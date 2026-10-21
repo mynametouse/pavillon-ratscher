@@ -63,4 +63,5 @@ vehicles/vsound.js          # V16b vehicle sounds: engine, tyres, wind, horn, do
 vehicles/vehicle.js         # V16b vehicles: physics, getting in and out, cameras, lights, HUD (VEH)
 vehicles/car.js             # V16b the car: saloon in Logan size, Beige Sable (CAR)
 vehicles/tractor.js         # V16b the tractor with front loader and pallet fork (TRACTOR2)
+vehicles/minimap.js         # V16b small map while driving: roads, route to the Klinge, destination (MMAP)
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api

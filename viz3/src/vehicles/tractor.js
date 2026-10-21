@@ -95,7 +95,7 @@ const TRACTOR2 = (() => {
       c.c2.scale.set(1, L * 0.45, 1); c.c2.position.copy(V(b[0], b[1] - (b[1] - a[1]) * 0.225, b[2] - (b[2] - a[2]) * 0.225)); c.c2.quaternion.copy(c.c1.quaternion); } }
   loaderPose(0);
   const model = { g, body, wheels, lamps: { head: [M.head], tail: [M.tail], brake: [M.brake], rev: [M.rev] }, beam: [0, 2.3, 1.62], LD,
-    update(v) { const dt = Math.min(0.1, (performance.now() - (LD.t || performance.now())) / 1000); LD.t = performance.now(); if (v === VEH.cur) { if (LD.up) LD.liftT = THREE.MathUtils.clamp(LD.liftT + LD.up * 0.34 * dt, -0.5, 0.62); }
+    update(v, dt) { if (v === VEH.cur) { if (LD.up) LD.liftT = THREE.MathUtils.clamp(LD.liftT + LD.up * 0.34 * dt, -0.5, 0.62); }   // dt: game time from the vehicle tick
       if (Math.abs(LD.lift - LD.liftT) > 1e-3 || Math.abs(LD.tilt - LD.tiltT) > 1e-3) { loaderPose(dt); markDirty(); if (VEH.cur === v) MOTION.lastMove = performance.now(); } },
     key(k, down) { if (k === 'r' || k === 'up') LD.up = down ? 1 : (LD.up === 1 ? 0 : LD.up); else if (k === 'g' || k === 'down') LD.up = down ? -1 : (LD.up === -1 ? 0 : LD.up); else if ((k === 't' || k === 'tilt') && down) LD.tiltT = LD.tiltT > 0.1 ? 0 : 0.3; },
     save: () => [+LD.liftT.toFixed(3), +LD.tiltT.toFixed(3)], load: a => { if (a && a.length >= 2) { LD.lift = LD.liftT = THREE.MathUtils.clamp(+a[0] || -0.5, -0.5, 0.62); LD.tilt = LD.tiltT = THREE.MathUtils.clamp(+a[1] || 0, 0, 0.3); loaderPose(0); } } };

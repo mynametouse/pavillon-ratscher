@@ -165,7 +165,7 @@ const PLAY = (() => {
     if (k === 'q') { if (P.mode === 'walk' && secondary()) e.preventDefault(); } });
   // ---- tapping a thing or a person in the picture does the same as the button ----
   const _v = new THREE.Vector3();
-  function tap(e, ray) { if (P.mode !== 'walk' || S.hold || (typeof PLAN !== 'undefined' && PLAN.on)) return false; const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+  function tap(e, ray) { if (P.mode !== 'walk' || S.hold || (S.seat && S.seat.drive) || (typeof PLAN !== 'undefined' && PLAN.on)) return false; const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
     const list = []; for (const a of candidates()) { const p = val(a.pos); if (!p) continue; const d = Math.hypot(p[0] - P.x, p[1] - P.y); if (d > val(a.r) + 2.2) continue; let lbl; try { lbl = a.label(); } catch (er) { lbl = null; } if (!lbl) continue; list.push({ a, p, d }); }
     if (!list.length) return false;
     const objs = []; for (const c of list) { const o = c.a.obj ? c.a.obj() : (c.a.npc ? c.a.npc.fig.g : null); if (o && o.visible) { o.userData.pact = c.a; objs.push(o); } }

@@ -40,6 +40,8 @@ VIEWS_B = [
   ('b19', 'gold', 'walk',  [1.7, -27.2, 1.65, 216, -15, 66]),          # band sawmill outside (V15b)
   ('b20', 'day',  'walk',  [17.6, 0.2, 1.65, 285, -3, 70]),          # fence and gate towards Ronald
   ('b21', 'night', 'walk', [-6.4, -3.8, 1.65, 55, 8, 64]),          # V16a: full-moon night (27 Aug, 23:30), moonlight from the SSE
+  ('b22', 'gold', 'veh',   ['car', 108.0, -93.0, 116, 8.5, 3.2, 1.55, 58, '']),   # V16b: with the car through Ratscher (Anger)
+  ('b23', 'gold', 'veh',   ['tractor', None, None, None, 9.5, -4.5, 1.7, 60, "VEH.by.tractor.model.load([0.25, 0.3])"]),   # V16b: the tractor at the Untere Klinge, fork raised
 ]
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
@@ -62,6 +64,14 @@ with sync_playwright() as p:
         pg.evaluate(f"GAME.setMode('{mode}')")
         if mode in ('night', 'auto'): pg.wait_for_function("window.DN && DN.ready()", timeout=300000, polling=500); time.sleep(1.5)
         if kind == 'orbit': pg.evaluate(f"GAME.orbit({a[0]},{a[1]},{a[2]},{json.dumps(a[3])})")
+        elif kind == 'veh':   # V16b: a vehicle placed on the road (or at its home), the camera ahead of it to the side, looking back at it
+            vid, x, y, psi, dist, side, hgt, fov, js = a
+            if x is not None: pg.evaluate(f"VEH.place('{vid}', {x}, {y}, {psi} * Math.PI / 180)")
+            if js: pg.evaluate(js)
+            pg.evaluate(f"""(() => {{ const v = VEH.by['{vid}'], s = v.st, f = [Math.sin(s.psi), Math.cos(s.psi)], l = [-Math.cos(s.psi), Math.sin(s.psi)], c = VEH.toW(v, 0, v.spec.box.cy);
+              const cx = c[0] + f[0] * {dist} + l[0] * {side}, cy = c[1] + f[1] * {dist} + l[1] * {side}, cz = ROADS.groundAt(cx, cy) + {hgt};
+              GAME.view(cx, cy, cz, Math.atan2(c[0] - cx, c[1] - cy) * 180 / Math.PI, Math.atan2(s.z + 0.8 - cz, Math.hypot(c[0] - cx, c[1] - cy)) * 180 / Math.PI, {fov}); }})()""")
+            time.sleep(1.5)
         else:
             x, y, z, yaw, pitch, fov = a
             if isinstance(z, str): z = G[z] + 1.65

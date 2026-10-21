@@ -9,9 +9,7 @@ const WCOL = (() => {
   function cell(i, j) { const k = key(i, j); let c = G.get(k); if (!c) G.set(k, c = { s: [], t: [] }); return c; }
   function build() { const segs = [], trees = [];
     const W = RATSCHER.walls; if (W) for (let i = 0; i + 3 < W.length; i += 4) segs.push(W[i], W[i + 1], W[i + 2], W[i + 3]);
-    for (const d of (window.ROADS && ROADS.decks) || []) { const p = d.p, n = p.length / 2;   // railings along both edges of each bridge deck
-      for (let k = 0; k < n - 1; k++) { const ax = p[k * 2], ay = p[k * 2 + 1], bx = p[k * 2 + 2], by = p[k * 2 + 3], L = Math.hypot(bx - ax, by - ay) || 1, nx = -(by - ay) / L * (d.hw - 0.08), ny = (bx - ax) / L * (d.hw - 0.08);
-        segs.push(ax + nx, ay + ny, bx + nx, by + ny, ax - nx, ay - ny, bx - nx, by - ny); } }
+    for (const d of (window.ROADS && ROADS.decks) || []) for (const r of d.rails || []) segs.push(r[0], r[1], r[2], r[3]);   // bridge railings
     const T = RATSCHER.treeXY; if (T) for (let i = 0; i + 2 < T.length; i += 3) trees.push(T[i], T[i + 1], Math.min(0.5, Math.max(0.15, 0.12 + T[i + 2] * 0.012)));
     SEG = new Float32Array(segs); TREE = new Float32Array(trees); S.nSeg = SEG.length / 4; S.nTree = TREE.length / 3; stampS = new Uint32Array(S.nSeg); stampT = new Uint32Array(S.nTree);
     for (let s = 0; s < S.nSeg; s++) { const x0 = Math.min(SEG[s * 4], SEG[s * 4 + 2]), x1 = Math.max(SEG[s * 4], SEG[s * 4 + 2]), y0 = Math.min(SEG[s * 4 + 1], SEG[s * 4 + 3]), y1 = Math.max(SEG[s * 4 + 1], SEG[s * 4 + 3]);

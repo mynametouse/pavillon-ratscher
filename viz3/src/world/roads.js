@@ -26,49 +26,52 @@ const ROADS = (() => {
       vec2 q = uv * vec2( textureSize( tRoad, 0 ) ) - 0.5, f = fract( q ); ivec2 i = ivec2( floor( q ) );
       float a = texelFetch( tRoad, i, 0 ).a, b = texelFetch( tRoad, i + ivec2( 1, 0 ), 0 ).a, c = texelFetch( tRoad, i + ivec2( 0, 1 ), 0 ).a, d = texelFetch( tRoad, i + ivec2( 1, 1 ), 0 ).a;
       b -= floor( b - a + 0.5 ); c -= floor( c - a + 0.5 ); d -= floor( d - a + 0.5 ); return fract( mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y ) ); }
-    // a detail texture with mean 1 (two samples, one turned and scaled, against visible tiling)
-    vec3 rdTex( sampler2D t, vec2 p, float tile ) { vec2 q = p / tile; vec3 a = texture( t, q ).rgb, b = texture( t, mat2( 0.8, -0.6, 0.6, 0.8 ) * q * 0.43 + 0.31 ).rgb;
+    // a detail texture with mean 1 (two samples, one turned and scaled, against visible tiling); explicit gradients dx, dy of p, so it may sit in branches
+    vec3 rdTex( sampler2D t, vec2 p, float tile, vec2 dx, vec2 dy ) { vec2 q = p / tile; mat2 M = mat2( 0.8, -0.6, 0.6, 0.8 ) * 0.43;
+      vec3 a = textureGrad( t, q, dx / tile, dy / tile ).rgb, b = textureGrad( t, M * q + 0.31, M * dx / tile, M * dy / tile ).rgb;
       return mix( a, b, 0.4 ) / max( textureLod( t, vec2( 0.5 ), 20.0 ).rgb, vec3( 0.02 ) ); }
-    vec3 landDetail( vec2 p, vec3 c, float dist ) {
+    vec3 landDetail( vec2 p, vec3 c, float dist ) { vec2 dx = dFdx( p ), dy = dFdy( p );
       // the aerial photos are cool and hazy (April, from the plane): the blue veil lifted from the darker ground, a little more colour
       float l = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hz = 1.0 - smoothstep( 0.08, 0.35, l );
-      c *= vec3( 1.0 + 0.08 * hz, 1.0, 0.62 + 0.38 * ( 1.0 - hz ) ); l = dot( c, vec3( 0.3, 0.59, 0.11 ) ); c = max( mix( vec3( l ), c, 1.15 ), vec3( 0.0 ) );
-      // up close the photo is soft: the grain of grass or soil after its colour, fading out by 150 m
-      float k = 1.0 - smoothstep( 30.0, 150.0, dist ), gr = clamp( ( c.g - max( c.r, c.b ) ) * 14.0 + 0.4, 0.0, 1.0 );
+      c *= vec3( 1.0 + 0.08 * hz, 1.0, 0.62 + 0.38 * ( 1.0 - hz ) ); l = dot( c, vec3( 0.3, 0.59, 0.11 ) ); c = max( mix( vec3( l ), c, 1.15 ), vec3( 0.0 ) ) * 0.8;   // and a little darker: grass and soil reflect less than the photo shows
+      // up close the photo is soft: the grain of grass (most of the land) or of bare soil (brown fields), fading out by 150 m
+      float k = 1.0 - smoothstep( 30.0, 150.0, dist ), gr = clamp( ( c.g - c.r ) * 12.0 + 0.7, 0.0, 1.0 );
       float n = ( rdN( p * 0.85 ) - 0.5 ) * 0.18 * ( 1.0 - smoothstep( 300.0, 700.0, dist ) );
-      if ( k > 0.0 ) { vec3 d = mix( rdTex( tDSoil, p, uDTile.y ), rdTex( tDLawn, p, uDTile.x ), gr ); c *= mix( vec3( 1.0 ), clamp( d, 0.2, 2.5 ), 0.8 * k ); }
+      if ( k > 0.0 ) { vec3 d = gr < 0.02 ? rdTex( tDSoil, p, uDTile.y, dx, dy ) : gr > 0.98 ? rdTex( tDLawn, p, uDTile.x, dx, dy ) : mix( rdTex( tDSoil, p, uDTile.y, dx, dy ), rdTex( tDLawn, p, uDTile.x, dx, dy ), gr );
+        c *= mix( vec3( 1.0 ), clamp( d, 0.2, 2.5 ), 0.8 * k ); }
       return c * ( 1.0 + n ); }
     vec3 roadShade( vec2 p, vec3 c, float dist ) {
       if ( uRoad.x < 0.5 ) return c;
-      vec2 uv = ( p - bRoad.xy ) * bRoad.zw; if ( uv.x <= 0.001 || uv.y <= 0.001 || uv.x >= 0.999 || uv.y >= 0.999 ) return c;
-      vec4 t = texture( tRoad, uv ); float e = t.r * ${ERNG.toFixed(1)} + ${EMIN.toFixed(1)};
-      if ( e < -1.4 ) return c;
+      // everything that needs screen derivatives first, before any per-pixel branch
+      vec2 dx = dFdx( p ), dy = dFdy( p ), uv = ( p - bRoad.xy ) * bRoad.zw; float fwp = length( abs( dx ) + abs( dy ) );
+      vec4 t = texture( tRoad, uv ); float e = t.r * ${ERNG.toFixed(1)} + ${EMIN.toFixed(1)}, lat = t.b * ${(2 * LRNG).toFixed(1)} - ${LRNG.toFixed(1)}, fwE = max( fwidth( e ), 0.01 ), fwL = max( fwidth( lat ), 0.01 );
+      if ( uv.x <= 0.001 || uv.y <= 0.001 || uv.x >= 0.999 || uv.y >= 0.999 || e < -1.4 ) return c;
       float code = floor( texelFetch( tRoad, ivec2( uv * vec2( textureSize( tRoad, 0 ) ) ), 0 ).g * 255.0 + 0.5 ), kind = floor( code / 8.0 ), surf = code - kind * 8.0;
-      float lat = t.b * ${(2 * LRNG).toFixed(1)} - ${LRNG.toFixed(1)}, al = abs( lat ), fwp = length( fwidth( p ) ), fine = 1.0 - smoothstep( 0.012, 0.05, fwp ), mid = 1.0 - smoothstep( 0.08, 0.4, fwp );
+      float al = abs( lat ), fine = 1.0 - smoothstep( 0.012, 0.05, fwp ), mid = 1.0 - smoothstep( 0.08, 0.4, fwp );
       float lum = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hard = step( surf, 2.5 );   // asphalt, concrete, paving: a hard edge; gravel and earth fray into the grass
-      float eN = e + ( rdN( p * 1.7 ) - 0.5 ) * mix( 0.5, 0.13, hard ) + ( rdN( p * 9.0 ) - 0.5 ) * 0.05 * mid, fwE = max( fwidth( e ), 0.01 );
+      float eN = e + ( rdN( p * 1.7 ) - 0.5 ) * mix( 0.5, 0.13, hard ) + ( rdN( p * 9.0 ) - 0.5 ) * 0.05 * mid;
       float k = smoothstep( -fwE, fwE, eN ) * ( 1.0 - smoothstep( 600.0, 1400.0, dist ) );
       float n1 = rdN( p * 0.23 ), n2 = rdN( p * 1.3 + 3.7 ), n3 = ( rdN( p * 23.0 ) - 0.5 ) * fine + ( rdN( p * 7.0 + 1.3 ) - 0.5 ) * 0.6 * mid;
       vec3 r;
       float kd = 1.0 - smoothstep( 25.0, 120.0, dist );
       if ( surf < 0.5 ) {   // asphalt: dark grey, patches and repairs after the photo's brightness, grain (texture up close); polished wheel tracks on wider roads
-        r = vec3( 0.098, 0.1, 0.105 ) * clamp( lum / 0.12, 0.72, 1.45 ) * ( 0.84 + 0.3 * n1 ) * ( 0.94 + 0.12 * n2 ) * mix( vec3( 1.0 + 0.3 * n3 ), clamp( rdTex( tDAsph, p, uDTile.z ), 0.3, 2.2 ), kd );
+        r = vec3( 0.098, 0.1, 0.105 ) * clamp( lum / 0.12, 0.72, 1.45 ) * ( 0.84 + 0.3 * n1 ) * ( 0.94 + 0.12 * n2 ) * mix( vec3( 1.0 + 0.3 * n3 ), clamp( rdTex( tDAsph, p, uDTile.z, dx, dy ), 0.3, 2.2 ), kd );
         if ( kind < 3.5 ) r *= 1.0 - 0.07 * ( 1.0 - smoothstep( 0.25, 0.6, abs( al - 1.75 ) ) ) * mid; }
       else if ( surf < 1.5 ) { r = vec3( 0.32, 0.315, 0.3 ) * ( 0.88 + 0.2 * n1 ) * ( 1.0 + 0.22 * n3 ); }   // concrete
       else if ( surf < 2.5 ) {   // paving stones: small blocks
         vec2 bq = fract( p * vec2( 4.0, 6.0 ) ); float jt = ( 1.0 - smoothstep( 0.0, 0.08, min( min( bq.x, 1.0 - bq.x ), min( bq.y, 1.0 - bq.y ) ) ) ) * fine;
         r = vec3( 0.25, 0.235, 0.22 ) * ( 0.85 + 0.3 * rdH( floor( p * vec2( 4.0, 6.0 ) ) ) ) * ( 1.0 - 0.45 * jt ); }
       else if ( surf < 3.5 ) {   // gravel: light, coarse grain, wheel tracks a little darker and smoother
-        r = mix( vec3( 0.35, 0.33, 0.29 ), c * 1.15, 0.35 ) * ( 0.85 + 0.3 * n1 ) * mix( vec3( 1.0 + 0.45 * n3 ), clamp( rdTex( tDGrav, p, uDTile.w ), 0.3, 2.2 ), kd ); r *= 1.0 - 0.1 * ( 1.0 - smoothstep( 0.15, 0.35, abs( al - 0.78 ) ) ); }
+        r = mix( vec3( 0.35, 0.33, 0.29 ), c * 1.15, 0.35 ) * ( 0.85 + 0.3 * n1 ) * mix( vec3( 1.0 + 0.45 * n3 ), clamp( rdTex( tDGrav, p, uDTile.w, dx, dy ), 0.3, 2.2 ), kd ); r *= 1.0 - 0.1 * ( 1.0 - smoothstep( 0.15, 0.35, abs( al - 0.78 ) ) ); }
       else {   // earth or grass: two wheel tracks of bare soil, grass between and beside them (a single trail on narrow paths)
         float rut = kind > 6.5 ? 1.0 - smoothstep( 0.18, 0.42, al ) : 1.0 - smoothstep( 0.16, 0.34, abs( al - 0.78 ) );
         rut *= ( surf > 4.5 ? 0.4 : 0.92 ) * ( 0.75 + 0.25 * n2 );
-        vec3 soil = vec3( 0.25, 0.205, 0.155 ) * ( 0.8 + 0.35 * n1 ) * mix( vec3( 1.0 + 0.35 * n3 ), clamp( rdTex( tDSoil, p, uDTile.y ), 0.3, 2.2 ), kd ), worn = c * vec3( 1.08, 1.05, 0.9 );
+        vec3 soil = vec3( 0.25, 0.205, 0.155 ) * ( 0.8 + 0.35 * n1 ) * mix( vec3( 1.0 + 0.35 * n3 ), clamp( rdTex( tDSoil, p, uDTile.y, dx, dy ), 0.3, 2.2 ), kd ), worn = c * vec3( 1.08, 1.05, 0.9 );
         r = mix( worn, soil, rut ); }
       // markings: edge lines (main roads, motorway), dashed centre line or lane divider (main and county roads, motorway); worn white paint
       if ( kind < 2.5 && hard > 0.5 && dist < 220.0 ) {
-        float fwL = max( fwidth( lat ), 0.01 ), paint = 0.0;
-        if ( kind < 1.5 ) paint = rdLine( abs( e - 0.27 ), 0.075, fwL );
+        float paint = 0.0;
+        if ( kind < 1.5 ) paint = rdLine( abs( e - 0.27 ), 0.075, fwE );
         if ( al < 0.5 ) paint = max( paint, rdLine( al, 0.065, fwL ) * step( rdPhase( uv ), 0.3333 ) );
         r = mix( r, vec3( 0.58, 0.58, 0.56 ) * ( 0.85 + 0.15 * n2 ), paint * ( 0.8 + 0.2 * n1 ) * ( 1.0 - smoothstep( 120.0, 220.0, dist ) ) ); }
       // verge: beside asphalt and concrete a strip of trodden grass and grit
@@ -127,11 +130,14 @@ const ROADS = (() => {
         q([...aR, A[2]], [...bR, B[2]], [...bL, B[2]], [...aL, A[2]], top);
         for (const [s0, s1] of [[aL, bL], [bR, aR]]) { const z0 = s0 === aL ? A[2] : B[2], z1 = s1 === bL ? B[2] : A[2]; q([...s0, z0 - 0.75], [...s1, z1 - 0.75], [...s1, z1], [...s0, z0], side); }
         q([...aL, A[2] - 0.75], [...bL, B[2] - 0.75], [...bR, B[2] - 0.75], [...aR, A[2] - 0.75], side);
-        for (const sd of [1, -1]) { const ex = [-uy * sd * (hw - 0.08), ux * sd * (hw - 0.08)], fx = [-vy * sd * (hw - 0.08), vx * sd * (hw - 0.08)];
-          const segL = cum[k + 1] - cum[k], np = Math.max(1, Math.round(segL / 2));
-          for (let j = 0; j <= np; j++) { const f = j / np, x = A[0] + (B[0] - A[0]) * f + ex[0] + (fx[0] - ex[0]) * f, y = A[1] + (B[1] - A[1]) * f + ex[1] + (fx[1] - ex[1]) * f, z = A[2] + (B[2] - A[2]) * f;
-            rail.push([x, y, z, 0.05, 0.05, 1.0]); }
-          for (const zr of [0.55, 1.0]) { const xa = A[0] + ex[0], ya = A[1] + ex[1], xb = B[0] + fx[0], yb = B[1] + fx[1]; rail.push([xa, ya, A[2] + zr, xb, yb, B[2] + zr, 'r']); } } } }
+      }
+      // railings on both sides, 0.4 m short of the deck's ends (posts every ~2 m, two rails); the same lines are the colliders (world/worldcol.js)
+      const at = sv => { let k = 0; while (k < n - 2 && cum[k + 1] < sv) k++; const L1 = cum[k + 1] - cum[k] || 1, f = (sv - cum[k]) / L1, ux = (p[k * 2 + 2] - p[k * 2]) / L1, uy = (p[k * 2 + 3] - p[k * 2 + 1]) / L1;
+        return [p[k * 2] + (p[k * 2 + 2] - p[k * 2]) * f, p[k * 2 + 1] + (p[k * 2 + 3] - p[k * 2 + 1]) * f, zOf(sv), ux, uy]; };
+      const s0 = Math.min(0.4, L * 0.1), s1 = L - s0, np = Math.max(1, Math.round((s1 - s0) / 2)); deck.rails = [];
+      for (const sd of [1, -1]) { let prev = null;
+        for (let j = 0; j <= np; j++) { const [x0, y0, z0, ux, uy] = at(s0 + (s1 - s0) * j / np), x = x0 - uy * sd * (hw - 0.08), y = y0 + ux * sd * (hw - 0.08);
+          rail.push([x, y, z0, 0.05, 0.05, 1.0]); if (prev) { for (const zr of [0.55, 1.0]) rail.push([prev[0], prev[1], prev[2] + zr, x, y, z0 + zr, 'r']); deck.rails.push([prev[0], prev[1], x, y]); } prev = [x, y, z0]; } } }
     if (!top.length) return;
     const mk = (arr, mat, idx) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3)); g.computeVertexNormals(); const me = new THREE.Mesh(g, mat); me.userData.noMerge = true; me.castShadow = true; me.receiveShadow = true; scene.add(me); return me; };
     mk(top, matTop); mk(side, matSide);

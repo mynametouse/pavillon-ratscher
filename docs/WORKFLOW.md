@@ -49,6 +49,7 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 | v15b_reload.py | Spielstand speichern/laden, Handy-Ansicht | 15 min |
 | v16a.py, v16a_b.py, v16a_c.py | Tag/Nacht: Stunden, Mondphasen, Draufsicht nachts, Nachbarn nachts, Oktober | je 10–20 min |
 | v16a_lapse.py, v16a_video.py | Zeitraffer eines Tages (Bilderbogen, mp4) | 15–25 min |
+| v16b.py | Fahrzeuge: Einsteigen, Gas/Bremse/rückwärts, Hauswand, Route Garten → Klinge mit Ortsnamen, Aussteigen und Gehen im Gelände, Traktor mit Frontlader, Licht nachts (Abschnitte: `car,drive,crash,route,walk,tractor,night`) | 15–25 min |
 | prof.py, loadtime.py | Kosten pro Frame (TICKS), Draw-Calls/Speicher; Ladezeiten | 10 min |
 | bilder.py `b21 B` | Galeriebilder nach `dist/img` (`?offline=1`, hohe Qualität) | je 2 min |
 | pano.py, tour.py, gi.py, bake.py | 360°-Bilder, Raumführung, GI- und Himmelssichtbarkeits-Volumen backen | lang |
@@ -96,4 +97,9 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 - **Licht/Tageszeit**: Schlüsselbilder `DN.KF` in `time/daynight.js`; feste Stimmungen `render/modes.js`.
 - **Aufgaben/Dialoge**: `game/quests.js`, Stimmen `tools/voices/lines3.py` (edge-tts).
 - **Werkstatt-Spiel**: `werk/werk.js` (Stationen und Schritte), Fenster `werk/werkui.js`, Gebäude/Maschinen `garden/workshop.js`.
+- **Fahrzeuge**: Modell und Fahrwerte je Fahrzeug in `vehicles/<name>.js` (`car.js`, `tractor.js`), Kern `vehicles/vehicle.js` (Physik, Kollision,
+  Kameras, Licht, HUD), Töne `vehicles/vsound.js`; Anleitung ARCHITECTURE.md Abschnitt 11/12. Test `v16b.py`.
+- **Straßen und Wege**: `python3 tools/geo/build_roads.py` (braucht die Geo-Originale unter `<repo>/geo` bzw. `PAV_GEO`), dann
+  `geo/out/pub/roads.b64.json` nach `viz3/dist/geo/` kopieren und in `viz3/manifests.json` `geoman.roads` aus `geo/out/pub/geo.json` übernehmen
+  (oder Voll-Build). Aussehen der Straßen: GLSL in `world/roads.js` (`roadShade`, `landDetail`).
 - **Oberfläche**: Menü-Einträge `shell/menu.html`, HUD-Knöpfe `shell/panel_3d.html`, Fenster-Container `shell/windows.html`, Stil im passenden `shell/css/*.css`, Hinweise „Was das Modell zeigt“ `shell/notes.html`.

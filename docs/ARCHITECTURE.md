@@ -1,6 +1,6 @@
 # Architektur der App (viz3)
 
-Stand: V16a + Umbau (Oktober 2026). Kurz: **ein Bündel, ein gemeinsamer Gültigkeitsbereich, Module in fester Reihenfolge, jede
+Stand: V16b (Oktober 2026). Kurz: **ein Bündel, ein gemeinsamer Gültigkeitsbereich, Module in fester Reihenfolge, jede
 Schnittstelle als `window.NAME`**. Kommentare im Code sind Englisch, Texte in der Oberfläche Deutsch.
 
 ## 1 Grundprinzip
@@ -15,7 +15,7 @@ Schnittstelle als `window.NAME`**. Kommentare im Code sind Englisch, Texte in de
   zusammengefasst; spätere Module (Spiel, Werkstatt, Tag/Nacht) bleiben einzelne Meshes. Punktlichter entstehen in
   `pavilion/interior.js` (7, `window.LIGHTS`) und `garden/workshop_lamp.js` (1).
 - Die Seite liegt in Teilen unter `viz3/shell/` (Reihenfolge `parts.txt`): `head.html`, CSS je Bereich (`css/layout, stage3d, siteplan, variants, pano,
-  gallery, phases, game, hud, werk_clock`), `header.html`, `panel_3d.html` (Bühne, HUD, Overlays), `menu.html` (Menü mit Orten, Licht, Spiel,
+  gallery, phases, game, hud, werk_clock, vehicles`), `header.html`, `panel_3d.html` (Bühne, HUD, Overlays), `menu.html` (Menü mit Orten, Licht, Spiel,
   Steuerung/Hilfe), `windows.html` (Inventar, Maschine, Uhr, PSA, Werkstattbuch), `panel_pano|film|gallery.html`, `notes.html`, `tail.html`.
   Der Build setzt Skript, Manifeste und die Quellenliste ein (`<!--SCRIPTS-->`, `<!--CREDITS-->`).
 
@@ -25,7 +25,9 @@ Schnittstelle als `window.NAME`**. Kommentare im Code sind Englisch, Texte in de
   `Vector3(x, z, −y)`. Richtungen als Kompass-Azimut (0 = Nord, 90 = Ost); `dirFromAz(az, el)`.
 - **Verschiebbare Gebäude** (`bldBegin(key, …) … bldEnd()`, `BUILD[key]`): gebaut in Original-Koordinaten unter einer Gruppe am Drehpunkt;
   `BUILD[key].tf(x, y)` rechnet Original- in aktuelle Koordinaten (nach Verschieben in der Draufsicht). Werkstatt-Spiel: `WERK.WT()`.
-- **Echte Welt**: `GEOMAN.xf` (`a, b, ex, ey`) bildet Grundstück → UTM 32N ab (`world/ratscher.js`, Geländehöhe `RATSCHER.hAt`).
+- **Echte Welt**: `GEOMAN.xf` (`a, b, ex, ey`) bildet Grundstück → UTM 32N ab (`world/ratscher.js`). Höhen: `RATSCHER.hAt` (bilinear, glatt),
+  `RATSCHER.hMesh` (genau die gezeichneten Dreiecke des 10-m-Geländes), `ROADS.groundAt(x, y, z)` = befahrbarer/begehbarer Boden
+  (modelliertes Grundstück mit Bach innerhalb ±120 m, sonst Gelände, Brückendecks). Befahrbar ist das Quadrat des 10-m-Geländes (`RATSCHER.box`, 2,4 km).
 
 ## 3 Laden
 
@@ -68,7 +70,10 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `GEAR` | werk/gear.js | Schutzausrüstung, `GEAR.check(req)` |
 | `WERK`, `WUI` | werk/ | Werkstatt-Spiel (Werkstücke, Stationen, Schritte), Maschinenfenster, Werkstattbuch |
 | `WORKS`, `WLAMP` | garden/workshop*.js | Werkstattgebäude mit Maschinen und Ton; LED-Licht mit Bewegungsmelder |
-| `RATSCHER` | world/ratscher.js | echte Umgebung: Gelände (`hAt`), Luftbilder, Gebäude, Bäume |
+| `RATSCHER` | world/ratscher.js | echte Umgebung: Gelände (`hAt`, `hMesh`, `box`), Luftbilder, Gebäude (`walls`: Wandfüße), Bäume (`treeXY`) |
+| `ROADS` | world/roads.js | Straßen und Wege aus OSM: Straßenkarte für die Boden-Shader (`roadShade`, `landDetail`), Oberfläche unter einem Punkt (`at`), Boden (`groundAt`), Brücken (`decks`), Ortsnamen (`place`), Routen (`routes.klinge`) |
+| `WCOL` | world/worldcol.js | Kollision mit der echten Umgebung: Wände aller Gebäude, Stämme, Brückengeländer (`each`, `pushCircle`) |
+| `VEH`, `VSND`, `MMAP` | vehicles/ | Fahrzeuge (`VEH.add(spec, model)`, `enter/exit/goTo/place/state/follow/reset`, Kameras, Licht, HUD); Fahrzeugtöne; Karte beim Fahren |
 | `SITEPLAN`, `PLANNER` | world/siteplan.js, pavilion/plan.js | Draufsicht (Gebäude verschieben, Zäune), Möbel planen, Plan veröffentlichen |
 | `GAME` | boot/boot.js | Test- und Steuer-API: `go(spot)`, `view(x,y,z,yaw,pitch)`, `step`, `shot`, `setMode`, `setPhase`, `setVariant` … |
 
@@ -93,7 +98,8 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `pav-view`, `pav-fig`, `pav-lock`, `pav-sound`, `pav-wpcard` | Kamera (Figur/Augen), Spielfigur, Mausfang, Ton, Werkstück-Karte |
 | `pav-clock-v1`, `pav-dn-v1` | Spielzeit und Tempo; Kalender (Tag 1 = Datum) |
 | `pav-quests-v1`, `pav-werk-v1`, `pav-gear-v1` | Aufgaben, Werkstatt-Spiel, Schutzausrüstung |
-| `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a` | „Neu in …“-Hinweise schon gezeigt |
+| `pav-veh-v1` | Fahrzeuge: Standort und Richtung je Fahrzeug, Frontlader, Lichtmodus (auto/an/aus) |
+| `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b` | „Neu in …“-Hinweise schon gezeigt |
 
 Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), hier eintragen.
 
@@ -110,11 +116,11 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `game/` – Gehen/Kamera/Schleife, Aktionen/Inventar, Haus (Schalter, Ofen, Sitzen), Aufgaben, HUD, Spielfigur
 - `audio/` – Ton-Engine (Aufnahmen, Synthese, Atmosphäre, Stimmen), Musik (Klavier, Platten, Ukulele)
 - `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus
-- `world/` – Draufsicht/Planen, Umgebung Ratscher
+- `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Kollision mit der Umgebung (`worldcol`)
 - `time/` – Uhr, Sterndaten, Tag und Nacht
 - `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster
 - `boot/` – Start
-- (geplant) `vehicles/` – Auto, Traktor (V16b)
+- `vehicles/` – Fahrzeug-Kern (`vehicle`: Physik, Ein-/Aussteigen, Kameras, Licht, HUD), Töne (`vsound`), Auto (`car`), Traktor mit Frontlader (`tractor`), Karte beim Fahren (`minimap`)
 
 ## 10 Leistung (gemessen, SwiftShader-Test, test/prof.py)
 
@@ -124,9 +130,34 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   große Rechnungen in Teilen über mehrere Frames (Beispiel `giMix`); neue statische Geometrie vor `render/zmerge.js` einhängen oder
   selbst zusammenfassen (InstancedMesh, `BufferGeometryUtils.mergeGeometries`).
 
-## 11 Erweitern – Beispiel neues Modul (z. B. Fahrzeuge)
+## 11 Boden, Straßen, Fahrzeuge (V16b)
 
-1. Ordner/Datei anlegen (`src/vehicles/car.js`), Zeile in `src/modules.txt` vor `boot/boot.js` (nach allem, was gebraucht wird).
-2. Als IIFE schreiben, API auf `window` (`window.VEH = …`), Pro-Frame-Arbeit über `window.TICKS.push(dt => …)`, Aktionen über `PLAY.act`.
-3. Spielstand mit eigenem Schlüssel (`pav-veh-v1`, oben eintragen); Texte deutsch; Quellen in `buildlib/credits.py`.
-4. Test-Skript `viz3/test/<thema>.py` mit `lib.py`; Eintrag in docs/CHANGELOG.md.
+- **Straßen**: `tools/geo/build_roads.py` liest die OSM-Wege (`<repo>/geo`, Originale), klassifiziert sie (Art: motorway, main, county, street,
+  lane, service, track, path, foot; Belag: asphalt, concrete, paving, gravel, ground, grass; Breite; Brücke), vereinfacht sie und schreibt
+  `geo/out/pub/roads.b64.json` + den Eintrag `roads` in `geo.json` (→ `dist/geo/`, `manifests.json` `geoman.roads`). Im modellierten Grundstück
+  (Zone x −50…42, y −52…48) gelten statt OSM der modellierte Feldweg und ein Verbindungsweg mit Brücke über den Bach (dort im Skript erklärt).
+  Route `routes.klinge`: Garten → Anger → Geisenhöhner Weg → Feldweg über die L 1625 → Waldrand → Untere Klinge.
+- **Straßenkarte** (`world/roads.js`, beim Laden gerastert, 1,25 m/px bzw. 2 m auf Telefonen): R Abstand zum Straßenrand, G Art×8+Belag,
+  B seitlicher Versatz zur Mittellinie, A Phase der Leitlinie (18 m). Die Boden-Shader holen sich `ROADS.shader(sh)` (Uniforms + GLSL) und rufen
+  `landDetail(p, farbe, abstand)` (Luftbild entdunstet, Gras-/Erdkorn aus Detailtexturen in der Nähe) und `roadShade(p, farbe, abstand)` auf
+  (Asphalt, Beton, Pflaster, Schotter, Fahrspuren, Bankett, Markierungen). Kein Straßen-Mesh: keine Z-Kämpfe, Kreuzungen fügen sich von selbst.
+- **Fahrzeuge** (`vehicles/vehicle.js`): ein Fahrzeug = `VEH.add(spec, model)`. `model`: `g` (Gruppe, Ursprung am Boden unter dem Schwerpunkt,
+  x rechts, y vorn), `body` (federnder Teil), `wheels` (`{x, y, r, steer, drive, piv, node}`), `lamps` (`head/tail/brake/rev`: Materialien mit
+  Emission), optional `update(v, dt)` (Spielzeit), `key(k, down)`, `save()/load(a)`, `beam` (Lichtquelle lokal). `spec`: Masse, Trägheit, Achsabstände `a/b`,
+  Spur, Schwerpunkthöhe, Radradius, Reifensteifigkeit `Cf/Cr`, Haftung, Lenkung (`steerMax`, `steerV`), Motor (`eng.curve` Nm über U/min),
+  Gänge, Bremsen, Luftwiderstand, Kasten für Kollisionen (`box`), Augenpunkt (`eye`), Tür (`door`), Kamera, Ton (`petrol`/`diesel`), `home()`.
+  Physik 120 Hz (Einspurmodell, Reibkreis je Achse, Automatik), Boden aus `ROADS.groundAt`/`ROADS.at`, Kollision mit `WCOL`, `COL`, Fahrzeugen,
+  Nachbarn und Huberts Traktor. Kamera: `VEH.applyCam` (aus `game.js applyCam`), Nachführen in Spielzeit (`camTick`). Licht: ein SpotLight für das
+  nächste Fahrzeug mit Licht an. Haken in `game/game.js`: `groundZ`, Gehgrenzen (`walkBounds`), Kollision des Gehenden, Kamera, Schattenkasten,
+  Ortsnamen; in `game/play.js`: Sitzart `drive`; in `npc/npc.js`: Huberts Traktor wartet, wenn ein Fahrzeug im Weg steht.
+  Karte beim Fahren (`vehicles/minimap.js`): 2D-Canvas `#vmap`, Fahrtrichtung oben, Wege nach Art, Route zur Klinge, 10 Hz nur beim Fahren.
+
+## 12 Erweitern – Beispiel neues Fahrzeug
+
+1. Datei `src/vehicles/<name>.js` nach dem Muster von `car.js` (Modell bauen, `spec` mit Physikwerten, `return VEH.add(spec, model)`),
+   Zeile in `src/modules.txt` nach `vehicles/vehicle.js`.
+2. Eigene Tasten über `model.key(k, down)` (belegt: E, Q, V, L, H, Leertaste, R/G/T beim Traktor, F Vollbild, M, I, J, B, C, X, Z, Ziffern);
+   Knöpfe im HUD (`shell/panel_3d.html` `#vhud`, `data-vb`).
+3. Test in `viz3/test/v16b.py` ergänzen (Abschnitte wählbar), Eintrag in docs/CHANGELOG.md.
+4. Allgemein für neue Module: IIFE, API auf `window`, Pro-Frame-Arbeit über `window.TICKS`, Aktionen über `PLAY.act`, Spielstand mit eigenem
+   `pav-…-v1`-Schlüssel (Abschnitt 8), Texte deutsch, Quellen in `buildlib/credits.py`.

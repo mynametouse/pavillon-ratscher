@@ -11,10 +11,10 @@
 // Cameras: behind the vehicle (follows the heading; the mouse looks around and it swings back) or the driver's eyes – V or the mouse wheel,
 // like walking. Lights: low beam as one spot light (always in the scene, intensity 0 when off: no shader recompiles), lamps glow;
 // 'auto' after the sun (time/daynight.js). Keys while driving: W/S or arrows, A/D steer, Space handbrake, L light, H horn, Q out.
-// Positions in localStorage 'pav-veh1'. Tests: VEH.auto = (v, dt) => ({ thr, brk, steer, hand }) overrides the keys; VEH.follow(route).
+// Positions in localStorage 'pav-veh-v1'. Tests: VEH.auto = (v, dt) => ({ thr, brk, steer, hand }) overrides the keys; VEH.follow(route).
 const VEH = (() => {
   const S = { list: [], by: {}, cur: null, auto: null, lights: 'auto', camT: 0 };
-  const LS = 'pav-veh1'; let saved = {}; try { saved = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) {}
+  const LS = 'pav-veh-v1'; let saved = {}; try { saved = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) {}
   if (saved.lights === 'on' || saved.lights === 'off' || saved.lights === 'auto') S.lights = saved.lights;
   function save() { const o = { lights: S.lights }; for (const v of S.list) o[v.id] = [+v.st.x.toFixed(2), +v.st.y.toFixed(2), +v.st.psi.toFixed(4), ...(v.model.save ? v.model.save() : [])];
     try { localStorage.setItem(LS, JSON.stringify(o)); } catch (e) {} }
@@ -79,7 +79,7 @@ const VEH = (() => {
     if (s.shiftT > 0) s.shiftT -= h;
     const launch = sp.eng.idle + s.thr * (sp.eng.launch - sp.eng.idle), slip = erpm < launch, rpmEff = slip ? launch : erpm;
     s.rpm = lerp1(s.rpm, s.engine ? Math.min(sp.eng.red, Math.max(sp.eng.idle, rpmEff)) : 0, h * (slip ? 6 : 14));
-    let Fdrive = 0; if (s.engine && s.shiftT <= 0 && rpmEff < sp.eng.red + 50) { const T = torque(sp, rpmEff) * s.thr - (s.thr < 0.05 && !slip ? sp.eng.drag * Math.min(1, erpm / 3000) : 0); Fdrive = T * ratio(sp, s.gear) * sp.eff / sp.rw; }
+    let Fdrive = 0; if (s.engine && s.shiftT <= 0 && rpmEff < sp.eng.red + 50 && !(s.gear < 0 && erpm > (sp.revRpm || 3600))) { const T = torque(sp, rpmEff) * s.thr - (s.thr < 0.05 && !slip ? sp.eng.drag * Math.min(1, erpm / 3000) : 0); Fdrive = T * ratio(sp, s.gear) * sp.eff / sp.rw; }   // reverse: kept slow
     // axle loads (weight transfer from the last acceleration), grip
     const cosP = Math.cos(s.pt), Fz = m * GR * cosP, Fzf = Math.max(0.12 * Fz, Fz * b / L - m * s.ax * sp.hcg / L), Fzr = Math.max(0.12 * Fz, Fz - Fzf);
     const muF = muOf(v, 0, 1), muR = muOf(v, 2, 3), crr = crrOf(v), mF = m * b / L, mR = m * a / L;
@@ -151,18 +151,22 @@ const VEH = (() => {
       (i, Q) => { const h = circBox(A, Q[i * 3], Q[i * 3 + 1], Q[i * 3 + 2]); if (h) hits.push([h, null]); });
     if (Math.abs(A.c[0]) < 140 && Math.abs(A.c[1]) < 140 && typeof CG !== 'undefined' && CG) {   // the garden's colliders (fences, sheds, trees, machines …)
       const seen = new Set(); for (let gx = A.c[0] - R; gx <= A.c[0] + R; gx += CG.cs) for (let gy = A.c[1] - R; gy <= A.c[1] + R; gy += CG.cs) for (const i of cellItems(CG, gx, gy)) seen.add(i);
-      for (const i of seen) { const c = COL[i]; if (!phOk(c) || c[5] <= z0 || c[4] >= z1) continue; const r9 = c[9]; if (r9 && c[6] === 'house') continue;   // the village's footprint boxes: the walls themselves are in WCOL
+      for (const i of seen) { const c = COL[i]; if (!phOk(c) || c[5] <= z0 || c[4] >= z1) continue; const r9 = c[9]; if ((r9 && c[6] === 'house') || c[6] === 'tractor') continue;   // the village's footprint boxes (the walls themselves are in WCOL), Hubert's parked tractor (below, where it really is)
         const B = r9 ? { c: toWorld(c, (c[0] + c[1]) / 2, (c[2] + c[3]) / 2), ax: [r9.c, r9.s], ay: [-r9.s, r9.c], ex: (c[1] - c[0]) / 2, ey: (c[3] - c[2]) / 2 } : { c: [(c[0] + c[1]) / 2, (c[2] + c[3]) / 2], ax: [1, 0], ay: [0, 1], ex: (c[1] - c[0]) / 2, ey: (c[3] - c[2]) / 2 };
         const h = sat(A, B); if (h) hits.push([h, null]); } }
     for (const o of S.list) { if (o === v) continue; const h = sat(A, boxOf(o)); if (h) hits.push([h, o]); }
+    if (typeof TRACTOR !== 'undefined' && TRACTOR.g) { const tp = TRACTOR.g.position, az = -TRACTOR.g.rotation.y, f = fwd(az), r = rgt(az);   // Hubert's old tractor, parked or on its round
+      const h = sat(A, { c: [tp.x + f[0] * 0.35, -tp.z + f[1] * 0.35], ax: r, ay: f, ex: 0.98, ey: 1.45 }); if (h) hits.push([h, null]); }
     if (window.NPCS) for (const w of [NPCS.hubert, NPCS.ronald]) { if (!w || !w.fig || !w.fig.g.visible || w.drive) continue; const h = circBox(A, w.x, w.y, 0.32); if (h) hits.push([h, null]); }
     let big = 0; for (const [h, o] of hits) { const dv = resolve(v, h, o); if (dv > big) big = dv; }
     if (big > 1.4 && v === S.cur) VSND.thud(v, Math.min(1, big / 9)); return hits.length; }
+  // something in the way of Hubert's tractor round (npc/npc.js): a vehicle within reach ahead of (x, y) in the direction az
+  S.blocked = (x, y, az, ahead) => { const px = x + Math.sin(az) * ahead, py = y + Math.cos(az) * ahead; for (const v of S.list) if (circBox(boxOf(v), px, py, 1.5)) return true; return false; };
   // walkers bump into parked vehicles (game/game.js collide)
   S.pushWalker = (p, rad, feet) => { for (const v of S.list) { if (v === S.cur) continue; if (feet != null && feet > v.st.z + v.spec.box.h - 0.2) continue; const h = circBox(boxOf(v), p[0], p[1], rad); if (!h) continue; p[0] -= h.n[0] * h.d; p[1] -= h.n[1] * h.d; } };
   // ---------------- pose of the model ----------------
   const _q = new THREE.Quaternion(), _e = new THREE.Euler(0, 0, 0, 'YXZ');
-  function pose(v) { const s = v.st, sp = v.spec, g = v.g;
+  function pose(v, dt = 0) { const s = v.st, sp = v.spec, g = v.g;
     if (!v.placed) { groundPose(v); s.z = s.zg; s.pitch = s.pt; s.roll = s.rt; v.placed = true; }
     g.position.copy(V(s.x, s.y, s.z)); _e.set(s.pitch, -s.psi, -s.roll, 'YXZ'); g.quaternion.setFromEuler(_e);
     if (v.model.body) { v.model.body.rotation.x = s.dp; v.model.body.rotation.z = -s.dr; }
@@ -170,7 +174,7 @@ const VEH = (() => {
     const cp = Math.cos(s.pitch), sr = Math.sin(s.roll);
     for (const w of v.W) { const zPlane = s.z + Math.sin(s.pitch) * w.y - sr * w.x, comp = THREE.MathUtils.clamp((w.gz - zPlane) * cp, -sp.travel, sp.travel); w.comp = lerp1(w.comp, comp, 0.5);
       w.piv.position.y = w.r + w.comp; if (w.steer) w.piv.rotation.y = -s.steer * (w.steer || 1); w.node.rotation.x = -w.spin; }
-    if (v.model.update) v.model.update(v); }
+    if (v.model.update) v.model.update(v, dt); }
   // ---------------- lights ----------------
   const lightsOn = v => v.st.engine && (S.lights === 'on' || (S.lights === 'auto' && dark()));
   function lamps(v) { const on = lightsOn(v), M = v.model.lamps; if (!M) return;
@@ -191,11 +195,11 @@ const VEH = (() => {
   function enter(v) { if (S.cur || PLAY.seated()) return;
     const seat = { kind: 'drive', drive: v, keepKeys: true, pitch: -4, get yaw() { return v.st.psi * 180 / Math.PI; }, follow: () => eyeW(v),
       get lock() { return Math.hypot(v.st.u, v.st.v) > 1.5; }, lockMsg: 'Erst anhalten.', get back() { return exitPos(v); }, set back(x) {},
-      primary: () => toggleLights(), get primaryLabel() { return 'Licht ' + ({ auto: 'automatisch', on: 'an', off: 'aus' })[S.lights]; }, leaveLabel: 'Aussteigen', onLeave: () => left(v) };
+      primary: () => toggleLights(), primaryLabel: '', leaveLabel: 'Aussteigen', onLeave: () => left(v) };
     S.cur = v; v.st.engine = true; v.st.hand = false; v.st.sleep = 0; v.st.gear = 1; S.camFrom = { p: cam.position.clone(), q: cam.quaternion.clone(), t: 0 }; S.lastPsi = v.st.psi; S.lookT = 0;
     PLAY.sit(seat); P.yaw = v.st.psi * 180 / Math.PI; P.pitch = -8; CAM3.cur = Math.max(CAM3.cur, 1.2);
     VSND.door(v); VSND.start(v); document.body.dataset.drive = v.id; hud(true); markDirty(true); }
-  function left(v) { S.cur = null; v.st.engine = false; v.st.thr = 0; v.st.hand = true; VSND.stop(v); VSND.door(v); document.body.dataset.drive = ''; hud(false); lamps(v); save(); markDirty(true); }
+  function left(v) { S.cur = null; v.st.engine = false; v.st.thr = 0; v.st.hand = true; VSND.stop(v); VSND.door(v); delete document.body.dataset.drive; hud(false); lamps(v); save(); markDirty(true); }
   function toggleLights() { S.lights = S.lights === 'auto' ? (dark() ? 'off' : 'on') : S.lights === 'on' ? 'off' : 'auto'; PLAY.think('Licht ' + ({ auto: 'automatisch', on: 'an', off: 'aus' })[S.lights] + '.', 1600); save(); markDirty(); }
   // ---------------- input: keys, the on-screen stick, or a test driver ----------------
   const K = new Set(); const typing = () => ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
@@ -216,7 +220,7 @@ const VEH = (() => {
       const inp = driven ? input(v, dt) : { thr: 0, brk: 0, steer: 0, hand: true };
       const n = Math.max(1, Math.ceil(dt / HSTEP)), h = dt / n; for (let i = 0; i < n; i++) { step(v, h, inp); collide(v); }
       s.sleep = (!driven && Math.hypot(s.u, s.v) < 0.03 && Math.abs(s.r) < 0.01) ? s.sleep + dt : 0;
-      pose(v); lamps(v); if (driven || Math.hypot(s.u, s.v) > 0.01) markDirty(); s.moved += Math.hypot(s.u, s.v) * dt; }
+      pose(v, dt); lamps(v); if (driven || Math.hypot(s.u, s.v) > 0.01) markDirty(); s.moved += Math.hypot(s.u, s.v) * dt; }
     const v = S.cur; if (v) { const e = eyeW(v); P.x = e.x; P.y = e.y; P.feet = v.st.z + 0.3; P.cam = { x: e.x, y: e.y, z: e.z };   // the ears, the neighbours and the figure know where I am
       if (v.st.moved > 40) { v.st.moved = 0; save(); } camTick(v, dt); VSND.update(v, dt); hudUpdate(v); if (Math.hypot(v.st.u, v.st.v) > 0.1) MOTION.lastMove = performance.now(); }
     beamUpdate(); S.ms = performance.now() - t0; }
@@ -278,8 +282,14 @@ const VEH = (() => {
     SPOTS._veh = { mode: 'walk', pos: [d[0], d[1]], z: ROADS.groundAt(d[0], d[1]), yaw: Math.atan2(c[0] - d[0], c[1] - d[1]) * 180 / Math.PI, pitch: -6, label: v.name }; go('_veh'); markDirty(true); }
   document.querySelectorAll('[data-veh]').forEach(b => b.addEventListener('click', () => { goTo(b.dataset.veh); if (window.HUD && HUD.open) HUD.setMenu(false); }));
   S.goTo = goTo;
+  // stuck somewhere? both vehicles back to where they started (menu: „Fahrzeuge zurückstellen“)
+  S.reset = () => { if (S.cur) S.exit(); for (const v of S.list) { const p = v.spec.home(); S.place(v.id, p[0], p[1], p[2]); v.st.gear = 1; v.st.engine = false; lamps(v); } save(); toast('Auto und Traktor stehen wieder an ihrem Platz.', 3500); };
+  document.querySelectorAll('[data-vreset]').forEach(b => b.addEventListener('click', () => { S.reset(); if (window.HUD && HUD.open) HUD.setMenu(false); }));
   S.add = add; S.lightsOn = lightsOn; S.toW = toW; S.toL = toL; S.save = save; S.toggleLights = toggleLights;
   window.TICKS.unshift(dt => { try { update(dt); } catch (e) { if (!S._err) { S._err = 1; console.warn('veh', e); } } });   // first: the figure and the camera then see this frame's vehicle
+  // first visit of V16b: a word about driving
+  let intro = false; window.TICKS.push(() => { if (intro || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16b') === '1'; localStorage.setItem('pav-v16b', '1'); } catch (e) {}
+    if (!seen) setTimeout(() => toast('Neu: Fahren. Das Auto steht am Feldweg vor dem Garten, der Traktor an der Unteren Klinge (Menü: „Zum Auto“, „Zum Traktor“). ' + (COARSE ? 'Antippen: einsteigen, Kreis links: Gas, Bremse, lenken.' : 'E: einsteigen, W/S Gas und Bremse, A/D lenken, Q: aussteigen.') + ' Beim Fahren zeigt die Karte links oben den Weg zur Klinge.', 11000), 15000); });
   // when the geodata are there: vehicles placed before (on the near ground) are set onto the terrain
   whenLoaded(() => { for (const v of S.list) { v.placed = false; pose(v); } });
   return S; })();

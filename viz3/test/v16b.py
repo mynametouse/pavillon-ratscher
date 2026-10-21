@@ -1,7 +1,8 @@
 # V16b vehicles: the car and the tractor on the roads from OpenStreetMap – getting in, driving (gears, brakes, reverse, handbrake),
 # collisions, the route from the garden through Ratscher to the Untere Klinge, getting out and walking on the terrain, the front loader,
-# headlights at night. Pictures in out/v16b/. Sections (optional second argument, comma-separated): car,drive,crash,route,tractor,night,walk
-import sys, os, time, json
+# headlights at night, the HUD with the map, a phone. Pictures in out/v16b/. Sections (optional second argument, comma-separated):
+# car,drive,crash,route,walk,tractor,night,ui,phone
+import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]; OUT = lib.out('v16b'); ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else None
 def want(k): return not ONLY or k in ONLY
@@ -27,7 +28,13 @@ with lib.browser() as b:
         if not E("VEH.cur"): E("VEH.enter('car')")
         x0 = st()[0]; drive(6, thr=1); s = st()[0]; d = ((s['x'] - x0['x']) ** 2 + (s['y'] - x0['y']) ** 2) ** 0.5
         check('accelerates on the field path', s['kmh'] > 20 and d > 25, f"{s['kmh']} km/h, {d:.1f} m, gear {s['gear']}")
-        drive(4, brk=1); s = st()[0]; check('brakes to a stop', abs(s['kmh']) < 1, f"{s['kmh']} km/h")
+        # braking: held long enough it turns into reverse (as in GTA), so watch for the moment it stands
+        E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })"); t_stop = None; b0 = st()[0]
+        for k in range(40):
+            steps(0.1); s = st()[0]
+            if abs(s['kmh']) < 1: t_stop = round((k + 1) * 0.1, 1); break
+        E("VEH.auto = null"); dist = ((s['x'] - b0['x']) ** 2 + (s['y'] - b0['y']) ** 2) ** 0.5
+        check('brakes to a stop', t_stop is not None and t_stop < 3.5, f"from {b0['kmh']} km/h in {t_stop} s, {dist:.1f} m")
         drive(3, brk=1); s = st()[0]; check('reverses when the brake is held', s['gear'] == -1 and s['kmh'] < -2, f"gear {s['gear']} {s['kmh']} km/h")
         drive(3, thr=1); s = st()[0]; check('forward again', s['gear'] >= 1, f"gear {s['gear']} {s['kmh']} km/h")
         drive(3, brk=1)
@@ -39,7 +46,7 @@ with lib.browser() as b:
         # start 14 m out on whichever side is free, facing the wall
         sx, sy = mx + nx * 14, my + ny * 14
         if E(f"ROADS.groundAt({sx}, {sy}) > ROADS.groundAt({mx}, {my}) + 4 || WCOL.pushCircle([{sx}, {sy}], 1.5)"): sx, sy, nx, ny = mx - nx * 14, my - ny * 14, -nx, -ny
-        import math; psi = math.atan2(-nx, -ny)
+        psi = math.atan2(-nx, -ny)
         E(f"VEH.place('car', {sx}, {sy}, {psi})"); drive(5, thr=1); s = st()[0]
         side = (s['x'] - ax) * nx + (s['y'] - ay) * ny
         check('stops at a house wall', side > 0.5, f"{side:.2f} m in front of the wall, {s['kmh']} km/h"); lib.shot(pg, OUT, 'b_crash')
@@ -74,15 +81,56 @@ with lib.browser() as b:
         check('front loader rises and tilts', ld['lift'] > 0.5 and ld['tilt'] > 0.2, '')
         s = st()[1]; E(f"GAME.P.yaw = {s['psi']} + 100; GAME.P.pitch = -8"); E("GAME.shot()"); lib.shot(pg, OUT, 'e_tractor_side_up')
         E("VEH.by.tractor.model.key('g', true)"); steps(5); E("VEH.by.tractor.model.key('g', false); VEH.by.tractor.model.key('t', true); VEH.by.tractor.model.key('t', false)"); steps(1)
-        x0 = st()[1]; drive(8, thr=1); s = st()[1]; check('tractor drives', s['kmh'] > 8, f"{s['kmh']} km/h gear {s['gear']}")
+        R = E("ROADS.routes.klinge"); i = len(R) - 40; E(f"VEH.place('tractor', {R[i][0]}, {R[i][1]}, Math.atan2({R[i - 1][0] - R[i][0]}, {R[i - 1][1] - R[i][1]}))"); steps(0.3)   # on the track, facing back towards the village
+        x0 = st()[1]; drive(8, thr=1); s = st()[1]; check('tractor drives', s['kmh'] > 15, f"{s['kmh']} km/h gear {s['gear']}")
         drive(4, brk=1); E(f"GAME.P.yaw = {s['psi']} - 120; GAME.P.pitch = -10"); lib.shot(pg, OUT, 'e_tractor_front')
     if want('night'):
         if not E("VEH.cur"): E("VEH.enter('car')")
-        E("CLOCK.t = 22 * 60 + 40; DN.update(true)"); lib.settle_light(pg)
+        E("CLOCK.t = 23 * 60 + 40; DN.update(true)"); lib.settle_light(pg)
         R = E("ROADS.routes.klinge"); i = 60; E(f"VEH.place(VEH.cur.id, {R[i][0]}, {R[i][1]}, Math.atan2({R[i + 1][0] - R[i][0]}, {R[i + 1][1] - R[i][1]}))"); steps(0.5)
         E("GAME.setView3(true)"); steps(0.5); lib.shot(pg, OUT, 'f_night_chase')
         check('lights on at night (auto)', E("VEH.lightsOn(VEH.cur)"))
         E("GAME.setView3(false)"); steps(0.5); lib.shot(pg, OUT, 'f_night_driver'); E("GAME.setView3(true)")
+    RECT = """(id => { const e = document.getElementById(id); if (!e) return null; const b = e.getBoundingClientRect(), cs = getComputedStyle(e); return { hidden: e.hidden || cs.display === 'none' || cs.visibility === 'hidden' || b.width === 0, x: b.x, y: b.y, w: b.width, h: b.height }; })"""
+    def rects(F, ids): return json.loads(F("JSON.stringify(Object.fromEntries(" + json.dumps(ids) + ".map(id => [id, " + RECT + "(id)])))"))
+    def overlap(a, c): return a and c and not a['hidden'] and not c['hidden'] and a['x'] < c['x'] + c['w'] and c['x'] < a['x'] + a['w'] and a['y'] < c['y'] + c['h'] and c['y'] < a['y'] + a['h']
+    MAPPX = "(() => { const cv = document.getElementById('vmap'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let n = 0; for (let k = 3; k < d.length; k += 16) if (d[k] > 0) n++; return n; })()"
+    if want('ui'):   # the driving HUD on the page: speedometer, the small map with the way to the Klinge, the destination below it
+        if not E("VEH.cur"): E("VEH.enter('car')")
+        E("CLOCK.t = 14 * 60; DN.update(true)"); lib.settle_light(pg)
+        R = E("ROADS.routes.klinge"); i = 40; E(f"VEH.place(VEH.cur.id, {R[i][0]}, {R[i][1]}, Math.atan2({R[i + 1][0] - R[i][0]}, {R[i + 1][1] - R[i][1]}))")
+        E(f"window._fs = VEH.follow(ROADS.routes.klinge.slice({i}), 9)"); steps(3)
+        u = rects(E, ['vhud', 'vmap', 'vmaplab', 'where', 'hudtr', 'actrow', 'moves']); txt = E("document.getElementById('vmaplab').textContent"); px = E(MAPPX); print('ui', u, txt, px, flush=True)
+        check('map and speedometer shown while driving', not u['vhud']['hidden'] and not u['vmap']['hidden'] and px > 300, f"{px} map pixels")
+        check('destination under the map', ('Klinge' in txt or 'Garten' in txt) and not u['vmaplab']['hidden'], txt)
+        check('map clear of the place label and the clock', not overlap(u['vmap'], u['where']) and not overlap(u['vmap'], u['hudtr']) and not overlap(u['vmaplab'], u['where']), '')
+        E("GAME.shot()"); pg.screenshot(path=os.path.join(OUT, 'g_hud.png')); print('shot g_hud', flush=True)
+        E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null"); drive(2, brk=1)
+        E("VEH.reset(); GAME.step(0.2)"); r = json.loads(E("JSON.stringify({ s: VEH.state(), h: VEH.list.map(v => v.spec.home()), cur: !!VEH.cur })"))
+        check('reset puts both vehicles back', not r['cur'] and all(abs(a['x'] - h[0]) < 0.2 and abs(a['y'] - h[1]) < 0.2 for a, h in zip(r['s'], r['h'])), str([(a['x'], a['y']) for a in r['s']]))
+    if want('phone'):   # a phone: from the menu to the car, get in by tapping, drive with the circle on the left, the HUD fits the screen
+        ctx = b.new_context(viewport={'width': 390, 'height': 780}, device_scale_factor=2, is_mobile=True, has_touch=True)
+        mp = ctx.new_page(); lib.preset(mp); mp.on('pageerror', lambda e: errs.append('M PAGEERR ' + str(e)))
+        mp.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded')
+        mp.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); time.sleep(2); M = mp.evaluate; M("window.FREEZE = true")
+        M("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
+        mp.tap('#menubtn'); time.sleep(0.5); mp.tap('[data-veh="car"]'); time.sleep(0.5); M("for (let i = 0; i < 12; i++) GAME.step(0.05)")
+        lbl = M("(document.getElementById('doorbtn') || {}).textContent || ''"); print('phone action', lbl, flush=True)
+        mp.tap('#doorbtn'); M("for (let i = 0; i < 20; i++) GAME.step(0.05)")
+        check('phone: menu → car → tap gets in', M("!!(VEH.cur && VEH.cur.id === 'car')"), lbl)
+        jr = rects(M, ['joy'])['joy']; cx, cy = jr['x'] + jr['w'] / 2, jr['y'] + jr['h'] / 2; cdp = ctx.new_cdp_session(mp)
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': cx, 'y': cy, 'id': 1}]})
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': cx + 8, 'y': cy - jr['h'] * 0.42, 'id': 1}]})
+        M("for (let i = 0; i < 160; i++) GAME.step(0.025)"); ph = json.loads(M("JSON.stringify(VEH.state()[0])"))
+        u = rects(M, ['vhud', 'vmap', 'vmaplab', 'where', 'hudtr', 'actrow', 'joy', 'moves', 'menubtn']); print('phone', ph, u, flush=True)
+        M("GAME.shot()"); mp.screenshot(path=os.path.join(OUT, 'h_phone_drive.png')); print('shot h_phone_drive', flush=True)
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
+        check('phone: the circle drives', ph['kmh'] > 8, f"{ph['kmh']} km/h")
+        bad = [f"{a}/{c}" for a, c in [('vhud', 'joy'), ('vhud', 'actrow'), ('vmap', 'where'), ('vmap', 'hudtr'), ('vmap', 'menubtn'), ('vmaplab', 'where'), ('vhud', 'moves')] if overlap(u[a], u[c])]
+        off = [k for k in ('vhud', 'vmap', 'joy') if u[k] and not u[k]['hidden'] and (u[k]['x'] < 0 or u[k]['x'] + u[k]['w'] > 390 or u[k]['y'] + u[k]['h'] > 780)]
+        check('phone: HUD parts do not overlap and fit', not bad and not off and u['moves']['hidden'], f"overlap {bad} outside {off} moves hidden {u['moves']['hidden']}")
+        mp.tap('#act2'); M("for (let i = 0; i < 20; i++) GAME.step(0.05)"); check('phone: tap gets out', M("!VEH.cur"))
+        ctx.close()
     errs = [e for e in errs if 'Texture marked' not in e]
     print('\n'.join(errs[:30]) or 'no errors'); check('no errors', not errs)
     print(f"{len(ok)} ok, {len(fails)} failed: {fails}")

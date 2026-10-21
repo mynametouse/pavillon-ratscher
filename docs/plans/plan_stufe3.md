@@ -9,7 +9,7 @@ Reihenfolge (Zwischenversionen, jeweils veröffentlichen):
    - Lampen (MODES.L), Ofen, Papier, Screen: interpolieren; Straßenlaternen Ratscher nachts an.
    - Schatten: Sonnenrichtung in 0,5°-Schritten (Shadow-Map-Update), nachts Schatten aus/Mond schwach.
    - Menü „Licht“: „Tageslauf (Uhr)“ + feste Modi.
-2. **V16b Fahrzeuge**: eigenes Auto (generische Stufenheck-Limousine in Logan-Größe 4290×1740×1525, Farbe „Beige Sable“ #A89F88 metallic,
+2. **V16b Fahrzeuge – FERTIG (22.10.2026)**: eigenes Auto (generische Stufenheck-Limousine in Logan-Größe 4290×1740×1525, Farbe „Beige Sable“ #A89F88 metallic,
    keine Marken-Logos/Design-Details), Traktor mit Frontlader/Palettengabel. Ein-/Aussteigen (E/Q), Fahrphysik (Fahrradmodell, Gelände-Höhe
    aus RATSCHER.hAt + floorAt, Kollision COL/Gebäude), Verfolgerkamera, Motorgeräusch (Auto synth., Traktor Aufnahme), Scheinwerfer nachts.
    Startplätze: Auto vor dem Garten (Nordtor, Zufahrt), Traktor an der Klinge (Kreuzung J).
@@ -36,3 +36,19 @@ dl_paint/ (Farbtafeln), ratscher_photos/.
 - Env: zwei PMREM-Ziele per texelFetch-Shader gemischt (+ Tönung), GI: CPU-Mischung 8 Schichten/Frame (Ping-Pong), GI.tint, weiche Box-Kanten (1,5 m).
 - Licht nachts: Mond als Richtungslicht (0,11 × Phase^3,5), Lampen automatisch (MODES.auto.L), Werkstatt-LED mit Bewegungsmelder (WLAMP), Grillen (Mai–Sep), NPC nachts daheim (22–6 Uhr, nur wenn nicht im Blick), Schlafen auf Liegen (bis 7 Uhr).
 - Offen/später: Straßenlaternen + Fensterlicht im Dorf (V16e), Jahreszeiten der Vegetation, Wolkenzug/Wetter.
+
+## V16b – umgesetzt
+- Straßen und Wege aus OSM (tools/geo/build_roads.py → geo/roads.b64.json, 250 Wege, 45 km im befahrbaren Quadrat 2,4 km): Art, Belag, Breite,
+  Brücken; im modellierten Grundstück der Feldweg und ein Verbindungsweg mit kleiner Brücke über den Bach zum Weg ins Dorf.
+- Straßenkarte beim Laden gerastert (world/roads.js), im Boden-Shader: Asphalt (Textur, Flicken nach dem Luftbild), Beton, Pflaster, Schotter,
+  Erdwege mit Fahrspuren, Bankett, Rand- und Leitlinien (L 3004, Kreisstraße, A 73); Luftbild entdunstet, Gras-/Erdkorn in der Nähe.
+- Brücken mit Deck und Geländer (Höhe gerade zwischen den Enden), Bäume nicht mehr mitten auf Wegen.
+- Fahrzeuge (vehicles/): Einspurmodell 120 Hz mit Reifenschlupf, Reibkreis, Automatik, Rückwärts per Bremse im Stand, Handbremse, Haftung nach
+  Belag/Wiese/Acker, Federung, Kollision mit allen Gebäudewänden, Stämmen, Geländern, Gartenobjekten, Nachbarn, Huberts Traktor.
+- Auto: Stufenheck in Logan-Größe, Beige Sable metallic, ohne Markenzeichen, Innenraum; Kennzeichen HBN (ausgedacht). Parkt neben dem Feldweg.
+- Traktor: ~100 PS, Allrad, Kabine, Frontlader mit Parallelführung und Palettengabel (R/G/T); steht an der Unteren Klinge.
+- Kamera hinterher (folgt, Maus schaut um) oder Fahrersicht (V/Mausrad), Licht automatisch nachts (ein Spot), Bremslichter, Rückfahrlicht,
+  Motor-/Reifen-/Wind-/Hupenton (synthetisch, Traktor aus der Aufnahme), Tacho, Kleinkarte mit Route und Ziel, Ortsnamen unterwegs.
+- Gehen im ganzen Quadrat (Gelände, Wände, Stämme, geparkte Fahrzeuge), Menü „Zum Auto“/„Zum Traktor“/„Fahrzeuge zurückstellen“; am Telefon
+  Kreis links (Gas/Bremse/Lenken), Knöpfe am Tacho, Antippen zum Ein-/Aussteigen.
+- Offen/später: Verkehr, Straßenlaternen und Dorf nach Fotos (V16e), Wald an der Klinge in 3D (V16c), Anhänger/Lasten (V16d).

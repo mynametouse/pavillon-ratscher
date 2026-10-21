@@ -15,5 +15,7 @@
 #vkeys{left:50%;transform:translateX(-50%);top:calc(60px + env(safe-area-inset-top,0px));max-width:calc(100% - 32px);padding:8px 13px;border-radius:999px;background:var(--ov-bg);backdrop-filter:blur(6px);font:500 12px/1.5 var(--f-body);text-align:center;pointer-events:none;z-index:4}
 #vkeys kbd{font:500 10.5px/1 var(--f-mono);padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.14);margin-right:2px}
 #vkeys i{display:inline-block;width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.5;vertical-align:middle;margin:0 4px}
-body[data-drive="car"] #hotbar,body[data-drive="tractor"] #hotbar,body[data-drive="car"] #hbname,body[data-drive="tractor"] #hbname,body[data-drive="car"] #stancetag,body[data-drive="tractor"] #stancetag{display:none!important}
-@media (max-width:560px){ #vhud{bottom:calc(74px + env(safe-area-inset-bottom,0px));min-width:0;padding:8px 10px} #vhud .vspd b{font-size:28px} #vhud .vbtns button{width:34px;height:34px} }
+body[data-drive] #qtrack,body[data-drive] #hotbar,body[data-drive] #hbname,body[data-drive] #stancetag,body[data-drive] #moves,body[data-drive] #xhair{display:none!important}
+#vmap{left:max(12px,env(safe-area-inset-left,0px));top:calc(64px + env(safe-area-inset-top,0px));width:168px;height:168px;border-radius:50%;pointer-events:none;z-index:3}
+#vmaplab{left:max(12px,env(safe-area-inset-left,0px));top:calc(238px + env(safe-area-inset-top,0px));width:168px;text-align:center;font:600 12px/1 var(--f-body);color:#ffd36b;text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none;z-index:3}
+@media (max-width:560px){ #vmap{width:118px;height:118px;top:calc(58px + env(safe-area-inset-top,0px))} #vmaplab{width:118px;top:calc(182px + env(safe-area-inset-top,0px))} #vhud{bottom:calc(74px + env(safe-area-inset-bottom,0px));min-width:0;padding:8px 10px} #vhud .vspd b{font-size:28px} #vhud .vbtns button{width:34px;height:34px} }

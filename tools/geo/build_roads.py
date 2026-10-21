@@ -101,7 +101,7 @@ if xp.is_empty: print('connector does not cross the stream?'); out.append(((KI_T
 else:
     from shapely.ops import substring
     d = cl.project(xp if xp.geom_type == 'Point' else list(xp.geoms)[0])
-    for a, b, fl, sf, wd in ((0, d - 3.6, 0, SI_G, 3.4), (d - 3.6, d + 3.6, 1, SI_C, 3.6), (d + 3.6, cl.length, 0, SI_G, 3.4)):
+    for a, b, fl, sf, wd in ((0, d - 2.9, 0, SI_G, 3.4), (d - 2.9, d + 2.9, 1, SI_C, 3.6), (d + 2.9, cl.length, 0, SI_G, 3.4)):   # the ditch is 4.5 m wide at the top
         out.append(((KI_T, sf, wd, fl), np.array(substring(cl, a, b).coords), 'site:connector', {}))
     q = cl.interpolate(d); print('stream bridge at', round(q.x, 1), round(q.y, 1))
 print('ways', len(out), 'length km', round(sum(LineString(p).length for _, p, _, _ in out) / 1000, 1))

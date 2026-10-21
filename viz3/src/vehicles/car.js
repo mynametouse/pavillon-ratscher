@@ -113,5 +113,6 @@ const CAR = (() => {
     box: { hw: 0.88, hl: (YF - YR) / 2, cy: (YF + YR) / 2, h: 1.5 }, eye: [-0.36, -0.42, 1.17], door: [-1.25, -0.25], reach: 2.2, beam: 320, beamAngle: 0.5, sound: 'petrol',
     cam: { dist: 5.6, height: 1.9, look: 1.15 },
     // parked on the field path just past the garden bridge, nose towards the village (first point of the route to the Klinge)
-    home: () => { const R = ROADS.routes.klinge; if (R && R.length > 1) { const a = R[0], b = R[1]; return [a[0], a[1], Math.atan2(b[0] - a[0], b[1] - a[1])]; } return [7.5, 31.2, 2.04]; } };
+    // (on the field side, 2.5 m left of the path's middle: Hubert's tractor makes its rounds along the path)
+    home: () => { const R = ROADS.routes.klinge; if (R && R.length > 1) { const a = R[0], b = R[1], h = Math.atan2(b[0] - a[0], b[1] - a[1]); return [a[0] - Math.cos(h) * 2.5, a[1] + Math.sin(h) * 2.5, h]; } return [8.6, 33.4, 2.04]; } };
   return VEH.add(spec, model); })();
