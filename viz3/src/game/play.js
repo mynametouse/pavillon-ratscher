@@ -92,7 +92,7 @@ const PLAY = (() => {
     for (const a of ACTS) out.push(a);
     return out; }
   function reach(a) { const p = val(a.pos); if (!p) return null; const d = Math.hypot(p[0] - P.x, p[1] - P.y); if (d > val(a.r)) return null; if (p[2] < P.feet - 0.6 || p[2] > P.feet + 2.5) return null; return { p, d }; }
-  function pick() { if (P.mode !== 'walk' || (typeof PLAN !== 'undefined' && PLAN.on) || S.seat && S.seat.kind === 'ride') return null; const [fx, fy] = fwd(); let best = null, bs = 1e9;
+  function pick() { if (P.mode !== 'walk' || (typeof PLAN !== 'undefined' && PLAN.on) || S.seat && (S.seat.kind === 'ride' || S.seat.drive)) return null; const [fx, fy] = fwd(); let best = null, bs = 1e9;
     for (const a of candidates()) { const r = reach(a); if (!r) continue; let lbl; try { lbl = a.label(); } catch (e) { lbl = null; } if (!lbl) continue;
       const dx = r.p[0] - P.x, dy = r.p[1] - P.y, L = Math.hypot(dx, dy) || 1, cs = (dx * fx + dy * fy) / L, ang = r.d < 0.45 ? 0 : 1 - cs;
       if (ang > 1.35 && r.d > 0.8) continue;   // behind me

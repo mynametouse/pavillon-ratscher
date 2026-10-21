@@ -47,6 +47,8 @@ game/home.js                # light switches, stove fire, sitting and lying (TIC
 audio/music.js              # 
 game/quests.js              # tasks with the neighbours, journal, tracker (QUESTS)
 world/ratscher.js           # real surroundings from geodata: terrain, orthophotos, buildings, trees (RATSCHER)
+world/roads.js              # V16b roads and paths from OSM: road map for the ground shaders, surface under the wheels, bridges (ROADS)
+world/worldcol.js           # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
 game/hud.js                 # HUD, menu, inventory window, pointer lock (HUD)
 game/avatar.js              # the player figure (AVATAR)
 time/clock.js               # game clock (CLOCK)
@@ -57,4 +59,8 @@ time/skydata.js             # generated: stars + Milky Way (tools/nightsky/mk_sk
 time/daynight.js            # day and night after the clock: sun, moon, stars, light blending (DN)
 garden/workshop_lamp.js     # workshop LED lights with motion sensor (WLAMP)
 npc/hours.js                # neighbours at home at night
+vehicles/vsound.js          # V16b vehicle sounds: engine, tyres, wind, horn, doors (VSND)
+vehicles/vehicle.js         # V16b vehicles: physics, getting in and out, cameras, lights, HUD (VEH)
+vehicles/car.js             # V16b the car: saloon in Logan size, Beige Sable (CAR)
+vehicles/tractor.js         # V16b the tractor with front loader and pallet fork (TRACTOR2)
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api

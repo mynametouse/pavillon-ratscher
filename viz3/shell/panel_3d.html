@@ -60,6 +60,19 @@
       <div class="topics" id="np-topics"></div>
     </aside>
     <div id="joy" aria-label="Gehen"><div id="knob"></div></div>
+    <div class="ov" id="vhud" hidden aria-label="Fahrzeug">
+      <div class="vspd"><b data-v="spd">0</b><small>km/h</small></div><div class="vgear" data-v="gear" title="Gang (automatisch), R rückwärts">1</div>
+      <div class="vrpm" title="Drehzahl"><i data-v="rpm"></i></div>
+      <div class="vbtns">
+        <button type="button" data-vb="light" aria-pressed="false" title="Licht (L)" aria-label="Licht"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6.5c-3.6 0-5.5 2.6-5.5 5.5s1.9 5.5 5.5 5.5h1.5V6.5zM14 8l6-1.5M14 12h6.5M14 16l6 1.5"/></svg></button>
+        <button type="button" data-vb="horn" title="Hupe (H)" aria-label="Hupe"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l6 4V6l-6 4zM16.5 9.5a3.5 3.5 0 0 1 0 5M18.8 7a7 7 0 0 1 0 10"/></svg></button>
+        <button type="button" data-vb="hand" title="Handbremse (Leertaste)" aria-label="Handbremse"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/><path d="M10 15.5V8.5h2.6a2 2 0 0 1 0 4H10"/></svg></button>
+        <button type="button" data-vb="up" class="ld" title="Gabel heben (R)" aria-label="Gabel heben">▲</button>
+        <button type="button" data-vb="down" class="ld" title="Gabel senken (G)" aria-label="Gabel senken">▼</button>
+        <button type="button" data-vb="tilt" class="ld" title="Gabel kippen (T)" aria-label="Gabel kippen">⤴</button>
+      </div>
+    </div>
+    <div class="ov" id="vkeys" hidden><kbd>W</kbd><kbd>S</kbd> Gas · Bremse · rückwärts <i></i> <kbd>A</kbd><kbd>D</kbd> lenken <i></i> <kbd>Leer</kbd> Handbremse <i></i> <kbd>L</kbd> Licht <i></i> <kbd>H</kbd> Hupe <i></i> <kbd>V</kbd> Ansicht <i></i> <kbd>Q</kbd> aussteigen<span class="ld"> <i></i> <kbd>R</kbd><kbd>G</kbd> Gabel <kbd>T</kbd> kippen</span></div>
     <div class="ov pad" aria-label="Bewegen">
       <button class="f" aria-label="Vorwärts" data-key="w">▲</button>
       <button class="l" aria-label="Nach links drehen" data-key="arrowleft">◀</button>

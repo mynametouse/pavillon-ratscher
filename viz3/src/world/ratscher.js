@@ -6,7 +6,7 @@
 // The modelled site (garden, Hubert, Ronald, workshop, stream and field path) stays as it is; the real land starts around it.
 // Data preparation: scratchpad geo/tools (fetch_all, build_terrain2, build_osm, build_bld, pack).
 const RATSCHER = (() => {
-  const M = window.GEOMAN, S = { on: GEO_REAL && !!M, ready: false, map: false, tex: {}, mapTex: null, meshes: [], trees: [], bld: [], water: [], mid: [], hAt: () => 0 };
+  const M = window.GEOMAN, S = { on: GEO_REAL && !!M, ready: false, map: false, tex: {}, mapTex: null, meshes: [], trees: [], bld: [], water: [], mid: [], hAt: () => 0, hMesh: () => 0 };
   if (!S.on) return S;
   const GB = BASE + 'geo/', LQ = QUALITY !== 'high' && !OFFLINE;
   const A = M.xf.a, Bq = M.xf.b, T = M.terrain;
@@ -48,14 +48,28 @@ const RATSCHER = (() => {
     const I = T.inner; let c = (x - I.x0) / I.step, r = (y - I.y0) / I.step; if (c >= 0 && r >= 0 && c <= I.n - 1 && r <= I.n - 1) return bil(zI, I.n, c, r);
     const O = T.outer; return bil(zO, O.n, (x - O.x0) / O.step, (y - O.y0) / O.step); }
   S.hAt = hAt;
+  // exact height of the drawn ground: the triangles of the 10 m mesh (diagonal i,j → i+1,j+1; the grid lines next to ±120 m moved onto it),
+  // so wheels and feet stand on what is seen; inside the modelled square the flat near ground (0)
+  let XS = null, YS = null;
+  function hMesh(x, y) { if (Math.abs(x) < 120 && Math.abs(y) < 120) return 0; const I = T.inner, n = I.n; if (!zI || !XS) return hAt(x, y);
+    let i = Math.floor((x - I.x0) / I.step), j = Math.floor((y - I.y0) / I.step); if (i < 0 || j < 0 || i > n - 2 || j > n - 2) return hAt(x, y);
+    if (i > 0 && x < XS[i]) i--; else if (i < n - 2 && x >= XS[i + 1]) i++; if (j > 0 && y < YS[j]) j--; else if (j < n - 2 && y >= YS[j + 1]) j++;
+    const u = (x - XS[i]) / (XS[i + 1] - XS[i]), v = (y - YS[j]) / (YS[j + 1] - YS[j]), k = j * n + i, za = zI[k], zb = zI[k + 1], zc = zI[k + n + 1], zd = zI[k + n];
+    return (u >= v ? za + u * (zb - za) + v * (zc - zb) : za + v * (zd - za) + u * (zc - zd)) / 10; }
+  S.hMesh = hMesh;
+  // the drivable square (inner 10 m terrain): [x0, y0, x1, y1]
+  S.box = [T.inner.x0, T.inner.y0, T.inner.x0 + (T.inner.n - 1) * T.inner.step, T.inner.y0 + (T.inner.n - 1) * T.inner.step];
   // ---------- terrain meshes ----------
   function terrainMat() {
     const m = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, metalness: 0, envMapIntensity: 0.55 });
     m.onBeforeCompile = sh => { Object.assign(sh.uniforms, GU, FIELDU);
       sh.vertexShader = 'varying vec2 vGeo;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vGeo = vec2( position.x, -position.z );');
-      sh.fragmentShader = 'varying vec2 vGeo;\n' + GEO_GLSL + '\n' + FIELD_GLSL + sh.fragmentShader
-        .replace('#include <map_fragment>', '#include <map_fragment>\n { vec3 gc = geoCol( vGeo ) * ( 1.0 - uCloudK * cloudSh( vGeo ) * ( 1.0 - uGFlat ) ); gGeoEm = gc * uGFlat * uGFlatK; diffuseColor.rgb *= gc * ( 1.0 - uGFlat ); }')
+      sh.fragmentShader = 'varying vec2 vGeo;\n' + GEO_GLSL + '\n' + FIELD_GLSL + '\n' + ROADS.shader(sh) + '\n' + sh.fragmentShader
+        .replace('#include <map_fragment>', `#include <map_fragment>
+          { vec3 gc = geoCol( vGeo ); if ( uGMap < 0.5 && uGFlat < 0.5 ) gc = roadShade( vGeo, landDetail( vGeo, gc, length( vViewPosition ) ), length( vViewPosition ) );   // V16b: roads and paths (world/roads.js)
+            gc *= 1.0 - uCloudK * cloudSh( vGeo ) * ( 1.0 - uGFlat ); gGeoEm = gc * uGFlat * uGFlatK; diffuseColor.rgb *= gc * ( 1.0 - uGFlat ); }`)
         .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += gGeoEm;')
+        .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= 0.35;')   // grass and soil scatter: no pale sky sheen at grazing angles (V16b, low driving views)
         .replace('#include <fog_fragment>', `#include <fog_fragment>
           #ifdef USE_FOG
           { vec2 ed = abs( vGeo - uGEdge.xy ); gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, smoothstep( uGEdge.z - 3200.0, uGEdge.z, max( ed.x, ed.y ) ) ); }   // the end of the data fades into the haze
@@ -67,7 +81,7 @@ const RATSCHER = (() => {
     // inner: 10 m grid with a hole for the near ground (240 m square of the model); the grid lines next to ±120 m are moved onto it
     { const n = I.n, xs = new Float32Array(n), ys = new Float32Array(n); for (let i = 0; i < n; i++) { xs[i] = I.x0 + i * I.step; ys[i] = I.y0 + i * I.step; }
       const iL = Math.round((-120 - I.x0) / I.step), iR = Math.round((120 - I.x0) / I.step), jB = Math.round((-120 - I.y0) / I.step), jT = Math.round((120 - I.y0) / I.step);
-      xs[iL] = -120; xs[iR] = 120; ys[jB] = -120; ys[jT] = 120;
+      xs[iL] = -120; xs[iR] = 120; ys[jB] = -120; ys[jT] = 120; XS = xs; YS = ys;
       const pos = new Float32Array(n * n * 3); for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const k = (j * n + i) * 3; pos[k] = xs[i]; pos[k + 1] = zI[j * n + i] / 10; pos[k + 2] = -ys[j]; }
       const idx = []; for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) { if (i >= iL && i < iR && j >= jB && j < jT) continue; const a = j * n + i, b = a + 1, c = a + n + 1, d = a + n; idx.push(a, b, c, a, c, d); }
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingSphere();
@@ -139,6 +153,11 @@ const RATSCHER = (() => {
       const cr = (RP[q] - RP[p]) * (-RP[r + 2] + RP[p + 2]) - (-RP[q + 2] + RP[p + 2]) * (RP[r] - RP[p]); if (cr < 0) { const s = ri[t + 1]; ri[t + 1] = ri[t + 2]; ri[t + 2] = s; } }
     const gr = new THREE.BufferGeometry(); gr.setAttribute('position', new THREE.BufferAttribute(RP, 3)); gr.setIndex(new THREE.BufferAttribute(ri, 1)); gr.computeVertexNormals(); gr.computeBoundingSphere();
     for (const [g, m] of [[gw, wallMat()], [gr, roofMat()]]) { const me = new THREE.Mesh(g, m); me.userData.noMerge = true; me.castShadow = false; me.receiveShadow = false; scene.add(me); S.bld.push(me); }
+    // V16b: every wall's foot as a segment [x1, y1, x2, y2] (vehicles collide with all buildings, vehicles/vehicle.js)
+    { const segs = []; for (let s = 0; s + 3 < nw; s += 4) { const ax = P[s * 3], ay = -P[s * 3 + 2]; let bx = ax, by = ay, bd = -1;
+        for (let k = 1; k < 4; k++) { const x = P[(s + k) * 3], y = -P[(s + k) * 3 + 2], d = (x - ax) ** 2 + (y - ay) ** 2; if (d > bd) { bd = d; bx = x; by = y; } }
+        if (bd > 0.01) segs.push(ax, ay, bx, by); }
+      S.walls = new Float32Array(segs); }
     // buildings within reach of a walk: colliders (oriented box around each footprint)
     const by = new Map(); for (let i = 0; i < nw; i += 2) { const bid = Math.floor(W[i * 4 + 3] / 4), x = P[i * 3], y = -P[i * 3 + 2]; if (Math.hypot(x - 2, y - 2) > 95) continue; let a = by.get(bid); if (!a) by.set(bid, a = []); a.push([x, y]); }
     for (const pts of by.values()) { const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length, cy = pts.reduce((s, p) => s + p[1], 0) / pts.length; let sxx = 0, syy = 0, sxy = 0;
@@ -160,10 +179,11 @@ const RATSCHER = (() => {
     rt.scissorTest = false; rt.viewport.set(0, 0, C * TK.length, C); R.setRenderTarget(pt); R.setClearColor(pc, pa); SV.on.value = sv; GI.on.value = gi;
     return { tex: rt.texture, info }; }
   function buildTrees() {
-    const t = new Int16Array(bin.trees), n = t.length / 5, far = [], mid = [];
+    const t = new Int16Array(bin.trees), n = t.length / 5, far = [], mid = []; S.treeXY = [];   // x, y, height of every tree (vehicle collisions)
     for (let i = 0; i < n; i++) { const x = t[i * 5] / 10, y = t[i * 5 + 1] / 10, h = t[i * 5 + 2] / 100, r = t[i * 5 + 3] / 100, con = t[i * 5 + 4] > 0;
-      if (STREAM.inDitch(x, y, 0.8)) continue; const hs = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
-      const kind = con ? 4 : Math.floor(hs * 4), it = { x, y, z: hAt(x, y), h, r, kind, hs }; (Math.hypot(x - 2, y - 2) < 100 ? mid : far).push(it); }
+      if (STREAM.inDitch(x, y, 0.8)) continue; if (ROADS.edge(x, y) > -0.4) continue;   // V16b: a crown measured over a road stands beside it, not in it
+      const hs = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
+      const kind = con ? 4 : Math.floor(hs * 4), it = { x, y, z: hAt(x, y), h, r, kind, hs }; (Math.hypot(x - 2, y - 2) < 100 ? mid : far).push(it); S.treeXY.push(x, y, h); }
     // near: generated 3D trees (thinned leaf cards), as the garden's own trees
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), sv = new THREE.Vector3();
     const byK = new Map(); for (const it of mid) { const k = TK[it.kind]; if (!TREES[k]) continue; let a = byK.get(k); if (!a) byK.set(k, a = []); a.push(it); }

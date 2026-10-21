@@ -1,7 +1,9 @@
 # shared helpers for the Ratscher geodata build: transforms model <-> UTM32, the 1 m DGM/DOM mosaics, sampling
 import json, os, io, zipfile, numpy as np, tifffile
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); DATA = os.path.join(HERE, 'data'); OUT = os.path.join(HERE, 'out')
-SP = os.path.dirname(HERE)
+# geodata work area (data/ = downloads, out/ = results, model2utm.json): PAV_GEO, else <repo>/geo (link to the originals, not committed)
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+HERE = os.environ.get('PAV_GEO') or os.path.join(REPO, 'geo'); DATA = os.path.join(HERE, 'data'); OUT = os.path.join(HERE, 'out')
+SP = os.path.dirname(os.path.realpath(HERE))   # the work area around it (research/ for the routes)
 G = json.load(open(os.path.join(HERE, 'model2utm.json'))); A, B, EX, EY = G['a'], G['b'], G['ex'], G['ey']; S2 = A * A + B * B
 def m2u(x, y): x = np.asarray(x, float); y = np.asarray(y, float); return A * x - B * y + EX, B * x + A * y + EY
 def u2m(E, N): dx = np.asarray(E, float) - EX; dy = np.asarray(N, float) - EY; return (A * dx + B * dy) / S2, (-B * dx + A * dy) / S2

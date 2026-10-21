@@ -34,7 +34,7 @@ function setPhase(n) { PHASE = Math.max(0, Math.min(PHASES.length - 1, n | 0)); 
 const STANCES = { stand: { eye: 1.62, h: 1.78, sp: 1, name: 'Stehen' }, crouch: { eye: 1.1, h: 1.28, sp: 0.3, name: 'Geduckt' }, crawl: { eye: 0.36, h: 0.52, sp: 0.17, name: 'Kriechen' }, prone: { eye: 0.26, h: 0.42, sp: 0, name: 'Liegen' } };
 const bodyH = () => STANCES[(typeof P !== 'undefined' && P.stance) || 'stand'].h;
 function blocked(x, y, feet) { const top = feet + bodyH() - 0.03; for (const [s] of surfaces(x, y)) if (s > feet + STEP && s < top) return true; return false; }
-const groundZ = (x, y) => STREAM.zAt(x, y);   // the meadow is flat (0) except at the stream
+const groundZ = (x, y) => window.ROADS ? ROADS.groundAt(x, y) : STREAM.zAt(x, y);   // the meadow is flat (0) except at the stream; beyond the site the terrain and bridge decks (V16b, world/roads.js)
 function floorInfo(x, y, feet) { let best = -1e9, typ = 'ground'; for (const [z, t] of surfaces(x, y)) if (z <= feet + STEP && z > best) { best = z; typ = t; } return best === -1e9 ? [groundZ(x, y), 'ground'] : [best, typ]; }
 function floorAt(x, y, feet) { return floorInfo(x, y, feet)[0]; }
 function surfType(x, y, z) { const [fz, t] = floorInfo(x, y, z + 0.01); if (t !== 'ground') return t; if (gravelAtPt(x, y)) return 'stone'; return 'grass'; }
@@ -66,7 +66,13 @@ function collide(p, feet, on) { if (!on) return; const b0 = feet + 0.25, b1 = fe
     if (d2 < RAD * RAD) { let nx = lp[0], ny = lp[1]; if (d2 < 1e-9) { const ox = [c[0] - RAD - lp[0], c[1] + RAD - lp[0]], oy = [c[2] - RAD - lp[1], c[3] + RAD - lp[1]]; const mx = Math.abs(ox[0]) < Math.abs(ox[1]) ? ox[0] : ox[1], my = Math.abs(oy[0]) < Math.abs(oy[1]) ? oy[0] : oy[1];
         if (Math.abs(mx) < Math.abs(my)) nx += mx; else ny += my; }
       else { const d = Math.sqrt(d2); nx = qx + dx / d * RAD; ny = qy + dy / d * RAD; }
-      if (c[9]) { const w = toWorld(c, nx, ny); p[0] = w[0]; p[1] = w[1]; } else { p[0] = nx; p[1] = ny; } } } }
+      if (c[9]) { const w = toWorld(c, nx, ny); p[0] = w[0]; p[1] = w[1]; } else { p[0] = nx; p[1] = ny; } } }
+  // V16b: beyond the modelled site the walls of every building and the trunks (world/worldcol.js); parked vehicles everywhere
+  if (window.WCOL && (Math.abs(p[0]) > 50 || Math.abs(p[1]) > 55)) WCOL.pushCircle(p, RAD);
+  if (window.VEH) VEH.pushWalker(p, RAD, feet); }
+// how far one may walk: the garden's 75 m, with the real surroundings the whole square of the 10 m terrain (V16b)
+function walkBounds() { const B = window.RATSCHER && RATSCHER.ready && RATSCHER.box; if (B) { P.x = THREE.MathUtils.clamp(P.x, B[0] + 8, B[2] - 8); P.y = THREE.MathUtils.clamp(P.y, B[1] + 8, B[3] - 8); return; }
+  const r = Math.hypot(P.x - 2, P.y - 2); if (r > 75) { P.x = 2 + (P.x - 2) * 75 / r; P.y = 2 + (P.y - 2) * 75 / r; } }
 // ---------------- player & viewpoints ----------------
 const P = { x: 2, y: -6, feet: 0, vz: 0, yaw: 0, pitch: 0, mode: 'orbit', az: 225, el: 16, r: 19, tgt: [2, 2, 3.2], stride: 0, tx: 2.0, ty: -6.5, th: 110,   // tx, ty, th: plan view centre and height of the picture (m)
   stance: 'stand', eyeH: 1.62, body: 0, air: false, speed: 0, mvx: 0, mvy: 0, landT: 0 };   // V15: posture, smoothed eye height, the figure's heading (deg), airborne, ground speed (m/s), last move direction
@@ -104,13 +110,16 @@ function applySpots(v) { for (const [k, o] of Object.entries(SPOTS_VAR[v])) { co
 applySpots(VARIANT);
 let s0 = true; try { const sv = localStorage.getItem('pav-sound'); if (sv !== null) s0 = sv === '1'; } catch (e) {}
 const opt = { collide: true, sound: s0 }; let stepZ = 0;
-function placeName() { if (P.mode === 'orbit') return 'Modellansicht'; const f = P.feet, inT = P.x > G.TW.x0 && P.x < G.TW.x1 && P.y > G.TW.y0 && P.y < G.TW.y1, inEG = P.x > 0 && P.x < 4 && P.y > 0 && P.y < 4, inOG = P.x > G.OG.x0 && P.x < G.OG.x1 && P.y > G.OG.y0 && P.y < G.OG.y1;
+function placeName() { if (P.mode === 'orbit') return 'Modellansicht';
+  if ((Math.abs(P.x) > 50 || Math.abs(P.y) > 55) && window.ROADS) { const wp = ROADS.place(P.x, P.y); if (wp) return wp; }   // V16b: out in the village and the fields
+  const f = P.feet, inT = P.x > G.TW.x0 && P.x < G.TW.x1 && P.y > G.TW.y0 && P.y < G.TW.y1, inEG = P.x > 0 && P.x < 4 && P.y > 0 && P.y < 4, inOG = P.x > G.OG.x0 && P.x < G.OG.x1 && P.y > G.OG.y0 && P.y < G.OG.y1;
   const rough = PHASE < PHN.floors ? ' (Rohbau)' : '';
   if (inT) { if (f > G.zD - 0.1) return 'Turmkopf, Ausgang Dachterrasse'; if (Math.abs(f - G.zO) < 0.06 && P.y > G.PASS.y0 - 0.25) return 'Turm, Podest Arbeitsraum'; if (f > G.zT0 + 0.1) return f > G.zO ? 'Wendeltreppe zum Dach' : 'Wendeltreppe'; return 'Turm, Eingang'; }
   if (G.LAD1) { const on = L => P.x > L.x0 && P.x < L.x1 && P.y > L.y0 - 0.05 && P.y < L.y1 + 0.05 && f > L.z0 + 0.1 && f < L.z1 - 0.1;
     if (on(G.LAD1)) return 'Leitertreppe zum Arbeitsraum'; if (on(G.LAD2)) return 'Leitertreppe zur Dachterrasse'; }
   if (f > G.zD - 0.25) return 'Dachterrasse'; if (f > G.zC) return 'Dach';
-  if (f > G.zE) return inOG ? 'Arbeitsraum' + rough : 'Obergeschoss'; if (inEG) return 'Bibliothek' + rough; const sp = window.sitePlace ? sitePlace(P.x, P.y, f) : null; return sp || 'Garten'; }
+  if (f > G.zE) return inOG ? 'Arbeitsraum' + rough : 'Obergeschoss'; if (inEG) return 'Bibliothek' + rough;
+  const sp = window.sitePlace ? sitePlace(P.x, P.y, f) : null; return sp || 'Garten'; }
 // inside the pavilion (EG or OG, below the roof): fewer far plants are drawn (see VEG)
 window.inHouseNow = () => P.mode === 'walk' && P.feet < G.zC && P.x > G.OG.x0 && P.x < G.OG.x1 && P.y > G.OG.y0 && P.y < G.OG.y1 && (P.feet >= G.zE - 0.3 || (P.x > 0 && P.x < 4 && P.y > 0 && P.y < 4));
 function go(name) { const s = SPOTS[name]; if (window.PLAY && PLAY.seated()) PLAY.stand(true); P.mode = s.mode;
@@ -134,7 +143,8 @@ function applyCam() {
   if (P.mode === 'orbit') { const a = P.az * Math.PI / 180, e = P.el * Math.PI / 180, t = P.tgt;
     const ox = t[0] + Math.sin(a) * Math.cos(e) * P.r, oy = t[1] + Math.cos(a) * Math.cos(e) * P.r, gz = window.RATSCHER && RATSCHER.ready ? RATSCHER.hAt(ox, oy) + 3 : 0.6;   // never inside a hill
     cam.fov = 45; cam.near = Math.max(0.1, P.r * 0.02); cam.far = FAR0(); cam.updateProjectionMatrix(); cam.position.copy(V(ox, oy, Math.max(gz, t[2] + Math.sin(e) * P.r))); cam.lookAt(V(...t)); }
-  else { const y = P.yaw * Math.PI / 180, p = P.pitch * Math.PI / 180, c = P.cam;   // P.cam: seat, ride or a short move there (23_play)
+  else { if (window.VEH && VEH.applyCam()) return;   // V16b: driving – chase camera or the driver's eyes
+    const y = P.yaw * Math.PI / 180, p = P.pitch * Math.PI / 180, c = P.cam;   // P.cam: seat, ride or a short move there (23_play)
     cam.near = 0.1; cam.far = FAR0();
     if (CAM3.on) { const pv = cam3Pivot(), fx = Math.sin(y) * Math.cos(p), fy = Math.cos(y) * Math.cos(p), fz = Math.sin(p), d = CAM3.cur;   // behind the figure, looking past its shoulder
       cam.fov = window.innerWidth < 760 ? 68 : 60; cam.updateProjectionMatrix(); cam.position.copy(V(pv[0] - fx * d, pv[1] - fy * d, pv[2] - fz * d)); cam.lookAt(V(pv[0] + fx, pv[1] + fy, pv[2] + fz)); return; }
@@ -261,7 +271,7 @@ function frame(now) { const dt = Math.min(0.12, (now - last) / 1000); last = now
   let side = (keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0);
   if (joy.active) { f += joy.y; side += joy.x * 0.8; }
   { const n = Math.max(1, Math.ceil(dt / 0.034)); for (let i = 0; i < n; i++) physics(dt / n, f, turn, side, keys.has('shift') ? 1.9 : slowWalk ? 0.56 : 1); }
-  if (P.mode === 'walk') cam3Update(dt);
+  if (P.mode === 'walk' && !(window.VEH && VEH.cur)) cam3Update(dt);
   adaptExposure(dt);
   if (window.TICKS) for (let i = 0; i < TICKS.length; i++) { try { TICKS[i](dt); } catch (e) { if (!TICKS[i]._err) { TICKS[i]._err = 1; console.warn('tick', e); } } }
   if (_shadowDirty) { R.shadowMap.needsUpdate = true; _shadowDirty = false; _dirty = true; }
@@ -281,7 +291,7 @@ function physics(dt, f, turn, side, run) {
   if (P.mode === 'orbit') { if (f || turn || side) { P.az -= (turn + side) * 50 * dt; P.r = THREE.MathUtils.clamp(P.r - f * 8 * Math.max(1, P.r / 70) * dt, 7, ORBMAX()); markDirty(); } }
   else if (P.mode === 'top') { if (f || turn || side) { const k = P.th * 0.55 * run * dt; P.tx += (turn + side) * k; P.ty += f * k; markDirty(); } }
   else if (window.PLAY && PLAY.seated()) {   // sitting, lying or riding along: look around; the walk keys stand up again
-    if (turn) { P.yaw += turn * 95 * dt; markDirty(); }
+    if (turn && !PLAY.seat.drive) { P.yaw += turn * 95 * dt; markDirty(); }   // driving: the arrow keys steer (vehicles/vehicle.js)
     if ((f || side) && !PLAY.seat.lock && !PLAY.seat.keepKeys) PLAY.stand();
     P.speed = 0; P.air = false; P.vz = 0;
     PLAY.update(dt); const pl = placeName(); if (pl !== lastPlace) { lbl.textContent = pl; lastPlace = pl; } }
@@ -295,7 +305,7 @@ function physics(dt, f, turn, side, run) {
       const p = [P.x + (Math.sin(y) * nf + Math.cos(y) * ns) * sp * dt, P.y + (Math.cos(y) * nf - Math.sin(y) * ns) * sp * dt];
       collide(p, P.feet, opt.collide);
       if (opt.collide && blocked(p[0], p[1], P.feet)) { if (!blocked(p[0], P.y, P.feet)) p[1] = P.y; else if (!blocked(P.x, p[1], P.feet)) p[0] = P.x; else { p[0] = P.x; p[1] = P.y; } }
-      const mx = p[0] - P.x, my = p[1] - P.y, d = Math.hypot(mx, my); P.x = p[0]; P.y = p[1]; const r = Math.hypot(P.x - 2, P.y - 2); if (r > 75) { P.x = 2 + (P.x - 2) * 75 / r; P.y = 2 + (P.y - 2) * 75 / r; }
+      const mx = p[0] - P.x, my = p[1] - P.y, d = Math.hypot(mx, my); P.x = p[0]; P.y = p[1]; walkBounds();
       moved = d; if (d > 1e-5) { P.mvx = mx / d; P.mvy = my / d; }
       // the figure turns towards where it goes (crawling and lying it turns more slowly); seen through its eyes it always faces the view
       if (third && d > 1e-5) { const want = Math.atan2(nf * Math.sin(y) + ns * Math.cos(y), nf * Math.cos(y) - ns * Math.sin(y)) * 180 / Math.PI; let dd = want - P.body; while (dd > 180) dd -= 360; while (dd < -180) dd += 360; P.body += dd * Math.min(1, dt * (P.stance === 'prone' || P.stance === 'crawl' ? 4 : 10)); }
@@ -323,7 +333,7 @@ function physics(dt, f, turn, side, run) {
   { const nm = P.mode === 'orbit' ? 'Modellansicht' : P.mode === 'top' ? 'Draufsicht' : null; if (nm && lastPlace !== nm) { lbl.textContent = nm; lastPlace = nm; if (dbtn) dbtn.hidden = true; lastDoor = null; if (window.PLAY) PLAY.update(0); } }
   if (updateDoors(dt)) markDirty();
   if (P.mode === 'top') sunFollow(P.tx, P.ty, THREE.MathUtils.clamp(P.th * 0.75 * Math.max(1, stage.clientWidth / Math.max(1, stage.clientHeight)), 16, 90));
-  else sunFollow(P.mode === 'walk' ? P.x : P.tgt[0], P.mode === 'walk' ? P.y : P.tgt[1]);
+  else if (!(window.VEH && VEH.sun())) sunFollow(P.mode === 'walk' ? P.x : P.tgt[0], P.mode === 'walk' ? P.y : P.tgt[1]);
   if (window.WORKS && WORKS.update && WORKS.update(dt)) markDirty();
   if (P.mode === 'walk') STREAM.listen(P.x, P.y); else if (P.mode === 'top') STREAM.listen(P.tx, P.ty); else STREAM.listen(2 + Math.sin(P.az * Math.PI / 180) * P.r * 0.5, 2 + Math.cos(P.az * Math.PI / 180) * P.r * 0.5);
   if (window.NPC) { try { NPC.update(dt); } catch (e) { if (!window._npcErr) { window._npcErr = 1; console.warn('npc', e); } } }

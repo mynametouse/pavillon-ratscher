@@ -1,7 +1,7 @@
 # open geodata for Ratscher: Thuringian DGM1/DOM1 tiles (1 m, © GDI-Th), orthophotos (DOP, colour + infrared) via WMS, Copernicus DEM (outer ring), OSM
 import os, sys, time, json
 sys.path.insert(0, os.path.dirname(__file__)); from wms import get, dop
-D = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data'); os.makedirs(D, exist_ok=True)
+from common import DATA as D; os.makedirs(D, exist_ok=True)
 def save(name, b): open(os.path.join(D, name), 'wb').write(b); print('saved', name, len(b), flush=True)
 CX, CY = 625650, 5595500   # centre of the inner area (between the garden and the village), EPSG:25832
 # 1) orthophotos
