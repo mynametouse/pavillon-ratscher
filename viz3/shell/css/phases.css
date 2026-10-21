@@ -1,0 +1,35 @@
+/* construction phases: strip above the spot chips, info panel at the right (bottom sheet on phones) */
+.phases{display:flex;align-items:center;gap:8px;pointer-events:auto;background:var(--ov-bg);border-radius:10px;padding:8px 10px;backdrop-filter:blur(6px);color:var(--ov-ink)}
+.phases .pb{flex:none;width:34px;height:34px;border-radius:8px;border:0;background:rgba(255,255,255,.12);color:var(--ov-ink);font:500 18px/1 var(--f-body);cursor:pointer}
+.phases .pb:disabled{opacity:.35;cursor:default}
+.phases .pname{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.phases .pname b{font:500 13px/1.2 var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phases .pname small{font:400 11px/1 var(--f-mono);opacity:.75}
+.phases input[type=range]{width:100%;margin:0;accent-color:var(--larch);height:18px}
+.phases .pinfo{flex:none;border:0;border-radius:8px;background:var(--ov-bg-on);color:var(--ov-ink-on);font:500 12.5px/1 var(--f-body);padding:10px 12px;cursor:pointer}
+#ppanel{position:absolute;z-index:4;top:60px;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(170px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100% - 24px));background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden}
+#ppanel header{display:flex;align-items:center;gap:8px;padding:12px 14px 8px;border-bottom:1px solid var(--line)}
+#ppanel header h3{margin:0;font:700 16px/1.2 var(--f-display);flex:1;min-width:0}
+#ppanel header small{font:400 11px/1 var(--f-mono);color:var(--muted);display:block;margin-top:4px}
+#ppanel .x{border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer;padding:4px 6px}
+#ppanel nav{display:flex;gap:4px;padding:8px 14px 0}
+#ppanel nav button{flex:1;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font:500 13px/1 var(--f-body);padding:8px 4px;cursor:pointer}
+#ppanel nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--larch)}
+#ppanel .body{overflow:auto;padding:12px 14px 14px;font:400 13.5px/1.5 var(--f-body);flex:1;min-height:0}
+#ppanel .body ul{margin:0;padding-left:18px;display:grid;gap:6px}
+#ppanel .body h4{font:500 12px/1.2 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+#ppanel .body h4:first-child{margin-top:0}
+#ppanel table{width:100%;border-collapse:collapse;font-size:12.5px}
+#ppanel td,#ppanel th{padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+#ppanel th{font:500 11px/1.2 var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+#ppanel td.n,#ppanel th.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#ppanel td.spec{color:var(--muted);font-size:11.5px}
+#ppanel tr.sum td{font-weight:500;border-top:2px solid var(--line);border-bottom:0}
+#ppanel .tot{display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;font-variant-numeric:tabular-nums;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+#ppanel .tot b{font-weight:500}
+#ppanel .note{font-size:11.5px;color:var(--muted);margin-top:10px}
+@media (max-width:720px){ #ppanel{top:auto;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto;bottom:calc(166px + env(safe-area-inset-bottom,0px));max-height:46%} .phases .pname small{display:none} }
+@media (max-width:560px){ header.top .sub{display:none} .tabs{margin-left:0;width:100%} .tabs button{flex:1} .hint{display:none} .pad{bottom:calc(172px + env(safe-area-inset-bottom,0px))} #joy{bottom:calc(176px + env(safe-area-inset-bottom,0px));width:104px;height:104px} #knob{left:32px;top:32px} #doorbtn{bottom:calc(186px + env(safe-area-inset-bottom,0px))} #talkbtn{bottom:calc(234px + env(safe-area-inset-bottom,0px))} #npcsub{bottom:calc(282px + env(safe-area-inset-bottom,0px))} }
+body:not([data-mode="walk"]) .pad{display:none}
+@media (pointer:coarse){ .hint{display:none} }
+

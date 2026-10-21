@@ -1,0 +1,14 @@
+/* 360° panoramas */
+#panostage{position:absolute;inset:0;background:#cfd8de;cursor:grab}
+#panostage:active{cursor:grabbing}
+#panostage canvas{display:block;width:100%;height:100%;touch-action:none}
+#panohot{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+#panohot .hot{position:absolute;transform:translate(-50%,-19px);display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;padding:0;cursor:pointer;pointer-events:auto;font:500 12px/1.1 var(--f-body)}
+#panohot .hot[hidden]{display:none}
+#panohot .hot i{display:block;width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.95);background:rgba(24,26,20,.32);box-shadow:0 1px 8px rgba(0,0,0,.35);backdrop-filter:blur(3px)}
+#panohot .hot i::after{content:"";display:block;width:10px;height:10px;margin:12px auto 0;border-radius:50%;background:#fff}
+#panohot .hot span{background:var(--ov-bg);color:var(--ov-ink);padding:5px 8px;border-radius:6px;white-space:nowrap;backdrop-filter:blur(6px)}
+#panohot .hot:hover i,#panohot .hot:focus-visible i{background:rgba(255,255,255,.28)}
+.panovar{top:12px;right:max(12px,env(safe-area-inset-right,0px));display:flex;gap:4px}
+.panoempty{top:50%;left:50%;transform:translate(-50%,-50%);margin:0;background:var(--ov-bg);border-radius:8px;padding:12px 16px;font:400 13px/1.45 var(--f-body);max-width:min(340px,calc(100% - 32px));text-align:center}
+@media (max-width:560px){ .panovar{top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px))} }

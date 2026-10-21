@@ -1,0 +1,89 @@
+  <section class="panel" id="p-3d" role="tabpanel" aria-labelledby="tab-3d" style="overflow:hidden">
+    <div id="stage"></div>
+    <div id="loading">3D-Modell wird geladen …</div>
+    <div class="ov where" aria-live="polite"><span id="where">Modellansicht</span><small>Entwurfsstudie, vereinfacht</small></div>
+    <div class="ov" id="hudtr">
+      <button type="button" class="hb" id="clockbtn" title="Spielzeit"><span class="hbi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><span class="hbt">07:30</span></button>
+      <button type="button" class="hb" id="gearbtn" hidden title="Schutzausrüstung (PSA)"><span class="gi"></span><span class="hbt">PSA</span></button>
+      <button type="button" class="hb" id="camtog" hidden aria-pressed="true" title="Ansicht: Figur mit Schulterkamera oder durch die eigenen Augen (V, Mausrad)"><span class="hbi i3"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4.8" r="2.3"/><path d="M12 8v7M12 10.2l-4.2 3M12 10.2l4.2 3M12 15l-3.2 6M12 15l3.2 6"/></svg></span><span class="hbi i1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.7"/></svg></span><span class="hbt">Figur</span></button>
+      <button type="button" class="hb" id="menubtn" aria-expanded="false" aria-controls="menu" title="Menü (Esc oder M)"><span class="hbi burger" aria-hidden="true"><i></i><i></i><i></i></span><span class="hbt">Menü</span></button>
+    </div>
+    <div class="ov toast" id="toast" role="status" hidden></div>
+    <aside id="ppanel" hidden aria-label="Bauphase: Bauweise, Material, Kosten">
+      <header><div style="min-width:0;flex:1"><h3 id="pp-title">Bauphase</h3><small id="pp-sub"></small></div><button class="x" id="pp-close" aria-label="Schließen">×</button></header>
+      <nav><button type="button" data-pt="how" aria-selected="true">Bauweise</button><button type="button" data-pt="mat" aria-selected="false">Material</button><button type="button" data-pt="cost" aria-selected="false">Kosten</button></nav>
+      <div class="body" id="pp-body"></div>
+    </aside>
+    <div id="actrow"><button id="act2" type="button" hidden></button><button id="doorbtn" type="button" hidden>Tür öffnen</button></div>
+    <div class="ov" id="qtrack" hidden role="button" tabindex="0" aria-label="Aufgabe – antippen für alle Aufgaben"></div>
+    <div class="ov" id="planbar" hidden>
+      <span id="pb-name">Gegenstand antippen</span>
+      <button type="button" data-pa="rotl" title="15° links drehen (Shift+R)">↺</button><button type="button" data-pa="rotr" title="15° rechts drehen (R)">↻</button><button type="button" data-pa="dup" title="Kopie daneben">Kopie</button><button type="button" data-pa="del" title="Entfernen (Entf)">Löschen</button>
+      <button type="button" data-pa="add" class="acc">+ Hinzufügen</button><button type="button" data-pa="reset" title="Alle Änderungen verwerfen">Zurück</button><button type="button" data-pa="done">Fertig</button>
+    </div>
+    <aside id="facade" hidden aria-label="Fassade wählen"><h3>Fassade<button type="button" class="x" aria-label="Schließen">×</button></h3>
+      <h4>Haus</h4><div class="prow sw" data-fac="house"></div>
+      <h4 data-var="A">Treppenturm</h4><div class="prow sw" data-fac="tower" data-var="A"></div>
+      <h4>Fensterrahmen</h4><div class="prow sw" data-fac="frame"></div>
+      <p class="fnote">Gilt für die Außenverkleidung (Bretter mit Deckleisten; Schindeln, Stülpschalung, Platten, Kupfer und Putz als Oberfläche darauf). Die Wahl bleibt in diesem Browser gespeichert und gehört über „Teilen“ zum Planstand.</p></aside>
+    <aside id="interior" hidden aria-label="Einrichtung wählen"><h3>Einrichtung<button type="button" class="x" aria-label="Schließen">×</button></h3>
+      <h4>Stil</h4><div class="prow sw" data-st="style"></div>
+      <h4>Boden</h4><div class="prow sw" data-st="floor"></div>
+      <h4>Wände</h4><div class="prow sw" data-st="walls"></div>
+      <h4>Decke</h4><div class="prow sw" data-st="ceil"></div>
+      <h4>Möbelholz</h4><div class="prow sw" data-st="wood"></div>
+      <h4>Stoffe</h4><div class="prow sw" data-st="fabric"></div>
+      <p class="fnote">Gilt für den Pavillon innen. Möbel, Regal, Bett, Schreibtisch, Piano und Sideboard verschiebst du mit „Planen“. Die Wahl bleibt in diesem Browser gespeichert und gehört über „Teilen“ zum Planstand.</p></aside>
+    <aside id="perfbox" hidden aria-label="Leistungstest"><h3>Leistungstest<button type="button" class="x" id="perfclose" aria-label="Schließen">×</button></h3>
+      <pre id="perfout">Messung startet …</pre>
+      <div class="acts"><button type="button" id="perfcopy">Ergebnis kopieren</button></div>
+      <p>Das Modell geht von selbst durch sechs Ansichten und dreht sich dabei. Danach kannst du das Ergebnis kopieren und mir schicken.</p></aside>
+    <svg id="topsvg" hidden aria-hidden="true"></svg>
+    <div class="ov" id="topscale" hidden><i></i><span>10 m</span><b>N ↑</b></div>
+    <div class="ov" id="geoattr" hidden>Luftbild und Gelände © GDI-Th (dl-de/by-2-0) · Karte © OpenStreetMap-Mitwirkende (ODbL) · Copernicus DEM © DLR/Airbus, EU/ESA</div>
+    <div class="ov" id="sitebar" hidden>
+      <span id="sb-name">Gebäude ziehen zum Verschieben</span>
+      <span class="sbg" id="sb-bld" hidden><label>Ost<input type="number" id="sb-dx" step="0.1" inputmode="decimal" aria-label="Verschiebung nach Osten in Metern"></label><label>Nord<input type="number" id="sb-dy" step="0.1" inputmode="decimal" aria-label="Verschiebung nach Norden in Metern"></label><label>Drehung °<input type="number" id="sb-da" step="1" inputmode="decimal" aria-label="Drehung im Uhrzeigersinn in Grad"></label>
+        <button type="button" data-sa="rotl" title="15° gegen den Uhrzeigersinn (Shift+R)">↺</button><button type="button" data-sa="rotr" title="15° im Uhrzeigersinn (R)">↻</button><button type="button" data-sa="home" title="Zurück an den ursprünglichen Platz">Ursprung</button><button type="button" data-sa="desel" title="Auswahl aufheben (Esc)" aria-label="Auswahl aufheben">✕</button></span>
+      <span class="sbg" id="sb-fence" hidden><button type="button" data-sa="gate" id="sb-gate">Tür hier</button><button type="button" data-sa="fdel" title="Zaun löschen (Entf)">Löschen</button><button type="button" data-sa="desel" title="Auswahl aufheben (Esc)" aria-label="Auswahl aufheben">✕</button></span>
+      <span class="sbg" id="sb-draw" hidden><button type="button" data-sa="kind-mesh" aria-pressed="true">Maschendraht</button><button type="button" data-sa="kind-wood" aria-pressed="false">Holzzaun</button><button type="button" data-sa="back">Punkt zurück</button><button type="button" data-sa="cancel">Abbrechen</button><button type="button" data-sa="finish" class="acc">Fertig</button></span>
+      <span class="sbg" id="sb-main"><button type="button" data-sa="village" hidden title="Ratscher und Umgebung zeigen – noch einmal: zurück zum Garten">Ratscher</button><button type="button" data-sa="geomap" aria-pressed="false" hidden title="Karte statt Luftbild">Karte</button><button type="button" data-sa="draw">Zaun<span class="tx"> ziehen</span></button><button type="button" data-sa="trees" aria-pressed="true" title="Bäume im Garten ein- und ausblenden">Bäume</button><button type="button" data-sa="undo" title="Rückgängig (Strg+Z)" aria-label="Rückgängig">↶<span class="tx"> Rückgängig</span></button><button type="button" data-sa="reset" title="Alle Gebäude und Zäune wie ursprünglich">Grundstand</button><button type="button" data-sa="share">Teilen</button><button type="button" data-sa="done" class="acc">Fertig</button></span>
+      <div id="sb-warn" hidden></div>
+    </div>
+    <aside id="sharebox" hidden aria-label="Teilen und veröffentlichen"><h3>Teilen<button type="button" class="x" aria-label="Schließen">×</button></h3><div id="sh-body"></div></aside>
+    <aside id="palette" hidden aria-label="Gegenstände hinzufügen"><h3>Hinzufügen<button type="button" class="x" onclick="this.closest('aside').hidden=true" aria-label="Schließen">×</button></h3></aside>
+    <button id="talkbtn" hidden>Sprechen</button>
+    <div id="npcsub" hidden></div>
+    <aside id="npcpanel" hidden aria-label="Gespräch">
+      <header><h3 id="np-name">Nachbar</h3><button class="x" id="np-close" aria-label="Gespräch beenden">×</button></header>
+      <div class="say" id="np-text"></div>
+      <div class="topics" id="np-topics"></div>
+    </aside>
+    <div id="joy" aria-label="Gehen"><div id="knob"></div></div>
+    <div class="ov pad" aria-label="Bewegen">
+      <button class="f" aria-label="Vorwärts" data-key="w">▲</button>
+      <button class="l" aria-label="Nach links drehen" data-key="arrowleft">◀</button>
+      <button class="b" aria-label="Rückwärts" data-key="s">▼</button>
+      <button class="r" aria-label="Nach rechts drehen" data-key="arrowright">▶</button>
+    </div>
+    <div id="xhair" hidden aria-hidden="true"></div>
+    <div class="ov" id="hotbar" role="toolbar" aria-label="Leiste: Gegenstände 1 bis 8"></div>
+    <div class="ov" id="hbname" hidden aria-live="polite"></div>
+    <div class="ov" id="stancetag" hidden></div>
+    <div class="ov" id="moves" aria-label="Bewegungen">
+      <button type="button" data-mv="crouch" aria-pressed="false" aria-label="Ducken"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="14.5" cy="5.6" r="2.2"/><path d="M13.6 8.6l-3.8 5 4.6 1.6-1.2 5.3M10.4 12.6l4.8 1.2M13 9.6l3.6 3.2M5 21h14"/></svg></button>
+      <button type="button" data-mv="crawl" aria-pressed="false" aria-label="Kriechen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="19" cy="8.4" r="2.1"/><path d="M16.6 11H8.4M16 11l1.2 6.4M8.4 11l-0.4 5.4-4 1.2M3 19.5h18"/></svg></button>
+      <button type="button" data-mv="prone" aria-pressed="false" aria-label="Hinlegen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="19.6" cy="14.6" r="2.1"/><path d="M17.4 16.4H4M15 16.4l3.6 1.8M3 19.5h18"/></svg></button>
+      <button type="button" data-mv="jump" class="big" aria-label="Springen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17V5M7 10l5-5 5 5M5 20.5h14"/></svg></button>
+    </div>
+    <div class="ov" id="orbithud">
+      <div id="ph-home">
+        <div class="phases" data-phase-ui aria-label="Bauphase">
+          <button class="pb" id="ph-prev" aria-label="Vorherige Bauphase">‹</button>
+          <div class="pname"><b id="ph-name">Einrichtung</b><input type="range" id="ph-range" min="0" max="30" value="30" step="1" aria-label="Bauphase wählen"><small id="ph-sub">Phase 30 von 30</small></div>
+          <button class="pb" id="ph-next" aria-label="Nächste Bauphase">›</button>
+          <button class="pinfo" id="ph-info" aria-expanded="false">Bauweise</button>
+        </div>
+      </div>
+      <div class="ohb"><button type="button" class="ogo" data-spot="garten" title="Hineingehen: in den Garten, dann mit W A S D oder dem Steuerkreuz gehen">Losgehen</button><button type="button" class="oalt" data-spot="draufsicht" title="Von oben: Gebäude verschieben, Zäune ziehen, Ratscher und Umgebung">Draufsicht</button></div>
+    </div>

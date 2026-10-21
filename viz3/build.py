@@ -8,6 +8,7 @@ inline, assemble the page in dist/ (pavillon-ratscher.html = Claude artifact, in
   fast build  --fast, or automatically without the originals: dist/ already holds the assets (last full build, or the published site
               copied in by tools/bootstrap.sh); only app.js and the HTML are rebuilt, manifests and credits come from manifests.json
   module order: src/modules.txt (one file per line, relative to src/, # comments); without it every src/NN_*.js in name order
+  page: shell/parts.txt (head, css/*.css, header, panels, menu, windows, notes, tail) joined in order
   DIST=<dir> builds into another folder; PACK=0 keeps the images of the glTF models as separate files (full build)
 """
 import json, os, sys, glob, subprocess
@@ -49,7 +50,12 @@ if r.returncode: print(r.stdout, r.stderr); sys.exit(1)
 if r.stderr.strip(): print(r.stderr[:2000])
 app = open(os.path.join(D, 'app.js')).read()
 # ---- HTML ----
-shell = open(os.path.join(H, 'shell.html')).read()
+def shell_text():   # the page: shell/parts.txt lists its parts in order (head, CSS by area, header, 3D stage, menu, windows, tabs, notes, tail)
+    lst = os.path.join(H, 'shell', 'parts.txt')
+    if not os.path.exists(lst): return open(os.path.join(H, 'shell.html')).read()
+    names = [ln.split('#', 1)[0].strip() for ln in open(lst)]
+    return ''.join(open(os.path.join(H, 'shell', n)).read() for n in names if n)
+shell = shell_text()
 shell = shell.replace('<!--CREDITS-->', M['credits'])
 def page(extra_head=''):
     js = app.replace('</script', '<\\/script')

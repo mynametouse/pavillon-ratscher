@@ -1,0 +1,12 @@
+/* design variants: elements marked data-var show only for the active variant */
+body[data-variant="A"] [data-var="B"],body[data-variant="B"] [data-var="A"]{display:none!important}
+.chip.vl{cursor:default;background:none;backdrop-filter:none;padding:10px 4px 10px 6px;opacity:.85}
+#perfbox{position:absolute;z-index:5;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(440px,calc(100% - 24px));background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:14px 16px}
+#perfbox h3{margin:0 0 8px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center;gap:8px}
+#perfbox h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer}
+#perfout{margin:0;white-space:pre-wrap;font:400 12px/1.5 var(--f-mono);color:var(--ink);max-height:40vh;overflow:auto;user-select:text;-webkit-user-select:text}
+#perfbox .acts{display:flex;gap:8px;margin-top:10px}
+#perfbox .acts button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 13px/1 var(--f-body);padding:9px 13px;cursor:pointer}
+#perfbox p{margin:8px 0 0;font:400 12px/1.45 var(--f-body);color:var(--muted)}
+@media (max-width:560px){ #perfbox{top:104px} }
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--paper);color:var(--muted);font:400 13px/1.4 var(--f-mono);z-index:5}

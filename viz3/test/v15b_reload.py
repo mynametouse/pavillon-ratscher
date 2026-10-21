@@ -14,7 +14,7 @@ def boot(pg):
     pg.wait_for_function("!window.AVATAR || AVATAR.ready || AVATAR.failed", timeout=900000, polling=1000); time.sleep(3); pg.evaluate("window.FREEZE = true"); pg.evaluate(HELP)
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'])
-    ctx = b.new_context(viewport={'width': 1000, 'height': 640}); pg = ctx.new_page(); errs = []
+    ctx = b.new_context(viewport={'width': 1000, 'height': 640}); pg = ctx.new_page(); lib.preset(pg); errs = []
     pg.on('pageerror', lambda e: errs.append('PAGEERR ' + str(e))); pg.on('console', lambda m: errs.append('CONSOLE ' + m.type + ' ' + m.text) if m.type == 'error' else None)
     boot(pg); E = lambda js: pg.evaluate(js); L = lambda s: print(s, flush=True)
     E("QUESTS.reset(); GAME.go('werkstatt'); GAME.setView3(false, true); GAME.step(0.3)")
@@ -47,7 +47,7 @@ with sync_playwright() as p:
     E("__W.ppe(['brille', 'ohr', 'ffp2'])"); E("GAME.step(0.6)"); shot(pg, 'g2_figure_brille_ffp2')
     E("GAME.setView3(false, true); GAME.go('werkstatt'); GAME.step(0.5)"); shot(pg, 'g3_spot_werkstatt')
     # phone: the machine window and the card
-    mp = ctx.new_page(); mp.set_viewport_size({'width': 390, 'height': 780})
+    mp = ctx.new_page(); lib.preset(mp); mp.set_viewport_size({'width': 390, 'height': 780})
     mp.on('pageerror', lambda e: errs.append('M PAGEERR ' + str(e)))
     boot(mp); mp.evaluate("GAME.go('werkstatt'); GAME.step(0.3)")
     mp.evaluate("(() => { __W.at('saw'); return __W.lbl('werk:saw'); })()"); mp.evaluate("WERK.carriedWP() || 0")

@@ -16,7 +16,7 @@ window.__mk = (st, at, o) => { const wp = WERK.newWP(st, Object.assign({ L: 500,
 """
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'])
-    pg = b.new_page(viewport={'width': 1100, 'height': 680}); errs = []
+    pg = b.new_page(viewport={'width': 1100, 'height': 680}); lib.preset(pg); errs = []
     pg.on('pageerror', lambda e: errs.append('PAGEERR ' + str(e))); pg.on('console', lambda m: errs.append('CONSOLE ' + m.type + ' ' + m.text) if m.type == 'error' else None)
     t0 = time.time(); pg.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded')
     pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); print('loaded', round(time.time() - t0), 's', flush=True)

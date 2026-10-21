@@ -20,8 +20,14 @@ def browser():
         try: yield b
         finally: b.close()
 
-def page(b, w=1000, h=640, errs=None, **kw):
+def preset(pg, tier='schnell'):
+    """Skip the GPU benchmark at load (several minutes in SwiftShader): the render tier is preset like a choice by hand.
+    'schnell' for logic tests, 'hoch' for pictures. Load time then ~2 min, with ?nogeo=1 (no real surroundings) ~1 min."""
+    pg.add_init_script("try { localStorage.setItem('pav-tier', '" + tier + "'); } catch (e) {}")
+
+def page(b, w=1000, h=640, errs=None, tier='schnell', **kw):
     pg = b.new_page(viewport={'width': w, 'height': h}, **kw)
+    if tier: preset(pg, tier)
     if errs is not None:
         pg.on('pageerror', lambda e: errs.append('PAGEERR ' + str(e)))
         pg.on('console', lambda m: errs.append('CONSOLE ' + m.text) if m.type == 'error' else None)

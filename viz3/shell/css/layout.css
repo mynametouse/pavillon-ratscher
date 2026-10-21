@@ -1,0 +1,22 @@
+/* Layout: one-screen app; slim header with three views (3D model, film, pictures); the 3D stage fills the rest with overlay controls */
+:root{
+  --paper:#eceee8; --ink:#23241f; --muted:#666a61; --line:#cfd3c8; --larch:#9b6a3a; --plate:#e2e5dd; --charred:#2b2724;
+  --ov-bg:rgba(24,23,21,.64); --ov-bg-on:rgba(243,239,230,.94); --ov-ink:#f3f1ec; --ov-ink-on:#23241f;
+  --f-display:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#161714; --ink:#e8e9e3; --muted:#9a9e94; --line:#2f312c; --larch:#d29a62; --plate:#1f201d; --charred:#0e0d0c; color-scheme:dark } }
+:root[data-theme="dark"]{ --paper:#161714; --ink:#e8e9e3; --muted:#9a9e94; --line:#2f312c; --larch:#d29a62; --plate:#1f201d; --charred:#0e0d0c; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--f-body);display:flex;flex-direction:column;overflow:hidden}
+header.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line)}
+header.top h1{font:700 20px/1.1 var(--f-display);margin:0;letter-spacing:-.005em}
+header.top .sub{font:400 11.5px/1.2 var(--f-mono);color:var(--muted);letter-spacing:.04em}
+.tabs{display:flex;gap:4px;margin-left:auto}
+.tabs button{font:500 13.5px/1 var(--f-body);color:var(--muted);background:none;border:1px solid transparent;border-radius:999px;padding:8px 13px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--line);background:var(--plate)}
+main{flex:1;min-height:0;position:relative}
+section.panel{position:absolute;inset:0;overflow:auto}

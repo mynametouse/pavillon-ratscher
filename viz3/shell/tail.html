@@ -1,0 +1,29 @@
+<!--CREDITS-->
+    </div>
+  </section>
+</main>
+<dialog id="lb" aria-label="Bild vergrößert"><img alt=""><p></p></dialog>
+
+<script>
+// design variant before the 3D code loads (so only the matching texts show): #turm / #leiter in the link, otherwise the last choice, default Leiter
+(function(){ let v='B'; const h=(location.hash||'').slice(1).toLowerCase(); try{ const s=localStorage.getItem('pav-variant'); if(s==='A'||s==='B') v=s; }catch(e){} if(h==='turm') v='A'; if(h==='leiter') v='B'; document.body.dataset.variant=v; })();
+// tabs, chapters, lightbox
+(function(){
+  const tabs=[...document.querySelectorAll('[role=tab]')];
+  function sel(t){ tabs.forEach(x=>{ const on=x===t; x.setAttribute('aria-selected',on); document.getElementById(x.getAttribute('aria-controls')).hidden=!on; });
+    if(t.id!=='tab-film'){ const v=document.getElementById('tour'); if(v&&!v.paused) v.pause(); }
+    if(t.id==='tab-3d' && window.requestRender){ window.dispatchEvent(new Event('resize')); }
+    try{ localStorage.setItem('pav-tab',t.id); }catch(e){} }
+  tabs.forEach(t=>t.addEventListener('click',()=>sel(t)));
+  const h=(location.hash||'').slice(1); const byHash={film:'tab-film',raumfuehrung:'tab-film',bilder:'tab-bilder','3d':'tab-3d','360':'tab-pano',pano:'tab-pano',rundblick:'tab-pano'};
+  let start=byHash[h]; if(!start){ try{ start=localStorage.getItem('pav-tab'); }catch(e){} }
+  const st=tabs.find(t=>t.id===start); if(st) sel(st);
+  document.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>{ const v=document.getElementById('tour'); v.currentTime=parseFloat(b.dataset.t); v.play().catch(()=>{}); }));
+  const lb=document.getElementById('lb'), li=lb.querySelector('img'), lp=lb.querySelector('p');
+  document.querySelectorAll('figure.shot img').forEach(img=>{ img.tabIndex=0;
+    const open=()=>{ li.src=img.src; li.alt=img.alt; lp.textContent=img.closest('figure').querySelector('.t').textContent; try{lb.showModal();}catch(e){} };
+    img.addEventListener('click',open); img.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } }); });
+  lb.addEventListener('click',()=>lb.close());
+})();
+</script>
+<!--SCRIPTS-->

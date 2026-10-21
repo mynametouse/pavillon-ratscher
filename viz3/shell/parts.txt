@@ -1,0 +1,21 @@
+# Parts of the page in order (build.py joins them without separators). CSS sits inside <style> from head.html to header.html.
+head.html
+css/layout.css
+css/stage3d.css
+css/siteplan.css
+css/variants.css
+css/pano.css
+css/gallery.css
+css/phases.css
+css/game.css
+css/hud.css
+css/werk_clock.css
+header.html
+panel_3d.html
+menu.html
+windows.html
+panel_pano.html
+panel_film.html
+panel_gallery.html
+notes.html
+tail.html

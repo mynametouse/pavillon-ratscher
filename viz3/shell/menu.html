@@ -1,0 +1,88 @@
+    <div id="menu" hidden>
+      <div class="mscrim" data-mclose></div>
+      <div class="msheet" role="dialog" aria-modal="true" aria-labelledby="m-title">
+        <header class="mhead"><div><h2 id="m-title">Menü</h2><small>Pavillon Ratscher · Esc oder M: zurück</small></div><button type="button" class="x" data-mclose aria-label="Menü schließen">×</button></header>
+        <div class="mbody">
+          <button type="button" class="mresume" data-mclose>Weiter</button>
+          <section class="msec" aria-label="Orte"><h3>Orte</h3><div class="mchips">
+            <button class="chip" data-spot="modell" aria-pressed="true">Modell</button>
+            <button class="chip" data-spot="draufsicht" aria-pressed="false" title="Von oben: Gebäude verschieben und drehen, Zäune ziehen">Draufsicht</button>
+            <button class="chip" data-spot="garten" aria-pressed="false">Garten</button>
+            <button class="chip" data-spot="carport" aria-pressed="false">Carport</button>
+            <button class="chip" data-spot="eingang" aria-pressed="false">Vor der Tür</button>
+            <button class="chip" data-spot="bibliothek" aria-pressed="false">Bibliothek<span class="lv">±0,00</span></button>
+            <button class="chip" data-spot="treppe" aria-pressed="false">Treppenturm</button>
+            <button class="chip" data-spot="arbeitsraum" aria-pressed="false">Arbeitsraum<span class="lv">+2,99</span></button>
+            <button class="chip" data-spot="lounge" aria-pressed="false">Lounge<span class="lv">+2,99</span></button>
+            <button class="chip" data-spot="dach" aria-pressed="false">Dachterrasse<span class="lv">+5,95</span></button>
+            <button class="chip" data-spot="wohnwagen" aria-pressed="false">Wohnwagen</button>
+            <button class="chip" data-spot="holzhaus" aria-pressed="false">Holzhaus</button>
+            <button class="chip" data-spot="bungalow" aria-pressed="false">Bungalow</button>
+            <button class="chip" data-spot="ziegen" aria-pressed="false">Ziegen</button>
+            <button class="chip" data-spot="hubert" aria-pressed="false">Hubert</button>
+            <button class="chip" data-spot="werkstatt" aria-pressed="false">Werkstatt</button>
+          </div></section>
+          <section class="msec" aria-label="Bauphase"><h3>Bauphase</h3><div id="ph-menu"></div></section>
+          <section class="msec" aria-label="Licht und Variante"><h3>Licht</h3><div class="mchips">
+            <button class="chip" data-light="auto" aria-pressed="true" title="Sonne, Mond und Sterne folgen der Spieluhr – wie sie über Ratscher wirklich stehen">Tageslauf</button>
+            <button class="chip" data-light="day" aria-pressed="false">Tag</button>
+            <button class="chip" data-light="gold" aria-pressed="false">Goldene Stunde</button>
+            <button class="chip" data-light="dusk" aria-pressed="false">Abend</button>
+            <button class="chip" data-light="night" aria-pressed="false" title="Vollmondnacht Ende August">Nacht</button>
+            </div><h3 class="h3b">Variante</h3><div class="mchips">
+            <button class="chip" data-var-set="B" aria-pressed="false" title="Ohne Turm: Leitertreppen mit Bodenluke und Dachluke, OG rundum auskragend">Leiter</button>
+            <button class="chip" data-var-set="A" aria-pressed="false" title="Mit Wendeltreppenturm an der Ostseite">Turm</button>
+            </div></section>
+          <section class="msec" aria-label="Spiel"><h3>Spiel</h3>
+            <div class="mlist">
+              <button class="tog" id="questbtn" aria-pressed="false" title="Aufgaben mit Ronald und Hubert, in der Werkstatt und am Ofen (Taste J)">Aufgaben<span>4 offen</span></button>
+              <button class="tog" id="invbtn" type="button" aria-pressed="false" title="Alles, was du dabeihast (Taste I)">Inventar<span>I</span></button>
+            </div>
+            <div class="mrow"><span>Spielfigur</span><div class="mseg" id="figseg"><button type="button" data-fig="m" aria-pressed="true">Mann</button><button type="button" data-fig="f" aria-pressed="false">Frau</button></div></div>
+            <div class="mrow"><span>Spielzeit</span><div class="mseg" id="crateseg"><button type="button" data-crate="real" aria-pressed="false">Echtzeit</button><button type="button" data-crate="min" aria-pressed="true">1 Std = 1 Min</button><button type="button" data-crate="fast" aria-pressed="false">1 Std = 10 s</button></div></div>
+            <div class="mrow"><span>Ansicht</span><div class="mseg" id="viewseg"><button type="button" data-view="3" aria-pressed="true">Figur</button><button type="button" data-view="1" aria-pressed="false">Eigene Augen</button></div></div>
+            <div class="mrow" data-ptr="fine"><span>Maus</span><div class="mseg" id="lockseg"><button type="button" data-lock="1" aria-pressed="true" title="Nach einem Klick ins Bild dreht die Maus den Blick, Klick: handeln, Esc: Menü">Steuert den Blick</button><button type="button" data-lock="0" aria-pressed="false" title="Mit gedrückter Taste ziehen, um dich umzuschauen">Ziehen</button></div></div>
+            <p class="mnote" id="fignote" hidden>Die Figur wird noch geladen.</p>
+          </section>
+          <section class="msec" aria-label="Gestalten"><h3>Gestalten</h3><div class="mlist">
+              <button class="tog" id="planbtn" aria-pressed="false" title="Planungsmodus: Möbel und Gegenstände verschieben, drehen, stapeln, hinzufügen, löschen">Planen</button>
+              <button class="tog" id="facbtn" aria-pressed="false" title="Fassade: Material und Farbe für Haus (und Turm) ausprobieren">Fassade</button>
+              <button class="tog" id="intbtn" aria-pressed="false" title="Einrichtung: Stil, Boden, Wände, Decke, Möbelholz und Stoffe im Pavillon">Einrichtung</button>
+              <button class="tog" id="sharebtn" aria-pressed="false" title="Öffentlicher Link ohne Claude-Konto, Planstand für alle veröffentlichen, Plan-Code">Teilen</button>
+            </div></section>
+          <section class="msec" aria-label="Einstellungen"><h3>Einstellungen</h3><div class="mlist">
+              <button class="tog" id="soundbtn" aria-pressed="true">Ton<span>an</span></button>
+              <button class="tog" id="qualbtn" aria-pressed="true" title="Grafikqualität (wird beim Laden an das Gerät angepasst): hoch – mittel – schnell">Grafik<span>hoch</span></button>
+              <button class="tog" id="collbtn" aria-pressed="true" title="Wände und Möbel halten dich auf">Kollision<span>an</span></button>
+              <button class="tog" id="fullbtn" aria-pressed="false" title="Vollbild: Kopfzeile ausblenden, Modell über den ganzen Bildschirm">Vollbild</button>
+              <button class="tog" id="perfbtn" aria-pressed="false" title="Leistungstest: misst ca. 15 Sekunden lang die Bildrate in sechs typischen Ansichten">Leistung</button>
+            </div></section>
+          <section class="msec" aria-label="Steuerung"><h3>Steuerung</h3>
+            <div class="mhelp" id="hint">
+              <dl data-ptr="fine">
+                <dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / Pfeile</dt><dd>gehen, <kbd>Shift</kbd> rennen, <kbd>Feststelltaste</kbd> langsam</dd>
+                <dt>Maus</dt><dd>umschauen (nach einem Klick ins Bild; sonst ziehen)</dd>
+                <dt><kbd>E</kbd> / Klick</dt><dd>handeln: Tür, Sprechen, Nehmen, Sitzen, Spielen</dd>
+                <dt><kbd>Q</kbd></dt><dd>ablegen, aufstehen, abbrechen; mit freien Händen: Werkstück von der Station nehmen</dd>
+                <dt>Grünes Feld</dt><dd>beim Leimen, Zwingen, Brennen: noch einmal <kbd>E</kbd>, wenn der Balken im grünen Feld steht</dd>
+                <dt><kbd>Leertaste</kbd></dt><dd>springen</dd>
+                <dt><kbd>C</kbd> <kbd>X</kbd> <kbd>Z</kbd></dt><dd>ducken, kriechen, hinlegen (noch einmal: aufstehen)</dd>
+                <dt><kbd>1</kbd>–<kbd>8</kbd></dt><dd>Gegenstand in die Hand, <kbd>0</kbd> Hände frei</dd>
+                <dt><kbd>I</kbd> · <kbd>J</kbd> · <kbd>B</kbd></dt><dd>Inventar · Aufgaben · Werkstattbuch</dd>
+                <dt>Uhr oben rechts</dt><dd>Tempo, Warten, Datum; nachts aufs Tagesbett legen: Schlafen bis 7 Uhr</dd>
+                <dt><kbd>V</kbd> / Mausrad</dt><dd>Figur oder eigene Augen, Abstand der Kamera</dd>
+                <dt><kbd>Esc</kbd> / <kbd>M</kbd></dt><dd>Menü · <kbd>F</kbd> Vollbild · <kbd>Bild ↑</kbd><kbd>Bild ↓</kbd> Bauphase</dd>
+                <dt>Planen</dt><dd>Möbel ziehen, <kbd>R</kbd> drehen, <kbd>Entf</kbd> löschen</dd>
+                <dt>Draufsicht</dt><dd>Gebäude verschieben, Zäune ziehen</dd>
+              </dl>
+              <dl data-ptr="coarse">
+                <dt>Kreis links</dt><dd>gehen</dd>
+                <dt>Wischen</dt><dd>umschauen; zwei Finger: Kamera näher oder weiter weg</dd>
+                <dt>Knöpfe rechts</dt><dd>springen, ducken, kriechen, hinlegen</dd>
+                <dt>Großer Knopf</dt><dd>handeln: Tür, Sprechen, Nehmen, Sitzen; daneben ablegen, aufstehen. Grünes Feld: noch einmal tippen, wenn der Balken drin steht</dd>
+                <dt>Leiste unten</dt><dd>Gegenstand in die Hand, Rucksack: Inventar</dd>
+              </dl>
+            </div></section>
+        </div>
+      </div>
+    </div>

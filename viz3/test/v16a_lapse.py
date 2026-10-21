@@ -9,7 +9,7 @@ OUT = lib.out('v16a/' + name)
 for f in os.listdir(OUT): os.remove(os.path.join(OUT, f))
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
-    pg = b.new_page(viewport={'width': 960, 'height': 540}); errs = []
+    pg = b.new_page(viewport={'width': 960, 'height': 540}); lib.preset(pg, 'hoch'); errs = []
     pg.on('pageerror', lambda e: errs.append('PAGEERR ' + str(e))); pg.on('console', lambda m: errs.append('CONSOLE ' + m.text) if m.type == 'error' else None)
     pg.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded'); pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000)
     time.sleep(3); pg.evaluate("window.FREEZE = true"); E = lambda js: pg.evaluate(js)

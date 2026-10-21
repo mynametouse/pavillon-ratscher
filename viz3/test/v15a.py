@@ -22,7 +22,7 @@ window.__T = {
 """
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'])
-    pg = b.new_page(viewport={'width': 1100, 'height': 680}); errs = []
+    pg = b.new_page(viewport={'width': 1100, 'height': 680}); lib.preset(pg); errs = []
     pg.on('pageerror', lambda e: errs.append('PAGEERR ' + str(e))); pg.on('console', lambda m: errs.append('CONSOLE ' + m.type + ' ' + m.text) if m.type in ('error', 'warning') else None)
     t0 = time.time(); pg.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded')
     pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); print('loaded', round(time.time() - t0), 's', flush=True)
@@ -78,7 +78,7 @@ with sync_playwright() as p:
         E("GAME.go('hubert'); GAME.step(0.3)"); print('bench', E("(() => { const a = PLAY.acts().find(a => a.id === 'seat:hubertbench'); GAME.view(-13.25, 1.4, 1.62, 180, -10); GAME.step(0.2); const l = a.label(); PLAY.run(a); GAME.step(1.2); GAME.P.yaw = -60; GAME.P.pitch = -12; GAME.step(0.4); return l; })()"), flush=True); ui(pg, 'h3_bench')
     if want('phone'):
         ctx = b.new_context(viewport={'width': 390, 'height': 780}, device_scale_factor=2, is_mobile=True, has_touch=True)
-        mp = ctx.new_page(); mp.on('pageerror', lambda e: errs.append('M PAGEERR ' + str(e)))
+        mp = ctx.new_page(); lib.preset(mp); mp.on('pageerror', lambda e: errs.append('M PAGEERR ' + str(e)))
         mp.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded')
         mp.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); time.sleep(2); mp.evaluate("window.FREEZE = true")
         mp.evaluate("GAME.shot()"); mp.screenshot(path=os.path.join(OUT, 'd1_phone_orbit.png'), timeout=240000)
