@@ -1,5 +1,5 @@
 import json,os,glob
-S='/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad'
+S=(os.environ.get('PAV_WORK') or os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')))
 O=S+'/assets/tex'; L=S+'/assets/_tex_work/logs'; DL=S+'/assets/_tex_work/dl'
 stats={}
 for p in glob.glob(L+'/*.json'):

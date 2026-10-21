@@ -70,7 +70,7 @@ function collide(p, feet, on) { if (!on) return; const b0 = feet + 0.25, b1 = fe
 // ---------------- player & viewpoints ----------------
 const P = { x: 2, y: -6, feet: 0, vz: 0, yaw: 0, pitch: 0, mode: 'orbit', az: 225, el: 16, r: 19, tgt: [2, 2, 3.2], stride: 0, tx: 2.0, ty: -6.5, th: 110,   // tx, ty, th: plan view centre and height of the picture (m)
   stance: 'stand', eyeH: 1.62, body: 0, air: false, speed: 0, mvx: 0, mvy: 0, landT: 0 };   // V15: posture, smoothed eye height, the figure's heading (deg), airborne, ground speed (m/s), last move direction
-// ---- V15 third-person view: camera over the right shoulder of the figure (29_avatar.js); V or the mouse wheel switch to the eyes ----
+// ---- V15 third-person view: camera over the right shoulder of the figure (game/avatar.js); V or the mouse wheel switch to the eyes ----
 const CAM3 = { want: (() => { try { const v = localStorage.getItem('pav-view'); return v ? v === '3' : true; } catch (e) { return true; } })(), d: 3.3, cur: 3.3, side: 0.4, sideCur: 0.4, MIN: 1.15, MAX: 7,
   get on() { return this.want && P.mode === 'walk' && !!(window.AVATAR && AVATAR.ready) && !(window.PLAY && PLAY.seat && PLAY.seat.fp) && !(window.PIANO && PIANO.on); } };
 window.CAM3 = CAM3;
@@ -214,7 +214,7 @@ cv.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) return; con
     return; }
   if (pts.size > 1) return; const k = 180 / Math.max(stage.clientHeight, 300);
   if (P.mode === 'orbit') { P.az -= dx * k * 0.9; P.el = THREE.MathUtils.clamp(P.el + dy * k * 0.6, 2, 80); } else look(-dx * k * 0.55, dy * k * 0.45); markDirty(); });
-// turning the view in the walk mode (mouse, touch, captured mouse in 28_hud.js); with the figure the camera may look further up and down
+// turning the view in the walk mode (mouse, touch, captured mouse in game/hud.js); with the figure the camera may look further up and down
 function look(dyaw, dpitch) { P.yaw += dyaw; const lim = CAM3.on ? [-65, 72] : [-75, 75]; P.pitch = THREE.MathUtils.clamp(P.pitch + dpitch, lim[0], lim[1]); markDirty(); }
 window.look = look;
 // camera distance behind the figure (wheel, pinch); closer than the minimum switches to the eyes, back out to the figure again
@@ -235,7 +235,7 @@ if (pad) { let id = null, c0 = null; const mv = e => { if (e.pointerId !== id) r
   pad.addEventListener('pointerdown', e => { id = e.pointerId; try { pad.setPointerCapture(id); } catch (err) {} const r = pad.getBoundingClientRect(); c0 = [r.left + r.width / 2, r.top + r.height / 2]; joy.active = true; mv(e); });
   pad.addEventListener('pointermove', mv); const end = e => { if (e.pointerId !== id) return; id = null; joy.x = joy.y = 0; joy.active = false; knob.style.transform = ''; }; pad.addEventListener('pointerup', end); pad.addEventListener('pointercancel', end); }
 document.querySelectorAll('[data-key]').forEach(btn => { const k = btn.dataset.key; const on = e => { e.preventDefault(); keys.add(k); }, off = () => keys.delete(k); btn.addEventListener('pointerdown', on); btn.addEventListener('pointerup', off); btn.addEventListener('pointerleave', off); btn.addEventListener('pointercancel', off); });
-// (the action button #doorbtn is driven by 23_play.js: doors, machines, people and things)
+// (the action button #doorbtn is driven by game/play.js: doors, machines, people and things)
 document.querySelectorAll('[data-spot]').forEach(b => b.addEventListener('click', () => go(b.dataset.spot)));
 document.querySelectorAll('[data-light]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.light; setMode(v); document.querySelectorAll('[data-light]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); if (v !== 'auto' && v !== 'night') audio.setTime(v); try { localStorage.setItem('pav-light2', v); } catch (e) {} }));
 function setCollide(v) { opt.collide = v; const b = $('collbtn'); if (b) { b.setAttribute('aria-pressed', v ? 'true' : 'false'); b.querySelector('span').textContent = v ? 'an' : 'aus'; } }

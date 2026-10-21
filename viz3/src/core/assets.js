@@ -53,7 +53,7 @@ const SV = { tex: { value: null }, min: { value: new THREE.Vector3() }, size: { 
 // replaces the image-based diffuse light inside its box (E(n) = A · (1 + B·n), A log-encoded RGB, B direction term)
 const GI = { a: { value: null }, b: { value: null }, on: { value: 0 }, lo: { value: 0 }, hi: { value: 1 }, k: { value: 1 }, tint: { value: new THREE.Vector3(1, 1, 1) }, min: { value: new THREE.Vector3() }, size: { value: new THREE.Vector3(1, 1, 1) } };
 // sun shadows of the moving figures: the sun's own shadow map only changes with the buildings (it is redrawn on demand), so people, goats
-// and the tractor get a small depth map of their own from the sun's direction (16_npc_real.js, redrawn every frame around the figures near
+// and the tractor get a small depth map of their own from the sun's direction (npc/npc_real.js, redrawn every frame around the figures near
 // the camera); every patched material multiplies the sun's light by it: real shadows on lawn, grass blades, walls and the figures themselves.
 // Soft edge like the sun's half-degree disc: a short blocker search sets the filter width from the distance to the occluder.
 const FIGSH = { map: { value: null }, mat: { value: new THREE.Matrix4() }, on: { value: 0 }, texel: { value: 1 / 1024 }, wtexel: { value: 0.01 }, range: { value: 40 }, bias: { value: 0.001 } };

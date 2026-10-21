@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-const req = createRequire('/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/gt/node_modules/');
+const req = createRequire((process.env.PAV_WORK || new URL('../..', import.meta.url).pathname) + '/gt/node_modules/');
 const { NodeIO } = req('@gltf-transform/core');
 const { ALL_EXTENSIONS } = req('@gltf-transform/extensions');
 const { resample, prune, dedup, meshopt } = req('@gltf-transform/functions');

@@ -1,8 +1,9 @@
 # V15b save/reload: work on a board up to the first glue-up in the clamps, carry a tool, store a blank; reload the page; check that the
 # workpieces, the clamps, the tools and the clock come back. Also Ronald's board quest and the tracker text; the phone layout of the windows.
 import sys, os, time, base64, json
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
-port = sys.argv[1]; OUT = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/v15b'; os.makedirs(OUT, exist_ok=True)
+port = sys.argv[1]; OUT = lib.out('v15b'); os.makedirs(OUT, exist_ok=True)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 HELP = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'v15b.py')).read().split('HELP = r"""')[1].split('"""')[0]
 def shot(pg, name):

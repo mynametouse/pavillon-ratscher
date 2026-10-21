@@ -1,0 +1,60 @@
+# Module list of the app, in bundle order (build.py concatenates them into one shared scope: later modules see everything above).
+# The order matters: modules run at load in this sequence (meshes before render/zmerge.js get merged; point lights are created in pavilion/interior.js
+# and garden/workshop_lamp.js). A new module goes where its dependencies are above it – usually before boot/boot.js.
+
+core/head.js                # three.js imports, renderer, scene, camera, query flags, small helpers
+core/assets.js              # loading manager, textures, PBR materials, patchSV (sky visibility, baked GI, figure shadows, lamp-spill mask)
+core/geo.js                 # box/cylinder builders with collision + walk registry (COL, WALK), building registry (bldBegin/bldEnd, BUILD)
+core/mats.js                # shared materials MAT
+pavilion/house_base.js      # the planned pavilion: dimensions, levels, wall/window/railing/ladder helpers
+pavilion/house_common.js    # parts both variants share (slab, EG walls S/N/W, joists, chimney, EG windows, floor, stove)
+pavilion/house_tower.js     # variant A: stair tower
+pavilion/house_ladder.js    # variant B: ladder stairs, trapdoor, roof hatch
+pavilion/interior.js        # furniture, lamps (LIGHTS) – shared and variant A
+pavilion/interior_ladder.js # variant B furnishing
+garden/stream_geo.js        # the stream: shared geometry (STREAM)
+garden/env.js               # sky dome, sun light + shadow box, ground, far terrain, neighbour sheds
+garden/site_base.js         # existing garden buildings: helpers and materials
+garden/carport.js           # 
+garden/holzhaus.js          # 
+garden/greenhouse.js        # 
+garden/bungalow.js          # 
+garden/washhouse.js         # 
+garden/places.js            # place names and indoor test for the existing buildings
+garden/stream.js            # 
+garden/workshop.js          # workshop building Klingenholz with machines, band sawmill, generator (WORKS)
+garden/fences.js            # fences (FENCES)
+garden/trees.js             # 
+garden/grass.js             # 
+render/render.js            # render pipeline, quality tiers, HDRI image light, baked GI (and its day/night mixing)
+render/modes.js             # light moods day/gold/dusk, setMode (auto/night → time/daynight.js)
+game/game.js                # walking: collision, doors, player state, camera, input, frame loop
+audio/audio.js              # sound engine: recordings, synthesis, ambience, voices, toast()
+pavilion/phases.js          # construction phases with materials and costs (data)
+pavilion/phaseui.js         # 
+npc/npc.js                  # Hubert, Ronald, goats, tractor: walkers, dialogue UI
+npc/npc_real.js             # rigged glTF figures for the neighbours, figure shadows
+render/zmerge.js            # merges the static meshes created so far (later modules are not merged)
+pavilion/plan.js            # planning mode: furniture items
+pavilion/facade.js          # 
+pavilion/style.js           # 
+pavilion/variant.js         # 
+render/perf.js              # 
+render/pano.js              # 
+world/siteplan.js           # plan view: move buildings, draw fences, publish the plan
+game/play.js                # action button, things in the hand, inventory core, seats, timed work (PLAY)
+game/home.js                # light switches, stove fire, sitting and lying (TICKS starts here)
+audio/music.js              # 
+game/quests.js              # tasks with the neighbours, journal, tracker (QUESTS)
+world/ratscher.js           # real surroundings from geodata: terrain, orthophotos, buildings, trees (RATSCHER)
+game/hud.js                 # HUD, menu, inventory window, pointer lock (HUD)
+game/avatar.js              # the player figure (AVATAR)
+time/clock.js               # game clock (CLOCK)
+werk/gear.js                # protective gear (GEAR)
+werk/werk.js                # workshop game: end-grain board (WERK)
+werk/werkui.js              # machine windows, workpiece card, workshop book (WUI)
+time/skydata.js             # generated: stars + Milky Way (tools/nightsky/mk_sky.py)
+time/daynight.js            # day and night after the clock: sun, moon, stars, light blending (DN)
+garden/workshop_lamp.js     # workshop LED lights with motion sensor (WLAMP)
+npc/hours.js                # neighbours at home at night
+boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api

@@ -82,7 +82,7 @@ const QUESTS = (() => {
     if (!quiet) { if (prev === 'new' && st !== 'done') banner('Neue Aufgabe', TITLES[k]); else if (st === 'done') { banner('Erledigt', TITLES[k] + REWARD[k]); SFX.chime(); if (allDone()) setTimeout(() => banner('Alle Aufgaben erledigt', 'Willkommen in Ratscher!'), 4200); } else SFX.note(); }
     save(); renderJournal(); }
   const REWARD = { goat: ' · Ronald schenkt dir Ziegenkäse', fire: ' · der Ofen bullert', diesel: ' · Hubert taut auf', board: ' · Samstag wird gegrillt' };
-  // V15b: the board is made in the workshop game (31_werk.js) – finished, it goes to Ronald
+  // V15b: the board is made in the workshop game (werk/werk.js) – finished, it goes to Ronald
   function boardMade() { if (Q.board.st === 'make') setSt('board', 'deliver'); }
   const allDone = () => Object.values(Q).every(q => q.st === 'done');
   const nextOpen = () => ['goat', 'fire', 'diesel', 'board'].find(k => Q[k].st !== 'done' && Q[k].st !== 'new') || ['goat', 'fire', 'diesel', 'board'].find(k => Q[k].st !== 'done');

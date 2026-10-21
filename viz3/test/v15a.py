@@ -1,7 +1,8 @@
 # V15a check: menu instead of button rows, HUD (bar of things, actions, task), inventory, postures and jumping, third-person view
 import sys, os, time, base64, json
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
-port = sys.argv[1]; OUT = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/v15'; os.makedirs(OUT, exist_ok=True)
+port = sys.argv[1]; OUT = lib.out('v15'); os.makedirs(OUT, exist_ok=True)
 only = sys.argv[2].split(',') if len(sys.argv) > 2 else None
 want = lambda n: not only or n in only
 def ui(pg, name): pg.evaluate("GAME.shot()"); pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=240000); print('ui', name, flush=True)

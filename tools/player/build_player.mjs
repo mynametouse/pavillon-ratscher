@@ -10,7 +10,7 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 
-const cfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+const cfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8').replaceAll('${PAV_WORK}', process.env.PAV_WORK || '.'));   // paths of the originals: PAV_WORK = working area with charsrc/
 const ab = (p) => { const b = fs.readFileSync(p); return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength); };
 const loadFBX = (p) => new FBXLoader().parse(ab(p), '');
 const loadGLB = (p) => new Promise((res, rej) => new GLTFLoader().parse(ab(p), '', res, rej));

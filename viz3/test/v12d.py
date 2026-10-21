@@ -1,8 +1,9 @@
 # V12b: interior style presets and new facade claddings – screenshots, errors, persistence, plan state
 import sys, os, time, base64
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
 port = sys.argv[1] if len(sys.argv) > 1 else '8765'
-OUT = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/v12'
+OUT = lib.out('v12')
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
     pg = b.new_page(viewport={'width': 960, 'height': 600}); pg.set_default_timeout(180000); errs = []

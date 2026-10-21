@@ -1,7 +1,7 @@
 # Stufe 3 – Arbeitsplan (nach V15b)
 
 Reihenfolge (Zwischenversionen, jeweils veröffentlichen):
-1. **V16a Tag/Nacht – FERTIG (21.10.2026)** an CLOCK gekoppelt (src/33_skydata.js, 34_daynight.js; GI-Mischung in 09_render.js; weiche GI-Kanten + Lampen-Maske in 01_assets.js): Sonnenstand für Ratscher (50,47° N, 10,78° O) nach Datum/Uhrzeit, kontinuierliche Licht-Interpolation
+1. **V16a Tag/Nacht – FERTIG (21.10.2026)** an CLOCK gekoppelt (src/time/skydata.js, time/daynight.js; GI-Mischung in render/render.js; weiche GI-Kanten + Lampen-Maske in core/assets.js): Sonnenstand für Ratscher (50,47° N, 10,78° O) nach Datum/Uhrzeit, kontinuierliche Licht-Interpolation
    zwischen Schlüsselbildern (Nacht/Dämmerung/Gold/Tag), Nacht neu (Mond, Sterne, Lampen an). Umsetzung:
    - Sky: photoSkyMat um zweite Textur + Mischfaktor erweitern; Nachthimmel prozedural (Sterne, Mond).
    - Env: zwei PMREM-Ziele per Vollbild-Shader mischen (gleiches CubeUV-Layout) → gemischtes RT als scene.environment, nur bei Änderung > 2 %.
@@ -31,7 +31,7 @@ dl_paint/ (Farbtafeln), ratscher_photos/.
 ## V16a – umgesetzt
 - Kalender: Spieltag 1 = Mo 1. Juni 2026 (DN.e0, 'pav-dn-v1'), MEZ/MESZ-Regel, Datum im Uhr-Fenster (Monat ±, Heute).
 - Sonne NOAA (+ Refraktion, gegen PyEphem auf ±1 min geprüft), Mond Almanac-Kurzreihe (Topozentrik, Phase), Sterne Hipparcos ≤ 6m + Milchstraße (d3-celestial, BSD-3, Lizenz im Credits-Block).
-- Schlüsselbilder nach Sonnenhöhe: 35° Tag, 8° Gold, 1,5° Gold+Abendlicht, −2,5° Dämmerungsfoto, −7° blaue Stunde, −14° Nacht (KF in 34_daynight.js).
+- Schlüsselbilder nach Sonnenhöhe: 35° Tag, 8° Gold, 1,5° Gold+Abendlicht, −2,5° Dämmerungsfoto, −7° blaue Stunde, −14° Nacht (KF in time/daynight.js).
 - Himmel: zwei Fotos überblendet, Elevations-Warp (Fotosonne auf echte Höhe), Nachtverlauf, Milchstraße, Mondscheibe mit Phase/Maria, Halo. Sterne als THREE.Points (renderOrder −9).
 - Env: zwei PMREM-Ziele per texelFetch-Shader gemischt (+ Tönung), GI: CPU-Mischung 8 Schichten/Frame (Ping-Pong), GI.tint, weiche Box-Kanten (1,5 m).
 - Licht nachts: Mond als Richtungslicht (0,11 × Phase^3,5), Lampen automatisch (MODES.auto.L), Werkstatt-LED mit Bewegungsmelder (WLAMP), Grillen (Mai–Sep), NPC nachts daheim (22–6 Uhr, nur wenn nicht im Blick), Schlafen auf Liegen (bis 7 Uhr).

@@ -152,7 +152,7 @@ const NPCUI = (() => {
   const friendly = w => !!(window.QUESTS && QUESTS.friendly(w.name));
   async function start(w) { if (cur || !pan) return; cur = w; w.talking = true; w.target = null; busy = true; pan.hidden = false; nm.textContent = labels[w.name]; tx.textContent = '…'; renderTopics();
     await w.say(friendly(w) && VL[w.name + ':greetf'] ? 'greetf' : 'greet', { force: true }); busy = false; }
-  // topics: quest topics first (25_quests.js decides which apply right now), then the small talk
+  // topics: quest topics first (game/quests.js decides which apply right now), then the small talk
   function renderTopics() { if (!tp || !cur) return; tp.innerHTML = ''; const topics = Object.entries((VM.topics && VM.topics[cur.name]) || {}), qt = window.QUESTS ? QUESTS.topics(cur.name) : [];
     for (const [k, label, quest] of [...qt.map(q => [q.k, q.label, true]), ...topics]) { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (quest) b.className = 'quest'; b.addEventListener('click', () => ask(k)); tp.appendChild(b); }
     const bye = document.createElement('button'); bye.type = 'button'; bye.className = 'bye'; bye.textContent = 'Tschüss'; bye.addEventListener('click', () => end(true)); tp.appendChild(bye); }
@@ -220,7 +220,7 @@ const BLOBM = new THREE.ShaderMaterial({ uniforms: BLOBU, transparent: true, dep
   vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
   fragmentShader: 'uniform float s; varying vec2 vUv; void main() { vec2 q = (vUv - 0.5) * 2.0; float r = length(q); float a = r >= 1.0 ? 0.0 : 0.62 * s * (1.0 - r * r) * (1.0 - 0.3 * r) * (0.75 + 0.25 * smoothstep(1.0, -1.0, q.y)); gl_FragColor = vec4(0.0, 0.0, 0.0, a); }' });
 const BLOBS = [], _bv = new THREE.Vector3();
-// figures with real sun shadows (16_npc_real.js) keep only a soft contact shadow underneath
+// figures with real sun shadows (npc/npc_real.js) keep only a soft contact shadow underneath
 const BLOBC = BLOBM.clone(); BLOBC.uniforms.s.value = 0.55;
 function addBlob(fig, w, l, h) { fig.g.traverse(o => { if (o.isMesh) o.castShadow = false; });
   const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), BLOBM); m.renderOrder = 1; m.userData.noMerge = true; m.frustumCulled = false; scene.add(m); BLOBS.push({ fig, w, l, h, m }); fig.blob = m; return m; }

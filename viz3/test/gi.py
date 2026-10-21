@@ -100,7 +100,7 @@ def read_hdr(path):
         else: img[y] = buf[pos:pos + w * 4].reshape(w, 4); pos += w * 4
     e = img[..., 3].astype(np.int32); f = np.where(e > 0, np.ldexp(1.0, e - 136), 0.0)
     return img[..., :3].astype(np.float64) * f[..., None]
-SRC = open(os.path.join(H, 'src', '10_modes.js')).read()
+SRC = open(os.path.join(H, 'src', 'render/modes.js')).read()
 def mode_params(m):
     s = re.search(m + r':\s*\{([^}]*)\}', SRC).group(1); g = lambda k: re.search(k + r':\s*([0-9.x a-fA-F]+)', s).group(1).strip()
     hx = int(g('sunC'), 16); srgb = np.array([(hx >> 16) & 255, (hx >> 8) & 255, hx & 255]) / 255; lin = np.where(srgb <= 0.04045, srgb / 12.92, ((srgb + 0.055) / 1.055) ** 2.4)

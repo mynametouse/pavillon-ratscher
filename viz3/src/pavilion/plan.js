@@ -33,7 +33,7 @@ function supportZ(x, y, fx, fy, zRef, exclude) { let best = Math.max(0, floorAt(
     if (c[9]) { const r = c[9], dx = x - r.cx, dy = y - r.cy; qx = dx * r.c + dy * r.s; qy = -dx * r.s + dy * r.c; gx = gy = Math.max(fx, fy); }
     if (c[0] > qx + gx || c[1] < qx - gx || c[2] > qy + gy || c[3] < qy - gy) continue; const top = c[5]; if (top > best && top <= feet + 1.35 && top <= zRef + 1.0) best = top; }
   return best; }
-// ---- GLB placements from the interior (05_interior.js) register here once their model has loaded ----
+// ---- GLB placements from the interior (pavilion/interior.js) register here once their model has loaded ----
 function registerItem(it) { if (it.registered) return it; it.registered = true; it.label = it.label || GLB_ITEMS[it.type] || (PROC[it.type] && PROC[it.type].label) || it.type; it.key = it.key || itemKey(it.type); it.root.userData.item = it; it.root.traverse(o => { o.userData.noMerge = true; }); ITEMS.push(it);
   if (it.pending) { Object.assign(it, it.pending); delete it.pending; applyItem(it); } return it; }
 window.registerItem = registerItem;

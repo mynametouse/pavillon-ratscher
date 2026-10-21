@@ -1,5 +1,5 @@
 # V16a: night sky data from d3-celestial (BSD-3-Clause, Olaf Frohn): Hipparcos stars to mag 6 and the Milky Way outline levels.
-# Writes src/33_skydata.js: stars packed (RA, Dec as uint16, mag, B-V as uint8; base64) and the Milky Way as an equirectangular
+# Writes src/time/skydata.js: stars packed (RA, Dec as uint16, mag, B-V as uint8; base64) and the Milky Way as an equirectangular
 # grayscale PNG in equatorial coordinates (RA left→right 0..360, Dec top +90 → bottom −90), data URI.
 import json, sys, os, base64, io, struct, math
 import numpy as np

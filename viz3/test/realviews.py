@@ -1,9 +1,10 @@
 # realism check views (before/after): python3 realviews.py PORT PREFIX [names] [w h]
 import sys, os, time, base64, json
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
 port = sys.argv[1]; prefix = sys.argv[2]; QARG = os.environ.get('QARG', ''); only = sys.argv[3].split(',') if len(sys.argv) > 3 and sys.argv[3] != 'all' else None
 W, H = (int(sys.argv[4]), int(sys.argv[5])) if len(sys.argv) > 5 else (1100, 640)
-OUT = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/real'; os.makedirs(OUT, exist_ok=True)
+OUT = lib.out('real'); os.makedirs(OUT, exist_ok=True)
 VIEWS = [
   ('modell', "GAME.orbit(225, 16, 21)"),
   ('garten', "GAME.go('garten')"),

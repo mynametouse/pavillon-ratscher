@@ -1,3 +1,4 @@
 #!/bin/bash
-cd /tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad
-exec python3 csp/cspserve.py 8951 viz3/dist
+# local test server on port 8951 for viz3/dist, with a content-security policy like the artifact host (tests: viz3/test/*.py 8951)
+cd "$(dirname "$0")/../.."
+exec python3 tools/csp/cspserve.py "${1:-8951}" viz3/dist

@@ -1,4 +1,4 @@
-// ---------- stream: ditch surface, water, bridge, stairs to the water, stones (geometry in 05_stream.js) ----------
+// ---------- stream: ditch surface, water, bridge, stairs to the water, stones (geometry in garden/stream_geo.js) ----------
 { const ST = STREAM, { wpt, cOff, zAtTA } = ST;
   const rotOf = (cx, cy) => ({ cx, cy, c: Math.cos(ST.BR.ang), s: Math.sin(ST.BR.ang) });
   const frameAt = t => { const p = wpt(t, cOff(t)); const g = new THREE.Group(); g.position.copy(V(p[0], p[1], 0)); g.rotation.y = ST.BR.ang; scene.add(g); return { g, rot: rotOf(p[0], p[1]) }; };

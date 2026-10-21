@@ -43,7 +43,7 @@ const photoSkyMat = new THREE.ShaderMaterial({ uniforms: photoSkyU, side: THREE.
    }` });
 const skyTex = {}; let skyWant = null;
 function skyAlign(mode) { const h = SKYMAN[mode]; if (!h) return; const phiS = Math.atan2(sunDir.z, sunDir.x); photoSkyU.off.value = phiS / (2 * Math.PI) + 0.5 - h.sun_u; }
-// a sky photo: the texture when it is there, else null (and it is fetched); the day-and-night blend (34_daynight.js) asks for two at a time
+// a sky photo: the texture when it is there, else null (and it is fetched); the day-and-night blend (time/daynight.js) asks for two at a time
 function skyLoad(mode) { const h = SKYMAN[mode]; if (!h) return null; const e = skyTex[mode]; if (e === 'loading') return null; if (e) return e; skyTex[mode] = 'loading';
   new THREE.TextureLoader(LM).load(BASE + 'sky/' + h.files[(HQ0 || OFFLINE) ? 'hq' : 'lq'], t => { t.colorSpace = THREE.NoColorSpace; t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; t.magFilter = THREE.LinearFilter; t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping; t.needsUpdate = true;
     skyTex[mode] = t; if (window.DN && DN.active) DN.update(true); else skyUse(mode, t); markDirty(); }, undefined, () => { delete skyTex[mode]; });

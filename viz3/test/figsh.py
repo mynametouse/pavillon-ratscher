@@ -1,8 +1,9 @@
 # figure sun shadows: python3 figsh.py PORT PREFIX MODE[,MODE] [QARG]  — wide views of Ronald, Hubert, goats, tractor with their shadows
 import sys, os, time, base64, math
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
 port, prefix = sys.argv[1], sys.argv[2]; MODES = (sys.argv[3] if len(sys.argv) > 3 else 'gold').split(','); QARG = sys.argv[4] if len(sys.argv) > 4 else ''
-OUT = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/real'
+OUT = lib.out('real')
 def shot(pg, name):
     pg.evaluate("GAME.shot()"); pg.evaluate("GAME.shot()"); d = pg.evaluate("document.querySelector('#stage canvas').toDataURL('image/jpeg',0.88)")
     open(os.path.join(OUT, f'{prefix}_{name}.jpg'), 'wb').write(base64.b64decode(d.split(',')[1])); print('shot', name, pg.evaluate("JSON.stringify({on: FIGSH_STATE()})"), flush=True)

@@ -1,6 +1,6 @@
 #!/bin/bash
 # batch.sh <outdir> [extra args for process.py]
-S=/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad; W=$S/assets/_tex_work/dl; O=$1; shift; X="$@"
+S=${PAV_WORK:-$(cd "$(dirname "$0")/../.." && pwd)}; W=$S/assets/_tex_work/dl; O=$1; shift; X="$@"
 mkdir -p $O
 P="python3 -I $S/scripts/process.py"
 run(){ $P "$@" $X > $O/_log_$3.json & }

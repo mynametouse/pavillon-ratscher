@@ -1,9 +1,10 @@
 # V16a: a day in Ratscher as a short film for the release note: 1 June, 4:00–23:50 every 10 game minutes, view from the south-east into the
 # north-western evening sky (the sun sets there in June), frames labelled with the time → mp4 (H.264, 12 fps)
 import sys, os, time, base64, subprocess
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
 from PIL import Image, ImageDraw, ImageFont
-port = sys.argv[1]; OUT = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/v16a/video'; os.makedirs(OUT, exist_ok=True)
+port = sys.argv[1]; OUT = lib.out('v16a/video'); os.makedirs(OUT, exist_ok=True)
 for f in os.listdir(OUT): os.remove(os.path.join(OUT, f))
 VIEW = sys.argv[2] if len(sys.argv) > 2 else '9.9,-1.0,1.65,-55,9,72'
 T0, T1, ST = 4 * 60, 23 * 60 + 50, 10

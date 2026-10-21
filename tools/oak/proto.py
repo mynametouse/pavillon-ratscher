@@ -1,4 +1,4 @@
-# prototype of the oak painter (numpy): end grain tiles and long grain faces; iterate here, then port to 31_werk.js
+# prototype of the oak painter (numpy): end grain tiles and long grain faces; iterate here, then port to werk/werk.js
 import numpy as np
 from PIL import Image
 rng = np.random.default_rng(3)

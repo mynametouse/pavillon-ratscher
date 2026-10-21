@@ -217,7 +217,7 @@ const DN = (() => {
     const key = a + '|' + (k ? b : '') + '|' + (Math.round(k * 50) / 50) + '|' + tint.map(v => (Math.round(v * 100) / 100)).join();
     if (key === S.envKey) return; S.envKey = key;
     scene.environment = plain ? ra.texture : ENVB.blend(ra.texture, k ? rb.texture : null, Math.round(k * 50) / 50, tint); }
-  // what the baked indirect light should show (09_render.js giApply): two modes, their mix, a gain
+  // what the baked indirect light should show (render/render.js giApply): two modes, their mix, a gain
   function giWant() { const s = S.cur, L = LOOK; if (!s) return { a: 'day', b: null, k: 0, g: 1 }; const k = L.texB ? Math.round(L.kTex * 25) / 25 : 0;
     return { a: k >= 1 ? L.texB : L.texA, b: k > 0 && k < 1 ? L.texB : null, k: k >= 1 ? 0 : k, g: s.gi }; }
   const giKeyOf = () => { const w = giWant(); return (window.VARIANT || '') + w.a + '|' + (w.b || '') + '|' + w.k; };
@@ -228,7 +228,7 @@ const DN = (() => {
     clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>' };
   function hudIcon(s) { const k = !S.active ? 'clock' : s.sunEl > 3 ? 'sun' : s.sunEl > -6 ? 'tw' : 'moon'; if (k === S.icon) return; S.icon = k; const b = document.querySelector('#clockbtn .hbi'); if (b) b.innerHTML = ICONS[k];
     const cb = $('clockbtn'); if (cb) cb.dataset.dn = k; }
-  // ---------------- enable / disable (setMode in 10_modes.js delegates here) ----------------
+  // ---------------- enable / disable (setMode in render/modes.js delegates here) ----------------
   function enable(m) { S.mode = m === 'night' ? 'night' : 'auto'; S.active = true; MODE = S.mode; window.MODE_NOW = S.mode; S.ap = null; S.envKey = ''; S.giKey = ''; S.lampSig = ''; S.tod = '';
     apply(true); if (window.RATSCHER && RATSCHER.top) RATSCHER.topMode(true); markDirty(true); }
   function disable() { if (!S.active) return; S.active = false; STARS.pts.visible = false; S.icon = ''; hudIcon({}); GI.k.value = 1; GI.tint.value.set(1, 1, 1); }
@@ -261,27 +261,3 @@ const DN = (() => {
     get state() { return S.cur; }, ready: () => { const L = LOOK; return !!(skyLoad(L.texA) && (!L.texB || skyLoad(L.texB)) && envLoad(L.texA) && (!L.texB || envLoad(L.texB)) && !GIMIX.job); }, get e0() { return S.e0; }, set e0(v) { S.e0 = Math.round(v); save(); if (S.active) apply(true); }, LOOK, KF, STARS, SU, lookAt, hint: () => S.hint };
 })();
 window.DN = DN;
-// ---------------- workshop: LED battens with a motion sensor (on after dark while someone is in the shed) ----------------
-const WLAMP = (() => { const Bw = window.BUILD && BUILD.werkstatt, g = new THREE.Group(); g.name = 'wlamp';
-  if (Bw) { Bw.root.add(g); g.position.copy(V(-Bw.pivot[0], -Bw.pivot[1], 0)); } else scene.add(g);
-  const light = new THREE.PointLight(0xfff0dc, 0, 12, 1.5); light.position.copy(V(-1.5, -38.72, 2.3)); g.add(light);
-  const tube = new THREE.MeshStandardMaterial({ color: 0xf2f2ee, emissive: 0xfff4e6, emissiveIntensity: 0, roughness: 0.35 }), housing = new THREE.MeshStandardMaterial({ color: 0xb9bdc0, metalness: 0.4, roughness: 0.45 });
-  for (const x of [-4.44, -0.52, 1.44]) { const h = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.05, 1.25), housing); h.position.copy(V(x, -38.72, 2.42)); g.add(h);
-    const t = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.018, 1.18), tube); t.position.copy(V(x, -38.72, 2.388)); g.add(t); }
-  const sensor = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 8), new THREE.MeshStandardMaterial({ color: 0xe8e8e4, roughness: 0.3 })); sensor.position.copy(V(-0.52, -36.95, 2.35)); g.add(sensor);
-  const S = { on: false, k: 0, away: 0 }, wp = new THREE.Vector3();
-  window.TICKS.push(dt => { const dark = window.DN && DN.active ? (DN.state && DN.state.sunEl < 4) : (window.MODE_NOW === 'dusk' || window.MODE_NOW === 'night');
-    light.getWorldPosition(wp); const near = typeof P !== 'undefined' && P.mode === 'walk' && Math.hypot(P.x - wp.x, P.y + wp.z) < 6.6 && P.feet < 3;
-    if (near) S.away = 0; else S.away += dt;
-    const want = dark && (near || (S.on && S.away < 20));
-    if (want !== S.on) { S.on = want; if (want && window.SFX && SFX.click) SFX.click(); }
-    const k = S.on ? 1 : 0; if (Math.abs(S.k - k) > 0.001) { S.k += Math.sign(k - S.k) * Math.min(Math.abs(k - S.k), dt * 5); light.intensity = 7.5 * S.k; tube.emissiveIntensity = 2.2 * S.k; markDirty(); } });
-  return { light, S }; })();
-window.WLAMP = WLAMP;
-// ---------------- the neighbours keep hours: from 22:00 to 6:00 Hubert and Ronald are at home (they come and go when nobody looks) ----------------
-window.TICKS.push((() => { let acc = 0; return dt => { acc += dt; if (acc < 1) return; acc = 0; const N = window.NPC; if (!N || !N.NPCS || typeof P === 'undefined') return;
-  const real = N.real, loading = real && real.started && !real.ready && !real.failed, m = ((CLOCK.t % 1440) + 1440) % 1440, home = m >= 22 * 60 || m < 6 * 60;
-  for (const w of [N.NPCS.hubert, N.NPCS.ronald]) { if (!w || !w.fig) continue; const g = w.fig.g, d = w.dist(), seen = P.mode !== 'walk' || (d < 45 && inView(w.x, w.y, 1.2));
-    if (home && !w.away && !w.talking && !w.drive && !seen && d > 10) w.away = true;
-    else if (!home && w.away && !seen) { w.away = false; if (!loading) { g.visible = true; markDirty(); } }
-    if (w.away && g.visible) { g.visible = false; markDirty(); } } }; })());

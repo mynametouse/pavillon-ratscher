@@ -2,7 +2,7 @@
 # light balance stays) and a log-encoded sky photo (upper hemisphere) as the visible background, decoded to HDR in the sky shader.
 import cv2, numpy as np, json, os
 from PIL import Image
-SP = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad'; SRC = SP + '/hdrsel'; A = SP + '/assets'
+SP = (os.environ.get('PAV_WORK') or os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))); SRC = SP + '/hdrsel'; A = SP + '/assets'
 LO, HI, CROP = -5.0, 3.0, 0.56
 MODES = [('day', 'kloofendal_48d_partly_cloudy', 0.656, 0.55), ('gold', 'kloppenheim_06', 0.418, 0.55), ('dusk', 'qwantani_dusk_2', 0.727, 0.42)]
 Y = np.array([0.2126, 0.7152, 0.0722], np.float32)

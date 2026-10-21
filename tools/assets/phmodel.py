@@ -1,7 +1,7 @@
 # phmodel.py <id> [res=1k]: downloads a Poly Haven model (glTF + textures) into assets/_mdl_work/phnew/<id>/
 import sys, os, json, subprocess
 aid = sys.argv[1]; res = sys.argv[2] if len(sys.argv) > 2 else '1k'
-W = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/assets/_mdl_work/phnew/' + aid; os.makedirs(W, exist_ok=True)
+W = (os.environ.get('PAV_WORK') or os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))) + '/assets/_mdl_work/phnew/' + aid; os.makedirs(W, exist_ok=True)
 def curl(url, out):
     if os.path.exists(out) and os.path.getsize(out) > 100: return
     r = subprocess.run(['curl', '-sS', '-L', '--fail', '--retry', '3', '-o', out, url])

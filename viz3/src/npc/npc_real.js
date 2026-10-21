@@ -128,7 +128,7 @@ function realTractor(gl) {
   return { inner, wheels, seat }; }
 function swapTractor(T) { const old = TRACTOR.g.children.slice(); for (const c of old) TRACTOR.g.remove(c); TRACTOR.g.add(T.inner); TRACTOR.wheels = T.wheels;
   TRACTOR.roll = d => { for (const w of T.wheels) w.piv.rotation.z -= d / w.r; }; if (T.seat) TRACTOR.seat = T.seat; for (const b of BLOBS) if (b.fig === TRACTOR) Object.assign(b, { w: 1.7, l: 3.1, h: 1.0 }); }
-// ---- the figures' sun shadows (see FIGSH in 01_assets.js): a depth map from the sun's direction, fitted each frame around the figures
+// ---- the figures' sun shadows (see FIGSH in core/assets.js): a depth map from the sun's direction, fitted each frame around the figures
 // nearest to the camera (the nearest one and whoever stands within 18 m of it), drawn with the figures' own meshes only ----
 const FSD = { size: (HQ0 || OFFLINE) ? 2048 : 1024, rt: null, cam: new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 60), mats: new Map(), figs: [] };
 const _fsBias = new THREE.Matrix4().set(0.5, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0, 0.5, 0.5, 0, 0, 0, 1), _fsv = new THREE.Vector3(), _fsc = new THREE.Color(), _fsctr = new THREE.Vector3();

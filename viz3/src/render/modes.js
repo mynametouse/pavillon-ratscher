@@ -18,7 +18,7 @@ function adaptExposure(dt, snap, pos) { const M = MODES[MODE]; if (!M) return;
   if (snap || Math.abs(ADAPT.k - want) < 0.004) ADAPT.k = want; else { ADAPT.k += (want - ADAPT.k) * Math.min(1, dt * 1.6); markDirty(); }
   R.toneMappingExposure = M.exp * (+QS.get('ex') || 1) * (QS.get('noadapt') ? 1 : ADAPT.k); }
 const screenMats = [];
-// V16a: 'auto' (the day after the game clock) and 'night' (a fixed moonlit night) are run by DN (34_daynight.js); the three fixed moods stay as they were
+// V16a: 'auto' (the day after the game clock) and 'night' (a fixed moonlit night) are run by DN (time/daynight.js); the three fixed moods stay as they were
 function setMode(m) { if (m === 'auto' || m === 'night') { if (window.DN) DN.enable(m); return; } const M = MODES[m]; if (!M) return; if (window.DN) DN.disable(); MODE = m; window.MODE_NOW = m; const L = window.LIGHTS;
   const topV = typeof P !== 'undefined' && P.mode === 'top'; sunDir = topV ? dirFromAz(205, 52) : dirFromAz(M.az, M.el); sun.intensity = topV ? 3.3 : M.sun; sun.color.set(topV ? 0xfff4e6 : M.sunC); hemi.intensity = M.hemi; scene.environmentIntensity = M.env;
   skyU.zen.value.set(M.zen); skyU.hor.value.set(M.hor); skyU.glowK.value = M.glowK; skyU.cloudK.value = M.cloud; skyU.cloudCol.value.set(M.cc); skyU.cloudShade.value.set(M.cs); scene.fog.color.set(M.fog);

@@ -1,7 +1,7 @@
 # V15b sounds: table saw (idle, cutting), thickness planer (idle, cutting), random-orbit sander – synthesized seamless 4 s loops (own work, CC0)
 import numpy as np, subprocess, os, json
 SR = 48000
-SP = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad'
+SP = (os.environ.get('PAV_WORK') or os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')))
 OUT = SP + '/assets/snd'; TMP = SP + '/sndtest/v15'; os.makedirs(TMP, exist_ok=True)
 rng = np.random.default_rng(15)
 LN = 4 * SR; t = np.arange(LN) / SR

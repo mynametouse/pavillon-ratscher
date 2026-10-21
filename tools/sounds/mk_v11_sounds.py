@@ -1,7 +1,7 @@
 # V11 sounds: brook loop (field recording), generator loop (CC0), synthesized workshop machines (seamless 4 s loops built in the FFT domain).
 import numpy as np, subprocess, os, json, sys
 SR = 48000
-SP = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad'
+SP = (os.environ.get('PAV_WORK') or os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')))
 OUT = SP + '/assets/snd'; TMP = SP + '/sndtest/v11'; os.makedirs(TMP, exist_ok=True)
 rng = np.random.default_rng(7)
 def load(path, sr=SR):

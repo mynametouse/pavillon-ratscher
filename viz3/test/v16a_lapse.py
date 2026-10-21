@@ -1,10 +1,11 @@
 # V16a: a day as a time-lapse from one place (frames every N game minutes) → mp4 and a contact sheet; shows whether the light blends without jumps
 import sys, os, time, base64, subprocess
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
 from PIL import Image, ImageDraw
 port = sys.argv[1]; day = int(sys.argv[2]); t0m = int(sys.argv[3]); t1m = int(sys.argv[4]); stepm = int(sys.argv[5]); view = sys.argv[6] if len(sys.argv) > 6 else '2.0,-9.0,1.65,0,6,70'
 name = sys.argv[7] if len(sys.argv) > 7 else 'lapse'
-OUT = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/v16a/' + name; os.makedirs(OUT, exist_ok=True)
+OUT = lib.out('v16a/' + name)
 for f in os.listdir(OUT): os.remove(os.path.join(OUT, f))
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])

@@ -1,9 +1,10 @@
 # V12 deeper checks: labels/outlines in the plan view, workshop move (machines, saw), fence collision, furniture with buildings,
 # a published plan.json applied on first visit, plan code round trip, share box
 import sys, os, time, json
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
 port = sys.argv[1] if len(sys.argv) > 1 else '8765'
-OUT = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/v12'
+OUT = lib.out('v12')
 def wait_loaded(pg):
     pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=900000, polling=1000)
     pg.evaluate("window.NPC && (NPC.update = () => {})")   # neighbours and goats stand still: the software renderer would otherwise redraw non-stop

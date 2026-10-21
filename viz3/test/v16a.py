@@ -1,7 +1,8 @@
 # V16a day and night: the light at several hours of 1 June (game day 1), the moonlit fixed night, the workshop at night, the clock window
 import sys, os, time, base64, json
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
-port = sys.argv[1]; OUT = '/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/v16a'; os.makedirs(OUT, exist_ok=True)
+port = sys.argv[1]; OUT = lib.out('v16a'); os.makedirs(OUT, exist_ok=True)
 ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else None
 def shot(pg, name):
     d = pg.evaluate("(() => { GAME.shot(); return document.querySelector('#stage canvas').toDataURL('image/jpeg', 0.88); })()"); open(os.path.join(OUT, name + '.jpg'), 'wb').write(base64.b64decode(d.split(',')[1])); print('shot', name, flush=True)

@@ -1,6 +1,6 @@
 // ===================== V14 game layer: one action button (E / tap) for doors, people and things; carrying things in the hand; =====================
-// sitting, lying and riding along; timed work with a progress bar; thoughts as subtitles. The quests (25_quests.js) and the
-// instruments (24_music.js) build on it. All positions in site coordinates (x east, y north, z up).
+// sitting, lying and riding along; timed work with a progress bar; thoughts as subtitles. The quests (game/quests.js) and the
+// instruments (audio/music.js) build on it. All positions in site coordinates (x east, y north, z up).
 phase(null);
 // ---- the thing in the hand: its own little scene, drawn over the finished picture with a cleared depth buffer, so it never cuts into walls ----
 const HELD = (() => {

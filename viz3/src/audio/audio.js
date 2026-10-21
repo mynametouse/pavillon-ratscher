@@ -111,7 +111,7 @@ const audio = (() => {
     if (loops.amb_dusk) loops.amb_dusk.g.gain.setTargetAtTime(day ? 0 : 0.8, t, 1.5);
     if (loops.amb_wind) loops.amb_wind.g.gain.setTargetAtTime(0.35 * windMul, t, 1.0);
     const ds = Math.hypot(P.x - G.STV[0], P.y - G.STV[1]); const inEG = P.mode === 'walk' && P.feet < G.zU - 0.4 && inside;
-    const fire = window.STOVE ? STOVE.level() : (tod !== 'day' ? 1 : 0);   // V14: the fire burns once it has been lit (25_quests.js)
+    const fire = window.STOVE ? STOVE.level() : (tod !== 'day' ? 1 : 0);   // V14: the fire burns once it has been lit (game/quests.js)
     stoveVol = (inEG && fire > 0) ? THREE.MathUtils.clamp(0.9 / (ds * ds + 0.6), 0, 0.9) * fire : 0;
     if (loops.amb_stove) loops.amb_stove.g.gain.setTargetAtTime(stoveVol, t, 0.3);
     if (!greeted && ctx.state === 'running') { greeted = true; toast(IOS ? 'Ton an. Falls es still bleibt: Lautstärke hoch und Stummschalter prüfen.' : 'Ton an: Wind, Vögel, Schritte und Türen sind echte Aufnahmen.'); } }
