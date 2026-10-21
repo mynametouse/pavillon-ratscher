@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#bbb}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/viz3/node_modules/three/build/three.module.js","three/addons/":"/viz3/node_modules/three/examples/jsm/"}}</script></head><body>
+<script type="module">
+import * as THREE from 'three'; import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'; import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js'; import { clone as skelClone } from 'three/addons/utils/SkeletonUtils.js';
+window.THREE = THREE;
+const R = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); R.setSize(480, 480); R.toneMapping = THREE.AgXToneMapping; document.body.appendChild(R.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xb8bcc0); const cam = new THREE.PerspectiveCamera(30, 1, 0.01, 1000);
+scene.add(new THREE.HemisphereLight(0xdfe8f0, 0x6a6050, 1.6)); const sun = new THREE.DirectionalLight(0xfff2e0, 2.6); sun.position.set(3, 5, 4); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStandardMaterial({ color: 0x6f7d4e })); ground.rotation.x = -Math.PI / 2; scene.add(ground);
+window.NPC = {}; const code = await (await fetch('/viz3/src/16_npc_real.js')).text();
+const F = new Function('THREE', 'GLTFLoader', 'MeshoptDecoder', 'skelClone', 'ANISO', 'patchSV', 'cam', 'scene', 'QS', 'whenLoaded', 'BASE', 'markDirty', code + '\nreturn { realPerson, realGoat, boneCanon, strawHat };');
+const M = F(THREE, GLTFLoader, MeshoptDecoder, skelClone, 4, m => m, cam, scene, new URLSearchParams(''), () => {}, '', () => {});
+const L = new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder);
+let fig = null;
+window.makeFig = async (kind, opts) => { const cl = await (await fetch('/assets/chars/clips.json')).json(); if (fig) scene.remove(fig.g);
+  if (kind === 'goat') { const gl = await L.loadAsync('/assets/chars/goat.json'); fig = M.realGoat(gl, opts); }
+  else { const gl = await L.loadAsync('/assets/chars/' + kind + '.json'); fig = M.realPerson(gl, cl[kind], opts); }
+  scene.add(fig.g); fig.g.updateMatrixWorld(true); window.FIG = fig; return true; };
+window.sim = (n, dt, speed, mode, graze, camSpec) => { fig.mode = mode || 'stand'; fig.graze = graze || 0; const out = []; const shots = [];
+  for (let i = 0; i < n; i++) { cam.position.set(...camSpec.pos); cam.lookAt(...camSpec.at); cam.updateMatrixWorld(); fig.anim(dt, speed);
+    if (fig.bones && fig.bones.Head) { const B = fig.bones; const H = B.Head.getWorldPosition(new THREE.Vector3()), T = (B.HeadTop_End || B.Head).getWorldPosition(new THREE.Vector3()); const up = T.sub(H).normalize(); out.push(+(Math.acos(Math.min(1, up.y)) * 180 / Math.PI).toFixed(1)); }
+    if (camSpec.every && i % camSpec.every === 0) { R.render(scene, cam); shots.push(R.domElement.toDataURL('image/jpeg', 0.8)); } }
+  return { tilt: out, shots }; };
+window.ready = true;
+</script></body></html>

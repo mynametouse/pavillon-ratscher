@@ -1,0 +1,248 @@
+// ---------------- asset loading ----------------
+const LM = new THREE.LoadingManager();
+const LOAD = { done: 0, total: 0, finished: false, cbs: [] };
+LM.onProgress = (u, d, t) => { LOAD.done = d; LOAD.total = t; const l = $('loading'); if (l && !l.hidden) l.textContent = 'Modell wird geladen … ' + Math.round(100 * d / Math.max(t, 1)) + ' %'; };
+LM.onLoad = () => { LOAD.finished = true; LOAD.cbs.splice(0).forEach(f => { try { f(); } catch (e) { console.error(e); } }); };
+LM.onError = u => console.warn('Datei fehlt:', u);
+function whenLoaded(f) { if (LOAD.finished) f(); else LOAD.cbs.push(f); }
+// standalone single-file version: assets come from blob URLs built from the embedded data
+if (window.EMBED_URL) { const mod = u => window.EMBED_URL[u] || u; LM.setURLModifier(mod); THREE.DefaultLoadingManager.setURLModifier(mod); }
+const TXL = new THREE.TextureLoader(LM);
+// The glTF files carry geometry and images as data: URIs. Strict content-security policies (the artifact viewer in the Claude app) refuse
+// to fetch() data: URIs, so every model failed there. The parser now decodes them itself: buffers with atob, images through
+// createImageBitmap from a Blob (an <img> where that is missing). The loading manager stays busy until a model is fully parsed.
+function b64bytes(uri) { const s = atob(uri.slice(uri.indexOf(',') + 1)); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
+let GLTF_N = 0;
+function gltfDataURIs(loader) {
+  loader.register(parser => {
+    const man = parser.options.manager || THREE.DefaultLoadingManager, key = 'gltf-parse-' + (++GLTF_N); let ended = false; man.itemStart(key);
+    const done = () => { if (!ended) { ended = true; man.itemEnd(key); } };
+    const op = parser.parse; parser.parse = function (onLoad, onError) { return op.call(this, r => { try { onLoad(r); } finally { done(); } }, e => { done(); if (onError) onError(e); }); };
+    const lb = parser.loadBuffer;
+    parser.loadBuffer = function (i) { const d = this.json.buffers[i]; if (d && d.uri && d.uri.startsWith('data:')) { try { return Promise.resolve(b64bytes(d.uri).buffer); } catch (e) { return Promise.reject(e); } } return lb.call(this, i); };
+    const tl = parser.textureLoader;
+    parser.textureLoader = { isImageBitmapLoader: true, setCrossOrigin() { return this; }, setRequestHeader() { return this; }, setPath() { return this; },
+      load(url, onLoad, onProgress, onError) {
+        if (!url.startsWith('data:')) return tl.isImageBitmapLoader ? tl.load(url, onLoad, onProgress, onError) : tl.load(url, t => onLoad(t.image), onProgress, onError);
+        const viaImg = () => { const im = new Image(); im.onload = () => onLoad(im); im.onerror = onError; im.src = url; };
+        let blob; try { blob = new Blob([b64bytes(url)], { type: url.slice(5, url.indexOf(';')) }); } catch (e) { viaImg(); return; }
+        if (typeof createImageBitmap !== 'function') { viaImg(); return; }
+        let p; try { p = createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' }); } catch (e) { viaImg(); return; }
+        p.then(onLoad, viaImg); } };
+    return { name: 'PAV_data_uri' }; });
+  return loader; }
+const GLL = gltfDataURIs(new GLTFLoader(LM)); GLL.setMeshoptDecoder(MeshoptDecoder);   // models: meshopt-compressed geometry and WebP images inside the JSON
+const TEXMAN = window.TEXMAN || {};        // {name:{tile:[w,h], rot}} injected at build
+const ANISO = Math.min(8, R.capabilities.getMaxAnisotropy());
+const texCache = {};
+function texFile(file, srgb) {
+  const key = file + (srgb ? '|s' : '|l'); if (texCache[key]) return texCache[key];
+  const rec = { tex: null, ok: null, fails: [], clones: [] };
+  rec.tex = TXL.load(BASE + file, () => { rec.ok = true; rec.clones.forEach(c => c.needsUpdate = true); markDirty(true); },
+    undefined, () => { rec.ok = false; rec.fails.forEach(f => f()); });
+  rec.tex.wrapS = rec.tex.wrapT = THREE.RepeatWrapping; rec.tex.anisotropy = ANISO; if (srgb) rec.tex.colorSpace = THREE.SRGBColorSpace;
+  texCache[key] = rec; return rec;
+}
+function texUse(file, srgb, rep, rot = 0) {
+  const rec = texFile(file, srgb); const t = rec.tex.clone(); t.repeat.set(rep[0], rep[1]); t.rotation = rot;
+  if (rec.ok) t.needsUpdate = true; else rec.clones.push(t); return { t, rec };
+}
+// ---------- sky-visibility volume (baked ambient occlusion for the house, see bake) ----------
+const SV = { tex: { value: null }, min: { value: new THREE.Vector3() }, size: { value: new THREE.Vector3(1, 1, 1) }, on: { value: 0 }, floor: { value: 0.15 }, gain: { value: 2.8 } };
+// baked global illumination around the pavilion (test/gi.py): irradiance from sky and two bounces of sun and sky light, per light mode;
+// replaces the image-based diffuse light inside its box (E(n) = A · (1 + B·n), A log-encoded RGB, B direction term)
+const GI = { a: { value: null }, b: { value: null }, on: { value: 0 }, lo: { value: 0 }, hi: { value: 1 }, k: { value: 1 }, tint: { value: new THREE.Vector3(1, 1, 1) }, min: { value: new THREE.Vector3() }, size: { value: new THREE.Vector3(1, 1, 1) } };
+// sun shadows of the moving figures: the sun's own shadow map only changes with the buildings (it is redrawn on demand), so people, goats
+// and the tractor get a small depth map of their own from the sun's direction (16_npc_real.js, redrawn every frame around the figures near
+// the camera); every patched material multiplies the sun's light by it: real shadows on lawn, grass blades, walls and the figures themselves.
+// Soft edge like the sun's half-degree disc: a short blocker search sets the filter width from the distance to the occluder.
+const FIGSH = { map: { value: null }, mat: { value: new THREE.Matrix4() }, on: { value: 0 }, texel: { value: 1 / 1024 }, wtexel: { value: 0.01 }, range: { value: 40 }, bias: { value: 0.001 } };
+const FIGSH_GLSL = `uniform sampler2D uFSMap; uniform mat4 uFSMat; uniform float uFSOn, uFSTexel, uFSWTexel, uFSRange, uFSBias;
+float figSh() {
+  if ( uFSOn < 0.5 ) return 1.0;
+  vec3 c = ( uFSMat * vec4( vSVW, 1.0 ) ).xyz;
+  if ( c.x <= 0.004 || c.x >= 0.996 || c.y <= 0.004 || c.y >= 0.996 || c.z <= 0.0 || c.z >= 1.0 ) return 1.0;
+  if ( unpackRGBAToDepth( texture2D( uFSMap, vec2( 0.5 * uFSTexel ) ) ) < 0.99 ) return 1.0;   // its corner is always empty: a map that failed (low memory) casts nothing
+  float z = c.z - uFSBias, bs = 0.0, bn = 0.0;
+  for ( int k = 0; k < 5; k ++ ) { vec2 o = k == 0 ? vec2( 0.0 ) : vec2( k == 1 ? 5.0 : ( k == 2 ? -5.0 : 0.0 ), k == 3 ? 5.0 : ( k == 4 ? -5.0 : 0.0 ) );
+    float d = unpackRGBAToDepth( texture2D( uFSMap, c.xy + o * uFSTexel ) ); if ( d < z ) { bs += d; bn += 1.0; } }
+  if ( bn < 0.5 ) return 1.0;
+  float r = clamp( ( 0.0047 * ( z - bs / bn ) * uFSRange + 0.004 ) / uFSWTexel, 1.0, 5.0 );
+  float s = 0.0;
+  for ( int i = -1; i <= 1; i ++ ) for ( int j = -1; j <= 1; j ++ ) s += step( z, unpackRGBAToDepth( texture2D( uFSMap, c.xy + vec2( float( i ), float( j ) ) * r * uFSTexel ) ) );
+  return s / 9.0; }
+`;
+// the sun is the only directional light: its shadow term gets the figures' shadow as a second factor
+const LFB_FIG = (() => { const s = THREE.ShaderChunk.lights_fragment_begin, rx = /(directLight\.color \*= \( directLight\.visible && receiveShadow \) \? getShadow\( directionalShadowMap\[ i \][^;]*;)/;
+  if (!rx.test(s)) { console.warn('Figurenschatten: three-Shader geändert, aus'); return null; } return s.replace(rx, '$1\n\t\tdirectLight.color *= figSh();'); })();
+// V16a: lawn and gravel near the pavilion get only a little of the room lamps (point lights have no shadows: without this the whole gravel bed
+// glowed at night as if the walls were glass); the spill through windows and doors stays as a faint glow
+const LFB_P = 'getPointLightInfo( pointLight, geometryPosition, directLight );';
+const LFB_LEAK = (() => { const s = LFB_FIG || THREE.ShaderChunk.lights_fragment_begin; return s.includes(LFB_P) ? s.replace(LFB_P, LFB_P + '\n\t\tdirectLight.color *= svLeakF();') : null; })();
+const LEAK_GLSL = 'float svLeakF() { return mix( 0.16, 1.0, smoothstep( 4.6, 9.0, length( vSVW.xz - vec2( 2.0, -2.0 ) ) ) ); }\n';
+function patchSV(m) {
+  if (m.userData.svPatched) return m; m.userData.svPatched = true;
+  const prev = m.onBeforeCompile;
+  m.onBeforeCompile = (sh, r) => {
+    if (prev) prev(sh, r);
+    sh.uniforms.uSV = SV.tex; sh.uniforms.uSVMin = SV.min; sh.uniforms.uSVSize = SV.size; sh.uniforms.uSVOn = SV.on; sh.uniforms.uSVFloor = SV.floor; sh.uniforms.uSVGain = SV.gain;
+    sh.uniforms.uGIA = GI.a; sh.uniforms.uGIB = GI.b; sh.uniforms.uGIOn = GI.on; sh.uniforms.uGILo = GI.lo; sh.uniforms.uGIHi = GI.hi; sh.uniforms.uGIK = GI.k; sh.uniforms.uGITint = GI.tint; sh.uniforms.uGIMin = GI.min; sh.uniforms.uGISize = GI.size;
+    sh.uniforms.uFSMap = FIGSH.map; sh.uniforms.uFSMat = FIGSH.mat; sh.uniforms.uFSOn = FIGSH.on; sh.uniforms.uFSTexel = FIGSH.texel; sh.uniforms.uFSWTexel = FIGSH.wtexel; sh.uniforms.uFSRange = FIGSH.range; sh.uniforms.uFSBias = FIGSH.bias;
+    sh.vertexShader = 'varying vec3 vSVW;\n' + sh.vertexShader.replace('#include <project_vertex>',
+      `#include <project_vertex>
+       { vec4 sw = vec4( transformed, 1.0 );
+       #ifdef USE_INSTANCING
+         sw = instanceMatrix * sw;
+       #endif
+         vSVW = ( modelMatrix * sw ).xyz + normalize( mat3( modelMatrix ) * objectNormal ) * 0.06; }`);
+    const G = m.userData.grime;
+    sh.fragmentShader = 'precision highp sampler3D;\nuniform sampler3D uSV, uGIA, uGIB; uniform vec3 uSVMin, uSVSize, uGIMin, uGISize, uGITint; uniform float uSVOn, uSVFloor, uSVGain, uGIOn, uGILo, uGIHi, uGIK; varying vec3 vSVW;\n' + (G ? GRIME_GLSL : '') +
+      (G ? sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+       { float h = vSVW.y - 0.06; float g = 1.0 - smoothstep(0.0, ${G[1].toFixed(3)}, h); float n = gNoise(vSVW.xz * 3.1 + vec2(vSVW.y * 2.3, 0.0));
+         float splash = g * (0.55 + 0.45 * n);   // rain splash and soil near the ground
+         vec3 dirt = vec3(dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11))) * vec3(0.78, 0.72, 0.62);
+         diffuseColor.rgb = mix(diffuseColor.rgb, dirt, splash * ${G[0].toFixed(3)});
+         float m2 = gNoise(vSVW.xz * 0.45 + vec2(0.0, vSVW.y * 0.6)) * 0.6 + gNoise(vSVW.xz * 1.7 + vec2(vSVW.y * 2.1)) * 0.4;   // weathering patches
+         diffuseColor.rgb *= ${(1 - G[2]).toFixed(3)} + ${(2 * G[2]).toFixed(3)} * m2;${G[3] ? `
+         float sk = gNoise(vec2((vSVW.x + vSVW.z) * 7.0, vSVW.y * 0.45)) * 0.65 + gNoise(vec2((vSVW.x - vSVW.z) * 17.0, vSVW.y * 0.9)) * 0.35;   // rain streaks running down
+         diffuseColor.rgb *= 1.0 - ${G[3].toFixed(3)} * smoothstep(0.5, 0.9, sk);` : ''} }`) : sh.fragmentShader).replace('#include <lights_fragment_maps>',
+      `#include <lights_fragment_maps>
+       float giHit = 0.0; vec3 giE = vec3( 0.0 );
+       if ( uGIOn > 0.5 ) { vec3 gt = ( vSVW - uGIMin ) / uGISize;
+         if ( all( greaterThan( gt, vec3( 0.0 ) ) ) && all( lessThan( gt, vec3( 1.0 ) ) ) ) {
+           vec3 nW = normalize( inverseTransformDirection( geometryNormal, viewMatrix ) );
+           vec3 gA = exp2( mix( vec3( uGILo ), vec3( uGIHi ), texture( uGIA, gt ).rgb ) ); vec3 gB = ( texture( uGIB, gt ).rgb * 2.0 - 1.0 ) * 1.5;
+           vec3 ge = min( gt, 1.0 - gt ) * uGISize;   // V16a: the volume fades out over its last 1.5 m sideways (no rectangle on the lawn)
+           giE = gA * max( 0.0, 1.0 + dot( gB, nW ) ) * uGIK * uGITint; giHit = smoothstep( 0.0, 1.5, min( ge.x, ge.z ) ); } }
+       if ( uSVOn > 0.5 ) { vec3 st = ( vSVW - uSVMin ) / uSVSize;
+         if ( all( greaterThan( st, vec3( 0.0 ) ) ) && all( lessThan( st, vec3( 1.0 ) ) ) ) {
+           float sv = texture( uSV, st ).r; sv = uSVFloor + ( 1.0 - uSVFloor ) * clamp( sv * uSVGain, 0.0, 1.0 );
+           irradiance *= sv;
+           #if defined( RE_IndirectSpecular )
+             iblIrradiance = mix( iblIrradiance * sv, giE, giHit ); radiance *= sv;
+           #endif
+         } }` + (m.userData.svDim ? `
+       { const vec3 LW = vec3( 0.2126, 0.7152, 0.0722 ); const float K = ${m.userData.svDim[0].toFixed(3)}, D = ${m.userData.svDim[1].toFixed(3)};
+         irradiance = mix( irradiance, vec3( dot( irradiance, LW ) ), D ) * K;
+         #if defined( RE_IndirectSpecular )
+           iblIrradiance = mix( iblIrradiance, vec3( dot( iblIrradiance, LW ) ), D ) * K; radiance *= K;
+         #endif
+       }` : ''));
+    const lfb = m.userData.leak && LFB_LEAK ? LFB_LEAK : LFB_FIG;
+    if (lfb && sh.fragmentShader.includes('#include <lights_fragment_begin>')) sh.fragmentShader = sh.fragmentShader.replace('#include <lights_fragment_begin>', lfb).replace('void main() {', (LFB_FIG ? FIGSH_GLSL : '') + (lfb === LFB_LEAK ? LEAK_GLSL : '') + 'void main() {');
+  };
+  const key = m.customProgramCacheKey ? m.customProgramCacheKey.bind(m) : null;
+  m.customProgramCacheKey = () => (key ? key() : '') + '|sv' + (m.userData.svDim ? m.userData.svDim.join('_') : '') + (m.userData.grime ? '|g' + m.userData.grime.join('_') : '') + (m.userData.leak ? '|lk' : '');
+  return m;
+}
+// weathering of outdoor surfaces: soil and splash near the ground (strength k up to height h m), large soft patches (variation v)
+const GRIME_GLSL = `float gHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float gNoise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(gHash(i), gHash(i + vec2(1.0, 0.0)), u.x), mix(gHash(i + vec2(0.0, 1.0)), gHash(i + vec2(1.0, 1.0)), u.x), u.y); }
+`;
+function grime(m, k = 0.45, h = 0.45, v = 0.08, st = 0) { if (!m || !m.isMaterial) return m; m.userData.grime = [k, h, v, st]; patchSV(m); m.needsUpdate = true; return m; }
+// interior surfaces outside the baked volume (site buildings): weaker, desaturated sky light – a room is not lit by the green lawn below it
+function dimIndoor(m, k = 0.5, desat = 0.6) { m.userData.svDim = [k, desat]; m.needsUpdate = true; return m; }
+// ---------- PBR material from texture set tex/<name>_{col,nrm,orm}.jpg|webp (world-metre UVs) ----------
+const texFileOf = (name, ch) => `tex/${name}_${ch}.${((TEXMAN[name] || {}).ext || {})[ch] || 'jpg'}`;
+function pbrMat(name, o = {}) {
+  const tm = TEXMAN[name]; const tile = o.tile || (tm && tm.tile) || [1, 1]; const rep = [1 / tile[0], 1 / tile[1]];
+  const rot = (o.rot !== undefined ? o.rot : (tm && tm.rot) || 0);
+  const m = new THREE.MeshStandardMaterial({ color: o.color ?? 0xffffff, roughness: o.rough ?? 1, metalness: o.metal ?? 0, envMapIntensity: o.env ?? 1, side: o.side ?? THREE.FrontSide });
+  if (o.transparent) { m.transparent = true; m.opacity = o.opacity ?? 1; }
+  if (o.wash) { const wc = new THREE.Color(o.wash[0]), k = o.wash[1], v = `vec3(${wc.r.toFixed(4)},${wc.g.toFixed(4)},${wc.b.toFixed(4)})`;   // whitewash / glaze: blend the albedo towards a colour, grain stays visible
+    m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>\n diffuseColor.rgb = mix( diffuseColor.rgb, ${v}, ${k.toFixed(3)} );`); };
+    m.customProgramCacheKey = () => 'wash' + o.wash[0] + '_' + k; }
+  if (o.grade) { const G = m.userData.grade = { d: { value: 0 }, c: { value: new THREE.Color(0xffffff) }, k: { value: 0 } };   // live colour grading of the albedo (facade options: greyed / glazed wood)
+    m.onBeforeCompile = sh => { sh.uniforms.uGD = G.d; sh.uniforms.uGC = G.c; sh.uniforms.uGK = G.k;
+      sh.fragmentShader = 'uniform float uGD, uGK; uniform vec3 uGC;\n' + sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n { float gl = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ); diffuseColor.rgb = mix( mix( diffuseColor.rgb, vec3( gl ), uGD ), uGC, uGK ); }'); };
+    m.customProgramCacheKey = () => 'grade'; }
+  m.name = name;
+  if (!tm) { m.color.set(o.fallback ?? 0x888888); m.roughness = o.fbRough ?? 0.85; return patchSV(m); }
+  const ex = (tm.ext || {}), c = texUse(`tex/${name}_col.${ex.col || 'jpg'}`, true, rep, rot), n = texUse(`tex/${name}_nrm.${ex.nrm || 'jpg'}`, false, rep, rot), r = texUse(`tex/${name}_orm.${ex.orm || 'jpg'}`, false, rep, rot);
+  m.map = c.t; m.normalMap = n.t; const ns = o.nrm ?? 1; m.normalScale.set(ns, ns); m.roughnessMap = r.t; m.aoMap = r.t; m.aoMapIntensity = o.ao ?? 0.7;
+  if ((o.metal ?? 0) > 0 && o.metalMap) m.metalnessMap = r.t;
+  c.rec.fails.push(() => { m.map = null; m.color.set(o.fallback ?? 0x888888); m.needsUpdate = true; });
+  n.rec.fails.push(() => { m.normalMap = null; m.needsUpdate = true; });
+  r.rec.fails.push(() => { m.roughnessMap = null; m.aoMap = null; m.metalnessMap = null; m.roughness = o.fbRough ?? 0.85; m.needsUpdate = true; });
+  return patchSV(m);
+}
+function plain(o) { return patchSV(new THREE.MeshStandardMaterial(Object.assign({ roughness: 0.85, metalness: 0 }, o))); }
+// ---------- glTF models ----------
+const MODELS = window.MODELMAN || {};      // {id:{file,bbox:[x,y,z]}} injected at build
+// each glTF is parsed once (textures decoded once, shared by every copy); a copy merges its meshes per material (one draw call per material, not per part)
+const GLB_CACHE = {};
+// quantized glTF attributes (KHR_mesh_quantization: normalized integers, scale in the node) → plain floats before baking a transform into them
+function toFloatAttrs(g) { for (const n of Object.keys(g.attributes)) { const a = g.attributes[n]; if (a.array instanceof Float32Array && !a.normalized) continue;
+    const f = new Float32Array(a.count * a.itemSize); for (let i = 0; i < a.count; i++) for (let k = 0; k < a.itemSize; k++) f[i * a.itemSize + k] = a.getComponent(i, k); g.setAttribute(n, new THREE.BufferAttribute(f, a.itemSize)); }
+  return g; }
+function mergeByMaterial(root) { root.updateMatrixWorld(true); const inv = root.matrixWorld.clone().invert(); const groups = new Map();
+  root.traverse(o => { if (o.isMesh && !o.isSkinnedMesh && !o.isInstancedMesh && !Array.isArray(o.material) && !(o.morphTargetInfluences && o.morphTargetInfluences.length)) { const k = o.material.uuid; let a = groups.get(k); if (!a) groups.set(k, a = []); a.push(o); } });
+  for (const list of groups.values()) { if (list.length < 2) continue;
+    try { let geos = list.map(o => { let g = o.geometry; if (Object.values(g.attributes).some(a => a.isInterleavedBufferAttribute)) g = BufferGeometryUtils.deinterleaveGeometry(g.clone()) || g; g = toFloatAttrs(g.clone()); g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld)); g.morphAttributes = {}; return g; });
+      const names = Object.keys(geos[0].attributes).filter(n => geos.every(g => g.attributes[n] && g.attributes[n].itemSize === geos[0].attributes[n].itemSize));
+      for (const g of geos) for (const n of Object.keys(g.attributes)) if (!names.includes(n)) g.deleteAttribute(n);
+      if (!geos.every(g => g.index)) geos = geos.map(g => g.index ? g.toNonIndexed() : g);
+      const mg = BufferGeometryUtils.mergeGeometries(geos, false); if (!mg) continue;
+      const m = new THREE.Mesh(mg, list[0].material); m.castShadow = list.some(o => o.castShadow); m.receiveShadow = true; m.name = list[0].name; root.add(m);
+      for (const o of list) o.parent.remove(o); } catch (e) { /* keep the separate parts */ } }
+  return root; }
+function loadModel(id, cb, matFix) {
+  const mm = MODELS[id]; if (!mm) { cb(null); return; }
+  const done = src => { if (!src) { cb(null); return; } const sc = src.clone(true);
+    sc.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (matFix) o.material = matFix(o.material, o) || o.material; } }); cb(mergeByMaterial(sc)); };
+  let c = GLB_CACHE[id]; if (c) { if (c.scene) done(c.scene); else c.wait.push(done); return; }
+  c = GLB_CACHE[id] = { scene: null, wait: [done] };
+  GLL.load(BASE + 'models/' + mm.file, g => {
+    g.scene.traverse(o => { if (o.isMesh) { const ms = Array.isArray(o.material) ? o.material : [o.material];
+      ms.forEach(mt => { if (mt.isMeshStandardMaterial) { patchSV(mt); if (mt.map) mt.map.anisotropy = ANISO; if (mt.alphaTest > 0 || mt.transparent) { mt.side = THREE.DoubleSide; } } }); } });
+    c.scene = g.scene; c.wait.splice(0).forEach(f => f(g.scene));
+  }, undefined, () => { c.wait.splice(0).forEach(f => f(null)); delete GLB_CACHE[id]; });
+}
+let _dirty = true, _shadowDirty = true;
+function markDirty(shadow) { _dirty = true; if (shadow) _shadowDirty = true; }
+// ---------- vegetation: one InstancedMesh per spatial cell, so frustum culling works; small detail additionally fades out of the draw list beyond maxD ----------
+// Inside the house (walls all round) the far rule is halved; near tree cells switch between full and thinned leaf cards (lod pairs).
+const VEG = { far: [], lod: [], last: new THREE.Vector3(1e9, 0, 0), k: -1,
+  update(p) { const k = (window.inHouseNow && inHouseNow()) ? 0.5 : 1; if (p.distanceToSquared(this.last) < 1 && k === this.k) return; this.last.copy(p); this.k = k;
+    for (const im of this.far) { const bs = im.boundingSphere; if (bs) im.visible = bs.center.distanceTo(p) - bs.radius < im.userData.maxD * k; }
+    for (const L of this.lod) { const bs = L.hi.boundingSphere; if (!bs) continue; const near = bs.center.distanceTo(p) - bs.radius < L.d; L.hi.visible = near; L.lo.visible = !near; } } };
+window.VEG = VEG;
+function cellsOf(items, cell, key) { const m = new Map(); for (const it of items) { const k = key ? key(it) : Math.floor(it.x / cell) + ':' + Math.floor(it.y / cell); let a = m.get(k); if (!a) m.set(k, a = []); a.push(it); } return [...m.values()]; }
+function vegReady(im, maxD) { im.frustumCulled = true; im.computeBoundingSphere(); if (maxD) { im.userData.maxD = maxD; VEG.far.push(im); } return im; }
+// ---------- instancing of glTF variants (trees, grass clumps, ferns ...) ----------
+function loadGLBRaw(id, cb) { const mm = MODELS[id]; if (!mm) { cb(null); return; } GLL.load(BASE + 'models/' + mm.file, g => cb(g), undefined, () => cb(null)); }
+function variantParts(g, mm) { g.scene.updateMatrixWorld(true); const vars = []; const nodes = (mm.nodes && mm.nodes.length > 1 && !mm.single) ? mm.nodes : [null];
+  for (const n of nodes) { const root = n ? g.scene.getObjectByName(n.name) : g.scene; if (!root) continue;
+    const T = new THREE.Matrix4().makeTranslation(...(n ? n.origin.map(v => -v) : [0, 0, 0])); const parts = [];
+    root.traverse(o => { if (o.isMesh) parts.push({ geo: o.geometry, mat: o.material, local: T.clone().multiply(o.matrixWorld) }); }); if (parts.length) vars.push({ parts, name: n ? n.name : '' }); }
+  return vars; }
+// leaf cards of a glTF tree (each card its own vertex island): keep a share of the cards and enlarge them – same crown density, fewer triangles
+function thinIslands(geo, keep, grow) { const g = geo.index ? geo.clone() : null; if (!g) return geo; const idx = g.index.array, P = g.attributes.position, n = P.count;
+  const par = new Int32Array(n); for (let i = 0; i < n; i++) par[i] = i; const find = a => { while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; };
+  for (let t = 0; t < idx.length; t += 3) { const a = find(idx[t]), b = find(idx[t + 1]), c = find(idx[t + 2]); if (b !== a) par[b] = a; const c2 = find(c); if (c2 !== a) par[c2] = a; }
+  const isl = new Map(); for (let t = 0; t < idx.length; t += 3) { const r = find(idx[t]); let e = isl.get(r); if (!e) isl.set(r, e = []); e.push(t); }
+  if (isl.size < 50) return geo;   // not a card mesh
+  const out = [], v = new THREE.Vector3(), c = new THREE.Vector3(), done = new Uint8Array(n);
+  for (const [r, tris] of isl) { const h = Math.sin(r * 12.9898) * 43758.5453; if (h - Math.floor(h) > keep) continue;
+    const vs = new Set(); for (const t of tris) for (let k = 0; k < 3; k++) vs.add(idx[t + k]); c.set(0, 0, 0); for (const i of vs) c.add(v.fromBufferAttribute(P, i)); c.multiplyScalar(1 / vs.size);
+    for (const i of vs) { if (done[i]) continue; done[i] = 1; v.fromBufferAttribute(P, i).sub(c).multiplyScalar(grow).add(c); P.setXYZ(i, v.x, v.y, v.z); }
+    for (const t of tris) out.push(idx[t], idx[t + 1], idx[t + 2]); }
+  g.setIndex(out); return g; }
+function instanceVariants(id, items, o = {}) {
+  loadGLBRaw(id, g => { if (!g) { if (o.fail) o.fail(); return; } const vars = variantParts(g, MODELS[id]); if (!vars.length) return;
+    if (o.thin) for (const vr of vars) for (const part of vr.parts) { const mt = Array.isArray(part.mat) ? part.mat[0] : part.mat, nm = ((mt.map && mt.map.name) || mt.name || '');
+      if (o.thin.match.test(nm)) part.geo = thinIslands(part.geo, o.thin.keep, o.thin.grow); }
+    const by = vars.map(() => []); items.forEach(it => { const v = (it.v ?? -1) >= 0 ? it.v % vars.length : Math.floor(rnd() * vars.length); by[v].push(it); });
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), sc = new THREE.Vector3(), out = new THREE.Matrix4();
+    vars.forEach((vr, vi) => { const all = by[vi]; if (!all.length) return;
+      for (const part of vr.parts) { const mats = Array.isArray(part.mat) ? part.mat : [part.mat]; let depthMat = null;
+        mats.forEach(mt => { if (mt.isMeshStandardMaterial) { patchSV(mt); if (mt.alphaTest > 0 || mt.transparent) { mt.side = THREE.DoubleSide; mt.transparent = false; mt.alphaTest = Math.max(mt.alphaTest, 0.45); } if (o.tint) mt.color.multiply(new THREE.Color(o.tint)); if (o.env != null) mt.envMapIntensity = o.env; } });
+        for (const list of (o.cell ? cellsOf(all, o.cell) : [all])) {
+        const im = new THREE.InstancedMesh(part.geo, part.mat, list.length);
+        list.forEach((it, i) => { q.setFromAxisAngle(up, it.rot ?? rnd() * 6.283); const s = it.s ?? 1; if (Array.isArray(s)) sc.set(s[0], s[1], s[2]); else sc.set(s, s, s);
+          m4.compose(V(it.x, it.y, it.z ?? 0), q, sc); out.multiplyMatrices(m4, part.local); im.setMatrixAt(i, out); if (it.c != null) im.setColorAt(i, new THREE.Color(it.c, it.c, it.c)); });
+        im.castShadow = o.cast ?? true; im.receiveShadow = true; im.userData.noMerge = true; vegReady(im, o.maxD);
+        if (o.cast !== false && mats.some(mt => mt.alphaTest > 0 && mt.map)) { const mt = mats.find(mm2 => mm2.alphaTest > 0 && mm2.map); im.customDepthMaterial = depthMat || (depthMat = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: mt.map, alphaTest: mt.alphaTest })); }
+        (o.parent || scene).add(im); if (o.list) o.list.push(im); } } });
+    markDirty(true); if (o.done) o.done(); });
+}

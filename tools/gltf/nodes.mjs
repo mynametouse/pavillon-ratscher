@@ -1,0 +1,6 @@
+import { NodeIO } from '@gltf-transform/core'; import { ALL_EXTENSIONS } from '@gltf-transform/extensions'; import { getBounds } from '@gltf-transform/functions';
+const io = new NodeIO().registerExtensions(ALL_EXTENSIONS); const doc = await io.read(process.argv[2]); const root = doc.getRoot();
+const sc = root.getDefaultScene() || root.listScenes()[0]; const b = getBounds(sc); console.log('bounds', b.min.map(v => v.toFixed(2)), b.max.map(v => v.toFixed(2)));
+const walk = (n, d) => { const m = n.getMesh(); const t = m ? m.listPrimitives().reduce((k, p) => k + (p.getIndices() ? p.getIndices().getCount() / 3 : 0), 0) : 0; if (d < 7) console.log(' '.repeat(d * 2) + n.getName() + (m ? ` [mesh ${t}t ${m.listPrimitives().map(p => p.getMaterial()?.getName()).join(',')}]` : '') + ' T' + n.getTranslation().map(v => v.toFixed(2)) + (n.getScale().some(v => Math.abs(v - 1) > 1e-3) ? ' S' + n.getScale().map(v => v.toFixed(3)) : '')); for (const c of n.listChildren()) walk(c, d + 1); };
+for (const n of sc.listChildren()) walk(n, 0);
+for (const m of root.listMaterials()) { const t = m.getBaseColorTexture(); console.log('mat', m.getName(), t ? 'tex' : 'notex', m.getAlphaMode(), [...m.listExtensions()].map(e => e.extensionName).join(',')); }

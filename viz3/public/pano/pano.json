@@ -1,0 +1,325 @@
+{
+ "B": [
+  {
+   "id": "garten",
+   "label": "Garten",
+   "x": 3.4,
+   "y": 15.8,
+   "z": 1.65,
+   "yaw": 175,
+   "file": "pano/b_garten.jpg",
+   "nb": [
+    "eingang",
+    "west",
+    "bruecke",
+    "werkstatt"
+   ]
+  },
+  {
+   "id": "eingang",
+   "label": "Vor der Haustür",
+   "x": 7.2,
+   "y": 3.3,
+   "z": 1.65,
+   "yaw": -95,
+   "file": "pano/b_eingang.jpg",
+   "nb": [
+    "garten",
+    "west",
+    "leiter",
+    "bibliothek"
+   ]
+  },
+  {
+   "id": "west",
+   "label": "Westwiese",
+   "x": -5.5,
+   "y": 1.0,
+   "z": 1.65,
+   "yaw": 80,
+   "file": "pano/b_west.jpg",
+   "nb": [
+    "garten",
+    "eingang",
+    "werkstatt"
+   ]
+  },
+  {
+   "id": "bibliothek",
+   "label": "Bibliothek",
+   "x": 2.0,
+   "y": 2.45,
+   "z": 1.936,
+   "yaw": -120,
+   "file": "pano/b_bibliothek.jpg",
+   "nb": [
+    "leiter",
+    "eingang"
+   ]
+  },
+  {
+   "id": "leiter",
+   "label": "An der Leitertreppe",
+   "x": 3.3,
+   "y": 2.45,
+   "z": 1.936,
+   "yaw": 180,
+   "file": "pano/b_leiter.jpg",
+   "nb": [
+    "eingang",
+    "bibliothek",
+    "arbeitsraum"
+   ],
+   "via": {
+    "arbeitsraum": [
+     3.3,
+     1.07,
+     3.336
+    ]
+   },
+   "pitch": 18
+  },
+  {
+   "id": "arbeitsraum",
+   "label": "Arbeitsraum",
+   "x": 2.1,
+   "y": 2.3,
+   "z": 4.606,
+   "yaw": -110,
+   "file": "pano/b_arbeitsraum.jpg",
+   "nb": [
+    "leiter",
+    "lounge",
+    "dachost"
+   ],
+   "via": {
+    "leiter": [
+     3.3,
+     1.07,
+     2.786
+    ],
+    "dachost": [
+     4.19,
+     3.15,
+     5.838
+    ]
+   }
+  },
+  {
+   "id": "lounge",
+   "label": "Lounge",
+   "x": 0.95,
+   "y": 2.0,
+   "z": 4.606,
+   "yaw": -90,
+   "file": "pano/b_lounge.jpg",
+   "nb": [
+    "arbeitsraum"
+   ]
+  },
+  {
+   "id": "dach",
+   "label": "Dachterrasse",
+   "x": 1.6,
+   "y": 2.6,
+   "z": 7.608,
+   "yaw": -95,
+   "file": "pano/b_dach.jpg",
+   "nb": [
+    "dachost"
+   ]
+  },
+  {
+   "id": "dachost",
+   "label": "Dachterrasse Ost",
+   "x": 4.3,
+   "y": 4.45,
+   "z": 7.608,
+   "yaw": -130,
+   "file": "pano/b_dachost.jpg",
+   "nb": [
+    "dach",
+    "arbeitsraum"
+   ],
+   "via": {
+    "arbeitsraum": [
+     4.19,
+     3.15,
+     5.788
+    ]
+   }
+  },
+  {
+   "id": "bruecke",
+   "label": "Brücke",
+   "x": 3.53,
+   "y": 29.83,
+   "z": 1.71,
+   "yaw": -177,
+   "file": "pano/b_bruecke.jpg",
+   "nb": [
+    "garten"
+   ]
+  },
+  {
+   "id": "werkstatt",
+   "label": "Werkstatt",
+   "x": -2.0,
+   "y": -37.55,
+   "z": 1.69,
+   "yaw": 190,
+   "file": "pano/b_werkstatt.jpg",
+   "nb": [
+    "garten",
+    "west"
+   ]
+  }
+ ],
+ "A": [
+  {
+   "id": "garten",
+   "label": "Garten",
+   "x": 3.4,
+   "y": 15.8,
+   "z": 1.65,
+   "yaw": 175,
+   "file": "pano/a_garten.jpg",
+   "nb": [
+    "eingang",
+    "west",
+    "bruecke",
+    "werkstatt"
+   ]
+  },
+  {
+   "id": "eingang",
+   "label": "Vor der Turmtür",
+   "x": 9.2,
+   "y": 3.7,
+   "z": 1.65,
+   "yaw": -105,
+   "file": "pano/a_eingang.jpg",
+   "nb": [
+    "garten",
+    "west",
+    "turm"
+   ]
+  },
+  {
+   "id": "west",
+   "label": "Westwiese",
+   "x": -5.5,
+   "y": 1.0,
+   "z": 1.65,
+   "yaw": 80,
+   "file": "pano/a_west.jpg",
+   "nb": [
+    "garten",
+    "eingang",
+    "werkstatt"
+   ]
+  },
+  {
+   "id": "bibliothek",
+   "label": "Bibliothek",
+   "x": 2.0,
+   "y": 2.45,
+   "z": 1.936,
+   "yaw": -120,
+   "file": "pano/a_bibliothek.jpg",
+   "nb": [
+    "turm"
+   ]
+  },
+  {
+   "id": "turm",
+   "label": "Im Treppenturm",
+   "x": 6.15,
+   "y": 3.12,
+   "z": 1.92,
+   "yaw": -96,
+   "file": "pano/a_turm.jpg",
+   "nb": [
+    "eingang",
+    "bibliothek",
+    "arbeitsraum",
+    "turmkopf"
+   ]
+  },
+  {
+   "id": "arbeitsraum",
+   "label": "Arbeitsraum",
+   "x": 2.1,
+   "y": 2.3,
+   "z": 4.606,
+   "yaw": -110,
+   "file": "pano/a_arbeitsraum.jpg",
+   "nb": [
+    "turm",
+    "lounge"
+   ]
+  },
+  {
+   "id": "lounge",
+   "label": "Lounge",
+   "x": 0.95,
+   "y": 2.0,
+   "z": 4.606,
+   "yaw": -90,
+   "file": "pano/a_lounge.jpg",
+   "nb": [
+    "arbeitsraum"
+   ]
+  },
+  {
+   "id": "dach",
+   "label": "Dachterrasse",
+   "x": 1.6,
+   "y": 2.6,
+   "z": 7.568,
+   "yaw": -95,
+   "file": "pano/a_dach.jpg",
+   "nb": [
+    "turmkopf"
+   ]
+  },
+  {
+   "id": "turmkopf",
+   "label": "Turmkopf",
+   "x": 5.4,
+   "y": 3.0,
+   "z": 7.568,
+   "yaw": -100,
+   "file": "pano/a_turmkopf.jpg",
+   "nb": [
+    "turm",
+    "dach"
+   ]
+  },
+  {
+   "id": "bruecke",
+   "label": "Brücke",
+   "x": 3.53,
+   "y": 29.83,
+   "z": 1.71,
+   "yaw": -177,
+   "file": "pano/a_bruecke.jpg",
+   "nb": [
+    "garten"
+   ]
+  },
+  {
+   "id": "werkstatt",
+   "label": "Werkstatt",
+   "x": -2.0,
+   "y": -37.55,
+   "z": 1.69,
+   "yaw": 190,
+   "file": "pano/a_werkstatt.jpg",
+   "nb": [
+    "garten",
+    "west"
+   ]
+  }
+ ]
+}

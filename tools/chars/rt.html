@@ -1,0 +1,107 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#bbb}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/viz3/node_modules/three/build/three.module.js","three/addons/":"/viz3/node_modules/three/examples/jsm/"}}</script></head><body>
+<script type="module">
+import * as THREE from 'three'; import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'; import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+const R = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); R.setSize(400, 520); R.toneMapping = THREE.AgXToneMapping; document.body.appendChild(R.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xb8bcc0); const cam = new THREE.PerspectiveCamera(30, 400 / 520, 0.01, 1000);
+scene.add(new THREE.HemisphereLight(0xdfe8f0, 0x6a6050, 1.6)); const sun = new THREE.DirectionalLight(0xfff2e0, 2.6); sun.position.set(3, 5, 4); scene.add(sun);
+const L = new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder);
+// canonical bone names: Mixamo ('mixamorigLeftArm_011' → 'LeftArm'), CC/3ds Max biped style mapped onto Mixamo names
+const CC = { Hip: 'Hips', Waist: 'Spine', Spine01: 'Spine1', Spine02: 'Spine2', NeckTwist01: 'Neck', Head: 'Head' };
+for (const [s, S] of [['L', 'Left'], ['R', 'Right']]) { Object.assign(CC, { [s + '_Clavicle']: S + 'Shoulder', [s + '_Upperarm']: S + 'Arm', [s + '_Forearm']: S + 'ForeArm', [s + '_Hand']: S + 'Hand', [s + '_Thigh']: S + 'UpLeg', [s + '_Calf']: S + 'Leg', [s + '_Foot']: S + 'Foot', [s + '_ToeBase']: S + 'ToeBase' });
+  ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky'].forEach((f, i) => { for (let k = 0; k < 3; k++) CC[`${s}_Finger${i}${k}`] = `${S}Hand${f}${k + 1}`; }); }
+export function canon(n) { let b = n.replace(/_\d+$/, ''); if (b.startsWith('mixamorig')) return b.replace(/^mixamorig:?/, ''); return CC[b] || null; }
+window.canon = canon;
+async function load(url) { const g = await L.loadAsync(url); const root = g.scene; root.updateMatrixWorld(true);
+  const bones = {}, bind = new Map(); let mesh = null;
+  root.traverse(o => { if (o.isSkinnedMesh) { if (!mesh || o.skeleton.bones.length > mesh.skeleton.bones.length) mesh = o; const sk = o.skeleton;
+      sk.bones.forEach((b, i) => { if (!bind.has(b)) bind.set(b, new THREE.Matrix4().multiplyMatrices(o.bindMatrix, sk.boneInverses[i].clone().invert())); }); } });
+  for (const b of bind.keys()) { const c = canon(b.name); if (c && !bones[c]) bones[c] = b; }
+  return { g, root, mesh, bones, bind }; }
+const _p = new THREE.Vector3(), _s = new THREE.Vector3(), _q = new THREE.Quaternion();
+const rotOf = m => { m.decompose(_p, _q, _s); return _q.clone(); }, posOf = m => new THREE.Vector3().setFromMatrixPosition(m);
+function bindPose(M) { // put every skinned bone into its bind pose (world from the inverse bind matrices)
+  const order = []; M.root.traverse(o => { if (M.bind.has(o)) order.push(o); });
+  for (const b of order) { const pw = b.parent.matrixWorld; const loc = new THREE.Matrix4().multiplyMatrices(pw.clone().invert(), M.bind.get(b)); loc.decompose(b.position, b.quaternion, b.scale); b.updateMatrixWorld(true); } }
+window.bindView = async (url) => { const M = await load(url); scene.add(M.root); bindPose(M); M.root.updateMatrixWorld(true); const s = shot(M.root, [0, 90]); scene.remove(M.root); return { shots: s, canon: Object.keys(M.bones).length }; };
+function shot(root, azs) { const box = new THREE.Box3().setFromObject(root); const size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3()); const d = Math.max(size.x, size.y, size.z) * 1.9; const out = [];
+  for (const az of azs) { const a = az * Math.PI / 180; cam.position.set(c.x + Math.sin(a) * d, c.y, c.z + Math.cos(a) * d); cam.lookAt(c); R.render(scene, cam); out.push(R.domElement.toDataURL('image/jpeg', 0.85)); } return out; }
+// reference pose of a rig: its rest pose with both arms raised to horizontal (T-pose), so A-pose and T-pose rigs compare
+function refPose(M) { M.root.updateMatrixWorld(true); const all = [...M.bind.keys()]; const save = new Map(all.map(b => [b, b.quaternion.clone()]));
+  for (const [arm, hand, sx] of [['LeftArm', 'LeftHand', 1], ['RightArm', 'RightHand', -1]]) { const a = M.bones[arm], h = M.bones[hand]; if (!a || !h) continue;
+    const dir = h.getWorldPosition(new THREE.Vector3()).sub(a.getWorldPosition(new THREE.Vector3())).normalize(); const qw = new THREE.Quaternion().setFromUnitVectors(dir, new THREE.Vector3(sx, 0, 0));
+    const pw = a.parent.getWorldQuaternion(new THREE.Quaternion()); a.quaternion.premultiply(pw.clone().invert().multiply(qw).multiply(pw)); a.updateMatrixWorld(true); }
+  M.root.updateMatrixWorld(true); const ref = new Map(all.map(b => [b, { q: b.getWorldQuaternion(new THREE.Quaternion()), p: b.getWorldPosition(new THREE.Vector3()) }]));
+  for (const [b, q] of save) b.quaternion.copy(q); M.root.updateMatrixWorld(true); return ref; }
+// retarget: target bone world rotation(t) = source world(t) · source ref⁻¹ · target ref (reference poses: T-pose, facing +Z); hips moved by the scaled source offset, forward motion removed
+function retarget(S, T, clip, o = {}) {
+  const fps = o.fps || 30, n = Math.max(2, Math.round(clip.duration * fps) + 1), times = [];
+  const rS = refPose(S), rT = refPose(T);
+  const mixer = new THREE.AnimationMixer(S.root); const act = mixer.clipAction(clip); act.play();
+  const tOrder = []; T.root.traverse(x => { if (!x.isMesh && x !== T.root) tOrder.push(x); });   // every node: joints and the non-joint helpers between them (scale compensation nodes)
+  const tCanon = new Map(); for (const [c, b] of Object.entries(T.bones)) if (S.bones[c]) tCanon.set(b, c);
+  const restLocal = new Map(tOrder.map(b => [b, b.quaternion.clone()]));
+  const off = new Map(); for (const [b, c] of tCanon) off.set(b, rS.get(S.bones[c]).q.clone().invert().multiply(rT.get(b).q));
+  const tracksQ = new Map([...tCanon.keys()].map(b => [b, []]));
+  const H = 'Hips', sH = S.bones[H], tH = T.bones[H];
+  const hgt = (M, r) => { let mn = 1e9; for (const c of ['LeftToeBase', 'RightToeBase', 'LeftFoot', 'RightFoot']) if (M.bones[c]) mn = Math.min(mn, r.get(M.bones[c]).p.y); return r.get(M.bones[H]).p.y - mn; };
+  const k = hgt(T, rT) / hgt(S, rS), sH0 = rS.get(sH).p, tH0 = rT.get(tH).p; const hipVals = [], z0 = [];
+  const top = new Map(); T.root.updateMatrixWorld(true); for (const b of tOrder) if (!tOrder.includes(b.parent)) top.set(b, b.parent.getWorldQuaternion(new THREE.Quaternion()));
+  const hipParentInv = tH.parent.matrixWorld.clone().invert();
+  for (let i = 0; i < n; i++) { const t = Math.min(clip.duration, i / fps); times.push(t); mixer.setTime(t); S.root.updateMatrixWorld(true);
+    const W = new Map();
+    for (const b of tOrder) { const pW = W.get(b.parent) || top.get(b); let w;
+      if (tCanon.has(b)) { w = S.bones[tCanon.get(b)].getWorldQuaternion(new THREE.Quaternion()).multiply(off.get(b)); const loc = pW.clone().invert().multiply(w); const a = tracksQ.get(b);
+        if (a.length >= 4 && a[a.length - 4] * loc.x + a[a.length - 3] * loc.y + a[a.length - 2] * loc.z + a[a.length - 1] * loc.w < 0) { loc.x *= -1; loc.y *= -1; loc.z *= -1; loc.w *= -1; }
+        a.push(loc.x, loc.y, loc.z, loc.w); }
+      else w = pW.clone().multiply(restLocal.get(b));
+      W.set(b, w); }
+    const sp = sH.getWorldPosition(new THREE.Vector3()); z0.push(sp.z); const d = sp.sub(sH0).multiplyScalar(k); if (o.inPlace !== false) d.z = 0;
+    const lp = tH0.clone().add(d).applyMatrix4(hipParentInv); hipVals.push(lp.x, lp.y, lp.z); }
+  const tracks = []; for (const [b, a] of tracksQ) tracks.push(new THREE.QuaternionKeyframeTrack(b.name + '.quaternion', times, a));
+  tracks.push(new THREE.VectorKeyframeTrack(tH.name + '.position', times, hipVals));
+  act.stop(); mixer.uncacheRoot(S.root);
+  const hT = hgt(T, rT); return { clip: new THREE.AnimationClip(o.name || clip.name, clip.duration, tracks), speed: (z0[z0.length - 1] - z0[0]) * k / clip.duration / hT, hip: hT, k, mapped: tracksQ.size }; }
+window.RT = async (srcUrl, tgtUrl, clipIndex, name, viewTimes) => {
+  const S = await load(srcUrl), T = await load(tgtUrl); const clip = S.g.animations[clipIndex];
+  const r = retarget(S, T, clip, { name }); scene.add(T.root);
+  const mixer = new THREE.AnimationMixer(T.root); mixer.clipAction(r.clip).play(); const shots = [];
+  for (const t of viewTimes) { mixer.setTime(t * clip.duration); T.root.updateMatrixWorld(true); shots.push(...shot(T.root, [90, 20])); }
+  scene.remove(T.root);
+  // standing pose = average of the cycle (legs together, arms hanging), as a two-key clip
+  const st = r.clip.tracks.map(tr => { const n = tr.values.length / tr.getValueSize(), sz = tr.getValueSize(), acc = new Array(sz).fill(0);
+    for (let i = 0; i < n; i++) { let sg = 1; if (sz === 4 && i > 0) { let d = 0; for (let k2 = 0; k2 < 4; k2++) d += tr.values[i * 4 + k2] * tr.values[k2]; sg = d < 0 ? -1 : 1; } for (let k2 = 0; k2 < sz; k2++) acc[k2] += sg * tr.values[i * sz + k2]; }
+    if (sz === 4) { const L = Math.hypot(...acc); for (let k2 = 0; k2 < 4; k2++) acc[k2] /= L; } else for (let k2 = 0; k2 < sz; k2++) acc[k2] /= n;
+    return new (sz === 4 ? THREE.QuaternionKeyframeTrack : THREE.VectorKeyframeTrack)(tr.name, [0, 1], acc.concat(acc)); });
+  const stand = new THREE.AnimationClip(name + '_stand', 1, st);
+  return { json: JSON.stringify(THREE.AnimationClip.toJSON(r.clip)), stand: JSON.stringify(THREE.AnimationClip.toJSON(stand)), speed: r.speed, hip: r.hip, k: r.k, mapped: r.mapped, tracks: r.clip.tracks.length, dur: clip.duration, shots }; };
+window.dbg = async (url) => { const M = await load(url); const out = {}; M.root.updateMatrixWorld(true);
+  for (const c of ['Hips', 'Head', 'LeftToeBase', 'LeftHand']) { const b = M.bones[c]; if (!b) continue; const bp = posOf(M.bind.get(b)), wp = b.getWorldPosition(new THREE.Vector3()); out[c] = { bind: bp.toArray().map(v => +v.toFixed(3)), world: wp.toArray().map(v => +v.toFixed(3)) }; }
+  let bm = null; M.root.traverse(o => { if (o.isSkinnedMesh && !bm) bm = { bindMatrix: o.bindMatrix.elements.map(v => +v.toFixed(3)), meshWorld: o.matrixWorld.elements.map(v => +v.toFixed(3)), name: o.name }; });
+  scene.add(M.root); bindPose(M); M.root.updateMatrixWorld(true); const shots = shot(M.root, [0, 90]); scene.remove(M.root);
+  return { out, bm, shots }; };
+window.rest = async (url) => { const M = await load(url); scene.add(M.root); M.root.updateMatrixWorld(true); const shots = shot(M.root, [0, 90]); scene.remove(M.root); return { shots }; };
+window.offs = async (url) => { const M = await load(url); const out = {}; for (const c of ['Spine1', 'Neck', 'LeftArm', 'LeftForeArm', 'LeftHand', 'LeftLeg', 'LeftFoot', 'Hips']) { const b = M.bones[c]; if (b) out[c] = b.position.toArray().map(v => +v.toFixed(3)).concat(['|'], b.quaternion.toArray().map(v => +v.toFixed(3))); }
+  const h = M.bones.Hips; const ws = h.parent.getWorldScale(new THREE.Vector3()); out.parentScale = ws.toArray().map(v => +v.toFixed(4)); out.anims = M.g.animations.map(a => a.name + ':' + a.tracks.filter(t => /Hips.*position/.test(t.name)).length);
+  return out; };
+window.qdbg = async (url) => { const M = await load(url); const out = {}; const clip = M.g.animations[0];
+  const W = c => M.bones[c].getWorldQuaternion(new THREE.Quaternion()).toArray().map(v => +v.toFixed(3));
+  M.root.updateMatrixWorld(true); for (const c of ['Hips', 'Spine', 'Spine2', 'Head', 'LeftUpLeg']) out['rest_' + c] = W(c);
+  out.nonBoneTracks = clip.tracks.map(t => t.name).filter(n => { const nm = n.split('.')[0]; let f = null; M.root.traverse(o => { if (o.name === nm) f = o; }); return f && !M.bind.has(f); });
+  const mixer = new THREE.AnimationMixer(M.root); mixer.clipAction(clip).play(); mixer.setTime(0.5); M.root.updateMatrixWorld(true);
+  for (const c of ['Hips', 'Spine', 'Spine2', 'Head', 'LeftUpLeg']) out['t_' + c] = W(c);
+  const hipsTr = clip.tracks.find(t => t.name.startsWith(M.bones.Hips.name + '.quaternion')); out.hipsTrack0 = hipsTr ? Array.from(hipsTr.values.slice(0, 4)).map(v => +v.toFixed(3)) : null; out.hipsRestLocal = M.bones.Hips.quaternion.toArray();
+  return out; };
+window.sides = async (url) => { const M = await load(url); M.root.updateMatrixWorld(true); const out = {};
+  for (const c of ['LeftHand', 'RightHand', 'LeftArm', 'LeftForeArm', 'LeftUpLeg', 'Hips', 'Spine', 'Spine2', 'Neck', 'Head']) { const b = M.bones[c]; if (b) out[c] = b.name + ' ' + b.getWorldPosition(new THREE.Vector3()).toArray().map(v => v.toFixed(1)).join(',') + ' parent ' + b.parent.name; }
+  return out; };
+window.turnTest = async (url) => { const M = await load(url); M.root.updateMatrixWorld(true); const out = {};
+  const B = M.bones; const h = B.Head; const top = M.root.getObjectByName(h.name.replace('Head_', 'HeadNub_')) || h.children[0];
+  const dir = () => { const a = h.getWorldPosition(new THREE.Vector3()), b = top.getWorldPosition(new THREE.Vector3()); const d = b.sub(a).normalize(); const f = new THREE.Vector3(0, 0, 1).applyQuaternion(h.getWorldQuaternion(new THREE.Quaternion())); return { up: d.toArray().map(v => +v.toFixed(3)) }; };
+  out.before = dir(); const mq = M.root.getWorldQuaternion(new THREE.Quaternion()).invert();
+  const turn = (b, ax, ang) => { const q = new THREE.Quaternion(); b.parent.getWorldQuaternion(q); q.premultiply(mq).invert(); const v = ax.clone().applyQuaternion(q); b.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(v, ang)); b.updateMatrixWorld(true); };
+  turn(h, new THREE.Vector3(0, 1, 0), 0.5); out.yaw05 = dir();
+  const chain = []; let p = h.parent; while (p && chain.length < 6) { chain.push(p.name + ' s=' + p.scale.toArray().map(v => +v.toFixed(3)).join(',') + ' ws=' + p.getWorldScale(new THREE.Vector3()).toArray().map(v => +v.toFixed(4)).join(',')); p = p.parent; } out.chain = chain;
+  return out; };
+window.ready = true;
+</script></body></html>

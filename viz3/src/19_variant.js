@@ -1,0 +1,18 @@
+// ---------- design variant switch: A = spiral stair tower, B = ladder stairs with trapdoor and roof hatch (both are in the scene) ----------
+// Switching swaps: visible meshes, walk surfaces and colliders (tagged per variant), doors and hatches, the light volume, the two variant lamps,
+// building phases with costs, viewpoints and labels. The player stays where he is if that place exists in the other variant.
+function setVariant(v, { save = true } = {}) { if (v !== 'A' && v !== 'B') return; const changed = v !== VARIANT;
+  VARIANT = v; window.VARIANT = v; document.body.dataset.variant = v;
+  for (const k of Object.keys(GEO)) delete GEO[k]; Object.assign(GEO, v === 'A' ? GEO_A : GEO_B);
+  PHASES.splice(0, PHASES.length, ...(v === 'A' ? PHASES_A : PHASES_B));
+  applySpots(v); T1.position.copy(TLAMP[v][0]); T2.position.copy(TLAMP[v][1]); svApply(v); if (window.giApply) giApply();
+  if (save) { try { localStorage.setItem('pav-variant', v); } catch (e) {} }
+  document.querySelectorAll('[data-var-set]').forEach(b => b.setAttribute('aria-pressed', b.dataset.varSet === v ? 'true' : 'false'));
+  const tc = document.querySelector('[data-spot="treppe"]'); if (tc) tc.textContent = SPOTS.treppe.label;
+  const dl = document.querySelector('[data-spot="dach"] .lv'); if (dl) dl.textContent = '+' + GEO.zD.toFixed(2).replace('.', ',');
+  if (changed) { if (window.PLANNER) PLANNER.select(null); setPhase(PHASE);
+    if (P.mode === 'walk') { const fl = floorAt(P.x, P.y, P.feet + 0.3); if (Math.abs(fl - P.feet) < 0.35) P.feet = fl;
+      else go(P.feet > GEO.zC ? 'dach' : P.feet > GEO.zE - 0.3 ? 'arbeitsraum' : (P.x > -1 && P.x < 7 && P.y > -1 && P.y < 5 ? 'bibliothek' : 'eingang')); }
+    lastPlace = ''; markDirty(true); if (window.PANO && PANO.on) panoShow(true); toast(v === 'A' ? 'Variante Turm: Wendeltreppe im Turm an der Ostseite' : 'Variante Leiter: ohne Turm, Leitertreppen mit Bodenluke und Dachluke', 3200); } }
+document.querySelectorAll('[data-var-set]').forEach(b => b.addEventListener('click', () => setVariant(b.dataset.varSet)));
+// (V15: the V key switches between the eyes and the figure; the variant is chosen in the menu)

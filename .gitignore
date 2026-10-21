@@ -1,0 +1,12 @@
+# build output and caches (the site lives in branch gh-pages)
+viz3/dist/
+viz3/dist_pub/
+viz3/src/_main.js
+viz3/node_modules/
+viz3/opt/
+viz3/used_models.json
+viz3/out.json
+node_modules/
+out/
+__pycache__/
+*.pyc

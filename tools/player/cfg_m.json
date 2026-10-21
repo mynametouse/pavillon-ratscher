@@ -1,0 +1,177 @@
+{
+ "name": "player_m",
+ "avatar": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Avatars/Professions/Delivery_Male_01/Export/Delivery_Male_01.fbx",
+ "unitScale": 0.01,
+ "fps": 24,
+ "outDir": "out",
+ "rocketboxClips": [
+  {
+   "key": "idle",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_static/m_idle_neutral_01.max.fbx",
+   "stillRoot": true,
+   "fps": 15
+  },
+  {
+   "key": "walk",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_xy/m_walk_neutral_01.max.fbx",
+   "inPlace": true
+  },
+  {
+   "key": "jog",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_xy/m_run_slow_01.max.fbx",
+   "inPlace": true
+  },
+  {
+   "key": "sprint",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_xy/m_run_fast_01.max.fbx",
+   "inPlace": true
+  },
+  {
+   "key": "crouchIdle",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_static/m_crouch_idle.max.fbx",
+   "stillRoot": true,
+   "fps": 15
+  },
+  {
+   "key": "sit",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_static/m_sit_chair_idle_relaxed_01.max.fbx",
+   "stillRoot": true,
+   "fps": 15,
+   "trimEnd": 12
+  },
+  {
+   "key": "interactLoop",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_static/m_work_table.max.fbx",
+   "stillRoot": true,
+   "fps": 15
+  },
+  {
+   "key": "greet",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_static/m_wave_01.max.fbx",
+   "stillRoot": true,
+   "loop": false,
+   "fps": 15
+  },
+  {
+   "key": "talk",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_static/m_gestic_talk_neutral_01.max.fbx",
+   "stillRoot": true,
+   "fps": 15,
+   "trimEnd": 10
+  },
+  {
+   "key": "knock",
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/rocketbox/repo/Assets/Animations/all_animations_max_motextr_static/m_knock_door.max.fbx",
+   "stillRoot": true,
+   "loop": false,
+   "fps": 15
+  }
+ ],
+ "retarget": [
+  {
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/mesh2motion/repo/static/animations/human-base-animations.glb",
+   "clips": [
+    {
+     "from": "Crouch_Walk",
+     "key": "crouchWalk",
+     "measure": true
+    },
+    {
+     "from": "Jump_Start",
+     "key": "jumpStart",
+     "loop": false
+    },
+    {
+     "from": "Jump_air",
+     "key": "jumpLoop"
+    },
+    {
+     "from": "Jump_Land",
+     "key": "jumpLand",
+     "loop": false,
+     "inPlace": true
+    },
+    {
+     "from": "Walk_Carry",
+     "key": "walkCarry",
+     "measure": true
+    },
+    {
+     "from": "Idle_Torch",
+     "key": "holdTool",
+     "fps": 15
+    },
+    {
+     "from": "Chop_Tree",
+     "key": "chop",
+     "loop": false
+    },
+    {
+     "from": "PickUp_Table",
+     "key": "pickup",
+     "loop": false
+    },
+    {
+     "from": "Farm_Harvest",
+     "key": "pickupLow",
+     "loop": false
+    },
+    {
+     "from": "Interact",
+     "key": "interact",
+     "loop": false
+    },
+    {
+     "from": "Fixing_Kneeling",
+     "key": "kneel",
+     "fps": 15
+    },
+    {
+     "from": "Farm_Watering",
+     "key": "pour",
+     "fps": 15
+    },
+    {
+     "from": "Push",
+     "key": "push",
+     "fps": 15
+    },
+    {
+     "from": "Driving",
+     "key": "drive",
+     "fps": 15
+    },
+    {
+     "from": "Sitting_Idle",
+     "key": "sitM2M",
+     "fps": 15
+    }
+   ]
+  },
+  {
+   "file": "/tmp/claude-0/-home-claude/c5ba8437-b351-5b29-96e3-f852e8e82b48/scratchpad/charsrc/mesh2motion/repo/static/animations/human-addon-animations.glb",
+   "clips": [
+    {
+     "from": "Crawl",
+     "key": "crawl",
+     "measure": true
+    },
+    {
+     "from": "Sleeping",
+     "key": "lie",
+     "fps": 15
+    },
+    {
+     "from": "Kneeling Tired",
+     "key": "kneelIdle",
+     "fps": 15
+    },
+    {
+     "from": "Head Nod",
+     "key": "nod",
+     "loop": false
+    }
+   ]
+  }
+ ]
+}

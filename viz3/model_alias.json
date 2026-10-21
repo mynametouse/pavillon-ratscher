@@ -1,0 +1,137 @@
+{
+ "armchair": {
+  "id": "modern_arm_chair_01"
+ },
+ "lounge_chair": {
+  "id": "modern_arm_chair_01"
+ },
+ "desk_chair": {
+  "id": "painted_wooden_chair_01"
+ },
+ "side_table": {
+  "id": "side_table_01"
+ },
+ "side_table_small": {
+  "id": "side_table_01"
+ },
+ "plant_a": {
+  "id": "potted_plant_02"
+ },
+ "plant_b": {
+  "id": "potted_plant_02"
+ },
+ "succulent": {
+  "id": "potted_plant_04"
+ },
+ "books": {
+  "id": "book_encyclopedia_set_01"
+ },
+ "bowl": {
+  "id": "wooden_bowl_01"
+ },
+ "vase": {
+  "id": "ceramic_vase_04"
+ },
+ "ukulele": {
+  "id": "Ukulele_01"
+ },
+ "lantern_t": {
+  "id": "wooden_lantern_01"
+ },
+ "basket": {
+  "id": "wicker_basket_02"
+ },
+ "footstool": {
+  "id": "wooden_stool_02"
+ },
+ "stump": {
+  "id": "tree_stump_01"
+ },
+ "fir": {
+  "id": "fir_tree_01"
+ },
+ "smalltree": {
+  "id": "island_tree_02"
+ },
+ "grass1": {
+  "id": "grass_medium_01"
+ },
+ "grass2": {
+  "id": "grass_medium_02"
+ },
+ "fern": {
+  "id": "fern_02"
+ },
+ "dandelion": {
+  "id": "dandelion_01"
+ },
+ "vice": {
+  "id": "bench_vice_01"
+ },
+ "handplane": {
+  "id": "hand_plane_no4"
+ },
+ "handsaw": {
+  "id": "handsaw_wood"
+ },
+ "mallet": {
+  "id": "wooden_hammer_01"
+ },
+ "tape": {
+  "id": "measuring_tape_01"
+ },
+ "toolchest": {
+  "id": "metal_tool_chest"
+ },
+ "drill": {
+  "id": "Drill_01"
+ },
+ "axe": {
+  "id": "wooden_axe_03"
+ },
+ "sledge": {
+  "id": "sledgehammer_01"
+ },
+ "handdrill": {
+  "id": "vintage_hand_drill"
+ },
+ "screwdrivers": {
+  "id": "screwdrivers_02"
+ },
+ "wstool": {
+  "id": "wooden_stool_01"
+ },
+ "garden_set": {
+  "id": "outdoor_table_chair_set_01"
+ },
+ "rain_barrel": {
+  "id": "Barrel_02"
+ },
+ "spade": {
+  "id": "rusted_spade_01"
+ },
+ "crate": {
+  "id": "plastic_crate_02"
+ },
+ "tyre_old": {
+  "id": "old_tyre"
+ },
+ "jerrycan": {
+  "id": "metal_jerrycan"
+ },
+ "bench_out": {
+  "id": "painted_wooden_bench"
+ },
+ "boots": {
+  "id": "rubber_boots"
+ },
+ "hose_reel": {
+  "id": "garden_hose_wall_mounted_01"
+ },
+ "compost": {
+  "id": "compost_bags"
+ },
+ "ladder": {
+  "id": "ladder_sectioned_01"
+ }
+}

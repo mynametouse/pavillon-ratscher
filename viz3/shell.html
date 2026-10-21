@@ -1,0 +1,895 @@
+<title>Pavillon Ratscher</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Layout: one-screen app; slim header with three views (3D model, film, pictures); the 3D stage fills the rest with overlay controls */
+:root{
+  --paper:#eceee8; --ink:#23241f; --muted:#666a61; --line:#cfd3c8; --larch:#9b6a3a; --plate:#e2e5dd; --charred:#2b2724;
+  --ov-bg:rgba(24,23,21,.64); --ov-bg-on:rgba(243,239,230,.94); --ov-ink:#f3f1ec; --ov-ink-on:#23241f;
+  --f-display:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#161714; --ink:#e8e9e3; --muted:#9a9e94; --line:#2f312c; --larch:#d29a62; --plate:#1f201d; --charred:#0e0d0c; color-scheme:dark } }
+:root[data-theme="dark"]{ --paper:#161714; --ink:#e8e9e3; --muted:#9a9e94; --line:#2f312c; --larch:#d29a62; --plate:#1f201d; --charred:#0e0d0c; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--f-body);display:flex;flex-direction:column;overflow:hidden}
+header.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line)}
+header.top h1{font:700 20px/1.1 var(--f-display);margin:0;letter-spacing:-.005em}
+header.top .sub{font:400 11.5px/1.2 var(--f-mono);color:var(--muted);letter-spacing:.04em}
+.tabs{display:flex;gap:4px;margin-left:auto}
+.tabs button{font:500 13.5px/1 var(--f-body);color:var(--muted);background:none;border:1px solid transparent;border-radius:999px;padding:8px 13px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--line);background:var(--plate)}
+main{flex:1;min-height:0;position:relative}
+section.panel{position:absolute;inset:0;overflow:auto}
+/* 3D */
+#stage{position:absolute;inset:0;background:#cfd8de}
+#stage canvas{display:block;width:100%;height:100%}
+.ov{position:absolute;z-index:2;color:var(--ov-ink)}
+.where{top:12px;left:max(12px,env(safe-area-inset-left,0px));background:var(--ov-bg);border-radius:6px;padding:7px 11px;font:500 14px/1.2 var(--f-body);backdrop-filter:blur(6px)}
+.where small{display:block;font:400 11px/1.3 var(--f-mono);opacity:.75;margin-top:2px}
+.bar{left:0;right:0;bottom:0;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.row{display:flex;gap:6px;overflow-x:auto;pointer-events:auto;scrollbar-width:none;padding-bottom:2px}
+.row::-webkit-scrollbar{display:none}
+.chip{flex:none;font:500 13px/1 var(--f-body);color:var(--ov-ink);background:var(--ov-bg);border:0;border-radius:999px;padding:10px 14px;cursor:pointer;backdrop-filter:blur(6px)}
+.chip[aria-pressed="true"]{background:var(--ov-bg-on);color:var(--ov-ink-on)}
+.chip .lv{font:400 11px/1 var(--f-mono);opacity:.7;margin-left:6px}
+.sep{flex:none;width:1px;background:rgba(255,255,255,.25);margin:4px 2px}
+.pad{right:max(12px,env(safe-area-inset-right,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:6px}
+.pad button{background:var(--ov-bg);color:var(--ov-ink);border:0;border-radius:10px;font:500 18px/1 var(--f-body);cursor:pointer;touch-action:none;backdrop-filter:blur(6px);user-select:none;-webkit-user-select:none}
+.pad button:active{background:var(--ov-bg-on);color:var(--ov-ink-on)}
+.pad .f{grid-column:2;grid-row:1}.pad .l{grid-column:1;grid-row:2}.pad .b{grid-column:2;grid-row:2}.pad .r{grid-column:3;grid-row:2}
+.hint{top:12px;right:max(12px,env(safe-area-inset-right,0px));max-width:260px;background:var(--ov-bg);border-radius:6px;padding:8px 11px;font:400 12px/1.45 var(--f-body);backdrop-filter:blur(6px)}
+.hint b{font-weight:500}
+#joy{position:absolute;z-index:3;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px));width:116px;height:116px;border-radius:50%;background:var(--ov-bg);touch-action:none;display:none;backdrop-filter:blur(6px)}
+#knob{position:absolute;left:38px;top:38px;width:40px;height:40px;border-radius:50%;background:var(--ov-bg-on);pointer-events:none}
+@media (pointer:coarse){ body[data-mode="walk"] #joy{display:block} body[data-mode="walk"] .pad{display:none} }
+body:not([data-mode="walk"]) #joy{display:none}
+.toggles{top:12px;right:max(12px,env(safe-area-inset-right,0px));display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.tog{font:500 12.5px/1 var(--f-body);color:var(--ov-ink);background:var(--ov-bg);border:0;border-radius:999px;padding:9px 12px;cursor:pointer;backdrop-filter:blur(6px)}
+.tog span{font:400 11px/1 var(--f-mono);opacity:.8;margin-left:5px}
+.tog[aria-pressed="true"]{background:var(--ov-bg-on);color:var(--ov-ink-on)}
+.toast{top:58px;right:max(12px,env(safe-area-inset-right,0px));max-width:min(280px,70vw);background:var(--ov-bg-on);color:var(--ov-ink-on);border-radius:6px;padding:9px 12px;font:400 12.5px/1.45 var(--f-body);box-shadow:0 2px 12px rgba(0,0,0,.2)}
+#doorbtn{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(112px + env(safe-area-inset-bottom,0px));font:500 14px/1 var(--f-body);color:var(--ov-ink-on);background:var(--ov-bg-on);border:0;border-radius:999px;padding:12px 18px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.hint{top:auto;bottom:calc(112px + env(safe-area-inset-bottom,0px));right:auto;left:max(12px,env(safe-area-inset-left,0px))}
+#talkbtn{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(160px + env(safe-area-inset-bottom,0px));font:500 14px/1 var(--f-body);color:var(--ov-ink-on);background:var(--ov-bg-on);border:0;border-radius:999px;padding:12px 18px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+#npcsub{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(206px + env(safe-area-inset-bottom,0px));max-width:min(560px,86%);background:rgba(10,10,9,.72);color:#f3f1ec;border-radius:8px;padding:8px 14px;font:400 14.5px/1.4 var(--f-body);text-align:center;pointer-events:none}
+#npcpanel{position:absolute;z-index:4;top:60px;left:max(12px,env(safe-area-inset-left,0px));width:min(340px,calc(100% - 24px));background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden}
+#npcpanel header{display:flex;align-items:center;gap:8px;padding:12px 14px 8px;border-bottom:1px solid var(--line)}
+#npcpanel header h3{margin:0;font:700 16px/1.2 var(--f-display);flex:1}
+#npcpanel .x{border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer;padding:4px 6px}
+#npcpanel .say{padding:12px 14px;font:400 14px/1.5 var(--f-body);min-height:58px;border-bottom:1px solid var(--line)}
+#npcpanel .topics{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 14px}
+#npcpanel .topics button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 13px/1 var(--f-body);padding:9px 12px;cursor:pointer}
+#npcpanel .topics button:disabled{opacity:.5;cursor:default}
+#npcpanel .topics button.bye{margin-left:auto;background:transparent}
+@media (max-width:720px){ #npcpanel{top:auto;bottom:calc(166px + env(safe-area-inset-bottom,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto} #talkbtn{bottom:calc(150px + env(safe-area-inset-bottom,0px))} }
+body[data-full="1"] header.top{display:none}
+body[data-full="1"] .hint{display:none}
+body[data-full="1"] .toggles .tog span{display:none}
+body[data-full="1"] .where small{display:none}
+@media (max-width:560px){ .toggles{max-width:70%;gap:4px} .tog{padding:8px 10px;font-size:12px} .where{padding:6px 9px;font-size:13px} }
+#planbar{top:58px;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--ov-bg);border-radius:10px;padding:8px 10px;backdrop-filter:blur(6px);pointer-events:auto;z-index:4}
+#planbar span{font:500 13px/1.2 var(--f-body);color:var(--ov-ink);flex:1;min-width:120px}
+#planbar button{border:0;border-radius:8px;background:rgba(255,255,255,.14);color:var(--ov-ink);font:500 13px/1 var(--f-body);padding:9px 11px;cursor:pointer}
+#planbar button:disabled{opacity:.35;cursor:default}
+#planbar button.acc{background:var(--ov-bg-on);color:var(--ov-ink-on)}
+#palette{position:absolute;z-index:5;top:112px;left:max(12px,env(safe-area-inset-left,0px));width:min(360px,calc(100% - 24px));max-height:60%;overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:10px 14px 14px}
+#palette h3{margin:0 0 6px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center}
+#palette h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer}
+#palette h4{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+#palette .prow{display:flex;flex-wrap:wrap;gap:6px}
+#palette .prow button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 13px/1 var(--f-body);padding:9px 12px;cursor:pointer}
+#facade{position:absolute;z-index:5;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(380px,calc(100% - 24px));max-height:64%;overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:12px 14px 14px}
+#interior{position:absolute;z-index:5;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(380px,calc(100% - 24px));max-height:64%;overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:12px 14px 14px}
+#facade h3{margin:0 0 4px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center}
+#interior h3{margin:0 0 4px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center}
+#facade h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer}
+#interior h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer}
+#facade h4{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+#interior h4{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+#facade .prow{display:flex;flex-wrap:wrap;gap:6px}
+#interior .prow{display:flex;flex-wrap:wrap;gap:6px}
+#facade .prow button{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:7px 11px 7px 7px;cursor:pointer}
+#interior .prow button{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:7px 11px 7px 7px;cursor:pointer}
+#facade .prow button i{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);flex:none}
+#interior .prow button i{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);flex:none}
+#facade .prow button[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+#interior .prow button[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+#facade .fnote{margin:12px 0 0;font:400 12px/1.45 var(--f-body);color:var(--muted)}
+#interior .fnote{margin:12px 0 0;font:400 12px/1.45 var(--f-body);color:var(--muted)}
+body[data-full="1"] #planbar{top:52px}
+@media (max-width:560px){ #planbar{top:104px} #palette{top:158px;max-height:52%} #facade,#interior{top:104px;left:max(12px,env(safe-area-inset-left,0px));right:auto;max-height:58%} body[data-full="1"] #facade,body[data-full="1"] #interior{top:56px} body[data-full="1"] #planbar{top:56px} body[data-full="1"] #palette{top:110px} }
+/* plan view (Draufsicht): toolbar, SVG overlay with labels and outlines, scale bar; share panel */
+#sitebar{top:58px;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));display:flex;gap:6px 8px;align-items:center;flex-wrap:wrap;background:var(--ov-bg);border-radius:10px;padding:8px 10px;backdrop-filter:blur(6px);pointer-events:auto;z-index:4}
+#sb-name{font:500 13px/1.3 var(--f-body);color:var(--ov-ink);flex:1 1 220px;min-width:0}
+#sitebar .sbg{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#sitebar button{border:0;border-radius:8px;background:rgba(255,255,255,.14);color:var(--ov-ink);font:500 13px/1 var(--f-body);padding:9px 11px;cursor:pointer}
+#sitebar button.acc,#sitebar button[aria-pressed="true"]{background:var(--ov-bg-on);color:var(--ov-ink-on)}
+#sitebar label{display:flex;align-items:center;gap:5px;font:400 11.5px/1 var(--f-mono);color:var(--ov-ink)}
+#sitebar input{width:66px;border:0;border-radius:6px;padding:7px 6px;font:500 13px/1 var(--f-body);background:rgba(255,255,255,.92);color:#23241f}
+#sb-warn{flex-basis:100%;font:400 12px/1.35 var(--f-body);color:var(--ov-ink);opacity:.9}
+#sb-warn.bad{color:#ffd27a;opacity:1}
+#topsvg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;overflow:hidden}
+#topsvg text{font:600 12.5px var(--f-body);fill:#fff;stroke:rgba(20,22,18,.78);stroke-width:3.4px;paint-order:stroke;stroke-linejoin:round;text-anchor:middle;dominant-baseline:middle}
+#topsvg text.sel{fill:#ffd24a}
+#topsvg text.pav{fill:#fff1cf}
+#topsvg text.nb{font-weight:500;font-size:12px;fill:#eef0ea}
+#topsvg text.water{fill:#d4e8ff}
+#topsvg text.len{font:500 12px var(--f-mono);fill:#ffd24a}
+#topsvg .out{fill:rgba(255,210,74,.13);stroke:#ffd24a;stroke-width:2}
+#topsvg .out.bad{fill:rgba(255,90,60,.16);stroke:#ff6b4a}
+#topsvg .bound{fill:none;stroke:rgba(255,236,190,.95);stroke-width:1.6;stroke-dasharray:2 4;stroke-linecap:round}
+#topsvg .ghost{fill:none;stroke:rgba(255,255,255,.9);stroke-width:1.5;stroke-dasharray:6 5}
+#topsvg .fence{fill:none;stroke:rgba(236,240,232,.9);stroke-width:1.6;stroke-dasharray:5 3;stroke-linejoin:round}
+#topsvg .fence.wood{stroke:#e2bf8a;stroke-width:2.4;stroke-dasharray:none}
+#topsvg .fence.on{stroke:#ffd24a;stroke-width:4;stroke-dasharray:none;stroke-linecap:round}
+#topsvg .gate{fill:#23241f;stroke:#ffd24a;stroke-width:2}
+#topsvg .draw{fill:none;stroke:#ffd24a;stroke-width:2.5;stroke-dasharray:8 5;stroke-linejoin:round}
+#topsvg .dv{fill:#ffd24a;stroke:#23241f;stroke-width:1.5}
+#topscale{left:max(12px,env(safe-area-inset-left,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;background:var(--ov-bg);border-radius:6px;padding:6px 9px;font:400 11.5px/1 var(--f-mono);backdrop-filter:blur(6px)}
+#topscale i{display:block;height:6px;border:2px solid var(--ov-ink);border-top:0}
+#topscale b{font:600 11.5px/1 var(--f-body);margin-left:6px}
+#geoattr{display:none;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ov-bg);border-radius:6px;padding:4px 8px;font:400 10.5px/1.3 var(--f-body);color:var(--ov-ink);opacity:.85;max-width:calc(100vw - 24px)}
+body[data-top="1"] #geoattr:not([hidden]){display:block}
+#topsvg text.gp{font:700 15px var(--f-body);fill:#fff6df;stroke-width:4px}
+#topsvg text.gk{font:500 11.5px var(--f-body);fill:#f3ecdc}
+#topsvg text.gr{font:500 11px var(--f-body);fill:#fff3c4}
+#topsvg text.gw{font:italic 500 12px var(--f-body);fill:#cfe5ff}
+body[data-mode="top"] .phases,body[data-mode="top"] .hint{display:none}
+body[data-mode="top"] #stage{cursor:grab}
+body[data-full="1"] #sitebar{top:52px}
+#sharebox{position:absolute;z-index:6;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(430px,calc(100% - 24px));max-height:calc(100% - 128px);overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:14px 16px}
+#sharebox h3{margin:0 0 6px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center}
+#sharebox h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer;padding:0 4px}
+#sharebox h4{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+#sharebox p,#sharebox ol{margin:6px 0;font:400 13px/1.5 var(--f-body)}
+#sharebox ol{padding-left:20px}
+#sharebox a{color:var(--larch);overflow-wrap:anywhere}
+#sharebox .acts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+#sharebox button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 13px/1 var(--f-body);padding:9px 13px;cursor:pointer}
+#sharebox button.acc{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#sharebox button.lnk{border:0;background:none;padding:0;color:var(--muted);text-decoration:underline;font-size:12px}
+#sharebox p > button{margin-left:6px;padding:6px 10px;font-size:12px}
+#sharebox button:disabled{opacity:.5;cursor:default}
+#sharebox input,#sharebox textarea{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:400 12.5px/1.4 var(--f-mono);background:var(--plate);color:var(--ink)}
+#sharebox textarea{display:block;width:100%;margin-top:8px;resize:vertical}
+#sharebox .msg{color:var(--larch);font-weight:500}
+#sharebox .msg.bad{color:#d9534f}
+#sharebox .st{color:var(--muted)}
+#sharebox .small{font-size:12px;color:var(--muted)}
+@media (max-width:560px){ #sitebar{top:12px;padding:7px 8px;gap:5px 6px} #sitebar button{padding:8px 8px;font-size:12px} #sitebar .tx{display:none} #sitebar input{width:52px} #sb-name{flex-basis:100%;font-size:12.5px} #sitebar[data-sel="1"] #sb-main{display:none} body[data-mode="top"] .toggles{display:none} body[data-mode="top"] .where{display:none} #sharebox{top:104px} body[data-mode="top"] #sharebox{top:12px} body[data-full="1"] #sitebar{top:12px} }
+/* design variants: elements marked data-var show only for the active variant */
+body[data-variant="A"] [data-var="B"],body[data-variant="B"] [data-var="A"]{display:none!important}
+.chip.vl{cursor:default;background:none;backdrop-filter:none;padding:10px 4px 10px 6px;opacity:.85}
+#perfbox{position:absolute;z-index:5;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(440px,calc(100% - 24px));background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:14px 16px}
+#perfbox h3{margin:0 0 8px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center;gap:8px}
+#perfbox h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer}
+#perfout{margin:0;white-space:pre-wrap;font:400 12px/1.5 var(--f-mono);color:var(--ink);max-height:40vh;overflow:auto;user-select:text;-webkit-user-select:text}
+#perfbox .acts{display:flex;gap:8px;margin-top:10px}
+#perfbox .acts button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 13px/1 var(--f-body);padding:9px 13px;cursor:pointer}
+#perfbox p{margin:8px 0 0;font:400 12px/1.45 var(--f-body);color:var(--muted)}
+@media (max-width:560px){ #perfbox{top:104px} }
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--paper);color:var(--muted);font:400 13px/1.4 var(--f-mono);z-index:5}
+/* 360° panoramas */
+#panostage{position:absolute;inset:0;background:#cfd8de;cursor:grab}
+#panostage:active{cursor:grabbing}
+#panostage canvas{display:block;width:100%;height:100%;touch-action:none}
+#panohot{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+#panohot .hot{position:absolute;transform:translate(-50%,-19px);display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;padding:0;cursor:pointer;pointer-events:auto;font:500 12px/1.1 var(--f-body)}
+#panohot .hot[hidden]{display:none}
+#panohot .hot i{display:block;width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.95);background:rgba(24,26,20,.32);box-shadow:0 1px 8px rgba(0,0,0,.35);backdrop-filter:blur(3px)}
+#panohot .hot i::after{content:"";display:block;width:10px;height:10px;margin:12px auto 0;border-radius:50%;background:#fff}
+#panohot .hot span{background:var(--ov-bg);color:var(--ov-ink);padding:5px 8px;border-radius:6px;white-space:nowrap;backdrop-filter:blur(6px)}
+#panohot .hot:hover i,#panohot .hot:focus-visible i{background:rgba(255,255,255,.28)}
+.panovar{top:12px;right:max(12px,env(safe-area-inset-right,0px));display:flex;gap:4px}
+.panoempty{top:50%;left:50%;transform:translate(-50%,-50%);margin:0;background:var(--ov-bg);border-radius:8px;padding:12px 16px;font:400 13px/1.45 var(--f-body);max-width:min(340px,calc(100% - 32px));text-align:center}
+@media (max-width:560px){ .panovar{top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px))} }
+/* film + pictures */
+.page{max-width:1120px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.page h2{font:700 24px/1.2 var(--f-display);margin:0 0 6px;text-wrap:balance}
+.lede{color:var(--muted);margin:0 0 20px;max-width:64ch}
+.film{margin:0;background:var(--charred);border-radius:6px;overflow:hidden}
+.film video{display:block;width:100%;max-width:100%;aspect-ratio:16/9;background:#000}
+.film figcaption{color:#cfc9bf;font:400 12.5px/1.5 var(--f-mono);padding:10px 14px}
+.chapters{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.chapters button{width:100%;text-align:left;font:400 14px/1.3 var(--f-body);color:var(--ink);background:var(--plate);border:1px solid var(--line);border-radius:6px;padding:10px 12px;cursor:pointer;display:flex;gap:10px;align-items:baseline}
+.chapters .tc{font:400 12px/1 var(--f-mono);color:var(--larch);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 22px}
+@media (max-width:720px){.grid{grid-template-columns:1fr}}
+figure.shot{margin:0;display:grid;gap:8px;min-width:0}
+figure.shot img{width:100%;max-width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:4px;display:block;background:var(--plate);cursor:zoom-in}
+.cap{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:baseline}
+.cap .n{font:400 12px/1.4 var(--f-mono);color:var(--larch);grid-row:span 3;font-variant-numeric:tabular-nums}
+.cap .t{font:500 15.5px/1.3 var(--f-body)}
+.cap .d{color:var(--muted);font-size:14.5px;line-height:1.5}
+.cap .m{font:400 12px/1.4 var(--f-mono);color:var(--muted)}
+.group{grid-column:1/-1;display:flex;align-items:center;gap:12px;margin-top:8px}
+.group span{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.group::after{content:"";flex:1;border-top:1px solid var(--line)}
+.vsw{display:inline-flex;gap:4px;margin:4px 0 14px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--plate);flex-wrap:wrap}
+.vsw button{border:0;background:none;color:var(--muted);font:500 13px/1 var(--f-body);padding:8px 13px;border-radius:999px;cursor:pointer}
+.vsw button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.notes{margin-top:44px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+@media (max-width:720px){.notes{grid-template-columns:1fr}}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:8px}
+.notes h3{font:700 18px/1.2 var(--f-display);margin:0 0 10px}
+.credits{margin-top:36px;border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:var(--muted)}
+.credits summary{cursor:pointer;font-weight:500;color:var(--ink)}
+.credits ul{padding-left:18px;display:grid;gap:4px;margin:10px 0 0}
+.credits a{color:inherit}
+.credits li{overflow-wrap:anywhere}
+.credits .lic{margin-top:12px}.credits .lic pre{white-space:pre-wrap;font:400 11.5px/1.45 var(--f-mono);background:var(--plate);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;max-width:100%}
+.small{color:var(--muted);font-size:14px}
+dialog{border:0;padding:0;background:transparent;max-width:min(96vw,1600px)}
+dialog::backdrop{background:rgba(10,10,9,.86)}
+dialog img{width:100%;height:auto;display:block;border-radius:4px}
+dialog p{color:#e8e5de;font:400 13px/1.4 var(--f-mono);margin:8px 2px 0}
+:focus-visible{outline:2px solid var(--larch);outline-offset:2px}
+
+/* construction phases: strip above the spot chips, info panel at the right (bottom sheet on phones) */
+.phases{display:flex;align-items:center;gap:8px;pointer-events:auto;background:var(--ov-bg);border-radius:10px;padding:8px 10px;backdrop-filter:blur(6px);color:var(--ov-ink)}
+.phases .pb{flex:none;width:34px;height:34px;border-radius:8px;border:0;background:rgba(255,255,255,.12);color:var(--ov-ink);font:500 18px/1 var(--f-body);cursor:pointer}
+.phases .pb:disabled{opacity:.35;cursor:default}
+.phases .pname{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.phases .pname b{font:500 13px/1.2 var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phases .pname small{font:400 11px/1 var(--f-mono);opacity:.75}
+.phases input[type=range]{width:100%;margin:0;accent-color:var(--larch);height:18px}
+.phases .pinfo{flex:none;border:0;border-radius:8px;background:var(--ov-bg-on);color:var(--ov-ink-on);font:500 12.5px/1 var(--f-body);padding:10px 12px;cursor:pointer}
+#ppanel{position:absolute;z-index:4;top:60px;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(170px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100% - 24px));background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden}
+#ppanel header{display:flex;align-items:center;gap:8px;padding:12px 14px 8px;border-bottom:1px solid var(--line)}
+#ppanel header h3{margin:0;font:700 16px/1.2 var(--f-display);flex:1;min-width:0}
+#ppanel header small{font:400 11px/1 var(--f-mono);color:var(--muted);display:block;margin-top:4px}
+#ppanel .x{border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer;padding:4px 6px}
+#ppanel nav{display:flex;gap:4px;padding:8px 14px 0}
+#ppanel nav button{flex:1;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font:500 13px/1 var(--f-body);padding:8px 4px;cursor:pointer}
+#ppanel nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--larch)}
+#ppanel .body{overflow:auto;padding:12px 14px 14px;font:400 13.5px/1.5 var(--f-body);flex:1;min-height:0}
+#ppanel .body ul{margin:0;padding-left:18px;display:grid;gap:6px}
+#ppanel .body h4{font:500 12px/1.2 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+#ppanel .body h4:first-child{margin-top:0}
+#ppanel table{width:100%;border-collapse:collapse;font-size:12.5px}
+#ppanel td,#ppanel th{padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+#ppanel th{font:500 11px/1.2 var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+#ppanel td.n,#ppanel th.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#ppanel td.spec{color:var(--muted);font-size:11.5px}
+#ppanel tr.sum td{font-weight:500;border-top:2px solid var(--line);border-bottom:0}
+#ppanel .tot{display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;font-variant-numeric:tabular-nums;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+#ppanel .tot b{font-weight:500}
+#ppanel .note{font-size:11.5px;color:var(--muted);margin-top:10px}
+@media (max-width:720px){ #ppanel{top:auto;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto;bottom:calc(166px + env(safe-area-inset-bottom,0px));max-height:46%} .phases .pname small{display:none} }
+@media (max-width:560px){ header.top .sub{display:none} .tabs{margin-left:0;width:100%} .tabs button{flex:1} .hint{display:none} .pad{bottom:calc(172px + env(safe-area-inset-bottom,0px))} #joy{bottom:calc(176px + env(safe-area-inset-bottom,0px));width:104px;height:104px} #knob{left:32px;top:32px} #doorbtn{bottom:calc(186px + env(safe-area-inset-bottom,0px))} #talkbtn{bottom:calc(234px + env(safe-area-inset-bottom,0px))} #npcsub{bottom:calc(282px + env(safe-area-inset-bottom,0px))} }
+body:not([data-mode="walk"]) .pad{display:none}
+@media (pointer:coarse){ .hint{display:none} }
+
+/* V14 game layer: action buttons, quest tracker and journal, banner, piano keys */
+#actrow{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(112px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;align-items:center;justify-content:center;pointer-events:none;width:max-content;max-width:calc(100% - 24px)}
+#actrow button{pointer-events:auto}
+#actrow #doorbtn{position:relative;left:auto;bottom:auto;transform:none;overflow:hidden;background:linear-gradient(90deg,#ffd36b calc(var(--p,0)*100%),var(--ov-bg-on) calc(var(--p,0)*100%));max-width:calc(100vw - 150px);white-space:nowrap;text-overflow:ellipsis}
+#act2{font:500 13px/1 var(--f-body);color:var(--ov-ink);background:var(--ov-bg);border:0;border-radius:999px;padding:11px 14px;cursor:pointer;backdrop-filter:blur(6px);white-space:nowrap}
+#qtrack{top:66px;left:max(12px,env(safe-area-inset-left,0px));max-width:min(380px,calc(56vw));background:var(--ov-bg);border-radius:8px;padding:7px 11px 8px;font:400 12.5px/1.4 var(--f-body);backdrop-filter:blur(6px);cursor:pointer;display:grid;grid-template-columns:1fr auto;column-gap:10px;align-items:center}
+#qtrack b{grid-column:1;font:500 11px/1.3 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:#ffd36b}
+#qtrack span{grid-column:1}
+#qtrack i{grid-column:2;grid-row:1 / span 2;font:700 18px/1 var(--f-body);font-style:normal;color:#ffd36b;display:inline-block;width:22px;text-align:center;align-self:center}
+#qtrack em{grid-column:2;grid-row:3;font:400 11px/1 var(--f-mono);font-style:normal;opacity:.8;text-align:center}
+body[data-full="1"] #qtrack{top:58px}
+#npcsub.think{font-style:italic;background:rgba(30,26,20,.66)}
+#npcpanel .topics button.quest{border-color:#c79a2c;background:#fff4d6;color:#4a3608}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) #npcpanel .topics button.quest{background:#3a2e12;color:#ffe2a0} }
+:root[data-theme="dark"] #npcpanel .topics button.quest{background:#3a2e12;color:#ffe2a0}
+#quests{position:absolute;z-index:5;top:60px;left:max(12px,env(safe-area-inset-left,0px));width:min(370px,calc(100% - 24px));max-height:calc(100% - 190px);overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:12px 14px}
+#quests h3{margin:0 0 6px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center}
+#quests h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer}
+#quests .qi{border-top:1px solid var(--line);padding:10px 0}
+#quests .qi.tr{box-shadow:inset 3px 0 0 #d9a520;padding-left:10px}
+#quests .qi.dn{opacity:.6}
+#quests .qh{display:flex;align-items:baseline;gap:8px}
+#quests .qh b{font:500 14px/1.3 var(--f-body);flex:1}
+#quests .qs{font:400 10.5px/1 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:4px 7px;color:var(--muted)}
+#quests .qs.run{border-color:#c79a2c;color:#9a6f05}
+#quests .qs.ok{border-color:#6f9a5a;color:#4e7a3a}
+#quests .qw{font:400 11px/1.3 var(--f-mono);color:var(--muted);margin-top:2px}
+#quests p{margin:6px 0 0;font:400 13px/1.45 var(--f-body)}
+#quests .qt{margin-top:8px;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12px/1 var(--f-body);padding:7px 11px;cursor:pointer}
+#quests .qt[aria-pressed="true"]{border-color:#c79a2c}
+#quests .qf{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;font:400 11px/1.4 var(--f-mono);color:var(--muted)}
+#quests .qf button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;font:500 12px/1 var(--f-body);padding:7px 11px;cursor:pointer}
+#qbanner{position:absolute;z-index:6;top:16%;left:50%;transform:translateX(-50%);background:rgba(18,16,13,.8);color:#f6efe0;border-radius:12px;padding:12px 20px 13px;text-align:center;pointer-events:none;box-shadow:0 6px 30px rgba(0,0,0,.35);max-width:min(440px,calc(100% - 32px))}
+#qbanner small{display:block;font:500 11px/1.2 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:#ffd36b}
+#qbanner b{display:block;font:700 18px/1.3 var(--f-display);margin-top:4px;text-wrap:balance}
+#qbanner.go{animation:qb 4.2s ease both}
+@keyframes qb{0%{opacity:0;transform:translate(-50%,-8px)}8%{opacity:1;transform:translate(-50%,0)}85%{opacity:1}100%{opacity:0}}
+#piano{position:absolute;z-index:4;left:0;right:0;bottom:0;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(10,9,8,0),rgba(10,9,8,.62) 30%);display:flex;flex-direction:column;gap:8px;align-items:center}
+#piano .pbar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+#piano .pbar button{font:500 13px/1 var(--f-body);color:var(--ov-ink);background:var(--ov-bg);border:0;border-radius:999px;padding:9px 13px;cursor:pointer;backdrop-filter:blur(6px)}
+#piano .pbar button[aria-pressed="true"]{background:var(--ov-bg-on);color:var(--ov-ink-on)}
+#piano .keys{position:relative;width:min(900px,100%);height:clamp(104px,23vh,168px);touch-action:none;user-select:none;-webkit-user-select:none}
+#piano .wk{position:absolute;top:0;bottom:0;background:linear-gradient(#fbf9f3,#ece7dc);border:1px solid #2b2722;border-radius:0 0 7px 7px;box-sizing:border-box;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font:400 10px/1 var(--f-mono);color:#7d766a}
+#piano .bk{position:absolute;top:0;height:60%;background:linear-gradient(#2a2724,#0f0e0d);border-radius:0 0 4px 4px;z-index:2;box-shadow:0 2px 3px rgba(0,0,0,.4)}
+#piano .wk.on{background:linear-gradient(#ffe7a6,#ffd36b)}
+#piano .bk.on{background:linear-gradient(#b8892b,#7d5b16)}
+#piano .phint{font:400 11px/1.3 var(--f-mono);color:rgba(255,255,255,.75);text-align:center}
+@media (pointer:coarse){ #piano .phint{display:none} }
+body.piano-on .bar,body.piano-on #joy,body.piano-on .pad,body.piano-on #actrow,body.piano-on .hint{display:none!important}
+@media (max-width:560px){ #actrow{bottom:calc(186px + env(safe-area-inset-bottom,0px))} #qtrack{top:104px;max-width:calc(100% - 24px)} #actrow #doorbtn{max-width:calc(100vw - 130px)} }
+
+/* ===== V15: one menu (☰, Esc, M) holds what used to be button rows; while playing only a HUD: things at the bottom, actions above, the task at the top ===== */
+.pad{display:none!important}
+#hudtr{top:12px;right:max(12px,env(safe-area-inset-right,0px));display:flex;gap:6px;z-index:6}
+.hb{display:flex;align-items:center;gap:7px;min-height:38px;font:500 13px/1 var(--f-body);color:var(--ov-ink);background:var(--ov-bg);border:0;border-radius:999px;padding:9px 14px 9px 11px;cursor:pointer;backdrop-filter:blur(6px)}
+.hb[aria-expanded="true"]{background:var(--ov-bg-on);color:var(--ov-ink-on)}
+.hbi{display:grid;place-items:center;width:18px;height:18px}
+.hbi svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hbi.burger{gap:3px;width:16px;align-content:center}
+.hbi.burger i{display:block;width:16px;height:2px;border-radius:1px;background:currentColor}
+#camtog .i1{display:none}
+#camtog[aria-pressed="false"] .i1{display:grid}
+#camtog[aria-pressed="false"] .i3{display:none}
+body:not([data-mode="walk"]) #camtog{display:none}
+.toast{top:60px}
+/* bar of things (hotbar) */
+#hotbar{left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:5px;padding:5px;border-radius:13px;background:rgba(18,17,15,.46);backdrop-filter:blur(6px);z-index:3;pointer-events:auto}
+#hotbar .slot{position:relative;flex:none;width:52px;height:52px;padding:0;border-radius:9px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07) center/88% no-repeat;cursor:pointer;color:var(--ov-ink)}
+#hotbar .slot.on{border-color:#ffd36b;background-color:rgba(255,211,107,.16);box-shadow:inset 0 0 0 1px #ffd36b}
+#hotbar .slot b{position:absolute;left:5px;top:4px;font:500 10px/1 var(--f-mono);color:rgba(255,255,255,.62)}
+#hotbar .slot em{position:absolute;right:4px;bottom:3px;font:500 11px/1 var(--f-mono);font-style:normal}
+#hotbar .slot.ph i{position:absolute;inset:12px;border-radius:50%;background:rgba(255,255,255,.22)}
+#hotbar .bagb{flex:none;width:52px;height:52px;padding:0;border-radius:9px;border:0;background:rgba(255,255,255,.12);color:var(--ov-ink);display:grid;place-items:center;cursor:pointer;margin-left:3px}
+#hotbar .bagb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#hotbar .bagb em{position:absolute;font:500 10px/1 var(--f-mono);font-style:normal;margin:30px 0 0 30px;color:#ffd36b}
+#hbname{left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));font:500 13px/1 var(--f-body);background:var(--ov-bg);padding:6px 11px;border-radius:7px;pointer-events:none;white-space:nowrap;backdrop-filter:blur(6px)}
+#stancetag{left:max(12px,env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));font:500 12.5px/1 var(--f-body);background:var(--ov-bg);padding:8px 11px;border-radius:999px;pointer-events:none;backdrop-filter:blur(6px)}
+#stancetag kbd{font:500 10.5px/1 var(--f-mono);opacity:.75;margin-left:6px}
+#actrow{bottom:calc(108px + env(safe-area-inset-bottom,0px))}
+#npcsub{bottom:calc(160px + env(safe-area-inset-bottom,0px))}
+body:not([data-mode="walk"]) #hotbar,body:not([data-mode="walk"]) #hbname,body:not([data-mode="walk"]) #stancetag{display:none}
+body:not([data-mode="walk"]) #actrow{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#xhair{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 0 0 1.5px rgba(0,0,0,.4);z-index:3;pointer-events:none}
+/* touch: walking circle on the left, moves on the right */
+#joy{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#moves{display:none;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(2,50px);grid-template-rows:50px 62px;gap:10px;z-index:3;pointer-events:auto}
+#moves button{width:50px;height:50px;padding:0;border-radius:50%;border:0;background:var(--ov-bg);color:var(--ov-ink);display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(6px);touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#moves button svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#moves button[aria-pressed="true"]{background:var(--ov-bg-on);color:var(--ov-ink-on)}
+#moves button.big{width:62px;height:62px;align-self:end}
+#moves [data-mv="prone"]{grid-column:1;grid-row:2;align-self:end}
+@media (pointer:coarse){ body[data-mode="walk"] #moves{display:grid} body[data-mode="walk"] #stancetag{display:none} }
+/* model view: building phases and the way in */
+#orbithud{left:0;right:0;bottom:0;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));display:flex;gap:10px;align-items:flex-end;pointer-events:none;z-index:2}
+#orbithud > *{pointer-events:auto}
+#ph-home{flex:1;min-width:0;max-width:600px}
+#orbithud .ohb{display:flex;gap:6px;margin-left:auto}
+.ogo{font:500 14.5px/1 var(--f-body);color:var(--ov-ink-on);background:var(--ov-bg-on);border:0;border-radius:999px;padding:14px 20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.oalt{font:500 13.5px/1 var(--f-body);color:var(--ov-ink);background:var(--ov-bg);border:0;border-radius:999px;padding:14px 16px;cursor:pointer;backdrop-filter:blur(6px)}
+body:not([data-mode="orbit"]) #orbithud{display:none}
+@media (max-width:620px){ #orbithud{flex-direction:column;align-items:stretch} #orbithud .ohb{margin-left:0;justify-content:flex-end} #ph-home{max-width:none} }
+/* the menu: a sheet at the right (phones: from below) */
+#menu{position:absolute;inset:0;z-index:9}
+#menu .mscrim{position:absolute;inset:0;background:rgba(12,12,10,.34)}
+#menu .msheet{position:absolute;top:0;right:0;bottom:0;width:min(430px,100%);background:var(--paper);color:var(--ink);box-shadow:-8px 0 32px rgba(0,0,0,.3);display:flex;flex-direction:column}
+.mhead{display:flex;align-items:center;gap:10px;padding:14px max(16px,env(safe-area-inset-right,0px)) 10px 18px;border-bottom:1px solid var(--line)}
+.mhead h2{margin:0;font:700 19px/1.15 var(--f-display)}
+.mhead small{display:block;font:400 11px/1.3 var(--f-mono);color:var(--muted);margin-top:3px}
+.mhead .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 26px/1 var(--f-body);cursor:pointer;padding:2px 6px}
+.mbody{flex:1;min-height:0;overflow:auto;padding:14px max(16px,env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) 18px;display:flex;flex-direction:column;gap:20px;overscroll-behavior:contain}
+.mresume{align-self:stretch;font:500 15px/1 var(--f-body);color:var(--paper);background:var(--ink);border:0;border-radius:12px;padding:15px 16px;cursor:pointer}
+.msec h3{margin:0 0 8px;font:500 11px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.msec h3.h3b{margin-top:14px}
+.mchips{display:flex;flex-wrap:wrap;gap:6px}
+#menu .chip{background:var(--plate);color:var(--ink);border:1px solid var(--line);backdrop-filter:none;padding:9px 12px;font-size:13px}
+#menu .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#menu .chip .lv{opacity:.65}
+.mlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#menu .tog{display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0;background:var(--plate);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:500 13.5px/1.2 var(--f-body);backdrop-filter:none;text-align:left}
+#menu .tog span{font:400 11.5px/1 var(--f-mono);color:var(--muted);opacity:1;margin:0;white-space:nowrap}
+#menu .tog[aria-pressed="true"]{border-color:var(--ink)}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;font:500 13.5px/1.2 var(--f-body)}
+.mseg{display:inline-flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--plate)}
+.mseg button{border:0;background:none;color:var(--muted);font:500 13px/1 var(--f-body);padding:8px 13px;border-radius:999px;cursor:pointer}
+.mseg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.16)}
+.mseg button:disabled{opacity:.45;cursor:default}
+.mnote{margin:8px 0 0;font:400 12px/1.45 var(--f-body);color:var(--muted)}
+.mhelp dl{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;margin:0;font:400 13px/1.45 var(--f-body)}
+.mhelp dt{font-weight:500;white-space:nowrap}
+.mhelp dd{margin:0;color:var(--muted)}
+.mhelp kbd{display:inline-block;min-width:1.6em;text-align:center;font:500 11px/1 var(--f-mono);color:var(--ink);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:3px 4px;margin:0 1px;background:var(--plate)}
+.mhelp dl[data-ptr="coarse"]{display:none}
+@media (pointer:coarse){ .mhelp dl[data-ptr="coarse"]{display:grid} .mhelp dl[data-ptr="fine"]{display:none} .mrow[data-ptr="fine"]{display:none} }
+#menu .phases{background:var(--plate);color:var(--ink);backdrop-filter:none;border:1px solid var(--line)}
+#menu .phases .pb{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+#menu .phases .pinfo{background:var(--ink);color:var(--paper)}
+@media (max-width:560px){ #menu .msheet{top:auto;left:0;width:auto;max-height:88%;border-radius:18px 18px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.3)} .mlist{grid-template-columns:1fr 1fr} .mhelp dl{grid-template-columns:1fr;gap:2px 0} .mhelp dd{margin-bottom:6px} }
+/* inventory window */
+#invwin{position:absolute;z-index:8;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));width:min(590px,calc(100% - 24px));max-height:calc(100% - 140px);overflow:auto;background:var(--paper);color:var(--ink);border-radius:14px;box-shadow:0 10px 36px rgba(0,0,0,.34);padding:12px 14px 14px}
+#invwin h3{margin:0 0 4px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center;gap:8px}
+#invwin h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer}
+#invwin h4{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+#invwin .ig{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+#invwin .is{position:relative;aspect-ratio:1;max-width:100%;padding:0;border-radius:9px;border:1px solid var(--line);background:var(--plate) center/86% no-repeat;cursor:pointer;color:var(--ink)}
+#invwin .is.on{border-color:#c79a2c;box-shadow:inset 0 0 0 1px #c79a2c}
+#invwin .is.pick{outline:2px dashed var(--larch);outline-offset:1px}
+#invwin .is b{position:absolute;left:5px;top:4px;font:500 10px/1 var(--f-mono);color:var(--muted)}
+#invwin .is em{position:absolute;right:4px;bottom:3px;font:500 11px/1 var(--f-mono);font-style:normal}
+#invwin .info{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;font:400 13px/1.45 var(--f-body);min-height:44px}
+#invwin .info b{font-weight:500}
+#invwin .info p{margin:0;flex:1 1 220px;color:var(--muted)}
+#invwin .info button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:8px 12px;cursor:pointer}
+#invwin .info button.acc{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+@media (max-width:560px){ #hotbar{gap:3px;padding:4px} #hotbar .slot{width:39px;height:39px} #hotbar .bagb{width:39px;height:39px;margin-left:1px} #hotbar .slot b{display:none} #hbname{bottom:calc(60px + env(safe-area-inset-bottom,0px))}
+  #joy{bottom:calc(66px + env(safe-area-inset-bottom,0px))} #moves{bottom:calc(66px + env(safe-area-inset-bottom,0px))} #actrow{bottom:calc(196px + env(safe-area-inset-bottom,0px))} #npcsub{bottom:calc(250px + env(safe-area-inset-bottom,0px))} #invwin{bottom:calc(64px + env(safe-area-inset-bottom,0px))} .hb .hbt{display:none} .hb{padding:9px 11px} }
+body.piano-on #hotbar,body.piano-on #moves,body.piano-on #hbname,body.piano-on #stancetag,body.piano-on #xhair{display:none!important}
+body[data-seated="1"] #moves{display:none!important}
+body[data-mode="walk"] .where small{display:none}
+body[data-mode="walk"] #qtrack{top:58px}
+@media (max-width:560px){ .toast{top:128px;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));max-width:none} body:not([data-mode="walk"]) .toast{top:60px} }
+/* ===== V15b: game clock, protective gear, machine windows, the workpiece card, the workshop book ===== */
+#clockbtn .hbt{font-variant-numeric:tabular-nums}
+#clockbtn.focus{box-shadow:inset 0 0 0 2px #ffd36b}
+#clockbtn.warp .hbi{animation:ckspin 1.2s linear infinite}
+@keyframes ckspin{to{transform:rotate(360deg)}}
+#gearbtn .gi{display:flex;gap:1px}
+#gearbtn .gi i{display:grid;place-items:center;width:18px;height:18px}
+#gearbtn .gi svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#gearbtn .gi .g-off{opacity:.45}
+body:not([data-mode="walk"]) #clockbtn,body:not([data-mode="walk"]) #gearbtn{display:none}
+#clockwin,#gearwin,#machwin,#werkbuch{position:absolute;z-index:8;background:var(--paper);color:var(--ink);border-radius:14px;box-shadow:0 10px 36px rgba(0,0,0,.34);padding:12px 14px 14px;overflow:auto;overscroll-behavior:contain}
+#clockwin{top:60px;right:max(12px,env(safe-area-inset-right,0px));width:min(370px,calc(100% - 24px));max-height:calc(100% - 150px)}
+#gearwin{top:60px;right:max(12px,env(safe-area-inset-right,0px));width:min(410px,calc(100% - 24px));max-height:calc(100% - 150px)}
+#machwin{left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));width:min(480px,calc(100% - 24px));max-height:calc(100% - 130px)}
+#werkbuch{top:60px;left:max(12px,env(safe-area-inset-left,0px));width:min(480px,calc(100% - 24px));max-height:calc(100% - 150px)}
+#clockwin h3,#gearwin h3,#machwin h3,#werkbuch h3{margin:0 0 6px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center;gap:8px}
+#clockwin h3 .x,#gearwin h3 .x,#machwin h3 .x,#werkbuch h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer}
+#clockwin h4,#werkbuch h4{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.cknow{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;font:500 15px/1.2 var(--f-body);margin-bottom:4px}
+.cknow span{font:500 22px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.cknow em{font:400 12px/1 var(--f-body);color:var(--larch);font-style:normal}
+.ckw{display:flex;flex-wrap:wrap;gap:6px}
+.ckw button,#machwin .mbtn button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:9px 13px;cursor:pointer}
+.ckw button.acc,#machwin .mbtn .acc{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.ckj{list-style:none;margin:0;padding:0;display:grid;gap:5px;font:400 13px/1.35 var(--f-body)}
+.ckdate{display:grid;gap:2px;margin:2px 0 8px;font:400 12.5px/1.35 var(--f-body);color:var(--muted)}
+.ckdate b{font:600 14px/1.3 var(--f-body);color:var(--ink)}
+#clockbtn[data-dn="sun"] .hbi{color:#f2c14e}
+#clockbtn[data-dn="tw"] .hbi{color:#f0a072}
+#clockbtn[data-dn="moon"] .hbi{color:#b9c8ff}
+.ckj li{display:flex;justify-content:space-between;gap:10px}
+.ckj span{color:var(--muted);font:400 12px/1.35 var(--f-mono);white-space:nowrap}
+#clockwin .mseg,#machwin .mseg{flex-wrap:wrap}
+.gl{display:grid;gap:6px}
+.gitem{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:10px;padding:9px 10px;cursor:pointer}
+.gitem i{display:grid;place-items:center}
+.gitem i svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.gitem b{display:block;font:500 13.5px/1.25 var(--f-body)}
+.gitem small{display:block;font:400 11.5px/1.35 var(--f-body);color:var(--muted)}
+.gitem em{font:500 11px/1 var(--f-mono);font-style:normal;color:var(--muted)}
+.gitem.on{border-color:#3f8a3c;box-shadow:inset 0 0 0 1px #3f8a3c}
+.gitem.on em{color:#3f8a3c}
+.gnote{margin:10px 0 0;font:400 12px/1.45 var(--f-body);color:var(--muted)}
+.msub{font:400 12px/1.35 var(--f-mono);color:var(--muted);margin-bottom:4px}
+.mrw{margin-top:12px}
+.mlb{display:flex;justify-content:space-between;gap:10px;font:500 13px/1.3 var(--f-body)}
+.mlb b{font:500 13px/1 var(--f-mono);white-space:nowrap}
+.mct{display:flex;align-items:center;gap:8px;margin-top:6px}
+.mct input{flex:1;min-width:0;accent-color:var(--larch)}
+.mct .st{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--plate);color:var(--ink);font:500 18px/1 var(--f-body);cursor:pointer}
+.mrw small{display:block;margin-top:5px;font:400 11.5px/1.4 var(--f-body);color:var(--muted)}
+.mch{margin-top:6px}
+.mchk{display:grid;gap:6px;margin-top:12px}
+.ck{display:grid;grid-template-columns:22px minmax(0,1fr);gap:9px;align-items:start;text-align:left;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:10px;padding:9px 10px;cursor:pointer}
+.ck i{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--muted);margin-top:1px;display:grid;place-items:center}
+.ck.on i{background:var(--ink);border-color:var(--ink)}
+.ck.on i::after{content:"";width:9px;height:5px;border:2px solid var(--paper);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+.ck b{display:block;font:500 13px/1.3 var(--f-body)}
+.ck small{display:block;font:400 11.5px/1.35 var(--f-body);color:var(--muted)}
+.mgear{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:12px;font:400 12.5px/1.3 var(--f-body)}
+.mgear>span{color:var(--muted)}
+.mgear em{font-style:normal}
+.mgear em.ok{color:#3f8a3c}
+.mgear em.no{color:#b3261e;font-weight:500}
+.mgear .gearlink{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12px/1 var(--f-body);padding:6px 10px;cursor:pointer}
+.minfo{margin:10px 0 0;font:400 12.5px/1.45 var(--f-body);color:var(--muted)}
+.mbtn{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;flex-wrap:wrap}
+#wpcard{top:150px;left:max(12px,env(safe-area-inset-left,0px));width:min(300px,52vw);background:var(--ov-bg);color:var(--ov-ink);border-radius:10px;padding:8px 10px 9px;font:400 12.5px/1.4 var(--f-body);backdrop-filter:blur(6px);pointer-events:auto;z-index:3}
+#wpcard .wc-t{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;color:inherit;padding:0;text-align:left;cursor:pointer;font:500 13px/1.3 var(--f-body)}
+#wpcard .wc-t b{flex:1;min-width:0;font-weight:600}
+#wpcard .wc-t i{font-style:normal;opacity:.7}
+#wpcard .wc-d{font:400 11px/1.35 var(--f-mono);opacity:.75;margin-top:3px}
+#wpcard .wc-n{margin-top:6px}
+#wpcard .wc-n span{display:block;font:500 10.5px/1.2 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:#ffd36b}
+#wpcard .wc-j{margin-top:5px;font:400 11.5px/1.35 var(--f-mono);color:#ffd36b}
+#wpcard .wc-s{margin-top:4px;color:#ffd36b;letter-spacing:.1em}
+#wpcard .wc-b{margin-top:7px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:inherit;font:500 11.5px/1 var(--f-body);padding:6px 10px;cursor:pointer}
+body:not([data-mode="walk"]) #wpcard{display:none}
+.bk-i{margin:0 0 10px;font:400 13px/1.45 var(--f-body);color:var(--muted)}
+.bk-i b{color:var(--ink);font-weight:500}
+ol.bk{margin:0;padding:0;list-style:none;counter-reset:bk;display:grid;gap:8px}
+ol.bk li{counter-increment:bk;display:grid;grid-template-columns:26px minmax(0,1fr);gap:1px 9px;font:400 12.5px/1.4 var(--f-body)}
+ol.bk li::before{content:counter(bk);grid-row:span 2;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:500 11px/1 var(--f-mono);background:var(--plate);border:1px solid var(--line);color:var(--muted)}
+ol.bk li b{font-weight:500}
+ol.bk li span{color:var(--muted)}
+ol.bk li.ok::before{content:"✓";background:#3f8a3c;color:#fff;border-color:#3f8a3c}
+ol.bk li.cur::before{background:#ffd36b;color:#23241f;border-color:#c79a2c}
+ol.bk li.cur b{font-weight:700}
+ol.bk li.opt::before{content:"–"}
+ul.bk-f{margin:0;padding:0;list-style:none;display:grid;gap:6px;font:400 12.5px/1.4 var(--f-body)}
+ul.bk-f span{display:block;color:var(--muted);font-size:11.5px}
+.bk-n{margin:12px 0 0;font:400 11.5px/1.45 var(--f-body);color:var(--muted)}
+#actrow #doorbtn.gauge::after{content:"";position:absolute;top:0;bottom:0;left:calc(var(--g0,.6) * 100%);width:calc((var(--g1,.8) - var(--g0,.6)) * 100%);background:rgba(80,190,100,.26);box-shadow:inset 0 0 0 2px rgba(60,160,80,.95);pointer-events:none}
+#gearfx{position:absolute;inset:0;pointer-events:none;z-index:2;display:none}
+body[data-mode="walk"][data-view="1"] #gearfx[data-eyes="brille"],body[data-mode="walk"][data-view="1"] #gearfx[data-eyes="korb"]{display:block}
+#gearfx[data-eyes="brille"]{box-shadow:inset 0 -46px 70px -44px rgba(30,35,40,.45),inset 0 40px 60px -44px rgba(30,35,40,.35)}
+#gearfx[data-eyes="korb"]{box-shadow:inset 0 0 120px 28px rgba(20,25,28,.5)}
+@media (max-width:560px){ #clockbtn .hbt{display:inline;font-size:12px} #clockbtn{padding:9px 10px} #gearbtn .hbt{display:none} #wpcard{top:196px;width:min(250px,62vw);font-size:12px} #machwin{bottom:calc(64px + env(safe-area-inset-bottom,0px))} }
+</style>
+
+<header class="top">
+  <div><h1>Pavillon Ratscher</h1><div class="sub">Begehbares Modell · Garten bei Ratscher · Okt. 2026</div></div>
+  <nav class="tabs" role="tablist" aria-label="Ansichten">
+    <button role="tab" id="tab-3d" aria-selected="true" aria-controls="p-3d">3D-Modell</button>
+    <button role="tab" id="tab-pano" aria-selected="false" aria-controls="p-pano">360°</button>
+    <button role="tab" id="tab-bilder" aria-selected="false" aria-controls="p-bilder">Bilder</button>
+    <button role="tab" id="tab-film" aria-selected="false" aria-controls="p-film">Raumführung</button>
+  </nav>
+</header>
+<main>
+  <section class="panel" id="p-3d" role="tabpanel" aria-labelledby="tab-3d" style="overflow:hidden">
+    <div id="stage"></div>
+    <div id="loading">3D-Modell wird geladen …</div>
+    <div class="ov where" aria-live="polite"><span id="where">Modellansicht</span><small>Entwurfsstudie, vereinfacht</small></div>
+    <div class="ov" id="hudtr">
+      <button type="button" class="hb" id="clockbtn" title="Spielzeit"><span class="hbi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><span class="hbt">07:30</span></button>
+      <button type="button" class="hb" id="gearbtn" hidden title="Schutzausrüstung (PSA)"><span class="gi"></span><span class="hbt">PSA</span></button>
+      <button type="button" class="hb" id="camtog" hidden aria-pressed="true" title="Ansicht: Figur mit Schulterkamera oder durch die eigenen Augen (V, Mausrad)"><span class="hbi i3"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4.8" r="2.3"/><path d="M12 8v7M12 10.2l-4.2 3M12 10.2l4.2 3M12 15l-3.2 6M12 15l3.2 6"/></svg></span><span class="hbi i1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.7"/></svg></span><span class="hbt">Figur</span></button>
+      <button type="button" class="hb" id="menubtn" aria-expanded="false" aria-controls="menu" title="Menü (Esc oder M)"><span class="hbi burger" aria-hidden="true"><i></i><i></i><i></i></span><span class="hbt">Menü</span></button>
+    </div>
+    <div class="ov toast" id="toast" role="status" hidden></div>
+    <aside id="ppanel" hidden aria-label="Bauphase: Bauweise, Material, Kosten">
+      <header><div style="min-width:0;flex:1"><h3 id="pp-title">Bauphase</h3><small id="pp-sub"></small></div><button class="x" id="pp-close" aria-label="Schließen">×</button></header>
+      <nav><button type="button" data-pt="how" aria-selected="true">Bauweise</button><button type="button" data-pt="mat" aria-selected="false">Material</button><button type="button" data-pt="cost" aria-selected="false">Kosten</button></nav>
+      <div class="body" id="pp-body"></div>
+    </aside>
+    <div id="actrow"><button id="act2" type="button" hidden></button><button id="doorbtn" type="button" hidden>Tür öffnen</button></div>
+    <div class="ov" id="qtrack" hidden role="button" tabindex="0" aria-label="Aufgabe – antippen für alle Aufgaben"></div>
+    <div class="ov" id="planbar" hidden>
+      <span id="pb-name">Gegenstand antippen</span>
+      <button type="button" data-pa="rotl" title="15° links drehen (Shift+R)">↺</button><button type="button" data-pa="rotr" title="15° rechts drehen (R)">↻</button><button type="button" data-pa="dup" title="Kopie daneben">Kopie</button><button type="button" data-pa="del" title="Entfernen (Entf)">Löschen</button>
+      <button type="button" data-pa="add" class="acc">+ Hinzufügen</button><button type="button" data-pa="reset" title="Alle Änderungen verwerfen">Zurück</button><button type="button" data-pa="done">Fertig</button>
+    </div>
+    <aside id="facade" hidden aria-label="Fassade wählen"><h3>Fassade<button type="button" class="x" aria-label="Schließen">×</button></h3>
+      <h4>Haus</h4><div class="prow sw" data-fac="house"></div>
+      <h4 data-var="A">Treppenturm</h4><div class="prow sw" data-fac="tower" data-var="A"></div>
+      <h4>Fensterrahmen</h4><div class="prow sw" data-fac="frame"></div>
+      <p class="fnote">Gilt für die Außenverkleidung (Bretter mit Deckleisten; Schindeln, Stülpschalung, Platten, Kupfer und Putz als Oberfläche darauf). Die Wahl bleibt in diesem Browser gespeichert und gehört über „Teilen“ zum Planstand.</p></aside>
+    <aside id="interior" hidden aria-label="Einrichtung wählen"><h3>Einrichtung<button type="button" class="x" aria-label="Schließen">×</button></h3>
+      <h4>Stil</h4><div class="prow sw" data-st="style"></div>
+      <h4>Boden</h4><div class="prow sw" data-st="floor"></div>
+      <h4>Wände</h4><div class="prow sw" data-st="walls"></div>
+      <h4>Decke</h4><div class="prow sw" data-st="ceil"></div>
+      <h4>Möbelholz</h4><div class="prow sw" data-st="wood"></div>
+      <h4>Stoffe</h4><div class="prow sw" data-st="fabric"></div>
+      <p class="fnote">Gilt für den Pavillon innen. Möbel, Regal, Bett, Schreibtisch, Piano und Sideboard verschiebst du mit „Planen“. Die Wahl bleibt in diesem Browser gespeichert und gehört über „Teilen“ zum Planstand.</p></aside>
+    <aside id="perfbox" hidden aria-label="Leistungstest"><h3>Leistungstest<button type="button" class="x" id="perfclose" aria-label="Schließen">×</button></h3>
+      <pre id="perfout">Messung startet …</pre>
+      <div class="acts"><button type="button" id="perfcopy">Ergebnis kopieren</button></div>
+      <p>Das Modell geht von selbst durch sechs Ansichten und dreht sich dabei. Danach kannst du das Ergebnis kopieren und mir schicken.</p></aside>
+    <svg id="topsvg" hidden aria-hidden="true"></svg>
+    <div class="ov" id="topscale" hidden><i></i><span>10 m</span><b>N ↑</b></div>
+    <div class="ov" id="geoattr" hidden>Luftbild und Gelände © GDI-Th (dl-de/by-2-0) · Karte © OpenStreetMap-Mitwirkende (ODbL) · Copernicus DEM © DLR/Airbus, EU/ESA</div>
+    <div class="ov" id="sitebar" hidden>
+      <span id="sb-name">Gebäude ziehen zum Verschieben</span>
+      <span class="sbg" id="sb-bld" hidden><label>Ost<input type="number" id="sb-dx" step="0.1" inputmode="decimal" aria-label="Verschiebung nach Osten in Metern"></label><label>Nord<input type="number" id="sb-dy" step="0.1" inputmode="decimal" aria-label="Verschiebung nach Norden in Metern"></label><label>Drehung °<input type="number" id="sb-da" step="1" inputmode="decimal" aria-label="Drehung im Uhrzeigersinn in Grad"></label>
+        <button type="button" data-sa="rotl" title="15° gegen den Uhrzeigersinn (Shift+R)">↺</button><button type="button" data-sa="rotr" title="15° im Uhrzeigersinn (R)">↻</button><button type="button" data-sa="home" title="Zurück an den ursprünglichen Platz">Ursprung</button><button type="button" data-sa="desel" title="Auswahl aufheben (Esc)" aria-label="Auswahl aufheben">✕</button></span>
+      <span class="sbg" id="sb-fence" hidden><button type="button" data-sa="gate" id="sb-gate">Tür hier</button><button type="button" data-sa="fdel" title="Zaun löschen (Entf)">Löschen</button><button type="button" data-sa="desel" title="Auswahl aufheben (Esc)" aria-label="Auswahl aufheben">✕</button></span>
+      <span class="sbg" id="sb-draw" hidden><button type="button" data-sa="kind-mesh" aria-pressed="true">Maschendraht</button><button type="button" data-sa="kind-wood" aria-pressed="false">Holzzaun</button><button type="button" data-sa="back">Punkt zurück</button><button type="button" data-sa="cancel">Abbrechen</button><button type="button" data-sa="finish" class="acc">Fertig</button></span>
+      <span class="sbg" id="sb-main"><button type="button" data-sa="village" hidden title="Ratscher und Umgebung zeigen – noch einmal: zurück zum Garten">Ratscher</button><button type="button" data-sa="geomap" aria-pressed="false" hidden title="Karte statt Luftbild">Karte</button><button type="button" data-sa="draw">Zaun<span class="tx"> ziehen</span></button><button type="button" data-sa="trees" aria-pressed="true" title="Bäume im Garten ein- und ausblenden">Bäume</button><button type="button" data-sa="undo" title="Rückgängig (Strg+Z)" aria-label="Rückgängig">↶<span class="tx"> Rückgängig</span></button><button type="button" data-sa="reset" title="Alle Gebäude und Zäune wie ursprünglich">Grundstand</button><button type="button" data-sa="share">Teilen</button><button type="button" data-sa="done" class="acc">Fertig</button></span>
+      <div id="sb-warn" hidden></div>
+    </div>
+    <aside id="sharebox" hidden aria-label="Teilen und veröffentlichen"><h3>Teilen<button type="button" class="x" aria-label="Schließen">×</button></h3><div id="sh-body"></div></aside>
+    <aside id="palette" hidden aria-label="Gegenstände hinzufügen"><h3>Hinzufügen<button type="button" class="x" onclick="this.closest('aside').hidden=true" aria-label="Schließen">×</button></h3></aside>
+    <button id="talkbtn" hidden>Sprechen</button>
+    <div id="npcsub" hidden></div>
+    <aside id="npcpanel" hidden aria-label="Gespräch">
+      <header><h3 id="np-name">Nachbar</h3><button class="x" id="np-close" aria-label="Gespräch beenden">×</button></header>
+      <div class="say" id="np-text"></div>
+      <div class="topics" id="np-topics"></div>
+    </aside>
+    <div id="joy" aria-label="Gehen"><div id="knob"></div></div>
+    <div class="ov pad" aria-label="Bewegen">
+      <button class="f" aria-label="Vorwärts" data-key="w">▲</button>
+      <button class="l" aria-label="Nach links drehen" data-key="arrowleft">◀</button>
+      <button class="b" aria-label="Rückwärts" data-key="s">▼</button>
+      <button class="r" aria-label="Nach rechts drehen" data-key="arrowright">▶</button>
+    </div>
+    <div id="xhair" hidden aria-hidden="true"></div>
+    <div class="ov" id="hotbar" role="toolbar" aria-label="Leiste: Gegenstände 1 bis 8"></div>
+    <div class="ov" id="hbname" hidden aria-live="polite"></div>
+    <div class="ov" id="stancetag" hidden></div>
+    <div class="ov" id="moves" aria-label="Bewegungen">
+      <button type="button" data-mv="crouch" aria-pressed="false" aria-label="Ducken"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="14.5" cy="5.6" r="2.2"/><path d="M13.6 8.6l-3.8 5 4.6 1.6-1.2 5.3M10.4 12.6l4.8 1.2M13 9.6l3.6 3.2M5 21h14"/></svg></button>
+      <button type="button" data-mv="crawl" aria-pressed="false" aria-label="Kriechen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="19" cy="8.4" r="2.1"/><path d="M16.6 11H8.4M16 11l1.2 6.4M8.4 11l-0.4 5.4-4 1.2M3 19.5h18"/></svg></button>
+      <button type="button" data-mv="prone" aria-pressed="false" aria-label="Hinlegen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="19.6" cy="14.6" r="2.1"/><path d="M17.4 16.4H4M15 16.4l3.6 1.8M3 19.5h18"/></svg></button>
+      <button type="button" data-mv="jump" class="big" aria-label="Springen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17V5M7 10l5-5 5 5M5 20.5h14"/></svg></button>
+    </div>
+    <div class="ov" id="orbithud">
+      <div id="ph-home">
+        <div class="phases" data-phase-ui aria-label="Bauphase">
+          <button class="pb" id="ph-prev" aria-label="Vorherige Bauphase">‹</button>
+          <div class="pname"><b id="ph-name">Einrichtung</b><input type="range" id="ph-range" min="0" max="30" value="30" step="1" aria-label="Bauphase wählen"><small id="ph-sub">Phase 30 von 30</small></div>
+          <button class="pb" id="ph-next" aria-label="Nächste Bauphase">›</button>
+          <button class="pinfo" id="ph-info" aria-expanded="false">Bauweise</button>
+        </div>
+      </div>
+      <div class="ohb"><button type="button" class="ogo" data-spot="garten" title="Hineingehen: in den Garten, dann mit W A S D oder dem Steuerkreuz gehen">Losgehen</button><button type="button" class="oalt" data-spot="draufsicht" title="Von oben: Gebäude verschieben, Zäune ziehen, Ratscher und Umgebung">Draufsicht</button></div>
+    </div>
+    <div id="menu" hidden>
+      <div class="mscrim" data-mclose></div>
+      <div class="msheet" role="dialog" aria-modal="true" aria-labelledby="m-title">
+        <header class="mhead"><div><h2 id="m-title">Menü</h2><small>Pavillon Ratscher · Esc oder M: zurück</small></div><button type="button" class="x" data-mclose aria-label="Menü schließen">×</button></header>
+        <div class="mbody">
+          <button type="button" class="mresume" data-mclose>Weiter</button>
+          <section class="msec" aria-label="Orte"><h3>Orte</h3><div class="mchips">
+            <button class="chip" data-spot="modell" aria-pressed="true">Modell</button>
+            <button class="chip" data-spot="draufsicht" aria-pressed="false" title="Von oben: Gebäude verschieben und drehen, Zäune ziehen">Draufsicht</button>
+            <button class="chip" data-spot="garten" aria-pressed="false">Garten</button>
+            <button class="chip" data-spot="carport" aria-pressed="false">Carport</button>
+            <button class="chip" data-spot="eingang" aria-pressed="false">Vor der Tür</button>
+            <button class="chip" data-spot="bibliothek" aria-pressed="false">Bibliothek<span class="lv">±0,00</span></button>
+            <button class="chip" data-spot="treppe" aria-pressed="false">Treppenturm</button>
+            <button class="chip" data-spot="arbeitsraum" aria-pressed="false">Arbeitsraum<span class="lv">+2,99</span></button>
+            <button class="chip" data-spot="lounge" aria-pressed="false">Lounge<span class="lv">+2,99</span></button>
+            <button class="chip" data-spot="dach" aria-pressed="false">Dachterrasse<span class="lv">+5,95</span></button>
+            <button class="chip" data-spot="wohnwagen" aria-pressed="false">Wohnwagen</button>
+            <button class="chip" data-spot="holzhaus" aria-pressed="false">Holzhaus</button>
+            <button class="chip" data-spot="bungalow" aria-pressed="false">Bungalow</button>
+            <button class="chip" data-spot="ziegen" aria-pressed="false">Ziegen</button>
+            <button class="chip" data-spot="hubert" aria-pressed="false">Hubert</button>
+            <button class="chip" data-spot="werkstatt" aria-pressed="false">Werkstatt</button>
+          </div></section>
+          <section class="msec" aria-label="Bauphase"><h3>Bauphase</h3><div id="ph-menu"></div></section>
+          <section class="msec" aria-label="Licht und Variante"><h3>Licht</h3><div class="mchips">
+            <button class="chip" data-light="auto" aria-pressed="true" title="Sonne, Mond und Sterne folgen der Spieluhr – wie sie über Ratscher wirklich stehen">Tageslauf</button>
+            <button class="chip" data-light="day" aria-pressed="false">Tag</button>
+            <button class="chip" data-light="gold" aria-pressed="false">Goldene Stunde</button>
+            <button class="chip" data-light="dusk" aria-pressed="false">Abend</button>
+            <button class="chip" data-light="night" aria-pressed="false" title="Vollmondnacht Ende August">Nacht</button>
+            </div><h3 class="h3b">Variante</h3><div class="mchips">
+            <button class="chip" data-var-set="B" aria-pressed="false" title="Ohne Turm: Leitertreppen mit Bodenluke und Dachluke, OG rundum auskragend">Leiter</button>
+            <button class="chip" data-var-set="A" aria-pressed="false" title="Mit Wendeltreppenturm an der Ostseite">Turm</button>
+            </div></section>
+          <section class="msec" aria-label="Spiel"><h3>Spiel</h3>
+            <div class="mlist">
+              <button class="tog" id="questbtn" aria-pressed="false" title="Aufgaben mit Ronald und Hubert, in der Werkstatt und am Ofen (Taste J)">Aufgaben<span>4 offen</span></button>
+              <button class="tog" id="invbtn" type="button" aria-pressed="false" title="Alles, was du dabeihast (Taste I)">Inventar<span>I</span></button>
+            </div>
+            <div class="mrow"><span>Spielfigur</span><div class="mseg" id="figseg"><button type="button" data-fig="m" aria-pressed="true">Mann</button><button type="button" data-fig="f" aria-pressed="false">Frau</button></div></div>
+            <div class="mrow"><span>Spielzeit</span><div class="mseg" id="crateseg"><button type="button" data-crate="real" aria-pressed="false">Echtzeit</button><button type="button" data-crate="min" aria-pressed="true">1 Std = 1 Min</button><button type="button" data-crate="fast" aria-pressed="false">1 Std = 10 s</button></div></div>
+            <div class="mrow"><span>Ansicht</span><div class="mseg" id="viewseg"><button type="button" data-view="3" aria-pressed="true">Figur</button><button type="button" data-view="1" aria-pressed="false">Eigene Augen</button></div></div>
+            <div class="mrow" data-ptr="fine"><span>Maus</span><div class="mseg" id="lockseg"><button type="button" data-lock="1" aria-pressed="true" title="Nach einem Klick ins Bild dreht die Maus den Blick, Klick: handeln, Esc: Menü">Steuert den Blick</button><button type="button" data-lock="0" aria-pressed="false" title="Mit gedrückter Taste ziehen, um dich umzuschauen">Ziehen</button></div></div>
+            <p class="mnote" id="fignote" hidden>Die Figur wird noch geladen.</p>
+          </section>
+          <section class="msec" aria-label="Gestalten"><h3>Gestalten</h3><div class="mlist">
+              <button class="tog" id="planbtn" aria-pressed="false" title="Planungsmodus: Möbel und Gegenstände verschieben, drehen, stapeln, hinzufügen, löschen">Planen</button>
+              <button class="tog" id="facbtn" aria-pressed="false" title="Fassade: Material und Farbe für Haus (und Turm) ausprobieren">Fassade</button>
+              <button class="tog" id="intbtn" aria-pressed="false" title="Einrichtung: Stil, Boden, Wände, Decke, Möbelholz und Stoffe im Pavillon">Einrichtung</button>
+              <button class="tog" id="sharebtn" aria-pressed="false" title="Öffentlicher Link ohne Claude-Konto, Planstand für alle veröffentlichen, Plan-Code">Teilen</button>
+            </div></section>
+          <section class="msec" aria-label="Einstellungen"><h3>Einstellungen</h3><div class="mlist">
+              <button class="tog" id="soundbtn" aria-pressed="true">Ton<span>an</span></button>
+              <button class="tog" id="qualbtn" aria-pressed="true" title="Grafikqualität (wird beim Laden an das Gerät angepasst): hoch – mittel – schnell">Grafik<span>hoch</span></button>
+              <button class="tog" id="collbtn" aria-pressed="true" title="Wände und Möbel halten dich auf">Kollision<span>an</span></button>
+              <button class="tog" id="fullbtn" aria-pressed="false" title="Vollbild: Kopfzeile ausblenden, Modell über den ganzen Bildschirm">Vollbild</button>
+              <button class="tog" id="perfbtn" aria-pressed="false" title="Leistungstest: misst ca. 15 Sekunden lang die Bildrate in sechs typischen Ansichten">Leistung</button>
+            </div></section>
+          <section class="msec" aria-label="Steuerung"><h3>Steuerung</h3>
+            <div class="mhelp" id="hint">
+              <dl data-ptr="fine">
+                <dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / Pfeile</dt><dd>gehen, <kbd>Shift</kbd> rennen, <kbd>Feststelltaste</kbd> langsam</dd>
+                <dt>Maus</dt><dd>umschauen (nach einem Klick ins Bild; sonst ziehen)</dd>
+                <dt><kbd>E</kbd> / Klick</dt><dd>handeln: Tür, Sprechen, Nehmen, Sitzen, Spielen</dd>
+                <dt><kbd>Q</kbd></dt><dd>ablegen, aufstehen, abbrechen; mit freien Händen: Werkstück von der Station nehmen</dd>
+                <dt>Grünes Feld</dt><dd>beim Leimen, Zwingen, Brennen: noch einmal <kbd>E</kbd>, wenn der Balken im grünen Feld steht</dd>
+                <dt><kbd>Leertaste</kbd></dt><dd>springen</dd>
+                <dt><kbd>C</kbd> <kbd>X</kbd> <kbd>Z</kbd></dt><dd>ducken, kriechen, hinlegen (noch einmal: aufstehen)</dd>
+                <dt><kbd>1</kbd>–<kbd>8</kbd></dt><dd>Gegenstand in die Hand, <kbd>0</kbd> Hände frei</dd>
+                <dt><kbd>I</kbd> · <kbd>J</kbd> · <kbd>B</kbd></dt><dd>Inventar · Aufgaben · Werkstattbuch</dd>
+                <dt>Uhr oben rechts</dt><dd>Tempo, Warten, Datum; nachts aufs Tagesbett legen: Schlafen bis 7 Uhr</dd>
+                <dt><kbd>V</kbd> / Mausrad</dt><dd>Figur oder eigene Augen, Abstand der Kamera</dd>
+                <dt><kbd>Esc</kbd> / <kbd>M</kbd></dt><dd>Menü · <kbd>F</kbd> Vollbild · <kbd>Bild ↑</kbd><kbd>Bild ↓</kbd> Bauphase</dd>
+                <dt>Planen</dt><dd>Möbel ziehen, <kbd>R</kbd> drehen, <kbd>Entf</kbd> löschen</dd>
+                <dt>Draufsicht</dt><dd>Gebäude verschieben, Zäune ziehen</dd>
+              </dl>
+              <dl data-ptr="coarse">
+                <dt>Kreis links</dt><dd>gehen</dd>
+                <dt>Wischen</dt><dd>umschauen; zwei Finger: Kamera näher oder weiter weg</dd>
+                <dt>Knöpfe rechts</dt><dd>springen, ducken, kriechen, hinlegen</dd>
+                <dt>Großer Knopf</dt><dd>handeln: Tür, Sprechen, Nehmen, Sitzen; daneben ablegen, aufstehen. Grünes Feld: noch einmal tippen, wenn der Balken drin steht</dd>
+                <dt>Leiste unten</dt><dd>Gegenstand in die Hand, Rucksack: Inventar</dd>
+              </dl>
+            </div></section>
+        </div>
+      </div>
+    </div>
+    <aside id="invwin" hidden aria-label="Inventar"></aside>
+    <aside id="machwin" hidden aria-label="Maschine einstellen"></aside>
+    <aside id="clockwin" hidden aria-label="Spielzeit"></aside>
+    <aside id="gearwin" hidden aria-label="Schutzausrüstung"></aside>
+    <aside id="werkbuch" hidden aria-label="Werkstattbuch"></aside>
+    <div class="ov" id="wpcard" hidden></div>
+    <div id="gearfx" aria-hidden="true"></div>
+  </section>
+
+  <section class="panel" id="p-pano" role="tabpanel" aria-labelledby="tab-pano" hidden style="overflow:hidden">
+    <div id="panostage"></div>
+    <div id="panohot"></div>
+    <div class="ov where" aria-live="polite"><span id="panostate">360°-Rundblick</span><small>Ziehen zum Umsehen · Kreise antippen zum Weitergehen</small></div>
+    <div class="ov panovar" role="group" aria-label="Variante">
+      <button class="chip" data-var-set="B" aria-pressed="false">Leiter</button>
+      <button class="chip" data-var-set="A" aria-pressed="false">Turm</button>
+    </div>
+    <div class="ov bar"><div class="row" id="panolist" role="group" aria-label="Standorte"></div></div>
+    <p class="ov panoempty" id="panoempty" hidden>Die Rundblicke für diese Variante werden gerade berechnet und kommen mit dem nächsten Update.</p>
+  </section>
+
+  <section class="panel" id="p-film" role="tabpanel" aria-labelledby="tab-film" hidden>
+    <div class="page">
+      <h2>Raumführung</h2>
+      <p class="lede">Knapp eine Minute durch die 360°-Rundblicke (Variante Leiter, Version 14, mit der echten Umgebung von Ratscher): über die Brücke in den Garten, zur Haustür, durch Bibliothek, Arbeitsraum und Lounge bis auf die Dachterrasse mit Fernblick. Selbst gehen lässt sich alles im Tab „3D-Modell“, auch die Variante Turm.</p>
+      <figure class="film"><video id="tour" controls playsinline preload="metadata" poster="img/b01.jpg" src="tour.mp4"></video>
+        <figcaption>Version 14 · aus den 360°-Rundblicken · 960 × 540</figcaption></figure>
+      <ol class="chapters" aria-label="Kapitel">
+        <li><button data-t="0.0"><span class="tc">0:00</span>Ankunft über die Brücke</button></li>
+        <li><button data-t="7.0"><span class="tc">0:07</span>Im Garten</button></li>
+        <li><button data-t="12.8"><span class="tc">0:12</span>Vor der Haustür</button></li>
+        <li><button data-t="18.1"><span class="tc">0:18</span>Bibliothek</button></li>
+        <li><button data-t="25.9"><span class="tc">0:25</span>Leitertreppe nach oben</button></li>
+        <li><button data-t="30.2"><span class="tc">0:30</span>Arbeitsraum mit Musikecke</button></li>
+        <li><button data-t="37.0"><span class="tc">0:37</span>Lounge mit Westglas</button></li>
+        <li><button data-t="42.3"><span class="tc">0:42</span>Dachterrasse</button></li>
+        <li><button data-t="48.1"><span class="tc">0:48</span>Fernblick nach Westen</button></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="panel" id="p-bilder" role="tabpanel" aria-labelledby="tab-bilder" hidden>
+    <div class="page">
+      <h2>Bilder</h2>
+      <div class="vsw" role="group" aria-label="Variante"><button type="button" data-var-set="B" aria-pressed="true">Variante Leiter, ohne Turm</button><button type="button" data-var-set="A" aria-pressed="false">Variante Turm</button></div>
+      <p class="lede" data-var="B">Standbilder aus dem aktuellen 3D-Modell, Variante ohne Turm: Leitertreppen mit Bodenluke und Dachluke, Obergeschoss rundum 0,9 m auskragend, raumhohes Westglas, Dachterrasse über dem ganzen Haus – und die bestehenden Gebäude aus den Fotos. Antippen vergrößert ein Bild.</p>
+      <p class="lede" data-var="A">Standbilder aus dem aktuellen 3D-Modell, Variante Turm: schlanker Wendeltreppenturm im Osten als Eingang, geschlossenes Obergeschoss mit 0,9 m Auskragung, raumhohes Westglas, Dachterrasse über dem ganzen Haus – und die bestehenden Gebäude aus den Fotos: Carport mit Wohnwagen, Holzhaus, Bungalow, Gewächshaus und Waschhaus. Antippen vergrößert ein Bild.</p>
+      <div class="grid" data-var="B">
+    <div class="group"><span>Außen</span></div>
+    <figure class="shot"><img src="img/b01.jpg" alt="Ankunft im Garten zwischen Carport und Bungalow, hinten der Pavillon ohne Turm" loading="lazy"><div class="cap"><span class="n">01</span><span class="t">Ankunft</span><span class="d">Vom Gartentor im Norden zwischen Carport und Bungalow hindurch: rechts der Wohnwagen unter dem Carport, links der grüne Bungalow, hinten der Pavillon – das Obergeschoss kragt rundum aus.</span><span class="m">Garten · Augenhöhe 1,65 m</span></div></figure>
+    <figure class="shot"><img src="img/b02.jpg" alt="Außenansicht von Südwesten mit Westglas" loading="lazy"><div class="cap"><span class="n">02</span><span class="t">Von Südwesten</span><span class="d">Unten der geschlossene Kern aus geflammter Lärche, oben das raumhohe Westglas zwischen geschlossenen Ecken; das Obergeschoss steht auf allen vier Seiten 0,9 m über.</span><span class="m">Garten · Blick NO</span></div></figure>
+    <figure class="shot"><img src="img/b03.jpg" alt="Außenansicht von Südosten mit Haustür unter der Auskragung" loading="lazy"><div class="cap"><span class="n">03</span><span class="t">Von Südosten</span><span class="d">Die Haustür liegt in der Ostwand unter der Auskragung, daneben ein kleines Fenster an der Leitertreppe. Rechts der große Baum an der Ostgrenze.</span><span class="m">Garten · Blick NW</span></div></figure>
+    <figure class="shot"><img src="img/b04.jpg" alt="Pavillon in der Abenddämmerung mit Innenlicht" loading="lazy"><div class="cap"><span class="n">04</span><span class="t">Am Abend</span><span class="d">Mit Licht innen wird das Westglas zur Laterne im Garten.</span><span class="m">Dämmerung · Blick NO</span></div></figure>
+    <figure class="shot"><img src="img/b05.jpg" alt="Vogelperspektive auf Pavillon, Dachterrasse mit Dachluke und Garten" loading="lazy"><div class="cap"><span class="n">05</span><span class="t">Vogelperspektive</span><span class="d">Dachterrasse ca. 37 m² über dem ganzen Haus, Zugang durch die verglaste Dachluke an der Ostseite. Oben Carport mit Wohnwagen und Bungalow, rechts Waschhaus, Gewächshaus und Holzhaus an der Ostgrenze.</span><span class="m">ca. 20 m Höhe</span></div></figure>
+
+    <div class="group"><span>Bibliothek · ±0,00</span></div>
+    <figure class="shot"><img src="img/b06.jpg" alt="Leitertreppe aus Eiche durch die offene Bodenluke" loading="lazy"><div class="cap"><span class="n">06</span><span class="t">Leitertreppe</span><span class="d">Gleich hinter der Haustür steigt die Leitertreppe aus Eiche an der Ostwand nach Süden durch die offene Bodenluke in den Arbeitsraum: 63°, Stufen 16 cm tief, 69 cm breit, Handläufe auf beiden Seiten.</span><span class="m">Bibliothek · Blick S, nach oben</span></div></figure>
+    <figure class="shot"><img src="img/b07.jpg" alt="Bibliothek mit Holzofen, Lesefenster und Daybed" loading="lazy"><div class="cap"><span class="n">07</span><span class="t">Ofen und Lesefenster</span><span class="d">Von der Haustür aus: Fensterbank West, runder Holzofen in der Nordwestecke, Daybed als Sofa und Gästebett an der Südwand, der Lesesessel in der Mitte.</span><span class="m">Bibliothek · Blick SW</span></div></figure>
+    <figure class="shot"><img src="img/b08.jpg" alt="Lesesessel und Bücherwand, Haustür und Leitertreppe" loading="lazy"><div class="cap"><span class="n">08</span><span class="t">Lesesessel und Bücherwand</span><span class="d">Eine Bücherwand an der Nordwand neben dem Ofen, unten das Holzfach; die Haustür öffnet nach außen, rechts die Leitertreppe.</span><span class="m">Bibliothek · Blick NO</span></div></figure>
+
+    <div class="group"><span>Arbeitsraum · +2,99</span></div>
+    <figure class="shot"><img src="img/b09.jpg" alt="Arbeitsraum mit Schreibtisch unter dem Südband" loading="lazy"><div class="cap"><span class="n">09</span><span class="t">Schreibtisch</span><span class="d">Arbeitsplatz unter dem Südband: Tageslicht von vorn und vom Westglas links. Der Schornstein steht frei im Raum.</span><span class="m">Arbeitsraum · Blick SW</span></div></figure>
+    <figure class="shot"><img src="img/b10.jpg" alt="Lounge und Musikecke im Arbeitsraum" loading="lazy"><div class="cap"><span class="n">10</span><span class="t">Lounge und Musikecke</span><span class="d">Zwei Sessel mit Blick durchs Westglas, Stagepiano und Verstärker unter dem Nordband, daneben das Sideboard mit Plattenspieler.</span><span class="m">Arbeitsraum · Blick NW</span></div></figure>
+    <figure class="shot"><img src="img/b11.jpg" alt="Offene Bodenluke mit Geländer und Leiter zur Dachluke" loading="lazy"><div class="cap"><span class="n">11</span><span class="t">Bodenluke und Dachleiter</span><span class="d">Der Lukendeckel steht offen und sichert die Luke nach Norden, Geländer links und rechts. Dahinter an der Ostwand die zweite Leitertreppe zur Dachluke.</span><span class="m">Arbeitsraum · Blick NO</span></div></figure>
+
+    <div class="group"><span>Dachterrasse · +5,99</span></div>
+    <figure class="shot"><img src="img/b12.jpg" alt="Dachterrasse mit Liegen und PV-Brüstung, gesehen von der Dachluke" loading="lazy"><div class="cap"><span class="n">12</span><span class="t">Dachterrasse</span><span class="d">Aus der Dachluke auf die Lärchendielen: zwei Liegen, PV-Module als Südbrüstung, Seilgeländer, Schornstein mit Regenhaube.</span><span class="m">Dach · Blick SW</span></div></figure>
+    <figure class="shot"><img src="img/b13.jpg" alt="Blick von der Dachterrasse nach Westen über die Schuppen" loading="lazy"><div class="cap"><span class="n">13</span><span class="t">Blick nach Westen</span><span class="d">Aus etwa 7,6 m Augenhöhe über die Nachbarschuppen zum Sonnenuntergang, hinter dem Windschutz aus Glas.</span><span class="m">Dach · Blick W</span></div></figure>
+    <div class="group"><span>Bach, Werkstatt, Zaun</span></div>
+    <figure class="shot"><img src="img/b14.jpg" alt="Blick von der Brücke nach Süden auf Bungalow, Pavillon und Carport" loading="lazy"><div class="cap"><span class="n">14</span><span class="t">Über die Brücke</span><span class="d">Der Eingang von Norden über die geteerte Brücke, 2,5 m breit und ohne Geländer: links der grüne Bungalow, rechts der Wohnwagen unter dem Carport, geradeaus hinter den Bäumen der Pavillon. Links und rechts der Brücke geht es über Treppen ans Wasser.</span><span class="m">Brücke · Blick Süd</span></div></figure>
+    <figure class="shot"><img src="img/b15.jpg" alt="Der Bach mit Böschungen, Bäumen und der Brücke" loading="lazy"><div class="cap"><span class="n">15</span><span class="t">Bach und Brücke</span><span class="d">Der Bach fließt rund 1,5 m unter der Wiese von Ost nach West durch alle drei Grundstücke. Links und rechts der Brücke führen Treppen aus Eichenschwellen ans Wasser.</span><span class="m">Böschung · Blick West</span></div></figure>
+    <figure class="shot"><img src="img/b16.jpg" alt="Am Wasser auf dem Steinpodest unter der Brücke" loading="lazy"><div class="cap"><span class="n">16</span><span class="t">Am Wasser</span><span class="d">Unten auf dem Steinpodest: etwa ein Meter Wasser über Kies. Die Brückenplatte liegt auf zwei Betonwiderlagern in den Böschungen.</span><span class="m">Ufer · Augenhöhe am Wasser</span></div></figure>
+    <figure class="shot"><img src="img/b17.jpg" alt="Holzwerkstatt Klingenholz am Südende mit Stammlager" loading="lazy"><div class="cap"><span class="n">17</span><span class="t">Werkstatt Klingenholz</span><span class="d">Am Südende das offene Holzgerüst, 10 × 4 m, mit dunklen Schindeln, davor die Blockbandsäge auf ihrer Schiene. Nur die Rückwand nach Süden ist geschlossen, rechts lagern die Stämme.</span><span class="m">Garten · Blick Süd</span></div></figure>
+    <figure class="shot"><img src="img/b18.jpg" alt="In der Werkstatt: Leimtisch, Hobelbank, Werkzeugwand, Holzregal" loading="lazy"><div class="cap"><span class="n">18</span><span class="t">In der Werkstatt</span><span class="d">Leimtisch mit Korpuszwingen, Hobelbank und Werkzeugwand an der Südwand, daneben das PSA-Brett und das Regal mit Leimholzplatten und fertigen Stirnholzbrettern. Vorn Tischkreissäge, Dickenhobel und Trommelschleifer.</span><span class="m">Werkstatt · Blick Süd</span></div></figure>
+    <figure class="shot"><img src="img/b19.jpg" alt="Blockbandsäge mit Stamm vor der Werkstatt" loading="lazy"><div class="cap"><span class="n">19</span><span class="t">Blockbandsäge</span><span class="d">Die Blockbandsäge steht draußen vor der Werkstatt: Schiene Süd–Nord, mittig zur Werkstatt, die kurze Seite zur Werkstatt. Innen bleibt Platz für Tischkreissäge, Dickenhobel und Leimtisch. Im Modell lassen sich die Maschinen einschalten.</span><span class="m">Werkstatt · Blick Südwest</span></div></figure>
+    <figure class="shot"><img src="img/b20.jpg" alt="Maschendrahtzaun mit Gartentür zu Ronald" loading="lazy"><div class="cap"><span class="n">20</span><span class="t">Zaun zu Ronald</span><span class="d">Maschendrahtzaun entlang der Ostgrenze, gesehen von Ronalds Seite: die Gartentür zwischen Gewächshaus und Waschhaus. Zu Hubert bleibt die Grenze offen.</span><span class="m">Ronalds Seite · Blick West</span></div></figure>
+    <figure class="shot"><img src="img/b21.jpg" alt="Pavillon in einer Vollmondnacht mit beleuchteten Fenstern" loading="lazy"><div class="cap"><span class="n">21</span><span class="t">Vollmondnacht</span><span class="d">Ende August, kurz vor Mitternacht: Vollmondlicht aus Südsüdosten, Licht in allen Fenstern, darüber die Sterne. Seit Version 16a folgen Sonne, Mond und Sterne der Spieluhr – so, wie sie über Ratscher wirklich stehen.</span></div></figure>
+  </div>
+      <div class="grid" data-var="A">
+    <div class="group"><span>Außen</span></div>
+    <figure class="shot"><img src="img/01.jpg" alt="Ankunft im Garten zwischen Carport und Bungalow, hinten der Pavillon" loading="lazy"><div class="cap"><span class="n">01</span><span class="t">Ankunft</span><span class="d">Vom Gartentor im Norden zwischen Carport und Bungalow hindurch: rechts der Wohnwagen unter dem Carport, links der grüne Bungalow, hinten der Pavillon mit dem schlanken Turm an der Ostseite.</span><span class="m">Garten · Augenhöhe 1,65 m</span></div></figure>
+    <figure class="shot"><img src="img/02.jpg" alt="Außenansicht von Südwesten mit Westglas" loading="lazy"><div class="cap"><span class="n">02</span><span class="t">Von Südwesten</span><span class="d">Unten der geschlossene Kern aus geflammter Lärche, oben das raumhohe Westglas zwischen geschlossenen Ecken; rechts dahinter der Treppenturm mit verglastem Kopf.</span><span class="m">Garten · Blick NO</span></div></figure>
+    <figure class="shot"><img src="img/03.jpg" alt="Außenansicht von Südosten mit Treppenturm und Eingangstür" loading="lazy"><div class="cap"><span class="n">03</span><span class="t">Von Südosten</span><span class="d">Der Turm ist der Eingang: Tür nach Osten, geradeaus in die Bibliothek, links die Wendeltreppe nach oben. Rechts der große Baum an der Ostgrenze, dahinter Waschhaus und Gewächshaus.</span><span class="m">Garten · Blick NW</span></div></figure>
+    <figure class="shot"><img src="img/04.jpg" alt="Pavillon in der Abenddämmerung mit Innenlicht" loading="lazy"><div class="cap"><span class="n">04</span><span class="t">Am Abend</span><span class="d">Mit Licht innen wird das Westglas zur Laterne im Garten; oben leuchtet der Turmkopf.</span><span class="m">Dämmerung · Blick NO</span></div></figure>
+    <figure class="shot"><img src="img/05.jpg" alt="Vogelperspektive auf Pavillon, Turm, Dachterrasse und Garten" loading="lazy"><div class="cap"><span class="n">05</span><span class="t">Vogelperspektive</span><span class="d">Dachterrasse 32 m² über dem ganzen Haus, Zugang durch den Turmkopf. Oben Carport mit Wohnwagen und Bungalow, rechts Waschhaus, Gewächshaus und Holzhaus an der Ostgrenze.</span><span class="m">ca. 20 m Höhe</span></div></figure>
+    <figure class="shot"><img src="img/06.jpg" alt="Im Treppenturm: Wendeltreppe um die Stahlspindel" loading="lazy"><div class="cap"><span class="n">06</span><span class="t">Treppenturm</span><span class="d">Wendeltreppe Ø 2,16 m um eine Stahlspindel: eine Umdrehung bis zum Podest vor dem Arbeitsraum (+2,99), eine weitere bis in den Turmkopf auf Terrassenhöhe. Unbeheizt, trocken, hell.</span><span class="m">Turm · Blick SW</span></div></figure>
+
+    <div class="group"><span>Bibliothek · ±0,00</span></div>
+    <figure class="shot"><img src="img/07.jpg" alt="Bibliothek mit Holzofen, Lesefenster und Daybed" loading="lazy"><div class="cap"><span class="n">07</span><span class="t">Ofen und Lesefenster</span><span class="d">Von der Tür aus: Fensterbank West, runder Holzofen in der Nordwestecke, Daybed als Sofa und Gästebett an der Südwand. Die Mitte bleibt frei.</span><span class="m">Bibliothek · Blick SW</span></div></figure>
+    <figure class="shot"><img src="img/08.jpg" alt="Lesesessel und Bücherwand in der Bibliothek" loading="lazy"><div class="cap"><span class="n">08</span><span class="t">Lesesessel und Bücherwand</span><span class="d">Eine Bücherwand an der Nordwand neben dem Ofen, unten das Holzfach; der Lesesessel in der Ostecke schräg zum Feuer, daneben der Lampentisch. Die Tür zum Turm öffnet nach außen.</span><span class="m">Bibliothek · Blick NO</span></div></figure>
+
+    <div class="group"><span>Arbeitsraum · +2,99</span></div>
+    <figure class="shot"><img src="img/09.jpg" alt="Arbeitsraum mit Schreibtisch unter dem Südband" loading="lazy"><div class="cap"><span class="n">09</span><span class="t">Schreibtisch</span><span class="d">Arbeitsplatz unter dem Südband: Tageslicht von vorn und vom Westglas links. Der Schornstein steht frei im Raum.</span><span class="m">Arbeitsraum · Blick SW</span></div></figure>
+    <figure class="shot"><img src="img/10.jpg" alt="Lounge und Musikecke im Arbeitsraum" loading="lazy"><div class="cap"><span class="n">10</span><span class="t">Lounge und Musikecke</span><span class="d">Zwei Sessel nebeneinander mit Blick durchs Westglas, leicht zueinander gedreht; Stagepiano unter dem Nordband, Sideboard mit Plattenspieler an der Ostwand.</span><span class="m">Arbeitsraum · Blick NW</span></div></figure>
+
+    <div class="group"><span>Dachterrasse · +5,95</span></div>
+    <figure class="shot"><img src="img/11.jpg" alt="Dachterrasse mit Liegen und PV-Brüstung, gesehen aus dem Turmkopf" loading="lazy"><div class="cap"><span class="n">11</span><span class="t">Dachterrasse</span><span class="d">Aus dem Turmkopf auf die Lärchendielen: zwei Liegen, PV-Module als Südbrüstung, Seilgeländer, Schornstein mit Regenhaube.</span><span class="m">Dach · Blick SW</span></div></figure>
+    <figure class="shot"><img src="img/12.jpg" alt="Blick von der Dachterrasse nach Westen über die Schuppen" loading="lazy"><div class="cap"><span class="n">12</span><span class="t">Blick nach Westen</span><span class="d">Aus etwa 7,6 m Augenhöhe über die Nachbarschuppen zum Sonnenuntergang, hinter dem Windschutz aus Glas.</span><span class="m">Dach · Blick W</span></div></figure>
+      <div class="group"><span>Bach, Werkstatt, Zaun</span></div>
+    <figure class="shot"><img src="img/b16.jpg" alt="Am Wasser auf dem Steinpodest unter der Brücke" loading="lazy"><div class="cap"><span class="n">16</span><span class="t">Am Wasser</span><span class="d">Unten auf dem Steinpodest: etwa ein Meter Wasser über Kies. Die Brückenplatte liegt auf zwei Betonwiderlagern in den Böschungen.</span><span class="m">Ufer · Augenhöhe am Wasser</span></div></figure>
+    <figure class="shot"><img src="img/b17.jpg" alt="Holzwerkstatt Klingenholz am Südende mit Stammlager" loading="lazy"><div class="cap"><span class="n">17</span><span class="t">Werkstatt Klingenholz</span><span class="d">Am Südende das offene Holzgerüst, 10 × 4 m, mit dunklen Schindeln, davor die Blockbandsäge auf ihrer Schiene. Nur die Rückwand nach Süden ist geschlossen, rechts lagern die Stämme.</span><span class="m">Garten · Blick Süd</span></div></figure>
+    <figure class="shot"><img src="img/b18.jpg" alt="In der Werkstatt: Leimtisch, Hobelbank, Werkzeugwand, Holzregal" loading="lazy"><div class="cap"><span class="n">18</span><span class="t">In der Werkstatt</span><span class="d">Leimtisch mit Korpuszwingen, Hobelbank und Werkzeugwand an der Südwand, daneben das PSA-Brett und das Regal mit Leimholzplatten und fertigen Stirnholzbrettern. Vorn Tischkreissäge, Dickenhobel und Trommelschleifer.</span><span class="m">Werkstatt · Blick Süd</span></div></figure>
+    <figure class="shot"><img src="img/b19.jpg" alt="Blockbandsäge mit Stamm vor der Werkstatt" loading="lazy"><div class="cap"><span class="n">19</span><span class="t">Blockbandsäge</span><span class="d">Die Blockbandsäge steht draußen vor der Werkstatt: Schiene Süd–Nord, mittig zur Werkstatt, die kurze Seite zur Werkstatt. Innen bleibt Platz für Tischkreissäge, Dickenhobel und Leimtisch. Im Modell lassen sich die Maschinen einschalten.</span><span class="m">Werkstatt · Blick Südwest</span></div></figure>
+    <figure class="shot"><img src="img/b20.jpg" alt="Maschendrahtzaun mit Gartentür zu Ronald" loading="lazy"><div class="cap"><span class="n">20</span><span class="t">Zaun zu Ronald</span><span class="d">Maschendrahtzaun entlang der Ostgrenze, gesehen von Ronalds Seite: die Gartentür zwischen Gewächshaus und Waschhaus. Zu Hubert bleibt die Grenze offen.</span><span class="m">Ronalds Seite · Blick West</span></div></figure>
+    <figure class="shot"><img src="img/b21.jpg" alt="Pavillon in einer Vollmondnacht mit beleuchteten Fenstern" loading="lazy"><div class="cap"><span class="n">21</span><span class="t">Vollmondnacht</span><span class="d">Ende August, kurz vor Mitternacht: Vollmondlicht aus Südsüdosten, Licht in allen Fenstern, darüber die Sterne. Seit Version 16a folgen Sonne, Mond und Sterne der Spieluhr – so, wie sie über Ratscher wirklich stehen.</span></div></figure>
+  </div>
+      <section class="notes" data-var="B">
+        <div><h3>Was das Modell zeigt</h3><ul>
+          <li>Tag und Nacht (seit Version 16a): Die Sonne steht, wo sie über Ratscher an diesem Tag und zu dieser Stunde wirklich steht; der Mond mit seiner Phase, gut 5000 Sterne und die Milchstraße drehen sich mit. Das Licht geht fließend von Tag über Abendsonne und Dämmerung in die Nacht; im Pavillon gehen abends die Lampen an, die Werkstatt hat Licht mit Bewegungsmelder, Hubert und Ronald gehen nachts heim. Spieltag 1 ist der 1. Juni 2026 (Datum über die Uhr oben rechts). Nachts aufs Tagesbett legen und bis zum Morgen schlafen. Menü → Licht: „Tageslauf“ oder eine feste Stimmung.</li>
+          <li>Werkstatt-Spiel (seit Version 15b): ein Stirnholz-Schneidebrett selbst bauen – Leimholzplatte Eiche aus dem Regal, Kanteln an der Tischkreissäge, Verleimen mit Zwingen und Zulagen, Dickenhobel, Scheiben, zweite Verleimung, Trommelschleifer, Fasen, Schleifen, Ölen, Brandzeichen; wahlweise Räuchern im Zelt (Räuchereiche). Mit Schutzausrüstung, Spielzeit (Uhr oben rechts, Tempo im Menü) und Werkstattbuch (Taste B). Die Blockbandsäge steht jetzt draußen vor der Werkstatt.</li>
+          <li>Spielfigur und Menü (seit Version 15): unterwegs als Mann oder Frau mit Schulterkamera (oder durch die eigenen Augen: V oder Mausrad), springen, ducken, kriechen, hinlegen; Dinge kommen ins Inventar (Leiste 1–8, Rucksack I). Alle Knöpfe von früher liegen im Menü oben rechts (Esc oder M).</li>
+          <li>Ratscher rundherum (seit Version 14): Gelände, Luftbilder, Häuser und Bäume der echten Umgebung aus offenen Geodaten (Thüringer Geoportal, OpenStreetMap, Copernicus), bis 12 km weit. In der „Draufsicht“ herauszoomen oder „Ratscher“ antippen; „Karte“ wechselt vom Luftbild zur Karte. Garten und Nachbargrundstücke bleiben wie modelliert; Feldweg und Bach liegen im Modell etwas anders als in Wirklichkeit.</li>
+          <li>Mitspielen (seit Version 14): sitzen und liegen, Klavier spielen, Platten auflegen, Licht schalten, Dinge tragen – und vier Aufgaben mit Hubert und Ronald („Aufgaben“ im Menü oder Taste J).</li>
+          <li>Rundherum (seit Version 11): der Bach an der Nordgrenze mit geteerter Brücke und Treppen ans Wasser, der Maschendrahtzaun zu Ronald mit Gartentür und die Holzwerkstatt Klingenholz am Südende. Die Maschinen lassen sich im 3D-Modell mit E einschalten.</li>
+          <li>Planen von oben (seit Version 12): In der „Draufsicht“ lassen sich Bungalow, Carport, Holzhaus, Gewächshaus, Waschhaus, Garage und Werkstatt verschieben und drehen und Zäune ziehen. Über „Teilen“ wird der eigene Planstand für alle Besucher veröffentlicht. Die 360°-Rundblicke und die Bilder zeigen den Grundstand.</li>
+          <li>Ohne Turm: Eingang durch die Haustür in der Ostwand, unter der Auskragung. Innen führt eine Leitertreppe (63°) durch eine Bodenluke in den Arbeitsraum, eine zweite durch eine verglaste Dachluke auf die Dachterrasse. Beide Luken stehen meist offen. Alle Türen öffnen nach außen.</li>
+          <li>Das Obergeschoss kragt auf allen vier Seiten 0,9 m aus und misst 5,8 × 5,8 m: innen ca. 26 m² statt 22 m², die Dachterrasse ca. 37 m² statt 32 m². Das Haus ist mit Geländer etwa 7,1 m hoch, ohne den 8,5 m hohen Turm.</li>
+          <li>Wärme: Ofen im EG, einwandiges Rohr bis zur Decke, Warmluftkanal mit 12-V-Lüfter in den Arbeitsraum; bei offener Bodenluke steigt warme Luft auch direkt nach oben.</li>
+          <li>Aus dem Arbeitsraum (Augenhöhe ca. 4,6 m) sieht man nach Westen eher auf die Dächer der Nachbarschuppen. Ganz frei ist der Blick erst von der Dachterrasse (ca. 7,6 m).</li>
+          <li>Der Schornstein muss deutlich über die Terrasse hinaus, im Modell bis ca. 8,9 m.</li>
+          <li>Lage nach Luftbild eingemessen (±1 m): Pavillon auf der Blechgarage (A), Carport mit Wohnwagen (B) und grüner Bungalow (D) im Norden, Holzhaus (C) mit Gewächshaus gerade an der Ostgrenze, Waschhaus nördlich davon unter dem großen Baum. Die Türen von Wohnwagen und Bungalow zeigen zum Gartentor.</li>
+          <li>Umschalten zwischen den Varianten: im 3D-Modell unten „Leiter“ und „Turm“ (oder Taste V); Bauphasen, Material und Kosten wechseln mit.</li>
+          <li>Grafik: Beim Gehen und Drehen rechnet das Modell mit etwas geringerer Auflösung, im Stand kommt sofort das volle Bild. Die Stufe (hoch, mittel, schnell) wählt es beim Laden selbst, umschaltbar über „Grafik“.</li></ul></div>
+        <div><h3>Annahmen und offene Punkte</h3><ul class="small">
+          <li>Grundstück, Bäume und Nachbarbauten stammen aus dem Luftbild und der Grenzzeichnung, Höhen geschätzt.</li>
+          <li>Platte 4 × 4 m, bewehrt, mit Frostschürze; in dieser Variante trägt sie das ganze Haus.</li>
+          <li>Baurecht: Eine Leitertreppe als einziger Zugang zu einem Aufenthaltsraum sieht die Thüringer Bauordnung (§ 34) in der Regel nicht vor – das klären wir später mit dem Bauamt.</li>
+          <li>Möbel und Materialien sind Vorschläge. Statik (Kragarme, Ringbalken, Dachbalken 5,8 m) ist überschlägig geprüft, nicht nachgewiesen.</li></ul></div>
+      </section>
+      <section class="notes" data-var="A">
+        <div><h3>Was das Modell zeigt</h3><ul>
+          <li>Tag und Nacht (seit Version 16a): Die Sonne steht, wo sie über Ratscher an diesem Tag und zu dieser Stunde wirklich steht; der Mond mit seiner Phase, gut 5000 Sterne und die Milchstraße drehen sich mit. Das Licht geht fließend von Tag über Abendsonne und Dämmerung in die Nacht; im Pavillon gehen abends die Lampen an, die Werkstatt hat Licht mit Bewegungsmelder, Hubert und Ronald gehen nachts heim. Spieltag 1 ist der 1. Juni 2026 (Datum über die Uhr oben rechts). Nachts aufs Tagesbett legen und bis zum Morgen schlafen. Menü → Licht: „Tageslauf“ oder eine feste Stimmung.</li>
+          <li>Werkstatt-Spiel (seit Version 15b): ein Stirnholz-Schneidebrett selbst bauen – Leimholzplatte Eiche aus dem Regal, Kanteln an der Tischkreissäge, Verleimen mit Zwingen und Zulagen, Dickenhobel, Scheiben, zweite Verleimung, Trommelschleifer, Fasen, Schleifen, Ölen, Brandzeichen; wahlweise Räuchern im Zelt (Räuchereiche). Mit Schutzausrüstung, Spielzeit (Uhr oben rechts, Tempo im Menü) und Werkstattbuch (Taste B). Die Blockbandsäge steht jetzt draußen vor der Werkstatt.</li>
+          <li>Spielfigur und Menü (seit Version 15): unterwegs als Mann oder Frau mit Schulterkamera (oder durch die eigenen Augen: V oder Mausrad), springen, ducken, kriechen, hinlegen; Dinge kommen ins Inventar (Leiste 1–8, Rucksack I). Alle Knöpfe von früher liegen im Menü oben rechts (Esc oder M).</li>
+          <li>Ratscher rundherum (seit Version 14): Gelände, Luftbilder, Häuser und Bäume der echten Umgebung aus offenen Geodaten (Thüringer Geoportal, OpenStreetMap, Copernicus), bis 12 km weit. In der „Draufsicht“ herauszoomen oder „Ratscher“ antippen; „Karte“ wechselt vom Luftbild zur Karte. Garten und Nachbargrundstücke bleiben wie modelliert; Feldweg und Bach liegen im Modell etwas anders als in Wirklichkeit.</li>
+          <li>Mitspielen (seit Version 14): sitzen und liegen, Klavier spielen, Platten auflegen, Licht schalten, Dinge tragen – und vier Aufgaben mit Hubert und Ronald („Aufgaben“ im Menü oder Taste J).</li>
+          <li>Rundherum (seit Version 11): der Bach an der Nordgrenze mit geteerter Brücke und Treppen ans Wasser, der Maschendrahtzaun zu Ronald mit Gartentür und die Holzwerkstatt Klingenholz am Südende. Die Maschinen lassen sich im 3D-Modell mit E einschalten.</li>
+          <li>Planen von oben (seit Version 12): In der „Draufsicht“ lassen sich Bungalow, Carport, Holzhaus, Gewächshaus, Waschhaus, Garage und Werkstatt verschieben und drehen und Zäune ziehen. Über „Teilen“ wird der eigene Planstand für alle Besucher veröffentlicht. Die 360°-Rundblicke und die Bilder zeigen den Grundstand.</li>
+          <li>Eingang über den Turm an der Ostseite: Tür nach Osten, geradeaus in die Bibliothek, links die Wendeltreppe (Ø 2,16 m) zum Arbeitsraum und weiter in den verglasten Turmkopf mit Tür zur Dachterrasse. Alle Türen öffnen nach außen; innen bleiben 11,7 m² (EG) und 22 m² (OG) frei.</li>
+          <li>Wärme: Ofen im EG, einwandiges Rohr bis zur Decke, Warmluftkanal mit 12-V-Lüfter in den Arbeitsraum; der Turm ist ein unbeheizter Windfang mit dichten Türen.</li>
+          <li>Aus dem Arbeitsraum (Augenhöhe ca. 4,6 m) sieht man nach Westen eher auf die Dächer der Nachbarschuppen. Ganz frei ist der Blick erst von der Dachterrasse (ca. 7,6 m).</li>
+          <li>Der Schornstein muss deutlich über die Terrasse hinaus, im Modell bis ca. 8,9 m.</li>
+          <li>Lage nach Luftbild eingemessen (±1 m): Pavillon auf der Blechgarage (A), Carport mit Wohnwagen (B) und grüner Bungalow (D) im Norden, Holzhaus (C) mit Gewächshaus gerade an der Ostgrenze, Waschhaus nördlich davon unter dem großen Baum. Die Türen von Wohnwagen und Bungalow zeigen zum Gartentor.</li>
+          <li>Fassade: Material und Farbe von Haus, Turm und Fensterrahmen lassen sich im 3D-Modell über „Fassade“ ausprobieren.</li>
+          <li>Grafik: Beim Gehen und Drehen rechnet das Modell mit etwas geringerer Auflösung, im Stand kommt sofort das volle Bild. Die Stufe (hoch, mittel, schnell) wählt es beim Laden selbst, umschaltbar über „Grafik“.</li>
+          <li>Die Baumkrone östlich des Pavillons reicht an den Turm, Rückschnitt einplanen.</li></ul></div>
+        <div><h3>Annahmen</h3><ul class="small">
+          <li>Grundstück, Bäume und Nachbarbauten stammen aus dem Luftbild und der Grenzzeichnung, Höhen geschätzt.</li>
+          <li>Platte 4 × 4 m, bewehrt, mit Frostschürze. Das Garagendach im Luftbild misst ca. 4,5 × 6,3 m; ist die Platte größer, kann der Turm darauf stehen.</li>
+          <li>Landschaft in der Ferne nur angedeutet, kein Geländemodell.</li>
+          <li>Möbel und Materialien sind Vorschläge. Statik (Kragarme, Ringbalken, Turm) und Baurecht (Gebäudeklasse 1, Abstandsflächen, Verfahrensfreiheit) sind offen.</li></ul></div>
+      </section>
+<!--CREDITS-->
+    </div>
+  </section>
+</main>
+<dialog id="lb" aria-label="Bild vergrößert"><img alt=""><p></p></dialog>
+
+<script>
+// design variant before the 3D code loads (so only the matching texts show): #turm / #leiter in the link, otherwise the last choice, default Leiter
+(function(){ let v='B'; const h=(location.hash||'').slice(1).toLowerCase(); try{ const s=localStorage.getItem('pav-variant'); if(s==='A'||s==='B') v=s; }catch(e){} if(h==='turm') v='A'; if(h==='leiter') v='B'; document.body.dataset.variant=v; })();
+// tabs, chapters, lightbox
+(function(){
+  const tabs=[...document.querySelectorAll('[role=tab]')];
+  function sel(t){ tabs.forEach(x=>{ const on=x===t; x.setAttribute('aria-selected',on); document.getElementById(x.getAttribute('aria-controls')).hidden=!on; });
+    if(t.id!=='tab-film'){ const v=document.getElementById('tour'); if(v&&!v.paused) v.pause(); }
+    if(t.id==='tab-3d' && window.requestRender){ window.dispatchEvent(new Event('resize')); }
+    try{ localStorage.setItem('pav-tab',t.id); }catch(e){} }
+  tabs.forEach(t=>t.addEventListener('click',()=>sel(t)));
+  const h=(location.hash||'').slice(1); const byHash={film:'tab-film',raumfuehrung:'tab-film',bilder:'tab-bilder','3d':'tab-3d','360':'tab-pano',pano:'tab-pano',rundblick:'tab-pano'};
+  let start=byHash[h]; if(!start){ try{ start=localStorage.getItem('pav-tab'); }catch(e){} }
+  const st=tabs.find(t=>t.id===start); if(st) sel(st);
+  document.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>{ const v=document.getElementById('tour'); v.currentTime=parseFloat(b.dataset.t); v.play().catch(()=>{}); }));
+  const lb=document.getElementById('lb'), li=lb.querySelector('img'), lp=lb.querySelector('p');
+  document.querySelectorAll('figure.shot img').forEach(img=>{ img.tabIndex=0;
+    const open=()=>{ li.src=img.src; li.alt=img.alt; lp.textContent=img.closest('figure').querySelector('.t').textContent; try{lb.showModal();}catch(e){} };
+    img.addEventListener('click',open); img.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } }); });
+  lb.addEventListener('click',()=>lb.close());
+})();
+</script>
+<!--SCRIPTS-->
