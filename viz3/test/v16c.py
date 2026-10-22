@@ -182,7 +182,7 @@ if want('phone'):   # a phone: the lightest tier, the forest still built and wit
         M("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
         M("CLOCK.t = 13 * 60; DN.update(true)"); lib.settle_light(mp)
         M("GAME.view(-478, -602, ROADS.groundAt(-478, -602) + 1.7, 100, 3, 62); GAME.step(0.2)"); lib.shot(mp, OUT, 'l_phone_core')
-        s = json.loads(M("JSON.stringify(Object.assign(FOREST.stats(), { calls: GAME.R.info.render.calls, tris: GAME.R.info.render.triangles, tier: RENDER.tier }))")); print('phone', s)
+        s = json.loads(M("JSON.stringify(Object.assign(FOREST.stats(), { calls: GAME.R.info.render.calls, tris: GAME.R.info.render.triangles, tier: GAME.RENDER.tier }))")); print('phone', s)
         check('phone: forest drawn lighter', s['tier'] == 'schnell' and s['near'] > 30 and s['near'] < 400, str(s))
         g_ok, g = lib.check_gl(mp); check('phone: textures per shader ≤ 16', g_ok, f"max fragment {g['maxFrag']}, vertex {g['maxVert']}")
         check('phone: no errors', not errs, '\n'.join(errs[:5]))

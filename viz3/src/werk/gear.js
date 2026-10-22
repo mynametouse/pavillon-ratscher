@@ -41,7 +41,7 @@ const GEAR = (() => {
   function renderWin() { if (!win || win.hidden) return;
     let h = '<h3>Schutzausrüstung<button type="button" class="x" aria-label="Schließen">×</button></h3>';
     const item = ([id, it]) => `<button type="button" class="gitem${worn(id) ? ' on' : ''}" data-g="${id}" aria-pressed="${worn(id)}"><i>${ICO[it.slot]}</i><span><b>${it.n}</b><small>${it.d}</small></span><em>${worn(id) ? 'angelegt' : 'anlegen'}</em></button>`;
-    if (!S.have && !S.haveF) h += '<p class="gnote">Deine Schutzausrüstung hängt am PSA-Brett in der Werkstatt (Rückwand, neben dem Holzregal); die Forstausrüstung liegt in der Forstkiste am Traktor (Untere Klinge).</p>';
+    if (!S.have && !S.haveF) h += '<p class="gnote">Deine Schutzausrüstung hängt am PSA-Brett in der Werkstatt (Rückwand, neben dem Holzregal)' + (window.FELL && FELL.on ? '; die Forstausrüstung liegt in der Forstkiste am Traktor (Untere Klinge).' : '.') + '</p>';
     if (S.have) { h += '<div class="gl">' + Object.entries(IT).filter(([, it]) => !it.forest).map(item).join('') + '</div>';
       h += '<p class="gnote">Säge und Hobel: Schutzbrille und Gehörschutz, keine Handschuhe. Schleifen: dazu die FFP2-Maske. Räuchern: Korbbrille, ABEK-Halbmaske, Nitrilhandschuhe.</p>'; }
     if (S.haveF) { h += '<h4 class="gh">Wald (Motorsäge)</h4><div class="gl">' + Object.entries(IT).filter(([, it]) => it.forest).map(item).join('') + '</div>';

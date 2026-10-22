@@ -27,7 +27,7 @@ const AVATAR = (() => {
     const model = gl.scene, g = new THREE.Group(), inner = new THREE.Group(); inner.rotation.y = Math.PI; g.add(inner); inner.add(model);   // models face +z, figures look along local -z
     const sc = prepModel(model, o.h); const B = {}; model.traverse(x => { if (x.isBone) { const c = canonP(x.name); if (c && !B[c]) B[c] = x; } });
     model.traverse(x => { if (x.isMesh) { x.frustumCulled = false; const ms = Array.isArray(x.material) ? x.material : [x.material]; for (const m of ms) if (m && /hair|lash|brow/i.test(m.name || '')) { m.alphaTest = Math.max(m.alphaTest || 0, 0.4); m.transparent = false; } } });
-    try { wearZones(model); } catch (e) { console.warn('wear zones', e); }
+    if (window.FELL && FELL.on) try { wearZones(model); } catch (e) { console.warn('wear zones', e); }   // only with felling (V16c2)
     const mixer = new THREE.AnimationMixer(model), acts = {}, clips = {};
     for (const [k, c] of Object.entries(set.clips)) { const clip = decode(c); clips[k] = clip; const a = mixer.clipAction(clip); a.play(); a.setEffectiveWeight(0); if (!clip.userData.loop) { a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; } acts[k] = a; }
     const w = {}; for (const k of Object.keys(acts)) w[k] = 0;

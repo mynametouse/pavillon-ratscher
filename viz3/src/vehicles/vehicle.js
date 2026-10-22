@@ -75,7 +75,14 @@ const VEH = (() => {
     s.thr = lerp1(s.thr, thr, h * 8); s.brk = brk; s.hand = !!inp.hand; s.brakeOn = brk > 0.05 || (s.hand && spd > 0.3);
     // engine speed through the gear (clutch slipping below idle, launch revs), automatic shifting
     const wrpm = s.u / sp.rw * 60 / (2 * Math.PI); let erpm = Math.abs(wrpm * ratio(sp, s.gear));
-    if (s.gear > 0 && s.shiftT <= 0 && !s.air) { if (s.gear < sp.gears.length && erpm > sp.upAt(s.thr)) { s.gear++; s.shiftT = sp.shift; } else if (s.gear > 1 && erpm < sp.downAt(s.thr)) { s.gear--; s.shiftT = sp.shift * 0.7; } }
+    // no hunting: up only into a gear that stays clear of the downshift point and only while it still pulls (or at the red line, or with
+    // room to spare), down only after a moment in the gear – the speed lost during a shift (no drive) once dropped a tractor uphill on a soft
+    // track straight back into first, again and again; nearly standing: first gear
+    if (s.gear > 0 && !s.air) { s.inGear = (s.inGear || 0) + h;
+      if (s.gear > 1 && spd < 0.3) { s.gear = 1; s.inGear = 0; }
+      else if (s.shiftT <= 0) { const dn = sp.downAt(s.thr), nx = s.gear < sp.gears.length ? erpm * ratio(sp, s.gear + 1) / ratio(sp, s.gear) : 0;
+        if (nx && erpm > sp.upAt(s.thr) && nx > dn * 1.05 && (s.ax > 0.1 || erpm > sp.eng.red - 120 || nx > dn * 1.35)) { s.gear++; s.shiftT = sp.shift; s.inGear = 0; }
+        else if (s.gear > 1 && erpm < dn && s.inGear > 1.2) { s.gear--; s.shiftT = sp.shift * 0.7; s.inGear = 0; } } }
     if (s.shiftT > 0) s.shiftT -= h;
     const launch = sp.eng.idle + s.thr * (sp.eng.launch - sp.eng.idle), slip = erpm < launch, rpmEff = slip ? launch : erpm;
     s.rpm = lerp1(s.rpm, s.engine ? Math.min(sp.eng.red, Math.max(sp.eng.idle, rpmEff)) : 0, h * (slip ? 6 : 14));

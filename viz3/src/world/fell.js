@@ -216,7 +216,19 @@ const FELL = (() => {
     if (SAW.loops) { const L = SAW.load, sx = P.x, sy = P.y; audio.loopVol('csaw:idle', SAW.run ? (1 - L) * 0.55 : 0); audio.loopVol('csaw:cut', L * 0.95); audio.loopVol('csaw:high', 0);
       for (const n of ['csaw:idle', 'csaw:cut']) audio.moveLoop(n, sx, sy); audio.loopRate('csaw:cut', 0.97 + 0.06 * Math.sin(performance.now() / 700), 0.3); }
     // the chain runs while cutting (texture-less: a shimmer by moving the mesh a hair)
-    if (HELD.obj && SAW.load > 0) { HELD.obj.traverse(o => { if (o.name === 'chain') o.position.x = 0.21 + Math.sin(performance.now() / 9) * 0.0015; }); markDirty(); } }
+    if (HELD.obj && SAW.load > 0) { HELD.obj.traverse(o => { if (o.name === 'chain') o.position.x = 0.21 + Math.sin(performance.now() / 9) * 0.0015; }); markDirty(); }
+    cutSaw(cutting); }
+  // seen from behind the figure (third person), the saw is shown where it cuts: the body outside the stem, the bar in the cut, pointing from
+  // where one stands into the wood – the figure kneels or stands beside it (the saw in the hand would hang in the air in those poses)
+  function cutSaw(on) { const third = on && typeof CAM3 !== 'undefined' && CAM3.on, T = SAW.T, a = PLAY.hold && PLAY.hold.a;
+    if (!SAW.cut3) { SAW.cut3 = new THREE.Group(); const m = sawModel(); m.position.set(-HANDLE[0], -HANDLE[1], -HANDLE[2]); SAW.cut3.add(m); SAW.cut3.visible = false; SAW.cut3.traverse(o => { if (o.isMesh) o.userData.noMerge = true; }); scene.add(SAW.cut3); }
+    if (T && T.held) T.held.visible = !third;
+    if (!third || !a || !a.pos) { if (SAW.cut3.visible) { SAW.cut3.visible = false; markDirty(); } return; }
+    const p = a.pos(); if (!p) return; let dx = p[0] - P.x, dy = p[1] - P.y; const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
+    let r = 0.2; try { const rec = cur(), t = rec && treeOf(rec); if (t) r = FOREST.trunkR(t, THREE.MathUtils.clamp(p[2] - t.z, 0.3, 1.3)); } catch (e) {}
+    const hx = p[0] - dx * (r + 0.42), hy = p[1] - dy * (r + 0.42);
+    SAW.cut3.position.copy(V(hx, hy, p[2])); SAW.cut3.rotation.set(0, Math.atan2(dy, dx), -0.08, 'YXZ');   // the model's +x (the bar) towards the stem
+    SAW.cut3.children[0].position.x = -HANDLE[0] + Math.sin(performance.now() / 9) * 0.002; SAW.cut3.visible = true; markDirty(); }
   // ---------------- the forest box at the tractor: gear, saw, wedges, hammer, tape, calliper ----------------
   let KIT = null;
   function kitPos() { const v = window.VEH && VEH.by && VEH.by.tractor, h = v && v.spec.home ? v.spec.home() : [-563.8, -581.4, 0]; const psi = h[2] || 0, f = [Math.sin(psi), Math.cos(psi)], r = [Math.cos(psi), -Math.sin(psi)];
@@ -564,6 +576,9 @@ const FELL = (() => {
     if ((e.key === 'b' || e.key === 'B') && P.mode === 'walk' && S.bookCtx()) { e.stopImmediatePropagation(); e.preventDefault(); book(); } }, true);
   S.bookCtx = () => !!(S.ready && (S.job != null || (FOREST.amb && FOREST.amb() > 0.3) || (KIT && Math.hypot(P.x - KIT.x, P.y - KIT.y) < 30)));
   whenLoaded(() => { if (!FOREST.ready || !window.ROADS || !ROADS.ready) return; try { S.marked = chooseMarked(); buildKit(); registerActs(); mkSaw(); load(); buildMarks(); S.ready = true; } catch (e) { console.warn('fell', e); } });
+  // first visit of V16c2: a word about felling
+  let intro = false; window.TICKS.push(() => { if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16c2') === '1'; localStorage.setItem('pav-v16c2', '1'); } catch (e) {}
+    if (!seen) setTimeout(() => toast('Neu: Bäume fällen wie ein Profi. An der Unteren Klinge steht die Forstkiste am Traktor (Helm mit Visier, Schnittschutz, Motorsäge, Keile). Der Förster hat Bäume mit einem orangen Strich markiert: ansprechen, Fallkerb, Fällschnitt mit Halteband, Keil, Warnruf – dann entasten, ablängen, vermessen. B: Waldbuch.', 14000), 40000); });
   // test and tool hooks
   Object.assign(S, { book, rec: cur, nextOp, openPlan, startFall, geomOf, outcome, landing, zopfY, endGrain, sawStart, sawStop, get saw() { return SAW; }, stars, kitPos, freeDirs, leanOf, pressSide,
     reset() { try { localStorage.removeItem(LSK); } catch (e) {} location.reload(); } });

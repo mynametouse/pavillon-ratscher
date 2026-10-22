@@ -156,7 +156,7 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   Emission), optional `update(v, dt)` (Spielzeit), `key(k, down)`, `save()/load(a)`, `beam` (Lichtquelle lokal). `spec`: Masse, Trägheit, Achsabstände `a/b`,
   Spur, Schwerpunkthöhe, Radradius, Reifensteifigkeit `Cf/Cr`, Haftung, Lenkung (`steerMax`, `steerV`), Motor (`eng.curve` Nm über U/min),
   Gänge, Bremsen, Luftwiderstand, Kasten für Kollisionen (`box`), Augenpunkt (`eye`), Tür (`door`), Kamera, Ton (`petrol`/`diesel`), `home()`.
-  Physik 120 Hz (Einspurmodell, Reibkreis je Achse, Automatik), Boden aus `ROADS.groundAt`/`ROADS.at`, Kollision mit `WCOL`, `COL`, Fahrzeugen,
+  Physik 120 Hz (Einspurmodell, Reibkreis je Achse, Automatik ohne Pendeln: hoch nur in einen Gang über der Rückschaltdrehzahl und solange er zieht, zurück erst nach 1,2 s im Gang), Boden aus `ROADS.groundAt`/`ROADS.at`, Kollision mit `WCOL`, `COL`, Fahrzeugen,
   Nachbarn und Huberts Traktor. Kamera: `VEH.applyCam` (aus `game.js applyCam`), Nachführen in Spielzeit (`camTick`). Licht: ein SpotLight für das
   nächste Fahrzeug mit Licht an. Haken in `game/game.js`: `groundZ`, Gehgrenzen (`walkBounds`), Kollision des Gehenden, Kamera, Schattenkasten,
   Ortsnamen; in `game/play.js`: Sitzart `drive`; in `npc/npc.js`: Huberts Traktor wartet, wenn ein Fahrzeug im Weg steht.
