@@ -71,3 +71,32 @@ def check_gl(pg, limit=16):
     r = _j.loads(pg.evaluate(f"JSON.stringify(window.GLCHECK ? GLCHECK.run({limit}) : ({GLCOUNT})(GAME.R, {limit}))"))
     ok = not r['bad'] and not r['broken'] and r['maxFrag'] <= limit and r['maxVert'] <= limit
     return ok, r
+
+class Checks:
+    """Named checks with one result line and an exit code – what viz3/test/run.py and the CI read (plan: claude/pavillon-umbau.md, phase 0).
+        ck = lib.Checks('smoke')
+        ck('werkstatt actions', n > 0, f'{n} actions')      # prints 'OK   …' or 'FAIL …', returns the condition
+        ck.errors(errs)                                       # uncaught page errors fail (errs from lib.page(errs=[]))
+        ck.done()                                             # 'RESULT smoke: 5/5 ok in 74 s', exit code 1 if anything failed
+    """
+    def __init__(self, name):
+        self.name, self.ok, self.fail, self.t0 = name, [], [], time.time()
+
+    def __call__(self, what, cond, info=''):
+        (self.ok if cond else self.fail).append(what)
+        print(('OK   ' if cond else 'FAIL ') + what, info, flush=True)
+        return bool(cond)
+
+    def errors(self, errs, ignore=('Texture marked for update',)):
+        """Uncaught exceptions on the page fail; console errors are only listed (some come from the browser itself)."""
+        bad = [e for e in errs if e.startswith('PAGEERR') and not any(i in e for i in ignore)]
+        con = [e for e in errs if e.startswith('CONSOLE') and not any(i in e for i in ignore)]
+        for e in con[:5]: print('note', e[:300], flush=True)
+        return self('no uncaught page errors', not bad, ' | '.join(e[:200] for e in bad[:3]))
+
+    def done(self):
+        import sys
+        n = len(self.ok) + len(self.fail)
+        tail = (' – FAIL: ' + ', '.join(self.fail[:6])) if self.fail else ''
+        print(f'RESULT {self.name}: {len(self.ok)}/{n} ok in {round(time.time() - self.t0)} s{tail}', flush=True)
+        sys.exit(1 if self.fail or not n else 0)
