@@ -128,7 +128,7 @@ const MAT = { roads: contentMaterial('roads'), buildings: contentMaterial('build
 MAT.marks.polygonOffsetFactor = -4;
 MAT.marks.polygonOffsetUnits = -8;
 // trees: unit shapes scaled per instance (cone for conifers, rounded crown for broadleaves), colour per instance
-const TREE_GEO = [new THREE.ConeGeometry(1, 1, 6, 1, true).translate(0, 0.5, 0), new THREE.IcosahedronGeometry(1, 1).translate(0, 1, 0)];
+const TREE_GEO = [new THREE.ConeGeometry(1, 1, 6, 1, true).translate(0, 0.5, 0), new THREE.IcosahedronGeometry(1, 0).translate(0, 1, 0)];
 MAT.trees = (() => {
   const m = contentMaterial('trees');
   m.vertexColors = false;
