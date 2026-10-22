@@ -80,26 +80,30 @@ function timeFrames(n) { const gl = R.getContext(), px = new Uint8Array(4), ts =
 // software renderer uploads only what the first picture shows (the rest when it comes into view). LOAD.alive marks progress: the boot
 // fallback opens the page only when nothing has moved for a while, never in the middle of a running step.
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+// V16b4: compile() of the whole scene handed every program to the driver in one go and the page waited until the GPU process had taken
+// them all – half a minute frozen on the test PC, minutes on Falko's laptop, and the screen still said „Modell wird aufgebaut …“ (the new text
+// is only painted after the task). Now object by object: a few new programs, then wait (without blocking) until the driver has them, paint
+// the count, go on. The same programs as before, in the render-target variant the composer uses.
 async function compileShown(say) {
   const gl = R.getContext(), ext = gl.getExtension('KHR_parallel_shader_compile');
   const rt = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType });
-  let fin = false;
-  try { R.setRenderTarget(rt); R.compileAsync(scene, cam).then(() => { fin = true; }, e => { console.warn('compile', e); fin = true; }); }   // compile() itself runs now, with the render target set
-  catch (e) { console.warn('compile', e); fin = true; } finally { R.setRenderTarget(null); }
-  // without the extension the driver finishes each program when it is first asked about it: ask one by one between short pauses (otherwise
-  // the first frame would do all of them in one go)
-  if (!ext) { const ps = (R.info.programs || []).slice(); let n = 0, slice = performance.now();
-    for (const p of ps) { try { gl.getProgramParameter(p.program, gl.LINK_STATUS); } catch (e) {} n++;
-      if (performance.now() - slice > 40) { LOAD.alive = performance.now(); say && say('Grafik wird vorbereitet … Shader ' + n + ' von ' + ps.length); await sleep(0); slice = performance.now(); } }
-    fin = true; }
-  let lastN = -1, lastT = performance.now();
-  while (!fin) { await sleep(200);
-    let ok = 0; const ps = R.info.programs || [];
-    if (ext) for (const p of ps) { if (p._pavReady || gl.getProgramParameter(p.program, ext.COMPLETION_STATUS_KHR)) { p._pavReady = true; ok++; } }
-    if (ok !== lastN) { lastN = ok; lastT = performance.now(); LOAD.alive = lastT; }
-    if (ext) say && say('Grafik wird vorbereitet … Shader ' + ok + ' von ' + ps.length);
-    if (performance.now() - lastT > 60000) { console.warn('compile: no progress for 60 s'); break; } }   // a stuck driver: go on, the frames compile the rest
-  rt.dispose(); }
+  // one object per material (compile() walks the whole scene for its lights on every call: objects whose materials have a program already
+  // are skipped), at the end one pass over everything for the few variants left (instanced, skinned …)
+  const objs = [], seen = new Set(), mats = o => Array.isArray(o.material) ? o.material : [o.material];
+  scene.traverse(o => { if ((o.isMesh || o.isPoints || o.isLine || o.isSprite) && o.material && mats(o).some(m => m && !seen.has(m))) { mats(o).forEach(m => seen.add(m)); objs.push(o); } });
+  const has = o => mats(o).every(m => { const mp = m && R.properties.get(m); return !m || (mp && mp.programs && mp.programs.size); });
+  const progs = () => R.info.programs || [], ready = p => { if (p._pavReady) return true; try { if (ext ? gl.getProgramParameter(p.program, ext.COMPLETION_STATUS_KHR) : (gl.getProgramParameter(p.program, gl.LINK_STATUS), true)) p._pavReady = true; } catch (e) { p._pavReady = true; } return !!p._pavReady; };
+  const tell = i => { LOAD.alive = performance.now(); say && say('Grafik wird vorbereitet … Shader ' + progs().filter(p => p._pavReady).length + ' (' + Math.min(100, Math.round(100 * i / Math.max(1, objs.length))) + ' %)'); };
+  // the new programs: with the extension ask without waiting until they are done; without it the driver finishes each one when asked
+  const settle = async (fresh, i) => { if (ext) { const w0 = performance.now(); while (fresh.some(p => !ready(p))) { tell(i); await sleep(30); if (performance.now() - w0 > 30000) { console.warn('compile: a program takes > 30 s'); break; } } } else for (const p of fresh) ready(p); };
+  let i = 0;
+  while (i < objs.length) {   // a portion: objects until 3 new programs were made or 30 ms have passed
+    const n0 = progs().length, t0 = performance.now();
+    try { R.setRenderTarget(rt); while (i < objs.length && progs().length - n0 < 3 && performance.now() - t0 < 30) { if (!has(objs[i])) R.compile(objs[i], cam, scene); i++; } }
+    catch (e) { console.warn('compile', e); i++; } finally { R.setRenderTarget(null); }
+    await settle(progs().slice(n0), i); tell(i); await sleep(0); }
+  { const n0 = progs().length; try { R.setRenderTarget(rt); R.compile(scene, cam); } catch (e) { console.warn('compile', e); } finally { R.setRenderTarget(null); } await settle(progs().slice(n0), objs.length); }
+  tell(objs.length); rt.dispose(); }
 async function uploadTextures(say, seenOnly) {
   const set = new Set(), add = t => { if (t && t.isTexture && !t.isRenderTargetTexture && t.image && (t.image.width || t.image.data || t.image.length)) set.add(t); };
   let fr = null; if (seenOnly) { applyCam(); cam.updateMatrixWorld(); fr = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse)); }
@@ -113,12 +117,17 @@ async function uploadTextures(say, seenOnly) {
 async function prepareGPU(say) {
   const t0 = performance.now(), step = t => say && say('Grafik wird vorbereitet … ' + t);
   const soft = GLINFO.soft && !TIER_USER && !OFFLINE; if (soft) { applyTier('schnell', false); resize(); RENDER.bench = { soft: 1 }; }
+  // V16b4: the light way (as for a software renderer) on every device: only the textures in view, no frame of everything – that frame was
+  // seconds of GPU work on a laptop, enough for a driver reset, and the full upload is too much graphics memory for a phone
+  const qp = (location.search.match(/[?&]prep=(lite|full)/) || [])[1], mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  // (Falko's laptop hung while loading, 22.10.2026; ?prep=full for comparisons)
+  const lite = !OFFLINE && (soft || qp !== 'full'); RENDER.lite = lite; LOADLOG.note('Vorbereitung ' + (lite ? 'sparsam' : 'voll') + (mobile ? ' (Mobilgerät)' : '') + (LOADLOG.prev ? ' (nach abgebrochenem Versuch)' : ''), true);
   // 1) all scene materials in the render-target variant the composer uses – in the background, the count on the loading screen
   step('Shader'); LOAD.alive = performance.now(); await compileShown(say);
   // 2) textures to the GPU one by one; then (hardware) one frame with culling off for the shadow-map programs and post passes, with the hidden
   //    design variant shown for this one frame (switching variants later uploads nothing). A software renderer skips both: every texture
   //    there costs a second, and a frame of everything many more – the first picture comes first, the rest when it is seen
-  if (!soft) { RENDER.texN = await uploadTextures(say); step('erstes Bild'); LOAD.alive = performance.now(); await nextFrame();
+  if (!lite) { RENDER.texN = await uploadTextures(say); step('erstes Bild'); LOAD.alive = performance.now(); await nextFrame();
     const off = [], shown = [], phOn = o => o.userData.ph === undefined || (o.userData.ph <= PHASE && (o.userData.phEnd === undefined || PHASE < o.userData.phEnd));
     scene.traverse(o => { if (o.isMesh && o.frustumCulled) { off.push(o); o.frustumCulled = false; } if (o.userData.var && !o.visible && phOn(o)) { shown.push(o); o.visible = true; } });
     R.shadowMap.needsUpdate = true; applyCam(); renderFrame(); for (const o of off) o.frustumCulled = true; for (const o of shown) o.visible = false; R.shadowMap.needsUpdate = true; }
