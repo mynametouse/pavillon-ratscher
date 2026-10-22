@@ -56,7 +56,8 @@ jobs:
         run: |
           npm ci --prefix viz3 --no-audit --no-fund
           pip install playwright
-          python -m playwright install --with-deps chromium
+          # the system packages come from the Ubuntu mirror, which sometimes stalls: bounded, then the browser alone
+          timeout 300 python -m playwright install --with-deps chromium || python -m playwright install chromium
       - name: Bauen wie veröffentlicht
         run: python viz3/build.py --fast --min
       - name: Kurztest
