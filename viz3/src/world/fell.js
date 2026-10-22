@@ -580,6 +580,8 @@ const FELL = (() => {
   let intro = false; window.TICKS.push(() => { if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16c2') === '1'; localStorage.setItem('pav-v16c2', '1'); } catch (e) {}
     if (!seen) setTimeout(() => news('Neu: Bäume fällen wie ein Profi. An der Unteren Klinge steht die Forstkiste am Traktor (Helm mit Visier, Schnittschutz, Motorsäge, Keile). Der Förster hat Bäume mit einem orangen Strich markiert: ansprechen, Fallkerb, Fällschnitt mit Halteband, Keil, Warnruf – dann entasten, ablängen, vermessen. B: Waldbuch.', 14000), 44000); });
   // test and tool hooks
+  // V16d: werk/holz.js takes over the measured logs as objects of their own – the felled tree's log meshes are then hidden
+  S.hideLogs = tid => { const r = RT[tid]; if (r && r.logG && r.logG.visible) { r.logG.visible = false; markDirty(true); } };
   Object.assign(S, { book, rec: cur, nextOp, openPlan, startFall, geomOf, outcome, landing, zopfY, endGrain, sawStart, sawStop, get saw() { return SAW; }, stars, kitPos, freeDirs, leanOf, pressSide,
     reset() { try { localStorage.removeItem(LSK); } catch (e) {} location.reload(); } });
   return S; })();

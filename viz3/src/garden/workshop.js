@@ -86,14 +86,16 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], { short: 'Werkst
     for (const x of [-0.62, 0.62]) { B(x - 0.05, x + 0.05, -0.16, 0.16, 0.38, 0.48, M.orange, P()); B(x - 0.04, x + 0.04, -0.04, 0.04, 0.48, 1.86, M.orange, P({ grain: 'z' })); }
     for (const x of [-GA / 2, GA / 2]) for (const y of [-0.12, 0.12]) { const w = ycyl(y - 0.025, y + 0.025, x, 0.48, 0.045, M.dark, 14, h); }
     B(-0.66, 0.66, -0.06, 0.06, 1.82, 1.9, M.orange, P());
-    for (const x of [-0.5, 0.5]) { const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.29, 0.29, 0.2, 28), [M.orange, M.orange, M.orange]); wh.rotation.x = Math.PI / 2; wh.position.copy(V(x, 0, SAW.zBlade + 0.26)); wh.castShadow = true; h.add(wh);
-      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.23, 6), [M.dark, M.steel, M.steel]); hub.rotation.x = Math.PI / 2; hub.position.copy(wh.position); h.add(hub); SAW.wheels.push(hub); }
-    B(-0.5, 0.5, -0.06, 0.06, SAW.zBlade + 0.46, SAW.zBlade + 0.56, M.orange, P());
-    B(-0.48, 0.48, -0.004, 0.004, SAW.zBlade - 0.017, SAW.zBlade + 0.017, M.blade, P({ cast: false }));                 // the blade, across the log
-    for (const x of [-0.25, 0.25]) B(x - 0.03, x + 0.03, -0.035, 0.035, SAW.zBlade - 0.02, SAW.zBlade + 0.28, M.dark, P());   // blade guides
-    B(0.72, 1.06, -0.2, 0.2, SAW.zBlade + 0.16, SAW.zBlade + 0.5, M.red, P());           // engine block
-    B(0.76, 1.02, -0.16, 0.12, SAW.zBlade + 0.5, SAW.zBlade + 0.64, M.black, P());       // fuel tank
-    hcyl(0.86, 1.0, 0.16, SAW.zBlade + 0.32, 0.05, M.dark, 12, h);                         // muffler
+    // V16d: the saw unit (wheels, blade, guides, engine) is a group of its own – it moves up and down on the posts (SAW.unit.position.y = blade height − zBlade)
+    const U = SAW.unit = new THREE.Group(); h.add(U); const PU = (o) => Object.assign({ parent: U, col: false }, o);
+    for (const x of [-0.5, 0.5]) { const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.29, 0.29, 0.2, 28), [M.orange, M.orange, M.orange]); wh.rotation.x = Math.PI / 2; wh.position.copy(V(x, 0, SAW.zBlade + 0.26)); wh.castShadow = true; U.add(wh);
+      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.23, 6), [M.dark, M.steel, M.steel]); hub.rotation.x = Math.PI / 2; hub.position.copy(wh.position); U.add(hub); SAW.wheels.push(hub); }
+    B(-0.5, 0.5, -0.06, 0.06, SAW.zBlade + 0.46, SAW.zBlade + 0.56, M.orange, PU());
+    B(-0.48, 0.48, -0.004, 0.004, SAW.zBlade - 0.017, SAW.zBlade + 0.017, M.blade, PU({ cast: false }));                 // the blade, across the log
+    for (const x of [-0.25, 0.25]) B(x - 0.03, x + 0.03, -0.035, 0.035, SAW.zBlade - 0.02, SAW.zBlade + 0.28, M.dark, PU());   // blade guides
+    B(0.72, 1.06, -0.2, 0.2, SAW.zBlade + 0.16, SAW.zBlade + 0.5, M.red, PU());           // engine block
+    B(0.76, 1.02, -0.16, 0.12, SAW.zBlade + 0.5, SAW.zBlade + 0.64, M.black, PU());       // fuel tank
+    hcyl(0.86, 1.0, 0.16, SAW.zBlade + 0.32, 0.05, M.dark, 12, U);                         // muffler
     B(-0.32, 0.32, -0.3, -0.27, 1.12, 1.15, M.black, P()); for (const x of [-0.32, 0.32]) B(x - 0.015, x + 0.015, -0.3, -0.04, 1.12, 1.15, M.black, P());   // push bar (south)
     WORKS.machines.push({ key: 'saw', label: 'Blockbandsäge', pos: [MX + 0.95, YS + 0.4], r: 2.2, z: 0, snd: 'saw_run', snd2: 'saw_cut', state: SAW }); }
   // --- drum sander (feed along y, drum across) ---

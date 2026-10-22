@@ -107,7 +107,10 @@ const VEH = (() => {
     else s.slip = 0;
     // forces in the body frame: tyres, air, slope
     const drag = 0.5 * RHO * sp.cdA, Fu = Fxf * cd - Fyf * sd + Fxr - drag * s.u * Math.abs(s.u) - m * GR * Math.sin(s.pt), Fv = Fxf * sd + Fyf * cd + Fyr - drag * 3 * s.v * Math.abs(s.v) + m * GR * Math.sin(s.rt) * (s.air ? 0 : 1);
-    const du = Fu / m + s.v * s.r, dv = Fv / m - s.u * s.r, dr = s.air ? -s.r * 0.5 : (a * (Fxf * sd + Fyf * cd) - b * Fyr) / sp.Iz;
+    // V16d: a trailer behind (vehicles/trailer.js): its mass and load are pulled along – rolling resistance, the slope, its brakes (overrun brake) and its inertia
+    const mt = sp.tow ? sp.tow() : 0; let FuT = Fu;
+    if (mt > 0 && !s.air) { const sg = Math.sign(s.u), res = (0.03 + s.brk * 0.45) * mt * GR, stop = (m + mt) * Math.abs(s.u) / h; FuT = Fu - mt * GR * Math.sin(s.pt) - sg * Math.min(res, stop + Math.abs(Fu)); }
+    const du = FuT / (m + mt) + s.v * s.r, dv = Fv / m - s.u * s.r, dr = s.air ? -s.r * 0.5 : (a * (Fxf * sd + Fyf * cd) - b * Fyr) / sp.Iz;
     s.u += du * h; s.v += dv * h; s.r += dr * h;
     // below walking pace the vehicle follows its wheels (no slip): yaw from the steering, the rear axle without side motion
     if (!s.air && !s.hand) { const kin = Math.max(0, 1 - spd / 2.2); if (kin > 0) { const rK = s.u * Math.tan(s.steer) / L; s.r += (rK - s.r) * kin; s.v += (b * rK - s.v) * kin; } }
@@ -176,7 +179,7 @@ const VEH = (() => {
   S.blocked = (x, y, az, ahead) => { const px = x + Math.sin(az) * ahead, py = y + Math.cos(az) * ahead; for (const v of S.list) if (circBox(boxOf(v), px, py, 1.5)) return true; return false; };
   // walkers bump into parked vehicles (game/game.js collide)
   S.pushWalker = (p, rad, feet) => { for (const v of S.list) { if (v === S.cur) continue; if (feet != null && feet > v.st.z + v.spec.box.h - 0.2) continue; const h = circBox(boxOf(v), p[0], p[1], rad); if (!h) continue; p[0] -= h.n[0] * h.d; p[1] -= h.n[1] * h.d; }
-    for (const x of S.extra) { const B = x.box(); if (!B || (feet != null && feet > B.z1 - 0.2)) continue; const h = circBox(B, p[0], p[1], rad); if (h) { p[0] -= h.n[0] * h.d; p[1] -= h.n[1] * h.d; } } };
+    for (const x of S.extra) { if (x.noWalk) continue; const B = x.box(); if (!B || (feet != null && feet > B.z1 - 0.2)) continue; const h = circBox(B, p[0], p[1], rad); if (h) { p[0] -= h.n[0] * h.d; p[1] -= h.n[1] * h.d; } } };
   // ---------------- pose of the model ----------------
   const _q = new THREE.Quaternion(), _e = new THREE.Euler(0, 0, 0, 'YXZ');
   function pose(v, dt = 0) { const s = v.st, sp = v.spec, g = v.g;
