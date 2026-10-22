@@ -1,7 +1,7 @@
 {
  "format": "welt-test/1",
- "generated": "2026-10-22T21:40:28Z",
- "commit": "c074cb8",
+ "generated": "2026-10-22T21:50:14Z",
+ "commit": "8f9958f",
  "plan": "B",
  "crs": "EPSG:25832",
  "heights": "NHN (DHHN2016) in m minus H0",
@@ -54,7 +54,7 @@
     },
     "image": {
      "n": 4,
-     "bytes": 188702
+     "bytes": 202268
     }
    },
    "6": {
@@ -73,7 +73,7 @@
     },
     "image": {
      "n": 16,
-     "bytes": 816350
+     "bytes": 871038
     }
    },
    "7": {
@@ -92,7 +92,7 @@
     },
     "image": {
      "n": 64,
-     "bytes": 3949324
+     "bytes": 4188332
     }
    },
    "8": {
@@ -111,7 +111,7 @@
     },
     "image": {
      "n": 36,
-     "bytes": 1383588
+     "bytes": 1466150
     }
    },
    "9": {
@@ -130,7 +130,7 @@
     },
     "image": {
      "n": 144,
-     "bytes": 5046098
+     "bytes": 5366116
     }
    },
    "10": {
@@ -149,7 +149,7 @@
     },
     "image": {
      "n": 576,
-     "bytes": 17928662
+     "bytes": 19145958
     }
    },
    "11": {
@@ -168,7 +168,7 @@
     },
     "image": {
      "n": 2304,
-     "bytes": 62918360
+     "bytes": 66386382
     }
    },
    "12": {
@@ -187,7 +187,7 @@
     },
     "image": {
      "n": 1600,
-     "bytes": 27857608
+     "bytes": 27883010
     }
    }
   },
@@ -493,6 +493,14 @@
   "dgm1_share": 0.0,
   "copernicus_offset_m": 0.0,
   "imagery": "DOP Thüringen, WMS TH DOP (th_dop), © GDI-Th, CC BY 4.0",
+  "imagery_balance": {
+   "cells_km": [
+    27,
+    27
+   ],
+   "gain_min": 0.726,
+   "gain_max": 1.45
+  },
   "osm": "OpenStreetMap (2026-10-22T21:23Z), © OpenStreetMap-Mitwirkende, ODbL 1.0"
  },
  "attribution": "Luftbild und Geländemodell: © GDI-Th (CC BY 4.0) · © OpenStreetMap-Mitwirkende (ODbL) · Copernicus DEM GLO-30: © DLR e.V. 2010-2014 und © Airbus Defence and Space GmbH 2014-2018, bereitgestellt im Rahmen von COPERNICUS durch EU und ESA · Landbedeckung: © ESA WorldCover project 2021 (CC BY 4.0)",

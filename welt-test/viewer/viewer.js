@@ -441,8 +441,9 @@ function treeGroup(a) {
       if (a[i * 6 + 5] !== type) continue;
       const x = a[i * 6] / 10, z = a[i * 6 + 1] / 10, y = a[i * 6 + 2] / 10, h = a[i * 6 + 3] / 10, r = a[i * 6 + 4] / 10;
       if (type === 0) {
-        _p.set(x, y + 0.12 * h, z);
-        _s.set(r, 0.88 * h, r);
+        // conifer: the crown cone starts a fifth of the height up (trunks and cut branches below, roads stay clear)
+        _p.set(x, y + 0.2 * h, z);
+        _s.set(r, 0.82 * h, r);
       } else {
         _p.set(x, y + 0.3 * h, z);
         _s.set(r, 0.36 * h, r);
@@ -451,8 +452,9 @@ function treeGroup(a) {
       im.setMatrixAt(k, _m);
       const v = ((i * 2654435761) >>> 0) / 4294967296;
       // sRGB picks: dark spruce green, lighter broadleaf green
-      if (type === 0) _c.setRGB(0.16 + 0.06 * v, 0.27 + 0.08 * v, 0.17, THREE.SRGBColorSpace);
-      else _c.setRGB(0.3 + 0.1 * v, 0.4 + 0.1 * v, 0.18, THREE.SRGBColorSpace);
+      // close to the forest tones of the spring orthophoto (dark spruce, fresh beech)
+      if (type === 0) _c.setRGB(0.11 + 0.04 * v, 0.18 + 0.05 * v, 0.11, THREE.SRGBColorSpace);
+      else _c.setRGB(0.2 + 0.07 * v, 0.28 + 0.07 * v, 0.13, THREE.SRGBColorSpace);
       im.setColorAt(k, _c);
       k++;
     }
@@ -483,7 +485,9 @@ function updateContent() {
       }
       const dx = Math.max(Math.abs(camera.position.x - c.centre.x) - c.s / 2, 0);
       const dz = Math.max(Math.abs(camera.position.z - c.centre.z) - c.s / 2, 0);
-      const near = Math.hypot(dx, dz, Math.max(camera.position.y - 200, 0)) < range;
+      // trees only near the ground: seen from high up the photo shows the forest better than a patch of 3D trees
+      const up = kind === 'trees' ? Math.max(camera.position.y - 100, 0) * 3 : Math.max(camera.position.y - 200, 0);
+      const near = Math.hypot(dx, dz, up) < range;
       if (near && c.state === 0) {
         c.state = 1;
         const url = BASE + C[kind].replace('{z}', C.level).replace('{x}', k.split('_')[0]).replace('{y}', k.split('_')[1]);
@@ -670,10 +674,11 @@ document.body.appendChild(labRoot);
 const RANGE = { town: 15000, village: 7000, suburb: 5000, hamlet: 3500, isolated_dwelling: 1500, locality: 2000, peak: 6000 };
 const v3 = new THREE.Vector3();
 function updateLabels() {
+  const low = mode === 'drive';   // at the wheel only the nearby villages and towns, no peaks on the horizon
   for (const n of NAMES) {
     v3.copy(n.p);
     const d = v3.distanceTo(camera.position);
-    let show = d < (RANGE[n.kind] || 3000) && d > 30;
+    let show = low ? (n.kind === 'town' || n.kind === 'village') && d < 2500 && d > 30 : d < (RANGE[n.kind] || 3000) && d > 30;
     if (show) {
       v3.y -= (Math.pow(v3.x - camera.position.x, 2) + Math.pow(v3.z - camera.position.z, 2)) * CURV;
       v3.project(camera);
