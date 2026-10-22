@@ -41106,6 +41106,22 @@ var LOADLOG = (() => {
   return L;
 })();
 window.LOADLOG = LOADLOG;
+LOAD.pending = /* @__PURE__ */ new Map();
+{
+  const s02 = LM.itemStart, e0 = LM.itemEnd, x0 = LM.itemError;
+  LM.itemStart = (u) => {
+    LOAD.pending.set(u, performance.now());
+    s02.call(LM, u);
+  };
+  LM.itemEnd = (u) => {
+    LOAD.pending.delete(u);
+    e0.call(LM, u);
+  };
+  LM.itemError = (u) => {
+    LOAD.pending.delete(u);
+    x0.call(LM, u);
+  };
+}
 LM.onProgress = (u, d, t) => {
   LOAD.done = d;
   LOAD.total = t;
@@ -41120,7 +41136,10 @@ LM.onLoad = () => {
   if (!LOAD.finished && l && !l.hidden) l.textContent = "Modell wird aufgebaut \u2026";
   LOAD.allIn = true;
   LOAD.alive = performance.now();
-  LOAD.flushT = setTimeout(flushLoaded, LOAD.finished ? 0 : 40);
+  LOAD.flushT = setTimeout(() => {
+    if (LOAD.finished) flushLoaded();
+    else breathe().then(flushLoaded);
+  }, LOAD.finished ? 0 : 40);
 };
 var breathe = () => new Promise((r) => {
   let d = 0;
@@ -41139,9 +41158,11 @@ async function flushLoaded() {
   LOAD.flushing = true;
   let k = 0;
   while (LOAD.cbs.length) {
-    const f = LOAD.cbs.shift(), n = ++k + LOAD.cbs.length, a = performance.now(), l = $("loading");
+    const f = LOAD.cbs.shift(), n = ++k + LOAD.cbs.length, l = $("loading");
     if (l && !l.hidden && n > 1) l.textContent = "Modell wird aufgebaut \u2026 " + k + " von " + n;
     LOADLOG.note("Aufbau " + k + "/" + n + ": " + String(f).replace(/\s+/g, " ").slice(0, 70), true);
+    await breathe();
+    const a = performance.now();
     try {
       f();
     } catch (e) {
@@ -41150,7 +41171,6 @@ async function flushLoaded() {
     }
     LOAD.alive = performance.now();
     if (performance.now() - a > 400) LOADLOG.note("Aufbau " + k + " fertig nach " + Math.round(performance.now() - a) + " ms", true);
-    if (LOAD.cbs.length) await breathe();
   }
   LOAD.flushing = false;
   LOAD.alive = performance.now();
@@ -47525,7 +47545,7 @@ async function compileShown(say) {
   };
   const tell = (i2) => {
     LOAD.alive = performance.now();
-    say && say("Grafik wird vorbereitet \u2026 Shader " + progs().filter((p) => p._pavReady).length + " (" + Math.min(100, Math.round(100 * i2 / Math.max(1, objs.length))) + " %)");
+    say && say("Grafik wird vorbereitet \u2026 Shader " + Math.min(i2, objs.length) + " von " + objs.length);
   };
   const settle = async (fresh, i2) => {
     if (ext) {
@@ -47538,14 +47558,21 @@ async function compileShown(say) {
           break;
         }
       }
-    } else for (const p of fresh) ready(p);
+    } else for (const p of fresh) {
+      const a = performance.now();
+      ready(p);
+      if (performance.now() - a > 40) {
+        tell(i2);
+        await sleep(0);
+      }
+    }
   };
   let i = 0;
   while (i < objs.length) {
     const n0 = progs().length, t0 = performance.now();
     try {
       R.setRenderTarget(rt);
-      while (i < objs.length && progs().length - n0 < 3 && performance.now() - t0 < 30) {
+      while (i < objs.length && progs().length - n0 < (ext ? 3 : 1) && performance.now() - t0 < 30) {
         if (!has(objs[i])) R.compile(objs[i], cam, scene);
         i++;
       }
@@ -70370,6 +70397,16 @@ var sayLoading = (t) => {
       el.textContent = "";
       line(s + " s");
       if (prev) line(prev, true);
+      if (!LOAD.allIn && s > 20 && LOAD.pending && LOAD.pending.size) {
+        const now2 = performance.now(), slow = [...LOAD.pending].filter(([u, t]) => now2 - t > 15e3).map(([u]) => String(u).split("?")[0].split("/").slice(-2).join("/"));
+        if (slow.length) {
+          line("Noch nicht da: " + slow.slice(0, 3).join(", ") + (slow.length > 3 ? " (+" + (slow.length - 3) + ")" : ""), true);
+          if (!el.dataset.slow) {
+            el.dataset.slow = "1";
+            LOADLOG.note("wartet auf: " + slow.slice(0, 4).join(", "), true);
+          }
+        }
+      }
       if (diag || all || s > 25) {
         const st = all ? LOADLOG.steps : LOADLOG.steps.slice(-6);
         for (const x of st) line((x[0] / 1e3).toFixed(1) + " s  " + x[1]);
