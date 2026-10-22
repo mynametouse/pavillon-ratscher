@@ -55,6 +55,10 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
   Kasten um den Pavillon (weicher Rand 1,5 m, Tönung `GI.tint`), Figurenschatten (`FIGSH`), Maske gegen Lampenlicht durch Wände
   (`material.userData.leak`, Rasen/Kies). Programm-Cache-Schlüssel beachten (`customProgramCacheKey`), sonst teilen Varianten Shader.
 - Lichter nie per `visible` an/aus (ändert die Shader-Varianten → alles neu kompilieren); stattdessen `intensity = 0`.
+- **Höchstens 16 Texturen je Shader-Programm** (Fragment- und Vertex-Shader getrennt gezählt). Das ist die Untergrenze von WebGL 2 und
+  auf vielen Laptops, Macs und Telefonen auch die Obergrenze; SwiftShader in den Tests erlaubt 32. Mehr Texturen → das Programm kompiliert
+  nicht, das Mesh fehlt (V16b: Boden um den Garten mit 21 Texturen, der Himmel schien durch). Gleichartige Kacheltexturen deshalb als
+  `sampler2DArray` bündeln (`DETAIL`, Abschnitt 11) oder in einen Atlas legen. `test/gpu.py` und `lib.check_gl(pg)` prüfen jedes Programm.
 
 ## 6 Spielschicht
 
@@ -130,7 +134,7 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   große Rechnungen in Teilen über mehrere Frames (Beispiel `giMix`); neue statische Geometrie vor `render/zmerge.js` einhängen oder
   selbst zusammenfassen (InstancedMesh, `BufferGeometryUtils.mergeGeometries`).
 
-## 11 Boden, Straßen, Fahrzeuge (V16b)
+## 11 Boden, Straßen, Fahrzeuge (V16b, V16b1)
 
 - **Straßen**: `tools/geo/build_roads.py` liest die OSM-Wege (`<repo>/geo`, Originale), klassifiziert sie (Art: motorway, main, county, street,
   lane, service, track, path, foot; Belag: asphalt, concrete, paving, gravel, ground, grass; Breite; Brücke), vereinfacht sie und schreibt
@@ -152,6 +156,18 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   nächste Fahrzeug mit Licht an. Haken in `game/game.js`: `groundZ`, Gehgrenzen (`walkBounds`), Kollision des Gehenden, Kamera, Schattenkasten,
   Ortsnamen; in `game/play.js`: Sitzart `drive`; in `npc/npc.js`: Huberts Traktor wartet, wenn ein Fahrzeug im Weg steht.
   Karte beim Fahren (`vehicles/minimap.js`): 2D-Canvas `#vmap`, Fahrtrichtung oben, Wege nach Art, Route zur Klinge, 10 Hz nur beim Fahren.
+- **Detailtexturen der Böden** (`core/detail.js`, V16b1): `DETAIL.tex` ist *ein* `DataArrayTexture` mit allen Kachel-Detailtexturen
+  (Ebenen `lawn`, `lawn2`, `gravel`, `forestfloor`, `asphalt`, `needles`, `mossfloor`; 1024 px auf „hoch“, sonst 512, mit Mipmaps), Index über
+  `DETAIL.L[name]`. Bis die Bilder geladen sind, liegt ein graues Platzhalter-Array darin. Im Shader: `uniform highp sampler2DArray tDet;`
+  und `texture(tDet, vec3(uv, Ebene))` (Straßen-GLSL: `rdTex(ebene, p, kachel, dx, dy)` mit `textureGrad`). Neue Bodentextur: Namen in
+  `DETAIL.NAMES` ergänzen, kein neuer Sampler.
+- **GLCHECK** (`core/detail.js`): `GLCHECK.run(limit)` zählt nach dem Kompilieren die aktiven Sampler-Uniforms jedes Programms und meldet
+  Programme, die nicht linken. `GLCHECK.guard()` läuft am Ende von `prepareGPU`: Erlaubt die GPU weniger Texturen, als ein Programm braucht,
+  schaltet er auf `lite` (Bodenshader ohne Straßen- und Kornteil, `ROADS.shader` liefert `S.STUB`) und lässt die Materialien neu bauen –
+  der Boden wird einfacher, verschwindet aber nicht.
+- **Auto** (`vehicles/car.js`, V16b1): generischer Kombi in Logan-MCV-Proportionen (4473 × 1740 × 1640 mm, Radstand 2905), Karosserie als
+  Profil-Extrusion (Unterteil, Fensterband, Dach), Teile vorn auf der gemessenen Frontfläche (`frontAt`), geteilte Hecktüren, Dachreling,
+  Ladefläche `model.load` (`y0…y1`, `z`, halbe Breite, Höhe) für spätere Ladung (V16d).
 
 ## 12 Erweitern – Beispiel neues Fahrzeug
 

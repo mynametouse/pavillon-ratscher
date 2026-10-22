@@ -39,12 +39,14 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
   wegen des GPU-Tests), mit `?nogeo=1` (ohne echte Umgebung) ≈ 1 min. Die Tests stoppen die Schleife (`window.FREEZE = true`) und
   treiben die Welt mit `GAME.step(sek)`; Bilder mit `GAME.shot()` → `lib.shot()`. Ausgaben nach `out/<test>/` (nicht eingecheckt).
 - `viz3/test/lib.py`: `browser()`, `page()`, `preset()`, `boot()`, `shot()`, `out()`, `settle_light()` (nach Uhr-/Lichtwechsel warten,
-  bis Himmel, Umgebungslicht und GI-Mischung fertig sind).
+  bis Himmel, Umgebungslicht und GI-Mischung fertig sind), `check_gl(pg, 16)` (Texturen je kompiliertem Programm, kaputte Programme).
+- SwiftShader erlaubt 32 Texturen je Shader, echte GPUs oft nur 16 – deshalb prüft `check_gl` gegen 16, nicht gegen das, was der Test-Browser kann.
 - Wichtige Tests:
 
 | Skript | prüft | Dauer |
 |---|---|---|
 | smoke.py | Laden, keine Fehler | 3 min |
+| gpu.py | **GPU-Grenzen**: höchstens 16 Texturen je Shader-Programm (wie auf Laptops/Macs/Telefonen), kein Programm kaputt, Boden an 7 Orten tags und nachts sichtbar (kein Himmel im unteren Bilddrittel), dazu Innenraum, Werkstatt, Auto, Draufsicht. **Vor jeder Veröffentlichung**, bei neuen Texturen in Shadern immer | 6 min |
 | v15b.py | Werkstatt-Spiel komplett vom Leimholz bis zum geölten Brett (Regression) | 20 min |
 | v15b_reload.py | Spielstand speichern/laden, Handy-Ansicht | 15 min |
 | v16a.py, v16a_b.py, v16a_c.py | Tag/Nacht: Stunden, Mondphasen, Draufsicht nachts, Nachbarn nachts, Oktober | je 10–20 min |
@@ -58,7 +60,7 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 
 ## 4 Veröffentlichen (Checkliste)
 
-1. `cd viz3 && python3 build.py --fast --min` (bzw. Voll-Build), dann `smoke.py` und die Tests des geänderten Bereichs.
+1. `cd viz3 && python3 build.py --fast --min` (bzw. Voll-Build), dann `smoke.py`, `gpu.py` und die Tests des geänderten Bereichs.
 2. Neue/geänderte Galeriebilder: `PORT=8951 python3 test/bilder.py <name> B` (schreibt `dist/img/<name>.jpg`), Bildunterschrift in `viz3/shell/panel_gallery.html`.
 3. **Artefakt** (Claude): `python3 ../tools/publish/pubmap.py dist_pub dist /tmp/pm.json` listet neue/geänderte Dateien. Dann Artifact
    publish: `url` = https://claude.ai/artifact/Py7y37HTE5ojmFp1Wrg7MC, `file_path` = `viz3/dist/pavillon-ratscher.html`, `root` = `viz3/dist`,

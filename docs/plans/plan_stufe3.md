@@ -9,7 +9,7 @@ Reihenfolge (Zwischenversionen, jeweils veröffentlichen):
    - Lampen (MODES.L), Ofen, Papier, Screen: interpolieren; Straßenlaternen Ratscher nachts an.
    - Schatten: Sonnenrichtung in 0,5°-Schritten (Shadow-Map-Update), nachts Schatten aus/Mond schwach.
    - Menü „Licht“: „Tageslauf (Uhr)“ + feste Modi.
-2. **V16b Fahrzeuge – FERTIG (22.10.2026)**: eigenes Auto (generische Stufenheck-Limousine in Logan-Größe 4290×1740×1525, Farbe „Beige Sable“ #A89F88 metallic,
+2. **V16b Fahrzeuge – FERTIG (22.10.2026)**: eigenes Auto (generischer Kombi in Logan-MCV-Größe 4473×1740×1640, Radstand 2905 – seit V16b1, vorher Stufenheck; Farbe „Beige Sable“ #A89F88 metallic,
    keine Marken-Logos/Design-Details), Traktor mit Frontlader/Palettengabel. Ein-/Aussteigen (E/Q), Fahrphysik (Fahrradmodell, Gelände-Höhe
    aus RATSCHER.hAt + floorAt, Kollision COL/Gebäude), Verfolgerkamera, Motorgeräusch (Auto synth., Traktor Aufnahme), Scheinwerfer nachts.
    Startplätze: Auto vor dem Garten (Nordtor, Zufahrt), Traktor an der Klinge (Kreuzung J).
@@ -45,7 +45,7 @@ dl_paint/ (Farbtafeln), ratscher_photos/.
 - Brücken mit Deck und Geländer (Höhe gerade zwischen den Enden), Bäume nicht mehr mitten auf Wegen.
 - Fahrzeuge (vehicles/): Einspurmodell 120 Hz mit Reifenschlupf, Reibkreis, Automatik, Rückwärts per Bremse im Stand, Handbremse, Haftung nach
   Belag/Wiese/Acker, Federung, Kollision mit allen Gebäudewänden, Stämmen, Geländern, Gartenobjekten, Nachbarn, Huberts Traktor.
-- Auto: Stufenheck in Logan-Größe, Beige Sable metallic, ohne Markenzeichen, Innenraum; Kennzeichen HBN (ausgedacht). Parkt neben dem Feldweg.
+- Auto: Kombi in Logan-MCV-Größe (seit V16b1; Ladefläche ~1,6 m bis zur Rückbank, geteilte Hecktüren, Dachreling), Beige Sable metallic, ohne Markenzeichen, Innenraum; Kennzeichen HBN (ausgedacht). Parkt neben dem Feldweg.
 - Traktor: ~100 PS, Allrad, Kabine, Frontlader mit Parallelführung und Palettengabel (R/G/T); steht an der Unteren Klinge.
 - Kamera hinterher (folgt, Maus schaut um) oder Fahrersicht (V/Mausrad), Licht automatisch nachts (ein Spot), Bremslichter, Rückfahrlicht,
   Motor-/Reifen-/Wind-/Hupenton (synthetisch, Traktor aus der Aufnahme), Tacho, Kleinkarte mit Route und Ziel, Ortsnamen unterwegs.
