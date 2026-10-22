@@ -1,12 +1,38 @@
 // ---------------- asset loading ----------------
 const LM = new THREE.LoadingManager();
 const LOAD = { done: 0, total: 0, finished: false, cbs: [] };
-LM.onProgress = (u, d, t) => { LOAD.done = d; LOAD.total = t; LOAD.alive = performance.now(); const l = $('loading'); if (l && !l.hidden && !LOAD.finished && !LOAD.allIn) l.textContent = 'Modell wird geladen … ' + Math.round(100 * d / Math.max(t, 1)) + ' %'; };   // V16b2: later loads do not overwrite the next steps
+// V16b4: load log – every step of loading with its time, written to localStorage while the page loads ('pav-loadlog'). If the browser kills the
+// page (iPhone: out of memory) or it hangs, the next visit knows where the last attempt stopped; boot.js shows it on the loading screen.
+const LOADLOG = (() => { const L = { t0: performance.now(), steps: [], errs: [], prev: null, open: true, last: '', lastT: -1e9 };
+  try { const p = JSON.parse(localStorage.getItem('pav-loadlog') || 'null'); if (p && p.open && Date.now() - p.at < 3 * 3600e3) L.prev = p; } catch (e) {}
+  L.save = () => { try { localStorage.setItem('pav-loadlog', JSON.stringify({ open: L.open, at: Date.now(), t: Math.round(performance.now() - L.t0), steps: L.steps.slice(-40), errs: L.errs.slice(-6),
+    gl: window.GLINFO ? GLINFO.renderer.slice(0, 90) : '', ua: navigator.userAgent.slice(0, 140), mem: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null })); } catch (e) {} };
+  // a step: kept when it is a new kind of step (text before the numbers) or a second has passed since the last one
+  L.note = (txt, force) => { const now = performance.now(), kind = String(txt).replace(/[\d\s.,%()]+/g, ' ').trim();
+    if (!force && kind === L.last && now - L.lastT < 1000) return; L.last = kind; L.lastT = now; L.steps.push([Math.round(now - L.t0), String(txt).slice(0, 120)]); L.save(); };
+  L.err = e => { L.errs.push(String(e && (e.stack || e.message) || e).slice(0, 300)); L.save(); };
+  L.end = () => { L.open = false; L.note('fertig', true); };
+  window.addEventListener('error', e => L.err(e.error || e.message)); window.addEventListener('unhandledrejection', e => L.err(e.reason));
+  return L; })();
+window.LOADLOG = LOADLOG;
+LM.onProgress = (u, d, t) => { LOAD.done = d; LOAD.total = t; LOAD.alive = performance.now(); const l = $('loading'); if (l && !l.hidden && !LOAD.finished && !LOAD.allIn) l.textContent = 'Modell wird geladen … ' + Math.round(100 * d / Math.max(t, 1)) + ' %';   // V16b2: later loads do not overwrite the next steps
+  if (!LOAD.allIn) LOADLOG.note('Dateien ' + d + ' von ' + t); };
 // V16b3: after the last file the scene is built from them (up to half a minute on a slow PC): say so, and let the page show it before the work
 // starts (LOAD.finished – and with it whenLoaded's run-at-once – only from the moment the callbacks run, so nothing sees a half-built scene)
-LM.onLoad = () => { if (LOAD.flushT) return; const l = $('loading'); if (!LOAD.finished && l && !l.hidden) l.textContent = 'Modell wird aufgebaut …'; LOAD.allIn = true; LOAD.alive = performance.now();
-  LOAD.flushT = setTimeout(() => { LOAD.flushT = 0; LOAD.finished = true; LOAD.cbs.splice(0).forEach(f => { try { f(); } catch (e) { console.error(e); } }); LOAD.alive = performance.now(); }, LOAD.finished ? 0 : 40); };
-LM.onError = u => console.warn('Datei fehlt:', u);
+// V16b4: one callback at a time with a breath in between – the page stays responsive, the loading text counts the steps (a step that hangs
+// shows which one it is), every step goes to the load log. Callbacks registered while the scene is built run at once, as before.
+LM.onLoad = () => { if (LOAD.flushT || LOAD.flushing) return; const l = $('loading'); if (!LOAD.finished && l && !l.hidden) l.textContent = 'Modell wird aufgebaut …'; LOAD.allIn = true; LOAD.alive = performance.now();
+  LOAD.flushT = setTimeout(flushLoaded, LOAD.finished ? 0 : 40); };
+const breathe = () => new Promise(r => { let d = 0; const go = () => { if (!d) { d = 1; r(); } }; requestAnimationFrame(() => setTimeout(go, 0)); setTimeout(go, 80); });   // a paint, or 80 ms in a hidden tab
+async function flushLoaded() { LOAD.flushT = 0; LOAD.finished = true; LOAD.flushing = true; let k = 0;
+  while (LOAD.cbs.length) { const f = LOAD.cbs.shift(), n = ++k + LOAD.cbs.length, a = performance.now(), l = $('loading');
+    if (l && !l.hidden && n > 1) l.textContent = 'Modell wird aufgebaut … ' + k + ' von ' + n;
+    LOADLOG.note('Aufbau ' + k + '/' + n + ': ' + String(f).replace(/\s+/g, ' ').slice(0, 70), true);
+    try { f(); } catch (e) { console.error(e); LOADLOG.err(e); }
+    LOAD.alive = performance.now(); if (performance.now() - a > 400) LOADLOG.note('Aufbau ' + k + ' fertig nach ' + Math.round(performance.now() - a) + ' ms', true);
+    if (LOAD.cbs.length) await breathe(); }
+  LOAD.flushing = false; LOAD.alive = performance.now(); }
+LM.onError = u => { console.warn('Datei fehlt:', u); LOADLOG.err('Datei fehlt: ' + u); };
 function whenLoaded(f) { if (LOAD.finished) f(); else LOAD.cbs.push(f); }
 // standalone single-file version: assets come from blob URLs built from the embedded data
 if (window.EMBED_URL) { const mod = u => window.EMBED_URL[u] || u; LM.setURLModifier(mod); THREE.DefaultLoadingManager.setURLModifier(mod); }
