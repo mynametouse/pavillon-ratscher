@@ -38,7 +38,9 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 **Schnellprüfung und Testläufer (Umbau Phase 0, Plan im Projektdokument `claude/pavillon-umbau.md`):**
 
 ```bash
-bash tools/check.sh                              # ohne Browser, ~10 s: Build, Lint (Datei:Zeile), Testskripte, Format-Bericht, Abhängigkeiten
+bash tools/check.sh                              # ohne Browser, ~20 s: Build, Lint (Datei:Zeile), Testskripte, Format, Abhängigkeiten,
+                                                 #   Unit-Tests (viz3/test/unit), Typen der Schnittstellen
+node --test "viz3/test/unit/*.test.mjs"          # nur die Unit-Tests: einzelne ES-Module in node (SAVE, KERN …), Millisekunden
 python3 viz3/test/run.py --serve smoke           # Browser-Tests nacheinander: je Test PASS/FAIL in einer Zeile, Exit-Code, Logs in out/run/
 python3 viz3/test/run.py --serve gate            # Prüfpaket vor dem Veröffentlichen: smoke gpu softgl loadlog
 # bei GitHub läuft bei jedem Stand auf src das ganze Prüfpaket gleichzeitig (.github/workflows/pruefpaket.yml):
