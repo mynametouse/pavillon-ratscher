@@ -99,12 +99,12 @@ const VPROPS = (() => {
     for (const im of [...(RATSCHER.trees || []), ...(RATSCHER.mid || [])]) { let ch = false; for (let i = 0; i < im.count; i++) { im.getMatrixAt(i, m4); const e = m4.elements; if (Math.hypot(e[12] - x, -e[14] - y) < r) { im.setMatrixAt(i, z0); ch = true; } } if (ch) im.instanceMatrix.needsUpdate = true; }
     const T = RATSCHER.treeXY; if (T && T.length) { const keep = []; for (let i = 0; i + 2 < T.length; i += 3) if (Math.hypot(T[i] - x, T[i + 1] - y) >= r) keep.push(T[i], T[i + 1], T[i + 2]); T.length = 0; T.push(...keep); } }
   function linde(kP, kS) { const [x, y] = S.LINDE, z = gz(x, y); hideTrees(x, y, 7);
-    let K = null; try { K = buildTreeKind({ key: 'linde', preset: 'Oak Large', seed: 1888, tint: 0x7fae5c, mod: o => {   // a broad, dense crown down to 3 m (photo 2026)
+    let K = null; try { K = buildTreeKind({ key: 'linde', preset: 'Oak Large', seed: 1888, tint: 0xd2e2bc, mod: o => {   // a broad, dense crown down to 3 m (photo 2026)
       Object.assign(o.branch.angle, { 1: 60, 2: 44, 3: 34 }); Object.assign(o.branch.children, { 0: 12, 1: 7, 2: 4 }); Object.assign(o.branch.length, { 0: 40, 1: 31, 2: 16, 3: 8 });
       o.branch.start['1'] = 0.2; o.branch.radius['0'] = 3.6; o.branch.gnarliness['1'] = 0.07; o.branch.force.strength = 0.006;
-      o.leaves.type = 'aspen'; o.leaves.count = 16; o.leaves.size = 5.2; o.leaves.sizeVariance = 0.55; o.leaves.start = 0.0; } }); } catch (e) { console.warn('linde', e); }
+      o.leaves.type = 'oak'; o.leaves.count = 16; o.leaves.size = 5.2; o.leaves.sizeVariance = 0.55; o.leaves.start = 0.0; } }); } catch (e) { console.warn('linde', e); }
     if (K) { const s = 18 / K.H, m4 = new THREE.Matrix4().compose(V(x, y, z - 0.15), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.7), new THREE.Vector3(s * 1.12, s, s * 1.12)); S.lindeR = K.R * s * 1.12;
-      K.bg.applyMatrix4(m4); K.lg.applyMatrix4(m4);   // in place, in world coordinates: VEG.lod and the frustum test both read the bounding sphere as world space
+      K.bg.applyMatrix4(m4); K.lg.applyMatrix4(m4); K.leaf.envMapIntensity = 0.35; K.leaf.roughness = 0.95;   // less sky sheen on the leaves (backlit they looked frosted)   // in place, in world coordinates: VEG.lod and the frustum test both read the bounding sphere as world space
       const bark = new THREE.Mesh(K.bg, K.bark), leaf = new THREE.Mesh(K.lg, K.leaf), lo = new THREE.Mesh(thinCards(K.lg, 0.4, 1.45), K.leaf);
       for (const me of [bark, leaf, lo]) { me.userData.noMerge = true; me.castShadow = false; me.receiveShadow = false; me.geometry.computeBoundingSphere(); scene.add(me); S.meshes.push(me); }
       leaf.boundingSphere = leaf.geometry.boundingSphere; lo.visible = false; VEG.lod.push({ hi: leaf, lo, d: 70 }); S.lindeMeshes = [bark, leaf, lo]; }   // full crown within 70 m
@@ -230,6 +230,15 @@ const VPROPS = (() => {
   S.dispose = () => { for (const m of S.meshes) { scene.remove(m); if (m.geometry) m.geometry.dispose(); } S.meshes.length = 0; S.lamps.length = 0; const i = (window.TICKS || []).indexOf(tick); if (i >= 0) TICKS.splice(i, 1);
     for (const L2 of [...VEG.lod]) if (S.lindeMeshes && S.lindeMeshes.includes(L2.hi)) VEG.lod.splice(VEG.lod.indexOf(L2), 1); CLK.hands = null; CLK.dials.length = 0; S.ready = false; };
   whenLoaded(() => { if (!RATSCHER.ready) return; try { build(); } catch (e) { console.warn('village props', e); } });
+  // ---- names while walking (game/game.js placeName): the places of the centre, else the street (OSM names) ----
+  const STREETS = {"Hauptstraße":[[230.0,-22.6,214.1,-94.1]],"Ratschner Anger":[[344.8,-170.6,332.9,-151.0,322.2,-140.5,295.2,-122.6,263.5,-109.3,214.1,-94.1,200.4,-119.5],[449.6,-337.8,414.0,-328.0,391.5,-317.4,371.2,-292.9],[237.0,-124.7,200.4,-119.5],[200.4,-119.5,194.7,-121.3,143.1,-110.0,107.7,-92.8,78.5,-60.5,63.7,-33.2],[371.2,-292.9,352.1,-235.6,349.1,-185.7,344.8,-170.6]],"Geisenhöhner Weg":[[182.8,-183.7,175.9,-211.5],[200.4,-119.5,187.8,-175.5,182.8,-183.7],[175.9,-211.5,159.1,-256.9]],"Zur Alten Schmiede":[[395.7,-181.3,383.5,-209.4,374.1,-213.0,367.6,-227.0,363.4,-230.8,352.1,-235.6],[344.8,-170.6,395.7,-181.3]],"An der Mühle":[[175.9,-211.5,213.5,-228.1,258.3,-254.3,344.0,-286.8,371.2,-292.9]]};
+  S.place = (x, y) => { const d = (p, r) => Math.hypot(x - p[0], y - p[1]) < r;
+    if (Math.hypot(x - S.ANGER[0], y - S.ANGER[1]) > 520) return null;
+    if (d(S.LINDE, 14)) return 'Ratscher · Dorflinde am Anger'; if (S.school && d([S.school.cx + 5.5 * Math.cos(S.school.rot), S.school.cy + 5.5 * Math.sin(S.school.rot)], 15)) return 'Ratscher · Alte Schule (1828)';
+    if (d(S.FOUNTAIN, 11)) return 'Ratscher · Dorfbrunnen'; if (d([250.6, -99.6], 6)) return 'Ratscher · Schulbushaltestelle';
+    let best = null, bd = 18; for (const [n, ls] of Object.entries(STREETS)) for (const l of ls) for (let i = 0; i + 3 < l.length; i += 2) {
+      const ax = l[i], ay = l[i + 1], dx = l[i + 2] - ax, dy = l[i + 3] - ay, L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2)), e = Math.hypot(x - ax - dx * t, y - ay - dy * t); if (e < bd) { bd = e; best = n; } }
+    return best ? 'Ratscher · ' + best : null; };
   S.kit = kit; S.bench = (k, x, y, a, len) => bench(k, x, y, a, len);
   return S; })();
 window.VPROPS = VPROPS;

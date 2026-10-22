@@ -111,7 +111,7 @@ applySpots(VARIANT);
 let s0 = true; try { const sv = localStorage.getItem('pav-sound'); if (sv !== null) s0 = sv === '1'; } catch (e) {}
 const opt = { collide: true, sound: s0 }; let stepZ = 0;
 function placeName() { if (P.mode === 'orbit') return 'Modellansicht';
-  if ((Math.abs(P.x) > 50 || Math.abs(P.y) > 55) && window.ROADS) { const wp = ROADS.place(P.x, P.y); if (wp) return wp; }   // V16b: out in the village and the fields
+  if ((Math.abs(P.x) > 50 || Math.abs(P.y) > 55) && window.ROADS) { const wp = (window.VPROPS && VPROPS.place && VPROPS.place(P.x, P.y)) || ROADS.place(P.x, P.y); if (wp) return wp; }   // V16b: out in the village and the fields; V16e: places and streets of Ratscher
   const f = P.feet, inT = P.x > G.TW.x0 && P.x < G.TW.x1 && P.y > G.TW.y0 && P.y < G.TW.y1, inEG = P.x > 0 && P.x < 4 && P.y > 0 && P.y < 4, inOG = P.x > G.OG.x0 && P.x < G.OG.x1 && P.y > G.OG.y0 && P.y < G.OG.y1;
   const rough = PHASE < PHN.floors ? ' (Rohbau)' : '';
   if (inT) { if (f > G.zD - 0.1) return 'Turmkopf, Ausgang Dachterrasse'; if (Math.abs(f - G.zO) < 0.06 && P.y > G.PASS.y0 - 0.25) return 'Turm, Podest Arbeitsraum'; if (f > G.zT0 + 0.1) return f > G.zO ? 'Wendeltreppe zum Dach' : 'Wendeltreppe'; return 'Turm, Eingang'; }
