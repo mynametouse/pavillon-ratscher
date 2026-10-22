@@ -1,0 +1,7 @@
+# generated or vendored – never reformatted
+src/_main.js
+src/time/skydata.js
+src/eztree/
+dist/
+dist_pub/
+node_modules/
