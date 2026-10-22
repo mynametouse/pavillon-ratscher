@@ -172,27 +172,36 @@ function propTweak(model, P) {
   });
   model.updateMatrixWorld(true);
 }
-// straw hat on the head bone, sized and placed from the head's rest pose (o.hatK size, o.hatY height, o.hatTilt)
+// straw hat on the head bone, sized and placed from the head's rest pose (o.hatK size, o.hatY height, o.hatTilt). Rigs with a head-top bone
+// (Character Creator): sized by the head's length. Rigs without one (Rocketbox Biped): the brim o.hatUp above the head bone and o.hatFwd
+// forward, o.hatK as the hat's own scale (fitted by eye on Ronald, 23.10.2026: 0.105 m, 0.022 m, 1.16).
 function hatOn(B, o) {
-  // straw hat on the head bone, sized and placed from the head's rest pose
-  const hp = B.Head.getWorldPosition(new THREE.Vector3()),
-    tp = (B.HeadTop_End || B.Head).getWorldPosition(new THREE.Vector3());
-  const up = tp.clone().sub(hp);
-  const L = up.length();
-  up.normalize();
+  const hp = B.Head.getWorldPosition(new THREE.Vector3());
   const hat = strawHat();
-  const k = ((o.hatK || 1.35) * L) / 0.19;
-  const fwd = new THREE.Vector3(0, 0, 1);
-  const want = new THREE.Matrix4().compose(
-    hp
-      .clone()
-      .addScaledVector(up, L * (o.hatY ?? 0.45))
-      .addScaledVector(fwd, -L * 0.05),
-    new THREE.Quaternion()
-      .setFromUnitVectors(new THREE.Vector3(0, 1, 0), up)
-      .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), o.hatTilt ?? 0.1)),
-    new THREE.Vector3(k, k, k)
-  );
+  let want;
+  if (B.HeadTop_End) {
+    const up = B.HeadTop_End.getWorldPosition(new THREE.Vector3()).sub(hp);
+    const L = up.length();
+    up.normalize();
+    const k = ((o.hatK || 1.35) * L) / 0.19;
+    want = new THREE.Matrix4().compose(
+      hp
+        .clone()
+        .addScaledVector(up, L * (o.hatY ?? 0.45))
+        .addScaledVector(new THREE.Vector3(0, 0, 1), -L * 0.05),
+      new THREE.Quaternion()
+        .setFromUnitVectors(new THREE.Vector3(0, 1, 0), up)
+        .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), o.hatTilt ?? 0.1)),
+      new THREE.Vector3(k, k, k)
+    );
+  } else {
+    const k = o.hatK ?? 1.16;
+    want = new THREE.Matrix4().compose(
+      hp.clone().add(new THREE.Vector3(0, o.hatUp ?? 0.105, o.hatFwd ?? 0.022)), // the rest pose stands upright, facing +z
+      new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), o.hatTilt ?? -0.05),
+      new THREE.Vector3(k, k, k)
+    );
+  }
   const loc = B.Head.matrixWorld.clone().invert().multiply(want);
   loc.decompose(hat.position, hat.quaternion, hat.scale);
   B.Head.add(hat);
@@ -336,8 +345,32 @@ function rbPerson(gl, set, o) {
     aT = act('talk');
   if (aI) aI.timeScale = o.idleRate ?? 0.85;
   const walkSp = ((set.clips.walk && set.clips.walk.speed) || 1.25) * s; // m/s of the cycle at this size
+  // a limp now and then (o.limp, Falko 23.10.2026: Hubert "läuft manchmal ein bisschen hinkend"): the right leg hurts – the walk hurries over
+  // its stance and lingers on the left, the body dips and leans over it. Where in the clip the right foot stands: its lowest point
+  // against the left foot, sampled once.
+  let phR = 0;
+  if (o.limp && aW && B.RightFoot && B.LeftFoot) {
+    const d = aW.getClip().duration,
+      vr = new THREE.Vector3(),
+      vl = new THREE.Vector3();
+    aW.setEffectiveWeight(1);
+    let lo = 1e9;
+    for (let i = 0; i < 24; i++) {
+      aW.time = (i / 24) * d;
+      mixer.update(0);
+      model.updateMatrixWorld(true);
+      const y = B.RightFoot.getWorldPosition(vr).y - B.LeftFoot.getWorldPosition(vl).y;
+      if (y < lo) {
+        lo = y;
+        phR = i / 24;
+      }
+    }
+    aW.setEffectiveWeight(0);
+    aW.time = Math.random() * d;
+  }
   let w = 0,
     tk = 0,
+    limT = Math.random() * 60,
     acc = 0,
     look = 0,
     lookT = 0,
@@ -359,9 +392,17 @@ function rbPerson(gl, set, o) {
       tk += ((talk ? 1 : 0) - tk) * Math.min(1, dt * 3);
       if (!g.visible || !camNear(g, 70)) return; // far away or hidden: no pose updates
       const rest = 1 - w;
+      let lim = 0,
+        ph = 0;
+      if (o.limp && aW && w > 0.05) {
+        limT += dt;
+        lim = o.limp * w * THREE.MathUtils.clamp(Math.sin(limT * 0.11) * 1.6, 0, 1); // limps for a while, then walks evenly again
+        ph = (aW.time / aW.getClip().duration - phR) * Math.PI * 2; // 0: the right foot stands
+      }
       if (aW) {
         aW.setEffectiveWeight(w);
-        aW.timeScale = speed > 0.05 ? THREE.MathUtils.clamp(speed / walkSp, 0.55, 1.6) : 1;
+        aW.timeScale =
+          (speed > 0.05 ? THREE.MathUtils.clamp(speed / walkSp, 0.55, 1.6) : 1) * (1 + 0.32 * lim * Math.cos(ph));
       }
       if (aT) aT.setEffectiveWeight(sit ? 0 : rest * tk);
       if (aI) aI.setEffectiveWeight(sit ? 1 : rest * (1 - (aT ? tk : 0)));
@@ -385,6 +426,12 @@ function rbPerson(gl, set, o) {
         boneTurn(sv, Q, B.Spine1 || B.Spine, 1, 0, 0, o.stoop);
         boneTurn(sv, Q, B.Neck, 1, 0, 0, -o.stoop * 0.6); // the head comes up again
       }
+      const rs = lim > 0.01 ? Math.max(0, Math.cos(ph)) * lim : 0; // on the sore right leg
+      if (rs) {
+        boneTurn(sv, Q, B.Spine1 || B.Spine, 0, 0, 1, 0.08 * rs); // the trunk leans over it
+        boneTurn(sv, Q, B.Hips, 0, 0, 1, -0.05 * rs); // the other side of the pelvis drops
+      }
+      inner.position.y = -0.012 * rs; // and the body dips
       // somebody close by (the visitor) gets looked at; otherwise now and then a slow look around
       let seen = false;
       if (camNear(g, 7)) {
@@ -759,9 +806,11 @@ async function loadReal() {
       TRACTOR.g.visible = true;
     }
     if (RB) {
-      // Hubert, about 70: white hair, a tweed jacket (Male_Adult_03); Ronald: grey beard, work suit, rubber boots, his straw hat (Gardener_Male_01)
-      swapFig(NPCS.hubert, rbPerson(gh, cl, { h: 1.74, stoop: 0.09, idleRate: 0.8 }));
-      swapFig(NPCS.ronald, rbPerson(gr, cl, { h: 1.76, stoop: 0.05, idleRate: 0.9, hat: true }));
+      // Hubert, 70–75: dark hair, moustache, a light checked work shirt, work trousers and shoes, limps now and then (Construction_Male_01,
+      // tools/player/build_npc.sh); Ronald, about 60: grey beard, work suit, rubber boots (Gardener_Male_01) – no hat (Falko, 23.10. 1:23:
+      // at most a flat cap, and only if it sits right)
+      swapFig(NPCS.hubert, rbPerson(gh, cl, { h: 1.73, stoop: 0.1, idleRate: 0.78, limp: 1 }));
+      swapFig(NPCS.ronald, rbPerson(gr, cl, { h: 1.76, stoop: 0.05, idleRate: 0.9 }));
     } else {
       swapFig(NPCS.hubert, realPerson(gh, cl.hubert, { h: 1.74, idle: true, idleMix: 0.3 }));
       swapFig(

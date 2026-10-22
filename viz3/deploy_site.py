@@ -35,8 +35,10 @@ for f in sorted(glob.glob(os.path.join(SRC, '**', '*'), recursive=True)):
     rel = os.path.relpath(f, SRC).replace(os.sep, '/')
     if rel in SKIP or (rel == 'plan.json' and os.path.exists(os.path.join(SITE, 'plan.json'))): continue   # the owner's published plan in the repo wins
     dst = os.path.join(OUT, rel); os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy2(f, dst); n += 1; tot += os.path.getsize(f)
-BADGE = ('<div style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:99999;background:#b45309;color:#fff;'
-         'font:600 12px system-ui,sans-serif;padding:3px 10px;border-radius:10px;pointer-events:none;opacity:.92">Vorschau – noch nicht freigegeben</div>\n')
+# small, and after 8 s faint – on a phone it must not cover the HUD (Falko, 23.10.2026)
+BADGE = ('<div style="position:fixed;top:calc(3px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:99999;background:#b45309;color:#fff;'
+         'font:600 10.5px/1.35 system-ui,sans-serif;padding:1px 8px;border-radius:8px;pointer-events:none;white-space:nowrap;opacity:.92;animation:pvfade 1s 8s forwards">'
+         'Vorschau – noch nicht freigegeben</div><style>@keyframes pvfade{to{opacity:.28}}</style>\n')
 page = HEAD + head_part + '</head>\n<body>\n' + (BADGE if SUB else '') + body_part + '\n</body>\n</html>\n'
 if SUB and os.path.exists(os.path.join(SITE, 'plan.json')): shutil.copy2(os.path.join(SITE, 'plan.json'), os.path.join(OUT, 'plan.json'))
 open(os.path.join(OUT, 'index.html'), 'w').write(page)

@@ -16,24 +16,37 @@ export function toast(msg, ms = 3600) {
     t.hidden = true;
   }, ms);
 }
-// V16c2: the one-time "Neu: …" hints one after another, each for its own time – several versions may arrive at once (forest, felling, wood),
-// and a hint must not cut the one before it short
+// The one-time "Neu: …" hints (each marked as seen by its SAVE.once when it is queued). Since 23.10.2026 (Falko on the iPhone: the hints kept
+// coming and covered the view) at most one per visit – a first visit queued a chain of nine, one per version –, and a tap on a hint closes
+// it for good; what else was queued is dropped (it counts as seen).
 let newsQ = [],
-  newsOn = false;
+  newsOn = false,
+  newsDone = false;
 export function news(msg, ms = 11000) {
+  if (newsDone) return;
   newsQ.push([msg, ms]);
   if (!newsOn) newsNext();
 }
 function newsNext() {
-  const n = newsQ.shift();
+  const n = newsDone ? null : newsQ.shift();
   if (!n) {
     newsOn = false;
     return;
   }
   newsOn = true;
+  newsDone = true; // the one hint of this visit
+  newsQ = [];
   toast(n[0], n[1]);
   setTimeout(newsNext, n[1] + 1200);
 }
+// a tap closes a hint at once
+$('toast')?.addEventListener('click', () => {
+  const t = $('toast');
+  if (!t) return;
+  clearTimeout(toastT);
+  t.hidden = true;
+  newsQ = [];
+});
 export function soundLabel() {
   const b = $('soundbtn');
   if (!b) return;

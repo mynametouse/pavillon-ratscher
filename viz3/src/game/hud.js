@@ -10,7 +10,7 @@ import { phase } from '../core/geo.js';
 import { P } from './walkable.js';
 import { CAM3, setView3 } from './player.js';
 import { cv, keys, look, ray } from './input.js';
-import { toast } from '../audio/audio.js';
+import { news, toast } from '../audio/audio.js';
 import { PLAN } from '../pavilion/plan.js';
 import { SITEPLAN } from '../world/siteplan.js';
 import { PLAY } from './play.js';
@@ -761,6 +761,38 @@ export const HUD = (() => {
     viewChanged();
     stanceChanged();
   }
+  // free view (Falko, 23.10.2026, on the iPhone: "einen freien Bildschirm, ohne diese fürs Spiel unnötigen Anzeigen"): the button at the top
+  // right hides what is not needed to move – task card, place, time, the bar of things, hints; the moves, the action button and the menu stay.
+  // The same button brings everything back; the choice is kept.
+  function setClean(v) {
+    document.body.dataset.clean = v ? '1' : '';
+    const b = $('cleanbtn');
+    if (b) {
+      b.setAttribute('aria-pressed', v ? 'true' : 'false');
+      b.title = v ? 'Anzeigen wieder einblenden' : 'Freie Sicht: Anzeigen ausblenden';
+    }
+    try {
+      SAVE.setRaw('pav-clean', v ? '1' : '0');
+    } catch (e) {}
+    markDirty(true);
+  }
+  setClean(SAVE.raw('pav-clean') === '1');
+  $('cleanbtn')?.addEventListener('click', () => setClean(document.body.dataset.clean !== '1'));
+  // the place name while walking: shown when it changes, faded after a few seconds (screen.css: body[data-mode="walk"] .where.faded)
+  {
+    const wl = $('where'),
+      box = wl && wl.closest('.where');
+    let ft = null;
+    const show = () => {
+      if (!box) return;
+      box.classList.remove('faded');
+      clearTimeout(ft);
+      ft = setTimeout(() => box.classList.add('faded'), 6000);
+    };
+    if (wl && window.MutationObserver)
+      new MutationObserver(show).observe(wl, { childList: true, characterData: true, subtree: true });
+    show();
+  }
   // first visit of version 15: a short word about the new controls
   let intro = false;
   window.TICKS.push(() => {
@@ -770,7 +802,7 @@ export const HUD = (() => {
     if (!seen)
       setTimeout(
         () =>
-          toast(
+          news(
             COARSE
               ? 'Neu: Menü oben rechts. Unten deine Sachen (antippen: in die Hand), rechts springen, ducken, kriechen, hinlegen. Zwei Finger: Kamera näher oder weiter.'
               : 'Neu: Menü oben rechts (Esc oder M). Unten deine Sachen (1–8, I), Leertaste springen, C ducken, X kriechen, Z hinlegen, V oder Mausrad: Figur oder eigene Augen.',
@@ -787,7 +819,7 @@ export const HUD = (() => {
     if (!seen)
       setTimeout(
         () =>
-          toast(
+          news(
             'Neu in der Werkstatt: ein Stirnholz-Schneidebrett selbst bauen – Leimholz, Kanteln, Verleimen, Hobeln, Schleifen, Ölen. Werkstattbuch: ' +
               (COARSE ? 'Karte links' : 'Taste B') +
               '. Die Uhr oben rechts zeigt die Spielzeit.',
@@ -804,7 +836,7 @@ export const HUD = (() => {
     if (!seen)
       setTimeout(
         () =>
-          toast(
+          news(
             'Neu: Tag und Nacht. Die Sonne steht, wo sie über Ratscher wirklich steht – heute ist Spieltag 1, der 1. Juni. Abends gehen die Lampen an, nachts Mond und Sterne. Uhr oben rechts: Tempo, Warten, Datum.',
             10000
           ),
@@ -817,6 +849,7 @@ export const HUD = (() => {
   viewChanged();
   return {
     setMenu,
+    setClean,
     get open() {
       return S.open;
     },

@@ -25,7 +25,7 @@ import { blocked, cellItems, CG, P, phOk, toWorld } from '../game/walkable.js';
 import { CAM3, go, SPOTS } from '../game/player.js';
 import { FAR0 } from '../game/camera.js';
 import { joy, keys } from '../game/input.js';
-import { toast } from '../audio/audio.js';
+import { news, toast } from '../audio/audio.js';
 import { NPCS, TRACTOR } from '../npc/npc.js';
 import { PLAY } from '../game/play.js';
 import { WCOL } from '../world/worldcol.js';
@@ -1543,7 +1543,7 @@ export const VEH = (() => {
     if (!seen)
       setTimeout(
         () =>
-          toast(
+          news(
             'Neu: Fahren. Das Auto steht am Feldweg vor dem Garten, der Traktor an der Unteren Klinge (Menü: „Zum Auto“, „Zum Traktor“). ' +
               (COARSE
                 ? 'Antippen: einsteigen, Kreis links: Gas, Bremse, lenken.'

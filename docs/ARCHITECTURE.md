@@ -126,7 +126,7 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | `pav-light2` | Lichtmodus (auto/day/gold/dusk/night) |
 | `pav-variant`, `pav-facade`, `pav-style`, `pav-layout`, `pav-site`, `pav-plan-ts` | Entwurf: Variante, Fassade, Innenstil, Möbel, Gebäude/Zäune, Stand des veröffentlichten Plans |
 | `pav-gh-token` | GitHub-Schlüssel des Eigentümers zum Veröffentlichen des Plans (nur in seinem Browser, nie im Repo) |
-| `pav-view`, `pav-fig`, `pav-lock`, `pav-sound`, `pav-wpcard` | Kamera (Figur/Augen), Spielfigur, Mausfang, Ton, Werkstück-Karte |
+| `pav-view`, `pav-fig`, `pav-lock`, `pav-sound`, `pav-wpcard`, `pav-clean` | Kamera (Figur/Augen), Spielfigur, Mausfang, Ton, Werkstück-Karte, freie Sicht (Anzeigen aus) |
 | `pav-clock-v1`, `pav-dn-v1` | Spielzeit und Tempo; Kalender (Tag 1 = Datum) |
 | `pav-quests-v1`, `pav-werk-v1`, `pav-gear-v1` | Aufgaben, Werkstatt-Spiel, Schutzausrüstung |
 | `pav-veh-v1` | Fahrzeuge: Standort und Richtung je Fahrzeug, Frontlader, Lichtmodus (auto/an/aus) |

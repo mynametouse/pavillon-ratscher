@@ -21,8 +21,8 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 2. Agenten arbeiten nur in ihren Ordnern; was sie darüber hinaus brauchen, melden sie dem Kern-Chat.
 3. Browser-Tests im Chat-Rechner nie zwei gleichzeitig (2 Kerne, SwiftShader verliert sonst den WebGL-Kontext); Agenten testen im Browser
    nur bei GitHub Actions.
-4. Veröffentlichen über GitHub Actions: nach grünem Prüfpaket kommt die Vorschau nach `/vorschau/`, „Live stellen“ von Hand
-   (`docs/WORKFLOW.md`, Abschnitt 4). Der Notweg aus dem Chat (`deploy_push.sh`) nur durch den Kern-Chat.
+4. Veröffentlichen über GitHub Actions: nach grünem Prüfpaket kommt die Vorschau nach `/vorschau/`; seit 23.10. 1:05 (Falko) geht ein
+   grün getesteter Stand vom Kern-Chat direkt live (`git push origin src:live`, `docs/WORKFLOW.md`, Abschnitt 4). Der Notweg aus dem Chat (`deploy_push.sh`) nur durch den Kern-Chat.
 5. Gespeichertes nur über `SAVE` (`core/save.js`), Code formatiert (Prettier), `bash tools/check.sh` vor jedem Push.
 6. Originale und Rohdaten: übergangsweise im privaten Repo `mynametouse/klingenholz-konfigurator`, Zweig `pavillon-originale` (Umzug ins
    eigene private Repo `pavillon-ratscher-assets`, sobald es existiert). Keine Schlüssel, keine Flurstücks- oder privaten Rohdaten ins

@@ -17,3 +17,8 @@ $T"
 # only gh-pages is served; the old mirror branch main is no longer pushed (the shallow work tree cannot prove its fast-forward)
 git -C "$R" push -q origin main:gh-pages 2>&1 | grep -v "expected 'acknowledgments'\|push negotiation failed" || true
 git -C "$R" log --oneline -3
+# a rejected push must not pass silently (the world tiles and the Actions preview write gh-pages too): the remote head must be ours
+if [ "$(git -C "$R" ls-remote origin refs/heads/gh-pages | cut -f1)" != "$(git -C "$R" rev-parse HEAD)" ]; then
+  echo "gh-pages NOT updated: the site moved on meanwhile – run deploy_push.sh again" >&2
+  exit 1
+fi

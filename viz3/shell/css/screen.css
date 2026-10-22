@@ -1,0 +1,53 @@
+/* ===== 23.10.2026 (Falko on the iPhone: "einen freien Bildschirm", hints that keep coming, landscape): the folded task card, the free
+   view (#cleanbtn, body[data-clean]), the place name that fades while walking, phones without the page header while walking, and a
+   layout for phones held sideways ===== */
+.toast{cursor:pointer}
+/* the task card folds to title, arrow and distance a few seconds after it changed (game/quests.js); a tap unfolds it */
+#qtrack.mini{grid-template-columns:auto auto auto;column-gap:8px;padding:6px 10px}
+#qtrack.mini span{display:none}
+#qtrack.mini i{grid-column:2;grid-row:1;font-size:16px;width:18px}
+#qtrack.mini em{grid-column:3;grid-row:1}
+/* the place name fades a few seconds after it changed (game/hud.js) */
+.where{transition:opacity .6s}
+body[data-mode="walk"] .where.faded{opacity:0;pointer-events:none}
+/* free view: only what moves you stays – the moves, the action button, the menu and this button */
+#cleanbtn .off{display:none}
+#cleanbtn[aria-pressed="true"] .off{display:inline}
+body[data-clean="1"] .where,body[data-clean="1"] #qtrack,body[data-clean="1"] .toast,body[data-clean="1"] #hotbar,body[data-clean="1"] #hbname,
+body[data-clean="1"] #stancetag,body[data-clean="1"] #clockbtn,body[data-clean="1"] #gearbtn,body[data-clean="1"] #camtog,body[data-clean="1"] #vmap,
+body[data-clean="1"] #vmaplab,body[data-clean="1"] #vkeys,body[data-clean="1"] .hint{display:none!important}
+body[data-clean="1"] #hudtr .hb{background:rgba(24,23,21,.36)}
+@media (pointer:coarse){
+  /* playing on a touch screen: the page header with title and tabs goes away, the picture gets the whole screen */
+  body[data-mode="walk"] header.top{display:none}
+}
+/* phones held sideways: little height – compact header, small buttons, the circle and the moves low in the corners, a narrow bar of things */
+@media (orientation:landscape) and (max-height:500px){
+  header.top{padding-block:4px;gap:10px}
+  header.top .sub{display:none}
+  header.top h1{font-size:15px}
+  .tabs button{padding:6px 10px;font-size:12.5px}
+  .where{top:8px;padding:5px 9px;font-size:13px}
+  #hudtr{top:8px;gap:5px}
+  .hb{min-height:34px;padding:7px 10px}
+  .hb .hbt{display:none}
+  #clockbtn .hbt{display:inline}
+  #qtrack,body[data-mode="walk"] #qtrack{top:48px;max-width:min(330px,40vw)}
+  .toast,body:not([data-mode="walk"]) .toast{top:8px;left:50%;right:auto;transform:translateX(-50%);max-width:min(380px,40vw)}
+  #hotbar{bottom:calc(6px + env(safe-area-inset-bottom,0px));gap:3px;padding:4px}
+  #hotbar .slot,#hotbar .bagb{width:40px;height:40px}
+  #hotbar .bagb{margin-left:1px}
+  #hotbar .slot b{display:none}
+  #hbname{bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+  #joy{bottom:calc(12px + env(safe-area-inset-bottom,0px));width:104px;height:104px}
+  #knob{left:32px;top:32px}
+  #moves{bottom:calc(12px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(2,46px);grid-template-rows:46px 56px;gap:8px}
+  #moves button{width:46px;height:46px}
+  #moves button.big{width:56px;height:56px}
+  #actrow{bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+  #npcsub{bottom:calc(108px + env(safe-area-inset-bottom,0px));max-width:min(520px,56%)}
+  #invwin{bottom:calc(56px + env(safe-area-inset-bottom,0px));max-height:calc(100% - 64px)}
+  #qbanner{top:10%}
+  #npcpanel{top:48px;max-height:calc(100% - 58px);overflow:auto}
+  #talkbtn{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+}

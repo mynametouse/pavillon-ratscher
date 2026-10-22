@@ -43,6 +43,14 @@ const T = async (name, alpha = false) => {
   if (!fs.existsSync(f)) return null;
   return doc.createTexture(name).setMimeType('image/webp').setImage(await webp(f, MAXT, alpha)).setURI(`${PFX}_${name}.webp`);
 };
+// DROP=<regex>: parts whose material matches go (e.g. the helmet and the tool belt of Construction_Male_01 for Hubert)
+if (process.env.DROP) {
+  const rx = new RegExp(process.env.DROP, 'i');
+  for (const mesh of root.listMeshes()) for (const pr of mesh.listPrimitives()) {
+    const mt = pr.getMaterial();
+    if (mt && rx.test(mt.getName())) { mesh.removePrimitive(pr); pr.dispose(); console.log('dropped part', mt.getName()); }
+  }
+}
 for (const m of root.listMaterials()) {
   const n = m.getName();
   m.setMetallicFactor(0).setRoughnessFactor(0.8);

@@ -93,7 +93,9 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
    softgl, loadlog, memphone, savefuzz, Straßen; Safari-Engine als Versuch). Sind alle grün, schreibt der Job „Vorschau veröffentlichen“
    den Stand nach **https://mynametouse.github.io/pavillon-ratscher/vorschau/** (oben ein Hinweis „Vorschau“; der veröffentlichte Plan wird
    mitkopiert, die normale Seite bleibt unverändert).
-2. Falko schaut sich die Vorschau an (Laptop, iPhone). **Live stellen:** Falko sagt es dem Kern-Chat, der schiebt den Stand nach Branch
+2. **Live stellen** (Falko, 23.10.2026 1:05: „alles, was erfolgreich getestet ist, … direkt … in die normale Online-Version“): ist das
+   Prüfpaket grün, schiebt der Kern-Chat den Stand ohne weitere Rückfrage live; nur was die Tests nicht abdecken (echtes Handy, echte
+   Grafikkarte), sagt er vorher dazu. Falko schaut sich die Vorschau an (Laptop, iPhone), wann er mag. Der Kern-Chat schiebt den Stand nach Branch
    `live` (`git push origin src:live`) – Chat-Sitzungen dürfen Workflows nicht von Hand starten. Oder GitHub → Actions → „Live stellen“ →
    Run workflow (dieser Knopf erscheint erst, wenn der Standard-Branch des Repos `src` ist, heute ist es `main`). Die Website wird aus dem
    Stand neu gebaut; `plan.json`, `vorschau/` und `welt-test/` bleiben.

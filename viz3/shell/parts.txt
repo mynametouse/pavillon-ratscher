@@ -12,6 +12,7 @@ css/hud.css
 css/werk_clock.css
 css/vehicles.css
 css/forst.css
+css/screen.css
 header.html
 panel_3d.html
 menu.html

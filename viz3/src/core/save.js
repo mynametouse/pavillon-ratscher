@@ -176,6 +176,7 @@ window.SAVE = SAVE;
   K('pav-fig', 'Figur', 'text', null);
   K('pav-lock', 'Maus fangen', 'text', null, oneOf('1', '0'));
   K('pav-wpcard', 'Werkstück-Karte', 'text', null, oneOf('1', '0'));
+  K('pav-clean', 'Freie Sicht (Anzeigen aus)', 'text', null, oneOf('1', '0'));
   K('pav-variant', 'Entwurf A/B', 'text', null, oneOf('A', 'B'));
   K('pav-style', 'Einrichtungsstil', 'json', null, obj);
   K('pav-facade', 'Fassade', 'json', null, obj);

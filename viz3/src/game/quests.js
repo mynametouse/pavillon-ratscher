@@ -1311,7 +1311,12 @@ export const QUESTS = (() => {
     }
   });
   let tkLast = '',
+    tkTxt = '',
+    tkFull = 0,
     mkAcc = 0;
+  // the card shows the whole task for a few seconds when it changes, then folds to title, arrow and distance (Falko, 23.10.2026: the
+  // displays should not cover the view all the time); a tap unfolds it, a tap on the open card opens the journal
+  const TK_FULL = 8000;
   function updateTracker(dt) {
     if (!ON || !tk) return;
     const show = P.mode === 'walk' && !(typeof PLAN !== 'undefined' && PLAN.on);
@@ -1334,6 +1339,14 @@ export const QUESTS = (() => {
       }
     }
     const key = txt + '|' + (dist != null ? Math.round(dist) : '') + '|' + (arrow != null ? Math.round(arrow / 8) : '');
+    if (txt !== tkTxt) {
+      tkTxt = txt;
+      tkFull = performance.now() + TK_FULL;
+      tk.classList.remove('mini');
+    } else if (txt && tkFull && performance.now() > tkFull) {
+      tkFull = 0;
+      tk.classList.add('mini');
+    }
     if (key !== tkLast) {
       tkLast = key;
       tk.hidden = !txt;
@@ -1368,7 +1381,12 @@ export const QUESTS = (() => {
       markDirty();
     }
   }
-  tk?.addEventListener('click', () => toggleJournal(true));
+  tk?.addEventListener('click', () => {
+    if (tk.classList.contains('mini')) {
+      tk.classList.remove('mini');
+      tkFull = performance.now() + TK_FULL;
+    } else toggleJournal(true);
+  });
   // ---------------- per frame ----------------
   let hintShown = false;
   window.TICKS.push(dt => {
