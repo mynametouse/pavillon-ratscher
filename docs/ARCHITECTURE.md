@@ -90,8 +90,8 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 - Der Build schreibt die Manifeste inline in die Seite (`window.TEXMAN, HDRIMAN, MODELMAN, SNDMAN, SVMAN(_B), VOICEMAN, PANOMAN, SKYMAN,
   CHARMAN, PLAYERMAN, GIMAN_A/_B, MUSICMAN, GEOMAN`) und speichert sie in `viz3/manifests.json` (Schnell-Build ohne Originale).
 - Bilder der glTF-Modelle stecken als Data-URI im JSON (ein Artefakt-Stand darf höchstens 511 Dateien haben).
-- Erzeugt von Werkzeugen, nicht vom Build: `img/*.jpg` (test/bilder.py), `pano/` (test/pano.py), `gi/` (test/gi.py), `sv*.png` (test/bake.py),
-  `tour.mp4` (test/tour.py), `time/skydata.js` (tools/nightsky/mk_sky.py).
+- Erzeugt von Werkzeugen, nicht vom Build: `gi/` (test/gi.py), `sv*.png` (test/bake.py), `time/skydata.js` (tools/nightsky/mk_sky.py).
+  Nur noch Bestand auf `gh-pages`, nicht mehr gepflegt (Falko, 22.10.2026; Skripte entfernt): Galeriebilder `img/*.jpg`, 360°-Bilder `pano/`, Raumführung `tour.mp4`.
 - Neue Quelle mit Namensnennung: Zeile in `viz3/buildlib/credits.py` (Töne: `assets/snd/CREDITS.md`).
 
 ## 8 Gespeichert im Browser (localStorage)

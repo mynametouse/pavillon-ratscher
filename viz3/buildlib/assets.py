@@ -77,7 +77,7 @@ def collect(H, SP, A, D):
         m = json.load(open(f)); m['modes'] = {k: e for k, e in m.get('modes', {}).items() if os.path.exists(os.path.join(D, e['a'])) and os.path.exists(os.path.join(D, e['b']))}
         return m if m['modes'] else None
     giman_a, giman_b = _giman('a'), _giman('b')
-    # 360° panoramas (rendered by test/pano.py): only the ones whose image exists
+    # 360° panoramas (existing images only; no longer rendered or maintained since 22.10.2026)
     PANOD = os.path.join(H, 'public', 'pano'); panoman = {}
     if os.path.exists(os.path.join(PANOD, 'pano.json')):
         for _v, _l in json.load(open(os.path.join(PANOD, 'pano.json'))).items():
