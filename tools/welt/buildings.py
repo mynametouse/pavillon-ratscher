@@ -17,6 +17,27 @@ WALLS = [(0.86, 0.83, 0.76), (0.90, 0.88, 0.84), (0.80, 0.76, 0.68), (0.84, 0.80
 ROOFS = [(0.52, 0.24, 0.18), (0.46, 0.22, 0.17), (0.28, 0.28, 0.30), (0.58, 0.30, 0.20), (0.36, 0.30, 0.28)]
 
 
+NAMED = {'red': (0.62, 0.22, 0.16), 'darkred': (0.45, 0.16, 0.13), 'brown': (0.42, 0.27, 0.2), 'grey': (0.5, 0.5, 0.5), 'gray': (0.5, 0.5, 0.5),
+         'darkgrey': (0.32, 0.32, 0.33), 'darkgray': (0.32, 0.32, 0.33), 'black': (0.18, 0.18, 0.19), 'white': (0.92, 0.92, 0.9),
+         'beige': (0.86, 0.8, 0.66), 'yellow': (0.88, 0.8, 0.45), 'orange': (0.78, 0.45, 0.25), 'green': (0.35, 0.45, 0.3),
+         'blue': (0.35, 0.42, 0.55), 'silver': (0.7, 0.7, 0.72), 'cream': (0.92, 0.88, 0.76)}
+
+
+def _colour(v):
+    """OSM roof:colour / building:colour (name or #rrggbb) -> sRGB tuple or None"""
+    if not v:
+        return None
+    v = v.strip().lower()
+    if v.startswith('#') and len(v) in (4, 7):
+        try:
+            if len(v) == 4:
+                v = '#' + ''.join(ch * 2 for ch in v[1:])
+            return tuple(int(v[i:i + 2], 16) / 255 for i in (1, 3, 5))
+        except ValueError:
+            return None
+    return NAMED.get(v)
+
+
 def _num(v):
     try:
         return float(str(v).replace(',', '.').replace('m', '').strip())
@@ -167,8 +188,8 @@ def build(osm, nodeE, dem, area, out_dir):
         key = (int(math.floor((c.x - ROOT_E0) / s9)), int(math.floor((c.y - ROOT_N0) / s9)))
         g = groups[key]
         hsh = (zlib.crc32(fid.encode()) & 0xffff) / 65535.0   # deterministic (str hash is salted per process)
-        wc = WALLS[int(hsh * len(WALLS)) % len(WALLS)]
-        rc = (0.50, 0.50, 0.50) if (big or flat) else ROOFS[int(hsh * 97) % len(ROOFS)]
+        wc = _colour(tags.get('building:colour')) or WALLS[int(hsh * len(WALLS)) % len(WALLS)]
+        rc = _colour(tags.get('roof:colour')) or ((0.50, 0.50, 0.50) if (big or flat) else ROOFS[int(hsh * 97) % len(ROOFS)])
         # walls: every ring, split where the roof changes plane (the gable ends)
         rings = [np.array(poly.exterior.coords)[:-1]] + [np.array(h.coords)[:-1] for h in poly.interiors]
         for ring in rings:
