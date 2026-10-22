@@ -161,10 +161,11 @@ window.SAVE = SAVE;
   K('pav-dn-v1', 'Tag und Nacht', 'json', null, obj);
   K('pav-quests-v1', 'Aufgaben', 'json', null, obj);
   K('pav-gear-v1', 'Schutzausrüstung', 'json', null, obj);
-  // the neighbour east was renamed on 22.10.2026 (Ronald → Bernd): workpieces given to him keep their place
+  // the preview of 22.10.2026 (23:09–23:45) called the neighbour east Bernd: workpieces given to him there come back to Ronald
+  // (werk/werk.js does the same when it loads)
   K('pav-werk-v1', 'Werkstatt', 'json', null, obj, {
     migrate: s => {
-      if (s && Array.isArray(s.list)) for (const o of s.list) if (o && o.where === 'ron' + 'ald') o.where = 'bernd';
+      if (s && Array.isArray(s.list)) for (const o of s.list) if (o && o.where === 'bernd') o.where = 'ronald';
       return s;
     },
   });
