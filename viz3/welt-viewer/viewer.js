@@ -113,7 +113,11 @@ function contentMaterial(kind) {
     sh.uniforms.uCurv = U.uCurv;
     sh.vertexShader = 'uniform vec3 uCam; uniform float uCurv;\n' + sh.vertexShader.replace(
       '#include <project_vertex>',
-      `vec4 mvPosition = modelMatrix * vec4(transformed, 1.0);
+      `vec4 mvPosition = vec4(transformed, 1.0);
+       #ifdef USE_INSTANCING
+         mvPosition = instanceMatrix * mvPosition;
+       #endif
+       mvPosition = modelMatrix * mvPosition;
        vec2 dd = mvPosition.xz - uCam.xz; mvPosition.y -= dot(dd, dd) * uCurv;
        mvPosition = viewMatrix * mvPosition; gl_Position = projectionMatrix * mvPosition;`,
     );
@@ -123,6 +127,14 @@ function contentMaterial(kind) {
 const MAT = { roads: contentMaterial('roads'), buildings: contentMaterial('buildings'), marks: contentMaterial('roads') };
 MAT.marks.polygonOffsetFactor = -4;
 MAT.marks.polygonOffsetUnits = -8;
+// trees: unit shapes scaled per instance (cone for conifers, rounded crown for broadleaves), colour per instance
+const TREE_GEO = [new THREE.ConeGeometry(1, 1, 6, 1, true).translate(0, 0.5, 0), new THREE.IcosahedronGeometry(1, 1).translate(0, 1, 0)];
+MAT.trees = (() => {
+  const m = contentMaterial('trees');
+  m.vertexColors = false;
+  return m;
+})();
+const TREE_RANGE = MOBILE ? 500 : 1000;
 
 // ---------------- meta, frame ----------------
 let META, O, LV, LMIN, LMAX;
@@ -398,6 +410,39 @@ function select() {
   }
 }
 
+// ---------------- trees: int16 x, z, ground, height, radius, type (dm) per tree ----------------
+const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color();
+function treeGroup(a) {
+  const n = a.length / 6;
+  const g = new THREE.Group();
+  for (const type of [0, 1]) {
+    let cnt = 0;
+    for (let i = 0; i < n; i++) if (a[i * 6 + 5] === type) cnt++;
+    if (!cnt) continue;
+    const im = new THREE.InstancedMesh(TREE_GEO[type], MAT.trees, cnt);
+    let k = 0;
+    for (let i = 0; i < n; i++) {
+      if (a[i * 6 + 5] !== type) continue;
+      const x = a[i * 6] / 10, z = a[i * 6 + 1] / 10, y = a[i * 6 + 2] / 10, h = a[i * 6 + 3] / 10, r = a[i * 6 + 4] / 10;
+      if (type === 0) {
+        _p.set(x, y + 0.12 * h, z);
+        _s.set(r, 0.88 * h, r);
+      } else {
+        _p.set(x, y + 0.3 * h, z);
+        _s.set(r, 0.36 * h, r);
+      }
+      _m.compose(_p, _q, _s);
+      im.setMatrixAt(k, _m);
+      const v = ((i * 2654435761) >>> 0) / 4294967296;
+      im.setColorAt(k, type === 0 ? _c.setRGB(0.1 + 0.05 * v, 0.2 + 0.07 * v, 0.12) : _c.setRGB(0.2 + 0.08 * v, 0.3 + 0.1 * v, 0.12));
+      k++;
+    }
+    im.frustumCulled = false;
+    g.add(im);
+  }
+  return g;
+}
+
 // ---------------- roads and buildings (level-9 tiles) ----------------
 const loader = new GLTFLoader();
 const content = new Map(); // 'roads/x_y' -> {state, group, centre}
@@ -406,6 +451,7 @@ function updateContent() {
   for (const [kind, list, range] of [
     ['roads', C.roads_tiles, 1500],
     ['buildings', C.buildings_tiles, 2500],
+    ['trees', C.trees_tiles || [], TREE_RANGE],
   ]) {
     for (const k of list) {
       const id = kind + '/' + k;
@@ -425,6 +471,14 @@ function updateContent() {
         get(url)
           .then(buf => {
             ST.contentBytes += buf.byteLength;
+            if (kind === 'trees') {
+              c.group = treeGroup(new Int16Array(buf));
+              c.group.position.copy(c.centre);
+              c.group.position.y = 0;
+              scene.add(c.group);
+              c.state = 2;
+              return;
+            }
             loader.parse(
               buf,
               '',

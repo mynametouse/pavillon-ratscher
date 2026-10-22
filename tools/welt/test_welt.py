@@ -126,5 +126,28 @@ pos2, chains2 = roads.network(ways2, nodeE2)
 newpos, sa = roads.fit_axis(pos2, chains2, AxisDem())
 mid = newpos[chains2[0][1]][len(chains2[0][1]) // 2]
 ck('axis fit', abs((mid[1] - N0) - 202.0) < 0.6, f'centre at N {mid[1] - N0:.2f} (true 202, OSM 200)')
+# trees: inside the tree cover, not on the road, not in a building
+import trees, types
+
+
+class FakeMask:
+    pass
+
+
+fm = FakeMask()
+tb = wlib.tbounds(wlib.CONTENT_LEVEL, 2048, 2048)
+fm.e0, fm.n1, fm.res = tb[0], tb[3], 10.0
+fm.m = np.zeros((80, 80), np.float32)
+fm.m[:, :40] = 1                                    # western half forest
+fd = types.SimpleNamespace(cop=types.SimpleNamespace(trees=fm), sample=lambda E, N: np.full(len(E), wlib.H0 + 5.0))
+road = [(np.array([[tb[0], tb[1] + 400], [tb[2], tb[1] + 400]]), 3.0)]
+with tempfile.TemporaryDirectory() as td:
+    vf = trees.build(fd, road, [(tb[0] + 100, tb[1] + 100, 15.0)], tb, td)
+    a = np.frombuffer(open(os.path.join(td, 'v', f'{wlib.CONTENT_LEVEL}_2048_2048.bin'), 'rb').read(), '<i2').reshape(-1, 6)
+    Ec, Nc = wlib.tcentre(wlib.CONTENT_LEVEL, 2048, 2048)
+    E, N = a[:, 0] / 10 + Ec, -a[:, 1] / 10 + Nc
+    ck('trees in forest only', len(a) > 1000 and np.all(E < tb[0] + 400 + 4), f'{len(a)} trees')
+    ck('trees off the road', np.all(np.abs(N - (tb[1] + 400)) > 5.4))
+    ck('trees off buildings', np.all(np.hypot(E - tb[0] - 100, N - tb[1] - 100) > 18))
 print('test_welt:', 'ok' if not fails else f'{fails} FAILED')
 sys.exit(1 if fails else 0)

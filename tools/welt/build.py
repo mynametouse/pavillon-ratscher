@@ -91,6 +91,13 @@ def main():
     E, N = tr.transform(lla[:, 0], lla[:, 1])
     nodeE = {i: (e, n) for i, e, n in zip(ids, E, N)}
     bmeta = buildings.build(osm, nodeE, dem, blk, a.out)
+    circles = bmeta.pop('_circles', [])
+
+    # ---- single trees in the forests (WorldCover tree cover; away from roads and buildings) ----
+    import trees
+    rways, rnodes = roads.load_ways(osm, blk, margin=50)
+    road_lines = [(np.array([rnodes[r] for r in w['refs']]), w['w'] / 2) for w in rways if not (w['fl'] & 2)]
+    vmeta = trees.build(dem, road_lines, circles, blk, a.out)
 
     # ---- imagery ----
     iinfo = {}
@@ -178,6 +185,8 @@ def main():
         'content': {'level': CONTENT_LEVEL, 'roads': 'r/{z}_{x}_{y}.glb', 'buildings': 'b/{z}_{x}_{y}.glb',
                     'glb_frame': 'x = E - Ec, y = H - H0, z = -(N - Nc); (Ec, Nc) = Mitte der Kachel (auch in extras.utm_centre)',
                     'roads_tiles': sorted(rmeta['tiles']), 'buildings_tiles': sorted(bmeta['tiles']),
+                    'trees': 'v/{z}_{x}_{y}.bin', 'trees_tiles': sorted(vmeta),
+                    'trees_format': 'int16 je Baum: x dm, z dm (= -(N - Nc)), Boden H - H0 dm, Höhe dm, Kronenradius dm, Typ (0 Nadel, 1 Laub)',
                     'routes': 'routes.json', 'roads_json': 'roads.json', 'names': 'names.json'},
         'sources': {'terrain': terr_src, 'terrain_source': dem.source, 'dgm1_tiles': list(dem.dgm_tiles), 'dgm1_share': round(dem.dgm_share, 3),
                     'copernicus_offset_m': round(dem.cop_off, 2), 'imagery': 'DOP Thüringen, WMS TH DOP (th_dop), © GDI-Th, CC BY 4.0',

@@ -102,6 +102,7 @@ def build(osm, nodeE, dem, area, out_dir):
     groups = collections.defaultdict(lambda: dict(pos=[], col=[], idx=[], n=0))
     s9 = tsize(CONTENT_LEVEL)
     stats = collections.Counter()
+    circles = []
     for P, holes, tags, fid in feats:
         try:
             poly = Polygon(P, [h for h in holes if len(h) >= 3])
@@ -116,6 +117,7 @@ def build(osm, nodeE, dem, area, out_dir):
         c = poly.centroid
         if not (area[0] <= c.x < area[2] and area[1] <= c.y < area[3]):
             continue
+        circles.append((c.x, c.y, math.sqrt(poly.area / math.pi) * 1.3))
         poly = orient(poly.simplify(0.2), 1.0)
         typ = tags.get('building', 'yes')
         A = poly.area
@@ -242,4 +244,4 @@ def build(osm, nodeE, dem, area, out_dir):
         files[f'{tx}_{ty}'] = write_glb(fn, [dict(name='buildings', pos=pos, idx=idx, nrm=nrm, col=col, rough=0.85)],
                                         extras={'utm_centre': [Ec, Nc], 'H0': H0, 'crs': 'EPSG:25832'})
     log(f'Gebäude: {sum(stats.values())} ({dict(stats)}), {len(files)} Kacheln, {sum(files.values()) / 1e6:.1f} MB')
-    return {'count': sum(stats.values()), 'roofs': dict(stats), 'tiles': files}
+    return {'count': sum(stats.values()), 'roofs': dict(stats), 'tiles': files, '_circles': circles}
