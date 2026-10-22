@@ -20,7 +20,7 @@ from scipy.sparse import coo_matrix, diags
 from scipy.sparse.linalg import spsolve
 from scipy.spatial import cKDTree
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from wlib import log, H0, CONTENT_LEVEL, tiles, tcentre, tbounds
+from wlib import log, H0, CONTENT_LEVEL, tcentre
 from glb import write_glb, flat_normals
 
 # kind: default width (m), default surface, centre/edge markings, wave cut-off L (m), shoulder width (m), rank (drawing order)
@@ -675,7 +675,7 @@ def write_ribbons(groups, out_dir, marks=None, bridges=None, postg=None):
 
 def carve(dem, pos, chains, h, area):
     """cut / fill the 1 m mosaic along the roads inside `area` (in place). Returns the number of changed pixels and stats."""
-    S_xy, S_t, S_n, S_h, S_hw, S_sw, S_cr, S_max = [], [], [], [], [], [], [], []
+    S_xy, S_t, S_h, S_hw, S_sw, S_cr, S_max = [], [], [], [], [], [], []
     bridges = []
     for w, ids in chains:
         P = pos[ids]

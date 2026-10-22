@@ -12,11 +12,11 @@ Terrain tile t/{L}/{x}/{y}.bin – 101 x 101 heights, little endian:
      q = heights in cm relative to H0, row j = 0 at the SOUTH edge, i east.
 Imagery tile i/{L}/{x}/{y}.webp – 512 x 512, row 0 = north edge, pixel areas (u = (E - E0) / s, v = (N - N0) / s).
 """
-import io, os, sys, struct, zlib
+import os, sys, struct, zlib
 import numpy as np
 from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from wlib import log, tbounds, tsize, tiles, trange, aligned, TILE_PX, TERR_N, H0
+from wlib import log, tbounds, tsize, tiles, TILE_PX, TERR_N, H0
 
 Image.MAX_IMAGE_PIXELS = None
 

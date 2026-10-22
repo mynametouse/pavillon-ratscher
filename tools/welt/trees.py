@@ -3,7 +3,7 @@ candidates on a jittered grid inside the WorldCover 2021 tree cover, away from r
 crown from a distribution, ~60 % conifers (Thuringian forest).
 Per level-9 tile v/9_{x}_{y}.bin: int16 little endian, 6 values per tree relative to the tile centre (Ec, Nc) –
   x = (E - Ec) dm, z = -(N - Nc) dm, y = ground height - H0 in dm, tree height dm, crown radius dm, type (0 conifer, 1 broadleaf)."""
-import math, os, sys, zlib
+import os, sys, zlib
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from wlib import log, H0, CONTENT_LEVEL, tiles, tbounds, tcentre

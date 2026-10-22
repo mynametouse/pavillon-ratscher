@@ -6,7 +6,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import wlib
 from tiles import encode_heights, decode_heights
 import roads
-from glb import write_glb
 
 fails = 0
 

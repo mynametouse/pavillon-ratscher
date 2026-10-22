@@ -150,10 +150,10 @@ def build(osm, nodeE, dem, area, out_dir):
         e1, e2 = mrr[1] - mrr[0], mrr[2] - mrr[1]
         if np.hypot(*e1) >= np.hypot(*e2):
             ux = e1 / max(np.hypot(*e1), 1e-9)
-            L, W = np.hypot(*e1), np.hypot(*e2)
+            W = np.hypot(*e2)
         else:
             ux = e2 / max(np.hypot(*e2), 1e-9)
-            L, W = np.hypot(*e2), np.hypot(*e1)
+            W = np.hypot(*e1)
         ctr = mrr.mean(axis=0)
         uy = np.array([-ux[1], ux[0]])
         small = typ in SMALL or A < 30
