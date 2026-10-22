@@ -1,0 +1,116 @@
+"""Headless check of the world viewer (GitHub Actions only – the chat sandbox has 2 cores and runs the app's browser tests).
+  python3 -I tools/welt/check_viewer.py <site dir with welt-test/> [--url <viewer url>] [--out <dir>] [--wait 240]
+Without --url a local server serves the site dir and the viewer loads the tiles relative to itself (welt-test/viewer/?base=../).
+Checks: the page starts, terrain tiles load (none fail), roads/buildings load, no console errors; reports MB loaded, texture memory,
+triangles, draw calls, time to the first frame; screenshots (overview, Ratscher, driving) and check.json into --out."""
+import argparse, functools, http.server, json, os, sys, threading, time
+
+ap = argparse.ArgumentParser()
+ap.add_argument('site')
+ap.add_argument('--url')
+ap.add_argument('--out', default='check')
+ap.add_argument('--wait', type=float, default=240)
+a = ap.parse_args()
+os.makedirs(a.out, exist_ok=True)
+
+srv = None
+if not a.url:
+    class Quiet(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+    Quiet.extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map, '.webp': 'image/webp', '.glb': 'model/gltf-binary',
+                            '.bin': 'application/octet-stream', '.js': 'text/javascript', '.json': 'application/json'}
+    srv = http.server.ThreadingHTTPServer(('127.0.0.1', 8765), functools.partial(Quiet, directory=os.path.abspath(a.site)))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    a.url = 'http://127.0.0.1:8765/welt-test/viewer/?base=../'
+
+from playwright.sync_api import sync_playwright
+
+res = {'url': a.url, 'checks': {}, 'console_errors': [], 'page_errors': []}
+ok = True
+
+
+def check(name, cond, info=''):
+    global ok
+    res['checks'][name] = {'ok': bool(cond), 'info': info}
+    print(f"{'PASS' if cond else 'FAIL'} {name} {info}", flush=True)
+    ok = ok and bool(cond)
+
+
+def wait_idle(pg, limit):
+    t0 = time.time()
+    calm = 0
+    while time.time() - t0 < limit:
+        if pg.evaluate('window.WELT && WELT.idle && WELT.idle()'):
+            calm += 1
+            if calm >= 3:
+                return time.time() - t0
+        else:
+            calm = 0
+        time.sleep(1.0)
+    return None
+
+
+with sync_playwright() as p:
+    br = p.chromium.launch(args=['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'])
+    pg = br.new_page(viewport={'width': 1280, 'height': 720})
+    pg.on('console', lambda m: m.type == 'error' and res['console_errors'].append(m.text[:300]))
+    pg.on('pageerror', lambda e: res['page_errors'].append(str(e)[:300]))
+    t0 = time.time()
+    pg.goto(a.url, wait_until='load', timeout=120000)
+    pg.wait_for_function('window.WELT && window.WELT.ready === true', timeout=120000)
+    check('start', True, f'{time.time() - t0:.1f} s')
+    t_idle = wait_idle(pg, a.wait)
+    st = pg.evaluate('WELT.stats()')
+    check('kacheln_geladen', st['tilesReady'] >= 20 and t_idle is not None,
+          f"{st['tilesReady']} Kacheln, sichtbar {st['drawn']}, bereit nach {t_idle and round(t_idle)} s")
+    pg.screenshot(path=os.path.join(a.out, '1_ueberblick.png'))
+    res['overview'] = st
+    # Ratscher from close by: the finest level, roads and buildings
+    pg.evaluate("WELT.place('dorf')")
+    time.sleep(2)
+    wait_idle(pg, a.wait)
+    time.sleep(3)
+    pg.evaluate("WELT.place('dorf')")
+    wait_idle(pg, a.wait)
+    st2 = pg.evaluate('WELT.stats()')
+    pg.screenshot(path=os.path.join(a.out, '2_ratscher.png'))
+    check('strassen_gebaeude', st2['contentLoaded'] >= 2, f"{st2['contentLoaded']} Inhalts-Kacheln (Straßen/Gebäude)")
+    res['village'] = st2
+    routes = pg.evaluate('WELT.routes()')
+    res['routes'] = routes
+    check('strecken', len(routes) >= 1, json.dumps(routes, ensure_ascii=False)[:200])
+    if routes:
+        pg.evaluate("WELT.setMode('drive')")
+        pg.evaluate("WELT.drive.s = 300")
+        time.sleep(4)
+        wait_idle(pg, 90)
+        time.sleep(2)
+        pg.screenshot(path=os.path.join(a.out, '3_fahren.png'))
+        res['drive'] = pg.evaluate('WELT.stats()')
+    fin = pg.evaluate('WELT.stats()')
+    res['final'] = fin
+    check('keine_fehlgeschlagenen_kacheln', fin['failed'] == 0, f"{fin['failed']} fehlgeschlagen; {fin['errors'][:3]}")
+    check('keine_konsolenfehler', not res['console_errors'] and not res['page_errors'],
+          f"{res['console_errors'][:3]} {res['page_errors'][:3]}")
+    mbl = fin['bytes'] / 1e6
+    mtex = fin['texBytes'] / 1e6
+    print(f"geladen {mbl:.1f} MB in {fin['requests']} Anfragen (Inhalt {fin['contentBytes'] / 1e6:.1f} MB), Texturspeicher {mtex:.0f} MB, "
+          f"erstes Bild nach {fin['firstFrameMs'] / 1000:.1f} s, Draw-Calls {fin['renderer']['calls']}, Dreiecke {fin['renderer']['triangles']}, "
+          f"GL: {fin['gl']}", flush=True)
+    res['summary'] = {'mb_loaded': round(mbl, 1), 'texture_mb': round(mtex), 'requests': fin['requests'], 'first_frame_s': fin['firstFrameMs'] / 1000,
+                      'calls': fin['renderer']['calls'], 'triangles': fin['renderer']['triangles'], 'gl': fin['gl']}
+    br.close()
+res['ok'] = ok
+json.dump(res, open(os.path.join(a.out, 'check.json'), 'w'), indent=1, ensure_ascii=False)
+if os.environ.get('GITHUB_STEP_SUMMARY'):
+    with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+        f.write(f"### Viewer-Prüfung {'bestanden' if ok else 'FEHLER'} – {a.url}\n\n")
+        for k, v in res['checks'].items():
+            f.write(f"- {'✅' if v['ok'] else '❌'} {k}: {v['info']}\n")
+        s = res.get('summary', {})
+        f.write(f"\nGeladen {s.get('mb_loaded')} MB in {s.get('requests')} Anfragen, Texturspeicher {s.get('texture_mb')} MB, "
+                f"erstes Bild {s.get('first_frame_s')} s, Draw-Calls {s.get('calls')}, Dreiecke {s.get('triangles')}, GL {s.get('gl')}\n")
+if srv:
+    srv.shutdown()
+sys.exit(0 if ok else 1)
