@@ -199,9 +199,9 @@ def fetch_osm(raw, ll):
     data = None
     # Overpass first (one try per server, 150 s), then the OSM API in chunks (reliable for test blocks; for the 150 km world:
     # Geofabrik extracts in Actions)
-    for url in ([] if os.environ.get('WELT_NO_OVERPASS') else OVERPASS[:3]):
+    for url in ([] if os.environ.get('WELT_NO_OVERPASS') else OVERPASS[:1]):
         try:
-            st, b, ct = http_get(url, tries=1, timeout=150, data={'data': q})
+            st, b, ct = http_get(url, tries=1, timeout=120, data={'data': q})
             if st == 200 and b[:1] == b'{':
                 j = json.loads(b)
                 if j.get('remark') and 'error' in j['remark'].lower():
