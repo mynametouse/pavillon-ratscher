@@ -197,7 +197,7 @@ def fetch_osm(raw, ll):
     os.makedirs(os.path.dirname(p), exist_ok=True)
     q = QUERY.format(s=s, w=w, n=n, e=e)
     data = None
-    # Overpass first (one try per server, 150 s), then the OSM API in chunks (reliable for test blocks; for the 150 km world:
+    # Overpass first (one try, 120 s – the public servers answered 504 on 22.10.), then the OSM API in chunks (fine for test blocks; for the 150 km world:
     # Geofabrik extracts in Actions)
     for url in ([] if os.environ.get('WELT_NO_OVERPASS') else OVERPASS[:1]):
         try:
