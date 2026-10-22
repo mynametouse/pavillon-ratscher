@@ -1,8 +1,12 @@
 # Live stellen: der freigegebene Stand von src kommt auf die normale Website (die Vorschau unter /vorschau/ bleibt, plan.json und welt-test/
-# bleiben unangetastet). Start von Hand: GitHub → Actions → „Live stellen“ → Run workflow – oder vom Kern-Chat über die API.
+# bleiben unangetastet). Zwei Wege:
+#   - der Kern-Chat schiebt den Stand nach Branch `live` (git push origin src:live) – Chat-Sitzungen dürfen Workflows nicht von Hand starten
+#   - von Hand: GitHub → Actions → „Live stellen“ → Run workflow (der Knopf erscheint nur, wenn der Standard-Branch des Repos `src` ist)
 name: Live stellen
 
 on:
+  push:
+    branches: [live]
   workflow_dispatch:
     inputs:
       version:
@@ -25,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: src
+          ref: ${{ github.event_name == 'push' && github.sha || 'src' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -49,6 +53,6 @@ jobs:
           cd "$RUNNER_TEMP/site"
           git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -q -m "${{ inputs.version }} live: src ${GITHUB_SHA::7}" || { echo "nichts geändert"; exit 0; }
+          git commit -q -m "${{ inputs.version }} live: $(git -C "$GITHUB_WORKSPACE" log -1 --format='%h %s' | cut -c1-100)" || { echo "nichts geändert"; exit 0; }
           for i in 1 2 3; do git push -q origin HEAD:gh-pages && break; git pull -q --rebase origin gh-pages; done
           echo "Live: https://mynametouse.github.io/pavillon-ratscher/"
