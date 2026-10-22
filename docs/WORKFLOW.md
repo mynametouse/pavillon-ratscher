@@ -82,7 +82,9 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
   `boot/boot.js`, `game/game.js`, `core/*`, Dokumente. Neue `window`-Namen und Speicher-Schlüssel vorher in ARCHITECTURE.md prüfen/eintragen.
 - **Zusammenführen**: `git fetch origin && git rebase origin/src`, testen, dann `git checkout src && git merge --ff-only feat/<thema> && git push origin src`.
 - **Veröffentlichen immer nur von `src`** und nur einer zur Zeit: vorher `git pull` auf `src`, bauen, testen, veröffentlichen (Abschnitt 4).
-  Hat jemand dazwischen veröffentlicht, ist `origin/gh-pages` neuer: erst `src` aktualisieren, dann neu bauen.
+  Hat jemand dazwischen veröffentlicht, ist `origin/gh-pages` neuer: erst `src` aktualisieren, dann `bash tools/bootstrap.sh` (holt `dist` und
+  `dist_pub` neu von `gh-pages`) und neu bauen – `deploy_site.py` ersetzt die Website komplett durch `dist_pub`, Galeriebilder des anderen
+  (sie liegen nur auf `gh-pages`, nicht im Repo) gingen sonst verloren.
 - Versionsnummern: nächste freie Nummer aus `docs/CHANGELOG.md` beim Veröffentlichen vergeben (nicht vorher reservieren).
 - Arbeitsstand für Menschen und andere Chats: Projekt-Dokument `claude/pavillon-ratscher-stand.md` (Was ist fertig, was läuft, was als Nächstes).
 
