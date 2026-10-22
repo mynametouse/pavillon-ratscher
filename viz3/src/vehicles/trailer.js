@@ -110,13 +110,15 @@ const TRAILER = (() => {
     if (Math.abs(rel) > MAXA) { s.psi = v.st.psi + Math.sign(rel) * MAXA; const f = fwd(s.psi); s.x = H[0] - f[0] * LD; s.y = H[1] - f[1] * LD; }
     const f = fwd(s.psi), mv = (s.x - ox) * f[0] + (s.y - oy) * f[1]; s.spin += mv / RT;
     // the bed against walls, trunks, the garden and other vehicles: pushed out, and the tractor is held back by as much
-    const B = box(); if (B) { const hits = VEH.boxHits(B, s.z + 0.3, s.z + ZB + Math.max(0.3, S.cargoH || 0), v); let push = [0, 0], big = 0;
+    const B = box(); if (B) { const hits = VEH.boxHits(B, s.z + 0.3, s.z + ZB + Math.max(0.3, S.cargoH || 0), v); hits.push(...VEH.guideHits(wheelBox(), s.z, s.z + 0.6)); let push = [0, 0], big = 0;
       for (const [h] of hits) { if (h.d < 0.004) continue; push[0] += h.n[0] * h.d; push[1] += h.n[1] * h.d; big = Math.max(big, h.d); }
       if (big > 0.004) { s.x += push[0]; s.y += push[1]; const vs = v.st, vf = fwd(vs.psi), vr = rgt(vs.psi); vs.x += push[0]; vs.y += push[1];
         const pn = Math.hypot(push[0], push[1]), nx = push[0] / pn, ny = push[1] / pn, wv = [vs.u * vf[0] + vs.v * vr[0], vs.u * vf[1] + vs.v * vr[1]], into = wv[0] * nx + wv[1] * ny;
         if (into < 0) { wv[0] -= into * nx; wv[1] -= into * ny; vs.u = wv[0] * vf[0] + wv[1] * vf[1]; vs.v = wv[0] * vr[0] + wv[1] * vr[1]; if (-into > 1.2 && window.VSND) VSND.thud(v, Math.min(1, -into / 6)); }
         S.hitT = performance.now(); } }
     S.ver++; }
+  // the tandem's footprint: only the wheels are held by the bridge guides (the bed may reach out over the edge)
+  function wheelBox() { const s = S.st; return { c: [s.x, s.y], ax: rgt(s.psi), ay: fwd(s.psi), ex: TRK / 2 + WT / 2, ey: AX + RT }; }
   function box() { const s = S.st, f = fwd(s.psi), r = rgt(s.psi), cy = (BY0 + BY1) / 2; return { c: [s.x + f[0] * cy, s.y + f[1] * cy], ax: r, ay: f, ex: HW + 0.02, ey: (BY1 - BY0) / 2 + 0.03, z0: s.z + 0.15, z1: s.z + ZB + ZS }; }
   // straight behind the hitch H (heading psi of the tractor)
   function place(H, psi) { const f = fwd(psi); Object.assign(S.st, { x: H[0] - f[0] * LD, y: H[1] - f[1] * LD, psi }); S.ver++; pose(); }
@@ -136,10 +138,7 @@ const TRAILER = (() => {
     if (v) { const sp = Math.hypot(v.st.u, v.st.v); if (sp > 0.001 || S.dirty) { follow(v, dt); S.dirty = false; pose(dt); markDirty(); lastSave += sp * dt; if (lastSave > 40) { lastSave = 0; save(); } } else if (legT > 0) pose(dt);
       const on = VEH.lightsOn(v), brk = v.st.brakeOn && v.st.engine; for (const m of tails) m.material.emissiveIntensity = on ? 1.6 : 0; for (const m of brakes) m.material.emissiveIntensity = brk ? 3.2 : on ? 1.2 : 0; }
     else if (legT < 1) { pose(dt); markDirty(); } }
-  window.TICKS.unshift(dt => { try { update(dt); } catch (e) { if (!S._err) { S._err = 1; console.warn('trailer', e); } } });   // runs after VEH (which unshifted itself before): see below
-  // VEH puts its tick first; the trailer must follow the tractor in the same frame: move it right behind VEH's tick
-  { const i = window.TICKS.findIndex(f => String(f).includes('update(dt); } catch (e) { if (!S._err) { S._err = 1; console.warn(\'trailer\''));
-    const j = window.TICKS.findIndex(f => String(f).includes("console.warn('veh'")); if (i >= 0 && j >= 0 && i < j) { const f = window.TICKS.splice(i, 1)[0]; window.TICKS.splice(j, 0, f); } }
+  VEH.after.push(update);   // right after the vehicles' physics in the same frame: the eye stays on the hitch
   // ---------------- in the world ----------------
   scene.add(g);
   VEH.extra.push(S.ex = { box: () => box(), get tow() { return S.tow; }, trailer: true });

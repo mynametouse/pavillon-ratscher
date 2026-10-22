@@ -22,8 +22,9 @@ with lib.browser() as b:
     def cam(cx, cy, ch, tx, ty, tz, fov=60):
         gz = E(f"ROADS.groundAt({cx}, {cy})"); tg = E(f"ROADS.groundAt({tx}, {ty})"); yaw = math.degrees(math.atan2(tx - cx, ty - cy)); pitch = math.degrees(math.atan2(tg + tz - gz - ch, math.hypot(tx - cx, ty - cy)))
         E(f"GAME.setView3(false, true); GAME.view({cx}, {cy}, {gz + ch}, {yaw}, {pitch}, {fov}); GAME.step(0.05)")
-    def drive(thr, brk, steer, secs): E(f"VEH.auto = () => ({{ thr: {thr}, brk: {brk}, steer: {steer}, hand: false }})"); steps(secs); E("VEH.auto = null")
-    def stop(): drive(0, 1, 0, 1.2)
+    def drive(thr, brk, steer, secs): E("VEH.cur || VEH.enter('tractor')"); E(f"VEH.auto = () => ({{ thr: {thr}, brk: {brk}, steer: {steer}, hand: false }})"); steps(secs); E("VEH.auto = null")
+    # stop like a driver: the brake while rolling forward, the forward key while rolling back (the brake key reverses), then the handbrake
+    def stop(): E("VEH.cur || VEH.enter('tractor')"); E("VEH.auto = v => { if (!v) return { thr: 0, brk: 0, steer: 0, hand: true }; const u = v.st.u; return Math.abs(u) < 0.15 ? { thr: 0, brk: 0, steer: 0, hand: true } : u > 0 ? { thr: 0, brk: 1, steer: 0, hand: false } : { thr: 1, brk: 0, steer: 0, hand: false }; }"); steps(2.0); E("VEH.auto = null")
     gap = lambda: J("(() => { const v = VEH.by.tractor, h = TRAILER.hitchW(v), e = TRAILER.eyeW(); return Math.hypot(h[0] - e[0], h[1] - e[1]); })()")
     if want('trailer'):
         s0 = J("{ c: !!TRAILER.tow, t: TRAILER.st, v: VEH.by.tractor.st }"); print('start', s0['c'], {k: s0['t'][k] for k in ('x', 'y', 'psi')})
@@ -47,10 +48,13 @@ with lib.browser() as b:
         check('the parked trailer stops the tractor', bx > 2.0, f"tractor {bx:.2f} m beside the trailer's axis")
         stop(); E("VEH.exit()"); steps(0.3)
     if want('bridge'):   # the tractor with the trailer from the field path over the garden bridge into the garden
-        br = J("{ a: STREAM.wpt(STREAM.TB, STREAM.OFF - 12), b: STREAM.wpt(STREAM.TB, STREAM.OFF - 5), c: STREAM.wpt(STREAM.TB, STREAM.OFF), d: STREAM.wpt(STREAM.TB, STREAM.OFF + 6), e: STREAM.wpt(STREAM.TB, STREAM.OFF + 14), psi: Math.atan2(STREAM.N[0], STREAM.N[1]) }")
+        # in bridge coordinates (lat along the stream, lon across, from the bridge's middle): straight over, then a little to the right –
+        # 3.7 m past the bridge a garden tree stands 0.6 m left of the axis (the gap to the next one on the right is 3.5 m)
+        br = J("(() => { const c = STREAM.BR.c, U = STREAM.U, N = STREAM.N, w = (lat, lon) => [c[0] + U[0] * lat + N[0] * lon, c[1] + U[1] * lat + N[1] * lon]; return { a: w(0, -12), b: w(0, -5), c: w(0, 0), d: w(0, 4), f: w(1.4, 7.5), e: w(1.4, 14), psi: Math.atan2(N[0], N[1]) }; })()")
+        E("VEH.place('car', 40, 52, Math.PI / 2)")   # the own car parks on the field path right in front of the bridge: out of the way for this drive
         E(f"VEH.place('tractor', {br['a'][0]}, {br['a'][1]}, {br['psi']}); TRAILER.home(); VEH.enter('tractor')"); steps(0.5)
         check('trailer coupled for the bridge', E("!!TRAILER.tow"))
-        E(f"window._fs = VEH.follow({json.dumps([br['a'], br['b'], br['c'], br['d'], br['e']])}, 3)"); zmin = 9; tz = 9
+        E(f"window._fs = VEH.follow({json.dumps([br['a'], br['b'], br['c'], br['d'], br['f'], br['e']])}, 2.5)"); zmin = 9; tz = 9
         for k in range(30):
             steps(0.5); s = J("{ v: VEH.by.tractor.st, t: TRAILER.st }"); zmin = min(zmin, s['v']['z']); tz = min(tz, s['t']['z'])
             if k == 9: cam(br['c'][0] + 7, br['c'][1] - 3, 3, br['c'][0], br['c'][1], 1, 62); lib.shot(pg, OUT, 'b_bridge'); E("GAME.setView3(true)")

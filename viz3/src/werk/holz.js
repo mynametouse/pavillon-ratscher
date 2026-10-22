@@ -164,13 +164,15 @@ const HOLZ = (() => {
     g.traverse(o => { if (o.isMesh) o.userData.noMerge = true; }); scene.add(g);
     YARD.inside = p => { const dx = p[0] - Y.x, dy = p[1] - Y.y, a = dx * ux + dy * uy, b = -dx * uy + dy * ux; return Math.abs(a) < Y.len / 2 && Math.abs(b) < Y.w / 2; }; }
   // ---------------- the garden bridge (2.5 m wide, no railing) for the tractor (2.28 m over the tyres) ----------------
-  // world/roads.js lets vehicles stand on its deck; invisible guides along both edges keep the wheels on it, flared at both ends so the
-  // driver is led on (walkers are not stopped by them)
-  function bridgeGuides() { const ST = window.STREAM; if (!ST || !ST.BR || !ST.wpt) return; const U = ST.U, N = ST.N, w = ST.BR.w, l = ST.BR.l;
+  // world/roads.js lets vehicles stand on its deck; invisible guides along both edges keep the wheels on it where the ditch is below
+  // (±2.1 m of the 6.2 m deck; beyond, the slab lies on the banks), flared at both ends so the driver is led on. They hold only the
+  // wheels (vehicles/vehicle.js guideHits): the loader, a log on the fork or the trailer's bed may reach out over the edge. Walkers pass.
+  const GUIDE_HALF = 2.1;
+  function bridgeGuides() { const ST = window.STREAM; if (!ST || !ST.BR || !ST.wpt) return; const U = ST.U, N = ST.N, w = ST.BR.w, l = GUIDE_HALF;
     const wall = (p1, p2) => { const dx = p2[0] - p1[0], dy = p2[1] - p1[1], L = Math.hypot(dx, dy), ay = [dx / L, dy / L], B = { c: [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2], ax: [ay[1], -ay[0]], ay, ex: 0.05, ey: L / 2, z0: -2, z1: 0.7 };
       VEH.extra.push({ box: () => B, noWalk: true, guide: true }); };
-    for (const sd of [-1, 1]) { const t = ST.TB + sd * (w + 0.05); wall(ST.wpt(t, ST.OFF - ST.BR.l), ST.wpt(t, ST.OFF + ST.BR.l));
-      for (const e of [-1, 1]) { const c0 = ST.wpt(t, ST.OFF + e * l), a = 0.5, len = 2.4; wall(c0, [c0[0] + (N[0] * e * Math.cos(a) + U[0] * sd * Math.sin(a)) * len, c0[1] + (N[1] * e * Math.cos(a) + U[1] * sd * Math.sin(a)) * len]); } } }
+    for (const sd of [-1, 1]) { const t = ST.TB + sd * (w + 0.05); wall(ST.wpt(t, ST.OFF - l), ST.wpt(t, ST.OFF + l));
+      for (const e of [-1, 1]) { const c0 = ST.wpt(t, ST.OFF + e * l), a = 0.55, len = 2.0; wall(c0, [c0[0] + (N[0] * e * Math.cos(a) + U[0] * sd * Math.sin(a)) * len, c0[1] + (N[1] * e * Math.cos(a) + U[1] * sd * Math.sin(a)) * len]); } } }
   S.bridgeGuides = bridgeGuides;
   // ---------------- saving ----------------
   let saveT = null; function save() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(LSK, JSON.stringify({ v: 1, logs: S.logs.map(l => { const o = { id: l.id, st: l.st };

@@ -74,7 +74,7 @@ const TRACTOR2 = (() => {
         m4.compose(new THREE.Vector3(0, Math.cos(a) * (r + 0.01), Math.sin(a) * (r + 0.01)), q, new THREE.Vector3(w * 0.9 / 0.06, 1, 1)); gs.push(lugGeo.clone().applyMatrix4(m4)); } node.add(new THREE.Mesh(BufferGeometryUtils.mergeGeometries(gs), M.tyre)); }
     for (const m of node.children) { m.castShadow = true; m.receiveShadow = true; }
     if (steer) { const mg = new THREE.Mesh(wingGeo(r + 0.07, w + 0.08, -0.2, 1.9), M.greenD); mg.castShadow = true; piv.add(mg); }
-    wheels.push({ x, y, r, steer, drive, piv, node }); }
+    wheels.push({ x, y, r, w, steer, drive, piv, node }); }
   bx(1.3, 0.16, 0.14, M.frame, 0, A, RF);   // front axle beam
   // ---- front loader: masts, arms, cross tube, lift cylinders, tool carrier and pallet fork (parallel guidance: the fork keeps its angle) ----
   const LD = { lift: -0.5, liftT: -0.5, tilt: 0, tiltT: 0, up: 0, ARM: 2.62, P0: [0.35, 1.86], X: 0.66, min: -0.6 };   // V16d: min −0.6 = the tines on the ground (under a log)
@@ -110,3 +110,4 @@ const TRACTOR2 = (() => {
     // at the Untere Klinge: on the forest-edge track a little before the junction, facing it
     home: () => { const R = ROADS.routes.klinge; if (R && R.length > 4) { const e = R[R.length - 1]; let k = R.length - 1; while (k > 0 && Math.hypot(R[k][0] - e[0], R[k][1] - e[1]) < 14) k--; const a = R[k]; return [a[0], a[1], Math.atan2(e[0] - a[0], e[1] - a[1])]; } return [-565, -585, 4.3]; } };
   return VEH.add(spec, model); })();
+window.TRACTOR2 = TRACTOR2;   // V16d: the wood (werk/holz.js) and its tests reach the tractor's fork

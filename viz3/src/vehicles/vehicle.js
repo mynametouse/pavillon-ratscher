@@ -13,7 +13,7 @@
 // 'auto' after the sun (time/daynight.js). Keys while driving: W/S or arrows, A/D steer, Space handbrake, L light, H horn, Q out.
 // Positions in localStorage 'pav-veh-v1'. Tests: VEH.auto = (v, dt) => ({ thr, brk, steer, hand }) overrides the keys; VEH.follow(route).
 const VEH = (() => {
-  const S = { list: [], by: {}, cur: null, auto: null, lights: 'auto', camT: 0, extra: [] };   // extra: boxes that are no vehicles of their own (V16d trailer)
+  const S = { list: [], by: {}, cur: null, auto: null, lights: 'auto', camT: 0, extra: [], after: [] };   // extra: boxes that are no vehicles of their own, after: called right after the physics (V16d trailer)
   const LS = 'pav-veh-v1'; let saved = {}; try { saved = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) {}
   if (saved.lights === 'on' || saved.lights === 'off' || saved.lights === 'auto') S.lights = saved.lights;
   function save() { const o = { lights: S.lights }; for (const v of S.list) o[v.id] = [+v.st.x.toFixed(2), +v.st.y.toFixed(2), +v.st.psi.toFixed(4), ...(v.model.save ? v.model.save() : [])];
@@ -167,12 +167,18 @@ const VEH = (() => {
         const B = r9 ? { c: toWorld(c, (c[0] + c[1]) / 2, (c[2] + c[3]) / 2), ax: [r9.c, r9.s], ay: [-r9.s, r9.c], ex: (c[1] - c[0]) / 2, ey: (c[3] - c[2]) / 2 } : { c: [(c[0] + c[1]) / 2, (c[2] + c[3]) / 2], ax: [1, 0], ay: [0, 1], ex: (c[1] - c[0]) / 2, ey: (c[3] - c[2]) / 2 };
         const h = sat(A, B); if (h) hits.push([h, null]); } }
     for (const o of S.list) { if (o === skip) continue; const h = sat(A, boxOf(o)); if (h) hits.push([h, o]); }
-    for (const x of S.extra) { if (x.tow && x.tow === skip) continue; const B = x.box(); if (!B || z1 < B.z0 || z0 > B.z1) continue; const h = sat(A, B); if (h) hits.push([h, null]); }   // a trailer: fixed for the others
+    for (const x of S.extra) { if (x.guide || (x.tow && x.tow === skip)) continue; const B = x.box(); if (!B || z1 < B.z0 || z0 > B.z1) continue; const h = sat(A, B); if (h) hits.push([h, null]); }   // a trailer: fixed for the others
     if (typeof TRACTOR !== 'undefined' && TRACTOR.g) { const tp = TRACTOR.g.position, az = -TRACTOR.g.rotation.y, f = fwd(az), r = rgt(az);   // Hubert's old tractor, parked or on its round
       const h = sat(A, { c: [tp.x + f[0] * 0.35, -tp.z + f[1] * 0.35], ax: r, ay: f, ex: 0.98, ey: 1.45 }); if (h) hits.push([h, null]); }
     if (window.NPCS) for (const w of [NPCS.hubert, NPCS.ronald]) { if (!w || !w.fig || !w.fig.g.visible || w.drive) continue; const h = circBox(A, w.x, w.y, 0.32); if (h) hits.push([h, null]); }
     return hits; }
-  function collide(v) { const s = v.st, hits = boxHits(boxOf(v), s.z + 0.25, s.z + v.spec.box.h, v);
+  // guides (V16d: the garden bridge's edges) hold only the wheels – the loader, a log on the fork or the body may reach out over the edge
+  function guideHits(W, z0, z1) { const hits = []; for (const x of S.extra) { if (!x.guide) continue; const B = x.box(); if (!B || z1 < B.z0 || z0 > B.z1) continue; const h = sat(W, B); if (h) hits.push([h, null]); } return hits; }
+  // the footprint of the wheels (from the model's wheels: track, tyre width, radius)
+  const wheelBox = v => { let wb = v.wb; if (!wb) { let hw = 0, y0 = 1e9, y1 = -1e9; for (const w of v.W) { hw = Math.max(hw, Math.abs(w.x) + (w.w || 0.24) / 2); y0 = Math.min(y0, w.y - w.r); y1 = Math.max(y1, w.y + w.r); }
+      wb = v.wb = { hw, cy: (y0 + y1) / 2, hl: (y1 - y0) / 2 }; }
+    const s = v.st, f = fwd(s.psi), r = rgt(s.psi); return { c: [s.x + f[0] * wb.cy, s.y + f[1] * wb.cy], ax: r, ay: f, ex: wb.hw, ey: wb.hl }; };
+  function collide(v) { const s = v.st, hits = boxHits(boxOf(v), s.z + 0.25, s.z + v.spec.box.h, v); if (S.extra.length) hits.push(...guideHits(wheelBox(v), s.z, s.z + 0.6));
     let big = 0; for (const [h, o] of hits) { const dv = resolve(v, h, o); if (dv > big) big = dv; }
     if (big > 1.4 && v === S.cur) VSND.thud(v, Math.min(1, big / 9)); return hits.length; }
   // something in the way of Hubert's tractor round (npc/npc.js): a vehicle within reach ahead of (x, y) in the direction az
@@ -247,6 +253,7 @@ const VEH = (() => {
       const n = Math.max(1, Math.ceil(dt / HSTEP)), h = dt / n; for (let i = 0; i < n; i++) { step(v, h, inp); collide(v); if (!sane(v)) break; }
       s.sleep = (!driven && Math.hypot(s.u, s.v) < 0.03 && Math.abs(s.r) < 0.01) ? s.sleep + dt : 0;
       pose(v, dt); lamps(v); if (driven || Math.hypot(s.u, s.v) > 0.01) markDirty(); s.moved += Math.hypot(s.u, s.v) * dt; }
+    for (const f of S.after) { try { f(dt); } catch (e) { if (!f._err) { f._err = 1; console.warn('veh after', e); } } }   // V16d: what hangs on a vehicle (the trailer) follows it in the same frame
     const v = S.cur; if (v) { const e = eyeW(v); P.x = e.x; P.y = e.y; P.feet = v.st.z + 0.3; P.cam = { x: e.x, y: e.y, z: e.z };   // the ears, the neighbours and the figure know where I am
       if (v.st.moved > 40) { v.st.moved = 0; save(); } camTick(v, dt); VSND.update(v, dt); hudUpdate(v); if (Math.hypot(v.st.u, v.st.v) > 0.1) MOTION.lastMove = performance.now(); }
     beamUpdate(); S.ms = performance.now() - t0; }
@@ -293,8 +300,19 @@ const VEH = (() => {
     const st = { i, done: false, stuck: 0, back: 0 }; S.auto = (v, dt) => { const s = v.st;
       if (st.back > 0) { st.back -= dt; return { thr: 0, brk: 1, steer: -st.bs, hand: false }; }   // stuck against something: back off a little
       st.stuck = Math.abs(s.u) < 0.3 && s.thr > 0.3 ? st.stuck + dt : 0; if (st.stuck > 1.6) { st.stuck = 0; st.back = 1.8; st.bs = Math.sign(s.steer || 1); }
+      let tg, ang, last, dEnd;
+      if (opt.look) {   // pure pursuit from the rear axle: the point 'look' metres further along the route, the steering angle of the arc through it
+        const sp = v.spec, f = fwd(s.psi), ra = [s.x - f[0] * sp.b, s.y - f[1] * sp.b]; let bj = st.i, bt = 0, bd = 1e9;
+        for (let j = Math.max(0, st.i - 1); j < Math.min(pts.length - 1, st.i + 3); j++) { const p = pts[j], q = pts[j + 1], dx = q[0] - p[0], dy = q[1] - p[1], L2 = dx * dx + dy * dy || 1, t = THREE.MathUtils.clamp(((ra[0] - p[0]) * dx + (ra[1] - p[1]) * dy) / L2, 0, 1), d = Math.hypot(p[0] + dx * t - ra[0], p[1] + dy * t - ra[1]); if (d < bd) { bd = d; bj = j; bt = t; } }
+        st.i = Math.max(st.i, bj); if (bj < st.i) bt = 0; let j = st.i, rest = opt.look, p = [pts[j][0] + (pts[j + 1][0] - pts[j][0]) * bt, pts[j][1] + (pts[j + 1][1] - pts[j][1]) * bt];
+        while (j < pts.length - 1) { const q = pts[j + 1], d = Math.hypot(q[0] - p[0], q[1] - p[1]); if (d >= rest) { p = [p[0] + (q[0] - p[0]) * rest / d, p[1] + (q[1] - p[1]) * rest / d]; rest = 0; break; } rest -= d; p = q; j++; }
+        tg = p; const lr = [(tg[0] - ra[0]) * rgt(s.psi)[0] + (tg[1] - ra[1]) * rgt(s.psi)[1], (tg[0] - ra[0]) * f[0] + (tg[1] - ra[1]) * f[1]], ld = Math.hypot(lr[0], lr[1]) || 1;
+        ang = Math.atan(2 * (sp.a + sp.b) * lr[0] / (ld * ld)); last = j >= pts.length - 1; const e = pts[pts.length - 1]; dEnd = Math.hypot(e[0] - s.x, e[1] - s.y);
+        if (last && dEnd < 3 || st.done) { st.done = true; return Math.abs(s.u) > 0.3 ? { thr: 0, brk: 1, steer: 0, hand: false } : { thr: 0, brk: 0, steer: 0, hand: true }; }
+        const vt = Math.min(speed, last ? 1 + dEnd * 0.6 : speed) * (1 - Math.min(0.5, Math.abs(ang) * 0.5)), ev = vt - s.u;
+        return { thr: ev > 0 ? Math.min(1, ev * 0.4) : 0, brk: ev < -0.6 ? Math.min(1, -ev * 0.25) : 0, steer: THREE.MathUtils.clamp(ang / Math.max(0.1, sp.steerMax / (1 + (Math.abs(s.u) / sp.steerV) ** 2)), -1, 1), hand: false }; }
       while (st.i < pts.length - 1 && Math.hypot(pts[st.i][0] - s.x, pts[st.i][1] - s.y) < Math.max(5, Math.abs(s.u) * 0.9)) st.i++;
-      const tg = pts[Math.min(pts.length - 1, st.i)], lp = toL(v, tg[0], tg[1]), ang = Math.atan2(lp[0], Math.max(0.1, lp[1])), last = st.i >= pts.length - 1, dEnd = Math.hypot(tg[0] - s.x, tg[1] - s.y);
+      tg = pts[Math.min(pts.length - 1, st.i)]; const lp = toL(v, tg[0], tg[1]); ang = Math.atan2(lp[0], Math.max(0.1, lp[1])); last = st.i >= pts.length - 1; dEnd = Math.hypot(tg[0] - s.x, tg[1] - s.y);
       if (last && dEnd < 3 || st.done) { st.done = true; return Math.abs(s.u) > 0.3 ? { thr: 0, brk: 1, steer: 0, hand: false } : { thr: 0, brk: 0, steer: 0, hand: true }; }
       const vt = Math.min(speed, last ? 1 + dEnd * 0.6 : speed) * (1 - Math.min(0.6, Math.abs(ang) * 0.9)), ev = vt - s.u;
       return { thr: ev > 0 ? Math.min(1, ev * 0.4) : 0, brk: ev < -0.6 ? Math.min(1, -ev * 0.25) : 0, steer: THREE.MathUtils.clamp(ang * 2.2 / Math.max(0.15, v.spec.steerMax / (1 + (Math.abs(s.u) / v.spec.steerV) ** 2)) * 0.5, -1, 1), hand: false }; };
@@ -314,7 +332,7 @@ const VEH = (() => {
   S.reset = () => { if (S.cur) S.exit(); for (const v of S.list) { const p = v.spec.home(); S.place(v.id, p[0], p[1], p[2]); v.st.gear = 1; v.st.engine = false; lamps(v); } save(); toast('Auto und Traktor stehen wieder an ihrem Platz.', 3500); };
   document.querySelectorAll('[data-vreset]').forEach(b => b.addEventListener('click', () => { S.reset(); if (window.HUD && HUD.open) HUD.setMenu(false); }));
   S.add = add; S.lightsOn = lightsOn; S.toW = toW; S.toL = toL; S.save = save; S.toggleLights = toggleLights;
-  S.boxHits = boxHits; S.sat = sat; S.circBox = circBox; S.fwd = fwd; S.rgt = rgt; S.groundPose = groundPose;
+  S.boxHits = boxHits; S.guideHits = guideHits; S.wheelBox = wheelBox; S.sat = sat; S.circBox = circBox; S.fwd = fwd; S.rgt = rgt; S.groundPose = groundPose;
   window.TICKS.unshift(dt => { try { update(dt); } catch (e) { if (!S._err) { S._err = 1; console.warn('veh', e); } } });   // first: the figure and the camera then see this frame's vehicle
   // first visit of V16b: a word about driving
   let intro = false; window.TICKS.push(() => { if (intro || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16b') === '1'; localStorage.setItem('pav-v16b', '1'); } catch (e) {}
