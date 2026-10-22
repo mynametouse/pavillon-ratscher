@@ -8,7 +8,13 @@ requestAnimationFrame(frame);
 const hideLoading = () => { const ld = $('loading'); if (ld) ld.hidden = true; LOAD.ready = true; markDirty(true); qualLabel(); };
 const sayLoading = t => { const ld = $('loading'); if (ld && !ld.hidden) ld.textContent = t; };
 // show the model only when every shader is compiled and every texture is on the GPU – otherwise the first minute stutters
-whenLoaded(() => { LOAD.prepStart = performance.now(); prepareGPU(sayLoading).catch(e => console.warn('prepare', e)).then(hideLoading); });
+// V16b2: without a graphics card (software rendering) say once per visit why it is slow and what helps
+const softHint = () => { if (!window.GLINFO || !GLINFO.soft || OFFLINE) return; let seen = false; try { seen = sessionStorage.getItem('pav-soft') === '1'; sessionStorage.setItem('pav-soft', '1'); } catch (e) {} if (seen) return;
+  setTimeout(() => toast('Dieser Browser zeichnet ohne Grafikkarte (Software-Grafik' + (/basic render/i.test(GLINFO.renderer) ? ': „Microsoft Basic Render Driver“' : '') + '), deshalb läuft das Modell auf „schnell“ und eher ruckelig. Abhilfe: in Chrome unter Einstellungen → System „Grafikbeschleunigung verwenden, wenn verfügbar“ einschalten und den Browser neu starten – oder den Grafiktreiber aktualisieren.', 15000), 2500); };
+whenLoaded(() => { LOAD.prepStart = performance.now(); prepareGPU(sayLoading).catch(e => console.warn('prepare', e)).then(() => { hideLoading(); softHint(); }); });
+// the browser may drop the GPU context (driver reset, too little memory): say so instead of a frozen picture; three.js rebuilds it
+R.domElement.addEventListener('webglcontextlost', () => { const ld = $('loading'); if (ld) { ld.hidden = false; ld.textContent = 'Die Grafik wurde vom Browser zurückgesetzt – sie wird neu aufgebaut …'; } }, false);
+R.domElement.addEventListener('webglcontextrestored', () => { const ld = $('loading'); if (ld && LOAD.ready) ld.hidden = true; markDirty(true); }, false);
 setTimeout(() => { if (!LOAD.ready) hideLoading(); }, OFFLINE ? 900000 : 90000);
 window.GAME = { R, scene, cam, MAT, MODES, PHASES, setPhase, phase: () => PHASE, P, go, DOOR, toggleDoor, floorAt, setCollide, nearDoor, setMode, setQuality, audio, setSound, COL, WALK, RENDER, SV, MERGED: window.MERGED,
   setVariant, variant: () => VARIANT, perfTest, GEO, render: () => markDirty(), loaded: () => !!LOAD.ready, assetsLoaded: () => LOAD.finished, perf: () => ({ tier: RENDER.tier, bench: RENDER.bench, prepMs: RENDER.prepMs, pr: R.getPixelRatio(), programs: R.info.programs.length }), doorsAll: v => { for (const k of DKEYS()) setDoorNow(k, v); }, setDoorNow,

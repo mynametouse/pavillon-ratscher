@@ -59,26 +59,39 @@ applyTier(RENDER.tier, false);
 function renderFrame(kind) { if (window.PREFRAME) window.PREFRAME(); if (window.FIGSHADOW) window.FIGSHADOW(); if (kind === 'motion' && MOTION.level > 0 && MOTION.comp) MOTION.comp.render(); else if (RENDER.composer) RENDER.composer.render(); else R.render(scene, cam); }
 // ---- GPU preparation while the loading screen is visible: compile every shader in parallel, upload every texture, then time a few frames ----
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+// V16b2: what draws the pictures. A software renderer (no graphics card: SwiftShader, Windows' "Microsoft Basic Render Driver", llvmpipe)
+// draws every frame on the processor – seconds per frame at full size. There the lightest tier is set at once and nothing is timed:
+// timing six frames per tier took minutes and looked like a hang at "100 %" (Falko, 22.10.2026).
+const GLINFO = (() => { let r = ''; try { const gl = R.getContext(), d = gl.getExtension('WEBGL_debug_renderer_info'); r = String((d && gl.getParameter(d.UNMASKED_RENDERER_WEBGL)) || gl.getParameter(gl.RENDERER) || ''); } catch (e) {}
+  return { renderer: r, soft: /swiftshader|basic render|llvmpipe|softpipe|software/i.test(r) }; })();
+window.GLINFO = GLINFO;
+function timeOne() { const gl = R.getContext(), px = new Uint8Array(4), a = performance.now(); renderFrame(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return performance.now() - a; }
 function timeFrames(n) { const gl = R.getContext(), px = new Uint8Array(4), ts = [];
   for (let i = 0; i < n + 2; i++) { const a = performance.now(); renderFrame(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); if (i >= 2) ts.push(performance.now() - a); }
   ts.sort((a, b) => a - b); return ts[Math.floor(ts.length / 2)]; }
 async function prepareGPU(say) {
-  const t0 = performance.now(); say && say('Grafik wird vorbereitet …');
-  // 1) all scene materials in the render-target variant the composer uses (KHR_parallel_shader_compile: the page stays responsive)
+  const t0 = performance.now(), step = (k, t) => say && say('Grafik wird vorbereitet … (' + k + '/3: ' + t + ')');
+  const soft = GLINFO.soft && !TIER_USER && !OFFLINE; if (soft) { applyTier('schnell', false); resize(); RENDER.bench = { soft: 1 }; }
+  // 1) all scene materials in the render-target variant the composer uses (KHR_parallel_shader_compile: the page stays responsive);
+  //    at most 40 s – a lost context or a stuck driver must not keep the loading screen up for ever
+  step(1, 'Shader');
   const rt = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType });
-  try { R.setRenderTarget(rt); await R.compileAsync(scene, cam); } catch (e) { console.warn('compile', e); } finally { R.setRenderTarget(null); rt.dispose(); }
+  try { R.setRenderTarget(rt); await Promise.race([R.compileAsync(scene, cam), new Promise(r => setTimeout(r, 40000))]); } catch (e) { console.warn('compile', e); } finally { R.setRenderTarget(null); rt.dispose(); }
   // 2) one frame with culling off (shadow-map programs, post passes, all textures to the GPU) – hidden behind the loading screen
   // (the hidden design variant is shown for this one frame too, so switching variants later uploads nothing)
+  step(2, 'Texturen'); await nextFrame();
   const off = [], shown = [], phOn = o => o.userData.ph === undefined || (o.userData.ph <= PHASE && (o.userData.phEnd === undefined || PHASE < o.userData.phEnd));
   scene.traverse(o => { if (o.isMesh && o.frustumCulled) { off.push(o); o.frustumCulled = false; } if (o.userData.var && !o.visible && phOn(o)) { shown.push(o); o.visible = true; } });
   R.shadowMap.needsUpdate = true; applyCam(); renderFrame(); for (const o of off) o.frustumCulled = true; for (const o of shown) o.visible = false; R.shadowMap.needsUpdate = true;
   await nextFrame(); renderFrame(); await nextFrame(); renderFrame('motion'); await nextFrame();
-  // 3) pick the tier once (unless chosen by hand earlier)
-  if (!TIER_USER && !OFFLINE) { say && say('Grafik wird an dieses Gerät angepasst …');
-    // still frames are drawn only when the view stops, so they may take longer; moving frames get their own, cheaper path
-    let name = RENDER.tier; let ms = timeFrames(4); RENDER.bench = { [name]: Math.round(ms) };
-    while (ms > 45 && name !== 'schnell') { name = TIER_ORDER[TIER_ORDER.indexOf(name) + 1]; applyTier(name, false); resize(); renderFrame(); await nextFrame(); ms = timeFrames(4); RENDER.bench[name] = Math.round(ms); } }
-  { const ms = (RENDER.bench && Object.values(RENDER.bench).pop()) || 30; MOTION.stillMs = ms; setMotionLevel(OFFLINE ? 0 : ms <= 12 ? 0 : ms <= 18 ? 1 : ms <= 26 ? 2 : ms <= 36 ? 3 : 4); }
+  // 3) pick the tier once (unless chosen by hand earlier): one probe frame first – a slow GPU goes straight to the lightest tier
+  //    (still frames are drawn only when the view stops, so they may take longer; moving frames get their own, cheaper path)
+  if (!TIER_USER && !OFFLINE && !soft) { step(3, 'Grafikkarte testen'); await nextFrame();
+    let name = RENDER.tier, ms = timeOne(); RENDER.bench = { probe: Math.round(ms) };
+    if (ms > 250 && name !== 'schnell') { name = 'schnell'; applyTier(name, false); resize(); renderFrame(); await nextFrame(); ms = timeOne(); RENDER.bench[name] = Math.round(ms); }
+    else { ms = timeFrames(4); RENDER.bench[name] = Math.round(ms);
+      while (ms > 45 && name !== 'schnell') { name = ms > 150 ? 'schnell' : TIER_ORDER[TIER_ORDER.indexOf(name) + 1]; applyTier(name, false); resize(); renderFrame(); await nextFrame(); ms = timeFrames(name === 'schnell' ? 1 : 4); RENDER.bench[name] = Math.round(ms); } } }
+  { const ms = soft ? 999 : (RENDER.bench && Object.values(RENDER.bench).pop()) || 30; MOTION.stillMs = Math.min(ms, 400); setMotionLevel(OFFLINE ? 0 : ms <= 12 ? 0 : ms <= 18 ? 1 : ms <= 26 ? 2 : ms <= 36 ? 3 : 4); }
   if (window.GLCHECK) GLCHECK.guard();   // V16b1: a program with more textures than this GPU allows → plain ground instead of none
   RENDER.prepMs = Math.round(performance.now() - t0); markDirty(true); }
 // ---------------- HDRI per time of day (aligned with the modelled sun) ----------------
