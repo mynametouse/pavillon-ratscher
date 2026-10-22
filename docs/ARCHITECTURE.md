@@ -55,7 +55,7 @@ Oberfläche Deutsch.
 
 ## 4 Frame-Schleife
 
-`game/game.js` `frame()`: Physik (Gehen, Kollision, Türen), `cam3Update`, `adaptExposure`, dann alle `TICKS` (Liste von
+`game/game.js` `frame()`: Physik (Gehen, Kollision, Türen – `game/walkable.js`), `cam3Update`, `adaptExposure`, dann alle `TICKS` (Liste von
 Pro-Frame-Funktionen, `window.TICKS.push(dt => …)`). **Gezeichnet wird nur, wenn etwas `markDirty()` gerufen hat**: in Bewegung billige
 Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(true)` zeichnet zusätzlich die Schattenkarte der Sonne neu
 (nur bei Änderungen an Statischem oder Sonnenstand). Tests setzen `window.FREEZE = true` und treiben die Welt mit `GAME.step(sek)`
@@ -84,7 +84,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `HUD` | game/hud.js | Menü, HUD, Inventarfenster, Mausfang |
 | `AVATAR` | game/avatar.js | Spielfigur (Mann/Frau), Bewegungen, Schutzausrüstung an der Figur |
 | `QUESTS` | game/quests.js | Aufgaben, Tagebuch (J), Zielanzeige |
-| `NPC` | npc/npc.js, npc_real.js, hours.js | Hubert, Ronald, Ziegen, Traktor; Dialoge; nachts daheim |
+| `NPC` | npc/npc.js, npc_real.js, hours.js | Günter, Bernd, Ziegen, Traktor; Dialoge; nachts daheim |
 | `CLOCK` | time/clock.js | Spielzeit (Minuten seit Tag 1, 0:00), Tempo, Warten/Zeitraffer, `CLOCK.on(fn)`, `CLOCK.jobs(fn)` |
 | `DN` | time/daynight.js | Kalender, Sonne/Mond/Sterne, Licht; `DN.sky(jd)`, `DN.jdOf(t)`, `DN.dateStr()` |
 | `GEAR` | werk/gear.js | Schutzausrüstung, `GEAR.check(req)` |
@@ -145,7 +145,10 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `garden/` – Grundstück: Bach, Himmel/Sonne/Boden (`env`), je Bestandsgebäude eine Datei (carport, holzhaus, greenhouse, bungalow,
   washhouse), Werkstattgebäude, Zäune, Bäume, Gras, Werkstattlicht
 - `render/` – Pipeline, Stimmungen, Zusammenfassen statischer Meshes, Leistungstest, Panoramen
-- `game/` – Gehen/Kamera/Schleife, Aktionen/Inventar, Haus (Schalter, Ofen, Sitzen), Aufgaben, HUD, Spielfigur
+- `game/` – begehbares Modell (`walkable`: Spielerzustand `P`, Bauphasen, Laufflächen und Kollision im Raster, Boden, Türen), Spieler
+  (`player`: Blickpunkte, Ortsname, `go`, Springen, Haltungen), Kamera (`camera`: alle Ansichten, Schulterkamera ohne Wanddurchblick,
+  `resize`), Eingabe (`input`), Schleife (`game`: `frame`, Physik des Gehens) – bis Phase 1 eine Datei `game.js` –; Aktionen/Inventar,
+  Haus (Schalter, Ofen, Sitzen), Aufgaben, HUD, Spielfigur
 - `audio/` – Ton-Engine (Aufnahmen, Synthese, Atmosphäre, Stimmen), Musik (Klavier, Platten, Ukulele)
 - `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus
 - `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Wald an der Klinge (`forest`), Fällen (`fell`, V16c2), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
@@ -181,9 +184,9 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   Spur, Schwerpunkthöhe, Radradius, Reifensteifigkeit `Cf/Cr`, Haftung, Lenkung (`steerMax`, `steerV`), Motor (`eng.curve` Nm über U/min),
   Gänge, Bremsen, Luftwiderstand, Kasten für Kollisionen (`box`), Augenpunkt (`eye`), Tür (`door`), Kamera, Ton (`petrol`/`diesel`), `home()`.
   Physik 120 Hz (Einspurmodell, Reibkreis je Achse, Automatik ohne Pendeln: hoch nur in einen Gang über der Rückschaltdrehzahl und solange er zieht, zurück erst nach 1,2 s im Gang), Boden aus `ROADS.groundAt`/`ROADS.at`, Kollision mit `WCOL`, `COL`, Fahrzeugen,
-  Nachbarn und Huberts Traktor. Kamera: `VEH.applyCam` (aus `game.js applyCam`), Nachführen in Spielzeit (`camTick`). Licht: ein SpotLight für das
-  nächste Fahrzeug mit Licht an. Haken in `game/game.js`: `groundZ`, Gehgrenzen (`walkBounds`), Kollision des Gehenden, Kamera, Schattenkasten,
-  Ortsnamen; in `game/play.js`: Sitzart `drive`; in `npc/npc.js`: Huberts Traktor wartet, wenn ein Fahrzeug im Weg steht.
+  Nachbarn und Günters Traktor. Kamera: `VEH.applyCam` (aus `applyCam`, `game/camera.js`), Nachführen in Spielzeit (`camTick`). Licht: ein SpotLight für das
+  nächste Fahrzeug mit Licht an. Haken in `game/walkable.js` (`groundZ`, Gehgrenzen `walkBounds`, Kollision des Gehenden), `game/camera.js` (Kamera) und `game/game.js`
+  (Schattenkasten, Ortsnamen); in `game/play.js`: Sitzart `drive`; in `npc/npc.js`: Günters Traktor wartet, wenn ein Fahrzeug im Weg steht.
   Karte beim Fahren (`vehicles/minimap.js`): 2D-Canvas `#vmap`, Fahrtrichtung oben, Wege nach Art, Route zur Klinge, 10 Hz nur beim Fahren.
 - **Detailtexturen der Böden** (`core/detail.js`, V16b1): `DETAIL.tex` ist *ein* `DataArrayTexture` mit allen Kachel-Detailtexturen
   (Ebenen `lawn`, `lawn2`, `gravel`, `forestfloor`, `asphalt`, `needles`, `mossfloor`; 1024 px auf „hoch“, sonst 512, mit Mipmaps), Index über

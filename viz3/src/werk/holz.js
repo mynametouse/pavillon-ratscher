@@ -14,7 +14,7 @@ import { KERN } from '../core/kern.js';
 import { LOAD, markDirty } from '../core/assets.js';
 import { BUILD, COL } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
-import { P, rebuildGrids } from '../game/game.js';
+import { P, rebuildGrids } from '../game/walkable.js';
 import { news } from '../audio/audio.js';
 import { PLAY, SFX } from '../game/play.js';
 import { FOREST } from '../world/forest.js';

@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import { LATE } from '../core/late.js';
 import { SAVE } from '../core/save.js';
 import { $, BASE, stage } from '../core/head.js';
-import { DOOR, G, opt, P } from '../game/game.js';
+import { DOOR, G, P } from '../game/walkable.js';
+import { opt } from '../game/player.js';
 Object.assign(LATE, { toast }); // functions for modules that load earlier: game/game.js
 let toastT = null;
 export function toast(msg, ms = 3600) {

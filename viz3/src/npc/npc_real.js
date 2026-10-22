@@ -3,14 +3,14 @@
 // offline onto both men (tools: chars/rt.html); standing pose = average of that cycle; Hubert keeps his own idle (an old man's stance).
 // Goats: one rigged goat with its own idle clip (head, ears, bleat), legs and grazing posed procedurally on top.
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as skelClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { BASE, cam, HQ0, OFFLINE, QS, R, scene } from '../core/head.js';
 import { ANISO, FIGSH, gltfDataURIs, markDirty, patchSV, toFloatAttrs, whenLoaded } from '../core/assets.js';
 import { sun, sunDir } from '../garden/env.js';
 import { RENDER } from '../render/render.js';
-import { P } from '../game/game.js';
+import { P } from '../game/walkable.js';
 import { BLOBS, GOATS, NPCS, TRACTOR } from './npc.js';
 const CHARMAN = window.CHARMAN || null;
 const REAL = { ready: false, failed: false, started: false };

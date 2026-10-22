@@ -14,7 +14,7 @@ import { ANISO, markDirty, plain, whenLoaded } from '../core/assets.js';
 import { BUILD, phase } from '../core/geo.js';
 import { WORKS } from '../garden/workshop.js';
 import { mulberry } from '../garden/grass.js';
-import { DOOR, P, toggleDoor } from '../game/game.js';
+import { DOOR, P, toggleDoor } from '../game/walkable.js';
 import { toast } from '../audio/audio.js';
 import { HELD, PLAY, SFX } from '../game/play.js';
 import { QUESTS } from '../game/quests.js';

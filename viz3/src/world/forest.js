@@ -38,7 +38,7 @@ import {
 import { DETAIL, GLCHECK } from '../core/detail.js';
 import { GEO_REAL, sunC, sunHalf } from '../garden/env.js';
 import { RENDER } from '../render/render.js';
-import { P } from '../game/game.js';
+import { P } from '../game/walkable.js';
 import { news } from '../audio/audio.js';
 import { RATSCHER } from './ratscher.js';
 import { ROADS } from './roads.js';
