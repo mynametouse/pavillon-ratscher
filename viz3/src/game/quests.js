@@ -8,7 +8,7 @@ import { LOAD, loadModel, markDirty, plain, whenLoaded } from '../core/assets.js
 import { B, BUILD, phase, PHN } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
 import { mulberry } from '../garden/grass.js';
-import { DOOR, G, P, PHASE, poseDoor, toggleDoor } from './game.js';
+import { DOOR, G, P, PHASE, poseDoor, toggleDoor } from './walkable.js';
 import { audio, toast } from '../audio/audio.js';
 import {
   bleat,

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { BUILD } from '../core/geo.js';
-import { P } from '../game/game.js';
+import { P } from '../game/walkable.js';
 import { SFX } from '../game/play.js';
 import { DN } from '../time/daynight.js';
 const WLAMP = (() => {

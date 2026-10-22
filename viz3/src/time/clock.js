@@ -8,7 +8,7 @@ import { SAVE } from '../core/save.js';
 import { $, COARSE } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { phase } from '../core/geo.js';
-import { P } from '../game/game.js';
+import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { HUD } from '../game/hud.js';
 phase(null);

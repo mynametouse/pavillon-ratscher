@@ -3,7 +3,7 @@
 // from the garden to the Untere Klinge, the garden, the other vehicle, north; below it the next destination with its distance (Klinge when
 // near the garden, else the garden). Drawn on a 2D canvas ten times a second, only while driving; nothing in the 3D scene.
 import { $ } from '../core/head.js';
-import { P } from '../game/game.js';
+import { P } from '../game/walkable.js';
 import { ROADS } from '../world/roads.js';
 import { VEH } from './vehicle.js';
 const MMAP = (() => {

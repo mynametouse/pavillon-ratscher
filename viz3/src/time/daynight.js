@@ -14,7 +14,7 @@ import { glowMat } from '../pavilion/interior.js';
 import { FIELDU, hemi, placeSun, setSunDir, sky, skyLoad, skyMat, skyU, sun, sunC } from '../garden/env.js';
 import { envLoad, giApply, GIMIX } from '../render/render.js';
 import { adaptExposure, MODES, setModeId } from '../render/modes.js';
-import { P } from '../game/game.js';
+import { P } from '../game/walkable.js';
 import { audio, toast } from '../audio/audio.js';
 import { PLAY } from '../game/play.js';
 import { LIGHTSTATE, STOVE } from '../game/home.js';

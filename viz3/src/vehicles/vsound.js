@@ -4,7 +4,7 @@
 // tractor recording (snd/, CC0) in pitch with the revs plus a knocking pulse, synthesised when the recording is missing. Tyres: rolling roar
 // after the surface (asphalt hum, gravel crunch, field rumble), squeal when they slide; wind with the speed. In the driver's view
 // everything a little muffled. Built when the engine starts, faded out and dropped when it stops.
-import { CAM3 } from '../game/game.js';
+import { CAM3 } from '../game/player.js';
 import { audio } from '../audio/audio.js';
 export const VSND = (() => {
   const E = new Map();

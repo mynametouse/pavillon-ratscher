@@ -8,7 +8,9 @@ import { markDirty } from '../core/assets.js';
 import { GEO_A, GEO_B } from './house_ladder.js';
 import { T1, T2, TLAMP } from './interior.js';
 import { giApply, svApply } from '../render/render.js';
-import { applySpots, floorAt, go, P, PHASE, resetLastPlace, setPhase, SPOTS } from '../game/game.js';
+import { floorAt, P, PHASE, setPhase } from '../game/walkable.js';
+import { applySpots, go, SPOTS } from '../game/player.js';
+import { resetLastPlace } from '../game/game.js';
 import { toast } from '../audio/audio.js';
 import { PHASES, PHASES_A, PHASES_B } from './phases.js';
 export function setVariant(v, { save = true } = {}) {

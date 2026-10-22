@@ -1,6 +1,6 @@
 // ---------------- the neighbours keep hours: from 22:00 to 6:00 Günter and Bernd are at home (they come and go when nobody looks) ----------------
 import { markDirty } from '../core/assets.js';
-import { P } from '../game/game.js';
+import { P } from '../game/walkable.js';
 import { inView } from './npc.js';
 import { CLOCK } from '../time/clock.js';
 window.TICKS.push(

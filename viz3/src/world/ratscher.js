@@ -16,7 +16,9 @@ import { STREAM } from '../garden/stream_geo.js';
 import { FAKEENV, FIELD_GLSL, FIELDU, GEO_REAL, GEOGU, S0 } from '../garden/env.js';
 import { thinCards, TREES } from '../garden/trees.js';
 import { GRADE } from '../render/render.js';
-import { applyCam, go, P, rebuildGrids } from '../game/game.js';
+import { P, rebuildGrids } from '../game/walkable.js';
+import { go } from '../game/player.js';
+import { applyCam } from '../game/camera.js';
 export const RATSCHER = (() => {
   const M = window.GEOMAN,
     S = {

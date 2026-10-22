@@ -11,7 +11,7 @@ import { placeGLB } from '../pavilion/interior.js';
 import { S0, sun, sunDir } from '../garden/env.js';
 import { gB, MATS } from '../garden/site_base.js';
 import { RENDER } from '../render/render.js';
-import { nearDoor, P, poseDoor, rebuildGrids } from '../game/game.js';
+import { nearDoor, P, poseDoor, rebuildGrids } from '../game/walkable.js';
 import { audio } from '../audio/audio.js';
 import { PHASES } from '../pavilion/phases.js';
 phase(null);

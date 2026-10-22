@@ -1,7 +1,7 @@
 // ---------------- construction phase UI ----------------
 import { LATE } from '../core/late.js';
 import { $ } from '../core/head.js';
-import { PHASE, setPhase } from '../game/game.js';
+import { PHASE, setPhase } from '../game/walkable.js';
 import { PHASES } from './phases.js';
 Object.assign(LATE, { phaseLabel }); // functions for modules that load earlier: game/game.js
 const fmtE = v => v.toLocaleString('de-DE', { maximumFractionDigits: 0 }) + ' €';

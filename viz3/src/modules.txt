@@ -33,7 +33,11 @@ garden/trees.js             #
 garden/grass.js             # 
 render/render.js            # render pipeline, quality tiers, HDRI image light, baked GI (and its day/night mixing)
 render/modes.js             # light moods day/gold/dusk, setMode (auto/night → time/daynight.js)
-game/game.js                # walking: collision, doors, player state, camera, input, frame loop
+game/walkable.js            # the walkable model: player state P, phases, walk surfaces and colliders, floor, doors, collision
+game/player.js              # third-person view state, viewpoints, place name, go, jumping and postures
+game/camera.js              # every view mode, the third-person camera kept out of walls, resize
+game/input.js               # keys, mouse, touch, joystick, click to pick, fullscreen
+game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net
 audio/audio.js              # sound engine: recordings, synthesis, ambience, voices, toast()
 pavilion/phases.js          # construction phases with materials and costs (data)
 pavilion/phaseui.js         # 

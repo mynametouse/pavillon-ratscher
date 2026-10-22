@@ -11,30 +11,11 @@ import { MAT } from '../core/mats.js';
 import { sunFollow } from '../garden/env.js';
 import { GLINFO, prepareGPU, RENDER, renderFrame, setQuality } from '../render/render.js';
 import { adaptExposure, MODES, setMode } from '../render/modes.js';
-import {
-  applyCam,
-  CAM3,
-  cam3Update,
-  DKEYS,
-  DOOR,
-  EYE,
-  floorAt,
-  frame,
-  go,
-  look,
-  nearDoor,
-  P,
-  PHASE,
-  physics,
-  placeName,
-  qualLabel,
-  resize,
-  setCollide,
-  setDoorNow,
-  setPhase,
-  setView3,
-  toggleDoor,
-} from '../game/game.js';
+import { DKEYS, DOOR, EYE, floorAt, nearDoor, P, PHASE, setDoorNow, setPhase, toggleDoor } from '../game/walkable.js';
+import { CAM3, go, placeName, setView3 } from '../game/player.js';
+import { applyCam, cam3Update, resize } from '../game/camera.js';
+import { look, qualLabel, setCollide } from '../game/input.js';
+import { frame, physics } from '../game/game.js';
 import { audio, setSound, soundLabel, toast } from '../audio/audio.js';
 import { PHASES } from '../pavilion/phases.js';
 import { setVariant } from '../pavilion/variant.js';

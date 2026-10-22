@@ -9,7 +9,7 @@ import { cam, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { RENDER } from '../render/render.js';
-import { P } from '../game/game.js';
+import { P } from '../game/walkable.js';
 import { RATSCHER } from './ratscher.js';
 import { ROADS } from './roads.js';
 import { VILLAGE } from './village.js';

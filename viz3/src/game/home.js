@@ -8,7 +8,7 @@ import { MAT } from '../core/mats.js';
 import { glowMat } from '../pavilion/interior.js';
 import { RENDER } from '../render/render.js';
 import { MODE, MODES } from '../render/modes.js';
-import { G, P, PHASE } from './game.js';
+import { G, P, PHASE } from './walkable.js';
 import { ITEMS } from '../pavilion/plan.js';
 import { PLAY, SFX } from './play.js';
 phase(null);

@@ -7,7 +7,7 @@ import { $, BASE, cam, DPR, R, stage, V, VARIANT } from '../core/head.js';
 import { DIRTY, markDirty, VEG } from '../core/assets.js';
 import { RENDER, renderFrame } from './render.js';
 import { adaptExposure } from './modes.js';
-import { EYE } from '../game/game.js';
+import { EYE } from '../game/walkable.js';
 Object.assign(LATE, { panoShow }); // functions for modules that load earlier: pavilion/variant.js
 const PANO_FACES = [
   ['px', [1, 0, 0], [0, 1, 0]],
