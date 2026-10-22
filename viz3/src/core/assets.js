@@ -6,7 +6,7 @@ const LOAD = { done: 0, total: 0, finished: false, cbs: [] };
 const LOADLOG = (() => { const L = { t0: performance.now(), steps: [], errs: [], prev: null, open: true, last: '', lastT: -1e9 };
   try { const p = JSON.parse(localStorage.getItem('pav-loadlog') || 'null'); if (p && p.open && Date.now() - p.at < 3 * 3600e3) L.prev = p; } catch (e) {}
   L.save = () => { try { localStorage.setItem('pav-loadlog', JSON.stringify({ open: L.open, at: Date.now(), t: Math.round(performance.now() - L.t0), steps: L.steps.slice(-40), errs: L.errs.slice(-6),
-    gl: window.GLINFO ? GLINFO.renderer.slice(0, 90) : '', ua: navigator.userAgent.slice(0, 140), mem: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null })); } catch (e) {} };
+    tex: window.TEXHALF ? window.TEXHALF.level : 0, gl: window.GLINFO ? GLINFO.renderer.slice(0, 90) : '', ua: navigator.userAgent.slice(0, 140), mem: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null })); } catch (e) {} };
   // a step: kept when it is a new kind of step (text before the numbers) or a second has passed since the last one
   L.note = (txt, force) => { const now = performance.now(), kind = String(txt).replace(/[\d\s.,%()]+/g, ' ').trim();
     if (!force && kind === L.last && now - L.lastT < 1000) return; L.last = kind; L.lastT = now; L.steps.push([Math.round(now - L.t0), String(txt).slice(0, 120)]); L.save(); };
@@ -48,6 +48,26 @@ function whenLoaded(f) { if (LOAD.finished) f(); else LOAD.cbs.push(f); }
 // standalone single-file version: assets come from blob URLs built from the embedded data
 if (window.EMBED_URL) { const mod = u => window.EMBED_URL[u] || u; LM.setURLModifier(mod); THREE.DefaultLoadingManager.setURLModifier(mod); }
 const TXL = new THREE.TextureLoader(LM);
+// V16b6: phones and tablets get every image from 512 px up at half its size, right when it is loaded – a quarter of the memory on the CPU and
+// the GPU (iPhone: ~880 MB of decoded images made Safari drop the page while the textures went up). Desktop unchanged. Did a load at that level
+// break off anyway (the previous load log is still open and names its level), the next attempt takes a quarter (from 256 px up: half) and keeps
+// it (pav-texlevel). ?tex=full / half / quarter to check by hand. Data images (baked light, sky visibility), 360° and gallery pictures keep their size.
+const TEXHALF = { level: 0, n: 0, mb: 0 }; window.TEXHALF = TEXHALF;
+{ const q = (location.search.match(/[?&]tex=(full|half|quarter)/) || [])[1], mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (q) TEXHALF.level = { full: 0, half: 1, quarter: 2 }[q];
+  else if (mobile) { let kept = 1; try { kept = Math.max(1, +localStorage.getItem('pav-texlevel') || 1); } catch (e) {}
+    const P = LOADLOG.prev; if (P && (P.tex || 0) >= kept) { kept = Math.min(2, (P.tex || 0) + 1); try { localStorage.setItem('pav-texlevel', String(kept)); } catch (e) {} }
+    TEXHALF.level = kept; }
+  TEXHALF.on = TEXHALF.level > 0; }
+function halfImage(im) { const w = im.naturalWidth || im.width || 0, h = im.naturalHeight || im.height || 0, m = Math.max(w, h), L = TEXHALF.level;
+  const sh = m >= 512 ? L : m >= 256 && L >= 2 ? 1 : 0; if (!sh) return im;
+  try { const c = document.createElement('canvas'); c.width = Math.max(1, w >> sh); c.height = Math.max(1, h >> sh); const x = c.getContext('2d'); if (!x) return im;
+    x.imageSmoothingQuality = 'high'; x.drawImage(im, 0, 0, c.width, c.height); if (typeof im.close === 'function') im.close();
+    TEXHALF.n++; TEXHALF.mb += (w * h - c.width * c.height) * 4 / 1e6; return c; } catch (e) { return im; } }
+if (TEXHALF.on) { const IL = THREE.ImageLoader.prototype, load0 = IL.load, keep = /\/(gi|pano|img)\/|\bsv(_b)?\.png/;
+  IL.load = function (url, onLoad, onProgress, onError) { return load0.call(this, url, onLoad && !keep.test(url) ? im => onLoad(halfImage(im)) : onLoad, onProgress, onError); };
+  LOADLOG.note('Texturen auf Mobilgerät: ' + (TEXHALF.level > 1 ? 'Viertel' : 'halbe Größe'), true);
+  whenLoaded(() => LOADLOG.note('Texturen verkleinert: ' + TEXHALF.n + ', ' + Math.round(TEXHALF.mb) + ' MB gespart', true)); }
 // The glTF files carry geometry and images as data: URIs. Strict content-security policies (the artifact viewer in the Claude app) refuse
 // to fetch() data: URIs, so every model failed there. The parser now decodes them itself: buffers with atob, images through
 // createImageBitmap from a Blob (an <img> where that is missing). The loading manager stays busy until a model is fully parsed.
@@ -64,11 +84,11 @@ function gltfDataURIs(loader) {
     parser.textureLoader = { isImageBitmapLoader: true, setCrossOrigin() { return this; }, setRequestHeader() { return this; }, setPath() { return this; },
       load(url, onLoad, onProgress, onError) {
         if (!url.startsWith('data:')) return tl.isImageBitmapLoader ? tl.load(url, onLoad, onProgress, onError) : tl.load(url, t => onLoad(t.image), onProgress, onError);
-        const viaImg = () => { const im = new Image(); im.onload = () => onLoad(im); im.onerror = onError; im.src = url; };
+        const viaImg = () => { const im = new Image(); im.onload = () => onLoad(halfImage(im)); im.onerror = onError; im.src = url; };   // V16b6: halved on phones
         let blob; try { blob = new Blob([b64bytes(url)], { type: url.slice(5, url.indexOf(';')) }); } catch (e) { viaImg(); return; }
         if (typeof createImageBitmap !== 'function') { viaImg(); return; }
         let p; try { p = createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' }); } catch (e) { viaImg(); return; }
-        p.then(onLoad, viaImg); } };
+        p.then(bm => onLoad(halfImage(bm)), viaImg); } };
     return { name: 'PAV_data_uri' }; });
   return loader; }
 const GLL = gltfDataURIs(new GLTFLoader(LM)); GLL.setMeshoptDecoder(MeshoptDecoder);   // models: meshopt-compressed geometry and WebP images inside the JSON
