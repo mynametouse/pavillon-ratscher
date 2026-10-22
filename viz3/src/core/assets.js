@@ -1,7 +1,7 @@
 // ---------------- asset loading ----------------
 const LM = new THREE.LoadingManager();
 const LOAD = { done: 0, total: 0, finished: false, cbs: [] };
-LM.onProgress = (u, d, t) => { LOAD.done = d; LOAD.total = t; const l = $('loading'); if (l && !l.hidden) l.textContent = 'Modell wird geladen … ' + Math.round(100 * d / Math.max(t, 1)) + ' %'; };
+LM.onProgress = (u, d, t) => { LOAD.done = d; LOAD.total = t; const l = $('loading'); if (l && !l.hidden && !LOAD.finished) l.textContent = 'Modell wird geladen … ' + Math.round(100 * d / Math.max(t, 1)) + ' %'; };   // V16b2: later loads do not overwrite the next steps
 LM.onLoad = () => { LOAD.finished = true; LOAD.cbs.splice(0).forEach(f => { try { f(); } catch (e) { console.error(e); } }); };
 LM.onError = u => console.warn('Datei fehlt:', u);
 function whenLoaded(f) { if (LOAD.finished) f(); else LOAD.cbs.push(f); }
