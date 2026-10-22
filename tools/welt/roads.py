@@ -532,6 +532,63 @@ def markings(pos, chains, h, area, lift=0.0):
     return groups
 
 
+def posts(pos, chains, h, area, built, spacing=50.0):
+    """delineator posts (Leitpfosten) on rural main and county roads: both sides every 50 m at the outer edge of the shoulder,
+    1.0 m high, white with a black band; none within 40 m of a building (villages) or on bridges -> {tile: arrays}"""
+    from wlib import ROOT_E0, ROOT_N0, tsize
+    s9 = tsize(CONTENT_LEVEL)
+    groups = collections.defaultdict(lambda: dict(pos=[], col=[], idx=[], n=0))
+    # a post: box 0.12 x 1.0 x 0.10 m, black band 0.2 m below the top on the road side
+    bx = np.array([[-0.06, -0.05], [0.06, -0.05], [0.06, 0.05], [-0.06, 0.05]])
+    for w, ids in chains:
+        if w['kind'] not in ('main', 'county') or w['fl'] & 3:
+            continue
+        P = pos[ids]
+        if len(P) < 3:
+            continue
+        seg = np.hypot(*np.diff(P, axis=0).T)
+        cum = np.concatenate([[0], np.cumsum(seg)])
+        if cum[-1] < spacing:
+            continue
+        t, _ = tangents(P)
+        nrm = np.stack([-t[:, 1], t[:, 0]], 1)
+        o, hw, sw = cross(w)
+        sL, sR = slopes(w, P)
+        for s0 in np.arange(spacing / 2, cum[-1], spacing):
+            x, y = np.interp(s0, cum, P[:, 0]), np.interp(s0, cum, P[:, 1])
+            if built is not None and built.query([x, y], distance_upper_bound=40.0)[0] < 40.0:
+                continue
+            if not (area[0] <= x < area[2] and area[1] <= y < area[3]):
+                continue
+            nx, ny = np.interp(s0, cum, nrm[:, 0]), np.interp(s0, cum, nrm[:, 1])
+            ln = max(np.hypot(nx, ny), 1e-9)
+            nx, ny = nx / ln, ny / ln
+            z = np.interp(s0, cum, h[ids])
+            key = (int(np.floor((x - ROOT_E0) / s9)), int(np.floor((y - ROOT_N0) / s9)))
+            g = groups[key]
+            for side in (-1, 1):
+                sl = np.interp(s0, cum, sL if side > 0 else sR)
+                off = side * (hw + sw - 0.15)
+                zb = z - sl * hw - SH_SLOPE * (sw - 0.15)
+                cx, cy = x + off * nx, y + off * ny
+                # local frame: u along the road (tangent), v across
+                tx_, ty_ = ny, -nx
+                foot = [(cx + a * tx_ + b * nx, cy + a * ty_ + b * ny) for a, b in bx]
+                for z0, z1, col in ((zb - 0.3, zb + 0.7, (0.92, 0.92, 0.9)), (zb + 0.7, zb + 0.9, (0.08, 0.08, 0.08)),
+                                    (zb + 0.9, zb + 1.0, (0.92, 0.92, 0.9))):
+                    for q in range(4):
+                        a_, b_ = foot[q], foot[(q + 1) % 4]
+                        g['pos'].append(np.array([[a_[0], a_[1], z0], [b_[0], b_[1], z0], [b_[0], b_[1], z1], [a_[0], a_[1], z1]]))
+                        g['col'].append(np.tile(col, (4, 1)))
+                        g['idx'].append(np.array([0, 1, 2, 0, 2, 3]) + g['n'])
+                        g['n'] += 4
+                g['pos'].append(np.array([[p_[0], p_[1], zb + 1.0] for p_ in foot]))
+                g['col'].append(np.tile((0.92, 0.92, 0.9), (4, 1)))
+                g['idx'].append(np.array([0, 1, 2, 0, 2, 3]) + g['n'])
+                g['n'] += 4
+    return groups
+
+
 def bridge_parts(pos, chains, h, area, lift=0.0):
     """simple bridge bodies for OSM bridges: deck slab 1.2 m deep under the carriageway and shoulders, parapets 0.9 m high on both
     sides (the terrain below stays as it is) -> {tile: arrays} like markings()"""
@@ -577,7 +634,7 @@ def bridge_parts(pos, chains, h, area, lift=0.0):
     return groups
 
 
-def write_ribbons(groups, out_dir, marks=None, bridges=None):
+def write_ribbons(groups, out_dir, marks=None, bridges=None, postg=None):
     os.makedirs(out_dir, exist_ok=True)
     files = {}
     for (tx, ty), g in groups.items():
@@ -598,6 +655,12 @@ def write_ribbons(groups, out_dir, marks=None, bridges=None):
             im = np.concatenate(mg['idx']).astype(np.uint32).reshape(-1, 3)[:, ::-1].ravel()
             meshes.append(dict(name='markings', pos=pm, idx=im, nrm=np.tile(np.array([[0, 1, 0]], np.float32), (len(pm), 1)),
                                col=np.full((len(pm), 3), 0.93, np.float32), rough=0.6))
+        pg_ = (postg or {}).get((tx, ty))
+        if pg_ and pg_['pos']:
+            Pp = np.concatenate(pg_['pos'])
+            pp = np.stack([Pp[:, 0] - Ec, Pp[:, 2] - H0, -(Pp[:, 1] - Nc)], 1).astype(np.float32)
+            ip = np.concatenate(pg_['idx']).astype(np.uint32)
+            meshes.append(dict(name='leitpfosten', pos=pp, idx=ip, nrm=flat_normals(pp, ip), col=np.concatenate(pg_['col']), rough=0.5, double=True))
         bg = (bridges or {}).get((tx, ty))
         if bg and bg['pos']:
             Pb = np.concatenate(bg['pos'])
@@ -849,7 +912,15 @@ def build(osm, dem, area, out_dir, fit=False):
     log('Gelände an Straßen angepasst:', cst)
     groups = ribbons(pos, chains, h, area)
     marks = markings(pos, chains, h, area)
-    files = write_ribbons(groups, os.path.join(out_dir, 'r'), marks, bridge_parts(pos, chains, h, area))
+    # buildings (OSM way nodes) mark the villages: no delineator posts there
+    from pyproj import Transformer
+    bn = [osm['nodes'][r][:2] for refs, tg in osm['ways'].values() if 'building' in tg for r in refs[:1] if r in osm['nodes']]
+    built = None
+    if bn:
+        tr = Transformer.from_crs('EPSG:4326', 'EPSG:25832', always_xy=True)
+        bE, bN = tr.transform(np.array(bn)[:, 0], np.array(bn)[:, 1])
+        built = cKDTree(np.stack([bE, bN], 1))
+    files = write_ribbons(groups, os.path.join(out_dir, 'r'), marks, bridge_parts(pos, chains, h, area), posts(pos, chains, h, area, built))
     # centre lines for the app (physics, later): per way kind, surface, width, flags, points (E, N, H) rounded to cm
     lines = []
     for w, ids in chains:
