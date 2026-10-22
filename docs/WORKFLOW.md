@@ -63,6 +63,7 @@ python3 viz3/test/run.py --serve gate            # Prüfpaket vor dem Veröffent
 | Skript | prüft | Dauer |
 |---|---|---|
 | smoke.py | Laden, keine Fehler | 3 min |
+| report.py | Fehlerbericht (Menü → Fehlerbericht): Inhalt, GitHub-Link, keine gespeicherten Werte, Esc schließt nur den Bericht | 2 min |
 | savefuzz.py | **Kaputte Spielstände** (Umbau Phase 0): jeder gespeicherte Schlüssel mit Unsinn belegt (kein JSON, falsche Typen, NaN, alte Namen) – die Seite startet trotzdem, `SAVE.problems` zählt, was ignoriert wurde | 6 min |
 | webkit.py | **Safari-Engine** (WebKit, iPhone-13-Profil): lädt ohne Fehler, Renderer und Ladezeit; im Prüfpaket bei GitHub als Versuch | 5 min |
 | memphone.py | **Speicher wie am iPhone** (V16b6): iPhone-13-Kontext ohne Stufen-Voreinstellung – Texturen halbiert, entpackte Bilder < 350 MB; nach einem abgebrochenen Versuch Viertel (gemerkt); Prozess-Speicher (ps). `texhalf.py`: dieselben Bilder mit `?tex=full` und `?tex=half` – halbierte Texturen sehen gleich aus (mittlere Abweichung < 8) | 4 + 5 min |

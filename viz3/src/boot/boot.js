@@ -22,6 +22,7 @@ import { perfTest } from '../render/perf.js';
 import { PLAY } from '../game/play.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { frame, physics } from '../game/game.js';
+import { REPORT } from './report.js';
 const bootStep = (name, f) => {
   try {
     f();
@@ -165,6 +166,11 @@ const sayLoading = t => {
           draw();
         };
         el.appendChild(b);
+        const rb = document.createElement('button'); // the whole report to copy or to report on GitHub (boot/report.js)
+        rb.textContent = 'Bericht';
+        rb.style.cssText = b.style.cssText + ';margin-left:6px';
+        rb.onclick = () => REPORT.show();
+        el.appendChild(rb);
       }
     };
     const iv = setInterval(() => {
