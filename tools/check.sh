@@ -1,6 +1,6 @@
 #!/bin/bash
 # Fast checks before every push (target: under a minute, no browser): build, lint with file/line, test scripts compile, format, architecture,
-# types of the interfaces (modules with // @ts-check).
+# unit tests without a browser (viz3/test/unit), types of the interfaces (modules with // @ts-check).
 #   bash tools/check.sh            exit 0 = everything that must pass passed
 # Format: report only until the one-time formatting commit sets FORMAT_STRICT=1 below (plan: Projekt-Dokument claude/pavillon-umbau.md).
 set -o pipefail
@@ -20,6 +20,7 @@ if [ "$n" = 0 ]; then echo "all modules formatted"
 elif [ "$FORMAT_STRICT" = 1 ]; then echo "FAIL $n modules not formatted – run: (cd viz3 && ../tools/check/node_modules/.bin/prettier --write 'src/**/*.js')"; FAIL=1
 else echo "$n modules not yet formatted (report only until the formatting commit)"; fi
 step deps;   node tools/check/deps.mjs || FAIL=1
+step unit;   if out=$(node --test "viz3/test/unit/*.test.mjs" 2>&1); then echo "$(echo "$out" | grep -c '^ok ') unit tests passed (viz3/test/unit, no browser)"; else echo "FAIL"; echo "$out" | grep -B2 -A12 '^not ok' | head -40; FAIL=1; fi
 step types;  if out=$(tools/check/node_modules/.bin/tsc -p tools/check/tsconfig.json 2>&1); then echo "types checked in $(grep -l '^// @ts-check' viz3/src/*/*.js | wc -l) modules with // @ts-check (tools/check/tsconfig.json)"; else echo "FAIL"; echo "$out" | head -20; FAIL=1; fi
 
 echo "check: $([ $FAIL = 0 ] && echo ok || echo FAILED) in $(( $(date +%s) - T0 )) s"
