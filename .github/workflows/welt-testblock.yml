@@ -55,6 +55,12 @@ jobs:
         run: |
           set -o pipefail
           python -I -u tools/welt/build.py --plan "$PLAN" --raw ~/welt-raw --out site/welt-test 2>&1 | tee build.log
+      - name: Straßenmethode auf echtem 1-m-Gelände (DGM1 Bayern bei Rödental, solange Thüringen fehlt)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          WELT_NO_OVERPASS=1 python -I -u tools/welt/demo_dgm1.py ~/welt-raw site/welt-test/diag/bayern 642 5574 2>&1 | grep -v "OSM API chunk" | tee demo_dgm1.log
+          { echo "### Straßenmethode auf DGM1 Bayern (642/5574, 2 × 2 km, B 4)"; echo '```'; grep -E "==|^   [a-z]|Achsen" demo_dgm1.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Rohdaten in den Cache (auch wenn später etwas scheitert)
         if: always()
         uses: actions/cache/save@v4
@@ -98,6 +104,7 @@ jobs:
           path: |
             check/
             build.log
+            demo_dgm1.log
           if-no-files-found: ignore
       - name: Kacheln für die Veröffentlichung
         uses: actions/upload-artifact@v4

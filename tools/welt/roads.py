@@ -330,7 +330,7 @@ def print_metrics(res, label):
         if 'ral' in r:
             extra = (f"  RAL: über {r['ral']['max_steigung']} % {100 * r['anteil_ueber_steigung']:.0f} %, Kuppe < {r['ral']['min_kuppe']} m "
                      f"{100 * r['anteil_kuppe_zu_eng']:.0f} %, Wanne < {r['ral']['min_wanne']} m {100 * r['anteil_wanne_zu_eng']:.0f} % der Länge")
-        t = '' if 'test' not in r else ('  ok  ' if r['test'] else '  ÜBER ')
+        t = '      ' if 'test' not in r else ('  ok  ' if r['test'] else '  ÜBER ')
         print(f"   {k:9s} {r['km']:6.1f} km{t}Wellen/km {r['wellen_je_km_vorher']:6.1f} -> {r['wellen_je_km']:5.1f}   "
               f"Steigungswechsel/10 m {r['steigungswechsel_10m_vorher']:5.2f} -> {r['steigungswechsel_10m']:5.2f} %   "
               f"max {r['max_steigung_vorher']:5.1f} -> {r['max_steigung']:5.1f} %{extra}", flush=True)
