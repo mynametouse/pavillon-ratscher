@@ -1,0 +1,68 @@
+# Prüfen bei jedem Push (Plan: Projektdokument claude/pavillon-umbau.md, Phase 0):
+#   1. Schnellprüfung ohne Browser – bash tools/check.sh (Build, Lint mit Datei/Zeile, Testskripte, Format-Bericht, Abhängigkeiten)
+#   2. Kurztest im Browser – python3 viz3/test/run.py --serve smoke (Chromium mit Software-Grafik wie in den Chats)
+# Lokal dasselbe mit denselben Befehlen. Reine Doku-Commits (docs/, *.md, z. B. PARALLEL.md) lösen nichts aus.
+name: Prüfen
+
+on:
+  push:
+    branches: [src, 'kern/**', 'feat/**', 'fix/**', 'perf/**']
+    paths-ignore: ['docs/**', '**.md']
+  pull_request:
+    branches: [src]
+  workflow_dispatch:
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Schnellprüfung
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build, Lint, Testskripte, Format, Abhängigkeiten
+        run: bash tools/check.sh
+
+  smoke:
+    name: Kurztest im Browser
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Website als Asset-Basis (Branch gh-pages)
+        run: |
+          git clone -q --depth 1 --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          mkdir -p viz3/dist
+          (cd "$RUNNER_TEMP/site" && tar --exclude=.git -cf - .) | (cd viz3/dist && tar -xf -)
+      - name: Werkzeuge
+        run: |
+          npm ci --prefix viz3 --no-audit --no-fund
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Bauen wie veröffentlicht
+        run: python viz3/build.py --fast --min
+      - name: Kurztest
+        run: python viz3/test/run.py --serve smoke
+      - name: Testausgabe aufheben
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testausgabe
+          path: out/run/
+          if-no-files-found: ignore
