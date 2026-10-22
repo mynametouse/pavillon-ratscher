@@ -1,0 +1,36 @@
+{
+  "//": "Type check of the interfaces (refactor phase 1): files with // @ts-check are checked, the rest of the app is only read for types. tools/check.sh runs it.",
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "lib": [
+      "es2022",
+      "dom",
+      "dom.iterable"
+    ],
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "three": [
+        "node_modules/@types/three"
+      ],
+      "three/examples/jsm/*": [
+        "node_modules/@types/three/examples/jsm/*"
+      ]
+    }
+  },
+  "include": [
+    "globals.d.ts",
+    "../../viz3/src/**/*.js"
+  ],
+  "exclude": [
+    "../../viz3/src/_main.js",
+    "../../viz3/src/eztree/**"
+  ]
+}

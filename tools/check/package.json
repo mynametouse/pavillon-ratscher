@@ -4,10 +4,12 @@
   "description": "Fast checks for the Pavillon model (tools/check.sh): format, lint, architecture report. Not part of the app bundle.",
   "type": "module",
   "devDependencies": {
+    "@types/three": "0.169.0",
     "acorn": "^8.14.0",
     "eslint": "^9.39.0",
     "eslint-scope": "^8.4.0",
     "globals": "^15.15.0",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "typescript": "5.9.3"
   }
 }
