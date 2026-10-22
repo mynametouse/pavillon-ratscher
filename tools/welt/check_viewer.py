@@ -37,6 +37,19 @@ def check(name, cond, info=''):
     ok = ok and bool(cond)
 
 
+def shot(page, name):
+    """screenshot; one slow software-rendered frame must not end the check: 2 min, once more, else a failed check"""
+    for k in range(2):
+        try:
+            page.screenshot(path=os.path.join(a.out, name), timeout=120000)
+            return True
+        except Exception as e:
+            err = repr(e)[:200]
+            print(f'Bildschirmfoto {name}: Versuch {k + 1} gescheitert: {err}', flush=True)
+    check('bildschirmfoto_' + name.split('.')[0], False, err)
+    return False
+
+
 def wait_idle(pg, limit):
     t0 = time.time()
     calm = 0
@@ -62,7 +75,7 @@ with sync_playwright() as p:
         pg.wait_for_function('window.WELT && window.WELT.ready === true', timeout=120000)
     except Exception as e:   # the page did not start: keep what can be seen
         check('start', False, f'{e!r}'[:300] + f" console: {res['console_errors'][:3]} page: {res['page_errors'][:3]}")
-        pg.screenshot(path=os.path.join(a.out, '0_start.png'))
+        shot(pg, '0_start.png')
         json.dump(res, open(os.path.join(a.out, 'check.json'), 'w'), indent=1, ensure_ascii=False)
         sys.exit(1)
     check('start', True, f'{time.time() - t0:.1f} s')
@@ -70,7 +83,7 @@ with sync_playwright() as p:
     st = pg.evaluate('WELT.stats()')
     check('kacheln_geladen', st['tilesReady'] >= 20 and t_idle is not None,
           f"{st['tilesReady']} Kacheln, sichtbar {st['drawn']}, bereit nach {t_idle and round(t_idle)} s")
-    pg.screenshot(path=os.path.join(a.out, '1_ueberblick.png'))
+    shot(pg, '1_ueberblick.png')
     res['overview'] = st
     # Ratscher from close by: the finest level, roads and buildings
     pg.evaluate("WELT.place('dorf')")
@@ -80,7 +93,7 @@ with sync_playwright() as p:
     pg.evaluate("WELT.place('dorf')")
     wait_idle(pg, a.wait)
     st2 = pg.evaluate('WELT.stats()')
-    pg.screenshot(path=os.path.join(a.out, '2_ratscher.png'))
+    shot(pg, '2_ratscher.png')
     check('strassen_gebaeude', st2['contentLoaded'] >= 2, f"{st2['contentLoaded']} Inhalts-Kacheln (Straßen/Gebäude)")
     res['village'] = st2
     routes = pg.evaluate('WELT.routes()')
@@ -92,7 +105,7 @@ with sync_playwright() as p:
         time.sleep(4)
         wait_idle(pg, 90)
         time.sleep(2)
-        pg.screenshot(path=os.path.join(a.out, '3_fahren.png'))
+        shot(pg, '3_fahren.png')
         res['drive'] = pg.evaluate('WELT.stats()')
     fin = pg.evaluate('WELT.stats()')
     res['final'] = fin
@@ -124,7 +137,7 @@ with sync_playwright() as p:
         time.sleep(2)
         wait_idle(mp, a.wait)
         ms = mp.evaluate('WELT.stats()')
-        mp.screenshot(path=os.path.join(a.out, '4_iphone.png'))
+        shot(mp, '4_iphone.png')
         res['iphone'] = {'tiles': ms['tilesReady'], 'mb_loaded': round(ms['bytes'] / 1e6, 1), 'texture_mb': round(ms['texBytes'] / 1e6),
                          'triangles': ms['renderer']['triangles'], 'calls': ms['renderer']['calls']}
         check('iphone_budget', ms['texBytes'] / 1e6 <= 300, f"Texturen {ms['texBytes'] / 1e6:.0f} MB (Budget 300), {ms['tilesReady']} Kacheln, "
