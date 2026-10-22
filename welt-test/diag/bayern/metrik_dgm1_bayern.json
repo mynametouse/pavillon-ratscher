@@ -1,0 +1,284 @@
+{
+ "area_utm": [
+  642050.0,
+  5574050.0,
+  643950.0,
+  5575950.0
+ ],
+ "metric_osm_axis": {
+  "track": {
+   "km": 18.27,
+   "wellen_je_km_vorher": 10.7,
+   "wellen_je_km": 0.8,
+   "steigungswechsel_10m_vorher": 1.37,
+   "steigungswechsel_10m": 0.53,
+   "max_steigung_vorher": 54.5,
+   "max_steigung": 24.0,
+   "grenzwerte": {
+    "wellen_je_km": 6,
+    "steigungswechsel_10m": 1.5
+   },
+   "test": true
+  },
+  "path": {
+   "km": 4.25,
+   "wellen_je_km_vorher": 28.0,
+   "wellen_je_km": 3.3,
+   "steigungswechsel_10m_vorher": 1.93,
+   "steigungswechsel_10m": 0.82,
+   "max_steigung_vorher": 30.3,
+   "max_steigung": 22.1
+  },
+  "lane": {
+   "km": 4.11,
+   "wellen_je_km_vorher": 5.1,
+   "wellen_je_km": 0.5,
+   "steigungswechsel_10m_vorher": 0.82,
+   "steigungswechsel_10m": 0.34,
+   "max_steigung_vorher": 16.9,
+   "max_steigung": 12.4,
+   "grenzwerte": {
+    "wellen_je_km": 4,
+    "steigungswechsel_10m": 1.0
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 8.0,
+    "min_kuppe": 3000,
+    "min_wanne": 2000
+   },
+   "anteil_ueber_steigung": 0.053,
+   "anteil_kuppe_zu_eng": 0.0,
+   "anteil_wanne_zu_eng": 0.0
+  },
+  "street": {
+   "km": 3.85,
+   "wellen_je_km_vorher": 3.6,
+   "wellen_je_km": 0.3,
+   "steigungswechsel_10m_vorher": 0.78,
+   "steigungswechsel_10m": 0.29,
+   "max_steigung_vorher": 18.3,
+   "max_steigung": 16.2,
+   "grenzwerte": {
+    "wellen_je_km": 4,
+    "steigungswechsel_10m": 1.0
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 8.0,
+    "min_kuppe": 3000,
+    "min_wanne": 2000
+   },
+   "anteil_ueber_steigung": 0.331,
+   "anteil_kuppe_zu_eng": 0.0,
+   "anteil_wanne_zu_eng": 0.0
+  },
+  "service": {
+   "km": 3.0,
+   "wellen_je_km_vorher": 8.7,
+   "wellen_je_km": 1.7,
+   "steigungswechsel_10m_vorher": 1.31,
+   "steigungswechsel_10m": 0.54,
+   "max_steigung_vorher": 29.3,
+   "max_steigung": 18.0,
+   "grenzwerte": {
+    "wellen_je_km": 5,
+    "steigungswechsel_10m": 1.2
+   },
+   "test": true
+  },
+  "main": {
+   "km": 1.01,
+   "wellen_je_km_vorher": 0.0,
+   "wellen_je_km": 0.0,
+   "steigungswechsel_10m_vorher": 0.53,
+   "steigungswechsel_10m": 0.03,
+   "max_steigung_vorher": 49.3,
+   "max_steigung": 3.3,
+   "grenzwerte": {
+    "wellen_je_km": 2,
+    "steigungswechsel_10m": 0.5
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 5.5,
+    "min_kuppe": 6000,
+    "min_wanne": 3500
+   },
+   "anteil_ueber_steigung": 0.0,
+   "anteil_kuppe_zu_eng": 0.0,
+   "anteil_wanne_zu_eng": 0.0
+  },
+  "county": {
+   "km": 0.93,
+   "wellen_je_km_vorher": 6.5,
+   "wellen_je_km": 0.0,
+   "steigungswechsel_10m_vorher": 0.46,
+   "steigungswechsel_10m": 0.07,
+   "max_steigung_vorher": 14.4,
+   "max_steigung": 6.7,
+   "grenzwerte": {
+    "wellen_je_km": 3,
+    "steigungswechsel_10m": 0.7
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 6.5,
+    "min_kuppe": 5000,
+    "min_wanne": 3000
+   },
+   "anteil_ueber_steigung": 0.076,
+   "anteil_kuppe_zu_eng": 0.0,
+   "anteil_wanne_zu_eng": 0.0
+  },
+  "foot": {
+   "km": 0.81,
+   "wellen_je_km_vorher": 12.3,
+   "wellen_je_km": 1.2,
+   "steigungswechsel_10m_vorher": 0.98,
+   "steigungswechsel_10m": 0.54,
+   "max_steigung_vorher": 13.7,
+   "max_steigung": 11.8
+  }
+ },
+ "metric_fitted_axis": {
+  "track": {
+   "km": 18.28,
+   "wellen_je_km_vorher": 10.2,
+   "wellen_je_km": 0.9,
+   "steigungswechsel_10m_vorher": 1.36,
+   "steigungswechsel_10m": 0.53,
+   "max_steigung_vorher": 54.5,
+   "max_steigung": 24.0,
+   "grenzwerte": {
+    "wellen_je_km": 6,
+    "steigungswechsel_10m": 1.5
+   },
+   "test": true
+  },
+  "path": {
+   "km": 4.25,
+   "wellen_je_km_vorher": 28.0,
+   "wellen_je_km": 3.3,
+   "steigungswechsel_10m_vorher": 1.93,
+   "steigungswechsel_10m": 0.82,
+   "max_steigung_vorher": 30.3,
+   "max_steigung": 22.1
+  },
+  "lane": {
+   "km": 4.11,
+   "wellen_je_km_vorher": 5.3,
+   "wellen_je_km": 0.5,
+   "steigungswechsel_10m_vorher": 0.87,
+   "steigungswechsel_10m": 0.34,
+   "max_steigung_vorher": 22.2,
+   "max_steigung": 12.5,
+   "grenzwerte": {
+    "wellen_je_km": 4,
+    "steigungswechsel_10m": 1.0
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 8.0,
+    "min_kuppe": 3000,
+    "min_wanne": 2000
+   },
+   "anteil_ueber_steigung": 0.053,
+   "anteil_kuppe_zu_eng": 0.0,
+   "anteil_wanne_zu_eng": 0.0
+  },
+  "street": {
+   "km": 3.85,
+   "wellen_je_km_vorher": 3.6,
+   "wellen_je_km": 0.3,
+   "steigungswechsel_10m_vorher": 0.79,
+   "steigungswechsel_10m": 0.3,
+   "max_steigung_vorher": 18.3,
+   "max_steigung": 16.2,
+   "grenzwerte": {
+    "wellen_je_km": 4,
+    "steigungswechsel_10m": 1.0
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 8.0,
+    "min_kuppe": 3000,
+    "min_wanne": 2000
+   },
+   "anteil_ueber_steigung": 0.331,
+   "anteil_kuppe_zu_eng": 0.0,
+   "anteil_wanne_zu_eng": 0.0
+  },
+  "service": {
+   "km": 3.0,
+   "wellen_je_km_vorher": 8.7,
+   "wellen_je_km": 1.7,
+   "steigungswechsel_10m_vorher": 1.28,
+   "steigungswechsel_10m": 0.54,
+   "max_steigung_vorher": 29.3,
+   "max_steigung": 18.0,
+   "grenzwerte": {
+    "wellen_je_km": 5,
+    "steigungswechsel_10m": 1.2
+   },
+   "test": true
+  },
+  "main": {
+   "km": 1.01,
+   "wellen_je_km_vorher": 0.0,
+   "wellen_je_km": 0.0,
+   "steigungswechsel_10m_vorher": 0.53,
+   "steigungswechsel_10m": 0.03,
+   "max_steigung_vorher": 49.3,
+   "max_steigung": 3.3,
+   "grenzwerte": {
+    "wellen_je_km": 2,
+    "steigungswechsel_10m": 0.5
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 5.5,
+    "min_kuppe": 6000,
+    "min_wanne": 3500
+   },
+   "anteil_ueber_steigung": 0.0,
+   "anteil_kuppe_zu_eng": 0.0,
+   "anteil_wanne_zu_eng": 0.0
+  },
+  "county": {
+   "km": 0.93,
+   "wellen_je_km_vorher": 6.5,
+   "wellen_je_km": 0.0,
+   "steigungswechsel_10m_vorher": 0.45,
+   "steigungswechsel_10m": 0.07,
+   "max_steigung_vorher": 14.4,
+   "max_steigung": 6.7,
+   "grenzwerte": {
+    "wellen_je_km": 3,
+    "steigungswechsel_10m": 0.7
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 6.5,
+    "min_kuppe": 5000,
+    "min_wanne": 3000
+   },
+   "anteil_ueber_steigung": 0.076,
+   "anteil_kuppe_zu_eng": 0.0,
+   "anteil_wanne_zu_eng": 0.0
+  },
+  "foot": {
+   "km": 0.81,
+   "wellen_je_km_vorher": 12.3,
+   "wellen_je_km": 1.2,
+   "steigungswechsel_10m_vorher": 0.98,
+   "steigungswechsel_10m": 0.54,
+   "max_steigung_vorher": 13.7,
+   "max_steigung": 11.8
+  }
+ },
+ "axis_shift_m": {
+  "mean": 0.18,
+  "p95": 1.0
+ }
+}

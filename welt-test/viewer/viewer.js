@@ -90,8 +90,11 @@ void main() {
   int q = (vUv.x >= 0.5 ? 1 : 0) + (vUv.y >= 0.5 ? 2 : 0);
   if (((uMask >> q) & 1) != 0) discard;
   vec3 c = texture2D(map, vUv).rgb;
+  vec3 n = normalize(vN);
+  // cut and fill slopes beside the roads (1:1.5) stretch the photo: there a grassy embankment colour takes over
+  c = mix(c, vec3(0.36, 0.40, 0.25), 0.7 * smoothstep(0.93, 0.80, n.y));
   // relief shading relative to flat ground (the photo already has its own light): 1.0 on the flat, brighter towards the sun
-  float l = 1.0 + 0.6 * (dot(normalize(vN), uSun) - uSun.y);
+  float l = 1.0 + 0.6 * (dot(n, uSun) - uSun.y);
   c *= clamp(l, 0.55, 1.2);
   float f = 1.0 - exp(-pow(vDist * uFogD, 2.0));
   gl_FragColor = vec4(mix(c, uFog, f), 1.0);
@@ -138,6 +141,8 @@ function contentMaterial(kind) {
 const MAT = { roads: contentMaterial('roads'), buildings: contentMaterial('buildings'), marks: contentMaterial('roads') };
 MAT.marks.polygonOffsetFactor = -4;
 MAT.marks.polygonOffsetUnits = -8;
+MAT.bridge = contentMaterial('buildings');
+MAT.bridge.side = THREE.DoubleSide;
 // trees: unit shapes scaled per instance (cone for conifers, rounded crown for broadleaves), colour per instance
 const TREE_GEO = [new THREE.ConeGeometry(1, 1, 6, 1, true).translate(0, 0.5, 0), new THREE.IcosahedronGeometry(1, 0).translate(0, 1, 0)];
 MAT.trees = (() => {
@@ -499,7 +504,7 @@ function updateContent() {
               g => {
                 g.scene.traverse(o => {
                   if (o.isMesh) {
-                    o.material = kind === 'roads' && /mark/.test(o.name) ? MAT.marks : MAT[kind];
+                    o.material = kind === 'roads' && /mark/.test(o.name) ? MAT.marks : kind === 'roads' && /bruecke/.test(o.name) ? MAT.bridge : MAT[kind];
                     o.frustumCulled = false;
                   }
                 });
@@ -576,6 +581,7 @@ let ROUTES = [];
 function startRoute(i) {
   const r = ROUTES[+i || 0];
   if (!r) return;
+  $('prof').href = BASE + `diag/profil_${+i || 0}.png`;
   drive.route = r;
   drive.s = 0;
   drive.paused = false;
@@ -659,7 +665,7 @@ function hud() {
 // ---------------- place names (names.json) as HTML labels ----------------
 let NAMES = [];
 const labRoot = document.createElement('div');
-labRoot.style.cssText = 'position:fixed;inset:0;pointer-events:none;overflow:hidden';
+labRoot.style.cssText = 'position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0';
 document.body.appendChild(labRoot);
 const RANGE = { town: 15000, village: 7000, suburb: 5000, hamlet: 3500, isolated_dwelling: 1500, locality: 2000, peak: 6000 };
 const v3 = new THREE.Vector3();
@@ -732,6 +738,8 @@ async function start() {
   camera.position.set(g0.x - 900, 900, g0.z + 1700);
   orbit.update();
   if (Q.get('mode') === 'drive') setMode('drive');
+  // ?ort=garten|dorf|talsperre|schleusingen|ueberblick: jump there once the first tiles stand (the ground height comes from them)
+  if (Q.get('ort')) setTimeout(() => place(Q.get('ort')), 2500);
   requestAnimationFrame(loop);
 }
 let last = performance.now();
