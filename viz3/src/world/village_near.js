@@ -92,8 +92,9 @@ const VNEAR = (() => {
   function tick(dt) { acc += dt; if (acc < 0.35) return; acc = 0; if (!S.on) return;
     const n = window.VILLAGE && VILLAGE.night ? VILLAGE.night() : 0, nl = n > 0.1 ? Math.min(1, (n - 0.1) / 0.3) : 0; if (Math.abs(nl - U.uNightL.value) > 0.01) { U.uNightL.value = nl; markDirty(); }
     const p = cam.position, x = p.x, y = -p.z, top = P.mode === 'top'; let todo = null, best = 1e9;
+    const lite = RENDER.tier === 'schnell', R1 = lite ? 45 : S.R1, R2 = lite ? 110 : S.R2;   // V16e1: the lightest tier (software graphics) keeps fewer cells
     for (const c of S.cells.values()) { const d = Math.hypot(c.cx - x, c.cy - y) - S.CS * 0.7;
-      if (c.ready && (d > S.R2 || top)) dropCell(c); else if (!c.ready && d < S.R1 && !top && d < best) { best = d; todo = c; } }
+      if (c.ready && (d > R2 || top)) dropCell(c); else if (!c.ready && d < R1 && !top && d < best) { best = d; todo = c; } }
     if (todo) buildCell(todo); }
   S.dispose = () => { for (const c of S.cells.values()) if (c.ready) dropCell(c); S.cells.clear(); const i = (window.TICKS || []).indexOf(tick); if (i >= 0) TICKS.splice(i, 1); S.on = false; };
   S.state = () => ({ cells: S.cells.size, ready: [...S.cells.values()].filter(c => c.ready).length, built: S.built, dropped: S.dropped });
