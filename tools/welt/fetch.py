@@ -197,9 +197,11 @@ def fetch_osm(raw, ll):
     os.makedirs(os.path.dirname(p), exist_ok=True)
     q = QUERY.format(s=s, w=w, n=n, e=e)
     data = None
-    for url in ([] if os.environ.get('WELT_NO_OVERPASS') else OVERPASS):
+    # Overpass first (one try per server, 150 s), then the OSM API in chunks (reliable for test blocks; for the 150 km world:
+    # Geofabrik extracts in Actions)
+    for url in ([] if os.environ.get('WELT_NO_OVERPASS') else OVERPASS[:3]):
         try:
-            st, b, ct = http_get(url, tries=2, timeout=300, data={'data': q})
+            st, b, ct = http_get(url, tries=1, timeout=150, data={'data': q})
             if st == 200 and b[:1] == b'{':
                 j = json.loads(b)
                 if j.get('remark') and 'error' in j['remark'].lower():
@@ -235,31 +237,39 @@ def osm_from_overpass(j):
 
 
 def osm_from_api(ll, step=0.02):
-    """fallback: OSM API 0.6 map calls in chunks (each ~1.4 x 2.2 km, below the 50 000 node limit)"""
+    """fallback: OSM API 0.6 map calls in chunks (~1.4 x 2.2 km; a chunk over the 50 000 node limit is split in four)"""
     import xml.etree.ElementTree as ET
     w, s, e, n = ll
     nodes, ways, rels = {}, {}, {}
+
+    def chunk(x0, y0, x1, y1, depth=0):
+        bb = f'{x0:.5f},{y0:.5f},{x1:.5f},{y1:.5f}'
+        st, b, ct = http_get(f'https://api.openstreetmap.org/api/0.6/map?bbox={bb}', timeout=300)
+        if st == 400 and depth < 3:
+            xm, ym = (x0 + x1) / 2, (y0 + y1) / 2
+            for q in ((x0, y0, xm, ym), (xm, y0, x1, ym), (x0, ym, xm, y1), (xm, ym, x1, y1)):
+                chunk(*q, depth=depth + 1)
+            return
+        if st != 200:
+            raise RuntimeError(f'OSM API {bb}: HTTP {st} {b[:200]}')
+        root = ET.fromstring(b)
+        for el in root.iter('node'):
+            tags = {t.get('k'): t.get('v') for t in el.findall('tag')}
+            nodes[el.get('id')] = [float(el.get('lon')), float(el.get('lat'))] + ([tags] if tags else [])
+        for el in root.iter('way'):
+            ways[el.get('id')] = [[nd.get('ref') for nd in el.findall('nd')], {t.get('k'): t.get('v') for t in el.findall('tag')}]
+        for el in root.iter('relation'):
+            rels[el.get('id')] = [[(m.get('type'), m.get('ref'), m.get('role')) for m in el.findall('member')],
+                                  {t.get('k'): t.get('v') for t in el.findall('tag')}]
+        log('OSM API chunk', bb, len(b), 'bytes')
+        time.sleep(1.0)
+
     lon = w
     while lon < e - 1e-9:
         lat = s
         while lat < n - 1e-9:
-            bb = f'{lon:.5f},{lat:.5f},{min(lon + step * 1.5, e):.5f},{min(lat + step, n):.5f}'
-            st, b, ct = http_get(f'https://api.openstreetmap.org/api/0.6/map?bbox={bb}', timeout=300)
-            if st != 200:
-                raise RuntimeError(f'OSM API {bb}: HTTP {st} {b[:200]}')
-            root = ET.fromstring(b)
-            for el in root.iter('node'):
-                tags = {t.get('k'): t.get('v') for t in el.findall('tag')}
-                nodes[el.get('id')] = [float(el.get('lon')), float(el.get('lat'))] + ([tags] if tags else [])
-            for el in root.iter('way'):
-                ways[el.get('id')] = [[nd.get('ref') for nd in el.findall('nd')], {t.get('k'): t.get('v') for t in el.findall('tag')}]
-            for el in root.iter('relation'):
-                rels[el.get('id')] = [[(m.get('type'), m.get('ref'), m.get('role')) for m in el.findall('member')],
-                                      {t.get('k'): t.get('v') for t in el.findall('tag')}]
-            log('OSM API chunk', bb, len(b), 'bytes')
-            time.sleep(1.5)
+            chunk(lon, lat, min(lon + step * 1.5, e), min(lat + step, n))
             lat += step
         lon += step * 1.5
-    # the map call only returns nodes inside the box: ways crossing chunk borders are complete because every chunk returns all
-    # nodes of its ways ("map" includes them), relations may miss members outside the whole area (fine for a test block)
+    # every chunk returns all nodes of its ways, so ways crossing chunk borders are complete; relations may miss members outside
     return {'nodes': nodes, 'ways': ways, 'rels': rels}
