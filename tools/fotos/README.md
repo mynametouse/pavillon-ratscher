@@ -42,7 +42,7 @@ Ein Foto einem Ort im Modell zuordnen: lat/lon → UTM 32N (ETRS89) → Modellko
 Modell an dieselbe Stelle setzen und das Foto daneben vergleichen.
 
 ## Quellen und Lizenzen
-- **Panoramax** (https://panoramax.xyz, offene Straßenfotos, Gesichter und Kennzeichen verpixelt): CC BY-SA 4.0. Fast alles aus einer Fahrt von
+- **Panoramax** (https://panoramax.xyz, offene Straßenfotos, Gesichter und Kennzeichen verpixelt): CC BY-SA 4.0. Fast alles aus zwei Fahrten von
   „R_A“ am 3.10.2025 (Kamera Garmin VIRB hinter der Frontscheibe, 100° Bildwinkel, ein Bild alle 10–22 m, zusammen knapp 20 km Straße) – zeigt die
   Straßen so, wie man sie fährt; Suhl von „sixsixfive“
   (12/2025). Namensnennung: „Foto: R_A, CC BY-SA 4.0, via Panoramax“.
