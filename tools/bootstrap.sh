@@ -8,7 +8,9 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd); SITE=${PAV_SITE:-$HOME/pavillon-ratscher
 URL=$(git -C "$ROOT" remote get-url origin)
 if [ ! -d "$SITE/.git" ]; then echo "site → $SITE"; git clone -q --depth 1 --branch gh-pages --single-branch "$URL" "$SITE"; git -C "$SITE" checkout -q -B main; else git -C "$SITE" fetch -q --depth 1 origin gh-pages && git -C "$SITE" checkout -q -B main origin/gh-pages; fi
 mkdir -p "$ROOT/viz3/dist"
-( cd "$SITE" && tar --exclude=.git --exclude=README.md --exclude=.nojekyll -cf - . ) | ( cd "$ROOT/viz3/dist" && tar -xf - )
+# the preview (vorschau/) is built from src and may carry assets the live site does not have yet - use it when present
+BASE="$SITE"; [ -f "$SITE/vorschau/index.html" ] && BASE="$SITE/vorschau"
+( cd "$BASE" && tar --exclude=.git --exclude=README.md --exclude=.nojekyll --exclude=./vorschau -cf - . ) | ( cd "$ROOT/viz3/dist" && tar -xf - )
 # the site's index.html is the full page; dist/pavillon-ratscher.html (artifact) and dist/index.html come from the build below
 rm -rf "$ROOT/viz3/dist_pub"; cp -a "$ROOT/viz3/dist" "$ROOT/viz3/dist_pub"
 ( cd "$ROOT/viz3" && npm ci --no-audit --no-fund --silent )
