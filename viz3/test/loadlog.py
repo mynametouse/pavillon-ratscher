@@ -24,7 +24,9 @@ with lib.browser() as b:
     url = f'http://localhost:{port}/index.html'
     # 1) an attempt that is cut off while the scene is built or the GPU is prepared (like a crash): leave the page
     s1 = run(pg, url, stop=lambda d: 'aufgebaut' in d['t'] or 'vorbereitet' in d['t'])
-    print('first attempt, cut at', s1[-1]); pg.goto('about:blank'); time.sleep(1)
+    # like a visitor who drove: saved positions of all vehicles (since V16b1 a saved car position stopped the whole start – V16b4)
+    sv = pg.evaluate("(() => { const o = { lights: 'auto' }; for (const v of (window.VEH && VEH.list) || []) o[v.id] = [+v.st.x.toFixed(2), +v.st.y.toFixed(2), +v.st.psi.toFixed(4)].concat(v.model.save ? v.model.save() : []); localStorage.setItem('pav-veh-v1', JSON.stringify(o)); return Object.keys(o).join(','); })()")
+    print('first attempt, cut at', s1[-1], '· saved vehicles:', sv); pg.goto('about:blank'); time.sleep(1)
     # 2) the next visit: says where the last attempt stopped, counts the building steps, loads
     s2 = run(pg, url)
     for t, d in s2: print(f"{t:6.1f}  {d['t'][:70]:70s} | {d['i'][:90]}")
@@ -32,7 +34,8 @@ with lib.browser() as b:
     check('the next visit says where the last attempt stopped', 'brach ab bei' in infos, infos[:160])
     check('building steps counted on the loading screen', any(x.startswith('Modell wird aufgebaut …') and 'von' in x for x in texts), str([x for x in texts if 'aufgebaut' in x][:3]))
     check('the seconds count while loading', any(d['i'][:3].strip().rstrip('s').strip().isdigit() for t, d in s2 if d['i']), '')
-    check('the model opens', s2[-1][1]['r'], str(s2[-1]))
+    check('the model opens (with saved vehicle positions)', s2[-1][1]['r'] and 'car' in sv, str(s2[-1]))
+    check('vehicles and felling started (the start ran to its end)', pg.evaluate("!!(window.VEH && VEH.list.length >= 2 && window.FELL && window.GAME)"), pg.evaluate("JSON.stringify({ veh: window.VEH ? VEH.list.map(v => v.id) : null, fell: !!window.FELL, game: !!window.GAME })"))
     lg = json.loads(pg.evaluate("localStorage.getItem('pav-loadlog')") or '{}')
     check('the load log is closed after loading', lg.get('open') is False and len(lg.get('steps', [])) > 5, f"{len(lg.get('steps', []))} steps, last {lg.get('steps', [[0, '']])[-1]}")
     check('the info line is gone after loading', not pg.evaluate("!!document.getElementById('loadinfo')"))
