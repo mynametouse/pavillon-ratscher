@@ -106,8 +106,11 @@ const VPROPS = (() => {
     if (K) { const s = 21 / K.H, m4 = new THREE.Matrix4().compose(V(x, y, z - 0.15), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.7), new THREE.Vector3(s * 1.2, s, s * 1.2)); S.lindeR = K.R * s * 1.2;
       K.bg.applyMatrix4(m4); K.lg.applyMatrix4(m4); K.leaf.envMapIntensity = 0.35; K.leaf.roughness = 0.95;   // less sky sheen on the leaves (backlit they looked frosted)   // in place, in world coordinates: VEG.lod and the frustum test both read the bounding sphere as world space
       const bark = new THREE.Mesh(K.bg, K.bark), leaf = new THREE.Mesh(K.lg, K.leaf), lo = new THREE.Mesh(thinCards(K.lg, 0.4, 1.45), K.leaf);
-      for (const me of [bark, leaf, lo]) { me.userData.noMerge = true; me.castShadow = false; me.receiveShadow = false; me.geometry.computeBoundingSphere(); scene.add(me); S.meshes.push(me); }
-      leaf.boundingSphere = leaf.geometry.boundingSphere; lo.visible = false; VEG.lod.push({ hi: leaf, lo, d: 70 }); S.lindeMeshes = [bark, leaf, lo]; }   // full crown within 70 m
+      // V16e1: on the lightest tier (software graphics) half the leaf cards near the camera – the alpha-tested crown was the largest cost at the Anger
+      const thin = new THREE.Mesh(thinCards(K.lg, 0.5, 1.12), K.leaf);
+      for (const me of [bark, leaf, lo, thin]) { me.userData.noMerge = true; me.castShadow = false; me.receiveShadow = false; me.geometry.computeBoundingSphere(); scene.add(me); S.meshes.push(me); }
+      leaf.boundingSphere = leaf.geometry.boundingSphere; thin.boundingSphere = thin.geometry.boundingSphere; lo.visible = false; thin.visible = false;
+      S.lindeLod = { hi: leaf, lo, d: 70 }; VEG.lod.push(S.lindeLod); S.lindeHi = [leaf, thin]; S.lindeMeshes = [bark, leaf, lo, thin]; }   // full crown within 70 m
     // paving under the tree and a ring of benches with their backs to the trunk
     S.pave.push({ c: [x + 0.6, y], r: 5.4 });
     for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + 0.3; bench(kP, x + Math.cos(a) * 2.25, y + Math.sin(a) * 2.25, a, 1.7); }
@@ -199,7 +202,9 @@ const VPROPS = (() => {
     iP.userData.noMerge = true; iP.renderOrder = 2; iP.visible = false; iP.computeBoundingSphere(); scene.add(iP); S.meshes.push(iP); S.pool = iP; }
   // ---- night: lamps on below the horizon (or in the evening light mode), the nearest light the facades ----
   const _v = new THREE.Vector3(), LV = [];
-  function tick() { const V2 = window.VILLAGE; clockSet(false); if (S.lindeMeshes && RATSCHER.map) { S.lindeMeshes[1].visible = S.lindeMeshes[2].visible = false; } if (!S.glass || !V2 || !V2.U) return;
+  function tick() { const V2 = window.VILLAGE; clockSet(false);
+    if (S.lindeLod) { const want = S.lindeHi[RENDER.tier === 'schnell' ? 1 : 0]; if (S.lindeLod.hi !== want) { S.lindeLod.hi.visible = false; S.lindeLod.hi = want; markDirty(); } }   // crown by tier
+    if (S.lindeMeshes && RATSCHER.map) { for (const m of S.lindeMeshes.slice(1)) m.visible = false; } if (!S.glass || !V2 || !V2.U) return;
     const n = V2.night ? V2.night() : 0, on = n > 0.08 ? Math.min(1, (n - 0.08) / 0.3) : 0;
     if (Math.abs(on - (S.on1 || 0)) > 0.01) { S.on1 = on; S.glass.emissiveIntensity = 6 * on; S.pool.material.color.setRGB(0.24 * on, 0.165 * on, 0.085 * on); S.pool.visible = on > 0.01 && !RATSCHER.map; markDirty(); }
     const U = V2.U.uLampV; if (!U) return; const arr = U.value;
@@ -229,7 +234,8 @@ const VPROPS = (() => {
     (window.TICKS || (window.TICKS = [])).push(tick);
     // what is new, once (after the V16b hint)
     let intro = false; TICKS.push(() => { if (intro || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16e') === '1'; localStorage.setItem('pav-v16e', '1'); } catch (e) {}
-      if (!seen) setTimeout(() => toast('Neu: Ratscher nach Fotos – Schiefer, Fachwerk und Putz wie im Dorf, die alte Schule mit Uhr, die Dorflinde, der Brunnen, Laternen und abends Licht in den Fenstern. Menü → „Dorf“.', 11000), 32000); });
+      // through the news queue (audio.js, V16c2): one-time hints follow each other instead of cutting each other short
+      if (!seen) setTimeout(() => news('Neu: Ratscher nach Fotos – Schiefer, Fachwerk und Putz wie im Dorf, die alte Schule mit Uhr, die Dorflinde, der Brunnen, Laternen und abends Licht in den Fenstern. Menü → „Dorf“.', 11000), 32000); });
     S.on = true; S.ready = true; S.ms = Math.round(performance.now() - t0); markDirty(true); }
   S.dispose = () => { for (const m of S.meshes) { scene.remove(m); if (m.geometry) m.geometry.dispose(); const k = RATSCHER.bld.indexOf(m); if (k >= 2) RATSCHER.bld.splice(k, 1); } S.meshes.length = 0; S.lamps.length = 0; const i = (window.TICKS || []).indexOf(tick); if (i >= 0) TICKS.splice(i, 1);
     for (const L2 of [...VEG.lod]) if (S.lindeMeshes && S.lindeMeshes.includes(L2.hi)) VEG.lod.splice(VEG.lod.indexOf(L2), 1); CLK.hands = null; CLK.dials.length = 0; S.ready = false; };
