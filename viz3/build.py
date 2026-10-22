@@ -28,6 +28,24 @@ else:
     M = BA.collect(H, SP, A, D)
     M['credits'] = BC.credits_html(A, M['playerman'], M['geoman'], M['musicman'])
     json.dump(M, open(MANF, 'w'), ensure_ascii=False, separators=(',', ':')); M = json.load(open(MANF))   # same key order either way
+# ---- feature extras (23.10.2026): a feature's own small assets travel with its branch, so CI and the preview have them without the
+# manual path (deploy_push.sh): viz3/extra/<feature>/dist/** is copied into dist/, viz3/extra/<feature>/manifest.json is merged into the
+# manifests (dicts merge key by key, other values replace; 'credits_add' is appended to the credits). Small files only (< 5 MB each).
+def _merge(a, b):
+    for k, v in b.items():
+        if isinstance(v, dict) and isinstance(a.get(k), dict): _merge(a[k], v)
+        else: a[k] = v
+import shutil as _sh
+for _fx in sorted(glob.glob(os.path.join(H, 'extra', '*'))):
+    _src_d = os.path.join(_fx, 'dist')
+    for _f in glob.glob(os.path.join(_src_d, '**', '*'), recursive=True):
+        if os.path.isfile(_f):
+            _dst = os.path.join(D, os.path.relpath(_f, _src_d)); os.makedirs(os.path.dirname(_dst), exist_ok=True); _sh.copy2(_f, _dst)
+    _mf = os.path.join(_fx, 'manifest.json')
+    if os.path.exists(_mf):
+        _x = json.load(open(_mf)); _add = _x.pop('credits_add', '')
+        _merge(M, _x)
+        if _add: M['credits'] = M.get('credits', '') + _add
 site = open(os.path.join(H, 'site.js')).read().strip()
 try:   # build id shown in the error report (boot/report.js): source commit and build time
     _src = subprocess.run(['git', '-C', H, 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip()

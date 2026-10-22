@@ -604,6 +604,15 @@ function saveLayout() {
 function applyLayout(L) {
   PLAN.loaded = true;
   if (!L || L.v !== 1) L = { v: 1, moved: {}, removed: [], added: [] };
+  // a broken stored layout (found by test/savefuzz.py: {v: 1} without 'moved' stopped the start) – keep only what has the right shape
+  const fin = o => !!o && typeof o === 'object' && ['x', 'y', 'z', 'rot'].every(k => Number.isFinite(o[k]));
+  const mv = L.moved && typeof L.moved === 'object' && !Array.isArray(L.moved) ? L.moved : {};
+  L = {
+    v: 1,
+    moved: Object.fromEntries(Object.entries(mv).filter(([, o]) => fin(o))),
+    removed: Array.isArray(L.removed) ? L.removed.filter(k => typeof k === 'string') : [],
+    added: Array.isArray(L.added) ? L.added.filter(a => fin(a) && typeof a.type === 'string') : [],
+  };
   for (const it of ITEMS.slice())
     if (it.added) {
       it.removed = true;

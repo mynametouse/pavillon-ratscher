@@ -1,0 +1,66 @@
+# Feature branches of the helper agents (feat/**, since 23.10.2026): the quick checks, smoke and each feature's own browser tests
+# (viz3/extra/*/tests.txt, one 'name[:args]' per line as for viz3/test/run.py) on a build with the website as asset base (the preview if there
+# is one) plus the branch's extras (viz3/extra/*/dist). Screenshots and logs (out/) are kept as the artifact 'out' – the agents look at their
+# work there (gh run download), because the chat machine runs only one browser at a time. Nothing is published from here.
+name: Feature
+
+on:
+  push:
+    branches: ['feat/**']
+    paths-ignore: ['docs/**', '**.md']
+
+concurrency:
+  group: feat-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Prüfen und Bilder
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Website als Asset-Basis (nur die Vorschau bzw. die Seite, ohne Welt-Kacheln)
+        run: |
+          git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          cd "$RUNNER_TEMP/site"
+          if git cat-file -e HEAD:vorschau/index.html 2>/dev/null; then
+            git sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          else
+            git sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"
+          fi
+          git checkout -q
+          cd "$GITHUB_WORKSPACE"; mkdir -p viz3/dist
+          (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+      - name: Werkzeuge
+        run: |
+          npm ci --prefix viz3 --no-audit --no-fund
+          npm ci --prefix tools/check --no-audit --no-fund
+          pip install playwright
+          timeout 300 python -m playwright install --with-deps chromium || python -m playwright install chromium
+      - name: Schnellprüfung (Bauen, Lint, Format, Abhängigkeiten, Einheitentests, Typen)
+        run: bash tools/check.sh
+      - name: Bauen wie veröffentlicht
+        run: python viz3/build.py --fast --min
+      - name: Browser-Tests (smoke und die Tests der Features)
+        run: |
+          T=$(cat viz3/extra/*/tests.txt 2>/dev/null | grep -v '^\s*#' | xargs)
+          echo "Tests: smoke $T"
+          python viz3/test/run.py --serve smoke $T
+      - name: Bilder und Protokolle aufheben
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: out
+          path: out/
+          if-no-files-found: ignore
+          retention-days: 5

@@ -26,10 +26,12 @@ garden/holzhaus.js          #
 garden/greenhouse.js        # 
 garden/bungalow.js          # 
 garden/washhouse.js         # 
+# feat/garten: new garden modules below this line (before render/zmerge.js, so their static meshes get merged)
 garden/places.js            # place names and indoor test for the existing buildings
 garden/stream.js            # 
 garden/workshop.js          # workshop building Klingenholz with machines, band sawmill, generator (WORKS)
 garden/fences.js            # fences (FENCES)
+# feat/nachbarn: Hubert's and Ronald's yards below this line
 garden/trees.js             # 
 garden/grass.js             # 
 render/render.js            # render pipeline, quality tiers, HDRI image light, baked GI (and its day/night mixing)
@@ -64,6 +66,7 @@ world/village_near.js       # V16e near the walker: fences, hedges, flower boxes
 world/worldcol.js           # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
 game/hud.js                 # HUD, menu, inventory window, pointer lock (HUD)
 game/avatar.js              # the player figure (AVATAR)
+# feat/figuren: below this line
 time/clock.js               # game clock (CLOCK)
 werk/gear.js                # protective gear (GEAR)
 werk/werk.js                # workshop game: end-grain board (WERK)
@@ -72,6 +75,7 @@ time/skydata.js             # generated: stars + Milky Way (tools/nightsky/mk_sk
 time/daynight.js            # day and night after the clock: sun, moon, stars, light blending (DN)
 garden/workshop_lamp.js     # workshop LED lights with motion sensor (WLAMP)
 npc/hours.js                # neighbours at home at night
+# feat/nachbarn: neighbour routines below this line
 vehicles/vsound.js          # V16b vehicle sounds: engine, tyres, wind, horn, doors (VSND)
 vehicles/vehicle.js         # V16b vehicles: physics, getting in and out, cameras, lights, HUD (VEH)
 vehicles/car.js             # V16b the car: estate in Logan MCV size (V16b1), Beige Sable (CAR)
@@ -82,6 +86,7 @@ world/fell.js               # V16c2 felling at the Klinge: forest gear, chainsaw
 werk/holz.js                # V16d wood 1: the logs as objects – on the fork, the trailer, the log yard (HOLZ)
 werk/holz_saw.js            # V16d wood 2: the band sawmill – clamp, plan, cut board by board, blocks beside the mill (HOLZSAW)
 werk/holz_dry.js            # V16d wood 3: the drying stack, drying by the climate, the moisture meter, time-lapse (HOLZDRY)
+# feat/dorf: village life below this line
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api

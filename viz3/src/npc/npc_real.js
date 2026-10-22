@@ -313,7 +313,7 @@ function realPerson(gl, cl, o) {
 // ---- Rocketbox neighbours (since 22.10.2026, Falko: realistic older men like the player figures): 3ds Max Biped rig (MIT), driven by the
 // player's clip set chars/pclips_m.json (idle, walk, talking gestures); sitting on the tractor stays the procedural pose of realPerson.
 // Age: a slight stoop of the upper back (o.stoop rad) and a slower idle (o.idleRate).
-function rbPerson(gl, set, o) {
+export function rbPerson(gl, set, o) {
   const model = gl.scene,
     g = new THREE.Group(),
     inner = new THREE.Group();

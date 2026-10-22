@@ -13,6 +13,10 @@ css/werk_clock.css
 css/vehicles.css
 css/forst.css
 css/screen.css
+css/garten.css
+css/figuren.css
+css/nachbarn.css
+css/dorf.css
 header.html
 panel_3d.html
 menu.html
