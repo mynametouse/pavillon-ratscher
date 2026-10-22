@@ -100,21 +100,19 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
 - Das Artefakt in Claude wird nicht mehr aktualisiert (Falko, 22.10.2026); es bleibt auf V16d.
 - Galeriebilder, 360°-Rundblicke und Raumführung werden nicht mehr erzeugt (Falko, 22.10.2026).
 
-## 5 Parallel arbeiten (mehrere Chats gleichzeitig)
+## 5 Parallel arbeiten (ein Chat, Hilfs-Agenten)
 
-- **Abstimmung zwischen den Chats: `docs/PARALLEL.md`** (Belegung, gemeinsame Dateien je Thema, Absprachen, Nachrichten). Lesen beim Start,
-  vor Rebase/Merge und vor dem Veröffentlichen: `git fetch -q origin && git show origin/src:docs/PARALLEL.md`; ändern nur über Git auf `src`.
-- **Ein Thema = ein Branch** von `src`: `git checkout -b feat/<thema> origin/src` (z. B. `feat/fahrzeuge`, `feat/dorf`, `feat/figuren`).
-- **Nur im eigenen Bereich ändern**: eigener Ordner unter `viz3/src/` (neu oder bestehend), eigene Tests, eigene Zeilen in `modules.txt`.
-  Gemeinsame Dateien knapp und gezielt anfassen: `src/modules.txt`, `shell/menu.html` (Menü, Hilfe), `shell/panel_3d.html` (HUD), `shell/css/*.css`, `build.py`/`buildlib/`, `manifests.json`,
-  `boot/boot.js`, `game/game.js`, `core/*`, Dokumente. Neue `window`-Namen und Speicher-Schlüssel vorher in ARCHITECTURE.md prüfen/eintragen.
-- **Zusammenführen**: `git fetch origin && git rebase origin/src`, testen, dann `git checkout src && git merge --ff-only feat/<thema> && git push origin src`.
-- **Veröffentlichen immer nur von `src`** und nur einer zur Zeit: vorher `git pull` auf `src`, bauen, testen, veröffentlichen (Abschnitt 4).
-  Hat jemand dazwischen veröffentlicht, ist `origin/gh-pages` neuer: erst `src` aktualisieren, dann `bash tools/bootstrap.sh` (holt `dist` und
-  `dist_pub` neu von `gh-pages`) und neu bauen – `deploy_site.py` ersetzt die Website komplett durch `dist_pub`, Dateien, die nur auf
-  `gh-pages` liegen (Galeriebilder, 360°-Bilder), gingen sonst verloren.
-- Versionsnummern: nächste freie Nummer aus `docs/CHANGELOG.md` beim Veröffentlichen vergeben (nicht vorher reservieren).
-- Arbeitsstand für Menschen und andere Chats: Projekt-Dokument `claude/pavillon-ratscher-stand.md` (Was ist fertig, was läuft, was als Nächstes).
+- Seit 22.10.2026 arbeitet **ein Chat** (Kern-Chat) mit Falko. Parallele Arbeit erledigen **Hilfs-Agenten**, die er startet: je Thema ein
+  Branch (`welt/…`, `feat/…`) in einem eigenen Worktree (`git worktree add ../<name> -b <branch> src`, mit eigener Kopie von `viz3/dist`,
+  sonst überschreibt ein Build die Dateien eines laufenden Tests). Wer woran arbeitet: `docs/PARALLEL.md` auf `src`.
+- **Nur im eigenen Bereich ändern**: eigener Ordner (unter `viz3/src/` oder `tools/`), eigene Tests, eigene Zeilen in `modules.txt`.
+  Gemeinsame Dateien (`modules.txt`, `shell/*`, `build.py`/`buildlib/`, `manifests.json`, `boot/boot.js`, `game/game.js`, `core/*`, Dokumente)
+  ändert der Kern-Chat. Neue `window`-Namen und Speicher-Schlüssel in ARCHITECTURE.md bzw. `core/save.js` eintragen.
+- **Zusammenführen** (Kern-Chat): `git fetch origin && git rebase origin/src`, `bash tools/check.sh` und die betroffenen Tests, dann
+  `src` vorspulen und pushen – GitHub prüft und baut die Vorschau (Abschnitt 4).
+- Browser-Tests im Chat-Rechner nie zwei gleichzeitig (2 Kerne); Agenten testen im Browser bei GitHub Actions.
+- Versionsnummern: nächste freie Nummer aus `docs/CHANGELOG.md` beim Live-Stellen vergeben.
+- Arbeitsstand für Menschen: Projekt-Dokumente `claude/pavillon-umbau.md` (Plan und Stand) und `claude/pavillon-ratscher-stand.md`.
 
 ## 6 Regeln
 
