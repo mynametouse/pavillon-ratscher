@@ -212,7 +212,10 @@ def main():
                          'geometricError': 0, 'content': {'uri': f'{CONTENT_LEVEL}_{x}_{y}.glb'}})
         if not kids:
             continue
-        ar = det
+        # the root box encloses all children (content tiles of the detail block for roads, of the whole block for buildings)
+        kx = [int(k.split('_')[0]) for k in tl]
+        ky = [int(k.split('_')[1]) for k in tl]
+        ar = wlib.tbounds(CONTENT_LEVEL, min(kx), min(ky))[:2] + wlib.tbounds(CONTENT_LEVEL, max(kx), max(ky))[2:]
         rb = [(ar[0] + ar[2]) / 2 - XF['ex'], (ar[1] + ar[3]) / 2 - XF['ey'], (ar[2] - ar[0]) / 2, (ar[3] - ar[1]) / 2]
         ts = {'asset': {'version': '1.1', 'generator': 'pavillon-ratscher tools/welt', 'extras': {'crs': 'EPSG:25832', 'origin_utm': [XF['ex'], XF['ey']], 'H0': H0}},
               'geometricError': 2000,
