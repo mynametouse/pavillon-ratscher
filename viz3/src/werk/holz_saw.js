@@ -143,6 +143,7 @@ const HOLZSAW = (() => {
       const x = MX() + 1.35 + k * 0.7, yc = (LY0 + LY1) / 2;
       for (const b of bs) { const m = new THREE.Matrix4().makeTranslation(...V(x, yc - b.L / 2, z - b.zb).toArray()); list.push({ b: Object.assign({}, b), m }); z += b.zt - b.zb + 0.002; } });
     PG = S.mergeSet(list, G, PG);
+    HOLZ.setCol('holzblock', logs.map((lid, k) => { const x = MX() + 1.35 + k * 0.7, h = S.boards.filter(b => b.st === 'pile' && b.lid === lid).reduce((a, b) => a + b.t, 0.14); return [x - 0.3, x + 0.3, LY0 - 0.25, LY1 + 0.25, 0, h]; }));
     // the timbers under the blocks
     if (!S.under) { const mat = MAT.kvh || new THREE.MeshStandardMaterial({ color: 0x8a6a48 }); S.under = new THREE.Group(); for (let k = 0; k < 3; k++) for (const y of [LY0 + 0.5, LY1 - 0.5]) { const me = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.12, 0.12), mat); me.position.copy(V(MX() + 1.35 + k * 0.7, y, 0.06)); me.castShadow = me.receiveShadow = true; S.under.add(me); } G.add(S.under); } }
   S.pileBoards = () => S.boards.filter(b => b.st === 'pile');

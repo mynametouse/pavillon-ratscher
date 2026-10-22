@@ -27,8 +27,8 @@ const HOLZDRY = (() => {
     if (b.st === 'pile') k *= 0.15;
     if (b.st === 'stack' && st) { const L = st.layers, li = b.layer || 0; if (li === 0) k *= st.found < 0.3 ? 0.6 : 0.85; if (li === L.length - 1 && st.roof) k *= 1.1; if (!st.gap) k *= 0.8; if (!st.roof) k *= 0.9; }
     return k; }
-  function emcOf(b, E, st) { if (b.st === 'kiln') return 8; if (b.st === 'shop') return Math.max(9, E - 3.5); if (b.st === 'pile') return E + 3; if (b.st === 'stack' && st && !st.roof) return E + 3.5; return E + 1; }
-  function stepDay(b, doy, st) { const c = clim(doy), T = b.st === 'kiln' ? 45 : b.st === 'shop' ? Math.max(12, c.T + 5) : c.T, k = rateOf(b, T, st), E = emcOf(b, c.E, st);
+  function emcOf(b, E, st) { if (b.st === 'kiln') return S.kiln && S.kiln.on ? 8 : Math.max(9, E - 3.5); if (b.st === 'shop') return Math.max(9, E - 3.5); if (b.st === 'pile') return E + 3; if (b.st === 'stack' && st && !st.roof) return E + 3.5; return E + 1; }
+  function stepDay(b, doy, st) { const c = clim(doy), T = b.st === 'kiln' ? (S.kiln && S.kiln.on ? 32 : Math.max(12, c.T + 5)) : b.st === 'shop' ? Math.max(12, c.T + 5) : c.T, k = rateOf(b, T, st), E = emcOf(b, c.E, st);
     const was = b.mc; b.mc = E + (b.mc - E) * Math.exp(-k); if (b.mc < 4) b.mc = 4;
     // faults while drying: blue stain in wet warm sapwood with little air, end checks without sealing when it dries fast
     if ((b.sp === 'spruce' || b.sp === 'pine' || b.mc0 > 90) && b.mc > 25 && T > 8 && b.st !== 'kiln') { const air = b.st === 'pile' ? 1 : (st && (st.found < 0.3 || !st.gap)) ? 0.45 : 0.12; b.wet = (b.wet || 0) + air; if (b.wet > 22 && !b.blue) b.blue = true; }
@@ -66,7 +66,8 @@ const HOLZDRY = (() => {
       if (st.weight) for (const l of [-L / 2 + 0.6, -L / 6, L / 6, L / 2 - 0.6]) box(0.4, 0.2, 0.24, at(0, l, zr + 0.14), gC); }
     for (const [geos, mat] of [[gC, conc], [gW, wood], [gS, stickM]]) if (geos.length) { const me = new THREE.Mesh(BufferGeometryUtils.mergeGeometries(geos), mat); me.castShadow = me.receiveShadow = true; g.add(me); geos.forEach(x => x.dispose()); }
     if (list.length && SAW()) SAW().mergeSet(list, g, null);
-    g.traverse(o => { if (o.isMesh) o.userData.noMerge = true; }); G.add(g); MESH = g; markDirty(true); }
+    g.traverse(o => { if (o.isMesh) o.userData.noMerge = true; }); G.add(g); MESH = g; markDirty(true);
+    { const Lh = (st.L || 4.1) / 2 + (st.roof ? 0.3 : 0.05), Wh = SP.W / 2 + (st.roof ? 0.25 : 0.05), hh = (st.top || st.found) + (st.roof ? 0.4 : 0); HOLZ.setCol('holzstapel', [[SP.x - Lh, SP.x + Lh, SP.y - Wh, SP.y + Wh, 0, hh]]); } }
   // ---------------- building the stack ----------------
   const pos = () => { const [x, y] = WT(SP.x - 0.2, SP.y - 1.3); return [x, y, 0.9]; };
   function openSetup() { WUI.machine({ title: 'Trockenstapel anlegen', sub: 'Luftgetrocknet unter Dach, nördlich der Werkstatt',
@@ -97,6 +98,7 @@ const HOLZDRY = (() => {
           CLOCK.t += 15; rebuild(); save(); think(st.roof ? 'Abgedeckt. Jetzt trocknet der Stapel – messen und den Zeitraffer nutzen.' : 'Ohne Dach regnet es hinein: Das Holz wird außen immer wieder nass.', 3800); } }) }); }
   // ---------------- the moisture meter ----------------
   function openMeter() { advance(); const st = S.stack, bs = B().filter(b => b.st === 'stack'); if (!bs.length) return;
+    const MT = window.WERK && WERK.TOOLS && WERK.TOOLS.meter; if (MT && !PLAY.has(MT)) { think('Den Feuchtemesser von der Hobelbank in der Werkstatt holen.', 3400); return; }
     const nL = st.layers.length, pick = w => { const li = w === 'oben' ? nL - 1 : w === 'unten' ? 0 : Math.floor(nL / 2); return bs.filter(b => b.layer === li).sort((a, b) => Math.abs(a.sa) - Math.abs(b.sa))[0]; };
     const c = clim(doyOf(CLOCK.t)), Tw = Math.round(c.T);
     WUI.machine({ title: 'Holzfeuchte messen', sub: `Widerstandsmessgerät mit Einschlagelektrode · Holztemperatur etwa ${Tw} °C`,
@@ -125,6 +127,36 @@ const HOLZDRY = (() => {
   // days until the stack's mean reaches the target (simulated on a copy), ≤ 730
   function forecast(target) { const st = S.stack, bs = B().filter(b => b.st === 'stack').map(b => Object.assign({}, b)); if (!bs.length) return 0; let t = CLOCK.t;
     for (let d = 1; d <= 730; d++) { const doy = doyOf(t); for (const b of bs) stepDay(b, doy, st); t += 1440; if (bs.reduce((s, b) => s + b.mc, 0) / bs.length <= target) return d; } return -1; }
+  // ---------------- the drying cabinet at the workshop's west wall: from air-dry (≤ 20 %) to workshop-dry (8–10 %) ----------------
+  // An insulated cabinet with a condensation dehumidifier and a fan (~45 °C): boards cut to workshop length (1 m) on stickers inside.
+  const KP = { x: -7.1, y: -39.15, w: 0.85, l: 1.5, h: 2.05 };   // workshop coordinates as built
+  function buildKiln() { const g = new THREE.Group(), white = new THREE.MeshStandardMaterial({ color: 0xe6e7e2, roughness: 0.55 }), dark = new THREE.MeshStandardMaterial({ color: 0x34383b, roughness: 0.5 });
+    const led = S.led = new THREE.MeshStandardMaterial({ color: 0x0c2410, emissive: 0x29ff5a, emissiveIntensity: 0 }), bx = (sx, sy, sz, x, y, z, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(sx, sz, sy), m); me.position.copy(V(x, y, z)); me.castShadow = me.receiveShadow = true; g.add(me); };
+    bx(KP.w, KP.l, KP.h, KP.x, KP.y, KP.h / 2, white); bx(0.02, KP.l - 0.1, KP.h - 0.12, KP.x - KP.w / 2 - 0.006, KP.y, KP.h / 2, white);          // the door on the west side
+    bx(0.03, 0.03, 0.4, KP.x - KP.w / 2 - 0.03, KP.y + KP.l / 2 - 0.16, KP.h / 2, dark); for (const z of [0.25, 1.8]) bx(0.03, 0.12, 0.06, KP.x - KP.w / 2 - 0.02, KP.y - KP.l / 2 + 0.08, z, dark);   // handle, hinges
+    bx(0.4, 0.5, 0.25, KP.x, KP.y, KP.h + 0.125, dark); bx(0.01, 0.12, 0.06, KP.x - KP.w / 2 - 0.02, KP.y + 0.35, 1.55, led);   // the dehumidifier on top, the display
+    g.traverse(o => { if (o.isMesh) o.userData.noMerge = true; }); G.add(g); HOLZ.setCol('holzofen', [[KP.x - KP.w / 2 - 0.03, KP.x + KP.w / 2, KP.y - KP.l / 2, KP.y + KP.l / 2, 0, KP.h + 0.25]]); }
+  const kpos = () => { const [x, y] = WT(KP.x - KP.w / 2 - 0.6, KP.y); return [x, y, 1.0]; };
+  const inKiln = () => B().filter(b => b.st === 'kiln');
+  const avgOf = bs => bs.length ? bs.reduce((s, b) => s + b.mc, 0) / bs.length : 0;
+  function kilnOp() { const k = inKiln(), st = S.stack, sb = B().filter(b => b.st === 'stack');
+    if (!k.length) { if (!sb.length) return null; const m = avgOf(sb);
+      return { label: 'Lufttrockene Bretter auf 1 m ablängen, in den Trockenschrank', run: () => { if (m > 21) { think(`Erst lufttrocken: im Mittel ${de(m)} %. Über ~20 % reißen sie im Schrank (zu großes Feuchtegefälle).`, 4600); return; }
+        PLAY.run({ id: 'hd:kin', r: 3, rMove: 2.5, pos: kpos, label: () => 'Einlagern', hold: 4, holdLabel: 'Ablängen, mit Leisten einstapeln …', anim3: 'interactLoop', run: () => {
+          for (const b of sb) { b.st = 'kiln'; b.Lw = Math.max(0, b.L - 2 * (b.endck || 0)); } if (st) { st.layers = []; st.roof = false; } S.kiln = { on: false, t0: CLOCK.t }; CLOCK.t += 40; rebuild(); save();
+          think('Eingelagert: die Bretter in 1-m-Stücken auf Leisten im Schrank. Jetzt das Programm starten.', 3600); } }); } }; }
+    const m = avgOf(k);
+    if (!S.kiln.on && m > 10.5) return { label: 'Trockenschrank starten (Ziel 9 %, 45 °C, Entfeuchter)', run: () => { S.kiln.on = true; S.kiln.t1 = CLOCK.t; if (S.led) S.led.emissiveIntensity = 1.5; save(); markDirty(true); think('Läuft: Lüfter und Entfeuchter an. Bis 9 % dauert es etwa zwei bis drei Wochen.', 3800); } };
+    if (S.kiln.on && m > 10.5) return { label: `Trockenschrank: ${de(m)} % – warten (Zeitraffer)`, run: () => { const days = kilnDays(); CLOCK.wait(days * 1440, 'Zeitraffer', () => { advance(); think(`Im Schrank jetzt ${de(avgOf(inKiln()))} %.`, 3200); }); } };
+    return { label: `Trockene Bretter (${de(m)} %) aus dem Schrank in die Werkstatt`, run: () => PLAY.run({ id: 'hd:kout', r: 3, rMove: 2.5, pos: kpos, label: () => 'Ausräumen', hold: 3, holdLabel: 'Ausräumen …', anim3: 'interactLoop', run: toShop }) }; }
+  function kilnDays() { const bs = inKiln().map(b => Object.assign({}, b)); let t = CLOCK.t; for (let d = 1; d <= 120; d++) { const doy = doyOf(t); for (const b of bs) stepDay(b, doy, S.stack); t += 1440; if (avgOf(bs) <= 9.5) return d; } return 120; }
+  // to the workshop: planks of ≥ 35 mm become glued panels 40 × 400 × 1000 mm for the end-grain board (werk/werk.js), thinner boards are stored
+  function toShop() { const k = inKiln(), m = avgOf(k), sp = k.length ? k[0].sp : 'larch'; let area = 0, thin = 0;
+    for (const b of k) { b.st = 'used'; const L1 = Math.floor((b.Lw || b.L) + 1e-6), w = (b.wS + b.wW) / 2 * (b.blue ? 0.85 : 1) * (b.warp ? 0.8 : 1) * (b.crack ? 0.7 : 1); if (b.t >= 0.035) area += L1 * w; else thin += L1; }
+    const n = Math.floor(area * 0.8 / 0.4); if (S.led) S.led.emissiveIntensity = 0; S.kiln = null; save(); markDirty(true);
+    if (n && window.WERK && WERK.addOwn) WERK.addOwn(n, sp, m);
+    think(n ? `${n} Leimholzplatte${n > 1 ? 'n' : ''} ${({ larch: 'Lärche', spruce: 'Fichte' })[sp] || ''} aus den eigenen Bohlen (abgerichtet, gehobelt, verleimt) liegen jetzt im Werkstattregal – daraus wird ein Stirnholzbrett.${thin ? ` Dazu ${thin} m dünnere Bretter auf Vorrat.` : ''}` : `Die Bretter (${thin} m) liegen auf Vorrat in der Werkstatt. Für Leimholz braucht es Bohlen ab 35 mm.`, 6500);
+    if (window.QUESTS && QUESTS.banner) QUESTS.banner('Eigenes Holz in der Werkstatt', n ? `${n} Platte${n > 1 ? 'n' : ''} aus ${({ larch: 'Lärche', spruce: 'Fichte' })[sp] || 'Holz'} der Klinge, ${de(m)} % Holzfeuchte` : 'Bretter auf Vorrat'); }
   // ---------------- the acts at the stack ----------------
   function opAt() { const st = S.stack, piles = SAW() ? SAW().pileBoards() : [];
     if (!st) return piles.length ? { label: 'Trockenstapel anlegen', run: openSetup } : null;
@@ -134,13 +166,14 @@ const HOLZDRY = (() => {
   function register() {
     PLAY.act({ id: 'hd:op', r: 2.8, prio: 0.7, pos, label: () => { const o = opAt(); return o ? o.label : null; }, run: () => { const o = opAt(); if (o) o.run(); } });
     PLAY.act({ id: 'hd:meter', r: 2.8, prio: 0.6, pos: () => { const p = pos(); return [p[0] + 0.6, p[1], p[2]]; }, label: () => S.stack && S.stack.layers.length ? 'Holzfeuchte messen' : null, run: openMeter });
+    PLAY.act({ id: 'hd:kiln', r: 2.6, prio: 0.7, pos: kpos, label: () => { const o = kilnOp(); return o ? o.label : null; }, run: () => { const o = kilnOp(); if (o) o.run(); } });
     PLAY.act({ id: 'hd:lapse', r: 2.8, prio: 0.5, pos: () => { const p = pos(); return [p[0] - 0.6, p[1], p[2]]; }, label: () => S.stack && S.stack.layers.length ? 'Trocknen beobachten (Zeitraffer)' : null, run: openLapse });
     // the clock window lists the stack while it dries
     if (CLOCK.jobs) CLOCK.jobs.push(() => { const m = stackMC(); return m ? [{ label: `Trockenstapel: ${de(m.avg)} % Holzfeuchte`, left: 0 }] : []; }); }
   // ---------------- saving (inside world/holz.js) ----------------
   function save() { if (HOLZ.save) HOLZ.save(); }
-  const p2 = HOLZ.part2; HOLZ.part2 = () => Object.assign(p2 ? p2() : {}, { stack: S.stack, hist: S.hist.slice(-400) });
-  const on0 = HOLZSAW.onStart; HOLZSAW.onStart = p => { if (on0) on0(p); if (p) { S.stack = p.stack || null; S.hist = p.hist || []; } register(); rebuild(); };
+  const p2 = HOLZ.part2; HOLZ.part2 = () => Object.assign(p2 ? p2() : {}, { stack: S.stack, hist: S.hist.slice(-400), kiln: S.kiln });
+  const on0 = HOLZSAW.onStart; HOLZSAW.onStart = p => { if (on0) on0(p); if (p) { S.stack = p.stack || null; S.hist = p.hist || []; S.kiln = p.kiln || null; } buildKiln(); if (S.kiln && S.kiln.on && S.led) S.led.emissiveIntensity = 1.5; register(); rebuild(); };
   let acc = 0; window.TICKS.push(dt => { acc += dt; if (acc < 1) return; acc = 0; try { if (HOLZ.ready) advance(); } catch (e) { if (!S._err) { S._err = 1; console.warn('holzdry', e); } } });
   Object.assign(S, { clim, doyOf, advance, stackMC, forecast, rebuild, layOne, nextLayer, rateOf, stepDay });
   return S; })();
