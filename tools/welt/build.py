@@ -185,8 +185,10 @@ def main():
         'crs': 'EPSG:25832', 'heights': 'NHN (DHHN2016) in m minus H0', 'H0': H0,
         'origin': {'E': XF['ex'], 'N': XF['ey'], 'H': H0, 'latlon': list(ORIGIN_LATLON),
                    'note': 'Ursprung des App-Modells (Garten): Modell (0, 0, 0) = UTM (E, N), Höhe H0'},
-        'model_xf': {**XF, 'note': 'Modellmeter (x Ost, y Nord) -> UTM: E = a x - b y + ex, N = b x + a y + ey; z = H - H0. '
-                                   'Umkehrung: x = (a dE + b dN) / (a²+b²), y = (-b dE + a dN) / (a²+b²) mit dE = E - ex, dN = N - ey'},
+        'model_xf': {**XF, 'scale': round(float(np.hypot(XF['a'], XF['b'])), 6), 'rotation_deg': round(float(np.degrees(np.arctan2(XF['b'], XF['a']))), 3),
+                     'note': 'Modellmeter (x Ost, y Nord) -> UTM: E = a x - b y + ex, N = b x + a y + ey; z = H - H0. '
+                             'Umkehrung: x = (a dE + b dN) / (a²+b²), y = (-b dE + a dN) / (a²+b²) mit dE = E - ex, dN = N - ey. '
+                             'Achtung: das App-Modell ist gegen UTM gedreht und skaliert (scale, rotation_deg); die Kacheln sind echte UTM-Meter.'},
         'tiling': {'root': [ROOT_E0, ROOT_N0, ROOT_SIZE], 'y': 'north', 'tile_px': TILE_PX, 'terrain_n': TERR_N,
                    'image': 'i/{z}/{x}/{y}.webp', 'terrain': 't/{z}/{x}/{y}.bin',
                    'terrain_format': 'WTH1: Kopf 20 Byte (Magic, n, Flags, Basis cm, hmin, hmax) + zlib der Lorenzo-Reste in cm (tools/welt/tiles.py)',
