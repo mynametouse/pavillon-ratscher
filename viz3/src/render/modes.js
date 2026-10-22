@@ -1,9 +1,16 @@
 // ---------------- light modes ----------------
-let MODE = 'gold';
-function setModeId(m) {
+import { LATE } from '../core/late.js';
+import { QS, R, scene } from '../core/head.js';
+import { markDirty, SV } from '../core/assets.js';
+import { MAT } from '../core/mats.js';
+import { glowMat } from '../pavilion/interior.js';
+import { dirFromAz, FIELDU, hemi, placeSun, setSkyFor, setSunDir, skyU, sun, sunDir } from '../garden/env.js';
+import { giApply, setEnvFor } from './render.js';
+export let MODE = 'gold';
+export function setModeId(m) {
   MODE = m; // time/daynight.js takes over the mode (auto/night)
 }
-const MODES = {
+export const MODES = {
   day: {
     az: 228,
     el: 46,
@@ -74,7 +81,7 @@ MODES.day.fogD = 2.4e-5;
 MODES.gold.fogD = 3.4e-5;
 MODES.dusk.fogD = 5.2e-5; // haze over the real land (exponential, see 27_ratscher)
 const ADAPT = { k: 1 };
-function houseAt(x, y, feet) {
+export function houseAt(x, y, feet) {
   const g = window.GEO;
   if (!g || !g.OG || SV.on.value < 0.5) return false;
   return (
@@ -86,12 +93,12 @@ function houseAt(x, y, feet) {
     (feet >= g.zE - 0.3 || (x > 0 && x < 4 && y > 0 && y < 4))
   );
 }
-function adaptExposure(dt, snap, pos) {
+export function adaptExposure(dt, snap, pos) {
   const M = MODES[MODE];
   if (!M) return;
   const ins = pos
     ? houseAt(pos[0], pos[1], pos[2])
-    : typeof P !== 'undefined' && P.mode === 'walk' && houseAt(P.x, P.y, P.feet);
+    : typeof LATE.P !== 'undefined' && LATE.P.mode === 'walk' && houseAt(LATE.P.x, LATE.P.y, LATE.P.feet);
   const want = ins ? M.expIn || 1 : 1;
   if (snap || Math.abs(ADAPT.k - want) < 0.004) ADAPT.k = want;
   else {
@@ -102,18 +109,18 @@ function adaptExposure(dt, snap, pos) {
 }
 const screenMats = [];
 // V16a: 'auto' (the day after the game clock) and 'night' (a fixed moonlit night) are run by DN (time/daynight.js); the three fixed moods stay as they were
-function setMode(m) {
+export function setMode(m) {
   if (m === 'auto' || m === 'night') {
-    if (window.DN) DN.enable(m);
+    if (window.DN) LATE.DN.enable(m);
     return;
   }
   const M = MODES[m];
   if (!M) return;
-  if (window.DN) DN.disable();
+  if (window.DN) LATE.DN.disable();
   MODE = m;
   window.MODE_NOW = m;
   const L = window.LIGHTS;
-  const topV = typeof P !== 'undefined' && P.mode === 'top';
+  const topV = typeof LATE.P !== 'undefined' && LATE.P.mode === 'top';
   setSunDir(topV ? dirFromAz(205, 52) : dirFromAz(M.az, M.el));
   sun.intensity = topV ? 3.3 : M.sun;
   sun.color.set(topV ? 0xfff4e6 : M.sunC);
@@ -133,13 +140,13 @@ function setMode(m) {
   MAT.paperOG.emissiveIntensity = M.paper;
   if (window.FIELDU) FIELDU.uCloudK.value = { day: 0.42, gold: 0.18, dusk: 0 }[m] || 0;
   if (scene.fog && scene.fog.isFogExp2)
-    scene.fog.density = typeof P !== 'undefined' && P.mode === 'top' ? 0 : M.fogD || 3e-5;
+    scene.fog.density = typeof LATE.P !== 'undefined' && LATE.P.mode === 'top' ? 0 : M.fogD || 3e-5;
   skyU.sunDir.value.copy(sunDir);
   placeSun();
   setEnvFor(m);
   setSkyFor(m);
   if (window.giApply) giApply();
-  if (window.LIGHTSTATE) LIGHTSTATE.reset();
-  if (window.RATSCHER && RATSCHER.top) RATSCHER.topMode(true);
+  if (window.LIGHTSTATE) LATE.LIGHTSTATE.reset();
+  if (window.RATSCHER && LATE.RATSCHER.top) LATE.RATSCHER.topMode(true);
   markDirty(true);
 }

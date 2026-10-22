@@ -3,8 +3,16 @@
 // shingles, only the back wall to the south boarded; floor of concrete pavers. Band sawmill for logs along the open north side, drum sander and
 // planer (power from a petrol generator outside the east end), two carpenter's benches and a tool wall along the south wall, a rack of glued
 // panels, sawn boards with stickers, finished end-grain boards. Logs are stored to the right (west), seen from the garden.
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { rnd, rr, scene, V } from '../core/head.js';
+import { ANISO, grime, markDirty, patchSV, pbrMat, plain } from '../core/assets.js';
+import { B, beam, bldBegin, bldEnd, BUILD, COL, cyl, DOORS, phase, tagPh } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { placeGLB } from '../pavilion/interior.js';
+import { boardMat } from './site_base.js';
 phase(null);
-const WORKS = {
+export const WORKS = {
   machines: [],
   update: null,
   px: -1.5,
@@ -1020,19 +1028,19 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
     const S = SND[k];
     if (on) {
       if (!S.playing) {
-        audio.loopAt(k, S.snd, x, y, { vol: vol ?? S.vol, ref: S.ref, rate: 0.5 });
-        if (audio.hasLoop(k)) {
+        LATE.audio.loopAt(k, S.snd, x, y, { vol: vol ?? S.vol, ref: S.ref, rate: 0.5 });
+        if (LATE.audio.hasLoop(k)) {
           S.playing = true;
-          audio.loopRate(k, 1.0, 0.5);
+          LATE.audio.loopRate(k, 1.0, 0.5);
         }
       } else {
-        if (vol !== undefined) audio.loopVol(k, vol);
-        audio.moveLoop(k, x, y);
+        if (vol !== undefined) LATE.audio.loopVol(k, vol);
+        LATE.audio.moveLoop(k, x, y);
       }
     } else if (S.playing) {
       S.playing = false;
-      audio.loopRate(k, 0.4, 0.7);
-      audio.stopLoop(k, 1.8);
+      LATE.audio.loopRate(k, 0.4, 0.7);
+      LATE.audio.stopLoop(k, 1.8);
     }
   };
   WORKS.update = dt => {

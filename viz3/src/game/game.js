@@ -1,6 +1,34 @@
 // ===================== walkable model: controls, physics, doors =====================
-const G = window.GEO;
-const EYE = 1.62,
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, cam, OFFLINE, R, scene, stage, V, VARIANT, varOk } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { DIRTY, LOAD, markDirty, SV, VEG } from '../core/assets.js';
+import { BUILD, COL, PHN, WALK } from '../core/geo.js';
+import { GEO_A, GEO_B } from '../pavilion/house_ladder.js';
+import { STREAM } from '../garden/stream_geo.js';
+import { sunFollow } from '../garden/env.js';
+import { WORKS } from '../garden/workshop.js';
+import { gravelMask } from '../garden/grass.js';
+import {
+  applyTier,
+  camMoved,
+  giApply,
+  MOTION,
+  motionTrack,
+  nextTier,
+  RENDER,
+  renderFrame,
+  sizeMotion,
+  TIER_ORDER,
+  TIER_USER,
+  TIERS,
+} from '../render/render.js';
+import { adaptExposure, setMode } from '../render/modes.js';
+Object.assign(LATE, { poseDoor, rebuildGrids, applyCam, resize }); // functions for modules that load earlier: core/geo.js, pavilion/interior.js, render/render.js
+export const G = window.GEO;
+export const EYE = 1.62,
   RAD = 0.21,
   STEP = 0.42,
   WALK_SPEED = 2.5; // m/s (Shift ×1.9); on ladder treads a fifth of it
@@ -29,7 +57,7 @@ function toLocal(b, x, y) {
     dy = y - r.cy;
   return [dx * r.c + dy * r.s, -dx * r.s + dy * r.c];
 }
-function toWorld(b, x, y) {
+export function toWorld(b, x, y) {
   const r = b[9];
   if (!r) return [x, y];
   return [r.cx + x * r.c - y * r.s, r.cy + x * r.s + y * r.c];
@@ -47,20 +75,21 @@ function mkGrid(list, cs = 0.5) {
   });
   return { m, cs, list };
 }
-let WG = null,
+export let WG = null,
   CG = null;
-function rebuildGrids() {
+export function rebuildGrids() {
   WG = mkGrid(WALK);
   CG = mkGrid(COL);
 }
 rebuildGrids();
-function cellItems(Gd, x, y) {
+export function cellItems(Gd, x, y) {
   return Gd.m.get(Math.floor(x / Gd.cs) + ',' + Math.floor(y / Gd.cs)) || [];
 }
-let PHASE = 11;
+export let PHASE = 11;
+Object.defineProperty(LATE, 'PHASE', { get: () => PHASE, enumerable: true });
 window.PHASE = PHASE;
 // colliders: [7] phase from, [8] phase until, [10] variant; walk surfaces: [6]/[7] phase, [8] key of a hatch lid (surface only while closed), [10] variant
-const phOk = e =>
+export const phOk = e =>
   (e[7] == null || e[7] <= PHASE) && (e[8] == null || PHASE < e[8]) && (e[10] == null || e[10] === VARIANT);
 function surfaces(x, y) {
   const out = [[groundZ(x, y), 'ground']];
@@ -74,7 +103,7 @@ function surfaces(x, y) {
   }
   return out;
 }
-const doorOn = d => (d.ph == null || d.ph <= PHASE) && varOk(d.var);
+export const doorOn = d => (d.ph == null || d.ph <= PHASE) && varOk(d.var);
 function applyVisibility() {
   scene.traverse(o => {
     const ph = o.userData.ph,
@@ -86,8 +115,8 @@ function applyVisibility() {
       !(o.userData.item && o.userData.item.removed);
   });
 }
-function setPhase(n) {
-  PHASE = Math.max(0, Math.min(PHASES.length - 1, n | 0));
+export function setPhase(n) {
+  PHASE = Math.max(0, Math.min(LATE.PHASES.length - 1, n | 0));
   window.PHASE = PHASE;
   applyVisibility();
   SV.on.value = PHASE >= PHN.egOSB ? 1 : 0;
@@ -112,7 +141,7 @@ function setPhase(n) {
   document
     .querySelectorAll('[data-phase-ui]')
     .forEach(el => el.dispatchEvent(new CustomEvent('phase', { detail: PHASE })));
-  phaseLabel();
+  LATE.phaseLabel();
   markDirty(true);
 }
 // ---- V15 stances: standing, crouched, on all fours, lying flat; eye height, body height (for collisions) and pace ----
@@ -124,12 +153,12 @@ const STANCES = {
   prone: { eye: 0.26, h: 0.42, sp: 0, name: 'Liegen' },
 };
 const bodyH = () => STANCES[(typeof P !== 'undefined' && P.stance) || 'stand'].h;
-function blocked(x, y, feet) {
+export function blocked(x, y, feet) {
   const top = feet + bodyH() - 0.03;
   for (const [s] of surfaces(x, y)) if (s > feet + STEP && s < top) return true;
   return false;
 }
-const groundZ = (x, y) => (window.ROADS ? ROADS.groundAt(x, y) : STREAM.zAt(x, y)); // the meadow is flat (0) except at the stream; beyond the site the terrain and bridge decks (V16b, world/roads.js)
+const groundZ = (x, y) => (window.ROADS ? LATE.ROADS.groundAt(x, y) : STREAM.zAt(x, y)); // the meadow is flat (0) except at the stream; beyond the site the terrain and bridge decks (V16b, world/roads.js)
 function floorInfo(x, y, feet) {
   let best = -1e9,
     typ = 'ground';
@@ -140,7 +169,7 @@ function floorInfo(x, y, feet) {
     }
   return best === -1e9 ? [groundZ(x, y), 'ground'] : [best, typ];
 }
-function floorAt(x, y, feet) {
+export function floorAt(x, y, feet) {
   return floorInfo(x, y, feet)[0];
 }
 function surfType(x, y, z) {
@@ -153,8 +182,8 @@ function gravelAtPt(x, y) {
   return gravelMask(x, y) > 100 / 255;
 }
 // ---------------- doors (hinged / sliding), registered in 02_geo ----------------
-const DOOR = window.DOORS;
-const DKEYS = () => Object.keys(DOOR);
+export const DOOR = window.DOORS;
+export const DKEYS = () => Object.keys(DOOR);
 function doorCols() {
   const C = [];
   for (const k of DKEYS()) {
@@ -176,15 +205,15 @@ function doorCols() {
   }
   return C;
 }
-function poseDoor(d) {
+export function poseDoor(d) {
   if (d.kind === 'machine') return;
   const e = d.t * d.t * (3 - 2 * d.t);
   if (d.kind === 'slide') d.group.position.x = d.x0 + (d.x1 - d.x0) * e;
   else if (d.kind === 'flap') d.group.rotation[d.rot] = d.open * e;
   else d.group.rotation.y = d.theta + ((d.sign * Math.PI) / 2) * 0.92 * e;
 }
-const doorWord = d => d.label || (d.kind === 'flap' ? 'Luke' : 'Tür');
-function toggleDoor(k) {
+export const doorWord = d => d.label || (d.kind === 'flap' ? 'Luke' : 'Tür');
+export function toggleDoor(k) {
   const d = DOOR[k];
   if (!d || !doorOn(d)) return;
   d.target = d.target > 0.5 ? 0 : 1;
@@ -192,9 +221,9 @@ function toggleDoor(k) {
     markDirty();
     return;
   }
-  audio.door(d.kind === 'slide' ? 'og' : 'eg', d.target > 0.5);
+  LATE.audio.door(d.kind === 'slide' ? 'og' : 'eg', d.target > 0.5);
 }
-function setDoorNow(k, v) {
+export function setDoorNow(k, v) {
   const d = DOOR[k];
   if (!d || d.kind === 'machine') return;
   d.t = d.target = v ? 1 : 0;
@@ -214,7 +243,7 @@ function updateDoors(dt) {
   }
   return moving;
 }
-function nearDoor() {
+export function nearDoor() {
   let best = null,
     bd = 1e9;
   for (const k of DKEYS()) {
@@ -282,11 +311,11 @@ function collide(p, feet, on) {
     }
   // V16b: beyond the modelled site the walls of every building and the trunks (world/worldcol.js); parked vehicles everywhere
   if (Math.abs(p[0]) > 50 || Math.abs(p[1]) > 55) KERN.pushOut(p, RAD);
-  if (window.VEH) VEH.pushWalker(p, RAD, feet);
+  if (window.VEH) LATE.VEH.pushWalker(p, RAD, feet);
 }
 // how far one may walk: the garden's 75 m, with the real surroundings the whole square of the 10 m terrain (V16b)
 function walkBounds() {
-  const B = window.RATSCHER && RATSCHER.ready && RATSCHER.box;
+  const B = window.RATSCHER && LATE.RATSCHER.ready && LATE.RATSCHER.box;
   if (B) {
     P.x = THREE.MathUtils.clamp(P.x, B[0] + 8, B[2] - 8);
     P.y = THREE.MathUtils.clamp(P.y, B[1] + 8, B[3] - 8);
@@ -299,7 +328,7 @@ function walkBounds() {
   }
 }
 // ---------------- player & viewpoints ----------------
-const P = {
+export const P = {
   x: 2,
   y: -6,
   feet: 0,
@@ -324,8 +353,9 @@ const P = {
   mvy: 0,
   landT: 0,
 }; // V15: posture, smoothed eye height, the figure's heading (deg), airborne, ground speed (m/s), last move direction
+LATE.P = P;
 // ---- V15 third-person view: camera over the right shoulder of the figure (game/avatar.js); V or the mouse wheel switch to the eyes ----
-const CAM3 = {
+export const CAM3 = {
   want: (() => {
     try {
       const v = SAVE.raw('pav-view');
@@ -344,14 +374,14 @@ const CAM3 = {
     return (
       this.want &&
       P.mode === 'walk' &&
-      !!(window.AVATAR && AVATAR.ready) &&
-      !(window.PLAY && PLAY.seat && PLAY.seat.fp) &&
-      !(window.PIANO && PIANO.on)
+      !!(window.AVATAR && LATE.AVATAR.ready) &&
+      !(window.PLAY && LATE.PLAY.seat && LATE.PLAY.seat.fp) &&
+      !(window.PIANO && LATE.PIANO.on)
     );
   },
 };
 window.CAM3 = CAM3;
-function setView3(v, quiet) {
+export function setView3(v, quiet) {
   CAM3.want = !!v;
   try {
     SAVE.setRaw('pav-view', v ? '3' : '1');
@@ -361,14 +391,14 @@ function setView3(v, quiet) {
     if (CAM3.d < CAM3.MIN + 0.1) CAM3.d = 2.2;
   }
   document.body.dataset.view = CAM3.on ? '3' : '1';
-  if (window.HUD) HUD.viewChanged(quiet);
+  if (window.HUD) LATE.HUD.viewChanged(quiet);
   markDirty(true);
 }
 window.setView3 = setView3;
 function dirYaw(x, y, tx, ty) {
   return (Math.atan2(tx - x, ty - y) * 180) / Math.PI;
 }
-const SPOTS = {
+export const SPOTS = {
   modell: { mode: 'orbit', az: 225, el: 16, r: 21, label: 'Modellansicht' },
   draufsicht: { mode: 'top', label: 'Draufsicht' },
   garten: { mode: 'walk', pos: [3.6, 15.2], z: 0, yaw: dirYaw(3.6, 15.2, 3.0, 2.0), pitch: 3, label: 'Garten' },
@@ -428,7 +458,7 @@ const SPOTS_VAR = {
     dach: { z: () => GEO_B.zD },
   },
 };
-function applySpots(v) {
+export function applySpots(v) {
   for (const [k, o] of Object.entries(SPOTS_VAR[v])) {
     const s = SPOTS[k];
     for (const [f, val] of Object.entries(o)) s[f] = typeof val === 'function' ? val() : val;
@@ -440,9 +470,9 @@ try {
   const sv = SAVE.raw('pav-sound');
   if (sv !== null) s0 = sv === '1';
 } catch (e) {}
-const opt = { collide: true, sound: s0 };
+export const opt = { collide: true, sound: s0 };
 let stepZ = 0;
-function placeName() {
+export function placeName() {
   if (P.mode === 'orbit') return 'Modellansicht';
   if ((Math.abs(P.x) > 50 || Math.abs(P.y) > 55) && window.ROADS) {
     const wp = KERN.place(P.x, P.y);
@@ -481,9 +511,9 @@ window.inHouseNow = () =>
   P.y > G.OG.y0 &&
   P.y < G.OG.y1 &&
   (P.feet >= G.zE - 0.3 || (P.x > 0 && P.x < 4 && P.y > 0 && P.y < 4));
-function go(name) {
+export function go(name) {
   const s = SPOTS[name];
-  if (window.PLAY && PLAY.seated()) PLAY.stand(true);
+  if (window.PLAY && LATE.PLAY.seated()) LATE.PLAY.stand(true);
   P.mode = s.mode;
   if (s.mode === 'orbit') {
     P.az = s.az;
@@ -507,13 +537,13 @@ function go(name) {
     P.eyeH = STANCES.stand.eye;
     CAM3.cur = Math.min(CAM3.cur, 1.4);
   }
-  if (window.SITEPLAN) SITEPLAN.onMode(s.mode);
+  if (window.SITEPLAN) LATE.SITEPLAN.onMode(s.mode);
   document
     .querySelectorAll('[data-spot]')
     .forEach(b => b.setAttribute('aria-pressed', b.dataset.spot === name ? 'true' : 'false'));
   document.body.dataset.mode = s.mode;
   document.body.dataset.view = CAM3.on ? '3' : '1';
-  if (window.HUD) HUD.modeChanged();
+  if (window.HUD) LATE.HUD.modeChanged();
   markDirty();
 }
 let bob = 0;
@@ -521,10 +551,10 @@ const TOP_FOV = 30;
 function topH() {
   return P.th / (2 * Math.tan((TOP_FOV * Math.PI) / 360));
 } // camera height for a picture P.th metres tall
-const TOPMAX = () => (window.RATSCHER && RATSCHER.ready ? 9000 : 170); // the plan view zooms out to the whole valley once the real surroundings are there
-const FAR0 = () => (window.RATSCHER && RATSCHER.ready ? 30000 : 12000);
-const ORBMAX = () => (window.RATSCHER && RATSCHER.ready ? 420 : 70); // the model view may step back far enough to see the village
-function applyCam() {
+export const TOPMAX = () => (window.RATSCHER && LATE.RATSCHER.ready ? 9000 : 170); // the plan view zooms out to the whole valley once the real surroundings are there
+export const FAR0 = () => (window.RATSCHER && LATE.RATSCHER.ready ? 30000 : 12000);
+const ORBMAX = () => (window.RATSCHER && LATE.RATSCHER.ready ? 420 : 70); // the model view may step back far enough to see the village
+export function applyCam() {
   if (P.mode === 'top') {
     P.th = Math.min(P.th, TOPMAX());
     const lim = TOPMAX() > 1000 ? 11000 : 400;
@@ -538,7 +568,7 @@ function applyCam() {
     cam.up.set(0, 0, -1);
     cam.position.copy(V(P.tx, P.ty, h));
     cam.lookAt(V(P.tx, P.ty, 0));
-    if (window.SITEPLAN) SITEPLAN.onCam();
+    if (window.SITEPLAN) LATE.SITEPLAN.onCam();
     return;
   }
   cam.up.set(0, 1, 0);
@@ -548,7 +578,7 @@ function applyCam() {
       t = P.tgt;
     const ox = t[0] + Math.sin(a) * Math.cos(e) * P.r,
       oy = t[1] + Math.cos(a) * Math.cos(e) * P.r,
-      gz = window.RATSCHER && RATSCHER.ready ? KERN.terrain(ox, oy) + 3 : 0.6; // never inside a hill
+      gz = window.RATSCHER && LATE.RATSCHER.ready ? KERN.terrain(ox, oy) + 3 : 0.6; // never inside a hill
     cam.fov = 45;
     cam.near = Math.max(0.1, P.r * 0.02);
     cam.far = FAR0();
@@ -556,7 +586,7 @@ function applyCam() {
     cam.position.copy(V(ox, oy, Math.max(gz, t[2] + Math.sin(e) * P.r)));
     cam.lookAt(V(...t));
   } else {
-    if (window.VEH && VEH.applyCam()) return; // V16b: driving – chase camera or the driver's eyes
+    if (window.VEH && LATE.VEH.applyCam()) return; // V16b: driving – chase camera or the driver's eyes
     const y = (P.yaw * Math.PI) / 180,
       p = (P.pitch * Math.PI) / 180,
       c = P.cam; // P.cam: seat, ride or a short move there (23_play)
@@ -666,7 +696,7 @@ function camRay(a, b, pad = 0.14) {
   }
   return t;
 }
-function cam3Update(dt) {
+export function cam3Update(dt) {
   if (!CAM3.on) return;
   const b = cam3Base(),
     y = (P.yaw * Math.PI) / 180,
@@ -729,9 +759,9 @@ function headHit(x, y, z0, z1) {
 }
 function setStance(st, quiet) {
   if (!STANCES[st] || st === P.stance) return true;
-  if (P.mode !== 'walk' || (window.PLAY && PLAY.seated())) return false;
+  if (P.mode !== 'walk' || (window.PLAY && LATE.PLAY.seated())) return false;
   const say = t => {
-    if (!quiet && window.PLAY) PLAY.think(t, 2200);
+    if (!quiet && window.PLAY) LATE.PLAY.think(t, 2200);
   };
   if (st !== 'stand' && floorInfo(P.x, P.y, P.feet)[1] === 'ladder') {
     say('Nicht auf der Leiter.');
@@ -743,8 +773,8 @@ function setStance(st, quiet) {
     return false;
   }
   P.stance = st;
-  if (typeof SFX !== 'undefined' && SFX.cloth) SFX.cloth();
-  if (window.HUD) HUD.stanceChanged();
+  if (typeof LATE.SFX !== 'undefined' && LATE.SFX.cloth) LATE.SFX.cloth();
+  if (window.HUD) LATE.HUD.stanceChanged();
   markDirty();
   return true;
 }
@@ -754,21 +784,21 @@ function toggleStance(st) {
   return st === 'crouch' ? setStance('stand') : setStance('crouch', true) || setStance('stand');
 }
 function jump() {
-  if (P.mode !== 'walk' || (window.PLAY && PLAY.seated()) || P.air || P.vz !== 0) return false;
+  if (P.mode !== 'walk' || (window.PLAY && LATE.PLAY.seated()) || P.air || P.vz !== 0) return false;
   if (P.stance === 'crawl' || P.stance === 'prone') return setStance('stand', true) || setStance('crouch');
   if (P.stance === 'crouch' && !setStance('stand')) return false;
   if (floorInfo(P.x, P.y, P.feet)[1] === 'ladder' || !headroom(STANCES.stand.h + 0.3)) return false;
   P.vz = 3.5;
   P.air = true;
   P.airT = 0;
-  if (typeof SFX !== 'undefined' && SFX.hop) SFX.hop();
+  if (typeof LATE.SFX !== 'undefined' && LATE.SFX.hop) LATE.SFX.hop();
   markDirty();
   return true;
 }
 window.MOVE = { jump, setStance, toggleStance, STANCES };
 // ---------------- input ----------------
-const keys = new Set();
-const joy = { x: 0, y: 0, active: false };
+export const keys = new Set();
+export const joy = { x: 0, y: 0, active: false };
 window.addEventListener('keydown', e => {
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
   const k = e.key.toLowerCase();
@@ -778,7 +808,7 @@ window.addEventListener('keydown', e => {
   }
   if ((k === 'e' || k === 'enter') && !e.repeat) {
     if (window.PLAY) {
-      if (P.mode === 'walk' && PLAY.primary()) e.preventDefault();
+      if (P.mode === 'walk' && LATE.PLAY.primary()) e.preventDefault();
     } else {
       const d = nearDoor();
       if (d && P.mode === 'walk') {
@@ -805,7 +835,7 @@ for (const t of ['keydown', 'keyup'])
   window.addEventListener(t, e => {
     if (e.getModifierState) slowWalk = e.getModifierState('CapsLock');
   });
-const cv = R.domElement;
+export const cv = R.domElement;
 cv.style.touchAction = 'none';
 const pts = new Map();
 let pinch0 = null,
@@ -846,7 +876,7 @@ cv.addEventListener('pointermove', e => {
         CAM3.d = THREE.MathUtils.clamp(nd, CAM3.MIN, CAM3.MAX);
         markDirty();
       }
-    } else if (r > 1.35 && window.AVATAR && AVATAR.ready) {
+    } else if (r > 1.35 && window.AVATAR && LATE.AVATAR.ready) {
       CAM3.d = 1.8;
       setView3(true);
       pinch0 = null;
@@ -862,7 +892,7 @@ cv.addEventListener('pointermove', e => {
   markDirty();
 });
 // turning the view in the walk mode (mouse, touch, captured mouse in game/hud.js); with the figure the camera may look further up and down
-function look(dyaw, dpitch) {
+export function look(dyaw, dpitch) {
   P.yaw += dyaw;
   const lim = CAM3.on ? [-65, 72] : [-75, 75];
   P.pitch = THREE.MathUtils.clamp(P.pitch + dpitch, lim[0], lim[1]);
@@ -875,7 +905,7 @@ function zoom3(k) {
   if (P.mode !== 'walk') return;
   if (!CAM3.on) {
     zoomAcc = Math.min(2, zoomAcc * k);
-    if (zoomAcc > 1.18 && !CAM3.want && window.AVATAR && AVATAR.ready) {
+    if (zoomAcc > 1.18 && !CAM3.want && window.AVATAR && LATE.AVATAR.ready) {
       zoomAcc = 1;
       CAM3.d = 1.7;
       setView3(true);
@@ -913,7 +943,7 @@ cv.addEventListener(
   },
   { passive: false }
 );
-const ray = new THREE.Raycaster();
+export const ray = new THREE.Raycaster();
 function clickPick(e) {
   if (P.mode !== 'walk') return;
   const r = cv.getBoundingClientRect();
@@ -921,7 +951,7 @@ function clickPick(e) {
     new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, (-(e.clientY - r.top) / r.height) * 2 + 1),
     cam
   );
-  if (window.PLAY && PLAY.tap(e, ray)) return;
+  if (window.PLAY && LATE.PLAY.tap(e, ray)) return;
   const hits = ray.intersectObjects(
     DKEYS()
       .map(k => DOOR[k].group)
@@ -992,13 +1022,13 @@ document.querySelectorAll('[data-light]').forEach(b =>
     const v = b.dataset.light;
     setMode(v);
     document.querySelectorAll('[data-light]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
-    if (v !== 'auto' && v !== 'night') audio.setTime(v);
+    if (v !== 'auto' && v !== 'night') LATE.audio.setTime(v);
     try {
       SAVE.setRaw('pav-light2', v);
     } catch (e) {}
   })
 );
-function setCollide(v) {
+export function setCollide(v) {
   opt.collide = v;
   const b = $('collbtn');
   if (b) {
@@ -1007,7 +1037,7 @@ function setCollide(v) {
   }
 }
 $('collbtn')?.addEventListener('click', () => setCollide(!opt.collide));
-function qualLabel() {
+export function qualLabel() {
   const b = $('qualbtn');
   if (!b) return;
   b.setAttribute('aria-pressed', RENDER.tier === 'hoch' ? 'true' : 'false');
@@ -1060,13 +1090,13 @@ let last = performance.now(),
   lastPlace = '',
   lastDoor = null;
 const P3D = $('p-3d');
-function resetLastPlace() {
+export function resetLastPlace() {
   lastPlace = ''; // pavilion/variant.js: the place label is shown anew after a switch
 }
 // V16b5: a frame that throws (one bad value somewhere) no longer ends the frame loop for good: the next frame comes, the error goes to the
 // page's error handlers (log, a short notice – boot.js), the same error at most every 5 s
 let frameErrT = -1e9;
-function frame(now) {
+export function frame(now) {
   try {
     frame0(now);
   } catch (e) {
@@ -1106,7 +1136,7 @@ function frame0(now) {
     const n = Math.max(1, Math.ceil(dt / 0.034));
     for (let i = 0; i < n; i++) physics(dt / n, f, turn, side, keys.has('shift') ? 1.9 : slowWalk ? 0.56 : 1);
   }
-  if (P.mode === 'walk' && !(window.VEH && VEH.cur)) cam3Update(dt);
+  if (P.mode === 'walk' && !(window.VEH && LATE.VEH.cur)) cam3Update(dt);
   adaptExposure(dt);
   if (window.TICKS)
     for (let i = 0; i < TICKS.length; i++) {
@@ -1144,8 +1174,8 @@ function frame0(now) {
       renderFrame('motion');
       DIRTY.frame = false;
       MOTION.stillDue = true;
-      PERF.js += performance.now() - t0;
-      PERF.n++;
+      LATE.PERF.js += performance.now() - t0;
+      LATE.PERF.n++;
     } else if (now - MOTION.lastStill > Math.max(90, MOTION.stillMs * 2.5)) {
       if (window.VEG) VEG.update(cam.position);
       renderFrame('still');
@@ -1189,12 +1219,15 @@ const FPS = {
         applyTier(nt, false);
         qualLabel();
         this.done = true;
-        toast('Grafik auf „' + TIERS[nt].label + '“ gestellt, damit es flüssig läuft. Über „Grafik“ änderbar.', 6000);
+        LATE.toast(
+          'Grafik auf „' + TIERS[nt].label + '“ gestellt, damit es flüssig läuft. Über „Grafik“ änderbar.',
+          6000
+        );
       }
     }
   },
 };
-function physics(dt, f, turn, side, run) {
+export function physics(dt, f, turn, side, run) {
   if (P.mode === 'orbit') {
     if (f || turn || side) {
       P.az -= (turn + side) * 50 * dt;
@@ -1208,17 +1241,17 @@ function physics(dt, f, turn, side, run) {
       P.ty += f * k;
       markDirty();
     }
-  } else if (window.PLAY && PLAY.seated()) {
+  } else if (window.PLAY && LATE.PLAY.seated()) {
     // sitting, lying or riding along: look around; the walk keys stand up again
-    if (turn && !PLAY.seat.drive) {
+    if (turn && !LATE.PLAY.seat.drive) {
       P.yaw += turn * 95 * dt;
       markDirty();
     } // driving: the arrow keys steer (vehicles/vehicle.js)
-    if ((f || side) && !PLAY.seat.lock && !PLAY.seat.keepKeys) PLAY.stand();
+    if ((f || side) && !LATE.PLAY.seat.lock && !LATE.PLAY.seat.keepKeys) LATE.PLAY.stand();
     P.speed = 0;
     P.air = false;
     P.vz = 0;
-    PLAY.update(dt);
+    LATE.PLAY.update(dt);
     const pl = placeName();
     if (pl !== lastPlace) {
       lbl.textContent = pl;
@@ -1292,7 +1325,7 @@ function physics(dt, f, turn, side, run) {
       bob = third || P.stance !== 'stand' ? 0 : Math.sin((P.stride * Math.PI) / sl) * 0.022;
       if (P.stride > sl && !P.air) {
         P.stride = 0;
-        audio.step(
+        LATE.audio.step(
           surfType(P.x, P.y, P.feet),
           P.stance === 'stand' ? (run > 1 ? 1.25 : 1) : P.stance === 'crouch' ? 0.6 : 0.35
         );
@@ -1333,7 +1366,7 @@ function physics(dt, f, turn, side, run) {
         markDirty();
         if (P.feet === fl) {
           if (P.vz < -2.4) {
-            audio.step(surfType(P.x, P.y, P.feet), P.vz < -4 ? 1.6 : 1.15);
+            LATE.audio.step(surfType(P.x, P.y, P.feet), P.vz < -4 ? 1.6 : 1.15);
             stepZ = P.feet;
             P.landT = P.vz < -4.5 ? 0.45 : 0.22;
           }
@@ -1352,14 +1385,14 @@ function physics(dt, f, turn, side, run) {
     if (P.vz === 0 && Math.abs(P.feet - stepZ) > 0.12) {
       stepZ = P.feet;
       P.stride = 0;
-      audio.step(surfType(P.x, P.y, P.feet), 1.0, true);
+      LATE.audio.step(surfType(P.x, P.y, P.feet), 1.0, true);
     }
     const pl = placeName();
     if (pl !== lastPlace) {
       lbl.textContent = pl;
       lastPlace = pl;
     }
-    if (window.PLAY) PLAY.update(dt);
+    if (window.PLAY) LATE.PLAY.update(dt);
     else {
       const nd = nearDoor(),
         dtxt = k =>
@@ -1385,7 +1418,7 @@ function physics(dt, f, turn, side, run) {
       lastPlace = nm;
       if (dbtn) dbtn.hidden = true;
       lastDoor = null;
-      if (window.PLAY) PLAY.update(0);
+      if (window.PLAY) LATE.PLAY.update(0);
     }
   }
   if (updateDoors(dt)) markDirty();
@@ -1395,7 +1428,7 @@ function physics(dt, f, turn, side, run) {
       P.ty,
       THREE.MathUtils.clamp(P.th * 0.75 * Math.max(1, stage.clientWidth / Math.max(1, stage.clientHeight)), 16, 90)
     );
-  else if (!(window.VEH && VEH.sun()))
+  else if (!(window.VEH && LATE.VEH.sun()))
     sunFollow(P.mode === 'walk' ? P.x : P.tgt[0], P.mode === 'walk' ? P.y : P.tgt[1]);
   if (window.WORKS && WORKS.update && WORKS.update(dt)) markDirty();
   if (P.mode === 'walk') STREAM.listen(P.x, P.y);
@@ -1412,9 +1445,9 @@ function physics(dt, f, turn, side, run) {
       }
     }
   }
-  audio.update(dt);
+  LATE.audio.update(dt);
 }
-function resize() {
+export function resize() {
   const w = stage.clientWidth,
     h = stage.clientHeight;
   if (!w || !h) return;

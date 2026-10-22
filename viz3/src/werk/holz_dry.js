@@ -10,6 +10,20 @@
 // the pith. The meter is a pin-type resistance meter (species group 3 for spruce/larch, temperature correction ~0.5 % per 5.6 °C, reliable
 // 6–30 %, above that only a rough figure). Time-lapse via CLOCK.wait. Dry boards (≤ 12 % after the drying cabinet in the workshop) go to the
 // workshop as stock (werk/werk.js, own wood for the end-grain board).
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { scene, V } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
+import { BUILD } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { PLAY } from '../game/play.js';
+import { QUESTS } from '../game/quests.js';
+import { CLOCK } from '../time/clock.js';
+import { WERK } from './werk.js';
+import { WUI } from './werkui.js';
+import { DN } from '../time/daynight.js';
+import { HOLZ } from './holz.js';
+import { HOLZSAW } from './holz_saw.js';
 const HOLZDRY = (() => {
   const de = (v, d = 1) => Number(v).toFixed(d).replace('.', ','),
     think = (t, ms) => PLAY.think(t, ms);

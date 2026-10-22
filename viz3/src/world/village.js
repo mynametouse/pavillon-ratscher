@@ -7,7 +7,13 @@
 // night some windows are lit. Roofs are rebuilt from the fitted ones with overhanging eaves and verges, a fascia and soffit, ridge tiles,
 // gutters and downpipes, chimneys; clay tiles in the colour the orthophoto shows for that building (else fibre cement, sheet metal, slate,
 // bitumen). Per building: S.bld (facades, eave, roof, style). Landmarks, street lamps, near details: world/village_props.js.
-const VILLAGE = (() => {
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { scene } from '../core/head.js';
+import { markDirty, texFile, texFileOf, TEXMAN, whenLoaded } from '../core/assets.js';
+import { RATSCHER } from './ratscher.js';
+import { ROADS } from './roads.js';
+export const VILLAGE = (() => {
   const S = { on: false, ready: false, bld: [], byId: new Map(), meshes: [], U: null, ANGER: [222, -108] };
   if (!window.RATSCHER || !RATSCHER.on) return S;
   const hh = n => {
@@ -1024,7 +1030,7 @@ const VILLAGE = (() => {
   // ---- night: windows lit by the clock (evening most, deep night a few, early morning some) ----
   S.winShare = () => {
     if (!window.CLOCK) return 0.4;
-    const h = (((CLOCK.t / 60) % 24) + 24) % 24;
+    const h = (((LATE.CLOCK.t / 60) % 24) + 24) % 24;
     return h < 5
       ? 0.05
       : h < 6
@@ -1040,13 +1046,13 @@ const VILLAGE = (() => {
                 : 0.5 - (h - 22) * 0.22;
   };
   S.night = () => {
-    if (window.DN && DN.active && DN.state) return DN.state.night;
+    if (window.DN && LATE.DN.active && LATE.DN.state) return LATE.DN.state.night;
     return window.MODE_NOW === 'dusk' ? 0.8 : 0;
   };
   function tick() {
     if (!S.U) return;
     const n = S.night(),
-      p = window.DN && DN.active ? S.winShare() : 0.45;
+      p = window.DN && LATE.DN.active ? S.winShare() : 0.45;
     if (Math.abs(n - S.U.uNight.value) > 0.01 || Math.abs(p - S.U.uWinP.value) > 0.01) {
       S.U.uNight.value = n;
       S.U.uWinP.value = p;

@@ -1,6 +1,19 @@
 // ===================== V15 HUD and menu: what used to sit in button rows is in one menu (☰, Esc, M); while playing only a HUD: =====================
 // the bar of things (inventory places 1–8, the bag), the action buttons above it, the task at the top and on touch screens the moves.
 // Also here: the inventory window (I), pictures of the things rendered from their 3D models, the captured mouse (pointer lock).
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, cam, COARSE, R, scene } from '../core/head.js';
+import { LOAD, markDirty } from '../core/assets.js';
+import { phase } from '../core/geo.js';
+import { CAM3, cv, keys, look, P, ray, setView3 } from './game.js';
+import { toast } from '../audio/audio.js';
+import { PLAN } from '../pavilion/plan.js';
+import { SITEPLAN } from '../world/siteplan.js';
+import { PLAY } from './play.js';
+import { PIANO } from '../audio/music.js';
+import { QUESTS } from './quests.js';
 phase(null);
 // ---- pictures of the things: their own 3D model, lit from the front, rendered once into a small image (cached) ----
 const ICON = (() => {
@@ -176,7 +189,7 @@ const ICON = (() => {
     },
   };
 })();
-const HUD = (() => {
+export const HUD = (() => {
   const menu = $('menu'),
     mbtn = $('menubtn'),
     camb = $('camtog'),
@@ -265,7 +278,7 @@ const HUD = (() => {
   });
   menu.querySelectorAll('[data-fig]').forEach(b =>
     b.addEventListener('click', () => {
-      if (window.AVATAR) AVATAR.setKind(b.dataset.fig);
+      if (window.AVATAR) LATE.AVATAR.setKind(b.dataset.fig);
       else {
         try {
           SAVE.setRaw('pav-fig', b.dataset.fig);
@@ -321,7 +334,7 @@ const HUD = (() => {
   }
   // ---------------- view: the figure (shoulder camera) or the own eyes ----------------
   function viewChanged() {
-    const ready = !!(window.AVATAR && AVATAR.ready);
+    const ready = !!(window.AVATAR && LATE.AVATAR.ready);
     camb.hidden = !ready;
     const on = CAM3.on || (CAM3.want && ready && P.mode !== 'walk');
     camb.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -620,19 +633,19 @@ const HUD = (() => {
         return true;
       }
       if (id === 'machwin') {
-        WUI.close(true);
+        LATE.WUI.close(true);
         return true;
       }
       if (id === 'gearwin') {
-        GEAR.setWin(false);
+        LATE.GEAR.setWin(false);
         return true;
       }
       if (id === 'clockwin') {
-        CLOCK.setWin(false);
+        LATE.CLOCK.setWin(false);
         return true;
       }
       if (id === 'werkbuch') {
-        WUI.book(false);
+        LATE.WUI.book(false);
         return true;
       }
       const x = el.querySelector('.x, #np-close, #pp-close, #perfclose');
@@ -658,7 +671,7 @@ const HUD = (() => {
   window.addEventListener(
     'keydown',
     e => {
-      const mw = window.WUI && WUI.open;
+      const mw = window.WUI && LATE.WUI.open;
       if ((!S.open && !S.inv && !mw) || typing()) return;
       const k = e.key;
       if (mw && !S.open && !S.inv) {
@@ -728,7 +741,7 @@ const HUD = (() => {
       seatedWas = sd;
       document.body.dataset.seated = sd ? '1' : '';
     }
-    const rd = !!(window.AVATAR && AVATAR.ready);
+    const rd = !!(window.AVATAR && LATE.AVATAR.ready);
     if (rd !== readyWas) {
       readyWas = rd;
       viewChanged();
@@ -766,7 +779,7 @@ const HUD = (() => {
   });
   let intro2 = false;
   window.TICKS.push(() => {
-    if (intro2 || P.mode !== 'walk' || !LOAD.ready || !window.WERK || !WERK.on) return;
+    if (intro2 || P.mode !== 'walk' || !LOAD.ready || !window.WERK || !LATE.WERK.on) return;
     intro2 = true;
     const seen = !SAVE.once('pav-v15b'); // one-time hint
     if (!seen)
@@ -824,5 +837,6 @@ const HUD = (() => {
     panelOpen,
   };
 })();
+LATE.HUD = HUD;
 window.HUD = HUD;
 window.ICON = ICON;

@@ -1,3 +1,26 @@
+import * as THREE from 'three';
+import { V } from '../core/head.js';
+import { beam, bldBegin, bldEnd, boardLeaf, COL, cyl, PH, PH_END, RB, tagPh } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { placeGLB } from '../pavilion/interior.js';
+import {
+  BLD,
+  faceOf,
+  FOOT,
+  gB,
+  INSIDE,
+  lcol,
+  ldoor,
+  lwalk,
+  lwc,
+  MATS,
+  rotDesc,
+  SINK,
+  siteGroup,
+  slopeSlab,
+  wheel,
+  worldOf,
+} from './site_base.js';
 bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', pad: 0.3 });
 // ===== B: carport 6,0 × 4,0 m, ca. 3,5 m hoch (Pfosten 12/12, Pfetten, Sparren, Trapezblech) with the Tabbert caravan; door side faces the garden entrance (north) =====
 {

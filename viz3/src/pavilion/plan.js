@@ -1,7 +1,20 @@
 // ===================== Planungsmodus: Gegenstände greifen, verschieben, drehen, stapeln, hinzufügen, löschen; Layout im Browser gespeichert =====================
-const ITEMS = [];
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, cam, scene, V, varOk } from '../core/head.js';
+import { loadModel, markDirty, MODELS, plain } from '../core/assets.js';
+import { BUILD, COL, cyl, itemCol, itemFootprint, itemTheta, itemWalk, RB } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { gB } from '../garden/site_base.js';
+import { cv, floorAt, go, P, PHASE, phOk, rebuildGrids, setPhase } from '../game/game.js';
+import { toast } from '../audio/audio.js';
+import { PHASES } from './phases.js';
+import { NM } from '../npc/npc.js';
+Object.assign(LATE, { applyItem, registerItem }); // functions for modules that load earlier: core/geo.js, pavilion/interior.js
+export const ITEMS = [];
 let ITEM_N = 0;
-const PLAN = { on: false, sel: null, drag: null, dirtyLayout: false };
+export const PLAN = { on: false, sel: null, drag: null, dirtyLayout: false };
 const PROC = {
   // procedural items built in a local frame (origin at the base centre, +y = front)
   bank: {
@@ -583,7 +596,7 @@ function saveLayout() {
     SAVE.setRaw('pav-layout', JSON.stringify(layoutState()));
     PLAN.dirtyLayout = false;
   } catch (e) {}
-  if (window.SITEPLAN) SITEPLAN.changed();
+  if (window.SITEPLAN) LATE.SITEPLAN.changed();
 }
 // stored layout → items: everything first to its home, then the stored moves, removals and additions (once at start, and when a published plan arrives)
 function applyLayout(L) {
@@ -630,7 +643,7 @@ function resetLayout() {
   } catch (e) {}
   applyLayout(null);
   toast('Ursprüngliche Einrichtung wiederhergestellt');
-  if (window.SITEPLAN) SITEPLAN.changed();
+  if (window.SITEPLAN) LATE.SITEPLAN.changed();
 }
 // ---- UI ----
 function setPlan(v) {

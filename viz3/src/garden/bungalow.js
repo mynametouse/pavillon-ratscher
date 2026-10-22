@@ -1,3 +1,32 @@
+import * as THREE from 'three';
+import { V } from '../core/head.js';
+import { beam, bldBegin, bldEnd, boardLeaf, cyl, RB, tagPh } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { placeGLB } from '../pavilion/interior.js';
+import {
+  BLD,
+  faceOf,
+  FOOT,
+  gB,
+  ICEIL,
+  INSIDE,
+  IW,
+  lbox,
+  lcol,
+  ldoor,
+  ljamb,
+  lshut,
+  lw,
+  lwalk,
+  lwc,
+  lwin,
+  MATS,
+  rotDesc,
+  SINK,
+  siteGroup,
+  slopeSlab,
+  worldOf,
+} from './site_base.js';
 bldBegin('bungalow', 'Bungalow', BLD.bungalow.c, { short: 'Bungalow', pad: 0.3 });
 // ===== D: grüner Bungalow (5,0 × 5,0 m) wie der Wohnwagen zur Pforte ausgerichtet: Giebel mit Haustür und zwei Fenstern mit Läden nach Norden, First Nord–Süd, Hintertür im Südgiebel =====
 // local frame (az 0): +x = north (front gable), −x = south (back gable), +y = west, −y = east

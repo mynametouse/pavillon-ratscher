@@ -1,18 +1,33 @@
 // ---------------- rendering: one fixed pipeline (scene with ambient occlusion → tone mapping → SMAA) for every frame ----------------
 // The quality tier (resolution, AO quality) is chosen once while the loading screen is up, by timing a few frames on this GPU; it never
 // changes on its own while someone looks around (switching looked like flicker). The "Grafik" button cycles the tiers by hand.
-const TIERS = {
+import * as THREE from 'three';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { N8AOPass } from 'n8ao';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { BASE, cam, DPR, HQ0, OFFLINE, QS, R, scene, stage, VARIANT } from '../core/head.js';
+import { FIGSH, GI, LM, LOAD, LOADLOG, markDirty, SV } from '../core/assets.js';
+import { PHN } from '../core/geo.js';
+import { GLCHECK } from '../core/detail.js';
+import { pmrem, sun, sunDir } from '../garden/env.js';
+export const TIERS = {
   hoch: { label: 'hoch', pr: Math.min(DPR, 1.5), ao: 'Medium' },
   mittel: { label: 'mittel', pr: Math.min(DPR, 1.0), ao: 'Performance' },
   schnell: { label: 'schnell', pr: Math.min(DPR, 1.0) * 0.8, ao: null },
 };
-const TIER_ORDER = ['hoch', 'mittel', 'schnell'];
-let TIER_USER = null;
+export const TIER_ORDER = ['hoch', 'mittel', 'schnell'];
+export let TIER_USER = null;
 try {
   const t = SAVE.raw('pav-tier');
   if (TIERS[t]) TIER_USER = t;
 } catch (e) {}
-const RENDER = {
+export const RENDER = {
   tier: TIER_USER || (HQ0 ? 'hoch' : 'mittel'),
   composer: null,
   ao: null,
@@ -60,7 +75,7 @@ function buildComposer() {
   }
 }
 // photographic finish after tone mapping: a touch of contrast and colour (AgX alone is a little flat) and a soft lens vignette
-const GRADE = { contrast: { value: 1.06 }, sat: { value: 1.08 }, vig: { value: 0.32 }, lift: { value: 0.0 } };
+export const GRADE = { contrast: { value: 1.06 }, sat: { value: 1.08 }, vig: { value: 0.32 }, lift: { value: 0.0 } };
 function gradePass() {
   return new ShaderPass({
     uniforms: Object.assign({ tDiffuse: { value: null } }, GRADE),
@@ -75,8 +90,8 @@ function gradePass() {
 buildComposer();
 // ---- motion quality: while the camera moves, frames come from a cheaper path (lower resolution, no ambient occlusion, no SMAA);
 // as soon as it stands still for a moment, one full-quality frame. The motion resolution adapts to the measured frame rate (target ≥ 50 fps). ----
-const MLEVELS = [0, 1.0, 0.85, 0.72, 0.6, 0.5]; // 0 = moving frames in full quality (fast GPUs); then resolution factors of the still quality
-const MOTION = {
+export const MLEVELS = [0, 1.0, 0.85, 0.72, 0.6, 0.5]; // 0 = moving frames in full quality (fast GPUs); then resolution factors of the still quality
+export const MOTION = {
   comp: null,
   level: 2,
   lastMove: -1e9,
@@ -98,7 +113,7 @@ function buildMotion() {
   MOTION.comp = comp;
   sizeMotion();
 }
-function sizeMotion() {
+export function sizeMotion() {
   if (!MOTION.comp) return;
   const w = Math.max(2, stage.clientWidth || window.innerWidth),
     h = Math.max(2, stage.clientHeight || window.innerHeight);
@@ -113,7 +128,7 @@ function setMotionLevel(l) {
   sizeMotion();
 }
 // camera signature: did the view change since the last frame?
-function camMoved() {
+export function camMoved() {
   const s = MOTION.sig,
     p = cam.position,
     q = cam.quaternion,
@@ -126,7 +141,7 @@ function camMoved() {
   return m;
 }
 // adapt the motion resolution: median of the last 30 intervals between consecutive moving frames
-function motionTrack(now) {
+export function motionTrack(now) {
   const dt = now - MOTION.lastT;
   MOTION.lastT = now;
   if (dt > 0 && dt < 250) MOTION.buf.push(dt);
@@ -144,7 +159,7 @@ function motionTrack(now) {
   }
 }
 buildMotion();
-function applyTier(name, save) {
+export function applyTier(name, save) {
   const T = TIERS[name] || TIERS.mittel;
   RENDER.tier = name;
   const aoOn = !!(T.ao && RENDER.ao);
@@ -164,16 +179,16 @@ function applyTier(name, save) {
   sizeMotion();
   markDirty();
 }
-function setQuality(v) {
+export function setQuality(v) {
   const name = typeof v === 'string' ? v : v ? 'hoch' : 'schnell';
   applyTier(name, true);
 }
-function nextTier() {
+export function nextTier() {
   const i = TIER_ORDER.indexOf(RENDER.tier);
   setQuality(TIER_ORDER[(i + 1) % TIER_ORDER.length]);
 }
 applyTier(RENDER.tier, false);
-function renderFrame(kind) {
+export function renderFrame(kind) {
   if (window.PREFRAME) window.PREFRAME();
   if (window.FIGSHADOW) window.FIGSHADOW();
   if (kind === 'motion' && MOTION.level > 0 && MOTION.comp) MOTION.comp.render();
@@ -185,7 +200,7 @@ const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
 // V16b2: what draws the pictures. A software renderer (no graphics card: SwiftShader, Windows' "Microsoft Basic Render Driver", llvmpipe)
 // draws every frame on the processor – seconds per frame at full size. There the lightest tier is set at once and nothing is timed:
 // timing six frames per tier took minutes and looked like a hang at "100 %" (Falko, 22.10.2026).
-const GLINFO = (() => {
+export const GLINFO = (() => {
   let r = '';
   try {
     const gl = R.getContext(),
@@ -194,6 +209,7 @@ const GLINFO = (() => {
   } catch (e) {}
   return { renderer: r, soft: /swiftshader|basic render|llvmpipe|softpipe|software/i.test(r) };
 })();
+LATE.GLINFO = GLINFO;
 window.GLINFO = GLINFO;
 // V16b3: decided at once, not only after loading – every frame on a software renderer is cheap from the start
 if (GLINFO.soft && !TIER_USER && !OFFLINE && RENDER.tier !== 'schnell') applyTier('schnell', false);
@@ -339,7 +355,7 @@ async function uploadTextures(say, seenOnly) {
     };
   let fr = null;
   if (seenOnly) {
-    applyCam();
+    LATE.applyCam();
     cam.updateMatrixWorld();
     fr = new THREE.Frustum().setFromProjectionMatrix(
       new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse)
@@ -377,13 +393,13 @@ async function uploadTextures(say, seenOnly) {
   }
   return list.length;
 }
-async function prepareGPU(say) {
+export async function prepareGPU(say) {
   const t0 = performance.now(),
     step = t => say && say('Grafik wird vorbereitet … ' + t);
   const soft = GLINFO.soft && !TIER_USER && !OFFLINE;
   if (soft) {
     applyTier('schnell', false);
-    resize();
+    LATE.resize();
     RENDER.bench = { soft: 1 };
   }
   // V16b4: the light way (as for a software renderer) on every device: only the textures in view, no frame of everything – that frame was
@@ -418,7 +434,7 @@ async function prepareGPU(say) {
       shown = [],
       phOn = o =>
         o.userData.ph === undefined ||
-        (o.userData.ph <= PHASE && (o.userData.phEnd === undefined || PHASE < o.userData.phEnd));
+        (o.userData.ph <= LATE.PHASE && (o.userData.phEnd === undefined || LATE.PHASE < o.userData.phEnd));
     scene.traverse(o => {
       if (o.isMesh && o.frustumCulled) {
         off.push(o);
@@ -430,7 +446,7 @@ async function prepareGPU(say) {
       }
     });
     R.shadowMap.needsUpdate = true;
-    applyCam();
+    LATE.applyCam();
     renderFrame();
     for (const o of off) o.frustumCulled = true;
     for (const o of shown) o.visible = false;
@@ -441,7 +457,7 @@ async function prepareGPU(say) {
     LOAD.alive = performance.now();
     await nextFrame();
     R.shadowMap.needsUpdate = true;
-    applyCam();
+    LATE.applyCam();
   }
   LOAD.alive = performance.now();
   await nextFrame();
@@ -462,7 +478,7 @@ async function prepareGPU(say) {
     if (ms > 250 && name !== 'schnell') {
       name = 'schnell';
       applyTier(name, false);
-      resize();
+      LATE.resize();
       renderFrame();
       await nextFrame();
       ms = timeOne();
@@ -473,7 +489,7 @@ async function prepareGPU(say) {
       while (ms > 45 && name !== 'schnell') {
         name = ms > 150 ? 'schnell' : TIER_ORDER[TIER_ORDER.indexOf(name) + 1];
         applyTier(name, false);
-        resize();
+        LATE.resize();
         renderFrame();
         await nextFrame();
         ms = timeFrames(name === 'schnell' ? 1 : 4);
@@ -496,7 +512,7 @@ const envCache = {},
   envBusy = {};
 let envWant = null;
 // a prefiltered image light per mood: the render target when it is there, else null (and it is fetched and prefiltered once)
-function envLoad(mode) {
+export function envLoad(mode) {
   const h = HDRI[mode];
   if (!h) return null;
   if (envCache[mode]) return envCache[mode];
@@ -537,7 +553,7 @@ function envLoad(mode) {
       tex.dispose();
       envCache[mode] = rt;
       delete envBusy[mode];
-      if (window.DN && DN.active) DN.update(true);
+      if (window.DN && LATE.DN.active) LATE.DN.update(true);
       else envUse(mode, rt);
     },
     undefined,
@@ -548,7 +564,7 @@ function envLoad(mode) {
   return null;
 }
 function envUse(mode, rt) {
-  if (envWant !== mode || (window.DN && DN.active)) return;
+  if (envWant !== mode || (window.DN && LATE.DN.active)) return;
   const h = HDRI[mode];
   scene.environment = rt.texture;
   // three: equirect u -> phi = 2π(u-0.5) measured from +X towards +Z; our sun: phi_s = atan2(Z, X)
@@ -557,7 +573,7 @@ function envUse(mode, rt) {
   scene.environmentRotation.set(0, -(phiS - phiH) * (window.ENV_SIGN || 1), 0);
   markDirty();
 }
-function setEnvFor(mode) {
+export function setEnvFor(mode) {
   envWant = mode;
   const rt = envLoad(mode);
   if (rt) envUse(mode, rt);
@@ -565,7 +581,7 @@ function setEnvFor(mode) {
 // ---------------- baked sky-visibility volume (soft room-scale occlusion indoors) ----------------
 // one volume per design variant (A: tower, B: ladder stairs); the active one is bound to the shared uniforms
 const SVTEX = {};
-function svApply(key) {
+export function svApply(key) {
   const e = SVTEX[key] || SVTEX.A || SVTEX.B;
   if (!e) return;
   const sv = e.man;
@@ -682,7 +698,7 @@ function giLoad(v, m) {
 }
 // V16a: between two moods the two baked volumes are mixed on the CPU (8 slices per frame) into one of two buffers; the other stays bound meanwhile.
 // E = (1−k)·E1 + k·E2 per colour (decoded from the log encoding), the direction term weighted by brightness.
-const GIMIX = { job: null, ready: null, buf: [null, null] };
+export const GIMIX = { job: null, ready: null, buf: [null, null] };
 function giMix(v, man, ea, eb, key, k, pair) {
   if (GIMIX.ready && GIMIX.ready.key === key) return GIMIX.ready;
   const stale = GIMIX.ready && GIMIX.ready.pair === pair ? GIMIX.ready : null; // the same two moods at a nearby mix: shown until the new one is done
@@ -772,15 +788,15 @@ function giMixStep() {
 }
 (window.TICKS = window.TICKS || []).push(giMixStep);
 let GIVAR = null;
-function giApply() {
+export function giApply() {
   const v = VARIANT,
     man = GIMAN[v];
-  const W = window.DN && DN.active ? DN.giWant() : { a: window.MODE_NOW || 'day', b: null, k: 0, g: 1 };
+  const W = window.DN && LATE.DN.active ? LATE.DN.giWant() : { a: window.MODE_NOW || 'day', b: null, k: 0, g: 1 };
   const want =
     !!(man && man.modes && man.modes[W.a]) &&
     !QS.get('nogi') &&
-    (window.PHASE ?? 99) >= PHASES.length - 1 &&
-    !(typeof P !== 'undefined' && P.mode === 'top');
+    (window.PHASE ?? 99) >= LATE.PHASES.length - 1 &&
+    !(typeof LATE.P !== 'undefined' && LATE.P.mode === 'top');
   if (!want) {
     if (GI.on.value) {
       GI.on.value = 0;

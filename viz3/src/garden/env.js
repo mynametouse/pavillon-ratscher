@@ -1,9 +1,17 @@
 // ---------- environment: sky, sun, ground, terrain, neighbours ----------
-const S0 = window.SITE;
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { BASE, HQ0, OFFLINE, QS, R, rnd, rr, scene, V } from '../core/head.js';
+import { ANISO, cellsOf, LM, markDirty, patchSV, pbrMat, texFileOf, TEXMAN, texUse, vegReady } from '../core/assets.js';
+import { bldBegin, bldEnd, COL, PH, PH_END, phase, PHN, tagPh } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { DETAIL } from '../core/detail.js';
+import { STREAM } from './stream_geo.js';
+export const S0 = window.SITE;
 // real surroundings (27_ratscher): with the geodata package the made-up far land, forest blobs, lake and village are only a fallback –
 // they are hidden as soon as the real terrain is built (FAKEENV); the made-up far trees are not planted at all
-const GEO_REAL = !!window.GEOMAN && !QS.get('nogeo');
-const FAKEENV = [];
+export const GEO_REAL = !!window.GEOMAN && !QS.get('nogeo');
+export const FAKEENV = [];
 const fakeEnv = o => {
   if (GEO_REAL)
     o.traverse(c => {
@@ -13,7 +21,7 @@ const fakeEnv = o => {
   return o;
 }; // kept separate (not merged), so it can be taken out again
 // near ground: the orthophoto shows through outside the modelled site (zone of the garden and the neighbours, corridor of the field path and stream)
-const GEOGU = {
+export const GEOGU = {
   uGeoTex: { value: null },
   uGeoOn: { value: 0 },
   uGeoAB: { value: new THREE.Vector2(1, 0) },
@@ -26,18 +34,18 @@ const GEOGU = {
   uGeoFlatK: { value: 1 },
   uGeoCurve: { value: 0 },
 };
-function dirFromAz(az, el) {
+export function dirFromAz(az, el) {
   const a = (az * Math.PI) / 180,
     e = (el * Math.PI) / 180;
   return V(Math.sin(a) * Math.cos(e), Math.cos(a) * Math.cos(e), Math.sin(e)).normalize();
 }
-let sunDir = dirFromAz(248, 13);
+export let sunDir = dirFromAz(248, 13);
 // other modules replace the sun direction through setSunDir (an imported variable cannot be assigned)
-function setSunDir(d) {
+export function setSunDir(d) {
   sunDir = d;
 }
 // sky with soft cumulus layer
-const skyU = {
+export const skyU = {
   sunDir: { value: sunDir.clone() },
   zen: { value: new THREE.Color(0x6e93bf) },
   hor: { value: new THREE.Color(0xf1d6ae) },
@@ -47,7 +55,7 @@ const skyU = {
   cloudShade: { value: new THREE.Color(0x9aa3b2) },
   cloudK: { value: 0.55 },
 };
-const skyMat = new THREE.ShaderMaterial({
+export const skyMat = new THREE.ShaderMaterial({
   uniforms: skyU,
   side: THREE.BackSide,
   depthWrite: false,
@@ -67,7 +75,7 @@ const skyMat = new THREE.ShaderMaterial({
      #include <colorspace_fragment>
    }`,
 });
-const sky = new THREE.Mesh(new THREE.SphereGeometry(9000, 48, 24), skyMat);
+export const sky = new THREE.Mesh(new THREE.SphereGeometry(9000, 48, 24), skyMat);
 sky.userData.noMerge = true;
 sky.renderOrder = -10;
 scene.add(sky); // drawn first: the real land reaches beyond the sky sphere
@@ -105,7 +113,7 @@ function skyAlign(mode) {
   photoSkyU.off.value = phiS / (2 * Math.PI) + 0.5 - h.sun_u;
 }
 // a sky photo: the texture when it is there, else null (and it is fetched); the day-and-night blend (time/daynight.js) asks for two at a time
-function skyLoad(mode) {
+export function skyLoad(mode) {
   const h = SKYMAN[mode];
   if (!h) return null;
   const e = skyTex[mode];
@@ -123,7 +131,7 @@ function skyLoad(mode) {
       t.wrapT = THREE.ClampToEdgeWrapping;
       t.needsUpdate = true;
       skyTex[mode] = t;
-      if (window.DN && DN.active) DN.update(true);
+      if (window.DN && LATE.DN.active) LATE.DN.update(true);
       else skyUse(mode, t);
       markDirty();
     },
@@ -135,7 +143,7 @@ function skyLoad(mode) {
   return null;
 }
 function skyUse(mode, t) {
-  if (skyWant !== mode || (window.DN && DN.active)) return;
+  if (skyWant !== mode || (window.DN && LATE.DN.active)) return;
   const h = SKYMAN[mode];
   photoSkyU.tSky.value = t;
   photoSkyU.lo.value = h.lo;
@@ -149,7 +157,7 @@ function skyUse(mode, t) {
     scene.fog.color.setRGB(hz[0] * (h.fogK ?? 0.9), hz[1] * (h.fogK ?? 0.9), hz[2] * (h.fogK ?? 0.9));
   markDirty();
 }
-function setSkyFor(mode) {
+export function setSkyFor(mode) {
   skyWant = mode;
   const h = SKYMAN[mode];
   if (!h) {
@@ -160,7 +168,7 @@ function setSkyFor(mode) {
   if (t) skyUse(mode, t);
 }
 scene.fog = new THREE.Fog(0xe4dccd, 500, 7000);
-const sun = new THREE.DirectionalLight(0xffdcae, 3.2);
+export const sun = new THREE.DirectionalLight(0xffdcae, 3.2);
 sun.castShadow = true;
 const SHS = OFFLINE ? 4096 : HQ0 ? 4096 : 2048;
 sun.shadow.mapSize.set(SHS, SHS);
@@ -178,8 +186,8 @@ sun.shadow.normalBias = 0.025;
 sun.shadow.radius = 3;
 scene.add(sun);
 scene.add(sun.target);
-let sunHalf = 16;
-function placeSun(center) {
+export let sunHalf = 16;
+export function placeSun(center) {
   const c = center || V(2, 2, 3),
     dist = 70 + Math.max(0, sunHalf - 16) * 1.6;
   sun.position.copy(c.clone().add(sunDir.clone().multiplyScalar(dist)));
@@ -189,8 +197,8 @@ function placeSun(center) {
 placeSun();
 // the sun's shadow box (±16 m) follows the walker in 4 m steps (workshop, stream); near the house and in the model view it stays on the house.
 // The plan view from above widens it (half size `half`) so every building in the picture casts its shadow.
-let sunC = [2, 2];
-function sunFollow(x, y, half = 16) {
+export let sunC = [2, 2];
+export function sunFollow(x, y, half = 16) {
   let cx = 2,
     cy = 2;
   if (half > 16 || Math.hypot(x - 2, y - 2) > 9) {
@@ -212,21 +220,21 @@ function sunFollow(x, y, half = 16) {
   placeSun(V(cx, cy, 3));
   markDirty(true);
 }
-const hemi = new THREE.HemisphereLight(0xcfe0f2, 0x7c786a, 0.35);
+export const hemi = new THREE.HemisphereLight(0xcfe0f2, 0x7c786a, 0.35);
 scene.add(hemi);
 // fallback environment from the sky until the HDRI arrives
-const pmrem = new THREE.PMREMGenerator(R);
+export const pmrem = new THREE.PMREMGenerator(R);
 {
   const es = new THREE.Scene();
   es.add(new THREE.Mesh(new THREE.SphereGeometry(100, 32, 16), skyMat));
   scene.environment = pmrem.fromScene(es, 0.02).texture;
 }
 // ---------- near ground (240 x 240 m): painted overview + photo lawn / gravel detail ----------
-const GSZ = 240,
+export const GSZ = 240,
   GPX = OFFLINE ? 4096 : HQ0 ? 3072 : 2048;
-const toPxF = p => (x, y) => [((x + GSZ / 2) / GSZ) * p, ((GSZ / 2 - y) / GSZ) * p];
+export const toPxF = p => (x, y) => [((x + GSZ / 2) / GSZ) * p, ((GSZ / 2 - y) / GSZ) * p];
 // garden paths (gravel): bridge over the stream in the north → between carport and bungalow → front door on the east side; branches to the caravan, bungalow, wash house, greenhouse, wooden house
-const PATHS = [
+export const PATHS = [
   [
     STREAM.bridgeGardenEnd,
     [STREAM.bridgeGardenEnd[0] + 0.35, STREAM.bridgeGardenEnd[1] - 1.4],
@@ -273,7 +281,7 @@ function mkCanvasG(px) {
   c.width = c.height = px;
   return c;
 }
-const gpaint = mkCanvasG(GPX),
+export const gpaint = mkCanvasG(GPX),
   gmask = mkCanvasG(GPX);
 {
   const g = gpaint.getContext('2d'),
@@ -459,7 +467,7 @@ const litTex = (() => {
   const t = new THREE.CanvasTexture(c);
   return t;
 })();
-function mkGroundMat(cut) {
+export function mkGroundMat(cut) {
   const lt = (TEXMAN.lawn && TEXMAN.lawn.tile) || [2, 2],
     gt = (TEXMAN.gravel && TEXMAN.gravel.tile) || [1, 1];
   const m = new THREE.MeshStandardMaterial({ map: gpTex, roughness: 1, envMapIntensity: 0.8 });
@@ -494,7 +502,7 @@ function mkGroundMat(cut) {
   m.onBeforeCompile = sh => {
     Object.assign(sh.uniforms, U);
     const RD = window.ROADS
-      ? ROADS.shader(sh)
+      ? LATE.ROADS.shader(sh)
       : 'vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }'; // V16b roads (world/roads.js)
     sh.uniforms.tDet = { value: DETAIL.tex };
     const decl = /sampler2DArray\s+tDet\b/.test(RD) ? '' : 'uniform highp sampler2DArray tDet;\n'; // shared with the road shader's declaration
@@ -607,7 +615,7 @@ const lakeC = [1550 * Math.sin((106 * Math.PI) / 180), 1550 * Math.cos((106 * Ma
   lakeA = 520,
   lakeB = 200,
   lakeRot = (-35 * Math.PI) / 180;
-function inLake(x, y) {
+export function inLake(x, y) {
   const dx = x - lakeC[0],
     dy = y - lakeC[1];
   const c = Math.cos(lakeRot),
@@ -639,9 +647,9 @@ function forestAt(x, y, h) {
 }
 // fields beyond the near ground: crisp borders with a grassy margin, drill rows and tramlines along each field, soft patches – all procedural,
 // faded out where one pixel covers more than the pattern (forest and lake keep the vertex colour)
-const FIELDU = { uCloudK: { value: 0 }, uFT: { value: 0 } };
+export const FIELDU = { uCloudK: { value: 0 }, uFT: { value: 0 } };
 window.FIELDU = FIELDU;
-const FIELD_GLSL = `uniform float uFT;
+export const FIELD_GLSL = `uniform float uFT;
 float fHash( vec2 p ) { return fract( sin( dot( p, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); }
 float fNoise( vec2 p ) { vec2 i = floor( p ), f = fract( p ); vec2 u = f * f * ( 3.0 - 2.0 * f );
   return mix( mix( fHash( i ), fHash( i + vec2( 1.0, 0.0 ) ), u.x ), mix( fHash( i + vec2( 0.0, 1.0 ) ), fHash( i + vec2( 1.0, 1.0 ) ), u.x ), u.y ); }

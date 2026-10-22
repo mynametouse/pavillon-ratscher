@@ -1,8 +1,20 @@
 // ===================== V15 the player's own figure (third person, Mann or Frau): a rigged person whose motions come from an animation =====================
 // library retargeted offline onto its skeleton (chars/player.html): standing, walking, jogging, sprinting, ducking, crawling, lying, jumping,
 // sitting, carrying, chopping, kneeling … The thing in the hand sits in the right hand (tools), hangs from it (canister) or is held in both arms.
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { BASE, QS, scene, V } from '../core/head.js';
+import { markDirty, whenLoaded } from '../core/assets.js';
+import { phase } from '../core/geo.js';
+import { MOTION, RENDER } from '../render/render.js';
+import { CAM3, P, setView3 } from './game.js';
+import { NPCUI } from '../npc/npc.js';
+import { boneCanon, boneTurn, CHL, fsAdd, prepModel } from '../npc/npc_real.js';
+import { HELD, PLAY } from './play.js';
+import { HUD } from './hud.js';
 phase(null);
-const AVATAR = (() => {
+export const AVATAR = (() => {
   const PM = window.PLAYERMAN || null;
   const A = { ready: false, failed: !PM, kind: 'm', fig: null, figs: {}, loading: {}, clips: null };
   try {
@@ -117,7 +129,7 @@ const AVATAR = (() => {
           }
       }
     });
-    if (window.FELL && FELL.on)
+    if (window.FELL && LATE.FELL.on)
       try {
         wearZones(model);
       } catch (e) {
@@ -819,4 +831,5 @@ const AVATAR = (() => {
     );
   return Object.assign(A, { setKind, gesture, update, load, canonP, wear });
 })();
+LATE.AVATAR = AVATAR;
 window.AVATAR = AVATAR;

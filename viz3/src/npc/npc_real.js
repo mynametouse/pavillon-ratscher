@@ -2,9 +2,19 @@
 // Loaded after the scene is up; until then (or if loading fails) the low-poly figures stay. Walk cycle: motion capture, retargeted
 // offline onto both men (tools: chars/rt.html); standing pose = average of that cycle; Hubert keeps his own idle (an old man's stance).
 // Goats: one rigged goat with its own idle clip (head, ears, bleat), legs and grazing posed procedurally on top.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { clone as skelClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { BASE, cam, HQ0, OFFLINE, QS, R, scene } from '../core/head.js';
+import { ANISO, FIGSH, gltfDataURIs, markDirty, patchSV, toFloatAttrs, whenLoaded } from '../core/assets.js';
+import { sun, sunDir } from '../garden/env.js';
+import { RENDER } from '../render/render.js';
+import { P } from '../game/game.js';
+import { BLOBS, GOATS, NPCS, TRACTOR } from './npc.js';
 const CHARMAN = window.CHARMAN || null;
 const REAL = { ready: false, failed: false, started: false };
-const CHL = gltfDataURIs(new GLTFLoader());
+export const CHL = gltfDataURIs(new GLTFLoader());
 CHL.setMeshoptDecoder(MeshoptDecoder);
 // no stand-in figures while the real ones load: the simple low-poly ones only come back if loading fails
 const STANDIN = () => [NPCS.hubert.fig, NPCS.ronald.fig, ...GOATS.map(g => g.fig), TRACTOR];
@@ -38,7 +48,7 @@ for (const [a, b] of [
     [a + '_Foot']: b + 'Foot',
     [a + '_ToeBase']: b + 'ToeBase',
   });
-function boneCanon(n) {
+export function boneCanon(n) {
   const b = n.replace(/_\d+$/, '');
   return b.startsWith('mixamorig') ? b.replace(/^mixamorig:?/, '') : CCN[b] || null;
 }
@@ -62,7 +72,7 @@ function charMat(m, tint) {
 // rotate a bone about an axis given in the model's own frame (x = the figure's left, y = up, z = forward); parents must be up to date.
 // The pose before the turn is kept in sv and put back before the next mixer update: the mixer only writes a bone when its own
 // value changes, so a turned bone would otherwise keep (and add up) the turns of earlier frames.
-function boneTurn(sv, modelQinv, b, ax, ay, az, ang) {
+export function boneTurn(sv, modelQinv, b, ax, ay, az, ang) {
   if (!b || !ang) return;
   if (!sv.has(b)) sv.set(b, b.quaternion.clone());
   b.parent.getWorldQuaternion(_rq);
@@ -72,7 +82,7 @@ function boneTurn(sv, modelQinv, b, ax, ay, az, ang) {
   b.quaternion.premultiply(_rq2);
   b.updateMatrixWorld(true);
 }
-function prepModel(model, h, o = {}) {
+export function prepModel(model, h, o = {}) {
   model.updateMatrixWorld(true);
   model.traverse(x => {
     if (x.isMesh) {
@@ -511,7 +521,7 @@ function fsDepthMat(m) {
   return d;
 }
 // fig: { g }, r: radius around the point cy m above the feet that holds the whole figure
-function fsAdd(fig, r, cy) {
+export function fsAdd(fig, r, cy) {
   const ms = [];
   fig.g.traverse(x => {
     if (!x.isMesh || !x.visible) return;

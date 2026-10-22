@@ -7,7 +7,20 @@
 // Street lamps in the lantern style of the photos along the village streets (OSM ways near houses), lit at night: glowing heads, light
 // on the ground beneath, and the eight nearest light the facades (world/village.js, uLampV). Collisions: walls and posts are added to
 // RATSCHER.walls / RATSCHER.treeXY before world/worldcol.js builds its grid (module order).
-const VPROPS = (() => {
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { cam, scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { LOAD, markDirty, texFile, texFileOf, TEXMAN, VEG, whenLoaded } from '../core/assets.js';
+import { buildTreeKind, thinCards } from '../garden/trees.js';
+import { RENDER } from '../render/render.js';
+import { P, SPOTS } from '../game/game.js';
+import { news } from '../audio/audio.js';
+import { RATSCHER } from './ratscher.js';
+import { ROADS } from './roads.js';
+import { VILLAGE } from './village.js';
+export const VPROPS = (() => {
   const S = {
     on: false,
     ready: false,
@@ -364,7 +377,7 @@ const VPROPS = (() => {
   }
   function clockSet(force) {
     if (!CLK.hands) return;
-    const t = window.CLOCK ? CLOCK.t : Date.now() / 60000,
+    const t = window.CLOCK ? LATE.CLOCK.t : Date.now() / 60000,
       m = Math.floor(t);
     if (!force && m === CLK.last) return;
     CLK.last = m;

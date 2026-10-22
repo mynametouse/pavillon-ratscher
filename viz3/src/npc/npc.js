@@ -1,5 +1,19 @@
-// ---------------- neighbours: Hubert (west, sheds, old tractor) and Ronald (east, goat paddock) ----------------
+// ---------------- neighbours: Günter (west, sheds, old tractor) and Bernd (east, goat paddock) ----------------
 // Procedural low-poly figures, waypoint AI, positional voices (Piper TTS, free), goat bleats, tractor trips.
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { LATE } from '../core/late.js';
+import { $, cam, scene, V } from '../core/head.js';
+import { ANISO, FIGSH, markDirty, patchSV, plain } from '../core/assets.js';
+import { B, beam, COL, hingeDoor, PH, PH_END, phase, tagPh } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { placeGLB } from '../pavilion/interior.js';
+import { S0, sun, sunDir } from '../garden/env.js';
+import { gB, MATS } from '../garden/site_base.js';
+import { RENDER } from '../render/render.js';
+import { nearDoor, P, poseDoor, rebuildGrids } from '../game/game.js';
+import { audio } from '../audio/audio.js';
+import { PHASES } from '../pavilion/phases.js';
 phase(null);
 const VM = window.VOICEMAN || { lines: [], topics: {} };
 const VL = {};
@@ -29,7 +43,7 @@ function plaidTex(c1, c2) {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
-const NM = {
+export const NM = {
   skinH: plain({ color: 0xd8ab86, roughness: 0.85 }),
   skinR: plain({ color: 0xe0b28c, roughness: 0.85 }),
   hubJacket: plain({ color: 0x3f4a37, roughness: 0.95 }),
@@ -334,7 +348,7 @@ function makeTractor() {
   };
 }
 // ---- paddock on the east neighbour's land ----
-const PAD = { x0: 19, x1: 33, y0: -10.3, y1: 8.2 };
+export const PAD = { x0: 19, x1: 33, y0: -10.3, y1: 8.2 };
 window.NPC_PAD = PAD;
 {
   const post = (x, y) => B(x - 0.06, x + 0.06, y - 0.06, y + 0.06, 0, 1.25, MAT.plank, { col: false, grain: 'z' });
@@ -372,7 +386,7 @@ window.NPC_PAD = PAD;
       rail(a[0], -2.7, b[0], b[1]);
     } else rail(a[0], a[1], b[0], b[1]);
   }
-  // the gate (west side): a wooden farm gate on a hinge at the north post, swings into the paddock; it stands open until Ronald shuts it (V14)
+  // the gate (west side): a wooden farm gate on a hinge at the north post, swings into the paddock; it stands open until Bernd shuts it (V14)
   {
     const gl = new THREE.Group(),
       gw = 2.34,
@@ -429,8 +443,8 @@ window.NPC_PAD = PAD;
   B(22.55, 23.65, -4.75, -4.05, 0.38, 0.4, NM.water, { col: false, cast: false });
   B(19.5, 20.4, 3.2, 3.7, 0, 0.9, MAT.plank, { col: true }); // Pfahl für den Salzleckstein
 }
-// ---- Hubert's side: tractor parked by the northern shed, a woodpile, a bench ----
-const TRACTOR = makeTractor();
+// ---- Günter's side: tractor parked by the northern shed, a woodpile, a bench ----
+export const TRACTOR = makeTractor();
 TRACTOR.g.position.copy(V(-15.1, 27.2, 0));
 TRACTOR.g.rotation.y = -((20 * Math.PI) / 180);
 scene.add(TRACTOR.g);
@@ -442,11 +456,11 @@ placeGLB('jerrycan', { x: -17.0, y: 29.45, z: 0, face: 70 });
 B(-13.45, -13.05, -0.85, 0.65, 0.42, 0.47, MAT.plank, { col: true, grain: 'y' });
 for (const y of [-0.75, 0.55]) B(-13.4, -13.1, y - 0.04, y + 0.04, 0, 0.42, MAT.plank, { col: false, grain: 'z' }); // V15: runs north–south, so who sits on it looks east into the garden
 // ---- controllers ----
-const NPCS = {};
-function headingTo(x, y, tx, ty) {
+export const NPCS = {};
+export function headingTo(x, y, tx, ty) {
   return Math.atan2(tx - x, ty - y);
 }
-function lerpAngle(a, b, k) {
+export function lerpAngle(a, b, k) {
   let d = b - a;
   while (d > Math.PI) d -= 2 * Math.PI;
   while (d < -Math.PI) d += 2 * Math.PI;
@@ -552,8 +566,8 @@ class Walker {
     return audio.voice(id, this.x, this.y, { vol });
   }
 }
-// Hubert
-const hubertFig = makePerson({
+// Günter
+const guenterFig = makePerson({
   jacket: NM.hubJacket,
   trousers: NM.hubTrousers,
   skin: NM.skinH,
@@ -561,7 +575,7 @@ const hubertFig = makePerson({
   beard: true,
   h: 1.72,
 });
-scene.add(hubertFig.g);
+scene.add(guenterFig.g);
 const HUB_WPS = [
   [-13.5, 21.2],
   [-15.7, 11.7],
@@ -572,7 +586,7 @@ const HUB_WPS = [
   [-14.5, 17.2],
   [-14.1, -1.3],
 ];
-NPCS.hubert = new Walker('hubert', hubertFig, {
+NPCS.guenter = new Walker('guenter', guenterFig, {
   x: -14.1,
   y: 7.7,
   az: 0,
@@ -583,10 +597,10 @@ NPCS.hubert = new Walker('hubert', hubertFig, {
   sayGap: 30,
   hear: 16,
 });
-NPCS.hubert.tractorT = 150 + Math.random() * 120;
-NPCS.hubert.drive = null;
-// Ronald
-const ronaldFig = makePerson({
+NPCS.guenter.tractorT = 150 + Math.random() * 120;
+NPCS.guenter.drive = null;
+// Bernd
+const berndFig = makePerson({
   jacket: NM.ronShirt,
   vest: NM.ronVest,
   trousers: NM.ronTrousers,
@@ -594,7 +608,7 @@ const ronaldFig = makePerson({
   hat: 'straw',
   h: 1.8,
 });
-scene.add(ronaldFig.g);
+scene.add(berndFig.g);
 const RON_WPS = [
   [23.1, -3.1],
   [26.5, 1.7],
@@ -604,7 +618,7 @@ const RON_WPS = [
   [20.3, -0.3],
   [30.5, -2.3],
 ];
-NPCS.ronald = new Walker('ronald', ronaldFig, {
+NPCS.bernd = new Walker('bernd', berndFig, {
   x: 24.5,
   y: -0.3,
   az: 0,
@@ -615,9 +629,9 @@ NPCS.ronald = new Walker('ronald', ronaldFig, {
   sayGap: 22,
   hear: 22,
 });
-NPCS.ronald.greeted = false;
+NPCS.bernd.greeted = false;
 // goats
-const GOATS = [];
+export const GOATS = [];
 for (const [name, m, big, x, y] of [
   ['Lotte', NM.goatW, false, 28, 5],
   ['Frieda', NM.goatB, false, 31, 1],
@@ -645,7 +659,7 @@ for (const [name, m, big, x, y] of [
   GOATS.push(w);
 }
 // ---- bleats: recordings when available, else a synthesized "mäh" ----
-function bleat(gt) {
+export function bleat(gt) {
   const sp = audio.spatial(gt.x, gt.y, 22);
   if (!audio.ready()) return;
   gt.fig.graze = 0;
@@ -662,7 +676,7 @@ function bleat(gt) {
   audio.synthBleat && audio.synthBleat(gt.x, gt.y, gt.gname === 'Egon' ? 0.8 : 1.05);
 }
 // ---- dialogue UI ----
-const NPCUI = (() => {
+export const NPCUI = (() => {
   const btn = $('talkbtn'),
     pan = $('npcpanel'),
     nm = $('np-name'),
@@ -673,7 +687,7 @@ const NPCUI = (() => {
   let cur = null,
     busy = false,
     subT = null;
-  const labels = { hubert: 'Hubert', ronald: 'Ronald' };
+  const labels = { guenter: 'Günter', bernd: 'Bernd' };
   function sub(w, text) {
     if (!sb) return;
     if (!text) return;
@@ -688,7 +702,7 @@ const NPCUI = (() => {
     );
     if (cur === w && tx) tx.textContent = text;
   }
-  const friendly = w => !!(window.QUESTS && QUESTS.friendly(w.name));
+  const friendly = w => !!(window.QUESTS && LATE.QUESTS.friendly(w.name));
   async function start(w) {
     if (cur || !pan) return;
     cur = w;
@@ -707,7 +721,7 @@ const NPCUI = (() => {
     if (!tp || !cur) return;
     tp.innerHTML = '';
     const topics = Object.entries((VM.topics && VM.topics[cur.name]) || {}),
-      qt = window.QUESTS ? QUESTS.topics(cur.name) : [];
+      qt = window.QUESTS ? LATE.QUESTS.topics(cur.name) : [];
     for (const [k, label, quest] of [...qt.map(q => [q.k, q.label, true]), ...topics]) {
       const b = document.createElement('button');
       b.type = 'button';
@@ -730,7 +744,7 @@ const NPCUI = (() => {
       quest = k.startsWith('q_');
     if (!quest) w.talks++;
     tp.querySelectorAll('button').forEach(b => (b.disabled = true));
-    const qa = quest && window.QUESTS ? QUESTS.ask(w.name, k) : null;
+    const qa = quest && window.QUESTS ? LATE.QUESTS.ask(w.name, k) : null;
     if (qa && qa.before) qa.before();
     await w.sayId(w.name + '_t_' + k);
     if (qa && qa.after) qa.after();
@@ -739,7 +753,7 @@ const NPCUI = (() => {
       end(false);
       return;
     }
-    if (w.name === 'hubert' && w.talks >= 2 && !friendly(w)) {
+    if (w.name === 'guenter' && w.talks >= 2 && !friendly(w)) {
       await w.say('bye', { force: true });
       w.avoidUntil = performance.now() / 1000 + 90;
       end(false);
@@ -759,7 +773,7 @@ const NPCUI = (() => {
     busy = false;
     if (sayBye) {
       w.say('bye', { force: true });
-      if (w.name === 'hubert') w.avoidUntil = performance.now() / 1000 + 60;
+      if (w.name === 'guenter') w.avoidUntil = performance.now() / 1000 + 60;
     }
   }
   btn?.addEventListener('click', () => {
@@ -773,7 +787,7 @@ function nearNPC() {
   if (P.mode !== 'walk') return null;
   let best = null,
     bd = 3.2;
-  for (const w of [NPCS.hubert, NPCS.ronald]) {
+  for (const w of [NPCS.guenter, NPCS.bernd]) {
     if (w.drive || !w.fig.g.visible) continue;
     const d = w.dist();
     if (d < bd) {
@@ -793,7 +807,7 @@ window.addEventListener('keydown', e => {
     }
   }
 });
-// ---- tractor trip: Hubert walks to the tractor, drives the field track east and back, parks ----
+// ---- tractor trip: Günter walks to the tractor, drives the field track east and back, parks ----
 const TRK = (() => {
   const [P1, P2] = S0.path;
   const dx = P2[0] - P1[0],
@@ -802,7 +816,7 @@ const TRK = (() => {
   return { P1, u: [dx / L, dy / L], L };
 })();
 const trkPt = t => [TRK.P1[0] + TRK.u[0] * t, TRK.P1[1] + TRK.u[1] * t];
-const TRACTOR_HOME = { x: -15.1, y: 27.2, az: (20 * Math.PI) / 180 };
+export const TRACTOR_HOME = { x: -15.1, y: 27.2, az: (20 * Math.PI) / 180 };
 const DRIVE_ROUTE = [
   [-14.7, 32.2],
   [-13.5, 37.2],
@@ -817,7 +831,7 @@ const DRIVE_ROUTE = [
   [-14.9, 31.7],
   [TRACTOR_HOME.x, TRACTOR_HOME.y],
 ];
-function startDrive(w) {
+export function startDrive(w) {
   w.drive = { i: 0, az: TRACTOR_HOME.az, x: TRACTOR_HOME.x, y: TRACTOR_HOME.y, phase: 'start', t: 0 };
   w.fig.mode = 'sit';
   w.state = 'drive';
@@ -837,10 +851,10 @@ function updateDrive(w, dt) {
       dist = Math.hypot(dx, dy);
     const h = Math.atan2(dx, dy);
     d.az = lerpAngle(d.az, h, Math.min(1, dt * 1.6));
-    const sp = window.VEH && VEH.blocked(d.x, d.y, d.az, 3.2) ? 0 : 2.3; // V16b: waits while a vehicle stands in the way const mv = Math.min(dist, sp * dt); d.x += Math.sin(d.az) * mv; d.y += Math.cos(d.az) * mv; TRACTOR.roll(mv);
+    const sp = window.VEH && LATE.VEH.blocked(d.x, d.y, d.az, 3.2) ? 0 : 2.3; // V16b: waits while a vehicle stands in the way const mv = Math.min(dist, sp * dt); d.x += Math.sin(d.az) * mv; d.y += Math.cos(d.az) * mv; TRACTOR.roll(mv);
     if (dist < 0.6) {
       d.i++;
-      if (window.QUESTS) QUESTS.driveWp(d.i);
+      if (window.QUESTS) LATE.QUESTS.driveWp(d.i);
       if (d.i >= DRIVE_ROUTE.length) {
         d.phase = 'park';
         d.t = 0;
@@ -859,14 +873,14 @@ function updateDrive(w, dt) {
       w.target = null;
       w.wait = 3;
       w.tractorT = 240 + Math.random() * 240;
-      if (d.passenger && window.QUESTS) QUESTS.driveEnd(w);
+      if (d.passenger && window.QUESTS) LATE.QUESTS.driveEnd(w);
       return;
     }
   }
   TRACTOR.g.position.copy(V(d.x, d.y, 0));
   TRACTOR.g.rotation.y = -d.az;
   audio.moveLoop('tractor', d.x, d.y);
-  // Hubert on the seat
+  // Günter on the seat
   const st = TRACTOR.seat || { back: 0.62, z: 0.14 },
     sz = st.top != null ? st.top - (w.fig.hipH || 0.9) + 0.1 : st.z;
   w.x = d.x - Math.sin(d.az) * st.back;
@@ -880,7 +894,7 @@ function updateDrive(w, dt) {
 const _frus = new THREE.Frustum(),
   _pm = new THREE.Matrix4(),
   _vv = new THREE.Vector3();
-function inView(x, y, z = 1) {
+export function inView(x, y, z = 1) {
   _vv.set(x, z, -y);
   return _frus.containsPoint(_vv);
 }
@@ -894,8 +908,8 @@ function updateNPC(dt) {
   _pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
   _frus.setFromProjectionMatrix(_pm);
   let dirty = false;
-  // Hubert
-  const h = NPCS.hubert;
+  // Günter
+  const h = NPCS.guenter;
   if (h.drive) {
     updateDrive(h, dt);
     dirty = dirty || inView(TRACTOR.g.position.x, -TRACTOR.g.position.z) || inView(h.x, h.y);
@@ -928,7 +942,7 @@ function updateNPC(dt) {
         pd < 2.2 &&
         now > h.avoidUntil - 85 &&
         h.state !== 'toTractor' &&
-        !(window.QUESTS && QUESTS.friendly('hubert'))
+        !(window.QUESTS && LATE.QUESTS.friendly('guenter'))
       ) {
         const ax = h.x - P.x,
           ay = h.y - P.y,
@@ -941,13 +955,13 @@ function updateNPC(dt) {
     }
     dirty = dirty || ((h.v > 0 || (h.fig.real && h.dist() < 25)) && inView(h.x, h.y));
   }
-  // Ronald
-  const r = NPCS.ronald;
+  // Bernd
+  const r = NPCS.bernd;
   {
     const pd = r.dist();
     if (!r.greeted && pd < 11 && inView(r.x, r.y)) {
       r.greeted = true;
-      r.sayId('ronald_idle_04');
+      r.sayId('bernd_idle_04');
     }
     if (!r.talking && pd < r.hear && Math.random() < dt / 26) r.say('idle');
     if (r.talking && pd > 5.5) NPCUI.end(false);
@@ -987,7 +1001,7 @@ function updateNPC(dt) {
       b.hidden = !show;
     }
     if (show) {
-      const t = 'Mit ' + (nw.name === 'hubert' ? 'Hubert' : 'Ronald') + ' sprechen';
+      const t = 'Mit ' + (nw.name === 'guenter' ? 'Günter' : 'Bernd') + ' sprechen';
       if (b.textContent !== t) b.textContent = t;
     }
   }
@@ -1012,7 +1026,7 @@ const BLOBM = new THREE.ShaderMaterial({
   fragmentShader:
     'uniform float s; varying vec2 vUv; void main() { vec2 q = (vUv - 0.5) * 2.0; float r = length(q); float a = r >= 1.0 ? 0.0 : 0.62 * s * (1.0 - r * r) * (1.0 - 0.3 * r) * (0.75 + 0.25 * smoothstep(1.0, -1.0, q.y)); gl_FragColor = vec4(0.0, 0.0, 0.0, a); }',
 });
-const BLOBS = [],
+export const BLOBS = [],
   _bv = new THREE.Vector3();
 // figures with real sun shadows (npc/npc_real.js) keep only a soft contact shadow underneath
 const BLOBC = BLOBM.clone();
@@ -1055,8 +1069,8 @@ function updateBlobs() {
     b.m.scale.set(b.w * (ct ? 0.85 : 1), (b.l + L * 0.9) * (ct ? 0.85 : 1), 1);
   }
 }
-addBlob(hubertFig, 0.55, 0.5, 0.9);
-addBlob(ronaldFig, 0.55, 0.5, 0.9);
+addBlob(guenterFig, 0.55, 0.5, 0.9);
+addBlob(berndFig, 0.55, 0.5, 0.9);
 for (const gt of GOATS) addBlob(gt.fig, 0.55, 0.8, 0.45);
 addBlob(TRACTOR, 1.9, 2.6, 1.0);
 window.NPC = {
@@ -1064,7 +1078,7 @@ window.NPC = {
   GOATS,
   TRACTOR,
   update: updateNPC,
-  startDrive: () => startDrive(NPCS.hubert),
+  startDrive: () => startDrive(NPCS.guenter),
   talk: n => NPCUI.start(NPCS[n]),
 };
 if (typeof rebuildGrids === 'function') rebuildGrids(); // fence, shelter and tractor colliders were added after the grid was built

@@ -1,3 +1,23 @@
+import { beam, bldBegin, bldEnd, boardLeaf, cyl } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import {
+  BLD,
+  FOOT,
+  gB,
+  INSIDE,
+  lcol,
+  ldoor,
+  ljamb,
+  ltrap,
+  lw,
+  lwalk,
+  lwc,
+  lwin,
+  MATS,
+  rotDesc,
+  siteGroup,
+  slopeSlab,
+} from './site_base.js';
 bldBegin('washhouse', 'Waschhaus', BLD.washhouse.c, { short: 'Waschhaus', pad: 0.15 });
 // ===== Waschhaus (2,0 × 1,6 m) nördlich vom Gewächshaus unter dem großen Baum: Holz, Pultdach mit Dachpappe, Tür zur Gartenseite (West), Toilette, Waschbecken, Regentonne =====
 {

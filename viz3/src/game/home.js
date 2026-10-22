@@ -1,8 +1,20 @@
 // ===================== V14 home: light switches, the stove's fire, sitting and lying on chairs, benches, the daybed and the loungers =====================
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { OFFLINE, QS } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
+import { itemTheta, phase, PHN } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { glowMat } from '../pavilion/interior.js';
+import { RENDER } from '../render/render.js';
+import { MODE, MODES } from '../render/modes.js';
+import { G, P, PHASE } from './game.js';
+import { ITEMS } from '../pavilion/plan.js';
+import { PLAY, SFX } from './play.js';
 phase(null);
 window.TICKS = window.TICKS || []; // per-frame callbacks (12_game frame loop), also outside the walk view
 // ---- lights: the paper lamps can be switched per floor (pull the lamp's cord); a new time of day sets them back to automatic ----
-const LIGHTSTATE = (() => {
+export const LIGHTSTATE = (() => {
   const SW = { eg: null, og: null },
     ON = [24, 18, 14, 26, 10, 12, 9],
     GRP = { eg: [0, 5], og: [2, 3, 4, 6] };
@@ -60,9 +72,10 @@ const LIGHTSTATE = (() => {
       (feet >= G.zE && window.LIGHTS && LIGHTS[3].intensity > 3),
   };
 })();
+LATE.LIGHTSTATE = LIGHTSTATE;
 window.LIGHTSTATE = LIGHTSTATE;
 // ---- the wood stove: cold until it is lit (quest "Feuer im Ofen"); then flames behind the glass, flickering light, crackling ----
-const STOVE = (() => {
+export const STOVE = (() => {
   const st = { lit: false, k: 0, t: 0, on: !OFFLINE && !QS.get('noplay'), acc: 0 };
   const fireMat = new THREE.ShaderMaterial({
     uniforms: { uT: { value: 0 }, uK: { value: 0 } },
@@ -154,8 +167,9 @@ const STOVE = (() => {
     },
   };
 })();
+LATE.STOVE = STOVE;
 window.STOVE = STOVE;
-// ---- sitting and lying: chairs, armchairs, benches, stools and the stump (models); window seat, daybed, terrace loungers (built in); Hubert's bench ----
+// ---- sitting and lying: chairs, armchairs, benches, stools and the stump (models); window seat, daybed, terrace loungers (built in); Günter's bench ----
 const SEATS = (() => {
   const T = {
     armchair: { sh: 0.43, back: 0.12, label: 'In den Sessel setzen' },
@@ -234,7 +248,7 @@ const SEATS = (() => {
       prio: -0.15,
       obj: () => it.root,
       label: () =>
-        !PLAY.seat && it.root && !it.removed && shown(it.root) && !(window.PIANO && PIANO.on) ? label : null,
+        !PLAY.seat && it.root && !it.removed && shown(it.root) && !(window.PIANO && LATE.PIANO.on) ? label : null,
       pos: () => {
         const p = poseFn();
         return [p.x, p.y, it.z + 0.4];
@@ -253,9 +267,9 @@ const SEATS = (() => {
         };
         if (p.kind === 'lie') {
           o.primary = () => {
-            if (window.DN && DN.canSleep()) DN.sleep();
+            if (window.DN && LATE.DN.canSleep()) LATE.DN.sleep();
           };
-          o.primaryLabel = () => (window.DN && DN.canSleep() ? 'Schlafen bis 7 Uhr' : '');
+          o.primaryLabel = () => (window.DN && LATE.DN.canSleep() ? 'Schlafen bis 7 Uhr' : '');
         } // V16a: lying down after dark
         PLAY.sit(o);
       },
@@ -338,9 +352,9 @@ const SEATS = (() => {
     }
   });
   scan();
-  // Hubert's bench on his side (no model item)
+  // Günter's bench on his side (no model item)
   PLAY.act({
-    id: 'seat:hubertbench',
+    id: 'seat:guenterbench',
     r: 1.2,
     prio: -0.15,
     label: () => (PLAY.seat ? null : 'Auf die Bank setzen'),
@@ -355,7 +369,7 @@ const SEATS = (() => {
         kind: 'sit',
         onSit: () => {
           SFX.drop();
-          if (window.QUESTS) QUESTS.event('hubertbench');
+          if (window.QUESTS) LATE.QUESTS.event('guenterbench');
         },
       }),
   });

@@ -1,4 +1,8 @@
-// ---------------- the neighbours keep hours: from 22:00 to 6:00 Hubert and Ronald are at home (they come and go when nobody looks) ----------------
+// ---------------- the neighbours keep hours: from 22:00 to 6:00 Günter and Bernd are at home (they come and go when nobody looks) ----------------
+import { markDirty } from '../core/assets.js';
+import { P } from '../game/game.js';
+import { inView } from './npc.js';
+import { CLOCK } from '../time/clock.js';
 window.TICKS.push(
   (() => {
     let acc = 0;
@@ -12,7 +16,7 @@ window.TICKS.push(
         loading = real && real.started && !real.ready && !real.failed,
         m = ((CLOCK.t % 1440) + 1440) % 1440,
         home = m >= 22 * 60 || m < 6 * 60;
-      for (const w of [N.NPCS.hubert, N.NPCS.ronald]) {
+      for (const w of [N.NPCS.guenter, N.NPCS.bernd]) {
         if (!w || !w.fig) continue;
         const g = w.fig.g,
           d = w.dist(),

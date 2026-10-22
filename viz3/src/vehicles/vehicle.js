@@ -12,7 +12,24 @@
 // like walking. Lights: low beam as one spot light (always in the scene, intensity 0 when off: no shader recompiles), lamps glow;
 // 'auto' after the sun (time/daynight.js). Keys while driving: W/S or arrows, A/D steer, Space handbrake, L light, H horn, Q out.
 // Positions in localStorage 'pav-veh-v1'. Tests: VEH.auto = (v, dt) => ({ thr, brk, steer, hand }) overrides the keys; VEH.follow(route).
-const VEH = (() => {
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, cam, COARSE, scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { LOAD, LOADLOG, markDirty, whenLoaded } from '../core/assets.js';
+import { COL } from '../core/geo.js';
+import { GEO_REAL, sunFollow } from '../garden/env.js';
+import { MOTION } from '../render/render.js';
+import { blocked, CAM3, cellItems, CG, FAR0, go, joy, keys, P, phOk, SPOTS, toWorld } from '../game/game.js';
+import { toast } from '../audio/audio.js';
+import { NPCS, TRACTOR } from '../npc/npc.js';
+import { PLAY } from '../game/play.js';
+import { WCOL } from '../world/worldcol.js';
+import { HUD } from '../game/hud.js';
+import { DN } from '../time/daynight.js';
+import { VSND } from './vsound.js';
+export const VEH = (() => {
   const S = { list: [], by: {}, cur: null, auto: null, lights: 'auto', camT: 0, extra: [], after: [] }; // extra: boxes that are no vehicles of their own, after: called right after the physics (V16d trailer)
   const LS = 'pav-veh-v1';
   let saved = {};
@@ -1543,4 +1560,5 @@ const VEH = (() => {
   });
   return S;
 })();
+LATE.VEH = VEH;
 window.VEH = VEH;

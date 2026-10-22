@@ -6,6 +6,11 @@
 // Glasshouse: windscreen, side and rear windows as one tapered prism of tinted glass, roof, pillars and frames over it. Inside: dashboard,
 // steering wheel, seats, rear bench, load floor. Model frame: x right, y forward, z up, origin on the ground under the centre of mass
 // (front axle +1.25 m, rear axle −1.655 m). Number plates: "HBN" (Landkreis Hildburghausen) with a made-up number.
+import * as THREE from 'three';
+import { V } from '../core/head.js';
+import { ANISO } from '../core/assets.js';
+import { ROADS } from '../world/roads.js';
+import { VEH } from './vehicle.js';
 const CAR = (() => {
   const A = 1.25,
     B = 1.655,

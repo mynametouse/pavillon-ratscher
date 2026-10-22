@@ -1,4 +1,7 @@
 // ---- where am I (place label, indoor acoustics) ----
+import { STREAM } from './stream_geo.js';
+import { S0 } from './env.js';
+import { BLD, inLocal, INSIDE } from './site_base.js';
 function inPolyXY(x, y, poly) {
   let c = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {

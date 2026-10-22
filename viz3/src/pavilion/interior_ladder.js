@@ -1,4 +1,8 @@
 // ############################ VARIANT B: furnishing around the ladder stairs ############################
+import { B, beam, cyl, phase, PHN, varOff, varOn } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { RFB, zDb, zE, zF, zO } from './house_base.js';
+import { amp, armchair, grpItem, IX1B, IY1, lantern, NW, pillowFix, placeGLB, terraceSet } from './interior.js';
 varOn('B');
 phase(PHN.furniture);
 // EG: reading chair in front of stove and west window (the ladder takes the SE corner), lamp table towards the entrance, pouf in front, plant between daybed and ladder

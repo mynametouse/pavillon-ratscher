@@ -1,5 +1,10 @@
 // ---------- interior styles of the pavilion: floor, walls, ceiling, furniture wood and fabrics – presets and single choices (remembered per browser, part of the published plan) ----------
-const STYLE = (() => {
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $ } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
+import { MAT } from '../core/mats.js';
+export const STYLE = (() => {
   const G = (m, d = 0, c = 0xffffff, k = 0) => {
     const U = m.userData.grade;
     if (!U) return;
@@ -165,7 +170,7 @@ const STYLE = (() => {
     } catch (e) {}
     sync();
     markDirty(true);
-    if (window.SITEPLAN) SITEPLAN.changed();
+    if (window.SITEPLAN) LATE.SITEPLAN.changed();
   }
   function applyAll(st) {
     st = Object.assign({}, DEF, st || {});
@@ -245,4 +250,5 @@ const STYLE = (() => {
   }; // for chair upholstery that loads later
   return { setStyle, setPart, applyAll, cushCol, state: () => Object.assign({}, state), OPT, PRESET };
 })();
+LATE.STYLE = STYLE;
 window.STYLE = STYLE;

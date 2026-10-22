@@ -3,8 +3,16 @@
 // 1 h = 10 s). Glue, oil and fuming take game time; while gluing the clock runs in real time ("focus"), so the open time of the glue is honest;
 // waiting is a short time-lapse. Since V16a sun, moon and stars follow the clock (time/daynight.js).
 // GEAR: personal protective equipment from the board in the workshop – goggles, ear defenders, FFP2 mask, half mask with ABEK filter, gloves.
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, COARSE } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
+import { phase } from '../core/geo.js';
+import { P } from '../game/game.js';
+import { PLAY } from '../game/play.js';
+import { HUD } from '../game/hud.js';
 phase(null);
-const CLOCK = (() => {
+export const CLOCK = (() => {
   const LSK = 'pav-clock-v1';
   const RATES = {
     real: { r: 1 / 60, n: 'Echtzeit' },
@@ -106,13 +114,14 @@ const CLOCK = (() => {
     win = $('clockwin');
   function ui() {
     if (!btn) return;
-    const txt = (COARSE ? '' : (window.DN ? DN.dateShort() : 'Tag ' + day()) + ' · ') + hm() + (S.warp ? ' ⏩' : '');
+    const txt =
+      (COARSE ? '' : (window.DN ? LATE.DN.dateShort() : 'Tag ' + day()) + ' · ') + hm() + (S.warp ? ' ⏩' : '');
     if (txt !== S.shown) {
       S.shown = txt;
       btn.querySelector('.hbt').textContent = txt;
       btn.title =
         'Spielzeit: ' +
-        (window.DN ? DN.dateStr(S.t, true) : 'Tag ' + day()) +
+        (window.DN ? LATE.DN.dateStr(S.t, true) : 'Tag ' + day()) +
         ', ' +
         hm() +
         ' Uhr' +
@@ -138,7 +147,7 @@ const CLOCK = (() => {
       } catch (e) {}
     }
     win.innerHTML = `<h3>Spielzeit<button type="button" class="x" aria-label="Schließen">×</button></h3>
-      <div class="cknow"><b>Tag ${day()}</b><span>${hm()} Uhr</span>${S.focus.size ? '<em>Echtzeit – Leim offen</em>' : S.warp ? '<em>' + (S.warp.label === 'Schlafen' ? 'Schlafen …' : 'Zeitraffer …') + '</em>' : ''}</div>${window.DN ? DN.winHTML() : ''}
+      <div class="cknow"><b>Tag ${day()}</b><span>${hm()} Uhr</span>${S.focus.size ? '<em>Echtzeit – Leim offen</em>' : S.warp ? '<em>' + (S.warp.label === 'Schlafen' ? 'Schlafen …' : 'Zeitraffer …') + '</em>' : ''}</div>${window.DN ? LATE.DN.winHTML() : ''}
       <div class="mrow"><span>Tempo</span><div class="mseg">${Object.entries(RATES)
         .map(([k, r]) => `<button type="button" data-rate="${k}" aria-pressed="${S.rate === k}">${r.n}</button>`)
         .join('')}</div></div>
@@ -154,7 +163,7 @@ const CLOCK = (() => {
       ${jobs.length ? `<h4>Läuft gerade</h4><ul class="ckj">${jobs.map(j => `<li><b>${j.label}</b><span>${j.left > 0 ? 'noch ' + dur(j.left) : 'fertig'}</span></li>`).join('')}</ul>` : ''}
       <p class="mnote">Leim, Öl und Räuchern brauchen Spielzeit. Beim Verleimen läuft die Uhr in Echtzeit – die offene Zeit des Leims ist echt. Sonne, Mond und Sterne stehen, wo sie über Ratscher zu dieser Stunde wirklich stehen. Nachts: auf das Tagesbett legen und bis zum Morgen schlafen.</p>`;
     win.querySelector('.x').addEventListener('click', () => setWin(false));
-    if (window.DN) DN.winBind(win);
+    if (window.DN) LATE.DN.winBind(win);
     win.querySelectorAll('[data-rate]').forEach(b => b.addEventListener('click', () => setRate(b.dataset.rate)));
     win.querySelectorAll('[data-wait]').forEach(b =>
       b.addEventListener('click', () => {
@@ -232,4 +241,5 @@ const CLOCK = (() => {
     },
   };
 })();
+LATE.CLOCK = CLOCK;
 window.CLOCK = CLOCK;

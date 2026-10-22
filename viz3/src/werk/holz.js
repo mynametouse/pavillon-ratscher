@@ -6,7 +6,24 @@
 // before driving: a log on level tines rolls off when braking hard. A log on the fork is as wide as it is long – it bumps into trunks and
 // walls like the vehicles (VEH.boxHits). Weights from the green density (spruce ~780, larch ~820 kg/m³); the trailer pulls them (TRAILER.cargo).
 // State in 'pav-holz-v1'. Part 2 (werk/holz_saw.js): the band sawmill and the boards; part 3 (werk/holz_dry.js): stacking and drying.
-const HOLZ = (() => {
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { LOAD, markDirty } from '../core/assets.js';
+import { BUILD, COL } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { P, rebuildGrids } from '../game/game.js';
+import { news } from '../audio/audio.js';
+import { PLAY, SFX } from '../game/play.js';
+import { FOREST } from '../world/forest.js';
+import { VSND } from '../vehicles/vsound.js';
+import { VEH } from '../vehicles/vehicle.js';
+import { TRACTOR2 } from '../vehicles/tractor.js';
+import { TRAILER } from '../vehicles/trailer.js';
+import { FELL } from '../world/fell.js';
+export const HOLZ = (() => {
   const LSK = 'pav-holz-v1',
     D2R = Math.PI / 180;
   const S = { logs: [], by: {}, ready: false, ver: 0, fork: null, RHO: { spruce: 780, larch: 820, pine: 800 } };
@@ -508,8 +525,8 @@ const HOLZ = (() => {
       }
     }
     // onto the band sawmill's bunks (part 2 knows them)
-    if (window.HOLZSAW && HOLZSAW.dropOn) {
-      const res = HOLZSAW.dropOn(l, a, b, m, r);
+    if (window.HOLZSAW && LATE.HOLZSAW.dropOn) {
+      const res = LATE.HOLZSAW.dropOn(l, a, b, m, r);
       if (res === 'wait') return;
       if (res === 'done') {
         done(l, null);

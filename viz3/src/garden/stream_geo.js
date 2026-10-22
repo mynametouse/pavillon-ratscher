@@ -3,7 +3,8 @@
 // Cross-section: gravel bed with ~1 m of water (15–21 cm deep), banks rising steeply from the water and rounding off into the meadow 2.25 m
 // from the centre (4.5 m wide at the top). Asphalt bridge 2.5 m wide (no railing) north of the pavilion; on the garden side a stair of
 // oak sleepers to a stone landing at the water, 3 m left and right of the bridge.
-const STREAM = (() => {
+import { LATE } from '../core/late.js';
+export const STREAM = (() => {
   const S = window.SITE,
     P1 = S.path[0],
     P2 = S.path[1],
@@ -183,8 +184,8 @@ const STREAM = (() => {
     try {
       const [t] = loc(x, y),
         p = wpt(t, cOff(t));
-      if (!audio.hasLoop('brook')) audio.loopAt('brook', 'stream', p[0], p[1], { vol: 0.9, ref: 4.5 });
-      else audio.moveLoop('brook', p[0], p[1]);
+      if (!LATE.audio.hasLoop('brook')) LATE.audio.loopAt('brook', 'stream', p[0], p[1], { vol: 0.9, ref: 4.5 });
+      else LATE.audio.moveLoop('brook', p[0], p[1]);
     } catch (e) {}
   }
   return {

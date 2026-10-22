@@ -2,6 +2,11 @@
 // Variant-tagged meshes (A = tower, B = ladder) go into buckets of their variant. A shared mesh whose bucket (material, shadow, phase) also exists
 // in a variant is copied into both variants' buckets, so the visible variant still draws each material/phase in one call.
 // Movable buildings (plan view) are merged per building, in the building's own frame, and the merged meshes stay children of its root group.
+import * as THREE from 'three';
+import { scene, VARIANT } from '../core/head.js';
+import { MAT } from '../core/mats.js';
+import { sky } from '../garden/env.js';
+import { WORKS } from '../garden/workshop.js';
 (function () {
   const skip = new Set();
   Object.values(window.DOORS).forEach(d => d.group && d.group.traverse(o => skip.add(o)));

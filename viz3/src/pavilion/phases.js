@@ -2,7 +2,9 @@
 // item: [Bezeichnung, Spezifikation, Menge, Einheit, Preis Kauf €/Einheit, Preis mit Eigenholz €/Einheit (null = gleich, 0 = entfällt)]
 // Preise: Netto-Richtwerte Deutschland 2026 für Selbstbauer (Holzhandel/Baustoffhandel), ohne Arbeitszeit, ±25 %.
 // "Eigenholz": Lärche/Fichte aus eigenem Wald, Bandsäge, luftgetrocknet (u ≤ 18 %); angesetzt ~25 % des Kaufpreises (Sägen, Trocknen, Hobeln, Ausschuss).
-const PHASES_A = [
+import { LATE } from '../core/late.js';
+import { VARIANT } from '../core/head.js';
+export const PHASES_A = [
   {
     name: 'Bestand',
     grp: 'Vorbereitung',
@@ -909,7 +911,7 @@ const PH_B = {
     ],
   },
 };
-const PHASES_B = PHASES_A.map((p, i) => Object.assign({}, p, PH_B[i] || {}));
+export const PHASES_B = PHASES_A.map((p, i) => Object.assign({}, p, PH_B[i] || {}));
 for (const L of [PHASES_A, PHASES_B])
   L.forEach((p, i) => {
     p.id = i;
@@ -917,7 +919,8 @@ for (const L of [PHASES_A, PHASES_B])
     p.eigen = Math.round(p.items.reduce((s, it) => s + it[2] * (it[5] ?? it[4]), 0));
   });
 // the live list (mutated in place when the variant changes)
-const PHASES = (VARIANT === 'A' ? PHASES_A : PHASES_B).slice();
+export const PHASES = (VARIANT === 'A' ? PHASES_A : PHASES_B).slice();
+LATE.PHASES = PHASES;
 window.PHASES = PHASES;
 window.PHASES_A = PHASES_A;
 window.PHASES_B = PHASES_B;

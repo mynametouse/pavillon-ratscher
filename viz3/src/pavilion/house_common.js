@@ -1,5 +1,38 @@
 // ############################ COMMON: slab, EG walls S/N/W, EG floor, stove ############################
 // ======================= PHASE 0/1: existing slab with the tin garage, then cleared =======================
+import * as THREE from 'three';
+import { scene, V } from '../core/head.js';
+import { B, beam, boardLeaf, COL, cyl, hingeDoor, PH, phase, PHN, tagPh } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import {
+  BV,
+  cutOps,
+  DEP,
+  DOORY,
+  EG,
+  EG_ops,
+  facade,
+  JW,
+  OG,
+  RF,
+  SD,
+  sheath,
+  SIDES,
+  SNW,
+  studFrame,
+  STV,
+  T,
+  WE,
+  windowIn,
+  zC,
+  zE,
+  zF,
+  zJT,
+  zO,
+  zS,
+  zSill,
+  zStud0,
+} from './house_base.js';
 phase(PHN.bestand);
 B(-0.15, 4.15, -0.15, 4.15, 0, zS, MAT.conc, { walk: 'stone' });
 phase(PHN.bestand, PHN.garage);

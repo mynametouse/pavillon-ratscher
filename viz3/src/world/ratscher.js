@@ -5,7 +5,19 @@
 // surface model (roof colours from the orthophoto), 21 000 trees from the canopy height model (tree tops, height, crown width, conifer or not).
 // The modelled site (garden, Hubert, Ronald, workshop, stream and field path) stays as it is; the real land starts around it.
 // Data preparation: scratchpad geo/tools (fetch_all, build_terrain2, build_osm, build_bld, pack).
-const RATSCHER = (() => {
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { LATE } from '../core/late.js';
+import { BASE, OFFLINE, QUALITY, R, scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { ANISO, b64bytes, cellsOf, GI, LM, markDirty, SV, vegReady, whenLoaded } from '../core/assets.js';
+import { COL } from '../core/geo.js';
+import { STREAM } from '../garden/stream_geo.js';
+import { FAKEENV, FIELD_GLSL, FIELDU, GEO_REAL, GEOGU, S0 } from '../garden/env.js';
+import { thinCards, TREES } from '../garden/trees.js';
+import { GRADE } from '../render/render.js';
+import { applyCam, go, P, rebuildGrids } from '../game/game.js';
+export const RATSCHER = (() => {
   const M = window.GEOMAN,
     S = {
       on: GEO_REAL && !!M,
@@ -196,8 +208,8 @@ const RATSCHER = (() => {
           '#include <begin_vertex>\n vGeo = vec2( position.x, -position.z );'
         );
       const FS =
-        window.FOREST && FOREST.on
-          ? FOREST.shader(sh)
+        window.FOREST && LATE.FOREST.on
+          ? LATE.FOREST.shader(sh)
           : 'float fCan = 0.0, fOut = 1.0; vec3 forestFloor( vec2 p, vec3 c, float d ) { return c; }'; // V16c forest floor (world/forest.js)
       sh.fragmentShader =
         'varying vec2 vGeo;\n' +
@@ -205,7 +217,7 @@ const RATSCHER = (() => {
         '\n' +
         FIELD_GLSL +
         '\n' +
-        ROADS.shader(sh) +
+        LATE.ROADS.shader(sh) +
         '\n' +
         FS +
         '\n' +
@@ -223,7 +235,7 @@ const RATSCHER = (() => {
           .replace(
             '#include <lights_fragment_end>',
             '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= 0.35;\n' +
-              (window.FOREST && FOREST.LIGHT ? FOREST.LIGHT : '')
+              (window.FOREST && LATE.FOREST.LIGHT ? LATE.FOREST.LIGHT : '')
           ) // grass and soil scatter: no pale sky sheen at grazing angles (V16b, low driving views)
           .replace(
             '#include <fog_fragment>',
@@ -667,11 +679,11 @@ const RATSCHER = (() => {
         r = t[i * 5 + 3] / 100,
         con = t[i * 5 + 4] > 0;
       if (STREAM.inDitch(x, y, 0.8)) continue;
-      if (window.FOREST && FOREST.owns(x, y)) {
+      if (window.FOREST && LATE.FOREST.owns(x, y)) {
         S.forestCHM.push([x, y, h, r, con]);
         continue;
       } // V16c: the forest at the Klinge draws these itself (world/forest.js)
-      if (ROADS.edge(x, y) > -0.4) continue; // V16b: a crown measured over a road stands beside it, not in it
+      if (LATE.ROADS.edge(x, y) > -0.4) continue; // V16b: a crown measured over a road stands beside it, not in it
       const hs = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
       const kind = con ? 4 : Math.floor(hs * 4),
         it = { x, y, z: hAt(x, y), h, r, kind, hs };
@@ -916,5 +928,6 @@ const RATSCHER = (() => {
   });
   return S;
 })();
+LATE.RATSCHER = RATSCHER;
 window.RATSCHER = RATSCHER;
 KERN.provide('terrain', (x, y) => (RATSCHER.hMesh ? RATSCHER.hMesh(x, y) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0)); // core/kern.js

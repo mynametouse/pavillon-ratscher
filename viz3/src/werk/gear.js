@@ -1,5 +1,13 @@
 // ---- personal protective equipment (PSA): taken once from the board in the workshop, then put on and off in its window (anywhere) ----
-const GEAR = (() => {
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $ } from '../core/head.js';
+import { markDirty, whenLoaded } from '../core/assets.js';
+import { audio } from '../audio/audio.js';
+import { PLAY, SFX } from '../game/play.js';
+import { HUD } from '../game/hud.js';
+import { AVATAR } from '../game/avatar.js';
+export const GEAR = (() => {
   const LSK = 'pav-gear-v1';
   const IT = {
     brille: { slot: 'eyes', n: 'Schutzbrille', d: 'EN 166: gegen Späne und Splitter an Säge, Hobel und Schleifer.' },
@@ -115,7 +123,7 @@ const GEAR = (() => {
     }
     renderBtn();
     renderWin();
-    if (window.WUI) WUI.refresh();
+    if (window.WUI) LATE.WUI.refresh();
     markDirty();
   }
   const ICO = {
@@ -152,7 +160,9 @@ const GEAR = (() => {
     if (!S.have && !S.haveF)
       h +=
         '<p class="gnote">Deine Schutzausrüstung hängt am PSA-Brett in der Werkstatt (Rückwand, neben dem Holzregal)' +
-        (window.FELL && FELL.on ? '; die Forstausrüstung liegt in der Forstkiste am Traktor (Untere Klinge).' : '.') +
+        (window.FELL && LATE.FELL.on
+          ? '; die Forstausrüstung liegt in der Forstkiste am Traktor (Untere Klinge).'
+          : '.') +
         '</p>';
     if (S.have) {
       h +=
@@ -256,4 +266,5 @@ const GEAR = (() => {
     },
   };
 })();
+LATE.GEAR = GEAR;
 window.GEAR = GEAR;

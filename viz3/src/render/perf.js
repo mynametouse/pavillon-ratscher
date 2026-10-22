@@ -1,5 +1,12 @@
 // ---------- performance test: about 15 s, six typical views with the camera turning; reports frame rate, slow frames, GPU, resolution ----------
+import { LATE } from '../core/late.js';
+import { $, DPR, R, VARIANT } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
+import { MLEVELS, MOTION, RENDER, renderFrame, TIERS } from './render.js';
+import { go, P } from '../game/game.js';
+import { toast } from '../audio/audio.js';
 const PERF = { running: false, js: 0, n: 0 };
+LATE.PERF = PERF;
 function gpuName() {
   try {
     const gl = R.getContext(),
@@ -11,7 +18,7 @@ function gpuName() {
     return '?';
   }
 }
-async function perfTest() {
+export async function perfTest() {
   if (PERF.running) return;
   const box = $('perfbox'),
     out = $('perfout');

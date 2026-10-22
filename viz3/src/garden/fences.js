@@ -1,8 +1,15 @@
 // ---------- fences: chain-link (Maschendraht) or wooden pickets, built from a polyline; the plan view draws, moves and deletes them ----------
-const FENCES = [];
+import * as THREE from 'three';
+import { rnd, rr, scene, V } from '../core/head.js';
+import { ANISO, grime, markDirty, patchSV, pbrMat, plain } from '../core/assets.js';
+import { B, COL, DOORS, hingeDoor } from '../core/geo.js';
+import { STREAM } from './stream_geo.js';
+import { S0 } from './env.js';
+import { WORKS } from './workshop.js';
+export const FENCES = [];
 window.FENCES = FENCES;
 let FENCE_N = 0;
-const FENCE_KINDS = { mesh: { label: 'Maschendraht', H: 1.25 }, wood: { label: 'Holzzaun', H: 1.0 } };
+export const FENCE_KINDS = { mesh: { label: 'Maschendraht', H: 1.25 }, wood: { label: 'Holzzaun', H: 1.0 } };
 const FENCE_TEX = {
   mesh: (() => {
     const n = 128,
@@ -115,14 +122,14 @@ function boxesMesh(list, mat) {
   me.receiveShadow = true;
   return me;
 }
-function mkFence(spec) {
+export function mkFence(spec) {
   const kind = FENCE_KINDS[spec.kind] ? spec.kind : 'mesh',
     K = FENCE_KINDS[kind],
     H = K.H,
     pts = spec.pts.map(p => [p[0], p[1]]);
   if (pts.length < 2) return null;
-  // the preview of 22.10.2026 (23:09–23:45) named the neighbour east Bernd; plans saved there come back to Ronald
-  if (spec.id === 'bernd') spec = Object.assign({}, spec, { id: 'ronald', doorKey: 'ronaldgate' });
+  // saved plans from before 22.10.2026 still name the neighbour east by his old name
+  if (spec.id === 'ronald') spec = Object.assign({}, spec, { id: 'bernd', doorKey: 'berndgate' });
   const f = {
     id: spec.id || 'f' + FENCE_N++,
     kind,
@@ -301,7 +308,7 @@ function mkFence(spec) {
   FENCES.push(f);
   return f;
 }
-function rmFence(f) {
+export function rmFence(f) {
   const i = FENCES.indexOf(f);
   if (i < 0) return;
   FENCES.splice(i, 1);
@@ -319,8 +326,8 @@ function rmFence(f) {
   }
   markDirty(true);
 }
-// the fence towards Ronald: along the east boundary from the top of the stream bank down to the south-east corner, garden gate between greenhouse and wash house
-const FENCE_DEFAULT = (() => {
+// the fence towards Bernd: along the east boundary from the top of the stream bank down to the south-east corner, garden gate between greenhouse and wash house
+export const FENCE_DEFAULT = (() => {
   const G = S0.garden,
     pts = [];
   const i0 = G.findIndex(p => p[0] > 13 && p[1] < -44);
@@ -360,11 +367,11 @@ const FENCE_DEFAULT = (() => {
     s += L;
   }
   return {
-    id: 'ronald',
+    id: 'bernd',
     kind: 'mesh',
     pts: keep.map(p => [+p[0].toFixed(2), +p[1].toFixed(2)]),
     gate: gate != null ? +gate.toFixed(2) : null,
-    doorKey: 'ronaldgate',
+    doorKey: 'berndgate',
     builtin: true,
   };
 })();

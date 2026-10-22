@@ -10,7 +10,27 @@
 // Drawing: the trunk foot of the tree under work is built here (bark, cut faces with growth rings, kerfs, the notch piece, the wedge); the
 // rest of the tree is the forest's own model (FOREST.soloMats: bark hidden below the foot, cards gone as they are delimbed).
 // Coordinates: the felling frame F of a tree has its origin at the tree's foot, x' = felling direction, y up, z' = to the right.
-const FELL = (() => {
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, COARSE, QS, scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { ANISO, LOAD, markDirty, whenLoaded } from '../core/assets.js';
+import { CAM3, P } from '../game/game.js';
+import { audio, news } from '../audio/audio.js';
+import { NPCS } from '../npc/npc.js';
+import { HELD, PLAY, SFX } from '../game/play.js';
+import { QUESTS } from '../game/quests.js';
+import { ROADS } from './roads.js';
+import { FOREST } from './forest.js';
+import { HUD } from '../game/hud.js';
+import { AVATAR } from '../game/avatar.js';
+import { CLOCK } from '../time/clock.js';
+import { GEAR } from '../werk/gear.js';
+import { WUI } from '../werk/werkui.js';
+import { VEH } from '../vehicles/vehicle.js';
+export const FELL = (() => {
   // switched on with V16c2 (V16c1 shipped the forest only; ?fell=1 turned it on for tests)
   const FELL_ENABLED = true;
   const S = {
@@ -3015,4 +3035,5 @@ const FELL = (() => {
   });
   return S;
 })();
+LATE.FELL = FELL;
 window.FELL = FELL;

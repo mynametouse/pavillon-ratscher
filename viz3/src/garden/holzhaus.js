@@ -1,3 +1,26 @@
+import { beam, bldBegin, bldEnd, boardLeaf, RB } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { placeGLB } from '../pavilion/interior.js';
+import {
+  BLD,
+  faceOf,
+  FOOT,
+  gB,
+  INSIDE,
+  lcol,
+  ldoor,
+  ljamb,
+  ltrap,
+  lw,
+  lwalk,
+  lwc,
+  lwin,
+  MATS,
+  rotDesc,
+  siteGroup,
+  slopeSlabX,
+  worldOf,
+} from './site_base.js';
 bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 });
 // ===== C: Holzhaus (3,0 × 3,6 m, an der Ostgrenze ausgerichtet; Pfosten auf Betonsteinen, Fensterband West, Pultdach mit grünen Biberschwanz-Schindeln, alte Busluke, Fassade ocker) =====
 {

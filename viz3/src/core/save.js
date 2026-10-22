@@ -6,7 +6,7 @@
 //   SAVE.get(K) → value or default · SAVE.set(K, v) → true if kept · SAVE.del(K) · SAVE.once('pav-v17') → true on the first visit only
 // Kinds: 'json' (any JSON value), 'text' (a string), 'num' (a finite number), 'flag' ('1' = true). The stored format is the same as before
 // SAVE existed (plain JSON or plain text), so saved states of earlier versions keep working.
-const SAVE = (() => {
+export const SAVE = (() => {
   const REG = new Map();
   const problems = [];
   const mem = new Map(); // fallback when the browser keeps nothing: values live for this visit only

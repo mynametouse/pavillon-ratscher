@@ -1,8 +1,18 @@
 // ===================== V15b workshop windows: machine settings, the workpiece card, the workshop book =====================
 // The machine window holds what a real machine is set to (fence, blade height, depth of cut …), choices and a check list (protective gear).
 // The card in the HUD shows the workpiece one is working on and its next step; the book (B) the whole way to the board with the reasons.
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, COARSE } from '../core/head.js';
+import { phase } from '../core/geo.js';
+import { keys, P } from '../game/game.js';
+import { PIANO } from '../audio/music.js';
+import { HUD } from '../game/hud.js';
+import { CLOCK } from '../time/clock.js';
+import { GEAR } from './gear.js';
+import { WERK } from './werk.js';
 phase(null);
-const WUI = (() => {
+export const WUI = (() => {
   const mw = $('machwin'),
     card = $('wpcard'),
     bk = $('werkbuch');
@@ -312,4 +322,5 @@ const WUI = (() => {
     renderCard,
   };
 })();
+LATE.WUI = WUI;
 window.WUI = WUI;

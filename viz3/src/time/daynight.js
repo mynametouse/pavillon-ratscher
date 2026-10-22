@@ -4,8 +4,25 @@
 // Milky Way turn with the sidereal time. Between the photographed skies (day, golden hour, twilight), their image-based light and the
 // baked indirect light the picture blends continuously; after sunset the twilight fades into the night sky. The pavilion's lamps switch
 // on at dusk by themselves, the LED lights in the workshop when someone is in it after dark. Menu "Licht": "Tageslauf" (this) or a fixed mood.
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, R, scene, V } from '../core/head.js';
+import { GI, markDirty } from '../core/assets.js';
+import { phase } from '../core/geo.js';
+import { glowMat } from '../pavilion/interior.js';
+import { FIELDU, hemi, placeSun, setSunDir, sky, skyLoad, skyMat, skyU, sun, sunC } from '../garden/env.js';
+import { envLoad, giApply, GIMIX } from '../render/render.js';
+import { adaptExposure, MODES, setModeId } from '../render/modes.js';
+import { P } from '../game/game.js';
+import { audio, toast } from '../audio/audio.js';
+import { PLAY } from '../game/play.js';
+import { LIGHTSTATE, STOVE } from '../game/home.js';
+import { RATSCHER } from '../world/ratscher.js';
+import { CLOCK } from './clock.js';
+import { SKYDATA } from './skydata.js';
 phase(null);
-const DN = (() => {
+export const DN = (() => {
   const LAT = 50.4705,
     LON = 10.7801,
     D2R = Math.PI / 180,
@@ -1095,4 +1112,5 @@ const DN = (() => {
     hint: () => S.hint,
   };
 })();
+LATE.DN = DN;
 window.DN = DN;

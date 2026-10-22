@@ -6,7 +6,17 @@
 // markings from it (ROADS.GLSL, roadShade()); vehicles read the surface under each wheel (ROADS.at) and stand on ROADS.groundAt
 // (terrain triangles, bridge decks). Bridges get a deck with railings, their height straight between the two ends.
 // © OpenStreetMap contributors (ODbL), with the other geodata in the credits.
-const ROADS = (() => {
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { LATE } from '../core/late.js';
+import { BASE, QUALITY, scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { ANISO, b64bytes, LM, markDirty, TEXMAN, whenLoaded } from '../core/assets.js';
+import { DETAIL, GLCHECK } from '../core/detail.js';
+import { STREAM } from '../garden/stream_geo.js';
+import { GEO_REAL } from '../garden/env.js';
+import { RATSCHER } from './ratscher.js';
+export const ROADS = (() => {
   const M = window.GEOMAN && window.GEOMAN.roads;
   const S = {
     on: !!(GEO_REAL && M),
@@ -448,7 +458,7 @@ const ROADS = (() => {
     foot: 'Fußweg',
   };
   S.place = (x, y) => {
-    const fw = window.FOREST && FOREST.place(x, y);
+    const fw = window.FOREST && LATE.FOREST.place(x, y);
     if (fw) return fw; // V16c: in the forest (world/forest.js)
     const J = (S.routes.klinge || []).slice(-1)[0];
     if (J && Math.hypot(x - J[0], y - J[1]) < 140) return 'Untere Klinge';
@@ -495,6 +505,7 @@ const ROADS = (() => {
   });
   return S;
 })();
+LATE.ROADS = ROADS;
 window.ROADS = ROADS;
 // the ground, the road surface and the place names out in the land as KERN services (core/kern.js)
 KERN.provide('ground', (x, y, z) => ROADS.groundAt(x, y, z));

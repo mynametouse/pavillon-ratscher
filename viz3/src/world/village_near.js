@@ -4,6 +4,16 @@
 // sometimes a satellite dish. Built per 80 m cell when the camera comes within 95 m of it, one cell per tick, and dropped again beyond 170 m:
 // one mesh and one draw call per cell, one material for all (kinds: plain, log ends, hedge leaves, boards, lamp glass). Window places
 // follow the facade shader's bays (world/village.js); fences stop short of other buildings and of the road (ROADS.edge).
+import * as THREE from 'three';
+import { cam, scene } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { markDirty, whenLoaded } from '../core/assets.js';
+import { RENDER } from '../render/render.js';
+import { P } from '../game/game.js';
+import { RATSCHER } from './ratscher.js';
+import { ROADS } from './roads.js';
+import { VILLAGE } from './village.js';
+import { VPROPS } from './village_props.js';
 const VNEAR = (() => {
   const S = { on: false, cells: new Map(), built: 0, dropped: 0, CS: 80, R1: 95, R2: 170 };
   if (!window.RATSCHER || !RATSCHER.on) return S;

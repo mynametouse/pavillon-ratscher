@@ -1,4 +1,25 @@
 // ---------------- garden trees: procedural ez-tree models (bark + leaf textures), instanced ----------------
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { Tree } from '../eztree/tree.js';
+import { BASE, QS, R, rnd, rr, scene, V } from '../core/head.js';
+import {
+  cellsOf,
+  GI,
+  instanceVariants,
+  LM,
+  markDirty,
+  MODELS,
+  patchSV,
+  SV,
+  VEG,
+  vegReady,
+  whenLoaded,
+} from '../core/assets.js';
+import { COL } from '../core/geo.js';
+import { STREAM } from './stream_geo.js';
+import { GEO_REAL, inLake, PATHS, S0 } from './env.js';
+import { inLocal } from './site_base.js';
 globalThis.EZ_TREE_BASE = BASE + 'tree/';
 globalThis.EZ_TREE_MANAGER = LM;
 const TREE_KINDS = [
@@ -20,7 +41,7 @@ const TREE_KINDS = [
   { key: 'pine', preset: 'Pine Medium', seed: 555, tint: 0xffffff },
 ];
 const leafDepthMats = {};
-function buildTreeKind(k) {
+export function buildTreeKind(k) {
   const t = new Tree();
   t.loadPreset(k.preset);
   t.options.seed = k.seed;
@@ -80,9 +101,9 @@ function buildTreeKind(k) {
     });
   return { bg, lg, bark, leaf, depth: leafDepthMats[k.preset], H, R: Rr, items: [] };
 }
-const TREES = {};
+export const TREES = {};
 const treeTrunks = [];
-const TREEG = new THREE.Group();
+export const TREEG = new THREE.Group();
 TREEG.userData.noMerge = true;
 scene.add(TREEG);
 window.TREEG = TREEG; // trees within 55 m: hidden in the plan view on request
@@ -105,7 +126,7 @@ function addTreeInst(kind, x, y, h, r) {
   treeTrunks.push([x, y, Math.min(0.28, 0.06 + h * 0.012)]);
 }
 // distant trees: a third of the leaf cards, each card enlarged (same crown density from afar, a third of the triangles)
-function thinCards(geo, keep, grow) {
+export function thinCards(geo, keep, grow) {
   const g2 = geo.clone(),
     idx = geo.index.array,
     P = g2.attributes.position,
