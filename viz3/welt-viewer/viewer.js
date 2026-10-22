@@ -581,6 +581,7 @@ let ROUTES = [];
 function startRoute(i) {
   const r = ROUTES[+i || 0];
   if (!r) return;
+  $('prof').href = BASE + `diag/profil_${+i || 0}.png`;
   drive.route = r;
   drive.s = 0;
   drive.paused = false;
