@@ -191,6 +191,17 @@ const HOLZ = (() => {
       S.logs.push(l); S.by[l.id] = l; if (window.FELL && FELL.hideLogs) FELL.hideLogs(f.tid); }
     const s = load(); buildYard(); bridgeGuides(); redraw(); trailerMass(); if (S.onStart) S.onStart(s ? s.part2 : null); markDirty(true); }
   window.TICKS.push(dt => { try { tick(dt); } catch (e) { if (!S._err) { S._err = 1; console.warn('holz', e); } } });
-  Object.assign(S, { redraw, save, support, place, adopt, yard: YARD, mid, SPN, de, rOf, species });
+  // colliders of the wood places (blocks, stack, drying cabinet) in the garden's list (COL; the grids are rebuilt). By tag: the old entries
+  // are switched off (other code may hold COL indices), the new ones appended. Boxes in workshop coordinates as built → world AABB.
+  S.setCol = (tag, boxes) => { for (const c of COL) if (c && c[6] === tag) { c[4] = -99; c[5] = -99; }
+    for (const b of boxes) { const P = [WT(b[0], b[2]), WT(b[1], b[2]), WT(b[0], b[3]), WT(b[1], b[3])]; COL.push([Math.min(...P.map(q => q[0])), Math.max(...P.map(q => q[0])), Math.min(...P.map(q => q[1])), Math.max(...P.map(q => q[1])), b[4], b[5], tag, null, null]); }
+    if (typeof rebuildGrids === 'function') rebuildGrids(); };
+  S.WT = WT;
+  // tests and tools: a log of given size lying at (x, y) along az (radians, 0 = north), its butt at the start
+  S.testLog = (o = {}) => { const sp = o.sp || 'spruce', L = o.L || 4.1, d0 = o.d0 || 34, d1 = o.d1 || 28, az = o.az || 0, x = o.x, y = o.y, f = [Math.sin(az), Math.cos(az)];
+    const id = 'T' + (++S.nT || (S.nT = 1)), l = { id, tid: -1, sp, L, d0, d1, dm: Math.round((d0 + d1) / 2), vol: +(Math.PI / 4 * ((d0 + d1) / 200) ** 2 * L).toFixed(3), q: 'B', i: 0, st: 'ground', seed: 0.3, tint: 1 };
+    l.p0 = [x - f[0] * L / 2, y - f[1] * L / 2, 0]; l.p1 = [x + f[0] * L / 2, y + f[1] * L / 2, 0]; l.p0[2] = support(l.p0[0], l.p0[1], l) + d0 / 200; l.p1[2] = support(l.p1[0], l.p1[1], l) + d1 / 200;
+    S.logs.push(l); S.by[id] = l; redraw(); save(); return id; };
+  Object.assign(S, { redraw, save, support, place, adopt, yard: YARD, mid, SPN, de, rOf, species, forkTick, trailerMass });
   return S; })();
 window.HOLZ = HOLZ;

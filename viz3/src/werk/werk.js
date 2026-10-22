@@ -45,7 +45,17 @@ const WERK = (() => {
   const darkOf = (H, end) => 1 - Math.exp(-Math.max(0, H) / (end ? 14 : 30));
   const FUMED = [88, 58, 34];
   // colour of a material point (v across the original panel, w through its thickness, u along the grain), end grain or long grain face
-  function oakCol(wp, v, w, u, end, o, px) { const l = lamAt(wp, v), dv = v - l.v0 - l.pv, dw = w - l.pw, r = Math.hypot(dv, dw); let k = l.tone;
+  // V16d: own wood from the Klinge (werk/holz_dry.js) – larch or spruce: softwoods have no pores and no broad rays, the latewood is a sharp
+  // dark band; larch heartwood is reddish brown with a narrow light sapwood edge, spruce stays pale
+  const SOFT = { larch: { e: [226, 170, 112], l: [160, 88, 50], sap: [234, 214, 170] }, spruce: { e: [236, 216, 176], l: [192, 150, 98], sap: null }, pine: { e: [232, 200, 150], l: [178, 112, 62], sap: [238, 220, 182] } };
+  function softCol(wp, v, w, u, end, o, px) { const P = SOFT[wp.sp] || SOFT.spruce, l = lamAt(wp, v), dv = v - l.v0 - l.pv, dw = w - l.pw, r = Math.hypot(dv, dw), ring = l.ring * 1.5;
+    const aa = Math.min(1, Math.max(0, (ring * (px || 1) - 1.6) / 2.4)); let rg;
+    if (end) { const ang = Math.atan2(dw, dv); rg = r / ring + 0.05 * Math.sin(ang * 5 + l.ph); } else rg = r / ring + 0.55 * Math.sin(u * 0.0042 + l.ph) + 0.18 * Math.sin(u * 0.017 + l.ph * 2.3);
+    const f = rg - Math.floor(rg), lw = THREE.MathUtils.smoothstep(f, 0.6, 0.78) * (1 - THREE.MathUtils.smoothstep(f, 0.9, 1.0)) * (0.3 + 0.7 * aa), k = l.tone * (0.97 + 0.06 * hsh(Math.floor(u / 40), Math.floor(v * 3 + w * 3)));
+    for (let i = 0; i < 3; i++) o[i] = (P.e[i] + (P.l[i] - P.e[i]) * lw) * k; o[0] += l.hue * 5; o[2] -= l.hue * 5;
+    o[3] = P.sap && isSap(l, v) ? 1 : 0; if (o[3]) for (let i = 0; i < 3; i++) o[i] = o[i] * 0.4 + P.sap[i] * 0.6;
+    return o; }
+  function oakCol(wp, v, w, u, end, o, px) { if (wp.sp) return softCol(wp, v, w, u, end, o, px); const l = lamAt(wp, v), dv = v - l.v0 - l.pv, dw = w - l.pw, r = Math.hypot(dv, dw); let k = l.tone;
     const aa = Math.min(1, Math.max(0, (l.ring * (px || 1) - 1.6) / 2.4));   // rings fade out where they come close to the pixel size (no moiré)
     if (end) { const ang = Math.atan2(dw, dv), rg = r / l.ring + 0.06 * Math.sin(ang * 5 + l.ph), f = rg - Math.floor(rg);
       k *= 0.82 * (1 - 0.13 * aa * (0.5 + 0.5 * Math.cos(6.2832 * (f - 0.1))));                                            // latewood darker
@@ -84,7 +94,7 @@ const WERK = (() => {
     if (F.sl && ctx.j != null && F.sl[ctx.j]) { const r = F.sl[ctx.j], dep = (ctx.top ? wp.rmT[0] - r.rm[0] : wp.rmT[1] - r.rm[1]); if (dep < dE(r.H)) k = Math.max(k, darkOf(r.H, 1) * (1 - Math.max(0, dep) / dE(r.H) * 0.35)); }
     if (F.B && ctx.top != null) { const dep = ctx.top ? wp.rmT[0] - F.B.rm[0] : wp.rmT[1] - F.B.rm[1]; if (dep < dE(F.B.H)) k = Math.max(k, darkOf(F.B.H, 1) * (1 - Math.max(0, dep) / dE(F.B.H) * 0.35)); }
     if (F.B && ctx.side) k = Math.max(k, darkOf(F.B.H) * 0.9);
-    return k; }
+    return wp.sp ? k * 0.15 : k; }   // V16d: softwoods have hardly any tannin – ammonia barely darkens them
   // one canvas per face of the current form; px per mm chosen so a whole face is at most 512 px
   function faceTextures(wp) { const f = formOf(wp.st), o = {}, out = {};
     const px = (L) => Math.max(0.25, Math.min(1.0, 384 / L));
@@ -220,7 +230,7 @@ const WERK = (() => {
     fum: {}, airT: null, mc: 8.6 + Math.random() * 1.2, notes: [], safe: 0, where: 'gone', done: false, glue: null, created: now() }, o);
     if (!wp.lam) wp.lam = lamellae(wp.seed, 400); W.list.push(wp); return wp; }
   const nameOf = wp => { const F = wp.fum || {}, fumed = fumeH(wp) > 5, nsl = (F.sl || []).filter(r => r && r.H > 5).length, all = (F.B && F.B.H > 5) || (nsl && nsl >= (wp.slices || []).length);
-    const sp = all ? 'Räuchereiche' : nsl ? 'Eiche/Räuchereiche' : fumed ? 'Eiche, angeräuchert' : 'Eiche';
+    const sp = wp.sp ? ({ larch: 'Lärche', spruce: 'Fichte', pine: 'Kiefer' }[wp.sp] || 'Nadelholz') + (wp.own ? ' (eigenes Holz)' : '') : all ? 'Räuchereiche' : nsl ? 'Eiche/Räuchereiche' : fumed ? 'Eiche, angeräuchert' : 'Eiche';
     return ({ panel: 'Leimholzplatte ' + sp, blank: 'Zuschnitt ' + sp + ' 500 mm', rip: 'Zuschnitt (wird gesägt)', strips: nStrips(wp) + ' Kanteln ' + sp, lay1: 'Kanteln', glue1: 'Kanteln mit Leim', clamp1: 'Verleimung (in den Zwingen)', panel1: 'Leimholz aus Kanteln', planed1: 'Leimholz, gehobelt', slice: 'Leimholz (wird gesägt)',
       slices: (wp.slices || []).length + ' Stirnholzscheiben', lay2: 'Stirnholzscheiben', glue2: 'Scheiben mit Leim', clamp2: 'Stirnholzverleimung (in den Zwingen)', board: 'Stirnholzbrett, roh', flat: 'Stirnholzbrett, plan', trimmed: 'Stirnholzbrett, besäumt', finish: 'Stirnholzbrett ' + sp, done: 'Schneidebrett ' + sp + ' Nr. ' + (wp.bn || wp.n) })[wp.st] || 'Werkstück'; };
   function dimsOf(wp) { const f = formOf(wp.st);
@@ -649,5 +659,7 @@ const WERK = (() => {
   // ---------------- for the quests (Ronald's board), the HUD card and the tests ----------------
   return { ST, RACK, SHELF, TENT, W, TOOLS, objective, current, nextStep, nameOf, dimsOf, descOf, BOOK, ORDER, posOf, carriedWP, render, renderRack, save, load, reset, changed, stars, starsTxt, fumeH, formOf, newWP, mkThing, refreshThing,
     hasFinished: () => { const c = carriedWP(); return !!(c && c.done); }, handOver() { const c = carriedWP(); if (!c || !c.done) return null; killThing(c); c.where = 'ronald'; save(); changed(); return c; },
-    finished: () => W.list.filter(w => w.done), on: ON, exec, opOf, syn, gearChecks, WT, wpMesh, faceTextures }; })();
+    finished: () => W.list.filter(w => w.done), on: ON, exec, opOf, syn, gearChecks, WT, wpMesh, faceTextures,
+    // V16d: panels glued from one's own dried planks (werk/holz_dry.js) go into the rack like the bought ones
+    addOwn(n, sp, mc) { for (let i = 0; i < n; i++) { const p = newWP('panel', { sp, own: true, mc: +(mc - 0.3 + Math.random() * 0.6).toFixed(1) }); p.where = 'rack'; RACK.items.push(p); } renderRack(); save(); return n; } }; })();
 window.WERK = WERK;
