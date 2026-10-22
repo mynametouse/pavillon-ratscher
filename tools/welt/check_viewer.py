@@ -52,7 +52,7 @@ def wait_idle(pg, limit):
 
 
 with sync_playwright() as p:
-    br = p.chromium.launch(args=['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'])
+    br = p.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
     pg = br.new_page(viewport={'width': 1280, 'height': 720})
     pg.on('console', lambda m: m.type == 'error' and res['console_errors'].append(m.text[:300]))
     pg.on('pageerror', lambda e: res['page_errors'].append(str(e)[:300]))
