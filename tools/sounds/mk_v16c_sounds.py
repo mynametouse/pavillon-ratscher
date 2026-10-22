@@ -18,7 +18,7 @@ def spec(x, fn): X = np.fft.rfft(x); f = np.fft.rfftfreq(len(x), 1 / SR); return
 def bp(f, fc, q): return 1.0 / (1.0 + (q * (f / fc - fc / np.maximum(f, 1e-3))) ** 2)
 def bandnoise(n, lo, hi, tilt=0.0):
     X = rng.standard_normal(n // 2 + 1) + 1j * rng.standard_normal(n // 2 + 1); f = np.fft.rfftfreq(n, 1 / SR)
-    g = ((f >= lo) & (f <= hi)).astype(float); g = np.convolve(g, np.ones(41) / 41, 'same'); g *= np.where(f > 1, (f / 1000.0) ** tilt, 0)
+    g = ((f >= lo) & (f <= hi)).astype(float); g = np.convolve(g, np.ones(41) / 41, 'same'); g *= (np.maximum(f, 1.0) / 1000.0) ** tilt * (f > 1)
     x = np.fft.irfft(X * g, n); return x / (np.std(x) + 1e-12)
 def cconv(x, h): n = len(x); H = np.fft.rfft(np.pad(h, (0, n - len(h))) if len(h) < n else h[:n]); return np.fft.irfft(np.fft.rfft(x) * H, n)   # circular: loops stay seamless
 def damped(fr, tau, n=None, ph=0.0):
@@ -60,7 +60,7 @@ def one_shot_engine(rpm_curve, dur):
     x = np.zeros(n); x[fire] = 1 + 0.15 * rng.standard_normal(fire.sum()); return np.convolve(x, exhaust_ir(1.0))[:n]
 def pull(n0, dur):   # pawls ratcheting while the flywheel spins up and down
     n = int(SR * dur); tt = np.arange(n) / SR; sp_ = np.sin(np.pi * np.clip(tt / dur, 0, 1)) ** 0.7; ph = np.cumsum(18 + 34 * sp_) / SR
-    clicks = (np.diff(np.floor(ph * 4), prepend=0) > 0).astype(float) * (0.4 + 0.6 * sp_); clicks = np.convolve(clicks, damped(3100, 0.0009, 200) + 0.6 * damped(1700, 0.0015, 300))[:n]
+    clicks = (np.diff(np.floor(ph * 4), prepend=0) > 0).astype(float) * (0.4 + 0.6 * sp_); clicks = np.convolve(clicks, damped(3100, 0.0009, 300) + 0.6 * damped(1700, 0.0015, 300))[:n]
     whirr = bandnoise(n, 90, 900, -0.6) * sp_ * 0.35; return clicks + whirr
 start = np.zeros(int(SR * 3.4))
 p1 = pull(0, 0.55); start[:len(p1)] += p1

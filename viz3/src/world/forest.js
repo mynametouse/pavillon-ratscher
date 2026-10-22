@@ -101,7 +101,7 @@ const FOREST = (() => {
           const az = rr(0, 6.283), el = rr(-0.55, -0.05), dir = [Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az)], L = (0.45 + 1.25 * f) * rr(0.6, 1.1) * (lod ? 1.3 : 1);
           const U = rotAround(norm(cross(dir, [0, 1, 0])), dir, rr(-0.8, 0.8)), r0 = rAt(y) * 0.85, g = rr(0.75, 1.05);
           card(Cd, [ax[0] + dir[0] * r0, y + dir[1] * r0, ax[1] + dir[2] * r0], dir, U, L, L / R[4] * 1.6, R, [0.62 * g, 0.57 * g, 0.5 * g], y / H, norm([dir[0], 0.8, dir[2]]), true); } } }
-    return { bark: finish(Bk), cards: finish(Cd), H, W: Rc, rAt };
+    return { bark: finish(Bk), cards: finish(Cd), H, W: Rc, rAt, rb, tile, bt: sp.bt || [1, 1, 1] };
   }
   // ---------- materials: needle cards and bark with distance bands (dither), canopy shade for the far side of the shadow box ----------
   const CU = { tCan: { value: null }, bCan: { value: new THREE.Vector4(0, 0, 1, 1) }, uSunBox: { value: new THREE.Vector4(0, 0, 16, 0.8) } };   // w: share of the canopy shade kept inside the box
@@ -187,12 +187,14 @@ const FOREST = (() => {
       rt.viewport.set(i * C, 0, C, C * 2); rt.scissor.set(i * C, 0, C, C * 2); R.setRenderTarget(rt); R.render(sc, side);
       rt.viewport.set(i * C, C * 2, C, C); rt.scissor.set(i * C, C * 2, C, C); R.setRenderTarget(rt); R.render(sc, top); info.push({ W, H }); });
     rt.scissorTest = false; rt.viewport.set(0, 0, C * n, C * 3); R.setRenderTarget(pt); R.setClearColor(pc, pa); SV.on.value = sv; GI.on.value = gi;
-    return { tex: rt.texture, rt, info, n, models, mats, seas: SEAS_U.value.clone() }; }
+    return { tex: rt.texture, rt, info, n, models, mats, seas: SEAS_U.value.clone(), good: texReady() }; }
   // ---------- building it all ----------
   const LODS = { hoch: [44, 175, 34], mittel: [34, 140, 26], schnell: [22, 95, 16] };   // near radius, middle radius, ground cover radius
   const lodR = () => LODS[RENDER.tier] || LODS.mittel;
   const MAX0 = 700, MAX1 = 6000, MAXC = 500;
-  let MODELS0 = [], MODELS1 = [], IM0 = [], IM1 = [], U0 = [], U1 = [], U2 = null, COVER = [], CIM = [], A2 = null;
+  let MODELS0 = [], MODELS1 = [], IM0 = [], IM1 = [], U0 = [], U1 = [], U2 = null, COVER = [], CIM = [], A2 = null, TWIG_OK = false;
+  // the far atlas can only be drawn once the twig and bark images are there (drawn at once it held black trunks and no needles)
+  const texReady = () => TWIG_OK && ['sprucebark', 'pinebark'].every(k => !TEXMAN[k] || texFile(texFileOf(k, 'col'), true).ok);
   const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), sv3 = new THREE.Vector3(), up3 = new THREE.Vector3(0, 1, 0), colT = new THREE.Color();
   function matrixOf(t, Md, out) { const s = t.h / Md.H; q4.setFromAxisAngle(up3, t.rot); out.compose(V(t.x, t.y, t.z - 0.05), q4, sv3.set(s * t.w, s, s * t.w)); return out; }
   function build() { const t0 = performance.now(); const P0 = plant(); S.list = P0.T;
@@ -200,7 +202,7 @@ const FOREST = (() => {
     const tex = new THREE.DataTexture(new Uint8Array(P0.cov.map(v => Math.round(Math.min(1, v) * 255))), MW, MH, THREE.RedFormat); tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true;
     CU.tCan.value = tex; CU.bCan.value.set(MX0, MY0, 1 / (MW * MR), 1 / (MH * MR));
     // models and materials
-    const twig = TXL.load(BASE + 'tree/fir_twig_color.png', () => markDirty(true)); twig.colorSpace = THREE.SRGBColorSpace; twig.anisotropy = ANISO;
+    const twig = TXL.load(BASE + 'tree/fir_twig_color.png', () => { TWIG_OK = true; markDirty(true); }); twig.colorSpace = THREE.SRGBColorSpace; twig.anisotropy = ANISO;
     const barkTex = {}; for (const k of ['sprucebark', 'pinebark']) barkTex[k] = TEXMAN[k] ? { map: texUse(texFileOf(k, 'col'), true, [1, 1]).t, nrm: texUse(texFileOf(k, 'nrm'), false, [1, 1]).t, orm: texUse(texFileOf(k, 'orm'), false, [1, 1]).t } : null;
     const lodU = [new THREE.Vector4(-2, -1, 1e5, 1e5 + 1), new THREE.Vector4(1, 2, 1e5, 1e5 + 1), new THREE.Vector4(1, 2, 1e5, 1e5 + 1)]; U0 = lodU[0]; U1 = lodU[1]; U2 = lodU[2];
     const mk = (sp, lod) => { const B = barkTex[SPEC[sp].bark], key = sp + lod;
@@ -272,10 +274,14 @@ const FOREST = (() => {
   // per frame: the sun's shadow box for the canopy shade, the draw sets
   let seasT = 0;
   window.TICKS.push(dt => { if (!S.ready) return; if (typeof sunC !== 'undefined') CU.uSunBox.value.set(sunC[0], sunC[1], sunHalf, 0.8); relod(false);
+    if (A2 && !A2.good && texReady()) { A2 = atlas(A2.models, A2.mats, A2.rt); A2.good = true; S.atlasDone = true; markDirty(true); }
     if ((seasT -= (dt || 0.016)) > 0) return; seasT = 2; const q = seasonOf(doyNow()), u = SEAS_U.value; if (Math.abs(q[0] - u.x) + Math.abs(q[1] - u.y) + Math.abs(q[2] - u.z) < 0.004) return;
     u.set(q[0], q[1], q[2], 0); markDirty(true);
     const a = A2 && A2.seas; if (a && Math.abs(a.x - u.x) + Math.abs(a.y - u.y) + Math.abs(a.z - u.z) > 0.12) A2 = atlas(A2.models, A2.mats, A2.rt); });
   whenLoaded(() => { if (!window.RATSCHER || !RATSCHER.ready) return; try { build(); } catch (e) { console.warn('forest', e); } });
+  // what is new (once)
+  let intro = false; window.TICKS.push(() => { if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16c') === '1'; localStorage.setItem('pav-v16c', '1'); } catch (e) {}
+    if (!seen) setTimeout(() => toast('Neu: der Wald an der Klinge in 3D – Fichten, Lärchen und Kiefern, Nadelstreu und Moos, Licht unter den Kronen. Menü „Zum Traktor“, dann ein paar Schritte in den Familienwald. Die Lärchen färben sich nach dem Spieldatum.', 11000), 26000); });
   // ---------- the ground shader part (world/ratscher.js terrain): needle litter and moss under the crowns, light under the canopy ----------
   const FS_STUB = 'float fCan = 0.0, fOut = 1.0; vec3 forestFloor( vec2 p, vec3 c, float d ) { return c; }';
   S.shader = sh => { if (!window.DETAIL || (window.GLCHECK && GLCHECK.lite)) return FS_STUB;   // needs tDet from the road GLSL (world/roads.js), which LITE drops
@@ -295,15 +301,19 @@ const FOREST = (() => {
   S.LIGHT = 'reflectedLight.directDiffuse *= 1.0 - 0.86 * fCan * fOut; reflectedLight.directSpecular *= 1.0 - 0.9 * fCan * fOut; reflectedLight.indirectDiffuse *= mix( vec3( 1.0 ), vec3( 0.46, 0.5, 0.36 ), fCan ); reflectedLight.indirectSpecular *= 1.0 - 0.8 * fCan;';
   // ---------- V16c2 felling (world/fell.js): one tree taken out of the instancing, its profile, the gap it leaves ----------
   S.byId = id => S.list[id];
+  S._atlas = () => A2;   // tests
   S.model = m => MODELS0[m];
+  S.spec = sp => SPEC[sp];
+  S.patchSolo = (m, key, U, cards) => patch(m, key, S._mk.lodU[0], cards || false, U);   // one more material in the stand's light (vShade, canopy)
   S.variant = m => VARIANTS[m];
   S.scaleOf = t => { const Md = MODELS0[t.m]; return { s: t.h / Md.H, sw: t.h / Md.H * t.w }; };
   // radius of the trunk of tree t at z m above its foot (world metres, as drawn)
   S.trunkR = (t, z) => { const Md = MODELS0[t.m], s = t.h / Md.H; return Md.rAt(Math.max(0, z) / s) * s * t.w; };
   // materials for one tree outside the instancing: the near look, bark hidden below uCut (model height), cards gone below uDelimb (share of height)
-  S.soloMats = (sp, U) => { const B = S._mk.barkTex[SPEC[sp].bark], lu = S._mk.lodU[0];
-    const bark = patch(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: B && B.map, normalMap: B && B.nrm, roughnessMap: B && B.orm, roughness: 1, envMapIntensity: 0.55 }), 'b' + sp, lu, false, U);
-    const cards = patch(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: S._mk.twig, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.82, envMapIntensity: 0.5 }), 'c' + sp, lu, true, U);
+  S.barkMap = sp => S._mk.barkTex[SPEC[sp].bark];
+  S.soloMats = (sp, U) => { const B = S._mk.barkTex[SPEC[sp].bark], lu = S._mk.lodU[0];   // U.uCut acts on the bark, U.uDelimb on the cards
+    const bark = patch(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: B && B.map, normalMap: B && B.nrm, roughnessMap: B && B.orm, roughness: 1, envMapIntensity: 0.55 }), 'b' + sp, lu, false, { uCut: U.uCut, uDelimb: { value: -1 } });
+    const cards = patch(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: S._mk.twig, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.82, envMapIntensity: 0.5 }), 'c' + sp, lu, true, { uCut: { value: -10 }, uDelimb: U.uDelimb });
     if (sp === 'larch') seasonal(cards, false); return { bark, cards, depth: S._mk.depth, barkMap: B }; };
   // take a tree out of the stand: near/middle sets, its far card, its trunk for collisions, its crown from the light and litter maps
   S.hide = t => { if (!t || t.gone) return; t.gone = true;

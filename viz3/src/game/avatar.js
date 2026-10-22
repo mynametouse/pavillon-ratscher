@@ -126,7 +126,8 @@ const AVATAR = (() => {
   // ---- V15b protective gear on the figure: goggles, ear defenders, masks – meshes on the head bone, built once per figure ----
   const GM = { lens: new THREE.MeshStandardMaterial({ color: 0xd2e6ee, roughness: 0.06, transparent: true, opacity: 0.36, depthWrite: false }), frame: new THREE.MeshStandardMaterial({ color: 0x24282c, roughness: 0.5 }),
     cup: new THREE.MeshStandardMaterial({ color: 0xd8a21a, roughness: 0.45 }), band: new THREE.MeshStandardMaterial({ color: 0x2b2e31, roughness: 0.6 }), ffp: new THREE.MeshStandardMaterial({ color: 0xf2f1ec, roughness: 0.85 }),
-    mask: new THREE.MeshStandardMaterial({ color: 0x55595d, roughness: 0.55 }), filt: new THREE.MeshStandardMaterial({ color: 0x8a6a3a, roughness: 0.5 }), fk: new THREE.MeshStandardMaterial({ color: 0x3f8a3c, roughness: 0.5 }) };
+    mask: new THREE.MeshStandardMaterial({ color: 0x55595d, roughness: 0.55 }), filt: new THREE.MeshStandardMaterial({ color: 0x8a6a3a, roughness: 0.5 }), fk: new THREE.MeshStandardMaterial({ color: 0x3f8a3c, roughness: 0.5 }),
+    helm: new THREE.MeshStandardMaterial({ color: 0xe8661c, roughness: 0.4 }), visor: new THREE.MeshStandardMaterial({ color: 0x1c1d1f, roughness: 0.5, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }) };
   let WEARING = { eyes: null, ears: null, resp: null };
   function gearOf(F) { if (F.gear !== undefined) return F.gear; const H = F.B.Head; if (!H) return F.gear = null;
     // measured in the standing pose (after loading the skeleton may still hold the lying pose of the lieTurn measurement)
@@ -146,9 +147,14 @@ const AVATAR = (() => {
     { const g = mk('abek'); const c = new THREE.Mesh(new THREE.SphereGeometry(0.056, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), GM.mask); c.rotation.x = -Math.PI / 2; c.scale.set(1, 0.7, 0.9); c.position.set(0, -0.07, -0.03); c.castShadow = true; g.add(c);
       for (const x of [-0.052, 0.052]) { cylr(g, x, -0.085, -0.07, 0.03, 0.028, GM.filt, Math.PI / 2 - 0.4, x < 0 ? 0.5 : -0.5); cylr(g, x * 1.08, -0.09, -0.09, 0.031, 0.008, GM.fk, Math.PI / 2 - 0.4, x < 0 ? 0.5 : -0.5); }
       const t = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.006, 4, 24), GM.band); t.rotation.x = Math.PI / 2; t.position.set(0, -0.05, 0.05); g.add(t); }
+    // V16c2 forest helmet (world/fell.js): orange shell with brim, ear defenders on arms, the mesh visor down over the face
+    { const g = mk('forsthelm'); const sh = new THREE.Mesh(new THREE.SphereGeometry(0.128, 22, 12, 0, Math.PI * 2, 0, Math.PI / 2), GM.helm); sh.scale.set(1.0, 0.92, 1.14); sh.position.set(0, 0.055, 0.075); sh.castShadow = true; g.add(sh);
+      const br = new THREE.Mesh(new THREE.CylinderGeometry(0.142, 0.146, 0.012, 26), GM.helm); br.scale.set(1, 1, 1.12); br.position.set(0, 0.052, 0.07); br.castShadow = true; g.add(br);
+      for (const x of [-0.096, 0.096]) { cylr(g, x, -0.025, 0.078, 0.042, 0.03, GM.helm, 0, Math.PI / 2); box(g, x * 1.02, 0.02, 0.078, 0.008, 0.07, 0.018, GM.band); }
+      const vz = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.155, 0.135, 24, 1, true, Math.PI * 0.68, Math.PI * 0.64), GM.visor); vz.position.set(0, -0.02, 0.072); vz.scale.set(1, 1, 1.05); g.add(vz); }
     return F.gear = it; }
-  function wear(on) { WEARING = Object.assign({ eyes: null, ears: null, resp: null }, on || {}); for (const F of Object.values(A.figs)) applyGear(F); markDirty(true); }
-  function applyGear(F) { const it = gearOf(F); if (!it) return; for (const [id, g] of Object.entries(it)) g.visible = WEARING.eyes === id || WEARING.ears === id || WEARING.resp === id; }
+  function wear(on) { WEARING = Object.assign({ eyes: null, ears: null, resp: null, head: null }, on || {}); for (const F of Object.values(A.figs)) applyGear(F); markDirty(true); }
+  function applyGear(F) { const it = gearOf(F); if (!it) return; for (const [id, g] of Object.entries(it)) g.visible = WEARING.eyes === id || WEARING.ears === id || WEARING.resp === id || WEARING.head === id; }
   // ---- loading ----
   const FL = new THREE.FileLoader(); FL.setResponseType('json'); const U = f => BASE + 'chars/' + f;
   async function load(kind) { if (A.figs[kind]) return A.figs[kind]; if (A.loading[kind]) return A.loading[kind];
