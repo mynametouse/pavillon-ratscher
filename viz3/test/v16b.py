@@ -53,7 +53,10 @@ with lib.browser() as b:
         drive(3, brk=1)
     if want('route'):
         if not E("VEH.cur"): E("VEH.enter('car')")
-        R = E("ROADS.routes.klinge"); E(f"VEH.place('car', {R[0][0]}, {R[0][1]}, Math.atan2({R[1][0] - R[0][0]}, {R[1][1] - R[0][1]}))"); E("window._fs = VEH.follow(ROADS.routes.klinge, 10)")
+        R = E("ROADS.routes.klinge"); E(f"VEH.place('car', {R[0][0]}, {R[0][1]}, Math.atan2({R[1][0] - R[0][0]}, {R[1][1] - R[0][1]}))")
+        # since V16d Günter's tractor waits on the last metres of the track (vehicles/tractor.js home) and collides – the car drives to 15 m before it
+        E("window._rk = (() => { const R = ROADS.routes.klinge, t = VEH.state().find(v => v.id === 'tractor'); let k = R.length - 1; while (k > 2 && t && Math.hypot(R[k][0] - t.x, R[k][1] - t.y) < 15) k--; return R.slice(0, k + 1); })()")
+        E("window._fs = VEH.follow(window._rk, 10)")
         T = 0; places = set()
         for secs, shot in [(8, 'c_bridge'), (10, 'c_anger'), (16, 'c_village'), (24, 'c_fields'), (20, 'c_l1625'), (30, 'c_forest_edge'), (40, None), (30, None)]:
             for k in range(int(secs / 0.5)): steps(0.5); places.add(E("document.getElementById('where').textContent"))

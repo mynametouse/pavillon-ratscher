@@ -31,6 +31,7 @@ z0 = np.frombuffer(bytes(raw), dtype='<i2', count=n * n).reshape(n, n).astype(fl
 XS = x0 + np.arange(n) * st; YS = y0 + np.arange(n) * st
 iL, iR, jB, jT = round((-120 - x0) / st), round((120 - x0) / st), round((-120 - y0) / st), round((120 - y0) / st)
 XS[iL], XS[iR], YS[jB], YS[jT] = -120.0, 120.0, -120.0, 120.0
+JOIN = 3.0   # m: a way end this close to another way is joined to it (T junction); farther ends stay free (was 30 by mistake until 22.10. 23:00)
 L_CUT = {'motorway': 320, 'main': 240, 'county': 210, 'street': 130, 'lane': 130, 'service': 100, 'track': 100}   # m: shorter waves removed
 GMAX = {'motorway': 5, 'main': 9, 'county': 10, 'street': 12, 'lane': 14, 'service': 15, 'track': 18}               # % over 10 m (check only)
 
@@ -68,7 +69,7 @@ for wy in use:
                 A, B = P[s], P[s + 1]; AB = B - A; L2 = AB @ AB
                 if L2 < 1: continue
                 t = np.clip((np.array(e, float) - A) @ AB / L2, 0, 1); d = np.hypot(*(A + t * AB - e))
-                if d < 30 and (best is None or d < best[0]): best = (d, ot, s, t)
+                if d < JOIN and (best is None or d < best[0]): best = (d, ot, s, t)
         if best and 0 < best[3] < 1:
             best[1]['q'].insert(best[2] + 1, e); count[e] += 1; joined += 1
         elif best:   # nearest point is the other way's vertex: snap the end onto it
