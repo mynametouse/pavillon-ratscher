@@ -126,6 +126,17 @@ pos2, chains2 = roads.network(ways2, nodeE2)
 newpos, sa = roads.fit_axis(pos2, chains2, AxisDem())
 mid = newpos[chains2[0][1]][len(chains2[0][1]) // 2]
 ck('axis fit', abs((mid[1] - N0) - 202.0) < 0.6, f'centre at N {mid[1] - N0:.2f} (true 202, OSM 200)')
+# delineator posts and bridge bodies on a straight main road
+tb9 = wlib.tbounds(wlib.CONTENT_LEVEL, 2048, 2048)
+pp = np.stack([tb9[0] + 100 + np.arange(0, 400, 2.0), np.full(200, tb9[1] + 100)], 1)
+cc = [({'kind': 'main', 'surf': 'asphalt', 'w': 6.5, 'fl': 0, 'id': '1', 'name': '', 'ref': ''}, np.arange(200))]
+gp = roads.posts(pp, cc, np.full(200, wlib.H0 + 10), tb9, None)
+npost = sum(len(p) for g in gp.values() for p in g['pos']) // 52
+ck('posts every 50 m both sides', npost == 16, f'{npost} posts')
+cc[0][0]['fl'] = 1
+gb = roads.bridge_parts(pp, cc, np.full(200, wlib.H0 + 10), tb9)
+ck('bridge body', sum(len(i) for g in gb.values() for i in g['idx']) > 1000)
+
 # trees: inside the tree cover, not on the road, not in a building
 import trees, types
 
