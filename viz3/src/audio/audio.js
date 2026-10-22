@@ -5,7 +5,6 @@ import { SAVE } from '../core/save.js';
 import { $, BASE, stage } from '../core/head.js';
 import { DOOR, G, P } from '../game/walkable.js';
 import { opt } from '../game/player.js';
-Object.assign(LATE, { toast }); // functions for modules that load earlier: game/game.js
 let toastT = null;
 export function toast(msg, ms = 3600) {
   const t = $('toast');

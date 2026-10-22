@@ -144,6 +144,14 @@ export let stepZ = 0; // feet height of the last step sound (game/game.js physic
 export function setStepZ(z) {
   stepZ = z;
 }
+// the place shown in the header (#where): the frame loop sets it when the place changes, the variant switch resets it so it is shown anew
+export let lastPlace = '';
+export function setLastPlace(pl) {
+  lastPlace = pl;
+}
+export function resetLastPlace() {
+  lastPlace = '';
+}
 export function placeName() {
   if (P.mode === 'orbit') return 'Modellansicht';
   if ((Math.abs(P.x) > 50 || Math.abs(P.y) > 55) && window.ROADS) {
