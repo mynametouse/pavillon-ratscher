@@ -103,7 +103,7 @@ with lib.browser() as b:
         lab = J("(() => { const a = PLAY.acts().find(a => a.id === 'holz:unload'); return a ? a.label() : null; })()"); print('unload label', lab)
         E("(() => { const a = PLAY.acts().find(a => a.id === 'holz:unload'); if (a) PLAY.run(a); })()"); steps(0.3)
         st5 = J(f"(() => {{ const l = HOLZ.logs.find(l => l.id === '{lid2}'), m = HOLZ.mid(l), loc = TRAILER.local(m); return {{ st: l.st, yard: HOLZ.inYard(m), side: +loc[0].toFixed(2), z: +(m[2] - ROADS.groundAt(m[0], m[1])).toFixed(2), cargo: TRAILER.cargo || 0 }}; }})()")
-        check('stakes opened at the back: the log rolls off the far side into the log yard', lab and 'links' in lab and st5['st'] == 'ground' and st5['yard'] and st5['side'] < -1.0 and st5['cargo'] == 0, str(st5))
+        check('stakes opened at the back: the log rolls off the far side into the log yard, onto its timbers', lab and 'links' in lab and st5['st'] == 'ground' and st5['yard'] and st5['side'] < -1.0 and st5['cargo'] == 0 and st5['z'] > 0.22, str(st5))
         cam(Y[0] - 4.0, Y[1] - 3.2, 2.4, Y[0] + 1.2, Y[1] + 0.3, 0.4, 60); shot('h_log_yard')
     if want('fork') or want('saw') or want('stack'):   # a log in the garden: on the fork, to the sawmill
         E("TRAILER.uncouple && TRAILER.tow && TRAILER.uncouple(true)")

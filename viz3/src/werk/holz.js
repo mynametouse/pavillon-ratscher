@@ -154,8 +154,8 @@ const HOLZ = (() => {
     l.st = 'ground'; l.p0 = [a[0], a[1], s0 + r0]; l.p1 = [b[0], b[1], s1 + r1]; restOn(l); done(l, YARD.inside(m) ? 'Im Holzlager.' : null); }
   const warned = {}; function warnOnce(k, t) { if (performance.now() - (warned[k] || 0) > 6000) { warned[k] = performance.now(); think(t, 3200); } }
   // a straight log rests on the highest of what is under it (the yard's timbers, another log): sampled along it, lifted as a whole
-  function restOn(l) { const a = l.p0, b = l.p1, r0 = l.d0 / 200, r1 = l.d1 / 200; let up = 0;
-    for (let k = 1; k < 10; k++) { const t = k / 10, x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t, need = support(x, y, l) + r0 + (r1 - r0) * t - (a[2] + (b[2] - a[2]) * t); if (need > up) up = need; }
+  function restOn(l) { const a = l.p0, b = l.p1, r0 = l.d0 / 200, r1 = l.d1 / 200, n = Math.max(10, Math.ceil(l.L / 0.05)); let up = 0;   // every 5 cm: the timbers are 14 cm wide
+    for (let k = 1; k < n; k++) { const t = k / n, x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t, need = support(x, y, l) + r0 + (r1 - r0) * t - (a[2] + (b[2] - a[2]) * t); if (need > up) up = need; }
     if (up > 0.002) { a[2] += up; b[2] += up; } }
   function done(l, msg) { delete l.f0; delete l.f1; redraw(); SFX.drop && SFX.drop(); if (msg) think(msg, 1800); S.ver++; save(); }
   function trailerMass() { if (!window.TRAILER) return; let kg = 0, h = 0; for (const l of S.logs) if (l.st === 'trailer') { kg += S.mass(l); h = Math.max(h, l.tz + (l.d0 + l.d1) / 400); } TRAILER.cargo = kg; TRAILER.cargoH = h; TRAILER.loadList = S.logs.filter(l => l.st === 'trailer'); }
