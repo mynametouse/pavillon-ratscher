@@ -90,8 +90,11 @@ void main() {
   int q = (vUv.x >= 0.5 ? 1 : 0) + (vUv.y >= 0.5 ? 2 : 0);
   if (((uMask >> q) & 1) != 0) discard;
   vec3 c = texture2D(map, vUv).rgb;
+  vec3 n = normalize(vN);
+  // cut and fill slopes beside the roads (1:1.5) stretch the photo: there a grassy embankment colour takes over
+  c = mix(c, vec3(0.36, 0.40, 0.25), 0.7 * smoothstep(0.93, 0.80, n.y));
   // relief shading relative to flat ground (the photo already has its own light): 1.0 on the flat, brighter towards the sun
-  float l = 1.0 + 0.6 * (dot(normalize(vN), uSun) - uSun.y);
+  float l = 1.0 + 0.6 * (dot(n, uSun) - uSun.y);
   c *= clamp(l, 0.55, 1.2);
   float f = 1.0 - exp(-pow(vDist * uFogD, 2.0));
   gl_FragColor = vec4(mix(c, uFog, f), 1.0);
