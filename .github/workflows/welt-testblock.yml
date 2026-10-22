@@ -40,9 +40,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Werkzeuge
-        run: |
-          pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests mapbox-earcut rasterio playwright
-          python -m playwright install --with-deps chromium
+        run: pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests mapbox-earcut rasterio playwright
       - name: Kurztests der Pipeline (Sekunden)
         run: python -I tools/welt/test_welt.py
       - name: Rohdaten aus dem Cache (Downloads früherer Läufe)
@@ -66,6 +64,7 @@ jobs:
       - name: Zusammenfassung
         if: always()
         run: |
+          [ -f build.log ] || exit 0
           {
             echo "### Welt-Testblock Plan $PLAN"
             echo '```'
@@ -77,6 +76,10 @@ jobs:
           mkdir -p site/welt-test/viewer
           cp viz3/welt-viewer/* site/welt-test/viewer/
           du -sh site/welt-test; find site/welt-test -type f | wc -l
+      - name: Browser für die Prüfung
+        run: |
+          # the system packages come from the Ubuntu mirror, which sometimes stalls: bounded, then the browser alone
+          timeout 300 python -m playwright install --with-deps chromium || python -m playwright install chromium
       - name: Prüfen im Browser (Chromium, Software-Grafik)
         run: python -I tools/welt/check_viewer.py site --out check
       - name: Prüfausgabe aufheben
@@ -175,7 +178,8 @@ jobs:
           echo "noch nicht live – prüfe trotzdem"
       - name: Prüfen im Browser (live)
         run: |
-          pip install --quiet playwright && python -m playwright install --with-deps chromium
+          pip install --quiet playwright
+          timeout 300 python -m playwright install --with-deps chromium || python -m playwright install chromium
           python -I tools/welt/check_viewer.py . --url "https://mynametouse.github.io/pavillon-ratscher/welt-test/viewer/" --out check-live
       - name: Prüfausgabe aufheben
         if: always()

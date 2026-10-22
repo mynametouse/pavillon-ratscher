@@ -83,8 +83,6 @@ def main():
 
     # ---- buildings over the block ----
     import buildings
-    nodeE = None
-    ways, nodeE = roads.load_ways(osm, blk, margin=0)
     from pyproj import Transformer as _T
     tr = _T.from_crs('EPSG:4326', 'EPSG:25832', always_xy=True)
     ids = list(osm['nodes'].keys())

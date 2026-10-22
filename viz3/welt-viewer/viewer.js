@@ -11,9 +11,10 @@ const PAGES = 'https://mynametouse.github.io/pavillon-ratscher/welt-test/';
 const BASE = Q.get('base')
   ? new URL(Q.get('base'), location.href).href
   : location.pathname.includes('/welt-test/viewer') ? new URL('../', location.href).href : PAGES;
-const LOD = +(Q.get('lod') || 2.2);
 const MOBILE = /iPhone|iPad|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.userAgent));
-const MAX_TILES = +(Q.get('maxtiles') || (MOBILE ? 260 : 700));
+const LOD = +(Q.get('lod') || (MOBILE ? 1.7 : 2.2));
+// texture budget: 512 px tiles with mipmaps ~1.4 MB each -> phone <= ~250 MB (brief: <= 300 MB textures on the phone)
+const MAX_TILES = +(Q.get('maxtiles') || (MOBILE ? 170 : 700));
 const MAX_REQ = 6;
 const CURV = 0.87 / (2 * 6371000); // earth curvature with standard refraction
 const $ = id => document.getElementById(id);
@@ -356,8 +357,8 @@ function select() {
   const out = [];
   want.clear();
   const visit = node => {
-    node.used = frameNo;
     if (!frustum.intersectsBox(node.box)) return;
+    node.used = frameNo;
     const d = node.box.distanceToPoint(cam);
     if (node.state !== 2) {
       request(node, d / node.size);
