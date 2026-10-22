@@ -35,7 +35,7 @@ const VEH = (() => {
         ax: 0, ay: 0, vzLP: 0, engine: false, sleep: 0, slip: 0, light: false, brakeOn: false, horn: false, zg: 0, pt: 0, rt: 0, moved: 0 } };
     const L = spec.a + spec.b; spec.L = L;
     const sv = saved[spec.id]; const B = boundsBox();
-    if (sv && sv.length >= 3 && isFinite(sv[0]) && sv[0] > B[0] && sv[0] < B[2] && sv[1] > B[1] && sv[1] < B[3]) { v.st.x = sv[0]; v.st.y = sv[1]; v.st.psi = sv[2]; if (model.load) model.load(sv.slice(3)); v.placed = true; }
+    if (sv && sv.length >= 3 && isFinite(sv[0]) && sv[0] > B[0] && sv[0] < B[2] && sv[1] > B[1] && sv[1] < B[3]) { v.st.x = sv[0]; v.st.y = sv[1]; v.st.psi = sv[2]; if (typeof model.load === 'function') model.load(sv.slice(3)); v.placed = true; }   // V16b4: the car's model.load is its load space (an object, since V16b1) – calling it threw as soon as a position was saved and stopped the whole start
     else { const p = spec.home(); v.st.x = p[0]; v.st.y = p[1]; v.st.psi = p[2]; v.placed = !!p[3]; }
     scene.add(v.g); v.g.traverse(o => { if (o.isMesh) { o.userData.noMerge = true; if (o.castShadow === undefined) o.castShadow = true; } });
     S.list.push(v); S.by[v.id] = v;
