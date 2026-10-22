@@ -15,6 +15,9 @@ const LOADLOG = (() => { const L = { t0: performance.now(), steps: [], errs: [],
   window.addEventListener('error', e => L.err(e.error || e.message)); window.addEventListener('unhandledrejection', e => L.err(e.reason));
   return L; })();
 window.LOADLOG = LOADLOG;
+// V16b4: which files are still on the way (a file that never arrives keeps the page at „Modell wird geladen … 100 %“ – the info line names it)
+LOAD.pending = new Map(); { const s0 = LM.itemStart, e0 = LM.itemEnd, x0 = LM.itemError;
+  LM.itemStart = u => { LOAD.pending.set(u, performance.now()); s0.call(LM, u); }; LM.itemEnd = u => { LOAD.pending.delete(u); e0.call(LM, u); }; LM.itemError = u => { LOAD.pending.delete(u); x0.call(LM, u); }; }
 LM.onProgress = (u, d, t) => { LOAD.done = d; LOAD.total = t; LOAD.alive = performance.now(); const l = $('loading'); if (l && !l.hidden && !LOAD.finished && !LOAD.allIn) l.textContent = 'Modell wird geladen … ' + Math.round(100 * d / Math.max(t, 1)) + ' %';   // V16b2: later loads do not overwrite the next steps
   if (!LOAD.allIn) LOADLOG.note('Dateien ' + d + ' von ' + t); };
 // V16b3: after the last file the scene is built from them (up to half a minute on a slow PC): say so, and let the page show it before the work
@@ -22,15 +25,15 @@ LM.onProgress = (u, d, t) => { LOAD.done = d; LOAD.total = t; LOAD.alive = perfo
 // V16b4: one callback at a time with a breath in between – the page stays responsive, the loading text counts the steps (a step that hangs
 // shows which one it is), every step goes to the load log. Callbacks registered while the scene is built run at once, as before.
 LM.onLoad = () => { if (LOAD.flushT || LOAD.flushing) return; const l = $('loading'); if (!LOAD.finished && l && !l.hidden) l.textContent = 'Modell wird aufgebaut …'; LOAD.allIn = true; LOAD.alive = performance.now();
-  LOAD.flushT = setTimeout(flushLoaded, LOAD.finished ? 0 : 40); };
+  LOAD.flushT = setTimeout(() => { if (LOAD.finished) flushLoaded(); else breathe().then(flushLoaded); }, LOAD.finished ? 0 : 40); };   // the new text is painted first
 const breathe = () => new Promise(r => { let d = 0; const go = () => { if (!d) { d = 1; r(); } }; requestAnimationFrame(() => setTimeout(go, 0)); setTimeout(go, 80); });   // a paint, or 80 ms in a hidden tab
 async function flushLoaded() { LOAD.flushT = 0; LOAD.finished = true; LOAD.flushing = true; let k = 0;
-  while (LOAD.cbs.length) { const f = LOAD.cbs.shift(), n = ++k + LOAD.cbs.length, a = performance.now(), l = $('loading');
+  while (LOAD.cbs.length) { const f = LOAD.cbs.shift(), n = ++k + LOAD.cbs.length, l = $('loading');
     if (l && !l.hidden && n > 1) l.textContent = 'Modell wird aufgebaut … ' + k + ' von ' + n;
     LOADLOG.note('Aufbau ' + k + '/' + n + ': ' + String(f).replace(/\s+/g, ' ').slice(0, 70), true);
-    try { f(); } catch (e) { console.error(e); LOADLOG.err(e); }
-    LOAD.alive = performance.now(); if (performance.now() - a > 400) LOADLOG.note('Aufbau ' + k + ' fertig nach ' + Math.round(performance.now() - a) + ' ms', true);
-    if (LOAD.cbs.length) await breathe(); }
+    await breathe();   // the count above is on the screen while this step runs – a step that hangs shows its number
+    const a = performance.now(); try { f(); } catch (e) { console.error(e); LOADLOG.err(e); }
+    LOAD.alive = performance.now(); if (performance.now() - a > 400) LOADLOG.note('Aufbau ' + k + ' fertig nach ' + Math.round(performance.now() - a) + ' ms', true); }
   LOAD.flushing = false; LOAD.alive = performance.now(); }
 LM.onError = u => { console.warn('Datei fehlt:', u); LOADLOG.err('Datei fehlt: ' + u); };
 function whenLoaded(f) { if (LOAD.finished) f(); else LOAD.cbs.push(f); }

@@ -18,6 +18,8 @@ const sayLoading = t => { LOAD.alive = performance.now(); LOADLOG.note(t); const
     if (P0) LOADLOG.note('vorheriger Versuch offen: ' + (prev || '?'), true);
     const draw = () => { const s = Math.round((performance.now() - t0) / 1000); el.textContent = ''; line(s + ' s');
       if (prev) line(prev, true);
+      if (!LOAD.allIn && s > 20 && LOAD.pending && LOAD.pending.size) { const now = performance.now(), slow = [...LOAD.pending].filter(([u, t]) => now - t > 15000).map(([u]) => String(u).split('?')[0].split('/').slice(-2).join('/'));
+        if (slow.length) { line('Noch nicht da: ' + slow.slice(0, 3).join(', ') + (slow.length > 3 ? ' (+' + (slow.length - 3) + ')' : ''), true); if (!el.dataset.slow) { el.dataset.slow = '1'; LOADLOG.note('wartet auf: ' + slow.slice(0, 4).join(', '), true); } } }
       if (diag || all || s > 25) { const st = all ? LOADLOG.steps : LOADLOG.steps.slice(-6); for (const x of st) line((x[0] / 1000).toFixed(1) + ' s  ' + x[1]); for (const e of LOADLOG.errs.slice(-3)) line('Fehler: ' + e.slice(0, 160), true);
         if (all) { line(String(window.GLINFO ? GLINFO.renderer : '') + ' · ' + navigator.userAgent.slice(0, 110)); }
         const b = document.createElement('button'); b.textContent = all ? 'weniger' : 'Protokoll'; b.style.cssText = 'margin-top:6px;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12px/1 var(--f-body);padding:7px 11px;cursor:pointer';
