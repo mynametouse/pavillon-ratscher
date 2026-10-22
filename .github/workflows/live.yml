@@ -1,0 +1,54 @@
+# Live stellen: der freigegebene Stand von src kommt auf die normale Website (die Vorschau unter /vorschau/ bleibt, plan.json und welt-test/
+# bleiben unangetastet). Start von Hand: GitHub → Actions → „Live stellen“ → Run workflow – oder vom Kern-Chat über die API.
+name: Live stellen
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versionsname für die Commit-Nachricht (z. B. V17a)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
+jobs:
+  live:
+    name: Website aktualisieren
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: src
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Website holen (Branch gh-pages)
+        run: |
+          git clone -q --depth 1 --branch gh-pages --single-branch "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          mkdir -p viz3/dist
+          B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
+          (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+      - name: Bauen wie veröffentlicht
+        run: |
+          npm ci --prefix viz3 --no-audit --no-fund
+          python viz3/build.py --fast --min
+          rm -rf viz3/dist_pub && cp -a viz3/dist viz3/dist_pub
+      - name: Website schreiben und hochladen
+        run: |
+          python viz3/deploy_site.py dist_pub "$RUNNER_TEMP/site"
+          cd "$RUNNER_TEMP/site"
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "${{ inputs.version }} live: src ${GITHUB_SHA::7}" || { echo "nichts geändert"; exit 0; }
+          for i in 1 2 3; do git push -q origin HEAD:gh-pages && break; git pull -q --rebase origin gh-pages; done
+          echo "Live: https://mynametouse.github.io/pavillon-ratscher/"
