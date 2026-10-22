@@ -642,7 +642,7 @@ function loop(now) {
   camera.updateMatrixWorld();
   U.uCam.value.copy(camera.position);
   select();
-  if (frameNo % 10 === 1) updateContent();
+  updateContent();
   renderer.render(scene, camera);
   if (!ST.firstFrameMs && drawn.length) ST.firstFrameMs = Math.round(performance.now() - ST.t0);
   fpsN++;
@@ -682,7 +682,7 @@ window.WELT.stats = () => ({
     return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
   })(),
 });
-window.WELT.idle = () => active === 0 && want.size === 0 && ST.tilesReady > 0;
+window.WELT.idle = () => active === 0 && want.size === 0 && ST.tilesReady > 0 && ![...content.values()].some(c => c.state === 1);
 window.WELT.setMode = setMode;
 window.WELT.place = place;
 window.WELT.routes = () => ROUTES.map(r => ({ name: r.name, kind: r.kind, length_m: r.length_m }));
