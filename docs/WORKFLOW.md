@@ -90,8 +90,10 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
    softgl, loadlog, memphone, savefuzz, Straßen; Safari-Engine als Versuch). Sind alle grün, schreibt der Job „Vorschau veröffentlichen“
    den Stand nach **https://mynametouse.github.io/pavillon-ratscher/vorschau/** (oben ein Hinweis „Vorschau“; der veröffentlichte Plan wird
    mitkopiert, die normale Seite bleibt unverändert).
-2. Falko schaut sich die Vorschau an (Laptop, iPhone). **Live stellen:** GitHub → Actions → „Live stellen“ → Run workflow (Versionsname
-   eintragen) – oder der Kern-Chat startet es. Die Website wird aus `src` neu gebaut; `plan.json`, `vorschau/` und `welt-test/` bleiben.
+2. Falko schaut sich die Vorschau an (Laptop, iPhone). **Live stellen:** Falko sagt es dem Kern-Chat, der schiebt den Stand nach Branch
+   `live` (`git push origin src:live`) – Chat-Sitzungen dürfen Workflows nicht von Hand starten. Oder GitHub → Actions → „Live stellen“ →
+   Run workflow (dieser Knopf erscheint erst, wenn der Standard-Branch des Repos `src` ist, heute ist es `main`). Die Website wird aus dem
+   Stand neu gebaut; `plan.json`, `vorschau/` und `welt-test/` bleiben.
 3. `docs/CHANGELOG.md` ergänzen (nächste freie Nummer), Projekt-Dokument `claude/pavillon-ratscher-stand.md` nachtragen.
 4. **Notweg aus dem Chat** (z. B. wenn neue Asset-Dateien nur im Chat liegen – sie stehen nicht im Repo, die Asset-Basis ist die Website):
    `cd viz3 && python3 build.py --fast --min && rm -rf dist_pub && cp -a dist dist_pub`, dann
