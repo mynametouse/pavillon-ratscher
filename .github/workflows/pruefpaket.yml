@@ -1,5 +1,5 @@
-# Prüfpaket bei jedem neuen Stand auf src (Plan: Projektdokument claude/pavillon-umbau.md, Phase 0) – die langen Browser-Tests laufen hier
-# gleichzeitig auf eigenen Rechnern statt nacheinander im Chat:
+# Prüfpaket bei jedem neuen Stand auf src und auf den Kern-Zweigen kern/* (Plan: Projektdokument claude/pavillon-umbau.md, Phase 0) – die
+# langen Browser-Tests laufen hier gleichzeitig auf eigenen Rechnern statt nacheinander im Chat; nur src geht danach in die Vorschau:
 #   Pflicht: smoke, gpu (16 Texturen je Shader), softgl (ohne Grafikkarte), loadlog (Laden mit gespeicherten Ständen), memphone (iPhone-Speicher),
 #            savefuzz (kaputte gespeicherte Werte), Straßen (Wellen je km unter der Grenze)
 #   Versuch: Safari-Engine (WebKit mit iPhone-13-Profil) – zählt noch nicht, bis klar ist, ob WebGL dort ohne Grafikkarte läuft
@@ -7,7 +7,7 @@ name: Prüfpaket
 
 on:
   push:
-    branches: [src]
+    branches: [src, 'kern/**']
     paths-ignore: ['docs/**', '**.md']
   workflow_dispatch:
 
@@ -109,7 +109,8 @@ jobs:
   vorschau:
     name: Vorschau veröffentlichen
     needs: [browser, strassen]
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # nur src geht in die Vorschau – die Kern-Zweige (kern/*) werden nur geprüft
+    if: github.ref == 'refs/heads/src'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
