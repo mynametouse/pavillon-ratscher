@@ -84,16 +84,21 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
 - Zwei CPU-Kerne: nicht mehrere Browser-Tests gleichzeitig laufen lassen (SwiftShader verliert sonst den WebGL-Kontext).
 - **Windows misst anders** (V16b3): Chrome übersetzt dort jeden Shader über Direct3D (0,3–1,4 s je Programm ohne Grafikkarte), SwiftShader hier nicht. Wer viele neue Materialien/Shader bringt, prüft das Laden vor dem Veröffentlichen zusätzlich im Chrome des Owners (Claude in Chrome, Testseite mit `window.ASSET_BASE` auf die Website, siehe Branch `test/softgl`): Zeitstrahl der Ladeanzeige und Lücken > 1,5 s mitschreiben.
 
-## 4 Veröffentlichen (Checkliste)
+## 4 Veröffentlichen (seit Umbau Phase 0: Vorschau zuerst)
 
-1. `cd viz3 && python3 build.py --fast --min` (bzw. Voll-Build), dann `smoke.py`, `gpu.py` und die Tests des geänderten Bereichs.
-2. **Artefakt** (Claude): `python3 ../tools/publish/pubmap.py dist_pub dist /tmp/pm.json` listet neue/geänderte Dateien. Dann Artifact
-   publish: `url` = https://claude.ai/artifact/Py7y37HTE5ojmFp1Wrg7MC, `file_path` = `viz3/dist/pavillon-ratscher.html`, `root` = `viz3/dist`,
-   `files` = `{"app.js": "app.js", …Einträge aus pm.json}`, `label` = Version. Aus einem neuen Chat vorher `Artifact read` mit derselben URL.
-3. **Website**: `rm -rf dist_pub && cp -a dist dist_pub && COMMIT_TRAILER="<Zuordnungszeilen>" bash deploy_push.sh "V…: …"`; nach ≈ 1 min live
-   (`curl -s https://mynametouse.github.io/pavillon-ratscher/ | grep "Version …"`). Der veröffentlichte Plan (`plan.json`) bleibt erhalten.
-4. **Quellcode**: Commit auf `src`, `git push origin src`.
-5. `docs/CHANGELOG.md` ergänzen; Projekt-Dokument `claude/pavillon-ratscher-stand.md` (Claude-Projekt „Garten“) aktualisieren.
+1. **Push auf `src`** → GitHub Actions: Schnellprüfung, dann das **Prüfpaket gleichzeitig** (`.github/workflows/pruefpaket.yml`: smoke, gpu,
+   softgl, loadlog, memphone, savefuzz, Straßen; Safari-Engine als Versuch). Sind alle grün, schreibt der Job „Vorschau veröffentlichen“
+   den Stand nach **https://mynametouse.github.io/pavillon-ratscher/vorschau/** (oben ein Hinweis „Vorschau“; der veröffentlichte Plan wird
+   mitkopiert, die normale Seite bleibt unverändert).
+2. Falko schaut sich die Vorschau an (Laptop, iPhone). **Live stellen:** GitHub → Actions → „Live stellen“ → Run workflow (Versionsname
+   eintragen) – oder der Kern-Chat startet es. Die Website wird aus `src` neu gebaut; `plan.json`, `vorschau/` und `welt-test/` bleiben.
+3. `docs/CHANGELOG.md` ergänzen (nächste freie Nummer), Projekt-Dokument `claude/pavillon-ratscher-stand.md` nachtragen.
+4. **Notweg aus dem Chat** (z. B. wenn neue Asset-Dateien nur im Chat liegen – sie stehen nicht im Repo, die Asset-Basis ist die Website):
+   `cd viz3 && python3 build.py --fast --min && rm -rf dist_pub && cp -a dist dist_pub`, dann
+   `VORSCHAU=1 COMMIT_TRAILER="<Zuordnungszeilen>" bash deploy_push.sh "V…: …"` (Vorschau) und ohne `VORSCHAU` (live). Danach erst `src` pushen,
+   damit die Actions-Vorschau schon die neuen Dateien als Basis hat.
+- Das Artefakt in Claude wird nicht mehr aktualisiert (Falko, 22.10.2026); es bleibt auf V16d.
+- Galeriebilder, 360°-Rundblicke und Raumführung werden nicht mehr erzeugt (Falko, 22.10.2026).
 
 ## 5 Parallel arbeiten (mehrere Chats gleichzeitig)
 
