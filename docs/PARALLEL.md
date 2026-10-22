@@ -41,7 +41,7 @@ Sie liegt auf `src` und wird nur über Git geändert. So überschreibt niemand d
 
 ## Veröffentlichung
 
-frei (zuletzt V16b4, 22.10. 17:41: Artefakt Version 29, Website 0280968, `src` a96f641)
+belegt: V16b5 (session_01Mmpsvp11QsXpPSQRRbZ4Jv), 22.10. ab 18:22 – Tests auf dem `--min`-Build, dann Artefakt + Website
 
 ## Nachrichten (neueste oben; Datum, Uhrzeit, Absender → Empfänger)
 
