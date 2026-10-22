@@ -197,6 +197,15 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - **Schnittstellen für das Fällen** (V16c2): `FOREST.model(m)` (Geometrie und Stammprofil `rAt`), `trunkR(t, z)` (Radius in Weltmetern),
   `soloMats(sp, U)` (Materialien für einen einzelnen Baum: Rinde unter `uCut` verborgen, Karten unter `uDelimb` weg), `patchSolo`, `hide(t)`
   (aus Instanzen, Fernkarte, Kollision und Kronenraster nehmen).
+- **Fällen** (`world/fell.js`, `FELL`, V16c2): Forstkiste am Traktor (`fell:kit`: Forst-PSA in `GEAR` mit Feldern head/body/legs/feet/hands,
+  Motorsäge in `PLAY.things.motorsaege`, Keile, Maßband, Kluppe), vom Förster markierte Bäume (`S.marked`, orange Striche), Ablauf je Baum
+  `S.trees[id].st`: plan → Fallkerb (Sohle, Dach) → Splintschnitte → Warnruf → Fällschnitt als Stechschnitt (Bruchleiste ~1/10 Ø) → Keil →
+  Warnruf → Halteband → fallen (`outcome`, `landing`: Richtung, Abweichung, Reißen, Sterne) → entasten → Stammfuß, Zopf → ablängen (Druckseite
+  zuerst) → vermessen (`S.logs`: Länge, Mittendurchmesser, Festmeter, Güte). Der Stammfuß des Baums in Arbeit wird hier gebaut (Rinde,
+  Schnittflächen mit Jahrringen, Fallkerbstück, Keil), der Rest ist das Waldmodell (`FOREST.soloMats`). Waldbuch mit Taste B, Maschinenfenster
+  mit Zeichnung (`WUI.machine({ fig })`). Kleidung: Warnjacke, Schnittschutzhose, Stiefel und Handschuhe färben die eigene Kleidung der Figur
+  nach Körperzonen um (`game/avatar.js` `wearZones`, Hautgewichte), der Helm ist ein eigenes Modell; von hinten (3. Person) zeigt die Säge am
+  Schnitt (`cutSaw`). Speicher `pav-fell-v1`.
 
 ## 12 Erweitern – Beispiel neues Fahrzeug
 

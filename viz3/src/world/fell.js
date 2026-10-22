@@ -11,8 +11,8 @@
 // rest of the tree is the forest's own model (FOREST.soloMats: bark hidden below the foot, cards gone as they are delimbed).
 // Coordinates: the felling frame F of a tree has its origin at the tree's foot, x' = felling direction, y up, z' = to the right.
 const FELL = (() => {
-  // V16c1 ships the forest only: felling is switched on with V16c2 (until then ?fell=1 for tests)
-  const FELL_ENABLED = false;
+  // switched on with V16c2 (V16c1 shipped the forest only; ?fell=1 turned it on for tests)
+  const FELL_ENABLED = true;
   const S = { on: !!(window.FOREST && FOREST.on) && (FELL_ENABLED || QS.has('fell')), ready: false, kit: false, trees: {}, logs: [], job: null, marked: [], n: 0 };
   if (!S.on) return S;
   const LSK = 'pav-fell-v1', D2R = Math.PI / 180, KERF = 0.0045, YTOP = 1.9;
