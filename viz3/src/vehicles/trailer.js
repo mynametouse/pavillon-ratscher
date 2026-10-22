@@ -338,7 +338,7 @@ const TRAILER = (() => {
       zrr = 0;
     for (const w of wheels) {
       const p = toW(w.x, w.y);
-      w.gz = ROADS.groundAt(p[0], p[1], zq);
+      w.gz = KERN.ground(p[0], p[1], zq);
       if (w.y > 0) zf += w.gz / 2;
       else zr += w.gz / 2;
       if (w.x < 0) zl += w.gz / 2;
@@ -362,7 +362,7 @@ const TRAILER = (() => {
     if (v) ez = hitchW(v)[2];
     else {
       const e = eyeW();
-      ez = ROADS.groundAt(e[0], e[1], zq) + EZ;
+      ez = KERN.ground(e[0], e[1], zq) + EZ;
     }
     const ph = Math.asin(THREE.MathUtils.clamp((ez - pz) / LR, -0.7, 0.7)) - s.pitch;
     db.rotation.x = ph;
@@ -371,7 +371,7 @@ const TRAILER = (() => {
     leg.rotation.x = -ph - s.pitch;
     const lw = (() => {
         const e = toW(0, BY1 + (LR - 0.62) * Math.cos(ph));
-        return ROADS.groundAt(e[0], e[1], zq);
+        return KERN.ground(e[0], e[1], zq);
       })(),
       top = pz + Math.sin(ph + s.pitch) * (LR - 0.62);
     const reach = Math.max(0.12, top - lw - 0.02),
@@ -485,7 +485,7 @@ const TRAILER = (() => {
     return (
       Math.hypot(H[0] - e[0], H[1] - e[1]) < 1.25 &&
       Math.abs(rel) < 0.8 &&
-      Math.abs(H[2] - (ROADS.groundAt(e[0], e[1]) + EZ)) < 0.6
+      Math.abs(H[2] - (KERN.ground(e[0], e[1]) + EZ)) < 0.6
     );
   };
   function couple(v, quiet) {

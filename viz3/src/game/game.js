@@ -281,7 +281,7 @@ function collide(p, feet, on) {
       }
     }
   // V16b: beyond the modelled site the walls of every building and the trunks (world/worldcol.js); parked vehicles everywhere
-  if (window.WCOL && (Math.abs(p[0]) > 50 || Math.abs(p[1]) > 55)) WCOL.pushCircle(p, RAD);
+  if (Math.abs(p[0]) > 50 || Math.abs(p[1]) > 55) KERN.pushOut(p, RAD);
   if (window.VEH) VEH.pushWalker(p, RAD, feet);
 }
 // how far one may walk: the garden's 75 m, with the real surroundings the whole square of the 10 m terrain (V16b)
@@ -445,7 +445,7 @@ let stepZ = 0;
 function placeName() {
   if (P.mode === 'orbit') return 'Modellansicht';
   if ((Math.abs(P.x) > 50 || Math.abs(P.y) > 55) && window.ROADS) {
-    const wp = (window.VPROPS && VPROPS.place && VPROPS.place(P.x, P.y)) || ROADS.place(P.x, P.y);
+    const wp = KERN.place(P.x, P.y);
     if (wp) return wp;
   } // V16b: out in the village and the fields; V16e: places and streets of Ratscher
   const f = P.feet,
@@ -548,7 +548,7 @@ function applyCam() {
       t = P.tgt;
     const ox = t[0] + Math.sin(a) * Math.cos(e) * P.r,
       oy = t[1] + Math.cos(a) * Math.cos(e) * P.r,
-      gz = window.RATSCHER && RATSCHER.ready ? RATSCHER.hAt(ox, oy) + 3 : 0.6; // never inside a hill
+      gz = window.RATSCHER && RATSCHER.ready ? KERN.terrain(ox, oy) + 3 : 0.6; // never inside a hill
     cam.fov = 45;
     cam.near = Math.max(0.1, P.r * 0.02);
     cam.far = FAR0();

@@ -24,7 +24,7 @@ const VPROPS = (() => {
   };
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
     L = (r, g, b) => [lin(r), lin(g), lin(b)];
-  const gz = (x, y) => (RATSCHER.hMesh ? RATSCHER.hMesh(x, y) : RATSCHER.hAt(x, y));
+  const gz = (x, y) => KERN.terrain(x, y);
   const tex = (k, m, srgb) => (window.TEXMAN && TEXMAN[k] ? texFile(texFileOf(k, m), srgb).tex : null);
   // ---- a small geometry kit in site coordinates (x east, y north, z up), flat normals, uv in metres, vertex colours ----
   function kit() {
@@ -1203,3 +1203,4 @@ const VPROPS = (() => {
   return S;
 })();
 window.VPROPS = VPROPS;
+KERN.provide('place', (x, y) => (VPROPS.place ? VPROPS.place(x, y) : null), 10); // village places before the roads (core/kern.js)

@@ -13,7 +13,7 @@ const VNEAR = (() => {
   };
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
     L = (r, g, b) => [lin(r), lin(g), lin(b)];
-  const gz = (x, y) => (RATSCHER.hMesh ? RATSCHER.hMesh(x, y) : RATSCHER.hAt(x, y));
+  const gz = (x, y) => KERN.terrain(x, y);
   const FENCE = [L(0.92, 0.91, 0.87), L(0.45, 0.3, 0.2), L(0.25, 0.36, 0.25), L(0.18, 0.18, 0.18), L(0.55, 0.38, 0.24)],
     HEDGE = L(0.22, 0.36, 0.16),
     BINS = [L(0.28, 0.29, 0.3), L(0.15, 0.3, 0.6), L(0.42, 0.28, 0.16), L(0.85, 0.72, 0.1)];
