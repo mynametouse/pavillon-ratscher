@@ -224,8 +224,19 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   Länge). Zustände: `ground` (Boden, auf anderen Stämmen, auf den Unterlegern im Holzlager nördlich der Säge), `fork`, `trailer`, `saw`,
   `sawn`. Gabel (`TRACTOR2.model.fork`, Zinken bis zum Boden `LD.min`): beim Heben mit den Zinken unter einem quer liegenden Stamm liegt er auf
   der Gabel; beim Senken bleibt er dort liegen, wo er aufsetzt (Boden, Stamm, Anhänger zwischen den Rungen, Blockbandsäge). Ungekippte Gabel
-  und hartes Bremsen: er rollt herunter. Auf der Gabel stößt er an wie ein Fahrzeug. Die Gartenbrücke trägt Fahrzeuge (`ROADS.groundAt`),
-  unsichtbare Führungen an ihren Kanten halten die Räder auf dem 2,5 m breiten Deck.
+  und hartes Bremsen: er rollt herunter. Auf der Gabel stößt er an wie ein Fahrzeug. Beim Senken kommt er bis 30 cm über seiner Ablage von
+  den (zurückgekippten) Zinken (`HOLZ.SETTLE`); liegend ruht er auf dem Höchsten darunter (`restOn`: entlang des Stamms abgetastet).
+  Die Gartenbrücke trägt Fahrzeuge (`ROADS.groundAt`); unsichtbare Führungen (`VEH.extra`, `guide`) an ihren Kanten halten **nur die Räder**
+  (`VEH.guideHits` mit `VEH.wheelBox`: Spur, Reifenbreite, Radius aus dem Modell) und nur so weit, wie der Graben darunter liegt (±2,1 m der
+  6,2 m langen Platte, an den Enden aufgeweitet) – Frontlader, Ladung und Ladefläche dürfen über den Rand ragen. Damit kommen Traktor und
+  Anhänger von der Brücke zwischen den zwei Gartenbäumen dahinter auf den Weg (Test `v16d.py bridge`: Pure Pursuit `VEH.follow(pts, v, { look })`
+  vom Feldweg bis ans Holzlager).
+- **Kollision Traktor** (`model.colParts` → `VEH.collide`): Rumpf bis zu den Frontgewichten in voller Höhe, davor der Frontlader nur so hoch,
+  wie Geräteträger und Zinken gerade stehen – gehoben greift die Gabel über das Bett der Säge oder die Ladefläche (deren Box reicht nur bis
+  knapp unter den Boden). Ohne `colParts` (Auto) bleibt es die eine Box aus `spec.box`.
+- **Abladen** (`HOLZ.unload`, zu Fuß an der Rückseite oder vorn am Anhänger): wie beim echten Rungenwagen werden die Rungen der anderen Seite
+  geöffnet, die Stämme rollen nebeneinander ab – steht der Anhänger längs neben dem Holzlager, direkt auf dessen Kanthölzer. Seite: weg von dem,
+  der öffnet; aus der Mitte zum Holzlager hin, sonst rechts.
 - **Blockbandsäge** (`werk/holz_saw.js`, `HOLZSAW`): das Modell aus V15b (`garden/workshop.js`, Sägeaggregat jetzt als Gruppe `SAW.unit`
   höhenverstellbar). Festklemmen, Einschnitt planen (24/30 mm Bretter, 40/52 mm Bohlen; Zeichnung des Zopfendes mit den Schnitten), Schwarte,
   dann Schnitt für Schnitt (Schnittfuge 2 mm) bis 3 cm über die Bänke. Bretter mit Baumkante (`boardGeos`: gesägte Flächen, Rinde, Hirnholz;
