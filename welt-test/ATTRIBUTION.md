@@ -12,6 +12,7 @@ Diese Kacheln (Gelände, Luftbild, Straßen, Gebäude) sind aus offenen Daten er
 | Geländemodell DGM1 Bayern (nur `diag/bayern/`: Test der Straßenmethode auf 1-m-Daten) | Bayerische Vermessungsverwaltung | CC BY 4.0 | Datenquelle: Bayerische Vermessungsverwaltung – www.geodaten.bayern.de |
 
 Bearbeitung: Höhen umgerechnet und gekachelt, Straßen als eigene Bänder mit geglättetem Längsprofil (Gelände an Straßen
-angeschnitten/aufgefüllt), Gebäude aus Grundrissen hochgezogen (Höhen geschätzt), Luftbilder neu gekachelt (WebP).
+angeschnitten/aufgefüllt), Gebäude aus Grundrissen hochgezogen (Höhen geschätzt), Luftbilder neu gekachelt (WebP) und in den
+Farben angeglichen (je Befliegungstag eine Tonkurve, Bezug ist der Bildflug am Garten; Tage und Flächen in meta.json `sources.imagery_balance`).
 Werkzeug: `tools/welt/` im Repo https://github.com/mynametouse/pavillon-ratscher (Branch `welt/woche1`).
 Die aus OpenStreetMap abgeleiteten Dateien (`roads.json`, `routes.json`, `r/`, `b/`) stehen als abgeleitete Datenbank unter der ODbL 1.0.

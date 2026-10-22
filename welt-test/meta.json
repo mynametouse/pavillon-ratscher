@@ -1,7 +1,7 @@
 {
  "format": "welt-test/1",
- "generated": "2026-10-22T21:50:14Z",
- "commit": "8f9958f",
+ "generated": "2026-10-22T22:21:10Z",
+ "commit": "d3f5cd0",
  "plan": "B",
  "crs": "EPSG:25832",
  "heights": "NHN (DHHN2016) in m minus H0",
@@ -54,7 +54,7 @@
     },
     "image": {
      "n": 4,
-     "bytes": 202268
+     "bytes": 179878
     }
    },
    "6": {
@@ -73,7 +73,7 @@
     },
     "image": {
      "n": 16,
-     "bytes": 871038
+     "bytes": 789596
     }
    },
    "7": {
@@ -92,7 +92,7 @@
     },
     "image": {
      "n": 64,
-     "bytes": 4188332
+     "bytes": 3867882
     }
    },
    "8": {
@@ -111,7 +111,7 @@
     },
     "image": {
      "n": 36,
-     "bytes": 1466150
+     "bytes": 1346480
     }
    },
    "9": {
@@ -130,7 +130,7 @@
     },
     "image": {
      "n": 144,
-     "bytes": 5366116
+     "bytes": 4932074
     }
    },
    "10": {
@@ -149,7 +149,7 @@
     },
     "image": {
      "n": 576,
-     "bytes": 19145958
+     "bytes": 17679356
     }
    },
    "11": {
@@ -168,7 +168,7 @@
     },
     "image": {
      "n": 2304,
-     "bytes": 66386382
+     "bytes": 63011332
     }
    },
    "12": {
@@ -183,11 +183,11 @@
     "px": 0.1953125,
     "terrain": {
      "n": 1600,
-     "bytes": 3925398
+     "bytes": 3925399
     },
     "image": {
      "n": 1600,
-     "bytes": 27883010
+     "bytes": 27848490
     }
    }
   },
@@ -494,12 +494,40 @@
   "copernicus_offset_m": 0.0,
   "imagery": "DOP Thüringen, WMS TH DOP (th_dop), © GDI-Th, CC BY 4.0",
   "imagery_balance": {
+   "model": "one tone curve per flight day and channel (quantile matching across the km lines where flights meet)",
    "cells_km": [
     27,
     27
    ],
-   "gain_min": 0.726,
-   "gain_max": 1.45
+   "flights": {
+    "2024-04-07": 298,
+    "2024-05-15": 317,
+    "2025-05-12": 107
+   },
+   "reference": "2024-04-07",
+   "boundaries": {
+    "2024-04-07|2025-05-12": {
+     "pairs": 8947,
+     "step_before": 3.0,
+     "step_after": 5.0,
+     "contrast_before": 1.14,
+     "contrast_after": 0.91
+    },
+    "2024-05-15|2025-05-12": {
+     "pairs": 4664,
+     "step_before": 46.0,
+     "step_after": 7.0,
+     "contrast_before": 1.64,
+     "contrast_after": 1.28
+    },
+    "2024-04-07|2024-05-15": {
+     "pairs": 12352,
+     "step_before": 39.0,
+     "step_after": 1.0,
+     "contrast_before": 1.08,
+     "contrast_after": 1.0
+    }
+   }
   },
   "osm": "OpenStreetMap (2026-10-22T21:23Z), © OpenStreetMap-Mitwirkende, ODbL 1.0"
  },
