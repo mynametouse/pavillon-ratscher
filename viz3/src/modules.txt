@@ -49,6 +49,7 @@ audio/music.js              #
 game/quests.js              # tasks with the neighbours, journal, tracker (QUESTS)
 world/ratscher.js           # real surroundings from geodata: terrain, orthophotos, buildings, trees (RATSCHER)
 world/roads.js              # V16b roads and paths from OSM: road map for the ground shaders, surface under the wheels, bridges (ROADS)
+world/forest.js             # V16c the forest at the Klinge: stand, procedural spruce/larch/pine in three levels of detail, forest floor, cover (FOREST)
 world/village.js            # V16e Ratscher after photos: facades, roofs, chimneys, windows lit at night (VILLAGE)
 world/village_props.js      # V16e the centre: old school with turret and clock, Dorflinde, fountain, bus stop, street lamps, light at night (VPROPS)
 world/village_near.js       # V16e near the walker: fences, hedges, flower boxes, bins, woodpiles, door lamps – loaded and dropped by distance (VNEAR)

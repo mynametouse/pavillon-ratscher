@@ -169,7 +169,8 @@ const ROADS = (() => {
   // ---- place names out in the land (game/game.js placeName): the Klinge, the villages after the map labels, the kind of road ----
   const PL = ((window.GEOMAN && GEOMAN.labels) || []).filter(l => l.k === 'place');
   const RN = { motorway: 'Autobahn A 73', main: 'Landstraße', county: 'Kreisstraße', street: 'Dorfstraße', lane: 'Wirtschaftsweg', service: 'Zufahrt', track: 'Feldweg', path: 'Pfad', foot: 'Fußweg' };
-  S.place = (x, y) => { const J = (S.routes.klinge || []).slice(-1)[0]; if (J && Math.hypot(x - J[0], y - J[1]) < 140) return 'Untere Klinge';
+  S.place = (x, y) => { const fw = window.FOREST && FOREST.place(x, y); if (fw) return fw;   // V16c: in the forest (world/forest.js)
+    const J = (S.routes.klinge || []).slice(-1)[0]; if (J && Math.hypot(x - J[0], y - J[1]) < 140) return 'Untere Klinge';
     let best = null, bd = 1e9; for (const l of PL) { const d = Math.hypot(x - l.x, y - l.y); if (d < bd) { bd = d; best = l; } }
     const r = S.at(x, y), rn = r && r.e > -0.5 ? RN[S.KINDS[r.kind]] : null, near = best && bd < (best.p >= 9 ? 700 : 380);
     if (near) return rn && rn !== 'Dorfstraße' ? best.t + ' · ' + rn : best.t;

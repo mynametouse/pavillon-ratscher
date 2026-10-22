@@ -1,4 +1,5 @@
 // ===================== V16b collisions with the real surroundings: walls of every building, tree trunks, bridge railings (WCOL) =====================
+// (V16c: also the trunks of the forest at the Klinge, world/forest.js FOREST.trunks)
 // A spatial hash (8 m cells) over the drivable square, built once the geodata are there (world/ratscher.js S.walls, S.treeXY; world/roads.js
 // decks). The vehicles test their body box against it (vehicles/vehicle.js); walking far from the garden pushes the walker's circle out
 // of walls and trunks (game/game.js collide). Trunk radius from the tree's height.
@@ -11,6 +12,7 @@ const WCOL = (() => {
     const W = RATSCHER.walls; if (W) for (let i = 0; i + 3 < W.length; i += 4) segs.push(W[i], W[i + 1], W[i + 2], W[i + 3]);
     for (const d of (window.ROADS && ROADS.decks) || []) for (const r of d.rails || []) segs.push(r[0], r[1], r[2], r[3]);   // bridge railings
     const T = RATSCHER.treeXY; if (T) for (let i = 0; i + 2 < T.length; i += 3) trees.push(T[i], T[i + 1], Math.min(0.5, Math.max(0.15, 0.12 + T[i + 2] * 0.012)));
+    const F = window.FOREST && FOREST.trunks; if (F) for (let i = 0; i + 2 < F.length; i += 3) trees.push(F[i], F[i + 1], F[i + 2]);   // V16c the forest at the Klinge
     SEG = new Float32Array(segs); TREE = new Float32Array(trees); S.nSeg = SEG.length / 4; S.nTree = TREE.length / 3; stampS = new Uint32Array(S.nSeg); stampT = new Uint32Array(S.nTree);
     for (let s = 0; s < S.nSeg; s++) { const x0 = Math.min(SEG[s * 4], SEG[s * 4 + 2]), x1 = Math.max(SEG[s * 4], SEG[s * 4 + 2]), y0 = Math.min(SEG[s * 4 + 1], SEG[s * 4 + 3]), y1 = Math.max(SEG[s * 4 + 1], SEG[s * 4 + 3]);
       for (let i = Math.floor(x0 / CS); i <= Math.floor(x1 / CS); i++) for (let j = Math.floor(y0 / CS); j <= Math.floor(y1 / CS); j++) cell(i, j).s.push(s); }
