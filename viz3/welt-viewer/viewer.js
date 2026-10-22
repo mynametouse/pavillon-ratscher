@@ -602,7 +602,10 @@ function updateControls(dt) {
     tmp.y += 1.0;
     camera.lookAt(tmp);
     const g = ((routePoint(r, drive.s + 10).y - routePoint(r, drive.s - 10).y) / 20) * 100;
-    $('grade').textContent = `Steigung ${g.toFixed(1)} % · ${(drive.s / 1000).toFixed(2)} / ${(L / 1000).toFixed(2)} km`;
+    const mk = META.roads && META.roads.metric && META.roads.metric[r.kind];
+    $('grade').textContent =
+      `Steigung ${g.toFixed(1)} % · ${(drive.s / 1000).toFixed(2)} / ${(L / 1000).toFixed(2)} km` +
+      (mk ? ` · Wellen/km ${mk.wellen_je_km} (vorher ${mk.wellen_je_km_vorher})` : '');
   }
 }
 
