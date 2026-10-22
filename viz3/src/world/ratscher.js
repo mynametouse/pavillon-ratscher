@@ -115,7 +115,7 @@ const RATSCHER = (() => {
     m.onBeforeCompile = sh => {
       sh.vertexShader = 'attribute vec4 aW; varying vec4 vW;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vW = aW;');
       sh.fragmentShader = WALL_GLSL + '\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
-        { float typ = mod( vW.w, 4.0 ), bid = floor( vW.w / 4.0 ), k = gH( bid ), v = vW.y, top = vW.z; vec3 c;
+        { float wv = floor( vW.w + 0.5 ), typ = mod( wv, 4.0 ), bid = floor( wv / 4.0 ), k = gH( bid ), v = vW.y, top = vW.z; vec3 c;   // V16b: rounded – the interpolated 4·id+type came out a hair below (type 0 read as 3: houses flickered like static)
           if ( typ < 0.5 ) {   // house: plaster in light tones, windows in bays, two floors where the wall is high enough
             c = k < 0.18 ? vec3( 0.62, 0.59, 0.53 ) : k < 0.36 ? vec3( 0.58, 0.52, 0.42 ) : k < 0.54 ? vec3( 0.66, 0.64, 0.60 ) : k < 0.7 ? vec3( 0.55, 0.50, 0.46 ) : k < 0.85 ? vec3( 0.63, 0.56, 0.44 ) : vec3( 0.13, 0.14, 0.16 );   // plaster tones; one in seven clad in slate
             float per = 2.9 + gH( bid + 7.0 ) * 0.9, cu = fract( vW.x / per + gH( bid + 3.0 ) ), fl = mod( v, 2.8 ), ww = abs( cu - 0.5 ) * per;
