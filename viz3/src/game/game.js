@@ -1060,6 +1060,9 @@ let last = performance.now(),
   lastPlace = '',
   lastDoor = null;
 const P3D = $('p-3d');
+function resetLastPlace() {
+  lastPlace = ''; // pavilion/variant.js: the place label is shown anew after a switch
+}
 // V16b5: a frame that throws (one bad value somewhere) no longer ends the frame loop for good: the next frame comes, the error goes to the
 // page's error handlers (log, a short notice – boot.js), the same error at most every 5 s
 let frameErrT = -1e9;
@@ -1122,13 +1125,13 @@ function frame0(now) {
     requestAnimationFrame(frame);
     return;
   }
-  if (_shadowDirty) {
+  if (DIRTY.shadow) {
     R.shadowMap.needsUpdate = true;
-    _shadowDirty = false;
-    _dirty = true;
+    DIRTY.shadow = false;
+    DIRTY.frame = true;
   }
   // moving view → cheap frame every time; standing still → one full-quality frame (other changes while still, e.g. walking figures, at most every few frames)
-  if (_dirty) {
+  if (DIRTY.frame) {
     const t0 = performance.now();
     applyCam();
     const moved = camMoved();
@@ -1139,14 +1142,14 @@ function frame0(now) {
       }
       if (window.VEG) VEG.update(cam.position);
       renderFrame('motion');
-      _dirty = false;
+      DIRTY.frame = false;
       MOTION.stillDue = true;
       PERF.js += performance.now() - t0;
       PERF.n++;
     } else if (now - MOTION.lastStill > Math.max(90, MOTION.stillMs * 2.5)) {
       if (window.VEG) VEG.update(cam.position);
       renderFrame('still');
-      _dirty = false;
+      DIRTY.frame = false;
       MOTION.stillDue = false;
       MOTION.lastStill = now;
     }

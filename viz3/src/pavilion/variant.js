@@ -4,7 +4,7 @@
 function setVariant(v, { save = true } = {}) {
   if (v !== 'A' && v !== 'B') return;
   const changed = v !== VARIANT;
-  VARIANT = v;
+  setVariantId(v);
   window.VARIANT = v;
   document.body.dataset.variant = v;
   for (const k of Object.keys(GEO)) delete GEO[k];
@@ -44,7 +44,7 @@ function setVariant(v, { save = true } = {}) {
                 : 'eingang'
         );
     }
-    lastPlace = '';
+    resetLastPlace();
     markDirty(true);
     if (window.PANO && PANO.on) panoShow(true);
     toast(

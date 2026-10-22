@@ -577,7 +577,7 @@ const SITEPLAN = (() => {
     if (sc) sc.hidden = !on;
     {
       const M = MODES[MODE];
-      sunDir = on ? dirFromAz(205, 52) : dirFromAz(M.az, M.el);
+      setSunDir(on ? dirFromAz(205, 52) : dirFromAz(M.az, M.el));
       placeSun(V(sunC[0], sunC[1], 3));
       if (window.giApply) giApply();
       sun.color.set(on ? 0xfff4e6 : M.sunC);

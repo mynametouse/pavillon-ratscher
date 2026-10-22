@@ -32,9 +32,9 @@ function panoCapture(x, y, zEye, size = 1152, fov = 100) {
     cam.up.set(...u);
     cam.lookAt(tgt.copy(cam.position).add(new THREE.Vector3(...f)));
     cam.updateMatrixWorld();
-    if (_shadowDirty) {
+    if (DIRTY.shadow) {
       R.shadowMap.needsUpdate = true;
-      _shadowDirty = false;
+      DIRTY.shadow = false;
     }
     renderFrame('still');
     out[n] = R.domElement.toDataURL('image/png');

@@ -1,5 +1,8 @@
 // ---------------- light modes ----------------
 let MODE = 'gold';
+function setModeId(m) {
+  MODE = m; // time/daynight.js takes over the mode (auto/night)
+}
 const MODES = {
   day: {
     az: 228,
@@ -111,7 +114,7 @@ function setMode(m) {
   window.MODE_NOW = m;
   const L = window.LIGHTS;
   const topV = typeof P !== 'undefined' && P.mode === 'top';
-  sunDir = topV ? dirFromAz(205, 52) : dirFromAz(M.az, M.el);
+  setSunDir(topV ? dirFromAz(205, 52) : dirFromAz(M.az, M.el));
   sun.intensity = topV ? 3.3 : M.sun;
   sun.color.set(topV ? 0xfff4e6 : M.sunC);
   hemi.intensity = M.hemi;
