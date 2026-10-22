@@ -123,14 +123,18 @@ function mkGroundMat(cut) {
   const lt = (TEXMAN.lawn && TEXMAN.lawn.tile) || [2, 2], gt = (TEXMAN.gravel && TEXMAN.gravel.tile) || [1, 1];
   const m = new THREE.MeshStandardMaterial({ map: gpTex, roughness: 1, envMapIntensity: 0.8 });
   const rep = [GSZ / lt[0], GSZ / lt[1]];
-  const lawnC = TEXMAN.lawn ? texUse(texFileOf('lawn', 'col'), true, rep).t : null, lawnN = TEXMAN.lawn ? texUse(texFileOf('lawn', 'nrm'), false, rep).t : null, lawnO = TEXMAN.lawn ? texUse(texFileOf('lawn', 'orm'), false, rep).t : null;
-  const gravC = TEXMAN.gravel ? texUse(texFileOf('gravel', 'col'), true, [1, 1]).t : null, gravN = TEXMAN.gravel ? texUse(texFileOf('gravel', 'nrm'), false, [1, 1]).t : null;
+  // V16b1: the colour detail (lawn, second lawn, gravel) comes from the texture array of core/detail.js – one texture unit instead of three
+  // (the near ground had reached the 16 units many GPUs allow; with the road detail it went over and did not compile there)
+  const lawnN = TEXMAN.lawn ? texUse(texFileOf('lawn', 'nrm'), false, rep).t : null, lawnO = TEXMAN.lawn ? texUse(texFileOf('lawn', 'orm'), false, rep).t : null;
+  const gravN = TEXMAN.gravel ? texUse(texFileOf('gravel', 'nrm'), false, [1, 1]).t : null;
   if (lawnN) { m.normalMap = lawnN; m.normalScale.set(1, 1); } if (lawnO) { m.roughnessMap = lawnO; }
-  const lawn2 = TEXMAN.lawn2 ? texUse(texFileOf('lawn2', 'col'), true, rep).t : null, l2k = TEXMAN.lawn2 ? lt[0] / TEXMAN.lawn2.tile[0] : 1;
-  const U = Object.assign({ uMask: { value: gmTex }, uLawn: { value: lawnC }, uGrav: { value: gravC }, uGravN: { value: gravN }, uGK: { value: lt[0] / gt[0] }, uHasL: { value: lawnC ? 1 : 0 }, uCut: { value: cut ? 1 : 0 },
-    uLawn2: { value: lawn2 || lawnC }, uL2K: { value: l2k }, uLit: { value: litTex }, uHasL2: { value: lawn2 ? 1 : 0 } }, GEOGU);
+  const l2k = TEXMAN.lawn2 ? lt[0] / TEXMAN.lawn2.tile[0] : 1;
+  const U = Object.assign({ uMask: { value: gmTex }, uGravN: { value: gravN }, uGK: { value: lt[0] / gt[0] }, uHasL: { value: TEXMAN.lawn ? 1 : 0 }, uCut: { value: cut ? 1 : 0 },
+    uL2K: { value: l2k }, uLit: { value: litTex }, uHasL2: { value: TEXMAN.lawn2 ? 1 : 0 } }, GEOGU);
+  const LY = n => DETAIL.L[n].toFixed(1);
   m.onBeforeCompile = sh => { Object.assign(sh.uniforms, U); const RD = window.ROADS ? ROADS.shader(sh) : 'vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';   // V16b roads (world/roads.js)
-    sh.fragmentShader = RD + '\nuniform sampler2D uMask, uLawn, uGrav, uGravN, uLawn2, uLit, uGeoTex; uniform float uGK, uHasL, uCut, uL2K, uHasL2, uGeoOn, uGeoGain, uGeoMap, uGeoFlat, uGeoFlatK, uGeoCurve; vec3 gGeoEm = vec3( 0.0 );\nvec3 geoAlbN( vec3 c, float g ) { return uGeoMap > 0.5 ? c * g : mix( c * g, 0.62 * pow( max( c, vec3( 0.0 ) ), vec3( 0.75 ) ) * g / 0.86, uGeoCurve ); } uniform vec2 uGeoAB; uniform vec3 uGeoBox; uniform vec4 uGeoZone, uGeoPath;\nfloat lnHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat lnNoise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(lnHash(i), lnHash(i + vec2(1.0, 0.0)), u.x), mix(lnHash(i + vec2(0.0, 1.0)), lnHash(i + vec2(1.0, 1.0)), u.x), u.y); }\n' + sh.fragmentShader
+    sh.uniforms.tDet = { value: DETAIL.tex }; const decl = /sampler2DArray\s+tDet\b/.test(RD) ? '' : 'uniform highp sampler2DArray tDet;\n';   // shared with the road shader's declaration
+    sh.fragmentShader = RD + '\n' + decl + 'uniform sampler2D uMask, uGravN, uLit, uGeoTex; uniform float uGK, uHasL, uCut, uL2K, uHasL2, uGeoOn, uGeoGain, uGeoMap, uGeoFlat, uGeoFlatK, uGeoCurve; vec3 gGeoEm = vec3( 0.0 );\nvec3 geoAlbN( vec3 c, float g ) { return uGeoMap > 0.5 ? c * g : mix( c * g, 0.62 * pow( max( c, vec3( 0.0 ) ), vec3( 0.75 ) ) * g / 0.86, uGeoCurve ); } uniform vec2 uGeoAB; uniform vec3 uGeoBox; uniform vec4 uGeoZone, uGeoPath;\nfloat lnHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat lnNoise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(lnHash(i), lnHash(i + vec2(1.0, 0.0)), u.x), mix(lnHash(i + vec2(0.0, 1.0)), lnHash(i + vec2(1.0, 1.0)), u.x), u.y); }\n' + sh.fragmentShader
       .replace('#include <map_fragment>', `
         vec4 gPaint = texture2D( map, vMapUv ); vec4 gMsk = texture2D( uMask, vMapUv ); if ( uCut > 0.5 && gMsk.b > 0.5 ) discard;
         float gFade = smoothstep( 22.0, 75.0, length( vViewPosition ) );
@@ -139,10 +143,10 @@ function mkGroundMat(cut) {
         float gM1 = lnNoise( gW * 0.115 ) * 0.62 + lnNoise( gW * 0.41 + 7.3 ) * 0.38, gM2 = lnNoise( gW * 0.032 + 3.1 );
         vec3 gTint = mix( vec3( 0.9, 0.93, 0.82 ), vec3( 1.07, 1.06, 0.97 ), gM1 ) * mix( vec3( 1.0 ), vec3( 1.1, 1.03, 0.84 ), smoothstep( 0.55, 0.9, gM2 ) * 0.55 );   // patches: lusher, drier, clover
         #ifdef USE_NORMALMAP
-        if ( uHasL > 0.5 ) { vec2 wq = vNormalMapUv; vec3 lawn = texture2D( uLawn, wq ).rgb; vec3 grav = texture2D( uGrav, wq * uGK ).rgb;
-          vec3 lawn2 = texture2D( uLawn, mat2( 0.8, -0.6, 0.6, 0.8 ) * wq * 0.43 + 0.17 ).rgb;   // second, rotated sample against visible tiling
+        if ( uHasL > 0.5 ) { vec2 wq = vNormalMapUv; vec3 lawn = texture( tDet, vec3( wq, ${LY('lawn')} ) ).rgb; vec3 grav = texture( tDet, vec3( wq * uGK, ${LY('gravel')} ) ).rgb;
+          vec3 lawn2 = texture( tDet, vec3( mat2( 0.8, -0.6, 0.6, 0.8 ) * wq * 0.43 + 0.17, ${LY('lawn')} ) ).rgb;   // second, rotated sample against visible tiling
           lawn = mix( lawn, lawn2, smoothstep( 0.3, 0.7, lnNoise( gW * 0.09 + 11.0 ) ) );
-          if ( uHasL2 > 0.5 ) { float lit = texture2D( uLit, vMapUv ).r * ( 0.75 + 0.25 * lnNoise( gW * 0.8 ) ); vec3 lf = texture2D( uLawn2, wq * uL2K ).rgb; lawn = mix( lawn, lf * vec3( 0.8, 0.82, 0.86 ), lit * 0.8 ); }
+          if ( uHasL2 > 0.5 ) { float lit = texture2D( uLit, vMapUv ).r * ( 0.75 + 0.25 * lnNoise( gW * 0.8 ) ); vec3 lf = texture( tDet, vec3( wq * uL2K, ${LY('lawn2')} ) ).rgb; lawn = mix( lawn, lf * vec3( 0.8, 0.82, 0.86 ), lit * 0.8 ); }
           vec3 nearC = mix( lawn * vec3( 1.45, 1.4, 1.25 ) * ( 0.8 + 0.4 * clamp( gPaint.g / 0.42, 0.5, 1.5 ) * 0.5 ), grav * 1.1, gMsk.r );
           gCol = mix( gPaint.rgb, nearC * mix( gTint, vec3( 1.0 ), gMsk.r ), gMsk.g * ( 1.0 - gFade * 0.9 ) ); }
         #endif

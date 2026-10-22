@@ -79,6 +79,7 @@ async function prepareGPU(say) {
     let name = RENDER.tier; let ms = timeFrames(4); RENDER.bench = { [name]: Math.round(ms) };
     while (ms > 45 && name !== 'schnell') { name = TIER_ORDER[TIER_ORDER.indexOf(name) + 1]; applyTier(name, false); resize(); renderFrame(); await nextFrame(); ms = timeFrames(4); RENDER.bench[name] = Math.round(ms); } }
   { const ms = (RENDER.bench && Object.values(RENDER.bench).pop()) || 30; MOTION.stillMs = ms; setMotionLevel(OFFLINE ? 0 : ms <= 12 ? 0 : ms <= 18 ? 1 : ms <= 26 ? 2 : ms <= 36 ? 3 : 4); }
+  if (window.GLCHECK) GLCHECK.guard();   // V16b1: a program with more textures than this GPU allows → plain ground instead of none
   RENDER.prepMs = Math.round(performance.now() - t0); markDirty(true); }
 // ---------------- HDRI per time of day (aligned with the modelled sun) ----------------
 const HDRI = window.HDRIMAN || {};          // {day:{file,sun_u}, ...}

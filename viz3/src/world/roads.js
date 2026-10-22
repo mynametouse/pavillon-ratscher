@@ -10,15 +10,15 @@ const ROADS = (() => {
   const M = window.GEOMAN && window.GEOMAN.roads;
   const S = { on: !!(GEO_REAL && M), ready: false, ways: [], decks: [], routes: (M && M.routes) || {}, KINDS: (M && M.kinds) || [], SURF: (M && M.surf) || [] };
   const U = { tRoad: { value: null }, bRoad: { value: new THREE.Vector4(0, 0, 1, 1) }, uRoad: { value: new THREE.Vector4(0, 0, 0, 0) } };   // uRoad.x: road map present
-  // detail textures for the ground up close: the photo gives the colour, these the grain (grass, soil, asphalt, gravel; tiles from TEXMAN)
-  { const white = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); white.needsUpdate = true;
-    const tx = k => (GEO_REAL && window.TEXMAN && TEXMAN[k]) ? texUse(texFileOf(k, 'col'), true, [1, 1]).t : white, tl = (k, d) => (window.TEXMAN && TEXMAN[k] && TEXMAN[k].tile[0]) || d;
-    Object.assign(U, { tDLawn: { value: tx('lawn') }, tDSoil: { value: tx('forestfloor') }, tDAsph: { value: tx('asphalt') }, tDGrav: { value: tx('gravel') },
-      uDTile: { value: new THREE.Vector4(tl('lawn', 1.4), tl('forestfloor', 3), tl('asphalt', 2.5), tl('gravel', 1.6)) } }); }
+  // detail textures for the ground up close: the photo gives the colour, these the grain (grass, soil, asphalt, gravel) – layers of the one
+  // texture array of core/detail.js (V16b1: a shader may use 16 textures on many GPUs; four extra ones broke the near ground there)
+  { const tl = (k, d) => (window.TEXMAN && TEXMAN[k] && TEXMAN[k].tile[0]) || d;
+    Object.assign(U, { tDet: { value: DETAIL.tex }, uDTile: { value: new THREE.Vector4(tl('lawn', 1.4), tl('forestfloor', 3), tl('asphalt', 2.5), tl('gravel', 1.6)) } }); }
+  const LY = n => DETAIL.L[n].toFixed(1);
   S.U = U;
   const EMIN = -4, ERNG = 12, LRNG = 8, DASH = 18;   // encoding: edge distance −4 … +8 m, lateral offset ±8 m, dash period (m)
   // ---- the ground shader part: roadShade( p (site metres), ground colour, distance from the camera ) → colour ----
-  S.GLSL = `uniform sampler2D tRoad, tDLawn, tDSoil, tDAsph, tDGrav; uniform vec4 bRoad, uRoad, uDTile;
+  S.GLSL = `uniform sampler2D tRoad; uniform highp sampler2DArray tDet; uniform vec4 bRoad, uRoad, uDTile;
     float rdH( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
     float rdN( vec2 p ) { vec2 i = floor( p ), f = fract( p ); vec2 u = f * f * ( 3.0 - 2.0 * f ); return mix( mix( rdH( i ), rdH( i + vec2( 1.0, 0.0 ) ), u.x ), mix( rdH( i + vec2( 0.0, 1.0 ) ), rdH( i + vec2( 1.0, 1.0 ) ), u.x ), u.y ); }
     float rdLine( float d, float hw, float fw ) { return clamp( ( hw - d ) / fw + 0.5, 0.0, 1.0 ) * min( 1.0, 2.0 * hw / fw ); }   // coverage of a line of half width hw
@@ -27,9 +27,9 @@ const ROADS = (() => {
       float a = texelFetch( tRoad, i, 0 ).a, b = texelFetch( tRoad, i + ivec2( 1, 0 ), 0 ).a, c = texelFetch( tRoad, i + ivec2( 0, 1 ), 0 ).a, d = texelFetch( tRoad, i + ivec2( 1, 1 ), 0 ).a;
       b -= floor( b - a + 0.5 ); c -= floor( c - a + 0.5 ); d -= floor( d - a + 0.5 ); return fract( mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y ) ); }
     // a detail texture with mean 1 (two samples, one turned and scaled, against visible tiling); explicit gradients dx, dy of p, so it may sit in branches
-    vec3 rdTex( sampler2D t, vec2 p, float tile, vec2 dx, vec2 dy ) { vec2 q = p / tile; mat2 M = mat2( 0.8, -0.6, 0.6, 0.8 ) * 0.43;
-      vec3 a = textureGrad( t, q, dx / tile, dy / tile ).rgb, b = textureGrad( t, M * q + 0.31, M * dx / tile, M * dy / tile ).rgb;
-      return mix( a, b, 0.4 ) / max( textureLod( t, vec2( 0.5 ), 20.0 ).rgb, vec3( 0.02 ) ); }
+    vec3 rdTex( float layer, vec2 p, float tile, vec2 dx, vec2 dy ) { vec2 q = p / tile; mat2 M = mat2( 0.8, -0.6, 0.6, 0.8 ) * 0.43;
+      vec3 a = textureGrad( tDet, vec3( q, layer ), dx / tile, dy / tile ).rgb, b = textureGrad( tDet, vec3( M * q + 0.31, layer ), M * dx / tile, M * dy / tile ).rgb;
+      return mix( a, b, 0.4 ) / max( textureLod( tDet, vec3( 0.5, 0.5, layer ), 20.0 ).rgb, vec3( 0.02 ) ); }
     // bare fields, stubble and gravel come out of the photos too bright and cold (like frost): brightness above 0.22 compressed, warmed
     vec3 landHi( vec3 c ) { float l = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hi = smoothstep( 0.18, 0.42, l );
       return c * ( l > 0.22 ? ( 0.22 + ( l - 0.22 ) * 0.45 ) / l : 1.0 ) * mix( vec3( 1.0 ), vec3( 1.08, 1.0, 0.82 ), hi ); }
@@ -42,7 +42,7 @@ const ROADS = (() => {
       // up close the photo is soft: the grain of grass (most of the land) or of bare soil (brown fields), fading out by 150 m
       float k = 1.0 - smoothstep( 30.0, 150.0, dist ), gr = clamp( ( c.g - c.r ) * 12.0 + 0.7, 0.0, 1.0 );
       float n = ( rdN( p * 0.85 ) - 0.5 ) * 0.18 * ( 1.0 - smoothstep( 300.0, 700.0, dist ) );
-      if ( k > 0.0 ) { vec3 d = gr < 0.02 ? rdTex( tDSoil, p, uDTile.y, dx, dy ) : gr > 0.98 ? rdTex( tDLawn, p, uDTile.x, dx, dy ) : mix( rdTex( tDSoil, p, uDTile.y, dx, dy ), rdTex( tDLawn, p, uDTile.x, dx, dy ), gr );
+      if ( k > 0.0 ) { vec3 d = gr < 0.02 ? rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ) : gr > 0.98 ? rdTex( ${LY('lawn')}, p, uDTile.x, dx, dy ) : mix( rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ), rdTex( ${LY('lawn')}, p, uDTile.x, dx, dy ), gr );
         c *= mix( vec3( 1.0 ), clamp( d, 0.2, 2.5 ), 0.8 * k ); }
       return c * ( 1.0 + n ); }
     vec3 roadShade( vec2 p, vec3 c, float dist ) {
@@ -60,18 +60,18 @@ const ROADS = (() => {
       vec3 r;
       float kd = 1.0 - smoothstep( 25.0, 120.0, dist );
       if ( surf < 0.5 ) {   // asphalt: dark grey, patches and repairs after the photo's brightness, grain (texture up close); polished wheel tracks on wider roads
-        r = vec3( 0.098, 0.1, 0.105 ) * clamp( lum / 0.12, 0.72, 1.45 ) * ( 0.84 + 0.3 * n1 ) * ( 0.94 + 0.12 * n2 ) * mix( vec3( 1.0 + 0.3 * n3 ), clamp( rdTex( tDAsph, p, uDTile.z, dx, dy ), 0.3, 2.2 ), kd );
+        r = vec3( 0.098, 0.1, 0.105 ) * clamp( lum / 0.12, 0.72, 1.45 ) * ( 0.84 + 0.3 * n1 ) * ( 0.94 + 0.12 * n2 ) * mix( vec3( 1.0 + 0.3 * n3 ), clamp( rdTex( ${LY('asphalt')}, p, uDTile.z, dx, dy ), 0.3, 2.2 ), kd );
         if ( kind < 3.5 ) r *= 1.0 - 0.07 * ( 1.0 - smoothstep( 0.25, 0.6, abs( al - 1.75 ) ) ) * mid; }
       else if ( surf < 1.5 ) { r = vec3( 0.32, 0.315, 0.3 ) * ( 0.88 + 0.2 * n1 ) * ( 1.0 + 0.22 * n3 ); }   // concrete
       else if ( surf < 2.5 ) {   // paving stones: small blocks
         vec2 bq = fract( p * vec2( 4.0, 6.0 ) ); float jt = ( 1.0 - smoothstep( 0.0, 0.08, min( min( bq.x, 1.0 - bq.x ), min( bq.y, 1.0 - bq.y ) ) ) ) * fine;
         r = vec3( 0.25, 0.235, 0.22 ) * ( 0.85 + 0.3 * rdH( floor( p * vec2( 4.0, 6.0 ) ) ) ) * ( 1.0 - 0.45 * jt ); }
       else if ( surf < 3.5 ) {   // gravel: light, coarse grain, wheel tracks a little darker and smoother
-        r = mix( vec3( 0.35, 0.33, 0.29 ), c * 1.15, 0.35 ) * ( 0.85 + 0.3 * n1 ) * mix( vec3( 1.0 + 0.45 * n3 ), clamp( rdTex( tDGrav, p, uDTile.w, dx, dy ), 0.3, 2.2 ), kd ); r *= 1.0 - 0.1 * ( 1.0 - smoothstep( 0.15, 0.35, abs( al - 0.78 ) ) ); }
+        r = mix( vec3( 0.35, 0.33, 0.29 ), c * 1.15, 0.35 ) * ( 0.85 + 0.3 * n1 ) * mix( vec3( 1.0 + 0.45 * n3 ), clamp( rdTex( ${LY('gravel')}, p, uDTile.w, dx, dy ), 0.3, 2.2 ), kd ); r *= 1.0 - 0.1 * ( 1.0 - smoothstep( 0.15, 0.35, abs( al - 0.78 ) ) ); }
       else {   // earth or grass: two wheel tracks of bare soil, grass between and beside them (a single trail on narrow paths)
         float rut = kind > 6.5 ? 1.0 - smoothstep( 0.18, 0.42, al ) : 1.0 - smoothstep( 0.16, 0.34, abs( al - 0.78 ) );
         rut *= ( surf > 4.5 ? 0.4 : 0.92 ) * ( 0.75 + 0.25 * n2 );
-        vec3 soil = vec3( 0.25, 0.205, 0.155 ) * ( 0.8 + 0.35 * n1 ) * mix( vec3( 1.0 + 0.35 * n3 ), clamp( rdTex( tDSoil, p, uDTile.y, dx, dy ), 0.3, 2.2 ), kd ), worn = c * vec3( 1.08, 1.05, 0.9 );
+        vec3 soil = vec3( 0.25, 0.205, 0.155 ) * ( 0.8 + 0.35 * n1 ) * mix( vec3( 1.0 + 0.35 * n3 ), clamp( rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ), 0.3, 2.2 ), kd ), worn = c * vec3( 1.08, 1.05, 0.9 );
         r = mix( worn, soil, rut ); }
       // markings: edge lines (main roads, motorway), dashed centre line or lane divider (main and county roads, motorway); worn white paint
       if ( kind < 2.5 && hard > 0.5 && dist < 220.0 ) {
@@ -82,7 +82,9 @@ const ROADS = (() => {
       // verge: beside asphalt and concrete a strip of trodden grass and grit
       vec3 o = c; if ( hard > 0.5 ) o = mix( c, vec3( 0.2, 0.19, 0.155 ) * ( 0.8 + 0.4 * n2 ), smoothstep( -0.7, -0.05, eN ) * ( 1.0 - k ) * 0.5 );
       return mix( o, r, k ); }`;
-  S.shader = sh => { Object.assign(sh.uniforms, U); return S.GLSL; };   // a ground material's onBeforeCompile: S.shader(sh) → GLSL to prepend
+  // without textures (GPU below what the shader needs, core/detail.js GLCHECK.lite): the same functions, plain
+  S.STUB = 'float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';
+  S.shader = sh => { if (window.GLCHECK && GLCHECK.lite) return S.STUB; Object.assign(sh.uniforms, U); return S.GLSL; };   // a ground material's onBeforeCompile: S.shader(sh) → GLSL to prepend
   const ground0 = (x, y) => (Math.abs(x) < 120 && Math.abs(y) < 120) || !(window.RATSCHER && RATSCHER.ready) ? STREAM.zAt(x, y) : RATSCHER.hMesh(x, y);
   if (!S.on) { S.at = () => null; S.edge = () => -99; S.deckAt = () => null; S.groundAt = ground0; S.place = () => null; return S; }
   const [X0, Y0, X1, Y1] = M.box, RES = QUALITY === 'high' ? 1.25 : 2.0, W = Math.ceil((X1 - X0) / RES), H = Math.ceil((Y1 - Y0) / RES);

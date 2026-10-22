@@ -13,4 +13,5 @@ with sync_playwright() as p:
     print(pg.evaluate("JSON.stringify({werk: !!(window.WERK && WERK.on), rack: WERK.RACK.items.length, clock: CLOCK.fmt(CLOCK.t), gear: !!window.GEAR, wui: !!window.WUI, acts: PLAY.acts().filter(a => a.id.startsWith('werk:')).length, things: Object.keys(PLAY.things).length})"), flush=True)
     pg.evaluate("GAME.go('werkstatt'); GAME.step(0.5)")
     print('labels', pg.evaluate("PLAY.acts().filter(a => a.id.startsWith('werk:')).map(a => { try { return a.id + '=' + a.label(); } catch (e) { return a.id + ' ERR ' + e.message; } }).join(' | ')"), flush=True)
+    ok, r = lib.check_gl(pg); print(('OK   ' if ok else 'FAIL ') + 'textures per shader ≤ 16', f"max fragment {r['maxFrag']}, vertex {r['maxVert']}, programs {r['programs']}", r['bad'][:5], r['broken'][:5], flush=True)
     print('\n'.join(errs[:20]) or 'no errors', flush=True); b.close()

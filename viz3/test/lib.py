@@ -53,3 +53,21 @@ def settle_light(pg, tries=80):
         if pg.evaluate("!window.DN || !DN.active || DN.ready()"): break
         time.sleep(0.3)
     pg.evaluate("window.DN && DN.active && DN.update(true); GAME.step(0.05)")
+
+# the same count without the app's GLCHECK (older builds, e.g. the published one)
+GLCOUNT = """(R, lim) => { const gl = R.getContext(), ST = new Set([gl.SAMPLER_2D, gl.SAMPLER_CUBE, gl.SAMPLER_3D, gl.SAMPLER_2D_ARRAY, gl.SAMPLER_2D_SHADOW, gl.SAMPLER_CUBE_SHADOW, gl.SAMPLER_2D_ARRAY_SHADOW]);
+  const out = { limit: lim, programs: 0, maxFrag: 0, maxVert: 0, bad: [], broken: [] };
+  for (const p of R.info.programs || []) { const prog = p.program; if (!prog) continue; out.programs++; if (p.diagnostics && p.diagnostics.runnable === false) out.broken.push(p.name);
+    const fs = (gl.getShaderSource(p.fragmentShader) || '').replace(/\\/\\/.*$/gm, ''), vs = (gl.getShaderSource(p.vertexShader) || '').replace(/\\/\\/.*$/gm, ''); let f = 0, v = 0; const names = [];
+    for (let i = 0; i < gl.getProgramParameter(prog, gl.ACTIVE_UNIFORMS); i++) { const u = gl.getActiveUniform(prog, i); if (!u || !ST.has(u.type)) continue; const b = u.name.replace(/\\[.*$/, ''), re = new RegExp('\\\\b' + b + '\\\\b');
+      const inF = re.test(fs), inV = re.test(vs); if (inF || !inV) f += u.size; if (inV) v += u.size; names.push(b); }
+    out.maxFrag = Math.max(out.maxFrag, f); out.maxVert = Math.max(out.maxVert, v); if (f > lim || v > lim) out.bad.push({ name: p.name, frag: f, vert: v, samplers: names }); }
+  return out; }"""
+
+def check_gl(pg, limit=16):
+    """V16b1: every compiled shader program within the textures a GPU must allow (WebGL 2 minimum: 16 per shader stage; many laptops,
+    Macs and phones have no more – SwiftShader here allows 32, so too many would go unnoticed), and none broken. Returns (ok, report)."""
+    import json as _j
+    r = _j.loads(pg.evaluate(f"JSON.stringify(window.GLCHECK ? GLCHECK.run({limit}) : ({GLCOUNT})(GAME.R, {limit}))"))
+    ok = not r['bad'] and not r['broken'] and r['maxFrag'] <= limit and r['maxVert'] <= limit
+    return ok, r
