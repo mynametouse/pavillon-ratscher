@@ -665,7 +665,7 @@ function hud() {
 // ---------------- place names (names.json) as HTML labels ----------------
 let NAMES = [];
 const labRoot = document.createElement('div');
-labRoot.style.cssText = 'position:fixed;inset:0;pointer-events:none;overflow:hidden';
+labRoot.style.cssText = 'position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0';
 document.body.appendChild(labRoot);
 const RANGE = { town: 15000, village: 7000, suburb: 5000, hamlet: 3500, isolated_dwelling: 1500, locality: 2000, peak: 6000 };
 const v3 = new THREE.Vector3();
