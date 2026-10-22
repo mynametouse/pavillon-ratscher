@@ -1,5 +1,5 @@
 # Gallery picture 28 (V16d): from log to board – the log yard north of the band sawmill with logs on its squared timbers, a log on the
-# sawmill's bunks, the tractor with the loaded stake trailer alongside. The state is set up directly (logs from HOLZ.testLog put on the
+# sawmill’s bunks, the tractor with the stake trailer behind. The state is set up directly (logs from HOLZ.testLog put on the
 # trailer through its slots, on the yard, on the mill through HOLZSAW.dropOn), then the picture is taken like bilder.py (offline quality,
 # 1280 × 720, JPEG 0.9) into dist/img/b28.jpg.
 #   PORT=8954 python3 viz3/test/b28.py        (~4 min)
@@ -26,7 +26,7 @@ with lib.browser() as b:
           l.st = 'trailer'; l.tx = s.x; l.tz = s.z; l.ta = {[0.25, 0.3, 0.2][i]}; TRAILER.loadList = HOLZ.logs.filter(o => o.st === 'trailer'); }})()""")
     for i, (sp, L, d0, d1, dx) in enumerate([('spruce', 4.1, 40, 33, -1.2), ('spruce', 4.0, 33, 28, -0.45), ('larch', 3.9, 35, 29, 0.3)]):
         E(f"HOLZ.testLog({{ sp: '{sp}', x: {Y[0]} + {dx}, y: {Y[1]}, az: 0, L: {L}, d0: {d0}, d1: {d1} }})")
-    E("""(() => { const l = HOLZ.logs.find(l => l.id === HOLZ.testLog({ sp: 'spruce', x: 70, y: 70, az: 0, L: 4.0, d0: 38, d1: 31 })), r = (l.d0 + l.d1) / 400;
+    E("""(() => { const id = HOLZ.testLog({ sp: 'spruce', x: 70, y: 70, az: 0, L: 4.0, d0: 38, d1: 31 }), l = HOLZ.logs.find(o => o.id === id), r = (l.d0 + l.d1) / 400;
       const a = [-1.5, -31.65 - 2.0, 0.5 + r], b = [-1.5, -31.65 + 2.0, 0.5 + r], m = [-1.5, -31.65, 0.5 + r]; l.wp0 = a; l.wp1 = b; HOLZSAW.dropOn(l, a, b, m, r); })()""")
     E("TRAILER.cargo = HOLZ.logs.filter(l => l.st === 'trailer').length * 300; HOLZ.redraw()"); steps(0.5)
     print('logs', J("HOLZ.logs.map(l => l.st)"), flush=True)
