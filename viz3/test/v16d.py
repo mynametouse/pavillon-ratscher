@@ -62,8 +62,10 @@ with lib.browser() as b:
         E("TRAILER.uncouple && TRAILER.tow && TRAILER.uncouple(true)")
         lid = E("HOLZ.testLog({ sp: 'spruce', x: -5, y: -17.5, az: 0, L: 4.1, d0: 34, d1: 28 })"); steps(0.2)
         # the tractor west of it, facing east; the tines' middle ~3.1 m ahead of its centre with the fork on the ground
-        E("VEH.place('tractor', -5 - 4.4, -17.5, Math.PI / 2); VEH.enter('tractor'); (() => { const LD = TRACTOR2.model.LD; LD.liftT = LD.min; })()"); steps(3)
-        drive(0.25, 0, 0, 2.6); stop()
+        E("VEH.place('tractor', -5 - 3.4, -17.5, Math.PI / 2); VEH.enter('tractor'); (() => { const LD = TRACTOR2.model.LD; LD.liftT = LD.min; })()"); steps(3)
+        # line the tines' middle up under the log (a driver creeps forward until the tines are under it)
+        E("""(() => { const F = TRACTOR2.model.fork; F.tool.updateWorldMatrix(true, false); const p = new THREE.Vector3(0, F.top, -(F.y0 + F.y1) / 2).applyMatrix4(F.tool.matrixWorld), m = [p.x, -p.z];
+          const l = HOLZ.logs.find(l => l.id === '""" + lid + """'), c = HOLZ.mid(l), v = VEH.by.tractor.st; VEH.place('tractor', v.x + (c[0] - m[0]), v.y + (c[1] - m[1]) * 0 + 0, v.psi); })()"""); steps(0.4)
         info = J("(() => { const l = HOLZ.logs.find(l => l.id === '" + lid + "'); return { st: l.st, v: VEH.by.tractor.st.x }; })()"); print('before lift', info)
         E("TRACTOR2.model.key('r', true)"); steps(1.8); E("TRACTOR2.model.key('r', false)"); steps(0.2)
         st = E(f"HOLZ.logs.find(l => l.id === '{lid}').st"); check('lifting with the tines under it: the log lies on the fork', st == 'fork', st)

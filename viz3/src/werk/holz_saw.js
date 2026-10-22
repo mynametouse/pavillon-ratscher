@@ -113,16 +113,16 @@ const HOLZSAW = (() => {
   function unitTo(zAbs) { const s = SAWs(); if (s && s.unit) { s.unit.position.y = zAbs - s.zBlade; markDirty(); } }
   function cutOp() { const l = curLog(), p = S.plan; if (!l || !p) return null; const i = S.cut, zc = p.zc, h = p.cuts[i], name = i === 0 ? 'Schwarte abnehmen (erster Schnitt)' : `Schnitt ${i + 1}/${p.cuts.length}: Brett ${i}`;
     return { key: 'hs:cut' + i, label: name, ppe: ['ohr', 'brille|korb'], what: 'Blockbandsäge', hold: 2.4 + l.L * 0.75, holdLabel: 'Sägen …', anim3: 'push', rMove: 3,
-      start: () => { if (window.DOORS && DOORS.saw) DOORS.saw.target = 1; WORKS.sawBoost = 0; anim.on = true; anim.t = 0; anim.dur = 2.4 + l.L * 0.75; anim.h = zc + h; unitTo(zc + h); },
+      start: () => { if (window.DOORS && DOORS.saw) DOORS.saw.target = 1; WORKS.sawBoost = 1e-6; anim.on = true; anim.t = 0; anim.dur = 2.4 + l.L * 0.75; anim.h = zc + h; unitTo(zc + h); },
       work: k => { const s = SAWs(); if (!s) return; s.dir = 1; s.s = s.s0 + (s.s1 - s.s0) * k; s.head.position.z = -(s.s - WORKS.py); markDirty(); },
       cancel: () => { anim.on = false; const s = SAWs(); if (s) { s.dir = -1; } },
       run: () => { anim.on = false; const s = SAWs(); if (s) s.dir = -1; takeOff(l, p, i); } }; }
   // the piece above the cut comes off: the slab is firewood, a board goes onto the log's block beside the mill
   function takeOff(l, p, i) { const pcs = pieces(l, p), pc = pcs[i], r0 = l.d0 / 200, r1 = l.d1 / 200;
     if (pc.kind === 'slab') S.fire += 1; else addBoard(l, pc, i);
-    S.cut = i + 1; CLOCK.t += 2;
+    S.cut = i + 1; CLOCK.t += 2; remain();
     if (S.cut >= p.cuts.length) {   // the last cut: the bottom piece (lower slab) lies on the bunks – the log is used up
-      S.fire += 1; l.st = 'sawn'; S.log = null; S.clamp = false; S.plan = null; S.cut = 0; unitTo(SAWs().zBlade); HOLZ.redraw();
+      S.fire += 1; l.st = 'sawn'; l.hide = false; S.log = null; S.clamp = false; S.plan = null; S.cut = 0; unitTo(SAWs().zBlade); remain(); HOLZ.redraw();
       const nb = S.boards.filter(b => b.lid === l.id).length; SFX.chime && SFX.chime();
       think(`Fertig: ${nb} Bretter à ${Math.round(p.t * 1000)} mm, zwei Schwarten ins Brennholz. Die Bretter jetzt mit Leisten zum Trocknen stapeln.`, 5200);
       if (window.QUESTS && QUESTS.banner) QUESTS.banner('Stamm eingeschnitten', `${HOLZ.SPN[l.sp] || ''} ${de(l.L, 2)} m → ${nb} Bretter (${Math.round(p.t * 1000)} mm)`); }
@@ -136,6 +136,12 @@ const HOLZSAW = (() => {
     const b = { id: 'B' + (++S.n), lid: l.id, sp: l.sp, n: i, t: +t.toFixed(4), L: l.L, zb: +pc.zb.toFixed(4), zt: +pc.zt.toFixed(4), r0: l.d0 / 200, r1: l.d1 / 200, wS: +w.small.toFixed(3), wW: +w.wide.toFixed(3),
       pith: pc.zb < 0 && pc.zt > 0, mc0: greenMC(l, pc.zb, pc.zt), st: 'pile', t0: CLOCK.t };
     b.mc = b.mc0; S.boards.push(b); }
+  // ---------------- the log on the mill while it is sawn: the part below the last cut (flat sawn top, bark sides, end grain) ----------------
+  let RM = null;
+  function remain() { const l = curLog(), p = S.plan; if (!l || !p || !S.cut) { if (RM) { G.remove(RM); RM.traverse(o => { if (o.isMesh) o.geometry.dispose(); }); RM = null; } if (l && l.hide) { l.hide = false; HOLZ.redraw(); } markDirty(true); return; }
+    const r0 = l.d0 / 200, r1 = l.d1 / 200, yc = (LY0 + LY1) / 2, top = p.cuts[S.cut - 1] - KERF;
+    const b = { sp: l.sp, L: l.L, r0, r1, zb: -Math.max(r0, r1) * 1.001, zt: top }, m = new THREE.Matrix4().makeTranslation(...V(MX(), yc - l.L / 2, p.zc).toArray());
+    RM = S.mergeSet([{ b, m }], G, RM); if (!l.hide) { l.hide = true; HOLZ.redraw(); } }
   // ---------------- the blocks beside the mill (east of the track): boards flat in their order, one block per log ----------------
   let PG = null;
   function rebuildPiles() { const list = [], logs = [...new Set(S.boards.filter(b => b.st === 'pile').map(b => b.lid))];
@@ -162,7 +168,7 @@ const HOLZSAW = (() => {
   function save() { if (HOLZ.save) HOLZ.save(); }
   HOLZ.part2 = () => ({ log: S.log, clamp: S.clamp, plan: S.plan, cut: S.cut, boards: S.boards, fire: S.fire, n: S.n, deco: S.decoGone });
   const onStart0 = HOLZ.onStart; HOLZ.onStart = p2 => { if (onStart0) onStart0(p2); if (p2) { Object.assign(S, { log: p2.log || null, clamp: !!p2.clamp, plan: p2.plan || null, cut: p2.cut || 0, boards: p2.boards || [], fire: p2.fire || 0, n: p2.n || 0, decoGone: !!p2.deco }); }
-    if (S.decoGone || curLog()) hideDeco(); register(); rebuildPiles(); if (S.onStart) S.onStart(p2); };
+    hideDeco(); register(); rebuildPiles(); remain(); if (S.onStart) S.onStart(p2); };   // the mill is a real machine now: its old decorative log goes
   window.TICKS.push(() => { if (anim.on) markDirty(); });
   return S; })();
 window.HOLZSAW = HOLZSAW;
