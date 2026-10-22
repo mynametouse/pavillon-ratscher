@@ -42,6 +42,7 @@ abgerufen (siehe `.github/workflows/welt-probe.yml`), ○ = nur aus der Quelle �
   Sobald `geoportal.geoportal-th.de` wieder Kacheln liefert, reicht ein neuer Lauf (Downloads landen im Actions-Cache). Wenn der neue
   Portal-Weg mit CAPTCHA bleibt: Falko lädt die ~100 DGM1-/DOM1-Kacheln für den Testblock einmal im Browser und legt sie ins private
   Repo (`pavillon-ratscher-assets`), Actions holt sie von dort (Token als Secret).
+- OpenStreetMap: Overpass antwortete am 22.10.2026 abends von allen drei Servern mit 504; die Pipeline nimmt dann die OSM-API in Ausschnitten (Testblock: 25–40 Abrufe). Für die Ringe bis 150 km: Geofabrik-Auszüge (`thueringen-latest.osm.pbf`, `bayern-latest.osm.pbf` …) in Actions mit osmium zuschneiden – keine Last auf den öffentlichen Diensten.
 - Luftbilder fern weiter über WMS in Zielauflösung (der Server rechnet herunter; 5000 px je Abruf): Thüringen `th_dop`, Bayern/Hessen/
   Sachsen/Sachsen-Anhalt/Niedersachsen über ihre DOP-WMS (Ebenennamen beim Einbau aus den Capabilities).
 - Bayern liefert DGM1 und LoD2 sauber über Metalink mit SHA-256 – ideal für GitHub Actions; Hessen DGM1 über WCS (Ausschnitt in
