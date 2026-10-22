@@ -165,6 +165,7 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   `DETAIL.L[name]`. Bis die Bilder geladen sind, liegt ein graues Platzhalter-Array darin. Im Shader: `uniform highp sampler2DArray tDet;`
   und `texture(tDet, vec3(uv, Ebene))` (Straßen-GLSL: `rdTex(ebene, p, kachel, dx, dy)` mit `textureGrad`). Neue Bodentextur: Namen in
   `DETAIL.NAMES` ergänzen, kein neuer Sampler.
+- **GLINFO** (`render/render.js`, V16b2): Name des Renderers (`WEBGL_debug_renderer_info`), `soft` bei Software-Grafik (SwiftShader, „Basic Render Driver“, llvmpipe). `prepareGPU` nimmt dann sofort die Stufe „schnell“ und misst nicht (die Messung kostete dort Minuten); sonst entscheidet zuerst ein einzelnes Probebild (> 250 ms → „schnell“). Die Ladeanzeige nennt die drei Schritte (Shader, Texturen, Grafikkarte); `LM.onProgress` überschreibt sie nach dem Laden nicht mehr. Test: `test/softgl.py` (ohne Stufen-Voreinstellung).
 - **GLCHECK** (`core/detail.js`): `GLCHECK.run(limit)` zählt nach dem Kompilieren die aktiven Sampler-Uniforms jedes Programms und meldet
   Programme, die nicht linken. `GLCHECK.guard()` läuft am Ende von `prepareGPU`: Erlaubt die GPU weniger Texturen, als ein Programm braucht,
   schaltet er auf `lite` (Bodenshader ohne Straßen- und Kornteil, `ROADS.shader` liefert `S.STUB`) und lässt die Materialien neu bauen –

@@ -46,6 +46,7 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 | Skript | prüft | Dauer |
 |---|---|---|
 | smoke.py | Laden, keine Fehler | 3 min |
+| softgl.py | **Laden ohne Grafikkarte** (V16b2): ohne Stufen-Voreinstellung, Software-Grafik erkannt, gleich „schnell“, Vorbereitung < 3 min, Ladeanzeige bleibt nicht bei „100 %“ stehen, Hinweis | 5 min |
 | gpu.py | **GPU-Grenzen**: höchstens 16 Texturen je Shader-Programm (wie auf Laptops/Macs/Telefonen), kein Programm kaputt, Boden an 7 Orten tags und nachts sichtbar (kein Himmel im unteren Bilddrittel), dazu Innenraum, Werkstatt, Auto, Draufsicht. **Vor jeder Veröffentlichung**, bei neuen Texturen in Shadern immer | 6 min |
 | v15b.py | Werkstatt-Spiel komplett vom Leimholz bis zum geölten Brett (Regression) | 20 min |
 | v15b_reload.py | Spielstand speichern/laden, Handy-Ansicht | 15 min |
