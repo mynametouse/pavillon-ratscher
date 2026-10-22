@@ -263,7 +263,11 @@ window.addEventListener('keydown', e => { if (e.key === 'f' || e.key === 'F') { 
 // ---------------- loop ----------------
 const lbl = $('where'), dbtn = $('doorbtn'); let last = performance.now(), lastPlace = '', lastDoor = null;
 const P3D = $('p-3d');
-function frame(now) { const dt = Math.min(0.12, (now - last) / 1000); last = now;   // slow frames are split into substeps below, so walking keeps its real speed
+// V16b5: a frame that throws (one bad value somewhere) no longer ends the frame loop for good: the next frame comes, the error goes to the
+// page's error handlers (log, a short notice – boot.js), the same error at most every 5 s
+let frameErrT = -1e9;
+function frame(now) { try { frame0(now); } catch (e) { requestAnimationFrame(frame); if (now - frameErrT > 5000) { frameErrT = now; if (window.reportError) reportError(e); else setTimeout(() => { throw e; }); } } }
+function frame0(now) { const dt = Math.min(0.12, (now - last) / 1000); last = now;   // slow frames are split into substeps below, so walking keeps its real speed
   if (P3D.hidden || window.FREEZE) { P3D.away = !window.FREEZE; requestAnimationFrame(frame); return; }   // FREEZE: tests step the world by hand (GAME.step)   // another tab is open: no physics, no drawing
   if (P3D.away) { P3D.away = false; resize(); markDirty(true); MOTION.lastStill = -1e9; }   // back in the 3D tab: fresh size and a sharp frame at once
   let f = (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0);

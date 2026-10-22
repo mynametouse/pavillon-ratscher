@@ -11,7 +11,11 @@ bootStep('Größe', () => resize()); bootStep('Variante', () => setVariant(VARIA
 bootStep('Ton', () => soundLabel()); bootStep('Grafikstufe', () => qualLabel()); bootStep('Bauphase', () => setPhase(PHASES.length - 1));
 bootStep('Luken', () => { for (const k of ['hatch', 'roofhatch']) setDoorNow(k, true); });   // the trapdoor and the roof hatch usually stand open
 requestAnimationFrame(frame);
-const hideLoading = () => { const ld = $('loading'); if (ld) ld.hidden = true; const li = $('loadinfo'); if (li) li.remove(); LOAD.ready = true; LOADLOG.end(); markDirty(true); qualLabel(); };
+const hideLoading = () => { const ld = $('loading'); if (ld) ld.hidden = true; const li = $('loadinfo'); if (li) li.remove(); LOAD.ready = true; window.PAV_LOADED = true; LOADLOG.end(); markDirty(true); qualLabel(); };
+// V16b5: an error after loading (in a frame, a click) no longer covers the model with „konnte nicht geladen werden“ (build.py says that only
+// while loading, game.js keeps the frames going): the model runs on, the error is in the log (pav-loadlog) and named now and then
+{ let shownT = -1e9; window.addEventListener('error', e => { const m = String(e.message || (e.error && e.error.message) || ''); if (!window.PAV_LOADED || /ResizeObserver|^Script error/i.test(m)) return;
+    const now = performance.now(); if (now - shownT < 30000) return; shownT = now; toast('Kurzer Fehler im Modell (' + (m.replace(/^Uncaught\s*/, '').slice(0, 90) || 'unbekannt') + ') – es läuft weiter. Falls etwas hängt: Seite neu laden.', 7000); }); }
 const sayLoading = t => { LOAD.alive = performance.now(); LOADLOG.note(t); const ld = $('loading'); if (ld && !ld.hidden && ld.textContent !== t) ld.textContent = t; };
 // V16b4: under the loading text – the seconds since the start (when they stand still, one step keeps the page busy), where the last attempt
 // stopped if it did not finish (crash or hang), and after 25 s (or with ?diag=1) the last steps of the load log; „Protokoll“ shows all of it

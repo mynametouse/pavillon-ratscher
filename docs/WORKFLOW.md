@@ -46,6 +46,7 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 | Skript | prüft | Dauer |
 |---|---|---|
 | smoke.py | Laden, keine Fehler | 3 min |
+| fellcrash.py | **Absturz nach dem Fällen** (V16b5): Baum aus den Kollisionen genommen, Traktor fährt zum Stubben (von Hand gesteppt und mit echter Bildschleife), Zustand bleibt endlich; NaN im Ton verworfen, NaN im Fahrzeug zurückgesetzt, Fehler in einem Bild nach dem Laden: keine Lademeldung, Bilder laufen weiter, Hinweis und Protokoll | 4 min |
 | loadlog.py | **Laden Schritt für Schritt** (V16b4): Aufbau gezählt, Sekunden unter der Ladeanzeige, Ladeprotokoll geschlossen, nach einem abgebrochenen Versuch Hinweis, wo er stand; `loadprof.py`: Zeitachse der Ladeanzeige, CPU-Profil je Funktion, Programme | 6 min |
 | softgl.py | **Laden ohne Grafikkarte** (V16b2/V16b3): ohne Stufen-Voreinstellung, Software-Grafik erkannt, gleich „schnell“, Vorbereitung < 3 min, Ladeanzeige bleibt nicht bei „100 %“ stehen und zählt die Shader, Seite bleibt beim Vorbereiten ansprechbar (≤ 20 s am Stück: das erste Bild), Hinweis | 5 min |
 | gpu.py | **GPU-Grenzen**: höchstens 16 Texturen je Shader-Programm (wie auf Laptops/Macs/Telefonen), kein Programm kaputt, Boden an 7 Orten tags und nachts sichtbar (kein Himmel im unteren Bilddrittel), dazu Innenraum, Werkstatt, Auto, Draufsicht. **Vor jeder Veröffentlichung**, bei neuen Texturen in Shadern immer | 6 min |

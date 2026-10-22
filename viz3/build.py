@@ -57,9 +57,9 @@ def shell_text():   # the page: shell/parts.txt lists its parts in order (head, 
     return ''.join(open(os.path.join(H, 'shell', n)).read() for n in names if n)
 shell = shell_text()
 shell = shell.replace('<!--CREDITS-->', M['credits'])
-def page(extra_head=''):
+def page(extra_head=''):   # the first script: an error while loading is shown on the loading screen (V16b5: only while loading – after that boot.js names it, the model runs on)
     js = app.replace('</script', '<\\/script')
-    return shell.replace('<!--SCRIPTS-->', '<script>' + extra_head + 'window.addEventListener("error",e=>{const l=document.getElementById("loading");if(l){l.hidden=false;l.textContent="Das 3D-Modell konnte nicht geladen werden ("+(e.message||"Fehler")+").";}});\n' + inject + '</script>\n<script type="module">\n' + js + '\n</script>')
+    return shell.replace('<!--SCRIPTS-->', '<script>' + extra_head + 'window.addEventListener("error",e=>{if(window.PAV_LOADED||/ResizeObserver|^Script error/i.test(e.message||""))return;const l=document.getElementById("loading");if(l){l.hidden=false;l.textContent="Das 3D-Modell konnte nicht geladen werden ("+(e.message||"Fehler")+").";}});\n' + inject + '</script>\n<script type="module">\n' + js + '\n</script>')
 open(os.path.join(D, 'pavillon-ratscher.html'), 'w').write(page())
 open(os.path.join(D, 'index.html'), 'w').write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>' + page('window.OFFLINE=!!new URLSearchParams(location.search).get("offline");') + '</body></html>')
 if not fast and os.environ.get('PACK', '1') == '1': print('packed glTF', BA.pack_gltf([os.path.join(D, s) for s in ('models', 'grass', 'chars')]))

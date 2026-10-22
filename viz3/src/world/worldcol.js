@@ -30,10 +30,13 @@ const WCOL = (() => {
         if (d < r && d > 1e-6) { p[0] = qx + ex / d * r; p[1] = qy + ey / d * r; hit = true; } },
       (t, A) => { const ex = p[0] - A[t * 3], ey = p[1] - A[t * 3 + 1], rr = r + A[t * 3 + 2], d = Math.hypot(ex, ey); if (d < rr && d > 1e-6) { p[0] = A[t * 3] + ex / d * rr; p[1] = A[t * 3 + 1] + ey / d * rr; hit = true; } });
     return hit; };
-  // V16c2: a felled tree no longer stands in the way (world/fell.js): its trunk leaves the list (NaN: never hit)
+  // V16c2: a felled tree no longer stands in the way (world/fell.js): its trunk leaves the list
+  // V16b5: taken out of its cell – it was set to NaN before, which the vehicles' circle test (vehicles/vehicle.js circBox) took for a hit
+  // with NaN depth: a vehicle near the stump got a NaN position, the sounds threw and the page stopped
   S.removeTree = (x, y) => { if (!S.ready) return false; let best = -1, bd = 0.6;
     S.each(x - 1, y - 1, x + 1, y + 1, null, (t, A) => { const d = Math.hypot(A[t * 3] - x, A[t * 3 + 1] - y); if (d < bd) { bd = d; best = t; } });
-    if (best < 0) return false; TREE[best * 3] = TREE[best * 3 + 1] = NaN; return true; };
+    if (best < 0) return false; const c = G.get(key(Math.floor(TREE[best * 3] / CS), Math.floor(TREE[best * 3 + 1] / CS))), k = c ? c.t.indexOf(best) : -1;
+    if (k >= 0) c.t.splice(k, 1); TREE[best * 3 + 2] = 0; return true; };
   whenLoaded(() => { if (!window.RATSCHER || !RATSCHER.ready) return; try { build(); } catch (e) { console.warn('wcol', e); } });
   return S; })();
 window.WCOL = WCOL;

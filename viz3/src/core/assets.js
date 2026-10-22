@@ -15,6 +15,14 @@ const LOADLOG = (() => { const L = { t0: performance.now(), steps: [], errs: [],
   window.addEventListener('error', e => L.err(e.error || e.message)); window.addEventListener('unhandledrejection', e => L.err(e.reason));
   return L; })();
 window.LOADLOG = LOADLOG;
+// V16b5: Web Audio throws on a value that is not finite (NaN, Infinity) – one bad number from a position (a vehicle near a felled tree)
+// stopped the whole page. Such a value is dropped now (the parameter keeps its course) and noted in the log (once in 10 s).
+if (window.AudioParam) { const AP = AudioParam.prototype; let badT = -1e9;
+  const bad = (k, v) => { const now = performance.now(); if (now - badT < 10000) return; badT = now; console.warn('audio: ' + k + '(' + v + ') dropped'); LOADLOG.err('Ton: ' + k + '(' + v + ') verworfen'); };
+  for (const k of ['setValueAtTime', 'setTargetAtTime', 'linearRampToValueAtTime', 'exponentialRampToValueAtTime']) { const f = AP[k]; if (typeof f !== 'function') continue;
+    AP[k] = function (v, t, c) { if (!isFinite(v) || !isFinite(t) || (arguments.length > 2 && !isFinite(c))) { bad(k, v); return this; } return f.apply(this, arguments); }; }   // isFinite converts like the browser does
+  const d = Object.getOwnPropertyDescriptor(AP, 'value');
+  if (d && d.set && d.configurable) Object.defineProperty(AP, 'value', { configurable: true, enumerable: d.enumerable, get: d.get, set(v) { if (!isFinite(v)) { bad('value', v); return; } d.set.call(this, v); } }); }
 // V16b4: which files are still on the way (a file that never arrives keeps the page at „Modell wird geladen … 100 %“ – the info line names it)
 LOAD.pending = new Map(); { const s0 = LM.itemStart, e0 = LM.itemEnd, x0 = LM.itemError;
   LM.itemStart = u => { LOAD.pending.set(u, performance.now()); s0.call(LM, u); }; LM.itemEnd = u => { LOAD.pending.delete(u); e0.call(LM, u); }; LM.itemError = u => { LOAD.pending.delete(u); x0.call(LM, u); }; }

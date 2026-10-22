@@ -35,7 +35,7 @@ const VEH = (() => {
         ax: 0, ay: 0, vzLP: 0, engine: false, sleep: 0, slip: 0, light: false, brakeOn: false, horn: false, zg: 0, pt: 0, rt: 0, moved: 0 } };
     const L = spec.a + spec.b; spec.L = L;
     const sv = saved[spec.id]; const B = boundsBox();
-    if (sv && sv.length >= 3 && isFinite(sv[0]) && sv[0] > B[0] && sv[0] < B[2] && sv[1] > B[1] && sv[1] < B[3]) { v.st.x = sv[0]; v.st.y = sv[1]; v.st.psi = sv[2]; if (typeof model.load === 'function') model.load(sv.slice(3)); v.placed = true; }   // V16b4: the car's model.load is its load space (an object, since V16b1) – calling it threw as soon as a position was saved and stopped the whole start
+    if (sv && sv.length >= 3 && Number.isFinite(sv[0]) && Number.isFinite(sv[1]) && Number.isFinite(sv[2]) && sv[0] > B[0] && sv[0] < B[2] && sv[1] > B[1] && sv[1] < B[3]) { v.st.x = sv[0]; v.st.y = sv[1]; v.st.psi = sv[2]; if (typeof model.load === 'function') model.load(sv.slice(3)); v.placed = true; }   // V16b4: the car's model.load is its load space (an object, since V16b1) – calling it threw as soon as a position was saved and stopped the whole start
     else { const p = spec.home(); v.st.x = p[0]; v.st.y = p[1]; v.st.psi = p[2]; v.placed = !!p[3]; }
     scene.add(v.g); v.g.traverse(o => { if (o.isMesh) { o.userData.noMerge = true; if (o.castShadow === undefined) o.castShadow = true; } });
     S.list.push(v); S.by[v.id] = v;
@@ -131,12 +131,12 @@ const VEH = (() => {
   // separating axes: depth and normal (from B towards A), contact point
   function sat(A, B) { let best = 1e9, n = null;
     for (const ax of [A.ax, A.ay, B.ax, B.ay]) { const rA = A.ex * Math.abs(dot(A.ax, ax)) + A.ey * Math.abs(dot(A.ay, ax)), rB = B.ex * Math.abs(dot(B.ax, ax)) + B.ey * Math.abs(dot(B.ay, ax)), d = dot(A.c, ax) - dot(B.c, ax), o = rA + rB - Math.abs(d);
-      if (o <= 0) return null; if (o < best) { best = o; n = d >= 0 ? ax : [-ax[0], -ax[1]]; } }
+      if (!(o > 0)) return null; if (o < best) { best = o; n = d >= 0 ? ax : [-ax[0], -ax[1]]; } }
     const cA = corners(A).filter(p => inBox(B, p)), cB = corners(B).filter(p => inBox(A, p)); const pts = cA.length ? cA : cB.length ? cB : [[(A.c[0] + B.c[0]) / 2, (A.c[1] + B.c[1]) / 2]];
     const pc = pts.reduce((q, p) => [q[0] + p[0] / pts.length, q[1] + p[1] / pts.length], [0, 0]); return { n, d: best, p: pc }; }
   function circBox(A, cx, cy, rad) { const d = [cx - A.c[0], cy - A.c[1]], lx = dot(d, A.ax), ly = dot(d, A.ay), qx = THREE.MathUtils.clamp(lx, -A.ex, A.ex), qy = THREE.MathUtils.clamp(ly, -A.ey, A.ey);
     const ex = lx - qx, ey = ly - qy, dd = Math.hypot(ex, ey);
-    if (dd > rad) return null; const p = [A.c[0] + A.ax[0] * qx + A.ay[0] * qy, A.c[1] + A.ax[1] * qx + A.ay[1] * qy];
+    if (!(dd <= rad)) return null; const p = [A.c[0] + A.ax[0] * qx + A.ay[0] * qy, A.c[1] + A.ax[1] * qx + A.ay[1] * qy];
     if (dd > 1e-6) { const wx = (A.ax[0] * ex + A.ay[0] * ey) / dd, wy = (A.ax[1] * ex + A.ay[1] * ey) / dd; return { n: [-wx, -wy], d: rad - dd, p }; }
     const ox = A.ex - Math.abs(lx), oy = A.ey - Math.abs(ly); return ox < oy ? { n: [-A.ax[0] * Math.sign(lx || 1), -A.ax[1] * Math.sign(lx || 1)], d: ox + rad, p } : { n: [-A.ay[0] * Math.sign(ly || 1), -A.ay[1] * Math.sign(ly || 1)], d: oy + rad, p }; }
   // impulse at the contact point (n: push direction for v); o: the other vehicle (or null = fixed)
@@ -220,12 +220,22 @@ const VEH = (() => {
     if (joy.active) { if (joy.y > 0.12) thr = Math.max(thr, Math.min(1, joy.y * 1.25)); if (joy.y < -0.12) brk = Math.max(brk, Math.min(1, -joy.y * 1.25)); steer += joy.x * 1.15; }
     const tb = S.touch || {}; if (tb.hand) K.add(' ');
     return { thr, brk, steer, hand: K.has(' ') || !!tb.hand }; }
+  // V16b5: a state that turned NaN or infinite (a bad contact) goes back to the last good one – before, the NaN spread to the driver's view,
+  // the ears (the sounds threw) and the whole page stopped
+  const NUM = ['x', 'y', 'z', 'psi', 'u', 'v', 'r', 'vz', 'pitch', 'roll', 'pv', 'rv', 'dp', 'dr', 'rpm', 'ax', 'ay', 'vzLP', 'slip', 'steer', 'moved'];
+  function sane(v) { const s = v.st; let bad = NUM.find(k => !Number.isFinite(s[k])); if (!bad && v.W.some(w => !Number.isFinite(w.comp + w.spin))) bad = 'wheel';
+    if (!bad) { const g = v.good || (v.good = {}); g.x = s.x; g.y = s.y; g.z = s.z; g.psi = s.psi; return true; }
+    const p = v.spec.home(), g = v.good || { x: p[0], y: p[1], z: Number.isFinite(s.zg) ? s.zg : 0, psi: p[2] };
+    Object.assign(s, { x: g.x, y: g.y, z: g.z, psi: g.psi, u: 0, v: 0, r: 0, vz: 0, pitch: 0, roll: 0, pv: 0, rv: 0, dp: 0, dr: 0, rpm: v.spec.eng.idle, ax: 0, ay: 0, vzLP: 0, slip: 0, steer: 0, moved: 0 });
+    for (const w of v.W) { w.comp = 0; w.spin = 0; } v.placed = false;
+    if (performance.now() - (S.badT || -1e9) > 5000) { S.badT = performance.now(); console.warn('veh: invalid state (' + bad + '), back to the last good one:', v.id); if (window.LOADLOG) LOADLOG.err('Fahrzeug ' + v.id + ': ungültiger Zustand (' + bad + '), zurückgesetzt'); }
+    return false; }
   // ---------------- per frame ----------------
   function update(dt) { if (!S.list.length || !LOAD.finished) return; const t0 = performance.now();
     for (const v of S.list) { const s = v.st, driven = v === S.cur;
       if (!driven && s.sleep > 1.5 && !s.air) { lamps(v); continue; }   // parked and still: no physics
       const inp = driven ? input(v, dt) : { thr: 0, brk: 0, steer: 0, hand: true };
-      const n = Math.max(1, Math.ceil(dt / HSTEP)), h = dt / n; for (let i = 0; i < n; i++) { step(v, h, inp); collide(v); }
+      const n = Math.max(1, Math.ceil(dt / HSTEP)), h = dt / n; for (let i = 0; i < n; i++) { step(v, h, inp); collide(v); if (!sane(v)) break; }
       s.sleep = (!driven && Math.hypot(s.u, s.v) < 0.03 && Math.abs(s.r) < 0.01) ? s.sleep + dt : 0;
       pose(v, dt); lamps(v); if (driven || Math.hypot(s.u, s.v) > 0.01) markDirty(); s.moved += Math.hypot(s.u, s.v) * dt; }
     const v = S.cur; if (v) { const e = eyeW(v); P.x = e.x; P.y = e.y; P.feet = v.st.z + 0.3; P.cam = { x: e.x, y: e.y, z: e.z };   // the ears, the neighbours and the figure know where I am
