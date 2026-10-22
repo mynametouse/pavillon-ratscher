@@ -4,6 +4,8 @@ Stand: 22.10.2026 (Welt-Chat, Woche 1). Garten = 50,4991° N, 10,7692° O. Im Um
 Hessen, Sachsen, Sachsen-Anhalt und Niedersachsen. Spalte „geprüft“: ✔ = Endpunkt am 22.10.2026 aus GitHub Actions oder der Sitzung
 abgerufen (siehe `.github/workflows/welt-probe.yml`), ○ = nur aus der Quelle übernommen, vor dem Einbau prüfen.
 
+**Thüringen:** Die aktuellen Metadaten (WMS-Capabilities, GeoMIS) nennen **CC BY 4.0** mit „© GDI-Th“; ältere Angaben (auch im Auftrag) nennen die Datenlizenz Deutschland – Namensnennung 2.0. Beide verlangen dieselbe Namensnennung; die Kacheln führen CC BY 4.0.
+
 **Regel für die Pipeline:** Lizenz und Namensnennung reisen mit jeder Kachel (`welt-test/meta.json` → `attribution`, `sources`;
 `welt-test/ATTRIBUTION.md`). Abgeleitete OSM-Daten stehen unter der ODbL.
 
