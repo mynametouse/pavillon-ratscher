@@ -93,13 +93,13 @@ async function compileShown(say) {
   scene.traverse(o => { if ((o.isMesh || o.isPoints || o.isLine || o.isSprite) && o.material && mats(o).some(m => m && !seen.has(m))) { mats(o).forEach(m => seen.add(m)); objs.push(o); } });
   const has = o => mats(o).every(m => { const mp = m && R.properties.get(m); return !m || (mp && mp.programs && mp.programs.size); });
   const progs = () => R.info.programs || [], ready = p => { if (p._pavReady) return true; try { if (ext ? gl.getProgramParameter(p.program, ext.COMPLETION_STATUS_KHR) : (gl.getProgramParameter(p.program, gl.LINK_STATUS), true)) p._pavReady = true; } catch (e) { p._pavReady = true; } return !!p._pavReady; };
-  const tell = i => { LOAD.alive = performance.now(); say && say('Grafik wird vorbereitet … Shader ' + progs().filter(p => p._pavReady).length + ' (' + Math.min(100, Math.round(100 * i / Math.max(1, objs.length))) + ' %)'); };
+  const tell = i => { LOAD.alive = performance.now(); say && say('Grafik wird vorbereitet … Shader ' + Math.min(i, objs.length) + ' von ' + objs.length); };   // counted by material
   // the new programs: with the extension ask without waiting until they are done; without it the driver finishes each one when asked
-  const settle = async (fresh, i) => { if (ext) { const w0 = performance.now(); while (fresh.some(p => !ready(p))) { tell(i); await sleep(30); if (performance.now() - w0 > 30000) { console.warn('compile: a program takes > 30 s'); break; } } } else for (const p of fresh) ready(p); };
+  const settle = async (fresh, i) => { if (ext) { const w0 = performance.now(); while (fresh.some(p => !ready(p))) { tell(i); await sleep(30); if (performance.now() - w0 > 30000) { console.warn('compile: a program takes > 30 s'); break; } } } else for (const p of fresh) { const a = performance.now(); ready(p); if (performance.now() - a > 40) { tell(i); await sleep(0); } } };   // one at a time, a breath after a slow one
   let i = 0;
   while (i < objs.length) {   // a portion: objects until 3 new programs were made or 30 ms have passed
     const n0 = progs().length, t0 = performance.now();
-    try { R.setRenderTarget(rt); while (i < objs.length && progs().length - n0 < 3 && performance.now() - t0 < 30) { if (!has(objs[i])) R.compile(objs[i], cam, scene); i++; } }
+    try { R.setRenderTarget(rt); while (i < objs.length && progs().length - n0 < (ext ? 3 : 1) && performance.now() - t0 < 30) { if (!has(objs[i])) R.compile(objs[i], cam, scene); i++; } }
     catch (e) { console.warn('compile', e); i++; } finally { R.setRenderTarget(null); }
     await settle(progs().slice(n0), i); tell(i); await sleep(0); }
   { const n0 = progs().length; try { R.setRenderTarget(rt); R.compile(scene, cam); } catch (e) { console.warn('compile', e); } finally { R.setRenderTarget(null); } await settle(progs().slice(n0), objs.length); }
