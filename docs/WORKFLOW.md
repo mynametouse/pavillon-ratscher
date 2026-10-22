@@ -70,6 +70,8 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 
 ## 5 Parallel arbeiten (mehrere Chats gleichzeitig)
 
+- **Abstimmung zwischen den Chats: `docs/PARALLEL.md`** (Belegung, gemeinsame Dateien je Thema, Absprachen, Nachrichten). Lesen beim Start,
+  vor Rebase/Merge und vor dem Veröffentlichen: `git fetch -q origin && git show origin/src:docs/PARALLEL.md`; ändern nur über Git auf `src`.
 - **Ein Thema = ein Branch** von `src`: `git checkout -b feat/<thema> origin/src` (z. B. `feat/fahrzeuge`, `feat/dorf`, `feat/figuren`).
 - **Nur im eigenen Bereich ändern**: eigener Ordner unter `viz3/src/` (neu oder bestehend), eigene Tests, eigene Zeilen in `modules.txt`.
   Gemeinsame Dateien knapp und gezielt anfassen: `src/modules.txt`, `shell/menu.html` (Menü, Hilfe), `shell/panel_3d.html` (HUD), `shell/css/*.css`, `build.py`/`buildlib/`, `manifests.json`,
