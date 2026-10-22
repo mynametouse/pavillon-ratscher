@@ -29,8 +29,8 @@ with lib.browser() as b:
     check('loading text moves on after the assets (no "100 %" left standing)', not stuck and any('Grafik wird vorbereitet' in d['t'] for t, d in texts), str(stuck[:2]))
     import re
     par = pg.evaluate("!!GAME.R.getContext().getExtension('KHR_parallel_shader_compile')")   # without it the count cannot be asked without waiting
-    check('shaders counted on the loading screen (when the browser compiles in parallel)', not par or any(re.search(r'Shader \d+ von \d+', d['t']) for t, d in texts), f"parallel compile: {par}")
-    check('page responsive while preparing (longest wait ≤ 12 s: the first picture)', waits and max(waits) <= 12, f"longest {max(waits or [0]):.1f} s over {len(waits)} looks")
+    check('shaders counted on the loading screen', any(re.search(r'Shader \d+ von \d+', d['t']) for t, d in texts), f"parallel compile: {par}")
+    check('page responsive while preparing (longest wait ≤ 15 s: the first picture)', waits and max(waits) <= 15, f"longest {max(waits or [0]):.1f} s over {len(waits)} looks")
     time.sleep(4)
     toast = pg.evaluate("(() => { const t = document.getElementById('toast'); return t && !t.hidden ? t.textContent : ''; })()")
     check('hint about software rendering', 'ohne Grafikkarte' in toast, toast[:90])

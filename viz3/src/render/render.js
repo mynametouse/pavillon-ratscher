@@ -86,6 +86,12 @@ async function compileShown(say) {
   let fin = false;
   try { R.setRenderTarget(rt); R.compileAsync(scene, cam).then(() => { fin = true; }, e => { console.warn('compile', e); fin = true; }); }   // compile() itself runs now, with the render target set
   catch (e) { console.warn('compile', e); fin = true; } finally { R.setRenderTarget(null); }
+  // without the extension the driver finishes each program when it is first asked about it: ask one by one between short pauses (otherwise
+  // the first frame would do all of them in one go)
+  if (!ext) { const ps = (R.info.programs || []).slice(); let n = 0, slice = performance.now();
+    for (const p of ps) { try { gl.getProgramParameter(p.program, gl.LINK_STATUS); } catch (e) {} n++;
+      if (performance.now() - slice > 40) { LOAD.alive = performance.now(); say && say('Grafik wird vorbereitet … Shader ' + n + ' von ' + ps.length); await sleep(0); slice = performance.now(); } }
+    fin = true; }
   let lastN = -1, lastT = performance.now();
   while (!fin) { await sleep(200);
     let ok = 0; const ps = R.info.programs || [];
