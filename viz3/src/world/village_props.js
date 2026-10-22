@@ -227,6 +227,9 @@ const VPROPS = (() => {
     if (typeof SPOTS !== 'undefined') { const x = 241.5, y = -101.5; SPOTS.dorf = { mode: 'walk', pos: [x, y], z: gz(x, y), yaw: 292, pitch: 3, label: 'Dorf (Anger)' }; }
     for (const m of S.meshes) if (!S.lindeMeshes || !S.lindeMeshes.slice(1).includes(m)) { if (m !== S.pool) RATSCHER.bld.push(m); }   // hidden with the buildings in the map view
     (window.TICKS || (window.TICKS = [])).push(tick);
+    // what is new, once (after the V16b hint)
+    let intro = false; TICKS.push(() => { if (intro || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16e') === '1'; localStorage.setItem('pav-v16e', '1'); } catch (e) {}
+      if (!seen) setTimeout(() => toast('Neu: Ratscher nach Fotos – Schiefer, Fachwerk und Putz wie im Dorf, die alte Schule mit Uhr, die Dorflinde, der Brunnen, Laternen und abends Licht in den Fenstern. Menü → „Dorf“.', 11000), 32000); });
     S.on = true; S.ready = true; S.ms = Math.round(performance.now() - t0); markDirty(true); }
   S.dispose = () => { for (const m of S.meshes) { scene.remove(m); if (m.geometry) m.geometry.dispose(); const k = RATSCHER.bld.indexOf(m); if (k >= 2) RATSCHER.bld.splice(k, 1); } S.meshes.length = 0; S.lamps.length = 0; const i = (window.TICKS || []).indexOf(tick); if (i >= 0) TICKS.splice(i, 1);
     for (const L2 of [...VEG.lod]) if (S.lindeMeshes && S.lindeMeshes.includes(L2.hi)) VEG.lod.splice(VEG.lod.indexOf(L2), 1); CLK.hands = null; CLK.dials.length = 0; S.ready = false; };

@@ -42,7 +42,7 @@ VIEWS_B = [
   ('b21', 'night', 'walk', [-6.4, -3.8, 1.65, 55, 8, 64]),          # V16a: full-moon night (27 Aug, 23:30), moonlight from the SSE
   ('b22', 'gold', 'veh',   ['car', 108.0, -93.0, 116, 8.5, 3.2, 1.55, 58, '']),   # V16b: with the car through Ratscher (Anger)
   ('b23', 'gold', 'veh',   ['tractor', None, None, None, 9.5, -4.5, 1.7, 60, "VEH.by.tractor.model.load([0.25, 0.3])"]),   # V16b: the tractor at the Untere Klinge, fork raised
-  ('b24', 'gold', 'walk',  [248.0, -102.2, 2.6, 284, 7, 64]),       # V16e: the Anger in Ratscher – Dorflinde, old school with turret (photo spot 2026)
+  ('b24', 'day',  'walk',  [248.0, -102.2, 2.6, 284, 7, 64]),       # V16e: the Anger in Ratscher – Dorflinde, old school with turret (photo spot 2026)
   ('b25', 'dusk', 'walk',  [200.9, -111.9, 2.06, 248, 1, 64]),      # V16e: the fountain in the evening, lamps and windows lit (photo spot 2026)
 ]
 with sync_playwright() as p:

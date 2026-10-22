@@ -106,7 +106,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `pav-clock-v1`, `pav-dn-v1` | Spielzeit und Tempo; Kalender (Tag 1 = Datum) |
 | `pav-quests-v1`, `pav-werk-v1`, `pav-gear-v1` | Aufgaben, Werkstatt-Spiel, Schutzausrüstung |
 | `pav-veh-v1` | Fahrzeuge: Standort und Richtung je Fahrzeug, Frontlader, Lichtmodus (auto/an/aus) |
-| `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b` | „Neu in …“-Hinweise schon gezeigt |
+| `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt |
 
 Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), hier eintragen.
 
