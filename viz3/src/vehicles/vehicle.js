@@ -195,7 +195,7 @@ const VEH = (() => {
   function enter(v) { if (S.cur || PLAY.seated()) return;
     const seat = { kind: 'drive', drive: v, keepKeys: true, pitch: -4, get yaw() { return v.st.psi * 180 / Math.PI; }, follow: () => eyeW(v),
       get lock() { return Math.hypot(v.st.u, v.st.v) > 1.5; }, lockMsg: 'Erst anhalten.', get back() { return exitPos(v); }, set back(x) {},
-      primary: () => toggleLights(), primaryLabel: '', leaveLabel: 'Aussteigen', onLeave: () => left(v) };
+      primary: () => toggleLights(), primaryLabel: '', get leaveLabel() { return Math.hypot(v.st.u, v.st.v) > 1.5 ? '' : 'Aussteigen'; }, onLeave: () => left(v) };   // the button only when it stands (not over the view while driving)
     S.cur = v; v.st.engine = true; v.st.hand = false; v.st.sleep = 0; v.st.gear = 1; S.camFrom = { p: cam.position.clone(), q: cam.quaternion.clone(), t: 0 }; S.lastPsi = v.st.psi; S.lookT = 0;
     PLAY.sit(seat); P.yaw = v.st.psi * 180 / Math.PI; P.pitch = -8; CAM3.cur = Math.max(CAM3.cur, 1.2);
     VSND.door(v); VSND.start(v); document.body.dataset.drive = v.id; hud(true); markDirty(true); }
@@ -275,7 +275,9 @@ const VEH = (() => {
     return st; };
   S.enter = id => { const v = S.by[id]; if (v) { if (PLAY.seated()) PLAY.stand(true); goTo(id); enter(v); } return !!v; };
   S.exit = () => { if (!S.cur) return false; const v = S.cur; v.st.u = v.st.v = v.st.r = 0; return PLAY.stand(true); };
-  S.place = (id, x, y, psi) => { const v = S.by[id]; if (!v) return; Object.assign(v.st, { x, y, psi, u: 0, v: 0, r: 0, sleep: 0 }); v.placed = false; pose(v); markDirty(true); };
+  S.place = (id, x, y, psi) => { const v = S.by[id]; if (!v) return; Object.assign(v.st, { x, y, psi, u: 0, v: 0, r: 0, sleep: 0 }); v.placed = false; pose(v);
+    if (v === S.cur) { S.lastPsi = psi; P.yaw = S.lookYaw = psi * 180 / Math.PI; S.lookT = -9; }   // the one I sit in: the view goes along
+    markDirty(true); };
   S.state = () => S.list.map(v => ({ id: v.id, x: +v.st.x.toFixed(2), y: +v.st.y.toFixed(2), z: +v.st.z.toFixed(2), psi: +(v.st.psi * 180 / Math.PI).toFixed(1), kmh: +(v.st.u * 3.6).toFixed(1), gear: v.st.gear, rpm: Math.round(v.st.rpm), slip: +v.st.slip.toFixed(2), air: v.st.air, light: lightsOn(v) }));
   // the menu: walk to a vehicle (beside its driver's door, looking at it)
   function goTo(id) { const v = S.by[id]; if (!v || S.cur) return; const sp = v.spec, d = toW(v, sp.door[0] - 0.6, sp.door[1] - 0.8), c = toW(v, 0, sp.box.cy);

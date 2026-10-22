@@ -114,9 +114,10 @@ with lib.browser() as b:
         mp.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded')
         mp.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); time.sleep(2); M = mp.evaluate; M("window.FREEZE = true")
         M("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
-        mp.tap('#menubtn'); time.sleep(0.5); mp.tap('[data-veh="car"]'); time.sleep(0.5); M("for (let i = 0; i < 12; i++) GAME.step(0.05)")
+        mp.wait_for_function("!window.AVATAR || AVATAR.ready || AVATAR.failed", timeout=900000, polling=1000); M("GAME.step(0.1)")   # the figure loaded: no long busy frames any more
+        mp.tap('#menubtn', timeout=180000); time.sleep(0.5); mp.tap('[data-veh="car"]', timeout=180000); time.sleep(0.5); M("for (let i = 0; i < 12; i++) GAME.step(0.05)")
         lbl = M("(document.getElementById('doorbtn') || {}).textContent || ''"); print('phone action', lbl, flush=True)
-        mp.tap('#doorbtn'); M("for (let i = 0; i < 20; i++) GAME.step(0.05)")
+        mp.tap('#doorbtn', timeout=180000); M("for (let i = 0; i < 20; i++) GAME.step(0.05)")
         check('phone: menu → car → tap gets in', M("!!(VEH.cur && VEH.cur.id === 'car')"), lbl)
         jr = rects(M, ['joy'])['joy']; cx, cy = jr['x'] + jr['w'] / 2, jr['y'] + jr['h'] / 2; cdp = ctx.new_cdp_session(mp)
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': cx, 'y': cy, 'id': 1}]})
@@ -129,7 +130,17 @@ with lib.browser() as b:
         bad = [f"{a}/{c}" for a, c in [('vhud', 'joy'), ('vhud', 'actrow'), ('vmap', 'where'), ('vmap', 'hudtr'), ('vmap', 'menubtn'), ('vmaplab', 'where'), ('vhud', 'moves')] if overlap(u[a], u[c])]
         off = [k for k in ('vhud', 'vmap', 'joy') if u[k] and not u[k]['hidden'] and (u[k]['x'] < 0 or u[k]['x'] + u[k]['w'] > 390 or u[k]['y'] + u[k]['h'] > 780)]
         check('phone: HUD parts do not overlap and fit', not bad and not off and u['moves']['hidden'], f"overlap {bad} outside {off} moves hidden {u['moves']['hidden']}")
-        mp.tap('#act2'); M("for (let i = 0; i < 20; i++) GAME.step(0.05)"); check('phone: tap gets out', M("!VEH.cur"))
+        # stop: the circle pulled down until it stands, then let go; the button to get out shows only now
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': cx, 'y': cy, 'id': 2}]})
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': cx, 'y': cy + jr['h'] * 0.42, 'id': 2}]})
+        for k in range(60):
+            M("for (let i = 0; i < 4; i++) GAME.step(0.025)")
+            if abs(json.loads(M("JSON.stringify(VEH.state()[0])"))['kmh']) < 1: break
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []}); M("for (let i = 0; i < 10; i++) GAME.step(0.05)")
+        lbl2 = M("(b => b && !b.hidden ? b.textContent : '')(document.getElementById('act2'))")
+        try: mp.tap('#act2', timeout=60000)
+        except Exception as e: print('tap act2:', str(e)[:200])
+        M("for (let i = 0; i < 20; i++) GAME.step(0.05)"); check('phone: stops, tap gets out', M("!VEH.cur"), f"button '{lbl2}'")
         ctx.close()
     errs = [e for e in errs if 'Texture marked' not in e]
     print('\n'.join(errs[:30]) or 'no errors'); check('no errors', not errs)

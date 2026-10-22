@@ -139,7 +139,8 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   Route `routes.klinge`: Garten → Anger → Geisenhöhner Weg → Feldweg über die L 1625 → Waldrand → Untere Klinge.
 - **Straßenkarte** (`world/roads.js`, beim Laden gerastert, 1,25 m/px bzw. 2 m auf Telefonen): R Abstand zum Straßenrand, G Art×8+Belag,
   B seitlicher Versatz zur Mittellinie, A Phase der Leitlinie (18 m). Die Boden-Shader holen sich `ROADS.shader(sh)` (Uniforms + GLSL) und rufen
-  `landDetail(p, farbe, abstand)` (Luftbild entdunstet, Gras-/Erdkorn aus Detailtexturen in der Nähe) und `roadShade(p, farbe, abstand)` auf
+  `landDetail(p, farbe, abstand)` (Luftbild entdunstet, helle kalte Flächen wie Acker/Schotter gedämpft und wärmer – `landHi`, auch für
+  die modellierten Felder in garden/env.js –, Gras-/Erdkorn aus Detailtexturen in der Nähe) und `roadShade(p, farbe, abstand)` auf
   (Asphalt, Beton, Pflaster, Schotter, Fahrspuren, Bankett, Markierungen). Kein Straßen-Mesh: keine Z-Kämpfe, Kreuzungen fügen sich von selbst.
 - **Fahrzeuge** (`vehicles/vehicle.js`): ein Fahrzeug = `VEH.add(spec, model)`. `model`: `g` (Gruppe, Ursprung am Boden unter dem Schwerpunkt,
   x rechts, y vorn), `body` (federnder Teil), `wheels` (`{x, y, r, steer, drive, piv, node}`), `lamps` (`head/tail/brake/rev`: Materialien mit

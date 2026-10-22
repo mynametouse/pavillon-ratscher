@@ -156,7 +156,7 @@ const PLAY = (() => {
     if (txt !== S.lastLbl) { S.lastLbl = txt; btn.hidden = !txt; btn.textContent = txt; }
     btn.style.setProperty('--p', h ? Math.min(1, h.t / h.dur).toFixed(3) : '0'); btn.classList.toggle('busy', !!h); btn.classList.toggle('gauge', !!(h && h.g));
     if (h && h.g && btn.dataset.g !== h.g.lo + ',' + h.g.hi) { btn.dataset.g = h.g.lo + ',' + h.g.hi; btn.style.setProperty('--g0', h.g.lo); btn.style.setProperty('--g1', h.g.hi); }
-    let t2 = ''; if (P.mode === 'walk' && !talking) { if (h) t2 = 'Abbrechen'; else if (S.seat) t2 = ride ? '' : (val(S.seat.leaveLabel) || 'Aufstehen'); else if (S.carry) t2 = val(S.carry.dropLabel) || (S.carry.name + ' ablegen'); else { const q = window.PLAY_SEC && PLAY_SEC(); if (q) t2 = q.label; } }
+    let t2 = ''; if (P.mode === 'walk' && !talking) { if (h) t2 = 'Abbrechen'; else if (S.seat) { const ll = val(S.seat.leaveLabel); t2 = ride || ll === '' ? '' : (ll || 'Aufstehen'); } else if (S.carry) t2 = val(S.carry.dropLabel) || (S.carry.name + ' ablegen'); else { const q = window.PLAY_SEC && PLAY_SEC(); if (q) t2 = q.label; } }
     if (t2 && !COARSE) t2 += '  ·  Q';
     if (b2 && t2 !== S.lastSec) { S.lastSec = t2; b2.hidden = !t2; b2.textContent = t2; } }
   btn?.addEventListener('click', () => primary()); b2?.addEventListener('click', () => secondary());

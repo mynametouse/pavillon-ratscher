@@ -49,7 +49,7 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 | v15b_reload.py | Spielstand speichern/laden, Handy-Ansicht | 15 min |
 | v16a.py, v16a_b.py, v16a_c.py | Tag/Nacht: Stunden, Mondphasen, Draufsicht nachts, Nachbarn nachts, Oktober | je 10–20 min |
 | v16a_lapse.py, v16a_video.py | Zeitraffer eines Tages (Bilderbogen, mp4) | 15–25 min |
-| v16b.py | Fahrzeuge: Einsteigen, Gas/Bremse/rückwärts, Hauswand, Route Garten → Klinge mit Ortsnamen, Aussteigen und Gehen im Gelände, Traktor mit Frontlader, Licht nachts (Abschnitte: `car,drive,crash,route,walk,tractor,night`) | 15–25 min |
+| v16b.py | Fahrzeuge: Einsteigen, Gas/Bremse/rückwärts, Hauswand, Route Garten → Klinge mit Ortsnamen, Aussteigen und Gehen im Gelände, Traktor mit Frontlader, Licht nachts, HUD mit Karte, Zurückstellen, Telefon (Antippen, Kreis, Platz der Anzeigen) (Abschnitte: `car,drive,crash,route,walk,tractor,night,ui,phone`) | 20–30 min |
 | prof.py, loadtime.py | Kosten pro Frame (TICKS), Draw-Calls/Speicher; Ladezeiten | 10 min |
 | bilder.py `b21 B` | Galeriebilder nach `dist/img` (`?offline=1`, hohe Qualität) | je 2 min |
 | pano.py, tour.py, gi.py, bake.py | 360°-Bilder, Raumführung, GI- und Himmelssichtbarkeits-Volumen backen | lang |

@@ -129,7 +129,7 @@ function mkGroundMat(cut) {
   const lawn2 = TEXMAN.lawn2 ? texUse(texFileOf('lawn2', 'col'), true, rep).t : null, l2k = TEXMAN.lawn2 ? lt[0] / TEXMAN.lawn2.tile[0] : 1;
   const U = Object.assign({ uMask: { value: gmTex }, uLawn: { value: lawnC }, uGrav: { value: gravC }, uGravN: { value: gravN }, uGK: { value: lt[0] / gt[0] }, uHasL: { value: lawnC ? 1 : 0 }, uCut: { value: cut ? 1 : 0 },
     uLawn2: { value: lawn2 || lawnC }, uL2K: { value: l2k }, uLit: { value: litTex }, uHasL2: { value: lawn2 ? 1 : 0 } }, GEOGU);
-  m.onBeforeCompile = sh => { Object.assign(sh.uniforms, U); const RD = window.ROADS ? ROADS.shader(sh) : 'vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; }';   // V16b roads (world/roads.js)
+  m.onBeforeCompile = sh => { Object.assign(sh.uniforms, U); const RD = window.ROADS ? ROADS.shader(sh) : 'vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';   // V16b roads (world/roads.js)
     sh.fragmentShader = RD + '\nuniform sampler2D uMask, uLawn, uGrav, uGravN, uLawn2, uLit, uGeoTex; uniform float uGK, uHasL, uCut, uL2K, uHasL2, uGeoOn, uGeoGain, uGeoMap, uGeoFlat, uGeoFlatK, uGeoCurve; vec3 gGeoEm = vec3( 0.0 );\nvec3 geoAlbN( vec3 c, float g ) { return uGeoMap > 0.5 ? c * g : mix( c * g, 0.62 * pow( max( c, vec3( 0.0 ) ), vec3( 0.75 ) ) * g / 0.86, uGeoCurve ); } uniform vec2 uGeoAB; uniform vec3 uGeoBox; uniform vec4 uGeoZone, uGeoPath;\nfloat lnHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat lnNoise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(lnHash(i), lnHash(i + vec2(1.0, 0.0)), u.x), mix(lnHash(i + vec2(0.0, 1.0)), lnHash(i + vec2(1.0, 1.0)), u.x), u.y); }\n' + sh.fragmentShader
       .replace('#include <map_fragment>', `
         vec4 gPaint = texture2D( map, vMapUv ); vec4 gMsk = texture2D( uMask, vMapUv ); if ( uCut > 0.5 && gMsk.b > 0.5 ) discard;
@@ -156,7 +156,7 @@ function mkGroundMat(cut) {
           else { vec3 oLow = geoAlbN( textureLod( uGeoTex, gou, 6.0 ).rgb, uGeoGain ), pLow = textureLod( map, vMapUv, 7.0 ).rgb;   // the modelled plots take over the real colours (20 m scale, mostly brightness)
             float lr = dot( oLow, vec3( 0.3, 0.59, 0.11 ) ) / max( dot( pLow, vec3( 0.3, 0.59, 0.11 ) ), 0.012 );
             vec3 tr = clamp( mix( vec3( lr ), oLow / max( pLow, vec3( 0.012 ) ), 0.75 ), 0.5, 1.8 );
-            gCol = mix( gCol, gCol * tr, ( 1.0 - smoothstep( 0.0, 0.4, gMsk.g ) ) * 0.85 ); }
+            gCol = mix( gCol, gCol * tr, ( 1.0 - smoothstep( 0.0, 0.4, gMsk.g ) ) * 0.85 ); gCol = mix( gCol, landHi( gCol ), 1.0 - smoothstep( 0.0, 0.4, gMsk.g ) ); }   // V16b: the fields' bright photo colour toned like the land around
           vec3 gO = geoAlbN( texture2D( uGeoTex, gou ).rgb, uGeoGain ); if ( uGeoFlat < 0.5 && uGeoMap < 0.5 ) gO = landDetail( gW, gO, length( vViewPosition ) ); gGeoEm = gO * ( 1.0 - gKeep ) * uGeoFlat * uGeoFlatK;   // plan view: the photo / map shows its own colours (unlit)
           gCol = mix( gO * ( 1.0 - uGeoFlat ), gCol, gKeep );
           if ( uGeoMap < 0.5 && uGeoFlat < 0.5 ) gCol = roadShade( gW, gCol, length( vViewPosition ) ); }   // V16b: roads and paths, also the modelled field path and its connector

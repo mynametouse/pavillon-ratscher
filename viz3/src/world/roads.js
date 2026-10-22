@@ -30,10 +30,15 @@ const ROADS = (() => {
     vec3 rdTex( sampler2D t, vec2 p, float tile, vec2 dx, vec2 dy ) { vec2 q = p / tile; mat2 M = mat2( 0.8, -0.6, 0.6, 0.8 ) * 0.43;
       vec3 a = textureGrad( t, q, dx / tile, dy / tile ).rgb, b = textureGrad( t, M * q + 0.31, M * dx / tile, M * dy / tile ).rgb;
       return mix( a, b, 0.4 ) / max( textureLod( t, vec2( 0.5 ), 20.0 ).rgb, vec3( 0.02 ) ); }
+    // bare fields, stubble and gravel come out of the photos too bright and cold (like frost): brightness above 0.22 compressed, warmed
+    vec3 landHi( vec3 c ) { float l = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hi = smoothstep( 0.18, 0.42, l );
+      return c * ( l > 0.22 ? ( 0.22 + ( l - 0.22 ) * 0.45 ) / l : 1.0 ) * mix( vec3( 1.0 ), vec3( 1.08, 1.0, 0.82 ), hi ); }
     vec3 landDetail( vec2 p, vec3 c, float dist ) { vec2 dx = dFdx( p ), dy = dFdy( p );
       // the aerial photos are cool and hazy (April, from the plane): the blue veil lifted from the darker ground, a little more colour
       float l = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hz = 1.0 - smoothstep( 0.08, 0.35, l );
-      c *= vec3( 1.0 + 0.08 * hz, 1.0, 0.62 + 0.38 * ( 1.0 - hz ) ); l = dot( c, vec3( 0.3, 0.59, 0.11 ) ); c = max( mix( vec3( l ), c, 1.15 ), vec3( 0.0 ) ) * 0.8;   // and a little darker: grass and soil reflect less than the photo shows
+      c *= vec3( 1.0 + 0.08 * hz, 1.0, 0.62 + 0.38 * ( 1.0 - hz ) ); l = dot( c, vec3( 0.3, 0.59, 0.11 ) );
+      c = landHi( c ); l = dot( c, vec3( 0.3, 0.59, 0.11 ) );
+      c = max( mix( vec3( l ), c, 1.15 ), vec3( 0.0 ) ) * 0.8;   // and a little darker: grass and soil reflect less than the photo shows
       // up close the photo is soft: the grain of grass (most of the land) or of bare soil (brown fields), fading out by 150 m
       float k = 1.0 - smoothstep( 30.0, 150.0, dist ), gr = clamp( ( c.g - c.r ) * 12.0 + 0.7, 0.0, 1.0 );
       float n = ( rdN( p * 0.85 ) - 0.5 ) * 0.18 * ( 1.0 - smoothstep( 300.0, 700.0, dist ) );
