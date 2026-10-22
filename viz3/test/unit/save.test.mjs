@@ -76,17 +76,17 @@ test('kinds: num, flag, text', async () => {
   assert.equal(ls.m.has('pav-t'), false);
 });
 
-test('migration on read: Ronald became Bernd (22.10.2026) – workpieces given to him keep their place', async () => {
+test('migration on read: the preview of 22.10.2026 called Ronald Bernd – workpieces given to him there come back to Ronald', async () => {
   const old = JSON.stringify({
     list: [
-      { id: 1, where: 'ron' + 'ald' },
+      { id: 1, where: 'bernd' },
       { id: 2, where: 'bench' },
     ],
   });
   const { SAVE } = await load('ok', { 'pav-werk-v1': old });
   assert.deepEqual(
     SAVE.get('pav-werk-v1').list.map(o => o.where),
-    ['bernd', 'bench']
+    ['ronald', 'bench']
   );
 });
 

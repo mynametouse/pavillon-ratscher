@@ -169,7 +169,7 @@ export const STOVE = (() => {
 })();
 LATE.STOVE = STOVE;
 window.STOVE = STOVE;
-// ---- sitting and lying: chairs, armchairs, benches, stools and the stump (models); window seat, daybed, terrace loungers (built in); Günter's bench ----
+// ---- sitting and lying: chairs, armchairs, benches, stools and the stump (models); window seat, daybed, terrace loungers (built in); Hubert's bench ----
 const SEATS = (() => {
   const T = {
     armchair: { sh: 0.43, back: 0.12, label: 'In den Sessel setzen' },
@@ -352,9 +352,9 @@ const SEATS = (() => {
     }
   });
   scan();
-  // Günter's bench on his side (no model item)
+  // Hubert's bench on his side (no model item)
   PLAY.act({
-    id: 'seat:guenterbench',
+    id: 'seat:hubertbench',
     r: 1.2,
     prio: -0.15,
     label: () => (PLAY.seat ? null : 'Auf die Bank setzen'),
@@ -369,7 +369,7 @@ const SEATS = (() => {
         kind: 'sit',
         onSit: () => {
           SFX.drop();
-          if (window.QUESTS) LATE.QUESTS.event('guenterbench');
+          if (window.QUESTS) LATE.QUESTS.event('hubertbench');
         },
       }),
   });
