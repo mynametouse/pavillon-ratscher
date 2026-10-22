@@ -1,3 +1,4 @@
+// @ts-check
 // ===================== SAVE: everything this browser keeps between visits goes through here (refactor phase 0, 22.10.2026) =====================
 // One registry of the saved keys (owner, kind, default, check), reads that never throw and never hand out a broken value (lesson V16b4:
 // one saved vehicle position stopped every start), writes that survive a full or blocked storage (Safari private mode, quota), small
@@ -6,10 +7,25 @@
 //   SAVE.get(K) → value or default · SAVE.set(K, v) → true if kept · SAVE.del(K) · SAVE.once('pav-v17') → true on the first visit only
 // Kinds: 'json' (any JSON value), 'text' (a string), 'num' (a finite number), 'flag' ('1' = true). The stored format is the same as before
 // SAVE existed (plain JSON or plain text), so saved states of earlier versions keep working.
+/**
+ * How a saved key is stored and checked (SAVE.key).
+ * @typedef {object} SaveSpec
+ * @property {string} [owner]  feature or module the value belongs to (bug reports, SAVE.keys)
+ * @property {'json' | 'text' | 'num' | 'flag'} [kind]  stored format (default 'json')
+ * @property {any} [def]  value when nothing – or something broken – is stored
+ * @property {((v: any) => boolean) | null} [check]  shape check after reading; false: the default is used instead
+ * @property {((v: any) => any) | null} [migrate]  updates an older stored shape (before the check)
+ * @property {boolean} [secret]  never in SAVE.dump (keys, tokens)
+ */
+/** type-checked (// @ts-check above; tools/check/tsconfig.json, run by tools/check.sh) */
 export const SAVE = (() => {
+  /** @type {Map<string, SaveSpec>} */
   const REG = new Map();
+  /** @type {{ key: string, what: string, msg: string }[]} */
   const problems = [];
+  /** @type {Map<string, string>} */
   const mem = new Map(); // fallback when the browser keeps nothing: values live for this visit only
+  /** @type {Storage | null} */
   let ls = null;
   try {
     ls = window.localStorage;
@@ -25,6 +41,7 @@ export const SAVE = (() => {
       console.warn('SAVE', what, key, e || '');
     } catch (_) {}
   };
+  /** @param {string} key  @returns {string | null} the stored text */
   function raw(key) {
     // written in this visit: the value as written – also when the browser refused to keep it (storage full), so the page carries on with it
     if (mem.has(key)) return mem.get(key);
@@ -35,6 +52,7 @@ export const SAVE = (() => {
     }
     return null;
   }
+  /** @param {string} key  @param {string} s  @returns {boolean} true if the browser keeps it (not only for this visit) */
   function rawSet(key, s) {
     mem.set(key, s);
     try {
@@ -47,6 +65,7 @@ export const SAVE = (() => {
     }
     return false;
   }
+  /** @param {string} key */
   function rawDel(key) {
     mem.delete(key);
     try {
@@ -56,12 +75,15 @@ export const SAVE = (() => {
     }
   }
   const clone = v => (v && typeof v === 'object' ? JSON.parse(JSON.stringify(v)) : v);
+  /** @type {(key: string) => SaveSpec} */
   const spec = key => REG.get(key) || { kind: 'text', def: null };
   // register a key: { owner, kind, def, check(value) → bool, migrate(value) → value, secret }
+  /** @param {string} k  @param {SaveSpec} [s]  @returns {string} the key */
   function key(k, s = {}) {
     REG.set(k, Object.assign({ owner: '?', kind: 'json', def: null, check: null, migrate: null, secret: false }, s));
     return k;
   }
+  /** @param {string} k  @param {SaveSpec} s  @param {string | null} txt */
   function decode(k, s, txt) {
     if (txt == null) return clone(s.def);
     let v;
@@ -75,6 +97,7 @@ export const SAVE = (() => {
     if (s.check && !s.check(v)) throw new Error('unexpected shape');
     return v;
   }
+  /** @param {string} k  @returns {any} the stored value, or the default */
   function get(k) {
     const s = spec(k);
     const txt = raw(k);
@@ -85,12 +108,14 @@ export const SAVE = (() => {
       return clone(s.def);
     }
   }
+  /** @param {SaveSpec} s  @param {any} v  @returns {string | null} */
   function encode(s, v) {
     if (s.kind === 'json') return JSON.stringify(v);
     if (s.kind === 'flag') return v ? '1' : '0';
     if (s.kind === 'num') return Number.isFinite(+v) ? String(+v) : null;
     return v == null ? null : String(v);
   }
+  /** @param {string} k  @param {any} v  @returns {boolean} true if kept */
   function set(k, v) {
     const s = spec(k);
     let txt;
@@ -107,6 +132,7 @@ export const SAVE = (() => {
     return rawSet(k, txt);
   }
   // one-time hints: true on the first visit, then never again
+  /** @param {string} k  @returns {boolean} */
   function once(k) {
     if (!REG.has(k)) key(k, { owner: 'hint', kind: 'flag', def: false });
     if (get(k)) return false;
