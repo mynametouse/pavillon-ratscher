@@ -320,7 +320,7 @@ const TRAILER = (() => {
   const eyeW = () => toW(0, LD);
   function save() {
     try {
-      localStorage.setItem(
+      SAVE.setRaw(
         LS,
         JSON.stringify({ x: +S.st.x.toFixed(2), y: +S.st.y.toFixed(2), psi: +S.st.psi.toFixed(4), c: !!S.tow })
       );
@@ -617,7 +617,7 @@ const TRAILER = (() => {
     const v = tr();
     let sv = null;
     try {
-      sv = JSON.parse(localStorage.getItem(LS) || 'null');
+      sv = JSON.parse(SAVE.raw(LS) || 'null');
     } catch (e) {}
     if (sv && isFinite(sv.x) && isFinite(sv.y)) {
       Object.assign(S.st, { x: sv.x, y: sv.y, psi: sv.psi || 0 });

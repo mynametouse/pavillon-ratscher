@@ -374,7 +374,7 @@ const FACADE = (() => {
   const MATS_OF = { house: MAT.char, tower: MAT.charT, frame: MAT.frame };
   let state = { house: 'yakisugi', tower: 'yakisugi', frame: 'larch' };
   try {
-    const j = JSON.parse(localStorage.getItem('pav-facade') || 'null');
+    const j = JSON.parse(SAVE.raw('pav-facade') || 'null');
     if (j) state = Object.assign(state, j);
   } catch (e) {}
   function apply(target, key) {
@@ -385,7 +385,7 @@ const FACADE = (() => {
     m.needsUpdate = true;
     state[target] = key;
     try {
-      localStorage.setItem('pav-facade', JSON.stringify(state));
+      SAVE.setRaw('pav-facade', JSON.stringify(state));
     } catch (e) {}
     sync();
     markDirty(true);

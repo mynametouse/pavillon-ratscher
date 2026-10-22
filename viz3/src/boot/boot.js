@@ -13,7 +13,7 @@ const bootStep = (name, f) => {
 };
 let l0 = 'auto';
 try {
-  l0 = localStorage.getItem('pav-light2') || l0;
+  l0 = SAVE.raw('pav-light2') || l0;
 } catch (e) {}
 if (!MODES[l0] && l0 !== 'auto' && l0 !== 'night') l0 = 'auto';
 bootStep('Licht', () => {
@@ -23,7 +23,7 @@ bootStep('Licht', () => {
     LOADLOG.err('Licht „' + l0 + '“: ' + ((e && e.message) || e));
     l0 = 'auto';
     try {
-      localStorage.setItem('pav-light2', 'auto');
+      SAVE.setRaw('pav-light2', 'auto');
     } catch (e2) {}
     setMode('auto');
   }

@@ -17,7 +17,7 @@ function setVariant(v, { save = true } = {}) {
   if (window.giApply) giApply();
   if (save) {
     try {
-      localStorage.setItem('pav-variant', v);
+      SAVE.setRaw('pav-variant', v);
     } catch (e) {}
   }
   document

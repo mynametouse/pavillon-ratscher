@@ -67,7 +67,7 @@ const GEAR = (() => {
     on: { eyes: null, ears: null, resp: null, hands: null, head: null, body: null, legs: null, feet: null },
   };
   try {
-    const s = JSON.parse(localStorage.getItem(LSK) || 'null');
+    const s = JSON.parse(SAVE.raw(LSK) || 'null');
     if (s) {
       S.have = !!s.have;
       S.haveF = !!s.haveF;
@@ -76,7 +76,7 @@ const GEAR = (() => {
   } catch (e) {}
   const save = () => {
     try {
-      localStorage.setItem(LSK, JSON.stringify({ have: S.have, haveF: S.haveF, on: S.on }));
+      SAVE.setRaw(LSK, JSON.stringify({ have: S.have, haveF: S.haveF, on: S.on }));
     } catch (e) {}
   };
   const worn = id => !!IT[id] && S.on[IT[id].slot] === id;

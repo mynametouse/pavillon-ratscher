@@ -113,6 +113,9 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
 - Keine Recherche-Rohdaten mit Flurstücken oder privaten Fotos ins Repo; Geodaten nur aufbereitet (wie in `dist/geo`).
 - Lizenzen: jede Fremdquelle mit Namensnennung in `buildlib/credits.py`; Lizenztexte, die mitgeliefert werden müssen, stehen dort (MIT Rocketbox, BSD d3-celestial).
 - Code-Kommentare Englisch, Oberfläche Deutsch. Einheiten: Meter, Grad, Minuten Spielzeit.
+- Gespeichertes nur über `SAVE` (`core/save.js`), nie direkt `localStorage`: Schlüssel dort eintragen, beim Lesen jeden Wert prüfen
+  (Lehre V16b4); `test/savefuzz.py` belegt alle Schlüssel mit Unsinn – die Seite muss trotzdem starten.
+- Code formatiert Prettier (`viz3/.prettierrc.json`, 120 Zeichen); `bash tools/check.sh` prüft das vor jedem Push.
 - Vor dem Teilen großer Dateien: Bündel-Gleichheit ist ein gutes Werkzeug – nach reinem Umordnen muss `dist/app.js` (min) byte-gleich bleiben.
 
 ## 7 Rezepte

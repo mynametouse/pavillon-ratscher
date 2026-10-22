@@ -2820,7 +2820,7 @@ const FELL = (() => {
     clearTimeout(saveT);
     saveT = setTimeout(() => {
       try {
-        localStorage.setItem(
+        SAVE.setRaw(
           LSK,
           JSON.stringify({
             v: 1,
@@ -2841,7 +2841,7 @@ const FELL = (() => {
   function load() {
     let s = null;
     try {
-      s = JSON.parse(localStorage.getItem(LSK) || 'null');
+      s = JSON.parse(SAVE.raw(LSK) || 'null');
     } catch (e) {}
     if (!s || s.v !== 1) return;
     S.kit = !!s.kit;
@@ -2965,11 +2965,7 @@ const FELL = (() => {
   window.TICKS.push(() => {
     if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return;
     intro = true;
-    let seen = false;
-    try {
-      seen = localStorage.getItem('pav-v16c2') === '1';
-      localStorage.setItem('pav-v16c2', '1');
-    } catch (e) {}
+    const seen = !SAVE.once('pav-v16c2'); // one-time hint
     if (!seen)
       setTimeout(
         () =>
@@ -3012,7 +3008,7 @@ const FELL = (() => {
     pressSide,
     reset() {
       try {
-        localStorage.removeItem(LSK);
+        SAVE.del(LSK);
       } catch (e) {}
       location.reload();
     },

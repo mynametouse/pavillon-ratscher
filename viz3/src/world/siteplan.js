@@ -37,19 +37,19 @@ const SITEPLAN = (() => {
   const LS = {
     get(k) {
       try {
-        return localStorage.getItem(k);
+        return SAVE.raw(k);
       } catch (e) {
         return null;
       }
     },
     set(k, v) {
       try {
-        localStorage.setItem(k, v);
+        SAVE.setRaw(k, v);
       } catch (e) {}
     },
     del(k) {
       try {
-        localStorage.removeItem(k);
+        SAVE.del(k);
       } catch (e) {}
     },
   };

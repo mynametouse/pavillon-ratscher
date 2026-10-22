@@ -137,7 +137,7 @@ const STYLE = (() => {
   const DEF = { style: 'natur', floor: 'oak', walls: 'clay', ceil: 'larch', wood: 'oak', fabric: 'natur' };
   let state = Object.assign({}, DEF);
   try {
-    const j = JSON.parse(localStorage.getItem('pav-style') || 'null');
+    const j = JSON.parse(SAVE.raw('pav-style') || 'null');
     if (j) state = Object.assign(state, j);
   } catch (e) {}
   function setPart(part, key, save = true) {
@@ -161,7 +161,7 @@ const STYLE = (() => {
   }
   function store() {
     try {
-      localStorage.setItem('pav-style', JSON.stringify(state));
+      SAVE.setRaw('pav-style', JSON.stringify(state));
     } catch (e) {}
     sync();
     markDirty(true);

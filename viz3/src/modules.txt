@@ -2,6 +2,7 @@
 # The order matters: modules run at load in this sequence (meshes before render/zmerge.js get merged; point lights are created in pavilion/interior.js
 # and garden/workshop_lamp.js). A new module goes where its dependencies are above it – usually before boot/boot.js.
 
+core/save.js                # SAVE: every value kept in this browser (registry, safe reads/writes, migrations, test hooks)
 core/head.js                # three.js imports, renderer, scene, camera, query flags, small helpers
 core/assets.js              # loading manager, textures, PBR materials, patchSV (sky visibility, baked GI, figure shadows, lamp-spill mask)
 core/geo.js                 # box/cylinder builders with collision + walk registry (COL, WALK), building registry (bldBegin/bldEnd, BUILD)

@@ -6,19 +6,19 @@ const QUESTS = (() => {
     LS = {
       get() {
         try {
-          return JSON.parse(localStorage.getItem(LSK) || 'null');
+          return JSON.parse(SAVE.raw(LSK) || 'null');
         } catch (e) {
           return null;
         }
       },
       set(v) {
         try {
-          localStorage.setItem(LSK, JSON.stringify(v));
+          SAVE.setRaw(LSK, JSON.stringify(v));
         } catch (e) {}
       },
       del() {
         try {
-          localStorage.removeItem(LSK);
+          SAVE.del(LSK);
         } catch (e) {}
       },
     };
@@ -1362,11 +1362,7 @@ const QUESTS = (() => {
     updateTracker(dt);
     if (!hintShown && P.mode === 'walk' && LOAD.ready) {
       hintShown = true;
-      let seen = false;
-      try {
-        seen = localStorage.getItem('pav-v14') === '1';
-        localStorage.setItem('pav-v14', '1');
-      } catch (e) {} /* (V15: the menu's word about the new controls replaces this one) */
+      const seen = !SAVE.once('pav-v14'); // one-time hint /* (V15: the menu's word about the new controls replaces this one) */
     }
   });
   // ---------------- load / reset ----------------

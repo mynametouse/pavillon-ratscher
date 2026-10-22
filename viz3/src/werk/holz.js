@@ -759,7 +759,7 @@ const HOLZ = (() => {
     clearTimeout(saveT);
     saveT = setTimeout(() => {
       try {
-        localStorage.setItem(
+        SAVE.setRaw(
           LSK,
           JSON.stringify({
             v: 1,
@@ -792,7 +792,7 @@ const HOLZ = (() => {
   function load() {
     let s = null;
     try {
-      s = JSON.parse(localStorage.getItem(LSK) || 'null');
+      s = JSON.parse(SAVE.raw(LSK) || 'null');
     } catch (e) {}
     if (!s || s.v !== 1) return null;
     for (const o of s.logs || []) {
@@ -881,11 +881,7 @@ const HOLZ = (() => {
   window.TICKS.push(() => {
     if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return;
     intro = true;
-    let seen = false;
-    try {
-      seen = localStorage.getItem('pav-v16d') === '1';
-      localStorage.setItem('pav-v16d', '1');
-    } catch (e) {}
+    const seen = !SAVE.once('pav-v16d'); // one-time hint
     if (!seen)
       setTimeout(
         () =>

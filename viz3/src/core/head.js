@@ -29,7 +29,7 @@ let VARIANT = (() => {
   if (h === 'turm') return 'A';
   if (h === 'leiter') return 'B';
   try {
-    const v = localStorage.getItem('pav-variant');
+    const v = SAVE.raw('pav-variant');
     if (v === 'A' || v === 'B') return v;
   } catch (e) {}
   return 'B';

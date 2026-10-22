@@ -6,7 +6,7 @@ const AVATAR = (() => {
   const PM = window.PLAYERMAN || null;
   const A = { ready: false, failed: !PM, kind: 'm', fig: null, figs: {}, loading: {}, clips: null };
   try {
-    const k = localStorage.getItem('pav-fig');
+    const k = SAVE.raw('pav-fig');
     if (k === 'm' || k === 'f') A.kind = k;
   } catch (e) {}
   // ---- canonical bone names: Mixamo, Character Creator, 3ds Max Biped (Rocketbox), UE mannequin (Mesh2Motion, Quaternius) ----
@@ -786,7 +786,7 @@ const AVATAR = (() => {
     if (k !== 'm' && k !== 'f') return;
     A.kind = k;
     try {
-      localStorage.setItem('pav-fig', k);
+      SAVE.setRaw('pav-fig', k);
     } catch (e) {}
     if (window.HUD) HUD.refresh();
     if (!PM) return;

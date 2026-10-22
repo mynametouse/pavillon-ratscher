@@ -6,12 +6,12 @@ const LOAD = { done: 0, total: 0, finished: false, cbs: [] };
 const LOADLOG = (() => {
   const L = { t0: performance.now(), steps: [], errs: [], prev: null, open: true, last: '', lastT: -1e9 };
   try {
-    const p = JSON.parse(localStorage.getItem('pav-loadlog') || 'null');
+    const p = JSON.parse(SAVE.raw('pav-loadlog') || 'null');
     if (p && p.open && Date.now() - p.at < 3 * 3600e3) L.prev = p;
   } catch (e) {}
   L.save = () => {
     try {
-      localStorage.setItem(
+      SAVE.setRaw(
         'pav-loadlog',
         JSON.stringify({
           open: L.open,
@@ -204,13 +204,13 @@ window.TEXHALF = TEXHALF;
   else if (mobile) {
     let kept = 1;
     try {
-      kept = Math.max(1, +localStorage.getItem('pav-texlevel') || 1);
+      kept = Math.max(1, +SAVE.raw('pav-texlevel') || 1);
     } catch (e) {}
     const P = LOADLOG.prev;
     if (P && (P.tex || 0) >= kept) {
       kept = Math.min(2, (P.tex || 0) + 1);
       try {
-        localStorage.setItem('pav-texlevel', String(kept));
+        SAVE.setRaw('pav-texlevel', String(kept));
       } catch (e) {}
     }
     TEXHALF.level = kept;

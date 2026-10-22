@@ -3469,7 +3469,7 @@ const WERK = (() => {
         const tools = {};
         for (const T of TOOL_LIST)
           tools[T.id] = T.state === 'world' ? { pos: [...T.pos, T.yaw] } : { slot: PLAY.slotOf(T) };
-        localStorage.setItem(
+        SAVE.setRaw(
           LSK,
           JSON.stringify({
             v: 1,
@@ -3514,7 +3514,7 @@ const WERK = (() => {
   function load() {
     let s = null;
     try {
-      s = JSON.parse(localStorage.getItem(LSK) || 'null');
+      s = JSON.parse(SAVE.raw(LSK) || 'null');
     } catch (e) {}
     for (const S of Object.values(ST)) S.wp = null;
     if (!s || s.v !== 1) {
@@ -3571,7 +3571,7 @@ const WERK = (() => {
   }
   function reset() {
     try {
-      localStorage.removeItem(LSK);
+      SAVE.del(LSK);
     } catch (e) {}
     for (const wp of W.list) if (wp.T) killThing(wp);
     for (const S of Object.values(ST)) S.wp = null;
