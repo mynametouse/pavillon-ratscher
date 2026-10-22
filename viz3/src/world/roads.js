@@ -165,7 +165,9 @@ const ROADS = (() => {
   S.deckAt = deckAt;
   // the drivable ground under a point: the modelled site (flat, the stream), the terrain triangles, a bridge deck when coming from its level (z: the current height)
   S.groundAt = (x, y, z) => { let g = ground0(x, y);
-    if (S.decks.length) { const d = deckAt(x, y); if (d && d[0] > g && (z == null || z > d[0] - 1.2)) g = d[0]; } return g; };
+    if (S.decks.length) { const d = deckAt(x, y); if (d && d[0] > g && (z == null || z > d[0] - 1.2)) g = d[0]; }
+    if (window.STREAM && STREAM.onBridge && Math.abs(x) < 120 && Math.abs(y) < 120 && STREAM.onBridge(x, y) && (z == null || z > -0.7)) g = Math.max(g, (STREAM.BR && STREAM.BR.walkTop) || 0.06);   // V16d: the garden bridge carries vehicles too (tractor and trailer to the sawmill)
+    return g; };
   // ---- place names out in the land (game/game.js placeName): the Klinge, the villages after the map labels, the kind of road ----
   const PL = ((window.GEOMAN && GEOMAN.labels) || []).filter(l => l.k === 'place');
   const RN = { motorway: 'Autobahn A 73', main: 'Landstraße', county: 'Kreisstraße', street: 'Dorfstraße', lane: 'Wirtschaftsweg', service: 'Zufahrt', track: 'Feldweg', path: 'Pfad', foot: 'Fußweg' };

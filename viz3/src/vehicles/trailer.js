@@ -154,6 +154,14 @@ const TRAILER = (() => {
     if (sv && isFinite(sv.x) && isFinite(sv.y)) { Object.assign(S.st, { x: sv.x, y: sv.y, psi: sv.psi || 0 }); S.placed = true; if (sv.c && v) couple(v, true); else pose(); }
     else { S.placed = true; home(); }
     legT = S.tow ? 0 : 1; pose(); markDirty(true); });
-  return Object.assign(S, { toW, eyeW, hitchW, box, pose, couple, uncouple, toggle, canCouple, home, save, mass: () => M0 + (S.cargo || 0) });
+  // the load (world/holz.js): a world point in the bed's frame [x across, y along, z above the bed floor]
+  const local = p => { const s = S.st, dx = p[0] - s.x, dy = p[1] - s.y, f = fwd(s.psi), r = rgt(s.psi); return [dx * r[0] + dy * r[1], dx * f[0] + dy * f[1], (p[2] || 0) - s.z - ZB]; };
+  // where a log of radius r put down at x (across) comes to rest: it rolls into the lowest gap between the stakes and the logs already there
+  // (circles in the cross-section; the load lies lengthwise); null when it would stick out above the stakes
+  function slot(x0, r) { const L = S.loadList || [], hw = S.bed.hw, zAt = x => { let z = r; for (const o of L) { const ro = (o.d0 + o.d1) / 400, dx = Math.abs(x - o.tx); if (dx < r + ro) z = Math.max(z, o.tz + Math.sqrt((r + ro) ** 2 - dx * dx)); } return z; };
+    let x = THREE.MathUtils.clamp(x0, -hw + r, hw - r), z = zAt(x);
+    for (let k = 0; k < 200; k++) { const zl = x - 0.01 >= -hw + r ? zAt(x - 0.01) : 1e9, zr = x + 0.01 <= hw - r ? zAt(x + 0.01) : 1e9; if (zl < z - 1e-4 && zl <= zr) { x -= 0.01; z = zl; } else if (zr < z - 1e-4) { x += 0.01; z = zr; } else break; }
+    return z + r > ZS + 0.05 ? null : { x, z }; }
+  return Object.assign(S, { toW, eyeW, hitchW, box, pose, couple, uncouple, toggle, canCouple, home, save, local, slot, mass: () => M0 + (S.cargo || 0) });
 })();
 window.TRAILER = TRAILER;

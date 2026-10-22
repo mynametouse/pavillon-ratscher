@@ -61,6 +61,7 @@ const TRACTOR2 = (() => {
   revs.push(bx(0.1, 0.04, 0.06, M.rev, 0.3, CY0 - 0.02, CZ1 - 0.05));
   bx(0.9, 0.3, 0.3, M.frame, 0, -B - 0.35, 0.95); for (const sx of [-1, 1]) strut([sx * 0.38, -B - 0.4, 0.75], [sx * 0.42, -B - 1.05, 0.55], 0.07, 0.07, M.frame); strut([0, -B - 0.45, 1.2], [0, -B - 0.95, 1.05], 0.06, 0.06, M.frame);
   bx(0.06, 0.12, 0.06, M.steel, 0, -B - 0.55, 0.78);   // PTO stub
+  bx(0.14, 0.86, 0.05, M.frame, 0, -B - 0.66, 0.46); rod([0, -2.16, 0.4], [0, -2.16, 0.6], 0.022, M.steel); bx(0.2, 0.08, 0.06, M.frame, 0, -B - 0.25, 0.46);   // V16d: swinging drawbar with its pin (the trailer's hitch)
   // ---- wheels: rear 1.56 m, front 1.12 m (lathe tyres with a tread band), light grey rims ----
   const tyreGeo = (r, w, ri) => { const s = w * 0.18, pts = [[ri, -w / 2], [r - s, -w / 2], [r, -w / 2 + s], [r, w / 2 - s], [r - s, w / 2], [ri, w / 2]].map(([a, b]) => new THREE.Vector2(a, b)); const gg = new THREE.LatheGeometry(pts, 40); gg.rotateZ(Math.PI / 2); return gg; };
   const lugGeo = new THREE.BoxGeometry(0.06, 0.05, 0.16);
@@ -76,7 +77,7 @@ const TRACTOR2 = (() => {
     wheels.push({ x, y, r, steer, drive, piv, node }); }
   bx(1.3, 0.16, 0.14, M.frame, 0, A, RF);   // front axle beam
   // ---- front loader: masts, arms, cross tube, lift cylinders, tool carrier and pallet fork (parallel guidance: the fork keeps its angle) ----
-  const LD = { lift: -0.5, liftT: -0.5, tilt: 0, tiltT: 0, up: 0, ARM: 2.62, P0: [0.35, 1.86], X: 0.66 };
+  const LD = { lift: -0.5, liftT: -0.5, tilt: 0, tiltT: 0, up: 0, ARM: 2.62, P0: [0.35, 1.86], X: 0.66, min: -0.6 };   // V16d: min −0.6 = the tines on the ground (under a log)
   for (const sx of [-1, 1]) { bx(0.1, 0.36, 0.95, M.green, sx * LD.X, 0.3, 1.42); bx(0.14, 0.2, 0.2, M.frame, sx * LD.X, LD.P0[0], LD.P0[1]); }
   const arms = new THREE.Group(); arms.position.copy(V(0, LD.P0[0], LD.P0[1])); body.add(arms);   // turns about the mast pivots (model x)
   for (const sx of [-1, 1]) { const a = bx(0.12, LD.ARM, 0.17, M.green, sx * LD.X, LD.ARM / 2, 0, 0, 0, arms); bx(0.1, 0.45, 0.12, M.green, sx * LD.X, LD.ARM - 0.15, -0.14, -0.6, 0, arms); }
@@ -94,11 +95,11 @@ const TRACTOR2 = (() => {
       c.c1.scale.set(1, L * 0.6, 1); c.c1.position.copy(V(a[0], a[1] + (b[1] - a[1]) * 0.3, a[2] + (b[2] - a[2]) * 0.3)); c.c1.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
       c.c2.scale.set(1, L * 0.45, 1); c.c2.position.copy(V(b[0], b[1] - (b[1] - a[1]) * 0.225, b[2] - (b[2] - a[2]) * 0.225)); c.c2.quaternion.copy(c.c1.quaternion); } }
   loaderPose(0);
-  const model = { g, body, wheels, lamps: { head: [M.head], tail: [M.tail], brake: [M.brake], rev: [M.rev] }, beam: [0, 2.3, 1.62], LD,
-    update(v, dt) { if (v === VEH.cur) { if (LD.up) LD.liftT = THREE.MathUtils.clamp(LD.liftT + LD.up * 0.34 * dt, -0.5, 0.62); }   // dt: game time from the vehicle tick
+  const model = { g, body, wheels, lamps: { head: [M.head], tail: [M.tail], brake: [M.brake], rev: [M.rev] }, beam: [0, 2.3, 1.62], LD, fork: { tool, x: 0.36, y0: 0.06, y1: 1.18, top: 0.0425 },   // V16d: the tines in the tool frame (x across, y along, z up; top surface)
+    update(v, dt) { if (v === VEH.cur) { if (LD.up) LD.liftT = THREE.MathUtils.clamp(LD.liftT + LD.up * 0.34 * dt, LD.min, 0.62); }   // dt: game time from the vehicle tick
       if (Math.abs(LD.lift - LD.liftT) > 1e-3 || Math.abs(LD.tilt - LD.tiltT) > 1e-3) { loaderPose(dt); markDirty(); if (VEH.cur === v) MOTION.lastMove = performance.now(); } },
-    key(k, down) { if (k === 'r' || k === 'up') LD.up = down ? 1 : (LD.up === 1 ? 0 : LD.up); else if (k === 'g' || k === 'down') LD.up = down ? -1 : (LD.up === -1 ? 0 : LD.up); else if ((k === 't' || k === 'tilt') && down) LD.tiltT = LD.tiltT > 0.1 ? 0 : 0.3; },
-    save: () => [+LD.liftT.toFixed(3), +LD.tiltT.toFixed(3)], load: a => { if (a && a.length >= 2) { LD.lift = LD.liftT = THREE.MathUtils.clamp(+a[0] || -0.5, -0.5, 0.62); LD.tilt = LD.tiltT = THREE.MathUtils.clamp(+a[1] || 0, 0, 0.3); loaderPose(0); } } };
+    key(k, down) { if (k === 'r' || k === 'up') LD.up = down ? 1 : (LD.up === 1 ? 0 : LD.up); else if (k === 'g' || k === 'down') LD.up = down ? -1 : (LD.up === -1 ? 0 : LD.up); else if ((k === 't' || k === 'tilt') && down) LD.tiltT = LD.tiltT > 0.1 ? 0 : 0.3; else if ((k === 'k' || k === 'hitch') && down && window.TRAILER) TRAILER.toggle(); },
+    save: () => [+LD.liftT.toFixed(3), +LD.tiltT.toFixed(3)], load: a => { if (a && a.length >= 2) { LD.lift = LD.liftT = THREE.MathUtils.clamp(+a[0] || -0.5, LD.min, 0.62); LD.tilt = LD.tiltT = THREE.MathUtils.clamp(+a[1] || 0, 0, 0.3); loaderPose(0); } } };
   const spec = { id: 'tractor', name: 'Traktor', enterLabel: 'Auf den Traktor steigen', mass: 5400, Iz: 7200, a: A, b: B, track: (TRR + TRF) / 2, hcg: 1.05, rw: RR, mu: 0.85, Cf: 110000, Cr: 190000, offGrip: 1.35, offRoll: 0.7,
     steerMax: 0.8, steerV: 9, steerRate: 1.9, steerBack: 2.8,
     eng: { idle: 850, red: 2350, launch: 1150, drag: 170, curve: [[800, 300], [1300, 420], [1600, 440], [2000, 400], [2200, 330], [2350, 150], [2450, 0]] },

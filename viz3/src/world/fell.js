@@ -565,6 +565,8 @@ const FELL = (() => {
   S.bookCtx = () => !!(S.ready && (S.job != null || (FOREST.amb && FOREST.amb() > 0.3) || (KIT && Math.hypot(P.x - KIT.x, P.y - KIT.y) < 30)));
   whenLoaded(() => { if (!FOREST.ready || !window.ROADS || !ROADS.ready) return; try { S.marked = chooseMarked(); buildKit(); registerActs(); mkSaw(); load(); buildMarks(); S.ready = true; } catch (e) { console.warn('fell', e); } });
   // test and tool hooks
+  // V16d: werk/holz.js takes over the measured logs as objects of their own – the felled tree's log meshes are then hidden
+  S.hideLogs = tid => { const r = RT[tid]; if (r && r.logG && r.logG.visible) { r.logG.visible = false; markDirty(true); } };
   Object.assign(S, { book, rec: cur, nextOp, openPlan, startFall, geomOf, outcome, landing, zopfY, endGrain, sawStart, sawStop, get saw() { return SAW; }, stars, kitPos, freeDirs, leanOf, pressSide,
     reset() { try { localStorage.removeItem(LSK); } catch (e) {} location.reload(); } });
   return S; })();

@@ -68,6 +68,10 @@ vehicles/vsound.js          # V16b vehicle sounds: engine, tyres, wind, horn, do
 vehicles/vehicle.js         # V16b vehicles: physics, getting in and out, cameras, lights, HUD (VEH)
 vehicles/car.js             # V16b the car: estate in Logan MCV size (V16b1), Beige Sable (CAR)
 vehicles/tractor.js         # V16b the tractor with front loader and pallet fork (TRACTOR2)
+vehicles/trailer.js         # V16d the stake trailer: tandem axle, stakes, towed on a tractrix, couple with K (TRAILER)
 vehicles/minimap.js         # V16b small map while driving: roads, route to the Klinge, destination (MMAP)
 world/fell.js               # V16c2 felling at the Klinge: forest gear, chainsaw, felling the professional way, delimbing, bucking, measuring (FELL)
+werk/holz.js                # V16d wood 1: the logs as objects – on the fork, the trailer, the log yard (HOLZ)
+werk/holz_saw.js            # V16d wood 2: the band sawmill – clamp, plan, cut board by board, blocks beside the mill (HOLZSAW)
+werk/holz_dry.js            # V16d wood 3: the drying stack, drying by the climate, the moisture meter, time-lapse (HOLZDRY)
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api
