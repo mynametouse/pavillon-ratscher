@@ -61,12 +61,16 @@ jobs:
           set -o pipefail
           WELT_NO_OVERPASS=1 python -I -u tools/welt/demo_dgm1.py ~/welt-raw site/welt-test/diag/bayern 642 5574 2>&1 | grep -v "OSM API chunk" | tee demo_dgm1.log
           { echo "### Straßenmethode auf DGM1 Bayern (642/5574, 2 × 2 km, B 4)"; echo '```'; grep -E "==|^   [a-z]|Achsen" demo_dgm1.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
+        if: always()
+        run: echo "RAWKEY=$(cd ~/welt-raw 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
       - name: Rohdaten in den Cache (auch wenn später etwas scheitert)
         if: always()
         uses: actions/cache/save@v4
         with:
           path: ~/welt-raw
-          key: welt-raw-${{ env.PLAN }}-v1-${{ github.run_id }}
+          # the same downloads give the same key: the save is skipped instead of storing another copy (repo cache limit 10 GB)
+          key: welt-raw-${{ env.PLAN }}-v1-${{ env.RAWKEY }}
       - name: Zusammenfassung
         if: always()
         run: |
