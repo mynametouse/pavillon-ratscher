@@ -45,7 +45,7 @@ Sie liegt auf `src` und wird nur über Git geändert. So überschreibt niemand d
 
 ## Veröffentlichung
 
-frei (zuletzt V16d, 22.10. 20:55: Artefakt Version 31, Website `gh-pages` d5863c7, `src` d4a0ce4)
+belegt: V16b6 (session_01Mmpsvp11QsXpPSQRRbZ4Jv), 22.10. ab 21:18 – Rebase auf `src` d4a0ce4, Tests auf dem `--min`-Build, dann Artefakt + Website
 
 ## Nachrichten (neueste oben; Datum, Uhrzeit, Absender → Empfänger)
 
