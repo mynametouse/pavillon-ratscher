@@ -63,7 +63,7 @@ const CAR = (() => {
     const roofPts = [[RF.yf + 0.05, RF.z], [RF.yf - 0.02, RF.z + 0.035], [RF.yr + 0.06, RF.z + 0.032], [RF.yr - 0.06, RF.z + 0.005], [RF.yr - 0.08, RF.z - 0.02]];
     add(extrude(roofPts.concat([[RF.yr - 0.08, RF.z - 0.035], [RF.yf + 0.05, RF.z - 0.02]]), 2 * RF.w + 0.06, 0.02, (x, y, z) => [x, y, z + 0.02 * (1 - (x / RF.w) ** 2)]), P);
     bx(2 * RF.w - 0.04, RF.yf - RF.yr - 0.08, 0.02, M.liner, 0, (RF.yf + RF.yr) / 2, RF.z - 0.04);
-    for (const sx of [-1, 1]) { bx(0.04, 2.0, 0.035, M.black, sx * (RF.w - 0.06), -1.25, RF.z + 0.085); for (const yy of [-0.3, -2.18]) bx(0.05, 0.12, 0.06, M.black, sx * (RF.w - 0.06), yy, RF.z + 0.05); }
+    for (const sx of [-1, 1]) { bx(0.035, 1.95, 0.03, M.black, sx * (RF.w - 0.06), -1.25, RF.z + 0.075); for (const yy of [-0.3, -2.18]) bx(0.05, 0.14, 0.05, M.black, sx * (RF.w - 0.06), yy, RF.z + 0.048); }   // low roof rails on two feet
     // pillars: A along the windscreen edges, B and C dark between the windows, D wide in the body colour at the rear corners
     const strut = (a, b, w, d, mat) => { const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2], L = Math.hypot(dx, dy, dz); const m = add(new THREE.BoxGeometry(w, L, d), mat);
       m.position.copy(V((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2)); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), V(dx, dy, dz).normalize()); return m; };
@@ -84,9 +84,19 @@ const CAR = (() => {
     x.fillStyle = '#1d3f9a'; x.fillRect(6, 6, 46, 100); x.fillStyle = '#f2d21e'; for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; x.beginPath(); x.arc(29 + Math.cos(a) * 13, 34 + Math.sin(a) * 13, 2.2, 0, 7); x.fill(); }
     x.fillStyle = '#fff'; x.font = 'bold 26px sans-serif'; x.textAlign = 'center'; x.fillText('D', 29, 92); x.fillStyle = '#111'; x.font = 'bold 74px "DIN Alternate", "Arial Narrow", Arial, sans-serif'; x.textAlign = 'left'; x.fillText('HBN PR 216', 64, 84);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return new THREE.MeshStandardMaterial({ map: t, roughness: 0.4, metalness: 0.2 }); })();
-  bx(0.92, 0.04, 0.13, M.black, 0, YF - 0.025, 0.68); bx(0.9, 0.02, 0.018, M.chrome, 0, YF - 0.002, 0.70);   // grille, one bright bar
-  for (const sx of [-1, 1]) { const hl = bx(0.3, 0.05, 0.13, M.head, sx * 0.6, YF - 0.075, 0.705, 0, 0); hl.rotation.y = sx * 0.18; bx(0.08, 0.04, 0.045, M.amber, sx * 0.79, YF - 0.13, 0.735); }
-  bx(0.72, 0.04, 0.09, M.black, 0, YF - 0.02, 0.40); bx(0.52, 0.012, 0.112, plate, 0, YF + 0.004, 0.52);
+  // the front face of the body where the parts sit (measured on the extruded body, so they never end up inside it)
+  // (the extruded faces have vertices only along their edges, so every vertex in the height band counts; the plan is not bent lengthwise)
+  const frontAt = (z0, z1, dflt) => { const pp = lower.geometry.attributes.position; let m = -9; for (let i = 0; i < pp.count; i++) { const z = pp.getY(i); if (z >= z0 && z <= z1) m = Math.max(m, -pp.getZ(i)); } return m > 0 ? m : dflt; };
+  const FL = frontAt(0.62, 0.78, 1.85 + D), FB = frontAt(0.36, 0.56, 1.87 + D);
+  // grille: a dark trapezoid frame with three horizontal slats and a bright top bar (no badge)
+  bx(0.95, 0.05, 0.15, M.black, 0, FL - 0.005, 0.675); for (const z of [0.63, 0.672, 0.714]) bx(0.86, 0.02, 0.02, M.trim, 0, FL + 0.021, z); bx(0.94, 0.02, 0.016, M.chrome, 0, FL + 0.018, 0.752);
+  // headlamps drawn back into the wings, a chrome reflector in each, indicators at the outer ends
+  for (const sx of [-1, 1]) { const hl = bx(0.34, 0.06, 0.16, M.head, sx * 0.61, FL - 0.03, 0.705); hl.rotation.y = sx * 0.2;
+    const rf = add(new THREE.CylinderGeometry(0.055, 0.055, 0.02, 20), M.chrome); rf.rotation.x = Math.PI / 2; rf.position.copy(V(sx * 0.57, FL + 0.0, 0.705));
+    bx(0.08, 0.04, 0.05, M.amber, sx * 0.8, FL - 0.11, 0.725); }
+  // bumper: wide black intake, round fog lamps in black surrounds, the number plate
+  bx(0.74, 0.05, 0.1, M.black, 0, FB + 0.0, 0.40); bx(0.52, 0.012, 0.112, plate, 0, FB + 0.03, 0.52);
+  for (const sx of [-1, 1]) { bx(0.15, 0.04, 0.12, M.black, sx * 0.62, FB - 0.005, 0.405); const fg = add(new THREE.CylinderGeometry(0.042, 0.042, 0.03, 20), M.head); fg.rotation.x = Math.PI / 2; fg.position.copy(V(sx * 0.62, FB + 0.012, 0.405)); }
   // ---- rear: tall lamps up the D pillars (tail, brake, reversing, indicator), handle at the split, plate, bumper, exhaust ----
   const tails = [], brakes = [], revs = [];
   for (const sx of [-1, 1]) { tails.push(bx(0.13, 0.05, 0.3, M.tail, sx * 0.745, -2.335, 1.12)); brakes.push(bx(0.13, 0.05, 0.15, M.brake, sx * 0.745, -2.36, 0.89)); bx(0.13, 0.05, 0.09, M.amber, sx * 0.745, -2.375, 0.77); revs.push(bx(0.11, 0.05, 0.06, M.rev, sx * 0.745, -2.385, 0.68)); }
