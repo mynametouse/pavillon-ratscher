@@ -52,8 +52,9 @@ scene.background = SKY;
 scene.fog = new THREE.FogExp2(SKY, 0.000045);
 const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 80000);
 const sunDir = new THREE.Vector3(-0.45, 0.75, 0.48).normalize();
-scene.add(new THREE.HemisphereLight(0xdfe9f3, 0x5b5546, 1.1));
-const sun = new THREE.DirectionalLight(0xfff3e0, 1.6);
+// physically based light units (three r155+): Lambert divides by pi, so ~pi x the old intensities
+scene.add(new THREE.HemisphereLight(0xdfe9f3, 0x5b5546, 1.4));
+const sun = new THREE.DirectionalLight(0xfff3e0, 2.0);
 sun.position.copy(sunDir);
 scene.add(sun);
 const U = { uCam: { value: new THREE.Vector3() }, uCurv: { value: CURV } };
@@ -78,8 +79,9 @@ void main() {
   int q = (vUv.x >= 0.5 ? 1 : 0) + (vUv.y >= 0.5 ? 2 : 0);
   if (((uMask >> q) & 1) != 0) discard;
   vec3 c = texture2D(map, vUv).rgb;
-  float l = 0.80 + 0.32 * (dot(normalize(vN), uSun) - 0.62);
-  c *= clamp(l, 0.55, 1.15);
+  // relief shading relative to flat ground (the photo already has its own light): 1.0 on the flat, brighter towards the sun
+  float l = 1.0 + 0.6 * (dot(normalize(vN), uSun) - uSun.y);
+  c *= clamp(l, 0.55, 1.2);
   float f = 1.0 - exp(-pow(vDist * uFogD, 2.0));
   gl_FragColor = vec4(mix(c, uFog, f), 1.0);
 }`;

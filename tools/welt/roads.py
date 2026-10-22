@@ -156,6 +156,44 @@ def network(ways, nodeE, step=2.0):
     return np.array(pos, float), chains
 
 
+def fit_axis(pos, chains, dem, search=2.5, step=0.5, taper=25.0):
+    """move the OSM axis onto the carriageway (DGM1 shows it as a flat strip): per node the lateral shift within +-search m whose
+    cross-section is flattest (smallest residual of a straight line across 90 % of the width; small shifts preferred), median-
+    filtered and smoothed along the way, faded out towards junctions (shared nodes stay). Returns new positions and the shifts."""
+    from scipy.ndimage import median_filter, gaussian_filter1d
+    pos = pos.copy()
+    deg = collections.Counter(int(i) for _, ids in chains for i in set(ids.tolist()))
+    shifts_all = []
+    for w, ids in chains:
+        if w['fl'] & 3 or w['w'] < 2.5 or len(ids) < 8:
+            continue
+        P = pos[ids]
+        t, L = tangents(P)
+        nrm = np.stack([-t[:, 1], t[:, 0]], 1)
+        hw = w['w'] / 2
+        offs = np.linspace(-0.9 * hw, 0.9 * hw, 7)
+        sh = np.arange(-search, search + 1e-9, step)
+        S = P[:, None, None, :] + (sh[None, :, None, None] + offs[None, None, :, None]) * nrm[:, None, None, :]
+        H = dem.sample(S[..., 0].ravel(), S[..., 1].ravel()).reshape(len(P), len(sh), len(offs))
+        A = np.stack([np.ones_like(offs), offs], 1)
+        coef = np.linalg.lstsq(A, H.reshape(-1, len(offs)).T, rcond=None)[0]
+        res = H.reshape(-1, len(offs)) - (A @ coef).T
+        rms = np.sqrt(np.mean(res ** 2, axis=1)).reshape(len(P), len(sh))
+        cost = rms + 0.01 * np.abs(sh)[None, :]
+        best = sh[np.argmin(cost, axis=1)]
+        best = gaussian_filter1d(median_filter(best, size=15, mode='nearest'), 4, mode='nearest')
+        cum = np.concatenate([[0], np.cumsum(L)])
+        jpos = [cum[k] for k, i in enumerate(ids) if deg[int(i)] > 1] + [cum[0], cum[-1]]
+        dj = np.min(np.abs(cum[:, None] - np.array(jpos)[None, :]), axis=1)
+        best *= np.clip(dj / taper, 0, 1)
+        movable = np.array([deg[int(i)] == 1 for i in ids])
+        pos[ids[movable]] = P[movable] + best[movable, None] * nrm[movable]
+        shifts_all.append(np.abs(best))
+    sa = np.concatenate(shifts_all) if shifts_all else np.zeros(1)
+    log(f'Achsen auf die Fahrbahn geschoben: Mittel {sa.mean():.2f} m, p95 {np.percentile(sa, 95):.2f} m, max {sa.max():.2f} m')
+    return pos, sa
+
+
 def tangents(P):
     d = np.diff(P, axis=0)
     L = np.maximum(np.hypot(d[:, 0], d[:, 1]), 1e-9)
@@ -649,11 +687,18 @@ def routes(pos, chains, h, area, n=3):
     return res
 
 
-def build(osm, dem, area, out_dir):
+def build(osm, dem, area, out_dir, axis=False):
     """the whole roads step for one area -> writes r/*.glb, roads.json, routes.json; carves dem.mos; returns the meta entry"""
     ways, nodeE = load_ways(osm, area)
     pos, chains = network(ways, nodeE)
     log(f'Straßen: {len(ways)} Wege, {len(pos)} Knoten, {sum(len(i) for _, i in chains)} Kettenpunkte')
+    axis_fit = None
+    if axis:
+        try:
+            pos, sa = fit_axis(pos, chains, dem)
+            axis_fit = {'mittel_m': round(float(sa.mean()), 2), 'p95_m': round(float(np.percentile(sa, 95)), 2)}
+        except Exception as e:   # never let the refinement break the build
+            log('Achsenkorrektur übersprungen:', repr(e)[:200])
     h, axis, data_t = solve_profile(pos, chains, dem)
     res = metrics(pos, chains, h, axis)
     print_metrics(res, '(vorher = Achse punktweise aus dem Gelände, nachher = geglättetes Längsprofil)')
@@ -673,4 +718,5 @@ def build(osm, dem, area, out_dir):
     rts = routes(pos, chains, h, area)
     json.dump({'crs': 'EPSG:25832', 'routes': rts}, open(os.path.join(out_dir, 'routes.json'), 'w'), separators=(',', ':'))
     log('Fahrstrecken:', [(r['name'], r['kind'], r['length_m']) for r in rts])
-    return {'metric': res, 'terrain_change': cst, 'tiles': files, 'ways': len(ways), 'km': round(sum(r['km'] for r in res.values()), 1)}
+    return {'metric': res, 'terrain_change': cst, 'tiles': files, 'ways': len(ways), 'km': round(sum(r['km'] for r in res.values()), 1),
+            'axis_fit': axis_fit}

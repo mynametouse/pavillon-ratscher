@@ -101,5 +101,30 @@ with tempfile.TemporaryDirectory() as td:
     ck('glb header', mg == 0x46546C67 and ver == 2 and ln == len(raw))
     acc = doc['accessors'][doc['meshes'][0]['primitives'][0]['attributes']['POSITION']]
     ck('glb positions', acc['count'] > 100 and len(acc['min']) == 3, f"{acc['count']} vertices in {len(files)} tiles")
+# axis fit: the carriageway lies 2 m north of the OSM axis; ditches and slopes beside it
+class AxisDem:
+    def __init__(self):
+        self.e0, self.n1 = E0, N0 + 400
+        yy, xx = np.mgrid[0:400, 0:400] + 0.5
+        d = (self.n1 - N0 - yy) - 202.0          # signed distance north of the true centre line (N = 202)
+        road = 300 - 0.025 * np.abs(d)
+        side = 300 - 0.075 - 0.6 * np.clip(np.abs(d) - 3, 0, 1.5) + 0.3 * np.clip(np.abs(d) - 5, 0, None)
+        self.mos = np.where(np.abs(d) <= 3, road, side).astype(np.float32)
+
+    def sample(self, E, N):
+        from dem import bilinear
+        return bilinear(self.mos, E, N, self.e0, self.n1, 1.0)
+
+
+osm2 = {'nodes': {}, 'ways': {}, 'rels': {}}
+for k, E in enumerate(np.arange(20, 381, 30)):
+    lon, lat = toLL.transform(E0 + E, N0 + 200)
+    osm2['nodes'][str(k)] = [lon, lat]
+osm2['ways']['9'] = [[str(k) for k in range(len(np.arange(20, 381, 30)))], {'highway': 'secondary'}]
+ways2, nodeE2 = roads.load_ways(osm2, (E0, N0, E0 + 400, N0 + 400))
+pos2, chains2 = roads.network(ways2, nodeE2)
+newpos, sa = roads.fit_axis(pos2, chains2, AxisDem())
+mid = newpos[chains2[0][1]][len(chains2[0][1]) // 2]
+ck('axis fit', abs((mid[1] - N0) - 202.0) < 0.6, f'centre at N {mid[1] - N0:.2f} (true 202, OSM 200)')
 print('test_welt:', 'ok' if not fails else f'{fails} FAILED')
 sys.exit(1 if fails else 0)
