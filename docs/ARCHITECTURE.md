@@ -107,6 +107,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `pav-quests-v1`, `pav-werk-v1`, `pav-gear-v1` | Aufgaben, Werkstatt-Spiel, Schutzausrüstung |
 | `pav-veh-v1` | Fahrzeuge: Standort und Richtung je Fahrzeug, Frontlader, Lichtmodus (auto/an/aus) |
 | `pav-fell-v1` | Fällen (V16c2): Forstkiste genommen, Bäume in Arbeit/gefällt mit Schnittmaßen und Lage, Holzliste |
+| `pav-trailer-v1`, `pav-holz-v1` | Holz (V16d): Anhänger (Lage, angekuppelt); Stämme (wo, Lage), Säge, Bretter mit Feuchte, Stapel, Trockenschrank |
 | `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt |
 
 Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), hier eintragen.
@@ -127,9 +128,9 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Wald an der Klinge (`forest`), Fällen (`fell`, V16c2), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
   Kollision mit der Umgebung (`worldcol`)
 - `time/` – Uhr, Sterndaten, Tag und Nacht
-- `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster
+- `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster; Holz vom Stamm zum Brett (`holz`, `holz_saw`, `holz_dry`, V16d)
 - `boot/` – Start
-- `vehicles/` – Fahrzeug-Kern (`vehicle`: Physik, Ein-/Aussteigen, Kameras, Licht, HUD), Töne (`vsound`), Auto (`car`), Traktor mit Frontlader (`tractor`), Karte beim Fahren (`minimap`)
+- `vehicles/` – Fahrzeug-Kern (`vehicle`: Physik, Ein-/Aussteigen, Kameras, Licht, HUD), Töne (`vsound`), Auto (`car`), Traktor mit Frontlader (`tractor`), Rungenanhänger (`trailer`, V16d), Karte beim Fahren (`minimap`)
 
 ## 10 Leistung (gemessen, SwiftShader-Test, test/prof.py)
 
@@ -208,6 +209,37 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   mit Zeichnung (`WUI.machine({ fig })`). Kleidung: Warnjacke, Schnittschutzhose, Stiefel und Handschuhe färben die eigene Kleidung der Figur
   nach Körperzonen um (`game/avatar.js` `wearZones`, Hautgewichte), der Helm ist ein eigenes Modell; von hinten (3. Person) zeigt die Säge am
   Schnitt (`cutSaw`). Speicher `pav-fell-v1`.
+
+## 11c Holz: vom Stamm zum Brett (V16d)
+
+- **Anhänger** (`vehicles/trailer.js`, `TRAILER`): Rungenanhänger mit Tandemachse (Ladefläche 4,4 × 2,0 m, vier Rungen je Seite, Stirngitter,
+  Zugdeichsel mit Öse 4,1 m vor der Achsmitte, Stützfuß). Kein eigenes VEH-Fahrzeug: angekuppelt läuft die Achse auf einer Schleppkurve hinter
+  dem Zugpendel des Traktors her (Deichsellänge bleibt, kein Querschlupf), Knickwinkel höchstens 75°; die Ladefläche stößt über
+  `VEH.boxHits` an Wände, Stämme, Gartenobjekte und hält den Traktor zurück. Abgestellt ist sie ein Hindernis (`VEH.extra`), auch für Fußgänger.
+  Masse und Ladung zieht der Traktor mit (`spec.tow` in `VEH.step`: Trägheit, Rollwiderstand, Hang, Auflaufbremse). Kuppeln mit K (Knopf am
+  Tacho) oder zu Fuß an der Deichsel. `TRAILER.local(p)`, `TRAILER.slot(x, r)` (Querschnitt: ein Stamm rollt in die tiefste Lücke zwischen den
+  Rungen), `TRAILER.cargo`/`cargoH` (von HOLZ gesetzt).
+- **Stämme** (`werk/holz.js`, `HOLZ`): übernimmt die vermessenen Abschnitte aus `FELL.logs` (FELL blendet seine eigenen Stammstücke dann aus,
+  `FELL.hideLogs`). Gezeichnet instanziert je Holzart (Rinde + Hirnholz, zwei Draw-Calls für alle Stämme; Form aus `iLog`: Radius unten/oben,
+  Länge). Zustände: `ground` (Boden, auf anderen Stämmen, auf den Unterlegern im Holzlager nördlich der Säge), `fork`, `trailer`, `saw`,
+  `sawn`. Gabel (`TRACTOR2.model.fork`, Zinken bis zum Boden `LD.min`): beim Heben mit den Zinken unter einem quer liegenden Stamm liegt er auf
+  der Gabel; beim Senken bleibt er dort liegen, wo er aufsetzt (Boden, Stamm, Anhänger zwischen den Rungen, Blockbandsäge). Ungekippte Gabel
+  und hartes Bremsen: er rollt herunter. Auf der Gabel stößt er an wie ein Fahrzeug. Die Gartenbrücke trägt Fahrzeuge (`ROADS.groundAt`),
+  unsichtbare Führungen an ihren Kanten halten die Räder auf dem 2,5 m breiten Deck.
+- **Blockbandsäge** (`werk/holz_saw.js`, `HOLZSAW`): das Modell aus V15b (`garden/workshop.js`, Sägeaggregat jetzt als Gruppe `SAW.unit`
+  höhenverstellbar). Festklemmen, Einschnitt planen (24/30 mm Bretter, 40/52 mm Bohlen; Zeichnung des Zopfendes mit den Schnitten), Schwarte,
+  dann Schnitt für Schnitt (Schnittfuge 2 mm) bis 3 cm über die Bänke. Bretter mit Baumkante (`boardGeos`: gesägte Flächen, Rinde, Hirnholz;
+  `mergeSet` fasst sie je Stapel zu drei Meshes zusammen), Blockware je Stamm neben der Säge. Jedes Brett: Stärke, Breiten an beiden Enden,
+  Herzbrett, Frischfeuchte nach seiner Lage im Stamm (Fichte Splint ~140 %, Kern ~50 %; Lärche schmaler Splint).
+- **Trocknen** (`werk/holz_dry.js`, `HOLZDRY`): Stapel nördlich der Werkstatt (Unterbau 15/45 cm, Leisten alle 50/100 cm, Fuge, Hirnholzschutz,
+  Dach mit Gewicht). Klima Meiningen (DWD 1991–2020): Monatsmittel Temperatur und Gleichgewichtsfeuchte (13 % Sommer, 21 % Winter); je Brett
+  täglich `u ← E + (u − E)·exp(−k)` mit k aus Dicke^1,5, Temperatur, Holzart (Lärche ×0,6), Lage im Stapel, unter Fasersättigung halb so
+  schnell. Fehler: Bläue (nasser warmer Splint, wenig Luft), Endrisse (ohne Hirnholzschutz), Verzug (Leisten zu weit, kein Gewicht), Herzriss.
+  Feuchtemesser (Werkzeug von der Hobelbank: Holzartengruppe, Temperaturkorrektur, genau 6–30 %), Zeitraffer über `CLOCK.wait`, Kurve im
+  Fenster. Trockenschrank an der Westwand der Werkstatt (Entfeuchter, 8 %): ab ≤ 20 % lufttrocken auf 9 %, dann Bohlen ab 35 mm als
+  Leimholzplatten ins Werkstattregal (`WERK.addOwn`, Lärche/Fichte statt Eiche: `softCol`, Räuchern wirkt kaum).
+- Kollisionen der Holzplätze (Blöcke, Stapel, Schrank) als `COL`-Einträge mit Tag (`HOLZ.setCol`, Gitter neu). Speicher: `pav-trailer-v1`,
+  `pav-holz-v1`. Test `test/v16d.py`.
 
 ## 12 Erweitern – Beispiel neues Fahrzeug
 
