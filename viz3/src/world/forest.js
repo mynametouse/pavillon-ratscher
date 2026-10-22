@@ -34,9 +34,9 @@ const FOREST = (() => {
   // base, whorl spacing, branches per whorl, droop/up: branch elevation at the crown base/top (rad), cards per branch, card size, needle
   // tint, dead branches below the crown (share kept), bark texture and bark tint at the top (pine: orange mirror bark)
   const SPEC = {
-    spruce: { H: 24, rb: 0.21, cb: 0.48, cr: 0.13, whorl: 0.46, nB: 6, droop: -0.5, up: 0.4, cards: 4, cs: 0.9, tint: [0.6, 0.72, 0.54], dead: 0.85, bark: 'sprucebark', top: [1, 1, 1], hang: 0.6 },
-    larch: { H: 26, rb: 0.22, cb: 0.55, cr: 0.13, whorl: 0.62, nB: 5, droop: -0.15, up: 0.6, cards: 3, cs: 0.8, tint: [0.74, 0.92, 0.48], dead: 0.4, bark: 'pinebark', top: [1, 0.95, 0.9], sparse: 0.72 },
-    pine: { H: 24, rb: 0.22, cb: 0.66, cr: 0.16, whorl: 0.8, nB: 5, droop: -0.08, up: 0.3, cards: 3, cs: 0.9, tint: [0.52, 0.64, 0.56], dead: 0.3, bark: 'pinebark', top: [1.5, 0.85, 0.55] } };
+    spruce: { H: 24, rb: 0.21, cb: 0.48, cr: 0.13, whorl: 0.46, nB: 6, droop: -0.5, up: 0.4, cards: 4, cs: 0.8, tint: [0.56, 0.68, 0.5], dead: 0.95, bark: 'sprucebark', bt: [0.74, 0.7, 0.66], top: [1, 1, 1], hang: 0.6 },
+    larch: { H: 26, rb: 0.22, cb: 0.55, cr: 0.115, whorl: 0.62, nB: 5, droop: -0.15, up: 0.6, cards: 3, cs: 0.8, tint: [0.66, 0.82, 0.44], dead: 0.4, bark: 'pinebark', bt: [0.8, 0.68, 0.6], top: [1, 0.95, 0.9], sparse: 0.72 },
+    pine: { H: 24, rb: 0.22, cb: 0.66, cr: 0.16, whorl: 0.8, nB: 5, droop: -0.08, up: 0.3, cards: 3, cs: 0.9, tint: [0.52, 0.64, 0.56], dead: 0.3, bark: 'pinebark', bt: [0.72, 0.7, 0.68], top: [1.6, 0.9, 0.6] } };
   const VARIANTS = [['spruce', 'stand'], ['spruce', 'edge'], ['spruce', 'young'], ['larch', 'stand'], ['larch', 'edge'], ['larch', 'young'], ['pine', 'stand'], ['pine', 'edge']];
   const VI = {}; VARIANTS.forEach((v, i) => { VI[v[0] + ':' + v[1]] = i; });
   // needle sprays in the twig atlas (px of 1024, origin top left; stem at the bottom) and the bare dead branch (base on the left)
@@ -67,7 +67,7 @@ const FOREST = (() => {
     // trunk
     const Bk = GB(), segR = lod ? 5 : 9, segH = lod ? 4 : 14, tile = 0.9, circ = 2 * Math.PI * rb;
     for (let i = 0; i <= segH; i++) { const t = i / segH, y = H * (t * t * 0.35 + t * 0.65), r = rAt(y), ax = axis(y), top = THREE.MathUtils.smoothstep(y, cbY * 0.6, H);
-      const col = [1 + (sp.top[0] - 1) * top, 1 + (sp.top[1] - 1) * top, 1 + (sp.top[2] - 1) * top];
+      const bt = sp.bt || [1, 1, 1], col = [bt[0] * (1 + (sp.top[0] - 1) * top), bt[1] * (1 + (sp.top[1] - 1) * top), bt[2] * (1 + (sp.top[2] - 1) * top)];
       for (let j = 0; j <= segR; j++) { const a = j / segR * Math.PI * 2, cx = Math.cos(a), cz = Math.sin(a);
         Bk.p.push(ax[0] + cx * r, y, ax[1] + cz * r); Bk.n.push(cx, 0.12, cz); Bk.uv.push(j / segR * circ / tile, y / tile); Bk.c.push(...col); Bk.h.push(y / H); } }
     for (let i = 0; i < segH; i++) for (let j = 0; j < segR; j++) { const a = i * (segR + 1) + j, b = a + segR + 1; Bk.i.push(a, b, a + 1, a + 1, b, b + 1); }
@@ -95,36 +95,54 @@ const FOREST = (() => {
     { const R = rect(lod ? SPRAY[2] : SMALL[0]), y = H - (lod ? 1.4 : 0.9), ax = axis(y), g = [tint[0], tint[1], tint[2]];
       for (const a of [0, 1.57]) card(Cd, [ax[0], y, ax[1]], [0, 1, 0], [Math.cos(a), 0, Math.sin(a)], lod ? 1.6 : 1.05, (lod ? 1.6 : 1.05) * R[4], R, g, 0.97, [0, 1, 0], false); }
     // dead branches below the crown (spruce keeps many, larch and pine few)
-    if (!young) { const dStep = lod ? 1.0 : 0.36, R = rect(DEAD);
+    if (!young) { const dStep = lod ? 0.9 : 0.27, R = rect(DEAD);
       for (let y = 1.0; y < cbY - 0.2; y += dStep * rr(0.8, 1.2)) { const f = y / cbY, n = lod ? 2 : 4 + Math.floor(rnd() * 2), ax = axis(y);
         for (let k = 0; k < n; k++) { if (rnd() > sp.dead * (0.45 + 0.55 * f)) continue;
-          const az = rr(0, 6.283), el = rr(-0.55, -0.05), dir = [Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az)], L = (0.35 + 1.0 * f) * rr(0.6, 1.1) * (lod ? 1.3 : 1);
+          const az = rr(0, 6.283), el = rr(-0.55, -0.05), dir = [Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az)], L = (0.45 + 1.25 * f) * rr(0.6, 1.1) * (lod ? 1.3 : 1);
           const U = rotAround(norm(cross(dir, [0, 1, 0])), dir, rr(-0.8, 0.8)), r0 = rAt(y) * 0.85, g = rr(0.75, 1.05);
           card(Cd, [ax[0] + dir[0] * r0, y + dir[1] * r0, ax[1] + dir[2] * r0], dir, U, L, L / R[4] * 1.6, R, [0.62 * g, 0.57 * g, 0.5 * g], y / H, norm([dir[0], 0.8, dir[2]]), true); } } }
-    return { bark: finish(Bk), cards: finish(Cd), H, W: Rc };
+    return { bark: finish(Bk), cards: finish(Cd), H, W: Rc, rAt };
   }
   // ---------- materials: needle cards and bark with distance bands (dither), canopy shade for the far side of the shadow box ----------
-  const CU = { tCan: { value: null }, bCan: { value: new THREE.Vector4(0, 0, 1, 1) }, uSunBox: { value: new THREE.Vector4(0, 0, 16, 0.5) } };   // w: share of the canopy shade kept inside the box
+  const CU = { tCan: { value: null }, bCan: { value: new THREE.Vector4(0, 0, 1, 1) }, uSunBox: { value: new THREE.Vector4(0, 0, 16, 0.8) } };   // w: share of the canopy shade kept inside the box
   const VSH = `attribute float aH; uniform vec4 uLod; uniform sampler2D tCan; uniform vec4 bCan, uSunBox; varying float vFade, vShade;`;
   const FSH = `varying float vFade, vShade; float fdHash( vec2 p ) { return fract( sin( dot( p, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); }`;
-  function patch(m, key, lodU, cardsMat) {
-    m.onBeforeCompile = sh => { Object.assign(sh.uniforms, CU); sh.uniforms.uLod = { value: lodU };
-      sh.vertexShader = VSH + '\n' + sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
-        { vec4 ipw = modelMatrix * instanceMatrix * vec4( 0.0, 0.0, 0.0, 1.0 ); float dI = length( ipw.xz - cameraPosition.xz );
+  function patch(m, key, lodU, cardsMat, solo) {
+    m.onBeforeCompile = sh => { Object.assign(sh.uniforms, CU); sh.uniforms.uLod = { value: lodU }; if (solo) Object.assign(sh.uniforms, solo);
+      sh.vertexShader = VSH + (solo ? '\nuniform float uCut, uDelimb; varying float vY;' : '') + '\n' + sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
+        { ${solo ? `vec4 ipw = modelMatrix * vec4( 0.0, 0.0, 0.0, 1.0 ); vFade = 1.0; vY = position.y; if ( aH < uDelimb ) gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );` : `vec4 ipw = modelMatrix * instanceMatrix * vec4( 0.0, 0.0, 0.0, 1.0 ); float dI = length( ipw.xz - cameraPosition.xz );
           vFade = smoothstep( uLod.x, uLod.y, dI ) * ( 1.0 - smoothstep( uLod.z, uLod.w, dI ) );
-          if ( vFade < 0.002 ) gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );   // outside its band: clipped, no fragments
+          if ( vFade < 0.002 ) gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );   // outside its band: clipped, no fragments`}
           vec2 gp = vec2( ipw.x, -ipw.z ), cu = ( gp - bCan.xy ) * bCan.zw; float can = texture( tCan, cu ).r;
           float ob = max( smoothstep( uSunBox.z - 3.0, uSunBox.z, max( abs( gp.x - uSunBox.x ), abs( gp.y - uSunBox.y ) ) ), uSunBox.w );
           vShade = 1.0 - 0.82 * can * ob * ( 1.0 - smoothstep( 0.5, 1.0, aH ) ); }`);
-      sh.fragmentShader = FSH + '\n' + sh.fragmentShader.replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
-          if ( vFade < 0.998 && vFade < fdHash( gl_FragCoord.xy ) ) discard;`)
+      sh.fragmentShader = FSH + (solo ? '\nuniform float uCut; varying float vY;' : '') + '\n' + sh.fragmentShader.replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
+          ${solo ? 'if ( vY < uCut ) discard;' : 'if ( vFade < 0.998 && vFade < fdHash( gl_FragCoord.xy ) ) discard;'}`)
         .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
-          reflectedLight.directDiffuse *= vShade; reflectedLight.directSpecular *= vShade * vShade; reflectedLight.indirectDiffuse *= 0.55 + 0.45 * vShade;`);
+          reflectedLight.directDiffuse *= vShade; reflectedLight.directSpecular *= vShade * vShade; reflectedLight.indirectDiffuse *= mix( vec3( 0.42, 0.47, 0.34 ), vec3( 1.0 ), vShade );`);
+      if (cardsMat === true) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+          diffuseColor.rgb *= mix( 0.5, 1.0, smoothstep( -0.35, 0.35, ( normal * mat3( viewMatrix ) ).y ) );`);
       if (cardsMat) sh.fragmentShader = sh.fragmentShader.replace('#include <alphatest_fragment>', `
           { vec2 tsz = vec2( textureSize( map, 0 ) ); float mip = max( 0.0, 0.5 * log2( max( dot( dFdx( vMapUv * tsz ), dFdx( vMapUv * tsz ) ), dot( dFdy( vMapUv * tsz ), dFdy( vMapUv * tsz ) ) ) ) );
             diffuseColor.a *= 1.0 + mip * 0.28; }   // minified alpha fades out: keep the sprays' coverage at a distance
           #include <alphatest_fragment>`); };
-    m.customProgramCacheKey = () => 'forest_' + key; return m; }
+    m.customProgramCacheKey = () => 'forest_' + key + (solo ? '_solo' : ''); return m; }
+  // ---------- the larch's year (European larch, Thuringia ~400 m): fresh green from mid April, gold from mid October, ----------
+  // needles fall in November, bare twigs in winter. uSeas: x gold, y bare (colour and the share of needles gone), z fresh green
+  const SEAS_U = { value: new THREE.Vector4(0, 0, 0, 0) };
+  const SEAS_GLSL = `{ float lu = dot( diffuseColor.rgb, vec3( 0.3, 0.59, 0.11 ) );
+      vec3 c = mix( diffuseColor.rgb, diffuseColor.rgb * vec3( 1.15, 1.2, 0.85 ), uSeas.z );
+      c = mix( c, lu * vec3( 2.1, 1.42, 0.38 ), uSeas.x ); diffuseColor.rgb = mix( c, lu * vec3( 1.05, 0.86, 0.68 ), uSeas.y );
+      if ( uSeas.y > 0.01 && fdHash( floor( vMapUv * 320.0 ) ) < uSeas.y * 0.9 ) discard; }`;
+  function seasonal(m, hash) { const ob = m.onBeforeCompile, ck = m.customProgramCacheKey;
+    m.onBeforeCompile = sh => { if (ob) ob.call(m, sh); sh.uniforms.uSeas = SEAS_U;
+      sh.fragmentShader = 'uniform vec4 uSeas;\n' + (hash ? 'float fdHash( vec2 p ) { return fract( sin( dot( p, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); }\n' : '') + sh.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n' + SEAS_GLSL); };
+    m.customProgramCacheKey = () => (ck ? ck.call(m) : '') + '_seas'; return m; }
+  const doyNow = () => { if (!window.DN || !window.CLOCK) return 180; const d = new Date((DN.jdOf(CLOCK.t) - 2440587.5) * 864e5); return (d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5; };
+  function seasonOf(doy) { const ss = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
+    const bare = Math.max(1 - ss(100, 120, doy), ss(306, 330, doy)), gold = ss(279, 301, doy), fresh = ss(100, 112, doy) * (1 - ss(128, 165, doy));
+    return [gold, bare, fresh]; }
+  S.season = () => { const q = SEAS_U.value; return { doy: Math.round(doyNow()), gold: +q.x.toFixed(2), bare: +q.y.toFixed(2), fresh: +q.z.toFixed(2) }; };
   // ---------- planting ----------
   const CELL = 8, GRID = new Map(); const gk = (i, j) => (i + 4096) * 8192 + (j + 4096);
   function gridAdd(t) { const k = gk(Math.floor(t.x / CELL), Math.floor(t.y / CELL)); let a = GRID.get(k); if (!a) GRID.set(k, a = []); a.push(t); }
@@ -132,8 +150,8 @@ const FOREST = (() => {
     for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) { const a = GRID.get(gk(i, j)); if (a) for (const t of a) if ((t.x - x) ** 2 + (t.y - y) ** 2 < r * r) return true; } return false; }
   // canopy rasters (2 m): mask of the measured crowns (where the stand is closed) and the cover of all planted crowns (ground, light)
   const MR = 2, MX0 = LB[0] - 12, MY0 = LB[1] - 12, MW = Math.ceil((LB[2] - LB[0] + 24) / MR), MH = Math.ceil((LB[3] - LB[1] + 24) / MR);
-  function splat(A, x, y, r, v, soft) { const i0 = Math.max(0, Math.floor((x - r - MX0) / MR)), i1 = Math.min(MW - 1, Math.ceil((x + r - MX0) / MR)), j0 = Math.max(0, Math.floor((y - r - MY0) / MR)), j1 = Math.min(MH - 1, Math.ceil((y + r - MY0) / MR));
-    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const d = Math.hypot(MX0 + (i + 0.5) * MR - x, MY0 + (j + 0.5) * MR - y); if (d > r) continue; const k = j * MW + i, w = soft ? v * Math.min(1, (r - d) / (r * 0.35)) : v; A[k] = Math.min(1, A[k] + w); } }
+  function splat(A, x, y, r, v, soft, raw) { const i0 = Math.max(0, Math.floor((x - r - MX0) / MR)), i1 = Math.min(MW - 1, Math.ceil((x + r - MX0) / MR)), j0 = Math.max(0, Math.floor((y - r - MY0) / MR)), j1 = Math.min(MH - 1, Math.ceil((y + r - MY0) / MR));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const d = Math.hypot(MX0 + (i + 0.5) * MR - x, MY0 + (j + 0.5) * MR - y); if (d > r) continue; const k = j * MW + i, w = soft ? v * Math.min(1, (r - d) / (r * 0.35)) : v; A[k] = raw ? A[k] + w : Math.min(1, A[k] + w); } }
   const at = (A, x, y) => { const i = Math.floor((x - MX0) / MR), j = Math.floor((y - MY0) / MR); return i < 0 || j < 0 || i >= MW || j >= MH ? 0 : A[j * MW + i]; };
   function plant() { const chm = (window.RATSCHER && RATSCHER.forestCHM) || [], rnd = mulberry(1609), rr = (a, b) => a + (b - a) * rnd(), T = [];
     const ground = (x, y) => window.ROADS ? ROADS.groundAt(x, y) : RATSCHER.hMesh(x, y), onRoad = (x, y, m) => window.ROADS && ROADS.edge(x, y) > -m;
@@ -156,10 +174,10 @@ const FOREST = (() => {
         add(x, y, q < 0.62 ? hn * rr(0.78, 1.0) : q < 0.86 ? hn * rr(0.5, 0.78) : rr(2.5, 7.5), q < 0.86 ? sp : (rnd() < 0.85 ? 'spruce' : 'larch'), false); }
       else { if (r < 0.5 || nearAny(x, y, 1.9)) continue; add(x, y, rr(0.9, 4.8), rnd() < 0.85 ? 'spruce' : 'larch', false); } }
     // cover of the crowns as they stand now (light and ground)
-    const cov = new Float32Array(MW * MH); for (const t of T) splat(cov, t.x, t.y, t.h * (t.sp === 'pine' ? 0.15 : 0.12) * t.w + 0.8, t.h < 6.5 ? 0.25 : 0.7, true);
+    const cov = new Float32Array(MW * MH); for (const t of T) splat(cov, t.x, t.y, t.h * 0.16 * t.w + 1.2, t.h < 6.5 ? 0.25 : 0.7, true, true);   // raw sums (felling subtracts a crown)
     return { T, mask, cov }; }
   // ---------- the far atlas: every model drawn once from the side ----------
-  function atlas(models, mats) { const C = 256, n = models.length, rt = new THREE.WebGLRenderTarget(C * n, C * 3, { generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter });
+  function atlas(models, mats, rt0) { const C = 256, n = models.length, rt = rt0 || new THREE.WebGLRenderTarget(C * n, C * 3, { generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter });
     const pt = R.getRenderTarget(), pc = R.getClearColor(new THREE.Color()), pa = R.getClearAlpha(), sv = SV.on.value, gi = GI.on.value; SV.on.value = 0; GI.on.value = 0;
     R.setRenderTarget(rt); R.setClearColor(0x2c3626, 0); R.clear(); const info = [];
     models.forEach((Md, i) => { const sc = new THREE.Scene(); sc.add(new THREE.AmbientLight(0xffffff, Math.PI)); sc.add(new THREE.Mesh(Md.bark, mats[i].bark), new THREE.Mesh(Md.cards, mats[i].cards));
@@ -169,7 +187,7 @@ const FOREST = (() => {
       rt.viewport.set(i * C, 0, C, C * 2); rt.scissor.set(i * C, 0, C, C * 2); R.setRenderTarget(rt); R.render(sc, side);
       rt.viewport.set(i * C, C * 2, C, C); rt.scissor.set(i * C, C * 2, C, C); R.setRenderTarget(rt); R.render(sc, top); info.push({ W, H }); });
     rt.scissorTest = false; rt.viewport.set(0, 0, C * n, C * 3); R.setRenderTarget(pt); R.setClearColor(pc, pa); SV.on.value = sv; GI.on.value = gi;
-    return { tex: rt.texture, info, n }; }
+    return { tex: rt.texture, rt, info, n, models, mats, seas: SEAS_U.value.clone() }; }
   // ---------- building it all ----------
   const LODS = { hoch: [44, 175, 34], mittel: [34, 140, 26], schnell: [22, 95, 16] };   // near radius, middle radius, ground cover radius
   const lodR = () => LODS[RENDER.tier] || LODS.mittel;
@@ -188,17 +206,21 @@ const FOREST = (() => {
     const mk = (sp, lod) => { const B = barkTex[SPEC[sp].bark], key = sp + lod;
       const bark = patch(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: B && B.map, normalMap: lod ? null : B && B.nrm, roughnessMap: B && B.orm, aoMap: null, roughness: 1, envMapIntensity: 0.55 }), 'b' + key, lodU[lod], false);
       const cards = patch(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: twig, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.82, envMapIntensity: 0.5 }), 'c' + key, lodU[lod], true);
+      if (sp === 'larch') seasonal(cards, false);
       return { bark, cards }; };
     const MATS = [{}, {}]; for (const sp of Object.keys(SPEC)) for (const l of [0, 1]) MATS[l][sp] = mk(sp, l);
+    S._mk = { twig, barkTex, lodU, depth: null };
     MODELS0 = VARIANTS.map(([sp, v]) => buildModel(sp, v, 0)); MODELS1 = VARIANTS.map(([sp, v]) => buildModel(sp, v, 1));
-    const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: twig, alphaTest: 0.42 });
+    const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: twig, alphaTest: 0.42 }); S._mk.depth = depth;
     const inst = (geo, mat, max, shadow) => { const im = new THREE.InstancedMesh(geo, mat, max); im.count = 0; im.frustumCulled = false; im.castShadow = shadow; im.receiveShadow = true; im.userData.noMerge = true;
       im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); im.setColorAt(0, colT.setRGB(1, 1, 1)); im.instanceColor.setUsage(THREE.DynamicDrawUsage); scene.add(im); return im; };
     IM0 = MODELS0.map((Md, i) => { const sp = VARIANTS[i][0], b = inst(Md.bark, MATS[0][sp].bark, MAX0, true), c = inst(Md.cards, MATS[0][sp].cards, MAX0, true); c.customDepthMaterial = depth; return { b, c, Md }; });
     IM1 = MODELS1.map((Md, i) => { const sp = VARIANTS[i][0]; return { b: inst(Md.bark, MATS[1][sp].bark, MAX1, false), c: inst(Md.cards, MATS[1][sp].cards, MAX1, false), Md }; });
     // far: cross cards from the atlas, all trees, static (one instanced mesh per 160 m cell)
-    A2 = atlas(MODELS0, VARIANTS.map(([sp]) => ({ bark: new THREE.MeshBasicMaterial({ map: barkTex[SPEC[sp].bark] && barkTex[SPEC[sp].bark].map, vertexColors: true }), cards: new THREE.MeshBasicMaterial({ map: twig, vertexColors: true, alphaTest: 0.42, side: THREE.DoubleSide }) })));
-    const fm = patch(new THREE.MeshStandardMaterial({ map: A2.tex, alphaTest: 0.32, side: THREE.DoubleSide, roughness: 1, envMapIntensity: 0.5 }), 'far', lodU[2], false);
+    { const q = seasonOf(doyNow()); SEAS_U.value.set(q[0], q[1], q[2], 0); }
+    A2 = atlas(MODELS0, VARIANTS.map(([sp]) => { const cm = new THREE.MeshBasicMaterial({ map: twig, vertexColors: true, alphaTest: 0.42, side: THREE.DoubleSide }); if (sp === 'larch') seasonal(cm, true);
+      return { bark: new THREE.MeshBasicMaterial({ map: barkTex[SPEC[sp].bark] && barkTex[SPEC[sp].bark].map, vertexColors: true }), cards: cm }; }));
+    const fm = patch(new THREE.MeshStandardMaterial({ map: A2.tex, alphaTest: 0.32, side: THREE.DoubleSide, roughness: 1, envMapIntensity: 0.5 }), 'far', lodU[2], 'far');   // 'far': keeps the alpha coverage, no underside (its normals all point up)
     const fmc = fm.onBeforeCompile; fm.onBeforeCompile = sh => { fmc(sh); sh.vertexShader = 'attribute float aKind;\n' + sh.vertexShader.replace('#include <uv_vertex>', `#include <uv_vertex>\n vMapUv.x = ( aKind + vMapUv.x ) / ${A2.n.toFixed(1)};`);
       sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal = normalize( vNormal ); nonPerturbedNormal = normal;'); };
     // two upright planes (side view, lower two thirds of the atlas) and one level plane in the crown (top view, upper third: from above the stand closes)
@@ -206,9 +228,9 @@ const FOREST = (() => {
       for (const g of [a, b]) { const u = g.attributes.uv; for (let i = 0; i < u.count; i++) u.setY(i, u.getY(i) * 2 / 3); }
       c.rotateX(-Math.PI / 2); c.translate(0, 0.66, 0); { const u = c.attributes.uv; for (let i = 0; i < u.count; i++) u.setY(i, 2 / 3 + u.getY(i) / 3); }
       const g = BufferGeometryUtils.mergeGeometries([a, b, c]);
-      const nn = g.attributes.normal; for (let i = 0; i < nn.count; i++) nn.setXYZ(i, 0, 1, 0); const h = new Float32Array(nn.count); const pp = g.attributes.position; for (let i = 0; i < pp.count; i++) h[i] = pp.getY(i); g.setAttribute('aH', new THREE.BufferAttribute(h, 1)); return g; })();
+      const nn = g.attributes.normal; for (let i = 0; i < nn.count; i++) nn.setXYZ(i, 0, 1, 0); const h = new Float32Array(nn.count); const pp = g.attributes.position; for (let i = 0; i < pp.count; i++) h[i] = i >= 8 ? 1 : pp.getY(i); g.setAttribute('aH', new THREE.BufferAttribute(h, 1)); return g; })();   // aH: height share; vertices 8–11 are the level plane (crown top, fully lit)
     for (const grp of cellsOf(S.list, 160)) { const g = crossG.clone(), kk = new Float32Array(grp.length); g.setAttribute('aKind', new THREE.InstancedBufferAttribute(kk, 1)); const im = new THREE.InstancedMesh(g, fm, grp.length);
-      grp.forEach((t, i) => { const I = A2.info[t.m], s = t.h / MODELS0[t.m].H; q4.setFromAxisAngle(up3, t.rot); m4.compose(V(t.x, t.y, t.z - 0.1), q4, sv3.set(I.W * s * t.w, I.H * s, I.W * s * t.w)); im.setMatrixAt(i, m4); kk[i] = t.m;
+      grp.forEach((t, i) => { const I = A2.info[t.m], s = t.h / MODELS0[t.m].H; q4.setFromAxisAngle(up3, t.rot); m4.compose(V(t.x, t.y, t.z - 0.1), q4, sv3.set(I.W * s * t.w, I.H * s, I.W * s * t.w)); im.setMatrixAt(i, m4); kk[i] = t.m; t.fi = [im, i];
         im.setColorAt(i, colT.setRGB(1, 1, 1).multiplyScalar(0.88 + (t.id % 7) * 0.035)); });
       im.castShadow = false; im.receiveShadow = false; im.userData.noMerge = true; im.computeBoundingSphere(); scene.add(im); S.far = (S.far || []).concat(im); }
     // ground cover near the camera: ferns, stumps, lying deadwood
@@ -248,22 +270,48 @@ const FOREST = (() => {
       C.im.count = n; C.im.instanceMatrix.needsUpdate = true; }
     S.nNear = n0; S.nMid = n1; S.ms = +(performance.now() - t0).toFixed(1); markDirty(true); }
   // per frame: the sun's shadow box for the canopy shade, the draw sets
-  window.TICKS.push(() => { if (!S.ready) return; if (typeof sunC !== 'undefined') CU.uSunBox.value.set(sunC[0], sunC[1], sunHalf, 0.5); relod(false); });
+  let seasT = 0;
+  window.TICKS.push(dt => { if (!S.ready) return; if (typeof sunC !== 'undefined') CU.uSunBox.value.set(sunC[0], sunC[1], sunHalf, 0.8); relod(false);
+    if ((seasT -= (dt || 0.016)) > 0) return; seasT = 2; const q = seasonOf(doyNow()), u = SEAS_U.value; if (Math.abs(q[0] - u.x) + Math.abs(q[1] - u.y) + Math.abs(q[2] - u.z) < 0.004) return;
+    u.set(q[0], q[1], q[2], 0); markDirty(true);
+    const a = A2 && A2.seas; if (a && Math.abs(a.x - u.x) + Math.abs(a.y - u.y) + Math.abs(a.z - u.z) > 0.12) A2 = atlas(A2.models, A2.mats, A2.rt); });
   whenLoaded(() => { if (!window.RATSCHER || !RATSCHER.ready) return; try { build(); } catch (e) { console.warn('forest', e); } });
   // ---------- the ground shader part (world/ratscher.js terrain): needle litter and moss under the crowns, light under the canopy ----------
-  S.shader = sh => { Object.assign(sh.uniforms, CU, { tNeedle: { value: TEXMAN.needles ? texUse(texFileOf('needles', 'col'), true, [1, 1]).t : null }, tMossF: { value: TEXMAN.mossfloor ? texUse(texFileOf('mossfloor', 'col'), true, [1, 1]).t : null },
-      uFTile: { value: new THREE.Vector2((TEXMAN.needles && TEXMAN.needles.tile[0]) || 2.4, (TEXMAN.mossfloor && TEXMAN.mossfloor.tile[0]) || 2) } });
-    return `uniform sampler2D tCan, tNeedle, tMossF; uniform vec4 bCan, uSunBox; uniform vec2 uFTile; float fCan = 0.0, fOut = 1.0;
+  const FS_STUB = 'float fCan = 0.0, fOut = 1.0; vec3 forestFloor( vec2 p, vec3 c, float d ) { return c; }';
+  S.shader = sh => { if (!window.DETAIL || (window.GLCHECK && GLCHECK.lite)) return FS_STUB;   // needs tDet from the road GLSL (world/roads.js), which LITE drops
+    Object.assign(sh.uniforms, CU, { uFTile: { value: new THREE.Vector2(DETAIL.tile.needles || 2.4, DETAIL.tile.mossfloor || 2) } });
+    const LN = DETAIL.L.needles.toFixed(1), LM = DETAIL.L.mossfloor.toFixed(1);
+    return `uniform sampler2D tCan; uniform vec4 bCan, uSunBox; uniform vec2 uFTile; float fCan = 0.0, fOut = 1.0;
     vec3 forestFloor( vec2 p, vec3 c, float dist ) { vec2 dx = dFdx( p ), dy = dFdy( p ), cu = ( p - bCan.xy ) * bCan.zw;
       float k = ( cu.x > 0.0 && cu.y > 0.0 && cu.x < 1.0 && cu.y < 1.0 ) ? texture( tCan, cu ).r : 0.0;
-      vec3 nd = textureGrad( tNeedle, p / uFTile.x, dx / uFTile.x, dy / uFTile.x ).rgb, ms = textureGrad( tMossF, p / uFTile.y + 0.37, dx / uFTile.y, dy / uFTile.y ).rgb;
       fCan = k; fOut = max( smoothstep( uSunBox.z - 3.0, uSunBox.z, max( abs( p.x - uSunBox.x ), abs( p.y - uSunBox.y ) ) ), uSunBox.w );
-      float kf = smoothstep( 0.1, 0.5, k ) * ( 1.0 - smoothstep( 260.0, 650.0, dist ) );
+      float kf = smoothstep( 0.1, 0.5, k ) * ( 1.0 - smoothstep( 120.0, 260.0, dist ) );   // far away the photo's own forest floor and canopy take over
+      if ( kf < 0.001 ) return c;
+      vec3 nd = textureGrad( tDet, vec3( p / uFTile.x, ${LN} ), dx / uFTile.x, dy / uFTile.x ).rgb, ms = textureGrad( tDet, vec3( p / uFTile.y + 0.37, ${LM} ), dx / uFTile.y, dy / uFTile.y ).rgb;
       float mz = smoothstep( 0.45, 0.7, rdN( p * 0.11 + 3.1 ) ) * ( 0.6 + 0.4 * rdN( p * 0.9 ) );   // moss and leaf patches
       vec3 fl = mix( nd * vec3( 0.42, 0.37, 0.33 ), ms * vec3( 0.55, 0.66, 0.46 ), mz * 0.85 ) * ( 0.85 + 0.3 * rdN( p * 0.35 ) );
       return mix( c, fl, kf ); }`; };
   // the matching light lines (after lights_fragment_end): direct sun dimmed under the crowns beyond the shadow box, less sky
-  S.LIGHT = 'reflectedLight.directDiffuse *= 1.0 - 0.86 * fCan * fOut; reflectedLight.directSpecular *= 1.0 - 0.9 * fCan * fOut; reflectedLight.indirectDiffuse *= 1.0 - 0.42 * fCan;';
+  S.LIGHT = 'reflectedLight.directDiffuse *= 1.0 - 0.86 * fCan * fOut; reflectedLight.directSpecular *= 1.0 - 0.9 * fCan * fOut; reflectedLight.indirectDiffuse *= mix( vec3( 1.0 ), vec3( 0.46, 0.5, 0.36 ), fCan ); reflectedLight.indirectSpecular *= 1.0 - 0.8 * fCan;';
+  // ---------- V16c2 felling (world/fell.js): one tree taken out of the instancing, its profile, the gap it leaves ----------
+  S.byId = id => S.list[id];
+  S.model = m => MODELS0[m];
+  S.variant = m => VARIANTS[m];
+  S.scaleOf = t => { const Md = MODELS0[t.m]; return { s: t.h / Md.H, sw: t.h / Md.H * t.w }; };
+  // radius of the trunk of tree t at z m above its foot (world metres, as drawn)
+  S.trunkR = (t, z) => { const Md = MODELS0[t.m], s = t.h / Md.H; return Md.rAt(Math.max(0, z) / s) * s * t.w; };
+  // materials for one tree outside the instancing: the near look, bark hidden below uCut (model height), cards gone below uDelimb (share of height)
+  S.soloMats = (sp, U) => { const B = S._mk.barkTex[SPEC[sp].bark], lu = S._mk.lodU[0];
+    const bark = patch(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: B && B.map, normalMap: B && B.nrm, roughnessMap: B && B.orm, roughness: 1, envMapIntensity: 0.55 }), 'b' + sp, lu, false, U);
+    const cards = patch(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: S._mk.twig, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.82, envMapIntensity: 0.5 }), 'c' + sp, lu, true, U);
+    if (sp === 'larch') seasonal(cards, false); return { bark, cards, depth: S._mk.depth, barkMap: B }; };
+  // take a tree out of the stand: near/middle sets, its far card, its trunk for collisions, its crown from the light and litter maps
+  S.hide = t => { if (!t || t.gone) return; t.gone = true;
+    if (t.fi) { const [im, i] = t.fi; im.getMatrixAt(i, m4); m4.scale(sv3.set(0, 0, 0)); im.setMatrixAt(i, m4); im.instanceMatrix.needsUpdate = true; }
+    if (S.cov && CU.tCan.value) { splat(S.cov, t.x, t.y, t.h * 0.16 * t.w + 1.2, t.h < 6.5 ? -0.25 : -0.7, true, true); const d = CU.tCan.value.image.data, c = S.cov;
+      for (let k = 0; k < c.length; k++) d[k] = Math.round(Math.max(0, Math.min(1, c[k])) * 255); CU.tCan.value.needsUpdate = true; }
+    if (window.WCOL && WCOL.removeTree) WCOL.removeTree(t.x, t.y);
+    relod(true); };
   S.stats = () => ({ trees: S.list.length, core: S.list.filter(t => t.core).length, near: S.nNear, mid: S.nMid, ms: S.ms, build: S.buildMs, cover: CIM.reduce((n, C) => n + C.im.count, 0) });
   return S; })();
 window.FOREST = FOREST;
