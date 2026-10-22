@@ -237,8 +237,11 @@ const VILLAGE = (() => {
     for (const b of S.bld) { let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (const f of b.fac) { x0 = Math.min(x0, f.ax, f.bx); x1 = Math.max(x1, f.ax, f.bx); y0 = Math.min(y0, f.ay, f.by); y1 = Math.max(y1, f.ay, f.by); }
       b.bb = [x0, y0, x1, y1]; b.tris = []; for (let i = Math.floor(x0 / cs); i <= Math.floor(x1 / cs); i++) for (let j = Math.floor(y0 / cs); j <= Math.floor(y1 / cs); j++) { const k = i + ':' + j; let a = grid.get(k); if (!a) grid.set(k, a = []); a.push(b); } }
     const inside = (b, x, y) => { let c = false; for (const f of b.fac) { if ((f.ay > y) !== (f.by > y) && x < (f.bx - f.ax) * (y - f.ay) / (f.by - f.ay) + f.ax) c = !c; } return c; };
+    const edgeD = (b, x, y) => { let m = 1e9; for (const f of b.fac) { const dx = x - f.ax, dy = y - f.ay, t = Math.max(0, Math.min(f.L, dx * f.dx + dy * f.dy)); m = Math.min(m, Math.hypot(dx - f.dx * t, dy - f.dy * t)); } return m; };
     for (let t = 0; t < nt; t++) { let x = 0, y = 0; for (let k = 0; k < 3; k++) { const i = RI[t * 3 + k]; x += RP[i * 3] / 3; y -= RP[i * 3 + 2] / 3; }
-      for (const b of grid.get(key(x, y)) || []) if (x >= b.bb[0] - 0.3 && x <= b.bb[2] + 0.3 && y >= b.bb[1] - 0.3 && y <= b.bb[3] + 0.3 && inside(b, x, y)) { b.tris.push(t); break; } }
+      let hit = null; for (const b of grid.get(key(x, y)) || []) if (x >= b.bb[0] - 0.3 && x <= b.bb[2] + 0.3 && y >= b.bb[1] - 0.3 && y <= b.bb[3] + 0.3 && inside(b, x, y)) { hit = b; break; }
+      if (!hit) { let bd = 4; for (const b of grid.get(key(x, y)) || []) { const d = edgeD(b, x, y); if (d < bd) { bd = d; hit = b; } } }   // a triangle over a notch of an L-shaped plan: to the nearest building, as before
+      if (hit) hit.tris.push(t); else S.lostTris = (S.lostTris || 0) + 1; }
     const pos = [], nrm = [], uv = [], rk = [], tan = [];
     const push = (p, n, u, k, tg) => { pos.push(p[0], p[2], -p[1]); nrm.push(n[0], n[2], -n[1]); uv.push(u[0], u[1]); rk.push(k[0], k[1], k[2], k[3]); tan.push(tg[0], 0, -tg[1]); };
     for (const b of S.bld) { if (b.tris.length) roofOf(b, RP, RI, push, sample); }
@@ -263,7 +266,7 @@ const VILLAGE = (() => {
     const cs = []; for (const t of T) for (let k = 0; k < 7; k++) { const r1 = hh(b.id + k * 3.1), r2 = hh(b.id + k * 5.7) * (1 - r1); const [a, c, d] = t.v; const s = sample(a.x + (c.x - a.x) * r1 + (d.x - a.x) * r2, a.y + (c.y - a.y) * r1 + (d.y - a.y) * r2); if (s) cs.push(s); }
     cs.sort((p, q) => (p[0] + p[1] + p[2]) - (q[0] + q[1] + q[2])); const mid = cs.slice(Math.floor(cs.length * 0.25), Math.max(Math.floor(cs.length * 0.25) + 1, Math.floor(cs.length * 0.85)));
     let col = mid.length ? [0, 1, 2].map(i => mid.reduce((s, c) => s + c[i], 0) / mid.length) : [0.55, 0.3, 0.22];
-    if (b.st.style === ST.SCHOOL) col = [0.80, 0.33, 0.18];   // the school's orange tiles (photos)
+    if (b.st.style === ST.SCHOOL) col = [0.72, 0.29, 0.17];   // the school's red-orange tiles (photos 2013, 2026)
     const kind = roofKind(b, col); if (kind === 0) { const [h, s, l] = hsl(col); if (s < 0.22 || (h > 40 && h < 300)) col = l < 0.3 ? [0.40, 0.24, 0.18] : [0.66, 0.32, 0.22]; }
     if (kind === 4) { const l = (col[0] + col[1] + col[2]) / 3; col = [0, 1, 2].map(i => Math.min(0.62, l * 0.8 + col[i] * 0.2)); }   // flat: grey like the photo (gravel, bitumen)
     col = col.map(lin); b.roof = { kind, col };

@@ -48,7 +48,7 @@ const VPROPS = (() => {
       diffuseColor.rgb *= texture2D( tKit, vUv * ${(1 / tile).toFixed(4)} ).rgb / max( textureLod( tKit, vec2( 0.5 ), 12.0 ).rgb, vec3( 0.01 ) );`); }; }
     m.customProgramCacheKey = () => 'v16e-kit' + tile; return m; }
   // ---- colours (sRGB from the photos, linear here) ----
-  const PAVE = L(0.55, 0.54, 0.52), SL = L(0.27, 0.29, 0.32), SLD = L(0.20, 0.21, 0.24), WOOD = L(0.40, 0.27, 0.17), WOODD = L(0.30, 0.20, 0.13), STONE = L(0.62, 0.58, 0.50), IRON = L(0.12, 0.12, 0.12);
+  const PAVE = L(0.42, 0.41, 0.39), SL = L(0.27, 0.29, 0.32), SLD = L(0.20, 0.21, 0.24), WOOD = L(0.40, 0.27, 0.17), WOODD = L(0.30, 0.20, 0.13), STONE = L(0.62, 0.58, 0.50), IRON = L(0.12, 0.12, 0.12);
   // ---- the old school: ridge turret with clocks, siren (building 215, ridge along the long axis; the turret at the west-north-west end) ----
   const CLK = { hands: null, dials: [], last: -1 };
   function school(kP, kM) { const b = window.VILLAGE && VILLAGE.byId.get(215); if (!b) return;
@@ -87,23 +87,23 @@ const VPROPS = (() => {
     const hg = new THREE.BufferGeometry(); hg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(CLK.dials.length * 2 * 6 * 3), 3)); hg.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(CLK.dials.length * 2 * 6 * 3), 3));
     CLK.hands = mesh(hg, new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5, metalness: 0.4, side: THREE.DoubleSide })); CLK.hands.frustumCulled = false; clockSet(true); }
   function clockSet(force) { if (!CLK.hands) return; const t = window.CLOCK ? CLOCK.t : (Date.now() / 60000), m = Math.floor(t); if (!force && m === CLK.last) return; CLK.last = m;
-    const hrs = ((t / 60) % 12 + 12) % 12, mins = ((t % 60) + 60) % 60, P = CLK.hands.geometry.attributes.position.array, N = CLK.hands.geometry.attributes.normal.array; let o = 0;
+    const hrs = ((t / 60) % 12 + 12) % 12, mins = ((t % 60) + 60) % 60; CLK.h = hrs; CLK.m = mins; const P = CLK.hands.geometry.attributes.position.array, N = CLK.hands.geometry.attributes.normal.array; let o = 0;
     for (const d of CLK.dials) { const rx = -d.ny, ry = d.nx, off = 0.02;
       for (const [ang, len, w] of [[hrs / 12 * Math.PI * 2, 0.24, 0.035], [mins / 60 * Math.PI * 2, 0.36, 0.025]]) { const ux = Math.sin(ang), uz = Math.cos(ang);   // along the hand: right·sin + up·cos
         const pt = (s, t2) => [d.x + d.nx * off + rx * (ux * s + uz * t2), d.y + d.ny * off + ry * (ux * s + uz * t2), d.z + (uz * s - ux * t2)];
         const q = [pt(-0.06, -w / 2), pt(len, -w / 2), pt(len, w / 2), pt(-0.06, w / 2)];
         for (const p of [q[0], q[1], q[2], q[0], q[2], q[3]]) { P[o] = p[0]; P[o + 1] = p[2]; P[o + 2] = -p[1]; N[o] = d.nx; N[o + 1] = 0; N[o + 2] = -d.ny; o += 3; } } }
     CLK.hands.geometry.attributes.position.needsUpdate = true; CLK.hands.geometry.attributes.normal.needsUpdate = true; CLK.hands.geometry.computeBoundingSphere(); markDirty(); }
-  // ---- the Dorflinde (1888): a generated lime, 17 m; the measured crowns there are hidden ----
+  // ---- the Dorflinde (1888): a generated lime, 21 m (twice the ridges around it in the photo); the measured crowns there are hidden ----
   function hideTrees(x, y, r) { const m4 = new THREE.Matrix4(), z0 = new THREE.Matrix4().makeScale(0, 0, 0);
     for (const im of [...(RATSCHER.trees || []), ...(RATSCHER.mid || [])]) { let ch = false; for (let i = 0; i < im.count; i++) { im.getMatrixAt(i, m4); const e = m4.elements; if (Math.hypot(e[12] - x, -e[14] - y) < r) { im.setMatrixAt(i, z0); ch = true; } } if (ch) im.instanceMatrix.needsUpdate = true; }
     const T = RATSCHER.treeXY; if (T && T.length) { const keep = []; for (let i = 0; i + 2 < T.length; i += 3) if (Math.hypot(T[i] - x, T[i + 1] - y) >= r) keep.push(T[i], T[i + 1], T[i + 2]); T.length = 0; T.push(...keep); } }
   function linde(kP, kS) { const [x, y] = S.LINDE, z = gz(x, y); hideTrees(x, y, 7);
-    let K = null; try { K = buildTreeKind({ key: 'linde', preset: 'Oak Large', seed: 1888, tint: 0xd2e2bc, mod: o => {   // a broad, dense crown down to 3 m (photo 2026)
+    let K = null; try { K = buildTreeKind({ key: 'linde', preset: 'Oak Large', seed: 1888, tint: 0x93b474, mod: o => {   // a broad, dense crown down to 3 m (photo 2026)
       Object.assign(o.branch.angle, { 1: 60, 2: 44, 3: 34 }); Object.assign(o.branch.children, { 0: 12, 1: 7, 2: 4 }); Object.assign(o.branch.length, { 0: 40, 1: 31, 2: 16, 3: 8 });
       o.branch.start['1'] = 0.2; o.branch.radius['0'] = 3.6; o.branch.gnarliness['1'] = 0.07; o.branch.force.strength = 0.006;
-      o.leaves.type = 'oak'; o.leaves.count = 16; o.leaves.size = 5.2; o.leaves.sizeVariance = 0.55; o.leaves.start = 0.0; } }); } catch (e) { console.warn('linde', e); }
-    if (K) { const s = 18 / K.H, m4 = new THREE.Matrix4().compose(V(x, y, z - 0.15), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.7), new THREE.Vector3(s * 1.12, s, s * 1.12)); S.lindeR = K.R * s * 1.12;
+      o.leaves.type = 'oak'; o.leaves.count = 18; o.leaves.size = 5.6; o.leaves.sizeVariance = 0.55; o.leaves.start = 0.0; } }); } catch (e) { console.warn('linde', e); }
+    if (K) { const s = 21 / K.H, m4 = new THREE.Matrix4().compose(V(x, y, z - 0.15), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.7), new THREE.Vector3(s * 1.2, s, s * 1.2)); S.lindeR = K.R * s * 1.2;
       K.bg.applyMatrix4(m4); K.lg.applyMatrix4(m4); K.leaf.envMapIntensity = 0.35; K.leaf.roughness = 0.95;   // less sky sheen on the leaves (backlit they looked frosted)   // in place, in world coordinates: VEG.lod and the frustum test both read the bounding sphere as world space
       const bark = new THREE.Mesh(K.bg, K.bark), leaf = new THREE.Mesh(K.lg, K.leaf), lo = new THREE.Mesh(thinCards(K.lg, 0.4, 1.45), K.leaf);
       for (const me of [bark, leaf, lo]) { me.userData.noMerge = true; me.castShadow = false; me.receiveShadow = false; me.geometry.computeBoundingSphere(); scene.add(me); S.meshes.push(me); }
@@ -193,15 +193,15 @@ const VPROPS = (() => {
     // light on the ground under each lamp: a soft disc, added on top (at night only)
     const c = document.createElement('canvas'); c.width = c.height = 128; const x2 = c.getContext('2d'), gr = x2.createRadialGradient(64, 64, 0, 64, 64, 64);
     gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,255,0.5)'); gr.addColorStop(0.6, 'rgba(255,255,255,0.12)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); x2.fillStyle = gr; x2.fillRect(0, 0, 128, 128);
-    const pg = new THREE.PlaneGeometry(11, 11); pg.rotateX(-Math.PI / 2);
+    const pg = new THREE.PlaneGeometry(9, 9); pg.rotateX(-Math.PI / 2);
     const mPool = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), color: 0x000000, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
     const iP = new THREE.InstancedMesh(pg, mPool, n); spots.forEach(([x, y], i) => { m4.makeTranslation(x, gz(x, y) + 0.12, -y); iP.setMatrixAt(i, m4); });
     iP.userData.noMerge = true; iP.renderOrder = 2; iP.visible = false; iP.computeBoundingSphere(); scene.add(iP); S.meshes.push(iP); S.pool = iP; }
   // ---- night: lamps on below the horizon (or in the evening light mode), the nearest light the facades ----
   const _v = new THREE.Vector3(), LV = [];
-  function tick() { const V2 = window.VILLAGE; clockSet(false); if (!S.glass || !V2 || !V2.U) return;
+  function tick() { const V2 = window.VILLAGE; clockSet(false); if (S.lindeMeshes && RATSCHER.map) { S.lindeMeshes[1].visible = S.lindeMeshes[2].visible = false; } if (!S.glass || !V2 || !V2.U) return;
     const n = V2.night ? V2.night() : 0, on = n > 0.08 ? Math.min(1, (n - 0.08) / 0.3) : 0;
-    if (Math.abs(on - (S.on1 || 0)) > 0.01) { S.on1 = on; S.glass.emissiveIntensity = 6 * on; S.pool.material.color.setRGB(0.42 * on, 0.29 * on, 0.15 * on); S.pool.visible = on > 0.01; markDirty(); }
+    if (Math.abs(on - (S.on1 || 0)) > 0.01) { S.on1 = on; S.glass.emissiveIntensity = 6 * on; S.pool.material.color.setRGB(0.24 * on, 0.165 * on, 0.085 * on); S.pool.visible = on > 0.01 && !RATSCHER.map; markDirty(); }
     const U = V2.U.uLampV; if (!U) return; const arr = U.value;
     if (on <= 0.01) { if (arr[0].w !== 0) { for (const a of arr) a.w = 0; markDirty(); } return; }
     const cp = cam.position; LV.length = 0; for (const l of S.lamps) { const d = (l.x - cp.x) ** 2 + (-l.y - cp.z) ** 2; LV.push([d, l]); } LV.sort((a, b) => a[0] - b[0]);
@@ -225,9 +225,10 @@ const VPROPS = (() => {
     if (S.segs.length || S.benches.length) { const W0 = RATSCHER.walls || new Float32Array(0), add = [...S.segs]; for (const b of S.benches) add.push(...b); const W1 = new Float32Array(W0.length + add.length); W1.set(W0); W1.set(add, W0.length); RATSCHER.walls = W1; }
     if (RATSCHER.treeXY) for (const t of S.trunks) RATSCHER.treeXY.push(t[0], t[1], t[2]);
     if (typeof SPOTS !== 'undefined') { const x = 241.5, y = -101.5; SPOTS.dorf = { mode: 'walk', pos: [x, y], z: gz(x, y), yaw: 292, pitch: 3, label: 'Dorf (Anger)' }; }
+    for (const m of S.meshes) if (!S.lindeMeshes || !S.lindeMeshes.slice(1).includes(m)) { if (m !== S.pool) RATSCHER.bld.push(m); }   // hidden with the buildings in the map view
     (window.TICKS || (window.TICKS = [])).push(tick);
     S.on = true; S.ready = true; S.ms = Math.round(performance.now() - t0); markDirty(true); }
-  S.dispose = () => { for (const m of S.meshes) { scene.remove(m); if (m.geometry) m.geometry.dispose(); } S.meshes.length = 0; S.lamps.length = 0; const i = (window.TICKS || []).indexOf(tick); if (i >= 0) TICKS.splice(i, 1);
+  S.dispose = () => { for (const m of S.meshes) { scene.remove(m); if (m.geometry) m.geometry.dispose(); const k = RATSCHER.bld.indexOf(m); if (k >= 2) RATSCHER.bld.splice(k, 1); } S.meshes.length = 0; S.lamps.length = 0; const i = (window.TICKS || []).indexOf(tick); if (i >= 0) TICKS.splice(i, 1);
     for (const L2 of [...VEG.lod]) if (S.lindeMeshes && S.lindeMeshes.includes(L2.hi)) VEG.lod.splice(VEG.lod.indexOf(L2), 1); CLK.hands = null; CLK.dials.length = 0; S.ready = false; };
   whenLoaded(() => { if (!RATSCHER.ready) return; try { build(); } catch (e) { console.warn('village props', e); } });
   // ---- names while walking (game/game.js placeName): the places of the centre, else the street (OSM names) ----
@@ -239,6 +240,7 @@ const VPROPS = (() => {
     let best = null, bd = 18; for (const [n, ls] of Object.entries(STREETS)) for (const l of ls) for (let i = 0; i + 3 < l.length; i += 2) {
       const ax = l[i], ay = l[i + 1], dx = l[i + 2] - ax, dy = l[i + 3] - ay, L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2)), e = Math.hypot(x - ax - dx * t, y - ay - dy * t); if (e < bd) { bd = e; best = n; } }
     return best ? 'Ratscher · ' + best : null; };
+  S.clock = () => CLK.hands ? { h: +CLK.h.toFixed(3), m: +CLK.m.toFixed(2) } : null;   // the hands' time (tests)
   S.kit = kit; S.bench = (k, x, y, a, len) => bench(k, x, y, a, len);
   return S; })();
 window.VPROPS = VPROPS;

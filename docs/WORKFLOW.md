@@ -52,6 +52,7 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 | v16a.py, v16a_b.py, v16a_c.py | Tag/Nacht: Stunden, Mondphasen, Draufsicht nachts, Nachbarn nachts, Oktober | je 10–20 min |
 | v16a_lapse.py, v16a_video.py | Zeitraffer eines Tages (Bilderbogen, mp4) | 15–25 min |
 | v16b.py | Fahrzeuge: Einsteigen, Gas/Bremse/rückwärts, Hauswand, Route Garten → Klinge mit Ortsnamen, Aussteigen und Gehen im Gelände, Traktor mit Frontlader, Licht nachts, HUD mit Karte, Zurückstellen, Telefon (Antippen, Kreis, Platz der Anzeigen) (Abschnitte: `car,drive,crash,route,walk,tractor,night,ui,phone`) | 20–30 min |
+| v16e.py | Dorf nach Fotos: Stile und Dächer aller Gebäude, Schule mit Uhr (folgt der Spielzeit), Dorflinde (Messbäume ausgeblendet), Laternen, Ortsnamen, Menüort „Dorf“, Nahdetails laden/verwerfen, Kollision Brunnen/Laternen/Linde, Nacht (Fenster, Laternen, Licht an Wänden), Bilder von den Fotostellen, Texturen je Shader (Abschnitte: `load,places,near,walk,night,shots,gl`) | 10–15 min |
 | prof.py, loadtime.py | Kosten pro Frame (TICKS), Draw-Calls/Speicher; Ladezeiten | 10 min |
 | bilder.py `b21 B` | Galeriebilder nach `dist/img` (`?offline=1`, hohe Qualität) | je 2 min |
 | pano.py, tour.py, gi.py, bake.py | 360°-Bilder, Raumführung, GI- und Himmelssichtbarkeits-Volumen backen | lang |
@@ -106,4 +107,8 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 - **Straßen und Wege**: `python3 tools/geo/build_roads.py` (braucht die Geo-Originale unter `<repo>/geo` bzw. `PAV_GEO`), dann
   `geo/out/pub/roads.b64.json` nach `viz3/dist/geo/` kopieren und in `viz3/manifests.json` `geoman.roads` aus `geo/out/pub/geo.json` übernehmen
   (oder Voll-Build). Aussehen der Straßen: GLSL in `world/roads.js` (`roadShade`, `landDetail`).
+- **Dorf** (V16e): Stil eines Hauses in `world/village.js` `styleOf` (nach Gebäudenummer festlegbar, z. B. die Schule 215); Fassadenbild im GLSL von
+  `wallMat`, Dächer in `roofOf`; Wahrzeichen und Laternen in `world/village_props.js` (Lage in Grundstücks-Koordinaten, Fotostandorte im Kopf
+  von `test/v16e.py`); Zäune, Tonnen usw. in `world/village_near.js` `house()`. Gebäudenummer an einer Stelle: im Testserver
+  `VILLAGE.bld.filter(b => Math.hypot(b.cx - x, b.cy - y) < 20)`. Test `v16e.py`.
 - **Oberfläche**: Menü-Einträge `shell/menu.html`, HUD-Knöpfe `shell/panel_3d.html`, Fenster-Container `shell/windows.html`, Stil im passenden `shell/css/*.css`, Hinweise „Was das Modell zeigt“ `shell/notes.html`.

@@ -22,7 +22,7 @@ Reihenfolge (Zwischenversionen, jeweils veröffentlichen):
 4. **V16d Stämme → Bretter → Trocknen**: Traktor-Gabel heben/stapeln, Anhänger, zum Holzlager (Werkstatt West), auf die Blockbandsäge;
    Einschnitt in Bohlen/Bretter (Stärke wählen), stapeln mit Stapelleisten (Luftfeuchte, Dach), Trocknung: frisch Eiche ~70 % → Luft ~1 Jahr je
    25 mm auf ~15 %, Trockenkammer auf 8–10 %; Feuchtemesser; Zeitraffer. Fertige Bohlen → Werkstatt (Stirnholzbrett aus eigenem Holz).
-5. **V16e Dorf**: Ratscher nach Fotos (research/ratscher_photos, ratscher_roofs.json): Fassaden (Schiefer, Fachwerk, Putz pastell),
+5. **V16e Dorf – FERTIG (22.10.2026, parallel zu V16c)**: Ratscher nach Fotos (research/ratscher_photos, ratscher_roofs.json): Fassaden (Schiefer, Fachwerk, Putz pastell),
    Ziegeldächer, Dorfbrunnen, Dorflinde (1888), alte Schule mit Glockentürmchen; Straßenlaternen; Streaming/LOD für Performance.
 
 Recherche: research/klinge.md, klinge_geo.json (Polylinien Route, Waldrand, Kandidatenflächen, Höhenprofil), dl_car/ (Logan-Fotos),
@@ -52,3 +52,24 @@ dl_paint/ (Farbtafeln), ratscher_photos/.
 - Gehen im ganzen Quadrat (Gelände, Wände, Stämme, geparkte Fahrzeuge), Menü „Zum Auto“/„Zum Traktor“/„Fahrzeuge zurückstellen“; am Telefon
   Kreis links (Gas/Bremse/Lenken), Knöpfe am Tacho, Antippen zum Ein-/Aussteigen.
 - Offen/später: Verkehr, Straßenlaternen und Dorf nach Fotos (V16e), Wald an der Klinge in 3D (V16c), Anhänger/Lasten (V16d).
+
+## V16e – umgesetzt
+- Vorlage: 17 Fotos auf Wikimedia Commons (Kategorie „Ratscher (Schleusingen)“: Aschroet 1.8.2026 CC0 mit Kamerastandort, Störfix 2013,
+  Michael Köhler 1986/1997), OpenStreetMap (amenity=fountain, Brunnen, Bushaltestelle mit Wartehäuschen, Briefkasten, Bänke,
+  Straßennamen, Hausnummern), Wikipedia (alte Schule 1828 mit Glockenturm, heute Vereinsheim der Feuerwehr; Dorflinde gepflanzt 1888).
+- Fassaden-Shader auf den Wänden aus `ratscher.js` (die Datei bleibt unverändert): Schiefer (ganz, nur oben, nur Giebel; weiße Rauten),
+  Fachwerk (ganz oder Obergeschoss; Dunkelbraun, Ochsenblutrot, Schwarz), Putz pastell, Neubau-Putz mit großen Fenstern, Scheunen aus
+  Brettern auf Mauersockel, Ziegel, Hallen aus Trapezblech. Fenster mit Laibung (Sehstrahl im Wandsystem), Rahmen, Flügeln, Kämpfer,
+  Gardinen, Sohlbank, manchmal Läden; Türen und Tore zur nächsten Straße (Straßenkarte). Dächer neu: Überstand an Traufe und Ortgang,
+  Untersicht, Stirnbrett, Rinne, Fallrohr, Firstziegel, Schornstein; Farbe aus dem Luftbild je Gebäude; Flachdächer grau mit Attika.
+- Alte Schule (Gebäude 215): rotes Fachwerk, Schiefergiebel, Dachreiter (Schiefer, Uhr mit Spielzeit auf vier Seiten, Schallläden,
+  welsche Haube, Kugel, Wetterfahne), Sirene, Ziegel-Schornstein, Tür an der Südseite. Dorflinde 21 m, Bankring, Pflaster; Brunnen
+  (versenktes Sandsteinbecken, Stufen, Blumen) auf gepflastertem Platz mit Bordstein, Bank und Laterne; Wartehäuschen mit H-Schild,
+  Briefkasten, Wegweiser. Laternen (Laternenkopf wie auf dem Foto) an den Dorfstraßen nahe Häusern, nachts mit Lichtflecken und Licht
+  an den Wänden (acht nächste); Fensterlicht nach Uhrzeit.
+- Nahdetails nach Entfernung (80-m-Zellen, laden ab 95 m, verwerfen ab 170 m): Zäune und Hecken zur Straße mit Gartentor, Briefkasten,
+  Blumenkästen, Mülltonnen, Holzstapel, Türlampe, blaue Hausnummer, Satellitenschüssel.
+- Ortsnamen beim Gehen („Ratscher · Dorflinde am Anger“, „… · Alte Schule (1828)“, Straßen aus OSM), Menüort „Dorf“. Kollision mit Brunnen,
+  Laternen, Linde, Wartehäuschen, Bänken.
+- Offen/später: Bäume im Dorf in 3D nahe der Kamera (mit dem Wald-LOD von V16c abstimmen), Gauben, Fassaden einzelner Häuser nach
+  Falkos eigenen Fotos (Stil je Gebäudenummer in `styleOf`), Verkehr.

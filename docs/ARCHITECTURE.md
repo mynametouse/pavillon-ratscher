@@ -1,6 +1,6 @@
 # Architektur der App (viz3)
 
-Stand: V16b (Oktober 2026). Kurz: **ein Bündel, ein gemeinsamer Gültigkeitsbereich, Module in fester Reihenfolge, jede
+Stand: V16e (Oktober 2026). Kurz: **ein Bündel, ein gemeinsamer Gültigkeitsbereich, Module in fester Reihenfolge, jede
 Schnittstelle als `window.NAME`**. Kommentare im Code sind Englisch, Texte in der Oberfläche Deutsch.
 
 ## 1 Grundprinzip
@@ -77,6 +77,9 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `RATSCHER` | world/ratscher.js | echte Umgebung: Gelände (`hAt`, `hMesh`, `box`), Luftbilder, Gebäude (`walls`: Wandfüße), Bäume (`treeXY`) |
 | `ROADS` | world/roads.js | Straßen und Wege aus OSM: Straßenkarte für die Boden-Shader (`roadShade`, `landDetail`), Oberfläche unter einem Punkt (`at`), Boden (`groundAt`), Brücken (`decks`), Ortsnamen (`place`), Routen (`routes.klinge`) |
 | `WCOL` | world/worldcol.js | Kollision mit der echten Umgebung: Wände aller Gebäude, Stämme, Brückengeländer (`each`, `pushCircle`) |
+| `VILLAGE` | world/village.js | V16e Ratscher nach Fotos: Fassaden-Shader auf den Wänden von `RATSCHER`, neu gebaute Dächer mit Überstand, Schornsteine, Fensterlicht (`bld`, `byId`, `ST`, `night()`, `U`) |
+| `VPROPS` | world/village_props.js | V16e Ortsmitte: alte Schule mit Dachreiter und Uhr, Dorflinde, Brunnen, Bushaltestelle, Laternen, Ortsnamen (`place`), Geometrie-Baukasten (`kit`) |
+| `VNEAR` | world/village_near.js | V16e Nahdetails je 80-m-Zelle, nach Entfernung geladen und verworfen: Zäune, Hecken, Blumenkästen, Tonnen, Holzstapel, Türlampen (`state()`) |
 | `VEH`, `VSND`, `MMAP` | vehicles/ | Fahrzeuge (`VEH.add(spec, model)`, `enter/exit/goTo/place/state/follow/reset`, Kameras, Licht, HUD); Fahrzeugtöne; Karte beim Fahren |
 | `SITEPLAN`, `PLANNER` | world/siteplan.js, pavilion/plan.js | Draufsicht (Gebäude verschieben, Zäune), Möbel planen, Plan veröffentlichen |
 | `GAME` | boot/boot.js | Test- und Steuer-API: `go(spot)`, `view(x,y,z,yaw,pitch)`, `step`, `shot`, `setMode`, `setPhase`, `setVariant` … |
@@ -120,7 +123,8 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `game/` – Gehen/Kamera/Schleife, Aktionen/Inventar, Haus (Schalter, Ofen, Sitzen), Aufgaben, HUD, Spielfigur
 - `audio/` – Ton-Engine (Aufnahmen, Synthese, Atmosphäre, Stimmen), Musik (Klavier, Platten, Ukulele)
 - `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus
-- `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Kollision mit der Umgebung (`worldcol`)
+- `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
+  Kollision mit der Umgebung (`worldcol`)
 - `time/` – Uhr, Sterndaten, Tag und Nacht
 - `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster
 - `boot/` – Start
@@ -178,3 +182,30 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 3. Test in `viz3/test/v16b.py` ergänzen (Abschnitte wählbar), Eintrag in docs/CHANGELOG.md.
 4. Allgemein für neue Module: IIFE, API auf `window`, Pro-Frame-Arbeit über `window.TICKS`, Aktionen über `PLAY.act`, Spielstand mit eigenem
    `pav-…-v1`-Schlüssel (Abschnitt 8), Texte deutsch, Quellen in `buildlib/credits.py`.
+
+## 13 Das Dorf nach Fotos (V16e)
+
+- **Grundlage**: die 337 Gebäude aus `world/ratscher.js` (OSM-Grundrisse, Höhe und Dachform aus dem Oberflächenmodell). Die Wände bleiben dessen
+  Geometrie (Quads `[A Fuß, A oben, B Fuß, B oben]`, `aW` = u um den Grundriss, v über dem Fuß, Oberkante, 4·id+Typ); `ratscher.js` bleibt
+  unverändert. `VILLAGE` liest die Meshes nach dem Aufbau (`whenLoaded`, Modul-Reihenfolge vor `worldcol.js`), fasst kollineare Quads zu
+  Fassaden zusammen (Traufe, Giebel mit First, Pultseite), gibt jedem Gebäude einen Stil (`styleOf`: Typ, Größe, Nähe zum Anger, Zufall aus
+  der Nummer; die alte Schule = Gebäude 215) und setzt neue Attribute: `aV` (u auf der Fassade, Länge, Traufhöhe, Stil), `aG` (Oberkante:
+  Anfang, First und seine Lage, Ende), `aD` (Tür/Tor, Achsabstand, Bits: Giebel, Läden, Ornament, Hochparterre), `aC` (Farbe, Indizes für
+  Holz, Rahmen, Tür, Läden), `aTan` (Wandrichtung). **Ganzzahlige Codes im Shader runden** (`floor(x + 0.5)`) – interpoliert kommen sie
+  einen Hauch daneben heraus, sonst flackern Bits pixelweise.
+- **Fassaden-Shader** (`wallMat`): Fensterachsen gleichmäßig über die Fassade, ein Fenster nur, wo es unter Traufe/Giebellinie passt (so
+  entstehen Dachfenster im Giebel von selbst); Schiefer mit Schuppen und Rauten, Fachwerk (Schwelle, Rähm, Riegel, Pfosten an den
+  Fenstern, Streben in den Endfeldern), Bretter, Ziegel, Blech, Putz mit Sockel. **Fenster mit Tiefe ohne Geometrie**: Der Sehstrahl wird in
+  das Wandsystem (u, v, Normale) umgerechnet; trifft er die Laibung, bekommt das Pixel deren Normale (die Sonne beleuchtet sie richtig),
+  sonst Glas, Rahmen, Sprossen, Gardinen in der Glasebene. Fern: Mittelwerte statt feiner Linien (`fwidth`). Nachts: Fensterlicht nach
+  Uhrzeit (`uWinP`), die acht nächsten Laternen beleuchten die Wände (`uLampV`, Sichtraum).
+- **Dächer**: die angepassten Dreiecke je Grundriss neu gebaut. Ecken auf dem Umriss rücken nach außen (Traufe 0,45 m, Ortgang 0,3 m) und
+  in ihrer Dachebene nach unten; dazu Untersicht, Stirnbrett, Rinne mit Fallrohr, Firstziegel, Schornstein. Dachfarbe aus dem Luftbild
+  (Median im Grundriss, Schatten und Glanz weggelassen) → Tonziegel, Faserzement, Blech, Schiefer oder Flachdach mit Attika.
+- **Ortsmitte** (`VPROPS`): Geometrie aus dem Baukasten `kit()` (Lage in Grundstücks-Koordinaten, uv in Metern, Vertexfarben); Dorflinde aus
+  `buildTreeKind` (Transform in die Geometrie gebacken: `VEG.lod` und Frustum lesen die Kugel als Weltraum), die gemessenen Kronen dort werden
+  ausgeblendet. Laternen als `InstancedMesh` entlang der OSM-Straßen nahe Häusern; Lichtflecken additiv. Kollision: Segmente und Pfosten
+  werden vor `WCOL.build` an `RATSCHER.walls`/`treeXY` gehängt.
+- **Nahdetails** (`VNEAR`): je 80-m-Zelle ein Mesh, gebaut wenn die Kamera auf 95 m herankommt (eine Zelle pro Takt), verworfen ab 170 m und in der
+  Draufsicht. Fensterlage für Blumenkästen wie im Shader (gleiche Achsen-Regel). Neues Detail: in `house()` ergänzen, Material-Arten über `aK`.
+- Texturen je Programm (`GLCHECK`): Fassaden 5, Dächer 7, Requisiten 3, Nahdetails 2.

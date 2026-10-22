@@ -1,11 +1,11 @@
 // ===================== V16e near the walker: what makes the village lived in, loaded and dropped by distance (VNEAR) =====================
 // Per house (always the same, from its number): a fence or a hedge along the street with a gate at the door, flower boxes under the street
 // windows, wheelie bins, a woodpile at a side wall (barns too), a lamp over the door (lit at night), the blue house-number plate,
-// sometimes a satellite dish. Built per 64 m cell when the camera comes within 125 m, one cell per tick, and dropped again beyond 200 m:
+// sometimes a satellite dish. Built per 80 m cell when the camera comes within 95 m of it, one cell per tick, and dropped again beyond 170 m:
 // one mesh and one draw call per cell, one material for all (kinds: plain, log ends, hedge leaves, boards, lamp glass). Window places
 // follow the facade shader's bays (world/village.js); fences stop short of other buildings and of the road (ROADS.edge).
 const VNEAR = (() => {
-  const S = { on: false, cells: new Map(), built: 0, dropped: 0, CS: 64, R1: 125, R2: 200 };
+  const S = { on: false, cells: new Map(), built: 0, dropped: 0, CS: 80, R1: 95, R2: 170 };
   if (!window.RATSCHER || !RATSCHER.on) return S;
   const hh = n => { const s = Math.sin(n * 12.9898 + 4.1) * 43758.5453; return s - Math.floor(s); };
   const lin = c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4), L = (r, g, b) => [lin(r), lin(g), lin(b)];

@@ -62,7 +62,7 @@ with lib.browser() as b:
             if fs['done']: break
         print('places', sorted(places))
         check('drives the route to the Klinge', E("window._fs.done") and E("ROADS.place(VEH.cur.st.x, VEH.cur.st.y)") == 'Untere Klinge', f"{T} s")
-        check('names on the way', 'Ratscher' in places and any('Landstraße' in p or 'Feldweg' in p for p in places), '')
+        check('names on the way', any(p.startswith('Ratscher') for p in places) and any('Landstraße' in p or 'Feldweg' in p for p in places), '')   # V16e: in the village also 'Ratscher · <Straße>'
         E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null"); lib.shot(pg, OUT, 'c_klinge')
     if want('walk') or want('tractor'):
         if not E("VEH.cur") and not E("PLAY.seated()"):
