@@ -10,6 +10,7 @@ which catches ditches and slopes beside the road. Measured on the main road: 55 
 - Measured like the app sees it: the triangles of the 10 m mesh with the grid lines next to +-120 m moved onto the edge.
     python3 -I tools/geo/smooth_roads.py viz3/dist/geo viz3/manifests.json <outdir> [FULL FADE]
 writes <outdir>/terrain.b64.json (replaces viz3/dist/geo/terrain.b64.json; outer grid unchanged) and prints the metrics before/after;
+once applied, viz3/manifests.json gets geoman.terrain.roads = '<what, when>' so it is not applied twice;
 z0.npy, z1.npy, network.json are for diagnostics. Before using it: look at it in the app (drive the main road, the village, bridges).
 Known limits: the bench beside a road is as wide as the 10 m grid allows (cut/fill up to ~2 m on slopes); junction steps are much
 smaller but not gone; near building walls the change is limited."""
@@ -18,10 +19,13 @@ from scipy.sparse import coo_matrix
 from scipy.sparse.linalg import spsolve
 from scipy.spatial import cKDTree
 
-G, MAN, OUT = sys.argv[1:4]; os.makedirs(OUT, exist_ok=True)
-FULL = float(sys.argv[4]) if len(sys.argv) > 4 else 6.0
-FADE = float(sys.argv[5]) if len(sys.argv) > 5 else 8.0
+A = [a for a in sys.argv[1:] if not a.startswith('--')]
+G, MAN, OUT = A[:3]; os.makedirs(OUT, exist_ok=True)
+FULL = float(A[3]) if len(A) > 3 else 6.0
+FADE = float(A[4]) if len(A) > 4 else 8.0
 M = json.load(open(MAN))['geoman']; I = M['terrain']['inner']; n, st, x0, y0 = I['n'], I['step'], I['x0'], I['y0']
+if M['terrain'].get('roads') and '--force' not in sys.argv:   # the published terrain is smoothed already (marker in the manifest)
+    sys.exit(f"terrain already smoothed ({M['terrain']['roads']}) – smoothing it again would flatten it twice; --force to do it anyway")
 raw = bytearray(base64.b64decode(json.load(open(os.path.join(G, 'terrain.b64.json')))['b64']))
 z0 = np.frombuffer(bytes(raw), dtype='<i2', count=n * n).reshape(n, n).astype(float) / 10.0
 XS = x0 + np.arange(n) * st; YS = y0 + np.arange(n) * st

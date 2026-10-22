@@ -2,7 +2,7 @@
 Works on the built asset set (viz3/dist, fetched from gh-pages - no originals needed) and on viz3/manifests.json:
 - voice lines: ids, files and speaker renamed (hubert_* -> guenter_*, ronald_* -> bernd_*); lines whose text names a neighbour are spoken
   anew with the same edge-tts voice, rate and pitch and the same ffmpeg chain as tools/voices/lines3.py, durations updated
-- dialogue topics: keys and labels; character files chars/<name>.json and the character manifest
+- dialogue topics: keys and labels; character files chars/<name>.json, the clip sets in chars/clips.json and the character manifest
 - files named after the old names are removed from the asset dir, so the next publish leaves none behind
     python3 -I tools/voices/rename_neighbours.py viz3/dist viz3/manifests.json [--dry]
 The app code (ids 'hubert'/'ronald', texts, saved keys) is renamed separately; saved games migrate through SAVE."""
@@ -52,6 +52,14 @@ for o, n in NEW.items():
         print('char ', o, '->', n, flush=True)
         if not DRY: shutil.copy2(src, dst)
         old_files.append(src); cm[n] = n + '.json'; del cm[o]
+# animation clips per character (chars/clips.json: one key per character)
+cf = os.path.join(DIST, 'chars', cm.get('clips', 'clips.json'))
+if os.path.exists(cf):
+    clips = json.load(open(cf))
+    if any(o in clips for o in NEW):
+        print('clips', [o for o in NEW if o in clips], flush=True)
+        if not DRY: json.dump({NEW.get(k, k): v for k, v in clips.items()}, open(cf, 'w'), separators=(',', ':'))
+if isinstance(M.get('credits'), str): M['credits'] = retext(M['credits'])   # the credits list, cached for fast builds
 if DRY: sys.exit(print('dry run - nothing written'))
 for f in old_files:
     if os.path.exists(f): os.remove(f)
