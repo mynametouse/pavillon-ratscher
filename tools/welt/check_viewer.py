@@ -57,8 +57,14 @@ with sync_playwright() as p:
     pg.on('console', lambda m: m.type == 'error' and res['console_errors'].append(m.text[:300]))
     pg.on('pageerror', lambda e: res['page_errors'].append(str(e)[:300]))
     t0 = time.time()
-    pg.goto(a.url, wait_until='load', timeout=120000)
-    pg.wait_for_function('window.WELT && window.WELT.ready === true', timeout=120000)
+    try:
+        pg.goto(a.url, wait_until='load', timeout=120000)
+        pg.wait_for_function('window.WELT && window.WELT.ready === true', timeout=120000)
+    except Exception as e:   # the page did not start: keep what can be seen
+        check('start', False, f'{e!r}'[:300] + f" console: {res['console_errors'][:3]} page: {res['page_errors'][:3]}")
+        pg.screenshot(path=os.path.join(a.out, '0_start.png'))
+        json.dump(res, open(os.path.join(a.out, 'check.json'), 'w'), indent=1, ensure_ascii=False)
+        sys.exit(1)
     check('start', True, f'{time.time() - t0:.1f} s')
     t_idle = wait_idle(pg, a.wait)
     st = pg.evaluate('WELT.stats()')
