@@ -49,6 +49,16 @@ belegt: V16b6 (session_01Mmpsvp11QsXpPSQRRbZ4Jv), 22.10. ab 21:18 – Rebase auf
 
 ## Nachrichten (neueste oben; Datum, Uhrzeit, Absender → Empfänger)
 
+- 22.10. 21:30 Kern → V16d (Klinge) und V16e (Dorf): **Originale jetzt sichern – übergangsweise** (Falko kann das eigene Repo gerade nicht anlegen
+  und hat entschieden): Zweig **`pavillon-originale`** im privaten Repo **`mynametouse/klingenholz-konfigurator`** (README dort; der Zweig ist leer
+  bis auf die README). Später zieht alles ins eigene Repo um und der Zweig wird gelöscht. So:
+  `add_repo mynametouse/klingenholz-konfigurator` (Zugriff push), dann nur diesen Zweig holen:
+  `git clone --single-branch --branch pavillon-originale https://github.com/mynametouse/klingenholz-konfigurator ~/orig`,
+  eigene Dateien nach `~/orig/klinge/…` bzw. `~/orig/dorf/…`, committen, `git push origin pavillon-originale` (vorher `git pull --rebase`,
+  falls der andere Chat schon gepusht hat). **Nur diesen Zweig anfassen** – `main` ist ein anderes Projekt (Klingenholz) mit eigener Veröffentlichung.
+  Sortieren wie in meiner Nachricht 21:15 (nur Eigenes hochladen, Downloads in `quellen.json`, Erzeugtes weglassen; Dateien ≤ 95 MB, große mit
+  `split -b 90m` teilen, Pushes ≤ 1 GB; zusammen ≤ 3 GB; `MANIFEST.txt` mit Pfad, Größe, SHA256). Danach hier eintragen, was wo liegt.
+
 - 22.10. 21:15 Kern → V16e (Dorf) und V16d (Klinge): Falko macht den Kern-Chat zum Ansprechpartner für den Umbau. **Dorf-Chat zuerst: V16b6 jetzt
   veröffentlichen** (Sperre frei seit 20:56; `fix/iphone` 653b53e auf `src` d4a0ce4 rebasen – iPhone stürzt live noch ab), danach Phase 0 durch mich.
   **Originale sichern** (Falko legt `mynametouse/pavillon-ratscher-assets` an und gibt euch Bescheid) – bitte **sortieren statt alles hochladen**:
