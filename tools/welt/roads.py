@@ -442,8 +442,18 @@ def carve(dem, pos, chains, h, area):
     c1 = min(Ww, int(math.ceil(area[2] - dem.e0)))
     r0 = max(0, int(math.floor(dem.n1 - area[3])))
     r1 = min(Hh, int(math.ceil(dem.n1 - area[1])))
-    # bridge corridors stay as they are (the valley under the deck)
-    from matplotlib.path import Path as MPath
+    # bridge corridors stay as they are: densified bridge axes in a KD-tree with their half widths
+    btree, BHW, bmax = None, None, 0.0
+    if bridges:
+        bp, bw = [], []
+        for P, hb in bridges:
+            seg = np.hypot(*np.diff(P, axis=0).T)
+            cum = np.concatenate([[0], np.cumsum(seg)])
+            s_ = np.arange(0, cum[-1] + 1e-9, 0.5)
+            bp.append(np.stack([np.interp(s_, cum, P[:, 0]), np.interp(s_, cum, P[:, 1])], 1))
+            bw.append(np.full(len(s_), hb))
+        btree, BHW = cKDTree(np.concatenate(bp)), np.concatenate(bw)
+        bmax = float(BHW.max())
     changed = 0
     dz_all = []
     K = 6
@@ -485,17 +495,13 @@ def carve(dem, pos, chains, h, area):
             t0 = T0[nc]
             tn = np.clip(t0, He - s / SLOPE, He + s / SLOPE)
             new[nc] = np.where(lim, tn, t0)
-        if bridges:
-            for P, hb in bridges:
-                # inside a bridge corridor nothing changes
-                dmin = np.full(len(pv), np.inf)
-                for a, b in zip(P[:-1], P[1:]):
-                    ab = b - a
-                    L2 = max(ab @ ab, 1e-9)
-                    tt_ = np.clip(((pv - a) @ ab) / L2, 0, 1)
-                    dmin = np.minimum(dmin, np.hypot(*(pv - (a + tt_[:, None] * ab)).T))
-                keep = dmin < hb
-                new[keep] = T0[keep]
+        if btree is not None:
+            # inside a bridge corridor nothing changes (the valley under the deck)
+            db, jb = btree.query(pv, k=1, distance_upper_bound=bmax, workers=-1)
+            hit = np.isfinite(db)
+            keep = np.zeros(len(pv), bool)
+            keep[hit] = db[hit] < BHW[jb[hit]]
+            new[keep] = T0[keep]
         blk = M[rows[0]:rows[-1] + 1, c0:c1].reshape(-1)
         idxv = np.flatnonzero(valid)
         dzv = new - T0
