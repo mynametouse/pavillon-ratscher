@@ -99,16 +99,17 @@ def log(*a):
 
 
 # ---------------- HTTP ----------------
-_session = None
+import threading
+_local = threading.local()   # one requests session per thread (the WMS chunks are fetched three at a time)
 UA = 'PavillonRatscher-Welt/0.1 (+https://github.com/mynametouse/pavillon-ratscher; open geodata test tiles, non-commercial)'
 
 
 def http_get(url, tries=4, timeout=180, data=None, accept=None):
     """GET (or POST with data) with retries; returns (status, bytes, content-type). Raises after the last try."""
-    global _session
     import requests
+    _session = getattr(_local, 'session', None)
     if _session is None:
-        _session = requests.Session()
+        _session = _local.session = requests.Session()
         _session.headers['User-Agent'] = UA
     last = None
     for k in range(tries):

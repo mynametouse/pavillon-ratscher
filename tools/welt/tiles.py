@@ -110,7 +110,12 @@ class ImagePyramid:
         cl = chunk_level if chunk_level is not None else L - 3
         k = 1 << (L - cl)
         px = TILE_PX * k
-        for cx, cy in tiles(cl, area):
+        chunks = tiles(cl, area)
+        # download the chunks three at a time first (the server takes ~20 s per 4096 px image), cut them afterwards
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(3) as ex:
+            list(ex.map(lambda c: fetch_wms(raw, layer, tbounds(cl, *c), px, px, decode=False), chunks))
+        for cx, cy in chunks:
             bb = tbounds(cl, cx, cy)
             img = fetch_wms(raw, layer, bb, px, px)
             jobs = []

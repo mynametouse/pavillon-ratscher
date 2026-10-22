@@ -147,8 +147,8 @@ class Cop30:
 WMS_TH = 'https://www.geoproxy.geoportal-th.de/geoproxy/services/DOP'
 
 
-def fetch_wms(raw, layer, bbox, w, h, fmt='image/jpeg'):
-    """one GetMap request (EPSG:25832), cached; returns an RGB uint8 array (row 0 = north)"""
+def fetch_wms(raw, layer, bbox, w, h, fmt='image/jpeg', decode=True):
+    """one GetMap request (EPSG:25832), cached; returns an RGB uint8 array (row 0 = north), or None with decode=False"""
     from PIL import Image
     e0, n0, e1, n1 = bbox
     p = os.path.join(raw, 'dop', f'{layer}_{w}x{h}_{e0:.0f}_{n0:.0f}_{e1:.0f}_{n1:.0f}.jpg')
@@ -165,6 +165,8 @@ def fetch_wms(raw, layer, bbox, w, h, fmt='image/jpeg'):
             raise RuntimeError(f'WMS {layer} {bbox}: no image')
         os.makedirs(os.path.dirname(p), exist_ok=True)
         open(p, 'wb').write(b)
+    if not decode:
+        return None
     return np.asarray(Image.open(p).convert('RGB'))
 
 
