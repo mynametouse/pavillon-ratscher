@@ -452,8 +452,9 @@ function treeGroup(a) {
       im.setMatrixAt(k, _m);
       const v = ((i * 2654435761) >>> 0) / 4294967296;
       // sRGB picks: dark spruce green, lighter broadleaf green
-      if (type === 0) _c.setRGB(0.16 + 0.06 * v, 0.27 + 0.08 * v, 0.17, THREE.SRGBColorSpace);
-      else _c.setRGB(0.3 + 0.1 * v, 0.4 + 0.1 * v, 0.18, THREE.SRGBColorSpace);
+      // close to the forest tones of the spring orthophoto (dark spruce, fresh beech)
+      if (type === 0) _c.setRGB(0.11 + 0.04 * v, 0.18 + 0.05 * v, 0.11, THREE.SRGBColorSpace);
+      else _c.setRGB(0.2 + 0.07 * v, 0.28 + 0.07 * v, 0.13, THREE.SRGBColorSpace);
       im.setColorAt(k, _c);
       k++;
     }
@@ -484,7 +485,9 @@ function updateContent() {
       }
       const dx = Math.max(Math.abs(camera.position.x - c.centre.x) - c.s / 2, 0);
       const dz = Math.max(Math.abs(camera.position.z - c.centre.z) - c.s / 2, 0);
-      const near = Math.hypot(dx, dz, Math.max(camera.position.y - 200, 0)) < range;
+      // trees only near the ground: seen from high up the photo shows the forest better than a patch of 3D trees
+      const up = kind === 'trees' ? Math.max(camera.position.y - 100, 0) * 3 : Math.max(camera.position.y - 200, 0);
+      const near = Math.hypot(dx, dz, up) < range;
       if (near && c.state === 0) {
         c.state = 1;
         const url = BASE + C[kind].replace('{z}', C.level).replace('{x}', k.split('_')[0]).replace('{y}', k.split('_')[1]);
