@@ -200,7 +200,8 @@ const RATSCHER = (() => {
     const A2 = treeAtlas(); if (!A2) return; const nK = TK.length;
     const mat = new THREE.MeshStandardMaterial({ map: A2.tex, alphaTest: 0.32, side: THREE.DoubleSide, roughness: 1, envMapIntensity: 0.55 });
     mat.onBeforeCompile = sh => { sh.vertexShader = 'attribute float aKind;\n' + sh.vertexShader.replace('#include <uv_vertex>', `#include <uv_vertex>\n vMapUv.x = ( aKind + vMapUv.x ) / ${nK.toFixed(1)};`);
-      sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal = normalize( vNormal ); nonPerturbedNormal = normal;'); };
+      sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal = normalize( vNormal ); nonPerturbedNormal = normal;')
+        .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n reflectedLight.directDiffuse *= 0.82; reflectedLight.indirectDiffuse *= 0.6; reflectedLight.indirectSpecular *= 0.25;'); };   // V16c: a crown shades itself – the flat cards were pale
     mat.customProgramCacheKey = () => 'geotree';
     const cross = (() => { const a = new THREE.PlaneGeometry(1, 1), b = new THREE.PlaneGeometry(1, 1); b.rotateY(Math.PI / 2); const g = BufferGeometryUtils.mergeGeometries([a, b]); g.translate(0, 0.5, 0);
       const nn = g.attributes.normal; for (let i = 0; i < nn.count; i++) nn.setXYZ(i, 0, 1, 0); return g; })();

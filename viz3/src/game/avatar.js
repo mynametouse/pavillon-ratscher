@@ -27,6 +27,7 @@ const AVATAR = (() => {
     const model = gl.scene, g = new THREE.Group(), inner = new THREE.Group(); inner.rotation.y = Math.PI; g.add(inner); inner.add(model);   // models face +z, figures look along local -z
     const sc = prepModel(model, o.h); const B = {}; model.traverse(x => { if (x.isBone) { const c = canonP(x.name); if (c && !B[c]) B[c] = x; } });
     model.traverse(x => { if (x.isMesh) { x.frustumCulled = false; const ms = Array.isArray(x.material) ? x.material : [x.material]; for (const m of ms) if (m && /hair|lash|brow/i.test(m.name || '')) { m.alphaTest = Math.max(m.alphaTest || 0, 0.4); m.transparent = false; } } });
+    try { wearZones(model); } catch (e) { console.warn('wear zones', e); }
     const mixer = new THREE.AnimationMixer(model), acts = {}, clips = {};
     for (const [k, c] of Object.entries(set.clips)) { const clip = decode(c); clips[k] = clip; const a = mixer.clipAction(clip); a.play(); a.setEffectiveWeight(0); if (!clip.userData.loop) { a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; } acts[k] = a; }
     const w = {}; for (const k of Object.keys(acts)) w[k] = 0;
@@ -153,7 +154,30 @@ const AVATAR = (() => {
       for (const x of [-0.096, 0.096]) { cylr(g, x, -0.025, 0.078, 0.042, 0.03, GM.helm, 0, Math.PI / 2); box(g, x * 1.02, 0.02, 0.078, 0.008, 0.07, 0.018, GM.band); }
       const vz = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.155, 0.135, 24, 1, true, Math.PI * 0.68, Math.PI * 0.64), GM.visor); vz.position.set(0, -0.02, 0.072); vz.scale.set(1, 1, 1.05); g.add(vz); }
     return F.gear = it; }
-  function wear(on) { WEARING = Object.assign({ eyes: null, ears: null, resp: null, head: null }, on || {}); for (const F of Object.values(A.figs)) applyGear(F); markDirty(true); }
+  // V16c2 forest clothing (world/fell.js): warning jacket, chainsaw trousers, boots, gloves – the figure's own clothes recoloured by body zone.
+  // Each vertex gets its zone from the bone that moves it most (skin weights): hands → gloves, arms/spine/chest → jacket, legs → trousers,
+  // feet → boots; the hips bone splits at its own height (jacket above, trousers below). The folds of the texture stay (luminance kept).
+  const WEAR_U = { value: new THREE.Vector4(0, 0, 0, 0) };
+  const ZONE = n => /Hand|Thumb|Index|Middle|Ring|Pinky/.test(n) ? 4 : /Foot|Toe/.test(n) ? 3 : /UpLeg|Leg/.test(n) ? 2 : /Arm|Shoulder|Spine|Chest|Clavicle/.test(n) ? 1 : n === 'Hips' ? 5 : 0;
+  function wearZones(model) { model.updateMatrixWorld(true);
+    model.traverse(m => { if (!m.isSkinnedMesh || !m.skeleton || /hair|lash|brow|eye/i.test((m.material && m.material.name) || '')) return; const g = m.geometry, si = g.attributes.skinIndex, sw = g.attributes.skinWeight, pos = g.attributes.position; if (!si || !sw) return;
+      const bones = m.skeleton.bones, zb = bones.map(b => ZONE(canonP(b.name) || '')), hipI = zb.indexOf(5), hipY = hipI >= 0 ? new THREE.Vector3().setFromMatrixPosition(m.skeleton.boneInverses[hipI].clone().invert()).y : 0;
+      const z = new Float32Array(pos.count), v = new THREE.Vector3();
+      for (let i = 0; i < pos.count; i++) { let b = 0, bw = -1; for (let k = 0; k < 4; k++) { const w = sw.getComponent(i, k); if (w > bw) { bw = w; b = si.getComponent(i, k); } }
+        let zz = zb[b] || 0; if (zz === 5) { v.fromBufferAttribute(pos, i).applyMatrix4(m.bindMatrix); zz = v.y > hipY ? 1 : 2; } z[i] = zz; }
+      g.setAttribute('aWear', new THREE.BufferAttribute(z, 1));
+      const ms = Array.isArray(m.material) ? m.material : [m.material];
+      for (const mt of ms) { if (!mt || mt.userData.wear) continue; mt.userData.wear = true; const ob = mt.onBeforeCompile, ck = mt.customProgramCacheKey;
+        mt.onBeforeCompile = (sh, r) => { if (ob) ob.call(mt, sh, r); sh.uniforms.uWear = WEAR_U;
+          sh.vertexShader = 'attribute float aWear; varying float vWear;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vWear = aWear;');
+          sh.fragmentShader = 'uniform vec4 uWear; varying float vWear;\n' + sh.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+            { float rg = floor( vWear + 0.5 ), on = rg < 0.5 ? 0.0 : rg < 1.5 ? uWear.x : rg < 2.5 ? uWear.y : rg < 3.5 ? uWear.z : uWear.w;
+              if ( on > 0.5 ) { float lu = dot( diffuseColor.rgb, vec3( 0.3, 0.59, 0.11 ) ); vec3 tg = rg < 1.5 ? vec3( 0.95, 0.34, 0.04 ) : rg < 2.5 ? vec3( 0.12, 0.125, 0.13 ) : rg < 3.5 ? vec3( 0.055, 0.045, 0.04 ) : vec3( 0.62, 0.27, 0.06 );
+                diffuseColor.rgb = tg * clamp( 0.5 + lu * 1.8, 0.55, 1.4 ); } }`); };
+        mt.customProgramCacheKey = () => (ck ? ck.call(mt) : '') + '_wear'; mt.needsUpdate = true; } }); }
+  function wear(on) { WEARING = Object.assign({ eyes: null, ears: null, resp: null, head: null }, on || {});
+    WEAR_U.value.set(WEARING.body === 'warnjacke' ? 1 : 0, WEARING.legs === 'forsthose' ? 1 : 0, WEARING.feet === 'forststiefel' ? 1 : 0, WEARING.hands === 'forsthand' ? 1 : 0);
+    for (const F of Object.values(A.figs)) applyGear(F); markDirty(true); }
   function applyGear(F) { const it = gearOf(F); if (!it) return; for (const [id, g] of Object.entries(it)) g.visible = WEARING.eyes === id || WEARING.ears === id || WEARING.resp === id || WEARING.head === id; }
   // ---- loading ----
   const FL = new THREE.FileLoader(); FL.setResponseType('json'); const U = f => BASE + 'chars/' + f;

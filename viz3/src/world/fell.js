@@ -175,7 +175,7 @@ const FELL = (() => {
     if (c.open && !r.piece) { r.piece = notchPiece(r.t, p, G); r.F.add(r.piece); const gz = ground(...toSite(r.t, r.az, G.R + 0.45, 0.1)) - (r.t.z - 0.05);
       r.piece.position.set(G.R + 0.45 - G.xS, gz + 0.03 - p.hS, 0.1); r.piece.rotation.set(0.15, 0.6, Math.PI * 0.5); }
     if (c.wedge && !r.wedge) { r.wedge = wedgeMesh(); r.F.add(r.wedge); }
-    if (r.wedge) { const ins = clamp(c.wedge || 0, 0, 1.6); r.wedge.position.set(-G.RB - 0.07 + 0.11 * ins, G.hB, 0.02); }
+    if (r.wedge) { const ins = clamp(c.wedge || 0, 0, 1.6); r.wedge.position.set(-G.RB - 0.16 + 0.09 * ins, G.hB, 0.02); }   // thick end out of the cut, 7–14 cm
     markDirty(true); }
   // ---------------- protective gear for the forest (werk/gear.js) ----------------
   const FORST = ['forsthelm', 'forsthose', 'forststiefel', 'forsthand', 'warnjacke'];
@@ -269,7 +269,7 @@ const FELL = (() => {
   let MARKG = null;
   function showMarks(rec, on) { if (MARKG) { scene.remove(MARKG); MARKG.traverse(o => { if (o.geometry) o.geometry.dispose(); }); MARKG = null; } if (!on || !rec) return; const t = treeOf(rec), g = new THREE.Group(); MARKG = g;
     const strip = (pts, w, m) => { const p = [], idx = []; for (let i = 0; i < pts.length; i++) { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L * w / 2, ny = dx / L * w / 2;
-        for (const s of [-1, 1]) { const x = pts[i][0] + nx * s, y = pts[i][1] + ny * s, v = V(x, y, ground(x, y) + 0.05); p.push(v.x, v.y, v.z); } if (i) { const k = i * 2; idx.push(k - 2, k - 1, k, k - 1, k + 1, k); } }
+        for (const s of [-1, 1]) { const x = pts[i][0] + nx * s, y = pts[i][1] + ny * s, v = V(x, y, ground(x, y) + 0.14); p.push(v.x, v.y, v.z); } if (i) { const k = i * 2; idx.push(k - 2, k - 1, k, k - 1, k + 1, k); } }
       const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); geo.setIndex(idx); const me = new THREE.Mesh(geo, m); me.renderOrder = 3; g.add(me); };
     const free = (t.fellDirs || freeDirs(t)).list, ok = free.includes(Math.round(rec.az / 5) * 5 % 360), fx = Math.sin(rec.az * D2R), fy = Math.cos(rec.az * D2R);
     const line = []; for (let s = 0.5; s <= t.h; s += 1) line.push([t.x + fx * s, t.y + fy * s]); strip(line, 0.22, MT.line(ok ? 0x46c46a : 0xe0442a, 0.9));
@@ -296,7 +296,8 @@ const FELL = (() => {
   // ---- the cuts: a window for the settings, then the saw in a gauge (stop in the green zone) ----
   function cutWin(rec, o) { WUI.machine({ title: o.title, sub: o.sub, rows: o.rows, info: o.info, fig: stumpSVG(rec, o.hl), gear: { req: FORST }, go: o.go || 'Säge ansetzen',
       onGo: v => { if (!gearOk() || !sawEnsure()) return; Object.assign(rec.p, o.apply ? o.apply(v) : {}); syncCuts(rec); changed(); sawStart(() => PLAY.run(o.act(rec))); } }); }
-  const gaugeAct = (rec, key, label, g, where, onDone, anim) => ({ id: 'fell:g:' + key, r: 2.6, rMove: 1.2, pos: () => { const t = treeOf(rec), s = standAt(rec, where); return [s[0], s[1], t.z + 0.4]; },
+  const trunkPos = rec => { const t = treeOf(rec); return [t.x, t.y, t.z + 0.4]; };
+  const gaugeAct = (rec, key, label, g, where, onDone, anim) => ({ id: 'fell:g:' + key, r: 2.6, rMove: 1.2, pos: () => trunkPos(rec),
     label: () => label, gauge: g, holdLabel: 'Sägen – im grünen Bereich stoppen (E)', anim3: anim || 'kneelIdle',
     start: () => { SAW.load = 1; }, work: k => { const c = rec.cut; if (key === 'sole') c.sole = k / g.hi * 0.95; if (key === 'roof') c.roof = k; if (key === 'back') c.back = Math.min(0.95, k); syncCuts(rec); },
     cancel: () => { SAW.load = 0; }, run: k => { SAW.load = 0; onDone(k); CLOCK.t += 2; changed(); } });
@@ -318,7 +319,7 @@ const FELL = (() => {
         rec.st = t.sp === 'beech' ? 'call1' : 'splint'; syncCuts(rec); dropPiece(rec); think('Kerbstück fällt heraus. ' + (rec.st === 'splint' ? 'Jetzt die Splintschnitte an beiden Enden der Sehne.' : ''), 4200); }) }); }
   function dropPiece(rec) { const r = RT[rec.id]; if (!r || !r.piece) return; const p0 = r.piece.position.clone(), t0 = performance.now(), G = geomOf(r.t, rec.p); const p1 = p0.clone(); r.piece.position.set(0, 0, 0); r.piece.rotation.set(0, 0, 0);
     ANIM.push({ dur: 0.7, f: k => { const e = k * k; r.piece.position.set(lerp(0, p1.x, e), lerp(0, p1.y, e) + Math.sin(k * Math.PI) * 0.15, lerp(0, p1.z, k)); r.piece.rotation.set(0.15 * k, 0.6 * k, Math.PI * 0.5 * e); } }); SFX.drop(); }
-  function doSplint(rec) { if (!gearOk() || !sawEnsure()) return; sawStart(() => PLAY.run({ id: 'fell:splint', r: 2.6, rMove: 1.2, pos: () => { const t = treeOf(rec), s = standAt(rec, 'front'); return [s[0], s[1], t.z + 0.4]; },
+  function doSplint(rec) { if (!gearOk() || !sawEnsure()) return; sawStart(() => PLAY.run({ id: 'fell:splint', r: 2.6, rMove: 1.2, pos: () => trunkPos(rec),
     label: () => 'Splintschnitte', hold: 2.4, anim3: 'kneelIdle', holdLabel: 'Splintschnitte links und rechts …', start: () => { SAW.load = 1; }, cancel: () => { SAW.load = 0; },
     run: () => { SAW.load = 0; rec.cut.splint = 1; rec.st = 'call1'; syncCuts(rec); CLOCK.t += 1; changed(); think('Splint eingeschnitten – die Fasern reißen nicht hoch. Vor dem Fällschnitt: Warnruf.', 4200); } })); }
   function doCall(rec, which) { sawIdle(); const lines = ['Achtung, Baum fällt!']; shout(lines[0]); rec.calls = (rec.calls || 0) + 1;
@@ -337,10 +338,10 @@ const FELL = (() => {
         if (rec.p.step < 0.03 || rec.p.step < D / 10 * 0.7) note(rec, 'Bruchstufe zu klein (' + cmS(rec.p.step) + ') – der Stamm kann über den Stock zurückrutschen');
         if (rec.p.B < D / 20) { note(rec, 'Stützband zu schwach – es reißt vorzeitig'); rec.early = true; }
         think(`Bruchleiste ${cmS(T)} (${de(Math.round(T / D * 100))} %). Jetzt den Keil in den Fällschnitt.`, 4600); if (rec.early) setTimeout(() => { if (rec.st === 'wedge') startFall(rec, true); }, 2600); }, 'interactLoop') }); }
-  function doWedge(rec) { if (!gearOk()) return; PLAY.run({ id: 'fell:wedge', r: 2.6, rMove: 1.2, pos: () => { const t = treeOf(rec), s = standAt(rec, 'back'); return [s[0], s[1], t.z + 0.4]; }, label: () => 'Fällkeil setzen und antreiben', hold: 3.0, anim3: 'chop', holdLabel: 'Keil antreiben …',
+  function doWedge(rec) { if (!gearOk()) return; PLAY.run({ id: 'fell:wedge', r: 2.6, rMove: 1.2, pos: () => trunkPos(rec), label: () => 'Fällkeil setzen und antreiben', hold: 3.0, anim3: 'chop', holdLabel: 'Keil antreiben …',
     start: () => { rec.cut.wedge = 0.2; syncCuts(rec); sawIdle(); }, work: k => { const n = Math.floor(k * 4); if (n !== rec._wn) { rec._wn = n; if (n > 0) { if (audio.has('wedge_hit')) audio.at('wedge_hit', P.x, P.y, { vol: 1, ref: 10 }); else SFX.clunk(); } } rec.cut.wedge = 0.2 + k * 0.8; syncCuts(rec); },
     cancel: () => {}, run: () => { rec.cut.wedge = 1; rec.st = 'call2'; syncCuts(rec); CLOCK.t += 1; changed(); think('Keil sitzt. Noch einmal Rundumblick und Warnruf, dann das Stützband.', 4200); } }); }
-  function doBand(rec) { if (!gearOk() || !sawEnsure()) return; sawStart(() => PLAY.run({ id: 'fell:band', r: 2.6, rMove: 1.2, pos: () => { const t = treeOf(rec), s = standAt(rec, 'left'); return [s[0], s[1], t.z + 0.6]; },
+  function doBand(rec) { if (!gearOk() || !sawEnsure()) return; sawStart(() => PLAY.run({ id: 'fell:band', r: 2.6, rMove: 1.2, pos: () => trunkPos(rec),
     label: () => 'Stützband durchtrennen', hold: 1.4, anim3: 'interactLoop', holdLabel: 'Band durchtrennen …', start: () => { SAW.load = 1; }, cancel: () => { SAW.load = 0; },
     run: () => { SAW.load = 0; rec.cut.band = 1; syncCuts(rec); startFall(rec, false); } })); }
   function note(rec, txt) { if (!rec.notes.includes(txt)) rec.notes.push(txt); }
@@ -413,7 +414,7 @@ const FELL = (() => {
   // ---------------- delimbing: section by section from the foot to the top ----------------
   function delimbSecs(rec) { const t = treeOf(rec), zy = zopfY(t), n = Math.max(3, Math.ceil((zy - 1.5) / 3)); return { n, len: (zy - 1.5) / n, zy }; }
   function doDelimb(rec) { if (!gearOk() || !sawEnsure()) return; const D = delimbSecs(rec), k = rec.delimb || 0; sawStart(() => PLAY.run({ id: 'fell:delimb', r: 3.0, rMove: 1.6,
-    pos: () => { const s = sideOfStem(rec, 1.5 + (k + 0.5) * D.len, 1.0); return s; }, label: () => `Entasten ${k + 1}/${D.n}`, hold: 2.2, anim3: 'interactLoop', holdLabel: 'Äste am Stamm absägen …',
+    pos: () => stemPoint(rec, 1.5 + (k + 0.5) * D.len), label: () => `Entasten ${k + 1}/${D.n}`, hold: 2.2, anim3: 'interactLoop', holdLabel: 'Äste am Stamm absägen …',
     start: () => { SAW.load = 1; }, cancel: () => { SAW.load = 0; },
     run: () => { SAW.load = 0; rec.delimb = k + 1; applyDelimb(rec); slash(rec, 1.5 + k * D.len, 1.5 + (k + 1) * D.len); CLOCK.t += 3; if (rec.delimb >= D.n) { rec.st = 'trim'; think('Bis zum Zopf entastet. Jetzt den Stammfuß mit dem Fallkerb gerade abschneiden.', 4800); } changed(); } })); }
   function applyDelimb(rec) { const r = RT[rec.id]; if (!r) return; const D = delimbSecs(rec), y = 1.5 + (rec.delimb || 0) * D.len; r.Us.uDelimb.value = (rec.delimb || 0) >= D.n ? (D.zy + 0.4) / r.t.h : y / r.t.h; markDirty(true); }
@@ -423,14 +424,18 @@ const FELL = (() => {
     const map = new Map(); const keep = new Set();
     for (let i = 0; i < idx.length; i += 3) { const a = ah.getX(idx[i]); if (a >= s0 && a < s1) for (let k = 0; k < 3; k++) keep.add(idx[i + k]); }
     for (const vi of keep) { v.set(pos.getX(vi), pos.getY(vi), pos.getZ(vi)).applyMatrix4(m); const sx = v.x, sy = -v.z, gz = ground(sx, sy); const z = gz + 0.05 + Math.min(0.6, Math.max(0, v.y - gz) * 0.12) + rnd() * 0.1;
-      map.set(vi, p.length / 3); const w = V(sx, sy, z); p.push(w.x, w.y, w.z); uv.push(cg.attributes.uv.getX(vi), cg.attributes.uv.getY(vi)); c.push(cg.attributes.color.getX(vi) * 0.8, cg.attributes.color.getY(vi) * 0.75, cg.attributes.color.getZ(vi) * 0.7); h.push(1); }
+      map.set(vi, p.length / 3); const w = V(sx, sy, z); p.push(w.x, w.y, w.z); uv.push(cg.attributes.uv.getX(vi), cg.attributes.uv.getY(vi)); c.push(cg.attributes.color.getX(vi) * 0.62, cg.attributes.color.getY(vi) * 0.58, cg.attributes.color.getZ(vi) * 0.5); h.push(1); }   // brash on the ground: darker, a little browner
     for (let i = 0; i < idx.length; i += 3) { const a = map.get(idx[i]), b = map.get(idx[i + 1]), cc = map.get(idx[i + 2]); if (a != null && b != null && cc != null) ii.push(a, b, cc); }
     if (!ii.length) return; const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute('color', new THREE.Float32BufferAttribute(c, 3)); g.setAttribute('aH', new THREE.Float32BufferAttribute(h, 1)); g.setIndex(ii); g.computeVertexNormals();
     const mats = FOREST.soloMats(r.t.sp, { uCut: { value: -10 }, uDelimb: { value: -1 } }), me = new THREE.Mesh(g, mats.cards); me.receiveShadow = true; me.userData.noMerge = true; scene.add(me); (r.slash = r.slash || []).push(me); markDirty(true); }
   // ---------------- trimming the butt, the top, bucking into logs ----------------
-  function doTrim(rec) { if (!gearOk() || !sawEnsure()) return; const t = treeOf(rec), G = geomOf(t, rec.p); sawStart(() => PLAY.run({ id: 'fell:trim', r: 3, rMove: 1.6, pos: () => sideOfStem(rec, 0.6, 0.9), label: () => 'Stammfuß kappen', hold: 2.0, anim3: 'kneelIdle', holdLabel: 'Gerade abschneiden …',
-    start: () => { SAW.load = 1; }, cancel: () => { SAW.load = 0; }, run: () => { SAW.load = 0; rec.trim = rec.p.hS + G.d * G.tA + 0.06; rec.st = 'top'; buildLogs(rec); CLOCK.t += 2; changed(); think('Stammfuß gekappt. Jetzt den Zopf bei etwa 14 cm Durchmesser abtrennen.', 4500); } })); }
-  function doTop(rec) { if (!gearOk() || !sawEnsure()) return; const t = treeOf(rec), zy = zopfY(t); sawStart(() => PLAY.run({ id: 'fell:top', r: 3, rMove: 1.6, pos: () => sideOfStem(rec, zy, 1.0), label: () => 'Zopf abtrennen', hold: 1.6, anim3: 'interactLoop', holdLabel: 'Gipfel absägen …',
+  function doTrim(rec) { if (!gearOk() || !sawEnsure()) return; const t = treeOf(rec), G = geomOf(t, rec.p); sawStart(() => PLAY.run({ id: 'fell:trim', r: 3, rMove: 1.6, pos: () => stemPoint(rec, 0.6), label: () => 'Stammfuß kappen', hold: 2.0, anim3: 'kneelIdle', holdLabel: 'Gerade abschneiden …',
+    start: () => { SAW.load = 1; }, cancel: () => { SAW.load = 0; }, run: () => { SAW.load = 0; rec.trim = rec.p.hS + G.d * G.tA + 0.06; rec.st = 'top'; buildLogs(rec); detachButt(rec, true); CLOCK.t += 2; changed(); think('Stammfuß gekappt. Jetzt den Zopf bei etwa 14 cm Durchmesser abtrennen.', 4500); } })); }
+  // the trimmed butt with the notch rolls a little aside (it is firewood)
+  function detachButt(rec, anim) { const r = RT[rec.id]; if (!r || !r.parts || r.butt) return; r.F.updateMatrixWorld(true); const b = new THREE.Group(); b.userData.noMerge = true; scene.add(b); b.attach(r.parts.stem); if (r.stemCaps) b.attach(r.stemCaps); r.butt = b;
+    const a = (rec.az + (rec.pose ? rec.pose.dev : 0)) * D2R, off = V(Math.cos(a) * 0.45, -Math.sin(a) * 0.45, -0.12);
+    if (anim) ANIM.push({ dur: 0.5, f: k => { b.position.copy(off).multiplyScalar(k * k); } }); else b.position.copy(off); markDirty(true); }
+  function doTop(rec) { if (!gearOk() || !sawEnsure()) return; const t = treeOf(rec), zy = zopfY(t); sawStart(() => PLAY.run({ id: 'fell:top', r: 3, rMove: 1.6, pos: () => stemPoint(rec, zy), label: () => 'Zopf abtrennen', hold: 1.6, anim3: 'interactLoop', holdLabel: 'Gipfel absägen …',
     start: () => { SAW.load = 1; }, cancel: () => { SAW.load = 0; }, run: () => { SAW.load = 0; rec.top = zy; rec.st = 'buck'; buildLogs(rec); CLOCK.t += 1; changed(); openBuck(rec); } })); }
   // the stem from the trimmed butt to the top as tapered logs with bark and cut faces (drawn in the stem's frame)
   function logGeo(t, Md, sc, th, y0, y1) { const NS = 32, ys = []; const n = Math.max(2, Math.ceil((y1 - y0) / 0.25)); for (let i = 0; i <= n; i++) ys.push(lerp(y0, y1, i / n));
@@ -469,11 +474,11 @@ const FELL = (() => {
     WUI.machine({ title: `Trennschnitt bei ${de(y - (rec.trim || 0), 2)} m`, sub: 'Wo liegt die Druckseite?', choices: [{ k: 'side', label: 'Zuerst einsägen', val: 'oben', opts: [['oben', 'oben (Stamm liegt hohl)'], ['unten', 'unten (Stamm liegt auf)']] }],
       info: 'Liegt der Stamm an beiden Enden auf und hängt dazwischen durch, wird er oben gestaucht: oben anfangen. Liegt er in der Mitte auf und die Enden hängen, ist die Druckseite unten. Erst ein Drittel in die Druckseite, dann von der Zugseite trennen.',
       gear: { req: FORST }, go: 'Sägen', onGo: v => { if (!gearOk() || !sawEnsure()) return; const ok = v.side === side;
-        sawStart(() => PLAY.run({ id: 'fell:cut', r: 3, rMove: 1.6, pos: () => sideOfStem(rec, y, 0.95), label: () => 'Trennschnitt', hold: ok ? 2.4 : 4.2, anim3: 'interactLoop', holdLabel: ok ? 'Druckseite, dann Zugseite …' : 'Die Säge klemmt! Keil in den Schnitt …',
+        sawStart(() => PLAY.run({ id: 'fell:cut', r: 3, rMove: 1.6, pos: () => stemPoint(rec, y), label: () => 'Trennschnitt', hold: ok ? 2.4 : 4.2, anim3: 'interactLoop', holdLabel: ok ? 'Druckseite, dann Zugseite …' : 'Die Säge klemmt! Keil in den Schnitt …',
           start: () => { SAW.load = 1; if (!ok) setTimeout(() => think('Falsche Seite zuerst: der Schnitt schließt sich und klemmt die Kette. Mit dem Keil aufweiten und von der anderen Seite fertig sägen.', 5000), 900); }, cancel: () => { SAW.load = 0; },
           run: () => { SAW.load = 0; if (!ok) note(rec, 'Beim Ablängen die Säge eingeklemmt (Druckseite verwechselt)'); rec.cutDone = i + 1; buildLogs(rec); CLOCK.t += ok ? 2 : 5; if (rec.cutDone >= rec.cuts.length) { rec.st = 'measure'; think('Alle Abschnitte getrennt. Jetzt vermessen: Kluppe und Maßband.', 4200); } changed(); } })); } }); }
   // measuring: middle diameter (calliper twice across, whole cm), length, volume after Huber
-  function doMeasure(rec) { PLAY.run({ id: 'fell:measure', r: 3, rMove: 1.6, pos: () => sideOfStem(rec, ((rec.trim || 0) + (rec.top || 8)) / 2, 1.0), label: () => 'Abschnitte vermessen (Kluppe, Maßband)', hold: 2.6, anim3: 'kneelIdle', holdLabel: 'Messen …',
+  function doMeasure(rec) { PLAY.run({ id: 'fell:measure', r: 3, rMove: 1.6, pos: () => stemPoint(rec, ((rec.trim || 0) + (rec.top || 8)) / 2), label: () => 'Abschnitte vermessen (Kluppe, Maßband)', hold: 2.6, anim3: 'kneelIdle', holdLabel: 'Messen …',
     run: () => { const t = treeOf(rec), cuts = [rec.trim || 0, ...(rec.cuts || []), rec.top || zopfY(t)], out = rec.out || {};
       for (let i = 0; i < cuts.length - 1; i++) { const y0 = cuts[i], y1 = cuts[i + 1], L = y1 - y0, dm = Math.floor(2 * FOREST.trunkR(t, (y0 + y1) / 2) * 100), vol = Math.PI / 4 * (dm / 100) ** 2 * L;
         const q = i === 0 && out.split ? 'C' : (i === 0 ? 'A' : (dm >= 25 ? 'B' : 'C')); S.logs.push({ id: 'L' + (++S.n), tid: t.id, sp: t.sp, i, y0, y1, L: +L.toFixed(2), d0: Math.round(2 * FOREST.trunkR(t, y0) * 100), d1: Math.round(2 * FOREST.trunkR(t, y1) * 100), dm, vol: +vol.toFixed(3), q, where: 'wald', at: logWorld(rec, y0, y1) }); }
@@ -550,7 +555,7 @@ const FELL = (() => {
       splitFoot(rec); const t = r.t, G = geomOf(t, rec.p), pose = rec.pose || { dev: 0, th: landing(t, rec.az, 0) };
       r.pivot.position.set((G.xS + G.xH) / 2 + (pose.dx || 0.35), (rec.p.hS + G.hB) / 2 + (pose.dy ?? -rec.p.hS * 0.85), 0); r.stem.position.set(-(G.xS + G.xH) / 2, -(rec.p.hS + G.hB) / 2, 0); r.pivot.rotation.set(0, -(pose.dev || 0) * D2R, -pose.th);
       if (rec.delimb) { applyDelimb(rec); r.F.updateMatrixWorld(true); const D = delimbSecs(rec); for (let k = 0; k < rec.delimb; k++) slash(rec, 1.5 + k * D.len, 1.5 + (k + 1) * D.len); }
-      if (rec.trim || rec.top) buildLogs(rec); if (rec.cuts && rec.st === 'buck') buildMarksOnStem(rec); } }
+      if (rec.trim || rec.top) { buildLogs(rec); if (rec.trim) detachButt(rec, false); } if (rec.cuts && rec.st === 'buck') buildMarksOnStem(rec); } }
   // ---------------- per frame ----------------
   function tick(dt) { if (!S.ready) return; animTick(dt); fallTick(dt); ptsTick(dt); sawTick(dt); }
   window.TICKS.push(dt => { try { tick(dt); } catch (e) { if (!S._err) { S._err = 1; console.warn('fell', e); } } });
