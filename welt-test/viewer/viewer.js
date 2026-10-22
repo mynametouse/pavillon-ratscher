@@ -29,7 +29,18 @@ const fail = (where, e) => {
 
 async function get(url, kind = 'arrayBuffer') {
   ST.requests++;
-  const r = await fetch(url);
+  // GitHub Pages answers bursts right after a deploy now and then with 503: retry transient failures with a short backoff
+  let r;
+  for (let k = 0; ; k++) {
+    try {
+      r = await fetch(url);
+      if (r.ok || k >= 3 || !(r.status >= 500 || r.status === 429)) break;
+    } catch (e) {
+      if (k >= 3) throw e;
+    }
+    ST.retries = (ST.retries || 0) + 1;
+    await new Promise(res => setTimeout(res, 400 * 3 ** k));
+  }
   if (!r.ok) throw new Error(`HTTP ${r.status} ${url}`);
   if (kind === 'json') {
     const t = await r.arrayBuffer();
@@ -52,8 +63,9 @@ scene.background = SKY;
 scene.fog = new THREE.FogExp2(SKY, 0.000045);
 const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 80000);
 const sunDir = new THREE.Vector3(-0.45, 0.75, 0.48).normalize();
-scene.add(new THREE.HemisphereLight(0xdfe9f3, 0x5b5546, 1.1));
-const sun = new THREE.DirectionalLight(0xfff3e0, 1.6);
+// physically based light units (three r155+): Lambert divides by pi, so ~pi x the old intensities
+scene.add(new THREE.HemisphereLight(0xdfe9f3, 0x5b5546, 1.4));
+const sun = new THREE.DirectionalLight(0xfff3e0, 2.0);
 sun.position.copy(sunDir);
 scene.add(sun);
 const U = { uCam: { value: new THREE.Vector3() }, uCurv: { value: CURV } };
@@ -78,8 +90,9 @@ void main() {
   int q = (vUv.x >= 0.5 ? 1 : 0) + (vUv.y >= 0.5 ? 2 : 0);
   if (((uMask >> q) & 1) != 0) discard;
   vec3 c = texture2D(map, vUv).rgb;
-  float l = 0.80 + 0.32 * (dot(normalize(vN), uSun) - 0.62);
-  c *= clamp(l, 0.55, 1.15);
+  // relief shading relative to flat ground (the photo already has its own light): 1.0 on the flat, brighter towards the sun
+  float l = 1.0 + 0.6 * (dot(normalize(vN), uSun) - uSun.y);
+  c *= clamp(l, 0.55, 1.2);
   float f = 1.0 - exp(-pow(vDist * uFogD, 2.0));
   gl_FragColor = vec4(mix(c, uFog, f), 1.0);
 }`;
@@ -111,7 +124,11 @@ function contentMaterial(kind) {
     sh.uniforms.uCurv = U.uCurv;
     sh.vertexShader = 'uniform vec3 uCam; uniform float uCurv;\n' + sh.vertexShader.replace(
       '#include <project_vertex>',
-      `vec4 mvPosition = modelMatrix * vec4(transformed, 1.0);
+      `vec4 mvPosition = vec4(transformed, 1.0);
+       #ifdef USE_INSTANCING
+         mvPosition = instanceMatrix * mvPosition;
+       #endif
+       mvPosition = modelMatrix * mvPosition;
        vec2 dd = mvPosition.xz - uCam.xz; mvPosition.y -= dot(dd, dd) * uCurv;
        mvPosition = viewMatrix * mvPosition; gl_Position = projectionMatrix * mvPosition;`,
     );
@@ -121,6 +138,14 @@ function contentMaterial(kind) {
 const MAT = { roads: contentMaterial('roads'), buildings: contentMaterial('buildings'), marks: contentMaterial('roads') };
 MAT.marks.polygonOffsetFactor = -4;
 MAT.marks.polygonOffsetUnits = -8;
+// trees: unit shapes scaled per instance (cone for conifers, rounded crown for broadleaves), colour per instance
+const TREE_GEO = [new THREE.ConeGeometry(1, 1, 6, 1, true).translate(0, 0.5, 0), new THREE.IcosahedronGeometry(1, 0).translate(0, 1, 0)];
+MAT.trees = (() => {
+  const m = contentMaterial('trees');
+  m.vertexColors = false;
+  return m;
+})();
+const TREE_RANGE = MOBILE ? 500 : 1000;
 
 // ---------------- meta, frame ----------------
 let META, O, LV, LMIN, LMAX;
@@ -396,6 +421,42 @@ function select() {
   }
 }
 
+// ---------------- trees: int16 x, z, ground, height, radius, type (dm) per tree ----------------
+const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color();
+function treeGroup(a) {
+  const n = a.length / 6;
+  const g = new THREE.Group();
+  for (const type of [0, 1]) {
+    let cnt = 0;
+    for (let i = 0; i < n; i++) if (a[i * 6 + 5] === type) cnt++;
+    if (!cnt) continue;
+    const im = new THREE.InstancedMesh(TREE_GEO[type], MAT.trees, cnt);
+    let k = 0;
+    for (let i = 0; i < n; i++) {
+      if (a[i * 6 + 5] !== type) continue;
+      const x = a[i * 6] / 10, z = a[i * 6 + 1] / 10, y = a[i * 6 + 2] / 10, h = a[i * 6 + 3] / 10, r = a[i * 6 + 4] / 10;
+      if (type === 0) {
+        _p.set(x, y + 0.12 * h, z);
+        _s.set(r, 0.88 * h, r);
+      } else {
+        _p.set(x, y + 0.3 * h, z);
+        _s.set(r, 0.36 * h, r);
+      }
+      _m.compose(_p, _q, _s);
+      im.setMatrixAt(k, _m);
+      const v = ((i * 2654435761) >>> 0) / 4294967296;
+      // sRGB picks: dark spruce green, lighter broadleaf green
+      if (type === 0) _c.setRGB(0.16 + 0.06 * v, 0.27 + 0.08 * v, 0.17, THREE.SRGBColorSpace);
+      else _c.setRGB(0.3 + 0.1 * v, 0.4 + 0.1 * v, 0.18, THREE.SRGBColorSpace);
+      im.setColorAt(k, _c);
+      k++;
+    }
+    im.frustumCulled = false;
+    g.add(im);
+  }
+  return g;
+}
+
 // ---------------- roads and buildings (level-9 tiles) ----------------
 const loader = new GLTFLoader();
 const content = new Map(); // 'roads/x_y' -> {state, group, centre}
@@ -404,6 +465,7 @@ function updateContent() {
   for (const [kind, list, range] of [
     ['roads', C.roads_tiles, 1500],
     ['buildings', C.buildings_tiles, 2500],
+    ['trees', C.trees_tiles || [], TREE_RANGE],
   ]) {
     for (const k of list) {
       const id = kind + '/' + k;
@@ -423,6 +485,14 @@ function updateContent() {
         get(url)
           .then(buf => {
             ST.contentBytes += buf.byteLength;
+            if (kind === 'trees') {
+              c.group = treeGroup(new Int16Array(buf));
+              c.group.position.copy(c.centre);
+              c.group.position.y = 0;
+              scene.add(c.group);
+              c.state = 2;
+              return;
+            }
             loader.parse(
               buf,
               '',
@@ -546,7 +616,10 @@ function updateControls(dt) {
     tmp.y += 1.0;
     camera.lookAt(tmp);
     const g = ((routePoint(r, drive.s + 10).y - routePoint(r, drive.s - 10).y) / 20) * 100;
-    $('grade').textContent = `Steigung ${g.toFixed(1)} % · ${(drive.s / 1000).toFixed(2)} / ${(L / 1000).toFixed(2)} km`;
+    const mk = META.roads && META.roads.metric && META.roads.metric[r.kind];
+    $('grade').textContent =
+      `Steigung ${g.toFixed(1)} % · ${(drive.s / 1000).toFixed(2)} / ${(L / 1000).toFixed(2)} km` +
+      (mk ? ` · Wellen/km ${mk.wellen_je_km} (vorher ${mk.wellen_je_km_vorher})` : '');
   }
 }
 
@@ -583,6 +656,28 @@ function hud() {
     `Gelände ${(tris / 1e6).toLocaleString('de-DE', { maximumFractionDigits: 2 })} Mio. Dreiecke · ${fps} fps`;
 }
 
+// ---------------- place names (names.json) as HTML labels ----------------
+let NAMES = [];
+const labRoot = document.createElement('div');
+labRoot.style.cssText = 'position:fixed;inset:0;pointer-events:none;overflow:hidden';
+document.body.appendChild(labRoot);
+const RANGE = { town: 15000, village: 7000, suburb: 5000, hamlet: 3500, isolated_dwelling: 1500, locality: 2000, peak: 6000 };
+const v3 = new THREE.Vector3();
+function updateLabels() {
+  for (const n of NAMES) {
+    v3.copy(n.p);
+    const d = v3.distanceTo(camera.position);
+    let show = d < (RANGE[n.kind] || 3000) && d > 30;
+    if (show) {
+      v3.y -= (Math.pow(v3.x - camera.position.x, 2) + Math.pow(v3.z - camera.position.z, 2)) * CURV;
+      v3.project(camera);
+      show = v3.z < 1 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
+    }
+    n.el.style.display = show ? 'block' : 'none';
+    if (show) n.el.style.transform = `translate(${((v3.x + 1) / 2) * innerWidth}px, ${((1 - v3.y) / 2) * innerHeight}px) translate(-50%, -100%)`;
+  }
+}
+
 // ---------------- start ----------------
 let roots = [];
 async function start() {
@@ -613,6 +708,18 @@ async function start() {
   } catch (e) {
     fail('Strecken', e);
   }
+  if (META.content.names) {
+    const nj = await get(BASE + META.content.names, 'json').catch(() => null);
+    NAMES = (nj ? nj.names : []).map(n => {
+      const el = document.createElement('div');
+      el.textContent = n.name;
+      const big = n.kind === 'town' || n.kind === 'village';
+      el.style.cssText = `position:absolute;left:0;top:0;white-space:nowrap;color:#fff;font:${big ? 650 : 500} ${big ? 14 : 12}px system-ui,sans-serif;` +
+        'text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 2px #000;display:none';
+      labRoot.appendChild(el);
+      return { ...n, el, p: toScene(n.E, n.N, n.H - META.H0 + (n.kind === 'peak' ? 8 : 25)) };
+    });
+  }
   $('route').innerHTML = ROUTES.map((r, i) => `<option value="${i}">${r.name} (${(r.length_m / 1000).toFixed(1)} km)</option>`).join('');
   for (const m of ['orbit', 'fly', 'drive']) $('m-' + m).onclick = () => setMode(m);
   $('goto').onchange = e => e.target.value && (place(e.target.value), (e.target.value = ''));
@@ -640,7 +747,8 @@ function loop(now) {
   camera.updateMatrixWorld();
   U.uCam.value.copy(camera.position);
   select();
-  if (frameNo % 10 === 1) updateContent();
+  updateContent();
+  if (frameNo % 2 === 0) updateLabels();
   renderer.render(scene, camera);
   if (!ST.firstFrameMs && drawn.length) ST.firstFrameMs = Math.round(performance.now() - ST.t0);
   fpsN++;
@@ -680,7 +788,7 @@ window.WELT.stats = () => ({
     return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
   })(),
 });
-window.WELT.idle = () => active === 0 && want.size === 0 && ST.tilesReady > 0;
+window.WELT.idle = () => active === 0 && want.size === 0 && ST.tilesReady > 0 && ![...content.values()].some(c => c.state === 1);
 window.WELT.setMode = setMode;
 window.WELT.place = place;
 window.WELT.routes = () => ROUTES.map(r => ({ name: r.name, kind: r.kind, length_m: r.length_m }));
