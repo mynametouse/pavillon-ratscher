@@ -434,7 +434,10 @@ function treeGroup(a) {
       _m.compose(_p, _q, _s);
       im.setMatrixAt(k, _m);
       const v = ((i * 2654435761) >>> 0) / 4294967296;
-      im.setColorAt(k, type === 0 ? _c.setRGB(0.1 + 0.05 * v, 0.2 + 0.07 * v, 0.12) : _c.setRGB(0.2 + 0.08 * v, 0.3 + 0.1 * v, 0.12));
+      // sRGB picks: dark spruce green, lighter broadleaf green
+      if (type === 0) _c.setRGB(0.16 + 0.06 * v, 0.27 + 0.08 * v, 0.17, THREE.SRGBColorSpace);
+      else _c.setRGB(0.3 + 0.1 * v, 0.4 + 0.1 * v, 0.18, THREE.SRGBColorSpace);
+      im.setColorAt(k, _c);
       k++;
     }
     im.frustumCulled = false;

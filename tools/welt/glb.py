@@ -1,4 +1,4 @@
-"""Minimal glTF 2.0 binary writer (GLB) for the world tiles: triangle meshes with POSITION, NORMAL, COLOR_0, TEXCOORD_0,
+"""Minimal glTF 2.0 binary writer (GLB) for the world tiles: triangle meshes with POSITION, NORMAL, COLOR_0 (given in sRGB, stored linear), TEXCOORD_0,
 one material per mesh (vertex colours, metallic 0). Extras carry the tile placement (UTM centre, H0) for any loader."""
 import json, struct
 import numpy as np
@@ -40,7 +40,10 @@ def write_glb(path, meshes, extras=None):
         if m.get('nrm') is not None:
             attrs['NORMAL'] = add(np.asarray(m['nrm'], np.float32), 34962, 5126, 'VEC3')
         if m.get('col') is not None:
-            c = np.clip(np.asarray(m['col'], np.float32) * 255 + 0.5, 0, 255).astype(np.uint8)
+            # colours are given in sRGB (as picked by eye); glTF vertex colours are linear
+            cs = np.clip(np.asarray(m['col'], np.float32), 0, 1)
+            cl = np.where(cs <= 0.04045, cs / 12.92, ((cs + 0.055) / 1.055) ** 2.4)
+            c = np.clip(cl * 255 + 0.5, 0, 255).astype(np.uint8)
             if c.shape[1] == 3:   # vertex colours as normalized unsigned bytes, padded to 4 for alignment
                 c = np.concatenate([c, np.full((len(c), 1), 255, np.uint8)], 1)
             attrs['COLOR_0'] = add(c, 34962, 5121, 'VEC4', normalized=True)
