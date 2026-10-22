@@ -732,6 +732,8 @@ async function start() {
   camera.position.set(g0.x - 900, 900, g0.z + 1700);
   orbit.update();
   if (Q.get('mode') === 'drive') setMode('drive');
+  // ?ort=garten|dorf|talsperre|schleusingen|ueberblick: jump there once the first tiles stand (the ground height comes from them)
+  if (Q.get('ort')) setTimeout(() => place(Q.get('ort')), 2500);
   requestAnimationFrame(loop);
 }
 let last = performance.now();
