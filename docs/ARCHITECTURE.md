@@ -68,7 +68,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `HUD` | game/hud.js | Menü, HUD, Inventarfenster, Mausfang |
 | `AVATAR` | game/avatar.js | Spielfigur (Mann/Frau), Bewegungen, Schutzausrüstung an der Figur |
 | `QUESTS` | game/quests.js | Aufgaben, Tagebuch (J), Zielanzeige |
-| `NPC` | npc/npc.js, npc_real.js, hours.js | Hubert, Ronald, Ziegen, Traktor; Dialoge; nachts daheim |
+| `NPC` | npc/npc.js, npc_real.js, hours.js | Günter, Bernd, Ziegen, Traktor; Dialoge; nachts daheim |
 | `CLOCK` | time/clock.js | Spielzeit (Minuten seit Tag 1, 0:00), Tempo, Warten/Zeitraffer, `CLOCK.on(fn)`, `CLOCK.jobs(fn)` |
 | `DN` | time/daynight.js | Kalender, Sonne/Mond/Sterne, Licht; `DN.sky(jd)`, `DN.jdOf(t)`, `DN.dateStr()` |
 | `GEAR` | werk/gear.js | Schutzausrüstung, `GEAR.check(req)` |
@@ -158,9 +158,9 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   Spur, Schwerpunkthöhe, Radradius, Reifensteifigkeit `Cf/Cr`, Haftung, Lenkung (`steerMax`, `steerV`), Motor (`eng.curve` Nm über U/min),
   Gänge, Bremsen, Luftwiderstand, Kasten für Kollisionen (`box`), Augenpunkt (`eye`), Tür (`door`), Kamera, Ton (`petrol`/`diesel`), `home()`.
   Physik 120 Hz (Einspurmodell, Reibkreis je Achse, Automatik ohne Pendeln: hoch nur in einen Gang über der Rückschaltdrehzahl und solange er zieht, zurück erst nach 1,2 s im Gang), Boden aus `ROADS.groundAt`/`ROADS.at`, Kollision mit `WCOL`, `COL`, Fahrzeugen,
-  Nachbarn und Huberts Traktor. Kamera: `VEH.applyCam` (aus `game.js applyCam`), Nachführen in Spielzeit (`camTick`). Licht: ein SpotLight für das
+  Nachbarn und Günters Traktor. Kamera: `VEH.applyCam` (aus `game.js applyCam`), Nachführen in Spielzeit (`camTick`). Licht: ein SpotLight für das
   nächste Fahrzeug mit Licht an. Haken in `game/game.js`: `groundZ`, Gehgrenzen (`walkBounds`), Kollision des Gehenden, Kamera, Schattenkasten,
-  Ortsnamen; in `game/play.js`: Sitzart `drive`; in `npc/npc.js`: Huberts Traktor wartet, wenn ein Fahrzeug im Weg steht.
+  Ortsnamen; in `game/play.js`: Sitzart `drive`; in `npc/npc.js`: Günters Traktor wartet, wenn ein Fahrzeug im Weg steht.
   Karte beim Fahren (`vehicles/minimap.js`): 2D-Canvas `#vmap`, Fahrtrichtung oben, Wege nach Art, Route zur Klinge, 10 Hz nur beim Fahren.
 - **Detailtexturen der Böden** (`core/detail.js`, V16b1): `DETAIL.tex` ist *ein* `DataArrayTexture` mit allen Kachel-Detailtexturen
   (Ebenen `lawn`, `lawn2`, `gravel`, `forestfloor`, `asphalt`, `needles`, `mossfloor`; 1024 px auf „hoch“, sonst 512, mit Mipmaps), Index über

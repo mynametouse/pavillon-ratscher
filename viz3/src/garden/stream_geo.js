@@ -1,5 +1,5 @@
 // ---------- the stream (Bach) along the north boundary: shared geometry for ground painting, terrain, walking and meshes ----------
-// It runs parallel to the field path through all three plots (Hubert – owner – Ronald), 1.5 m below the meadow, and flows from east to west.
+// It runs parallel to the field path through all three plots (Günter – owner – Bernd), 1.5 m below the meadow, and flows from east to west.
 // Cross-section: gravel bed with ~1 m of water (15–21 cm deep), banks rising steeply from the water and rounding off into the meadow 2.25 m
 // from the centre (4.5 m wide at the top). Asphalt bridge 2.5 m wide (no railing) north of the pavilion; on the garden side a stair of
 // oak sleepers to a stone landing at the water, 3 m left and right of the bridge.

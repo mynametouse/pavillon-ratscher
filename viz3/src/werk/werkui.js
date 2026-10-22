@@ -268,7 +268,7 @@ const WUI = (() => {
         fin
           .map(
             w =>
-              `<li><b>${esc(WERK.nameOf(w))}</b> ${'★'.repeat(w.stars || 0)}${'☆'.repeat(5 - (w.stars || 0))}<span>${esc(w.where === 'ronald' ? 'bei Ronald' : w.where === 'shelf' ? 'im Regal' : 'dabei')}${w.notes.length ? ' · ' + esc(w.notes.join('; ')) : ''}</span></li>`
+              `<li><b>${esc(WERK.nameOf(w))}</b> ${'★'.repeat(w.stars || 0)}${'☆'.repeat(5 - (w.stars || 0))}<span>${esc(w.where === 'bernd' ? 'bei Bernd' : w.where === 'shelf' ? 'im Regal' : 'dabei')}${w.notes.length ? ' · ' + esc(w.notes.join('; ')) : ''}</span></li>`
           )
           .join('') +
         '</ul>';

@@ -53,7 +53,7 @@ def collect(H, SP, A, D):
     sync(os.path.join(A, 'sky'), os.path.join(D, 'sky'), ['*.jpg'])   # photographic skies (tools/mksky.py)
     # rigged people and goats (gt/chars.mjs, chars/rt.html): glTF JSON with meshopt geometry + WebP images, animation clips
     sync(os.path.join(A, 'chars'), os.path.join(D, 'chars'), ['*.json', '*.webp'])
-    charman = {k: k + '.json' for k in ('hubert', 'ronald', 'goat', 'clips')} if all(os.path.exists(os.path.join(D, 'chars', k + '.json')) for k in ('hubert', 'ronald', 'goat', 'clips')) else None
+    charman = {k: k + '.json' for k in ('guenter', 'bernd', 'goat', 'clips')} if all(os.path.exists(os.path.join(D, 'chars', k + '.json')) for k in ('guenter', 'bernd', 'goat', 'clips')) else None
     if charman and os.path.exists(os.path.join(D, 'chars', 'tractor.json')): charman['tractor'] = 'tractor.json'
     # V15 player figures (man, woman) and their animation clips (chars/player.py): only the files that exist
     for _old in ('pclips.json',):

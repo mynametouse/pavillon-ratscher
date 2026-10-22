@@ -55,7 +55,7 @@ def classify(t):
     return KI[k], SI[s], wd, fl
 # ---- the modelled site (garden/*.js: garden, neighbours, field path, stream) and OSM differ by a few metres. Inside the site zone the model
 #      has its own ground, so the OSM ways there are left out; the vehicles use the modelled field path (painted ±1.6 m gravel, garden/env.js),
-#      and a gravel connector leads from it south-east over the stream (a small bridge) past Ronald's paddock to the service road towards the
+#      and a gravel connector leads from it south-east over the stream (a small bridge) past Bernd's paddock to the service road towards the
 #      village – the OSM line itself would cut the paddock's corner and run through the modelled stream. The north-western farm track is
 #      linked down to the field path. Coordinates of the zone, path and stream as in garden/env.js, garden/stream_geo.js, npc/npc.js.
 SITE = json.load(open(os.path.join(REPO, 'viz3', 'site.json')))
