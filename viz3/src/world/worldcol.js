@@ -150,3 +150,4 @@ const WCOL = (() => {
   return S;
 })();
 window.WCOL = WCOL;
+KERN.provide('pushOut', (p, r) => WCOL.pushCircle(p, r)); // core/kern.js

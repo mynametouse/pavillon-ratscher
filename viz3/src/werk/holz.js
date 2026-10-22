@@ -443,7 +443,7 @@ const HOLZ = (() => {
   // ---------------- where a lowered log comes to rest ----------------
   // the ground (or a log lying there, or the log yard's squared timbers) under a point
   function support(x, y, self) {
-    let z = ROADS.groundAt(x, y);
+    let z = KERN.ground(x, y);
     for (const u of YARD.under || []) {
       const dx = x - u.x,
         dy = y - u.y,
@@ -595,7 +595,7 @@ const HOLZ = (() => {
     for (const k of [-1, 1]) {
       const x = Y.x + (ux * k * Y.gap) / 2,
         y = Y.y + (uy * k * Y.gap) / 2,
-        z = ROADS.groundAt(x, y),
+        z = KERN.ground(x, y),
         me = new THREE.Mesh(new THREE.BoxGeometry(Y.w, 0.14, 0.14), mat);
       me.position.copy(V(x, y, z + 0.07));
       me.rotation.y = -Y.az;

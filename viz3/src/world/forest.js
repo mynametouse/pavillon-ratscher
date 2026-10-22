@@ -585,7 +585,7 @@ const FOREST = (() => {
       rnd = mulberry(1609),
       rr = (a, b) => a + (b - a) * rnd(),
       T = [];
-    const ground = (x, y) => (window.ROADS ? ROADS.groundAt(x, y) : RATSCHER.hMesh(x, y)),
+    const ground = (x, y) => KERN.ground(x, y),
       onRoad = (x, y, m) => window.ROADS && ROADS.edge(x, y) > -m;
     const mask = new Float32Array(MW * MH);
     for (const c of chm) splat(mask, c[0], c[1], c[3] * 1.25 + 1.6, 1, false);
@@ -998,7 +998,7 @@ const FOREST = (() => {
   function cover(P0) {
     const rnd = mulberry(77),
       items = { fern: [], stump: [], stump2: [], deadlog: [] },
-      ground = (x, y) => (window.ROADS ? ROADS.groundAt(x, y) : RATSCHER.hMesh(x, y));
+      ground = (x, y) => KERN.ground(x, y);
     for (let y = LB[1]; y < LB[3]; y += 2)
       for (let x = LB[0]; x < LB[2]; x += 2) {
         const px = x + rnd() * 2,

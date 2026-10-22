@@ -39,7 +39,7 @@ const FELL = (() => {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-  const ground = (x, y) => ROADS.groundAt(x, y);
+  const ground = (x, y) => KERN.ground(x, y);
   const think = (t, ms) => PLAY.think(t, ms);
   const SPN = { spruce: 'Fichte', larch: 'Lärche', pine: 'Kiefer' };
   // ---------------- materials ----------------

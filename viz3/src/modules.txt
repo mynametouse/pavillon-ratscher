@@ -4,6 +4,7 @@
 
 core/save.js                # SAVE: every value kept in this browser (registry, safe reads/writes, migrations, test hooks)
 core/head.js                # three.js imports, renderer, scene, camera, query flags, small helpers
+core/kern.js                # KERN: ground, terrain, road surface, collision, place names – services the world modules provide
 core/assets.js              # loading manager, textures, PBR materials, patchSV (sky visibility, baked GI, figure shadows, lamp-spill mask)
 core/geo.js                 # box/cylinder builders with collision + walk registry (COL, WALK), building registry (bldBegin/bldEnd, BUILD)
 core/mats.js                # shared materials MAT

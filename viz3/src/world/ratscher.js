@@ -917,3 +917,4 @@ const RATSCHER = (() => {
   return S;
 })();
 window.RATSCHER = RATSCHER;
+KERN.provide('terrain', (x, y) => (RATSCHER.hMesh ? RATSCHER.hMesh(x, y) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0)); // core/kern.js

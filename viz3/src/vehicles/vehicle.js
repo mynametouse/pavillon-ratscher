@@ -5,7 +5,7 @@
 // transfer, a kinematic blend below walking pace; drive force from an engine torque curve through an automatic gearbox (GTA-style: the
 // brake key reverses once it stands), brakes, handbrake (rear axle slides), rolling resistance and grip from the surface under the wheels
 // (world/roads.js: asphalt … grass; off the roads meadow and field), air drag. The body stands on the four ground heights
-// (ROADS.groundAt: terrain triangles, bridge decks) with spring-damped pitch and roll, short flights over crests.
+// (KERN.ground → ROADS.groundAt: terrain triangles, bridge decks) with spring-damped pitch and roll, short flights over crests.
 // Collisions: the body box against building walls, trunks and bridge railings (world/worldcol.js), the garden's colliders (COL), the other
 // vehicles and the neighbours – push-out plus an impulse with a little restitution and friction, a thud. Walkers bump into parked vehicles.
 // Cameras: behind the vehicle (follows the heading; the mouse looks around and it swings back) or the driver's eyes – V or the mouse wheel,
@@ -175,8 +175,8 @@ const VEH = (() => {
       zq = s.z + 0.7;
     for (const w of v.W) {
       const p = toW(v, w.x, w.y);
-      w.gz = ROADS.groundAt(p[0], p[1], zq);
-      const r = ROADS.at(p[0], p[1]);
+      w.gz = KERN.ground(p[0], p[1], zq);
+      const r = KERN.surface(p[0], p[1]);
       w.surf = r && r.e > -0.1 ? r.surf : -1;
     }
     const [fl, fr, rl, rr] = v.W,
@@ -853,15 +853,15 @@ const VEH = (() => {
     for (const [lx, ly] of cands) {
       const p = toW(v, lx, ly),
         q = p.slice();
-      if (window.WCOL) WCOL.pushCircle(q, 0.3);
+      KERN.pushOut(q, 0.3);
       if (Math.hypot(q[0] - p[0], q[1] - p[1]) > 0.05) continue;
-      const gz = ROADS.groundAt(p[0], p[1], s.z + 0.5);
+      const gz = KERN.ground(p[0], p[1], s.z + 0.5);
       if (Math.abs(gz - s.z) > 1.2) continue;
       if (typeof blocked === 'function' && blocked(p[0], p[1], gz)) continue;
       return [p[0], p[1], gz];
     }
     const p = toW(v, -(B.hw + 0.55), sp.eye[1]);
-    return [p[0], p[1], ROADS.groundAt(p[0], p[1], s.z + 0.5)];
+    return [p[0], p[1], KERN.ground(p[0], p[1], s.z + 0.5)];
   }
   function enter(v) {
     if (S.cur || PLAY.seated()) return;
@@ -1163,7 +1163,7 @@ const VEH = (() => {
       let cx = pv[0] - fx * L,
         cy = pv[1] - fy * L,
         cz = pv[2] - fz * L + C.height * k * 0.55;
-      const gz = ROADS.groundAt(cx, cy, cz) + 0.45;
+      const gz = KERN.ground(cx, cy, cz) + 0.45;
       if (cz < gz) cz = gz;
       cam.fov = (window.innerWidth < 760 ? 70 : 62) + Math.min(10, spd * 0.25);
       cam.near = 0.15;
@@ -1456,7 +1456,7 @@ const VEH = (() => {
     SPOTS._veh = {
       mode: 'walk',
       pos: [d[0], d[1]],
-      z: ROADS.groundAt(d[0], d[1]),
+      z: KERN.ground(d[0], d[1]),
       yaw: (Math.atan2(c[0] - d[0], c[1] - d[1]) * 180) / Math.PI,
       pitch: -6,
       label: v.name,

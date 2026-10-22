@@ -496,3 +496,7 @@ const ROADS = (() => {
   return S;
 })();
 window.ROADS = ROADS;
+// the ground, the road surface and the place names out in the land as KERN services (core/kern.js)
+KERN.provide('ground', (x, y, z) => ROADS.groundAt(x, y, z));
+KERN.provide('surface', (x, y) => ROADS.at(x, y));
+KERN.provide('place', (x, y) => ROADS.place(x, y), 0);
