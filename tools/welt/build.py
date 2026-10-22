@@ -4,7 +4,14 @@
     --plan B   the same with levels 8-11 over 9.6 x 9.6 km (Schleusingen, Talsperre, Ratscher)
     --plan T   1.6 km block for a quick local run
     --no-dgm   skip the DGM1 download (Copernicus GLO-30 only)
-Prints the road metric (waves per km per class before/after) and the sizes per level; writes meta.json and ATTRIBUTION.md."""
+Prints the road metric (waves per km per class before/after) and the sizes per level; writes meta.json and ATTRIBUTION.md.
+Output (= gh-pages/welt-test/, later Cloudflare R2):
+  meta.json          tiling, levels with tile ranges, origin and model transform, sources, attribution, road metric
+  t/{z}/{x}/{y}.bin  terrain (WTH1, tiles.py)        i/{z}/{x}/{y}.webp  orthophoto 512 px
+  r/9_{x}_{y}.glb    road ribbons, markings, bridges  b/9_{x}_{y}.glb     buildings      r|b/tileset.json  the same as 3D Tiles 1.1
+  v/9_{x}_{y}.bin    single trees (trees.py)          roads.json  centre lines with profile heights   routes.json  drive routes
+  names.json         place names                      diag/       route profiles before/after, overview with roads
+  ATTRIBUTION.md     sources and licences (German)"""
 import argparse, json, os, subprocess, sys, time
 from multiprocessing import Pool
 import numpy as np
