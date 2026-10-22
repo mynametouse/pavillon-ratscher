@@ -26,12 +26,14 @@ const SAVE = (() => {
     } catch (_) {}
   };
   function raw(key) {
+    // written in this visit: the value as written – also when the browser refused to keep it (storage full), so the page carries on with it
+    if (mem.has(key)) return mem.get(key);
     try {
       if (ls) return ls.getItem(key);
     } catch (e) {
       note(key, 'read', e);
     }
-    return mem.has(key) ? mem.get(key) : null;
+    return null;
   }
   function rawSet(key, s) {
     mem.set(key, s);
