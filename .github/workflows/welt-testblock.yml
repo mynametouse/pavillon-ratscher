@@ -156,6 +156,37 @@ jobs:
           git log --oneline -2
           echo "generated=$(python3 -c "import json;print(json.load(open('welt-test/meta.json'))['generated'])")" >> "$GITHUB_OUTPUT"
 
+  r2:
+    # later home of the world tiles: Cloudflare R2 (S3 API). Inert until Falko adds the secrets R2_ACCOUNT_ID, R2_ACCESS_KEY_ID,
+    # R2_SECRET_ACCESS_KEY, R2_BUCKET (and makes the bucket public with CORS for mynametouse.github.io).
+    name: Nach Cloudflare R2 (wenn eingerichtet)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      AWS_DEFAULT_REGION: auto
+    steps:
+      - name: R2 eingerichtet?
+        run: '[ -n "$R2_ACCOUNT_ID" ] && echo "R2: ja" || echo "R2 noch nicht eingerichtet – nichts zu tun"'
+      - uses: actions/download-artifact@v4
+        if: env.R2_ACCOUNT_ID != ''
+        with:
+          name: welt-test
+          path: new/welt-test
+      - name: Hochladen (nur Geändertes)
+        if: env.R2_ACCOUNT_ID != ''
+        run: |
+          aws s3 sync new/welt-test "s3://$R2_BUCKET/welt-test" --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" \
+            --no-progress --exclude "*.glb" --exclude "*.bin"
+          aws s3 sync new/welt-test "s3://$R2_BUCKET/welt-test" --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" \
+            --no-progress --exclude "*" --include "*.glb" --content-type model/gltf-binary
+          aws s3 sync new/welt-test "s3://$R2_BUCKET/welt-test" --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" \
+            --no-progress --exclude "*" --include "*.bin" --content-type application/octet-stream
+
   live:
     name: Live-Prüfung (GitHub Pages)
     needs: deploy
