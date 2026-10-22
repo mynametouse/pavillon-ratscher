@@ -742,7 +742,7 @@ const DN = (() => {
     MA.paper = L.paper;
     MA.L = L.L.slice();
     MA.stove = L.stove.getHex();
-    sunDir = lo.dir.clone();
+    setSunDir(lo.dir.clone());
     sun.intensity = lo.I;
     sun.color.copy(lo.col);
     hemi.intensity = L.hemi;
@@ -919,7 +919,7 @@ const DN = (() => {
   function enable(m) {
     S.mode = m === 'night' ? 'night' : 'auto';
     S.active = true;
-    MODE = S.mode;
+    setModeId(S.mode);
     window.MODE_NOW = S.mode;
     S.ap = null;
     S.envKey = '';

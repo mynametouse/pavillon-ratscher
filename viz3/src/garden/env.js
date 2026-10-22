@@ -32,6 +32,10 @@ function dirFromAz(az, el) {
   return V(Math.sin(a) * Math.cos(e), Math.cos(a) * Math.cos(e), Math.sin(e)).normalize();
 }
 let sunDir = dirFromAz(248, 13);
+// other modules replace the sun direction through setSunDir (an imported variable cannot be assigned)
+function setSunDir(d) {
+  sunDir = d;
+}
 // sky with soft cumulus layer
 const skyU = {
   sunDir: { value: sunDir.clone() },

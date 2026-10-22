@@ -782,11 +782,11 @@ function loadModel(id, cb, matFix) {
     }
   );
 }
-let _dirty = true,
-  _shadowDirty = true;
+// render requests: a new frame (frame) and a new shadow map (shadow) are due – set through markDirty, cleared by the render loops
+const DIRTY = { frame: true, shadow: true };
 function markDirty(shadow) {
-  _dirty = true;
-  if (shadow) _shadowDirty = true;
+  DIRTY.frame = true;
+  if (shadow) DIRTY.shadow = true;
 }
 // ---------- vegetation: one InstancedMesh per spatial cell, so frustum culling works; small detail additionally fades out of the draw list beyond maxD ----------
 // Inside the house (walls all round) the far rule is halved; near tree cells switch between full and thinned leaf cards (lod pairs).

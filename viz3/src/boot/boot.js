@@ -290,9 +290,9 @@ window.GAME = {
   shot() {
     applyCam();
     adaptExposure(0, true);
-    if (_shadowDirty) {
+    if (DIRTY.shadow) {
       R.shadowMap.needsUpdate = true;
-      _shadowDirty = false;
+      DIRTY.shadow = false;
     }
     renderFrame();
   },
@@ -300,9 +300,9 @@ window.GAME = {
     applyCam();
     if (window.VEG) VEG.update(cam.position);
     adaptExposure(dt, !!snap);
-    if (_shadowDirty) {
+    if (DIRTY.shadow) {
       R.shadowMap.needsUpdate = true;
-      _shadowDirty = false;
+      DIRTY.shadow = false;
     }
     renderFrame();
   }, // one frame of a recorded film (test/tour.py)

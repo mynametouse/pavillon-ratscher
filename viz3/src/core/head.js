@@ -35,6 +35,9 @@ let VARIANT = (() => {
   return 'B';
 })();
 window.VARIANT = VARIANT;
+function setVariantId(v) {
+  VARIANT = v; // pavilion/variant.js switches (setVariant)
+}
 const varOk = v => !v || v === VARIANT;
 // point lights: skip the lighting maths for lamps that do not reach a fragment (switched off or out of range) – most of the picture is outside every lamp's radius
 THREE.ShaderChunk.lights_fragment_begin = THREE.ShaderChunk.lights_fragment_begin.replace(
