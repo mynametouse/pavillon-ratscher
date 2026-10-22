@@ -38,6 +38,8 @@ KLIST = list(KINDS)
 # main ~ EKL 2, county ~ EKL 3, lane/street ~ EKL 4 (inside villages RASt applies; there it is only a reference)
 RAL = {'motorway': (4.0, 13000, 8800), 'main': (5.5, 6000, 3500), 'county': (6.5, 5000, 3000), 'street': (8.0, 3000, 2000),
        'lane': (8.0, 3000, 2000)}
+# CI limits per class after smoothing (brief claude/pavillon-welt.md, roads item 6): waves per km, mean change of grade per 10 m (%)
+LIMITS = {'motorway': (1, 0.3), 'main': (2, 0.5), 'county': (3, 0.7), 'street': (4, 1.0), 'lane': (4, 1.0), 'service': (5, 1.2), 'track': (6, 1.5)}
 SURF = ['asphalt', 'concrete', 'paving', 'gravel', 'ground', 'grass']
 SURF_OSM = {'asphalt': 'asphalt', 'paved': 'asphalt', 'chipseal': 'asphalt', 'concrete': 'concrete', 'concrete:plates': 'concrete',
             'concrete:lanes': 'concrete', 'paving_stones': 'paving', 'sett': 'paving', 'cobblestone': 'paving', 'unhewn_cobblestone': 'paving',
@@ -308,6 +310,10 @@ def metrics(pos, chains, h, axis):
                          steigungswechsel_10m_vorher=round(float(np.mean(r['dg_b'])), 2) if r['dg_b'] else None,
                          steigungswechsel_10m=round(float(np.mean(r['dg_a'])), 2) if r['dg_a'] else None,
                          max_steigung_vorher=round(r['maxg_b'], 1), max_steigung=round(r['maxg_a'], 1))
+        if kind in LIMITS:
+            lw, lg = LIMITS[kind]
+            res[kind]['grenzwerte'] = {'wellen_je_km': lw, 'steigungswechsel_10m': lg}
+            res[kind]['test'] = bool(res[kind]['wellen_je_km'] <= lw and (res[kind]['steigungswechsel_10m'] or 0) <= lg)
         if kind in RAL:
             res[kind].update(ral=dict(zip(('max_steigung', 'min_kuppe', 'min_wanne'), RAL[kind])),
                              anteil_ueber_steigung=round(r['over_grade'] / km, 3), anteil_kuppe_zu_eng=round(r['over_crest'] / km, 3),
@@ -322,22 +328,58 @@ def print_metrics(res, label):
         if 'ral' in r:
             extra = (f"  RAL: über {r['ral']['max_steigung']} % {100 * r['anteil_ueber_steigung']:.0f} %, Kuppe < {r['ral']['min_kuppe']} m "
                      f"{100 * r['anteil_kuppe_zu_eng']:.0f} %, Wanne < {r['ral']['min_wanne']} m {100 * r['anteil_wanne_zu_eng']:.0f} % der Länge")
-        print(f"   {k:9s} {r['km']:6.1f} km  Wellen/km {r['wellen_je_km_vorher']:6.1f} -> {r['wellen_je_km']:5.1f}   "
+        t = '' if 'test' not in r else ('  ok  ' if r['test'] else '  ÜBER ')
+        print(f"   {k:9s} {r['km']:6.1f} km{t}Wellen/km {r['wellen_je_km_vorher']:6.1f} -> {r['wellen_je_km']:5.1f}   "
               f"Steigungswechsel/10 m {r['steigungswechsel_10m_vorher']:5.2f} -> {r['steigungswechsel_10m']:5.2f} %   "
               f"max {r['max_steigung_vorher']:5.1f} -> {r['max_steigung']:5.1f} %{extra}", flush=True)
 
 
 # ---------------- cross-section, ribbons, carving ----------------
 def cross(w):
-    """offsets and height drops of the cross-section (left to right): skirt, shoulder, edge, centre, edge, shoulder, skirt"""
+    """offsets of the cross-section (right to left: o < 0 is right of the direction of travel): skirt, shoulder, edge, centre,
+    edge, shoulder, skirt -> (o, half width, shoulder width)"""
     hw = w['w'] / 2
     sw = KINDS[w['kind']][4]
-    crown = CROWN if w['surf'] in ('asphalt', 'concrete', 'paving') else 0.04
-    edge = crown * hw
-    sh = edge + SH_SLOPE * sw
     o = np.array([-(hw + sw + 0.6), -(hw + sw), -hw, 0.0, hw, hw + sw, hw + sw + 0.6])
-    dz = -np.array([sh + 0.45, sh, edge, 0.0, edge, sh, sh + 0.45])
-    return o, dz, hw, sw, crown
+    return o, hw, sw
+
+
+# superelevation on rural roads (RAL-like): one-sided cross fall towards the inside from radius R0 down, 7 % at Rmin
+SUPER = {'motorway': (900.0, 400.0), 'main': (600.0, 150.0), 'county': (500.0, 120.0), 'lane': (300.0, 80.0)}
+
+
+def slopes(w, P):
+    """cross fall of the left and right half per node (positive = falling outwards): the crown on straights, one-sided towards the
+    inside of curves (2.5 % -> 7 %), blended with the smoothed curvature so that the change runs over a few tens of metres"""
+    paved = w['surf'] in ('asphalt', 'concrete', 'paving')
+    crown = CROWN if paved else 0.04
+    n = len(P)
+    sL, sR = np.full(n, crown), np.full(n, crown)
+    if w['kind'] not in SUPER or not paved or n < 5 or w['fl'] & 1:
+        return sL, sR
+    from scipy.ndimage import gaussian_filter1d
+    R0, Rm = SUPER[w['kind']]
+    d = np.diff(P, axis=0)
+    L = np.maximum(np.hypot(d[:, 0], d[:, 1]), 1e-6)
+    th = np.unwrap(np.arctan2(d[:, 1], d[:, 0]))
+    k = np.zeros(n)
+    k[1:-1] = np.diff(th) / ((L[:-1] + L[1:]) / 2)
+    k = gaussian_filter1d(k, 6, mode='nearest')          # ~12 m at 2 m node spacing
+    R = 1.0 / np.maximum(np.abs(k), 1e-6)
+    q = np.clip(0.025 + 0.045 * (R0 - R) / (R0 - Rm), 0.025, 0.07)
+    t = np.clip((R0 - R) / (0.3 * R0), 0, 1)
+    b = t * t * (3 - 2 * t)                               # 0 on straights, 1 in curves below 0.7 R0
+    side = np.sign(k)                                     # + = turning left: the left half falls
+    return (1 - b) * crown + b * q * side, (1 - b) * crown - b * q * side
+
+
+def section_z(z, sL, sR, o, hw, sw):
+    """heights of the cross-section vertices (n, len(o)): carriageway by the cross fall of its half, shoulders falling at 8 %,
+    skirts 0.45 m lower"""
+    a = np.abs(o)[None, :]
+    sl = np.where(o[None, :] >= 0, sL[:, None], sR[:, None])
+    dz = -sl * np.minimum(a, hw) - SH_SLOPE * np.clip(a - hw, 0, None) - 0.45 * (a > hw + sw + 0.3)
+    return z[:, None] + dz
 
 
 def decimate(P, z, tol_xy=0.03, tol_z=0.01, max_gap=20):
@@ -380,12 +422,13 @@ def ribbons(pos, chains, h, area, lift=0.0):
         keep = decimate(P0, z0)
         nsec += len(P0)
         nkept += len(keep)
+        sL0, sR0 = slopes(w, P0)
         P, z, t = P0[keep], z0[keep], t0[keep]
         vcum = np.concatenate([[0], np.cumsum(L0)])[keep]
         nrm = np.stack([-t[:, 1], t[:, 0]], 1)
-        o, dz, hw, sw, _ = cross(w)
+        o, hw, sw = cross(w)
         V = P[:, None, :] + o[None, :, None] * nrm[:, None, :]           # (n, 7, 2)
-        Z = z[:, None] + dz[None, :]
+        Z = section_z(z, sL0[keep], sR0[keep], o, hw, sw)
         m = len(o)
         col = np.array([SHOULDER_COL, SHOULDER_COL] + [COL[w['surf']]] * 3 + [SHOULDER_COL, SHOULDER_COL], np.float32)
         mid = (P[:-1] + P[1:]) / 2
@@ -448,7 +491,8 @@ def markings(pos, chains, h, area, lift=0.0):
         t0, L0 = tangents(P0)
         cum = np.concatenate([[0], np.cumsum(L0)])
         n0 = np.stack([-t0[:, 1], t0[:, 0]], 1)
-        o, dz, hw, sw, crown = cross(w)
+        o, hw, sw = cross(w)
+        sL0, sR0 = slopes(w, P0)
         mid_key = lambda p: (int(np.floor((p[0] - ROOT_E0) / s9)), int(np.floor((p[1] - ROOT_N0) / s9)))
         inside = lambda p: area[0] <= p[0] < area[2] and area[1] <= p[1] < area[3]
         if mark >= 2 and hw > 2.0:     # edge lines on the decimated sections, cut into runs per tile
@@ -457,7 +501,8 @@ def markings(pos, chains, h, area, lift=0.0):
             for side in (-1, 1):
                 off = side * (hw - 0.3)
                 V = np.stack([P + (off - hw_l) * nn, P + (off + hw_l) * nn], 1)
-                Z = np.repeat((z - crown * abs(off) + 0.012)[:, None], 2, 1)
+                sl = (sL0 if side > 0 else sR0)[keep]
+                Z = np.repeat((z - sl * abs(off) + 0.012)[:, None], 2, 1)
                 mids = (P[:-1] + P[1:]) / 2
                 keys = [mid_key(m) if inside(m) else None for m in mids]
                 k0 = 0
@@ -527,13 +572,14 @@ def carve(dem, pos, chains, h, area):
         x, y, z = np.interp(s, cum, P[:, 0]), np.interp(s, cum, P[:, 1]), np.interp(s, cum, h[ids])
         Q = np.stack([x, y], 1)
         t, _ = tangents(Q) if len(Q) > 1 else (np.array([[1.0, 0.0]]), None)
-        o, dz, hw, sw, cr = cross(w)
+        o, hw, sw = cross(w)
+        sL, sR = slopes(w, P)
         S_xy.append(Q)
         S_t.append(t)
         S_h.append(z)
         S_hw.append(np.full(len(Q), hw))
         S_sw.append(np.full(len(Q), sw))
-        S_cr.append(np.full(len(Q), cr))
+        S_cr.append(np.stack([np.interp(s, cum, sL), np.interp(s, cum, sR)], 1))
         S_max.append(np.full(len(Q), 4.0 if w['kind'] in ('path', 'foot') else 30.0))
     if not S_xy:
         return 0, {}
@@ -585,8 +631,10 @@ def carve(dem, pos, chains, h, area):
         v = pv[:, None, :] - Q[jj]
         tt = T[jj]
         along = np.abs(v[..., 0] * tt[..., 0] + v[..., 1] * tt[..., 1])
-        off = np.abs(-v[..., 0] * tt[..., 1] + v[..., 1] * tt[..., 0])
-        hw, sw, cr, hc = HW[jj], SW[jj], CR[jj], Hc[jj]
+        so = -v[..., 0] * tt[..., 1] + v[..., 1] * tt[..., 0]          # signed offset, + = left of the direction
+        off = np.abs(so)
+        hw, sw, hc = HW[jj], SW[jj], Hc[jj]
+        cr = np.where(so >= 0, CR[jj][..., 0], CR[jj][..., 1])        # cross fall of the half the pixel lies in
         core = okk & (off <= hw + sw) & (along <= 0.55)
         surf = hc - cr * np.minimum(off, hw) - SH_SLOPE * np.clip(off - hw, 0, None) - UNDER
         surf = np.where(core, surf, -np.inf)
@@ -695,17 +743,24 @@ def profile_png(path, title, s, raw, smooth, terrain=None):
     lo, hi = float(min(np.nanmin(raw), np.nanmin(smooth))) - 1, float(max(np.nanmax(raw), np.nanmax(smooth))) + 1
     im = Image.new('RGB', (W, H), (255, 255, 255))
     d = ImageDraw.Draw(im)
+    try:   # umlauts: DejaVu (on the Ubuntu runners); else plain ASCII
+        from PIL import ImageFont
+        font = ImageFont.truetype('DejaVuSans.ttf', 13)
+        tx = lambda q: q
+    except OSError:
+        font = None
+        tx = lambda q: q.replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue').replace('–', '-')
     X = lambda v: m + (v - s[0]) / max(s[-1] - s[0], 1) * (W - 2 * m)
     Y = lambda v: H - m - (v - lo) / max(hi - lo, 0.1) * (H - 2 * m)
     for k in range(0, int(s[-1]) + 1, 100):
         d.line([(X(k), m), (X(k), H - m)], fill=(232, 232, 232))
-        d.text((X(k) + 2, H - m + 4), f'{k} m', fill=(90, 90, 90))
+        d.text((X(k) + 2, H - m + 4), f'{k} m', fill=(90, 90, 90), font=font)
     for z in np.arange(np.ceil(lo), hi, max(1, round((hi - lo) / 8))):
         d.line([(m, Y(z)), (W - m, Y(z))], fill=(232, 232, 232))
-        d.text((4, Y(z) - 6), f'{z:.0f}', fill=(90, 90, 90))
+        d.text((4, Y(z) - 6), f'{z:.0f}', fill=(90, 90, 90), font=font)
     d.line([(X(a), Y(b)) for a, b in zip(s, raw)], fill=(150, 150, 150), width=1)
     d.line([(X(a), Y(b)) for a, b in zip(s, smooth)], fill=(200, 30, 30), width=2)
-    d.text((m, 12), title + '  –  grau: Achse punktweise aus dem Gelände, rot: geglättetes Längsprofil (m NHN)', fill=(0, 0, 0))
+    d.text((m, 12), tx(title + '  –  grau: Achse punktweise aus dem Gelände, rot: geglättetes Längsprofil (m NHN)'), fill=(0, 0, 0), font=font)
     im.save(path)
 
 
