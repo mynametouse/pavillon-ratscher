@@ -532,7 +532,52 @@ def markings(pos, chains, h, area, lift=0.0):
     return groups
 
 
-def write_ribbons(groups, out_dir, marks=None):
+def bridge_parts(pos, chains, h, area, lift=0.0):
+    """simple bridge bodies for OSM bridges: deck slab 1.2 m deep under the carriageway and shoulders, parapets 0.9 m high on both
+    sides (the terrain below stays as it is) -> {tile: arrays} like markings()"""
+    from wlib import ROOT_E0, ROOT_N0, tsize
+    s9 = tsize(CONTENT_LEVEL)
+    groups = collections.defaultdict(lambda: dict(pos=[], idx=[], n=0))
+    for w, ids in chains:
+        if not (w['fl'] & 1) or w['kind'] in ('path', 'foot') and w['w'] < 1.5:
+            continue
+        P = pos[ids]
+        if len(P) < 2:
+            continue
+        z = h[ids] + lift + 0.002 * KINDS[w['kind']][5]
+        t, _ = tangents(P)
+        nrm = np.stack([-t[:, 1], t[:, 0]], 1)
+        o, hw, sw = cross(w)
+        e = hw + sw
+        sL, sR = slopes(w, P)
+        zl = z - sL * hw - SH_SLOPE * sw          # deck edge heights left / right
+        zr = z - sR * hw - SH_SLOPE * sw
+        L_, R_ = P + e * nrm, P - e * nrm
+        mid = (P[:-1] + P[1:]) / 2
+        if not ((mid[:, 0] >= area[0]) & (mid[:, 0] < area[2]) & (mid[:, 1] >= area[1]) & (mid[:, 1] < area[3])).any():
+            continue
+        key = (int(np.floor((mid[len(mid) // 2, 0] - ROOT_E0) / s9)), int(np.floor((mid[len(mid) // 2, 1] - ROOT_N0) / s9)))
+        g = groups[key]
+        # strips along the bridge: (outline points, heights) pairs -> quads between consecutive sections
+        strips = [(L_, zl + 0.9, L_, zl - 1.2),          # left outer face, parapet top down to the slab bottom
+                  (R_, zr - 1.2, R_, zr + 0.9),          # right outer face
+                  (L_, zl - 1.2, R_, zr - 1.2),          # underside
+                  (L_ - 0.25 * nrm, zl, L_ - 0.25 * nrm, zl + 0.9),   # parapet inner faces
+                  (R_ + 0.25 * nrm, zr + 0.9, R_ + 0.25 * nrm, zr),
+                  (L_, zl + 0.9, L_ - 0.25 * nrm, zl + 0.9),          # parapet tops
+                  (R_ + 0.25 * nrm, zr + 0.9, R_, zr + 0.9)]
+        k = len(P)
+        for A_, za, B_, zb in strips:
+            V = np.stack([np.concatenate([A_[:, 0], B_[:, 0]]), np.concatenate([A_[:, 1], B_[:, 1]]), np.concatenate([za, zb])], 1)
+            g['pos'].append(V)
+            i = np.arange(k - 1)
+            a, b, c, d = g['n'] + i, g['n'] + i + 1, g['n'] + k + i + 1, g['n'] + k + i
+            g['idx'].append(np.stack([a, b, c, a, c, d], -1).ravel())
+            g['n'] += 2 * k
+    return groups
+
+
+def write_ribbons(groups, out_dir, marks=None, bridges=None):
     os.makedirs(out_dir, exist_ok=True)
     files = {}
     for (tx, ty), g in groups.items():
@@ -553,6 +598,13 @@ def write_ribbons(groups, out_dir, marks=None):
             im = np.concatenate(mg['idx']).astype(np.uint32).reshape(-1, 3)[:, ::-1].ravel()
             meshes.append(dict(name='markings', pos=pm, idx=im, nrm=np.tile(np.array([[0, 1, 0]], np.float32), (len(pm), 1)),
                                col=np.full((len(pm), 3), 0.93, np.float32), rough=0.6))
+        bg = (bridges or {}).get((tx, ty))
+        if bg and bg['pos']:
+            Pb = np.concatenate(bg['pos'])
+            pb = np.stack([Pb[:, 0] - Ec, Pb[:, 2] - H0, -(Pb[:, 1] - Nc)], 1).astype(np.float32)
+            ib = np.concatenate(bg['idx']).astype(np.uint32)
+            meshes.append(dict(name='bruecken', pos=pb, idx=ib, nrm=flat_normals(pb, ib), col=np.full((len(pb), 3), 0.62, np.float32),
+                               rough=0.8, double=True))
         size = write_glb(fn, meshes, extras={'utm_centre': [Ec, Nc], 'H0': H0, 'crs': 'EPSG:25832'})
         files[f'{tx}_{ty}'] = size
     return files
@@ -797,7 +849,7 @@ def build(osm, dem, area, out_dir, fit=False):
     log('Gelände an Straßen angepasst:', cst)
     groups = ribbons(pos, chains, h, area)
     marks = markings(pos, chains, h, area)
-    files = write_ribbons(groups, os.path.join(out_dir, 'r'), marks)
+    files = write_ribbons(groups, os.path.join(out_dir, 'r'), marks, bridge_parts(pos, chains, h, area))
     # centre lines for the app (physics, later): per way kind, surface, width, flags, points (E, N, H) rounded to cm
     lines = []
     for w, ids in chains:

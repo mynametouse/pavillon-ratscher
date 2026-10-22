@@ -138,6 +138,8 @@ function contentMaterial(kind) {
 const MAT = { roads: contentMaterial('roads'), buildings: contentMaterial('buildings'), marks: contentMaterial('roads') };
 MAT.marks.polygonOffsetFactor = -4;
 MAT.marks.polygonOffsetUnits = -8;
+MAT.bridge = contentMaterial('buildings');
+MAT.bridge.side = THREE.DoubleSide;
 // trees: unit shapes scaled per instance (cone for conifers, rounded crown for broadleaves), colour per instance
 const TREE_GEO = [new THREE.ConeGeometry(1, 1, 6, 1, true).translate(0, 0.5, 0), new THREE.IcosahedronGeometry(1, 0).translate(0, 1, 0)];
 MAT.trees = (() => {
@@ -499,7 +501,7 @@ function updateContent() {
               g => {
                 g.scene.traverse(o => {
                   if (o.isMesh) {
-                    o.material = kind === 'roads' && /mark/.test(o.name) ? MAT.marks : MAT[kind];
+                    o.material = kind === 'roads' && /mark/.test(o.name) ? MAT.marks : kind === 'roads' && /bruecke/.test(o.name) ? MAT.bridge : MAT[kind];
                     o.frustumCulled = false;
                   }
                 });
