@@ -35,6 +35,19 @@ bash tools/csp/start8951.sh &            # Testserver für viz3/dist (CSP wie be
 python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spielschichten da
 ```
 
+**Schnellprüfung und Testläufer (Umbau Phase 0, Plan im Projektdokument `claude/pavillon-umbau.md`):**
+
+```bash
+bash tools/check.sh                              # ohne Browser, ~10 s: Build, Lint (Datei:Zeile), Testskripte, Format-Bericht, Abhängigkeiten
+python3 viz3/test/run.py --serve smoke           # Browser-Tests nacheinander: je Test PASS/FAIL in einer Zeile, Exit-Code, Logs in out/run/
+python3 viz3/test/run.py --serve gate            # Prüfpaket vor dem Veröffentlichen: smoke gpu softgl loadlog
+```
+
+- Vor jedem Push `tools/check.sh`. Neue Tests melden über `ck = lib.Checks('name')`, `ck('was', bedingung, info)`, `ck.errors(errs)`, `ck.done()`
+  (Ergebniszeile `RESULT`, Exit-Code 1 bei Fehlern); ältere Tests beurteilt `run.py` nach Exit-Code, Zeitlimit, `FAIL`-Zeilen, `PAGEERR` und Tracebacks.
+- GitHub Actions (`.github/workflows/check.yml`) führt bei jedem Push auf `src`, `kern/*`, `feat/*`, `fix/*`, `perf/*` dieselbe Schnellprüfung und den
+  Kurztest aus (reine Doku-Commits nicht); Ergebnis: `gh run list -R mynametouse/pavillon-ratscher --branch <zweig>`.
+
 - Chromium läuft hier mit SwiftShader (Software-GPU): ein Bild braucht Sekunden, das Laden **≈ 2 min** (mit `lib.preset`, sonst 5–6 min
   wegen des GPU-Tests), mit `?nogeo=1` (ohne echte Umgebung) ≈ 1 min. Die Tests stoppen die Schleife (`window.FREEZE = true`) und
   treiben die Welt mit `GAME.step(sek)`; Bilder mit `GAME.shot()` → `lib.shot()`. Ausgaben nach `out/<test>/` (nicht eingecheckt).
