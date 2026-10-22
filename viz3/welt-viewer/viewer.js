@@ -441,8 +441,9 @@ function treeGroup(a) {
       if (a[i * 6 + 5] !== type) continue;
       const x = a[i * 6] / 10, z = a[i * 6 + 1] / 10, y = a[i * 6 + 2] / 10, h = a[i * 6 + 3] / 10, r = a[i * 6 + 4] / 10;
       if (type === 0) {
-        _p.set(x, y + 0.12 * h, z);
-        _s.set(r, 0.88 * h, r);
+        // conifer: the crown cone starts a fifth of the height up (trunks and cut branches below, roads stay clear)
+        _p.set(x, y + 0.2 * h, z);
+        _s.set(r, 0.82 * h, r);
       } else {
         _p.set(x, y + 0.3 * h, z);
         _s.set(r, 0.36 * h, r);
@@ -670,10 +671,11 @@ document.body.appendChild(labRoot);
 const RANGE = { town: 15000, village: 7000, suburb: 5000, hamlet: 3500, isolated_dwelling: 1500, locality: 2000, peak: 6000 };
 const v3 = new THREE.Vector3();
 function updateLabels() {
+  const low = mode === 'drive';   // at the wheel only the nearby villages and towns, no peaks on the horizon
   for (const n of NAMES) {
     v3.copy(n.p);
     const d = v3.distanceTo(camera.position);
-    let show = d < (RANGE[n.kind] || 3000) && d > 30;
+    let show = low ? (n.kind === 'town' || n.kind === 'village') && d < 2500 && d > 30 : d < (RANGE[n.kind] || 3000) && d > 30;
     if (show) {
       v3.y -= (Math.pow(v3.x - camera.position.x, 2) + Math.pow(v3.z - camera.position.z, 2)) * CURV;
       v3.project(camera);

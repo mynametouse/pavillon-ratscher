@@ -26,7 +26,7 @@ def build(dem, road_lines, bld_polys, area, out_dir, spacing=8.0):
         cum = np.concatenate([[0], np.cumsum(seg)])
         s = np.arange(0, cum[-1] + 1e-9, 2.0)
         rp.append(np.stack([np.interp(s, cum, P[:, 0]), np.interp(s, cum, P[:, 1])], 1))
-        rw.append(np.full(len(s), hw + 2.5))
+        rw.append(np.full(len(s), hw + 4.0))   # carriageway, shoulder and a clear strip: crowns do not reach over the road
     rtree = cKDTree(np.concatenate(rp)) if rp else None
     RW = np.concatenate(rw) if rw else None
     # buildings: centres with a radius (enclosing circle approximation)
@@ -68,7 +68,7 @@ def build(dem, road_lines, bld_polys, area, out_dir, spacing=8.0):
         G = dem.sample(E, N)
         con = rng.random(n) < 0.6
         hgt = np.clip(rng.normal(np.where(con, 24.0, 20.0), 4.0), 10.0, 34.0)
-        rad = np.where(con, 0.17, 0.27) * hgt * rng.uniform(0.85, 1.15, n)
+        rad = np.where(con, 0.15, 0.25) * hgt * rng.uniform(0.85, 1.15, n)
         Ec, Nc = tcentre(CONTENT_LEVEL, tx, ty)
         arr = np.stack([np.round((E - Ec) * 10), np.round(-(N - Nc) * 10), np.round((G - H0) * 10), np.round(hgt * 10),
                         np.round(rad * 10), (~con).astype(float)], 1).astype('<i2')
