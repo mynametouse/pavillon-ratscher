@@ -14,7 +14,7 @@ const WUI = (() => {
     vals: {},
     cardOff: (() => {
       try {
-        return localStorage.getItem('pav-wpcard') === '0';
+        return SAVE.raw('pav-wpcard') === '0';
       } catch (e) {
         return false;
       }
@@ -191,7 +191,7 @@ const WUI = (() => {
     card.querySelector('.wc-t').addEventListener('click', () => {
       S.cardOff = !S.cardOff;
       try {
-        localStorage.setItem('pav-wpcard', S.cardOff ? '0' : '1');
+        SAVE.setRaw('pav-wpcard', S.cardOff ? '0' : '1');
       } catch (e) {}
       lastCard = '';
       renderCard();

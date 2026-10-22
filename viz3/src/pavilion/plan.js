@@ -649,7 +649,7 @@ function layoutState() {
 }
 function saveLayout() {
   try {
-    localStorage.setItem('pav-layout', JSON.stringify(layoutState()));
+    SAVE.setRaw('pav-layout', JSON.stringify(layoutState()));
     PLAN.dirtyLayout = false;
   } catch (e) {}
   if (window.SITEPLAN) SITEPLAN.changed();
@@ -685,7 +685,7 @@ function loadLayout() {
   if (PLAN.loaded) return;
   let L = null;
   try {
-    L = JSON.parse(localStorage.getItem('pav-layout') || 'null');
+    L = JSON.parse(SAVE.raw('pav-layout') || 'null');
   } catch (e) {}
   if (!L || L.v !== 1) {
     PLAN.loaded = true;
@@ -695,7 +695,7 @@ function loadLayout() {
 }
 function resetLayout() {
   try {
-    localStorage.removeItem('pav-layout');
+    SAVE.del('pav-layout');
   } catch (e) {}
   applyLayout(null);
   toast('Ursprüngliche Einrichtung wiederhergestellt');

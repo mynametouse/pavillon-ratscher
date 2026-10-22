@@ -1177,11 +1177,7 @@ const FOREST = (() => {
   window.TICKS.push(() => {
     if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return;
     intro = true;
-    let seen = false;
-    try {
-      seen = localStorage.getItem('pav-v16c') === '1';
-      localStorage.setItem('pav-v16c', '1');
-    } catch (e) {}
+    const seen = !SAVE.once('pav-v16c'); // one-time hint
     if (!seen)
       setTimeout(
         () =>

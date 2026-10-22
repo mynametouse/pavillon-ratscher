@@ -268,7 +268,7 @@ const HUD = (() => {
       if (window.AVATAR) AVATAR.setKind(b.dataset.fig);
       else {
         try {
-          localStorage.setItem('pav-fig', b.dataset.fig);
+          SAVE.setRaw('pav-fig', b.dataset.fig);
         } catch (e) {}
       }
       refresh();
@@ -284,7 +284,7 @@ const HUD = (() => {
     b.addEventListener('click', () => {
       LOCK.want = b.dataset.lock === '1';
       try {
-        localStorage.setItem('pav-lock', LOCK.want ? '1' : '0');
+        SAVE.setRaw('pav-lock', LOCK.want ? '1' : '0');
       } catch (e) {}
       refresh();
     })
@@ -484,7 +484,7 @@ const HUD = (() => {
   const LOCK = {
     want: (() => {
       try {
-        return localStorage.getItem('pav-lock') !== '0';
+        return SAVE.raw('pav-lock') !== '0';
       } catch (e) {
         return true;
       }
@@ -751,11 +751,7 @@ const HUD = (() => {
   window.TICKS.push(() => {
     if (intro || P.mode !== 'walk' || !LOAD.ready) return;
     intro = true;
-    let seen = false;
-    try {
-      seen = localStorage.getItem('pav-v15') === '1';
-      localStorage.setItem('pav-v15', '1');
-    } catch (e) {}
+    const seen = !SAVE.once('pav-v15'); // one-time hint
     if (!seen)
       setTimeout(
         () =>
@@ -772,11 +768,7 @@ const HUD = (() => {
   window.TICKS.push(() => {
     if (intro2 || P.mode !== 'walk' || !LOAD.ready || !window.WERK || !WERK.on) return;
     intro2 = true;
-    let seen = false;
-    try {
-      seen = localStorage.getItem('pav-v15b') === '1';
-      localStorage.setItem('pav-v15b', '1');
-    } catch (e) {}
+    const seen = !SAVE.once('pav-v15b'); // one-time hint
     if (!seen)
       setTimeout(
         () =>
@@ -793,11 +785,7 @@ const HUD = (() => {
   window.TICKS.push(() => {
     if (intro3 || P.mode !== 'walk' || !LOAD.ready) return;
     intro3 = true;
-    let seen = false;
-    try {
-      seen = localStorage.getItem('pav-v16a') === '1';
-      localStorage.setItem('pav-v16a', '1');
-    } catch (e) {}
+    const seen = !SAVE.once('pav-v16a'); // one-time hint
     if (!seen)
       setTimeout(
         () =>

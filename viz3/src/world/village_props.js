@@ -1107,11 +1107,7 @@ const VPROPS = (() => {
     TICKS.push(() => {
       if (intro || P.mode !== 'walk' || !LOAD.ready) return;
       intro = true;
-      let seen = false;
-      try {
-        seen = localStorage.getItem('pav-v16e') === '1';
-        localStorage.setItem('pav-v16e', '1');
-      } catch (e) {}
+      const seen = !SAVE.once('pav-v16e'); // one-time hint
       // through the news queue (audio.js, V16c2): one-time hints follow each other instead of cutting each other short
       if (!seen)
         setTimeout(

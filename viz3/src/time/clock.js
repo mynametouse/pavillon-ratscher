@@ -13,13 +13,13 @@ const CLOCK = (() => {
   };
   const S = { t: 7 * 60 + 30, rate: 'min', focus: new Set(), warp: null, saveAcc: 0, shown: '', jobs: [] };
   try {
-    const s = JSON.parse(localStorage.getItem(LSK) || 'null');
+    const s = JSON.parse(SAVE.raw(LSK) || 'null');
     if (s && isFinite(s.t)) S.t = s.t;
     if (s && RATES[s.rate]) S.rate = s.rate;
   } catch (e) {}
   const save = () => {
     try {
-      localStorage.setItem(LSK, JSON.stringify({ t: S.t, rate: S.rate }));
+      SAVE.setRaw(LSK, JSON.stringify({ t: S.t, rate: S.rate }));
     } catch (e) {}
   };
   const pad = n => String(n).padStart(2, '0');

@@ -17,7 +17,7 @@ const VEH = (() => {
   const LS = 'pav-veh-v1';
   let saved = {};
   try {
-    saved = JSON.parse(localStorage.getItem(LS) || '{}') || {};
+    saved = JSON.parse(SAVE.raw(LS) || '{}') || {};
   } catch (e) {}
   if (saved.lights === 'on' || saved.lights === 'off' || saved.lights === 'auto') S.lights = saved.lights;
   function save() {
@@ -25,7 +25,7 @@ const VEH = (() => {
     for (const v of S.list)
       o[v.id] = [+v.st.x.toFixed(2), +v.st.y.toFixed(2), +v.st.psi.toFixed(4), ...(v.model.save ? v.model.save() : [])];
     try {
-      localStorage.setItem(LS, JSON.stringify(o));
+      SAVE.setRaw(LS, JSON.stringify(o));
     } catch (e) {}
   }
   const GR = 9.81,
@@ -1519,11 +1519,7 @@ const VEH = (() => {
   window.TICKS.push(() => {
     if (intro || P.mode !== 'walk' || !LOAD.ready) return;
     intro = true;
-    let seen = false;
-    try {
-      seen = localStorage.getItem('pav-v16b') === '1';
-      localStorage.setItem('pav-v16b', '1');
-    } catch (e) {}
+    const seen = !SAVE.once('pav-v16b'); // one-time hint
     if (!seen)
       setTimeout(
         () =>

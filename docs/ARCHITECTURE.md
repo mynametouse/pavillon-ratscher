@@ -94,7 +94,13 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
   Nur noch Bestand auf `gh-pages`, nicht mehr gepflegt (Falko, 22.10.2026; Skripte entfernt): Galeriebilder `img/*.jpg`, 360°-Bilder `pano/`, Raumführung `tour.mp4`.
 - Neue Quelle mit Namensnennung: Zeile in `viz3/buildlib/credits.py` (Töne: `assets/snd/CREDITS.md`).
 
-## 8 Gespeichert im Browser (localStorage)
+## 8 Gespeichert im Browser (localStorage, nur über `SAVE`)
+
+Seit dem Umbau (Phase 0) geht jeder gespeicherte Wert über **`SAVE`** (`core/save.js`, erstes Modul): Verzeichnis aller Schlüssel mit
+Besitzer, Art und Standardwert, Lesen ohne Ausnahme (kaputte Werte → Standard, vermerkt in `SAVE.problems`), Schreiben ohne Ausnahme
+(volle oder gesperrte Ablage → Wert nur für diesen Besuch), kleine Umzüge beim Lesen (`migrate`), Testhaken `SAVE.keys/dump/load`.
+Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. `SAVE.raw/setRaw` (eigenes Textformat) benutzen;
+„Neu“-Hinweise mit `SAVE.once('pav-…')`. Test `test/savefuzz.py`: alle Schlüssel mit Unsinn belegt – die Seite muss trotzdem starten.
 
 | Schlüssel | Inhalt |
 |---|---|
@@ -108,9 +114,10 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `pav-veh-v1` | Fahrzeuge: Standort und Richtung je Fahrzeug, Frontlader, Lichtmodus (auto/an/aus) |
 | `pav-fell-v1` | Fällen (V16c2): Forstkiste genommen, Bäume in Arbeit/gefällt mit Schnittmaßen und Lage, Holzliste |
 | `pav-trailer-v1`, `pav-holz-v1` | Holz (V16d): Anhänger (Lage, angekuppelt); Stämme (wo, Lage), Säge, Bretter mit Feuchte, Stapel, Trockenschrank |
-| `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt |
+| `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16d`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt (`SAVE.once`) |
+| `pav-loadlog`, `pav-texlevel` | Ladeprotokoll des letzten Versuchs; halbe Texturen nach abgebrochenem Laden am Telefon |
 
-Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), hier eintragen.
+Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), in `core/save.js` und hier eintragen.
 
 ## 9 Modulkarte
 

@@ -9,7 +9,7 @@ const TIERS = {
 const TIER_ORDER = ['hoch', 'mittel', 'schnell'];
 let TIER_USER = null;
 try {
-  const t = localStorage.getItem('pav-tier');
+  const t = SAVE.raw('pav-tier');
   if (TIERS[t]) TIER_USER = t;
 } catch (e) {}
 const RENDER = {
@@ -157,7 +157,7 @@ function applyTier(name, save) {
   if (save) {
     TIER_USER = name;
     try {
-      localStorage.setItem('pav-tier', name);
+      SAVE.setRaw('pav-tier', name);
     } catch (e) {}
   }
   if (window._resize) window._resize();

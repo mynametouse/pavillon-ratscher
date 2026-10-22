@@ -41,7 +41,7 @@ function soundLabel() {
 function setSound(v) {
   opt.sound = v;
   try {
-    localStorage.setItem('pav-sound', v ? '1' : '0');
+    SAVE.setRaw('pav-sound', v ? '1' : '0');
   } catch (e) {}
   audio.enable(v);
   soundLabel();

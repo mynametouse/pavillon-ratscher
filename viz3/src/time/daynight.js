@@ -29,13 +29,13 @@ const DN = (() => {
     lampP: -1,
   };
   try {
-    const s = JSON.parse(localStorage.getItem(LSK) || 'null');
+    const s = JSON.parse(SAVE.raw(LSK) || 'null');
     if (s && Number.isFinite(s.e0)) S.e0 = Math.round(s.e0);
     if (s && s.hint) S.hint = true;
   } catch (e) {}
   const save = () => {
     try {
-      localStorage.setItem(LSK, JSON.stringify({ e0: S.e0, hint: S.hint }));
+      SAVE.setRaw(LSK, JSON.stringify({ e0: S.e0, hint: S.hint }));
     } catch (e) {}
   };
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x)),

@@ -328,7 +328,7 @@ const P = {
 const CAM3 = {
   want: (() => {
     try {
-      const v = localStorage.getItem('pav-view');
+      const v = SAVE.raw('pav-view');
       return v ? v === '3' : true;
     } catch (e) {
       return true;
@@ -354,7 +354,7 @@ window.CAM3 = CAM3;
 function setView3(v, quiet) {
   CAM3.want = !!v;
   try {
-    localStorage.setItem('pav-view', v ? '3' : '1');
+    SAVE.setRaw('pav-view', v ? '3' : '1');
   } catch (e) {}
   if (v) {
     CAM3.cur = Math.min(CAM3.cur, 1.2);
@@ -437,7 +437,7 @@ function applySpots(v) {
 applySpots(VARIANT);
 let s0 = true;
 try {
-  const sv = localStorage.getItem('pav-sound');
+  const sv = SAVE.raw('pav-sound');
   if (sv !== null) s0 = sv === '1';
 } catch (e) {}
 const opt = { collide: true, sound: s0 };
@@ -994,7 +994,7 @@ document.querySelectorAll('[data-light]').forEach(b =>
     document.querySelectorAll('[data-light]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
     if (v !== 'auto' && v !== 'night') audio.setTime(v);
     try {
-      localStorage.setItem('pav-light2', v);
+      SAVE.setRaw('pav-light2', v);
     } catch (e) {}
   })
 );
