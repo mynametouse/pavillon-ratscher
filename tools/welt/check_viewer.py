@@ -3,7 +3,7 @@
 Without --url a local server serves the site dir and the viewer loads the tiles relative to itself (welt-test/viewer/?base=../).
 Checks: the page starts, terrain tiles load (none fail), roads/buildings load, no console errors; reports MB loaded, texture memory,
 triangles, draw calls, time to the first frame; screenshots (overview, Ratscher, driving) and check.json into --out."""
-import argparse, functools, http.server, json, os, sys, threading, time
+import argparse, functools, http.server, json, os, re, sys, threading, time
 
 ap = argparse.ArgumentParser()
 ap.add_argument('site')
@@ -97,8 +97,13 @@ with sync_playwright() as p:
     fin = pg.evaluate('WELT.stats()')
     res['final'] = fin
     check('keine_fehlgeschlagenen_kacheln', fin['failed'] == 0, f"{fin['failed']} fehlgeschlagen; {fin['errors'][:3]}")
-    check('keine_konsolenfehler', not res['console_errors'] and not res['page_errors'],
-          f"{res['console_errors'][:3]} {res['page_errors'][:3]}")
+    # 5xx/429 for single files are retried by the viewer (GitHub Pages right after a deploy); Chrome still logs them – count separately
+    transient = [m for m in res['console_errors'] if re.search(r'status of (5\d\d|429)', m)]
+    other = [m for m in res['console_errors'] if m not in transient]
+    res['transient_errors'] = len(transient)
+    check('keine_konsolenfehler', not other and not res['page_errors'],
+          f"{other[:3]} {res['page_errors'][:3]} (vorübergehende 5xx, wiederholt: {len(transient)}, Wiederholungen: {fin.get('retries', 0)})")
+    check('keine_fehlermeldungen', not fin['errors'], f"{fin['errors'][:3]}")
     mbl = fin['bytes'] / 1e6
     mtex = fin['texBytes'] / 1e6
     print(f"geladen {mbl:.1f} MB in {fin['requests']} Anfragen (Inhalt {fin['contentBytes'] / 1e6:.1f} MB), Texturspeicher {mtex:.0f} MB, "

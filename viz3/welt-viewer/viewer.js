@@ -29,7 +29,18 @@ const fail = (where, e) => {
 
 async function get(url, kind = 'arrayBuffer') {
   ST.requests++;
-  const r = await fetch(url);
+  // GitHub Pages answers bursts right after a deploy now and then with 503: retry transient failures with a short backoff
+  let r;
+  for (let k = 0; ; k++) {
+    try {
+      r = await fetch(url);
+      if (r.ok || k >= 3 || !(r.status >= 500 || r.status === 429)) break;
+    } catch (e) {
+      if (k >= 3) throw e;
+    }
+    ST.retries = (ST.retries || 0) + 1;
+    await new Promise(res => setTimeout(res, 400 * 3 ** k));
+  }
   if (!r.ok) throw new Error(`HTTP ${r.status} ${url}`);
   if (kind === 'json') {
     const t = await r.arrayBuffer();
