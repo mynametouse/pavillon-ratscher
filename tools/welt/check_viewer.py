@@ -111,6 +111,27 @@ with sync_playwright() as p:
           f"GL: {fin['gl']}", flush=True)
     res['summary'] = {'mb_loaded': round(mbl, 1), 'texture_mb': round(mtex), 'requests': fin['requests'], 'first_frame_s': fin['firstFrameMs'] / 1000,
                       'calls': fin['renderer']['calls'], 'triangles': fin['renderer']['triangles'], 'gl': fin['gl']}
+    pg.close()
+    # the same as an iPhone 13 (Chromium with the phone's screen and user agent: the viewer's phone budget – LOD 1.7, <= 170 tiles)
+    try:
+        ctx = br.new_context(**p.devices['iPhone 13'])
+        mp = ctx.new_page()
+        mp.on('pageerror', lambda e: res['page_errors'].append('iPhone: ' + str(e)[:300]))
+        mp.goto(a.url, wait_until='load', timeout=120000)
+        mp.wait_for_function('window.WELT && window.WELT.ready === true', timeout=120000)
+        wait_idle(mp, a.wait)
+        mp.evaluate("WELT.place('dorf')")
+        time.sleep(2)
+        wait_idle(mp, a.wait)
+        ms = mp.evaluate('WELT.stats()')
+        mp.screenshot(path=os.path.join(a.out, '4_iphone.png'))
+        res['iphone'] = {'tiles': ms['tilesReady'], 'mb_loaded': round(ms['bytes'] / 1e6, 1), 'texture_mb': round(ms['texBytes'] / 1e6),
+                         'triangles': ms['renderer']['triangles'], 'calls': ms['renderer']['calls']}
+        check('iphone_budget', ms['texBytes'] / 1e6 <= 300, f"Texturen {ms['texBytes'] / 1e6:.0f} MB (Budget 300), {ms['tilesReady']} Kacheln, "
+              f"{ms['bytes'] / 1e6:.1f} MB geladen")
+        ctx.close()
+    except Exception as e:
+        check('iphone_budget', False, repr(e)[:300])
     br.close()
 res['ok'] = ok
 json.dump(res, open(os.path.join(a.out, 'check.json'), 'w'), indent=1, ensure_ascii=False)
@@ -120,6 +141,8 @@ if os.environ.get('GITHUB_STEP_SUMMARY'):
         for k, v in res['checks'].items():
             f.write(f"- {'✅' if v['ok'] else '❌'} {k}: {v['info']}\n")
         s = res.get('summary', {})
+        if res.get('iphone'):
+            f.write(f"- iPhone-13-Emulation: {res['iphone']}\n")
         f.write(f"\nGeladen {s.get('mb_loaded')} MB in {s.get('requests')} Anfragen, Texturspeicher {s.get('texture_mb')} MB, "
                 f"erstes Bild {s.get('first_frame_s')} s, Draw-Calls {s.get('calls')}, Dreiecke {s.get('triangles')}, GL {s.get('gl')}\n")
 if srv:
