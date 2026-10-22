@@ -3,7 +3,7 @@
 #   bash tools/check.sh            exit 0 = everything that must pass passed
 # Format: report only until the one-time formatting commit sets FORMAT_STRICT=1 below (plan: Projekt-Dokument claude/pavillon-umbau.md).
 set -o pipefail
-FORMAT_STRICT=0
+FORMAT_STRICT=1
 ROOT=$(cd "$(dirname "$0")/.." && pwd); cd "$ROOT" || exit 2
 T0=$(date +%s); FAIL=0
 step() { printf '%-8s ' "$1"; }
