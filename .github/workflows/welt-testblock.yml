@@ -88,7 +88,8 @@ jobs:
           for t in r b; do
             [ -f "site/welt-test/$t/tileset.json" ] || continue
             npx --yes 3d-tiles-validator --tilesetFile "site/welt-test/$t/tileset.json" --writeReports false > "val_$t.json" 2>&1 || true
-            python3 -c "import json,sys; d=json.load(open('val_$t.json')); n=d.get('numErrors'); w=d.get('numWarnings'); print('$t', 'Fehler', n, 'Warnungen', w); [print(' ', i.get('type'), i.get('message','')[:160]) for i in d.get('issues', [])[:8]]" || tail -20 "val_$t.json"
+            # the validator prints a line before its JSON report
+            python3 -I -c "import json,sys; s=open(sys.argv[1]).read(); d=json.loads(s[s.index('{'):s.rindex('}') + 1]); print(sys.argv[2], 'Fehler', d.get('numErrors'), 'Warnungen', d.get('numWarnings'), 'Hinweise', d.get('numInfos')); [print(' ', i.get('severity'), i.get('type'), i.get('path', ''), i.get('message', '')[:160]) for i in d.get('issues', [])[:8]]" "val_$t.json" "$t" || tail -20 "val_$t.json"
           done
       - name: Browser für die Prüfung
         run: |

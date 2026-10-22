@@ -170,6 +170,37 @@ def fetch_wms(raw, layer, bbox, w, h, fmt='image/jpeg', decode=True):
     return np.asarray(Image.open(p).convert('RGB'))
 
 
+def flight_dates(raw, area):
+    """flight date of every 1 km DOP tile in the area: {'E_N' (km): 'YYYY-MM-DD' or None (no Thuringian tile)}.
+    GetFeatureInfo on the metadata layer th_dop_info at each tile centre (attribute 'Erstellung'); cached as JSON.
+    Tiles of one flight day share their radiometry, so the colour balance works with these blocks."""
+    import re
+    from concurrent.futures import ThreadPoolExecutor
+    e0, n0 = int(np.floor(area[0] / 1000)), int(np.floor(area[1] / 1000))
+    e1, n1 = int(np.ceil(area[2] / 1000)), int(np.ceil(area[3] / 1000))
+    p = os.path.join(raw, 'dop', f'flights_{e0}_{n0}_{e1}_{n1}.json')
+    if os.path.exists(p):
+        return json.load(open(p))
+
+    def one(key):
+        E, N = (int(v) * 1000 + 500 for v in key.split('_'))
+        url = (f'{WMS_TH}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=th_dop_info&QUERY_LAYERS=th_dop_info&STYLES='
+               f'&CRS=EPSG:25832&BBOX={E - 50},{N - 50},{E + 50},{N + 50}&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain')
+        st, b, _ = http_get(url, timeout=60)
+        m = re.search(r'Erstellung=(\d\d)\.(\d\d)\.(\d{4})', b.decode('utf-8', 'replace')) if st == 200 else None
+        return key, (f'{m.group(3)}-{m.group(2)}-{m.group(1)}' if m else None)
+    keys = [f'{i}_{j}' for j in range(n0, n1) for i in range(e0, e1)]
+    with ThreadPoolExecutor(4) as ex:
+        res = dict(ex.map(one, keys))
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    json.dump(res, open(p, 'w'), indent=0, sort_keys=True)
+    days = {}
+    for v in res.values():
+        days[v] = days.get(v, 0) + 1
+    log(f'Bildflüge im Umkreis: {len(res)} Kacheln, ' + ', '.join(f'{k}: {v}' for k, v in sorted(days.items(), key=lambda kv: str(kv[0]))))
+    return res
+
+
 # ---------------- OpenStreetMap ----------------
 OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter',
             'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter']

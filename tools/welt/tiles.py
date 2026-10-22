@@ -87,82 +87,167 @@ def _save_webp(args):
     return os.path.getsize(path)
 
 
+IDT_Q = np.linspace(0.5, 99.5, 41)
+
+
+def _map1d(x, qs, qt):
+    """piecewise linear through the quantile pairs, slope 1 beyond the ends (rare colours keep their distance)"""
+    y = np.interp(x, qs, qt)
+    y = np.where(x < qs[0], qt[0] + (x - qs[0]), y)
+    return np.where(x > qs[-1], qt[-1] + (x - qs[-1]), y)
+
+
+def colour_transfer(src, tgt, iters=10, seed=1):
+    """3-D colour transfer (iterative distribution transfer, Pitie et al. 2005): src colours (n, 3) are moved until their joint
+    distribution matches tgt (m, 3) - in turn along the R, G, B axes and along random rotations of them, each time by matching
+    the quantiles. Returns a 64^3 table of colour shifts (int16, index (r >> 2) * 4096 + (g >> 2) * 64 + (b >> 2)); a shift
+    rather than the colour keeps the two low bits of every channel."""
+    rng = np.random.default_rng(seed)
+    steps, x, t = [], src.astype(np.float64), tgt.astype(np.float64)
+    for k in range(iters):
+        R = np.linalg.qr(rng.normal(size=(3, 3)))[0] if k else np.eye(3)
+        xs, ts = x @ R.T, t @ R.T
+        maps = []
+        for ax in range(3):
+            qs, qt = np.percentile(xs[:, ax], IDT_Q), np.percentile(ts[:, ax], IDT_Q)
+            qs_u, inv = np.unique(np.round(qs, 3), return_inverse=True)
+            qt_u = np.maximum.accumulate(np.bincount(inv, qt) / np.bincount(inv))
+            maps.append((qs_u, qt_u))
+            xs[:, ax] = _map1d(xs[:, ax], qs_u, qt_u)
+        x = xs @ R
+        steps.append((R, maps))
+    g = np.arange(64) * 4 + 1.5
+    c = np.stack(np.meshgrid(g, g, g, indexing='ij'), -1).reshape(-1, 3)
+    y = c.copy()
+    for R, maps in steps:
+        ys = y @ R.T
+        for ax in range(3):
+            ys[:, ax] = _map1d(ys[:, ax], *maps[ax])
+        y = ys @ R
+    return np.clip(np.round(y - c), -127, 127).astype(np.int16)
+
+
+def shift_colours(table, img):
+    """apply a colour_transfer table to uint8 colours (..., 3)"""
+    i = (img[..., 0].astype(np.int32) >> 2) * 4096 + (img[..., 1].astype(np.int32) >> 2) * 64 + (img[..., 2].astype(np.int32) >> 2)
+    return np.clip(img.astype(np.int16) + table[i], 0, 255).astype(np.uint8)
+
+
 class Harmonizer:
-    """colour balance of the orthophoto mosaic: the Thuringian DOP service joins flight years along 1 km lines (seen on 22.10.2026:
-    a hard brightness step across the whole block at N = 5597000). Every 1 km source cell gets one gain per channel so that
-    neighbouring cells agree in 100 m strips along their common edge (least squares over all edges, weak pull to 1).
-    Solved once on the coarse context mosaic, applied to every chunk of every level, so all levels stay consistent."""
-    def __init__(self, img, bbox, strip=100.0, lam=0.05, anchor=None):
+    """colour balance of the orthophoto mosaic. The Thuringian DOP service joins flights of different days along 1 km lines
+    (around the garden: 7 April 2024, 15 May 2024 north of N = 5597 km, 12 May 2025 east of E = 632 km; the April flight is
+    lighter, hazier and more cyan, the May flights darker and yellow-green). Tiles of one flight day share their radiometry, so
+    each flight block (dates from the DOP metadata, fetch.flight_dates) gets one 3-D colour transfer. Starting from the garden's
+    block, the next block (most shared boundary first) is matched to the blocks done so far, with the pixels facing each other a
+    few metres either side of the common km lines, pooled over the whole boundary (fields, forests and water continue across a
+    line, so both sides see the same ground). Solved once on the coarse context mosaic, applied to every chunk of every level.
+    What stays is real: crops grew between April and May. (Tried first: gains per 1 km cell from strip means - they mistook
+    forest against field for a step; then one tone curve per channel and flight - brightness matched, the hue did not.)"""
+    def __init__(self, img, bbox, dates, band=4, anchor=None):
         e0, n0, e1, n1 = bbox
         H, W = img.shape[:2]
         p = (e1 - e0) / W
         self.ce0, self.cn0 = int(np.floor(e0 / 1000)), int(np.floor(n0 / 1000))
         nE, nN = int(np.ceil(e1 / 1000)) - self.ce0, int(np.ceil(n1 / 1000)) - self.cn0
-        a = img.astype(np.float32)
-        valid = (a.min(axis=2) > 6) & (a.max(axis=2) < 248)   # no-data (white/black) outside the state
-        sp = max(1, int(round(strip / p)))
-        cid = lambda i, j: j * nE + i
-
-        def strip_mean(r0, r1, c0, c1):
-            r0, r1, c0, c1 = max(r0, 0), min(r1, H), max(c0, 0), min(c1, W)
-            if r1 - r0 < 2 or c1 - c0 < 2:
-                return None
-            v = valid[r0:r1, c0:c1]
-            if v.mean() < 0.6:
-                return None
-            return a[r0:r1, c0:c1][v].mean(axis=0)
-        cons = []
-        for i in range(1, nE):          # vertical km lines x = 1000 (ce0 + i)
-            x = 1000.0 * (self.ce0 + i)
-            c = int(round((x - e0) / p))
-            for j in range(nN):
-                ys0, ys1 = 1000.0 * (self.cn0 + j), 1000.0 * (self.cn0 + j + 1)
-                r0, r1 = int(round((n1 - ys1) / p)), int(round((n1 - ys0) / p))
-                ma, mb = strip_mean(r0, r1, c - sp, c), strip_mean(r0, r1, c, c + sp)
-                if ma is not None and mb is not None:
-                    cons.append((cid(i - 1, j), cid(i, j), np.log(mb + 1) - np.log(ma + 1)))
-        for j in range(1, nN):          # horizontal km lines y = 1000 (cn0 + j); cell j - 1 south, j north
-            y = 1000.0 * (self.cn0 + j)
-            r = int(round((n1 - y) / p))
-            for i in range(nE):
-                xs0, xs1 = 1000.0 * (self.ce0 + i), 1000.0 * (self.ce0 + i + 1)
-                c0, c1 = int(round((xs0 - e0) / p)), int(round((xs1 - e0) / p))
-                mn, ms = strip_mean(r - sp, r, c0, c1), strip_mean(r, r + sp, c0, c1)
-                if mn is not None and ms is not None:
-                    cons.append((cid(i, j), cid(i, j - 1), np.log(ms + 1) - np.log(mn + 1)))
-        n = nE * nN
-        g = np.zeros((n, 3))
-        if cons:
-            from scipy.sparse import coo_matrix
-            from scipy.sparse.linalg import lsqr
-            m = len(cons)
-            ri = np.concatenate([np.arange(m), np.arange(m), m + np.arange(n)])
-            ci = np.concatenate([[c[0] for c in cons], [c[1] for c in cons], np.arange(n)])
-            prior = np.full(n, lam)
-            if anchor is not None:   # the cell with the garden keeps its colours, the others are matched to it
-                ai = int(np.floor(anchor[0] / 1000)) - self.ce0
-                aj = int(np.floor(anchor[1] / 1000)) - self.cn0
-                if 0 <= ai < nE and 0 <= aj < nN:
-                    prior[cid(ai, aj)] = 30.0
-            vv = np.concatenate([np.ones(m), -np.ones(m), prior])
-            A = coo_matrix((vv, (ri, ci)), shape=(m + n, n)).tocsr()
-            D = np.array([c[2] for c in cons])
-            for ch in range(3):         # cell a + g_a should equal cell b + g_b: g_a - g_b = log(b) - log(a)
-                g[:, ch] = lsqr(A, np.concatenate([D[:, ch], np.zeros(n)]))[0]
         self.nE, self.nN = nE, nN
-        self.gain = np.clip(np.exp(g), 0.7, 1.45).reshape(nN, nE, 3).astype(np.float32)
-        steps = np.array([abs(c[2]).max() for c in cons]) if cons else np.zeros(1)
-        log(f'Farbausgleich der Bildflüge: {len(cons)} Kanten, Stufen bis {100 * (np.exp(steps.max()) - 1):.0f} %, '
-            f'Kanten über 8 %: {int((steps > np.log(1.08)).sum())}, Faktoren {self.gain.min():.2f} .. {self.gain.max():.2f}')
+        self.names = sorted({v for v in (dates or {}).values() if v})
+        nb = len(self.names)
+        lab = np.full((nN, nE), nb, int)       # index nb: unknown (outside Thuringia, no metadata) -> unchanged
+        for j in range(nN):
+            for i in range(nE):
+                v = (dates or {}).get(f'{self.ce0 + i}_{self.cn0 + j}')
+                if v:
+                    lab[j, i] = self.names.index(v)
+        self.lab = lab
+        valid = (img.min(axis=2) > 6) & (img.max(axis=2) < 248)   # no-data (white/black) outside the state
+        d = np.arange(1, band + 1)      # pixel 0 on either side is skipped (resampling and JPEG blur the line itself)
+        pool = {}                       # (block x, block y) -> list of (colours on x's side (k, 3), facing colours on y's side)
+
+        def add(lx, ly, xa, xb, va, vb):
+            if lx == ly or lx == nb or ly == nb:
+                return
+            ok = va & vb
+            if ok.sum() < 16:
+                return
+            pool.setdefault((lx, ly), []).append((xa[ok], xb[ok]))
+            pool.setdefault((ly, lx), []).append((xb[ok], xa[ok]))
+        for i in range(1, nE):          # vertical km lines x = 1000 (ce0 + i): cell i - 1 west, cell i east
+            c = int(round((1000.0 * (self.ce0 + i) - e0) / p))       # first pixel column east of the line
+            cw, ce = c - 1 - d, c + d
+            if cw.min() < 0 or ce.max() >= W:
+                continue
+            for j in range(nN):
+                r0 = max(int(round((n1 - 1000.0 * (self.cn0 + j + 1)) / p)), 0)
+                r1 = min(int(round((n1 - 1000.0 * (self.cn0 + j)) / p)), H)
+                if r1 - r0 >= 4:
+                    add(lab[j, i - 1], lab[j, i], img[r0:r1][:, cw], img[r0:r1][:, ce], valid[r0:r1][:, cw], valid[r0:r1][:, ce])
+        for j in range(1, nN):          # horizontal km lines y = 1000 (cn0 + j): cell j north, cell j - 1 south
+            r = int(round((n1 - 1000.0 * (self.cn0 + j)) / p))       # first pixel row south of the line
+            rn, rs = r - 1 - d, r + d
+            if rn.min() < 0 or rs.max() >= H:
+                continue
+            for i in range(nE):
+                c0 = max(int(round((1000.0 * (self.ce0 + i) - e0) / p)), 0)
+                c1 = min(int(round((1000.0 * (self.ce0 + i + 1) - e0) / p)), W)
+                if c1 - c0 >= 4:
+                    add(lab[j, i], lab[j - 1, i], img[rn][:, c0:c1], img[rs][:, c0:c1], valid[rn][:, c0:c1], valid[rs][:, c0:c1])
+        self.table = [None] * (nb + 1)  # colour shifts per block; None = unchanged
+        look = lambda b, v: v if self.table[b] is None else shift_colours(self.table[b], v)
+        # the reference: the garden's flight block (else the largest)
+        start = None
+        if anchor is not None:
+            ai, aj = int(np.floor(anchor[0] / 1000)) - self.ce0, int(np.floor(anchor[1] / 1000)) - self.cn0
+            if 0 <= ai < nE and 0 <= aj < nN and lab[aj, ai] < nb:
+                start = int(lab[aj, ai])
+        if start is None and nb:
+            start = int(np.bincount(lab[lab < nb].ravel(), minlength=nb).argmax())
+        done = {start} if start is not None else set()
+        while True:
+            cand = {}
+            for (x, y), lst in pool.items():
+                if x in done and y not in done:
+                    cand[y] = cand.get(y, 0) + sum(len(A) for A, _ in lst)
+            if not cand:
+                break
+            y = max(cand, key=cand.get)
+            src = np.concatenate([B for (x, yy), lst in pool.items() if yy == y and x in done for _, B in lst])
+            tgt = np.concatenate([look(x, A) for (x, yy), lst in pool.items() if yy == y and x in done for A, _ in lst])
+            self.table[y] = colour_transfer(src, tgt)
+            done.add(y)
+        # the step across each boundary (median difference of the facing pixels, grey levels, worst channel) before and after
+        spread = lambda v: np.subtract(*np.percentile(v.astype(float), [90, 10], axis=0))
+        self.stats = {'cells_km': [nE, nN], 'flights': {nm: int((lab == k).sum()) for k, nm in enumerate(self.names)},
+                      'reference': self.names[start] if start is not None else None, 'boundaries': {}}
+        for (x, y), lst in pool.items():
+            if x < y:
+                A = np.concatenate([a for a, _ in lst])
+                B = np.concatenate([b for _, b in lst])
+                A2, B2 = look(x, A).astype(float), look(y, B).astype(float)
+                self.stats['boundaries'][f'{self.names[x]}|{self.names[y]}'] = {
+                    'pairs': len(A), 'step_before': round(float(np.abs(np.median(B.astype(float) - A, axis=0)).max()), 1),
+                    'step_after': round(float(np.abs(np.median(B2 - A2, axis=0)).max()), 1),
+                    'contrast_before': round(float(np.median(spread(B) / np.maximum(spread(A), 1))), 2),
+                    'contrast_after': round(float(np.median(spread(B2) / np.maximum(spread(A2), 1))), 2)}
+        log('Farbausgleich der Bildflüge: ' + (', '.join(f'{k} ({v} km²)' for k, v in self.stats['flights'].items()) or 'keine Bildflugdaten')
+            + f"; Bezug {self.stats['reference']}; " + '; '.join(f"{k}: Stufe {v['step_before']} -> {v['step_after']} Grauwerte, "
+                                                               f"Kontrast {v['contrast_before']} -> {v['contrast_after']}"
+                                                               for k, v in self.stats['boundaries'].items()))
 
     def apply(self, img, bbox):
+        """the colour transfer of each cell's flight block on its part of the image (bbox of the image, row 0 = north)"""
         e0, n0, e1, n1 = bbox
         H, W = img.shape[:2]
         p = (e1 - e0) / W
         ci = np.clip(np.floor((e0 + (np.arange(W) + 0.5) * p) / 1000).astype(int) - self.ce0, 0, self.nE - 1)
         rj = np.clip(np.floor((n1 - (np.arange(H) + 0.5) * p) / 1000).astype(int) - self.cn0, 0, self.nN - 1)
-        G = self.gain[rj[:, None], ci[None, :]]
-        return np.clip(img.astype(np.float32) * G + 0.5, 0, 255).astype(np.uint8)
+        runs = lambda v: zip(np.r_[0, np.flatnonzero(np.diff(v)) + 1], np.r_[np.flatnonzero(np.diff(v)) + 1, len(v)])
+        out = img.copy()
+        for r0, r1 in runs(rj):
+            for c0, c1 in runs(ci):
+                t = self.table[self.lab[rj[r0], ci[c0]]]
+                if t is not None:
+                    out[r0:r1, c0:c1] = shift_colours(t, img[r0:r1, c0:c1])
+        return out
 
 
 def wms_mosaic(raw, L, area, chunk_level, layer='th_dop'):

@@ -33,7 +33,8 @@ Diese Kacheln (Gelände, Luftbild, Straßen, Gebäude) sind aus offenen Daten er
 | Geländemodell DGM1 Bayern (nur `diag/bayern/`: Test der Straßenmethode auf 1-m-Daten) | Bayerische Vermessungsverwaltung | CC BY 4.0 | Datenquelle: Bayerische Vermessungsverwaltung – www.geodaten.bayern.de |
 
 Bearbeitung: Höhen umgerechnet und gekachelt, Straßen als eigene Bänder mit geglättetem Längsprofil (Gelände an Straßen
-angeschnitten/aufgefüllt), Gebäude aus Grundrissen hochgezogen (Höhen geschätzt), Luftbilder neu gekachelt (WebP).
+angeschnitten/aufgefüllt), Gebäude aus Grundrissen hochgezogen (Höhen geschätzt), Luftbilder neu gekachelt (WebP) und in den
+Farben angeglichen (je Befliegungstag eine Tonkurve, Bezug ist der Bildflug am Garten; Tage und Flächen in meta.json `sources.imagery_balance`).
 Werkzeug: `tools/welt/` im Repo https://github.com/mynametouse/pavillon-ratscher (Branch `welt/woche1`).
 Die aus OpenStreetMap abgeleiteten Dateien (`roads.json`, `routes.json`, `r/`, `b/`) stehen als abgeleitete Datenbank unter der ODbL 1.0.
 """
@@ -113,10 +114,18 @@ def main():
     harm_info = None
     if not a.skip_imagery:
         from tiles import ImagePyramid, Harmonizer, wms_mosaic
-        # colour balance of the flight blocks: solved on the context mosaic (level 7, 6.25 m), the garden's cell keeps its colours
+        # colour balance of the flight days: blocks from the DOP metadata, tone curves solved on the context mosaic (level 7,
+        # 6.25 m); the garden's flight keeps its colours. Without metadata the imagery stays as delivered.
+        from fetch import flight_dates
+        try:
+            dates = flight_dates(a.raw, area[7])
+        except Exception as e:   # the metadata service is a nicety, not a reason to stop
+            log('Bildflugdaten nicht abrufbar – ohne Farbausgleich:', repr(e)[:200])
+            dates = {}
         cimg, cbb = wms_mosaic(a.raw, 7, area[7], 5)
-        harm = Harmonizer(cimg, cbb, anchor=(XF['ex'], XF['ey']))
-        harm_info = {'cells_km': [harm.nE, harm.nN], 'gain_min': round(float(harm.gain.min()), 3), 'gain_max': round(float(harm.gain.max()), 3)}
+        harm = Harmonizer(cimg, cbb, dates, anchor=(XF['ex'], XF['ey']))
+        harm_info = {'model': 'one tone curve per flight day and channel (quantile matching across the km lines where flights meet)',
+                     **harm.stats}
         del cimg
         with Pool(a.jobs) as pool:
             ip = ImagePyramid(a.out, a.quality, pool, harm)

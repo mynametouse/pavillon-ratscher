@@ -45,6 +45,10 @@ abgerufen (siehe `.github/workflows/welt-probe.yml`), ○ = nur aus der Quelle �
 - OpenStreetMap: Overpass antwortete am 22.10.2026 abends von allen drei Servern mit 504; die Pipeline nimmt dann die OSM-API in Ausschnitten (Testblock: 25–40 Abrufe). Für die Ringe bis 150 km: Geofabrik-Auszüge (`thueringen-latest.osm.pbf`, `bayern-latest.osm.pbf` …) in Actions mit osmium zuschneiden – keine Last auf den öffentlichen Diensten.
 - Luftbilder fern weiter über WMS in Zielauflösung (der Server rechnet herunter; 5000 px je Abruf): Thüringen `th_dop`, Bayern/Hessen/
   Sachsen/Sachsen-Anhalt/Niedersachsen über ihre DOP-WMS (Ebenennamen beim Einbau aus den Capabilities).
+- **Befliegungstag je 1-km-Kachel** (Thüringen): `GetFeatureInfo` auf `th_dop_info` (`INFO_FORMAT=text/plain`) liefert `Name=32_625_5595`,
+  `Erstellung=07.04.2024`, `Publikation=2025-02`. Der WMS setzt Kacheln verschiedener Flugtage aneinander; um den Garten: 7.4.2024
+  (Garten, Südwesten), 15.5.2024 (nördlich N 5597 km), 12.5.2025 (östlich E 632 km). Die Pipeline gleicht die Farben je Flugtag an
+  (`fetch.flight_dates`, `tiles.Harmonizer`); Stufe an der Naht N 5597 km 39 → 1 Grauwert.
 - Bayern liefert DGM1 und LoD2 sauber über Metalink mit SHA-256 – ideal für GitHub Actions; Hessen DGM1 über WCS (Ausschnitt in
   Zielauflösung, kein Kachel-Download nötig).
 - Unterschiedliche Lizenzen je Land: CC BY 4.0 (TH, BY, NI), dl-de/by-2-0 (SN, ST), dl-de/zero-2-0 (HE). Alle erlauben Bearbeitung und
