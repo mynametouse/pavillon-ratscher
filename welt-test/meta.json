@@ -1,0 +1,433 @@
+{
+ "format": "welt-test/1",
+ "generated": "2026-10-22T21:12:46Z",
+ "commit": "19c085c",
+ "plan": "A",
+ "crs": "EPSG:25832",
+ "heights": "NHN (DHHN2016) in m minus H0",
+ "H0": 374.617,
+ "origin": {
+  "E": 625469.0070213208,
+  "N": 5595624.323524626,
+  "H": 374.617,
+  "latlon": [
+   50.4991,
+   10.7692
+  ],
+  "note": "Ursprung des App-Modells (Garten): Modell (0, 0, 0) = UTM (E, N), Höhe H0"
+ },
+ "model_xf": {
+  "a": 1.0127906473420232,
+  "b": 0.07715765993901931,
+  "ex": 625469.0070213208,
+  "ey": 5595624.323524626,
+  "note": "Modellmeter (x Ost, y Nord) -> UTM: E = a x - b y + ex, N = b x + a y + ey; z = H - H0. Umkehrung: x = (a dE + b dN) / (a²+b²), y = (-b dE + a dN) / (a²+b²) mit dE = E - ex, dN = N - ey"
+ },
+ "tiling": {
+  "root": [
+   420700.0,
+   5390800.0,
+   409600.0
+  ],
+  "y": "north",
+  "tile_px": 512,
+  "terrain_n": 101,
+  "image": "i/{z}/{x}/{y}.webp",
+  "terrain": "t/{z}/{x}/{y}.bin",
+  "terrain_format": "WTH1: Kopf 20 Byte (Magic, n, Flags, Basis cm, hmin, hmax) + zlib der Lorenzo-Reste in cm (tools/welt/tiles.py)",
+  "levels": {
+   "5": {
+    "size": 12800.0,
+    "rect": [
+     15,
+     15,
+     16,
+     16
+    ],
+    "terrain_step": 128.0,
+    "px": 25.0,
+    "terrain": {
+     "n": 4,
+     "bytes": 70513
+    },
+    "image": {
+     "n": 4,
+     "bytes": 188702
+    }
+   },
+   "6": {
+    "size": 6400.0,
+    "rect": [
+     30,
+     30,
+     33,
+     33
+    ],
+    "terrain_step": 64.0,
+    "px": 12.5,
+    "terrain": {
+     "n": 16,
+     "bytes": 257782
+    },
+    "image": {
+     "n": 16,
+     "bytes": 816350
+    }
+   },
+   "7": {
+    "size": 3200.0,
+    "rect": [
+     60,
+     60,
+     67,
+     67
+    ],
+    "terrain_step": 32.0,
+    "px": 6.25,
+    "terrain": {
+     "n": 64,
+     "bytes": 876896
+    },
+    "image": {
+     "n": 64,
+     "bytes": 3949324
+    }
+   },
+   "8": {
+    "size": 1600.0,
+    "rect": [
+     127,
+     126,
+     129,
+     128
+    ],
+    "terrain_step": 16.0,
+    "px": 3.125,
+    "terrain": {
+     "n": 9,
+     "bytes": 91382
+    },
+    "image": {
+     "n": 9,
+     "bytes": 311138
+    }
+   },
+   "9": {
+    "size": 800.0,
+    "rect": [
+     254,
+     252,
+     259,
+     257
+    ],
+    "terrain_step": 8.0,
+    "px": 1.5625,
+    "terrain": {
+     "n": 36,
+     "bytes": 264766
+    },
+    "image": {
+     "n": 36,
+     "bytes": 1114938
+    }
+   },
+   "10": {
+    "size": 400.0,
+    "rect": [
+     508,
+     504,
+     519,
+     515
+    ],
+    "terrain_step": 4.0,
+    "px": 0.78125,
+    "terrain": {
+     "n": 144,
+     "bytes": 696439
+    },
+    "image": {
+     "n": 144,
+     "bytes": 4047784
+    }
+   },
+   "11": {
+    "size": 200.0,
+    "rect": [
+     1016,
+     1008,
+     1039,
+     1031
+    ],
+    "terrain_step": 2.0,
+    "px": 0.390625,
+    "terrain": {
+     "n": 576,
+     "bytes": 1867466
+    },
+    "image": {
+     "n": 576,
+     "bytes": 14629634
+    }
+   },
+   "12": {
+    "size": 100.0,
+    "rect": [
+     2032,
+     2024,
+     2071,
+     2063
+    ],
+    "terrain_step": 1.0,
+    "px": 0.1953125,
+    "terrain": {
+     "n": 1600,
+     "bytes": 3924176
+    },
+    "image": {
+     "n": 1600,
+     "bytes": 27857608
+    }
+   }
+  },
+  "hmin": -63.53,
+  "hmax": 512.93,
+  "areas": {
+   "context": [
+    612700.0,
+    5582800.0,
+    638300.0,
+    5608400.0
+   ],
+   "block": [
+    623900.0,
+    5592400.0,
+    628700.0,
+    5597200.0
+   ],
+   "detail": [
+    623900.0,
+    5593200.0,
+    627900.0,
+    5597200.0
+   ]
+  }
+ },
+ "content": {
+  "level": 9,
+  "roads": "r/{z}_{x}_{y}.glb",
+  "buildings": "b/{z}_{x}_{y}.glb",
+  "glb_frame": "x = E - Ec, y = H - H0, z = -(N - Nc); (Ec, Nc) = Mitte der Kachel (auch in extras.utm_centre)",
+  "roads_tiles": [
+   "254_253",
+   "254_254",
+   "254_255",
+   "254_256",
+   "254_257",
+   "255_253",
+   "255_254",
+   "255_255",
+   "255_256",
+   "255_257",
+   "256_253",
+   "256_254",
+   "256_255",
+   "256_256",
+   "256_257",
+   "257_253",
+   "257_254",
+   "257_255",
+   "257_256",
+   "257_257",
+   "258_253",
+   "258_254",
+   "258_255",
+   "258_256",
+   "258_257"
+  ],
+  "buildings_tiles": [
+   "254_252",
+   "254_253",
+   "254_254",
+   "254_255",
+   "254_256",
+   "254_257",
+   "255_253",
+   "255_254",
+   "255_255",
+   "255_256",
+   "255_257",
+   "256_254",
+   "256_255",
+   "256_256",
+   "256_257",
+   "257_254",
+   "257_255",
+   "257_256",
+   "257_257",
+   "258_252",
+   "258_253",
+   "258_254",
+   "258_255",
+   "259_252",
+   "259_254",
+   "259_255",
+   "259_256"
+  ],
+  "routes": "routes.json",
+  "roads_json": "roads.json"
+ },
+ "sources": {
+  "terrain": "Copernicus DEM GLO-30 (Oberflächenmodell 30 m; Ersatz: DGM1-Server nicht erreichbar)",
+  "terrain_source": "cop30",
+  "dgm1_tiles": [
+   0,
+   36
+  ],
+  "dgm1_share": 0.0,
+  "copernicus_offset_m": 0.0,
+  "imagery": "DOP Thüringen, WMS TH DOP (th_dop), © GDI-Th, CC BY 4.0",
+  "osm": "OpenStreetMap (2026-10-22T21:05Z), © OpenStreetMap-Mitwirkende, ODbL 1.0"
+ },
+ "attribution": "Luftbild und Geländemodell: © GDI-Th (CC BY 4.0) · © OpenStreetMap-Mitwirkende (ODbL) · Copernicus DEM GLO-30: © DLR e.V. 2010-2014 und © Airbus Defence and Space GmbH 2014-2018, bereitgestellt im Rahmen von COPERNICUS durch EU und ESA",
+ "roads": {
+  "metric": {
+   "track": {
+    "km": 63.74,
+    "wellen_je_km_vorher": 13.0,
+    "wellen_je_km": 4.3,
+    "steigungswechsel_10m_vorher": 3.04,
+    "steigungswechsel_10m": 1.24,
+    "max_steigung_vorher": 49.0,
+    "max_steigung": 39.0
+   },
+   "street": {
+    "km": 21.45,
+    "wellen_je_km_vorher": 16.4,
+    "wellen_je_km": 3.5,
+    "steigungswechsel_10m_vorher": 2.86,
+    "steigungswechsel_10m": 0.88,
+    "max_steigung_vorher": 44.5,
+    "max_steigung": 38.8,
+    "ral": {
+     "max_steigung": 8.0,
+     "min_kuppe": 3000,
+     "min_wanne": 2000
+    },
+    "anteil_ueber_steigung": 0.18,
+    "anteil_kuppe_zu_eng": 0.104,
+    "anteil_wanne_zu_eng": 0.042
+   },
+   "main": {
+    "km": 18.23,
+    "wellen_je_km_vorher": 16.0,
+    "wellen_je_km": 0.2,
+    "steigungswechsel_10m_vorher": 2.94,
+    "steigungswechsel_10m": 0.31,
+    "max_steigung_vorher": 32.7,
+    "max_steigung": 19.7,
+    "ral": {
+     "max_steigung": 5.5,
+     "min_kuppe": 6000,
+     "min_wanne": 3500
+    },
+    "anteil_ueber_steigung": 0.205,
+    "anteil_kuppe_zu_eng": 0.056,
+    "anteil_wanne_zu_eng": 0.006
+   },
+   "path": {
+    "km": 14.08,
+    "wellen_je_km_vorher": 15.1,
+    "wellen_je_km": 8.9,
+    "steigungswechsel_10m_vorher": 3.73,
+    "steigungswechsel_10m": 2.46,
+    "max_steigung_vorher": 51.4,
+    "max_steigung": 47.6
+   },
+   "service": {
+    "km": 13.48,
+    "wellen_je_km_vorher": 20.0,
+    "wellen_je_km": 6.5,
+    "steigungswechsel_10m_vorher": 3.36,
+    "steigungswechsel_10m": 1.26,
+    "max_steigung_vorher": 43.5,
+    "max_steigung": 23.1
+   },
+   "lane": {
+    "km": 10.64,
+    "wellen_je_km_vorher": 13.3,
+    "wellen_je_km": 3.1,
+    "steigungswechsel_10m_vorher": 2.82,
+    "steigungswechsel_10m": 0.97,
+    "max_steigung_vorher": 44.7,
+    "max_steigung": 34.7,
+    "ral": {
+     "max_steigung": 8.0,
+     "min_kuppe": 3000,
+     "min_wanne": 2000
+    },
+    "anteil_ueber_steigung": 0.214,
+    "anteil_kuppe_zu_eng": 0.109,
+    "anteil_wanne_zu_eng": 0.075
+   },
+   "foot": {
+    "km": 8.91,
+    "wellen_je_km_vorher": 19.9,
+    "wellen_je_km": 10.2,
+    "steigungswechsel_10m_vorher": 3.71,
+    "steigungswechsel_10m": 2.27,
+    "max_steigung_vorher": 54.9,
+    "max_steigung": 38.9
+   },
+   "motorway": {
+    "km": 6.48,
+    "wellen_je_km_vorher": 30.9,
+    "wellen_je_km": 0.0,
+    "steigungswechsel_10m_vorher": 4.34,
+    "steigungswechsel_10m": 0.13,
+    "max_steigung_vorher": 21.9,
+    "max_steigung": 7.1,
+    "ral": {
+     "max_steigung": 4.0,
+     "min_kuppe": 13000,
+     "min_wanne": 8800
+    },
+    "anteil_ueber_steigung": 0.094,
+    "anteil_kuppe_zu_eng": 0.043,
+    "anteil_wanne_zu_eng": 0.0
+   },
+   "county": {
+    "km": 5.36,
+    "wellen_je_km_vorher": 14.4,
+    "wellen_je_km": 0.7,
+    "steigungswechsel_10m_vorher": 2.97,
+    "steigungswechsel_10m": 0.35,
+    "max_steigung_vorher": 27.4,
+    "max_steigung": 13.6,
+    "ral": {
+     "max_steigung": 6.5,
+     "min_kuppe": 5000,
+     "min_wanne": 3000
+    },
+    "anteil_ueber_steigung": 0.244,
+    "anteil_kuppe_zu_eng": 0.054,
+    "anteil_wanne_zu_eng": 0.001
+   }
+  },
+  "terrain_change": {
+   "pixel": 830773,
+   "mittel_m": 0.56,
+   "p95_m": 1.84,
+   "max_auftrag_m": 5.98,
+   "max_abtrag_m": 9.22
+  },
+  "ways": 886,
+  "km": 162.4
+ },
+ "buildings": {
+  "count": 1609,
+  "roofs": {
+   "Satteldach": 1592,
+   "flach": 17
+  }
+ }
+}
