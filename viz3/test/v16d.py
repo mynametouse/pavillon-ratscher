@@ -22,9 +22,9 @@ with lib.browser() as b:
     check('wood module ready', E("!!(HOLZ.ready && window.TRAILER && window.HOLZSAW && window.HOLZDRY)"))
     def cam(cx, cy, ch, tx, ty, tz, fov=60):
         gz = E(f"ROADS.groundAt({cx}, {cy})"); tg = E(f"ROADS.groundAt({tx}, {ty})"); yaw = math.degrees(math.atan2(tx - cx, ty - cy)); pitch = math.degrees(math.atan2(tg + tz - gz - ch, math.hypot(tx - cx, ty - cy)))
-        # in a vehicle, its camera (chase or cab) and the seat would take over at the next step: the driver steps out of the game's view for
-        # the picture (VEH.cur off for that one step; shot() puts it back)
-        E(f"if (VEH.cur) {{ window._vcur = VEH.cur; VEH.cur = null; }} GAME.setView3(false, true); GAME.view({cx}, {cy}, {gz + ch}, {yaw}, {pitch}, {fov}); GAME.step(0.05)")
+        # in a vehicle, its camera (chase or cab) and the seat (P.cam) would take over: for the picture the vehicle is let go and the seat's
+        # camera cleared, and nothing steps until shot() has rendered (GAME.shot applies the camera itself); shot() puts the vehicle back
+        E(f"(() => {{ const inV = !!VEH.cur; if (inV) {{ window._vcur = VEH.cur; VEH.cur = null; }} GAME.P.cam = null; GAME.setView3(false, true); GAME.view({cx}, {cy}, {gz + ch}, {yaw}, {pitch}, {fov}); if (!inV) GAME.step(0.05); }})()")
     def shot(name): lib.shot(pg, OUT, name); E("if (window._vcur) { VEH.cur = window._vcur; window._vcur = null; }")
     def drive(thr, brk, steer, secs): E("VEH.cur || VEH.enter('tractor')"); E(f"VEH.auto = () => ({{ thr: {thr}, brk: {brk}, steer: {steer}, hand: false }})"); steps(secs); E("VEH.auto = null")
     # stop like a driver: the brake while rolling forward, the forward key while rolling back (the brake key reverses), then the handbrake
