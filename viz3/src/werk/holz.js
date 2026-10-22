@@ -191,6 +191,10 @@ const HOLZ = (() => {
       S.logs.push(l); S.by[l.id] = l; if (window.FELL && FELL.hideLogs) FELL.hideLogs(f.tid); }
     const s = load(); buildYard(); bridgeGuides(); redraw(); trailerMass(); if (S.onStart) S.onStart(s ? s.part2 : null); markDirty(true); }
   window.TICKS.push(dt => { try { tick(dt); } catch (e) { if (!S._err) { S._err = 1; console.warn('holz', e); } } });
+  // first visit of V16d: a word about the way of the wood
+  let intro = false; window.TICKS.push(() => { if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false;
+    try { seen = localStorage.getItem('pav-v16d') === '1'; localStorage.setItem('pav-v16d', '1'); } catch (e) {}
+    if (!seen) setTimeout(() => news('Neu: vom Stamm zum Brett. Die Stämme lädt der Traktor mit der Gabel (R heben, G senken) auf den Anhänger (K kuppelt an und ab) und fährt sie zur Blockbandsäge vor der Werkstatt. Dort aufspannen und Brett für Brett schneiden, die Bretter mit Stapelleisten stapeln, mit dem Feuchtemesser prüfen und im Zeitraffer trocknen – trocken kommen sie in die Werkstatt.', 12000), 44000); });
   // colliders of the wood places (blocks, stack, drying cabinet) in the garden's list (COL; the grids are rebuilt). By tag: the old entries
   // are switched off (other code may hold COL indices), the new ones appended. Boxes in workshop coordinates as built → world AABB.
   S.setCol = (tag, boxes) => { for (const c of COL) if (c && c[6] === tag) { c[4] = -99; c[5] = -99; }
