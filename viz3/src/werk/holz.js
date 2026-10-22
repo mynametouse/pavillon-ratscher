@@ -135,21 +135,28 @@ const HOLZ = (() => {
       const t = THREE.MathUtils.clamp(((x - P[0]) * ux + (y - P[1]) * uy) / L2, 0, 1), px = P[0] + ux * t, py = P[1] + uy * t, rr = (o.d0 + (o.d1 - o.d0) * t) / 200, d = Math.hypot(x - px, y - py);
       if (d < rr * 0.98) z = Math.max(z, P[2] + (Q[2] - P[2]) * t + Math.sqrt(rr * rr - d * d)); }
     return z; }
+  // lowering: within this height above its rest the log comes off the tines (tilted back, they hold it higher than their heel – the heel
+  // would reach the trailer's floor or the mill's bed first)
+  const SETTLE = 0.3; S.SETTLE = SETTLE;
   function dropCheck(l, F) { const a = l.wp0, b = l.wp1, r0 = l.d0 / 200, r1 = l.d1 / 200, m = mid(l), r = (r0 + r1) / 2;
     // onto the trailer: between the stakes, along its axis
     if (window.TRAILER) { const T = TRAILER, loc = T.local ? T.local(m) : null; if (loc && Math.abs(loc[0]) < T.bed.hw + 0.3 && loc[1] > T.bed.y0 - 0.3 && loc[1] < T.bed.y1 + 0.3) {
         const ax = [b[0] - a[0], b[1] - a[1]], La = Math.hypot(ax[0], ax[1]) || 1, f = VEH.fwd(T.st.psi), cosA = Math.abs((ax[0] * f[0] + ax[1] * f[1]) / La);
         if (cosA < 0.87) { warnOnce('ang', 'Den Stamm längs auf den Anhänger legen (seitlich ranfahren).'); return; }
         const slot = T.slot ? T.slot(loc[0], r) : null; if (!slot) { warnOnce('full', 'Der Anhänger ist voll – höher als die Rungen geht nicht.'); return; }
-        const zb = T.st.z + T.bed.z + slot.z - r; if (m[2] - r > zb + 0.02) return;   // still above the gap it would roll into
+        const zb = T.st.z + T.bed.z + slot.z - r; if (m[2] - r > zb + SETTLE) return;   // still above the gap it would roll into
         l.st = 'trailer'; l.tx = slot.x; l.tz = slot.z; l.ta = THREE.MathUtils.clamp(loc[1], T.bed.y0 + l.L / 2 - 0.25, T.bed.y1 - l.L / 2 + 0.2); trailerMass(); done(l, 'Auf dem Anhänger.'); return; } }
     // onto the band sawmill's bunks (part 2 knows them)
     if (window.HOLZSAW && HOLZSAW.dropOn) { const res = HOLZSAW.dropOn(l, a, b, m, r); if (res === 'wait') return; if (res === 'done') { done(l, null); return; } }
     // onto the ground, a log there or the yard's timbers
     const s0 = support(a[0], a[1], l), s1 = support(b[0], b[1], l);
-    if (a[2] - r0 > s0 + 0.02 || b[2] - r1 > s1 + 0.02) return;
-    l.st = 'ground'; l.p0 = [a[0], a[1], s0 + r0]; l.p1 = [b[0], b[1], s1 + r1]; done(l, YARD.inside(m) ? 'Im Holzlager.' : null); }
+    if (a[2] - r0 > s0 + SETTLE || b[2] - r1 > s1 + SETTLE) return;
+    l.st = 'ground'; l.p0 = [a[0], a[1], s0 + r0]; l.p1 = [b[0], b[1], s1 + r1]; restOn(l); done(l, YARD.inside(m) ? 'Im Holzlager.' : null); }
   const warned = {}; function warnOnce(k, t) { if (performance.now() - (warned[k] || 0) > 6000) { warned[k] = performance.now(); think(t, 3200); } }
+  // a straight log rests on the highest of what is under it (the yard's timbers, another log): sampled along it, lifted as a whole
+  function restOn(l) { const a = l.p0, b = l.p1, r0 = l.d0 / 200, r1 = l.d1 / 200; let up = 0;
+    for (let k = 1; k < 10; k++) { const t = k / 10, x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t, need = support(x, y, l) + r0 + (r1 - r0) * t - (a[2] + (b[2] - a[2]) * t); if (need > up) up = need; }
+    if (up > 0.002) { a[2] += up; b[2] += up; } }
   function done(l, msg) { delete l.f0; delete l.f1; redraw(); SFX.drop && SFX.drop(); if (msg) think(msg, 1800); S.ver++; save(); }
   function trailerMass() { if (!window.TRAILER) return; let kg = 0, h = 0; for (const l of S.logs) if (l.st === 'trailer') { kg += S.mass(l); h = Math.max(h, l.tz + (l.d0 + l.d1) / 400); } TRAILER.cargo = kg; TRAILER.cargoH = h; TRAILER.loadList = S.logs.filter(l => l.st === 'trailer'); }
   // ---------------- the log yard (Holzlager) beside the band sawmill: two squared timbers across, logs on them ----------------
@@ -173,7 +180,32 @@ const HOLZ = (() => {
       VEH.extra.push({ box: () => B, noWalk: true, guide: true }); };
     for (const sd of [-1, 1]) { const t = ST.TB + sd * (w + 0.05); wall(ST.wpt(t, ST.OFF - l), ST.wpt(t, ST.OFF + l));
       for (const e of [-1, 1]) { const c0 = ST.wpt(t, ST.OFF + e * l), a = 0.55, len = 2.0; wall(c0, [c0[0] + (N[0] * e * Math.cos(a) + U[0] * sd * Math.sin(a)) * len, c0[1] + (N[1] * e * Math.cos(a) + U[1] * sd * Math.sin(a)) * len]); } } }
-  S.bridgeGuides = bridgeGuides;
+  S.bridgeGuides = bridgeGuides; S.inYard = p => YARD.inside(p);
+  // ---------------- unloading the trailer: the stakes on one side open, the logs roll off ----------------
+  // As on a real stake trailer: standing at the front or the back, pull the pins of the far side's stakes – the load rolls off that side
+  // (never stand where it rolls). The logs come to rest side by side on the ground beside the bed, or on the log yard's timbers when the
+  // trailer stands alongside them. The fork then takes them one by one.
+  function unload() { const T = window.TRAILER; if (!T || !T.st) return; const list = S.logs.filter(l => l.st === 'trailer'); if (!list.length) return;
+    if (T.tow && Math.hypot(T.tow.st.u, T.tow.st.v) > 0.3) { think('Erst anhalten.', 1500); return; }
+    const side = rollSide();
+    list.sort((a, b) => side * (b.tx - a.tx) || a.tz - b.tz);   // the outermost first
+    let off = T.bed.hw + 0.25;
+    for (const l of list) { const r0 = l.d0 / 200, r1 = l.d1 / 200, rm = Math.max(r0, r1), x = side * (off + rm); off += 2 * rm + 0.04;
+      const a = T.toW(x, l.ta + l.L / 2), b = T.toW(x, l.ta - l.L / 2);
+      l.st = 'ground'; l.p0 = [a[0], a[1], 0]; l.p1 = [b[0], b[1], 0]; delete l.tx; delete l.tz; delete l.ta;
+      l.p0[2] = support(a[0], a[1], l) + r0; l.p1[2] = support(b[0], b[1], l) + r1; restOn(l); l.wp0 = l.p0; l.wp1 = l.p1; }
+    trailerMass(); redraw(); save(); S.ver++; SFX.drop && SFX.drop(); markDirty(true);
+    const yard = list.some(l => YARD.inside(mid(l)));
+    think(`Rungen auf: ${list.length === 1 ? 'der Stamm rollt' : list.length + ' Stämme rollen'} ${side > 0 ? 'rechts' : 'links'} ab${yard ? ' – ins Holzlager' : ''}. Nie auf der Abrollseite stehen! Rungen wieder schließen.`, 4200); }
+  // which way: away from the one who opens them; standing in the middle of an end: towards the log yard if it is beside the bed, else right
+  function rollSide() { const T = window.TRAILER, me = T.local([P.x, P.y, 0]); if (Math.abs(me[0]) >= 0.25) return me[0] > 0 ? -1 : 1;
+    for (const sd of [1, -1]) { const p = T.toW(sd * (T.bed.hw + 1.0), (T.bed.y0 + T.bed.y1) / 2); if (YARD.inside([p[0], p[1]])) return sd; } return 1; }
+  S.unload = unload;
+  function unloadAct() { const T = window.TRAILER; if (!T || !T.g) return;
+    PLAY.act({ id: 'holz:unload', r: 2.0, prio: 0.65, obj: () => T.g, pos: () => { const e = T.toW(0, T.bed.y0 - 0.5); return [e[0], e[1], T.st.z + 1.0]; },
+      label: () => VEH.cur || !S.logs.some(l => l.st === 'trailer') ? null : `Rungen ${rollSide() > 0 ? 'rechts' : 'links'} öffnen – Stämme abrollen lassen`, run: unload });
+    PLAY.act({ id: 'holz:unload2', r: 2.0, prio: 0.65, obj: () => T.g, pos: () => { const e = T.toW(0, T.bed.y1 + 0.3); return [e[0], e[1], T.st.z + 1.0]; },
+      label: () => VEH.cur || !S.logs.some(l => l.st === 'trailer') ? null : `Rungen ${rollSide() > 0 ? 'rechts' : 'links'} öffnen – Stämme abrollen lassen`, run: unload }); }
   // ---------------- saving ----------------
   let saveT = null; function save() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(LSK, JSON.stringify({ v: 1, logs: S.logs.map(l => { const o = { id: l.id, st: l.st };
       if (l.st === 'ground' || l.st === 'saw') { o.p0 = l.p0.map(v => +v.toFixed(3)); o.p1 = l.p1.map(v => +v.toFixed(3)); }
@@ -191,7 +223,7 @@ const HOLZ = (() => {
   function start() { S.ready = true; const FL = (window.FELL && FELL.logs) || []; S.nF = FL.length;
     for (const f of FL) { if (!f.at) continue; const l = { id: f.id, tid: f.tid, sp: f.sp, L: f.L, d0: f.d0, d1: f.d1, dm: f.dm, vol: f.vol, q: f.q, i: f.i, st: 'ground', seed: ((f.tid * 7 + f.i * 13) % 97) / 97, tint: 0.92 + ((f.tid * 3 + f.i) % 7) * 0.02, p0: [f.at.x0, f.at.y0, f.at.z0], p1: [f.at.x1, f.at.y1, f.at.z1] };
       S.logs.push(l); S.by[l.id] = l; if (window.FELL && FELL.hideLogs) FELL.hideLogs(f.tid); }
-    const s = load(); buildYard(); bridgeGuides(); redraw(); trailerMass(); if (S.onStart) S.onStart(s ? s.part2 : null); markDirty(true); }
+    const s = load(); buildYard(); bridgeGuides(); unloadAct(); redraw(); trailerMass(); if (S.onStart) S.onStart(s ? s.part2 : null); markDirty(true); }
   window.TICKS.push(dt => { try { tick(dt); } catch (e) { if (!S._err) { S._err = 1; console.warn('holz', e); } } });
   // first visit of V16d: a word about the way of the wood
   let intro = false; window.TICKS.push(() => { if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false;

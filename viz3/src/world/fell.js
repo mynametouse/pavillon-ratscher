@@ -25,7 +25,7 @@ const FELL = (() => {
   const SPN = { spruce: 'Fichte', larch: 'Lärche', pine: 'Kiefer' };
   // ---------------- materials ----------------
   const MT = {
-    paint: new THREE.MeshStandardMaterial({ color: 0xff4d12, emissive: 0x3a0c00, roughness: 0.8, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
+    paint: new THREE.MeshStandardMaterial({ color: 0xff4d12, emissive: 0x6a1800, roughness: 0.8, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
     wedge: new THREE.MeshStandardMaterial({ color: 0xf0b018, roughness: 0.5 }), steel: new THREE.MeshStandardMaterial({ color: 0xb8bcc0, metalness: 0.85, roughness: 0.35 }),
     dark: new THREE.MeshStandardMaterial({ color: 0x24262a, roughness: 0.6 }), grey: new THREE.MeshStandardMaterial({ color: 0x5b5f63, roughness: 0.55 }),
     orange: new THREE.MeshStandardMaterial({ color: 0xe8661c, roughness: 0.45 }), black: new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.7 }),
@@ -77,7 +77,9 @@ const FELL = (() => {
     for (const t of S.marked) { const rec = S.trees[t.id], down = rec && ORDER.indexOf(rec.st) >= ORDER.indexOf('falling'); let a = Math.atan2(J[1] - t.y, J[0] - t.x); { let best = 1e9; for (let k = 0; k < 16; k++) { const aa = k / 16 * Math.PI * 2, x = t.x + Math.cos(aa) * 6, y = t.y + Math.sin(aa) * 6, e = -ROADS.edge(x, y); if (e < best) { best = e; a = aa; } } }
       const p = [], idx = []; const quad = (y0, h, w, slant) => { const k = p.length / 3; for (const [u, v] of [[-1, 0], [1, 0], [1, 1], [-1, 1]]) { const yy = y0 + v * h + u * slant, r = FOREST.trunkR(t, yy) + 0.006, aa = a + u * w / r;
           p.push(t.x + Math.cos(aa) * r, t.y + Math.sin(aa) * r, t.z - 0.05 + yy); } idx.push(k, k + 1, k + 2, k, k + 2, k + 3); };
-      if (!down) quad(1.25, 0.26, 0.035, 0.07); quad(0.2, 0.06, 0.035, 0);
+      // the forester's marks in fluorescent spray paint: a big slash on the side towards the path and one on the far side (seen from both
+      // directions), and the dot on the root foot that stays on the stump (V16d: larger – the small stripe was hard to find from the tractor)
+      if (!down) { quad(1.1, 0.5, 0.075, 0.13); const a0 = a; a = a0 + Math.PI; quad(1.1, 0.5, 0.075, 0.13); a = a0; } quad(0.18, 0.08, 0.05, 0);
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p.map((v, i) => v), 3)); g.setIndex(idx);
       const pp = g.attributes.position; for (let i = 0; i < pp.count; i++) { const v = V(pp.getX(i), pp.getY(i), pp.getZ(i)); pp.setXYZ(i, v.x, v.y, v.z); } g.computeVertexNormals(); geos.push(g); }
     if (!geos.length) return; MARKS = new THREE.Mesh(BufferGeometryUtils.mergeGeometries(geos), MT.paint); MARKS.userData.noMerge = true; MARKS.receiveShadow = true; scene.add(MARKS); markDirty(true); }
@@ -537,9 +539,15 @@ const FELL = (() => {
   const bk = (() => { let e = $('waldbuch'); if (!e) { e = document.createElement('aside'); e.id = 'waldbuch'; e.hidden = true; e.setAttribute('aria-label', 'Waldbuch'); ($('p-3d') || document.body).appendChild(e); } return e; })();
   const card = (() => { let e = $('fellcard'); if (!e) { e = document.createElement('div'); e.id = 'fellcard'; e.className = 'ov'; e.hidden = true; ($('p-3d') || document.body).appendChild(e); } return e; })();
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // the nearest marked tree still standing: distance and compass direction from where one stands (or sits in the tractor)
+  const DIRS = ['Norden', 'Nordosten', 'Osten', 'Südosten', 'Süden', 'Südwesten', 'Westen', 'Nordwesten'];
+  function nextMarked() { const me = VEH.cur ? [VEH.cur.st.x, VEH.cur.st.y] : [P.x, P.y]; let best = null, bd = 1e9;
+    for (const t of S.marked) { const r = S.trees[t.id]; if (r && ORDER.indexOf(r.st) >= ORDER.indexOf('falling')) continue; const d = Math.hypot(t.x - me[0], t.y - me[1]); if (d < bd) { bd = d; best = t; } }
+    if (!best) return ' Alle markierten Bäume sind gefällt.'; const az = (Math.atan2(best.x - me[0], best.y - me[1]) * 180 / Math.PI + 360) % 360;
+    return bd < 4 ? ` Ein markierter Baum steht direkt hier (${SPN[best.sp] || 'Baum'}).` : ` Nächster markierter Baum: <b>${Math.round(bd)} m Richtung ${DIRS[Math.round(az / 45) % 8]}</b> (${SPN[best.sp] || 'Baum'}, oranger Schrägstrich in Brusthöhe).`; }
   function book(v) { S.bookOpen = v === undefined ? !S.bookOpen : !!v; bk.hidden = !S.bookOpen; if (S.bookOpen) { if (window.HUD) HUD.unlock(); renderBook(); } }
   function renderBook() { if (bk.hidden) return; const rec = cur(), ord = rec ? ORDER.indexOf(rec.st) : -1;
-    let h = '<h3>Waldbuch<button type="button" class="x" aria-label="Schließen">×</button></h3><p class="bk-i">Fällen nach Profi-Art im Familienwald an der Klinge. Die Bäume mit dem orangen Strich hat der Förster ausgezeichnet. ' + (rec ? `Jetzt: <b>${SPN[rec.sp]}, ${de(rec.h, 0)} m</b>.` : 'Zum Anfangen: Forstkiste am Traktor, dann zu einem markierten Baum.') + '</p><ol class="bk">';
+    let h = '<h3>Waldbuch<button type="button" class="x" aria-label="Schließen">×</button></h3><p class="bk-i">Fällen nach Profi-Art im Familienwald an der Klinge. Die Bäume mit dem orangen Strich hat der Förster ausgezeichnet. ' + (rec ? `Jetzt: <b>${SPN[rec.sp]}, ${de(rec.h, 0)} m</b>.` : 'Zum Anfangen: Forstkiste am Traktor, dann zu einem markierten Baum.') + nextMarked() + '</p><ol class="bk">';
     for (const [k, t, d] of BOOK) { const i = ORDER.indexOf(k), st = k === 'kit' ? (GEAR.haveForest ? 'ok' : '') : !rec ? '' : i < ord ? 'ok' : (i === ord || (k === 'call1' && rec.st === 'call2')) ? 'cur' : ''; h += `<li class="${st}"><b>${esc(t)}</b><span>${esc(d)}</span></li>`; }
     h += '</ol>'; const done = Object.values(S.trees).filter(r => r.st === 'done');
     if (done.length) h += '<h4>Gefällte Bäume</h4><ul class="bk-f">' + done.map(r => `<li><b>${SPN[r.sp]} ${de(r.h, 0)} m</b> ${'★'.repeat(r.stars || 0)}${'☆'.repeat(5 - (r.stars || 0))}<span>${esc(r.notes.length ? r.notes.join('; ') : 'saubere Arbeit')}</span></li>`).join('') + '</ul>';

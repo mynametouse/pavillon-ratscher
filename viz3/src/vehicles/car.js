@@ -120,7 +120,7 @@ const CAR = (() => {
     const t = new THREE.Mesh(tyreGeo, M.tyre), rm = new THREE.Mesh(rimGeo, M.hub), cp = new THREE.Mesh(capGeo, M.rim); cp.position.x = Math.sign(x) * 0.086; node.add(t, rm, cp);
     for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2, d = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.05, 0.022), M.hub); d.position.set(Math.sign(x) * 0.097, Math.cos(a) * 0.11, Math.sin(a) * 0.11); d.rotation.x = a; node.add(d); }
     for (const m of [t, rm, cp]) { m.castShadow = true; m.receiveShadow = true; } wheels.push({ x, y, r: RW, w: 0.185, steer, drive, piv, node }); }
-  const model = { g, body, wheels, lamps: { head: [M.head], tail: [M.tail], brake: [M.brake], rev: [M.rev] }, beam: [0, YF - 0.12, 0.7], load: { y0: -2.33, y1: -1.42, z: 0.63, hw: 0.68, h: 0.88 } };   // the load space (V16d)
+  const model = { g, body, wheels, lamps: { head: [M.head], tail: [M.tail], brake: [M.brake], rev: [M.rev] }, beam: [0, YF - 0.12, 0.7], cargo: { y0: -2.33, y1: -1.42, z: 0.63, hw: 0.68, h: 0.88 } };   // the load space (V16d)
   const spec = { id: 'car', name: 'Auto', enterLabel: 'Ins Auto steigen', mass: 1230, Iz: 2150, a: A, b: B, track: TR, hcg: 0.57, rw: RW, mu: 1.0, Cf: 74000, Cr: 86000,
     steerMax: 0.56, steerV: 15, steerRate: 2.6, steerBack: 4.2,
     eng: { idle: 850, red: 6300, launch: 2300, drag: 32, curve: [[800, 70], [1500, 92], [3000, 112], [4500, 106], [5500, 95], [6300, 82], [6600, 0]] },

@@ -99,6 +99,10 @@ const TRACTOR2 = (() => {
     update(v, dt) { if (v === VEH.cur) { if (LD.up) LD.liftT = THREE.MathUtils.clamp(LD.liftT + LD.up * 0.34 * dt, LD.min, 0.62); }   // dt: game time from the vehicle tick
       if (Math.abs(LD.lift - LD.liftT) > 1e-3 || Math.abs(LD.tilt - LD.tiltT) > 1e-3) { loaderPose(dt); markDirty(); if (VEH.cur === v) MOTION.lastMove = performance.now(); } },
     key(k, down) { if (k === 'r' || k === 'up') LD.up = down ? 1 : (LD.up === 1 ? 0 : LD.up); else if (k === 'g' || k === 'down') LD.up = down ? -1 : (LD.up === -1 ? 0 : LD.up); else if ((k === 't' || k === 'tilt') && down) LD.tiltT = LD.tiltT > 0.1 ? 0 : 0.3; else if ((k === 'k' || k === 'hitch') && down && window.TRAILER) TRAILER.toggle(); },
+    // V16d collision parts (vehicles/vehicle.js collide): the body up to the front weights (full height), the loader in front of it only as high
+    // as the carrier and the tines are – lifted, the fork reaches over a sawmill's bed or a trailer's floor
+    colParts() { const tipY = LD.P0[0] + Math.cos(LD.lift) * LD.ARM, tz = LD.P0[1] + Math.sin(LD.lift) * LD.ARM - 0.38, y1 = tipY + 1.18 * Math.cos(LD.tilt), B0 = -2.0, B1 = 2.6;
+      return [{ cy: (B0 + B1) / 2, hl: (B1 - B0) / 2, hw: 1.14, z0: 0.25, z1: 2.9 }, { cy: (B1 + y1) / 2, hl: Math.max(0.05, (y1 - B1) / 2), hw: 0.68, z0: tz - 0.04, z1: tz + 0.7 + 1.18 * Math.sin(LD.tilt) }]; },
     save: () => [+LD.liftT.toFixed(3), +LD.tiltT.toFixed(3)], load: a => { if (a && a.length >= 2) { LD.lift = LD.liftT = THREE.MathUtils.clamp(+a[0] || -0.5, LD.min, 0.62); LD.tilt = LD.tiltT = THREE.MathUtils.clamp(+a[1] || 0, 0, 0.3); loaderPose(0); } } };
   const spec = { id: 'tractor', name: 'Traktor', enterLabel: 'Auf den Traktor steigen', mass: 5400, Iz: 7200, a: A, b: B, track: (TRR + TRF) / 2, hcg: 1.05, rw: RR, mu: 0.85, Cf: 110000, Cr: 190000, offGrip: 1.35, offRoll: 0.7,
     steerMax: 0.8, steerV: 9, steerRate: 1.9, steerBack: 2.8,

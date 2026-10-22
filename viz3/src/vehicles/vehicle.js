@@ -178,7 +178,12 @@ const VEH = (() => {
   const wheelBox = v => { let wb = v.wb; if (!wb) { let hw = 0, y0 = 1e9, y1 = -1e9; for (const w of v.W) { hw = Math.max(hw, Math.abs(w.x) + (w.w || 0.24) / 2); y0 = Math.min(y0, w.y - w.r); y1 = Math.max(y1, w.y + w.r); }
       wb = v.wb = { hw, cy: (y0 + y1) / 2, hl: (y1 - y0) / 2 }; }
     const s = v.st, f = fwd(s.psi), r = rgt(s.psi); return { c: [s.x + f[0] * wb.cy, s.y + f[1] * wb.cy], ax: r, ay: f, ex: wb.hw, ey: wb.hl }; };
-  function collide(v) { const s = v.st, hits = boxHits(boxOf(v), s.z + 0.25, s.z + v.spec.box.h, v); if (S.extra.length) hits.push(...guideHits(wheelBox(v), s.z, s.z + 0.6));
+  // parts with their own height (V16d: the tractor's body, and its front loader whose fork passes over what is lower than it – a sawmill's bed,
+  // a trailer's floor), from the model's colParts(v): [{ cy, hl, hw, z0, z1 }] in the vehicle frame; without: the one box from the spec
+  const partBox = (v, p) => { const s = v.st, f = fwd(s.psi), r = rgt(s.psi); return { c: [s.x + f[0] * p.cy, s.y + f[1] * p.cy], ax: r, ay: f, ex: p.hw, ey: p.hl }; };
+  function collide(v) { const s = v.st, parts = v.model.colParts ? v.model.colParts(v) : null; let hits;
+    if (parts) { hits = []; for (const p of parts) hits.push(...boxHits(partBox(v, p), s.z + p.z0, s.z + p.z1, v)); } else hits = boxHits(boxOf(v), s.z + 0.25, s.z + v.spec.box.h, v);
+    if (S.extra.length) hits.push(...guideHits(wheelBox(v), s.z, s.z + 0.6));
     let big = 0; for (const [h, o] of hits) { const dv = resolve(v, h, o); if (dv > big) big = dv; }
     if (big > 1.4 && v === S.cur) VSND.thud(v, Math.min(1, big / 9)); return hits.length; }
   // something in the way of Hubert's tractor round (npc/npc.js): a vehicle within reach ahead of (x, y) in the direction az

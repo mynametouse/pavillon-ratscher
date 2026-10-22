@@ -74,11 +74,12 @@ const HOLZSAW = (() => {
     if (cosA < 0.9) { warn('Längs auf die Bänke legen – den Traktor quer zur Säge stellen.'); return 'wait'; }
     if (S.log && S.log !== l.id) { warn('Auf der Säge liegt schon ein Stamm.'); return 'wait'; }
     if (l.L > 4.6) { warn('Zu lang für die Säge (höchstens 4,6 m).'); return 'wait'; }
-    if (lm[2] - r > BUNK + 0.03) return 'wait';
+    if (lm[2] - r > BUNK + (HOLZ.SETTLE || 0.3)) return 'wait';
     seat(l); S.clamp = false; S.plan = null; S.cut = 0; hideDeco(); HOLZ.redraw(); save(); think(`Stamm auf der Säge: ${HOLZ.SPN[l.sp] || ''} ${de(l.L, 2)} m, Ø ${l.dm} cm. Jetzt festklemmen.`, 3600); return 'done'; };
   let warnT = 0; const warn = t => { if (performance.now() - warnT > 5000) { warnT = performance.now(); think(t, 3000); } };
-  function hideDeco() { const s = SAWs(); if (s && s.logMesh && s.logMesh.visible) { s.logMesh.visible = false; S.decoGone = true; markDirty(true);
-      for (const c of COL) if (c && c[6] === 'log' && Math.abs((c[0] + c[1]) / 2 - s.xc) < 0.05) { c[4] = -9; c[5] = -9; } } }   // the old decorative log and its collider
+  // the old decorative log and its collider (garden/workshop.js; the collider is in the workshop's frame: matched by its tag and width)
+  function hideDeco() { const s = SAWs(); if (!s) return; if (s.logMesh && s.logMesh.visible) { s.logMesh.visible = false; S.decoGone = true; markDirty(true); }
+    for (const c of COL) if (c && c[6] === 'log' && c[5] > -1 && Math.abs(c[1] - c[0] - 2 * (s.logR || 0.26)) < 0.05) { c[4] = -9; c[5] = -9; } }
   const curLog = () => S.log && HOLZ.logs.find(l => l.id === S.log && l.st === 'saw');
   // ---------------- the plan: heights of the cuts from the log axis ----------------
   // first cut: a slab off the top so the face is ~60 % of the small end wide; then boards of thickness t (+ kerf) down to 3 cm above the bunks

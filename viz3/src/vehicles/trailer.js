@@ -119,7 +119,7 @@ const TRAILER = (() => {
     S.ver++; }
   // the tandem's footprint: only the wheels are held by the bridge guides (the bed may reach out over the edge)
   function wheelBox() { const s = S.st; return { c: [s.x, s.y], ax: rgt(s.psi), ay: fwd(s.psi), ex: TRK / 2 + WT / 2, ey: AX + RT }; }
-  function box() { const s = S.st, f = fwd(s.psi), r = rgt(s.psi), cy = (BY0 + BY1) / 2; return { c: [s.x + f[0] * cy, s.y + f[1] * cy], ax: r, ay: f, ex: HW + 0.02, ey: (BY1 - BY0) / 2 + 0.03, z0: s.z + 0.15, z1: s.z + ZB + ZS }; }
+  function box() { const s = S.st, f = fwd(s.psi), r = rgt(s.psi), cy = (BY0 + BY1) / 2; return { c: [s.x + f[0] * cy, s.y + f[1] * cy], ax: r, ay: f, ex: HW + 0.02, ey: (BY1 - BY0) / 2 + 0.03, z0: s.z + 0.15, z1: s.z + ZB - 0.12 }; }   // up to just below the floor: the fork and a log come in over the stakes from above, the tines reach a log on the floor
   // straight behind the hitch H (heading psi of the tractor)
   function place(H, psi) { const f = fwd(psi); Object.assign(S.st, { x: H[0] - f[0] * LD, y: H[1] - f[1] * LD, psi }); S.ver++; pose(); }
   // ---------------- coupling ----------------
