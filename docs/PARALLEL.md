@@ -12,7 +12,7 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 | Thema | Wer | Branch | Stand | Dateien |
 |---|---|---|---|---|
-| Umbau Phase 0–2 (Plan: Projektdokument `claude/pavillon-umbau.md`) | Kern-Chat, session_01GdUYaP2XXAAEDXZpGWVkBm | `kern/*` → `src` | Phase 0 abgeschlossen bis auf Falkos Blick auf die Vorschau; Phase 1 beginnt | alles außer den Welt-Ordnern |
+| Umbau Phase 0–2 (Plan: Projektdokument `claude/pavillon-umbau.md`) | Kern-Chat, session_01GdUYaP2XXAAEDXZpGWVkBm | `kern/*` → `src` | Phase 0 live (V16f, 22.10. 23:44); Phase 1, Fehlerbericht und die neuen Nachbarfiguren in der Vorschau – wartet auf Falkos Blick; dann Phase 2 | alles außer den Welt-Ordnern |
 | Welt Woche 1: Quellen je Land, Testgebiet in GitHub Actions, Straßen als eigenes Bauteil, eigene Ansicht (Auftrag `claude/pavillon-welt.md`) | Hilfs-Agent des Kern-Chats | `welt/woche1` | läuft seit 22.10. 22:00 | `tools/welt/**`, `viz3/welt-viewer/**`, `.github/workflows/welt-*.yml`, auf `gh-pages` nur `welt-test/` |
 
 ## Absprachen
@@ -31,5 +31,7 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 23.10. 00:10 Kern: Die Nachbarn heißen wieder Hubert und Ronald (Falko, 22.10. 23:28; die Umbenennung in Günter/Bernd ist zurückgenommen,
+  gespeicherte Stände mit `bernd` werden zurück übersetzt). Beide sind jetzt Rocketbox-Figuren wie die Spielfigur (`tools/player/build_npc.sh`).
 - 22.10. 22:20 Kern: Datei verschlankt – ab jetzt ein Chat mit Hilfs-Agenten (Falko, 21:54). Klinge- und Dorf-Chat sind fertig (V16d und V16b6
   veröffentlicht); der Klinge-Chat sichert noch seine Originale (Anleitung: Nachrichten 21:15 und 21:30 im Verlauf dieser Datei).

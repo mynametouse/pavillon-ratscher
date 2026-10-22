@@ -135,7 +135,9 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
 - **Gebäude im Garten ändern**: `viz3/src/garden/<gebäude>.js` (eine Datei je Gebäude, `bldBegin … bldEnd`). Neues Gebäude: neue Datei nach dem Muster, Zeile in `modules.txt` vor `garden/places.js`, Eintrag in `site.js` (`SITE.bld`).
 - **Pavillon**: Maße/Helfer `pavilion/house_base.js`; Teile beider Varianten `house_common.js`; Turm `house_tower.js`; Leiter-Variante `house_ladder.js`; Bauphasen/Kosten `pavilion/phases.js`.
 - **Ton**: Engine `audio/audio.js` (`tone()`, `burst()`, `playBuf()`, Atmosphäre in `scheduleOneShots`); neue Aufnahmen nach `dist/snd` + Manifest `sm`.
-- **Figuren**: Spielfigur `game/avatar.js` (Werkzeug `tools/player`), Nachbarn `npc/`.
+- **Figuren**: Spielfigur `game/avatar.js` (Werkzeug `tools/player`), Nachbarn `npc/`. Hubert und Ronald sind seit 22.10.2026 Rocketbox-Figuren
+  wie die Spielfigur (`npc/npc_real.js` `rbPerson`, Knochennamen und Bewegungsformat `core/rig.js`), gebaut mit
+  `PAV_WORK=<Arbeitsordner> bash tools/player/build_npc.sh` → `dist/chars/hubert_rb.json`, `ronald_rb.json`; die alten Figuren mit `?oldfig`.
 - **Licht/Tageszeit**: Schlüsselbilder `DN.KF` in `time/daynight.js`; feste Stimmungen `render/modes.js`.
 - **Aufgaben/Dialoge**: `game/quests.js`, Stimmen `tools/voices/lines3.py` (edge-tts).
 - **Werkstatt-Spiel**: `werk/werk.js` (Stationen und Schritte), Fenster `werk/werkui.js`, Gebäude/Maschinen `garden/workshop.js`.

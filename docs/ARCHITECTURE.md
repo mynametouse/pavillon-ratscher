@@ -86,7 +86,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `HUD` | game/hud.js | Menü, HUD, Inventarfenster, Mausfang |
 | `AVATAR` | game/avatar.js | Spielfigur (Mann/Frau), Bewegungen, Schutzausrüstung an der Figur |
 | `QUESTS` | game/quests.js | Aufgaben, Tagebuch (J), Zielanzeige |
-| `NPC` | npc/npc.js, npc_real.js, hours.js | Hubert, Ronald, Ziegen, Traktor; Dialoge; nachts daheim |
+| `NPC` | npc/npc.js, npc_real.js, hours.js | Hubert, Ronald (Rocketbox-Figuren mit den Bewegungen der Spielfigur, `rbPerson`), Ziegen, Traktor; Dialoge; nachts daheim |
 | `CLOCK` | time/clock.js | Spielzeit (Minuten seit Tag 1, 0:00), Tempo, Warten/Zeitraffer, `CLOCK.on(fn)`, `CLOCK.jobs(fn)` |
 | `DN` | time/daynight.js | Kalender, Sonne/Mond/Sterne, Licht; `DN.sky(jd)`, `DN.jdOf(t)`, `DN.dateStr()` |
 | `GEAR` | werk/gear.js | Schutzausrüstung, `GEAR.check(req)` |
