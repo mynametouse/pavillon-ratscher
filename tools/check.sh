@@ -12,7 +12,7 @@ step() { printf '%-8s ' "$1"; }
 
 step build;  if out=$(python3 viz3/build.py --fast 2>&1); then echo "$out" | tail -1; else echo "FAIL"; echo "$out" | tail -20; FAIL=1; fi
 step lint;   node tools/check/lint.mjs || FAIL=1
-step tests;  if python3 -m py_compile viz3/test/*.py tools/csp/*.py 2>/tmp/pycheck.$$; then echo "test scripts compile"; else echo "FAIL"; cat /tmp/pycheck.$$; FAIL=1; fi; rm -f /tmp/pycheck.$$
+step tests;  if python3 -m py_compile viz3/test/*.py tools/csp/*.py tools/fotos/*.py tools/geo/smooth_roads.py 2>/tmp/pycheck.$$; then echo "test scripts compile"; else echo "FAIL"; cat /tmp/pycheck.$$; FAIL=1; fi; rm -f /tmp/pycheck.$$
 step format
 n=$(cd viz3 && ../tools/check/node_modules/.bin/prettier --list-different "src/**/*.js" 2>/dev/null | wc -l)
 if [ "$n" = 0 ]; then echo "all modules formatted"
