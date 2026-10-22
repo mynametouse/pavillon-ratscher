@@ -5,13 +5,14 @@ import * as THREE from 'three';
 import { LATE } from '../core/late.js';
 import { SAVE } from '../core/save.js';
 import { BASE, QS, scene, V } from '../core/head.js';
+import { canonBone, decodeClip } from '../core/rig.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { phase } from '../core/geo.js';
 import { MOTION, RENDER } from '../render/render.js';
 import { P } from './walkable.js';
 import { CAM3, setView3 } from './player.js';
 import { NPCUI } from '../npc/npc.js';
-import { boneCanon, boneTurn, CHL, fsAdd, prepModel } from '../npc/npc_real.js';
+import { boneTurn, CHL, fsAdd, prepModel } from '../npc/npc_real.js';
 import { HELD, PLAY } from './play.js';
 import { HUD } from './hud.js';
 phase(null);
@@ -22,81 +23,8 @@ export const AVATAR = (() => {
     const k = SAVE.raw('pav-fig');
     if (k === 'm' || k === 'f') A.kind = k;
   } catch (e) {}
-  // ---- canonical bone names: Mixamo, Character Creator, 3ds Max Biped (Rocketbox), UE mannequin (Mesh2Motion, Quaternius) ----
-  const CN = {
-    Bip01_Pelvis: 'Hips',
-    Bip01_Spine: 'Spine',
-    Bip01_Spine1: 'Spine1',
-    Bip01_Spine2: 'Spine2',
-    Bip01_Neck: 'Neck',
-    Bip01_Head: 'Head',
-    pelvis: 'Hips',
-    spine_01: 'Spine',
-    spine_02: 'Spine1',
-    spine_03: 'Spine2',
-    neck_01: 'Neck',
-    head: 'Head',
-    Head: 'Head',
-  };
-  for (const [b, u, S] of [
-    ['L', 'l', 'Left'],
-    ['R', 'r', 'Right'],
-  ]) {
-    Object.assign(CN, {
-      [`Bip01_${b}_Clavicle`]: S + 'Shoulder',
-      [`Bip01_${b}_UpperArm`]: S + 'Arm',
-      [`Bip01_${b}_Forearm`]: S + 'ForeArm',
-      [`Bip01_${b}_Hand`]: S + 'Hand',
-      [`Bip01_${b}_Thigh`]: S + 'UpLeg',
-      [`Bip01_${b}_Calf`]: S + 'Leg',
-      [`Bip01_${b}_Foot`]: S + 'Foot',
-      [`Bip01_${b}_Toe0`]: S + 'ToeBase',
-      [`clavicle_${u}`]: S + 'Shoulder',
-      [`upperarm_${u}`]: S + 'Arm',
-      [`lowerarm_${u}`]: S + 'ForeArm',
-      [`hand_${u}`]: S + 'Hand',
-      [`thigh_${u}`]: S + 'UpLeg',
-      [`calf_${u}`]: S + 'Leg',
-      [`foot_${u}`]: S + 'Foot',
-      [`ball_${u}`]: S + 'ToeBase',
-    });
-    ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky'].forEach((f, i) => {
-      for (let k = 0; k < 3; k++) {
-        CN[`Bip01_${b}_Finger${i}${k ? k : ''}`] = `${S}Hand${f}${k + 1}`;
-        CN[`${f.toLowerCase()}_0${k + 1}_${u}`] = `${S}Hand${f}${k + 1}`;
-      }
-    });
-  }
-  const canonP = n =>
-    CN[n] ||
-    (n.startsWith('mixamorig')
-      ? n.replace(/_\d+$/, '').replace(/^mixamorig:?/, '')
-      : CN[n.replace(/_\d+$/, '')] || boneCanon(n));
-  // ---- clips: per figure a compact set (bone names, int16 quaternions, hip positions) → three.js clips ----
-  function b64(s, T) {
-    const bin = atob(s),
-      u8 = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-    return new T(u8.buffer);
-  }
-  function decode(c) {
-    const q = b64(c.q, Int16Array),
-      p = c.p ? b64(c.p, Float32Array) : null,
-      n = c.n,
-      nb = c.b.length,
-      times = new Float32Array(n),
-      tracks = [];
-    for (let i = 0; i < n; i++) times[i] = Math.min(c.d, i / c.fps);
-    for (let j = 0; j < nb; j++) {
-      const v = new Float32Array(n * 4);
-      for (let i = 0; i < n; i++) for (let k = 0; k < 4; k++) v[i * 4 + k] = q[(i * nb + j) * 4 + k] / 32767;
-      tracks.push(new THREE.QuaternionKeyframeTrack(c.b[j] + '.quaternion', times, v));
-    }
-    if (p && c.hb) tracks.push(new THREE.VectorKeyframeTrack(c.hb + '.position', times, p));
-    const clip = new THREE.AnimationClip(c.name, c.d, tracks);
-    clip.userData = { speed: c.speed || 0, loop: c.loop !== false };
-    return clip;
-  }
+  // canonical bone names (Mixamo, Character Creator, 3ds Max Biped, UE mannequin) and the compact clips: core/rig.js
+  const canonP = canonBone;
   // ---- one figure ----
   const _v = new THREE.Vector3(),
     _v2 = new THREE.Vector3(),
@@ -140,7 +68,7 @@ export const AVATAR = (() => {
       acts = {},
       clips = {};
     for (const [k, c] of Object.entries(set.clips)) {
-      const clip = decode(c);
+      const clip = decodeClip(c);
       clips[k] = clip;
       const a = mixer.clipAction(clip);
       a.play();

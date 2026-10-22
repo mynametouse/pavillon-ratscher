@@ -55,6 +55,8 @@ def collect(H, SP, A, D):
     sync(os.path.join(A, 'chars'), os.path.join(D, 'chars'), ['*.json', '*.webp'])
     charman = {k: k + '.json' for k in ('hubert', 'ronald', 'goat', 'clips')} if all(os.path.exists(os.path.join(D, 'chars', k + '.json')) for k in ('hubert', 'ronald', 'goat', 'clips')) else None
     if charman and os.path.exists(os.path.join(D, 'chars', 'tractor.json')): charman['tractor'] = 'tractor.json'
+    for k in ('hubert_rb', 'ronald_rb'):   # since 22.10.2026: the neighbours as Rocketbox figures (tools/player/build_npc.sh)
+        if charman and os.path.exists(os.path.join(D, 'chars', k + '.json')): charman[k] = k + '.json'
     # V15 player figures (man, woman) and their animation clips (chars/player.py): only the files that exist
     for _old in ('pclips.json',):
         if os.path.exists(os.path.join(D, 'chars', _old)): os.remove(os.path.join(D, 'chars', _old))

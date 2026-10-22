@@ -7,6 +7,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as skelClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { BASE, cam, HQ0, OFFLINE, QS, R, scene } from '../core/head.js';
+import { canonBone, decodeClip } from '../core/rig.js';
 import { ANISO, FIGSH, gltfDataURIs, markDirty, patchSV, toFloatAttrs, whenLoaded } from '../core/assets.js';
 import { sun, sunDir } from '../garden/env.js';
 import { RENDER } from '../render/render.js';
@@ -24,34 +25,7 @@ const _rq = new THREE.Quaternion(),
   _rv = new THREE.Vector3(),
   _rv2 = new THREE.Vector3(),
   _rmq = new THREE.Quaternion();
-// canonical bone names (Mixamo 'mixamorigLeftArm_011' → 'LeftArm'; Character Creator style 'L_Upperarm_037' → 'LeftArm')
-const CCN = {
-  Hip: 'Hips',
-  Waist: 'Spine',
-  Spine01: 'Spine1',
-  Spine02: 'Spine2',
-  NeckTwist01: 'Neck',
-  Head: 'Head',
-  HeadNub: 'HeadTop_End',
-};
-for (const [a, b] of [
-  ['L', 'Left'],
-  ['R', 'Right'],
-])
-  Object.assign(CCN, {
-    [a + '_Clavicle']: b + 'Shoulder',
-    [a + '_Upperarm']: b + 'Arm',
-    [a + '_Forearm']: b + 'ForeArm',
-    [a + '_Hand']: b + 'Hand',
-    [a + '_Thigh']: b + 'UpLeg',
-    [a + '_Calf']: b + 'Leg',
-    [a + '_Foot']: b + 'Foot',
-    [a + '_ToeBase']: b + 'ToeBase',
-  });
-export function boneCanon(n) {
-  const b = n.replace(/_\d+$/, '');
-  return b.startsWith('mixamorig') ? b.replace(/^mixamorig:?/, '') : CCN[b] || null;
-}
+// canonical bone names of every rig in use (Mixamo, Character Creator, 3ds Max Biped, UE): core/rig.js
 function charMat(m, tint) {
   if (!m || !m.isMeshStandardMaterial) return m;
   m.metalness = 0;
@@ -181,7 +155,7 @@ function propTweak(model, P) {
     tw = [];
   model.traverse(x => {
     if (!x.isBone) return;
-    const c = boneCanon(x.name);
+    const c = canonBone(x.name);
     if (c && !B[c]) B[c] = x;
     if (/^(L|R)_(Thigh|Calf)Twist02/.test(x.name)) tw.push(x);
   });
@@ -198,6 +172,31 @@ function propTweak(model, P) {
   });
   model.updateMatrixWorld(true);
 }
+// straw hat on the head bone, sized and placed from the head's rest pose (o.hatK size, o.hatY height, o.hatTilt)
+function hatOn(B, o) {
+  // straw hat on the head bone, sized and placed from the head's rest pose
+  const hp = B.Head.getWorldPosition(new THREE.Vector3()),
+    tp = (B.HeadTop_End || B.Head).getWorldPosition(new THREE.Vector3());
+  const up = tp.clone().sub(hp);
+  const L = up.length();
+  up.normalize();
+  const hat = strawHat();
+  const k = ((o.hatK || 1.35) * L) / 0.19;
+  const fwd = new THREE.Vector3(0, 0, 1);
+  const want = new THREE.Matrix4().compose(
+    hp
+      .clone()
+      .addScaledVector(up, L * (o.hatY ?? 0.45))
+      .addScaledVector(fwd, -L * 0.05),
+    new THREE.Quaternion()
+      .setFromUnitVectors(new THREE.Vector3(0, 1, 0), up)
+      .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), o.hatTilt ?? 0.1)),
+    new THREE.Vector3(k, k, k)
+  );
+  const loc = B.Head.matrixWorld.clone().invert().multiply(want);
+  loc.decompose(hat.position, hat.quaternion, hat.scale);
+  B.Head.add(hat);
+}
 function realPerson(gl, cl, o) {
   const model = gl.scene,
     g = new THREE.Group(),
@@ -210,35 +209,12 @@ function realPerson(gl, cl, o) {
   const B = {};
   model.traverse(x => {
     if (x.isBone) {
-      const c = boneCanon(x.name);
+      const c = canonBone(x.name);
       if (c && !B[c]) B[c] = x;
     }
   });
   const hipH = B.Hips ? B.Hips.getWorldPosition(new THREE.Vector3()).y : 0.9;
-  if (o.hat && B.Head) {
-    // straw hat on the head bone, sized and placed from the head's rest pose
-    const hp = B.Head.getWorldPosition(new THREE.Vector3()),
-      tp = (B.HeadTop_End || B.Head).getWorldPosition(new THREE.Vector3());
-    const up = tp.clone().sub(hp);
-    const L = up.length();
-    up.normalize();
-    const hat = strawHat();
-    const k = ((o.hatK || 1.35) * L) / 0.19;
-    const fwd = new THREE.Vector3(0, 0, 1);
-    const want = new THREE.Matrix4().compose(
-      hp
-        .clone()
-        .addScaledVector(up, L * (o.hatY ?? 0.45))
-        .addScaledVector(fwd, -L * 0.05),
-      new THREE.Quaternion()
-        .setFromUnitVectors(new THREE.Vector3(0, 1, 0), up)
-        .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), o.hatTilt ?? 0.1)),
-      new THREE.Vector3(k, k, k)
-    );
-    const loc = B.Head.matrixWorld.clone().invert().multiply(want);
-    loc.decompose(hat.position, hat.quaternion, hat.scale);
-    B.Head.add(hat);
-  }
+  if (o.hat && B.Head) hatOn(B, o);
   const mixer = new THREE.AnimationMixer(model);
   const C = j => THREE.AnimationClip.parse(j);
   const aW = mixer.clipAction(C(cl.walk)),
@@ -320,6 +296,117 @@ function realPerson(gl, cl, o) {
         boneTurn(sv, Q, B.Neck, 0, 1, 0, look * 0.4 * lk);
         boneTurn(sv, Q, B.Head, 0, 1, 0, look * 0.6 * lk);
         boneTurn(sv, Q, B.Head, 1, 0, 0, Math.sin(t * 0.23) * 0.06 * st);
+      }
+    },
+  };
+  return self;
+}
+// ---- Rocketbox neighbours (since 22.10.2026, Falko: realistic older men like the player figures): 3ds Max Biped rig (MIT), driven by the
+// player's clip set chars/pclips_m.json (idle, walk, talking gestures); sitting on the tractor stays the procedural pose of realPerson.
+// Age: a slight stoop of the upper back (o.stoop rad) and a slower idle (o.idleRate).
+function rbPerson(gl, set, o) {
+  const model = gl.scene,
+    g = new THREE.Group(),
+    inner = new THREE.Group();
+  inner.rotation.y = Math.PI;
+  g.add(inner);
+  inner.add(model); // models face +z; figures walk along local -z
+  const s = prepModel(model, o.h);
+  const B = {};
+  model.traverse(x => {
+    if (x.isBone) {
+      const c = canonBone(x.name);
+      if (c && !B[c]) B[c] = x;
+    }
+  });
+  const hipH = B.Hips ? B.Hips.getWorldPosition(new THREE.Vector3()).y : 0.9;
+  if (o.hat && B.Head) hatOn(B, o);
+  const mixer = new THREE.AnimationMixer(model);
+  const act = k => {
+    const c = set && set.clips && set.clips[k];
+    if (!c) return null;
+    const a = mixer.clipAction(decodeClip(c));
+    a.play();
+    a.setEffectiveWeight(0);
+    a.time = Math.random() * a.getClip().duration;
+    return a;
+  };
+  const aW = act('walk'),
+    aI = act('idle'),
+    aT = act('talk');
+  if (aI) aI.timeScale = o.idleRate ?? 0.85;
+  const walkSp = ((set.clips.walk && set.clips.walk.speed) || 1.25) * s; // m/s of the cycle at this size
+  let w = 0,
+    tk = 0,
+    acc = 0,
+    look = 0,
+    lookT = 0,
+    lookTo = 0;
+  const sv = new Map();
+  const self = {
+    g,
+    real: true,
+    mode: 'stand',
+    model,
+    bones: B,
+    hipH,
+    walker: null, // set by swapFig: talking shows the gestures
+    anim(dt, speed) {
+      acc += dt;
+      const sit = self.mode === 'sit';
+      const talk = !sit && !!(self.walker && self.walker.talking);
+      w += ((!sit && speed > 0.05 ? 1 : 0) - w) * Math.min(1, dt * 6);
+      tk += ((talk ? 1 : 0) - tk) * Math.min(1, dt * 3);
+      if (!g.visible || !camNear(g, 70)) return; // far away or hidden: no pose updates
+      const rest = 1 - w;
+      if (aW) {
+        aW.setEffectiveWeight(w);
+        aW.timeScale = speed > 0.05 ? THREE.MathUtils.clamp(speed / walkSp, 0.55, 1.6) : 1;
+      }
+      if (aT) aT.setEffectiveWeight(sit ? 0 : rest * tk);
+      if (aI) aI.setEffectiveWeight(sit ? 1 : rest * (1 - (aT ? tk : 0)));
+      for (const [b, q] of sv) b.quaternion.copy(q);
+      sv.clear();
+      mixer.update(acc);
+      acc = 0;
+      model.updateMatrixWorld(true);
+      model.getWorldQuaternion(_rmq).invert();
+      const Q = _rmq;
+      if (sit) {
+        for (const sd of ['Left', 'Right']) {
+          boneTurn(sv, Q, B[sd + 'UpLeg'], 1, 0, 0, -1.45);
+          boneTurn(sv, Q, B[sd + 'Leg'], 1, 0, 0, 1.5);
+          boneTurn(sv, Q, B[sd + 'Arm'], 1, 0, 0, -0.55);
+          boneTurn(sv, Q, B[sd + 'ForeArm'], 1, 0, 0, -0.75);
+        }
+        return;
+      }
+      if (o.stoop) {
+        boneTurn(sv, Q, B.Spine1 || B.Spine, 1, 0, 0, o.stoop);
+        boneTurn(sv, Q, B.Neck, 1, 0, 0, -o.stoop * 0.6); // the head comes up again
+      }
+      // somebody close by (the visitor) gets looked at; otherwise now and then a slow look around
+      let seen = false;
+      if (camNear(g, 7)) {
+        _rv2.copy(cam.position);
+        model.worldToLocal(_rv2);
+        const yaw = Math.atan2(_rv2.x, _rv2.z);
+        if (Math.abs(yaw) < 1.6) {
+          lookTo = THREE.MathUtils.clamp(yaw, -1.0, 1.0);
+          seen = true;
+          lookT = 1.5;
+        }
+      }
+      lookT -= dt;
+      if (!seen && lookT <= 0) {
+        lookT = 3 + Math.random() * 6;
+        lookTo = Math.random() < 0.45 ? 0 : (Math.random() - 0.5) * 0.9;
+      }
+      look += (lookTo - look) * Math.min(1, dt * (seen ? 3 : 1.4));
+      const lk = rest * (seen ? 1 : 0.6);
+      if (lk > 0.01) {
+        boneTurn(sv, Q, B.Neck, 0, 1, 0, look * 0.4 * lk);
+        boneTurn(sv, Q, B.Head, 0, 1, 0, look * 0.6 * lk);
       }
     },
   };
@@ -645,6 +732,7 @@ function swapFig(w, f, blob) {
       if (blob) Object.assign(b, blob);
     }
   f.blob = old.blob;
+  f.walker = w;
   w.fig = f;
   w.place();
 }
@@ -654,11 +742,15 @@ async function loadReal() {
   const FL = new THREE.FileLoader();
   FL.setResponseType('json');
   const U = f => BASE + 'chars/' + f;
+  // since 22.10.2026 the neighbours are Rocketbox figures (hubert_rb, ronald_rb) moved by the player's clips; the earlier models stay
+  // as a fallback for an asset base without them
+  const PM = window.PLAYERMAN || {},
+    RB = !!(CHARMAN.hubert_rb && CHARMAN.ronald_rb && PM.pclips_m) && !QS.get('oldfig');
   try {
     const [cl, gh, gr, gg, gt] = await Promise.all([
-      FL.loadAsync(U(CHARMAN.clips)),
-      CHL.loadAsync(U(CHARMAN.hubert)),
-      CHL.loadAsync(U(CHARMAN.ronald)),
+      FL.loadAsync(U(RB ? PM.pclips_m : CHARMAN.clips)),
+      CHL.loadAsync(U(RB ? CHARMAN.hubert_rb : CHARMAN.hubert)),
+      CHL.loadAsync(U(RB ? CHARMAN.ronald_rb : CHARMAN.ronald)),
       CHL.loadAsync(U(CHARMAN.goat)),
       CHARMAN.tractor ? CHL.loadAsync(U(CHARMAN.tractor)) : null,
     ]);
@@ -666,16 +758,22 @@ async function loadReal() {
       swapTractor(realTractor(gt));
       TRACTOR.g.visible = true;
     }
-    swapFig(NPCS.hubert, realPerson(gh, cl.hubert, { h: 1.74, idle: true, idleMix: 0.3 }));
-    swapFig(
-      NPCS.ronald,
-      realPerson(gr, cl.ronald, {
-        h: 1.72,
-        hat: true,
-        prop: QS.get('rawfig') ? null : { head: 0.87, hand: 0.86, leg: 1.07 },
-      })
-    );
-    NPCS.ronald.speed = 0.8; // a shorter man: a slightly slower pace keeps his steps natural
+    if (RB) {
+      // Hubert, about 70: white hair, a tweed jacket (Male_Adult_03); Ronald: grey beard, work suit, rubber boots, his straw hat (Gardener_Male_01)
+      swapFig(NPCS.hubert, rbPerson(gh, cl, { h: 1.74, stoop: 0.09, idleRate: 0.8 }));
+      swapFig(NPCS.ronald, rbPerson(gr, cl, { h: 1.76, stoop: 0.05, idleRate: 0.9, hat: true }));
+    } else {
+      swapFig(NPCS.hubert, realPerson(gh, cl.hubert, { h: 1.74, idle: true, idleMix: 0.3 }));
+      swapFig(
+        NPCS.ronald,
+        realPerson(gr, cl.ronald, {
+          h: 1.72,
+          hat: true,
+          prop: QS.get('rawfig') ? null : { head: 0.87, hand: 0.86, leg: 1.07 },
+        })
+      );
+      NPCS.ronald.speed = 0.8; // a shorter man: a slightly slower pace keeps his steps natural
+    }
     const GT = { Lotte: { len: 1.12 }, Frieda: { len: 1.1, tint: 0xa47b55 }, Egon: { len: 1.3, tint: 0x4a3f36 } };
     for (const gt of GOATS)
       swapFig(gt, realGoat(gg, GT[gt.gname] || { len: 1.1 }), {
