@@ -1,7 +1,17 @@
 // ---------- design variant switch: A = spiral stair tower, B = ladder stairs with trapdoor and roof hatch (both are in the scene) ----------
 // Switching swaps: visible meshes, walk surfaces and colliders (tagged per variant), doors and hatches, the light volume, the two variant lamps,
 // building phases with costs, viewpoints and labels. The player stays where he is if that place exists in the other variant.
-function setVariant(v, { save = true } = {}) {
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { setVariantId, VARIANT } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
+import { GEO_A, GEO_B } from './house_ladder.js';
+import { T1, T2, TLAMP } from './interior.js';
+import { giApply, svApply } from '../render/render.js';
+import { applySpots, floorAt, go, P, PHASE, resetLastPlace, setPhase, SPOTS } from '../game/game.js';
+import { toast } from '../audio/audio.js';
+import { PHASES, PHASES_A, PHASES_B } from './phases.js';
+export function setVariant(v, { save = true } = {}) {
   if (v !== 'A' && v !== 'B') return;
   const changed = v !== VARIANT;
   setVariantId(v);
@@ -46,7 +56,7 @@ function setVariant(v, { save = true } = {}) {
     }
     resetLastPlace();
     markDirty(true);
-    if (window.PANO && PANO.on) panoShow(true);
+    if (window.PANO && LATE.PANO.on) LATE.panoShow(true);
     toast(
       v === 'A'
         ? 'Variante Turm: Wendeltreppe im Turm an der Ostseite'

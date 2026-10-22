@@ -1,4 +1,11 @@
 // ---------- stream: ditch surface, water, bridge, stairs to the water, stones (geometry in garden/stream_geo.js) ----------
+import * as THREE from 'three';
+import { rnd, scene, V } from '../core/head.js';
+import { ANISO, pbrMat } from '../core/assets.js';
+import { B, beam, COL, cyl, WALK } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { STREAM } from './stream_geo.js';
+import { GSZ, mkGroundMat } from './env.js';
 {
   const ST = STREAM,
     { wpt, cOff, zAtTA } = ST;

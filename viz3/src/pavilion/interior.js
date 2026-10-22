@@ -2,14 +2,22 @@
 // Shared by both variants: stove, bookcase, window seat, daybed, desk, lounge, piano, lamps. Per variant: reading corner (A: east corner,
 // B: in front of the stove – the ladder takes the SE corner), sideboard (A: east wall, B: north wall), terrace furniture (terrace height differs).
 // Variant B items get their own keys ('B:…') so the saved layouts of variant A keep matching.
-const NW = 4 - T,
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { LATE } from '../core/late.js';
+import { rnd, rr, scene, V, VARIANT, varOk } from '../core/head.js';
+import { loadModel, markDirty, MODELS, patchSV, plain } from '../core/assets.js';
+import { B, beam, COL, cyl, itemCol, PH, PH_END, phase, PHN, RB, tagPh, VAR, varOff, varOn } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { OG, OGB, RF, STV, T, TT, TW, zC, zD, zE, zF, zG, zO } from './house_base.js';
+export const NW = 4 - T,
   IX0 = OG.x0 + T,
   IX1 = OG.x1 - T,
   IY0 = OG.y0 + T,
   IY1 = OG.y1 - T; // inner faces EG (north/east) and OG box (A)
-const IX1B = OGB.x1 - T; // OG east inner face (B)
+export const IX1B = OGB.x1 - T; // OG east inner face (B)
 phase(PHN.builtins);
-function placeGLB(id, { x, y, z, face = 0, h = null, w = null, col = true, colPad = 0, mat = null }, fallback) {
+export function placeGLB(id, { x, y, z, face = 0, h = null, w = null, col = true, colPad = 0, mat = null }, fallback) {
   const mm = MODELS[id];
   if (!mm) {
     if (fallback) fallback();
@@ -60,7 +68,7 @@ function placeGLB(id, { x, y, z, face = 0, h = null, w = null, col = true, colPa
           fallback();
           if (vv) varOff();
           phase(p0, p1);
-          if (window.rebuildGrids) rebuildGrids();
+          if (window.rebuildGrids) LATE.rebuildGrids();
         }
         markDirty(true);
         return;
@@ -86,7 +94,7 @@ function placeGLB(id, { x, y, z, face = 0, h = null, w = null, col = true, colPa
       root.traverse(o => {
         o.userData.noMerge = true;
       });
-      if (window.registerItem) registerItem(it);
+      if (window.registerItem) LATE.registerItem(it);
     },
     mat
   );
@@ -94,7 +102,7 @@ function placeGLB(id, { x, y, z, face = 0, h = null, w = null, col = true, colPa
 }
 // built-in furniture as one movable planner item: everything fn builds becomes a group at its base centre (merged per item later, see 16_zmerge);
 // its own colliders give way to one box collider of the item. Keys: 'grp:<name>' ('A:'/'B:' prefix inside a variant) – stable for saved layouts.
-function grpItem(name, label, fn) {
+export function grpItem(name, label, fn) {
   const n0 = scene.children.length,
     c0 = COL.length,
     ph = PH,
@@ -148,7 +156,7 @@ function grpItem(name, label, fn) {
 // upholstery of the model chairs: one shared material per colour role, so the interior styles can recolour it ('a' light, 'b' accent)
 const CUSH = {};
 window.CUSH = CUSH;
-const pillowFix =
+export const pillowFix =
   (col, role = 'a') =>
   mt => {
     if (!mt || !/pillow|cushion|leather/i.test(mt.name || '')) return null;
@@ -167,13 +175,13 @@ const pillowFix =
       );
       m.userData.col0 = col;
       if (L.length) m.color.copy(L[0].color);
-      else if (window.STYLE) m.color.set(STYLE.cushCol(role, col));
+      else if (window.STYLE) m.color.set(LATE.STYLE.cushCol(role, col));
       L.push(m);
     }
     return m;
   };
 // --- wood stove (round), slate hearth plate, slate heat shield; single-wall black pipe in the EG, insulated above the ceiling
-const glowMat = new THREE.MeshBasicMaterial({ color: 0xff9a3c });
+export const glowMat = new THREE.MeshBasicMaterial({ color: 0xff9a3c });
 phase(PHN.stove);
 {
   const [sx, sy] = STV;
@@ -287,7 +295,7 @@ grpItem('daybed', 'Tagesbett', () => {
   RB(1.78, 2.3, 0.52, 1.17, 0.71, 0.76, 0.02, MAT.woolP, { col: false });
 });
 // --- reading chair, lamp table, pouf, rug, kindling basket, tall plant
-function armchair(x0, x1, y0, y1, z, mat = MAT.woolP) {
+export function armchair(x0, x1, y0, y1, z, mat = MAT.woolP) {
   const sh = z + 0.12;
   RB(x0 + 0.04, x1 - 0.12, y0 + 0.1, y1 - 0.1, sh, sh + 0.28, 0.06, mat, { puff: 0.015 });
   RB(x1 - 0.2, x1 - 0.02, y0 + 0.06, y1 - 0.06, sh + 0.1, z + 0.92, 0.07, mat, { col: false });
@@ -321,7 +329,7 @@ placeGLB('plant_b', { x: 3.28, y: 0.66, z: zF, h: 1.1 });
 varOff();
 phase(PHN.builtins);
 // --- paper lanterns (Akari type) hung between the joists
-function lantern(x, y, zc, r, sy = 1.0, pm = MAT.paper) {
+export function lantern(x, y, zc, r, sy = 1.0, pm = MAT.paper) {
   const s = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 20), pm);
   s.scale.y = sy;
   s.position.copy(V(x, y, zc));
@@ -424,7 +432,7 @@ placeGLB('side_table_small', { x: -0.2, y: 2.0, z: zO, face: 0, h: 0.5 }, () => 
 });
 placeGLB('vase', { x: -0.2, y: 2.0, z: zO + 0.5, h: 0.3, col: false });
 // music corner along the north band: stage piano on oak stand, stool, small amp; ukulele on the east wall
-function amp(x0, x1) {
+export function amp(x0, x1) {
   B(x0, x1, IY1 - 0.4, IY1 - 0.05, zO, zO + 0.42, MAT.black, { bevel: 0.01 });
   B(x0 + 0.04, x1 - 0.04, IY1 - 0.41, IY1 - 0.4, zO + 0.06, zO + 0.36, MAT.woolP, { col: false });
 }
@@ -498,7 +506,7 @@ function lounger(xh, y, zt) {
   beam([xh - 0.53, y, zt + 0.41], [xh - 0.03, y, zt + 0.88], 0.56, 0.06, MAT.sageP);
   COL.push([x0, xh, y - 0.33, y + 0.33, zt, zt + 0.9, 'furn', PH, PH_END]);
 }
-function terraceSet(zt, rf) {
+export function terraceSet(zt, rf) {
   grpItem('lounger1', 'Liege', () => lounger(1.6, 1.0, zt));
   grpItem('lounger2', 'Liege', () => lounger(1.6, 2.05, zt));
   grpItem('ttable', 'Terrassentisch', () => {
@@ -570,14 +578,14 @@ scene.add(L5);
 // stair tower: wall lamps on the north wall of the passage (under the landing) and on the OG landing – paper shades like the house lamps
 const TLX = 5.75,
   TLY = TW.y1 - TT - 0.13;
-const TLAMP = {
+export const TLAMP = {
   A: [V(TLX, TLY - 0.04, 2.3), V(TLX, TLY - 0.04, zO + 2.25)],
   B: [V(3.3, 2.8, zE - 0.22), V(IX1B - 0.2, 2.12, zO + 1.95)],
 };
-const T1 = new THREE.PointLight(0xffd6a0, 0, 3.4, 2);
+export const T1 = new THREE.PointLight(0xffd6a0, 0, 3.4, 2);
 T1.position.copy(TLAMP[VARIANT][0]);
 scene.add(T1);
-const T2 = new THREE.PointLight(0xffd6a0, 0, 3.6, 2);
+export const T2 = new THREE.PointLight(0xffd6a0, 0, 3.6, 2);
 T2.position.copy(TLAMP[VARIANT][1]);
 scene.add(T2);
 window.TLAMP = TLAMP;

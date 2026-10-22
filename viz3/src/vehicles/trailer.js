@@ -8,7 +8,18 @@
 // K in the cab (or the button at the tacho) couples when the hitch is close to the eye, and uncouples where the tractor stands; on foot:
 // at the drawbar. A parked trailer is an obstacle for vehicles and walkers (VEH.extra). The load is world/holz.js's business (TRAILER.bed).
 // Model frame as vehicles/car.js (x right, y forward, z up, origin on the ground under the axle centre). Position in 'pav-trailer-v1'.
-const TRAILER = (() => {
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { ANISO, LOAD, markDirty, whenLoaded } from '../core/assets.js';
+import { boardTex } from '../garden/site_base.js';
+import { PLAY, SFX } from '../game/play.js';
+import { VSND } from './vsound.js';
+import { VEH } from './vehicle.js';
+export const TRAILER = (() => {
   const LD = 4.1,
     BY0 = -1.9,
     BY1 = 2.5,
@@ -687,4 +698,5 @@ const TRAILER = (() => {
     mass: () => M0 + (S.cargo || 0),
   });
 })();
+LATE.TRAILER = TRAILER;
 window.TRAILER = TRAILER;

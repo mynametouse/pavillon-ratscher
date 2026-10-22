@@ -30,7 +30,8 @@ else:
     json.dump(M, open(MANF, 'w'), ensure_ascii=False, separators=(',', ':')); M = json.load(open(MANF))   # same key order either way
 site = open(os.path.join(H, 'site.js')).read().strip()
 inject = site + '\nwindow.TEXMAN=' + json.dumps(M['tm']) + ';\nwindow.HDRIMAN=' + json.dumps(M['hm']) + ';\nwindow.MODELMAN=' + json.dumps(M['mm']) + ';\nwindow.SNDMAN=' + json.dumps(M['sm']) + ';\nwindow.SVMAN=' + json.dumps(M['svm']) + ';\nwindow.SVMAN_B=' + json.dumps(M['svmb']) + ';\nwindow.VOICEMAN=' + json.dumps(M['vm'], ensure_ascii=False) + ';\nwindow.PANOMAN=' + json.dumps(M['panoman'], ensure_ascii=False) + ';\nwindow.SKYMAN=' + json.dumps(M['skyman']) + ';\nwindow.CHARMAN=' + json.dumps(M['charman']) + ';\nwindow.PLAYERMAN=' + json.dumps(M['playerman']) + ';\nwindow.GIMAN_A=' + json.dumps(M['giman_a']) + ';\nwindow.GIMAN_B=' + json.dumps(M['giman_b']) + ';\nwindow.MUSICMAN=' + json.dumps(M['musicman'], ensure_ascii=False) + ';\nwindow.GEOMAN=' + json.dumps(M['geoman'], ensure_ascii=False, separators=(',', ':')) + ';\n'
-# ---- bundle: the modules in their order, one shared scope (see docs/ARCHITECTURE.md) ----
+# ---- bundle: the entry _main.js imports the modules in their order – ES modules since phase 1, they load in exactly this order because a
+# module imports only from modules above it (see docs/ARCHITECTURE.md) ----
 def module_files():
     lst = os.path.join(H, 'src', 'modules.txt')
     if not os.path.exists(lst): return sorted(glob.glob(os.path.join(H, 'src', '[0-9][0-9]_*.js')))
@@ -41,7 +42,7 @@ def module_files():
     miss = [f for f in out if not os.path.exists(f)]
     if miss: sys.exit('modules.txt: fehlt ' + ', '.join(miss))
     return out
-main = '\n'.join(open(f).read() for f in module_files())
+main = ''.join("import './%s';\n" % os.path.relpath(f, os.path.join(H, 'src')).replace(os.sep, '/') for f in module_files())
 open(os.path.join(H, 'src', '_main.js'), 'w').write(main)
 cmd = ['npx', '--yes', 'esbuild@0.24.0', os.path.join(H, 'src', '_main.js'), '--bundle', '--format=esm', '--target=es2020', '--outfile=' + os.path.join(D, 'app.js'), '--log-level=warning']
 if minify: cmd.append('--minify')

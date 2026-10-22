@@ -3,6 +3,44 @@
 // V16b4: every start step on its own – one that throws (a saved setting this version does not expect, a driver quirk) is logged and shown
 // under the loading text, the others and the GPU preparation still run (before, the rest of the start was skipped and the page stayed at
 // „Modell wird aufgebaut …“ for ever)
+import { SAVE } from '../core/save.js';
+import { $, cam, OFFLINE, R, scene, VARIANT } from '../core/head.js';
+import { DIRTY, LOAD, LOADLOG, markDirty, SV, VEG, whenLoaded } from '../core/assets.js';
+import { COL, WALK } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { sunFollow } from '../garden/env.js';
+import { GLINFO, prepareGPU, RENDER, renderFrame, setQuality } from '../render/render.js';
+import { adaptExposure, MODES, setMode } from '../render/modes.js';
+import {
+  applyCam,
+  CAM3,
+  cam3Update,
+  DKEYS,
+  DOOR,
+  EYE,
+  floorAt,
+  frame,
+  go,
+  look,
+  nearDoor,
+  P,
+  PHASE,
+  physics,
+  placeName,
+  qualLabel,
+  resize,
+  setCollide,
+  setDoorNow,
+  setPhase,
+  setView3,
+  toggleDoor,
+} from '../game/game.js';
+import { audio, setSound, soundLabel, toast } from '../audio/audio.js';
+import { PHASES } from '../pavilion/phases.js';
+import { setVariant } from '../pavilion/variant.js';
+import { perfTest } from '../render/perf.js';
+import { PLAY } from '../game/play.js';
+import { VEH } from '../vehicles/vehicle.js';
 const bootStep = (name, f) => {
   try {
     f();

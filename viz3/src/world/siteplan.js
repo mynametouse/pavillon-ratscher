@@ -1,6 +1,24 @@
 // ===================== Draufsicht: plan view from above – move and turn the buildings, draw fences; the plan is kept per browser =====================
 // and can be published for everyone (website: plan.json in the GitHub repo, written with the owner's token; every visitor loads it as the default).
-const SITEPLAN = (() => {
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, cam, scene, stage, V, VARIANT } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
+import { bldRects, bldSet, BUILD, inRect, rectCorners } from '../core/geo.js';
+import { STREAM } from '../garden/stream_geo.js';
+import { dirFromAz, placeSun, S0, setSunDir, sun, sunC } from '../garden/env.js';
+import { FENCE_DEFAULT, FENCE_KINDS, FENCES, mkFence, rmFence } from '../garden/fences.js';
+import { TREEG } from '../garden/trees.js';
+import { footHideApply, inPoly } from '../garden/grass.js';
+import { giApply } from '../render/render.js';
+import { MODE, MODES } from '../render/modes.js';
+import { applyCam, cv, go, P, rebuildGrids, TOPMAX } from '../game/game.js';
+import { toast } from '../audio/audio.js';
+import { FACADE } from '../pavilion/facade.js';
+import { STYLE } from '../pavilion/style.js';
+import { setVariant } from '../pavilion/variant.js';
+export const SITEPLAN = (() => {
   const BKEYS = Object.keys(BUILD);
   const S = {
     on: false,
@@ -550,7 +568,7 @@ const SITEPLAN = (() => {
         q = STREAM.wpt(t, STREAM.cOff(t));
       put(pr(q[0], q[1], -1), 'Bach', 'nb water');
     }
-    if (window.RATSCHER && RATSCHER.ready) RATSCHER.overlay(pr, put, W, H); // places, hills, roads and water of the real surroundings
+    if (window.RATSCHER && LATE.RATSCHER.ready) LATE.RATSCHER.overlay(pr, put, W, H); // places, hills, roads and water of the real surroundings
     svg.innerHTML = h;
     if (sc) {
       const m = wpp();
@@ -583,15 +601,15 @@ const SITEPLAN = (() => {
       sun.color.set(on ? 0xfff4e6 : M.sunC);
       sun.intensity = on ? 3.3 : M.sun; // plan view: neutral midday light, not the evening glow
       if (scene.fog && scene.fog.isFogExp2) scene.fog.density = on ? 0 : M.fogD || 3e-5;
-      if (window.RATSCHER && RATSCHER.topMode) RATSCHER.topMode(on);
-      if (window.DN && DN.active) DN.update(true);
+      if (window.RATSCHER && LATE.RATSCHER.topMode) LATE.RATSCHER.topMode(on);
+      if (window.DN && LATE.DN.active) LATE.DN.update(true);
     } // plan view: a high sun, short shadows (no baked light)
     if (on) {
       if (window.PLANNER && PLANNER.PLAN.on) PLANNER.setPlan(false);
       selInfo();
       toast(
         'Draufsicht: Gebäude ziehen zum Verschieben, antippen und ↺ ↻ zum Drehen. „Zaun ziehen“ setzt Punkt für Punkt einen Zaun. Mausrad / zwei Finger: Zoom' +
-          (window.RATSCHER && RATSCHER.ready
+          (window.RATSCHER && LATE.RATSCHER.ready
             ? ' – ganz hinaus bis Ratscher und ins Tal, „Karte“ statt Luftbild.'
             : '.'),
         7500
@@ -1119,5 +1137,6 @@ const SITEPLAN = (() => {
     publish,
   };
 })();
+LATE.SITEPLAN = SITEPLAN;
 window.SITEPLAN = SITEPLAN;
 window.GEOH = { V, bldRects, rectCorners, inRect, bldSet, mkFence, rmFence }; // for tests

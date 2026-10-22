@@ -1,5 +1,10 @@
 // ---------- facade options: material and colour of the cladding, separately for house and tower, plus window frames (remembered per browser) ----------
-const FACADE = (() => {
+import * as THREE from 'three';
+import { SAVE } from '../core/save.js';
+import { $, rnd, rr } from '../core/head.js';
+import { ANISO, markDirty } from '../core/assets.js';
+import { MAT } from '../core/mats.js';
+export const FACADE = (() => {
   const save0 = m => ({
     map: m.map,
     normalMap: m.normalMap,

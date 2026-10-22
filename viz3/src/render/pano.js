@@ -1,6 +1,14 @@
 // ---------- 360° panoramas: capture (used offline to render them) ----------
 // Six square views with the full pipeline (shadows, ambient occlusion, SMAA), 100° wide so the screen-space effects have context at the seams;
 // the cube is turned into an equirectangular image outside the browser (test/pano.py). Face basis (three.js coords): forward F, up U.
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { $, BASE, cam, DPR, R, stage, V, VARIANT } from '../core/head.js';
+import { DIRTY, markDirty, VEG } from '../core/assets.js';
+import { RENDER, renderFrame } from './render.js';
+import { adaptExposure } from './modes.js';
+import { EYE } from '../game/game.js';
+Object.assign(LATE, { panoShow }); // functions for modules that load earlier: pavilion/variant.js
 const PANO_FACES = [
   ['px', [1, 0, 0], [0, 1, 0]],
   ['nx', [-1, 0, 0], [0, 1, 0]],
@@ -68,6 +76,7 @@ const PANO = {
   pinch: null,
   dirty: true,
 };
+LATE.PANO = PANO;
 function panoList() {
   return (PANOMAN[VARIANT] || []).slice();
 }

@@ -1,9 +1,16 @@
 // ---------------- asset loading ----------------
-const LM = new THREE.LoadingManager();
-const LOAD = { done: 0, total: 0, finished: false, cbs: [] };
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { LATE } from './late.js';
+import { SAVE } from './save.js';
+import { $, BASE, R, rnd, scene, V } from './head.js';
+export const LM = new THREE.LoadingManager();
+export const LOAD = { done: 0, total: 0, finished: false, cbs: [] };
 // V16b4: load log – every step of loading with its time, written to localStorage while the page loads ('pav-loadlog'). If the browser kills the
 // page (iPhone: out of memory) or it hangs, the next visit knows where the last attempt stopped; boot.js shows it on the loading screen.
-const LOADLOG = (() => {
+export const LOADLOG = (() => {
   const L = { t0: performance.now(), steps: [], errs: [], prev: null, open: true, last: '', lastT: -1e9 };
   try {
     const p = JSON.parse(SAVE.raw('pav-loadlog') || 'null');
@@ -20,7 +27,7 @@ const LOADLOG = (() => {
           steps: L.steps.slice(-40),
           errs: L.errs.slice(-6),
           tex: window.TEXHALF ? window.TEXHALF.level : 0,
-          gl: window.GLINFO ? GLINFO.renderer.slice(0, 90) : '',
+          gl: window.GLINFO ? LATE.GLINFO.renderer.slice(0, 90) : '',
           ua: navigator.userAgent.slice(0, 140),
           mem: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null,
         })
@@ -178,7 +185,7 @@ LM.onError = u => {
   console.warn('Datei fehlt:', u);
   LOADLOG.err('Datei fehlt: ' + u);
 };
-function whenLoaded(f) {
+export function whenLoaded(f) {
   if (LOAD.finished) f();
   else LOAD.cbs.push(f);
 }
@@ -188,7 +195,7 @@ if (window.EMBED_URL) {
   LM.setURLModifier(mod);
   THREE.DefaultLoadingManager.setURLModifier(mod);
 }
-const TXL = new THREE.TextureLoader(LM);
+export const TXL = new THREE.TextureLoader(LM);
 // V16b6: phones and tablets get every image from 512 px up at half its size, right when it is loaded – a quarter of the memory on the CPU and
 // the GPU (iPhone: ~880 MB of decoded images made Safari drop the page while the textures went up). Desktop unchanged. Did a load at that level
 // break off anyway (the previous load log is still open and names its level), the next attempt takes a quarter (from 256 px up: half) and keeps
@@ -255,14 +262,14 @@ if (TEXHALF.on) {
 // The glTF files carry geometry and images as data: URIs. Strict content-security policies (the artifact viewer in the Claude app) refuse
 // to fetch() data: URIs, so every model failed there. The parser now decodes them itself: buffers with atob, images through
 // createImageBitmap from a Blob (an <img> where that is missing). The loading manager stays busy until a model is fully parsed.
-function b64bytes(uri) {
+export function b64bytes(uri) {
   const s = atob(uri.slice(uri.indexOf(',') + 1));
   const u = new Uint8Array(s.length);
   for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
   return u;
 }
 let GLTF_N = 0;
-function gltfDataURIs(loader) {
+export function gltfDataURIs(loader) {
   loader.register(parser => {
     const man = parser.options.manager || THREE.DefaultLoadingManager,
       key = 'gltf-parse-' + ++GLTF_N;
@@ -351,12 +358,12 @@ function gltfDataURIs(loader) {
   });
   return loader;
 }
-const GLL = gltfDataURIs(new GLTFLoader(LM));
+export const GLL = gltfDataURIs(new GLTFLoader(LM));
 GLL.setMeshoptDecoder(MeshoptDecoder); // models: meshopt-compressed geometry and WebP images inside the JSON
-const TEXMAN = window.TEXMAN || {}; // {name:{tile:[w,h], rot}} injected at build
-const ANISO = Math.min(8, R.capabilities.getMaxAnisotropy());
+export const TEXMAN = window.TEXMAN || {}; // {name:{tile:[w,h], rot}} injected at build
+export const ANISO = Math.min(8, R.capabilities.getMaxAnisotropy());
 const texCache = {};
-function texFile(file, srgb) {
+export function texFile(file, srgb) {
   const key = file + (srgb ? '|s' : '|l');
   if (texCache[key]) return texCache[key];
   const rec = { tex: null, ok: null, fails: [], clones: [] };
@@ -379,7 +386,7 @@ function texFile(file, srgb) {
   texCache[key] = rec;
   return rec;
 }
-function texUse(file, srgb, rep, rot = 0) {
+export function texUse(file, srgb, rep, rot = 0) {
   const rec = texFile(file, srgb);
   const t = rec.tex.clone();
   t.repeat.set(rep[0], rep[1]);
@@ -389,7 +396,7 @@ function texUse(file, srgb, rep, rot = 0) {
   return { t, rec };
 }
 // ---------- sky-visibility volume (baked ambient occlusion for the house, see bake) ----------
-const SV = {
+export const SV = {
   tex: { value: null },
   min: { value: new THREE.Vector3() },
   size: { value: new THREE.Vector3(1, 1, 1) },
@@ -399,7 +406,7 @@ const SV = {
 };
 // baked global illumination around the pavilion (test/gi.py): irradiance from sky and two bounces of sun and sky light, per light mode;
 // replaces the image-based diffuse light inside its box (E(n) = A · (1 + B·n), A log-encoded RGB, B direction term)
-const GI = {
+export const GI = {
   a: { value: null },
   b: { value: null },
   on: { value: 0 },
@@ -414,7 +421,7 @@ const GI = {
 // and the tractor get a small depth map of their own from the sun's direction (npc/npc_real.js, redrawn every frame around the figures near
 // the camera); every patched material multiplies the sun's light by it: real shadows on lawn, grass blades, walls and the figures themselves.
 // Soft edge like the sun's half-degree disc: a short blocker search sets the filter width from the distance to the occluder.
-const FIGSH = {
+export const FIGSH = {
   map: { value: null },
   mat: { value: new THREE.Matrix4() },
   on: { value: 0 },
@@ -458,7 +465,7 @@ const LFB_LEAK = (() => {
 })();
 const LEAK_GLSL =
   'float svLeakF() { return mix( 0.16, 1.0, smoothstep( 4.6, 9.0, length( vSVW.xz - vec2( 2.0, -2.0 ) ) ) ); }\n';
-function patchSV(m) {
+export function patchSV(m) {
   if (m.userData.svPatched) return m;
   m.userData.svPatched = true;
   const prev = m.onBeforeCompile;
@@ -566,7 +573,7 @@ function patchSV(m) {
 const GRIME_GLSL = `float gHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float gNoise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(gHash(i), gHash(i + vec2(1.0, 0.0)), u.x), mix(gHash(i + vec2(0.0, 1.0)), gHash(i + vec2(1.0, 1.0)), u.x), u.y); }
 `;
-function grime(m, k = 0.45, h = 0.45, v = 0.08, st = 0) {
+export function grime(m, k = 0.45, h = 0.45, v = 0.08, st = 0) {
   if (!m || !m.isMaterial) return m;
   m.userData.grime = [k, h, v, st];
   patchSV(m);
@@ -574,14 +581,14 @@ function grime(m, k = 0.45, h = 0.45, v = 0.08, st = 0) {
   return m;
 }
 // interior surfaces outside the baked volume (site buildings): weaker, desaturated sky light – a room is not lit by the green lawn below it
-function dimIndoor(m, k = 0.5, desat = 0.6) {
+export function dimIndoor(m, k = 0.5, desat = 0.6) {
   m.userData.svDim = [k, desat];
   m.needsUpdate = true;
   return m;
 }
 // ---------- PBR material from texture set tex/<name>_{col,nrm,orm}.jpg|webp (world-metre UVs) ----------
-const texFileOf = (name, ch) => `tex/${name}_${ch}.${((TEXMAN[name] || {}).ext || {})[ch] || 'jpg'}`;
-function pbrMat(name, o = {}) {
+export const texFileOf = (name, ch) => `tex/${name}_${ch}.${((TEXMAN[name] || {}).ext || {})[ch] || 'jpg'}`;
+export function pbrMat(name, o = {}) {
   const tm = TEXMAN[name];
   const tile = o.tile || (tm && tm.tile) || [1, 1];
   const rep = [1 / tile[0], 1 / tile[1]];
@@ -660,15 +667,15 @@ function pbrMat(name, o = {}) {
   });
   return patchSV(m);
 }
-function plain(o) {
+export function plain(o) {
   return patchSV(new THREE.MeshStandardMaterial(Object.assign({ roughness: 0.85, metalness: 0 }, o)));
 }
 // ---------- glTF models ----------
-const MODELS = window.MODELMAN || {}; // {id:{file,bbox:[x,y,z]}} injected at build
+export const MODELS = window.MODELMAN || {}; // {id:{file,bbox:[x,y,z]}} injected at build
 // each glTF is parsed once (textures decoded once, shared by every copy); a copy merges its meshes per material (one draw call per material, not per part)
 const GLB_CACHE = {};
 // quantized glTF attributes (KHR_mesh_quantization: normalized integers, scale in the node) → plain floats before baking a transform into them
-function toFloatAttrs(g) {
+export function toFloatAttrs(g) {
   for (const n of Object.keys(g.attributes)) {
     const a = g.attributes[n];
     if (a.array instanceof Float32Array && !a.normalized) continue;
@@ -727,7 +734,7 @@ function mergeByMaterial(root) {
   }
   return root;
 }
-function loadModel(id, cb, matFix) {
+export function loadModel(id, cb, matFix) {
   const mm = MODELS[id];
   if (!mm) {
     cb(null);
@@ -783,14 +790,14 @@ function loadModel(id, cb, matFix) {
   );
 }
 // render requests: a new frame (frame) and a new shadow map (shadow) are due – set through markDirty, cleared by the render loops
-const DIRTY = { frame: true, shadow: true };
-function markDirty(shadow) {
+export const DIRTY = { frame: true, shadow: true };
+export function markDirty(shadow) {
   DIRTY.frame = true;
   if (shadow) DIRTY.shadow = true;
 }
 // ---------- vegetation: one InstancedMesh per spatial cell, so frustum culling works; small detail additionally fades out of the draw list beyond maxD ----------
 // Inside the house (walls all round) the far rule is halved; near tree cells switch between full and thinned leaf cards (lod pairs).
-const VEG = {
+export const VEG = {
   far: [],
   lod: [],
   last: new THREE.Vector3(1e9, 0, 0),
@@ -814,7 +821,7 @@ const VEG = {
   },
 };
 window.VEG = VEG;
-function cellsOf(items, cell, key) {
+export function cellsOf(items, cell, key) {
   const m = new Map();
   for (const it of items) {
     const k = key ? key(it) : Math.floor(it.x / cell) + ':' + Math.floor(it.y / cell);
@@ -824,7 +831,7 @@ function cellsOf(items, cell, key) {
   }
   return [...m.values()];
 }
-function vegReady(im, maxD) {
+export function vegReady(im, maxD) {
   im.frustumCulled = true;
   im.computeBoundingSphere();
   if (maxD) {
@@ -834,7 +841,7 @@ function vegReady(im, maxD) {
   return im;
 }
 // ---------- instancing of glTF variants (trees, grass clumps, ferns ...) ----------
-function loadGLBRaw(id, cb) {
+export function loadGLBRaw(id, cb) {
   const mm = MODELS[id];
   if (!mm) {
     cb(null);
@@ -847,7 +854,7 @@ function loadGLBRaw(id, cb) {
     () => cb(null)
   );
 }
-function variantParts(g, mm) {
+export function variantParts(g, mm) {
   g.scene.updateMatrixWorld(true);
   const vars = [];
   const nodes = mm.nodes && mm.nodes.length > 1 && !mm.single ? mm.nodes : [null];
@@ -918,7 +925,7 @@ function thinIslands(geo, keep, grow) {
   g.setIndex(out);
   return g;
 }
-function instanceVariants(id, items, o = {}) {
+export function instanceVariants(id, items, o = {}) {
   loadGLBRaw(id, g => {
     if (!g) {
       if (o.fail) o.fail();

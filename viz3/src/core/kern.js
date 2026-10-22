@@ -8,7 +8,7 @@
 //   KERN.pushOut(p, r)     moves the point p = [x, y] out of walls and trunks (radius r, outside the modelled square)
 //   KERN.place(x, y)       name of the place or road, or null – asks the providers from the highest priority down
 //   KERN.provide(name, fn, prio = 0)   for the world modules;  KERN.providers() lists what is registered (tests)
-const KERN = (() => {
+export const KERN = (() => {
   const P = {};
   function provide(name, fn, prio = 0) {
     (P[name] = P[name] || []).push({ fn, prio });

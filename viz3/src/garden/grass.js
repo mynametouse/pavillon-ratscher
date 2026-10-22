@@ -1,5 +1,12 @@
 // ---------------- 3D lawn: instanced grass clumps + a few meadow flowers near the pavilion ----------------
-function inPoly(x, y, poly) {
+import * as THREE from 'three';
+import { BASE, HQ0, OFFLINE, rnd, rr, scene, V } from '../core/head.js';
+import { ANISO, cellsOf, GLL, instanceVariants, markDirty, MODELS, patchSV, vegReady } from '../core/assets.js';
+import { bldRects, inRect, rectCorners } from '../core/geo.js';
+import { STREAM } from './stream_geo.js';
+import { gmask, S0, toPxF } from './env.js';
+import { inLocal } from './site_base.js';
+export function inPoly(x, y, poly) {
   let c = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
     const a = poly[i],
@@ -65,14 +72,14 @@ function footHideOne(e, R) {
   if (ch) e.im.instanceMatrix.needsUpdate = true;
   return ch;
 }
-function footHideApply() {
+export function footHideApply() {
   const R = footRects();
   let ch = false;
   for (const e of FOOTHIDE.list) if (footHideOne(e, R)) ch = true;
   if (ch) markDirty(true);
 }
 window.footHideApply = footHideApply;
-function mulberry(a) {
+export function mulberry(a) {
   return () => {
     a |= 0;
     a = (a + 0x6d2b79f5) | 0;
@@ -90,7 +97,7 @@ const GMASK = (() => {
   g.drawImage(gmask, 0, 0, n, n);
   return { n, d: g.getImageData(0, 0, n, n).data, toPx: toPxF(n) };
 })();
-function gravelMask(x, y) {
+export function gravelMask(x, y) {
   const [px, py] = GMASK.toPx(x, y);
   if (px < 0 || py < 0 || px >= GMASK.n || py >= GMASK.n) return 0;
   return GMASK.d[(Math.floor(py) * GMASK.n + Math.floor(px)) * 4] / 255;

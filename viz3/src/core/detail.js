@@ -7,7 +7,10 @@
 // (until then a neutral grey, which the shaders treat as "no detail"). GLCHECK.run() counts the samplers of every compiled program;
 // the tests demand ≤ 16 (test/lib.py check_gl), and at run time a GPU below what a program needs switches the ground to its plain
 // shading (LITE) instead of losing it.
-const DETAIL = (() => {
+import * as THREE from 'three';
+import { QUALITY, R, scene } from './head.js';
+import { ANISO, markDirty, texFile, texFileOf, TEXMAN, whenLoaded } from './assets.js';
+export const DETAIL = (() => {
   const NAMES = ['lawn', 'lawn2', 'gravel', 'forestfloor', 'asphalt', 'needles', 'mossfloor'];
   const SZ = QUALITY === 'high' ? 1024 : 512,
     N = NAMES.length,
@@ -60,7 +63,7 @@ const DETAIL = (() => {
 })();
 window.DETAIL = DETAIL;
 // ---------- how many textures does each compiled shader program use? ----------
-const GLCHECK = (() => {
+export const GLCHECK = (() => {
   const S = { lite: false };
   // the samplers a program's fragment shader really uses (active uniforms declared in its fragment source), and its vertex shader
   S.run = limit => {

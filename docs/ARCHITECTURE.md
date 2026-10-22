@@ -1,15 +1,31 @@
 # Architektur der App (viz3)
 
-Stand: V16e (Oktober 2026). Kurz: **ein Bündel, ein gemeinsamer Gültigkeitsbereich, Module in fester Reihenfolge, jede
-Schnittstelle als `window.NAME`**. Kommentare im Code sind Englisch, Texte in der Oberfläche Deutsch.
+Stand: Umbau Phase 1 (Oktober 2026). Kurz: **ein Bündel aus ES-Modulen in fester Reihenfolge – ein Modul importiert nur von Modulen
+über ihm –, Kern-Dienste `SAVE` und `KERN`, `window.NAME` für Tests und Fehlersuche**. Kommentare im Code sind Englisch, Texte in der
+Oberfläche Deutsch.
 
 ## 1 Grundprinzip
 
-- `viz3/build.py` hängt die Dateien aus `src/modules.txt` in dieser Reihenfolge aneinander (`src/_main.js`, nicht einchecken) und bündelt
-  sie mit esbuild zu `dist/app.js` (Importe nur in `core/head.js`: three r169 + Addons, n8ao, ez-tree aus `src/eztree/`).
-- Alle Module teilen **einen** Gültigkeitsbereich: ein Modul sieht jede Top-Level-Konstante/-Funktion der Module **über** ihm
-  (z. B. `scene`, `MAT`, `B()`, `markDirty()`, `P`). Was andere Module oder Tests brauchen, steht zusätzlich auf `window`
-  (`window.WERK`, `window.DN` …). Neue Querverbindungen bitte über diese `window`-Objekte, nicht über interne Namen fremder Module.
+- `viz3/build.py` schreibt `src/_main.js` (nicht einchecken): je Zeile von `src/modules.txt` ein `import './…'`; esbuild bündelt zu
+  `dist/app.js`. Die Module laufen genau in dieser Reihenfolge, weil jedes nur von Modulen **über** ihm importiert – ein Import von weiter
+  unten würde jenes Modul zuerst laden und die Reihenfolge ändern.
+- Jedes Modul ist ein echtes ES-Modul (seit Umbau Phase 1; bis dahin teilten alle einen Gültigkeitsbereich): was andere brauchen, ist
+  `export`iert, Nutzer importieren es mit relativem Pfad. three.js, seine Addons, n8ao und ez-tree (`src/eztree/`) importiert jedes Modul selbst.
+- **Gegen die Ladereihenfolge** – ein Modul braucht etwas von weiter unten, z. B. `render/render.js` die Kamerafunktion `applyCam` aus
+  `game/game.js` – geht es über `LATE` (`core/late.js`): das spätere Modul übergibt beim Laden (`LATE.DN = DN`, Funktionen gleich am
+  Anfang, `let`-Variablen als Getter), der Nutzer liest beim Laufen (`LATE.DN.update()`), nie schon beim Laden. Das sind 40 Namen
+  (`node tools/check/deps.mjs --late`), jeder eine Stelle, an der die Schichten noch falsch herum zeigen; Phase 2 ersetzt sie durch
+  Dienste. Bitte keine neuen.
+- Variablen fremder Module lassen sich nicht zuweisen (Importe sind schreibgeschützt): dafür Setter (`setSunDir`, `setVariantId`,
+  `setModeId`, `resetLastPlace`) oder Objekte (`DIRTY.frame`, `DIRTY.shadow` statt `_dirty`/`_shadowDirty`).
+- **Kern-Dienste:** `SAVE` (`core/save.js`, alles im Browser Gespeicherte, Abschnitt 8) und `KERN` (`core/kern.js`): Boden, Gelände,
+  Straßenbelag, Kollision, Ortsnamen. Features fragen `KERN`; die Weltmodule melden sich beim Laden als Anbieter (`KERN.provide`), die
+  Kachelwelt wird es genauso tun.
+- Was Tests oder die Fehlersuche brauchen, steht zusätzlich auf `window` (`window.WERK`, `window.DN` …); dazu die Manifeste aus dem
+  Build (`window.TEXMAN` …). Querverbindungen zwischen Modulen laufen über Importe und Kern-Dienste, nicht über `window`.
+- `bash tools/check.sh` prüft das ohne Browser: Lint je Modul (ein fehlender Import ist ein Fehler), Format, `tools/check/deps.mjs`
+  (Importe nur nach oben, `LATE` vollständig und nur nach unten). Zweige mit dem alten gemeinsamen Gültigkeitsbereich wandelt
+  `node tools/check/esm_convert.mjs` um.
 - Viele Module sind IIFEs (`const X = (() => { … return api; })();`): innen privat, außen nur die Rückgabe.
 - **Reihenfolge zählt**: Module laufen beim Laden von oben nach unten. Was `render/zmerge.js` vorfindet, wird zu wenigen Draw-Calls
   zusammengefasst; spätere Module (Spiel, Werkstatt, Tag/Nacht) bleiben einzelne Meshes. Punktlichter entstehen in
@@ -262,13 +278,14 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 
 ## 12 Erweitern – Beispiel neues Fahrzeug
 
-1. Datei `src/vehicles/<name>.js` nach dem Muster von `car.js` (Modell bauen, `spec` mit Physikwerten, `return VEH.add(spec, model)`),
-   Zeile in `src/modules.txt` nach `vehicles/vehicle.js`.
+1. Datei `src/vehicles/<name>.js` nach dem Muster von `car.js` (Modell bauen, `spec` mit Physikwerten, `return VEH.add(spec, model)`,
+   `VEH` aus `./vehicle.js` importieren), Zeile in `src/modules.txt` nach `vehicles/vehicle.js`.
 2. Eigene Tasten über `model.key(k, down)` (belegt: E, Q, V, L, H, Leertaste, R/G/T beim Traktor, F Vollbild, M, I, J, B, C, X, Z, Ziffern);
    Knöpfe im HUD (`shell/panel_3d.html` `#vhud`, `data-vb`).
 3. Test in `viz3/test/v16b.py` ergänzen (Abschnitte wählbar), Eintrag in docs/CHANGELOG.md.
-4. Allgemein für neue Module: IIFE, API auf `window`, Pro-Frame-Arbeit über `window.TICKS`, Aktionen über `PLAY.act`, Spielstand mit eigenem
-   `pav-…-v1`-Schlüssel (Abschnitt 8), Texte deutsch, Quellen in `buildlib/credits.py`.
+4. Allgemein für neue Module: ES-Modul, das importiert, was es braucht, und seine API exportiert (Zeile in `modules.txt` unter allem,
+   was es importiert); Boden, Kollision, Ortsnamen über `KERN`; Pro-Frame-Arbeit über `window.TICKS`, Aktionen über `PLAY.act`;
+   Spielstand nur über `SAVE` (Abschnitt 8); für Tests die API zusätzlich auf `window`; Texte deutsch, Quellen in `buildlib/credits.py`.
 
 ## 13 Das Dorf nach Fotos (V16e)
 

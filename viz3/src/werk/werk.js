@@ -5,8 +5,24 @@
 // 80 → 240 with raising the grain, oiled twice, branded. Optional: fuming with ammonia in the tent (Räuchereiche) – it reaches only a few
 // millimetres into long grain, far deeper through end grain; sapwood stays light. Every workpiece is a thing: carried, put down, stored in the
 // rack, finished ones on the shelf above. All positions are workshop coordinates as built (WT() → where the workshop stands now).
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { COARSE, OFFLINE, QS, scene, V } from '../core/head.js';
+import { ANISO, markDirty, plain, whenLoaded } from '../core/assets.js';
+import { BUILD, phase } from '../core/geo.js';
+import { WORKS } from '../garden/workshop.js';
+import { mulberry } from '../garden/grass.js';
+import { DOOR, P, toggleDoor } from '../game/game.js';
+import { toast } from '../audio/audio.js';
+import { HELD, PLAY, SFX } from '../game/play.js';
+import { QUESTS } from '../game/quests.js';
+import { HUD } from '../game/hud.js';
+import { CLOCK } from '../time/clock.js';
+import { GEAR } from './gear.js';
 phase(null);
-const WERK = (() => {
+export const WERK = (() => {
   const ON = !OFFLINE && !QS.get('noplay');
   const LSK = 'pav-werk-v1';
   const WT = (x, y) => (window.BUILD && BUILD.werkstatt ? BUILD.werkstatt.tf(x, y) : [x, y]);
@@ -1783,7 +1799,7 @@ const WERK = (() => {
       slice: 'Scheiben (Querschnitt)',
       trim: 'Besäumen',
     }[mode];
-    WUI.machine({
+    LATE.WUI.machine({
       title: 'Tischkreissäge · ' + title,
       sub: nameOf(wp) + ' · ' + dimsOf(wp),
       rows,
@@ -2111,7 +2127,7 @@ const WERK = (() => {
   function openPrep(wp) {
     const first = wp.st === 'lay1',
       p = wp.prepLast || { dry: false, foil: false, cauls: false, tool: 'roller', glue: 'D3' };
-    WUI.machine({
+    LATE.WUI.machine({
       title: (first ? 'Erste' : 'Zweite') + ' Verleimung vorbereiten',
       sub: nameOf(wp) + ' · ' + (first ? nStrips(wp) - 1 : wp.slices.length - 1) + ' Fugen',
       choices: [
@@ -2392,7 +2408,7 @@ const WERK = (() => {
     const wp = ST.planer.wp;
     if (!wp) return;
     const p = wp.pl || (wp.pl = { r: 1.0 });
-    WUI.machine({
+    LATE.WUI.machine({
       title: 'Dickenhobel',
       sub: nameOf(wp) + ' · ' + dimsOf(wp),
       rows: [
@@ -2543,7 +2559,7 @@ const WERK = (() => {
     const wp = ST.sander.wp;
     if (!wp) return;
     const p = wp.sd || (wp.sd = { r: 0.3 });
-    WUI.machine({
+    LATE.WUI.machine({
       title: 'Trommelschleifer · K80',
       sub: nameOf(wp) + ' · ' + dimsOf(wp),
       rows: [
@@ -2821,7 +2837,7 @@ const WERK = (() => {
   }
   function openGrit(wp) {
     const nx = gritNext(wp);
-    WUI.machine({
+    LATE.WUI.machine({
       title: 'Exzenterschleifer',
       sub: nameOf(wp) + ' · zuletzt ' + (wp.grit ? 'K' + wp.grit : '–'),
       choices: [
@@ -3037,7 +3053,7 @@ const WERK = (() => {
       changed();
     };
     if (wp.st === 'slices')
-      WUI.machine({
+      LATE.WUI.machine({
         title: 'Räucherzelt',
         sub: wp.slices.length + ' Stirnholzscheiben',
         choices: [
@@ -3492,11 +3508,11 @@ const WERK = (() => {
   }
   function changed() {
     save();
-    if (window.WUI) WUI.card();
+    if (window.WUI) LATE.WUI.card();
   }
   PLAY.onInv(() => {
     save();
-    if (window.WUI) WUI.card();
+    if (window.WUI) LATE.WUI.card();
   });
   function defaults() {
     RACK.items.length = 0;
@@ -3594,7 +3610,7 @@ const WERK = (() => {
           toolDefaults();
           renderRack();
         }
-        if (window.WUI) WUI.card();
+        if (window.WUI) LATE.WUI.card();
       }, 900)
     );
   else {
@@ -3670,4 +3686,5 @@ const WERK = (() => {
     },
   };
 })();
+LATE.WERK = WERK;
 window.WERK = WERK;

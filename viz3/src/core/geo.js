@@ -1,7 +1,12 @@
 // ---------------- geometry helpers with automatic walk/collision registry ----------------
-const COL = []; // [x0,x1,y0,y1,z0,z1,tag,phase]  (site coords)
-const WALK = []; // [x0,x1,y0,y1,ztop,type,phase]
-const PHN = {
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { LATE } from './late.js';
+import { scene, V } from './head.js';
+import { markDirty, MODELS } from './assets.js';
+export const COL = []; // [x0,x1,y0,y1,z0,z1,tag,phase]  (site coords)
+export const WALK = []; // [x0,x1,y0,y1,ztop,type,phase]
+export const PHN = {
   bestand: 0,
   garage: 1,
   abdicht: 2,
@@ -35,21 +40,21 @@ const PHN = {
   furniture: 30,
 };
 window.PHN = PHN;
-let PH = null,
+export let PH = null,
   PH_END = null; // construction phase of everything created from now on (null = site, always visible)
-function phase(n, end = null) {
+export function phase(n, end = null) {
   PH = n;
   PH_END = end;
 }
 // design variant of everything created between varOn(v) and varOff(): 'A' = stair tower, 'B' = ladder stairs; untagged = both.
 // Meshes get userData.var, colliders and walk surfaces get the tag at index 10, doors a .var field; only the active variant is shown and walkable.
-let VAR = null,
+export let VAR = null,
   VMARK = null;
-function varOn(v) {
+export function varOn(v) {
   VAR = v;
   VMARK = [COL.length, WALK.length, v];
 }
-function varOff() {
+export function varOff() {
   if (!VMARK) return;
   const [c0, w0, v] = VMARK;
   for (let i = c0; i < COL.length; i++) if (COL[i][10] == null) COL[i][10] = v;
@@ -57,7 +62,7 @@ function varOff() {
   VAR = null;
   VMARK = null;
 }
-function tagPh(o) {
+export function tagPh(o) {
   if (PH !== null) {
     o.userData.ph = PH;
     if (PH_END !== null) o.userData.phEnd = PH_END;
@@ -66,7 +71,7 @@ function tagPh(o) {
   return o;
 }
 // world-metre UVs from vertex position + normal; 'grain' = site axis the texture's V direction follows
-function siteUV(geo, cx, cy, cz, grain, dims) {
+export function siteUV(geo, cx, cy, cz, grain, dims) {
   const p = geo.attributes.position,
     n = geo.attributes.normal,
     uv = geo.attributes.uv;
@@ -118,7 +123,7 @@ function longestAxis(w, d, h) {
   return h >= w && h >= d ? 'z' : w >= d ? 'x' : 'y';
 }
 // axis-aligned box in site coords
-function B(x0, x1, y0, y1, z0, z1, m, o = {}) {
+export function B(x0, x1, y0, y1, z0, z1, m, o = {}) {
   const w = x1 - x0,
     d = y1 - y0,
     h = z1 - z0;
@@ -143,7 +148,7 @@ function B(x0, x1, y0, y1, z0, z1, m, o = {}) {
   return tagPh(me);
 }
 // rounded soft box (cushions, upholstery)
-function RB(x0, x1, y0, y1, z0, z1, r, m, o = {}) {
+export function RB(x0, x1, y0, y1, z0, z1, r, m, o = {}) {
   const w = x1 - x0,
     d = y1 - y0,
     h = z1 - z0;
@@ -172,7 +177,7 @@ function RB(x0, x1, y0, y1, z0, z1, r, m, o = {}) {
   return tagPh(me);
 }
 // member between two site points (rotated box)
-function beam(p, q, sw, sh, m, o = {}) {
+export function beam(p, q, sw, sh, m, o = {}) {
   const a = V(...p),
     b = V(...q);
   const L = a.distanceTo(b);
@@ -213,7 +218,7 @@ function beam(p, q, sw, sh, m, o = {}) {
   }
   return tagPh(me);
 }
-function cyl(x, y, z0, z1, r, m, seg = 20, r2, o = {}) {
+export function cyl(x, y, z0, z1, r, m, seg = 20, r2, o = {}) {
   const g = new THREE.CylinderGeometry(r, r2 ?? r, z1 - z0, seg);
   const uv = g.attributes.uv,
     pp = g.attributes.position;
@@ -230,10 +235,10 @@ function cyl(x, y, z0, z1, r, m, seg = 20, r2, o = {}) {
   return tagPh(me);
 }
 // ---------------- doors (hinged or sliding), registered for the walk controller ----------------
-const DOORS = {};
+export const DOORS = {};
 window.DOORS = DOORS;
 // hinged: hinge at site (hx,hy), leaf along unit vector a (closed), width w, swing sign (+1 = counter-clockwise seen from above), height z0..z1
-function hingeDoor(key, group, { hx, hy, a, w, sign, z0, z1, thick = 0.08 }) {
+export function hingeDoor(key, group, { hx, hy, a, w, sign, z0, z1, thick = 0.08 }) {
   const theta = Math.atan2(a[1], a[0]);
   group.position.copy(V(hx, hy, z0));
   group.rotation.y = theta;
@@ -275,7 +280,7 @@ function slideDoor(key, group, { x0, x1, pos, z0, z1, box }) {
 // hatch lid (trapdoor, roof hatch): the group's origin is on the hinge line; closed it lies flat, open it is turned by `open` radians about the
 // three.js axis `rot` ('x' = hinge along site x, 'z' = hinge along site y). Closed, `walk` is a walk surface (added by the caller with this key at
 // index 8); open, `openBox` is a collider (the standing lid). `pos` is where the player has to be to work it.
-function flapDoor(key, group, { hx, hy, z, rot, open, pos, openBox, label = 'Luke' }) {
+export function flapDoor(key, group, { hx, hy, z, rot, open, pos, openBox, label = 'Luke' }) {
   group.position.copy(V(hx, hy, z));
   tagPh(group);
   scene.add(group);
@@ -303,7 +308,7 @@ function flapDoor(key, group, { hx, hy, z, rot, open, pos, openBox, label = 'Luk
   return DOORS[key];
 }
 // larch board door leaf built along local +X from the hinge (x = 0 .. w), with optional vision strip and handle
-function boardLeaf(w, h, { glass = null, boards = true, mat = MAT.larch } = {}) {
+export function boardLeaf(w, h, { glass = null, boards = true, mat = LATE.MAT.larch } = {}) {
   const g = new THREE.Group();
   const leaf = new THREE.Mesh(new RoundedBoxGeometry(w - 0.02, h - 0.02, 0.06, 1, 0.006), mat);
   siteUV(leaf.geometry, 0, 0, 0, 'z');
@@ -313,26 +318,26 @@ function boardLeaf(w, h, { glass = null, boards = true, mat = MAT.larch } = {}) 
   g.add(leaf);
   if (boards)
     for (let x = 0.15; x < w - 0.08; x += 0.145) {
-      const s = new THREE.Mesh(new THREE.BoxGeometry(0.004, h - 0.06, 0.062), MAT.black);
+      const s = new THREE.Mesh(new THREE.BoxGeometry(0.004, h - 0.06, 0.062), LATE.MAT.black);
       s.position.set(x, h / 2, 0);
       g.add(s);
     }
   if (glass) {
     const [gx, gw, gz0, gz1] = glass;
-    const win = new THREE.Mesh(new THREE.BoxGeometry(gw, gz1 - gz0, 0.064), MAT.glass);
+    const win = new THREE.Mesh(new THREE.BoxGeometry(gw, gz1 - gz0, 0.064), LATE.MAT.glass);
     win.position.set(gx, (gz0 + gz1) / 2, 0);
     win.renderOrder = 2;
     g.add(win);
   }
   for (const zz of [0.045, -0.045]) {
-    const hh = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.36, 0.025), MAT.blacksteel);
+    const hh = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.36, 0.025), LATE.MAT.blacksteel);
     hh.position.set(w - 0.09, 1.05, zz);
     g.add(hh);
   }
   return g;
 }
 // framed glass door leaf (larch frame, single pane)
-function glassLeaf(w, h) {
+export function glassLeaf(w, h) {
   const g = new THREE.Group();
   const fw = 0.08;
   for (const [x0, x1, y0, y1] of [
@@ -341,17 +346,17 @@ function glassLeaf(w, h) {
     [fw, w - fw, 0, 0.12],
     [fw, w - fw, h - fw, h],
   ]) {
-    const f = new THREE.Mesh(new RoundedBoxGeometry(x1 - x0, y1 - y0, 0.07, 1, 0.004), MAT.frame);
+    const f = new THREE.Mesh(new RoundedBoxGeometry(x1 - x0, y1 - y0, 0.07, 1, 0.004), LATE.MAT.frame);
     f.position.set((x0 + x1) / 2, (y0 + y1) / 2, 0);
     f.castShadow = true;
     g.add(f);
   }
-  const gl = new THREE.Mesh(new THREE.BoxGeometry(w - 2 * fw, h - 0.12 - fw, 0.02), MAT.glass);
+  const gl = new THREE.Mesh(new THREE.BoxGeometry(w - 2 * fw, h - 0.12 - fw, 0.02), LATE.MAT.glass);
   gl.position.set(w / 2, (0.12 + h - fw) / 2, 0);
   gl.renderOrder = 2;
   g.add(gl);
   for (const zz of [0.05, -0.05]) {
-    const hh = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.3, 0.025), MAT.blacksteel);
+    const hh = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.3, 0.025), LATE.MAT.blacksteel);
     hh.position.set(w - 0.1, 1.05, zz);
     g.add(hh);
   }
@@ -360,10 +365,10 @@ function glassLeaf(w, h) {
 // ---------------- movable buildings (plan view): everything a block builds between bldBegin and bldEnd becomes one group ----------------
 // Meshes are re-parented into a root group at the pivot; axis-aligned colliders and floors get a rotation descriptor relative to the pivot,
 // existing descriptors are remembered with their original values; hinged doors, machines and placed models are moved by recomputing them.
-const BUILD = {};
+export const BUILD = {};
 window.BUILD = BUILD;
 let BCUR = null;
-function bldBegin(key, label, c, opt = {}) {
+export function bldBegin(key, label, c, opt = {}) {
   BCUR = {
     key,
     label,
@@ -376,7 +381,7 @@ function bldBegin(key, label, c, opt = {}) {
     opt,
   };
 }
-function bldEnd(desc) {
+export function bldEnd(desc) {
   const C = BCUR;
   BCUR = null;
   if (!C) return null;
@@ -447,10 +452,10 @@ function bldEnd(desc) {
   return B;
 }
 // footprint rectangles where the building stands now: centre, compass heading of the local x axis, half sizes
-function bldRects(B) {
+export function bldRects(B) {
   return B.rects.map(q => ({ c: B.tf(q.c0[0], q.c0[1]), az: q.az0 - B.da, hx: q.hx, hy: q.hy }));
 }
-function rectCorners(r) {
+export function rectCorners(r) {
   const a = (r.az * Math.PI) / 180,
     ux = [Math.sin(a), Math.cos(a)],
     vy = [-Math.cos(a), Math.sin(a)];
@@ -461,7 +466,7 @@ function rectCorners(r) {
     [-1, 1],
   ].map(([i, j]) => [r.c[0] + ux[0] * r.hx * i + vy[0] * r.hy * j, r.c[1] + ux[1] * r.hx * i + vy[1] * r.hy * j]);
 }
-function inRect(r, x, y, pad = 0) {
+export function inRect(r, x, y, pad = 0) {
   const a = (r.az * Math.PI) / 180,
     dx = x - r.c[0],
     dy = y - r.c[1],
@@ -483,7 +488,7 @@ function bldXf(px, py, dx, dy, da) {
     },
   };
 }
-function bldSet(key, dx, dy, da) {
+export function bldSet(key, dx, dy, da) {
   const B = BUILD[key];
   if (!B) return;
   const [px, py] = B.pivot,
@@ -514,7 +519,7 @@ function bldSet(key, dx, dy, da) {
       D.a = [Math.cos(D.theta), Math.sin(D.theta)];
       D.pos = [D.hx + (D.a[0] * D.w) / 2, D.hy + (D.a[1] * D.w) / 2];
       D.group.position.copy(V(D.hx, D.hy, D.z));
-      poseDoor(D);
+      LATE.poseDoor(D);
     } else if (q.pos0) D.pos = X.f(q.pos0[0], q.pos0[1]);
   }
   for (const q of B.descs) {
@@ -537,17 +542,17 @@ function bldSet(key, dx, dy, da) {
       it.x = x;
       it.y = y;
       it.rot = rot;
-      applyItem(it);
+      LATE.applyItem(it);
     } else it.pending = Object.assign(it.pending || {}, { x, y, rot });
   }
   markDirty(true);
 }
 // ---------- collision and walk entries of a planner item (built-in furniture registers them while its module loads, the planner
 // (pavilion/plan.js) when items move): footprint of the rotated box, COL entry (rotated box for angled items), WALK entry for walkable tops ----------
-function itemTheta(it) {
+export function itemTheta(it) {
   return ((it.kind === 'glb' ? it.rot + (MODELS[it.type]?.front || 0) : -it.rot) * Math.PI) / 180;
 } // CCW plan angle of the item's local x axis
-function itemFootprint(it) {
+export function itemFootprint(it) {
   const th = itemTheta(it),
     c = Math.abs(Math.cos(th)),
     s = Math.abs(Math.sin(th));
@@ -561,7 +566,7 @@ function itemRot(it) {
   if (d < 0.5 || d > 89.5) return undefined;
   return { cx: it.x, cy: it.y, c: Math.cos(th), s: Math.sin(th) };
 }
-function itemCol(it) {
+export function itemCol(it) {
   if (it.noCol) return;
   const f = itemFootprint(it),
     rot = itemRot(it);
@@ -589,7 +594,7 @@ function itemCol(it) {
     for (let i = 0; i < 11; i++) c[i] = e[i];
   }
 }
-function itemWalk(it) {
+export function itemWalk(it) {
   if (!it.walk) return;
   const f = itemFootprint(it);
   const e = [

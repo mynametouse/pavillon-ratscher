@@ -3,7 +3,13 @@
 // A spatial hash (8 m cells) over the drivable square, built once the geodata are there (world/ratscher.js S.walls, S.treeXY; world/roads.js
 // decks). The vehicles test their body box against it (vehicles/vehicle.js); walking far from the garden pushes the walker's circle out
 // of walls and trunks (game/game.js collide). Trunk radius from the tree's height.
-const WCOL = (() => {
+import { LATE } from '../core/late.js';
+import { KERN } from '../core/kern.js';
+import { whenLoaded } from '../core/assets.js';
+import { RATSCHER } from './ratscher.js';
+import { ROADS } from './roads.js';
+import { FOREST } from './forest.js';
+export const WCOL = (() => {
   const S = { ready: false, nSeg: 0, nTree: 0 },
     CS = 8,
     G = new Map();
@@ -149,5 +155,6 @@ const WCOL = (() => {
   });
   return S;
 })();
+LATE.WCOL = WCOL;
 window.WCOL = WCOL;
 KERN.provide('pushOut', (p, r) => WCOL.pushCircle(p, r)); // core/kern.js

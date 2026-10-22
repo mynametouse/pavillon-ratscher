@@ -1,3 +1,22 @@
+import * as THREE from 'three';
+import { rnd, V } from '../core/head.js';
+import { instanceVariants, MODELS } from '../core/assets.js';
+import { beam, bldBegin, bldEnd, glassLeaf, tagPh } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import {
+  BLD,
+  FOOT,
+  gB,
+  INSIDE,
+  lcol,
+  ldoor,
+  lwalk,
+  MATS,
+  rotDesc,
+  siteGroup,
+  slopeSlab,
+  worldOf,
+} from './site_base.js';
 bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus', pad: 0.05 });
 // ===== Gewächshaus (2,0 × 1,4 m) direkt nördlich vom Holzhaus: Alu-Rahmen, Glas, Satteldach, Tür zur Gartenseite (West), Tomaten und Gurken =====
 {

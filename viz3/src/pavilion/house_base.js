@@ -15,8 +15,13 @@
 //   0.122 KVH 6/14 studs e = 62.5 cm + 140 mm wood fibre    (phase 2 / 5)
 //   0.262 OSB/3 15 mm, joints taped = airtight layer        (phase 3 / 5)
 //   0.277 Lehmputz 15 mm on reed mat                        (phase 10)
-const T = 0.292;
-const DEP = {
+import * as THREE from 'three';
+import { scene, V } from '../core/head.js';
+import { plain } from '../core/assets.js';
+import { B, beam, COL, PH, PH_END, tagPh } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+export const T = 0.292;
+export const DEP = {
   clad: [0, 0.022],
   lat: [0.022, 0.052],
   kon: [0.052, 0.082],
@@ -26,7 +31,7 @@ const DEP = {
   clay: [0.277, 0.292],
 };
 // stair tower (unheated): boards 22 + battens 30 + wood-fibre board 16 + studs 6/12 + larch lining 15 = 0.203
-const TT = 0.203,
+export const TT = 0.203,
   DEPT = {
     clad: [0, 0.022],
     lat: [0.022, 0.052],
@@ -35,21 +40,21 @@ const TT = 0.203,
     stud: [0.084, 0.188],
     osb: [0.188, 0.203],
   };
-const SW = 0.06,
+export const SW = 0.06,
   SD = 0.14,
   BV = 0.006;
 // levels
-const zS = 0.15,
+export const zS = 0.15,
   zF = 0.316,
   zSill = zS + 0.004,
   zStud0 = zSill + SW;
-const zE = 2.68,
+export const zE = 2.68,
   JD = 0.24,
   JW = 0.1,
   zJT = zE + JD,
   zOSB = zJT + 0.024 + 0.022,
   zO = zOSB + 0.02; // OG floor 2.986
-const zG = 5.15,
+export const zG = 5.15,
   RBh = 0.24,
   zC = zG + RBh,
   zRJ = zC + JD,
@@ -58,42 +63,42 @@ const zG = 5.15,
   zR = zRI + 0.022,
   zD = zR + 0.004 + 0.04 + 0.028; // terrace 5.948 (A)
 // B: the roof joists span the full 5.8 m → BSH 12/28 instead of KVH 12/24, the terrace sits 4 cm higher
-const JDB = 0.28,
+export const JDB = 0.28,
   zRJb = zC + JDB,
   zRBb = zRJb + 0.024,
   zRIb = zRBb + 0.2,
   zRb = zRIb + 0.022,
   zDb = zRb + 0.004 + 0.04 + 0.028; // terrace 5.988 (B)
 // boxes (site coords)
-const EG = { x0: 0, x1: 4, y0: 0, y1: 4 };
-const OG = { x0: -0.9, x1: 4.0, y0: -0.9, y1: 4.9 };
-const TW = { x0: 4.0, x1: 6.6, y0: 0.15, y1: 3.85 }; // stair tower (outer faces); its west side is the house wall, above the roof its own head wall
-const RF = { x0: -1.4, x1: 4.5, y0: -1.4, y1: 5.4 }; // house roof plate; the tower rises through its east overhang
-const PL = 0.9; // OG corner pier length
-const STV = [0.95, 3.25]; // stove
-const tR = { x0: RF.x0 + 0.3, x1: RF.x1 - 0.3, y0: RF.y0 + 0.3, y1: RF.y1 - 0.3 }; // terrace railing lines
+export const EG = { x0: 0, x1: 4, y0: 0, y1: 4 };
+export const OG = { x0: -0.9, x1: 4.0, y0: -0.9, y1: 4.9 };
+export const TW = { x0: 4.0, x1: 6.6, y0: 0.15, y1: 3.85 }; // stair tower (outer faces); its west side is the house wall, above the roof its own head wall
+export const RF = { x0: -1.4, x1: 4.5, y0: -1.4, y1: 5.4 }; // house roof plate; the tower rises through its east overhang
+export const PL = 0.9; // OG corner pier length
+export const STV = [0.95, 3.25]; // stove
+export const tR = { x0: RF.x0 + 0.3, x1: RF.x1 - 0.3, y0: RF.y0 + 0.3, y1: RF.y1 - 0.3 }; // terrace railing lines
 // spiral stair: axis SC, tread radius SR (Ø 2.16 m), steel column Ø 168 mm; one full turn per storey, rising anticlockwise from the north
-const SC = [5.22, 1.47],
+export const SC = [5.22, 1.47],
   SR = 1.08,
   SCR = 0.084,
   zT0 = zF - 0.016;
-const SPA = { z0: zT0, z1: zO, n: 14 },
+export const SPA = { z0: zT0, z1: zO, n: 14 },
   SPB = { z0: zO, z1: zD, n: 15 };
 for (const f of [SPA, SPB]) {
   f.rise = (f.z1 - f.z0) / f.n;
   f.da = (2 * Math.PI) / f.n;
 }
-const PASS = { y0: SC[1] + SR, y1: TW.y1 - TT }; // passage / landings along the north side of the tower
-const zTH = zD + 2.35; // tower head: top of the walls (glazed lantern above the terrace)
-const DOORY = [2.66, 3.52]; // all tower doors in one line: garden → passage → library; landing → work room; head → terrace
+export const PASS = { y0: SC[1] + SR, y1: TW.y1 - TT }; // passage / landings along the north side of the tower
+export const zTH = zD + 2.35; // tower head: top of the walls (glazed lantern above the terrace)
+export const DOORY = [2.66, 3.52]; // all tower doors in one line: garden → passage → library; landing → work room; head → terrace
 // ---- variant B: bigger OG and roof, trapdoor + roof hatch, two ladder stairs ----
-const OGB = { x0: -0.9, x1: 4.9, y0: -0.9, y1: 4.9 };
-const RFB = { x0: -1.4, x1: 5.4, y0: -1.4, y1: 5.4 };
-const tRB = { x0: RFB.x0 + 0.3, x1: RFB.x1 - 0.3, y0: RFB.y0 + 0.3, y1: RFB.y1 - 0.3 };
-const HT1 = { x0: 2.88, x1: 3.71, y0: 0.42, y1: 1.72 }; // trapdoor in the OG floor (clear opening), above the SE corner of the library
-const HT2 = { x0: 3.78, x1: 4.6, y0: 2.46, y1: 3.84 }; // roof hatch (clear opening inside the curb) along the OG east wall, between two roof joists
-const CK = { x0: HT2.x0 - 0.06, x1: HT2.x1 + 0.06, y0: HT2.y0 - 0.06, y1: HT2.y1 + 0.06 }; // outer faces of the hatch curb
-const zK = zDb + 0.1; // curb top: 17 cm above the waterproofing, 10 cm above the deck
+export const OGB = { x0: -0.9, x1: 4.9, y0: -0.9, y1: 4.9 };
+export const RFB = { x0: -1.4, x1: 5.4, y0: -1.4, y1: 5.4 };
+export const tRB = { x0: RFB.x0 + 0.3, x1: RFB.x1 - 0.3, y0: RFB.y0 + 0.3, y1: RFB.y1 - 0.3 };
+export const HT1 = { x0: 2.88, x1: 3.71, y0: 0.42, y1: 1.72 }; // trapdoor in the OG floor (clear opening), above the SE corner of the library
+export const HT2 = { x0: 3.78, x1: 4.6, y0: 2.46, y1: 3.84 }; // roof hatch (clear opening inside the curb) along the OG east wall, between two roof joists
+export const CK = { x0: HT2.x0 - 0.06, x1: HT2.x1 + 0.06, y0: HT2.y0 - 0.06, y1: HT2.y1 + 0.06 }; // outer faces of the hatch curb
+export const zK = zDb + 0.1; // curb top: 17 cm above the waterproofing, 10 cm above the deck
 // ladder stair: n rises between z0 and z1, 63° pitch; it rises in direction `dir` (+1 = north, -1 = south) and its top edge (floor edge) is at yTop
 function mkLadder(L) {
   L.rise = (L.z1 - L.z0) / L.n;
@@ -103,9 +108,9 @@ function mkLadder(L) {
   return L;
 }
 const lys = (L, s) => L.yFoot + L.dir * s; // site y at run distance s from the foot
-const LAD1 = mkLadder({ x0: 2.92, x1: 3.7, yTop: HT1.y0, dir: -1, z0: zF, z1: zO, n: 13, deg: 63 }); // library → work room, rising southward along the east wall
-const LAD2 = mkLadder({ x0: 3.8, x1: 4.58, yTop: HT2.y1, dir: 1, z0: zO, z1: zK, n: 15, deg: 63 }); // work room → roof, rising northward along the east wall
-const ESTUB = [-0.25, HT1.y0 - JW / 2, HT1.y1 + JW / 2, 2.6, 3.45, 4.2]; // east cantilever joists; the second and third frame the trapdoor
+export const LAD1 = mkLadder({ x0: 2.92, x1: 3.7, yTop: HT1.y0, dir: -1, z0: zF, z1: zO, n: 13, deg: 63 }); // library → work room, rising southward along the east wall
+export const LAD2 = mkLadder({ x0: 3.8, x1: 4.58, yTop: HT2.y1, dir: 1, z0: zO, z1: zK, n: 15, deg: 63 }); // work room → roof, rising northward along the east wall
+export const ESTUB = [-0.25, HT1.y0 - JW / 2, HT1.y1 + JW / 2, 2.6, 3.45, 4.2]; // east cantilever joists; the second and third frame the trapdoor
 // ---------------- wall helpers for any box ----------------
 function wallOf(box, dep) {
   const face = { S: box.y0, N: box.y1, W: box.x0, E: box.x1 },
@@ -138,7 +143,7 @@ function wallOf(box, dep) {
     sn: side => side === 'S' || side === 'N',
   };
 }
-function cutOps(a0, a1, z0, z1, ops) {
+export function cutOps(a0, a1, z0, z1, ops) {
   let parts = [[a0, a1, z0, z1]];
   for (const o of ops) {
     const out = [];
@@ -159,7 +164,7 @@ function cutOps(a0, a1, z0, z1, ops) {
   return parts.filter(p => p[1] - p[0] > 1e-3 && p[3] - p[2] > 1e-3);
 }
 // plan rectangle [x0,x1,y0,y1] minus a hole {x0,x1,y0,y1}: up to four rectangles
-function rectMinus(r, h) {
+export function rectMinus(r, h) {
   const [x0, x1, y0, y1] = r;
   if (h.x1 <= x0 || h.x0 >= x1 || h.y1 <= y0 || h.y0 >= y1) return [r];
   const out = [];
@@ -172,7 +177,7 @@ function rectMinus(r, h) {
   return out;
 }
 // stud frame of one wall side between a0..a1 (along), z0 (sill top) .. z1 (top of double plate)
-function studFrame(W, side, a0, a1, ops, z0, z1, extraPosts = [], sw = SW) {
+export function studFrame(W, side, a0, a1, ops, z0, z1, extraPosts = [], sw = SW) {
   const d = W.dep.stud,
     g = W.sn(side) ? 'x' : 'y';
   const studs = new Set();
@@ -210,7 +215,7 @@ function studFrame(W, side, a0, a1, ops, z0, z1, extraPosts = [], sw = SW) {
   W.wl(side, a0, a1, d, z1 - 2 * sw, z1 - sw, MAT.kvh, { grain: g, bevel: BV, col: false });
   W.wl(side, a0, a1, d, z1 - sw, z1, MAT.kvh, { grain: g, bevel: BV, col: false });
 }
-function sheath(W, side, a0, a1, ops, z0, z1, { ins = true, osb = true, board = true, osbM = MAT.osb } = {}) {
+export function sheath(W, side, a0, a1, ops, z0, z1, { ins = true, osb = true, board = true, osbM = MAT.osb } = {}) {
   if (ins)
     for (const [p0, p1, q0, q1] of cutOps(a0, a1, z0 + 0.06, z1 - 0.12, ops))
       W.wl(side, p0, p1, [W.dep.stud[0] + 0.004, W.dep.stud[1] - 0.004], q0, q1, MAT.hfd, { col: false, cast: false });
@@ -223,7 +228,7 @@ function sheath(W, side, a0, a1, ops, z0, z1, { ins = true, osb = true, board = 
     for (const [p0, p1, q0, q1] of cutOps(a0, a1, z0, z1, ops))
       W.wl(side, p0, p1, W.dep.hfd, q0, q1, MAT.hfdBoard, { col: false });
 }
-function facade(W, side, a0, a1, ops, z0, z1, part = 'all', clad = MAT.char) {
+export function facade(W, side, a0, a1, ops, z0, z1, part = 'all', clad = MAT.char) {
   const g = W.sn(side) ? 'x' : 'y';
   if (part !== 'clad') {
     for (let a = a0 + 0.03; a < a1; a += 0.625)
@@ -244,7 +249,7 @@ function facade(W, side, a0, a1, ops, z0, z1, part = 'all', clad = MAT.char) {
       W.wl(side, p0, p1, [-0.022, 0], q0, q1, clad, { col: false, cast: false, grain: 'z' });
 }
 // timber window in a wall of box W: fixed glazing in an oiled larch frame set 13.5 cm behind the outer face
-function windowIn(
+export function windowIn(
   W,
   side,
   a0,
@@ -311,7 +316,7 @@ function windowIn(
   }
 }
 // steel railing (posts, oak handrail, round bars) along a straight edge + collider
-function railLine(p0, p1, z0, h = 1.0) {
+export function railLine(p0, p1, z0, h = 1.0) {
   const [x0, y0] = p0,
     [x1, y1] = p1,
     L = Math.hypot(x1 - x0, y1 - y0);
@@ -340,7 +345,7 @@ function railLine(p0, p1, z0, h = 1.0) {
   ]);
 }
 // terrace railing: larch posts, handrail, steel cables
-function rail(p0, p1, z0, h, { rails = [0.12], posts = 1.45, m = MAT.larch } = {}) {
+export function rail(p0, p1, z0, h, { rails = [0.12], posts = 1.45, m = MAT.larch } = {}) {
   const [x0, y0] = p0,
     [x1, y1] = p1;
   const L = Math.hypot(x1 - x0, y1 - y0);
@@ -371,7 +376,7 @@ function rail(p0, p1, z0, h, { rails = [0.12], posts = 1.45, m = MAT.larch } = {
   ]);
 }
 // west windbreak: laminated glass between larch posts (sunset stays free)
-function glassRail(t, zRx, zDx) {
+export function glassRail(t, zRx, zDx) {
   const g = B(t.x0 - 0.012, t.x0 + 0.012, t.y0 + 0.05, t.y1 - 0.05, zDx + 0.08, zDx + 1.04, MAT.glass, {
     cast: false,
     col: false,
@@ -385,7 +390,7 @@ function glassRail(t, zRx, zDx) {
 }
 // south parapet: four glass–glass PV modules between larch posts
 let PVM = null;
-function pvRail(t, zRx, zDx) {
+export function pvRail(t, zRx, zDx) {
   if (!PVM) {
     const c = document.createElement('canvas');
     c.width = c.height = 256;
@@ -465,7 +470,7 @@ function rod(p, q, r, m, seg = 12) {
 // ladder stair (Leitertreppe): two oak stringers 4.5 × 20 cm, oak treads 16 cm deep and 4 cm thick (open risers – every tread reaches under the
 // next one, so there is no gap underfoot), round oak handrails on steel brackets 80 cm above the nosing line, running on past the top edge as grab rails.
 // Treads are walk surfaces of type 'ladder' (slower walking, stair sound); the stringers are colliders.
-function ladderStair(L) {
+export function ladderStair(L) {
   const sw = 0.045,
     sd = 0.2,
     tw = 0.16,
@@ -513,11 +518,11 @@ function ladderStair(L) {
       rod([x, lys(L, s), zl(s) + 0.13], [x, lys(L, s), zl(s) + h - 0.02], 0.007, MAT.blacksteel, 8);
   }
 }
-const WE = wallOf(EG, DEP),
+export const WE = wallOf(EG, DEP),
   WO = wallOf(OG, DEP),
   WT = wallOf(TW, DEPT),
   WOB = wallOf(OGB, DEP);
-const EG_ops = {
+export const EG_ops = {
   S: [
     { a0: 0.45, a1: 2.25, s: 0.75, h: 2.15 },
     { a0: 2.75, a1: 3.65, s: 0.75, h: 2.15 },
@@ -526,24 +531,24 @@ const EG_ops = {
   E: [{ a0: DOORY[0], a1: DOORY[1], s: zF, h: 2.4 }],
   N: [],
 };
-const EG_opsB = Object.assign({}, EG_ops, { E: [EG_ops.E[0], { a0: 1.9, a1: 2.5, s: 0.75, h: 2.15 }] }); // B: front door + small window beside the ladder
-const bandS = zO + 0.7,
+export const EG_opsB = Object.assign({}, EG_ops, { E: [EG_ops.E[0], { a0: 1.9, a1: 2.5, s: 0.75, h: 2.15 }] }); // B: front door + small window beside the ladder
+export const bandS = zO + 0.7,
   bandH = zG - 0.06;
-const OG_ops = {
+export const OG_ops = {
   W: [{ a0: 0.0, a1: 4.0, s: zO, h: zG }],
   N: [{ a0: 0.0, a1: 3.1, s: bandS, h: bandH }],
   S: [{ a0: 0.0, a1: 3.1, s: bandS, h: bandH }],
   E: [{ a0: DOORY[0], a1: DOORY[1], s: zO, h: zO + 2.1 }],
 };
 // B: window bands N and S between the corner piers (4.0 m), a shorter band in the east wall south of the roof ladder
-const OG_opsB = {
+export const OG_opsB = {
   W: OG_ops.W,
   N: [{ a0: 0.0, a1: 4.0, s: bandS, h: bandH }],
   S: [{ a0: 0.0, a1: 4.0, s: bandS, h: bandH }],
   E: [{ a0: 0.0, a1: 2.0, s: bandS, h: bandH }],
 };
 // tower openings: entrance door (east), slit windows beside the spiral, landing window, glazed band all round the head
-const TW_ops = {
+export const TW_ops = {
   E: [
     { a0: DOORY[0], a1: DOORY[1], s: zT0, h: 2.4 },
     { a0: 0.7, a1: 1.4, s: 1.0, h: 2.35 },
@@ -565,19 +570,19 @@ const TW_ops = {
     { a0: 0.45, a1: 2.35, s: zD + 0.85, h: zD + 2.1 },
   ],
 };
-const TW_SEG = [
+export const TW_SEG = [
   [0.335, zJT],
   [zJT, zD - 0.27],
   [zD - 0.27, zTH],
 ]; // three lifts (platform framing): EG, OG, head
-const twRange = s => (WT.sn(s) ? [TW.x0, TW.x1] : [TW.y0 + 0.2, TW.y1 - 0.2]);
-const SIDES = ['S', 'N', 'W', 'E'],
+export const twRange = s => (WT.sn(s) ? [TW.x0, TW.x1] : [TW.y0 + 0.2, TW.y1 - 0.2]);
+export const SIDES = ['S', 'N', 'W', 'E'],
   SNW = ['S', 'N', 'W'];
-function ROOF_PARTS() {
+export function ROOF_PARTS() {
   return [
     [RF.x0, OG.x1, RF.y0, RF.y1],
     [OG.x1, RF.x1, RF.y0, TW.y0],
     [OG.x1, RF.x1, TW.y1, RF.y1],
   ];
 }
-const TRF = { x0: TW.x0 - 0.3, x1: TW.x1 + 0.3, y0: TW.y0 - 0.3, y1: TW.y1 + 0.3 }; // tower roof plate
+export const TRF = { x0: TW.x0 - 0.3, x1: TW.x1 + 0.3, y0: TW.y0 - 0.3, y1: TW.y1 + 0.3 }; // tower roof plate

@@ -7,7 +7,24 @@
 // Slabs are firewood. Each board knows its log, thickness, widths at both ends, whether the pith runs through it (Herzbrett), and its
 // green moisture from where it lay in the log (spruce sapwood 130–150 %, heartwood ~50 %; larch heartwood ~55 %, narrow sapwood ~120 %).
 // Hearing protection and glasses. Boards are drawn merged per pile: three draw calls (sawn faces, wany edges, end grain).
-const HOLZSAW = (() => {
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { LATE } from '../core/late.js';
+import { scene, V } from '../core/head.js';
+import { ANISO, markDirty } from '../core/assets.js';
+import { BUILD, COL, DOORS } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { WORKS } from '../garden/workshop.js';
+import { mulberry } from '../garden/grass.js';
+import { PLAY, SFX } from '../game/play.js';
+import { QUESTS } from '../game/quests.js';
+import { FOREST } from '../world/forest.js';
+import { CLOCK } from '../time/clock.js';
+import { GEAR } from './gear.js';
+import { WUI } from './werkui.js';
+import { FELL } from '../world/fell.js';
+import { HOLZ } from './holz.js';
+export const HOLZSAW = (() => {
   const KERF = 0.002,
     BUNK = 0.5,
     MINCUT = BUNK + 0.03,
@@ -767,4 +784,5 @@ const HOLZSAW = (() => {
   });
   return S;
 })();
+LATE.HOLZSAW = HOLZSAW;
 window.HOLZSAW = HOLZSAW;

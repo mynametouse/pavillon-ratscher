@@ -1,5 +1,16 @@
 // ===================== V14 music: playable stage piano (grand or e-piano sound, keys on screen and on the keyboard), record player with =====================
 // public-domain records, ukulele. Instrument sounds are synthesized in the browser (no samples), the records are recordings (snd/music).
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { $, BASE, V, VARIANT } from '../core/head.js';
+import { ANISO, markDirty, plain } from '../core/assets.js';
+import { phase, PHN } from '../core/geo.js';
+import { GEO_A, GEO_B } from '../pavilion/house_ladder.js';
+import { houseAt } from '../render/modes.js';
+import { G, opt, P, PHASE } from '../game/game.js';
+import { audio } from './audio.js';
+import { ITEMS } from '../pavilion/plan.js';
+import { PLAY, SFX } from '../game/play.js';
 phase(null);
 const MUSIC_SR = 24000;
 // ---- piano voice: additive synthesis with inharmonic partials, two detuned strings, a fast and a slow decay; e-piano: FM with a bell tine ----
@@ -105,7 +116,7 @@ function pluck(m, dur = 1.8) {
   return norm(out, 0.35);
 }
 // ---- PIANO ----
-const PIANO = (() => {
+export const PIANO = (() => {
   const st = {
     on: false,
     voice: 'piano',
@@ -526,6 +537,7 @@ const PIANO = (() => {
     st,
   };
 })();
+LATE.PIANO = PIANO;
 window.PIANO = PIANO;
 // ---- record player on the sideboard: public-domain records (snd/music); the disc turns, the sound comes from the turntable ----
 const RECORDS = (() => {

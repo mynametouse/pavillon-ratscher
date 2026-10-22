@@ -4,7 +4,15 @@
 // parallel guidance (the fork stays level while lifting), a pallet fork with two tines – R raises, G lowers, T tilts the tines up/back.
 // Parked at the Untere Klinge (the end of the route from the garden, world/roads.js routes.klinge). Model frame as in vehicles/car.js
 // (x right, y forward, z up, origin on the ground under the centre of mass: front axle +1.30 m, rear axle −1.10 m).
-const TRACTOR2 = (() => {
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { LATE } from '../core/late.js';
+import { V } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
+import { MOTION } from '../render/render.js';
+import { ROADS } from '../world/roads.js';
+import { VEH } from './vehicle.js';
+export const TRACTOR2 = (() => {
   const A = 1.3,
     B = 1.1,
     RR = 0.78,
@@ -387,7 +395,7 @@ const TRACTOR2 = (() => {
       if (k === 'r' || k === 'up') LD.up = down ? 1 : LD.up === 1 ? 0 : LD.up;
       else if (k === 'g' || k === 'down') LD.up = down ? -1 : LD.up === -1 ? 0 : LD.up;
       else if ((k === 't' || k === 'tilt') && down) LD.tiltT = LD.tiltT > 0.1 ? 0 : 0.3;
-      else if ((k === 'k' || k === 'hitch') && down && window.TRAILER) TRAILER.toggle();
+      else if ((k === 'k' || k === 'hitch') && down && window.TRAILER) LATE.TRAILER.toggle();
     },
     // V16d collision parts (vehicles/vehicle.js collide): the body up to the front weights (full height), the loader in front of it only as high
     // as the carrier and the tines are – lifted, the fork reaches over a sawmill's bed or a trailer's floor

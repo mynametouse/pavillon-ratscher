@@ -1,9 +1,21 @@
 // ===================== V14 game layer: one action button (E / tap) for doors, people and things; carrying things in the hand; =====================
 // sitting, lying and riding along; timed work with a progress bar; thoughts as subtitles. The quests (game/quests.js) and the
 // instruments (audio/music.js) build on it. All positions in site coordinates (x east, y north, z up).
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { $, cam, COARSE, scene, V } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
+import { phase } from '../core/geo.js';
+import { sun, sunDir } from '../garden/env.js';
+import { MOTION, RENDER } from '../render/render.js';
+import { houseAt } from '../render/modes.js';
+import { blocked, CAM3, cv, DKEYS, DOOR, doorOn, doorWord, floorAt, joy, keys, opt, P, toggleDoor } from './game.js';
+import { audio } from '../audio/audio.js';
+import { NPCS, NPCUI } from '../npc/npc.js';
+import { PLAN } from '../pavilion/plan.js';
 phase(null);
 // ---- the thing in the hand: its own little scene, drawn over the finished picture with a cleared depth buffer, so it never cuts into walls ----
-const HELD = (() => {
+export const HELD = (() => {
   const sc = new THREE.Scene(),
     root = new THREE.Group();
   sc.add(root);
@@ -66,7 +78,7 @@ const HELD = (() => {
   H.play = (dur, f, kind) =>
     new Promise(res => {
       H.anim = { t: 0, dur, f, res, kind: kind || null };
-      if (kind === 'chop' && window.AVATAR) AVATAR.gesture('chop', 1);
+      if (kind === 'chop' && window.AVATAR) LATE.AVATAR.gesture('chop', 1);
       markDirty();
     });
   H.tick = dt => {
@@ -120,13 +132,13 @@ const HELD = (() => {
     sc.environmentRotation.copy(scene.environmentRotation);
     lampL.position.copy(cam.position);
     lampL.position.y += 0.6;
-    lampL.intensity = ins && window.LIGHTSTATE && LIGHTSTATE.lampNear(P.x, P.y, P.feet) ? 1.6 : 0;
+    lampL.intensity = ins && window.LIGHTSTATE && LATE.LIGHTSTATE.lampNear(P.x, P.y, P.feet) ? 1.6 : 0;
   };
   return H;
 })();
 window.PREFRAME = () => HELD.place();
 // ---- synthesized little sounds for the actions (the recordings in snd/ stay for steps, doors, machines) ----
-const SFX = (() => {
+export const SFX = (() => {
   let nb = null;
   const A = () => audio.raw && audio.raw();
   const noise = c => {
@@ -309,8 +321,9 @@ const SFX = (() => {
     },
   };
 })();
+LATE.SFX = SFX;
 // ---- the interaction layer ----
-const PLAY = (() => {
+export const PLAY = (() => {
   const ACTS = [],
     THINGS = {},
     S = { best: null, hold: null, carry: null, seat: null, tw: null, lastLbl: '', lastSec: '', thinkT: null };
@@ -525,7 +538,7 @@ const PLAY = (() => {
       else if (id.startsWith('seat:') || id === 'piano' || val(a.hold)) g = null;
       else g = 'interact';
     }
-    if (g) AVATAR.gesture(g, g === 'interact' ? 1.7 : g === 'pickupLow' ? 1.5 : 1.2);
+    if (g) LATE.AVATAR.gesture(g, g === 'interact' ? 1.7 : g === 'pickupLow' ? 1.5 : 1.2);
   }
   function run(a) {
     if (!a) return false;
@@ -1006,4 +1019,5 @@ const PLAY = (() => {
     candidates,
   };
 })();
+LATE.PLAY = PLAY;
 window.PLAY = PLAY;

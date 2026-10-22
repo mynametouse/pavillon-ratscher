@@ -1,4 +1,76 @@
 // ############################ VARIANT B: no tower – ladder stairs, trapdoor, roof hatch, OG cantilevered on all sides ############################
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { VARIANT } from '../core/head.js';
+import { B, beam, COL, cyl, flapDoor, PH, phase, PHN, siteUV, varOff, varOn, WALK } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import {
+  bandH,
+  bandS,
+  BV,
+  CK,
+  cutOps,
+  DEP,
+  DOORY,
+  EG,
+  EG_opsB,
+  ESTUB,
+  facade,
+  glassRail,
+  HT1,
+  HT2,
+  JW,
+  LAD1,
+  LAD2,
+  ladderStair,
+  OG,
+  OG_opsB,
+  OGB,
+  PASS,
+  PL,
+  pvRail,
+  rail,
+  railLine,
+  rectMinus,
+  RF,
+  RFB,
+  SC,
+  SD,
+  sheath,
+  SIDES,
+  SR,
+  studFrame,
+  STV,
+  SW,
+  T,
+  tR,
+  tRB,
+  TT,
+  TW,
+  WE,
+  windowIn,
+  WOB,
+  zC,
+  zD,
+  zDb,
+  zE,
+  zF,
+  zG,
+  zJT,
+  zK,
+  zO,
+  zOSB,
+  zR,
+  zRb,
+  zRBb,
+  zRIb,
+  zRJb,
+  zS,
+  zSill,
+  zStud0,
+  zT0,
+  zTH,
+} from './house_base.js';
 varOn('B');
 // ======================= PHASE 4: front step =======================
 phase(PHN.piles);
@@ -299,7 +371,7 @@ const ladderInfo = L => ({
   go: L.go,
   dir: L.dir,
 });
-const GEO_A = {
+export const GEO_A = {
   variant: 'A',
   zS,
   zF,
@@ -327,7 +399,7 @@ const GEO_A = {
   tR,
   PL,
 };
-const GEO_B = Object.assign({}, GEO_A, {
+export const GEO_B = Object.assign({}, GEO_A, {
   variant: 'B',
   zR: zRb,
   zD: zDb,

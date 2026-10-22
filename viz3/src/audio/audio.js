@@ -1,6 +1,12 @@
 // ===================== sound: real recordings (CC0 / CC BY), synthesized fallback =====================
+import * as THREE from 'three';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { $, BASE, stage } from '../core/head.js';
+import { DOOR, G, opt, P } from '../game/game.js';
+Object.assign(LATE, { toast }); // functions for modules that load earlier: game/game.js
 let toastT = null;
-function toast(msg, ms = 3600) {
+export function toast(msg, ms = 3600) {
   const t = $('toast');
   if (!t) return;
   t.textContent = msg;
@@ -14,7 +20,7 @@ function toast(msg, ms = 3600) {
 // and a hint must not cut the one before it short
 let newsQ = [],
   newsOn = false;
-function news(msg, ms = 11000) {
+export function news(msg, ms = 11000) {
   newsQ.push([msg, ms]);
   if (!newsOn) newsNext();
 }
@@ -28,7 +34,7 @@ function newsNext() {
   toast(n[0], n[1]);
   setTimeout(newsNext, n[1] + 1200);
 }
-function soundLabel() {
+export function soundLabel() {
   const b = $('soundbtn');
   if (!b) return;
   const st = audio.state();
@@ -38,7 +44,7 @@ function soundLabel() {
   if (sp.textContent !== txt) sp.textContent = txt;
   b.title = opt.sound && st !== 'running' ? 'Ton startet mit dem ersten Klick oder Tippen' : '';
 }
-function setSound(v) {
+export function setSound(v) {
   opt.sound = v;
   try {
     SAVE.setRaw('pav-sound', v ? '1' : '0');
@@ -58,7 +64,7 @@ document.addEventListener('visibilitychange', () => audio.visible(!document.hidd
 const SNDMAN = window.SNDMAN || []; // [{file, kind, loop}]
 const LOOPLEN = {};
 for (const s of SNDMAN) if (s.loop) LOOPLEN[s.kind] = s.loop;
-const audio = (() => {
+export const audio = (() => {
   const AC = window.AudioContext || window.webkitAudioContext;
   let mufF = null,
     mufG = null,
@@ -463,7 +469,7 @@ const audio = (() => {
     // V16a: summer nights (May–September of the game's date): field crickets, three of them at different pitches, chirps of four pulses
     const cricket = () => {
       if (!ctx) return;
-      if (on && vis && tod === 'dusk' && (!window.DN || !DN.active || DN.summer())) {
+      if (on && vis && tod === 'dusk' && (!window.DN || !LATE.DN.active || LATE.DN.summer())) {
         const t0 = ctx.currentTime + 0.05;
         for (let k = 0; k < 3; k++) {
           if (Math.random() < 0.22) continue;
@@ -671,7 +677,7 @@ const audio = (() => {
     const inside = insideNow(),
       high = P.mode === 'walk' ? THREE.MathUtils.clamp(P.feet / G.zD, 0, 1) : 0.6;
     windMul = 0.75 + high * 1.0;
-    forest = window.FOREST && FOREST.amb ? FOREST.amb() : 0;
+    forest = window.FOREST && LATE.FOREST.amb ? LATE.FOREST.amb() : 0;
     windMul *= 1 + 0.7 * forest; // V16c: the wind in the crowns of the forest at the Klinge
     const openEG = DOOR.eg ? DOOR.eg.t > 0.5 : false,
       openOG = DOOR.ogE ? DOOR.ogE.t > 0.5 : false,
@@ -685,7 +691,7 @@ const audio = (() => {
     if (loops.amb_wind) loops.amb_wind.g.gain.setTargetAtTime(0.35 * windMul, t, 1.0);
     const ds = Math.hypot(P.x - G.STV[0], P.y - G.STV[1]);
     const inEG = P.mode === 'walk' && P.feet < G.zU - 0.4 && inside;
-    const fire = window.STOVE ? STOVE.level() : tod !== 'day' ? 1 : 0; // V14: the fire burns once it has been lit (game/quests.js)
+    const fire = window.STOVE ? LATE.STOVE.level() : tod !== 'day' ? 1 : 0; // V14: the fire burns once it has been lit (game/quests.js)
     stoveVol = inEG && fire > 0 ? THREE.MathUtils.clamp(0.9 / (ds * ds + 0.6), 0, 0.9) * fire : 0;
     if (loops.amb_stove) loops.amb_stove.g.gain.setTargetAtTime(stoveVol, t, 0.3);
     if (!greeted && ctx.state === 'running') {
@@ -783,3 +789,4 @@ const audio = (() => {
     },
   };
 })();
+LATE.audio = audio;

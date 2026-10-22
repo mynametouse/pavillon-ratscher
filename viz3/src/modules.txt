@@ -1,9 +1,11 @@
-# Module list of the app, in bundle order (build.py concatenates them into one shared scope: later modules see everything above).
-# The order matters: modules run at load in this sequence (meshes before render/zmerge.js get merged; point lights are created in pavilion/interior.js
-# and garden/workshop_lamp.js). A new module goes where its dependencies are above it – usually before boot/boot.js.
+# Module list of the app, in load order. ES modules (since refactor phase 1): build.py writes the entry src/_main.js with one import per line,
+# and the modules run in exactly this order because a module imports only from modules ABOVE it (tools/check/deps.mjs enforces it; what a
+# module needs from further down goes through LATE, core/late.js). The order matters: meshes before render/zmerge.js get merged; point
+# lights are created in pavilion/interior.js and garden/workshop_lamp.js. A new module goes below everything it imports – usually before boot/boot.js.
 
+core/late.js                # LATE: what a module needs from a module further down (handed over when that one loads)
 core/save.js                # SAVE: every value kept in this browser (registry, safe reads/writes, migrations, test hooks)
-core/head.js                # three.js imports, renderer, scene, camera, query flags, small helpers
+core/head.js                # renderer, scene, camera, query flags, small helpers (THREE also on window)
 core/kern.js                # KERN: ground, terrain, road surface, collision, place names – services the world modules provide
 core/assets.js              # loading manager, textures, PBR materials, patchSV (sky visibility, baked GI, figure shadows, lamp-spill mask)
 core/geo.js                 # box/cylinder builders with collision + walk registry (COL, WALK), building registry (bldBegin/bldEnd, BUILD)

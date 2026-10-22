@@ -12,7 +12,37 @@
 // overdraw). Under the crowns the ground becomes needle litter with moss (world/ratscher.js terrain shader: forestFloor) and the
 // light is dimmed beyond the sun's shadow box (canopy map, 2 m). Ferns, stumps and lying deadwood near the camera. Trunks are
 // obstacles (world/worldcol.js). Hooks: place names (world/roads.js S.place), wind and birds (audio/audio.js FOREST.amb).
-const FOREST = (() => {
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { LATE } from '../core/late.js';
+import { SAVE } from '../core/save.js';
+import { BASE, cam, R, scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import {
+  ANISO,
+  cellsOf,
+  GI,
+  LOAD,
+  loadGLBRaw,
+  markDirty,
+  MODELS,
+  SV,
+  texFile,
+  texFileOf,
+  TEXMAN,
+  texUse,
+  TXL,
+  variantParts,
+  whenLoaded,
+} from '../core/assets.js';
+import { DETAIL, GLCHECK } from '../core/detail.js';
+import { GEO_REAL, sunC, sunHalf } from '../garden/env.js';
+import { RENDER } from '../render/render.js';
+import { P } from '../game/game.js';
+import { news } from '../audio/audio.js';
+import { RATSCHER } from './ratscher.js';
+import { ROADS } from './roads.js';
+export const FOREST = (() => {
   const S = {
     on: !!(GEO_REAL && window.GEOMAN && GEOMAN.terrain),
     ready: false,
@@ -519,7 +549,7 @@ const FOREST = (() => {
   }
   const doyNow = () => {
     if (!window.DN || !window.CLOCK) return 180;
-    const d = new Date((DN.jdOf(CLOCK.t) - 2440587.5) * 864e5);
+    const d = new Date((LATE.DN.jdOf(LATE.CLOCK.t) - 2440587.5) * 864e5);
     return (d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5;
   };
   function seasonOf(doy) {
@@ -1284,7 +1314,7 @@ const FOREST = (() => {
       for (let k = 0; k < c.length; k++) d[k] = Math.round(Math.max(0, Math.min(1, c[k])) * 255);
       CU.tCan.value.needsUpdate = true;
     }
-    if (window.WCOL && WCOL.removeTree) WCOL.removeTree(t.x, t.y);
+    if (window.WCOL && LATE.WCOL.removeTree) LATE.WCOL.removeTree(t.x, t.y);
     relod(true);
   };
   S.stats = () => ({
@@ -1298,4 +1328,5 @@ const FOREST = (() => {
   });
   return S;
 })();
+LATE.FOREST = FOREST;
 window.FOREST = FOREST;

@@ -1,26 +1,33 @@
 // ---------- existing buildings on the plot (the owner's photos + aerial): B carport + caravan, C wooden house, D green bungalow, greenhouse, wash house ----------
 // Walls are built with real openings (outside cladding and inside lining), every door opens outwards and every room is walkable.
+import * as THREE from 'three';
+import { rnd, rr, scene, V } from '../core/head.js';
+import { ANISO, dimIndoor, grime, patchSV, pbrMat, plain, TEXMAN } from '../core/assets.js';
+import { B, COL, hingeDoor, PH, PH_END, phase, siteUV, tagPh, WALK } from '../core/geo.js';
+import { MAT } from '../core/mats.js';
+import { cutOps } from '../pavilion/house_base.js';
+import { S0 } from './env.js';
 phase(null);
-const BLD = S0.bld;
+export const BLD = S0.bld;
 // local frame: x along the long side (compass heading az), y to the left of it (az - 90), z up
-function siteGroup(b) {
+export function siteGroup(b) {
   const g = new THREE.Group();
   g.position.copy(V(b.c[0], b.c[1], 0));
   g.rotation.y = (-(b.az - 90) * Math.PI) / 180;
   scene.add(g);
   return g;
 }
-function gB(g, x0, x1, y0, y1, z0, z1, m, o = {}) {
+export function gB(g, x0, x1, y0, y1, z0, z1, m, o = {}) {
   return B(x0, x1, y0, y1, z0, z1, m, Object.assign({ parent: g, col: false }, o));
 }
-function worldOf(b, lx, ly) {
+export function worldOf(b, lx, ly) {
   const a = (b.az * Math.PI) / 180;
   const ux = [Math.sin(a), Math.cos(a)],
     vy = [Math.sin(a - Math.PI / 2), Math.cos(a - Math.PI / 2)];
   return [b.c[0] + lx * ux[0] + ly * vy[0], b.c[1] + lx * ux[1] + ly * vy[1]];
 }
 // tilted slab in the local frame: box w (x) × d (along the slope, y) × t, raised by dz over its length (slope along local y, +y end higher)
-function slopeSlab(g, cx, cy, zc, w, d, t, dz, m, o = {}) {
+export function slopeSlab(g, cx, cy, zc, w, d, t, dz, m, o = {}) {
   const L = Math.hypot(d, dz);
   const geo = new THREE.BoxGeometry(w, t, L);
   siteUV(geo, cx, cy, zc, 'x', [w, L]);
@@ -33,7 +40,7 @@ function slopeSlab(g, cx, cy, zc, w, d, t, dz, m, o = {}) {
   return tagPh(me);
 }
 // same, sloping along local x (+x end higher by dz)
-function slopeSlabX(g, cx, cy, zc, w, d, t, dz, m, o = {}) {
+export function slopeSlabX(g, cx, cy, zc, w, d, t, dz, m, o = {}) {
   const L = Math.hypot(w, dz);
   const geo = new THREE.BoxGeometry(L, t, d);
   siteUV(geo, cx, cy, zc, 'y', [L, d]);
@@ -46,7 +53,7 @@ function slopeSlabX(g, cx, cy, zc, w, d, t, dz, m, o = {}) {
   return tagPh(me);
 }
 // painted board cladding: canvas texture with board shadows (horizontal or vertical boards)
-function boardTex(hex, boardW, vertical, wear = 0.08) {
+export function boardTex(hex, boardW, vertical, wear = 0.08) {
   const c = document.createElement('canvas');
   c.width = c.height = 512;
   const q = c.getContext('2d');
@@ -78,7 +85,7 @@ function boardTex(hex, boardW, vertical, wear = 0.08) {
   return t;
 }
 // painted boards: photo texture of white painted planks (grain, seams, worn paint, relief) tinted to the paint colour – the canvas boards stay as fallback
-function boardMat(hex, boardW, vertical, o = {}) {
+export function boardMat(hex, boardW, vertical, o = {}) {
   const PHOTO = { paintwood: [0.457, 0.381, 0.339, 0.52], weatherwood: [0.061, 0.058, 0.05, 0.84] },
     ph = o.photo || 'paintwood',
     A = PHOTO[ph];
@@ -141,7 +148,7 @@ function shingleTex() {
   t.anisotropy = ANISO;
   return t;
 }
-const MATS = {
+export const MATS = {
   ochre: boardMat(0xc8903c, 0.095, true, { wear: 0.12 }), // Holzhaus C, Endzustand ocker
   pale: dimIndoor(boardMat(0xe9d6ad, 0.095, true, { wear: 0.05 }), 0.65, 0.5), // Innenschalung Holzhaus
   greenBoards: boardMat(0x8aa37c, 0.11, false, { wear: 0.07 }), // Bungalow D
@@ -229,7 +236,7 @@ grime(MATS.white, 0.5, 0.5, 0.06);
 grime(MATS.creamBox, 0.4, 0.55, 0.05, 0.16);
 grime(MATS.cream, 0.4, 0.55, 0.05, 0.2);
 grime(MATS.stake, 0.3, 0.3, 0.1);
-function wheel(g, x, y, z, r, w, rimR) {
+export function wheel(g, x, y, z, r, w, rimR) {
   const geo = new THREE.CylinderGeometry(r, r, w, 24);
   const me = new THREE.Mesh(geo, MATS.tyre);
   me.position.copy(V(x, y, z));
@@ -244,20 +251,20 @@ function wheel(g, x, y, z, r, w, rimR) {
   tagPh(rim);
 }
 // ---- local-frame colliders, floors and doors (rotation descriptor at index 9, see 12_game) ----
-function rotDesc(b, ox = 0, oy = 0) {
+export function rotDesc(b, ox = 0, oy = 0) {
   const a = (b.az * Math.PI) / 180;
   const c = Math.sin(a),
     s = Math.cos(a);
   const w = worldOf(b, ox, oy);
   return { cx: w[0], cy: w[1], c, s };
 }
-function lcol(r, x0, x1, y0, y1, z0, z1, tag = 'wall') {
+export function lcol(r, x0, x1, y0, y1, z0, z1, tag = 'wall') {
   COL.push([x0, x1, y0, y1, z0, z1, tag, PH, PH_END, r]);
 }
-function lwalk(r, x0, x1, y0, y1, zt, type = 'wood') {
+export function lwalk(r, x0, x1, y0, y1, zt, type = 'wood') {
   WALK.push([x0, x1, y0, y1, zt, type, PH, PH_END, undefined, r]);
 }
-function ldoor(key, b, leaf, { lx, ly, dir, w, sign, z0, z1, ox = 0, oy = 0 }) {
+export function ldoor(key, b, leaf, { lx, ly, dir, w, sign, z0, z1, ox = 0, oy = 0 }) {
   const a = (b.az * Math.PI) / 180;
   const ux = [Math.sin(a), Math.cos(a)],
     vy = [-Math.cos(a), Math.sin(a)];
@@ -265,7 +272,7 @@ function ldoor(key, b, leaf, { lx, ly, dir, w, sign, z0, z1, ox = 0, oy = 0 }) {
   const d = [dir[0] * ux[0] + dir[1] * vy[0], dir[0] * ux[1] + dir[1] * vy[1]];
   return hingeDoor(key, leaf, { hx: h[0], hy: h[1], a: d, w, sign, z0, z1 });
 }
-function inLocal(b, x, y, hx, hy, ox = 0, oy = 0) {
+export function inLocal(b, x, y, hx, hy, ox = 0, oy = 0) {
   const a = (b.az * Math.PI) / 180;
   const c = Math.sin(a),
     s = Math.cos(a);
@@ -276,33 +283,33 @@ function inLocal(b, x, y, hx, hy, ox = 0, oy = 0) {
     ly = -dx * s + dy * c;
   return Math.abs(lx) < hx && Math.abs(ly) < hy;
 }
-const INSIDE = [];
-const FOOT = [];
+export const INSIDE = [];
+export const FOOT = [];
 window.SITE_FOOT = FOOT;
-const IW = dimIndoor(plain({ color: 0xf3f1ea, roughness: 0.85 }), 0.6, 0.6);
-const ICEIL = dimIndoor(plain({ color: 0xf1ede6, roughness: 0.9 }), 0.62, 0.9);
-const SINK = plain({ color: 0x8a949c, roughness: 0.35, metalness: 0.6 });
-function faceOf(b, localDeg) {
+export const IW = dimIndoor(plain({ color: 0xf3f1ea, roughness: 0.85 }), 0.6, 0.6);
+export const ICEIL = dimIndoor(plain({ color: 0xf1ede6, roughness: 0.9 }), 0.62, 0.9);
+export const SINK = plain({ color: 0x8a949c, roughness: 0.35, metalness: 0.6 });
+export function faceOf(b, localDeg) {
   return b.az + localDeg;
 } // placeGLB face angle: compass degrees; local 0 = facing +y of the building (az)
 // ---- walls with openings in a local frame: run 'x' = wall along local x (thickness t0..t1 in y), run 'y' = along local y (thickness in x); ops [{a0,a1,s,h}] ----
-function lw(g, run, a0, a1, t0, t1, z0, z1, ops, m, o = {}) {
+export function lw(g, run, a0, a1, t0, t1, z0, z1, ops, m, o = {}) {
   for (const [p0, p1, q0, q1] of cutOps(a0, a1, z0, z1, ops)) {
     if (run === 'x') gB(g, p0, p1, t0, t1, q0, q1, m, o);
     else gB(g, t0, t1, p0, p1, q0, q1, m, o);
   }
 }
-function lwc(r, run, a0, a1, t0, t1, z0, z1, doors = [], tag = 'wall') {
+export function lwc(r, run, a0, a1, t0, t1, z0, z1, doors = [], tag = 'wall') {
   for (const [p0, p1, q0, q1] of cutOps(a0, a1, z0, z1, doors)) {
     if (run === 'x') lcol(r, p0, p1, t0, t1, q0, q1, tag);
     else lcol(r, t0, t1, p0, p1, q0, q1, tag);
   }
 }
-function lbox(g, run, a0, a1, t0, t1, z0, z1, m, o = {}) {
+export function lbox(g, run, a0, a1, t0, t1, z0, z1, m, o = {}) {
   return run === 'x' ? gB(g, a0, a1, t0, t1, z0, z1, m, o) : gB(g, t0, t1, a0, a1, z0, z1, m, o);
 }
 // window: frame + pane centred at tc in the wall thickness
-function lwin(
+export function lwin(
   g,
   run,
   a0,
@@ -325,13 +332,13 @@ function lwin(
   if (gl) gl.renderOrder = 2;
 }
 // door lining (jambs + head) on the outer face, outward direction k (+1/-1 along the thickness axis)
-function ljamb(g, run, a0, a1, t0, t1, z0, z1, m, w = 0.05) {
+export function ljamb(g, run, a0, a1, t0, t1, z0, z1, m, w = 0.05) {
   lbox(g, run, a0 - w, a0, t0, t1, z0, z1 + w, m, { cast: false });
   lbox(g, run, a1, a1 + w, t0, t1, z0, z1 + w, m, { cast: false });
   lbox(g, run, a0, a1, t0, t1, z1, z1 + w, m, { cast: false });
 }
 // louvred shutters left and right of a window, on the outer face (tOut, outward sign k)
-function lshut(g, run, a0, a1, tOut, k, z0, z1, m) {
+export function lshut(g, run, a0, a1, tOut, k, z0, z1, m) {
   const w = (a1 - a0) / 2,
     f = tOut + 0.035 * k,
     t0 = Math.min(tOut, f),
@@ -348,7 +355,7 @@ function lshut(g, run, a0, a1, tOut, k, z0, z1, m) {
   }
 }
 // trapezoid infill (gable of a mono-pitch roof): along the run from a0 (top zA) to a1 (top zB), base z0, thickness t0..t1
-function ltrap(g, run, a0, a1, t0, t1, z0, zA, zB, m) {
+export function ltrap(g, run, a0, a1, t0, t1, z0, zA, zB, m) {
   const sh = new THREE.Shape();
   sh.moveTo(a0, z0);
   sh.lineTo(a1, z0);
