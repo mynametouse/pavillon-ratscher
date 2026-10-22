@@ -382,7 +382,72 @@ def ribbons(pos, chains, h, area, lift=0.0):
     return groups
 
 
-def write_ribbons(groups, out_dir):
+def markings(pos, chains, h, area, lift=0.0):
+    """white lines on main and county roads (German rural roads: edge lines, centre line 6 m dash / 12 m gap, 0.12 m wide),
+    a centimetre above the surface -> {tile: arrays} like ribbons()"""
+    from wlib import ROOT_E0, ROOT_N0, tsize
+    s9 = tsize(CONTENT_LEVEL)
+    groups = collections.defaultdict(lambda: dict(pos=[], idx=[], n=0))
+    hw_l = 0.06
+
+    def add(key, V, Z):
+        """V (k, 2, 2) left/right points per section, Z (k, 2) heights -> strip of quads"""
+        g = groups[key]
+        k = len(V)
+        g['pos'].append(np.stack([V[..., 0].ravel(), V[..., 1].ravel(), Z.ravel()], 1))
+        i = np.arange(k - 1)
+        a = g['n'] + 2 * i
+        b, c, d = a + 2, a + 3, a + 1     # a left back, d right back, b left front, c right front
+        g['idx'].append(np.stack([a, d, c, a, c, b], -1).ravel())
+        g['n'] += 2 * k
+
+    for w, ids in chains:
+        mark = KINDS[w['kind']][2]
+        if not mark or w['fl'] & 2 or w['surf'] not in ('asphalt', 'concrete'):
+            continue
+        P0 = pos[ids]
+        z0 = h[ids] + lift + 0.002 * KINDS[w['kind']][5]
+        t0, L0 = tangents(P0)
+        cum = np.concatenate([[0], np.cumsum(L0)])
+        n0 = np.stack([-t0[:, 1], t0[:, 0]], 1)
+        o, dz, hw, sw, crown = cross(w)
+        mid_key = lambda p: (int(np.floor((p[0] - ROOT_E0) / s9)), int(np.floor((p[1] - ROOT_N0) / s9)))
+        inside = lambda p: area[0] <= p[0] < area[2] and area[1] <= p[1] < area[3]
+        if mark >= 2 and hw > 2.0:     # edge lines on the decimated sections, cut into runs per tile
+            keep = decimate(P0, z0)
+            P, z, nn = P0[keep], z0[keep], n0[keep]
+            for side in (-1, 1):
+                off = side * (hw - 0.3)
+                V = np.stack([P + (off - hw_l) * nn, P + (off + hw_l) * nn], 1)
+                Z = np.repeat((z - crown * abs(off) + 0.012)[:, None], 2, 1)
+                mids = (P[:-1] + P[1:]) / 2
+                keys = [mid_key(m) if inside(m) else None for m in mids]
+                k0 = 0
+                while k0 < len(keys):
+                    if keys[k0] is None:
+                        k0 += 1
+                        continue
+                    k1 = k0
+                    while k1 + 1 < len(keys) and keys[k1 + 1] == keys[k0]:
+                        k1 += 1
+                    add(keys[k0], V[k0:k1 + 2], Z[k0:k1 + 2])
+                    k0 = k1 + 1
+        # centre line dashes
+        for s0 in np.arange(3.0, cum[-1] - 6.0, 18.0):
+            ss = np.linspace(s0, s0 + 6.0, 4)
+            px, py = np.interp(ss, cum, P0[:, 0]), np.interp(ss, cum, P0[:, 1])
+            pz = np.interp(ss, cum, z0) + 0.012
+            nx, ny = np.interp(ss, cum, n0[:, 0]), np.interp(ss, cum, n0[:, 1])
+            Pd = np.stack([px, py], 1)
+            nd = np.stack([nx, ny], 1) / np.maximum(np.hypot(nx, ny), 1e-9)[:, None]
+            m = Pd[1]
+            if not inside(m):
+                continue
+            add(mid_key(m), np.stack([Pd - hw_l * nd, Pd + hw_l * nd], 1), np.repeat(pz[:, None], 2, 1))
+    return groups
+
+
+def write_ribbons(groups, out_dir, marks=None):
     os.makedirs(out_dir, exist_ok=True)
     files = {}
     for (tx, ty), g in groups.items():
@@ -395,8 +460,15 @@ def write_ribbons(groups, out_dir):
         idx = idx.reshape(-1, 3)[:, ::-1].ravel()
         nrm = flat_normals(pos, idx)
         fn = os.path.join(out_dir, f'{CONTENT_LEVEL}_{tx}_{ty}.glb')
-        size = write_glb(fn, [dict(name='roads', pos=pos, idx=idx, nrm=nrm, col=np.concatenate(g['col']), uv=np.concatenate(g['uv']).astype(np.float32),
-                                   rough=0.9)], extras={'utm_centre': [Ec, Nc], 'H0': H0, 'crs': 'EPSG:25832'})
+        meshes = [dict(name='roads', pos=pos, idx=idx, nrm=nrm, col=np.concatenate(g['col']), uv=np.concatenate(g['uv']).astype(np.float32), rough=0.9)]
+        mg = (marks or {}).get((tx, ty))
+        if mg and mg['pos']:
+            Pm = np.concatenate(mg['pos'])
+            pm = np.stack([Pm[:, 0] - Ec, Pm[:, 2] - H0, -(Pm[:, 1] - Nc)], 1).astype(np.float32)
+            im = np.concatenate(mg['idx']).astype(np.uint32).reshape(-1, 3)[:, ::-1].ravel()
+            meshes.append(dict(name='markings', pos=pm, idx=im, nrm=np.tile(np.array([[0, 1, 0]], np.float32), (len(pm), 1)),
+                               col=np.full((len(pm), 3), 0.93, np.float32), rough=0.6))
+        size = write_glb(fn, meshes, extras={'utm_centre': [Ec, Nc], 'H0': H0, 'crs': 'EPSG:25832'})
         files[f'{tx}_{ty}'] = size
     return files
 
@@ -588,7 +660,8 @@ def build(osm, dem, area, out_dir):
     n, cst = carve(dem, pos, chains, h, area)
     log('Gelände an Straßen angepasst:', cst)
     groups = ribbons(pos, chains, h, area)
-    files = write_ribbons(groups, os.path.join(out_dir, 'r'))
+    marks = markings(pos, chains, h, area)
+    files = write_ribbons(groups, os.path.join(out_dir, 'r'), marks)
     # centre lines for the app (physics, later): per way kind, surface, width, flags, points (E, N, H) rounded to cm
     lines = []
     for w, ids in chains:

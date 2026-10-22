@@ -29,9 +29,42 @@ def bilinear(M, E, N, e0, n1, px):
     return np.where(inside, v, np.nan)
 
 
-class Dem:
-    def __init__(self, raw, area, ctx, use_dgm=True, blend=300.0):
+class CopGround:
+    """Copernicus GLO-30 with the forest canopy lowered (WorldCover tree mask x an offset fitted on the data itself: the high-pass
+    of the surface regressed on the high-pass of the tree mask). Without WorldCover the plain surface model."""
+    def __init__(self, raw, ctx, use_trees=True):
         self.cop = Cop30(raw, ctx)
+        self.trees, self.canopy = None, 0.0
+        if not use_trees:
+            return
+        try:
+            from landcover import TreeMask
+            self.trees = TreeMask(raw, ctx)
+        except Exception as e:
+            log('WorldCover nicht verfügbar – Copernicus ohne Kronenabzug:', repr(e)[:200])
+            return
+        from scipy import ndimage
+        T = self.trees
+        H, W = T.m.shape
+        EE, NN = np.meshgrid(T.e0 + (np.arange(W) + 0.5) * T.res, T.n1 - (np.arange(H) + 0.5) * T.res)
+        C = self.cop(EE, NN).astype(np.float64)
+        M = T.m.astype(np.float64)
+        hc = C - ndimage.gaussian_filter(C, 25)
+        hm = M - ndimage.gaussian_filter(M, 25)
+        k = float(np.sum(hc * hm) / max(np.sum(hm * hm), 1e-9))
+        self.canopy = float(np.clip(k, 5.0, 30.0))
+        log(f'Copernicus: Kronenhöhe aus den Daten geschätzt {k:.1f} m -> abgezogen {self.canopy:.1f} m unter Wald')
+
+    def __call__(self, E, N):
+        v = self.cop(E, N)
+        if self.trees is not None:
+            v = v - self.canopy * self.trees(np.asarray(E, float), np.asarray(N, float))
+        return v
+
+
+class Dem:
+    def __init__(self, raw, area, ctx, use_dgm=True, blend=300.0, use_trees=True):
+        self.cop = CopGround(raw, ctx, use_trees)
         e0, n0, e1, n1 = [float(v) for v in area]
         self.e0, self.n1, self.px = e0, n1, 1.0
         W, H = int(round(e1 - e0)), int(round(n1 - n0))

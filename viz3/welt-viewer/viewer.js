@@ -117,7 +117,9 @@ function contentMaterial(kind) {
   };
   return m;
 }
-const MAT = { roads: contentMaterial('roads'), buildings: contentMaterial('buildings') };
+const MAT = { roads: contentMaterial('roads'), buildings: contentMaterial('buildings'), marks: contentMaterial('roads') };
+MAT.marks.polygonOffsetFactor = -4;
+MAT.marks.polygonOffsetUnits = -8;
 
 // ---------------- meta, frame ----------------
 let META, O, LV, LMIN, LMAX;
@@ -426,7 +428,7 @@ function updateContent() {
               g => {
                 g.scene.traverse(o => {
                   if (o.isMesh) {
-                    o.material = MAT[kind];
+                    o.material = kind === 'roads' && /mark/.test(o.name) ? MAT.marks : MAT[kind];
                     o.frustumCulled = false;
                   }
                 });
@@ -553,15 +555,14 @@ function place(name) {
   const at = (E, N, h, dx, dz, H) => {
     setMode('orbit');
     const t = toScene(E, N, 0);
-    t.y = h;
+    t.y = h === null ? groundAt(t) : h;
     orbit.target.copy(t);
     camera.position.set(t.x + dx, t.y + H, t.z + dz);
   };
-  const g = () => groundAt(toScene(O.E, O.N, 0));
-  if (name === 'garten') at(O.E, O.N, g(), 120, 160, 90);
-  if (name === 'dorf') at(625790, 5595400, g(), 260, 320, 180);
-  if (name === 'talsperre') at(627070, 5594370, g(), 600, 700, 420);
-  if (name === 'schleusingen') at(624270, 5596780, g(), 700, 900, 520);
+  if (name === 'garten') at(O.E, O.N, null, 120, 160, 90);
+  if (name === 'dorf') at(625790, 5595400, null, 260, 320, 180);
+  if (name === 'talsperre') at(627070, 5594370, null, 600, 700, 420);
+  if (name === 'schleusingen') at(624270, 5596780, null, 700, 900, 520);
   if (name === 'ueberblick') {
     const c = [(A.block[0] + A.block[2]) / 2, (A.block[1] + A.block[3]) / 2];
     at(c[0], c[1], 0, 2600, 3600, 2900);

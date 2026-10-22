@@ -41,7 +41,7 @@ jobs:
           python-version: '3.12'
       - name: Werkzeuge
         run: |
-          pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests mapbox-earcut matplotlib playwright
+          pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests mapbox-earcut rasterio playwright
           python -m playwright install --with-deps chromium
       - name: Kurztests der Pipeline (Sekunden)
         run: python -I tools/welt/test_welt.py

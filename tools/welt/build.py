@@ -130,7 +130,7 @@ def main():
         'tiling': {'root': [ROOT_E0, ROOT_N0, ROOT_SIZE], 'y': 'north', 'tile_px': TILE_PX, 'terrain_n': TERR_N,
                    'image': 'i/{z}/{x}/{y}.webp', 'terrain': 't/{z}/{x}/{y}.bin',
                    'terrain_format': 'WTH1: Kopf 20 Byte (Magic, n, Flags, Basis cm, hmin, hmax) + zlib der Lorenzo-Reste in cm (tools/welt/tiles.py)',
-                   'levels': lv, 'hmin': round(hmin, 2), 'hmax': round(hmax, 2), 'areas': {'context': ctx, 'block': blk, 'detail': det}},
+                   'levels': lv, 'hmin': round(hmin - H0, 2), 'hmax': round(hmax - H0, 2), 'areas': {'context': ctx, 'block': blk, 'detail': det}},
         'content': {'level': CONTENT_LEVEL, 'roads': 'r/{z}_{x}_{y}.glb', 'buildings': 'b/{z}_{x}_{y}.glb',
                     'glb_frame': 'x = E - Ec, y = H - H0, z = -(N - Nc); (Ec, Nc) = Mitte der Kachel (auch in extras.utm_centre)',
                     'roads_tiles': sorted(rmeta['tiles']), 'buildings_tiles': sorted(bmeta['tiles']),
@@ -144,6 +144,28 @@ def main():
         'buildings': {k: v for k, v in bmeta.items() if k != 'tiles'},
     }
     json.dump(meta, open(os.path.join(a.out, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
+    # the same GLB tiles as 3D Tiles 1.1 tilesets (standard loaders, e.g. 3DTilesRendererJS): local frame x east, y north, z up with the
+    # origin at the model origin (E, N, H0); glTF y-up content is turned z-up by the 3D Tiles convention
+    for kind, sub, tl in (('roads', 'r', rmeta['tiles']), ('buildings', 'b', bmeta['tiles'])):
+        kids = []
+        for k in sorted(tl):
+            x, y = map(int, k.split('_'))
+            e0_, n0_, e1_, n1_ = wlib.tbounds(CONTENT_LEVEL, x, y)
+            ec, nc = (e0_ + e1_) / 2, (n0_ + n1_) / 2
+            g = dem.grid(e0_, n0_, (e1_ - e0_) / 8, 9)
+            z0, z1 = float(g.min()) - H0 - 5, float(g.max()) - H0 + (40 if kind == 'buildings' else 5)
+            kids.append({'boundingVolume': {'box': [0, 0, (z0 + z1) / 2, (e1_ - e0_) / 2, 0, 0, 0, (n1_ - n0_) / 2, 0, 0, 0, (z1 - z0) / 2]},
+                         'transform': [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, round(ec - XF['ex'], 3), round(nc - XF['ey'], 3), 0, 1],
+                         'geometricError': 0, 'content': {'uri': f'{CONTENT_LEVEL}_{x}_{y}.glb'}})
+        if not kids:
+            continue
+        ar = det
+        rb = [(ar[0] + ar[2]) / 2 - XF['ex'], (ar[1] + ar[3]) / 2 - XF['ey'], (ar[2] - ar[0]) / 2, (ar[3] - ar[1]) / 2]
+        ts = {'asset': {'version': '1.1', 'generator': 'pavillon-ratscher tools/welt', 'extras': {'crs': 'EPSG:25832', 'origin_utm': [XF['ex'], XF['ey']], 'H0': H0}},
+              'geometricError': 2000,
+              'root': {'boundingVolume': {'box': [rb[0], rb[1], (hmin + hmax) / 2 - H0, rb[2] + 50, 0, 0, 0, rb[3] + 50, 0, 0, 0, (hmax - hmin) / 2 + 60]},
+                       'geometricError': 400, 'refine': 'ADD', 'children': kids}}
+        json.dump(ts, open(os.path.join(a.out, sub, 'tileset.json'), 'w'), indent=1)
     open(os.path.join(a.out, 'ATTRIBUTION.md'), 'w').write(ATTR_DE)
     tot = 0
     nf = 0
