@@ -10,7 +10,8 @@ ok = []; fails = []
 def check(name, cond, info=''):
     (ok if cond else fails).append(name); print(('OK   ' if cond else 'FAIL ') + name, info, flush=True)
 with lib.browser() as b:
-    errs = []; pg = lib.page(b, 1100, 640, errs, tier='hoch'); lib.boot(pg, port, query='?fell=1', figures=True); E = pg.evaluate
+    # TIER=schnell: much faster in SwiftShader (the forest's level-of-detail work after the camera moves at the Klinge blocks the page between steps)
+    errs = []; pg = lib.page(b, 1100, 640, errs, tier=os.environ.get('TIER', 'hoch')); lib.boot(pg, port, query='?fell=1', figures=True); E = pg.evaluate
     E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
     steps = lambda secs: E(f"for (let i = 0; i < {int(secs / 0.025)}; i++) GAME.step(0.025)")
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))

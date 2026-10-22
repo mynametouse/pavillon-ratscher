@@ -169,7 +169,10 @@ const HOLZDRY = (() => {
     PLAY.act({ id: 'hd:kiln', r: 2.6, prio: 0.7, pos: kpos, label: () => { const o = kilnOp(); return o ? o.label : null; }, run: () => { const o = kilnOp(); if (o) o.run(); } });
     PLAY.act({ id: 'hd:lapse', r: 2.8, prio: 0.5, pos: () => { const p = pos(); return [p[0] - 0.6, p[1], p[2]]; }, label: () => S.stack && S.stack.layers.length ? 'Trocknen beobachten (Zeitraffer)' : null, run: openLapse });
     // the clock window lists the stack while it dries
-    if (CLOCK.jobs) CLOCK.jobs.push(() => { const m = stackMC(); return m ? [{ label: `Trockenstapel: ${de(m.avg)} % Holzfeuchte`, left: 0 }] : []; }); }
+    // (the forecast to 20 % – air-dry – once per game hour; 'fertig' when there; not listed if it would take more than two years)
+    let fc = { h: -1, d: 0 };
+    if (typeof CLOCK.jobs === 'function') CLOCK.jobs(() => { const m = stackMC(); if (!m) return []; const h = Math.floor(CLOCK.t / 60); if (h !== fc.h) { fc.h = h; fc.d = m.avg > 20 ? forecast(20) : 0; }
+      if (fc.d < 0) return []; return [{ label: `Trockenstapel: ${de(m.avg)} % Holzfeuchte${m.avg > 20 ? ', lufttrocken (20 %)' : ' – lufttrocken'}`, left: fc.d > 0 ? fc.d * 1440 : 0 }]; }); }
   // ---------------- saving (inside world/holz.js) ----------------
   function save() { if (HOLZ.save) HOLZ.save(); }
   const p2 = HOLZ.part2; HOLZ.part2 = () => Object.assign(p2 ? p2() : {}, { stack: S.stack, hist: S.hist.slice(-400), kiln: S.kiln });
