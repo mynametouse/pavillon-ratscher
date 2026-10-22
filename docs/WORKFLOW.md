@@ -41,6 +41,8 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 bash tools/check.sh                              # ohne Browser, ~10 s: Build, Lint (Datei:Zeile), Testskripte, Format-Bericht, Abhängigkeiten
 python3 viz3/test/run.py --serve smoke           # Browser-Tests nacheinander: je Test PASS/FAIL in einer Zeile, Exit-Code, Logs in out/run/
 python3 viz3/test/run.py --serve gate            # Prüfpaket vor dem Veröffentlichen: smoke gpu softgl loadlog
+# bei GitHub läuft bei jedem Stand auf src das ganze Prüfpaket gleichzeitig (.github/workflows/pruefpaket.yml):
+#   smoke gpu softgl loadlog memphone savefuzz + Straßen (Wellen je km) + Safari-Engine (Versuch)
 ```
 
 - Vor jedem Push `tools/check.sh`. Neue Tests melden über `ck = lib.Checks('name')`, `ck('was', bedingung, info)`, `ck.errors(errs)`, `ck.done()`
@@ -59,6 +61,8 @@ python3 viz3/test/run.py --serve gate            # Prüfpaket vor dem Veröffent
 | Skript | prüft | Dauer |
 |---|---|---|
 | smoke.py | Laden, keine Fehler | 3 min |
+| savefuzz.py | **Kaputte Spielstände** (Umbau Phase 0): jeder gespeicherte Schlüssel mit Unsinn belegt (kein JSON, falsche Typen, NaN, alte Namen) – die Seite startet trotzdem, `SAVE.problems` zählt, was ignoriert wurde | 6 min |
+| webkit.py | **Safari-Engine** (WebKit, iPhone-13-Profil): lädt ohne Fehler, Renderer und Ladezeit; im Prüfpaket bei GitHub als Versuch | 5 min |
 | memphone.py | **Speicher wie am iPhone** (V16b6): iPhone-13-Kontext ohne Stufen-Voreinstellung – Texturen halbiert, entpackte Bilder < 350 MB; nach einem abgebrochenen Versuch Viertel (gemerkt); Prozess-Speicher (ps). `texhalf.py`: dieselben Bilder mit `?tex=full` und `?tex=half` – halbierte Texturen sehen gleich aus (mittlere Abweichung < 8) | 4 + 5 min |
 | fellcrash.py | **Absturz nach dem Fällen** (V16b5): Baum aus den Kollisionen genommen, Traktor fährt zum Stubben (von Hand gesteppt und mit echter Bildschleife), Zustand bleibt endlich; NaN im Ton verworfen, NaN im Fahrzeug zurückgesetzt, Fehler in einem Bild nach dem Laden: keine Lademeldung, Bilder laufen weiter, Hinweis und Protokoll | 4 min |
 | loadlog.py | **Laden Schritt für Schritt** (V16b4): Aufbau gezählt, Sekunden unter der Ladeanzeige, Ladeprotokoll geschlossen, nach einem abgebrochenen Versuch Hinweis, wo er stand; `loadprof.py`: Zeitachse der Ladeanzeige, CPU-Profil je Funktion, Programme | 6 min |
