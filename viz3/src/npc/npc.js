@@ -5,8 +5,8 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { LATE } from '../core/late.js';
 import { $, cam, scene, V } from '../core/head.js';
 import { ANISO, FIGSH, markDirty, patchSV, plain } from '../core/assets.js';
-import { B, beam, COL, hingeDoor, PH, PH_END, phase, tagPh } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { B, beam, COL, hingeDoor, PH, PH_END, phase, tagPh } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import { S0, sun, sunDir } from '../garden/env.js';
 import { gB, MATS } from '../garden/site_base.js';

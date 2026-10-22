@@ -18,8 +18,8 @@
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
 import { plain } from '../core/assets.js';
-import { B, beam, COL, PH, PH_END, tagPh } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { B, beam, COL, PH, PH_END, tagPh } from '../core/geo.js';
 export const T = 0.292;
 export const DEP = {
   clad: [0, 0.022],

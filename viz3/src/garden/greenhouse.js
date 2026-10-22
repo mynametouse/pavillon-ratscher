@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { rnd, V } from '../core/head.js';
 import { instanceVariants, MODELS } from '../core/assets.js';
-import { beam, bldBegin, bldEnd, glassLeaf, tagPh } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { beam, bldBegin, bldEnd, glassLeaf, tagPh } from '../core/geo.js';
 import {
   BLD,
   FOOT,

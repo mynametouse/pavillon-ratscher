@@ -2,8 +2,8 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { VARIANT } from '../core/head.js';
-import { B, beam, COL, cyl, flapDoor, PH, phase, PHN, siteUV, varOff, varOn, WALK } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { B, beam, COL, cyl, flapDoor, PH, phase, PHN, siteUV, varOff, varOn, WALK } from '../core/geo.js';
 import {
   bandH,
   bandS,

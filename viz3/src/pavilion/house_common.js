@@ -2,8 +2,8 @@
 // ======================= PHASE 0/1: existing slab with the tin garage, then cleared =======================
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
-import { B, beam, boardLeaf, COL, cyl, hingeDoor, PH, phase, PHN, tagPh } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { B, beam, boardLeaf, COL, cyl, hingeDoor, PH, phase, PHN, tagPh } from '../core/geo.js';
 import {
   BV,
   cutOps,

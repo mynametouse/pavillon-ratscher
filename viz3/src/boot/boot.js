@@ -6,8 +6,8 @@
 import { SAVE } from '../core/save.js';
 import { $, cam, OFFLINE, R, scene, VARIANT } from '../core/head.js';
 import { DIRTY, LOAD, LOADLOG, markDirty, SV, VEG, whenLoaded } from '../core/assets.js';
-import { COL, WALK } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { COL, WALK } from '../core/geo.js';
 import { sunFollow } from '../garden/env.js';
 import { GLINFO, prepareGPU, RENDER, renderFrame, setQuality } from '../render/render.js';
 import { adaptExposure, MODES, setMode } from '../render/modes.js';
