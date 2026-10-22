@@ -46,7 +46,7 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 | Skript | prüft | Dauer |
 |---|---|---|
 | smoke.py | Laden, keine Fehler | 3 min |
-| softgl.py | **Laden ohne Grafikkarte** (V16b2): ohne Stufen-Voreinstellung, Software-Grafik erkannt, gleich „schnell“, Vorbereitung < 3 min, Ladeanzeige bleibt nicht bei „100 %“ stehen, Hinweis | 5 min |
+| softgl.py | **Laden ohne Grafikkarte** (V16b2/V16b3): ohne Stufen-Voreinstellung, Software-Grafik erkannt, gleich „schnell“, Vorbereitung < 3 min, Ladeanzeige bleibt nicht bei „100 %“ stehen und zählt die Shader, Seite bleibt beim Vorbereiten ansprechbar (≤ 12 s am Stück), Hinweis | 5 min |
 | gpu.py | **GPU-Grenzen**: höchstens 16 Texturen je Shader-Programm (wie auf Laptops/Macs/Telefonen), kein Programm kaputt, Boden an 7 Orten tags und nachts sichtbar (kein Himmel im unteren Bilddrittel), dazu Innenraum, Werkstatt, Auto, Draufsicht. **Vor jeder Veröffentlichung**, bei neuen Texturen in Shadern immer | 6 min |
 | v15b.py | Werkstatt-Spiel komplett vom Leimholz bis zum geölten Brett (Regression) | 20 min |
 | v15b_reload.py | Spielstand speichern/laden, Handy-Ansicht | 15 min |
@@ -58,7 +58,8 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 | bilder.py `b21 B` | Galeriebilder nach `dist/img` (`?offline=1`, hohe Qualität) | je 2 min |
 | pano.py, tour.py, gi.py, bake.py | 360°-Bilder, Raumführung, GI- und Himmelssichtbarkeits-Volumen backen | lang |
 
-- Zwei CPU-Kerne: nicht mehrere Browser-Tests gleichzeitig laufen lassen.
+- Zwei CPU-Kerne: nicht mehrere Browser-Tests gleichzeitig laufen lassen (SwiftShader verliert sonst den WebGL-Kontext).
+- **Windows misst anders** (V16b3): Chrome übersetzt dort jeden Shader über Direct3D (0,3–1,4 s je Programm ohne Grafikkarte), SwiftShader hier nicht. Wer viele neue Materialien/Shader bringt, prüft das Laden vor dem Veröffentlichen zusätzlich im Chrome des Owners (Claude in Chrome, Testseite mit `window.ASSET_BASE` auf die Website, siehe Branch `test/softgl`): Zeitstrahl der Ladeanzeige und Lücken > 1,5 s mitschreiben.
 
 ## 4 Veröffentlichen (Checkliste)
 

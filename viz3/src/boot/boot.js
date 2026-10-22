@@ -6,7 +6,7 @@ resize(); setVariant(VARIANT, { save: false }); go('modell'); setCollide(true); 
 for (const k of ['hatch', 'roofhatch']) setDoorNow(k, true);   // the trapdoor and the roof hatch usually stand open
 requestAnimationFrame(frame);
 const hideLoading = () => { const ld = $('loading'); if (ld) ld.hidden = true; LOAD.ready = true; markDirty(true); qualLabel(); };
-const sayLoading = t => { const ld = $('loading'); if (ld && !ld.hidden) ld.textContent = t; };
+const sayLoading = t => { LOAD.alive = performance.now(); const ld = $('loading'); if (ld && !ld.hidden && ld.textContent !== t) ld.textContent = t; };
 // show the model only when every shader is compiled and every texture is on the GPU – otherwise the first minute stutters
 // V16b2: without a graphics card (software rendering) say once per visit why it is slow and what helps
 const softHint = () => { if (!window.GLINFO || !GLINFO.soft || OFFLINE) return; let seen = false; try { seen = sessionStorage.getItem('pav-soft') === '1'; sessionStorage.setItem('pav-soft', '1'); } catch (e) {} if (seen) return;
@@ -15,7 +15,9 @@ whenLoaded(() => { LOAD.prepStart = performance.now(); prepareGPU(sayLoading).ca
 // the browser may drop the GPU context (driver reset, too little memory): say so instead of a frozen picture; three.js rebuilds it
 R.domElement.addEventListener('webglcontextlost', () => { const ld = $('loading'); if (ld) { ld.hidden = false; ld.textContent = 'Die Grafik wurde vom Browser zurückgesetzt – sie wird neu aufgebaut …'; } }, false);
 R.domElement.addEventListener('webglcontextrestored', () => { const ld = $('loading'); if (ld && LOAD.ready) ld.hidden = true; markDirty(true); }, false);
-setTimeout(() => { if (!LOAD.ready) hideLoading(); }, OFFLINE ? 900000 : 90000);
+// V16b3: the page opens by itself only when nothing has moved for two minutes (a stuck driver) – never in the middle of a running step
+// (the old fixed 90 s opened it while shaders were still compiling: every frame then waited for them and the page froze)
+LOAD.alive = performance.now(); { const iv = setInterval(() => { if (LOAD.ready) { clearInterval(iv); return; } if (performance.now() - LOAD.alive > (OFFLINE ? 900000 : 120000)) { clearInterval(iv); console.warn('loading: no progress for 2 min, opening'); hideLoading(); } }, 5000); }
 window.GAME = { R, scene, cam, MAT, MODES, PHASES, setPhase, phase: () => PHASE, P, go, DOOR, toggleDoor, floorAt, setCollide, nearDoor, setMode, setQuality, audio, setSound, COL, WALK, RENDER, SV, MERGED: window.MERGED,
   setVariant, variant: () => VARIANT, perfTest, GEO, render: () => markDirty(), loaded: () => !!LOAD.ready, assetsLoaded: () => LOAD.finished, perf: () => ({ tier: RENDER.tier, bench: RENDER.bench, prepMs: RENDER.prepMs, pr: R.getPixelRatio(), programs: R.info.programs.length }), doorsAll: v => { for (const k of DKEYS()) setDoorNow(k, v); }, setDoorNow,
   sim(f, turn, side, secs, run = 1) { for (let t = 0; t < secs - 1e-9; t += 0.025) physics(0.025, f, turn, side, run); return { x: +P.x.toFixed(2), y: +P.y.toFixed(2), feet: +P.feet.toFixed(2), where: placeName() }; },

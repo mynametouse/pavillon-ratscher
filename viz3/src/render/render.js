@@ -65,28 +65,62 @@ const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
 const GLINFO = (() => { let r = ''; try { const gl = R.getContext(), d = gl.getExtension('WEBGL_debug_renderer_info'); r = String((d && gl.getParameter(d.UNMASKED_RENDERER_WEBGL)) || gl.getParameter(gl.RENDERER) || ''); } catch (e) {}
   return { renderer: r, soft: /swiftshader|basic render|llvmpipe|softpipe|software/i.test(r) }; })();
 window.GLINFO = GLINFO;
+// V16b3: decided at once, not only after loading – every frame on a software renderer is cheap from the start
+if (GLINFO.soft && !TIER_USER && !OFFLINE && RENDER.tier !== 'schnell') applyTier('schnell', false);
+// and the sun's shadow map smaller and with the plain filter there: its one-time drawing took ~14 s on a PC without graphics card
+if (GLINFO.soft && !OFFLINE) { R.shadowMap.type = THREE.PCFShadowMap; if (sun.shadow.mapSize.x > 1024) sun.shadow.mapSize.set(1024, 1024); }
 function timeOne() { const gl = R.getContext(), px = new Uint8Array(4), a = performance.now(); renderFrame(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return performance.now() - a; }
 function timeFrames(n) { const gl = R.getContext(), px = new Uint8Array(4), ts = [];
   for (let i = 0; i < n + 2; i++) { const a = performance.now(); renderFrame(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); if (i >= 2) ts.push(performance.now() - a); }
   ts.sort((a, b) => a - b); return ts[Math.floor(ts.length / 2)]; }
-async function prepareGPU(say) {
-  const t0 = performance.now(), step = (k, t) => say && say('Grafik wird vorbereitet … (' + k + '/3: ' + t + ')');
-  const soft = GLINFO.soft && !TIER_USER && !OFFLINE; if (soft) { applyTier('schnell', false); resize(); RENDER.bench = { soft: 1 }; }
-  // 1) all scene materials in the render-target variant the composer uses (KHR_parallel_shader_compile: the page stays responsive);
-  //    at most 40 s – a lost context or a stuck driver must not keep the loading screen up for ever
-  step(1, 'Shader');
+// V16b3: nothing in the preparation may block the page for long. On Windows every shader goes through Direct3D's compiler (0.3–1.4 s each
+// on a PC without graphics card, 129 programs), and the old "one frame with everything" uploaded ~300 megapixels of textures in one go
+// (65 s there) – the page froze for minutes at "100 %" (Falko, 22.10.2026). Now: shaders compile in the background with a count on the
+// loading screen (KHR_parallel_shader_compile: readiness is asked without waiting), textures go up one by one between short pauses, and a
+// software renderer uploads only what the first picture shows (the rest when it comes into view). LOAD.alive marks progress: the boot
+// fallback opens the page only when nothing has moved for a while, never in the middle of a running step.
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function compileShown(say) {
+  const gl = R.getContext(), ext = gl.getExtension('KHR_parallel_shader_compile');
   const rt = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType });
-  try { R.setRenderTarget(rt); await Promise.race([R.compileAsync(scene, cam), new Promise(r => setTimeout(r, 40000))]); } catch (e) { console.warn('compile', e); } finally { R.setRenderTarget(null); rt.dispose(); }
-  // 2) one frame with culling off (shadow-map programs, post passes, all textures to the GPU) – hidden behind the loading screen
-  // (the hidden design variant is shown for this one frame too, so switching variants later uploads nothing)
-  step(2, 'Texturen'); await nextFrame();
-  const off = [], shown = [], phOn = o => o.userData.ph === undefined || (o.userData.ph <= PHASE && (o.userData.phEnd === undefined || PHASE < o.userData.phEnd));
-  scene.traverse(o => { if (o.isMesh && o.frustumCulled) { off.push(o); o.frustumCulled = false; } if (o.userData.var && !o.visible && phOn(o)) { shown.push(o); o.visible = true; } });
-  R.shadowMap.needsUpdate = true; applyCam(); renderFrame(); for (const o of off) o.frustumCulled = true; for (const o of shown) o.visible = false; R.shadowMap.needsUpdate = true;
-  await nextFrame(); renderFrame(); await nextFrame(); renderFrame('motion'); await nextFrame();
+  let fin = false;
+  try { R.setRenderTarget(rt); R.compileAsync(scene, cam).then(() => { fin = true; }, e => { console.warn('compile', e); fin = true; }); }   // compile() itself runs now, with the render target set
+  catch (e) { console.warn('compile', e); fin = true; } finally { R.setRenderTarget(null); }
+  let lastN = -1, lastT = performance.now();
+  while (!fin) { await sleep(200);
+    let ok = 0; const ps = R.info.programs || [];
+    if (ext) for (const p of ps) { if (p._pavReady || gl.getProgramParameter(p.program, ext.COMPLETION_STATUS_KHR)) { p._pavReady = true; ok++; } }
+    if (ok !== lastN) { lastN = ok; lastT = performance.now(); LOAD.alive = lastT; }
+    if (ext) say && say('Grafik wird vorbereitet … Shader ' + ok + ' von ' + ps.length);
+    if (performance.now() - lastT > 60000) { console.warn('compile: no progress for 60 s'); break; } }   // a stuck driver: go on, the frames compile the rest
+  rt.dispose(); }
+async function uploadTextures(say, seenOnly) {
+  const set = new Set(), add = t => { if (t && t.isTexture && !t.isRenderTargetTexture && t.image && (t.image.width || t.image.data || t.image.length)) set.add(t); };
+  let fr = null; if (seenOnly) { applyCam(); cam.updateMatrixWorld(); fr = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse)); }
+  (fr ? scene.traverseVisible : scene.traverse).call(scene, o => { if (fr && (o.isMesh || o.isPoints || o.isLine) && o.frustumCulled && !fr.intersectsObject(o)) return;
+    const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []; for (const m of ms) { for (const k in m) { const v = m[k]; if (v && v.isTexture) add(v); }
+    if (m.uniforms) for (const k in m.uniforms) { const u = m.uniforms[k]; if (u && u.value) Array.isArray(u.value) ? u.value.forEach(add) : add(u.value); } } });
+  const list = [...set]; let n = 0, slice = performance.now();
+  for (const t of list) { try { R.initTexture(t); } catch (e) {} n++;
+    if (performance.now() - slice > 40) { LOAD.alive = performance.now(); say && say('Grafik wird vorbereitet … Texturen ' + n + ' von ' + list.length); await sleep(0); slice = performance.now(); } }
+  return list.length; }
+async function prepareGPU(say) {
+  const t0 = performance.now(), step = t => say && say('Grafik wird vorbereitet … ' + t);
+  const soft = GLINFO.soft && !TIER_USER && !OFFLINE; if (soft) { applyTier('schnell', false); resize(); RENDER.bench = { soft: 1 }; }
+  // 1) all scene materials in the render-target variant the composer uses – in the background, the count on the loading screen
+  step('Shader'); LOAD.alive = performance.now(); await compileShown(say);
+  // 2) textures to the GPU one by one; then (hardware) one frame with culling off for the shadow-map programs and post passes, with the hidden
+  //    design variant shown for this one frame (switching variants later uploads nothing). A software renderer skips both: every texture
+  //    there costs a second, and a frame of everything many more – the first picture comes first, the rest when it is seen
+  if (!soft) { RENDER.texN = await uploadTextures(say); step('erstes Bild'); LOAD.alive = performance.now(); await nextFrame();
+    const off = [], shown = [], phOn = o => o.userData.ph === undefined || (o.userData.ph <= PHASE && (o.userData.phEnd === undefined || PHASE < o.userData.phEnd));
+    scene.traverse(o => { if (o.isMesh && o.frustumCulled) { off.push(o); o.frustumCulled = false; } if (o.userData.var && !o.visible && phOn(o)) { shown.push(o); o.visible = true; } });
+    R.shadowMap.needsUpdate = true; applyCam(); renderFrame(); for (const o of off) o.frustumCulled = true; for (const o of shown) o.visible = false; R.shadowMap.needsUpdate = true; }
+  else { RENDER.texN = await uploadTextures(say, true); step('erstes Bild'); LOAD.alive = performance.now(); await nextFrame(); R.shadowMap.needsUpdate = true; applyCam(); }
+  LOAD.alive = performance.now(); await nextFrame(); renderFrame(); await nextFrame(); renderFrame('motion'); await nextFrame(); LOAD.alive = performance.now();
   // 3) pick the tier once (unless chosen by hand earlier): one probe frame first – a slow GPU goes straight to the lightest tier
   //    (still frames are drawn only when the view stops, so they may take longer; moving frames get their own, cheaper path)
-  if (!TIER_USER && !OFFLINE && !soft) { step(3, 'Grafikkarte testen'); await nextFrame();
+  if (!TIER_USER && !OFFLINE && !soft) { step('Grafikkarte testen'); LOAD.alive = performance.now(); await nextFrame();
     let name = RENDER.tier, ms = timeOne(); RENDER.bench = { probe: Math.round(ms) };
     if (ms > 250 && name !== 'schnell') { name = 'schnell'; applyTier(name, false); resize(); renderFrame(); await nextFrame(); ms = timeOne(); RENDER.bench[name] = Math.round(ms); }
     else { ms = timeFrames(4); RENDER.bench[name] = Math.round(ms);

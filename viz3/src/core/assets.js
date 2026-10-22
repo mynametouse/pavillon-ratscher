@@ -1,8 +1,11 @@
 // ---------------- asset loading ----------------
 const LM = new THREE.LoadingManager();
 const LOAD = { done: 0, total: 0, finished: false, cbs: [] };
-LM.onProgress = (u, d, t) => { LOAD.done = d; LOAD.total = t; const l = $('loading'); if (l && !l.hidden && !LOAD.finished) l.textContent = 'Modell wird geladen … ' + Math.round(100 * d / Math.max(t, 1)) + ' %'; };   // V16b2: later loads do not overwrite the next steps
-LM.onLoad = () => { LOAD.finished = true; LOAD.cbs.splice(0).forEach(f => { try { f(); } catch (e) { console.error(e); } }); };
+LM.onProgress = (u, d, t) => { LOAD.done = d; LOAD.total = t; LOAD.alive = performance.now(); const l = $('loading'); if (l && !l.hidden && !LOAD.finished && !LOAD.allIn) l.textContent = 'Modell wird geladen … ' + Math.round(100 * d / Math.max(t, 1)) + ' %'; };   // V16b2: later loads do not overwrite the next steps
+// V16b3: after the last file the scene is built from them (up to half a minute on a slow PC): say so, and let the page show it before the work
+// starts (LOAD.finished – and with it whenLoaded's run-at-once – only from the moment the callbacks run, so nothing sees a half-built scene)
+LM.onLoad = () => { if (LOAD.flushT) return; const l = $('loading'); if (!LOAD.finished && l && !l.hidden) l.textContent = 'Modell wird aufgebaut …'; LOAD.allIn = true; LOAD.alive = performance.now();
+  LOAD.flushT = setTimeout(() => { LOAD.flushT = 0; LOAD.finished = true; LOAD.cbs.splice(0).forEach(f => { try { f(); } catch (e) { console.error(e); } }); LOAD.alive = performance.now(); }, LOAD.finished ? 0 : 40); };
 LM.onError = u => console.warn('Datei fehlt:', u);
 function whenLoaded(f) { if (LOAD.finished) f(); else LOAD.cbs.push(f); }
 // standalone single-file version: assets come from blob URLs built from the embedded data

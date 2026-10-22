@@ -274,6 +274,9 @@ function frame(now) { const dt = Math.min(0.12, (now - last) / 1000); last = now
   if (P.mode === 'walk' && !(window.VEH && VEH.cur)) cam3Update(dt);
   adaptExposure(dt);
   if (window.TICKS) for (let i = 0; i < TICKS.length; i++) { try { TICKS[i](dt); } catch (e) { if (!TICKS[i]._err) { TICKS[i]._err = 1; console.warn('tick', e); } } }
+  // V16b3: nothing is drawn while the loading screen is up – prepareGPU draws its own frames; a frame here could wait for shaders still
+  // compiling in the background (seconds each on Windows without a graphics card) and froze the page
+  if (!LOAD.ready) { requestAnimationFrame(frame); return; }
   if (_shadowDirty) { R.shadowMap.needsUpdate = true; _shadowDirty = false; _dirty = true; }
   // moving view → cheap frame every time; standing still → one full-quality frame (other changes while still, e.g. walking figures, at most every few frames)
   if (_dirty) { const t0 = performance.now(); applyCam(); const moved = camMoved();
