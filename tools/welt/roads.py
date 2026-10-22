@@ -687,13 +687,35 @@ def routes(pos, chains, h, area, n=3):
     return res
 
 
-def build(osm, dem, area, out_dir, axis=False):
+def profile_png(path, title, s, raw, smooth, terrain=None):
+    """longitudinal profile before/after as a small PNG (PIL only): grey = axis point-sampled from the terrain model,
+    red = smoothed road profile; heights exaggerated"""
+    from PIL import Image, ImageDraw
+    W, H, m = 1400, 420, 50
+    lo, hi = float(min(np.nanmin(raw), np.nanmin(smooth))) - 1, float(max(np.nanmax(raw), np.nanmax(smooth))) + 1
+    im = Image.new('RGB', (W, H), (255, 255, 255))
+    d = ImageDraw.Draw(im)
+    X = lambda v: m + (v - s[0]) / max(s[-1] - s[0], 1) * (W - 2 * m)
+    Y = lambda v: H - m - (v - lo) / max(hi - lo, 0.1) * (H - 2 * m)
+    for k in range(0, int(s[-1]) + 1, 100):
+        d.line([(X(k), m), (X(k), H - m)], fill=(232, 232, 232))
+        d.text((X(k) + 2, H - m + 4), f'{k} m', fill=(90, 90, 90))
+    for z in np.arange(np.ceil(lo), hi, max(1, round((hi - lo) / 8))):
+        d.line([(m, Y(z)), (W - m, Y(z))], fill=(232, 232, 232))
+        d.text((4, Y(z) - 6), f'{z:.0f}', fill=(90, 90, 90))
+    d.line([(X(a), Y(b)) for a, b in zip(s, raw)], fill=(150, 150, 150), width=1)
+    d.line([(X(a), Y(b)) for a, b in zip(s, smooth)], fill=(200, 30, 30), width=2)
+    d.text((m, 12), title + '  –  grau: Achse punktweise aus dem Gelände, rot: geglättetes Längsprofil (m NHN)', fill=(0, 0, 0))
+    im.save(path)
+
+
+def build(osm, dem, area, out_dir, fit=False):
     """the whole roads step for one area -> writes r/*.glb, roads.json, routes.json; carves dem.mos; returns the meta entry"""
     ways, nodeE = load_ways(osm, area)
     pos, chains = network(ways, nodeE)
     log(f'Straßen: {len(ways)} Wege, {len(pos)} Knoten, {sum(len(i) for _, i in chains)} Kettenpunkte')
     axis_fit = None
-    if axis:
+    if fit:
         try:
             pos, sa = fit_axis(pos, chains, dem)
             axis_fit = {'mittel_m': round(float(sa.mean()), 2), 'p95_m': round(float(np.percentile(sa, 95)), 2)}
@@ -702,6 +724,18 @@ def build(osm, dem, area, out_dir, axis=False):
     h, axis, data_t = solve_profile(pos, chains, dem)
     res = metrics(pos, chains, h, axis)
     print_metrics(res, '(vorher = Achse punktweise aus dem Gelände, nachher = geglättetes Längsprofil)')
+    # drive routes and their profiles before the terrain is carved (the grey line shows the untouched terrain model)
+    rts = routes(pos, chains, h, area)
+    # diagnostic: profiles of the drive routes before/after (diag/profil_*.png)
+    try:
+        os.makedirs(os.path.join(out_dir, 'diag'), exist_ok=True)
+        for k, r in enumerate(rts):
+            P = np.array(r['pts'])
+            ss = np.concatenate([[0], np.cumsum(np.hypot(*np.diff(P[:, :2], axis=0).T))])
+            raw = dem.sample(P[:, 0], P[:, 1])
+            profile_png(os.path.join(out_dir, 'diag', f'profil_{k}.png'), f"{r['name']} ({r['kind']}, {r['length_m']} m)", ss, raw, P[:, 2])
+    except Exception as e:
+        log('Profilbild übersprungen:', repr(e)[:200])
     n, cst = carve(dem, pos, chains, h, area)
     log('Gelände an Straßen angepasst:', cst)
     groups = ribbons(pos, chains, h, area)
@@ -715,7 +749,6 @@ def build(osm, dem, area, out_dir, axis=False):
                       'pts': np.round(np.stack([P[:, 0], P[:, 1], h[ids]], 1)[::2 if len(P) > 4 else 1], 2).tolist()})
     json.dump({'crs': 'EPSG:25832', 'heights': 'NHN m (road surface at the axis)', 'ways': lines}, open(os.path.join(out_dir, 'roads.json'), 'w'),
               separators=(',', ':'))
-    rts = routes(pos, chains, h, area)
     json.dump({'crs': 'EPSG:25832', 'routes': rts}, open(os.path.join(out_dir, 'routes.json'), 'w'), separators=(',', ':'))
     log('Fahrstrecken:', [(r['name'], r['kind'], r['length_m']) for r in rts])
     return {'metric': res, 'terrain_change': cst, 'tiles': files, 'ways': len(ways), 'km': round(sum(r['km'] for r in res.values()), 1),

@@ -71,7 +71,7 @@ def main():
     # ---- roads in the detail block (carves the mosaic) ----
     import roads
     # the axis fit needs the 1 m terrain model (on Copernicus' 30 m it would only move roads around)
-    rmeta = roads.build(osm, dem, det, a.out, axis=dem.dgm_share > 0.5)
+    rmeta = roads.build(osm, dem, det, a.out, fit=dem.dgm_share > 0.5)
 
     # ---- terrain tiles ----
     dem.build_mips(8)
