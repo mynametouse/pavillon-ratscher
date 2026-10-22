@@ -585,6 +585,28 @@ function hud() {
     `Gelände ${(tris / 1e6).toLocaleString('de-DE', { maximumFractionDigits: 2 })} Mio. Dreiecke · ${fps} fps`;
 }
 
+// ---------------- place names (names.json) as HTML labels ----------------
+let NAMES = [];
+const labRoot = document.createElement('div');
+labRoot.style.cssText = 'position:fixed;inset:0;pointer-events:none;overflow:hidden';
+document.body.appendChild(labRoot);
+const RANGE = { town: 15000, village: 7000, suburb: 5000, hamlet: 3500, isolated_dwelling: 1500, locality: 2000, peak: 6000 };
+const v3 = new THREE.Vector3();
+function updateLabels() {
+  for (const n of NAMES) {
+    v3.copy(n.p);
+    const d = v3.distanceTo(camera.position);
+    let show = d < (RANGE[n.kind] || 3000) && d > 30;
+    if (show) {
+      v3.y -= (Math.pow(v3.x - camera.position.x, 2) + Math.pow(v3.z - camera.position.z, 2)) * CURV;
+      v3.project(camera);
+      show = v3.z < 1 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
+    }
+    n.el.style.display = show ? 'block' : 'none';
+    if (show) n.el.style.transform = `translate(${((v3.x + 1) / 2) * innerWidth}px, ${((1 - v3.y) / 2) * innerHeight}px) translate(-50%, -100%)`;
+  }
+}
+
 // ---------------- start ----------------
 let roots = [];
 async function start() {
@@ -615,6 +637,18 @@ async function start() {
   } catch (e) {
     fail('Strecken', e);
   }
+  if (META.content.names) {
+    const nj = await get(BASE + META.content.names, 'json').catch(() => null);
+    NAMES = (nj ? nj.names : []).map(n => {
+      const el = document.createElement('div');
+      el.textContent = n.name;
+      const big = n.kind === 'town' || n.kind === 'village';
+      el.style.cssText = `position:absolute;left:0;top:0;white-space:nowrap;color:#fff;font:${big ? 650 : 500} ${big ? 14 : 12}px system-ui,sans-serif;` +
+        'text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 2px #000;display:none';
+      labRoot.appendChild(el);
+      return { ...n, el, p: toScene(n.E, n.N, n.H - META.H0 + (n.kind === 'peak' ? 8 : 25)) };
+    });
+  }
   $('route').innerHTML = ROUTES.map((r, i) => `<option value="${i}">${r.name} (${(r.length_m / 1000).toFixed(1)} km)</option>`).join('');
   for (const m of ['orbit', 'fly', 'drive']) $('m-' + m).onclick = () => setMode(m);
   $('goto').onchange = e => e.target.value && (place(e.target.value), (e.target.value = ''));
@@ -643,6 +677,7 @@ function loop(now) {
   U.uCam.value.copy(camera.position);
   select();
   updateContent();
+  if (frameNo % 2 === 0) updateLabels();
   renderer.render(scene, camera);
   if (!ST.firstFrameMs && drawn.length) ST.firstFrameMs = Math.round(performance.now() - ST.t0);
   fpsN++;

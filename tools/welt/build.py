@@ -107,6 +107,23 @@ def main():
                 ip.reduce(L, area[L])
             iinfo = {L: dict(n=ip.count.get(L, 0), bytes=ip.bytes.get(L, 0)) for L in levels}
 
+    # ---- place names (OSM place nodes and named peaks inside the context square) -> names.json ----
+    names = []
+    for nid, nd in osm['nodes'].items():
+        if len(nd) < 3 or not nd[2].get('name'):
+            continue
+        tg = nd[2]
+        kind = tg.get('place') or ('peak' if tg.get('natural') == 'peak' else None)
+        if kind not in ('town', 'village', 'hamlet', 'suburb', 'isolated_dwelling', 'locality', 'peak'):
+            continue
+        e_, n_ = tr.transform(nd[0], nd[1])
+        if not (ctx[0] <= e_ <= ctx[2] and ctx[1] <= n_ <= ctx[3]):
+            continue
+        names.append({'name': tg['name'] + (f" {tg['ele']} m" if kind == 'peak' and tg.get('ele') else ''), 'kind': kind,
+                      'E': round(e_, 1), 'N': round(n_, 1), 'H': round(float(dem.sample(np.array([e_]), np.array([n_]))[0]), 1)})
+    json.dump({'crs': 'EPSG:25832', 'names': names}, open(os.path.join(a.out, 'names.json'), 'w'), ensure_ascii=False)
+    log('Ortsnamen:', len(names))
+
     # ---- quick look: the block from level 10 with the roads by class (diag/uebersicht.jpg) ----
     try:
         from PIL import Image, ImageDraw
@@ -161,7 +178,7 @@ def main():
         'content': {'level': CONTENT_LEVEL, 'roads': 'r/{z}_{x}_{y}.glb', 'buildings': 'b/{z}_{x}_{y}.glb',
                     'glb_frame': 'x = E - Ec, y = H - H0, z = -(N - Nc); (Ec, Nc) = Mitte der Kachel (auch in extras.utm_centre)',
                     'roads_tiles': sorted(rmeta['tiles']), 'buildings_tiles': sorted(bmeta['tiles']),
-                    'routes': 'routes.json', 'roads_json': 'roads.json'},
+                    'routes': 'routes.json', 'roads_json': 'roads.json', 'names': 'names.json'},
         'sources': {'terrain': terr_src, 'terrain_source': dem.source, 'dgm1_tiles': list(dem.dgm_tiles), 'dgm1_share': round(dem.dgm_share, 3),
                     'copernicus_offset_m': round(dem.cop_off, 2), 'imagery': 'DOP Thüringen, WMS TH DOP (th_dop), © GDI-Th, CC BY 4.0',
                     'osm': f"OpenStreetMap ({osm.get('fetched', '')}), © OpenStreetMap-Mitwirkende, ODbL 1.0"},
