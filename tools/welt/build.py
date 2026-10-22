@@ -107,6 +107,34 @@ def main():
                 ip.reduce(L, area[L])
             iinfo = {L: dict(n=ip.count.get(L, 0), bytes=ip.bytes.get(L, 0)) for L in levels}
 
+    # ---- quick look: the block from level 10 with the roads by class (diag/uebersicht.jpg) ----
+    try:
+        from PIL import Image, ImageDraw
+        L = 10
+        x0, y0, x1, y1 = trange(L, area[L])
+        px = 128
+        im = Image.new('RGB', ((x1 - x0 + 1) * px, (y1 - y0 + 1) * px), (200, 200, 200))
+        for yy in range(y0, y1 + 1):
+            for xx in range(x0, x1 + 1):
+                p = os.path.join(a.out, 'i', str(L), str(xx), f'{yy}.webp')
+                if os.path.exists(p):
+                    im.paste(Image.open(p).convert('RGB').resize((px, px), Image.LANCZOS), ((xx - x0) * px, (y1 - yy) * px))
+        e0_, n0_ = wlib.tbounds(L, x0, y0)[:2]
+        n1_ = n0_ + (y1 - y0 + 1) * tsize(L)
+        sc = px / tsize(L)
+        dr = ImageDraw.Draw(im)
+        colk = {'motorway': (255, 0, 160), 'main': (255, 40, 40), 'county': (255, 160, 0), 'street': (255, 255, 255), 'lane': (255, 255, 120),
+                'service': (200, 200, 255), 'track': (190, 140, 80), 'path': (120, 255, 120), 'foot': (120, 220, 255)}
+        rj = json.load(open(os.path.join(a.out, 'roads.json')))
+        for w in rj['ways']:
+            pts = [((p[0] - e0_) * sc, (n1_ - p[1]) * sc) for p in w['pts']]
+            if len(pts) > 1:
+                dr.line(pts, fill=colk.get(w['kind'], (255, 255, 255)), width=2 if w['kind'] in ('main', 'county', 'motorway') else 1)
+        os.makedirs(os.path.join(a.out, 'diag'), exist_ok=True)
+        im.save(os.path.join(a.out, 'diag', 'uebersicht.jpg'), quality=82)
+    except Exception as e:
+        log('Übersichtsbild übersprungen:', repr(e)[:200])
+
     # ---- meta ----
     try:
         commit = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True, cwd=wlib.REPO).stdout.strip()

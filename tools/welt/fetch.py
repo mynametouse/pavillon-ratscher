@@ -171,7 +171,7 @@ def fetch_wms(raw, layer, bbox, w, h, fmt='image/jpeg'):
 # ---------------- OpenStreetMap ----------------
 OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter',
             'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter']
-QUERY = """[out:json][timeout:300][maxsize:1073741824][bbox:{s},{w},{n},{e}];
+QUERY = """[out:json][timeout:180][bbox:{s},{w},{n},{e}];
 (
   way["highway"];
   way["building"]; relation["building"]["type"="multipolygon"];
