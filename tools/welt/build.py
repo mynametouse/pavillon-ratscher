@@ -110,10 +110,16 @@ def main():
 
     # ---- imagery ----
     iinfo = {}
+    harm_info = None
     if not a.skip_imagery:
-        from tiles import ImagePyramid
+        from tiles import ImagePyramid, Harmonizer, wms_mosaic
+        # colour balance of the flight blocks: solved on the context mosaic (level 7, 6.25 m), the garden's cell keeps its colours
+        cimg, cbb = wms_mosaic(a.raw, 7, area[7], 5)
+        harm = Harmonizer(cimg, cbb, anchor=(XF['ex'], XF['ey']))
+        harm_info = {'cells_km': [harm.nE, harm.nN], 'gain_min': round(float(harm.gain.min()), 3), 'gain_max': round(float(harm.gain.max()), 3)}
+        del cimg
         with Pool(a.jobs) as pool:
-            ip = ImagePyramid(a.out, a.quality, pool)
+            ip = ImagePyramid(a.out, a.quality, pool, harm)
             ip.from_wms(a.raw, FINEST, area[FINEST], chunk_level=FINEST - 3)
             ip.from_wms(a.raw, 11, area[11], chunk_level=8)
             for L in (10, 9, 8):
@@ -201,6 +207,7 @@ def main():
                     'routes': 'routes.json', 'roads_json': 'roads.json', 'names': 'names.json'},
         'sources': {'terrain': terr_src, 'terrain_source': dem.source, 'dgm1_tiles': list(dem.dgm_tiles), 'dgm1_share': round(dem.dgm_share, 3),
                     'copernicus_offset_m': round(dem.cop_off, 2), 'imagery': 'DOP Thüringen, WMS TH DOP (th_dop), © GDI-Th, CC BY 4.0',
+                    'imagery_balance': harm_info,
                     'osm': f"OpenStreetMap ({osm.get('fetched', '')}), © OpenStreetMap-Mitwirkende, ODbL 1.0"},
         'attribution': 'Luftbild und Geländemodell: © GDI-Th (CC BY 4.0) · © OpenStreetMap-Mitwirkende (ODbL) · '
                        'Copernicus DEM GLO-30: © DLR e.V. 2010-2014 und © Airbus Defence and Space GmbH 2014-2018, bereitgestellt im Rahmen von COPERNICUS durch EU und ESA'

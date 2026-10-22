@@ -87,10 +87,105 @@ def _save_webp(args):
     return os.path.getsize(path)
 
 
+class Harmonizer:
+    """colour balance of the orthophoto mosaic: the Thuringian DOP service joins flight years along 1 km lines (seen on 22.10.2026:
+    a hard brightness step across the whole block at N = 5597000). Every 1 km source cell gets one gain per channel so that
+    neighbouring cells agree in 100 m strips along their common edge (least squares over all edges, weak pull to 1).
+    Solved once on the coarse context mosaic, applied to every chunk of every level, so all levels stay consistent."""
+    def __init__(self, img, bbox, strip=100.0, lam=0.05, anchor=None):
+        e0, n0, e1, n1 = bbox
+        H, W = img.shape[:2]
+        p = (e1 - e0) / W
+        self.ce0, self.cn0 = int(np.floor(e0 / 1000)), int(np.floor(n0 / 1000))
+        nE, nN = int(np.ceil(e1 / 1000)) - self.ce0, int(np.ceil(n1 / 1000)) - self.cn0
+        a = img.astype(np.float32)
+        valid = (a.min(axis=2) > 6) & (a.max(axis=2) < 248)   # no-data (white/black) outside the state
+        sp = max(1, int(round(strip / p)))
+        cid = lambda i, j: j * nE + i
+
+        def strip_mean(r0, r1, c0, c1):
+            r0, r1, c0, c1 = max(r0, 0), min(r1, H), max(c0, 0), min(c1, W)
+            if r1 - r0 < 2 or c1 - c0 < 2:
+                return None
+            v = valid[r0:r1, c0:c1]
+            if v.mean() < 0.6:
+                return None
+            return a[r0:r1, c0:c1][v].mean(axis=0)
+        cons = []
+        for i in range(1, nE):          # vertical km lines x = 1000 (ce0 + i)
+            x = 1000.0 * (self.ce0 + i)
+            c = int(round((x - e0) / p))
+            for j in range(nN):
+                ys0, ys1 = 1000.0 * (self.cn0 + j), 1000.0 * (self.cn0 + j + 1)
+                r0, r1 = int(round((n1 - ys1) / p)), int(round((n1 - ys0) / p))
+                ma, mb = strip_mean(r0, r1, c - sp, c), strip_mean(r0, r1, c, c + sp)
+                if ma is not None and mb is not None:
+                    cons.append((cid(i - 1, j), cid(i, j), np.log(mb + 1) - np.log(ma + 1)))
+        for j in range(1, nN):          # horizontal km lines y = 1000 (cn0 + j); cell j - 1 south, j north
+            y = 1000.0 * (self.cn0 + j)
+            r = int(round((n1 - y) / p))
+            for i in range(nE):
+                xs0, xs1 = 1000.0 * (self.ce0 + i), 1000.0 * (self.ce0 + i + 1)
+                c0, c1 = int(round((xs0 - e0) / p)), int(round((xs1 - e0) / p))
+                mn, ms = strip_mean(r - sp, r, c0, c1), strip_mean(r, r + sp, c0, c1)
+                if mn is not None and ms is not None:
+                    cons.append((cid(i, j), cid(i, j - 1), np.log(ms + 1) - np.log(mn + 1)))
+        n = nE * nN
+        g = np.zeros((n, 3))
+        if cons:
+            from scipy.sparse import coo_matrix
+            from scipy.sparse.linalg import lsqr
+            m = len(cons)
+            ri = np.concatenate([np.arange(m), np.arange(m), m + np.arange(n)])
+            ci = np.concatenate([[c[0] for c in cons], [c[1] for c in cons], np.arange(n)])
+            prior = np.full(n, lam)
+            if anchor is not None:   # the cell with the garden keeps its colours, the others are matched to it
+                ai = int(np.floor(anchor[0] / 1000)) - self.ce0
+                aj = int(np.floor(anchor[1] / 1000)) - self.cn0
+                if 0 <= ai < nE and 0 <= aj < nN:
+                    prior[cid(ai, aj)] = 30.0
+            vv = np.concatenate([np.ones(m), -np.ones(m), prior])
+            A = coo_matrix((vv, (ri, ci)), shape=(m + n, n)).tocsr()
+            D = np.array([c[2] for c in cons])
+            for ch in range(3):         # cell a + g_a should equal cell b + g_b: g_a - g_b = log(b) - log(a)
+                g[:, ch] = lsqr(A, np.concatenate([D[:, ch], np.zeros(n)]))[0]
+        self.nE, self.nN = nE, nN
+        self.gain = np.clip(np.exp(g), 0.7, 1.45).reshape(nN, nE, 3).astype(np.float32)
+        steps = np.array([abs(c[2]).max() for c in cons]) if cons else np.zeros(1)
+        log(f'Farbausgleich der Bildflüge: {len(cons)} Kanten, Stufen bis {100 * (np.exp(steps.max()) - 1):.0f} %, '
+            f'Kanten über 8 %: {int((steps > np.log(1.08)).sum())}, Faktoren {self.gain.min():.2f} .. {self.gain.max():.2f}')
+
+    def apply(self, img, bbox):
+        e0, n0, e1, n1 = bbox
+        H, W = img.shape[:2]
+        p = (e1 - e0) / W
+        ci = np.clip(np.floor((e0 + (np.arange(W) + 0.5) * p) / 1000).astype(int) - self.ce0, 0, self.nE - 1)
+        rj = np.clip(np.floor((n1 - (np.arange(H) + 0.5) * p) / 1000).astype(int) - self.cn0, 0, self.nN - 1)
+        G = self.gain[rj[:, None], ci[None, :]]
+        return np.clip(img.astype(np.float32) * G + 0.5, 0, 255).astype(np.uint8)
+
+
+def wms_mosaic(raw, L, area, chunk_level, layer='th_dop'):
+    """the WMS chunks of level L over an area joined into one image (row 0 = north) -> (image, bbox)"""
+    from fetch import fetch_wms
+    k = 1 << (L - chunk_level)
+    px = TILE_PX * k
+    ch = tiles(chunk_level, area)
+    xs, ys = sorted({c[0] for c in ch}), sorted({c[1] for c in ch})
+    img = np.zeros((len(ys) * px, len(xs) * px, 3), np.uint8)
+    for cx, cy in ch:
+        a = fetch_wms(raw, layer, tbounds(chunk_level, cx, cy), px, px)
+        r0 = (ys[-1] - cy) * px
+        c0 = (cx - xs[0]) * px
+        img[r0:r0 + px, c0:c0 + px] = a
+    bb = tbounds(chunk_level, xs[0], ys[0])[:2] + tbounds(chunk_level, xs[-1], ys[-1])[2:]
+    return img, bb
+
+
 class ImagePyramid:
     """collects 512 px tiles of one level from big WMS chunks, then builds the coarser levels by 2x2 reduction"""
-    def __init__(self, out, quality=74, pool=None):
-        self.out, self.q, self.pool = out, quality, pool
+    def __init__(self, out, quality=74, pool=None, harm=None):
+        self.out, self.q, self.pool, self.harm = out, quality, pool, harm
         self.bytes = {}
         self.count = {}
 
@@ -118,6 +213,8 @@ class ImagePyramid:
         for cx, cy in chunks:
             bb = tbounds(cl, cx, cy)
             img = fetch_wms(raw, layer, bb, px, px)
+            if self.harm is not None:
+                img = self.harm.apply(img, bb)
             jobs = []
             x0, y0 = cx * k, cy * k
             for j in range(k):            # j north: image row 0 = north edge

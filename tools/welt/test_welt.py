@@ -136,6 +136,16 @@ cc[0][0]['fl'] = 1
 gb = roads.bridge_parts(pp, cc, np.full(200, wlib.H0 + 10), tb9)
 ck('bridge body', sum(len(i) for g in gb.values() for i in g['idx']) > 1000)
 
+# colour balance: a 30 % darker flight block north of a km line is matched to the south
+from tiles import Harmonizer
+rngh = np.random.default_rng(5)
+im = np.clip(rngh.normal(120, 25, (400, 400, 3)), 10, 240).astype(np.uint8)    # 4 x 4 km at 10 m, rows from the north
+im[:100] = (im[:100] * 0.7).astype(np.uint8)                                   # north of N = 5593000 (bbox 5590000..5594000)
+hz = Harmonizer(im, (620000.0, 5590000.0, 624000.0, 5594000.0), anchor=(621500.0, 5591500.0))
+fixed = hz.apply(im, (620000.0, 5590000.0, 624000.0, 5594000.0)).astype(float)
+step = abs(fixed[90:100].mean() - fixed[100:110].mean())
+ck('colour balance', step < 4 and abs(fixed[200:].mean() - im[200:].mean()) < 3, f'step {step:.1f} (before {abs(im[90:100].astype(float).mean() - im[100:110].mean()):.1f})')
+
 # trees: inside the tree cover, not on the road, not in a building
 import trees, types
 
