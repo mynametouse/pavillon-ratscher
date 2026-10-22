@@ -15,13 +15,13 @@ import { DKEYS, DOOR, EYE, floorAt, nearDoor, P, PHASE, setDoorNow, setPhase, to
 import { CAM3, go, placeName, setView3 } from '../game/player.js';
 import { applyCam, cam3Update, resize } from '../game/camera.js';
 import { look, qualLabel, setCollide } from '../game/input.js';
-import { frame, physics } from '../game/game.js';
 import { audio, setSound, soundLabel, toast } from '../audio/audio.js';
 import { PHASES } from '../pavilion/phases.js';
 import { setVariant } from '../pavilion/variant.js';
 import { perfTest } from '../render/perf.js';
 import { PLAY } from '../game/play.js';
 import { VEH } from '../vehicles/vehicle.js';
+import { frame, physics } from '../game/game.js';
 const bootStep = (name, f) => {
   try {
     f();

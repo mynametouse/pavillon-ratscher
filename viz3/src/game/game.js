@@ -1,7 +1,6 @@
 // ===================== the frame loop: frame (one bad frame does not end the loop), physics of walking and the place label, safety net for
 // the frame rate; walking itself lives in game/walkable.js, player.js, camera.js and input.js (split in refactor phase 1) =====================
 import * as THREE from 'three';
-import { LATE } from '../core/late.js';
 import { $, cam, OFFLINE, R, stage } from '../core/head.js';
 import { DIRTY, LOAD, markDirty, VEG } from '../core/assets.js';
 import { STREAM } from '../garden/stream_geo.js';
@@ -34,18 +33,18 @@ import {
   WALK_SPEED,
   walkBounds,
 } from './walkable.js';
-import { CAM3, headHit, opt, placeName, setStance, setStepZ, stepZ } from './player.js';
+import { CAM3, headHit, lastPlace, opt, placeName, setLastPlace, setStance, setStepZ, stepZ } from './player.js';
 import { applyCam, cam3Update, ORBMAX, resize, setBob } from './camera.js';
 import { joy, keys, qualLabel, slowWalk } from './input.js';
+import { audio, toast } from '../audio/audio.js';
+import { PERF } from '../render/perf.js';
+import { PLAY } from './play.js';
+import { VEH } from '../vehicles/vehicle.js';
 const lbl = $('where'),
   dbtn = $('doorbtn');
 let last = performance.now(),
-  lastPlace = '',
   lastDoor = null;
 const P3D = $('p-3d');
-export function resetLastPlace() {
-  lastPlace = ''; // pavilion/variant.js: the place label is shown anew after a switch
-}
 // V16b5: a frame that throws (one bad value somewhere) no longer ends the frame loop for good: the next frame comes, the error goes to the
 // page's error handlers (log, a short notice – boot.js), the same error at most every 5 s
 let frameErrT = -1e9;
@@ -89,7 +88,7 @@ function frame0(now) {
     const n = Math.max(1, Math.ceil(dt / 0.034));
     for (let i = 0; i < n; i++) physics(dt / n, f, turn, side, keys.has('shift') ? 1.9 : slowWalk ? 0.56 : 1);
   }
-  if (P.mode === 'walk' && !(window.VEH && LATE.VEH.cur)) cam3Update(dt);
+  if (P.mode === 'walk' && !(window.VEH && VEH.cur)) cam3Update(dt);
   adaptExposure(dt);
   if (window.TICKS)
     for (let i = 0; i < TICKS.length; i++) {
@@ -127,8 +126,8 @@ function frame0(now) {
       renderFrame('motion');
       DIRTY.frame = false;
       MOTION.stillDue = true;
-      LATE.PERF.js += performance.now() - t0;
-      LATE.PERF.n++;
+      PERF.js += performance.now() - t0;
+      PERF.n++;
     } else if (now - MOTION.lastStill > Math.max(90, MOTION.stillMs * 2.5)) {
       if (window.VEG) VEG.update(cam.position);
       renderFrame('still');
@@ -172,10 +171,7 @@ const FPS = {
         applyTier(nt, false);
         qualLabel();
         this.done = true;
-        LATE.toast(
-          'Grafik auf „' + TIERS[nt].label + '“ gestellt, damit es flüssig läuft. Über „Grafik“ änderbar.',
-          6000
-        );
+        toast('Grafik auf „' + TIERS[nt].label + '“ gestellt, damit es flüssig läuft. Über „Grafik“ änderbar.', 6000);
       }
     }
   },
@@ -194,21 +190,21 @@ export function physics(dt, f, turn, side, run) {
       P.ty += f * k;
       markDirty();
     }
-  } else if (window.PLAY && LATE.PLAY.seated()) {
+  } else if (window.PLAY && PLAY.seated()) {
     // sitting, lying or riding along: look around; the walk keys stand up again
-    if (turn && !LATE.PLAY.seat.drive) {
+    if (turn && !PLAY.seat.drive) {
       P.yaw += turn * 95 * dt;
       markDirty();
     } // driving: the arrow keys steer (vehicles/vehicle.js)
-    if ((f || side) && !LATE.PLAY.seat.lock && !LATE.PLAY.seat.keepKeys) LATE.PLAY.stand();
+    if ((f || side) && !PLAY.seat.lock && !PLAY.seat.keepKeys) PLAY.stand();
     P.speed = 0;
     P.air = false;
     P.vz = 0;
-    LATE.PLAY.update(dt);
+    PLAY.update(dt);
     const pl = placeName();
     if (pl !== lastPlace) {
       lbl.textContent = pl;
-      lastPlace = pl;
+      setLastPlace(pl);
     }
   } else {
     if (turn) {
@@ -278,7 +274,7 @@ export function physics(dt, f, turn, side, run) {
       setBob(third || P.stance !== 'stand' ? 0 : Math.sin((P.stride * Math.PI) / sl) * 0.022);
       if (P.stride > sl && !P.air) {
         P.stride = 0;
-        LATE.audio.step(
+        audio.step(
           surfType(P.x, P.y, P.feet),
           P.stance === 'stand' ? (run > 1 ? 1.25 : 1) : P.stance === 'crouch' ? 0.6 : 0.35
         );
@@ -319,7 +315,7 @@ export function physics(dt, f, turn, side, run) {
         markDirty();
         if (P.feet === fl) {
           if (P.vz < -2.4) {
-            LATE.audio.step(surfType(P.x, P.y, P.feet), P.vz < -4 ? 1.6 : 1.15);
+            audio.step(surfType(P.x, P.y, P.feet), P.vz < -4 ? 1.6 : 1.15);
             setStepZ(P.feet);
             P.landT = P.vz < -4.5 ? 0.45 : 0.22;
           }
@@ -338,14 +334,14 @@ export function physics(dt, f, turn, side, run) {
     if (P.vz === 0 && Math.abs(P.feet - stepZ) > 0.12) {
       setStepZ(P.feet);
       P.stride = 0;
-      LATE.audio.step(surfType(P.x, P.y, P.feet), 1.0, true);
+      audio.step(surfType(P.x, P.y, P.feet), 1.0, true);
     }
     const pl = placeName();
     if (pl !== lastPlace) {
       lbl.textContent = pl;
-      lastPlace = pl;
+      setLastPlace(pl);
     }
-    if (window.PLAY) LATE.PLAY.update(dt);
+    if (window.PLAY) PLAY.update(dt);
     else {
       const nd = nearDoor(),
         dtxt = k =>
@@ -368,10 +364,10 @@ export function physics(dt, f, turn, side, run) {
     const nm = P.mode === 'orbit' ? 'Modellansicht' : P.mode === 'top' ? 'Draufsicht' : null;
     if (nm && lastPlace !== nm) {
       lbl.textContent = nm;
-      lastPlace = nm;
+      setLastPlace(nm);
       if (dbtn) dbtn.hidden = true;
       lastDoor = null;
-      if (window.PLAY) LATE.PLAY.update(0);
+      if (window.PLAY) PLAY.update(0);
     }
   }
   if (updateDoors(dt)) markDirty();
@@ -381,7 +377,7 @@ export function physics(dt, f, turn, side, run) {
       P.ty,
       THREE.MathUtils.clamp(P.th * 0.75 * Math.max(1, stage.clientWidth / Math.max(1, stage.clientHeight)), 16, 90)
     );
-  else if (!(window.VEH && LATE.VEH.sun()))
+  else if (!(window.VEH && VEH.sun()))
     sunFollow(P.mode === 'walk' ? P.x : P.tgt[0], P.mode === 'walk' ? P.y : P.tgt[1]);
   if (window.WORKS && WORKS.update && WORKS.update(dt)) markDirty();
   if (P.mode === 'walk') STREAM.listen(P.x, P.y);
@@ -398,7 +394,7 @@ export function physics(dt, f, turn, side, run) {
       }
     }
   }
-  LATE.audio.update(dt);
+  audio.update(dt);
 }
 window._resize = resize;
 window.addEventListener('resize', resize);

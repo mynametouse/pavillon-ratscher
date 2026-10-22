@@ -13,7 +13,7 @@ Oberfläche Deutsch.
   `export`iert, Nutzer importieren es mit relativem Pfad. three.js, seine Addons, n8ao und ez-tree (`src/eztree/`) importiert jedes Modul selbst.
 - **Gegen die Ladereihenfolge** – ein Modul braucht etwas von weiter unten, z. B. `render/render.js` die Kamerafunktion `applyCam` aus
   `game/game.js` – geht es über `LATE` (`core/late.js`): das spätere Modul übergibt beim Laden (`LATE.DN = DN`, Funktionen gleich am
-  Anfang, `let`-Variablen als Getter), der Nutzer liest beim Laufen (`LATE.DN.update()`), nie schon beim Laden. Das sind 40 Namen
+  Anfang, `let`-Variablen als Getter), der Nutzer liest beim Laufen (`LATE.DN.update()`), nie schon beim Laden. Das sind 38 Namen
   (`node tools/check/deps.mjs --late`), jeder eine Stelle, an der die Schichten noch falsch herum zeigen; Phase 2 ersetzt sie durch
   Dienste. Bitte keine neuen.
 - Variablen fremder Module lassen sich nicht zuweisen (Importe sind schreibgeschützt): dafür Setter (`setSunDir`, `setVariantId`,
@@ -25,7 +25,9 @@ Oberfläche Deutsch.
   Build (`window.TEXMAN` …). Querverbindungen zwischen Modulen laufen über Importe und Kern-Dienste, nicht über `window`.
 - `bash tools/check.sh` prüft das ohne Browser: Lint je Modul (ein fehlender Import ist ein Fehler), Format, `tools/check/deps.mjs`
   (Importe nur nach oben, `LATE` vollständig und nur nach unten). Zweige mit dem alten gemeinsamen Gültigkeitsbereich wandelt
-  `node tools/check/esm_convert.mjs` um.
+  `node tools/check/esm_convert.mjs` um. Code zwischen Modulen verschoben oder die Reihenfolge geändert: `node tools/check/fix_late.mjs`
+  (macht `LATE`-Bezüge zu Importen und umgekehrt), dann `node tools/check/fix_imports.mjs` (Importe und Exporte neu), Prettier.
+- Die Schleife (`game/game.js`) lädt als letztes Modul vor `boot/boot.js`: sie ruft alles auf und importiert es dadurch direkt.
 - Viele Module sind IIFEs (`const X = (() => { … return api; })();`): innen privat, außen nur die Rückgabe.
 - **Reihenfolge zählt**: Module laufen beim Laden von oben nach unten. Was `render/zmerge.js` vorfindet, wird zu wenigen Draw-Calls
   zusammengefasst; spätere Module (Spiel, Werkstatt, Tag/Nacht) bleiben einzelne Meshes. Punktlichter entstehen in
