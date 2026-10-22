@@ -13,7 +13,7 @@
 // 'auto' after the sun (time/daynight.js). Keys while driving: W/S or arrows, A/D steer, Space handbrake, L light, H horn, Q out.
 // Positions in localStorage 'pav-veh-v1'. Tests: VEH.auto = (v, dt) => ({ thr, brk, steer, hand }) overrides the keys; VEH.follow(route).
 const VEH = (() => {
-  const S = { list: [], by: {}, cur: null, auto: null, lights: 'auto', camT: 0 };
+  const S = { list: [], by: {}, cur: null, auto: null, lights: 'auto', camT: 0, extra: [] };   // extra: boxes that are no vehicles of their own (V16d trailer)
   const LS = 'pav-veh-v1'; let saved = {}; try { saved = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) {}
   if (saved.lights === 'on' || saved.lights === 'off' || saved.lights === 'auto') S.lights = saved.lights;
   function save() { const o = { lights: S.lights }; for (const v of S.list) o[v.id] = [+v.st.x.toFixed(2), +v.st.y.toFixed(2), +v.st.psi.toFixed(4), ...(v.model.save ? v.model.save() : [])];
@@ -145,7 +145,9 @@ const VEH = (() => {
     const apply = (q, sg) => { const w = vel(q), J = [(hit.n[0] * j + t[0] * jt) * sg, (hit.n[1] * j + t[1] * jt) * sg]; w[0] += J[0] / q.spec.mass; w[1] += J[1] / q.spec.mass;
       q.st.r -= ((hit.p[0] - q.st.x) * J[1] - (hit.p[1] - q.st.y) * J[0]) / q.spec.Iz; const f = fwd(q.st.psi), r = rgt(q.st.psi); q.st.u = dot(w, f); q.st.v = dot(w, r); q.st.sleep = 0; };
     apply(v, 1); if (o) apply(o, -1); return j / mA; }
-  function collide(v) { const s = v.st, A = boxOf(v), R = Math.hypot(A.ex, A.ey) + 0.6, hits = [], z0 = s.z + 0.25, z1 = s.z + v.spec.box.h;
+  // hits of a box (centre c, unit axes ax/ay, half extents ex/ey; from z0 to z1 above the ground) against the world: walls, trunks and railings
+  // (WCOL), the garden's colliders, the other vehicles (not skip), Hubert's tractor, the neighbours and the extra boxes (V16d trailers: S.extra)
+  function boxHits(A, z0, z1, skip) { const R = Math.hypot(A.ex, A.ey) + 0.6, hits = [];
     WCOL.each(A.c[0] - R, A.c[1] - R, A.c[0] + R, A.c[1] + R, (i, Q) => { const ax = Q[i * 4], ay = Q[i * 4 + 1], bx = Q[i * 4 + 2], by = Q[i * 4 + 3], L = Math.hypot(bx - ax, by - ay); if (L < 0.05) return;
         const u = [(bx - ax) / L, (by - ay) / L], h = sat(A, { c: [(ax + bx) / 2, (ay + by) / 2], ax: [-u[1], u[0]], ay: u, ex: 0.12, ey: L / 2 }); if (h) hits.push([h, null]); },
       (i, Q) => { const h = circBox(A, Q[i * 3], Q[i * 3 + 1], Q[i * 3 + 2]); if (h) hits.push([h, null]); });
@@ -154,16 +156,20 @@ const VEH = (() => {
       for (const i of seen) { const c = COL[i]; if (!phOk(c) || c[5] <= z0 || c[4] >= z1) continue; const r9 = c[9]; if ((r9 && c[6] === 'house') || c[6] === 'tractor') continue;   // the village's footprint boxes (the walls themselves are in WCOL), Hubert's parked tractor (below, where it really is)
         const B = r9 ? { c: toWorld(c, (c[0] + c[1]) / 2, (c[2] + c[3]) / 2), ax: [r9.c, r9.s], ay: [-r9.s, r9.c], ex: (c[1] - c[0]) / 2, ey: (c[3] - c[2]) / 2 } : { c: [(c[0] + c[1]) / 2, (c[2] + c[3]) / 2], ax: [1, 0], ay: [0, 1], ex: (c[1] - c[0]) / 2, ey: (c[3] - c[2]) / 2 };
         const h = sat(A, B); if (h) hits.push([h, null]); } }
-    for (const o of S.list) { if (o === v) continue; const h = sat(A, boxOf(o)); if (h) hits.push([h, o]); }
+    for (const o of S.list) { if (o === skip) continue; const h = sat(A, boxOf(o)); if (h) hits.push([h, o]); }
+    for (const x of S.extra) { if (x.tow && x.tow === skip) continue; const B = x.box(); if (!B || z1 < B.z0 || z0 > B.z1) continue; const h = sat(A, B); if (h) hits.push([h, null]); }   // a trailer: fixed for the others
     if (typeof TRACTOR !== 'undefined' && TRACTOR.g) { const tp = TRACTOR.g.position, az = -TRACTOR.g.rotation.y, f = fwd(az), r = rgt(az);   // Hubert's old tractor, parked or on its round
       const h = sat(A, { c: [tp.x + f[0] * 0.35, -tp.z + f[1] * 0.35], ax: r, ay: f, ex: 0.98, ey: 1.45 }); if (h) hits.push([h, null]); }
     if (window.NPCS) for (const w of [NPCS.hubert, NPCS.ronald]) { if (!w || !w.fig || !w.fig.g.visible || w.drive) continue; const h = circBox(A, w.x, w.y, 0.32); if (h) hits.push([h, null]); }
+    return hits; }
+  function collide(v) { const s = v.st, hits = boxHits(boxOf(v), s.z + 0.25, s.z + v.spec.box.h, v);
     let big = 0; for (const [h, o] of hits) { const dv = resolve(v, h, o); if (dv > big) big = dv; }
     if (big > 1.4 && v === S.cur) VSND.thud(v, Math.min(1, big / 9)); return hits.length; }
   // something in the way of Hubert's tractor round (npc/npc.js): a vehicle within reach ahead of (x, y) in the direction az
   S.blocked = (x, y, az, ahead) => { const px = x + Math.sin(az) * ahead, py = y + Math.cos(az) * ahead; for (const v of S.list) if (circBox(boxOf(v), px, py, 1.5)) return true; return false; };
   // walkers bump into parked vehicles (game/game.js collide)
-  S.pushWalker = (p, rad, feet) => { for (const v of S.list) { if (v === S.cur) continue; if (feet != null && feet > v.st.z + v.spec.box.h - 0.2) continue; const h = circBox(boxOf(v), p[0], p[1], rad); if (!h) continue; p[0] -= h.n[0] * h.d; p[1] -= h.n[1] * h.d; } };
+  S.pushWalker = (p, rad, feet) => { for (const v of S.list) { if (v === S.cur) continue; if (feet != null && feet > v.st.z + v.spec.box.h - 0.2) continue; const h = circBox(boxOf(v), p[0], p[1], rad); if (!h) continue; p[0] -= h.n[0] * h.d; p[1] -= h.n[1] * h.d; }
+    for (const x of S.extra) { const B = x.box(); if (!B || (feet != null && feet > B.z1 - 0.2)) continue; const h = circBox(B, p[0], p[1], rad); if (h) { p[0] -= h.n[0] * h.d; p[1] -= h.n[1] * h.d; } } };
   // ---------------- pose of the model ----------------
   const _q = new THREE.Quaternion(), _e = new THREE.Euler(0, 0, 0, 'YXZ');
   function pose(v, dt = 0) { const s = v.st, sp = v.spec, g = v.g;
@@ -288,6 +294,7 @@ const VEH = (() => {
   S.reset = () => { if (S.cur) S.exit(); for (const v of S.list) { const p = v.spec.home(); S.place(v.id, p[0], p[1], p[2]); v.st.gear = 1; v.st.engine = false; lamps(v); } save(); toast('Auto und Traktor stehen wieder an ihrem Platz.', 3500); };
   document.querySelectorAll('[data-vreset]').forEach(b => b.addEventListener('click', () => { S.reset(); if (window.HUD && HUD.open) HUD.setMenu(false); }));
   S.add = add; S.lightsOn = lightsOn; S.toW = toW; S.toL = toL; S.save = save; S.toggleLights = toggleLights;
+  S.boxHits = boxHits; S.sat = sat; S.circBox = circBox; S.fwd = fwd; S.rgt = rgt; S.groundPose = groundPose;
   window.TICKS.unshift(dt => { try { update(dt); } catch (e) { if (!S._err) { S._err = 1; console.warn('veh', e); } } });   // first: the figure and the camera then see this frame's vehicle
   // first visit of V16b: a word about driving
   let intro = false; window.TICKS.push(() => { if (intro || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16b') === '1'; localStorage.setItem('pav-v16b', '1'); } catch (e) {}
