@@ -25,7 +25,7 @@ HEAD = ('<!doctype html>\n<html lang="de">\n<head>\n<meta charset="utf-8">\n<met
 SKIP = {'index.html', 'pavillon-ratscher.html', 'app.js', '_files.json', '_pub.json'}
 os.makedirs(OUT, exist_ok=True)
 # replace the site's content (keep .git and the published plan of the owner, plan.json, which the page itself writes)
-KEEP = set() if SUB else {'.git', 'plan.json', 'vorschau'}   # a pending preview survives a deploy of the site
+KEEP = set() if SUB else {'.git', 'plan.json', 'vorschau', 'welt-test'}   # a pending preview and the world test tiles survive a deploy
 for name in os.listdir(OUT):
     if name in KEEP: continue
     p = os.path.join(OUT, name); shutil.rmtree(p) if os.path.isdir(p) and not os.path.islink(p) else os.remove(p)

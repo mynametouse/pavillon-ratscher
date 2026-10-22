@@ -10,7 +10,7 @@ if [ ! -d "$SITE/.git" ]; then echo "site → $SITE"; git clone -q --depth 1 --b
 mkdir -p "$ROOT/viz3/dist"
 # the preview (vorschau/) is built from src and may carry assets the live site does not have yet - use it when present
 BASE="$SITE"; [ -f "$SITE/vorschau/index.html" ] && BASE="$SITE/vorschau"
-( cd "$BASE" && tar --exclude=.git --exclude=README.md --exclude=.nojekyll --exclude=./vorschau -cf - . ) | ( cd "$ROOT/viz3/dist" && tar -xf - )
+( cd "$BASE" && tar --exclude=.git --exclude=README.md --exclude=.nojekyll --exclude=./vorschau --exclude=./welt-test -cf - . ) | ( cd "$ROOT/viz3/dist" && tar -xf - )
 # the site's index.html is the full page; dist/pavillon-ratscher.html (artifact) and dist/index.html come from the build below
 rm -rf "$ROOT/viz3/dist_pub"; cp -a "$ROOT/viz3/dist" "$ROOT/viz3/dist_pub"
 ( cd "$ROOT/viz3" && npm ci --no-audit --no-fund --silent )
