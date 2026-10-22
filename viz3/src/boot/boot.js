@@ -1,9 +1,15 @@
 // ---------------- boot ----------------
 // V16a: the light follows the game clock unless a fixed mood was chosen (new key: the old default 'gold' is not carried over)
+// V16b4: every start step on its own – one that throws (a saved setting this version does not expect, a driver quirk) is logged and shown
+// under the loading text, the others and the GPU preparation still run (before, the rest of the start was skipped and the page stayed at
+// „Modell wird aufgebaut …“ for ever)
+const bootStep = (name, f) => { try { f(); } catch (e) { console.error('Start: ' + name, e); LOADLOG.err('Start (' + name + '): ' + (e && e.message || e)); } };
 let l0 = 'auto'; try { l0 = localStorage.getItem('pav-light2') || l0; } catch (e) {} if (!MODES[l0] && l0 !== 'auto' && l0 !== 'night') l0 = 'auto';
-setMode(l0); document.querySelectorAll('[data-light]').forEach(x => x.setAttribute('aria-pressed', x.dataset.light === l0 ? 'true' : 'false')); if (l0 !== 'auto' && l0 !== 'night') audio.setTime(l0);
-resize(); setVariant(VARIANT, { save: false }); go('modell'); setCollide(true); soundLabel(); qualLabel(); setPhase(PHASES.length - 1);
-for (const k of ['hatch', 'roofhatch']) setDoorNow(k, true);   // the trapdoor and the roof hatch usually stand open
+bootStep('Licht', () => { try { setMode(l0); } catch (e) { LOADLOG.err('Licht „' + l0 + '“: ' + (e && e.message || e)); l0 = 'auto'; try { localStorage.setItem('pav-light2', 'auto'); } catch (e2) {} setMode('auto'); }
+  document.querySelectorAll('[data-light]').forEach(x => x.setAttribute('aria-pressed', x.dataset.light === l0 ? 'true' : 'false')); if (l0 !== 'auto' && l0 !== 'night') audio.setTime(l0); });
+bootStep('Größe', () => resize()); bootStep('Variante', () => setVariant(VARIANT, { save: false })); bootStep('Ansicht', () => go('modell')); bootStep('Kollision', () => setCollide(true));
+bootStep('Ton', () => soundLabel()); bootStep('Grafikstufe', () => qualLabel()); bootStep('Bauphase', () => setPhase(PHASES.length - 1));
+bootStep('Luken', () => { for (const k of ['hatch', 'roofhatch']) setDoorNow(k, true); });   // the trapdoor and the roof hatch usually stand open
 requestAnimationFrame(frame);
 const hideLoading = () => { const ld = $('loading'); if (ld) ld.hidden = true; const li = $('loadinfo'); if (li) li.remove(); LOAD.ready = true; LOADLOG.end(); markDirty(true); qualLabel(); };
 const sayLoading = t => { LOAD.alive = performance.now(); LOADLOG.note(t); const ld = $('loading'); if (ld && !ld.hidden && ld.textContent !== t) ld.textContent = t; };
@@ -20,7 +26,8 @@ const sayLoading = t => { LOAD.alive = performance.now(); LOADLOG.note(t); const
       if (prev) line(prev, true);
       if (!LOAD.allIn && s > 20 && LOAD.pending && LOAD.pending.size) { const now = performance.now(), slow = [...LOAD.pending].filter(([u, t]) => now - t > 15000).map(([u]) => String(u).split('?')[0].split('/').slice(-2).join('/'));
         if (slow.length) { line('Noch nicht da: ' + slow.slice(0, 3).join(', ') + (slow.length > 3 ? ' (+' + (slow.length - 3) + ')' : ''), true); if (!el.dataset.slow) { el.dataset.slow = '1'; LOADLOG.note('wartet auf: ' + slow.slice(0, 4).join(', '), true); } } }
-      if (diag || all || s > 25) { const st = all ? LOADLOG.steps : LOADLOG.steps.slice(-6); for (const x of st) line((x[0] / 1000).toFixed(1) + ' s  ' + x[1]); for (const e of LOADLOG.errs.slice(-3)) line('Fehler: ' + e.slice(0, 160), true);
+      for (const e of LOADLOG.errs.slice(-3)) line('Fehler: ' + e.slice(0, 160), true);
+      if (diag || all || s > 25) { const st = all ? LOADLOG.steps : LOADLOG.steps.slice(-6); for (const x of st) line((x[0] / 1000).toFixed(1) + ' s  ' + x[1]);
         if (all) { line(String(window.GLINFO ? GLINFO.renderer : '') + ' · ' + navigator.userAgent.slice(0, 110)); }
         const b = document.createElement('button'); b.textContent = all ? 'weniger' : 'Protokoll'; b.style.cssText = 'margin-top:6px;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12px/1 var(--f-body);padding:7px 11px;cursor:pointer';
         b.onclick = () => { all = !all; draw(); }; el.appendChild(b); } };
