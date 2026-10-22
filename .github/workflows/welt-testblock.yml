@@ -76,6 +76,14 @@ jobs:
           mkdir -p site/welt-test/viewer
           cp viz3/welt-viewer/* site/welt-test/viewer/
           du -sh site/welt-test; find site/welt-test -type f | wc -l
+      - name: 3D-Tiles-Validator (Straßen, Gebäude)
+        continue-on-error: true
+        run: |
+          for t in r b; do
+            [ -f "site/welt-test/$t/tileset.json" ] || continue
+            npx --yes 3d-tiles-validator --tilesetFile "site/welt-test/$t/tileset.json" --writeReports false > "val_$t.json" 2>&1 || true
+            python3 -c "import json,sys; d=json.load(open('val_$t.json')); n=d.get('numErrors'); w=d.get('numWarnings'); print('$t', 'Fehler', n, 'Warnungen', w); [print(' ', i.get('type'), i.get('message','')[:160]) for i in d.get('issues', [])[:8]]" || tail -20 "val_$t.json"
+          done
       - name: Browser für die Prüfung
         run: |
           # the system packages come from the Ubuntu mirror, which sometimes stalls: bounded, then the browser alone
