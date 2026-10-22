@@ -1,5 +1,9 @@
 // ===================== sound: real recordings (CC0 / CC BY), synthesized fallback =====================
 let toastT = null; function toast(msg, ms = 3600) { const t = $('toast'); if (!t) return; t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, ms); }
+// V16c2: the one-time "Neu: …" hints one after another, each for its own time – several versions may arrive at once (forest, felling, wood),
+// and a hint must not cut the one before it short
+let newsQ = [], newsOn = false; function news(msg, ms = 11000) { newsQ.push([msg, ms]); if (!newsOn) newsNext(); }
+function newsNext() { const n = newsQ.shift(); if (!n) { newsOn = false; return; } newsOn = true; toast(n[0], n[1]); setTimeout(newsNext, n[1] + 1200); }
 function soundLabel() { const b = $('soundbtn'); if (!b) return; const st = audio.state(); b.setAttribute('aria-pressed', opt.sound ? 'true' : 'false'); const sp = b.querySelector('span'); const txt = opt.sound ? 'an' : 'aus'; if (sp.textContent !== txt) sp.textContent = txt;
   b.title = opt.sound && st !== 'running' ? 'Ton startet mit dem ersten Klick oder Tippen' : ''; }
 function setSound(v) { opt.sound = v; try { localStorage.setItem('pav-sound', v ? '1' : '0'); } catch (e) {} audio.enable(v); soundLabel(); }

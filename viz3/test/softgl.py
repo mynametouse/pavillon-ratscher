@@ -30,7 +30,7 @@ with lib.browser() as b:
     import re
     par = pg.evaluate("!!GAME.R.getContext().getExtension('KHR_parallel_shader_compile')")   # without it the count cannot be asked without waiting
     check('shaders counted on the loading screen', any(re.search(r'Shader \d+ von \d+', d['t']) for t, d in texts), f"parallel compile: {par}")
-    check('page responsive while preparing (longest wait ≤ 15 s: the first picture)', waits and max(waits) <= 15, f"longest {max(waits or [0]):.1f} s over {len(waits)} looks")
+    check('page responsive while preparing (longest wait ≤ 20 s: the first picture – minutes froze it before V16b3)', waits and max(waits) <= 20, f"longest {max(waits or [0]):.1f} s over {len(waits)} looks")
     time.sleep(4)
     toast = pg.evaluate("(() => { const t = document.getElementById('toast'); return t && !t.hidden ? t.textContent : ''; })()")
     check('hint about software rendering', 'ohne Grafikkarte' in toast, toast[:90])

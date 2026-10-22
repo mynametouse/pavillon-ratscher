@@ -578,7 +578,7 @@ const FELL = (() => {
   whenLoaded(() => { if (!FOREST.ready || !window.ROADS || !ROADS.ready) return; try { S.marked = chooseMarked(); buildKit(); registerActs(); mkSaw(); load(); buildMarks(); S.ready = true; } catch (e) { console.warn('fell', e); } });
   // first visit of V16c2: a word about felling
   let intro = false; window.TICKS.push(() => { if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16c2') === '1'; localStorage.setItem('pav-v16c2', '1'); } catch (e) {}
-    if (!seen) setTimeout(() => toast('Neu: Bäume fällen wie ein Profi. An der Unteren Klinge steht die Forstkiste am Traktor (Helm mit Visier, Schnittschutz, Motorsäge, Keile). Der Förster hat Bäume mit einem orangen Strich markiert: ansprechen, Fallkerb, Fällschnitt mit Halteband, Keil, Warnruf – dann entasten, ablängen, vermessen. B: Waldbuch.', 14000), 40000); });
+    if (!seen) setTimeout(() => news('Neu: Bäume fällen wie ein Profi. An der Unteren Klinge steht die Forstkiste am Traktor (Helm mit Visier, Schnittschutz, Motorsäge, Keile). Der Förster hat Bäume mit einem orangen Strich markiert: ansprechen, Fallkerb, Fällschnitt mit Halteband, Keil, Warnruf – dann entasten, ablängen, vermessen. B: Waldbuch.', 14000), 44000); });
   // test and tool hooks
   Object.assign(S, { book, rec: cur, nextOp, openPlan, startFall, geomOf, outcome, landing, zopfY, endGrain, sawStart, sawStop, get saw() { return SAW; }, stars, kitPos, freeDirs, leanOf, pressSide,
     reset() { try { localStorage.removeItem(LSK); } catch (e) {} location.reload(); } });

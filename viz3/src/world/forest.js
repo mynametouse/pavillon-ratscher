@@ -281,7 +281,7 @@ const FOREST = (() => {
   whenLoaded(() => { if (!window.RATSCHER || !RATSCHER.ready) return; try { build(); } catch (e) { console.warn('forest', e); } });
   // what is new (once)
   let intro = false; window.TICKS.push(() => { if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return; intro = true; let seen = false; try { seen = localStorage.getItem('pav-v16c') === '1'; localStorage.setItem('pav-v16c', '1'); } catch (e) {}
-    if (!seen) setTimeout(() => toast('Neu: der Wald an der Klinge in 3D – Fichten, Lärchen und Kiefern, Nadelstreu und Moos, Licht unter den Kronen. Menü „Zum Traktor“, dann ein paar Schritte in den Familienwald. Die Lärchen färben sich nach dem Spieldatum.', 11000), 26000); });
+    if (!seen) setTimeout(() => news('Neu: der Wald an der Klinge in 3D – Fichten, Lärchen und Kiefern, Nadelstreu und Moos, Licht unter den Kronen. Menü „Zum Traktor“, dann ein paar Schritte in den Familienwald. Die Lärchen färben sich nach dem Spieldatum.', 11000), 44000); });
   // ---------- the ground shader part (world/ratscher.js terrain): needle litter and moss under the crowns, light under the canopy ----------
   const FS_STUB = 'float fCan = 0.0, fOut = 1.0; vec3 forestFloor( vec2 p, vec3 c, float d ) { return c; }';
   S.shader = sh => { if (!window.DETAIL || (window.GLCHECK && GLCHECK.lite)) return FS_STUB;   // needs tDet from the road GLSL (world/roads.js), which LITE drops
