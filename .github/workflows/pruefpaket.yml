@@ -2,7 +2,8 @@
 # langen Browser-Tests laufen hier gleichzeitig auf eigenen Rechnern statt nacheinander im Chat; nur src geht danach in die Vorschau:
 #   Pflicht: smoke, gpu (16 Texturen je Shader), softgl (ohne Grafikkarte), loadlog (Laden mit gespeicherten Ständen), memphone (iPhone-Speicher),
 #            savefuzz (kaputte gespeicherte Werte), Straßen (Wellen je km unter der Grenze)
-#   Versuch: Safari-Engine (WebKit mit iPhone-13-Profil) – zählt noch nicht, bis klar ist, ob WebGL dort ohne Grafikkarte läuft
+#   Versuch: Safari-Engine (WebKit mit iPhone-13-Profil) – zählt noch nicht, bis klar ist, ob WebGL dort ohne Grafikkarte läuft;
+#            Feature-Tests v16b, v16c, v16d, v16e – melden, halten die Vorschau aber noch nicht auf
 name: Prüfpaket
 
 on:
@@ -56,6 +57,48 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-${{ matrix.test }}
+          path: out/
+          if-no-files-found: ignore
+
+  features:
+    # die Feature-Tests (Fahrzeuge, Wald und Fällen, Holz, Dorf) – je 10–30 min; sie melden, halten die Vorschau aber (noch) nicht auf
+    name: Feature ${{ matrix.test }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        test: [v16b, v16c, v16d, v16e]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Website als Asset-Basis (Branch gh-pages, Vorschau wenn vorhanden)
+        run: |
+          git clone -q --depth 1 --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          mkdir -p viz3/dist
+          B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
+          (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+      - name: Werkzeuge
+        run: |
+          npm ci --prefix viz3 --no-audit --no-fund
+          pip install playwright
+          # the system packages come from the Ubuntu mirror, which sometimes stalls: bounded, then the browser alone
+          timeout 300 python -m playwright install --with-deps chromium || python -m playwright install chromium
+      - name: Bauen wie veröffentlicht
+        run: python viz3/build.py --fast --min
+      - name: Test ${{ matrix.test }}
+        run: python viz3/test/run.py --serve ${{ matrix.test }}
+      - name: Testausgabe aufheben
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feature-${{ matrix.test }}
           path: out/
           if-no-files-found: ignore
 
