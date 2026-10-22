@@ -3,8 +3,8 @@
 import * as THREE from 'three';
 import { rnd, rr, scene, V } from '../core/head.js';
 import { ANISO, dimIndoor, grime, patchSV, pbrMat, plain, TEXMAN } from '../core/assets.js';
-import { B, COL, hingeDoor, PH, PH_END, phase, siteUV, tagPh, WALK } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { B, COL, hingeDoor, PH, PH_END, phase, siteUV, tagPh, WALK } from '../core/geo.js';
 import { cutOps } from '../pavilion/house_base.js';
 import { S0 } from './env.js';
 phase(null);

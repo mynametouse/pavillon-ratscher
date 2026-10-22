@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { V } from '../core/head.js';
-import { beam, bldBegin, bldEnd, boardLeaf, cyl, RB, tagPh } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { beam, bldBegin, bldEnd, boardLeaf, cyl, RB, tagPh } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import {
   BLD,

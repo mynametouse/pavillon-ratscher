@@ -1,6 +1,5 @@
 // ---------------- materials (photo textures, CC0; plain colours as fallback) ----------------
 import * as THREE from 'three';
-import { LATE } from './late.js';
 import { rnd, rr } from './head.js';
 import { ANISO, grime, pbrMat, plain } from './assets.js';
 export const MAT = {
@@ -63,7 +62,6 @@ export const MAT = {
   weather: pbrMat('weatherwood', { fallback: 0x6b6862, nrm: 1.0, rough: 1.05 }),
   zinc: plain({ color: 0x9aa1a4, metalness: 0.65, roughness: 0.42 }),
 };
-LATE.MAT = MAT;
 MAT.glass.userData.noSV = true;
 // pavilion interior: own materials (live colour grading), so the interior styles do not change the other buildings
 Object.assign(MAT, {

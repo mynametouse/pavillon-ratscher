@@ -4,6 +4,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { LATE } from './late.js';
 import { scene, V } from './head.js';
 import { markDirty, MODELS } from './assets.js';
+import { MAT } from './mats.js';
 export const COL = []; // [x0,x1,y0,y1,z0,z1,tag,phase]  (site coords)
 export const WALK = []; // [x0,x1,y0,y1,ztop,type,phase]
 export const PHN = {
@@ -308,7 +309,7 @@ export function flapDoor(key, group, { hx, hy, z, rot, open, pos, openBox, label
   return DOORS[key];
 }
 // larch board door leaf built along local +X from the hinge (x = 0 .. w), with optional vision strip and handle
-export function boardLeaf(w, h, { glass = null, boards = true, mat = LATE.MAT.larch } = {}) {
+export function boardLeaf(w, h, { glass = null, boards = true, mat = MAT.larch } = {}) {
   const g = new THREE.Group();
   const leaf = new THREE.Mesh(new RoundedBoxGeometry(w - 0.02, h - 0.02, 0.06, 1, 0.006), mat);
   siteUV(leaf.geometry, 0, 0, 0, 'z');
@@ -318,19 +319,19 @@ export function boardLeaf(w, h, { glass = null, boards = true, mat = LATE.MAT.la
   g.add(leaf);
   if (boards)
     for (let x = 0.15; x < w - 0.08; x += 0.145) {
-      const s = new THREE.Mesh(new THREE.BoxGeometry(0.004, h - 0.06, 0.062), LATE.MAT.black);
+      const s = new THREE.Mesh(new THREE.BoxGeometry(0.004, h - 0.06, 0.062), MAT.black);
       s.position.set(x, h / 2, 0);
       g.add(s);
     }
   if (glass) {
     const [gx, gw, gz0, gz1] = glass;
-    const win = new THREE.Mesh(new THREE.BoxGeometry(gw, gz1 - gz0, 0.064), LATE.MAT.glass);
+    const win = new THREE.Mesh(new THREE.BoxGeometry(gw, gz1 - gz0, 0.064), MAT.glass);
     win.position.set(gx, (gz0 + gz1) / 2, 0);
     win.renderOrder = 2;
     g.add(win);
   }
   for (const zz of [0.045, -0.045]) {
-    const hh = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.36, 0.025), LATE.MAT.blacksteel);
+    const hh = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.36, 0.025), MAT.blacksteel);
     hh.position.set(w - 0.09, 1.05, zz);
     g.add(hh);
   }
@@ -346,17 +347,17 @@ export function glassLeaf(w, h) {
     [fw, w - fw, 0, 0.12],
     [fw, w - fw, h - fw, h],
   ]) {
-    const f = new THREE.Mesh(new RoundedBoxGeometry(x1 - x0, y1 - y0, 0.07, 1, 0.004), LATE.MAT.frame);
+    const f = new THREE.Mesh(new RoundedBoxGeometry(x1 - x0, y1 - y0, 0.07, 1, 0.004), MAT.frame);
     f.position.set((x0 + x1) / 2, (y0 + y1) / 2, 0);
     f.castShadow = true;
     g.add(f);
   }
-  const gl = new THREE.Mesh(new THREE.BoxGeometry(w - 2 * fw, h - 0.12 - fw, 0.02), LATE.MAT.glass);
+  const gl = new THREE.Mesh(new THREE.BoxGeometry(w - 2 * fw, h - 0.12 - fw, 0.02), MAT.glass);
   gl.position.set(w / 2, (0.12 + h - fw) / 2, 0);
   gl.renderOrder = 2;
   g.add(gl);
   for (const zz of [0.05, -0.05]) {
-    const hh = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.3, 0.025), LATE.MAT.blacksteel);
+    const hh = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.3, 0.025), MAT.blacksteel);
     hh.position.set(w - 0.1, 1.05, zz);
     g.add(hh);
   }

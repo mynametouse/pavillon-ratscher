@@ -13,7 +13,7 @@ Oberfläche Deutsch.
   `export`iert, Nutzer importieren es mit relativem Pfad. three.js, seine Addons, n8ao und ez-tree (`src/eztree/`) importiert jedes Modul selbst.
 - **Gegen die Ladereihenfolge** – ein Modul braucht etwas von weiter unten, z. B. `render/render.js` die Kamerafunktion `applyCam` aus
   `game/game.js` – geht es über `LATE` (`core/late.js`): das spätere Modul übergibt beim Laden (`LATE.DN = DN`, Funktionen gleich am
-  Anfang, `let`-Variablen als Getter), der Nutzer liest beim Laufen (`LATE.DN.update()`), nie schon beim Laden. Das sind 38 Namen
+  Anfang, `let`-Variablen als Getter), der Nutzer liest beim Laufen (`LATE.DN.update()`), nie schon beim Laden. Das sind 37 Namen
   (`node tools/check/deps.mjs --late`), jeder eine Stelle, an der die Schichten noch falsch herum zeigen; Phase 2 ersetzt sie durch
   Dienste. Bitte keine neuen.
 - Variablen fremder Module lassen sich nicht zuweisen (Importe sind schreibgeschützt): dafür Setter (`setSunDir`, `setVariantId`,

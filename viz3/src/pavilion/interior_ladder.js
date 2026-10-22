@@ -1,6 +1,6 @@
 // ############################ VARIANT B: furnishing around the ladder stairs ############################
-import { B, beam, cyl, phase, PHN, varOff, varOn } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { B, beam, cyl, phase, PHN, varOff, varOn } from '../core/geo.js';
 import { RFB, zDb, zE, zF, zO } from './house_base.js';
 import { amp, armchair, grpItem, IX1B, IY1, lantern, NW, pillowFix, placeGLB, terraceSet } from './interior.js';
 varOn('B');

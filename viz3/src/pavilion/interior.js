@@ -7,8 +7,8 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { LATE } from '../core/late.js';
 import { rnd, rr, scene, V, VARIANT, varOk } from '../core/head.js';
 import { loadModel, markDirty, MODELS, patchSV, plain } from '../core/assets.js';
-import { B, beam, COL, cyl, itemCol, PH, PH_END, phase, PHN, RB, tagPh, VAR, varOff, varOn } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { B, beam, COL, cyl, itemCol, PH, PH_END, phase, PHN, RB, tagPh, VAR, varOff, varOn } from '../core/geo.js';
 import { OG, OGB, RF, STV, T, TT, TW, zC, zD, zE, zF, zG, zO } from './house_base.js';
 export const NW = 4 - T,
   IX0 = OG.x0 + T,

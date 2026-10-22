@@ -8,8 +8,8 @@ core/save.js                # SAVE: every value kept in this browser (registry, 
 core/head.js                # renderer, scene, camera, query flags, small helpers (THREE also on window)
 core/kern.js                # KERN: ground, terrain, road surface, collision, place names – services the world modules provide
 core/assets.js              # loading manager, textures, PBR materials, patchSV (sky visibility, baked GI, figure shadows, lamp-spill mask)
-core/geo.js                 # box/cylinder builders with collision + walk registry (COL, WALK), building registry (bldBegin/bldEnd, BUILD)
 core/mats.js                # shared materials MAT
+core/geo.js                 # box/cylinder builders with collision + walk registry (COL, WALK), building registry (bldBegin/bldEnd, BUILD)
 core/detail.js              # V16b1 detail textures of the ground shaders as one texture array (DETAIL); sampler count check and fallback (GLCHECK)
 pavilion/house_base.js      # the planned pavilion: dimensions, levels, wall/window/railing/ladder helpers
 pavilion/house_common.js    # parts both variants share (slab, EG walls S/N/W, joists, chimney, EG windows, floor, stove)

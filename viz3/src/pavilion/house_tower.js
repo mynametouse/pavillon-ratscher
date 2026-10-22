@@ -1,6 +1,7 @@
 // ############################ VARIANT A: stair tower ############################
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
+import { MAT } from '../core/mats.js';
 import {
   B,
   beam,
@@ -18,7 +19,6 @@ import {
   varOn,
   WALK,
 } from '../core/geo.js';
-import { MAT } from '../core/mats.js';
 import {
   bandH,
   bandS,

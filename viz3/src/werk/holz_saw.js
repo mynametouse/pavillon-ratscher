@@ -12,8 +12,8 @@ import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUti
 import { LATE } from '../core/late.js';
 import { scene, V } from '../core/head.js';
 import { ANISO, markDirty } from '../core/assets.js';
-import { BUILD, COL, DOORS } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { BUILD, COL, DOORS } from '../core/geo.js';
 import { WORKS } from '../garden/workshop.js';
 import { mulberry } from '../garden/grass.js';
 import { PLAY, SFX } from '../game/play.js';

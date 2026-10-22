@@ -1,5 +1,5 @@
-import { beam, bldBegin, bldEnd, boardLeaf, RB } from '../core/geo.js';
 import { MAT } from '../core/mats.js';
+import { beam, bldBegin, bldEnd, boardLeaf, RB } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import {
   BLD,
