@@ -11,7 +11,7 @@ on:
         description: 'Umfang: A = 4 × 4 km Detail (Stufe 12) + 4,8 km Block; B = dazu Block 9,6 × 9,6 km (Stufen 8–11)'
         type: choice
         options: [A, B]
-        default: A
+        default: B
       veroeffentlichen:
         description: 'nach gh-pages/welt-test/ veröffentlichen'
         type: boolean
@@ -24,7 +24,7 @@ permissions:
   contents: write
 
 env:
-  PLAN: ${{ inputs.plan || 'A' }}
+  PLAN: ${{ inputs.plan || 'B' }}
 
 jobs:
   build:
