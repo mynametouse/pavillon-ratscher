@@ -6,9 +6,11 @@ OpenStreetMap gives the axis, DGM1 (1 m) the heights:
   3. Longitudinal profile: one least-squares problem for all roads together (Whittaker smoother): stay near the data, penalise the
      curvature per class so that waves shorter than L are removed (motorway 320 m, main 240, county 210, street/lane 130,
      service/track 100, path/foot 60); junction nodes are shared, so the roads meet at one height; bridges and tunnels stay straight.
-  4. Cross-section: carriageway with a 2.5 % crown, shoulder (Bankett) at 8 %, a short buried skirt; the terrain under the road is set
-     6 cm below it, beside the road it is cut or filled with 1:1.5 slopes (clamp between the shoulder height -/+ distance / 1.5).
-  5. Ribbon meshes per level-9 tile (GLB), centre lines with heights (JSON) and drive routes for the viewer.
+  4. Cross-section: carriageway with a 2.5 % crown, one-sided towards the inside of curves on rural roads (up to 7 %), shoulder
+     (Bankett) at 8 %, a short buried skirt; the terrain under the road is set 6 cm below it, beside the road it is cut or filled with
+     1:1.5 slopes (clamp between the shoulder height -/+ distance / 1.5).
+  5. Ribbon meshes per level-9 tile (GLB, with white lines on main and county roads), centre lines with heights (JSON), drive routes
+     and their before/after profiles (diag/) for the viewer. With DGM1 the OSM axis is first moved onto the carriageway (fit_axis).
   6. Metric per class (printed and in meta.json): waves per km, change of grade per 10 m, max grade, share of length beyond the
      RAL 2012 limits (grade, crest and sag radius; values from memory - check against the RAL before using them as a hard test).
 """
