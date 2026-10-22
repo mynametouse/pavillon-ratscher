@@ -1,0 +1,21 @@
+/* V16c2 felling at the Klinge (world/fell.js): forest book, tree card, stump drawing in the cut windows, log list; forest gear (werk/gear.js) */
+#waldbuch{position:absolute;z-index:8;background:var(--paper);color:var(--ink);border-radius:14px;box-shadow:0 10px 36px rgba(0,0,0,.34);padding:12px 14px 14px;overflow:auto;overscroll-behavior:contain;top:60px;left:max(12px,env(safe-area-inset-left,0px));width:min(500px,calc(100% - 24px));max-height:calc(100% - 150px)}
+#waldbuch h3{margin:0 0 6px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center;gap:8px}
+#waldbuch h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer}
+#waldbuch h4{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+#waldbuch table.hl{width:100%;border-collapse:collapse;font:400 12px/1.35 var(--f-mono)}
+#waldbuch table.hl th{text-align:left;font-weight:500;color:var(--muted);border-bottom:1px solid var(--line);padding:3px 4px}
+#waldbuch table.hl td{padding:3px 4px;border-bottom:1px solid var(--line)}
+#fellcard{position:absolute;top:150px;left:max(12px,env(safe-area-inset-left,0px));width:min(300px,52vw);background:var(--ov-bg);color:var(--ov-ink);border-radius:10px;padding:8px 10px 9px;font:400 12.5px/1.4 var(--f-body);backdrop-filter:blur(6px);pointer-events:auto;z-index:5}
+#fellcard .wc-t b{font:600 13px/1.3 var(--f-body)}
+#fellcard .wc-d{font:400 11px/1.35 var(--f-mono);opacity:.75;margin-top:3px}
+#fellcard .wc-n{margin-top:6px}
+#fellcard .wc-n span{display:block;font:500 10.5px/1.2 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:#ffd36b}
+#fellcard .wc-b{margin-top:7px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:inherit;font:500 11.5px/1 var(--f-body);padding:6px 10px;cursor:pointer}
+body:not([data-mode="walk"]) #fellcard{display:none}
+#machwin .mfig{display:flex;justify-content:center;margin:8px 0 2px}
+#machwin .mfig svg.fellfig{width:min(240px,100%);height:auto;background:var(--plate);border-radius:10px;border:1px solid var(--line)}
+#gearwin h4.gh{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+body[data-mode="walk"][data-view="1"] #gearfx[data-head="forsthelm"]{display:block}
+#gearfx[data-head="forsthelm"]{background:repeating-linear-gradient(0deg,rgba(20,22,24,.16) 0 1px,transparent 1px 7px),repeating-linear-gradient(90deg,rgba(20,22,24,.16) 0 1px,transparent 1px 7px);box-shadow:inset 0 60px 50px -40px rgba(200,90,20,.55)}
+@media (max-width:560px){ #fellcard{top:196px;width:min(250px,62vw);font-size:12px} }

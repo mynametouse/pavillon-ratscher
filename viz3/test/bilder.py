@@ -44,6 +44,7 @@ VIEWS_B = [
   ('b23', 'gold', 'veh',   ['tractor', None, None, None, 9.5, -4.5, 1.7, 60, "VEH.by.tractor.model.load([0.25, 0.3])"]),   # V16b: the tractor at the Untere Klinge, fork raised
   ('b24', 'day',  'walk',  [248.0, -102.2, 2.6, 284, 7, 64]),       # V16e: the Anger in Ratscher – Dorflinde, old school with turret (photo spot 2026)
   ('b25', 'dusk', 'walk',  [200.9, -111.9, 2.06, 248, 1, 64]),      # V16e: the fountain in the evening, lamps and windows lit (photo spot 2026)
+  ('b26', 'day',  'wald',  [-560, -592, 1.7, 100, 2, 60, "CLOCK.t = Math.round(Date.UTC(2026, 9, 22) / 864e5 - (DN.jdOf(0) - 2440587.5 + 0.5 | 0)) * 1440 + 15 * 60"]),   # V16c: the forest edge at the Untere Klinge – young spruces, larches golden in late October
 ]
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
@@ -74,6 +75,10 @@ with sync_playwright() as p:
               const cx = c[0] + f[0] * {dist} + l[0] * {side}, cy = c[1] + f[1] * {dist} + l[1] * {side}, cz = ROADS.groundAt(cx, cy) + {hgt};
               GAME.view(cx, cy, cz, Math.atan2(c[0] - cx, c[1] - cy) * 180 / Math.PI, Math.atan2(s.z + 0.8 - cz, Math.hypot(c[0] - cx, c[1] - cy)) * 180 / Math.PI, {fov}); }})()""")
             time.sleep(1.5)
+        elif kind == 'wald':   # V16c: a view at eye height above the forest floor, after an optional script (date); the forest picks its trees first
+            x, y, h, yaw, pitch, fov, js = a
+            if js: pg.evaluate(js)
+            z = pg.evaluate(f"ROADS.groundAt({x}, {y})") + h; pg.evaluate(f"GAME.view({x},{y},{z},{yaw},{pitch},{fov})"); time.sleep(2.5)
         else:
             x, y, z, yaw, pitch, fov = a
             if isinstance(z, str): z = G[z] + 1.65

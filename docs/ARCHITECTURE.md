@@ -106,7 +106,8 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `pav-clock-v1`, `pav-dn-v1` | Spielzeit und Tempo; Kalender (Tag 1 = Datum) |
 | `pav-quests-v1`, `pav-werk-v1`, `pav-gear-v1` | Aufgaben, Werkstatt-Spiel, Schutzausrüstung |
 | `pav-veh-v1` | Fahrzeuge: Standort und Richtung je Fahrzeug, Frontlader, Lichtmodus (auto/an/aus) |
-| `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt |
+| `pav-fell-v1` | Fällen (V16c2): Forstkiste genommen, Bäume in Arbeit/gefällt mit Schnittmaßen und Lage, Holzliste |
+| `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt |
 
 Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), hier eintragen.
 
@@ -123,7 +124,7 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `game/` – Gehen/Kamera/Schleife, Aktionen/Inventar, Haus (Schalter, Ofen, Sitzen), Aufgaben, HUD, Spielfigur
 - `audio/` – Ton-Engine (Aufnahmen, Synthese, Atmosphäre, Stimmen), Musik (Klavier, Platten, Ukulele)
 - `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus
-- `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
+- `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Wald an der Klinge (`forest`), Fällen (`fell`, V16c2), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
   Kollision mit der Umgebung (`worldcol`)
 - `time/` – Uhr, Sterndaten, Tag und Nacht
 - `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster
@@ -173,6 +174,28 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - **Auto** (`vehicles/car.js`, V16b1): generischer Kombi in Logan-MCV-Proportionen (4473 × 1740 × 1640 mm, Radstand 2905), Karosserie als
   Profil-Extrusion (Unterteil, Fensterband, Dach), Teile vorn auf der gemessenen Frontfläche (`frontAt`), geteilte Hecktüren, Dachreling,
   Ladefläche `model.load` (`y0…y1`, `z`, halbe Breite, Höhe) für spätere Ladung (V16d).
+
+## 11b Wald an der Klinge (V16c)
+
+- **Bestand** (`world/forest.js`, `FOREST`): der Nordwest-Lappen des großen Walds südlich der L 1625 (`LOBE`, 16,8 ha, ALKIS „Nadelholz“),
+  darin der vermutete Familienwald `CORE` (2,3 ha an der Wegekreuzung J). `world/ratscher.js` gibt die Bäume des Kronenhöhenmodells in diesem
+  Lappen ab (`RATSCHER.forestCHM`, ~2300 herrschende Bäume) statt sie als Baumbilder zu zeichnen; dazwischen pflanzt das Modul den Rest
+  (Raster 3,6 m mit Zufall, Höhen nach den gemessenen Nachbarn, Unterstand, Jungwuchs in Lücken) – deterministisch, ~9300 Bäume.
+  Arten: Fichte (Kammfichte mit hängenden Zweigen), Lärche (licht, schlank), Kiefer (Spiegelrinde oben); je Art „Bestand/Rand/Jung“.
+- **Modelle**: prozedural (Stamm mit Rinde, Quirle aus Nadelzweig-Karten aus `public/tree/fir_twig_color.png`, Totäste unten) in drei
+  Stufen: nah (bis 34–44 m, Schatten), mittel (bis 140–175 m), fern (Kreuzkarten aus einem beim Laden gerenderten Atlas, Seiten- und
+  Draufsicht). Übergänge mit Bildschirm-Dither über einige Meter; außerhalb ihres Bandes klappt eine Stufe ihre Ecken zusammen (kein Overdraw).
+  Der Atlas wird erst gezeichnet, wenn Zweig- und Rindenbilder geladen sind (sonst schwarze Stämme ohne Nadeln). Radien: `LODS` je Grafikstufe.
+- **Licht und Boden**: Kronenraster 2 m (`tCan`, Rohsummen in `S.cov`): unter den Kronen Nadelstreu mit Moosflecken (Ebenen `needles`,
+  `mossfloor` im `DETAIL`-Array – kein eigener Sampler), außerhalb des Sonnenschatten-Kastens gedämpfte Sonne, Himmelslicht grün-braun
+  getönt statt blau (`FOREST.LIGHT` im Geländeshader, `vShade` in den Baum-Shadern). In der Ferne übernimmt das Luftbild.
+- **Jahreszeit**: Lärchen nach dem Spieldatum (`seasonOf`): frisches Grün ab Mitte April, gelb-golden ab Mitte Oktober, Nadelfall im
+  November, kahl im Winter (`uSeas`; auch der Fernatlas wird neu gezeichnet).
+- **Bodendeckung** nah an der Kamera: Farne, Stubben, liegendes Totholz (glTF, instanziert). Stämme sind Hindernisse (`WCOL`, `FOREST.trunks`).
+  Ortsnamen „Die Klinge – Familienwald“ / „Wald an der Klinge“ (`FOREST.place` → `ROADS.place`), Wind und Vögel (`FOREST.amb` → `audio`).
+- **Schnittstellen für das Fällen** (V16c2): `FOREST.model(m)` (Geometrie und Stammprofil `rAt`), `trunkR(t, z)` (Radius in Weltmetern),
+  `soloMats(sp, U)` (Materialien für einen einzelnen Baum: Rinde unter `uCut` verborgen, Karten unter `uDelimb` weg), `patchSolo`, `hide(t)`
+  (aus Instanzen, Fernkarte, Kollision und Kronenraster nehmen).
 
 ## 12 Erweitern – Beispiel neues Fahrzeug
 

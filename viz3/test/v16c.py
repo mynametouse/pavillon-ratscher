@@ -1,6 +1,8 @@
 # V16c the forest at the Klinge (world/forest.js): the stand, the views into and over it, walking among the trunks, the tractor on the
 # forest track, place names and forest sound, the larch's year, texture limits, a phone. Pictures in out/v16c/.
-# Sections (optional second argument, comma-separated): stand,views,walk,tractor,season,night,phone
+# Sections (optional second argument, comma-separated): stand,views,walk,tractor,season,night,phone,fell
+# fell (V16c2): forest box, a marked tree from the plan to the logs: notch, sapwood cuts, calls, bore cut, wedge, band, the fall, delimbing,
+# trimming, the top, bucking (compression side), measuring; the stump and the logs, the forest book; reload keeps it all.
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]; OUT = lib.out('v16c'); ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else None
@@ -18,7 +20,7 @@ VIEWS = [
     ('f_fields', -150, -400, 2.2, 230, -3, 55),          # from the fields by the L 1625: the forest far away
 ]
 with lib.browser() as b:
-    errs = []; pg = lib.page(b, 1100, 640, errs, tier='hoch'); lib.boot(pg, port, figures=True); E = pg.evaluate
+    errs = []; pg = lib.page(b, 1100, 640, errs, tier='hoch'); lib.boot(pg, port, query='?fell=1' if want('fell') else '', figures=True); E = pg.evaluate
     E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
     steps = lambda secs: E(f"for (let i = 0; i < {int(secs / 0.025)}; i++) GAME.step(0.025)")
     E("CLOCK.t = 13 * 60; DN.update(true)"); lib.settle_light(pg); E("GAME.setView3 && GAME.setView3(false, true)")
@@ -90,6 +92,83 @@ with lib.browser() as b:
         if 'jan' in res: check('larch bare in January', res['jan']['bare'] > 0.95, str(res['jan']))
         if 'jul' in res: check('larch green in July', res['jul']['gold'] < 0.05 and res['jul']['bare'] < 0.05, str(res['jul']))
         E("CLOCK.t = 13 * 60; DN.update(true)"); lib.settle_light(pg)
+
+    if want('fell'):   # V16c2 felling: the whole way with a marked tree, cut by cut as a forester would
+        def act(aid): return E(f"(() => {{ const a = PLAY.acts().find(a => a.id === '{aid}'); if (!a) return null; let l = null; try {{ l = a.label(); }} catch (e) {{ l = 'ERR ' + e; }} PLAY.run(a); return l; }})()")
+        def go(): return E("(() => { const b = document.querySelector('#machwin .go'); if (!b || document.getElementById('machwin').hidden) return false; b.click(); return true; })()")
+        def wait_hold(gauge=False):
+            for i in range(60):
+                if E("!!(PLAY.hold && " + ("PLAY.hold.g" if gauge else "true") + ")"): return True
+                time.sleep(0.2); E("GAME.step(0.025)")
+            return False
+        def gauge(k):
+            if not wait_hold(True): return None
+            h = json.loads(E("JSON.stringify({ dur: PLAY.hold.dur, t: PLAY.hold.t })")); E(f"for (let i = 0; i < {int((k * h['dur'] - h['t']) / 0.025)}; i++) GAME.step(0.025)"); E("PLAY.primary()"); return h
+        def hold():
+            if not wait_hold(): return None
+            d = E("PLAY.hold.dur"); steps(d + 0.3); return d
+        rec = lambda: json.loads(E("JSON.stringify((() => { const r = FELL.rec(); return r ? { st: r.st, az: r.az, p: r.p, cut: r.cut, notes: r.notes, out: r.out || null, stars: r.stars || 0, pose: r.pose || null } : null; })())"))
+        def look_at(cx, cy, ch, tx, ty, tz, fov=60):
+            gz = E(f"ROADS.groundAt({cx}, {cy})"); tg = E(f"ROADS.groundAt({tx}, {ty})"); yaw = math.degrees(math.atan2(tx - cx, ty - cy)); pitch = math.degrees(math.atan2(tg + tz - gz - ch, math.hypot(tx - cx, ty - cy)))
+            E(f"PLAY.select(-1); GAME.setView3(false, true); GAME.view({cx}, {cy}, {gz + ch}, {yaw}, {pitch}, {fov}); GAME.step(0.05)")
+        E("CLOCK.t = 13 * 60; DN.update(true)"); lib.settle_light(pg)
+        check('felling ready, trees marked', E("FELL.ready && FELL.marked.length >= 8"), str(E("FELL.marked.length")))
+        k = E("FELL.kitPos()"); E(f"GAME.view({k[0]} - 1.2, {k[1]}, ROADS.groundAt({k[0]} - 1.2, {k[1]}) + 1.7, 90, -10, 62); GAME.step(0.2)")
+        act('fell:kit'); steps(0.2); go(); steps(0.3)
+        g = json.loads(E("JSON.stringify({ have: GEAR.haveForest, on: GEAR.on, saw: PLAY.has(PLAY.things.motorsaege) })"))
+        check('forest box: gear on, saw taken', g['have'] and g['saw'] and all(g['on'][s] for s in ('head', 'body', 'legs', 'feet', 'hands')), str(g['on']))
+        t = json.loads(E("JSON.stringify((() => { const t = FELL.marked[0]; return { id: t.id, x: t.x, y: t.y, z: t.z, h: t.h, sp: t.sp }; })())"))
+        E(f"GAME.view({t['x']} - 1.4, {t['y']} - 0.6, ROADS.groundAt({t['x']} - 1.4, {t['y']} - 0.6) + 1.7, 60, 10, 62); GAME.step(0.2)")
+        check('a marked tree offers felling', 'fällen' in (act('fell:pick') or ''), '')
+        steps(0.2); go(); steps(0.2); r = rec(); az = r['az']; fx, fy = math.sin(math.radians(az)), math.cos(math.radians(az)); rx, ry = fy, -fx
+        check('direction chosen into a free lane', r['st'] == 'retreat', f"{az}°")
+        act('fell:op'); hold()
+        act('fell:op'); steps(0.1); go(); gauge(0.53); r = rec()
+        D = 2 * E(f"FELL.geomOf(FOREST.byId({t['id']}), FELL.rec().p).R")
+        check('notch floor 1/5 to 1/3 of the diameter', r['st'] == 'roof' and 0.2 <= r['p']['d'] / D <= 0.334, f"{r['p']['d'] * 100:.1f} cm of Ø {D * 100:.0f} cm")
+        act('fell:op'); steps(0.1); go(); gauge(0.8); steps(1.0); r = rec()
+        check('roof meets the floor, the piece drops out', r['cut'].get('open') == 1 and r['st'] == 'splint' and not r['notes'], str(r['notes']))
+        look_at(t['x'] + fx * 1.5 + rx * 0.6, t['y'] + fy * 1.5 + ry * 0.6, 0.75, t['x'], t['y'], 0.32, 50); lib.shot(pg, OUT, 'm_notch')
+        act('fell:op'); hold(); act('fell:op'); steps(2.4)
+        r = rec(); check('sapwood cuts, then the call', r['cut'].get('splint') == 1 and r['st'] == 'back', r['st'])
+        act('fell:op'); steps(0.1); go(); gauge(0.55); r = rec()
+        check('hinge about 1/10 Ø', r['st'] == 'wedge' and 0.07 <= r['p']['T'] / D <= 0.13, f"{r['p']['T'] * 100:.1f} cm")
+        act('fell:op'); hold(); act('fell:op'); steps(2.4)
+        look_at(t['x'] - fx * 1.1 + rx * 1.2, t['y'] - fy * 1.1 + ry * 1.2, 0.7, t['x'], t['y'], 0.33, 50); lib.shot(pg, OUT, 'n_back_wedge')
+        r = rec(); check('wedge driven, second call', r['cut'].get('wedge') == 1 and r['st'] == 'band', r['st'])
+        act('fell:op'); hold(); steps(3.4)
+        look_at(t['x'] - rx * 18 + fx * 4, t['y'] - ry * 18 + fy * 4, 2.0, t['x'] + fx * 6, t['y'] + fy * 6, 6, 75); lib.shot(pg, OUT, 'o_falling')
+        for i in range(30):
+            steps(0.5)
+            if rec()['st'] == 'down': break
+        r = rec(); print('down', r, flush=True)
+        check('the tree is down, close to the chosen direction', r['st'] == 'down' and abs(r['out']['dev']) < 8, f"dev {r['out']['dev']:.1f}°, stars {r['stars']}")
+        look_at(t['x'] - rx * 9 + fx * 2, t['y'] - ry * 9 + fy * 2, 2.6, t['x'] + fx * 8, t['y'] + fy * 8, 0.3, 75); lib.shot(pg, OUT, 'p_down')
+        look_at(t['x'] - fx * 0.9 + rx * 0.9, t['y'] - fy * 0.9 + ry * 0.9, 1.25, t['x'], t['y'], 0.3, 55); lib.shot(pg, OUT, 'q_stump')
+        check('trunk gone from the collisions', not E(f"(() => {{ const p = [{t['x']} + 0.05, {t['y']}]; return WCOL.pushCircle(p, 0.3); }})()"), '')
+        n = 0
+        while rec()['st'] in ('down', 'delimb') and n < 12: act('fell:op'); hold(); n += 1
+        look_at(t['x'] - rx * 7 + fx * 3, t['y'] - ry * 7 + fy * 3, 2.4, t['x'] + fx * 9, t['y'] + fy * 9, 0.3, 75); lib.shot(pg, OUT, 'r_delimbed')
+        check('delimbed to the top', rec()['st'] == 'trim', f"{n} sections")
+        act('fell:op'); hold(); act('fell:op'); hold(); steps(0.2); go(); steps(0.2)
+        cuts = E("FELL.rec().cuts"); print('cuts', cuts)
+        for i in range(10):
+            if rec()['st'] != 'buck': break
+            act('fell:op'); steps(0.1)
+            side = E("(() => { const r = FELL.rec(); return FELL.pressSide(r, r.cuts[r.cutDone || 0]); })()")   # the right side first (the window asks)
+            E(f"(() => {{ const b = document.querySelector('#machwin [data-ch=\"side\"][data-v=\"{side}\"]'); if (b) b.click(); }})()"); steps(0.05)
+            go(); hold()
+        act('fell:op'); hold(); steps(0.3)
+        logs = json.loads(E("JSON.stringify(FELL.logs)")); r = rec(); print('logs', logs, flush=True)
+        check('bucked and measured into logs', len(logs) >= 2 and all(2.5 <= l['L'] <= 4.2 for l in logs[:-1]), ', '.join(f"{l['L']} m Ø{l['dm']} {l['vol']} Fm" for l in logs))
+        look_at(t['x'] - rx * 5 + fx * 4, t['y'] - ry * 5 + fy * 4, 1.8, t['x'] + fx * 8, t['y'] + fy * 8, 0.3, 70); lib.shot(pg, OUT, 's_logs')
+        E("FELL.book(true)"); time.sleep(0.3); pg.screenshot(path=os.path.join(OUT, 't_book.png')); E("FELL.book(false)")
+        st_ = json.loads(E("JSON.stringify(Object.values(FELL.trees).map(r => ({ st: r.st, stars: r.stars, notes: r.notes })))")); print('trees', st_)
+        check('tree done with stars', st_ and st_[0]['st'] == 'done' and st_[0]['stars'] >= 4, str(st_))
+        # reload: the stump, the logs and the list survive
+        pg.reload(wait_until='domcontentloaded'); pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); time.sleep(3); E("window.FREEZE = true")
+        rl = json.loads(E("JSON.stringify({ trees: Object.keys(FELL.trees).length, logs: FELL.logs.length, gone: FOREST.byId(" + str(t['id']) + ").gone })"))
+        check('reload keeps the felled tree and its logs', rl['trees'] == 1 and rl['logs'] == len(logs) and rl['gone'], str(rl))
     if want('night'):
         E("CLOCK.t = 22 * 60 + 30; DN.update(true)"); lib.settle_light(pg)
         E("GAME.view(-606, -598, ROADS.groundAt(-606, -598) + 1.7, 62, 4, 62); GAME.step(0.1)"); lib.shot(pg, OUT, 'k_night_edge')

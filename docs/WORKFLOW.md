@@ -54,6 +54,7 @@ python3 viz3/test/smoke.py 8951          # Grundtest: lädt, keine Fehler, Spiel
 | v16a_lapse.py, v16a_video.py | Zeitraffer eines Tages (Bilderbogen, mp4) | 15–25 min |
 | v16b.py | Fahrzeuge: Einsteigen, Gas/Bremse/rückwärts, Hauswand, Route Garten → Klinge mit Ortsnamen, Aussteigen und Gehen im Gelände, Traktor mit Frontlader, Licht nachts, HUD mit Karte, Zurückstellen, Telefon (Antippen, Kreis, Platz der Anzeigen) (Abschnitte: `car,drive,crash,route,walk,tractor,night,ui,phone`) | 20–30 min |
 | v16e.py | Dorf nach Fotos: Stile und Dächer aller Gebäude, Schule mit Uhr (folgt der Spielzeit), Dorflinde (Messbäume ausgeblendet), Laternen, Ortsnamen, Menüort „Dorf“, Nahdetails laden/verwerfen, Kollision Brunnen/Laternen/Linde, Nacht (Fenster, Laternen, Licht an Wänden), Bilder von den Fotostellen, Texturen je Shader (Abschnitte: `load,places,near,walk,night,shots,gl`) | 10–15 min |
+| v16c.py | Wald an der Klinge: Bestand (Bäume, Arten, Kern), Ansichten (Waldrand, Familienwald, Bestand, Blick nach oben, Drohne, Felder), Gehen zwischen Stämmen (Ortsname, Waldton, Stamm hält auf), Traktor auf dem Waldweg und am Stamm, Lärche nach Jahreszeit, Nacht, Telefon; Abschnitte `stand,views,walk,tractor,season,night,phone` (+ `fell` ab V16c2) | 20–30 min |
 | prof.py, loadtime.py | Kosten pro Frame (TICKS), Draw-Calls/Speicher; Ladezeiten | 10 min |
 | bilder.py `b21 B` | Galeriebilder nach `dist/img` (`?offline=1`, hohe Qualität) | je 2 min |
 | pano.py, tour.py, gi.py, bake.py | 360°-Bilder, Raumführung, GI- und Himmelssichtbarkeits-Volumen backen | lang |
