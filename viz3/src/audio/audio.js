@@ -62,17 +62,19 @@ const audio = (() => {
   function startLoops() { if (!ctx) return; for (const k of ['amb_birds_day', 'amb_wind', 'amb_dusk']) loopNode(k, amb); if (has('amb_stove')) loopNode('amb_stove', sfx); if (has('amb_wind') && windSynth) { windSynth.gain.setTargetAtTime(0, ctx.currentTime, 1); } }
   function startSynthWind() { if (windSynth || !ctx) return; windF = filt('lowpass', 600, 0.5); windG = gain(0.25); windSynth = gain(1); const s = ctx.createBufferSource(); s.buffer = nb; s.loop = true; s.connect(windF); windF.connect(windG); windG.connect(windSynth); windSynth.connect(amb); s.start(); gusts(); }
   function gusts() { if (!ctx || !windG) return; const t = ctx.currentTime, g = Math.random(), d = 2.5 + Math.random() * 5; windG.gain.setTargetAtTime((0.08 + g * 0.24) * windMul, t, d * 0.35); windF.frequency.setTargetAtTime(380 + g * 520, t, d * 0.4); later(gusts, d * 1000); }
-  let windMul = 1, stoveVol = 0;
+  let windMul = 1, stoveVol = 0, forest = 0;
   // birds and distant sounds: recorded one-shots when available, else synthesized phrases
   function scheduleOneShots() {
     const bird = () => { if (!ctx) return; const dusk = tod === 'dusk';
       if (on && vis) { const kinds = ['bird_blackbird', 'bird_greattit', 'bird_chaffinch', 'bird_robin'].filter(has); const pan = Math.random() * 1.6 - 0.8, v = (dusk ? 0.35 : 0.6) * (0.4 + Math.random() * 0.6);
-        if (kinds.length) playBuf(pick(kinds[Math.floor(Math.random() * kinds.length)]), amb, { vol: v, pan, rate: 0.97 + Math.random() * 0.06 }); else synthBird(pan, v * 0.2); }
+        const kk = forest > 0.5 && kinds.includes('bird_chaffinch') && Math.random() < 0.5 ? 'bird_chaffinch' : kinds[Math.floor(Math.random() * kinds.length)];   // V16c: finches in the forest
+        if (kinds.length) playBuf(pick(kk), amb, { vol: v, pan, rate: 0.97 + Math.random() * 0.06 }); else synthBird(pan, v * 0.2); }
       later(bird, (dusk ? 9000 : (has('amb_birds_day') ? 6000 : 2200)) + Math.random() * (dusk ? 14000 : 7000)); };
     const distant = () => { if (!ctx) return; if (on && vis) { const r = Math.random(), pan = Math.random() * 1.6 - 0.8, t = ctx.currentTime + 0.1;
         if (tod === 'dusk') { if (r < 0.5) (has('owl') ? playBuf(pick('owl'), amb, { vol: 0.45, pan }) : synthOwl(t, pan)); else if (r < 0.75) (has('bells') ? playBuf(pick('bells'), amb, { vol: 0.3, pan: -0.4 }) : synthBells(t)); }
+        else if (forest > 0.5 && r < 0.55) (has('woodpecker') ? playBuf(pick('woodpecker'), amb, { vol: 0.5, pan }) : synthWoodpecker(t, pan));   // V16c: woodpeckers in the forest
         else { if (r < 0.35) (has('crow') ? playBuf(pick('crow'), amb, { vol: 0.4, pan }) : synthCrow(t, pan)); else if (r < 0.6) (has('woodpecker') ? playBuf(pick('woodpecker'), amb, { vol: 0.4, pan }) : synthWoodpecker(t, pan)); else if (r < 0.8) (has('bells') ? playBuf(pick('bells'), amb, { vol: 0.28, pan: -0.4 }) : synthBells(t)); } }
-      later(distant, 24000 + Math.random() * 36000); };
+      later(distant, (forest > 0.5 ? 9000 : 24000) + Math.random() * (forest > 0.5 ? 14000 : 36000)); };
     // V16a: summer nights (May–September of the game's date): field crickets, three of them at different pitches, chirps of four pulses
     const cricket = () => { if (!ctx) return;
       if (on && vis && tod === 'dusk' && (!window.DN || !DN.active || DN.summer())) { const t0 = ctx.currentTime + 0.05;
@@ -103,6 +105,7 @@ const audio = (() => {
   function update(dt) { if (!ctx) return; const now = performance.now(); if (now - lastLbl > 400) { lastLbl = now; soundLabel(); }
     if (!on) return; const t = ctx.currentTime, show = vis && stage.offsetParent !== null; master.gain.setTargetAtTime(show ? 1 : 0, t, 0.15);
     const inside = insideNow(), high = P.mode === 'walk' ? THREE.MathUtils.clamp(P.feet / G.zD, 0, 1) : 0.6; windMul = 0.75 + high * 1.0;
+    forest = window.FOREST && FOREST.amb ? FOREST.amb() : 0; windMul *= 1 + 0.7 * forest;   // V16c: the wind in the crowns of the forest at the Klinge
     const openEG = DOOR.eg ? DOOR.eg.t > 0.5 : false, openOG = DOOR.ogE ? DOOR.ogE.t > 0.5 : false, inOG = P.feet > G.zU - 0.2;
     ambLP.frequency.setTargetAtTime(inside ? ((inOG ? openOG : openEG) ? 5500 : 900) : 16000, t, 0.25); amb.gain.setTargetAtTime(inside ? 0.55 : 1, t, 0.25);
     wetBus.gain.setTargetAtTime(inside ? 0.22 : 0.0, t, 0.2);

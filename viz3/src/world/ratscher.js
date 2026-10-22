@@ -64,12 +64,13 @@ const RATSCHER = (() => {
     const m = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, metalness: 0, envMapIntensity: 0.55 });
     m.onBeforeCompile = sh => { Object.assign(sh.uniforms, GU, FIELDU);
       sh.vertexShader = 'varying vec2 vGeo;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vGeo = vec2( position.x, -position.z );');
-      sh.fragmentShader = 'varying vec2 vGeo;\n' + GEO_GLSL + '\n' + FIELD_GLSL + '\n' + ROADS.shader(sh) + '\n' + sh.fragmentShader
+      const FS = window.FOREST && FOREST.on ? FOREST.shader(sh) : 'float fCan = 0.0, fOut = 1.0; vec3 forestFloor( vec2 p, vec3 c, float d ) { return c; }';   // V16c forest floor (world/forest.js)
+      sh.fragmentShader = 'varying vec2 vGeo;\n' + GEO_GLSL + '\n' + FIELD_GLSL + '\n' + ROADS.shader(sh) + '\n' + FS + '\n' + sh.fragmentShader
         .replace('#include <map_fragment>', `#include <map_fragment>
-          { vec3 gc = geoCol( vGeo ); if ( uGMap < 0.5 && uGFlat < 0.5 ) gc = roadShade( vGeo, landDetail( vGeo, gc, length( vViewPosition ) ), length( vViewPosition ) );   // V16b: roads and paths (world/roads.js)
+          { vec3 gc = geoCol( vGeo ); if ( uGMap < 0.5 && uGFlat < 0.5 ) gc = roadShade( vGeo, forestFloor( vGeo, landDetail( vGeo, gc, length( vViewPosition ) ), length( vViewPosition ) ), length( vViewPosition ) );   // V16b: roads and paths (world/roads.js), V16c forest floor
             gc *= 1.0 - uCloudK * cloudSh( vGeo ) * ( 1.0 - uGFlat ); gGeoEm = gc * uGFlat * uGFlatK; diffuseColor.rgb *= gc * ( 1.0 - uGFlat ); }`)
         .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += gGeoEm;')
-        .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= 0.35;')   // grass and soil scatter: no pale sky sheen at grazing angles (V16b, low driving views)
+        .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= 0.35;\n' + (window.FOREST && FOREST.LIGHT ? FOREST.LIGHT : ''))   // grass and soil scatter: no pale sky sheen at grazing angles (V16b, low driving views)
         .replace('#include <fog_fragment>', `#include <fog_fragment>
           #ifdef USE_FOG
           { vec2 ed = abs( vGeo - uGEdge.xy ); gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, smoothstep( uGEdge.z - 3200.0, uGEdge.z, max( ed.x, ed.y ) ) ); }   // the end of the data fades into the haze
@@ -179,9 +180,11 @@ const RATSCHER = (() => {
     rt.scissorTest = false; rt.viewport.set(0, 0, C * TK.length, C); R.setRenderTarget(pt); R.setClearColor(pc, pa); SV.on.value = sv; GI.on.value = gi;
     return { tex: rt.texture, info }; }
   function buildTrees() {
-    const t = new Int16Array(bin.trees), n = t.length / 5, far = [], mid = []; S.treeXY = [];   // x, y, height of every tree (vehicle collisions)
+    const t = new Int16Array(bin.trees), n = t.length / 5, far = [], mid = []; S.treeXY = []; S.forestCHM = [];   // x, y, height of every tree (vehicle collisions); the forest lobe's own
     for (let i = 0; i < n; i++) { const x = t[i * 5] / 10, y = t[i * 5 + 1] / 10, h = t[i * 5 + 2] / 100, r = t[i * 5 + 3] / 100, con = t[i * 5 + 4] > 0;
-      if (STREAM.inDitch(x, y, 0.8)) continue; if (ROADS.edge(x, y) > -0.4) continue;   // V16b: a crown measured over a road stands beside it, not in it
+      if (STREAM.inDitch(x, y, 0.8)) continue;
+      if (window.FOREST && FOREST.owns(x, y)) { S.forestCHM.push([x, y, h, r, con]); continue; }   // V16c: the forest at the Klinge draws these itself (world/forest.js)
+      if (ROADS.edge(x, y) > -0.4) continue;   // V16b: a crown measured over a road stands beside it, not in it
       const hs = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
       const kind = con ? 4 : Math.floor(hs * 4), it = { x, y, z: hAt(x, y), h, r, kind, hs }; (Math.hypot(x - 2, y - 2) < 100 ? mid : far).push(it); S.treeXY.push(x, y, h); }
     // near: generated 3D trees (thinned leaf cards), as the garden's own trees

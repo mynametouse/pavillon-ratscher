@@ -133,5 +133,11 @@
  },
  "ladder": {
   "id": "ladder_sectioned_01"
+ },
+ "deadlog": {
+  "id": "dead_tree_trunk"
+ },
+ "stump2": {
+  "id": "tree_stump_02"
  }
 }
