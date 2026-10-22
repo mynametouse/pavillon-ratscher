@@ -1,0 +1,107 @@
+# Prüfpaket bei jedem neuen Stand auf src (Plan: Projektdokument claude/pavillon-umbau.md, Phase 0) – die langen Browser-Tests laufen hier
+# gleichzeitig auf eigenen Rechnern statt nacheinander im Chat:
+#   Pflicht: smoke, gpu (16 Texturen je Shader), softgl (ohne Grafikkarte), loadlog (Laden mit gespeicherten Ständen), memphone (iPhone-Speicher),
+#            savefuzz (kaputte gespeicherte Werte), Straßen (Wellen je km unter der Grenze)
+#   Versuch: Safari-Engine (WebKit mit iPhone-13-Profil) – zählt noch nicht, bis klar ist, ob WebGL dort ohne Grafikkarte läuft
+name: Prüfpaket
+
+on:
+  push:
+    branches: [src]
+    paths-ignore: ['docs/**', '**.md']
+  workflow_dispatch:
+
+concurrency:
+  group: pruefpaket-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    name: ${{ matrix.test }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        test: [smoke, gpu, softgl, loadlog, memphone, savefuzz]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Website als Asset-Basis (Branch gh-pages, Vorschau wenn vorhanden)
+        run: |
+          git clone -q --depth 1 --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          mkdir -p viz3/dist
+          B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
+          (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+      - name: Werkzeuge
+        run: |
+          npm ci --prefix viz3 --no-audit --no-fund
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Bauen wie veröffentlicht
+        run: python viz3/build.py --fast --min
+      - name: Test ${{ matrix.test }}
+        run: python viz3/test/run.py --serve ${{ matrix.test }}
+      - name: Testausgabe aufheben
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-${{ matrix.test }}
+          path: out/
+          if-no-files-found: ignore
+
+  webkit:
+    name: Safari-Engine (Versuch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Website als Asset-Basis
+        run: |
+          git clone -q --depth 1 --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          mkdir -p viz3/dist
+          B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
+          (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+      - name: Werkzeuge
+        run: |
+          npm ci --prefix viz3 --no-audit --no-fund
+          pip install playwright
+          python -m playwright install --with-deps webkit
+      - name: Bauen wie veröffentlicht
+        run: python viz3/build.py --fast --min
+      - name: WebKit mit iPhone-13-Profil
+        run: python viz3/test/run.py --serve webkit
+
+  strassen:
+    name: Straßen glatt
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Gelände der Website (Vorschau wenn vorhanden)
+        run: |
+          git clone -q --depth 1 --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
+          echo "GEO=$B/geo" >> "$GITHUB_ENV"
+      - name: Wellen je km messen
+        run: |
+          pip install numpy scipy
+          python -I tools/geo/smooth_roads.py "$GEO" viz3/manifests.json "$RUNNER_TEMP/roads" --measure

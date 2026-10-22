@@ -9,6 +9,7 @@ which catches ditches and slopes beside the road. Measured on the main road: 55 
   their heights are averaged (they agree at junctions now). Near building walls the change is limited (walls reach 0.6 m below ground).
 - Measured like the app sees it: the triangles of the 10 m mesh with the grid lines next to +-120 m moved onto the edge.
     python3 -I tools/geo/smooth_roads.py viz3/dist/geo viz3/manifests.json <outdir> [FULL FADE]
+    python3 -I tools/geo/smooth_roads.py viz3/dist/geo viz3/manifests.json <outdir> --measure   # check only: exit 1 if roads are too wavy
 writes <outdir>/terrain.b64.json (replaces viz3/dist/geo/terrain.b64.json; outer grid unchanged) and prints the metrics before/after;
 once applied, viz3/manifests.json gets geoman.terrain.roads = '<what, when>' so it is not applied twice;
 z0.npy, z1.npy, network.json are for diagnostics. Before using it: look at it in the app (drive the main road, the village, bridges).
@@ -24,7 +25,8 @@ G, MAN, OUT = A[:3]; os.makedirs(OUT, exist_ok=True)
 FULL = float(A[3]) if len(A) > 3 else 6.0
 FADE = float(A[4]) if len(A) > 4 else 8.0
 M = json.load(open(MAN))['geoman']; I = M['terrain']['inner']; n, st, x0, y0 = I['n'], I['step'], I['x0'], I['y0']
-if M['terrain'].get('roads') and '--force' not in sys.argv:   # the published terrain is smoothed already (marker in the manifest)
+MEASURE = '--measure' in sys.argv   # only measure the given terrain (CI check), change nothing
+if M['terrain'].get('roads') and '--force' not in sys.argv and not MEASURE:   # the published terrain is smoothed already (marker in the manifest)
     sys.exit(f"terrain already smoothed ({M['terrain']['roads']}) – smoothing it again would flatten it twice; --force to do it anyway")
 raw = bytearray(base64.b64decode(json.load(open(os.path.join(G, 'terrain.b64.json')))['b64']))
 z0 = np.frombuffer(bytes(raw), dtype='<i2', count=n * n).reshape(n, n).astype(float) / 10.0
@@ -96,6 +98,33 @@ pos = np.array(pos); N = len(pos)
 deg = collections.Counter(i for _, ids in chains for i in set(ids))
 print('nodes', N, 'junction nodes', sum(1 for i, c in deg.items() if c > 1))
 
+# ---- measure like the app ----
+def stats(z, label):
+    out = {}; steep = collections.Counter()
+    for wy, ids in chains:
+        if wy['fl'] & 1: continue
+        P = pos[ids]; seg = np.hypot(*np.diff(P, axis=0).T); cum = np.concatenate([[0], np.cumsum(seg)])
+        s = np.arange(0, cum[-1], 2.0)
+        if len(s) < 30: continue
+        xs, ys = np.interp(s, cum, P[:, 0]), np.interp(s, cum, P[:, 1])
+        hh = np.array([hmesh(z, x, y) for x, y in zip(xs, ys)])
+        g10 = (hh[5:] - hh[:-5]) / 10 * 100; dg = np.abs(np.diff(g10[::5]))
+        sm = np.convolve(np.pad(hh, 15, mode='edge'), np.ones(31) / 31, 'valid'); dev = hh - sm
+        bumps = int(np.sum((np.abs(np.diff(np.sign(np.diff(hh)))) > 0) & (np.abs(dev[1:-1]) > 0.15)))
+        rr = out.setdefault(wy['kind'], dict(km=0, dg=[], bumps=0, maxg=0)); rr['km'] += cum[-1] / 1000; rr['dg'] += list(dg); rr['bumps'] += bumps
+        rr['maxg'] = max(rr['maxg'], float(np.max(np.abs(g10)))); steep[wy['kind']] += int(np.sum(np.abs(g10) > GMAX[wy['kind']] + 3))
+    print(f'== {label}')
+    for k, rr in sorted(out.items(), key=lambda kv: -kv[1]['km']):
+        print(f"  {k:8s} {rr['km']:5.1f} km  Steigungswechsel je 10 m Ø {np.mean(rr['dg']):4.1f} % (p90 {np.percentile(rr['dg'], 90):4.1f})"
+              f"  Wellen/km {rr['bumps'] / rr['km']:5.1f}  max Steigung {rr['maxg']:5.1f} %  Stellen über Klassengrenze+3 % {steep[k]}")
+    return out
+WAVES_MAX = {'motorway': 4, 'main': 8, 'county': 8}   # waves per km the smoothed roads must stay below (CI)
+if MEASURE:
+    r = stats(z0, 'gemessen')
+    bad = [f"{k} {r[k]['bumps'] / r[k]['km']:.1f}/km > {lim}" for k, lim in WAVES_MAX.items() if k in r and r[k]['bumps'] / r[k]['km'] > lim]
+    print('Straßen zu wellig: ' + ', '.join(bad) if bad else 'Straßen glatt genug: ' + ', '.join(f"{k} {r[k]['bumps'] / r[k]['km']:.1f}/km" for k in WAVES_MAX if k in r))
+    sys.exit(1 if bad else 0)
+
 # ---- least squares: data rows + curvature rows ----
 t = np.array([hmesh(z0, x, y) for x, y in pos]); t = np.where(np.isnan(t), np.nanmean(t), t)
 insite = (np.abs(pos[:, 0]) < 120) & (np.abs(pos[:, 1]) < 120)
@@ -164,26 +193,6 @@ for flat, nb in enumerate(cand):
         f = np.clip((dw - 6) / 4, 0, 1); lo, hi = -0.4 + f * (-50 + 0.4), 0.3 + f * (50 - 0.3); dz = min(max(dz, lo), hi)
     z1[j, i] = z0[j, i] + dz
 
-# ---- measure like the app ----
-def stats(z, label):
-    out = {}; steep = collections.Counter()
-    for wy, ids in chains:
-        if wy['fl'] & 1: continue
-        P = pos[ids]; seg = np.hypot(*np.diff(P, axis=0).T); cum = np.concatenate([[0], np.cumsum(seg)])
-        s = np.arange(0, cum[-1], 2.0)
-        if len(s) < 30: continue
-        xs, ys = np.interp(s, cum, P[:, 0]), np.interp(s, cum, P[:, 1])
-        hh = np.array([hmesh(z, x, y) for x, y in zip(xs, ys)])
-        g10 = (hh[5:] - hh[:-5]) / 10 * 100; dg = np.abs(np.diff(g10[::5]))
-        sm = np.convolve(np.pad(hh, 15, mode='edge'), np.ones(31) / 31, 'valid'); dev = hh - sm
-        bumps = int(np.sum((np.abs(np.diff(np.sign(np.diff(hh)))) > 0) & (np.abs(dev[1:-1]) > 0.15)))
-        rr = out.setdefault(wy['kind'], dict(km=0, dg=[], bumps=0, maxg=0)); rr['km'] += cum[-1] / 1000; rr['dg'] += list(dg); rr['bumps'] += bumps
-        rr['maxg'] = max(rr['maxg'], float(np.max(np.abs(g10)))); steep[wy['kind']] += int(np.sum(np.abs(g10) > GMAX[wy['kind']] + 3))
-    print(f'== {label}')
-    for k, rr in sorted(out.items(), key=lambda kv: -kv[1]['km']):
-        print(f"  {k:8s} {rr['km']:5.1f} km  Steigungswechsel je 10 m Ø {np.mean(rr['dg']):4.1f} % (p90 {np.percentile(rr['dg'], 90):4.1f})"
-              f"  Wellen/km {rr['bumps'] / rr['km']:5.1f}  max Steigung {rr['maxg']:5.1f} %  Stellen über Klassengrenze+3 % {steep[k]}")
-    return out
 before = stats(z0, 'vorher'); after = stats(z1, f'nachher v3 (FULL {FULL}, FADE {FADE})')
 mv = np.abs(z1 - z0); print(f'Geländepunkte verändert: {(mv > 0.05).sum()} von {n * n}, Ø {mv[mv > 0.05].mean():.2f} m, p95 {np.percentile(mv[mv > 0.05], 95):.2f} m, max {mv.max():.2f} m')
 zi = np.round(z1 * 10).astype('<i2').tobytes(); raw[0:n * n * 2] = zi
