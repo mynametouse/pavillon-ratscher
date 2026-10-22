@@ -1,4 +1,4 @@
-# figure sun shadows: python3 figsh.py PORT PREFIX MODE[,MODE] [QARG]  — wide views of Bernd, Günter, goats, tractor with their shadows
+# figure sun shadows: python3 figsh.py PORT PREFIX MODE[,MODE] [QARG]  — wide views of Ronald, Hubert, goats, tractor with their shadows
 import sys, os, time, base64, math
 import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
@@ -23,11 +23,11 @@ with sync_playwright() as p:
     pg.evaluate("window.FIGSH_STATE = () => (window.FIGSHADOW ? 'pass' : 'nopass'); window.GAME_SUNAZ = () => { const M = { day: 228, gold: 246, dusk: 262 }; return M[window.MODE_NOW] || 246; }")
     for mode in MODES:
         pg.evaluate(f"GAME.setMode('{mode}'); GAME.setPhase(GAME.PHASES.length-1)"); time.sleep(2)
-        pg.evaluate("(() => { const w = NPC.NPCS.bernd; w.target = null; w.wait = 90; w.place(); })()")
-        pg.evaluate(f"(() => {{ const w = NPC.NPCS.bernd; ({VIEW})([w.x, w.y, 75, 6.5, 2.0, -14, 62]); }})()"); time.sleep(1.2); shot(pg, f'{mode}_bernd')
-        pg.evaluate(f"(() => {{ const w = NPC.NPCS.bernd; ({VIEW})([w.x, w.y, -60, 3.2, 1.65, -18, 55]); }})()"); time.sleep(0.6); shot(pg, f'{mode}_bernd_near')
-        pg.evaluate("(() => { const w = NPC.NPCS.guenter; w.target = null; w.wait = 90; w.place(); })()")
-        pg.evaluate(f"(() => {{ const w = NPC.NPCS.guenter; ({VIEW})([w.x, w.y, 70, 7.5, 2.2, -14, 62]); }})()"); time.sleep(1.2); shot(pg, f'{mode}_guenter')
+        pg.evaluate("(() => { const w = NPC.NPCS.ronald; w.target = null; w.wait = 90; w.place(); })()")
+        pg.evaluate(f"(() => {{ const w = NPC.NPCS.ronald; ({VIEW})([w.x, w.y, 75, 6.5, 2.0, -14, 62]); }})()"); time.sleep(1.2); shot(pg, f'{mode}_ronald')
+        pg.evaluate(f"(() => {{ const w = NPC.NPCS.ronald; ({VIEW})([w.x, w.y, -60, 3.2, 1.65, -18, 55]); }})()"); time.sleep(0.6); shot(pg, f'{mode}_ronald_near')
+        pg.evaluate("(() => { const w = NPC.NPCS.hubert; w.target = null; w.wait = 90; w.place(); })()")
+        pg.evaluate(f"(() => {{ const w = NPC.NPCS.hubert; ({VIEW})([w.x, w.y, 70, 7.5, 2.2, -14, 62]); }})()"); time.sleep(1.2); shot(pg, f'{mode}_hubert')
         pg.evaluate("NPC.GOATS.forEach(x => { x.target = null; x.wait = 90; })")
         pg.evaluate(f"(() => {{ const a = NPC.GOATS[0]; ({VIEW})([a.x, a.y, 80, 5.5, 1.7, -16, 60]); }})()"); time.sleep(1.5); shot(pg, f'{mode}_ziegen')
     print('errors', [e for e in errs if 'Datei fehlt' not in e][:10]); b.close()

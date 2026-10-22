@@ -44,7 +44,7 @@ dl_paint/ (Farbtafeln), ratscher_photos/.
   Erdwege mit Fahrspuren, Bankett, Rand- und Leitlinien (L 3004, Kreisstraße, A 73); Luftbild entdunstet, Gras-/Erdkorn in der Nähe.
 - Brücken mit Deck und Geländer (Höhe gerade zwischen den Enden), Bäume nicht mehr mitten auf Wegen.
 - Fahrzeuge (vehicles/): Einspurmodell 120 Hz mit Reifenschlupf, Reibkreis, Automatik, Rückwärts per Bremse im Stand, Handbremse, Haftung nach
-  Belag/Wiese/Acker, Federung, Kollision mit allen Gebäudewänden, Stämmen, Geländern, Gartenobjekten, Nachbarn, Günters Traktor.
+  Belag/Wiese/Acker, Federung, Kollision mit allen Gebäudewänden, Stämmen, Geländern, Gartenobjekten, Nachbarn, Huberts Traktor.
 - Auto: Kombi in Logan-MCV-Größe (seit V16b1; Ladefläche ~1,6 m bis zur Rückbank, geteilte Hecktüren, Dachreling), Beige Sable metallic, ohne Markenzeichen, Innenraum; Kennzeichen HBN (ausgedacht). Parkt neben dem Feldweg.
 - Traktor: ~100 PS, Allrad, Kabine, Frontlader mit Parallelführung und Palettengabel (R/G/T); steht an der Unteren Klinge.
 - Kamera hinterher (folgt, Maus schaut um) oder Fahrersicht (V/Mausrad), Licht automatisch nachts (ein Spot), Bremslichter, Rückfahrlicht,

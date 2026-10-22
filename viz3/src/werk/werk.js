@@ -1444,7 +1444,7 @@ const WERK = (() => {
       'Brettöl satt auftragen, 20 min einziehen lassen, Überschuss abnehmen, 8 h trocknen. Öllappen in den Metalleimer mit Wasser – Selbstentzündung!',
     ],
     ['brandmark', 'Brandzeichen „KLINGENHOLZ“', 'Brandeisen 5 min aufheizen, gleichmäßig drücken, nicht zu lange.'],
-    ['done', 'Einlagern oder verschenken', 'Fertige Bretter ins Regal (obere Ablage) oder Bernd bringen.'],
+    ['done', 'Einlagern oder verschenken', 'Fertige Bretter ins Regal (obere Ablage) oder Ronald bringen.'],
   ];
   const ORDER = {
     panel: 2,
@@ -1543,7 +1543,7 @@ const WERK = (() => {
         };
       }
       case 'done':
-        return { t: 'ins Regal stellen oder Bernd bringen', at: 'shelf' };
+        return { t: 'ins Regal stellen oder Ronald bringen', at: 'shelf' };
     }
     return null;
   }
@@ -1561,7 +1561,7 @@ const WERK = (() => {
     if (c && !c.done) return c;
     let best = null;
     for (const wp of W.list) {
-      if (wp.done || wp.where === 'gone' || wp.where === 'bernd') continue;
+      if (wp.done || wp.where === 'gone' || wp.where === 'ronald') continue;
       if (wp.where === 'rack' && wp.st === 'panel') continue;
       if (!best || (ORDER[wp.st] || 0) > (ORDER[best.st] || 0)) best = wp;
     }
@@ -3524,7 +3524,7 @@ const WERK = (() => {
       for (const k of Object.keys(ST)) render(k);
       return;
     }
-    for (const o of s.list || []) if (o.where === 'ronald') o.where = 'bernd'; // saved before the neighbours were renamed (22.10.2026)
+    for (const o of s.list || []) if (o.where === 'bernd') o.where = 'ronald'; // the preview of 22.10.2026 23:09–23:45 called him Bernd
     W.list.length = 0;
     W.n = s.n || 0;
     W.boards = s.boards || 0;
@@ -3604,7 +3604,7 @@ const WERK = (() => {
     if (window.QUESTS && QUESTS.banner) QUESTS.banner(a, b);
     else toast(a + ': ' + b);
   }
-  // ---------------- for the quests (Bernd's board), the HUD card and the tests ----------------
+  // ---------------- for the quests (Ronald's board), the HUD card and the tests ----------------
   return {
     ST,
     RACK,
@@ -3643,7 +3643,7 @@ const WERK = (() => {
       const c = carriedWP();
       if (!c || !c.done) return null;
       killThing(c);
-      c.where = 'bernd';
+      c.where = 'ronald';
       save();
       changed();
       return c;

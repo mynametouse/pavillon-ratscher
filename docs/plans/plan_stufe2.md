@@ -2,7 +2,7 @@
 
 ## Umbau Werkstatt (garden/workshop.js)
 - Werkstatt 10 × 4 m (X −6,6…3,6; Y −40,6 Rückwand … −36,85 offene Nordseite).
-- **Blockbandsäge nach draußen:** Schiene Süd–Nord, mittig zur Werkstatt (x ≈ −1,5), kurze Seite zur Werkstatt (Südende ≈ 2 m vor YF, also y ≈ −34,8), lange Seiten zu Günter (W) und Bernd (O); Schienenlänge ca. 6–8 m; eigenes kleines Dach? (Owner nannte keins – offen lassen, evtl. Plane). Stämme seitlich (W) gelagert, Bretter mit Stapelleisten daneben.
+- **Blockbandsäge nach draußen:** Schiene Süd–Nord, mittig zur Werkstatt (x ≈ −1,5), kurze Seite zur Werkstatt (Südende ≈ 2 m vor YF, also y ≈ −34,8), lange Seiten zu Hubert (W) und Ronald (O); Schienenlänge ca. 6–8 m; eigenes kleines Dach? (Owner nannte keins – offen lassen, evtl. Plane). Stämme seitlich (W) gelagert, Bretter mit Stapelleisten daneben.
 - Innen frei gewordener Platz (Nordseite) für: **Tischkreissäge** (Formatkreissäge, Tisch 85 cm hoch, Sägeblatt 250 mm, Parallelanschlag, Schiebeschlitten, Spaltkeil, Haube), **Dickenhobel** (330 mm Durchlass, auf Fahrgestell, Ein-/Auslauftisch), **Leimtisch** mit Zwingen (Korpus-/Parallelzwingen, Schraubzwingen) und Ober-/Niederhaltern (Spannplatte mit Spannbügeln), **Räucherzelt** für Eiche (Folienzelt, Schale mit Ammoniak 25 %, Atemschutz), **Holzregal** (Leimholzplatten Eiche/Räuchereiche, Kanteln, fertige Bretter einlagern).
 - Bestehend: Trommelschleifer (sander), Abrichthobel (planer), Hobelbänke, Werkzeugwand, Generator.
 

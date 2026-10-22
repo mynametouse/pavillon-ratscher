@@ -1,5 +1,5 @@
 # V15b save/reload: work on a board up to the first glue-up in the clamps, carry a tool, store a blank; reload the page; check that the
-# workpieces, the clamps, the tools and the clock come back. Also Bernd's board quest and the tracker text; the phone layout of the windows.
+# workpieces, the clamps, the tools and the clock come back. Also Ronald's board quest and the tracker text; the phone layout of the windows.
 import sys, os, time, base64, json
 import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); import lib
 from playwright.sync_api import sync_playwright
@@ -18,9 +18,9 @@ with sync_playwright() as p:
     pg.on('pageerror', lambda e: errs.append('PAGEERR ' + str(e))); pg.on('console', lambda m: errs.append('CONSOLE ' + m.type + ' ' + m.text) if m.type == 'error' else None)
     boot(pg); E = lambda js: pg.evaluate(js); L = lambda s: print(s, flush=True)
     E("QUESTS.reset(); GAME.go('werkstatt'); GAME.setView3(false, true); GAME.step(0.3)")
-    # the quest with Bernd
-    L('topics ' + E("JSON.stringify(QUESTS.topics('bernd'))"))
-    L('ask ' + E("(() => { const r = QUESTS.ask('bernd', 'q_werkstatt'); r.after(); return QUESTS.Q.board.st + ' | ' + QUESTS.objective('board')[0]; })()"))
+    # the quest with Ronald
+    L('topics ' + E("JSON.stringify(QUESTS.topics('ronald'))"))
+    L('ask ' + E("(() => { const r = QUESTS.ask('ronald', 'q_werkstatt'); r.after(); return QUESTS.Q.board.st + ' | ' + QUESTS.objective('board')[0]; })()"))
     E("__W.ppe(['brille', 'ohr'])")
     L('to clamps: ' + E("""(() => { __W.atXY(2.15, -39.6, 2.15, -40.3, 0.5); __W.run('werk:rack'); __W.at('saw'); __W.op('saw'); __W.go(); __W.op('saw'); __W.op('saw'); __W.go(); __W.rep('saw', 'Kantel', 0, 12); __W.op('saw');
       __W.at('glue'); __W.op('glue'); __W.op('glue'); __W.check('dry'); __W.check('foil'); __W.check('cauls'); __W.go(); __W.rep('glue', 'Leim auftragen', 0.7, 12); __W.op('glue'); __W.rep('glue', 'Zwinge', 0.68, 8); __W.op('glue');

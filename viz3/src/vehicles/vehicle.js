@@ -582,7 +582,7 @@ const VEH = (() => {
     return j / mA;
   }
   // hits of a box (centre c, unit axes ax/ay, half extents ex/ey; from z0 to z1 above the ground) against the world: walls, trunks and railings
-  // (WCOL), the garden's colliders, the other vehicles (not skip), Günter's tractor, the neighbours and the extra boxes (V16d trailers: S.extra)
+  // (WCOL), the garden's colliders, the other vehicles (not skip), Hubert's tractor, the neighbours and the extra boxes (V16d trailers: S.extra)
   function boxHits(A, z0, z1, skip) {
     const R = Math.hypot(A.ex, A.ey) + 0.6,
       hits = [];
@@ -616,7 +616,7 @@ const VEH = (() => {
         const c = COL[i];
         if (!phOk(c) || c[5] <= z0 || c[4] >= z1) continue;
         const r9 = c[9];
-        if ((r9 && c[6] === 'house') || c[6] === 'tractor') continue; // the village's footprint boxes (the walls themselves are in WCOL), Günter's parked tractor (below, where it really is)
+        if ((r9 && c[6] === 'house') || c[6] === 'tractor') continue; // the village's footprint boxes (the walls themselves are in WCOL), Hubert's parked tractor (below, where it really is)
         const B = r9
           ? {
               c: toWorld(c, (c[0] + c[1]) / 2, (c[2] + c[3]) / 2),
@@ -652,12 +652,12 @@ const VEH = (() => {
       const tp = TRACTOR.g.position,
         az = -TRACTOR.g.rotation.y,
         f = fwd(az),
-        r = rgt(az); // Günter's old tractor, parked or on its round
+        r = rgt(az); // Hubert's old tractor, parked or on its round
       const h = sat(A, { c: [tp.x + f[0] * 0.35, -tp.z + f[1] * 0.35], ax: r, ay: f, ex: 0.98, ey: 1.45 });
       if (h) hits.push([h, null]);
     }
     if (window.NPCS)
-      for (const w of [NPCS.guenter, NPCS.bernd]) {
+      for (const w of [NPCS.hubert, NPCS.ronald]) {
         if (!w || !w.fig || !w.fig.g.visible || w.drive) continue;
         const h = circBox(A, w.x, w.y, 0.32);
         if (h) hits.push([h, null]);
@@ -720,7 +720,7 @@ const VEH = (() => {
     if (big > 1.4 && v === S.cur) VSND.thud(v, Math.min(1, big / 9));
     return hits.length;
   }
-  // something in the way of Günter's tractor round (npc/npc.js): a vehicle within reach ahead of (x, y) in the direction az
+  // something in the way of Hubert's tractor round (npc/npc.js): a vehicle within reach ahead of (x, y) in the direction az
   S.blocked = (x, y, az, ahead) => {
     const px = x + Math.sin(az) * ahead,
       py = y + Math.cos(az) * ahead;

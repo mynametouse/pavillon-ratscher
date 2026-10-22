@@ -33,7 +33,7 @@ game/game.js                # walking: collision, doors, player state, camera, i
 audio/audio.js              # sound engine: recordings, synthesis, ambience, voices, toast()
 pavilion/phases.js          # construction phases with materials and costs (data)
 pavilion/phaseui.js         # 
-npc/npc.js                  # Günter, Bernd, goats, tractor: walkers, dialogue UI
+npc/npc.js                  # Hubert, Ronald, goats, tractor: walkers, dialogue UI
 npc/npc_real.js             # rigged glTF figures for the neighbours, figure shadows
 render/zmerge.js            # merges the static meshes created so far (later modules are not merged)
 pavilion/plan.js            # planning mode: furniture items

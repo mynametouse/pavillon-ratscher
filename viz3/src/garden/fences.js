@@ -121,8 +121,8 @@ function mkFence(spec) {
     H = K.H,
     pts = spec.pts.map(p => [p[0], p[1]]);
   if (pts.length < 2) return null;
-  // saved plans from before 22.10.2026 still name the neighbour east by his old name
-  if (spec.id === 'ronald') spec = Object.assign({}, spec, { id: 'bernd', doorKey: 'berndgate' });
+  // the preview of 22.10.2026 (23:09–23:45) named the neighbour east Bernd; plans saved there come back to Ronald
+  if (spec.id === 'bernd') spec = Object.assign({}, spec, { id: 'ronald', doorKey: 'ronaldgate' });
   const f = {
     id: spec.id || 'f' + FENCE_N++,
     kind,
@@ -319,7 +319,7 @@ function rmFence(f) {
   }
   markDirty(true);
 }
-// the fence towards Bernd: along the east boundary from the top of the stream bank down to the south-east corner, garden gate between greenhouse and wash house
+// the fence towards Ronald: along the east boundary from the top of the stream bank down to the south-east corner, garden gate between greenhouse and wash house
 const FENCE_DEFAULT = (() => {
   const G = S0.garden,
     pts = [];
@@ -360,11 +360,11 @@ const FENCE_DEFAULT = (() => {
     s += L;
   }
   return {
-    id: 'bernd',
+    id: 'ronald',
     kind: 'mesh',
     pts: keep.map(p => [+p[0].toFixed(2), +p[1].toFixed(2)]),
     gate: gate != null ? +gate.toFixed(2) : null,
-    doorKey: 'berndgate',
+    doorKey: 'ronaldgate',
     builtin: true,
   };
 })();

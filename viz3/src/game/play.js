@@ -444,7 +444,7 @@ const PLAY = (() => {
         npc: w,
         r: 3.2,
         prio: -0.3,
-        label: () => 'Mit ' + (w.name === 'guenter' ? 'Günter' : 'Bernd') + ' sprechen',
+        label: () => 'Mit ' + (w.name === 'hubert' ? 'Hubert' : 'Ronald') + ' sprechen',
         pos: () => [w.x, w.y, P.feet + 1.5],
         run: () => NPCUI.start(w),
       })
@@ -458,7 +458,7 @@ const PLAY = (() => {
       if (Math.hypot(P.x - d.pos[0], P.y - d.pos[1]) < (d.r || 1.6)) out.push(doorCand(k));
     }
     if (!NPCUI.cur())
-      for (const w of [NPCS.guenter, NPCS.bernd]) {
+      for (const w of [NPCS.hubert, NPCS.ronald]) {
         if (w.drive || !w.fig.g.visible || w.dist() > 3.2) continue;
         out.push(npcCand(w));
       }

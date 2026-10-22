@@ -975,7 +975,7 @@ const FELL = (() => {
       title: 'Forstkiste',
       sub: 'Motorsägenarbeit im Wald: Ausrüstung nach DGUV Information 214-046',
       checks: [],
-      info: 'Persönliche Schutzausrüstung: Schutzhelm mit Gesichtsschutz (Visier) und Gehörschutz, Schnittschutzhose (Schnittschutz Klasse 1, Form A), Schnittschutzstiefel, Handschuhe, Warnjacke in Signalfarbe. Dazu Motorsäge (Kettenbremse prüfen, Kette scharf und gespannt), Kombikanister, zwei Fällkeile, Spalthammer, Maßband, Kluppe. Nie allein im Wald arbeiten: Günter ist per Handy in Rufweite.',
+      info: 'Persönliche Schutzausrüstung: Schutzhelm mit Gesichtsschutz (Visier) und Gehörschutz, Schnittschutzhose (Schnittschutz Klasse 1, Form A), Schnittschutzstiefel, Handschuhe, Warnjacke in Signalfarbe. Dazu Motorsäge (Kettenbremse prüfen, Kette scharf und gespannt), Kombikanister, zwei Fällkeile, Spalthammer, Maßband, Kluppe. Nie allein im Wald arbeiten: Hubert ist per Handy in Rufweite.',
       go: have ? 'PSA anlegen' : 'Alles nehmen und PSA anlegen',
       onGo: () => {
         if (!have) {
@@ -1223,7 +1223,7 @@ const FELL = (() => {
       G = geomOf(t, rec.p),
       ln = leanOf(t),
       dirs = t.fellDirs || freeDirs(t);
-    const near = (window.NPCS ? [NPCS.guenter, NPCS.bernd] : []).filter(
+    const near = (window.NPCS ? [NPCS.hubert, NPCS.ronald] : []).filter(
       w => w && Math.hypot(w.x - t.x, w.y - t.y) < 2 * t.h
     );
     const veh = (window.VEH ? VEH.list : []).filter(v => Math.hypot(v.st.x - t.x, v.st.y - t.y) < t.h + 3);

@@ -3,7 +3,7 @@
 // the wooded hills keep their canopy on the skyline; earth curvature included. Draped with the Thuringian orthophotos (20 cm … 6 m per pixel,
 // © GDI-Th, CC BY 4.0) or an OSM-style map (© OpenStreetMap contributors, ODbL). 337 buildings from OSM footprints with roofs from the
 // surface model (roof colours from the orthophoto), 21 000 trees from the canopy height model (tree tops, height, crown width, conifer or not).
-// The modelled site (garden, Günter, Bernd, workshop, stream and field path) stays as it is; the real land starts around it.
+// The modelled site (garden, Hubert, Ronald, workshop, stream and field path) stays as it is; the real land starts around it.
 // Data preparation: scratchpad geo/tools (fetch_all, build_terrain2, build_osm, build_bld, pack).
 const RATSCHER = (() => {
   const M = window.GEOMAN,

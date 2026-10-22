@@ -54,7 +54,7 @@ with sync_playwright() as p:
         E("GAME.step(1.2)")
     if want('seat'):
         E("PLAY.clearInv()")
-        print('bench', E("__T.go('seat:guenterbench', 1.0)"), E("__T.run('seat:guenterbench')"), flush=True); E("GAME.step(1.0)"); E("GAME.P.yaw += 150; GAME.step(0.4)"); print('sit', E("JSON.stringify(__T.st())"), flush=True); shot(pg, 'd1_sit_bench')
+        print('bench', E("__T.go('seat:hubertbench', 1.0)"), E("__T.run('seat:hubertbench')"), flush=True); E("GAME.step(1.0)"); E("GAME.P.yaw += 150; GAME.step(0.4)"); print('sit', E("JSON.stringify(__T.st())"), flush=True); shot(pg, 'd1_sit_bench')
         E("PLAY.stand(true); GAME.step(0.6)")
         lie = E("(PLAY.acts().find(a => a.id.startsWith('seat:') && /Liege/.test((()=>{try{return a.label()||''}catch(e){return ''}})())) || {}).id || null")
         print('lounger act', lie, flush=True)

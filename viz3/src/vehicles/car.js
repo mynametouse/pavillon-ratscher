@@ -580,7 +580,7 @@ const CAR = (() => {
     sound: 'petrol',
     cam: { dist: 5.9, height: 2.0, look: 1.2 },
     // parked on the field path just past the garden bridge, nose towards the village (first point of the route to the Klinge)
-    // (on the field side, 2.5 m left of the path's middle: Günter's tractor makes its rounds along the path)
+    // (on the field side, 2.5 m left of the path's middle: Hubert's tractor makes its rounds along the path)
     home: () => {
       const R = ROADS.routes.klinge;
       if (R && R.length > 1) {

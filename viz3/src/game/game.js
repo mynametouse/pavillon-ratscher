@@ -405,13 +405,13 @@ const SPOTS = {
   holzhaus: { mode: 'walk', pos: [11.75, -6.7], z: 0, yaw: 6, pitch: -2, bld: 'holzhaus', label: 'Holzhaus' },
   bungalow: { mode: 'walk', pos: [8.6, 21.4], z: 0, yaw: 180, pitch: -2, bld: 'bungalow', label: 'Bungalow' },
   ziegen: { mode: 'walk', pos: [17.0, -1.4], z: 0, yaw: 82, pitch: -1, label: 'Ziegenweide' },
-  guenter: {
+  hubert: {
     mode: 'walk',
     pos: [-10.6, 22.6],
     z: 0,
     yaw: dirYaw(-10.6, 22.6, -15.1, 27.2),
     pitch: 1,
-    label: 'Bei Günter',
+    label: 'Bei Hubert',
   },
   werkstatt: { mode: 'walk', pos: [0.8, -35.2], z: 0, yaw: 205, pitch: -6, bld: 'werkstatt', label: 'Werkstatt' },
 };

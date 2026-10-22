@@ -1,13 +1,13 @@
-# V14 dialogue: all lines of Günter and Bernd, spoken by Microsoft Edge neural voices (edge-tts; free, private use)
+# V14 dialogue: all lines of Hubert and Ronald, spoken by Microsoft Edge neural voices (edge-tts; free, private use)
 # Output: assets/snd/voice/<id>.mp3 + voices.json (same format as before; old Piper files are replaced)
 import json, os, subprocess, sys, time, re
 H = os.path.dirname(os.path.abspath(__file__)); SP = os.path.dirname(H)
 OUT = os.path.join(SP, 'assets', 'snd', 'voice'); TMP = os.path.join(H, 'raw'); os.makedirs(TMP, exist_ok=True)
 ETTS = os.path.join(SP, 'scripts', 'etts.py')
-VOICES = {'guenter': dict(voice='de-DE-ConradNeural', rate='-10%', pitch='-8Hz', af='highpass=f=70,lowpass=f=9000'),
-          'bernd': dict(voice='de-DE-FlorianMultilingualNeural', rate='+2%', pitch='-2Hz', af='highpass=f=80')}
+VOICES = {'hubert': dict(voice='de-DE-ConradNeural', rate='-10%', pitch='-8Hz', af='highpass=f=70,lowpass=f=9000'),
+          'ronald': dict(voice='de-DE-FlorianMultilingualNeural', rate='+2%', pitch='-2Hz', af='highpass=f=80')}
 L = {
- 'guenter': {
+ 'hubert': {
   'idle': ['Hm.', 'Was gibt es da zu gucken?', 'Hab zu tun.', 'Hier wächst auch nichts von allein.', 'Der Zaun bleibt, wo er ist.', 'Wird wieder Regen geben.'],
   'near': ['Bleiben Sie mal da drüben.', 'Nicht so nah. Ich hab Werkzeug in der Hand.'],
   'greet': ['Was wollen Sie?', 'Ja? Machen Sie es kurz.'],
@@ -19,7 +19,7 @@ L = {
    'wetter': 'Wetter? Kommt Regen. Sagt mein Knie. Das Knie irrt sich nie.',
    'holz': 'Lärche aus dem eigenen Wald. Luftgetrocknet, zwei Jahre mindestens, sonst reißt es. Mehr sag ich nicht.',
    'traktor': 'Der Traktor? Baujahr zweiundsechzig. Läuft. Mehr muss er nicht. Und nein, ich verleihe ihn nicht.',
-   'wer': 'Günter. Mehr müssen Sie nicht wissen. Und jetzt lassen Sie mich arbeiten.',
+   'wer': 'Hubert. Mehr müssen Sie nicht wissen. Und jetzt lassen Sie mich arbeiten.',
    'q_hilfe': 'Hilfe? Ich brauch keine Hilfe. Na gut. Der Traktor ist leer, und mit meinem Rücken schlepp ich keinen Kanister. Sie haben doch Diesel hinten an Ihrem Aggregat. Bringen Sie mir den Kanister. Dann sehen wir weiter.',
    'q_kanister': 'Der Kanister steht hinten bei Ihrer Werkstatt, neben dem Aggregat. Ich warte hier nicht ewig.',
    'q_voll': 'Na also. Geht doch. Dann steigen Sie auf, links auf den Kotflügel. Festhalten und nichts anfassen.',
@@ -29,8 +29,8 @@ L = {
    'q_frieda': 'Die braune Ziege? Die steht in meinem Kohl! Holen Sie die da raus, aber schnell.',
   },
   'x': {
-   'frieda': 'Ist das Bernds Ziege? Die frisst meinen Kohl! Schaffen Sie das Vieh hier weg!',
-   'frieda2': 'Und sagen Sie Bernd, er soll sein Gatter zumachen!',
+   'frieda': 'Ist das Ronalds Ziege? Die frisst meinen Kohl! Schaffen Sie das Vieh hier weg!',
+   'frieda2': 'Und sagen Sie Ronald, er soll sein Gatter zumachen!',
    'bench': 'Das ist meine Bank.',
    'touch': 'Finger weg von meinem Traktor.',
    'fill': 'Langsam. Nicht danebenkippen.',
@@ -40,7 +40,7 @@ L = {
    'ride_4': 'So. Und wieder zurück.',
    'ride_end': 'Absteigen. Und danke. Aber sagen Sie es keinem.',
   } },
- 'bernd': {
+ 'ronald': {
   'idle': ['Na, Ziegen, satt?', 'Schönes Wetter heute, was?', 'Komm, Lotte, komm her.', 'Tag auch!', 'Egon, lass das Gatter in Ruhe.'],
   'schnauze': ['Schnauze!', 'Schnauze, Egon!', 'Ruhe im Stall! Ha ha.'],
   'greet': ['Na, hallo Nachbar! Alles gut bei euch?', 'Ah, Besuch vom Nachbargarten. Komm ran, die beißen nicht.'],
@@ -49,13 +49,13 @@ L = {
   't': {
    'ziegen': 'Das sind Lotte, Frieda und der Bock Egon. Die meckern, wenn sie Hunger haben. Und wenn sie keinen haben, auch.',
    'pavillon': 'Euer Pavillon mit Dachterrasse? Da komm ich mal rauf zum Sonnenuntergang. Ich bring Bier mit.',
-   'wetter': 'Morgen soll es schön werden. Günter drüben sagt Regen. Aber der sagt immer Regen.',
+   'wetter': 'Morgen soll es schön werden. Hubert drüben sagt Regen. Aber der sagt immer Regen.',
    'dorf': 'Ratscher ist klein, aber hier kennt jeder jeden. Freitags ist Stammtisch im Gasthof. Komm vorbei.',
    'hilfe': 'Wenn ihr beim Aufrichten der Wände Hände braucht, sag Bescheid. Mein Traktor hat auch einen Frontlader.',
-   'guenter': 'Der Günter? Der ist in Ordnung, nur eigen. Lass ihn in Ruhe, dann lässt er dich in Ruhe.',
+   'hubert': 'Der Hubert? Der ist in Ordnung, nur eigen. Lass ihn in Ruhe, dann lässt er dich in Ruhe.',
    'q_helfen': 'Helfen? Immer gern! Die Ziegen haben Hunger. Hinten im Unterstand liegt Heu. Nimm dir einen Arm voll und gib jeder was ab. Aber Egon zuerst, sonst ist er beleidigt.',
    'q_heu': 'Das Heu liegt hinten im Unterstand. Und dann ab zu den Ziegen. Lotte, Frieda und Egon.',
-   'q_wo': 'Frieda ist bestimmt wieder bei Günter im Gemüse. Die liebt seinen Kohl. Hör einfach auf das Meckern.',
+   'q_wo': 'Frieda ist bestimmt wieder bei Hubert im Gemüse. Die liebt seinen Kohl. Hör einfach auf das Meckern.',
    'q_frieda': 'Du bist ein Schatz! Ich mach das Gatter jetzt zu, versprochen. Hier, nimm ein Stück Ziegenkäse mit. Selbstgemacht!',
    'q_werkstatt': 'Sag mal, in deiner Werkstatt, da machst du doch diese Stirnholzbretter. Klingenholz, oder? Machst du mir eins? Für die Küche. Ich lad dich dafür zum Grillen ein.',
    'q_wie': 'Na, du bist doch der Fachmann! Leimholz in Kanteln sägen, verleimen, hobeln, in Scheiben schneiden, drehen, wieder verleimen, schleifen, ölen. Hast du mir selbst erzählt. Und setz die Schutzbrille auf!',
@@ -64,8 +64,8 @@ L = {
   'x': {
    'hay': 'Genau, das ist das gute Heu.',
    'egon': 'Siehste, jetzt ist Egon beleidigt. Na ja, der kriegt sich wieder ein.',
-   'fed_open': 'Danke dir! Ach du Schreck, Frieda haut ab! Das Gatter steht ja noch offen! Hinterher, sonst frisst sie wieder Günters Kohl!',
-   'fed_jump': 'Danke dir! Ach du Schreck, Frieda! Die springt glatt übers Gatter! Hinterher, sonst frisst sie wieder Günters Kohl!',
+   'fed_open': 'Danke dir! Ach du Schreck, Frieda haut ab! Das Gatter steht ja noch offen! Hinterher, sonst frisst sie wieder Huberts Kohl!',
+   'fed_jump': 'Danke dir! Ach du Schreck, Frieda! Die springt glatt übers Gatter! Hinterher, sonst frisst sie wieder Huberts Kohl!',
    'back': 'Da ist sie ja! Frieda, du Ausreißerin!',
    'pet': 'Die mögen dich!',
   } } }
@@ -95,7 +95,7 @@ for who, id_, text in items():
     print('ok', id_, man[-1]['dur'], flush=True)
 for f in os.listdir(OUT):
     if f.endswith('.mp3') and f not in want: os.remove(os.path.join(OUT, f)); print('removed', f)
-topics = {'guenter': {'garten': 'Ihr Garten', 'pavillon': 'Der Pavillon', 'wetter': 'Wetter', 'holz': 'Holz', 'traktor': 'Der Traktor', 'wer': 'Wer sind Sie?'},
-          'bernd': {'ziegen': 'Die Ziegen', 'pavillon': 'Der Pavillon', 'wetter': 'Wetter', 'dorf': 'Ratscher', 'hilfe': 'Hilfe beim Bau', 'guenter': 'Günter'}}
+topics = {'hubert': {'garten': 'Ihr Garten', 'pavillon': 'Der Pavillon', 'wetter': 'Wetter', 'holz': 'Holz', 'traktor': 'Der Traktor', 'wer': 'Wer sind Sie?'},
+          'ronald': {'ziegen': 'Die Ziegen', 'pavillon': 'Der Pavillon', 'wetter': 'Wetter', 'dorf': 'Ratscher', 'hilfe': 'Hilfe beim Bau', 'hubert': 'Hubert'}}
 json.dump({'voices': {k: {'model': v['voice'], 'rate': v['rate'], 'pitch': v['pitch'], 'engine': 'Microsoft Edge Vorlesen (edge-tts)'} for k, v in VOICES.items()}, 'lines': man, 'topics': topics}, open(os.path.join(OUT, 'voices.json'), 'w'), ensure_ascii=False, indent=1)
 print('DONE', len(man))

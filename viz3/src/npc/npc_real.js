@@ -1,13 +1,13 @@
 // ---------------- realistic neighbours and goats: rigged, textured glTF models (CC BY, see "Quellen und Lizenzen") ----------------
 // Loaded after the scene is up; until then (or if loading fails) the low-poly figures stay. Walk cycle: motion capture, retargeted
-// offline onto both men (tools: chars/rt.html); standing pose = average of that cycle; Günter keeps his own idle (an old man's stance).
+// offline onto both men (tools: chars/rt.html); standing pose = average of that cycle; Hubert keeps his own idle (an old man's stance).
 // Goats: one rigged goat with its own idle clip (head, ears, bleat), legs and grazing posed procedurally on top.
 const CHARMAN = window.CHARMAN || null;
 const REAL = { ready: false, failed: false, started: false };
 const CHL = gltfDataURIs(new GLTFLoader());
 CHL.setMeshoptDecoder(MeshoptDecoder);
 // no stand-in figures while the real ones load: the simple low-poly ones only come back if loading fails
-const STANDIN = () => [NPCS.guenter.fig, NPCS.bernd.fig, ...GOATS.map(g => g.fig), TRACTOR];
+const STANDIN = () => [NPCS.hubert.fig, NPCS.ronald.fig, ...GOATS.map(g => g.fig), TRACTOR];
 if (CHARMAN && !QS.get('lowfig')) for (const f of STANDIN()) f.g.visible = false;
 const _rq = new THREE.Quaternion(),
   _rq2 = new THREE.Quaternion(),
@@ -397,7 +397,7 @@ function realGoat(gl, o) {
   };
   return self;
 }
-// ---- Günter's tractor: an old weathered red tractor (CC BY); its four wheels are cut out of the one wheel mesh so they can turn ----
+// ---- Hubert's tractor: an old weathered red tractor (CC BY); its four wheels are cut out of the one wheel mesh so they can turn ----
 function realTractor(gl) {
   const model = gl.scene,
     inner = new THREE.Group();
@@ -647,8 +647,8 @@ async function loadReal() {
   try {
     const [cl, gh, gr, gg, gt] = await Promise.all([
       FL.loadAsync(U(CHARMAN.clips)),
-      CHL.loadAsync(U(CHARMAN.guenter)),
-      CHL.loadAsync(U(CHARMAN.bernd)),
+      CHL.loadAsync(U(CHARMAN.hubert)),
+      CHL.loadAsync(U(CHARMAN.ronald)),
       CHL.loadAsync(U(CHARMAN.goat)),
       CHARMAN.tractor ? CHL.loadAsync(U(CHARMAN.tractor)) : null,
     ]);
@@ -656,16 +656,16 @@ async function loadReal() {
       swapTractor(realTractor(gt));
       TRACTOR.g.visible = true;
     }
-    swapFig(NPCS.guenter, realPerson(gh, cl.guenter, { h: 1.74, idle: true, idleMix: 0.3 }));
+    swapFig(NPCS.hubert, realPerson(gh, cl.hubert, { h: 1.74, idle: true, idleMix: 0.3 }));
     swapFig(
-      NPCS.bernd,
-      realPerson(gr, cl.bernd, {
+      NPCS.ronald,
+      realPerson(gr, cl.ronald, {
         h: 1.72,
         hat: true,
         prop: QS.get('rawfig') ? null : { head: 0.87, hand: 0.86, leg: 1.07 },
       })
     );
-    NPCS.bernd.speed = 0.8; // a shorter man: a slightly slower pace keeps his steps natural
+    NPCS.ronald.speed = 0.8; // a shorter man: a slightly slower pace keeps his steps natural
     const GT = { Lotte: { len: 1.12 }, Frieda: { len: 1.1, tint: 0xa47b55 }, Egon: { len: 1.3, tint: 0x4a3f36 } };
     for (const gt of GOATS)
       swapFig(gt, realGoat(gg, GT[gt.gname] || { len: 1.1 }), {
@@ -673,8 +673,8 @@ async function loadReal() {
         l: 1.25 * (GT[gt.gname] || { len: 1.1 }).len,
         h: 0.55,
       });
-    fsAdd(NPCS.guenter.fig, 1.05, 0.9);
-    fsAdd(NPCS.bernd.fig, 1.05, 0.9);
+    fsAdd(NPCS.hubert.fig, 1.05, 0.9);
+    fsAdd(NPCS.ronald.fig, 1.05, 0.9);
     for (const gt of GOATS) fsAdd(gt.fig, 0.85, 0.5);
     if (gt) fsAdd(TRACTOR, 2.0, 1.1);
     if (!QS.get('noshfig')) window.FIGSHADOW = figShadowPass;

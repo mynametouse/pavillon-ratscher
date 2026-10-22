@@ -75,7 +75,7 @@ with sync_playwright() as p:
         E("QUESTS.reset(); GAME.go('garten'); GAME.setView3(true); GAME.step(0.6)"); E("PLAY.give(QUESTS.things.AXE); PLAY.give(QUESTS.things.CAN); GAME.step(0.6)")
         time.sleep(3); E("HUD.render(); GAME.step(0.3)"); ui(pg, 'h1_third_hud')
         E("GAME.go('bibliothek'); GAME.step(0.6)"); ui(pg, 'h2_third_inside')
-        E("GAME.go('guenter'); GAME.step(0.3)"); print('bench', E("(() => { const a = PLAY.acts().find(a => a.id === 'seat:guenterbench'); GAME.view(-13.25, 1.4, 1.62, 180, -10); GAME.step(0.2); const l = a.label(); PLAY.run(a); GAME.step(1.2); GAME.P.yaw = -60; GAME.P.pitch = -12; GAME.step(0.4); return l; })()"), flush=True); ui(pg, 'h3_bench')
+        E("GAME.go('hubert'); GAME.step(0.3)"); print('bench', E("(() => { const a = PLAY.acts().find(a => a.id === 'seat:hubertbench'); GAME.view(-13.25, 1.4, 1.62, 180, -10); GAME.step(0.2); const l = a.label(); PLAY.run(a); GAME.step(1.2); GAME.P.yaw = -60; GAME.P.pitch = -12; GAME.step(0.4); return l; })()"), flush=True); ui(pg, 'h3_bench')
     if want('phone'):
         ctx = b.new_context(viewport={'width': 390, 'height': 780}, device_scale_factor=2, is_mobile=True, has_touch=True)
         mp = ctx.new_page(); lib.preset(mp); mp.on('pageerror', lambda e: errs.append('M PAGEERR ' + str(e)))

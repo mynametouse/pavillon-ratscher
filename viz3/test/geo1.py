@@ -31,7 +31,7 @@ with sync_playwright() as p:
         pg.evaluate("GAME.orbit(150, 24, 70, [2, 2, 3])"); shot(pg, 'm_se_70')
         pg.evaluate("GAME.orbit(300, 12, 70, [2, 2, 3])"); shot(pg, 'm_nw_70')
     if want('walk'):
-        for (nm, yaw, pitch) in (('w_se_village', 135, 1), ('w_sw_hills', 220, 2), ('w_n_field', 10, 1), ('w_e', 85, 1), ('w_w_guenter', 275, 1)):
+        for (nm, yaw, pitch) in (('w_se_village', 135, 1), ('w_sw_hills', 220, 2), ('w_n_field', 10, 1), ('w_e', 85, 1), ('w_w_hubert', 275, 1)):
             pg.evaluate(f"GAME.view(3.6, 15.2, 1.62, {yaw}, {pitch}); GAME.step(0.05)"); shot(pg, nm)
         pg.evaluate("GAME.view(14, -40, 1.62, 140, 0); GAME.step(0.05)"); shot(pg, 'w_south_edge')
         for m in ('day', 'dusk'):

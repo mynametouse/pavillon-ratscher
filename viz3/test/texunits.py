@@ -18,7 +18,7 @@ with sync_playwright() as p:
     pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); print('loaded', round(time.time() - t0), 's', flush=True)
     pg.wait_for_function("!window.CHARMAN || (NPC.real && (NPC.real.ready || NPC.real.failed))", timeout=900000, polling=1000)
     pg.evaluate("GAME.setMode('day'); GAME.setPhase(GAME.PHASES.length-1)"); time.sleep(2)
-    pg.evaluate("(() => { const w = NPC.NPCS.bernd; w.target = null; w.wait = 60; GAME.view(w.x + 2.5, w.y + 2.5, 1.6, 225, -10, 60); })()"); time.sleep(1); pg.evaluate("GAME.shot()"); pg.evaluate("GAME.shot()")
+    pg.evaluate("(() => { const w = NPC.NPCS.ronald; w.target = null; w.wait = 60; GAME.view(w.x + 2.5, w.y + 2.5, 1.6, 225, -10, 60); })()"); time.sleep(1); pg.evaluate("GAME.shot()"); pg.evaluate("GAME.shot()")
     print('figsh on', pg.evaluate("window.FIGSH ? FIGSH.on.value : 'n/a'"), flush=True)
     pg.evaluate("GAME.go('garten')"); pg.evaluate("GAME.shot()"); pg.evaluate("GAME.go('bibliothek')"); pg.evaluate("GAME.shot()")
     print(pg.evaluate(COUNT)); print('errors', errs[:6]); b.close()

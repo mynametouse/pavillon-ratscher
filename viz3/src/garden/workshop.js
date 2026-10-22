@@ -1,4 +1,4 @@
-// ---------- Klingenholz wood workshop at the south boundary, chain-link fence towards Bernd ----------
+// ---------- Klingenholz wood workshop at the south boundary, chain-link fence towards Ronald ----------
 // Workshop 10 × 4 m: timber frame (KVH 12/12 posts on point footings, plates, tie beams, knee braces), gable roof 25° with dark bitumen
 // shingles, only the back wall to the south boarded; floor of concrete pavers. Band sawmill for logs along the open north side, drum sander and
 // planer (power from a petrol generator outside the east end), two carpenter's benches and a tool wall along the south wall, a rack of glued
@@ -263,7 +263,7 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
     me.castShadow = true;
     scene.add(me);
   }
-  // --- V15b band sawmill outside, north of the workshop: track south–north, short end towards the workshop, long sides towards Günter (W) and Bernd (E);
+  // --- V15b band sawmill outside, north of the workshop: track south–north, short end towards the workshop, long sides towards Hubert (W) and Ronald (E);
   //     the saw head straddles the track and cuts along the log (its blade runs across, east–west) ---
   const MX = -1.5,
     YS = -34.85,
@@ -308,7 +308,7 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
     SAW.logMesh = ycyl(SAW.logY0, SAW.logY1, MX, 0.5 + SAW.logR, SAW.logR, [MAT.logs, MAT.logEnd, MAT.logEnd], 24);
     SAW.logMesh.userData.noMerge = true;
     COL.push([MX - SAW.logR, MX + SAW.logR, SAW.logY0, SAW.logY1, 0.4, 0.5 + 2 * SAW.logR, 'log', null, null]);
-    // the saw head: a frame over the track on four rollers, the saw unit with both wheel housings across, the engine on Bernd's side, push bar to the south
+    // the saw head: a frame over the track on four rollers, the saw unit with both wheel housings across, the engine on Ronald's side, push bar to the south
     const h = SAW.head;
     h.position.copy(V(MX, SAW.s, 0));
     scene.add(h);

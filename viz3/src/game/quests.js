@@ -32,13 +32,13 @@ const QUESTS = (() => {
   const TITLES = {
     goat: 'Futter für die Ziegen',
     fire: 'Feuer im Ofen',
-    diesel: 'Diesel für Günter',
-    board: 'Ein Brett für Bernd',
+    diesel: 'Diesel für Hubert',
+    board: 'Ein Brett für Ronald',
   };
-  const WHO = { goat: 'Bernd', fire: 'Bibliothek', diesel: 'Günter', board: 'Bernd · Werkstatt' };
+  const WHO = { goat: 'Ronald', fire: 'Bibliothek', diesel: 'Hubert', board: 'Ronald · Werkstatt' };
   const ON = !OFFLINE && !QS.get('noplay');
-  const R = () => NPCS.bernd,
-    H = () => NPCS.guenter,
+  const R = () => NPCS.ronald,
+    H = () => NPCS.hubert,
     goat = n => GOATS.find(g => g.gname === n),
     FRIEDA = () => goat('Frieda');
   const near = (w, d) => w && Math.hypot(P.x - w.x, P.y - w.y) < d;
@@ -232,7 +232,7 @@ const QUESTS = (() => {
     name: 'Heu',
     carry3: 'arms',
     grip3: { fwd: 0.2, dy: -0.06 },
-    desc: 'Ein Arm voll Wiesenheu aus Bernds Unterstand – für Lotte, Frieda und Egon.',
+    desc: 'Ein Arm voll Wiesenheu aus Ronalds Unterstand – für Lotte, Frieda und Egon.',
     world: hayBundle(1),
     held: HAYH,
     r: 1.4,
@@ -266,7 +266,7 @@ const QUESTS = (() => {
     name: 'Kanister',
     carry3: 'side',
     grip3: { hang: 0.44 },
-    desc: () => (CAN.empty ? 'Leerer 20-Liter-Kanister.' : '20 Liter Diesel für Günters Traktor.'),
+    desc: () => (CAN.empty ? 'Leerer 20-Liter-Kanister.' : '20 Liter Diesel für Huberts Traktor.'),
     size: 0.47,
     r: 1.3,
     hz: 0.3,
@@ -336,7 +336,7 @@ const QUESTS = (() => {
     }
     markDirty(true);
   }
-  // ---- the cabbage bed on Günter's side (Frieda's favourite) ----
+  // ---- the cabbage bed on Hubert's side (Frieda's favourite) ----
   const BED = { x0: -16.3, x1: -12.7, y0: -11.4, y1: -8.6 };
   const CAB = (() => {
     B(BED.x0, BED.x1, BED.y0, BED.y1, 0, 0.07, MAT.soil, { col: false, cast: false });
@@ -416,12 +416,12 @@ const QUESTS = (() => {
     renderJournal();
   }
   const REWARD = {
-    goat: ' · Bernd schenkt dir Ziegenkäse',
+    goat: ' · Ronald schenkt dir Ziegenkäse',
     fire: ' · der Ofen bullert',
-    diesel: ' · Günter taut auf',
+    diesel: ' · Hubert taut auf',
     board: ' · Samstag wird gegrillt',
   };
-  // V15b: the board is made in the workshop game (werk/werk.js) – finished, it goes to Bernd
+  // V15b: the board is made in the workshop game (werk/werk.js) – finished, it goes to Ronald
   function boardMade() {
     if (Q.board.st === 'make') setSt('board', 'deliver');
   }
@@ -455,7 +455,7 @@ const QUESTS = (() => {
     switch (k) {
       case 'goat':
         return {
-          new: ['Sprich mit Bernd an der Ziegenweide.', () => [R().x, R().y]],
+          new: ['Sprich mit Ronald an der Ziegenweide.', () => [R().x, R().y]],
           hay: ['Hol Heu aus dem Unterstand hinten in der Weide.', () => [30.6, 6.6]],
           feed:
             H_(HAY) || q.fed.length
@@ -468,9 +468,9 @@ const QUESTS = (() => {
                 ]
               : ['Hol Heu aus dem Unterstand.', () => [30.6, 6.6]],
           search: ['Frieda ist ausgebüxt! Finde sie – hör auf ihr Meckern.', () => [FRIEDA().x, FRIEDA().y]],
-          lead: ['Führe Frieda zurück in Bernds Weide (durch die Gartentür).', () => [PAD.x0 + 2.2, -1.5]],
-          report: ['Sag Bernd, dass Frieda wieder da ist.', () => [R().x, R().y]],
-          done: ['Erledigt. Bernd hat dir Ziegenkäse geschenkt.', null],
+          lead: ['Führe Frieda zurück in Ronalds Weide (durch die Gartentür).', () => [PAD.x0 + 2.2, -1.5]],
+          report: ['Sag Ronald, dass Frieda wieder da ist.', () => [R().x, R().y]],
+          done: ['Erledigt. Ronald hat dir Ziegenkäse geschenkt.', null],
         }[st];
       case 'fire':
         return {
@@ -490,22 +490,22 @@ const QUESTS = (() => {
         }[st];
       case 'diesel':
         return {
-          new: ['Günter sieht aus, als bräuchte er Hilfe. Sprich mit ihm.', () => [H().x, H().y]],
+          new: ['Hubert sieht aus, als bräuchte er Hilfe. Sprich mit ihm.', () => [H().x, H().y]],
           fetch: H_(CAN)
-            ? ['Bring den Kanister zu Günters Traktor und tank ihn auf.', () => tankPos()]
+            ? ['Bring den Kanister zu Huberts Traktor und tank ihn auf.', () => tankPos()]
             : ['Hol den Dieselkanister beim Stromaggregat an der Werkstatt.', () => CAN.pos],
-          tell: ['Sag Günter, dass der Traktor voll ist.', () => [H().x, H().y]],
+          tell: ['Sag Hubert, dass der Traktor voll ist.', () => [H().x, H().y]],
           mount: ['Steig auf den Traktor (links auf den Kotflügel).', () => mountPos()],
-          ride: ['Festhalten! Günter fährt eine Runde über den Feldweg.', null],
-          done: ['Erledigt. Günter ist jetzt freundlicher.', null],
+          ride: ['Festhalten! Hubert fährt eine Runde über den Feldweg.', null],
+          done: ['Erledigt. Hubert ist jetzt freundlicher.', null],
         }[st];
       case 'board': {
-        if (st === 'new') return ['Bernd hat eine Bitte – frag ihn nach deiner Holzwerkstatt.', () => [R().x, R().y]];
-        if (st === 'done') return ['Erledigt. Bernd hängt das Brett an die Wand.', null];
-        if (window.WERK && WERK.hasFinished()) return ['Bring das Schneidebrett zu Bernd.', () => [R().x, R().y]];
+        if (st === 'new') return ['Ronald hat eine Bitte – frag ihn nach deiner Holzwerkstatt.', () => [R().x, R().y]];
+        if (st === 'done') return ['Erledigt. Ronald hängt das Brett an die Wand.', null];
+        if (window.WERK && WERK.hasFinished()) return ['Bring das Schneidebrett zu Ronald.', () => [R().x, R().y]];
         if (st === 'deliver')
           return [
-            'Nimm ein fertiges Schneidebrett (Regal, obere Ablage) und bring es Bernd.',
+            'Nimm ein fertiges Schneidebrett (Regal, obere Ablage) und bring es Ronald.',
             () => WERK.posOf('shelf'),
           ];
         const o = window.WERK && WERK.objective();
@@ -521,7 +521,7 @@ const QUESTS = (() => {
       g = Q.goat.st,
       d = Q.diesel.st,
       b = Q.board.st;
-    if (who === 'guenter') {
+    if (who === 'hubert') {
       if (d === 'new') out.push({ k: 'q_hilfe', label: 'Brauchen Sie Hilfe?' });
       if (d === 'fetch') out.push({ k: 'q_kanister', label: 'Wo ist der Kanister?' });
       if (d === 'tell') out.push({ k: 'q_voll', label: 'Der Traktor ist voll' });
@@ -541,7 +541,7 @@ const QUESTS = (() => {
     return out;
   }
   function ask(who, k) {
-    if (who === 'guenter')
+    if (who === 'hubert')
       switch (k) {
         case 'q_hilfe':
           return { after: () => setSt('diesel', 'fetch') };
@@ -549,12 +549,12 @@ const QUESTS = (() => {
           return {
             after: () => {
               setSt('diesel', 'mount');
-              guenterToTractor();
+              hubertToTractor();
             },
             end: true,
           };
         case 'q_auf':
-          return { after: () => guenterToTractor(), end: true };
+          return { after: () => hubertToTractor(), end: true };
         case 'q_fahrt':
           return {
             after: () => {
@@ -587,7 +587,7 @@ const QUESTS = (() => {
           return {
             after: () => {
               setSt('board', 'make');
-              if (window.WERK && WERK.finished().some(w => w.where !== 'bernd')) boardMade();
+              if (window.WERK && WERK.finished().some(w => w.where !== 'ronald')) boardMade();
             },
           };
         case 'q_brett':
@@ -721,7 +721,7 @@ const QUESTS = (() => {
     save();
     renderJournal();
   }
-  // Frieda runs off through the gate (or over it), out of sight she ends up in Günter's cabbage
+  // Frieda runs off through the gate (or over it), out of sight she ends up in Hubert's cabbage
   function escape() {
     const f = FRIEDA(),
       open = DOOR.paddockgate && DOOR.paddockgate.t > 0.5;
@@ -1047,7 +1047,7 @@ const QUESTS = (() => {
       PLAY.give(WOOD);
     },
   });
-  // ---------------- Günter's diesel and the ride along ----------------
+  // ---------------- Hubert's diesel and the ride along ----------------
   const tr = () => TRACTOR.g,
     home = () => !H().drive && Math.hypot(tr().position.x - TRACTOR_HOME.x, -tr().position.z - TRACTOR_HOME.y) < 0.6;
   const trLocal = (lx, ly) => {
@@ -1095,7 +1095,7 @@ const QUESTS = (() => {
       PLAY.take(CAN);
       CAN.place(x, y, 0, -tr().rotation.y);
       setSt('diesel', 'tell');
-      PLAY.think('Voll. Jetzt Günter Bescheid sagen.', 2600);
+      PLAY.think('Voll. Jetzt Hubert Bescheid sagen.', 2600);
     },
   });
   PLAY.act({
@@ -1107,7 +1107,7 @@ const QUESTS = (() => {
     label: () => (ON && Q.diesel.st === 'mount' && home() && !PLAY.seat ? 'Auf den Traktor steigen' : null),
     run: () => mount(),
   });
-  function guenterToTractor() {
+  function hubertToTractor() {
     const h = H();
     h.tractorT = 1e9;
     const [tx, ty] = trLocal(1.0, -0.9);
@@ -1142,7 +1142,7 @@ const QUESTS = (() => {
   function mount() {
     setSt('diesel', 'ride', true);
     renderJournal();
-    if (!H().ctl && !H().drive) guenterToTractor();
+    if (!H().ctl && !H().drive) hubertToTractor();
     const seatF = () => {
       const [x, y] = trLocal(-0.62, -0.42);
       return { x, y, z: 2.05 };
@@ -1427,7 +1427,7 @@ const QUESTS = (() => {
         poseDoor(d);
       }
     }
-    if (Q.diesel.st === 'mount') guenterToTractor();
+    if (Q.diesel.st === 'mount') hubertToTractor();
     if (s.stove || Q.fire.st === 'done') STOVE.light(true);
     renderJournal();
   }
@@ -1470,9 +1470,9 @@ const QUESTS = (() => {
     topics,
     ask,
     event(n) {
-      if (n === 'guenterbench' && near(H(), 16)) bark(H(), 'bench', 120);
+      if (n === 'hubertbench' && near(H(), 16)) bark(H(), 'bench', 120);
     },
-    friendly: who => (who === 'guenter' ? Q.diesel.st === 'done' : Q.goat.st === 'done' || Q.board.st === 'done'),
+    friendly: who => (who === 'hubert' ? Q.diesel.st === 'done' : Q.goat.st === 'done' || Q.board.st === 'done'),
     driveWp,
     driveEnd,
     objective,

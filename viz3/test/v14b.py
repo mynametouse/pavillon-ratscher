@@ -55,7 +55,7 @@ with sync_playwright() as p:
     if want('goat'):
         print('-- goat', flush=True)
         E("GAME.go('ziegen'); GAME.step(0.3)")
-        print('bernd', E("__T.ask('bernd', 'q_helfen')").split('"goat":')[1][:40], flush=True)
+        print('ronald', E("__T.ask('ronald', 'q_helfen')").split('"goat":')[1][:40], flush=True)
         print('hay', E("__T.go('goat:haypile', 1.2)"), E("__T.run('goat:haypile', 0.5)"), E("PLAY.carry && PLAY.carry.id"), flush=True)
         shot(pg, 'b_hay')
         for name in ('Lotte', 'Frieda', 'Egon'):
@@ -77,29 +77,29 @@ with sync_playwright() as p:
           const f = NPC.GOATS.find(g => g.gname === 'Frieda'); return JSON.stringify({ st: QUESTS.Q.goat.st, f: [+f.x.toFixed(1), +f.y.toFixed(1)], p: [+GAME.P.x.toFixed(1), +GAME.P.y.toFixed(1)] }); })()""")
         print('walked', r, flush=True)
         shot(pg, 'b_frieda_home')
-        if 'report' in r: print('report', E("__T.ask('bernd', 'q_frieda')").split('"goat":')[1][:30], flush=True)
+        if 'report' in r: print('report', E("__T.ask('ronald', 'q_frieda')").split('"goat":')[1][:30], flush=True)
     if want('diesel'):
         print('-- diesel', flush=True)
-        E("GAME.go('guenter'); GAME.step(0.3)")
-        print('guenter', E("__T.ask('guenter', 'q_hilfe')").split('"diesel":')[1][:40], flush=True)
+        E("GAME.go('hubert'); GAME.step(0.3)")
+        print('hubert', E("__T.ask('hubert', 'q_hilfe')").split('"diesel":')[1][:40], flush=True)
         print('can', E("JSON.stringify(__T.obj('diesel'))"), flush=True)
         print('take can', E("__T.go('take:can', 1.0)"), E("__T.run('take:can', 0.5)"), E("PLAY.carry && PLAY.carry.id"), flush=True)
         shot(pg, 'b_can')
         print('fill label', E("__T.go('diesel:fill', 1.2)"), flush=True)
         print('fill', E("__T.run('diesel:fill', 5.2)"), E("JSON.stringify(__T.st())"), flush=True)
-        print('tell', E("__T.ask('guenter', 'q_voll')").split('"diesel":')[1][:40], flush=True)
+        print('tell', E("__T.ask('hubert', 'q_voll')").split('"diesel":')[1][:40], flush=True)
         E("__T.wait(2000)")
         print('mount label', E("__T.go('diesel:mount', 1.0)"), flush=True)
         print('mount', E("__T.run('diesel:mount', 0.5)"), E("JSON.stringify({ st: __T.st().diesel, seat: PLAY.seat && PLAY.seat.kind })"), flush=True)
-        r = E("""(async () => { for (let k = 0; k < 900; k++) { GAME.step(0.1); await new Promise(r => setTimeout(r, 2)); if (NPC.NPCS.guenter.drive) break; }
-          const h = NPC.NPCS.guenter; return JSON.stringify({ drive: !!h.drive, pass: !!(h.drive && h.drive.passenger), h: [+h.x.toFixed(1), +h.y.toFixed(1)] }); })()"""); print('guenter drives', r, flush=True)
+        r = E("""(async () => { for (let k = 0; k < 900; k++) { GAME.step(0.1); await new Promise(r => setTimeout(r, 2)); if (NPC.NPCS.hubert.drive) break; }
+          const h = NPC.NPCS.hubert; return JSON.stringify({ drive: !!h.drive, pass: !!(h.drive && h.drive.passenger), h: [+h.x.toFixed(1), +h.y.toFixed(1)] }); })()"""); print('hubert drives', r, flush=True)
         E("__T.wait(3000)"); shot(pg, 'b_ride')
-        r = E("""(async () => { for (let k = 0; k < 2400; k++) { GAME.step(0.1); if (k % 10 === 0) await new Promise(r => setTimeout(r, 2)); if (!NPC.NPCS.guenter.drive) break; }
+        r = E("""(async () => { for (let k = 0; k < 2400; k++) { GAME.step(0.1); if (k % 10 === 0) await new Promise(r => setTimeout(r, 2)); if (!NPC.NPCS.hubert.drive) break; }
           await new Promise(r => setTimeout(r, 3000)); return JSON.stringify({ st: QUESTS.Q.diesel.st, seat: !!PLAY.seat, p: [+GAME.P.x.toFixed(1), +GAME.P.y.toFixed(1)] }); })()"""); print('ride over', r, flush=True)
     if want('board'):
         print('-- board', flush=True)
         E("GAME.go('ziegen'); GAME.step(0.3)")
-        print('bernd', E("__T.ask('bernd', 'q_werkstatt')").split('"board":')[1][:40], flush=True)
+        print('ronald', E("__T.ask('ronald', 'q_werkstatt')").split('"board":')[1][:40], flush=True)
         E("GAME.go('werkstatt'); GAME.step(0.3)")
         print('saw label', E("__T.go('board:saw', 1.4)"), flush=True)
         print('saw', E("__T.run('board:saw', 0.5)"), flush=True)
@@ -109,7 +109,7 @@ with sync_playwright() as p:
             print(k, E(f"__T.go('board:{k}', 0.9)"), E(f"__T.run('board:{k}', {secs})"), E("JSON.stringify({ st: QUESTS.Q.board.st, stage: QUESTS.Q.board.stage })"), flush=True)
         shot(pg, 'b_board_done')
         E("GAME.go('ziegen'); GAME.step(0.3)")
-        print('deliver', E("JSON.stringify(QUESTS.topics('bernd'))"), E("__T.ask('bernd', 'q_brett')").split('"board":')[1][:30], flush=True)
+        print('deliver', E("JSON.stringify(QUESTS.topics('ronald'))"), E("__T.ask('ronald', 'q_brett')").split('"board":')[1][:30], flush=True)
     if want('home'):
         print('-- home', flush=True)
         E("GAME.go('bibliothek'); GAME.step(0.2)")

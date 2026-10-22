@@ -543,8 +543,8 @@ const SITEPLAN = (() => {
         R = bldRects(B);
       if (R.length) put(pr(R[0].c[0], R[0].c[1], 2.6), B.short, cls);
     }
-    put(pr(-20, 2), 'Günter', 'nb');
-    put(pr(24, -6), 'Bernd', 'nb');
+    put(pr(-20, 2), 'Hubert', 'nb');
+    put(pr(24, -6), 'Ronald', 'nb');
     {
       const t = STREAM.TB + 16,
         q = STREAM.wpt(t, STREAM.cOff(t));

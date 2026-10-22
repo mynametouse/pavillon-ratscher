@@ -26,11 +26,11 @@ with sync_playwright() as p:
     at(22, 20, 0, [2.5, 12.0, 1.65, 183.1, 22, 60]); shot(pg, 'm_daymoon_wide')
     at(8, 6, 0, [2.5, 12.0, 1.65, 159.0, 31.5, 3]); shot(pg, 'm_lastq_8jun_0600')
     at(2, 0, 45, [2.5, 12.0, 1.65, 157, 7.5, 3]); shot(pg, 'm_full_2jun_0045')
-    # neighbours at night: look away from Bernd for a few seconds
+    # neighbours at night: look away from Ronald for a few seconds
     at(1, 23, 0, [2.0, -9.0, 1.65, 270, 0, 60]); E("GAME.step(3.0)")
-    print('npc night', E("JSON.stringify({ r: { away: !!NPC.NPCS.bernd.away, vis: NPC.NPCS.bernd.fig.g.visible }, h: { away: !!NPC.NPCS.guenter.away, vis: NPC.NPCS.guenter.fig.g.visible } })"))
+    print('npc night', E("JSON.stringify({ r: { away: !!NPC.NPCS.ronald.away, vis: NPC.NPCS.ronald.fig.g.visible }, h: { away: !!NPC.NPCS.hubert.away, vis: NPC.NPCS.hubert.fig.g.visible } })"))
     at(2, 7, 0, [2.0, -9.0, 1.65, 270, 0, 60]); E("GAME.step(3.0)")
-    print('npc morning', E("JSON.stringify({ r: { away: !!NPC.NPCS.bernd.away, vis: NPC.NPCS.bernd.fig.g.visible }, h: { away: !!NPC.NPCS.guenter.away, vis: NPC.NPCS.guenter.fig.g.visible } })"))
+    print('npc morning', E("JSON.stringify({ r: { away: !!NPC.NPCS.ronald.away, vis: NPC.NPCS.ronald.fig.g.visible }, h: { away: !!NPC.NPCS.hubert.away, vis: NPC.NPCS.hubert.fig.g.visible } })"))
     # plan view at night: neutral midday light
     at(1, 23, 30, [2.0, -9.0, 1.65, 0, 6, 70]); E("GAME.go('draufsicht')"); E("GAME.step(0.5)"); print('top', E("JSON.stringify(DN.dbg())")); shot(pg, 'top_at_night')
     E("GAME.go('werkstatt'); GAME.step(0.5)"); print('back', E("JSON.stringify(DN.dbg())"))
