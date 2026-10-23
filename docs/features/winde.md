@@ -23,7 +23,6 @@ Heck zieht den Stamm aus dem Bestand.
 8. **Choker lösen** (am Stammende, **E**), dann hinter der Winde **„Seil an der Winde einhängen“**, Winde anheben (N oder Außenbedienung).
 9. **Aufladen mit der Gabel**: wie bisher – die Gabel muss **quer** unter den Stamm, also von der Seite heranfahren (G ganz runter, darunter,
    R heben, T kippen). Höchstens 1500 kg.
-
 10. **Oder mit dem Kran** (neu: der Rungenanhänger ist jetzt ein Rückewagen mit Kran): Anhänger neben die Stämme stellen (Reichweite etwa
     6 m um die Kransäule vorn am Anhänger), zu Fuß an die Steuerventile rechts vorn am Anhänger, zum gewünschten Stamm schauen, **E**
     „Kran: … aufladen“. Der Kran greift den Stamm, wie er liegt, schwenkt über die Ladefläche und legt ihn längs zwischen die Rungen
@@ -54,7 +53,7 @@ seiner Lage – ältere Builds lesen ihn als liegenden Stamm. Kaputte Werte werd
 ## Testen
 
 ```bash
-bash tools/browser_lock.sh python3 viz3/test/run.py --port 8975 --serve winde            # alles (~15 min)
+bash tools/browser_lock.sh python3 viz3/test/run.py --port 8975 --serve winde            # alles (~5 min bei GitHub, hier ~10 min)
 bash tools/browser_lock.sh python3 viz3/test/run.py --port 8975 --serve winde:model,pull  # Abschnitte: model,pull,fork,skid,stuck,save,kran,hints
 ```
 

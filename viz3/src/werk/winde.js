@@ -873,7 +873,7 @@ export const WINDE = (() => {
   PLAY.act({
     id: 'winde:funk',
     r: 6,
-    prio: -1.6,
+    prio: -3, // anything else within reach in front of me comes first (felling, the neighbours …)
     obj: () => null,
     pos: () => [P.x, P.y, P.feet + 1.0],
     label: () => {
