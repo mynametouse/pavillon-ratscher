@@ -198,7 +198,7 @@ export const FAHRT = (() => {
     (x, y, z) => {
       if (!S.ready || insideRB(x, y)) return undefined;
       const r = roadAt(x, y, 0.5);
-      if (!r) return undefined;
+      if (!r || ownFade(x, y) < 0.5) return undefined; // in a zone with its own roads (Kloster Veßra) its ground carries
       if (!(r.w.fl & 1))
         return outRB(x, y) < 3 && !(r.w.fl & 2) ? r.z - (paved(r.w) ? 0.025 : 0.04) * Math.min(r.d, r.w.hw) : undefined;
       const deck = r.z;
@@ -261,20 +261,39 @@ export const FAHRT = (() => {
   }
   // several roads (a junction, a corner between two streets): weighted by the distance to their edges, so that no step forms where
   // the nearest road changes
+  // a zone that treats its own roads (welt/vessra.js: its road cap and banks over the tiles, the houses placed on that ground) keeps
+  // its ground: the carving fades out over the 100 m before the zone's square and stays out of it, so the zone's ground and the drawn
+  // tiles agree there and the profile meets the zone's road at the edge (Kern chat 23.10.: two systems must not carve the same streets)
+  const OWN_FADE = 100;
+  function ownFade(x, y) {
+    const V = window.VESSRA;
+    if (!V || !V.ORT) return 1;
+    const Z = V.ZONE || [V.ORT[0] - 650, V.ORT[1] - 650, V.ORT[0] + 650, V.ORT[1] + 650], // welt/vessra.js ZONE: ORT ± 650 m
+      dx = Math.max(Z[0] - x, 0, x - Z[2]),
+      dy = Math.max(Z[1] - y, 0, y - Z[3]),
+      t = Math.min(1, Math.hypot(dx, dy) / OWN_FADE);
+    return t * t * (3 - 2 * t);
+  }
   function carveZ(x, y, raw) {
     if (insideRB(x, y)) return raw;
+    const f = ownFade(x, y);
+    if (f <= 0) return raw;
     const C = roadsAt(x, y, 18);
     if (!C.length) return raw;
-    if (C.length === 1) return surfOf(C[0], raw);
-    let sw = 0,
-      sz = 0;
-    for (const c of C) {
-      const e = Math.max(0, c.d - c.w.hw) + 0.4,
-        wt = 1 / (e * e);
-      sw += wt;
-      sz += wt * surfOf(c, raw);
+    let z;
+    if (C.length === 1) z = surfOf(C[0], raw);
+    else {
+      let sw = 0,
+        sz = 0;
+      for (const c of C) {
+        const e = Math.max(0, c.d - c.w.hw) + 0.4,
+          wt = 1 / (e * e);
+        sw += wt;
+        sz += wt * surfOf(c, raw);
+      }
+      z = sz / sw;
     }
-    return sz / sw;
+    return raw + (z - raw) * f;
   }
   // place names: in a village its street (or its name), on a road its number or name and the nearest village
   const inPoly = (r, x, y) => {
@@ -1017,7 +1036,14 @@ export const FAHRT = (() => {
       if (Math.hypot(sg.x - x, sg.y - y) < 450) want.add('s' + i);
     });
     D.ways.forEach((w, i) => {
-      if (w.fl & 1 && x > w.bb[0] - 500 && x < w.bb[2] + 500 && y > w.bb[1] - 500 && y < w.bb[3] + 500)
+      if (
+        w.fl & 1 &&
+        x > w.bb[0] - 500 &&
+        x < w.bb[2] + 500 &&
+        y > w.bb[1] - 500 &&
+        y < w.bb[3] + 500 &&
+        ownFade((w.bb[0] + w.bb[2]) / 2, (w.bb[1] + w.bb[3]) / 2) >= 0.5
+      )
         want.add('b' + i);
     });
     for (const k of [...built.keys()])
