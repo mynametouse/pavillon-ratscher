@@ -47,12 +47,28 @@ export const DORF = (() => {
   }
   const save = () => SAVE.set(KEY, ST);
   const stepI = s => STEPS.indexOf(s);
+  // the role as the matter stands: amt/amt.js knows when Ingrid has handed over the office (its roleOf first, if it has one)
+  function roleOf(k) {
+    try {
+      const A = window.AMT;
+      if (A && typeof A.roleOf === 'function') {
+        const r = A.roleOf(k);
+        if (r) return r;
+      }
+    } catch (e) {}
+    if (k === 'ingrid' && DLIFE.retired()) return 'war elf Jahre Ortsteilbürgermeisterin';
+    return T.P[k].role;
+  }
+  const stepText = s =>
+    DLIFE.retired()
+      ? T.TASK.steps[s].replace('die Ortsteilbürgermeisterin', 'die frühere Ortsteilbürgermeisterin')
+      : T.TASK.steps[s];
   function setStep(s, quiet) {
     if (stepI(s) <= stepI(ST.step)) return;
     ST.step = s;
     save();
     UI.task();
-    if (!quiet && T.TASK.steps[s]) PLAY.think((s === 'done' ? 'Geschafft: ' : 'Aufgabe: ') + T.TASK.steps[s], 6500);
+    if (!quiet && T.TASK.steps[s]) PLAY.think((s === 'done' ? 'Geschafft: ' : 'Aufgabe: ') + stepText(s), 6500);
   }
   // ---- where things are ----
   const S = {
@@ -125,7 +141,7 @@ export const DORF = (() => {
         er = errandOf(U.cur) || errandOf(null);
       let html = '';
       if (er) html = '<b>' + er.E.title + '</b> – ' + er.E.steps[er.e.i].text;
-      else if (stepI(s) >= 1 && s !== 'done') html = '<b>' + T.TASK.title + '</b> – ' + T.TASK.steps[s];
+      else if (stepI(s) >= 1 && s !== 'done') html = '<b>' + T.TASK.title + '</b> – ' + stepText(s);
       task.hidden = !html;
       if (html) task.innerHTML = html;
     };
@@ -170,12 +186,12 @@ export const DORF = (() => {
       U.cur = k;
       const p = T.P[k];
       h3.textContent = p.full;
-      role.textContent = p.age + ' · ' + p.role;
+      role.textContent = p.age + ' · ' + roleOf(k);
       el.hidden = false;
       U.task();
       // the evening greeting at the school and the fire, otherwise one of the day (good morning / hello / good evening by the clock)
       const ev = S.placed === 'school' || S.placed === 'fire',
-        g = ev || !p.day ? p.greet : p.day,
+        g = ev || !p.day ? p.greet : p.dayRetired && DLIFE.retired() ? p.dayRetired : p.day,
         n = (U.n[k] = (U.n[k] || 0) + 1),
         hr = window.CLOCK ? (window.CLOCK.t % 1440) / 60 : 12;
       say.textContent = g[(n - 1) % g.length].replace(

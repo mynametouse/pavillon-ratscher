@@ -222,6 +222,11 @@ export const DTEXT = (() => {
         '{gruss}! Im Rathaus bin ich die Ortsteilbürgermeisterin, im Garten bin ich nur Ingrid.',
         '{gruss}! Die Rosen danken es einem, wenn man sie abends gießt und nicht in der Mittagssonne.',
       ],
+      // the same after she has handed over the office (amt/amt.js)
+      dayRetired: [
+        '{gruss}! Seit ich das Amt abgegeben habe, haben meine Rosen endlich wieder eine Gärtnerin.',
+        '{gruss}! Elf Jahre Sitzungen – jetzt gieße ich, wann ich will. Das hat auch etwas.',
+      ],
       topics: {
         dorf: [
           'Das Dorf',
