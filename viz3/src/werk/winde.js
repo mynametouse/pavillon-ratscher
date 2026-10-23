@@ -389,6 +389,11 @@ export const WINDE = (() => {
     const nE = [ex, ey, 0],
       nO = [ox, oy, 0];
     nE[2] = HOLZ.support(ex, ey, l) + rE;
+    // close to the winch the cable (from 1.7 m up) lifts the fastened end a little off the ground
+    if (!free && S.pull && S.Xw) {
+      const dh = Math.hypot(ex - S.Xw[0], ey - S.Xw[1]);
+      nE[2] += 0.28 * clamp(1 - dh / 6, 0, 1);
+    }
     nO[2] = HOLZ.support(ox, oy, l) + rO;
     if (e) {
       l.p1 = nE;
@@ -409,6 +414,7 @@ export const WINDE = (() => {
       X = exitW();
     if (!l || !l.p0) return;
     gatherTrunks(l, 1.5);
+    S.Xw = X;
     let moved = false;
     if (S.atShield) {
       // lying against the shield: the end goes with the winch (raised: the tractor drags the log)

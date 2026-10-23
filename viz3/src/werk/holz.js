@@ -229,6 +229,7 @@ export const HOLZ = (() => {
       l.wp0 = mw(a);
       l.wp1 = mw(b);
     } else if (l.st === 'trailer' && window.TRAILER) {
+      TRAILER.g.updateWorldMatrix(true, false); // V16h: placed or moved since the last frame (tests, the crane) – not last frame's matrix
       const M = TRAILER.g.matrixWorld,
         z = TRAILER.bed.z + l.tz,
         a = V(l.tx, l.ta + l.L / 2, z).applyMatrix4(M),
