@@ -178,6 +178,7 @@ export const DPEOPLE = (() => {
     scene.add(f.g);
     S.figs[key] = f;
     S.loads++;
+    S.fresh = true; // dorf/dorf.js places it right away (not only when all are there)
     return f;
   }
   // make sure these figures are there (resolves when all are loaded); a failed one is noted and skipped

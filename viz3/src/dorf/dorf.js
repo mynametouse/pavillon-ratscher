@@ -706,6 +706,10 @@ export const DORF = (() => {
       if (need.has(k)) S.idle[k] = 0;
       else if ((S.idle[k] = (S.idle[k] || 0) + dt) > 25) DPEOPLE.drop(k);
     }
+    if (DPEOPLE.fresh) {
+      DPEOPLE.fresh = false; // a figure has just arrived: its place now, not only after the last one
+      if (show) S.placed = null;
+    }
     if (show !== S.placed || (show && acc > 2)) {
       if (acc > 2) acc = 0;
       if (show === 'school') placeSchool();
@@ -871,6 +875,7 @@ export const DORF = (() => {
     figErr: DPEOPLE.err,
     cars: DCARS.ready ? DCARS.state() : null,
     homes: DLIFE.homes() ? Object.keys(DLIFE.homes()).length : 0,
+    homesErr: DLIFE.err,
     talk: UI.cur,
     sub: UI.sub.hidden ? null : UI.sub.textContent,
   });

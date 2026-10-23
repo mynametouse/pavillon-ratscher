@@ -52,11 +52,11 @@ with lib.browser() as b:
             t0 = time.time()
             for i in range(120):
                 E("GAME.step(0.2)")
-                if len(J('DORF.state().figs')) >= 6: break
+                if len(J('DORF.state().shown')) >= 8: break
                 time.sleep(0.5)
             st = J('DORF.state()'); print('figures', round(time.time() - t0), 's', json.dumps(st, ensure_ascii=False), flush=True)
-            ck('six villagers loaded for the evening', len(st['figs']) == 6 and not st['figErr'], f"{st['figs']} {st['figErr']}")
-            ck('they sit and stand in the school', len(st['shown']) == 6, str(st['shown']))
+            ck('eight villagers loaded for the evening', len(st['figs']) == 8 and not st['figErr'], f"{st['figs']} {st['figErr']}")
+            ck('they sit and stand in the school (each placed as soon as it is there)', len(st['shown']) == 8, str(st['shown']))
             if want('door'):
                 x, y = J("DSCHOOL.toW(DSCHOOL.F.du, -4.2)"); z = J("DSCHOOL.F.zF")
                 E(f"GAME.view({x}, {y}, {z} + 1.3, DSCHOOL.az(0, 1), 4, 62); GAME.step(0.3)"); lib.shot(pg, OUT, 'a_door_open')

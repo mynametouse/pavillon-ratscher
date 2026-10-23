@@ -18,7 +18,8 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   auf den Tisch, ab und zu klirren Gläser (Web Audio, nach Entfernung). Ist ein Abend und man ist im Garten oder im Dorf unterwegs, kommt
   einmal ein Hinweis („In der alten Schule brennt Licht …“). Sitzt man fest (Tür zu), führt „Hinausgehen“ vor die Tür.
 - **Dorfbewohner** (`dorf_text.js`, `dorf_people.js`): Gerhard (72, Lehrer i. R., Dorfchronik), Manfred (56, Wehrführer), Wolfgang (59,
-  Waldarbeiter), Uwe (46, Landwirt, freitags hinter der Theke), Katrin (39, Pflegerin, Rommé), Ingrid (58, Ortsteilbürgermeisterin) –
+  Waldarbeiter), Uwe (46, Landwirt, freitags hinter der Theke), Katrin (39, Pflegerin, Rommé), Ingrid (58, Ortsteilbürgermeisterin),
+  Jens (34, Kfz-Mechaniker, Feuerwehr), Heike (47, Gemüsegarten, Hühner) –
   Microsoft-Rocketbox-Figuren (MIT) mit den Bewegungen der Spielfiguren, gebaut mit `tools/player/build_villagers.sh` →
   `viz3/extra/dorf/dist/chars/dorf_*.json` (0,7–1,2 MB je Figur, Gesicht 1024 px, Rest 512 px; unter den durchsichtigen Pixeln der
   Haarkarten liegt die mittlere Haarfarbe, sonst gäbe es dunkle Ränder; Gerhard ohne Haarkarten). Geladen werden sie **nur** kurz vor und
@@ -34,16 +35,32 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   Knistern (Web Audio). Die Shader werden schon beim Herankommen übersetzt (kein Ruckeln, wenn das Feuer angeht). Ortsname
   „Feuer am Acker · Richtung Klinge“.
 
+- **Alltag im Dorf** (`dorf_life.js`, `DLIFE`; Falko 23.10. 2:52): Die Leute sind meist im Haus. Jeder hat ein eigenes Haus am Anger
+  (aus `world/village.js`, eines mit Tür, die Häuser verteilt), eine Haustür und einen Platz im Vorgarten neben dem Weg. Der Tag kommt
+  aus Spieluhr und Kalender, jeden Tag anders: April bis Oktober morgens und abends eine Runde im Garten (Unkraut jäten kniend, in den
+  warmen Monaten gießen mit der Kanne), im Winter ab und zu kurz an die Tür; Heike und Katrin reden an manchen Abenden am Gartenzaun.
+  Sie kommen aus der Tür, gehen die paar Schritte, arbeiten, gehen wieder hinein; wer angesprochen wird, steht auf und dreht sich her.
+  Geladen werden nur die, die draußen sind und in der Nähe (140 m), wenige auf einmal; nach 25 s ohne Bedarf wieder freigegeben.
+- **Autos** (`dorf_cars.js`, `DCARS`): Katrin und Jens fahren werktags zur Arbeit, Ingrid dienstags und donnerstags ins Rathaus, Manfred
+  manchmal einkaufen. Das Auto (schlicht, ohne Marke) parkt am Straßenrand vor dem Haus; der Besitzer geht hin, steigt ein, es fährt
+  langsam die Straße entlang aus dem Dorf (weg vom Anger, ~200 m) und kommt später zurück. Es wartet, wenn man davor steht.
+- **Besorgungen** (Aufgaben wie in einem Spiel, `DTEXT.ERRANDS`): „Für die Chronik“ (Gerhard: Dorflinde, Brunnen, Schuluhr ansehen),
+  „Ein Brett für die Tombola“ (Ingrid: ein fertiges Stirnholzbrett aus der Klingenholz-Werkstatt bringen – `WERK.handOver`),
+  „Wolfgangs Lehrstück“ (an der Klinge einen markierten Baum fällen und vermessen – `FELL.logs`), „Ein Päckchen für Hubert“ (Jens:
+  Zündkerzen für den Mondeo), „Ziegenmist für die Beete“ (Heike: bei Ronald abholen). Stand in `pav-dorf-v1` (`err`).
+- **Freitag draußen**: an milden Abenden (Mai bis September, bis 22 Uhr) sitzen Jens und Heike an einer Bierzeltgarnitur vor der Schule,
+  sonst am langen Tisch drinnen.
+
 ## Testen
 
 - Schnell im Browser: `index.html?dorf=freitag` (Freitag 20 Uhr, vor der Schultür) oder `?dorf=feuer` (Samstag 21 Uhr am Feuer).
 - In der Konsole: `DORF.jump('skat', 20)`, `DORF.atDoor()`, `DORF.enter()`, `DORF.toFire()`, `DORF.state()`, `DORF.UI.open('gerhard')`.
-- Browsertest `viz3/test/dorf.py` (Abschnitte `light,door,inside,talk,task,fire,gl`), läuft bei jedem Push auf `feat/dorf` in GitHub Actions
+- Browsertest `viz3/test/dorf.py` (Abschnitte `light,door,inside,talk,task,fire,life,summer,gl`), läuft bei jedem Push auf `feat/dorf` in GitHub Actions
   (`viz3/extra/dorf/tests.txt`); Bilder in `out/dorf/`.
 
 ## Für den Kern-Chat
 
-- Neuer Speicher-Schlüssel `pav-dorf-v1` (Zeile in `core/save.js`), neue `window`-Namen `DCAL`, `DPEOPLE`, `DSCHOOL`, `DFIRE`, `DORF`.
+- Neuer Speicher-Schlüssel `pav-dorf-v1` (Zeile in `core/save.js`), neue `window`-Namen `DCAL`, `DPEOPLE`, `DSCHOOL`, `DFIRE`, `DLIFE`, `DCARS`, `DORF`.
 - Die Aufgabe hat ein eigenes kleines Tagebuch im Gesprächsfenster; `game/quests.js` ist unberührt (zum späteren Einbinden: `DORF.ST.step`).
 - Zur Laufzeit, ohne fremde Dateien zu ändern: die Wand der Schule (`RATSCHER.bld[0]`, Viereck mit der Tür) wird ersetzt; ein
   `KERN.provide('pushOut', …, 1)` lässt in der offenen Tür die Weltwände (`WCOL`) aus; `LIGHTS[0,3,4]` (Schule) und `LIGHTS[1]` (Feuer)

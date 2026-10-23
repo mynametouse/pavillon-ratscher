@@ -12,7 +12,8 @@ import { WCOL } from '../world/worldcol.js';
 import { DCAL } from './dorf_cal.js';
 import { DTEXT } from './dorf_text.js';
 export const DLIFE = (() => {
-  const S = { homes: null, err: null };
+  const S = { err: null };
+  let cache = null; // the homes, once found (S.homes is the function)
   const ANGER = [222, -108];
   const KEYS = Object.keys(DTEXT.P);
   const hh = n => {
@@ -55,21 +56,25 @@ export const DLIFE = (() => {
     }
     return null;
   }
-  // every villager a house near the Anger, at least 28 m from the others (the same houses in every visit: the village data is fixed)
+  // every villager a house near the Anger, at least 28 m from the others (the same houses in every visit: the village data is fixed);
+  // the candidates in a fixed spread order (a stride without common divisor with their number), not only the nearest
   function homes() {
-    if (S.homes) return S.homes;
-    if (!window.VILLAGE || !VILLAGE.ready || !window.WCOL || !WCOL.ready) return null;
+    if (cache) return cache;
+    if (!window.VILLAGE || !VILLAGE.ready || !window.WCOL || !WCOL.ready || !ROADS || !ROADS.ready) return null;
     const C = VILLAGE.bld
       .filter(b => b.typ === 0 && b.id !== 215 && b.st && b.st.style !== VILLAGE.ST.SCHOOL && b.fac.some(f => f.door))
       .map(b => ({ b, d: Math.hypot(b.cx - ANGER[0], b.cy - ANGER[1]) }))
       .filter(o => o.d > 35 && o.d < 280)
       .sort((a, z) => a.d - z.d);
+    const n = C.length,
+      gcd = (a, b) => (b ? gcd(b, a % b) : a),
+      stride = [7, 11, 13, 5, 3, 1].find(s => gcd(s, n) === 1) || 1;
     const out = {},
       used = [];
     let i = 0;
     for (const k of KEYS) {
-      while (i < C.length) {
-        const c = C[(i * 7) % C.length]; // not only the nearest: some further out
+      while (i < n) {
+        const c = C[(i * stride) % n];
         i++;
         if (used.some(u => Math.hypot(u.cx - c.b.cx, u.cy - c.b.cy) < 28)) continue;
         const h = home(c.b);
@@ -79,7 +84,11 @@ export const DLIFE = (() => {
         break;
       }
     }
-    S.homes = out;
+    S.err =
+      Object.keys(out).length < KEYS.length
+        ? 'homes: ' + Object.keys(out).length + ' of ' + KEYS.length + ' (' + n + ' houses)'
+        : null;
+    cache = out;
     return out;
   }
   let moD = -1,
