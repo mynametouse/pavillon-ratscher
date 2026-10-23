@@ -12,12 +12,13 @@
 // text lines as subtitles when the visitor is near (no recordings for them yet).
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
 import { markDirty, plain } from '../core/assets.js';
 import { DOOR, P } from '../game/walkable.js';
-import { SPOTS } from '../game/player.js';
 import { audio } from '../audio/audio.js';
 import { HOF, SHEDS } from '../garden/hof_hubert.js';
 import { HOFCAR } from '../garden/hof_auto.js';
+import { sitePlace } from '../garden/places.js';
 import {
   GOATLURE,
   GOATS,
@@ -1332,27 +1333,31 @@ export const LIFE = (() => {
       b.label = () => (H.seated === BENCH ? null : l0());
     }
   }
-  // place names (garden/places.js window.sitePlace): Hubert's yard and workshops, Ronald's meadow
+  // place names (KERN.place, core/kern.js): Hubert's yard and workshops, Ronald's meadow – where the garden would say 'neighbour's plot'
   {
-    const sp0 = window.sitePlace;
     const inShed = (x, y) =>
       SHEDS.some(S => {
         const dx = x - S.c[0],
           dy = y - S.c[1];
         return Math.abs(dx * S.u[0] + dy * S.u[1]) < S.D / 2 && Math.abs(dx * S.v[0] + dy * S.v[1]) < S.L / 2;
       });
-    window.sitePlace = (x, y, z) => {
-      const r = sp0 ? sp0(x, y, z) : null;
-      if (r === 'Nachbargrundstück West' && y > -26 && y < 40 && x > -44)
-        return inShed(x, y) ? 'Huberts Werkstatt' : 'Huberts Hof';
-      if (r === 'Nachbargrundstück Ost' && x > PAD.x0 - 2 && x < PAD.x1 + 2 && y > PAD.y1 && y < 10)
-        return 'Ronalds Wiese';
-      return r;
-    };
+    KERN.provide(
+      'place',
+      (x, y, z) => {
+        if (Math.abs(x) > 50 || Math.abs(y) > 55) return undefined;
+        const r = sitePlace(x, y, z);
+        if (r === 'Nachbargrundstück West' && y > -26 && y < 40 && x > -44)
+          return inShed(x, y) ? 'Huberts Werkstatt' : 'Huberts Hof';
+        if (r === 'Nachbargrundstück Ost' && x > PAD.x0 - 2 && x < PAD.x1 + 2 && y > PAD.y1 && y < 10)
+          return 'Ronalds Wiese';
+        return undefined;
+      },
+      60
+    );
   }
-  // the viewpoints follow the moved paddock and the yard (game/player.js SPOTS; menu "Ziegen", "Bei Hubert")
-  if (SPOTS.ziegen) Object.assign(SPOTS.ziegen, { pos: [PAD.x0 - 2.6, PAD.gy + 1.5], yaw: 108, pitch: -2 });
-  if (SPOTS.hubert) Object.assign(SPOTS.hubert, { pos: [-11.6, 8.2], yaw: -112, pitch: -3 });
+  // the viewpoints follow the moved paddock and the yard (KERN.spot; menu "Ziegen", "Bei Hubert")
+  KERN.spot('ziegen', { pos: [PAD.x0 - 2.6, PAD.gy + 1.5], yaw: 108, pitch: -2 });
+  KERN.spot('hubert', { pos: [-11.6, 8.2], yaw: -112, pitch: -3 });
   return {
     AG,
     get TRIP() {

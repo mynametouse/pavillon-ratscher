@@ -22,7 +22,7 @@ import { COL } from '../core/geo.js';
 import { GEO_REAL, sunFollow } from '../garden/env.js';
 import { MOTION } from '../render/render.js';
 import { blocked, cellItems, CG, P, phOk, toWorld } from '../game/walkable.js';
-import { CAM3, go, SPOTS } from '../game/player.js';
+import { CAM3, go } from '../game/player.js';
 import { FAR0 } from '../game/camera.js';
 import { joy, keys } from '../game/input.js';
 import { news, toast } from '../audio/audio.js';
@@ -1487,14 +1487,14 @@ export const VEH = (() => {
     const sp = v.spec,
       d = toW(v, sp.door[0] - 0.6, sp.door[1] - 0.8),
       c = toW(v, 0, sp.box.cy);
-    SPOTS._veh = {
+    KERN.spot('_veh', {
       mode: 'walk',
       pos: [d[0], d[1]],
       z: KERN.ground(d[0], d[1]),
       yaw: (Math.atan2(c[0] - d[0], c[1] - d[1]) * 180) / Math.PI,
       pitch: -6,
       label: v.name,
-    };
+    });
     go('_veh');
     markDirty(true);
   }

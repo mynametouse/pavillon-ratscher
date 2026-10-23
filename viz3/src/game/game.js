@@ -2,6 +2,7 @@
 // the frame rate; walking itself lives in game/walkable.js, player.js, camera.js and input.js (split in refactor phase 1) =====================
 import * as THREE from 'three';
 import { $, cam, OFFLINE, R, stage } from '../core/head.js';
+import { KERN } from '../core/kern.js';
 import { DIRTY, LOAD, LOADLOG, markDirty, VEG } from '../core/assets.js';
 import { STREAM } from '../garden/stream_geo.js';
 import { sunFollow } from '../garden/env.js';
@@ -90,6 +91,7 @@ function frame0(now) {
   }
   if (P.mode === 'walk' && !(window.VEH && VEH.cur)) cam3Update(dt);
   adaptExposure(dt);
+  KERN.update(dt); // phase 2: zones built near and dropped far, borrowed lights, waits (core/kern.js)
   if (window.TICKS)
     for (let i = 0; i < TICKS.length; i++) {
       try {
@@ -206,6 +208,7 @@ export function physics(dt, f, turn, side, run) {
     const pl = placeName();
     if (pl !== lastPlace) {
       lbl.textContent = pl;
+      KERN.emit('place', { name: pl, prev: lastPlace });
       setLastPlace(pl);
     }
   } else {
@@ -341,6 +344,7 @@ export function physics(dt, f, turn, side, run) {
     const pl = placeName();
     if (pl !== lastPlace) {
       lbl.textContent = pl;
+      KERN.emit('place', { name: pl, prev: lastPlace });
       setLastPlace(pl);
     }
     if (window.PLAY) PLAY.update(dt);

@@ -4,7 +4,8 @@
 // under the loading text, the others and the GPU preparation still run (before, the rest of the start was skipped and the page stayed at
 // „Modell wird aufgebaut …“ for ever)
 import { SAVE } from '../core/save.js';
-import { $, cam, OFFLINE, R, scene, VARIANT } from '../core/head.js';
+import { $, cam, OFFLINE, QS, R, scene, VARIANT } from '../core/head.js';
+import { KERN } from '../core/kern.js';
 import { DIRTY, LOAD, LOADLOG, markDirty, SV, VEG, whenLoaded } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { COL, WALK } from '../core/geo.js';
@@ -63,7 +64,52 @@ bootStep('Luken', () => {
   for (const k of ['hatch', 'roofhatch']) setDoorNow(k, true);
 }); // the trapdoor and the roof hatch usually stand open
 requestAnimationFrame(frame);
+// phase 2: ?szenario=name starts in a situation a feature registered (KERN.scenario, core/kern.js) – once the model is up
+{
+  const sz = QS.get('szenario');
+  if (sz)
+    KERN.until(() => LOAD.ready, 3600).then(
+      () =>
+        setTimeout(() => {
+          const s = KERN.scenario(sz);
+          if (!s)
+            return LOADLOG.err(
+              'Szenario „' +
+                sz +
+                '“ gibt es nicht (' +
+                KERN.scenarios()
+                  .map(x => x.name)
+                  .join(', ') +
+                ')'
+            );
+          try {
+            s.run();
+            KERN.emit('scenario', { name: sz });
+          } catch (e) {
+            LOADLOG.err('Szenario ' + sz + ': ' + ((e && e.message) || e));
+          }
+        }, 400),
+      () => {}
+    );
+}
+// Falko, 23.10.2026: the start shows today's garden – construction phase 0 'Bestand' (the old garage on its slab), not the pavilion.
+// The model is built and the GPU prepared with the whole pavilion (bootStep 'Bauphase'), so later phases need no new shaders.
+// ?bauphase=N or ?bauphase=fertig starts elsewhere. On the test server (localhost) the default is 'fertig', so every older test keeps its
+// built pavilion; test/kern2.py checks the real start with ?bauphase=0.
+let phase0Done = false;
+function startPhase() {
+  if (phase0Done) return;
+  phase0Done = true;
+  const q = QS.get('bauphase') ?? (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'fertig' : '0'),
+    n = q === 'fertig' ? PHASES.length - 1 : parseInt(q, 10);
+  try {
+    setPhase(Number.isFinite(n) ? n : 0);
+  } catch (e) {
+    LOADLOG.err('Bauphase: ' + ((e && e.message) || e));
+  }
+}
 const hideLoading = () => {
+  startPhase();
   const ld = $('loading');
   if (ld) ld.hidden = true;
   const li = $('loadinfo');
@@ -351,6 +397,7 @@ window.GAME = {
       physics(0.025, f, turn, side, run);
       if (P.mode === 'walk' && !(window.VEH && VEH.cur)) cam3Update(0.025);
       adaptExposure(0.025);
+      KERN.update(0.025); // zones, borrowed lights, waits – as in the frame loop (game/game.js)
       for (const fn of window.TICKS || []) fn(0.025);
     }
     return {
