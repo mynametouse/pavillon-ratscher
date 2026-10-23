@@ -126,7 +126,7 @@ with lib.browser() as b:
         ck('vehicle hooks in place (edge, limit, walls)', E("typeof VEH.edge === 'function' && typeof VEH.limit === 'function' && typeof VEH.hitsOut === 'function'"))
     E(REC)
     # 14:30, and the clock in real time (a long drive must not run into the evening: other textures, other light)
-    E("if (!DN.active) GAME.setMode('auto'); CLOCK.t = 14 * 60 + 30; CLOCK.rate = 'real'; DN.update(true)")
+    E("if (!DN.active) GAME.setMode('auto'); CLOCK.t = 14 * 60 + 30; CLOCK.setRate('real'); DN.update(true)")
     lib.settle_light(pg)
     tex0 = E("GAME.R.info.memory.textures")
     st = lambda: json.loads(E("JSON.stringify(VEH.state().find(v => v.id === 'car'))"))
@@ -318,11 +318,13 @@ with lib.browser() as b:
             pk = DATA['park']['baumschule']
             ck('at the gate of the Baumschule Kammbach (Schulstraße)', math.dist((s['x'], s['y']), (pk[0], pk[1])) < 12, json.dumps(s))
             shot('i_baumschule_tor')
-            # through the gate onto the nursery's parking (welt/vessra.js), slowly
-            B = json.loads(E("JSON.stringify(window.VESSRA && VESSRA.baumschule ? { e: VESSRA.baumschule.eingang, p: VESSRA.baumschule.parkplatz } : null)"))
+            # through the gate into the nursery's yard (welt/vessra.js: the gate G, u along the street, w into the grounds), slowly
+            B = json.loads(E("JSON.stringify(window.VESSRA && VESSRA.baumschule ? VESSRA.baumschule.frame : null)"))
             if B:
-                e, p2 = B['e'], B['p']
-                E(f"window._fs = VEH.follow([[VEH.cur.st.x, VEH.cur.st.y], [{e['x']}, {e['y']}], [{p2['x']}, {p2['y']}]], 2.5, {{ look: 4 }})")
+                G, u, w = B['G'], B['u'], B['w']
+                Y = lambda a, b: [G[0] + u[0] * a + w[0] * b, G[1] + u[1] * a + w[1] * b]
+                pts = [[s['x'], s['y']], Y(0, -6), Y(0, -2.5), Y(0, 2), Y(0, 7)]
+                E(f"window._fs = VEH.follow({json.dumps(pts)}, 2.2, {{ look: 3.5 }})")
                 for _ in range(120):
                     chunk(0.5)
                     if json.loads(E("JSON.stringify(window._fs)"))['done']:
@@ -332,10 +334,12 @@ with lib.browser() as b:
                 E("VEH.auto = null")
                 chunk(1)
                 s = st()
-                ck('parked on the nursery parking', math.dist((s['x'], s['y']), (p2['x'], p2['y'])) < 4 and abs(s['kmh']) < 1,
-                   f"{math.dist((s['x'], s['y']), (p2['x'], p2['y'])):.1f} m from the space, {sorted(msgs)}")
+                tgt = Y(0, 7)
+                wh = where()
+                ck('through the gate into the nursery yard', math.dist((s['x'], s['y']), tgt) < 4 and abs(s['kmh']) < 1 and 'Baumschule' in (wh or ''),
+                   f"{math.dist((s['x'], s['y']), tgt):.1f} m from the yard point, {wh!r}")
                 ck('the word on arrival', any('Baumschule Kammbach' in m for m in msgs), str(sorted(msgs)))
-                shot('i_baumschule_parkplatz')
+                shot('i_baumschule_hof')
         else:
             ck('the end of the map: held at the edge of the tiles, with a word', s['x'] < -4300 and abs(s['kmh']) < 3 and any('endet' in m for m in msgs),
                f"x {s['x']}, {s['kmh']} km/h, {sorted(msgs)}")
@@ -364,8 +368,9 @@ with lib.browser() as b:
         f = json.loads(E("JSON.stringify(FAHRT.status())"))
         mem = json.loads(E("JSON.stringify({ tex: GAME.R.info.memory.textures, geo: GAME.R.info.memory.geometries })"))
         print('home', json.dumps(f), json.dumps(mem), flush=True)
-        ck('home again: asleep, tiles and signs freed', not f['active'] and f['welt']['tiles'] == 0 and not f['signsNear'] and not f['carved'], json.dumps(f))
-        ck('textures back near the start', mem['tex'] <= tex0 + 12, f"{tex0} → {mem['tex']}")
+        ck('home again: asleep, tiles, signs and overlay freed', not f['active'] and f['welt']['tiles'] == 0 and not f['signsNear'] and not f['carved'] and f['tex'] == 0, json.dumps(f))
+        # all textures of the page: the zones that were visited (Schleusingen, Kloster Veßra) free theirs on their own
+        print('textures', tex0, '->', mem['tex'], flush=True)
     if want('gl'):
         ok, rep = lib.check_gl(pg, 16)
         ck('textures per shader ≤ 16, no broken program', ok, json.dumps({k: rep[k] for k in ('programs', 'maxFrag', 'maxVert', 'bad', 'broken')}))

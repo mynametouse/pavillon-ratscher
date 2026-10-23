@@ -1147,6 +1147,8 @@ export const FAHRT = (() => {
     dropped: S.n.dropped,
     cap: Number.isFinite(S.cap) ? +S.cap.toFixed(1) : null,
     carved,
+    // textures this module holds: the signs' canvases and the asphalt overlay
+    tex: [...built.keys()].filter(k => k[0] === 's').length + (OV.tex ? 1 : 0),
     loadMs: S.loadMs || 0,
     err: S.err,
     welt: WELT.state(),
