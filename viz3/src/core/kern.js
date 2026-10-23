@@ -17,6 +17,8 @@
 //                          KERN.spots() is the registry itself (game/player.js SPOTS is the same object)
 //   KERN.scenario(name, { label, run, order }) a start situation – ?szenario=name runs it after loading (boot/boot.js), tests use the same;
 //                          KERN.scenarios() lists them (garten, dorf, freitag, feuer, schleusingen, wald, brief, wahlkampf, wahltag, stadtrat …)
+//   KERN.tasks.source({ id, order, list }) / KERN.tasks.list()   one journal for the tasks of every feature (game/quests.js shows it, key J):
+//                          an entry { id, title, who, status: 'offen' | 'läuft' | 'erledigt', text, target: () => [x, y] | null, z }
 //   KERN.act(a) / KERN.unact(id) / KERN.acts()   entries of the action button (game/play.js picks the nearest and runs it):
 //                          { id, label: () => text | null, pos: () => [x, y, z], r, run, prio, hold, gauge, need, start, cancel, gest3 }
 //   KERN.on(name, fn) → off, KERN.emit(name, data)   events for tasks and statistics (list below), KERN.events() the last ones
@@ -87,6 +89,8 @@
  * @property {() => Record<string, any>} spots  the registry of places to jump to
  * @property {(name: string, def?: { label?: string, run: () => any, order?: number }) => any} scenario  a start situation; without def: the one registered or null
  * @property {() => any[]} scenarios  all start situations by order (tests, menu)
+ * @property {{ source: (src: { id: string, order?: number, list: () => any[] }) => any, list: () => any[] }} tasks  the journal's sources and
+ *   their entries { id, title, who, status: 'offen' | 'läuft' | 'erledigt', text, target?: () => number[] | null, z?: number } (+ src, key)
  * @property {(a: any) => any} act  an entry of the action button (replaces one with the same id)
  * @property {(id: string) => void} unact
  * @property {() => any[]} acts
@@ -175,6 +179,31 @@ export const KERN = (() => {
     SCEN[name] = Object.assign({ name, label: name, order: 50 }, SCEN[name], def);
     return SCEN[name];
   }
+
+  // ---- tasks of every feature in one journal (phase 2, building block 2): a source lists its entries when asked ----
+  const TSRC = [];
+  const tasks = {
+    source(src) {
+      const i = TSRC.findIndex(t => t.id === src.id);
+      if (i >= 0) TSRC[i] = src;
+      else TSRC.push(src);
+      TSRC.sort((a, b) => (a.order || 50) - (b.order || 50));
+      return src;
+    },
+    list() {
+      const out = [];
+      for (const src of TSRC) {
+        let l = [];
+        try {
+          l = src.list() || [];
+        } catch (e) {
+          console.warn('tasks', src.id, e);
+        }
+        for (const e of l) out.push(Object.assign({ src: src.id, key: src.id + ':' + e.id }, e));
+      }
+      return out;
+    },
+  };
 
   // ---- the action button ----
   const ACTS = [];
@@ -422,6 +451,7 @@ export const KERN = (() => {
     spots: () => SPOTS,
     scenario,
     scenarios: () => Object.values(SCEN).sort((a, b) => a.order - b.order),
+    tasks,
     act,
     unact,
     acts: () => ACTS,

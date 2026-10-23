@@ -241,6 +241,27 @@ export const AMT = (() => {
     }
     return '';
   }
+  // the journal (KERN.tasks, core/kern.js; shown by game/quests.js, key J): the election and the office as one entry, what is next
+  KERN.tasks.source({
+    id: 'amt',
+    order: 30,
+    list: () => {
+      if (!ST || ST.phase === 'none') return [];
+      const strip = t => String(t || '').replace(/<[^>]+>/g, '');
+      const h = status(),
+        m = /^<b>(.*?)<\/b>(?:\s*–\s*)?([\s\S]*)$/.exec(h) || [null, 'Ortsvorsteher', h];
+      return [
+        {
+          id: 'ortsvorsteher',
+          title: strip(m[1]),
+          who: 'Ratscher · Rathaus Schleusingen (Mappe: O)',
+          status: ST.phase === 'lost' || ST.phase === 'missed' ? 'erledigt' : 'läuft',
+          text: strip(m[2]) || 'Alles Weitere steht in der Mappe (O).',
+          target: null,
+        },
+      ];
+    },
+  });
   // ======================= the folder (#amtbook, key O) and the HUD button =======================
   const BOOK = (() => {
     const host = $('p-3d') || document.body;

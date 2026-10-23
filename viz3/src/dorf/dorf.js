@@ -917,6 +917,37 @@ export const DORF = (() => {
     talk: UI.cur,
     sub: UI.sub.hidden ? null : UI.sub.textContent,
   });
+  // the journal (KERN.tasks, core/kern.js; shown by game/quests.js, key J): the evening's task and the errands taken on
+  KERN.tasks.source({
+    id: 'dorf',
+    order: 20,
+    list: () => {
+      const out = [];
+      if (stepI(ST.step) >= 1)
+        out.push({
+          id: 'freitag',
+          title: T.TASK.title,
+          who: 'Alte Schule · freitags 19–23 Uhr',
+          status: ST.step === 'done' ? 'erledigt' : 'läuft',
+          text: stepText(ST.step) || '',
+          target: () =>
+            ST.step === 'fire' ? DFIRE.at : DSCHOOL.F && DSCHOOL.toW ? DSCHOOL.toW(DSCHOOL.F.du, -2.6) : null,
+        });
+      for (const [id, e] of Object.entries(ST.err)) {
+        const E = T.ERRANDS[id];
+        if (!E) continue;
+        out.push({
+          id: 'err-' + id,
+          title: E.title,
+          who: (T.P[E.who] && T.P[E.who].name) || E.who,
+          status: e.st === 'done' ? 'erledigt' : 'läuft',
+          text: e.st === 'done' ? 'Erledigt.' : (E.steps[e.i] && E.steps[e.i].text) || '',
+          target: null,
+        });
+      }
+      return out;
+    },
+  });
   // start situations (KERN.scenario; ?szenario=dorf|freitag|feuer – the older ?dorf=freitag|feuer does the same)
   KERN.scenario('dorf', { label: 'Dorf (Anger)', order: 20, run: () => go('dorf') });
   KERN.scenario('freitag', {

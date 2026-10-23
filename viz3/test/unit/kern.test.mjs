@@ -263,3 +263,22 @@ test('scenarios: registered by name, merged, listed by order', async () => {
   K.scenario('freitag').run();
   assert.equal(ran, 'skat');
 });
+
+test('tasks: sources by order, entries keyed by source, a broken source is skipped', async () => {
+  const K = await fresh();
+  K.tasks.source({ id: 'dorf', order: 20, list: () => [{ id: 'freitag', title: 'Freitagabend', status: 'läuft' }] });
+  K.tasks.source({ id: 'nachbarn', order: 10, list: () => [{ id: 'goat', title: 'Futter', status: 'offen' }] });
+  K.tasks.source({
+    id: 'kaputt',
+    order: 5,
+    list: () => {
+      throw new Error('x');
+    },
+  });
+  assert.deepEqual(
+    K.tasks.list().map(e => e.key),
+    ['nachbarn:goat', 'dorf:freitag']
+  );
+  K.tasks.source({ id: 'dorf', order: 20, list: () => [] });
+  assert.equal(K.tasks.list().length, 1);
+});
