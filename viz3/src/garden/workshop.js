@@ -526,7 +526,8 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
       for (const y of [y0 + 0.04, y1 - 0.04]) cyl(x, y, 0.0, 0.1, 0.045, M.rubber, 10, undefined, { col: false });
     COL.push([x0, x1, y0, y1, 0, 0.8, 'cart', null, null]);
   }
-  // --- petrol generator outside the east end, cable to the machines ---
+  // --- petrol generator outside the east end, cable to the machines (feat/garage: its tank, refuelling with the red petrol can from the
+  //     garage and the stop when it is empty – garden/garage_play.js) ---
   const GEN = { x: 4.35, y: -38.6 };
   {
     const { x, y } = GEN;
@@ -546,7 +547,7 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
   }
   WORKS.machines.push({
     key: 'gen',
-    label: 'Stromaggregat',
+    label: 'Benzin-Stromaggregat',
     pos: [GEN.x, GEN.y + 0.8],
     r: 1.4,
     z: 0,

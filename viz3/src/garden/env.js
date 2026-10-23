@@ -4,7 +4,7 @@ import { LATE } from '../core/late.js';
 import { BASE, HQ0, OFFLINE, QS, R, rnd, rr, scene, V } from '../core/head.js';
 import { ANISO, cellsOf, LM, markDirty, patchSV, pbrMat, texFileOf, TEXMAN, texUse, vegReady } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { bldBegin, bldEnd, COL, PH, PH_END, phase, PHN, tagPh } from '../core/geo.js';
+import { phase } from '../core/geo.js';
 import { DETAIL } from '../core/detail.js';
 import { STREAM } from './stream_geo.js';
 export const S0 = window.SITE;
@@ -963,37 +963,10 @@ function prismHouse(cx, cy, L, W, az, hw, hr, wallM, roofM, flat = false, kind =
   scene.add(g);
   return g;
 }
-function rectInfo(r) {
-  const p = r.map(q => new THREE.Vector2(q[0], q[1]));
-  const c = p[0].clone().add(p[2]).multiplyScalar(0.5);
-  const L = p[0].distanceTo(p[3]),
-    W = p[0].distanceTo(p[1]);
-  const d = p[0].clone().sub(p[3]);
-  const az = (Math.atan2(d.x, d.y) * 180) / Math.PI;
-  return { c, L, W, az };
-}
-function rectCol(r, h) {
-  const xs = r.map(q => q[0]),
-    ys = r.map(q => q[1]);
-  COL.push([Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys), 0, h, 'house', PH, PH_END]);
-}
 // Hubert's buildings (SITE.neigh) are workshops open to the east since 23.10.2026: garden/hof_hubert.js builds them. The random number
 // each of them drew stays drawn, so everything built after this keeps its place.
 S0.neigh.forEach(() => rnd());
-phase(PHN.garage);
-{
-  const q = rectInfo(S0.garage);
-  bldBegin('garage', 'Blechgarage', [q.c.x, q.c.y], { short: 'Garage', pad: 0.2 });
-  const g = prismHouse(q.c.x, q.c.y, q.L, q.W, q.az, 2.3, 0, MAT.corr, MAT.roofGrey, true);
-  g.traverse(o => tagPh(o));
-  rectCol(S0.garage, 2.5);
-  for (let i = 0; i < 2; i++) {
-    const pv = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.04, 1.1), MAT.pv);
-    pv.position.set(-1.0 + i * 1.9, 2.5, 0);
-    g.add(pv);
-  }
-  bldEnd({ c: [q.c.x, q.c.y], az: q.az, L: q.L, W: q.W });
-}
+// the tin garage at the south end (from phase 1, 'Garage versetzt'): garden/garage.js (feat/garage) – with its sliding leaves and the store
 phase(null);
 for (let i = 0; i < 42; i++) {
   const a = (rr(95, 215) * Math.PI) / 180,
