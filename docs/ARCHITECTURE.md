@@ -128,6 +128,9 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `TREEHIT` | world/treehit.js | kleine Bäume geben Fahrzeugen nach: biegen, kippen mit Wurzelteller, bleiben liegen (`pav-trees-v1`), dicke halten auf (`give`, `standUp`, `axisOf`); Jungbäume nur für Fahrzeuge in `WCOL` (`each(…, soft)`) (`docs/features/baeume.md`) |
 | `WELT`, `SCHL` | welt/welt.js, schleusingen.js | Kachelwelt aus `tools/welt` (Gelände, Luftbilder) nach Bedarf um die Kamera gestreamt (Zonen fordern sie an); Schleusingen begehbar: Altstadt aus OSM mit den Dorf-Shadern, Markt, Rathaus mit Halle, Wahrzeichen |
 | `AMT`, `AMTDATA`, `AMTMODEL`, `AMTWORLD` | amt/ | Ortsvorsteher: Wahl und Amt nach Thüringer Recht – Daten (Menschen, Anliegen, Aufgaben, Texte), reine Logik (Meinungen, Versprechen, Unterschriften, Auszählung, Ortsteilrat, Stadtrat; Einheitentests), was im Dorf entsteht (Laterne, Mitfahrbank, Anzeige …), Brief, Mappe (O), Wahltag, Rathaus über `SCHL`; Start mit `?amt=brief\|wahlkampf\|wahltag\|zaehlen\|amt\|stadtrat` (`docs/features/ortsvorsteher.md`) |
+| `GPLAN`, `GPMODEL`, `GPRULES`, `GPSUN`, `GP3D`, `GPSCHEMA` | gplan/ | Gartenplaner (V16n): Datenvertrag der Pflanzendaten (`gplan_schema.js`, Daten in `extra/pflanzen/dist/gartenplaner/`), reine Logik mit Einheitentests – Wachsen und Jahreszeiten, Plan, Gilden, Listen (`gplan_model.js`), Sonne und Schatten über Ratscher (`gplan_sun.js`), Berater mit Gründen (`gplan_rules.js`: Grenzabstand ThürNRG, Gebäude – immer der geplante Pavillon –, Bach, Spätfrost, Befruchter, Nachbarn, Licht) –, Pflanzen in 3D ohne neue Programme (`gplan_3d.js`), Fenster und Draufsicht über `SITEPLAN.hooks` (`gplan.js`); Menü → Gestalten → „Garten planen“, `?szenario=gartenplaner` (`docs/features/gartenplaner.md`) |
+| `VESSRA` | welt/vessra.js | Kloster Veßra (V16m): eine `KERN.zone` mit eigenem Kachelsatz (`welt-test/zonen/vessra/`, auch die Straße dorthin), Klosterruine, Torkirche, Mauer, Häuser aus OSM, die Baumschule Kammbach mit Beeten und benannten Stellen (`VESSRA.baumschule`); `?szenario=vessra`, `?szenario=baumschule` (`docs/features/vessra.md`) |
+| `TASKS` | core/tasks.js | Aufgaben als Daten (Phase 2): Schritte auf Ereignisse oder Prüfungen, `pav-tasks-v1`, im Tagebuch (Abschnitt 3, „Dienste für Erweiterungen“) |
 | `CLOCK` | time/clock.js | Spielzeit (Minuten seit Tag 1, 0:00), Tempo, Warten/Zeitraffer, `CLOCK.on(fn)`, `CLOCK.jobs(fn)` |
 | `DN` | time/daynight.js | Kalender, Sonne/Mond/Sterne, Licht; `DN.sky(jd)`, `DN.jdOf(t)`, `DN.dateStr()` |
 | `GEAR` | werk/gear.js | Schutzausrüstung, `GEAR.check(req)` |
@@ -179,6 +182,8 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | `pav-dorf-v1` | Dorfleben (V16h): Stand der Aufgabe „Freitagabend in der alten Schule“, Besuche, Kartenspiel |
 | `pav-trees-v1` | umgefahrene Bäume (V16i): Lage, Richtung, Winkel |
 | `pav-amt-v1` | Ortsvorsteher (V16i): Abschnitt der Wahl, Meinungen je Person, Versprechen, Unterschriften, Aufgaben, Anliegen, Beschlüsse |
+| `pav-gplan-v1` | Gartenplaner (V16n): `{ v, items: [{ id, x, y, jahr }], show, age, month, hour }` – geplante Pflanzen, Anzeige im Garten, Alter, Schatten-Monat/-Stunde |
+| `pav-tasks-v1` | Aufgaben als Daten (`core/tasks.js`): `{ v: 1, t: { id: { st: 'läuft' \| 'erledigt', i } } }` |
 | `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16d`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt (`SAVE.once`) |
 | `pav-loadlog`, `pav-texlevel` | Ladeprotokoll des letzten Versuchs; halbe Texturen nach abgebrochenem Laden am Telefon |
 
