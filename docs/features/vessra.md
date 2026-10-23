@@ -15,7 +15,8 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   Sprungziel `KERN.spot('baumschule')` ohne Menüeintrag).
 - **Nichts davon beim Start**: eine Zone des Kerns (`KERN.zone({ id: 'vessra' })`) – gebaut, wenn der Beobachter (`KERN.where()`: die
   Spielfigur, sonst die Kamera) näher als 950 m an der Ortsmitte (−8850, −300) ist, ab 1350 m wieder freigegeben (Gebäude sofort,
-  Welt-Kacheln nach 20 s); Stand in `KERN.zones()`. Beim Laden der Seite meldet `welt/vessra.js` nur seinen Kachel-Satz an (ohne Abruf),
+  Welt-Kacheln nach 20 s); Stand in `KERN.zones()`. Gebaut wird in Scheiben mit einem Frame dazwischen (je Scheibe höchstens etwa
+  100 ms, `VESSRA.status().times`), damit ein Auto auf dem Weg dorthin nicht stockt. Beim Laden der Seite meldet `welt/vessra.js` nur seinen Kachel-Satz an (ohne Abruf),
   die Sprungziele, die Startsituationen, den Aktionsknopf „Hinsetzen“ (`KERN.act`) und die `KERN`-Anbieter (Ort, Wände, frei).
 - **Gelände und Boden** aus den eigenen Welt-Kacheln (Luftbild 20 cm/px nah). Das 30-m-Oberflächenmodell trägt im Ort Häuser und
   Bäume mit, die Pipeline schneidet die Straßen mit Böschungen 1:1,5 hinein – die Straße lag in einer Rinne. Neben den Autostraßen wird der
@@ -124,8 +125,10 @@ gebaut; `VESSRA.baumschule` (sonst `null`):
 - Ohne veröffentlichte Kacheln (z. B. lokaler Testserver ohne `dist/welt-test/zonen/vessra/`) bleibt der Ort auf dem 120-m-Gelände von
   `world/ratscher.js` stehen (`VESSRA.status().noTiles`).
 - Solange die Zone gebaut ist, setzt sie zwei Polster (`WELT.setPads('vessra', …)`): den Boden neben den Autostraßen abgesenkt und den
-  Hof der Baumschule als glatte Ebene, am Tor auf Straßenhöhe (Weg Schulstraße → Tor → `parkplatz` höchstens 15 % steil, geprüft). Die Fahrbahn selbst bleibt, wie die Pipeline sie geschnitten hat; Fahrzeuge fahren auf denselben Höhen
-  (`KERN.ground`), beim Bauen der Zone (950 m) werden die geladenen Kacheln einmal neu gerechnet.
+  Hof der Baumschule als glatte Ebene, am Tor auf Straßenhöhe (Weg Schulstraße → Tor → `parkplatz` höchstens 15 % steil, geprüft). Die
+  Polster bauen auf dem Boden, den WELT ihnen gibt (die Straßen der Fahrt sind `under` eingeschnitten): die Fahrbahn selbst bleibt;
+  `VESSRA.gz` ist genau, was WELT zeichnet (`WELT.padAt`), Fahrzeuge fahren auf denselben Höhen (`KERN.ground`). Nach dem Setzen werden die
+  Kacheln darunter nach und nach neu gerechnet, die nächsten sofort (`WELT.padQueue()`).
 - `welt/welt.js` gehört heute `feat/vessra`; Änderungen der Fahrt bitte nur an markierten Zeilen (`// feat/fahrt`).
 
 ## Quellen
@@ -138,10 +141,12 @@ Ermell 2021/2022, Tilman2007 2025), keine Bilder im Repo.
   `viz3/dist/welt-test/zonen/vessra/` (≈ 1200 Dateien, 14 MB), prüft: nichts beim Start (Kachel-Satz nur angemeldet; Zone,
   Startsituationen, Sprungziele angemeldet), Menü, Laden, eigene Kacheln, Boden, keine Rinne neben der Schleusinger Straße, eine Hauswand
   und die Klostermauer halten auf, durchs Torhaus, durchs Westportal ins Langhaus, durch den Triumphbogen in die Vierung, die Nordwand
-  hält auf, die Wahrzeichen, die Baumschule (fünf Beete, Stellen, Name, Schilder, Jungbäume, `?szenario=baumschule` vor dem Tor und
-  hinein), Ortsnamen, Bilder
+  hält auf, die Wahrzeichen, die Baumschule (fünf Beete, Stellen, Name, Schilder, Jungbäume, der Hof eine Ebene, der Weg eines Autos von
+  der Schulstraße durchs Tor zum Parkplatz höchstens 15 % steil, Kaufen mit `take`/`putBack`, `?szenario=baumschule` vor dem Tor und
+  hinein), Ortsnamen, Straßenschilder, Bilder
   (`out/vessra/`: Tor, Westfront wie das Foto von Südwesten 2025, Langhaus von Westen, Henneberger Kapelle, wie das Drohnenbild von Osten 2021,
-  Torkirche, zwei Panoramax-Stellen an der Schleusinger Straße, Baumschule nah und von oben, Ort von oben), Nacht (Laternen), Freigeben,
+  Torkirche, zwei Panoramax-Stellen an der Schleusinger Straße, Baumschule nah und von oben, Ort von oben, Straßenschild am Tor), Nacht
+  (Laternen, geliehene Lichter), Freigeben,
   höchstens 6 neue Shader-Programme, Texturen je Shader. Abschnitte einzeln: `vessra:start,load,walk,kirche,baumschule,names,shots,night,free`.
   Bei GitHub: `feat.yml` (Artefakt „out“).
 - `… --serve vessra_szenario` – startet mit `?szenario=baumschule`: die Spielfigur vor dem Tor der Baumschule, die Zone baut sich um sie,
@@ -151,12 +156,13 @@ Ermell 2021/2022, Tilman2007 2025), keine Bilder im Repo.
   → `viz3/extra/vessra/dist/vessra/ort.json`.
 
 ## Offen
-- Hinfahren (Agent `fahrt`), Einkaufen und Einladen (nächste Runde, Stellen in `VESSRA.baumschule`).
+- Einkaufen und Einladen (nächste Runde des Gartenplaners): Stellen, Beete und `take`/`putBack` stehen in `VESSRA.baumschule` bereit;
+  Hinfahren ist da (Agent `fahrt`, V16q).
 - Gelände: Copernicus (30 m Oberflächenmodell, Straßen eingeschnitten) – DGM1 Thüringen war am 22./23.10. nicht abrufbar; sobald es da ist,
   reicht ein neuer Lauf von `welt-vessra.yml` (ohne `--no-dgm`), dann kann das Absenken neben den Straßen (`roadCap` in
   `welt/vessra.js`) entfallen oder kleiner werden. Abseits der Straßen tragen Wiesen und Höfe noch Buckel aus Häusern und Bäumen.
-- Die Kirche: die Pfeilerstümpfe ohne Sockelstufen, der Fries ohne Köpfe und Rosetten (nur die Bögen), keine Grabplatten an den Wänden.
-- Die Baumschule: Pflanzen sind ein zusammengefasstes Mesh – einzelne Töpfe lassen sich noch nicht herausnehmen (zum Einkaufen müsste
-  ein Beet seine Töpfe als eigene Instanzen bauen).
+- Die Kirche: der Fries ohne Köpfe und Rosetten (nur die Bögen), keine Grabplatten an den Wänden, die Galerie zwischen den Türmen
+  vereinfacht.
+- Die Baumschule hängt am Hang (Oberflächenmodell): ob der echte Hof eben ist, zeigt erst das DGM1.
 - Laubbäume: das Luftbild (Flug 7.4.2024) zeigt sie unbelaubt – auf den Wiesen der Klosteranlage und in den Gärten nach Regeln gesetzt,
   nicht nach ihrer echten Lage. Innenräume (Kapellen, Museumshäuser) sind nicht begehbar.
