@@ -105,10 +105,15 @@ Stimmen für dich); mit etwa +10 bei allen und vielen Gesprächen wird es knapp;
 
 ## Das Rathaus – die Naht zu Schleusingen
 
-Bis die begehbare Stadt (Branch `feat/schleusingen`) ein Rathaus mit Sitzungssaal hat, ist der Besuch eine **eigene Szene** im Fenster
-(`AMT.rathaus()`): Fahrt 25 Spielminuten hin und zurück (`CLOCK.wait`), Wahlamt, Bauamt, Sitzungssaal. Einbinden später: das echte Rathaus
-ruft an seinem Eingang bzw. im Sitzungssaal `AMT.rathaus()` (Bürgerbüro: Wahlamt, Bauamt) bzw. `AMT.council()` (Stadtratssitzung) auf;
-`AMT.trip()` (Auto, Tagebuch) fährt dann statt der Zeitraffer-Fahrt dorthin. Mehr Stellen gibt es nicht.
+Ohne begehbare Stadt ist der Besuch eine **eigene Szene** im Fenster (`AMT.rathaus()`): Fahrt 25 Spielminuten hin und zurück
+(`CLOCK.wait`, das Dorf dunkelt hinter dem Fenster ab), Wahlamt, Bauamt, Sitzungssaal (`AMT.council()`, donnerstags).
+
+Mit der begehbaren Stadt (Branch `feat/schleusingen`, `welt/schleusingen.js`, `SCHL`) – schon eingebaut, wird aktiv, sobald `SCHL` da ist
+(bis zum Zusammenführen über `window.SCHL` gelesen, danach besser ein Import):
+- „Ins Rathaus“ (Auto, Mappe, Menü) fragt: **selbst hinfahren** (die Zielanzeige zeigt den Weg zum Markt bzw. zum Schalter) oder abkürzen.
+- Im Bürgerbüro steht am Schalter (`SCHL.rathaus.counter`) die Aktion **„Am Schalter: Wahlamt, Bauamt, Stadtrat“** – dieselbe Szene ohne
+  Fahrt (`AMT.rathaus(true)`), donnerstags mit dem Weg in den Sitzungssaal.
+- Mehr braucht die Stadt nicht zu wissen; umgekehrt liest AMT nur `SCHL.on`, `SCHL.state`, `SCHL.MARKT`, `SCHL.rathaus.counter/floor`.
 
 ## Dateien
 

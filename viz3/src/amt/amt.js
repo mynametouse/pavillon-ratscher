@@ -1031,19 +1031,53 @@ export const AMT = (() => {
       if (done) done();
     }
   }
+  // the walkable town (welt/schleusingen.js, branch feat/schleusingen – read through window until it is merged): its Rathaus hall
+  const town = () => (window.SCHL && window.SCHL.on ? window.SCHL : null);
+  const rathausReal = () => {
+    const S = town();
+    return S && S.state === 'ready' && S.rathaus && S.rathaus.counter ? S.rathaus : null;
+  };
+  // with the walkable town: drive there oneself (the way is shown) or shorten the drive; without it: the drive in fast motion
   function trip() {
     if (!canTrip()) return;
     UI.close();
+    if (town() && town().MARKT) {
+      UI.open(
+        'Nach Schleusingen',
+        'ins Rathaus am Markt',
+        'Selbst fahren – mit dem Auto oder zu Fuß, der Weg wird gezeigt – oder die Fahrt abkürzen?',
+        {
+          id: 'trip',
+          free: true,
+        }
+      );
+      UI.buttons([
+        [
+          'Selbst hinfahren',
+          () => {
+            UI.close();
+            track('rathaus');
+          },
+          'quest',
+        ],
+        ['Abkürzen (Zeitraffer)', () => (UI.close(), drive(25, 'Fahrt nach Schleusingen', () => rathaus()))],
+        bye('Doch nicht'),
+      ]);
+      return;
+    }
     drive(25, 'Fahrt nach Schleusingen', () => rathaus());
   }
-  function rathaus() {
+  function rathaus(real) {
     const t = now();
     const items = [];
+    RATH.real = !!real;
     UI.open(
       'Rathaus Schleusingen',
       'am Markt · ' + dateOf(t) + ', ' + CLOCK.hm(t) + ' Uhr',
-      'Das Rathaus am Markt, unten das Bürgerbüro, oben der Sitzungssaal. Wohin?',
-      { id: 'rathaus', free: true, wide: true, away: true, scene: SCENES.rathaus() }
+      real
+        ? 'Am Schalter im Bürgerbüro. Die Sachbearbeiterin schaut auf: „Was kann ich für Sie tun?“'
+        : 'Das Rathaus am Markt, unten das Bürgerbüro, oben der Sitzungssaal. Wohin?',
+      { id: 'rathaus', free: !real, wide: true, away: !real, scene: real ? '' : SCENES.rathaus() }
     );
     if (ST.phase === 'candidate')
       items.push([
@@ -1113,18 +1147,20 @@ export const AMT = (() => {
     RATH.items = items;
     rathausButtons();
   }
-  const RATH = { items: [] };
+  const RATH = { items: [], real: false };
   function rathausButtons() {
     UI.buttons([
       ...RATH.items.filter(Boolean),
-      [
-        'Zurück nach Ratscher',
-        () => {
-          UI.close();
-          drive(25, 'Zurück nach Ratscher');
-        },
-        'bye',
-      ],
+      RATH.real
+        ? bye('Auf Wiedersehen')
+        : [
+            'Zurück nach Ratscher',
+            () => {
+              UI.close();
+              drive(25, 'Zurück nach Ratscher');
+            },
+            'bye',
+          ],
     ]);
   }
   // ======================= election day: voting, the public count, the result =======================
@@ -1565,7 +1601,7 @@ export const AMT = (() => {
     CNC.i = 0;
     UI.open('Stadtratssitzung', 'Sitzungssaal im Rathaus Schleusingen · öffentlich', '', {
       id: 'council',
-      free: true,
+      free: !RATH.real,
       wide: true,
       away: true,
       scene: SCENES.room('stadtrat'),
@@ -1591,10 +1627,10 @@ export const AMT = (() => {
       );
       UI.buttons([
         [
-          'Zurück nach Ratscher',
+          RATH.real ? 'Sitzung verlassen' : 'Zurück nach Ratscher',
           () => {
             UI.close();
-            drive(30, 'Zurück nach Ratscher');
+            if (!RATH.real) drive(30, 'Zurück nach Ratscher');
           },
           'bye',
         ],
@@ -1907,6 +1943,21 @@ export const AMT = (() => {
       else if (office()) ortsrat();
     },
   });
+  // the walkable town hall (when the town is there): at the counter of the Bürgerbüro the same as in the scene
+  PLAY.act({
+    id: 'amt:rathaus',
+    r: 2.4,
+    prio: 0.4,
+    label: () => (rathausReal() && canTrip() && !UI.cur ? 'Am Schalter: Wahlamt, Bauamt, Stadtrat' : null),
+    pos: () => {
+      const R = rathausReal();
+      return R ? [R.counter[0], R.counter[1], (R.floor || KERN.terrain(R.counter[0], R.counter[1])) + 1.1] : null;
+    },
+    run: () => {
+      if (TRK.k === 'rathaus') track(null);
+      rathaus(true);
+    },
+  });
   // the car: off to the town hall
   PLAY.act({
     id: 'amt:car',
@@ -1973,6 +2024,10 @@ export const AMT = (() => {
     if (k === 'hydrant') return AMTWORLD.hydrantAt();
     if (k === 'fence') return AMTWORLD.fenceAt();
     if (k === 'bus') return [250.6, -99.6];
+    if (k === 'rathaus') {
+      const R = rathausReal();
+      return R ? R.counter : town() ? town().MARKT : null;
+    }
     if (k === 'schule') {
       const d = schoolDoor();
       return d ? [d[0], d[1]] : [216, -98];
@@ -1989,6 +2044,7 @@ export const AMT = (() => {
     fence: 'Zaun an Ronalds Weide',
     bus: 'Bushaltestelle',
     schule: 'Alte Schule',
+    rathaus: 'Rathaus Schleusingen',
   };
   function track(k) {
     TRK.k = k;
