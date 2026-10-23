@@ -8,6 +8,7 @@ import { LOAD, loadModel, markDirty, plain, whenLoaded } from '../core/assets.js
 import { MAT } from '../core/mats.js';
 import { B, BUILD, phase, PHN } from '../core/geo.js';
 import { mulberry } from '../garden/grass.js';
+import { HOF, SHEDS } from '../garden/hof_hubert.js';
 import { DOOR, G, P, PHASE, poseDoor, toggleDoor } from './walkable.js';
 import { audio, toast } from '../audio/audio.js';
 import {
@@ -54,15 +55,31 @@ export const QUESTS = (() => {
     fire: { st: 'new', chopped: 0 },
     diesel: { st: 'new', empty: false, thanked: false },
     board: { st: 'new', shown: false },
+    // feat/nachbarn (23.10.2026): tasks from the neighbours' day
+    holz: { st: 'new', n: 0 },
+    werkzeug: { st: 'new' },
+    stall: { st: 'new', in: [] },
   };
+  const KEYS = ['goat', 'fire', 'diesel', 'board', 'holz', 'werkzeug', 'stall'];
   let track = 'goat';
   const TITLES = {
     goat: 'Futter für die Ziegen',
     fire: 'Feuer im Ofen',
     diesel: 'Diesel für Hubert',
     board: 'Ein Brett für Ronald',
+    holz: 'Holz für die Trockenhütte',
+    werkzeug: 'Ein Schlüssel für Hubert',
+    stall: 'Ziegen in den Stall',
   };
-  const WHO = { goat: 'Ronald', fire: 'Bibliothek', diesel: 'Hubert', board: 'Ronald · Werkstatt' };
+  const WHO = {
+    goat: 'Ronald',
+    fire: 'Bibliothek',
+    diesel: 'Hubert',
+    board: 'Ronald · Werkstatt',
+    holz: 'Hubert · Holzplatz',
+    werkzeug: 'Hubert · Auto',
+    stall: 'Ronald · abends',
+  };
   const ON = !OFFLINE && !QS.get('noplay');
   const R = () => NPCS.ronald,
     H = () => NPCS.hubert,
@@ -447,15 +464,16 @@ export const QUESTS = (() => {
     fire: ' · der Ofen bullert',
     diesel: ' · Hubert taut auf',
     board: ' · Samstag wird gegrillt',
+    holz: ' · Hubert brummt: „Nicht schlecht.“',
+    werkzeug: ' · der Kombi springt wieder an',
+    stall: ' · Ronald lädt dich zum Skat ein',
   };
   // V15b: the board is made in the workshop game (werk/werk.js) – finished, it goes to Ronald
   function boardMade() {
     if (Q.board.st === 'make') setSt('board', 'deliver');
   }
   const allDone = () => Object.values(Q).every(q => q.st === 'done');
-  const nextOpen = () =>
-    ['goat', 'fire', 'diesel', 'board'].find(k => Q[k].st !== 'done' && Q[k].st !== 'new') ||
-    ['goat', 'fire', 'diesel', 'board'].find(k => Q[k].st !== 'done');
+  const nextOpen = () => KEYS.find(k => Q[k].st !== 'done' && Q[k].st !== 'new') || KEYS.find(k => Q[k].st !== 'done');
   let saveT = null;
   function save() {
     clearTimeout(saveT);
@@ -483,7 +501,7 @@ export const QUESTS = (() => {
       case 'goat':
         return {
           new: ['Sprich mit Ronald an der Ziegenweide.', () => [R().x, R().y]],
-          hay: ['Hol Heu aus dem Unterstand hinten in der Weide.', () => [30.6, 6.6]],
+          hay: ['Hol Heu aus dem Unterstand hinten in der Weide.', () => [PAD.hay[0], PAD.hay[1] - 0.35]],
           feed:
             H_(HAY) || q.fed.length
               ? [
@@ -493,9 +511,12 @@ export const QUESTS = (() => {
                     return g ? [g.x, g.y] : null;
                   },
                 ]
-              : ['Hol Heu aus dem Unterstand.', () => [30.6, 6.6]],
+              : ['Hol Heu aus dem Unterstand.', () => [PAD.hay[0], PAD.hay[1] - 0.35]],
           search: ['Frieda ist ausgebüxt! Finde sie – hör auf ihr Meckern.', () => [FRIEDA().x, FRIEDA().y]],
-          lead: ['Führe Frieda zurück in Ronalds Weide (durch die Gartentür).', () => [PAD.x0 + 2.2, -1.5]],
+          lead: [
+            'Führe Frieda zurück in Ronalds Weide (durchs Gatter an der Westseite).',
+            () => [PAD.x0 + 2.2, PAD.gy],
+          ],
           report: ['Sag Ronald, dass Frieda wieder da ist.', () => [R().x, R().y]],
           done: ['Erledigt. Ronald hat dir Ziegenkäse geschenkt.', null],
         }[st];
@@ -540,8 +561,43 @@ export const QUESTS = (() => {
           o || ['Bau ein Stirnholz-Schneidebrett in der Werkstatt (Werkstattbuch: B).', () => LATE.WERK.posOf('rack')]
         );
       }
+      case 'holz': {
+        const hut = HOF.huts[HOF.stackHut];
+        if (st === 'new')
+          return [
+            'Hubert stapelt Holz in seine Trockenhütten. Frag ihn, ob du mit anpacken kannst.',
+            () => [H().x, H().y],
+          ];
+        if (st === 'done') return ['Erledigt. Die fünfte Hütte füllt sich.', null];
+        return H_(SCHEITE)
+          ? ['Schichte die Scheite in die fünfte Trockenhütte (' + q.n + '/4).', () => [hut.x + 0.6, hut.y]]
+          : ['Nimm Scheite vom Haufen am Hackklotz (' + q.n + '/4).', () => HOF.heap];
+      }
+      case 'werkzeug':
+        if (st === 'new') return ['Hubert schraubt an seinem Kombi. Frag ihn, was das Auto hat.', () => [H().x, H().y]];
+        if (st === 'done') return ['Erledigt. Der Kombi läuft wieder – fürs Erste.', null];
+        return H_(KEY)
+          ? ['Gib Hubert den Ringschlüssel – er steht am Auto.', () => [H().x, H().y]]
+          : ['Hol den 13er-Ringschlüssel von der Werkbank in Huberts Werkstatt (hinter dem Auto).', () => KEY.pos];
+      case 'stall': {
+        if (st === 'new')
+          return evening()
+            ? ['Ronald holt die Ziegen in den Stall. Frag ihn, ob du helfen kannst.', () => [R().x, R().y]]
+            : ['Abends (ab halb sechs) holt Ronald die Ziegen in den Stall – frag ihn dann.', () => [R().x, R().y]];
+        if (st === 'done') return ['Erledigt. Lotte, Frieda und Egon sind im Stall.', null];
+        const g = GOATS.filter(g => !q.in.includes(g.gname)).sort((a, b) => a.dist() - b.dist())[0];
+        return [
+          'Treib die Ziegen in den Unterstand (' + q.in.length + '/3): geh hinter ihnen her.',
+          () => (g ? [g.x, g.y] : [PAD.hay[0], PAD.hay[1]]),
+        ];
+      }
     }
   }
+  const evening = () => {
+    const m = window.CLOCK ? ((LATE.CLOCK.t % 1440) + 1440) % 1440 : 0;
+    return m >= 17 * 60 + 30 && m < 21 * 60 + 45;
+  };
+  const atCar = () => !!(H().life && H().life.cur === 'car');
   // ---------------- dialogue: topics that apply right now ----------------
   function topics(who) {
     if (!ON) return [];
@@ -558,6 +614,8 @@ export const QUESTS = (() => {
       if (d === 'done' && !Q.diesel.thanked) out.push({ k: 'q_fahrt', label: 'Danke für die Fahrt' });
       if (g === 'search' || g === 'lead') out.push({ k: 'q_frieda', label: 'Haben Sie Frieda gesehen?' });
       if (hasB && !Q.board.shown) out.push({ k: 'q_brett', label: 'Mein Schneidebrett' });
+      if (Q.holz.st === 'new') out.push({ k: 'q_holz', label: 'Soll ich mit anpacken?' });
+      if (Q.werkzeug.st === 'new' && atCar()) out.push({ k: 'q_auto', label: 'Was hat das Auto?' });
     } else {
       if (g === 'new') out.push({ k: 'q_helfen', label: 'Kann ich dir helfen?' });
       if (g === 'hay' || g === 'feed') out.push({ k: 'q_heu', label: 'Wo ist das Heu?' });
@@ -566,6 +624,8 @@ export const QUESTS = (() => {
       if (b === 'new') out.push({ k: 'q_werkstatt', label: 'Meine Holzwerkstatt' });
       if (b === 'make') out.push({ k: 'q_wie', label: 'Wie geht so ein Brett?' });
       if ((b === 'make' || b === 'deliver') && hasB) out.push({ k: 'q_brett', label: 'Dein Schneidebrett' });
+      if (Q.stall.st === 'new' && evening() && (g === 'new' || g === 'done'))
+        out.push({ k: 'q_stall', label: 'Soll ich die Ziegen reintreiben?' });
     }
     return out;
   }
@@ -598,6 +658,25 @@ export const QUESTS = (() => {
               save();
             },
           };
+        case 'q_holz':
+          return {
+            text: [
+              'Anpacken? Hm. Na gut.',
+              'Die Scheite vom Haufen am Hackklotz in die fünfte Hütte. Ordentlich schichten, Rinde nach oben.',
+            ],
+            after: () => {
+              Q.holz.n = 0;
+              setSt('holz', 'stack');
+            },
+          };
+        case 'q_auto':
+          return {
+            text: [
+              'Der Krümmer zieht Luft. Hört man doch.',
+              'In der Werkstatt hinter dem Auto liegt auf der Bank der Dreizehner-Ringschlüssel. Bringen Sie mir den mal?',
+            ],
+            after: () => setSt('werkzeug', 'fetch'),
+          };
       }
     else
       switch (k) {
@@ -625,6 +704,15 @@ export const QUESTS = (() => {
               if (window.WERK) LATE.WERK.handOver();
             },
             after: () => setSt('board', 'done'),
+          };
+        case 'q_stall':
+          return {
+            text: [
+              'Au ja, gern! Die drei wollen abends nie rein.',
+              'Geh einfach hinter ihnen her, dann laufen sie vor dir weg. Rein in den Unterstand, hinten in der Ecke.',
+            ],
+            after: () => startHerd(),
+            end: true,
           };
       }
     return null;
@@ -680,7 +768,7 @@ export const QUESTS = (() => {
     id: 'goat:haypile',
     r: 1.9,
     prio: 0.5,
-    pos: [30.6, 6.95, 0.5],
+    pos: [PAD.hay[0], PAD.hay[1], 0.5],
     label: () =>
       ON && FEEDING() && !PLAY.has(HAY) && HAY.state !== 'world' && Q.goat.fed.length < 3 ? 'Heu nehmen' : null,
     run: () => {
@@ -757,10 +845,10 @@ export const QUESTS = (() => {
     bark(R(), open ? 'fed_open' : 'fed_jump', 1e9);
     setSt('goat', 'search');
     const path = [
-      [PAD.x0 + 0.8, -1.5],
-      [PAD.x0 - 2.6, -1.6],
-      [PAD.x0 - 3.2, -9],
-      [PAD.x0 - 3.0, -16],
+      [PAD.x0 + 0.8, PAD.gy],
+      [PAD.x0 - 2.6, PAD.gy + 0.2],
+      [PAD.x0 - 3.2, PAD.gy + 7],
+      [PAD.x0 - 3.0, PAD.gy + 14],
     ];
     let i = 0,
       t = 0;
@@ -1218,6 +1306,203 @@ export const QUESTS = (() => {
     w.avoidUntil = 0;
     setTimeout(() => setSt('diesel', 'done'), 2400);
   }
+  // ---------------- feat/nachbarn: wood for Hubert's drying hut ----------------
+  const SCHEITE = PLAY.thing({
+    id: 'scheite',
+    name: 'Scheite',
+    carry3: 'arms',
+    grip3: { fwd: 0.18, dy: -0.08 },
+    desc: 'Gespaltenes Holz von Huberts Hackplatz – für seine Trockenhütte.',
+    world: woodBundle(),
+    held: woodBundle(),
+    r: 1.4,
+    hz: 0.15,
+    vm: { x: 0.06, y: -0.34, z: -0.5, rx: 0.3 },
+    sfx: () => SFX.clunk(),
+  });
+  SCHEITE.gone();
+  PLAY.act({
+    id: 'holz:take',
+    r: 1.7,
+    prio: 0.6,
+    pos: () => [HOF.heap[0], HOF.heap[1], 0.3],
+    label: () => (ON && Q.holz.st === 'stack' && !PLAY.has(SCHEITE) ? 'Scheite aufnehmen' : null),
+    run: () => {
+      SCHEITE.state = 'gone';
+      PLAY.give(SCHEITE);
+      renderJournal();
+    },
+  });
+  PLAY.act({
+    id: 'holz:put',
+    r: 1.9,
+    prio: 0.7,
+    need: SCHEITE,
+    pos: () => {
+      const h = HOF.huts[HOF.stackHut];
+      return [h.x + 0.55, h.y, 0.9];
+    },
+    label: () =>
+      ON && Q.holz.st === 'stack' && PLAY.has(SCHEITE) ? 'In die Trockenhütte schichten (' + Q.holz.n + '/4)' : null,
+    hold: 1.6,
+    holdLabel: 'Schichten …',
+    run: () => {
+      PLAY.take(SCHEITE);
+      SCHEITE.gone();
+      SFX.clunk();
+      Q.holz.n++;
+      const h = HOF.huts[HOF.stackHut];
+      HOF.fillHut(Math.min(1, h.fill + 0.05));
+      if (Q.holz.n >= 4) {
+        setSt('holz', 'done');
+        if (near(H(), 25)) setTimeout(() => H().sayText('Nicht schlecht. Sie können ja doch was.'), 900);
+      } else {
+        if (Q.holz.n === 2 && near(H(), 20)) H().sayText('Rinde nach oben, hab ich gesagt.');
+        save();
+        renderJournal();
+      }
+    },
+  });
+  // ---------------- feat/nachbarn: the spanner for Hubert's car ----------------
+  const KEYM = plain({ color: 0x8d9398, metalness: 0.85, roughness: 0.3 });
+  function spanner() {
+    const g = new THREE.Group();
+    const h = new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.24, 0.012), KEYM);
+    h.position.y = 0.13;
+    g.add(h);
+    for (const y of [0.0, 0.26]) {
+      const r = new THREE.Mesh(new THREE.TorusGeometry(0.022, 0.008, 6, 12), KEYM);
+      r.position.y = y;
+      g.add(r);
+    }
+    return g;
+  }
+  const KEY = PLAY.thing({
+    id: 'ringschluessel',
+    name: '13er-Ringschlüssel',
+    carry3: 'tool',
+    grip3: { at: 0.4, len: 0.28 },
+    desc: 'Huberts Dreizehner-Ringschlüssel. Ölig.',
+    world: (() => {
+      const g = spanner();
+      g.rotation.z = Math.PI / 2; // lying on the bench
+      const w = new THREE.Group();
+      w.add(g);
+      g.position.y = 0.012;
+      return w;
+    })(),
+    held: spanner(),
+    r: 1.3,
+    hz: 0.1,
+    vm: { x: 0.3, y: -0.25, z: -0.5, rx: -0.4, rz: 0.3 },
+    onTake: () => renderJournal(),
+  });
+  const keyHome = () => {
+    const s = SHEDS[3] || SHEDS[0],
+      b = s ? s.bench : HOF.carShed;
+    return [b[0] + (s ? s.v[0] * 0.5 : 0), b[1] + (s ? s.v[1] * 0.5 : 0)];
+  };
+  PLAY.act({
+    id: 'werkzeug:give',
+    r: 2.3,
+    prio: 0.9,
+    need: KEY,
+    obj: () => H().fig.g,
+    pos: () => [H().x, H().y, 1.0],
+    label: () =>
+      ON && Q.werkzeug.st === 'fetch' && PLAY.has(KEY) && !H().drive && H().fig.g.visible
+        ? 'Hubert den Schlüssel geben'
+        : null,
+    run: () => {
+      PLAY.take(KEY);
+      const [x, y] = keyHome();
+      KEY.place(x, y, 0.9, 0.3);
+      setSt('werkzeug', 'done');
+      H()
+        .sayText('Na also. Der Dreizehner.')
+        .then(() => H().sayText('So. Der hält wieder. Bis zum nächsten Mal.'));
+    },
+  });
+  // ---------------- feat/nachbarn: the goats into the shelter in the evening (herding: they run away from the visitor) ----------------
+  const SHELTER = () => ({ x0: PAD.x1 - 3.6, x1: PAD.x1 - 0.6, y0: PAD.y1 - 3.6, y1: PAD.y1 - 0.7 });
+  const inShelter = g => {
+    const S = SHELTER();
+    return g.x > S.x0 && g.x < S.x1 && g.y > S.y0 && g.y < S.y1;
+  };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  function startHerd() {
+    Q.stall.in = [];
+    setSt('stall', 'herd');
+    for (const g of GOATS) if (!g.ctl) herdCtl(g);
+  }
+  function herdCtl(g) {
+    let tgt = null,
+      sp = 0;
+    g.ctl = dt => {
+      if (Q.stall.st !== 'herd') {
+        g.ctl = null;
+        return false;
+      }
+      const S = SHELTER();
+      if (Q.stall.in.includes(g.gname)) {
+        // inside: a few steps now and then, eating
+        if (!tgt && Math.random() < dt / 6)
+          tgt = [S.x0 + 0.5 + Math.random() * (S.x1 - S.x0 - 1), S.y0 + 0.4 + Math.random() * (S.y1 - S.y0 - 0.8)];
+        sp = 0.4;
+      } else if (Math.hypot(P.x - g.x, P.y - g.y) < 3.4 && P.mode === 'walk') {
+        // away from the visitor, drawn towards the open side of the shelter
+        const ax = g.x - P.x,
+          ay = g.y - P.y,
+          L = Math.hypot(ax, ay) || 1,
+          ex = S.x0 - 0.3 - g.x,
+          ey = (S.y0 + S.y1) / 2 - g.y,
+          M = Math.hypot(ex, ey) || 1,
+          dx = (ax / L) * 0.6 + (ex / M) * 0.8,
+          dy = (ay / L) * 0.6 + (ey / M) * 0.8,
+          K = Math.hypot(dx, dy) || 1;
+        tgt = [
+          clamp(g.x + (dx / K) * 2.2, PAD.x0 + 0.6, PAD.x1 - 0.6),
+          clamp(g.y + (dy / K) * 2.2, PAD.y0 + 0.6, PAD.y1 - 0.6),
+        ];
+        if (M < 1.6) tgt = [S.x0 + 1.2, (S.y0 + S.y1) / 2]; // at the opening: in
+        sp = 1.6;
+      }
+      if (tgt) {
+        const dx = tgt[0] - g.x,
+          dy = tgt[1] - g.y,
+          d = Math.hypot(dx, dy);
+        if (d < 0.15) tgt = null;
+        else {
+          g.az = lerpAngle(g.az, Math.atan2(dx, dy), Math.min(1, dt * 6));
+          const mv = Math.min(d, sp * dt);
+          g.x += Math.sin(g.az) * mv;
+          g.y += Math.cos(g.az) * mv;
+          g.v = sp;
+          g.fig.graze = 0;
+          g.fig.anim(dt, sp);
+        }
+      }
+      if (!tgt) {
+        g.v = 0;
+        g.fig.graze = 1;
+        g.fig.anim(dt, 0);
+      }
+      if (!Q.stall.in.includes(g.gname) && inShelter(g)) {
+        Q.stall.in.push(g.gname);
+        bleat(g);
+        tgt = null;
+        if (Q.stall.in.length >= 3) {
+          setSt('stall', 'done');
+          setTimeout(() => R().sayText('Na bitte, alle drei drin! Freitag kommst du mit zum Skat, ja?'), 700);
+        } else {
+          if (Q.stall.in.length === 1) R().sayText(g.gname + ' ist drin. Weiter so!');
+          save();
+          renderJournal();
+        }
+      }
+      return true;
+    };
+  }
   // ---------------- journal, tracker, banner ----------------
   const jr = (() => {
     const el = document.createElement('aside');
@@ -1255,7 +1540,7 @@ export const QUESTS = (() => {
       updateBtn();
       return;
     }
-    const keys = ['goat', 'fire', 'diesel', 'board'];
+    const keys = KEYS;
     jr.innerHTML =
       '<h3>Aufgaben<button type="button" class="x" aria-label="Schließen">×</button></h3>' +
       keys
@@ -1415,6 +1700,11 @@ export const QUESTS = (() => {
   // ---------------- load / reset ----------------
   function placeDefaults() {
     axeInBlock();
+    SCHEITE.gone();
+    {
+      const [x, y] = keyHome();
+      KEY.place(x, y, 0.9, 0.3);
+    }
     const [x, y] = WT(3.78, -37.95);
     CAN.empty = false;
     CAN.place(x, y, 0, 0.3 + WDA());
@@ -1436,6 +1726,9 @@ export const QUESTS = (() => {
     if (Q.goat.st === 'lead') Q.goat.st = 'search';
     if (Q.diesel.st === 'ride') Q.diesel.st = 'mount';
     if (Q.fire.st === 'chop' && Q.fire.chopped >= 3) Q.fire.st = 'gather';
+    if (Q.stall.st === 'herd') Q.stall.st = 'new'; // (where the goats were is not kept)
+    if (!Array.isArray(Q.stall.in)) Q.stall.in = [];
+    if (!(Q.holz.n >= 0 && Q.holz.n <= 4)) Q.holz.n = 0;
     if (Q.board.stage !== undefined) {
       if (['saw', 'plane', 'glue', 'endgrain', 'sand', 'oil', 'deliver'].includes(Q.board.st)) Q.board.st = 'make';
       delete Q.board.stage;
@@ -1483,14 +1776,17 @@ export const QUESTS = (() => {
     Object.assign(Q.fire, { st: 'new', chopped: 0 });
     Object.assign(Q.diesel, { st: 'new', empty: false, thanked: false });
     Object.assign(Q.board, { st: 'new', shown: false });
+    Object.assign(Q.holz, { st: 'new', n: 0 });
+    Object.assign(Q.werkzeug, { st: 'new' });
+    Object.assign(Q.stall, { st: 'new', in: [] });
     if (PLAY.seated()) PLAY.stand(true);
     PLAY.clearInv();
     HAYIN.scale.setScalar(0.9);
     for (const g of GOATS) {
       g.ctl = null;
     }
-    FRIEDA().x = 30;
-    FRIEDA().y = 1;
+    FRIEDA().x = PAD.x1 - 3;
+    FRIEDA().y = PAD.y0 + 10;
     H().ctl = null;
     H().tractorT = 120;
     CAB.reset();
@@ -1515,12 +1811,26 @@ export const QUESTS = (() => {
     event(n) {
       if (n === 'hubertbench' && near(H(), 16)) bark(H(), 'bench', 120);
     },
-    friendly: who => (who === 'hubert' ? Q.diesel.st === 'done' : Q.goat.st === 'done' || Q.board.st === 'done'),
+    friendly: who =>
+      who === 'hubert'
+        ? Q.diesel.st === 'done' || Q.holz.st === 'done' || Q.werkzeug.st === 'done'
+        : Q.goat.st === 'done' || Q.board.st === 'done',
+    // feat/nachbarn (npc/life.js): what a task needs of the neighbours' day – holds(kind): keep the tractor at home / the goats free;
+    // wants(who): the activity a task needs right now (Hubert at his car while you fetch the spanner, Ronald at the shelter while you herd)
+    holds: k =>
+      k === 'tractor'
+        ? ['fetch', 'tell', 'mount', 'ride'].includes(Q.diesel.st)
+        : k === 'goats'
+          ? Q.stall.st === 'herd'
+          : false,
+    wants: who =>
+      who === 'hubert' ? (Q.werkzeug.st === 'fetch' ? 'car' : null) : Q.stall.st === 'herd' ? 'stall' : null,
     driveWp,
     driveEnd,
     objective,
     Q,
-    things: { AXE, HAY, WOOD, CAN },
+    things: { AXE, HAY, WOOD, CAN, SCHEITE, KEY },
+    startHerd,
     reset,
     toggleJournal,
     get track() {

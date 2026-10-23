@@ -12,13 +12,13 @@ import { ANISO, FIGSH, gltfDataURIs, markDirty, patchSV, toFloatAttrs, whenLoade
 import { sun, sunDir } from '../garden/env.js';
 import { RENDER } from '../render/render.js';
 import { P } from '../game/walkable.js';
-import { BLOBS, GOATS, NPCS, TRACTOR } from './npc.js';
+import { BLOBS, GOATS, MOWER, NPCS, TRACTOR } from './npc.js';
 const CHARMAN = window.CHARMAN || null;
 const REAL = { ready: false, failed: false, started: false };
 export const CHL = gltfDataURIs(new GLTFLoader());
 CHL.setMeshoptDecoder(MeshoptDecoder);
 // no stand-in figures while the real ones load: the simple low-poly ones only come back if loading fails
-const STANDIN = () => [NPCS.hubert.fig, NPCS.ronald.fig, ...GOATS.map(g => g.fig), TRACTOR];
+const STANDIN = () => [NPCS.hubert.fig, NPCS.ronald.fig, ...GOATS.map(g => g.fig), TRACTOR, MOWER];
 if (CHARMAN && !QS.get('lowfig')) for (const f of STANDIN()) f.g.visible = false;
 const _rq = new THREE.Quaternion(),
   _rq2 = new THREE.Quaternion(),
@@ -310,6 +310,126 @@ function realPerson(gl, cl, o) {
   };
   return self;
 }
+// ---- work poses of the neighbours (feat/nachbarn, 23.10.2026): procedural turns on top of the clips, like sitting. fig.pose = { k, t }
+// (kind and its own clock, set by npc/life.js); the pose fades in and out (0.4 s). Angles in model space: about x (the figure's left)
+// a positive turn bends the trunk forward, a negative one lifts an arm or a thigh forward; about y (up) it turns. Keyframes per kind:
+// [phase 0…1, arm, forearm, spine, hips, knee], interpolated smoothly; c: the cycle in seconds.
+const POSE = {
+  // two-handed axe: ready at the block, up over the head, a quick strike, hold, back (strike at phase 0.56: npc/life.js plays the knock)
+  chop: {
+    c: 2.6,
+    kf: [
+      [0, -0.95, -0.3, 0.32, 0.12, 0.12],
+      [0.4, -2.85, -0.75, -0.08, 0.0, 0.05],
+      [0.47, -2.7, -0.6, 0.0, 0.0, 0.05],
+      [0.56, -0.8, -0.1, 0.55, 0.25, 0.32],
+      [0.72, -0.85, -0.15, 0.5, 0.22, 0.28],
+      [1, -0.95, -0.3, 0.32, 0.12, 0.12],
+    ],
+    adduct: 0.32,
+  },
+  // the chainsaw at the sawhorse: held at the hips, trunk bent a little, a small rocking while it cuts
+  saw: {
+    c: 0.7,
+    kf: [
+      [0, -0.7, -0.95, 0.42, 0.18, 0.25],
+      [0.5, -0.78, -0.9, 0.46, 0.2, 0.27],
+      [1, -0.7, -0.95, 0.42, 0.18, 0.25],
+    ],
+    adduct: 0.3,
+  },
+  // bending down to the ground (picking up wood, a round, hay)
+  pick: {
+    c: 1,
+    kf: [
+      [0, -0.55, -0.25, 0.75, 0.55, 0.5],
+      [1, -0.55, -0.25, 0.75, 0.55, 0.5],
+    ],
+    adduct: 0.15,
+  },
+  // an armful in front of the chest (also while walking)
+  carry: {
+    c: 1,
+    kf: [
+      [0, -0.5, -1.45, -0.04, 0, 0],
+      [1, -0.5, -1.45, -0.04, 0, 0],
+    ],
+    adduct: 0.36,
+    walk: true,
+  },
+  // putting it down at chest height (the drying hut, the hay rack)
+  place: {
+    c: 1,
+    kf: [
+      [0, -1.2, -0.55, 0.28, 0.08, 0.08],
+      [1, -1.2, -0.55, 0.28, 0.08, 0.08],
+    ],
+    adduct: 0.25,
+  },
+  // over the open bonnet: bent forward, hands in the engine bay, the right one turning a spanner
+  bonnet: {
+    c: 1.3,
+    kf: [
+      [0, -1.05, -0.35, 0.5, 0.35, 0.12],
+      [0.5, -1.1, -0.55, 0.52, 0.36, 0.12],
+      [1, -1.05, -0.35, 0.5, 0.35, 0.12],
+    ],
+    adduct: 0.12,
+    oneHand: true,
+  },
+  // at the workbench: hands on the work
+  bench: {
+    c: 2.2,
+    kf: [
+      [0, -0.75, -0.95, 0.2, 0.05, 0.05],
+      [0.5, -0.8, -1.05, 0.22, 0.05, 0.05],
+      [1, -0.75, -0.95, 0.2, 0.05, 0.05],
+    ],
+    adduct: 0.25,
+    oneHand: true,
+  },
+};
+const _pk = [0, 0, 0, 0, 0];
+function poseAt(P, t) {
+  const c = (((t / P.c) % 1) + 1) % 1,
+    K = P.kf;
+  let i = 0;
+  while (i < K.length - 2 && c > K[i + 1][0]) i++;
+  const a = K[i],
+    b = K[i + 1],
+    u = Math.min(1, Math.max(0, (c - a[0]) / Math.max(1e-6, b[0] - a[0]))),
+    s = u * u * (3 - 2 * u);
+  for (let j = 0; j < 5; j++) _pk[j] = a[j + 1] + (b[j + 1] - a[j + 1]) * s;
+  return _pk;
+}
+// the gestures of someone talking on a chair: the speaking hand comes up and moves, the head nods a little (k 0…1: how much)
+function talkSit(sv, Q, B, t, k) {
+  if (k < 0.01) return;
+  const g = Math.sin(t * 2.3) * 0.5 + 0.5;
+  boneTurn(sv, Q, B.RightArm, 1, 0, 0, -0.35 * k);
+  boneTurn(sv, Q, B.RightForeArm, 1, 0, 0, (-0.55 - 0.35 * g) * k);
+  boneTurn(sv, Q, B.Head, 1, 0, 0, Math.sin(t * 3.1) * 0.06 * k);
+}
+function applyPose(sv, Q, B, kind, t, k, walking) {
+  const P = POSE[kind];
+  if (!P || k < 0.01) return;
+  const w = P.walk ? k : k * (1 - walking);
+  if (w < 0.01) return;
+  const [arm, fore, spine, hips, knee] = poseAt(P, t);
+  if (hips) {
+    boneTurn(sv, Q, B.Hips, 1, 0, 0, hips * w);
+    for (const sd of ['Left', 'Right']) boneTurn(sv, Q, B[sd + 'UpLeg'], 1, 0, 0, -hips * w * 0.85);
+  }
+  if (knee) for (const sd of ['Left', 'Right']) boneTurn(sv, Q, B[sd + 'Leg'], 1, 0, 0, knee * w);
+  boneTurn(sv, Q, B.Spine, 1, 0, 0, spine * 0.5 * w);
+  boneTurn(sv, Q, B.Spine1 || B.Spine2, 1, 0, 0, spine * 0.5 * w);
+  for (const sd of ['Left', 'Right']) {
+    const one = P.oneHand && sd === 'Left';
+    boneTurn(sv, Q, B[sd + 'Arm'], 1, 0, 0, (one ? arm * 0.8 : arm) * w);
+    boneTurn(sv, Q, B[sd + 'Arm'], 0, 1, 0, (sd === 'Left' ? -1 : 1) * P.adduct * w);
+    boneTurn(sv, Q, B[sd + 'ForeArm'], 1, 0, 0, (one ? fore * 0.6 : fore) * w);
+  }
+}
 // ---- Rocketbox neighbours (since 22.10.2026, Falko: realistic older men like the player figures): 3ds Max Biped rig (MIT), driven by the
 // player's clip set chars/pclips_m.json (idle, walk, talking gestures); sitting on the tractor stays the procedural pose of realPerson.
 // Age: a slight stoop of the upper back (o.stoop rad) and a slower idle (o.idleRate).
@@ -374,7 +494,12 @@ export function rbPerson(gl, set, o) {
     acc = 0,
     look = 0,
     lookT = 0,
-    lookTo = 0;
+    lookTo = 0,
+    pw = 0,
+    pk = null,
+    pt = 0,
+    sk = 0,
+    st = 0;
   const sv = new Map();
   const self = {
     g,
@@ -384,12 +509,25 @@ export function rbPerson(gl, set, o) {
     bones: B,
     hipH,
     walker: null, // set by swapFig: talking shows the gestures
+    pose: null, // { k, t }: a work pose (POSE above), set by npc/life.js
+    speak: false, // talking on a chair (npc/life.js): gestures
+    after: null, // called after each pose update (npc/life.js puts the tools into the hands)
     anim(dt, speed) {
       acc += dt;
       const sit = self.mode === 'sit';
       const talk = !sit && !!(self.walker && self.walker.talking);
       w += ((!sit && speed > 0.05 ? 1 : 0) - w) * Math.min(1, dt * 6);
       tk += ((talk ? 1 : 0) - tk) * Math.min(1, dt * 3);
+      if (self.pose) {
+        if (self.pose.k !== pk) {
+          pk = self.pose.k; // a new kind takes over at once (a little weaker, then it settles)
+          pw *= 0.6;
+        }
+        pt = self.pose.t;
+      }
+      pw += ((self.pose && self.pose.k === pk ? 1 : 0) - pw) * Math.min(1, dt * 4);
+      sk += ((sit && self.speak ? 1 : 0) - sk) * Math.min(1, dt * 3);
+      st += dt;
       if (!g.visible || !camNear(g, 70)) return; // far away or hidden: no pose updates
       const rest = 1 - w;
       let lim = 0,
@@ -420,8 +558,11 @@ export function rbPerson(gl, set, o) {
           boneTurn(sv, Q, B[sd + 'Arm'], 1, 0, 0, -0.55);
           boneTurn(sv, Q, B[sd + 'ForeArm'], 1, 0, 0, -0.75);
         }
+        talkSit(sv, Q, B, st, sk);
+        if (self.after) self.after(self);
         return;
       }
+      if (pk && pw > 0.01) applyPose(sv, Q, B, pk, pt, pw, w);
       if (o.stoop) {
         boneTurn(sv, Q, B.Spine1 || B.Spine, 1, 0, 0, o.stoop);
         boneTurn(sv, Q, B.Neck, 1, 0, 0, -o.stoop * 0.6); // the head comes up again
@@ -450,11 +591,12 @@ export function rbPerson(gl, set, o) {
         lookTo = Math.random() < 0.45 ? 0 : (Math.random() - 0.5) * 0.9;
       }
       look += (lookTo - look) * Math.min(1, dt * (seen ? 3 : 1.4));
-      const lk = rest * (seen ? 1 : 0.6);
+      const lk = rest * (seen ? 1 : 0.6) * (1 - 0.7 * pw); // at work the eyes stay on the work
       if (lk > 0.01) {
         boneTurn(sv, Q, B.Neck, 0, 1, 0, look * 0.4 * lk);
         boneTurn(sv, Q, B.Head, 0, 1, 0, look * 0.6 * lk);
       }
+      if (self.after) self.after(self);
     },
   };
   return self;
@@ -618,16 +760,17 @@ function realTractor(gl) {
   const seat = seatBox ? { back: -((seatBox.min.x + seatBox.max.x) / 2), top: seatBox.max.y - 0.04 } : null;
   return { inner, wheels, seat };
 }
-function swapTractor(T) {
-  const old = TRACTOR.g.children.slice();
-  for (const c of old) TRACTOR.g.remove(c);
-  TRACTOR.g.add(T.inner);
-  TRACTOR.wheels = T.wheels;
-  TRACTOR.roll = d => {
+// TR: Hubert's TRACTOR or Ronald's MOWER (keep: parts of the low-poly one that stay, the mower's cutter bar)
+function swapTractor(T, TR = TRACTOR, keep = []) {
+  const old = TR.g.children.slice();
+  for (const c of old) if (!keep.includes(c)) TR.g.remove(c);
+  TR.g.add(T.inner);
+  TR.wheels = T.wheels;
+  TR.roll = d => {
     for (const w of T.wheels) w.piv.rotation.z -= d / w.r;
   };
-  if (T.seat) TRACTOR.seat = T.seat;
-  for (const b of BLOBS) if (b.fig === TRACTOR) Object.assign(b, { w: 1.7, l: 3.1, h: 1.0 });
+  if (T.seat) TR.seat = T.seat;
+  for (const b of BLOBS) if (b.fig === TR) Object.assign(b, { w: 1.7, l: 3.1, h: 1.0 });
 }
 // ---- the figures' sun shadows (see FIGSH in core/assets.js): a depth map from the sun's direction, fitted each frame around the figures
 // nearest to the camera (the nearest one and whoever stands within 18 m of it), drawn with the figures' own meshes only ----
@@ -802,9 +945,12 @@ async function loadReal() {
       CHARMAN.tractor ? CHL.loadAsync(U(CHARMAN.tractor)) : null,
     ]);
     if (gt) {
+      const gm = { scene: gt.scene.clone(true) }; // Ronald's mowing tractor: a copy (shared geometry and materials)
       swapTractor(realTractor(gt));
       TRACTOR.g.visible = true;
-    }
+      swapTractor(realTractor(gm), MOWER, [MOWER.bar]);
+      MOWER.g.visible = true;
+    } else TRACTOR.g.visible = MOWER.g.visible = true; // no tractor model: the simple ones
     if (RB) {
       // Hubert, 70–75: dark hair, moustache, a light checked work shirt, work trousers and shoes, limps now and then (Construction_Male_01,
       // tools/player/build_npc.sh); Ronald, about 60: grey beard, work suit, rubber boots (Gardener_Male_01) – no hat (Falko, 23.10. 1:23:
@@ -833,7 +979,10 @@ async function loadReal() {
     fsAdd(NPCS.hubert.fig, 1.05, 0.9);
     fsAdd(NPCS.ronald.fig, 1.05, 0.9);
     for (const gt of GOATS) fsAdd(gt.fig, 0.85, 0.5);
-    if (gt) fsAdd(TRACTOR, 2.0, 1.1);
+    if (gt) {
+      fsAdd(TRACTOR, 2.0, 1.1);
+      fsAdd(MOWER, 2.0, 1.1);
+    }
     if (!QS.get('noshfig')) window.FIGSHADOW = figShadowPass;
     REAL.ready = true;
     markDirty(true);
