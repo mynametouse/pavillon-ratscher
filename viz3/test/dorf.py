@@ -198,6 +198,22 @@ with lib.browser() as b:
                 E(f"(() => {{ const p = VPROPS.{name}; GAME.view(p[0] + 2, p[1] + 2, KERN.terrain(p[0], p[1]) + 1.6, 200, 0, 60); for (let i = 0; i < 6; i++) GAME.step(0.2); }})()")
             E("(() => { const s = VPROPS.school; GAME.view(s.cx + 3, s.cy - 9, KERN.terrain(s.cx, s.cy - 9) + 1.6, 0, 10, 60); for (let i = 0; i < 6; i++) GAME.step(0.2); })()")
             ck('errand „Für die Chronik“: the three places done, back to Gerhard', J('DORF.ST.err.chronik.i') == 3, str(J('DORF.ST.err.chronik')))
+            # a car: Katrin drives to work on a weekday morning – parked at the kerb, she gets in, it drives off along the street
+            E("DN.e0 = Date.UTC(2026, 5, 9) / 864e5 - Math.floor(CLOCK.t / 1440)")   # Tuesday 9 June
+            dep = J("(() => { const d = Math.floor(CLOCK.t / 1440); for (let m = 6 * 60; m < 9 * 60; m++) if (DLIFE.away('katrin', d * 1440 + m)) return d * 1440 + m; return null; })()")
+            E(f"CLOCK.t = {dep} - 1.5; DN.update(true)"); lib.settle_light(pg)
+            E("(() => { const h = DLIFE.homes().katrin; GAME.view(h.door[0] + h.n[0] * 9, h.door[1] + h.n[1] * 9, KERN.terrain(h.door[0], h.door[1]) + 1.7, Math.atan2(-h.n[0], -h.n[1]) * 180 / Math.PI, -6, 66); })()")
+            for i in range(12): E("GAME.step(0.5)")
+            cs = J('DORF.state().cars'); print('cars', cs, flush=True)
+            ck('four villagers have cars, parked at the kerb', cs and len(cs) == 4, str(cs))
+            lib.shot(pg, OUT, 'h_car_parked')
+            for i in range(30):
+                E("GAME.step(0.5)")
+                if J("DORF.state().cars.katrin.st") in ('leaving',): break
+            for i in range(8): E("GAME.step(0.5)")
+            st = J("DORF.state().cars.katrin"); print('katrin car', st, flush=True)
+            lib.shot(pg, OUT, 'h_car_leaving')
+            ck('Katrin drives off to work', st and st['st'] in ('leaving', 'away') and st['a'] > 1, str(st))
         except Exception as ex:
             ck('section ran: life', False, repr(ex)[:400])
     if want('summer'):

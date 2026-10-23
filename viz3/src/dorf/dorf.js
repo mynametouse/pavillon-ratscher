@@ -20,6 +20,7 @@ import { DPEOPLE } from './dorf_people.js';
 import { DSCHOOL } from './dorf_school.js';
 import { DFIRE } from './dorf_fire.js';
 import { DLIFE } from './dorf_life.js';
+import { DCARS } from './dorf_cars.js';
 export const DORF = (() => {
   const T = DTEXT,
     NAME = k => (T.P[k] ? T.P[k].name : k);
@@ -715,6 +716,9 @@ export const DORF = (() => {
       markDirty();
     }
     if (!show) lifeTick(mx, my);
+    // the cars: built when one comes near the village, driving by the timetable
+    if (!DCARS.ready && Math.hypot(mx - 222, my + 108) < 450 && DLIFE.homes()) DCARS.build();
+    if (DCARS.ready) DCARS.tick(dt, window.CLOCK ? window.CLOCK.t : 0, mx, my, CARHOOKS);
     if (DPEOPLE.tick(dt) && (dS < 40 || dF < 40)) markDirty();
     // talk: the panel closes when one walks away; table talk while one is there
     if (UI.cur) {
@@ -726,6 +730,31 @@ export const DORF = (() => {
     talkTick(dt, where);
   }
   (window.TICKS || (window.TICKS = [])).push(tick);
+  // the owner walks from the door to the car before it leaves, and back into the house when it is home again (if the figure is there)
+  const CARHOOKS = {
+    board(k, p0) {
+      const h = DLIFE.homes() && DLIFE.homes()[k],
+        f = DPEOPLE.figs[k];
+      if (!h || !f || S.placed) return;
+      DPEOPLE.place(k, h.step[0], h.step[1], KERN.terrain(h.step[0], h.step[1]), 0, 'stand');
+      S.out[k] = 'car';
+      DPEOPLE.walkTo(k, p0[0], p0[1], 1.1, zAt, () => {
+        DPEOPLE.hide(k);
+        S.out[k] = 'in';
+      });
+    },
+    alight(k, p0) {
+      const h = DLIFE.homes() && DLIFE.homes()[k],
+        f = DPEOPLE.figs[k];
+      if (!h || !f || S.placed) return;
+      DPEOPLE.place(k, p0[0], p0[1], KERN.terrain(p0[0], p0[1]), 0, 'stand');
+      S.out[k] = 'car';
+      DPEOPLE.walkTo(k, h.step[0], h.step[1], 1.0, zAt, () => {
+        DPEOPLE.hide(k);
+        S.out[k] = 'in';
+      });
+    },
+  };
   // ---- the everyday: out of the door, a few steps to the bed, work, back in; standing up to talk ----
   const zAt = (x, y) => KERN.terrain(x, y);
   function lifeTick(mx, my) {
@@ -740,6 +769,7 @@ export const DORF = (() => {
         continue;
       }
       const st = S.out[k] || 'in';
+      if (st === 'car') continue; // on the way to or from the car (CARHOOKS)
       if (UI.cur === k) {
         // talking: standing, turned to the visitor
         if (f.g.visible && f.at && S.talkTo !== k) {
@@ -839,6 +869,8 @@ export const DORF = (() => {
     drops: DPEOPLE.drops,
     requests: DPEOPLE.requests.slice(),
     figErr: DPEOPLE.err,
+    cars: DCARS.ready ? DCARS.state() : null,
+    homes: DLIFE.homes() ? Object.keys(DLIFE.homes()).length : 0,
     talk: UI.cur,
     sub: UI.sub.hidden ? null : UI.sub.textContent,
   });

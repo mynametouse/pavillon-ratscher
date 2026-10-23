@@ -91,8 +91,26 @@ export const DLIFE = (() => {
     }
     return moV;
   };
+  // who drives a car, and when they are away with it (game minutes of the day): Katrin and Jens to work on weekdays, Ingrid to the town
+  // hall twice a week, Manfred shopping now and then. Weekday from the calendar (0 Sunday … 6 Saturday).
+  const CARS = { katrin: 0xb9bcc0, jens: 0x2b3f63, ingrid: 0x7a1f1f, manfred: 0xe8e6df };
+  function away(key, t) {
+    if (!CARS[key]) return null;
+    const d = Math.floor(t / 1440),
+      m = t - d * 1440,
+      wd = DCAL.wd(t),
+      work = wd >= 1 && wd <= 5;
+    let a = null;
+    if (key === 'katrin' && work) a = [7 * 60 + 5 + hh(d + 1) * 20, 16 * 60 + 10 + hh(d + 2) * 40];
+    else if (key === 'jens' && work) a = [6 * 60 + 40 + hh(d + 3) * 15, 16 * 60 + 50 + hh(d + 4) * 50];
+    else if (key === 'ingrid' && (wd === 2 || wd === 4))
+      a = [9 * 60 + 40 + hh(d + 5) * 30, 12 * 60 + 20 + hh(d + 6) * 40];
+    else if (key === 'manfred' && hh(d * 3 + 7) < 0.45) a = [9 * 60 + hh(d + 8) * 90, 11 * 60 + 30 + hh(d + 9) * 60];
+    return a && m >= a[0] && m < a[1] ? { from: d * 1440 + a[0], to: d * 1440 + a[1] } : null;
+  }
   // what one does at t outside the evenings: null (in the house) or { mode, from, to, with? }
   function routine(key, t) {
+    if (away(key, t)) return null; // out with the car
     const i = KEYS.indexOf(key),
       d = Math.floor(t / 1440),
       m = t - d * 1440,
@@ -146,7 +164,7 @@ export const DLIFE = (() => {
     if (!h) return null;
     return { x: h.spot[0], y: h.spot[1], z: KERN.terrain(h.spot[0], h.spot[1]), hd: h.hd, step: h.step };
   }
-  Object.assign(S, { homes, routine, where, KEYS });
+  Object.assign(S, { homes, routine, where, away, CARS, KEYS });
   return S;
 })();
 window.DLIFE = DLIFE;
