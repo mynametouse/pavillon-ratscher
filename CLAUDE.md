@@ -5,6 +5,8 @@
   `git fetch -q origin && git show origin/src:docs/PARALLEL.md`. Agenten arbeiten nur in ihren Ordnern und auf eigenen Branches.
 - **Veröffentlichen** über GitHub Actions: grünes Prüfpaket → Vorschau `/vorschau/`; ein grün getesteter Stand geht ohne Rückfrage live
   (Falko, 23.10.2026: `git push origin src:live`), neue Stände zwischendurch in die Vorschau zum Ausprobieren (`docs/WORKFLOW.md`, Abschnitt 4).
+- **Absturz/Neustart:** alles Wichtige liegt auf GitHub (`src`, `feat/*`, `wip/kern`) und im Projekt „Garten“ – Anleitung `docs/WORKFLOW.md`,
+  „Wiederanlauf nach einem Absturz des Chats“; Aufträge der Agenten wörtlich in `docs/plans/auftraege/`, Stand mit `bash tools/agents.sh`.
 - **Browser** im Chat-Rechner nie zwei gleichzeitig: jeder Lauf über `bash tools/browser_lock.sh …` mit eigenem Port.
 - Einstieg: `README.md`, `docs/WORKFLOW.md` (bauen, testen, veröffentlichen, parallel arbeiten), `docs/ARCHITECTURE.md` (Aufbau, Modulkarte).
 - Stand für Menschen: Claude-Projekt „Garten“, Dokumente `claude/pavillon-ratscher-stand.md` und `claude/pavillon-entwicklung.md`
