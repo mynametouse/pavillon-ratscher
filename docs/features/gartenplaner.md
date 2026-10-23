@@ -75,6 +75,7 @@ zeigt „Testdaten“. Geladen wird erst beim Öffnen; geprüft mit `GPSCHEMA.va
 ## Für den Kern-Chat
 
 - **Grüne Stände zum Zusammenführen** (neueste oben):
+  - `5bb05a5` (dazu: Rückgängig ↶/Strg+Z, Punktringe vor Ort): GitHub-Lauf 39932095522 grün – smoke und `gartenplaner:phone` 39/39.
   - `23f5d50` (mit `src` fa6e086 zusammengeführt – Veßra, V16l): GitHub-Lauf 39929746233 grün – smoke und `gartenplaner:phone` 37/37
     (dazu Telefon quer). Berater mit den echten Daten (Kletterpflanzen an Wänden, eine Meldung je Pflanze, Fakten je Obstart), dichtere
     Stauden, schmale Kletterpflanzen.
@@ -99,5 +100,5 @@ zeigt „Testdaten“. Geladen wird erst beim Öffnen; geprüft mit `GPSCHEMA.va
 - `docs/ARCHITECTURE.md`: Abschnitt 6 `GPLAN`, Abschnitt 8 `pav-gplan-v1` ergänzen; Fenster `#gplan` steht nicht in `HUD.PANELS`
   (Esc schließt es nicht): vor Ort darf die Maus den Blick fangen, gesetzt wird dann mit E (Aktionsknopf); wer lieber klickt, lässt die
   Maus mit Esc los (dabei öffnet das HUD das Menü – wäre `#gplan` in `PANELS`, gäbe es vor Ort keinen Mausfang).
-- Kletterpflanzen dürfen direkt an einer Wand stehen (nicht im Gebäude); Ein Gilden-Platz an der Südwand des Pavillons liegt deshalb am
+- Kletterpflanzen dürfen direkt an einer Wand stehen (nicht im Gebäude); ein Gilden-Platz an der Südwand des Pavillons liegt deshalb am
   besten knapp südlich von y = −1,05 (Südkante des Pavillons mit Auskragung).
