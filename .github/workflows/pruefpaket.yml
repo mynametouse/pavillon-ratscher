@@ -214,7 +214,9 @@ jobs:
           npm ci --prefix viz3 --no-audit --no-fund
           pip install playwright
           # the system packages come from the Ubuntu mirror, which sometimes stalls: bounded, then the browser alone
-          timeout 300 python -m playwright install --with-deps webkit || python -m playwright install webkit
+          # WebKit cannot start without its system packages (the fallback without them ended in a traceback after 1 s): up to three tries
+          for i in 1 2 3; do timeout 300 python -m playwright install --with-deps webkit && break; echo "Versuch $i: Paketquelle hängt – nochmal"; sleep 15; done
+          python -m playwright install webkit
       - name: Bauen wie veröffentlicht
         run: python viz3/build.py --fast --min
       - name: WebKit mit iPhone-13-Profil

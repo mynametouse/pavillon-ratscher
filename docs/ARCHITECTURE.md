@@ -84,7 +84,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 |---|---|---|
 | `PLAY` | game/play.js | Aktionsknopf (`PLAY.act({id, r, label, pos, run, …})`), Dinge in der Hand und Inventar (`PLAY.thing`), Sitzen/Liegen (`PLAY.sit`), zeitliche Arbeit mit Balken und Zielfeld (`hold`, `gauge`), Gedanken (`PLAY.think`) |
 | `HUD` | game/hud.js | Menü, HUD, Inventarfenster, Mausfang |
-| `AVATAR` | game/avatar.js | Spielfigur (Mann/Frau), Bewegungen, Schutzausrüstung an der Figur |
+| `AVATAR` | game/avatar.js | Spielfiguren Falko, Sarah, Christoph (Wahl im Menü, `pav-fig`), Bewegungen, Schutzausrüstung, Christophs Mütze und Ohrhörer |
 | `QUESTS` | game/quests.js | Aufgaben, Tagebuch (J), Zielanzeige |
 | `NPC` | npc/npc.js, npc_real.js, hours.js | Hubert, Ronald (Rocketbox-Figuren mit den Bewegungen der Spielfigur, `rbPerson`), Ziegen, Traktor; Dialoge; nachts daheim |
 | `CLOCK` | time/clock.js | Spielzeit (Minuten seit Tag 1, 0:00), Tempo, Warten/Zeitraffer, `CLOCK.on(fn)`, `CLOCK.jobs(fn)` |
