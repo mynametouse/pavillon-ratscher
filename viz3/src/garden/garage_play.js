@@ -276,7 +276,7 @@ export const GPLAY = (() => {
   });
   let dimNow = null;
   function dimTick() {
-    const d = on0() && GARAGE.inside(M.x, M.y);
+    const d = inGarage(M.x, M.y);
     if (d === dimNow) return;
     dimNow = d;
     MW.g.traverse(o => {
