@@ -64,15 +64,24 @@ jobs:
           if-no-files-found: ignore
 
   features:
-    # die Feature-Tests (Fahrzeuge, Wald und Fällen, Holz, Dorf) – je 10–30 min; sie melden, halten die Vorschau aber (noch) nicht auf
-    name: Feature ${{ matrix.test }}
+    # die Feature-Tests (Fahrzeuge, Wald und Fällen, Holz, Dorf) – je 10–30 min, seit 23.10.2026 in Abschnitte geteilt (halbe Wartezeit);
+    # sie melden, halten die Vorschau aber (noch) nicht auf
+    name: Feature ${{ matrix.key }}
     runs-on: ubuntu-latest
     timeout-minutes: 75
     continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
-        test: [v16b, v16c, v16d, v16e]
+        include:
+          - { key: v16b-1, test: 'v16b:car,drive,crash,route' }
+          - { key: v16b-2, test: 'v16b:walk,tractor,night,ui,phone' }
+          - { key: v16c-1, test: 'v16c:stand,views,walk,season' }
+          - { key: v16c-2, test: 'v16c:tractor,night,phone,fell' }
+          - { key: v16d-1, test: 'v16d:trailer,bridge,load' }
+          - { key: v16d-2, test: 'v16d:fork,saw,stack' }
+          - { key: v16e-1, test: 'v16e:load,places,near,walk' }
+          - { key: v16e-2, test: 'v16e:night,shots,gl' }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -98,13 +107,13 @@ jobs:
           timeout 300 python -m playwright install --with-deps chromium || python -m playwright install chromium
       - name: Bauen wie veröffentlicht
         run: python viz3/build.py --fast --min
-      - name: Test ${{ matrix.test }}
-        run: python viz3/test/run.py --serve ${{ matrix.test }}
+      - name: Test ${{ matrix.key }}
+        run: python viz3/test/run.py --serve '${{ matrix.test }}'
       - name: Testausgabe aufheben
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: feature-${{ matrix.test }}
+          name: feature-${{ matrix.key }}
           path: out/
           if-no-files-found: ignore
 
