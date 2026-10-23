@@ -50,9 +50,11 @@ Außerdem `SCHL.inHall(x, y)`, `SCHL.place(x, y)`, `SPOTS.schleusingen`.
 - `viz3/src/game/walkable.js`: `groundZ` über `KERN.ground` (statt direkt `ROADS.groundAt`), `walkBounds` fragt zuerst `KERN.free`.
 - `viz3/src/modules.txt`: Marke `# feat/schleusingen` mit `welt/welt.js` und `welt/schleusingen.js` direkt unter `world/village_near.js`.
 - `viz3/shell/menu.html`: ein Eintrag Orte → „Schleusingen“ (nach „Dorf“); `viz3/shell/parts.txt`: `css/schleusingen.css` nach `css/dorf.css`.
-- Noch offen für den Kern-Chat: `docs/ARCHITECTURE.md` (WELT, SCHL in Abschnitt 6/9, `KERN.free`), `docs/CHANGELOG.md`; die Fahrzeuge bleiben
-  im 2,4-km-Quadrat: in `vehicles/vehicle.js` (Rand der Karte, „Hier endet die Karte.“) `if (!KERN.free(s.x, s.y) && (s.x < B[0] || …))` –
-  dann ginge die Fahrt bis Schleusingen (Boden und Wände kommen schon über `KERN`).
+- Noch offen für den Kern-Chat: in `docs/ARCHITECTURE.md` beim Abschnitt zu `KERN` der Dienst `KERN.free` und die Regel „`undefined` = der
+  nächste Anbieter“; im nächsten CHANGELOG-Eintrag die Rathausfront (Uhrturm, Portal, Fenster, Erdgeschoss) und der Sockel am Hang. Die
+  Fahrzeuge bleiben im 2,4-km-Quadrat: in `vehicles/vehicle.js` (Rand der Karte, „Hier endet die Karte.“)
+  `if (!KERN.free(s.x, s.y) && (s.x < B[0] || …))` – dann ginge die Fahrt bis Schleusingen (Boden und Wände kommen schon über `KERN`);
+  „Selbst hinfahren“ der Ortsvorsteher-Aufgabe geht bis dahin nur zu Fuß.
 
 ## Quellen
 Gebäude, Straßen, Orte © OpenStreetMap-Mitwirkende (ODbL); Gelände/Luftbild der Kacheln © GDI-Th (CC BY 4.0), Copernicus DEM, ESA WorldCover
