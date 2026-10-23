@@ -817,9 +817,18 @@ export const DSCHOOL = (() => {
     const LS = window.LIGHTS;
     if (!LS || !S.built) return;
     if (on && !saved) {
-      saved = LENT.map(i => {
-        const l = LS[i];
-        return { l, p: l.position.clone(), d: l.distance, c: l.color.getHex(), dec: l.decay };
+      saved = LENT.map((i, k) => {
+        const l = LS[i],
+          [x, y, h] = S.lamps[k],
+          [wx, wy] = toW(x, y);
+        return {
+          l,
+          p: l.position.clone(),
+          d: l.distance,
+          c: l.color.getHex(),
+          dec: l.decay,
+          at: V(wx, wy, S.F.zF + h - 0.12),
+        };
       });
       S.lit = true;
     } else if (!on && saved) {
@@ -836,14 +845,10 @@ export const DSCHOOL = (() => {
       markDirty(true);
     }
   }
-  const _v = new THREE.Vector3();
   function lightTick(k) {
     if (!saved) return;
     saved.forEach((o, i) => {
-      const [x, y, h] = S.lamps[i];
-      const [wx, wy] = toW(x, y);
-      _v.copy(V(wx, wy, S.F.zF + h - 0.12));
-      if (o.l.position.distanceToSquared(_v) > 1e-6) o.l.position.copy(_v);
+      if (o.l.position.distanceToSquared(o.at) > 1e-6) o.l.position.copy(o.at);
       o.l.distance = 9;
       o.l.decay = 1.6;
       o.l.color.setHex(0xffc58a);

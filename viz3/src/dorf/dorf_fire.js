@@ -215,7 +215,6 @@ export const DFIRE = (() => {
   }
   // ---- the light: the pavilion's stove light (LIGHTS[1], orange) borrowed while the fire burns and one is near ----
   let lent = null;
-  const _v = new THREE.Vector3();
   function light(on) {
     const LS = window.LIGHTS;
     if (!LS) return;
@@ -322,8 +321,8 @@ export const DFIRE = (() => {
     if (near !== !!lent) light(near);
     if (lent) {
       const fl = 0.8 + 0.12 * Math.sin(S.t * 11.3) + 0.08 * Math.sin(S.t * 23.1 + 1.3) + 0.06 * Math.sin(S.t * 4.1);
-      _v.copy(V(S.at[0], S.at[1], S.z + 1.1));
-      lent.l.position.copy(_v);
+      if (!S.lightAt) S.lightAt = V(S.at[0], S.at[1], S.z + 1.1);
+      lent.l.position.copy(S.lightAt);
       lent.l.distance = 18;
       lent.l.decay = 1.3;
       lent.l.color.setHex(0xff8f45);
