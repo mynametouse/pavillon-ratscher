@@ -19,8 +19,9 @@ Oberfläche Deutsch.
 - Variablen fremder Module lassen sich nicht zuweisen (Importe sind schreibgeschützt): dafür Setter (`setSunDir`, `setVariantId`,
   `setModeId`, `resetLastPlace`) oder Objekte (`DIRTY.frame`, `DIRTY.shadow` statt `_dirty`/`_shadowDirty`).
 - **Kern-Dienste:** `SAVE` (`core/save.js`, alles im Browser Gespeicherte, Abschnitt 8) und `KERN` (`core/kern.js`): Boden, Gelände,
-  Straßenbelag, Kollision, Ortsnamen. Features fragen `KERN`; die Weltmodule melden sich beim Laden als Anbieter (`KERN.provide`), die
-  Kachelwelt wird es genauso tun.
+  Straßenbelag, Kollision, Ortsnamen, `KERN.free(x, y)` (dort darf man gehen, auch außerhalb des 2,4-km-Quadrats). Features fragen `KERN`;
+  die Weltmodule melden sich beim Laden als Anbieter (`KERN.provide(name, fn, rang)`); liefert ein Anbieter `undefined`, fragt `KERN` den
+  nächsten (eine Zone antwortet nur in sich) – so meldet sich die Kachelwelt (`WELT`, Schleusingen) seit V16i.
 - Was Tests oder die Fehlersuche brauchen, steht zusätzlich auf `window` (`window.WERK`, `window.DN` …); dazu die Manifeste aus dem
   Build (`window.TEXMAN` …). Querverbindungen zwischen Modulen laufen über Importe und Kern-Dienste, nicht über `window`.
 - `bash tools/check.sh` prüft das ohne Browser: Lint je Modul (ein fehlender Import ist ein Fehler), Format, `tools/check/deps.mjs`
