@@ -9,7 +9,7 @@ def want(k): return not ONLY or k in ONLY
 ck = lib.Checks('baeume')
 # a target for vehicle vid: a trunk with the wanted outcome (bend / fall / stop) and a free, fairly level run-up of 12 m (and 6 m behind it);
 # nothing else in the corridor that would hold the vehicle (saplings may stand there), away from the modelled garden
-PICK = r"""window._bPick = (vid, want, cx, cy, maxR) => {
+PICK = r"""window._bPick = (vid, want, cx, cy, maxR, dmin, dmax) => {
   const W = WCOL, hw = vid === 'tractor' ? 1.8 : 1.5, res = [];
   for (let i = 0; i < W.nTree; i++) {
     if (W.dead[i]) continue;
@@ -19,7 +19,7 @@ PICK = r"""window._bPick = (vid, want, cx, cy, maxR) => {
     if (!inf || inf.down) continue;
     const v = TREEHIT.verdict(i, vid, 20);
     if (want === 'bend' ? !inf.soft || inf.H < 1.2 : v !== want) continue;
-    if (want === 'fall' && (inf.D < (vid === 'tractor' ? 0.11 : 0.05) || inf.D > (vid === 'tractor' ? 0.155 : 0.09) || inf.soft)) continue;
+    if (want === 'fall' && (inf.D < (dmin || (vid === 'tractor' ? 0.11 : 0.05)) || inf.D > (dmax || (vid === 'tractor' ? 0.155 : 0.09)) || inf.soft)) continue;
     if (want === 'stop' && inf.D < 0.2) continue;
     res.push([Math.hypot(p[0] - cx, p[1] - cy), i, p]);
   }
@@ -60,16 +60,24 @@ with lib.browser() as b:
     ck('car knocks over spruces up to ~9–10 cm, the tractor up to ~17–18 cm', 8 <= car_max <= 11 and 15 <= tr_max <= 19, f"car ≤ {car_max} cm, tractor ≤ {tr_max} cm")
     fallen = []
 
+    def look(t, H):   # 6 m up, 6 m back along the run-up and 5 m to the side, looking at a third of the height along the push direction
+        dx, dy = t['dx'], t['dy']; cx_, cy_ = t['x'] - dx * 6 + dy * 5, t['y'] - dy * 6 - dx * 5
+        tx, ty = t['x'] + dx * H / 3, t['y'] + dy * H / 3; dist = math.hypot(tx - cx_, ty - cy_)
+        yaw = math.degrees(math.atan2(tx - cx_, ty - cy_)); pitch = -math.degrees(math.atan2(6, dist))
+        return f"GAME.setView3 && GAME.setView3(false, true); GAME.view({cx_}, {cy_}, ROADS.groundAt({cx_}, {cy_}) + 6, {yaw}, {pitch}, 62); GAME.step(0.3)"
+    def lies_along(i, t):
+        ax = E(f"TREEHIT.axisOf({i})")
+        return ax, (ax is not None and ax[0] * t['dx'] + ax[1] * t['dy'] > 0.6 and ax[2] < 0.45)
+
     def scenario(vid, kind, cx, cy, R):
         t = json.loads(E(f"JSON.stringify(_bPick('{vid}', '{kind}', {cx}, {cy}, {R}))"))
         if not ck(f'{vid} {kind}: a target with a free run-up', t is not None, ''): return None
         inf = t['info']; name = f"{vid}_{kind}"
         print(name, 'target', {k: t[k] for k in ('i', 'x', 'y', 'psi')}, inf, flush=True)
         dx, dy = t['dx'], t['dy']; i = t['i']
-        # side view before: 9 m to the side, looking at the stem
-        vx, vy = t['x'] + dy * 9 - dx * 4, t['y'] - dx * 9 - dy * 4; yaw = math.degrees(math.atan2(t['x'] - vx, t['y'] - vy))
+        # the view from above and behind the run-up, before
         E(f"VEH.place('{vid}', {t['sx']}, {t['sy']}, {t['psi']}); GAME.step(0.2)")
-        E(f"if (VEH.cur) VEH.exit(); GAME.setView3 && GAME.setView3(false, true); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.2)"); lib.shot(pg, OUT, name + '_1_before')
+        E("if (VEH.cur) VEH.exit()"); E(look(t, inf['H'])); lib.shot(pg, OUT, name + '_1_before')
         E(f"VEH.enter('{vid}'); GAME.setView3(true)"); steps(0.5)
         E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
         mx, passed, shot_mid, s, kmh_hit = 0.0, False, False, -12.0, 0
@@ -84,13 +92,14 @@ with lib.browser() as b:
         v = r['v']; s = (v['x'] - t['x']) * dx + (v['y'] - t['y']) * dy
         print(name, 'after', r, f"s {s:.2f} m, hit at {kmh_hit} km/h, max tilt {mx:.2f}", flush=True)
         if not shot_mid: lib.shot(pg, OUT, name + '_2_contact')
-        E(f"VEH.exit(); GAME.step(0.3); GAME.setView3 && GAME.setView3(false, true); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.3)"); lib.shot(pg, OUT, name + '_3_after')
+        E("VEH.exit(); GAME.step(0.3)"); E(look(t, inf['H'])); lib.shot(pg, OUT, name + '_3_after')
         if kind == 'bend':
             ck(f'{vid}: sapling ({inf["H"]:.1f} m) bends under it', mx > 0.5, f"max {math.degrees(mx):.0f}°")
             ck(f'{vid}: drives over the sapling', s > 2, f"{s:.1f} m past it")
             ck(f'{vid}: sapling springs back', r['s']['th'] < 0.2 and not r['s']['dead'], f"{math.degrees(r['s']['th']):.0f}° now")
         elif kind == 'fall':
             ck(f'{vid}: small tree (Ø {inf["D"] * 100:.0f} cm) tips over', r['s']['mode'] == 'rest' and r['s']['dead'] and r['s']['th'] > 1.1, f"{r['s']}")
+            ax, ok_ax = lies_along(i, t); ck(f'{vid}: it lies in the push direction (drawn stem axis)', ok_ax, f"axis {ax}, push {dx:.2f}, {dy:.2f}")
             ck(f'{vid}: goes on past the fallen tree', s > 2, f"{s:.1f} m past it, hit at {kmh_hit} km/h")
             fallen.append(t)
         else:
@@ -100,12 +109,12 @@ with lib.browser() as b:
 
     # pushed slowly: the tractor creeps against a small tree with the throttle – it leans with the loader, the root plate tears, it falls
     def push_scenario(vid, cx, cy, R):
-        t = json.loads(E(f"JSON.stringify(_bPick('{vid}', 'fall', {cx}, {cy}, {R}))"))
+        t = json.loads(E(f"JSON.stringify(_bPick('{vid}', 'fall', {cx}, {cy}, {R}, 0.07, 0.13))"))
         if not ck(f'{vid} push: a target', t is not None, ''): return None
         i, dx, dy = t['i'], t['dx'], t['dy']; r0 = E(f"WCOL.trunk({i})[2]"); back = (4.25 if vid == 'tractor' else 2.75) + r0
         E(f"VEH.place('{vid}', {t['x'] - dx * back}, {t['y'] - dy * back}, {t['psi']}); VEH.enter('{vid}'); GAME.setView3(true)"); steps(0.5)
         print(vid, 'push target', t['info'], flush=True)
-        E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
+        E("VEH.auto = () => ({ thr: 0.5, brk: 0, steer: 0, hand: false })")
         modes, mxp, shot = [], 0.0, False
         for k in range(50):
             steps(0.1); r = json.loads(E(f"JSON.stringify(TREEHIT.state({i}))"))
@@ -118,7 +127,8 @@ with lib.browser() as b:
         r = json.loads(E(f"JSON.stringify({{ s: TREEHIT.state({i}), last: TREEHIT.last }})")); print(vid, 'push', modes, f"max lean {math.degrees(mxp):.0f}°", r, flush=True)
         ck(f'{vid}: pushed slowly, the tree leans first (root plate lifting)', 'push' in modes and 0.08 < mxp < 0.4, f"{modes}, max {math.degrees(mxp):.0f}°")
         ck(f'{vid}: then it tears out and lies', r['s']['mode'] == 'rest' and r['s']['dead'], str(r['s']))
-        lib.shot(pg, OUT, vid + '_push_3_after'); E("VEH.exit(); GAME.step(0.2)")
+        ax, ok_ax = lies_along(i, t); ck(f'{vid}: pushed over, it lies ahead of the tractor (drawn stem axis)', ok_ax, f"axis {ax}, push {dx:.2f}, {dy:.2f}")
+        E("VEH.exit(); GAME.step(0.2)"); E(look(t, t['info']['H'])); lib.shot(pg, OUT, vid + '_push_3_after')
         if r['s']['dead']: fallen.append(t)
 
     F0 = (-470, -600)
@@ -144,7 +154,6 @@ with lib.browser() as b:
         for t in fallen:
             r = json.loads(E(f"JSON.stringify({{ s: TREEHIT.state({t['i']}), free: WCOL.treeAt({t['x']}, {t['y']}, 0.35) }})"))
             ck(f"after a reload: still lying at {t['x']:.0f}, {t['y']:.0f}, no obstacle", r['s']['dead'] and r['s']['mode'] == 'rest' and r['free'] == -1, str(r))
-            vx, vy = t['x'] + t['dy'] * 9 - t['dx'] * 4, t['y'] - t['dx'] * 9 - t['dy'] * 4; yaw = math.degrees(math.atan2(t['x'] - vx, t['y'] - vy))
-            E(f"GAME.setView3 && GAME.setView3(false, true); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.3)"); lib.shot(pg, OUT, f"reload_{t['i']}")
+            E(look(t, t['info']['H'])); lib.shot(pg, OUT, f"reload_{t['i']}")
     ck.errors(errs)
 ck.done()

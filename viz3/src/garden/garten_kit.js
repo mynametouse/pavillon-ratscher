@@ -246,6 +246,24 @@ const endTex = ctex(
   },
   [1 / 0.32, 1 / 0.32]
 );
+// solar cells: 6 × 10 dark blue cells with silver gaps and busbars (the whole module face)
+const pvTex = ctex(128, 256, (q, w, h) => {
+  q.fillStyle = '#b9c0c8';
+  q.fillRect(0, 0, w, h);
+  const nx = 6,
+    ny = 10,
+    cw = (w - 6) / nx,
+    ch = (h - 6) / ny;
+  for (let i = 0; i < nx; i++)
+    for (let j = 0; j < ny; j++) {
+      const x = 3 + i * cw,
+        y = 3 + j * ch;
+      q.fillStyle = `rgb(${22 + R0() * 6},${32 + R0() * 6},${58 + R0() * 10})`;
+      q.fillRect(x + 1, y + 1, cw - 2, ch - 2);
+      q.fillStyle = 'rgba(200,210,220,0.35)';
+      for (const f of [0.33, 0.67]) q.fillRect(x + 1, y + ch * f, cw - 2, 1);
+    }
+});
 // ---- materials ----
 export const KM = {
   tiles: dimIndoor(plain({ map: tileTex, roughness: 0.22, metalness: 0.02 }), 0.75, 0.4),
@@ -254,6 +272,7 @@ export const KM = {
   curtainLinen: plain({ color: 0xf1ebdc, roughness: 0.92, side: THREE.DoubleSide, transparent: true, opacity: 0.86 }),
   duvet: plain({ map: gingham(0x5b7ea3, 10), roughness: 0.9 }),
   art: plain({ map: artTex, roughness: 0.75 }),
+  pvCells: plain({ map: pvTex, roughness: 0.18, metalness: 0.25 }),
   endgrain: plain({ map: endTex, roughness: 0.6 }),
   curtainSage: plain({ color: 0x93a084, roughness: 0.95, side: THREE.DoubleSide }),
   wardrobe: dimIndoor(plain({ color: 0xd9e3e8, roughness: 0.55 }), 0.8, 0.3), // dove blue, almost white (Falko)
