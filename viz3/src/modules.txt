@@ -102,6 +102,8 @@ dorf/dorf_text.js           # feat/dorf the villagers: names, ages, what they sa
 dorf/dorf_people.js         # feat/dorf the villagers as Rocketbox figures, loaded only for an evening nearby (DPEOPLE)
 dorf/dorf_school.js         # feat/dorf the room in the old school: door opening, tables, bar, windows, borrowed lamps (DSCHOOL)
 dorf/dorf_fire.js           # feat/dorf the fire on the field towards the Klinge: flames, sparks, light, crackle (DFIRE)
+dorf/dorf_life.js           # feat/dorf homes and the everyday of the villagers: front gardens, the fence, out and in (DLIFE)
+dorf/dorf_cars.js           # feat/dorf the villagers' cars: parked at the kerb, driving out of the village and back (DCARS)
 dorf/dorf.js                # feat/dorf evenings, villagers placed, talk panel, table talk, card game, the task (DORF)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
