@@ -1,7 +1,8 @@
 // ===================== feat/ortsvorsteher 3: what changes in the village (AMTWORLD) =====================
 // The things the councils decide stand in the village a few game days later (amt/amt.js sets ST.built[thing] = game minute): a shielded
 // street lamp on the way to the gardens (warm light at night), the „Mitfahrbank“ beside the bus stop, a speed display at the village
-// entrance (the first step towards Tempo 30), a Kirmes poster at the old school, an information board on the school's history. And the
+// entrance (the first step towards Tempo 30), the bus shelter's new roof and timetable, a Kirmes poster with its date at the old school,
+// an information board on the school's history. And the
 // props of two campaign tasks: the hydrant sign with the cover under leaves on the Anger, the rotten piece of fence at Ronald's pasture.
 // Geometry from the village kit (world/village_props.js VPROPS.kit: site coordinates, vertex colours) with the material settings of the
 // village props (the same shader program), signs as small canvas textures. Places are found at run time beside the roads (ROADS.edge)
@@ -479,21 +480,56 @@ export const AMTWORLD = (() => {
     }
     const z = gz(x, y);
     const k = VPROPS.kit();
+    // the pasture has a wooden rail fence (two rails): the rotten piece – a post that leans, a rail broken through, one on the grass;
+    // mended – two new posts and two new rails, still light from the saw
+    const old = C(0.3, 0.24, 0.18),
+      neu = C(0.72, 0.58, 0.4);
     if (broken) {
-      // a leaning, rotten post and a sagging piece of wire
-      k.box(x - 0.15, y, z, 0.1, 0.1, 1.1, 0.3, C(0.32, 0.26, 0.2));
-      k.box(x - 0.35, y + 0.6, z + 0.15, 0.04, 1.1, 0.5, 0.2, C(0.5, 0.5, 0.48));
+      k.box(x + 0.12, y - 0.9, z, 0.1, 0.1, 1.0, 0.35, old);
+      k.box(x, y - 0.45, z + 0.62, 0.05, 0.95, 0.09, 0.25, old);
+      k.box(x, y + 0.5, z + 0.5, 0.05, 0.9, 0.09, -0.35, old);
+      k.box(x + 0.35, y + 0.1, z, 0.06, 1.8, 0.09, 0.15, old);
     } else {
-      // two new posts, fresh wire
-      k.box(x - 0.05, y - 0.6, z, 0.1, 0.1, 1.25, 0, C(0.66, 0.52, 0.34));
-      k.box(x - 0.05, y + 0.6, z, 0.1, 0.1, 1.25, 0, C(0.66, 0.52, 0.34));
-      k.box(x - 0.05, y, z + 0.2, 0.03, 1.3, 0.85, 0, C(0.7, 0.7, 0.68));
+      // on the inside: two new posts, a new top rail and woven wire (Knotengitter) – goats climb and slip through rails
+      k.box(x + 0.1, y - 1.3, z, 0.11, 0.11, 1.3, 0, neu);
+      k.box(x + 0.1, y + 1.3, z, 0.11, 0.11, 1.3, 0, neu);
+      k.box(x + 0.1, y, z + 1.18, 0.06, 2.7, 0.09, 0, neu);
     }
     S.fence = new THREE.Group();
     S.fence.add(mesh(k, mats().kit, 'fence'));
+    if (!broken) {
+      const w = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.1), wireMat());
+      w.position.set(x + 0.16, z + 0.6, -y);
+      w.rotation.y = Math.PI / 2;
+      w.userData.noMerge = true;
+      S.fence.add(w);
+    }
     scene.add(S.fence);
     S.fenceBroken = !!broken;
     markDirty(true);
+  }
+  // woven wire: a grid of thin galvanised wires on a canvas, cut out (alphaTest), 15 cm meshes
+  let WIRE = null;
+  function wireMat() {
+    if (WIRE) return WIRE;
+    const c = document.createElement('canvas');
+    c.width = c.height = 32;
+    const g = c.getContext('2d');
+    g.strokeStyle = '#b9bdbf';
+    g.lineWidth = 2;
+    g.strokeRect(1, 1, 30, 30);
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(2.6 / 0.15, 1.1 / 0.15);
+    WIRE = new THREE.MeshStandardMaterial({
+      map: t,
+      alphaTest: 0.4,
+      transparent: false,
+      side: THREE.DoubleSide,
+      metalness: 0.4,
+      roughness: 0.5,
+    });
+    return WIRE;
   }
   const fenceAt = () => (S.fence && S.fenceBroken ? fenceSpot() : null);
   // ---- per state: build what is due, drop what is no longer (a reset) ----

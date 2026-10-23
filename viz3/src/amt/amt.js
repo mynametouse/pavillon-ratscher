@@ -40,7 +40,19 @@ export const AMT = (() => {
   const avail = k => !!D.P[k] && (D.P[k].npc ? !!NPCS[k] : !!(DTEXT.P && DTEXT.P[k]));
   const nameOf = k => (DTEXT.P && DTEXT.P[k] ? DTEXT.P[k].name : D.P[k] ? D.P[k].name : k);
   const fullOf = k => (DTEXT.P && DTEXT.P[k] ? DTEXT.P[k].full : D.P[k] ? D.P[k].full : k);
-  const roleOf = k => (D.P[k] && D.P[k].opp ? D.P[k].role : DTEXT.P && DTEXT.P[k] ? DTEXT.P[k].role : D.P[k].role);
+  // the role as the matter stands: Ingrid steps down, Uwe stands (and may win)
+  function roleOf(k) {
+    const ph = ST.phase;
+    if (k === 'ingrid' && ph !== 'none')
+      return ph === 'office' || ph === 'lost' || ph === 'missed'
+        ? 'war elf Jahre Ortsteilbürgermeisterin'
+        : D.P.ingrid.role;
+    if (k === 'uwe' && (ph === 'lost' || ph === 'missed')) return 'Landwirt, Ortsvorsteher von Ratscher';
+    if (k === 'uwe' && ph === 'office') return 'Landwirt, im Ortsteilrat';
+    if (D.P[k] && D.P[k].opp)
+      return ph === 'none' ? (DTEXT.P && DTEXT.P[k] ? DTEXT.P[k].role : D.P[k].role) : D.P[k].role;
+    return DTEXT.P && DTEXT.P[k] ? DTEXT.P[k].role : D.P[k] ? D.P[k].role : '';
+  }
   // the world as it was before the election: what one already did for people counts (the Friday task, errands, the neighbours' tasks)
   function bonus() {
     const b = {};
@@ -1974,7 +1986,7 @@ export const AMT = (() => {
         r: 1.9,
         prio: 0.15,
         label: () => {
-          if (ST.phase === 'none' || UI.cur || !avail(k) || figNear(k)) return null;
+          if (!(ST.phase === 'asked' || campaign() || office()) || UI.cur || !avail(k) || figNear(k)) return null;
           return 'Bei ' + nameOf(k) + ' klingeln';
         },
         pos: () => {
@@ -2094,7 +2106,12 @@ export const AMT = (() => {
       AMTWORLD.fence(false);
       L('ronald', 4, 'Ihr habt zusammen den Zaun geflickt');
       save();
-      think('Neue Pfosten, das Drahtgeflecht gespannt. Hält. Jetzt Heike Bescheid sagen.');
+      think(
+        'Zwei neue Pfosten, oben eine Latte, innen Knotengitter festgetackert – Ziegen klettern und schlüpfen, ein Ziegenzaun braucht Gitter und gut 1,20 m Höhe. Jetzt ' +
+          nameOf(victim()) +
+          ' Bescheid sagen.',
+        9000
+      );
     },
   });
   // ======================= showing the way: a marker over the goal, direction and distance in the HUD =======================
@@ -2231,6 +2248,8 @@ export const AMT = (() => {
     countTick(Math.min(dt, 0.25));
     doorFigTick(dt);
     trackTick(dt);
+    // the panel closes when one walks away (every frame: the next thing to do should not wait for it)
+    if (UI.cur && UI.at && Math.hypot(P.x - UI.at[0], P.y - UI.at[1]) > 6) UI.close();
     TK.acc += dt;
     if (TK.acc < 0.5) return;
     TK.acc = 0;
@@ -2380,8 +2399,6 @@ export const AMT = (() => {
         speech();
       }
     } else TK.inside = 0;
-    // the panel closes when one walks away
-    if (UI.cur && UI.at && Math.hypot(P.x - UI.at[0], P.y - UI.at[1]) > 6) UI.close();
   }
   (window.TICKS || (window.TICKS = [])).push(tick);
   // ======================= drawings for the scenes (small SVGs, no textures) =======================

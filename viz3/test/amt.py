@@ -48,7 +48,7 @@ with lib.browser() as b:
         # ringing at Gerhard's door: the action button at his doorstep
         h = J("AMT.homes().gerhard")
         # 12:45: nobody is out in the front garden then (dorf/dorf_life.js: mornings until 12:15, afternoons from 16:30) – Gerhard is in
-        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 12 * 60 + 45")
+        E("AMT.UI.close(); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 12 * 60 + 45")
         x, y = h['step']; put(x - 0.5, y - 0.5, 45)
         best = J("GAME.step(0.2).best"); ck('the action button: ring at Gerhard’s door', best == 'Bei Gerhard klingeln', str(best))
         E("PLAY.primary(); GAME.step(0.2)"); st = J('AMT.state()')
