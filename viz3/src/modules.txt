@@ -70,6 +70,7 @@ world/village_near.js       # V16e near the walker: fences, hedges, flower boxes
 # feat/schleusingen: the tiled world and Schleusingen below this line
 welt/welt.js                # the tiled world (tools/welt) streamed around the camera where a zone needs it; terrain for KERN (WELT)
 welt/schleusingen.js        # Schleusingen after photos: the old town walkable, Rathaus to enter, landmarks, lamps, street names (SCHL)
+# feat/vessra: Kloster Veßra below this line (the monastery, the village, the tree nursery)
 world/worldcol.js           # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
 world/treehit.js            # small trees give way to vehicles: saplings bend, small trees tip over with the root plate, thick ones stop (TREEHIT)
 game/hud.js                 # HUD, menu, inventory window, pointer lock (HUD)
@@ -111,6 +112,8 @@ amt/amt_data.js             # feat/ortsvorsteher the election and the office as 
 amt/amt_model.js            # feat/ortsvorsteher opinions, promises, signatures, the count, the Ortsteilrat and the town council – pure logic (AMTMODEL)
 amt/amt_world.js            # feat/ortsvorsteher what the councils decide stands in the village: lamp, Mitfahrbank, speed display, poster, board (AMTWORLD)
 amt/amt.js                  # feat/ortsvorsteher the letter, the campaign, election day with the public count, the office, the town hall scene (AMT)
+# feat/gartenplaner: the garden planner below this line (after the office, before the frame loop)
+gplan/gplan_schema.js       # the plant data contract: fields, enums, checks of pflanzen.json, regeln.json, gilden.json – pure (GPSCHEMA)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api
