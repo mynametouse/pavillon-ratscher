@@ -240,8 +240,7 @@ export const TRACTOR2 = (() => {
   }
   revs.push(bx(0.1, 0.04, 0.06, M.rev, 0.3, CY0 - 0.02, CZ1 - 0.05));
   bx(0.9, 0.3, 0.3, M.frame, 0, -B - 0.35, 0.95);
-  for (const sx of [-1, 1]) strut([sx * 0.38, -B - 0.4, 0.75], [sx * 0.42, -B - 1.05, 0.55], 0.07, 0.07, M.frame);
-  strut([0, -B - 0.45, 1.2], [0, -B - 0.95, 1.05], 0.06, 0.06, M.frame);
+  // V16h: the three-point linkage (lower links, top link, lift arms) moves with the forestry winch below – see winchPose
   bx(0.06, 0.12, 0.06, M.steel, 0, -B - 0.55, 0.78); // PTO stub
   bx(0.14, 0.86, 0.05, M.frame, 0, -B - 0.66, 0.46);
   rod([0, -2.16, 0.4], [0, -2.16, 0.6], 0.022, M.steel);
@@ -373,6 +372,234 @@ export const TRACTOR2 = (() => {
     }
   }
   loaderPose(0);
+  // ---- V16h a three-point forestry winch at the back (generic, no make), for skidding logs out of the stand: a frame with the support
+  // shield (Rückeschild) at the bottom – lowered, its teeth dig into the ground and hold the tractor while it pulls –, a protective grille,
+  // the drum with clutch and brake (driven by the PTO shaft), the cable up to a pulley and a fairlead with four rollers at the top, a radio
+  // receiver with its aerial. Raised (transport) its lower edge is 0.75 m up, so a trailer's drawbar passes beneath. The cable, the choker
+  // and the dragged log are werk/winde.js's business; here the model and its pose (model.winch: lift 1 = up, 0 = down on the ground).
+  // Winch frame: x right, y towards the tractor, z up from the shield's lower edge; origin under the hitch pins.
+  const WN = {
+    lift: 1,
+    liftT: 1,
+    UP: 0.75,
+    wound: 50, // metres of cable on the drum (werk/winde.js keeps it)
+    spin: 0,
+    exit: [0, -0.53, 1.66], // where the cable leaves the fairlead
+    shield: [0, -0.6, 0.3], // in front of the shield's back face: where a pulled log end comes to rest
+    LL: 0.74, // lower links: length, pivots on the tractor (± x)
+    PIV: [0.4, -1.5, 0.72],
+  };
+  const MW = {
+    paint: new THREE.MeshStandardMaterial({ color: 0xc4521f, metalness: 0.25, roughness: 0.5 }),
+    dark: new THREE.MeshStandardMaterial({ color: 0x1d1e20, metalness: 0.35, roughness: 0.6 }),
+    rope: new THREE.MeshStandardMaterial({ color: 0x5b5e60, metalness: 0.75, roughness: 0.42 }),
+    guard: new THREE.MeshStandardMaterial({ color: 0xd9ad1f, roughness: 0.55 }),
+  };
+  WN.mats = MW;
+  const wg = new THREE.Group();
+  body.add(wg);
+  WN.g = wg;
+  // a chain of n oval links along the local −y (three.js) from the origin, with a hook at the end – the choker (werk/winde.js uses it too)
+  WN.chainGeo = (n, hook = true) => {
+    const gs = [],
+      m4 = new THREE.Matrix4(),
+      q = new THREE.Quaternion(),
+      sc = new THREE.Vector3(1, 1.55, 1);
+    const link = new THREE.TorusGeometry(0.019, 0.0055, 5, 10);
+    for (let i = 0; i < n; i++) {
+      q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), i % 2 ? Math.PI / 2 : 0);
+      m4.compose(new THREE.Vector3(0, -0.026 - i * 0.047, 0), q, sc);
+      gs.push(link.clone().applyMatrix4(m4));
+    }
+    if (hook) {
+      const hk = new THREE.TorusGeometry(0.034, 0.008, 6, 12, Math.PI * 1.35);
+      m4.compose(
+        new THREE.Vector3(0, -0.06 - n * 0.047, 0),
+        q.setFromEuler(new THREE.Euler(0, 0, Math.PI * 0.82)),
+        new THREE.Vector3(1, 1, 1)
+      );
+      gs.push(hk.applyMatrix4(m4));
+    }
+    return BufferGeometryUtils.mergeGeometries(gs);
+  };
+  {
+    const L = { paint: [], dark: [], steel: [], rope: [] },
+      m4 = new THREE.Matrix4(),
+      q = new THREE.Quaternion(),
+      one = new THREE.Vector3(1, 1, 1),
+      Y = new THREE.Vector3(0, 1, 0);
+    const box = (k, sx, sy, sz, x, y, z) => {
+      m4.compose(V(x, y, z), q.identity(), one);
+      L[k].push(new THREE.BoxGeometry(sx, sz, sy).applyMatrix4(m4));
+    };
+    // a bar (box w × d) or a round (cylinder radius w) from a to b
+    const bar = (k, a, b, w, d, round) => {
+      const dx = b[0] - a[0],
+        dy = b[1] - a[1],
+        dz = b[2] - a[2],
+        len = Math.hypot(dx, dy, dz);
+      m4.compose(
+        V((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2),
+        q.setFromUnitVectors(Y, V(dx, dy, dz).normalize()),
+        one
+      );
+      L[k].push(
+        (round ? new THREE.CylinderGeometry(w, w, len, 10) : new THREE.BoxGeometry(w, len, d)).applyMatrix4(m4)
+      );
+    };
+    // the shield: leaning towards the tractor, teeth along its lower edge, side cheeks, a rolled upper edge
+    bar('paint', [0, -0.56, 0], [0, -0.42, 0.62], 1.66, 0.025);
+    for (let i = 0; i < 9; i++) box('steel', 0.05, 0.03, 0.08, -0.76 + i * 0.19, -0.565, -0.03);
+    for (const sx of [-1, 1]) {
+      box('paint', 0.025, 0.52, 0.62, sx * 0.82, -0.31, 0.31);
+      box('paint', 0.025, 0.2, 0.3, sx * 0.6, -0.1, 0.5);
+    }
+    bar('steel', [-0.84, -0.42, 0.64], [0.84, -0.42, 0.64], 0.035, 0, true);
+    box('paint', 1.64, 0.4, 0.03, 0, -0.32, 0.2);
+    box('paint', 1.1, 0.1, 0.12, 0, -0.04, 0.42);
+    // the A-frame: posts, cross beams, the grille between them
+    for (const sx of [-1, 1]) bar('paint', [sx * 0.6, -0.2, 0.42], [sx * 0.27, -0.25, 1.78], 0.1, 0.1);
+    box('paint', 1.0, 0.08, 0.08, 0, -0.22, 1.12);
+    box('paint', 0.62, 0.12, 0.1, 0, -0.26, 1.78);
+    for (const x of [-0.36, -0.18, 0, 0.18, 0.36])
+      bar('dark', [x, -0.34, 0.66], [x * 0.5, -0.34, 1.72], 0.011, 0, true);
+    for (const z of [0.95, 1.42]) {
+      const hw = 0.6 - ((z - 0.42) / 1.36) * 0.33;
+      bar('dark', [-hw, -0.34, z], [hw, -0.34, z], 0.011, 0, true);
+    }
+    // hitch: lower pins and the top-link brackets
+    for (const sx of [-1, 1]) {
+      for (const o of [-0.045, 0.045]) box('paint', 0.025, 0.18, 0.22, sx * 0.43 + o, 0.0, 0.42);
+      bar('steel', [sx * 0.37, 0.03, 0.42], [sx * 0.5, 0.03, 0.42], 0.022, 0, true);
+      box('paint', 0.025, 0.16, 0.24, sx * 0.055, -0.05, 1.32);
+    }
+    bar('steel', [-0.08, 0.0, 1.34], [0.08, 0.0, 1.34], 0.02, 0, true);
+    // drive: input shaft, chain case on the right, clutch and brake on the left
+    bar('steel', [0, 0.06, 0.86], [0, -0.12, 0.86], 0.03, 0, true);
+    box('dark', 0.16, 0.36, 0.46, 0.44, -0.1, 0.88);
+    bar('dark', [-0.27, -0.1, 0.88], [-0.4, -0.1, 0.88], 0.17, 0, true);
+    // pulley at the top, the fairlead with four rollers, the cable from the drum up over the pulley
+    box('paint', 0.16, 0.32, 0.1, 0, -0.34, 1.83);
+    bar('dark', [-0.022, -0.38, 1.74], [0.022, -0.38, 1.74], 0.1, 0, true);
+    for (const sx of [-1, 1]) bar('steel', [sx * 0.05, -0.53, 1.56], [sx * 0.05, -0.53, 1.77], 0.02, 0, true);
+    for (const z of [1.58, 1.75]) bar('steel', [-0.08, -0.53, z], [0.08, -0.53, z], 0.02, 0, true);
+    for (const sx of [-1, 1]) box('paint', 0.02, 0.2, 0.26, sx * 0.09, -0.46, 1.68);
+    bar('rope', [0, -0.18, 1.04], [0, -0.33, 1.66], 0.006, 0, true);
+    bar('rope', [0, -0.45, 1.72], [0, -0.53, 1.66], 0.006, 0, true);
+    // the radio receiver with its aerial (the remote control goes with the cable)
+    box('dark', 0.14, 0.1, 0.22, -0.68, -0.14, 1.28);
+    box('paint', 0.142, 0.102, 0.03, -0.68, -0.14, 1.33);
+    bar('dark', [-0.68, -0.14, 1.39], [-0.68, -0.14, 1.68], 0.006, 0, true);
+    for (const [k, list] of Object.entries(L)) {
+      const me = new THREE.Mesh(BufferGeometryUtils.mergeGeometries(list), k === 'steel' ? M.steel : MW[k]);
+      me.castShadow = me.receiveShadow = true;
+      wg.add(me);
+    }
+  }
+  // the drum (turns): core, the wound cable (its radius after what is on it), flanges with bolts
+  const drum = new THREE.Group();
+  drum.position.copy(V(0, -0.1, 0.88));
+  wg.add(drum);
+  {
+    const cylX = (r, w, mat, x = 0) => {
+      const gg = new THREE.CylinderGeometry(r, r, w, 22);
+      gg.rotateZ(Math.PI / 2);
+      const me = new THREE.Mesh(gg, mat);
+      me.position.x = x;
+      me.castShadow = me.receiveShadow = true;
+      drum.add(me);
+      return me;
+    };
+    cylX(0.11, 0.44, MW.dark);
+    WN.woundM = cylX(0.2, 0.4, MW.rope);
+    for (const sx of [-1, 1]) {
+      cylX(0.235, 0.024, MW.paint, sx * 0.212);
+      for (let k = 0; k < 6; k++) {
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.03, 0.03), MW.dark),
+          a = (k / 6) * Math.PI * 2;
+        b.position.set(sx * 0.226, Math.cos(a) * 0.16, Math.sin(a) * 0.16);
+        drum.add(b);
+      }
+    }
+  }
+  // the hook parked at the fairlead while the cable is wound in: the slider, the choker chain hanging down
+  const parked = new THREE.Group();
+  parked.position.copy(V(...WN.exit));
+  wg.add(parked);
+  {
+    const sl = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 0.05), M.steel);
+    sl.position.y = -0.1;
+    const ch = new THREE.Mesh(WN.chainGeo(9), MW.dark);
+    ch.position.y = -0.16;
+    const rp = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.05, 6), MW.rope);
+    rp.position.y = -0.03;
+    for (const m of [sl, ch, rp]) {
+      m.castShadow = true;
+      parked.add(m);
+    }
+  }
+  WN.parked = parked;
+  WN.drum = drum;
+  // the linkage, the PTO shaft: unit bars stretched between their ends every pose
+  const unit = (mat, w, d, round) =>
+    add(round ? new THREE.CylinderGeometry(w, w, 1, 10) : new THREE.BoxGeometry(w, 1, d), mat);
+  const LNK = [-1, 1].map(sx => ({
+    sx,
+    link: unit(M.frame, 0.07, 0.06),
+    arm: unit(M.frame, 0.07, 0.09),
+    rod: unit(M.steel, 0.022, 0, true),
+  }));
+  const topA = unit(M.frame, 0.036, 0, true),
+    topB = unit(M.steel, 0.024, 0, true),
+    pto = unit(M.steel, 0.03, 0, true),
+    ptoG = add(new THREE.CylinderGeometry(0.06, 0.052, 1, 12, 1, true), MW.guard);
+  const _wa = new THREE.Vector3(),
+    _wb = new THREE.Vector3(),
+    _wy = new THREE.Vector3(0, 1, 0);
+  function stretch(m, a, b) {
+    _wa.copy(V(a[0], a[1], a[2]));
+    _wb.copy(V(b[0], b[1], b[2]));
+    const len = _wa.distanceTo(_wb);
+    m.position.copy(_wa).add(_wb).multiplyScalar(0.5);
+    m.scale.set(1, Math.max(1e-3, len), 1);
+    m.quaternion.setFromUnitVectors(_wy, _wb.sub(_wa).normalize());
+  }
+  const lerp3 = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+  function winchPose(dt) {
+    if (dt) WN.lift += THREE.MathUtils.clamp(WN.liftT - WN.lift, -0.42 * dt, 0.42 * dt);
+    const zp = WN.lift * WN.UP,
+      P0 = WN.PIV,
+      pz = 0.42 + zp,
+      s = THREE.MathUtils.clamp((pz - P0[2]) / WN.LL, -1, 1),
+      py = P0[1] - Math.cos(Math.asin(s)) * WN.LL; // the lower links turn about their pivots: the pins rise on a circle
+    WN.y0 = py - 0.02;
+    wg.position.copy(V(0, WN.y0, zp));
+    const az = 1.24 + WN.lift * 0.3;
+    for (const l of LNK) {
+      const pin = [l.sx * 0.43, py, pz];
+      stretch(l.link, [l.sx * P0[0], P0[1], P0[2]], pin);
+      stretch(l.arm, [l.sx * 0.3, -1.38, 1.18], [l.sx * 0.33, -1.86, az]);
+      stretch(l.rod, [l.sx * 0.33, -1.84, az - 0.02], lerp3([l.sx * P0[0], P0[1], P0[2]], pin, 0.55));
+    }
+    const top = [0, WN.y0 - 0.05, zp + 1.34];
+    stretch(topA, [0, -1.56, 1.22], lerp3([0, -1.56, 1.22], top, 0.62));
+    stretch(topB, lerp3([0, -1.56, 1.22], top, 0.5), top);
+    const inp = [0, WN.y0 + 0.06, zp + 0.86];
+    stretch(pto, [0, -1.7, 0.78], inp);
+    stretch(ptoG, lerp3([0, -1.7, 0.78], inp, 0.18), lerp3([0, -1.7, 0.78], inp, 0.82));
+    drum.rotation.x = -WN.spin;
+    const k = 0.62 + 0.38 * THREE.MathUtils.clamp(WN.wound / 50, 0, 1);
+    WN.woundM.scale.set(1, k, k);
+  }
+  WN.pose = winchPose;
+  // a point of the winch frame in site coordinates (x east, y north, z up)
+  const _wp = new THREE.Vector3();
+  WN.toW = p => {
+    wg.updateWorldMatrix(true, false);
+    _wp.copy(V(p[0], p[1], p[2])).applyMatrix4(wg.matrixWorld);
+    return [_wp.x, -_wp.z, _wp.y];
+  };
+  winchPose(0);
   const model = {
     g,
     body,
@@ -381,6 +608,9 @@ export const TRACTOR2 = (() => {
     beam: [0, 2.3, 1.62],
     LD,
     fork: { tool, x: 0.36, y0: 0.06, y1: 1.18, top: 0.0425 }, // V16d: the tines in the tool frame (x across, y along, z up; top surface)
+    winch: WN, // V16h the forestry winch (werk/winde.js works it)
+    // V16h: the shield in the ground holds the tractor (vehicles/vehicle.js: no throttle, the handbrake on)
+    hold: () => WN.liftT < 0.4 || Math.abs(WN.lift - WN.liftT) > 0.01 || !!(WN.busy && WN.busy()),
     update(v, dt) {
       if (v === VEH.cur) {
         if (LD.up) LD.liftT = THREE.MathUtils.clamp(LD.liftT + LD.up * 0.34 * dt, LD.min, 0.62);
@@ -392,6 +622,7 @@ export const TRACTOR2 = (() => {
       }
     },
     key(k, down) {
+      if (WN.onKey && WN.onKey(k, down)) return; // V16h: N raises/lowers the winch; K waits while it is down
       if (k === 'r' || k === 'up') LD.up = down ? 1 : LD.up === 1 ? 0 : LD.up;
       else if (k === 'g' || k === 'down') LD.up = down ? -1 : LD.up === -1 ? 0 : LD.up;
       else if ((k === 't' || k === 'tilt') && down) LD.tiltT = LD.tiltT > 0.1 ? 0 : 0.3;
@@ -405,6 +636,7 @@ export const TRACTOR2 = (() => {
         y1 = tipY + 1.18 * Math.cos(LD.tilt),
         B0 = -2.0,
         B1 = 2.6;
+      const zw = WN.lift * WN.UP;
       return [
         { cy: (B0 + B1) / 2, hl: (B1 - B0) / 2, hw: 1.14, z0: 0.25, z1: 2.9 },
         {
@@ -414,14 +646,21 @@ export const TRACTOR2 = (() => {
           z0: tz - 0.04,
           z1: tz + 0.7 + 1.18 * Math.sin(LD.tilt),
         },
+        { cy: (WN.y0 || -2.2) - 0.3, hl: 0.27, hw: 0.84, z0: zw + 0.12, z1: zw + 1.85 }, // V16h the winch behind
       ];
     },
-    save: () => [+LD.liftT.toFixed(3), +LD.tiltT.toFixed(3)],
+    // [lift, tilt] of the loader; V16h: a third value, the winch's lift (1 up, 0.5 a log lifted at the shield, 0 down; older states have
+    // two – it is up then)
+    save: () => [+LD.liftT.toFixed(3), +LD.tiltT.toFixed(3), +WN.liftT.toFixed(2)],
     load: a => {
       if (a && a.length >= 2) {
         LD.lift = LD.liftT = THREE.MathUtils.clamp(+a[0] || -0.5, LD.min, 0.62);
         LD.tilt = LD.tiltT = THREE.MathUtils.clamp(+a[1] || 0, 0, 0.3);
         loaderPose(0);
+      }
+      if (a && typeof a[2] === 'number' && Number.isFinite(a[2])) {
+        WN.lift = WN.liftT = THREE.MathUtils.clamp(a[2], 0, 1);
+        winchPose(0);
       }
     },
   };

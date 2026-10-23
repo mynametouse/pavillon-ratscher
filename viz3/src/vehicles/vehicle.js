@@ -1068,7 +1068,8 @@ export const VEH = (() => {
         lamps(v);
         continue;
       } // parked and still: no physics
-      const inp = driven ? input(v, dt) : { thr: 0, brk: 0, steer: 0, hand: true };
+      let inp = driven ? input(v, dt) : { thr: 0, brk: 0, steer: 0, hand: true };
+      if (driven && v.model.hold && v.model.hold()) inp = { thr: 0, brk: 0, steer: inp.steer, hand: true }; // V16h: held (the winch's shield in the ground)
       const n = Math.max(1, Math.ceil(dt / HSTEP)),
         h = dt / n;
       for (let i = 0; i < n; i++) {

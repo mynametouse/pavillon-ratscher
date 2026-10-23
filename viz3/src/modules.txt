@@ -86,6 +86,7 @@ world/fell.js               # V16c2 felling at the Klinge: forest gear, chainsaw
 werk/holz.js                # V16d wood 1: the logs as objects – on the fork, the trailer, the log yard (HOLZ)
 werk/holz_saw.js            # V16d wood 2: the band sawmill – clamp, plan, cut board by board, blocks beside the mill (HOLZSAW)
 werk/holz_dry.js            # V16d wood 3: the drying stack, drying by the climate, the moisture meter, time-lapse (HOLZDRY)
+werk/winde.js               # V16h the forestry winch on the tractor: cable out by hand, choker, winding in, the log dragged, skidding (WINDE)
 # feat/dorf: village life below this line
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue

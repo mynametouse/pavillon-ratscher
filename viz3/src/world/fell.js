@@ -3006,6 +3006,36 @@ export const FELL = (() => {
       markDirty(true);
     }
   };
+  // V16h: a felled stem near (x, y) that is not worked up yet – no logs for the fork or the winch until it is measured: what is left to do
+  const TODO = {
+    down: 'entasten, ablängen, vermessen',
+    delimb: 'entasten, ablängen, vermessen',
+    trim: 'Stammfuß kappen, ablängen, vermessen',
+    top: 'Zopf abtrennen, ablängen, vermessen',
+    buck: 'ablängen, vermessen',
+    measure: 'vermessen',
+  };
+  S.openStem = (x, y, rad) => {
+    let best = null,
+      bd = rad;
+    for (const id of Object.keys(S.trees)) {
+      const rec = S.trees[id],
+        t = TODO[rec.st] ? treeOf(rec) : null;
+      if (!t) continue;
+      const a = stemPoint(rec, 0.3),
+        b = stemPoint(rec, t.h * 0.85);
+      if (!a || !b) continue;
+      const ux = b[0] - a[0],
+        uy = b[1] - a[1],
+        k = clamp(((x - a[0]) * ux + (y - a[1]) * uy) / (ux * ux + uy * uy || 1), 0, 1),
+        d = Math.hypot(a[0] + ux * k - x, a[1] + uy * k - y);
+      if (d < bd) {
+        bd = d;
+        best = { id: rec.id, st: rec.st, todo: TODO[rec.st], d };
+      }
+    }
+    return best;
+  };
   Object.assign(S, {
     book,
     rec: cur,

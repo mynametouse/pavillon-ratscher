@@ -218,7 +218,7 @@ export const HOLZ = (() => {
   function place(l) {
     const G = SP[l.isp];
     if (!G) return;
-    if (l.st === 'ground' || l.st === 'saw') {
+    if (l.st === 'ground' || l.st === 'saw' || l.st === 'winch') {
       l.wp0 = l.p0;
       l.wp1 = l.p1;
     } else if (l.st === 'fork' && S.forkObj()) {
@@ -318,7 +318,8 @@ export const HOLZ = (() => {
   }
   const mid = l => [(l.wp0[0] + l.wp1[0]) / 2, (l.wp0[1] + l.wp1[1]) / 2, (l.wp0[2] + l.wp1[2]) / 2];
   let prevLift = null,
-    hintT = 0;
+    hintT = 0,
+    liftFrom = null;
   function forkTick(dt) {
     const F = S.forkObj();
     if (!F) return;
@@ -327,6 +328,8 @@ export const HOLZ = (() => {
     const dl = prevLift == null ? 0 : LD.lift - prevLift;
     prevLift = LD.lift;
     const carry = S.logs.find(l => l.st === 'fork');
+    if (dl <= 1e-4) liftFrom = null;
+    else if (liftFrom == null) liftFrom = LD.lift - dl;
     if (!carry && dl > 1e-4) {
       // lifting: does a log lie on the tines now?
       let best = null,
@@ -351,11 +354,55 @@ export const HOLZ = (() => {
         }
       }
       if (best) pick(best.l, best.q, F);
+      else if (liftFrom != null && LD.lift - liftFrom > 0.12 && LD.lift - liftFrom - dl <= 0.12) whyNot(F);
     }
     if (carry) {
       if (dl < -1e-4) dropCheck(carry, F);
       else carryCheck(carry, dt);
     }
+  }
+  // V16h: the fork lifted and nothing came up – say why (Falko 23.10. 2:24: the log stayed where it was, without a word)
+  function whyNot(F) {
+    const c = new THREE.Vector3(0, F.top, -(F.y0 + F.y1) / 2).applyMatrix4(F.tool.matrixWorld),
+      cx = c.x,
+      cy = -c.z;
+    let best = null,
+      bd = 3.5;
+    for (const l of S.logs) {
+      if (!['ground', 'trailer', 'saw', 'winch'].includes(l.st) || !l.wp0) continue;
+      const a = l.wp0,
+        b = l.wp1,
+        ux = b[0] - a[0],
+        uy = b[1] - a[1],
+        L2 = ux * ux + uy * uy || 1,
+        t = THREE.MathUtils.clamp(((cx - a[0]) * ux + (cy - a[1]) * uy) / L2, 0, 1),
+        d = Math.hypot(a[0] + ux * t - cx, a[1] + uy * t - cy);
+      if (d < bd) {
+        bd = d;
+        best = l;
+      }
+    }
+    let msg = null;
+    if (!best) {
+      const o = FELL.openStem ? FELL.openStem(cx, cy, 4) : null;
+      if (o)
+        msg = `Der Stamm ist noch nicht aufgearbeitet (${o.todo}). Erst wenn er vermessen ist (Waldbuch B), liegen die Abschnitte für die Gabel bereit.`;
+    } else {
+      const l = best,
+        q = inFork(l, F),
+        r = (l.d0 + l.d1) / 400,
+        along = -q.c.z;
+      if (l.st === 'winch') msg = 'Am Stamm hängt noch das Windenseil – erst den Choker lösen.';
+      else if (coveredBy(l)) msg = 'Darauf liegt noch ein Stamm – erst den oberen nehmen.';
+      else if (S.mass(l) > 1500) msg = `Zu schwer für die Gabel: etwa ${S.mass(l)} kg, sie trägt höchstens 1500 kg.`;
+      else if (Math.abs(q.d.x) < 0.8)
+        msg = 'Der Stamm liegt längs zur Gabel – die Zinken müssen quer unter ihn. Von der Seite heranfahren.';
+      else if (q.c.y < F.top - r * 0.75)
+        msg = 'Die Zinken sind nicht unter dem Stamm: Gabel ganz absenken (G), quer darunterfahren, dann heben (R).';
+      else if (along > F.y1 - 0.04) msg = 'Noch weiter vorfahren, bis die Zinken ganz unter dem Stamm sind.';
+      else if (Math.abs(q.c.x) > (q.len / 2) * Math.abs(q.d.x) - 0.45) msg = 'Den Stamm weiter in der Mitte aufnehmen.';
+    }
+    if (msg) warnOnce('why', msg);
   }
   function pick(l, q, F) {
     if (S.mass(l) > 1500) {
@@ -781,8 +828,9 @@ export const HOLZ = (() => {
           JSON.stringify({
             v: 1,
             logs: S.logs.map(l => {
-              const o = { id: l.id, st: l.st };
-              if (l.st === 'ground' || l.st === 'saw') {
+              // V16h: a log on the winch's cable is kept as lying where it is (older builds read it so); werk/winde.js keeps the cable
+              const o = { id: l.id, st: l.st === 'winch' ? 'ground' : l.st };
+              if (l.st === 'ground' || l.st === 'saw' || l.st === 'winch') {
                 o.p0 = l.p0.map(v => +v.toFixed(3));
                 o.p1 = l.p1.map(v => +v.toFixed(3));
               }
@@ -970,11 +1018,21 @@ export const HOLZ = (() => {
     save();
     return id;
   };
+  // V16h: a log moved by someone else (werk/winde.js drags it on the cable): its instance follows
+  function moved(l) {
+    place(l);
+    const G = SP[l.isp];
+    if (G) G.mS.instanceMatrix.needsUpdate = true;
+    markDirty();
+  }
   Object.assign(S, {
     redraw,
     save,
     support,
     place,
+    moved,
+    restOn,
+    warnOnce,
     adopt,
     yard: YARD,
     mid,
