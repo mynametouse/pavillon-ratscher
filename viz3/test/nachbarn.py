@@ -227,5 +227,21 @@ with lib.browser() as b:
               E("(() => { const d = NPC.NPCS.hubert.drive; return d && window.VEH ? VEH.blocked(d.x, d.y, d.az, 3.2) : null; })()"), flush=True)
         ck('diesel task: Hubert drives the round and it ends (tractor moves)', t >= 0 and t2 >= 0 and E("__N.st().diesel") == 'done', E("__N.st().diesel"))
         ck('all old tasks still listed', all(k in E("__N.st()") for k in ('goat', 'fire', 'diesel', 'board')))
+    if want('daylong'):
+        # a whole day by the plan (day 6: a day with the talk at the table), stepped in 10 s pieces: which activities, no NaN, no stalls
+        E("LIFE.force('hubert', null); LIFE.force('ronald', null); __N.clock(6, 0); CLOCK.t = 5 * 1440 + 6 * 60")
+        E("GAME.view(3, 2, 1.7, 40, 0)")
+        log = E("""(() => { const out = []; for (let k = 0; k < 100; k++) { GAME.step(10); const h = NPC.NPCS.hubert, r = NPC.NPCS.ronald;
+            out.push([CLOCK.hm(), LIFE.cur('hubert'), LIFE.cur('ronald'), +h.x.toFixed(1), +h.y.toFixed(1), +r.x.toFixed(1), +r.y.toFixed(1), !!LIFE.TALK.on]); }
+            return JSON.stringify(out); })()""")
+        rows = json.loads(log)
+        hs = sorted(set(r[1] for r in rows if r[1])); rs = sorted(set(r[2] for r in rows if r[2]))
+        talked = sum(1 for r in rows if r[7])
+        finite = all(all(abs(v) < 1e4 for v in r[3:7]) for r in rows)
+        print('daylong', rows[0][0], '->', rows[-1][0], 'hubert', hs, 'ronald', rs, 'talk samples', talked, flush=True)
+        ck('a whole day: Hubert works with wood and at the car', any(k in hs for k in ('chop', 'saw', 'stack')) and 'car' in hs, hs)
+        ck('a whole day: Ronald feeds, mows and visits Hubert', 'feed' in rs and 'mow' in rs and 'visit' in rs, rs)
+        ck('a whole day: the two talk at the table', talked > 0, talked)
+        ck('a whole day: positions stay finite', finite)
     ck.errors(errs)
     ck.done()
