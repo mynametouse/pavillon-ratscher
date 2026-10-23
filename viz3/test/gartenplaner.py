@@ -201,6 +201,7 @@ with lib.browser() as b:
         # the action button (KERN.act) offers to set it; pressing it puts the plant 2.2 m in front of the walker
         best = J("GAME.step(0.1).best")
         ck('on site: the action button offers „… hier setzen“', bool(best) and best.endswith('hier setzen'), str(best))
+        ck('on site: rings on the ground – the selected plant and where the chosen one would stand', E("GPLAN.G3.nMarks") == 32, str(E("GPLAN.G3.nMarks")))
         n0 = E("GPLAN.state.items.length"); E("PLAY.primary(); GAME.step(0.2)")
         it = J("GPLAN.state.items[GPLAN.state.items.length - 1]")
         ck('on site: the plant stands 2.2 m in front of the walker', E("GPLAN.state.items.length") == n0 + 1 and abs(it['x'] - (-6 + 2.2)) < 0.1 and abs(it['y'] - (-12)) < 0.1, json.dumps(it))

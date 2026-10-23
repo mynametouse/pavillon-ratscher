@@ -313,6 +313,36 @@ export const GP3D = (() => {
     S.stats = { trees: nt, bushes: nb, dots: dots.length, cols: cols.length };
     markDirty(true);
   }
+  // rings of small dots on the ground (on site: the selected plant, where „hier setzen“ would put the chosen one) – the dots' material,
+  // no new program; independent of the plants' visibility. rings: [{ x, y, r, hex }]
+  let MARK = null,
+    nMark = 0;
+  function marks(rings) {
+    if (!rings.length && !nMark) return;
+    if (!MARK) {
+      MARK = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), S.dotMat || plain({ roughness: 0.7 }), 96);
+      MARK.setColorAt(0, col.setRGB(1, 1, 1));
+      MARK.castShadow = false;
+      MARK.receiveShadow = true;
+      MARK.userData.noMerge = true;
+      MARK.frustumCulled = false;
+      scene.add(MARK);
+    }
+    let n = 0;
+    for (const R of rings)
+      for (let i = 0; i < 16 && n < 96; i++, n++) {
+        const a = (i / 16) * Math.PI * 2,
+          x = R.x + Math.sin(a) * R.r,
+          y = R.y + Math.cos(a) * R.r;
+        m4.compose(V(x, y, KERN.ground(x, y) + 0.05), q.identity(), sc.set(0.035, 0.035, 0.035));
+        MARK.setMatrixAt(n, m4);
+        MARK.setColorAt(n, col.set(R.hex));
+      }
+    MARK.count = nMark = n;
+    MARK.instanceMatrix.needsUpdate = true;
+    if (MARK.instanceColor) MARK.instanceColor.needsUpdate = true;
+    markDirty();
+  }
   // trunks in the walker's collision grid: own entries of COL, reused on every change (other modules keep indices into COL, so
   // entries are never removed – one no longer needed is switched off like a removed fence: top below its bottom)
   const MINE = [];
@@ -337,6 +367,10 @@ export const GP3D = (() => {
   }
   return {
     sync,
+    marks,
+    get nMarks() {
+      return nMark;
+    },
     kindOf,
     get group() {
       return S.G;

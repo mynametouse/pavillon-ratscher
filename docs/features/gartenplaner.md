@@ -26,7 +26,8 @@ und die günstigen Teile von Meilenstein 4 (Berater, Gilden-Vorlagen, Listen). K
   Wühlmauskorb, Pfahl, Verbissschutz …) – „Kopieren“, „Herunterladen“ (.txt), „Drucken“.
 - **Vor Ort**: im Garten gehen (die Figur steht vor der ausgewählten Pflanze); „Hier setzen“ setzt die gewählte Pflanze 2,2 m vor die
   Figur (Höhe aus `KERN.ground`), „Ausgewählte hierher“ holt die ausgewählte dorthin; „Draufsicht“ zurück. Dasselbe über den
-  Aktionsknopf (E / großer Knopf): „… hier setzen“, „… hierher“ (`KERN.act`, ids `gplan:here`, `gplan:move`).
+  Aktionsknopf (E / großer Knopf): „… hier setzen“, „… hierher“ (`KERN.act`, ids `gplan:here`, `gplan:move`). Auf dem Boden zeigt ein
+  gelber Punktring die ausgewählte Pflanze, ein weißer die Stelle, an die „hier setzen“ die gewählte setzt.
 - **Startsituation** `?szenario=gartenplaner` (`KERN.scenario`): öffnet den Planer über dem Garten.
 
 ## Was der Berater prüft (`gplan/gplan_rules.js`, Texte deutsch mit Grund)

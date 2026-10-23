@@ -1067,6 +1067,32 @@ export const GPLAN = (() => {
     pos: frontPos,
     run: () => moveHere(),
   });
+  // on site: a yellow ring round the selected plant, a white one where „hier setzen“ would put the chosen plant (updated when the
+  // walker moves or turns, or the choice changes – not every frame)
+  let markKey = '';
+  function siteMarks() {
+    if (!onSite()) {
+      if (markKey) {
+        markKey = '';
+        GP3D.marks([]);
+      }
+      return;
+    }
+    const it = ST.items[U.sel],
+      f = U.arm && U.arm.id ? front() : null,
+      key = [it ? it.x + ',' + it.y : '', f ? f[0].toFixed(2) + ',' + f[1].toFixed(2) : ''].join('|');
+    if (key === markKey) return;
+    markKey = key;
+    const R = [];
+    if (it) {
+      const p = D.db.byId.get(it.id),
+        age = M.ageOf(it, viewYear()),
+        s = p ? M.sizeAt(p, age === null ? 0 : age, M.seedOf(it)) : null;
+      R.push({ x: it.x, y: it.y, r: s ? Math.max(0.35, Math.min(1.2, s.w / 2)) : 0.5, hex: '#ffd24a' });
+    }
+    if (f) R.push({ x: f[0], y: f[1], r: 0.3, hex: '#ffffff' });
+    GP3D.marks(R);
+  }
   // a start situation: ?szenario=gartenplaner opens the planner over the garden (tests, the menu's „Direkt zu …“)
   KERN.scenario('gartenplaner', { label: 'Gartenplaner', order: 14, run: () => open() });
   // ---------------- keys, the menu entry, the frame tick, the start ----------------
@@ -1095,6 +1121,7 @@ export const GPLAN = (() => {
       else if (U.open && U.mode === 'site' && P.mode === 'top') siteMode(false, true);
       else if (U.open && U.mode === 'site') renderSite();
     }
+    siteMarks();
     if (U.open || !ST.show || D.st !== 'ok' || !ST.items.length) return;
     acc += dt;
     if (acc < 2) return;
