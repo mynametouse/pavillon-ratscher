@@ -26,6 +26,7 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 | Pflanzen-Datenbank: 30–50 Arten und Sorten mit Quellen, Grenzabstände nach ThürNRG, Gilden (Daten im Vertrag `gplan/gplan_schema.js`) | Hilfs-Agent `pflanzen` | `feat/pflanzen` | gestartet 23.10. 9:20 (Auftrag `docs/plans/auftraege/pflanzen.md`) | `viz3/extra/pflanzen/` (`dist/gartenplaner/pflanzen.json`, `regeln.json`, `gilden.json`), `viz3/test/unit/pflanzen.test.mjs`, `docs/features/pflanzen.md`; kein Browser |
 | Kloster Veßra begehbar: Klosteranlage, Ort, Baumschule (Detailzone aus `claude/pavillon-welt.md`, für den Gartenplaner) | Hilfs-Agent `vessra` | `feat/vessra` (+ `welt/vessra` für die Kacheln) | gestartet 23.10. 9:20 (Auftrag `docs/plans/auftraege/vessra.md`) | `viz3/src/welt/vessra.js` (unter `# feat/vessra`), kleine Änderungen an `welt/welt.js`, `tools/welt/zone_vessra.py` und der Kachel-Plan für Veßra, eigener Workflow, `viz3/extra/vessra/`, `shell/css/vessra.css`, `viz3/test/vessra*.py`, ein Eintrag Orte → „Kloster Veßra“; Port 8981 |
 | Hinfahren: Fahrzeuge aus dem 2,4-km-Quadrat heraus nach Schleusingen und Kloster Veßra, Gelände beim Fahren nachladen, Orts- und Wegweiserschilder (Falko 9:27) | Hilfs-Agent `fahrt` | `feat/fahrt` | gestartet 23.10. 9:30 (Auftrag `docs/plans/auftraege/fahrt.md`) | neues `viz3/src/welt/fahrt.js` (unter `# feat/fahrt` nach `vehicles/minimap.js`), Kartenrand in `vehicles/vehicle.js`, `vehicles/minimap.js` (klein), wenige markierte Zeilen in `welt/welt.js`, `viz3/extra/fahrt/`, `viz3/test/fahrt*.py`, `docs/features/fahrt.md`; Port 8982 |
+| Einrichtung der Gartengebäude mit einem Klick umstellen (Stile, Akzentfarben), Holzhaus als Atelier (Töpfern, Malen, Schaukelstuhl, Klappsofa als Gästebett), Wohnwagen gespiegelt – Bett rechts (Falko 9:54) | Hilfs-Agent `einrichtung` | `feat/einrichtung` | gestartet 23.10. 10:10 (Auftrag `docs/plans/auftraege/einrichtung.md`) | `garden/holzhaus.js` (innen), `garden/garten_in.js`, `garden/garten_kit.js`, Wohnwagen innen in `garden/carport.js`, Bungalow innen in `garden/bungalow.js`, neue Module unter `garden/garten_in.js`, `viz3/extra/einrichtung/`, `shell/css/einrichtung.css`, `viz3/test/einrichtung*.py`, `docs/features/einrichtung.md`, ein Menüeintrag, eine Zeile in `core/save.js`; Port 8983 |
 
 ## Absprachen
 
@@ -47,6 +48,10 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
    sich daran, Änderungen nur über den Kern-Chat (Testdaten: `viz3/test/unit/fixtures/gplan_mini.json`).
 
 ## Nachrichten (neueste oben)
+
+- 23.10. 10:10 Kern: Falko (9:54): Start in Bauphase 0 (alte Garage statt Pavillon) – baut der Kern-Chat (`boot/boot.js`, Lampen bleiben
+  sichtbar und werden über die Stärke geschaltet, `?bauphase=`; auf dem Testserver beginnt es wie bisher fertig). Einrichtung der Gartengebäude
+  mit Stilen, Atelier, Klappsofa, Wohnwagen gespiegelt – Agent `einrichtung`.
 
 - 23.10. 09:45 Kern: Falko (9:27): die Baumschule heißt im Modell „Baumschule Kammbach“; Hinfahren kommt dazu (Agent `fahrt`, Veßra-Agent baut
   die Kacheln für die Strecke mit). Falko (9:38): so dokumentieren, dass ein Absturz des Chats nichts kostet – Aufträge der Agenten jetzt
