@@ -258,6 +258,24 @@ export const DTEXT = (() => {
       ['uwe', 'Das sagst du jede Woche.'],
     ],
   ];
+  TALK.push(
+    [
+      ['gerhard', 'In der Chronik steht, dass beim Pflanzen der Linde das halbe Dorf dabei war.'],
+      ['ingrid', 'Und die andere Hälfte hat hinterher erzählt, sie wäre auch dabei gewesen.'],
+    ],
+    [
+      ['uwe', 'Will noch jemand Brezeln? Sonst ess ich sie.'],
+      ['wolfgang', 'Her damit.'],
+    ],
+    [
+      ['manfred', 'Nächsten Monat ist Übung an der Talsperre. Wer fährt mit?'],
+      ['uwe', 'Wenn’s nicht regnet.'],
+    ],
+    [
+      ['katrin', 'Ingrid, wie machst du das bloß mit den Jokern?'],
+      ['ingrid', 'Erfahrung, meine Liebe. Und ein gutes Gedächtnis.'],
+    ]
+  );
   // the story of the evening: told once one sits down at the table (the task) – and later now and then
   const STORY = [
     ['gerhard', 'Soll ich erzählen, wie das Haus zu seiner Uhr kam?'],
@@ -295,6 +313,14 @@ export const DTEXT = (() => {
       ['uwe', 'Und Hubert hat ihr den Schraubenschlüssel erklärt, ich hab’s gesehen.'],
     ],
   ];
+  STORIES.push([
+    [
+      'gerhard',
+      'Als Junge habe ich hier auf dem Dachboden eine alte Schiefertafel gefunden. Darauf stand: Wer das liest, ist mit Fegen dran.',
+    ],
+    ['manfred', 'Und? Hast du gefegt?'],
+    ['gerhard', 'Bis heute nicht.'],
+  ]);
   // at the fire
   const FIRE = [
     [
@@ -312,6 +338,11 @@ export const DTEXT = (() => {
       ['wolfgang', 'Na klar. Wo sonst.'],
     ],
     [['wolfgang', 'Das Holz ist aus der Klinge – trockenes Restholz vom letzten Winter. Riecht ihr das Harz?']],
+    [['wolfgang', 'Hört ihr den Kauz drüben an der Klinge? Der ruft jeden Abend um diese Zeit.']],
+    [
+      ['uwe', 'Nächstes Jahr säe ich hier Dinkel. Dann gibt’s beim Feuer Stockbrot vom eigenen Acker.'],
+      ['katrin', 'Das sagst du jedes Jahr, Uwe.'],
+    ],
   ];
   // the task: steps with the line in the task card
   const TASK = {

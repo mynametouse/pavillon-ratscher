@@ -14,10 +14,14 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   die Tür geht freitagabends nach innen auf, sonst ist abgeschlossen („Tür der alten Schule“ sagt, wann wieder). Daneben hängt der **Aushang**.
   Licht: keine neuen Lampen (sonst würde jeder Shader neu übersetzt) – drei Innenlampen des Pavillons werden geliehen, solange der Abend läuft
   und man in der Nähe ist, und hängen dann über den Tischen und der Theke.
+- **Leben im Raum**: am Skattisch wird Stich für Stich gespielt (Karten fliegen in die Mitte, der Stich geht zum Gewinner), Karten klatschen
+  auf den Tisch, ab und zu klirren Gläser (Web Audio, nach Entfernung). Ist ein Abend und man ist im Garten oder im Dorf unterwegs, kommt
+  einmal ein Hinweis („In der alten Schule brennt Licht …“). Sitzt man fest (Tür zu), führt „Hinausgehen“ vor die Tür.
 - **Dorfbewohner** (`dorf_text.js`, `dorf_people.js`): Gerhard (72, Lehrer i. R., Dorfchronik), Manfred (56, Wehrführer), Wolfgang (59,
   Waldarbeiter), Uwe (46, Landwirt, freitags hinter der Theke), Katrin (39, Pflegerin, Rommé), Ingrid (58, Ortsteilbürgermeisterin) –
   Microsoft-Rocketbox-Figuren (MIT) mit den Bewegungen der Spielfiguren, gebaut mit `tools/player/build_villagers.sh` →
-  `viz3/extra/dorf/dist/chars/dorf_*.json` (0,7–1,2 MB je Figur, Gesicht 1024 px, Rest 512 px). Geladen werden sie **nur** kurz vor und
+  `viz3/extra/dorf/dist/chars/dorf_*.json` (0,7–1,2 MB je Figur, Gesicht 1024 px, Rest 512 px; unter den durchsichtigen Pixeln der
+  Haarkarten liegt die mittlere Haarfarbe, sonst gäbe es dunkle Ränder; Gerhard ohne Haarkarten). Geladen werden sie **nur** kurz vor und
   während eines Abends in der Nähe, danach wieder freigegeben.
 - **Gespräche**: Aktionsknopf „Mit … sprechen“ → Gesprächsfenster (`#dorfpanel`, Aussehen wie bei den Nachbarn, `shell/css/dorf.css`) mit
   Themen: Schule (1828, heute Vereinshaus der Feuerwehr), Dorflinde (1888), Talsperre, Wald und Klinge, Wetter, Hubert und Ronald …

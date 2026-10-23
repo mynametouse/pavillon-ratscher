@@ -4,7 +4,7 @@
 // Loaded only when they are needed (the evening runs or is about to, and one is near the school or the fire), one after the other with a
 // pause between (no long stall); dropped again (geometry, textures freed) when nobody needs them for a while.
 import * as THREE from 'three';
-import { BASE, scene, V } from '../core/head.js';
+import { BASE, QS, scene, V } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { CHL, rbPerson } from '../npc/npc_real.js';
 import { DTEXT } from './dorf_text.js';
@@ -14,7 +14,7 @@ export const DPEOPLE = (() => {
     PM = window.PLAYERMAN || {};
   const U = f => BASE + 'chars/' + f;
   const KEYS = Object.keys(DTEXT.P);
-  const avail = () => !!(PM.pclips_m && KEYS.every(k => CH[DTEXT.P[k].fig]));
+  const avail = () => !!(PM.pclips_m && KEYS.every(k => CH[DTEXT.P[k].fig])) && !QS.get('lowfig'); // ?lowfig: no figures (as npc/npc_real.js)
   async function clipSet(k) {
     if (S.clips[k]) return S.clips[k];
     const file = k === 'f' && PM.pclips_f ? PM.pclips_f : PM.pclips_m,

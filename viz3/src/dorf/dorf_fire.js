@@ -126,11 +126,12 @@ export const DFIRE = (() => {
           ar = (a * Math.PI) / 180,
           bx = Math.cos(ar) * r,
           by = Math.sin(ar) * r;
-        S.benches.push({ x: bx, y: by, a: ar + Math.PI, len });
+        const dz = KERN.terrain(x + bx, y + by) - S.z; // the field is not quite level
+        S.benches.push({ x: bx, y: by, a: ar + Math.PI, len, dz });
         const g = new THREE.CylinderGeometry(0.2, 0.22, len, 10);
         g.rotateZ(Math.PI / 2);
         g.rotateY(ar + Math.PI / 2);
-        g.translate(bx, 0.2, -by);
+        g.translate(bx, 0.2 + dz, -by);
         const me = new THREE.Mesh(g, MAT.logs);
         me.castShadow = me.receiveShadow = true;
         grp.add(me);

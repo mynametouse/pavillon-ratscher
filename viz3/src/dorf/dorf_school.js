@@ -755,6 +755,7 @@ export const DSCHOOL = (() => {
       S.grp.position.copy(V(F.ox, F.oy, F.zF));
       S.grp.rotation.y = Math.atan2(F.s, F.c);
       scene.add(S.grp);
+      RATSCHER.bld.push(S.grp); // hidden with the buildings in the map view
       const kit = VPROPS.kit ? VPROPS.kit() : null;
       if (!kit) throw new Error('no VPROPS kit');
       // the kit works in site coordinates: give it room coordinates (x, y, h) in a frame without turn, the group turns it
