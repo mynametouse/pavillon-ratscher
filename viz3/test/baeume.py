@@ -57,7 +57,7 @@ with lib.browser() as b:
         const c = Math.round(f.D * 100); if (out[c]) continue; out[c] = [TREEHIT.verdict(i, 'car', 20), TREEHIT.verdict(i, 'tractor', 20), TREEHIT.verdict(i, 'car', 4)]; } return out; })())"""))
     keys = sorted(int(k) for k in tab); print('spruce: D cm → car 20 km/h, tractor 20 km/h, car 4 km/h', {k: tab[str(k)] for k in keys}, flush=True)
     car_max = max([k for k in keys if tab[str(k)][0] == 'fall'] or [0]); tr_max = max([k for k in keys if tab[str(k)][1] == 'fall'] or [0])
-    ck('car knocks over spruces up to ~9–10 cm, the tractor up to ~17–18 cm', 8 <= car_max <= 11 and 15 <= tr_max <= 19, f"car ≤ {car_max} cm, tractor ≤ {tr_max} cm")
+    ck('car knocks over spruces up to ~9–10 cm, the tractor up to ~16 cm (loader low; ~18 with its front weights)', 8 <= car_max <= 11 and 15 <= tr_max <= 19, f"car ≤ {car_max} cm, tractor ≤ {tr_max} cm")
     fallen = []
 
     def look(t, H):   # 6 m up, 6 m back along the run-up and 5 m to the side, looking at a third of the height along the push direction

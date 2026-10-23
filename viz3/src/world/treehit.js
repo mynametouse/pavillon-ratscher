@@ -42,8 +42,8 @@ export const TREEHIT = (() => {
   const NAME = { spruce: 'Fichte', larch: 'Lärche', pine: 'Kiefer' };
   // per vehicle: contact height of the body (m), the force its front takes on a narrow stem (N), traction when pushing slowly (N)
   const VP = {
-    car: { h: 0.45, front: 6000, trac: 4000, der: 'das Auto', dem: 'dem Auto' },
-    tractor: { h: 0.75, front: 22000, trac: 30000, der: 'der Traktor', dem: 'dem Traktor' },
+    car: { h: 0.45, hv: 0.45, front: 6000, trac: 4000, der: 'das Auto', dem: 'dem Auto' },
+    tractor: { h: 0.75, hv: 0.53, front: 22000, trac: 30000, der: 'der Traktor', dem: 'dem Traktor' }, // hv: what touches first – the loader, lowered
   };
   const vpOf = v => VP[v.id] || { h: 0.6, front: 8000, trac: 6000, der: 'das Fahrzeug', dem: 'dem Fahrzeug' };
   // ---------------- what stands where: WCOL trunk → tree ----------------
@@ -733,7 +733,7 @@ export const TREEHIT = (() => {
         }
       : null;
   };
-  // what vehicle vid (car/tractor) does to trunk i when it hits it at kmh with the body (or at height hc)
+  // what vehicle vid (car/tractor) does to trunk i when it hits it at kmh with what touches first (or at height hc)
   S.verdict = (i, vid, kmh = 20, hc) => {
     const T = info(i);
     if (!T) return 'hard';
@@ -743,7 +743,7 @@ export const TREEHIT = (() => {
       m = vv ? massOf(vv) : vid === 'tractor' ? 5400 : 1230,
       a = kmh / 3.6,
       F = Math.min(P.front, (m * a * a) / (2 * YIELD)),
-      need = T.M / (hc || P.h);
+      need = T.M / (hc || P.hv || P.h);
     return F >= need ? 'fall' : 'stop';
   };
   S.state = i => {
