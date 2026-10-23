@@ -499,6 +499,27 @@
       "herausgeber": "Bundesinstitut für Risikobewertung (BfR)",
       "abgerufen": "2026-10-23",
       "lizenz": null
+    },
+    "wetcc-gilde": {
+      "titel": "Fruit Tree Guild – Layers and Categories",
+      "url": "https://wetcc.edu/wp-content/uploads/pdf/Fruit-Tree-Guild-Layers-Categories.pdf",
+      "herausgeber": "White Earth Tribal and Community College, Community Extension (gefördert von USDA NIFA)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "hswt-waldgarten": {
+      "titel": "Evaluierung der finanziellen Rentabilität eines Waldgartens am Standort Freising/Dürneck (Bachelorarbeit J. Knoll, Juni 2025)",
+      "url": "https://agroforst-info.de/wp-content/uploads/2025/11/Bachelorarbeit_Waldgarten_Knoll_Juni_2025.pdf",
+      "herausgeber": "Hochschule Weihenstephan-Triesdorf, Fakultät Wald und Forstwirtschaft (über agroforst-info.de)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lfl-schafgarbe": {
+      "titel": "Essbare Wildkräuter: Schafgarbe (Februar 2008)",
+      "url": "https://www.lfl.bayern.de/mam/cms07/iab/dateien/wildkraeuter_schafgarbe.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Landwirtschaft (LfL), Institut für Agrarökologie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
     }
   },
   "arten": [
@@ -718,7 +739,7 @@
       "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": "Forstgehölz – nicht in der Sortimentsübersicht; eher Forstbaumschule" },
       "darstellung": { "typ": "laubbaum", "krone": "oval", "laub": "#3e5a2e", "bluete": "#8a5a6a", "frucht": "#4a3a2a", "herbst": "#5a6a3a" },
       "text": "Heimischer Baum für die nassen Stellen am Bach: bindet mit Wurzelknöllchen Luftstickstoff, übersteht nassen, schweren Boden und lange Überflutung. Die Samen in den kleinen Zapfen sind Winterfutter für Vögel.",
-      "quellen": ["pfaf-alnus-glutinosa", "sdw-schwarzerle"]
+      "quellen": ["pfaf-alnus-glutinosa", "sdw-schwarzerle", "hswt-waldgarten"]
     },
     {
       "id": "goumi",
@@ -746,8 +767,8 @@
       "nachbarrecht": "strauch-uebrige",
       "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
       "darstellung": { "typ": "strauch", "krone": "buschig", "laub": "#8a9a6a", "bluete": "#f2ead0", "frucht": "#c4302b", "herbst": "#b5a35a" },
-      "text": "Stickstoffsammler mit essbaren roten Beeren im Hochsommer; die kleinen Blüten duften nach Flieder und locken Bienen. Ein Strauch am sonnigen Rand der Apfel-Gilde liefert dem Baum Stickstoff.",
-      "quellen": ["pfaf-elaeagnus-multiflora"]
+      "text": "Stickstoffsammler mit essbaren roten Beeren im Hochsommer; die kleinen Blüten duften nach Flieder und locken Bienen. Ölweiden werden im Waldgarten neben nährstoffhungrige Obstbäume gesetzt – ein Strauch am sonnigen Rand der Apfel-Gilde.",
+      "quellen": ["pfaf-elaeagnus-multiflora", "hswt-waldgarten"]
     },
     {
       "id": "johannisbeere-rot",
@@ -840,7 +861,7 @@
       "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
       "darstellung": { "typ": "staude", "krone": "buschig", "laub": "#3f7a3a", "bluete": "#c48ad0" },
       "text": "Würzkraut für den Ring am Stamm; die rosa Blüten im Frühsommer sind gute Bienenweide. Unter Apfelbäumen soll Schnittlauch nach der Mischkultur-Literatur den Schorf mindern – belegt ist das nicht.",
-      "quellen": ["pfaf-allium-schoenoprasum"]
+      "quellen": ["pfaf-allium-schoenoprasum", "wetcc-gilde"]
     },
     {
       "id": "narzisse",
@@ -896,7 +917,7 @@
       "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
       "darstellung": { "typ": "strauch", "krone": "buschig", "laub": "#4f7a35", "bluete": "#d8c86a", "frucht": "#8a6a3a", "herbst": "#d0b040" },
       "text": "Heimischer Großstrauch für Hecke und Gildenrand, liefert Nüsse und Stangen und verträgt Wind. Für sichere Ernte eine zweite Sorte oder eine Wildhasel in die Nähe pflanzen.",
-      "quellen": ["pfaf-corylus-avellana"]
+      "quellen": ["pfaf-corylus-avellana", "hswt-waldgarten"]
     },
     {
       "id": "birne-conference",
@@ -1646,16 +1667,16 @@
       "licht": ["sonne", "halbschatten"],
       "boden": { "art": ["sand", "lehmsand", "lehm", "tonlehm"], "ph": [5.5, 8], "feuchte": ["trocken", "frisch"], "staunaesse": "nein" },
       "frosthaerte_c": -30,
-      "bluete": { "monate": [6, 8], "spaetfrost": "gering", "farbe": "#f4f0ea" },
+      "bluete": { "monate": [6, 10], "spaetfrost": "gering", "farbe": "#f4f0ea" },
       "laub": "wintergruen",
-      "funktionen": ["insekten", "heil", "bodendecker"],
+      "funktionen": ["insekten", "heil", "gewuerz", "bodendecker"],
       "pflanzzeit": [3, 10],
       "pflege": "Anspruchslos und trockenheitsfest; verträgt Mähen und Tritt. Breitet sich über Ausläufer aus – bei Bedarf abstechen.",
       "nachbarrecht": "krautig",
       "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
       "darstellung": { "typ": "staude", "krone": "buschig", "laub": "#5a8a4a", "bluete": "#f4f0ea" },
-      "text": "Heimische Staude, die Bestäuber und Nützlinge wie Marienkäfer und Florfliegen anlockt. Für sonnige, eher trockene Ränder der Gilden; wächst auch im Rasen.",
-      "quellen": ["pfaf-achillea-millefolium"]
+      "text": "Heimische Staude trockener Wiesen und Weiden, die Bestäuber und Nützlinge wie Marienkäfer und Florfliegen anlockt; junge Blätter und Blüten würzen Salat und Quark. Für sonnige, eher trockene Ränder der Gilden; verträgt Mähen und Tritt.",
+      "quellen": ["pfaf-achillea-millefolium", "lfl-schafgarbe"]
     },
     {
       "id": "rhabarber",
@@ -1711,7 +1732,7 @@
       "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
       "darstellung": { "typ": "bodendecker", "krone": "flach", "laub": "#4f8a3a", "bluete": "#f8f8f0", "frucht": "#d0202a" },
       "text": "Heimischer Bodendecker für Halbschatten und Sonne, der unter Sträuchern rasch eine geschlossene Decke bildet; kleine, aromatische Früchte im Frühsommer.",
-      "quellen": ["pfaf-fragaria-vesca"]
+      "quellen": ["pfaf-fragaria-vesca", "wetcc-gilde"]
     },
     {
       "id": "weissklee",
@@ -1738,7 +1759,7 @@
       "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
       "darstellung": { "typ": "bodendecker", "krone": "flach", "laub": "#4a8a3a", "bluete": "#f4f4ec" },
       "text": "Lebender Mulch für Wege und offene Baumscheiben: sammelt Stickstoff, verträgt Tritt und ist eine gute Bienenweide. Braucht Licht – unter dichten Kronen bleibt er schwach.",
-      "quellen": ["pfaf-trifolium-repens"]
+      "quellen": ["pfaf-trifolium-repens", "wetcc-gilde"]
     },
     {
       "id": "waldmeister",

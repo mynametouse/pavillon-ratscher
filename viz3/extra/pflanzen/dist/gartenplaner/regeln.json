@@ -142,6 +142,13 @@
       "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
       "abgerufen": "2026-10-23",
       "lizenz": null
+    },
+    "tlubn-klima-sm": {
+      "titel": "Klimaentwicklung Schmalkalden-Meiningen (Faktenblatt, erstellt 16.04.2025)",
+      "url": "https://rekisviewer.hydro.tu-dresden.de/viewer/rekis_domain/Klima_Steckbriefe/Thueringen/Landkreise/16066/000_GESAMT.pdf",
+      "herausgeber": "Thüringer Landesamt für Umwelt, Bergbau und Naturschutz (TLUBN), Kompetenzzentrum Klima; Auswertung TU Dresden (ReKIS)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
     }
   },
   "messung": "Gemessen wird von der Mitte des Stammes – bei Sträuchern, Hecken und Rebstöcken von der Mitte der Pflanze – bis zur Grenzlinie, und zwar an der Stelle, an der die Pflanze aus dem Boden tritt (§ 47 ThürNRG). Die Breite der Krone zählt dabei nicht; über die Grenze ragende Äste und Wurzeln regelt § 910 BGB.",
@@ -333,6 +340,11 @@
       "id": "spaetfrost-sortenwahl",
       "text": "In Frostlagen spät blühende oder blütenfrostrobuste Sorten wählen – beim Apfel z. B. Luxemburger Renette, Roter Bellefleur, Grahams Jubiläumsapfel, Heslacher Gereutapfel; bei der Birne Metzer Bratbirne, Welsche Bratbirne, Prinzessin Marianne. Ontario blüht frostfest, ihr Holz ist aber nicht winterhart genug für sehr kalte Lagen.",
       "quelle": "kob-spaetfrost"
+    },
+    {
+      "id": "klima-region",
+      "text": "Klima im Nachbarkreis Schmalkalden-Meiningen (für Ratscher das nächste belegte Mittel): 1961–1990 im Flächenmittel 7,5 °C, 102 Frost- und 29 Eistage, 761 mm Niederschlag; 1991–2020 um 1,2 °C wärmer und 13 Frosttage weniger. Im Szenario ohne Klimaschutz wird es weiter wärmer, die Sommer bis 2100 um etwa ein Fünftel trockener. Für die Tallage am Bach gilt zusätzlich die Kaltluft-Regel (spaetfrost-tallage).",
+      "quelle": "tlubn-klima-sm"
     },
     {
       "id": "aprikose-pfirsich",
