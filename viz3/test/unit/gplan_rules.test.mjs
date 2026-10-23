@@ -80,8 +80,14 @@ test('buildings: in the pavilion, the grown crown over it, close to it', () => {
   has(run(MINI, plan(['apfel-test', 5, 2])), 'warn', 'bau', /Krone reicht ausgewachsen 1,3 m über den Pavillon/);
   has(run(MINI, plan(['apfel-test', 6, 2])), 'hint', 'bau', /bis an den Pavillon/);
   hasNot(run(MINI, plan(['apfel-test', 8, 2])), 'bau');
-  // a perennial next to the wall is fine
+  // a perennial next to the wall is fine, a climber right at it too (but not in it)
   hasNot(run(MINI, plan(['beinwell-test', 4.6, 2])), 'bau');
+  const k = clone(MINI);
+  k.pflanzen.arten[1].schicht = 'kletter';
+  k.pflanzen.arten[1].darstellung.typ = 'kletter';
+  hasNot(run(k, plan(['goumi-test', 4.1, 2])), 'bau');
+  has(run(k, plan(['goumi-test', 3.9, 2])), 'warn', 'bau', /steht im Pavillon/);
+  has(run(MINI, plan(['goumi-test', 4.1, 2])), 'warn', 'bau', /direkt am Pavillon/);
 });
 
 test('the path: on it, the crown hanging into it', () => {

@@ -97,7 +97,13 @@ export const GPRULES = (() => {
               ' m bis zur Grenze – nach Thüringer Nachbarrecht mindestens ' +
               de(g.abstand_m) +
               ' m.',
-            g.text + ' (' + g.paragraf + '). ' + (db.messung || ''),
+            g.text +
+              ' (' +
+              g.paragraf +
+              '). ' +
+              (db.messung || '') +
+              // towards the brook the boundary may be the water's own parcel (then no distance applies)
+              (S.brook && S.brook(a.it.x, a.it.y) < 10 ? ' ' + fact(db, [/gewaesser/, /bach/], '') : ''),
             'grenze'
           );
       }
@@ -107,17 +113,21 @@ export const GPRULES = (() => {
       for (const b of S.buildings || []) {
         const inB = inPoly(a.it.x, a.it.y, b.foot),
           d = inB ? 0 : edgeDist(a.it.x, a.it.y, b.foot);
-        if (inB || d < 0.25) {
+        // a climber belongs at a wall (not in the building); everything else keeps a little room
+        const climber = a.p.schicht === 'kletter' || (a.p.darstellung && a.p.darstellung.typ === 'kletter');
+        if (inB || (d < 0.25 && !climber)) {
           add(
             'warn',
             [a.i],
             name(a.p) + ' steht ' + (inB ? bIn(b) : 'direkt ' + bAt(b)) + '.',
-            'Dort ist kein Boden zum Pflanzen.',
+            inB
+              ? 'Dort ist kein Boden zum Pflanzen.'
+              : 'Unmittelbar an der Wand: kein Platz für Wurzeln und Krone, Spritzwasser, Traufe.',
             'bau'
           );
           continue;
         }
-        if (!woody) continue;
+        if (!woody || climber) continue;
         const over = a.R - d;
         if (over > 0.5 && M.isTree(a.p))
           add(
@@ -343,8 +353,9 @@ export const GPRULES = (() => {
         items,
         name(p) +
           (items.length > 1 ? ' (' + items.length + '×)' : '') +
-          (bf.selbstfruchtbar === 'nein' ? ' braucht' : ' trägt besser mit') +
-          (p.sorte ? ' eine zweite Sorte' : ' eine zweite Pflanze') +
+          (bf.selbstfruchtbar === 'nein'
+            ? ' braucht ' + (p.sorte ? 'eine zweite Sorte' : 'eine zweite Pflanze')
+            : ' trägt besser mit ' + (p.sorte ? 'einer zweiten Sorte' : 'einer zweiten Pflanze')) +
           ' als Befruchter in höchstens ' +
           POLL +
           ' m' +
@@ -354,6 +365,7 @@ export const GPRULES = (() => {
           ': Bienen bringen den Pollen einer anderen, gleichzeitig blühenden ' +
           (p.sorte ? 'Sorte' : 'Pflanze derselben Art') +
           '; ein passender Baum oder Strauch im Nachbargarten hilft auch.' +
+          (p.sorte ? '' : ' Beim Kauf zwei verschiedene Sorten nehmen.') +
           (f ? ' ' + f.text : ''),
         'befruchter'
       );
