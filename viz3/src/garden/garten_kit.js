@@ -378,6 +378,91 @@ export function armchair(g, x0, x1, y0, y1, z, m, back = '-y') {
 export function bulbMat(col = 0xfff2d6) {
   return new THREE.MeshStandardMaterial({ color: col, emissive: 0xffd28a, emissiveIntensity: 0, roughness: 0.3 });
 }
+// ---- palette: the plain-coloured parts of a building share one material (colour, roughness and metalness come from two tiny images,
+// each part's UVs point at its swatch), so render/zmerge.js folds them into a few draw calls instead of one per colour ----
+const PAL = (() => {
+  const N = 64,
+    C = 4,
+    cells = new Map(),
+    mk = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = N;
+      return c;
+    },
+    col = mk(),
+    orm = mk(),
+    qc = col.getContext('2d'),
+    qo = orm.getContext('2d');
+  qc.fillStyle = '#ffffff';
+  qc.fillRect(0, 0, N, N);
+  qo.fillStyle = 'rgb(255,200,0)';
+  qo.fillRect(0, 0, N, N);
+  const tex = (c, srgb) => {
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    t.magFilter = t.minFilter = THREE.NearestFilter;
+    t.generateMipmaps = false;
+    return t;
+  };
+  const tc = tex(col, true),
+    to = tex(orm, false);
+  const mat = side => {
+    const m = plain({ map: tc, roughnessMap: to, metalnessMap: to, roughness: 1, metalness: 1, side });
+    m.name = 'garten-palette';
+    return m;
+  };
+  const M = { front: mat(THREE.FrontSide), double: mat(THREE.DoubleSide) };
+  function uv(m) {
+    const key = m.color.getHexString() + '|' + m.roughness.toFixed(2) + '|' + m.metalness.toFixed(2);
+    let i = cells.get(key);
+    if (i === undefined) {
+      i = cells.size;
+      if (i >= (N / C) * (N / C)) return null;
+      cells.set(key, i);
+      const x = (i % (N / C)) * C,
+        y = Math.floor(i / (N / C)) * C;
+      qc.fillStyle = '#' + m.color.getHexString();
+      qc.fillRect(x, y, C, C);
+      qo.fillStyle = `rgb(255,${Math.round(m.roughness * 255)},${Math.round(m.metalness * 255)})`;
+      qo.fillRect(x, y, C, C);
+      tc.needsUpdate = to.needsUpdate = true;
+    }
+    return [((i % (N / C)) * C + C / 2) / N, 1 - (Math.floor(i / (N / C)) * C + C / 2) / N];
+  }
+  return { M, uv, cells };
+})();
+// give the plain-coloured meshes of a building group the palette material (not those in keep: their colour changes while playing)
+export function paletteize(g, keep = []) {
+  const K = new Set(keep);
+  for (const l of GLAMPS) if (l.mat) K.add(l.mat);
+  K.add(KM.traySoil);
+  K.add(KM.tomato);
+  const list = [];
+  g.traverse(o => {
+    if (o.isMesh && !o.isInstancedMesh && !o.userData.noMerge && !Array.isArray(o.material)) list.push(o);
+  });
+  let n = 0;
+  for (const o of list) {
+    const m = o.material;
+    if (K.has(m) || !m.isMeshStandardMaterial || m.isMeshPhysicalMaterial || m.map || m.normalMap || m.transparent)
+      continue;
+    if (m.userData.svDim || m.userData.grime || m.vertexColors || (m.emissive && m.emissive.getHex() !== 0)) continue;
+    const t = PAL.uv(m);
+    if (!t) continue;
+    const geo = o.geometry.clone();
+    let uv = geo.attributes.uv;
+    if (!uv) {
+      uv = new THREE.BufferAttribute(new Float32Array(geo.attributes.position.count * 2), 2);
+      geo.setAttribute('uv', uv);
+    }
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, t[0], t[1]);
+    o.geometry = geo;
+    o.material = m.side === THREE.DoubleSide ? PAL.M.double : PAL.M.front;
+    n++;
+  }
+  return n;
+}
+export { PAL };
 // ---- registries for garden/garten_in.js (local coordinates; the world position follows the building when it is moved in the plan view) ----
 export const GLAMPS = []; // {key, b, lx, ly, z, mat, dist, inten, color, sw: [lx, ly, z], label, room: (x, y, z) => bool}
 export const GSEATS = []; // {key, b, lx, ly, eye, yaw (local compass deg), pitch, kind: 'sit'|'lie', label, r, at: [lx, ly]}

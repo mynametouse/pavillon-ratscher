@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { MAT } from '../core/mats.js';
 import { beam, bldBegin, bldEnd, boardLeaf, cyl } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
@@ -30,6 +31,7 @@ import {
   keysBegin,
   KM,
   mug,
+  paletteize,
   picture,
   plant,
   pot,
@@ -408,7 +410,22 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
   lcol(r, xi1 - 0.35, xi1, -0.5, 0.75, zf, zf + 0.35, 'cans');
   lcol(r, 0.05, 0.55, yi0, yi0 + 0.4, zf, zf + 0.42, 'battery');
   // door: hinged at the west jamb, opens outwards (north)
-  ldoor('holzhaus', b, boardLeaf(0.85, 1.98, { mat: MATS.ochre }), {
+  // a wreath of dried herbs and rose hips on the outside of the door (the leaf's −Z face looks north)
+  const leafH = boardLeaf(0.85, 1.98, { mat: MATS.ochre });
+  {
+    const wr = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.028, 6, 20), KM.herbDry);
+    wr.position.set(0.42, 1.5, -0.05);
+    leafH.add(wr);
+    const hips = [];
+    for (let i = 0; i < 7; i++) {
+      const a = (i / 7) * Math.PI * 2 + 0.3;
+      hips.push(
+        new THREE.SphereGeometry(0.018, 6, 5).translate(0.42 + Math.cos(a) * 0.12, 1.5 + Math.sin(a) * 0.12, -0.075)
+      );
+    }
+    leafH.add(new THREE.Mesh(BufferGeometryUtils.mergeGeometries(hips), KM.red));
+  }
+  ldoor('holzhaus', b, leafH, {
     lx: DN.a0,
     ly: hy - 0.03,
     dir: [1, 0],
@@ -435,6 +452,7 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
   gB(g, DN.a1 + 0.12, DN.a1 + 0.14, hy + 0.55, hy + 0.85, 0, 0.12, MAT.blacksteel, { cast: false });
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: zf - 0.1, z1: zH + 0.4, name: 'Holzhaus' });
   FOOT.push({ b, hx: hx + 0.1, hy: hy + 0.1, ox: 0, oy: 0 });
+  paletteize(g, []);
 }
 
 bldEnd(BLD.holzhaus);

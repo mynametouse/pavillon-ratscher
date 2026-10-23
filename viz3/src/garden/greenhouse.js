@@ -17,7 +17,7 @@ import {
   slopeSlab,
   worldOf,
 } from './site_base.js';
-import { GACTS, jar, KM, leaf, plant, pot, put, rng, stone, wateringCan } from './garten_kit.js';
+import { GACTS, jar, KM, leaf, paletteize, plant, pot, put, rng, stone, wateringCan } from './garten_kit.js';
 // Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends now face north and south: turned
 // by 90° about its centre (site data: heading 96°, the long side east–west) and moved 0.5 m north, clear of the hut's new door
 {
@@ -288,6 +288,7 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
   });
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: 0, z1: 2.1, name: 'Gewächshaus' });
   FOOT.push({ b, hx: hx + 0.05, hy: hy + 0.05, ox: 0, oy: 0 });
+  paletteize(g, []);
 }
 
 const GHB = bldEnd(BLD.greenhouse);

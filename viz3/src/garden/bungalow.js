@@ -40,6 +40,7 @@ import {
   keysEnd,
   KM,
   mug,
+  paletteize,
   picture,
   plant,
   pot,
@@ -1099,6 +1100,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   FOOT.push({ b, hx: hx + 0.1, hy: hy + 0.1, ox: 0, oy: 0 });
   FOOT.push({ b, hx: ANX.hx + 0.1, hy: ANX.hy + 0.1, ox: ANX.ox, oy: ANX.oy });
   keysEnd();
+  paletteize(g, [plateM]);
 }
 
 bldEnd(BLD.bungalow);
