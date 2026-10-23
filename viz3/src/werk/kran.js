@@ -22,7 +22,7 @@ export const KRAN = (() => {
   const clamp = THREE.MathUtils.clamp,
     think = (t, ms) => PLAY.think(t, ms),
     de = (v, n = 1) => (+v).toLocaleString('de-DE', { minimumFractionDigits: n, maximumFractionDigits: n });
-  const CY = 2.92, // the column: on the axis, ahead of the bed front
+  const CY = 3.0, // the column: on the axis, ahead of the bed front (on the drawbar's frame)
     CZ = 2.2, // the boom's pivot height
     OFF = 0.12, // the pivot ahead of the column's axis
     L1 = 2.7,
@@ -65,8 +65,8 @@ export const KRAN = (() => {
     return m;
   };
   // ---- base and column (fixed on the trailer) ----
-  box(0.72, 0.5, 0.22, 0, CY, 0.66, M.paint);
-  for (const sx of [-1, 1]) stretch(unitBox(0.08, 0.08, M.paint), [sx * 0.3, CY - 0.1, 0.7], [sx * 0.52, 2.38, 0.86]);
+  box(0.6, 0.5, 0.22, 0, CY, 0.66, M.paint);
+  for (const sx of [-1, 1]) stretch(unitBox(0.08, 0.08, M.paint), [sx * 0.26, CY - 0.1, 0.7], [sx * 0.52, 2.38, 0.86]);
   box(0.42, 0.42, 0.22, 0, CY, 0.88, M.dark); // slewing gear
   // ---- the slewing part: column, head; the boom and the stick in it ----
   const slew = new THREE.Group();
@@ -122,7 +122,9 @@ export const KRAN = (() => {
     if (o.isMesh) o.userData.noMerge = true;
   });
   // ---- pose: slew θ (0 = ahead, π = back over the bed), the tip at h (from the pivot) and z (absolute, trailer frame), grapple yaw φ, open ----
-  const Q = { th: Math.PI, h: 1.7, z: 1.95, phi: 0, open: 0, tel: 0 };
+  // parked: over the bed, the boom raised, the stick down to the grapple above the floor (transport height about 3.9 m)
+  const PARK = { h: 3.9, z: 2.35 };
+  const Q = { th: Math.PI, h: PARK.h, z: PARK.z, phi: 0, open: 0, tel: 0 };
   function ik(h, z) {
     const zr = z - CZ;
     let d = Math.hypot(h, zr),
@@ -280,8 +282,8 @@ export const KRAN = (() => {
       { th: angTo(thA, Math.PI), h: hB, z: Math.max(safe, zBed + 0.6), phi: angTo(phiA, 0), open: 0 },
       { th: angTo(thA, Math.PI), h: hB, z: zBed, phi: angTo(phiA, 0), open: 0 },
       { th: angTo(thA, Math.PI), h: hB, z: zBed, phi: angTo(phiA, 0), open: 1, drop: true },
-      { th: angTo(thA, Math.PI), h: 1.7, z: safe, phi: angTo(phiA, 0), open: 0 },
-      { th: angTo(thA, Math.PI), h: 1.7, z: 1.95, phi: angTo(phiA, 0), open: 0 },
+      { th: angTo(thA, Math.PI), h: PARK.h, z: safe, phi: angTo(phiA, 0), open: 0 },
+      { th: angTo(thA, Math.PI), h: PARK.h, z: PARK.z, phi: angTo(phiA, 0), open: 0 },
     ];
     S.seq = { K, i: 0, t: 0, dur: 0, from: null, l, slot, ta, r: o.r };
     S.busy = true;
@@ -337,7 +339,9 @@ export const KRAN = (() => {
     for (const n of ['th', 'h', 'z', 'phi', 'open']) Q[n] = q.from[n] + (k[n] - q.from[n]) * e;
     pose();
     if (S.log) carry(S.log);
-    sndTick();
+    try {
+      sndTick();
+    } catch (e) {} // a failing sound must never stop the crane
     if (e0 >= 1) {
       if (k.grip) {
         const l = q.l;

@@ -492,7 +492,7 @@ export const WINDE = (() => {
     sndOff('pull');
     SFX.clunk && SFX.clunk();
     think(
-      'Der Stamm liegt am Rückeschild. Choker lösen – oder die Winde etwas anheben (N im Traktor) und den Stamm zum Weg schleifen, wo die Gabel von der Seite herankommt.',
+      'Der Stamm liegt am Rückeschild. Choker lösen – oder die Winde etwas anheben (N im Traktor) und den Stamm an eine freie Stelle schleifen. Aufladen: mit der Gabel quer von der Seite oder mit dem Kran am Anhänger.',
       6500
     );
     changed();
@@ -683,7 +683,7 @@ export const WINDE = (() => {
     SFX.clunk && SFX.clunk();
     HOLZ.save();
     think(
-      'Choker gelöst. Das Seil an der Winde einhängen – oder gleich den nächsten Stamm anschlagen. Den Stamm nimmt die Gabel quer von der Seite.',
+      'Choker gelöst. Das Seil an der Winde einhängen – oder gleich den nächsten Stamm anschlagen. Aufladen: Gabel quer von der Seite oder Kran am Anhänger.',
       5200
     );
     changed();
@@ -999,6 +999,17 @@ export const WINDE = (() => {
         s.stop(t + 1.5);
       } catch (e) {}
   }
+  // a failing sound must never stop the winch
+  function sndSafe(dt) {
+    try {
+      sndTick(dt);
+    } catch (e) {
+      if (!SND.err) {
+        SND.err = 1;
+        console.warn('winde sound', e);
+      }
+    }
+  }
   function sndTick(dt) {
     // the engine runs while the winch is down and nobody sits in the tractor (in the cab: vehicles/vsound.js)
     const near = Math.hypot(P.x - T.st.x, P.y - T.st.y) < 140;
@@ -1038,7 +1049,7 @@ export const WINDE = (() => {
     } else N.sOut.gain.setTargetAtTime(0, t, 0.1);
   }
   // ---------------- per frame ----------------
-  let lastX = null,
+  let lastT = null,
     lastHand = null,
     introDone = false;
   function tick(dt) {
@@ -1052,6 +1063,17 @@ export const WINDE = (() => {
         if (WN.liftT < 0.4) VSND.thud(T, 0.35);
       }
     }
+    // the tractor jumped (menu: vehicles back to their places, a test): the cable goes back on the drum, the log stays where it is, the
+    // winch goes up – as at the start
+    const tp = [T.st.x, T.st.y];
+    if (lastT && Math.hypot(tp[0] - lastT[0], tp[1] - lastT[1]) > 3) {
+      if (S.cable !== 'drum') reset('Die Winde ist wieder aufgespult – der Stamm bleibt liegen.');
+      else if (WN.liftT < 1) {
+        WN.lift = WN.liftT = 1;
+        WN.pose(0);
+      }
+    }
+    lastT = tp;
     WN.parked.visible = S.cable === 'drum';
     if (S.btn) {
       const pr = WN.liftT < 0.9 ? 'true' : 'false';
@@ -1077,17 +1099,10 @@ export const WINDE = (() => {
     if (S.cable === 'drum') {
       rope.visible = false;
       choker.g.visible = false;
-      lastX = null;
-      sndTick(dt);
+      sndSafe(dt);
       return;
     }
     const X = exitW();
-    // the tractor jumped (menu: vehicles back to their places): the cable goes back on the drum, the log stays where it is
-    if (lastX && Math.hypot(X[0] - lastX[0], X[1] - lastX[1]) > 3) {
-      reset('Die Winde ist wieder aufgespult – der Stamm bleibt liegen.');
-      return;
-    }
-    lastX = X;
     if (S.cable === 'hand') {
       if (VEH.cur || PLAY.seated()) {
         // into a vehicle or sat down: the hook stays here
@@ -1135,7 +1150,7 @@ export const WINDE = (() => {
     chokerUpdate();
     if (S.dirty || S.pull || S.cable === 'hand') markDirty();
     S.dirty = false;
-    sndTick(dt);
+    sndSafe(dt);
     if (S.saveT !== undefined && (S.saveT -= dt) <= 0) {
       S.saveT = undefined;
       HOLZ.save();
@@ -1160,7 +1175,6 @@ export const WINDE = (() => {
     sndStop();
     rope.visible = false;
     choker.g.visible = false;
-    lastX = null;
     if (msg) think(msg, 3000);
     changed();
   }
@@ -1281,6 +1295,9 @@ export const WINDE = (() => {
     ae: S.ae,
     end: S.end,
     hold: T.model.hold(),
+    snd: !!SND.N,
+    sndErr: SND.err || 0,
+    audio: !!(audio.ready && audio.ready()),
   });
   Object.assign(S, { takeCable, hangIn, fasten, release, nearEnd, exitW, restPt, chokerAt, danger, hookPos, restore });
   return S;

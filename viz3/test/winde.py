@@ -117,7 +117,8 @@ with lib.browser() as b:
         sp = J(f"(() => {{ const v = VEH.by.tractor; return VEH.toW(v, -4.6, 0.8); }})()"); walk_to(sp[0], sp[1], 0.8, 90); steps(0.1)
         b2 = best(); print('safe place:', b2, flush=True)
         ck('beside the tractor: „Seil einholen (Funk)“', b2.startswith('winde:funk') and 'einholen' in b2, b2)
-        act(); steps(0.1); ck('it pulls', st()['pull'])
+        E("['keydown', 'keyup'].forEach(t => window.dispatchEvent(new KeyboardEvent(t, { key: 'Shift' })))"); steps(0.2)   # a gesture: the sound may start
+        act(); steps(0.1); s45 = st(); ck('it pulls', s45['pull'], f"sound graph {s45['snd']}, audio ready {s45['audio']}")
         L = lambda: J(f"(() => {{ const l = HOLZ.by['{lid}'], e = WINDE.state().ae, E = e ? l.p1 : l.p0, O = e ? l.p0 : l.p1, R = WINDE.restPt(l); return {{ E, O, dR: Math.hypot(E[0] - R[0], E[1] - R[1]), gO: O[2] - KERN.ground(O[0], O[1]), gE: E[2] - KERN.ground(E[0], E[1]) }}; }})()")
         start = L(); traj = []; shotDone = False; tpull = 0
         for k in range(160):
@@ -130,6 +131,7 @@ with lib.browser() as b:
         s5 = st(); q = L(); print('pulled', tpull, 's, trajectory', traj[::8], s5, flush=True)
         moved = math.hypot(q['E'][0] - start['E'][0], q['E'][1] - start['E'][1])
         ck('wound in: the log lies against the shield', s5['atShield'] and q['dR'] < 0.6, f"{moved:.1f} m in {tpull} s, {q['dR']:.2f} m from the shield, said: {sub()[:90]}")
+        ck('no error in the winch sounds', st()['sndErr'] == 0)
         ck('about half a metre a second', moved / max(1, tpull) > 0.3 and moved / max(1, tpull) < 0.65, f"{moved / max(1, tpull):.2f} m/s")
         orbit(R[0], R[1], R[2] - 1.0, math.degrees(v['psi']) + 180 + 50, 22, 9); shot('f_at_shield')
     if want('save'):
@@ -162,13 +164,20 @@ with lib.browser() as b:
         ck('cable in, winch up: the tractor may drive', s8['cable'] == 'drum' and s8['lift'] > 0.99 and not s8['hold'], str(s8))
         # the fork from the side: the tractor across the log, the tines' middle under its middle
         E("VEH.enter('tractor'); (() => { const LD = TRACTOR2.model.LD; LD.liftT = LD.min; LD.tiltT = 0; })()"); steps(3)
-        al = J(f"""(() => {{ const l = HOLZ.by['{lid}'], m = HOLZ.mid(l), u = [l.p1[0] - l.p0[0], l.p1[1] - l.p0[1]], ul = Math.hypot(u[0], u[1]), n = [-u[1] / ul, u[0] / ul];
-          const v = VEH.by.tractor.st, X = [v.x - m[0], v.y - m[1]], sd = Math.sign(X[0] * n[0] + X[1] * n[1]) || 1, psi = Math.atan2(-n[0] * sd, -n[1] * sd);
-          VEH.place('tractor', m[0] + n[0] * sd * 3.4, m[1] + n[1] * sd * 3.4, psi); return {{ m, psi }}; }})()""")
-        steps(0.4)
-        E(f"""(() => {{ const F = TRACTOR2.model.fork; F.tool.updateWorldMatrix(true, false); const p = new THREE.Vector3(0, F.top, -(F.y0 + F.y1) / 2).applyMatrix4(F.tool.matrixWorld), q = [p.x, -p.z];
-          const m = HOLZ.mid(HOLZ.by['{lid}']), v = VEH.by.tractor.st; VEH.place('tractor', v.x + m[0] - q[0], v.y + m[1] - q[1], v.psi); }})()"""); steps(0.4)
-        E("TRACTOR2.model.key('r', true)"); steps(1.8); E("TRACTOR2.model.key('r', false)"); steps(0.2)
+        # both sides of the log, the lower ground first (the tines reach a little below the wheels' plane, not more)
+        sides = J(f"""(() => {{ const l = HOLZ.by['{lid}'], m = HOLZ.mid(l), u = [l.p1[0] - l.p0[0], l.p1[1] - l.p0[1]], ul = Math.hypot(u[0], u[1]), n = [-u[1] / ul, u[0] / ul];
+          return [1, -1].map(sd => ({{ sd, dz: KERN.ground(m[0] + n[0] * sd * 3.4, m[1] + n[1] * sd * 3.4) - KERN.ground(m[0], m[1]) }})).sort((a, b) => a.dz - b.dz); }})()""")
+        for sdo in sides:
+            E(f"""(() => {{ const l = HOLZ.by['{lid}'], m = HOLZ.mid(l), u = [l.p1[0] - l.p0[0], l.p1[1] - l.p0[1]], ul = Math.hypot(u[0], u[1]), n = [-u[1] / ul, u[0] / ul], sd = {sdo['sd']};
+              VEH.place('tractor', m[0] + n[0] * sd * 3.4, m[1] + n[1] * sd * 3.4, Math.atan2(-n[0] * sd, -n[1] * sd)); const LD = TRACTOR2.model.LD; LD.liftT = LD.min; }})()""")
+            steps(2.6)
+            E(f"""(() => {{ const F = TRACTOR2.model.fork; F.tool.updateWorldMatrix(true, false); const p = new THREE.Vector3(0, F.top, -(F.y0 + F.y1) / 2).applyMatrix4(F.tool.matrixWorld), q = [p.x, -p.z];
+              const m = HOLZ.mid(HOLZ.by['{lid}']), v = VEH.by.tractor.st; VEH.place('tractor', v.x + m[0] - q[0], v.y + m[1] - q[1], v.psi); }})()"""); steps(0.4)
+            dg = J(f"""(() => {{ const F = TRACTOR2.model.fork; F.tool.updateWorldMatrix(true, false); const p = new THREE.Vector3(0, F.top, -(F.y0 + F.y1) / 2).applyMatrix4(F.tool.matrixWorld), l = HOLZ.by['{lid}'], m = HOLZ.mid(l);
+              return {{ tine: +p.y.toFixed(2), bottom: +(m[2] - (l.d0 + l.d1) / 400).toFixed(2), d: +Math.hypot(p.x - m[0], -p.z - m[1]).toFixed(2) }}; }})()""")
+            print('fork side', sdo, dg, flush=True)
+            E("TRACTOR2.model.key('r', true)"); steps(1.8); E("TRACTOR2.model.key('r', false)"); steps(0.2)
+            if E(f"HOLZ.by['{lid}'].st") == 'fork': break
         stf = E(f"HOLZ.by['{lid}'].st"); ck('after winching the fork takes the log from the side', stf == 'fork', f"{stf}, said: {sub()[:100]}")
         E("TRACTOR2.model.key('t', true); TRACTOR2.model.key('t', false)"); steps(1.0)
         vt = tr(); orbit(vt['x'], vt['y'], J(f"KERN.ground({vt['x']}, {vt['y']})") + 1.2, math.degrees(vt['psi']) + 60, 18, 9); shot('g_on_fork')

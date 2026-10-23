@@ -28,6 +28,8 @@ Heck zieht den Stamm aus dem Bestand.
     6 m um die Kransäule vorn am Anhänger), zu Fuß an die Steuerventile rechts vorn am Anhänger, zum gewünschten Stamm schauen, **E**
     „Kran: … aufladen“. Der Kran greift den Stamm, wie er liegt, schwenkt über die Ladefläche und legt ihn längs zwischen die Rungen
     (Stammfuß nach vorn). Hubmoment 3,6 t·m: nah etwa 1,4 t, ganz außen 0,6 t – sonst sagt er „Zu schwer bei dieser Ausladung“.
+    Wie im echten Kleinwald: erst mit dem Traktor allein (Winde) die Stämme an den Weg ziehen, dann mit dem Anhänger kommen und laden –
+    Winde (Dreipunkt) und Anhänger (Zugmaul darunter) gehen nicht gleichzeitig.
 
 Hinweise, wenn die Gabel nichts hebt: Der Traktor sagt jetzt, warum – Stamm liegt längs zur Gabel, Zinken nicht darunter, noch nicht weit
 genug untergefahren, zu schwer, noch ein Seil daran, oder der Baum ist noch nicht aufgearbeitet (erst entasten, ablängen, **vermessen** –
