@@ -1,0 +1,126 @@
+# Small trees give way to vehicles (world/treehit.js, Falko 23.10.2026 2:52): the car and the tractor each drive into a sapling (bends under
+# the vehicle and springs back), a small tree (tips over with its root plate and stays lying, the vehicle goes on) and a thick one (stops the
+# vehicle, the tree stays). Then a reload: the knocked-over trees still lie and are no obstacles. Pictures in out/baeume/ (side view before
+# and after, the chase camera in the middle). Sections (optional second argument): car,tractor,reload
+import sys, os, json, math
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
+port = sys.argv[1]; OUT = lib.out('baeume'); ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else None
+def want(k): return not ONLY or k in ONLY
+ck = lib.Checks('baeume')
+# a target for vehicle vid: a trunk with the wanted outcome (bend / fall / stop) and a free, fairly level run-up of 12 m (and 6 m behind it);
+# nothing else in the corridor that would hold the vehicle (saplings may stand there), away from the modelled garden
+PICK = r"""window._bPick = (vid, want, cx, cy, maxR) => {
+  const W = WCOL, hw = vid === 'tractor' ? 1.8 : 1.5, res = [];
+  for (let i = 0; i < W.nTree; i++) {
+    if (W.dead[i]) continue;
+    const p = W.trunk(i);
+    if (!p || Math.hypot(p[0] - cx, p[1] - cy) > maxR || (Math.abs(p[0]) < 170 && Math.abs(p[1]) < 170)) continue;
+    const inf = TREEHIT.info(i);
+    if (!inf || inf.down) continue;
+    const v = TREEHIT.verdict(i, vid, 20);
+    if (want === 'bend' ? !inf.soft || inf.H < 1.2 : v !== want) continue;
+    if (want === 'fall' && (inf.D < (vid === 'tractor' ? 0.11 : 0.05) || inf.D > (vid === 'tractor' ? 0.155 : 0.09) || inf.soft)) continue;
+    if (want === 'stop' && inf.D < 0.2) continue;
+    res.push([Math.hypot(p[0] - cx, p[1] - cy), i, p]);
+  }
+  res.sort((a, b) => a[0] - b[0]);
+  for (const [d0, i, p] of res.slice(0, 600)) {
+    for (let k = 0; k < 12; k++) {
+      const az = (k * Math.PI) / 6, dx = Math.sin(az), dy = Math.cos(az), L0 = 12, L1 = want === 'stop' ? 1 : 7;
+      let ok = true, zp = ROADS.groundAt(p[0] - dx * L0, p[1] - dy * L0);
+      for (let s = -L0; s <= L1 && ok; s += 1) {
+        const x = p[0] + dx * s, y = p[1] + dy * s, z = ROADS.groundAt(x, y);
+        if (!Number.isFinite(z) || Math.abs(z - zp) > 0.22 || (ROADS.at(x, y) && ROADS.at(x, y).bridge)) ok = false;
+        zp = z;
+        if (!ok) break;
+        W.each(x - hw - 0.6, y - hw - 0.6, x + hw + 0.6, y + hw + 0.6,
+          (q, A) => { const ax = A[q * 4], ay = A[q * 4 + 1], bx = A[q * 4 + 2], by = A[q * 4 + 3], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey || 1,
+              t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / L2)); if (Math.hypot(ax + ex * t - x, ay + ey * t - y) < hw + 0.3) ok = false; },
+          (t, A) => { if (t === i || W.soft[t]) return; if (Math.hypot(A[t * 3] - x, A[t * 3 + 1] - y) < hw + A[t * 3 + 2] + 0.2) ok = false; });
+      }
+      if (!ok) continue;
+      return { i, x: p[0], y: p[1], z: ROADS.groundAt(p[0], p[1]), sx: p[0] - dx * L0, sy: p[1] - dy * L0, psi: az, dx, dy, info: TREEHIT.info(i), d0 };
+    }
+  }
+  return null;
+};"""
+with lib.browser() as b:
+    errs = []; pg = lib.page(b, 1100, 680, errs, tier='mittel'); lib.boot(pg, port, figures=True); E = pg.evaluate
+    E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
+    E("CLOCK.t = 13 * 60; DN.update(true)"); lib.settle_light(pg); E(PICK)
+    steps = lambda secs: E(f"for (let i = 0; i < {max(1, int(secs / 0.025))}; i++) GAME.step(0.025)")
+    st = json.loads(E("JSON.stringify({ th: TREEHIT.stats(), soft: WCOL.soft.reduce((a, b) => a + b, 0), trunks: WCOL.nTree, nR: WCOL.nR, rule: TREEHIT.rule })"))
+    print('world', st, flush=True)
+    ck('trees give way: module ready, saplings listed as soft trunks', st['th']['ready'] and st['soft'] > 100, f"{st['soft']} saplings of {st['trunks']} trunks")
+    # the rule in numbers: what the car and the tractor manage at 20 km/h (stem diameter in cm → verdict), from the forest's spruces
+    tab = json.loads(E("""JSON.stringify((() => { const out = {}; for (let i = 0; i < WCOL.nTree; i++) { const f = TREEHIT.info(i); if (!f || !f.forest || f.soft || f.name !== 'Fichte') continue;
+        const c = Math.round(f.D * 100); if (out[c]) continue; out[c] = [TREEHIT.verdict(i, 'car', 20), TREEHIT.verdict(i, 'tractor', 20), TREEHIT.verdict(i, 'car', 4)]; } return out; })())"""))
+    keys = sorted(int(k) for k in tab); print('spruce: D cm → car 20 km/h, tractor 20 km/h, car 4 km/h', {k: tab[str(k)] for k in keys}, flush=True)
+    car_max = max([k for k in keys if tab[str(k)][0] == 'fall'] or [0]); tr_max = max([k for k in keys if tab[str(k)][1] == 'fall'] or [0])
+    ck('car knocks over spruces up to ~9–10 cm, the tractor up to ~17–18 cm', 8 <= car_max <= 11 and 15 <= tr_max <= 19, f"car ≤ {car_max} cm, tractor ≤ {tr_max} cm")
+    fallen = []
+
+    def scenario(vid, kind, cx, cy, R):
+        t = json.loads(E(f"JSON.stringify(_bPick('{vid}', '{kind}', {cx}, {cy}, {R}))"))
+        if not ck(f'{vid} {kind}: a target with a free run-up', t is not None, ''): return None
+        inf = t['info']; name = f"{vid}_{kind}"
+        print(name, 'target', {k: t[k] for k in ('i', 'x', 'y', 'psi')}, inf, flush=True)
+        dx, dy = t['dx'], t['dy']; i = t['i']
+        # side view before: 9 m to the side, looking at the stem
+        vx, vy = t['x'] + dy * 9 - dx * 4, t['y'] - dx * 9 - dy * 4; yaw = math.degrees(math.atan2(t['x'] - vx, t['y'] - vy))
+        E(f"VEH.place('{vid}', {t['sx']}, {t['sy']}, {t['psi']}); GAME.step(0.2)")
+        E(f"if (VEH.cur) VEH.exit(); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.2)"); lib.shot(pg, OUT, name + '_1_before')
+        E(f"VEH.enter('{vid}'); GAME.setView3(true)"); steps(0.5)
+        E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
+        mx, passed, shot_mid, s, kmh_hit = 0.0, False, False, -12.0, 0
+        for k in range(48):
+            steps(0.2); r = json.loads(E(f"JSON.stringify({{ s: TREEHIT.state({i}), v: VEH.state().find(v => v.id === '{vid}') }})"))
+            mx = max(mx, r['s']['th']); v = r['v']; s = (v['x'] - t['x']) * dx + (v['y'] - t['y']) * dy
+            if s < -3: kmh_hit = v['kmh']
+            if not shot_mid and (r['s']['th'] > 0.25 or (kind == 'stop' and s > -4)): lib.shot(pg, OUT, name + '_2_contact'); shot_mid = True
+            if s > 6 or (kind == 'stop' and k > 30): break
+        E("VEH.auto = () => ({ thr: 0, brk: 0, steer: 0, hand: true })"); steps(3.0); E("VEH.auto = null")
+        r = json.loads(E(f"JSON.stringify({{ s: TREEHIT.state({i}), v: VEH.state().find(v => v.id === '{vid}'), last: TREEHIT.last, n: TREEHIT.stats().n }})"))
+        v = r['v']; s = (v['x'] - t['x']) * dx + (v['y'] - t['y']) * dy
+        print(name, 'after', r, f"s {s:.2f} m, hit at {kmh_hit} km/h, max tilt {mx:.2f}", flush=True)
+        if not shot_mid: lib.shot(pg, OUT, name + '_2_contact')
+        E(f"VEH.exit(); GAME.step(0.3); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.3)"); lib.shot(pg, OUT, name + '_3_after')
+        if kind == 'bend':
+            ck(f'{vid}: sapling ({inf["H"]:.1f} m) bends under it', mx > 0.5, f"max {math.degrees(mx):.0f}°")
+            ck(f'{vid}: drives over the sapling', s > 2, f"{s:.1f} m past it")
+            ck(f'{vid}: sapling springs back', r['s']['th'] < 0.2 and not r['s']['dead'], f"{math.degrees(r['s']['th']):.0f}° now")
+        elif kind == 'fall':
+            ck(f'{vid}: small tree (Ø {inf["D"] * 100:.0f} cm) tips over', r['s']['mode'] == 'rest' and r['s']['dead'] and r['s']['th'] > 1.1, f"{r['s']}")
+            ck(f'{vid}: goes on past the fallen tree', s > 2, f"{s:.1f} m past it, hit at {kmh_hit} km/h")
+            fallen.append(t)
+        else:
+            ck(f'{vid}: thick tree (Ø {inf["D"] * 100:.0f} cm) stops it', s < 0 and not r['s']['dead'], f"centre {s:.2f} m before the stem, tree {r['s']}")
+            ck(f'{vid}: the crown swayed', mx > 0.0005, f"max {math.degrees(mx):.2f}°")
+        return t
+
+    F0 = (-470, -600)
+    if want('car'):
+        scenario('car', 'bend', *F0, 500)
+        scenario('car', 'fall', *F0, 600)
+        scenario('car', 'stop', *F0, 600)
+    if want('tractor'):
+        scenario('tractor', 'bend', *F0, 500)
+        scenario('tractor', 'fall', *F0, 700)
+        scenario('tractor', 'stop', *F0, 600)
+    ck.errors(errs)
+    if want('reload') and fallen:
+        sv = E("SAVE.raw('pav-trees-v1')"); print('saved', sv, flush=True)
+        sl = (json.loads(sv) or {}).get('t', []) if sv else []
+        ck('fallen trees saved', all(any(abs(e[0] - t['x']) < 0.05 and abs(e[1] - t['y']) < 0.05 for e in sl) for t in fallen), str(sv)[:200])
+        pg.reload(wait_until='domcontentloaded', timeout=300000)
+        pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); E("window.FREEZE = true")
+        E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')"); E("CLOCK.t = 13 * 60; DN.update(true)"); lib.settle_light(pg)
+        stt = json.loads(E("JSON.stringify(TREEHIT.stats())")); print('after reload', stt, flush=True)
+        ck('after a reload: the trees are restored', stt['restored'] >= len(fallen), str(stt))
+        for t in fallen:
+            r = json.loads(E(f"JSON.stringify({{ s: TREEHIT.state({t['i']}), free: WCOL.treeAt({t['x']}, {t['y']}, 0.35) }})"))
+            ck(f"after a reload: still lying at {t['x']:.0f}, {t['y']:.0f}, no obstacle", r['s']['dead'] and r['s']['mode'] == 'rest' and r['free'] == -1, str(r))
+            vx, vy = t['x'] + t['dy'] * 9 - t['dx'] * 4, t['y'] - t['dx'] * 9 - t['dy'] * 4; yaw = math.degrees(math.atan2(t['x'] - vx, t['y'] - vy))
+            E(f"GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.3)"); lib.shot(pg, OUT, f"reload_{t['i']}")
+    ck.errors(errs)
+ck.done()
