@@ -787,6 +787,22 @@ export const TREEHIT = (() => {
     const a = new THREE.Vector3(0, 1, 0).transformDirection(_m);
     return [+a.x.toFixed(3), +(-a.z).toFixed(3), +a.y.toFixed(3)];
   };
+  // the menu's „Bäume aufstellen“ (shell/menu.html, data-treereset): every knocked-over tree up again, the save cleared
+  document.querySelectorAll('[data-treereset]').forEach(b =>
+    b.addEventListener('click', () => {
+      const n = LOGS.length;
+      S.standUp();
+      toast(
+        n === 0
+          ? 'Es liegt kein umgedrückter Baum.'
+          : n === 1
+            ? 'Der umgedrückte Baum steht wieder.'
+            : `${n} umgedrückte Bäume stehen wieder.`,
+        3500
+      );
+      if (LATE.HUD && LATE.HUD.open) LATE.HUD.setMenu(false);
+    })
+  );
   S.active = () => ACT.size;
   S.stats = () => ({ ready: S.ready, active: ACT.size, down: S.down.length, restored: S.restored || 0, n: S.n });
   S.rule = { SIG, YIELD, TURN, D_BEND, ANCHOR, VP };

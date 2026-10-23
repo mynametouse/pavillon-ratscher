@@ -9,14 +9,14 @@ def want(k): return not ONLY or k in ONLY
 ck = lib.Checks('baeume')
 # a target for vehicle vid: a trunk with the wanted outcome (bend / fall / stop) and a free, fairly level run-up of 12 m (and 6 m behind it);
 # nothing else in the corridor that would hold the vehicle (saplings may stand there), away from the modelled garden
-PICK = r"""window._bPick = (vid, want, cx, cy, maxR, dmin, dmax) => {
+PICK = r"""window._bPick = (vid, want, cx, cy, maxR, dmin, dmax, src) => {
   const W = WCOL, hw = vid === 'tractor' ? 1.8 : 1.5, res = [];
   for (let i = 0; i < W.nTree; i++) {
     if (W.dead[i]) continue;
     const p = W.trunk(i);
     if (!p || Math.hypot(p[0] - cx, p[1] - cy) > maxR || (Math.abs(p[0]) < 170 && Math.abs(p[1]) < 170)) continue;
     const inf = TREEHIT.info(i);
-    if (!inf || inf.down) continue;
+    if (!inf || inf.down || (src === 'r' && inf.forest) || (src === 'f' && !inf.forest)) continue;
     const v = TREEHIT.verdict(i, vid, 20);
     if (want === 'bend' ? !inf.soft || inf.H < 1.2 : v !== want) continue;
     if (want === 'fall' && (inf.D < (dmin || (vid === 'tractor' ? 0.11 : 0.05)) || inf.D > (dmax || (vid === 'tractor' ? 0.155 : 0.09)) || inf.soft)) continue;
@@ -69,10 +69,11 @@ with lib.browser() as b:
         ax = E(f"TREEHIT.axisOf({i})")
         return ax, (ax is not None and ax[0] * t['dx'] + ax[1] * t['dy'] > 0.6 and ax[2] < 0.45)
 
-    def scenario(vid, kind, cx, cy, R):
-        t = json.loads(E(f"JSON.stringify(_bPick('{vid}', '{kind}', {cx}, {cy}, {R}))"))
-        if not ck(f'{vid} {kind}: a target with a free run-up', t is not None, ''): return None
-        inf = t['info']; name = f"{vid}_{kind}"
+    def scenario(vid, kind, cx, cy, R, src=None):
+        t = json.loads(E(f"JSON.stringify(_bPick('{vid}', '{kind}', {cx}, {cy}, {R}, 0, 0, {json.dumps(src)}))"))
+        tag = '' if not src else (' (field tree)' if src == 'r' else ' (forest)')
+        if not ck(f'{vid} {kind}{tag}: a target with a free run-up', t is not None, ''): return None
+        inf = t['info']; name = f"{vid}_{kind}" + ('_field' if src == 'r' else '')
         print(name, 'target', {k: t[k] for k in ('i', 'x', 'y', 'psi')}, inf, flush=True)
         dx, dy = t['dx'], t['dy']; i = t['i']
         # the view from above and behind the run-up, before
@@ -141,6 +142,8 @@ with lib.browser() as b:
         scenario('tractor', 'fall', *F0, 700)
         scenario('tractor', 'stop', *F0, 600)
         push_scenario('tractor', *F0, 700)
+        # a measured crown of the canopy model (world/ratscher.js instances, not the forest's): a broadleaf at a field edge
+        scenario('tractor', 'fall', -150, -300, 700, src='r')
     ck.errors(errs)
     if want('reload') and fallen:
         sv = E("SAVE.raw('pav-trees-v1')"); print('saved', sv, flush=True)
@@ -155,5 +158,34 @@ with lib.browser() as b:
             r = json.loads(E(f"JSON.stringify({{ s: TREEHIT.state({t['i']}), free: WCOL.treeAt({t['x']}, {t['y']}, 0.35) }})"))
             ck(f"after a reload: still lying at {t['x']:.0f}, {t['y']:.0f}, no obstacle", r['s']['dead'] and r['s']['mode'] == 'rest' and r['free'] == -1, str(r))
             E(look(t, t['info']['H'])); lib.shot(pg, OUT, f"reload_{t['i']}")
+        # across a lying stem with the car: a wheel climbs it (a jolt, some speed lost) – from whichever side has a free run
+        lie = sorted(fallen, key=lambda t: t['info']['forest'])[0]
+        az = next((e[2] for e in sl if abs(e[0] - lie['x']) < 0.05 and abs(e[1] - lie['y']) < 0.05), None)
+        if az is not None:
+            d = (math.sin(math.radians(az)), math.cos(math.radians(az))); L = 0.9 * lie['info']['H']
+            m = (lie['x'] + d[0] * 0.3 * L, lie['y'] + d[1] * 0.3 * L); run = None
+            for sg in (1, -1):
+                pp = (d[1] * sg, -d[0] * sg)
+                if not E(f"[...Array(12).keys()].some(k => WCOL.pushCircle([{m[0]} - {pp[0]} * (9 - k), {m[1]} - {pp[1]} * (9 - k)], 1.1)) || [...Array(5).keys()].some(k => WCOL.pushCircle([{m[0]} + {pp[0]} * (k + 1), {m[1]} + {pp[1]} * (k + 1)], 1.1))"):
+                    run = pp; break
+            if run:
+                n0 = E("TREEHIT.stats().n.over || 0")
+                E(f"VEH.place('car', {m[0] - run[0] * 9}, {m[1] - run[1] * 9}, Math.atan2({run[0]}, {run[1]})); VEH.enter('car'); GAME.setView3(true)"); steps(0.4)
+                E("VEH.auto = () => ({ thr: 0.7, brk: 0, steer: 0, hand: false })"); kmh = []
+                for k in range(16):
+                    steps(0.25); kmh.append(E("VEH.state().find(v => v.id === 'car').kmh"))
+                    if k == 9: lib.shot(pg, OUT, 'over_stem')
+                E("VEH.auto = () => ({ thr: 0, brk: 0, steer: 0, hand: true })"); steps(1.5); E("VEH.auto = null; VEH.exit(); GAME.step(0.2)")
+                n1 = E("TREEHIT.stats().n.over || 0"); print('over the stem', n0, n1, kmh, flush=True)
+                ck('car across a lying stem: the wheels climb it (jolts)', n1 > n0, f"{n1 - n0} wheel(s), km/h {kmh}")
+            else: print('no free run across a lying stem – not tested', flush=True)
+        # the menu's „Bäume aufstellen“: every knocked-over tree up again, an obstacle again, the save cleared
+        E("document.querySelector('[data-treereset]').click(); GAME.step(0.2)")
+        up = json.loads(E("JSON.stringify({ st: TREEHIT.stats(), saved: SAVE.raw('pav-trees-v1'), toast: document.getElementById('toast') && document.getElementById('toast').textContent })"))
+        ck('menu „Bäume aufstellen“: none lies, nothing saved', up['st']['down'] == 0 and not up['saved'], str(up))
+        for t in fallen:
+            r = json.loads(E(f"JSON.stringify({{ s: TREEHIT.state({t['i']}), at: WCOL.treeAt({t['x']}, {t['y']}, 0.35), ax: TREEHIT.axisOf({t['i']}) }})"))
+            ck(f"stands again at {t['x']:.0f}, {t['y']:.0f} (upright, an obstacle)", not r['s']['dead'] and r['at'] == t['i'] and r['ax'] and r['ax'][2] > 0.98, str(r))
+        E(look(fallen[0], fallen[0]['info']['H'])); lib.shot(pg, OUT, 'stood_up')
     ck.errors(errs)
 ck.done()
