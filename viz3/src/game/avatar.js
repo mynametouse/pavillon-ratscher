@@ -224,8 +224,10 @@ function figHeadwear(THREE, F, o = {}) {
   const vi = (i, j) => 1 + (i % NC) * NJ + (j - 1);
   for (let i = 0; i < NC; i++) {
     idx.push(0, vi(i, 1), vi(i + 1, 1));
+    const back = i >= NC - 2 || i < 2; // the opening at the back above the strap (the lowest band)
     for (let j = 1; j < NJ; j++)
-      idx.push(vi(i, j), vi(i, j + 1), vi(i + 1, j + 1), vi(i, j), vi(i + 1, j + 1), vi(i + 1, j));
+      if (!(back && j >= NJ - 3 && j < NJ - 1))
+        idx.push(vi(i, j), vi(i, j + 1), vi(i + 1, j + 1), vi(i, j), vi(i + 1, j + 1), vi(i + 1, j));
   }
   // the brim: from the front of the rim forward and a little down, the sides curving down; top and underside, outer edge
   const NB = 24,
