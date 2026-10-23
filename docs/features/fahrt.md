@@ -7,18 +7,22 @@ schickt; unterwegs Schleusingen.
 ## Was es gibt
 - **Fahren über den Rand des 2,4-km-Quadrats**: Auto und Traktor fahren überall weiter, wo die Welt-Kacheln (`welt/welt.js`) Boden haben –
   bis Schleusingen, Geisenhöhn, Rappelsdorf (Block B, 9,6 × 9,6 km), mit den Kacheln von `feat/vessra` weiter bis Kloster Veßra.
-- **Nichts beim Start**: `welt/fahrt.js` (`FAHRT`) wacht erst auf, wenn ein gefahrenes Fahrzeug 350 m vor dem Rand ist (oder man draußen
-  ist), holt dann die Straßendaten (`fahrt/strassen.json`, 290 kB) und bittet `WELT` um Kacheln – um einen Punkt **vor** dem Fahrzeug
-  (bis 110 m, je nach Tempo), damit der Boden vor den Rädern da ist; hinten werden sie beim schnellen Fahren nach 12 s frei. 450 m
-  zurück im Quadrat schläft es wieder ein (Kacheln, Schilder, Brücken frei).
+- **Nichts beim Start**: `welt/fahrt.js` (`FAHRT`) wacht erst auf, wenn ein gefahrenes Fahrzeug auf den Rand zufährt (geradeaus vor ihm
+  liegt der Rand näher als 350 m), 60 m davor ist oder man draußen ist; dann holt es die Straßendaten (`fahrt/strassen.json`, 290 kB) und
+  bittet `WELT` um Kacheln – um einen Punkt **vor** dem Fahrzeug (bis 110 m, je nach Tempo), damit der Boden vor den Rädern da ist;
+  hinten werden sie beim schnellen Fahren nach 12 s frei. 450 m zurück im Quadrat schläft es wieder ein (Kacheln, Schilder, Brücken frei).
 - **Rand**: wo der Boden noch lädt, bremst das Fahrzeug rechtzeitig ab und wartet („Gelände lädt …“), es fällt nie durch; wo keine
   Kacheln mehr sind: „Hier endet die Karte.“
 - **Straßen**: alle Autostraßen aus OpenStreetMap um Schleusingen bis Kloster Veßra (828 Wege, 175 km) mit einem **geglätteten
   Längsprofil** – derselbe Glätter wie die Kachel-Pipeline (`tools/welt/roads.py`: gemeinsame Knoten, Brücken gerade), gerechnet auf den
   Kachelhöhen (Wellen je km: Landstraßen 9,0 → 0,1, Ortsstraßen 13,8 → 3,1). Das Kachelnetz wird an den Straßen auf dieses Profil
   **eingeschnitten** (Fahrbahn mit Dachprofil, Bankett, Böschungen 1 : 1,5; `WELT.setPads` unter den Flächen der Zonen) – Räder, Füße
-  und Augen stehen auf demselben Boden. Fahrbahnbelag für Haftung und Rollwiderstand (`KERN.surface`), Brücken mit Fahrbahnplatte und
-  Geländer (die Geländer halten die Räder), Wände der Zonen (Schleusingen) halten Fahrzeuge auf (`KERN.pushOut`).
+  und Augen stehen auf demselben Boden. Am Rand des Quadrats treffen die Profile das 10-m-Gelände (im Quadrat sind dessen Höhen die
+  Daten des Glätters): keine Stufe, kein Überblenden. Fahrbahnbelag für Haftung und Rollwiderstand (`KERN.surface`); auf dem Luftbild
+  nahe dem Fahrzeug Asphalt statt der Pflastersteine, die der Kachel-Shader sonst aus grauen Flächen macht (`WELT.setOverlay`, solange
+  keine Zone ihre Straßen auflegt); Brücken mit Fahrbahnplatte und Geländer (die Geländer halten die Räder auf der Brücke, unten fährt
+  man durch); Wände der Zonen (Schleusingen) halten Fahrzeuge auf (`KERN.pushOut`).
+- **Ankommen**: am Markt „Markt Schleusingen.“, an der Baumschule ein Parkschild und „Baumschule Kammbach – hier parken.“
 - **Ortsnamen** im HUD: „L 1625 · bei Rappelsdorf“, „Burgstraße, Schleusingen“, „Feldflur bei …“ (`KERN.place`).
 - **Ortstafeln** (gelb, schwarzer Rand) an den Ortseingängen: vorn Name und Gemeinde („Stadt Schleusingen“) bzw. Landkreis, hinten der
   nächste Ort und der durchgestrichene Name; wo OSM sie kennt, an ihrem Ort, sonst am Rand der Bebauung. **Wegweiser** an den Kreuzungen
@@ -34,7 +38,7 @@ in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide R
 ## Grenzen
 - Gelände über Schleusingen und westlich davon: Copernicus 30 m (Oberflächenmodell) – die Straßen sind geglättet, das Land daneben
   bleibt grob; Bäume und Häuser außerhalb der Zonen gibt es dort nur auf dem Luftbild.
-- In der Altstadt Schleusingens (300 m um den Markt) wird nicht eingeschnitten: die Häuser stehen auf den Kacheln, wie sie sind.
+- Brücken über andere Straßen: die Höhe kennt das 30-m-Modell nicht – manche Überführung ist niedrig (das Auto passt darunter durch).
 - Ein draußen abgestelltes Auto steht nach dem Neuladen wieder vor dem Garten.
 
 ## Für den Kern-Chat (gemeinsame Dateien)

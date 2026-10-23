@@ -201,24 +201,33 @@ export const FAHRT = (() => {
       if (!r) return undefined;
       if (!(r.w.fl & 1))
         return outRB(x, y) < 3 && !(r.w.fl & 2) ? r.z - (paved(r.w) ? 0.025 : 0.04) * Math.min(r.d, r.w.hw) : undefined;
-      return z != null && z < r.z - 1.2 ? undefined : r.z;
+      const deck = r.z;
+      if (z != null && z < deck - 1.2) return undefined;
+      // a road passing under the bridge: below the deck's level that road carries
+      if (z != null && z < deck - 0.4) {
+        const lo = roadAt(x, y, 0.5, true);
+        if (lo && lo.z < deck - 1) return undefined;
+      }
+      return deck;
     },
     7
   );
-  // the carving of the tile mesh (WELT pads): the carriageway on the profile, the shoulder falling 8 %, beyond it the terrain cut or
-  // filled with 1 : 1.5 slopes until it meets the ground (tools/welt/roads.py does the same in its detail block)
+  // the carving of the tile mesh (WELT pads): the carriageway on the profile with its crown, a flat apron beside it, beyond it the
+  // terrain cut or filled with 1 : 2 slopes until it meets the ground (tools/welt/roads.py does the like in its detail block)
   function carveZ(x, y, raw) {
     if (insideRB(x, y)) return raw;
     const r = roadAt(x, y, 18, true);
     if (!r) return raw;
+    // beside the carriageway a flat apron of 2.5 m (pavement, verge – a car cutting a corner at a junction stays on level ground),
+    // then slopes of 1 : 2 down or up to the terrain
     const w = r.w,
-      sh = w.kind <= 2 ? 1.5 : 0.6,
+      sh = 2.5,
       zc = r.z,
       cr = paved(w) ? 0.025 : 0.04;
     if (r.d <= w.hw) return zc - cr * r.d;
-    const zs = zc - cr * w.hw - 0.08 * Math.min(r.d - w.hw, sh);
+    const zs = zc - cr * w.hw - 0.02 * Math.min(r.d - w.hw, sh);
     if (r.d <= w.hw + sh) return zs;
-    const k = (r.d - w.hw - sh) / 1.5;
+    const k = (r.d - w.hw - sh) / 2;
     return Math.max(zs - k, Math.min(zs + k, raw));
   }
   // place names: in a village its street (or its name), on a road its number or name and the nearest village
@@ -404,6 +413,19 @@ export const FAHRT = (() => {
     y1 += 30;
     WELT.setPads('fahrt', [{ poly: [x0, y0, x1, y0, x1, y1, x0, y1], z: carveZ, under: true }]);
   }
+  function headingOut(s) {
+    if (Math.abs(s.u) < 2) return false;
+    const f = VEH.fwd(s.psi),
+      sg = s.u < 0 ? -1 : 1,
+      dx = f[0] * sg,
+      dy = f[1] * sg;
+    let t = Infinity;
+    if (dx > 1e-6) t = Math.min(t, (RB[2] - s.x) / dx);
+    else if (dx < -1e-6) t = Math.min(t, (RB[0] - s.x) / dx);
+    if (dy > 1e-6) t = Math.min(t, (RB[3] - s.y) / dy);
+    else if (dy < -1e-6) t = Math.min(t, (RB[1] - s.y) / dy);
+    return t < 350;
+  }
   function tick(dt) {
     acc += dt;
     const v = VEH.cur,
@@ -411,8 +433,9 @@ export const FAHRT = (() => {
       vx = v ? v.st.x : P.x,
       vy = v ? v.st.y : P.y,
       d = outRB(vx, vy);
-    // awake: a driven vehicle within 350 m of the edge, or anyone outside; asleep again 450 m inside after 10 s
-    const want = walk && ((v && d > -350) || d > -30);
+    // awake: a driven vehicle heading out (its way straight ahead leaves the square within 350 m), within 60 m of the edge, or anyone
+    // outside; asleep again 450 m inside after 10 s
+    const want = walk && (d > -30 || (v && (d > -60 || (d > -350 && headingOut(v.st)))));
     if (want) {
       farT = 0;
       if (!S.active) {
@@ -463,8 +486,10 @@ export const FAHRT = (() => {
       S.cap = cap;
       // arrived: at the end of a route, standing
       if (S.ready && sp < 0.6) {
-        const rm = D.routes.markt,
-          pk = D.park.baumschule;
+        // the nursery's own parking (welt/vessra.js, feat/vessra) when it is built, else the street beside it
+        const vb = window.VESSRA && window.VESSRA.baumschule,
+          rm = D.routes.markt,
+          pk = vb && vb.parkplatz ? [vb.parkplatz.x, vb.parkplatz.y] : D.park.baumschule;
         const at =
           pk && Math.hypot(s.x - pk[0], s.y - pk[1]) < 30
             ? 'Baumschule Kammbach – hier parken.'
@@ -862,7 +887,7 @@ export const FAHRT = (() => {
       'schild ' + sg.n
     );
     panel.userData.own = true;
-    return { meshes: [posts, panel] };
+    return { meshes: [posts, panel], gz, dz: 0 };
   }
   // ---- the road surfaces on the tiles near the vehicle: asphalt (and sett) instead of the photo's grey, which the tile shader would
   // turn into sett up close – an overlay of 1 km² around the vehicle (WELT.setOverlay), only while no zone has laid its own streets ----
@@ -958,6 +983,17 @@ export const FAHRT = (() => {
       n++;
       ch = true;
     }
+    // a finer tile under a sign: the sign follows the ground
+    for (const [k, b] of built)
+      if (k[0] === 's' && b.gz !== undefined) {
+        const sg = D.signs[+k.slice(1)],
+          g = KERN.ground(sg.x, sg.y);
+        if (Math.abs(g - b.gz - b.dz) > 0.08) {
+          b.dz = g - b.gz;
+          for (const m of b.meshes) m.position.y = b.dz;
+          ch = true;
+        }
+      }
     S.signs = [...built.keys()].filter(k => k[0] === 's').map(k => D.signs[+k.slice(1)].n);
     S.decks = [...built.keys()].filter(k => k[0] === 'b').length;
     if (ch) markDirty(true);

@@ -293,10 +293,13 @@ def overpasses(pos, chains, h, clear=4.7, taper=120.0):
             continue
         need = 0.0
         low = set()
+        idset = {int(i) for i in ids}
         for a, b in zip(ids[:-1], ids[1:]):
             P, Q = pos[a], pos[b]
             for k in kd.query_ball_point((P + Q) / 2, float(np.hypot(*(Q - P))) / 2 + 3):
                 cj, c, d = segs[k]
+                if int(c) in idset or int(d) in idset:
+                    continue   # the roads that join the bridge at its ends
                 A, B = pos[c], pos[d]
                 r, sv = Q - P, B - A
                 den = r[0] * sv[1] - r[1] * sv[0]
@@ -308,6 +311,8 @@ def overpasses(pos, chains, h, clear=4.7, taper=120.0):
                     continue
                 zb = h[a] + t * (h[b] - h[a])
                 zr = h[c] + u * (h[d] - h[c])
+                if os.environ.get('FAHRT_DEBUG'):
+                    log('Kreuzung', w['id'], w['ref'] or w['name'], chains[cj][0]['ref'] or chains[cj][0]['name'], round(float(zb - H0), 2), round(float(zr - H0), 2))
                 if zb - zr > -1.0 and zb - zr < clear:
                     need = max(need, clear - (zb - zr))
                     low.add(cj)

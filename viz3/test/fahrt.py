@@ -174,19 +174,26 @@ with lib.browser() as b:
     rm = ROUTE['markt']
     i_out = next(i for i, p in enumerate(rm) if outside(*p))
     if want('edge') or want('markt'):
-        # 250 m before the route leaves the square, heading out at up to 80 km/h – the tiles are not there yet
-        i0 = along(rm, i_out, -250)
+        # 120 m before the place-name sign of Schleusingen on the L 3004 (inside the square, 220 m from its edge), at up to 80 km/h
+        # towards the edge – nothing of the drive is loaded yet
+        sg = min((s2 for s2 in DATA['signs'] if s2['t'] == 'ort' and s2['n'] == 'Schleusingen'), key=lambda s2: min(math.dist((s2['x'], s2['y']), p) for p in rm))
+        i_sg = min(range(len(rm)), key=lambda i: math.dist(rm[i], (sg['x'], sg['y'])))
+        i0 = along(rm, i_sg, -120)
         place_on(rm, i0)
         E(f"window._fs = VEH.follow({json.dumps(rm[i0:])}, 22, {{ look: 14 }})")
         reset_rec()
         held = False
         caps = []
-        for k in range(60):   # 30 s of game time, as fast as the page steps (no waiting for the network)
+        shot_sign = False
+        for k in range(90):   # 45 s of game time, as fast as the page steps (no waiting for the network)
             f = chunk(0.5, wait=False)
             caps.append(f['cap'])
             s = st()
             if f['cap'] is not None and f['cap'] < abs(s['kmh']) / 3.6:
                 held = True
+            if not shot_sign and math.dist((s['x'], s['y']), (sg['x'], sg['y'])) < 40 and 'Schleusingen' in f['signsNear']:
+                shot_sign = True
+                shot('b_ortstafel')
             if outside(s['x'], s['y'], -40):
                 break
         r = stats()
@@ -208,7 +215,7 @@ with lib.browser() as b:
         E(f"window._fs = VEH.follow({json.dumps(rm[i_out:])}, 13.5, {{ look: 9 }})")
         reset_rec()
         T = 0
-        shots = {'b_ortstafel': False, 'c_altstadt': False}
+        shots = {'b_ortstafel': True, 'c_altstadt': False}
         while T < 400:
             f = chunk(0.5)
             T += 0.5
@@ -219,7 +226,7 @@ with lib.browser() as b:
                 if d < 45:
                     shots['b_ortstafel'] = True
                     shot('b_ortstafel')
-            if not shots['c_altstadt'] and math.dist((s['x'], s['y']), rm[-1]) < 260:
+            if not shots['c_altstadt'] and math.dist((s['x'], s['y']), rm[-1]) < 130 and outside(s['x'], s['y']):
                 shots['c_altstadt'] = True
                 shot('c_altstadt')
             if fs['done']:
@@ -237,6 +244,14 @@ with lib.browser() as b:
         E("VEH.auto = null")
         shot('d_markt')
         shot('e_markt_fahrer', third=False)
+        # the small map while driving: the roads beyond the square, the routes, where the car heads
+        E("for (let i = 0; i < 8; i++) GAME.step(0.025)")
+        mp = E("(() => { const c = document.getElementById('vmap'); return c && !c.hidden ? c.toDataURL('image/png') : null; })()")
+        lab = E("(() => { const l = document.getElementById('vmaplab'); return l ? l.textContent : ''; })()")
+        if mp:
+            import base64
+            open(os.path.join(OUT, 'k_karte.png'), 'wb').write(base64.b64decode(mp.split(',')[1]))
+        ck('the small map draws out there (roads, routes, destination)', bool(mp) and E("typeof MMAP.more === 'function'"), f'label {lab!r}')
         mem = json.loads(E("JSON.stringify({ tex: GAME.R.info.memory.textures, geo: GAME.R.info.memory.geometries, progs: (GAME.R.info.programs || []).length, welt: WELT.state(), heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : 0 })"))
         print('memory at the Markt', json.dumps(mem), flush=True)
     if want('west'):
@@ -256,7 +271,8 @@ with lib.browser() as b:
         T = 0
         mem = []
         stop_t = 0
-        shots = {'f_l1625': False, 'g_ende': False, 'h_zollbrueck': False}
+        shots = {'f_l1625': False, 'g_ende': False, 'h_zollbrueck': False, 'j_wegweiser': False, 'h_bruecke': False}
+        wegs = [s2 for s2 in DATA['signs'] if s2['t'] == 'weg']
         while T < 700:
             f = chunk(0.5)
             T += 0.5
@@ -264,6 +280,12 @@ with lib.browser() as b:
             fs = json.loads(E("JSON.stringify(window._fs)"))
             if int(T * 2) % 40 == 0:
                 mem.append(json.loads(E("JSON.stringify({ x: Math.round(VEH.cur.st.x), tex: GAME.R.info.memory.textures, geo: GAME.R.info.memory.geometries, tiles: WELT.state().tiles })")))
+            if not shots['j_wegweiser'] and any(math.dist((s['x'], s['y']), (w2['x'], w2['y'])) < 35 for w2 in wegs):
+                shots['j_wegweiser'] = True
+                shot('j_wegweiser')
+            if not shots['h_bruecke'] and math.dist((s['x'], s['y']), (-1880, -305)) < 70 and f['decks']:
+                shots['h_bruecke'] = True
+                shot('h_bruecke')
             if not shots['f_l1625'] and s['x'] < -2300:
                 shots['f_l1625'] = True
                 shot('f_l1625')
