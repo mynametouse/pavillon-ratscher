@@ -286,7 +286,8 @@ export const WELT = (() => {
     return z === undefined ? raw : z;
   };
   S.setPads = (id, list) => {
-    for (let i = pads.length - 1; i >= 0; i--) if (pads[i].id === id) pads.splice(i, 1);
+    const gone = [];
+    for (let i = pads.length - 1; i >= 0; i--) if (pads[i].id === id) gone.push(...pads.splice(i, 1));
     for (const { poly, z, under } of list || []) {
       const xs = poly.filter((v, k) => k % 2 === 0),
         ys = poly.filter((v, k) => k % 2 === 1);
@@ -300,14 +301,53 @@ export const WELT = (() => {
     }
     // feat/fahrt: pads marked 'under' (the roads of welt/fahrt.js) come last – the pads of a zone (a square, a hall) win
     pads.sort((a, b) => a.under - b.under);
-    for (const t of S.tiles.values())
+    // the tiles under the pads that changed are drawn again: the nearest at once, the rest a few per frame (a zone or the drive setting
+    // its pads should not stall the frame for every tile loaded); until then a tile keeps its old ground for drawing and walking alike
+    const bb = [1e9, 1e9, -1e9, -1e9];
+    for (const q of [...gone, ...pads.filter(q => q.id === id)]) {
+      bb[0] = Math.min(bb[0], q.bb[0]);
+      bb[1] = Math.min(bb[1], q.bb[1]);
+      bb[2] = Math.max(bb[2], q.bb[2]);
+      bb[3] = Math.max(bb[3], q.bb[3]);
+    }
+    for (const t of S.tiles.values()) if (t.mesh && t.h && tileOver(t, bb)) REB.add(t);
+    rebuildSome(30);
+  };
+  const REB = new Set();
+  // a tile's square in model metres (the corners of its UTM square)
+  function tileOver(t, bb) {
+    const s = tsize(t.L),
+      cs = [toM(t.e0, t.n0), toM(t.e0 + s, t.n0), toM(t.e0, t.n0 + s), toM(t.e0 + s, t.n0 + s)];
+    return !(
+      Math.max(...cs.map(c => c[0])) < bb[0] ||
+      Math.min(...cs.map(c => c[0])) > bb[2] ||
+      Math.max(...cs.map(c => c[1])) < bb[1] ||
+      Math.min(...cs.map(c => c[1])) > bb[3]
+    );
+  }
+  function rebuildSome(ms) {
+    if (!REB.size) return;
+    const t0 = performance.now(),
+      walk = P.mode === 'walk',
+      cx = walk ? P.x : cam.position.x,
+      cy = walk ? P.y : -cam.position.z,
+      d = t => {
+        const s = tsize(t.L),
+          [x, y] = toM(t.e0 + s / 2, t.n0 + s / 2);
+        return Math.hypot(x - cx, y - cy) - s * 0.7;
+      };
+    for (const t of [...REB].sort((p, q) => d(p) - d(q))) {
+      REB.delete(t);
       if (t.mesh && t.h) {
         const old = t.mesh.geometry;
         t.mesh.geometry = makeGeo(t);
         old.dispose();
       }
+      if (performance.now() - t0 > ms) break;
+    }
     markDirty(true);
-  };
+  }
+  S.padQueue = () => REB.size; // tiles still to be drawn again after a change of the pads
   function buildMesh(t) {
     const me = new THREE.Mesh(makeGeo(t), tileMat(t.tex));
     me.userData.noMerge = true;
@@ -436,6 +476,7 @@ export const WELT = (() => {
     }
   }
   function drop(t) {
+    REB.delete(t);
     if (t.mesh) {
       scene.remove(t.mesh);
       t.mesh.geometry.dispose();
@@ -669,6 +710,7 @@ export const WELT = (() => {
     lastN = 0;
   function tick(dt) {
     acc += dt;
+    rebuildSome(20);
     const want = needs.size > 0;
     if (!want) {
       if (S.active) {
