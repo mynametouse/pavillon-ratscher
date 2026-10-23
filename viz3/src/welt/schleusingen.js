@@ -1507,11 +1507,13 @@ export const SCHL = (() => {
   }
   // a tall window with a round arch on a wall: lower left corner on the wall line (ox, oy), along (ex, ey)
   function arch(K, ox, oy, ex, ey, z0, w, h, col) {
-    const p = (u, v) => [ox + ex * u, oy + ey * u, z0 + v],
+    // the frame 4 cm, the pane 8 cm off the wall (out = (ey, -ex)): in one plane they flickered into each other and the wall from afar
+    const p = (u, v, o = 0.04) => [ox + ex * u + ey * o, oy + ey * u - ex * o, z0 + v],
+      q = (u, v) => p(u, v, 0.08),
       r = w / 2,
       FR = linC([0.78, 0.74, 0.66]);
     K.quad(p(-r - 0.12, -0.12), p(r + 0.12, -0.12), p(r + 0.12, h - r), p(-r - 0.12, h - r), FR);
-    K.quad(p(-r, 0), p(r, 0), p(r, h - r), p(-r, h - r), col);
+    K.quad(q(-r, 0), q(r, 0), q(r, h - r), q(-r, h - r), col);
     for (let k = 0; k < 6; k++) {
       const a0 = (k / 6) * Math.PI,
         a1 = ((k + 1) / 6) * Math.PI;
@@ -1522,9 +1524,9 @@ export const SCHL = (() => {
         FR
       );
       K.tri(
-        p(0, h - r + 0.001),
-        p(Math.cos(a0) * r, h - r + Math.sin(a0) * r + 0.001),
-        p(Math.cos(a1) * r, h - r + Math.sin(a1) * r + 0.001),
+        q(0, h - r),
+        q(Math.cos(a0) * r, h - r + Math.sin(a0) * r),
+        q(Math.cos(a1) * r, h - r + Math.sin(a1) * r),
         col
       );
     }
@@ -1617,21 +1619,21 @@ export const SCHL = (() => {
           h = 1.3,
           w = 0.95;
         if (zz + h > top - 2.3) break;
-        rect(du - w / 2 - 0.13, du + w / 2 + 0.13, zz - 0.13, zz + h + 0.13, TD + 0.01, RF);
-        rect(du - w / 2, du + w / 2, zz, zz + h, TD + 0.02, WF);
+        rect(du - w / 2 - 0.13, du + w / 2 + 0.13, zz - 0.13, zz + h + 0.13, TD + 0.02, RF);
+        rect(du - w / 2, du + w / 2, zz, zz + h, TD + 0.04, WF);
         for (const [p0, p1, q0, q1] of [
           [du - w / 2 + 0.07, du - 0.03, zz + 0.07, zz + h * 0.68],
           [du + 0.03, du + w / 2 - 0.07, zz + 0.07, zz + h * 0.68],
           [du - w / 2 + 0.07, du - 0.03, zz + h * 0.72, zz + h - 0.07],
           [du + 0.03, du + w / 2 - 0.07, zz + h * 0.72, zz + h - 0.07],
         ])
-          rect(p0, p1, q0, q1, TD + 0.03, GL);
+          rect(p0, p1, q0, q1, TD + 0.06, GL);
       }
       // the clock under the cornice: dark rim, white face, hands at ten past ten
       {
         const zc = top - 1.25,
-          [x, y] = P_(du, TD + 0.015),
-          [x2, y2] = P_(du, TD + 0.03);
+          [x, y] = P_(du, TD + 0.02),
+          [x2, y2] = P_(du, TD + 0.04);
         K.disc(x, y, zc, nx, ny, 0.68, linC([0.18, 0.12, 0.08]), 20, false);
         K.disc(x2, y2, zc, nx, ny, 0.58, linC([0.95, 0.94, 0.9]), 20, false);
         for (const [th, len, hw] of [
@@ -1640,7 +1642,7 @@ export const SCHL = (() => {
         ]) {
           const su = Math.sin(th),
             sz = Math.cos(th),
-            o = TD + 0.045;
+            o = TD + 0.06;
           K.quad(
             onF(du + sz * hw, zc - su * hw, o),
             onF(du + su * len + sz * hw, zc + sz * len - su * hw, o),
@@ -1734,11 +1736,11 @@ export const SCHL = (() => {
             const [x, y] = P_(du + du2, TD + o);
             K.disc(x, y, zA + dz, nx, ny, r, col, 14, false);
           };
-        dsc(0.015, 0.34, linC([0.15, 0.4, 0.17]));
-        dsc(0.03, 0.27, linC([0.88, 0.68, 0.2]));
-        dsc(0.045, 0.11, linC([0.05, 0.05, 0.05]), 0, -0.03);
-        dsc(0.045, 0.06, linC([0.05, 0.05, 0.05]), 0.07, 0.09);
-        dsc(0.06, 0.035, C.RED, 0.08, 0.15);
+        dsc(0.02, 0.34, linC([0.15, 0.4, 0.17]));
+        dsc(0.04, 0.27, linC([0.88, 0.68, 0.2]));
+        dsc(0.06, 0.11, linC([0.05, 0.05, 0.05]), 0, -0.03);
+        dsc(0.06, 0.06, linC([0.05, 0.05, 0.05]), 0.07, 0.09);
+        dsc(0.08, 0.035, C.RED, 0.08, 0.15);
       }
       // a red frieze over the ground floor, along the whole front
       {
@@ -1758,7 +1760,7 @@ export const SCHL = (() => {
             const u = uA + sg * du2;
             if (u - w / 2 < 0.3 || u + w / 2 > L - 0.3 || z + zb + h > Math.min(zg(u - w / 2), zg(u + w / 2)) - 0.3)
               continue;
-            K.tri(onF(u - w / 2, z + zb, 0.03), onF(u + w / 2, z + zb, 0.03), onF(u, z + zb + h, 0.03), YL);
+            K.tri(onF(u - w / 2, z + zb, 0.05), onF(u + w / 2, z + zb, 0.05), onF(u, z + zb + h, 0.05), YL);
           }
       }
     }
