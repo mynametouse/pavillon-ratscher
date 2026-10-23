@@ -16,7 +16,7 @@
 // - Walls of the zones (Schleusingen) stop vehicles through KERN.pushOut (VEH.hitsOut).
 // © OpenStreetMap contributors (ODbL 1.0) for the roads, places and signs.
 import * as THREE from 'three';
-import { BASE, scene } from '../core/head.js';
+import { BASE, COARSE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
@@ -743,6 +743,24 @@ export const FAHRT = (() => {
       );
     }
     K.strip(at(hw + 0.3, -0.85), at(-hw - 0.3, -0.85), C_SIDE);
+    // piers where the valley lies deeper than 3 m below the deck, about every 28 m
+    let acc = 14;
+    for (let i = 0; i < w.n - 1; i++) {
+      const A = E[i],
+        B2 = E[i + 1],
+        L = Math.hypot(B2.x - A.x, B2.y - A.y);
+      for (let t = 0; t < L; t += 2) {
+        acc += 2;
+        if (acc < 28) continue;
+        const x = A.x + ((B2.x - A.x) * t) / L,
+          y = A.y + ((B2.y - A.y) * t) / L,
+          z = A.z + ((B2.z - A.z) * t) / L,
+          g = KERN.terrain(x, y);
+        if (z - 0.85 - g < 3) continue;
+        acc = 0;
+        K.box(x, y, g - 0.5, hw * 1.2, 1.4, z - 0.85 - g + 0.5, Math.atan2(-A.ry, A.rx), C_SIDE);
+      }
+    }
     let run = 0;
     for (let i = 0; i < w.n; i++) {
       const e = E[i],
@@ -948,16 +966,19 @@ export const FAHRT = (() => {
       return;
     }
     if (OV.tex && Math.abs(x - OV.x0 - 512) < 260 && Math.abs(y - OV.y0 - 512) < 260) return;
-    const N = 1024,
-      x0 = Math.round(x - 512),
-      y0 = Math.round(y - 512);
+    // 1 km around the vehicle: 1 m per pixel, on phones and tablets 2 m (a quarter of the memory)
+    const SZ = 1024,
+      N = COARSE ? 512 : 1024,
+      k = N / SZ,
+      x0 = Math.round(x - SZ / 2),
+      y0 = Math.round(y - SZ / 2);
     if (!OV.cv) {
       OV.cv = document.createElement('canvas');
       OV.cv.width = OV.cv.height = N;
     }
     const g = OV.cv.getContext('2d'),
-      X = v => v - x0,
-      Y = v => y0 + N - v;
+      X = v => (v - x0) * k,
+      Y = v => (y0 + SZ - v) * k;
     g.fillStyle = '#000';
     g.fillRect(0, 0, N, N);
     g.lineCap = 'round';
@@ -967,7 +988,7 @@ export const FAHRT = (() => {
         if (w.kind !== k || w.fl & 3 || w.bb[2] < x0 || w.bb[0] > x0 + N || w.bb[3] < y0 || w.bb[1] > y0 + N) continue;
         // asphalt (40) or sett (120), as welt/schleusingen.js
         g.strokeStyle = `rgb(255,${w.surf === 2 ? 120 : 40},0)`;
-        g.lineWidth = w.hw * 2;
+        g.lineWidth = w.hw * 2 * k;
         g.beginPath();
         for (let i = 0; i < w.n; i++) (i ? g.lineTo : g.moveTo).call(g, X(w.p[i * 3]), Y(w.p[i * 3 + 1]));
         g.stroke();
@@ -979,7 +1000,7 @@ export const FAHRT = (() => {
     } else OV.tex.needsUpdate = true;
     OV.x0 = x0;
     OV.y0 = y0;
-    WELT.setOverlay(OV.tex, x0, y0, N);
+    WELT.setOverlay(OV.tex, x0, y0, SZ);
   }
   function overlayOff() {
     if (OV.tex && (!WELT.overlay || WELT.overlay() === OV.tex) && !(SCHL && SCHL.state === 'ready'))
