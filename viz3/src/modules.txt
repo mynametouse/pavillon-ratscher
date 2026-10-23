@@ -7,6 +7,7 @@ core/late.js                # LATE: what a module needs from a module further do
 core/save.js                # SAVE: every value kept in this browser (registry, safe reads/writes, migrations, test hooks)
 core/head.js                # renderer, scene, camera, query flags, small helpers (THREE also on window)
 core/kern.js                # KERN: ground, terrain, road surface, collision, place names – services the world modules provide
+core/tasks.js               # TASKS: tasks as data – steps advance on KERN events, saved (pav-tasks-v1), listed in the one journal
 core/rig.js                 # canonical bone names of the people (Mixamo, CC, Biped, UE) and the compact clip format
 core/assets.js              # loading manager, textures, PBR materials, patchSV (sky visibility, baked GI, figure shadows, lamp-spill mask)
 core/mats.js                # shared materials MAT
