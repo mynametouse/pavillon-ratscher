@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { LATE } from '../core/late.js';
 import { SAVE } from '../core/save.js';
-import { VARIANT } from '../core/head.js';
+import { cam, VARIANT } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { BUILD, COL, PHN } from '../core/geo.js';
@@ -67,7 +67,8 @@ window.setView3 = setView3;
 function dirYaw(x, y, tx, ty) {
   return (Math.atan2(tx - x, ty - y) * 180) / Math.PI;
 }
-export const SPOTS = {
+// the places to jump to (menu Orte, data-spot) live in KERN's registry (core/kern.js): other modules add theirs with KERN.spot(name, def)
+for (const [k, v] of Object.entries({
   modell: { mode: 'orbit', az: 225, el: 16, r: 21, label: 'Modellansicht' },
   draufsicht: { mode: 'top', label: 'Draufsicht' },
   garten: { mode: 'walk', pos: [3.6, 15.2], z: 0, yaw: dirYaw(3.6, 15.2, 3.0, 2.0), pitch: 3, label: 'Garten' },
@@ -113,7 +114,9 @@ export const SPOTS = {
     label: 'Bei Hubert',
   },
   werkstatt: { mode: 'walk', pos: [0.8, -35.2], z: 0, yaw: 205, pitch: -6, bld: 'werkstatt', label: 'Werkstatt' },
-};
+}))
+  KERN.spot(k, v);
+export const SPOTS = KERN.spots();
 // viewpoints that differ per variant (B: front door in the EG east wall under the cantilever, ladder stair instead of the tower, terrace 4 cm higher)
 const SPOTS_VAR = {
   A: {
@@ -152,36 +155,44 @@ export function setLastPlace(pl) {
 export function resetLastPlace() {
   lastPlace = '';
 }
+// the place shown in the header: KERN.place asks the providers by priority (core/kern.js) – the pavilion (100), the neighbours' yards
+// (npc/life.js, 60), the garden (garden/places.js, 50: everything within 50 m), named areas (30), Schleusingen (20), the village (10),
+// the roads and fields (0)
 export function placeName() {
   if (P.mode === 'orbit') return 'Modellansicht';
-  if ((Math.abs(P.x) > 50 || Math.abs(P.y) > 55) && window.ROADS) {
-    const wp = KERN.place(P.x, P.y);
-    if (wp) return wp;
-  } // V16b: out in the village and the fields; V16e: places and streets of Ratscher
-  const f = P.feet,
-    inT = P.x > G.TW.x0 && P.x < G.TW.x1 && P.y > G.TW.y0 && P.y < G.TW.y1,
-    inEG = P.x > 0 && P.x < 4 && P.y > 0 && P.y < 4,
-    inOG = P.x > G.OG.x0 && P.x < G.OG.x1 && P.y > G.OG.y0 && P.y < G.OG.y1;
-  const rough = PHASE < PHN.floors ? ' (Rohbau)' : '';
-  if (inT) {
-    if (f > G.zD - 0.1) return 'Turmkopf, Ausgang Dachterrasse';
-    if (Math.abs(f - G.zO) < 0.06 && P.y > G.PASS.y0 - 0.25) return 'Turm, Podest Arbeitsraum';
-    if (f > G.zT0 + 0.1) return f > G.zO ? 'Wendeltreppe zum Dach' : 'Wendeltreppe';
-    return 'Turm, Eingang';
-  }
-  if (G.LAD1) {
-    const on = L =>
-      P.x > L.x0 && P.x < L.x1 && P.y > L.y0 - 0.05 && P.y < L.y1 + 0.05 && f > L.z0 + 0.1 && f < L.z1 - 0.1;
-    if (on(G.LAD1)) return 'Leitertreppe zum Arbeitsraum';
-    if (on(G.LAD2)) return 'Leitertreppe zur Dachterrasse';
-  }
-  if (f > G.zD - 0.25) return 'Dachterrasse';
-  if (f > G.zC) return 'Dach';
-  if (f > G.zE) return inOG ? 'Arbeitsraum' + rough : 'Obergeschoss';
-  if (inEG) return 'Bibliothek' + rough;
-  const sp = window.sitePlace ? sitePlace(P.x, P.y, f) : null;
-  return sp || 'Garten';
+  return KERN.place(P.x, P.y, P.feet) || 'Garten';
 }
+export const NEAR = (x, y) => Math.abs(x) <= 50 && Math.abs(y) <= 55; // the garden's own names; beyond: the village, the roads, the fields
+// the pavilion and its tower, ladders and roof (only near the garden)
+KERN.provide(
+  'place',
+  (x, y, f) => {
+    if (!NEAR(x, y) || f === undefined) return undefined;
+    const inT = x > G.TW.x0 && x < G.TW.x1 && y > G.TW.y0 && y < G.TW.y1,
+      inEG = x > 0 && x < 4 && y > 0 && y < 4,
+      inOG = x > G.OG.x0 && x < G.OG.x1 && y > G.OG.y0 && y < G.OG.y1;
+    const rough = PHASE < PHN.floors ? ' (Rohbau)' : '';
+    if (inT) {
+      if (f > G.zD - 0.1) return 'Turmkopf, Ausgang Dachterrasse';
+      if (Math.abs(f - G.zO) < 0.06 && y > G.PASS.y0 - 0.25) return 'Turm, Podest Arbeitsraum';
+      if (f > G.zT0 + 0.1) return f > G.zO ? 'Wendeltreppe zum Dach' : 'Wendeltreppe';
+      return 'Turm, Eingang';
+    }
+    if (G.LAD1) {
+      const on = L => x > L.x0 && x < L.x1 && y > L.y0 - 0.05 && y < L.y1 + 0.05 && f > L.z0 + 0.1 && f < L.z1 - 0.1;
+      if (on(G.LAD1)) return 'Leitertreppe zum Arbeitsraum';
+      if (on(G.LAD2)) return 'Leitertreppe zur Dachterrasse';
+    }
+    if (f > G.zD - 0.25) return 'Dachterrasse';
+    if (f > G.zC) return 'Dach';
+    if (f > G.zE) return inOG ? 'Arbeitsraum' + rough : 'Obergeschoss';
+    if (inEG) return 'Bibliothek' + rough;
+    return undefined;
+  },
+  100
+);
+// where zones and borrowed lights measure from (KERN.where): the walker, else the camera
+KERN.provide('observer', () => (P.mode === 'walk' ? [P.x, P.y] : [cam.position.x, -cam.position.z]));
 // inside the pavilion (EG or OG, below the roof): fewer far plants are drawn (see VEG)
 window.inHouseNow = () =>
   P.mode === 'walk' &&
@@ -225,6 +236,7 @@ export function go(name) {
   document.body.dataset.view = CAM3.on ? '3' : '1';
   if (window.HUD) LATE.HUD.modeChanged();
   markDirty();
+  KERN.emit('spot', { name });
 }
 // ---- jumping and the four postures (keys Space, C, X, Z; buttons on touch screens) ----
 function headroom(h) {

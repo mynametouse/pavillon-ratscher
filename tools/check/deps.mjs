@@ -271,12 +271,13 @@ const writers = new Map();
 for (const rel of order)
   for (const nm of mods[rel].winWrite)
     (writers.get(nm) || writers.set(nm, []).get(nm)).push(rel);
+// since phase 2 (23.10.2026) none is left: a second writer is an error – use a KERN service (core/kern.js) or a setter of the owner
 const shared = [...writers].filter(([, w]) => w.length > 1);
-if (shared.length)
-  console.log(
-    "  written by several modules (hooks, docs/plans/plan_phase2.md): " +
-      shared.map(([nm, w]) => `${nm} (${w.join(", ")})`).join("; "),
+for (const [nm, w] of shared)
+  errors.push(
+    `window.${nm} is written by several modules (${w.join(", ")}) – a hook into another module; use a KERN service (core/kern.js) or a setter of the owner`,
   );
+if (shared.length) for (const e of errors.slice(-shared.length)) console.log("ERROR " + e);
 const hubs = [...rows]
   .sort(
     (a, b) =>

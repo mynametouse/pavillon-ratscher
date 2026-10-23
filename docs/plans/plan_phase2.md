@@ -21,7 +21,9 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
 
 ## Bausteine, in dieser Reihenfolge
 
-1. **Kern-Dienste für Erweiterungen** (~1 Tag) – statt Haken in fremde Objekte:
+1. **Kern-Dienste für Erweiterungen** (~1 Tag) – statt Haken in fremde Objekte. **Erledigt 23.10.2026** (`core/kern.js`, `docs/ARCHITECTURE.md`
+   „Dienste für Erweiterungen“; umgezogen: Ortsnamen von Garten und Nachbarn, Sprungziele, Aktionsknopf, Lampen von Schulraum und Feuer;
+   offen: Schleusingen und der Schulraum auf `KERN.zone`, `window.TICKS` → ein Kern-Dienst):
    - `KERN.places`: Ortsnamen und Menüorte als Register (Fläche oder Kreis, Name, Vorrang, Innen/Außen) – ersetzt das Überschreiben von
      `window.sitePlace` und das Ergänzen von `SPOTS`.
    - `KERN.lights`: ein fester Satz geteilter Punktlichter, nach Nähe ausgeliehen und automatisch zurückgegeben (keine neuen Lampen, also

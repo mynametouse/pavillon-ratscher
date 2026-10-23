@@ -1,6 +1,7 @@
 // ===================== sound: real recordings (CC0 / CC BY), synthesized fallback =====================
 import * as THREE from 'three';
 import { LATE } from '../core/late.js';
+import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
 import { $, BASE, stage } from '../core/head.js';
 import { DOOR, G, P } from '../game/walkable.js';
@@ -674,7 +675,7 @@ export const audio = (() => {
     const eg = P.x > 0 && P.x < 4 && P.y > 0 && P.y < 4 && P.feet < G.zE,
       og = P.x > G.OG.x0 && P.x < G.OG.x1 && P.y > G.OG.y0 && P.y < G.OG.y1 && P.feet >= G.zE,
       tw = P.x > G.TW.x0 && P.x < G.TW.x1 && P.y > G.TW.y0 && P.y < G.TW.y1;
-    return eg || og || tw || !!(window.insideSite && insideSite(P.x, P.y, P.feet));
+    return eg || og || tw || KERN.inside(P.x, P.y, P.feet);
   }
   function update(dt) {
     if (!ctx) return;

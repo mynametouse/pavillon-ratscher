@@ -815,6 +815,7 @@ export const DORF = (() => {
         // talking: standing, turned to the visitor
         if (f.g.visible && f.at && S.talkTo !== k) {
           S.talkTo = k;
+          KERN.emit('talk', { who: k });
           DPEOPLE.place(k, f.at.x, f.at.y, f.at.z, (Math.atan2(P.x - f.at.x, P.y - f.at.y) * 180) / Math.PI, 'stand');
         }
         continue;

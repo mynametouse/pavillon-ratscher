@@ -14,7 +14,6 @@ import { markDirty, whenLoaded } from '../core/assets.js';
 import { TREES } from '../garden/trees.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
-import { SPOTS } from '../game/player.js';
 import { toast } from '../audio/audio.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
@@ -39,16 +38,16 @@ export const SCHL = (() => {
     linC = (c, k = 1) => c.map(v => lin(v) * k);
   // ---- the menu place: on the Markt, looking at the Rathaus ----
   const START = [-1100.5, 1214.5];
-  SPOTS.schleusingen = {
+  KERN.spot('schleusingen', {
     mode: 'walk',
     pos: START,
     z: 0,
     yaw: (Math.atan2(-1131 - START[0], 1198 - START[1]) * 180) / Math.PI,
     pitch: 4,
     label: 'Schleusingen (Markt)',
-  };
+  });
   whenLoaded(() => {
-    if (RATSCHER.hAt) SPOTS.schleusingen.z = RATSCHER.hAt(START[0], START[1]);
+    if (RATSCHER.hAt) KERN.spot('schleusingen', { z: RATSCHER.hAt(START[0], START[1]) });
   });
   // ---- styles (world/village.js ST) and the colours of the photos ----
   const ST = {
@@ -810,7 +809,7 @@ export const SCHL = (() => {
     S.ms = Math.round(performance.now() - t0);
     S.state = 'ready';
     pc = [1e9, 0, null]; // the cached place name was given before the town stood
-    SPOTS.schleusingen.z = ground(START[0], START[1]);
+    KERN.spot('schleusingen', { z: ground(START[0], START[1]) });
     markDirty(true);
   }
   function add(m, name) {

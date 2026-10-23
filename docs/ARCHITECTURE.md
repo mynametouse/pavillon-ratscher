@@ -22,6 +22,23 @@ Oberfläche Deutsch.
   Straßenbelag, Kollision, Ortsnamen, `KERN.free(x, y)` (dort darf man gehen, auch außerhalb des 2,4-km-Quadrats). Features fragen `KERN`;
   die Weltmodule melden sich beim Laden als Anbieter (`KERN.provide(name, fn, rang)`); liefert ein Anbieter `undefined`, fragt `KERN` den
   nächsten (eine Zone antwortet nur in sich) – so meldet sich die Kachelwelt (`WELT`, Schleusingen) seit V16i.
+- **Dienste für Erweiterungen (Phase 2, Baustein 1, 23.10.2026)** – statt Haken in fremde Module (alle in `core/kern.js`, Unit-Tests
+  `test/unit/kern.test.mjs`; das Bild ruft einmal je Frame `KERN.update(dt)` aus `game/game.js`):
+  - **Orte:** `KERN.place(x, y, z)` fragt die Anbieter nach Rang – Pavillon (100, `game/player.js`), Hof und Wiese der Nachbarn (60,
+    `npc/life.js`), Garten (50, `garden/places.js`, alles im Umkreis von 50 m), benannte Flächen (`KERN.area({ name, rect | circle | poly, z,
+    prio, inside })`, Standard 30), Schleusingen (20), Dorf (10), Straßen und Flur (0). `KERN.inside(x, y, z)` (Innenraum: Hall, Lampen).
+    Sprungziele des Menüs: `KERN.spot(name, def)` (Register `KERN.spots()`, dasselbe Objekt wie `SPOTS` in `game/player.js`).
+  - **Aktionsknopf:** `KERN.act({ id, label, pos, r, run, prio, hold, gauge, … })`, `KERN.unact(id)` – `game/play.js` sucht daraus den
+    nächsten Eintrag (dazu Türen und die Nachbarn); `PLAY.act/off` geben weiter.
+  - **Ereignisse:** `KERN.on(name, fn)` → Abmelden, `KERN.emit(name, daten)`, `KERN.events()` (die letzten 60): `place`, `spot`, `talk`
+    (Nachbarn, Dorfbewohner), `act`, `take`, `fell`, `zone` – für Aufgaben und Statistik (Baustein 2).
+  - **Zonen:** `KERN.zone({ id, x, y, near, far, build, drop, tick, keep })` – gebaut, wenn der Beobachter (`KERN.where()`: die Spielfigur,
+    sonst die Kamera) näher als `near` kommt (`build` darf ein Promise liefern), freigegeben jenseits von `far` (nach `keep` s); Zeit und
+    Fehler im Ladeprotokoll, Stand in `KERN.zones()`. `KERN.until(bed, s)` wartet auf eine Bedingung.
+  - **Lampen leihen:** `KERN.lights.pool(liste, { home, restore })` (die Punktlichter L1, L4, L5, L3, L2 des Pavillons, solange man nicht
+    näher als 60 m am Pavillon ist) und `KERN.lights.borrow({ id, n, prio, want, on, tick, off })` – keine neuen Lampen, also keine neu
+    übersetzten Shader; Farbe, Ort, Reichweite und Stärke kommen von selbst zurück (Schulraum und Feuer im Dorf).
+  - **Keine Zuweisung an fremde `window`-Namen:** `tools/check/deps.mjs` meldet einen zweiten Schreiber als Fehler.
 - Was Tests oder die Fehlersuche brauchen, steht zusätzlich auf `window` (`window.WERK`, `window.DN` …); dazu die Manifeste aus dem
   Build (`window.TEXMAN` …). Querverbindungen zwischen Modulen laufen über Importe und Kern-Dienste, nicht über `window`.
 - `bash tools/check.sh` prüft das ohne Browser: Lint je Modul (ein fehlender Import ist ein Fehler), Format, `tools/check/deps.mjs`

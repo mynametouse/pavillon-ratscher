@@ -3,6 +3,7 @@
 // instruments (audio/music.js) build on it. All positions in site coordinates (x east, y north, z up).
 import * as THREE from 'three';
 import { LATE } from '../core/late.js';
+import { KERN } from '../core/kern.js';
 import { $, cam, COARSE, scene, V } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { phase } from '../core/geo.js';
@@ -123,7 +124,7 @@ export const HELD = (() => {
     H.obj.quaternion.copy(cam.quaternion).multiply(_q);
     H.obj.scale.setScalar(v.s || 1);
     // light: the scene's sky light and environment; direct sun only outdoors; a warm lamp near the camera when a room light is on
-    const ins = houseAt(P.x, P.y, P.feet) || !!(window.insideSite && insideSite(P.x, P.y, P.feet));
+    const ins = houseAt(P.x, P.y, P.feet) || KERN.inside(P.x, P.y, P.feet);
     sunL.color.copy(sun.color);
     sunL.intensity = ins ? 0 : sun.intensity * 0.9;
     sunL.position.copy(sunDir).multiplyScalar(10).add(H.obj.position);
@@ -326,8 +327,7 @@ export const SFX = (() => {
 LATE.SFX = SFX;
 // ---- the interaction layer ----
 export const PLAY = (() => {
-  const ACTS = [],
-    THINGS = {},
+  const THINGS = {},
     S = { best: null, hold: null, carry: null, seat: null, tw: null, lastLbl: '', lastSec: '', thinkT: null };
   // ---- V15 inventory: 8 places in the bar at the bottom (keys 1–8) and 16 in the bag; the chosen bar place is what is in the hand ----
   const NB = 8,
@@ -419,15 +419,9 @@ export const PLAY = (() => {
     return [Math.sin(y), Math.cos(y)];
   };
   const val = (v, ...a) => (typeof v === 'function' ? v(...a) : v);
-  function act(a) {
-    a.r = a.r || 1.6;
-    ACTS.push(a);
-    return a;
-  }
-  function off(id) {
-    const i = ACTS.findIndex(a => a.id === id);
-    if (i >= 0) ACTS.splice(i, 1);
-  }
+  // the registered things to do live in KERN (core/kern.js) – any module can add them at load time with KERN.act
+  const act = a => KERN.act(a),
+    off = id => KERN.unact(id);
   // ---- candidates: registered things to do, doors and machines, the two neighbours ----
   const doorTxt = d =>
     d.kind === 'machine'
@@ -477,7 +471,7 @@ export const PLAY = (() => {
         if (w.drive || !w.fig.g.visible || w.dist() > 3.2) continue;
         out.push(npcCand(w));
       }
-    for (const a of ACTS) out.push(a);
+    for (const a of KERN.acts()) out.push(a);
     return out;
   }
   function reach(a) {
@@ -557,6 +551,7 @@ export const PLAY = (() => {
       console.warn('act', a.id, e);
     }
     S.lastLbl = null;
+    KERN.emit('act', { id: a.id });
     return true;
   }
   // V15b: a gauge is a hold that the player stops (E / the button again) – the work's result depends on where the bar stood (green zone)
@@ -582,6 +577,7 @@ export const PLAY = (() => {
       } catch (e) {
         console.warn('act', h.a.id, e);
       }
+      KERN.emit('act', { id: h.a.id });
     } else if (h.a.cancel) h.a.cancel();
   }
   function primary() {
@@ -681,6 +677,7 @@ export const PLAY = (() => {
     if (T.world) T.world.visible = false;
     (T.sfx || SFX.pick)();
     if (T.onTake) T.onTake();
+    KERN.emit('take', { id: T.id, name: T.name });
     if (i < NB) {
       INV.sel = i;
       showHand(true);
@@ -1017,7 +1014,7 @@ export const PLAY = (() => {
       return S.best;
     },
     seated: () => !!S.seat,
-    acts: () => ACTS,
+    acts: () => KERN.acts(),
     candidates,
   };
 })();
