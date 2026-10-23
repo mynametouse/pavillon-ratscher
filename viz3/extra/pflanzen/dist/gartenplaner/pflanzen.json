@@ -578,7 +578,7 @@
         "hinweis": "Apfelbäume laut Website im Sortiment; Sorte und Unterlage vor Ort erfragen"
       },
       "darstellung": { "typ": "obstbaum", "krone": "rund", "laub": "#5a8638", "bluete": "#f5dde3", "frucht": "#7a1f1f", "herbst": "#c4a03a" },
-      "text": "Pillnitzer Winterapfel, resistent gegen Schorf, Mehltau und Feuerbrand und für raue Lagen empfohlen. Blüht spät, die Blüte gilt als wenig frostempfindlich. Dunkelrote, herb-säuerliche Früchte zum Lagern und Verarbeiten.",
+      "text": "Pillnitzer Winterapfel, resistent gegen Schorf, Mehltau und Feuerbrand und für raue Lagen empfohlen. Blüht spät, die Blüte gilt als wenig frostempfindlich. Dunkelrote Früchte mit eher neutralem, leicht herbem Geschmack – zum Lagern und Verarbeiten.",
       "quellen": ["bund-lemgo-befruchter", "lwg-streuobst-apfel", "bn-lindau-sorten", "lwg-unterlagen"]
     },
     {
@@ -929,7 +929,7 @@
         "hinweis": "Birnen laut Website im Sortiment; Sorte und Unterlage vor Ort erfragen"
       },
       "darstellung": { "typ": "obstbaum", "krone": "oval", "laub": "#4a7a3a", "bluete": "#f8f6ee", "frucht": "#9aa04a", "herbst": "#c0503a" },
-      "text": "Bewährte, regelmäßig tragende Tafelbirne mit geringerem Wärmebedarf und guter Befruchter für andere Birnen. Blüht mittelfrüh und ist spätfrostempfindlich – nur an den wärmsten Platz. Setzt zur Not auch ohne Befruchtung (oft unförmige) Früchte an.",
+      "text": "Bewährte, regelmäßig tragende Tafelbirne, laut LWG mit geringerem Wärmebedarf als viele andere Birnen, und guter Befruchter. Blüht mittelfrüh und ist spätfrostempfindlich – nur an den wärmsten Platz. Setzt zur Not auch ohne Befruchtung (oft unförmige) Früchte an.",
       "quellen": ["lwg-birne", "arche-noah-conference", "lwg-unterlagen", "pfaf-pyrus-communis"]
     },
     {
@@ -1215,6 +1215,7 @@
       "ernte": { "monate": [8, 9], "kg_jahr": null, "text": "Rote, säuerliche Früchte für Saft, Gelee und Mus" },
       "pflanzzeit": [10, 4],
       "pflege": "Wächst langsam, verträgt Schnitt und eignet sich auch für Hecken. Sämlinge tragen oft erst nach vielen Jahren – aus Stecklingen gezogene oder veredelte Pflanzen viel früher.",
+      "schutz": ["verbissschutz"],
       "nachbarrecht": "strauch-stark",
       "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
       "darstellung": { "typ": "strauch", "krone": "rund", "laub": "#4f7a35", "bluete": "#e8c832", "frucht": "#b01e2a", "herbst": "#c0602a" },
@@ -1244,6 +1245,7 @@
       "ernte": { "monate": [6, 7], "kg_jahr": null, "text": "Purpurschwarze, süße Beeren – Vögel sind oft schneller" },
       "pflanzzeit": [10, 4],
       "pflege": "Kaum Schnitt nötig; bildet keine Ausläufer. In voller Sonne trägt sie am besten. Gegen Vögel hilft ein Netz zur Reife.",
+      "schutz": ["verbissschutz"],
       "nachbarrecht": "strauch-stark",
       "bezug": { "kammbach": "kategorie", "stand": "2026-10-22", "hinweis": "Ziergehölze laut Website im Sortiment; Felsenbirne vor Ort erfragen" },
       "darstellung": { "typ": "strauch", "krone": "schirm", "laub": "#5a7a3a", "bluete": "#f4f0e0", "frucht": "#3a2040", "herbst": "#d0602a" },
@@ -1306,6 +1308,7 @@
       "ernte": { "monate": [7, 7], "kg_jahr": null, "text": "Mitte Juli; säurebetont, gut zum Verarbeiten" },
       "pflanzzeit": [10, 4],
       "pflege": "Trägt vor allem am jungen Holz: jeden Herbst etwa ein Drittel der Triebe, die ältesten zuerst, bodennah herausschneiden. Braucht reichlich Stickstoff (Mulch, Kompost); nicht neben Kiefern pflanzen (Säulenrost).",
+      "schutz": ["frostschutz"],
       "nachbarrecht": "beerenobst",
       "bezug": {
         "kammbach": "kategorie",
@@ -1819,6 +1822,7 @@
       },
       "pflanzzeit": [4, 5],
       "pflege": "An der sonnigsten Wand (Süd oder Südost) am Spalier oder an einer Pergola ziehen; ein Dachüberstand hält Regen ab und mindert den Falschen Mehltau. Sehr wüchsig – im Winter schneiden, sonst blutet die Rebe stark. Junge Triebe vor Spätfrost schützen.",
+      "schutz": ["frostschutz"],
       "nachbarrecht": "rebstock",
       "bezug": {
         "kammbach": "kategorie",
@@ -1856,6 +1860,7 @@
       },
       "pflanzzeit": [4, 5],
       "pflege": "Kräftiges Spalier oder Pergola. Winterschnitt Februar bis Mitte März, Sommerschnitt im August (Fruchttriebe auf acht bis zehn Blätter über der Frucht kürzen), lange Peitschentriebe mehrmals im Jahr entfernen. Pflanzenfuß beschatten, bei Trockenheit durchdringend gießen; kein Kalkboden.",
+      "schutz": ["frostschutz"],
       "nachbarrecht": "strauch-stark",
       "bezug": { "kammbach": "kategorie", "stand": "2026-10-22", "hinweis": "Kletterpflanzen laut Website im Sortiment; Kiwibeere vor Ort erfragen" },
       "darstellung": { "typ": "kletter", "krone": "flach", "laub": "#4f7a35", "bluete": "#f4f0dc", "frucht": "#7a9a3a", "herbst": "#d0c04a" },
@@ -1884,6 +1889,7 @@
       "befruchtung": null,
       "pflanzzeit": [4, 5],
       "pflege": "Wie die weibliche Pflanze: warm, windgeschützt, am Spalier; Winter- und Sommerschnitt.",
+      "schutz": ["frostschutz"],
       "nachbarrecht": "strauch-stark",
       "bezug": {
         "kammbach": "kategorie",

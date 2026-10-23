@@ -135,9 +135,16 @@
       "herausgeber": "White Earth Tribal and Community College, Community Extension (gefördert von USDA NIFA)",
       "abgerufen": "2026-10-23",
       "lizenz": null
+    },
+    "lwg-birne": {
+      "titel": "Birnensorten für den Garten (Merkblatt 3152, Juni 2016)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/infoschrift_birne_3152.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
     }
   },
-  "messung": "Gemessen wird waagerecht von der Mitte des Stammes – bei Sträuchern, Hecken und Rebstöcken von der Mitte der Pflanze – bis zur Grenzlinie, und zwar dort, wo die Pflanze aus dem Boden tritt (§ 47 ThürNRG). Die Breite der Krone zählt dabei nicht; über die Grenze ragende Äste und Wurzeln regelt § 910 BGB.",
+  "messung": "Gemessen wird von der Mitte des Stammes – bei Sträuchern, Hecken und Rebstöcken von der Mitte der Pflanze – bis zur Grenzlinie, und zwar an der Stelle, an der die Pflanze aus dem Boden tritt (§ 47 ThürNRG). Die Breite der Krone zählt dabei nicht; über die Grenze ragende Äste und Wurzeln regelt § 910 BGB.",
   "grenzabstand": [
     {
       "id": "baum-sehr-stark",
@@ -269,11 +276,11 @@
     },
     {
       "id": "grenzabstand-ausnahmen",
-      "text": "Keine Grenzabstände gelten für Pflanzen hinter einer undurchsichtigen Einfriedung, die sie nicht überragen, an Grenzen zu öffentlichen Grünflächen, Gewässern und Verkehrsflächen, auf öffentlichen Straßen, zum Schutz rutschgefährdeter Böschungen und gegenüber ungenutzten oder geringwertigen Flächen außerhalb des Ortes (§ 46 Abs. 2 Nr. 1–5 ThürNRG).",
+      "text": "Keine Grenzabstände gelten für Pflanzen hinter einer undurchsichtigen Einfriedung, die sie nicht überragen, an Grenzen zu öffentlichen Grünflächen und zu Gewässern (der Änderungsentwurf von 2015 nennt zusätzlich öffentliche Verkehrsflächen), auf öffentlichen Straßen, zum Schutz rutschgefährdeter Böschungen und gegenüber ungenutzten oder geringwertigen Flächen außerhalb des geschlossenen Baugebiets (§ 46 Abs. 2 Nr. 1–5 ThürNRG).",
       "quelle": "thuernrg"
     },
     {
-      "id": "grenzabstand-bach",
+      "id": "grenzabstand-gewaesser",
       "text": "Zum Bach hin gilt kein Grenzabstand, wenn das Gewässer ein eigenes Flurstück bildet (Grenze zu einem Gewässer, § 46 Abs. 2 Nr. 2 ThürNRG). Wo die Grenze in der Wiese liegt, gelten die normalen Abstände.",
       "quelle": "thuernrg"
     },
@@ -333,6 +340,11 @@
       "quelle": "lfulg-baumobst"
     },
     {
+      "id": "auenlehm-grundwasser",
+      "text": "Auenböden aus Auenlehm entstehen durch Überflutung und hoch stehendes Grundwasser; wie tief Wurzeln reichen, hängt vom Grundwasserstand ab. Oft überflutete Stellen taugen eher für Grünland oder Auwaldgehölze. Ein typisches Profil ist schwach sauer (pH um 6). Obstbäume, die keine Staunässe vertragen, nicht in die tiefsten Stellen setzen.",
+      "quelle": "mluk-vegagley"
+    },
+    {
       "id": "staunaesse-steinobst",
       "text": "Pflaume, Zwetsche, Sauerkirsche und Pfirsich vertragen keine Staunässe und keine Spätfrostlagen; Pflaumen brauchen tiefgründigen, sich rasch erwärmenden Boden mit genug Wasser. Für Kirschen auf schwerem Boden eignet sich die Vogelkirsche als Unterlage.",
       "quelle": "lfulg-baumobst"
@@ -346,6 +358,11 @@
       "id": "befruchtung-apfel",
       "text": "Apfelsorten sind fast alle auf fremden Pollen einer anderen, gleichzeitig blühenden Sorte angewiesen. Triploide Sorten (z. B. Boskoop, Jakob Fischer, Kaiser Wilhelm) taugen nicht als Befruchter und brauchen selbst zwei diploide Partner; die schorftoleranten Re- und Pi-Sorten sind diploid und gute Befruchter.",
       "quelle": "lwg-streuobst-apfel"
+    },
+    {
+      "id": "befruchtung-birne",
+      "text": "Birnen brauchen mehr Wärme als Äpfel und blühen früher, die Blüte ist daher spätfrostgefährdet – in rauen Lagen an geschützte Stellen oder als Wandspalier. Die meisten Birnen sind diploid; gute Befruchter sind z. B. ‘Williams Christ’, ‘Conférence’ und ‘Vereinsdechant’, triploide Sorten taugen nicht als Pollenspender.",
+      "quelle": "lwg-birne"
     },
     {
       "id": "befruchtung-suesskirsche",
@@ -371,11 +388,6 @@
       "id": "ziegen-verbiss",
       "text": "Ziegen fressen mit Vorliebe Gehölze und schälen Rinde; unter Obstbäumen gehen sie nur unter Aufsicht und mit massivem Baumschutz. Grenzt die Ziegenweide des Nachbarn im Osten an, junge Gehölze dort mit Verbiss- und Stammschutz pflanzen und den Zaun dicht halten.",
       "quelle": "aelf-unternutzung"
-    },
-    {
-      "id": "auenlehm-grundwasser",
-      "text": "Auenböden aus Auenlehm entstehen durch Überflutung und hoch stehendes Grundwasser; wie tief Wurzeln reichen, hängt vom Grundwasserstand ab. Oft überflutete Stellen taugen eher für Grünland oder Auwaldgehölze. Ein typisches Profil ist schwach sauer (pH um 6). Obstbäume, die keine Staunässe vertragen, nicht in die tiefsten Stellen setzen.",
-      "quelle": "mluk-vegagley"
     },
     {
       "id": "bodenprobe",

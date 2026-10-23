@@ -9,7 +9,7 @@ Bach (~375 m), Auenlehm (pH geschätzt ~6), Spätfrostlage, Wühlmäuse, Ziegen 
 | Datei (`viz3/extra/pflanzen/dist/gartenplaner/`) | Inhalt |
 |---|---|
 | `pflanzen.json` | 44 Arten und Sorten in allen Schichten: Baum 12, Kleinbaum 5, Strauch 13, Kraut 4, Boden 5, Wurzel 2, Kletter 3 – mit Größe, Wuchs, Licht, Boden, Frosthärte, Blüte und Spätfrostrisiko, Funktionen, Befruchtern, Nachbarn, Ernte, Pflege, Schutz beim Pflanzen, Grenzabstand-Kategorie, Bezug Kammbach, Farben für die Zeichnung und 1–4 Quellen je Pflanze (71 Quellen; in allen drei Dateien zusammen 85) |
-| `regeln.json` | 19 Grenzabstand-Kategorien nach dem Thüringer Nachbarrechtsgesetz (§ 44 Nr. 1–7, § 45 Abs. 1 Nr. 1–4, § 50; Kräuter und Stauden ohne Abstand), Messregel (§ 47) und 28 Fakten mit Beleg: Ausnahmen und Fristen (§§ 46, 48, 49, 51–53 ThürNRG, § 39 BNatSchG, § 910 BGB) sowie Ratschläge zu Spätfrost, Staunässe, Wühlmäusen, Juglon, Befruchtung, Unterlagen, Ziegen, Bodenprobe und Waldgarten-Abständen |
+| `regeln.json` | 19 Grenzabstand-Kategorien nach dem Thüringer Nachbarrechtsgesetz (§ 44 Nr. 1–7, § 45 Abs. 1 Nr. 1–4, § 50; Kräuter und Stauden ohne Abstand), Messregel (§ 47) und 29 Fakten mit Beleg: Ausnahmen und Fristen (§§ 46, 48, 49, 51–53 ThürNRG, § 39 BNatSchG, § 910 BGB) sowie Ratschläge zu Spätfrost, Staunässe, Wühlmäusen, Juglon, Befruchtung, Unterlagen, Ziegen, Bodenprobe und Waldgarten-Abständen |
 | `gilden.json` | 5 Gilden: Apfel (Rebella), Zwetsche, Wildobst-Hecke an der Ostgrenze, nasse Stelle am Bach (Schwarzerle), warme Südwand am Pavillon (Quitte, Wein, Kiwibeere) |
 
 Auswahl für die Lage: spät oder frostfest blühende Sorten (Apfel ‘Rebella’, ‘Rewena’, ‘Remo’ – schorfresistent, Befruchtung untereinander
@@ -17,6 +17,14 @@ belegt; Wangenheims Frühzwetsche; Süßkirschen ‘Regina’ + ‘Namare’ als
 Sauerkirsche ‘Jade’; Quitte, Mispel, Herbsthimbeere blühen spät), Walnuss ‘Nr. 26’ (spät austreibend), Stickstoffsammler (Schwarzerle,
 Goumi, Sanddorn weiblich/männlich, Erbsenstrauch, Weißklee). Zweihäusige Arten (Sanddorn, Kiwibeere) haben männlich und weiblich als
 eigene Einträge, damit der Planer fehlende Befruchter erkennt; die Maibeere nennt sich selbst als Befruchter (zweite Sorte nötig).
+Frostgefährdete Triebe oder Blüten (Kiwibeere, Wein, Schwarze Johannisbeere) tragen `schutz: frostschutz`.
+
+Fakten-Ids nach Thema (der Planer sucht per Muster die erste passende Id): Spätfrost `spaetfrost-tallage`, `spaetfrost-sortenwahl`,
+`aprikose-pfirsich`; Nässe `auenlehm-grundwasser`, `staunaesse-steinobst`; Befruchtung `befruchtung-apfel`, `befruchtung-birne`,
+`befruchtung-suesskirsche`; Wühlmäuse `wuehlmaus-drahtkorb`, `wuehlmaus-abwehrpflanzen`, `wuehlmaus-pflanzzeit`; Ziegen `ziegen-verbiss`;
+Walnuss `juglon-walnuss`; Boden `bodenprobe`; Waldgarten `waldgarten-abstand`, `waldgarten-naehrstoffe`, `gilde-funktionen`, `unterlage-halbstamm`;
+Recht `grenzabstand-landwirtschaft`, `grenzabstand-ausnahmen`, `grenzabstand-gewaesser`, `beseitigung-fuenf-jahre`, `hecke-rueckschnitt-nachbar`,
+`gehoelzschnitt-schonzeit`, `grenzaenderung`, `verjaehrung`, `ueberhang`, `rebanlage`, `wald-abstand`.
 
 ## Wichtigste Quellen
 
