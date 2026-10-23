@@ -6,6 +6,8 @@
 // programs are the ones the garden already has (tested: test/gartenplaner.py). Foliage, spring and autumn colour through the instance
 // colour (like the garden trees), bare in winter; blossom and fruit as small dots on the leaf cards of the crown, in the material of the
 // books in the bungalow (garden/garten_kit.js bookMesh: plain + instance colour). Trunks of trees from 5 years on stop the walker (COL).
+// Planting in the game (gplan/gplan_game.js): the hole with its heap of soil, the vole basket, the stake, the tree disc or the mulch – simple
+// shapes in that same material with instance colours; plants in containers (the nursery, the stock) stand on pots of it.
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -209,28 +211,38 @@ export const GP3D = (() => {
       out.push([v3.x, v3.y, v3.z, size * (0.8 + 0.4 * M.hash01(seed + 's' + i)), hex]);
     }
   }
-  // the plan in 3D. list: [{ p, x, y, age (null: not planted yet), seed }]; o: { month, show }
-  function sync(list, o) {
-    const show = !!(o && o.show) && list.some(e => e.age !== null);
-    if (!show) {
+  // the plan in 3D. list: [{ p, x, y, age (null: not in the ground in the year shown), seed, vis (the plant stands; default true), picked
+  // (harvested this year: no fruit), parts ({ w, hole, korb, pfahl, disc, mulch } round a plant in the ground) }];
+  // o: { month, pots: [{ p, x, y, z, seed }] plants at planting size in containers (the pot's foot at z) }
+  function sync(list, o = {}) {
+    const pots = o.pots || [],
+      live = list.filter(e => e.vis !== false && e.age !== null),
+      props = list.filter(e => e.parts);
+    if (!live.length && !props.length && !pots.length) {
       if (S.G) S.G.visible = false;
       setCols([]);
-      S.stats = { trees: 0, bushes: 0, dots: 0, cols: 0 };
+      S.stats = { trees: 0, bushes: 0, dots: 0, cols: 0, parts: 0, pots: 0 };
       markDirty(true);
       return;
     }
     if (!build()) return;
     S.G.visible = true;
-    const month = (o && o.month) || 6;
+    const month = o.month || 6;
     const byKind = {},
       dots = [],
-      cols = [];
-    for (const e of list) {
-      if (e.age === null) continue;
+      cols = [],
+      potList = [];
+    // a plant in a container: planting size, standing on its pot
+    for (const c of pots) {
+      const pot = potSize(c.p);
+      potList.push([c.x, c.y, c.z, pot]);
+      live.push({ p: c.p, x: c.x, y: c.y, z0: c.z + pot.h * 0.92, age: 0, seed: c.seed, pot: true, picked: true });
+    }
+    for (const e of live) {
       const p = e.p,
         s = M.sizeAt(p, e.age, e.seed),
         se = M.season(p, month),
-        z0 = KERN.ground(e.x, e.y),
+        z0 = e.z0 !== undefined ? e.z0 : KERN.ground(e.x, e.y),
         sh = shapeOf(p);
       // perennials that die back: gone in winter, low while budding
       if (sh === 'herb') {
@@ -239,7 +251,7 @@ export const GP3D = (() => {
       }
       const k = sh === 'herb' ? 'kraut' : kindOf(p);
       (byKind[k] = byKind[k] || []).push({ e, s, se, z0, sh, c: M.crown(p, s) });
-      if (sh === 'tree' && e.age >= 5) cols.push([e.x, e.y, Math.max(0.08, M.crown(p, s).tr)]);
+      if (sh === 'tree' && e.age >= 5 && !e.pot) cols.push([e.x, e.y, Math.max(0.08, M.crown(p, s).tr)]);
     }
     // trees and bushes: bark and leaves per kind, blossom and fruit on their leaf cards
     let nt = 0,
@@ -273,7 +285,7 @@ export const GP3D = (() => {
             C.bloom,
             e.seed
           );
-        if (se.fruit && C.fruit && (sh === 'bush' || e.age >= 2))
+        if (se.fruit && C.fruit && !e.picked && e.age >= M.bearingAge(e.p))
           dotsOn(
             dots,
             K.gpLeaf,
@@ -309,9 +321,93 @@ export const GP3D = (() => {
     });
     dm.count = dots.length;
     done(dm);
+    const np = drawParts(props, potList);
     setCols(cols);
-    S.stats = { trees: nt, bushes: nb, dots: dots.length, cols: cols.length };
+    S.stats = { trees: nt, bushes: nb, dots: dots.length, cols: cols.length, parts: np, pots: potList.length };
     markDirty(true);
+  }
+  // ---------------- what stands round a plant in the ground, and the pots ----------------
+  // a container by the plant's size: trees 20 l, shrubs and climbers 5 l, perennials 1 l (diameter d, height h in m)
+  function potSize(p) {
+    if (M.isTree(p)) return { d: 0.36, h: 0.32 };
+    if (p.schicht === 'strauch' || p.schicht === 'kletter') return { d: 0.24, h: 0.21 };
+    return { d: 0.13, h: 0.11 };
+  }
+  const PART = {
+    hole: '#2b1f16',
+    heap: '#5b4331',
+    korb: '#9aa1a3',
+    disc: '#4a3626',
+    mulch: '#7a5a3a',
+    pfahl: '#a9845a',
+    pot: '#26282a',
+  };
+  // three instanced meshes in the dots' material: lumps (hole, heap, basket, disc, mulch – a flattened ball), sticks (stakes), pots
+  function partMesh(name, n, geo) {
+    return slot(name, n, cap => {
+      const m = new THREE.InstancedMesh(geo(), S.dotMat, cap);
+      m.setColorAt(0, col.setRGB(1, 1, 1));
+      m.castShadow = false;
+      m.receiveShadow = true;
+      m.userData.noMerge = true;
+      S.G.add(m);
+      return m;
+    });
+  }
+  function drawParts(props, potList) {
+    const lumps = [],
+      sticks = [];
+    for (const e of props) {
+      const P = e.parts,
+        w = P.w,
+        z0 = KERN.ground(e.x, e.y),
+        a = M.hash01(e.seed + 'h') * 6.283;
+      if (P.hole) {
+        lumps.push([e.x, e.y, z0, w / 2, 0.035, w / 2, 0, PART.hole]);
+        lumps.push([
+          e.x + Math.cos(a) * w * 0.95,
+          e.y + Math.sin(a) * w * 0.95,
+          z0 - 0.02,
+          w * 0.5,
+          Math.max(0.1, w * 0.3),
+          w * 0.4,
+          a,
+          PART.heap,
+        ]);
+      }
+      if (P.korb) lumps.push([e.x, e.y, z0 + 0.012, w * 0.38, 0.035, w * 0.38, 0, PART.korb]);
+      if (P.disc) lumps.push([e.x, e.y, z0, w * 0.75, 0.03, w * 0.75, 0, PART.disc]);
+      if (P.mulch) lumps.push([e.x, e.y, z0, w * 0.95, 0.045, w * 0.95, 0, PART.mulch]);
+      if (P.pfahl) sticks.push([e.x - 0.14, e.y + 0.03, z0 - 0.3, 0.028, 1.9, PART.pfahl]);
+    }
+    const L = partMesh('part:lump', lumps.length, () => new THREE.IcosahedronGeometry(1, 1));
+    lumps.forEach(([x, y, z, sx, sy, sz, a, hex], i) => {
+      q.setFromAxisAngle(up, a);
+      m4.compose(V(x, y, z), q, sc.set(sx, sy, sz));
+      L.setMatrixAt(i, m4);
+      L.setColorAt(i, col.set(hex));
+    });
+    L.count = lumps.length;
+    done(L);
+    const K = partMesh('part:stick', sticks.length, () => new THREE.CylinderGeometry(1, 1, 1, 6).translate(0, 0.5, 0));
+    sticks.forEach(([x, y, z, r, h, hex], i) => {
+      m4.compose(V(x, y, z), q.identity(), sc.set(r, h, r));
+      K.setMatrixAt(i, m4);
+      K.setColorAt(i, col.set(hex));
+    });
+    K.count = sticks.length;
+    done(K);
+    const T = partMesh('part:pot', potList.length, () =>
+      new THREE.CylinderGeometry(0.5, 0.38, 1, 12).translate(0, 0.5, 0)
+    );
+    potList.forEach(([x, y, z, pot], i) => {
+      m4.compose(V(x, y, z), q.identity(), sc.set(pot.d, pot.h, pot.d));
+      T.setMatrixAt(i, m4);
+      T.setColorAt(i, col.set(PART.pot));
+    });
+    T.count = potList.length;
+    done(T);
+    return lumps.length + sticks.length;
   }
   // rings of small dots on the ground (on site: the selected plant, where „hier setzen“ would put the chosen one) – the dots' material,
   // no new program; independent of the plants' visibility. rings: [{ x, y, r, hex }]

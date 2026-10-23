@@ -6,7 +6,10 @@
 // you. The planned plants stand in the 3D garden at the chosen age and season (GP3D) – also after closing the panel („im Garten“).
 // Data: dist/gartenplaner/pflanzen.json, regeln.json, gilden.json (contract gplan/gplan_schema.js), fetched when the planner opens – never at
 // start (only a saved plan shown in the garden loads them once the model stands); testdaten.json when they are missing (badge „Testdaten“).
-// Saved: pav-gplan-v1 { v: 1, items: [{ id, x, y, jahr }], show, age, month, hour } through SAVE. Plan view: hooks of world/siteplan.js.
+// Saved: pav-gplan-v1 { v: 2, items: [{ id, x, y, jahr, st, sch, pd, w, cut, mu, h }], show, age, month, hour, off, kuebel, ernte } through
+// SAVE (a v1 plan is taken over, all of it planned). Plan view: hooks of world/siteplan.js. Planting, care and harvest in the game:
+// gplan/gplan_game.js (GPGAME). Planted plants (st 'gepflanzt', planting day pd of the garden calendar) always stand in the garden; „im
+// Garten“ shows or hides the planned ones. The garden calendar is the game's (DN.e0, CLOCK.t) plus the time-lapse offset off (years).
 import { SAVE } from '../core/save.js';
 import { $, BASE, stage } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -28,9 +31,13 @@ import { GPRULES } from './gplan_rules.js';
 import { GP3D } from './gplan_3d.js';
 export const GPLAN = (() => {
   const KEY = 'pav-gplan-v1';
-  const YEAR = Math.max(2026, new Date().getFullYear());
+  // the game calendar (time/daynight.js: DN.e0 is the epoch day of game day 1) and the garden's own offset in years (time-lapse for the
+  // plants only – the game clock stays): ages of planted plants, care and harvest count in garden days
+  const gameDay = () => DN.e0 + Math.floor(CLOCK.t / 1440);
   const D = { st: 'none', p: null, test: false, db: M.index(null), errors: [], warnings: [] };
-  let ST = M.sanitize(SAVE.get(KEY), null, YEAR);
+  let ST = M.sanitize(SAVE.get(KEY), null, M.yearOfDay(gameDay()));
+  const gday = () => M.gardenDay(gameDay(), ST.off);
+  const year = () => M.yearOfDay(gday());
   const U = {
     open: false,
     mode: 'plan',
@@ -46,6 +53,8 @@ export const GPLAN = (() => {
     list: 'shop',
     probe: null,
     el: null,
+    // plants come from the Vorrat without buying them (a switch for tests; until buying at the nursery works)
+    frei: true,
   };
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const de = M.de;
@@ -122,7 +131,7 @@ export const GPLAN = (() => {
       D.st = 'ok';
       // plants of the saved plan that are not in the data any more are dropped
       const n0 = ST.items.length;
-      ST = M.sanitize(ST, new Set(D.db.byId.keys()), YEAR);
+      ST = M.sanitize(ST, new Set(D.db.byId.keys()), year());
       if (ST.items.length !== n0) save();
       return D;
     })();
@@ -212,32 +221,73 @@ export const GPLAN = (() => {
     clearTimeout(saveT);
     saveT = setTimeout(() => SAVE.set(KEY, ST), 250);
   }
-  const viewYear = () => YEAR + ST.age;
-  const gameMonth = () => {
-    try {
-      return new Date((DN.jdOf(CLOCK.t) - 2440587.5) * 864e5).getUTCMonth() + 1;
-    } catch (e) {
-      return ST.month;
-    }
-  };
+  const viewYear = () => year() + ST.age;
+  const gameMonth = () => M.monthOfDay(gday());
   const seasonMonth = () => (U.open ? ST.month : gameMonth());
+  const planted = it => it.st === 'gepflanzt';
+  // a plant being planted stands in the ground from „Einpflanzen“ on
+  const inGround = (it, p) => planted(it) || (!!it.sch && it.sch > M.plantSteps(p).indexOf('pflanzen'));
+  // the age shown: planted – since planting (plus the preview while the planner is open); being planted – planting size; planned – the
+  // preview from its planting year on (null: later)
+  function ageNow(it, p = D.db.byId.get(it.id)) {
+    if (planted(it)) return M.itemAge(it, gday(), U.open ? ST.age : 0, viewYear());
+    if (p && inGround(it, p)) return 0;
+    return M.ageOf(it, viewYear());
+  }
+  // what stands round a plant in the ground: the hole and its heap while it is open, the vole basket in it, the stake (the first three
+  // years), the bare tree disc (two years) or the mulch (four)
+  function parts(it, p, age) {
+    if (!it.sch && !planted(it)) return null;
+    const L = M.plantSteps(p),
+      did = k => planted(it) || (L.includes(k) && it.sch > L.indexOf(k)),
+      open = did('loch') && !did('pflanzen'),
+      young = a => age === null || age < a;
+    return {
+      w: M.holeW(p),
+      hole: open,
+      korb: open && did('korb'),
+      pfahl: did('pfahl') && young(3),
+      disc: did('pflanzen') && !it.mu && young(2),
+      mulch: !!it.mu && young(4),
+    };
+  }
+  // the plants as the 3D garden and the plan view take them: vis – the plant stands in the 3D garden (planted and being planted always,
+  // planned ones with „im Garten“); picked – harvested this year (no fruit any more)
   function entries() {
-    const out = [];
+    const out = [],
+      y = year();
     ST.items.forEach((it, i) => {
       const p = D.db.byId.get(it.id);
-      if (p) out.push({ p, x: it.x, y: it.y, age: M.ageOf(it, viewYear()), seed: M.seedOf(it), it, i });
+      if (!p) return;
+      const age = ageNow(it, p),
+        pl = planted(it);
+      out.push({
+        p,
+        x: it.x,
+        y: it.y,
+        age,
+        seed: M.seedOf(it),
+        it,
+        i,
+        planted: pl,
+        vis: pl || inGround(it, p) || (!it.sch && ST.show),
+        picked: it.h === y,
+        parts: parts(it, p, age),
+      });
     });
     return out;
   }
+  let v3day = 0;
   function view3d() {
     if (D.st !== 'ok') return;
-    GP3D.sync(entries(), { month: seasonMonth(), show: ST.show });
+    v3day = gday();
+    GP3D.sync(entries(), { month: seasonMonth() });
   }
   function recheck(now) {
     clearTimeout(checkT);
     const run = () => {
       if (D.st !== 'ok') return;
-      U.warns = GPRULES.check(ST, D.db, site(), { year: YEAR, age: ST.age });
+      U.warns = GPRULES.check(ST, D.db, site(), { year: year(), age: ST.age, ageOf: it => ageNow(it) });
       U.flag = new Map();
       for (const w of U.warns)
         for (const i of w.items)
@@ -250,8 +300,17 @@ export const GPLAN = (() => {
     if (now) run();
     else checkT = setTimeout(run, 120);
   }
+  // o: { now – check at once, no3d, game – a change in the game (planting, care): the planner's undo starts afresh }
   function changed(o = {}) {
     U.ver = (U.ver || 0) + 1;
+    if (o.game) {
+      UNDO.length = 0;
+      renderUndo();
+      if (U.open) {
+        renderSel();
+        if (U.tab === 'garten') renderBody();
+      }
+    }
     save();
     recheck(o.now);
     if (!o.no3d) view3d();
@@ -285,7 +344,7 @@ export const GPLAN = (() => {
   function add(id, x, y, o = {}) {
     if (!D.db.byId.get(id)) return -1;
     if (!o.quiet) snap();
-    ST.items.push({ id, x: r2(x), y: r2(y), jahr: o.jahr || YEAR });
+    ST.items.push({ id, x: r2(x), y: r2(y), jahr: o.jahr || year(), st: 'geplant' });
     if (!o.quiet) {
       U.sel = ST.items.length - 1;
       changed();
@@ -353,12 +412,12 @@ export const GPLAN = (() => {
     wurzel: '#a87b5c',
     kletter: '#b065c6',
   };
-  const sunNow = () => GPSUN.sun(YEAR, ST.month, 15, ST.hour);
+  const sunNow = () => GPSUN.sun(year(), ST.month, 15, ST.hour);
   // shadow polygons of the month and hour (cached until the plan, the age, the time or a building changes)
   let shC = null;
   function shadows() {
     const S0k = site(),
-      key = [U.ver || 0, ST.age, ST.month, ST.hour, siteK, ST.items.length].join('|');
+      key = [U.ver || 0, ST.age, ST.month, ST.hour, siteK, ST.items.length, Math.floor(gday() / 30)].join('|');
     if (shC && shC.key === key) return shC;
     shC = Object.assign(shadows0(S0k), { key });
     return shC;
@@ -406,6 +465,7 @@ export const GPLAN = (() => {
       const cls =
         'gp-c gp-' +
         e.p.schicht +
+        (e.planted ? ' pl' : e.it.sch ? ' wip' : '') +
         (e.age === null ? ' later' : '') +
         (U.flag.get(e.i) ? ' ' + U.flag.get(e.i) : '') +
         (e.i === U.sel ? ' on' : '');
@@ -446,7 +506,7 @@ export const GPLAN = (() => {
     ST.items.forEach((it, i) => {
       const p = D.db.byId.get(it.id);
       if (!p) return;
-      const age = M.ageOf(it, viewYear()),
+      const age = ageNow(it, p),
         s = M.sizeAt(p, age === null ? 0 : age, M.seedOf(it)),
         d = Math.hypot(gp[0] - it.x, gp[1] - it.y),
         r = Math.max(tol, Math.min(s.w / 2, 1.2));
@@ -467,7 +527,8 @@ export const GPLAN = (() => {
       if (i < 0) return false;
       select(i);
       const it = ST.items[i];
-      U.drag = { i, dx: it.x - gp[0], dy: it.y - gp[1], moved: false };
+      // a plant in the ground stays where it is
+      U.drag = planted(it) || it.sch ? null : { i, dx: it.x - gp[0], dy: it.y - gp[1], moved: false };
       return 'take';
     },
     move(e, gp) {
@@ -513,7 +574,7 @@ export const GPLAN = (() => {
     for (const b of S.buildings) cs.push({ foot: b.foot, h: b.h });
     for (const t of S.trees)
       cs.push({ x: t[0], y: t[1], c: { zb: t[3] * 0.35, zc: t[3] * 0.65, a: t[3] * 0.32, r: t[2] } });
-    const r = GPSUN.shadeShare(x, y, 0.3, cs, YEAR, ST.month, 15, 20);
+    const r = GPSUN.shadeShare(x, y, 0.3, cs, year(), ST.month, 15, 20);
     U.probe = { x, y, share: r.share };
     renderShadeInfo();
     redraw();
@@ -546,6 +607,7 @@ export const GPLAN = (() => {
         ['gilden', 'Gilden'],
         ['schatten', 'Schatten'],
         ['listen', 'Listen'],
+        ['garten', 'Garten'],
       ]
         .map(
           ([k, t]) =>
@@ -597,13 +659,19 @@ export const GPLAN = (() => {
       return;
     }
     box.hidden = false;
-    const age = M.ageOf(it, viewYear()),
+    const age = ageNow(it, p),
       s = M.sizeAt(p, age === null ? 0 : age, M.seedOf(it)),
-      G = M.sizeAt(p, 999, M.seedOf(it));
+      G = M.sizeAt(p, 999, M.seedOf(it)),
+      pl = planted(it);
     const sz =
       age === null
         ? 'erst ab ' + it.jahr + ' gepflanzt'
-        : (ST.age ? 'in ' + ST.age + ' Jahren' : 'beim Pflanzen') + ' ' + de(s.h) + ' m hoch, ' + de(s.w) + ' m breit';
+        : (ST.age ? 'in ' + ST.age + ' Jahren' : pl || it.sch ? 'jetzt' : 'beim Pflanzen') +
+          ' ' +
+          de(s.h) +
+          ' m hoch, ' +
+          de(s.w) +
+          ' m breit';
     if (light && box.dataset.i === String(U.sel)) {
       const pos = box.querySelector('.gp-pos');
       if (pos) pos.textContent = 'x ' + de(it.x) + ' / y ' + de(it.y) + ' m';
@@ -614,9 +682,13 @@ export const GPLAN = (() => {
     box.innerHTML =
       `<div class="gp-selh"><i style="background:${LCOL[p.schicht]}"></i><b>${esc(M.fullName(p))}</b>` +
       `<button type="button" class="x" data-gp="desel" aria-label="Auswahl aufheben">×</button></div>` +
+      `<p class="gp-state${pl ? ' pl' : it.sch ? ' wip' : ''}">${esc(stateText(it, p))}</p>` +
       `<p>${esc(sz)} · ausgewachsen ${de(G.h)} × ${de(G.w)} m · <span class="gp-pos">x ${de(it.x)} / y ${de(it.y)} m</span></p>` +
-      `<div class="gp-row"><span class="gp-year">Pflanzjahr <button type="button" data-gp="y-" aria-label="ein Jahr früher">−</button><b>${it.jahr}</b><button type="button" data-gp="y+" aria-label="ein Jahr später">+</button></span>` +
-      `<button type="button" data-gp="tips" aria-pressed="${U.tips ? 'true' : 'false'}">Berater</button><button type="button" data-gp="del">Löschen</button></div>` +
+      '<div class="gp-row">' +
+      (pl || it.sch
+        ? ''
+        : `<span class="gp-year">Pflanzjahr <button type="button" data-gp="y-" aria-label="ein Jahr früher">−</button><b>${it.jahr}</b><button type="button" data-gp="y+" aria-label="ein Jahr später">+</button></span>`) +
+      `<button type="button" data-gp="tips" aria-pressed="${U.tips ? 'true' : 'false'}">Berater</button><button type="button" data-gp="del">${pl || it.sch ? 'Roden' : 'Löschen'}</button></div>` +
       (W.length
         ? '<ul class="gp-w">' + W.map(w => `<li class="${w.level}">${esc(w.text)}</li>`).join('') + '</ul>'
         : '<p class="gp-ok">Keine Hinweise für diese Pflanze.</p>') +
@@ -627,6 +699,94 @@ export const GPLAN = (() => {
             .join('') +
           '</ul>'
         : '');
+  }
+  const ageWords = a =>
+    a < 1 ? Math.max(0, Math.round(a * 12)) + ' Monate alt' : de(a, a < 10 ? 1 : 0) + ' Jahre alt';
+  // a plant's state in words: planned, being planted (the next step), planted (when, how old, what it needs now, harvested this year)
+  function stateText(it, p) {
+    if (planted(it)) {
+      const gd = gday(),
+        t = ['Gepflanzt am ' + M.dayDe(it.pd) + ', ' + ageWords((gd - it.pd) / M.DAY_YEAR)],
+        th = M.thirst(it, gd),
+        c = M.careOf(it, p, gd)
+          .filter(k => k !== 'giessen')
+          .map(k => M.CARE[k].label);
+      if (th !== null) t.push(th < 300 ? 'braucht Wasser – seit ' + th + ' Tagen nicht gegossen' : 'braucht Wasser');
+      if (c.length) t.push('jetzt: ' + c.join(', '));
+      if (it.h === year()) t.push('dieses Jahr geerntet');
+      return t.join(' · ');
+    }
+    const L = M.plantSteps(p);
+    if (it.sch)
+      return (
+        'Wird gepflanzt: ' +
+        it.sch +
+        ' von ' +
+        L.length +
+        ' Schritten – als Nächstes „' +
+        M.STEP[L[Math.min(it.sch, L.length - 1)]].label +
+        '“'
+      );
+    return 'Geplant – im Garten an der Stelle mit „' + M.STEP.loch.label + '“ anfangen';
+  }
+  // the garden tab: the garden year and the time-lapse, the plants in the ground, the stock, the harvest per year
+  function gardenHTML() {
+    const gd = gday(),
+      E = entries(),
+      P1 = E.filter(e => e.planted),
+      W = E.filter(e => !e.planted && e.it.sch),
+      row = e => {
+        const th = e.planted ? M.thirst(e.it, gd) : null,
+          c = e.planted ? M.careOf(e.it, e.p, gd) : [];
+        return (
+          `<li><button type="button" data-sel="${e.i}"><i style="background:${LCOL[e.p.schicht]}"></i><b>${esc(M.fullName(e.p))}</b>` +
+          `<small>${esc(e.planted ? ageWords((gd - e.it.pd) / M.DAY_YEAR) + (th !== null ? ' · durstig' : '') + (c.includes('ernten') ? ' · reif' : '') : stateText(e.it, e.p))}</small></button></li>`
+        );
+      };
+    const off = ST.off ? ' (Zeitraffer: ' + ST.off + (ST.off === 1 ? ' Jahr' : ' Jahre') + ' voraus)' : '';
+    const S1 = M.stock(ST.kuebel);
+    const H = M.harvestLines(ST.ernte, D.db);
+    return (
+      `<p class="gp-gy">Gartenjahr <b>${year()}</b> · ${esc(M.dayDe(gd))}${esc(off)}</p>` +
+      '<div class="gp-row"><button type="button" data-gp="ff1" title="Die Pflanzen ein Jahr älter – die Uhr des Spiels bleibt">+1 Jahr</button>' +
+      '<button type="button" data-gp="ff5" title="Die Pflanzen fünf Jahre älter – die Uhr des Spiels bleibt">+5 Jahre</button></div>' +
+      `<h4>Gepflanzt (${P1.length})</h4>` +
+      (P1.length
+        ? '<ul class="gp-list gp-glist">' + P1.map(row).join('') + '</ul>'
+        : '<p class="gp-hint">Noch nichts gepflanzt. Im Garten an einer geplanten Pflanze zeigt der Knopf die Schritte: Pflanzloch graben, Einpflanzen, Angießen …</p>') +
+      (W.length
+        ? `<h4>In Arbeit (${W.length})</h4><ul class="gp-list gp-glist">` + W.map(row).join('') + '</ul>'
+        : '') +
+      '<h4>Vorrat</h4>' +
+      (U.frei
+        ? '<p class="gp-hint">Bis zum Einkauf in der Baumschule kommen die Pflanzen aus dem Vorrat.</p>'
+        : S1.length
+          ? '<ul class="gp-stock">' +
+            S1.map(
+              c =>
+                `<li>${c.n} × ${esc(D.db.byId.get(c.id) ? M.fullName(D.db.byId.get(c.id)) : c.id)} – ${esc(M.LOC_TEXT[c.loc])}</li>`
+            ).join('') +
+            '</ul>'
+          : '<p class="gp-hint">Nichts im Vorrat – gekaufte Pflanzen stehen hier, bis sie gepflanzt sind.</p>') +
+      '<h4>Ernte</h4>' +
+      (H.length
+        ? '<ul class="gp-harvest">' + H.map(l => `<li>${esc(l)}</li>`).join('') + '</ul>'
+        : '<p class="gp-hint">Noch nichts geerntet.</p>')
+    );
+  }
+  // the time-lapse: the garden (its plants) n years ahead; the game clock stays
+  function timeLapse(n) {
+    ST.off = n === 0 ? 0 : Math.max(0, Math.min(200, ST.off + n));
+    U.ver = (U.ver || 0) + 1;
+    save();
+    recheck();
+    view3d();
+    renderSel();
+    if (U.tab === 'garten') renderBody();
+    redraw();
+    KERN.emit('gplan:zeitraffer', { off: ST.off, jahr: year() });
+    if (n) toast('Zeitraffer: Gartenjahr ' + year() + '.', 2200);
+    return ST.off;
   }
   function plantRow(p) {
     const F = M.finalSize(p),
@@ -686,7 +846,7 @@ export const GPLAN = (() => {
     const box = q$('.gp-sinfo');
     if (!box) return;
     const s = sunNow(),
-      dl = GPSUN.dayLight(YEAR, ST.month, 15),
+      dl = GPSUN.dayLight(year(), ST.month, 15),
       hm = h => Math.floor(h) + ':' + String(Math.round((h % 1) * 60)).padStart(2, '0');
     const dir = SUNDIR[Math.round((((s.az % 360) + 360) % 360) / 45) % 8];
     q$('.gp-mlab').textContent = M.monthName(ST.month);
@@ -770,6 +930,8 @@ export const GPLAN = (() => {
         `<label class="gp-sl">Uhrzeit <b class="gp-hlab"></b><input type="range" class="gp-hour" min="5" max="21" step="0.5" value="${ST.hour}" aria-label="Uhrzeit"></label>` +
         '<p class="gp-sinfo"></p><p class="gp-hint">Schatten der geplanten Pflanzen im gewählten Alter, der Gebäude und der Bäume im Garten am 15. des Monats. Mit „Schatten zeigen“ in den Plan tippen: wie viel des Tages die Stelle im Schatten liegt.</p>';
       renderShadeInfo();
+    } else if (U.tab === 'garten') {
+      body.innerHTML = gardenHTML();
     } else if (U.tab === 'listen') {
       const txt = listText();
       body.innerHTML =
@@ -784,11 +946,23 @@ export const GPLAN = (() => {
       String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear()
     );
   };
+  // the plants still to buy: planned, not in the ground, not bought yet (one container per item)
+  function toBuy() {
+    const have = new Map();
+    for (const c of ST.kuebel) if (c.loc !== 'korb') have.set(c.id, (have.get(c.id) || 0) + 1);
+    return ST.items.filter(it => {
+      if (planted(it) || inGround(it, D.db.byId.get(it.id) || {})) return false;
+      const n = have.get(it.id) || 0;
+      if (!n) return true;
+      have.set(it.id, n - 1);
+      return false;
+    });
+  }
   function listText(kind = U.list) {
     if (D.st !== 'ok') return '';
     const S = site(),
       o = { date: today(), test: D.test, where: it => where(it, S) };
-    return kind === 'plan' ? M.plantList(ST.items, D.db, o) : M.shopList(ST.items, D.db, o);
+    return kind === 'plan' ? M.plantList(ST.items, D.db, o) : M.shopList(toBuy(), D.db, o);
   }
   function msg(t, bad) {
     const m = q$('.gp-body .gp-msg');
@@ -877,7 +1051,8 @@ export const GPLAN = (() => {
     } else if (d.list) {
       U.list = d.list;
       renderBody();
-    } else if (d.gp) act(d.gp);
+    } else if (d.sel !== undefined) focusItem(+d.sel);
+    else if (d.gp) act(d.gp);
   }
   function act(a) {
     const it = ST.items[U.sel];
@@ -890,9 +1065,10 @@ export const GPLAN = (() => {
     } else if (a === 'show') setShow(!ST.show);
     else if (a === 'desel') select(-1);
     else if (a === 'del' && it) remove(U.sel);
-    else if ((a === 'y-' || a === 'y+') && it) {
+    else if ((a === 'y-' || a === 'y+') && it && !planted(it)) {
       snap();
-      it.jahr = Math.max(YEAR - 30, Math.min(YEAR + 30, it.jahr + (a === 'y+' ? 1 : -1)));
+      const y = year();
+      it.jahr = Math.max(y - 30, Math.min(y + 30, it.jahr + (a === 'y+' ? 1 : -1)));
       changed();
       renderSel();
     } else if (a === 'tips') {
@@ -914,6 +1090,8 @@ export const GPLAN = (() => {
     else if (a === 'plan') siteMode(false);
     else if (a === 'here') placeHere();
     else if (a === 'moveHere') moveHere();
+    else if (a === 'ff1') timeLapse(1);
+    else if (a === 'ff5') timeLapse(5);
   }
   function onInput(e) {
     const t = e.target;
@@ -1062,7 +1240,7 @@ export const GPLAN = (() => {
   }
   function moveHere() {
     const it = ST.items[U.sel];
-    if (!it) return false;
+    if (!it || planted(it) || it.sch) return false;
     snap();
     const [x, y] = front();
     it.x = r2(x);
@@ -1090,10 +1268,12 @@ export const GPLAN = (() => {
     id: 'gplan:move',
     r: 3,
     prio: 0.5,
-    label: () =>
-      onSite() && !(U.arm && U.arm.id) && ST.items[U.sel]
-        ? M.fullName(D.db.byId.get(ST.items[U.sel].id)) + ' hierher'
-        : null,
+    label: () => {
+      const it = ST.items[U.sel];
+      return onSite() && !(U.arm && U.arm.id) && it && !planted(it) && !it.sch
+        ? M.fullName(D.db.byId.get(it.id)) + ' hierher'
+        : null;
+    },
     pos: frontPos,
     run: () => moveHere(),
   });
@@ -1116,7 +1296,7 @@ export const GPLAN = (() => {
     const R = [];
     if (it) {
       const p = D.db.byId.get(it.id),
-        age = M.ageOf(it, viewYear()),
+        age = p ? ageNow(it, p) : null,
         s = p ? M.sizeAt(p, age === null ? 0 : age, M.seedOf(it)) : null;
       R.push({ x: it.x, y: it.y, r: s ? Math.max(0.35, Math.min(1.2, s.w / 2)) : 0.5, hex: '#ffd24a' });
     }
@@ -1156,6 +1336,7 @@ export const GPLAN = (() => {
   let lastMode = P.mode,
     acc = 0,
     lastMonth = 0;
+  const inUse = () => ST.items.some(it => planted(it) || it.sch);
   (window.TICKS = window.TICKS || []).push(dt => {
     if (P.mode !== lastMode) {
       lastMode = P.mode;
@@ -1165,19 +1346,20 @@ export const GPLAN = (() => {
       else if (U.open && U.mode === 'site') renderSite();
     }
     siteMarks();
-    if (U.open || !ST.show || D.st !== 'ok' || !ST.items.length) return;
+    if (U.open || D.st !== 'ok' || !ST.items.length) return;
     acc += dt;
     if (acc < 2) return;
     acc = 0;
+    // a new month (season) or a new garden day (the planted plants grow): the 3D garden anew
     const m = gameMonth();
-    if (m !== lastMonth) {
+    if (m !== lastMonth || (gday() !== v3day && inUse())) {
       lastMonth = m;
       view3d();
     }
   });
   // a plan saved with „im Garten: an“ stands in the garden after a reload: its data load once the model stands (not before)
   whenLoaded(() => {
-    if (ST.show && ST.items.length)
+    if ((ST.show && ST.items.length) || inUse())
       setTimeout(() => {
         loadData().then(() => {
           view3d();
@@ -1202,6 +1384,28 @@ export const GPLAN = (() => {
     probe,
     undo,
     listText,
+    changed,
+    timeLapse,
+    entries,
+    view3d,
+    gday,
+    gameDay,
+    year,
+    ageNow,
+    inGround,
+    toBuy,
+    onSite,
+    setFrei(v) {
+      U.frei = !!v;
+      if (U.open && U.tab === 'garten') renderBody();
+      return U.frei;
+    },
+    get frei() {
+      return U.frei;
+    },
+    get ready() {
+      return D.st === 'ok';
+    },
     frameGarden,
     site,
     shadows,

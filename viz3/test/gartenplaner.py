@@ -3,7 +3,9 @@
 # same spot (heute, 5, 10, 20 Jahre), shade at two times, the warnings (a tree 0.5 m from the boundary, an apple without a pollinator),
 # the plant list and the shopping list, on site (a plant set in front of the walker), trunks that stop the walker, shader programs and
 # textures per program, reload keeps the plan (and loads the data only after the model stands), „im Garten: aus“ (no request after reload),
-# the panel on a phone. Pictures and texts in out/gartenplaner/.
+# the panel on a phone. Round 2: planting the apple step by step from the Vorrat (the action button, hole, heap, stake, no new shader
+# programs), planted and planned in the plan view, „im Garten: aus“ keeps the planted, watering after a dry week, the time-lapse, the harvest
+# in its month into the harvest book, pruning in late winter. Pictures and texts in out/gartenplaner/.
 #   python3 viz3/test/run.py --port 8979 --serve gartenplaner      (or: python3 viz3/test/gartenplaner.py 8979 [geo,phone,only=a+b])
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -211,6 +213,95 @@ with lib.browser() as b:
         E("GPLAN.siteMode(false); GAME.step(0.1)")
         ck('back to the plan view', E("GAME.P.mode") == 'top', '')
     section('site', site)
+    # ---- planting in the game: the apple in the lawn step by step, the plant from the Vorrat ----
+    def plant():
+        E("GPLAN.close(); GPLAN.setShow(true); GPLAN.setAge(0); GAME.go('garten'); CLOCK.t = 9 * 60; GAME.step(0.1)")
+        it = J("GPLAN.state.items[0]"); G['ax'], G['ay'] = it['x'], it['y']
+        steps = J(f"GPLAN.M.plantSteps(GPLAN.data.db.byId.get('{G['apple']}'))")
+        name = E(f"GPLAN.M.fullName(GPLAN.data.db.byId.get('{G['apple']}'))")
+        # the figure 1.3 m south of the apple, looking at it (and down a little)
+        E(f"GAME.view({it['x']}, {it['y'] - 1.3}, 1.7, 0, -24, 62); GAME.step(0.1); GAME.shot()")
+        pA = E("GAME.R.info.programs.length")
+        labels = []
+        for k in steps:
+            best = J("GAME.step(0.05).best"); labels.append(best)
+            dur = E(f"GPLAN.M.STEP['{k}'].dur")
+            E("PLAY.primary()"); E(f"GAME.step({dur + 0.25})")
+            if k == 'loch':
+                G['parts'] = J("GPLAN.G3.stats"); E("GAME.shot()"); lib.shot(pg, OUT, 'j_pflanzloch')
+        print('labels', json.dumps(labels, ensure_ascii=False), 'parts after the hole', json.dumps(G.get('parts')), flush=True)
+        want_l = [J(f"GPLAN.M.STEP['{k}'].label") for k in steps]
+        ck('planting: the action button offers the steps one by one (hole, basket and stake where the plant asks, planting from the Vorrat, watering)',
+           all(l and l.startswith(w) and name in l for l, w in zip(labels, want_l)) and '(aus dem Vorrat)' in labels[steps.index('pflanzen')], json.dumps(labels, ensure_ascii=False))
+        ck('planting: an open hole with its heap after digging', G.get('parts', {}).get('parts', 0) >= 2, json.dumps(G.get('parts')))
+        st = J("GPLAN.state.items[0]"); gd = E("GPLAN.gday()")
+        ck('planting: the apple is planted, with the planting day of the game calendar', st.get('st') == 'gepflanzt' and st.get('pd') == gd and 'sch' not in st, json.dumps(st))
+        evs = J("KERN.events().slice(-30).map(e => [e.name, e.data])")
+        print('events', json.dumps(evs, ensure_ascii=False)[:600], flush=True)
+        ck('planting: events gplan:schritt for each step and gplan:gepflanzt with the plant', 'gplan:gepflanzt' in json.dumps(evs) and json.dumps(evs).count('gplan:schritt') == len(steps), json.dumps(evs)[:300])
+        E("GAME.step(0.1); GAME.shot()"); pB = E("GAME.R.info.programs.length")
+        ck('planting: no new shader programs for hole, heap, stake and the young tree', pB <= pA, f'{pA} -> {pB}')
+        lib.shot(pg, OUT, 'k_gepflanzt')
+        # „im Garten: aus“ hides only the planned plants
+        E("GPLAN.setShow(false); GAME.step(0.1)"); s1 = J("GPLAN.G3.stats")
+        E("GPLAN.setShow(true); GAME.step(0.1)"); s2 = J("GPLAN.G3.stats")
+        ck('„im Garten: aus“ hides the planned plants, the planted apple stays', s1['trees'] == 1 and s2['trees'] > 1 and E("GPLAN.G3.group.visible"), f'{s1} {s2}')
+        # the plan view: planted and planned look different
+        E("GPLAN.open(); GPLAN.select(0); GAME.step(0.1)")
+        pv = J("({ pl: document.querySelectorAll('#topsvg .gp-c.pl').length, plan: document.querySelectorAll('#topsvg .gp-c:not(.pl)').length, state: (document.querySelector('#gplan .gp-state') || {}).textContent, del: [...document.querySelectorAll('#gplan .gp-sel button')].map(b => b.textContent) })")
+        ck('plan view: the planted apple drawn solid, the planned ones dashed; the panel says when it was planted', pv['pl'] == 1 and pv['plan'] >= 3 and 'Gepflanzt am' in (pv['state'] or '') and 'Roden' in pv['del'], json.dumps(pv, ensure_ascii=False))
+        # a planted plant is not dragged away in the plan view
+        E("GPLAN.frameGarden(); GAME.step(0.1)")
+        page_shot(pg, 'l_plan_gepflanzt')
+    section('plant', plant)
+    # ---- care: watering after a dry week, the time-lapse, harvest in its month, pruning in late winter ----
+    def care():
+        E("GPLAN.close(); GPLAN.select(-1); GAME.go('garten'); GAME.step(0.1)")
+        ax, ay = G['ax'], G['ay']
+        look = f"GAME.view({ax}, {ay - 1.3}, 1.7, 0, -14, 62); GAME.step(0.1)"
+        E("CLOCK.t += 8 * 1440; GAME.step(0.6)"); E(look)
+        best = J("GAME.step(0.6).best")
+        rings = E("GPLAN.G3.nMarks")
+        ck('a week without rain in June: „Gießen“ at the young apple, a blue ring round it', bool(best) and best.startswith('Gießen') and rings == 16, f'{best} rings {rings}')
+        E("PLAY.primary(); GAME.step(2.7)")
+        st = J("GPLAN.state.items[0]")
+        ck('watering: the day is noted, the event gplan:gegossen', st.get('w') == E("GPLAN.gday()") and 'gplan:gegossen' in json.dumps(J("KERN.events().slice(-12)")), json.dumps(st))
+        # the time-lapse: five years on for the plants, the game clock stays
+        t0 = E("CLOCK.t"); s0 = J("GPLAN.G3.stats")
+        E("GPLAN.timeLapse(5); GAME.step(0.1)")
+        p = J(f"(() => {{ const p = GPLAN.data.db.byId.get('{G['apple']}'); return {{ bear: GPLAN.M.bearingAge(p), months: p.ernte ? p.ernte.monate : null, typ: p.darstellung && p.darstellung.typ }}; }})()")
+        while E("GPLAN.ageNow(GPLAN.state.items[0])") < p['bear']:
+            E("GPLAN.timeLapse(1)")
+        age = E("GPLAN.ageNow(GPLAN.state.items[0])")
+        ck('time-lapse: the apple years older, the game clock untouched', age >= 5 - 1e-6 and E("CLOCK.t") == t0 and E("GPLAN.state.off") >= 5, f'age {age:.2f} off {E("GPLAN.state.off")}')
+        E(f"GAME.view({ax}, {ay - 4.5}, 1.7, 0, 4, 62); GAME.step(0.2)"); lib.shot(pg, OUT, 'm_zeitraffer')
+        # the harvest month (of the next game year): the action „Ernten“, kg into the harvest book
+        if p['months']:
+            m = p['months'][0]
+            E(f"CLOCK.t = (Date.UTC(2027, {m - 1}, 15) / 864e5 - DN.e0) * 1440 + 10 * 60; GAME.step(0.6)"); E(look)
+            d0 = J("GPLAN.G3.stats.dots")
+            best = J("GAME.step(0.6).best")
+                E(f"GAME.view({ax}, {ay - 4.5}, 1.7, 0, 4, 62); GAME.step(0.2)"); lib.shot(pg, OUT, 'n_vor_der_ernte')
+            E(look); E("PLAY.primary(); GAME.step(3.3)")
+            y = E("GPLAN.year()"); log = J("GPLAN.state.ernte")
+            d1 = J("GPLAN.G3.stats.dots")
+            lines = J("GPLAN.M.harvestLines(GPLAN.state.ernte, GPLAN.data.db)")
+            print('harvest', best, json.dumps(log), lines, 'dots', d0, d1, flush=True)
+            ck('harvest: „Ernten“ in the harvest month, kg in the harvest book of the garden year, the event gplan:geerntet',
+               bool(best) and best.startswith('Ernten') and log.get(str(y), {}).get(G['apple'], 0) > 0 and 'gplan:geerntet' in json.dumps(J("KERN.events().slice(-12)")), f'{best} {log}')
+            E("GPLAN.open(); document.querySelector('#gplan [data-tab=\"garten\"]').click(); GAME.step(0.1)")
+            txt = E("document.querySelector('#gplan .gp-body').textContent")
+            ck('the garden tab: the garden year, the planted apple, „Ernte <year>: … kg“', f'Ernte {y}:' in txt and 'Gartenjahr' in txt and 'Gepflanzt (1)' in txt, txt[:300])
+            page_shot(pg, 'o_garten_ernte')
+            E("GPLAN.close(); GAME.step(0.1)")
+        if p['typ'] == 'obstbaum':
+            E(f"CLOCK.t = (Date.UTC(2028, 1, 15) / 864e5 - DN.e0) * 1440 + 10 * 60; GAME.step(0.6)"); E(look)
+            best = J("GAME.step(0.6).best")
+            E("PLAY.primary(); GAME.step(3.3)")
+            ck('late winter: „Schneiden“ at the fruit tree, then done for the year', bool(best) and best.startswith('Schneiden') and J("GPLAN.state.items[0]").get('cut') == E("GPLAN.year()"), str(best))
+        # back to June of the first year for the sections after this one (the garden keeps its offset)
+        E("CLOCK.t = 9 * 60; GAME.step(0.1)")
+    section('care', care)
     # ---- shader programs and textures per program ----
     def gl():
         E("GPLAN.setAge(10); GPLAN.setShow(true); GAME.go('garten'); GAME.view(-3.5, -16.5, 1.7, 8, 4, 62); GAME.step(0.2); GAME.shot()")
@@ -236,10 +327,21 @@ with lib.browser() as b:
     section('reload', reload)
     # ---- „im Garten: aus“: hidden, and after a reload nothing is loaded ----
     def off():
-        E("GPLAN.setShow(false)"); time.sleep(0.6)
-        ck('„im Garten: aus“ hides the plants', E("!GPLAN.G3.group || !GPLAN.G3.group.visible"), '')
-        reqs.clear(); boot(pg); time.sleep(3); E("GAME.step(0.5)")
-        ck('after a reload with „aus“: no request for the data, the plan kept', not reqs and E("GPLAN.state.show") is False and E("GPLAN.state.items.length") > 3, str(reqs))
+        E("GPLAN.setShow(false)"); time.sleep(0.6); E("GAME.step(0.1)")
+        npl = E("GPLAN.state.items.filter(it => it.st === 'gepflanzt').length")
+        if not npl:
+            ck('„im Garten: aus“ hides the plants', E("!GPLAN.G3.group || !GPLAN.G3.group.visible"), '')
+            reqs.clear(); boot(pg); time.sleep(3); E("GAME.step(0.5)")
+            ck('after a reload with „aus“: no request for the data, the plan kept', not reqs and E("GPLAN.state.show") is False and E("GPLAN.state.items.length") > 3, str(reqs))
+            return
+        st = J("GPLAN.G3.stats")
+        ck('„im Garten: aus“ hides the planned plants, the planted stand', st['trees'] + st['bushes'] == npl and E("GPLAN.G3.group.visible"), json.dumps(st))
+        reqs.clear(); boot(pg); early = list(reqs)
+        for i in range(40):
+            if E("GPLAN.data.st") == 'ok' and E("GPLAN.G3.stats.trees || 0") > 0: break
+            time.sleep(0.5); E("GAME.step(0.1)")
+        st = J("GPLAN.G3.stats")
+        ck('after a reload with „aus“: the planted plants stand again (data loaded after the start), the planned stay hidden', not early and E("GPLAN.state.show") is False and st['trees'] + st['bushes'] == npl, f'{st} early {early}')
     section('off', off)
     ck.errors(errs)
     # ---- the panel on a phone held upright ----

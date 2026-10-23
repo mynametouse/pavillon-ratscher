@@ -61,7 +61,7 @@ export const GPRULES = (() => {
       const p = db.byId.get(it.id);
       if (!p) return { i, it, p: null };
       const seed = M.seedOf(it),
-        age = M.ageOf(it, view),
+        age = opts.ageOf ? opts.ageOf(it) : M.ageOf(it, view),
         now = M.sizeAt(p, age === null ? 0 : age, seed),
         grown = M.sizeAt(p, 999, seed);
       return { i, it, p, age, now, grown, R: grown.w / 2, c: M.crown(p, now), cg: M.crown(p, grown) };

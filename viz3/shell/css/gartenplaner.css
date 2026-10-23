@@ -72,12 +72,14 @@
 #gplan .gp-site{padding:8px 12px 12px;border-top:1px solid var(--line)}
 #gplan .gp-site p{margin:0 0 6px;font-size:12.5px}
 #gplan.folded .gp-tabs,#gplan.folded .gp-body,#gplan.folded .gp-sel{display:none}
-#gplan.site .gp-tabs button:not([data-tab="pflanzen"]){display:none}
+#gplan.site .gp-tabs button:not([data-tab="pflanzen"]):not([data-tab="garten"]){display:none}
 #gplan.site .gp-body{max-height:30vh}
 body[data-gparm="1"][data-mode="top"] #stage{cursor:crosshair}
 body[data-gplan="1"] #topsvg .bound{stroke:#ffe9b8;stroke-width:2.4;stroke-dasharray:3 4}
 /* in the plan view's SVG */
-#topsvg .gp-c{stroke-width:1.6;fill-opacity:.34}
+#topsvg .gp-c{stroke-width:1.6;fill-opacity:.2;stroke-dasharray:5 3}
+#topsvg .gp-c.pl{fill-opacity:.5;stroke-dasharray:none;stroke-width:2}
+#topsvg .gp-c.wip{fill-opacity:.3;stroke-dasharray:2 2;stroke-width:2}
 #topsvg .gp-baum{fill:#3f8f2f;stroke:#7fd36a}
 #topsvg .gp-kleinbaum{fill:#86b83c;stroke:#b8e57a}
 #topsvg .gp-strauch{fill:#c9c42b;stroke:#ece66a}
@@ -107,3 +109,8 @@ body[data-gplan="1"] #topsvg .bound{stroke:#ffe9b8;stroke-width:2.4;stroke-dasha
   #gplan{top:8px;max-height:calc(100% - 16px);width:min(330px,46%)}
   body[data-mode="top"] #gplan{top:64px;max-height:calc(100% - 72px)}
 }
+#gplan .gp-state{margin:4px 0;font-weight:600}
+#gplan .gp-state.pl{color:var(--larch)}
+#gplan .gp-body h4{margin:14px 0 6px;font:600 12px/1.2 var(--f-body);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+#gplan .gp-gy{margin:6px 0}
+#gplan .gp-stock,#gplan .gp-harvest{margin:0;padding-left:18px;font-size:13px;line-height:1.5}
