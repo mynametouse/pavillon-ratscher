@@ -45,6 +45,7 @@ python3 viz3/test/run.py --serve smoke           # Browser-Tests nacheinander: j
 python3 viz3/test/run.py --serve gate            # Prüfpaket vor dem Veröffentlichen: smoke gpu softgl loadlog
 # bei GitHub läuft bei jedem Stand auf src das ganze Prüfpaket gleichzeitig (.github/workflows/pruefpaket.yml):
 #   smoke gpu softgl loadlog memphone savefuzz + Straßen (Wellen je km) + Safari-Engine (Versuch)
+#   + Feature-Tests v16b–v16e in 8 Abschnitten + Themen-Tests: jede Zeile von viz3/extra/*/tests.txt als eigener Job (beide melden nur)
 ```
 
 - Vor jedem Push `tools/check.sh`. Neue Tests melden über `ck = lib.Checks('name')`, `ck('was', bedingung, info)`, `ck.errors(errs)`, `ck.done()`
@@ -90,7 +91,7 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
 ## 4 Veröffentlichen (seit Umbau Phase 0: Vorschau zuerst)
 
 1. **Push auf `src`** → GitHub Actions: Schnellprüfung, dann das **Prüfpaket gleichzeitig** (`.github/workflows/pruefpaket.yml`: smoke, gpu,
-   softgl, loadlog, memphone, savefuzz, Straßen; Safari-Engine als Versuch). Sind alle grün, schreibt der Job „Vorschau veröffentlichen“
+   softgl, loadlog, memphone, savefuzz, Straßen; Safari-Engine, Feature- und Themen-Tests melden nur). Sind die Pflicht-Tests grün, schreibt der Job „Vorschau veröffentlichen“
    den Stand nach **https://mynametouse.github.io/pavillon-ratscher/vorschau/** (oben ein Hinweis „Vorschau“; der veröffentlichte Plan wird
    mitkopiert, die normale Seite bleibt unverändert).
 2. **Live stellen** (Falko, 23.10.2026 1:05: „alles, was erfolgreich getestet ist, … direkt … in die normale Online-Version“): ist das

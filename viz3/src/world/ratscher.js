@@ -688,7 +688,7 @@ export const RATSCHER = (() => {
       if (LATE.ROADS.edge(x, y) > -0.4) continue; // V16b: a crown measured over a road stands beside it, not in it
       const hs = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
       const kind = con ? 4 : Math.floor(hs * 4),
-        it = { x, y, z: hAt(x, y), h, r, kind, hs };
+        it = { x, y, z: hAt(x, y), h, r, kind, hs, con, inst: [], col: -1 }; // inst: [instanced mesh, index] (world/treehit.js tips it)
       (Math.hypot(x - 2, y - 2) < 100 ? mid : far).push(it);
       S.treeXY.push(x, y, h);
     }
@@ -697,6 +697,7 @@ export const RATSCHER = (() => {
       q = new THREE.Quaternion(),
       up = new THREE.Vector3(0, 1, 0),
       sv = new THREE.Vector3();
+    S.treeRecs = mid.concat(far); // world/treehit.js: every drawn crown with its instances and garden collider
     const byK = new Map();
     for (const it of mid) {
       const k = TK[it.kind];
@@ -718,8 +719,11 @@ export const RATSCHER = (() => {
         ib.setMatrixAt(i, m4);
         il.setMatrixAt(i, m4);
         il.setColorAt(i, new THREE.Color(1, 1, 1).multiplyScalar(0.84 + it.hs * 0.2));
-        if (Math.hypot(it.x - 2, it.y - 2) < 90)
+        it.inst.push([ib, i], [il, i]);
+        if (Math.hypot(it.x - 2, it.y - 2) < 90) {
           COL.push([it.x - 0.3, it.x + 0.3, it.y - 0.3, it.y + 0.3, 0, 4, 'tree']);
+          it.col = COL.length - 1;
+        }
       });
       for (const im of [ib, il]) {
         im.castShadow = false;
@@ -784,6 +788,7 @@ export const RATSCHER = (() => {
         q.setFromAxisAngle(up, it.hs * 6.283);
         m4.compose(V(it.x, it.y, it.z - 0.3), q, sv.set(sx, sy, sx));
         im.setMatrixAt(i, m4);
+        it.inst.push([im, i]);
         kk[i] = it.kind;
         im.setColorAt(
           i,
