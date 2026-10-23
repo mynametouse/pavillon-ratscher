@@ -111,6 +111,15 @@ test('the count: the same seed gives the same result; the numbers add up; liked 
   assert.equal(M.simulate(hi, 3).turnout, M.simulate({ ...hi, voted: false }, 3).turnout + 1);
 });
 
+test('Hubert is away on election day: his vote counts only by post', () => {
+  const S = M.fresh();
+  const hh = s => M.groups(s).find(g => g.k === 'hubert' && g.hh);
+  assert.equal(hh(S).n, 0);
+  S.tasks.briefwahl = 'done';
+  assert.equal(hh(S).n, D.P.hubert.hh);
+  assert.ok(hh(S).sure);
+});
+
 test('a person missing in this build votes with the rest', () => {
   const S = M.fresh();
   const all = M.groups(S).reduce((n, g) => n + g.n, 0),

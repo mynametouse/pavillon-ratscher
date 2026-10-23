@@ -7,17 +7,19 @@
 // with the public count, the office with concerns, the Ortsteilrat and the town council – a panel (#amtpanel) and a folder (#amtbook, O).
 // Saved: pav-amt-v1. The town hall is a scene of its own until the walkable Schleusingen has one (seam: AMT.rathaus, see docs).
 // Test hooks: window.AMT (state, jump, talk, count …), ?amt=brief|wahlkampf|wahltag|zaehlen|amt|stadtrat.
-import { $, QS } from '../core/head.js';
+import * as THREE from 'three';
+import { $, BASE, QS, scene, V } from '../core/head.js';
 import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
 import { LOAD, markDirty, whenLoaded } from '../core/assets.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { QUESTS } from '../game/quests.js';
-import { toast } from '../audio/audio.js';
+import { audio, toast } from '../audio/audio.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
 import { NPCS, NPCUI } from '../npc/npc.js';
+import { CHL, rbPerson } from '../npc/npc_real.js';
 import { VILLAGE } from '../world/village.js';
 import { WCOL } from '../world/worldcol.js';
 import { VEH } from '../vehicles/vehicle.js';
@@ -161,6 +163,7 @@ export const AMT = (() => {
       const f = U.onClose;
       U.onClose = null;
       if (f) f();
+      doorFigDrop();
       markDirty();
     };
     el.querySelector('.x').addEventListener('click', () => U.close());
@@ -274,6 +277,8 @@ export const AMT = (() => {
     const t = now();
     if (BOOK.tab === 'stand') {
       body += '<p class="st">' + (status() || 'Noch nichts.') + '</p>';
+      const nx = nextSteps();
+      if (nx.length) body += '<h4>Was jetzt?</h4><ul>' + nx.map(x => '<li>' + x + '</li>').join('') + '</ul>';
       if (ST.eday != null && ST.phase !== 'office')
         body +=
           '<dl><dt>Wahltag</dt><dd>' +
@@ -353,10 +358,18 @@ export const AMT = (() => {
               esc(fullOf(k)) +
               '</b><small>' +
               esc(roleOf(k)) +
+              (where(k) ? ' · ' + esc(where(k)) : '') +
               '</small><span class="bar"><i style="width:' +
               r +
               '%"></i></span><em>' +
               M.mood(r) +
+              (trackPos(k)
+                ? ' <button type="button" class="way" data-way="' +
+                  k +
+                  '">' +
+                  (TRK.k === k ? 'zeige ich' : 'Weg') +
+                  '</button>'
+                : '') +
               '</em></li>'
             );
           })
@@ -446,6 +459,12 @@ export const AMT = (() => {
         renderBook();
       })
     );
+    BOOK.el.querySelectorAll('[data-way]').forEach(b =>
+      b.addEventListener('click', () => {
+        track(TRK.k === b.dataset.way ? null : b.dataset.way);
+        renderBook();
+      })
+    );
     BOOK.el.querySelectorAll('[data-a]').forEach(b =>
       b.addEventListener('click', () => {
         toggleBook(false);
@@ -453,6 +472,41 @@ export const AMT = (() => {
         else letter();
       })
     );
+  }
+  // what one can do next (the folder's first tab): a hint per stage, plainly
+  function nextSteps() {
+    const t = now(),
+      out = [];
+    if (ST.phase === 'asked')
+      out.push(
+        'Sag Ingrid oder jemand anderem im Dorf, dass du antrittst – im Gespräch („Die Nachwahl …“) oder an der Haustür („Bei … klingeln“, 8–21 Uhr).'
+      );
+    if (ST.phase === 'candidate') {
+      const n = M.sigCount(ST);
+      if (n < D.SIGS)
+        out.push(
+          'Unterschriften sammeln: Wer dich kennt und mag (Meinung „unentschieden“ oder besser), unterschreibt mit seinem Haushalt. Noch ' +
+            (D.SIGS - n) +
+            '.'
+        );
+      else out.push('Den Wahlvorschlag im Rathaus Schleusingen einreichen – mit dem Auto oder unten „Ins Rathaus“.');
+    }
+    if (campaign()) {
+      const quiet = D.KEYS.filter(k => avail(k) && !D.P[k].opp && ST.met[k] == null).map(nameOf);
+      if (quiet.length) out.push('Noch nicht gesprochen: ' + quiet.join(', ') + '.');
+      if (DCAL.until('skat', t) < 3 * 1440 && ST.tasks.vorstellen !== 'done')
+        out.push('Freitagabend in der alten Schule: Dort sind alle – eine gute Gelegenheit, dich vorzustellen.');
+    }
+    if (office()) {
+      if (Object.values(ST.anl).some(a => a.st === 'open'))
+        out.push('Ortsteilrat einberufen: abends (17–22 Uhr) an der Tür der alten Schule.');
+      if (Object.values(ST.anl).some(a => a.st === 'stadt') || !ST.sworn)
+        out.push('Donnerstags ab 17 Uhr in den Stadtrat nach Schleusingen (Auto oder unten „Ins Rathaus“).');
+      if (Object.values(ST.anl).some(a => (a.st === 'stadt' || a.st === 'later') && !a.est))
+        out.push('Im Bauamt (Rathaus) Kostenschätzungen erbitten – damit hat ein Antrag im Stadtrat bessere Karten.');
+      out.push('Mit den Leuten reden: „Hast du ein Anliegen?“');
+    }
+    return out;
   }
   // ======================= the start: Ingrid's letter =======================
   function begin(quiet) {
@@ -482,6 +536,7 @@ export const AMT = (() => {
   }
   function letter() {
     ST.letter = true;
+    if (ST.phase === 'asked' && avail('ingrid') && !TRK.k) track('ingrid');
     save();
     const again = ST.tries > 0;
     UI.open(
@@ -520,7 +575,7 @@ export const AMT = (() => {
     save();
     UI.say(
       (k === 'uwe'
-        ? 'Dann sehen wir uns am Wahlsonntag. Möge der Bessere gewinnen – und danach trinken wir ein Bier.'
+        ? 'Dann sehen wir uns am Wahlsonntag. Möge der Bessere gewinnen – und danach trinken wir ein Bier. Übrigens: '
         : k && k !== 'letter'
           ? 'Das ist schön! '
           : 'Gut. ') +
@@ -684,6 +739,7 @@ export const AMT = (() => {
             'Gut, dass du fragst. Der Unterflurhydrant am Anger ist unter Laub verschwunden. Am Zaun hängt das rot umrandete Schild: oben H 80, darunter 1,5 und 4,0. Heißt: Leitung 80 Millimeter, der Deckel liegt anderthalb Meter seitlich und vier Meter vor dem Schild. Mach ihn frei – im Ernstfall zählt jede Minute.'
           );
           AMTWORLD.hydrant(true);
+          track('hydrant');
           think('Aufgabe: Den Hydrantendeckel am Anger nach dem Schild finden und freimachen.');
           UI.buttons([bye()]);
         },
@@ -708,6 +764,7 @@ export const AMT = (() => {
         'Was bewegt dich?',
         () => {
           ST.tasks.bus = 0;
+          track('bus');
           save();
           UI.say(
             'Komm mal an einem Schultag früh an die Bushaltestelle, zwischen Viertel vor sieben und halb acht. Dann siehst du selbst, wie die Kinder im Dunkeln an der Straße stehen und die Pendler vorbeirauschen.'
@@ -820,6 +877,7 @@ export const AMT = (() => {
           ST.tasks.zaun = 0;
           save();
           AMTWORLD.fence(true);
+          track('fence');
           UI.say(
             k === 'heike'
               ? 'Wenn das hält, bin ich zufrieden. Ronald hat hinten an der Weide ein Stück Zaun liegen.'
@@ -881,14 +939,13 @@ export const AMT = (() => {
   function speech() {
     UI.open(
       'Skatabend in der alten Schule',
-      'Du stehst auf und klopfst ans Glas',
-      'Alle schauen dich an. Was sagst du?',
-      {
-        id: 'speech',
-      }
+      'Wahlkampf am Freitag',
+      (avail('ingrid') ? 'Ingrid ruft durch den Raum: ' : '') +
+        '„Wir haben einen Kandidaten unter uns! Sag doch ein paar Worte.“ Alle schauen dich an. Was sagst du?',
+      { id: 'speech' }
     );
-    UI.buttons(
-      D.SPEECH.map(([label, eff]) => [
+    UI.buttons([
+      ...D.SPEECH.map(([label, eff]) => [
         label,
         () => {
           ST.tasks.vorstellen = 'done';
@@ -901,8 +958,9 @@ export const AMT = (() => {
           UI.buttons([bye()]);
         },
         'quest',
-      ])
-    );
+      ]),
+      bye('Lieber ein andermal'),
+    ]);
   }
   // ======================= the town hall in Schleusingen (a scene until the walkable town has one) =======================
   const canTrip = () => campaign() || office();
@@ -1483,7 +1541,7 @@ export const AMT = (() => {
   function inject(box, k, close) {
     if (!box) return;
     const old = box.querySelector('[data-amt]');
-    const label = injectLabel(k);
+    const label = DORF.game && DORF.game.on && box !== $('np-topics') ? null : injectLabel(k); // not in the middle of Katrin's card game
     if (!label) {
       if (old) old.remove();
       return;
@@ -1522,6 +1580,104 @@ export const AMT = (() => {
       }).observe(nt, { childList: true });
   }
   const LASTGREET = { k: null };
+  // ======================= the one who opens the door: a figure of its own in the doorway =======================
+  // The villagers' figures (dorf/dorf_people.js) belong to the village life, which loads and drops them for its evenings and gardens; the
+  // one at the door is loaded here (the same files), stands in the doorway while one talks and goes when the panel closes.
+  const DF = { f: null, k: null, tok: 0, clips: {} };
+  async function doorFig(k) {
+    const p = DTEXT.P && DTEXT.P[k],
+      CH = window.CHARMAN || {},
+      PM = window.PLAYERMAN || {},
+      H = homes(),
+      h = H && H[k];
+    if (!p || !h || !CH[p.fig] || !PM.pclips_m || QS.get('lowfig')) return;
+    doorFigDrop();
+    const tok = ++DF.tok;
+    try {
+      const cf = p.clips === 'f' && PM.pclips_f ? PM.pclips_f : PM.pclips_m;
+      let set = (DPEOPLE.clips && DPEOPLE.clips[p.clips]) || DF.clips[cf];
+      if (!set) {
+        const FL = new THREE.FileLoader();
+        FL.setResponseType('json');
+        set = DF.clips[cf] = await FL.loadAsync(BASE + 'chars/' + cf);
+      }
+      const gl = await CHL.loadAsync(BASE + 'chars/' + CH[p.fig]);
+      if (tok !== DF.tok || UI.cur !== k) {
+        gl.scene.traverse(freeObj);
+        return;
+      }
+      const f = rbPerson(gl, set, { h: p.h, stoop: p.stoop || 0, idleRate: 0.9 });
+      f.walker = { talking: false };
+      // in the doorway, half a step out, turned to the visitor
+      const x = (h.door[0] + h.step[0]) / 2,
+        y = (h.door[1] + h.step[1]) / 2,
+        z = KERN.terrain(h.step[0], h.step[1]);
+      f.g.position.copy(V(x, y, z));
+      f.g.rotation.y = -Math.atan2(P.x - x, P.y - y);
+      scene.add(f.g);
+      DF.f = f;
+      DF.k = k;
+      markDirty(true);
+    } catch (e) {
+      console.warn('amt door figure', k, e);
+    }
+  }
+  // the door bell: ding-dong (two soft triangle notes through the effects bus)
+  function bell() {
+    try {
+      const R = audio.raw && audio.raw();
+      if (!R || R.ctx.state !== 'running') return;
+      const { ctx, sfx } = R,
+        t = ctx.currentTime;
+      for (const [f, dt] of [
+        [659.3, 0],
+        [523.3, 0.45],
+      ]) {
+        const o = ctx.createOscillator(),
+          g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0, t + dt);
+        g.gain.linearRampToValueAtTime(0.1, t + dt + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dt + 1.2);
+        o.connect(g);
+        g.connect(sfx);
+        o.start(t + dt);
+        o.stop(t + dt + 1.3);
+      }
+    } catch (e) {
+      console.warn('amt bell', e);
+    }
+  }
+  function freeObj(o) {
+    if (o.geometry) o.geometry.dispose();
+    const ms = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
+    for (const m of ms) {
+      for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap'])
+        if (m[t]) m[t].dispose();
+      m.dispose();
+    }
+    if (o.isSkinnedMesh && o.skeleton && o.skeleton.boneTexture) o.skeleton.dispose();
+  }
+  function doorFigDrop() {
+    DF.tok++;
+    if (!DF.f) return;
+    scene.remove(DF.f.g);
+    DF.f.g.traverse(freeObj);
+    DF.f = null;
+    DF.k = null;
+    markDirty(true);
+  }
+  function doorFigTick(dt) {
+    const f = DF.f;
+    if (!f) return;
+    // the village shows this person somewhere close by (the garden, the evening): no second one
+    const o = DPEOPLE.figs && DPEOPLE.figs[DF.k];
+    if (o && o.g.visible && o.at && f.g.position && Math.hypot(o.at.x - P.x, o.at.y - P.y) < 30) return doorFigDrop();
+    f.walker.talking = UI.cur === DF.k && performance.now() % 7000 < 4200;
+    f.anim(Math.min(dt, 0.1), 0);
+    markDirty();
+  }
   // ======================= the homes of the villagers (ringing at the door) =======================
   let HOMES = null;
   function homes() {
@@ -1587,7 +1743,9 @@ export const AMT = (() => {
             );
             return;
           }
+          bell();
           talk(k, 'door');
+          doorFig(k);
         },
       });
   // the old school: voting, the count, introducing oneself, the Ortsteilrat
@@ -1621,23 +1779,6 @@ export const AMT = (() => {
       else if (ST.vote && ST.vote.counted && !ST.vote.accepted) result();
       else if (office()) ortsrat();
     },
-  });
-  PLAY.act({
-    id: 'amt:speech',
-    r: 6,
-    prio: -0.5,
-    label: () =>
-      campaign() &&
-      ST.tasks.vorstellen !== 'done' &&
-      DORF.S &&
-      DORF.S.skat &&
-      DORF.S.inside &&
-      !UI.cur &&
-      !(DORF.UI && DORF.UI.cur)
-        ? 'Dich allen vorstellen'
-        : null,
-    pos: () => (DSCHOOL.built && DSCHOOL.F ? [P.x, P.y, P.feet + 1.2] : null),
-    run: () => speech(),
   });
   // the car: off to the town hall
   PLAY.act({
@@ -1688,10 +1829,135 @@ export const AMT = (() => {
       think('Neue Pfosten, das Drahtgeflecht gespannt. Hält. Jetzt Heike Bescheid sagen.');
     },
   });
+  // ======================= showing the way: a marker over the goal, direction and distance in the HUD =======================
+  // (the neighbours' tasks have their own tracker, game/quests.js; this one is for the election and the office: a person's door, the
+  // hydrant, the fence, the bus stop, the school)
+  const TRK = { k: null, el: null, mark: null, acc: 0, last: '' };
+  function where(k) {
+    if (D.P[k] && D.P[k].npc)
+      return k === 'hubert' ? 'Huberts Hof, westlich vom Garten' : 'Ronalds Weide, südlich vom Garten';
+    const H = homes(),
+      h = H && H[k];
+    const pl = h && KERN.place ? KERN.place(h.step[0], h.step[1]) : null;
+    return pl ? pl.replace(/^Ratscher · /, '') : null;
+  }
+  function trackPos(k) {
+    if (!k) return null;
+    if (k === 'hydrant') return AMTWORLD.hydrantAt();
+    if (k === 'fence') return AMTWORLD.fenceAt();
+    if (k === 'bus') return [250.6, -99.6];
+    if (k === 'schule') {
+      const d = schoolDoor();
+      return d ? [d[0], d[1]] : [216, -98];
+    }
+    if (D.P[k] && D.P[k].npc) return NPCS[k] ? [NPCS[k].x, NPCS[k].y] : null;
+    const f = DPEOPLE.figs && DPEOPLE.figs[k];
+    if (f && f.g.visible && f.at) return [f.at.x, f.at.y];
+    const H = homes(),
+      h = H && H[k];
+    return h ? h.step : null;
+  }
+  const TRKNAME = {
+    hydrant: 'Hydrant am Anger',
+    fence: 'Zaun an Ronalds Weide',
+    bus: 'Bushaltestelle',
+    schule: 'Alte Schule',
+  };
+  function track(k) {
+    TRK.k = k;
+    TRK.last = '';
+    trackTick(1);
+  }
+  function trackTick(dt) {
+    TRK.acc += dt;
+    if (TRK.acc < 0.25) return;
+    TRK.acc = 0;
+    if (!TRK.el) {
+      TRK.el = document.createElement('div');
+      TRK.el.className = 'ov';
+      TRK.el.id = 'amttrack';
+      TRK.el.hidden = true;
+      TRK.el.setAttribute('role', 'button');
+      TRK.el.title = 'Antippen: nicht mehr zeigen';
+      TRK.el.addEventListener('click', () => track(null));
+      ($('p-3d') || document.body).appendChild(TRK.el);
+    }
+    const p = TRK.k ? trackPos(TRK.k) : null,
+      show = !!p && P.mode === 'walk' && UI.cur !== TRK.k;
+    const d = p ? Math.hypot(p[0] - P.x, p[1] - P.y) : 0;
+    if (p && d < 3.2 && P.mode === 'walk') {
+      // arrived
+      TRK.k = null;
+    }
+    const on = show && TRK.k;
+    const txt = on
+      ? (TRKNAME[TRK.k] || nameOf(TRK.k) + (D.P[TRK.k] && !D.P[TRK.k].npc && !figNear(TRK.k) ? ' (Haustür)' : '')) +
+        '|' +
+        Math.round(d) +
+        '|' +
+        Math.round(((Math.atan2(p[0] - P.x, p[1] - P.y) * 180) / Math.PI - P.yaw) / 8)
+      : '';
+    if (txt !== TRK.last) {
+      TRK.last = txt;
+      TRK.el.hidden = !on;
+      if (on) {
+        const [name, m, a8] = txt.split('|');
+        TRK.el.innerHTML =
+          '<b>Wahl und Amt</b><span>' +
+          esc(name) +
+          '</span><i style="transform:rotate(' +
+          +a8 * 8 +
+          'deg)">↑</i><em>' +
+          m +
+          ' m</em>';
+      }
+    }
+    // the marker over the goal (a sprite like the tasks' one, in the colour of the folder)
+    if (!TRK.mark) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 128;
+      const q = c.getContext('2d');
+      q.translate(64, 64);
+      q.beginPath();
+      q.arc(0, -10, 34, 0, Math.PI * 2);
+      q.fillStyle = 'rgba(20,18,15,0.55)';
+      q.fill();
+      q.beginPath();
+      q.arc(0, -10, 27, 0, Math.PI * 2);
+      q.fillStyle = '#8fd0ff';
+      q.fill();
+      q.fillStyle = '#1d3346';
+      q.font = '700 34px sans-serif';
+      q.textAlign = 'center';
+      q.fillText('§', 0, 2);
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace;
+      TRK.mark = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: t, depthTest: false, depthWrite: false, transparent: true, opacity: 0.92 })
+      );
+      TRK.mark.renderOrder = 999;
+      TRK.mark.visible = false;
+      TRK.mark.userData.noMerge = true;
+      scene.add(TRK.mark);
+    }
+    if (on && d > 3.5) {
+      const z = KERN.terrain(p[0], p[1]) + 3.2 + Math.sin(performance.now() / 420) * 0.08,
+        sc = Math.min(1.2, Math.max(0.25, d * 0.03));
+      TRK.mark.position.copy(V(p[0], p[1], z));
+      TRK.mark.scale.set(sc, sc, 1);
+      TRK.mark.visible = true;
+      markDirty();
+    } else if (TRK.mark.visible) {
+      TRK.mark.visible = false;
+      markDirty();
+    }
+  }
   // ======================= per frame =======================
   const TK = { acc: 0, warned: null };
   function tick(dt) {
     countTick(Math.min(dt, 0.25));
+    doorFigTick(dt);
+    trackTick(dt);
     TK.acc += dt;
     if (TK.acc < 0.5) return;
     TK.acc = 0;
@@ -1750,6 +2016,27 @@ export const AMT = (() => {
       }
       if (ST.seen.length > 60) ST.seen.splice(0, ST.seen.length - 60);
     }
+    // in office the people come to you: every other morning a note in the letterbox with a concern not yet on the list
+    if (
+      office() &&
+      ST.since != null &&
+      minOf(t) >= 9 * 60 &&
+      dayOf(t) > dayOf(ST.since) &&
+      (dayOf(t) - dayOf(ST.since)) % 2 === 0
+    ) {
+      const d = dayOf(t);
+      if (TK.note !== d) {
+        TK.note = d;
+        const next = Object.entries(D.ANLIEGEN).find(([id, A]) => !ST.anl[id] && avail(A.from));
+        if (next) {
+          const [id, A] = next;
+          ST.anl[id] = { st: 'open', t, why: '', d: '' };
+          save();
+          toast('Ein Zettel im Briefkasten, von ' + nameOf(A.from) + ': „' + A.ask + '“ (Mappe: Anliegen)', 10000);
+          BOOK.btn.querySelector('.dot').hidden = false;
+        }
+      }
+    }
     // Katrin's school bus: on a school day 6:45–7:30 at the stop
     if (ST.tasks.bus === 0 && P.mode === 'walk') {
       const wd = DCAL.wd(t),
@@ -1765,7 +2052,28 @@ export const AMT = (() => {
       }
     }
     AMTWORLD.refresh(ST, t);
-    if (!BOOK.el.hidden && BOOK.tab === 'stand' && Math.random() < 0.1) renderBook();
+    // the folder follows the matter (re-drawn only when its status line changes – not under the reader's fingers)
+    const stx = status();
+    if (stx !== TK.status) {
+      TK.status = stx;
+      renderBook();
+    }
+    // a Friday evening in the school during the campaign: Ingrid asks whether one wants to say a few words (once per evening)
+    if (
+      campaign() &&
+      ST.tasks.vorstellen !== 'done' &&
+      DORF.S &&
+      DORF.S.skat &&
+      DORF.S.inside &&
+      !UI.cur &&
+      !(DORF.UI && DORF.UI.cur)
+    ) {
+      TK.inside = (TK.inside || 0) + 0.5;
+      if (TK.inside > 8 && TK.asked !== dayOf(t)) {
+        TK.asked = dayOf(t);
+        speech();
+      }
+    } else TK.inside = 0;
     // the panel closes when one walks away
     if (UI.cur && UI.at && Math.hypot(P.x - UI.at[0], P.y - UI.at[1]) > 6) UI.close();
   }

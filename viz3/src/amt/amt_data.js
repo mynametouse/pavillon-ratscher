@@ -89,6 +89,7 @@ export const AMTDATA = (() => {
       rep0: 35,
       rival: 50,
       npc: true,
+      away: 'briefwahl', // on election day at his sister's in Suhl: votes only by post
       ask: ['feldweg'],
     },
     ronald: {

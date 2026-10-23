@@ -198,7 +198,17 @@ export const AMTMODEL = (() => {
       }
       const met = S.met[k] != null;
       // the rival's household votes for him; the rest of his circle like any other
-      out.push({ k, n: p.hh, r: p.opp ? 0 : S.rep[k], o: p.opp ? 100 : p.rival, met, hh: true });
+      // away on election day (Hubert at his sister's): his own vote only by post – the task that makes it possible
+      const post = p.away ? S.tasks[p.away] === 'done' : null;
+      out.push({
+        k,
+        n: post === false ? 0 : p.hh,
+        r: p.opp ? 0 : S.rep[k],
+        o: p.opp ? 100 : p.rival,
+        met,
+        hh: true,
+        sure: post === true,
+      });
       out.push({ k, n: p.circle, r: 0.6 * S.rep[k] + 0.4 * avg, o: p.rival, met: false, hh: false });
     }
     out.push({ k: null, n: rest, r: avg, o: 50, met: false, hh: false });
@@ -206,7 +216,7 @@ export const AMTMODEL = (() => {
   }
   const pMe = g => sig((g.r - g.o) / 9);
   const pTurn = (g, S) =>
-    clamp(0.42 + 0.005 * Math.abs(g.r - g.o) + (g.met ? 0.15 : 0) + (S.flips ? -0.02 : 0), 0.2, 0.93);
+    g.sure ? 0.97 : clamp(0.42 + 0.005 * Math.abs(g.r - g.o) + (g.met ? 0.15 : 0) + (S.flips ? -0.02 : 0), 0.2, 0.93);
   // expected share of the valid votes (the mood in the village, for the journal)
   function expect(S, avail) {
     let me = 0,
