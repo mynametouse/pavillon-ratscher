@@ -666,11 +666,94 @@ export const VESSRA = (() => {
       console.warn('vessra', e);
     }
   }
+  // the ground beside the car roads: the 30 m surface model of Copernicus carries the houses and trees of the village, and the pipeline
+  // cut the roads into it with 1:1.5 banks – a road in a trough a metre deep. Beside them the ground is lowered towards the road: to at
+  // most 10 cm + 6 % of the distance from the road's edge + a little curvature (4 mm/m², so a hillside stays) above it, by at most 2.5 m
+  // (a wood beside the road stays a wood), tapering off from 20 to 40 m; on a 4 m grid, faded out over the outer 100 m of the zone; a
+  // pad of WELT with the same function, so the drawn tiles, KERN's ground and the feet of the houses agree
+  let capG = null;
+  function roadCap() {
+    const G = 4,
+      n = Math.round((ZONE[2] - ZONE[0]) / G) + 1,
+      cap = new Float32Array(n * n).fill(1e9),
+      zc = new Float32Array(n * n),
+      R = 40;
+    for (let j = 0; j < n; j++)
+      for (let i = 0; i < n; i++) {
+        const z = gz(ZONE[0] + i * G, ZONE[1] + j * G);
+        zc[j * n + i] = z === undefined || z === null ? NaN : z;
+      }
+    for (const st of data.st || []) {
+      if (st.k > 5 || st.b) continue;
+      const hw = st.k <= 2 ? 4.5 : st.k === 3 ? 3.0 : 2.0,
+        p = st.p,
+        pts = [];
+      // the axis every 4 m with the height of the carved road
+      for (let k = 0; k + 3 < p.length; k += 2) {
+        const L = Math.hypot(p[k + 2] - p[k], p[k + 3] - p[k + 1]),
+          m = Math.max(1, Math.ceil(L / 4));
+        for (let q = k ? 1 : 0; q <= m; q++) {
+          const x = p[k] + ((p[k + 2] - p[k]) * q) / m,
+            y = p[k + 1] + ((p[k + 3] - p[k + 1]) * q) / m,
+            z = gz(x, y);
+          pts.push(x, y, z === undefined || z === null ? NaN : z);
+        }
+      }
+      for (let k = 0; k + 5 < pts.length; k += 3) {
+        const ax = pts[k],
+          ay = pts[k + 1],
+          za = pts[k + 2],
+          ex = pts[k + 3] - ax,
+          ey = pts[k + 4] - ay,
+          zb = pts[k + 5],
+          l2 = ex * ex + ey * ey || 1;
+        if (!(za === za && zb === zb)) continue;
+        const i0 = Math.max(0, Math.floor((Math.min(ax, ax + ex) - hw - R - ZONE[0]) / G)),
+          i1 = Math.min(n - 1, Math.ceil((Math.max(ax, ax + ex) + hw + R - ZONE[0]) / G)),
+          j0 = Math.max(0, Math.floor((Math.min(ay, ay + ey) - hw - R - ZONE[1]) / G)),
+          j1 = Math.min(n - 1, Math.ceil((Math.max(ay, ay + ey) + hw + R - ZONE[1]) / G));
+        for (let j = j0; j <= j1; j++)
+          for (let i = i0; i <= i1; i++) {
+            const x = ZONE[0] + i * G,
+              y = ZONE[1] + j * G,
+              t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / l2)),
+              d = Math.max(0, Math.hypot(x - ax - ex * t, y - ay - ey * t) - hw);
+            if (d > R) continue;
+            const k = j * n + i,
+              c = za + (zb - za) * t + 0.1 + 0.06 * d + 0.004 * d * d,
+              lo = zc[k] - 2.5 * Math.min(1, (R - d) / 20),
+              v = c > lo ? c : lo;
+            if (v < cap[k]) cap[k] = v;
+          }
+      }
+    }
+    return { G, n, cap };
+  }
+  const adj = (x, y, z) => {
+    if (!capG || !inZone(x, y)) return z;
+    const { G, n, cap } = capG,
+      fi = (x - ZONE[0]) / G,
+      fj = (y - ZONE[1]) / G,
+      i = Math.min(n - 2, Math.floor(fi)),
+      j = Math.min(n - 2, Math.floor(fj)),
+      tx = fi - i,
+      ty = fj - j,
+      k = j * n + i,
+      c =
+        cap[k] * (1 - tx) * (1 - ty) +
+        cap[k + 1] * tx * (1 - ty) +
+        cap[k + n] * (1 - tx) * ty +
+        cap[k + n + 1] * tx * ty;
+    if (!(c < z)) return z;
+    const w = Math.max(0, Math.min(1, Math.min(x - ZONE[0], ZONE[2] - x, y - ZONE[1], ZONE[3] - y) / 100));
+    return z + w * (c - z);
+  };
   const ground = (x, y) => {
     const z = gz && gz(x, y);
-    return z !== undefined && z !== null ? z : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
+    return z !== undefined && z !== null ? adj(x, y, z) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
   };
   S.gz = ground;
+  S.raw = (x, y) => (gz ? gz(x, y) : undefined); // the tiles' own height (tests: the banks beside the roads)
   function add(m, name, own) {
     m.name = 'vessra ' + name;
     m.userData.noMerge = true;
@@ -733,6 +816,7 @@ export const VESSRA = (() => {
     S.seats = [];
     S.baumschule = null;
     if (WELT.setPads) WELT.setPads('vessra', []);
+    capG = null;
     if (WELT.setOverlay && S.overlayTex && WELT.overlay && WELT.overlay() === S.overlayTex) WELT.setOverlay(null);
     S.overlayTex = null;
     data = null;
@@ -1430,6 +1514,17 @@ export const VESSRA = (() => {
     S.segs = [];
     S.bld = [];
     S.seats = [];
+    if (gz) {
+      capG = roadCap();
+      S.capMs = Math.round(performance.now() - t0);
+      if (WELT.setPads)
+        WELT.setPads('vessra', [
+          {
+            poly: [ZONE[0], ZONE[1], ZONE[2], ZONE[1], ZONE[2], ZONE[3], ZONE[0], ZONE[3]],
+            z: (x, y, raw) => adj(x, y, raw),
+          },
+        ]);
+    }
     const WB = wallBuf(),
       RB = roofBuf();
     data.b.forEach((b, i) => {
@@ -2382,7 +2477,7 @@ export const VESSRA = (() => {
       nrm = [],
       col = [],
       idx = [],
-      SEG = 7,
+      SEG = 9,
       LEAF = [
         [0.17, 0.27, 0.1],
         [0.24, 0.31, 0.11],
@@ -2393,24 +2488,81 @@ export const VESSRA = (() => {
       ].map(c => linC(c)),
       FIR = linC([0.08, 0.15, 0.08]),
       BARK = linC([0.24, 0.2, 0.16]);
-    // one ring of SEG vertices; the normal leans up (nz > 0) or down (nz < 0) from the horizontal out of the crown
-    const ring = (cx, cy, z, r, c, nz) => {
+    // one ring of SEG vertices, its radius a little lumpy (jit); the normal leans up (nz > 0) or down (nz < 0) out of the crown
+    const ring = (cx, cy, z, r, c, nz, jit = 0, seed = 0) => {
       const base = pos.length / 3,
         hz = Math.sqrt(Math.max(0, 1 - nz * nz));
-      for (let s = 0; s < SEG; s++) {
-        const a = (s / SEG) * Math.PI * 2;
-        pos.push(cx + Math.cos(a) * r, z, -(cy + Math.sin(a) * r));
+      for (let s2 = 0; s2 < SEG; s2++) {
+        const a = (s2 / SEG) * Math.PI * 2 + seed,
+          rs = r * (1 + (hh(seed * 13.1 + s2 * 7.3 + z) - 0.5) * jit);
+        pos.push(cx + Math.cos(a) * rs, z, -(cy + Math.sin(a) * rs));
         nrm.push(Math.cos(a) * hz, nz, -Math.sin(a) * hz);
         col.push(c[0], c[1], c[2]);
       }
       return base;
     };
     const band = (a, b) => {
-      for (let s = 0; s < SEG; s++) {
-        const s2 = (s + 1) % SEG;
-        idx.push(a + s, a + s2, b + s2, a + s, b + s2, b + s);
+      for (let s2 = 0; s2 < SEG; s2++) {
+        const s3 = (s2 + 1) % SEG;
+        idx.push(a + s2, a + s3, b + s3, a + s2, b + s3, b + s2);
       }
     };
+    // a closing fan from a ring to one point above (up) or below
+    const fan = (r0, x, y, z, c, up) => {
+      const v = pos.length / 3;
+      pos.push(x, z, -y);
+      nrm.push(0, up ? 1 : -1, 0);
+      col.push(c[0], c[1], c[2]);
+      for (let s2 = 0; s2 < SEG; s2++) {
+        const s3 = (s2 + 1) % SEG;
+        if (up) idx.push(r0 + s2, r0 + s3, v);
+        else idx.push(r0 + s3, r0 + s2, v);
+      }
+    };
+    // a crown of rings along a profile [radius factor, height factor, normal lean]
+    const crown = (x, y, z, Ht, rr, prof, c, jit, seed) => {
+      let prev = -1,
+        first = -1;
+      prof.forEach(([f, hz, nz], j) => {
+        const sh = 0.72 + 0.28 * (j / (prof.length - 1)),
+          b = ring(
+            x + (hh(x + j + seed) - 0.5) * rr * 0.15,
+            y + (hh(y + j + seed) - 0.5) * rr * 0.15,
+            z + Ht * hz,
+            rr * f,
+            c.map(v => v * sh),
+            nz,
+            jit,
+            seed
+          );
+        if (prev >= 0) band(prev, b);
+        else first = b;
+        prev = b;
+      });
+      fan(prev, x, y, z + Ht * prof[prof.length - 1][1] + rr * 0.06, c, true);
+      fan(
+        first,
+        x,
+        y,
+        z + Ht * prof[0][1] - rr * 0.05,
+        c.map(v => v * 0.7),
+        false
+      );
+    };
+    const FIRP = [
+        [0.75, 0.12, -0.6],
+        [0.62, 0.35, 0.1],
+        [0.42, 0.6, 0.4],
+        [0.22, 0.82, 0.7],
+        [0.02, 1.0, 1.0],
+      ],
+      LEAFP = [
+        [0.3, 0.28, -0.9],
+        [0.88, 0.42, -0.35],
+        [1.0, 0.62, 0.1],
+        [0.75, 0.84, 0.6],
+        [0.12, 1.0, 1.0],
+      ];
     T.forEach(tr => {
       const [x, y] = tr,
         R = tr[2] || 3,
@@ -2423,37 +2575,27 @@ export const VESSRA = (() => {
       const t0 = ring(x, y, z, 0.16 + R * 0.02, BARK, 0),
         t1 = ring(x, y, z + Ht * 0.45, 0.1 + R * 0.01, BARK, 0);
       band(t0, t1);
-      // the crown: rings of a round (or conical) profile, normals out of the crown, darker below
-      const prof = fir
-          ? [
-              [0.75, 0.12, -0.6],
-              [0.62, 0.35, 0.1],
-              [0.42, 0.6, 0.4],
-              [0.22, 0.82, 0.7],
-              [0.02, 1.0, 1.0],
-            ]
-          : [
-              [0.3, 0.28, -0.9],
-              [0.88, 0.42, -0.35],
-              [1.0, 0.62, 0.1],
-              [0.75, 0.84, 0.6],
-              [0.12, 1.0, 1.0],
-            ],
-        rr = fir ? R * 0.75 : R;
-      let prev = -1;
-      prof.forEach(([f, hz, nz], j) => {
-        const sh = 0.72 + 0.28 * (j / (prof.length - 1)),
-          b = ring(
-            x + (hh(x + j) - 0.5) * R * 0.15,
-            y + (hh(y + j) - 0.5) * R * 0.15,
-            z + Ht * hz,
-            rr * f,
-            c.map(v => v * sh),
-            nz
+      if (fir) crown(x, y, z, Ht, R * 0.75, FIRP, c, 0.18, k * 6.28);
+      else {
+        // a broad leaf tree: the main crown and two lobes beside it, a little lower – no round ball
+        crown(x, y, z, Ht, R * 0.82, LEAFP, c, 0.3, k * 6.28);
+        for (let j = 0; j < 2; j++) {
+          const a = k * 6.28 + j * 2.6 + 0.8,
+            ox = x + Math.cos(a) * R * 0.5,
+            oy = y + Math.sin(a) * R * 0.5;
+          crown(
+            ox,
+            oy,
+            z + Ht * 0.12,
+            Ht * 0.72,
+            R * 0.55,
+            LEAFP,
+            c.map(v => v * (0.92 + 0.12 * j)),
+            0.3,
+            a
           );
-        if (prev >= 0) band(prev, b);
-        prev = b;
-      });
+        }
+      }
       S.segs.push(...circleSegs(x, y, 0.3, 5));
     });
     const g = new THREE.BufferGeometry();

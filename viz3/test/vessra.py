@@ -118,6 +118,16 @@ with lib.browser() as b:
         ck('its own world tiles around the camera', s['welt']['visible'] >= 10 and s['welt']['err'] == 0 and not s['noTiles'] and '+zonen/vessra/' in s['welt'].get('sets', ''), json.dumps(s['welt']))
         ck('ground under the feet (tiles)', p['w'] is not None and abs(p['feet'] - p['g']) < 0.05 and abs(p['g'] - p['w']) < 0.01, json.dumps(p))
     if want('walk'):
+        # the ground beside the Schleusinger Straße: the banks of the road cut lowered (at 8 m from the axis at most ~0.5 m above it)
+        r = J("""(() => { const st = VESSRA.data.st.filter(s => s.n === 'Schleusinger Straße'); let raw = 0, adj = 0, n = 0, d = 0;
+            for (const s of st) { const p = s.p; for (let k = 0; k + 3 < p.length; k += 2) { const ex = p[k + 2] - p[k], ey = p[k + 3] - p[k + 1], L = Math.hypot(ex, ey);
+              for (let u = 0; u < L; u += 20) { const x = p[k] + ex * u / L, y = p[k + 1] + ey * u / L, nx = ey / L, ny = -ex / L;
+                if (Math.hypot(x - VESSRA.ORT[0], y - VESSRA.ORT[1]) > 450) continue;
+                for (const sg of [-1, 1]) { const qx = x + nx * sg * 8, qy = y + ny * sg * 8; if (VESSRA.raw(qx, qy) === undefined) continue;
+                  raw = Math.max(raw, VESSRA.raw(qx, qy) - VESSRA.raw(x, y)); adj = Math.max(adj, VESSRA.gz(qx, qy) - VESSRA.gz(x, y));
+                  if (Math.hypot(qx - GAME.P.x, qy - GAME.P.y) < 120) d = Math.max(d, Math.abs(VESSRA.gz(qx, qy) - (WELT.heightAt(qx, qy) ?? VESSRA.gz(qx, qy)))); n++; } } } }
+            return { n, raw: +raw.toFixed(2), adj: +adj.toFixed(2), tilesVsGround: +d.toFixed(3), ms: VESSRA.capMs }; })()""")
+        ck('the village ground: no trough beside the Schleusinger Straße (8 m from the axis)', r['n'] > 20 and r['adj'] <= 0.6 and r['tilesVsGround'] < 0.15, json.dumps(r))
         # walk straight at a house wall in the village: the wall stops the walker
         r = J("""(() => { const b = VESSRA.bld.find(b => !b.lm && !b.old && b.k === 0 && b.F.length > 3 && Math.hypot(b.cx + 8700, b.cy + 230) < 120);
             const f = b.F.find(f => !(f[8] & 1)) || b.F[0], mx = (f[0] + f[2]) / 2, my = (f[1] + f[3]) / 2, L = Math.hypot(f[2] - f[0], f[3] - f[1]), nx = (f[3] - f[1]) / L, ny = -(f[2] - f[0]) / L;
