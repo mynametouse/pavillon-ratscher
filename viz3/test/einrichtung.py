@@ -136,16 +136,27 @@ with lib.browser() as b:
         if kl == 'Schalen in den Brennofen':
             run(pg, 'garten:brennofen', 3); shot(pg, 'atelier_brennofen'); ev(pg, "GAME.step(6)")
         ck('kiln: the dried bowls are fired', kl == 'Schalen in den Brennofen' and ev(pg, "ATELIER.state.fired") >= 1, [kl, ev(pg, "ATELIER.state.fired")])
+        # glazing: dip the bisque-fired bowls, then the glaze firing – they shine in the atelier's accent colour
+        ev(pg, f"(() => {{ const w = {W}('holzhaus', 0.5, 0.75); GAME.view(w[0], w[1], {EYE_A}, SITE.bld.holzhaus.az - 75, -18, 70); GAME.step(0.1); }})()")
+        gl = act(pg, 'garten:glasieren'); run(pg, 'garten:glasieren', 0.3)
+        kl2 = act(pg, 'garten:brennofen'); run(pg, 'garten:brennofen', 9.5)
+        gf = ev(pg, "[ATELIER.state.glazed, ATELIER.state.gfired]")
+        ck('glazing: „Schalen glasieren“, then „Glasurbrand starten“', gl == 'Schalen glasieren' and kl2 == 'Glasurbrand starten' and gf[1] >= 1, [gl, kl2, gf])
+        view(pg, 'holzhaus', 0.5, 0.95, 1.22, -90, -20, 55); shot(pg, 'atelier_schalen_glasiert')
         # the journal: the atelier's tasks started when we came in, pottery done after bowl and firing, the guest bed done after unfolding
         tk = json.loads(ev(pg, "JSON.stringify(['atelier-toepfern', 'atelier-malen', 'atelier-gaestebett'].map(id => [id, TASKS.state(id)]))"))
         print('tasks', tk, flush=True)
-        ck('journal: the atelier tasks run (pottery and guest bed done)', tk[0][1] and tk[0][1]['st'] == 'erledigt' and tk[1][1] and tk[2][1] and tk[2][1]['st'] == 'erledigt', tk)
+        ck('journal: the atelier tasks run (pottery – turned, fired, glazed, fired – and the guest bed done)', tk[0][1] and tk[0][1]['st'] == 'erledigt' and tk[1][1] and tk[2][1] and tk[2][1]['st'] == 'erledigt', tk)
         # at night with the lamp on
         ev(pg, "GARTEN.set('holzhaus', true); GAME.setMode('night')"); lib.settle_light(pg)
         view(pg, 'holzhaus', -0.88, 1.45, EYE_A, 90, -14, 80); ev(pg, "GAME.step(0.4)"); shot(pg, 'atelier_nacht_lampe')
         ck('night: the shared lamp light is in the atelier', ev(pg, "GARTEN.cur() === 'holzhaus' && GARTEN.light.intensity > 0"), ev(pg, "GARTEN.cur()"))
         ev(pg, "GARTEN.set('holzhaus', false); GAME.setMode('day')"); lib.settle_light(pg)
         ev(pg, "GAME.go('holzhaus'); GAME.step(0.6)"); shot(pg, 'ort_atelier')
+        # the start situation ?szenario=atelier: inside at the door
+        sz = ev(pg, "(() => { const s = KERN.scenario('atelier'); if (!s) return null; s.run(); GAME.step(0.4); return sitePlace(GAME.P.x, GAME.P.y, GAME.P.feet + 0.5); })()")
+        ck('start situation „atelier“ (?szenario=atelier) puts one inside', sz == 'Atelier', sz)
+        shot(pg, 'szenario_atelier')
     # ---- the caravan: from the door the bed is on the right ----
     if want('caravan'):
         cv = json.loads(ev(pg, """JSON.stringify((() => { const b = SITE.bld.carport, r = GAME.COL.filter(c => c && (c[6] === 'bed' || c[6] === 'bench' || c[6] === 'kitchen') && c[9] && Math.abs(c[9].cx - b.c[0]) < 4 && Math.abs(c[9].cy - b.c[1]) < 4);
@@ -172,7 +183,7 @@ with lib.browser() as b:
         l0 = act(pg, 'garten:sitzecke-bett'); s0 = act(pg, 'seat:garten:wohnwagen-sitz')
         run(pg, 'garten:sitzecke-bett', 1.6)
         l1 = act(pg, 'garten:sitzecke-bett'); b1 = act(pg, 'seat:garten:wohnwagen-gaestebett'); s1 = act(pg, 'seat:garten:wohnwagen-sitz')
-        shot(pg, 'wohnwagen_sitzecke_als_bett')
+        view(pg, 'carport', 0.35 + 0.9, -0.35, EYE_C, 0, -38, 84); shot(pg, 'wohnwagen_sitzecke_als_bett')
         ck('caravan: the dinette table lowers into a bed (then „Hinlegen“)', l0 == 'Tisch absenken – Bett bauen' and s0 == 'In die Sitzecke setzen' and l1 == 'Bett wieder zur Sitzecke' and b1 == 'Hinlegen' and s1 is None, [l0, s0, l1, b1, s1])
         run(pg, 'seat:garten:wohnwagen-gaestebett', 1.2)
         ck('caravan: lying on the dinette bed', ev(pg, "!!(PLAY.seat && PLAY.seat.kind === 'lie')"))
