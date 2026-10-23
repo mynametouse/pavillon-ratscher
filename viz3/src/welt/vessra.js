@@ -3083,6 +3083,58 @@ export const VESSRA = (() => {
   KERN.provide('place', place, 20);
   KERN.provide('pushOut', pushOut, 10);
   KERN.provide('free', (x, y) => (inZone(x, y) ? true : undefined), 10);
+  // ---- at night two of the pavilion's lights (KERN.lights, core/kern.js) stand in the two street lamps nearest the walker: real light
+  // on the ground, the ruin, the trees around them (the village shader lights only the house walls) – no new lamps, no new shaders; they
+  // go back by themselves when the walker leaves or the day comes ----
+  const LB = { ls: null, acc: 0, at: [] };
+  const nightOn = () => (VPROPS.glass ? Math.min(1, VPROPS.glass.emissiveIntensity / 6) : 0);
+  KERN.lights.borrow({
+    id: 'vessra-laternen',
+    n: 2,
+    prio: 1,
+    want: () => {
+      if (S.state !== 'ready' || !S.lamps.length || nightOn() < 0.05) return false;
+      const o = KERN.where();
+      return !!o && inZone(o[0], o[1]);
+    },
+    on: ls => {
+      LB.ls = ls;
+      LB.acc = 1;
+    },
+    tick: (ls, dt) => {
+      LB.acc += dt;
+      if (LB.acc < 0.5) return;
+      LB.acc = 0;
+      const o = KERN.where();
+      if (!o) return;
+      const near = S.lamps
+        .map(l => [Math.hypot(l.x - o[0], l.y - o[1]), l])
+        .sort((a, b) => a[0] - b[0])
+        .slice(0, ls.length);
+      const k = nightOn();
+      LB.at = [];
+      ls.forEach((l, i) => {
+        const p = near[i] && near[i][1];
+        if (!p || near[i][0] > 90) {
+          l.intensity = 0;
+          return;
+        }
+        l.position.copy(V(p.x, p.y, p.z - 0.15));
+        l.color.setHex(0xffc98a);
+        l.distance = 17;
+        l.decay = 1.6;
+        l.intensity = 16 * k;
+        LB.at.push([p.x, p.y]);
+      });
+      markDirty();
+    },
+    off: () => {
+      LB.ls = null;
+      LB.at = [];
+      markDirty(true);
+    },
+  });
+  S.lit = () => LB.at.slice(); // tests: the lamps with a borrowed light
   // ---- near the place its tiles and the place are loaded, far away freed (KERN.zone, core/kern.js: build near, drop far, measured from
   // KERN.where() – the walker, else the camera) ----
   KERN.zone({
