@@ -977,23 +977,9 @@ function rectCol(r, h) {
     ys = r.map(q => q[1]);
   COL.push([Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys), 0, h, 'house', PH, PH_END]);
 }
-S0.neigh.forEach((r, i) => {
-  const q = rectInfo(r);
-  const roof = rnd() < 0.5 ? MAT.roofRed : MAT.roofGrey;
-  prismHouse(
-    q.c.x,
-    q.c.y,
-    q.L,
-    q.W * 0.8,
-    q.az,
-    3.4,
-    1.6,
-    MAT.wall,
-    [MAT.boxRed, roof, MAT.fibre, roof][i % 4],
-    false,
-    'barn'
-  );
-});
+// Hubert's buildings (SITE.neigh) are workshops open to the east since 23.10.2026: garden/hof_hubert.js builds them. The random number
+// each of them drew stays drawn, so everything built after this keeps its place.
+S0.neigh.forEach(() => rnd());
 phase(PHN.garage);
 {
   const q = rectInfo(S0.garage);

@@ -30,7 +30,8 @@ else:
     json.dump(M, open(MANF, 'w'), ensure_ascii=False, separators=(',', ':')); M = json.load(open(MANF))   # same key order either way
 # ---- feature extras (23.10.2026): a feature's own small assets travel with its branch, so CI and the preview have them without the
 # manual path (deploy_push.sh): viz3/extra/<feature>/dist/** is copied into dist/, viz3/extra/<feature>/manifest.json is merged into the
-# manifests (dicts merge key by key, other values replace; 'credits_add' is appended to the credits). Small files only (< 5 MB each).
+# manifests (dicts merge key by key, other values replace; 'credits_add' – one or more <li> – joins the list of sources). Small files only
+# (< 5 MB each).
 def _merge(a, b):
     for k, v in b.items():
         if isinstance(v, dict) and isinstance(a.get(k), dict): _merge(a[k], v)
@@ -45,7 +46,9 @@ for _fx in sorted(glob.glob(os.path.join(H, 'extra', '*'))):
     if os.path.exists(_mf):
         _x = json.load(open(_mf)); _add = _x.pop('credits_add', '')
         _merge(M, _x)
-        if _add: M['credits'] = M.get('credits', '') + _add
+        if _add:   # into the list of sources (before its </ul>), not behind the licence texts
+            _c = M.get('credits', ''); _i = _c.rfind('</ul>')
+            M['credits'] = _c[:_i] + _add + _c[_i:] if _i >= 0 else _c + _add
 site = open(os.path.join(H, 'site.js')).read().strip()
 try:   # build id shown in the error report (boot/report.js): source commit and build time
     _src = subprocess.run(['git', '-C', H, 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip()
