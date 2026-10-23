@@ -793,7 +793,7 @@ export const WINDE = (() => {
     prio: 0.4,
     obj: () => WN.g,
     pos: () => {
-      const p = VEH.toW(T, -1.25, -1.7);
+      const p = VEH.toW(T, -1.22, -1.95);
       return [p[0], p[1], T.st.z + 1.1];
     },
     label: () => {
@@ -1219,8 +1219,13 @@ export const WINDE = (() => {
       S.thing.place(S.end[0], S.end[1], S.end[2], 0);
       S.cable = 'free';
     }
-    if (S.cable !== 'drum' && WN.liftT > 0.4 && !(S.cable === 'log' && S.atShield)) {
-      WN.lift = WN.liftT = 0;
+    // the winch's lift (from the tractor's saved state) to fit: down with the cable out, down or lifted a little with a log at the shield,
+    // up with the cable in
+    const lt = WN.liftT,
+      want =
+        S.cable === 'drum' ? (lt === 0 ? 0 : 1) : S.cable === 'log' && S.atShield ? (lt === S.SKID ? S.SKID : 0) : 0;
+    if (want !== lt) {
+      WN.lift = WN.liftT = want;
       WN.pose(0);
     }
     WN.wound = S.MAX - S.out;

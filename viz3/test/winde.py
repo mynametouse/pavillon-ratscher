@@ -38,8 +38,17 @@ with lib.browser() as b:
     def act():   # what E does now
         return E("(() => { const b = PLAY.best; const l = b ? b.label() : null; PLAY.primary(); return l; })()")
     tr = lambda: J("VEH.by.tractor.st")
+    def drive(thr, secs, steer=0): E(f"VEH.auto = v => (v ? {{ thr: {thr}, brk: 0, steer: {steer}, hand: false }} : null)"); steps(secs); E("VEH.auto = null")
+    def stop(): E("VEH.auto = v => { if (!v) return null; const u = v.st.u; return Math.abs(u) < 0.15 ? { thr: 0, brk: 0, steer: 0, hand: true } : u > 0 ? { thr: 0, brk: 1, steer: 0, hand: false } : { thr: 1, brk: 0, steer: 0, hand: false }; }"); steps(2.0); E("VEH.auto = null")
+    # the tractor on the track, its rear turned towards the denser stand (where a log would lie)
+    TURN = """(() => { const v = VEH.by.tractor.st, T = []; WCOL.each(v.x - 32, v.y - 32, v.x + 32, v.y + 32, null, (i, Q) => T.push([Q[i * 3], Q[i * 3 + 1]]));
+      let best = null; for (let a = 0; a < 360; a += 10) { const az = a * Math.PI / 180, d = [Math.sin(az), Math.cos(az)]; let n = 0;
+        for (const t of T) { const dx = t[0] - v.x, dy = t[1] - v.y, al = dx * d[0] + dy * d[1], sd = Math.abs(dx * d[1] - dy * d[0]); if (al > 8 && al < 30 && sd < 9) n++; }
+        if (!best || n > best.n) best = { az, n }; }
+      VEH.place('tractor', v.x, v.y, best.az + Math.PI); return best; })()"""
     # ---- the place: the tractor at the Klinge on the track, its rear towards the stand; the trailer parked out of the way ----
     E("TRAILER.tow && TRAILER.uncouple(true)")
+    print('turned', J(TURN), flush=True); steps(0.3)
     t0 = tr()
     E(f"(() => {{ const s = TRAILER.st; s.x = {t0['x']} + Math.sin({t0['psi']}) * 16; s.y = {t0['y']} + Math.cos({t0['psi']}) * 16; s.psi = {t0['psi']}; s.z = ROADS.groundAt(s.x, s.y); TRAILER.pose(); }})()")
     FIND = """((psiOff, minD, maxD) => {   // a log place behind the tractor: a free corridor from the winch, trunks around (the stand), a free lie
@@ -62,7 +71,7 @@ with lib.browser() as b:
       return { rear, n: T.length, c: out.slice(0, 6) };
     })"""
     if want('model') or want('pull') or want('fork') or want('save'):
-        spot = J(FIND + "(0, 16, 26)"); print('spot', spot['n'], spot['c'][:3], flush=True)
+        spot = J(FIND + "(0, 12, 26)"); print('spot', spot['n'], spot['c'][:3], flush=True)
         ck('a log place in the stand behind the tractor', len(spot['c']) > 0, f"{len(spot['c'])} candidates, {spot['n']} trunks around")
         c = spot['c'][0] if spot['c'] else {'p': [t0['x'] - math.sin(t0['psi']) * 18, t0['y'] - math.cos(t0['psi']) * 18], 'az': t0['psi'] + math.pi / 2, 'dist': 18}
         lid = E(f"HOLZ.testLog({{ sp: 'spruce', x: {c['p'][0]}, y: {c['p'][1]}, az: {c['az']}, L: 4.2, d0: 36, d1: 30 }})"); steps(0.2)
@@ -135,7 +144,9 @@ with lib.browser() as b:
     if want('fork'):
         # the choker off (at the log), the cable back at the winch, the winch up
         ch = J("WINDE.chokerAt(HOLZ.by['" + lid + "'])"); vv = tr()
-        side = J(f"VEH.toW(VEH.by.tractor, -1.9, -3.2)"); walk_to(side[0], side[1], 0.7); E(f"GAME.P.yaw = {math.degrees(math.atan2(ch[0] - side[0], ch[1] - side[1]))}"); steps(0.2)
+        side = J(f"""(() => {{ const l = HOLZ.by['{lid}'], c = WINDE.chokerAt(l), u = [l.p1[0] - l.p0[0], l.p1[1] - l.p0[1]], ul = Math.hypot(u[0], u[1]), n = [-u[1] / ul, u[0] / ul], v = VEH.by.tractor.st;
+          const a = [c[0] + n[0] * 1.1, c[1] + n[1] * 1.1], b = [c[0] - n[0] * 1.1, c[1] - n[1] * 1.1]; return Math.hypot(a[0] - v.x, a[1] - v.y) > Math.hypot(b[0] - v.x, b[1] - v.y) ? a : b; }})()""")
+        walk_to(side[0], side[1], 0.4); E(f"GAME.P.yaw = {math.degrees(math.atan2(ch[0] - side[0], ch[1] - side[1]))}"); steps(0.2)
         b3 = best(); print('at the shield:', b3, flush=True)
         ck('at the log end: „Choker lösen“', b3.startswith('winde:release'), b3)
         act(); steps(0.2); s7 = st()
@@ -143,7 +154,8 @@ with lib.browser() as b:
         bp = J("TRACTOR2.model.winch.toW([0, -1.0, 0])"); walk_to(bp[0], bp[1], 0.6); E(f"GAME.P.yaw = {math.degrees(vv['psi'])}"); steps(0.2)
         b4 = best(); ck('behind the winch: „Seil an der Winde einhängen“', b4.startswith('winde:cable') and 'einhängen' in b4, b4)
         act(); steps(0.2)
-        lp = J("VEH.toW(VEH.by.tractor, -1.25, -1.7)"); walk_to(lp[0] - 0.6 * math.cos(vv['psi']), lp[1] + 0.6 * math.sin(vv['psi']), 0.6)
+        lp = J("VEH.toW(VEH.by.tractor, -1.22, -1.95)"); ls = J("VEH.toW(VEH.by.tractor, -2.0, -2.3)"); walk_to(ls[0], ls[1], 0.4)
+        E(f"GAME.P.yaw = {math.degrees(math.atan2(lp[0] - ls[0], lp[1] - ls[1]))}"); steps(0.2)
         b5 = best(); ck('at the left wing: „Winde anheben (Außenbedienung)“', b5.startswith('winde:lift') and 'anheben' in b5, b5)
         act(); steps(3.0); s8 = st()
         ck('cable in, winch up: the tractor may drive', s8['cable'] == 'drum' and s8['lift'] > 0.99 and not s8['hold'], str(s8))
@@ -164,8 +176,7 @@ with lib.browser() as b:
             E("(() => { const s = TRAILER.st; s.x = -2; s.y = -11; s.psi = 0; s.z = ROADS.groundAt(-2, -11); TRAILER.pose(); })()"); steps(0.3)
             E("VEH.place('tractor', -9.5 - 3.4, -11, Math.PI / 2)"); steps(0.4)
             E("TRACTOR2.model.key('r', true)"); steps(4.5); E("TRACTOR2.model.key('r', false)"); steps(0.2)
-            E("VEH.auto = () => ({ thr: 0.35, brk: 0, steer: 0, hand: false })"); steps(4.0)
-            E("VEH.auto = v => { const u = v.st.u; return Math.abs(u) < 0.15 ? { thr: 0, brk: 0, steer: 0, hand: true } : u > 0 ? { thr: 0, brk: 1, steer: 0, hand: false } : { thr: 1, brk: 0, steer: 0, hand: false }; }"); steps(2.0); E("VEH.auto = null")
+            drive(0.35, 4.0); stop()
             E("TRACTOR2.model.key('g', true)"); steps(7); E("TRACTOR2.model.key('g', false)"); steps(0.3)
             st3 = J(f"(() => {{ const l = HOLZ.by['{lid}']; return {{ st: l.st, cargo: TRAILER.cargo || 0 }}; }})()")
             ck('and puts it on the trailer', st3['st'] == 'trailer' and st3['cargo'] > 100, str(st3))
@@ -173,11 +184,12 @@ with lib.browser() as b:
         E("VEH.exit()"); steps(0.3)
     if want('skid'):
         E("VEH.cur && VEH.exit(); WINDE.reset()"); steps(0.3)
-        p = J("(() => { const p = VEH.by.tractor.spec.home(); VEH.place('tractor', p[0], p[1], p[2]); return p; })()"); steps(0.5)
+        p = J("(() => { const p = VEH.by.tractor.spec.home(); VEH.place('tractor', p[0], p[1], p[2]); return p; })()"); steps(0.3); J(TURN); steps(0.3)
         spot2 = J(FIND + "(0, 12, 18)"); c2 = spot2['c'][0] if spot2['c'] else None
         ck('a second log place for skidding', c2 is not None, str(spot2['c'][:1]))
         if c2:
             lid2 = E(f"HOLZ.testLog({{ sp: 'larch', x: {c2['p'][0]}, y: {c2['p'][1]}, az: {c2['pull']}, L: 3.6, d0: 30, d1: 26 }})"); steps(0.2)
+            bq = J("TRACTOR2.model.winch.toW([0, -1.4, 0])"); stand(bq[0], bq[1], 0)
             E("WINDE.takeCable()"); steps(3)
             e2 = J(f"WINDE.nearEnd(HOLZ.by['{lid2}'].p0[0], HOLZ.by['{lid2}'].p0[1], 0.1) || WINDE.nearEnd(HOLZ.by['{lid2}'].p1[0], HOLZ.by['{lid2}'].p1[1], 0.1)")
             X = J("WINDE.exitW()"); l2 = J(f"HOLZ.by['{lid2}']")
@@ -192,8 +204,7 @@ with lib.browser() as b:
             E("VEH.enter('tractor')"); steps(0.2); E("TRACTOR2.model.key('n', true); TRACTOR2.model.key('n', false)"); steps(2.5)
             s9 = st(); ck('N lifts the log at the shield a little (skidding position), the tractor may drive', abs(s9['liftT'] - 0.5) < 0.01 and not s9['hold'], str(s9))
             m0 = J(f"HOLZ.mid(HOLZ.by['{lid2}'])"); v0 = tr()
-            E("VEH.auto = () => ({ thr: 0.45, brk: 0, steer: 0, hand: false })"); steps(6.0)
-            E("VEH.auto = v => { const u = v.st.u; return Math.abs(u) < 0.15 ? { thr: 0, brk: 0, steer: 0, hand: true } : u > 0 ? { thr: 0, brk: 1, steer: 0, hand: false } : { thr: 1, brk: 0, steer: 0, hand: false }; }"); steps(2.0); E("VEH.auto = null")
+            drive(0.45, 6.0); stop()
             m1 = J(f"HOLZ.mid(HOLZ.by['{lid2}'])"); v1 = tr()
             gap = J(f"(() => {{ const l = HOLZ.by['{lid2}'], e = WINDE.state().ae, E = e ? l.p1 : l.p0, R = WINDE.restPt(l), O = e ? l.p0 : l.p1; return {{ d: Math.hypot(E[0] - R[0], E[1] - R[1]), up: E[2] - KERN.ground(E[0], E[1]), gO: O[2] - KERN.ground(O[0], O[1]) }}; }})()")
             dv = math.hypot(v1['x'] - v0['x'], v1['y'] - v0['y']); dm = math.hypot(m1[0] - m0[0], m1[1] - m0[1])
@@ -205,7 +216,7 @@ with lib.browser() as b:
             E("WINDE.release(); WINDE.hangIn(); WINDE.toggleLift()"); steps(3)
     if want('stuck'):
         E("VEH.cur && VEH.exit(); WINDE.reset()"); steps(0.3)
-        p = J("(() => { const p = VEH.by.tractor.spec.home(); VEH.place('tractor', p[0], p[1], p[2]); return p; })()"); steps(0.5)
+        p = J("(() => { const p = VEH.by.tractor.spec.home(); VEH.place('tractor', p[0], p[1], p[2]); return p; })()"); steps(0.3); J(TURN); steps(0.3)
         # a trunk 8–20 m behind the winch, the log right behind it on the same line (head-on)
         sc = J("""(() => { const v = VEH.by.tractor.st, X = WINDE.exitW(), f = [Math.sin(v.psi), Math.cos(v.psi)]; const T = [];
           WCOL.each(X[0] - 22, X[1] - 22, X[0] + 22, X[1] + 22, null, (i, Q) => T.push([Q[i * 3], Q[i * 3 + 1], Q[i * 3 + 2]]));
@@ -217,6 +228,7 @@ with lib.browser() as b:
             r = 0.15; c = [t[0] + u[0] * (t[2] + r + 0.25 + 1.6), t[1] + u[1] * (t[2] + r + 0.25 + 1.6)]
             lid3 = E(f"HOLZ.testLog({{ sp: 'spruce', x: {c[0]}, y: {c[1]}, az: {math.atan2(u[0], u[1])}, L: 3.2, d0: 30, d1: 26 }})"); steps(0.2)
             l3 = J(f"HOLZ.by['{lid3}']"); ne = 0 if math.hypot(l3['p0'][0] - X[0], l3['p0'][1] - X[1]) < math.hypot(l3['p1'][0] - X[0], l3['p1'][1] - X[1]) else 1
+            bq = J("TRACTOR2.model.winch.toW([0, -1.4, 0])"); stand(bq[0], bq[1], 0)
             E("WINDE.takeCable()"); steps(3); E(f"WINDE.fasten(HOLZ.by['{lid3}'], {ne})")
             sp = J("VEH.toW(VEH.by.tractor, -4.6, 0.8)"); stand(sp[0], sp[1], 0); E("WINDE.pullStart()")
             for k in range(30):
