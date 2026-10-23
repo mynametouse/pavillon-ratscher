@@ -262,6 +262,8 @@ with lib.browser() as b:
         lib.shot(pg, OUT, 'k_tor_nacht')
         n = J("{ glass: VPROPS.glass ? VPROPS.glass.emissiveIntensity : -1, mine: VESSRA.lamps.length, pool: VESSRA.pool ? VESSRA.pool.visible : null }")
         ck('night: the lamps glow', n['glass'] > 3 and n['mine'] > 30, json.dumps(n))
+        lt = J("{ lit: VESSRA.lit(), lights: KERN.lights.status().filter(b => b.id === 'vessra-laternen') }")
+        ck('night: two borrowed lights stand in the lamps nearest the walker (KERN.lights)', len(lt['lit']) == 2 and lt['lights'] and lt['lights'][0]['has'] == 2, json.dumps(lt))
     progs = E("(GAME.R.info.programs || []).length")
     tri = E("GAME.R.info.render.triangles")
     print('programs at the start', st0['progs'], 'after Kloster Veßra', progs, 'textures', st0['tex'], '->', E("GAME.R.info.memory.textures"), 'triangles last frame', tri, flush=True)
