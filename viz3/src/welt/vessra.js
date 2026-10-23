@@ -1304,9 +1304,11 @@ export const VESSRA = (() => {
     {
       const Ls = Math.hypot(S1[0] - S0[0], S1[1] - S0[1]);
       stoneWall(KS, N0, N1, zb, z + 10.2, 1.15, winsAt(0, Ln, z + 5.3), RED);
+      coping(K, N0, N1, z + 10.2, z + 10.2, 1.15);
       const ws = winsAt(0, Ls, z + 5.0);
       ws.push({ u: 2.6, w: 1.8, z0: zb, zs: z + 2.3, r: 0.9 }); // the door to the cloister
       stoneWall(KS, S0, S1, zb, z + 9.6, 1.15, ws, RED2);
+      coping(K, S0, S1, z + 9.6, z + 9.6, 1.15);
     }
     for (const sg of [-1, 1])
       for (let u = uW + 3.4, k = 0; u < uX - 1.5; u += 4.3, k++) {
@@ -1341,6 +1343,7 @@ export const VESSRA = (() => {
         RED,
         { ends: true }
       );
+      coping(K, A1, B1, z + 15.6, z + 15.6, 1.4);
     }
     if (C.transept && C.transept.length >= 8) {
       // the ring of the transept (OSM): its east, north and south walls stand to the eaves, windows high up
@@ -1362,6 +1365,7 @@ export const VESSRA = (() => {
           );
         } else holes.push({ u: L / 2, w: 1.2, z0: z + 9.0, zs: z + 11.4, r: 0.6 });
         stoneWall(KS, p, q, zb, z + 14.2, 1.3, holes, k % 2 ? RED : RED2);
+        coping(K, p, q, z + 14.2, z + 14.2, 1.3);
         if (east) {
           // the walled-up arch of the old choir on the inner face (a shade darker, framed – photo of the nave from the west 2025)
           const mx = (p[0] + q[0]) / 2 - ex[0] * 0.62,
@@ -1390,6 +1394,23 @@ export const VESSRA = (() => {
         );
       }
     }
+  }
+  // a ridge of tiles on the crown of a ruin wall (the walls of the church are capped so: drone photo 2021, the nave from the west 2025)
+  const TILE = linC([0.6, 0.3, 0.2]);
+  function coping(K, a, b, za, zb2, th) {
+    const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (L < 0.2) return;
+    const d = [(b[0] - a[0]) / L, (b[1] - a[1]) / L],
+      n = [d[1], -d[0]],
+      e = th / 2 + 0.1,
+      rz = Math.min(0.45, th * 0.3),
+      zAt = u => za + ((zb2 - za) * u) / L,
+      P = (u, sg) => [a[0] + d[0] * u + n[0] * sg * e, a[1] + d[1] * u + n[1] * sg * e, zAt(u) - 0.04],
+      R = u => [a[0] + d[0] * u, a[1] + d[1] * u, zAt(u) + rz],
+      uvA = p => [(p[0] - a[0]) * d[0] + (p[1] - a[1]) * d[1], p[2]];
+    for (const sg of [-1, 1]) poly(K, [P(0, sg), P(L, sg), R(L), R(0)], [n[0] * sg, n[1] * sg, 0.8], TILE, uvA);
+    poly(K, [P(0, -1), P(0, 1), R(0)], [-d[0], -d[1], 0], TILE, uvA);
+    poly(K, [P(L, -1), P(L, 1), R(L)], [d[0], d[1], 0], TILE, uvA);
   }
   // ---- the apses of the two chapels: half round, the Henneberg one plastered white under a cone of tiles (photo 2025) ----
   function apses(KS, K, RB) {

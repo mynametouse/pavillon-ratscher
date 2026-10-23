@@ -37,7 +37,8 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   **Fundamente des Chors** mit Apsis im Gras; die **Henneberger Kapelle** (Sandstein; ihr niedrigerer quadratischer Chor, dahinter die weiß verputzte runde Apsis mit
   Kegeldach – OSM `w121648571`, `w121648565`, Drohnenbild 2021) und die
   **Südkapelle** mit ihrer Apsis. Alle Mauern als Geometrie: die Kirche aus Quadern (das Pflasterbild des Dorfplatzes dreifach vergrößert:
-  Lagen von etwa 33 cm), Bruchstein (das Plattenbild) für Klostermauer und Torhaus – beides Programme, die es schon gibt.
+  Lagen von etwa 33 cm), Bruchstein (das Plattenbild) für Klostermauer und Torhaus – beides Programme, die es schon gibt. Auf den
+  Mauerkronen der Ruine (Langhaus, Triumphbogenwand, Querhaus) Firste aus Ziegeln wie auf dem Drohnenbild.
 - **Torhaus** als hoher Torturm nach dem Foto 2025: unten rote Sandsteinquader mit weitem Rundbogen und gewölbter Durchfahrt (man geht
   hindurch in den Klosterhof), darüber Bruchstein in Rosa und Gelb mit zwei Schlitzfenstern je Giebelseite, First längs der Durchfahrt;
   **Torkirche St. Erhard** (Kalkputz, Spitzbogenfenster, Eckquader aus Sandstein, Tür; Fotos 2019, 2022), **Klostermauer** (OSM:
@@ -140,6 +141,10 @@ Ermell 2021/2022, Tilman2007 2025), keine Bilder im Repo.
 ## Offen
 - Hinfahren (Agent `fahrt`), Einkaufen und Einladen (nächste Runde, Stellen in `VESSRA.baumschule`).
 - Gelände: Copernicus (30 m Oberflächenmodell, Straßen eingeschnitten) – DGM1 Thüringen war am 22./23.10. nicht abrufbar; sobald es da ist,
-  reicht ein neuer Lauf von `welt-vessra.yml` (ohne `--no-dgm`).
+  reicht ein neuer Lauf von `welt-vessra.yml` (ohne `--no-dgm`), dann kann das Absenken neben den Straßen (`roadCap` in
+  `welt/vessra.js`) entfallen oder kleiner werden. Abseits der Straßen tragen Wiesen und Höfe noch Buckel aus Häusern und Bäumen.
+- Die Kirche: die Pfeilerstümpfe ohne Sockelstufen, der Fries ohne Köpfe und Rosetten (nur die Bögen), keine Grabplatten an den Wänden.
+- Die Baumschule: Pflanzen sind ein zusammengefasstes Mesh – einzelne Töpfe lassen sich noch nicht herausnehmen (zum Einkaufen müsste
+  ein Beet seine Töpfe als eigene Instanzen bauen).
 - Laubbäume: das Luftbild (Flug 7.4.2024) zeigt sie unbelaubt – auf den Wiesen der Klosteranlage und in den Gärten nach Regeln gesetzt,
   nicht nach ihrer echten Lage. Innenräume (Kapellen, Museumshäuser) sind nicht begehbar.
