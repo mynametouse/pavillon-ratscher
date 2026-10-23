@@ -100,6 +100,10 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
    `live` (`git push origin src:live`) – Chat-Sitzungen dürfen Workflows nicht von Hand starten. Oder GitHub → Actions → „Live stellen“ →
    Run workflow (dieser Knopf erscheint erst, wenn der Standard-Branch des Repos `src` ist, heute ist es `main`). Die Website wird aus dem
    Stand neu gebaut; `plan.json`, `vorschau/` und `welt-test/` bleiben.
+   Live geht immer ein bestimmter, grün geprüfter Stand: `git push origin <sha>:refs/heads/live`; danach prüfen, was die Website meldet:
+   `gh api "repos/mynametouse/pavillon-ratscher/contents/index.html?ref=gh-pages" -H "Accept: application/vnd.github.raw" | grep -o 'PAV_BUILD=[^;]*'`.
+   **Zwei Kandidaten zugleich prüfen:** ein Push auf `src` bricht dessen laufendes Prüfpaket ab (`cancel-in-progress`). Läuft dort schon ein
+   Kandidat, geht der nächste nach `kern/<name>` (gleiches Prüfpaket, eigene Gruppe, keine Vorschau); ist er grün, kommt er live und nach `src`.
 3. `docs/CHANGELOG.md` ergänzen (nächste freie Nummer), Projekt-Dokument `claude/pavillon-ratscher-stand.md` nachtragen.
 4. **Notweg aus dem Chat** (z. B. wenn neue Asset-Dateien nur im Chat liegen – sie stehen nicht im Repo, die Asset-Basis ist die Website):
    `cd viz3 && python3 build.py --fast --min && rm -rf dist_pub && cp -a dist dist_pub`, dann

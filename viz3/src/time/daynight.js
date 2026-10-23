@@ -21,6 +21,7 @@ import { LIGHTSTATE, STOVE } from '../game/home.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { CLOCK } from './clock.js';
 import { SKYDATA } from './skydata.js';
+import { KERN } from '../core/kern.js';
 phase(null);
 export const DN = (() => {
   const LAT = 50.4705,
@@ -957,7 +958,7 @@ export const DN = (() => {
   }
   // ---------------- the clock drives it: per tick, cheap; heavy work only past the thresholds ----------------
   let acc = 0;
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     if (!S.active) return;
     acc += dt;
     const warp = CLOCK.warp,
@@ -970,7 +971,7 @@ export const DN = (() => {
     acc = 0;
     apply(false);
     nightHint();
-  });
+  }, 'time/daynight');
   // ---- a hint at the first dusk ----
   function nightHint() {
     const s = S.cur;

@@ -3,7 +3,8 @@ import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
 import { inView } from './npc.js';
 import { CLOCK } from '../time/clock.js';
-window.TICKS.push(
+import { KERN } from '../core/kern.js';
+KERN.tick(
   (() => {
     let acc = 0;
     return dt => {
@@ -35,5 +36,6 @@ window.TICKS.push(
         }
       }
     };
-  })()
+  })(),
+  'npc/hours'
 );

@@ -1219,7 +1219,7 @@ export const WINDE = (() => {
     S.saveT = 0.6;
     markDirty();
   }
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     try {
       tick(dt);
     } catch (e) {
@@ -1228,7 +1228,7 @@ export const WINDE = (() => {
         console.warn('winde', e);
       }
     }
-  });
+  }, 'werk/winde:1');
   // ---------------- saving: in the wood's state (werk/holz.js part2.winde) ----------------
   const p2 = HOLZ.part2;
   HOLZ.part2 = () => {
@@ -1303,7 +1303,7 @@ export const WINDE = (() => {
     if (kl) kl.insertAdjacentHTML('beforeend', ' <i></i> <kbd>N</kbd> Winde');
   }
   // ---------------- a word on the first visit after V16h, near the tractor ----------------
-  window.TICKS.push(() => {
+  KERN.tick(() => {
     if (introDone || !HOLZ.ready || P.mode !== 'walk' || !LOAD.ready) return;
     if (Math.hypot(P.x - T.st.x, P.y - T.st.y) > 40) return;
     introDone = true;
@@ -1318,7 +1318,7 @@ export const WINDE = (() => {
           ),
         4000
       );
-  });
+  }, 'werk/winde:2');
   // ---------------- state for tests and the error report ----------------
   S.state = () => ({
     cable: S.cable,

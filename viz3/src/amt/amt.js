@@ -2497,7 +2497,7 @@ export const AMT = (() => {
       }
     } else TK.inside = 0;
   }
-  (window.TICKS || (window.TICKS = [])).push(tick);
+  KERN.tick(tick, 'amt/amt');
   // ======================= drawings for the scenes (small SVGs, no textures) =======================
   const SCENES = {
     rathaus: () =>

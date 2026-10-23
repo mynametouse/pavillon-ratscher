@@ -53,8 +53,11 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   nördlich **fünf Beete** nach Art – Obstgehölze (Bäumchen im Container, angepfählt), Beerenobst, Ziergehölze (Herbstlaub: rot, gelb,
   panaschiert), Kletterpflanzen (am Bambus-Dreibein), Bodendecker – mit Bändchengewebe, Brettereinfassung und Schild; die Gebäude der
   Baumschule wie in OSM; westlich davon **Jungbäume in Reihen** auf dem Feld (rund 700, die Wege bleiben frei). Im Hof zwei
-  Pflanzenwagen mit drei Etagen Töpfen, hinter der Hütte eine Palette Blumenerde und Stapel leerer Container. Der Hof ist eben (eine
-  Ebene, höchstens 1 % Gefälle, 4 m Übergang – ebenfalls ein Polster). Schild „Baumschule Kammbach“ am Tor und an der Hütte. Ohne Fotos
+  Pflanzenwagen mit drei Etagen Töpfen, hinter der Hütte eine Palette Blumenerde und Stapel leerer Container. Der Hof ist eine glatte
+  Ebene statt der Buckel des Oberflächenmodells (der Hang steigt hier rund 10 % in beide Richtungen, die Ebene höchstens 8 %), am Tor auf
+  Straßenhöhe festgelegt – ein Auto fährt von der Schulstraße mit deren eigener Neigung hinein (Fehlerbericht der Fahrt 23.10.: die ebene
+  Fläche von e561492 lag am Tor 1,8 m zu hoch); Übergang 4 m zur Straße, 10 m an den anderen Seiten, ebenfalls ein Polster. Beete,
+  Tuch und Randbretter folgen der Neigung. Schild „Baumschule Kammbach“ am Tor und an der Hütte. Ohne Fotos
   vom Gelände (nur von der Straße aus): generisch.
 - **Straßenschilder**: je benannter Straße ein weißes Namensschild mit schwarzer Schrift an der Einmündung, die dem Klostertor am
   nächsten ist (6: Schleusinger Straße, Schulstraße, Gartenstraße, Fabrikstraße, Neuhofer Straße, Zwick), beidseitig lesbar.
@@ -77,6 +80,10 @@ gebaut; `VESSRA.baumschule` (sonst `null`):
   quer dazu, `art` ∈ `'obst' | 'beeren' | 'zier' | 'kletter' | 'boden'`, `name` (Schildtext), `slots`: die Stellplätze der Töpfe
   `[[x, y], …]` (30–78 je Beet), `label`: Schild `[x, y, z]`.
 - `frame`: `{ G, u, w }` – Ursprung am Südtor, `u` entlang der Schulstraße nach Norden, `w` ins Gelände (für eigene Stellen).
+- Kaufen (für die nächste Runde): `take(art, slot)` nimmt die Pflanze an `beete[…].slots[slot]` aus dem Beet (sie verschwindet) und gibt
+  `{ art, name, slot, x, y, z }` zurück, `null`, wenn es sie nicht (mehr) gibt; `putBack(art, slot)` stellt sie zurück, `isTaken(art, slot)`,
+  `taken()` (Schlüssel `art:slot`). Gilt, solange die Zone gebaut ist (nach dem Freigeben und Neubauen sind alle wieder da – den Kauf
+  selbst merkt sich der Planer).
 - `VESSRA.place(x, y)` nennt im Gelände „Baumschule Kammbach, Kloster Veßra“; `VESSRA.gz(x, y)` ist der Boden.
 - Hinkommen ohne Fahrt: `KERN.scenario('baumschule').run()` bzw. `?szenario=baumschule` (vor dem Tor); gebaut ist alles, sobald
   `VESSRA.state === 'ready'` (z. B. `await KERN.until(() => VESSRA.state === 'ready', 300)`).
@@ -85,7 +92,10 @@ gebaut; `VESSRA.baumschule` (sonst `null`):
 - Gemeinsame Dateien (auf diesem Branch geändert): `viz3/src/modules.txt` (eine Zeile `welt/vessra.js` direkt unter `# feat/vessra`),
   `viz3/shell/menu.html` (ein Eintrag Orte → „Kloster Veßra“ nach „Schleusingen“), `.github/workflows/welt-testblock.yml`: **`apply()`
   behält jetzt `welt-test/zonen/`** (beiseite, `welt-test/` ersetzen, zurück) – sonst löschte der nächste Testblock-Lauf die Zonen-Kacheln.
-- `welt/welt.js` (eigene Datei): Kachel-Sätze (siehe „Für die Fahrt“), `WELT.overlay()`, Belag „Kies“ (g/r > 0,86) im Straßen-Overlay;
+- `welt/welt.js` (eigene Datei): Kachel-Sätze (siehe „Für die Fahrt“), `WELT.overlay()`, `WELT.padAt(x, y, roh)` (die Höhe, die WELT für
+  eine Kachelhöhe zeichnet, mit allen Polstern – darauf baut die Zone ihren Boden, auch über den Straßen der Fahrt), nach `setPads` werden
+  nur die Kacheln unter den geänderten Polstern neu gerechnet, die nächsten sofort, der Rest ein paar je Frame (`WELT.padQueue()`),
+  Belag „Kies“ (g/r > 0,86) im Straßen-Overlay;
   Schleusingen unverändert (seine Codes 40/120/200 bleiben Asphalt/Pflaster/Platten).
 - Kern-Dienste (Phase 2, Baustein 1): `KERN.zone` (`vessra`), `KERN.spot` (`vessra`, `baumschule`), `KERN.scenario` (`vessra`,
   `baumschule`), `KERN.act` (`vessra:sit`), `KERN.lights.borrow` (`vessra-laternen`: nachts zwei Lichter des Pavillons in den beiden
@@ -114,7 +124,7 @@ gebaut; `VESSRA.baumschule` (sonst `null`):
 - Ohne veröffentlichte Kacheln (z. B. lokaler Testserver ohne `dist/welt-test/zonen/vessra/`) bleibt der Ort auf dem 120-m-Gelände von
   `world/ratscher.js` stehen (`VESSRA.status().noTiles`).
 - Solange die Zone gebaut ist, setzt sie zwei Polster (`WELT.setPads('vessra', …)`): den Boden neben den Autostraßen abgesenkt und den
-  Hof der Baumschule eben. Die Fahrbahn selbst bleibt, wie die Pipeline sie geschnitten hat; Fahrzeuge fahren auf denselben Höhen
+  Hof der Baumschule als glatte Ebene, am Tor auf Straßenhöhe (Weg Schulstraße → Tor → `parkplatz` höchstens 15 % steil, geprüft). Die Fahrbahn selbst bleibt, wie die Pipeline sie geschnitten hat; Fahrzeuge fahren auf denselben Höhen
   (`KERN.ground`), beim Bauen der Zone (950 m) werden die geladenen Kacheln einmal neu gerechnet.
 - `welt/welt.js` gehört heute `feat/vessra`; Änderungen der Fahrt bitte nur an markierten Zeilen (`// feat/fahrt`).
 
@@ -134,6 +144,8 @@ Ermell 2021/2022, Tilman2007 2025), keine Bilder im Repo.
   Torkirche, zwei Panoramax-Stellen an der Schleusinger Straße, Baumschule nah und von oben, Ort von oben), Nacht (Laternen), Freigeben,
   höchstens 6 neue Shader-Programme, Texturen je Shader. Abschnitte einzeln: `vessra:start,load,walk,kirche,baumschule,names,shots,night,free`.
   Bei GitHub: `feat.yml` (Artefakt „out“).
+- `… --serve vessra_szenario` – startet mit `?szenario=baumschule`: die Spielfigur vor dem Tor der Baumschule, die Zone baut sich um sie,
+  Boden, durchs Tor in den Verkaufshof, Bild `m_szenario_baumschule`. Die Kacheln holen beide Tests über `viz3/test/vessra_tiles.py`.
 - Kacheln neu bauen: Push auf `feat/vessra` mit Änderungen an `tools/welt/*.py` (außer `zone_*.py`, `test_welt.py`) oder an
   `.github/workflows/welt-vessra.yml`. Zonendaten: `python3 -I tools/welt/zone_vessra.py --raw <Cache-Ordner>` (OSM-API, Luftbild per WMS)
   → `viz3/extra/vessra/dist/vessra/ort.json`.

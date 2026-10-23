@@ -11,8 +11,9 @@ import { MODE, MODES } from '../render/modes.js';
 import { G, P, PHASE } from './walkable.js';
 import { ITEMS } from '../pavilion/plan.js';
 import { PLAY, SFX } from './play.js';
+import { KERN } from '../core/kern.js';
 phase(null);
-window.TICKS = window.TICKS || []; // per-frame callbacks (12_game frame loop), also outside the walk view
+window.TICKS = window.TICKS || []; // old per-frame list (game/game.js) – new code: KERN.tick; the last users move in phase 2
 // ---- lights: the paper lamps can be switched per floor (pull the lamp's cord); a new time of day sets them back to automatic ----
 export const LIGHTSTATE = (() => {
   const SW = { eg: null, og: null },
@@ -148,7 +149,7 @@ export const STOVE = (() => {
       markDirty();
     }
   }
-  window.TICKS.push(tick);
+  KERN.tick(tick, 'game/home:1');
   apply();
   return {
     apply,
@@ -344,13 +345,13 @@ const SEATS = (() => {
     }
   }
   let acc = 0;
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     acc += dt;
     if (acc > 2) {
       acc = 0;
       scan();
     }
-  });
+  }, 'game/home:2');
   scan();
   // Hubert's bench on his side (no model item)
   PLAY.act({

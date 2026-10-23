@@ -24,6 +24,7 @@ import { GEAR } from './gear.js';
 import { WUI } from './werkui.js';
 import { FELL } from '../world/fell.js';
 import { HOLZ } from './holz.js';
+import { KERN } from '../core/kern.js';
 export const HOLZSAW = (() => {
   const KERF = 0.002,
     BUNK = 0.5,
@@ -779,9 +780,9 @@ export const HOLZSAW = (() => {
     remain();
     if (S.onStart) S.onStart(p2);
   }; // the mill is a real machine now: its old decorative log goes
-  window.TICKS.push(() => {
+  KERN.tick(() => {
     if (anim.on) markDirty();
-  });
+  }, 'werk/holz_saw');
   return S;
 })();
 LATE.HOLZSAW = HOLZSAW;

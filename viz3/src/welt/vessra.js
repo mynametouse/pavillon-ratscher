@@ -671,19 +671,40 @@ export const VESSRA = (() => {
   // most 10 cm + 6 % of the distance from the road's edge + a little curvature (4 mm/m², so a hillside stays) above it, by at most 2.5 m
   // (a wood beside the road stays a wood), tapering off from 20 to 40 m; on a 4 m grid, faded out over the outer 100 m of the zone; a
   // pad of WELT with the same function, so the drawn tiles, KERN's ground and the feet of the houses agree
-  let capG = null;
-  function roadCap() {
+  let capG = null,
+    padsSet = false;
+  // the ground under the zone's own pads: the tiles, with what other pads made of them (the roads of welt/fahrt.js are carved 'under'
+  // the zones' pads – welt/welt.js padZ); the cap, the yard and the feet of the houses build on it, as the drawn tiles do
+  const base = (x, y) => {
+    const z = gz(x, y);
+    if (z === undefined || z === null) return undefined;
+    return WELT.padAt ? WELT.padAt(x, y, z) : z;
+  };
+  // async: a frame now and then (some 60 ms of work each), the build of the zone should not stall a car driving towards it
+  async function roadCap() {
     const G = 4,
       n = Math.round((ZONE[2] - ZONE[0]) / G) + 1,
       cap = new Float32Array(n * n).fill(1e9),
       zc = new Float32Array(n * n),
       R = 40;
-    for (let j = 0; j < n; j++)
+    let tq = performance.now(),
+      work = 0;
+    const breathe = async () => {
+      const now = performance.now();
+      if (now - tq < 60) return;
+      work += now - tq;
+      await nextFrame();
+      tq = performance.now();
+    };
+    for (let j = 0; j < n; j++) {
       for (let i = 0; i < n; i++) {
-        const z = gz(ZONE[0] + i * G, ZONE[1] + j * G);
-        zc[j * n + i] = z === undefined || z === null ? NaN : z;
+        const z = base(ZONE[0] + i * G, ZONE[1] + j * G);
+        zc[j * n + i] = z === undefined ? NaN : z;
       }
+      await breathe();
+    }
     for (const st of data.st || []) {
+      await breathe();
       if (st.k > 5 || st.b) continue;
       const hw = st.k <= 2 ? 4.5 : st.k === 3 ? 3.0 : 2.0,
         p = st.p,
@@ -695,8 +716,8 @@ export const VESSRA = (() => {
         for (let q = k ? 1 : 0; q <= m; q++) {
           const x = p[k] + ((p[k + 2] - p[k]) * q) / m,
             y = p[k + 1] + ((p[k + 3] - p[k + 1]) * q) / m,
-            z = gz(x, y);
-          pts.push(x, y, z === undefined || z === null ? NaN : z);
+            z = base(x, y);
+          pts.push(x, y, z === undefined ? NaN : z);
         }
       }
       for (let k = 0; k + 5 < pts.length; k += 3) {
@@ -727,7 +748,7 @@ export const VESSRA = (() => {
           }
       }
     }
-    return { G, n, cap };
+    return { G, n, cap, work: work + performance.now() - tq };
   }
   const adj = (x, y, z) => {
     if (!capG || !inZone(x, y)) return z;
@@ -748,10 +769,14 @@ export const VESSRA = (() => {
     const w = Math.max(0, Math.min(1, Math.min(x - ZONE[0], ZONE[2] - x, y - ZONE[1], ZONE[3] - y) / 100));
     return z + w * (c - z);
   };
-  // the sales yard of the nursery is level gravel: a plane fitted to the ground over it (u −13…26 m along the street, w 0.5…31 m into the
-  // grounds; slope at most 1 %), blended into the ground around it over 4 m – another pad, before the zone's
+  // the sales yard of the nursery: one smooth plane instead of the bumps of the surface model – fitted to the ground over it (u −13…26 m
+  // along the street, w 0.5…31 m into the grounds; the hillside rises some 10 % both ways, the plane at most 8 %), pinned at the gate to
+  // the street in front of it, so a car drives in from the Schulstraße at the street's own grade (Kern/fahrt 23.10.: the level plane of
+  // e561492 stood 1.8 m above the gate, a 40–57 % ramp); blended linearly into the ground around it – 4 m towards the street, 10 m on the
+  // other sides. Another pad, before the zone's
   const YARD = [-13, 0.5, 26, 31],
-    YM = 4;
+    YF = 4,
+    YS = 10;
   let yd = null;
   function yardPlane(F) {
     const pts = [];
@@ -759,8 +784,8 @@ export const VESSRA = (() => {
       for (let w = YARD[1]; w <= YARD[3] + 1e-6; w += 2) {
         const x = F.G[0] + F.t[0] * u + F.wv[0] * w,
           y = F.G[1] + F.t[1] * u + F.wv[1] * w,
-          z = gz(x, y);
-        if (z !== undefined && z !== null) pts.push([u, w, adj(x, y, z)]);
+          z = base(x, y);
+        if (z !== undefined) pts.push([u, w, adj(x, y, z)]);
       }
     if (pts.length < 20) return null;
     const n = pts.length,
@@ -777,8 +802,14 @@ export const VESSRA = (() => {
       uz += (u - uc) * (z - zc);
       wz += (w - wc) * (z - zc);
     }
-    const cl = v => Math.max(-0.01, Math.min(0.01, v)); // nearly level: the beds lie flat on it
-    return { G: F.G, t: F.t, wv: F.wv, uc, wc, a: zc, b: cl(uz / (uu || 1)), c: cl(wz / (ww || 1)) };
+    const cl = v => Math.max(-0.08, Math.min(0.08, v)),
+      b = cl(uz / (uu || 1)),
+      c = cl(wz / (ww || 1)),
+      xs = F.G[0] + F.wv[0] * (YARD[1] - YF),
+      ys = F.G[1] + F.wv[1] * (YARD[1] - YF),
+      zs = base(xs, ys),
+      z0 = zs === undefined ? zc : adj(xs, ys, zs);
+    return { G: F.G, t: F.t, wv: F.wv, uc, wc, a: z0 - b * (0 - uc) - c * (YARD[1] - wc), b, c };
   }
   const yardAdj = (x, y, z) => {
     if (!yd) return z;
@@ -786,19 +817,24 @@ export const VESSRA = (() => {
       dy = y - yd.G[1],
       u = dx * yd.t[0] + dy * yd.t[1],
       w = dx * yd.wv[0] + dy * yd.wv[1],
-      dd = Math.hypot(Math.max(YARD[0] - u, 0, u - YARD[2]), Math.max(YARD[1] - w, 0, w - YARD[3]));
-    if (dd >= YM) return z;
+      dn = Math.hypot(
+        Math.max(YARD[0] - u, 0, u - YARD[2]) / YS,
+        Math.max(YARD[1] - w, 0) / YF,
+        Math.max(w - YARD[3], 0) / YS
+      );
+    if (dn >= 1) return z;
     const pz =
-        yd.a +
-        yd.b * (Math.max(YARD[0], Math.min(YARD[2], u)) - yd.uc) +
-        yd.c * (Math.max(YARD[1], Math.min(YARD[3], w)) - yd.wc),
-      s2 = dd / YM,
-      k = s2 * s2 * (3 - 2 * s2);
-    return pz + (z - pz) * k;
+      yd.a +
+      yd.b * (Math.max(YARD[0], Math.min(YARD[2], u)) - yd.uc) +
+      yd.c * (Math.max(YARD[1], Math.min(YARD[3], w)) - yd.wc);
+    return pz + (z - pz) * dn;
   };
   const ground = (x, y) => {
     const z = gz && gz(x, y);
-    return z !== undefined && z !== null ? yardAdj(x, y, adj(x, y, z)) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
+    if (z === undefined || z === null) return RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
+    // once the zone's pads are set: exactly what WELT draws (its pads on whatever lies under them)
+    if (padsSet && WELT.padAt) return WELT.padAt(x, y, z);
+    return yardAdj(x, y, adj(x, y, z));
   };
   S.gz = ground;
   S.raw = (x, y) => (gz ? gz(x, y) : undefined); // the tiles' own height (tests: the banks beside the roads)
@@ -864,6 +900,7 @@ export const VESSRA = (() => {
     S.seats = [];
     S.baumschule = null;
     if (WELT.setPads) WELT.setPads('vessra', []);
+    padsSet = false;
     capG = null;
     yd = null;
     if (WELT.setOverlay && S.overlayTex && WELT.overlay && WELT.overlay() === S.overlayTex) WELT.setOverlay(null);
@@ -1599,25 +1636,43 @@ export const VESSRA = (() => {
       b.noDoor = true;
     },
   };
-  function build() {
-    const t0 = performance.now();
+  // built in a few slices with a frame in between (a car driving towards the place should not stall for the whole build); the time of
+  // each part in S.times
+  const nextFrame = () => new Promise(r => setTimeout(r, 0));
+  async function build() {
+    const t0 = performance.now(),
+      T = {};
+    let tp = t0;
+    const mark = k => {
+      const n2 = performance.now();
+      T[k] = (T[k] || 0) + Math.round(n2 - tp);
+      tp = n2;
+    };
+    S.times = T;
     S.segs = [];
     S.bld = [];
     S.seats = [];
+    if (padsSet && WELT.setPads) {
+      WELT.setPads('vessra', []);
+      padsSet = false;
+    }
     if (gz) {
-      capG = roadCap();
+      capG = await roadCap();
+      T.cap = Math.round(capG.work); // the work only, not the frames in between
+      await nextFrame();
+      tp = performance.now();
       const F = nurseryFrame();
       yd = F ? yardPlane(F) : null;
-      S.capMs = Math.round(performance.now() - t0);
+      S.capMs = T.cap || 0;
       const pads = [];
       if (yd) {
         const Q = (u, w) => [yd.G[0] + yd.t[0] * u + yd.wv[0] * w, yd.G[1] + yd.t[1] * u + yd.wv[1] * w];
         pads.push({
           poly: [
-            ...Q(YARD[0] - YM, YARD[1] - YM),
-            ...Q(YARD[2] + YM, YARD[1] - YM),
-            ...Q(YARD[2] + YM, YARD[3] + YM),
-            ...Q(YARD[0] - YM, YARD[3] + YM),
+            ...Q(YARD[0] - YS, YARD[1] - YF),
+            ...Q(YARD[2] + YS, YARD[1] - YF),
+            ...Q(YARD[2] + YS, YARD[3] + YS),
+            ...Q(YARD[0] - YS, YARD[3] + YS),
           ],
           z: (x, y, raw) => yardAdj(x, y, adj(x, y, raw)),
         });
@@ -1626,7 +1681,13 @@ export const VESSRA = (() => {
         poly: [ZONE[0], ZONE[1], ZONE[2], ZONE[1], ZONE[2], ZONE[3], ZONE[0], ZONE[3]],
         z: (x, y, raw) => adj(x, y, raw),
       });
-      if (WELT.setPads) WELT.setPads('vessra', pads);
+      if (WELT.setPads) {
+        WELT.setPads('vessra', pads);
+        padsSet = true;
+      }
+      mark('pads');
+      await nextFrame();
+      tp = performance.now();
     }
     const WB = wallBuf(),
       RB = roofBuf();
@@ -1677,7 +1738,11 @@ export const VESSRA = (() => {
           console.warn('vessra ' + name, e);
           S.err = S.err || name + ': ' + e;
         }
+        mark(name);
       };
+      mark('buildings');
+      await nextFrame();
+      tp = performance.now();
       step('kirche', () => kirche(KA, K, RB));
       step('apses', () => apses(KA, K, RB));
       for (const b of S.bld.filter(q => q.lm === 'torkirche')) step('torkirche', () => torkirche(K, b));
@@ -1692,20 +1757,29 @@ export const VESSRA = (() => {
       add(new THREE.Mesh(KS.geo(), stoneMat()), 'stone', true);
       if (!KA.empty()) add(new THREE.Mesh(scaledGeo(KA, 0.34), stoneMat('pavers', 1.3)), 'ashlar', true);
       add(new THREE.Mesh(K.geo(), propMat()), 'props', true);
+      mark('meshes');
+      await nextFrame();
+      tp = performance.now();
       step('ponds', ponds);
       step('lamps', lamps);
       step('trees', trees);
       step('signs', signs);
+      await nextFrame();
+      tp = performance.now();
     }
     add(new THREE.Mesh(WB.geo(), wm), 'walls');
     add(new THREE.Mesh(RB.geo(), rm), 'roofs');
+    mark('houses');
     try {
       streetMap();
     } catch (e) {
       console.warn('vessra streets', e);
     }
+    mark('streets');
     grid();
-    S.ms = Math.round(performance.now() - t0);
+    mark('grid');
+    S.ms = Object.values(T).reduce((a, v) => a + v, 0); // the work, without the frames between the slices
+    S.span = Math.round(performance.now() - t0);
     S.state = 'ready';
     pc = [1e9, 0, null]; // the cached place name was given before the place stood
     KERN.spot('vessra', { z: ground(START[0], START[1]) });
@@ -2137,6 +2211,30 @@ export const VESSRA = (() => {
         const [x, y, z] = Yz(u, w, dz);
         K.box(x, y, z, su, sw, sz, rot + rr, col);
       },
+      // a flat box lying on the (sloping) yard: its corners at the ground + d0 below and + d1 on top
+      slab = (u0, w0, u1, w1, d0, d1, col) => {
+        const C = [
+            [u0, w0],
+            [u1, w0],
+            [u1, w1],
+            [u0, w1],
+          ].map(([u, w]) => Yz(u, w)),
+          Bt = C.map(p => [p[0], p[1], p[2] + d0]),
+          T = C.map(p => [p[0], p[1], p[2] + d1]),
+          [mx, my] = Y((u0 + u1) / 2, (w0 + w1) / 2),
+          uv0 = () => [0, 0];
+        poly(K, T, [0, 0, 1], col, uv0);
+        for (let k = 0; k < 4; k++) {
+          const k2 = (k + 1) % 4;
+          poly(
+            K,
+            [Bt[k], Bt[k2], T[k2], T[k]],
+            [(C[k][0] + C[k2][0]) / 2 - mx, (C[k][1] + C[k2][1]) / 2 - my, 0],
+            col,
+            uv0
+          );
+        }
+      },
       POT = linC([0.06, 0.06, 0.065]),
       WOOD = linC([0.46, 0.33, 0.2]),
       WOODD = linC([0.3, 0.2, 0.12]),
@@ -2150,7 +2248,7 @@ export const VESSRA = (() => {
       hw1 = 15.5;
     {
       const zH = 2.5;
-      box((hu0 + hu1) / 2, (hw0 + hw1) / 2, -0.3, hu1 - hu0, hw1 - hw0, 0.45, linC([0.45, 0.44, 0.42])); // base
+      box((hu0 + hu1) / 2, (hw0 + hw1) / 2, -0.7, hu1 - hu0, hw1 - hw0, 0.85, linC([0.45, 0.44, 0.42])); // base (deep: the yard slopes)
       // walls: the counter side (u = hu1) has a window opening between 0.95 and 2.0 m
       box((hu0 + hu1) / 2, hw0 + 0.06, 0.1, hu1 - hu0, 0.12, zH, WOOD);
       box((hu0 + hu1) / 2, hw1 - 0.06, 0.1, hu1 - hu0, 0.12, zH + 0.5, WOOD);
@@ -2232,24 +2330,36 @@ export const VESSRA = (() => {
         S.segs.push(...circleSegs(x, y, 0.26, 6));
       }
     }
-    // the beds: a ground cloth with an edge of boards, plants in black containers in rows, a label at the path end
-    const beete = [];
+    // the beds: a ground cloth with an edge of boards, plants in black containers in rows, a label at the path end. The plants of the
+    // beds are a mesh of their own whose vertex range per slot is known – a plant can be taken out (bought) and put back (take/putBack)
+    const beete = [],
+      KP = VPROPS.kit(),
+      tri0 = KP.tri,
+      ranges = new Map();
+    let nv = 0;
+    KP.tri = (...q) => {
+      nv += 3;
+      return tri0(...q);
+    };
     const U0 = 3.0,
       U1 = 21.0;
     for (const A of ARTEN) {
       const wm = (A.w0 + A.w1) / 2,
         [cx, cy] = Y((U0 + U1) / 2, wm),
         slots = [];
-      box((U0 + U1) / 2, wm, -0.05, U1 - U0, A.w1 - A.w0, 0.08, CLOTH);
-      for (const w of [A.w0, A.w1]) box((U0 + U1) / 2, w, -0.05, U1 - U0 + 0.1, 0.05, 0.16, WOOD);
-      for (const u of [U0, U1]) box(u, wm, -0.05, 0.05, A.w1 - A.w0, 0.16, WOOD);
+      // on the yard's slope: the cloth and the edge boards follow the ground
+      slab(U0, A.w0, U1, A.w1, -0.05, 0.03, CLOTH);
+      for (const w of [A.w0, A.w1]) slab(U0 - 0.05, w - 0.025, U1 + 0.05, w + 0.025, -0.05, 0.11, WOOD);
+      for (const u of [U0, U1]) slab(u - 0.025, A.w0, u + 0.025, A.w1, -0.05, 0.11, WOOD);
       for (let r = 0; r < A.rows; r++) {
         const w = A.w0 + ((r + 0.5) * (A.w1 - A.w0)) / A.rows;
         for (let u = U0 + A.step / 2; u < U1 - A.step / 4; u += A.step) {
           const [x, y, z] = Yz(u, w, 0.03),
             k = hh(x * 3.1 + y * 1.7);
           slots.push([Math.round(x * 100) / 100, Math.round(y * 100) / 100]);
-          plant(K, A.art, x, y, z, k, { POT, BAMBOO, WOOD });
+          const v0 = nv;
+          plant(KP, A.art, x, y, z, k, { POT, BAMBOO, WOOD });
+          ranges.set(A.art + ':' + (slots.length - 1), [v0, nv]);
         }
       }
       // the label: a board on a post at the path end of the bed
@@ -2308,6 +2418,25 @@ export const VESSRA = (() => {
     const [sx, sy, sz] = Yz(3.2, -0.9);
     for (const o of [-1.2, 1.2]) K.box(sx + t[0] * o, sy + t[1] * o, sz - 0.2, 0.1, 0.1, 2.5, rot, WOODD);
     S.gateSign = { at: [sx - wv[0] * 0.07, sy - wv[1] * 0.07, sz + 1.55], d: [t[0], t[1]], h: 0.62 };
+    // the plants of the beds: taking one collapses its vertices to a point (no new geometry, no new draw call), putting back restores them
+    let pm = null,
+      orig = null;
+    if (!KP.empty()) {
+      pm = add(new THREE.Mesh(KP.geo(), propMat()), 'plants', true);
+      orig = pm.geometry.attributes.position.array.slice();
+    }
+    const taken = new Set(),
+      setRange = (key, back) => {
+        const r = ranges.get(key);
+        if (!pm || !r) return false;
+        const a = pm.geometry.attributes.position,
+          A2 = a.array;
+        for (let i = r[0]; i < r[1]; i++)
+          for (let c = 0; c < 3; c++) A2[i * 3 + c] = back ? orig[i * 3 + c] : orig[r[0] * 3 + c];
+        a.needsUpdate = true;
+        markDirty();
+        return true;
+      };
     S.baumschule = {
       name: 'Baumschule Kammbach',
       eingang: spot(0.5, 1.5, wv),
@@ -2315,6 +2444,23 @@ export const VESSRA = (() => {
       parkplatz: spot(-5.8, 6.0, wv),
       beete,
       frame: { G, u: t, w: wv },
+      // take a plant out of its bed (to the till, into the car): { art, name, slot, x, y, z } or null if there is none or it is gone
+      take(art, slot) {
+        const b = beete.find(q => q.art === art),
+          sl = b && b.slots[slot],
+          key = art + ':' + slot;
+        if (!sl || taken.has(key) || !setRange(key, false)) return null;
+        taken.add(key);
+        return { art, name: b.name, slot, x: sl[0], y: sl[1], z: ground(sl[0], sl[1]) };
+      },
+      putBack(art, slot) {
+        const key = art + ':' + slot;
+        if (!taken.has(key) || !setRange(key, true)) return false;
+        taken.delete(key);
+        return true;
+      },
+      isTaken: (art, slot) => taken.has(art + ':' + slot),
+      taken: () => [...taken],
     };
   }
   const nearPolyEdge = (p, x, y) => {
@@ -3187,7 +3333,7 @@ export const VESSRA = (() => {
       if (!S.noTiles)
         await KERN.until(() => WELT.heightAt(KL[0], KL[1]) !== undefined && WELT.state().loading === 0, 900);
       try {
-        build();
+        await build();
       } catch (e) {
         S.state = 'error';
         S.err = String(e);
@@ -3226,6 +3372,7 @@ export const VESSRA = (() => {
     noTiles: !!S.noTiles,
     err: S.err,
     zone: (KERN.zones().find(z => z.id === 'vessra') || { state: '' }).state,
+    times: S.times || null,
     welt: WELT.state(),
   });
   return S;
