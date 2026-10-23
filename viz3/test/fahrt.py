@@ -351,7 +351,28 @@ with lib.browser() as b:
         stop_t = 0
         shots = {'f_l1625': False, 'g_ende': False, 'h_zollbrueck': False, 'j_wegweiser': False, 'h_bruecke': False}
         wegs = [s2 for s2 in DATA['signs'] if s2['t'] == 'weg']
-        while T < 700:
+        # the end of the route is the nursery gate on the Schulstraße, where it turns 90° off the street (route point k_st is the last on
+        # the street): from 400 m before it at 30 km/h to the street point, then – once the zone of Kloster Veßra is there (welt/vessra.js:
+        # the gate G, u along the street, w into the grounds) – slowly in a left turn of 6.5 m radius off the street through the gate into
+        # the sales yard, as one would drive in
+        k_st = len(rb) - 3
+        phase, B, gmin, appr = 0, None, 1e9, None
+
+        def approach(B, s):
+            G, u, w = B['G'], B['u'], B['w']
+            Y = lambda a, b: [G[0] + u[0] * a + w[0] * b, G[1] + u[1] * a + w[1] * b]
+            UW = lambda q: ((q[0] - G[0]) * u[0] + (q[1] - G[1]) * u[1], (q[0] - G[0]) * w[0] + (q[1] - G[1]) * w[1])
+            R = 6.5
+            street = [UW(q) for q in rb[k_st - 6:k_st + 2]]
+            w0 = street[-1][1]
+            for (ua, wa), (ub, wb) in zip(street, street[1:]):
+                if ua <= -R <= ub:
+                    w0 = wa + (wb - wa) * (-R - ua) / ((ub - ua) or 1)
+            pts = [[s['x'], s['y']]] + [list(q) for q in rb[k_st - 6:k_st + 1] if UW(q)[0] < -R - 3 and math.dist(q, (s['x'], s['y'])) > 4 and UW(q)[0] > UW((s['x'], s['y']))[0]]
+            pts += [Y(-R + R * math.cos(math.radians(f)), w0 + R + R * math.sin(math.radians(f))) for f in (-90, -72, -54, -36, -18, 0)]
+            pts += [Y(0, b) for b in (-1.5, 0, 2.5, 5, 7)]
+            return pts
+        while T < 760:
             f = chunk(0.5)
             T += 0.5
             s = st()
@@ -370,45 +391,49 @@ with lib.browser() as b:
             if not shots['h_zollbrueck'] and 'Zollbrück' in f['signsNear'] and s['x'] < -5200:
                 shots['h_zollbrueck'] = True
                 shot('h_zollbrueck')
+            dG = math.dist((s['x'], s['y']), rb[-1])
+            if phase == 0 and dG < 400:
+                phase = 1
+                jn = min(range(i0, k_st + 1), key=lambda i: math.dist(rb[i], (s['x'], s['y'])))
+                E(f"window._fs = VEH.follow({json.dumps(rb[jn:k_st + 1])}, 8.3, {{ look: 8 }})")
+            if phase == 1:
+                if not B:
+                    B = json.loads(E("JSON.stringify(window.VESSRA && VESSRA.baumschule ? VESSRA.baumschule.frame : null)"))
+                if B and dG < 45:
+                    phase = 2
+                    shot('i_baumschule_tor')
+                    appr = approach(B, s)
+                    E(f"window._fs = VEH.follow({json.dumps(appr)}, 2.2, {{ look: 3.5 }})")
+            if phase == 2:
+                gmin = min(gmin, math.dist((s['x'], s['y']), (B['G'][0], B['G'][1])))
             stop_t = stop_t + 0.5 if abs(s['kmh']) < 2 else 0
-            if fs['done'] or stop_t > 6:
+            if (fs['done'] and phase != 1) or stop_t > (15 if phase == 1 else 6):
                 break
         r = stats()
         s = st()
         spd = json.loads(E("JSON.stringify(window._rec.spd)"))
         main = [v for x, y, v in spd if -4400 < x < -1800]
         med = sorted(main)[len(main) // 2] if main else 0
-        print('west', T, 's', json.dumps(r), json.dumps(s), 'speeds', main[::6], 'memory', mem, flush=True)
+        print('west', T, 's', json.dumps(r), json.dumps(s), 'speeds', main[::6], 'memory', mem, 'approach', appr, flush=True)
         ck('speed holds on the L 1625 (median ≥ 70 km/h)', med >= 70, f'median {med} km/h over {len(main)} samples')
         ck('west: on the ground, no flights', r['outNoGround'] == 0 and r['gap'] < 0.3 and r['air'] < 10, json.dumps(r))
         ck('west: few hard bumps', r['n'] > 0 and r['az8'] / max(1, r['n']) < 0.01, f"{r['az8']} of {r['n']} frames, max {r['azMax']} at {r['azAt']}; worst {r['bumps'][:8]}")
         ck('names on the L 1625', any('L 1625' in p for p in places), str(sorted(p for p in places if p and 'L 1625' in p)))
         tiles = [m['tiles'] for m in mem]
         ck('tiles behind are freed (no growth along the drive)', not tiles or max(tiles) < 260, str(tiles))
-        if fs['done']:
-            pk = DATA['park']['baumschule']
-            ck('at the gate of the Baumschule Kammbach (Schulstraße)', math.dist((s['x'], s['y']), (pk[0], pk[1])) < 12, json.dumps(s))
-            shot('i_baumschule_tor')
-            # through the gate into the nursery's yard (welt/vessra.js: the gate G, u along the street, w into the grounds), slowly
-            B = json.loads(E("JSON.stringify(window.VESSRA && VESSRA.baumschule ? VESSRA.baumschule.frame : null)"))
-            if B:
+        if phase:
+            ck('on the Schulstraße at the gate of the Baumschule Kammbach, through it', phase == 2 and gmin < 1.5, f"phase {phase}, {gmin:.1f} m from the gate at the least, {json.dumps(s)}")
+            if phase == 2:
                 G, u, w = B['G'], B['u'], B['w']
-                Y = lambda a, b: [G[0] + u[0] * a + w[0] * b, G[1] + u[1] * a + w[1] * b]
-                pts = [[s['x'], s['y']], Y(0, -6), Y(0, -2.5), Y(0, 2), Y(0, 7)]
-                E(f"window._fs = VEH.follow({json.dumps(pts)}, 2.2, {{ look: 3.5 }})")
-                for _ in range(120):
-                    chunk(0.5)
-                    if json.loads(E("JSON.stringify(window._fs)"))['done']:
-                        break
+                tgt = [G[0] + w[0] * 7, G[1] + w[1] * 7]
                 E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })")
                 chunk(1.5)
                 E("VEH.auto = null")
                 chunk(1)
                 s = st()
-                tgt = Y(0, 7)
                 wh = where()
-                ck('through the gate into the nursery yard', math.dist((s['x'], s['y']), tgt) < 4 and abs(s['kmh']) < 1 and 'Baumschule' in (wh or ''),
-                   f"{math.dist((s['x'], s['y']), tgt):.1f} m from the yard point, {wh!r}")
+                ck('into the nursery yard', math.dist((s['x'], s['y']), tgt) < 4 and abs(s['kmh']) < 1 and 'Baumschule' in (wh or ''),
+                   f"{math.dist((s['x'], s['y']), tgt):.1f} m from the yard point, {wh!r}, {json.dumps(s)}")
                 ck('the word on arrival', any('Baumschule Kammbach' in m for m in msgs), str(sorted(msgs)))
                 shot('i_baumschule_hof')
         else:

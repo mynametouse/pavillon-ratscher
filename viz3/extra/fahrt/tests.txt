@@ -1,5 +1,3 @@
-# Driving out of the square (welt/fahrt.js): to the Markt of Schleusingen, west on the L 1625 to Kloster Veßra, into the nursery yard
+# Driving out of the square (welt/fahrt.js): to the Markt of Schleusingen; from the garden through the village and west on the L 1625
+# to Kloster Veßra, through the gate into the nursery yard (schleusingen and vessra ran on this branch too, green at 3c8c7d2)
 fahrt
-# for now on this branch: the zones stay green with the drive's changes in welt/welt.js (their own topics list them in the Prüfpaket)
-schleusingen
-vessra
