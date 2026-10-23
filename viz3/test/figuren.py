@@ -40,14 +40,14 @@ window.__F = {
     const F = AVATAR.fig, h = F.hw;
     if (!h) return null;
     F.g.updateMatrixWorld(true);
-    const box = (o) => { let lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9]; const v = GAME.cam.position.clone();
-      o.traverse(x => { if (!x.isMesh) return; const p = x.geometry.attributes.position; for (let i = 0; i < p.count; i += 3) { v.fromBufferAttribute(p, i).applyMatrix4(x.matrixWorld); lo = [Math.min(lo[0], v.x), Math.min(lo[1], v.y), Math.min(lo[2], v.z)]; hi = [Math.max(hi[0], v.x), Math.max(hi[1], v.y), Math.max(hi[2], v.z)]; } });
-      return { lo, hi }; };
+    const box = (o) => { let lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9], n = 0; const v = GAME.cam.position.clone(), m = v.clone().set(0, 0, 0);
+      o.traverse(x => { if (!x.isMesh) return; const p = x.geometry.attributes.position; for (let i = 0; i < p.count; i += 3) { v.fromBufferAttribute(p, i).applyMatrix4(x.matrixWorld); m.add(v); n++; lo = [Math.min(lo[0], v.x), Math.min(lo[1], v.y), Math.min(lo[2], v.z)]; hi = [Math.max(hi[0], v.x), Math.max(hi[1], v.y), Math.max(hi[2], v.z)]; } });
+      return { lo, hi, mid: m.divideScalar(n || 1) }; };
     const eye = (() => { let e = null; F.model.traverse(x => { if (x.name === 'Bip01_LEye') e = x; }); return e ? e.getWorldPosition(GAME.cam.position.clone()) : null; })();
     const hd = F.B.Head.getWorldPosition(GAME.cam.position.clone()), c = box(h.cap.children[0]), b = box(h.buds);
     const cx = (c.lo[0] + c.hi[0]) / 2, cz = (c.lo[2] + c.hi[2]) / 2;
-    // the cap's middle in the head bone's own frame (m): the same in every pose if it sits on the head
-    const s = F.B.Head.getWorldScale(GAME.cam.position.clone()).x, loc = F.B.Head.worldToLocal(GAME.cam.position.clone().set(cx, (c.lo[1] + c.hi[1]) / 2, cz)).multiplyScalar(s);
+    // the cap's centroid in the head bone's own frame (m): the same in every pose if it sits on the head (a bounding box would not be)
+    const s = F.B.Head.getWorldScale(GAME.cam.position.clone()).x, loc = F.B.Head.worldToLocal(c.mid.clone()).multiplyScalar(s);
     return { cap: h.cap.visible, buds: h.buds.visible, capLow: +(c.lo[1] - (eye ? eye.y : hd.y)).toFixed(3), capTop: +(c.hi[1] - hd.y).toFixed(3),
       capOff: +Math.hypot(cx - hd.x, cz - hd.z).toFixed(3), budsToHead: +Math.hypot((b.lo[0] + b.hi[0]) / 2 - hd.x, (b.lo[2] + b.hi[2]) / 2 - hd.z).toFixed(3),
       local: loc.toArray().map(x => +x.toFixed(4)) };

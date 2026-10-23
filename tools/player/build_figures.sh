@@ -2,8 +2,8 @@
 # The selectable player figures (Falko 23.10.2026, docs/plans/plan_leben.md 3; Falko himself stays chars/player_m.json) from Microsoft
 # Rocketbox avatars (https://github.com/microsoft/Microsoft-Rocketbox, MIT). All adult women share one Biped skeleton, all adult men another,
 # so a figure can take the clothed body of one avatar and the head of another, and the clip sets fit unchanged:
-#   Sarah      body of Adults/Female_Adult_04 (leather jacket, cargo trousers, boots), head with brunette curls of Adults/Female_Party_02;
-#              clips chars/pclips_f.json
+#   Sarah      a real person: the current female figure Adults/Female_Adult_04 (face, skin, leather jacket, cargo trousers, boots) with
+#              only the hair changed – the wavy curls to the shoulders of Adults/Female_Party_01, brunette; clips chars/pclips_f.json
 #   Christoph  body of Adults/Male_Adult_09 (dark T-shirt, jeans; arms, shoulders and chest a little thicker), head of
 #              Professions/Sports_Male_01 (short brown hair, light beard); clips chars/pclips_m.json. Cap and earbuds: game/avatar.js
 # Mesh with the Biped rig, 1024 px WebP textures, meshopt, images embedded → viz3/extra/figuren/dist/chars/player_<name>.json
@@ -23,11 +23,12 @@ src() {   # group/avatar texture files…: fetch what is missing from the Rocket
   [ -s "$W/src/$a/Export/$a.fbx" ] || git -C "$RB" show "HEAD:Assets/Avatars/$g/Export/$a.fbx" > "$W/src/$a/Export/$a.fbx"
   for f in "$@"; do [ -s "$W/src/$a/Textures/$f" ] || git -C "$RB" show "HEAD:Assets/Avatars/$g/Textures/$f" > "$W/src/$a/Textures/$f"; done
 }
-fig() {   # name body-avatar head-avatar [build.json]
-  local n=$1 b=$2 h=$3 cfg=$4
-  (cd "$H/tools/player" && node fig_mesh.mjs "player_$n" "$W/src/$b/Export/$b.fbx" "$W/src/$h/Export/$h.fbx" "$W/out" $cfg 2>&1 | grep -v 'TGA loader')
+fig() {   # name body-avatar head-avatar|- [build.json]
+  local n=$1 b=$2 h=$3 cfg=$4 hf=-
+  [ "$h" = - ] || hf="$W/src/$h/Export/$h.fbx"
+  (cd "$H/tools/player" && node fig_mesh.mjs "player_$n" "$W/src/$b/Export/$b.fbx" "$hf" "$W/out" $cfg 2>&1 | grep -v 'TGA loader')
   python3 -I "$H/tools/player/fig_tex.py" "$n" "$W/src" "$W/tex_$n" "$W/preview"
-  (cd "$H/tools/player" && PAV_WORK=$W node texattach.mjs "$W/out/player_${n}_mesh.glb" "$W/tex_$n" "$n" "$W/out/player_${n}_tex.glb" 1024 0)
+  (cd "$H/tools/player" && PAV_WORK=$W node fig_texattach.mjs "$W/out/player_${n}_mesh.glb" "$W/tex_$n" "$n" "$W/out/player_${n}_tex.glb" 1024 0)
   (cd "$H/tools/gltf" && node chars.mjs "$W/out/player_${n}_tex.glb" "$W/pack" "player_$n" 1024 0 0 1)   # meshopt, WebP, glTF JSON
   python3 - "$W/pack" "player_$n" "$OUT/player_$n.json" <<'PY'
 import json, base64, sys
@@ -43,9 +44,16 @@ PY
 WHO=${*:-sarah christoph}
 for w in $WHO; do case $w in
   sarah)
-    src Adults/Female_Adult_04 f004_body_color.tga f004_body_normal.tga
-    src Adults/Female_Party_02 f022_head_color.tga f022_head_normal.tga f022_opacity_color.tga
-    fig sarah Female_Adult_04 Female_Party_02 ;;
+    src Adults/Female_Adult_04 f004_body_color.tga f004_body_normal.tga f004_head_color.tga f004_head_normal.tga f004_opacity_color.tga
+    src Adults/Female_Party_01 f010_head_color.tga f010_opacity_color.tga
+    # the donor's hair: its head triangles painted as hair reaching more than 1.5 mm outside Sarah's head, its hair cards (above 163 cm: not
+    # the lashes); Sarah's own bun (hair painted in the lower right of her head texture) would stick out at the back and goes
+    cat > "$W/sarah.json" <<JSON
+{ "hair": { "fbx": "$W/src/Female_Party_01/Export/Female_Party_01.fbx", "tex": "$W/src/Female_Party_01/Textures/f010_head_color.tga",
+            "gap": 0.15, "out": 1, "cardsAbove": 163,
+            "ownDrop": { "tex": "$W/src/Female_Adult_04/Textures/f004_head_color.tga", "uv": [0.6, 1.0, 0.0, 0.42] } } }
+JSON
+    fig sarah Female_Adult_04 - "$W/sarah.json" ;;
   christoph)
     src Adults/Male_Adult_09 m017_body_color.tga m017_body_normal.tga
     src Professions/Sports_Male_01 m021_head_color.tga m021_head_normal.tga

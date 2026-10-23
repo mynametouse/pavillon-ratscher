@@ -9,11 +9,13 @@ Wahl im Menü → Spiel → „Spielfigur“ (`#figseg`), gespeichert in `pav-fi
 | Figur | Körper (Kleidung) | Kopf | Bewegungen | Besonderes |
 |---|---|---|---|---|
 | Falko | Rocketbox `Professions/Delivery_Male_01` (bisherige Figur, unverändert) | dto. | `pclips_m` | – |
-| Sarah | `Adults/Female_Adult_04`: Lederjacke, Cargohose, Stiefel | `Adults/Female_Party_02`: brünette Locken | `pclips_f` | Haut von Händen und Ausschnitt an das Gesicht angeglichen; Haare etwas heller (im Licht des Modells sonst fast schwarz), die schwarzen Innenbänder der Haarkarten durchsichtig (sonst graue Streifen) |
+| Sarah | `Adults/Female_Adult_04` – die bisherige Frau: Gesicht, Haut, Ohrringe, Lederjacke, Cargohose, Stiefel bleiben | dto., nur die Haare neu: die gewellten Locken bis zur Schulter von `Adults/Female_Party_01`, brünett gefärbt (auch die eigenen aufgemalten Haare und die Brauen); der eigene Dutt fällt weg | `pclips_f` | Sarah ist eine echte Person: nur geändert, was Falko wollte (brünett, Locken) |
 | Christoph | `Adults/Male_Adult_09`: dunkles T-Shirt, Jeans (Tattoo entfernt), Arme, Schultern, Brust etwas kräftiger | `Professions/Sports_Male_01`: kurze braune Haare, leichter Bart | `pclips_m` | 1,5 cm kleiner als Falko; Schildmütze und Ohrhörer (`figHeadwear` in `game/avatar.js`) |
 
-Alle erwachsenen Rocketbox-Frauen teilen ein Skelett, alle Männer ein anderes – deshalb passen Kopf und Körper zweier Figuren
-zusammen und die Bewegungen der bisherigen Figuren ohne Änderung. Lizenz MIT (Microsoft), Nennung über `viz3/extra/figuren/manifest.json`.
+Alle erwachsenen Rocketbox-Frauen teilen ein Skelett, alle Männer ein anderes – deshalb passen Kopf, Haare und Körper verschiedener
+Figuren zusammen und die Bewegungen der bisherigen Figuren ohne Änderung. Sarahs neue Haare: die Dreiecke des Spenderkopfs, die als Haar
+bemalt sind und mehr als 1,5 mm außerhalb ihres Kopfes liegen (das Haarvolumen), dazu seine Haarkarten (ohne Wimpern, ohne die schwarzen
+Streuhaare); kleine Inseln unter 10 Dreiecken fallen weg. Lizenz MIT (Microsoft), Nennung über `viz3/extra/figuren/manifest.json`.
 
 - **Mütze und Ohrhörer** werden beim Laden aus den Kopf-Punkten der Figur gebaut, im Raum des Kopfknochens: sie sitzen in jeder Haltung.
   Die Mütze fällt unter dem Forsthelm und dem Kapselgehörschutz weg, die Ohrhörer bei jedem Gehörschutz; sonst sind sie „manchmal“
@@ -29,7 +31,7 @@ PAV_WORK=/tmp/figuren bash tools/player/build_figures.sh [sarah] [christoph]
 
 Holt die Originale aus dem Rocketbox-Klon (`RB=…`, Standard `/home/claude/microsoft/microsoft-rocketbox`), setzt Körper und Kopf zusammen
 (`tools/player/fig_mesh.mjs`: Dreiecke nach Material, Knochen nach Namen, Hals und Brust des Kopfes unter die Kleidung,
-Verdickung der Arme), bereitet die Texturen vor (`fig_tex.py`) und schreibt `viz3/extra/figuren/dist/chars/player_sarah.json` und
+Haare eines dritten Avatars, Verdickung der Arme), bereitet die Texturen vor (`fig_tex.py`, `fig_texattach.mjs`) und schreibt `viz3/extra/figuren/dist/chars/player_sarah.json` und
 `player_christoph.json` (je < 2 MB, Texturen 1024 px WebP). `build.py` kopiert sie nach `dist/chars/`; das Manifest legt
 `PLAYERMAN.player_f` auf Sarah und `player_c` auf Christoph.
 

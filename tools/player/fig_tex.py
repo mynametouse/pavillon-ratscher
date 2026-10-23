@@ -1,8 +1,9 @@
 # Textures of the selectable player figures (Falko 23.10.2026, docs/plans/plan_leben.md 3), from the Rocketbox originals (MIT):
-#   sarah      body (clothes, hands) of Adults/Female_Adult_04 (f004), head and curly brunette hair of Adults/Female_Party_02 (f022)
+#   sarah      the current female figure Adults/Female_Adult_04 (f004: face, skin, clothes) with the hair of Adults/Female_Party_01 (f010),
+#              both made brunette
 #   christoph  body of Adults/Male_Adult_09 (m017: dark T-shirt, jeans) without the forearm tattoo, head of Professions/Sports_Male_01
 #              (m021: short brown hair, light beard)
-# Where the skin of the two avatars meets (neck, hands, arms), the body's skin is shifted towards the colour of the face.
+# Christoph: where the skin of the two avatars meets (hands, arms), the body's skin is shifted towards the colour of the face.
 #   python3 -I fig_tex.py <sarah|christoph> <src dir: <Avatar>/Textures/*.tga> <out dir> [preview dir]
 import sys, os, shutil
 import numpy as np
@@ -61,34 +62,60 @@ def face_skin(head):
     return median_rgb(head, skin_mask(head) * reg)
 
 
-HAIR = np.array([1.55, 1.5, 1.42], np.float32)   # Sarah's hair: gain per channel (lighter, a little warmer)
+def hair_mask(img, blur=5.0):
+    """painted hair of a Rocketbox head texture: yellower than skin (g/r up, b/g down) or dark brown strands; smoothed, as hair is in patches"""
+    r, g, b = img[..., 0], img[..., 1], img[..., 2]
+    l = 0.3 * r + 0.59 * g + 0.11 * b
+    gr, bg = g / np.maximum(r, 1e-3), b / np.maximum(g, 1e-3)
+    score = (gr - 0.765) / 0.04 + (0.745 - bg) / 0.04
+    m = ((score > 0.6) | ((l < 0.3) & (l > 0.04) & (r >= g) & (g >= b))) & (l > 0.04) & (r >= g * 0.97)
+    return np.clip(cv2.GaussianBlur(m.astype(np.float32), (0, 0), blur) * 1.6 - 0.3, 0, 1)
+
+
+BRUNETTE = np.array([0.36, 0.235, 0.14], np.float32)   # the mean colour of Sarah's hair (sRGB; the model's light makes hair darker)
+
+
+def brunette(img, m):
+    """blonde → brunette: the brightness pattern of the strands kept, the colour from BRUNETTE"""
+    l = img @ np.array([0.3, 0.59, 0.11], np.float32)
+    ref = np.median(l[m > 0.5]) if (m > 0.5).any() else 0.5
+    b = np.clip(BRUNETTE[None, None, :] * np.power(np.maximum(l, 1e-4) / ref, 1.15)[..., None], 0, 1)
+    return img * (1 - m[..., None]) + b * m[..., None]
+
+
 if WHO == 'sarah':
-    head = load(tga('Female_Party_02', 'f022_head_color.tga'))
-    body = load(tga('Female_Adult_04', 'f004_body_color.tga'))
-    h, w, _ = body.shape
-    # the skin of the body texture: both hands (top corners) and the neckline of the jacket – not the brown leather around it
-    region = box(h, w, 0.0, 0.22, 0.0, 0.25) + box(h, w, 0.78, 1.0, 0.0, 0.25) + box(h, w, 0.43, 0.57, 0.40, 0.54)
-    body = match_skin(body, face_skin(head), np.minimum(region, 1))
-    save(body, 'sarah_body_color.tga')
+    # Sarah is a real person: the current female figure's face, skin and clothes stay (Adults/Female_Adult_04); only the hair changes –
+    # brunette, curly/wavy, to the shoulders: the hair of Adults/Female_Party_01 (blonde wavy curls) recoloured, the own hair painted on
+    # the head brunette as well (fig_mesh.mjs puts the donor's hair on the own head)
+    copy('Female_Adult_04', 'f004_body_color.tga', 'sarah_body_color.tga')
     copy('Female_Adult_04', 'f004_body_normal.tga', 'sarah_body_normal.tga')
-    # brunette, not black: in the model's light the dark brown of the curls read as black – hair a little lighter and warmer (the face,
-    # the eyes and the mouth – lower left of the layout – stay)
+    head = load(tga('Female_Adult_04', 'f004_head_color.tga'))
     hh, hw_, _ = head.shape
-    hm = ((head @ np.array([0.3, 0.59, 0.11], np.float32)) < 0.3) & (skin_mask(head) < 0.5)
-    hm = cv2.GaussianBlur((hm * (1 - box(hh, hw_, 0.0, 0.38, 0.6, 1.0))).astype(np.float32), (0, 0), 1.5)
-    save(head * (1 + hm[..., None] * (HAIR - 1)), 'sarah_head_color.tga')
-    copy('Female_Party_02', 'f022_head_normal.tga', 'sarah_head_normal.tga')
-    # the hair cards: their inner bands are opaque black (a dark base for blending in the original renderer); with alpha testing in the
-    # model they showed as grey stripes across the curls – there they go, the modelled hair of the head underneath carries the volume
-    op = np.asarray(Image.open(tga('Female_Party_02', 'f022_opacity_color.tga')).convert('RGBA')).copy()
-    lum = op[..., :3].astype(np.float32) @ np.array([0.3, 0.59, 0.11], np.float32)
-    band = (lum < 10) & (op[..., 3] > 100)
-    band = cv2.dilate(band.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
-    op[..., 3][band & (lum < 14)] = 0
-    rgb = op[..., :3].astype(np.float32) / 255   # the strands as light as the hair of the head
-    op[..., :3] = (np.clip(rgb * HAIR, 0, 1) * 255 + 0.5).astype(np.uint8)
-    print('hair cards: black band pixels made transparent', int(band.sum()))
-    Image.fromarray(op, 'RGBA').save(os.path.join(OUT, 'sarah_opacity_color.tga'))
+    m = hair_mask(head) * (1 - box(hh, hw_, 0.0, 0.38, 0.6, 1.0))   # not the eyes and the mouth (lower left of the layout)
+    save(brunette(head, m), 'sarah_head_color.tga')
+    copy('Female_Adult_04', 'f004_head_normal.tga', 'sarah_head_normal.tga')
+    # her lashes and earrings stay; the rest of that texture (her former hair cards) is cleared, the file gets small
+    op4 = np.asarray(Image.open(tga('Female_Adult_04', 'f004_opacity_color.tga')).convert('RGBA')).copy()
+    oh, ow = op4.shape[:2]
+    keep = np.zeros((oh, ow), bool)
+    for u0, u1, v0, v1 in [(0.23, 0.53, 0.0, 0.14), (0.48, 0.59, 0.18, 0.29)]:   # UV boxes (v up) of the lashes and the earrings
+        keep[int((1 - v1) * oh):int((1 - v0) * oh), int(u0 * ow):int(u1 * ow)] = True
+    op4[~keep] = 0
+    Image.fromarray(op4, 'RGBA').save(os.path.join(OUT, 'sarah_opacity_color.tga'))
+    hair = load(tga('Female_Party_01', 'f010_head_color.tga'))
+    save(brunette(hair, hair_mask(hair)), 'sarah_hair_color.tga')
+    # (no normal map for the donor's hair: smaller file, the strands of the texture carry it)
+    op = np.asarray(Image.open(tga('Female_Party_01', 'f010_opacity_color.tga')).convert('RGBA')).copy()
+    oh, ow = op.shape[:2]
+    op[int(0.9 * oh):, int(0.56 * ow):] = 0   # the black stray strands (lower right): flecks floating above the head
+    rgb = op[..., :3].astype(np.float32) / 255
+    seen = (op[..., 3] > 30).astype(np.float32)
+    op[..., :3] = (np.clip(brunette(rgb, seen), 0, 1) * 255 + 0.5).astype(np.uint8)
+    Image.fromarray(op, 'RGBA').save(os.path.join(OUT, 'sarah_hairop_color.tga'))
+    if PV:
+        os.makedirs(PV, exist_ok=True)
+        Image.open(os.path.join(OUT, 'sarah_head_color.tga')).convert('RGB').resize((768, 768)).save(os.path.join(PV, 'sarah_head.jpg'), quality=88)
+        Image.open(os.path.join(OUT, 'sarah_hair_color.tga')).convert('RGB').resize((768, 768)).save(os.path.join(PV, 'sarah_hair.jpg'), quality=88)
 elif WHO == 'christoph':
     head = load(tga('Sports_Male_01', 'm021_head_color.tga'))
     body8 = np.asarray(Image.open(tga('Male_Adult_09', 'm017_body_color.tga')).convert('RGB'))
