@@ -1,6 +1,7 @@
 // ===================== Kloster Veßra: the monastery, the village, the tree nursery – walkable (VESSRA) =====================
-// ~9 km west of the garden. Loaded only when the camera comes within 950 m of the place (Orte → „Kloster Veßra“, later by car), freed
-// beyond 1350 m. Ground: the tiled world (welt/welt.js) from the zone's own tile set welt-test/zonen/vessra/ (tools/welt/build.py --plan V,
+// ~9 km west of the garden. A zone of core/kern.js (KERN.zone): built when the walker or the camera comes within 950 m of the place
+// (Orte → „Kloster Veßra“, ?szenario=vessra or ?szenario=baumschule, by car), freed beyond 1350 m. Ground: the tiled world
+// (welt/welt.js) from the zone's own tile set welt-test/zonen/vessra/ (tools/welt/build.py --plan V,
 // which also covers the road there). Buildings: OSM footprints (tools/welt/zone_vessra.py → dist/vessra/ort.json) drawn with the facade
 // and roof shaders of the village (world/village.js – no new shader programs): the red sandstone ranges of the monastery and the domain,
 // the half-timbered houses of the open-air museum (Hennebergisches Museum), plastered village houses. The Klosteranlage after photos
@@ -12,13 +13,13 @@
 // container plants (fruit trees, berry shrubs, ornamental shrubs, climbers, ground cover), a sales hut with its counter, parking, young
 // trees in rows on the field – named spots for the garden planner (VESSRA.baumschule). Street lamps, benches, street names on the HUD.
 import * as THREE from 'three';
-import { BASE, cam, scene, V } from '../core/head.js';
+import { BASE, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, texFile, texFileOf, TEXMAN, whenLoaded } from '../core/assets.js';
 import { TREES } from '../garden/trees.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
-import { SPOTS } from '../game/player.js';
+import { go } from '../game/player.js';
 import { toast } from '../audio/audio.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
@@ -53,17 +54,32 @@ export const VESSRA = (() => {
     START = [-8790.6, -272.4],
     yawTo = (x, y, tx, ty) => (Math.atan2(tx - x, ty - y) * 180) / Math.PI;
   S.START = START;
-  SPOTS.vessra = {
+  KERN.spot('vessra', {
     mode: 'walk',
     pos: START,
     z: 0,
     yaw: yawTo(START[0], START[1], -8791, -377),
     pitch: 9,
     label: 'Kloster Veßra (Klostertor)',
-  };
-  whenLoaded(() => {
-    if (RATSCHER.hAt) SPOTS.vessra.z = RATSCHER.hAt(START[0], START[1]);
   });
+  // the nursery: on the Schulstraße in front of its gate, looking into the sales yard (no menu entry; ?szenario=baumschule) – the place
+  // and the view are set again from the built yard (nursery(): S.baumschule.eingang)
+  const BS = [-8863.3, -171.3];
+  KERN.spot('baumschule', {
+    mode: 'walk',
+    pos: BS,
+    z: 0,
+    yaw: -97,
+    pitch: 2,
+    label: 'Baumschule Kammbach (Kloster Veßra)',
+  });
+  whenLoaded(() => {
+    if (RATSCHER.hAt) KERN.spot('vessra', { z: RATSCHER.hAt(START[0], START[1]) });
+    if (RATSCHER.hAt) KERN.spot('baumschule', { z: RATSCHER.hAt(BS[0], BS[1]) });
+  });
+  // start situations (core/kern.js; ?szenario=vessra, ?szenario=baumschule): the place is built once the walker stands there (KERN.zone)
+  KERN.scenario('vessra', { label: 'Kloster Veßra, Klostertor', order: 31, run: () => go('vessra') });
+  KERN.scenario('baumschule', { label: 'Baumschule Kammbach, Kloster Veßra', order: 32, run: () => go('baumschule') });
   // ---- styles (world/village.js ST) and the colours of the photos ----
   const ST = {
     PLASTER: 0,
@@ -1491,7 +1507,15 @@ export const VESSRA = (() => {
     S.ms = Math.round(performance.now() - t0);
     S.state = 'ready';
     pc = [1e9, 0, null]; // the cached place name was given before the place stood
-    SPOTS.vessra.z = ground(START[0], START[1]);
+    KERN.spot('vessra', { z: ground(START[0], START[1]) });
+    const B = S.baumschule;
+    if (B) {
+      // in front of the nursery gate on the street, 4 m outside it, looking along the way in
+      const w = B.frame.w,
+        x = B.eingang.x - w[0] * 5.5,
+        y = B.eingang.y - w[1] * 5.5;
+      KERN.spot('baumschule', { pos: [x, y], z: ground(x, y), yaw: B.eingang.yaw });
+    }
     markDirty(true);
   }
   // ---- the gate house beside the gate church: the entrance to the monastery grounds and the museum, a round-arched passage with a
@@ -2667,7 +2691,7 @@ export const VESSRA = (() => {
     }
     return best;
   };
-  PLAY.act({
+  KERN.act({
     id: 'vessra:sit',
     r: 1.3,
     prio: 0.03,
@@ -2684,47 +2708,45 @@ export const VESSRA = (() => {
   KERN.provide('place', place, 20);
   KERN.provide('pushOut', pushOut, 10);
   KERN.provide('free', (x, y) => (inZone(x, y) ? true : undefined), 10);
-  // ---- the loop: near the place the tiles and the place are loaded, far away freed ----
-  let acc = 1;
-  function tick(dt) {
-    acc += dt;
-    if (acc < 0.4) return;
-    acc = 0;
-    if (S.pool && VPROPS.pool && S.pool.visible !== VPROPS.pool.visible) {
-      S.pool.visible = VPROPS.pool.visible;
-      markDirty();
-    }
-    const walk = P.mode === 'walk',
-      cx = walk ? P.x : cam.position.x,
-      cy = walk ? P.y : -cam.position.z,
-      d = Math.hypot(cx - ORT[0], cy - ORT[1]);
-    if (d < NEAR) {
+  // ---- near the place its tiles and the place are loaded, far away freed (KERN.zone, core/kern.js: build near, drop far, measured from
+  // KERN.where() – the walker, else the camera) ----
+  KERN.zone({
+    id: 'vessra',
+    x: ORT[0],
+    y: ORT[1],
+    near: NEAR,
+    far: FAR,
+    build: async () => {
       WELT.need('vessra', true, SUB);
-      if (S.state === 'idle') load();
-    } else if (d > FAR) {
-      WELT.need('vessra', false);
-      if (S.state === 'ready') S.dispose();
-      else if (S.state === 'data' || S.state === 'error') {
-        data = null;
-        S.data = null;
-        gz = null;
-        S.state = 'idle';
-      }
-    }
-    if (
-      S.state === 'data' &&
-      (S.noTiles || (WELT.heightAt(KL[0], KL[1]) !== undefined && WELT.state().loading === 0))
-    ) {
+      await load();
+      if (S.state === 'error') throw new Error(S.err);
+      if (!S.noTiles)
+        await KERN.until(() => WELT.heightAt(KL[0], KL[1]) !== undefined && WELT.state().loading === 0, 900);
       try {
         build();
       } catch (e) {
         S.state = 'error';
         S.err = String(e);
-        console.warn('vessra build', e);
+        throw e;
       }
-    }
-  }
-  (window.TICKS || (window.TICKS = [])).push(tick);
+    },
+    drop: () => {
+      WELT.need('vessra', false);
+      if (S.state === 'ready') S.dispose();
+      else {
+        data = null;
+        S.data = null;
+        gz = null;
+        S.state = 'idle';
+      }
+    },
+    tick: () => {
+      if (S.pool && VPROPS.pool && S.pool.visible !== VPROPS.pool.visible) {
+        S.pool.visible = VPROPS.pool.visible;
+        markDirty();
+      }
+    },
+  });
   S.status = () => ({
     state: S.state,
     buildings: S.bld.length,
@@ -2739,6 +2761,7 @@ export const VESSRA = (() => {
     loadMs: S.loadMs || 0,
     noTiles: !!S.noTiles,
     err: S.err,
+    zone: (KERN.zones().find(z => z.id === 'vessra') || { state: '' }).state,
     welt: WELT.state(),
   });
   return S;

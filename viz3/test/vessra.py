@@ -80,6 +80,10 @@ with lib.browser() as b:
         ck('nothing of Kloster Veßra at the start', st0['s']['state'] == 'idle' and st0['res'] == 0 and st0['s']['welt']['tiles'] == 0, json.dumps(st0['s']))
         ck('the zone tile set is registered, not fetched', 'zonen/vessra/' in st0['s']['welt'].get('sets', ''), st0['s']['welt'].get('sets', ''))
         ck('menu: Orte → Kloster Veßra', E("!!document.querySelector('#menu [data-spot=vessra]')"))
+        kz = J("""{ zone: KERN.zones().find(z => z.id === 'vessra') || null, sc: ['vessra', 'baumschule'].map(n => (KERN.scenario(n) || {}).label || null),
+            spots: ['vessra', 'baumschule'].map(n => !!KERN.spots()[n]) }""")
+        ck('a zone of the core, start situations and jump spots (KERN.zone, KERN.scenario, KERN.spot)',
+           kz['zone'] and kz['zone']['state'] == 'idle' and all(kz['sc']) and all(kz['spots']), json.dumps(kz))
 
     def wait_ready(limit=240):
         t0 = time.time()
@@ -109,8 +113,8 @@ with lib.browser() as b:
         sp = J("VESSRA.START")
         th = J("(() => { const b = VESSRA.bld.find(q => q.lm === 'torhaus'); return b ? [b.cx, b.cy] : [0, 0]; })()")
         ck('Orte → Kloster Veßra: in front of the gate house', math.hypot(p['x'] - sp[0], p['y'] - sp[1]) < 3 and math.hypot(sp[0] - th[0], sp[1] - th[1]) < 14, json.dumps(p))
-        ck('the place is built there', s['state'] == 'ready' and s['buildings'] > 120 and s['segs'] > 1500 and not s['err'],
-           f"{s['buildings']} buildings, {s['segs']} segments, {s['trees']} trees, {s['lamps']} lamps, {s['ms']} ms build, {s['loadMs']} ms data + {round(dt)} s; err {s['err']}")
+        ck('the place is built there', s['state'] == 'ready' and s['zone'] == 'ready' and s['buildings'] > 120 and s['segs'] > 1500 and not s['err'],
+           f"{s['buildings']} buildings, {s['segs']} segments, {s['trees']} trees, {s['lamps']} lamps, {s['ms']} ms build, {s['loadMs']} ms data + {round(dt)} s; zone {s['zone']}; err {s['err']}")
         ck('its own world tiles around the camera', s['welt']['visible'] >= 10 and s['welt']['err'] == 0 and not s['noTiles'] and '+zonen/vessra/' in s['welt'].get('sets', ''), json.dumps(s['welt']))
         ck('ground under the feet (tiles)', p['w'] is not None and abs(p['feet'] - p['g']) < 0.05 and abs(p['g'] - p['w']) < 0.01, json.dumps(p))
     if want('walk'):
@@ -164,6 +168,11 @@ with lib.browser() as b:
             r = J(f"""(() => {{ const e = VESSRA.baumschule.eingang; GAME.view(e.x, e.y, e.z + 1.62, e.yaw, 0, 60); GAME.step(0.5); GAME.step(4, 1);
                 return {{ x: GAME.P.x, y: GAME.P.y, where: VESSRA.place(GAME.P.x, GAME.P.y), sign: (VESSRA.signs || []).filter(s => /Kammbach/.test(s)).length, young: VESSRA.youngTrees }}; }})()""")
             ck('from the gate into the sales yard; its signs; young trees on the field', 'Baumschule' in (r['where'] or '') and r['sign'] >= 2 and r['young'] > 150, json.dumps(r, ensure_ascii=False))
+            # the start situation ?szenario=baumschule: on the street in front of the gate, walking in reaches the yard
+            r = J("""(() => { KERN.scenario('baumschule').run(); GAME.step(0.5); const a = { x: GAME.P.x, y: GAME.P.y, place: KERN.place(GAME.P.x, GAME.P.y) };
+                GAME.step(5, 1); return { a, b: { x: GAME.P.x, y: GAME.P.y, place: KERN.place(GAME.P.x, GAME.P.y) }, e: VESSRA.baumschule.eingang }; })()""")
+            ck('?szenario=baumschule: in front of the gate, a few steps into the yard',
+               math.hypot(r['a']['x'] - r['e']['x'], r['a']['y'] - r['e']['y']) < 8 and 'Baumschule Kammbach' in (r['b']['place'] or ''), json.dumps(r, ensure_ascii=False))
     if want('names'):
         n = J("[[-8790, -376], [-8798, -287], [-8749, -362], [-8805, -266], [-8905, -175]].map(([x, y]) => VESSRA.place(x, y))")
         ck('place names: church, gate church, Henneberg chapel, a street, the nursery',
