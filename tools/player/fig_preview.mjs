@@ -66,6 +66,7 @@ function render(view, file) {
   const v = new THREE.Vector3(), nn = new THREE.Vector3(), m4 = new THREE.Matrix4(), tmp = new THREE.Matrix4();
   root.traverse((o) => {
     if (!o.isMesh || !o.visible) return;
+    if (process.env.HIDE && new RegExp(process.env.HIDE).test((o.material && o.material.name) || '')) return; // HIDE=<regex of material names>
     let vis = true; for (let a = o; a; a = a.parent) if (!a.visible) vis = false; if (!vis) return;
     const g = o.geometry, P = g.attributes.position, N = g.attributes.normal, UV = g.attributes.uv, idx = g.index;
     const mats = Array.isArray(o.material) ? o.material : [o.material];

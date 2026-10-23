@@ -62,14 +62,14 @@ def face_skin(head):
     return median_rgb(head, skin_mask(head) * reg)
 
 
-def hair_mask(img, blur=5.0):
+def hair_mask(img, blur=5.0, gain=1.6):
     """painted hair of a Rocketbox head texture: yellower than skin (g/r up, b/g down) or dark brown strands; smoothed, as hair is in patches"""
     r, g, b = img[..., 0], img[..., 1], img[..., 2]
     l = 0.3 * r + 0.59 * g + 0.11 * b
     gr, bg = g / np.maximum(r, 1e-3), b / np.maximum(g, 1e-3)
     score = (gr - 0.765) / 0.04 + (0.745 - bg) / 0.04
     m = ((score > 0.6) | ((l < 0.3) & (l > 0.04) & (r >= g) & (g >= b))) & (l > 0.04) & (r >= g * 0.97)
-    return np.clip(cv2.GaussianBlur(m.astype(np.float32), (0, 0), blur) * 1.6 - 0.3, 0, 1)
+    return np.clip(cv2.GaussianBlur(m.astype(np.float32), (0, 0), blur) * gain - 0.3, 0, 1)
 
 
 BRUNETTE = np.array([0.36, 0.235, 0.14], np.float32)   # the mean colour of Sarah's hair (sRGB; the model's light makes hair darker)
@@ -91,8 +91,19 @@ if WHO == 'sarah':
     copy('Female_Adult_04', 'f004_body_normal.tga', 'sarah_body_normal.tga')
     head = load(tga('Female_Adult_04', 'f004_head_color.tga'))
     hh, hw_, _ = head.shape
-    m = hair_mask(head) * (1 - box(hh, hw_, 0.0, 0.38, 0.6, 1.0))   # not the eyes and the mouth (lower left of the layout)
-    save(brunette(head, m), 'sarah_head_color.tga')
+    keep = 1 - box(hh, hw_, 0.0, 0.38, 0.6, 1.0)   # not the eyes and the mouth (lower left of the layout)
+    face = cv2.GaussianBlur(box(hh, hw_, 0.28, 0.72, 0.19, 0.62), (0, 0), 12)
+    near = hair_mask(head, 10.0, 2.6) * (1 - face)
+    mx, mn = head.max(axis=2), head.min(axis=2)
+    grey = ((mx - mn) / np.maximum(mx, 1e-3) < 0.24) & (mx > 0.35)   # the pale blond fine hairs (grey-white, not skin)
+    m = np.maximum(hair_mask(head, 3.0), cv2.GaussianBlur(grey.astype(np.float32), (0, 0), 1.2) * near) * keep
+    # the fine blond hairs along the hairline: around the hair (outside the face) the skin gets a light brown tint instead of a bright
+    # brunette – the pale fringe would otherwise stay as a whitish seam
+    fringe = near * (1 - m) * keep
+    out = brunette(head, m)
+    tint = BRUNETTE / np.maximum(median_rgb(head, skin_mask(head) * face), 1e-3)
+    out = out * (1 - 0.75 * fringe[..., None] * (1 - tint[None, None, :]))
+    save(out, 'sarah_head_color.tga')
     copy('Female_Adult_04', 'f004_head_normal.tga', 'sarah_head_normal.tga')
     # her lashes and earrings stay; the rest of that texture (her former hair cards) is cleared, the file gets small
     op4 = np.asarray(Image.open(tga('Female_Adult_04', 'f004_opacity_color.tga')).convert('RGBA')).copy()

@@ -51,7 +51,7 @@ for w in $WHO; do case $w in
     cat > "$W/sarah.json" <<JSON
 { "hair": { "fbx": "$W/src/Female_Party_01/Export/Female_Party_01.fbx", "tex": "$W/src/Female_Party_01/Textures/f010_head_color.tga",
             "gap": 0.15, "out": 1, "cardsAbove": 163,
-            "ownDrop": { "tex": "$W/src/Female_Adult_04/Textures/f004_head_color.tga", "uv": [0.6, 1.0, 0.0, 0.42] } } }
+            "ownDrop": { "tex": "$W/src/Female_Adult_04/Textures/f004_head_color.tga", "uv": [0.6, 1.0, 0.0, 0.42], "above": 160 } } }
 JSON
     fig sarah Female_Adult_04 - "$W/sarah.json" ;;
   christoph)

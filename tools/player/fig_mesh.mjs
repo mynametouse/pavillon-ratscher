@@ -7,7 +7,7 @@
 // build.json: { "thick": { "<Biped bone>": factor | [factor at the joint, at the child joint], … },
 //   "torso": factor or { "<spine bone>": factor } (away from the spine's vertical axis), "torsoTop": cm below the neck joint where it ends,
 //   "hair": { "fbx": donor avatar, "tex": its head colour TGA, "gap": cm outside the own head, "out": corners outside (2), "cardsAbove": cm,
-//             "ownDrop": { "tex": own head colour TGA, "uv": [u0, u1, v0, v1] } (own hair pieces that would stick out) } }
+//             "ownDrop": { "tex": own head colour TGA, "uv": [u0, u1, v0, v1], "above": cm } (own hair pieces that would stick out) } }
 import fs from 'node:fs';
 import path from 'node:path';
 import { THREE } from './node_shims.mjs';
@@ -76,8 +76,9 @@ if (HC) {
   const own = partsOf(mb, gb, 'opacity'), above = HC.cardsAbove ?? 163;
   // own hair pieces that would stick out of the new hair (a bun): head triangles painted as hair inside the UV box ownDrop.uv
   const OD = HC.ownDrop, OT = OD ? readTGA(OD.tex) : null, OUV = gb.attributes.uv;
+  // (above the height OD.above, cm, all of the box goes: the last bits of a bun are not painted as hair everywhere)
   const ownHair = (t) => { let k = 0; for (let i = t; i < t + 3; i++) { const u = OUV.getX(i), w = OUV.getY(i);
-    if (u >= OD.uv[0] && u <= OD.uv[1] && w >= OD.uv[2] && w <= OD.uv[3] && hairTexel(OT, u, w)) k++; } return k >= 2; };
+    if (u >= OD.uv[0] && u <= OD.uv[1] && w >= OD.uv[2] && w <= OD.uv[3] && (hairTexel(OT, u, w) || bindY(mb, gb, i) > (OD.above ?? 1e9))) k++; } return k >= 2; };
   let dropped = 0;
   take(mb, gb, { body: 'body', head: 'head', opacity: 'opacity' }, (r, t) =>
     r === 'opacity' ? own.top.get(own.of.get(t)) < above : r === 'head' && OD && ownHair(t) ? (dropped++, false) : true);
