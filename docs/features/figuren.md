@@ -50,7 +50,8 @@ bash tools/browser_lock.sh python3 viz3/test/run.py --port 8972 --serve figuren
 
 `viz3/test/figuren.py`: Menü, gespeicherter alter Wert `f`, eigene Modelle, Größen, Mütze über dem Kopf (stehen, gehen, hocken), Ausrüstung;
 Bilder aller Figuren von vorn, der Seite und hinten nah und ganz, stehend, gehend, hockend → `out/figuren/`. Läuft bei jedem Push auf
-`feat/figuren` in GitHub Actions (`viz3/extra/figuren/tests.txt`).
+`feat/figuren` in GitHub Actions (`viz3/extra/figuren/tests.txt`) in zwei Teilen: `figuren:f,m` (Sarah, Falko) und `figuren:c`
+(Christoph mit Mütze, Ohrhörern, Ausrüstung, Größenvergleich) – je etwa 10 Minuten.
 
 ## Offen
 
