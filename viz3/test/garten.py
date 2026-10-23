@@ -85,7 +85,11 @@ with lib.browser() as b:
         view(pg, 'bungalow', 7.5, -5.5, 1.7, 180 + 35, -6, 62); shot(pg, 'bungalow_aussen_nordost')
         view(pg, 'bungalow', -6.0, -6.0, 1.7, -37, -5, 62); shot(pg, 'bungalow_aussen_suedost')
         view(pg, 'bungalow', 2.3, 0.0, 1.76, 180, -10, 78); shot(pg, 'bungalow_innen_von_tuer')
-        print('render info (bungalow from the door, one full frame)', ev(pg, "(() => { const I = GAME.R.info; I.autoReset = false; I.reset(); GAME.shot(); const o = { calls: I.render.calls, tris: I.render.triangles, programs: I.programs.length, geometries: I.memory.geometries, textures: I.memory.textures }; I.autoReset = true; return JSON.stringify(o); })()"), flush=True)
+        # what the three garden buildings cost in this view: one full frame with and without them (the rest of the scene the same)
+        cost = ev(pg, """(() => { const I = GAME.R.info, one = () => { I.autoReset = false; I.reset(); GAME.shot(); const o = { calls: I.render.calls, tris: I.render.triangles }; I.autoReset = true; return o; };
+          const a = one(), roots = ['bungalow', 'holzhaus', 'greenhouse'].map(k => BUILD[k].root); roots.forEach(r => r.visible = false); const b = one(); roots.forEach(r => r.visible = true);
+          return JSON.stringify({ all: a, without: b, buildings: { calls: a.calls - b.calls, tris: a.tris - b.tris }, programs: I.programs.length, textures: I.memory.textures }); })()""")
+        print('render cost (bungalow from the door, one full frame)', cost, flush=True)
         view(pg, 'bungalow', 1.9, -0.6, 1.76, 180 - 40, -14, 78); shot(pg, 'bungalow_innen_schlafecke')
         view(pg, 'bungalow', -0.8, -0.2, 1.7, -40, -14, 78); shot(pg, 'bungalow_innen_kueche')
         view(pg, 'bungalow', -2.1, 0.0, 1.7, 0, -8, 78); shot(pg, 'bungalow_innen_von_hinten')
@@ -97,10 +101,6 @@ with lib.browser() as b:
         ev(pg, "(() => { const a = PLAY.acts().find(a => a.id === 'seat:garten:bett'), b = SITE.bld.bungalow; GAME.view(b.c[0] + 1.95, b.c[1] - 1.2, 1.76, 0, 0); a.run(); GAME.step(1.2); })()")
         ck('lying in the bed', ev(pg, "!!(PLAY.seat && PLAY.seat.kind === 'lie')"), ev(pg, "JSON.stringify(PLAY.seat && { x: PLAY.seat.x, y: PLAY.seat.y, eye: PLAY.seat.eye })"))
         shot(pg, 'bungalow_vom_bett')
-        if ev(pg, "!!(window.AVATAR && AVATAR.ready)"):
-            ev(pg, "CAM3.want = true; GAME.P.pitch = -12; GAME.step(0.8)")
-            shot(pg, 'bungalow_bett_dritte_person')
-            ev(pg, "CAM3.want = false")
         ev(pg, "PLAY.stand(true); GAME.step(0.6)")
         ev(pg, "(() => { const a = PLAY.acts().find(a => a.id === 'seat:garten:sofa'); a.run(); GAME.step(1.2); })()")
         ck('sitting on the sofa', ev(pg, "!!(PLAY.seat && PLAY.seat.kind === 'sit')"))
