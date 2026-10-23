@@ -104,6 +104,11 @@ export const LIFE = (() => {
     const a = c.az * D2R;
     yield* go(w, [[c.x + Math.cos(a) * 0.6, c.y - Math.sin(a) * 0.6]]); // beside the seat (on the sitter's right)
     yield* turn(w, a);
+    // the visitor sits there: he waits beside it
+    while (PLAY.seat && Math.hypot(PLAY.seat.x - c.x, PLAY.seat.y - c.y) < 0.5) {
+      stand(w);
+      yield;
+    }
     w.x = c.x;
     w.y = c.y;
     w.az = a;
@@ -1278,6 +1283,17 @@ export const LIFE = (() => {
     if (m >= 6 * 60 && m < 21 * 60 && HOFCAR.open < 1 && AG.hubert.cur === 'car') HOFCAR.bonnet(1);
   }
   window.TICKS.push(tick);
+  // the visitor may sit down at Hubert's table too (a free chair): to listen to the two, or to wait for them
+  HOF.chairs.forEach((c, i) =>
+    PLAY.act({
+      id: 'seat:hof' + i,
+      r: 1.3,
+      prio: -0.1,
+      pos: [c.x, c.y, c.seat],
+      label: () => (PLAY.seat || H.seated === c || R.seated === c ? null : 'Auf den Stuhl setzen'),
+      run: () => PLAY.sit({ x: c.x, y: c.y, eye: c.seat + 0.78, yaw: c.az, pitch: -4, kind: 'sit' }),
+    })
+  );
   // while Hubert sits on his bench, the visitor cannot sit down on him (the seat of game/home.js)
   {
     const b = PLAY.acts().find(a => a.id === 'seat:hubertbench');

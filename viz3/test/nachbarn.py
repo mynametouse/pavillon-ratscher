@@ -59,6 +59,7 @@ with lib.browser() as b:
         view(-17.4, -9.8, 1.7, 180, -10, 60); shot('car_front_bonnet')
         view(-14.8, 12.0, 1.7, -105, -12, 60); shot('wood_yard')
         view(-16.4, -4.2, 1.5, -110, -10, 60); shot('table_chairs')
+        lbl = E("__N.go('seat:hof1', 1.0)"); ck('a free chair at the table to sit on', lbl == 'Auf den Stuhl setzen', lbl)
         view(-23.0, 1.0, 1.7, -78, -6, 70); shot('inside_workshop')
         E("(() => { const P = GAME.P; P.mode = 'top'; P.tx = -22; P.ty = 2; P.th = 52; document.body.dataset.mode = 'top'; GAME.step(0.05); })()"); shot('top_yard')
         E(f"(() => {{ const P = GAME.P; P.mode = 'top'; P.tx = {(pad['x0'] + pad['x1']) / 2}; P.ty = {(pad['y0'] + pad['y1']) / 2 + 6}; P.th = 46; document.body.dataset.mode = 'top'; GAME.step(0.05); }})()"); shot('top_paddock')
