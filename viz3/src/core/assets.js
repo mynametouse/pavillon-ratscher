@@ -472,6 +472,7 @@ export const TEX2 = (() => {
     const url = BASE + 'tex2/' + (S.half ? 'h/' : '') + stem + '.ktx2',
       key = 'ktx2:' + stem;
     let over = false;
+    if (!S.t0) S.t0 = Math.round(performance.now());
     LM.itemStart(key);
     const w = {
       bad: why => {
@@ -513,6 +514,7 @@ export const TEX2 = (() => {
               S.n++;
               S.ms += performance.now() - a;
               S.last = Math.round(performance.now());
+              if (!S.t1) S.t1 = S.last;
               const f = NAMES[ct.format] || String(ct.format);
               S.fmt[f] = (S.fmt[f] || 0) + 1;
               S.mb += mips.reduce((s, m) => s + m.data.byteLength, 0) / 1e6;
