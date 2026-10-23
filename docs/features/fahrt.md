@@ -60,6 +60,15 @@ Soll sie ein gewöhnliches Website-Asset werden: nach `gh-pages` `geo/terrain.b6
 Extra löschen. Neu bauen: `python3 -I viz3/extra/fahrt/innen.py <veröffentlichtes geo/> viz3/manifests.json` (nicht `viz3/dist/geo`, dort
 liegt nach dem Bau schon diese Datei – das Skript erkennt sie an ihrer Marke und bricht ab).
 
+Die Längsprofile draußen hält `strecke.py` an den Rändern am inneren Gelände fest; es liest es aus `viz3/dist/geo/terrain.b64.json`,
+also nach dem Bau das nachgebesserte. Reihenfolge beim Neubauen: `innen.py` → bauen (`build.py` legt das Extra nach `dist/geo/`) →
+`strecke.py` (sonst eine Stufe am Rand: die Nachbesserung hatte die Übergänge um bis 1,4 m verschoben).
+**Brückenköpfe im Quadrat**: `world/roads.js` setzt das Ende einer Brückenplatte auf das höchste Gelände quer über ihre Breite + 8 cm –
+0,1 bis 0,5 m über der Straße davor (14 von 16 Enden der 8 Brücken im Quadrat). Räder und Füße rollen dort über die letzten 5 m eine
+Rampe hinauf (`KERN.ground` in `welt/fahrt.js`, nur im Quadrat, nie auf einer Platte); die gezeichnete Straße bleibt, an der Kante liegen
+die Räder also bis zur Stufenhöhe darüber. Sauberer wäre in `world/roads.js` (`endZ`) die Höhe der Straßenmitte + 2 cm statt des
+Höchsten quer + 8 cm – das ist die Datei des Kern-Chats.
+
 **Zonen mit eigenen Straßen** (Kern-Chat 23.10. 14:05): Kloster Veßra behandelt seine Straßen selbst (Straßenkappe, Böschungen, der Hof
 der Baumschule; Häuser stehen auf `VESSRA.gz`). Dort bleibt das Einschneiden der Fahrt draußen – es blendet über die 100 m vor dem
 Quadrat der Zone (`VESSRA.ORT` ± 650 m) aus, die Brückenplatten der Fahrt dort entfallen; am Rand der Zone ist ihre Anpassung null, das

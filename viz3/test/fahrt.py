@@ -248,7 +248,8 @@ with lib.browser() as b:
         ck('smooth: few hard bumps (> 8 m/s² vertical)', r['n'] > 0 and r['az8'] / max(1, r['n']) < 0.01, f"{r['az8']} of {r['n']} frames, max {r['azMax']} at {r['azAt']}; worst {r['bumps'][:8]}")
         ck('place-name sign Schleusingen on the way', 'Schleusingen' in signs, str(sorted(signs)))
         ck('place names on the way', any('Schleusingen' in p for p in places), str(sorted(p for p in places if p)[:14]))
-        E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })")
+        # stand: the handbrake – the brake key reverses once the car stands (vehicles/vehicle.js), held 2 s it drove the car backwards
+        E("VEH.auto = () => ({ thr: 0, brk: 0, steer: 0, hand: true })")
         chunk(2)
         E("VEH.auto = null")
         shot('d_markt')
@@ -495,7 +496,10 @@ with lib.browser() as b:
             if phase == 2 and into:
                 G, u, w = B['G'], B['u'], B['w']
                 tgt = [G[0] + w[0] * 7, G[1] + w[1] * 7]
-                E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })")
+                # stand with the handbrake (the follower has stopped the car in the yard): holding the brake key reversed it 6.8 m back
+                # onto the Schulstraße (vehicles/vehicle.js: the brake key reverses once the car stands) – that was the red yard check of
+                # V16q and CI 11, a fault of this test, not of the drive
+                E("VEH.auto = () => ({ thr: 0, brk: 0, steer: 0, hand: true })")
                 chunk(1.5)
                 E("VEH.auto = null")
                 chunk(1)
