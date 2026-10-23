@@ -166,6 +166,8 @@ Bild neu gerechnet wird (nur der Anker beim Tragen).
 ### Runde 2 (Meilensteine 2 und 3)
 
 - **Grüne Stände** (neueste oben):
+  - `70a6ae7` (Takt über `KERN.tick`, Auto am Tor der Baumschule zählt): GitHub-Lauf 39950905149 grün – smoke, `gartenplaner:phone`
+    52/52, `gartenplaner_kammbach` 17/17.
   - `f3fed7d` (mit `src` 4c9fed2 und `feat/vessra` 3f3fbe7 zusammengeführt): GitHub-Lauf 39947562995 grün – smoke,
     `gartenplaner:phone` 52/52 (Pflanzen Schritt für Schritt, Gießen, Zeitraffer, Ernte, Schneiden, Draufsicht, Neuladen v 2, Telefon),
     `gartenplaner_kammbach` 17/17 (Töpfe in den Stellplätzen, keine neuen Shader 151 → 151, Aussuchen, Kassenzettel, Liefern lassen,
