@@ -499,6 +499,7 @@ export const FAHRT = (() => {
         if (at && S.arrived !== at) {
           S.arrived = at;
           PLAY.think(at, 3200);
+          KERN.emit('fahrt:ankunft', { ziel: at.startsWith('Markt') ? 'markt' : 'baumschule', x: s.x, y: s.y });
         }
       } else if (S.arrived && sp > 8) S.arrived = null;
       if (cap < sp - 0.5 && performance.now() - (S.msgT || 0) > 5000) {
@@ -1056,6 +1057,15 @@ export const FAHRT = (() => {
       return best;
     };
   }
+  // ---------------- start situation: ?szenario=fahrt – in the car on the L 3004, 160 m before the place-name sign of Schleusingen ----------------
+  KERN.scenario('fahrt', {
+    label: 'Im Auto auf der Straße nach Schleusingen',
+    order: 31,
+    run: () => {
+      VEH.place('car', -262.0, 713.1, -1.2966);
+      VEH.enter('car');
+    },
+  });
   // ---------------- tests and the error report ----------------
   S.status = () => ({
     on: S.on,
