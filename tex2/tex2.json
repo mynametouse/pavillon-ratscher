@@ -1,7 +1,7 @@
 {
  "v": 1,
  "ktx": "4.4.2",
- "made": "2026-10-23 10:36",
+ "made": "2026-10-23 12:18",
  "files": {
   "asphalt_col": {
    "src": "asphalt_col.webp",
@@ -1024,6 +1024,3248 @@
    "size": [
     1073046,
     299529
+   ]
+  }
+ },
+ "gltf": {
+  "109ac22bf83e3": {
+   "src": "models/island_tree_02.glb.json#8",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    107165,
+    46184
+   ]
+  },
+  "11494f8559e96": {
+   "src": "models/garden_hose_wall_mounted_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    257465,
+    67993
+   ]
+  },
+  "117b869556460": {
+   "src": "chars/player_f.json#3",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    598247,
+    179827
+   ]
+  },
+  "118287cbafc3d": {
+   "src": "models/wicker_basket_02.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    99938,
+    29749
+   ]
+  },
+  "11f08180eb172": {
+   "src": "models/fir_tree_01.glb.json#4",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    577278,
+    178534
+   ]
+  },
+  "11ff002a9d0bd": {
+   "src": "chars/tractor.json#5",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    648645,
+    197248
+   ]
+  },
+  "120c491327b89": {
+   "src": "models/potted_plant_02.glb.json#2",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    505213,
+    153466
+   ]
+  },
+  "123ecabfa80cf": {
+   "src": "chars/tractor.json#8",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    628077,
+    201185
+   ]
+  },
+  "12734075a08f9": {
+   "src": "models/painted_wooden_chair_01.glb.json#2",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    641345,
+    193973
+   ]
+  },
+  "12c186ef2cef1": {
+   "src": "models/vintage_hand_drill.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    272150,
+    73835
+   ]
+  },
+  "135a046915969": {
+   "src": "models/painted_wooden_chair_01.glb.json#0",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    516509,
+    162429
+   ]
+  },
+  "13eb8f9ce9039": {
+   "src": "models/modern_arm_chair_01.glb.json#1",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    186809,
+    70797
+   ]
+  },
+  "13f64f463d600": {
+   "src": "grass/grass.glb.json#0",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    69666,
+    23970
+   ]
+  },
+  "14820ebc7374c": {
+   "src": "models/vintage_hand_drill.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    286937,
+    79510
+   ]
+  },
+  "14b84797b6d2e": {
+   "src": "models/modern_arm_chair_01.glb.json#2",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    603512,
+    169652
+   ]
+  },
+  "14d307c9b2af4": {
+   "src": "models/island_tree_02.glb.json#4",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    585489,
+    179630
+   ]
+  },
+  "150b800643ccf": {
+   "src": "models/handsaw_wood.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    262768,
+    72811
+   ]
+  },
+  "15468dbbbb0fd": {
+   "src": "models/metal_jerrycan.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    283108,
+    74811
+   ]
+  },
+  "15470d842eaff": {
+   "src": "models/potted_plant_04.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    230839,
+    64120
+   ]
+  },
+  "165f0525c045b": {
+   "src": "models/fern_02.glb.json#2",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    72744,
+    27249
+   ]
+  },
+  "166d0b4dd0eae": {
+   "src": "chars/ronald.json#6",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    48585,
+    16831
+   ]
+  },
+  "16f109e2bea8a": {
+   "src": "chars/dorf_katrin.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    192980,
+    73144
+   ]
+  },
+  "16f70e0c89777": {
+   "src": "models/potted_plant_02.glb.json#1",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    202455,
+    82961
+   ]
+  },
+  "17814913d3d87": {
+   "src": "chars/ronald_rb.json#1",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    676592,
+    207625
+   ]
+  },
+  "1783079c891c6": {
+   "src": "chars/player_christoph.json#1",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    672050,
+    207301
+   ]
+  },
+  "17e2814204d0d": {
+   "src": "models/island_tree_02.glb.json#5",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    308119,
+    81946
+   ]
+  },
+  "187a09e0dfb51": {
+   "src": "chars/player_sarah.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    195113,
+    73116
+   ]
+  },
+  "18af00cee7156": {
+   "src": "chars/ronald.json#19",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    60848,
+    21826
+   ]
+  },
+  "18c44eb266543": {
+   "src": "models/fir_tree_01.glb.json#5",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    257711,
+    68522
+   ]
+  },
+  "18e2c4842fd03": {
+   "src": "chars/dorf_uwe.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    179888,
+    68708
+   ]
+  },
+  "191841a06b461": {
+   "src": "chars/player_f.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    198301,
+    77976
+   ]
+  },
+  "193c02a93ce5c": {
+   "src": "models/grass_medium_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    297841,
+    79029
+   ]
+  },
+  "19a783d65f31a": {
+   "src": "chars/player_sarah.json#5",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    203100,
+    77884
+   ]
+  },
+  "19bf80fa00d39": {
+   "src": "chars/dorf_heike.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    195564,
+    72526
+   ]
+  },
+  "1a0f0526cd788": {
+   "src": "chars/dorf_manfred.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    189392,
+    73194
+   ]
+  },
+  "1a2ecaa9538f1": {
+   "src": "chars/dorf_jens.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    182248,
+    69053
+   ]
+  },
+  "1a968656ec33c": {
+   "src": "chars/tractor.json#11",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    744500,
+    224694
+   ]
+  },
+  "1af04fd3d17ce": {
+   "src": "models/island_tree_02.glb.json#2",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    714448,
+    205710
+   ]
+  },
+  "1af435ae78c1": {
+   "src": "models/measuring_tape_01.glb.json#1",
+   "role": "col",
+   "w": 256,
+   "h": 256,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    14437,
+    5953
+   ]
+  },
+  "1b88091204648": {
+   "src": "chars/ronald_rb.json#3",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    655864,
+    164837
+   ]
+  },
+  "1bbe49263be17": {
+   "src": "models/painted_wooden_chair_01.glb.json#1",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    191507,
+    67522
+   ]
+  },
+  "1bdccade16e00": {
+   "src": "chars/player_christoph.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    189331,
+    69392
+   ]
+  },
+  "1c1188eb190ac": {
+   "src": "models/fir_tree_01.glb.json#7",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    742691,
+    214349
+   ]
+  },
+  "1c1b03f635863": {
+   "src": "models/wicker_basket_02.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    313932,
+    81559
+   ]
+  },
+  "1c42815679be5": {
+   "src": "chars/player_m.json#1",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    746094,
+    222067
+   ]
+  },
+  "1c704d51c3c95": {
+   "src": "chars/tractor.json#2",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    679316,
+    196638
+   ]
+  },
+  "1caec1a7b413f": {
+   "src": "chars/hubert_rb.json#1",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    734513,
+    213356
+   ]
+  },
+  "1cb708d656d8e": {
+   "src": "chars/tractor.json#3",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    184260,
+    66365
+   ]
+  },
+  "1cd44d7e49bd1": {
+   "src": "chars/player_christoph.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    186650,
+    70026
+   ]
+  },
+  "1d08c2e9f5046": {
+   "src": "models/island_tree_02.glb.json#6",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    240882,
+    90597
+   ]
+  },
+  "1d2c499056d28": {
+   "src": "models/side_table_01.glb.json#1",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    221425,
+    85618
+   ]
+  },
+  "1d5b032c51816": {
+   "src": "models/modern_arm_chair_01.glb.json#0",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    695015,
+    199151
+   ]
+  },
+  "1d5b46cd94610": {
+   "src": "chars/hubert_rb.json#3",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    667099,
+    164444
+   ]
+  },
+  "1dc8ce62ed6f9": {
+   "src": "chars/player_f.json#1",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    778197,
+    234862
+   ]
+  },
+  "1e0c0d7b1adea": {
+   "src": "models/dandelion_01.glb.json#2",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    109970,
+    41197
+   ]
+  },
+  "1ec3cab565dce": {
+   "src": "chars/goat.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    219130,
+    89157
+   ]
+  },
+  "1ed585266a429": {
+   "src": "models/fir_tree_01.glb.json#2",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    732435,
+    216431
+   ]
+  },
+  "1f7d4e8ff9bb9": {
+   "src": "models/island_tree_02.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    319403,
+    82439
+   ]
+  },
+  "202b08035c006": {
+   "src": "chars/dorf_katrin.json#4",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    96450,
+    32459
+   ]
+  },
+  "210d4b2a189cd": {
+   "src": "models/tree_stump_02.glb.json#2",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    771282,
+    221348
+   ]
+  },
+  "210e0ebb1d710": {
+   "src": "chars/dorf_wolfgang.json#4",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    111129,
+    37948
+   ]
+  },
+  "216447a26377d": {
+   "src": "grass/flower_blue.glb.json#2",
+   "role": "col",
+   "w": 244,
+   "h": 156,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    18089,
+    0
+   ]
+  },
+  "21790aa602044": {
+   "src": "models/fir_tree_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    321321,
+    81451
+   ]
+  },
+  "21b8e6451e53": {
+   "src": "models/rubber_boots.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    75859,
+    27296
+   ]
+  },
+  "21c4c271b4ab9": {
+   "src": "chars/dorf_gerhard.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    191406,
+    73814
+   ]
+  },
+  "2259c3e321c61": {
+   "src": "chars/hubert_rb.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    191651,
+    74786
+   ]
+  },
+  "226540f25c37c": {
+   "src": "chars/tractor.json#9",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    210121,
+    80584
+   ]
+  },
+  "229bc6885e98c": {
+   "src": "chars/dorf_jens.json#4",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    107188,
+    36255
+   ]
+  },
+  "22d85d70aff9": {
+   "src": "models/wooden_lantern_01.glb.json#4",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    36666,
+    13649
+   ]
+  },
+  "22e083951a2b1": {
+   "src": "chars/ronald.json#14",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    197908,
+    76689
+   ]
+  },
+  "22e302821a242": {
+   "src": "chars/player_f.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    211882,
+    79532
+   ]
+  },
+  "22f8835456c6f": {
+   "src": "chars/dorf_wolfgang.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    192678,
+    74471
+   ]
+  },
+  "23710d35ff40a": {
+   "src": "chars/ronald_rb.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    192082,
+    73224
+   ]
+  },
+  "23908feeb136e": {
+   "src": "chars/player_m.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    189868,
+    74386
+   ]
+  },
+  "23d8612eb73a": {
+   "src": "chars/dorf_ingrid.json#5",
+   "role": "col",
+   "w": 256,
+   "h": 256,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    10472,
+    4896
+   ]
+  },
+  "2410076d390b1": {
+   "src": "chars/tractor.json#6",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    212043,
+    82127
+   ]
+  },
+  "25268ba0e9624": {
+   "src": "chars/player_christoph.json#3",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    718520,
+    198009
+   ]
+  },
+  "25e30f94d9c8f": {
+   "src": "models/tree_stump_01.glb.json#2",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    824615,
+    240354
+   ]
+  },
+  "25fcb3a4a20a": {
+   "src": "models/ladder_sectioned_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    115755,
+    36521
+   ]
+  },
+  "2670c6aa7a46b": {
+   "src": "chars/dorf_heike.json#4",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    106573,
+    35205
+   ]
+  },
+  "2678a00939a6": {
+   "src": "chars/ronald.json#10",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    148482,
+    46536
+   ]
+  },
+  "26ba430c1bfe2": {
+   "src": "models/tree_stump_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    323894,
+    83016
+   ]
+  },
+  "273056cfd62e": {
+   "src": "models/grass_medium_02.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    68207,
+    25679
+   ]
+  },
+  "27af05cf1c621": {
+   "src": "models/fir_tree_01.glb.json#6",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    236128,
+    92412
+   ]
+  },
+  "27c4debd8cd4": {
+   "src": "chars/ronald.json#5",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    108019,
+    38507
+   ]
+  },
+  "281f4276077d0": {
+   "src": "chars/goat.json#2",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    777195,
+    211789
+   ]
+  },
+  "2a2e406f31ddb": {
+   "src": "models/potted_plant_02.glb.json#5",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    241789,
+    102259
+   ]
+  },
+  "2b74b988b882": {
+   "src": "models/rubber_boots.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    98797,
+    32902
+   ]
+  },
+  "2c5a02db13c3e": {
+   "src": "chars/dorf_ingrid.json#2",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    234518,
+    90085
+   ]
+  },
+  "2d0c7ce35994": {
+   "src": "chars/dorf_jens.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    116434,
+    37371
+   ]
+  },
+  "2e40dec8a0ff": {
+   "src": "models/measuring_tape_01.glb.json#2",
+   "role": "orm",
+   "w": 256,
+   "h": 256,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    55128,
+    16502
+   ]
+  },
+  "2f334933bc5cb": {
+   "src": "chars/tractor.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    235295,
+    91327
+   ]
+  },
+  "301cbd6ab6be": {
+   "src": "models/grass_medium_02.glb.json#1",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    127624,
+    42517
+   ]
+  },
+  "304c8fec9ec5": {
+   "src": "models/rubber_boots.glb.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    103339,
+    34062
+   ]
+  },
+  "30774ec8730d0": {
+   "src": "models/grass_medium_01.glb.json#2",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    126592,
+    44620
+   ]
+  },
+  "309e4b87dcb22": {
+   "src": "chars/player_m.json#3",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    747682,
+    202168
+   ]
+  },
+  "30d38196cca92": {
+   "src": "models/fir_tree_01.glb.json#8",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    205084,
+    82057
+   ]
+  },
+  "31509cc73154": {
+   "src": "models/measuring_tape_01.glb.json#0",
+   "role": "nrm",
+   "w": 256,
+   "h": 256,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    44475,
+    14520
+   ]
+  },
+  "32c0e793f990": {
+   "src": "models/ceramic_vase_04.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    43329,
+    15983
+   ]
+  },
+  "330a45c664c89": {
+   "src": "chars/hubert_rb.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    242756,
+    93728
+   ]
+  },
+  "334387b242900": {
+   "src": "models/island_tree_02.glb.json#1",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    246546,
+    94089
+   ]
+  },
+  "3390a3ccd1a1": {
+   "src": "models/rubber_boots.glb.json#4",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    38118,
+    13840
+   ]
+  },
+  "358489d3a8845": {
+   "src": "chars/tractor.json#7",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    1025496,
+    279225
+   ]
+  },
+  "35fb077991395": {
+   "src": "chars/player_m.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    242389,
+    94886
+   ]
+  },
+  "37218ac388445": {
+   "src": "chars/dorf_ingrid.json#4",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    130493,
+    45890
+   ]
+  },
+  "38188f26cd0f": {
+   "src": "chars/ronald.json#9",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    95834,
+    29509
+   ]
+  },
+  "388a8559651ca": {
+   "src": "chars/tractor.json#10",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    1039185,
+    280825
+   ]
+  },
+  "389423120774": {
+   "src": "models/modern_arm_chair_01.glb.json#4",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    56566,
+    20850
+   ]
+  },
+  "39d8be4ca34e": {
+   "src": "models/book_encyclopedia_set_01.glb.json#4",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    37179,
+    14436
+   ]
+  },
+  "3b0c315a708b": {
+   "src": "chars/dorf_manfred.json#1",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    136420,
+    41754
+   ]
+  },
+  "3b5849335601": {
+   "src": "chars/ronald.json#2",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    133377,
+    46511
+   ]
+  },
+  "3b98d6c31a24": {
+   "src": "models/Barrel_02.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    34227,
+    12805
+   ]
+  },
+  "3c494eb304a2b": {
+   "src": "models/fir_tree_01.glb.json#1",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    241584,
+    91810
+   ]
+  },
+  "3e0ce64d93c5": {
+   "src": "chars/dorf_wolfgang.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    140645,
+    44073
+   ]
+  },
+  "3e78e1a32af9": {
+   "src": "models/garden_hose_wall_mounted_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    122695,
+    39970
+   ]
+  },
+  "3f70a41f2835": {
+   "src": "chars/dorf_ingrid.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    158437,
+    49118
+   ]
+  },
+  "3fe8d100d244": {
+   "src": "models/wooden_lantern_01.glb.json#5",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    171494,
+    53421
+   ]
+  },
+  "4130f98b897a": {
+   "src": "chars/dorf_heike.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    153587,
+    47159
+   ]
+  },
+  "43a38372a5e12": {
+   "src": "chars/tractor.json#1",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    1055368,
+    267616
+   ]
+  },
+  "45a18544a5fb5": {
+   "src": "models/tree_stump_02.glb.json#1",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    263119,
+    98453
+   ]
+  },
+  "45ad061af916e": {
+   "src": "chars/tractor.json#4",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    1117803,
+    275104
+   ]
+  },
+  "4681174eedf": {
+   "src": "models/book_encyclopedia_set_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    5820,
+    3244
+   ]
+  },
+  "4724897a7e2ba": {
+   "src": "models/tree_stump_01.glb.json#1",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    269899,
+    100703
+   ]
+  },
+  "48302f7b5733": {
+   "src": "chars/player_sarah.json#4",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    15332,
+    6884
+   ]
+  },
+  "489806d70953": {
+   "src": "models/ceramic_vase_04.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    134725,
+    41517
+   ]
+  },
+  "4a38a1682bee": {
+   "src": "chars/dorf_katrin.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    165985,
+    51759
+   ]
+  },
+  "4abf81343b9d4": {
+   "src": "models/dead_tree_trunk.glb.json#1",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    238472,
+    90857
+   ]
+  },
+  "4c183e452de0": {
+   "src": "models/wooden_hammer_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    140920,
+    45881
+   ]
+  },
+  "4df8e6665575": {
+   "src": "models/compost_bags.glb.json#0",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    49266,
+    17898
+   ]
+  },
+  "516411b565bc": {
+   "src": "models/sledgehammer_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    124942,
+    40860
+   ]
+  },
+  "5298caeb3065": {
+   "src": "chars/dorf_uwe.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    150964,
+    43679
+   ]
+  },
+  "52ca4285ff99f": {
+   "src": "chars/ronald.json#17",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    236396,
+    84958
+   ]
+  },
+  "5324718d6fbc": {
+   "src": "chars/ronald.json#16",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    154451,
+    51116
+   ]
+  },
+  "53c48cb27823": {
+   "src": "models/Barrel_02.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    152701,
+    47678
+   ]
+  },
+  "55a012383a8c": {
+   "src": "chars/ronald.json#8",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    43126,
+    15880
+   ]
+  },
+  "56104c8a5a92": {
+   "src": "models/book_encyclopedia_set_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    50255,
+    17655
+   ]
+  },
+  "56bc39a028ba": {
+   "src": "models/dandelion_01.glb.json#1",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    165518,
+    49701
+   ]
+  },
+  "56f829074a0c": {
+   "src": "models/potted_plant_02.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    100248,
+    32719
+   ]
+  },
+  "58e4d16327e2": {
+   "src": "models/Drill_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    42010,
+    16580
+   ]
+  },
+  "5a4498bc7eef": {
+   "src": "models/rubber_boots.glb.json#5",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    149180,
+    46624
+   ]
+  },
+  "5a880f64d4bc": {
+   "src": "models/fern_02.glb.json#1",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    94886,
+    29077
+   ]
+  },
+  "5c3a4aafb7408": {
+   "src": "models/dead_tree_trunk.glb.json#2",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    820968,
+    235157
+   ]
+  },
+  "5cc8e466dbf2": {
+   "src": "chars/dorf_gerhard.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    157372,
+    43922
+   ]
+  },
+  "5d382327ba90": {
+   "src": "models/painted_wooden_bench.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    60957,
+    21206
+   ]
+  },
+  "5e288ab6db2e": {
+   "src": "models/wooden_bowl_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    127204,
+    39753
+   ]
+  },
+  "60841e67f17b": {
+   "src": "models/wooden_bowl_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    53711,
+    18481
+   ]
+  },
+  "60c836dcf9cd": {
+   "src": "chars/dorf_jens.json#0",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    56492,
+    21555
+   ]
+  },
+  "61182d672433": {
+   "src": "models/ceramic_vase_04.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    191782,
+    59709
+   ]
+  },
+  "611ccf42da72": {
+   "src": "models/painted_wooden_bench.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    176211,
+    50396
+   ]
+  },
+  "617075091140": {
+   "src": "models/wooden_hammer_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    68626,
+    23280
+   ]
+  },
+  "64a8efee448b": {
+   "src": "chars/dorf_gerhard.json#1",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    188875,
+    59265
+   ]
+  },
+  "64e8c68abf8c": {
+   "src": "models/book_encyclopedia_set_01.glb.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    126093,
+    37339
+   ]
+  },
+  "650cc33dcd454": {
+   "src": "chars/ronald_rb.json#4",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    265721,
+    110941
+   ]
+  },
+  "6624cf09488a": {
+   "src": "models/fern_02.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    136320,
+    45863
+   ]
+  },
+  "67b867f5b1ba": {
+   "src": "models/island_tree_02.glb.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    195919,
+    61220
+   ]
+  },
+  "68d4086e9f6a": {
+   "src": "chars/dorf_ingrid.json#0",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    60415,
+    20989
+   ]
+  },
+  "6914c6ff7c53b": {
+   "src": "chars/player_f.json#4",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    247688,
+    106786
+   ]
+  },
+  "69889db92e1a": {
+   "src": "models/metal_tool_chest.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    55808,
+    19385
+   ]
+  },
+  "6a68ce601b84": {
+   "src": "chars/ronald.json#1",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    154106,
+    43956
+   ]
+  },
+  "6bcc85826a18f": {
+   "src": "chars/ronald.json#22",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    237722,
+    90179
+   ]
+  },
+  "6f3c981d4862": {
+   "src": "chars/dorf_ingrid.json#1",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    199471,
+    62994
+   ]
+  },
+  "720c2b33947d": {
+   "src": "models/modern_arm_chair_01.glb.json#5",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    339104,
+    112659
+   ]
+  },
+  "724473153b38": {
+   "src": "models/potted_plant_04.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    180791,
+    55125
+   ]
+  },
+  "72ecbc686cc8": {
+   "src": "models/outdoor_table_chair_set_01.glb.json#4",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    63410,
+    21175
+   ]
+  },
+  "75103eb69cd2": {
+   "src": "models/outdoor_table_chair_set_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    61922,
+    20550
+   ]
+  },
+  "757095b72864": {
+   "src": "chars/dorf_heike.json#1",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    203232,
+    63364
+   ]
+  },
+  "7730287fc3b6": {
+   "src": "chars/dorf_uwe.json#1",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    198577,
+    61661
+   ]
+  },
+  "7c1cf1b1e92f": {
+   "src": "models/metal_jerrycan.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    64531,
+    21508
+   ]
+  },
+  "7c7cf5d1c1be": {
+   "src": "chars/dorf_heike.json#0",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    63011,
+    22710
+   ]
+  },
+  "7e382314fb17": {
+   "src": "chars/dorf_jens.json#1",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    204203,
+    64325
+   ]
+  },
+  "7f8910393c5": {
+   "src": "models/wooden_lantern_01.glb.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    18215,
+    8827
+   ]
+  },
+  "81e0f0c3612d": {
+   "src": "chars/dorf_manfred.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    206904,
+    63333
+   ]
+  },
+  "8278d6634b37": {
+   "src": "models/metal_tool_chest.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    169862,
+    52713
+   ]
+  },
+  "829042973d52": {
+   "src": "chars/dorf_katrin.json#0",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    70415,
+    23893
+   ]
+  },
+  "853ccd95c8c7": {
+   "src": "chars/dorf_wolfgang.json#0",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    64761,
+    23662
+   ]
+  },
+  "86c390c04fa": {
+   "src": "chars/goat.json#1",
+   "role": "orm",
+   "w": 64,
+   "h": 64,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    5407,
+    0
+   ]
+  },
+  "87104d12cc77": {
+   "src": "models/ladder_sectioned_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    47686,
+    16139
+   ]
+  },
+  "87b03e44955a": {
+   "src": "models/sledgehammer_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    205194,
+    60522
+   ]
+  },
+  "87f8ba36967b": {
+   "src": "models/rusted_spade_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    191772,
+    54529
+   ]
+  },
+  "8914e69fcce7": {
+   "src": "models/book_encyclopedia_set_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    190359,
+    54652
+   ]
+  },
+  "8918bbb10f72": {
+   "src": "chars/dorf_wolfgang.json#1",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    219547,
+    66794
+   ]
+  },
+  "896812c97848": {
+   "src": "chars/ronald.json#23",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    204964,
+    63298
+   ]
+  },
+  "89d886e525fa": {
+   "src": "models/plastic_crate_02.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    60926,
+    20713
+   ]
+  },
+  "8b0cfbf80249": {
+   "src": "models/wooden_axe_03.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    79207,
+    25986
+   ]
+  },
+  "8c8807f3ea61": {
+   "src": "chars/ronald.json#7",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    102879,
+    31955
+   ]
+  },
+  "8ce4456f6080": {
+   "src": "models/old_tyre.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    196032,
+    53990
+   ]
+  },
+  "8d50dc06b652": {
+   "src": "chars/dorf_manfred.json#2",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    67574,
+    23950
+   ]
+  },
+  "8dc870398f1f": {
+   "src": "chars/dorf_katrin.json#1",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    218774,
+    66990
+   ]
+  },
+  "8de4d9319114": {
+   "src": "models/painted_wooden_bench.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    213321,
+    56678
+   ]
+  },
+  "8e708013f945": {
+   "src": "chars/ronald.json#18",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    210660,
+    64776
+   ]
+  },
+  "8eb87ee8aeed": {
+   "src": "models/Ukulele_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    205415,
+    59735
+   ]
+  },
+  "8fb02e776779": {
+   "src": "models/compost_bags.glb.json#2",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    65268,
+    21041
+   ]
+  },
+  "9238c63175183": {
+   "src": "chars/player_sarah.json#6",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    304594,
+    127498
+   ]
+  },
+  "92538c64684ad": {
+   "src": "models/tree_stump_02.glb.json#0",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    1294029,
+    327003
+   ]
+  },
+  "92a88f0cc3b0": {
+   "src": "models/sledgehammer_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    76993,
+    24013
+   ]
+  },
+  "9378071efcd3": {
+   "src": "models/plastic_crate_02.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    200952,
+    58092
+   ]
+  },
+  "93b069258925": {
+   "src": "models/screwdrivers_02.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    212078,
+    61877
+   ]
+  },
+  "9644128cd1c5": {
+   "src": "models/wicker_basket_02.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    220705,
+    62558
+   ]
+  },
+  "967037fb3e2c": {
+   "src": "models/Ukulele_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    193028,
+    57949
+   ]
+  },
+  "9688a803a55f": {
+   "src": "models/Drill_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    207882,
+    63160
+   ]
+  },
+  "970c8f3528fd": {
+   "src": "models/potted_plant_02.glb.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    226635,
+    69529
+   ]
+  },
+  "98a459558e20": {
+   "src": "models/hand_plane_no4.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    80380,
+    25770
+   ]
+  },
+  "9b55091a46ec3": {
+   "src": "models/dead_tree_trunk.glb.json#0",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    1215164,
+    318088
+   ]
+  },
+  "9cccc297df6f": {
+   "src": "models/outdoor_table_chair_set_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    207134,
+    60700
+   ]
+  },
+  "9d44fe05ff49": {
+   "src": "chars/ronald.json#21",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    56035,
+    18985
+   ]
+  },
+  "9d589603de5b": {
+   "src": "models/bench_vice_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    237490,
+    71054
+   ]
+  },
+  "9dfc1b9ed390": {
+   "src": "models/wooden_lantern_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    84572,
+    26550
+   ]
+  },
+  "9ee8198f3340": {
+   "src": "models/wooden_bowl_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    175326,
+    46210
+   ]
+  },
+  "9f58361465ae": {
+   "src": "models/outdoor_table_chair_set_01.glb.json#5",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    210714,
+    60622
+   ]
+  },
+  "9fa84d1d32d1": {
+   "src": "models/wooden_stool_02.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    209645,
+    60568
+   ]
+  },
+  "a08ca029878c": {
+   "src": "models/rusted_spade_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    83278,
+    26532
+   ]
+  },
+  "a184400bac96": {
+   "src": "models/compost_bags.glb.json#3",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    196123,
+    57335
+   ]
+  },
+  "a1e8f9f87d01": {
+   "src": "models/Drill_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    207881,
+    62623
+   ]
+  },
+  "a2d433216945": {
+   "src": "chars/dorf_gerhard.json#0",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    74097,
+    23228
+   ]
+  },
+  "a468e6caf03c": {
+   "src": "models/Ukulele_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    86022,
+    27082
+   ]
+  },
+  "a4744a9076b9": {
+   "src": "models/plastic_crate_02.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    183772,
+    56424
+   ]
+  },
+  "a6506ae59e80": {
+   "src": "chars/dorf_uwe.json#0",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    78037,
+    24873
+   ]
+  },
+  "a6607c17b173": {
+   "src": "models/Barrel_02.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    184581,
+    55630
+   ]
+  },
+  "a674ec34172f": {
+   "src": "models/dandelion_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    205286,
+    61509
+   ]
+  },
+  "a79ca29e5c0e": {
+   "src": "chars/ronald.json#20",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    198170,
+    59752
+   ]
+  },
+  "a898351d1212": {
+   "src": "chars/ronald.json#15",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    196162,
+    54456
+   ]
+  },
+  "aa40397df92f": {
+   "src": "models/wooden_hammer_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    227764,
+    65805
+   ]
+  },
+  "ab0c0b4b31d4": {
+   "src": "models/compost_bags.glb.json#1",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    215758,
+    64121
+   ]
+  },
+  "adb0d09e115a": {
+   "src": "models/screwdrivers_02.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    206915,
+    60349
+   ]
+  },
+  "ae042aac5c26": {
+   "src": "models/wooden_axe_03.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    219557,
+    61249
+   ]
+  },
+  "b08c9326b46b": {
+   "src": "models/side_table_01.glb.json#0",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    267124,
+    91314
+   ]
+  },
+  "b28dc35b97e": {
+   "src": "models/outdoor_table_chair_set_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    40833,
+    17962
+   ]
+  },
+  "b370cc6ad5ab": {
+   "src": "chars/ronald.json#4",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    201438,
+    53129
+   ]
+  },
+  "b3b8d828334d": {
+   "src": "models/wooden_stool_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    226545,
+    66939
+   ]
+  },
+  "b6909aa9e869": {
+   "src": "models/hand_plane_no4.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    234796,
+    68432
+   ]
+  },
+  "b778325c4262": {
+   "src": "models/potted_plant_04.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    76637,
+    24476
+   ]
+  },
+  "b960fa606da5": {
+   "src": "chars/ronald.json#13",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    229767,
+    67719
+   ]
+  },
+  "bb606dc78796": {
+   "src": "chars/ronald.json#3",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    143483,
+    50860
+   ]
+  },
+  "bb88f64ec4f4": {
+   "src": "models/fir_tree_01.glb.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    181873,
+    53316
+   ]
+  },
+  "c2d07ac9b595": {
+   "src": "models/wooden_lantern_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    225545,
+    65872
+   ]
+  },
+  "c2e8d467bc56": {
+   "src": "models/metal_tool_chest.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    220702,
+    63633
+   ]
+  },
+  "c3010cf3aef": {
+   "src": "models/outdoor_table_chair_set_01.glb.json#3",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    46431,
+    19983
+   ]
+  },
+  "c3b8594a8be9": {
+   "src": "models/handsaw_wood.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    203549,
+    58711
+   ]
+  },
+  "c510aa7c94e9": {
+   "src": "models/screwdrivers_02.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    89501,
+    27509
+   ]
+  },
+  "c628fd08a693": {
+   "src": "models/metal_jerrycan.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    243366,
+    67358
+   ]
+  },
+  "c7b8e17d6782": {
+   "src": "models/old_tyre.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    88088,
+    26260
+   ]
+  },
+  "caf42012397a": {
+   "src": "models/old_tyre.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    210605,
+    58178
+   ]
+  },
+  "cd544f0e347b": {
+   "src": "models/modern_arm_chair_01.glb.json#3",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    489894,
+    158746
+   ]
+  },
+  "ced010d1b6a3": {
+   "src": "models/bench_vice_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    80623,
+    25212
+   ]
+  },
+  "cf04ac6ab076": {
+   "src": "models/handsaw_wood.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    90368,
+    26832
+   ]
+  },
+  "cf90a3b5242a": {
+   "src": "models/rusted_spade_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    234701,
+    68243
+   ]
+  },
+  "d0282bf391dd": {
+   "src": "chars/hubert.json#2",
+   "role": "nrm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    432893,
+    142458
+   ]
+  },
+  "d22049758b2f": {
+   "src": "models/grass_medium_01.glb.json#1",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    247168,
+    69363
+   ]
+  },
+  "d3108300f9f3": {
+   "src": "chars/ronald.json#11",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    152897,
+    58590
+   ]
+  },
+  "d350fc22a3ce": {
+   "src": "models/wooden_axe_03.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    247981,
+    69942
+   ]
+  },
+  "d3c428ba1003": {
+   "src": "models/wooden_stool_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    229739,
+    62469
+   ]
+  },
+  "d588534df99a": {
+   "src": "models/wooden_stool_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    94643,
+    28428
+   ]
+  },
+  "d58d51b0ea9": {
+   "src": "chars/hubert.json#1",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    7538,
+    3677
+   ]
+  },
+  "d598e49760ae": {
+   "src": "models/wooden_lantern_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    241455,
+    67839
+   ]
+  },
+  "d7946b108cf4": {
+   "src": "models/side_table_01.glb.json#2",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    525603,
+    152699
+   ]
+  },
+  "d94c65cbd278": {
+   "src": "models/bench_vice_01.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    253374,
+    70087
+   ]
+  },
+  "d9f8d99d9429": {
+   "src": "models/vintage_hand_drill.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    93099,
+    28005
+   ]
+  },
+  "dd287e7b4816": {
+   "src": "models/ladder_sectioned_01.glb.json#2",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    220995,
+    63130
+   ]
+  },
+  "e004f14f568d": {
+   "src": "chars/ronald.json#12",
+   "role": "orm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    235139,
+    65414
+   ]
+  },
+  "e09c17ea8975": {
+   "src": "models/garden_hose_wall_mounted_01.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    89123,
+    24156
+   ]
+  },
+  "e17cd25f66a3": {
+   "src": "models/island_tree_02.glb.json#7",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    582331,
+    170465
+   ]
+  },
+  "e1b03b3d22d9": {
+   "src": "chars/hubert.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    143906,
+    46125
+   ]
+  },
+  "e27060e881d9": {
+   "src": "models/hand_plane_no4.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    253081,
+    69766
+   ]
+  },
+  "e3f040e0533b": {
+   "src": "chars/ronald.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    173696,
+    62438
+   ]
+  },
+  "e7099b1818d": {
+   "src": "models/rubber_boots.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    13752,
+    6059
+   ]
+  },
+  "f28c9581352d": {
+   "src": "models/wooden_stool_02.glb.json#1",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    98615,
+    29546
+   ]
+  },
+  "f444973621aa": {
+   "src": "chars/ronald_rb.json#0",
+   "role": "col",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "fc8dc35f3f44",
+   "size": [
+    158204,
+    57085
+   ]
+  },
+  "f470c5f020b3": {
+   "src": "models/potted_plant_02.glb.json#4",
+   "role": "orm",
+   "w": 1024,
+   "h": 1024,
+   "alpha": false,
+   "recipe": "0a2819531d50",
+   "size": [
+    498765,
+    150964
+   ]
+  },
+  "fac0ee3e7c13": {
+   "src": "models/wooden_stool_02.glb.json#0",
+   "role": "nrm",
+   "w": 512,
+   "h": 512,
+   "alpha": false,
+   "recipe": "a9f78c296ce2",
+   "size": [
+    265057,
+    71797
+   ]
+  },
+  "feac5648c495": {
+   "src": "models/grass_medium_02.glb.json#2",
+   "role": "col",
+   "w": 512,
+   "h": 512,
+   "alpha": true,
+   "recipe": "b22ef9d0262f",
+   "size": [
+    57484,
+    24567
    ]
   }
  }
