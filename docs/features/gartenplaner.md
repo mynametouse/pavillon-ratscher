@@ -164,7 +164,15 @@ Bild neu gerechnet wird (nur der Anker beim Tragen).
 
 ### Runde 2 (Meilensteine 2 und 3)
 
-- **Grüne Stände** (neueste oben): siehe unten, wird mit jedem grünen Lauf ergänzt.
+- **Grüne Stände** (neueste oben):
+  - `f3fed7d` (mit `src` 4c9fed2 und `feat/vessra` 3f3fbe7 zusammengeführt): GitHub-Lauf 39947562995 grün – smoke,
+    `gartenplaner:phone` 52/52 (Pflanzen Schritt für Schritt, Gießen, Zeitraffer, Ernte, Schneiden, Draufsicht, Neuladen v 2, Telefon),
+    `gartenplaner_kammbach` 17/17 (Töpfe in den Stellplätzen, keine neuen Shader 151 → 151, Aussuchen, Kassenzettel, Liefern lassen,
+    Lieferung am Gartentor, Tragen mit Armhaltung, Einpflanzen aus den Armen, Aufgabe erledigt). Der Auto-Teil („Ins Auto laden“,
+    Ausladen) läuft erst mit der Fahrt in `src` (dieser Stand: Auto am Kartenrand, der Test sagt es und prüft die Lieferung).
+  - Bilder im Artefakt `out` des Laufs: `gartenplaner/j_pflanzloch.jpg`, `k_gepflanzt.jpg`, `l_plan_gepflanzt.png`,
+    `m_zeitraffer.jpg`, `n_vor_der_ernte.jpg`, `o_garten_ernte.png`; `gartenplaner_kammbach/a_beet.jpg`, `b_kassenzettel.png`,
+    `d_gartentor.jpg`, `e_tragen.jpg`, `f_gepflanzt.jpg`.
 - **Gemeinsame Dateien**: die eine Zeile in `core/save.js` nimmt jetzt `v: 1` und `v: 2` an (`pav-gplan-v1`); zwei neue Module unter
   `# feat/gartenplaner` in `modules.txt` (`gplan/gplan_game.js`, `gplan/gplan_shop.js`); ein Test mehr in
   `viz3/extra/gartenplaner/tests.txt` (`gartenplaner_kammbach`). Nicht angefasst: `welt/vessra.js`, `vehicles/*` (nur gelesen:
