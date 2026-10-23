@@ -204,8 +204,11 @@ with lib.browser() as b:
             E(f"CLOCK.t = {dep} - 3; DN.update(true)"); lib.settle_light(pg)
             E("(() => { const h = DLIFE.homes().katrin; GAME.view(h.door[0] + h.n[0] * 9, h.door[1] + h.n[1] * 9, KERN.terrain(h.door[0], h.door[1]) + 1.7, Math.atan2(-h.n[0], -h.n[1]) * 180 / Math.PI, -6, 66); })()")
             for i in range(8): E("GAME.step(0.25)")
+            # from across the street: the car in front, the house door behind it
+            E("(() => { const c = DCARS.cars.katrin, h = DLIFE.homes().katrin; if (!c) return; const dx = c.at[0] - h.door[0], dy = c.at[1] - h.door[1], l = Math.hypot(dx, dy) || 1, cx = c.at[0] + dx / l * 8 + h.d[0] * 3, cy = c.at[1] + dy / l * 8 + h.d[1] * 3, mx = (c.at[0] + h.door[0]) / 2, my = (c.at[1] + h.door[1]) / 2; GAME.view(cx, cy, KERN.terrain(cx, cy) + 1.7, Math.atan2(mx - cx, my - cy) * 180 / Math.PI, -8, 66); })()")
+            for i in range(2): E("GAME.step(0.25)")
             cs = J('DORF.state().cars'); print('cars', cs, flush=True)
-            ck('four villagers have cars, parked at the kerb', cs and len(cs) == 4 and all(c['st'] == 'parked' for c in cs.values()), str(cs))
+            ck('four villagers have cars; Katrin\'s is parked at the kerb before work, each drive at least 150 m', cs and len(cs) == 4 and cs['katrin']['st'] == 'parked' and all(c['L'] >= 150 for c in cs.values()), str(cs))
             lib.shot(pg, OUT, 'h_car_parked')
             E(f"CLOCK.t = {dep} + 0.5")   # time to go: Katrin comes out, walks to the driver's door, gets in, the car pulls out
             seen = set()

@@ -5,8 +5,12 @@
 // the front garden beside the path (not on the road, not in a wall). The day of each one comes from the game clock and the calendar
 // (deterministic, different every day): a morning and an evening turn in the garden from April to October (watering in the warm months,
 // weeding otherwise), in winter a breath of air at the door now and then; Heike and Katrin chat at Heike's fence on some evenings.
+import * as THREE from 'three';
+import { scene } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { VILLAGE } from '../world/village.js';
+import { VPROPS } from '../world/village_props.js';
 import { ROADS } from '../world/roads.js';
 import { WCOL } from '../world/worldcol.js';
 import { DCAL } from './dorf_cal.js';
@@ -91,6 +95,74 @@ export const DLIFE = (() => {
     cache = out;
     return out;
   }
+  // a bed in each front garden, in front of the spot where its owner kneels or waters: dark soil in a board edge, two rows of plants –
+  // vegetables at Heike's, Uwe's and Wolfgang's, roses at Ingrid's, flowers elsewhere (one mesh of vertex colours for all, built once)
+  const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
+    L = (r, g, b) => [lin(r), lin(g), lin(b)];
+  let bedMesh = null; // (not S.beds: that is the function)
+  function beds() {
+    if (bedMesh) return bedMesh;
+    const H = homes();
+    if (!H || !VPROPS.kit) return null;
+    const k = VPROPS.kit(),
+      SOIL = L(0.23, 0.16, 0.11),
+      WOOD = L(0.45, 0.36, 0.26),
+      VEG = new Set(['heike', 'uwe', 'wolfgang']),
+      FL = [L(0.78, 0.12, 0.12), L(0.92, 0.78, 0.18), L(0.92, 0.9, 0.86), L(0.55, 0.28, 0.62), L(0.95, 0.45, 0.6)];
+    KEYS.forEach((key, n) => {
+      const h = H[key];
+      if (!h) return;
+      const a = (h.hd * Math.PI) / 180,
+        cx = h.spot[0] + Math.sin(a) * 0.8,
+        cy = h.spot[1] + Math.cos(a) * 0.8,
+        rot = Math.atan2(h.d[1], h.d[0]), // along the house
+        c = Math.cos(rot),
+        sn = Math.sin(rot),
+        at = (ox, oy) => [cx + ox * c - oy * sn, cy + ox * sn + oy * c],
+        z = KERN.terrain(cx, cy);
+      k.box(cx, cy, z - 0.12, 1.8, 0.8, 0.2, rot, SOIL); // the soil, a little above the lawn
+      for (const [ox, oy, lx, ly] of [
+        [0, 0.42, 1.9, 0.04],
+        [0, -0.42, 1.9, 0.04],
+        [0.93, 0, 0.04, 0.8],
+        [-0.93, 0, 0.04, 0.8],
+      ]) {
+        const [x, y] = at(ox, oy);
+        k.box(x, y, z - 0.1, lx, ly, 0.22, rot, WOOD); // the board edge
+      }
+      for (let r = 0; r < 2; r++)
+        for (let i = 0; i < 5; i++) {
+          const j = n * 31 + r * 7 + i,
+            [x, y] = at(-0.68 + i * 0.34 + (hh(j) - 0.5) * 0.06, (r ? 0.2 : -0.2) + (hh(j + 1) - 0.5) * 0.06),
+            g = 0.28 + hh(j + 2) * 0.12,
+            green = L(g * 0.75, g * 1.25, g * 0.45);
+          if (VEG.has(key)) {
+            // cabbage, lettuce: a round head of leaves
+            const rr = 0.11 + hh(j + 3) * 0.05;
+            k.ball(x, y, z + 0.08 + rr * 0.6, rr, green, 7);
+          } else {
+            // a little bush with blossoms
+            const rr = 0.1 + hh(j + 3) * 0.05,
+              fl = key === 'ingrid' ? FL[0] : FL[Math.floor(hh(j + 4) * FL.length)];
+            k.ball(x, y, z + 0.08 + rr * 0.9, rr, green, 6);
+            for (let b = 0; b < 4; b++) {
+              const ba = hh(j + 5 + b) * Math.PI * 2;
+              k.ball(x + Math.cos(ba) * rr * 0.6, y + Math.sin(ba) * rr * 0.6, z + 0.08 + rr * 1.6, 0.035, fl, 5);
+            }
+          }
+        }
+    });
+    const me = new THREE.Mesh(
+      k.geo(),
+      new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, envMapIntensity: 0.6 })
+    );
+    me.userData.noMerge = true;
+    me.receiveShadow = true;
+    scene.add(me);
+    bedMesh = me;
+    markDirty();
+    return me;
+  }
   let moD = -1,
     moV = 5;
   const monthOf = d => {
@@ -173,7 +245,7 @@ export const DLIFE = (() => {
     if (!h) return null;
     return { x: h.spot[0], y: h.spot[1], z: KERN.terrain(h.spot[0], h.spot[1]), hd: h.hd, step: h.step };
   }
-  Object.assign(S, { homes, routine, where, away, CARS, KEYS });
+  Object.assign(S, { homes, beds, routine, where, away, CARS, KEYS });
   return S;
 })();
 window.DLIFE = DLIFE;

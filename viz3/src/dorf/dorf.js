@@ -731,7 +731,10 @@ export const DORF = (() => {
     }
     if (!show) lifeTick(mx, my);
     // the cars: built when one comes near the village, driving by the timetable
-    if (!DCARS.ready && Math.hypot(mx - 222, my + 108) < 450 && DLIFE.homes()) DCARS.build();
+    if (!DCARS.ready && Math.hypot(mx - 222, my + 108) < 450 && DLIFE.homes()) {
+      DCARS.build();
+      DLIFE.beds(); // the front-garden beds go with them
+    }
     if (DCARS.ready) DCARS.tick(dt, window.CLOCK ? window.CLOCK.t : 0, mx, my, CARHOOKS);
     if (DPEOPLE.tick(dt) && (dS < 40 || dF < 40)) markDirty();
     // talk: the panel closes when one walks away; table talk while one is there

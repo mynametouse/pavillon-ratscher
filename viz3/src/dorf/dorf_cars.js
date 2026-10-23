@@ -91,8 +91,6 @@ export const DCARS = (() => {
       lane = Math.min(1.2, best.w.w / 4);
     const pts = [[best.qx - uy * off, best.qy + ux * off]];
     let acc = 0;
-    if (fwd) for (let j = best.i / 2 + 1; j < n && acc < 200; j++) push(p[j * 2], p[j * 2 + 1]);
-    else for (let j = best.i / 2; j >= 0 && acc < 200; j--) push(p[j * 2], p[j * 2 + 1]);
     function push(x, y) {
       const l = pts[pts.length - 1],
         dx = x - l[0],
@@ -101,6 +99,37 @@ export const DCARS = (() => {
       if (d < 0.5) return;
       pts.push([x + (dy / d) * lane, y - (dx / d) * lane]); // to the right of the direction of travel
       acc += d;
+    }
+    // the way out: this way to its end, then on along the way that continues from there (street, lane, county or main road) and
+    // leads further out, up to 230 m (OSM ways end at every junction)
+    const used = new Set([best.w]),
+      dA = (x, y) => Math.hypot(x - ANGER[0], y - ANGER[1]);
+    let cur = { p, j: fwd ? best.i / 2 + 1 : best.i / 2, dir: fwd ? 1 : -1 };
+    for (let hop = 0; hop < 8 && cur && acc < 230; hop++) {
+      const Q = cur.p,
+        m = Q.length / 2;
+      for (let j = cur.j; j >= 0 && j < m && acc < 230; j += cur.dir) push(Q[j * 2], Q[j * 2 + 1]);
+      if (acc >= 230) break;
+      const e = cur.dir > 0 ? m - 1 : 0,
+        ex = Q[e * 2],
+        ey = Q[e * 2 + 1];
+      let next = null;
+      for (const w of W) {
+        if (used.has(w) || w.kind < 1 || w.kind > 5 || w.fl & 1) continue;
+        const q = w.p,
+          k = q.length / 2;
+        for (let i = 0; i < k; i++) {
+          if (Math.hypot(q[i * 2] - ex, q[i * 2 + 1] - ey) > 3.5) continue;
+          for (const dir of [1, -1]) {
+            const f = dir > 0 ? k - 1 : 0;
+            if (f === i) continue;
+            const far = dA(q[f * 2], q[f * 2 + 1]);
+            if (far > dA(ex, ey) + 5 && (!next || far > next.far)) next = { p: q, j: i + dir, dir, far, w };
+          }
+        }
+      }
+      if (next) used.add(next.w);
+      cur = next;
     }
     if (pts.length < 2) return null;
     const s = [0];
@@ -187,14 +216,23 @@ export const DCARS = (() => {
       const aw = DLIFE.away(c.key, t),
         p0 = c.path.pts[0],
         near = Math.hypot(mx - p0[0], my - p0[1]) < 260;
-      if (!near) {
+      if (!near || !c.near) {
+        // far away (or just come near): only the timetable, nothing drives
         c.st = aw ? 'away' : 'parked';
         c.a = aw ? c.path.L : 0;
         c.pose = 'out';
-        c.g.visible = false;
+        c.near = near;
+        if (c.g.visible !== (near && !aw)) {
+          c.g.visible = near && !aw;
+          markDirty();
+        }
+        if (near) put(c, p0[0], p0[1], c.path.hd);
         continue;
       }
+      // home from the last drive and time to go again while somebody watches: turned after a while all the same
+      if (c.st === 'parked' && aw && c.pose === 'in' && (c.inWait = (c.inWait || 0) + dt) > 30) c.pose = 'out';
       if (c.st === 'parked' && aw && c.pose === 'out') {
+        c.inWait = 0;
         // the owner comes out and gets in (dorf/dorf.js loads the figure and shows the walk; a few seconds at most for the loading)
         const there = !hooks || !hooks.want || hooks.want(c.key);
         c.figWait = there ? 0 : (c.figWait || 0) + dt;

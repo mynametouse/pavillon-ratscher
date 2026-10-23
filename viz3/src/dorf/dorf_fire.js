@@ -34,25 +34,25 @@ export const DFIRE = (() => {
     let s = 11;
     const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
     x.lineCap = 'round';
-    for (let row = 0; row < 9; row++) {
-      const y0 = row * 14.2 + rnd() * 4;
-      x.strokeStyle = `rgba(255, ${110 + Math.floor(rnd() * 90)}, 36, ${(0.5 + rnd() * 0.5).toFixed(2)})`;
-      x.lineWidth = 0.8 + rnd() * 1.8;
+    for (let row = 0; row < 7; row++) {
+      const y0 = row * 18.3 + rnd() * 5;
+      x.strokeStyle = `rgba(255, ${110 + Math.floor(rnd() * 90)}, 36, ${(0.35 + rnd() * 0.55).toFixed(2)})`;
+      x.lineWidth = 0.6 + rnd() * 1.2;
       x.beginPath();
       x.moveTo(0, y0);
       for (let px = 8; px <= 128; px += 8) x.lineTo(px, y0 + (rnd() - 0.5) * 3);
       x.stroke();
-      for (let k = 0; k < 5; k++) {
+      for (let k = 0; k < 3; k++) {
         const px = rnd() * 128;
         x.beginPath();
         x.moveTo(px, y0);
-        x.lineTo(px + (rnd() - 0.5) * 5, y0 + 14.2);
+        x.lineTo(px + (rnd() - 0.5) * 5, y0 + 18.3);
         x.stroke();
       }
     }
     const t = new THREE.CanvasTexture(c);
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(1, 2);
+    t.repeat.set(1, 1.5);
     t.colorSpace = THREE.SRGBColorSpace;
     return t;
   }
@@ -177,8 +177,8 @@ export const DFIRE = (() => {
       g.translate(cx, dz + h * 0.25, -cy);
       g.computeVertexNormals();
       const col = new Float32Array(p.count * 3),
-        base = 0.3 + 0.13 * hh(i + 4),
-        warm = 0.03 + hh(i + 5) * 0.05;
+        base = 0.2 + 0.11 * hh(i + 4), // grey to red-brown sandstone, as the fields here turn them up
+        warm = 0.02 + hh(i + 5) * 0.07;
       C.set(cx, dz + h * 0.25, -cy);
       const ix = -cx / r,
         iz = cy / r; // towards the fire (three.js x, z)
@@ -467,13 +467,13 @@ export const DFIRE = (() => {
     if (near !== !!lent) light(near);
     if (lent) {
       const fl = 0.8 + 0.12 * Math.sin(S.t * 11.3) + 0.08 * Math.sin(S.t * 23.1 + 1.3) + 0.06 * Math.sin(S.t * 4.1);
-      if (!S.lightAt) S.lightAt = V(S.at[0], S.at[1], S.z + 1.9);
+      if (!S.lightAt) S.lightAt = V(S.at[0], S.at[1], S.z + 2.6);
       lent.l.position.copy(S.lightAt);
       lent.l.distance = 18;
       lent.l.decay = 1.3;
       lent.l.color.setHex(0xff8f45);
-      lent.l.intensity = 26 * S.k * fl;
-      EMBER.emissiveIntensity = (0.9 + 0.7 * fl) * S.k;
+      lent.l.intensity = 31 * S.k * fl;
+      EMBER.emissiveIntensity = (0.55 + 0.45 * fl) * S.k;
     }
     crackle(S.k, dist);
     if (dist < 400 || Math.abs(S.k - k0) > 1e-3) markDirty();
