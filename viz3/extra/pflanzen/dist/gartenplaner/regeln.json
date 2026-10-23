@@ -146,13 +146,7 @@
       "paragraf": "§ 44 Nr. 3 Buchst. b ThürNRG",
       "quelle": "thuernrg"
     },
-    {
-      "id": "brombeere",
-      "text": "Brombeersträucher",
-      "abstand_m": 1,
-      "paragraf": "§ 44 Nr. 4 Buchst. a ThürNRG",
-      "quelle": "thuernrg"
-    },
+    { "id": "brombeere", "text": "Brombeersträucher", "abstand_m": 1, "paragraf": "§ 44 Nr. 4 Buchst. a ThürNRG", "quelle": "thuernrg" },
     {
       "id": "beerenobst",
       "text": "Alle übrigen Beerenobststräucher, z. B. Johannis-, Stachel-, Josta- und Himbeere, Aronia, Maibeere",
@@ -195,13 +189,7 @@
       "paragraf": "§ 45 Abs. 1 Nr. 2 ThürNRG",
       "quelle": "thuernrg"
     },
-    {
-      "id": "hecke-bis-2m",
-      "text": "Hecke bis 2 m Höhe",
-      "abstand_m": 0.75,
-      "paragraf": "§ 45 Abs. 1 Nr. 3 ThürNRG",
-      "quelle": "thuernrg"
-    },
+    { "id": "hecke-bis-2m", "text": "Hecke bis 2 m Höhe", "abstand_m": 0.75, "paragraf": "§ 45 Abs. 1 Nr. 3 ThürNRG", "quelle": "thuernrg" },
     {
       "id": "hecke-ueber-2m",
       "text": "Hecke über 2 m Höhe: 0,75 m zuzüglich des Maßes, um das die Hecke höher als 2 m ist (z. B. 3 m hohe Hecke: 1,75 m)",
