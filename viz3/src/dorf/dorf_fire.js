@@ -368,7 +368,7 @@ export const DFIRE = (() => {
   function spots() {
     const [x, y] = S.at,
       out = [];
-    for (const a of [20, 70, 120, 160]) {
+    for (const a of [10, 45, 80, 115, 150]) {
       const ar = (a * Math.PI) / 180,
         r = 2.3;
       out.push({

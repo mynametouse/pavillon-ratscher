@@ -9,6 +9,8 @@
 #   uwe      = Adults/Male_Adult_13        (argyle pullover – farmer, behind the bar on Fridays)
 #   katrin   = Adults/Female_Adult_09      (cardigan – Rummy)
 #   ingrid   = Professions/Business_Female_02 (glasses, blazer – mayor of the village)
+#   jens     = Adults/Male_Adult_08        (light blue shirt – car mechanic, young member of the fire brigade)
+#   heike    = Adults/Female_Adult_13      (short fair hair, cardigan – big vegetable garden, hens, sells eggs)
 # Mesh with the rig, WebP textures (face 1024 px; clothes, normals, hair 512; glasses 256 – vtex.mjs), meshopt, images embedded
 # → viz3/extra/dorf/dist/chars/dorf_<name>.json (charman keys dorf_<name>, viz3/extra/dorf/manifest.json).
 #   PAV_WORK=<work dir> bash tools/player/build_villagers.sh [names…]
@@ -40,7 +42,7 @@ PY
 }
 ARGS="$*"
 for spec in 'gerhard Male_Adult_03 m004 opacity' 'manfred Male_Adult_14 m012' 'wolfgang Male_Adult_05 m009' 'uwe Male_Adult_13 m010' \
-            'katrin Female_Adult_09 f009' 'ingrid Business_Female_02 f015'; do
+            'katrin Female_Adult_09 f009' 'ingrid Business_Female_02 f015' 'jens Male_Adult_08 m014' 'heike Female_Adult_13 f019'; do
   set -- $spec
   if [ -z "$ARGS" ] || [[ " $ARGS " == *" $1 "* ]]; then build "$1" "$2" "$3" "$4"; fi
 done

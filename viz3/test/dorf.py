@@ -1,6 +1,6 @@
 # feat/dorf village life: the Skat and Rummy evening in the old school (Fridays 19–23 h), the fire on the field towards the Klinge (every other
 # Saturday), the villagers (Rocketbox figures, loaded only for an evening nearby), the talk panel, table talk, the task, the card game.
-# Pictures (canvas and page) in out/dorf/. Sections (second argument, comma-separated): light,door,inside,talk,task,fire,gl – default all.
+# Pictures (canvas and page) in out/dorf/. Sections (second argument, comma-separated): light,door,inside,talk,task,fire,life,summer,gl.
 #   python3 viz3/test/run.py --port 8974 --serve dorf          (or: python3 viz3/test/dorf.py 8974 door,inside)
 import sys, os, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -159,6 +159,61 @@ with lib.browser() as b:
             st = J('DORF.state()'); ck('after the evening the figures are dropped again', not st['figs'] and st['drops'] >= 6, f"{st['figs']} drops {st['drops']}")
         except Exception as ex:
             ck('section ran: ' + "want('fire')", False, repr(ex)[:400])
+    if want('life'):
+        try:   # an ordinary June day: the villagers in their houses, now and then out in the front garden; errands
+            E("DN.e0 = Date.UTC(2026, 5, 8) / 864e5 - Math.floor(CLOCK.t / 1440)")   # today: Monday 8 June
+            H = J("(() => { const H = DLIFE.homes(); return H ? Object.fromEntries(Object.entries(H).map(([k, h]) => [k, [h.id, +h.spot[0].toFixed(1), +h.spot[1].toFixed(1)]])) : null; })()")
+            print('homes', json.dumps(H), flush=True)
+            ck('every villager has a house with a front garden', H and len(H) == 8, str(H and len(H)))
+            # the first one out in the garden this day
+            found = J("(() => { const d = Math.floor(CLOCK.t / 1440); for (let m = 8 * 60; m < 19 * 60; m += 5) for (const k of DLIFE.KEYS) { const r = DLIFE.routine(k, d * 1440 + m); if (r && !r.fence) return { k, t: d * 1440 + m + 8, mode: r.mode }; } return null; })()")
+            print('out', found, flush=True)
+            ck('the day brings somebody out into the garden', bool(found), str(found))
+            if found:
+                k = found['k']
+                E(f"CLOCK.t = {found['t']}; DN.update(true)"); lib.settle_light(pg)
+                sx, sy = H[k][1], H[k][2]
+                E(f"(() => {{ const h = DLIFE.homes()['{k}']; GAME.view(h.spot[0] + h.n[0] * 3.2 + h.d[0] * 1.5, h.spot[1] + h.n[1] * 3.2 + h.d[1] * 1.5, KERN.terrain(h.spot[0], h.spot[1]) + 1.62, Math.atan2(-h.n[0] * 3.2 - h.d[0] * 1.5, -h.n[1] * 3.2 - h.d[1] * 1.5) * 180 / Math.PI, -10, 62); }})()")
+                for i in range(80):
+                    E("GAME.step(0.25)")
+                    st = J(f"(() => {{ const f = DPEOPLE.figs['{k}']; return f ? {{ vis: f.g.visible, mode: f.mode, out: DORF.S.out['{k}'] }} : null; }})()")
+                    if st and st['out'] == 'there': break
+                    time.sleep(0.2)
+                print('garden', k, st, flush=True)
+                ck('a villager comes out and works in the front garden', st and st['vis'] and st['out'] == 'there' and st['mode'] in ('weed', 'water', 'stand'), str(st))
+                lib.shot(pg, OUT, 'f_garden_' + k)
+                E(f"DORF.UI.open('{k}'); GAME.step(0.3)")
+                tp = J("[...document.querySelectorAll('#dorfpanel .topics button')].map(b => b.textContent)")
+                print('topics', k, tp, flush=True)
+                ck('talking in the garden: the errand is offered', any(t for t in tp if t not in ('Tschüss',)) and len(tp) >= 4, str(tp))
+                page_shot(pg, 'f_garden_talk')
+                E("DORF.UI.close(); GAME.step(0.2)")
+                # far away the figures are freed again
+                E("GAME.view(-200, -300, KERN.terrain(-200, -300) + 1.6, 0, 0, 60)")
+                for i in range(35): E("GAME.step(1.0)")
+                st = J('DORF.state()'); ck('away from the village the figures are freed', not st['figs'], str(st['figs']))
+            # an errand: Gerhard's chronicle – the three places count as one walks by
+            E("DORF.ST.err.chronik = { st: 'open', i: 0, n0: 0 }")
+            for name in ('LINDE', 'FOUNTAIN'):
+                E(f"(() => {{ const p = VPROPS.{name}; GAME.view(p[0] + 2, p[1] + 2, KERN.terrain(p[0], p[1]) + 1.6, 200, 0, 60); for (let i = 0; i < 6; i++) GAME.step(0.2); }})()")
+            E("(() => { const s = VPROPS.school; GAME.view(s.cx + 3, s.cy - 9, KERN.terrain(s.cx, s.cy - 9) + 1.6, 0, 10, 60); for (let i = 0; i < 6; i++) GAME.step(0.2); })()")
+            ck('errand „Für die Chronik“: the three places done, back to Gerhard', J('DORF.ST.err.chronik.i') == 3, str(J('DORF.ST.err.chronik')))
+        except Exception as ex:
+            ck('section ran: life', False, repr(ex)[:400])
+    if want('summer'):
+        try:   # a mild Friday evening in June: Jens and Heike outside at the beer table, the others inside
+            E("DN.e0 = Date.UTC(2026, 5, 8) / 864e5 - Math.floor(CLOCK.t / 1440)"); d = E("DORF.jump('skat', 20)"); lib.settle_light(pg)
+            E("DORF.atDoor(); for (let i = 0; i < 20; i++) GAME.step(0.1)")
+            for i in range(80):
+                E("GAME.step(0.25)")
+                if len(J('DORF.state().shown')) >= 8: break
+                time.sleep(0.3)
+            st = J('DORF.state()'); print('summer', d, st['shown'], flush=True)
+            ck('a mild Friday: eight villagers, two of them outside', len(st['shown']) == 8, str(st['shown']))
+            x, y = J("DSCHOOL.toW(DSCHOOL.F.du + 4.2, -7.5)"); z = J("KERN.terrain(" + str(x) + ", " + str(y) + ")")
+            E(f"GAME.view({x}, {y}, {z} + 1.65, DSCHOOL.az(-0.25, 1), -2, 62); GAME.step(0.3)"); lib.shot(pg, OUT, 'g_summer_front')
+        except Exception as ex:
+            ck('section ran: summer', False, repr(ex)[:400])
     if want('gl'):
         try:
             good, r = lib.check_gl(pg)
