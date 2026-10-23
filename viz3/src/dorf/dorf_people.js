@@ -112,7 +112,8 @@ export const DPEOPLE = (() => {
   // per frame: the poses of the visible figures (npc_real.js skips far ones itself)
   function tick(dt) {
     let any = false;
-    for (const f of Object.values(S.figs)) {
+    for (const k in S.figs) {
+      const f = S.figs[k];
       if (!f.g.visible) continue;
       f.anim(dt, 0);
       any = true;

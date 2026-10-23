@@ -14,7 +14,7 @@ import { LIGHTSTATE } from '../game/home.js';
 import { audio } from '../audio/audio.js';
 import { VPROPS } from '../world/village_props.js';
 export const DFIRE = (() => {
-  const S = { built: false, at: [-288, -446], z: 0, k: 0, want: 0, t: 0, ring: [], benches: [], err: null, cracks: 0 };
+  const S = { built: false, at: [-262, -439], z: 0, k: 0, want: 0, t: 0, ring: [], benches: [], err: null, cracks: 0 };
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
     L = (r, g, b) => [lin(r), lin(g), lin(b)];
   const U = { uT: { value: 0 }, uK: { value: 0 } };
@@ -105,7 +105,17 @@ export const DFIRE = (() => {
           L(0.42 + 0.06 * Math.sin(i), 0.4, 0.37)
         );
       }
-      kit.disc(0, 0, 0.015, 0, 0, 0.95, L(0.1, 0.09, 0.085), 18, false);
+      kit.lathe(
+        0,
+        0,
+        0.0,
+        [
+          [0.95, 0],
+          [0.0, 0.03],
+        ],
+        18,
+        L(0.1, 0.09, 0.085)
+      ); // the ash bed
       // log benches around (three), a few spare logs, straw bales
       for (const [a, len] of [
         [200, 2.2],

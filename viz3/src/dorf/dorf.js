@@ -54,6 +54,10 @@ export const DORF = (() => {
     sc: null,
     inside: false,
     t: 0,
+    calT: 0,
+    skatCal: false,
+    fireCal: false,
+    skatSoon: false,
   };
   const school = () => {
     if (S.sc) return S.sc;
@@ -61,8 +65,6 @@ export const DORF = (() => {
     if (b) S.sc = [b.cx, b.cy];
     return S.sc;
   };
-  const camXY = () => [cam.position.x, -cam.position.z];
-  const dist = (a, b) => (a && b ? Math.hypot(a[0] - b[0], a[1] - b[1]) : 1e9);
   // ---- the talk panel and the subtitles ----
   const UI = (() => {
     const host = ($('npcpanel') && $('npcpanel').parentNode) || $('stage') || document.body;
@@ -383,6 +385,7 @@ export const DORF = (() => {
     r: 1.7,
     label: () => (DSCHOOL.built && DSCHOOL.want < 0.5 && !DSCHOOL.inside() ? 'Tür der alten Schule' : null),
     pos: () => {
+      if (!DSCHOOL.built) return null; // the candidates are asked every frame: nothing before the room exists
       const [x, y] = DSCHOOL.toW(DSCHOOL.F.du, -0.3);
       return [x, y, DSCHOOL.F.zF + 1.0];
     },
@@ -399,7 +402,8 @@ export const DORF = (() => {
     r: 1.6,
     prio: 0.1,
     label: () => (DSCHOOL.built && DSCHOOL.noticeAt ? 'Aushang lesen' : null),
-    pos: () => [DSCHOOL.noticeAt[0], DSCHOOL.noticeAt[1], DSCHOOL.F.zF + 1.2],
+    pos: () =>
+      DSCHOOL.built && DSCHOOL.noticeAt ? [DSCHOOL.noticeAt[0], DSCHOOL.noticeAt[1], DSCHOOL.F.zF + 1.2] : null,
     run: () => {
       toast(T.NOTICE.replace(/\n+/g, ' · '), 9000);
       if (stepI(ST.step) < 1) {
@@ -417,8 +421,9 @@ export const DORF = (() => {
     prio: 0.05,
     label: () => (S.skat && DSCHOOL.built && !PLAY.seat && DSCHOOL.inside() ? 'Hinsetzen' : null),
     pos: () => {
-      const st = DSCHOOL.seats.player,
-        [x, y, z] = DSCHOOL.at(st.x, st.y);
+      const st = DSCHOOL.built && DSCHOOL.seats.player;
+      if (!st) return null;
+      const [x, y, z] = DSCHOOL.at(st.x, st.y);
       return [x, y, z + 0.5];
     },
     run: () => sitDown(),
@@ -450,9 +455,10 @@ export const DORF = (() => {
     S.t += dt;
     const sc = school();
     if (!sc) return;
-    const me = P.mode === 'walk' ? [P.x, P.y] : camXY(),
-      dS = dist(me, sc),
-      dF = dist(me, DFIRE.at);
+    const mx = P.mode === 'walk' ? P.x : cam.position.x,
+      my = P.mode === 'walk' ? P.y : -cam.position.z,
+      dS = Math.hypot(mx - sc[0], my - sc[1]),
+      dF = Math.hypot(mx - DFIRE.at[0], my - DFIRE.at[1]);
     if (!DSCHOOL.built && dS < 170 && !DSCHOOL.err) DSCHOOL.build();
     if (!DFIRE.built && dF < 420 && !DFIRE.err) DFIRE.build();
     // the evenings (an evening one is part of goes on while one stays)
@@ -463,8 +469,16 @@ export const DORF = (() => {
       else save();
     }
     S.inside = inside;
-    const skatCal = DCAL.on('skat'),
-      fireCal = DCAL.on('fire');
+    if (S.calT <= 0) {
+      // the calendar twice a second (not every frame)
+      S.calT = 0.5;
+      S.skatCal = DCAL.on('skat');
+      S.fireCal = DCAL.on('fire');
+      S.skatSoon = S.skatCal || DCAL.until('skat') < 40;
+    }
+    S.calT -= dt;
+    const skatCal = S.skatCal,
+      fireCal = S.fireCal;
     if (skatCal && (inside || dS < 30)) S.skatStick = true;
     if (!inside && dS > 30) S.skatStick = false;
     if (fireCal && dF < 25) S.fireStick = true;
@@ -478,7 +492,7 @@ export const DORF = (() => {
     if (DFIRE.built) DFIRE.tick(dt, S.fire, dF);
     // who is needed where (the figures load shortly before an evening, only near it)
     let want = null;
-    const soon = S.skat || DCAL.until('skat') < 40;
+    const soon = S.skat || S.skatSoon;
     if (soon && dS < 170 && DSCHOOL.built) want = 'school';
     else if (S.fire && dF < 260 && DFIRE.built) want = 'fire';
     if (want) {

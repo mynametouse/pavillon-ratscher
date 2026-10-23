@@ -9,7 +9,7 @@ export const DCAL = (() => {
   const E0 = Date.UTC(2026, 5, 1) / 864e5; // game day 1 when DN has no calendar (Monday 1 June 2026)
   const e0 = () => (DN && Number.isFinite(DN.e0) ? DN.e0 : E0);
   const eday = (t = CLOCK.t) => e0() + Math.floor(t / 1440);
-  const wd = (t = CLOCK.t) => new Date(eday(t) * 864e5).getUTCDay(); // 0 Sunday … 5 Friday, 6 Saturday
+  const wd = (t = CLOCK.t) => (((eday(t) + 4) % 7) + 7) % 7; // 0 Sunday … 5 Friday, 6 Saturday (1 Jan 1970 was a Thursday)
   const min = (t = CLOCK.t) => ((Math.floor(t) % 1440) + 1440) % 1440;
   const EV = {
     skat: { day: 5, from: 19 * 60, to: 23 * 60, name: 'Skat- und Rommé-Abend' },

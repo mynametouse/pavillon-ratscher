@@ -275,7 +275,8 @@ export const DSCHOOL = (() => {
     box(M.door, dl - 0.1, dl, -0.02, t + 0.02, 0, hD + 0.1);
     box(M.door, dr, dr + 0.1, -0.02, t + 0.02, 0, hD + 0.1);
     box(M.door, dl - 0.1, dr + 0.1, -0.02, t + 0.02, hD, hD + 0.1);
-    box(M.stone, dl - 0.15, dr + 0.15, -0.42, t, -0.3, 0); // sandstone sill, a step outside
+    box(M.stone, dl - 0.15, dr + 0.15, -0.42, t, -0.5, 0); // sandstone sill
+    box(M.stone, dl - 0.3, dr + 0.3, -0.8, -0.42, -0.6, -0.17); // and a step before it
     // windows: the bays of the facade shader (world/village.js: spacing 2.25 m on the school, windows 1.0 m wide, from 0.95 m to the eave)
     const wins = [],
       sp = 2.25,
@@ -327,7 +328,8 @@ export const DSCHOOL = (() => {
     col(dl, dr, -0.05, y0, hD, hC + 0.3);
     S.doorCol = col(dl, dr, 0.02, 0.22, -0.4, hD); // the closed door (off while it is open)
     walk(x0 - 0.02, x1 + 0.02, y0 - 0.02, y1 + 0.02, 0);
-    walk(dl, dr, -0.42, y0, 0, 'stone');
+    walk(dl - 0.15, dr + 0.15, -0.42, y0, 0, 'stone');
+    walk(dl - 0.3, dr + 0.3, -0.8, -0.42, -0.17, 'stone');
     for (const [ya, yb, h] of [
       [y0, y0 + 0.7, hW + 0.4],
       [y0 + 0.7, y0 + 1.45, hW + 1.15],
@@ -395,7 +397,7 @@ export const DSCHOOL = (() => {
     return { x, y, a, top: 0.47 };
   }
   function furniture(kit) {
-    const { L: Lx, D } = S.F,
+    const { D } = S.F,
       t = R0.wall;
     // the Skat table (round) with three chairs – Gerhard, Manfred, Wolfgang
     const T1 = [8.4, D - 3.4];
@@ -411,6 +413,7 @@ export const DSCHOOL = (() => {
     S.seats.gerhard = sk[0];
     S.seats.manfred = sk[1];
     S.seats.wolfgang = sk[2];
+    S.skat = { T: T1, seats: sk };
     // cards: a fan before each player, the trick in the middle, the score pad
     for (const st of sk) {
       const cx = T1[0] + Math.cos(st.a + Math.PI) * 0.36,
@@ -808,9 +811,83 @@ export const DSCHOOL = (() => {
     });
     M.lamp.emissiveIntensity = 1.6 * k;
   }
+  // ---- the Skat game goes on: one card after the other into the middle, the trick slides to its winner ----
+  const TR = { cards: null, t: 1, lead: 0, n: 0, phase: 'play', win: 0 };
+  function cards() {
+    const k = VPROPS.kit();
+    k.box(0, 0, 0, 0.063, 0.09, 0.002, 0, L(0.93, 0.92, 0.88));
+    k.box(0, 0, 0.0021, 0.05, 0.075, 0.0004, 0, L(0.62, 0.1, 0.08)); // the pip side, a red mark
+    const g = k.geo();
+    TR.cards = [0, 1, 2].map(() => {
+      const me = new THREE.Mesh(g, M.kit);
+      me.visible = false;
+      me.userData.noMerge = true;
+      S.grp.add(me);
+      return me;
+    });
+  }
+  // hand of seat i (in front of the player, over the table edge) and the place of its card in the trick
+  const hand = i => {
+    const st = S.skat.seats[i],
+      T = S.skat.T,
+      a = st.a + Math.PI;
+    return [T[0] + Math.cos(a) * 0.5, T[1] + Math.sin(a) * 0.5];
+  };
+  const spot = i => {
+    const st = S.skat.seats[i],
+      T = S.skat.T,
+      a = st.a + Math.PI;
+    return [T[0] + Math.cos(a) * 0.13, T[1] + Math.sin(a) * 0.13];
+  };
+  function cardTick(dt) {
+    if (!TR.cards) cards();
+    TR.t -= dt;
+    const C = TR.cards;
+    if (TR.phase === 'play') {
+      const i = (TR.lead + TR.n) % 3,
+        me = C[TR.n],
+        k = THREE.MathUtils.clamp(1 - TR.t / 0.55, 0, 1),
+        a = hand(i),
+        b = spot(i),
+        x = a[0] + (b[0] - a[0]) * k,
+        y = a[1] + (b[1] - a[1]) * k,
+        h = 0.756 + TR.n * 0.003 + Math.sin(k * Math.PI) * 0.12;
+      me.visible = true;
+      me.position.set(x, h, -y);
+      me.rotation.set(0, S.skat.seats[i].a + 0.3 * TR.n, 0);
+      if (TR.t <= 0) {
+        TR.n++;
+        TR.t = 1.4 + Math.random() * 1.6;
+        if (TR.n >= 3) {
+          TR.phase = 'take';
+          TR.win = Math.floor(Math.random() * 3);
+          TR.t = 1.2;
+        }
+      }
+    } else if (TR.phase === 'take') {
+      if (TR.t < 0) {
+        const k = Math.min(1, -TR.t / 0.6),
+          a = hand(TR.win);
+        for (const me of C) {
+          me.position.x += (a[0] - me.position.x) * k * 0.2;
+          me.position.z += (-a[1] - me.position.z) * k * 0.2;
+        }
+        if (k >= 1) {
+          for (const me of C) me.visible = false;
+          TR.phase = 'play';
+          TR.lead = TR.win;
+          TR.n = 0;
+          TR.t = 2.2 + Math.random() * 1.5;
+        }
+      }
+    }
+    markDirty();
+  }
   // ---- per frame (from dorf/dorf.js): door animation, lights, the glass by daylight ----
   function tick(dt, evening, near) {
     if (!S.built) return;
+    if (evening && near && S.skat) cardTick(dt);
+    else if (TR.cards && TR.cards[0].visible) for (const me of TR.cards) me.visible = false;
     if (Math.abs(S.open - S.want) > 1e-3) {
       S.open += Math.sign(S.want - S.open) * Math.min(Math.abs(S.want - S.open), dt * 0.9);
       pose();
