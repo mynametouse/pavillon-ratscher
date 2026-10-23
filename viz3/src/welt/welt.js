@@ -158,27 +158,30 @@ export const WELT = (() => {
     markDirty(true);
   };
   const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver;
-    vec3 setts( vec2 p, vec3 c, float sc ) {   // small stones in offset rows, each a little different, dark joints
+    vec3 setts( vec2 p, vec3 c, float sc, float fwp ) {   // small stones in offset rows, each a little different, dark joints
       vec2 q = p * sc; q.x += 0.5 * mod( floor( q.y ), 2.0 );
-      vec2 f = fract( q ); float fw = fwidth( q.x ) + fwidth( q.y ), fine = 1.0 - smoothstep( 0.15, 0.6, fw );
+      vec2 f = fract( q ); float fine = 1.0 - smoothstep( 0.15, 0.6, fwp * sc );
       float jt = ( 1.0 - smoothstep( 0.0, 0.14, min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) ) ) ) * fine;
       return c * ( 0.84 + 0.32 * rdH( floor( q ) ) * fine ) * ( 1.0 - 0.45 * jt ); }
     vec3 weltGround( vec2 p, vec3 c, float dist ) {
+      // derivatives and texture reads first, before any branch that differs per pixel
+      float fwp = fwidth( p.x ) + fwidth( p.y );
+      vec2 ou = ( p - uOver.xy ) * uOver.z;
+      float ins = uOver.w * step( 0.0, ou.x ) * step( 0.0, ou.y ) * step( ou.x, 1.0 ) * step( ou.y, 1.0 );
+      vec4 o = texture( tOver, clamp( ou, 0.0, 1.0 ) ) * ins;
       float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), chroma = ( mx - mn ) / max( mx, 0.02 ), lum = dot( c, vec3( 0.3, 0.59, 0.11 ) );
       float near = 1.0 - smoothstep( 40.0, 90.0, dist ), pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * near;
       vec3 g = landDetail( p, c, dist );
-      vec4 o = vec4( 0.0 ); vec2 ou = ( p - uOver.xy ) * uOver.z;
-      if ( uOver.w > 0.5 && ou.x > 0.0 && ou.y > 0.0 && ou.x < 1.0 && ou.y < 1.0 ) o = texture( tOver, ou );
       if ( o.r > 0.03 ) {
         float code = o.g / max( o.r, 0.01 ), cov = o.r, n1 = rdN( p * 0.6 ), n2 = rdN( p * 5.0 );
         vec3 r;
         if ( code < 0.3 ) r = vec3( 0.085, 0.088, 0.092 ) * clamp( lum / 0.14, 0.75, 1.3 ) * ( 0.86 + 0.24 * n1 ) * ( 0.92 + 0.16 * n2 );   // asphalt, patches after the photo
-        else if ( code < 0.62 ) r = setts( p, vec3( 0.2, 0.19, 0.175 ) * clamp( lum / 0.2, 0.8, 1.25 ), 8.0 );   // sett
-        else r = setts( p * vec2( 1.0, 0.5 ), vec3( 0.27, 0.26, 0.245 ), 3.3 );   // paving slabs
+        else if ( code < 0.62 ) r = setts( p, vec3( 0.165, 0.152, 0.138 ) * clamp( lum / 0.26, 0.75, 1.12 ) * ( 0.85 + 0.3 * n1 ), 8.0, fwp );   // sett: grey-brown, worn patches
+        else r = setts( p * vec2( 1.0, 0.5 ), vec3( 0.27, 0.26, 0.245 ), 3.3, fwp );   // paving slabs
         float kerb = code < 0.3 ? ( 1.0 - smoothstep( 0.08, 0.2, abs( cov - 0.42 ) ) ) * near : 0.0;   // a light kerb stone along the asphalt
         r = mix( r, vec3( 0.36, 0.355, 0.34 ) * ( 0.9 + 0.2 * n2 ), kerb );
         g = mix( g, r, clamp( smoothstep( 0.3, 0.55, cov ) + kerb, 0.0, 1.0 ) );
-      } else if ( pave > 0.01 ) g = mix( g, setts( p, landHi( c ) * 0.78, 7.5 ), pave );
+      } else if ( pave > 0.01 ) g = mix( g, setts( p, landHi( c ) * 0.78, 7.5, fwp ), pave );
       return g; }`;
   const STUB =
     'float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }';

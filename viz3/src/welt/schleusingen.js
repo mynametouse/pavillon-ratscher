@@ -892,26 +892,18 @@ export const SCHL = (() => {
         z = b.z0,
         w = 6.6,
         a = Math.atan2(b.F[0][3] - b.F[0][1], b.F[0][2] - b.F[0][0]);
-      K.box(
-        tx,
-        ty,
-        z - 1,
-        w,
-        w,
-        31,
-        a,
-        SAND.map(v => v * 1.0)
-      );
-      K.box(tx, ty, z + 30, w + 0.4, w + 0.4, 0.5, a, STONE);
+      // the square tower rises two storeys over the ridge, then the octagon with its arches, the dark cupola (photos 2008, 2025)
+      K.box(tx, ty, z - 1, w, w, 39, a, SAND);
+      K.box(tx, ty, z + 37.6, w + 0.4, w + 0.4, 0.5, a, STONE);
       K.lathe(
         tx,
         ty,
-        z + 30.5,
+        z + 38.1,
         [
           [3.0, 0],
           [3.0, 6.5],
-          [3.2, 6.5],
-          [3.2, 6.9],
+          [3.25, 6.5],
+          [3.25, 6.9],
         ],
         8,
         SAND,
@@ -920,7 +912,7 @@ export const SCHL = (() => {
       K.lathe(
         tx,
         ty,
-        z + 37.4,
+        z + 45.0,
         [
           [3.2, 0],
           [2.6, 1.2],
@@ -934,7 +926,7 @@ export const SCHL = (() => {
       K.lathe(
         tx,
         ty,
-        z + 40.6,
+        z + 48.2,
         [
           [0.9, 0],
           [0.9, 2.0],
@@ -947,7 +939,13 @@ export const SCHL = (() => {
         SLATE,
         Math.PI / 8
       );
-      K.ball(tx, ty, z + 46.0, 0.25, GOLD, 8);
+      K.ball(tx, ty, z + 53.6, 0.25, GOLD, 8);
+      for (let k = 0; k < 8; k++) {
+        const an = (k * Math.PI) / 4 + Math.PI / 8,
+          ox = tx + Math.cos(an) * 3.05,
+          oy = ty + Math.sin(an) * 3.05;
+        arch(K, ox, oy, -Math.sin(an), Math.cos(an), z + 39.6, 0.9, 3.0, DARK);
+      }
       // sound openings and tall arched windows: dark panes with a light frame
       for (let s = 0; s < 4; s++) {
         const an = a + (s * Math.PI) / 2,
@@ -957,7 +955,7 @@ export const SCHL = (() => {
           oy = ty + ny * (w / 2 + 0.03),
           ex = -ny,
           ey = nx;
-        arch(K, ox, oy, ex, ey, z + 23, 1.3, 3.2, DARK);
+        arch(K, ox, oy, ex, ey, z + 31, 1.3, 3.4, DARK);
       }
       // the portal on the side towards the street: a round-arched door in a stone frame
       {
@@ -1791,12 +1789,38 @@ export const SCHL = (() => {
         k % 2 ? linC([0.5, 0.33, 0.19]) : linC([0.56, 0.38, 0.22])
       );
     }
-    // the arms (Henneberg: black hen on a green triple hill, gold field) on the back wall
+    // the arms of Schleusingen (Henneberg: a black hen with a red comb on a green triple hill, gold field) as a shield on the back wall
     {
-      const [x, y] = Q(uc, w1 - 0.03, 0);
-      k2.disc(x, y, fl + 2.35, nx, ny, 0.55, linC([0.85, 0.66, 0.2]), 16, false);
-      k2.disc(x + nx * 0.01, y + ny * 0.01, fl + 2.25, nx, ny, 0.22, linC([0.06, 0.06, 0.06]), 10, false);
-      k2.disc(x + nx * 0.01, y + ny * 0.01, fl + 1.95, nx, ny, 0.3, linC([0.1, 0.4, 0.15]), 10, false);
+      const GD = linC([0.88, 0.68, 0.2]),
+        GR = linC([0.12, 0.42, 0.16]),
+        BK = linC([0.05, 0.05, 0.05]),
+        RD = linC([0.75, 0.08, 0.06]),
+        zs = fl + 1.75,
+        S_ = (u, v, off) => {
+          const p = Q(uc + u, w1 - 0.03 - off, 0);
+          return [p[0], p[1], zs + v];
+        };
+      k2.quad(S_(-0.45, 0.25, 0), S_(0.45, 0.25, 0), S_(0.45, 1.05, 0), S_(-0.45, 1.05, 0), GD);
+      k2.tri(S_(-0.45, 0.25, 0), S_(0, -0.25, 0), S_(0.45, 0.25, 0), GD);
+      for (const [uh, r] of [
+        [-0.25, 0.2],
+        [0, 0.26],
+        [0.25, 0.2],
+      ]) {
+        const q = S_(uh, 0, 0.01);
+        k2.disc(q[0], q[1], zs + 0.22, nx, ny, r, GR, 12, false);
+      }
+      const disc = (u, v, r, col) => {
+        const q = S_(u, 0, 0.02);
+        k2.disc(q[0], q[1], zs + v, nx, ny, r, col, 12, false);
+      };
+      disc(0, 0.62, 0.17, BK);
+      disc(0.13, 0.78, 0.07, BK);
+      disc(0.17, 0.88, 0.06, BK);
+      disc(0.17, 0.95, 0.035, RD);
+      k2.tri(S_(-0.12, 0.62, 0.02), S_(-0.05, 0.75, 0.02), S_(-0.3, 0.92, 0.02), BK);
+      k2.quad(S_(-0.04, 0.38, 0.02), S_(-0.02, 0.38, 0.02), S_(-0.02, 0.5, 0.02), S_(-0.04, 0.5, 0.02), BK);
+      k2.quad(S_(0.04, 0.38, 0.02), S_(0.06, 0.38, 0.02), S_(0.06, 0.5, 0.02), S_(0.04, 0.5, 0.02), BK);
     }
     // light baked into the colours: brighter under the ceiling lights and in the middle, darker in the corners and low down
     const g2 = k2.geo(),
