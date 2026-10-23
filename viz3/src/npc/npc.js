@@ -851,7 +851,13 @@ function updateDrive(w, dt) {
       dist = Math.hypot(dx, dy);
     const h = Math.atan2(dx, dy);
     d.az = lerpAngle(d.az, h, Math.min(1, dt * 1.6));
-    const sp = window.VEH && LATE.VEH.blocked(d.x, d.y, d.az, 3.2) ? 0 : 2.3; // V16b: waits while a vehicle stands in the way const mv = Math.min(dist, sp * dt); d.x += Math.sin(d.az) * mv; d.y += Math.cos(d.az) * mv; TRACTOR.roll(mv);
+    // V16b: waits while a vehicle stands in the way. (Since V16e the four statements after this were stuck inside the comment of this
+    // line, so Hubert's tractor never moved and he sat on it for good – Falko, 23.10.2026 2:28.)
+    const sp = window.VEH && LATE.VEH.blocked(d.x, d.y, d.az, 3.2) ? 0 : 2.3;
+    const mv = Math.min(dist, sp * dt);
+    d.x += Math.sin(d.az) * mv;
+    d.y += Math.cos(d.az) * mv;
+    TRACTOR.roll(mv);
     if (dist < 0.6) {
       d.i++;
       if (window.QUESTS) LATE.QUESTS.driveWp(d.i);
