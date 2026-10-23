@@ -71,6 +71,10 @@ zeigt „Testdaten“. Geladen wird erst beim Öffnen; geprüft mit `GPSCHEMA.va
 
 ## Für den Kern-Chat
 
+- **Grüne Stände zum Zusammenführen** (neueste oben):
+  - `e44ae43` (mit `src` 7cbb8c2 zusammengeführt, echte Pflanzendaten, Dienste aus Baustein 1): GitHub-Lauf 39927210493 grün – smoke und
+    `gartenplaner:phone` 36/36. Danach `29e3804` (nur Berater-Texte und Kletterpflanzen an Wänden; Lauf folgt).
+
 - **Haken in `world/siteplan.js`** (klein, kommentiert): `SITEPLAN.hooks` – Erweiterungen der Draufsicht zeichnen ins SVG
   (`draw(pr, W, H)`, über der Grenze, unter Umrissen und Beschriftungen) und bekommen Antippen/Ziehen vor den Gebäuden
   (`down` → `'take'`/`'keep'`, `move`, `up`, `tap`). Kandidat für die verallgemeinerte Draufsicht (Phase 2).
