@@ -69,7 +69,7 @@ with lib.browser() as b:
         # side view before: 9 m to the side, looking at the stem
         vx, vy = t['x'] + dy * 9 - dx * 4, t['y'] - dx * 9 - dy * 4; yaw = math.degrees(math.atan2(t['x'] - vx, t['y'] - vy))
         E(f"VEH.place('{vid}', {t['sx']}, {t['sy']}, {t['psi']}); GAME.step(0.2)")
-        E(f"if (VEH.cur) VEH.exit(); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.2)"); lib.shot(pg, OUT, name + '_1_before')
+        E(f"if (VEH.cur) VEH.exit(); GAME.setView3 && GAME.setView3(false, true); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.2)"); lib.shot(pg, OUT, name + '_1_before')
         E(f"VEH.enter('{vid}'); GAME.setView3(true)"); steps(0.5)
         E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
         mx, passed, shot_mid, s, kmh_hit = 0.0, False, False, -12.0, 0
@@ -84,7 +84,7 @@ with lib.browser() as b:
         v = r['v']; s = (v['x'] - t['x']) * dx + (v['y'] - t['y']) * dy
         print(name, 'after', r, f"s {s:.2f} m, hit at {kmh_hit} km/h, max tilt {mx:.2f}", flush=True)
         if not shot_mid: lib.shot(pg, OUT, name + '_2_contact')
-        E(f"VEH.exit(); GAME.step(0.3); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.3)"); lib.shot(pg, OUT, name + '_3_after')
+        E(f"VEH.exit(); GAME.step(0.3); GAME.setView3 && GAME.setView3(false, true); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.3)"); lib.shot(pg, OUT, name + '_3_after')
         if kind == 'bend':
             ck(f'{vid}: sapling ({inf["H"]:.1f} m) bends under it', mx > 0.5, f"max {math.degrees(mx):.0f}°")
             ck(f'{vid}: drives over the sapling', s > 2, f"{s:.1f} m past it")
@@ -98,6 +98,29 @@ with lib.browser() as b:
             ck(f'{vid}: the crown swayed', mx > 0.0005, f"max {math.degrees(mx):.2f}°")
         return t
 
+    # pushed slowly: the tractor creeps against a small tree with the throttle – it leans with the loader, the root plate tears, it falls
+    def push_scenario(vid, cx, cy, R):
+        t = json.loads(E(f"JSON.stringify(_bPick('{vid}', 'fall', {cx}, {cy}, {R}))"))
+        if not ck(f'{vid} push: a target', t is not None, ''): return None
+        i, dx, dy = t['i'], t['dx'], t['dy']; r0 = E(f"WCOL.trunk({i})[2]"); back = (4.25 if vid == 'tractor' else 2.75) + r0
+        E(f"VEH.place('{vid}', {t['x'] - dx * back}, {t['y'] - dy * back}, {t['psi']}); VEH.enter('{vid}'); GAME.setView3(true)"); steps(0.5)
+        print(vid, 'push target', t['info'], flush=True)
+        E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
+        modes, mxp, shot = [], 0.0, False
+        for k in range(50):
+            steps(0.1); r = json.loads(E(f"JSON.stringify(TREEHIT.state({i}))"))
+            if not modes or modes[-1] != r['mode']: modes.append(r['mode'])
+            if r['mode'] == 'push':
+                mxp = max(mxp, r['th'])
+                if not shot and r['th'] > 0.12: lib.shot(pg, OUT, vid + '_push_2_leaning'); shot = True
+            if r['mode'] == 'rest': break
+        E("VEH.auto = () => ({ thr: 0, brk: 0, steer: 0, hand: true })"); steps(2.0); E("VEH.auto = null")
+        r = json.loads(E(f"JSON.stringify({{ s: TREEHIT.state({i}), last: TREEHIT.last }})")); print(vid, 'push', modes, f"max lean {math.degrees(mxp):.0f}°", r, flush=True)
+        ck(f'{vid}: pushed slowly, the tree leans first (root plate lifting)', 'push' in modes and 0.08 < mxp < 0.4, f"{modes}, max {math.degrees(mxp):.0f}°")
+        ck(f'{vid}: then it tears out and lies', r['s']['mode'] == 'rest' and r['s']['dead'], str(r['s']))
+        lib.shot(pg, OUT, vid + '_push_3_after'); E("VEH.exit(); GAME.step(0.2)")
+        if r['s']['dead']: fallen.append(t)
+
     F0 = (-470, -600)
     if want('car'):
         scenario('car', 'bend', *F0, 500)
@@ -107,6 +130,7 @@ with lib.browser() as b:
         scenario('tractor', 'bend', *F0, 500)
         scenario('tractor', 'fall', *F0, 700)
         scenario('tractor', 'stop', *F0, 600)
+        push_scenario('tractor', *F0, 700)
     ck.errors(errs)
     if want('reload') and fallen:
         sv = E("SAVE.raw('pav-trees-v1')"); print('saved', sv, flush=True)
@@ -121,6 +145,6 @@ with lib.browser() as b:
             r = json.loads(E(f"JSON.stringify({{ s: TREEHIT.state({t['i']}), free: WCOL.treeAt({t['x']}, {t['y']}, 0.35) }})"))
             ck(f"after a reload: still lying at {t['x']:.0f}, {t['y']:.0f}, no obstacle", r['s']['dead'] and r['s']['mode'] == 'rest' and r['free'] == -1, str(r))
             vx, vy = t['x'] + t['dy'] * 9 - t['dx'] * 4, t['y'] - t['dx'] * 9 - t['dy'] * 4; yaw = math.degrees(math.atan2(t['x'] - vx, t['y'] - vy))
-            E(f"GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.3)"); lib.shot(pg, OUT, f"reload_{t['i']}")
+            E(f"GAME.setView3 && GAME.setView3(false, true); GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 2.0, {yaw}, -8, 60); GAME.step(0.3)"); lib.shot(pg, OUT, f"reload_{t['i']}")
     ck.errors(errs)
 ck.done()

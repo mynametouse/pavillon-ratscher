@@ -25,13 +25,18 @@ biegt sich wenigstens. Das Spiel soll dabei etwas lehren: Stammdurchmesser, Kraf
 | Fichte bis ≈ 16–18 cm (≈ 14 m) | hält das Auto auf, Krone schwankt | kippt um |
 | dicker | hält auf (wie bisher), Krone schwankt, bei starkem Stoß ein Knarzen | hält auf |
 
-   Langsam (Schrittgeschwindigkeit) schafft das Auto nur, was es mit Gas schieben kann (≈ 8 cm). Das Fahrzeug verliert die Arbeit, die das
-   Umdrücken kostet (M · 0,35 rad), es wird langsamer, hält aber nicht an. Ein kurzer Hinweis nennt Durchmesser und Kräfte.
+   Zum Vergleich: Die Richtlinien für passiven Schutz an Straßen (RPS 2009) zählen Bäume ab 25 cm Stammumfang (≈ 8 cm Durchmesser) als
+   nicht verformbares Hindernis.
+   Schnell (ab ≈ 4 km/h) geht ein Stamm, der nachgibt, sofort; **langsam geschoben** neigt er sich mit dem Fahrzeug (es kriecht mit
+   höchstens 0,4 m/s weiter, der Wurzelteller hebt sich, es knarzt) und reißt bei ≈ 16° aus – setzt man vorher zurück, richtet er sich
+   wieder auf. Langsam schafft das Auto nur, was es mit Gas schieben kann (≈ 8 cm). Das Fahrzeug verliert die Arbeit, die das Umdrücken
+   kostet (M · 0,35 rad), es wird langsamer, hält aber nicht an. Ein kurzer Hinweis nennt Durchmesser und Kräfte.
    Gehende werfen keine Bäume um. Vom Förster markierte Bäume und solche, an denen gerade gefällt wird, bleiben, wie sie sind (Fällen hat
    seinen eigenen Zustand).
 5. **Liegen bleiben**: ein umgedrückter Baum verlässt sofort die Kollisionen (kein Hindernis mehr, auch nicht für Gehende), liegt auf dem
    Boden (Hang beachtet, Krone hält den Stamm etwas hoch) mit aufgestelltem Wurzelteller und bleibt nach dem Neuladen liegen
-   (Speicher `pav-trees-v1`: `{ v: 1, t: [[x, y, Richtung°, Winkel], …] }`, höchstens 2000).
+   (Speicher `pav-trees-v1`: `{ v: 1, t: [[x, y, Richtung°, Winkel], …] }`, höchstens 2000). Darüberfahren: rollt ein Rad über den
+   liegenden Stamm, ruckt das Fahrzeug (Nicken/Wanken) und verliert Tempo – je dicker und schneller, desto mehr –, in der Krone knacken Äste.
 
 ## Wo der Code ist
 

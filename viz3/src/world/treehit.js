@@ -110,7 +110,7 @@ export const TREEHIT = (() => {
   // the force vehicle v can put on a stem: impact (approach speed a, m/s) or pushing with the throttle, at most what its front takes
   function forceOf(v, a, P) {
     const dyn = a > 0 ? (massOf(v) * a * a) / (2 * YIELD) : 0,
-      push = THREE.MathUtils.clamp(v.st.thr || 0, 0, 1) * P.trac;
+      push = a > -0.05 && v.st.gear !== -1 ? THREE.MathUtils.clamp(v.st.thr || 0, 0, 1) * P.trac : 0;
     return Math.min(P.front, dyn + push);
   }
   // ---------------- trees in motion: bending, swaying, falling ----------------
@@ -283,6 +283,16 @@ export const TREEHIT = (() => {
         for (let k = 0; k < 3; k++)
           tone(t0 + k * 0.11, 'sawtooth', 210 - k * 25, 150 - k * 15, 0.08 * size, 0.03, 0.12);
         noise(t0, 'bandpass', 3000, 0.8, 0.25 * size, 0.08, 0.5, 2000);
+      } else if (kind === 'bump') {
+        // a wheel over a stem: a dull knock, the bark crunching
+        noise(t0, 'lowpass', 200, 0.8, 1.0 * size, 0.004, 0.14);
+        tone(t0, 'sine', 90, 55, 0.35 * size, 0.004, 0.14);
+        for (let k = 0; k < 3; k++)
+          noise(t0 + 0.02 + k * 0.03, 'bandpass', 1500 + Math.random() * 1500, 2, 0.4 * size, 0.001, 0.03);
+      } else if (kind === 'twigs') {
+        for (let k = 0; k < 4; k++)
+          noise(t0 + Math.random() * 0.15, 'bandpass', 2500 + Math.random() * 3000, 3, 0.35 * size, 0.001, 0.015);
+        noise(t0, 'bandpass', 3000, 0.8, 0.12 * size, 0.03, 0.2, 2000);
       } else if (kind === 'swish') {
         noise(t0, 'bandpass', 3400, 0.9, 0.22 * size, 0.04, 0.3, 2200);
       }
@@ -325,8 +335,15 @@ export const TREEHIT = (() => {
         hc = contactH(v, z0, P),
         need = T.M / hc,
         F = forceOf(v, a, P);
+      // slowly (pushing): the stem leans as far as the vehicle presses in, the root plate tears at ~16°; fast: it goes at once
+      const A = ACT.get(T.i);
+      if (A && A.mode === 'push') {
+        push(T, v, h, w, a, hc, need, F);
+        return true;
+      }
       if (F >= need) {
-        fall(T, v, h, w, a, hc, need, F);
+        if (a < 1.0) push(T, v, h, w, a, hc, need, F);
+        else fall(T, v, h, w, a, hc, need, F);
         return true;
       }
       sway(T, h, a, F / need, v, need, P);
@@ -380,14 +397,17 @@ export const TREEHIT = (() => {
     if (!A || A.mode === 'bend') {
       A = { T, mode: 'sway', th: 0, w: 0, dir: [-h.n[0], -h.n[1]], e: 0, pushT: -9, push: 0, rest: 0 };
       ACT.set(T.i, A);
+    } else if (A.mode === 'push') {
+      A.mode = 'sway'; // the push stopped short of tearing the roots
+      A.w = 0;
     }
-    const thMax = THREE.MathUtils.clamp(0.012 / T.D, 0.004, 0.14),
+    const thMax = THREE.MathUtils.clamp(0.006 / T.D, 0.002, 0.08),
       start = S.time - A.pushT > 0.25;
     A.dir = [-h.n[0], -h.n[1]];
     A.pushT = S.time;
     A.push = Math.min(1, ratio) * thMax;
     if (start) {
-      A.w += Math.min(1, ratio) * thMax * (a > 0.3 ? 9 : 3);
+      A.w += Math.min(1, ratio) * thMax * (a > 0.3 ? 3 : 1);
       if (ratio > 0.25 || a > 1.5) {
         S.n.stop++;
         snd(ratio > 0.5 ? 'creak' : 'swish', T.x, T.y, Math.min(1, T.D * 6));
@@ -396,6 +416,53 @@ export const TREEHIT = (() => {
             `${T.name}, Ø ${cm(T.D)} cm: zu stark. Umdrücken bräuchte ${kN(need)} kN, ${P.der} bringt höchstens ${kN(P.front)} kN auf den Stamm.`
           );
       }
+    }
+  }
+  // pushed slowly with enough force: the vehicle creeps on (at most PUSHV), the stem leans with it and its root plate lifts; past ~16° the
+  // anchorage fails and it falls. Backing off before that, it rights itself again.
+  const PUSHV = 0.4,
+    TEAR = 0.28;
+  function push(T, v, h, w, a, hc, need, F) {
+    let A = ACT.get(T.i);
+    if (!A || A.mode !== 'push') {
+      A = {
+        T,
+        mode: 'push',
+        th: A ? Math.max(0, A.th) : 0,
+        w: 0,
+        dir: [-h.n[0], -h.n[1]],
+        e: 0.6 * plateR(T),
+        rest: 0,
+      };
+      ACT.set(T.i, A);
+      if (T.D >= 0.05 && T.plate == null) {
+        const PL = plates();
+        if (PL.count < PMAX) T.plate = PL.count++;
+      }
+      snd('creak', T.x, T.y, Math.min(1.2, T.D * 7));
+    }
+    A.pushT = S.time;
+    A.dir = [A.dir[0] * 0.8 - h.n[0] * 0.2, A.dir[1] * 0.8 - h.n[1] * 0.2];
+    const L = Math.hypot(A.dir[0], A.dir[1]) || 1;
+    A.dir = [A.dir[0] / L, A.dir[1] / L];
+    A.th = Math.max(A.th, Math.atan2(Math.max(0, h.d - 0.01), hc));
+    // held back: the approach speed into the stem at most PUSHV (the rest goes into the roots) – without the force to go on, not at all
+    // (the vehicle rests against the leaning stem; backing off, the stem rights itself)
+    const ok = F >= need,
+      lim = ok ? PUSHV : 0;
+    if (a > lim) {
+      const s = v.st,
+        f = [Math.sin(s.psi), Math.cos(s.psi)],
+        rg = [Math.cos(s.psi), -Math.sin(s.psi)],
+        dv = a - lim,
+        vx = s.u * f[0] + s.v * rg[0] + h.n[0] * dv,
+        vy = s.u * f[1] + s.v * rg[1] + h.n[1] * dv;
+      s.u = vx * f[0] + vy * f[1];
+      s.v = vx * rg[0] + vy * rg[1];
+    }
+    if (ok && A.th > TEAR) {
+      A.w = 0.35;
+      fall(T, v, h, w, Math.max(a, 0.5), hc, need, F);
     }
   }
   // the stem gives way: out of the collisions at once, the vehicle pays the work, the tree tips over in the push direction with its root plate
@@ -416,10 +483,12 @@ export const TREEHIT = (() => {
       s.u = vx * f[0] + vy * f[1];
       s.v = vx * rg[0] + vy * rg[1];
     }
-    // direction: the push (contact normal), a little towards where the vehicle moves
-    const sp = Math.hypot(w[0], w[1]) || 1;
+    // direction: the push (contact normal), a little towards where the vehicle moves – or where it has been leaning while pushed
+    const sp = Math.hypot(w[0], w[1]) || 1,
+      A0 = ACT.get(T.i);
     let dx = -h.n[0] + (0.35 * w[0]) / sp,
       dy = -h.n[1] + (0.35 * w[1]) / sp;
+    if (A0 && A0.mode === 'push') [dx, dy] = A0.dir;
     const L = Math.hypot(dx, dy) || 1;
     dx /= L;
     dy /= L;
@@ -458,22 +527,73 @@ export const TREEHIT = (() => {
       const PL = plates();
       if (PL.count < PMAX) T.plate = PL.count++;
     }
+    if (!T.down) LOGS.push({ T, dir, L: T.H * 0.9, on: 0 });
     T.down = true;
     ACT.set(T.i, A);
     return A;
+  }
+  // ---------------- driving over a lying tree: a wheel climbs the stem (a jolt, some speed lost), branches crack under the wheels ----------------
+  const LOGS = [];
+  function overLogs(dt) {
+    const VH = LATE.VEH,
+      v = VH && VH.cur;
+    if (!v || !LOGS.length || !VH.toW || !v.W) return;
+    const s = v.st,
+      spd = Math.hypot(s.u, s.v);
+    if (!(spd > 0.15)) return;
+    for (const L of LOGS) {
+      const T = L.T,
+        dir = L.dir;
+      if (Math.hypot(s.x - T.x - dir[0] * L.L * 0.5, s.y - T.y - dir[1] * L.L * 0.5) > L.L * 0.5 + 5) continue;
+      for (let k = 0; k < v.W.length && k < 8; k++) {
+        const w = v.W[k],
+          p = VH.toW(v, w.x, w.y),
+          qx = p[0] - T.x,
+          qy = p[1] - T.y,
+          al = qx * dir[0] + qy * dir[1],
+          la = Math.abs(qx * dir[1] - qy * dir[0]),
+          on = al > 0.2 && al < L.L * 0.6 && la < T.D / 2 + 0.12,
+          bit = 1 << k;
+        if (on && !(L.on & bit)) {
+          // the stem under a wheel: the thicker and the faster, the harder the jolt
+          const j = Math.min(0.35, T.D * 2.2) * Math.min(1, spd / 4);
+          s.u *= 1 - j;
+          s.v *= 1 - j;
+          s.pv += Math.sign(w.y || 1) * Math.min(0.5, T.D * 4) * Math.min(1, spd / 2);
+          s.rv += Math.sign(w.x || 1) * Math.min(0.35, T.D * 3) * Math.min(1, spd / 2);
+          snd('bump', p[0], p[1], Math.min(1, T.D * 6));
+          S.n.over = (S.n.over || 0) + 1;
+        }
+        L.on = on ? L.on | bit : L.on & ~bit;
+        if (al > L.L * 0.35 && al < L.L && la < Math.max(0.6, T.H * 0.13)) {
+          // through the lying crown: the branches hold back a little and crack
+          const k = Math.min(0.3, T.D * 2.5) * dt * 0.25;
+          s.u *= 1 - k;
+          s.v *= 1 - k;
+          if (Math.random() < dt * 5) snd('twigs', p[0], p[1], Math.min(1, spd / 3));
+        }
+      }
+    }
   }
   // ---------------- per frame: only the trees in motion ----------------
   function tick(dt) {
     if (!(dt > 0)) return;
     dt = Math.min(dt, 0.1);
     S.time += dt;
+    overLogs(dt);
     if (!ACT.size) return;
     let shadow = false;
     for (const [i, A] of ACT) {
       const T = A.T,
         n = Math.max(1, Math.ceil(dt / 0.01)),
         hh = dt / n;
-      for (let k = 0; k < n; k++) {
+      if (A.mode === 'push' && S.time - A.pushT > 0.2) {
+        // the vehicle backed off before the roots tore: the stem rights itself
+        A.mode = 'sway';
+        A.push = 0;
+        A.w = 0;
+      }
+      for (let k = 0; k < n && A.mode !== 'push' && A.mode !== 'rest'; k++) {
         if (A.mode === 'fall') {
           A.w += A.k * Math.sin(Math.max(0.02, A.th)) * hh;
           A.th += A.w * hh;
@@ -508,14 +628,14 @@ export const TREEHIT = (() => {
           if (A.mode === 'bend' && A.th < -0.4) A.th = -0.4;
         }
       }
-      pose(T, A.dir, Math.max(-0.5, A.th), A.mode === 'fall' || A.mode === 'rest' ? A.e : 0);
+      pose(T, A.dir, Math.max(-0.5, A.th), A.e || 0);
       shadow = true;
       if (A.mode === 'rest') ACT.delete(i);
-      else if (A.mode !== 'fall') {
+      else if (A.mode !== 'fall' && A.mode !== 'push') {
         const still = Math.abs(A.w) < 0.004 && Math.abs(A.th - A.rest) < 0.003;
         const free = A.mode === 'bend' ? S.time - A.pressT > 0.5 : S.time - A.pushT > 0.5;
         if (still && free) {
-          pose(T, A.dir, A.rest, 0);
+          pose(T, A.dir, A.rest, A.e || 0);
           ACT.delete(i);
         }
       }
