@@ -688,12 +688,6 @@ export function teapot(g, lx, ly, z, m = KM.porcelain, yaw = 0) {
   });
   return grp;
 }
-// stepping stone (flagstone) in the lawn, its own little footprint so the grass leaves it free
-export function stone(g, b, lx, ly, sz, rnd = R0, FOOT = null) {
-  const geo = new THREE.CylinderGeometry(sz, sz * 1.04, 0.05, 7);
-  put(g, geo, MAT.stone, lx, ly, 0.0, { ry: rnd() * 6.28, s: [1, 1, 0.7 + rnd() * 0.3], cast: false });
-  if (FOOT) FOOT.push({ b, hx: sz * 0.9, hy: sz * 0.9, ox: lx, oy: ly });
-}
 // keys of placed models (planner: 'type#n', counted in load order): the garden buildings count in their own range, so the models placed
 // further down (the workshop …) keep the keys saved furniture layouts refer to (13 models were placed here before 23.10.2026)
 let keyN0 = null;
