@@ -590,7 +590,7 @@
       "befruchtung": { "selbstfruchtbar": "nein", "befruchter": ["apfel-remo", "Reglindis", "Reanda", "Retina"] },
       "ernte": { "monate": [10, 10], "kg_jahr": null, "text": "Pflückreif Anfang Oktober, genussreif November bis Februar" },
       "pflanzzeit": [10, 4],
-      "pflege": "In der Jugend straff erziehen (Erziehungsschnitt), später auslichten. Lagerapfel: kühl und feucht lagern. Bei vielen Wühlmäusen lieber im Frühjahr pflanzen.",
+      "pflege": "In der Jugend straff erziehen (Erziehungsschnitt), später auslichten. Lagerapfel, genussreif von November bis Februar. Bei vielen Wühlmäusen lieber im Frühjahr pflanzen.",
       "schutz": ["wuehlmauskorb", "pfahl", "stammschutz", "verbissschutz"],
       "nachbarrecht": "obst-stark",
       "bezug": {
@@ -624,7 +624,7 @@
       "befruchtung": { "selbstfruchtbar": "nein", "befruchter": ["apfel-rewena", "Reanda", "Reglindis"] },
       "ernte": { "monate": [9, 10], "kg_jahr": null, "text": "Mittlere Reifezeit, haltbar bis etwa November; vor allem für Saft und Most" },
       "pflanzzeit": [10, 4],
-      "pflege": "Erziehungsschnitt in den ersten Jahren, danach im Winter auslichten. Früchte für Saft oder Most gemeinsam ernten. Bei vielen Wühlmäusen lieber im Frühjahr pflanzen.",
+      "pflege": "Erziehungsschnitt in den ersten Jahren, danach im Winter auslichten. Säuerlicher Saft- und Mostapfel, haltbar bis etwa November. Bei vielen Wühlmäusen lieber im Frühjahr pflanzen.",
       "schutz": ["wuehlmauskorb", "pfahl", "stammschutz", "verbissschutz"],
       "nachbarrecht": "obst-stark",
       "bezug": {
@@ -658,7 +658,7 @@
       "befruchtung": { "selbstfruchtbar": "ja", "befruchter": [] },
       "ernte": { "monate": [8, 9], "kg_jahr": null, "text": "Reif Ende August bis Anfang September; kleine bis mittelgroße, dunkelblaue Zwetschen" },
       "pflanzzeit": [10, 4],
-      "pflege": "Wenig schneiden, am besten im Sommer nach der Ernte. Keine Staunässe. Auf Scharka achten (Ringflecken auf Blättern und Früchten) – die Sorte ist mittel bis stark anfällig.",
+      "pflege": "Braucht tiefgründigen, sich rasch erwärmenden Boden mit genug Wasser, aber ohne Staunässe, und eine windgeschützte Stelle. Für die Viruskrankheit Scharka ist die Sorte mittel bis stark anfällig – auffällige Blätter und Früchte beobachten.",
       "schutz": ["wuehlmauskorb", "pfahl", "verbissschutz"],
       "nachbarrecht": "obst-schwach",
       "bezug": {
@@ -1727,7 +1727,7 @@
       "funktionen": ["ertrag", "bodendecker", "insekten"],
       "ernte": { "monate": [6, 7], "kg_jahr": null, "text": "Kleine, sehr aromatische Früchte" },
       "pflanzzeit": [3, 9],
-      "pflege": "Breitet sich über Ausläufer rasch aus; überalterte Polster mit den Ausläufern verjüngen.",
+      "pflege": "Breitet sich über Ausläufer rasch aus und schließt Lücken von selbst.",
       "nachbarrecht": "krautig",
       "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
       "darstellung": { "typ": "bodendecker", "krone": "flach", "laub": "#4f8a3a", "bluete": "#f8f8f0", "frucht": "#d0202a" },

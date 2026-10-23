@@ -149,6 +149,13 @@
       "herausgeber": "Thüringer Landesamt für Umwelt, Bergbau und Naturschutz (TLUBN), Kompetenzzentrum Klima; Auswertung TU Dresden (ReKIS)",
       "abgerufen": "2026-10-23",
       "lizenz": null
+    },
+    "lwg-steinobst": {
+      "titel": "Empfehlenswerte Steinobst-Sorten (Merkblatt 3160, Mai 2016)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/steinobstsorten_infoschrift_3160.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
     }
   },
   "messung": "Gemessen wird von der Mitte des Stammes – bei Sträuchern, Hecken und Rebstöcken von der Mitte der Pflanze – bis zur Grenzlinie, und zwar an der Stelle, an der die Pflanze aus dem Boden tritt (§ 47 ThürNRG). Die Breite der Krone zählt dabei nicht; über die Grenze ragende Äste und Wurzeln regelt § 910 BGB.",
@@ -278,7 +285,7 @@
   "fakten": [
     {
       "id": "grenzabstand-landwirtschaft",
-      "text": "Grenzt das Nachbargrundstück an Weinbau, Landwirtschaft, Erwerbsgartenbau oder eine kleingartenähnliche Nutzung (oder ist es per Bebauungsplan dafür vorgesehen), gelten die doppelten Abstände nach §§ 44 und 45; bei sehr stark wachsenden Bäumen und Walnusssämlingen nur die anderthalbfachen, bei Pappeln wieder die doppelten (§ 46 Abs. 1 ThürNRG). Ob eine Ziegenweide dazu zählt, im Einzelfall klären.",
+      "text": "Dient das Nachbargrundstück dem Weinbau oder wird es landwirtschaftlich, erwerbsgärtnerisch oder wie ein Kleingarten genutzt (oder sieht ein Bebauungsplan das vor), gelten die doppelten Abstände nach §§ 44 und 45 – bei sehr stark wachsenden Bäumen und Walnusssämlingen die anderthalbfachen, bei Pappeln wieder die doppelten (§ 46 Abs. 1 ThürNRG). Ob die Ziegenweide des Nachbarn dazu zählt, im Einzelfall klären.",
       "quelle": "thuernrg-aenderung-2016"
     },
     {
@@ -328,7 +335,7 @@
     },
     {
       "id": "wald-abstand",
-      "text": "Wer Wald neu begründet oder verjüngt, braucht große Abstände: 30 m zu bebauten oder bebaubaren Grundstücken, 5 m zu landwirtschaftlich oder gärtnerisch genutzten, 1,5 m zu Wald (§ 49 Abs. 1 ThürNRG). Ein Waldgarten aus Obstgehölzen wird im Planer nach §§ 44, 45 geprüft.",
+      "text": "Wer Wald neu begründet oder verjüngt, braucht große Abstände: 30 m zu bebauten oder bebaubaren Grundstücken, 5 m zu landwirtschaftlich oder gärtnerisch genutzten, 1,5 m zu Wald (§ 49 Abs. 1 ThürNRG). Diese Waldabstände betreffen Wald im Sinne des Waldrechts; Gehölze im Garten prüft der Planer nach §§ 44 und 45.",
       "quelle": "thuernrg"
     },
     {
@@ -368,7 +375,7 @@
     },
     {
       "id": "befruchtung-apfel",
-      "text": "Apfelsorten sind fast alle auf fremden Pollen einer anderen, gleichzeitig blühenden Sorte angewiesen. Triploide Sorten (z. B. Boskoop, Jakob Fischer, Kaiser Wilhelm) taugen nicht als Befruchter und brauchen selbst zwei diploide Partner; die schorftoleranten Re- und Pi-Sorten sind diploid und gute Befruchter.",
+      "text": "Triploide Apfelsorten (z. B. Boskoop, Jakob Fischer, Kaiser Wilhelm) taugen nicht als Befruchter. Die schorftoleranten Re- und Pi-Sorten sind diploid und gute Befruchter, ebenso viele alte Sorten. Eine zweite, gleichzeitig blühende Sorte in der Nähe sichert den Ertrag.",
       "quelle": "lwg-streuobst-apfel"
     },
     {
@@ -378,8 +385,8 @@
     },
     {
       "id": "befruchtung-suesskirsche",
-      "text": "Die meisten Süßkirschensorten sind selbstunfruchtbar und brauchen eine passende zweite Sorte in der Nähe; selbstfruchtbare Ausnahmen gibt es (bei den Pillnitzer Sorten z. B. ‘Achat’ und ‘Jade’).",
-      "quelle": "lfulg-baumobst"
+      "text": "Die meisten Süßkirschen sind selbstunfruchtbar und brauchen eine passende, gleichzeitig blühende zweite Sorte. Selbstfruchtbar sind z. B. ‘Lapins’, ‘Sunburst’, ‘Sweetheart’ und ‘Skeena’ – sie neigen in regenreichen Gegenden aber stärker zum Platzen und zu Monilia.",
+      "quelle": "lwg-steinobst"
     },
     {
       "id": "wuehlmaus-drahtkorb",
