@@ -12,7 +12,7 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 | Thema | Wer | Branch | Stand | Dateien |
 |---|---|---|---|---|
-| Umbau Phase 0–2 (Plan: Projektdokument `claude/pavillon-umbau.md`) | Kern-Chat, session_01GdUYaP2XXAAEDXZpGWVkBm | `kern/*` → `src` | Phase 0 live (V16f, 22.10. 23:44), Phase 1 live (V16g, 23.10. 2:20); Falkos Wünsche der Nacht mit acht Hilfs-Agenten live als V16h–V16k (23.10. 3:30–6:27); Phase 2 (`docs/plans/plan_phase2.md`) ab 23.10. 9:30, zuerst Baustein 1 (Zwischenstand auf `wip/kern`, Prüfung auf `kern/phase2`) (`KERN.places/lights/zones/act/emit`); Datenvertrag des Gartenplaners `viz3/src/gplan/gplan_schema.js` | alles außer den Welt-Ordnern und den Ordnern der Agenten |
+| Umbau Phase 0–2 (Plan: Projektdokument `claude/pavillon-umbau.md`) | Kern-Chat, session_01GdUYaP2XXAAEDXZpGWVkBm | `kern/*` → `src` | Phase 0 live (V16f, 22.10. 23:44), Phase 1 live (V16g, 23.10. 2:20); Falkos Wünsche der Nacht mit acht Hilfs-Agenten live als V16h–V16k (23.10. 3:30–6:27); Phase 2 (`docs/plans/plan_phase2.md`) ab 23.10. 9:30: Baustein 1 auf `src` (10:40), Bausteine 2 und 3 begonnen (ein Tagebuch, `?szenario=`); Start in Bauphase 0 (Falko 9:54); Zwischenstände auf `wip/kern`, Prüfläufe auf `kern/phase2`; Datenvertrag des Gartenplaners `viz3/src/gplan/gplan_schema.js` | alles außer den Welt-Ordnern und den Ordnern der Agenten |
 | Welt Woche 1: Quellen je Land, Testgebiet in GitHub Actions, Straßen als eigenes Bauteil, eigene Ansicht (Auftrag `claude/pavillon-welt.md`) | Hilfs-Agent des Kern-Chats | `welt/woche1` | Woche 1 fertig (23.10. 0:15, d3f5cd0), auf `src` zusammengeführt (2:05); offen: Thüringer DGM1/DOM1 (Server-Wartung, CAPTCHA), R2-Zugang von Falko | `tools/welt/**`, `viz3/welt-viewer/**`, `.github/workflows/welt-*.yml`, auf `gh-pages` nur `welt-test/` |
 | Garten: Türen, Dach, Bungalow mit Anbau, Hütte, Gewächshaus, Einrichtung (`docs/plans/plan_leben.md` 4) | Hilfs-Agent `garten` | `feat/garten` | fertig 23.10. 5:20 (03b5c2e, in `src`) | `garden/bungalow.js`, `holzhaus.js`, `greenhouse.js`, neue `garden/*_in.js`, `garden/places.js`, `viz3/extra/garten/`, `shell/css/garten.css`, `viz3/test/garten*.py`; Port 8971 |
 | Spielfiguren Falko, Sarah, Christoph (3) | Hilfs-Agent `figuren` | `feat/figuren` | fertig 23.10. 4:55 (18b223d, in `src`) | `game/avatar.js`, `tools/player/`, Figurenwahl in `shell/menu.html`, `viz3/extra/figuren/`, `shell/css/figuren.css`, `viz3/test/figuren*.py`; Port 8972 |
@@ -48,6 +48,13 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
    sich daran, Änderungen nur über den Kern-Chat (Testdaten: `viz3/test/unit/fixtures/gplan_mini.json`).
 
 ## Nachrichten (neueste oben)
+
+- 23.10. 10:40 Kern: Phase 2, Baustein 1 ist auf `src` – neue Dienste in `core/kern.js` (`docs/ARCHITECTURE.md`, „Dienste für Erweiterungen“):
+  `KERN.place`-Anbieter/`KERN.area`, `KERN.spot`, `KERN.act`, `KERN.on/emit`, `KERN.zone` (Beispiel `welt/schleusingen.js`), `KERN.until`,
+  `KERN.lights.borrow`, `KERN.where`, `KERN.scenario` (`?szenario=…`), `KERN.tasks.source` (ein Tagebuch, J). `GAME.step` treibt `KERN.update`.
+  Agenten: `git fetch origin && git merge origin/src`, neue Orte, Sprungziele, Aktionen, Zonen, Lampen, Startsituationen und Aufgaben über diese
+  Dienste. Die Seite startet jetzt in Bauphase 0 (alte Garage); auf dem Testserver wie bisher fertig, `?bauphase=0` zeigt den echten Start.
+  Die Pflanzen-Datenbank (`feat/pflanzen`) ist auf `src`.
 
 - 23.10. 10:10 Kern: Falko (9:54): Start in Bauphase 0 (alte Garage statt Pavillon) – baut der Kern-Chat (`boot/boot.js`, Lampen bleiben
   sichtbar und werden über die Stärke geschaltet, `?bauphase=`; auf dem Testserver beginnt es wie bisher fertig). Einrichtung der Gartengebäude
