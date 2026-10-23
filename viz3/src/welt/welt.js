@@ -247,11 +247,19 @@ export const WELT = (() => {
   }
   S.setPads = (id, list) => {
     for (let i = pads.length - 1; i >= 0; i--) if (pads[i].id === id) pads.splice(i, 1);
-    for (const { poly, z } of list || []) {
+    for (const { poly, z, under } of list || []) {
       const xs = poly.filter((v, k) => k % 2 === 0),
         ys = poly.filter((v, k) => k % 2 === 1);
-      pads.push({ id, poly, z, bb: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] });
+      pads.push({
+        id,
+        poly,
+        z,
+        under: !!under,
+        bb: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)],
+      });
     }
+    // feat/fahrt: pads marked 'under' (the roads of welt/fahrt.js) come last – the pads of a zone (a square, a hall) win
+    pads.sort((a, b) => a.under - b.under);
     for (const t of S.tiles.values())
       if (t.mesh && t.h) {
         const old = t.mesh.geometry;
@@ -632,18 +640,20 @@ export const WELT = (() => {
     }
     S.active = true;
     // where the tiles are needed: the walker (the camera follows it), else the camera
+    // feat/fahrt: or a point ahead of a moving vehicle (S.focus, welt/fahrt.js), so the ground is there before the wheels
     const walk = P.mode === 'walk',
-      cx = walk ? P.x : cam.position.x,
-      cy = walk ? P.y : -cam.position.z,
+      fo = S.focus && S.focus(),
+      cx = fo ? fo[0] : walk ? P.x : cam.position.x,
+      cy = fo ? fo[1] : walk ? P.y : -cam.position.z,
       [E, N] = toU(cx, cy);
     if (acc > 0.5 || Math.hypot(E - lastE, N - lastN) > 25) {
       acc = 0;
       lastE = E;
       lastN = N;
       plan(E, N);
-      // tiles nobody wants for 30 s are freed
+      // tiles nobody wants for 30 s are freed (feat/fahrt: S.keep ms, shorter while a vehicle drives fast)
       const now = performance.now();
-      for (const t of [...S.tiles.values()]) if (now - t.used > 30000 && t.st !== 'load') drop(t);
+      for (const t of [...S.tiles.values()]) if (now - t.used > (S.keep || 30000) && t.st !== 'load') drop(t);
       dirty = true;
     }
     pump();

@@ -6,7 +6,7 @@ import { $ } from '../core/head.js';
 import { P } from '../game/walkable.js';
 import { ROADS } from '../world/roads.js';
 import { VEH } from './vehicle.js';
-const MMAP = (() => {
+export const MMAP = (() => {
   const cv = $('vmap'),
     lab = $('vmaplab');
   if (!cv || !window.ROADS || !ROADS.on) return null;
@@ -109,6 +109,8 @@ const MMAP = (() => {
       });
       g.stroke();
     }
+    // feat/fahrt: beyond the square the roads and routes of welt/fahrt.js (S.more)
+    if (S.more) S.more(g, P, cx, cy, R2);
     const rt = ROADS.routes.klinge;
     if (rt) {
       g.strokeStyle = 'rgba(255,196,64,0.75)';
@@ -157,8 +159,16 @@ const MMAP = (() => {
     g.beginPath();
     g.arc(r0, r0, r0 - 1, 0, 7);
     g.stroke();
-    // the next destination
-    if (lab && rt) {
+    // the next destination (feat/fahrt: S.dest – out there where the vehicle heads: the Markt, the nursery, the garden)
+    const dst = S.dest && S.dest(cx, cy, psi);
+    if (lab && dst) {
+      const txt =
+        dst[0] +
+        ' ' +
+        (dst[1] > 950 ? (dst[1] / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(dst[1] / 10) * 10 + ' m');
+      if (lab.hidden) lab.hidden = false;
+      if (lab.textContent !== txt) lab.textContent = txt;
+    } else if (lab && rt) {
       const J = rt[rt.length - 1],
         dG = Math.hypot(cx - 2, cy - 2),
         dJ = Math.hypot(cx - J[0], cy - J[1]),

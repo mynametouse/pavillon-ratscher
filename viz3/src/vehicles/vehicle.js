@@ -458,7 +458,9 @@ export const VEH = (() => {
     s.ay = lerp1(s.ay, dv + s.u * s.r, h * 10);
     s.psi += s.r * h;
     const f = fwd(s.psi),
-      rg = rgt(s.psi);
+      rg = rgt(s.psi),
+      x0 = s.x,
+      y0 = s.y;
     s.x += (s.u * f[0] + s.v * rg[0]) * h;
     s.y += (s.u * f[1] + s.v * rg[1]) * h;
     // body: pitch and roll of the ground (spring-damped) plus a little dive, squat and lean
@@ -470,16 +472,21 @@ export const VEH = (() => {
     s.roll += s.rv * h;
     s.dp = lerp1(s.dp, THREE.MathUtils.clamp(-s.ax * sp.dive, -0.06, 0.06), h * 6);
     s.dr = lerp1(s.dr, THREE.MathUtils.clamp(-s.ay * sp.lean, -0.07, 0.07), h * 5);
-    // the edge of the map: a soft stop
+    // the edge of the map: a soft stop. feat/fahrt: beyond the square a vehicle drives where the tiled world carries it – S.edge
+    // (welt/fahrt.js) answers null (drive on), 'wait' (the ground there is still loading) or 'end'; without it KERN.free decides
     const B = boundsBox();
     if (s.x < B[0] || s.x > B[2] || s.y < B[1] || s.y > B[3]) {
-      s.x = THREE.MathUtils.clamp(s.x, B[0], B[2]);
-      s.y = THREE.MathUtils.clamp(s.y, B[1], B[3]);
-      s.u *= 0.3;
-      s.v *= 0.3;
-      if (v === S.cur && performance.now() - (S.edgeT || 0) > 4000) {
-        S.edgeT = performance.now();
-        PLAY.think('Hier endet die Karte.');
+      const ed = S.edge ? S.edge(v) : KERN.free(s.x, s.y) ? null : 'end';
+      if (ed) {
+        const inB = x0 >= B[0] && x0 <= B[2] && y0 >= B[1] && y0 <= B[3];
+        s.x = inB ? THREE.MathUtils.clamp(s.x, B[0], B[2]) : x0;
+        s.y = inB ? THREE.MathUtils.clamp(s.y, B[1], B[3]) : y0;
+        s.u *= 0.3;
+        s.v *= 0.3;
+        if (v === S.cur && performance.now() - (S.edgeT || 0) > 4000) {
+          S.edgeT = performance.now();
+          PLAY.think(ed === 'wait' ? 'Gelände lädt …' : 'Hier endet die Karte.');
+        }
       }
     }
     for (const w of v.W) w.spin += (w.lock && s.hand ? 0 : s.u / w.r) * h;
@@ -684,6 +691,8 @@ export const VEH = (() => {
         const h = circBox(A, w.x, w.y, 0.32);
         if (h) hits.push([h, null]);
       }
+    // feat/fahrt: beyond the square the walls of the zones (Schleusingen …) through KERN.pushOut (welt/fahrt.js)
+    if (S.hitsOut) S.hitsOut(A, z0, z1, hits);
     return hits;
   }
   // guides (V16d: the garden bridge's edges) hold only the wheels – the loader, a log on the fork or the body may reach out over the edge
@@ -1072,6 +1081,8 @@ export const VEH = (() => {
       } // parked and still: no physics
       let inp = driven ? input(v, dt) : { thr: 0, brk: 0, steer: 0, hand: true };
       if (driven && v.model.hold && v.model.hold()) inp = { thr: 0, brk: 0, steer: inp.steer, hand: true }; // V16h: held (the winch's shield in the ground)
+      // feat/fahrt: a speed limit from outside (welt/fahrt.js: the ground ahead still loading, or the end of the map ahead)
+      if (driven && S.limit) inp = S.limit(v, inp);
       const n = Math.max(1, Math.ceil(dt / HSTEP)),
         h = dt / n;
       for (let i = 0; i < n; i++) {

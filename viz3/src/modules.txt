@@ -92,6 +92,8 @@ vehicles/car.js             # V16b the car: estate in Logan MCV size (V16b1), Be
 vehicles/tractor.js         # V16b the tractor with front loader and pallet fork (TRACTOR2)
 vehicles/trailer.js         # V16d the stake trailer: tandem axle, stakes, towed on a tractrix, couple with K (TRAILER)
 vehicles/minimap.js         # V16b small map while driving: roads, route to the Klinge, destination (MMAP)
+# feat/fahrt: driving beyond the square below this line
+welt/fahrt.js               # feat/fahrt driving out of the square: tiles ahead, the edge, roads with profiles, signs, the map (FAHRT)
 world/fell.js               # V16c2 felling at the Klinge: forest gear, chainsaw, felling the professional way, delimbing, bucking, measuring (FELL)
 werk/holz.js                # V16d wood 1: the logs as objects – on the fork, the trailer, the log yard (HOLZ)
 werk/holz_saw.js            # V16d wood 2: the band sawmill – clamp, plan, cut board by board, blocks beside the mill (HOLZSAW)
