@@ -248,6 +248,12 @@ with lib.browser() as b:
         E(f"GAME.orbit(200, 38, 520, [{ORT[0]}, {ORT[1]}, VESSRA.gz({ORT[0]}, {ORT[1]})]); GAME.step(0.5)")
         settle()
         lib.shot(pg, OUT, 'j_oben')
+        sg = J("(() => { const q = (VESSRA.streetSigns || []).find(q => q.name === 'Schleusinger Straße'); return q ? { at: q.at, d: q.d } : null; })()")
+        if sg:   # the street sign by the gate, from 6 m in front of it
+            nx, ny = sg['d'][1], -sg['d'][0]
+            x, y = sg['at'][0] + nx * 6, sg['at'][1] + ny * 6
+            view(x, y, yaw(x, y, sg['at'][0], sg['at'][1]), 8, 55)
+            lib.shot(pg, OUT, 'l_strassenschild')
     if want('night'):
         E("if (!DN.active) GAME.setMode('auto'); CLOCK.t = 22 * 60 + 40; DN.update(true)")
         lib.settle_light(pg)
