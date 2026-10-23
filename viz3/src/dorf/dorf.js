@@ -76,6 +76,7 @@ export const DORF = (() => {
     out: {},
     lifeT: 0,
     talkTo: null,
+    carNeed: {}, // owners whose car is about to leave or coming home near the visitor: their figure is wanted (S.t of the last ask)
   };
   const school = () => {
     if (S.sc) return S.sc;
@@ -172,9 +173,15 @@ export const DORF = (() => {
       role.textContent = p.age + ' · ' + p.role;
       el.hidden = false;
       U.task();
-      const g = p.greet,
-        n = (U.n[k] = (U.n[k] || 0) + 1);
-      say.textContent = g[(n - 1) % g.length];
+      // the evening greeting at the school and the fire, otherwise one of the day (good morning / hello / good evening by the clock)
+      const ev = S.placed === 'school' || S.placed === 'fire',
+        g = ev || !p.day ? p.greet : p.day,
+        n = (U.n[k] = (U.n[k] || 0) + 1),
+        hr = window.CLOCK ? (window.CLOCK.t % 1440) / 60 : 12;
+      say.textContent = g[(n - 1) % g.length].replace(
+        '{gruss}',
+        hr < 4 || hr >= 18 ? 'Guten Abend' : hr < 11 ? 'Guten Morgen' : 'Hallo'
+      );
       talkFig(k, say.textContent);
       if (mode === 'game') game.start();
       else topics(k);
@@ -698,7 +705,10 @@ export const DORF = (() => {
         }
     }
     S.lifeT -= dt;
-    if (!want) for (const k of DPEOPLE.KEYS) if (S.life[k] && S.near[k]) need.add(k);
+    if (!want) {
+      for (const k of DPEOPLE.KEYS) if (S.life[k] && S.near[k]) need.add(k);
+      for (const k in S.carNeed) if (S.t - S.carNeed[k] < 4) need.add(k);
+    }
     const miss = [...need].filter(k => !DPEOPLE.figs[k]);
     if (miss.length && !DPEOPLE.busy) DPEOPLE.ensure(miss).then(() => (S.placed = null));
     for (const k of Object.keys(DPEOPLE.figs)) {
@@ -736,22 +746,30 @@ export const DORF = (() => {
   (window.TICKS || (window.TICKS = [])).push(tick);
   // the owner walks from the door to the car before it leaves, and back into the house when it is home again (if the figure is there)
   const CARHOOKS = {
-    board(k, p0) {
+    // the owner's figure is wanted (true when it is there)
+    want(k) {
+      S.carNeed[k] = S.t;
+      return !!DPEOPLE.figs[k];
+    },
+    // out of the door to the driver's door; returns how long the car waits for her or him (s)
+    board(k, p) {
       const h = DLIFE.homes() && DLIFE.homes()[k],
         f = DPEOPLE.figs[k];
-      if (!h || !f || S.placed) return;
+      if (!h || !f || S.placed) return 0;
       DPEOPLE.place(k, h.step[0], h.step[1], KERN.terrain(h.step[0], h.step[1]), 0, 'stand');
       S.out[k] = 'car';
-      DPEOPLE.walkTo(k, p0[0], p0[1], 1.1, zAt, () => {
+      DPEOPLE.walkTo(k, p[0], p[1], 1.1, zAt, () => {
         DPEOPLE.hide(k);
         S.out[k] = 'in';
       });
+      return Math.hypot(p[0] - h.step[0], p[1] - h.step[1]) / 1.1 + 2;
     },
-    alight(k, p0) {
+    // home again: from the driver's door into the house
+    alight(k, p) {
       const h = DLIFE.homes() && DLIFE.homes()[k],
         f = DPEOPLE.figs[k];
       if (!h || !f || S.placed) return;
-      DPEOPLE.place(k, p0[0], p0[1], KERN.terrain(p0[0], p0[1]), 0, 'stand');
+      DPEOPLE.place(k, p[0], p[1], KERN.terrain(p[0], p[1]), 0, 'stand');
       S.out[k] = 'car';
       DPEOPLE.walkTo(k, h.step[0], h.step[1], 1.0, zAt, () => {
         DPEOPLE.hide(k);

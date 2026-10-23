@@ -18,6 +18,11 @@ export const DTEXT = (() => {
         'Guten Abend! Setz dich ruhig dazu – zum Zuhören braucht man keine Karten.',
         'Na, wieder da? Die Chronik freut sich über jeden neuen Namen.',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Ich zupfe nur ein bisschen Unkraut – an der Chronik schreibt es sich besser, wenn die Hände vorher etwas getan haben.',
+        '{gruss}! Schön, dass man dich auch mal im Dorf sieht. Wie weit ist der Pavillon?',
+      ],
       topics: {
         schule: [
           'Die alte Schule',
@@ -53,6 +58,11 @@ export const DTEXT = (() => {
       greet: [
         'Willkommen im Feuerwehrhaus! Die Garderobe ist der Haken neben der Tür.',
         'Grüß dich! Schon gehört? Die Sirene läuft wieder wie neu.',
+      ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Nur kurz Luft schnappen – nachher bringe ich noch die Atemschutzgeräte zur Prüfung nach Schleusingen.',
+        '{gruss}! Dienstabend ist jeden zweiten Mittwoch im Gerätehaus. Wir können jeden gebrauchen, der mit anpackt.',
       ],
       topics: {
         wehr: [
@@ -90,6 +100,11 @@ export const DTEXT = (() => {
         'N’Abend. Schön, dass du dich mal blicken lässt.',
         'Da ist ja der Pavillonbauer. Holz genug für den Winter?',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Heute mal kein Wald – die Kette ist beim Schärfen, und der Rücken freut sich.',
+        '{gruss}! Trocken ist es. Das sieht man an den Fichten zuerst, die werfen dann Nadeln.',
+      ],
       topics: {
         wald: [
           'Der Wald',
@@ -125,6 +140,11 @@ export const DTEXT = (() => {
         'Na, was darf’s sein? Fassbrause, Apfelschorle, ein Bier?',
         'Hallo! Die Gläser sind frisch gespült, die Brezeln von heute.',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Ich bin nur kurz vom Hof rüber, die Kühe warten nicht.',
+        '{gruss}! Wenn das Wetter hält, mähe ich morgen die Wiese an der Klinge.',
+      ],
       topics: {
         trinken: [
           'Etwas zu trinken',
@@ -159,6 +179,11 @@ export const DTEXT = (() => {
         'Hallo! Spielst du mit? Ich erklär’s dir, ist ganz einfach.',
         'Da bist du ja wieder! Ingrid hat schon zweimal gewonnen.',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Frühdienst gehabt – jetzt noch schnell die Beete, dann Füße hoch.',
+        '{gruss}! Kommst du Freitag zum Rommé? Ich brauche jemanden, der noch schlechter spielt als Ingrid.',
+      ],
       topics: {
         romme: [
           'Rommé',
@@ -192,6 +217,11 @@ export const DTEXT = (() => {
         'Guten Abend! Schön, dass du da bist. Komm rein, hier duzen sich alle.',
         'Hallo! Freitags ist bei uns immer ein Stuhl frei.',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Im Rathaus bin ich die Ortsteilbürgermeisterin, im Garten bin ich nur Ingrid.',
+        '{gruss}! Die Rosen danken es einem, wenn man sie abends gießt und nicht in der Mittagssonne.',
+      ],
       topics: {
         dorf: [
           'Das Dorf',
@@ -222,6 +252,11 @@ export const DTEXT = (() => {
       h: 1.82,
       stoop: 0,
       greet: ['Na? Läuft alles, auch das Auto?', 'Servus! Wenn’s irgendwo klappert – ich schau’s mir an.'],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Läuft Huberts Traktor noch? Wenn nicht – du weißt, wo ich wohne.',
+        '{gruss}! Feierabend. Jetzt noch der Rasenmäher von meiner Mutter, der springt seit Ostern nicht an.',
+      ],
       topics: {
         mondeo: [
           'Huberts Mondeo',
@@ -255,6 +290,11 @@ export const DTEXT = (() => {
       greet: [
         'Hallo! Pass auf die Beete auf, da sind gerade die Bohnen gekommen.',
         'Na, schon mal Eier von meinen Hühnern probiert?',
+      ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Brauchst du Eier? Heute waren es zwölf, die Hühner sind fleißig.',
+        '{gruss}! Pass auf, wo du hintrittst – da kommen gerade die Bohnen.',
       ],
       topics: {
         garten: [

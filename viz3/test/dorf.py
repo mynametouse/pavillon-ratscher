@@ -201,17 +201,23 @@ with lib.browser() as b:
             # a car: Katrin drives to work on a weekday morning – parked at the kerb, she gets in, it drives off along the street
             E("DN.e0 = Date.UTC(2026, 5, 9) / 864e5 - Math.floor(CLOCK.t / 1440)")   # Tuesday 9 June
             dep = J("(() => { const d = Math.floor(CLOCK.t / 1440); for (let m = 6 * 60; m < 9 * 60; m++) if (DLIFE.away('katrin', d * 1440 + m)) return d * 1440 + m; return null; })()")
-            E(f"CLOCK.t = {dep} - 1.5; DN.update(true)"); lib.settle_light(pg)
+            E(f"CLOCK.t = {dep} - 3; DN.update(true)"); lib.settle_light(pg)
             E("(() => { const h = DLIFE.homes().katrin; GAME.view(h.door[0] + h.n[0] * 9, h.door[1] + h.n[1] * 9, KERN.terrain(h.door[0], h.door[1]) + 1.7, Math.atan2(-h.n[0], -h.n[1]) * 180 / Math.PI, -6, 66); })()")
-            for i in range(12): E("GAME.step(0.5)")
+            for i in range(8): E("GAME.step(0.25)")
             cs = J('DORF.state().cars'); print('cars', cs, flush=True)
-            ck('four villagers have cars, parked at the kerb', cs and len(cs) == 4, str(cs))
+            ck('four villagers have cars, parked at the kerb', cs and len(cs) == 4 and all(c['st'] == 'parked' for c in cs.values()), str(cs))
             lib.shot(pg, OUT, 'h_car_parked')
-            for i in range(30):
+            E(f"CLOCK.t = {dep} + 0.5")   # time to go: Katrin comes out, walks to the driver's door, gets in, the car pulls out
+            seen = set()
+            for i in range(90):
                 E("GAME.step(0.5)")
-                if J("DORF.state().cars.katrin.st") in ('leaving',): break
+                st = J("DORF.state().cars.katrin"); seen.add(st['st'])
+                if st['st'] == 'boarding' and J("DPEOPLE.figs.katrin && DPEOPLE.figs.katrin.g.visible") and 'walk' not in seen:
+                    seen.add('walk'); lib.shot(pg, OUT, 'h_car_boarding')
+                if st['st'] == 'leaving': break
+                time.sleep(0.1)
             for i in range(8): E("GAME.step(0.5)")
-            st = J("DORF.state().cars.katrin"); print('katrin car', st, flush=True)
+            st = J("DORF.state().cars.katrin"); print('katrin car', st, sorted(seen), flush=True)
             lib.shot(pg, OUT, 'h_car_leaving')
             ck('Katrin drives off to work', st and st['st'] in ('leaving', 'away') and st['a'] > 1, str(st))
         except Exception as ex:

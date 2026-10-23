@@ -139,6 +139,13 @@ export const DCARS = (() => {
     y += (c.path.in0[1] - y) * e;
     return { x, y, hd: q.hd + 180 };
   }
+  // the driver's door (left, a little ahead of the middle) of a car standing at p with heading hd
+  function door(c, p, hd) {
+    const r = (hd * Math.PI) / 180,
+      fx = Math.sin(r),
+      fy = Math.cos(r);
+    return [p[0] - fy * 1.15 + fx * 0.3, p[1] + fx * 1.15 + fy * 0.3];
+  }
   const _v = new THREE.Vector3(),
     _f = new THREE.Vector3();
   // does the visitor see the car (near and in front of the camera)?
@@ -188,13 +195,18 @@ export const DCARS = (() => {
         continue;
       }
       if (c.st === 'parked' && aw && c.pose === 'out') {
-        c.st = 'boarding';
-        c.wait = 2.5; // the owner comes out and gets in (dorf/dorf.js shows the walk)
-        if (hooks && hooks.board) hooks.board(c.key, p0);
+        // the owner comes out and gets in (dorf/dorf.js loads the figure and shows the walk; a few seconds at most for the loading)
+        const there = !hooks || !hooks.want || hooks.want(c.key);
+        c.figWait = there ? 0 : (c.figWait || 0) + dt;
+        if (there || c.figWait > 6) {
+          c.st = 'boarding';
+          c.wait = Math.max(2.5, (hooks && hooks.board && hooks.board(c.key, door(c, c.path.pts[0], c.path.hd))) || 0);
+        }
       } else if (c.st === 'away' && !aw) {
         c.st = 'arriving';
         c.a = c.path.L;
       }
+      if (c.st === 'arriving' && hooks && hooks.want) hooks.want(c.key);
       if (c.st === 'boarding') {
         c.wait -= dt;
         if (c.wait <= 0) c.st = 'leaving';
@@ -220,7 +232,7 @@ export const DCARS = (() => {
           c.v = 0;
           c.st = 'parked';
           c.pose = 'in'; // across the street, facing in
-          if (hooks && hooks.alight) hooks.alight(c.key, c.path.in0);
+          if (hooks && hooks.alight) hooks.alight(c.key, door(c, c.path.in0, c.path.hd + 180));
         }
         const a = Math.max(0, Math.min(c.path.L, c.a)),
           q = out ? along(c, a) : alongIn(c, a);

@@ -22,18 +22,20 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   Jens (34, Kfz-Mechaniker, Feuerwehr), Heike (47, Gemüsegarten, Hühner) –
   Microsoft-Rocketbox-Figuren (MIT) mit den Bewegungen der Spielfiguren, gebaut mit `tools/player/build_villagers.sh` →
   `viz3/extra/dorf/dist/chars/dorf_*.json` (0,7–1,2 MB je Figur, Gesicht 1024 px, Rest 512 px; unter den durchsichtigen Pixeln der
-  Haarkarten liegt die mittlere Haarfarbe, sonst gäbe es dunkle Ränder; Gerhard ohne Haarkarten). Geladen werden sie **nur** kurz vor und
-  während eines Abends in der Nähe, danach wieder freigegeben.
+  Haarkarten liegt die mittlere Haarfarbe, sonst gäbe es dunkle Ränder; Gerhard ohne Haarkarten; Manfred schwarze Schuhe, Wolfgang
+  dunkle Arbeitsschuhe – die hellbraunen sahen im Feuerschein wie nackte Füße aus, `tools/player/dorf_shoes.py`). Geladen werden sie
+  **nur**, wenn sie gebraucht werden (Abend in der Nähe, Garten, Auto), jede gleich an ihren Platz, danach wieder freigegeben.
 - **Gespräche**: Aktionsknopf „Mit … sprechen“ → Gesprächsfenster (`#dorfpanel`, Aussehen wie bei den Nachbarn, `shell/css/dorf.css`) mit
   Themen: Schule (1828, heute Vereinshaus der Feuerwehr), Dorflinde (1888), Talsperre, Wald und Klinge, Wetter, Hubert und Ronald …
   Tischgespräche und Geschichten laufen als Untertitel (`#dorfsub`).
 - **Aufgabe „Freitagabend in der alten Schule“** (gespeichert in `pav-dorf-v1`): Aushang lesen → freitags hingehen → Ingrid begrüßen →
   am Rommé-Tisch hinsetzen → Gerhards Geschichte von der Schuluhr → mit Katrin „Höher oder tiefer“ spielen (fünf Runden, Skatblatt) → zum
   Feuer am Acker kommen und mit Wolfgang sprechen. Stand im Gesprächsfenster oben.
-- **Feuer am Acker** (`dorf_fire.js`, `DFIRE`): Feuerstelle mit Steinring und Holzbänken (immer da), beim Feuer Holzkegel, Flammen
-  (Rausch-Shader), glühende Scheite, Glut am Boden, Funkenflug, Rauch, flackerndes Licht (geliehene Ofenlampe des Pavillons),
-  Knistern (Web Audio). Die Shader werden schon beim Herankommen übersetzt (kein Ruckeln, wenn das Feuer angeht). Ortsname
-  „Feuer am Acker · Richtung Klinge“.
+- **Feuer am Acker** (`dorf_fire.js`, `DFIRE`): Feuerstelle mit einem Ring aus Feldsteinen (rund, unregelmäßig, jeder etwas anders,
+  zum Feuer hin verrußt) und Holzbänken (immer da); beim Feuer ein Kegel aus Rundhölzern mit Rinde, oben verkohlt mit glühenden Rissen
+  (Leuchtkarte statt einer Farbe über dem ganzen Scheit), Flammen (Rausch-Shader), Glut am Boden, Funkenflug, Rauch, flackerndes Licht
+  (geliehene Ofenlampe des Pavillons), Knistern (Web Audio). Die Shader werden schon beim Herankommen übersetzt (kein Ruckeln, wenn das
+  Feuer angeht). Ortsname „Feuer am Acker · Richtung Klinge“.
 
 - **Alltag im Dorf** (`dorf_life.js`, `DLIFE`; Falko 23.10. 2:52): Die Leute sind meist im Haus. Jeder hat ein eigenes Haus am Anger
   (aus `world/village.js`, eines mit Tür, die Häuser verteilt), eine Haustür und einen Platz im Vorgarten neben dem Weg. Der Tag kommt
@@ -42,8 +44,10 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   Sie kommen aus der Tür, gehen die paar Schritte, arbeiten, gehen wieder hinein; wer angesprochen wird, steht auf und dreht sich her.
   Geladen werden nur die, die draußen sind und in der Nähe (140 m), wenige auf einmal; nach 25 s ohne Bedarf wieder freigegeben.
 - **Autos** (`dorf_cars.js`, `DCARS`): Katrin und Jens fahren werktags zur Arbeit, Ingrid dienstags und donnerstags ins Rathaus, Manfred
-  manchmal einkaufen. Das Auto (schlicht, ohne Marke) parkt am Straßenrand vor dem Haus; der Besitzer geht hin, steigt ein, es fährt
-  langsam die Straße entlang aus dem Dorf (weg vom Anger, ~200 m) und kommt später zurück. Es wartet, wenn man davor steht.
+  manchmal einkaufen. Das Auto (schlicht, ohne Marke) parkt am Straßenrand der nächsten Straße, rechts in Fahrtrichtung hinaus; der
+  Besitzer kommt aus dem Haus, geht zur Fahrertür, steigt ein, es fährt langsam auf der rechten Spur aus dem Dorf (weg vom Anger, ~200 m)
+  und kommt später auf der Gegenspur zurück, parkt gegenüber, der Besitzer geht ins Haus. Es wartet, wenn man davor steht. Gebaut erst
+  im Umkreis von 450 m um den Anger; weiter weg gilt nur der Fahrplan.
 - **Besorgungen** (Aufgaben wie in einem Spiel, `DTEXT.ERRANDS`): „Für die Chronik“ (Gerhard: Dorflinde, Brunnen, Schuluhr ansehen),
   „Ein Brett für die Tombola“ (Ingrid: ein fertiges Stirnholzbrett aus der Klingenholz-Werkstatt bringen – `WERK.handOver`),
   „Wolfgangs Lehrstück“ (an der Klinge einen markierten Baum fällen und vermessen – `FELL.logs`), „Ein Päckchen für Hubert“ (Jens:
@@ -55,7 +59,7 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
 
 - Schnell im Browser: `index.html?dorf=freitag` (Freitag 20 Uhr, vor der Schultür) oder `?dorf=feuer` (Samstag 21 Uhr am Feuer).
 - In der Konsole: `DORF.jump('skat', 20)`, `DORF.atDoor()`, `DORF.enter()`, `DORF.toFire()`, `DORF.state()`, `DORF.UI.open('gerhard')`.
-- Browsertest `viz3/test/dorf.py` (Abschnitte `light,door,inside,talk,task,fire,life,summer,gl`), läuft bei jedem Push auf `feat/dorf` in GitHub Actions
+- Browsertest `viz3/test/dorf.py` (Abschnitte `light,door,inside,talk,task,fire,life,summer,gl`), läuft bei jedem Push auf `feat/dorf-leben` in GitHub Actions
   (`viz3/extra/dorf/tests.txt`); Bilder in `out/dorf/`.
 
 ## Für den Kern-Chat
