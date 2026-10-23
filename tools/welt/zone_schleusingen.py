@@ -294,8 +294,8 @@ def main():
             ht = float(str(tags.get('height', '')).replace('m', '').replace(',', '.'))
         except ValueError:
             pass
-        small = typ in SMALL or A < 25
-        big = typ in BIG or (typ in ('yes', 'industrial', 'commercial', 'retail') and A > 450)
+        small = (typ in SMALL or A < 25) and not lm
+        big = (typ in BIG or (typ in ('yes', 'industrial', 'commercial', 'retail') and A > 450)) and not lm
         kind = 2 if small else 1 if big else 0
         # storeys: the tag, else 3 at the Markt, 2-3 in the old town, 2 outside; sheds one
         h = (zlib.crc32(fid.encode()) & 0xffff) / 65535.0
@@ -310,6 +310,28 @@ def main():
         else:
             ux, W, Lr = e2 / max(np.hypot(*e2), 1e-9), np.hypot(*e1), np.hypot(*e2)
         ctr = mrr.mean(axis=0)
+        if lm == 'rathaus':
+            # the ridge runs away from the Markt: the front (the long wall facing the Markt) is the gable (photos 2008, 2025)
+            ring0 = np.array(poly.exterior.coords)[:-1]
+            best, fn = -1e9, None
+            for i in range(len(ring0)):
+                p0, p1 = ring0[i], ring0[(i + 1) % len(ring0)]
+                L = float(np.hypot(*(p1 - p0)))
+                if L < 8:
+                    continue
+                nrm = np.array([p1[1] - p0[1], -(p1[0] - p0[0])]) / L
+                m = (p0 + p1) / 2
+                dm = np.array(MARKT) - m
+                sc = float(nrm @ dm / np.hypot(*dm)) * min(L, 16)
+                if sc > best:
+                    best, fn = sc, nrm
+            if fn is not None:
+                ux = -fn
+                uyy = np.array([-ux[1], ux[0]])
+                tt = (ring0 - ring0.mean(axis=0)) @ ux
+                dd = (ring0 - ring0.mean(axis=0)) @ uyy
+                W, Lr = float(dd.max() - dd.min()), float(tt.max() - tt.min())
+                ctr = ring0.mean(axis=0) + ux * (tt.max() + tt.min()) / 2 + uyy * (dd.max() + dd.min()) / 2
         uy = np.array([-ux[1], ux[0]])
         stH = 2.75 if kind == 0 else 3.0
         plinth = 0.45 if kind == 0 else 0.0
@@ -323,6 +345,8 @@ def main():
         if shape in ('gabled', 'hipped', 'pitched', 'half-hipped', 'gambrel', 'mansard'):
             flat = False
         pitch = 15.0 if big else 22.0 if small else (48.0 if old else 42.0)
+        if lm == 'rathaus':
+            pitch = 52.0   # steep, as in the photos
         if kind == 3:
             eave, pitch = 12.5, 55.0
         hip = shape in ('hipped', 'half-hipped') or lm == 'rathaus' or (kind == 0 and A > 260 and not old and h < 0.3)
@@ -343,7 +367,7 @@ def main():
                 if lm == 'rathaus':
                     # the Rathaus shows its gable to the Markt (photos 2008, 2025) and is hipped at the back
                     tm = (MARKT[0] - ctr[0]) * ux[0] + (MARKT[1] - ctr[1]) * ux[1]
-                    planes += [(ke, 0.0, ce)] if tm < 0 else [(-ke, 0.0, ce)]
+                    planes += [(-ke, 0.0, ce)] if tm < 0 else [(ke, 0.0, ce)]   # the hip at the end away from the Markt
                 else:
                     planes += [(-ke, 0.0, ce), (ke, 0.0, ce)]
         ring = np.array(poly.exterior.coords)[:-1]

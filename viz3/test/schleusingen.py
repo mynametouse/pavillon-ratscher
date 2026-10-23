@@ -138,10 +138,20 @@ with lib.browser() as b:
         lib.shot(pg, OUT, 'b_rathaus')
         view(-1088, 1214, yaw(-1088, 1214, -1080, 1260), 3)
         lib.shot(pg, OUT, 'c_markt_nord')
-        view(-1205, 1222, yaw(-1205, 1222, -1246, 1213), 16)
-        lib.shot(pg, OUT, 'd_johannis')
-        view(-1228, 1128, yaw(-1228, 1128, -1290, 1180), 10)
-        lib.shot(pg, OUT, 'e_bertholdsburg')
+        # viewpoints on the streets near the church tower and below the castle (found in the street data)
+        vp = json.loads(E("""JSON.stringify((() => { const st = SCHL.data ? SCHL.data.st : [], best = (tx, ty, d0, d1, f) => { let b = null, bs = -1e9;
+              for (const s of st) { if (s.k > 5) continue; for (let k = 0; k < s.p.length; k += 2) { const x = s.p[k], y = s.p[k + 1], d = Math.hypot(x - tx, y - ty);
+                if (d < d0 || d > d1) continue; const sc = f(x, y); if (sc > bs) { bs = sc; b = [x, y]; } } } return b; };
+            return { kirche: best(-1246, 1213, 40, 70, (x, y) => x + y * 0.3), burg: best(-1293, 1175, 75, 120, (x, y) => -y - Math.abs(x + 1290) * 0.5) }; })())"""))
+        print('viewpoints', vp, flush=True)
+        if vp.get('kirche'):
+            x, y = vp['kirche']
+            view(x, y, yaw(x, y, -1246, 1210), 18)
+            lib.shot(pg, OUT, 'd_johannis')
+        if vp.get('burg'):
+            x, y = vp['burg']
+            view(x, y, yaw(x, y, -1290, 1172), 14)
+            lib.shot(pg, OUT, 'e_bertholdsburg')
         E("""(() => { const R = SCHL.rathaus, p = R.Q(R.L / 2 - 2, 1.4, 0), q = R.Q(R.L / 2, R.w1, 0);
             GAME.view(p[0], p[1], R.floor + 1.62, Math.atan2(q[0] - p[0], q[1] - p[1]) * 180 / Math.PI, -4, 70); for (let i = 0; i < 8; i++) GAME.step(0.25); })()""")
         lib.shot(pg, OUT, 'f_rathaus_halle')

@@ -11,6 +11,7 @@ import { KERN } from '../core/kern.js';
 import { ANISO, markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
 import { RATSCHER } from '../world/ratscher.js';
+import { ROADS } from '../world/roads.js';
 export const WELT = (() => {
   const M = window.GEOMAN;
   const S = {
@@ -140,6 +141,22 @@ export const WELT = (() => {
   };
   // ---- tiles ----
   // one material per tile (its photo); all share one program
+  // the ground of the tiles looks like the land of world/ratscher.js: the photo lifted from haze, bright land compressed, grain of grass
+  // and soil up close (ROADS.shader: landDetail), and grey surfaces (streets, squares) get sett stones up close
+  const TILE_GLSL = `vec3 weltGround( vec2 p, vec3 c, float dist ) {
+      float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), chroma = ( mx - mn ) / max( mx, 0.02 );
+      float pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * ( 1.0 - smoothstep( 40.0, 90.0, dist ) );
+      vec3 g = landDetail( p, c, dist );
+      if ( pave > 0.01 ) {
+        vec2 q = p * 7.5; q.x += 0.5 * mod( floor( q.y ), 2.0 );
+        vec2 f = fract( q ); float fw = fwidth( q.x ) + fwidth( q.y ), fine = 1.0 - smoothstep( 0.15, 0.6, fw );
+        float jt = ( 1.0 - smoothstep( 0.0, 0.14, min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) ) ) ) * fine;
+        vec3 st = landHi( c ) * 0.78 * ( 0.84 + 0.32 * rdH( floor( q ) ) * fine ) * ( 1.0 - 0.45 * jt );
+        g = mix( g, st, pave ); }
+      return g; }`;
+  const STUB =
+    'float rdH( vec2 p ) { return 0.5; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }';
+  // one material per tile (its photo); all share one program
   function tileMat(tex) {
     const m = new THREE.MeshStandardMaterial({
       map: tex,
@@ -150,7 +167,26 @@ export const WELT = (() => {
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 2,
     });
-    m.color.setScalar(0.86); // aerial photos are developed brighter than the ground (world/ratscher.js uGGain)
+    m.onBeforeCompile = sh => {
+      const G = ROADS.shader ? ROADS.shader(sh) : STUB;
+      sh.vertexShader =
+        'varying vec2 vGeo;\n' +
+        sh.vertexShader.replace(
+          '#include <begin_vertex>',
+          '#include <begin_vertex>\n vGeo = vec2( position.x, -position.z );'
+        );
+      sh.fragmentShader =
+        'varying vec2 vGeo;\n' +
+        G +
+        '\n' +
+        TILE_GLSL +
+        '\n' +
+        sh.fragmentShader.replace(
+          '#include <map_fragment>',
+          '#include <map_fragment>\n diffuseColor.rgb = weltGround( vGeo, diffuseColor.rgb, length( vViewPosition ) );'
+        );
+    };
+    m.customProgramCacheKey = () => 'welt-tile' + (window.GLCHECK && GLCHECK.lite ? '-lite' : '');
     return m;
   }
   // ---- level pads: a zone may set the terrain flat inside a polygon (a courtyard, the floor of a hall) ----

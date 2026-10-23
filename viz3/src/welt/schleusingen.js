@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { BASE, cam, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
+import { TREES } from '../garden/trees.js';
 import { P } from '../game/walkable.js';
 import { SPOTS } from '../game/player.js';
 import { toast } from '../audio/audio.js';
@@ -324,7 +325,27 @@ export const SCHL = (() => {
         }
         S.segs.push([ax, ay, ax + F.dx * h0, ay + F.dy * h0], [ax + F.dx * h1, ay + F.dy * h1, bx, by]);
       } else {
-        if (gable) {
+        if (b.band && !blind) {
+          // two bands (the castle): stone below, a half-timbered top storey with its own foot (photos 2025)
+          const zb = eave - b.band,
+            atU = Object.assign({}, at, {
+              st: ST.FW,
+              eave: b.band,
+              t0: t0 - zb,
+              tA: at.tA - zb,
+              t1: t1 - zb,
+              du: -1,
+              dw: 0,
+            }),
+            atL = Object.assign({}, at, { st: ST.PLASTER });
+          WB.quad(F, ax, ay, bx, by, 0, L, zb, zb, z0, low, atL);
+          if (gable) {
+            const mx = ax + F.dx * uA0,
+              my = ay + F.dy * uA0;
+            WB.quad(F, ax, ay, mx, my, 0, uA0, t0 - zb, tA0 - zb, z0 + zb, z0 + zb, atU);
+            WB.quad(F, mx, my, bx, by, uA0, L, tA0 - zb, t1 - zb, z0 + zb, z0 + zb, atU);
+          } else WB.quad(F, ax, ay, bx, by, 0, L, t0 - zb, t1 - zb, z0 + zb, z0 + zb, atU);
+        } else if (gable) {
           const mx = ax + F.dx * uA0,
             my = ay + F.dy * uA0;
           WB.quad(F, ax, ay, mx, my, 0, uA0, t0, tA0, z0, low, at);
@@ -360,6 +381,7 @@ export const SCHL = (() => {
         nz = -nz;
       }
       T.push({ v: [a, c, d], n: [nx, ny, nz], gx: nz > 0.05 ? -nx / nz : 0, gy: nz > 0.05 ? -ny / nz : 0 });
+      b.roofT = T;
     }
     const flat = !!b.fl;
     for (const t of T) {
@@ -581,6 +603,7 @@ export const SCHL = (() => {
       const r = await fetch(URL_);
       if (!r.ok) throw new Error('stadt.json ' + r.status);
       data = await r.json();
+      S.data = data;
       gz = await WELT.sampler(ZONE[0], ZONE[1], ZONE[2], ZONE[3]);
       S.loadMs = Math.round(performance.now() - t0);
       S.state = 'data';
@@ -679,8 +702,10 @@ export const SCHL = (() => {
     S.cells = null;
     S.bld = [];
     S.rathaus = null;
+    S.pool = null;
     if (WELT.setPads) WELT.setPads('schleusingen', []);
     data = null;
+    S.data = null;
     gz = null;
     S.state = 'idle';
     markDirty(true);
@@ -716,8 +741,10 @@ export const SCHL = (() => {
       b.F.forEach(f => (f[8] |= 1)); // no house windows: the church windows are tall arches (props)
     },
     burg(b) {
-      b.stF = (f, k) => ST.FW_UP;
+      b.stF = () => ST.PLASTER;
+      b.band = 3.1;
       b.st.sp = 2.9;
+      b.st.timber = 0;
     },
     turm(b) {
       b.stF = () => ST.PLASTER;
@@ -737,6 +764,13 @@ export const SCHL = (() => {
       WOOD = linC([0.42, 0.27, 0.16]),
       RED = linC([0.62, 0.14, 0.1]);
     const gzz = (x, y) => ground(x, y);
+    // dormers on the roofs round the Markt and in the old town (photos 2025: small shed dormers and gabled ones towards the street)
+    for (const b of S.bld) {
+      if (b.k !== 0 || b.fl || b.lm || !b.doorFac || !b.roofT || b.lv < 2) continue;
+      const dM = Math.hypot(b.cx - MARKT[0], b.cy - MARKT[1]);
+      if (dM > 260 || hh(b.i + 51) > (dM < 90 ? 0.95 : 0.5)) continue;
+      dormers(K, b);
+    }
     // the Marktbrunnen (photos 2025): octagonal platform, a big octagonal sandstone basin with bulging panels (covered in winter by a low
     // grey lid), a column with a capital and the figure of a woman in Renaissance dress, iron brackets
     {
@@ -1048,6 +1082,53 @@ export const SCHL = (() => {
     pm.userData.own = true;
     lamps();
     signs();
+    trees();
+  }
+  // ---- trees round the Markt (photos 2025: young trees along the edges of the square): the garden's ash, instanced ----
+  function trees() {
+    const K = TREES.ash || TREES.oakA,
+      M = data.marktplatz;
+    if (!K || !K.bg || !M) return;
+    const pts = [];
+    for (let k = 0; k < M.length; k += 2) {
+      const ax = M[k],
+        ay = M[k + 1],
+        bx = M[(k + 2) % M.length],
+        by = M[(k + 3) % M.length],
+        L = Math.hypot(bx - ax, by - ay);
+      for (let d = 6; d < L - 4; d += 13) {
+        const x = ax + ((bx - ax) * d) / L,
+          y = ay + ((by - ay) * d) / L,
+          // 3.5 m into the square (towards its middle)
+          mx = (MARKT[0] - x) / (Math.hypot(MARKT[0] - x, MARKT[1] - y) || 1),
+          my = (MARKT[1] - y) / (Math.hypot(MARKT[0] - x, MARKT[1] - y) || 1),
+          tx = x + mx * 3.5,
+          ty = y + my * 3.5;
+        if (Math.hypot(tx - MARKT[0], ty - MARKT[1]) < 9 || pts.some(q => Math.hypot(q[0] - tx, q[1] - ty) < 9))
+          continue;
+        if (S.rathaus && Math.hypot(tx - S.rathaus.door[0], ty - S.rathaus.door[1]) < 12) continue;
+        pts.push([tx, ty]);
+      }
+    }
+    if (!pts.length) return;
+    const ib = new THREE.InstancedMesh(K.bg, K.bark, pts.length),
+      il = new THREE.InstancedMesh(K.lg, K.leaf, pts.length),
+      m4 = new THREE.Matrix4(),
+      q = new THREE.Quaternion();
+    pts.forEach(([x, y], i) => {
+      const h = 8.5 + hh(i + 71) * 2.5,
+        sc = h / K.H;
+      q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), hh(i + 73) * 6.28);
+      m4.compose(V(x, y, ground(x, y) - 0.1), q, new THREE.Vector3(sc * 0.8, sc, sc * 0.8));
+      ib.setMatrixAt(i, m4);
+      il.setMatrixAt(i, m4);
+      S.segs.push(...circleSegs(x, y, 0.22, 6));
+    });
+    for (const im of [ib, il]) {
+      im.computeBoundingSphere();
+      add(im, 'trees');
+    }
+    S.trees = pts.length;
   }
   // ---- signs over the doors of shops, inns and offices (names from OSM) and over the Rathaus portal: one canvas atlas ----
   function signs() {
@@ -1147,6 +1228,107 @@ export const SCHL = (() => {
     m.userData.own = true;
     m.userData.tex = tex;
     S.signs = list.slice(0, rows).map(it => it.name);
+  }
+  // the roof height over a point (top faces of the building's roof), or null
+  function roofZ(b, x, y) {
+    let best = null;
+    for (const t of b.roofT) {
+      const [a, c, d] = t.v,
+        d0 = (c[1] - d[1]) * (a[0] - d[0]) + (d[0] - c[0]) * (a[1] - d[1]);
+      if (Math.abs(d0) < 1e-9) continue;
+      const l1 = ((c[1] - d[1]) * (x - d[0]) + (d[0] - c[0]) * (y - d[1])) / d0,
+        l2 = ((d[1] - a[1]) * (x - d[0]) + (a[0] - d[0]) * (y - d[1])) / d0,
+        l3 = 1 - l1 - l2;
+      if (l1 < -1e-4 || l2 < -1e-4 || l3 < -1e-4) continue;
+      const z = l1 * a[2] + l2 * c[2] + l3 * d[2];
+      if (best === null || z > best) best = z;
+    }
+    return best;
+  }
+  // shed dormers over the street facade: front with a window, cheeks, a flat roof back into the main roof
+  function dormers(K, b) {
+    const d = b.doorFac,
+      f = b.F.find(q => Math.abs(q[0] - d.ax) < 1e-6 && Math.abs(q[1] - d.ay) < 1e-6);
+    if (!f) return;
+    const L = Math.hypot(f[2] - f[0], f[3] - f[1]),
+      ix = -d.dy,
+      iy = d.dx, // into the house
+      n = Math.min(4, Math.floor((L - 1.2) / 3.4)),
+      col = b.st.col,
+      rc = b.rc.map(lin).map(v => v * 0.85),
+      FR = linC([0.92, 0.92, 0.9]),
+      GL = linC([0.1, 0.12, 0.14]),
+      shed = hh(b.i + 57) < 0.5;
+    if (n < 1) return;
+    for (let k = 0; k < n; k++) {
+      const u = ((k + 0.5) * L) / n,
+        px = f[0] + d.dx * u,
+        py = f[1] + d.dy * u,
+        d1 = 0.9,
+        zb = roofZ(b, px + ix * d1, py + iy * d1);
+      if (zb === null || zb < b.z0 + b.e - 0.5) continue;
+      const hf = 1.35,
+        zt = zb + hf,
+        w = shed ? 2.0 : 1.35;
+      let d2 = null;
+      for (let dd = d1 + 0.2; dd < d1 + 7; dd += 0.1) {
+        const z = roofZ(b, px + ix * dd, py + iy * dd);
+        if (z === null) break;
+        if (z >= zt + 0.12) {
+          d2 = dd;
+          break;
+        }
+      }
+      if (d2 === null) continue;
+      const P_ = (s2, dd, z) => [px + d.dx * s2 + ix * dd, py + d.dy * s2 + iy * dd, z],
+        hw = w / 2;
+      // front wall (faces the street), window with a frame
+      K.quad(P_(-hw, d1, zb - 0.1), P_(hw, d1, zb - 0.1), P_(hw, d1, zt), P_(-hw, d1, zt), col);
+      K.quad(
+        P_(-0.45, d1 - 0.02, zb + 0.25),
+        P_(0.45, d1 - 0.02, zb + 0.25),
+        P_(0.45, d1 - 0.02, zb + 1.15),
+        P_(-0.45, d1 - 0.02, zb + 1.15),
+        FR
+      );
+      K.quad(
+        P_(-0.37, d1 - 0.03, zb + 0.32),
+        P_(0.37, d1 - 0.03, zb + 0.32),
+        P_(0.37, d1 - 0.03, zb + 1.07),
+        P_(-0.37, d1 - 0.03, zb + 1.07),
+        GL
+      );
+      // cheeks
+      K.tri(P_(-hw, d1, zb - 0.1), P_(-hw, d1, zt), P_(-hw, d2, zt + 0.12), col);
+      K.tri(P_(hw, d1, zb - 0.1), P_(hw, d2, zt + 0.12), P_(hw, d1, zt), col);
+      if (shed)
+        K.quad(
+          P_(-hw - 0.12, d1 - 0.2, zt + 0.02),
+          P_(hw + 0.12, d1 - 0.2, zt + 0.02),
+          P_(hw + 0.12, d2, zt + 0.14),
+          P_(-hw - 0.12, d2, zt + 0.14),
+          rc
+        );
+      else {
+        // a small gable: two slopes from a ridge over the middle
+        const zr = zt + 0.55;
+        K.quad(
+          P_(-hw - 0.12, d1 - 0.2, zt - 0.05),
+          P_(0, d1 - 0.2, zr),
+          P_(0, d2, zr),
+          P_(-hw - 0.12, d2, zt - 0.05),
+          rc
+        );
+        K.quad(
+          P_(0, d1 - 0.2, zr),
+          P_(hw + 0.12, d1 - 0.2, zt - 0.05),
+          P_(hw + 0.12, d2, zt - 0.05),
+          P_(0, d2, zr),
+          rc
+        );
+        K.tri(P_(-hw, d1, zt), P_(hw, d1, zt), P_(0, d1, zr - 0.04), col);
+      }
+    }
   }
   // a tall window with a round arch on a wall: lower left corner on the wall line (ox, oy), along (ex, ey)
   function arch(K, ox, oy, ex, ey, z0, w, h, col) {
@@ -1258,6 +1440,27 @@ export const SCHL = (() => {
       const [cx, cy] = [tx + nx * 1.12 * sg, ty + ny * 1.12 * sg];
       K.disc(cx, cy, top + 0.4, nx * sg, ny * sg, 0.62, linC([0.92, 0.9, 0.82]), 16, false);
       K.box(cx + nx * sg * 0.02, cy + ny * sg * 0.02, top + 0.4, 0.05, 0.05, 0.45, Math.atan2(dy, dx), C.IRON);
+    }
+    // the decorated front gable (Renaissance, photo 2008): steps with finials along both slopes, cream with yellow
+    if (f[6] > Math.max(f[4], f[7]) + 1) {
+      const uA = f[5],
+        a = Math.atan2(dy, dx),
+        CR = linC([0.95, 0.88, 0.62]);
+      for (const [ua, ta, ub, tb] of [
+        [0, f[4], uA, f[6]],
+        [L, f[7], uA, f[6]],
+      ])
+        for (let k = 1; k <= 3; k++) {
+          const t = k / 4,
+            u = ua + (ub - ua) * t,
+            zz = z + ta + (tb - ta) * t,
+            [x, y] = [f[0] + dx * u + nx * 0.05, f[1] + dy * u + ny * 0.05];
+          K.box(x, y, zz - 0.2, 0.55, 0.5, 0.75, a, CR);
+          K.ball(x, y, zz + 0.68, 0.13, C.GOLD, 6);
+        }
+      const [x, y] = [f[0] + dx * uA + nx * 0.05, f[1] + dy * uA + ny * 0.05];
+      K.box(x, y, z + f[6] - 0.2, 0.7, 0.5, 1.0, a, CR);
+      K.ball(x, y, z + f[6] + 0.95, 0.16, C.GOLD, 6);
     }
     // a clock in the front gable, under the apex
     {
@@ -1454,6 +1657,20 @@ export const SCHL = (() => {
     }
     iL.userData.own = true;
     if (VPROPS.lamps) VPROPS.lamps.push(...S.lamps);
+    // light on the ground under each lamp at night: the soft disc of the village lamps (same material, shown with theirs)
+    if (VPROPS.pool) {
+      const pg = new THREE.PlaneGeometry(9, 9);
+      pg.rotateX(-Math.PI / 2);
+      const iP = new THREE.InstancedMesh(pg, VPROPS.pool.material, L.length);
+      L.forEach(([x, y], i) => {
+        m4.makeTranslation(x, ground(x, y) + 0.12, -y);
+        iP.setMatrixAt(i, m4);
+      });
+      iP.renderOrder = 2;
+      iP.computeBoundingSphere();
+      iP.visible = VPROPS.pool.visible;
+      S.pool = add(iP, 'lamp light');
+    }
   }
   // ---- collisions: wall segments in a 16 m grid ----
   function grid() {
@@ -1575,6 +1792,10 @@ export const SCHL = (() => {
     acc += dt;
     if (acc < 0.4) return;
     acc = 0;
+    if (S.pool && VPROPS.pool && S.pool.visible !== VPROPS.pool.visible) {
+      S.pool.visible = VPROPS.pool.visible;
+      markDirty();
+    }
     const walk = P.mode === 'walk',
       cx = walk ? P.x : cam.position.x,
       cy = walk ? P.y : -cam.position.z,
@@ -1602,6 +1823,8 @@ export const SCHL = (() => {
     buildings: S.bld.length,
     segs: S.segs.length,
     lamps: S.lamps.length,
+    trees: S.trees || 0,
+    signs: (S.signs || []).length,
     ms: S.ms,
     loadMs: S.loadMs || 0,
     err: S.err,
