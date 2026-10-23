@@ -33,8 +33,9 @@ schickt; unterwegs Schleusingen.
 - **Karte beim Fahren**: draußen die Straßen und die beiden Routen (Garten → Markt Schleusingen 3,7 km, Garten → Baumschule 10,8 km),
   unten das Ziel in Fahrtrichtung mit Entfernung.
 
-- **Szenario** `?szenario=fahrt` („Im Auto auf der Straße nach Schleusingen“): im Auto auf der L 3004, 160 m vor der Ortstafel von
-  Schleusingen. **Ereignis** `fahrt:ankunft` `{ ziel: 'markt' | 'baumschule', x, y }` beim Ankommen (`KERN.on`).
+- **Szenarien** `?szenario=fahrt` („Im Auto auf der Straße nach Schleusingen“): im Auto auf der L 3004, 160 m vor der Ortstafel von
+  Schleusingen; `?szenario=fahrt-vessra` („Im Auto auf der L 1625 nach Kloster Veßra“): auf der L 1625 kurz vor dem Westrand des Quadrats,
+  8,4 km bis zur Baumschule. **Ereignis** `fahrt:ankunft` `{ ziel: 'markt' | 'baumschule', x, y }` beim Ankommen (`KERN.on`).
 
 ## Hinfahren
 Ins Auto (Menü „Zum Auto“), dann über den Ratschner Anger und den Geisenhöhner Weg auf den Flurweg; für Schleusingen nach Norden
@@ -58,6 +59,11 @@ in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide R
   Pflaster – auf dem Land neben den Straßen sah das wie Kopfsteinpflaster auf Feldern aus; das Asphalt-Overlay der Fahrt setzt 0, die
   Zonen bleiben bei 1 (ohne fünften Wert wie bisher).
 - `modules.txt`: Marke `# feat/fahrt` mit `welt/fahrt.js` unter `vehicles/minimap.js`.
+- Neuer `window`-Name: `FAHRT` (`status()`, `data`, `roadAt`, `place`). Keine Speicher-Schlüssel. Shader-Programme: Schilder und Brücken
+  teilen die der Schleusinger Schilder und Requisiten (Standard-Material mit Bild bzw. mit Vertexfarben); gemessen +1 bis +3.
+- Eintrag für `docs/ARCHITECTURE.md` (Modulkarte, Abschnitt 6): `FAHRT` – welt/fahrt.js – Fahrt über das 2,4-km-Quadrat hinaus:
+  Kacheln vor dem Fahrzeug, Rand der Karte, Straßen mit Längsprofil (eingeschnitten), Brücken, Ortstafeln, Wegweiser, Karte, Szenario `fahrt`.
+- `viz3/extra/fahrt/tests.txt` nennt beim Übergeben nur `fahrt` (Schleusingen und Veßra liefen auf diesem Branch mit, grün).
 
 ## Testen
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8982 --serve fahrt` – holt die Kacheln entlang der Routen nach

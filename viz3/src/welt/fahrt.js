@@ -1134,6 +1134,16 @@ export const FAHRT = (() => {
       VEH.enter('car');
     },
   });
+  // ?szenario=fahrt-vessra – in the car on the L 1625 125 m inside the west edge of the square, heading for Kloster Veßra (8.4 km to
+  // the nursery); inside the square the ground is there at once, the tiles ahead load while the car rolls towards the edge
+  KERN.scenario('fahrt-vessra', {
+    label: 'Im Auto auf der L 1625 nach Kloster Veßra',
+    order: 33,
+    run: () => {
+      VEH.place('car', -905.1, -30.7, -1.704);
+      VEH.enter('car');
+    },
+  });
   // ---------------- tests and the error report ----------------
   S.status = () => ({
     on: S.on,
