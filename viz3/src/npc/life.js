@@ -31,6 +31,7 @@ import {
   startDrive,
   TRACTOR,
   TRACTOR_HOME,
+  tractorCol,
   trkPt,
 } from './npc.js';
 import { PLAY } from '../game/play.js';
@@ -583,6 +584,7 @@ export const LIFE = (() => {
     }
     TRACTOR.g.position.copy(V(TRACTOR_HOME.x, TRACTOR_HOME.y, 0));
     TRACTOR.g.rotation.set(0, -TRACTOR_HOME.az, 0);
+    tractorCol(true);
     w.fig.mode = 'stand';
     w.state = 'roam';
     w.inside = false;

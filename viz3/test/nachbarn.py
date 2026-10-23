@@ -52,6 +52,7 @@ with lib.browser() as b:
         E("LIFE.force('hubert', 'putter'); LIFE.force('ronald', 'paddock'); __N.clock(11, 0)")
         lib.settle_light(pg)
         view(-10.5, 2.0, 1.7, -100, -4, 70); shot('yard_from_garden')
+        print('cost', E("JSON.stringify({ calls: GAME.R.info.render.calls, tris: GAME.R.info.render.triangles, programs: GAME.R.info.programs.length, geometries: GAME.R.info.memory.geometries, textures: GAME.R.info.memory.textures })"), flush=True)
         view(-14.0, -3.0, 1.7, -55, -6, 65); shot('workshops_open_east')
         view(-17.2, 4.0, 1.6, -78, -4, 60); shot('drying_huts')
         view(-13.6, -15.0, 1.5, -95, -6, 60); shot('car_on_ramp_side')

@@ -477,6 +477,12 @@ TRACTOR.g.position.copy(V(-15.1, 27.2, 0));
 TRACTOR.g.rotation.y = -((20 * Math.PI) / 180);
 scene.add(TRACTOR.g);
 COL.push([-16.5, -13.7, 25.3, 29.1, 0, 1.8, 'tractor', null, null]);
+// its collider at home is lowered out of reach while it is away (the grid keeps the entry; only its height changes)
+const TRACTOR_COL = COL[COL.length - 1];
+export function tractorCol(home) {
+  TRACTOR_COL[4] = home ? 0 : -20;
+  TRACTOR_COL[5] = home ? 1.8 : -19;
+}
 B(-16, -13, 15.7, 16.9, 0, 1.3, MAT.logs, { col: true });
 B(-15.9, -13.1, 15.8, 16.8, 1.3, 1.45, MAT.plank, { col: false });
 placeGLB('tyre_old', { x: -17.35, y: 28.6, z: 0, face: 35 });
@@ -927,6 +933,7 @@ export function startDrive(w, o = {}) {
   };
   w.fig.mode = 'sit';
   w.state = 'drive';
+  tractorCol(false);
   audio.loopAt('tractor', 'tractor', w.drive.x, w.drive.y, { vol: 0.9, ref: 14, rate: 0.95 });
 }
 // the tractor follows the ground outside the flat modelled square (the road to the village): height under the middle, pitch from the axles
@@ -1000,6 +1007,7 @@ function updateDrive(w, dt) {
     }
     if (d.t > 2.5) {
       audio.stopLoop('tractor', 1.2);
+      if (Math.hypot(d.x - TRACTOR_HOME.x, d.y - TRACTOR_HOME.y) < 1.5) tractorCol(true);
       w.drive = null;
       w.fig.mode = 'stand';
       w.state = 'roam';
