@@ -44,9 +44,8 @@ Ein anderes Modul kann einen Nachbarn übernehmen, indem es `NPCS.<name>.ctl` au
    NPC.PAD.gy - 0.2], [NPC.PAD.x0 + 1.5, NPC.PAD.gy], [NPC.PAD.x0 + 4, NPC.PAD.gy + 1]]`. `GAME.go('ziegen')` zeigt schon auf die neue Weide.
 2. **Tests, die die Nachbarn von Hand stellen** (`npcreal.py`, `realviews.py`, ggf. `perfbase.py`): vorher
    `LIFE.force('hubert', 'off'); LIFE.force('ronald', 'off')` – sonst gehen sie zu ihrer Arbeit.
-3. **`docs/ARCHITECTURE.md`**: Modulkarte (`garden/hof_hubert.js` – Huberts Hof `HOF`, `SHEDS`, `RAMP`; `garden/hof_auto.js` – `HOFCAR`;
-   `npc/life.js` – Tagesablauf `LIFE`), neue `window`-Namen `HOF`, `HOFCAR`, `LIFE`, dazu `NPC.MOWER`, `NPC.PAD`; Abschnitt 6, Zeile `NPC`:
-   Tagesablauf, Arbeitshaltungen (`fig.pose`, `fig.speak`, `fig.after` in `npc/npc_real.js`).
+3. **`docs/ARCHITECTURE.md`**: `LIFE`, `HOF`, `HOFCAR` stehen seit cdd2176 drin; fehlt nur noch in der Zeile `NPC`: Ronalds Mähtraktor
+   `NPC.MOWER`, die Weide `NPC.PAD`, Arbeitshaltungen (`fig.pose`, `fig.speak`, `fig.after` in `npc/npc_real.js`).
 4. **Zur Laufzeit ergänzt, könnte in die Besitzer-Dateien wandern**: `SPOTS.ziegen` und `SPOTS.hubert` (neue Stellen; `game/player.js`),
    die Ortsnamen „Huberts Hof“, „Huberts Werkstatt“, „Ronalds Wiese“ über eine Hülle um `window.sitePlace` (`garden/places.js`; `deps.mjs`
    meldet `sitePlace` deshalb als von zwei Modulen geschrieben), die Beschriftung von `seat:hubertbench` (frei nur, wenn Hubert nicht selbst
