@@ -21,6 +21,8 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
     „Schalen glasieren“ (drei Glasureimer vor dem Regal), „Glasurbrand starten“ – danach glänzen sie in der Akzentfarbe des Ateliers;
     „Am Bild weitermalen“ (fünf Schritte, dann „Neues Bild beginnen“: Landschaft, Stillleben, Abstrakt). Lampe mit Schalter an der Tür
     (wie bisher, Schlüssel `holzhaus`).
+  - Kleine Geräusche (im Browser erzeugt, nur in der Nähe): Klick-Klack des Klappsofas (auch die Sitzecke im Wohnwagen), Brummen der
+    Scheibe, Knarzen des Schaukelstuhls, Relais des Brennofens, ein Plopp beim Glasieren, Pinselstriche an der Staffelei.
   - Ortsname „Atelier“, Menü → Orte „Atelier“ (`KERN.spot`), Startsituation `?szenario=atelier` (drinnen an der Tür).
   - Im Tagebuch (J): drei kleine Aufgaben als Daten (`core/tasks.js` `TASKS.define`), sie beginnen beim ersten Betreten des Ateliers
     und rücken über die Ereignisse des Ateliers vor: „Töpfern: eine Schale drehen und brennen“, „Malen: ein Bild fertig malen“,
