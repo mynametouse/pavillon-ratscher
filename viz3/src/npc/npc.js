@@ -468,7 +468,7 @@ window.NPC_PAD = PAD;
   const [tx, ty] = PAD.trough;
   B(tx - 0.6, tx + 0.6, ty - 0.4, ty + 0.4, 0, 0.45, NM.trough, { col: true });
   B(tx - 0.55, tx + 0.55, ty - 0.35, ty + 0.35, 0.38, 0.4, NM.water, { col: false, cast: false });
-  B(PAD.x0 + 1.0, PAD.x0 + 1.9, sy - 5.0, sy - 4.5, 0, 0.9, MAT.plank, { col: true }); // Pfahl für den Salzleckstein
+  B(PAD.x0 + 1.0, PAD.x0 + 1.9, PAD.y0 + 4.0, PAD.y0 + 4.5, 0, 0.9, MAT.plank, { col: true }); // Pfahl für den Salzleckstein
 }
 // ---- Hubert's side: tractor parked by the northern shed, a woodpile, a bench ----
 export const TRACTOR = makeTractor();

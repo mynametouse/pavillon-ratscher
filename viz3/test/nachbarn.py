@@ -96,6 +96,7 @@ with lib.browser() as b:
         E("LIFE.force('ronald', 'mow')"); t = E("__N.until(() => NPC.NPCS.ronald.mow && Math.hypot(LIFE.MS.x - NPC.MOWER.home.x, LIFE.MS.y - NPC.MOWER.home.y) > 8, 120)")
         rw = E("__N.w('ronald')"); ms = E("JSON.stringify(LIFE.MS)"); print('mow', t, rw, ms, flush=True)
         ck('Ronald mows the meadow (tractor moving)', t >= 0 and rw['mow'], ms)
+        E("__N.run(25)"); ck('cut grass lies behind the mower', E("LIFE.swaths()") >= 1, E("LIFE.swaths()"))
         E("(() => { const m = LIFE.MS; GAME.view(m.x - 9, m.y - 4, 2.2, 66, -8, 60); GAME.step(0.05); })()"); shot('ronald_mow')
         E("LIFE.force('ronald', 'paddock')"); E("__N.run(2)")
         rw = E("__N.w('ronald')"); ck('mowing ends when the plan changes (off the tractor)', not rw['mow'], rw)
@@ -112,6 +113,11 @@ with lib.browser() as b:
         ck('their talk shows as subtitles (German)', sub >= 0 and (txt.startswith('Hubert:') or txt.startswith('Ronald:')), txt)
         E("document.getElementById('npcsub').style.visibility = 'visible'"); shot('talk_table')
         E("GAME.view(-19.6, 0.5, 1.7, 182, -12, 50); GAME.step(0.05)"); shot('talk_table_north')
+        # some days they talk at the car instead: Hubert works, Ronald stands beside it
+        E("LIFE.force('hubert', 'car'); LIFE.force('ronald', 'visitCar')")
+        t = E("__N.until(() => LIFE.TALK.on, 120)"); rw = E("__N.w('ronald')"); print('talk at the car', t, rw, flush=True)
+        ck('the talk at the car (Ronald beside it, Hubert under the bonnet)', t >= 0, rw)
+        E("GAME.view(-14.4, -11.8, 1.6, -118, -10, 55); GAME.step(0.05)"); shot('talk_car')
     if want('trip'):
         E("__N.clock(14, 30)")
         E("LIFE.force('ronald', 'paddock'); LIFE.force('hubert', 'trip')")

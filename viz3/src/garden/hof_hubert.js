@@ -188,6 +188,10 @@ const TOOLWALL = patchSV(
   })
 );
 const OILCAN = plain({ color: 0x2f5d3a, roughness: 0.45, metalness: 0.4 });
+const TYRE = plain({ color: 0x1c1c1c, roughness: 0.9 });
+const SACK = plain({ color: 0xc9b48a, roughness: 1 });
+const DRUM = plain({ color: 0x2f4f86, roughness: 0.5, metalness: 0.3 });
+const BARROW = plain({ color: 0x4f7a45, roughness: 0.55, metalness: 0.3 });
 const CRATE = plain({ color: 0x9a6b3d, roughness: 0.9 });
 const SPLIT = plain({ color: 0xd8b98e, roughness: 0.85 });
 // ---- local-frame boxes for the turned buildings: lx along the building's across axis (east), ly along its length (north), z up ----
@@ -345,6 +349,55 @@ function workshop(r, i) {
   const fw = lbox(g, fL, 0.5, fh, MAT.logs, -D / 2 + t + 0.05 + fL / 2, fv, fh / 2);
   fw.material = [MAT.logs, MAT.logs, MAT.logs, MAT.logs, LOGEND, LOGEND]; // logs lie across: end grain towards the room
   colWall(at(-D / 2 + t, fv), at(-D / 2 + t + fL, fv), 0.6, 0, fh, 'wood');
+  // more of a working man's shed: boards on bearers along the back wall, and in each building something of its own
+  const mid = (i % 2 ? 1 : -1) * 0.6,
+    bL = Math.min(3.8, L * 0.3);
+  for (const k of [-1, 0, 1]) lbox(g, 0.75, 0.1, 0.32, MAT.kvh, -D / 2 + t + 0.45, mid + k * (bL / 2 - 0.15), 0.16);
+  lbox(g, 0.7, bL, 0.36, MAT.plank, -D / 2 + t + 0.45, mid, 0.5, { grain: 'y' });
+  colWall(at(-D / 2 + t + 0.45, mid - bL / 2), at(-D / 2 + t + 0.45, mid + bL / 2), 0.8, 0, 0.7, 'furn');
+  const lcyl = (r, h, m, x, y, z, o = {}) => {
+    const me = new THREE.Mesh(new THREE.CylinderGeometry(r, o.r2 ?? r, h, o.seg || 14), m);
+    me.position.set(x, z, -y);
+    if (o.rx) me.rotation.x = o.rx;
+    if (o.rz) me.rotation.z = o.rz;
+    me.castShadow = me.receiveShadow = true;
+    g.add(me);
+    return me;
+  };
+  if (i === 0) {
+    // an old single-axle trailer, drawbar to the open side
+    const tl = 0.4,
+      tv = -0.8;
+    lbox(g, 1.6, 2.7, 0.06, MAT.weather, tl, tv, 0.6, { grain: 'y' });
+    for (const s of [-1, 1]) {
+      lbox(g, 0.05, 2.7, 0.42, MAT.weather, tl + s * 0.78, tv, 0.84, { grain: 'y' });
+      lbox(g, 1.6, 0.05, 0.42, MAT.weather, tl, tv + s * 1.33, 0.84, { grain: 'x' });
+      lcyl(0.33, 0.18, TYRE, tl + s * 0.95, tv, 0.33, { rz: Math.PI / 2, seg: 16 });
+    }
+    lbox(g, 1.4, 0.08, 0.08, MAT.black, tl + 1.45, tv, 0.45, { grain: 'x' });
+    COL.push([...bboxOf([at(tl - 1.1, tv - 1.4), at(tl + 2.2, tv + 1.4)]), 0, 1.1, 'furn', null, null]);
+  } else if (i === 1) {
+    // sacks and a wheelbarrow
+    for (let k = 0; k < 3; k++)
+      lbox(g, 0.42, 0.62, 0.3, SACK, -D / 2 + t + 1.4, mid + bL / 2 + 0.6 + k * 0.5, 0.15 + (k === 1 ? 0.28 : 0), {
+        r: 0,
+      });
+    barrow(0.9, mid - 0.4);
+  } else if (i === 2) {
+    // an anvil on an oak stump, a wheelbarrow
+    lcyl(0.24, 0.62, MAT.logs, 0.2, mid + 1.6, 0.31, { r2: 0.27 });
+    lbox(g, 0.18, 0.5, 0.2, MAT.black, 0.2, mid + 1.6, 0.72);
+    barrow(1.3, mid - 1.4);
+  } else {
+    // oil drums and a stack of tyres in the car workshop
+    for (const k of [0, 1]) lcyl(0.29, 0.88, DRUM, D / 2 - 1.0 - k * 0.62, L / 2 - 0.9, 0.44, { seg: 16 });
+    for (let k = 0; k < 4; k++) lcyl(0.32, 0.2, TYRE, -0.6, L / 2 - 1.3, 0.1 + k * 0.205, { seg: 16 });
+  }
+  function barrow(lu, lv) {
+    lbox(g, 0.62, 0.85, 0.28, BARROW, lu, lv, 0.52);
+    lcyl(0.18, 0.08, TYRE, lu, lv + 0.62, 0.18, { rz: Math.PI / 2 });
+    for (const s of [-1, 1]) lbox(g, 0.04, 1.3, 0.04, MAT.black, lu + s * 0.26, lv - 0.15, 0.5);
+  }
   SHEDS.push({ c, u: [ux, uy], v: [vx, vy], D, L, he, at, bench: [bx, by] });
 }
 function bboxOf(pts) {
@@ -367,7 +420,7 @@ S0.neigh.forEach(workshop);
   if (s3) {
     put('vice', s3, -s3.D / 2 + 0.5, s3.L / 2 - 1.6, 0.9, 90, { col: false });
     put('toolchest', s3, -s3.D / 2 + 0.55, -s3.L / 2 + 2.4, 0.06, 90);
-    put('ladder', s3, -s3.D / 2 + 0.25, 0.4, 0.06, 90, { col: false });
+    put('ladder', s3, -s3.D / 2 + 0.25, 2.2, 0.06, 90, { col: false });
   }
   if (s4) {
     put('tyre_old', s4, -1.0, -s4.L / 2 + 1.3, 0.06, 0, { col: false });

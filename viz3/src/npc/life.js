@@ -869,9 +869,27 @@ export const LIFE = (() => {
   function* hTalk(w) {
     yield* sitFor(w, CH()[0]);
   }
+  // some days Hubert keeps at his car and Ronald stands beside it and talks ("… oder beim Auto")
+  let atCarNow = false;
+  function* rVisitCar(w) {
+    atCarNow = false;
+    const p = [HOFCAR.side[0] - 0.4, HOFCAR.side[1] + 1.5];
+    yield* rGo(w, ...p);
+    try {
+      atCarNow = true;
+      for (;;) {
+        yield* turn(w, Math.atan2(H.x - w.x, H.y - w.y));
+        yield* hold(w, 3);
+      }
+    } finally {
+      atCarNow = false;
+      w.fig.speak = false;
+    }
+  }
   // ================= the plans =================
   const tripDay = d => d % 3 === 2,
-    talkDay = d => !tripDay(d) && d % 5 !== 4;
+    talkDay = d => !tripDay(d) && d % 5 !== 4,
+    talkAtCar = d => d % 4 === 1;
   const PATTERN = [
     ['chop', 'saw', 'stack', 'car', 'chop', 'car', 'stack', 'chop', 'car', 'saw', 'stack'],
     ['car', 'chop', 'stack', 'chop', 'car', 'saw', 'car', 'stack', 'chop', 'car', 'chop'],
@@ -882,7 +900,7 @@ export const LIFE = (() => {
     if (m < 7 * 60) return 'putter';
     if (m >= 21 * 60) return 'putter';
     if (m >= 19 * 60 + 30) return 'bench';
-    if (talkDay(d) && m >= 16 * 60 && m < 18 * 60) return 'talk';
+    if (talkDay(d) && m >= 16 * 60 && m < 18 * 60) return talkAtCar(d) ? 'car' : 'talk';
     if (m >= 12 * 60 && m < 13 * 60) return 'table';
     if (tripDay(d) && m >= 14 * 60 + 30 && m < 15 * 60 + 30 && !tripBlocked()) return 'trip';
     const blk = Math.floor((m - 7 * 60) / 65);
@@ -892,7 +910,7 @@ export const LIFE = (() => {
     const q = QUESTS.wants('ronald');
     if (q) return q;
     if (m < 7 * 60 + 30) return 'feed';
-    if (talkDay(d) && m >= 16 * 60 && m < 17 * 60 + 50) return 'visit';
+    if (talkDay(d) && m >= 16 * 60 && m < 17 * 60 + 50) return talkAtCar(d) ? 'visitCar' : 'visit';
     if (m >= 17 * 60 + 50 && m < 19 * 60) return 'feed';
     if (m >= 19 * 60) return 'stall';
     if (d % 2 === 1 && m >= 8 * 60 && m < 11 * 60) return 'mow';
@@ -916,6 +934,7 @@ export const LIFE = (() => {
     stall: rStall,
     mow: rMow,
     visit: rVisit,
+    visitCar: rVisitCar,
   };
   // minimum real seconds before the plan may change an activity (a walk across the yard should lead to some work)
   const MIN = {
@@ -931,6 +950,7 @@ export const LIFE = (() => {
     paddock: 15,
     stall: 15,
     visit: 40,
+    visitCar: 40,
   };
   const AG = {};
   function agent(w, plan, home) {
@@ -1076,14 +1096,18 @@ export const LIFE = (() => {
   }
   function tickTalk(dt) {
     const both =
-      H.seated &&
-      R.seated &&
-      H.seated === CH()[0] &&
-      R.seated === CH()[1] &&
       !H.talking &&
       !R.talking &&
-      AG.hubert.cur === 'talk' &&
-      AG.ronald.cur === 'visit';
+      ((H.seated &&
+        R.seated &&
+        H.seated === CH()[0] &&
+        R.seated === CH()[1] &&
+        AG.hubert.cur === 'talk' &&
+        AG.ronald.cur === 'visit') ||
+        (atCarNow &&
+          AG.hubert.cur === 'car' &&
+          AG.ronald.cur === 'visitCar' &&
+          Math.hypot(H.x - R.x, H.y - R.y) < 4.5));
     if (!both) {
       if (TALK.on) {
         TALK.on = false;
@@ -1247,6 +1271,7 @@ export const LIFE = (() => {
     },
     fillRack,
     endTrip: () => endTrip(AG.hubert),
+    swaths: () => SWATH.n,
   };
 })();
 window.LIFE = LIFE;

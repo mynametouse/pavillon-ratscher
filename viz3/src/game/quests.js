@@ -1421,6 +1421,12 @@ export const QUESTS = (() => {
       H()
         .sayText('Na also. Der Dreizehner.')
         .then(() => H().sayText('So. Der hält wieder. Bis zum nächsten Mal.'));
+      // and the engine runs for a moment (the tractor's recording, higher)
+      setTimeout(() => {
+        if (!audio.ready()) return;
+        audio.loopAt('kombi', 'tractor', HOF.car.x, HOF.car.y + 2, { vol: 0.5, ref: 9, rate: 1.8 });
+        setTimeout(() => audio.stopLoop('kombi', 1.2), 5000);
+      }, 3500);
     },
   });
   // ---------------- feat/nachbarn: the goats into the shelter in the evening (herding: they run away from the visitor) ----------------

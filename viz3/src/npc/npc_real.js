@@ -515,7 +515,7 @@ export function rbPerson(gl, set, o) {
     anim(dt, speed) {
       acc += dt;
       const sit = self.mode === 'sit';
-      const talk = !sit && !!(self.walker && self.walker.talking);
+      const talk = !sit && !!((self.walker && self.walker.talking) || (self.speak && !self.pose)); // (speak: a talk of the two, npc/life.js)
       w += ((!sit && speed > 0.05 ? 1 : 0) - w) * Math.min(1, dt * 6);
       tk += ((talk ? 1 : 0) - tk) * Math.min(1, dt * 3);
       if (self.pose) {
