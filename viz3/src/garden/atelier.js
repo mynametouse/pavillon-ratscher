@@ -12,8 +12,9 @@ import { LATE } from '../core/late.js';
 import { V } from '../core/head.js';
 import { markDirty, plain, whenLoaded } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
+import { TASKS } from '../core/tasks.js';
 import { MAT } from '../core/mats.js';
-import { bldBegin, bldEnd, COL } from '../core/geo.js';
+import { beam, bldBegin, bldEnd, COL } from '../core/geo.js';
 import { BLD, gB, lcol, MATS, rotDesc, siteGroup, worldOf } from './site_base.js';
 import {
   bulbMat,
@@ -118,11 +119,11 @@ for (let i = 0; i < 4; i++)
     [MAT.black, KM.red, MAT.sage, KM.cream][i],
     { cast: false }
   );
-gB(g, wt.x0 + 0.1, wt.x1 - 0.1, wt.y1 - 0.42, wt.y1 - 0.08, FZ + 0.24, FZ + 0.36, MAT.oak, { cast: false });
+gB(g, wt.x0 + 0.1, wt.x1 - 0.1, wt.y1 - 0.42, wt.y1 - 0.08, FZ + 0.24, FZ + 0.36, AM.wood, { cast: false });
 {
   const z = wt.z;
   // palette (thin board with paint blobs)
-  put(g, new THREE.CylinderGeometry(0.17, 0.17, 0.008, 22), MAT.oak, wt.x0 + 0.3, 0.05, z + 0.004, {
+  put(g, new THREE.CylinderGeometry(0.17, 0.17, 0.008, 22), AM.wood, wt.x0 + 0.3, 0.05, z + 0.004, {
     s: [1, 1, 0.7],
     cast: false,
   });
@@ -151,7 +152,7 @@ gB(g, wt.x0 + 0.1, wt.x1 - 0.1, wt.y1 - 0.42, wt.y1 - 0.08, FZ + 0.24, FZ + 0.36
       put(
         g,
         new THREE.CylinderGeometry(0.004, 0.006, len, 5),
-        k % 2 ? MAT.oak : KM.bakelite,
+        k % 2 ? AM.wood : KM.bakelite,
         x + Math.cos(a) * 0.015,
         y + Math.sin(a) * 0.015,
         z + len / 2 + 0.01,
@@ -208,25 +209,19 @@ gB(g, wt.x0 + 0.1, wt.x1 - 0.1, wt.y1 - 0.42, wt.y1 - 0.08, FZ + 0.24, FZ + 0.36
       z + 0.13,
       { rz: (k - 2) * 0.08, cast: false }
     );
-  // clamp lamp: base on the table edge, two arms, a small shade looking down on the work
-  const lx = wt.x1 - 0.06,
-    ly = 0.32;
-  gB(g, lx - 0.03, lx + 0.03, ly - 0.03, ly + 0.03, z - 0.05, z + 0.03, MAT.blacksteel, { cast: false });
-  put(g, new THREE.CylinderGeometry(0.008, 0.008, 0.42, 6), MAT.blacksteel, lx - 0.04, ly - 0.05, z + 0.24, {
-    rx: -0.25,
-    rz: 0.15,
+  // clamp lamp at the window edge of the table: a post, an arm reaching over the work, the shade looking down
+  const lx = wt.x0 + 0.05,
+    ly = 0.32,
+    zp = z + 0.48,
+    ax = wt.x0 + 0.4,
+    az = z + 0.4;
+  gB(g, lx - 0.03, lx + 0.03, ly - 0.03, ly + 0.03, z - 0.05, z + 0.02, MAT.blacksteel, { cast: false });
+  beam([lx, ly, z + 0.02], [lx, ly, zp], 0.014, 0.014, MAT.blacksteel, { parent: g });
+  beam([lx, ly, zp], [ax, ly - 0.08, az], 0.012, 0.012, MAT.blacksteel, { parent: g });
+  put(g, new THREE.ConeGeometry(0.07, 0.1, 16, 1, true), MAT.blacksteel, ax + 0.02, ly - 0.085, az - 0.05, {
     cast: false,
   });
-  put(g, new THREE.CylinderGeometry(0.008, 0.008, 0.38, 6), MAT.blacksteel, lx - 0.16, ly - 0.2, z + 0.48, {
-    rx: 0.6,
-    rz: 0.9,
-    cast: false,
-  });
-  put(g, new THREE.ConeGeometry(0.07, 0.11, 14, 1, true), MAT.blacksteel, lx - 0.3, ly - 0.36, z + 0.5, {
-    rz: 0.5,
-    rx: 0.3,
-    cast: false,
-  });
+  put(g, new THREE.SphereGeometry(0.022, 8, 6), KM.porcelain, ax + 0.02, ly - 0.085, az - 0.085, { cast: false });
 }
 lcol(r, wt.x0, wt.x1, wt.y0, wt.y1, FZ, wt.z, 'table');
 // ---- hooks with an apron at the north end of the west wall, by the door ----
@@ -256,7 +251,7 @@ const EZ = { x: -0.18, y: 0.78, face: -112 }; // the canvas front looks along th
   gB(eg, 0.008, 0.03, -0.26, 0.26, 0.745, 0.76, KM.cream, { cast: false });
   // a few brushes and a rag on the ledge
   for (let k = 0; k < 3; k++)
-    put(eg, new THREE.CylinderGeometry(0.004, 0.006, 0.22, 5), MAT.oak, 0.05, -0.2 + k * 0.05, 0.765, {
+    put(eg, new THREE.CylinderGeometry(0.004, 0.006, 0.22, 5), AM.wood, 0.05, -0.2 + k * 0.05, 0.765, {
       rz: Math.PI / 2,
       ry: 0.1 * k,
       cast: false,
@@ -468,8 +463,8 @@ function clayShape(k) {
   soft(g, x1 - 0.2, x1 - 0.1, y0 + 0.2, y0 + 0.28, z + 0.008, z + 0.04, 0.012, KM.yellow, { cast: false });
   vessel(g, 'bowl', x1 - 0.12, y0 + 0.1, z + 0.008, 0.07, 0.06, panM);
   for (const [dx, m] of [
-    [0.06, MAT.oak],
-    [0.16, MAT.oak],
+    [0.06, AM.wood],
+    [0.16, AM.wood],
   ])
     put(g, new THREE.CylinderGeometry(0.012, 0.012, 0.08, 6), m, x0 + dx, y1 - 0.06, z + 0.02, {
       rz: Math.PI / 2,
@@ -485,7 +480,7 @@ function clayShape(k) {
       y1 - 0.04,
       z + 0.008,
       z + 0.012,
-      [MAT.oak, MAT.steel, MAT.oak, KM.red][k],
+      [AM.wood, MAT.steel, AM.wood, KM.red][k],
       { cast: false }
     );
   // below: two bags of clay, a reclaim bucket
@@ -1499,6 +1494,61 @@ GACTS.push({
     st.dirty();
   },
 });
+// ---- the journal (key J): three small tasks as data (core/tasks.js) – they start the first time one comes into the atelier and advance
+// on the atelier's own events ----
+{
+  const at = (x, y) => () => worldOf(b, x, y),
+    start = { on: 'place', when: d => !!d && d.name === 'Atelier' };
+  TASKS.define({
+    id: 'atelier-toepfern',
+    title: 'Töpfern: eine Schale drehen und brennen',
+    who: 'Atelier',
+    start,
+    steps: [
+      {
+        text: 'An die Töpferscheibe setzen, eine Schale drehen und ins Regal stellen.',
+        target: at(WH.x, WH.y),
+        on: 'einrichtung:schale',
+      },
+      {
+        text: 'Die Schalen trocknen lassen und im Brennofen brennen (Schrühbrand).',
+        target: at(KI.x, KI.y),
+        on: 'einrichtung:brand',
+      },
+    ],
+    done: 'Die Schalen sind geschrüht – hell und hart, bereit zum Glasieren.',
+  });
+  TASKS.define({
+    id: 'atelier-malen',
+    title: 'Malen: ein Bild fertig malen',
+    who: 'Atelier',
+    start,
+    steps: [
+      {
+        text: 'An der Staffelei weitermalen, bis das Bild fertig und signiert ist.',
+        target: at(EZ.x, EZ.y),
+        on: 'einrichtung:bild',
+        when: d => !!d && d.step >= 5,
+      },
+    ],
+    done: 'Fertig und signiert.',
+  });
+  TASKS.define({
+    id: 'atelier-gaestebett',
+    title: 'Ein Gästebett für Besuch',
+    who: 'Atelier',
+    start,
+    steps: [
+      {
+        text: 'Das Klappsofa im Atelier zum Bett ausklappen.',
+        target: at(0.9, SB.yc),
+        on: 'einrichtung:sofa',
+        when: d => !!d && d.bed === 1,
+      },
+    ],
+    done: 'Das Gästebett steht, Bettzeug liegt darauf.',
+  });
+}
 // ---- static parts: the room's furniture into the palette, no sun shadows indoors ----
 paletteize(g, []);
 bldEnd();

@@ -79,7 +79,7 @@ with lib.browser() as b:
         view(pg, 'holzhaus', 0.5, 1.3, EYE_A, 140, -16, 82); shot(pg, 'atelier_ecke_nordost')
         view(pg, 'holzhaus', -0.75, 0.0, EYE_A, 0, -12, 80); shot(pg, 'atelier_sofa_wand')
         view(pg, 'holzhaus', -0.62, 0.15, 1.75, -57, -8, 60); shot(pg, 'atelier_staffelei')
-        view(pg, 'holzhaus', -0.2, -0.55, 1.6, -150, -30, 64); shot(pg, 'atelier_toepferecke')
+        view(pg, 'holzhaus', -0.15, -0.5, 1.65, 145, -32, 68); shot(pg, 'atelier_toepferecke')
         # painting on: the canvas grows step by step
         ev(pg, f"(() => {{ const w = {W}('holzhaus', -0.4, 0.3); GAME.view(w[0], w[1], {EYE_A}, SITE.bld.holzhaus.az - 60, -8, 70); GAME.step(0.1); }})()")
         l0 = act(pg, 'garten:malen'); run(pg, 'garten:malen'); run(pg, 'garten:malen')
@@ -110,7 +110,7 @@ with lib.browser() as b:
         shot(pg, 'atelier_vom_schaukelstuhl')
         ev(pg, "PLAY.stand(true); GAME.step(6)")
         ck('rocking chair: at rest again after getting up', abs(ev(pg, "ATELIER.rock.th")) < 0.01, ev(pg, "ATELIER.rock.th"))
-        view(pg, 'holzhaus', 0.1, -0.4, 1.7, -60, -14, 70); shot(pg, 'atelier_schaukelstuhl')
+        view(pg, 'holzhaus', 0.0, -0.3, 1.7, 46, -16, 70); shot(pg, 'atelier_schaukelstuhl')
         # the sofa bed: unfold (animation), lie down, stand up, fold
         ev(pg, f"(() => {{ const w = {W}('holzhaus', -0.45, 0.05); GAME.view(w[0], w[1], {EYE_A}, SITE.bld.holzhaus.az, -14, 78); GAME.step(0.1); }})()")
         l0 = act(pg, 'garten:klappsofa'); s0 = act(pg, 'seat:garten:atelier-sofa'); b0 = act(pg, 'seat:garten:atelier-bett')
@@ -136,6 +136,10 @@ with lib.browser() as b:
         if kl == 'Schalen in den Brennofen':
             run(pg, 'garten:brennofen', 3); shot(pg, 'atelier_brennofen'); ev(pg, "GAME.step(6)")
         ck('kiln: the dried bowls are fired', kl == 'Schalen in den Brennofen' and ev(pg, "ATELIER.state.fired") >= 1, [kl, ev(pg, "ATELIER.state.fired")])
+        # the journal: the atelier's tasks started when we came in, pottery done after bowl and firing, the guest bed done after unfolding
+        tk = json.loads(ev(pg, "JSON.stringify(['atelier-toepfern', 'atelier-malen', 'atelier-gaestebett'].map(id => [id, TASKS.state(id)]))"))
+        print('tasks', tk, flush=True)
+        ck('journal: the atelier tasks run (pottery and guest bed done)', tk[0][1] and tk[0][1]['st'] == 'erledigt' and tk[1][1] and tk[2][1] and tk[2][1]['st'] == 'erledigt', tk)
         # at night with the lamp on
         ev(pg, "GARTEN.set('holzhaus', true); GAME.setMode('night')"); lib.settle_light(pg)
         view(pg, 'holzhaus', -0.88, 1.45, EYE_A, 90, -14, 80); ev(pg, "GAME.step(0.4)"); shot(pg, 'atelier_nacht_lampe')
@@ -225,6 +229,16 @@ with lib.browser() as b:
             ev(pg, "GAME.shot()"); pg.screenshot(path=os.path.join(OUT, 'panel.png'), timeout=120000); print('page shot panel', flush=True)
         except Exception as e:
             print('page shot panel failed (picture only)', str(e)[:120], flush=True)
+        # the same on a phone (portrait): the panel fits beside the edge, nothing cut off
+        try:
+            pg.set_viewport_size({'width': 390, 'height': 844}); ev(pg, "window.dispatchEvent(new Event('resize')); GAME.step(0.1)")
+            fit = ev(pg, "(() => { const r = document.getElementById('stilpanel').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right), Math.round(r.top), Math.round(r.bottom), innerWidth, innerHeight]; })()")
+            ck('panel on a phone: inside the screen', fit[0] >= 0 and fit[1] <= fit[4] and fit[3] <= fit[5], fit)
+            ev(pg, "GAME.shot()"); pg.screenshot(path=os.path.join(OUT, 'panel_handy.png'), timeout=120000); print('page shot panel_handy', flush=True)
+        except Exception as e:
+            print('page shot panel_handy failed (picture only)', str(e)[:120], flush=True)
+        finally:
+            pg.set_viewport_size({'width': 1000, 'height': 640}); ev(pg, "window.dispatchEvent(new Event('resize')); GAME.step(0.1)")
         ev(pg, "STIL.open(false)")
     # ---- a reload keeps the chosen styles and the sofa bed ----
     if want('reload'):
