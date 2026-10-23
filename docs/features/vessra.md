@@ -92,7 +92,10 @@ gebaut; `VESSRA.baumschule` (sonst `null`):
 - Gemeinsame Dateien (auf diesem Branch geändert): `viz3/src/modules.txt` (eine Zeile `welt/vessra.js` direkt unter `# feat/vessra`),
   `viz3/shell/menu.html` (ein Eintrag Orte → „Kloster Veßra“ nach „Schleusingen“), `.github/workflows/welt-testblock.yml`: **`apply()`
   behält jetzt `welt-test/zonen/`** (beiseite, `welt-test/` ersetzen, zurück) – sonst löschte der nächste Testblock-Lauf die Zonen-Kacheln.
-- `welt/welt.js` (eigene Datei): Kachel-Sätze (siehe „Für die Fahrt“), `WELT.overlay()`, Belag „Kies“ (g/r > 0,86) im Straßen-Overlay;
+- `welt/welt.js` (eigene Datei): Kachel-Sätze (siehe „Für die Fahrt“), `WELT.overlay()`, `WELT.padAt(x, y, roh)` (die Höhe, die WELT für
+  eine Kachelhöhe zeichnet, mit allen Polstern – darauf baut die Zone ihren Boden, auch über den Straßen der Fahrt), nach `setPads` werden
+  nur die Kacheln unter den geänderten Polstern neu gerechnet, die nächsten sofort, der Rest ein paar je Frame (`WELT.padQueue()`),
+  Belag „Kies“ (g/r > 0,86) im Straßen-Overlay;
   Schleusingen unverändert (seine Codes 40/120/200 bleiben Asphalt/Pflaster/Platten).
 - Kern-Dienste (Phase 2, Baustein 1): `KERN.zone` (`vessra`), `KERN.spot` (`vessra`, `baumschule`), `KERN.scenario` (`vessra`,
   `baumschule`), `KERN.act` (`vessra:sit`), `KERN.lights.borrow` (`vessra-laternen`: nachts zwei Lichter des Pavillons in den beiden

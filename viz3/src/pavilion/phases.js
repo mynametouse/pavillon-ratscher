@@ -11,7 +11,7 @@ export const PHASES_A = [
     short: 'Blechgarage auf der Betonplatte',
     days: '–',
     how: [
-      'Ausgangslage: Blechgarage ca. 4 × 4 m (Dach laut Luftbild 4,5 × 6,3 m) auf einer Betonplatte, Zufahrt von Süden, Wohnwagen unter dem Carport und grüner Bungalow im Norden, Holzhaus und Gewächshaus an der Ostgrenze, Waschhaus unter dem großen Baum, Obstbäume rundum.',
+      'Ausgangslage: Blechgarage ca. 4 × 4 m (Dach laut Luftbild 4,5 × 6,3 m) auf einer Betonplatte, zwei Schiebetore nach Norden, Wohnwagen unter dem Carport und grüner Bungalow im Norden, Holzhaus und Gewächshaus an der Ostgrenze, Waschhaus unter dem großen Baum, Obstbäume rundum.',
       'Vor dem Abbau: Platte vermessen (Rotationslaser), Fotos, Dicke und Frostschürze am Rand freigraben und messen. Danach entscheiden, ob die Grundfläche 4 × 4 oder größer wird.',
     ],
     check: [
@@ -577,7 +577,7 @@ export const PHASES_A = [
 const PH_B = {
   0: {
     how: [
-      'Ausgangslage: Blechgarage ca. 4 × 4 m (Dach laut Luftbild 4,5 × 6,3 m) auf einer Betonplatte, Zufahrt von Süden, Wohnwagen unter dem Carport und grüner Bungalow im Norden, Holzhaus und Gewächshaus an der Ostgrenze, Waschhaus unter dem großen Baum, Obstbäume rundum.',
+      'Ausgangslage: Blechgarage ca. 4 × 4 m (Dach laut Luftbild 4,5 × 6,3 m) auf einer Betonplatte, zwei Schiebetore nach Norden, Wohnwagen unter dem Carport und grüner Bungalow im Norden, Holzhaus und Gewächshaus an der Ostgrenze, Waschhaus unter dem großen Baum, Obstbäume rundum.',
       'Vor dem Abbau: Platte vermessen (Rotationslaser), Fotos, Dicke und Frostschürze am Rand freigraben und messen. In dieser Variante steht das ganze Haus auf der Platte; nur das Obergeschoss kragt rundum 0,9 m aus.',
     ],
     check: [

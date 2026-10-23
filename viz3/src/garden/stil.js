@@ -577,15 +577,33 @@ export function shadeAround(g, kind, lx, ly, zb, m, mMetal = MAT.blacksteel) {
     put(g, geo, m, lx, ly, zb + 0.02, { cast: false });
   }
 }
-// cushions standing on a seat: list of [x, y, width, turn]; run 'x' = their broad side along x (a back along x), 'y' = along y; mats cycle
+// a pillow: a unit sphere pushed out towards a box (superellipsoid) – square face with rounded corners, puffed faces, thin round
+// edge; the mesh is scaled to the cushion's size (x across, y up, z thickness in three's frame)
+const PILLOW = (() => {
+  const geo = new THREE.SphereGeometry(0.5, 20, 14),
+    p = geo.attributes.position,
+    f = (v, e) => Math.sign(v) * Math.pow(Math.abs(v), e);
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i) * 2,
+      y = p.getY(i) * 2,
+      z = p.getZ(i) * 2,
+      // corners pinched a little (like a real cushion), faces puffed
+      pinch = 1 - 0.18 * Math.pow(Math.abs(f(x, 0.3) * f(y, 0.3)), 2);
+    p.setXYZ(i, f(x, 0.3) * 0.5 * pinch, f(y, 0.3) * 0.5 * pinch, f(z, 0.9) * 0.5);
+  }
+  geo.computeVertexNormals();
+  return geo;
+})();
+export function pillow(g, x, y, z, w, h, d, m, ry = 0, lean = 0) {
+  return put(g, PILLOW, m, x, y, z + h / 2, { s: [w, h, d], ry, rx: lean, order: 'YXZ', cast: false });
+}
+// cushions standing on a seat: list of [x, y, width, turn]; run 'x' = their broad side along x (a back along x), 'y' = along y; mats cycle;
+// they lean back a little against the back of the seat
 export function cushions(g, list, z, mats, R = rng(5), run = 'x') {
   list.forEach(([x, y, w, ry], i) => {
-    const [ax, ay] = run === 'x' ? [w / 2, 0.08] : [0.08, w / 2];
-    soft(g, x - ax, x + ax, y - ay, y + ay, z, z + w * 0.85, 0.075, mats[i % mats.length], {
-      ry: ry ?? (R() - 0.5) * 0.4,
-      puff: 0.03,
-      cast: false,
-    });
+    // run 'x': the back is towards +y; run 'y': towards +x (the pillow's thin side faces it, its top leans onto it)
+    const turn = (ry ?? (R() - 0.5) * 0.4) + (run === 'x' ? 0 : -Math.PI / 2);
+    pillow(g, x, y, z - 0.02, w, w * 0.88, 0.17, mats[i % mats.length], turn, -0.18);
   });
 }
 // a sheepskin: soft, irregular, cream
@@ -877,7 +895,7 @@ const UI = (() => {
   // the HUD button follows the walker in and out of the buildings (four times a second)
   let acc = 0,
     last;
-  (window.TICKS = window.TICKS || []).push(dt => {
+  KERN.tick(dt => {
     acc += dt;
     if (acc < 0.25) return;
     acc = 0;
@@ -897,7 +915,7 @@ const UI = (() => {
         setTimeout(() => U.btn.classList.remove('new'), 9000);
       }
     }
-  });
+  }, 'einrichtung');
   return U;
 })();
 STIL.open = (v = true, key) => UI.open(v, key);

@@ -1,0 +1,3 @@
+# Driving out of the square (welt/fahrt.js): to the Markt of Schleusingen; from the garden through the village and west on the L 1625
+# to Kloster Veßra, through the gate into the nursery yard (schleusingen and vessra ran on this branch too, green at 3c8c7d2)
+fahrt

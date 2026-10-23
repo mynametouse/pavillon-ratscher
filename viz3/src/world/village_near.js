@@ -408,8 +408,8 @@ const VNEAR = (() => {
   S.dispose = () => {
     for (const c of S.cells.values()) if (c.ready) dropCell(c);
     S.cells.clear();
-    const i = (window.TICKS || []).indexOf(tick);
-    if (i >= 0) TICKS.splice(i, 1);
+    if (S.offTick) S.offTick();
+    S.offTick = null;
     S.on = false;
   };
   S.state = () => ({
@@ -437,7 +437,7 @@ const VNEAR = (() => {
         );
       c.bld.push(b);
     }
-    (window.TICKS || (window.TICKS = [])).push(tick);
+    S.offTick = KERN.tick(tick, 'world/village_near');
     S.on = true;
   });
   return S;

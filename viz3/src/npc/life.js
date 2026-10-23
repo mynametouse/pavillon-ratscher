@@ -1313,7 +1313,7 @@ export const LIFE = (() => {
     if (HOFCAR.open > 0 && m >= 21 * 60 && AG.hubert.cur !== 'car') HOFCAR.bonnet(0);
     if (m >= 6 * 60 && m < 21 * 60 && HOFCAR.open < 1 && AG.hubert.cur === 'car') HOFCAR.bonnet(1);
   }
-  window.TICKS.push(tick);
+  KERN.tick(tick, 'npc/life');
   // the visitor may sit down at Hubert's table too (a free chair): to listen to the two, or to wait for them
   HOF.chairs.forEach((c, i) =>
     PLAY.act({

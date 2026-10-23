@@ -16,6 +16,7 @@ import { NPCUI } from '../npc/npc.js';
 import { boneTurn, CHL, fsAdd, prepModel } from '../npc/npc_real.js';
 import { HELD, PLAY } from './play.js';
 import { HUD } from './hud.js';
+import { KERN } from '../core/kern.js';
 phase(null);
 // ---- headwear: begin – Christoph's cap and earbuds, fitted to the head of the loaded figure. Built in the head bone's own space from the
 // vertices that move with the head alone, so they sit right in every pose (a placement measured in one pose and carried over sat too low
@@ -793,7 +794,7 @@ export const AVATAR = (() => {
     if (F.gest || P.air || P.speed > 0.05 || Math.abs(P.eyeH - MOVE.STANCES[P.stance].eye) > 0.02)
       MOTION.lastMove = now;
   } // bigger movements: smooth frames (the light-weight motion path), not the slow still frames
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     try {
       update(dt);
     } catch (e) {
@@ -802,7 +803,7 @@ export const AVATAR = (() => {
         console.warn('avatar', e);
       }
     }
-  });
+  }, 'game/avatar');
   // ---- one-shot gestures: picking something up, a hand movement, chopping ----
   function gesture(k, ts = 1) {
     const F = A.fig;

@@ -17,6 +17,7 @@ import { VEH } from '../vehicles/vehicle.js';
 import { TRACTOR2 } from '../vehicles/tractor.js';
 import { TRAILER } from '../vehicles/trailer.js';
 import { HOLZ } from './holz.js';
+import { KERN } from '../core/kern.js';
 export const KRAN = (() => {
   const S = { busy: false, seq: null, log: null, CAP: 3600, REACH: 6.1 };
   if (!TRAILER || !TRAILER.g) return S;
@@ -383,7 +384,7 @@ export const KRAN = (() => {
       next();
     }
   }
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     try {
       tick(dt);
     } catch (e) {
@@ -392,7 +393,7 @@ export const KRAN = (() => {
         console.warn('kran', e);
       }
     }
-  });
+  }, 'werk/kran');
   // ---- the control block (E / tap) ----
   const still = () => Math.hypot(TRAILER.tow ? TRAILER.tow.st.u : 0, TRAILER.tow ? TRAILER.tow.st.v : 0) < 0.2;
   PLAY.act({

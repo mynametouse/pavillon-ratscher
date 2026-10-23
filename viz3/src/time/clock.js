@@ -11,6 +11,7 @@ import { phase } from '../core/geo.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { HUD } from '../game/hud.js';
+import { KERN } from '../core/kern.js';
 phase(null);
 export const CLOCK = (() => {
   const LSK = 'pav-clock-v1';
@@ -77,7 +78,7 @@ export const CLOCK = (() => {
     }
     ui();
   }
-  window.TICKS.push(tick);
+  KERN.tick(tick, 'time/clock');
   // waiting: the clock races ahead (1.5–8 s real time); everything that takes time in the world goes on meanwhile
   function wait(min, label, done) {
     if (!(min > 0)) {

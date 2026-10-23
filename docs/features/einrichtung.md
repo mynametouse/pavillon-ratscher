@@ -18,6 +18,7 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
     bleibt gespeichert.
   - Kleine Arbeiten mit Tipps: an die Töpferscheibe setzen → „Eine Schale drehen“ (die Scheibe dreht und brummt, der Ton wird zur Schale)
     → „Schale zum Trocknen ins Regal stellen“ (bis sechs); „Schalen in den Brennofen“ (Schrühbrand, die Anzeige glüht, danach sind sie hell);
+    „Schalen glasieren“ (drei Glasureimer vor dem Regal), „Glasurbrand starten“ – danach glänzen sie in der Akzentfarbe des Ateliers;
     „Am Bild weitermalen“ (fünf Schritte, dann „Neues Bild beginnen“: Landschaft, Stillleben, Abstrakt). Lampe mit Schalter an der Tür
     (wie bisher, Schlüssel `holzhaus`).
   - Ortsname „Atelier“, Menü → Orte „Atelier“ (`KERN.spot`), Startsituation `?szenario=atelier` (drinnen an der Tür).
@@ -41,15 +42,16 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
   - Wohnwagen: Wie heute (80er) · Retro 70er · Skandinavisch hell · Landhaus · Boho
 
   Ein Stil ändert Wände, Decke, Boden (auch Bild und Struktur: Dielen, gekalkt, Eiche, Beton), Möbelholz, Polster, Vorhänge, Teppiche,
-  Bettwäsche, Bilder – und die Einrichtung: im Bungalow das Sofa (Polstersofa, schlankes Holzsofa, Chesterfield, Landhaussofa mit Volant,
-  Tagesbett), den Couchtisch, den Lampenschirm um die Glühbirne (Papier, Falten, Gitter, Rattan), Pflanzen (auch hängend), Schaffell,
-  Teller und Uhr, Bogenlampe, Makramee, Lichterkette, Sitzkissen; im Atelier Lampenschirm, Bilder, Kissen, Pflanzen, Schaffell, Korb, Trockenblumen,
-  Metallhocker, Makramee, Lichterkette; im Wohnwagen Vorhänge, Kissen, Tischdecke, Läufer, Steppdecke, Blumen. Die Akzentfarbe färbt
-  Kissen, Vasen, Becher.
+  Bettwäsche, Bilder, im Bungalow auch Küchenfronten und Kleiderschrank (bei „Wie heute“ creme und taubenblau wie bisher) – und die
+  Einrichtung: im Bungalow das Sofa (Polstersofa, schlankes Holzsofa, Chesterfield, Landhaussofa mit Volant, Tagesbett), den Couchtisch,
+  den Lampenschirm um die Glühbirne (Papier, Falten, Gitter, Rattan), Pflanzen (auch hängend), Schaffell, Teller und Uhr, Bogenlampe,
+  Makramee, Lichterkette, Sitzkissen; im Atelier Lampenschirm, Bilder, Kissen, Pflanzen, Schaffell, Korb, Trockenblumen, Metallhocker,
+  Makramee, Lichterkette; im Wohnwagen Vorhänge, Kissen, Tischdecke, Läufer, Steppdecke, Blumen und eine Hängelampe über dem Tisch
+  (70er-Kuppel, Papierkugel, Faltenschirm, Rattan). Die Akzentfarbe färbt Kissen, Vasen, Becher und die glasierten Schalen.
 - Gespeichert in **`pav-stil-v1`** (eine Zeile in `core/save.js`): `{ v: 1, h: { bungalow|atelier|wohnwagen: { s: Stil, a: Akzent } },
-  x: { atelier: { sofa, bowls, fired, pic, motif }, wohnwagen: { bed } } }`.
-- Ereignisse (`KERN.on`): `einrichtung:stil` { house, style, acc }, `einrichtung:sofa`, `einrichtung:schale`, `einrichtung:brand`,
-  `einrichtung:bild` – für Aufgaben oder Statistik.
+  x: { atelier: { sofa, bowls, fired, glazed, gfired, pic, motif }, wohnwagen: { bed }, hint } }`.
+- Ereignisse (`KERN.on`): `einrichtung:stil` { house, style, acc }, `einrichtung:sofa`, `einrichtung:schale`, `einrichtung:brand` { glaze },
+  `einrichtung:glasur`, `einrichtung:bild` – für Aufgaben oder Statistik.
 
 ## Technik
 
@@ -63,6 +65,10 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
 - `garden/garten_in.js`: Sitze können jetzt eine eigene Hauptaktion, ein bewegtes Auge (`follow`) und `onSit/onLeave` haben, Labels
   als Funktion; Arbeiten weiter unten registrierter Module bekommen ihren Zustand.
 - `garten_kit.js` `picture()`: die Rahmenleisten liegen jetzt um das Bild (vorher eine Leiste in Höhe der Wanddicke).
+- Gemessen (GitHub, SwiftShader, `nogeo`): **116 Shader-Programme vor und nach allen 15 Stilen und 8 Akzenten** (keins neu), höchstens
+  15 Texturen je Programm. Je Stil-Schicht 5–11 Draw-Calls (≈ 1 600–9 300 Dreiecke). Die drei Gartengebäude zusammen vom Bungalow-Eingang
+  aus (Gartentest): 244 Draw-Calls, 139 000 Dreiecke (auf `src` vorher 196 und 138 000 mit Gelände) – das Atelier hat mehr Kleinteile als
+  die Pflanzhütte, dazu Sofa, Schaukelstuhl und Scheibe als eigene bewegliche Gruppen.
 
 ## Testen
 
@@ -81,5 +87,6 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
   `garden/garten_in.js`.
 - `test/garten.py`: zwei Prüfungen angepasst (Ort „Atelier“; Gießen im Gewächshaus). `garden/greenhouse.js`: unteres Regalbrett mit drei
   Anzuchtschalen und „Setzlinge gießen“ (vorher im Holzhaus).
-- Bitte nachtragen: `docs/ARCHITECTURE.md` (Abschnitt 6: `STIL`, `ATELIER`; Abschnitt 8: `pav-stil-v1`; Modulkarte), `docs/CHANGELOG.md`.
-- Neue `window`-Namen: `STIL`, `ATELIER` (nur für Tests).
+- Bitte nachtragen: `docs/ARCHITECTURE.md` (Abschnitt 6: `STIL`, `ATELIER`, `WOHNWAGEN`; Abschnitt 8: `pav-stil-v1`; Modulkarte), `docs/CHANGELOG.md`.
+- Neue `window`-Namen: `STIL`, `ATELIER`, `WOHNWAGEN` (nur für Tests). Der Takt des Knopfes „Einrichtung“ läuft schon über `KERN.tick`
+  (`garden/garten_in.js` nutzt wie bisher `window.TICKS`).

@@ -212,6 +212,13 @@ window.SAVE = SAVE;
     null,
     v => obj(v) && (v === null || (v.v === 1 && obj(v.h)))
   ); // feat/einrichtung (garden/stil.js)
+  K(
+    'pav-garage-v1',
+    'Alte Garage: Tore, Rasenmäher, Benzin, gemähter Rasen',
+    'json',
+    null,
+    v => v === null || (obj(v) && v.v === 1)
+  ); // feat/garage (garden/garage_play.js)
   for (const h of [
     'pav-v14',
     'pav-v15',

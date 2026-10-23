@@ -35,23 +35,7 @@ import {
 } from './house_base.js';
 phase(PHN.bestand);
 B(-0.15, 4.15, -0.15, 4.15, 0, zS, MAT.conc, { walk: 'stone' });
-phase(PHN.bestand, PHN.garage);
-{
-  const gm = MAT.metal,
-    rm = MAT.roofGrey;
-  for (const [x0, x1, y0, y1] of [
-    [0.02, 3.98, 3.9, 3.98],
-    [0.02, 0.1, 0.02, 3.98],
-    [3.9, 3.98, 0.02, 3.98],
-    [0.02, 0.6, 0.02, 0.1],
-    [3.4, 3.98, 0.02, 0.1],
-  ])
-    B(x0, x1, y0, y1, zS, zS + 2.1, gm, { grain: 'z' });
-  B(0.6, 3.4, 0.03, 0.09, zS, zS + 2.1, MAT.galv, { grain: 'x' }); // closed tilt door
-  for (let x = 0.3; x < 3.9; x += 0.5)
-    B(x - 0.015, x + 0.015, 0.1, 3.9, zS + 2.1, zS + 2.18, MAT.galv, { col: false, cast: false, grain: 'y' });
-  B(-0.08, 4.08, -0.08, 4.08, zS + 2.18, zS + 2.22, rm, { col: false });
-}
+// the tin garage of phase 0 on this slab (walls, sliding leaves to the north, shelves, tools): garden/garage.js (feat/garage)
 // ======================= PHASE 2/3: sealing, sill plates, anchors =======================
 phase(PHN.abdicht);
 B(0.0, 4.0, 0.0, 4.0, zS, zSill, MAT.bitumen, { col: false, cast: false });

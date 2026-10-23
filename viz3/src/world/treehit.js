@@ -674,7 +674,7 @@ export const TREEHIT = (() => {
     }
     if (shadow) markDirty(true);
   }
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     try {
       tick(dt);
     } catch (e) {
@@ -683,7 +683,7 @@ export const TREEHIT = (() => {
         console.warn('treehit tick', e);
       }
     }
-  });
+  }, 'world/treehit');
   // ---------------- saved: the trees knocked over stay down ('pav-trees-v1': { v: 1, t: [[x, y, azimuth°, angle], …] }) ----------------
   function remember(T, A) {
     S.down.push([
