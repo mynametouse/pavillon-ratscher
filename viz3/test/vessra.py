@@ -4,7 +4,7 @@
 # place names; pictures at the places of photos (Panoramax 2025, Wikimedia Commons), from above and at night; going home frees it again.
 # The tiles come from the published site and are copied into viz3/dist/welt-test/zonen/vessra/ first (the test server serves dist).
 # Sections (optional second argument, comma-separated): start,load,walk,kirche,baumschule,names,shots,night,free
-import sys, os, json, time, math, urllib.request, concurrent.futures
+import sys, os, json, time, math, urllib.request, urllib.error, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
@@ -24,6 +24,9 @@ def utm(x, y):
     return XF['a'] * x - XF['b'] * y + XF['ex'], XF['b'] * x + XF['a'] * y + XF['ey']
 
 
+FAILED = []
+
+
 def fetch_tiles():
     """the tiles the app asks for in the zone (levels 10-12, rings of welt/welt.js) and under it (sampler), into dist/welt-test/zonen/vessra/"""
     os.makedirs(DIST, exist_ok=True)
@@ -33,12 +36,22 @@ def fetch_tiles():
         if os.path.exists(p) and os.path.getsize(p) > 0:
             return 0
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        try:
-            with urllib.request.urlopen(SITE + rel, timeout=60) as r:
-                b = r.read()
-        except Exception:
+        for k in range(4):   # GitHub Pages now and then drops a connection: try again
+            try:
+                with urllib.request.urlopen(SITE + rel, timeout=60) as r:
+                    b = r.read()
+                break
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    return 0
+            except Exception:
+                pass
+            time.sleep(1 + 2 * k)
+        else:
+            FAILED.append(rel)
             return 0
-        open(p, 'wb').write(b)
+        open(p + '.part', 'wb').write(b)
+        os.replace(p + '.part', p)
         return len(b)
     get('meta.json')
     try:
@@ -62,7 +75,7 @@ def fetch_tiles():
     t0 = time.time()
     with concurrent.futures.ThreadPoolExecutor(8) as ex:
         n = sum(ex.map(get, sorted(jobs)))
-    print(f'zone tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s', flush=True)
+    print(f'zone tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s' + (f', not fetched: {FAILED[:5]}' if FAILED else ''), flush=True)
 
 
 fetch_tiles()
@@ -118,6 +131,17 @@ with lib.browser() as b:
         ck('its own world tiles around the camera', s['welt']['visible'] >= 10 and s['welt']['err'] == 0 and not s['noTiles'] and '+zonen/vessra/' in s['welt'].get('sets', ''), json.dumps(s['welt']))
         ck('ground under the feet (tiles)', p['w'] is not None and abs(p['feet'] - p['g']) < 0.05 and abs(p['g'] - p['w']) < 0.01, json.dumps(p))
     if want('walk'):
+        # the ground beside the Schleusinger Straße: the banks of the road cut lowered (at 8 m from the axis at most ~0.5 m above it)
+        r = J("""(() => { const st = VESSRA.data.st.filter(s => s.n === 'Schleusinger Straße'); let raw = 0, adj = 0, n = 0, d = 0;
+            for (const s of st) { const p = s.p; for (let k = 0; k + 3 < p.length; k += 2) { const ex = p[k + 2] - p[k], ey = p[k + 3] - p[k + 1], L = Math.hypot(ex, ey);
+              for (let u = 0; u < L; u += 20) { const x = p[k] + ex * u / L, y = p[k + 1] + ey * u / L, nx = ey / L, ny = -ex / L;
+                if (Math.hypot(x - VESSRA.ORT[0], y - VESSRA.ORT[1]) > 450) continue;
+                for (const sg of [-1, 1]) { const qx = x + nx * sg * 8, qy = y + ny * sg * 8; if (VESSRA.raw(qx, qy) === undefined) continue;
+                  raw = Math.max(raw, VESSRA.raw(qx, qy) - VESSRA.raw(x, y)); adj = Math.max(adj, VESSRA.gz(qx, qy) - VESSRA.gz(x, y));
+                  if (Math.hypot(qx - GAME.P.x, qy - GAME.P.y) < 120) d = Math.max(d, Math.abs(VESSRA.gz(qx, qy) - (WELT.heightAt(qx, qy) ?? VESSRA.gz(qx, qy)))); n++; } } } }
+            return { n, raw: +raw.toFixed(2), adj: +adj.toFixed(2), tilesVsGround: +d.toFixed(3), ms: VESSRA.capMs }; })()""")
+        ck('the village ground: no trough beside the Schleusinger Straße (8 m from the axis)',
+           r['n'] > 20 and r['adj'] <= 0.8 and r['adj'] < r['raw'] / 2 and r['tilesVsGround'] < 0.15, json.dumps(r))
         # walk straight at a house wall in the village: the wall stops the walker
         r = J("""(() => { const b = VESSRA.bld.find(b => !b.lm && !b.old && b.k === 0 && b.F.length > 3 && Math.hypot(b.cx + 8700, b.cy + 230) < 120);
             const f = b.F.find(f => !(f[8] & 1)) || b.F[0], mx = (f[0] + f[2]) / 2, my = (f[1] + f[3]) / 2, L = Math.hypot(f[2] - f[0], f[3] - f[1]), nx = (f[3] - f[1]) / L, ny = -(f[2] - f[0]) / L;
@@ -165,6 +189,8 @@ with lib.browser() as b:
         if bs:
             nm = J(f"[VESSRA.place({bs['beete'][2]['x']}, {bs['beete'][2]['y']}), VESSRA.place({bs['k']['x']}, {bs['k']['y']})]")
             ck('the nursery has its name on the HUD', all('Baumschule Kammbach' in (n or '') for n in nm), json.dumps(nm, ensure_ascii=False))
+            fl = J("(() => { const z = VESSRA.baumschule.beete.flatMap(b => b.slots.map(([x, y]) => VESSRA.gz(x, y))); return { n: z.length, lo: Math.min(...z), hi: Math.max(...z) }; })()")
+            ck('the sales yard is level: the beds lie on one plane', fl['hi'] - fl['lo'] < 0.5, json.dumps(fl))
             r = J(f"""(() => {{ const e = VESSRA.baumschule.eingang; GAME.view(e.x, e.y, e.z + 1.62, e.yaw, 0, 60); GAME.step(0.5); GAME.step(4, 1);
                 return {{ x: GAME.P.x, y: GAME.P.y, where: VESSRA.place(GAME.P.x, GAME.P.y), sign: (VESSRA.signs || []).filter(s => /Kammbach/.test(s)).length, young: VESSRA.youngTrees }}; }})()""")
             ck('from the gate into the sales yard; its signs; young trees on the field', 'Baumschule' in (r['where'] or '') and r['sign'] >= 2 and r['young'] > 150, json.dumps(r, ensure_ascii=False))
@@ -177,6 +203,8 @@ with lib.browser() as b:
         n = J("[[-8790, -376], [-8798, -287], [-8749, -362], [-8805, -266], [-8905, -175]].map(([x, y]) => VESSRA.place(x, y))")
         ck('place names: church, gate church, Henneberg chapel, a street, the nursery',
            'Klosterkirche' in n[0] and 'Torkirche' in n[1] and 'Henneberg' in n[2] and 'Straße' in n[3] and 'Kammbach' in n[4], json.dumps(n, ensure_ascii=False))
+        ss = J("(VESSRA.streetSigns || []).filter((q, i) => i % 2 === 0).map(q => [q.name, Math.round(Math.hypot(q.at[0] - VESSRA.START[0], q.at[1] - VESSRA.START[1]))])")
+        ck('street name signs at the junctions (the Schleusinger Straße near the gate)', len(ss) >= 4 and any(q[0] == 'Schleusinger Straße' and q[1] < 250 for q in ss), json.dumps(ss, ensure_ascii=False))
 
     def view(x, y, yaw, pitch=4, fov=62, steps=12, h=1.62):
         E(f"GAME.view({x}, {y}, VESSRA.gz({x}, {y}) + {h}, {yaw}, {pitch}, {fov}); for (let i = 0; i < {steps}; i++) GAME.step(0.25)")
