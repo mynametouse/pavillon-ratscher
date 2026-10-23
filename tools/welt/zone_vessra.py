@@ -525,7 +525,9 @@ def main():
         nurs = [Polygon(list(zip(r['p'][::2], r['p'][1::2]))) for r in areas if r['k'] in ('nursery', 'water')]
         if kirche.get('area'):
             nurs.append(Polygon(list(zip(kirche['area'][::2], kirche['area'][1::2]))).buffer(2.0))
-        road_ls = [s_['_ls'].buffer({1: 4.5, 2: 4.0, 3: 3.5, 5: 2.5}.get(s_['k'], 1.5)) for s_ in streets if s_['k'] <= 8]
+        # trunks at least 1.5 m beyond the carriageway (cars turn and pass there), none in front of a gate
+        road_ls = [s_['_ls'].buffer({1: 5.0, 2: 4.5, 3: 4.0, 5: 3.0}.get(s_['k'], 1.5)) for s_ in streets if s_['k'] <= 8]
+        road_ls += [Point(g[0], g[1]).buffer(7.0) for g in gates]
         from shapely.strtree import STRtree as _T
         rt = _T(road_ls) if road_ls else None
         found = []
@@ -560,7 +562,8 @@ def main():
     from shapely.strtree import STRtree as _T2
     mus = next((Polygon(list(zip(r['p'][::2], r['p'][1::2]))) for r in areas if r['k'] == 'museum'), None)
     block = [p.buffer(4.0) for p, _, _ in polys]
-    block += [s_['_ls'].buffer({1: 5.0, 2: 4.5, 3: 4.0, 5: 3.0, 6: 2.5}.get(s_['k'], 2.0)) for s_ in streets]
+    block += [s_['_ls'].buffer({1: 6.5, 2: 6.0, 3: 5.5, 5: 4.0, 6: 2.5}.get(s_['k'], 2.0)) for s_ in streets]
+    block += [Point(g[0], g[1]).buffer(9.0) for g in gates]   # the way in through a gate stays free (a car turns in there)
     block += [Polygon(list(zip(r['p'][::2], r['p'][1::2]))).buffer(1.5) for r in areas if r['k'] in ('water', 'cemetery', 'nursery', 'parking', 'garden')]
     if kirche.get('area'):
         block.append(Polygon(list(zip(kirche['area'][::2], kirche['area'][1::2]))).buffer(9.0))

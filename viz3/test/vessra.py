@@ -139,14 +139,26 @@ with lib.browser() as b:
             # (KERN.ground) at most ~15 % steep, no step over 0.15 m
             dr = J("""(() => { const B = VESSRA.baumschule, f = B.frame, Y = (u, w) => [f.G[0] + f.u[0] * u + f.w[0] * w, f.G[1] + f.u[1] * u + f.w[1] * w],
                 pk = B.parkplatz, pw = [(pk.x - f.G[0]) * f.u[0] + (pk.y - f.G[1]) * f.u[1], (pk.x - f.G[0]) * f.w[0] + (pk.y - f.G[1]) * f.w[1]],
-                P = [[0, -8], [0, 0.5], [pw[0] / 2, (0.5 + pw[1]) / 2], pw];
+                P = [[0, -8], [0, 0.5], [pw[0] / 2, (0.5 + pw[1]) / 2], pw],
+                // the approach for the obstacles: north on the right side of the Schulstraße (centre about 9 m outside the fence), a left turn in
+                A = [[-30, -13], [-12, -11.5], [-5, -10], [-1.5, -7.5], [0.5, -4], [0, 0.5]];
+              let clear = 99, cat = null;
+              for (let k = 0; k + 1 < A.length; k++) { const [u0, w0] = A[k], [u1, w1] = A[k + 1], m = Math.max(1, Math.ceil(Math.hypot(u1 - u0, w1 - w0) / 0.5));
+                for (let i = 0; i <= m; i++) { const [x, y] = Y(u0 + (u1 - u0) * i / m, w0 + (w1 - w0) * i / m);
+                  for (const g of VESSRA.segs) { if (Math.abs(g[0] - x) > 12 || Math.abs(g[1] - y) > 12) continue;
+                    const ex = g[2] - g[0], ey = g[3] - g[1], l2 = ex * ex + ey * ey || 1, tt = Math.max(0, Math.min(1, ((x - g[0]) * ex + (y - g[1]) * ey) / l2)),
+                      dd = Math.hypot(x - g[0] - ex * tt, y - g[1] - ey * tt); if (dd < clear) { clear = dd; cat = [x, y]; } } } }
                 let slope = 0, step = 0, at = null, n = 0, prev = null;
                 for (let k = 0; k + 1 < P.length; k++) { const [u0, w0] = P[k], [u1, w1] = P[k + 1], L = Math.hypot(u1 - u0, w1 - w0), m = Math.max(1, Math.ceil(L / 0.5));
                   for (let i = k ? 1 : 0; i <= m; i++) { const [x, y] = Y(u0 + (u1 - u0) * i / m, w0 + (w1 - w0) * i / m), z = KERN.ground(x, y); n++;
                     if (prev) { const d = Math.hypot(x - prev[0], y - prev[1]), dz = Math.abs(z - prev[2]); if (d > 1e-6 && dz / d > slope) { slope = dz / d; at = [x, y]; } step = Math.max(step, dz); }
+                    for (const g of VESSRA.segs) { if (Math.abs(g[0] - x) > 12 || Math.abs(g[1] - y) > 12) continue;
+                      const ex = g[2] - g[0], ey = g[3] - g[1], l2 = ex * ex + ey * ey || 1, tt = Math.max(0, Math.min(1, ((x - g[0]) * ex + (y - g[1]) * ey) / l2)),
+                        dd = Math.hypot(x - g[0] - ex * tt, y - g[1] - ey * tt); if (dd < clear) { clear = dd; cat = [x, y]; } }
                     prev = [x, y, z]; } }
-                return { n, slope: +slope.toFixed(3), step: +step.toFixed(3), at, gate: +KERN.ground(...Y(0, 0.5)).toFixed(2), street: +KERN.ground(...Y(0, -8)).toFixed(2), park: +KERN.ground(pk.x, pk.y).toFixed(2) }; })()""")
-            ck('a car drives in: Schulstraße → gate → parking place at most 15 % steep, no step over 0.15 m', dr['n'] > 20 and dr['slope'] <= 0.15 and dr['step'] <= 0.15, json.dumps(dr))
+                return { n, slope: +slope.toFixed(3), step: +step.toFixed(3), at, clear: +clear.toFixed(2), cat, gate: +KERN.ground(...Y(0, 0.5)).toFixed(2), street: +KERN.ground(...Y(0, -8)).toFixed(2), park: +KERN.ground(pk.x, pk.y).toFixed(2) }; })()""")
+            ck('a car drives in: Schulstraße → gate → parking place at most 15 % steep, no step over 0.15 m, nothing in the way (1.2 m)',
+               dr['n'] > 20 and dr['slope'] <= 0.15 and dr['step'] <= 0.15 and dr['clear'] >= 1.2, json.dumps(dr))
             # buying (the planner's next round): a plant comes out of its bed and goes back
             tk = J("""(() => { const B = VESSRA.baumschule, a = B.take('obst', 3), again = B.take('obst', 3), t1 = B.isTaken('obst', 3);
                 const back = B.putBack('obst', 3); return { a, again, t1, back, after: B.isTaken('obst', 3), n: B.taken().length }; })()""")
