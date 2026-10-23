@@ -372,6 +372,9 @@ export const ANISO = Math.min(8, R.capabilities.getMaxAnisotropy());
 // more mip level after a broken-off attempt. The texture objects stay the same: a loaded KTX2 texture is turned into a compressed texture
 // in place (clones made before included), so wrap, repeat, rotation, anisotropy, colour space – and the shader programs – stay as they are.
 // Any problem (file, transcoder, no compressed format on this GPU) falls back to the image, per texture. ?tex2=0 switches it off.
+// Where it is on by default – until Falko has checked it on his iPhone (Safari) and laptop (Chrome): in the preview (/vorschau/) and on
+// the test servers (localhost, so the CI tests cover it); on the live site only with ?tex2=1. For everyone: TEX2_LIVE = true.
+const TEX2_LIVE = false;
 export const TEX2 = (() => {
   const S = {
     on: false,
@@ -386,7 +389,9 @@ export const TEX2 = (() => {
   };
   window.TEX2 = S;
   const q = (location.search.match(/[?&]tex2=(\d)/) || [])[1];
+  S.dflt = TEX2_LIVE || /\/vorschau\//.test(location.pathname) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   if (q === '0') S.why = 'aus (?tex2=0)';
+  else if (q !== '1' && !S.dflt) S.why = 'aus auf der Live-Seite (an mit ?tex2=1)';
   else if (!S.names.size) S.why = 'keine KTX2-Dateien im Build';
   else if (window.EMBED_URL) S.why = 'eingebettete Fassung';
   else if (typeof WebAssembly !== 'object' || typeof Worker !== 'function') S.why = 'kein WebAssembly/Worker';
@@ -397,8 +402,14 @@ export const TEX2 = (() => {
       // colour maps are sRGB: as BC1/BC3 they need the sRGB variant of S3TC (three finds no format without it)
       if (c.dxtSupported && !R.extensions.has('WEBGL_compressed_texture_s3tc_srgb')) c.dxtSupported = false;
       c.etc1Supported = false; // ETC1 has no sRGB variant – ETC2 covers the same files
+      c.pvrtcSupported = false;
       S.gpu = Object.keys(c).filter(k => c[k]);
-      if (!(c.astcSupported || c.bptcSupported || c.etc2Supported || c.dxtSupported))
+      // ?tex2fmt=astc|bc7|bc1|etc2|rgba: one target family only (comparisons; rgba = transcoded to plain RGBA, nothing compressed)
+      const ff = (location.search.match(/[?&]tex2fmt=(astc|bc7|bc1|etc2|rgba)/) || [])[1],
+        FAM = { astc: 'astcSupported', bc7: 'bptcSupported', bc1: 'dxtSupported', etc2: 'etc2Supported' };
+      if (ff) for (const k of Object.values(FAM)) c[k] = c[k] && FAM[ff] === k;
+      if (ff) S.fam = ff;
+      if (!(c.astcSupported || c.bptcSupported || c.etc2Supported || c.dxtSupported) && ff !== 'rgba')
         S.why = 'keine komprimierten Formate auf dieser GPU';
       else {
         L.setWorkerLimit(Math.max(1, Math.min(TEXHALF.on ? 2 : 3, (navigator.hardwareConcurrency || 2) - 1)));

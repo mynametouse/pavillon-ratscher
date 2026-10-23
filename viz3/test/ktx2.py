@@ -20,6 +20,12 @@ STATE = """JSON.stringify((() => { const T = window.TEX2 || {}, f = T.files ? T.
     gpu: T.gpu || [], half: !!T.half, drop: T.drop || 0, mb: Math.round((T.mb || 0) * 10) / 10, last: T.last || 0, files: tex.length,
     k2: k2.length, k2mb: Math.round(k2.reduce((s, x) => s + x.mb, 0) * 10) / 10, k2w: [...new Set(k2.map(x => x.w))],
     img: img.length, imgmb: Math.round(img.reduce((s, x) => s + x.w * x.w * 4 * 4 / 3, 0) / 1e5) / 10, imgw: [...new Set(img.map(x => x.w))],
+    all: (() => { const seen = new Set(); let c = 0, i = 0, nc = 0, ni = 0; const add = t => { if (!t || !t.isTexture || t.isRenderTargetTexture) return; const s = t.source;
+        if (!s || seen.has(s)) return; seen.add(s); const im = s.data; if (!im || !im.width) return;
+        if (t.isCompressedTexture && t.mipmaps && t.mipmaps.length && t.mipmaps[0].data) { nc++; c += t.mipmaps.reduce((a, m) => a + m.data.byteLength, 0); }
+        else { ni++; i += im.width * im.height * (im.depth || 1) * 4 * (t.generateMipmaps === false ? 1 : 4 / 3); } };
+      GAME.scene.traverse(o => { for (const m of o.material ? [].concat(o.material) : []) { for (const k in m) add(m[k]); if (m.uniforms) for (const k in m.uniforms) { const u = m.uniforms[k]; if (u && u.value) [].concat(u.value).forEach(add); } } });
+      return { compressed: nc, compressedMB: Math.round(c / 1e5) / 10, images: ni, imagesMB: Math.round(i / 1e5) / 10, totalMB: Math.round((c + i) / 1e5) / 10 }; })(),
     programs: (GAME.R.info.programs || []).length, keys: (GAME.R.info.programs || []).map(p => p.cacheKey).sort(),
     tex: GAME.R.info.memory.textures, prep: window.RENDER ? RENDER.prepMs : null,
     log: (JSON.parse(localStorage.getItem('pav-loadlog') || '{}').steps || []).filter(s => /KTX2|Textur/.test(s[1])).map(s => s[1]) }; })())"""
@@ -62,6 +68,7 @@ else:
        + ('' if k2['keys'] == img['keys'] else ' – keys differ: ' + str(sorted(set(k2['keys']) ^ set(img['keys'])))[:300]))
     ck('full-size base levels on the desktop', k2['k2w'] == [1024], str(k2['k2w']))
     print(f"load: KTX2 {k2['load_s']} s (prepare GPU {k2['prep']} ms) vs images {img['load_s']} s (prepare GPU {img['prep']} ms)", flush=True)
+    print(f"graphics memory of all scene textures (estimate): KTX2 {k2['all']} vs images {img['all']}", flush=True)
 # the pictures compared in a blank page (canvas pixels; no image library needed on the CI machines): mean difference over RGB, share of
 # pixels with a difference > 60 in their mean, and the difference ×4 as a picture
 CMP = """async ([a, b]) => { const load = u => new Promise((r, e) => { const i = new Image(); i.onload = () => r(i); i.onerror = e; i.src = u; });
@@ -83,7 +90,11 @@ if have:
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p: phone = dict(p.devices['iPhone 13'])
     ph, _, eph = visit('', ctx=phone, views=False)
+    ph0, _, eph0 = visit('?tex2=0', ctx=phone, views=False)
     print('phone ', json.dumps(show(ph), ensure_ascii=False), flush=True)
+    print(f"phone: loaded in {ph['load_s']} s (prepare GPU {ph['prep']} ms) vs {ph0['load_s']} s ({ph0['prep']} ms) with ?tex2=0; graphics memory of all"
+          f" scene textures (estimate): KTX2 {ph['all']} vs images {ph0['all']}", flush=True)
+    eph += eph0
     ck('phone: half-size files, compressed', ph['on'] and ph['half'] and ph['k2'] > 30 and ph['k2w'] == [512], f"{ph['k2']} at {ph['k2w']} px, {ph['k2mb']} MB, {ph['fmt']}")
     eimg += eph
 ck.errors(ek2 + eimg)
