@@ -407,15 +407,15 @@ export const TREEHIT = (() => {
       A.mode = 'sway'; // the push stopped short of tearing the roots
       A.w = 0;
     }
-    // elastic: under a share r of the force that would tear it, the stem leans r · TEAR / 2 (an 11 cm spruce against the car ≈ 6°, a thick
-    // one not visibly); a knock sets it swinging by about as much
-    const lean = Math.min(1, ratio) * TEAR * 0.5,
+    // elastic: under a share r of the force that would tear it, the stem leans r · 0.3 · TEAR (an 11 cm spruce against the car ≈ 3.5°, a
+    // thick one hardly); a knock sets it swinging by about as much
+    const lean = Math.min(1, ratio) * TEAR * 0.3,
       start = S.time - A.pushT > 0.25;
     A.dir = [-h.n[0], -h.n[1]];
     A.pushT = S.time;
     A.push = lean;
     if (start) {
-      A.w += lean * swayW(T) * (a > 0.3 ? 0.8 : 0.3);
+      A.w += lean * swayW(T) * (a > 0.3 ? 0.7 : 0.3);
       if (ratio > 0.25 || a > 1.5) {
         S.n.stop++;
         snd(ratio > 0.5 ? 'creak' : 'swish', T.x, T.y, Math.min(1, T.D * 6));

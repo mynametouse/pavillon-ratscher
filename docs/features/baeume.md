@@ -31,7 +31,7 @@ biegt sich wenigstens. Das Spiel soll dabei etwas lehren: Stammdurchmesser, Kraf
    höchstens 0,4 m/s weiter, der Wurzelteller hebt sich, es knarzt) und reißt bei ≈ 16° aus – setzt man vorher zurück, richtet er sich
    wieder auf. Langsam schafft das Auto nur, was es mit Gas schieben kann (≈ 8 cm). Das Fahrzeug verliert die Arbeit, die das Umdrücken
    kostet (M · 0,35 rad), es wird langsamer, hält aber nicht an. Ein Stamm, der hält, gibt elastisch nach: unter dem Anteil r der Kraft,
-   die ihn ausreißen würde, neigt er sich um r · 8° (eine 11-cm-Fichte am Auto ≈ 6°, ein dicker Stamm sichtbar gar nicht), ein Stoß
+   die ihn ausreißen würde, neigt er sich um r · 5° (eine 11-cm-Fichte am Auto ≈ 3,5°, ein dicker Stamm kaum), ein Stoß
    lässt ihn etwa so weit schwingen. Ein kurzer Hinweis nennt Durchmesser und Kräfte (umgedrückt jedes Mal, „zu stark“ alle 8 s,
    Biegen höchstens alle 90 s).
    Gehende werfen keine Bäume um. Vom Förster markierte Bäume und solche, an denen gerade gefällt wird, bleiben, wie sie sind (Fällen hat
@@ -78,7 +78,7 @@ jedem Push auf `feat/baeume` (`viz3/extra/baeume/tests.txt`).
   Fahrzeuge (`soft`), umgefahrene `dead`, `WCOL.src/removeIdx/revive/treeAt/trunk`; `FOREST.retilt(t)`/`t.tilt`; `RATSCHER.treeRecs`;
   `VEH.boxHits` fragt `TREEHIT.give`.
 - `docs/CHANGELOG.md` (V16i nennt die Bäume schon): seither dazu – langsam geschoben neigt sich der Stamm erst mit dem Fahrzeug und reißt
-  bei ≈ 16° aus (zurücksetzen: er richtet sich wieder auf), ein Stamm, der hält, gibt elastisch nach (bis ≈ 8°), Räder über einem
+  bei ≈ 16° aus (zurücksetzen: er richtet sich wieder auf), ein Stamm, der hält, gibt elastisch nach (bis ≈ 5°), Räder über einem
   liegenden Stamm rucken, Äste knacken, Wurzelteller erdbraun statt beige, Hinweise seltener.
 - `core/save.js` (`pav-trees-v1`) und `modules.txt` (Zeile unter `world/worldcol.js`) sind im Branch eingetragen – beim Zusammenführen
   behalten.
