@@ -1611,8 +1611,19 @@ export const VESSRA = (() => {
       b.noDoor = true;
     },
   };
-  function build() {
-    const t0 = performance.now();
+  // built in a few slices with a frame in between (a car driving towards the place should not stall for the whole build); the time of
+  // each part in S.times
+  const nextFrame = () => new Promise(r => setTimeout(r, 0));
+  async function build() {
+    const t0 = performance.now(),
+      T = {};
+    let tp = t0;
+    const mark = k => {
+      const n2 = performance.now();
+      T[k] = (T[k] || 0) + Math.round(n2 - tp);
+      tp = n2;
+    };
+    S.times = T;
     S.segs = [];
     S.bld = [];
     S.seats = [];
@@ -1639,6 +1650,9 @@ export const VESSRA = (() => {
         z: (x, y, raw) => adj(x, y, raw),
       });
       if (WELT.setPads) WELT.setPads('vessra', pads);
+      mark('ground');
+      await nextFrame();
+      tp = performance.now();
     }
     const WB = wallBuf(),
       RB = roofBuf();
@@ -1689,7 +1703,11 @@ export const VESSRA = (() => {
           console.warn('vessra ' + name, e);
           S.err = S.err || name + ': ' + e;
         }
+        mark(name);
       };
+      mark('buildings');
+      await nextFrame();
+      tp = performance.now();
       step('kirche', () => kirche(KA, K, RB));
       step('apses', () => apses(KA, K, RB));
       for (const b of S.bld.filter(q => q.lm === 'torkirche')) step('torkirche', () => torkirche(K, b));
@@ -1704,20 +1722,29 @@ export const VESSRA = (() => {
       add(new THREE.Mesh(KS.geo(), stoneMat()), 'stone', true);
       if (!KA.empty()) add(new THREE.Mesh(scaledGeo(KA, 0.34), stoneMat('pavers', 1.3)), 'ashlar', true);
       add(new THREE.Mesh(K.geo(), propMat()), 'props', true);
+      mark('meshes');
+      await nextFrame();
+      tp = performance.now();
       step('ponds', ponds);
       step('lamps', lamps);
       step('trees', trees);
       step('signs', signs);
+      await nextFrame();
+      tp = performance.now();
     }
     add(new THREE.Mesh(WB.geo(), wm), 'walls');
     add(new THREE.Mesh(RB.geo(), rm), 'roofs');
+    mark('houses');
     try {
       streetMap();
     } catch (e) {
       console.warn('vessra streets', e);
     }
+    mark('streets');
     grid();
-    S.ms = Math.round(performance.now() - t0);
+    mark('grid');
+    S.ms = Object.values(T).reduce((a, v) => a + v, 0); // the work, without the frames between the slices
+    S.span = Math.round(performance.now() - t0);
     S.state = 'ready';
     pc = [1e9, 0, null]; // the cached place name was given before the place stood
     KERN.spot('vessra', { z: ground(START[0], START[1]) });
@@ -3271,7 +3298,7 @@ export const VESSRA = (() => {
       if (!S.noTiles)
         await KERN.until(() => WELT.heightAt(KL[0], KL[1]) !== undefined && WELT.state().loading === 0, 900);
       try {
-        build();
+        await build();
       } catch (e) {
         S.state = 'error';
         S.err = String(e);
@@ -3310,6 +3337,7 @@ export const VESSRA = (() => {
     noTiles: !!S.noTiles,
     err: S.err,
     zone: (KERN.zones().find(z => z.id === 'vessra') || { state: '' }).state,
+    times: S.times || null,
     welt: WELT.state(),
   });
   return S;
