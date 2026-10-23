@@ -950,13 +950,17 @@ function updateDrive(w, dt) {
     const h = Math.atan2(dx, dy);
     d.az = lerpAngle(d.az, h, Math.min(1, dt * 1.6));
     // V16b: waits while a vehicle stands in the way; slows down in tight turns
-    const turn = Math.abs(lerpAngle(0, h - d.az, 1)),
-      sp = window.VEH && LATE.VEH.blocked(d.x, d.y, d.az, 3.2) ? 0 : d.sp * (turn > 0.6 ? 0.45 : 1);
+    const last = d.i === R.length - 1,
+      turn = Math.abs(lerpAngle(0, h - d.az, 1)),
+      sp =
+        window.VEH && LATE.VEH.blocked(d.x, d.y, d.az, 3.2)
+          ? 0
+          : d.sp * (turn > 0.6 ? 0.45 : 1) * (last ? Math.min(1, 0.25 + dist / 6) : 1); // slows down for the last point
     const mv = Math.min(dist, sp * dt);
     d.x += Math.sin(d.az) * mv;
     d.y += Math.cos(d.az) * mv;
     TRACTOR.roll(mv);
-    if (dist < 0.6 + (d.sp > 3 ? 0.8 : 0)) {
+    if (dist < (last ? 0.35 : 0.6 + (d.sp > 3 ? 0.8 : 0))) {
       d.i++;
       if (window.QUESTS && R === DRIVE_ROUTE) LATE.QUESTS.driveWp(d.i);
       if (d.i >= R.length) {
@@ -973,6 +977,10 @@ function updateDrive(w, dt) {
     }
   } else if (d.phase === 'park') {
     d.az = lerpAngle(d.az, TRACTOR_HOME.az, Math.min(1, dt * 1.5));
+    if (Math.hypot(d.x - TRACTOR_HOME.x, d.y - TRACTOR_HOME.y) < 2) {
+      d.x += (TRACTOR_HOME.x - d.x) * Math.min(1, dt * 2); // rolls into its place (the tasks look for it there)
+      d.y += (TRACTOR_HOME.y - d.y) * Math.min(1, dt * 2);
+    }
     if (d.t > 2.5) {
       audio.stopLoop('tractor', 1.2);
       w.drive = null;

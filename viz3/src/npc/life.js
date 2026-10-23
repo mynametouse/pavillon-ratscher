@@ -33,6 +33,7 @@ import {
   TRACTOR_HOME,
   trkPt,
 } from './npc.js';
+import { PLAY } from '../game/play.js';
 import { QUESTS } from '../game/quests.js';
 import { ROADS } from '../world/roads.js';
 import { RATSCHER } from '../world/ratscher.js';
@@ -734,10 +735,56 @@ export const LIFE = (() => {
     for (let k = 0; k < 7; k++) {
       const x = x0 + k * 2.0,
         up = k % 2 === 0;
-      out.push([x, up ? ys : yn], [x, up ? yn : ys], [x + 1.0, up ? yn + 2.6 : ys - 2.6]);
+      out.push([x, up ? ys : yn, false], [x, up ? yn : ys, true], [x + 1.0, up ? yn + 2.6 : ys - 2.6, false]); // [x, y, cutting]
     }
     return out;
   })();
+  // the cut grass lies in a swath behind the cutter bar (right of the tractor): one strip per lane, gone when he mows again
+  const SWATH = (() => {
+    const geo = new THREE.BoxGeometry(1, 1, 1);
+    geo.translate(0, 0.5, 0);
+    const m = new THREE.InstancedMesh(geo, plain({ color: 0x8c9a4c, roughness: 1 }), 16);
+    m.count = 0;
+    m.receiveShadow = true;
+    m.userData.noMerge = true;
+    m.frustumCulled = false;
+    scene.add(m);
+    return {
+      m,
+      n: 0,
+      cur: null,
+      M: new THREE.Matrix4(),
+      Q: new THREE.Quaternion(),
+      S: new THREE.Vector3(),
+      Y: new THREE.Vector3(0, 1, 0),
+    };
+  })();
+  const barAt = () => [MS.x + Math.cos(MS.az) * 1.8, MS.y - Math.sin(MS.az) * 1.8];
+  function swath(on) {
+    const W = SWATH;
+    if (on === 'clear') {
+      W.n = W.m.count = 0;
+      W.cur = null;
+    } else if (on) {
+      if (W.n < 16) {
+        const [x, y] = barAt();
+        W.cur = { i: W.n++, x, y };
+        W.m.count = W.n;
+      }
+    } else W.cur = null;
+    markDirty();
+  }
+  function swathTo() {
+    const W = SWATH,
+      c = W.cur;
+    if (!c) return;
+    const [x, y] = barAt(),
+      L = Math.hypot(x - c.x, y - c.y);
+    W.Q.setFromAxisAngle(W.Y, -Math.atan2(x - c.x, y - c.y));
+    W.M.compose(V((x + c.x) / 2, (y + c.y) / 2, 0), W.Q, W.S.set(0.55, 0.05, Math.max(0.01, L)));
+    W.m.setMatrixAt(c.i, W.M);
+    W.m.instanceMatrix.needsUpdate = true;
+  }
   const MS = { x: MOWER.home.x, y: MOWER.home.y, az: MOWER.home.az * D2R };
   function mowerAt() {
     MOWER.g.position.copy(V(MS.x, MS.y, 0));
@@ -750,7 +797,7 @@ export const LIFE = (() => {
     w.az = MS.az;
     w.zOff = st.top != null ? st.top - (w.fig.hipH || 0.9) + 0.1 : st.z;
   }
-  function* drive(w, tx, ty, sp) {
+  function* drive(w, tx, ty, sp, cut) {
     for (;;) {
       const dx = tx - MS.x,
         dy = ty - MS.y,
@@ -766,6 +813,7 @@ export const LIFE = (() => {
         MS.y += Math.cos(MS.az) * mv;
         MOWER.roll(mv);
         mowerAt();
+        if (cut) swathTo();
         audio.moveLoop('mower', MS.x, MS.y);
       }
       seatOn(w);
@@ -791,12 +839,18 @@ export const LIFE = (() => {
         stand(w);
         yield;
       }
-      for (const [x, y] of LANES) yield* drive(w, x, y, 2.3);
+      swath('clear');
+      for (const [x, y, cut] of LANES) {
+        if (cut) swath(true);
+        yield* drive(w, x, y, 2.3, cut);
+        if (cut) swath(false);
+      }
       yield* drive(w, MOWER.home.x, MOWER.home.y - 3, 2.6);
       yield* drive(w, MOWER.home.x, MOWER.home.y, 1.2);
       a.lock = false;
     } finally {
       audio.stopLoop('mower', 1.0);
+      swath(false);
       w.mow = false;
       w.fig.mode = 'stand';
       w.zOff = 0;
@@ -852,7 +906,9 @@ export const LIFE = (() => {
     car: hCar,
     putter: hPutter,
     table: w => sitFor(w, CH()[0]),
-    bench: w => sitFor(w, BENCH),
+    // his bench (game/home.js lets the visitor sit there too: then he takes the chair at the table)
+    bench: w =>
+      sitFor(w, PLAY.seat && Math.hypot(PLAY.seat.x - BENCH.x, PLAY.seat.y - BENCH.y) < 0.8 ? CH()[0] : BENCH),
     talk: hTalk,
     trip: hTrip,
     feed: rFeed,
@@ -879,6 +935,7 @@ export const LIFE = (() => {
   const AG = {};
   function agent(w, plan, home) {
     const a = { name: w.name, w, plan, home, cur: null, it: null, t0: 0, lock: false, forced: null };
+    a.after = () => holdProp(w); // npc/npc_real.js calls fig.after(fig) after each pose update
     a.ctl = dt => {
       if (w.drive || w.away) return false;
       if ((w.talking && !w.seated && !w.mow) || w.shy > 0) {
@@ -1095,7 +1152,7 @@ export const LIFE = (() => {
         fillRack(0);
       }
       wasAway[a.name] = !!w.away;
-      if (w.fig.after !== holdProp) w.fig.after = holdProp; // (the real figures replace the simple ones after loading)
+      if (w.fig.after !== a.after) w.fig.after = a.after; // (the real figures replace the simple ones after loading)
       if (w.away) continue;
       // a task steers him (game/quests.js sets its own controller): the activity waits and starts again afterwards
       if (w.ctl && w.ctl !== a.ctl) {
@@ -1130,6 +1187,32 @@ export const LIFE = (() => {
     if (m >= 6 * 60 && m < 21 * 60 && HOFCAR.open < 1 && AG.hubert.cur === 'car') HOFCAR.bonnet(1);
   }
   window.TICKS.push(tick);
+  // while Hubert sits on his bench, the visitor cannot sit down on him (the seat of game/home.js)
+  {
+    const b = PLAY.acts().find(a => a.id === 'seat:hubertbench');
+    if (b) {
+      const l0 = b.label;
+      b.label = () => (H.seated === BENCH ? null : l0());
+    }
+  }
+  // place names (garden/places.js window.sitePlace): Hubert's yard and workshops, Ronald's meadow
+  {
+    const sp0 = window.sitePlace;
+    const inShed = (x, y) =>
+      SHEDS.some(S => {
+        const dx = x - S.c[0],
+          dy = y - S.c[1];
+        return Math.abs(dx * S.u[0] + dy * S.u[1]) < S.D / 2 && Math.abs(dx * S.v[0] + dy * S.v[1]) < S.L / 2;
+      });
+    window.sitePlace = (x, y, z) => {
+      const r = sp0 ? sp0(x, y, z) : null;
+      if (r === 'Nachbargrundstück West' && y > -26 && y < 40 && x > -44)
+        return inShed(x, y) ? 'Huberts Werkstatt' : 'Huberts Hof';
+      if (r === 'Nachbargrundstück Ost' && x > PAD.x0 - 2 && x < PAD.x1 + 2 && y > PAD.y1 && y < 10)
+        return 'Ronalds Wiese';
+      return r;
+    };
+  }
   // the viewpoints follow the moved paddock and the yard (game/player.js SPOTS; menu "Ziegen", "Bei Hubert")
   if (SPOTS.ziegen) Object.assign(SPOTS.ziegen, { pos: [PAD.x0 - 2.6, PAD.gy + 1.5], yaw: 108, pitch: -2 });
   if (SPOTS.hubert) Object.assign(SPOTS.hubert, { pos: [-11.6, 8.2], yaw: -112, pitch: -3 });

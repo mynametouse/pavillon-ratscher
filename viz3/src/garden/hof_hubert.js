@@ -534,14 +534,15 @@ HOF.fillHut = f => {
   COL.push([rx - 0.65, rx + 0.65, ry - 0.65, ry + 0.65, 0, 0.66, 'wood', null, null]);
   // the heap of split wood: wedge-shaped pieces in a loose mound
   const [sx, sy] = HOF.heap;
-  const piece = new THREE.CylinderGeometry(0.085, 0.085, 0.33, 3); // a split piece: a three-sided billet
-  for (let k = 0; k < 34; k++) {
+  const piece = new THREE.CylinderGeometry(0.1, 0.1, 0.34, 3); // a split piece: a three-sided billet
+  const SPLIT2 = plain({ color: 0xb8956a, roughness: 0.9 });
+  for (let k = 0; k < 40; k++) {
     const a = rand() * Math.PI * 2,
-      d = Math.sqrt(rand()) * 0.55,
+      d = Math.sqrt(rand()) * 0.6,
       x = sx + Math.cos(a) * d,
       y = sy + Math.sin(a) * d * 0.8,
-      z = 0.05 + (0.55 - d) * 0.5 * rand();
-    const m = new THREE.Mesh(piece, [SPLIT, MAT.logEnd, MAT.logEnd]);
+      z = 0.06 + (0.6 - d) * 0.55 * rand();
+    const m = new THREE.Mesh(piece, [k % 3 === 0 ? MAT.logs : k % 3 === 1 ? SPLIT2 : SPLIT, MAT.logEnd, MAT.logEnd]);
     m.position.copy(V(x, y, z));
     m.rotation.set(Math.PI / 2 + rr(-0.4, 0.4), rr(0, 6.3), rr(-0.3, 0.3));
     m.castShadow = m.receiveShadow = true;
@@ -619,4 +620,52 @@ RAMP.y1 = RAMP.ax + 0.55;
     scene.add(m);
     B(cx - 0.15, cx + 0.15, RAMP.y0 - 0.5, RAMP.y0 - 0.2, 0, 0.14, MAT.conc, { col: false });
   }
+}
+// ---- worn ground: wood chips round the chopping block and under the sawhorse, bare earth under the car ----
+{
+  const flat = { roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 };
+  const CHIPS = patchSV(
+    new THREE.MeshStandardMaterial(
+      Object.assign(
+        {
+          map: canvasTex(256, 256, (q, w, h) => {
+            const r0 = (
+              s => () =>
+                ((s = (s * 16807) % 2147483647) - 1) / 2147483646
+            )(7);
+            q.fillStyle = '#6b583f';
+            q.fillRect(0, 0, w, h);
+            for (let i = 0; i < 1600; i++) {
+              const l = 0.6 + r0() * 0.7;
+              q.fillStyle = `rgba(${(205 * l) | 0},${(165 * l) | 0},${(115 * l) | 0},${0.35 + r0() * 0.5})`;
+              q.save();
+              q.translate(r0() * w, r0() * h);
+              q.rotate(r0() * 3.14);
+              q.fillRect(-3, -1, 4 + r0() * 8, 1.5 + r0() * 2.5);
+              q.restore();
+            }
+          }),
+        },
+        flat
+      )
+    )
+  );
+  const EARTH = plain(Object.assign({ color: 0x5c4b3a }, flat));
+  const patch = (cx, cy, r, m, seed, sx = 1) => {
+    const pts = [];
+    for (let i = 0; i < 20; i++) {
+      const a = (i / 20) * Math.PI * 2,
+        k = r * (0.8 + 0.14 * Math.sin(i * 2.7 + seed) + 0.08 * Math.sin(i * 5.3 + seed * 2));
+      pts.push(new THREE.Vector2(Math.cos(a) * k * sx, Math.sin(a) * k));
+    }
+    const geo = new THREE.ShapeGeometry(new THREE.Shape(pts));
+    geo.rotateX(-Math.PI / 2);
+    const me = new THREE.Mesh(geo, m);
+    me.position.copy(V(cx, cy, 0.006));
+    me.receiveShadow = true;
+    scene.add(me);
+  };
+  patch(HOF.block[0] - 0.3, HOF.block[1] + 0.3, 2.0, CHIPS, 1);
+  patch(HOF.horse[0], HOF.horse[1] + 0.2, 1.4, CHIPS, 2);
+  patch(HOF.car.x, HOF.car.y + 0.4, 3.1, EARTH, 3, 0.55);
 }

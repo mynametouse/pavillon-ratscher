@@ -13,7 +13,7 @@ import { HOF, RAMP } from './hof_hubert.js';
 export const HOFCAR = (() => {
   const std = o => patchSV(new THREE.MeshStandardMaterial(o));
   const M = {
-    paint: std({ color: 0x2c4a3c, metalness: 0.55, roughness: 0.33, envMapIntensity: 1.0 }), // dark green metallic, a little tired
+    paint: std({ color: 0x35574a, metalness: 0.5, roughness: 0.36, envMapIntensity: 1.0 }), // dark green metallic, a little tired
     glass: std({ color: 0x141b20, metalness: 0.3, roughness: 0.06, envMapIntensity: 1.3 }),
     black: std({ color: 0x17181a, roughness: 0.6 }),
     trim: std({ color: 0x0e0f10, roughness: 0.4 }),
