@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import { R, cam, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
-import { markDirty, plain } from '../core/assets.js';
+import { markDirty, pbrMat } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { LIGHTSTATE } from '../game/home.js';
 import { audio } from '../audio/audio.js';
@@ -19,7 +19,9 @@ export const DFIRE = (() => {
     L = (r, g, b) => [lin(r), lin(g), lin(b)];
   const U = { uT: { value: 0 }, uK: { value: 0 } };
   // the burning logs glow from inside (a plain material: the same shader program as others of its kind)
-  const EMBER = plain({ color: 0x3a2a1e, roughness: 0.9, emissive: 0xff4a12, emissiveIntensity: 0 });
+  const EMBER = pbrMat('char', { fallback: 0x1f1c1a, nrm: 1.0, env: 0.7 });
+  EMBER.emissive.setHex(0xff3a0c);
+  EMBER.emissiveIntensity = 0;
   const NOISE = `float fh( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
     float fn( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
       return mix( mix( fh( i ), fh( i + vec2( 1.0, 0.0 ) ), f.x ), mix( fh( i + vec2( 0.0, 1.0 ) ), fh( i + vec2( 1.0, 1.0 ) ), f.x ), f.y ); }
@@ -70,16 +72,16 @@ export const DFIRE = (() => {
       vertexShader: `attribute float aSeed; uniform float uT, uK; varying float vA, vH;
         void main() {
           float life = 6.0 + fract( aSeed * 5.3 ) * 4.0, ph = fract( uT / life + aSeed * 7.7 );
-          float h = 1.4 + ph * 5.5, a = aSeed * 61.0;
+          float h = 2.3 + ph * 5.5, a = aSeed * 61.0;
           vec3 p = vec3( cos( a ) * 0.2 + sin( uT * 0.25 + aSeed * 9.0 ) * 0.9 * ph + ph * ph * 1.6, h, sin( a ) * 0.2 + ph * 0.6 );
           vA = smoothstep( 0.0, 0.12, ph ) * ( 1.0 - ph ) * uK; vH = ph;
           vec4 mv = modelViewMatrix * vec4( p, 1.0 );
-          gl_PointSize = clamp( ( 0.6 + ph * 2.2 ) * 300.0 / max( -mv.z, 0.5 ), 2.0, 160.0 );
+          gl_PointSize = clamp( ( 0.4 + ph * 2.0 ) * 260.0 / max( -mv.z, 0.5 ), 2.0, 140.0 );
           gl_Position = projectionMatrix * mv;
         }`,
       fragmentShader: `varying float vA, vH; void main() { vec2 q = gl_PointCoord - 0.5; float d = 1.0 - smoothstep( 0.15, 0.5, length( q ) );
-          vec3 c = mix( vec3( 0.32, 0.17, 0.08 ), vec3( 0.06, 0.06, 0.065 ), smoothstep( 0.0, 0.35, vH ) );
-          gl_FragColor = vec4( c, d * vA * 0.32 ); }`,
+          vec3 c = mix( vec3( 0.22, 0.13, 0.07 ), vec3( 0.05, 0.05, 0.055 ), smoothstep( 0.0, 0.3, vH ) );
+          gl_FragColor = vec4( c, d * vA * 0.2 ); }`,
     });
   }
   function sparkMat() {
@@ -114,19 +116,12 @@ export const DFIRE = (() => {
       S.grp = grp;
       const kit = VPROPS.kit();
       // the ring of stones and the ash bed
-      for (let i = 0; i < 14; i++) {
-        const a = (i / 14) * Math.PI * 2,
-          r = 1.0 + 0.06 * Math.sin(i * 7.1);
-        kit.box(
-          Math.cos(a) * r,
-          Math.sin(a) * r,
-          -0.05,
-          0.28,
-          0.22,
-          0.2 + 0.05 * Math.sin(i * 3.3),
-          a + 0.4,
-          L(0.42 + 0.06 * Math.sin(i), 0.4, 0.37)
-        );
+      for (let i = 0; i < 15; i++) {
+        const a = (i / 15) * Math.PI * 2 + 0.1 * Math.sin(i * 5.3),
+          r = 1.0 + 0.06 * Math.sin(i * 7.1),
+          rs = 0.12 + 0.04 * Math.abs(Math.sin(i * 3.3)),
+          g = 0.36 + 0.07 * Math.sin(i * 1.7);
+        kit.ball(Math.cos(a) * r, Math.sin(a) * r, 0.02, rs, L(g, g * 0.97, g * 0.92), 6); // field stones, half in the ground
       }
       kit.lathe(
         0,
@@ -358,13 +353,13 @@ export const DFIRE = (() => {
     if (near !== !!lent) light(near);
     if (lent) {
       const fl = 0.8 + 0.12 * Math.sin(S.t * 11.3) + 0.08 * Math.sin(S.t * 23.1 + 1.3) + 0.06 * Math.sin(S.t * 4.1);
-      if (!S.lightAt) S.lightAt = V(S.at[0], S.at[1], S.z + 1.1);
+      if (!S.lightAt) S.lightAt = V(S.at[0], S.at[1], S.z + 1.9);
       lent.l.position.copy(S.lightAt);
       lent.l.distance = 18;
       lent.l.decay = 1.3;
       lent.l.color.setHex(0xff8f45);
       lent.l.intensity = 26 * S.k * fl;
-      EMBER.emissiveIntensity = (0.5 + 0.5 * fl) * S.k;
+      EMBER.emissiveIntensity = (0.22 + 0.2 * fl) * S.k;
     }
     crackle(S.k, dist);
     if (dist < 400 || Math.abs(S.k - k0) > 1e-3) markDirty();
