@@ -46,7 +46,8 @@ biegt sich wenigstens. Das Spiel soll dabei etwas lehren: Stammdurchmesser, Kraf
 - `viz3/src/world/treehit.js` (`TREEHIT`): Regel, Bewegungen (biegen, schwanken, fallen) nur der Bäume in Bewegung, Wurzelteller
   (ein InstancedMesh), Töne (Knacken, Rascheln, Aufschlag, Knarzen, Rad über Stamm, Zweige – synthetisch über `audio.raw()`),
   Speichern, Testhilfen (`info(i)`, `verdict(i, 'car'|'tractor', kmh)`, `state(i)`, `axisOf(i)` – die gezeichnete Stammachse aus der
-  Instanzmatrix –, `stats()`, `rule`) und `standUp()` (alle umgefahrenen Bäume wieder aufstellen, Speicher leeren – Werkzeug, noch ohne Menü).
+  Instanzmatrix –, `stats()`, `rule`) und `standUp()` (alle umgefahrenen Bäume wieder aufstellen, Speicher leeren) – im Menü unter
+  „Orte“ der Knopf **„Bäume aufstellen“** (`shell/menu.html`, `data-treereset`, kurzer Hinweis, wie viele wieder stehen).
 - `viz3/src/world/worldcol.js` (`WCOL`): die Jungbäume (≤ 2,5 m) als weiche Stämme – nur Abfragen mit `each(…, soft = true)` sehen
   sie (die Fahrzeuge, die sie biegen); Gehende, ein an der Seilwinde gezogener Stamm und die Kamera nicht –,
   umgefahrene als `dead` (jede Abfrage überspringt sie – kein NaN, kein Löschen während einer Abfrage; Lehre V16b5), `src` (Baum je Stamm),
@@ -61,14 +62,16 @@ biegt sich wenigstens. Das Spiel soll dabei etwas lehren: Stammdurchmesser, Kraf
 
 ```bash
 cd viz3 && python3 build.py --fast && cd ..
-bash tools/browser_lock.sh python3 viz3/test/run.py --port 8976 --serve baeume          # alles (~12 min)
+bash tools/browser_lock.sh python3 viz3/test/run.py --port 8976 --serve baeume          # alles (~20 min)
 bash tools/browser_lock.sh python3 viz3/test/run.py --port 8976 --serve baeume:car      # nur das Auto
 ```
 
 `viz3/test/baeume.py`: Auto und Traktor fahren je in einen Jungbaum, einen kleinen und einen dicken Baum (freier Anlauf von 12 m wird
-gesucht); geprüft werden Biegen und Zurückfedern, Umkippen und Weiterfahren, Anhalten und Schwanken, dann Neuladen (liegt noch, kein
-Hindernis). Bilder: `out/baeume/<fahrzeug>_<fall>_1_before|2_contact|3_after.jpg`, `reload_<i>.jpg`. Bei GitHub läuft der Test bei
-jedem Push auf `feat/baeume` (`viz3/extra/baeume/tests.txt`).
+gesucht), der Traktor schiebt einen Baum langsam um, dazu ein Laubbaum am Feldrand (Krone aus dem Kronenhöhenmodell); geprüft werden
+Biegen und Zurückfedern, Umkippen (die gezeichnete Stammachse liegt in Schubrichtung) und Weiterfahren, Anhalten und Schwanken, dann
+Neuladen (liegt noch, kein Hindernis), das Auto quer über einen liegenden Stamm (Räder rucken) und der Menüknopf (alle stehen wieder).
+Bilder: `out/baeume/<fahrzeug>_<fall>_1_before|2_contact|3_after.jpg`, `tractor_push_*.jpg`, `reload_<i>.jpg`, `over_stem.jpg`,
+`stood_up.jpg`. Dauer ≈ 20 min (SwiftShader). Bei GitHub läuft der Test bei jedem Push auf `feat/baeume` (`viz3/extra/baeume/tests.txt`).
 
 ## Für den Kern-Chat (gemeinsame Dateien)
 
@@ -83,6 +86,6 @@ jedem Push auf `feat/baeume` (`viz3/extra/baeume/tests.txt`).
 - `core/save.js` (`pav-trees-v1`) und `modules.txt` (Zeile unter `world/worldcol.js`) sind im Branch eingetragen – beim Zusammenführen
   behalten.
 - Neuer `window`-Name `TREEHIT` (Tests, Fehlersuche).
-- Nicht gemacht, als Idee: Menüpunkt „Umgefahrene Bäume wieder aufstellen“ (`TREEHIT.standUp()`, z. B. neben „Fahrzeuge zurückstellen“
-  in `shell/menu.html`); ein einmaliger „Neu“-Hinweis (`SAVE.once`). Die Gartenbäume (`garden/trees.js`, Falkos eigene Obst- und
+- `shell/menu.html`: der Knopf „Bäume aufstellen“ nach „Fahrzeuge zurückstellen“ (`data-treereset`, Kern-Chat 23.10. 4:20) ist im Branch
+  eingetragen. Kein „Neu“-Hinweis (Falko möchte weniger Meldungen). Die Gartenbäume (`garden/trees.js`, Falkos eigene Obst- und
   Laubbäume im modellierten Grundstück) bleiben feste Hindernisse.
