@@ -366,7 +366,9 @@ export const AVATAR = (() => {
     },
   };
   const FIGID = { falko: 'm', sarah: 'f', christoph: 'c', mann: 'm', frau: 'f' };
-  const figCode = k => (FIGS[k] ? k : FIGID[String(k || '').toLowerCase()] || null);
+  const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+  const figCode = k =>
+    typeof k !== 'string' ? null : own(FIGS, k) ? k : own(FIGID, k.toLowerCase()) ? FIGID[k.toLowerCase()] : null;
   const A = { ready: false, failed: !PM, kind: 'm', fig: null, figs: {}, loading: {}, clips: null, FIGS };
   try {
     const k = figCode(SAVE.raw('pav-fig'));
