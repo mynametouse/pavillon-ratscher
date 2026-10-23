@@ -3,11 +3,12 @@
 # with a CPU profile of the main thread from the first byte until the model is shown (like loadprof.py). Prints per run: seconds to the
 # model, the loading text's steps (Shader, Texturen, erstes Bild), main-thread time in texture uploads (texSubImage2D, compressedTexSubImage2D,
 # uploadTexture) and the top functions; then the difference. Diagnostic: no checks fail except a run that does not load.
-#   python3 viz3/test/ktx2prof.py 8985 [modes]    (modes: comma-separated, default 'k2,bc7,bc1,etc2,rgba,img'; k2 = as published, img = ?tex2=0)
+#   python3 viz3/test/ktx2prof.py 8985 [modes]    (modes: comma-separated, default 'k2,astc,img'; k2 = as published, img = ?tex2=0;
+#                                                  also bc7, bc1, etc2, rgba – measured 23.10.: docs/features/texturen.md)
 import sys, os, re, json, time, collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]; tier = 'schnell'; ck = lib.Checks('ktx2prof'); OUT = lib.out('ktx2prof')
-MODES = (sys.argv[2] if len(sys.argv) > 2 else 'k2,bc7,bc1,etc2,rgba,img').split(',')
+MODES = (sys.argv[2] if len(sys.argv) > 2 else 'k2,astc,img').split(',')
 QUERY = lambda m: '' if m == 'k2' else '?tex2=0' if m == 'img' else '?tex2fmt=' + m
 UP = ('texSubImage2D', 'texImage2D', 'compressedTexSubImage2D', 'compressedTexImage2D', 'generateMipmap', 'texStorage2D')
 def run(query):

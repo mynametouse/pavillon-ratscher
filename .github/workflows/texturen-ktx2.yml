@@ -5,7 +5,8 @@
 # tex2/ übernommen statt neu kodiert.
 #   Ergebnis: https://mynametouse.github.io/pavillon-ratscher/tex2/tex2.json
 #   Neu bauen (z. B. nach neuen Texturen auf der Website): tools/tex/stand.txt ändern und auf src pushen – veröffentlicht wird bei Pushes
-#   auf src; auf feat/texturen nur, wenn die Commit-Nachricht „[tex2 veröffentlichen]“ enthält (sonst nur kodieren und messen).
+#   auf src; auf feat/texturen nur, wenn die erste Zeile der Commit-Nachricht damit beginnt: „[tex2 veröffentlichen]“ (sonst nur kodieren
+#   und messen; ein bloßes Zitat der Marke weiter hinten löst nichts aus).
 # Job „Messen“: die neuen Dateien in einem Build wie veröffentlicht (Website als Asset-Basis + dieses tex2/), dann viz3/test/ktx2.py und
 # ktx2prof.py (KTX2 gegen die Bilder, Formate) – unabhängig davon, ob tex2/ schon auf gh-pages liegt. Ergebnis: Artefakt „messung“.
 name: Texturen KTX2
@@ -148,7 +149,7 @@ jobs:
     needs: build
     if: >-
       (github.event_name == 'workflow_dispatch' && inputs.veroeffentlichen) || github.ref == 'refs/heads/src' ||
-      (github.event_name == 'push' && contains(github.event.head_commit.message, '[tex2 veröffentlichen]'))
+      (github.event_name == 'push' && startsWith(github.event.head_commit.message, '[tex2 veröffentlichen]'))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:

@@ -409,12 +409,29 @@ export const TEX2 = (() => {
         FAM = { astc: 'astcSupported', bc7: 'bptcSupported', bc1: 'dxtSupported', etc2: 'etc2Supported' };
       if (ff) for (const k of Object.values(FAM)) c[k] = c[k] && FAM[ff] === k;
       if (ff) S.fam = ff;
-      if (!(c.astcSupported || c.bptcSupported || c.etc2Supported || c.dxtSupported) && ff !== 'rgba')
+      // without a graphics card (the same test as GLINFO in render/render.js) every compressed texture is decoded on the processor when
+      // it goes up: measured with SwiftShader (docs/features/texturen.md) BC7 is cheap there – the start 5 s faster than with the images,
+      // ASTC 4 s slower, BC1/ETC2/RGBA like the images. So BC7 only, and the images where there is no BC7.
+      let soft = false;
+      try {
+        const gl = R.getContext(),
+          d = gl.getExtension('WEBGL_debug_renderer_info');
+        soft = /swiftshader|basic render|llvmpipe|softpipe|software/i.test(
+          String((d && gl.getParameter(d.UNMASKED_RENDERER_WEBGL)) || gl.getParameter(gl.RENDERER) || '')
+        );
+      } catch (e) {}
+      S.soft = soft;
+      if (soft && !ff) c.astcSupported = c.etc2Supported = c.dxtSupported = false;
+      if (soft && !ff && !c.bptcSupported) S.why = 'Software-Grafik ohne BC7 (dort sind die Bilder schneller)';
+      else if (!(c.astcSupported || c.bptcSupported || c.etc2Supported || c.dxtSupported) && ff !== 'rgba')
         S.why = 'keine komprimierten Formate auf dieser GPU';
       else {
-        L.setWorkerLimit(Math.max(1, Math.min(TEXHALF.on ? 2 : 3, (navigator.hardwareConcurrency || 2) - 1)));
+        // workers: each holds the transcoder's WebAssembly memory – one on phones, up to three on desktops; ended once nothing waits
+        L.setWorkerLimit(TEXHALF.on ? 1 : Math.max(1, Math.min(3, (navigator.hardwareConcurrency || 2) - 1)));
         S.L = L;
         S.on = true;
+        // the transcoder (~0.6 MB) comes at once, alongside the first files (a failure shows per texture → its image)
+        L.init().catch(() => {});
       }
     } catch (e) {
       S.why = 'Fehler: ' + ((e && e.message) || e);
@@ -467,6 +484,16 @@ export const TEX2 = (() => {
       else giveUp('Transkodierer antwortet nicht');
     }, ms);
   };
+  // the workers end 3 s after the last texture (their WebAssembly memory is freed); a later texture starts one again
+  let idleT = 0;
+  const idle = () => {
+    clearTimeout(idleT);
+    idleT = setTimeout(() => {
+      if (waiting.size || !S.L) return;
+      S.L.workerPool.dispose();
+      S.ended = (S.ended || 0) + 1;
+    }, 3000);
+  };
   // load one texture into rec.tex; ok() after it is in place, bad(why) → the caller loads the image instead
   S.load = (stem, rec, ok, bad) => {
     const url = BASE + 'tex2/' + (S.half ? 'h/' : '') + stem + '.ktx2',
@@ -479,6 +506,7 @@ export const TEX2 = (() => {
         if (over) return;
         over = true;
         waiting.delete(w);
+        idle();
         S.fails++;
         console.warn('KTX2', stem, why);
         try {
@@ -508,6 +536,7 @@ export const TEX2 = (() => {
             if (S.drop && mips.length > 1) mips = mips.slice(Math.min(S.drop, mips.length - 1));
             over = true;
             waiting.delete(w);
+            idle();
             try {
               rec.tex.image = { width: mips[0].width, height: mips[0].height };
               for (const t of [rec.tex, ...rec.clones]) morph(t, mips, ct.format);

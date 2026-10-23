@@ -17,7 +17,7 @@ VIEWS = [('garten', "GAME.view(-14, 10, 1.7, 205, -4, 62)"),
 STATE = """JSON.stringify((() => { const T = window.TEX2 || {}, f = T.files ? T.files() : [], tex = f.filter(x => /^tex\\//.test(x.file) && !/\\|i$/.test(x.file));
   const k2 = tex.filter(x => x.k2), img = tex.filter(x => !x.k2 && x.w);
   return { on: !!T.on, why: T.why || '', names: T.names ? T.names.size : 0, n: T.n || 0, fails: T.fails || 0, back: T.back || 0, fmt: T.fmt || {},
-    gpu: T.gpu || [], half: !!T.half, drop: T.drop || 0, mb: Math.round((T.mb || 0) * 10) / 10, t0: T.t0 || 0, t1: T.t1 || 0, last: T.last || 0, files: tex.length,
+    gpu: T.gpu || [], soft: !!T.soft, half: !!T.half, drop: T.drop || 0, mb: Math.round((T.mb || 0) * 10) / 10, t0: T.t0 || 0, t1: T.t1 || 0, last: T.last || 0, files: tex.length,
     k2: k2.length, k2mb: Math.round(k2.reduce((s, x) => s + x.mb, 0) * 10) / 10, k2w: [...new Set(k2.map(x => x.w))],
     img: img.length, imgmb: Math.round(img.reduce((s, x) => s + x.w * x.w * 4 * 4 / 3, 0) / 1e5) / 10, imgw: [...new Set(img.map(x => x.w))],
     all: (() => { const seen = new Set(); let c = 0, i = 0, nc = 0, ni = 0; const add = t => { if (!t || !t.isTexture || t.isRenderTargetTexture) return; const s = t.source;
