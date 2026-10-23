@@ -34,7 +34,8 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   Zwillingsfenster), Pyramidendächern und Stangen, dazwischen die Galerie mit Satteldach; das **Langhaus** ohne Dach: die beiden
   Außenwände mit hohen Rundbogenfenstern, in der Südwand die Tür zum Kreuzgang, die Stümpfe der Arkadenpfeiler (die östlichsten hoch);
   die **Vierung** mit Triumphbogen und zwei Seitenbögen, die Querhausmauern mit Fenstern und dem vermauerten Chorbogen, die
-  **Fundamente des Chors** mit Apsis im Gras; die **Henneberger Kapelle** (Sandstein, weiß verputzte Apsis mit Kegeldach) und die
+  **Fundamente des Chors** mit Apsis im Gras; die **Henneberger Kapelle** (Sandstein; ihr niedrigerer quadratischer Chor, dahinter die weiß verputzte runde Apsis mit
+  Kegeldach – OSM `w121648571`, `w121648565`, Drohnenbild 2021) und die
   **Südkapelle** mit ihrer Apsis. Alle Mauern als Geometrie: die Kirche aus Quadern (das Pflasterbild des Dorfplatzes dreifach vergrößert:
   Lagen von etwa 33 cm), Bruchstein (das Plattenbild) für Klostermauer und Torhaus – beides Programme, die es schon gibt.
 - **Torhaus** als hoher Torturm nach dem Foto 2025: unten rote Sandsteinquader mit weitem Rundbogen und gewölbter Durchfahrt (man geht
@@ -50,8 +51,12 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   hinter dem Südtor ein Verkaufshof aus Kies, südlich des Wegs drei Parkplätze und die **Verkaufshütte** mit Theke, Kasse und Vordach,
   nördlich **fünf Beete** nach Art – Obstgehölze (Bäumchen im Container, angepfählt), Beerenobst, Ziergehölze (Herbstlaub: rot, gelb,
   panaschiert), Kletterpflanzen (am Bambus-Dreibein), Bodendecker – mit Bändchengewebe, Brettereinfassung und Schild; die Gebäude der
-  Baumschule wie in OSM; westlich davon **Jungbäume in Reihen** auf dem Feld (rund 600, die Wege bleiben frei). Schild „Baumschule
-  Kammbach“ am Tor und an der Hütte. Ohne Fotos vom Gelände (nur von der Straße aus): generisch.
+  Baumschule wie in OSM; westlich davon **Jungbäume in Reihen** auf dem Feld (rund 700, die Wege bleiben frei). Im Hof zwei
+  Pflanzenwagen mit drei Etagen Töpfen, hinter der Hütte eine Palette Blumenerde und Stapel leerer Container. Der Hof ist eben (eine
+  Ebene, höchstens 1 % Gefälle, 4 m Übergang – ebenfalls ein Polster). Schild „Baumschule Kammbach“ am Tor und an der Hütte. Ohne Fotos
+  vom Gelände (nur von der Straße aus): generisch.
+- **Straßenschilder**: je benannter Straße ein weißes Namensschild mit schwarzer Schrift an der Einmündung, die dem Klostertor am
+  nächsten ist (6: Schleusinger Straße, Schulstraße, Gartenstraße, Fabrikstraße, Neuhofer Straße, Zwick), beidseitig lesbar.
 - **Laternen** (OSM und entlang der Straßen nahe Häusern, 53): nachts an, Lichtflecken, sie beleuchten die Wände wie im Dorf;
   **Bänke** (OSM, zur Kirche gewandt; eine an der Hütte der Baumschule) – **Hinsetzen** mit dem Aktionsknopf.
 - **Ortsnamen** im HUD: „Klosterkirche St. Marien (Ruine)“, die benannten Gebäude (Torkirche St. Erhard, Henneberger Kapelle, Kornhaus,
