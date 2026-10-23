@@ -186,5 +186,18 @@ with tempfile.TemporaryDirectory() as td:
     ck('trees in forest only', len(a) > 1000 and np.all(E < tb[0] + 400 + 4), f'{len(a)} trees')
     ck('trees off the road', np.all(np.abs(N - (tb[1] + 400)) > 5.4))
     ck('trees off buildings', np.all(np.hypot(E - tb[0] - 100, N - tb[1] - 100) > 18))
+# the detail zone Kloster Veßra (plan V): its own block west of the test block, monastery and nursery in the level-12 detail
+pv = wlib.PLANS['V']
+vb, vd = wlib.aligned(8, pv[8]), wlib.aligned(12, pv[12])
+mon, nur = (616541.0, 5594570.0), (616445.0, 5594757.0)   # UTM of the monastery and the tree nursery (OSM)
+inside = lambda p, r, m=0: r[0] + m <= p[0] <= r[2] - m and r[1] + m <= p[1] <= r[3] - m
+ck('zone Veßra: monastery and nursery in the detail block', inside(mon, vd, 600) and inside(nur, vd, 600), str(vd))
+ck('zone Veßra: block apart from the test block B, the detail inside it', vb[2] <= wlib.PLANS['B'][8][0]
+   and vb[0] <= vd[0] and vd[2] <= vb[2] and vb[1] <= vd[1] and vd[3] <= vb[3], str(vb))
+ck('zone Veßra: tile counts', len(wlib.tiles(12, vd)) == 400 and len(wlib.tiles(11, vb)) == 1280, f'{len(wlib.tiles(11, vb))}')
+rc = wlib.VESSRA_ROUTE
+ck('zone Veßra: the road corridor from block B (levels 10-11), adjoining it', vb[0] <= rc[0] and vb[1] <= rc[1] and rc[2] <= vb[2]
+   and rc[3] <= vb[3] and vb[2] == wlib.PLANS['B'][8][0], f'{rc} in {vb}')
+ck('zone Veßra: published under welt-test/zonen/vessra/', wlib.ZONES['V']['sub'] == 'zonen/vessra/')
 print('test_welt:', 'ok' if not fails else f'{fails} FAILED')
 sys.exit(1 if fails else 0)
