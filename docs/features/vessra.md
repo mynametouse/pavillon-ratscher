@@ -80,6 +80,10 @@ gebaut; `VESSRA.baumschule` (sonst `null`):
   quer dazu, `art` ∈ `'obst' | 'beeren' | 'zier' | 'kletter' | 'boden'`, `name` (Schildtext), `slots`: die Stellplätze der Töpfe
   `[[x, y], …]` (30–78 je Beet), `label`: Schild `[x, y, z]`.
 - `frame`: `{ G, u, w }` – Ursprung am Südtor, `u` entlang der Schulstraße nach Norden, `w` ins Gelände (für eigene Stellen).
+- Kaufen (für die nächste Runde): `take(art, slot)` nimmt die Pflanze an `beete[…].slots[slot]` aus dem Beet (sie verschwindet) und gibt
+  `{ art, name, slot, x, y, z }` zurück, `null`, wenn es sie nicht (mehr) gibt; `putBack(art, slot)` stellt sie zurück, `isTaken(art, slot)`,
+  `taken()` (Schlüssel `art:slot`). Gilt, solange die Zone gebaut ist (nach dem Freigeben und Neubauen sind alle wieder da – den Kauf
+  selbst merkt sich der Planer).
 - `VESSRA.place(x, y)` nennt im Gelände „Baumschule Kammbach, Kloster Veßra“; `VESSRA.gz(x, y)` ist der Boden.
 - Hinkommen ohne Fahrt: `KERN.scenario('baumschule').run()` bzw. `?szenario=baumschule` (vor dem Tor); gebaut ist alles, sobald
   `VESSRA.state === 'ready'` (z. B. `await KERN.until(() => VESSRA.state === 'ready', 300)`).
