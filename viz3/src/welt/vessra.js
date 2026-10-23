@@ -680,18 +680,31 @@ export const VESSRA = (() => {
     if (z === undefined || z === null) return undefined;
     return WELT.padAt ? WELT.padAt(x, y, z) : z;
   };
-  function roadCap() {
+  // async: a frame now and then (some 60 ms of work each), the build of the zone should not stall a car driving towards it
+  async function roadCap() {
     const G = 4,
       n = Math.round((ZONE[2] - ZONE[0]) / G) + 1,
       cap = new Float32Array(n * n).fill(1e9),
       zc = new Float32Array(n * n),
       R = 40;
-    for (let j = 0; j < n; j++)
+    let tq = performance.now(),
+      work = 0;
+    const breathe = async () => {
+      const now = performance.now();
+      if (now - tq < 60) return;
+      work += now - tq;
+      await nextFrame();
+      tq = performance.now();
+    };
+    for (let j = 0; j < n; j++) {
       for (let i = 0; i < n; i++) {
         const z = base(ZONE[0] + i * G, ZONE[1] + j * G);
         zc[j * n + i] = z === undefined ? NaN : z;
       }
+      await breathe();
+    }
     for (const st of data.st || []) {
+      await breathe();
       if (st.k > 5 || st.b) continue;
       const hw = st.k <= 2 ? 4.5 : st.k === 3 ? 3.0 : 2.0,
         p = st.p,
@@ -735,7 +748,7 @@ export const VESSRA = (() => {
           }
       }
     }
-    return { G, n, cap };
+    return { G, n, cap, work: work + performance.now() - tq };
   }
   const adj = (x, y, z) => {
     if (!capG || !inZone(x, y)) return z;
@@ -1644,10 +1657,13 @@ export const VESSRA = (() => {
       padsSet = false;
     }
     if (gz) {
-      capG = roadCap();
+      capG = await roadCap();
+      T.cap = Math.round(capG.work); // the work only, not the frames in between
+      await nextFrame();
+      tp = performance.now();
       const F = nurseryFrame();
       yd = F ? yardPlane(F) : null;
-      S.capMs = Math.round(performance.now() - t0);
+      S.capMs = T.cap || 0;
       const pads = [];
       if (yd) {
         const Q = (u, w) => [yd.G[0] + yd.t[0] * u + yd.wv[0] * w, yd.G[1] + yd.t[1] * u + yd.wv[1] * w];
@@ -1669,7 +1685,7 @@ export const VESSRA = (() => {
         WELT.setPads('vessra', pads);
         padsSet = true;
       }
-      mark('ground');
+      mark('pads');
       await nextFrame();
       tp = performance.now();
     }
