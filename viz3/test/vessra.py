@@ -126,8 +126,27 @@ with lib.browser() as b:
         if bs:
             nm = J(f"[VESSRA.place({bs['beete'][2]['x']}, {bs['beete'][2]['y']}), VESSRA.place({bs['k']['x']}, {bs['k']['y']})]")
             ck('the nursery has its name on the HUD', all('Baumschule Kammbach' in (n or '') for n in nm), json.dumps(nm, ensure_ascii=False))
-            fl = J("(() => { const z = VESSRA.baumschule.beete.flatMap(b => b.slots.map(([x, y]) => VESSRA.gz(x, y))); return { n: z.length, lo: Math.min(...z), hi: Math.max(...z) }; })()")
-            ck('the sales yard is level: the beds lie on one plane', fl['hi'] - fl['lo'] < 0.5, json.dumps(fl))
+            # the yard is one smooth plane (the beds on it): a plane through the plant slots fits them within a few centimetres
+            fl = J("""(() => { const P = VESSRA.baumschule.beete.flatMap(b => b.slots.map(([x, y]) => [x, y, VESSRA.gz(x, y)])), n = P.length,
+                m = [0, 1, 2].map(i => P.reduce((a, p) => a + p[i], 0) / n);
+                let xx = 0, xy = 0, yy = 0, xz = 0, yz = 0;
+                for (const [x, y, z] of P) { const dx = x - m[0], dy = y - m[1], dz = z - m[2]; xx += dx * dx; xy += dx * dy; yy += dy * dy; xz += dx * dz; yz += dy * dz; }
+                const det = xx * yy - xy * xy, b = (xz * yy - yz * xy) / det, c = (yz * xx - xz * xy) / det;
+                let r = 0; for (const [x, y, z] of P) r = Math.max(r, Math.abs(z - m[2] - b * (x - m[0]) - c * (y - m[1])));
+                return { n, slope: +Math.hypot(b, c).toFixed(3), resid: +r.toFixed(3) }; })()""")
+            ck('the sales yard is one smooth plane: the beds lie on it', fl['resid'] < 0.1 and fl['slope'] < 0.13, json.dumps(fl))
+            # a car's way in (Kern/fahrt 23.10.): from the Schulstraße 8 m in front of the gate through it to the parking place – the ground
+            # (KERN.ground) at most ~15 % steep, no step over 0.15 m
+            dr = J("""(() => { const B = VESSRA.baumschule, f = B.frame, Y = (u, w) => [f.G[0] + f.u[0] * u + f.w[0] * w, f.G[1] + f.u[1] * u + f.w[1] * w],
+                pk = B.parkplatz, pw = [(pk.x - f.G[0]) * f.u[0] + (pk.y - f.G[1]) * f.u[1], (pk.x - f.G[0]) * f.w[0] + (pk.y - f.G[1]) * f.w[1]],
+                P = [[0, -8], [0, 0.5], [pw[0] / 2, (0.5 + pw[1]) / 2], pw];
+                let slope = 0, step = 0, at = null, n = 0, prev = null;
+                for (let k = 0; k + 1 < P.length; k++) { const [u0, w0] = P[k], [u1, w1] = P[k + 1], L = Math.hypot(u1 - u0, w1 - w0), m = Math.max(1, Math.ceil(L / 0.5));
+                  for (let i = k ? 1 : 0; i <= m; i++) { const [x, y] = Y(u0 + (u1 - u0) * i / m, w0 + (w1 - w0) * i / m), z = KERN.ground(x, y); n++;
+                    if (prev) { const d = Math.hypot(x - prev[0], y - prev[1]), dz = Math.abs(z - prev[2]); if (d > 1e-6 && dz / d > slope) { slope = dz / d; at = [x, y]; } step = Math.max(step, dz); }
+                    prev = [x, y, z]; } }
+                return { n, slope: +slope.toFixed(3), step: +step.toFixed(3), at, gate: +KERN.ground(...Y(0, 0.5)).toFixed(2), street: +KERN.ground(...Y(0, -8)).toFixed(2), park: +KERN.ground(pk.x, pk.y).toFixed(2) }; })()""")
+            ck('a car drives in: Schulstraße → gate → parking place at most 15 % steep, no step over 0.15 m', dr['n'] > 20 and dr['slope'] <= 0.15 and dr['step'] <= 0.15, json.dumps(dr))
             r = J(f"""(() => {{ const e = VESSRA.baumschule.eingang; GAME.view(e.x, e.y, e.z + 1.62, e.yaw, 0, 60); GAME.step(0.5); GAME.step(4, 1);
                 return {{ x: GAME.P.x, y: GAME.P.y, where: VESSRA.place(GAME.P.x, GAME.P.y), sign: (VESSRA.signs || []).filter(s => /Kammbach/.test(s)).length, young: VESSRA.youngTrees }}; }})()""")
             ck('from the gate into the sales yard; its signs; young trees on the field', 'Baumschule' in (r['where'] or '') and r['sign'] >= 2 and r['young'] > 150, json.dumps(r, ensure_ascii=False))
