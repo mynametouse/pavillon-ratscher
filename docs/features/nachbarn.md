@@ -36,3 +36,20 @@ Bilder in `out/nachbarn/`. Im Browser (Konsole): `LIFE.force('hubert', 'chop' | 
 schaltet den Tagesablauf ab (der einfache Läufer aus `npc/npc.js`, für Tests, die eine Figur von Hand stellen); `CLOCK.t` setzt die Uhrzeit.
 Ein anderes Modul kann einen Nachbarn übernehmen, indem es `NPCS.<name>.ctl` auf eine eigene Steuerung setzt (wie die Aufgaben):
 `npc/life.js` hält dann still und macht danach weiter.
+
+## Für den Kern-Chat (gemeinsame Dateien, nicht in meinem Bereich)
+
+1. **`viz3/test/v14b.py`, Abschnitt `goat`**: der Fußweg mit Frieda führt noch zur alten Weide (`path = [[-8, -6], [0, -4], … [23, 0.5]]`,
+   Zeile ~73). Neuer Weg (wie in `viz3/test/nachbarn.py`): `[[-8, -20], [-8.6, -34], [-8.6, -46], [10, -47.5], [NPC.PAD.x0 - 1.5,
+   NPC.PAD.gy - 0.2], [NPC.PAD.x0 + 1.5, NPC.PAD.gy], [NPC.PAD.x0 + 4, NPC.PAD.gy + 1]]`. `GAME.go('ziegen')` zeigt schon auf die neue Weide.
+2. **Tests, die die Nachbarn von Hand stellen** (`npcreal.py`, `realviews.py`, ggf. `perfbase.py`): vorher
+   `LIFE.force('hubert', 'off'); LIFE.force('ronald', 'off')` – sonst gehen sie zu ihrer Arbeit.
+3. **`docs/ARCHITECTURE.md`**: `LIFE`, `HOF`, `HOFCAR` stehen seit cdd2176 drin; fehlt nur noch in der Zeile `NPC`: Ronalds Mähtraktor
+   `NPC.MOWER`, die Weide `NPC.PAD`, Arbeitshaltungen (`fig.pose`, `fig.speak`, `fig.after` in `npc/npc_real.js`).
+4. **Zur Laufzeit ergänzt, könnte in die Besitzer-Dateien wandern**: `SPOTS.ziegen` und `SPOTS.hubert` (neue Stellen; `game/player.js`),
+   die Ortsnamen „Huberts Hof“, „Huberts Werkstatt“, „Ronalds Wiese“ über eine Hülle um `window.sitePlace` (`garden/places.js`; `deps.mjs`
+   meldet `sitePlace` deshalb als von zwei Modulen geschrieben), die Beschriftung von `seat:hubertbench` (frei nur, wenn Hubert nicht selbst
+   dort sitzt; `game/home.js`).
+5. **Keine neuen Speicher-Schlüssel**: die drei neuen Aufgaben und ihre Dinge (`scheite`, `ringschluessel`) stehen in `pav-quests-v1`.
+6. **Für andere Module**: einen Nachbarn übernehmen = `NPCS.<name>.ctl` auf eine eigene Steuerung setzen (wie die Aufgaben); `npc/life.js`
+   hält still und macht danach weiter. `rbPerson(gl, set, o)` unverändert (neue, freiwillige Felder `pose`, `speak`, `after`).

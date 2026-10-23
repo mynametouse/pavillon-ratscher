@@ -86,7 +86,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `HUD` | game/hud.js | Menü, HUD, Inventarfenster, Mausfang |
 | `AVATAR` | game/avatar.js | Spielfiguren Falko, Sarah, Christoph (Wahl im Menü, `pav-fig`), Bewegungen, Schutzausrüstung, Christophs Mütze und Ohrhörer |
 | `QUESTS` | game/quests.js | Aufgaben, Tagebuch (J), Zielanzeige |
-| `NPC` | npc/npc.js, npc_real.js, hours.js | Hubert, Ronald (Rocketbox-Figuren mit den Bewegungen der Spielfigur, `rbPerson`), Ziegen, Traktor; Dialoge; nachts daheim |
+| `NPC` | npc/npc.js, npc_real.js, hours.js | Hubert, Ronald (Rocketbox-Figuren mit den Bewegungen der Spielfigur, `rbPerson`; Arbeitshaltungen `fig.pose`, `fig.speak`, `fig.after`), Ziegen und ihre Weide (`NPC.PAD`), Huberts Traktor, Ronalds Mähtraktor (`NPC.MOWER`); Dialoge; nachts daheim; einen Nachbarn übernehmen: `NPCS.<name>.ctl` |
 | `LIFE` | npc/life.js | Tagesablauf der Nachbarn nach der Spieluhr (hacken, sägen, stapeln, Auto, Mähen, Füttern, Fahrt zum Anger, Gespräch am Tisch/Auto), Schwaden, Ortsnamen ihrer Höfe; `LIFE.force(name, tätigkeit \| null \| 'off')` für Tests (`docs/features/nachbarn.md`) |
 | `HOF`, `HOFCAR` | garden/hof_hubert.js, hof_auto.js | Huberts Hof: nach Osten offene Werkstätten, Trockenhütchen (`fillHut`), Holzplatz, Tisch mit Stühlen; sein Kombi auf der Rampe (Haube) |
 | `GARTEN` | garden/garten_in.js, garten_kit.js | Gartengebäude zum Benutzen: Lampen mit einem geteilten Licht, Sofa, Bett, Ofen, Wasserkessel, Ernte; Baukasten und Schlüsselbereich der Möbel (`keysBegin/keysEnd`, `docs/features/garten.md`) |

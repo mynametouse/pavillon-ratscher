@@ -68,9 +68,9 @@ with sync_playwright() as p:
         print('frieda', E("(() => { const f = NPC.GOATS.find(g => g.gname === 'Frieda'); return JSON.stringify({ x: +f.x.toFixed(1), y: +f.y.toFixed(1), ctl: !!f.ctl }); })()"), E("JSON.stringify(__T.st())"), flush=True)
         print('lead', E("__T.go('goat:lead', 1.2)"), E("__T.run('goat:lead', 0.3)"), E("JSON.stringify(__T.st())"), flush=True)
         shot(pg, 'b_frieda_found')
-        # walk her home in small steps: to the gate, then into the paddock
+        # walk her home in small steps: to the gate, then into the paddock (south of the garden since 23.10.2026: npc/life.js, NPC.PAD)
         tgt = E("JSON.stringify(__T.obj('goat'))"); print('lead target', tgt, flush=True)
-        r = E("""(async () => { const path = [[-8, -6], [0, -4], [8, -2], [14.5, -1.6], [18, -1.5], [21, -1.0], [23, 0.5]]; let x = GAME.P.x, y = GAME.P.y;
+        r = E("""(async () => { const path = [[-8, -20], [-8.6, -34], [-8.6, -46], [10, -47.5], [NPC.PAD.x0 - 1.5, NPC.PAD.gy - 0.2], [NPC.PAD.x0 + 1.5, NPC.PAD.gy], [NPC.PAD.x0 + 4, NPC.PAD.gy + 1]]; let x = GAME.P.x, y = GAME.P.y;
           for (const [tx, ty] of path) { for (let k = 0; k < 80; k++) { const dx = tx - x, dy = ty - y, d = Math.hypot(dx, dy); if (d < 0.3) break; x += dx / d * 0.25; y += dy / d * 0.25;
               GAME.view(x, y, 1.62, Math.atan2(dx, dy) * 180 / Math.PI, 0); GAME.step(0.1); await new Promise(r => setTimeout(r, 2)); if (QUESTS.Q.goat.st === 'report') break; } if (QUESTS.Q.goat.st === 'report') break; }
           for (let k = 0; k < 40 && QUESTS.Q.goat.st !== 'report'; k++) { GAME.step(0.1); await new Promise(r => setTimeout(r, 2)); }

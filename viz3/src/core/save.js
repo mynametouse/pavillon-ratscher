@@ -173,7 +173,7 @@ window.SAVE = SAVE;
   K('pav-loadlog', 'Ladeprotokoll', 'json', null, obj);
   K('pav-view', 'Kamera: Schulter (3) oder Augen (1)', 'text', null, oneOf('3', '1'));
   K('pav-sound', 'Ton an/aus', 'text', null, oneOf('1', '0'));
-  K('pav-fig', 'Figur', 'text', null);
+  K('pav-fig', 'Spielfigur (m Falko, f Sarah, c Christoph)', 'text', null, oneOf('m', 'f', 'c'));
   K('pav-lock', 'Maus fangen', 'text', null, oneOf('1', '0'));
   K('pav-wpcard', 'Werkstück-Karte', 'text', null, oneOf('1', '0'));
   K('pav-clean', 'Freie Sicht (Anzeigen aus)', 'text', null, oneOf('1', '0'));
@@ -202,6 +202,7 @@ window.SAVE = SAVE;
   K('pav-trailer-v1', 'Anhänger', 'json', null, obj);
   K('pav-dorf-v1', 'Dorfleben: Aufgabe Skatabend, Besuche, Kartenspiel', 'json', null, obj); // feat/dorf (dorf/dorf.js)
   K('pav-trees-v1', 'Umgefahrene Bäume', 'json', null, obj); // world/treehit.js: { v: 1, t: [[x, y, azimuth°, angle], …] }
+  K('pav-amt-v1', 'Ortsvorsteher: Wahl, Meinungen, Versprechen, Anliegen', 'json', null, obj); // feat/ortsvorsteher (amt/amt.js)
   for (const h of [
     'pav-v14',
     'pav-v15',
@@ -212,6 +213,7 @@ window.SAVE = SAVE;
     'pav-v16c2',
     'pav-v16d',
     'pav-v16e',
+    'pav-winde',
   ])
     K(h, 'Hinweis „Neu“ einmal gezeigt', 'flag', false);
 }

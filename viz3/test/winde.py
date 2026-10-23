@@ -176,7 +176,10 @@ with lib.browser() as b:
             dg = J(f"""(() => {{ const F = TRACTOR2.model.fork; F.tool.updateWorldMatrix(true, false); const p = new THREE.Vector3(0, F.top, -(F.y0 + F.y1) / 2).applyMatrix4(F.tool.matrixWorld), l = HOLZ.by['{lid}'], m = HOLZ.mid(l);
               return {{ tine: +p.y.toFixed(2), bottom: +(m[2] - (l.d0 + l.d1) / 400).toFixed(2), d: +Math.hypot(p.x - m[0], -p.z - m[1]).toFixed(2) }}; }})()""")
             print('fork side', sdo, dg, flush=True)
+            # a driver holds the tractor with the handbrake while lifting (on a slope it would creep away)
+            E("VEH.auto = v => (v ? { thr: 0, brk: 0, steer: 0, hand: true } : null)")
             E("TRACTOR2.model.key('r', true)"); steps(1.8); E("TRACTOR2.model.key('r', false)"); steps(0.2)
+            E("VEH.auto = null")
             if E(f"HOLZ.by['{lid}'].st") == 'fork': break
         stf = E(f"HOLZ.by['{lid}'].st"); ck('after winching the fork takes the log from the side', stf == 'fork', f"{stf}, said: {sub()[:100]}")
         E("TRACTOR2.model.key('t', true); TRACTOR2.model.key('t', false)"); steps(1.0)

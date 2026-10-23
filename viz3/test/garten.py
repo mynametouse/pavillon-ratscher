@@ -65,6 +65,15 @@ with lib.browser() as b:
     print('door positions (local x, local y, world dy)', dpos, flush=True)
     for k, lx, ly, wdy in dpos:
         ck(f'door {k} faces north', wdy > 0.5, f'world dy {wdy:.2f}')
+    # the tractor's drive past the pavilion to the log yard (viz3/test/v16d.py 'bridge', world points): the hut's PV module keeps ≥ 2.5 m off it
+    pv = ev(pg, """(() => { const D = [[7.3, 3.8], [7.5, -3], [6.5, -8], [3.5, -12]];
+      const seg = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy))); return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy); };
+      let best = 1e9, n = 0;
+      for (const e of GAME.COL) { if (e[6] !== 'pv') continue; n++; const r = e[9];
+        for (const lx of [e[0], e[1]]) for (const ly of [e[2], e[3]]) { const p = r ? [r.cx + lx * r.c - ly * r.s, r.cy + lx * r.s + ly * r.c] : [lx, ly];
+          for (let i = 0; i + 1 < D.length; i++) best = Math.min(best, seg(p, D[i], D[i + 1])); } }
+      return { n, best: +best.toFixed(2) }; })()""")
+    ck('PV module of the hut ≥ 2.5 m off the tractor’s drive to the log yard', pv['n'] == 1 and pv['best'] >= 2.5, pv)
     # ---- walking in through the north doors (and not through closed ones) ----
     if want('walk'):
         r = walk(pg, 'bungalow', 3.6, 0.0, 180, 2.6, 'bungalowN', True)
@@ -119,7 +128,7 @@ with lib.browser() as b:
         # the gravel paths to the new doors from above, and the menu viewpoint 'Holzhaus' (game/player.js)
         ev(pg, "GAME.view(11.3, 0.6, 13.5, 0, -89, 60); GAME.step(0.05)"); shot(pg, 'pfade_von_oben')
         ev(pg, "GAME.go('holzhaus'); GAME.step(0.6)"); shot(pg, 'ort_holzhaus')
-        view(pg, 'holzhaus', 0.2, -5.6, 1.7, -90, -6, 62); shot(pg, 'holzhaus_aussen_sued')
+        view(pg, 'holzhaus', 0.9, -7.6, 1.7, -97, -7, 62); shot(pg, 'holzhaus_aussen_sued')
         view(pg, 'holzhaus', -0.75, 1.35, 1.98, 95, -16, 80); shot(pg, 'holzhaus_innen_von_tuer')
         view(pg, 'holzhaus', 0.4, -1.3, 1.95, 244, -14, 80); shot(pg, 'holzhaus_innen_von_ecke')
         # greenhouse: door from the north, inside, vent open
@@ -138,9 +147,19 @@ with lib.browser() as b:
         ev(pg, "GAME.setMode('night')"); lib.settle_light(pg)
         view(pg, 'bungalow', 2.3, 0.0, 1.76, 180, -10, 78); shot(pg, 'nacht_bungalow_innen')
         view(pg, 'bungalow', 7.5, -5.5, 1.7, 180 + 35, -6, 62); shot(pg, 'nacht_bungalow_aussen')
+        # draw all curtains: inside, and from the south-west (back window and sofa window glow through the cloth)
+        drapes = ['sofa', 'hinten', 'nordost', 'anbau']
+        view(pg, 'bungalow', 2.3, 0.0, 1.76, 180, -10, 78)
+        for k in drapes: ev(pg, f"PLAY.acts().find(a => a.id === 'garten:vorhang:{k}').run()")
+        ev(pg, "GAME.step(1.2)"); shot(pg, 'nacht_bungalow_vorhaenge')
+        view(pg, 'bungalow', -5.5, 4.5, 1.7, 40, -6, 62); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_bungalow_vorhaenge_aussen')
+        view(pg, 'bungalow', 2.3, 0.0, 1.76, 180, -10, 78)
+        for k in drapes: ev(pg, f"PLAY.acts().find(a => a.id === 'garten:vorhang:{k}').run()")
+        ev(pg, "GAME.step(1.2)")
         ev(pg, "GARTEN.set('holzhaus', true)")
         view(pg, 'holzhaus', -0.75, 1.35, 1.98, 95, -16, 80); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_holzhaus_innen')
         ck('the light followed into the hut', ev(pg, "GARTEN.cur() === 'holzhaus'"), ev(pg, "GARTEN.cur()"))
+        view(pg, 'holzhaus', -6.0, 2.5, 1.7, 23, -6, 62); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_holzhaus_aussen')
         ev(pg, "GARTEN.set('aussen', true)")
         view(pg, 'bungalow', 7.5, -2.5, 1.7, 180 + 10, -6, 62); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_bungalow_aussenlicht')
         ck('porch lamp: the light is with it outside', ev(pg, "GARTEN.cur() === 'aussen'"), ev(pg, "GARTEN.cur()"))
@@ -161,6 +180,12 @@ with lib.browser() as b:
         if want('shots'):
             view(pg, 'bungalow', 1.0, 1.0, 1.6, -30, -22, 60); shot(pg, 'bungalow_kessel_kocht')
         ev(pg, "PLAY.acts().find(a => a.id === 'garten:kessel').run(); GAME.step(0.2)")
+        # curtains at the back window: drawn, then open again
+        lbl = ev(pg, "PLAY.acts().find(a => a.id === 'garten:vorhang:hinten').label()")
+        ev(pg, "PLAY.acts().find(a => a.id === 'garten:vorhang:hinten').run(); GAME.step(1.2)")
+        lbl2 = ev(pg, "PLAY.acts().find(a => a.id === 'garten:vorhang:hinten').label()")
+        ev(pg, "PLAY.acts().find(a => a.id === 'garten:vorhang:hinten').run(); GAME.step(1.2)")
+        ck('bungalow: draw the curtains, open them again', lbl == 'Vorhänge zuziehen' and lbl2 == 'Vorhänge aufziehen', [lbl, lbl2])
         view(pg, 'holzhaus', -0.5, -0.3, 1.98, -90, -20, 70)
         lbl = ev(pg, "PLAY.acts().find(a => a.id === 'garten:giessen').label()")
         ev(pg, "PLAY.acts().find(a => a.id === 'garten:giessen').run(); GAME.step(0.2)")
@@ -171,6 +196,10 @@ with lib.browser() as b:
         ev(pg, "PLAY.acts().find(a => a.id === 'garten:tomaten').run(); GAME.step(0.2)")
         lbl2 = ev(pg, "PLAY.acts().find(a => a.id === 'garten:tomaten').label()")
         ck('greenhouse: pick the tomatoes once', lbl == 'Tomaten ernten' and lbl2 is None, [lbl, lbl2])
+        lbl = ev(pg, "PLAY.acts().find(a => a.id === 'garten:geizen').label()")
+        ev(pg, "PLAY.acts().find(a => a.id === 'garten:geizen').run(); GAME.step(0.2)")
+        lbl2 = ev(pg, "PLAY.acts().find(a => a.id === 'garten:geizen').label()")
+        ck('greenhouse: pinch out the side shoots once', lbl == 'Tomaten ausgeizen' and lbl2 is None, [lbl, lbl2])
         ev(pg, "(() => { const b = SITE.bld.bungalow; GAME.view(b.c[0] - 1.2, b.c[1] + 0.6, 1.76, -60, -10); GAME.step(0.2); })()")
         lbl = ev(pg, "PLAY.acts().find(a => a.id === 'garten:ofen').label()")
         ev(pg, "PLAY.acts().find(a => a.id === 'garten:ofen').run(); GAME.step(3.5)")

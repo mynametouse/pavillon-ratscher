@@ -482,6 +482,24 @@ export function paletteize(g, keep = []) {
   return n;
 }
 export { PAL };
+// furniture under a roof casts no sun shadow (the roof and walls shade the room anyway): fewer meshes in the shadow pass and fewer
+// merge buckets (cast / no cast). inside(lx, ly, z) tells which local points are in the room
+export function interiorNoShadow(g, inside) {
+  g.updateMatrixWorld(true);
+  const inv = g.matrixWorld.clone().invert(),
+    v = new THREE.Vector3();
+  let n = 0;
+  g.traverse(o => {
+    if (!o.isMesh || !o.castShadow) return;
+    if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+    v.copy(o.geometry.boundingSphere.center).applyMatrix4(o.matrixWorld).applyMatrix4(inv);
+    if (inside(v.x, -v.z, v.y)) {
+      o.castShadow = false;
+      n++;
+    }
+  });
+  return n;
+}
 // ---- registries for garden/garten_in.js (local coordinates; the world position follows the building when it is moved in the plan view) ----
 export const GLAMPS = []; // {key, b, lx, ly, z, mat, dist, inten, color, sw: [lx, ly, z], label, room: (x, y, z) => bool}
 export const GSEATS = []; // {key, b, lx, ly, eye, yaw (local compass deg), pitch, kind: 'sit'|'lie', label, r, at: [lx, ly]}
@@ -571,7 +589,16 @@ const blob = new THREE.IcosahedronGeometry(1, 0),
     s.quadraticCurveTo(0.5, 0.35, 0, 1);
     s.quadraticCurveTo(-0.5, 0.35, 0, 0);
     return new THREE.ShapeGeometry(s, 3);
-  })();
+  })(),
+  // round leaf (radius 1, cupped: the rim a little raised towards its front), a thin stalk 1 m long
+  discG = (() => {
+    const geo = new THREE.CircleGeometry(1, 9),
+      p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) p.setZ(i, (p.getX(i) ** 2 + p.getY(i) ** 2) * 0.25);
+    geo.computeVertexNormals();
+    return geo;
+  })(),
+  stalkG = new THREE.CylinderGeometry(0.004, 0.005, 1, 5, 1, true);
 // one leaf (pointing up and out), e.g. for climbing plants
 export function leaf(g, lx, ly, z, size, yaw, tilt, m) {
   return put(g, leafG, m, lx, ly, z, { s: [size * 0.7, size, 1], ry: yaw, rx: -tilt, order: 'YXZ', cast: false });
@@ -599,24 +626,46 @@ export function plant(g, lx, ly, z, size, kind, rnd = R0) {
       });
     return;
   }
-  const n = kind === 'geranium' ? 5 : 4;
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * 6.28 + rnd(),
+  if (kind === 'geranium') {
+    // round, slightly cupped leaves in a low mound; three flower umbels on stalks above them (a dome of small florets each)
+    for (let i = 0; i < 7; i++) {
+      const a = (i / 7) * 6.28 + rnd() * 0.6,
+        rr = size * (0.16 + rnd() * 0.12);
+      // the leaf faces up and a little outwards (ry turns three's +Z to the local direction a)
+      put(g, discG, KM.herb, lx + Math.cos(a) * rr, ly + Math.sin(a) * rr, z + size * (0.22 + rnd() * 0.2), {
+        s: [size * 0.2, size * 0.2, size * 0.2],
+        ry: a + Math.PI / 2,
+        rx: -Math.PI / 2 + 0.35 + rnd() * 0.3,
+        order: 'YXZ',
+        cast: false,
+      });
+    }
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * 6.28 + rnd(),
+        rr = size * 0.14,
+        x = lx + Math.cos(a) * rr,
+        y = ly + Math.sin(a) * rr,
+        zt = z + size * (0.78 + rnd() * 0.2);
+      put(g, stalkG, KM.herb, x, y, (z + size * 0.3 + zt) / 2, { s: [1, zt - z - size * 0.3, 1], cast: false });
+      for (let k = 0; k < 7; k++) {
+        const b = (k / 6) * 6.28,
+          q = k ? size * 0.085 : 0;
+        put(g, blob, KM.red, x + Math.cos(b) * q, y + Math.sin(b) * q, zt + (k ? 0 : size * 0.04), {
+          s: [size * 0.058, size * 0.05, size * 0.058],
+          cast: false,
+        });
+      }
+    }
+    return;
+  }
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * 6.28 + rnd(),
       rr = size * 0.3;
     put(g, blob, KM.herb, lx + Math.cos(a) * rr, ly + Math.sin(a) * rr, z + size * (0.35 + rnd() * 0.25), {
       s: [size * 0.36, size * 0.3, size * 0.36],
       cast: false,
     });
   }
-  if (kind === 'geranium')
-    for (let i = 0; i < 4; i++) {
-      const a = rnd() * 6.28,
-        rr = size * 0.25 * rnd();
-      put(g, blob, KM.red, lx + Math.cos(a) * rr, ly + Math.sin(a) * rr, z + size * (0.75 + rnd() * 0.2), {
-        s: [size * 0.16, size * 0.14, size * 0.16],
-        cast: false,
-      });
-    }
 }
 // watering can (body, spout with rose, handle over the top); yaw = local compass degrees the spout points to
 export function wateringCan(g, lx, ly, z, yaw, m = MAT.zinc, s = 1) {
@@ -669,12 +718,6 @@ export function teapot(g, lx, ly, z, m = KM.porcelain, yaw = 0) {
     cast: false,
   });
   return grp;
-}
-// stepping stone (flagstone) in the lawn, its own little footprint so the grass leaves it free
-export function stone(g, b, lx, ly, sz, rnd = R0, FOOT = null) {
-  const geo = new THREE.CylinderGeometry(sz, sz * 1.04, 0.05, 7);
-  put(g, geo, MAT.stone, lx, ly, 0.0, { ry: rnd() * 6.28, s: [1, 1, 0.7 + rnd() * 0.3], cast: false });
-  if (FOOT) FOOT.push({ b, hx: sz * 0.9, hy: sz * 0.9, ox: lx, oy: ly });
 }
 // keys of placed models (planner: 'type#n', counted in load order): the garden buildings count in their own range, so the models placed
 // further down (the workshop …) keep the keys saved furniture layouts refer to (13 models were placed here before 23.10.2026)

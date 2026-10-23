@@ -7,6 +7,7 @@
 // the front), then parks again. The trailer stands still meanwhile. Model in the trailer's frame (vehicles/trailer.js TRAILER.g: x right,
 // y forward, z up, origin under the axle centre); the log in the grapple is a HOLZ log in state 'crane' (saved as lying where it was taken).
 import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { V } from '../core/head.js';
 import { markDirty, LOAD } from '../core/assets.js';
 import { P } from '../game/walkable.js';
@@ -118,9 +119,21 @@ export const KRAN = (() => {
   box(0.3, 0.14, 0.2, 0.86, 2.62, 1.3, M.dark);
   for (let k = 0; k < 4; k++)
     stretch(unitRod(0.008, M.dark), [0.76 + k * 0.065, 2.56, 1.4], [0.76 + k * 0.065, 2.5, 1.62]);
-  root.traverse(o => {
-    if (o.isMesh) o.userData.noMerge = true;
-  });
+  // few draw calls: the fixed parts of each moving group merged per material (the cylinders are stretched every pose – they stay)
+  const keep = new Set(cyl.flatMap(c => [c.tube, c.rod]));
+  function mergeKids(g) {
+    const by = new Map();
+    for (const c of [...g.children]) {
+      if (!c.isMesh || keep.has(c)) continue;
+      c.updateMatrix();
+      if (!by.has(c.material)) by.set(c.material, []);
+      by.get(c.material).push(c.geometry.clone().applyMatrix4(c.matrix));
+      g.remove(c);
+      c.geometry.dispose();
+    }
+    for (const [mat, list] of by) mesh(list.length > 1 ? BufferGeometryUtils.mergeGeometries(list) : list[0], mat, g);
+  }
+  for (const g of [root, slew, boom, stick, tel, grap, ...claws.map(c => c.c)]) mergeKids(g);
   // ---- pose: slew θ (0 = ahead, π = back over the bed), the tip at h (from the pivot) and z (absolute, trailer frame), grapple yaw φ, open ----
   // parked: over the bed, the boom raised, the stick down to the grapple above the floor (transport height about 3.9 m)
   const PARK = { h: 3.9, z: 2.35 };

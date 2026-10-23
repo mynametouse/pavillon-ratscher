@@ -18,6 +18,11 @@ export const DTEXT = (() => {
         'Guten Abend! Setz dich ruhig dazu – zum Zuhören braucht man keine Karten.',
         'Na, wieder da? Die Chronik freut sich über jeden neuen Namen.',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Ich zupfe nur ein bisschen Unkraut – an der Chronik schreibt es sich besser, wenn die Hände vorher etwas getan haben.',
+        '{gruss}! Schön, dass man dich auch mal im Dorf sieht. Wie weit ist der Pavillon?',
+      ],
       topics: {
         schule: [
           'Die alte Schule',
@@ -53,6 +58,11 @@ export const DTEXT = (() => {
       greet: [
         'Willkommen im Feuerwehrhaus! Die Garderobe ist der Haken neben der Tür.',
         'Grüß dich! Schon gehört? Die Sirene läuft wieder wie neu.',
+      ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Nur kurz Luft schnappen – nachher bringe ich noch die Atemschutzgeräte zur Prüfung nach Schleusingen.',
+        '{gruss}! Dienstabend ist jeden zweiten Mittwoch im Gerätehaus. Wir können jeden gebrauchen, der mit anpackt.',
       ],
       topics: {
         wehr: [
@@ -90,6 +100,11 @@ export const DTEXT = (() => {
         'N’Abend. Schön, dass du dich mal blicken lässt.',
         'Da ist ja der Pavillonbauer. Holz genug für den Winter?',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Heute mal kein Wald – die Kette ist beim Schärfen, und der Rücken freut sich.',
+        '{gruss}! Trocken ist es. Das sieht man an den Fichten zuerst, die werfen dann Nadeln.',
+      ],
       topics: {
         wald: [
           'Der Wald',
@@ -125,6 +140,11 @@ export const DTEXT = (() => {
         'Na, was darf’s sein? Fassbrause, Apfelschorle, ein Bier?',
         'Hallo! Die Gläser sind frisch gespült, die Brezeln von heute.',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Ich bin nur kurz vom Hof rüber, die Kühe warten nicht.',
+        '{gruss}! Wenn das Wetter hält, mähe ich morgen die Wiese an der Klinge.',
+      ],
       topics: {
         trinken: [
           'Etwas zu trinken',
@@ -159,6 +179,11 @@ export const DTEXT = (() => {
         'Hallo! Spielst du mit? Ich erklär’s dir, ist ganz einfach.',
         'Da bist du ja wieder! Ingrid hat schon zweimal gewonnen.',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Frühdienst gehabt – jetzt noch schnell die Beete, dann Füße hoch.',
+        '{gruss}! Kommst du Freitag zum Rommé? Ich brauche jemanden, der noch schlechter spielt als Ingrid.',
+      ],
       topics: {
         romme: [
           'Rommé',
@@ -192,6 +217,11 @@ export const DTEXT = (() => {
         'Guten Abend! Schön, dass du da bist. Komm rein, hier duzen sich alle.',
         'Hallo! Freitags ist bei uns immer ein Stuhl frei.',
       ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Im Rathaus bin ich die Ortsteilbürgermeisterin, im Garten bin ich nur Ingrid.',
+        '{gruss}! Die Rosen danken es einem, wenn man sie abends gießt und nicht in der Mittagssonne.',
+      ],
       topics: {
         dorf: [
           'Das Dorf',
@@ -209,6 +239,81 @@ export const DTEXT = (() => {
         feuer: [
           'Das Feuer',
           'Jeden zweiten Samstag machen wir Feuer auf Uwes Acker, Richtung Klinge. Komm doch vorbei – ab sieben brennt es.',
+        ],
+      },
+    },
+    jens: {
+      name: 'Jens',
+      full: 'Jens Wagner',
+      age: 34,
+      role: 'Kfz-Mechaniker in Schleusingen, Gruppenführer bei der Feuerwehr',
+      fig: 'dorf_jens',
+      clips: 'm',
+      h: 1.82,
+      stoop: 0,
+      greet: ['Na? Läuft alles, auch das Auto?', 'Servus! Wenn’s irgendwo klappert – ich schau’s mir an.'],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Läuft Huberts Traktor noch? Wenn nicht – du weißt, wo ich wohne.',
+        '{gruss}! Feierabend. Jetzt noch der Rasenmäher von meiner Mutter, der springt seit Ostern nicht an.',
+      ],
+      topics: {
+        mondeo: [
+          'Huberts Mondeo',
+          'Hubert macht an seinem Mondeo alles selbst: Auto auf die Rampe, Teile besorgen, tauschen. Letztens war es die Zündspule – das Teil hab ich ihm mitgebracht.',
+          'So ein Kombi von 2005 hält ewig, wenn man ihn pflegt: Öl rechtzeitig wechseln, Rost früh behandeln, und im Winter Salz abwaschen.',
+        ],
+        wehr: [
+          'Die Feuerwehr',
+          'In der Grundausbildung lernt man Knoten, Leitern, Schläuche kuppeln. Einmal im Monat ist Übung – an der Talsperre zum Beispiel, da saugen wir Wasser aus offenem Gewässer an.',
+          'Bei einem Einsatz zählt jede Minute. Deshalb hängt bei mir die Jacke immer griffbereit an der Tür.',
+        ],
+        auto: [
+          'Auto auf dem Dorf',
+          'Auf dem Dorf geht ohne Auto wenig. Der Bus fährt morgens zur Schule und mittags zurück, am Wochenende kaum.',
+        ],
+        brett: [
+          'Klingenholz',
+          'Ihr macht die Bretter aus Eiche, mit dem Stirnholz nach oben? Auf so einem Brett bleiben die Messer länger scharf – die Klinge gleitet zwischen die Fasern.',
+        ],
+      },
+    },
+    heike: {
+      name: 'Heike',
+      full: 'Heike Ritter',
+      age: 47,
+      role: 'großer Gemüsegarten, Hühner, Eier am Gartentor',
+      fig: 'dorf_heike',
+      clips: 'f',
+      h: 1.7,
+      stoop: 0,
+      greet: [
+        'Hallo! Pass auf die Beete auf, da sind gerade die Bohnen gekommen.',
+        'Na, schon mal Eier von meinen Hühnern probiert?',
+      ],
+      // outside the evenings: in the garden, at the door ({gruss}: good morning / hello / good evening by the clock)
+      day: [
+        '{gruss}! Brauchst du Eier? Heute waren es zwölf, die Hühner sind fleißig.',
+        '{gruss}! Pass auf, wo du hintrittst – da kommen gerade die Bohnen.',
+      ],
+      topics: {
+        garten: [
+          'Der Garten',
+          'Kartoffeln, Bohnen, Zwiebeln, Kohl – und Tomaten, wenn der Sommer mitspielt. Gegossen wird abends oder ganz früh, dann verdunstet weniger.',
+          'Mulchen spart Gießen: Rasenschnitt dünn zwischen die Reihen, dann bleibt der Boden feucht und das Unkraut kleiner.',
+        ],
+        schnecken: [
+          'Schnecken',
+          'Gegen Schnecken hilft kein Wundermittel. Bretter auslegen, morgens drunter nachschauen und einsammeln. Wer kann, hält Laufenten.',
+        ],
+        huehner: [
+          'Die Hühner',
+          'Acht Hühner, ein Hahn. Im Winter legen sie weniger – die brauchen Licht. Das ist ganz normal.',
+          'Am Gartentor steht eine Kasse des Vertrauens: sechs Eier, zwei Euro. Bisher hat noch keiner geschummelt.',
+        ],
+        ziegen: [
+          'Ronalds Ziegen',
+          'Ronald bringt mir ab und zu Ziegenmist für die Beete. Gut verrottet ist der Gold wert.',
         ],
       },
     },
@@ -357,7 +462,116 @@ export const DTEXT = (() => {
       done: 'Du gehörst jetzt dazu. Freitags in der Schule, manchmal samstags am Feuer.',
     },
   };
+  // errands: who gives it, the offer (topic label, line), the steps (go somewhere / bring something / come back), the thanks.
+  // goto: a place of the village (dorf/dorf.js knows where), or a person (Hubert, Ronald); have: a test of the game state
+  const ERRANDS = {
+    chronik: {
+      who: 'gerhard',
+      title: 'Für die Chronik',
+      offer: [
+        'Kann ich helfen?',
+        'Für die Chronik will ich festhalten, wie die Mitte des Dorfes heute aussieht. Meine Knie mögen keine Wege mehr. Schau dir die Dorflinde an, den Brunnen und die Uhr an der Schule – und erzähl mir, was du gesehen hast.',
+      ],
+      steps: [
+        {
+          goto: 'linde',
+          r: 9,
+          text: 'Geh zur Dorflinde am Anger.',
+          at: 'Die Dorflinde: gepflanzt 1888. Ringsum Bänke, der Stamm schon mächtig.',
+        },
+        {
+          goto: 'brunnen',
+          r: 7,
+          text: 'Schau dir den Dorfbrunnen an.',
+          at: 'Der Brunnen aus Sandstein, ein Stück tiefer gelegt, mit Blumen und einer Bank.',
+        },
+        {
+          goto: 'schule',
+          r: 14,
+          text: 'Schau zur Uhr im Dachreiter der alten Schule.',
+          at: 'Die Uhr im Dachreiter – sie zeigt {uhr}.',
+        },
+        {
+          talk: 'gerhard',
+          text: 'Erzähl Gerhard, was du gesehen hast.',
+          label: 'Linde, Brunnen, Schuluhr – ich war da',
+        },
+      ],
+      thanks:
+        'Sehr gut. Die Linde, der Brunnen, die Uhr – das kommt alles hinein. Und dein Name als Mitarbeiter der Chronik. So entsteht Geschichte: einer schaut hin und schreibt es auf.',
+    },
+    brett: {
+      who: 'ingrid',
+      title: 'Ein Brett für die Tombola',
+      offer: [
+        'Klingenholz',
+        'Du machst doch die Stirnholzbretter in der Werkstatt im Garten? Für die Tombola beim Dorffest hätte ich gern eins als Hauptpreis. Bringst du mir eins, wenn es fertig ist – geölt und gebrannt?',
+      ],
+      steps: [
+        { have: 'board', text: 'Mach in der Werkstatt ein Stirnholzbrett fertig und nimm es in die Hand.' },
+        {
+          talk: 'ingrid',
+          text: 'Bring Ingrid das fertige Brett.',
+          label: 'Hier ist das Brett für die Tombola',
+          give: 'board',
+        },
+      ],
+      thanks:
+        'Das ist ja wunderschön! Eiche, das sieht man an den Markstrahlen. Damit gewinnt jemand den Hauptpreis, und alle fragen, wo es herkommt – Klingenholz aus Ratscher.',
+    },
+    lehrstueck: {
+      who: 'wolfgang',
+      title: 'Wolfgangs Lehrstück',
+      offer: [
+        'Bring mir das Fällen bei',
+        'Fällen lernt man nur im Wald. An der Klinge sind Bäume markiert. Mach einen Fallkerb, lass die Bruchleiste stehen, fäll ihn, entaste ihn und vermiss die Abschnitte. Dann komm wieder und erzähl.',
+      ],
+      steps: [
+        { have: 'log', text: 'Fäll an der Klinge einen markierten Baum und vermiss die Abschnitte.' },
+        { talk: 'wolfgang', text: 'Erzähl Wolfgang vom Fällen.', label: 'Ich habe einen Baum gefällt und vermessen' },
+      ],
+      thanks:
+        'Und die Bruchleiste hat gehalten? Dann hast du es verstanden. Merk dir: Rückweiche frei machen, Warnruf, und nie unter einem hängenden Baum arbeiten.',
+    },
+    zuendkerzen: {
+      who: 'jens',
+      title: 'Ein Päckchen für Hubert',
+      offer: [
+        'Brauchst du Hilfe?',
+        'Ich hab Zündkerzen für Huberts Mondeo besorgt, komme aber erst spät heim. Bringst du sie ihm? Er wohnt doch neben euch.',
+      ],
+      steps: [
+        {
+          goto: 'hubert',
+          r: 3.5,
+          text: 'Bring Hubert die Zündkerzen.',
+          at: 'Du gibst Hubert das Päckchen. Er nickt: „Vom Jens? Na endlich.“',
+        },
+        { talk: 'jens', text: 'Sag Jens Bescheid.', label: 'Hubert hat die Zündkerzen' },
+      ],
+      thanks: 'Danke! Dann läuft der Mondeo bald wieder rund. Wenn bei euch mal was klemmt – du weißt, wo ich wohne.',
+    },
+    mist: {
+      who: 'heike',
+      title: 'Ziegenmist für die Beete',
+      offer: [
+        'Kann ich etwas tun?',
+        'Ronald hat mir einen Eimer Ziegenmist versprochen, gut verrottet. Holst du ihn mir? Ronald ist bei seinen Ziegen, südlich von eurem Garten.',
+      ],
+      steps: [
+        {
+          goto: 'ronald',
+          r: 3.5,
+          text: 'Hol bei Ronald den Eimer Ziegenmist.',
+          at: 'Ronald drückt dir den Eimer in die Hand: „Für Heike? Gut abgelagert, sag ihr das.“',
+        },
+        { talk: 'heike', text: 'Bring Heike den Ziegenmist.', label: 'Hier ist der Mist von Ronald' },
+      ],
+      thanks:
+        'Wunderbar! Der kommt im Herbst unter die Beete, dann ruht er über den Winter. Nimm dir sechs Eier mit – geschenkt.',
+    },
+  };
   const NOTICE =
-    'AUSHANG – Freiwillige Feuerwehr Ratscher\n\nSkat- und Rommé-Abend\njeden Freitag ab 19 Uhr in der alten Schule.\nGäste sind herzlich willkommen!\n\nJeden zweiten Samstag Feuer am Acker Richtung Klinge.';
-  return { P, TALK, STORY, STORIES, FIRE, TASK, NOTICE };
+    'AUSHANG – Freiwillige Feuerwehr Ratscher\n\nSkat- und Rommé-Abend\njeden Freitag ab 19 Uhr in der alten Schule.\nGäste sind herzlich willkommen!\n\nJeden zweiten Samstag Feuer am Acker Richtung Klinge.\n\nWer hilft? Gerhard sucht Mithilfe für die Dorfchronik, Ingrid einen Hauptpreis für die Tombola, Heike verkauft Eier. Man trifft sie morgens und am frühen Abend in ihren Vorgärten – oder freitags hier.';
+  return { P, TALK, STORY, STORIES, FIRE, TASK, NOTICE, ERRANDS };
 })();

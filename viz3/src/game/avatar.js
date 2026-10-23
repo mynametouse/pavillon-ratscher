@@ -351,7 +351,7 @@ export const AVATAR = (() => {
   const PM = window.PLAYERMAN || null;
   // the figures (Falko 23.10.2026, docs/plans/plan_leben.md 3): Microsoft Rocketbox avatars on the Biped skeleton shared by all adult women
   // resp. men (tools/player/build_figures.sh). 'pav-fig' keeps the code – m and f of the former Mann/Frau stay valid. file: PLAYERMAN key of
-  // the mesh (else alt), clips: the clip set, scale: size against the skeleton's own (0: the clip set's height; Christoph 1.5 cm shorter
+  // the mesh (else alt), clips: the clip set, scale: size against the skeleton's own (0: the clip set's height; Christoph 1–2 cm shorter
   // than Falko), gearK: size of the protective gear on the head, cap/buds: Christoph's cap and earbuds (figHeadwear)
   const FIGS = {
     m: { name: 'Falko', file: 'player_m', clips: 'pclips_m', scale: 0, gearK: 1 },

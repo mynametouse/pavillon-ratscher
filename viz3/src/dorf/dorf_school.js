@@ -524,6 +524,35 @@ export const DSCHOOL = (() => {
         box(M.wood, T3[0] + u - 0.04, T3[0] + u + 0.04, T3[1] + v - 0.12, T3[1] + v + 0.12, 0, 0.42);
     }
     col(T3[0] - 1.6, T3[0] + 1.6, T3[1] - 0.9, T3[1] + 0.8, 0, 0.76);
+    // Jens and Heike: at the long table on cold evenings …
+    S.seats.jensIn = { x: T3[0] - 0.7, y: T3[1] - 0.72, a: Math.PI / 2, top: 0.46 };
+    S.seats.heikeIn = { x: T3[0] + 0.3, y: T3[1] + 0.62, a: -Math.PI / 2, top: 0.46 };
+    // … and outside before the school on mild ones: a beer table set beside the door (Falko: people sitting in front of the school)
+    {
+      const bx = S.F.du + 4.2,
+        by = -2.0,
+        [wx, wy] = toW(bx, by),
+        hg = KERN.terrain(wx, wy) - S.F.zF; // the ground outside, below the floor
+      box(M.wood, bx - 1.1, bx + 1.1, by - 0.25, by + 0.25, hg + 0.73, hg + 0.76, { grain: 'x' });
+      for (const v of [-0.62, 0.62])
+        box(M.wood, bx - 1.1, bx + 1.1, by + v - 0.13, by + v + 0.13, hg + 0.44, hg + 0.47, { grain: 'x' });
+      for (const u of [-0.85, 0.85]) {
+        box(M.dark, bx + u - 0.02, bx + u + 0.02, by - 0.22, by + 0.22, hg, hg + 0.73);
+        for (const v of [-0.62, 0.62])
+          box(M.dark, bx + u - 0.02, bx + u + 0.02, by + v - 0.1, by + v + 0.1, hg, hg + 0.44);
+      }
+      col(bx - 1.1, bx + 1.1, by - 0.8, by + 0.8, hg, hg + 0.76);
+      for (const [u, v] of [
+        [-0.5, 0.1],
+        [0.35, -0.12],
+      ]) {
+        kit.cyl(bx + u, by + v, hg + 0.76, hg + 0.92, 0.04, 0.045, 10, L(0.82, 0.55, 0.16), true); // two half-litre glasses
+        kit.cyl(bx + u, by + v, hg + 0.92, hg + 0.945, 0.045, 0.045, 10, L(0.95, 0.94, 0.9), true);
+      }
+      kit.box(bx + 0.95, by + 0.45, hg, 0.4, 0.3, 0.3, 0.2, L(0.55, 0.12, 0.08)); // a crate under the table's end
+      S.seats.jensOut = { x: bx - 0.35, y: by + 0.62, a: -Math.PI / 2, top: 0.47, hg };
+      S.seats.heikeOut = { x: bx + 0.35, y: by - 0.62, a: Math.PI / 2, top: 0.47, hg };
+    }
     // the bar corner at the west gable: counter, shelf with bottles and glasses, stools; Uwe behind it
     const bx0 = t + 0.05,
       bx1 = 3.3,
