@@ -643,6 +643,16 @@ export const LIFE = (() => {
   const northEast = (x, y) => y > PAD.y1 && x > PAD.x0 - 2; // on the meadow north of the paddock
   function* rGo(w, tx, ty, sp) {
     if (inPad(w.x, w.y) && !inPad(tx, ty)) yield* gate(w, false);
+    // from his house east of the paddock: round its north side (the gate is on the west)
+    if (w.x > PAD.x1 && tx < PAD.x1)
+      yield* go(
+        w,
+        [
+          [PAD.x1 + 1.2, Math.max(w.y, PAD.y1 + 1.0)],
+          [PAD.x1 - 1, PAD.y1 + 1.0],
+        ],
+        sp
+      );
     if (yard(w.x) && !yard(tx)) {
       yield* go(w, SOUTH.slice().reverse().slice(1), sp);
       if (northEast(tx, ty)) yield* go(w, [NW], sp);
@@ -1042,8 +1052,9 @@ export const LIFE = (() => {
     a.cur = null;
     a.lock = false;
   }
-  agent(H, hubertPlan, [-34.5, 38.5]);
-  agent(R, ronaldPlan, [40, -42]);
+  // where they come from in the morning (their houses are beyond: Hubert's north of his workshops, Ronald's east of the paddock)
+  agent(H, hubertPlan, [-24, 38.5]);
+  agent(R, ronaldPlan, [37, -36]);
   // ================= the two at the table: conversations about the village =================
   // [speaker, line] – Hubert says little and expects rain, Ronald talks (village life after docs/plans/plan_leben.md section 2)
   const TALKS = [
