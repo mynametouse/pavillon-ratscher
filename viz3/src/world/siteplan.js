@@ -45,6 +45,10 @@ export const SITEPLAN = (() => {
     branch: 'gh-pages',
   };
   const ON_SITE = /github\.io$/i.test(location.hostname);
+  // plugins of the plan view (feat/gartenplaner, gplan/gplan.js): { draw(pr, W, H) → SVG text drawn over the boundary and under the
+  // outlines and labels; down(e, gp) → 'take' takes the gesture (then move(e, gp) and up(e, gp, tap) instead of panning), 'keep' leaves the
+  // pan but picks no building (it waits for a tap); tap(e, gp) → true when it used the tap }
+  const HOOKS = [];
   const r2 = v => Math.round(v * 100) / 100,
     de = (v, d = 1) => (+v).toFixed(d).replace('.', ','),
     fmt = ts =>
@@ -498,6 +502,7 @@ export const SITEPLAN = (() => {
       S0.garden.map(p => pr(p[0], p[1], 0.05)),
       'bound'
     );
+    for (const k of HOOKS) if (k.draw) h += k.draw(pr, W, H) || '';
     if (S.sel) {
       const B = BUILD[S.sel];
       if (B.dx || B.dy || B.da)
@@ -669,6 +674,7 @@ export const SITEPLAN = (() => {
           }
           S.drag = null;
         }
+        if (S.down && S.down.hook && S.down.hook.up) S.down.hook.up(e, null, false);
         S.down = null;
         return;
       }
@@ -683,6 +689,11 @@ export const SITEPLAN = (() => {
         last: [e.clientX, e.clientY],
       };
       if (S.draw || !gp) return;
+      for (const hk of HOOKS) {
+        const r = hk.down ? hk.down(e, gp) : false;
+        if (r === 'take') S.down.hook = hk;
+        if (r) return;
+      }
       const k = pickBld(e, gp);
       if (k) {
         if (S.sel !== k) select(k);
@@ -724,6 +735,11 @@ export const SITEPLAN = (() => {
       if (!D || D.id !== e.pointerId) return;
       const mv = Math.hypot(e.clientX - D.x, e.clientY - D.y);
       if (mv > 5) D.moved = true;
+      if (D.hook) {
+        const gp = D.moved ? ground(e) : null;
+        if (gp && D.hook.move) D.hook.move(e, gp);
+        return;
+      }
       if (S.drag && D.moved) {
         const gp = ground(e);
         if (!gp) return;
@@ -764,6 +780,10 @@ export const SITEPLAN = (() => {
     const D = S.down;
     if (!D || D.id !== e.pointerId) return;
     S.down = null;
+    if (D.hook) {
+      if (D.hook.up) D.hook.up(e, ground(e), !D.moved && e.type !== 'pointercancel');
+      return;
+    }
     if (S.drag) {
       const g = S.drag;
       S.drag = null;
@@ -791,6 +811,7 @@ export const SITEPLAN = (() => {
       drawOverlay();
       return;
     }
+    for (const hk of HOOKS) if (hk.tap && hk.tap(e, gp)) return;
     if (pickBld(e, gp)) return; // selected on pointerdown
     const fh = pickFence(gp);
     if (fh) {
@@ -1148,6 +1169,7 @@ export const SITEPLAN = (() => {
     drawOverlay,
     setTrees,
     publish,
+    hooks: HOOKS,
   };
 })();
 LATE.SITEPLAN = SITEPLAN;
