@@ -86,6 +86,55 @@
       "herausgeber": "Sächsisches Landesamt für Umwelt, Landwirtschaft und Geologie (LfULG), Gartenbau Sachsen",
       "abgerufen": "2026-10-23",
       "lizenz": null
+    },
+    "aelf-unternutzung": {
+      "titel": "Unternutzung von Streuobstwiesen – Kostenfaktor oder Chance? (Vortrag G. Stöckl, Bio-Streuobsttagung Freising, 31.01.2013)",
+      "url": "https://lfl.bayern.de/mam/cms07/iab/dateien/unternutzung-streuobstwiesenst__ckl.pdf",
+      "herausgeber": "Amt für Ernährung, Landwirtschaft und Forsten Neumarkt i. d. OPf., Fachzentrum Ökologischer Landbau (veröffentlicht von der LfL Bayern)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "mluk-vegagley": {
+      "titel": "Steckbriefe Brandenburger Böden: Vega-Gley (3. Auflage, Dezember 2020)",
+      "url": "https://mleuv-daten.brandenburg.de/Steckbriefe-BB-Boeden/SB-9-3-Vegagley.pdf",
+      "herausgeber": "Ministerium für Landwirtschaft, Umwelt und Klimaschutz des Landes Brandenburg",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lwg-bodenprobe": {
+      "titel": "Hinweise zur Bodenprobenahme und Bodenuntersuchung (Merkblatt 1201, Juli 2022)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/1201_info_bf.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "bl-waldgarten": {
+      "titel": "Leitfaden Freiraumgestaltung auf Privatgrund – Obstgarten, Merkblatt Nr. 5 (Mai 2022)",
+      "url": "https://kanton.baselland.ch/volkswirtschafts-und-gesundheitsdirektion/landw-zentrum-ebenrain/nl_files/nl_merkblaetter/bafu_klimagarten_obst_waldgarten.pdf",
+      "herausgeber": "Kanton Basel-Landschaft, Landwirtschaftliches Zentrum Ebenrain (Bereitstellung)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "hswt-waldgarten": {
+      "titel": "Evaluierung der finanziellen Rentabilität eines Waldgartens am Standort Freising/Dürneck (Bachelorarbeit J. Knoll, Juni 2025)",
+      "url": "https://agroforst-info.de/wp-content/uploads/2025/11/Bachelorarbeit_Waldgarten_Knoll_Juni_2025.pdf",
+      "herausgeber": "Hochschule Weihenstephan-Triesdorf, Fakultät Wald und Forstwirtschaft (über agroforst-info.de)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lvgl-wuehlmaus": {
+      "titel": "Wühlmäuse im Garten (Reihe „Die Bayerischen Obst- und Gartenbauvereine informieren“, 2002)",
+      "url": "https://mv.gartenbauvereine.org/wp-content/uploads/2020/05/WuehlmaeuseImGarten.pdf",
+      "herausgeber": "Bayerischer Landesverband für Gartenbau und Landespflege e. V.",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "wetcc-gilde": {
+      "titel": "Fruit Tree Guild – Layers and Categories",
+      "url": "https://wetcc.edu/wp-content/uploads/pdf/Fruit-Tree-Guild-Layers-Categories.pdf",
+      "herausgeber": "White Earth Tribal and Community College, Community Extension (gefördert von USDA NIFA)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
     }
   },
   "messung": "Gemessen wird waagerecht von der Mitte des Stammes – bei Sträuchern, Hecken und Rebstöcken von der Mitte der Pflanze – bis zur Grenzlinie, und zwar dort, wo die Pflanze aus dem Boden tritt (§ 47 ThürNRG). Die Breite der Krone zählt dabei nicht; über die Grenze ragende Äste und Wurzeln regelt § 910 BGB.",
@@ -317,6 +366,41 @@
       "id": "juglon-walnuss",
       "text": "Walnüsse bilden Juglon, die Echte Walnuss weniger als die Schwarznuss. Am meisten steckt in Knospen, Blättern, Fruchtschalen und Wurzeln; gefährdet sind empfindliche Pflanzen vor allem unter der Krone und auf schlecht durchlüftetem, nassem Boden. Johannisbeeren, Zwiebeln, Bohnen und Kürbis gelten als tolerant. Walnusslaub nicht als Mulch im Beet verwenden.",
       "quelle": "psu-juglon"
+    },
+    {
+      "id": "ziegen-verbiss",
+      "text": "Ziegen fressen mit Vorliebe Gehölze und schälen Rinde; unter Obstbäumen gehen sie nur unter Aufsicht und mit massivem Baumschutz. Grenzt die Ziegenweide des Nachbarn im Osten an, junge Gehölze dort mit Verbiss- und Stammschutz pflanzen und den Zaun dicht halten.",
+      "quelle": "aelf-unternutzung"
+    },
+    {
+      "id": "auenlehm-grundwasser",
+      "text": "Auenböden aus Auenlehm entstehen durch Überflutung und hoch stehendes Grundwasser; wie tief Wurzeln reichen, hängt vom Grundwasserstand ab. Oft überflutete Stellen taugen eher für Grünland oder Auwaldgehölze. Ein typisches Profil ist schwach sauer (pH um 6). Obstbäume, die keine Staunässe vertragen, nicht in die tiefsten Stellen setzen.",
+      "quelle": "mluk-vegagley"
+    },
+    {
+      "id": "bodenprobe",
+      "text": "Vor dem Pflanzen (danach alle 3–5 Jahre) eine Bodenprobe nehmen: je Nutzung (Obstwiese, Beete) 10–15 Einstiche, 25–30 cm tief, gut mischen, etwa 500 g ins Labor. Die Standarduntersuchung ergibt Phosphat, Kalium und Kalkbedarf; Magnesium und Humus extra beauftragen. Bis dahin gilt die Schätzung pH um 6 (Auenlehm).",
+      "quelle": "lwg-bodenprobe"
+    },
+    {
+      "id": "wuehlmaus-pflanzzeit",
+      "text": "Wo viele Wühlmäuse sind, Gehölze lieber im Frühjahr als im Herbst pflanzen – im Herbst gesetzte Bäume werden bevorzugt angefressen. Gras um junge Bäume kurz halten, dicke Mulchdecken in gefährdeten Bereichen vermeiden, Fallobst aufsammeln, Fallen im Spätherbst und zeitigen Frühjahr stellen.",
+      "quelle": "lvgl-wuehlmaus"
+    },
+    {
+      "id": "waldgarten-abstand",
+      "text": "Ein essbarer Wald soll eher licht sein; die kleineren Bäume gehören auf die Südseite. Faustregel eines Schweizer Leitfadens: zwei Bäume mindestens so weit auseinander, wie ihre Endhöhen zusammen ergeben – dann wächst darunter noch etwas.",
+      "quelle": "bl-waldgarten"
+    },
+    {
+      "id": "waldgarten-naehrstoffe",
+      "text": "Nährstoffhungrige Obstbäume (Apfel, Birne, Quitte, Pflaume) neben Stickstoffsammler wie Erle oder Ölweide setzen; niedrige Sträucher auf die Südseite, damit Licht an die Bäume kommt. Ein Waldgarten nutzt bis zu sieben Schichten.",
+      "quelle": "hswt-waldgarten"
+    },
+    {
+      "id": "gilde-funktionen",
+      "text": "Eine Gilde kombiniert um den Baum Pflanzen mit verschiedenen Aufgaben: Bodendecker und Zwiebeln unterdrücken Gras (Obstbäume vertragen kein Gras unter der Krone), Beinwell holt Nährstoffe aus der Tiefe und liefert Mulch, Lauchgewächse wehren Schädlinge ab, Blüten locken Nützlinge, Leguminosen sammeln Stickstoff.",
+      "quelle": "wetcc-gilde"
     }
   ]
 }
