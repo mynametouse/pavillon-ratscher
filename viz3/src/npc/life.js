@@ -586,6 +586,13 @@ export const LIFE = (() => {
     w.fig.mode = 'stand';
     w.state = 'roam';
     w.inside = false;
+    if (Math.hypot(w.x - TRACTOR_HOME.x, w.y - TRACTOR_HOME.y) > 60) {
+      w.x = TRACTOR_HOME.x + 1; // (not on foot across the fields)
+      w.y = TRACTOR_HOME.y - 1.2;
+      w.place();
+    }
+    w.fig.g.rotation.set(0, -w.az, 0); // (no pitch of the tractor seat)
+    if (!w.away) w.fig.g.visible = true;
     a.trip = null;
     a.lock = false;
     if (a.it) {
@@ -678,7 +685,7 @@ export const LIFE = (() => {
         yield* hold(w, 1.3, 'place');
         hand(w, null);
         fillRack(rackHay + 0.55);
-        lure(PAD.rack[0], PAD.rack[1] - 0.9, 1.1, 40);
+        lure(PAD.rack[0] - 0.95, PAD.rack[1] + 0.1, 0.9, 40); // round the rack's west end (he stands south of it)
         yield* hold(w, 1.2);
       }
       for (let t = 0; t < 25;) {
