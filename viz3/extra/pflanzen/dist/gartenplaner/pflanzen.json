@@ -1729,7 +1729,11 @@
       "pflanzzeit": [3, 9],
       "pflege": "Breitet sich über Ausläufer rasch aus und schließt Lücken von selbst.",
       "nachbarrecht": "krautig",
-      "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
+      "bezug": {
+        "kammbach": "kategorie",
+        "stand": "2026-10-22",
+        "hinweis": "Bodendecker laut Website im Sortiment; ob diese Art dabei ist, vor Ort erfragen"
+      },
       "darstellung": { "typ": "bodendecker", "krone": "flach", "laub": "#4f8a3a", "bluete": "#f8f8f0", "frucht": "#d0202a" },
       "text": "Heimischer Bodendecker für Halbschatten und Sonne, der unter Sträuchern rasch eine geschlossene Decke bildet; kleine, aromatische Früchte im Frühsommer.",
       "quellen": ["pfaf-fragaria-vesca", "wetcc-gilde"]
@@ -1783,7 +1787,11 @@
       "pflanzzeit": [3, 10],
       "pflege": "Breitet sich über Wurzelausläufer aus. In praller Sonne und Trockenheit verbrennen die Blätter – nur im Schatten pflanzen.",
       "nachbarrecht": "krautig",
-      "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22", "hinweis": null },
+      "bezug": {
+        "kammbach": "kategorie",
+        "stand": "2026-10-22",
+        "hinweis": "Bodendecker laut Website im Sortiment; ob diese Art dabei ist, vor Ort erfragen"
+      },
       "darstellung": { "typ": "bodendecker", "krone": "flach", "laub": "#3f7a3a", "bluete": "#f8f8f0" },
       "text": "Schattenbodendecker für den Fuß von Hasel, Holunder und großen Bäumen. Duftet nach Heu (Cumarin) – für Bowle und Tee nur sparsam verwenden.",
       "quellen": ["pfaf-galium-odoratum"]
