@@ -1,4 +1,5 @@
-// Unit tests of KERN (core/kern.js) without a browser: providers by priority, defaults without a provider.
+// Unit tests of KERN (core/kern.js) without a browser: providers by priority, defaults without a provider; since phase 2 also areas, spots,
+// the action registry, events, zones, waits and borrowed lights.
 // Run: node --test viz3/test/unit/   (tools/check.sh does it)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
