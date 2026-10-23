@@ -12,6 +12,7 @@ import { opt } from '../game/player.js';
 import { audio } from './audio.js';
 import { ITEMS } from '../pavilion/plan.js';
 import { PLAY, SFX } from '../game/play.js';
+import { KERN } from '../core/kern.js';
 phase(null);
 const MUSIC_SR = 24000;
 // ---- piano voice: additive synthesis with inharmonic partials, two detuned strings, a fast and a slow decay; e-piano: FM with a bell tine ----
@@ -735,7 +736,7 @@ const RECORDS = (() => {
     run: () => (st.on ? stop() : play()),
   });
   let acc = 0;
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     if (!st.on) return;
     st.t += dt;
     acc += dt;
@@ -758,7 +759,7 @@ const RECORDS = (() => {
       acc = 0;
       markDirty();
     }
-  });
+  }, 'audio/music');
   return {
     play,
     stop,

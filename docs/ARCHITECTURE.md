@@ -45,7 +45,11 @@ Oberfläche Deutsch.
     Prüfung (`check`, zweimal je Sekunde) wahr wird; Stand je Aufgabe in `pav-tasks-v1`; im Tagebuch als Quelle `aufgaben` (15); Hinweise
     über die Ereignisse `task:start`, `task:step`, `task:done` (`game/quests.js`). `TASKS.start/advance/reset/state`; Unit-Tests
     `test/unit/tasks.test.mjs`. Neue Aufgaben nur noch so; die alten (Nachbarn, Dorf, Ortsvorsteher) ziehen nach und nach um.
-  - **`KERN.tick(fn, name)`:** ein Takt je Frame für Dienste (aus `KERN.update`); die Features nutzen noch `window.TICKS`.
+  - **`KERN.tick(fn, name)`:** ein Takt je Frame (aus `KERN.update`, auch in `GAME.step`), gibt eine Funktion zum Abschalten zurück – auch
+    aus dem eigenen Takt heraus. Seit 23.10. mittags laufen darüber auch die Features; nur Module laufender Agenten (Fahrzeuge, Welt,
+    Gartengebäude, Planer, Rendern, Aufgaben der Nachbarn) nutzen noch die alte Liste `window.TICKS` und ziehen abends um. `KERN.ticks()`
+    nennt die Takte, `KERN.profile(true)` misst die Zeit je Takt (`test/prof.py`); ein Fehler in einem Takt landet einmal im Ladeprotokoll
+    („Takt <name>: …“), der Rest läuft weiter.
   - **Startsituationen (Baustein 3):** `KERN.scenario(name, { label, run, order, ask, menu })` – `?szenario=name` startet nach dem Laden
     darin (`boot/boot.js`), Tests laden mit `lib.boot(pg, port, '?szenario=…')`; im **Menü unter „Szenen“** (`game/hud.js`, seit V16o) alle,
     die nicht schon ein Ort unter „Orte“ sind (gleicher Name wie ein `data-spot`) und nicht `menu: false` haben; eine Szene, die den

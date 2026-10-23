@@ -282,3 +282,35 @@ test('tasks: sources by order, entries keyed by source, a broken source is skipp
   K.tasks.source({ id: 'dorf', order: 20, list: () => [] });
   assert.equal(K.tasks.list().length, 1);
 });
+
+test('ticks: run in order, switch off from inside the round, a broken one is reported once and the rest runs on', async () => {
+  const K = await fresh();
+  const log = [];
+  let offA = null;
+  offA = K.tick(() => {
+    log.push('a');
+    offA(); // switches itself off while the list runs
+  }, 'a');
+  const offB = K.tick(() => log.push('b'), 'b');
+  K.tick(() => {
+    throw new Error('kaputt');
+  }, 'c');
+  K.tick(function d() {
+    log.push('d');
+  });
+  assert.deepEqual(K.ticks(), ['a', 'b', 'c', 'd']);
+  K.update(0.016);
+  assert.deepEqual(log, ['a', 'b', 'd']);
+  assert.deepEqual(K.ticks(), ['b', 'c', 'd']);
+  offB();
+  offB(); // twice is harmless
+  K.update(0.016);
+  assert.deepEqual(log, ['a', 'b', 'd', 'd']);
+  assert.deepEqual(K.ticks(), ['c', 'd']);
+  // timing per callback for the profiler (viz3/test/prof.py)
+  K.profile(true);
+  K.update(0.016);
+  K.update(0.016);
+  assert.equal(K.profile().d.n, 2);
+  assert.equal(K.profile(false), null);
+});
