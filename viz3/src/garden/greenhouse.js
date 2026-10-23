@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { rnd, V } from '../core/head.js';
 import { instanceVariants, MODELS } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { beam, bldBegin, bldEnd, glassLeaf, tagPh } from '../core/geo.js';
+import { beam, bldBegin, bldEnd, flapDoor, tagPh } from '../core/geo.js';
 import {
   BLD,
   FOOT,
@@ -17,17 +17,33 @@ import {
   slopeSlab,
   worldOf,
 } from './site_base.js';
+import { jar, KM, plant, pot, put, rng, wateringCan } from './garten_kit.js';
+// Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends now face north and south: turned
+// by 90° about its centre (site data: heading 96°, the long side east–west) and moved 0.5 m north, clear of the hut's new door
+{
+  const b = BLD.greenhouse;
+  if (b.az === 96) {
+    b.az = 6;
+    const a = (6 * Math.PI) / 180;
+    b.c[0] += 0.5 * Math.sin(a);
+    b.c[1] += 0.5 * Math.cos(a);
+  }
+}
 bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus', pad: 0.05 });
-// ===== Gewächshaus (2,0 × 1,4 m) direkt nördlich vom Holzhaus: Alu-Rahmen, Glas, Satteldach, Tür zur Gartenseite (West), Tomaten und Gurken =====
+// ===== Gewächshaus (2,0 × 1,4 m) direkt nördlich vom Holzhaus: Alu-Rahmen, Glas, Satteldach mit Lüftungsfenster, Tür im Nordgiebel, Tomaten und Gurken,
+// Anzuchtregal am Südgiebel =====
+// local frame (az 6): +x ≈ north (door gable), +y ≈ west
 {
   const b = BLD.greenhouse,
-    g = siteGroup(b);
+    g = siteGroup(b),
+    R = rng(2026);
   const hx = b.L / 2,
     hy = b.W / 2,
-    ze = 1.35,
-    zr = 1.95,
+    ze = 1.45,
+    zr = 2.05,
+    zd = 1.78, // top of the door (it reaches into the gable)
     f = 0.03,
-    dy = 0.32;
+    dy = 0.31;
   const r = rotDesc(b);
   gB(g, -hx, hx, -hy, hy, 0, 0.12, MAT.alu, { cast: false });
   for (const sx of [-1, 1])
@@ -42,21 +58,34 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
       gB(g, i * hx * 2 - f, i * hx * 2 + f, sy * hy - f, sy * hy + f, 0.12, ze, MAT.alu, { grain: 'z' });
       beam([i * hx * 2, sy * hy, ze], [i * hx * 2, 0, zr], 0.03, 0.03, MAT.alu, { parent: g });
     }
-  for (const y of [-dy, dy]) gB(g, -hx - f, -hx + f, y - f, y + f, 0.12, ze, MAT.alu, { grain: 'z' });
-  gB(g, -hx - f, -hx + f, -dy, dy, 1.33, ze, MAT.alu, { grain: 'y' }); // Türrahmen
+  // door frame in the north gable
+  for (const y of [-dy, dy]) gB(g, hx - f, hx + f, y - f, y + f, 0.12, zd + f, MAT.alu, { grain: 'z' });
+  gB(g, hx - f, hx + f, -dy, dy, zd, zd + 2 * f, MAT.alu, { grain: 'y' });
   const glass = (x0, x1, y0, y1, z0, z1) => {
     const m = gB(g, x0, x1, y0, y1, z0, z1, MAT.glass, { cast: false, recv: false });
     if (m) m.renderOrder = 2;
   };
   for (const sy of [-1, 1]) glass(-hx, hx, sy * hy - 0.003, sy * hy + 0.003, 0.12, ze);
-  glass(hx - 0.003, hx + 0.003, -hy, hy, 0.12, ze);
-  glass(-hx - 0.003, -hx + 0.003, -hy, -dy, 0.12, ze);
-  glass(-hx - 0.003, -hx + 0.003, dy, hy, 0.12, ze);
+  glass(-hx - 0.003, -hx + 0.003, -hy, hy, 0.12, ze);
+  // gable glass: the south one a plain triangle, the north one around the door
   for (const sx of [-1, 1]) {
     const sh = new THREE.Shape();
-    sh.moveTo(-hy, 0);
-    sh.lineTo(hy, 0);
-    sh.lineTo(0, zr - ze);
+    if (sx < 0) {
+      sh.moveTo(-hy, 0);
+      sh.lineTo(hy, 0);
+      sh.lineTo(0, zr - ze);
+    } else {
+      const z0 = 0.12 - ze;
+      sh.moveTo(-hy, z0);
+      sh.lineTo(-dy, z0);
+      sh.lineTo(-dy, zd - ze);
+      sh.lineTo(dy, zd - ze);
+      sh.lineTo(dy, z0);
+      sh.lineTo(hy, z0);
+      sh.lineTo(hy, 0);
+      sh.lineTo(0, zr - ze);
+      sh.lineTo(-hy, 0);
+    }
     sh.closePath();
     const geo = new THREE.ShapeGeometry(sh);
     const me = new THREE.Mesh(geo, MAT.glass);
@@ -67,6 +96,10 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     g.add(me);
     tagPh(me);
   }
+  // roof glass; on the west slope a vent that opens (Dachfenster)
+  const vx0 = 0.05,
+    vx1 = 0.6,
+    vs = 0.42; // vent: along the ridge vx0..vx1, vs down the slope
   for (const sy of [-1, 1]) {
     const m = slopeSlab(
       g,
@@ -82,11 +115,13 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     );
     m.renderOrder = 2;
   }
+  // raised beds, path of flagstones
   gB(g, -hx + 0.12, hx - 0.12, -hy + 0.08, -0.27, 0.12, 0.42, MAT.plank, { grain: 'x' });
   gB(g, -hx + 0.12, hx - 0.12, 0.27, hy - 0.08, 0.12, 0.42, MAT.plank, { grain: 'x' });
   gB(g, -hx + 0.14, hx - 0.14, -hy + 0.1, -0.29, 0.3, 0.4, MAT.soil, { cast: false });
   gB(g, -hx + 0.14, hx - 0.14, 0.29, hy - 0.1, 0.3, 0.4, MAT.soil, { cast: false });
-  gB(g, -hx + 0.02, hx - 0.12, -0.27, 0.27, 0.12, 0.14, MAT.stone, { cast: false });
+  gB(g, -hx + 0.12, hx - 0.02, -0.27, 0.27, 0.12, 0.14, MAT.stone, { cast: false });
+  // tomatoes on stakes in the east bed (the same random draws as before 23.10.2026, so everything loaded later stays as it was)
   const fernItems = [];
   for (let i = 0; i < 4; i++) {
     const lx = -hx + 0.35 + (i * (b.L - 0.7)) / 3,
@@ -111,25 +146,115 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     fernItems.push({ x: w[0], y: w[1], z: 0.4, s: 1.0 + rnd() * 0.3 });
   }
   if (MODELS.fern) instanceVariants('fern', fernItems, { cast: true, env: 0.6, tint: 0xd9f0b8 });
-  lwalk(r, -hx - 0.05, hx - 0.12, -0.27, 0.27, 0.14, 'stone');
+  // cucumbers climbing strings in the west bed
+  for (let i = 0; i < 3; i++) {
+    const lx = -hx + 0.45 + i * 0.5;
+    beam([lx, 0.5, 0.4], [lx + 0.05, 0.5, ze - 0.05], 0.004, 0.004, KM.twine, { parent: g });
+    for (let k = 0; k < 4; k++) {
+      put(
+        g,
+        new THREE.IcosahedronGeometry(1, 0),
+        MATS.leaf,
+        lx + 0.02 + (R() - 0.5) * 0.1,
+        0.5 + (R() - 0.5) * 0.12,
+        0.65 + k * 0.2,
+        {
+          s: [0.09, 0.05, 0.09],
+          cast: false,
+        }
+      );
+      if (k % 2)
+        put(g, new THREE.CylinderGeometry(0.018, 0.016, 0.13, 7), MATS.leaf, lx + 0.04, 0.47, 0.6 + k * 0.2, {
+          rz: 0.15,
+          cast: false,
+        });
+    }
+  }
+  // seedling shelf across the south gable, a watering can by the door, a thermometer
+  gB(g, -hx + 0.04, -hx + 0.3, -hy + 0.06, hy - 0.06, 0.72, 0.745, MAT.larch, { cast: false });
+  for (const y of [-hy + 0.08, hy - 0.08])
+    gB(g, -hx + 0.05, -hx + 0.08, y - 0.015, y + 0.015, 0.42, 0.72, MAT.larch, { cast: false });
+  for (let i = 0; i < 5; i++) {
+    const y = -0.5 + i * 0.25,
+      zs = pot(g, -hx + 0.17, y, 0.745, 0.05, 0.08);
+    plant(g, -hx + 0.17, y, zs, 0.1, i % 2 ? 'seedling' : 'herb', R);
+  }
+  jar(g, -hx + 0.17, 0.62, 0.745, 0.03, 0.09, KM.straw);
+  wateringCan(g, hx - 0.3, 0.12, 0.14, 150, MAT.zinc, 0.85);
+  gB(g, -0.2, -0.17, hy - 0.04, hy - 0.035, 1.0, 1.25, KM.porcelain, { cast: false });
+  gB(g, -0.19, -0.18, hy - 0.045, hy - 0.04, 1.03, 1.15, KM.red, { cast: false });
+  // the door: aluminium frame, one pane; hinged at the west post, opens outwards (north)
+  {
+    const w = 2 * dy - 0.02,
+      h = zd - 0.13,
+      lg = new THREE.Group(),
+      add = (bw, bh, bd, x, y, z, m) => {
+        const me = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), m);
+        me.position.set(x, y, z);
+        me.castShadow = m !== MAT.glass;
+        if (m === MAT.glass) me.renderOrder = 2;
+        lg.add(me);
+      };
+    add(0.035, h, 0.03, 0.0175, h / 2, 0, MAT.alu);
+    add(0.035, h, 0.03, w - 0.0175, h / 2, 0, MAT.alu);
+    add(w, 0.035, 0.03, w / 2, 0.0175, 0, MAT.alu);
+    add(w, 0.035, 0.03, w / 2, h - 0.0175, 0, MAT.alu);
+    add(w, 0.025, 0.03, w / 2, h * 0.45, 0, MAT.alu);
+    add(w - 0.07, h - 0.07, 0.006, w / 2, h / 2, 0, MAT.glass);
+    add(0.02, 0.14, 0.03, w - 0.06, h * 0.52, 0.025, MAT.blacksteel);
+    ldoor('greenhouse', b, lg, { lx: hx + 0.01, ly: dy - 0.01, dir: [0, -1], w, sign: 1, z0: 0.13, z1: zd - 0.01 });
+  }
+  // the roof vent: a pane hinged at the ridge, opened by hand (a hatch for the game: 'Dachfenster öffnen')
+  {
+    // group origin on the ridge at the hinge, its X along the ridge (local x); the pane runs down the west slope (three −Z) in a sub-group
+    const ang = Math.atan2(zr - ze, hy),
+      vg = new THREE.Group(),
+      sub = new THREE.Group(),
+      a = (b.az * Math.PI) / 180,
+      wv = vx1 - vx0,
+      add = (bw, bh, bd, x, y, z, m) => {
+        const me = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), m);
+        me.position.set(x, y, z);
+        if (m === MAT.glass) me.renderOrder = 2;
+        sub.add(me);
+      };
+    sub.rotation.x = -ang;
+    vg.add(sub);
+    add(wv, 0.006, vs, wv / 2, 0.016, -vs / 2, MAT.glass);
+    add(wv, 0.02, 0.025, wv / 2, 0.016, -vs + 0.0125, MAT.alu);
+    add(0.025, 0.02, vs, 0.0125, 0.016, -vs / 2, MAT.alu);
+    add(0.025, 0.02, vs, wv - 0.0125, 0.016, -vs / 2, MAT.alu);
+    add(0.02, 0.012, 0.12, wv / 2, 0.03, -vs + 0.07, MAT.blacksteel);
+    vg.rotation.order = 'YXZ';
+    vg.rotation.y = Math.PI / 2 - a;
+    const h0 = worldOf(b, vx0, 0),
+      inside = worldOf(b, (vx0 + vx1) / 2, 0.15);
+    const d = flapDoor('ghvent', vg, {
+      hx: h0[0],
+      hy: h0[1],
+      z: zr + 0.03,
+      rot: 'x',
+      open: 0.65,
+      pos: inside,
+      openBox: null,
+      label: 'Dachfenster',
+    });
+    d.z = 0.14; // the action is offered to someone standing in the greenhouse
+    d.r = 1.3;
+  }
+  lwalk(r, -hx + 0.12, hx + 0.05, -0.27, 0.27, 0.14, 'stone');
   lcol(r, -hx - 0.03, hx + 0.03, hy - 0.02, hy + 0.05, 0, 1.4, 'glass');
   lcol(r, -hx - 0.03, hx + 0.03, -hy - 0.05, -hy + 0.02, 0, 1.4, 'glass');
-  lcol(r, hx - 0.02, hx + 0.05, -hy, hy, 0, 1.4, 'glass');
-  lcol(r, -hx - 0.05, -hx + 0.02, -hy, -dy, 0, 1.4, 'glass');
-  lcol(r, -hx - 0.05, -hx + 0.02, dy, hy, 0, 1.4, 'glass');
+  lcol(r, -hx - 0.05, -hx + 0.02, -hy, hy, 0, 1.4, 'glass');
+  lcol(r, hx - 0.02, hx + 0.05, -hy, -dy, 0, 1.4, 'glass');
+  lcol(r, hx - 0.02, hx + 0.05, dy, hy, 0, 1.4, 'glass');
   lcol(r, -hx + 0.1, hx - 0.1, -hy + 0.06, -0.27, 0.12, 0.8, 'bed');
   lcol(r, -hx + 0.1, hx - 0.1, 0.27, hy - 0.06, 0.12, 0.8, 'bed');
-  ldoor('greenhouse', b, glassLeaf(0.64, 1.21), {
-    lx: -hx - 0.01,
-    ly: -dy,
-    dir: [0, 1],
-    w: 0.64,
-    sign: 1,
-    z0: 0.12,
-    z1: 1.33,
-  });
-  INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: 0, z1: 2.0, name: 'Gewächshaus' });
+  lcol(r, -hx, -hx + 0.32, -0.27, 0.27, 0.42, 0.76, 'shelf');
+  INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: 0, z1: 2.1, name: 'Gewächshaus' });
   FOOT.push({ b, hx: hx + 0.05, hy: hy + 0.05, ox: 0, oy: 0 });
 }
 
-bldEnd(BLD.greenhouse);
+const GHB = bldEnd(BLD.greenhouse);
+// the roof vent moves with the greenhouse in the plan view (hatches are not moved by bldSet, only their action point)
+if (GHB && window.DOORS.ghvent) GHB.root.attach(window.DOORS.ghvent.group);
