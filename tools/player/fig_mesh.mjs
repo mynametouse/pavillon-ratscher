@@ -7,7 +7,8 @@
 // build.json: { "thick": { "<Biped bone>": factor | [factor at the joint, at the child joint], … },
 //   "torso": factor or { "<spine bone>": factor } (away from the spine's vertical axis), "torsoTop": cm below the neck joint where it ends,
 //   "hair": { "fbx": donor avatar, "tex": its head colour TGA, "gap": cm outside the own head, "out": corners outside (2), "cardsAbove": cm,
-//             "ownDrop": { "tex": own head colour TGA, "uv": [u0, u1, v0, v1], "above": cm } (own hair pieces that would stick out) } }
+//             "ownDrop": { "tex": own head colour TGA, "uv": [u0, u1, v0, v1], "above": cm } (own hair pieces that would stick out: pressed
+//             onto the skull) } }
 import fs from 'node:fs';
 import path from 'node:path';
 import { THREE } from './node_shims.mjs';
@@ -72,21 +73,42 @@ function partsOf(mesh, g, role0) {
   return { of, top };
 }
 const HC = cfg.hair || null;
+const flatten = new Set(), flatC = new THREE.Vector3(), flatS = []; // own triangles pressed onto the skull, the head's middle, its scalp (directions, radii)
+function pressOnto(P, slack = 0) { // bind-space point → onto the scalp beneath it (radius of the scalp points within ~12° or wider, a little inside),
+  // if it stands out more than slack (cm)
+  const d = P.clone().sub(flatC), len = d.length(); d.normalize();
+  let near = [];
+  for (const c of [0.978, 0.94, 0.87, 0.77]) if ((near = flatS.filter((q) => q.d.dot(d) > c).map((q) => q.r).sort((a, b) => a - b)).length >= 6) break; // wider where the bun sat
+  if (!near.length) return P;
+  const r = near[Math.floor(near.length * 0.5)] - 0.15;
+  return len > r + slack ? flatC.clone().addScaledVector(d, r) : P;
+}
 if (HC) {
   const own = partsOf(mb, gb, 'opacity'), above = HC.cardsAbove ?? 163;
-  // own hair pieces that would stick out of the new hair (a bun): head triangles painted as hair inside the UV box ownDrop.uv
+  // own hair pieces that would stick out of the new hair (a bun): head triangles painted as hair inside the UV box ownDrop.uv – 
   const OD = HC.ownDrop, OT = OD ? readTGA(OD.tex) : null, OUV = gb.attributes.uv;
   // (above the height OD.above, cm, all of the box goes: the last bits of a bun are not painted as hair everywhere)
   const ownHair = (t) => { let k = 0; for (let i = t; i < t + 3; i++) { const u = OUV.getX(i), w = OUV.getY(i);
     if (u >= OD.uv[0] && u <= OD.uv[1] && w >= OD.uv[2] && w <= OD.uv[3] && (hairTexel(OT, u, w) || bindY(mb, gb, i) > (OD.above ?? 1e9))) k++; } return k >= 2; };
-  let dropped = 0;
-  take(mb, gb, { body: 'body', head: 'head', opacity: 'opacity' }, (r, t) =>
-    r === 'opacity' ? own.top.get(own.of.get(t)) < above : r === 'head' && OD && ownHair(t) ? (dropped++, false) : true);
-  if (OD) console.log('own hair pieces dropped:', dropped, 'triangles');
+  // they are not cut out (that left a hole in the crown) but pressed onto the skull below them: each corner moves towards the middle of
+  // the head down to the radius of the scalp around it (flatten, applied when the triangles are copied)
+  take(mb, gb, { body: 'body', head: 'head', opacity: 'opacity' }, (r, t) => {
+    if (r === 'head' && OD && ownHair(t)) flatten.add(t);
+    return r === 'opacity' ? own.top.get(own.of.get(t)) < above : true;
+  });
+  if (OD) {
+    const pts = [];
+    for (const gr of groupsOf(mb, gb)) if (gr.role === 'head') for (let t = gr.start; t < gr.start + gr.count; t += 3) if (!flatten.has(t))
+      for (let i = t; i < t + 3; i++) { const q = new THREE.Vector3().fromBufferAttribute(gb.attributes.position, i).applyMatrix4(mb.bindMatrix); if (q.y > (OD.above ?? 160)) pts.push(q); }
+    const bb = new THREE.Box3().setFromPoints(pts); bb.getCenter(flatC);
+    for (const q of pts) flatS.push({ d: q.clone().sub(flatC).normalize(), r: q.distanceTo(flatC) });
+    console.log('own hair pieces pressed onto the skull:', flatten.size, 'triangles');
+  }
   const donor = load(HC.fbx), md = skinned(donor), gd = md.geometry.index ? md.geometry.toNonIndexed() : md.geometry;
   // the own head's surface (bind space) in a 1 cm grid, for "how far outside it" of the donor's hair
   const grid = new Map(), cell = (x, y, z) => Math.floor(x) + ',' + Math.floor(y) + ',' + Math.floor(z), hp = [], hn = [];
   for (const gr of groupsOf(mb, gb)) if (gr.role === 'head') for (let i = gr.start; i < gr.start + gr.count; i++) {
+    if (flatten.has(i - ((i - gr.start) % 3))) continue; // not the pressed bun (it lies under the scalp now)
     const p = new THREE.Vector3().fromBufferAttribute(gb.attributes.position, i).applyMatrix4(mb.bindMatrix), nn = new THREE.Vector3().fromBufferAttribute(gb.attributes.normal, i).transformDirection(mb.bindMatrix);
     const j = hp.push(p) - 1; hn.push(nn); const c = cell(p.x, p.y, p.z); if (!grid.has(c)) grid.set(c, []); grid.get(c).push(j); }
   const outside = (p) => { let best = 1e9, bj = -1; const cx = Math.floor(p.x), cy = Math.floor(p.y), cz = Math.floor(p.z);
@@ -129,6 +151,11 @@ for (const [mi, r] of order.entries()) {
     const toM = mb.bindMatrixInverse.clone().multiply(p.mesh.bindMatrix), toN = new THREE.Matrix3().getNormalMatrix(toM), same = toM.equals(new THREE.Matrix4());
     for (const t of p.tris) for (let i = t; i < t + 3; i++, at++) {
       for (const a of ATTR) { const s = p.g.attributes[a]; if (!s) continue; for (let k = 0; k < s.itemSize; k++) out[a][at * s.itemSize + k] = s.array[i * s.itemSize + k]; }
+      if (!fromOther && flatten.has(t)) pressOnto(v.fromArray(out.position, at * 3).applyMatrix4(mb.bindMatrix)).applyMatrix4(mb.bindMatrixInverse).toArray(out.position, at * 3);
+      else if (!fromOther && r === 'head' && flatS.length) { // what else stands out of the crown by more than 1.2 cm (a hair stick through the bun)
+        v.fromArray(out.position, at * 3).applyMatrix4(mb.bindMatrix);
+        if (v.y > (HC.ownDrop.crown ?? 166)) pressOnto(v, 1.2).applyMatrix4(mb.bindMatrixInverse).toArray(out.position, at * 3);
+      }
       if (fromOther) {
         for (let k = 0; k < 4; k++) out.skinIndex[at * 4 + k] = remap[out.skinIndex[at * 4 + k]] ?? 0;
         if (!same) { v.fromArray(out.position, at * 3).applyMatrix4(toM).toArray(out.position, at * 3); n.fromArray(out.normal, at * 3).applyMatrix3(toN).normalize().toArray(out.normal, at * 3); }
