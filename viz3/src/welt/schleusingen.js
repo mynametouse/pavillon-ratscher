@@ -1747,6 +1747,68 @@ export const SCHL = (() => {
         const [x, y] = P_(L / 2, 0.05);
         K.box(x, y, z + 3.2, L, 0.1, 0.22, a, RF);
       }
+      // red surrounds round the windows of the front and yellow arches over those of the upper floors (photo 2025); the openings come
+      // from the wall shader (world/village.js) – bays and storeys computed here the same way
+      {
+        const LF = L,
+          nb = Math.max(1, Math.floor((LF - 0.6) / b.st.sp)),
+          bw = LF / nb,
+          [t0, uA, tA, t1] = [f[4], f[5], f[6], f[7]],
+          gableF = tA > Math.max(t0, t1) + 0.6 && uA > 0.3 && uA < L - 0.3,
+          cl = (v, lo, hi) => Math.min(hi, Math.max(lo, v)),
+          topAt = u =>
+            !gableF
+              ? t0 + ((t1 - t0) * u) / L
+              : u < uA
+                ? t0 + (tA - t0) * cl(u / Math.max(uA, 0.01), 0, 1)
+                : tA + (t1 - tA) * cl((u - uA) / Math.max(LF - uA, 0.01), 0, 1),
+          YL = linC([0.93, 0.77, 0.36]),
+          o = 0.03,
+          frame = (u0, u1, z0, z1, bd) => {
+            rect(u0 - bd, u1 + bd, z0 - bd, z0, o, RF);
+            rect(u0 - bd, u1 + bd, z1, z1 + bd, o, RF);
+            rect(u0 - bd, u0, z0, z1, o, RF);
+            rect(u1, u1 + bd, z0, z1, o, RF);
+          };
+        for (let bi = 0; bi < nb; bi++) {
+          const bc = (bi + 0.5) * bw;
+          if (Math.abs(bc - du) < TW / 2 + 0.4) continue; // behind the tower
+          for (let fi = 0; fi < 9; fi++) {
+            const fb = 0.35 + fi * 2.75;
+            let ww = 0.95,
+              wh = 1.3;
+            const lo = fb + 0.85,
+              attic = lo > b.e - 0.2;
+            if (attic) {
+              ww = 0.8;
+              wh = 1.0;
+            }
+            const room = Math.min(topAt(bc - ww / 2), topAt(bc + ww / 2)) - (lo + wh);
+            if (room <= (attic ? 0.4 : 0.18) || (attic && !gableF)) {
+              if (attic) continue;
+              break;
+            }
+            if (fi === 0 && Math.abs(bc - du) < Math.max(bw / 2, 0.75 + ww / 2 + 0.1)) continue;
+            frame(bc - ww / 2, bc + ww / 2, z + lo, z + lo + wh, 0.1);
+            if ((fi === 1 || fi === 2) && !attic) {
+              // a segmental arch over the window
+              const r = ww / 2 + 0.16,
+                zb = z + lo + wh + 0.16;
+              for (let k = 0; k < 8; k++) {
+                const a0 = (k / 8) * Math.PI,
+                  a1 = ((k + 1) / 8) * Math.PI;
+                K.tri(
+                  onF(bc, zb, o),
+                  onF(bc + Math.cos(a0) * r, zb + Math.sin(a0) * r * 0.55, o),
+                  onF(bc + Math.cos(a1) * r, zb + Math.sin(a1) * r * 0.55, o),
+                  YL
+                );
+              }
+              rect(bc - r, bc + r, zb - 0.06, zb, o, YL);
+            }
+          }
+        }
+      }
       // yellow ornaments in the gable: triangles beside the windows, as on the photo
       if (f[6] > Math.max(f[4], f[7]) + 2) {
         const uA = f[5],
