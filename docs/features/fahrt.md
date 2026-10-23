@@ -49,8 +49,9 @@ in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide R
 - Ein draußen abgestelltes Auto steht nach dem Neuladen wieder vor dem Garten.
 - Im Quadrat liegen die Straßen weiter auf dem 10-m-Gelände des Modells (ohne geglättetes Längsprofil): an Knicken der Dreiecke hebt
   das Auto bei Landstraßentempo ab, etwa auf der L 3004 kurz vor der Ortstafel Schleusingen (−360, 833: Gefälle springt von 5 auf 17 %).
-- Der Hof der Baumschule: seit dem Veßra-Feinschliff (23.10. mittags) liegt seine ebene Fläche am Tor 1,8 m über der Straße – eine Rampe
-  von über 50 %, durch die das Auto nicht hineinkommt; der Veßra-Agent gleicht sie an (der Test fährt dann wieder bis in den Hof).
+- Der Hof der Baumschule: der Test fährt durchs Tor in den Hof, wenn die Einfahrt flacher als 25 % ist, sonst hält er davor und
+  schreibt eine NOTE ins Protokoll (23.10. mittags war das Tor durch die ebene Hoffläche eine Rampe von 52 %; behoben in vessra 11f7b20,
+  Hof am Tor auf Straßenhöhe, höchstens 8,8 %).
 
 ## Für den Kern-Chat (gemeinsame Dateien)
 - `vehicles/vehicle.js`: Rand der Karte (`VEH.edge`: `null` | `'wait'` | `'end'`, ohne FAHRT wie vorgeschlagen `KERN.free`), Tempo-Grenze
