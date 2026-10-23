@@ -66,17 +66,19 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
   als Funktion; Arbeiten weiter unten registrierter Module bekommen ihren Zustand.
 - `garten_kit.js` `picture()`: die Rahmenleisten liegen jetzt um das Bild (vorher eine Leiste in Höhe der Wanddicke).
 - Gemessen (GitHub, SwiftShader, `nogeo`): **116 Shader-Programme vor und nach allen 15 Stilen und 8 Akzenten** (keins neu), höchstens
-  15 Texturen je Programm. Je Stil-Schicht 5–11 Draw-Calls (≈ 1 600–9 300 Dreiecke). Die drei Gartengebäude zusammen vom Bungalow-Eingang
-  aus (Gartentest): 244 Draw-Calls, 139 000 Dreiecke (auf `src` vorher 196 und 138 000 mit Gelände) – das Atelier hat mehr Kleinteile als
-  die Pflanzhütte, dazu Sofa, Schaukelstuhl und Scheibe als eigene bewegliche Gruppen.
+  15 Texturen je Programm. Je Stil-Schicht 4–11 Draw-Calls (≈ 2 300–10 800 Dreiecke; „Wie heute“ im Wohnwagen braucht keine). Die drei
+  Gartengebäude zusammen vom Bungalow-Eingang aus (Gartentest): 244 Draw-Calls, 142 000 Dreiecke (auf `src` vor dem Atelier 196 und 138 000)
+  – das Atelier hat mehr Kleinteile als die Pflanzhütte, dazu Sofa, Schaukelstuhl und Scheibe als eigene bewegliche Gruppen.
 
 ## Testen
 
-- `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8983 --serve einrichtung:nogeo=1` (≈ 10 min): Atelier von der Tür und aus
-  den Ecken, Staffelei, Töpferscheibe, Schaukelstuhl (schaukelt), Klappsofa (ausklappen → hinlegen → aufstehen → einklappen, Kollision),
-  Brennofen, Nacht mit Lampe; Wohnwagen von der Tür (Bett rechts), Bett, Sitzecke, außen; jeder Stil jedes Gebäudes (Bilder
-  `stil_<haus>_<stil>.jpg`), Akzentfarben, **Zahl der Shader-Programme vor/nach allen Stilen gleich**, Feld „Einrichtung“; Neuladen behält
-  Stile, Akzente und das ausgeklappte Sofa. Einzelne Teile: `only=atelier+caravan+styles+reload`.
+- `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8983 --serve einrichtung:nogeo=1` (im Chat-Rechner lang, dort besser einzelne
+  Teile mit `only=…`): Atelier von der Tür und aus den Ecken, Staffelei, Töpferscheibe, Schaukelstuhl (schaukelt), Klappsofa (ausklappen →
+  hinlegen → aufstehen → einklappen, Kollision), Brennofen, Glasieren, Aufgaben im Tagebuch, Nacht mit Lampe, Startsituation, Knopf
+  „Einrichtung“ (drinnen da, draußen weg); Wohnwagen von der Tür (Bett rechts), Bett, Sitzecke als Bett (die Laterne wird weggeräumt),
+  Deckenlicht, außen; jeder Stil jedes Gebäudes (Bilder `stil_<haus>_<stil>_<n>.jpg`), Akzentfarben, **Zahl der Shader-Programme vor/nach
+  allen Stilen gleich**, Feld „Einrichtung“ (auch am Handy); Neuladen behält Stile, Akzente und das ausgeklappte Sofa. Einzelne Teile:
+  `only=atelier+caravan+styles+reload`. Bei GitHub ≈ 14 min (23.10. 13:00: 51/51 grün, Gartentest 33/33).
 - `garten` (Gartentest) prüft Ort „Atelier“ und „Setzlinge gießen“ jetzt im Gewächshaus.
 - Bei GitHub: `viz3/extra/einrichtung/tests.txt` (einrichtung, garten), Bilder im Artefakt `out`.
 

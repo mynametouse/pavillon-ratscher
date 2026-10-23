@@ -264,7 +264,7 @@ with lib.browser() as b:
     if want('reload'):
         want_st = {h['key']: h['styles'][min(2, len(h['styles']) - 1)] for h in st['houses']}
         for k, sid in want_st.items(): ev(pg, f"STIL.set('{k}', '{sid}'); STIL.accent('{k}', 5)")
-        ev(pg, "ATELIER.setSofa(true)")
+        ev(pg, "ATELIER.setSofa(true); STIL.x('wohnwagen', { bed: 1 })")
         saved = ev(pg, "SAVE.raw('pav-stil-v1')")
         print('saved', saved, flush=True)
         ev(pg, "sessionStorage.setItem('einr-reload', '1')")
@@ -273,7 +273,8 @@ with lib.browser() as b:
         got = json.loads(ev(pg, "JSON.stringify(Object.fromEntries(STIL.houses().map(h => [h.key, [h.cur, h.acc]])))"))
         ck('reload: the chosen styles and accents are back', all(got.get(k, [None])[0] == sid and got[k][1] == 5 for k, sid in want_st.items()), [want_st, got])
         ck('reload: the sofa bed is still unfolded', ev(pg, "ATELIER.sofa.k") == 1, ev(pg, "ATELIER.sofa.k"))
+        ck('reload: the caravan dinette is still a bed', ev(pg, "WOHNWAGEN.dinette.k") == 1, ev(pg, "WOHNWAGEN.dinette.k"))
         view(pg, 'holzhaus', -0.88, 1.45, EYE_A, 90, -14, 80); shot(pg, 'reload_atelier')
-        ev(pg, "ATELIER.setSofa(false)")
+        ev(pg, "ATELIER.setSofa(false); STIL.x('wohnwagen', { bed: 0 })")
     ck.errors(errs)
 ck.done()

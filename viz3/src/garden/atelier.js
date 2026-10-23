@@ -976,7 +976,6 @@ function build(L, h) {
         { rx: Math.sin(a) * 0.15, rz: -Math.cos(a) * 0.15, cast: false }
       );
     }
-    gB(L, wt.x0 + 0.02, wt.x1 - 0.04, -0.28, -0.02, FZ + 1.5, FZ + 1.52, MAT.blacksteel, { cast: false });
   }
   if (s.boho) {
     macrame(L, 'y', -0.05, xi1 - 0.04, FZ + 1.95, 0.42, 0.55);
@@ -1072,6 +1071,52 @@ const creak = A =>
     gn.connect(out);
     o.start(t);
     o.stop(t + 0.32);
+  });
+// the kiln's relay clicks when it switches on and off
+const relay = A =>
+  tone(A, (c, out) => {
+    const t = c.currentTime + 0.02;
+    clack(c, out, t, 2600, 0.05);
+    clack(c, out, t + 0.06, 1900, 0.035);
+  });
+// the bowls dipped into the glaze: a soft plop
+const plop = A =>
+  tone(A, (c, out) => {
+    const t = c.currentTime + 0.02,
+      o = c.createOscillator(),
+      gn = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(420, t);
+    o.frequency.exponentialRampToValueAtTime(110, t + 0.16);
+    gn.gain.setValueAtTime(0.0001, t);
+    gn.gain.exponentialRampToValueAtTime(0.05, t + 0.015);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    o.connect(gn);
+    gn.connect(out);
+    o.start(t);
+    o.stop(t + 0.25);
+  });
+// brush strokes on the canvas: two soft swishes of filtered noise
+const swish = A =>
+  tone(A, (c, out) => {
+    for (let k = 0; k < 2; k++) {
+      const t = c.currentTime + 0.02 + k * 0.32,
+        n = c.createBufferSource(),
+        buf = c.createBuffer(1, Math.round(c.sampleRate * 0.28), c.sampleRate),
+        d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.sin((Math.PI * i) / d.length);
+      n.buffer = buf;
+      const bp = c.createBiquadFilter(),
+        gn = c.createGain();
+      bp.type = 'bandpass';
+      bp.frequency.value = 2800 + k * 600;
+      bp.Q.value = 0.8;
+      gn.gain.value = 0.035;
+      n.connect(bp);
+      bp.connect(gn);
+      gn.connect(out);
+      n.start(t);
+    }
   });
 const wheelHum = { node: null };
 function hum(A, on) {
@@ -1349,6 +1394,7 @@ GACTS.push({
     kiln.glaze = AS.bowls <= AS.fired;
     kilnLed.emissive.set(0xff3a1a);
     kilnLed.emissiveIntensity = 2;
+    st.sound(relay);
     st.think(
       kiln.glaze
         ? 'Glasurbrand: bis 1240 °C, die Glasur schmilzt zu Glas. Den Ofen erst unter 100 °C öffnen, sonst springen die Schalen.'
@@ -1363,6 +1409,7 @@ GACTS.push({
     kilnEye.emissiveIntensity = Math.min(2.5, kiln.t / 2);
     if (kiln.t > 8) {
       kiln.on = false;
+      st.sound(relay);
       kilnLed.emissiveIntensity = 0;
       kilnEye.emissiveIntensity = 0;
       if (kiln.glaze) AS.gfired = AS.glazed;
@@ -1408,6 +1455,7 @@ GACTS.push({
     keep();
     showBowls();
     KERN.emit('einrichtung:glasur', { n: AS.glazed });
+    st.sound(plop);
     st.think(
       'Glasieren: die geschrühte Schale kurz in die Glasur tauchen, bis drei zählen, den Fuß sauber abwischen – sonst klebt sie im Ofen fest.'
     );
@@ -1556,6 +1604,7 @@ GACTS.push({
     }
     canvasPaint(AS.motif, AS.pic);
     keep();
+    st.sound(swish);
     KERN.emit('einrichtung:bild', { motif: MOTIFS[AS.motif], step: AS.pic });
     st.dirty();
   },
