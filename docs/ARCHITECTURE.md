@@ -87,6 +87,13 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `AVATAR` | game/avatar.js | Spielfiguren Falko, Sarah, Christoph (Wahl im Menü, `pav-fig`), Bewegungen, Schutzausrüstung, Christophs Mütze und Ohrhörer |
 | `QUESTS` | game/quests.js | Aufgaben, Tagebuch (J), Zielanzeige |
 | `NPC` | npc/npc.js, npc_real.js, hours.js | Hubert, Ronald (Rocketbox-Figuren mit den Bewegungen der Spielfigur, `rbPerson`), Ziegen, Traktor; Dialoge; nachts daheim |
+| `LIFE` | npc/life.js | Tagesablauf der Nachbarn nach der Spieluhr (hacken, sägen, stapeln, Auto, Mähen, Füttern, Fahrt zum Anger, Gespräch am Tisch/Auto), Schwaden, Ortsnamen ihrer Höfe; `LIFE.force(name, tätigkeit \| null \| 'off')` für Tests (`docs/features/nachbarn.md`) |
+| `HOF`, `HOFCAR` | garden/hof_hubert.js, hof_auto.js | Huberts Hof: nach Osten offene Werkstätten, Trockenhütchen (`fillHut`), Holzplatz, Tisch mit Stühlen; sein Kombi auf der Rampe (Haube) |
+| `GARTEN` | garden/garten_in.js, garten_kit.js | Gartengebäude zum Benutzen: Lampen mit einem geteilten Licht, Sofa, Bett, Ofen, Wasserkessel, Ernte; Baukasten und Schlüsselbereich der Möbel (`keysBegin/keysEnd`, `docs/features/garten.md`) |
+| `DORF`, `DCAL`, `DTEXT`, `DPEOPLE`, `DSCHOOL`, `DFIRE` | dorf/ | Dorfleben: Kalender (Freitag Skat, jeden zweiten Samstag Feuer), Texte, Dorfbewohner (Rocketbox, nur abends in der Nähe geladen), Raum der alten Schule, Feuer am Acker, Gesprächsfenster, Aufgabe (`pav-dorf-v1`); Start mit `?dorf=freitag \| feuer` (`docs/features/dorf.md`) |
+| `WINDE`, `KRAN` | werk/winde.js, kran.js | Forstseilwinde am Traktorheck (Seil, Choker, Funk, Gefahrenbereich, Rücken) und Kran am Rungenwagen (Hubmoment, Reichweite); Hinweise der Gabel (`HOLZ.whyNot`) (`docs/features/winde.md`) |
+| `TREEHIT` | world/treehit.js | kleine Bäume geben Fahrzeugen nach: biegen, kippen mit Wurzelteller, bleiben liegen (`pav-trees-v1`), dicke halten auf (`give`, `standUp`, `axisOf`); Jungbäume nur für Fahrzeuge in `WCOL` (`each(…, soft)`) (`docs/features/baeume.md`) |
+| `WELT`, `SCHL` | welt/welt.js, schleusingen.js | Kachelwelt aus `tools/welt` (Gelände, Luftbilder) nach Bedarf um die Kamera gestreamt (Zonen fordern sie an); Schleusingen begehbar: Altstadt aus OSM mit den Dorf-Shadern, Markt, Rathaus mit Halle, Wahrzeichen |
 | `CLOCK` | time/clock.js | Spielzeit (Minuten seit Tag 1, 0:00), Tempo, Warten/Zeitraffer, `CLOCK.on(fn)`, `CLOCK.jobs(fn)` |
 | `DN` | time/daynight.js | Kalender, Sonne/Mond/Sterne, Licht; `DN.sky(jd)`, `DN.jdOf(t)`, `DN.dateStr()` |
 | `GEAR` | werk/gear.js | Schutzausrüstung, `GEAR.check(req)` |
@@ -111,6 +118,9 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 - Erzeugt von Werkzeugen, nicht vom Build: `gi/` (test/gi.py), `sv*.png` (test/bake.py), `time/skydata.js` (tools/nightsky/mk_sky.py).
   Nur noch Bestand auf `gh-pages`, nicht mehr gepflegt (Falko, 22.10.2026; Skripte entfernt): Galeriebilder `img/*.jpg`, 360°-Bilder `pano/`, Raumführung `tour.mp4`.
 - Neue Quelle mit Namensnennung: Zeile in `viz3/buildlib/credits.py` (Töne: `assets/snd/CREDITS.md`).
+- **Kleine Dateien eines Themas** (seit 23.10.2026): `viz3/extra/<thema>/dist/**` kopiert der Build nach `dist/`,
+  `viz3/extra/<thema>/manifest.json` wird in die Manifeste gemischt (`credits_add` kommt in die Quellenliste),
+  `viz3/extra/<thema>/tests.txt` nennt die Browser-Tests des Themas (Branch-CI `feat.yml`, Themen-Tests im Prüfpaket) – `viz3/extra/README.md`.
 
 ## 8 Gespeichert im Browser (localStorage, nur über `SAVE`)
 
@@ -132,6 +142,8 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | `pav-veh-v1` | Fahrzeuge: Standort und Richtung je Fahrzeug, Frontlader, Lichtmodus (auto/an/aus) |
 | `pav-fell-v1` | Fällen (V16c2): Forstkiste genommen, Bäume in Arbeit/gefällt mit Schnittmaßen und Lage, Holzliste |
 | `pav-trailer-v1`, `pav-holz-v1` | Holz (V16d): Anhänger (Lage, angekuppelt); Stämme (wo, Lage), Säge, Bretter mit Feuchte, Stapel, Trockenschrank |
+| `pav-dorf-v1` | Dorfleben (V16h): Stand der Aufgabe „Freitagabend in der alten Schule“, Besuche, Kartenspiel |
+| `pav-trees-v1` | umgefahrene Bäume (V16i): Lage, Richtung, Winkel |
 | `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16d`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt (`SAVE.once`) |
 | `pav-loadlog`, `pav-texlevel` | Ladeprotokoll des letzten Versuchs; halbe Texturen nach abgebrochenem Laden am Telefon |
 
@@ -145,18 +157,21 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `pavilion/` – der geplante Pavillon: `house_base` (Maße, Wand-/Fenster-Helfer), `house_common`, `house_tower` (Variante A),
   `house_ladder` (B), Innenausbau, Bauphasen/Kosten, Möbelplanung, Fassade, Stil, Variantenwechsel
 - `garden/` – Grundstück: Bach, Himmel/Sonne/Boden (`env`), je Bestandsgebäude eine Datei (carport, holzhaus, greenhouse, bungalow,
-  washhouse), Werkstattgebäude, Zäune, Bäume, Gras, Werkstattlicht
+  washhouse) mit Einrichtung (`garten_kit`, `garten_in`), Huberts Hof (`hof_hubert`, `hof_auto`), Werkstattgebäude, Zäune, Bäume, Gras, Werkstattlicht
 - `render/` – Pipeline, Stimmungen, Zusammenfassen statischer Meshes, Leistungstest, Panoramen
 - `game/` – begehbares Modell (`walkable`: Spielerzustand `P`, Bauphasen, Laufflächen und Kollision im Raster, Boden, Türen), Spieler
   (`player`: Blickpunkte, Ortsname, `go`, Springen, Haltungen), Kamera (`camera`: alle Ansichten, Schulterkamera ohne Wanddurchblick,
   `resize`), Eingabe (`input`), Schleife (`game`: `frame`, Physik des Gehens) – bis Phase 1 eine Datei `game.js` –; Aktionen/Inventar,
   Haus (Schalter, Ofen, Sitzen), Aufgaben, HUD, Spielfigur
 - `audio/` – Ton-Engine (Aufnahmen, Synthese, Atmosphäre, Stimmen), Musik (Klavier, Platten, Ukulele)
-- `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus
+- `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus, Tagesablauf (`life`)
+- `dorf/` – Dorfleben (Kalender, Texte, Dorfbewohner, Schule, Feuer)
+- `welt/` – Kachelwelt um die Kamera, Schleusingen
 - `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Wald an der Klinge (`forest`), Fällen (`fell`, V16c2), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
-  Kollision mit der Umgebung (`worldcol`)
+  Kollision mit der Umgebung (`worldcol`), Bäume, die Fahrzeugen nachgeben (`treehit`)
 - `time/` – Uhr, Sterndaten, Tag und Nacht
-- `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster; Holz vom Stamm zum Brett (`holz`, `holz_saw`, `holz_dry`, V16d)
+- `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster; Holz vom Stamm zum Brett (`holz`, `holz_saw`, `holz_dry`, V16d);
+  Rückewinde und Kran (`winde`, `kran`)
 - `boot/` – Start
 - `vehicles/` – Fahrzeug-Kern (`vehicle`: Physik, Ein-/Aussteigen, Kameras, Licht, HUD), Töne (`vsound`), Auto (`car`), Traktor mit Frontlader (`tractor`), Rungenanhänger (`trailer`, V16d), Karte beim Fahren (`minimap`)
 

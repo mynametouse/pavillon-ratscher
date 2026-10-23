@@ -1,0 +1,4 @@
+/* Schleusingen (welt/schleusingen.js): the menu chip of the town – it loads only there, so it says so while loading */
+#menu .chip[data-spot='schleusingen'] {
+  border-style: dashed;
+}
