@@ -1,0 +1,155 @@
+# Welt-Zone Kloster Veßra: eigener Kachelblock der Detailzone (~9 km westlich des Gartens; Klosteranlage und Baumschule) – Stufe 12 über
+# 2 × 2 km, Stufen 7–11 über 6,4 × 6,4 km, gleiche Kachelung und Pipeline wie der Testblock (tools/welt/build.py --plan V, Copernicus DEM
+# + Luftbilder GDI-Th, Straßen eingeschnitten). Veröffentlicht nur nach gh-pages/welt-test/zonen/vessra/ (eigene meta.json); sonst bleibt
+# gh-pages unberührt. Die App (viz3/src/welt/welt.js, vessra.js) lädt den Block nur, solange man in Kloster Veßra ist.
+#   Ergebnis: https://mynametouse.github.io/pavillon-ratscher/welt-test/zonen/vessra/meta.json
+# Nie auf welt/** pushen (das baut den großen Testblock neu) – diese Pipeline reist auf feat/vessra.
+name: Welt-Zone Kloster Veßra
+
+on:
+  workflow_dispatch:
+    inputs:
+      veroeffentlichen:
+        description: 'nach gh-pages/welt-test/zonen/vessra/ veröffentlichen'
+        type: boolean
+        default: true
+  push:
+    branches: ['feat/vessra']
+    paths: ['tools/welt/*.py', '!tools/welt/zone_*.py', '!tools/welt/test_welt.py', '.github/workflows/welt-vessra.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Kacheln Kloster Veßra bauen
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    concurrency:
+      group: welt-vessra-build
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests mapbox-earcut rasterio
+      - name: Kurztests der Pipeline (Sekunden)
+        run: python -I tools/welt/test_welt.py
+      - name: Rohdaten aus dem Cache (Downloads früherer Läufe)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/welt-raw
+          key: welt-raw-V-v1-${{ github.run_id }}
+          restore-keys: |
+            welt-raw-V-v1-
+      - name: Pipeline (Laden, Gelände, Straßen, Luftbild, Gebäude) – Plan V
+        run: |
+          set -o pipefail
+          # DGM1 Thüringen is still unavailable (QUELLEN.md): Copernicus GLO-30 as for the Schleusingen block
+          python -I -u tools/welt/build.py --plan V --no-dgm --raw ~/welt-raw --out site/vessra 2>&1 | tee build.log
+      - name: Zonendaten (OSM, Dachfarben aus dem neuen Luftbild) als Artefakt
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          [ -f tools/welt/zone_vessra.py ] || exit 0
+          WELT_NO_OVERPASS=1 python -I -u tools/welt/zone_vessra.py --raw ~/welt-raw --tiles site/vessra --out zone 2>&1 | tee zone.log
+      - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
+        if: always()
+        run: echo "RAWKEY=$(cd ~/welt-raw 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+      - name: Rohdaten in den Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/welt-raw
+          key: welt-raw-V-v1-${{ env.RAWKEY }}
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          [ -f build.log ] || exit 0
+          {
+            echo "### Welt-Zone Kloster Veßra (Plan V)"
+            echo '```'
+            grep -E "Straßen|Wellen|Gelände an|Gebäude:|DEM source|Farbausgleich|fertig in|Stufe" build.log | head -40
+            [ -f zone.log ] && tail -5 zone.log
+            echo '```'
+            du -sh site/vessra 2>/dev/null
+          } >> "$GITHUB_STEP_SUMMARY"
+          du -sh site/vessra; find site/vessra -type f | wc -l
+      - name: Kacheln für die Veröffentlichung
+        uses: actions/upload-artifact@v4
+        with:
+          name: welt-vessra
+          path: site/vessra
+          retention-days: 3
+          compression-level: 0
+      - name: Protokolle, Übersicht und Zonendaten
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: welt-vessra-pruefung
+          path: |
+            build.log
+            zone.log
+            zone/
+            site/vessra/meta.json
+            site/vessra/diag/uebersicht.jpg
+          if-no-files-found: ignore
+
+  deploy:
+    name: Nach gh-pages/welt-test/zonen/vessra/
+    needs: build
+    if: github.event_name == 'push' || inputs.veroeffentlichen
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: welt-vessra
+          path: new/vessra
+      - name: Größe prüfen (Grenze 300 MB)
+        run: |
+          MB=$(du -sm new/vessra | cut -f1); echo "zonen/vessra: $MB MB"
+          [ "$MB" -lt 300 ] || { echo "zu groß für gh-pages"; exit 1; }
+          [ -f new/vessra/meta.json ] || { echo "keine meta.json"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: welt-test/zonen/vessra
+      - name: Nur welt-test/zonen/vessra/ ersetzen, committen, pushen (bei Wettlauf neu aufsetzen)
+        working-directory: pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          apply() { rm -rf welt-test/zonen/vessra && mkdir -p welt-test/zonen && cp -r ../new/vessra welt-test/zonen/vessra && git add -A welt-test/zonen/vessra; }
+          apply
+          if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+          # only this folder may change on gh-pages
+          if git diff --cached --name-only | grep -v '^welt-test/zonen/vessra/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
+          MSG="Welt-Zone Kloster Veßra: Kacheln aus ${GITHUB_SHA::7} (${GITHUB_REF_NAME})
+
+          Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_01GdUYaP2XXAAEDXZpGWVkBm"
+          git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+          for i in 1 2 3 4 5; do
+            if git push -q origin HEAD:gh-pages; then echo "gepusht"; break; fi
+            echo "Push abgelehnt (Versuch $i) – neu holen und den eigenen Commit darauf setzen"
+            git fetch -q --depth 1 --filter=blob:none origin gh-pages
+            if ! git rebase -q --onto FETCH_HEAD HEAD~1; then
+              git rebase --abort || true
+              git reset -q --hard FETCH_HEAD
+              apply
+              git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+            fi
+            [ "$i" = 5 ] && exit 1
+            sleep $((i * 7))
+          done
+          git log --oneline -2
+          echo "### Veröffentlicht: welt-test/zonen/vessra/ ($(du -sh welt-test/zonen/vessra | cut -f1))" >> "$GITHUB_STEP_SUMMARY"
