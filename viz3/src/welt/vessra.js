@@ -1344,7 +1344,8 @@ export const VESSRA = (() => {
   }
   // ---- the apses of the two chapels: half round, the Henneberg one plastered white under a cone of tiles (photo 2025) ----
   function apses(KS, K, RB) {
-    const chapels = S.bld.filter(b => b.lm === 'henneberg' || b.lm === 'suedkapelle');
+    // the round apses (OSM) at the east ends: the white one of the Henneberg chapel beyond its square choir, the one of the south chapel
+    const chapels = S.bld.filter(b => b.lm === 'henneberg' || b.lm === 'hchor' || b.lm === 'suedkapelle');
     for (const b of S.bld.filter(q => q.lm === 'apsis')) {
       if (!chapels.length) break;
       const ch = chapels.reduce((m, q) =>
@@ -1376,7 +1377,7 @@ export const VESSRA = (() => {
         cx = ch.cx + dx * s0 + px * wc,
         cy = ch.cy + dy * s0 + py * wc,
         z0 = ch.z0 - 0.4,
-        white = ch.lm === 'henneberg',
+        white = ch.lm === 'henneberg' || ch.lm === 'hchor',
         col = white ? linC([0.93, 0.92, 0.88]) : STONE[0],
         h = white ? 4.6 : 3.4,
         a0 = Math.atan2(dy, dx) - Math.PI / 2,
@@ -1502,6 +1503,9 @@ export const VESSRA = (() => {
     },
     henneberg(b) {
       b.F.forEach(f => (f[8] |= 1));
+      b.noDoor = true;
+    },
+    hchor(b) {
       b.noDoor = true;
     },
     suedkapelle(b) {
@@ -2804,6 +2808,7 @@ export const VESSRA = (() => {
   const LMN = {
     torkirche: 'Torkirche St. Erhard',
     henneberg: 'Henneberger Kapelle',
+    hchor: 'Henneberger Kapelle',
     suedkapelle: 'Südkapelle',
     kornhaus: 'Kornhaus',
     kreuzgang: 'Kreuzgang',
