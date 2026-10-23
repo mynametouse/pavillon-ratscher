@@ -40,6 +40,17 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
   Hütte an deren Nordtür; die alten Enden an der West- bzw. Südtür sind weg (die Trittplatten sind damit überflüssig).
 - `game/player.js` Ort „Holzhaus“ im Menü: nordwestlich der Hütte mit Blick auf die neue Tür (`pos: [9.5, 1.4], yaw: 154`).
 
+## Für den Kern-Chat (gemeinsame Dateien, noch zu tun)
+
+- `docs/ARCHITECTURE.md`: Modulkarte um `garden/garten_kit.js` (Bausatz, Register `GLAMPS`/`GSEATS`/`GACTS`, `paletteize`,
+  `interiorNoShadow`) und `garden/garten_in.js` (`GARTEN`) ergänzen; Abschnitt 1 „Punktlichter entstehen in …“: dazu `garden/garten_in.js`
+  (1, `garten-lamp`, von allen Gartenlampen und dem Ofenfeuer geteilt); neuer Window-Name `GARTEN`; `window.ITEM_N` schreibt auch
+  `garten_kit.js` (`keysBegin/keysEnd`, eigener Schlüsselbereich der Gartenmodelle).
+- `docs/CHANGELOG.md`, `docs/PARALLEL.md`: Eintrag/Stand.
+- Wahlweise `viz3/site.js`: Gewächshaus `az: 6` und Mitte 0,5 m nach Norden (`[12.49, -0.09]`) – dann den Block am Anfang von
+  `garden/greenhouse.js` streichen.
+- Sonst nichts: `garden/env.js` (Wege) und `game/player.js` (Ort „Holzhaus“) sind auf `feat/garten` schon geändert (siehe oben).
+
 ## Hinweise
 
 - Das Gewächshaus ist in `garden/greenhouse.js` um 90° gedreht (Lagedaten `site.js`: Kurs 96°, lange Seite Ost–West) und 0,5 m nach Norden
