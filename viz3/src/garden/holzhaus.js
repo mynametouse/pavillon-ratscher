@@ -155,10 +155,10 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
       z0 = 0.32,
       dy = (Lp / 2) * Math.cos(ang),
       dz = (Lp / 2) * Math.sin(ang);
-    put(
+    const panel = put(
       g,
       new THREE.BoxGeometry(Wp, 0.035, Lp),
-      [MAT.alu, MAT.alu, KM.pvCells, KM.cream, MAT.alu, MAT.alu],
+      [MAT.alu, MAT.alu, KM.pvCells, MAT.alu, MAT.alu, MAT.alu],
       px,
       py,
       z0 + dz + 0.02,
@@ -166,6 +166,17 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
         rx: ang,
       }
     );
+    // junction box and two cross rails on the back
+    for (const [w, h, d, x, z] of [
+      [0.16, 0.03, 0.1, 0, -0.45],
+      [Wp - 0.1, 0.03, 0.04, 0, -0.3],
+      [Wp - 0.1, 0.03, 0.04, 0, 0.35],
+    ]) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), w < 0.2 ? MAT.black : MAT.alu);
+      m.position.set(x, -0.03, z);
+      m.castShadow = true;
+      panel.add(m);
+    }
     for (const sx of [-1, 1]) {
       const x = px + sx * (Wp / 2 - 0.08);
       beam([x, py - dy + 0.05, 0], [x, py - dy + 0.05, z0 + 0.03], 0.04, 0.04, MAT.alu, { parent: g });

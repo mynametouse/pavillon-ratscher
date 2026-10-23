@@ -141,6 +141,7 @@ with lib.browser() as b:
         ev(pg, "GARTEN.set('holzhaus', true)")
         view(pg, 'holzhaus', -0.75, 1.35, 1.98, 95, -16, 80); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_holzhaus_innen')
         ck('the light followed into the hut', ev(pg, "GARTEN.cur() === 'holzhaus'"), ev(pg, "GARTEN.cur()"))
+        view(pg, 'holzhaus', -6.0, 2.5, 1.7, 23, -6, 62); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_holzhaus_aussen')
         ev(pg, "GARTEN.set('aussen', true)")
         view(pg, 'bungalow', 7.5, -2.5, 1.7, 180 + 10, -6, 62); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_bungalow_aussenlicht')
         ck('porch lamp: the light is with it outside', ev(pg, "GARTEN.cur() === 'aussen'"), ev(pg, "GARTEN.cur()"))
