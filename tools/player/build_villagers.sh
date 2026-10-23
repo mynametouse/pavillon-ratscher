@@ -1,11 +1,12 @@
 #!/bin/bash
 # The people of Ratscher for the village life (feat/dorf, Falko 23.10.2026: Skat and Rummy evening in the old school, bonfire at the field):
-# six Microsoft Rocketbox avatars (https://github.com/microsoft/Microsoft-Rocketbox, MIT) with the Biped rig of the player and the neighbours,
+# eight Microsoft Rocketbox avatars (https://github.com/microsoft/Microsoft-Rocketbox, MIT) with the Biped rig of the player and the neighbours,
 # moved in the app by the player's clip sets (chars/pclips_m.json, pclips_f.json):
 #   gerhard  = Adults/Male_Adult_03        (grey hair, tweed jacket – retired teacher, keeps the village chronicle); without the faint
 #              hair cards (alpha-tested they showed as dark blotches on the grey hair of the head texture)
-#   manfred  = Adults/Male_Adult_14        (grey shirt, chinos – head of the volunteer fire brigade)
-#   wolfgang = Adults/Male_Adult_05        (grey stubble, quilted vest – forest worker)
+#   manfred  = Adults/Male_Adult_14        (grey shirt, chinos – head of the volunteer fire brigade); black shoes (dorf_shoes.py: his brown
+#              ones looked like bare feet in the light of the fire)
+#   wolfgang = Adults/Male_Adult_05        (grey stubble, quilted vest – forest worker); dark brown work boots instead of tan ones
 #   uwe      = Adults/Male_Adult_13        (argyle pullover – farmer, behind the bar on Fridays)
 #   katrin   = Adults/Female_Adult_09      (cardigan – Rummy)
 #   ingrid   = Professions/Business_Female_02 (glasses, blazer – mayor of the village)
@@ -22,8 +23,9 @@ O="$H/viz3/extra/dorf/dist/chars"
 mkdir -p "$W/out" "$W/pack" "$O" && ln -sfn "$H/tools/gltf" "$W/gt"
 (cd "$H/tools/player" && [ -d node_modules ] || npm ci --no-audit --no-fund --silent)
 (cd "$H/tools/gltf" && [ -d node_modules ] || npm ci --no-audit --no-fund --silent)
-build() {   # name avatar texture-prefix [parts to drop]
-  local n=$1 a=$2 p=$3 drop=$4
+build() {   # name avatar texture-prefix [parts to drop or -] [shoes: luminance:saturation]
+  local n=$1 a=$2 p=$3 drop=$4 shoes=$5
+  [ "$drop" = - ] && drop=
   printf '{ "name": "%s", "avatar": "%s", "unitScale": 0.01, "fps": 24, "outDir": "%s", "rocketboxClips": [], "retarget": [] }' \
     "$n" "$W/src/$a/Export/$a.fbx" "$W/out" > "$W/cfg_$n.json"
   (cd "$H/tools/player" && node build_player.mjs "$W/cfg_$n.json")                                   # mesh + Biped rig, no clips
@@ -39,10 +41,11 @@ for im in g.get('images', []):   # the images go into the JSON (data URIs), like
         im['uri'] = 'data:image/webp;base64,' + base64.b64encode(open(f'{d}/{u}', 'rb').read()).decode(); im['mimeType'] = 'image/webp'
 open(out, 'w').write(json.dumps(g, separators=(',', ':'))); print(out, round(os.path.getsize(out) / 1e6, 2), 'MB')
 PY
+  if [ -n "$shoes" ]; then python3 "$H/tools/player/dorf_shoes.py" "$W/out/${n}_mesh.glb" "$O/dorf_$n.json" ${shoes/:/ }; fi
 }
 ARGS="$*"
-for spec in 'gerhard Male_Adult_03 m004 opacity' 'manfred Male_Adult_14 m012' 'wolfgang Male_Adult_05 m009' 'uwe Male_Adult_13 m010' \
+for spec in 'gerhard Male_Adult_03 m004 opacity' 'manfred Male_Adult_14 m012 - 14:0.35' 'wolfgang Male_Adult_05 m009 - 30:0.8' 'uwe Male_Adult_13 m010' \
             'katrin Female_Adult_09 f009' 'ingrid Business_Female_02 f015' 'jens Male_Adult_08 m014' 'heike Female_Adult_13 f019'; do
   set -- $spec
-  if [ -z "$ARGS" ] || [[ " $ARGS " == *" $1 "* ]]; then build "$1" "$2" "$3" "$4"; fi
+  if [ -z "$ARGS" ] || [[ " $ARGS " == *" $1 "* ]]; then build "$1" "$2" "$3" "$4" "$5"; fi
 done

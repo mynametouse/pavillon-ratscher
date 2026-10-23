@@ -1,9 +1,10 @@
 // ===================== feat/dorf village life 7: the villagers' cars (DCARS) =====================
 // Falko, 23.10.2026 2:52: now and then people get into their cars, drive away and come back later. Katrin, Jens, Ingrid and Manfred have
 // a car (dorf/dorf_life.js: who, and when they are away). It is parked at the kerb of the street nearest the house (world/roads.js ways),
-// along the street. When one is near: the owner comes out, walks to the car, it drives slowly along the street away from the Anger and is
-// gone after ~200 m (or where the street ends); later it comes back the same way and the owner walks into the house. Far away the cars
-// only follow the timetable (parked or away). A plain car without a brand: body, cabin with dark windows, wheels, lamps – one mesh of
+// on the right-hand side for the way out. When one is near: the owner comes out, walks to the car, it drives slowly in the right-hand lane
+// away from the Anger and is gone after ~200 m (or where the street ends); later it comes back in the other lane, parks at the kerb across
+// the street (facing in) and the owner walks into the house; while nobody looks it is turned for the next morning. Far away the cars only
+// follow the timetable (parked or away). A plain car without a brand: body, cabin with dark windows, wheels, lamps – one mesh of
 // vertex colours each (the program of world/village_props.js), built when one first comes near.
 import * as THREE from 'three';
 import { cam, scene, V } from '../core/head.js';
@@ -53,7 +54,7 @@ export const DCARS = (() => {
     me.castShadow = false;
     return me;
   }
-  // the street next to the house: nearest point on a street, lane or service way; parked at the kerb on the house's side
+  // the street next to the house: nearest point on a street, lane or service way; the spot at the kerb and the drive out
   function parking(h) {
     const W = ROADS && ROADS.ways ? ROADS.ways : [];
     let best = null;
@@ -76,15 +77,18 @@ export const DCARS = (() => {
     if (!best || best.d > 45) return null;
     const len = Math.hypot(best.dx, best.dy) || 1,
       ux = best.dx / len,
-      uy = best.dy / len,
-      side = Math.sign((h.door[0] - best.qx) * -uy + (h.door[1] - best.qy) * ux) || 1,
-      off = Math.max(0.9, best.w.w / 2 - 1.0) * side;
+      uy = best.dy / len;
     // the drive: along the way from here, towards its end that lies further from the Anger, up to 200 m
     const p = best.w.p,
       n = p.length / 2,
       endA = [p[0], p[1]],
       endB = [p[(n - 1) * 2], p[(n - 1) * 2 + 1]],
       fwd = Math.hypot(endB[0] - ANGER[0], endB[1] - ANGER[1]) >= Math.hypot(endA[0] - ANGER[0], endA[1] - ANGER[1]);
+    // parked at the kerb on the right-hand side for the way out (as one parks here; maybe across the street from the house), driving
+    // in the right-hand lane
+    const side = fwd ? -1 : 1, // the left normal of (ux, uy) times side points to the right of the way out
+      off = Math.max(0.9, best.w.w / 2 - 1.0) * side,
+      lane = Math.min(1.2, best.w.w / 4);
     const pts = [[best.qx - uy * off, best.qy + ux * off]];
     let acc = 0;
     if (fwd) for (let j = best.i / 2 + 1; j < n && acc < 200; j++) push(p[j * 2], p[j * 2 + 1]);
@@ -95,9 +99,7 @@ export const DCARS = (() => {
         dy = y - l[1],
         d = Math.hypot(dx, dy);
       if (d < 0.5) return;
-      // keep to the right half of the road while driving out (lane offset across the segment)
-      const o = 1.2;
-      pts.push([x - (dy / d) * o * (fwd ? 1 : 1), y + (dx / d) * o * (fwd ? 1 : 1)]);
+      pts.push([x + (dy / d) * lane, y - (dx / d) * lane]); // to the right of the direction of travel
       acc += d;
     }
     if (pts.length < 2) return null;
@@ -105,7 +107,14 @@ export const DCARS = (() => {
     for (let j = 1; j < pts.length; j++)
       s.push(s[j - 1] + Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]));
     const dir0 = fwd ? [ux, uy] : [-ux, -uy];
-    return { pts, s, L: s[s.length - 1], hd: (Math.atan2(dir0[0], dir0[1]) * 180) / Math.PI };
+    return {
+      pts,
+      s,
+      L: s[s.length - 1],
+      hd: (Math.atan2(dir0[0], dir0[1]) * 180) / Math.PI,
+      lane,
+      in0: [2 * best.qx - pts[0][0], 2 * best.qy - pts[0][1]], // the kerb across the street (coming home)
+    };
   }
   // position and heading at arc length a along the drive
   function along(c, a) {
@@ -116,6 +125,29 @@ export const DCARS = (() => {
       x = pts[j - 1][0] + (pts[j][0] - pts[j - 1][0]) * k,
       y = pts[j - 1][1] + (pts[j][1] - pts[j - 1][1]) * k;
     return { x, y, hd: (Math.atan2(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]) * 180) / Math.PI };
+  }
+  // the way home: the other lane (mirrored across the middle of the street), the last 8 m to the kerb across from the spot
+  function alongIn(c, a) {
+    const q = along(c, a),
+      r = (q.hd * Math.PI) / 180,
+      R = [Math.cos(r), -Math.sin(r)], // right of the way out
+      k = Math.max(0, Math.min(1, 1 - a / 8)),
+      e = k * k * (3 - 2 * k);
+    let x = q.x - 2 * c.path.lane * R[0],
+      y = q.y - 2 * c.path.lane * R[1];
+    x += (c.path.in0[0] - x) * e;
+    y += (c.path.in0[1] - y) * e;
+    return { x, y, hd: q.hd + 180 };
+  }
+  const _v = new THREE.Vector3(),
+    _f = new THREE.Vector3();
+  // does the visitor see the car (near and in front of the camera)?
+  function seen(c) {
+    _v.copy(c.g.position).sub(cam.position);
+    const d = _v.length();
+    if (d > 140) return false;
+    cam.getWorldDirection(_f);
+    return d < 6 || _v.dot(_f) / d > 0.45;
   }
   function put(c, x, y, hd) {
     c.g.position.copy(V(x, y, KERN.ground(x, y) + 0.02));
@@ -134,7 +166,7 @@ export const DCARS = (() => {
       g.add(model(hex));
       g.visible = false;
       scene.add(g);
-      const c = { key: k, g, path, st: 'parked', a: 0, v: 0 };
+      const c = { key: k, g, path, st: 'parked', a: 0, v: 0, pose: 'out' };
       put(c, path.pts[0][0], path.pts[0][1], path.hd);
       S.cars[k] = c;
     }
@@ -151,10 +183,11 @@ export const DCARS = (() => {
       if (!near) {
         c.st = aw ? 'away' : 'parked';
         c.a = aw ? c.path.L : 0;
+        c.pose = 'out';
         c.g.visible = false;
         continue;
       }
-      if (c.st === 'parked' && aw) {
+      if (c.st === 'parked' && aw && c.pose === 'out') {
         c.st = 'boarding';
         c.wait = 2.5; // the owner comes out and gets in (dorf/dorf.js shows the walk)
         if (hooks && hooks.board) hooks.board(c.key, p0);
@@ -168,27 +201,30 @@ export const DCARS = (() => {
       }
       if (c.st === 'leaving' || c.st === 'arriving') {
         // slow through the village; it waits while the visitor stands right in front of it
-        const pos = along(c, c.a),
-          ahead = c.st === 'leaving' ? 1 : -1,
-          fx = Math.sin((pos.hd * Math.PI) / 180) * ahead,
-          fy = Math.cos((pos.hd * Math.PI) / 180) * ahead,
+        const out = c.st === 'leaving',
+          pos = out ? along(c, c.a) : alongIn(c, c.a),
+          fx = Math.sin((pos.hd * Math.PI) / 180),
+          fy = Math.cos((pos.hd * Math.PI) / 180),
           px = P.x - pos.x,
           py = P.y - pos.y,
           blocked =
-            P.mode === 'walk' && px * fx + py * fy > 0 && px * fx + py * fy < 7 && Math.abs(px * fy - py * fx) < 1.6;
-        c.v += ((blocked ? 0 : 6.5) - c.v) * Math.min(1, dt * (blocked ? 3 : 0.8));
-        c.a += c.v * dt * ahead;
-        if (c.st === 'leaving' && c.a >= c.path.L) {
+            P.mode === 'walk' && px * fx + py * fy > 0 && px * fx + py * fy < 7 && Math.abs(px * fy - py * fx) < 1.6,
+          vmax = out ? 6.5 : Math.min(6.5, 1.2 + c.a * 0.5); // slowing down before the kerb
+        c.v += ((blocked ? 0 : vmax) - c.v) * Math.min(1, dt * (blocked ? 3 : 0.8));
+        c.a += c.v * dt * (out ? 1 : -1);
+        if (out && c.a >= c.path.L) {
           c.st = 'away';
           c.v = 0;
-        } else if (c.st === 'arriving' && c.a <= 0) {
+        } else if (!out && c.a <= 0) {
           c.a = 0;
           c.v = 0;
           c.st = 'parked';
-          if (hooks && hooks.alight) hooks.alight(c.key, p0);
+          c.pose = 'in'; // across the street, facing in
+          if (hooks && hooks.alight) hooks.alight(c.key, c.path.in0);
         }
-        const q = along(c, Math.max(0, Math.min(c.path.L, c.a)));
-        put(c, q.x, q.y, c.st === 'parked' ? c.path.hd : q.hd + (ahead < 0 ? 180 : 0));
+        const a = Math.max(0, Math.min(c.path.L, c.a)),
+          q = out ? along(c, a) : alongIn(c, a);
+        put(c, q.x, q.y, q.hd);
         markDirty();
       }
       const vis = c.st !== 'away';
@@ -197,15 +233,22 @@ export const DCARS = (() => {
         markDirty();
       }
       if (vis && c.st === 'parked') {
-        // parked: where it belongs
-        if (Math.hypot(c.at[0] - p0[0], c.at[1] - p0[1]) > 0.01) put(c, p0[0], p0[1], c.path.hd);
+        // parked where it belongs; home from a drive it stands across the street until nobody looks, then it is turned for the next one
+        if (c.pose === 'in' && !seen(c)) c.pose = 'out';
+        const sp = c.pose === 'in' ? c.path.in0 : p0;
+        if (Math.hypot(c.at[0] - sp[0], c.at[1] - sp[1]) > 0.01) {
+          put(c, sp[0], sp[1], c.path.hd + (c.pose === 'in' ? 180 : 0));
+          markDirty();
+        }
       }
     }
-    void cam;
   }
   const state = () =>
     Object.fromEntries(
-      Object.entries(S.cars).map(([k, c]) => [k, { st: c.st, a: +c.a.toFixed(1), L: +c.path.L.toFixed(0) }])
+      Object.entries(S.cars).map(([k, c]) => [
+        k,
+        { st: c.st, a: +c.a.toFixed(1), L: +c.path.L.toFixed(0), pose: c.pose },
+      ])
     );
   Object.assign(S, { build, tick, state });
   return S;

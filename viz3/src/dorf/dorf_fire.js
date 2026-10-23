@@ -6,6 +6,7 @@
 // new light: that would compile every shader again), and a crackle made in the Web Audio graph (noise bursts, by distance and side).
 // Built the first time one comes within 400 m; the villagers stand around it (dorf/dorf.js).
 import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { R, cam, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, pbrMat } from '../core/assets.js';
@@ -18,9 +19,46 @@ export const DFIRE = (() => {
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
     L = (r, g, b) => [lin(r), lin(g), lin(b)];
   const U = { uT: { value: 0 }, uK: { value: 0 } };
-  // the burning logs glow from inside (a plain material: the same shader program as others of its kind)
-  const EMBER = pbrMat('char', { fallback: 0x1f1c1a, nrm: 1.0, env: 0.7 });
-  EMBER.emissive.setHex(0xff3a0c);
+  const hh = n => {
+    const v = Math.sin(n * 12.9898 + 4.1) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  // the charred ends of the logs: charcoal whose cracks glow while it burns (an emissive map: the seams between the char blocks bright,
+  // the blocks dark – no flat colour over the whole log)
+  function emberMap() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const x = c.getContext('2d');
+    x.fillStyle = '#050100';
+    x.fillRect(0, 0, 128, 128);
+    let s = 11;
+    const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    x.lineCap = 'round';
+    for (let row = 0; row < 9; row++) {
+      const y0 = row * 14.2 + rnd() * 4;
+      x.strokeStyle = `rgba(255, ${110 + Math.floor(rnd() * 90)}, 36, ${(0.5 + rnd() * 0.5).toFixed(2)})`;
+      x.lineWidth = 0.8 + rnd() * 1.8;
+      x.beginPath();
+      x.moveTo(0, y0);
+      for (let px = 8; px <= 128; px += 8) x.lineTo(px, y0 + (rnd() - 0.5) * 3);
+      x.stroke();
+      for (let k = 0; k < 5; k++) {
+        const px = rnd() * 128;
+        x.beginPath();
+        x.moveTo(px, y0);
+        x.lineTo(px + (rnd() - 0.5) * 5, y0 + 14.2);
+        x.stroke();
+      }
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(1, 2);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }
+  const EMBER = pbrMat('char', { fallback: 0x1f1c1a, nrm: 1.0, env: 0.5 });
+  EMBER.emissive.setHex(0xff6a22);
+  EMBER.emissiveMap = emberMap();
   EMBER.emissiveIntensity = 0;
   const NOISE = `float fh( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
     float fn( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
@@ -41,9 +79,10 @@ export const DFIRE = (() => {
           float n = fbm( vec2( u * 3.2 + uS * 5.0, v * 2.4 - t ) ), n2 = fn( vec2( u * 7.0 - uS, v * 5.0 - t * 1.6 ) );
           float w = ( 1.0 - v ) * ( 0.95 - abs( u - 0.5 ) * 2.0 * ( 0.55 + 0.9 * v ) );   // wide at the root, a tip at the top
           float f = smoothstep( 0.08, 0.5, w + ( n - 0.5 ) * 0.62 + ( n2 - 0.5 ) * 0.18 );
+          f *= ( 1.0 - smoothstep( 0.78, 1.0, v ) ) * smoothstep( 0.0, 0.12, u ) * ( 1.0 - smoothstep( 0.88, 1.0, u ) );   // never cut by the quad's edges
           vec3 c = mix( vec3( 1.0, 0.22, 0.03 ), vec3( 1.0, 0.72, 0.32 ), smoothstep( 0.35, 0.95, f ) );
           c = mix( c, vec3( 1.0, 0.9, 0.62 ), smoothstep( 0.9, 1.0, f ) * ( 1.0 - v ) * 0.7 );
-          gl_FragColor = vec4( c * f * uK * 1.45, 1.0 );
+          gl_FragColor = vec4( c * f * uK * 1.2, 1.0 );
         }`,
     });
   }
@@ -104,6 +143,63 @@ export const DFIRE = (() => {
           gl_FragColor = vec4( vec3( 1.0, 0.62, 0.22 ) * d * vA * 1.6, 1.0 ); }`,
     });
   }
+  // ---- field stones: a sphere pushed out of round (noise on the unit sphere, so the seam's twin vertices move alike), flattened and
+  // turned along the ring, half in the ground; grey-brown, each a little different, sooty towards the fire and on top (vertex colours) ----
+  function stones(n, R0, fx, fy) {
+    const geos = [],
+      hn = (x, y, z, k) => {
+        const v = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719 + k * 4.581) * 43758.5453;
+        return v - Math.floor(v);
+      },
+      rq = v => Math.round(v * 1000) / 1000,
+      P = new THREE.Vector3(),
+      C = new THREE.Vector3();
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + 0.12 * Math.sin(i * 5.3),
+        r = R0 + 0.07 * Math.sin(i * 7.1),
+        cx = Math.cos(a) * r,
+        cy = Math.sin(a) * r,
+        rl = 0.13 + 0.07 * hh(i + 1), // along the ring
+        rw = 0.1 + 0.04 * hh(i + 2), // across
+        h = 0.08 + 0.05 * hh(i + 3),
+        dz = KERN.terrain(fx + cx, fy + cy) - KERN.terrain(fx, fy),
+        g = new THREE.SphereGeometry(1, 10, 7),
+        p = g.attributes.position;
+      for (let k = 0; k < p.count; k++) {
+        const x = p.getX(k),
+          y = p.getY(k),
+          z = p.getZ(k),
+          d = 0.8 + 0.28 * hn(rq(x), rq(y), rq(z), i) + 0.1 * hn(rq(x * 3), rq(y * 3), rq(z * 3), i + 9);
+        p.setXYZ(k, x * d * rw, y * d * h, z * d * rl); // three.js: y up; z along the ring before the turn
+      }
+      g.rotateY(a); // the long side along the ring
+      g.rotateX((hh(i + 6) - 0.5) * 0.25);
+      g.translate(cx, dz + h * 0.25, -cy);
+      g.computeVertexNormals();
+      const col = new Float32Array(p.count * 3),
+        base = 0.3 + 0.13 * hh(i + 4),
+        warm = 0.03 + hh(i + 5) * 0.05;
+      C.set(cx, dz + h * 0.25, -cy);
+      const ix = -cx / r,
+        iz = cy / r; // towards the fire (three.js x, z)
+      for (let k = 0; k < p.count; k++) {
+        P.set(p.getX(k), p.getY(k), p.getZ(k)).sub(C).normalize();
+        const tow = Math.max(0, Math.min(1, (P.x * ix + P.z * iz + 0.35) / 1.0)),
+          top = Math.max(0, Math.min(1, (P.y + 0.3) / 0.9)),
+          soot = tow * (0.45 + 0.55 * top),
+          sp = (hn(rq(P.x * 4), rq(P.y * 4), rq(P.z * 4), i + 3) - 0.5) * 0.08,
+          v = (base + sp) * (1 - 0.8 * soot);
+        col[k * 3] = lin(v + warm);
+        col[k * 3 + 1] = lin(v + warm * 0.5);
+        col[k * 3 + 2] = lin(v - warm * 0.2);
+      }
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      geos.push(g);
+    }
+    const m = BufferGeometryUtils.mergeGeometries(geos);
+    for (const g of geos) g.dispose();
+    return m;
+  }
   // ---- build: stones, logs, benches; the burning parts (hidden while cold) ----
   function build() {
     if (S.built || S.err) return S.built;
@@ -115,14 +211,8 @@ export const DFIRE = (() => {
       scene.add(grp);
       S.grp = grp;
       const kit = VPROPS.kit();
-      // the ring of stones and the ash bed
-      for (let i = 0; i < 15; i++) {
-        const a = (i / 15) * Math.PI * 2 + 0.1 * Math.sin(i * 5.3),
-          r = 1.0 + 0.06 * Math.sin(i * 7.1),
-          rs = 0.12 + 0.04 * Math.abs(Math.sin(i * 3.3)),
-          g = 0.36 + 0.07 * Math.sin(i * 1.7);
-        kit.ball(Math.cos(a) * r, Math.sin(a) * r, 0.02, rs, L(g, g * 0.97, g * 0.92), 6); // field stones, half in the ground
-      }
+      // the ring of field stones (rounded, irregular, sooty on the side towards the fire) and the ash bed
+      const stoneG = stones(16, 1.02, x, y);
       kit.lathe(
         0,
         0,
@@ -154,39 +244,63 @@ export const DFIRE = (() => {
         me.castShadow = me.receiveShadow = true;
         grp.add(me);
       }
-      // the cone of logs (burning) and charred stubs (always)
-      const cone = new THREE.Group();
-      const up = new THREE.Vector3(0, 1, 0),
-        apex = new THREE.Vector3(0, 1.3, 0);
-      for (let i = 0; i < 9; i++) {
-        const a = (i / 9) * Math.PI * 2 + 0.3,
-          foot = new THREE.Vector3(Math.cos(a) * 0.62, 0, -Math.sin(a) * 0.62),
-          dir = apex.clone().sub(foot),
-          len = dir.length() + 0.12,
-          g = new THREE.CylinderGeometry(0.05, 0.075, len, 7);
-        g.translate(0, len / 2, 0);
-        const me = new THREE.Mesh(g, i % 3 ? EMBER : MAT.char);
-        me.position.copy(foot);
-        me.quaternion.setFromUnitVectors(up, dir.normalize());
+      // the cone of logs (burning): round logs with bark, their upper ends charred and glowing in the flames; charred stubs (always)
+      const cone = new THREE.Group(),
+        bark = [],
+        burnt = [],
+        up = new THREE.Vector3(0, 1, 0),
+        apex = new THREE.Vector3(0, 1.3, 0),
+        m4 = new THREE.Matrix4(),
+        q = new THREE.Quaternion(),
+        one = new THREE.Vector3(1, 1, 1);
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2 + 0.3 + 0.15 * Math.sin(i * 3.1),
+          rf = 0.58 + 0.08 * hh(i + 20),
+          foot = new THREE.Vector3(Math.cos(a) * rf, 0, -Math.sin(a) * rf),
+          top = apex
+            .clone()
+            .add(new THREE.Vector3(0.06 * Math.sin(i * 2.3), 0.08 * hh(i + 21), 0.06 * Math.cos(i * 1.7))),
+          dir = top.clone().sub(foot),
+          len = dir.length() + 0.16,
+          r = 0.045 + 0.03 * hh(i + 22),
+          cut = 0.5 + 0.12 * hh(i + 23); // where the bark ends and the char begins
+        q.setFromUnitVectors(up, dir.normalize());
+        m4.compose(foot, q, one);
+        const gb = new THREE.CylinderGeometry(r * 0.96, r * 1.04, len * cut, 8, 1);
+        gb.translate(0, (len * cut) / 2, 0);
+        gb.applyMatrix4(m4);
+        bark.push(gb);
+        const gc = new THREE.CylinderGeometry(r * 0.55, r * 0.9, len * (1.04 - cut), 8, 1);
+        gc.translate(0, len * (cut - 0.04) + (len * (1.04 - cut)) / 2, 0);
+        gc.applyMatrix4(m4);
+        burnt.push(gc);
+      }
+      for (const [list, mat] of [
+        [bark, MAT.logs],
+        [burnt, EMBER],
+      ]) {
+        const me = new THREE.Mesh(BufferGeometryUtils.mergeGeometries(list), mat);
         me.castShadow = true;
         cone.add(me);
+        for (const g of list) g.dispose();
       }
       grp.add(cone);
       S.cone = cone;
+      const stubs = [];
       for (let i = 0; i < 4; i++) {
         const a = i * 1.7,
-          g = new THREE.CylinderGeometry(0.07, 0.08, 0.7, 7);
+          g = new THREE.CylinderGeometry(0.07, 0.08, 0.7, 8);
         g.rotateZ(Math.PI / 2);
         g.rotateY(a);
         g.translate(Math.cos(a) * 0.2, 0.08, -Math.sin(a) * 0.2);
-        grp.add(new THREE.Mesh(g, MAT.char));
+        stubs.push(g);
       }
-      grp.add(
-        new THREE.Mesh(
-          kit.geo(),
-          new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, envMapIntensity: 0.6 })
-        )
-      );
+      grp.add(new THREE.Mesh(BufferGeometryUtils.mergeGeometries(stubs), EMBER));
+      const kitMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, envMapIntensity: 0.6 });
+      const sm = new THREE.Mesh(stoneG, kitMat);
+      sm.castShadow = sm.receiveShadow = true;
+      grp.add(sm);
+      grp.add(new THREE.Mesh(kit.geo(), kitMat));
       // flames: three crossed quads, the glow on the ground, sparks
       const fl = new THREE.Group();
       for (let i = 0; i < 3; i++) {
@@ -359,7 +473,7 @@ export const DFIRE = (() => {
       lent.l.decay = 1.3;
       lent.l.color.setHex(0xff8f45);
       lent.l.intensity = 26 * S.k * fl;
-      EMBER.emissiveIntensity = (0.22 + 0.2 * fl) * S.k;
+      EMBER.emissiveIntensity = (0.9 + 0.7 * fl) * S.k;
     }
     crackle(S.k, dist);
     if (dist < 400 || Math.abs(S.k - k0) > 1e-3) markDirty();
