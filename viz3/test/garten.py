@@ -41,7 +41,14 @@ def walk(pg, k, lx, ly, yaw_local, secs, door=None, open_=True):
 
 with lib.browser() as b:
     pg = lib.page(b, 1000, 640, errs=errs, tier=TIER)
-    lib.boot(pg, port, QUERY)
+    # boot (like lib.boot), but give up at once when the page throws while loading – a module that fails stops the whole app
+    t0 = time.time(); pg.goto(f'http://localhost:{port}/index.html{QUERY}', timeout=300000, wait_until='domcontentloaded')
+    while not ev(pg, "!!(window.GAME && GAME.loaded && GAME.loaded())"):
+        bad = [e for e in errs if e.startswith('PAGEERR')]
+        if bad or time.time() - t0 > 1200:
+            ck('page loads', False, ' | '.join(bad[:3]) or 'time-out'); ck.errors(errs); ck.done()
+        time.sleep(2)
+    time.sleep(3); ev(pg, "window.FREEZE = true"); print('loaded', round(time.time() - t0), 's', flush=True)
     ev(pg, "document.querySelectorAll('.ov,#doorbtn,#act2,#joy,header,#ppanel,#talkbtn,#npcsub,#toast').forEach(e => e.style.visibility = 'hidden')")
     ev(pg, "GAME.setMode('day'); GAME.setPhase(GAME.PHASES.length - 1); CAM3.want = false")
     time.sleep(1)
@@ -109,6 +116,9 @@ with lib.browser() as b:
         # wooden hut: outside from the north-west (door) and the west (roof falling west), inside
         view(pg, 'holzhaus', -3.2, 5.0, 1.7, 55, -6, 62); shot(pg, 'holzhaus_aussen_nordwest')
         view(pg, 'holzhaus', -6.5, -1.0, 1.7, -9, -4, 62); shot(pg, 'holzhaus_aussen_west')
+        # the gravel paths to the new doors from above, and the menu viewpoint 'Holzhaus' (game/player.js)
+        ev(pg, "GAME.view(11.3, 0.6, 13.5, 0, -89, 60); GAME.step(0.05)"); shot(pg, 'pfade_von_oben')
+        ev(pg, "GAME.go('holzhaus'); GAME.step(0.6)"); shot(pg, 'ort_holzhaus')
         view(pg, 'holzhaus', 0.2, -5.6, 1.7, -90, -6, 62); shot(pg, 'holzhaus_aussen_sued')
         view(pg, 'holzhaus', -0.75, 1.35, 1.98, 95, -16, 80); shot(pg, 'holzhaus_innen_von_tuer')
         view(pg, 'holzhaus', 0.4, -1.3, 1.95, 244, -14, 80); shot(pg, 'holzhaus_innen_von_ecke')

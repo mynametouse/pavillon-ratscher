@@ -40,7 +40,6 @@ import {
   rng,
   seedTray,
   soft,
-  stone,
   teapot,
   wateringCan,
 } from './garten_kit.js';
@@ -501,13 +500,6 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     }
     lcol(r, -1.1, 0.05, -hy - 1.1, -hy - 0.4, 0, 0.6, 'barrow');
   }
-  // stepping stones from the gravel path (west) to the new door
-  for (const [x, y, sz] of [
-    [-2.05, 1.55, 0.24],
-    [-1.75, 2.2, 0.22],
-    [-1.15, 2.72, 0.25],
-  ])
-    stone(g, b, x, y, sz, R, FOOT);
   // geraniums in pots beside the step, a boot scraper
   for (const [x, y, sz] of [
     [DN.a0 - 0.32, hy + 0.22, 0.13],

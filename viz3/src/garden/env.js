@@ -264,14 +264,14 @@ export const PATHS = [
   [
     [9.4, 4.1],
     [10.3, 1.4],
-    [11.05, -0.45],
-  ],
+    [11.5, 1.45],
+    [12.55, 1.35],
+  ], // to the greenhouse door (north gable, since 23.10.2026)
   [
     [10.3, 1.4],
-    [9.7, -2.0],
-    [10.3, -5.2],
-    [11.65, -5.95],
-  ],
+    [10.45, 0.2],
+    [10.85, -0.75],
+  ], // to the wooden hut's door (north, since 23.10.2026)
 ];
 const PATH = PATHS[0];
 window.PATH = PATH;

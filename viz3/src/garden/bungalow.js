@@ -631,6 +631,10 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
         st.f = (st.f || 0) + Math.sign(want - (st.f || 0)) * Math.min(Math.abs(want - (st.f || 0)), dt / 3);
         if (st.f < 0.002 && !st.k) return false;
         const fl = st.f * (0.8 + 0.2 * Math.sin(st.t * 13.1) * Math.sin(st.t * 7.3 + 1.2));
+        if (st.k && st.f > 0.5 && (st.next = (st.next ?? 1) - dt) <= 0) {
+          st.next = 0.4 + Math.random() * 1.6;
+          st.sound('crackle');
+        }
         fireM.color.setRGB(0.1 + 0.9 * fl, 0.05 + 0.4 * fl, 0.02 + 0.05 * fl);
         st.flicker('ofen', fl);
         return true;
