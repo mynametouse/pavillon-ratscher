@@ -101,7 +101,7 @@ export const SPOTS = {
   lounge: { mode: 'walk', pos: [1.9, 2.0], z: G.zO, yaw: -92, pitch: -5, label: 'Lounge' },
   dach: { mode: 'walk', pos: [2.6, 2.0], z: G.zD, yaw: -95, pitch: -6, label: 'Dachterrasse' },
   wohnwagen: { mode: 'walk', pos: [-0.9, 16.5], z: 0, yaw: 182, pitch: -2, bld: 'carport', label: 'Wohnwagen' },
-  holzhaus: { mode: 'walk', pos: [9.5, 1.4], z: 0, yaw: 154, pitch: -2, bld: 'holzhaus', label: 'Holzhaus' }, // door to the north (23.10.2026)
+  holzhaus: { mode: 'walk', pos: [9.5, 1.4], z: 0, yaw: 154, pitch: -2, bld: 'holzhaus', label: 'Atelier' }, // door to the north (23.10.2026); an atelier (feat/einrichtung)
   bungalow: { mode: 'walk', pos: [8.6, 21.4], z: 0, yaw: 180, pitch: -2, bld: 'bungalow', label: 'Bungalow' },
   ziegen: { mode: 'walk', pos: [17.0, -1.4], z: 0, yaw: 82, pitch: -1, label: 'Ziegenweide' },
   hubert: {

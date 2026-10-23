@@ -29,6 +29,8 @@ garden/bungalow.js          #
 garden/washhouse.js         # 
 # feat/garten: new garden modules below this line (before render/zmerge.js, so their static meshes get merged)
 garden/garten_in.js         # feat/garten: the garden buildings to use – lamps with one shared light, sofa, bed, small jobs (GARTEN)
+garden/stil.js              # feat/einrichtung: interior styles of the garden buildings – houses, style layers, accents, panel „Einrichtung“ (STIL)
+garden/atelier.js           # feat/einrichtung: the wooden house as an atelier – pottery, painting, rocking chair, sofa bed (ATELIER)
 garden/places.js            # place names and indoor test for the existing buildings
 garden/stream.js            # 
 garden/workshop.js          # workshop building Klingenholz with machines, band sawmill, generator (WORKS)

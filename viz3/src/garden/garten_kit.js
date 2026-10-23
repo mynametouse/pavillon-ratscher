@@ -4,8 +4,9 @@
 // Randomness comes from a local generator – the global rnd() stream stays as it was, so trees, grass etc. further down do not change.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { V } from '../core/head.js';
-import { ANISO, dimIndoor, patchSV, plain } from '../core/assets.js';
+import { ANISO, dimIndoor, MODELS, patchSV, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { tagPh } from '../core/geo.js';
 import { boardMat, gB } from './site_base.js';
@@ -399,8 +400,9 @@ export function bulbMat(col = 0xfff2d6) {
 }
 // ---- palette: the plain-coloured parts of a building share one material (colour, roughness and metalness come from two tiny images,
 // each part's UVs point at its swatch), so render/zmerge.js folds them into a few draw calls instead of one per colour ----
+// (feat/einrichtung: 128 px – 1024 swatches, the interior styles of the garden buildings add their colours here too)
 const PAL = (() => {
-  const N = 64,
+  const N = 128,
     C = 4,
     cells = new Map(),
     mk = () => {
@@ -458,7 +460,8 @@ export function paletteize(g, keep = []) {
   K.add(KM.tomato);
   const list = [];
   g.traverse(o => {
-    if (o.isMesh && !o.isInstancedMesh && !o.userData.noMerge && !Array.isArray(o.material)) list.push(o);
+    if (o.isMesh && !o.isInstancedMesh && !o.userData.noMerge && !Array.isArray(o.material) && !o.material.userData.own)
+      list.push(o);
   });
   let n = 0;
   for (const o of list) {
@@ -729,6 +732,110 @@ export function keysBegin() {
 export function keysEnd() {
   if (keyN0 !== null) window.ITEM_N = keyN0 + 13;
   keyN0 = null;
+}
+// models that were placed here once and are gone now (the potting hut became the atelier, feat/einrichtung): their numbers stay taken, so
+// the keys of the models after them (bungalow …) stay the same
+export function keysSkip(ids) {
+  for (const id of ids) if (MODELS[id]) window.ITEM_N = (window.ITEM_N || 0) + 1;
+}
+// ===================== feat/einrichtung (Falko, 23.10.2026): helpers for the interior styles of the garden buildings =====================
+// a copy of a material that compiles to the same shader program (patchSV's key depends on userData only: sky dimming, grime, lamp mask),
+// so a building can have its own wall, floor or fabric colour without a new program. Not for pbrMat's 'wash'/'grade' materials (their own
+// onBeforeCompile is not copied).
+export function twin(m, o = {}) {
+  const c = m.clone();
+  delete c.userData.svPatched;
+  patchSV(c);
+  if (o.color !== undefined) c.color.set(o.color);
+  if (o.roughness !== undefined) c.roughness = o.roughness;
+  c.userData.col0 = c.color.getHex();
+  c.userData.rough0 = c.roughness;
+  c.userData.own = true; // its colour changes while playing: never folded into the palette
+  return c;
+}
+// the paint photo of boardMat (site_base.js) has its own albedo: a paint colour is divided by it, like boardMat does
+const PAINT_A = [0.457, 0.381, 0.339];
+export function paintColor(m, hex) {
+  const c = new THREE.Color(hex);
+  if (m.map && m.name === 'boards') {
+    c.r /= PAINT_A[0];
+    c.g /= PAINT_A[1];
+    c.b /= PAINT_A[2];
+  }
+  m.color.copy(c);
+  return m;
+}
+// give a photo material (pbrMat: colour, normal, roughness/ao maps) the images of another one – the same channels, the same program
+export function useMaps(m, src) {
+  if (!src || !!m.map !== !!src.map || !!m.normalMap !== !!src.normalMap || !!m.roughnessMap !== !!src.roughnessMap)
+    return false;
+  if (!!m.aoMap !== !!src.aoMap || !!m.metalnessMap !== !!src.metalnessMap) return false;
+  m.map = src.map;
+  m.normalMap = src.normalMap;
+  m.roughnessMap = src.roughnessMap;
+  m.aoMap = src.aoMap;
+  m.metalnessMap = src.metalnessMap;
+  m.name = src.name;
+  return true;
+}
+// a canvas texture to draw patterns into again and again (rugs, curtains, bedding, pictures): same texture object, same program
+export function canvasTex(w, h, rep = [1, 1]) {
+  return ctex(w, h, () => {}, rep);
+}
+export function redraw(t, draw) {
+  const c = t.image,
+    q = c.getContext('2d');
+  q.clearRect(0, 0, c.width, c.height);
+  draw(q, c.width, c.height);
+  t.needsUpdate = true;
+  return t;
+}
+// merge a group's meshes by material (and shadow flag) into a few meshes in the group's own frame – what render/zmerge.js does for the
+// static scene, for parts that are built again while playing (style layers) or move as one (a rocking chair, a sofa's back)
+export function mergeGroup(g, o = {}) {
+  g.updateMatrixWorld(true);
+  const inv = g.matrixWorld.clone().invert(),
+    m4 = new THREE.Matrix4(),
+    buckets = new Map(),
+    kill = [];
+  g.traverse(me => {
+    if (!me.isMesh || me.isInstancedMesh || me.userData.keep || me === g) return;
+    if (Array.isArray(me.material)) return;
+    const geo = me.geometry;
+    if (!geo.attributes.position || !geo.attributes.normal) return;
+    let ng = geo.index ? geo.toNonIndexed() : geo.clone();
+    if (!ng.attributes.uv)
+      ng.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(ng.attributes.position.count * 2), 2));
+    for (const k of Object.keys(ng.attributes)) if (!['position', 'normal', 'uv'].includes(k)) ng.deleteAttribute(k);
+    ng.applyMatrix4(m4.multiplyMatrices(inv, me.matrixWorld));
+    const cast = o.cast === undefined ? me.castShadow : o.cast,
+      key = me.material.uuid + (cast ? 'c' : 'n') + (me.renderOrder || 0);
+    if (!buckets.has(key)) buckets.set(key, { m: me.material, cast, ro: me.renderOrder || 0, list: [] });
+    buckets.get(key).list.push(ng);
+    kill.push(me);
+  });
+  for (const me of kill) me.parent.remove(me);
+  const out = [];
+  for (const bk of buckets.values()) {
+    const geo = bk.list.length > 1 ? BufferGeometryUtils.mergeGeometries(bk.list) : bk.list[0];
+    if (!geo) continue;
+    geo.computeBoundingSphere();
+    const me = new THREE.Mesh(geo, bk.m);
+    me.castShadow = bk.cast;
+    me.receiveShadow = true;
+    me.renderOrder = bk.ro;
+    me.userData.noMerge = true;
+    g.add(me);
+    out.push(me);
+  }
+  return out;
+}
+// free the geometries of a group that is thrown away (materials are shared and stay)
+export function disposeGroup(g) {
+  g.traverse(me => {
+    if (me.isMesh && me.geometry) me.geometry.dispose();
+  });
+  if (g.parent) g.parent.remove(g);
 }
 // seed tray with seedlings in rows
 export function seedTray(g, x0, x1, y0, y1, z, rnd = R0, nx = 6, ny = 4) {
