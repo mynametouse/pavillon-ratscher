@@ -631,6 +631,10 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
         st.f = (st.f || 0) + Math.sign(want - (st.f || 0)) * Math.min(Math.abs(want - (st.f || 0)), dt / 3);
         if (st.f < 0.002 && !st.k) return false;
         const fl = st.f * (0.8 + 0.2 * Math.sin(st.t * 13.1) * Math.sin(st.t * 7.3 + 1.2));
+        if (st.k && st.f > 0.5 && (st.next = (st.next ?? 1) - dt) <= 0) {
+          st.next = 0.4 + Math.random() * 1.6;
+          st.sound('crackle');
+        }
         fireM.color.setRGB(0.1 + 0.9 * fl, 0.05 + 0.4 * fl, 0.02 + 0.05 * fl);
         st.flicker('ofen', fl);
         return true;
@@ -884,6 +888,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   const bulb = bareBulb(g, 0.1, -0.15, zw - 0.02, 1.9);
   bookMesh(g, books, R);
   // ---- lamps and places for the interactive part (garden/garten_in.js) ----
+  const porchMat = bulbMat(0xfff2d6); // the porch lantern (built further down)
   const inLoc = (x, y, ox, oy, ex, ey2) => {
     const a = (b.az * Math.PI) / 180,
       c = worldOf(b, ox, oy),
@@ -909,6 +914,24 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       label: 'Ofen',
       room: inside,
       r: 1.0,
+    },
+    {
+      key: 'aussen',
+      b,
+      lx: hx + 0.18,
+      ly: 0.78,
+      z: 1.92,
+      mat: porchMat,
+      glow: 2.2,
+      dist: 6,
+      inten: 5,
+      color: 0xffd9a8,
+      sw: [xi1 - 0.02, -0.8, 1.12],
+      swRoom: inside,
+      prio: -0.3,
+      label: 'Außenlicht',
+      room: () => false,
+      r: 1.3,
     },
     {
       key: 'bungalow',
@@ -1058,6 +1081,25 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   });
   // lived-in details outside (photo-scanned, real size): rubber boots by the front door, a painted bench on the north side, the rain barrel under
   // the annex's downpipe
+  // porch lamp: an old wall lantern west of the front door, switched inside by the door ('Außenlicht')
+  {
+    const px = hx + 0.02,
+      py = 0.78,
+      pz = 2.0;
+    gB(g, px, px + 0.04, py - 0.06, py + 0.06, pz - 0.12, pz + 0.06, MAT.blacksteel, { cast: false });
+    gB(g, px + 0.04, px + 0.16, py - 0.015, py + 0.015, pz + 0.02, pz + 0.05, MAT.blacksteel, { cast: false });
+    put(g, new THREE.CylinderGeometry(0.075, 0.055, 0.14, 8, 1, true), MAT.glass, px + 0.16, py, pz - 0.07, {
+      cast: false,
+    }).renderOrder = 2;
+    put(g, new THREE.ConeGeometry(0.1, 0.08, 8), MAT.blacksteel, px + 0.16, py, pz + 0.04, { cast: false });
+    put(g, new THREE.SphereGeometry(0.03, 10, 8), porchMat, px + 0.16, py, pz - 0.08, { cast: false });
+    gB(g, px + 0.11, px + 0.21, py - 0.05, py + 0.05, pz - 0.15, pz - 0.14, MAT.blacksteel, { cast: false });
+  }
+  put(g, new THREE.CylinderGeometry(0.03, 0.032, 0.03, 14), KM.porcelain, xi1 - 0.015, -0.8, 1.12, {
+    rz: Math.PI / 2,
+    cast: false,
+  });
+  gB(g, xi1 - 0.045, xi1 - 0.028, -0.806, -0.794, 1.098, 1.142, KM.bakelite, { cast: false });
   GL('boots', hx + 0.32, 0.45, 0.08, 180, { col: false });
   GL('bench_out', hx + 0.42, 1.55, 0.08, 180);
   GL('rain_barrel', AX1 + 0.32, AY0 + 0.05, 0, 0);

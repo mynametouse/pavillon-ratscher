@@ -167,7 +167,7 @@ export function blocked(x, y, feet) {
   for (const [s] of surfaces(x, y)) if (s > feet + STEP && s < top) return true;
   return false;
 }
-const groundZ = (x, y) => (window.ROADS ? LATE.ROADS.groundAt(x, y) : STREAM.zAt(x, y)); // the meadow is flat (0) except at the stream; beyond the site the terrain and bridge decks (V16b, world/roads.js)
+const groundZ = (x, y) => (window.ROADS ? KERN.ground(x, y) : STREAM.zAt(x, y)); // the meadow is flat (0) except at the stream; beyond the site the terrain and bridge decks (V16b, world/roads.js; the tiled world, welt/welt.js)
 export function floorInfo(x, y, feet) {
   let best = -1e9,
     typ = 'ground';
@@ -324,6 +324,7 @@ export function collide(p, feet, on) {
 }
 // how far one may walk: the garden's 75 m, with the real surroundings the whole square of the 10 m terrain (V16b)
 export function walkBounds() {
+  if (KERN.free(P.x, P.y)) return; // the tiled world beyond the square (welt/welt.js, e.g. Schleusingen)
   const B = window.RATSCHER && LATE.RATSCHER.ready && LATE.RATSCHER.box;
   if (B) {
     P.x = THREE.MathUtils.clamp(P.x, B[0] + 8, B[2] - 8);
