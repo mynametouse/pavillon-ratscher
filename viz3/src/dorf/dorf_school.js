@@ -557,6 +557,17 @@ export const DSCHOOL = (() => {
     }
     S.seats.uwe = { x: 1.9, y: by1 + 0.55, a: -Math.PI / 2, stand: true };
     S.bar = { x: 1.9, y: by0 - 0.4 };
+    {
+      // the glass Uwe puts on the counter for the guest (dorf/dorf.js shows it when one asks for a drink)
+      const k = VPROPS.kit();
+      k.cyl(2.25, by0 + 0.14, 1.06, 1.2, 0.034, 0.038, 10, L(0.86, 0.66, 0.3), true); // apple spritzer
+      k.cyl(2.25, by0 + 0.14, 1.2, 1.215, 0.038, 0.038, 10, L(0.95, 0.94, 0.9), true); // foam rim
+      k.box(2.25, by0 + 0.14, 1.06, 0.1, 0.1, 0.004, 0.3, L(0.95, 0.95, 0.93)); // beer mat
+      S.drink = new THREE.Mesh(k.geo(), M.kit);
+      S.drink.visible = false;
+      S.drink.userData.noMerge = true;
+      S.grp.add(S.drink);
+    }
     // pennant of the brigade over the bar, the old school photo
     {
       // the pennant of the brigade on the west gable, over the bar
@@ -991,6 +1002,7 @@ export const DSCHOOL = (() => {
         sound('clink', b[0], b[1]);
       }
     } else if (TR.cards && TR.cards[0].visible) for (const me of TR.cards) me.visible = false;
+    if (!evening && S.drink && S.drink.visible) S.drink.visible = false; // cleared away after the evening
     if (Math.abs(S.open - S.want) > 1e-3) {
       S.open += Math.sign(S.want - S.open) * Math.min(Math.abs(S.want - S.open), dt * 0.9);
       pose();

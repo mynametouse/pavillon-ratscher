@@ -83,6 +83,8 @@ with lib.browser() as b:
             ck('Ingrid has topics (the task first)', len(topics) >= 4 and topics[0] == 'Hallo, ich bin neu hier', str(topics))
             E("[...document.querySelectorAll('#dorfpanel .topics button')].find(b => b.textContent === 'Die Talsperre').click()")
             txt = E("document.querySelector('#dorfpanel .say').textContent"); ck('she answers about the dam', 'Talsperre' in txt, txt[:80])
+            drink = E("(() => { DORF.UI.open('uwe'); const b = [...document.querySelectorAll('#dorfpanel .topics button')].find(b => b.textContent === 'Etwas zu trinken'); if (b) b.click(); const v = DSCHOOL.drink.visible; DORF.UI.open('ingrid'); return v; })()")
+            ck('Uwe puts a glass on the counter', drink, '')
         except Exception as ex:
             ck('section ran: ' + "want('talk') or want('task')", False, repr(ex)[:400])
     if want('task'):

@@ -130,6 +130,10 @@ export const DORF = (() => {
         n = (U.n[k + id] = (U.n[k + id] || 0) + 1);
       say.textContent = lines[(n - 1) % lines.length];
       talkFig(k, say.textContent);
+      if (k === 'uwe' && id === 'trinken' && DSCHOOL.drink && !DSCHOOL.drink.visible) {
+        DSCHOOL.drink.visible = true; // the glass stands on the counter
+        markDirty();
+      }
     }
     function talkFig(k, text) {
       const f = DPEOPLE.figs[k];
