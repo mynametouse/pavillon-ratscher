@@ -822,19 +822,19 @@ export const WINDE = (() => {
   PLAY.act({
     id: 'winde:lift',
     r: 1.9,
-    prio: 0.4,
+    prio: 1.0, // at the wing the outside control comes first (the remote and a log end nearby wait)
     obj: () => WN.g,
     pos: () => {
       const p = VEH.toW(T, -1.22, -1.95);
       return [p[0], p[1], T.st.z + 1.1];
     },
+    // always offered on foot: up or down; with the cable out it says why the winch stays down (toggleLift)
     label: () => {
       if (!onFoot()) return null;
       if (WN.liftT >= 0.9) return 'Winde absenken (Außenbedienung)';
-      if (S.cable === 'drum') return 'Winde anheben (Außenbedienung)';
       if (S.cable === 'log' && S.atShield)
         return WN.liftT < 0.4 ? 'Winde anheben – Stamm anlüften' : 'Winde absenken – Stamm ablegen';
-      return null;
+      return 'Winde anheben (Außenbedienung)';
     },
     run: () => toggleLift(),
   });
@@ -842,7 +842,10 @@ export const WINDE = (() => {
   PLAY.act({
     id: 'winde:cable',
     r: 2.1,
-    prio: 0.5,
+    // with the hook in my hand behind the winch, hooking it in wins over a log end lying there (the log just released at the shield)
+    get prio() {
+      return S.cable === 'hand' ? 2.5 : 0.5;
+    },
     obj: () => WN.g,
     pos: () => {
       const p = WN.toW([0, -0.9, 1.0]);
