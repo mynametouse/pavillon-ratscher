@@ -38,10 +38,13 @@ export const GPRULES = (() => {
     for (let i = 0; i + 1 < line.length; i++) d = Math.min(d, segDist(x, y, line[i], line[i + 1]));
     return d;
   }
-  // a fact of regeln.json whose id matches (the reason in the data's own words), else the fallback
-  const fact = (db, re, fb) => {
-    const f = (db.facts || []).find(x => x && re.test(x.id || ''));
-    return f ? f.text : fb;
+  // a fact of regeln.json whose id matches (the reason in the data's own words), else the fallback; several patterns: in this order
+  const fact = (db, res, fb) => {
+    for (const re of [].concat(res)) {
+      const f = (db.facts || []).find(x => x && re.test(x.id || ''));
+      if (f) return f.text;
+    }
+    return fb;
   };
   const name = p => M.fullName(p);
   // German phrases for a building of gender g ('m', 'n', 'f'): 'im Pavillon', 'in der Werkstatt', 'am …', 'den/das/die …'
@@ -188,7 +191,7 @@ export const GPRULES = (() => {
             name(a.p) + ' verträgt keine Staunässe – ' + de(d) + ' m vom Bach ist der Boden nass.',
             fact(
               db,
-              /staunaess|nass|bach|grundwasser/,
+              /^Prunus/.test(a.p.art) ? [/staunaess/, /auenlehm|grundwasser/] : [/auenlehm|grundwasser/],
               'Am Bach steht das Grundwasser hoch; im Auenlehm staut sich nach Regen das Wasser, die Wurzeln faulen.'
             ),
             'nass'
@@ -309,36 +312,55 @@ export const GPRULES = (() => {
           );
         }
       }
-    // 6 pollination: a self-sterile cultivar needs another cultivar of the same species within ~30 m
+    // 6 pollination: a self-sterile cultivar needs another cultivar of the same species within ~30 m (a species without a cultivar
+    // name – seedlings – or one that names itself as pollinator is pollinated by another plant of its own kind); one note per plant
     const POLL = opts.pollinatorM || 30;
+    const lonely = new Map();
     for (const a of A) {
       const bf = a.p.befruchtung;
       if (!bf || (bf.selbstfruchtbar !== 'nein' && bf.selbstfruchtbar !== 'teilweise')) continue;
+      const self = !a.p.sorte || (bf.befruchter || []).includes(a.p.id);
       const partner = A.some(
-        b => b !== a && b.p.art === a.p.art && b.p.id !== a.p.id && Math.hypot(a.it.x - b.it.x, a.it.y - b.it.y) <= POLL
+        b =>
+          b !== a &&
+          b.p.art === a.p.art &&
+          (b.p.id !== a.p.id || self) &&
+          Math.hypot(a.it.x - b.it.x, a.it.y - b.it.y) <= POLL
       );
       if (partner) continue;
-      const fits = (bf.befruchter || []).map(x => (db.byId.get(x) ? name(db.byId.get(x)) : x));
+      if (!lonely.has(a.p.id)) lonely.set(a.p.id, { p: a.p, items: [] });
+      lonely.get(a.p.id).items.push(a.i);
+    }
+    for (const { p, items } of lonely.values()) {
+      const bf = p.befruchtung,
+        fits = (bf.befruchter || []).map(x => (db.byId.get(x) ? name(db.byId.get(x)) : x));
+      // the fact about this kind of fruit (befruchtung-apfel for apples …), if the rules have one
+      const f = (db.facts || []).find(
+        x => x && /^befrucht/.test(x.id) && p.id.startsWith(x.id.replace(/^befruchtung-|^befrucht\w*-/, ''))
+      );
       add(
         bf.selbstfruchtbar === 'nein' ? 'warn' : 'hint',
-        [a.i],
-        name(a.p) +
+        items,
+        name(p) +
+          (items.length > 1 ? ' (' + items.length + '×)' : '') +
           (bf.selbstfruchtbar === 'nein' ? ' braucht' : ' trägt besser mit') +
-          ' eine zweite Sorte als Befruchter in höchstens ' +
+          (p.sorte ? ' eine zweite Sorte' : ' eine zweite Pflanze') +
+          ' als Befruchter in höchstens ' +
           POLL +
           ' m' +
           (fits.length ? ' – passend: ' + fits.join(', ') : '') +
           '.',
-        (bf.selbstfruchtbar === 'nein'
-          ? 'Die Sorte ist selbstunfruchtbar'
-          : 'Die Sorte ist nur teilweise selbstfruchtbar') +
-          ': Bienen bringen den Pollen einer anderen, gleichzeitig blühenden Sorte. ' +
-          fact(db, /befrucht|bestaeub/, 'Ein passender Baum im Nachbargarten hilft auch.'),
+        (bf.selbstfruchtbar === 'nein' ? 'Selbstunfruchtbar' : 'Nur teilweise selbstfruchtbar') +
+          ': Bienen bringen den Pollen einer anderen, gleichzeitig blühenden ' +
+          (p.sorte ? 'Sorte' : 'Pflanze derselben Art') +
+          '; ein passender Baum oder Strauch im Nachbargarten hilft auch.' +
+          (f ? ' ' + f.text : ''),
         'befruchter'
       );
     }
     // 7 crowns that grow into each other (trees with trees, shrubs with shrubs – a shrub under a tree is a guild)
-    const big = A.filter(a => M.isTree(a.p) || a.p.schicht === 'strauch');
+    const big = A.filter(a => M.isTree(a.p) || a.p.schicht === 'strauch'),
+      crowdFact = fact(db, /waldgarten-abstand|abstand-waldgarten/, '');
     for (let i = 0; i < big.length; i++)
       for (let j = i + 1; j < big.length; j++) {
         const a = big[i],
@@ -350,20 +372,20 @@ export const GPRULES = (() => {
         add(
           d < need * 0.45 ? 'warn' : 'hint',
           [a.i, b.i],
-          'Die Kronen von ' +
-            name(a.p) +
+          name(a.p) +
             ' und ' +
             name(b.p) +
-            ' wachsen ineinander (' +
+            ': die Kronen wachsen ineinander (' +
             de(d) +
-            ' m, Platz braucht es für ' +
+            ' m Abstand, Platz braucht es für ' +
             de(need) +
             ' m).',
           'Ausgewachsen ' +
             de(a.grown.w) +
             ' und ' +
             de(b.grown.w) +
-            ' m breit – gedrängt tragen sie weniger und werden krank.',
+            ' m breit – gedrängt tragen sie weniger und werden anfälliger.' +
+            (crowdFact ? ' ' + crowdFact : ''),
           'krone'
         );
       }
@@ -375,6 +397,8 @@ export const GPRULES = (() => {
       for (const t of S.trees || [])
         casters.push({ x: t[0], y: t[1], c: { zb: t[3] * 0.35, zc: t[3] * 0.65, a: t[3] * 0.32, r: t[2] } });
       const [y, m, d] = opts.june || [2026, 6, 21];
+      // one note per plant (all its items in too much shade together); a tree or shrub that needs sun is a warning, a herb a hint
+      const dark = new Map();
       for (const a of A) {
         const L = a.p.licht || [];
         const sunOnly = L.length === 1 && L[0] === 'sonne',
@@ -385,28 +409,36 @@ export const GPRULES = (() => {
           cs = casters.filter(k => k.ref !== a && (!k.c || k.c.zc + k.c.a > z + 0.05));
         if (!cs.length) continue;
         const sh = GPSUN.shadeShare(a.it.x, a.it.y, z, cs, y, m, d, 40).share;
-        if (sunOnly && sh > 0.5)
+        if ((sunOnly && sh > 0.5) || (!sunOnly && sh > 0.8)) {
+          const k = a.p.id + (sunOnly ? ':s' : ':h');
+          if (!dark.has(k)) dark.set(k, { p: a.p, sunOnly, items: [], sh: [] });
+          dark.get(k).items.push(a.i);
+          dark.get(k).sh.push(sh);
+        }
+      }
+      const when = 'Gerechnet für den 21. Juni ' + (opts.age ? 'in ' + opts.age + ' Jahren' : 'beim Pflanzen');
+      for (const g of dark.values()) {
+        const lo = Math.round(Math.min(...g.sh) * 100),
+          hi = Math.round(Math.max(...g.sh) * 100),
+          pct = lo === hi ? lo + ' %' : lo + '–' + hi + ' %',
+          n = g.items.length > 1 ? ' (' + g.items.length + '×)' : '',
+          woody = M.isTree(g.p) || g.p.schicht === 'strauch';
+        if (g.sunOnly)
           add(
-            'warn',
-            [a.i],
-            name(a.p) +
-              ' braucht volle Sonne, steht aber im Juni ' +
-              Math.round(sh * 100) +
-              ' % des Tages im Schatten.',
-            'Gerechnet für den 21. Juni ' +
-              (opts.age ? 'in ' + opts.age + ' Jahren' : 'beim Pflanzen') +
-              ' mit den geplanten Pflanzen, den Gebäuden und den Bäumen im Garten.',
+            woody ? 'warn' : 'hint',
+            g.items,
+            name(g.p) + n + ' braucht volle Sonne, steht aber im Juni ' + pct + ' des Tages im Schatten.',
+            when +
+              ' mit den geplanten Pflanzen, den Gebäuden und den Bäumen im Garten' +
+              (woody ? ' – im Schatten trägt sie kaum.' : '.'),
             'licht'
           );
-        else if (!sunOnly && noShade && sh > 0.8)
+        else
           add(
             'hint',
-            [a.i],
-            name(a.p) +
-              ' steht im Juni ' +
-              Math.round(sh * 100) +
-              ' % des Tages im Schatten – für Halbschatten zu dunkel.',
-            'Gerechnet für den 21. Juni ' + (opts.age ? 'in ' + opts.age + ' Jahren' : 'beim Pflanzen') + '.',
+            g.items,
+            name(g.p) + n + ' steht im Juni ' + pct + ' des Tages im Schatten – für Halbschatten zu dunkel.',
+            when + '.',
             'licht'
           );
       }
@@ -485,7 +517,10 @@ export const GPRULES = (() => {
       out.push(
         'Befruchtung: ' +
           (p.befruchtung.selbstfruchtbar === 'nein' ? 'selbstunfruchtbar' : 'teilweise selbstfruchtbar') +
-          (p.befruchtung.befruchter.length ? ' – Befruchter: ' + p.befruchtung.befruchter.join(', ') : '') +
+          (p.befruchtung.befruchter.length
+            ? ' – Befruchter: ' +
+              p.befruchtung.befruchter.map(x => (db.byId.get(x) ? name(db.byId.get(x)) : x)).join(', ')
+            : '') +
           '.'
       );
     if (p.bluete)

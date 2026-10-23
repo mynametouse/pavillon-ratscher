@@ -139,6 +139,24 @@ test('pollination: a self-sterile apple alone needs a second cultivar within 30 
   has(run(d, plan(['apfel-test', -5, 5], ['apfel-test', 10, 5])), 'warn', 'befruchter');
   hasNot(run(d, plan(['apfel-test', -5, 5], ['apfel-b-test', 10, 5])), 'befruchter');
   has(run(d, plan(['apfel-test', -15, -15], ['apfel-b-test', 15, 15])), 'warn', 'befruchter');
+  // one note for all lonely plants of a kind
+  const two = run(MINI, plan(['apfel-test', -15, -15], ['apfel-test', 15, 15])).filter(w => w.key === 'befruchter');
+  assert.equal(two.length, 1);
+  assert.deepEqual(two[0].items, [0, 1]);
+  assert.ok(two[0].text.includes('(2×)'));
+  // a species without a cultivar name (seedlings): a second plant of the same kind pollinates
+  const e = clone(MINI);
+  e.pflanzen.arten[1].befruchtung = { selbstfruchtbar: 'nein', befruchter: ['goumi-test'] };
+  has(run(e, plan(['goumi-test', -5, 5])), 'warn', 'befruchter', /zweite Pflanze/);
+  hasNot(run(e, plan(['goumi-test', -5, 5], ['goumi-test', 5, 5])), 'befruchter');
+  // the reason names the fact about this fruit when regeln.json has one (befruchtung-apfel for apfel-…)
+  const f = clone(MINI);
+  f.pflanzen.arten[0].id = 'apfel-x';
+  f.gilden.gilden[0].mitte = 'apfel-x';
+  f.regeln.fakten.push({ id: 'befruchtung-apfel', text: 'Testfakt Apfel.', quelle: 'test' });
+  f.regeln.fakten.push({ id: 'befruchtung-kirsche', text: 'Testfakt Kirsche.', quelle: 'test' });
+  const wf = run(f, plan(['apfel-x', -5, 5])).find(w => w.key === 'befruchter');
+  assert.ok(wf.why.includes('Testfakt Apfel.') && !wf.why.includes('Kirsche'), wf.why);
 });
 
 test('crowns growing into each other: trees with trees, not a shrub under a tree', () => {

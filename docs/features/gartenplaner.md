@@ -35,9 +35,12 @@ nach der Draufsicht gerade stehen); auf dem Weg, auf der Brücke, Krone hängt i
 vom Bach; Spätfrost (frühe Blüte, `spaetfrost` hoch = Warnung, mittel = Hinweis); Unverträglichkeit (`unvertraeglich`: Art, Schicht oder
 alles im Radius bzw. der Krone); fehlender Befruchter (selbstunfruchtbar, keine andere Sorte derselben Art in 30 m, nennt `befruchter`);
 Kronen, die ineinander wachsen (Baum mit Baum, Strauch mit Strauch); Licht (braucht Sonne, liegt am 21. Juni mehr als den halben Tag im
-Schatten der geplanten Pflanzen, Gebäude und Bäume); Schutz beim Pflanzen (`schutz`); Boden (geschätzt: Auenlehm, pH ~6, frisch bis
-feucht). Gründe aus `regeln.json` `fakten`, wenn ihre id passt (`spaetfrost|frost|kaltluft`, `staunaess|nass|bach|grundwasser`,
-`wuehlmaus`, `ziege|verbiss`, `befrucht|bestaeub`).
+Schatten der geplanten Pflanzen, Gebäude und Bäume – Gehölz: Warnung, Kraut: Hinweis); Schutz beim Pflanzen (`schutz`); Boden (geschätzt:
+Auenlehm, pH ~6, frisch bis feucht). Mehrere gleiche Pflanzen in derselben Lage ergeben eine Meldung („Knoblauch (12×) …“). Eine Art ohne
+Sortennamen (Sämlinge) oder eine, die sich selbst als Befruchter nennt, wird von einer zweiten Pflanze ihrer Art befruchtet.
+Gründe aus `regeln.json` `fakten`, wenn ihre id passt (`spaetfrost|frost|kaltluft`; `auenlehm|grundwasser`, bei Steinobst zuerst
+`staunaess`; `wuehlmaus`; `ziege|verbiss`; `befruchtung-<art>` passend zur Pflanzen-id, z. B. `befruchtung-apfel` für `apfel-…`;
+`waldgarten-abstand` bei Kronen).
 
 ## Aufbau
 
@@ -46,7 +49,7 @@ feucht). Gründe aus `regeln.json` `fakten`, wenn ihre id passt (`spaetfrost|fro
 | `gplan/gplan_model.js` (GPMODEL, rein) | Wachstum (Pflanzhöhe → Endgröße, `1 − (1 − t)²` über `jahre_bis_endgroesse`, Mitte der Spannen, Seed variiert), Krone als Ellipsoid über dem Stamm, Jahreszeit (Laub, Blüte, Frucht nach Monat), gespeicherter Plan (`sanitize`), Gilden, Pflanz- und Einkaufsliste |
 | `gplan/gplan_sun.js` (GPSUN, rein) | Sonnenstand über dem Garten (50,4991° N, 10,7692° O, MEZ/MESZ, NOAA-Formeln wie `time/daynight.js`), Schatten einer Krone (Ellipse), eines Stamms, eines Gebäudes (Hülle), Schattenanteil eines Tages |
 | `gplan/gplan_rules.js` (GPRULES, rein) | Warnungen und Hinweise, Ratschläge je Pflanze |
-| `gplan/gplan_3d.js` (GP3D) | die Pflanzen im 3D-Garten, erst bei Gebrauch gebaut: Bäume als die ez-tree-Arten des Gartens (`garden/trees.js` `TREES`, skaliert, Laubfarbe über die Instanzfarbe), Sträucher/Stauden als Hügel aus denselben Blattkarten, Blüte und Früchte als kleine Punkte im Material der Bücher im Bungalow – keine neuen Shader; Stämme ab 5 Jahren in `COL` (Tag `gplan`, Einträge werden wiederverwendet, nie gelöscht) |
+| `gplan/gplan_3d.js` (GP3D) | die Pflanzen im 3D-Garten, erst bei Gebrauch gebaut: Laub- und Nadelbäume als die ez-tree-Arten des Gartens (`garden/trees.js` `TREES`), dazu eigene ez-tree-Arten aus den schon geladenen Rinden- und Blattbildern – Obstbaum (Oak Small, breit, viele kleine Espenblätter), zwei Sträucher (Presets Bush 1/2), ein niedriger Horst für Stauden, Bodendecker, Zwiebeln; alle instanziert und auf Alter und Breite skaliert. Laubfarbe der Pflanze (`darstellung.laub`, Austrieb heller, Herbstfarbe) über die Instanzfarbe, gemessen am Blattbild; kahl im Winter; Blüte und Früchte als kleine Punkte auf den Blattkarten (Material der Bücher im Bungalow) – keine neuen Shader (Test). Stämme ab 5 Jahren in `COL` (Tag `gplan`, Einträge werden wiederverwendet, nie gelöscht) |
 | `gplan/gplan.js` (GPLAN) | Daten laden und prüfen, Fenster `#gplan`, Zeichnen und Antippen in der Draufsicht, vor Ort, Speichern |
 
 Daten: `dist/gartenplaner/pflanzen.json`, `regeln.json`, `gilden.json` (Vertrag `gplan/gplan_schema.js`, Datenbank `feat/pflanzen`); fehlen
@@ -72,6 +75,9 @@ zeigt „Testdaten“. Geladen wird erst beim Öffnen; geprüft mit `GPSCHEMA.va
 - **Ein Menüeintrag**: `shell/menu.html` → Gestalten → „Garten planen“ (`#gplanbtn`); **eine Zeile** in `core/save.js` (`pav-gplan-v1`);
   `shell/css/gartenplaner.css` in `parts.txt` nach `css/amt.css`; Module unter `# feat/gartenplaner` in `modules.txt`.
 - Wer einen gespeicherten Plan mit „im Garten: an“ hat, lädt die Pflanzendaten nach dem Start (1,5 s nach `whenLoaded`), sonst nie.
+- Die echten Daten von `feat/pflanzen` (Stand 23.10. 10:29, 44 Pflanzen, 19 Grenzabstands-Kategorien, 28 Fakten, 5 Gilden) bestehen
+  `GPSCHEMA.validateAll` ohne Fehler und laufen durch Berater, Gilden und Listen (geprüft in node, nicht eingecheckt). Sobald sie auf `src`
+  sind, nimmt der Planer sie statt der Testdaten.
 - Ein Feld im Vertrag fehlt nicht zwingend; nützlich wären später: Höhe des Stammes je Form (heute fest im Modell: Hochstamm 1,8 m,
   Halbstamm 1,2 m, Busch 0,6 m …) und eine Wurzeltiefe/-art für Abstände zu Leitungen.
 - `docs/ARCHITECTURE.md`: Abschnitt 6 `GPLAN`, Abschnitt 8 `pav-gplan-v1` ergänzen; Fenster `#gplan` steht nicht in `HUD.PANELS`
