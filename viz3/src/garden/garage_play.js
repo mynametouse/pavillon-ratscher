@@ -21,7 +21,7 @@ import { DOORS, PHN } from '../core/geo.js';
 import { GARAGE, MOWER, mkMower, mkPetrolCan } from './garage.js';
 import { WORKS } from './workshop.js';
 import { GRASS } from './grass.js';
-import { blocked, floorAt, P, PHASE, setPhase } from '../game/walkable.js';
+import { blocked, collide, floorAt, P, PHASE, setPhase } from '../game/walkable.js';
 import { CAM3, go } from '../game/player.js';
 import { audio } from '../audio/audio.js';
 import { HELD, PLAY, SFX } from '../game/play.js';
@@ -182,15 +182,23 @@ export const GPLAY = (() => {
     const k = L.k * L.k * (3 - 2 * L.k);
     return L.side * L.travel * k;
   };
+  // a leaf is there in the phases of its garage (the old one in phase 0, the one at the south end from phase 1)
+  const leafOn = L => PHASE >= L.gar.ph[0] && PHASE < L.gar.ph[1];
+  const unit = v => {
+    const n = Math.hypot(v[0], v[1]) || 1;
+    return [v[0] / n, v[1] / n];
+  };
+  const leafW = (L, lx) => L.gar.toW(lx, L.y);
   const leafBox = L => {
-    if (!on0()) return null;
-    const o = leafOff(L);
+    if (!leafOn(L)) return null;
+    const o = leafOff(L),
+      A = L.gar.axes();
     return {
-      c: [(L.x0 + L.x1) / 2 + o, 4.026],
-      ax: [1, 0],
-      ay: [0, 1],
+      c: leafW(L, (L.x0 + L.x1) / 2 + o),
+      ax: unit(A.ax),
+      ay: unit(A.ay),
       ex: (L.x1 - L.x0) / 2,
-      ey: 0.03,
+      ey: L.ey,
       z0: L.z0,
       z1: L.z1,
     };
@@ -198,7 +206,10 @@ export const GPLAY = (() => {
   function slide(L, v, quiet) {
     if (L.want === v) return;
     L.want = v;
-    if (!quiet) rumble((L.x0 + L.x1) / 2 + leafOff(L), 4.03, 1.15, v > 0.5);
+    if (!quiet) {
+      const w = leafW(L, (L.x0 + L.x1) / 2 + leafOff(L));
+      rumble(w[0], w[1], 1.15, v > 0.5);
+    }
     S.dirty = true;
   }
   for (const L of GARAGE.leaves) {
@@ -208,11 +219,8 @@ export const GPLAY = (() => {
       r: 1.7,
       prio: 0.1,
       obj: () => L.g,
-      pos: () => {
-        const hx = L.side < 0 ? L.x1 - 0.16 : L.x0 + 0.16;
-        return [hx + leafOff(L), 4.03, Z0 + 1.1];
-      },
-      label: () => (on0() ? (L.want > 0.5 ? 'Tor zuschieben' : 'Tor aufschieben') : null),
+      pos: () => [...leafW(L, L.hx + leafOff(L)), L.z0 + 1.08],
+      label: () => (leafOn(L) ? (L.want > 0.5 ? 'Tor zuschieben' : 'Tor aufschieben') : null),
       run: () => slide(L, L.want > 0.5 ? 0 : 1),
     });
   }
@@ -227,11 +235,25 @@ export const GPLAY = (() => {
     }
     if (moving) markDirty(true);
   }
-  // can a thing at p be reached from where the walker is (not through the closed garage)
+  // inside the garage that stands now
+  const inGarage = (x, y) => GARAGE.insideAt(PHASE, x, y);
+  // can a thing at p be reached from where the walker is (not through the closed garage): inside, or in front of an open leaf
+  // (only at the old garage of phase 0, where the game starts; at the south garage – later phases – things stay at hand as before, the
+  // neighbours' tasks and tests fetch Hubert's can from anywhere around it)
   GARAGE.reach = (p, px = P.x, py = P.y) => {
-    if (!on0() || !GARAGE.inside(p[0], p[1]) || GARAGE.inside(px, py)) return true;
-    const [W, E] = GARAGE.leaves;
-    return py > 3.8 && py < 5.4 && ((px < 2.0 && W.k > 0.6) || (px >= 2.0 && E.k > 0.6));
+    if (!on0() || !inGarage(p[0], p[1]) || inGarage(px, py)) return true;
+    const G = GARAGE.at(PHASE),
+      [lx, ly] = G.toL(px, py),
+      D = G.door,
+      xm = (D.x0 + D.x1) / 2,
+      [W, E] = G.leaves;
+    return (
+      ly > D.y - 0.2 &&
+      ly < D.y + 1.4 &&
+      lx > D.x0 - 0.3 &&
+      lx < D.x1 + 0.3 &&
+      ((lx < xm && W.k > 0.6) || (lx >= xm && E.k > 0.6))
+    );
   };
   // ======================= the mower =======================
   const MW = mkMower();
@@ -323,8 +345,10 @@ export const GPLAY = (() => {
   function grab() {
     if (M.mode === 'push') return;
     const [sx, sy] = standW(),
-      fz = floorAt(sx, sy, M.z + 0.3);
-    if (blocked(sx, sy, fz) || Math.abs(fz - M.z) > 0.35) {
+      fz = floorAt(sx, sy, M.z + 0.3),
+      q = [sx, sy];
+    collide(q, fz, true); // a wall, a shelf, a tree where one would stand
+    if (blocked(sx, sy, fz) || Math.abs(fz - M.z) > 0.35 || Math.hypot(q[0] - sx, q[1] - sy) > 0.06) {
       PLAY.think('Da komme ich nicht hinter den Griff.');
       return;
     }
@@ -478,7 +502,7 @@ export const GPLAY = (() => {
       S.cutAcc = 0;
       S.cutX = M.x;
       S.cutY = M.y;
-      if (!(on0() && GARAGE.inside(M.x, M.y))) {
+      if (!inGarage(M.x, M.y)) {
         const f = fwdOf(M.az),
           shade = Math.abs(f[1]) >= Math.abs(f[0]) ? Math.sign(f[1]) : Math.sign(f[0]);
         const m2 = GRASS.cut(M.x + f[0] * 0.03, M.y + f[1] * 0.03, CUT_R, CLOCK.t, shade);
@@ -661,7 +685,10 @@ export const GPLAY = (() => {
   }
   // on the slab of the old garage once it is gone, or still at the home of the phase before: to the home of this phase
   const inOld = p => p[0] > -0.6 && p[0] < 4.6 && p[1] > -0.6 && p[1] < 4.7;
+  // in front of the door of the old garage the ground is worn (no ferns, no tall grass) – only while it stands there
+  const bareDoor = () => GRASS.bare('garage', GARAGE.bare(PHASE));
   function onPhase(old, ph) {
+    bareDoor();
     if (M.mode === 'push') release('phase');
     const H0 = old == null ? null : GARAGE.home(old),
       H1 = GARAGE.home(ph),
@@ -696,6 +723,8 @@ export const GPLAY = (() => {
         slot: PLAY.slotOf(CANT),
       },
       gen: rnd2(GEN.fuel),
+      licht: LAMP.on ? 1 : 0,
+      hint: S.hint ? 1 : 0,
       grass: GRASS.cutSave(CLOCK.t),
     });
   }
@@ -728,10 +757,13 @@ export const GPLAY = (() => {
       else if (c && Array.isArray(c.pos) && c.pos.length === 3 && c.pos.every(v => num(v, -300, 300)))
         CANT.place(c.pos[0], c.pos[1], c.pos[2], num(c.yaw, -10, 10) ? c.yaw : 0);
       if (num(s.gen, 0, GEN_L)) GEN.fuel = s.gen;
+      LAMP.on = s.licht === 1;
+      S.hint = s.hint === 1;
       if (s.grass) GRASS.cutLoad(s.grass, CLOCK.t);
     }
     S.tPrev = CLOCK.t;
     S.loaded = true;
+    bareDoor();
     dimNow = null;
     dimTick();
     markDirty(true);
@@ -759,6 +791,16 @@ export const GPLAY = (() => {
       S.dirty = true;
     }
     dimTick();
+    // a word the first time one comes to the old garage
+    if (!S.hint && on0() && P.mode === 'walk' && Math.hypot(P.x - 2, P.y - 4.6) < 6.5) {
+      S.hint = true;
+      S.dirty = true;
+      // a thought, not a news line (one news per visit is shared by all features)
+      PLAY.think(
+        'Die alte Blechgarage – zwei Schiebetore. Drinnen steht der Rasenmäher, Benzin im roten Kanister.',
+        4200
+      );
+    }
     growAcc += dmin;
     if (growAcc >= 20) {
       growAcc = 0;
@@ -772,8 +814,62 @@ export const GPLAY = (() => {
   }
   (window.TICKS = window.TICKS || []).unshift(tick);
   whenLoaded(() => setTimeout(load, 450));
+  // ---- the fluorescent tube: switched at the door; its light is one of the pavilion's, free before the built-ins (KERN.lights) ----
+  const LAMP = { on: false, ls: null, t: 0 };
+  KERN.lights.borrow({
+    id: 'garage-licht',
+    n: 1,
+    prio: 2,
+    want: () => {
+      if (!LAMP.on || !on0()) return false;
+      const o = KERN.where();
+      return !!o && Math.hypot(o[0] - 2, o[1] - 2) < 40;
+    },
+    on: ls => {
+      LAMP.ls = ls;
+      LAMP.t = 0;
+    },
+    tick: (ls, dt) => {
+      const l = ls[0];
+      LAMP.t += dt;
+      // a cold tube flickers before it lights
+      const k = LAMP.t > 0.7 || Math.sin(LAMP.t * 47) > 0.2 ? 1 : 0.05;
+      l.position.copy(V(...GARAGE.light));
+      l.distance = 6.5;
+      l.decay = 1.6;
+      l.color.setHex(0xeef3ff);
+      l.intensity = 5.5 * k;
+      GARAGE.tube.emissiveIntensity = 1.6 * k;
+      if (LAMP.t < 1.0) markDirty(true);
+    },
+    off: () => {
+      LAMP.ls = null;
+      GARAGE.tube.emissiveIntensity = 0;
+      markDirty(true);
+    },
+  });
+  KERN.act({
+    id: 'garage:licht',
+    r: 1.3,
+    prio: 0.2,
+    pos: () => GARAGE.switch,
+    label: () => (on0() ? (LAMP.on ? 'Licht aus' : 'Licht an') : null),
+    run: () => {
+      LAMP.on = !LAMP.on;
+      SFX.click();
+      if (!LAMP.on) GARAGE.tube.emissiveIntensity = 0;
+      S.dirty = true;
+      markDirty(true);
+    },
+  });
   // ---- where am I: inside the old garage (acoustics, the light on the thing in the hand) ----
-  KERN.provide('inside', (x, y, z) => on0() && GARAGE.inside(x, y) && z !== undefined && z < Z0 + 2.0);
+  KERN.provide('inside', (x, y, z) => z !== undefined && z < GARAGE.at(PHASE).zf + 2.0 && inGarage(x, y));
+  // the garage at the south end has its name (the old one: 'Alte Garage', game/player.js)
+  KERN.provide(
+    'place',
+    (x, y, z) => (PHASE >= PHN.garage && z !== undefined && z < 3 && inGarage(x, y) ? 'Garage (Holzlager)' : undefined),
+    55
+  );
   // ---- a place to jump to and a start situation: in front of the old garage (phase 0) ----
   KERN.spot('garage', { mode: 'walk', pos: [2.0, 7.4], z: 0, yaw: 180, pitch: -6, label: 'Alte Garage' });
   KERN.scenario('garage', {

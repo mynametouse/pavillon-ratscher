@@ -13,9 +13,10 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { scene, V } from '../core/head.js';
 import { ANISO, dimIndoor, patchSV, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { B, beam, BUILD, COL, cyl, PHN, phase, tagPh } from '../core/geo.js';
+import { B, beam, bldBegin, bldEnd, BUILD, COL, cyl, PHN, phase, tagPh } from '../core/geo.js';
 import { zS } from '../pavilion/house_base.js';
 import { S0 } from './env.js';
+import { gB, lcol, lwalk, rotDesc, siteGroup, worldOf } from './site_base.js';
 // own seeded random numbers (core/head.js rnd() is one sequence for the whole scene – using it here would move the trees and the grass)
 const rand = (
   s => () =>
@@ -57,6 +58,8 @@ const GM = {
   grey: pm(0x5f6366, 0.7),
   sack: pm(0x5a4a38, 0.95),
 };
+// the tube's glass: emissive when the light is on (a uniform – no new shader)
+const TUBE = plain({ color: 0xf4f6f2, roughness: 0.3, emissive: 0xeef4ff, emissiveIntensity: 0 });
 // pegboard over the bench: hardboard with holes in a 25 mm grid and the outlines where the tools hang
 const PEG = (() => {
   const c = document.createElement('canvas');
@@ -160,84 +163,98 @@ phase(PHN.bestand, PHN.garage);
   for (const x of [-0.6, 4.6]) box(x - 0.02, x + 0.02, RAIL.y0, RAIL.y1, RAIL.z0 - 0.06, RAIL.z1, MAT.blacksteel); // end stops
   // floor guides at the foot of the leaves
   for (const x of [OP.x0 - 0.2, OP.x1 + 0.2]) box(x - 0.04, x + 0.04, 4.05, 4.12, Z0, Z0 + 0.06, MAT.blacksteel);
-  // a fluorescent tube under the roof (no light of its own)
+  // a fluorescent tube under the roof (it glows when switched on: garden/garage_play.js lends it a light) and its switch by the door
   box(1.4, 2.6, 1.95, 2.05, HW - 0.07, HW, GM.white);
-  box(1.42, 2.58, 1.97, 2.03, HW - 0.1, HW - 0.07, plain({ color: 0xf4f6f2, roughness: 0.3 }));
+  box(1.42, 2.58, 1.97, 2.03, HW - 0.1, HW - 0.07, TUBE);
+  box(0.5, 0.6, 3.865, 3.9, Z0 + 1.3, Z0 + 1.42, GM.white);
+  box(0.535, 0.565, 3.855, 3.865, Z0 + 1.34, Z0 + 1.38, GM.grey);
 }
 // ---- the two sliding leaves: a steel frame with corrugated sheet outside, hung from two rollers each, a handle; the east one carries the
-//      hasp with the padlock. Closed they meet in the middle (x = 2.0); open each one slides 1.3 m to its side ----
-const leaves = [];
-for (const side of [-1, 1]) {
-  const x0 = side < 0 ? 2.0 - LEAF.w : 2.0,
-    x1 = x0 + LEAF.w,
-    g = new THREE.Group(),
-    o = { parent: g, col: false, cast: true };
-  const yf = LEAF.y0,
-    ys = LEAF.y1 - 0.012; // frame from y0 to ys, the sheet in front of it
-  // frame (40 × 40 tube): sides, top, bottom, a middle rail, a diagonal brace on the inside
-  B(x0, x0 + 0.04, yf, ys, LEAF.z0, LEAF.z1, MAT.galv, o);
-  B(x1 - 0.04, x1, yf, ys, LEAF.z0, LEAF.z1, MAT.galv, o);
-  B(x0, x1, yf, ys, LEAF.z1 - 0.04, LEAF.z1, MAT.galv, o);
-  B(x0, x1, yf, ys, LEAF.z0, LEAF.z0 + 0.04, MAT.galv, o);
-  B(x0, x1, yf, ys, LEAF.z0 + 0.98, LEAF.z0 + 1.02, MAT.galv, o);
-  {
-    const a = [side < 0 ? x0 + 0.06 : x1 - 0.06, yf + 0.015, LEAF.z0 + 0.06],
-      b = [side < 0 ? x1 - 0.06 : x0 + 0.06, yf + 0.015, LEAF.z0 + 0.96];
-    const me = rod(a, b, 0.016, MAT.galv, g, 6);
-    me.castShadow = true;
-  }
-  // the sheet, ribs upright
-  B(x0 + 0.005, x1 - 0.005, ys, LEAF.y1, LEAF.z0 + 0.01, LEAF.z1 - 0.005, MAT.metal, Object.assign({ grain: 'z' }, o));
-  // the handle near the meeting edge (outside), standing off on two bolts
-  const hx = side < 0 ? x1 - 0.16 : x0 + 0.16;
-  B(hx - 0.012, hx + 0.012, LEAF.y1 + 0.03, LEAF.y1 + 0.055, Z0 + 0.86, Z0 + 1.34, MAT.blacksteel, o);
-  for (const z of [Z0 + 0.9, Z0 + 1.3])
-    B(hx - 0.01, hx + 0.01, LEAF.y1, LEAF.y1 + 0.03, z - 0.01, z + 0.01, MAT.blacksteel, o);
-  // a pull handle inside too
-  B(hx - 0.012, hx + 0.012, yf - 0.05, yf - 0.025, Z0 + 0.9, Z0 + 1.25, MAT.blacksteel, o);
-  for (const z of [Z0 + 0.93, Z0 + 1.22])
-    B(hx - 0.01, hx + 0.01, yf - 0.025, yf, z - 0.01, z + 0.01, MAT.blacksteel, o);
-  // hangers with rollers in the rail
-  for (const x of [x0 + 0.16, x1 - 0.16]) {
-    B(x - 0.03, x + 0.03, 4.015, 4.03, LEAF.z1 - 0.06, RAIL.z0 + 0.04, MAT.galv, o);
-    const w = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.03, 12), MAT.blacksteel);
-    w.rotation.x = Math.PI / 2;
-    w.position.copy(V(x, 4.03, RAIL.z0 + 0.035));
-    g.add(w);
-  }
-  if (side > 0) {
-    // hasp and padlock at the meeting edge
-    B(x0 + 0.01, x0 + 0.09, LEAF.y1, LEAF.y1 + 0.012, Z0 + 1.08, Z0 + 1.13, MAT.blacksteel, o);
-    B(x0 + 0.05, x0 + 0.09, LEAF.y1 + 0.012, LEAF.y1 + 0.03, Z0 + 1.02, Z0 + 1.07, MAT.brass, o);
-  }
-  g.traverse(m => {
-    if (m.isMesh) m.userData.noMerge = true;
-  });
-  mergeByMat(g);
-  g.traverse(m => {
-    if (m.isMesh) {
-      m.userData.noMerge = true;
-      tagPh(m);
+//      hasp with the padlock. Closed they meet in the middle (xm); open each one slides `travel` to its side. Built in the coordinates of
+//      `parent` (the scene: site coordinates; a building's group: its local frame), each leaf a group of its own (it moves) ----
+function mkLeaves({ parent, keys, xm, w, y0, y1, z0, z1, zr, travel }) {
+  const out = [];
+  for (const side of [-1, 1]) {
+    const x0 = side < 0 ? xm - w : xm,
+      x1 = x0 + w,
+      g = new THREE.Group(),
+      o = { parent: g, col: false, cast: true };
+    const yf = y0,
+      ys = y1 - 0.012; // frame from y0 to ys, the sheet in front of it
+    // frame (40 × 40 tube): sides, top, bottom, a middle rail, a diagonal brace on the inside
+    B(x0, x0 + 0.04, yf, ys, z0, z1, MAT.galv, o);
+    B(x1 - 0.04, x1, yf, ys, z0, z1, MAT.galv, o);
+    B(x0, x1, yf, ys, z1 - 0.04, z1, MAT.galv, o);
+    B(x0, x1, yf, ys, z0, z0 + 0.04, MAT.galv, o);
+    B(x0, x1, yf, ys, z0 + 0.98, z0 + 1.02, MAT.galv, o);
+    {
+      const a = [side < 0 ? x0 + 0.06 : x1 - 0.06, yf + 0.015, z0 + 0.06],
+        b = [side < 0 ? x1 - 0.06 : x0 + 0.06, yf + 0.015, z0 + 0.96];
+      const me = rod(a, b, 0.016, MAT.galv, g, 6);
+      me.castShadow = true;
     }
-  });
-  tagPh(g);
-  scene.add(g);
-  leaves.push({
-    key: side < 0 ? 'garageW' : 'garageO',
-    name: side < 0 ? 'linkes Tor' : 'rechtes Tor',
-    side,
-    g,
-    x0,
-    x1,
-    y0: LEAF.y0 - 0.06,
-    y1: LEAF.y1 + 0.06,
-    z0: LEAF.z0,
-    z1: LEAF.z1,
-    travel: LEAF.travel,
-    k: 0,
-    want: 0,
-  });
+    // the sheet, ribs upright
+    B(x0 + 0.005, x1 - 0.005, ys, y1, z0 + 0.01, z1 - 0.005, MAT.metal, Object.assign({ grain: 'z' }, o));
+    // the handle near the meeting edge (outside), standing off on two bolts; a pull handle inside too
+    const hx = side < 0 ? x1 - 0.16 : x0 + 0.16,
+      zh = z0 - 0.025;
+    B(hx - 0.012, hx + 0.012, y1 + 0.03, y1 + 0.055, zh + 0.86, zh + 1.34, MAT.blacksteel, o);
+    for (const z of [zh + 0.9, zh + 1.3]) B(hx - 0.01, hx + 0.01, y1, y1 + 0.03, z - 0.01, z + 0.01, MAT.blacksteel, o);
+    B(hx - 0.012, hx + 0.012, yf - 0.05, yf - 0.025, zh + 0.9, zh + 1.25, MAT.blacksteel, o);
+    for (const z of [zh + 0.93, zh + 1.22])
+      B(hx - 0.01, hx + 0.01, yf - 0.025, yf, z - 0.01, z + 0.01, MAT.blacksteel, o);
+    // hangers with rollers in the rail
+    for (const x of [x0 + 0.16, x1 - 0.16]) {
+      B(x - 0.03, x + 0.03, yf + 0.015, yf + 0.03, z1 - 0.06, zr + 0.04, MAT.galv, o);
+      const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.03, 12), MAT.blacksteel);
+      wh.rotation.x = Math.PI / 2;
+      wh.position.copy(V(x, yf + 0.03, zr + 0.035));
+      g.add(wh);
+    }
+    if (side > 0) {
+      // hasp and padlock at the meeting edge
+      B(x0 + 0.01, x0 + 0.09, y1, y1 + 0.012, zh + 1.08, zh + 1.13, MAT.blacksteel, o);
+      B(x0 + 0.05, x0 + 0.09, y1 + 0.012, y1 + 0.03, zh + 1.02, zh + 1.07, MAT.brass, o);
+    }
+    mergeByMat(g);
+    g.traverse(m => {
+      if (m.isMesh) {
+        m.userData.noMerge = true;
+        tagPh(m);
+      }
+    });
+    tagPh(g);
+    parent.add(g);
+    out.push({
+      key: keys[side < 0 ? 0 : 1],
+      side,
+      g,
+      x0,
+      x1,
+      y: (y0 + y1) / 2, // the leaf's plane (in the frame)
+      ey: (y1 - y0) / 2 + 0.008,
+      hx, // its handle
+      z0,
+      z1,
+      travel,
+      k: 0,
+      want: 0,
+    });
+  }
+  return out;
 }
+const leaves = mkLeaves({
+  parent: scene,
+  keys: ['garageW', 'garageO'],
+  xm: 2.0,
+  w: LEAF.w,
+  y0: LEAF.y0,
+  y1: LEAF.y1,
+  z0: LEAF.z0,
+  z1: LEAF.z1,
+  zr: RAIL.z0,
+  travel: LEAF.travel,
+});
 // ======================= inside: shelves, workbench, tools =======================
 // steel shelf (Schwerlastregal): four perforated uprights, five chipboard levels, X braces at the back; the things on it come from fill(level)
 function shelf(x0, x1, y0, y1, levels, fill, backAt) {
@@ -591,7 +608,113 @@ const WB = { x0: 1.2, x1: 2.9, y0: 0.12, y1: 0.72, z: Z0 + 0.9 };
     scene.add(tagPh(t));
   }
 }
-// oil stain on the floor where cars stood once (a dark patch), a doormat of the garage: none
+phase(null);
+// ======================= from phase 1: the same garage at the south end of the garden, the store for the Klingenholz =======================
+// (garden/env.js built it as a closed box until 23.10.2026) Corrugated walls on a plank floor over concrete pads, the flat roof with its two
+// PV modules, the north end open under a lintel with a rail and the two sliding leaves; inside boards stacked on stickers along the walls,
+// the mower's and the cans' places by the door. A movable building ('garage' – plan view). Local frame (garden/site_base.js): x across
+// (≈ east), y along it (≈ north: the door), z up.
+const SB = (() => {
+  const r = S0.garage,
+    c = [(r[0][0] + r[2][0]) / 2, (r[0][1] + r[2][1]) / 2],
+    hy = Math.hypot(r[3][0] - r[0][0], r[3][1] - r[0][1]) / 2,
+    hx = Math.hypot(r[1][0] - r[0][0], r[1][1] - r[0][1]) / 2,
+    azN = (Math.atan2(r[3][0] - r[0][0], r[3][1] - r[0][1]) * 180) / Math.PI;
+  return { b: { c, az: azN + 90 }, hx, hy, azN, zf: 0.14, zw: 0.14 + 2.2, op: 1.1 };
+})();
+phase(PHN.garage);
+bldBegin('garage', 'Blechgarage', SB.b.c, { short: 'Garage', pad: 0.2 });
+const SUED = (() => {
+  const { b, hx, hy, zf, zw, op } = SB,
+    g = siteGroup(b),
+    r = rotDesc(b),
+    T = 0.06,
+    G = (x0, x1, y0, y1, z0, z1, m, o = {}) => gB(g, x0, x1, y0, y1, z0, z1, m, Object.assign({ cast: false }, o));
+  // concrete pads, joists, plank floor (walkable)
+  for (const x of [-hx + 0.2, hx - 0.2])
+    for (const y of [-hy + 0.25, 0, hy - 0.25]) G(x - 0.2, x + 0.2, y - 0.2, y + 0.2, 0, 0.06, MAT.conc);
+  for (const x of [-hx + 0.2, 0, hx - 0.2]) G(x - 0.05, x + 0.05, -hy, hy, 0.06, zf - 0.03, MAT.kvh, { grain: 'y' });
+  G(-hx, hx, -hy, hy, zf - 0.03, zf, MAT.plank, { grain: 'y' });
+  lwalk(r, -hx, hx, -hy, hy, zf, 'wood');
+  // walls (ribs upright); the north end beside and above the opening
+  const W = (x0, x1, y0, y1) => {
+    G(x0, x1, y0, y1, zf - 0.03, zw, MAT.corr, { grain: 'z', cast: true });
+    lcol(r, x0, x1, y0, y1, zf - 0.03, zw, 'wall');
+  };
+  W(-hx, -hx + T, -hy, hy);
+  W(hx - T, hx, -hy, hy);
+  W(-hx + T, hx - T, -hy, -hy + T);
+  W(-hx + T, -op, hy - T, hy);
+  W(op, hx - T, hy - T, hy);
+  G(-op, op, hy - T, hy, zf + 1.98, zw, MAT.corr, { grain: 'z', cast: true });
+  for (const [x, y] of [
+    [-hx, -hy],
+    [hx - 0.06, -hy],
+    [-hx, hy - 0.06],
+    [hx - 0.06, hy - 0.06],
+  ])
+    G(x, x + 0.06, y, y + 0.06, zf - 0.03, zw + 0.02, MAT.galv, { grain: 'z' });
+  G(-op - 0.05, -op, hy - 0.12, hy + 0.01, zf, zf + 1.98, MAT.galv, { grain: 'z' });
+  G(op, op + 0.05, hy - 0.12, hy + 0.01, zf, zf + 1.98, MAT.galv, { grain: 'z' });
+  G(-op - 0.05, op + 0.05, hy - 0.12, hy + 0.01, zf + 1.93, zf + 1.98, MAT.galv, { grain: 'x' });
+  // flat roof with the two PV modules (as before)
+  G(-hx - 0.1, hx + 0.1, -hy - 0.12, hy + 0.12, zw, zw + 0.06, MAT.roofGrey, { cast: true });
+  for (const y of [-1.0, 0.9]) {
+    G(-0.58, 0.58, y - 0.88, y + 0.88, zw + 0.06, zw + 0.1, MAT.pvframe);
+    G(-0.55, 0.55, y - 0.85, y + 0.85, zw + 0.1, zw + 0.12, MAT.pv, { cast: true });
+  }
+  // the rail beyond both sides of the opening, on brackets, and the leaves
+  const zr = zf + 2.06;
+  G(-op * 2 - 0.2, op * 2 + 0.2, hy + 0.01, hy + 0.095, zr, zr + 0.065, MAT.galv, { grain: 'x', cast: true });
+  for (const x of [-op * 2 - 0.1, -op * 0.6, op * 0.6, op * 2 + 0.1])
+    G(x - 0.03, x + 0.03, hy, hy + 0.095, zr + 0.065, zr + 0.11, MAT.galv);
+  const lv = mkLeaves({
+    parent: g,
+    keys: ['suedW', 'suedO'],
+    xm: 0,
+    w: op + 0.05,
+    y0: hy + 0.02,
+    y1: hy + 0.072,
+    z0: zf + 0.025,
+    z1: zf + 2.02,
+    zr,
+    travel: op + 0.05,
+  });
+  // the store: boards on stickers, stacked along both long walls on bearers; a few beams standing at the back
+  const stack = (x0, x1, y0, y1, n, seed) => {
+    const R = (
+      s => () =>
+        ((s = (s * 16807) % 2147483647) - 1) / 2147483646
+    )(seed);
+    for (const y of [y0 + 0.15, (y0 + y1) / 2, y1 - 0.15])
+      G(x0, x1, y - 0.05, y + 0.05, zf, zf + 0.1, MAT.kvh, { grain: 'x' });
+    let z = zf + 0.1;
+    for (let i = 0; i < n; i++) {
+      const t = 0.026 + R() * 0.026;
+      let x = x0;
+      while (x < x1 - 0.08) {
+        const w = Math.min(x1 - x, 0.12 + R() * 0.12);
+        G(x, x + w - 0.012, y0 + R() * 0.06, y1 - R() * 0.06, z, z + t, MAT.larch, { grain: 'y' });
+        x += w;
+      }
+      z += t;
+      if (i < n - 1)
+        for (const y of [y0 + 0.15, (y0 + y1) / 2, y1 - 0.15])
+          G(x0 + 0.02, x1 - 0.02, y - 0.012, y + 0.012, z, z + 0.022, MAT.kvh, { grain: 'x' });
+      z += 0.022;
+    }
+    lcol(r, x0, x1, y0, y1, zf, z, 'holz');
+  };
+  stack(-hx + 0.12, -0.7, -hy + 0.15, 1.5, 16, 71);
+  stack(0.7, hx - 0.12, -hy + 0.15, 0.8, 12, 72);
+  for (let i = 0; i < 5; i++) {
+    const x = -0.45 + i * 0.2;
+    beam([x, -hy + 0.1, zf], [x + 0.05, -hy + 0.3, zf + 2.0], 0.1, 0.1, MAT.kvh, { cast: false, parent: g });
+  }
+  lcol(r, -0.55, 0.55, -hy + 0.06, -hy + 0.35, zf, zf + 2.0, 'holz');
+  return { g, r, leaves: lv };
+})();
+bldEnd({ c: SB.b.c, az: SB.azN + 180, L: SB.hy * 2, W: SB.hx * 2 });
 phase(null);
 // ======================= models: the mower and the petrol can (garden/garage_play.js uses them) =======================
 // colours outdoors (they leave the garage)
@@ -763,44 +886,95 @@ export function oliveCan(root) {
   return root;
 }
 // ======================= where the things stand =======================
-// phase 0: inside the old garage; from phase 1: in front of the garage at the south end (its north side; garden/env.js builds it as a
-// closed store) – following that building when it is moved in the plan view (BUILD.garage.tf)
-const MOVED = (() => {
-  const r = S0.garage,
-    c = [(r[0][0] + r[2][0]) / 2, (r[0][1] + r[2][1]) / 2],
-    n = [(r[3][0] - r[0][0]) / 6.0, (r[3][1] - r[0][1]) / 6.0], // along the building, towards its north end
-    e = [(r[1][0] - r[0][0]) / 3.2, (r[1][1] - r[0][1]) / 3.2], // across, towards the east
-    L = Math.hypot(r[3][0] - r[0][0], r[3][1] - r[0][1]),
-    at = (a, b) => [c[0] + n[0] * a + e[0] * b, c[1] + n[1] * a + e[1] * b];
-  return { c, n, e, L, at, az: (Math.atan2(n[0], n[1]) * 180) / Math.PI };
-})();
-const tfMoved = (p, yaw) => {
-  const Bg = BUILD.garage;
-  if (!Bg) return [p[0], p[1], yaw];
-  const q = Bg.tf(p[0], p[1]);
-  return [q[0], q[1], yaw - Bg.da];
+// the two garages: the old one on the slab (phase 0; its frame is the site's) and the one at the south end (from phase 1; its frame follows
+// the building when it is moved in the plan view – BUILD.garage.tf). Per garage: toW/toL between its frame and the site, axes, inside,
+// the door (opening x0..x1 at the outside face y), the leaves, home places in its frame ([lx, ly, compass degrees in the frame])
+const sW = (lx, ly) => {
+  const w = worldOf(SB.b, lx, ly),
+    Bg = BUILD.garage;
+  return Bg ? Bg.tf(w[0], w[1]) : w;
+};
+const sAxes = () => {
+  const o = sW(0, 0),
+    x = sW(1, 0),
+    y = sW(0, 1);
+  return { o, ax: [x[0] - o[0], x[1] - o[1]], ay: [y[0] - o[0], y[1] - o[1]] };
+};
+const GAR = {
+  alt: {
+    id: 'alt',
+    ph: [PHN.bestand, PHN.garage],
+    leaves,
+    toW: (x, y) => [x, y],
+    toL: (x, y) => [x, y],
+    axes: () => ({ o: [0, 0], ax: [1, 0], ay: [0, 1] }),
+    inside: (lx, ly) => lx > 0.1 && lx < 3.9 && ly > 0.1 && ly < 3.9,
+    door: { x0: OP.x0, x1: OP.x1, y: 3.98 },
+    zf: Z0,
+    home: { mower: [2.0, 2.78, 0], petrol: [3.63, 3.12, 0], diesel: [3.62, 3.6, 90] },
+    bare: { c: [2.0, 5.0], hx: 1.35, hy: 0.9 },
+  },
+  sued: {
+    id: 'sued',
+    ph: [PHN.garage, 1e9],
+    leaves: SUED.leaves,
+    toW: sW,
+    toL: (x, y) => {
+      const { o, ax, ay } = sAxes(),
+        dx = x - o[0],
+        dy = y - o[1];
+      return [dx * ax[0] + dy * ax[1], dx * ay[0] + dy * ay[1]];
+    },
+    axes: sAxes,
+    inside: (lx, ly) => Math.abs(lx) < SB.hx - 0.06 && Math.abs(ly) < SB.hy - 0.06,
+    door: { x0: -SB.op, x1: SB.op, y: SB.hy },
+    zf: SB.zf,
+    home: { mower: [0, SB.hy - 1.3, 0], petrol: [1.12, SB.hy - 0.45, 0], diesel: [1.12, SB.hy - 0.95, 90] },
+    bare: { c: [0, SB.hy + 0.9], hx: SB.op + 0.25, hy: 0.85 },
+  },
+};
+for (const G of Object.values(GAR)) for (const L of G.leaves) L.gar = G;
+// the heading (compass degrees) of a garage's local +y – its door side
+const headOf = G => {
+  const { ay } = G.axes();
+  return (Math.atan2(ay[0], ay[1]) * 180) / Math.PI;
 };
 export const GARAGE = {
-  leaves,
+  GAR,
+  leaves: [...GAR.alt.leaves, ...GAR.sued.leaves],
+  tube: TUBE,
+  light: [2.0, 2.0, HW - 0.16], // where the tube's light shines from
+  switch: [0.55, 3.86, Z0 + 1.36],
   Z0,
   OP,
   LEAF,
-  inside: (x, y) => x > 0.1 && x < 3.9 && y > 0.1 && y < 3.9,
-  // in front of the door (outside, north) and just inside it
-  front: [2.0, 4.9],
+  // the garage standing in phase ph
+  at: ph => (ph <= PHN.bestand ? GAR.alt : GAR.sued),
+  // inside the old garage (site coordinates)
+  inside: (x, y) => GAR.alt.inside(x, y),
+  // inside the garage of phase ph
+  insideAt(ph, x, y) {
+    const G = GARAGE.at(ph),
+      l = G.toL(x, y);
+    return G.inside(l[0], l[1]);
+  },
+  headOf,
   // home(phase): where the mower (deck middle, heading in compass degrees), the petrol can and the diesel can stand: [x, y, z, az]
   home(ph) {
-    if (ph <= PHN.bestand)
-      return {
-        mower: [2.0, 2.78, Z0, 0],
-        petrol: [3.63, 3.12, Z0, 0],
-        diesel: [3.62, 3.6, Z0, 90],
-      };
-    const L = MOVED.L / 2,
-      m = tfMoved(MOVED.at(L + 0.75, 0.4), MOVED.az + 180), // facing the wall: the handle to the north, room to stand behind it
-      p = tfMoved(MOVED.at(L + 0.35, -1.2), MOVED.az),
-      d = tfMoved(MOVED.at(L + 0.35, -0.75), MOVED.az + 90);
-    return { mower: [m[0], m[1], 0, m[2]], petrol: [p[0], p[1], 0, p[2]], diesel: [d[0], d[1], 0, d[2]] };
+    const G = GARAGE.at(ph),
+      hd = headOf(G),
+      o = {};
+    for (const k of ['mower', 'petrol', 'diesel']) {
+      const [lx, ly, a] = G.home[k],
+        w = G.toW(lx, ly);
+      o[k] = [w[0], w[1], G.zf, a + hd];
+    }
+    return o;
+  },
+  // the worn patch in front of the door of the garage of phase ph: a rect for GRASS.bare
+  bare(ph) {
+    const G = GARAGE.at(ph);
+    return { c: G.toW(G.bare.c[0], G.bare.c[1]), az: headOf(G) + 90, hx: G.bare.hx, hy: G.bare.hy };
   },
 };
 window.GARAGE = GARAGE;

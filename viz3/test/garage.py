@@ -1,7 +1,7 @@
 # feat/garage (Falko, 23.10.2026 10:53): the old tin garage of construction phase 0 – two sliding leaves to the north, shelves with tools,
 # the petrol lawn mower (take it out, start it, mow a strip, the tank goes down, refuel, park it), the red petrol can, the generator's
 # petrol, Hubert's diesel can in the garage, a reload keeps the mown lawn and the mower's place. Pictures into out/garage/.
-#   python3 viz3/test/garage.py PORT [nogeo=1,tier=hoch,only=doors+inside+mower+petrol+diesel+reload]
+#   python3 viz3/test/garage.py PORT [nogeo=1,tier=hoch,only=programs+doors+inside+night+mower+petrol+diesel+sued+reload]
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]
@@ -31,7 +31,7 @@ window.__G = {
   // walk: forward (f = 1) or back (f = -1) for secs, in steps
   walk(secs, f = 1) { for (let t = 0; t < secs; t += 0.05) GAME.step(0.05, f); const P = GAME.P; return { x: +P.x.toFixed(2), y: +P.y.toFixed(2), feet: +P.feet.toFixed(2), place: KERN.place(P.x, P.y, P.feet) }; },
   m() { const M = GPLAY.M; return { x: +M.x.toFixed(2), y: +M.y.toFixed(2), z: +M.z.toFixed(2), az: +M.az.toFixed(1), mode: M.mode, run: M.run, fuel: +M.fuel.toFixed(3) }; },
-  leaves() { return GPLAY.leaves.map(L => ({ k: +L.k.toFixed(2), want: L.want, x: +L.g.position.x.toFixed(2) })); },
+  leaves() { return GARAGE.GAR.alt.leaves.map(L => ({ k: +L.k.toFixed(2), want: L.want, x: +L.g.position.x.toFixed(2) })); },
 };
 """
 
@@ -58,7 +58,7 @@ def boot():
 with lib.browser() as b:
     pg = lib.page(b, 1100, 660, errs=errs, tier=TIER)
     boot()
-    st = J("{ phase: window.PHASE, leaves: GPLAY.leaves.length, acts: PLAY.acts().filter(a => /^garage:/.test(a.id)).map(a => a.id), progs: GAME.perf().programs, m: __G.m(), save: SAVE.keys().some(k => k.key === 'pav-garage-v1') }")
+    st = J("{ phase: window.PHASE, leaves: GARAGE.GAR.alt.leaves.length, acts: PLAY.acts().filter(a => /^garage:/.test(a.id)).map(a => a.id), progs: GAME.perf().programs, m: __G.m(), save: SAVE.keys().some(k => k.key === 'pav-garage-v1') }")
     print('state', json.dumps(st), flush=True)
     ck('starts in phase 0 with the old garage', st['phase'] == 0 and st['leaves'] == 2, st)
     ck('actions registered (two leaves, mower, motor, tanken, generator)', all(('garage:' + k) in st['acts'] for k in ['garageW', 'garageO', 'maeher', 'motor', 'tanken', 'aggregat']), st['acts'])
@@ -69,7 +69,7 @@ with lib.browser() as b:
     if want('programs'):
         E("GAME.setPhase(GAME.PHASES.length - 1); GAME.view(2.0, 9.0, 1.65, 180, -6, 62); GAME.step(0.05); GAME.shot()")
         k0 = J("GAME.R.info.programs.map(p => p.cacheKey)")
-        E("GAME.setPhase(0); GPLAY.leaves.forEach(L => GPLAY.slide(L, 1, true)); GAME.step(1.5)")
+        E("GAME.setPhase(0); GARAGE.GAR.alt.leaves.forEach(L => GPLAY.slide(L, 1, true)); GAME.step(1.5)")
         for v_ in ["2.0, 9.0, 1.65, 180, -6, 62", "2.0, 4.6, 1.62, 180, -14, 78", "2.9, 3.5, 1.6, 225, -16, 80", "1.0, 3.3, 1.6, 140, -16, 80"]:
             E(f"GAME.view({v_}); GAME.step(0.05); GAME.shot()")
         new_ = J(f"GAME.R.info.programs.filter(p => !{json.dumps(k0)}.includes(p.cacheKey)).map(p => p.name + ' ' + p.cacheKey.slice(-160))")
@@ -77,7 +77,7 @@ with lib.browser() as b:
         ck('the old garage needs at most 2 programs of its own', len(new_) <= 2, len(new_))
     # ---------------- the doors: closed they block, the action slides them open, south wall closed ----------------
     if want('doors'):
-        E("GPLAY.leaves.forEach(L => GPLAY.slide(L, 0, true)); GAME.step(1.5)")
+        E("GARAGE.GAR.alt.leaves.forEach(L => GPLAY.slide(L, 0, true)); GAME.step(1.5)")
         view(2.0, 9.0, 1.65, 180, -6, 62); shot('nord_zu')
         r = E("(() => { GAME.view(1.6, 6.0, 1.62, 180, 0); return JSON.stringify(__G.walk(4.0)); })()")
         r = json.loads(r); ck('closed leaves block the way in from the north', r['y'] > 4.05, r)
@@ -105,7 +105,7 @@ with lib.browser() as b:
         ck('the open leaf blocks in front of the west wall', r['y'] > 4.05, r)
     # ---------------- inside: shelves, bench, tools, mower, cans ----------------
     if want('inside'):
-        E("GPLAY.leaves.forEach(L => GPLAY.slide(L, 1, true)); GAME.step(1.5)")
+        E("GARAGE.GAR.alt.leaves.forEach(L => GPLAY.slide(L, 1, true)); GAME.step(1.5)")
         view(2.0, 4.6, 1.62, 180, -14, 78); shot('innen_von_tuer')
         view(2.9, 3.5, 1.6, 225, -16, 80); shot('innen_regal_west')
         view(1.0, 3.3, 1.6, 140, -16, 80); shot('innen_regal_ost_kanister')
@@ -115,9 +115,24 @@ with lib.browser() as b:
         ck('petrol can, diesel can and the mower inside the garage', cans['inP'] and cans['inD'] and 0.1 < cans['m']['x'] < 3.9 and 0.1 < cans['m']['y'] < 3.9, cans)
         cost = E("""(() => { const I = GAME.R.info; GAME.view(2.0, 4.6, 1.62, 180, -14, 78); I.autoReset = false; I.reset(); GAME.shot(); const o = { calls: I.render.calls, tris: I.render.triangles, programs: I.programs.length }; I.autoReset = true; return JSON.stringify(o); })()""")
         print('render cost (from the door)', cost, flush=True)
+    # ---------------- night: the fluorescent tube (a borrowed pavilion light, free in phase 0) ----------------
+    if want('night'):
+        E("GARAGE.GAR.alt.leaves.forEach(L => GPLAY.slide(L, 1, true)); GAME.step(1.5)")
+        E("GAME.setMode('night')"); lib.settle_light(pg)
+        lab = E("__G.at('garage:licht', 0.8, 180)")
+        ck('switch inside by the door: "Licht an"', lab == 'Licht an', lab)
+        E("__G.run('garage:licht', 1.4)")
+        st_ = J("{ lent: KERN.lights.status().find(b => b.id === 'garage-licht'), glow: GARAGE.tube.emissiveIntensity }")
+        ck('the tube lights (a pavilion light lent to it)', st_['lent'] and st_['lent']['has'] == 1 and st_['glow'] > 0.5, st_)
+        view(2.0, 4.6, 1.62, 180, -14, 78); shot('nacht_innen_licht')
+        view(2.0, 9.0, 1.65, 180, -6, 62); shot('nacht_aussen_licht')
+        E("__G.at('garage:licht', 0.8, 180); __G.run('garage:licht', 0.3)")
+        st_ = J("{ lent: KERN.lights.status().find(b => b.id === 'garage-licht'), glow: GARAGE.tube.emissiveIntensity }")
+        ck('switched off: the light goes back', st_['lent'] and st_['lent']['has'] == 0 and st_['glow'] == 0, st_)
+        E("GAME.setMode('day')"); lib.settle_light(pg)
     # ---------------- the mower: take it out, start, mow a strip, fuel, park ----------------
     if want('mower'):
-        E("GPLAY.leaves.forEach(L => GPLAY.slide(L, 1, true)); GAME.step(1.5)")
+        E("GARAGE.GAR.alt.leaves.forEach(L => GPLAY.slide(L, 1, true)); GAME.step(1.5)")
         E("GPLAY.M.fuel = 0.5; GPLAY.mowerHome(0); GAME.step(0.1)")
         lab = E("__G.at('garage:maeher', 0.4, 180)")
         ck('behind the handle: "Rasenmäher nehmen"', lab == 'Rasenmäher nehmen', lab)
@@ -151,8 +166,10 @@ with lib.browser() as b:
         print('cut along the strip', json.dumps(cnt), flush=True)
         n_cut = sum(c['n'] for c in cnt); n_all = sum(c['all'] for c in cnt)
         ck('the lawn is short where the running mower passed', n_all > 0 and n_cut >= 0.8 * n_all, f'{n_cut}/{n_all} clumps cut, mower {p0} → {p1}')
-        side = J(f"GRASS.cutCount({(p0['x'] + p1['x']) / 2} - 1.6, {(p0['y'] + p1['y']) / 2}, 0.6)")
-        ck('… and only there (1.6 m beside it the lawn is long)', side['all'] > 0 and side['n'] == 0, side)
+        # beside the strip (the first spot 1.4–3 m to either side that has lawn): long
+        side = J(f"""(() => {{ const a = [{p0['x']}, {p0['y']}], b = [{p1['x']}, {p1['y']}], m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1,
+          q = [(b[1] - a[1]) / L, -(b[0] - a[0]) / L]; for (const d of [1.4, -1.4, 2, -2, 2.6, -2.6, 3, -3]) {{ const c = GRASS.cutCount(m[0] + q[0] * d, m[1] + q[1] * d, 0.6); if (c.all > 0) return Object.assign(c, {{ d }}); }} return {{ n: 0, all: 0 }}; }})()""")
+        ck('… and only there (beside the strip the lawn is long)', side['all'] > 0 and side['n'] == 0, side)
         a1 = E("GRASS.cutArea(CLOCK.t)")
         ck('mown area grows', a1 > a0 + 0.5, f'{a0} → {a1} m²')
         m = J("__G.m()"); dt_ = E("CLOCK.t") - t0
@@ -218,10 +235,10 @@ with lib.browser() as b:
         print('objective', txt, flush=True)
         ans = J("QUESTS.ask('hubert', 'q_kanister')")
         ck("Hubert's answer names the garage", 'garage' in json.dumps(ans, ensure_ascii=False).lower(), ans)
-        E("GPLAY.leaves.forEach(L => GPLAY.slide(L, 0, true)); GAME.step(1.5)")
+        E("GARAGE.GAR.alt.leaves.forEach(L => GPLAY.slide(L, 0, true)); GAME.step(1.5)")
         lab = E("(() => { const p = QUESTS.things.CAN.pos; GAME.view(p[0], 4.6, 1.62, 180, -20); GAME.step(0.1); return __G.label('take:can'); })()")
         ck('not through the closed door', lab is None, lab)
-        E("GPLAY.leaves.forEach(L => GPLAY.slide(L, 1, true)); GAME.step(1.5)")
+        E("GARAGE.GAR.alt.leaves.forEach(L => GPLAY.slide(L, 1, true)); GAME.step(1.5)")
         lab = E("(() => { const p = QUESTS.things.CAN.pos; GAME.view(p[0] - 0.7, 3.4, 1.62 + 0.15, 110, -30); GAME.step(0.1); return __G.label('take:can'); })()")
         ck('inside: "Dieselkanister nehmen"', lab == 'Dieselkanister nehmen', lab)
         view(2.6, 4.4, 1.6, 140, -28, 70); shot('kanister')
@@ -233,6 +250,37 @@ with lib.browser() as b:
         ck('phase 1: mower and cans at the garage at the south end', h['m']['y'] < -14 and h['can'][1] < -14 and h['petrol'][1] < -14, h)
         E("(() => { const H = GPLAY.home(); GAME.view(H.mower[0] - 1.5, H.mower[1] + 4.5, 1.7, 165, -12, 66); GAME.step(0.1); })()"); shot('phase1_garage_sued')
         E("GAME.setPhase(0); GAME.step(0.3)")
+    # ---------------- from phase 1: the garage at the south end (store for the wood) with the same leaves; the mower lives there ----------------
+    if want('sued'):
+        E("GAME.setPhase(1); GAME.step(0.3)")
+        g1 = J("{ acts: PLAY.acts().filter(a => /^garage:sued/.test(a.id)).map(a => a.id), home: GPLAY.home(), m: __G.m(), inM: GARAGE.insideAt(1, GPLAY.M.x, GPLAY.M.y), lv: GARAGE.GAR.sued.leaves.map(L => L.k) }")
+        ck('phase 1: the garage at the south end has its two leaves', g1['acts'] == ['garage:suedW', 'garage:suedO'], g1['acts'])
+        ck('… the mower stands inside it', g1['inM'], g1)
+        E("GARAGE.GAR.sued.leaves.forEach(L => GPLAY.slide(L, 0, true)); GAME.step(1.5)")
+        door = J("(() => { const G = GARAGE.GAR.sued; return { out: G.toW(0, G.door.y + 3.0), inn: G.toW(0, G.door.y - 1.0), head: GARAGE.headOf(G) }; })()")
+        E(f"GAME.view({door['out'][0]}, {door['out'][1]}, 1.65, {door['head']} + 180, -6, 62); GAME.step(0.1)"); shot('sued_zu')
+        r = J(f"(() => {{ GAME.view({door['out'][0]}, {door['out'][1]}, 1.62, {door['head']} + 180, 0); return __G.walk(3.0); }})()")
+        lp = J(f"GARAGE.GAR.sued.toL({r['x']}, {r['y']})")
+        ck('closed leaves of the south garage block', lp[1] > 2.95, {'p': r, 'local': lp})
+        for k in ['suedW', 'suedO']:
+            E(f"__G.at('garage:{k}', 0.8, {door['head']}); __G.run('garage:{k}', 1.6)")
+        lv = J("GARAGE.GAR.sued.leaves.map(L => L.k)")
+        ck('… both slide open', lv == [1, 1], lv)
+        E(f"GAME.view({door['out'][0]}, {door['out'][1]}, 1.65, {door['head']} + 180, -6, 62); GAME.step(0.1)"); shot('sued_offen')
+        E(f"GAME.view({door['inn'][0]}, {door['inn'][1]}, 1.6, {door['head']} + 180, -18, 80); GAME.step(0.1)"); shot('sued_innen')
+        pl = E(f"KERN.place({door['inn'][0]}, {door['inn'][1]}, 0.2)")
+        ck('inside: "Garage (Holzlager)"', pl == 'Garage (Holzlager)', pl)
+        # take the mower out through the north door
+        E("GPLAY.mowerHome(1); GAME.step(0.1)")
+        lab = J("__G.at('garage:maeher', 0.4, GPLAY.M.az + 180)")
+        E("__G.run('garage:maeher', 0.2)")
+        r = J("__G.walk(4.0)")
+        m = J("{ m: __G.m(), inG: GARAGE.insideAt(1, GPLAY.M.x, GPLAY.M.y), local: GARAGE.GAR.sued.toL(GPLAY.M.x, GPLAY.M.y) }")
+        ck('the mower comes out of the south garage', lab == 'Rasenmäher nehmen' and not m['inG'] and m['local'][1] > 3.2, {'label': lab, 'm': m})
+        E("PLAY.secondary(); GAME.step(0.2)")
+        E("GPLAY.mowerHome(1); GAME.setPhase(0); GAME.step(0.3)")
+        m = J("{ m: __G.m(), in0: GARAGE.inside(GPLAY.M.x, GPLAY.M.y) }")
+        ck('back to phase 0: the mower goes back into the old garage', m['in0'], m)
     # ---------------- reload: the mown lawn and the mower's place stay ----------------
     if want('reload'):
         E("(() => { const M = GPLAY.M; M.x = 6.5; M.y = 9.0; M.z = 0; M.az = 90; })(); GAME.step(0.1)")

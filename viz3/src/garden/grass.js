@@ -34,8 +34,22 @@ function footHideReg(im, kind = 'plant') {
   mowReg(e, FOOTHIDE.list.length - 1);
   footHideOne(e, footRects());
 }
+// feat/garage: worn patches where nothing grows, switched by their owner (GRASS.bare(id, rect | null), rect { c, az, hx, hy } as above)
+const BARE = new Map();
 function footRects() {
   const R = [];
+  for (const r of BARE.values()) {
+    const c = rectCorners(r),
+      xs = c.map(q => q[0]),
+      ys = c.map(q => q[1]);
+    R.push({
+      r,
+      x0: Math.min(...xs) - 0.2,
+      x1: Math.max(...xs) + 0.2,
+      y0: Math.min(...ys) - 0.2,
+      y1: Math.max(...ys) + 0.2,
+    });
+  }
   for (const B of Object.values(window.BUILD || {}))
     for (const r of bldRects(B)) {
       const c = rectCorners(r),
@@ -77,20 +91,21 @@ function footHideOne(e, R) {
   return ch;
 }
 // ---------------- feat/garage: mowing ----------------
-// GRASS.cut(x, y, r, t, shade) shortens the clumps, flowers and plants within r of (x, y) (t: game minutes, CLOCK.t); they grow back over
-// MOW.grow minutes (GRASS.grow(t) applies it – the caller calls it now and then). shade ±1: the stripe a mower leaves (lighter one way,
-// darker the other), fading as the grass grows. What is cut is also kept in a coarse grid (cells of MOW.c m) – GRASS.cutSave(t) /
-// cutLoad(s, t) for the saved game, cutArea(t) the area that is short now (m²). Returns the newly mown area (m², cells not cut for 12 h).
+// GRASS.cut(x, y, r, t, shade) shortens the clumps, flowers and plants within r of (x, y) (t: game minutes, CLOCK.t) and paints the mown
+// look onto the lawn (a faint tint over the ground, lighter or darker by shade ±1 – the stripes a mower leaves); both grow back over
+// MOW.grow minutes (GRASS.grow(t) applies it – the caller calls it now and then). The grid of the tint (MOW.c m cells) is what is saved:
+// GRASS.cutSave(t) / cutLoad(s, t); cutArea(t) the area that is short now (m²). cut() returns the newly mown area (m², not cut for 12 h).
 const MOW = {
-  c: 0.5,
+  c: 0.25,
   x0: -14,
   y0: -47,
-  nx: 64,
-  ny: 176,
+  nx: 128,
+  ny: 352,
   grow: 5 * 1440,
-  keep: { lawn: 0.32, flower: 0.12, plant: 0.3 },
+  keep: { lawn: 0.3, flower: 0.12, plant: 0.3 },
 };
-MOW.grid = new Float64Array(MOW.nx * MOW.ny).fill(NaN);
+MOW.grid = new Float32Array(MOW.nx * MOW.ny).fill(NaN); // cut time per cell
+MOW.sh = new Int8Array(MOW.nx * MOW.ny); // the stripe: +1 lighter, -1 darker
 MOW.hash = new Map(); // 1 m cells → packed (entry << 17 | instance)
 const mowKey = (cx, cy) => (cx + 2048) * 4096 + (cy + 2048);
 function mowReg(e, ei) {
@@ -124,11 +139,11 @@ function mowSet(e, i, f) {
   }
   if (e.c0) {
     const c = e.im.instanceColor.array,
-      k = 1 + e.sh[i] * 0.09 * (1 - f) * 1.5,
+      k = 1 + e.sh[i] * 0.12 * (1 - f) * 1.4,
       j = i * 3;
     c[j] = Math.min(1, e.c0[j] * k);
     c[j + 1] = Math.min(1, e.c0[j + 1] * k);
-    c[j + 2] = Math.min(1, e.c0[j + 2] * k * (e.sh[i] > 0 ? 0.96 : 1));
+    c[j + 2] = Math.min(1, e.c0[j + 2] * k * (e.sh[i] > 0 ? 0.94 : 1));
   }
 }
 const mowDirty = new Set();
@@ -145,23 +160,96 @@ const gridIdx = (x, y) => {
     cy = Math.floor((y - MOW.y0) / MOW.c);
   return cx < 0 || cy < 0 || cx >= MOW.nx || cy >= MOW.ny ? -1 : cy * MOW.nx + cx;
 };
+// the mown look: one canvas the size of the grid (a pixel per cell), on a quad just above the lawn; its alpha fades as the grass grows
+const TINT = {
+  mesh: null,
+  img: null,
+  q: null,
+  tex: null,
+  // light stripe (the blades bent away from the eye), dark stripe; the quad's opacity sets how strong
+  col: { 1: [176, 212, 104], '-1': [66, 100, 38], 0: [150, 190, 90] },
+};
+function tintMake() {
+  if (TINT.mesh) return;
+  const c = document.createElement('canvas');
+  c.width = MOW.nx;
+  c.height = MOW.ny;
+  TINT.q = c.getContext('2d');
+  TINT.img = TINT.q.createImageData(MOW.nx, MOW.ny);
+  TINT.tex = new THREE.CanvasTexture(c);
+  TINT.tex.colorSpace = THREE.SRGBColorSpace;
+  TINT.tex.anisotropy = ANISO;
+  const m0 = new THREE.MeshStandardMaterial({
+    map: TINT.tex,
+    transparent: true,
+    opacity: 0.3,
+    depthWrite: false,
+    roughness: 0.95,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2,
+  });
+  const W = MOW.nx * MOW.c,
+    H = MOW.ny * MOW.c,
+    me = new THREE.Mesh(new THREE.PlaneGeometry(W, H), patchSV(m0));
+  me.rotation.x = -Math.PI / 2;
+  me.position.copy(V(MOW.x0 + W / 2, MOW.y0 + H / 2, 0.012));
+  me.receiveShadow = true;
+  me.castShadow = false;
+  me.renderOrder = 1;
+  me.userData.noMerge = true;
+  me.visible = false;
+  scene.add(me);
+  TINT.mesh = me;
+}
+// cells [i0..i1] × [j0..j1] (grid indices) into the canvas: colour by stripe, alpha by how fresh the cut is
+function tintPaint(t, i0 = 0, i1 = MOW.nx - 1, j0 = 0, j1 = MOW.ny - 1) {
+  tintMake();
+  const d = TINT.img.data;
+  let any = false;
+  for (let cy = j0; cy <= j1; cy++)
+    for (let cx = i0; cx <= i1; cx++) {
+      const g = cy * MOW.nx + cx,
+        p = ((MOW.ny - 1 - cy) * MOW.nx + cx) * 4,
+        tc = MOW.grid[g];
+      const a = tc >= 0 ? Math.max(0, 1 - Math.max(0, t - tc) / MOW.grow) : 0;
+      const col = TINT.col[MOW.sh[g]] || TINT.col[0];
+      d[p] = col[0];
+      d[p + 1] = col[1];
+      d[p + 2] = col[2];
+      d[p + 3] = Math.round(255 * Math.min(1, a * 1.25));
+      if (a > 0) any = true;
+    }
+  TINT.q.putImageData(TINT.img, 0, 0, i0, MOW.ny - 1 - j1, i1 - i0 + 1, j1 - j0 + 1);
+  TINT.tex.needsUpdate = true;
+  if (any) TINT.mesh.visible = true;
+  markDirty();
+}
 function cut(x, y, r, t, shade = 0) {
   if (!(Number.isFinite(x) && Number.isFinite(y) && r > 0 && Number.isFinite(t))) return 0;
-  // the grid: cells whose middle is under the deck
+  // the grid (and the tint): cells whose middle is under the deck, on the lawn (not gravel, not in the stream's ditch)
   let fresh = 0;
   const c = MOW.c,
-    r2 = (r + c * 0.35) ** 2;
-  for (let gx = Math.floor((x - r - MOW.x0) / c); gx <= Math.floor((x + r - MOW.x0) / c); gx++)
-    for (let gy = Math.floor((y - r - MOW.y0) / c); gy <= Math.floor((y + r - MOW.y0) / c); gy++) {
-      if (gx < 0 || gy < 0 || gx >= MOW.nx || gy >= MOW.ny) continue;
+    sh = shade > 0 ? 1 : shade < 0 ? -1 : 0,
+    r2 = (r + c * 0.3) ** 2,
+    i0 = Math.max(0, Math.floor((x - r - MOW.x0) / c)),
+    i1 = Math.min(MOW.nx - 1, Math.floor((x + r - MOW.x0) / c)),
+    j0 = Math.max(0, Math.floor((y - r - MOW.y0) / c)),
+    j1 = Math.min(MOW.ny - 1, Math.floor((y + r - MOW.y0) / c));
+  if (i0 > i1 || j0 > j1) return 0;
+  for (let gx = i0; gx <= i1; gx++)
+    for (let gy = j0; gy <= j1; gy++) {
       const mx = MOW.x0 + (gx + 0.5) * c,
         my = MOW.y0 + (gy + 0.5) * c;
       if ((mx - x) ** 2 + (my - y) ** 2 > r2) continue;
+      if (gravelMask(mx, my) > 0.3 || STREAM.zAt(mx, my) < -0.04) continue;
       const j = gy * MOW.nx + gx,
         old = MOW.grid[j];
       if (!(old > t - 720)) fresh++;
       MOW.grid[j] = t;
+      MOW.sh[j] = sh;
     }
+  tintPaint(t, i0, i1, j0, j1);
   // the instances
   const L = FOOTHIDE.list;
   for (let cx = Math.floor(x - r); cx <= Math.floor(x + r); cx++)
@@ -176,7 +264,7 @@ function cut(x, y, r, t, shade = 0) {
         if (dx * dx + dy * dy > r * r) continue;
         if (!(e.tc[i] >= 0)) e.ncut++;
         e.tc[i] = t;
-        e.sh[i] = shade > 0 ? 1 : shade < 0 ? -1 : 0;
+        e.sh[i] = sh;
         mowSet(e, i, mowF(e, t, t));
         mowDirty.add(e);
       }
@@ -184,7 +272,7 @@ function cut(x, y, r, t, shade = 0) {
   mowFlush();
   return fresh * c * c;
 }
-// growing back: every cut instance from its cut time (call it when the clock has moved on)
+// growing back: every cut instance from its cut time, the tint fades (call it when the clock has moved on)
 function grow(t) {
   if (!Number.isFinite(t)) return;
   for (const e of FOOTHIDE.list) {
@@ -205,16 +293,27 @@ function grow(t) {
       }
     }
   }
-  for (let j = 0; j < MOW.grid.length; j++) if (MOW.grid[j] < t - MOW.grow) MOW.grid[j] = NaN;
+  let any = false;
+  for (let j = 0; j < MOW.grid.length; j++) {
+    if (!(MOW.grid[j] >= 0)) continue;
+    if (MOW.grid[j] < t - MOW.grow) {
+      MOW.grid[j] = NaN;
+      MOW.sh[j] = 0;
+    }
+    any = true;
+  }
+  if (any || (TINT.mesh && TINT.mesh.visible)) tintPaint(t);
+  if (TINT.mesh && !any) TINT.mesh.visible = false;
   mowFlush();
 }
-// the saved state: per cell the hours since it was cut (+1; 0 = long grown), run-length coded, base64
+// the saved state: per cell the hours since it was cut + 1 (0 = long grown; +128 for the darker stripe), run-length coded, base64
 function cutSave(t) {
   const n = MOW.grid.length,
     v = new Uint8Array(n);
   for (let j = 0; j < n; j++) {
     const tc = MOW.grid[j];
-    if (tc >= 0 && t - tc < MOW.grow) v[j] = Math.min(254, Math.floor(Math.max(0, t - tc) / 60)) + 1;
+    if (tc >= 0 && t - tc < MOW.grow)
+      v[j] = Math.min(126, Math.floor(Math.max(0, t - tc) / 60)) + 1 + (MOW.sh[j] < 0 ? 128 : 0);
   }
   const out = [];
   for (let j = 0; j < n;) {
@@ -234,6 +333,7 @@ function mowApplyGrid(e, t) {
     if (!(tc >= 0) || t - tc >= MOW.grow) continue;
     if (!(e.tc[i] >= 0)) e.ncut++;
     e.tc[i] = tc;
+    e.sh[i] = MOW.sh[j];
     mowSet(e, i, mowF(e, t, tc));
     mowDirty.add(e);
   }
@@ -249,17 +349,25 @@ function cutLoad(s, t) {
     return false;
   }
   const n = MOW.grid.length,
-    g = new Float64Array(n).fill(NaN);
+    g = new Float32Array(n).fill(NaN),
+    sh = new Int8Array(n);
   let j = 0;
   for (let i = 0; i + 1 < raw.length && j < n; i += 2) {
     const v = raw.charCodeAt(i),
-      k = raw.charCodeAt(i + 1);
-    for (let q = 0; q < k && j < n; q++, j++) if (v > 0) g[j] = t - (v - 1) * 60;
+      k = raw.charCodeAt(i + 1),
+      h = v & 127;
+    for (let q = 0; q < k && j < n; q++, j++)
+      if (h > 0) {
+        g[j] = t - (h - 1) * 60;
+        sh[j] = v & 128 ? -1 : 1;
+      }
   }
   MOW.grid = g;
+  MOW.sh = sh;
   MOW.t = t;
   for (const e of FOOTHIDE.list) mowApplyGrid(e, t);
   mowFlush();
+  tintPaint(t);
   return true;
 }
 // area that is short now (m²: cells cut within the growing time)
@@ -268,7 +376,7 @@ function cutArea(t) {
   for (let j = 0; j < MOW.grid.length; j++) if (MOW.grid[j] >= 0 && t - MOW.grid[j] < MOW.grow) n++;
   return n * MOW.c * MOW.c;
 }
-// test hook: how many instances are short in a circle (and how many there are)
+// test hook: how many lawn clumps are short in a circle (and how many there are)
 function cutCount(x, y, r) {
   let n = 0,
     all = 0;
@@ -284,7 +392,13 @@ function cutCount(x, y, r) {
   }
   return { n, all };
 }
-Object.assign(GRASS, { cut, grow, cutSave, cutLoad, cutArea, cutCount, MOW });
+function bare(id, r) {
+  const had = BARE.has(id);
+  if (r) BARE.set(id, r);
+  else BARE.delete(id);
+  if (r || had) footHideApply();
+}
+Object.assign(GRASS, { cut, grow, cutSave, cutLoad, cutArea, cutCount, bare, MOW, TINT });
 window.GRASS = GRASS;
 export function footHideApply() {
   const R = footRects();
