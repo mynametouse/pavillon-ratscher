@@ -176,7 +176,7 @@ export const DLIFE = (() => {
             for (let b = 0; b < 4; b++) {
               const ba = (b / 3) * Math.PI * 2 + hh(j + 6) * 2,
                 o = b === 3 ? 0 : rr * 0.55;
-              k.ball(x + Math.cos(ba) * o, y + Math.sin(ba) * o, z + 0.08 + rr * (b === 3 ? 1.4 : 0.8), rr, green, 6);
+              k.ball(x + Math.cos(ba) * o, y + Math.sin(ba) * o, z + 0.08 + rr * (b === 3 ? 1.4 : 0.8), rr, green, 5);
             }
             for (let b = 0; b < 6; b++) {
               const ba = hh(j + 5 + b) * Math.PI * 2,
@@ -187,7 +187,7 @@ export const DLIFE = (() => {
                 z + 0.08 + rr * (1.5 + hh(j + 17 + b) * 0.7),
                 0.04,
                 fl,
-                5
+                4
               );
             }
           }

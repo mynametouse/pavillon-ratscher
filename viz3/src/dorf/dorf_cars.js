@@ -30,11 +30,21 @@ export const DCARS = (() => {
       glass = L(0.1, 0.13, 0.16),
       tyre = L(0.05, 0.05, 0.05),
       rim = L(0.55, 0.56, 0.57);
-    k.box(0, 0, 0.3, 1.74, 4.25, 0.5, 0, body); // lower body
-    k.box(0, 0.05, 0.8, 1.7, 3.9, 0.1, 0, body); // shoulder
-    k.box(0, -0.25, 0.9, 1.56, 2.3, 0.52, 0, glass); // cabin with its windows
-    k.box(0, -0.25, 1.42, 1.5, 2.1, 0.06, 0, body); // roof
-    k.box(0, 1.35, 0.9, 1.5, 0.05, 0.42, 0, body); // the base of the windscreen
+    // a frustum from z0 to z1: footprint [x0, x1, y0, y1] at the bottom and at the top (windscreen and rear window slope)
+    const prism = (b, t, z0, z1, col) => {
+      const [bx0, bx1, by0, by1] = b,
+        [tx0, tx1, ty0, ty1] = t;
+      k.quad([bx1, by0, z0], [bx1, by1, z0], [tx1, ty1, z1], [tx1, ty0, z1], col);
+      k.quad([bx1, by1, z0], [bx0, by1, z0], [tx0, ty1, z1], [tx1, ty1, z1], col);
+      k.quad([bx0, by1, z0], [bx0, by0, z0], [tx0, ty0, z1], [tx0, ty1, z1], col);
+      k.quad([bx0, by0, z0], [bx1, by0, z0], [tx1, ty0, z1], [tx0, ty0, z1], col);
+      k.quad([tx0, ty0, z1], [tx1, ty0, z1], [tx1, ty1, z1], [tx0, ty1, z1], col);
+    };
+    k.box(0, 0, 0.3, 1.74, 4.25, 0.46, 0, body); // lower body
+    prism([-0.87, 0.87, 0.75, 2.125], [-0.84, 0.84, 0.95, 2.05], 0.76, 0.86, body); // the bonnet
+    prism([-0.87, 0.87, -2.125, 0.75], [-0.85, 0.85, -2.1, 0.75], 0.76, 0.84, body); // the waist under the windows
+    prism([-0.8, 0.8, -1.95, 0.8], [-0.68, 0.68, -1.7, -0.2], 0.84, 1.4, glass); // the cabin: windscreen, side windows, rear window
+    prism([-0.69, 0.69, -1.72, -0.18], [-0.66, 0.66, -1.68, -0.24], 1.4, 1.45, body); // roof
     k.box(0, 0, 0.18, 1.6, 4.32, 0.14, 0, dark); // sills and bumpers
     for (const sx of [-0.62, 0.62]) {
       k.box(sx, 2.12, 0.62, 0.32, 0.03, 0.12, 0, L(0.95, 0.95, 0.9)); // head lamps
