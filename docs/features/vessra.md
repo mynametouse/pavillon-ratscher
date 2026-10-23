@@ -57,7 +57,8 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   vom Gelände (nur von der Straße aus): generisch.
 - **Straßenschilder**: je benannter Straße ein weißes Namensschild mit schwarzer Schrift an der Einmündung, die dem Klostertor am
   nächsten ist (6: Schleusinger Straße, Schulstraße, Gartenstraße, Fabrikstraße, Neuhofer Straße, Zwick), beidseitig lesbar.
-- **Laternen** (OSM und entlang der Straßen nahe Häusern, 53): nachts an, Lichtflecken, sie beleuchten die Wände wie im Dorf;
+- **Laternen** (OSM und entlang der Straßen nahe Häusern, 53): nachts an, Lichtflecken, sie beleuchten die Wände wie im Dorf, und in
+  den beiden nächsten stehen geliehene Punktlichter des Pavillons (`KERN.lights.borrow`) – echtes Licht auf Boden, Ruine und Bäume;
   **Bänke** (OSM, zur Kirche gewandt; eine an der Hütte der Baumschule) – **Hinsetzen** mit dem Aktionsknopf.
 - **Ortsnamen** im HUD: „Klosterkirche St. Marien (Ruine)“, die benannten Gebäude (Torkirche St. Erhard, Henneberger Kapelle, Kornhaus,
   Westklausur …), „Baumschule Kammbach“, Friedhof, Teiche, die nächste Straße („Schleusinger Straße, Kloster Veßra“), sonst
@@ -85,9 +86,10 @@ gebaut; `VESSRA.baumschule` (sonst `null`):
   behält jetzt `welt-test/zonen/`** (beiseite, `welt-test/` ersetzen, zurück) – sonst löschte der nächste Testblock-Lauf die Zonen-Kacheln.
 - `welt/welt.js` (eigene Datei): Kachel-Sätze (siehe „Für die Fahrt“), `WELT.overlay()`, Belag „Kies“ (g/r > 0,86) im Straßen-Overlay;
   Schleusingen unverändert (seine Codes 40/120/200 bleiben Asphalt/Pflaster/Platten).
-- Kern-Dienste (Phase 2, Baustein 1; `origin/src` hineingeführt, 23.10. 10:50): `KERN.zone` (`vessra`), `KERN.spot` (`vessra`,
-  `baumschule`), `KERN.scenario` (`vessra`, `baumschule` – bitte in die Liste in `docs/ARCHITECTURE.md` aufnehmen), `KERN.act`
-  (`vessra:sit`), Anbieter `place` (20), `pushOut` (10), `free` (10). Kein `TICKS`-Eintrag, kein `SPOTS`-Import mehr.
+- Kern-Dienste (Phase 2, Baustein 1): `KERN.zone` (`vessra`), `KERN.spot` (`vessra`, `baumschule`), `KERN.scenario` (`vessra`,
+  `baumschule`), `KERN.act` (`vessra:sit`), `KERN.lights.borrow` (`vessra-laternen`: nachts zwei Lichter des Pavillons in den beiden
+  Laternen, die der Spielfigur am nächsten sind, Rang 1), Anbieter `place` (20), `pushOut` (10), `free` (10). Kein `TICKS`-Eintrag,
+  kein `SPOTS`-Import. Polster in `WELT` (`setPads('vessra', …)`, nur solange gebaut): Boden neben den Straßen, Hof der Baumschule.
 - Neue `window`-Namen: `VESSRA`. Keine Speicher-Schlüssel. Shader-Programme: Steinmauern teilen das Programm des Dorfplatz-Pflasters
   (`v16e-kit1.5`), Requisiten und Kronen das der Schleusinger Requisiten; neu nur Schilder und Wasser (gemessen im Test).
 - Eintrag für `docs/ARCHITECTURE.md` (Modulkarte, Abschnitt 6): `VESSRA` – welt/vessra.js – Kloster Veßra begehbar: Klosterkirche als
