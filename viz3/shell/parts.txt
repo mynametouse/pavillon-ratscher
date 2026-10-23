@@ -17,6 +17,7 @@ css/garten.css
 css/figuren.css
 css/nachbarn.css
 css/dorf.css
+css/winde.css
 header.html
 panel_3d.html
 menu.html

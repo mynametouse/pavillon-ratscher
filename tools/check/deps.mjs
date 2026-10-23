@@ -65,6 +65,7 @@ for (const rel of order) {
     libs: new Set(),
     exports: new Set(),
     win: new Set(),
+    winWrite: new Set(),
   });
   m.lateRead = new Map(); // name -> first line
   m.lateGive = new Map();
@@ -121,8 +122,21 @@ for (const rel of order) {
     }
   }
   walk(ast, (n, parent) => {
-    if (n.type === "AssignmentExpression" && member(n.left, "window"))
+    if (n.type === "AssignmentExpression" && member(n.left, "window")) {
       m.win.add(n.left.property.name);
+      // a real write, not the shared start 'window.X = window.X || …' or 'window.X || (window.X = …)' (TICKS): who else writes this
+      // name (report below)
+      const nm = n.left.property.name,
+        r = n.right,
+        isX = (e) => e && member(e, "window") && e.property.name === nm;
+      const init =
+        (r.type === "LogicalExpression" && isX(r.left)) ||
+        (parent &&
+          parent.type === "LogicalExpression" &&
+          parent.right === n &&
+          isX(parent.left));
+      if (!init) m.winWrite.add(nm);
+    }
     // LATE hand-overs: LATE.X = …, Object.assign(LATE, { X, … }), Object.defineProperty(LATE, 'X', …)
     if (n.type === "AssignmentExpression" && member(n.left, "LATE")) {
       if (!m.lateGive.has(n.left.property.name))
@@ -252,6 +266,17 @@ console.log(
   `deps: ${order.length} modules, ${edges} import edges (all upwards${errors.length ? " – see errors" : ""}), ${giver.size} names through LATE ` +
     `(against the load order), ${win.size} window names`,
 );
+// window names that more than one module writes – hooks into another module at run time (plan phase 2, building block 1: services instead)
+const writers = new Map();
+for (const rel of order)
+  for (const nm of mods[rel].winWrite)
+    (writers.get(nm) || writers.set(nm, []).get(nm)).push(rel);
+const shared = [...writers].filter(([, w]) => w.length > 1);
+if (shared.length)
+  console.log(
+    "  written by several modules (hooks, docs/plans/plan_phase2.md): " +
+      shared.map(([nm, w]) => `${nm} (${w.join(", ")})`).join("; "),
+  );
 const hubs = [...rows]
   .sort(
     (a, b) =>

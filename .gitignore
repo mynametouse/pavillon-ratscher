@@ -6,7 +6,7 @@ viz3/node_modules
 viz3/opt
 viz3/used_models.json
 viz3/out.json
-node_modules/
+node_modules
 out/
 __pycache__/
 *.pyc
