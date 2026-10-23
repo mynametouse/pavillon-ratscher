@@ -17,7 +17,7 @@ import {
   slopeSlab,
   worldOf,
 } from './site_base.js';
-import { GACTS, jar, KM, leaf, paletteize, plant, pot, put, rng, wateringCan } from './garten_kit.js';
+import { GACTS, jar, KM, leaf, paletteize, plant, pot, put, rng, seedTray, wateringCan } from './garten_kit.js';
 // Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends now face north and south: turned
 // by 90° about its centre (site data: heading 96°, the long side east–west) and moved 0.5 m north, clear of the hut's new door
 {
@@ -202,6 +202,11 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     plant(g, -hx + 0.17, y, zs, 0.1, i % 2 ? 'seedling' : 'herb', R);
   }
   jar(g, -hx + 0.17, 0.62, 0.745, 0.03, 0.09, KM.straw);
+  // feat/einrichtung: the seed trays moved here from the wooden house (now an atelier) – on a lower board of the shelf
+  gB(g, -hx + 0.04, -hx + 0.3, -hy + 0.08, hy - 0.08, 0.4, 0.42, MAT.larch, { cast: false });
+  seedTray(g, -hx + 0.06, -hx + 0.28, -0.6, -0.26, 0.42, R, 3, 4);
+  seedTray(g, -hx + 0.06, -hx + 0.28, -0.2, 0.14, 0.42, R, 3, 4);
+  seedTray(g, -hx + 0.06, -hx + 0.28, 0.2, 0.54, 0.42, R, 3, 4);
   wateringCan(g, hx - 0.3, 0.12, 0.14, 150, MAT.zinc, 0.85);
   gB(g, -0.2, -0.17, hy - 0.04, hy - 0.035, 1.0, 1.25, KM.porcelain, { cast: false });
   gB(g, -0.19, -0.18, hy - 0.045, hy - 0.04, 1.03, 1.15, KM.red, { cast: false });
@@ -318,6 +323,25 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
       st.think(
         'Die Geiztriebe in den Blattachseln mit zwei Fingern ausbrechen, solange sie klein sind – dann geht die Kraft in die Früchte statt in neue Triebe.'
       );
+      st.dirty();
+    },
+  });
+  // water the seedlings (the soil in the trays darkens) – feat/einrichtung: moved here from the wooden house
+  GACTS.push({
+    key: 'giessen',
+    b,
+    lx: -hx + 0.5,
+    ly: 0.0,
+    z: 0.6,
+    r: 1.0,
+    room: ghIn,
+    label: st => (st.wet ? null : 'Setzlinge gießen'),
+    run: st => {
+      st.wet = 1;
+      st.think(
+        'Mit der feinen Brause gießen, nur auf die Erde, nicht auf die Blättchen – feucht, nicht nass. Sarah wird sich freuen.'
+      );
+      KM.traySoil.color.copy(MAT.soil.color).multiplyScalar(0.5);
       st.dirty();
     },
   });

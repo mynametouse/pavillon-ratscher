@@ -2682,7 +2682,12 @@ export const AMT = (() => {
     ['amt', 'Ortsvorsteher: im Amt (Mappe)', 44],
     ['stadtrat', 'Ortsvorsteher: Stadtrat im Rathaus Schleusingen', 45],
   ])
-    KERN.scenario(q, { label, order: o, run: () => start(q) });
+    KERN.scenario(q, {
+      label,
+      order: o,
+      ask: 'setzt die Geschichte des Ortsvorstehers auf diesen Schritt',
+      run: () => start(q),
+    });
   return {
     get ST() {
       return ST;
