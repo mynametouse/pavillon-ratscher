@@ -136,10 +136,17 @@ with lib.browser() as b:
         if kl == 'Schalen in den Brennofen':
             run(pg, 'garten:brennofen', 3); shot(pg, 'atelier_brennofen'); ev(pg, "GAME.step(6)")
         ck('kiln: the dried bowls are fired', kl == 'Schalen in den Brennofen' and ev(pg, "ATELIER.state.fired") >= 1, [kl, ev(pg, "ATELIER.state.fired")])
+        # glazing: dip the bisque-fired bowls, then the glaze firing – they shine in the atelier's accent colour
+        ev(pg, f"(() => {{ const w = {W}('holzhaus', 0.5, 0.75); GAME.view(w[0], w[1], {EYE_A}, SITE.bld.holzhaus.az - 75, -18, 70); GAME.step(0.1); }})()")
+        gl = act(pg, 'garten:glasieren'); run(pg, 'garten:glasieren', 0.3)
+        kl2 = act(pg, 'garten:brennofen'); run(pg, 'garten:brennofen', 9.5)
+        gf = ev(pg, "[ATELIER.state.glazed, ATELIER.state.gfired]")
+        ck('glazing: „Schalen glasieren“, then „Glasurbrand starten“', gl == 'Schalen glasieren' and kl2 == 'Glasurbrand starten' and gf[1] >= 1, [gl, kl2, gf])
+        view(pg, 'holzhaus', 0.5, 0.95, 1.22, -90, -20, 55); shot(pg, 'atelier_schalen_glasiert')
         # the journal: the atelier's tasks started when we came in, pottery done after bowl and firing, the guest bed done after unfolding
         tk = json.loads(ev(pg, "JSON.stringify(['atelier-toepfern', 'atelier-malen', 'atelier-gaestebett'].map(id => [id, TASKS.state(id)]))"))
         print('tasks', tk, flush=True)
-        ck('journal: the atelier tasks run (pottery and guest bed done)', tk[0][1] and tk[0][1]['st'] == 'erledigt' and tk[1][1] and tk[2][1] and tk[2][1]['st'] == 'erledigt', tk)
+        ck('journal: the atelier tasks run (pottery – turned, fired, glazed, fired – and the guest bed done)', tk[0][1] and tk[0][1]['st'] == 'erledigt' and tk[1][1] and tk[2][1] and tk[2][1]['st'] == 'erledigt', tk)
         # at night with the lamp on
         ev(pg, "GARTEN.set('holzhaus', true); GAME.setMode('night')"); lib.settle_light(pg)
         view(pg, 'holzhaus', -0.88, 1.45, EYE_A, 90, -14, 80); ev(pg, "GAME.step(0.4)"); shot(pg, 'atelier_nacht_lampe')

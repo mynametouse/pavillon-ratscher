@@ -80,6 +80,7 @@ const AM = {
   art: twin(KM.art),
   canvas: twin(KM.art),
   paper: twin(KM.curtainLinen),
+  glaze: twin(KM.red, { roughness: 0.16 }), // glaze-fired bowls shine in the accent colour
 };
 AM.rug.map = canvasTex(128, 512, [1 / 0.5, 1]);
 AM.art.map = canvasTex(512, 512);
@@ -337,7 +338,11 @@ lcol(r, SH.x0, SH.x1, SH.y0, SH.y1, FZ, FZ + 1.84, 'shelf');
 }
 // the bowls turned on the wheel while playing: six places on the drying shelf (second board), shown as they are made
 const MYBOWLS = [],
-  BOWLM = { leather: plain({ color: 0xa79d92, roughness: 0.9 }), bisque: plain({ color: 0xe7d4c4, roughness: 0.85 }) };
+  BOWLM = {
+    leather: plain({ color: 0xa79d92, roughness: 0.9 }),
+    bisque: plain({ color: 0xe7d4c4, roughness: 0.85 }),
+    raw: plain({ color: 0xd9dfe0, roughness: 0.95 }), // dipped, not yet fired: the glaze is a pale powder
+  };
 {
   const ym = (SH.y0 + SH.y1) / 2;
   for (let i = 0; i < 6; i++) {
@@ -844,6 +849,7 @@ const STYLES = [
 ];
 function apply(h) {
   const s = STYLES.find(q => q.id === h.cur);
+  AM.glaze.color.set(h.A);
   paintColor(AM.wall, s.wall);
   surf(AM.floor, s.floor[0], s.floor[1]);
   surf(AM.wood, s.wood[0], s.wood[1]);
@@ -995,7 +1001,18 @@ const AS = {
   pic: Number.isInteger(SAVED.pic) ? Math.max(0, Math.min(5, SAVED.pic)) : 1,
   motif: Number.isInteger(SAVED.motif) ? SAVED.motif % 3 : 0,
 };
-const keep = () => STIL.x('atelier', { sofa: AS.sofa, bowls: AS.bowls, fired: AS.fired, pic: AS.pic, motif: AS.motif });
+AS.glazed = Number.isInteger(SAVED.glazed) ? Math.max(0, Math.min(AS.fired, SAVED.glazed)) : 0;
+AS.gfired = Number.isInteger(SAVED.gfired) ? Math.max(0, Math.min(AS.glazed, SAVED.gfired)) : 0;
+const keep = () =>
+  STIL.x('atelier', {
+    sofa: AS.sofa,
+    bowls: AS.bowls,
+    fired: AS.fired,
+    glazed: AS.glazed,
+    gfired: AS.gfired,
+    pic: AS.pic,
+    motif: AS.motif,
+  });
 SB.k = SB.want = AS.sofa;
 sofaPose(SB.k);
 sofaCol[0] = AS.sofa ? 0.16 : 0.56;
@@ -1003,7 +1020,7 @@ sofaCol[5] = FZ + (AS.sofa ? 0.5 : 0.9);
 function showBowls() {
   MYBOWLS.forEach((me, i) => {
     me.visible = i < AS.bowls;
-    me.material = i < AS.fired ? BOWLM.bisque : BOWLM.leather;
+    me.material = i < AS.gfired ? AM.glaze : i < AS.glazed ? BOWLM.raw : i < AS.fired ? BOWLM.bisque : BOWLM.leather;
   });
 }
 showBowls();
@@ -1318,14 +1335,24 @@ GACTS.push({
   z: FZ + 0.9,
   r: 1.2,
   room: atelierIn,
-  label: () => (kiln.on ? null : AS.bowls > AS.fired ? 'Schalen in den Brennofen' : null),
+  label: () =>
+    kiln.on
+      ? null
+      : AS.bowls > AS.fired
+        ? 'Schalen in den Brennofen'
+        : AS.glazed > AS.gfired
+          ? 'Glasurbrand starten'
+          : null,
   run: st => {
     kiln.on = true;
     kiln.t = 0;
+    kiln.glaze = AS.bowls <= AS.fired;
     kilnLed.emissive.set(0xff3a1a);
     kilnLed.emissiveIntensity = 2;
     st.think(
-      'Schrühbrand: langsam auf 900 °C, damit das Restwasser entweicht – danach sind die Schalen fest und nehmen Glasur an.'
+      kiln.glaze
+        ? 'Glasurbrand: bis 1240 °C, die Glasur schmilzt zu Glas. Den Ofen erst unter 100 °C öffnen, sonst springen die Schalen.'
+        : 'Schrühbrand: langsam auf 900 °C, damit das Restwasser entweicht – danach sind die Schalen fest und nehmen Glasur an.'
     );
     st.dirty();
   },
@@ -1338,14 +1365,53 @@ GACTS.push({
       kiln.on = false;
       kilnLed.emissiveIntensity = 0;
       kilnEye.emissiveIntensity = 0;
-      AS.fired = AS.bowls;
+      if (kiln.glaze) AS.gfired = AS.glazed;
+      else AS.fired = AS.bowls;
       keep();
-      KERN.emit('einrichtung:brand', { n: AS.fired });
+      KERN.emit('einrichtung:brand', { n: kiln.glaze ? AS.gfired : AS.fired, glaze: kiln.glaze });
       showBowls();
-      st.think('Der Ofen ist abgekühlt: die Schalen sind geschrüht – hell und hart. Jetzt glasieren.');
+      st.think(
+        kiln.glaze
+          ? 'Abgekühlt: die Glasur glänzt. Fertige Schalen – fürs Regal oder zum Verschenken.'
+          : 'Der Ofen ist abgekühlt: die Schalen sind geschrüht – hell und hart. Jetzt glasieren.'
+      );
       st.dirty();
     }
     return true;
+  },
+});
+// ---- glazing: three buckets of glaze in front of the shelves; the bisque-fired bowls are dipped (then a glaze firing) ----
+{
+  const cols = [0x9dbfae, 0x2d4f8c, 0xf1ede5];
+  cols.forEach((c, i) => {
+    const x = 0.22 + i * 0.2,
+      y = 1.3;
+    put(g, new THREE.CylinderGeometry(0.085, 0.075, 0.2, 16), MAT.zinc, x, y, FZ + 0.1, { cast: false });
+    put(g, new THREE.CylinderGeometry(0.078, 0.078, 0.01, 16), plain({ color: c, roughness: 0.4 }), x, y, FZ + 0.19, {
+      cast: false,
+    });
+  });
+  put(g, new THREE.TorusGeometry(0.05, 0.006, 4, 12, Math.PI), MAT.steel, 0.42, 1.3, FZ + 0.26, { cast: false });
+  lcol(r, 0.12, 0.74, 1.2, 1.4, FZ, FZ + 0.22, 'glaze');
+}
+GACTS.push({
+  key: 'glasieren',
+  b,
+  lx: 0.42,
+  ly: 1.12,
+  z: FZ + 0.6,
+  r: 1.1,
+  room: atelierIn,
+  label: () => (AS.fired > AS.glazed && !kiln.on ? 'Schalen glasieren' : null),
+  run: st => {
+    AS.glazed = AS.fired;
+    keep();
+    showBowls();
+    KERN.emit('einrichtung:glasur', { n: AS.glazed });
+    st.think(
+      'Glasieren: die geschrühte Schale kurz in die Glasur tauchen, bis drei zählen, den Fuß sauber abwischen – sonst klebt sie im Ofen fest.'
+    );
+    st.dirty();
   },
 });
 // ---- the easel: paint on, step by step (the picture on the canvas grows), then start a new one ----
@@ -1501,7 +1567,7 @@ GACTS.push({
     start = { on: 'place', when: d => !!d && d.name === 'Atelier' };
   TASKS.define({
     id: 'atelier-toepfern',
-    title: 'Töpfern: eine Schale drehen und brennen',
+    title: 'Töpfern: eine Schale drehen, brennen, glasieren',
     who: 'Atelier',
     start,
     steps: [
@@ -1514,9 +1580,21 @@ GACTS.push({
         text: 'Die Schalen trocknen lassen und im Brennofen brennen (Schrühbrand).',
         target: at(KI.x, KI.y),
         on: 'einrichtung:brand',
+        when: d => !!d && !d.glaze,
+      },
+      {
+        text: 'Die geschrühten Schalen glasieren (Eimer vor dem Regal).',
+        target: at(0.42, 1.3),
+        on: 'einrichtung:glasur',
+      },
+      {
+        text: 'Glasurbrand im Brennofen.',
+        target: at(KI.x, KI.y),
+        on: 'einrichtung:brand',
+        when: d => !!d && !!d.glaze,
       },
     ],
-    done: 'Die Schalen sind geschrüht – hell und hart, bereit zum Glasieren.',
+    done: 'Glasiert und gebrannt – die Schalen glänzen in der Akzentfarbe des Ateliers.',
   });
   TASKS.define({
     id: 'atelier-malen',
