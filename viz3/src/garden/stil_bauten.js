@@ -5,12 +5,27 @@
 // plants and what the style brings (sheepskin, plates and a clock, a metal shelf, macramé and a string of lights …); in the caravan
 // curtains, cushions, a cloth on the table, flowers, a rug, a quilt. „Wie heute“ is the furnishing as it was before.
 import * as THREE from 'three';
+import { LATE } from '../core/late.js';
 import { MAT } from '../core/mats.js';
 import { cyl } from '../core/geo.js';
 import { gB, MATS } from './site_base.js';
-import { canvasTex, curtain, KM, mug, paintColor, put, soft, teapot, twin, useMaps } from './garten_kit.js';
+import {
+  canvasTex,
+  curtain,
+  GACTS,
+  GSEATS,
+  KM,
+  mug,
+  paintColor,
+  put,
+  soft,
+  teapot,
+  twin,
+  useMaps,
+} from './garten_kit.js';
 import { CV, CW } from './carport.js';
 import { BUNG, BW } from './bungalow.js';
+import { sofaSound } from './atelier.js';
 import {
   coffeeTable,
   cushions,
@@ -665,3 +680,80 @@ STIL.house('wohnwagen', {
   styles: CSTYLES.map(s => Object.assign({}, s, { apply: cApply, build: cBuild })),
   def: 'heute',
 });
+// ---- the dinette becomes a bed (Falko: the sofa bed „auch im Wohnwagen“): the table goes down onto the benches, two cushions close the gap ----
+{
+  const zf = CV.zf,
+    sv = STIL.x('wohnwagen'),
+    S = { k: sv && sv.bed === 1 ? 1 : 0, want: 0, anim: false, lanY: null };
+  S.want = S.k;
+  const lantern = () => (window.GLB_PLACED || []).find(it => it.type === 'lantern_t' && it.bld === 'carport');
+  function pose(k) {
+    const e = k * k * (3 - 2 * k);
+    CV.table.position.y = -0.26 * e;
+    CV.leg.scale.y = 1 - 0.38 * e;
+    CV.fill.visible = k > 0.98;
+    const it = lantern();
+    if (it && it.root) {
+      if (S.lanY === null) S.lanY = it.root.position.y;
+      it.root.position.y = S.lanY - 0.26 * e;
+    }
+    CV.bed = k > 0.5 ? 1 : 0;
+  }
+  function settle() {
+    const c = CV.tableCol;
+    if (c) {
+      c[4] = zf + (S.k > 0.5 ? 0 : 0.25);
+      c[5] = zf + (S.k > 0.5 ? 0.5 : 0.72);
+    }
+    if (LATE.rebuildGrids) LATE.rebuildGrids();
+  }
+  pose(S.k);
+  settle();
+  GACTS.push({
+    key: 'sitzecke-bett',
+    b: CV.b,
+    lx: CV.cvx + 1.15,
+    ly: CV.cvy,
+    z: zf + 0.6,
+    r: 1.4,
+    room: CV.inside,
+    label: () => (S.anim ? null : S.k > 0.5 ? 'Bett wieder zur Sitzecke' : 'Tisch absenken – Bett bauen'),
+    run: st => {
+      S.want = S.k > 0.5 ? 0 : 1;
+      S.anim = true;
+      st.sound(sofaSound);
+      if (S.want)
+        st.think(
+          'Tischbein einklappen, Platte auf die Leisten der Bänke legen, Rückenpolster drauf – fertig ist das Bett für zwei.'
+        );
+    },
+    tick: (dt, st) => {
+      const it = S.lanY === null && S.k > 0 ? lantern() : null;
+      if (it && it.root) pose(S.k);
+      if (!S.anim) return !!(it && it.root);
+      S.k = S.k + Math.sign(S.want - S.k) * Math.min(Math.abs(S.want - S.k), dt / 1.2);
+      pose(S.k);
+      if (S.k === S.want) {
+        S.anim = false;
+        settle();
+        STIL.x('wohnwagen', { bed: S.want });
+        st.dirty();
+      }
+      return true;
+    },
+  });
+  GSEATS.push({
+    key: 'wohnwagen-gaestebett',
+    b: CV.b,
+    lx: CV.cvx + 1.95,
+    ly: CV.cvy + 0.7,
+    eye: zf + 0.5 + 0.3,
+    yaw: 90,
+    pitch: 2,
+    kind: 'lie',
+    label: () => (S.k > 0.98 && !S.anim ? 'Hinlegen' : null),
+    at: [CV.cvx + 1.0, CV.cvy],
+    r: 1.5,
+  });
+  window.WOHNWAGEN = { dinette: S, pose, settle };
+}

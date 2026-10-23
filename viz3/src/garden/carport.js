@@ -22,7 +22,7 @@ import {
   wheel,
   worldOf,
 } from './site_base.js';
-import { GSEATS, twin } from './garten_kit.js';
+import { bulbMat, GLAMPS, GSEATS, mergeGroup, put, twin } from './garten_kit.js';
 // feat/einrichtung: the caravan's own materials (twins: the same shader programs) – the interior styles change their colours
 export const CW = {
   floor: twin(MAT.oakF),
@@ -33,7 +33,7 @@ export const CW = {
   bedB: twin(MAT.woolLight),
   sheet: twin(MAT.linen),
 };
-export const CV = { anchor: null, inside: () => false, zf: 0.5, windows: [] };
+export const CV = { anchor: null, inside: () => false, zf: 0.5, windows: [], bed: 0 };
 bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', pad: 0.3 });
 // ===== B: carport 6,0 × 4,0 m, ca. 3,5 m hoch (Pfosten 12/12, Pfetten, Sparren, Trapezblech) with the Tabbert caravan; door side faces the garden entrance (north) =====
 {
@@ -328,8 +328,24 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
     });
     RB(1.37, X1 - 0.5, sy > 0 ? 0.9 : -1.03, sy > 0 ? 1.03 : -0.9, zf + 0.5, zf + 0.9, 0.04, CW.fab, { parent: cv });
   }
-  gB(cv, 1.42, X1 - 0.55, -0.42, 0.42, zf + 0.68, zf + 0.72, CW.wood2);
-  gB(cv, 1.88, 1.95, -0.04, 0.04, zf, zf + 0.68, MAT.alu, { grain: 'z', cast: false });
+  // the table can be lowered onto the benches – with two cushions on it the dinette becomes a bed (garden/stil_bauten.js): table top and leg,
+  // and the filler cushions, are groups of their own (merged by themselves, not with the caravan)
+  {
+    const tg = new THREE.Group(),
+      leg = new THREE.Group(),
+      fill = new THREE.Group();
+    cv.add(tg, leg, fill);
+    gB(tg, 1.42, X1 - 0.55, -0.42, 0.42, zf + 0.68, zf + 0.72, CW.wood2);
+    gB(leg, 1.88, 1.95, -0.04, 0.04, zf, zf + 0.68, MAT.alu, { grain: 'z', cast: false });
+    for (const [y0, y1] of [
+      [-0.42, -0.005],
+      [0.005, 0.42],
+    ])
+      RB(1.43, X1 - 0.56, y0, y1, zf + 0.42, zf + 0.5, 0.025, CW.fab, { parent: fill });
+    fill.visible = false;
+    for (const gg of [tg, leg, fill]) mergeGroup(gg, { cast: false });
+    Object.assign(CV, { table: tg, leg, fill });
+  }
   // cupboard between the wardrobe and the door (north), kitchen opposite the door (south): worktop, sink, two-burner hob
   gB(cv, -0.62, 0.12, 0.6, 1.06, zf, zf + 0.62, CW.wood);
   gB(cv, -0.64, 0.14, 0.58, 1.06, zf + 0.62, zf + 0.65, CW.wood2, { cast: false });
@@ -370,6 +386,7 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
   lcol(r, X0 - 1.3, X0, -0.45, 0.45, 0, 0.82, 'drawbar');
   lcol(r, 1.35, X1 - 0.04, -1.05, 1.05, zf, zf + 0.5, 'bench');
   lcol(r, 1.42, X1 - 0.55, -0.42, 0.42, zf + 0.25, zf + 0.72, 'table');
+  CV.tableCol = COL[COL.length - 1];
   lcol(r, -0.62, 0.12, 0.6, 1.06, zf, zf + 0.65, 'cupboard');
   lcol(r, -0.62, 0.68, -1.06, -0.5, zf, zf + 0.92, 'kitchen');
   lcol(r, -1.1, -0.67, 0.5, 1.06, zf, zf + 1.86, 'wardrobe');
@@ -386,7 +403,7 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
       yaw: 90,
       pitch: -6,
       kind: 'sit',
-      label: 'In die Sitzecke setzen',
+      label: () => (CV.bed ? null : 'In die Sitzecke setzen'),
       at: [cvx + 1.0, cvy + 0.25],
       r: 1.2,
     },
@@ -404,7 +421,44 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
       r: 1.6,
     }
   );
+  // a ceiling light (round plastic dome as in the 80s) over the middle, switch inside by the door – it borrows the garden's one lamp light
+  // (garden/garten_in.js: no new point light)
+  {
+    const domeM = bulbMat(0xf6efe0);
+    put(
+      cv,
+      new THREE.SphereGeometry(0.15, 18, 6, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2),
+      domeM,
+      0.3,
+      0,
+      Z1 - 0.045,
+      {
+        s: [1, 0.45, 1],
+        cast: false,
+      }
+    );
+    put(cv, new THREE.CylinderGeometry(0.16, 0.16, 0.012, 20), MATS.white, 0.3, 0, Z1 - 0.042, { cast: false });
+    gB(cv, 0.08, 0.14, HW - 0.04, HW - 0.035, 1.42, 1.5, MATS.white, { cast: false });
+    gB(cv, 0.1, 0.12, HW - 0.045, HW - 0.04, 1.44, 1.48, MAT.black, { cast: false });
+    GLAMPS.push({
+      key: 'wohnwagen',
+      b,
+      lx: cvx + 0.3,
+      ly: cvy,
+      z: Z1 - 0.12,
+      mat: domeM,
+      glow: 1.6,
+      dist: 3.6,
+      inten: 3.4,
+      color: 0xffe2b8,
+      sw: [cvx + 0.11, cvy + HW - 0.05, 1.46],
+      label: 'Licht',
+      room: (x, y, z) => CV.inside(x, y, z),
+      r: 1.2,
+    });
+  }
   CV.anchor = cv;
+  Object.assign(CV, { cvx, cvy, b });
   CV.inside = (x, y, z) => z > zf - 0.6 && z < Z1 + 0.2 && inLocal(b, x, y, X1, HW, cvx, cvy);
   CV.zf = zf;
   // door: hinged at the front (west) jamb as on German caravans, opens outwards

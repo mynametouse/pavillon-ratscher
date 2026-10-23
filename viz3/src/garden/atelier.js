@@ -1034,7 +1034,7 @@ const clack = (c, out, t, f = 900, v = 0.08) => {
   gn.connect(out);
   n.start(t);
 };
-const sofaSound = A =>
+export const sofaSound = A =>
   tone(A, (c, out) => {
     const t = c.currentTime + 0.02;
     clack(c, out, t, 700, 0.09);
@@ -1128,6 +1128,7 @@ GACTS.push({
       SB.anim = false;
       AS.sofa = SB.want;
       keep();
+      KERN.emit('einrichtung:sofa', { house: 'atelier', bed: AS.sofa });
       sofaCol[0] = AS.sofa ? 0.16 : 0.56;
       sofaCol[5] = FZ + (AS.sofa ? 0.5 : 0.9);
       if (LATE.rebuildGrids) LATE.rebuildGrids();
@@ -1263,6 +1264,7 @@ const potter = (() => {
       } else if (S.phase === 'bowl') {
         AS.bowls++;
         keep();
+        KERN.emit('einrichtung:schale', { n: AS.bowls });
         showBowls();
         S.phase = 'lump';
         clayShape(0);
@@ -1343,6 +1345,7 @@ GACTS.push({
       kilnEye.emissiveIntensity = 0;
       AS.fired = AS.bowls;
       keep();
+      KERN.emit('einrichtung:brand', { n: AS.fired });
       showBowls();
       st.think('Der Ofen ist abgekühlt: die Schalen sind geschrüht – hell und hart. Jetzt glasieren.');
       st.dirty();
@@ -1492,6 +1495,7 @@ GACTS.push({
     }
     canvasPaint(AS.motif, AS.pic);
     keep();
+    KERN.emit('einrichtung:bild', { motif: MOTIFS[AS.motif], step: AS.pic });
     st.dirty();
   },
 });

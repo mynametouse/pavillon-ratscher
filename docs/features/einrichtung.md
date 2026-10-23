@@ -25,7 +25,10 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
     Schubkarre, Kranz, Blumenkasten und PV-Modul bleiben draußen.
 - **Der Wohnwagen gespiegelt** (`garden/carport.js`): von der Tür aus liegt das Querbett jetzt **rechts** (vorn unter dem Panoramafenster,
   1,3 × 2,1 m, Kopf an der Nordseite), daneben die Kleiderschränke, links neben der Tür der Schrank, gegenüber die Küche, hinten die
-  Sitzgruppe; die Fenster folgen der Einrichtung, die Tür bleibt. Neu: „In die Sitzecke setzen“, „Ins Bett legen“.
+  Sitzgruppe; die Fenster folgen der Einrichtung, die Tür bleibt. Neu: „In die Sitzecke setzen“, „Ins Bett legen“ und
+  **die Sitzecke als Bett**: „Tisch absenken – Bett bauen“ (der Tisch geht auf die Bänke herunter, zwei Polster schließen die Lücke, die
+  Laterne fährt mit), dann „Hinlegen“, „Bett wieder zur Sitzecke“ – gespeichert. Deckenleuchte (80er-Kuppel) mit Schalter an der
+  Tür: „Licht an/aus“ (sie leiht sich das eine Gartenlicht).
 - **Stile mit einem Klick** (`garden/stil.js`, Bungalow und Wohnwagen in `garden/stil_bauten.js`): Feld „Einrichtung“ – Knopf
   „Einrichtung“ oben rechts, solange man in einem der Gebäude ist, und Menü → Gestalten → „Gartengebäude“. Je Gebäude ein Reiter, fünf Stile
   und acht Akzentfarben (Senfgelb, Rost, Flaschengrün, Petrol, Taubenblau, Altrosa, Aubergine, Salbei):
@@ -35,12 +38,14 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
 
   Ein Stil ändert Wände, Decke, Boden (auch Bild und Struktur: Dielen, gekalkt, Eiche, Beton), Möbelholz, Polster, Vorhänge, Teppiche,
   Bettwäsche, Bilder – und die Einrichtung: im Bungalow das Sofa (Polstersofa, schlankes Holzsofa, Chesterfield, Landhaussofa mit Volant,
-  Tagesbett), den Couchtisch, den Lampenschirm um die Glühbirne (Papier, Falten, Gitter, Rattan), Pflanzen, Schaffell, Teller und Uhr,
-  Metallregal, Makramee, Lichterkette, Sitzkissen; im Atelier Lampenschirm, Bilder, Kissen, Pflanzen, Schaffell, Korb, Trockenblumen,
+  Tagesbett), den Couchtisch, den Lampenschirm um die Glühbirne (Papier, Falten, Gitter, Rattan), Pflanzen (auch hängend), Schaffell,
+  Teller und Uhr, Bogenlampe, Makramee, Lichterkette, Sitzkissen; im Atelier Lampenschirm, Bilder, Kissen, Pflanzen, Schaffell, Korb, Trockenblumen,
   Metallhocker, Makramee, Lichterkette; im Wohnwagen Vorhänge, Kissen, Tischdecke, Läufer, Steppdecke, Blumen. Die Akzentfarbe färbt
   Kissen, Vasen, Becher.
 - Gespeichert in **`pav-stil-v1`** (eine Zeile in `core/save.js`): `{ v: 1, h: { bungalow|atelier|wohnwagen: { s: Stil, a: Akzent } },
-  x: { atelier: { sofa, bowls, fired, pic, motif } } }`.
+  x: { atelier: { sofa, bowls, fired, pic, motif }, wohnwagen: { bed } } }`.
+- Ereignisse (`KERN.on`): `einrichtung:stil` { house, style, acc }, `einrichtung:sofa`, `einrichtung:schale`, `einrichtung:brand`,
+  `einrichtung:bild` – für Aufgaben oder Statistik.
 
 ## Technik
 

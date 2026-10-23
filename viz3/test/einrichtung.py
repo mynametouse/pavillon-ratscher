@@ -163,6 +163,25 @@ with lib.browser() as b:
         ck('caravan: lie down in the bed', lb == 'Ins Bett legen' and ev(pg, "!!(PLAY.seat && PLAY.seat.kind === 'lie')"), lb)
         shot(pg, 'wohnwagen_vom_bett')
         ev(pg, "PLAY.stand(true); GAME.step(0.6)")
+        # the dinette becomes a bed: the table goes down, two cushions close the gap; lie down; back to the dinette
+        ev(pg, f"(() => {{ const w = {W}('carport', 0.35 + 0.95, -0.35); GAME.view(w[0], w[1], {EYE_C}, SITE.bld.carport.az, -16, 80); GAME.step(0.1); }})()")
+        l0 = act(pg, 'garten:sitzecke-bett'); s0 = act(pg, 'seat:garten:wohnwagen-sitz')
+        run(pg, 'garten:sitzecke-bett', 1.6)
+        l1 = act(pg, 'garten:sitzecke-bett'); b1 = act(pg, 'seat:garten:wohnwagen-gaestebett'); s1 = act(pg, 'seat:garten:wohnwagen-sitz')
+        shot(pg, 'wohnwagen_sitzecke_als_bett')
+        ck('caravan: the dinette table lowers into a bed (then „Hinlegen“)', l0 == 'Tisch absenken – Bett bauen' and s0 == 'In die Sitzecke setzen' and l1 == 'Bett wieder zur Sitzecke' and b1 == 'Hinlegen' and s1 is None, [l0, s0, l1, b1, s1])
+        run(pg, 'seat:garten:wohnwagen-gaestebett', 1.2)
+        ck('caravan: lying on the dinette bed', ev(pg, "!!(PLAY.seat && PLAY.seat.kind === 'lie')"))
+        ev(pg, "PLAY.stand(true); GAME.step(0.6)")
+        ev(pg, f"(() => {{ const w = {W}('carport', 0.35 + 0.95, -0.35); GAME.view(w[0], w[1], {EYE_C}, SITE.bld.carport.az, -16, 80); GAME.step(0.1); }})()")
+        run(pg, 'garten:sitzecke-bett', 1.6)
+        ck('caravan: back to the dinette', act(pg, 'seat:garten:wohnwagen-sitz') == 'In die Sitzecke setzen' and ev(pg, "WOHNWAGEN.dinette.k") == 0)
+        # its ceiling light at night (the garden's one shared lamp light goes there)
+        lbl = act(pg, 'garten:licht:wohnwagen')
+        ev(pg, "GARTEN.set('wohnwagen', true); GAME.setMode('night')"); lib.settle_light(pg)
+        view(pg, 'carport', 0.35 + 0.52, -0.35 + 0.75, EYE_C, 90, -12, 84); ev(pg, "GAME.step(0.4)"); shot(pg, 'wohnwagen_nacht_licht')
+        ck('caravan: ceiling light by the door switch, the shared light goes there', lbl in ('Licht an', 'Licht aus') and ev(pg, "GARTEN.cur() === 'wohnwagen' && GARTEN.light.intensity > 0"), [lbl, ev(pg, "GARTEN.cur()")])
+        ev(pg, "GARTEN.set('wohnwagen', false); GAME.setMode('day')"); lib.settle_light(pg)
     # ---- styles: every style of every house once (pictures), accents; no new shader programs ----
     if want('styles'):
         # warm up: every interior seen once in its current style
@@ -202,7 +221,10 @@ with lib.browser() as b:
         pan = ev(pg, "(() => { const p = document.getElementById('stilpanel'); return p && !p.hidden ? [p.querySelectorAll('.stabs button').length, p.querySelectorAll('.sstyles button').length, p.querySelectorAll('.saccents button').length] : null; })()")
         ck('panel „Einrichtung“: tabs, styles, accents', pan and pan[0] >= 1 and pan[1] >= 4 and pan[2] == 8, pan)
         ev(pg, "(() => { const p = document.getElementById('stilpanel'); p.style.visibility = 'visible'; })()")
-        pg.screenshot(path=os.path.join(OUT, 'panel.png'))
+        try:
+            ev(pg, "GAME.shot()"); pg.screenshot(path=os.path.join(OUT, 'panel.png'), timeout=120000); print('page shot panel', flush=True)
+        except Exception as e:
+            print('page shot panel failed (picture only)', str(e)[:120], flush=True)
         ev(pg, "STIL.open(false)")
     # ---- a reload keeps the chosen styles and the sofa bed ----
     if want('reload'):

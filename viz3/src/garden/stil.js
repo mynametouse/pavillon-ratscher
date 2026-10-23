@@ -13,6 +13,7 @@ import { LATE } from '../core/late.js';
 import { SAVE } from '../core/save.js';
 import { $ } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
+import { KERN } from '../core/kern.js';
 import { MAT } from '../core/mats.js';
 import { gB } from './site_base.js';
 import {
@@ -708,6 +709,7 @@ export const STIL = (() => {
     if (!o.nosave) {
       st.h[key] = { s: h.cur, a: h.acc };
       save();
+      KERN.emit('einrichtung:stil', { house: key, style: h.cur, acc: h.acc });
     }
     markDirty(true);
     UI.sync();
