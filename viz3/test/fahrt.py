@@ -459,6 +459,14 @@ with lib.browser() as b:
                     E(f"window._fs = VEH.follow({json.dumps(appr)}, 2.2, {{ look: 3.5 }})")
             if phase == 2:
                 gmin = min(gmin, math.dist((s['x'], s['y']), (B['G'][0], B['G'][1])))
+                # every step at the gate: what moves or holds the car (the speed cap and the edge of welt/fahrt.js, the follower, walls)
+                tr = json.loads(E("""JSON.stringify((() => { const v = VEH.cur, st = v.st, f = VEH.fwd(st.psi), pu = [];
+                  for (const k of [-1, 0, 1]) { const p = [st.x + f[0] * 1.4 * k, st.y + f[1] * 1.4 * k], q = p.slice(); pu.push(KERN.pushOut(q, 1.0) ? [+(q[0] - p[0]).toFixed(2), +(q[1] - p[1]).toFixed(2)] : 0); }
+                  const fs = FAHRT.status(); return { thr: +(st.thr || 0).toFixed(2), brk: +(st.brk || 0).toFixed(2), gear: st.gear, cap: fs.cap, edge: VEH.edge ? VEH.edge(v) : null,
+                    loading: fs.welt.loading, err: fs.welt.err, h: WELT.heightAt(st.x + f[0] * 6, st.y + f[1] * 6) !== undefined, push: pu, fs: window._fs }; })())"""))
+                G2, uu2, ww2 = B['G'], B['u'], B['w']
+                du, dw = s['x'] - G2[0], s['y'] - G2[1]
+                print(f"  gate u {du * uu2[0] + dw * uu2[1]:6.2f} w {du * ww2[0] + dw * ww2[1]:6.2f} {s['kmh']:5.1f} km/h", json.dumps(tr), flush=True)
             stop_t = stop_t + 0.5 if abs(s['kmh']) < 2 else 0
             if (fs['done'] and phase != 1) or stop_t > (15 if phase == 1 else 6):
                 break

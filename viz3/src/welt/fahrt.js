@@ -22,6 +22,7 @@ import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { RATSCHER } from '../world/ratscher.js';
+import { ROADS } from '../world/roads.js';
 import { WELT } from './welt.js';
 import { SCHL } from './schleusingen.js';
 import { VEH } from '../vehicles/vehicle.js';
@@ -193,10 +194,58 @@ export const FAHRT = (() => {
   // pads of the zones. This module's own ground: the bridge decks (when coming from their level: a walker in the valley stays), and the
   // first 3 m beyond the square, where the tile mesh dips towards its hidden vertices under the 10 m terrain (the profiles meet that
   // terrain at the edge: strecke.py solves them on it)
+  // inside the square: the ends of the bridge decks of world/roads.js. A deck starts on the highest ground across its width + 0.08 m, so
+  // it stood 0.1-0.3 m above the road it continues – a step that threw a car into the air at 50 km/h (main road north of the garden,
+  // 465/-201). The wheels (and feet) roll up a ramp over the last 5 m before the deck instead; the drawn road stays as it is (the ramp
+  // lifts at most that step, at the deck's edge).
+  const RAMP = 5;
+  let ramps = null;
+  function rampAt(x, y) {
+    if (!ramps) {
+      if (!ROADS.ready || !ROADS.decks) return undefined;
+      ramps = [];
+      for (const d of ROADS.decks) {
+        const p = d.p,
+          n = p.length / 2;
+        if (n < 2) continue;
+        for (const [k, k2, sv] of [
+          [0, 1, 0],
+          [n - 1, n - 2, d.L],
+        ]) {
+          const ex = p[k * 2],
+            ey = p[k * 2 + 1],
+            dx = ex - p[k2 * 2],
+            dy = ey - p[k2 * 2 + 1],
+            l = Math.hypot(dx, dy) || 1,
+            ux = dx / l,
+            uy = dy / l,
+            zd = d.zOf(sv) + 0.02,
+            zr = RATSCHER.hMesh(ex + ux * 0.3, ey + uy * 0.3);
+          // not where the deck goes on in another deck, not in the modelled garden
+          if (
+            zd - zr > 0.02 &&
+            zd - zr < 0.6 &&
+            (Math.abs(ex) > 125 || Math.abs(ey) > 125) &&
+            !ROADS.deckAt(ex + ux * 0.3, ey + uy * 0.3)
+          )
+            ramps.push({ x: ex, y: ey, ux, uy, hw: d.hw, dz: zd - zr });
+        }
+      }
+    }
+    for (const r of ramps) {
+      if (Math.abs(x - r.x) > RAMP + r.hw || Math.abs(y - r.y) > RAMP + r.hw) continue;
+      const t = (x - r.x) * r.ux + (y - r.y) * r.uy;
+      if (t < 0 || t > RAMP || Math.abs((x - r.x) * r.uy - (y - r.y) * r.ux) > r.hw) continue;
+      return ROADS.deckAt(x, y) ? undefined : RATSCHER.hMesh(x, y) + r.dz * (1 - t / RAMP);
+    }
+    return undefined;
+  }
+  S.rampAt = rampAt;
   KERN.provide(
     'ground',
     (x, y, z) => {
-      if (!S.ready || insideRB(x, y)) return undefined;
+      if (insideRB(x, y)) return rampAt(x, y);
+      if (!S.ready) return undefined;
       const r = roadAt(x, y, 0.5);
       if (!r || ownFade(x, y) < 0.5) return undefined; // in a zone with its own roads (Kloster Veßra) its ground carries
       if (!(r.w.fl & 1))

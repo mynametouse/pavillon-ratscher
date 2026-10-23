@@ -303,6 +303,12 @@ for wy, ids in chains:
     under += [i for i, c in zip(ids, cum) if only_bridge[i] and ABUT <= c <= cum[-1] - ABUT]
 bidx = np.array(sorted(set(under)), int)
 btree = cKDTree(pos[bidx]) if len(bidx) else None
+ball = np.flatnonzero(only_bridge)
+batree = cKDTree(pos[ball]) if len(ball) else None
+# world/roads.js sets a deck's end on the highest ground across its width + 0.08 m (+ 0.02 on the deck): with the abutment at the road's
+# height the deck stood 10-20 cm above the road – a step at 50 km/h. The ground under the deck's first metres lies 0.12 m below the profile,
+# so the deck's end meets the road.
+ABUT_DZ = 0.0   # tried -0.12: the deck end still stood 0.1 m above the road (its corners sample the approach) – the ramp is in welt/fahrt.js now
 bhw = max([wy['w'] / 2 for wy, ids in chains if wy['fl'] & 1] or [0])
 z1 = z0.copy()
 RE = max(hwN) + FULL + FADE + 1.5
@@ -321,6 +327,10 @@ for flat, nb in enumerate(cand):
         db, _ = btree.query([X, Y])
         if db < bhw + 2 and db < dr:
             continue
+    abut = False
+    if batree is not None:
+        dba, _ = batree.query([X, Y])
+        abut = dba < bhw + 2 and dba < dr
     # per class the nearest road node (nodes every <= 2 m): its profile height – not the nearest node of every way, which near a split
     # (way ends at a junction) averaged in the other way's end 8 m further along the road
     per = {}
@@ -351,7 +361,7 @@ for flat, nb in enumerate(cand):
             break
     if wtot <= 0:
         continue
-    dz = wtot * (tgt / wtot - z0[j, i])
+    dz = wtot * (tgt / wtot - z0[j, i]) + (ABUT_DZ if abut else 0.0)
     if DBG and math.hypot(X - DBG[0], Y - DBG[1]) < 16:
         print(f'  Punkt ({X:.1f}, {Y:.1f}) z {z0[j, i]:.2f} -> {z0[j, i] + dz:.2f}', {k: (round(v[1] / v[0], 2), round(v[2], 2)) for k, v in acc.items()})
     dw = wall.query([X, Y])[0]
