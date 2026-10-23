@@ -11,8 +11,9 @@
 //     weights, 0.75 m, or as high as the loader is – raised it has more leverage), reached from the impact m · v² / (2 · 0.35 m) or from
 //     pushing with the throttle (traction: car ≈ 4 kN, tractor more than its front takes)
 //   saplings (D < 4 cm) bend under the vehicle and spring back (a little crooked); a stem that gives way tips over in the push direction
-//     with its root plate (a short fall, then it lies – and stays lying: saved in 'pav-trees-v1'); a thicker stem stops the vehicle as before,
-//     its crown sways. The vehicle loses the work it took (M · 0.35 rad) – it gets slower, it does not stop.
+//     with its root plate (a short fall, then it lies – and stays lying: saved in 'pav-trees-v1'; pushed slowly it first leans with the
+//     vehicle until the roots tear at ~16°); a thicker stem stops the vehicle as before and leans elastically, its crown sways. The vehicle
+//     loses the work it took (M · 0.35 rad) – it gets slower, it does not stop. Over a lying stem a wheel jolts, the crown cracks.
 // Hooks: vehicles/vehicle.js boxHits asks TREEHIT.give for every trunk its box touches (true = the trunk gives way, no hit); world/worldcol.js
 // keeps the saplings as soft trunks and drops a fallen one (dead); world/forest.js and world/ratscher.js draw a tree tilted (t.tilt, instances).
 // Walkers never knock a tree over (only vehicles call give). Per frame only the trees in motion are touched (a handful).
@@ -300,10 +301,12 @@ export const TREEHIT = (() => {
     } catch (e) {}
   }
   // a short word on what happened and why (the game should teach: diameter, force, leverage), at most every few seconds
-  let msgT = -99;
-  function say(txt, force) {
-    if (!S.msgs || (!force && S.time - msgT < 6)) return;
-    msgT = S.time;
+  // (bending once in a while – a young stand would say it at every stem –, a stem that holds or falls each time, a few seconds apart)
+  const GAP = { bend: 90, stop: 8, fall: 3 },
+    msgT = { bend: -999, stop: -999, fall: -999 };
+  function say(txt, kind) {
+    if (!S.msgs || S.time - msgT[kind] < GAP[kind]) return;
+    msgT[kind] = S.time;
     S.last = txt;
     toast(txt, 5200);
   }
@@ -388,7 +391,8 @@ export const TREEHIT = (() => {
       snd('swish', T.x, T.y, Math.min(1, T.H / 2.5));
       if (v === (LATE.VEH && LATE.VEH.cur))
         say(
-          `${T.name}, ${T.H.toFixed(1).replace('.', ',')} m hoch, Ø ${cm(T.D)} cm: biegt sich unter ${vpOf(v).dem} und federt zurück.`
+          `${T.name}, ${T.H.toFixed(1).replace('.', ',')} m hoch, Ø ${cm(T.D)} cm: biegt sich unter ${vpOf(v).dem} und federt zurück.`,
+          'bend'
         );
     }
   }
@@ -417,7 +421,8 @@ export const TREEHIT = (() => {
         snd(ratio > 0.5 ? 'creak' : 'swish', T.x, T.y, Math.min(1, T.D * 6));
         if (v === (LATE.VEH && LATE.VEH.cur) && (a > 0.8 || (v.st.thr || 0) > 0.5))
           say(
-            `${T.name}, Ø ${cm(T.D)} cm: zu stark. Umdrücken bräuchte ${kN(need)} kN, ${P.der} bringt höchstens ${kN(P.front)} kN auf den Stamm.`
+            `${T.name}, Ø ${cm(T.D)} cm: zu stark. Umdrücken bräuchte ${kN(need)} kN, ${P.der} bringt höchstens ${kN(P.front)} kN auf den Stamm.`,
+            'stop'
           );
       }
     }
@@ -512,7 +517,7 @@ export const TREEHIT = (() => {
     if (v === (LATE.VEH && LATE.VEH.cur))
       say(
         `${T.name}, Ø ${cm(T.D)} cm, kippt mit dem Wurzelteller um: nötig waren ${kN(need)} kN in ${hc.toFixed(2).replace('.', ',')} m Höhe, ${vpOf(v).der} drückt mit ${kN(F)} kN.`,
-        true
+        'fall'
       );
   }
   // the angle at which the fallen tree lies: on the ground along dir (slope), the crown holds the stem up a little

@@ -626,7 +626,8 @@ export const VEH = (() => {
       (i, Q) => {
         const h = circBox(A, Q[i * 3], Q[i * 3 + 1], Q[i * 3 + 2]);
         if (h && !TREEHIT.give(i, h, z0, skip)) hits.push([h, null]); // world/treehit.js: a small tree gives way (bends, tips over)
-      }
+      },
+      true
     );
     if (Math.abs(A.c[0]) < 140 && Math.abs(A.c[1]) < 140 && typeof CG !== 'undefined' && CG) {
       // the garden's colliders (fences, sheds, trees, machines …)

@@ -30,7 +30,10 @@ biegt sich wenigstens. Das Spiel soll dabei etwas lehren: Stammdurchmesser, Kraf
    Schnell (ab ≈ 4 km/h) geht ein Stamm, der nachgibt, sofort; **langsam geschoben** neigt er sich mit dem Fahrzeug (es kriecht mit
    höchstens 0,4 m/s weiter, der Wurzelteller hebt sich, es knarzt) und reißt bei ≈ 16° aus – setzt man vorher zurück, richtet er sich
    wieder auf. Langsam schafft das Auto nur, was es mit Gas schieben kann (≈ 8 cm). Das Fahrzeug verliert die Arbeit, die das Umdrücken
-   kostet (M · 0,35 rad), es wird langsamer, hält aber nicht an. Ein kurzer Hinweis nennt Durchmesser und Kräfte.
+   kostet (M · 0,35 rad), es wird langsamer, hält aber nicht an. Ein Stamm, der hält, gibt elastisch nach: unter dem Anteil r der Kraft,
+   die ihn ausreißen würde, neigt er sich um r · 8° (eine 11-cm-Fichte am Auto ≈ 6°, ein dicker Stamm sichtbar gar nicht), ein Stoß
+   lässt ihn etwa so weit schwingen. Ein kurzer Hinweis nennt Durchmesser und Kräfte (umgedrückt jedes Mal, „zu stark“ alle 8 s,
+   Biegen höchstens alle 90 s).
    Gehende werfen keine Bäume um. Vom Förster markierte Bäume und solche, an denen gerade gefällt wird, bleiben, wie sie sind (Fällen hat
    seinen eigenen Zustand).
 5. **Liegen bleiben**: ein umgedrückter Baum verlässt sofort die Kollisionen (kein Hindernis mehr, auch nicht für Gehende), liegt auf dem
@@ -41,9 +44,11 @@ biegt sich wenigstens. Das Spiel soll dabei etwas lehren: Stammdurchmesser, Kraf
 ## Wo der Code ist
 
 - `viz3/src/world/treehit.js` (`TREEHIT`): Regel, Bewegungen (biegen, schwanken, fallen) nur der Bäume in Bewegung, Wurzelteller
-  (ein InstancedMesh), Töne (Knacken, Rascheln, Aufschlag, Knarzen – synthetisch über `audio.raw()`), Speichern, Testhilfen
-  (`info(i)`, `verdict(i, 'car'|'tractor', kmh)`, `state(i)`, `stats()`, `rule`).
-- `viz3/src/world/worldcol.js` (`WCOL`): die Jungbäume (≤ 2,5 m) als weiche Stämme (`soft`: Gehende gehen vorbei, Fahrzeuge biegen sie),
+  (ein InstancedMesh), Töne (Knacken, Rascheln, Aufschlag, Knarzen, Rad über Stamm, Zweige – synthetisch über `audio.raw()`),
+  Speichern, Testhilfen (`info(i)`, `verdict(i, 'car'|'tractor', kmh)`, `state(i)`, `axisOf(i)` – die gezeichnete Stammachse aus der
+  Instanzmatrix –, `stats()`, `rule`) und `standUp()` (alle umgefahrenen Bäume wieder aufstellen, Speicher leeren – Werkzeug, noch ohne Menü).
+- `viz3/src/world/worldcol.js` (`WCOL`): die Jungbäume (≤ 2,5 m) als weiche Stämme – nur Abfragen mit `each(…, soft = true)` sehen
+  sie (die Fahrzeuge, die sie biegen); Gehende, ein an der Seilwinde gezogener Stamm und die Kamera nicht –,
   umgefahrene als `dead` (jede Abfrage überspringt sie – kein NaN, kein Löschen während einer Abfrage; Lehre V16b5), `src` (Baum je Stamm),
   `removeIdx`, `treeAt`, `trunk`.
 - `viz3/src/world/forest.js`: `t.tilt` (Drehung um den Stammfuß + Versatz durch den Wurzelteller) in allen drei Detailstufen
@@ -64,3 +69,20 @@ bash tools/browser_lock.sh python3 viz3/test/run.py --port 8976 --serve baeume:c
 gesucht); geprüft werden Biegen und Zurückfedern, Umkippen und Weiterfahren, Anhalten und Schwanken, dann Neuladen (liegt noch, kein
 Hindernis). Bilder: `out/baeume/<fahrzeug>_<fall>_1_before|2_contact|3_after.jpg`, `reload_<i>.jpg`. Bei GitHub läuft der Test bei
 jedem Push auf `feat/baeume` (`viz3/extra/baeume/tests.txt`).
+
+## Für den Kern-Chat (gemeinsame Dateien)
+
+- `docs/ARCHITECTURE.md`: Abschnitt 6 eine Zeile `TREEHIT | world/treehit.js | kleine Bäume geben Fahrzeugen nach: biegen, umkippen
+  mit Wurzelteller, liegen bleiben; dicke halten auf (give, standUp, axisOf)`; Abschnitt 8 `pav-trees-v1 | umgefahrene Bäume (Lage,
+  Richtung, Winkel)`; Abschnitt 9 `world/` um `treehit` ergänzen; Abschnitt 11/11b: `WCOL.each(…, soft)` – Jungbäume (≤ 2,5 m) nur für
+  Fahrzeuge (`soft`), umgefahrene `dead`, `WCOL.src/removeIdx/revive/treeAt/trunk`; `FOREST.retilt(t)`/`t.tilt`; `RATSCHER.treeRecs`;
+  `VEH.boxHits` fragt `TREEHIT.give`.
+- `docs/CHANGELOG.md` (V16i nennt die Bäume schon): seither dazu – langsam geschoben neigt sich der Stamm erst mit dem Fahrzeug und reißt
+  bei ≈ 16° aus (zurücksetzen: er richtet sich wieder auf), ein Stamm, der hält, gibt elastisch nach (bis ≈ 8°), Räder über einem
+  liegenden Stamm rucken, Äste knacken, Wurzelteller erdbraun statt beige, Hinweise seltener.
+- `core/save.js` (`pav-trees-v1`) und `modules.txt` (Zeile unter `world/worldcol.js`) sind im Branch eingetragen – beim Zusammenführen
+  behalten.
+- Neuer `window`-Name `TREEHIT` (Tests, Fehlersuche).
+- Nicht gemacht, als Idee: Menüpunkt „Umgefahrene Bäume wieder aufstellen“ (`TREEHIT.standUp()`, z. B. neben „Fahrzeuge zurückstellen“
+  in `shell/menu.html`); ein einmaliger „Neu“-Hinweis (`SAVE.once`). Die Gartenbäume (`garden/trees.js`, Falkos eigene Obst- und
+  Laubbäume im modellierten Grundstück) bleiben feste Hindernisse.

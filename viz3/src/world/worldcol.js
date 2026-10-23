@@ -74,8 +74,9 @@ export const WCOL = (() => {
     for (let t = 0; t < S.nTree; t++) cell(Math.floor(TREE[t * 3] / CS), Math.floor(TREE[t * 3 + 1] / CS)).t.push(t);
     S.ready = true;
   }
-  // every wall segment / trunk whose cell touches the box [x0, x1] × [y0, y1] (each once): fn(index, data array)
-  S.each = (x0, y0, x1, y1, fnS, fnT) => {
+  // every wall segment / trunk whose cell touches the box [x0, x1] × [y0, y1] (each once): fn(index, data array). Fallen trunks never;
+  // the saplings (soft) only if asked (soft = true: the vehicles, which bend them – a walker, a dragged log or the camera pass them)
+  S.each = (x0, y0, x1, y1, fnS, fnT, soft) => {
     if (!S.ready) return;
     qid++;
     const i0 = Math.floor(x0 / CS) - (fnT ? 1 : 0),
@@ -94,7 +95,7 @@ export const WCOL = (() => {
           }
         if (fnT)
           for (const t of c.t) {
-            if (stampT[t] === qid || S.dead[t]) continue;
+            if (stampT[t] === qid || S.dead[t] || (S.soft[t] && !soft)) continue;
             stampT[t] = qid;
             fnT(t, TREE);
           }
@@ -130,7 +131,6 @@ export const WCOL = (() => {
         }
       },
       (t, A) => {
-        if (S.soft[t]) return; // a sapling: walkers step past it
         const ex = p[0] - A[t * 3],
           ey = p[1] - A[t * 3 + 1],
           rr = r + A[t * 3 + 2],
@@ -152,7 +152,6 @@ export const WCOL = (() => {
     let best = -1,
       bd = 0.6;
     S.each(x - 1, y - 1, x + 1, y + 1, null, (t, A) => {
-      if (S.soft[t]) return; // a felled tree is never a sapling
       const d = Math.hypot(A[t * 3] - x, A[t * 3 + 1] - y);
       if (d < bd) {
         bd = d;
@@ -180,14 +179,21 @@ export const WCOL = (() => {
   S.treeAt = (x, y, r = 0.3, soft = false) => {
     let best = -1,
       bd = r;
-    S.each(x - r, y - r, x + r, y + r, null, (t, A) => {
-      if (S.soft[t] && !soft) return;
-      const d = Math.hypot(A[t * 3] - x, A[t * 3 + 1] - y);
-      if (d < bd) {
-        bd = d;
-        best = t;
-      }
-    });
+    S.each(
+      x - r,
+      y - r,
+      x + r,
+      y + r,
+      null,
+      (t, A) => {
+        const d = Math.hypot(A[t * 3] - x, A[t * 3 + 1] - y);
+        if (d < bd) {
+          bd = d;
+          best = t;
+        }
+      },
+      soft
+    );
     return best;
   };
   // where trunk t stands and its radius (tests, world/treehit.js)
