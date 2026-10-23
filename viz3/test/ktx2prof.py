@@ -1,6 +1,6 @@
 # Start time with and without KTX2 textures (docs/features/texturen.md), measured fairly: one warm-up load first (the first browser of a
 # job is several seconds slower – disk cache – whatever it loads), then the modes in turns, several rounds; the median per mode.
-# Modes: k2 = as published (KTX2 where tex2/ has the file), img = ?tex2=0 (the images), and any target family forced with ?tex2fmt=
+# Modes: k2 = KTX2 (?tex2=1: also where it is off by default), img = ?tex2=0 (the images), dflt = as served, and a target family forced with ?tex2fmt=
 # (astc, bc7, bc1, etc2, rgba). Per load: seconds until the model is shown, the GPU preparation (RENDER.prepMs) and the phases of the
 # loading text (files, building, shaders, textures, first picture). Diagnostic: fails only when a load does not finish or the page errs.
 #   python3 viz3/test/ktx2prof.py 8985 [modes] [rounds]     (default 'k2,img' and 3 rounds: 7 loads, ~5 min on GitHub)
@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]; ck = lib.Checks('ktx2prof'); OUT = lib.out('ktx2prof')
 MODES = (sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else 'k2,img').split(',')
 ROUNDS = int(sys.argv[3]) if len(sys.argv) > 3 else 3
-QUERY = lambda m: '' if m == 'k2' else '?tex2=0' if m == 'img' else '?tex2fmt=' + m
+QUERY = lambda m: '?tex2=1' if m == 'k2' else '?tex2=0' if m == 'img' else '' if m == 'dflt' else '?tex2=1&tex2fmt=' + m
 PHASES = [('Dateien', 'Modell wird geladen'), ('Aufbau', 'Modell wird aufgebaut'), ('Shader', 'Shader'), ('Texturen', 'Texturen'), ('Bild', 'erstes Bild')]
 def run(mode):
     with lib.browser() as b:

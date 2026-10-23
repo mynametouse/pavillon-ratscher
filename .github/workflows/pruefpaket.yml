@@ -41,11 +41,13 @@ jobs:
         run: |
           # sparse: only the preview (or the site without preview and world tiles) – the full branch is ~400 MB (welt-test/, 23.10.2026)
           git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
-          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/' '/tex2/'; B="$RUNNER_TEMP/site/vorschau"
           else git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"; fi
           git -C "$RUNNER_TEMP/site" checkout -q
           mkdir -p viz3/dist
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+          # KTX2 textures (texturen-ktx2.yml): only at the site root, the preview loads them from there
+          if [ -d "$RUNNER_TEMP/site/tex2" ]; then rm -rf viz3/dist/tex2 && cp -r "$RUNNER_TEMP/site/tex2" viz3/dist/tex2; fi
       - name: Werkzeuge
         run: |
           npm ci --prefix viz3 --no-audit --no-fund
@@ -95,11 +97,13 @@ jobs:
         run: |
           # sparse: only the preview (or the site without preview and world tiles) – the full branch is ~400 MB (welt-test/, 23.10.2026)
           git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
-          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/' '/tex2/'; B="$RUNNER_TEMP/site/vorschau"
           else git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"; fi
           git -C "$RUNNER_TEMP/site" checkout -q
           mkdir -p viz3/dist
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+          # KTX2 textures (texturen-ktx2.yml): only at the site root, the preview loads them from there
+          if [ -d "$RUNNER_TEMP/site/tex2" ]; then rm -rf viz3/dist/tex2 && cp -r "$RUNNER_TEMP/site/tex2" viz3/dist/tex2; fi
       - name: Werkzeuge
         run: |
           npm ci --prefix viz3 --no-audit --no-fund
@@ -165,11 +169,13 @@ jobs:
       - name: Website als Asset-Basis (Branch gh-pages, Vorschau wenn vorhanden)
         run: |
           git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
-          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/' '/tex2/'; B="$RUNNER_TEMP/site/vorschau"
           else git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"; fi
           git -C "$RUNNER_TEMP/site" checkout -q
           mkdir -p viz3/dist
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+          # KTX2 textures (texturen-ktx2.yml): only at the site root, the preview loads them from there
+          if [ -d "$RUNNER_TEMP/site/tex2" ]; then rm -rf viz3/dist/tex2 && cp -r "$RUNNER_TEMP/site/tex2" viz3/dist/tex2; fi
       - name: Werkzeuge
         run: |
           npm ci --prefix viz3 --no-audit --no-fund
@@ -204,11 +210,13 @@ jobs:
         run: |
           # sparse: only the preview (or the site without preview and world tiles) – the full branch is ~400 MB (welt-test/, 23.10.2026)
           git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
-          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/' '/tex2/'; B="$RUNNER_TEMP/site/vorschau"
           else git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"; fi
           git -C "$RUNNER_TEMP/site" checkout -q
           mkdir -p viz3/dist
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+          # KTX2 textures (texturen-ktx2.yml): only at the site root, the preview loads them from there
+          if [ -d "$RUNNER_TEMP/site/tex2" ]; then rm -rf viz3/dist/tex2 && cp -r "$RUNNER_TEMP/site/tex2" viz3/dist/tex2; fi
       - name: Werkzeuge
         run: |
           npm ci --prefix viz3 --no-audit --no-fund
@@ -271,7 +279,7 @@ jobs:
           mkdir -p viz3/dist
           B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
-          # KTX2 textures (texturen-ktx2.yml): always the site's own tex2/ – it goes into the preview with the rest, so the tests find it there
+          # KTX2 textures (texturen-ktx2.yml): the site's tex2/ for the build (TEX2MAN); deploy_site.py does not copy it, the preview loads it from the root
           if [ -d "$RUNNER_TEMP/site/tex2" ]; then rm -rf viz3/dist/tex2 && cp -r "$RUNNER_TEMP/site/tex2" viz3/dist/tex2; fi
       - name: Bauen wie veröffentlicht
         run: |

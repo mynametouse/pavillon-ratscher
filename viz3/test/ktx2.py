@@ -1,5 +1,5 @@
-# GPU-compressed textures (KTX2/Basis, docs/features/texturen.md): the model loaded twice on the desktop – as published (KTX2 where tex2/
-# has the file) and with ?tex2=0 (the images, as before) – then once in an iPhone-13 context (half-size files). Checks: KTX2 used for the
+# GPU-compressed textures (KTX2/Basis, docs/features/texturen.md): the model loaded twice on the desktop – with ?tex2=1 (KTX2 where tex2/
+# has the file) and with ?tex2=0 (the images, as before) – then in an iPhone-13 context (half-size files) both ways. Checks: KTX2 used for the
 # tex/ textures, nothing fell back to an image, the same shader programs (a compressed texture must not change a material's program),
 # the same pictures at five views (garden, pavilion, interior, village, forest: mean difference small, no strongly changed areas – a texture
 # upside down, with wrong colours or missing would show), half-size base levels on the phone, no page errors. Prints load times and the
@@ -47,7 +47,7 @@ def visit(query, ctx=None, views=True):
                 ims[name] = pg.evaluate("(() => { GAME.shot(); GAME.shot(); return document.querySelector('#stage canvas').toDataURL('image/png'); })()")
             st2 = json.loads(pg.evaluate(STATE)); st['programs_after'] = st2['programs']; st['keys_after'] = st2['keys']
         return st, ims, errs
-k2, ik2, ek2 = visit('')
+k2, ik2, ek2 = visit('?tex2=1')
 img, iimg, eimg = visit('?tex2=0')
 show = lambda s: {k: v for k, v in s.items() if k not in ('keys', 'keys_after')}
 print('KTX2  ', json.dumps(show(k2), ensure_ascii=False), flush=True)
@@ -58,7 +58,7 @@ if not have:
     ck('no tex2/ in this build: the images, nothing broken', not k2['on'] and k2['k2'] == 0 and k2['img'] > 30, k2['why'])
 else:
     ck('KTX2 on (transcoder in a worker, a compressed format of this GPU)', k2['on'], f"{k2['why']} gpu {k2['gpu']}")
-    ck('the tex/ textures are compressed', k2['k2'] >= 0.9 * k2['files'] and k2['k2'] > 30, f"{k2['k2']} of {k2['files']} ({k2['fmt']}), {k2['img']} images")
+    ck('the tex/ textures are compressed', k2['k2'] >= 0.9 * k2['files'] and k2['k2'] > 30, f"{k2['k2']} of {k2['files']}, {k2['img']} images (formats of all: {k2['fmt']})")
     ck('nothing fell back to an image', k2['fails'] == 0 and k2['back'] == 0, f"fails {k2['fails']}, back {k2['back']}")
     ck('graphics memory of the tex/ textures at most a third', k2['k2mb'] + k2['imgmb'] <= img['imgmb'] / 3 + 1,
        f"KTX2 {k2['k2mb']} MB (+ {k2['imgmb']} MB images) vs images {img['imgmb']} MB (RGBA with mipmaps)")
@@ -93,7 +93,7 @@ with lib.browser() as b:
 if have:
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p: phone = dict(p.devices['iPhone 13'])
-    ph, _, eph = visit('', ctx=phone, views=False)
+    ph, _, eph = visit('?tex2=1', ctx=phone, views=False)
     ph0, _, eph0 = visit('?tex2=0', ctx=phone, views=False)
     print('phone ', json.dumps(show(ph), ensure_ascii=False), flush=True)
     print(f"phone: loaded in {ph['load_s']} s (prepare GPU {ph['prep']} ms) vs {ph0['load_s']} s ({ph0['prep']} ms) with ?tex2=0; graphics memory of all"

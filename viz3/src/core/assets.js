@@ -272,6 +272,8 @@ if (TEXHALF.on) {
 // Where it is on by default – until Falko has checked it on his iPhone (Safari) and laptop (Chrome): in the preview (/vorschau/) and on
 // the test servers (localhost, so the CI tests cover it); on the live site only with ?tex2=1. For everyone: TEX2_LIVE = true.
 const TEX2_LIVE = false;
+// on PCs without a graphics card (software rendering): BC7 from KTX2 (true) or the images as before (false); ?tex2=1 forces KTX2 there too
+const TEX2_SOFT = true;
 export const TEX2 = (() => {
   // TEX2MAN (build): { t: tex/ stems, g: { key of a glTF image: its larger side } } (an array: the tex/ stems only)
   const M = window.TEX2MAN || [];
@@ -311,8 +313,9 @@ export const TEX2 = (() => {
       if (ff) for (const k of Object.values(FAM)) c[k] = c[k] && FAM[ff] === k;
       if (ff) S.fam = ff;
       // without a graphics card (the same test as GLINFO in render/render.js) every compressed texture is decoded on the processor when
-      // it goes up: measured with SwiftShader (docs/features/texturen.md) BC7 is cheap there – the start 5 s faster than with the images,
-      // ASTC 4 s slower, BC1/ETC2/RGBA like the images. So BC7 only, and the images where there is no BC7.
+      // it goes up. Measured with SwiftShader (docs/features/texturen.md: warm-up, interleaved, median of 3): BC7 is the cheapest there,
+      // ASTC the dearest; BC7 about as fast as the images (with the models' images too: 3 s faster on a slower machine). So BC7 only,
+      // the images where there is none – or the images always with TEX2_SOFT = false.
       let soft = false;
       try {
         const gl = R.getContext(),
@@ -323,7 +326,8 @@ export const TEX2 = (() => {
       } catch (e) {}
       S.soft = soft;
       if (soft && !ff) c.astcSupported = c.etc2Supported = c.dxtSupported = false;
-      if (soft && !ff && !c.bptcSupported) S.why = 'Software-Grafik ohne BC7 (dort sind die Bilder schneller)';
+      if (soft && !ff && !TEX2_SOFT && q !== '1') S.why = 'Software-Grafik: die Bilder (TEX2_SOFT)';
+      else if (soft && !ff && !c.bptcSupported) S.why = 'Software-Grafik ohne BC7 (dort sind die Bilder schneller)';
       else if (!(c.astcSupported || c.bptcSupported || c.etc2Supported || c.dxtSupported) && ff !== 'rgba')
         S.why = 'keine komprimierten Formate auf dieser GPU';
       else {
@@ -337,6 +341,8 @@ export const TEX2 = (() => {
     } catch (e) {
       S.why = 'Fehler: ' + ((e && e.message) || e);
     }
+  // tex2/ lives only at the site root (one copy on gh-pages): the preview (/vorschau/) loads it from there
+  S.base = !BASE && /\/vorschau\//.test(location.pathname) ? '../' : BASE;
   // phones: the half-size files; after a broken-off attempt one mip level less (the same rule as halfImage for the 1024 px images)
   S.half = TEXHALF.on;
   S.drop = TEXHALF.level > 1 ? 1 : 0;
@@ -418,7 +424,7 @@ export const TEX2 = (() => {
     };
     waiting.add(w);
     new THREE.FileLoader(LM).setResponseType('arraybuffer').load(
-      BASE + path,
+      S.base + path,
       buf => {
         if (over) return;
         if (!watch && !S.n && !S.gn) arm(40000);
