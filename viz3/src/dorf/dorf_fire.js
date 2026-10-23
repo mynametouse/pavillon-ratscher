@@ -177,21 +177,23 @@ export const DFIRE = (() => {
       g.translate(cx, dz + h * 0.25, -cy);
       g.computeVertexNormals();
       const col = new Float32Array(p.count * 3),
-        base = 0.2 + 0.11 * hh(i + 4), // grey to red-brown sandstone, as the fields here turn them up
-        warm = 0.02 + hh(i + 5) * 0.07;
+        base = 0.26 + 0.12 * hh(i + 4), // grey field stones, some with a little rust of sandstone
+        warm = hh(i + 5) < 0.35 ? 0.04 + hh(i + 7) * 0.05 : 0.005;
       C.set(cx, dz + h * 0.25, -cy);
       const ix = -cx / r,
         iz = cy / r; // towards the fire (three.js x, z)
       for (let k = 0; k < p.count; k++) {
         P.set(p.getX(k), p.getY(k), p.getZ(k)).sub(C).normalize();
-        const tow = Math.max(0, Math.min(1, (P.x * ix + P.z * iz + 0.35) / 1.0)),
+        const t = P.x * ix + P.z * iz, // +1 towards the fire, −1 away
+          tow = Math.max(0, Math.min(1, (t + 0.2) / 0.9)),
           top = Math.max(0, Math.min(1, (P.y + 0.3) / 0.9)),
-          soot = tow * (0.45 + 0.55 * top),
-          sp = (hn(rq(P.x * 4), rq(P.y * 4), rq(P.z * 4), i + 3) - 0.5) * 0.08,
-          v = (base + sp) * (1 - 0.8 * soot);
+          soot = Math.pow(tow, 1.5) * (0.55 + 0.45 * top), // black on the side of the fire
+          away = Math.max(0, -t) * (1 - 0.5 * top), // the far side in its own shade (the fire light hangs high)
+          sp = (hn(rq(P.x * 4), rq(P.y * 4), rq(P.z * 4), i + 3) - 0.5) * 0.07,
+          v = (base + sp) * (1 - 0.82 * soot) * (1 - 0.45 * away);
         col[k * 3] = lin(v + warm);
-        col[k * 3 + 1] = lin(v + warm * 0.5);
-        col[k * 3 + 2] = lin(v - warm * 0.2);
+        col[k * 3 + 1] = lin(v + warm * 0.45);
+        col[k * 3 + 2] = lin(v + 0.01 - warm * 0.3);
       }
       g.setAttribute('color', new THREE.BufferAttribute(col, 3));
       geos.push(g);

@@ -181,6 +181,7 @@ with lib.browser() as b:
                     time.sleep(0.2)
                 print('garden', k, st, flush=True)
                 ck('a villager comes out and works in the front garden', st and st['vis'] and st['out'] == 'there' and st['mode'] in ('weed', 'water', 'stand'), str(st))
+                for i in range(6): E("GAME.step(0.25)")   # down on the knees (the pose blends over)
                 lib.shot(pg, OUT, 'f_garden_' + k)
                 E(f"DORF.UI.open('{k}'); GAME.step(0.3)")
                 tp = J("[...document.querySelectorAll('#dorfpanel .topics button')].map(b => b.textContent)")
@@ -215,7 +216,7 @@ with lib.browser() as b:
             for i in range(90):
                 E("GAME.step(0.5)")
                 st = J("DORF.state().cars.katrin"); seen.add(st['st'])
-                if st['st'] == 'boarding' and J("DPEOPLE.figs.katrin && DPEOPLE.figs.katrin.g.visible") and 'walk' not in seen:
+                if st['st'] == 'boarding' and J("!!(DPEOPLE.figs.katrin && DPEOPLE.figs.katrin.g.visible)") and 'walk' not in seen:
                     seen.add('walk'); lib.shot(pg, OUT, 'h_car_boarding')
                 if st['st'] == 'leaving': break
                 time.sleep(0.1)

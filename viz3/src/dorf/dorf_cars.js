@@ -77,16 +77,26 @@ export const DCARS = (() => {
     if (!best || best.d > 45) return null;
     const len = Math.hypot(best.dx, best.dy) || 1,
       ux = best.dx / len,
-      uy = best.dy / len;
-    // the drive: along the way from here, towards its end that lies further from the Anger, up to 200 m
-    const p = best.w.p,
-      n = p.length / 2,
-      endA = [p[0], p[1]],
-      endB = [p[(n - 1) * 2], p[(n - 1) * 2 + 1]],
-      fwd = Math.hypot(endB[0] - ANGER[0], endB[1] - ANGER[1]) >= Math.hypot(endA[0] - ANGER[0], endA[1] - ANGER[1]);
-    // parked at the kerb on the right-hand side for the way out (as one parks here; maybe across the street from the house), driving
-    // in the right-hand lane
-    const side = fwd ? -1 : 1, // the left normal of (ux, uy) times side points to the right of the way out
+      uy = best.dy / len,
+      dA = (x, y) => Math.hypot(x - ANGER[0], y - ANGER[1]);
+    // both ways along the street (and on along the ways that continue from its ends): the one that leads further out of the village
+    let pick = null;
+    for (const fwd of [true, false]) {
+      const d = drive(best, fwd, ux, uy, dA);
+      if (!d) continue;
+      const e = d.pts[d.pts.length - 1],
+        score = dA(e[0], e[1]) + Math.min(d.L, 230) * 0.6;
+      if (!pick || score > pick.score) pick = Object.assign(d, { score });
+    }
+    return pick;
+  }
+  // a drive out from the parking spot in one direction of the way: parked at the kerb on the right-hand side (as one parks here; maybe
+  // across the street from the house), the right-hand lane, this way to its end, then on along the way that continues from there
+  // (street, lane, county or main road) and leads further out, up to 230 m (OSM ways end at every junction)
+  function drive(best, fwd, ux, uy, dA) {
+    const W = ROADS.ways,
+      p = best.w.p,
+      side = fwd ? -1 : 1, // the left normal of (ux, uy) times side points to the right of the way out
       off = Math.max(0.9, best.w.w / 2 - 1.0) * side,
       lane = Math.min(1.2, best.w.w / 4);
     const pts = [[best.qx - uy * off, best.qy + ux * off]];
@@ -100,10 +110,7 @@ export const DCARS = (() => {
       pts.push([x + (dy / d) * lane, y - (dx / d) * lane]); // to the right of the direction of travel
       acc += d;
     }
-    // the way out: this way to its end, then on along the way that continues from there (street, lane, county or main road) and
-    // leads further out, up to 230 m (OSM ways end at every junction)
-    const used = new Set([best.w]),
-      dA = (x, y) => Math.hypot(x - ANGER[0], y - ANGER[1]);
+    const used = new Set([best.w]);
     let cur = { p, j: fwd ? best.i / 2 + 1 : best.i / 2, dir: fwd ? 1 : -1 };
     for (let hop = 0; hop < 8 && cur && acc < 230; hop++) {
       const Q = cur.p,
@@ -212,11 +219,13 @@ export const DCARS = (() => {
   // per frame (dorf/dorf.js): the timetable; driving only while one is near (else it jumps to parked or away)
   function tick(dt, t, mx, my, hooks) {
     if (!S.ready) return;
+    const jump = S.lastT !== undefined && Math.abs(t - S.lastT) > 10; // the clock jumped (slept, set): the timetable, no drive
+    S.lastT = t;
     for (const c of Object.values(S.cars)) {
       const aw = DLIFE.away(c.key, t),
         p0 = c.path.pts[0],
         near = Math.hypot(mx - p0[0], my - p0[1]) < 260;
-      if (!near || !c.near) {
+      if (!near || !c.near || jump) {
         // far away (or just come near): only the timetable, nothing drives
         c.st = aw ? 'away' : 'parked';
         c.a = aw ? c.path.L : 0;
