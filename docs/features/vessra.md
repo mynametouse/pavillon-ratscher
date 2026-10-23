@@ -134,6 +134,8 @@ Ermell 2021/2022, Tilman2007 2025), keine Bilder im Repo.
   Torkirche, zwei Panoramax-Stellen an der Schleusinger Straße, Baumschule nah und von oben, Ort von oben), Nacht (Laternen), Freigeben,
   höchstens 6 neue Shader-Programme, Texturen je Shader. Abschnitte einzeln: `vessra:start,load,walk,kirche,baumschule,names,shots,night,free`.
   Bei GitHub: `feat.yml` (Artefakt „out“).
+- `… --serve vessra_szenario` – startet mit `?szenario=baumschule`: die Spielfigur vor dem Tor der Baumschule, die Zone baut sich um sie,
+  Boden, durchs Tor in den Verkaufshof, Bild `m_szenario_baumschule`. Die Kacheln holen beide Tests über `viz3/test/vessra_tiles.py`.
 - Kacheln neu bauen: Push auf `feat/vessra` mit Änderungen an `tools/welt/*.py` (außer `zone_*.py`, `test_welt.py`) oder an
   `.github/workflows/welt-vessra.yml`. Zonendaten: `python3 -I tools/welt/zone_vessra.py --raw <Cache-Ordner>` (OSM-API, Luftbild per WMS)
   → `viz3/extra/vessra/dist/vessra/ort.json`.
