@@ -17,7 +17,8 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 | Garten: Türen, Dach, Bungalow mit Anbau, Hütte, Gewächshaus, Einrichtung (`docs/plans/plan_leben.md` 4) | Hilfs-Agent `garten` | `feat/garten` | ab 23.10. 1:45 | `garden/bungalow.js`, `holzhaus.js`, `greenhouse.js`, neue `garden/*_in.js`, `garden/places.js`, `viz3/extra/garten/`, `shell/css/garten.css`, `viz3/test/garten*.py`; Port 8971 |
 | Spielfiguren Falko, Sarah, Christoph (3) | Hilfs-Agent `figuren` | `feat/figuren` | ab 23.10. 1:45 | `game/avatar.js`, `tools/player/`, Figurenwahl in `shell/menu.html`, `viz3/extra/figuren/`, `shell/css/figuren.css`, `viz3/test/figuren*.py`; Port 8972 |
 | Nachbarn: Huberts Hof, Alltag, Ziegen nach Süden, Mähen, Gespräche, Aufgaben (1) | Hilfs-Agent `nachbarn` | `feat/nachbarn` | ab 23.10. 1:45 | `npc/*`, `game/quests.js`, neue `garden/hof_*.js`, `viz3/extra/nachbarn/`, `shell/css/nachbarn.css`, `viz3/test/nachbarn*.py`; Port 8973 |
-| Dorfleben: Skatabend in der alten Schule, Feuer am Acker, Dorfbewohner (2) | Hilfs-Agent `dorf` | `feat/dorf` | ab 23.10. 1:45 | neuer Ordner `viz3/src/dorf/`, `world/village*.js`, `viz3/extra/dorf/`, `shell/css/dorf.css`, `viz3/test/dorf*.py`; Port 8974 |
+| Dorfleben: Skatabend in der alten Schule, Feuer am Acker, Dorfbewohner (2) | Hilfs-Agent `dorf` | `feat/dorf-leben` (`feat/dorf` ist ein alter Zweig des V16e-Chats) | ab 23.10. 1:45 | neuer Ordner `viz3/src/dorf/`, `world/village*.js`, `viz3/extra/dorf/`, `shell/css/dorf.css`, `viz3/test/dorf*.py`; Port 8974 |
+| Rückewinde am Traktor: Stamm aus dem Bestand an den Weg ziehen, Hinweise beim Laden (Falko 2:24) | Hilfs-Agent `winde` | `feat/winde` | ab 23.10. 2:45 | `vehicles/tractor.js`, `werk/holz*.js`, `world/fell.js` (Hinweise, Übergabe), neues `werk/winde.js`, `viz3/extra/winde/`, `shell/css/winde.css`, `viz3/test/winde*.py`; Port 8975 |
 
 ## Absprachen
 
