@@ -4,79 +4,16 @@
 # place names; pictures at the places of photos (Panoramax 2025, Wikimedia Commons), from above and at night; going home frees it again.
 # The tiles come from the published site and are copied into viz3/dist/welt-test/zonen/vessra/ first (the test server serves dist).
 # Sections (optional second argument, comma-separated): start,load,walk,kirche,baumschule,names,shots,night,free
-import sys, os, json, time, math, urllib.request, urllib.error, concurrent.futures
+import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
+from vessra_tiles import fetch_tiles, ORT, KL   # the zone's tiles into dist (shared with vessra_szenario.py)
 
 port = sys.argv[1]
 ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else None
 want = lambda k: not ONLY or k in ONLY
 ck = lib.Checks('vessra')
 OUT = lib.out('vessra')
-SITE = os.environ.get('WELT_SITE', 'https://mynametouse.github.io/pavillon-ratscher/welt-test/') + 'zonen/vessra/'
-DIST = os.path.join(lib.ROOT, 'viz3', 'dist', 'welt-test', 'zonen', 'vessra')
-XF = json.load(open(os.path.join(lib.ROOT, 'viz3', 'manifests.json')))['geoman']['xf']
-ORT = (-8850.0, -300.0)
-KL = (-8770.0, -377.0)
-
-
-def utm(x, y):
-    return XF['a'] * x - XF['b'] * y + XF['ex'], XF['b'] * x + XF['a'] * y + XF['ey']
-
-
-FAILED = []
-
-
-def fetch_tiles():
-    """the tiles the app asks for in the zone (levels 10-12, rings of welt/welt.js) and under it (sampler), into dist/welt-test/zonen/vessra/"""
-    os.makedirs(DIST, exist_ok=True)
-
-    def get(rel):
-        p = os.path.join(DIST, rel)
-        if os.path.exists(p) and os.path.getsize(p) > 0:
-            return 0
-        os.makedirs(os.path.dirname(p), exist_ok=True)
-        for k in range(4):   # GitHub Pages now and then drops a connection: try again
-            try:
-                with urllib.request.urlopen(SITE + rel, timeout=60) as r:
-                    b = r.read()
-                break
-            except urllib.error.HTTPError as e:
-                if e.code == 404:
-                    return 0
-            except Exception:
-                pass
-            time.sleep(1 + 2 * k)
-        else:
-            FAILED.append(rel)
-            return 0
-        open(p + '.part', 'wb').write(b)
-        os.replace(p + '.part', p)
-        return len(b)
-    get('meta.json')
-    try:
-        meta = json.load(open(os.path.join(DIST, 'meta.json')))
-    except Exception as e:
-        print('no zone tiles on the site:', e, flush=True)
-        return
-    lv = meta['tiling']['levels']
-    jobs = set()
-    cs = [utm(ORT[0] + sx * 700, ORT[1] + sy * 700) for sx in (-1, 1) for sy in (-1, 1)]
-    for L, pad in ((10, 800), (11, 400), (12, 160)):
-        s = 409600 / (1 << L)
-        r = lv[str(L)]['rect']
-        E0, E1 = min(c[0] for c in cs) - pad, max(c[0] for c in cs) + pad
-        N0, N1 = min(c[1] for c in cs) - pad, max(c[1] for c in cs) + pad
-        for x in range(int((E0 - 420700) // s), int((E1 - 420700) // s) + 1):
-            for y in range(int((N0 - 5390800) // s), int((N1 - 5390800) // s) + 1):
-                if r[0] <= x <= r[2] and r[1] <= y <= r[3]:
-                    jobs.add(f't/{L}/{x}/{y}.bin')
-                    jobs.add(f'i/{L}/{x}/{y}.webp')
-    t0 = time.time()
-    with concurrent.futures.ThreadPoolExecutor(8) as ex:
-        n = sum(ex.map(get, sorted(jobs)))
-    print(f'zone tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s' + (f', not fetched: {FAILED[:5]}' if FAILED else ''), flush=True)
-
 
 fetch_tiles()
 with lib.browser() as b:
@@ -189,8 +126,32 @@ with lib.browser() as b:
         if bs:
             nm = J(f"[VESSRA.place({bs['beete'][2]['x']}, {bs['beete'][2]['y']}), VESSRA.place({bs['k']['x']}, {bs['k']['y']})]")
             ck('the nursery has its name on the HUD', all('Baumschule Kammbach' in (n or '') for n in nm), json.dumps(nm, ensure_ascii=False))
-            fl = J("(() => { const z = VESSRA.baumschule.beete.flatMap(b => b.slots.map(([x, y]) => VESSRA.gz(x, y))); return { n: z.length, lo: Math.min(...z), hi: Math.max(...z) }; })()")
-            ck('the sales yard is level: the beds lie on one plane', fl['hi'] - fl['lo'] < 0.5, json.dumps(fl))
+            # the yard is one smooth plane (the beds on it): a plane through the plant slots fits them within a few centimetres
+            fl = J("""(() => { const P = VESSRA.baumschule.beete.flatMap(b => b.slots.map(([x, y]) => [x, y, VESSRA.gz(x, y)])), n = P.length,
+                m = [0, 1, 2].map(i => P.reduce((a, p) => a + p[i], 0) / n);
+                let xx = 0, xy = 0, yy = 0, xz = 0, yz = 0;
+                for (const [x, y, z] of P) { const dx = x - m[0], dy = y - m[1], dz = z - m[2]; xx += dx * dx; xy += dx * dy; yy += dy * dy; xz += dx * dz; yz += dy * dz; }
+                const det = xx * yy - xy * xy, b = (xz * yy - yz * xy) / det, c = (yz * xx - xz * xy) / det;
+                let r = 0; for (const [x, y, z] of P) r = Math.max(r, Math.abs(z - m[2] - b * (x - m[0]) - c * (y - m[1])));
+                return { n, slope: +Math.hypot(b, c).toFixed(3), resid: +r.toFixed(3) }; })()""")
+            ck('the sales yard is one smooth plane: the beds lie on it', fl['resid'] < 0.1 and fl['slope'] < 0.13, json.dumps(fl))
+            # a car's way in (Kern/fahrt 23.10.): from the Schulstraße 8 m in front of the gate through it to the parking place – the ground
+            # (KERN.ground) at most ~15 % steep, no step over 0.15 m
+            dr = J("""(() => { const B = VESSRA.baumschule, f = B.frame, Y = (u, w) => [f.G[0] + f.u[0] * u + f.w[0] * w, f.G[1] + f.u[1] * u + f.w[1] * w],
+                pk = B.parkplatz, pw = [(pk.x - f.G[0]) * f.u[0] + (pk.y - f.G[1]) * f.u[1], (pk.x - f.G[0]) * f.w[0] + (pk.y - f.G[1]) * f.w[1]],
+                P = [[0, -8], [0, 0.5], [pw[0] / 2, (0.5 + pw[1]) / 2], pw];
+                let slope = 0, step = 0, at = null, n = 0, prev = null;
+                for (let k = 0; k + 1 < P.length; k++) { const [u0, w0] = P[k], [u1, w1] = P[k + 1], L = Math.hypot(u1 - u0, w1 - w0), m = Math.max(1, Math.ceil(L / 0.5));
+                  for (let i = k ? 1 : 0; i <= m; i++) { const [x, y] = Y(u0 + (u1 - u0) * i / m, w0 + (w1 - w0) * i / m), z = KERN.ground(x, y); n++;
+                    if (prev) { const d = Math.hypot(x - prev[0], y - prev[1]), dz = Math.abs(z - prev[2]); if (d > 1e-6 && dz / d > slope) { slope = dz / d; at = [x, y]; } step = Math.max(step, dz); }
+                    prev = [x, y, z]; } }
+                return { n, slope: +slope.toFixed(3), step: +step.toFixed(3), at, gate: +KERN.ground(...Y(0, 0.5)).toFixed(2), street: +KERN.ground(...Y(0, -8)).toFixed(2), park: +KERN.ground(pk.x, pk.y).toFixed(2) }; })()""")
+            ck('a car drives in: Schulstraße → gate → parking place at most 15 % steep, no step over 0.15 m', dr['n'] > 20 and dr['slope'] <= 0.15 and dr['step'] <= 0.15, json.dumps(dr))
+            # buying (the planner's next round): a plant comes out of its bed and goes back
+            tk = J("""(() => { const B = VESSRA.baumschule, a = B.take('obst', 3), again = B.take('obst', 3), t1 = B.isTaken('obst', 3);
+                const back = B.putBack('obst', 3); return { a, again, t1, back, after: B.isTaken('obst', 3), n: B.taken().length }; })()""")
+            ck('a plant can be taken out of its bed and put back (VESSRA.baumschule.take/putBack)',
+               bool(tk['a']) and tk['a']['art'] == 'obst' and tk['again'] is None and tk['t1'] and tk['back'] and not tk['after'] and tk['n'] == 0, json.dumps(tk, ensure_ascii=False))
             r = J(f"""(() => {{ const e = VESSRA.baumschule.eingang; GAME.view(e.x, e.y, e.z + 1.62, e.yaw, 0, 60); GAME.step(0.5); GAME.step(4, 1);
                 return {{ x: GAME.P.x, y: GAME.P.y, where: VESSRA.place(GAME.P.x, GAME.P.y), sign: (VESSRA.signs || []).filter(s => /Kammbach/.test(s)).length, young: VESSRA.youngTrees }}; }})()""")
             ck('from the gate into the sales yard; its signs; young trees on the field', 'Baumschule' in (r['where'] or '') and r['sign'] >= 2 and r['young'] > 150, json.dumps(r, ensure_ascii=False))
