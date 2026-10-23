@@ -1100,13 +1100,14 @@ export const AVATAR = (() => {
     applyHead(F);
   }
   // Christoph's cap and earbuds (figHeadwear): the cap stays off under the forest helmet and the ear defenders, the earbuds go with any
-  // hearing protection – and otherwise come and go ("manchmal Kopfhörer in den Ohren"): in for a few minutes, out for a few
-  const HW = { on: true, t: 150, force: null };
+  // hearing protection – and otherwise come and go ("manchmal Kopfhörer in den Ohren"): in for a few minutes, out for a few, out while
+  // talking with someone
+  const HW = { on: true, t: 150, force: null, talk: false };
   function applyHead(F) {
     const h = F && F.hw;
     if (!h) return;
     h.cap.visible = !!FIGS[F.kind].cap && !WEARING.head && WEARING.ears !== 'ohr';
-    h.buds.visible = !!FIGS[F.kind].buds && (HW.force ?? HW.on) && !WEARING.ears && !WEARING.head;
+    h.buds.visible = !!FIGS[F.kind].buds && (HW.force ?? (HW.on && !HW.talk)) && !WEARING.ears && !WEARING.head;
   }
   function buds(on) {
     HW.force = on == null ? null : !!on;
@@ -1114,7 +1115,14 @@ export const AVATAR = (() => {
     markDirty(true);
   }
   function budsTick(F, dt) {
-    if (!F.hw || HW.force != null || (HW.t -= dt) > 0) return;
+    if (!F.hw) return;
+    const talk = !!NPCUI.cur(); // talking with a neighbour: the earbuds come out
+    if (talk !== !!HW.talk) {
+      HW.talk = talk;
+      applyHead(F);
+      markDirty(true);
+    }
+    if (HW.force != null || (HW.t -= dt) > 0) return;
     HW.on = !HW.on;
     HW.t = (HW.on ? 150 : 90) + Math.random() * 200;
     applyHead(F);
