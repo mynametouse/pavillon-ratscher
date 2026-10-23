@@ -202,6 +202,7 @@ window.SAVE = SAVE;
   K('pav-trailer-v1', 'Anhänger', 'json', null, obj);
   K('pav-dorf-v1', 'Dorfleben: Aufgabe Skatabend, Besuche, Kartenspiel', 'json', null, obj); // feat/dorf (dorf/dorf.js)
   K('pav-trees-v1', 'Umgefahrene Bäume', 'json', null, obj); // world/treehit.js: { v: 1, t: [[x, y, azimuth°, angle], …] }
+  K('pav-amt-v1', 'Ortsvorsteher: Wahl, Meinungen, Versprechen, Anliegen', 'json', null, obj); // feat/ortsvorsteher (amt/amt.js)
   for (const h of [
     'pav-v14',
     'pav-v15',
