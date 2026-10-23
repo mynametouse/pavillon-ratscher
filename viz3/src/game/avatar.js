@@ -1,6 +1,7 @@
-// ===================== V15 the player's own figure (third person, Mann or Frau): a rigged person whose motions come from an animation =====================
-// library retargeted offline onto its skeleton (chars/player.html): standing, walking, jogging, sprinting, ducking, crawling, lying, jumping,
+// ===================== V15 the player's own figure (third person): a rigged person whose motions come from an animation library =====================
+// retargeted offline onto its skeleton (chars/player.html): standing, walking, jogging, sprinting, ducking, crawling, lying, jumping,
 // sitting, carrying, chopping, kneeling … The thing in the hand sits in the right hand (tools), hangs from it (canister) or is held in both arms.
+// Since 23.10.2026 three figures to choose from (Menü → Einstellungen → Spielfigur): Falko, Sarah and Christoph (FIGS below).
 import * as THREE from 'three';
 import { LATE } from '../core/late.js';
 import { SAVE } from '../core/save.js';
@@ -16,12 +17,344 @@ import { boneTurn, CHL, fsAdd, prepModel } from '../npc/npc_real.js';
 import { HELD, PLAY } from './play.js';
 import { HUD } from './hud.js';
 phase(null);
+// ---- headwear: begin – Christoph's cap and earbuds, fitted to the head of the loaded figure. Built in the head bone's own space from the
+// vertices that move with the head alone, so they sit right in every pose (a placement measured in one pose and carried over sat too low
+// and too far back in another). A pure function of three.js and the figure ({ model, B }): the offline preview (tools/player) uses it too.
+// o: color (cap), front/back (rim height above the eyes, m), brim (length, m), off (gap over the hair, m).
+function figHeadwear(THREE, F, o = {}) {
+  const H = F.B && F.B.Head;
+  const meshes = [];
+  F.model.traverse(x => {
+    if (x.isSkinnedMesh && x.skeleton) meshes.push(x);
+  });
+  const sk0 = meshes.length ? meshes[0].skeleton : null,
+    hi = sk0 ? sk0.bones.indexOf(H) : -1;
+  if (hi < 0) return null;
+  const inv = sk0.boneInverses[hi],
+    M = new THREE.Matrix4();
+  // joints of the bind pose in the head bone's space (from the inverse bind matrices – independent of the pose and of the space the
+  // vertices are stored in, which mesh quantization changes)
+  const joint = b => {
+    const i = b ? sk0.bones.indexOf(b) : -1;
+    return i < 0
+      ? null
+      : new THREE.Vector3().setFromMatrixPosition(M.copy(sk0.boneInverses[i]).invert()).applyMatrix4(inv);
+  };
+  const jp = joint(F.B.Hips),
+    jn = joint(F.B.Neck),
+    jl = joint(F.B.LeftArm),
+    jr = joint(F.B.RightArm);
+  if (!jp || !jn || !jl || !jr) return null;
+  // the head frame: X (the figure's left), U (up: pelvis → neck of the upright bind pose), W (forward) as unit vectors in the bone's space
+  const U = jn.clone().sub(jp).normalize(),
+    X = jl.clone().sub(jr);
+  X.addScaledVector(U, -X.dot(U)).normalize();
+  const W = new THREE.Vector3().crossVectors(X, U).normalize();
+  // k: bone units per metre of the figure as modelled (bones carry no scale animation, so any pose will do)
+  const k = 1 / new THREE.Vector3().setFromMatrixScale(M.copy(F.model.matrixWorld).invert().multiply(H.matrixWorld)).x;
+  const v = new THREE.Vector3(),
+    pts = [];
+  for (const m of meshes) {
+    if (!/head/i.test((m.material && m.material.name) || '')) continue; // face, neck and the modelled hair (not the hair cards)
+    const g = m.geometry,
+      P = g.attributes.position,
+      SI = g.attributes.skinIndex,
+      SW = g.attributes.skinWeight,
+      j = m.skeleton.bones.indexOf(H);
+    if (!P || !SI || !SW || j < 0) continue;
+    M.multiplyMatrices(m.skeleton.boneInverses[j], m.bindMatrix);
+    for (let i = 0; i < P.count; i++) {
+      let w = 0;
+      for (let c = 0; c < 4; c++) if (SI.getComponent(i, c) === j) w += SW.getComponent(i, c);
+      if (w < 0.98) continue; // only what the head bone moves alone (not the neck, jaw, lids)
+      v.fromBufferAttribute(P, i).applyMatrix4(M);
+      pts.push(v.dot(X) / k, v.dot(U) / k, v.dot(W) / k);
+    }
+  }
+  if (pts.length < 300) return null;
+  // the eyes (bones of the facial rig), else estimated from the top of the head
+  let eu = 0,
+    ef = 0,
+    ne = 0,
+    top = -1e9,
+    front = -1e9;
+  for (const nm of ['Bip01_LEye', 'Bip01_REye']) {
+    const b = sk0.bones.findIndex(x => x.name === nm);
+    if (b < 0) continue;
+    v.setFromMatrixPosition(M.copy(sk0.boneInverses[b]).invert()).applyMatrix4(inv);
+    eu += v.dot(U) / k;
+    ef += v.dot(W) / k;
+    ne++;
+  }
+  for (let i = 0; i < pts.length; i += 3) {
+    top = Math.max(top, pts[i + 1]);
+    front = Math.max(front, pts[i + 2]);
+  }
+  if (ne) ((eu /= ne), (ef /= ne));
+  else ((eu = top - 0.12), (ef = front - 0.015));
+  // the cranium: centre between its extremes above the eyes
+  let x0 = 1e9,
+    x1 = -1e9,
+    f0 = 1e9,
+    f1 = -1e9;
+  for (let i = 0; i < pts.length; i += 3)
+    if (pts[i + 1] > eu + 0.01) {
+      x0 = Math.min(x0, pts[i]);
+      x1 = Math.max(x1, pts[i]);
+      f0 = Math.min(f0, pts[i + 2]);
+      f1 = Math.max(f1, pts[i + 2]);
+    }
+  const cx = (x0 + x1) / 2,
+    cu = eu + 0.02,
+    cf = (f0 + f1) / 2;
+  // the outline of the head as seen from the centre: the farthest point per direction (azimuth × polar angle), gaps filled, widened, smoothed
+  const NA = 36,
+    NT = 20,
+    TM = (118 * Math.PI) / 180,
+    R = new Float32Array(NA * NT).fill(-1);
+  for (let i = 0; i < pts.length; i += 3) {
+    const dx = pts[i] - cx,
+      du = pts[i + 1] - cu,
+      df = pts[i + 2] - cf,
+      r = Math.hypot(dx, du, df),
+      th = Math.acos(THREE.MathUtils.clamp(du / (r || 1), -1, 1));
+    if (th >= TM) continue;
+    const ia = Math.floor(((Math.atan2(dx, df) + Math.PI) / (2 * Math.PI)) * NA) % NA,
+      it = Math.min(NT - 1, Math.floor((th / TM) * NT));
+    R[it * NA + ia] = Math.max(R[it * NA + ia], r);
+  }
+  const at = (a, t) => R[THREE.MathUtils.clamp(t, 0, NT - 1) * NA + (((a % NA) + NA) % NA)];
+  for (let pass = 0; pass < 30; pass++) {
+    let empty = 0;
+    const R2 = R.slice();
+    for (let t = 0; t < NT; t++)
+      for (let a = 0; a < NA; a++) {
+        if (R[t * NA + a] > 0) continue;
+        let s = 0,
+          n = 0;
+        for (const [da, dt] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ]) {
+          const q = at(a + da, t + dt);
+          if (q > 0) ((s += q), n++);
+        }
+        if (n) R2[t * NA + a] = s / n;
+        else empty++;
+      }
+    R.set(R2);
+    if (!empty) break;
+  }
+  const blur = (src, max) => {
+    const out = new Float32Array(src.length);
+    for (let t = 0; t < NT; t++)
+      for (let a = 0; a < NA; a++) {
+        let s = max ? -1e9 : 0,
+          n = 0;
+        for (let dt = -1; dt <= 1; dt++)
+          for (let da = -1; da <= 1; da++) {
+            const q = src[THREE.MathUtils.clamp(t + dt, 0, NT - 1) * NA + ((((a + da) % NA) + NA) % NA)];
+            if (max) s = Math.max(s, q);
+            else s += q;
+            n++;
+          }
+        out[t * NA + a] = max ? s : s / n;
+      }
+    return out;
+  };
+  const RS = blur(blur(R, true), false),
+    off = o.off ?? 0.006;
+  const rad = (al, th) => {
+    const fa = ((al + Math.PI) / (2 * Math.PI)) * NA - 0.5,
+      ft = THREE.MathUtils.clamp((th / TM) * NT - 0.5, 0, NT - 1),
+      a0 = Math.floor(fa),
+      t0 = Math.floor(ft),
+      wa = fa - a0,
+      wt = ft - t0,
+      g = (a, t) => RS[Math.min(NT - 1, t) * NA + (((a % NA) + NA) % NA)];
+    return (
+      (g(a0, t0) * (1 - wa) + g(a0 + 1, t0) * wa) * (1 - wt) +
+      (g(a0, t0 + 1) * (1 - wa) + g(a0 + 1, t0 + 1) * wa) * wt +
+      off
+    );
+  };
+  const dirp = (al, th, r) => [
+    cx + Math.sin(th) * Math.sin(al) * r,
+    cu + Math.cos(th) * r,
+    cf + Math.sin(th) * Math.cos(al) * r,
+  ];
+  // the rim: a plane across the forehead (front above the eyes) sloping down to the back of the head
+  const uF = eu + (o.front ?? 0.05),
+    uB = eu + (o.back ?? 0.02),
+    slope = (uF - uB) / 0.2,
+    above = p => p[1] - (uF + (p[2] - ef) * slope);
+  const rimTh = al => {
+    let pr = 0.02,
+      sp = above(dirp(al, pr, rad(al, pr)));
+    for (let th = 0.03; th < TM; th += 0.01) {
+      const s = above(dirp(al, th, rad(al, th)));
+      if (s < 0) return th - (0.01 * s) / (s - sp);
+      ((pr = th), (sp = s));
+    }
+    return TM;
+  };
+  // crown: a pole and rings down to the rim
+  const NC = 40,
+    NJ = 9,
+    pos = [],
+    idx = [];
+  pos.push(...dirp(0, 0, rad(0, 0)));
+  const rims = [];
+  for (let i = 0; i < NC; i++) {
+    const al = -Math.PI + (2 * Math.PI * i) / NC,
+      tr = rimTh(al);
+    rims.push(tr);
+    for (let j = 1; j <= NJ; j++) {
+      const th = (tr * j) / NJ;
+      pos.push(...dirp(al, th, rad(al, th)));
+    }
+  }
+  const vi = (i, j) => 1 + (i % NC) * NJ + (j - 1);
+  for (let i = 0; i < NC; i++) {
+    idx.push(0, vi(i, 1), vi(i + 1, 1));
+    for (let j = 1; j < NJ; j++)
+      idx.push(vi(i, j), vi(i, j + 1), vi(i + 1, j + 1), vi(i, j), vi(i + 1, j + 1), vi(i + 1, j));
+  }
+  // the brim: from the front of the rim forward and a little down, the sides curving down; top and underside, outer edge
+  const NB = 24,
+    AB = (72 * Math.PI) / 180,
+    LB = o.brim ?? 0.072,
+    TB = 0.004,
+    tilt = 0.2,
+    b0 = pos.length / 3;
+  const rows = [0, 0.25, 0.5, 0.75, 1];
+  for (const side of [0, 1])
+    for (let i = 0; i <= NB; i++) {
+      const al = -AB + (2 * AB * i) / NB,
+        q = al / AB,
+        tr = rimTh(al),
+        p0 = dirp(al, tr, rad(al, tr)),
+        L = 0.004 + LB * Math.pow(Math.max(0, 1 - q * q), 0.6);
+      // mostly forward, fanning out a little: the brim is about as wide as the head, its outline a half ellipse
+      const dx = Math.sin(al) * 0.32,
+        dn = Math.hypot(dx, Math.cos(al)) || 1;
+      for (const t of rows) {
+        const d = L * t;
+        pos.push(
+          p0[0] + (dx / dn) * Math.cos(tilt) * d,
+          p0[1] - Math.sin(tilt) * d - 0.012 * q * q * t - side * TB,
+          p0[2] + (Math.cos(al) / dn) * Math.cos(tilt) * d
+        );
+      }
+    }
+  const bv = (side, i, r) => b0 + side * (NB + 1) * rows.length + i * rows.length + r;
+  for (let i = 0; i < NB; i++)
+    for (let r = 0; r < rows.length - 1; r++)
+      for (const side of [0, 1]) {
+        const a = bv(side, i, r),
+          b = bv(side, i + 1, r),
+          c = bv(side, i + 1, r + 1),
+          d = bv(side, i, r + 1);
+        if (side) idx.push(a, c, b, a, d, c);
+        else idx.push(a, b, c, a, c, d);
+      }
+  for (let i = 0; i < NB; i++) {
+    const e = rows.length - 1;
+    idx.push(bv(0, i, e), bv(1, i, e), bv(1, i + 1, e), bv(0, i, e), bv(1, i + 1, e), bv(0, i + 1, e));
+  }
+  const toBone = new THREE.Matrix4().makeBasis(
+    X.clone().multiplyScalar(k),
+    U.clone().multiplyScalar(k),
+    W.clone().multiplyScalar(k)
+  );
+  const mk = (geo, mat) => {
+    const me = new THREE.Mesh(geo, mat);
+    me.matrixAutoUpdate = false;
+    me.matrix.copy(toBone);
+    me.castShadow = true;
+    me.userData.noMerge = true;
+    return me;
+  };
+  const capG = new THREE.BufferGeometry();
+  capG.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  capG.setIndex(idx);
+  capG.computeVertexNormals();
+  const capM = new THREE.MeshStandardMaterial({ color: o.color ?? 0x56633f, roughness: 0.9, side: THREE.DoubleSide });
+  const cap = new THREE.Group();
+  cap.name = 'cap';
+  cap.add(mk(capG, capM));
+  const btn = mk(new THREE.SphereGeometry(0.008, 10, 6), capM);
+  btn.matrix.multiply(new THREE.Matrix4().makeTranslation(...dirp(0, 0, rad(0, 0) + 0.001)));
+  btn.matrix.multiply(new THREE.Matrix4().makeScale(1, 0.45, 1));
+  cap.add(btn);
+  // earbuds: at the entrance of each ear canal – the ear is the outermost part of the head between the eyes' height and 5 cm below,
+  // 5–13 cm behind the eyes; the bud sits a little in front of the ear's middle, its stem points down
+  const buds = new THREE.Group();
+  buds.name = 'buds';
+  const budM = new THREE.MeshStandardMaterial({ color: 0xf1f1ee, roughness: 0.35 });
+  for (const s of [-1, 1]) {
+    let best = -1e9;
+    for (let i = 0; i < pts.length; i += 3) {
+      const x = pts[i] * s,
+        u = pts[i + 1],
+        f = pts[i + 2];
+      if (u > eu - 0.05 && u < eu + 0.015 && f > ef - 0.13 && f < ef - 0.05 && x > best) best = x;
+    }
+    let su = 0,
+      sf = 0,
+      n = 0;
+    for (let i = 0; i < pts.length; i += 3) {
+      const x = pts[i] * s,
+        u = pts[i + 1],
+        f = pts[i + 2];
+      if (u > eu - 0.05 && u < eu + 0.015 && f > ef - 0.13 && f < ef - 0.05 && x > best - 0.012)
+        ((su += u), (sf += f), n++);
+    }
+    if (!n) continue;
+    const bx = s * (best - (o.budIn ?? 0.009)),
+      bu = su / n - 0.004,
+      bf = sf / n + (o.budFwd ?? 0.008);
+    const bud = mk(new THREE.SphereGeometry(0.0068, 12, 8), budM);
+    bud.matrix.multiply(new THREE.Matrix4().makeTranslation(bx, bu, bf));
+    buds.add(bud);
+    const stem = mk(new THREE.CylinderGeometry(0.0026, 0.0024, 0.017, 8), budM);
+    stem.matrix.multiply(new THREE.Matrix4().makeTranslation(bx, bu - 0.009, bf + 0.003));
+    stem.matrix.multiply(new THREE.Matrix4().makeRotationX(0.3));
+    buds.add(stem);
+  }
+  H.add(cap);
+  H.add(buds);
+  return { cap, buds, eye: [eu, ef], rim: rims };
+}
+// ---- headwear: end ----
 export const AVATAR = (() => {
   const PM = window.PLAYERMAN || null;
-  const A = { ready: false, failed: !PM, kind: 'm', fig: null, figs: {}, loading: {}, clips: null };
+  // the figures (Falko 23.10.2026, docs/plans/plan_leben.md 3): Microsoft Rocketbox avatars on the Biped skeleton shared by all adult women
+  // resp. men (tools/player/build_figures.sh). 'pav-fig' keeps the code – m and f of the former Mann/Frau stay valid. file: PLAYERMAN key of
+  // the mesh (else alt), clips: the clip set, scale: size against the skeleton's own (0: the clip set's height; Christoph 1.5 cm shorter
+  // than Falko), gearK: size of the protective gear on the head, cap/buds: Christoph's cap and earbuds (figHeadwear)
+  const FIGS = {
+    m: { name: 'Falko', file: 'player_m', clips: 'pclips_m', scale: 0, gearK: 1 },
+    f: { name: 'Sarah', file: 'player_f', clips: 'pclips_f', scale: 1.0023, gearK: 0.94 },
+    c: {
+      name: 'Christoph',
+      file: 'player_c',
+      alt: 'player_m',
+      clips: 'pclips_m',
+      scale: 0.9922,
+      gearK: 1,
+      cap: true,
+      buds: true,
+    },
+  };
+  const FIGID = { falko: 'm', sarah: 'f', christoph: 'c', mann: 'm', frau: 'f' };
+  const figCode = k => (FIGS[k] ? k : FIGID[String(k || '').toLowerCase()] || null);
+  const A = { ready: false, failed: !PM, kind: 'm', fig: null, figs: {}, loading: {}, clips: null, FIGS };
   try {
-    const k = SAVE.raw('pav-fig');
-    if (k === 'm' || k === 'f') A.kind = k;
+    const k = figCode(SAVE.raw('pav-fig'));
+    if (k) A.kind = k;
   } catch (e) {}
   // canonical bone names (Mixamo, Character Creator, 3ds Max Biped, UE mannequin) and the compact clips: core/rig.js
   const canonP = canonBone;
@@ -39,7 +372,8 @@ export const AVATAR = (() => {
     inner.rotation.y = Math.PI;
     g.add(inner);
     inner.add(model); // models face +z, figures look along local -z
-    const sc = prepModel(model, o.h);
+    // size: the clip set's height, or a factor on the figure's own (the bounding box of the bind pose, as prepModel measures it)
+    const sc = prepModel(model, o.scale ? new THREE.Box3().setFromObject(model).getSize(_s).y * o.scale : o.h);
     const B = {};
     model.traverse(x => {
       if (x.isBone) {
@@ -326,6 +660,7 @@ export const AVATAR = (() => {
   function update(dt) {
     const F = A.fig;
     if (!F) return;
+    budsTick(F, dt);
     const show = CAM3.on && P.mode === 'walk' && CAM3.cur > 0.85;
     if (F.g.visible !== show) {
       F.g.visible = show;
@@ -498,7 +833,7 @@ export const AVATAR = (() => {
       hs = H.getWorldScale(new THREE.Vector3()),
       gq = F.g.getWorldQuaternion(new THREE.Quaternion()),
       hp = H.getWorldPosition(new THREE.Vector3());
-    const k = F.kind === 'f' ? 0.94 : 1,
+    const k = (FIGS[F.kind] && FIGS[F.kind].gearK) || 1,
       eye = new THREE.Vector3(0, 0.08 * k, -0.09 * k).applyQuaternion(gq).add(hp);
     const G = new THREE.Group();
     G.position.copy(H.worldToLocal(eye));
@@ -693,24 +1028,54 @@ export const AVATAR = (() => {
   }
   function applyGear(F) {
     const it = gearOf(F);
-    if (!it) return;
-    for (const [id, g] of Object.entries(it))
-      g.visible = WEARING.eyes === id || WEARING.ears === id || WEARING.resp === id || WEARING.head === id;
+    if (it)
+      for (const [id, g] of Object.entries(it))
+        g.visible = WEARING.eyes === id || WEARING.ears === id || WEARING.resp === id || WEARING.head === id;
+    applyHead(F);
+  }
+  // Christoph's cap and earbuds (figHeadwear): the cap stays off under the forest helmet and the ear defenders, the earbuds go with any
+  // hearing protection – and otherwise come and go ("manchmal Kopfhörer in den Ohren"): in for a few minutes, out for a few
+  const HW = { on: true, t: 150, force: null };
+  function applyHead(F) {
+    const h = F && F.hw;
+    if (!h) return;
+    h.cap.visible = !!FIGS[F.kind].cap && !WEARING.head && WEARING.ears !== 'ohr';
+    h.buds.visible = !!FIGS[F.kind].buds && (HW.force ?? HW.on) && !WEARING.ears && !WEARING.head;
+  }
+  function buds(on) {
+    HW.force = on == null ? null : !!on;
+    for (const F of Object.values(A.figs)) applyHead(F);
+    markDirty(true);
+  }
+  function budsTick(F, dt) {
+    if (!F.hw || HW.force != null || (HW.t -= dt) > 0) return;
+    HW.on = !HW.on;
+    HW.t = (HW.on ? 150 : 90) + Math.random() * 200;
+    applyHead(F);
+    markDirty(true);
   }
   // ---- loading ----
   const FL = new THREE.FileLoader();
   FL.setResponseType('json');
   const U = f => BASE + 'chars/' + f;
+  const SETS = {}; // clip sets by file: Falko and Christoph share pclips_m
   async function load(kind) {
     if (A.figs[kind]) return A.figs[kind];
     if (A.loading[kind]) return A.loading[kind];
     return (A.loading[kind] = (async () => {
-      const cf = PM['pclips_' + kind],
-        file = PM['player_' + kind];
+      const fg = FIGS[kind],
+        cf = fg && PM[fg.clips],
+        file = fg && (PM[fg.file] || (fg.alt && PM[fg.alt]));
       if (!cf || !file) throw new Error('keine Figur ' + kind);
-      const set = await FL.loadAsync(U(cf));
+      const set = await (SETS[cf] || (SETS[cf] = FL.loadAsync(U(cf))));
       const gl = await CHL.loadAsync(U(file));
-      const F = build(gl, set, { h: set.h || (kind === 'f' ? 1.68 : 1.8), kind });
+      const F = build(gl, set, { h: set.h || (fg.clips === 'pclips_f' ? 1.68 : 1.8), scale: fg.scale, kind });
+      if (fg.cap || fg.buds)
+        try {
+          F.hw = figHeadwear(THREE, F, fg.hw || {});
+        } catch (e) {
+          console.warn('headwear', e);
+        }
       F.g.visible = false;
       scene.add(F.g);
       fsAdd(F, 1.05, 0.9);
@@ -723,8 +1088,9 @@ export const AVATAR = (() => {
       return F;
     })());
   }
-  async function setKind(k) {
-    if (k !== 'm' && k !== 'f') return;
+  async function setKind(k0) {
+    const k = figCode(k0); // m, f, c – or the name (falko, sarah, christoph)
+    if (!k) return;
     A.kind = k;
     try {
       SAVE.setRaw('pav-fig', k);
@@ -758,7 +1124,8 @@ export const AVATAR = (() => {
         900
       )
     );
-  return Object.assign(A, { setKind, gesture, update, load, canonP, wear });
+  const figName = k => (FIGS[figCode(k) || A.kind] || FIGS.m).name;
+  return Object.assign(A, { setKind, gesture, update, load, canonP, wear, buds, figName });
 })();
 LATE.AVATAR = AVATAR;
 window.AVATAR = AVATAR;

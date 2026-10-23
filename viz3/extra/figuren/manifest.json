@@ -1,0 +1,4 @@
+{
+  "playerman": { "player_f": "player_sarah.json", "player_c": "player_christoph.json" },
+  "credits_add": "<li>Spielfiguren Sarah („Female_Adult_04“ mit Kopf und Locken von „Female_Party_02“) und Christoph („Male_Adult_09“ mit dem Kopf von „Sports_Male_01“; Mütze und Ohrhörer im Modell gebaut): Microsoft Rocketbox Avatar Library, MIT-Lizenz, Copyright (c) 2020 Microsoft, <a href=\"https://github.com/microsoft/Microsoft-Rocketbox\">github.com/microsoft/Microsoft-Rocketbox</a> (Lizenztext unten)</li>"
+}
