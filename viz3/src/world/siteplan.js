@@ -106,12 +106,22 @@ export const SITEPLAN = (() => {
   }
   function applySite(st, { save = true } = {}) {
     st = st && st.v === 1 ? st : { v: 1, bld: {}, fences: null };
+    // broken stored plans (test/savefuzz.py: "fences": 3 stopped the start) – only entries of the right shape count
+    const bld = st.bld && typeof st.bld === 'object' && !Array.isArray(st.bld) ? st.bld : {};
+    const okPt = p => Array.isArray(p) && Number.isFinite(p[0]) && Number.isFinite(p[1]);
+    const fences = Array.isArray(st.fences)
+      ? st.fences.filter(
+          f => f && typeof f === 'object' && Array.isArray(f.pts) && f.pts.length >= 2 && f.pts.every(okPt)
+        )
+      : null;
     for (const k of BKEYS) {
-      const q = (st.bld || {})[k] || { dx: 0, dy: 0, da: 0 },
+      const q0 = bld[k],
+        q = q0 && typeof q0 === 'object' ? q0 : { dx: 0, dy: 0, da: 0 },
         B = BUILD[k];
-      if (B.dx !== q.dx || B.dy !== q.dy || B.da !== q.da) moveBld(k, q.dx || 0, q.dy || 0, q.da || 0);
+      const n = v => (Number.isFinite(v) ? v : 0);
+      if (B.dx !== n(q.dx) || B.dy !== n(q.dy) || B.da !== n(q.da)) moveBld(k, n(q.dx), n(q.dy), n(q.da));
     }
-    const want = st.fences || [FENCE_DEFAULT],
+    const want = fences || [FENCE_DEFAULT], // an empty list is a plan without fences
       have = FENCES.map(fenceSpec);
     if (JSON.stringify(have) !== JSON.stringify(want.map(fenceSpec))) {
       S.fsel = null;

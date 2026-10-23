@@ -949,7 +949,8 @@ function updateDrive(w, dt) {
       dist = Math.hypot(dx, dy);
     const h = Math.atan2(dx, dy);
     d.az = lerpAngle(d.az, h, Math.min(1, dt * 1.6));
-    // V16b: waits while a vehicle stands in the way; slows down in tight turns
+    // V16b: waits while a vehicle stands in the way; slows down in tight turns and for the last point. (Since V16e the movement
+    // statements below were stuck inside the end-of-line comment here, so Hubert's tractor never moved – Falko, 23.10.2026 2:28.)
     const last = d.i === R.length - 1,
       turn = Math.abs(lerpAngle(0, h - d.az, 1)),
       sp =

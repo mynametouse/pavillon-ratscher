@@ -329,7 +329,12 @@ function treeImpostor(K, px = 256) {
   R.setRenderTarget(rt);
   R.setClearColor(0x3f4b30, 0);
   R.clear();
-  R.render(sc, cam); // foliage-coloured background: the mip levels of a far tree do not darken towards black R.setRenderTarget(pt); R.setClearColor(pc, pa); SV.on.value = sv; GI.on.value = gi;
+  R.render(sc, cam); // foliage-coloured background: the mip levels of a far tree do not darken towards black
+  // put everything back (since V16e these four statements were stuck inside the comment above – found 23.10.2026)
+  R.setRenderTarget(pt);
+  R.setClearColor(pc, pa);
+  SV.on.value = sv;
+  GI.on.value = gi;
   return { tex: rt.texture, w: hw * 2, h: hh * 2, base: bb.min.y - c.y + hh };
 }
 function buildFarImpostors() {

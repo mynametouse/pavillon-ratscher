@@ -1,14 +1,15 @@
 # Hubert's textures from Rocketbox Construction_Male_01 (m111): his face without the grey full beard but with a moustache (lower face of
 # Medical_Male_03, m153: its fine detail on m111's skin colour), a few more lines on the forehead, the dark hair kept; the jeans turned into
 # grey-olive work trousers.
-#   python3 -I hubert_tex.py <m111 head tga> <m153 head tga> <m111 body tga> <out dir> [preview dir]
+#   python3 -I hubert_tex.py <m111 head tga> <m153 head tga> <m111 body tga> <out dir> [preview dir or -] [m004 head tga]
 import sys, os
 import numpy as np
 import cv2
 from PIL import Image
 
 A_f, B_f, BODY_f, OUT = sys.argv[1:5]
-PV = sys.argv[5] if len(sys.argv) > 5 else None
+PV = sys.argv[5] if len(sys.argv) > 5 and sys.argv[5] != '-' else None
+OLD_f = sys.argv[6] if len(sys.argv) > 6 else None   # an older face for the wrinkles (Male_Adult_03 m004_head_color.tga)
 os.makedirs(OUT, exist_ok=True)
 
 def load(f):
@@ -58,7 +59,25 @@ out = A * (1 - lower[..., None]) + Bm * lower[..., None]
 # --- forehead and eyes: the fine lines of B (high-pass) on A's skin – a few years more ---
 hpB = B - blur(B, 6)
 fore = blur(box(h, w, 0.31, 0.69, 0.14, 0.36, 12) * ((SA > 0.22) & (VA > 0.30)), 4)
-out = np.clip(out + hpB * 0.9 * fore[..., None], 0, 1)
+out = np.clip(out + hpB * 1.5 * fore[..., None], 0, 1)
+# --- 70-75 (Falko): the wrinkles of an older face (OLD: Male_Adult_03, m004 – band-pass 2-14 px: crow's feet, eye bags, folds) over the
+# whole face but the eyes; the skin a little paler and more sallow ---
+if OLD_f:
+    O = load(OLD_f)
+    bp = blur(O, 3) - blur(O, 16)
+    face = box(h, w, 0.28, 0.72, 0.15, 0.56, 14) * (1 - box(h, w, 0.36, 0.64, 0.255, 0.30, 6) * 0.7)
+    skin = blur(((sat(out)[0] > 0.18) & (sat(out)[1] > 0.28)).astype(np.float32), 3)
+    out = np.clip(out + bp * 1.2 * (face * skin)[..., None], 0, 1)
+    g = lum(out)[..., None]
+    k = (face * skin * 0.14)[..., None]
+    out = np.clip(out * (1 - k) + (g * np.array([1.02, 0.98, 0.92], np.float32)) * k, 0, 1)
+# --- a dark, full moustache (dark hair; B's moustache found as dark detail in its box, grown a little) ---
+mb = box(h, w, 0.42, 0.58, 0.355, 0.42, 3)
+mm = np.clip((blur(lb, 16) - lb) * 9.0, 0, 1) * mb
+mm = np.minimum(1, blur(mm, 2.5) * 1.6)
+dark = np.array([0.12, 0.095, 0.08], np.float32)
+out = out * (1 - 0.62 * mm[..., None]) + dark * (0.62 * mm[..., None]) + (lb - blur(lb, 3))[..., None] * 0.6 * mm[..., None]
+out = np.clip(out, 0, 1)
 Image.fromarray((out * 255 + 0.5).astype(np.uint8)).save(os.path.join(OUT, 'm111_head_color.tga'))
 # --- body: the jeans (two blocks at the top) become grey-olive work trousers; belt, shirt, boots stay ---
 Bd = load(BODY_f)
