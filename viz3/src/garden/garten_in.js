@@ -81,10 +81,10 @@ const GARTEN = (() => {
       PLAY.act({
         id: 'garten:licht:' + l.key,
         r: l.r || 1.3,
-        prio: -0.2,
+        prio: l.prio ?? -0.2,
         label: () => {
           const p = P();
-          return p && l.room(p.x, p.y, p.feet + 1) ? l.label + (S.on[l.key] ? ' aus' : ' an') : null;
+          return p && (l.swRoom || l.room)(p.x, p.y, p.feet + 1) ? l.label + (S.on[l.key] ? ' aus' : ' an') : null;
         },
         pos: () => {
           const w = W(l.b, l.sw[0], l.sw[1]);

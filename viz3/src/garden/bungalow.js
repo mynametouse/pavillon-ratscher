@@ -911,6 +911,24 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       r: 1.0,
     },
     {
+      key: 'aussen',
+      b,
+      lx: hx + 0.18,
+      ly: 0.78,
+      z: 1.92,
+      mat: porchMat,
+      glow: 2.2,
+      dist: 6,
+      inten: 5,
+      color: 0xffd9a8,
+      sw: [xi1 - 0.02, -0.8, 1.12],
+      swRoom: inside,
+      prio: -0.3,
+      label: 'Außenlicht',
+      room: () => false,
+      r: 1.3,
+    },
+    {
       key: 'bungalow',
       b,
       lx: 0.1,
@@ -1058,6 +1076,26 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   });
   // lived-in details outside (photo-scanned, real size): rubber boots by the front door, a painted bench on the north side, the rain barrel under
   // the annex's downpipe
+  // porch lamp: an old wall lantern west of the front door, switched inside by the door ('Außenlicht')
+  const porchMat = bulbMat(0xfff2d6);
+  {
+    const px = hx + 0.02,
+      py = 0.78,
+      pz = 2.0;
+    gB(g, px, px + 0.04, py - 0.06, py + 0.06, pz - 0.12, pz + 0.06, MAT.blacksteel, { cast: false });
+    gB(g, px + 0.04, px + 0.16, py - 0.015, py + 0.015, pz + 0.02, pz + 0.05, MAT.blacksteel, { cast: false });
+    put(g, new THREE.CylinderGeometry(0.075, 0.055, 0.14, 8, 1, true), MAT.glass, px + 0.16, py, pz - 0.07, {
+      cast: false,
+    }).renderOrder = 2;
+    put(g, new THREE.ConeGeometry(0.1, 0.08, 8), MAT.blacksteel, px + 0.16, py, pz + 0.04, { cast: false });
+    put(g, new THREE.SphereGeometry(0.03, 10, 8), porchMat, px + 0.16, py, pz - 0.08, { cast: false });
+    gB(g, px + 0.11, px + 0.21, py - 0.05, py + 0.05, pz - 0.15, pz - 0.14, MAT.blacksteel, { cast: false });
+  }
+  put(g, new THREE.CylinderGeometry(0.03, 0.032, 0.03, 14), KM.porcelain, xi1 - 0.015, -0.8, 1.12, {
+    rz: Math.PI / 2,
+    cast: false,
+  });
+  gB(g, xi1 - 0.045, xi1 - 0.028, -0.806, -0.794, 1.098, 1.142, KM.bakelite, { cast: false });
   GL('boots', hx + 0.32, 0.45, 0.08, 180, { col: false });
   GL('bench_out', hx + 0.42, 1.55, 0.08, 180);
   GL('rain_barrel', AX1 + 0.32, AY0 + 0.05, 0, 0);

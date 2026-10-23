@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { V } from '../core/head.js';
 import { MAT } from '../core/mats.js';
 import { beam, bldBegin, bldEnd, boardLeaf, cyl } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
@@ -434,6 +435,30 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     z0: zf + 0.01,
     z1: zf + 1.99,
   });
+  // outside the south wall: the hose reel on the wall, a wheelbarrow with soil parked below the small window
+  GL('hose_reel', 0.62, -hy - 0.13, 0.75, 90, { h: 0.5, col: false });
+  {
+    const wg = new THREE.Group();
+    wg.position.copy(V(-0.55, -hy - 0.75, 0));
+    wg.rotation.y = 0.35;
+    g.add(wg);
+    // tray (four tilted sides and a bottom), wheel at the front (+x), handles and legs at the back
+    gB(wg, -0.3, 0.3, -0.25, 0.25, 0.36, 0.38, KM.enamelGreen);
+    for (const sgn of [-1, 1]) {
+      put(wg, new THREE.BoxGeometry(0.66, 0.24, 0.015), KM.enamelGreen, 0, sgn * 0.3, 0.49, { rx: sgn * 0.3 });
+      put(wg, new THREE.BoxGeometry(0.015, 0.24, 0.6), KM.enamelGreen, sgn * 0.34, 0, 0.49, { rz: -sgn * 0.35 });
+    }
+    put(wg, new THREE.SphereGeometry(0.26, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), MAT.soil, 0, 0, 0.42, {
+      s: [1.1, 0.45, 0.85],
+    });
+    put(wg, new THREE.TorusGeometry(0.15, 0.045, 8, 18), MAT.black, 0.52, 0, 0.2, { rx: 0, cast: true });
+    put(wg, new THREE.CylinderGeometry(0.04, 0.04, 0.12, 10), MAT.steel, 0.52, 0, 0.2, { rx: Math.PI / 2 });
+    for (const sgn of [-1, 1]) {
+      beam([0.52, sgn * 0.06, 0.2], [-0.75, sgn * 0.27, 0.55], 0.03, 0.04, MAT.oak, { parent: wg });
+      beam([-0.25, sgn * 0.2, 0.36], [-0.3, sgn * 0.22, 0.0], 0.025, 0.025, MAT.steel, { parent: wg });
+    }
+    lcol(r, -1.1, 0.05, -hy - 1.1, -hy - 0.4, 0, 0.6, 'barrow');
+  }
   // stepping stones from the gravel path (west) to the new door
   for (const [x, y, sz] of [
     [-2.05, 1.55, 0.24],

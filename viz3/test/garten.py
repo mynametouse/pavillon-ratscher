@@ -109,6 +109,7 @@ with lib.browser() as b:
         # wooden hut: outside from the north-west (door) and the west (roof falling west), inside
         view(pg, 'holzhaus', -3.2, 5.0, 1.7, 55, -6, 62); shot(pg, 'holzhaus_aussen_nordwest')
         view(pg, 'holzhaus', -6.5, -1.0, 1.7, -9, -4, 62); shot(pg, 'holzhaus_aussen_west')
+        view(pg, 'holzhaus', 0.2, -5.6, 1.7, -90, -6, 62); shot(pg, 'holzhaus_aussen_sued')
         view(pg, 'holzhaus', -0.75, 1.35, 1.98, 95, -16, 80); shot(pg, 'holzhaus_innen_von_tuer')
         view(pg, 'holzhaus', 0.4, -1.3, 1.95, 244, -14, 80); shot(pg, 'holzhaus_innen_von_ecke')
         # greenhouse: door from the north, inside, vent open
@@ -130,6 +131,10 @@ with lib.browser() as b:
         ev(pg, "GARTEN.set('holzhaus', true)")
         view(pg, 'holzhaus', -0.75, 1.35, 1.98, 95, -16, 80); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_holzhaus_innen')
         ck('the light followed into the hut', ev(pg, "GARTEN.cur() === 'holzhaus'"), ev(pg, "GARTEN.cur()"))
+        ev(pg, "GARTEN.set('aussen', true)")
+        view(pg, 'bungalow', 7.5, -2.5, 1.7, 180 + 10, -6, 62); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_bungalow_aussenlicht')
+        ck('porch lamp: the light is with it outside', ev(pg, "GARTEN.cur() === 'aussen'"), ev(pg, "GARTEN.cur()"))
+        ev(pg, "GARTEN.set('aussen', false)")
         ev(pg, "GARTEN.set('bungalow', false); GARTEN.set('leselampe', false); GARTEN.set('holzhaus', false)")
         view(pg, 'bungalow', -1.0, -0.6, 1.5, -55, -12, 75)
         ev(pg, "PLAY.acts().find(a => a.id === 'garten:ofen').run(); GAME.step(3.5)"); shot(pg, 'nacht_bungalow_ofen')
