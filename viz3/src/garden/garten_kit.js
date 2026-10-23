@@ -9,6 +9,7 @@ import { V } from '../core/head.js';
 import { ANISO, dimIndoor, MODELS, patchSV, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { tagPh } from '../core/geo.js';
+import { ITEMKEY } from '../pavilion/interior.js';
 import { boardMat, gB } from './site_base.js';
 // ---- local random numbers (own seed per use) ----
 export function rng(seed = 1) {
@@ -726,11 +727,11 @@ export function teapot(g, lx, ly, z, m = KM.porcelain, yaw = 0) {
 // further down (the workshop …) keep the keys saved furniture layouts refer to (13 models were placed here before 23.10.2026)
 let keyN0 = null;
 export function keysBegin() {
-  keyN0 = window.ITEM_N || 0;
-  window.ITEM_N = 7000;
+  keyN0 = ITEMKEY.n;
+  ITEMKEY.n = 7000;
 }
 export function keysEnd() {
-  if (keyN0 !== null) window.ITEM_N = keyN0 + 13;
+  if (keyN0 !== null) ITEMKEY.n = keyN0 + 13;
   keyN0 = null;
 }
 // models that were placed here once and are gone now (the potting hut became the atelier, feat/einrichtung): their numbers stay taken, so

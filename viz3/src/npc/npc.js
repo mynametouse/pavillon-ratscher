@@ -794,6 +794,7 @@ export const NPCUI = (() => {
   async function start(w) {
     if (cur || !pan) return;
     cur = w;
+    KERN.emit('talk', { who: w.name });
     w.talking = true;
     w.target = null;
     busy = true;

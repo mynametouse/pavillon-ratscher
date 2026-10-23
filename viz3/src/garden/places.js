@@ -1,4 +1,5 @@
-// ---- where am I (place label, indoor acoustics) ----
+// ---- where am I (place label, indoor acoustics) – the garden's names for KERN.place, its buildings for KERN.inside (core/kern.js) ----
+import { KERN } from '../core/kern.js';
 import { STREAM } from './stream_geo.js';
 import { S0 } from './env.js';
 import { BLD, inLocal, INSIDE } from './site_base.js';
@@ -11,8 +12,9 @@ function inPolyXY(x, y, poly) {
   }
   return c;
 }
-window.insideSite = (x, y, z) => INSIDE.some(i => z >= i.z0 && z <= i.z1 && inLocal(i.b, x, y, i.hx, i.hy, i.ox, i.oy));
-window.sitePlace = (x, y, z) => {
+export const insideSite = (x, y, z) =>
+  INSIDE.some(i => z >= i.z0 && z <= i.z1 && inLocal(i.b, x, y, i.hx, i.hy, i.ox, i.oy));
+export const sitePlace = (x, y, z) => {
   for (const i of INSIDE) if (z >= i.z0 && z <= i.z1 && inLocal(i.b, x, y, i.hx, i.hy, i.ox, i.oy)) return i.name;
   const cp = BLD.carport;
   if (inLocal(cp, x, y, cp.L / 2, cp.W / 2)) return 'Carport';
@@ -38,3 +40,12 @@ window.sitePlace = (x, y, z) => {
   if (!inPolyXY(x, y, S0.garden)) return x < 2 ? 'Nachbargrundstück West' : 'Nachbargrundstück Ost';
   return null;
 };
+window.insideSite = insideSite;
+window.sitePlace = sitePlace;
+KERN.provide('inside', insideSite);
+// within 50 m of the pavilion the garden names the place (and claims it: 'Garten' rather than the field names of the roads)
+KERN.provide(
+  'place',
+  (x, y, z) => (Math.abs(x) <= 50 && Math.abs(y) <= 55 ? sitePlace(x, y, z) || 'Garten' : undefined),
+  50
+);

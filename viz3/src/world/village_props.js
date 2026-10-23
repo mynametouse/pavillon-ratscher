@@ -16,7 +16,6 @@ import { LOAD, markDirty, texFile, texFileOf, TEXMAN, VEG, whenLoaded } from '..
 import { buildTreeKind, thinCards } from '../garden/trees.js';
 import { RENDER } from '../render/render.js';
 import { P } from '../game/walkable.js';
-import { SPOTS } from '../game/player.js';
 import { news } from '../audio/audio.js';
 import { RATSCHER } from './ratscher.js';
 import { ROADS } from './roads.js';
@@ -1106,10 +1105,10 @@ export const VPROPS = (() => {
       RATSCHER.walls = W1;
     }
     if (RATSCHER.treeXY) for (const t of S.trunks) RATSCHER.treeXY.push(t[0], t[1], t[2]);
-    if (typeof SPOTS !== 'undefined') {
+    {
       const x = 241.5,
         y = -101.5;
-      SPOTS.dorf = { mode: 'walk', pos: [x, y], z: gz(x, y), yaw: 292, pitch: 3, label: 'Dorf (Anger)' };
+      KERN.spot('dorf', { mode: 'walk', pos: [x, y], z: gz(x, y), yaw: 292, pitch: 3, label: 'Dorf (Anger)' });
     }
     for (const m of S.meshes)
       if (!S.lindeMeshes || !S.lindeMeshes.slice(1).includes(m)) {

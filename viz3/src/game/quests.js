@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { LATE } from '../core/late.js';
 import { SAVE } from '../core/save.js';
+import { KERN } from '../core/kern.js';
 import { $, OFFLINE, QS, scene, V } from '../core/head.js';
 import { LOAD, loadModel, markDirty, plain, whenLoaded } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
@@ -473,7 +474,11 @@ export const QUESTS = (() => {
     if (Q.board.st === 'make') setSt('board', 'deliver');
   }
   const allDone = () => Object.values(Q).every(q => q.st === 'done');
-  const nextOpen = () => KEYS.find(k => Q[k].st !== 'done' && Q[k].st !== 'new') || KEYS.find(k => Q[k].st !== 'done');
+  // the stove of the pavilion exists only from the built-ins on (the start is phase 0, the old garage – boot/boot.js)
+  const avail = k => k !== 'fire' || PHASE >= PHN.builtins;
+  const nextOpen = () =>
+    KEYS.find(k => avail(k) && Q[k].st !== 'done' && Q[k].st !== 'new') ||
+    KEYS.find(k => avail(k) && Q[k].st !== 'done');
   let saveT = null;
   function save() {
     clearTimeout(saveT);
@@ -1541,19 +1546,44 @@ export const QUESTS = (() => {
     }, 4200);
   }
   const STATUS = st => (st === 'done' ? 'erledigt' : st === 'new' ? 'offen' : 'läuft');
+  // phase 2 (building block 2): one journal for the tasks of every feature – the neighbours' tasks here, the village and the office add
+  // theirs as sources of KERN.tasks (core/kern.js); the tracked task is a key 'source:id' (the neighbours' own keys also without source)
+  KERN.tasks.source({
+    id: 'nachbarn',
+    order: 10,
+    list: () =>
+      KEYS.filter(avail).map(k => {
+        const o = objective(k) || ['', null],
+          st = Q[k].st;
+        return {
+          id: k,
+          title: TITLES[k],
+          who: WHO[k],
+          status: STATUS(st),
+          text: o[0],
+          target: o[1] || null,
+          z: k === 'fire' && (st === 'carry' || st === 'new') ? G.zF : 0,
+        };
+      }),
+  });
+  const keyOf = t => (t && t.includes(':') ? t : 'nachbarn:' + t);
+  const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
   function renderJournal() {
     if (jr.hidden) {
       updateBtn();
       return;
     }
-    const keys = KEYS;
+    const tr = keyOf(track);
     jr.innerHTML =
       '<h3>Aufgaben<button type="button" class="x" aria-label="Schließen">×</button></h3>' +
-      keys
-        .map(k => {
-          const o = objective(k) || ['', null],
-            st = Q[k].st;
-          return `<div class="qi${track === k ? ' tr' : ''}${st === 'done' ? ' dn' : ''}" data-q="${k}"><div class="qh"><b>${TITLES[k]}</b><span class="qs ${st === 'done' ? 'ok' : st === 'new' ? '' : 'run'}">${STATUS(st)}</span></div><div class="qw">${WHO[k]}</div><p>${o[0]}</p>${st !== 'done' ? `<button type="button" class="qt" data-track="${k}" aria-pressed="${track === k}">${track === k ? 'Wird verfolgt' : 'Verfolgen'}</button>` : ''}</div>`;
+      KERN.tasks
+        .list()
+        .map(e => {
+          const done = e.status === 'erledigt',
+            on = tr === e.key;
+          // the neighbours' texts are written here (with markup); other sources give plain text
+          const txt = e.src === 'nachbarn' ? e.text : esc(e.text);
+          return `<div class="qi${on ? ' tr' : ''}${done ? ' dn' : ''}" data-q="${esc(e.key)}"><div class="qh"><b>${esc(e.title)}</b><span class="qs ${done ? 'ok' : e.status === 'offen' ? '' : 'run'}">${esc(e.status)}</span></div><div class="qw">${esc(e.who)}</div><p>${txt}</p>${!done ? `<button type="button" class="qt" data-track="${esc(e.key)}" aria-pressed="${on}">${on ? 'Wird verfolgt' : 'Verfolgen'}</button>` : ''}</div>`;
         })
         .join('') +
       '<div class="qf"><span>E / Knopf: handeln · Q: ablegen, aufstehen · J: Aufgaben</span><button type="button" id="qreset">Neu beginnen</button></div>';
@@ -1585,7 +1615,7 @@ export const QUESTS = (() => {
   function updateBtn() {
     const b = $('questbtn');
     if (!b) return;
-    const n = Object.values(Q).filter(q => q.st !== 'done').length;
+    const n = KERN.tasks.list().filter(e => e.status !== 'erledigt').length;
     b.querySelector('span').textContent = n ? n + ' offen' : 'alle erledigt';
     b.setAttribute('aria-pressed', jr.hidden ? 'false' : 'true');
   }
@@ -1608,20 +1638,45 @@ export const QUESTS = (() => {
   // the card shows the whole task for a few seconds when it changes, then folds to title, arrow and distance (Falko, 23.10.2026: the
   // displays should not cover the view all the time); a tap unfolds it, a tap on the open card opens the journal
   const TK_FULL = 8000;
+  // the tracked entry: the neighbours' own every frame (cheap), another source's four times a second
+  let teAcc = 1,
+    teLast = null;
+  function trackedEntry(dt) {
+    const key = keyOf(track);
+    if (key.startsWith('nachbarn:')) {
+      const k = key.slice(9);
+      if (!Q[k] || !avail(k)) return null;
+      const o = objective(k) || ['', null];
+      return {
+        key,
+        src: 'nachbarn',
+        title: TITLES[k],
+        status: STATUS(Q[k].st),
+        text: o[0],
+        target: o[1] || null,
+        z: k === 'fire' && (Q.fire.st === 'carry' || Q.fire.st === 'new') ? G.zF : 0,
+      };
+    }
+    teAcc += dt;
+    if (teAcc > 0.25 || !teLast || teLast.key !== key) {
+      teAcc = 0;
+      teLast = KERN.tasks.list().find(e => e.key === key) || null;
+    }
+    return teLast;
+  }
   function updateTracker(dt) {
     if (!ON || !tk) return;
     const show = P.mode === 'walk' && !(typeof PLAN !== 'undefined' && PLAN.on);
-    const k = track,
-      o = Q[k] && objective(k);
+    const e = show ? trackedEntry(dt) : null;
     let txt = '',
       arrow = null,
       dist = null,
       tp = null;
-    if (show && o && Q[k].st !== 'done') {
-      txt = o[0];
+    if (e && e.status !== 'erledigt') {
+      txt = e.text;
       try {
-        tp = o[1] ? o[1]() : null;
-      } catch (e) {
+        tp = e.target ? e.target() : null;
+      } catch (err) {
         tp = null;
       }
       if (tp) {
@@ -1643,7 +1698,7 @@ export const QUESTS = (() => {
       tk.hidden = !txt;
       if (txt) {
         tk.innerHTML =
-          `<b>${TITLES[k]}</b><span>${txt}</span>` +
+          `<b>${esc(e.title)}</b><span>${e.src === 'nachbarn' ? txt : esc(txt)}</span>` +
           (dist != null && dist > 2.5
             ? `<i style="transform:rotate(${arrow.toFixed(0)}deg)">↑</i><em>${Math.round(dist)} m</em>`
             : '');
@@ -1651,10 +1706,7 @@ export const QUESTS = (() => {
     }
     // marker over the goal
     if (tp && dist > 3.5 && show) {
-      const z =
-        (k === 'fire' && (Q.fire.st === 'carry' || Q.fire.st === 'new') ? G.zF : 0) +
-        2.1 +
-        Math.sin(performance.now() / 400) * 0.06;
+      const z = (e.z || 0) + 2.1 + Math.sin(performance.now() / 400) * 0.06;
       MARK.position.copy(V(tp[0], tp[1], z));
       const s = THREE.MathUtils.clamp(dist * 0.03, 0.22, 1.1);
       MARK.scale.set(s, s, 1);

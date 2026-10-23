@@ -241,6 +241,27 @@ export const AMT = (() => {
     }
     return '';
   }
+  // the journal (KERN.tasks, core/kern.js; shown by game/quests.js, key J): the election and the office as one entry, what is next
+  KERN.tasks.source({
+    id: 'amt',
+    order: 30,
+    list: () => {
+      if (!ST || ST.phase === 'none') return [];
+      const strip = t => String(t || '').replace(/<[^>]+>/g, '');
+      const h = status(),
+        m = /^<b>(.*?)<\/b>(?:\s*–\s*)?([\s\S]*)$/.exec(h) || [null, 'Ortsvorsteher', h];
+      return [
+        {
+          id: 'ortsvorsteher',
+          title: strip(m[1]),
+          who: 'Ratscher · Rathaus Schleusingen (Mappe: O)',
+          status: ST.phase === 'lost' || ST.phase === 'missed' ? 'erledigt' : 'läuft',
+          text: strip(m[2]) || 'Alles Weitere steht in der Mappe (O).',
+          target: null,
+        },
+      ];
+    },
+  });
   // ======================= the folder (#amtbook, key O) and the HUD button =======================
   const BOOK = (() => {
     const host = $('p-3d') || document.body;
@@ -2636,19 +2657,32 @@ export const AMT = (() => {
       if (!q) return;
       setTimeout(() => {
         try {
-          jump(q);
-          if (q === 'zaehlen') {
-            if (DORF.atDoor) DORF.atDoor();
-            count();
-          } else if (q === 'wahltag' && DORF.atDoor) DORF.atDoor();
-          else if (q === 'stadtrat') rathaus();
-          else if (q === 'amt') toggleBook(true);
+          start(q);
         } catch (e) {
           console.warn('amt ?amt', e);
         }
       }, 1200);
     }, 600);
   });
+  // a step of the story to start from (?amt=… and KERN.scenario – ?szenario=brief|wahlkampf|wahltag|zaehlen|stadtrat|amt)
+  function start(q) {
+    jump(q);
+    if (q === 'zaehlen') {
+      if (DORF.atDoor) DORF.atDoor();
+      count();
+    } else if (q === 'wahltag' && DORF.atDoor) DORF.atDoor();
+    else if (q === 'stadtrat') rathaus();
+    else if (q === 'amt') toggleBook(true);
+  }
+  for (const [q, label, o] of [
+    ['brief', 'Ortsvorsteher: der Brief von Ingrid', 40],
+    ['wahlkampf', 'Ortsvorsteher: Wahlkampf', 41],
+    ['wahltag', 'Ortsvorsteher: Wahltag in der alten Schule', 42],
+    ['zaehlen', 'Ortsvorsteher: die Auszählung', 43],
+    ['amt', 'Ortsvorsteher: im Amt (Mappe)', 44],
+    ['stadtrat', 'Ortsvorsteher: Stadtrat im Rathaus Schleusingen', 45],
+  ])
+    KERN.scenario(q, { label, order: o, run: () => start(q) });
   return {
     get ST() {
       return ST;

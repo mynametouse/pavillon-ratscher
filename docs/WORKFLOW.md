@@ -121,6 +121,8 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
 - Browser-Tests im Chat-Rechner nie zwei gleichzeitig (2 Kerne); Agenten testen im Browser bei GitHub Actions.
 - Versionsnummern: nächste freie Nummer aus `docs/CHANGELOG.md` beim Live-Stellen vergeben.
 - Arbeitsstand für Menschen: Projekt-Dokumente `claude/pavillon-umbau.md` (Plan und Stand) und `claude/pavillon-ratscher-stand.md`.
+- **Hilfs-Agenten können das Claude-Projekt nicht lesen** (kein Projekt-Werkzeug): was sie brauchen (Konzept, Entscheidungen), gehört als Kopie
+  ins Repo (`docs/plans/`, z. B. `plan_gartenplaner.md`) und in ihren Auftrag.
 - **Agenten starten:** `bash tools/agents.sh worktree <thema>` legt `/home/claude/wt-<thema>` auf `feat/<thema>` an (`node_modules`
   verlinkt, eigene Kopie von `viz3/dist`); den Auftrag (englisch, mit Ordnern, Port, Test- und Lieferregeln) **zuerst** als
   `docs/plans/auftraege/<thema>.md` auf `src` sichern, dann den Agenten damit starten; Zeile in `docs/PARALLEL.md` unter „Belegung“.
