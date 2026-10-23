@@ -884,6 +884,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   const bulb = bareBulb(g, 0.1, -0.15, zw - 0.02, 1.9);
   bookMesh(g, books, R);
   // ---- lamps and places for the interactive part (garden/garten_in.js) ----
+  const porchMat = bulbMat(0xfff2d6); // the porch lantern (built further down)
   const inLoc = (x, y, ox, oy, ex, ey2) => {
     const a = (b.az * Math.PI) / 180,
       c = worldOf(b, ox, oy),
@@ -1077,7 +1078,6 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   // lived-in details outside (photo-scanned, real size): rubber boots by the front door, a painted bench on the north side, the rain barrel under
   // the annex's downpipe
   // porch lamp: an old wall lantern west of the front door, switched inside by the door ('Außenlicht')
-  const porchMat = bulbMat(0xfff2d6);
   {
     const px = hx + 0.02,
       py = 0.78,
