@@ -102,7 +102,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `WORKS`, `WLAMP` | garden/workshop*.js | Werkstattgebäude mit Maschinen und Ton; LED-Licht mit Bewegungsmelder |
 | `RATSCHER` | world/ratscher.js | echte Umgebung: Gelände (`hAt`, `hMesh`, `box`), Luftbilder, Gebäude (`walls`: Wandfüße), Bäume (`treeXY`) |
 | `ROADS` | world/roads.js | Straßen und Wege aus OSM: Straßenkarte für die Boden-Shader (`roadShade`, `landDetail`), Oberfläche unter einem Punkt (`at`), Boden (`groundAt`), Brücken (`decks`), Ortsnamen (`place`), Routen (`routes.klinge`) |
-| `WCOL` | world/worldcol.js | Kollision mit der echten Umgebung: Wände aller Gebäude, Stämme, Brückengeländer (`each`, `pushCircle`) |
+| `WCOL` | world/worldcol.js | Kollision mit der echten Umgebung: Wände aller Gebäude, Stämme, Brückengeländer (`each`, `pushCircle`); Jungbäume nur für Fahrzeuge (`each(…, soft)`), umgefahrene Stämme `dead`, `src/removeIdx/revive/treeAt/trunk` (V16i, `TREEHIT`); Bäume kippen auch im Wald (`FOREST.retilt`, `t.tilt`) und im Kronenmodell (`RATSCHER.treeRecs`) |
 | `VILLAGE` | world/village.js | V16e Ratscher nach Fotos: Fassaden-Shader auf den Wänden von `RATSCHER`, neu gebaute Dächer mit Überstand, Schornsteine, Fensterlicht (`bld`, `byId`, `ST`, `night()`, `U`) |
 | `VPROPS` | world/village_props.js | V16e Ortsmitte: alte Schule mit Dachreiter und Uhr, Dorflinde, Brunnen, Bushaltestelle, Laternen, Ortsnamen (`place`), Geometrie-Baukasten (`kit`) |
 | `VNEAR` | world/village_near.js | V16e Nahdetails je 80-m-Zelle, nach Entfernung geladen und verworfen: Zäune, Hecken, Blumenkästen, Tonnen, Holzstapel, Türlampen (`state()`) |
