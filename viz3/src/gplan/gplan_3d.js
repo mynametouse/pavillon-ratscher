@@ -51,8 +51,8 @@ export const GP3D = (() => {
       seed: 913,
       tint: 0xc9d6a0,
       mod: o => {
-        o.leaves.count = 14;
-        o.leaves.size = 2.8;
+        o.leaves.count = 24;
+        o.leaves.size = 2.5;
       },
     },
   };

@@ -91,4 +91,7 @@ zeigt „Testdaten“. Geladen wird erst beim Öffnen; geprüft mit `GPSCHEMA.va
 - Ein Feld im Vertrag fehlt nicht zwingend; nützlich wären später: Höhe des Stammes je Form (heute fest im Modell: Hochstamm 1,8 m,
   Halbstamm 1,2 m, Busch 0,6 m …) und eine Wurzeltiefe/-art für Abstände zu Leitungen.
 - `docs/ARCHITECTURE.md`: Abschnitt 6 `GPLAN`, Abschnitt 8 `pav-gplan-v1` ergänzen; Fenster `#gplan` steht nicht in `HUD.PANELS`
-  (Esc schließt es nicht; mit der Maus fangen klappt das Gehen vor Ort).
+  (Esc schließt es nicht): vor Ort darf die Maus den Blick fangen, gesetzt wird dann mit E (Aktionsknopf); wer lieber klickt, lässt die
+  Maus mit Esc los (dabei öffnet das HUD das Menü – wäre `#gplan` in `PANELS`, gäbe es vor Ort keinen Mausfang).
+- Kletterpflanzen dürfen direkt an einer Wand stehen (nicht im Gebäude); Ein Gilden-Platz an der Südwand des Pavillons liegt deshalb am
+  besten knapp südlich von y = −1,05 (Südkante des Pavillons mit Auskragung).
