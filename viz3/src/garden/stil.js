@@ -887,6 +887,15 @@ const UI = (() => {
       last = k;
       U.btn.hidden = !k;
       if (k) U.btn.querySelector('.hbt').textContent = 'Einrichtung';
+      // the first time inside one of these buildings: a hint, the button glows for a while
+      if (k && !STIL.x('hint') && LATE.PLAY) {
+        STIL.x('hint', 1);
+        LATE.PLAY.think(
+          'Neu: Mit „Einrichtung“ oben rechts stellst du Stil und Farben dieses Gebäudes mit einem Klick um.'
+        );
+        U.btn.classList.add('new');
+        setTimeout(() => U.btn.classList.remove('new'), 9000);
+      }
     }
   });
   return U;

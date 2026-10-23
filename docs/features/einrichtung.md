@@ -21,6 +21,9 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
     „Am Bild weitermalen“ (fünf Schritte, dann „Neues Bild beginnen“: Landschaft, Stillleben, Abstrakt). Lampe mit Schalter an der Tür
     (wie bisher, Schlüssel `holzhaus`).
   - Ortsname „Atelier“, Menü → Orte „Atelier“ (`KERN.spot`), Startsituation `?szenario=atelier` (drinnen an der Tür).
+  - Im Tagebuch (J, `KERN.tasks`), sobald man einmal drin war: „Töpfern: Schalen drehen und brennen“, „Malen: ein Bild fertig malen“,
+    „Ein Gästebett für Besuch“ – mit Stand und Ziel.
+  - Beim ersten Betreten eines der drei Gebäude ein Hinweis auf den Knopf „Einrichtung“ (er leuchtet kurz).
   - Die Anzuchtschalen und „Setzlinge gießen“ stehen jetzt im **Gewächshaus** (unteres Brett des Anzuchtregals); Schlauchwagen,
     Schubkarre, Kranz, Blumenkasten und PV-Modul bleiben draußen.
 - **Der Wohnwagen gespiegelt** (`garden/carport.js`): von der Tür aus liegt das Querbett jetzt **rechts** (vorn unter dem Panoramafenster,
