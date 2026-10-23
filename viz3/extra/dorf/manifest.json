@@ -1,0 +1,11 @@
+{
+ "charman": {
+  "dorf_gerhard": "dorf_gerhard.json",
+  "dorf_manfred": "dorf_manfred.json",
+  "dorf_wolfgang": "dorf_wolfgang.json",
+  "dorf_uwe": "dorf_uwe.json",
+  "dorf_katrin": "dorf_katrin.json",
+  "dorf_ingrid": "dorf_ingrid.json"
+ },
+ "credits_add": "<li>Dorfbewohner beim Skat- und Rommé-Abend und am Feuer (Gerhard „Male_Adult_03“, Manfred „Male_Adult_14“, Wolfgang „Male_Adult_05“, Uwe „Male_Adult_13“, Katrin „Female_Adult_09“, Ingrid „Business_Female_02“) mit den Bewegungen der Spielfiguren: Microsoft Rocketbox Avatar Library, MIT-Lizenz, Copyright (c) 2020 Microsoft, <a href=\"https://github.com/microsoft/Microsoft-Rocketbox\" target=\"_blank\" rel=\"noopener\">https://github.com/microsoft/Microsoft-Rocketbox</a></li>"
+}
