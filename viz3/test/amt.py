@@ -47,8 +47,9 @@ with lib.browser() as b:
         ck('Ingrid signs with her household', 'ingrid' in st['signed'] and st['sig'] >= 2, f"{st['sig']} {st['say'][:80]}")
         # ringing at Gerhard's door: the action button at his doorstep
         h = J("AMT.homes().gerhard")
+        # 12:45: nobody is out in the front garden then (dorf/dorf_life.js: mornings until 12:15, afternoons from 16:30) – Gerhard is in
+        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 12 * 60 + 45")
         x, y = h['step']; put(x - 0.5, y - 0.5, 45)
-        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 10 * 60")
         best = J("GAME.step(0.2).best"); ck('the action button: ring at Gerhard’s door', best == 'Bei Gerhard klingeln', str(best))
         E("PLAY.primary(); GAME.step(0.2)"); st = J('AMT.state()')
         ck('Gerhard opens the door, the election topics', st['panel'] == 'gerhard' and 'öffnet die Tür' in st['say'] and any('Unterschreibst' in x for x in st['buttons']), json.dumps(st['buttons'], ensure_ascii=False))
@@ -188,6 +189,14 @@ with lib.browser() as b:
             look_at(f[0], f[1], 4.5, 1.6, 90, -10); lib.shot(pg, OUT, 'm_zaun')
         E("AMT.talk('ronald', 'panel'); AMT.press('Der Zaun ist geflickt')")
         st = J('AMT.state()'); ck('the goats settled the village way', st['tasks'].get('zaun') == 'done' and st['pos'].get('ziegen') == 'mitte', json.dumps(st['pos']))
+        E("AMT.UI.close(); AMT.speech()"); st = J('AMT.state()')
+        ck('the candidates introduce themselves: Uwe first, then you', st['panel'] == 'speech' and 'Uwe steht auf' in st['say'], st['say'][:60])
+        E("AMT.press('Zuhören')"); st = J('AMT.state()')
+        ck('a question from the floor', 'Frage aus dem Saal' in st['say'], st['say'][:90])
+        page_shot(pg, 'o_frage_aus_dem_saal')
+        E("AMT.press('Erst messen')")
+        told = J("AMT.ST.pos.tempo30 ? AMT.ST.pos.tempo30.told.length : 0")
+        ck('answered in public: everyone present heard it', told >= len(J('AMT.state().avail')) - 3, str(told))
         E("AMT.UI.close(); AMT.toggleBook(true); AMT.BOOK.tab = 'stand'; AMT.renderBook()"); page_shot(pg, 'n_mappe_stand'); E("AMT.toggleBook(false)")
     section('aufgaben', aufgaben)
     def hydrant():

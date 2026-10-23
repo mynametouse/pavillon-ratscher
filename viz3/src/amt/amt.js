@@ -995,12 +995,14 @@ export const AMT = (() => {
     ]);
   }
   // introducing oneself at the Friday evening (inside the school, once per campaign)
+  // the candidates introduce themselves on a Friday evening (the fire brigade's room is the village's hall): Uwe first, then you, then a
+  // question from the floor – answered in public, so everyone present has heard the promise
   function speech() {
     UI.open(
+      'Vorstellung der Kandidaten',
       'Skatabend in der alten Schule',
-      'Wahlkampf am Freitag',
-      (avail('ingrid') ? 'Ingrid ruft durch den Raum: ' : '') +
-        '„Wir haben einen Kandidaten unter uns! Sag doch ein paar Worte.“ Alle schauen dich an. Was sagst du?',
+      (avail('ingrid') ? 'Ingrid klopft ans Glas: ' : '') +
+        '„Heute stellen sich die beiden vor, die Ortsvorsteher werden wollen.“ Uwe steht auf: „Ich bin hier aufgewachsen, ich kenne jeden Feldweg. Ordnung, keine neuen Schulden – mehr verspreche ich nicht.“ Kurzer Beifall. Dann schauen alle dich an. Was sagst du?',
       { id: 'speech' }
     );
     UI.buttons([
@@ -1011,15 +1013,50 @@ export const AMT = (() => {
           for (const k of D.KEYS) if (!D.P[k].npc && avail(k)) L(k, 2, 'Du hast dich beim Skatabend vorgestellt');
           E(eff, 'Deine Rede: ' + label);
           save();
-          UI.say(
-            'Beifall, ein paar Pfiffe, Manfred klopft auf den Tisch. Gerhard schreibt etwas in sein Heft. Uwe hebt das Glas: „Auf eine faire Wahl!“'
-          );
-          UI.buttons([bye()]);
+          floorQuestion();
         },
         'quest',
       ]),
       bye('Lieber ein andermal'),
     ]);
+  }
+  function floorQuestion() {
+    // the first issue one has said nothing about in public yet (asked by someone who cares about it)
+    const present = D.KEYS.filter(k => !D.P[k].npc && avail(k));
+    const i = ['tempo30', 'laterne', 'kirmes'].find(
+      q => !(ST.pos[q] && present.every(k => ST.pos[q].told.includes(k)))
+    );
+    const asker = i && D.ISSUES[i].care.find(k => present.includes(k) && !D.P[k].opp);
+    if (!i || !asker) {
+      UI.say('Beifall, ein paar Pfiffe, Manfred klopft auf den Tisch. Uwe hebt das Glas: „Auf eine faire Wahl!“');
+      UI.buttons([bye()]);
+      return;
+    }
+    UI.say(
+      'Beifall. Dann eine Frage aus dem Saal – ' +
+        nameOf(asker) +
+        ': „' +
+        D.ISSUES[i].q +
+        '“ Alle hören zu, was du antwortest.'
+    );
+    const p = ST.pos[i];
+    UI.buttons(
+      Object.entries(D.ISSUES[i].opts).map(([o, O]) => [
+        p ? (p.o === o ? 'Wie gesagt: ' : 'Anders als bisher: ') + O.say : O.say,
+        () => {
+          const r = M.promise(ST, i, o, asker, now());
+          for (const k of present) if (!ST.pos[i].told.includes(k)) ST.pos[i].told.push(k); // said in public: everyone heard it
+          save();
+          UI.say(
+            (r === 'flip'
+              ? 'Ein Raunen geht durch den Raum – da hat jemand vorher etwas anderes gehört. '
+              : 'Nicken, Gemurmel. ') + 'Gerhard schreibt mit. Uwe hebt das Glas: „Auf eine faire Wahl!“'
+          );
+          UI.buttons([bye()]);
+        },
+        'quest',
+      ])
+    );
   }
   // ======================= the town hall in Schleusingen (a scene until the walkable town has one) =======================
   const canTrip = () => campaign() || office();
@@ -1480,8 +1517,7 @@ export const AMT = (() => {
     let res, why;
     // a promise on the matter's issue: voting against what one promised breaks it
     const pr = A.issue && ST.pos[A.issue];
-    if (pr && (pr.o === 'nein') === yes && pr.o !== 'mitte')
-      for (const k of pr.told) L(k, -6, 'Versprechen gebrochen: ' + A.title);
+    if (pr && (pr.o === 'nein') === yes) for (const k of pr.told) L(k, -6, 'Versprechen gebrochen: ' + A.title);
     if (!r.pass) {
       res = 'no';
       why =
@@ -1504,7 +1540,7 @@ export const AMT = (() => {
           ' Stimmen – bezahlt aus dem Geld des Ortsteils (' +
           A.cost +
           ' Euro).';
-        ST.built[A.build] = now() + A.days * 1440;
+        if (A.build) ST.built[A.build] = now() + A.days * 1440;
         if (A.build === 'kirmes') kirmesDate();
         E(A.fans, 'Beschlossen: ' + A.title);
         E(A.foes, 'Beschlossen: ' + A.title);
@@ -1512,7 +1548,7 @@ export const AMT = (() => {
       } else {
         res = 'later';
         why =
-          'Dafür ist? Ja – aber das Geld des Ortsteils reicht dieses Jahr nicht mehr (' +
+          'Der Ortsteilrat ist dafür – aber das Geld des Ortsteils reicht dieses Jahr nicht mehr (' +
           Math.round(ST.budget) +
           ' Euro übrig). Nächstes Jahr wieder.';
       }
@@ -1664,7 +1700,7 @@ export const AMT = (() => {
           let st = res.d;
           if (st === 'yes' || st === 'kreis') {
             CITY.spent += A.cost;
-            ST.built[A.build] = now() + A.days * 1440;
+            if (A.build) ST.built[A.build] = now() + A.days * 1440;
             if (A.build === 'kirmes') kirmesDate();
             E(A.fans, (st === 'kreis' ? 'Angegangen: ' : 'Beschlossen: ') + A.title);
             E(A.foes, 'Beschlossen: ' + A.title);
@@ -1677,11 +1713,7 @@ export const AMT = (() => {
             for (const [k] of Object.entries(A.fans)) L(k, 1, 'Wenigstens Schotter in die Löcher');
           ST.anl[id] = Object.assign(a, { st, t: now(), why: res.why, d: st });
           save();
-          UI.say(
-            'Du trägst vor, ein paar Fragen, dann stimmen die Stadträte ab. ' +
-              res.why +
-              (st === 'later' && !a.est ? '' : '')
-          );
+          UI.say('Du trägst vor, ein paar Fragen, dann stimmen die Stadträte ab. ' + res.why);
           CNC.i++;
           UI.buttons([['Weiter', () => cncItem(), 'quest']]);
           AMTWORLD.refresh(ST, now());
