@@ -67,7 +67,9 @@ in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide R
 
 ## Testen
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8982 --serve fahrt` – holt die Kacheln entlang der Routen nach
-  `viz3/dist/welt-test/`; Abschnitte `start,edge,markt,west,free,gl`; Bilder in `out/fahrt/`. Bei GitHub: `feat.yml` (Artefakt „out“).
+  `viz3/dist/welt-test/`; Abschnitte `start,edge,markt,garten,west,free,gl` (`garten` und `west` zusammen sind die ganze Fahrt vom
+  Stellplatz im Garten bis in den Hof der Baumschule Kammbach); Bilder in `out/fahrt/`. Bei GitHub: `feat.yml` (Artefakt „out“).
+  Dauer bei GitHub etwa 15 Minuten (rund 18 Minuten Spielzeit, davon 11 auf der Strecke zur Baumschule).
 - Daten neu bauen: `python3 -I viz3/extra/fahrt/strecke.py --raw <Cache-Ordner>` (OSM-API in Zellen, Kacheln der Website).
 
 ## Quellen
