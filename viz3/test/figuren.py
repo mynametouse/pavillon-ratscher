@@ -2,7 +2,7 @@
 # (the old value 'f' of "Frau" opens Sarah), each figure loads from its own file, Christoph 1–2 cm shorter than Falko, his cap and
 # earbuds on the head in every pose and off under the forest helmet, protective gear on the new figures. Pictures front/side/back close up
 # and full length while standing, walking, crouching → out/figuren/<figure>_<view>.jpg
-#   python3 viz3/test/figuren.py PORT [figures, e.g. f,m,c]
+#   python3 viz3/test/figuren.py PORT [figures, e.g. f,m,c – viz3/extra/figuren/tests.txt runs f,m and c as two parts]
 import sys, os, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
@@ -82,6 +82,11 @@ with lib.browser() as b:
     ck('menu offers Falko, Sarah, Christoph', labels == 'm:Falko f:Sarah c:Christoph', labels)
     ck('old saved value f opens Sarah', E("AVATAR.kind") == 'f', E("AVATAR.kind"))
     heights = {}
+    if 'c' in ONLY and 'm' not in ONLY:   # a run with Christoph alone: Falko's height for the comparison, without pictures
+        E("AVATAR.setKind('m')")
+        pg.wait_for_function("AVATAR.ready && AVATAR.fig && AVATAR.fig.kind === 'm'", timeout=300000, polling=500)
+        E("__F.place()")
+        heights['m'] = E("__F.headH()")
     for k in ONLY:
         n = NAME[k]
         if E("AVATAR.kind") != k or not E("!!AVATAR.fig && AVATAR.fig.kind === AVATAR.kind"):
