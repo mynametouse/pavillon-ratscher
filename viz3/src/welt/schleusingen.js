@@ -8,7 +8,7 @@
 // go through into the hall (Bürgerbüro), St. Johannis with its tower and dark cupola, the Bertholdsburg with round towers and the
 // half-timbered top floor, the Marktbrunnen, street lamps (lit at night, they light the walls), benches. Street names on the HUD (OSM).
 import * as THREE from 'three';
-import { BASE, cam, scene, V } from '../core/head.js';
+import { BASE, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { go } from '../game/player.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
@@ -2490,41 +2490,38 @@ export const SCHL = (() => {
   KERN.provide('ground', (x, y) => (S.state === 'ready' && inHall(x, y) ? S.rathaus.floor : undefined), 10);
   KERN.provide('pushOut', pushOut, 10);
   KERN.provide('free', (x, y) => (inZone(x, y) ? true : undefined), 10);
-  // ---- the loop: near the Markt the tiles and the town are loaded, far away freed ----
-  let acc = 1;
-  function tick(dt) {
-    acc += dt;
-    if (acc < 0.4) return;
-    acc = 0;
-    if (S.pool && VPROPS.pool && S.pool.visible !== VPROPS.pool.visible) {
-      S.pool.visible = VPROPS.pool.visible;
-      markDirty();
-    }
-    const walk = P.mode === 'walk',
-      cx = walk ? P.x : cam.position.x,
-      cy = walk ? P.y : -cam.position.z,
-      d = Math.hypot(cx - MARKT[0], cy - MARKT[1]);
-    if (d < NEAR) {
+  // ---- near the Markt the tiles and the town are loaded, far away freed (KERN.zone, core/kern.js: build near, drop far) ----
+  KERN.zone({
+    id: 'schleusingen',
+    x: MARKT[0],
+    y: MARKT[1],
+    near: NEAR,
+    far: FAR,
+    build: async () => {
       WELT.need('schleusingen', true);
-      if (S.state === 'idle') load();
-    } else if (d > FAR) {
-      WELT.need('schleusingen', false);
-      if (S.state === 'ready') S.dispose();
-    }
-    if (
-      S.state === 'data' &&
-      (S.noTiles || (WELT.heightAt(MARKT[0], MARKT[1]) !== undefined && WELT.state().loading === 0))
-    ) {
+      await load();
+      if (S.state === 'error') throw new Error(S.err);
+      if (!S.noTiles)
+        await KERN.until(() => WELT.heightAt(MARKT[0], MARKT[1]) !== undefined && WELT.state().loading === 0, 900);
       try {
         build();
       } catch (e) {
         S.state = 'error';
         S.err = String(e);
-        console.warn('schleusingen build', e);
+        throw e;
       }
-    }
-  }
-  (window.TICKS || (window.TICKS = [])).push(tick);
+    },
+    drop: () => {
+      WELT.need('schleusingen', false);
+      if (S.state !== 'idle' && S.state !== 'error') S.dispose();
+    },
+    tick: () => {
+      if (S.pool && VPROPS.pool && S.pool.visible !== VPROPS.pool.visible) {
+        S.pool.visible = VPROPS.pool.visible;
+        markDirty();
+      }
+    },
+  });
   S.status = () => ({
     state: S.state,
     buildings: S.bld.length,
