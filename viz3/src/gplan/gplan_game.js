@@ -19,7 +19,8 @@ export const GPGAME = (() => {
   const S = { frame: 0, f: -1, cur: null, lock: null, ringKey: null, acc: 0 };
   // the containers of a plant that can go into this hole: in the hand, or set down within 3 m
   function source(it) {
-    if (GPLAN.frei) return 'vorrat';
+    // without the nursery (the world around Ratscher off: no Kloster Veßra) the plants come from the Vorrat as well
+    if (GPLAN.frei || !GPLAN.shop) return 'vorrat';
     const K = GPLAN.state.kuebel;
     const k =
       K.find(c => c.id === it.id && c.loc === 'hand') ||

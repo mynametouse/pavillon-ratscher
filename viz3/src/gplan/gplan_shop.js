@@ -40,27 +40,11 @@ export const GPSHOP = (() => {
   const nOf = loc => ST().kuebel.filter(c => c.loc === loc).length;
   const plural = n => n + (n === 1 ? ' Pflanze' : ' Pflanzen');
   // ---------------- the nursery's beds: which bed a plant stands on, the free places between the nursery's own pots ----------------
-  function artOf(p) {
-    const t = (p.darstellung && p.darstellung.typ) || '',
-      f = p.funktionen || [];
-    if (t === 'kletter' || p.schicht === 'kletter') return 'kletter';
-    if (t === 'obstbaum' || (M.isTree(p) && f.includes('ertrag') && t !== 'strauch')) return 'obst';
-    if (t === 'strauch' || p.schicht === 'strauch') return f.includes('ertrag') ? 'beeren' : 'zier';
-    if (M.isTree(p)) return 'zier';
-    return 'boden';
-  }
+  const artOf = M.bedArt;
   const PLACES = new WeakMap();
   function places(bed) {
-    if (PLACES.has(bed)) return PLACES.get(bed);
-    const L = bed.slots || [],
-      d = i => Math.hypot(L[i + 1][0] - L[i][0], L[i + 1][1] - L[i][1]);
-    let dmin = 1e9;
-    for (let i = 0; i + 1 < L.length; i++) dmin = Math.min(dmin, d(i));
-    const out = [];
-    for (let i = 0; i + 1 < L.length; i++)
-      if (d(i) < dmin * 1.3) out.push([(L[i][0] + L[i + 1][0]) / 2, (L[i][1] + L[i + 1][1]) / 2]);
-    PLACES.set(bed, out);
-    return out;
+    if (!PLACES.has(bed)) PLACES.set(bed, M.freePlaces(bed.slots));
+    return PLACES.get(bed);
   }
   // the plan items still to buy and not in the basket yet
   function wanted() {
@@ -521,9 +505,16 @@ export const GPSHOP = (() => {
   (window.TICKS = window.TICKS || []).push(dt => {
     const h = S.anchor && S.anchor.parent && ST().kuebel.some(c => c.loc === 'hand');
     if (h) {
-      const yaw = ((CAM3.on ? P.body : P.yaw) * Math.PI) / 180,
-        d = CAM3.on ? 0.36 : 0.55;
-      S.anchor.position.copy(V(P.x + Math.sin(yaw) * d, P.y + Math.cos(yaw) * d, P.feet + (CAM3.on ? 0.62 : 0.75)));
+      // in the figure's arms (third person); seen from the eyes: a little to the right and low, so the crown does not fill the view
+      const third = CAM3.on,
+        yaw = ((third ? P.body : P.yaw) * Math.PI) / 180,
+        d = third ? 0.36 : 0.5,
+        side = third ? 0 : 0.32,
+        f = [Math.sin(yaw), Math.cos(yaw)],
+        r = [Math.cos(yaw), -Math.sin(yaw)];
+      S.anchor.position.copy(
+        V(P.x + f[0] * d + r[0] * side, P.y + f[1] * d + r[1] * side, P.feet + (third ? 0.62 : 0.45))
+      );
       S.anchor.rotation.set(0, -yaw, 0);
     }
     S.acc += dt;
@@ -609,6 +600,8 @@ export const GPSHOP = (() => {
       TASKS.start('gplan-kaufen');
     }
   });
+  // buying needs the nursery (Kloster Veßra exists only with the world around Ratscher: welt/welt.js on)
+  GPLAN.shop = !!KERN.scenario('baumschule');
   const api = {
     refresh,
     shelf: () => S.shelf,

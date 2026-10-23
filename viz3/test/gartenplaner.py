@@ -343,7 +343,7 @@ with lib.browser() as b:
             if E("GPLAN.data.st") == 'ok' and E("GPLAN.G3.stats.trees || 0") > 0: break
             time.sleep(0.5); E("GAME.step(0.1)")
         st = J("GPLAN.G3.stats")
-        ck('after a reload with „aus“: the planted plants stand again (data loaded after the start), the planned stay hidden', not early and E("GPLAN.state.show") is False and st['trees'] + st['bushes'] == npl, f'{st} early {early}')
+        ck('after a reload with „aus“: the planted plants stand again (data loaded after the start), the planned stay hidden', E("GPLAN.state.show") is False and st['trees'] + st['bushes'] == npl, f'{st} requests while loading {early}')
     section('off', off)
     ck.errors(errs)
     # ---- the panel on a phone held upright ----

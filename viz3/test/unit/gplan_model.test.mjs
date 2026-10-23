@@ -257,6 +257,17 @@ test('care: water young plants in summer after a week, harvest from the bearing 
     k15 = M.harvestKg(apple, 15, 's');
   assert.ok(k4 > 0 && k15 > k4 && k15 <= 40 * 1.15, k4 + ' ' + k15);
   assert.equal(M.harvestKg(apple, 15, 's'), k15, 'deterministic');
+  // without kg_jahr in the data: a rough yield by kind and form
+  const half = {
+    schicht: 'baum',
+    form: 'halbstamm',
+    darstellung: { typ: 'obstbaum' },
+    ernte: { monate: [9, 10], kg_jahr: null },
+  };
+  assert.equal(M.kgFull(half), 35);
+  assert.equal(M.kgFull(Object.assign({}, half, { form: 'spindel' })), 12);
+  assert.equal(M.kgFull({ schicht: 'strauch', darstellung: { typ: 'strauch' }, ernte: { monate: [7, 8] } }), 3);
+  assert.equal(M.kgFull(apple), 30, 'kg_jahr [20, 40] from the data');
   assert.deepEqual(M.careOf(it, apple, day(2031, 9, 15)), ['ernten'], 'mulching is offered in the first year only');
   assert.deepEqual(M.careOf(it, apple, day(2027, 3, 15)), ['schneiden', 'mulchen']);
   assert.deepEqual(M.careOf(Object.assign({}, it, { h: 2031, mu: true }), apple, day(2031, 9, 15)), []);
@@ -284,4 +295,27 @@ test('the harvest book and the stock', () => {
     { id: 'goumi-test', loc: 'auto', n: 1 },
   ]);
   for (const l of M.LOCS) assert.ok(M.LOC_TEXT[l], l);
+});
+
+test('the nursery: the bed of a plant, free places between the pots of a row', () => {
+  assert.equal(M.bedArt(apple), 'obst');
+  assert.equal(M.bedArt(goumi), 'beeren');
+  assert.equal(M.bedArt(comfrey), 'boden');
+  assert.equal(M.bedArt({ schicht: 'kletter', darstellung: { typ: 'kletter' } }), 'kletter');
+  assert.equal(M.bedArt({ schicht: 'strauch', darstellung: { typ: 'strauch' }, funktionen: ['zier'] }), 'zier');
+  // two rows of three pots, 1.8 m apart along a row, the rows 1.3 m apart
+  const slots = [
+    [0, 0],
+    [1.8, 0],
+    [3.6, 0],
+    [0, 1.3],
+    [1.8, 1.3],
+    [3.6, 1.3],
+  ];
+  assert.deepEqual(M.freePlaces(slots), [
+    [0.9, 0],
+    [2.7, 0],
+    [0.9, 1.3],
+    [2.7, 1.3],
+  ]);
 });

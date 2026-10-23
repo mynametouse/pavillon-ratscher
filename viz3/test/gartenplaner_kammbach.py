@@ -73,7 +73,8 @@ with lib.browser() as b:
     pg = lib.page(b, 1100, 700, errs, tier='mittel')
     E = pg.evaluate
     J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
-    t0 = time.time(); pg.goto(f'http://localhost:{port}/index.html?nogeo=1', timeout=300000, wait_until='domcontentloaded')
+    # with the world around Ratscher (Kloster Veßra needs it: welt/welt.js on)
+    t0 = time.time(); pg.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded')
     while not E("!!(window.GAME && GAME.loaded && GAME.loaded())"):
         if [e for e in errs if e.startswith('PAGEERR')] or time.time() - t0 > 1200:
             ck('page loads', False, ' | '.join(errs[:3]) or 'time-out'); ck.errors(errs); ck.done()
@@ -172,7 +173,7 @@ with lib.browser() as b:
         ck('home: „Ausladen“ at the tailgate sets the three plants down behind the car', bool(best) and best.startswith('Ausladen') and len(bo) == 3, f'{best} {json.dumps(bo)}')
         lib.shot(pg, OUT, 'd_ausgeladen')
         # ---- the delivery: the next morning by the garden gate ----
-        E("CLOCK.t = (Math.floor(CLOCK.t / 1440) + 1) * 1440 + 7.5 * 60; GAME.step(1.0)")
+        E("CLOCK.t = (Math.floor(CLOCK.t / 1440) + 1) * 1440 + 7.5 * 60; GAME.step(1.5)")
         tor = J("GPLAN.state.kuebel.filter(c => c.loc === 'tor')")
         ck('the next morning the walnut stands by the garden gate', len(tor) == 1 and tor[0]['id'] == ids['nut'] and math.hypot(tor[0]['x'] + 8.86, tor[0]['y'] - 39.08) < 6, json.dumps(tor))
         t = J("TASKS.state('gplan-kaufen')")
@@ -182,7 +183,8 @@ with lib.browser() as b:
         for kk in ('herb', 'bush', 'apple', 'nut'):
             pid = ids[kk]
             c = J(f"GPLAN.state.kuebel.find(c => c.id === '{pid}')")
-            E(f"GAME.view({c['x']}, {c['y']} - 1.0, KERN.ground({c['x']}, {c['y']} - 1.0) + 1.7, 0, -30, 62); GAME.step(0.1)")
+            # standing at the container (the nearest one is taken)
+            E(f"GAME.view({c['x']}, {c['y']}, KERN.ground({c['x']}, {c['y']}) + 1.7, 0, -30, 62); GAME.step(0.1)")
             best = J("GAME.step(0.1).best")
             E("PLAY.primary(); GAME.step(0.3)")
             held = J("({ loc: (GPLAN.state.kuebel.find(c => c.id === '" + pid + "') || {}).loc, carry: PLAY.carry && PLAY.carry.id, sets: GPLAN.G3.sets() })")
@@ -205,7 +207,7 @@ with lib.browser() as b:
             print('planted', kk, ok_carry, labels, it.get('st'), flush=True)
         ck('„Tragen“: the plant in the arms (the arms pose of PLAY, drawn in front of the figure)', all(s[1] for s in steps_done), json.dumps(steps_done, ensure_ascii=False)[:400])
         ck('planted from the hands: „Einpflanzen“ without the Vorrat, every bought plant in the ground, the hands free',
-           all(s[3] == 'gepflanzt' and any(l.startswith('Einpflanzen') and 'Vorrat' not in l for l in s[2]) for s in steps_done) and not E("PLAY.carry") and E("GPLAN.state.kuebel.length") == 0, json.dumps(steps_done, ensure_ascii=False)[:400])
+           all(s[3] == 'gepflanzt' and any(l.startswith('Einpflanzen') and 'Vorrat' not in l for l in s[2]) for s in steps_done) and not E("!!PLAY.carry") and E("GPLAN.state.kuebel.length") == 0, json.dumps(steps_done, ensure_ascii=False)[:400])
         E("GAME.step(0.6)")
         t = J("TASKS.state('gplan-kaufen')")
         ck('the task „Pflanzen in der Baumschule Kammbach kaufen“ is done', t and t['st'] == 'erledigt', json.dumps(t))

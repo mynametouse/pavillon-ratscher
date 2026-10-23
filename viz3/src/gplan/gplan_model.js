@@ -348,6 +348,28 @@ export const GPMODEL = (() => {
     boden: 'im Garten abgestellt',
     hand: 'in der Hand',
   };
+  // the nursery: the bed a plant stands on (VESSRA.baumschule beete[].art) – fruit trees and nut trees, berries, ornamentals, climbers,
+  // ground cover and perennials
+  function bedArt(p) {
+    const t = (p.darstellung && p.darstellung.typ) || '',
+      f = p.funktionen || [];
+    if (t === 'kletter' || p.schicht === 'kletter') return 'kletter';
+    if (t === 'obstbaum' || (isTree(p) && f.includes('ertrag') && t !== 'strauch')) return 'obst';
+    if (t === 'strauch' || p.schicht === 'strauch') return f.includes('ertrag') ? 'beeren' : 'zier';
+    if (isTree(p)) return 'zier';
+    return 'boden';
+  }
+  // free places of a bed whose slots all hold the nursery's own pots: the middles between neighbouring pots of a row
+  function freePlaces(slots) {
+    const L = slots || [],
+      d = i => Math.hypot(L[i + 1][0] - L[i][0], L[i + 1][1] - L[i][1]);
+    let dmin = 1e9;
+    for (let i = 0; i + 1 < L.length; i++) dmin = Math.min(dmin, d(i));
+    const out = [];
+    for (let i = 0; i + 1 < L.length; i++)
+      if (d(i) < dmin * 1.3) out.push([(L[i][0] + L[i + 1][0]) / 2, (L[i][1] + L[i + 1][1]) / 2]);
+    return out;
+  }
   // the stock (bought, not planted yet) per plant and place: [{ id, loc, n }]
   function stock(kuebel) {
     const m = new Map();
@@ -582,6 +604,8 @@ export const GPMODEL = (() => {
     harvestLines,
     LOC_TEXT,
     stock,
+    bedArt,
+    freePlaces,
     seedOf,
     guildPlace,
     LAYER,

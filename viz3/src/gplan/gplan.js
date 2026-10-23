@@ -759,8 +759,12 @@ export const GPLAN = (() => {
         ? `<h4>In Arbeit (${W.length})</h4><ul class="gp-list gp-glist">` + W.map(row).join('') + '</ul>'
         : '') +
       '<h4>Vorrat</h4>' +
-      (U.frei
-        ? '<p class="gp-hint">Bis zum Einkauf in der Baumschule kommen die Pflanzen aus dem Vorrat.</p>'
+      (U.frei || !api.shop
+        ? '<p class="gp-hint">Die Pflanzen kommen aus dem Vorrat' +
+          (api.shop
+            ? ' (Schalter für Tests).'
+            : ' – ohne die Welt um Ratscher gibt es keine Baumschule zum Einkaufen.') +
+          '</p>'
         : S1.length
           ? '<ul class="gp-stock">' +
             S1.map(
@@ -1410,6 +1414,8 @@ export const GPLAN = (() => {
     get ready() {
       return D.st === 'ok';
     },
+    // buying is possible (gplan/gplan_shop.js sets it when the nursery exists)
+    shop: false,
     frameGarden,
     site,
     shadows,
