@@ -1589,6 +1589,7 @@ export const VESSRA = (() => {
       step('nursery', () => nursery(K));
       step('benches', () => benches(K));
       step('museum sign', () => museumSign(K));
+      step('street signs', () => streetSigns(K));
       add(new THREE.Mesh(KS.geo(), stoneMat()), 'stone', true);
       if (!KA.empty()) add(new THREE.Mesh(scaledGeo(KA, 0.34), stoneMat('pavers', 1.3)), 'ashlar', true);
       add(new THREE.Mesh(K.geo(), propMat()), 'props', true);
@@ -2390,6 +2391,67 @@ export const VESSRA = (() => {
       K.box(x + d[0] * o, y + d[1] * o, z - 0.2, 0.1, 0.1, 2.75, rot, linC([0.25, 0.17, 0.1]));
     S.museumSign = { at: [x, y, z + 1.85], d, h: 0.42 };
   }
+  // ---- street name signs at the junctions of the village (white, black lettering and border, on a grey pole): one per named street,
+  // where it leaves another road, parallel to it and readable from both sides ----
+  const distLine = (p, x, y) => {
+    let d = 1e9;
+    for (let k = 0; k + 3 < p.length; k += 2) {
+      const ax = p[k],
+        ay = p[k + 1],
+        ex = p[k + 2] - ax,
+        ey = p[k + 3] - ay,
+        l2 = ex * ex + ey * ey || 1,
+        t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / l2));
+      d = Math.min(d, Math.hypot(x - ax - ex * t, y - ay - ey * t));
+    }
+    return d;
+  };
+  function streetSigns(K) {
+    const roads = (data.st || []).filter(q => q.k <= 5),
+      best = new Map(),
+      out = [],
+      POLE = linC([0.45, 0.46, 0.47]),
+      inHouse = (x, y) => S.bld.some(b => Math.abs(b.cx - x) < 40 && Math.abs(b.cy - y) < 40 && inPoly(b.f, x, y));
+    // per street the junction nearest the monastery gate
+    for (const st of roads) {
+      if (!st.n) continue;
+      const p = st.p;
+      for (const e of [0, p.length - 2]) {
+        const x = p[e],
+          y = p[e + 1],
+          dg = Math.hypot(x - GATE[0], y - GATE[1]);
+        if (Math.hypot(x - ORT[0], y - ORT[1]) > 560 || (best.has(st.n) && best.get(st.n).dg <= dg)) continue;
+        if (!roads.some(o => o !== st && o.n !== st.n && distLine(o.p, x, y) < 2.5)) continue;
+        // 5 m into the street from the junction, on its right beside the carriageway
+        const k = e ? e - 2 : 2,
+          L = Math.hypot(p[k] - x, p[k + 1] - y) || 1,
+          ux = (p[k] - x) / L,
+          uy = (p[k + 1] - y) / L,
+          hw = st.k <= 2 ? 4.3 : 3.4,
+          sx = x + ux * Math.min(5, L * 0.5) + uy * hw,
+          sy = y + uy * Math.min(5, L * 0.5) - ux * hw;
+        if (inHouse(sx, sy) || roads.some(o => distLine(o.p, sx, sy) < hw - 0.8)) continue;
+        best.set(st.n, { dg, sx, sy, ux, uy });
+      }
+    }
+    for (const [name, c] of best) {
+      const z = ground(c.sx, c.sy);
+      K.cyl(c.sx, c.sy, z - 0.3, z + 2.75, 0.03, 0.03, 6, POLE);
+      S.segs.push(...circleSegs(c.sx, c.sy, 0.06, 4));
+      for (const sg of [1, -1])
+        out.push({
+          name,
+          at: [c.sx, c.sy, z + 2.36],
+          d: [c.ux * sg, c.uy * sg],
+          h: 0.19,
+          bg: '#f7f7f4',
+          fg: '#141414',
+          font: 'bold 40px "DejaVu Sans", Arial, Helvetica, sans-serif',
+          back: 0.015,
+        });
+    }
+    S.streetSigns = out;
+  }
   // ---- street lamps: the lantern of world/village_props.js, lit with the village's lamps (and lighting the walls) ----
   function lamps() {
     const L = data.lamps || [];
@@ -2664,19 +2726,29 @@ export const VESSRA = (() => {
       }
     if (S.museumSign)
       list.push({ name: 'Hennebergisches Museum Kloster Veßra', ...S.museumSign, bg: '#5c1f1a', fg: '#f2e2b0' });
+    for (const it of S.streetSigns || []) list.push(it);
     if (!list.length) return;
+    // one atlas row per text and style (a street sign is drawn twice, back to back, from the same row)
+    const rowOf = new Map(),
+      texts = [];
+    for (const it of list) {
+      const key = it.name + '|' + it.bg;
+      if (!rowOf.has(key)) {
+        rowOf.set(key, texts.length);
+        texts.push(it);
+      }
+    }
     const W = 1024,
       RH = 64,
-      rows = Math.min(16, list.length),
+      rows = Math.min(32, texts.length),
       cv = document.createElement('canvas');
     cv.width = W;
     cv.height = RH * rows;
     const g = cv.getContext('2d');
-    list.slice(0, rows).forEach((it, r) => {
-      g.font = 'bold 38px Georgia, "Times New Roman", serif';
+    texts.slice(0, rows).forEach((it, r) => {
+      g.font = it.font || 'bold 38px Georgia, "Times New Roman", serif';
       const tw = Math.min(W - 40, g.measureText(it.name).width);
       it.w = tw + 40;
-      it.r = r;
       g.fillStyle = it.bg;
       g.fillRect(0, r * RH, it.w, RH);
       g.fillStyle = it.fg;
@@ -2686,6 +2758,12 @@ export const VESSRA = (() => {
       g.lineWidth = 3;
       g.strokeRect(5, r * RH + 5, it.w - 10, RH - 10);
     });
+    for (const it of list) {
+      const t0 = texts[rowOf.get(it.name + '|' + it.bg)];
+      it.r = rowOf.get(it.name + '|' + it.bg);
+      it.w = t0.w;
+    }
+    list.splice(0, list.length, ...list.filter(it => it.r < rows));
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
@@ -2693,13 +2771,15 @@ export const VESSRA = (() => {
       uv = [],
       nrm = [],
       idx = [];
-    for (const it of list.slice(0, rows)) {
+    for (const it of list) {
       const d = it.d,
         h = it.h,
         w = (h * it.w) / RH,
         nx = d[1],
         ny = -d[0],
-        [cx, cy, z] = it.at,
+        [cx0, cy0, z] = it.at,
+        cx = cx0 + nx * (it.back || 0),
+        cy = cy0 + ny * (it.back || 0),
         n = pos.length / 3,
         v0 = 1 - ((it.r + 1) * RH) / (RH * rows),
         v1 = 1 - (it.r * RH) / (RH * rows);
@@ -2727,7 +2807,7 @@ export const VESSRA = (() => {
       true
     );
     m.userData.tex = tex;
-    S.signs = list.slice(0, rows).map(it => it.name);
+    S.signs = list.map(it => it.name);
   }
   // ---- the streets over the photo (welt/welt.js overlay): asphalt on the roads, water-bound gravel on the paths of the monastery,
   // the parking and the nursery's yard; r = cover, g/r = surface ----

@@ -200,6 +200,8 @@ with lib.browser() as b:
         n = J("[[-8790, -376], [-8798, -287], [-8749, -362], [-8805, -266], [-8905, -175]].map(([x, y]) => VESSRA.place(x, y))")
         ck('place names: church, gate church, Henneberg chapel, a street, the nursery',
            'Klosterkirche' in n[0] and 'Torkirche' in n[1] and 'Henneberg' in n[2] and 'Straße' in n[3] and 'Kammbach' in n[4], json.dumps(n, ensure_ascii=False))
+        ss = J("(VESSRA.streetSigns || []).filter((q, i) => i % 2 === 0).map(q => [q.name, Math.round(Math.hypot(q.at[0] - VESSRA.START[0], q.at[1] - VESSRA.START[1]))])")
+        ck('street name signs at the junctions (the Schleusinger Straße near the gate)', len(ss) >= 4 and any(q[0] == 'Schleusinger Straße' and q[1] < 250 for q in ss), json.dumps(ss, ensure_ascii=False))
 
     def view(x, y, yaw, pitch=4, fov=62, steps=12, h=1.62):
         E(f"GAME.view({x}, {y}, VESSRA.gz({x}, {y}) + {h}, {yaw}, {pitch}, {fov}); for (let i = 0; i < {steps}; i++) GAME.step(0.25)")
