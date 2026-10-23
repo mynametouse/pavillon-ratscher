@@ -340,6 +340,22 @@ with lib.browser() as b:
             ck('the end of the map: held at the edge of the tiles, with a word', s['x'] < -4300 and abs(s['kmh']) < 3 and any('endet' in m for m in msgs),
                f"x {s['x']}, {s['kmh']} km/h, {sorted(msgs)}")
             shot('g_ende')
+    if want('west'):
+        # up close: the nearest place-name sign out there, front and back, on foot (then back into the car)
+        sg = json.loads(E("JSON.stringify((() => { const v = VEH.cur ? VEH.cur.st : GAME.P; let b = null, bd = 1e9; for (const s of FAHRT.data.signs) { if (s.t !== 'ort') continue; const d = Math.hypot(s.x - v.x, s.y - v.y); if (d < bd) { bd = d; b = s; } } return b && bd < 1500 ? b : null; })())"))
+        if sg:
+            E("VEH.exit()")
+            chunk(0.5)
+            a = math.radians(sg['h'])
+            for side, nm in ((1, 'l_ortstafel_vorn'), (-1, 'l_ortstafel_hinten')):
+                x, y = sg['x'] + math.sin(a) * 7 * side, sg['y'] + math.cos(a) * 7 * side
+                yaw = math.degrees(math.atan2(sg['x'] - x, sg['y'] - y))
+                E(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + 1.6, {yaw}, 4, 50)")
+                for _ in range(6):
+                    chunk(0.5)
+                shot(nm, third=False)
+            E("VEH.enter('car')")
+            chunk(0.5)
     if want('free'):
         E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null; VEH.place('car', 8.6, 33.4, 2.04); CLOCK.t = 14 * 60 + 30; DN.update(true)")
         for _ in range(4):

@@ -1000,7 +1000,8 @@ export const FAHRT = (() => {
     } else OV.tex.needsUpdate = true;
     OV.x0 = x0;
     OV.y0 = y0;
-    WELT.setOverlay(OV.tex, x0, y0, SZ);
+    // no sett on the land beside a country road (welt/welt.js uPave)
+    WELT.setOverlay(OV.tex, x0, y0, SZ, 0);
   }
   function overlayOff() {
     if (OV.tex && (!WELT.overlay || WELT.overlay() === OV.tex) && !(SCHL && SCHL.state === 'ready'))

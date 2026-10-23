@@ -172,10 +172,13 @@ export const WELT = (() => {
   const OVER = {
     tOver: { value: new THREE.DataTexture(new Uint8Array(4), 1, 1) },
     uOver: { value: new THREE.Vector4(0, 0, 0, 0) },
+    // feat/fahrt: grey land near the camera as sett (1) – the roads of welt/fahrt.js lay asphalt and turn it off out in the country
+    uPave: { value: 1 },
   };
   OVER.tOver.value.needsUpdate = true;
   S.overlay = () => (OVER.uOver.value.w > 0 ? OVER.tOver.value : null); // whose streets lie on the photo (a zone frees only its own)
-  S.setOverlay = (tex, x0, y0, size) => {
+  S.setOverlay = (tex, x0, y0, size, pave) => {
+    OVER.uPave.value = pave === undefined ? 1 : pave;
     const old = OVER.tOver.value;
     OVER.tOver.value = tex || new THREE.DataTexture(new Uint8Array(4), 1, 1);
     if (!tex) OVER.tOver.value.needsUpdate = true;
@@ -183,7 +186,7 @@ export const WELT = (() => {
     if (old && old !== tex) old.dispose();
     markDirty(true);
   };
-  const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver;
+  const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver; uniform float uPave;
     vec3 setts( vec2 p, vec3 c, float sc, float fwp ) {   // small stones in offset rows, each a little different, dark joints
       vec2 q = p * sc; q.x += 0.5 * mod( floor( q.y ), 2.0 );
       vec2 f = fract( q ); float fine = 1.0 - smoothstep( 0.15, 0.6, fwp * sc );
@@ -198,7 +201,7 @@ export const WELT = (() => {
       float ins = uOver.w * step( 0.0, ou.x ) * step( 0.0, ou.y ) * step( ou.x, 1.0 ) * step( ou.y, 1.0 );
       vec4 o = texture( tOver, clamp( ou, 0.0, 1.0 ) ) * ins;
       float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), chroma = ( mx - mn ) / max( mx, 0.02 ), lum = dot( c, vec3( 0.3, 0.59, 0.11 ) );
-      float near = 1.0 - smoothstep( 40.0, 90.0, dist ), pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * near;
+      float near = 1.0 - smoothstep( 40.0, 90.0, dist ), pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * near * uPave;
       vec3 g = landDetail( p, c, dist );
       if ( o.r > 0.03 ) {
         float code = o.g / max( o.r, 0.01 ), cov = o.r, n1 = rdN( p * 0.6 ), n2 = rdN( p * 5.0 );

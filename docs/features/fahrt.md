@@ -51,9 +51,12 @@ in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide R
 - `vehicles/vehicle.js`: Rand der Karte (`VEH.edge`: `null` | `'wait'` | `'end'`, ohne FAHRT wie vorgeschlagen `KERN.free`), Tempo-Grenze
   (`VEH.limit(v, inp)`), Wände außerhalb (`VEH.hitsOut` in `boxHits`) – drei markierte Stellen.
 - `vehicles/minimap.js`: `export const MMAP`, Haken `MMAP.more` (zeichnet draußen) und `MMAP.dest` (Ziel-Beschriftung).
-- `welt/welt.js` (gehört heute `feat/vessra`), drei markierte Stellen `// feat/fahrt`: `WELT.focus` (Punkt vor dem Fahrzeug statt der
-  Spielfigur für den Kachelplan), `WELT.keep` (ms bis zum Freigeben, Standard 30 s), `setPads` mit `under: true` (Straßen unter den
-  Flächen der Zonen).
+- `welt/welt.js`, fünf markierte Stellen `// feat/fahrt`: `WELT.focus` (Punkt vor dem Fahrzeug statt der Spielfigur für den
+  Kachelplan), `WELT.keep` (ms bis zum Freigeben, Standard 30 s), `setPads` mit `under: true` (Straßen zuletzt einsortiert), `padZ`
+  (erst die Straßen, dann baut die Fläche einer Zone darauf auf: ihr Rand blendet in die eingeschnittene Straße statt ins rohe Gelände)
+  und `setOverlay(tex, x0, y0, size, pave)` mit der Uniform `uPave`: der Kachel-Shader machte graue Flächen nahe der Kamera überall zu
+  Pflaster – auf dem Land neben den Straßen sah das wie Kopfsteinpflaster auf Feldern aus; das Asphalt-Overlay der Fahrt setzt 0, die
+  Zonen bleiben bei 1 (ohne fünften Wert wie bisher).
 - `modules.txt`: Marke `# feat/fahrt` mit `welt/fahrt.js` unter `vehicles/minimap.js`.
 
 ## Testen
