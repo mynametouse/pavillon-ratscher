@@ -57,3 +57,9 @@ Bilder aller Figuren von vorn, der Seite und hinten nah und ganz, stehend, gehen
 
 - Sarahs Stiefel haben (wie bei der bisherigen Frau) einen kleinen Absatz; Rocketbox hat keine flachen Stiefel zu dieser Hose.
 - Die neuen Haare sind gewellte Locken bis zur Schulter (aus Rocketbox); engere Locken bräuchten ein anderes Haarmodell.
+
+## Für den Kern-Chat (gemeinsame Dateien)
+
+- Erledigt (e81b368): `shell/notes.html`, `buildlib/credits.py`, `docs/ARCHITECTURE.md` nennen Falko, Sarah und Christoph.
+- Wahlweise `viz3/src/core/save.js`: `K('pav-fig', …)` mit Prüfung `oneOf('m', 'f', 'c')` (avatar.js prüft selbst).
+- Die alte `dist/chars/player_f.json` auf `gh-pages` wird nicht mehr geladen (Sarah: `player_sarah.json`).
