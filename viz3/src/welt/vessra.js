@@ -748,9 +748,57 @@ export const VESSRA = (() => {
     const w = Math.max(0, Math.min(1, Math.min(x - ZONE[0], ZONE[2] - x, y - ZONE[1], ZONE[3] - y) / 100));
     return z + w * (c - z);
   };
+  // the sales yard of the nursery is level gravel: a plane fitted to the ground over it (u −13…26 m along the street, w 0.5…31 m into the
+  // grounds; slope at most 1 %), blended into the ground around it over 4 m – another pad, before the zone's
+  const YARD = [-13, 0.5, 26, 31],
+    YM = 4;
+  let yd = null;
+  function yardPlane(F) {
+    const pts = [];
+    for (let u = YARD[0]; u <= YARD[2] + 1e-6; u += 2)
+      for (let w = YARD[1]; w <= YARD[3] + 1e-6; w += 2) {
+        const x = F.G[0] + F.t[0] * u + F.wv[0] * w,
+          y = F.G[1] + F.t[1] * u + F.wv[1] * w,
+          z = gz(x, y);
+        if (z !== undefined && z !== null) pts.push([u, w, adj(x, y, z)]);
+      }
+    if (pts.length < 20) return null;
+    const n = pts.length,
+      uc = pts.reduce((a, p) => a + p[0], 0) / n,
+      wc = pts.reduce((a, p) => a + p[1], 0) / n,
+      zc = pts.reduce((a, p) => a + p[2], 0) / n;
+    let uu = 0,
+      ww = 0,
+      uz = 0,
+      wz = 0;
+    for (const [u, w, z] of pts) {
+      uu += (u - uc) * (u - uc);
+      ww += (w - wc) * (w - wc);
+      uz += (u - uc) * (z - zc);
+      wz += (w - wc) * (z - zc);
+    }
+    const cl = v => Math.max(-0.01, Math.min(0.01, v)); // nearly level: the beds lie flat on it
+    return { G: F.G, t: F.t, wv: F.wv, uc, wc, a: zc, b: cl(uz / (uu || 1)), c: cl(wz / (ww || 1)) };
+  }
+  const yardAdj = (x, y, z) => {
+    if (!yd) return z;
+    const dx = x - yd.G[0],
+      dy = y - yd.G[1],
+      u = dx * yd.t[0] + dy * yd.t[1],
+      w = dx * yd.wv[0] + dy * yd.wv[1],
+      dd = Math.hypot(Math.max(YARD[0] - u, 0, u - YARD[2]), Math.max(YARD[1] - w, 0, w - YARD[3]));
+    if (dd >= YM) return z;
+    const pz =
+        yd.a +
+        yd.b * (Math.max(YARD[0], Math.min(YARD[2], u)) - yd.uc) +
+        yd.c * (Math.max(YARD[1], Math.min(YARD[3], w)) - yd.wc),
+      s2 = dd / YM,
+      k = s2 * s2 * (3 - 2 * s2);
+    return pz + (z - pz) * k;
+  };
   const ground = (x, y) => {
     const z = gz && gz(x, y);
-    return z !== undefined && z !== null ? adj(x, y, z) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
+    return z !== undefined && z !== null ? yardAdj(x, y, adj(x, y, z)) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
   };
   S.gz = ground;
   S.raw = (x, y) => (gz ? gz(x, y) : undefined); // the tiles' own height (tests: the banks beside the roads)
@@ -817,6 +865,7 @@ export const VESSRA = (() => {
     S.baumschule = null;
     if (WELT.setPads) WELT.setPads('vessra', []);
     capG = null;
+    yd = null;
     if (WELT.setOverlay && S.overlayTex && WELT.overlay && WELT.overlay() === S.overlayTex) WELT.setOverlay(null);
     S.overlayTex = null;
     data = null;
@@ -1520,14 +1569,27 @@ export const VESSRA = (() => {
     S.seats = [];
     if (gz) {
       capG = roadCap();
+      const F = nurseryFrame();
+      yd = F ? yardPlane(F) : null;
       S.capMs = Math.round(performance.now() - t0);
-      if (WELT.setPads)
-        WELT.setPads('vessra', [
-          {
-            poly: [ZONE[0], ZONE[1], ZONE[2], ZONE[1], ZONE[2], ZONE[3], ZONE[0], ZONE[3]],
-            z: (x, y, raw) => adj(x, y, raw),
-          },
-        ]);
+      const pads = [];
+      if (yd) {
+        const Q = (u, w) => [yd.G[0] + yd.t[0] * u + yd.wv[0] * w, yd.G[1] + yd.t[1] * u + yd.wv[1] * w];
+        pads.push({
+          poly: [
+            ...Q(YARD[0] - YM, YARD[1] - YM),
+            ...Q(YARD[2] + YM, YARD[1] - YM),
+            ...Q(YARD[2] + YM, YARD[3] + YM),
+            ...Q(YARD[0] - YM, YARD[3] + YM),
+          ],
+          z: (x, y, raw) => yardAdj(x, y, adj(x, y, raw)),
+        });
+      }
+      pads.push({
+        poly: [ZONE[0], ZONE[1], ZONE[2], ZONE[1], ZONE[2], ZONE[3], ZONE[0], ZONE[3]],
+        z: (x, y, raw) => adj(x, y, raw),
+      });
+      if (WELT.setPads) WELT.setPads('vessra', pads);
     }
     const WB = wallBuf(),
       RB = roofBuf();
@@ -2003,11 +2065,12 @@ export const VESSRA = (() => {
     { art: 'kletter', name: 'Kletterpflanzen', w0: 21.0, w1: 24.5, rows: 2, step: 1.0 },
     { art: 'boden', name: 'Bodendecker', w0: 26.5, w1: 29.5, rows: 3, step: 0.7 },
   ];
-  function nursery(K) {
+  // the frame of the nursery: from its south gate on the Schulstraße (G) along the street towards the north gate (t), into the grounds (wv)
+  function nurseryFrame() {
     const ar = (data.areas || []).find(q => q.k === 'nursery');
-    if (!ar) return;
+    if (!ar) return null;
     const gs = (data.gates || []).filter(g => g[2] === 'gate' && nearPolyEdge(ar.p, g[0], g[1]) < 4);
-    if (gs.length < 1) return;
+    if (gs.length < 1) return null;
     gs.sort((p, q) => p[1] - q[1]);
     const G = [gs[0][0], gs[0][1]],
       N2 = gs.length > 1 ? [gs[gs.length - 1][0], gs[gs.length - 1][1]] : [G[0] - 6, G[1] + 40];
@@ -2016,6 +2079,12 @@ export const VESSRA = (() => {
     t = [t[0] / lt, t[1] / lt];
     let wv = [-t[1], t[0]];
     if (!inPoly(ar.p, G[0] + wv[0] * 6, G[1] + wv[1] * 6)) wv = [-wv[0], -wv[1]];
+    return { ar, G, t, wv };
+  }
+  function nursery(K) {
+    const F = nurseryFrame();
+    if (!F) return;
+    const { ar, G, t, wv } = F;
     const Y = (u, w) => [G[0] + t[0] * u + wv[0] * w, G[1] + t[1] * u + wv[1] * w],
       Yz = (u, w, dz = 0) => {
         const [x, y] = Y(u, w);

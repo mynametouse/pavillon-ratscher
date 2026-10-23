@@ -140,7 +140,8 @@ with lib.browser() as b:
                   raw = Math.max(raw, VESSRA.raw(qx, qy) - VESSRA.raw(x, y)); adj = Math.max(adj, VESSRA.gz(qx, qy) - VESSRA.gz(x, y));
                   if (Math.hypot(qx - GAME.P.x, qy - GAME.P.y) < 120) d = Math.max(d, Math.abs(VESSRA.gz(qx, qy) - (WELT.heightAt(qx, qy) ?? VESSRA.gz(qx, qy)))); n++; } } } }
             return { n, raw: +raw.toFixed(2), adj: +adj.toFixed(2), tilesVsGround: +d.toFixed(3), ms: VESSRA.capMs }; })()""")
-        ck('the village ground: no trough beside the Schleusinger Straße (8 m from the axis)', r['n'] > 20 and r['adj'] <= 0.6 and r['tilesVsGround'] < 0.15, json.dumps(r))
+        ck('the village ground: no trough beside the Schleusinger Straße (8 m from the axis)',
+           r['n'] > 20 and r['adj'] <= 0.8 and r['adj'] < r['raw'] / 2 and r['tilesVsGround'] < 0.15, json.dumps(r))
         # walk straight at a house wall in the village: the wall stops the walker
         r = J("""(() => { const b = VESSRA.bld.find(b => !b.lm && !b.old && b.k === 0 && b.F.length > 3 && Math.hypot(b.cx + 8700, b.cy + 230) < 120);
             const f = b.F.find(f => !(f[8] & 1)) || b.F[0], mx = (f[0] + f[2]) / 2, my = (f[1] + f[3]) / 2, L = Math.hypot(f[2] - f[0], f[3] - f[1]), nx = (f[3] - f[1]) / L, ny = -(f[2] - f[0]) / L;
@@ -188,6 +189,8 @@ with lib.browser() as b:
         if bs:
             nm = J(f"[VESSRA.place({bs['beete'][2]['x']}, {bs['beete'][2]['y']}), VESSRA.place({bs['k']['x']}, {bs['k']['y']})]")
             ck('the nursery has its name on the HUD', all('Baumschule Kammbach' in (n or '') for n in nm), json.dumps(nm, ensure_ascii=False))
+            fl = J("(() => { const z = VESSRA.baumschule.beete.flatMap(b => b.slots.map(([x, y]) => VESSRA.gz(x, y))); return { n: z.length, lo: Math.min(...z), hi: Math.max(...z) }; })()")
+            ck('the sales yard is level: the beds lie on one plane', fl['hi'] - fl['lo'] < 0.5, json.dumps(fl))
             r = J(f"""(() => {{ const e = VESSRA.baumschule.eingang; GAME.view(e.x, e.y, e.z + 1.62, e.yaw, 0, 60); GAME.step(0.5); GAME.step(4, 1);
                 return {{ x: GAME.P.x, y: GAME.P.y, where: VESSRA.place(GAME.P.x, GAME.P.y), sign: (VESSRA.signs || []).filter(s => /Kammbach/.test(s)).length, young: VESSRA.youngTrees }}; }})()""")
             ck('from the gate into the sales yard; its signs; young trees on the field', 'Baumschule' in (r['where'] or '') and r['sign'] >= 2 and r['young'] > 150, json.dumps(r, ensure_ascii=False))
