@@ -3,7 +3,8 @@
 // cards and lashes). Optional: limbs and chest a little thicker (radial scaling around the bones, by skin weight) for a sturdier build.
 // Output like build_player.mjs: mesh GLB with the Biped rig, no animations (the clip sets pclips_m / pclips_f fit, same skeleton).
 //   node fig_mesh.mjs <name> <body.fbx> <head.fbx|-> <out dir> [build.json]
-// build.json: { "thick": { "<Biped bone>": factor, … }, "torso": factor, "torsoTop": cm below the neck joint where the torso widening ends }
+// build.json: { "thick": { "<Biped bone>": factor | [factor at the joint, at the child joint], … },
+//   "torso": factor or { "<spine bone>": factor } (away from the spine's vertical axis), "torsoTop": cm below the neck joint where it ends }
 import fs from 'node:fs';
 import path from 'node:path';
 import { THREE } from './node_shims.mjs';
@@ -66,7 +67,8 @@ if (cfg.thick || cfg.torso) {
   const joint = (name) => { const i = idxB[name]; return i == null ? null : new THREE.Vector3().setFromMatrixPosition(mb.skeleton.boneInverses[i].clone().invert()); };
   const child = { Bip01_L_UpperArm: 'Bip01_L_Forearm', Bip01_R_UpperArm: 'Bip01_R_Forearm', Bip01_L_Forearm: 'Bip01_L_Hand', Bip01_R_Forearm: 'Bip01_R_Hand',
     Bip01_L_Thigh: 'Bip01_L_Calf', Bip01_R_Thigh: 'Bip01_R_Calf', Bip01_L_Calf: 'Bip01_L_Foot', Bip01_R_Calf: 'Bip01_R_Foot', Bip01_L_Clavicle: 'Bip01_L_UpperArm', Bip01_R_Clavicle: 'Bip01_R_UpperArm' };
-  const seg = {}; for (const [b, f] of Object.entries(cfg.thick || {})) { const a = joint(b), c = joint(child[b]); if (a && c) seg[idxB[b]] = { a, c, f }; else console.warn('no segment for', b); }
+  // factor on the distance from the bone's segment: a number, or [at the joint, at the child joint] (muscles bulk near the shoulder and the elbow)
+  const seg = {}; for (const [b, f] of Object.entries(cfg.thick || {})) { const a = joint(b), c = joint(child[b]); if (a && c) seg[idxB[b]] = { a, c, f: Array.isArray(f) ? f : [f, f] }; else console.warn('no segment for', b); }
   const spine = ['Bip01_Spine', 'Bip01_Spine1', 'Bip01_Spine2'].map((b) => idxB[b]).filter((i) => i != null), neck = joint('Bip01_Neck');
   const yTop = neck ? neck.y - (cfg.torsoTop ?? 6) : 1e9, spX = neck ? neck.x : 0, spZ = joint('Bip01_Spine2')?.z ?? 0;
   const P = new THREE.Vector3(), d = new THREE.Vector3(), ax = new THREE.Vector3(), rel = new THREE.Vector3(), q = new THREE.Vector3();
@@ -81,10 +83,10 @@ if (cfg.thick || cfg.torso) {
       if (s) { // away from the closest point on the bone's segment
         ax.copy(s.c).sub(s.a); rel.copy(P).sub(s.a);
         const t = THREE.MathUtils.clamp(rel.dot(ax) / ax.lengthSq(), 0, 1);
-        q.copy(s.a).addScaledVector(ax, t); d.addScaledVector(rel.copy(P).sub(q), (s.f - 1) * w); }
-      if (cfg.torso && spine.includes(bi)) wt += w;
+        q.copy(s.a).addScaledVector(ax, t); d.addScaledVector(rel.copy(P).sub(q), (s.f[0] + (s.f[1] - s.f[0]) * t - 1) * w); }
+      if (cfg.torso && spine.includes(bi)) wt += w * ((typeof cfg.torso === 'number' ? cfg.torso : cfg.torso[bonesB[bi].name] ?? 1) - 1);
     }
-    if (wt > 0) { const fall = THREE.MathUtils.smoothstep(yTop - P.y, 0, 5); d.x += (P.x - spX) * (cfg.torso - 1) * wt * fall; d.z += (P.z - spZ) * (cfg.torso - 1) * wt * fall; }
+    if (wt) { const fall = THREE.MathUtils.smoothstep(yTop - P.y, 0, 5); d.x += (P.x - spX) * wt * fall; d.z += (P.z - spZ) * wt * fall; }
     if (d.lengthSq() > 0) P.add(d).applyMatrix4(bindInv).toArray(out.position, i * 3);
   }
 }

@@ -18,7 +18,8 @@ zusammen und die Bewegungen der bisherigen Figuren ohne Änderung. Lizenz MIT (M
 - **Mütze und Ohrhörer** werden beim Laden aus den Kopf-Punkten der Figur gebaut, im Raum des Kopfknochens: sie sitzen in jeder Haltung.
   Die Mütze fällt unter dem Forsthelm und dem Kapselgehörschutz weg, die Ohrhörer bei jedem Gehörschutz; sonst sind sie „manchmal“
   drin (einige Minuten an, einige aus). Test-Haken: `AVATAR.buds(true|false|null)`.
-- Schutzausrüstung (Brille, Maske, Gehörschutz, Forsthelm, Forstkleidung) wirkt auf alle drei Figuren.
+- Schutzausrüstung (Brille, Maske, Gehörschutz, Forsthelm, Forstkleidung) wirkt auf alle drei Figuren. Unter dem Forsthelm drückt der
+  Vertex-Shader die Haare oberhalb des Helmrands in die Schale (`helmHair`) – Sarahs Locken standen sonst durch den Helm.
 
 ## Neu bauen
 

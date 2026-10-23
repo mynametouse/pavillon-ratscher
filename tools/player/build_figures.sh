@@ -49,11 +49,11 @@ for w in $WHO; do case $w in
   christoph)
     src Adults/Male_Adult_09 m017_body_color.tga m017_body_normal.tga
     src Professions/Sports_Male_01 m021_head_color.tga m021_head_normal.tga
-    # a little more muscular than Falko: upper arms, forearms, shoulders and chest thicker (factor on the distance from the bone)
+    # a little more muscular than Falko: upper arms, forearms, shoulders and chest thicker (factor on the distance from the bone), not the waist
     cat > "$W/christoph.json" <<'JSON'
-{ "thick": { "Bip01_L_UpperArm": 1.12, "Bip01_R_UpperArm": 1.12, "Bip01_L_Forearm": 1.06, "Bip01_R_Forearm": 1.06,
-             "Bip01_L_Clavicle": 1.06, "Bip01_R_Clavicle": 1.06 },
-  "torso": 1.05, "torsoTop": 7 }
+{ "thick": { "Bip01_L_UpperArm": [1.32, 1.14], "Bip01_R_UpperArm": [1.32, 1.14], "Bip01_L_Forearm": [1.16, 1.03], "Bip01_R_Forearm": [1.16, 1.03],
+             "Bip01_L_Clavicle": [1.12, 1.2], "Bip01_R_Clavicle": [1.12, 1.2] },
+  "torso": { "Bip01_Spine2": 1.13, "Bip01_Spine1": 1.06 }, "torsoTop": 7 }
 JSON
     fig christoph Male_Adult_09 Sports_Male_01 "$W/christoph.json" ;;
   *) echo "unknown figure $w"; exit 2 ;;

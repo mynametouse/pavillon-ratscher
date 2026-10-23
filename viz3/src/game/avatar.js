@@ -201,19 +201,24 @@ function figHeadwear(THREE, F, o = {}) {
     return TM;
   };
   // crown: a pole and rings down to the rim
-  const NC = 40,
+  // six panels: the seams (every 60°, one at the front) a little darker – vertex colours
+  const NC = 48,
     NJ = 9,
     pos = [],
+    col = [],
     idx = [];
   pos.push(...dirp(0, 0, rad(0, 0)));
+  col.push(0.86, 0.86, 0.86);
   const rims = [];
   for (let i = 0; i < NC; i++) {
     const al = -Math.PI + (2 * Math.PI * i) / NC,
-      tr = rimTh(al);
+      tr = rimTh(al),
+      seam = i % 8 === 0 ? 0.8 : 1;
     rims.push(tr);
     for (let j = 1; j <= NJ; j++) {
       const th = (tr * j) / NJ;
       pos.push(...dirp(al, th, rad(al, th)));
+      col.push(seam, seam, seam);
     }
   }
   const vi = (i, j) => 1 + (i % NC) * NJ + (j - 1);
@@ -247,6 +252,8 @@ function figHeadwear(THREE, F, o = {}) {
           p0[1] - Math.sin(tilt) * d - 0.012 * q * q * t - side * TB,
           p0[2] + (Math.cos(al) / dn) * Math.cos(tilt) * d
         );
+        const sh = side ? 0.62 : 1; // the underside darker
+        col.push(sh, sh, sh);
       }
     }
   const bv = (side, i, r) => b0 + side * (NB + 1) * rows.length + i * rows.length + r;
@@ -279,13 +286,22 @@ function figHeadwear(THREE, F, o = {}) {
   };
   const capG = new THREE.BufferGeometry();
   capG.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  capG.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   capG.setIndex(idx);
   capG.computeVertexNormals();
-  const capM = new THREE.MeshStandardMaterial({ color: o.color ?? 0x56633f, roughness: 0.9, side: THREE.DoubleSide });
+  const capM = new THREE.MeshStandardMaterial({
+    color: o.color ?? 0x56633f,
+    roughness: 0.9,
+    side: THREE.DoubleSide,
+    vertexColors: true,
+  });
   const cap = new THREE.Group();
   cap.name = 'cap';
   cap.add(mk(capG, capM));
-  const btn = mk(new THREE.SphereGeometry(0.008, 10, 6), capM);
+  const btn = mk(
+    new THREE.SphereGeometry(0.008, 10, 6),
+    new THREE.MeshStandardMaterial({ color: capM.color, roughness: 0.9 })
+  );
   btn.matrix.multiply(new THREE.Matrix4().makeTranslation(...dirp(0, 0, rad(0, 0) + 0.001)));
   btn.matrix.multiply(new THREE.Matrix4().makeScale(1, 0.45, 1));
   cap.add(btn);
@@ -936,7 +952,52 @@ export const AVATAR = (() => {
       vz.scale.set(1, 1, 1.05);
       g.add(vz);
     }
+    try {
+      helmHair(F, G);
+    } catch (e) {
+      console.warn('helmet hair', e);
+    }
     return (F.gear = it);
+  }
+  // the hair under the forest helmet (feat/figuren: Sarah's curls stood out through the shell): while it is worn, head vertices above the
+  // shell's rim and outside an ellipsoid just inside it are pulled onto that ellipsoid – in the vertex shader, in bind space before skinning
+  function helmHair(F, G) {
+    const U = (F.helmU = { value: 0 });
+    G.updateMatrix();
+    const C = new THREE.Vector3(0, 0.055, 0.075),
+      R = new THREE.Vector3(0.128, 0.118, 0.146).multiplyScalar(0.94),
+      S = new THREE.Matrix4()
+        .makeScale(1 / R.x, 1 / R.y, 1 / R.z)
+        .multiply(new THREE.Matrix4().makeTranslation(-C.x, -C.y, -C.z))
+        .multiply(G.matrix.clone().invert());
+    F.model.traverse(m => {
+      const mt = m.material;
+      if (!m.isSkinnedMesh || Array.isArray(mt) || !mt || mt.userData.helm || !/head|opacity|hair/i.test(mt.name || ''))
+        return;
+      const j = m.skeleton.bones.indexOf(F.B.Head);
+      if (j < 0) return;
+      const T = S.clone().multiply(m.skeleton.boneInverses[j]).multiply(m.bindMatrix), // bind space → helmet ellipsoid (unit sphere)
+        Ti = T.clone().invert();
+      mt.userData.helm = true;
+      const ob = mt.onBeforeCompile,
+        ck = mt.customProgramCacheKey;
+      mt.onBeforeCompile = (sh, r) => {
+        if (ob) ob.call(mt, sh, r);
+        sh.uniforms.uHelm = U;
+        sh.uniforms.uHT = { value: T };
+        sh.uniforms.uHTi = { value: Ti };
+        sh.vertexShader =
+          'uniform float uHelm; uniform mat4 uHT, uHTi;\n' +
+          sh.vertexShader.replace(
+            '#include <begin_vertex>',
+            `#include <begin_vertex>
+          if ( uHelm > 0.5 ) { vec3 e = ( uHT * vec4( transformed, 1.0 ) ).xyz; float L = length( e );
+            if ( e.y > 0.0 && L > 1.0 ) transformed = ( uHTi * vec4( e / L, 1.0 ) ).xyz; }`
+          );
+      };
+      mt.customProgramCacheKey = () => (ck ? ck.call(mt) : '') + '_helm';
+      mt.needsUpdate = true;
+    });
   }
   // V16c2 forest clothing (world/fell.js): warning jacket, chainsaw trousers, boots, gloves – the figure's own clothes recoloured by body zone.
   // Each vertex gets its zone from the bone that moves it most (skin weights): hands → gloves, arms/spine/chest → jacket, legs → trousers,
@@ -1031,6 +1092,7 @@ export const AVATAR = (() => {
     if (it)
       for (const [id, g] of Object.entries(it))
         g.visible = WEARING.eyes === id || WEARING.ears === id || WEARING.resp === id || WEARING.head === id;
+    if (F.helmU) F.helmU.value = WEARING.head === 'forsthelm' ? 1 : 0;
     applyHead(F);
   }
   // Christoph's cap and earbuds (figHeadwear): the cap stays off under the forest helmet and the ear defenders, the earbuds go with any
