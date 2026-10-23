@@ -110,6 +110,9 @@ gebaut; `VESSRA.baumschule` (sonst `null`):
   Höhenfunktion mit `f.tiles` (0 = kein Satz deckt das Rechteck).
 - Ohne veröffentlichte Kacheln (z. B. lokaler Testserver ohne `dist/welt-test/zonen/vessra/`) bleibt der Ort auf dem 120-m-Gelände von
   `world/ratscher.js` stehen (`VESSRA.status().noTiles`).
+- Solange die Zone gebaut ist, setzt sie zwei Polster (`WELT.setPads('vessra', …)`): den Boden neben den Autostraßen abgesenkt und den
+  Hof der Baumschule eben. Die Fahrbahn selbst bleibt, wie die Pipeline sie geschnitten hat; Fahrzeuge fahren auf denselben Höhen
+  (`KERN.ground`), beim Bauen der Zone (950 m) werden die geladenen Kacheln einmal neu gerechnet.
 - `welt/welt.js` gehört heute `feat/vessra`; Änderungen der Fahrt bitte nur an markierten Zeilen (`// feat/fahrt`).
 
 ## Quellen
