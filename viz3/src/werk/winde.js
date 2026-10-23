@@ -738,7 +738,33 @@ export const WINDE = (() => {
       b = VEH.fwd(T.st.psi),
       dh = H ? Math.hypot(H[0] - X[0], H[1] - X[1]) : 0,
       cs = dh > 1 ? -((H[0] - X[0]) * b[0] + (H[1] - X[1]) * b[1]) / dh : 1;
-    if (S.cable === 'log' && cs < 0.34)
+    // a standing tree in the cable's line: the cable rubs on it and the log runs towards it
+    let inLine = false;
+    if (S.cable === 'log' && H && dh > 3)
+      WCOL.each(
+        Math.min(X[0], H[0]) - 1,
+        Math.min(X[1], H[1]) - 1,
+        Math.max(X[0], H[0]) + 1,
+        Math.max(X[1], H[1]) + 1,
+        null,
+        (i, Q) => {
+          const ux = H[0] - X[0],
+            uy = H[1] - X[1],
+            t = ((Q[i * 3] - X[0]) * ux + (Q[i * 3 + 1] - X[1]) * uy) / (dh * dh);
+          if (
+            t > 0.08 &&
+            t < 0.9 &&
+            Math.hypot(X[0] + ux * t - Q[i * 3], X[1] + uy * t - Q[i * 3 + 1]) < Q[i * 3 + 2] + 0.04
+          )
+            inLine = true;
+        }
+      );
+    if (inLine)
+      think(
+        'Die Winde zieht – aber in der Seillinie steht ein Baum: das Seil scheuert, der Stamm läuft auf ihn zu. Notfalls stoppen und anders ansetzen.',
+        4200
+      );
+    else if (S.cable === 'log' && cs < 0.34)
       think(
         'Die Winde zieht – das Seil läuft aber sehr schräg über die Seilführung. Besser das Heck zum Stamm stellen.',
         3600
