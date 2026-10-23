@@ -1331,8 +1331,9 @@ export const VESSRA = (() => {
           last = u + 4.3 >= uX - 1.5,
           h = last ? 7.2 : 0.9 + hh(k * 3 + sg) * 0.7;
         KS.box(x, y, zb, 1.35, 1.35, h + (z - zb), a, k % 2 ? RED : RED2);
+        KS.box(x, y, zb, 1.8, 1.8, z - zb + 0.32, a, RED2); // the plinth (photo of the nave 2025)
         KS.box(x, y, z + h, 1.55, 1.55, 0.18, a, RED);
-        S.segs.push(...boxSegs(x, y, 1.4, 1.4, a));
+        S.segs.push(...boxSegs(x, y, 1.8, 1.8, a));
       }
     // -- the crossing: the wall with the triumphal arch and the two aisle arches; the transept walls around --
     const tv = [];
