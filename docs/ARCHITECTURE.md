@@ -31,7 +31,8 @@ Oberfläche Deutsch.
 - Viele Module sind IIFEs (`const X = (() => { … return api; })();`): innen privat, außen nur die Rückgabe.
 - **Reihenfolge zählt**: Module laufen beim Laden von oben nach unten. Was `render/zmerge.js` vorfindet, wird zu wenigen Draw-Calls
   zusammengefasst; spätere Module (Spiel, Werkstatt, Tag/Nacht) bleiben einzelne Meshes. Punktlichter entstehen in
-  `pavilion/interior.js` (7, `window.LIGHTS`) und `garden/workshop_lamp.js` (1).
+  `pavilion/interior.js` (7, `window.LIGHTS`), `garden/workshop_lamp.js` (1) und `garden/garten_in.js` (1, `garten-lamp`, von den Lampen der
+  Gartengebäude geteilt). Jedes neue Licht übersetzt alle Shader neu – Themen leihen vorhandene (Dorf: `LIGHTS[0,1,3,4]` während eines Abends).
 - Die Seite liegt in Teilen unter `viz3/shell/` (Reihenfolge `parts.txt`): `head.html`, CSS je Bereich (`css/layout, stage3d, siteplan, variants, pano,
   gallery, phases, game, hud, werk_clock, vehicles`), `header.html`, `panel_3d.html` (Bühne, HUD, Overlays), `menu.html` (Menü mit Orten, Licht, Spiel,
   Steuerung/Hilfe), `windows.html` (Inventar, Maschine, Uhr, PSA, Werkstattbuch), `panel_pano|film|gallery.html`, `notes.html`, `tail.html`.

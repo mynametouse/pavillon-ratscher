@@ -1,7 +1,7 @@
 # Module list of the app, in load order. ES modules (since refactor phase 1): build.py writes the entry src/_main.js with one import per line,
 # and the modules run in exactly this order because a module imports only from modules ABOVE it (tools/check/deps.mjs enforces it; what a
 # module needs from further down goes through LATE, core/late.js). The order matters: meshes before render/zmerge.js get merged; point
-# lights are created in pavilion/interior.js and garden/workshop_lamp.js. A new module goes below everything it imports – usually before boot/boot.js.
+# lights are created in pavilion/interior.js, garden/workshop_lamp.js and garden/garten_in.js (one shared). A new module goes below everything it imports – usually before boot/boot.js.
 
 core/late.js                # LATE: what a module needs from a module further down (handed over when that one loads)
 core/save.js                # SAVE: every value kept in this browser (registry, safe reads/writes, migrations, test hooks)
