@@ -107,7 +107,8 @@ with lib.browser() as b:
     p = J("{ x: GAME.P.x, y: GAME.P.y, feet: GAME.P.feet, g: KERN.ground(GAME.P.x, GAME.P.y), w: WELT.heightAt(GAME.P.x, GAME.P.y) ?? null }")
     if want('load'):
         sp = J("VESSRA.START")
-        ck('Orte → Kloster Veßra: at the gate in the monastery wall', math.hypot(p['x'] - sp[0], p['y'] - sp[1]) < 3 and math.hypot(sp[0] + 8750.3, sp[1] + 239.0) < 6, json.dumps(p))
+        th = J("(() => { const b = VESSRA.bld.find(q => q.lm === 'torhaus'); return b ? [b.cx, b.cy] : [0, 0]; })()")
+        ck('Orte → Kloster Veßra: in front of the gate house', math.hypot(p['x'] - sp[0], p['y'] - sp[1]) < 3 and math.hypot(sp[0] - th[0], sp[1] - th[1]) < 14, json.dumps(p))
         ck('the place is built there', s['state'] == 'ready' and s['buildings'] > 120 and s['segs'] > 1500 and not s['err'],
            f"{s['buildings']} buildings, {s['segs']} segments, {s['trees']} trees, {s['lamps']} lamps, {s['ms']} ms build, {s['loadMs']} ms data + {round(dt)} s; err {s['err']}")
         ck('its own world tiles around the camera', s['welt']['visible'] >= 10 and s['welt']['err'] == 0 and not s['noTiles'] and '+zonen/vessra/' in s['welt'].get('sets', ''), json.dumps(s['welt']))
@@ -128,6 +129,12 @@ with lib.browser() as b:
             const res = []; for (const s of [1, -1]) { const x = mx + nx * s * 4, y = my + ny * s * 4; GAME.view(x, y, VESSRA.gz(x, y) + 1.62, Math.atan2(-nx * s, -ny * s) * 180 / Math.PI, 0, 60); GAME.step(0.5); GAME.step(5, 1);
               res.push((GAME.P.x - mx) * nx * s + (GAME.P.y - my) * ny * s); } return res; })()""")
         ck('the monastery wall stops the walker from both sides', all(0.3 < d < 0.9 for d in r), json.dumps(r))
+    if want('walk'):
+        # through the passage of the gate house into the courtyard
+        r = J("""(() => { const T = VESSRA.torhaus; if (!T) return null; const p = [T.a[0] - T.dir[0] * 5, T.a[1] - T.dir[1] * 5];
+            GAME.view(p[0], p[1], VESSRA.gz(p[0], p[1]) + 1.62, Math.atan2(T.dir[0], T.dir[1]) * 180 / Math.PI, 0, 60); GAME.step(0.5); GAME.step(9, 1);
+            return { t: (GAME.P.x - T.a[0]) * T.dir[0] + (GAME.P.y - T.a[1]) * T.dir[1], len: Math.hypot(T.b[0] - T.a[0], T.b[1] - T.a[1]) }; })()""")
+        ck('through the gate house into the monastery grounds', r is not None and r['t'] > r['len'] + 1.0, json.dumps(r))
     if want('kirche'):
         k = J("VESSRA.kirche ? { uX: VESSRA.kirche.uX, uW: VESSRA.kirche.uW, vM: VESSRA.kirche.vM, z: VESSRA.kirche.z } : null")
         ck('the church: west front, nave and crossing in their frame', k is not None and 30 < k['uX'] - k['uW'] < 40, json.dumps(k))
@@ -191,6 +198,8 @@ with lib.browser() as b:
         # Panoramax 2025 (R_A): the Schleusinger Straße by the monastery wall, heading 65°
         view(-8890.5, -319.8, 65 + 3.1, 2, 70, h=1.5)   # model yaw = compass + 3.1° (model frame 4.36° from UTM, meridian convergence 1.27°)
         lib.shot(pg, OUT, 'g_pmx_schleusinger')
+        view(-8833.1, -284.0, 65 + 3.1, 2, 70, h=1.5)   # Panoramax 2025 by the Domänenscheune: the barn of the domain, the village ahead
+        lib.shot(pg, OUT, 'g2_pmx_domaene')
         bs = J("VESSRA.baumschule ? { e: VESSRA.baumschule.eingang, b: VESSRA.baumschule.beete[2] } : null")
         if bs:
             e = bs['e']

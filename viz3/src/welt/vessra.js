@@ -47,9 +47,10 @@ export const VESSRA = (() => {
   };
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
     linC = (c, k = 1) => c.map(v => lin(v) * k);
-  // ---- the menu place: just inside the gate in the monastery wall on the Schleusinger Straße, looking at the church towers ----
+  // ---- the menu place: on the forecourt by the Schleusinger Straße in front of the gate house (the entrance of the museum, beside the
+  // gate church), looking through its passage to the church towers ----
   const GATE = [-8750.3, -239.0],
-    START = [-8748.0, -241.8],
+    START = [-8790.6, -272.4],
     yawTo = (x, y, tx, ty) => (Math.atan2(tx - x, ty - y) * 180) / Math.PI;
   S.START = START;
   SPOTS.vessra = {
@@ -90,9 +91,9 @@ export const VESSRA = (() => {
   ].map(c => linC(c, 0.82));
   // red sandstone of the monastery ranges and the domain (photos 2022, 2025): purple-red, brownish red, a lighter pink-grey
   const STONE = [
-    [0.62, 0.42, 0.38],
-    [0.58, 0.4, 0.34],
-    [0.66, 0.5, 0.45],
+    [0.57, 0.38, 0.33],
+    [0.53, 0.36, 0.3],
+    [0.61, 0.44, 0.38],
   ].map(c => linC(c, 0.85));
   const LIME = linC([0.86, 0.84, 0.78], 0.82), // the lime render of the gate church
     BOARDS = [
@@ -296,6 +297,7 @@ export const VESSRA = (() => {
     if (b.noDoor) doorF = -1;
     let u0 = 0;
     b.F.forEach((f, k) => {
+      if (b.noWalls) return;
       const [ax, ay, bx, by, t0, uA0, tA0, t1, fl] = f,
         L = Math.hypot(bx - ax, by - ay);
       if (L < 0.05) return;
@@ -661,12 +663,13 @@ export const VESSRA = (() => {
     S.meshes.push(m);
     return m;
   }
-  // materials: vertex colours (shared with the props of the village and Schleusingen), and stone – the same program as the flagstone
-  // paving of the village centre (world/village_props.js texMat 'v16e-kit1.5': vertex colour × the flagstone photo, uv in metres)
+  // materials: vertex colours (shared with the props of the village and Schleusingen), and stone – the programs of the paving of the
+  // village centre (world/village_props.js texMat: vertex colour × a photo with mean 1, uv in metres): flagstones (1.5 m) for rubble
+  // walls, pavers (1.3 m) with the uv scaled to a third for ashlar – courses of about 33 cm, blocks of a metre (the church)
   const propMat = () =>
     new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, metalness: 0, envMapIntensity: 0.7 });
-  function stoneMat() {
-    const t = TEXMAN.flagstone ? texFile(texFileOf('flagstone', 'col'), true).tex : null,
+  function stoneMat(name = 'flagstone', tile = 1.5) {
+    const t = TEXMAN[name] ? texFile(texFileOf(name, 'col'), true).tex : null,
       m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, envMapIntensity: 0.6 });
     if (t) {
       m.defines = { USE_UV: '' };
@@ -677,13 +680,20 @@ export const VESSRA = (() => {
           sh.fragmentShader.replace(
             '#include <map_fragment>',
             `#include <map_fragment>
-      diffuseColor.rgb *= texture2D( tKit, vUv * ${(1 / 1.5).toFixed(4)} ).rgb / max( textureLod( tKit, vec2( 0.5 ), 12.0 ).rgb, vec3( 0.01 ) );`
+      diffuseColor.rgb *= texture2D( tKit, vUv * ${(1 / tile).toFixed(4)} ).rgb / max( textureLod( tKit, vec2( 0.5 ), 12.0 ).rgb, vec3( 0.01 ) );`
           );
       };
     }
-    m.customProgramCacheKey = () => 'v16e-kit' + 1.5;
+    m.customProgramCacheKey = () => 'v16e-kit' + tile;
     return m;
   }
+  // the geometry of a kit with its uv scaled (the ashlar: the paver photo at three times its size)
+  const scaledGeo = (Kx, f) => {
+    const g = Kx.geo(),
+      uv = g.attributes.uv;
+    for (let i = 0; i < uv.array.length; i++) uv.array[i] *= f;
+    return g;
+  };
   S.dispose = () => {
     for (const m of S.meshes) {
       scene.remove(m);
@@ -1111,6 +1121,17 @@ export const VESSRA = (() => {
       KS.box(x, y, zc, uW - 0.6, v1 - v0, 1.6, a, RED);
       for (let v = v0 + 0.45; v < v1 - 0.3; v += 0.62)
         arch(K, ...Q(0.27, v), -en[0], -en[1], zc + 0.2, 0.36, 1.1, DARK, RED);
+      // on the side of the nave the gallery is timber-framed with a row of windows (photo from the nave 2025)
+      const WD = linC([0.3, 0.2, 0.13]),
+        [gx, gy] = Q(uW - 0.33, (v0 + v1) / 2);
+      K.box(gx, gy, zc - 0.05, 0.12, v1 - v0, 1.7, a, WD);
+      for (let v = v0 + 0.5; v < v1 - 0.4; v += 0.75) {
+        const p0 = Qz(uW - 0.26, v, zc + 0.55),
+          p1 = Qz(uW - 0.26, v + 0.5, zc + 0.55),
+          p2 = Qz(uW - 0.26, v + 0.5, zc + 1.3),
+          p3 = Qz(uW - 0.26, v, zc + 1.3);
+        poly(K, [p0, p1, p2, p3], [ex[0], ex[1], 0], linC([0.12, 0.16, 0.2]), p => [0, p[2]]);
+      }
       const g0 = Qz(0.2, v0, zc + 1.6),
         g1 = Qz(uW - 0.2, v0, zc + 1.6),
         g2 = Qz(uW - 0.2, v1, zc + 1.6),
@@ -1369,6 +1390,10 @@ export const VESSRA = (() => {
   }
   // ---- landmarks among the OSM buildings: no house windows or doors from the facade shader (their openings are props) ----
   const LM_PREP = {
+    torhaus(b) {
+      b.noWalls = true; // its walls with the gate passage come from torhaus() (stone geometry), the roof stays generic
+      b.noDoor = true;
+    },
     torkirche(b) {
       b.F.forEach(f => (f[8] |= 1));
       b.noDoor = true;
@@ -1410,6 +1435,7 @@ export const VESSRA = (() => {
       b.z0 = z70 - zmin < 1.0 ? zmin - 0.1 : z70 - 0.4;
       b.st = styleOf(b, i);
       if (LM_PREP[b.lm]) LM_PREP[b.lm](b);
+      if (b.m === 'stone' && b.k === 1) b.F.forEach(f => (f[8] |= 1)); // the domain's stone barns: closed walls (Panoramax 2025)
       if (b.lm !== 'apsis')
         try {
           building(b, i, b.z0, WB, RB);
@@ -1426,7 +1452,8 @@ export const VESSRA = (() => {
         new THREE.MeshStandardMaterial({ color: 0x8a4a35 });
     if (VPROPS.kit) {
       const K = VPROPS.kit(),
-        KS = VPROPS.kit();
+        KS = VPROPS.kit(),
+        KA = VPROPS.kit(); // ashlar: the church
       const step = (name, f) => {
         try {
           f();
@@ -1435,9 +1462,10 @@ export const VESSRA = (() => {
           S.err = S.err || name + ': ' + e;
         }
       };
-      step('kirche', () => kirche(KS, K, RB));
-      step('apses', () => apses(KS, K, RB));
+      step('kirche', () => kirche(KA, K, RB));
+      step('apses', () => apses(KA, K, RB));
       for (const b of S.bld.filter(q => q.lm === 'torkirche')) step('torkirche', () => torkirche(K, b));
+      for (const b of S.bld.filter(q => q.lm === 'torhaus')) step('torhaus', () => torhaus(KS, K, b));
       step('walls', () => walls(KS, K));
       step('fences', () => fences(K));
       step('cemetery', () => cemetery(K));
@@ -1445,6 +1473,7 @@ export const VESSRA = (() => {
       step('benches', () => benches(K));
       step('museum sign', () => museumSign(K));
       add(new THREE.Mesh(KS.geo(), stoneMat()), 'stone', true);
+      if (!KA.empty()) add(new THREE.Mesh(scaledGeo(KA, 0.34), stoneMat('pavers', 1.3)), 'ashlar', true);
       add(new THREE.Mesh(K.geo(), propMat()), 'props', true);
       step('ponds', ponds);
       step('lamps', lamps);
@@ -1464,6 +1493,102 @@ export const VESSRA = (() => {
     pc = [1e9, 0, null]; // the cached place name was given before the place stood
     SPOTS.vessra.z = ground(START[0], START[1]);
     markDirty(true);
+  }
+  // ---- the gate house beside the gate church: the entrance to the monastery grounds and the museum, a round-arched passage with a
+  // barrel vault through it from the Schleusinger Straße into the courtyard (photo 2022 „Eingang“; plan of the district: Torgebäude) ----
+  function torhaus(KS, K, b) {
+    const ring = [];
+    for (let k = 0; k < b.f.length; k += 2) ring.push([b.f[k], b.f[k + 1]]);
+    // merge nearly straight runs of the outline into whole walls
+    const pts = ring.filter((p, k) => {
+      const a = ring[(k + ring.length - 1) % ring.length],
+        c = ring[(k + 1) % ring.length],
+        d1 = Math.atan2(p[1] - a[1], p[0] - a[0]),
+        d2 = Math.atan2(c[1] - p[1], c[0] - p[0]);
+      return Math.abs(Math.atan2(Math.sin(d2 - d1), Math.cos(d2 - d1))) > 0.3;
+    });
+    // the passage: through the middle, from the side facing the street (north) to the courtyard
+    let nf = null,
+      best = -1;
+    for (let k = 0; k < pts.length; k++) {
+      const p = pts[k],
+        q = pts[(k + 1) % pts.length],
+        L = Math.hypot(q[0] - p[0], q[1] - p[1]),
+        ny = -(q[0] - p[0]) / L;
+      if (L > 4 && ny > best) {
+        best = ny;
+        nf = [(q[1] - p[1]) / L, ny];
+      }
+    }
+    if (!nf) return;
+    const dir = [-nf[0], -nf[1]],
+      side = [-dir[1], dir[0]],
+      c = [b.cx, b.cy],
+      z0 = b.z0,
+      top = z0 + b.e,
+      W = 3.0,
+      zs = z0 + 2.5,
+      col = STONE[0],
+      cross = (p, q) => {
+        // where the passage's centre line crosses the wall p → q (u along the wall), or null
+        const ex = q[0] - p[0],
+          ey = q[1] - p[1],
+          den = dir[0] * ey - dir[1] * ex;
+        if (Math.abs(den) < 1e-6) return null;
+        const t = ((p[0] - c[0]) * ey - (p[1] - c[1]) * ex) / den,
+          u = ((p[0] - c[0]) * dir[1] - (p[1] - c[1]) * dir[0]) / den;
+        return u >= 0 && u <= 1 ? { t, u: u * Math.hypot(ex, ey) } : null;
+      };
+    const ends = [];
+    for (let k = 0; k < pts.length; k++) {
+      const p = pts[k],
+        q = pts[(k + 1) % pts.length],
+        x = cross(p, q),
+        holes = x ? [{ u: x.u, w: W, z0: z0 - 0.7, zs, r: W / 2 }] : [];
+      if (x) ends.push(x.t);
+      stoneWall(KS, p, q, z0 - 0.7, top, 0.7, holes, col);
+    }
+    // the gables over the walls (the generic roof stands on the eaves)
+    for (const f of b.F) {
+      const [ax, ay, bx, by, t0, uA, tA, t1] = f,
+        L = Math.hypot(bx - ax, by - ay);
+      if (L < 0.5 || tA < Math.max(t0, t1) + 0.6) continue;
+      const dx = (bx - ax) / L,
+        dy = (by - ay) / L;
+      poly(
+        KS,
+        [
+          [ax, ay, z0 + t0],
+          [bx, by, z0 + t1],
+          [ax + dx * uA, ay + dy * uA, z0 + tA],
+        ],
+        [dy, -dx, 0],
+        col,
+        p => [(p[0] - ax) * dx + (p[1] - ay) * dy, p[2]]
+      );
+    }
+    if (ends.length < 2) return;
+    const t0 = Math.min(...ends),
+      t1 = Math.max(...ends),
+      P = (t, s) => [c[0] + dir[0] * t + side[0] * s, c[1] + dir[1] * t + side[1] * s];
+    // the side walls of the passage and the barrel vault over it
+    for (const sg of [-1, 1])
+      stoneWall(KS, P(t0, sg * (W / 2 + 0.15)), P(t1, sg * (W / 2 + 0.15)), z0 - 0.7, zs, 0.3, [], col);
+    for (let k = 0; k < 8; k++) {
+      const a0 = (k / 8) * Math.PI,
+        a1 = ((k + 1) / 8) * Math.PI,
+        q = (t, a) => [...P(t, Math.cos(a) * (W / 2)), zs + Math.sin(a) * (W / 2)],
+        am = (a0 + a1) / 2;
+      poly(
+        KS,
+        [q(t0, a0), q(t1, a0), q(t1, a1), q(t0, a1)],
+        [-side[0] * Math.cos(am), -side[1] * Math.cos(am), -Math.sin(am)],
+        col,
+        p => [(p[0] - c[0]) * dir[0] + (p[1] - c[1]) * dir[1], p[2]]
+      );
+    }
+    S.torhaus = { a: P(t0 - 0.4, 0), b: P(t1 + 0.4, 0), dir, w: W };
+    void K;
   }
   // ---- the monastery wall and the other walls (OSM barrier=wall): red sandstone rubble, ~3.2 m, gaps with pillars at the gates ----
   function gapsOn(a, b, L, wGate) {

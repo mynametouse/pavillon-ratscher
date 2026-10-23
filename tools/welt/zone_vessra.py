@@ -246,6 +246,8 @@ def main():
             eave = 7.0   # the gate church: the passage below, the chapel above (photos 2019, 2025)
         if lm == 'kreuzgang':
             eave = 4.0
+        if lm == 'torhaus':
+            eave = 6.2   # the gate house: the vaulted passage below, a storey over it (photo 2022)
         if lm == 'apsis':
             eave = 4.2
         ht = None

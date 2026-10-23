@@ -9,7 +9,8 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   `welt-test/zonen/vessra/` (eigene `meta.json`) vom eigenen Workflow `.github/workflows/welt-vessra.yml` (Push auf `feat/vessra`, der
   die Pipeline-Dateien ändert, oder von Hand). Stufe 12 (100-m-Kacheln, Luftbild 20 cm/px) über 2 × 2 km um Klosteranlage und
   Baumschule, Stufen 7–11 über 8,0 × 6,4 km. Lauf 39918421150 (23.10. 9:32): 4359 Dateien, **71,8 MB**, 273 s.
-- **Menü → Orte → „Kloster Veßra“**: ans Tor in der Klostermauer an der Schleusinger Straße, Blick zur Kirche (`SPOTS.vessra`).
+- **Menü → Orte → „Kloster Veßra“**: auf den Vorplatz an der Schleusinger Straße vor dem **Torhaus** neben der Torkirche (dem Eingang
+  von Klosteranlage und Museum), Blick durch die Durchfahrt zu den Türmen (`SPOTS.vessra`).
 - **Nichts davon beim Start**: geladen wird erst, wenn die Spielfigur (sonst die Kamera) näher als 950 m an der Ortsmitte (−8850, −300)
   ist; ab 1350 m wird alles wieder freigegeben (Gebäude sofort, Welt-Kacheln nach 20 s). Beim Laden der Seite meldet `welt/vessra.js`
   nur seinen Kachel-Satz an (ohne Abruf), den Menüort, den Aktionsknopf „Hinsetzen“ und die `KERN`-Anbieter.
@@ -27,8 +28,10 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   Außenwände mit hohen Rundbogenfenstern, in der Südwand die Tür zum Kreuzgang, die Stümpfe der Arkadenpfeiler (die östlichsten hoch);
   die **Vierung** mit Triumphbogen und zwei Seitenbögen, die Querhausmauern mit Fenstern und dem vermauerten Chorbogen, die
   **Fundamente des Chors** mit Apsis im Gras; die **Henneberger Kapelle** (Sandstein, weiß verputzte Apsis mit Kegeldach) und die
-  **Südkapelle** mit ihrer Apsis. Alle Mauern als Geometrie mit Sandstein-Muster (das Plattenbild des Dorfplatzes, kein neues Programm).
-- **Torkirche St. Erhard** (Kalkputz, Spitzbogenfenster, Eckquader aus Sandstein, Tür), **Klostermauer** (OSM: rote Bruchsteinmauer
+  **Südkapelle** mit ihrer Apsis. Alle Mauern als Geometrie: die Kirche aus Quadern (das Pflasterbild des Dorfplatzes dreifach vergrößert:
+  Lagen von etwa 33 cm), Bruchstein (das Plattenbild) für Klostermauer und Torhaus – beides Programme, die es schon gibt.
+- **Torhaus** mit gewölbter Rundbogen-Durchfahrt (man geht hindurch in den Klosterhof) und **Torkirche St. Erhard** (Kalkputz,
+  Spitzbogenfenster, Eckquader aus Sandstein, Tür; Fotos 2019, 2022), **Klostermauer** (OSM: rote Bruchsteinmauer
   3,2 m mit Abdeckung; an den Toren Lücken mit Pfeilern), Zäune (Holz; der grüne Metallzaun der Baumschule) und Hecken, der **Friedhof**
   nördlich der Kirche (Gräber in Reihen mit Steinen und Kreuzen), die Teiche (Klosterteich, Dorfteich) als Wasserfläche.
 - **Bäume**: 700 Kronen aus dem Luftbild (dunkles Grün, Abstand ≥ 6 m, nicht auf Häusern, Straßen, Wasser, in der Kirche, in der
@@ -96,6 +99,21 @@ ESA WorldCover (`welt-test/ATTRIBUTION.md`); Fotos nur als Vorlage (`tools/fotos
 Ermell 2021/2022, Tilman2007 2025), keine Bilder im Repo.
 
 ## Testen
+- `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8981 --serve vessra` – holt die nötigen Welt-Kacheln der Zone nach
+  `viz3/dist/welt-test/zonen/vessra/` (≈ 1200 Dateien, 14 MB), prüft: nichts beim Start (Kachel-Satz nur angemeldet), Menü, Laden, eigene
+  Kacheln, Boden, eine Hauswand und die Klostermauer halten auf, durchs Westportal ins Langhaus, durch den Triumphbogen in die Vierung,
+  die Nordwand hält auf, die Wahrzeichen, die Baumschule (fünf Beete, Stellen, Name, Schilder, Jungbäume), Ortsnamen, Bilder
+  (`out/vessra/`: Tor, Westfront wie das Foto von Südwesten 2025, Langhaus von Westen, Henneberger Kapelle, wie das Drohnenbild von Osten 2021,
+  Torkirche, zwei Panoramax-Stellen an der Schleusinger Straße, Baumschule nah und von oben, Ort von oben), Nacht (Laternen), Freigeben,
+  höchstens 6 neue Shader-Programme, Texturen je Shader. Abschnitte einzeln: `vessra:start,load,walk,kirche,baumschule,names,shots,night,free`.
+  Bei GitHub: `feat.yml` (Artefakt „out“).
 - Kacheln neu bauen: Push auf `feat/vessra` mit Änderungen an `tools/welt/*.py` (außer `zone_*.py`, `test_welt.py`) oder an
   `.github/workflows/welt-vessra.yml`. Zonendaten: `python3 -I tools/welt/zone_vessra.py --raw <Cache-Ordner>` (OSM-API, Luftbild per WMS)
   → `viz3/extra/vessra/dist/vessra/ort.json`.
+
+## Offen
+- Hinfahren (Agent `fahrt`), Einkaufen und Einladen (nächste Runde, Stellen in `VESSRA.baumschule`).
+- Gelände: Copernicus (30 m Oberflächenmodell, Straßen eingeschnitten) – DGM1 Thüringen war am 22./23.10. nicht abrufbar; sobald es da ist,
+  reicht ein neuer Lauf von `welt-vessra.yml` (ohne `--no-dgm`).
+- Laubbäume: das Luftbild (Flug 7.4.2024) zeigt sie unbelaubt – auf den Wiesen der Klosteranlage und in den Gärten nach Regeln gesetzt,
+  nicht nach ihrer echten Lage. Innenräume (Kapellen, Museumshäuser) sind nicht begehbar.
