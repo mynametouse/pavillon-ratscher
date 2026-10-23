@@ -74,10 +74,10 @@ with lib.browser() as b:
         ck('day plan: lunch at the table, evening on the bench', plans['12:30'][0] == 'table' and plans['20:00'][0] == 'bench', plans)
         ck('day plan: Ronald feeds the goats in the morning, brings them in in the evening', plans['6:30'][1] == 'feed' and plans['20:00'][1] == 'stall', plans)
         # night: out of sight they go home, the bonnet shuts, the goats sleep in the shelter
-        E("__N.clock(22, 30)"); E("GAME.view(0, -20, 1.7, 180, 0)")
+        E("__N.clock(22, 30)"); E("GAME.view(0, 10, 1.7, 60, 0)")  # looking north-east: neither the yard nor the paddock in sight
         t = E("__N.until(() => NPC.NPCS.hubert.away && NPC.NPCS.ronald.away, 20)")
         E("__N.run(3)")
-        night = E("JSON.stringify({ h: NPC.NPCS.hubert.away, r: NPC.NPCS.ronald.away, bonnet: HOFCAR.open, goats: NPC.GOATS.map(g => [+g.x.toFixed(1), +g.y.toFixed(1)]) })")
+        night = E("JSON.stringify({ h: !!NPC.NPCS.hubert.away, r: !!NPC.NPCS.ronald.away, bonnet: HOFCAR.open, goats: NPC.GOATS.map(g => [+g.x.toFixed(1), +g.y.toFixed(1)]) })")
         print('night', t, night, flush=True)
         ck('night: both at home, bonnet shut', t >= 0 and '"bonnet":0' in night, night)
         E("__N.clock(6, 40)"); t = E("__N.until(() => !NPC.NPCS.hubert.away && !NPC.NPCS.ronald.away, 20)")

@@ -1173,6 +1173,37 @@ export const LIFE = (() => {
     if (hearing()) NPCUI.sub(sp, text);
     markDirty();
   }
+  // ---- what they mutter at their work when the visitor stands close by (text only) ----
+  const MUTTER = {
+    chop: [
+      'Buche. Die brennt lange.',
+      'Zwei Jahre muss das trocknen. Mindestens.',
+      'Ein Schlag, ein Scheit. So muss das.',
+    ],
+    stack: ['Rinde nach oben, sonst zieht der Regen rein.', 'Die fünfte wird diese Woche voll.', 'Luft muss durch.'],
+    car: [
+      'Der Krümmer. Immer der Krümmer.',
+      'Zwanzig Jahre und läuft. Noch.',
+      'Wer hat denn den Schlüssel wieder verlegt.',
+    ],
+    putter: ['Wo ist denn die Zange hin.', 'Ordnung ist das halbe Leben.'],
+    feed: [
+      'Na, ihr Rabauken? Essen gibt es!',
+      'Egon, lass Lotte auch was übrig.',
+      'Nicht drängeln, für jeden ist was da.',
+    ],
+    paddock: ['Der Pfosten hier muss mal neu.', 'Na, Frieda, heute schon ausgebüxt?', 'Wasser ist auch noch genug.'],
+    stall: ['Rein mit euch, es wird kalt.', 'Morgen früh gibt es wieder Heu.'],
+  };
+  const muttered = { hubert: 0, ronald: 0 };
+  function mutter(a) {
+    const w = a.w,
+      L = MUTTER[a.cur];
+    if (!L || TALK.on || NPCUI.cur() || w.talking || !w.fig.g.visible || P.mode !== 'walk') return;
+    if (Math.hypot(P.x - w.x, P.y - w.y) > 7 || now() - muttered[a.name] < 40 || Math.random() > 0.12) return;
+    muttered[a.name] = now();
+    w.sayText(L[(Math.random() * L.length) | 0]);
+  }
   // ================= per tick =================
   let acc = 0,
     wasAway = { hubert: false, ronald: false };
@@ -1234,6 +1265,7 @@ export const LIFE = (() => {
         if (a.it) stop(a);
         continue;
       }
+      mutter(a);
       if (a.cur && !a.lock && !w.drive) {
         const want = a.forced || a.plan(m, d),
           t1 = w.since && w.since >= a.t0 ? w.since : null; // arrived at the work (else still on the way)
