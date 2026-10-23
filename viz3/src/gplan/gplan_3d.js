@@ -251,8 +251,12 @@ export const GP3D = (() => {
       const bark = slot(k + ':b', L.length, n => im(K.bg, K.bark, n, false)),
         leaf = slot(k + ':l', L.length, n => im(K.gpLeaf, K.leaf, n, true, K.depth));
       L.forEach(({ e, s, se, z0, sh, c }, i) => {
-        const sy = s.h / K.H,
-          sx = THREE.MathUtils.clamp(s.w / 2 / K.R, sy * 0.5, sy * 1.8);
+        // a climber grows up a wall or a trellis: narrow and tall
+        const climb = e.p.darstellung && e.p.darstellung.typ === 'kletter',
+          sy = s.h / K.H,
+          sx = climb
+            ? THREE.MathUtils.clamp((s.w * 0.22) / K.R, sy * 0.25, sy * 0.6)
+            : THREE.MathUtils.clamp(s.w / 2 / K.R, sy * 0.5, sy * 1.8);
         q.setFromAxisAngle(up, M.hash01(e.seed + 'r') * 6.283);
         m4.compose(V(e.x, e.y, z0), q, sc.set(sx, sy, sx));
         bark.setMatrixAt(i, m4);

@@ -253,4 +253,10 @@ with lib.browser() as b:
         r = J("(() => { const a = document.getElementById('gplan').getBoundingClientRect(); return { top: a.top, bottom: a.bottom, h: a.height, w: a.width, H: innerHeight }; })()")
         ck('phone: the panel is a sheet at the bottom, at most half the height', r['bottom'] >= r['H'] - 2 and r['h'] <= r['H'] * 0.52 and r['w'] >= 380, json.dumps(r))
         page_shot(pg, 'i_telefon')
+        # the phone turned: the panel beside the plan, inside the screen
+        pg.set_viewport_size({'width': 780, 'height': 390}); time.sleep(0.5)
+        E("GPLAN.frameGarden(); GAME.step(0.2)")
+        r = J("(() => { const a = document.getElementById('gplan').getBoundingClientRect(); return { left: a.left, right: a.right, top: a.top, bottom: a.bottom, w: a.width, W: innerWidth, H: innerHeight }; })()")
+        ck('phone across: the panel on the right, at most half the width, inside the screen', r['right'] <= r['W'] + 1 and r['w'] <= r['W'] * 0.5 and r['bottom'] <= r['H'] + 1 and r['top'] >= 0, json.dumps(r))
+        page_shot(pg, 'i_telefon_quer')
 ck.done()
