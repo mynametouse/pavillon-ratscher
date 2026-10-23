@@ -1,5 +1,5 @@
-# Feature branches of the helper agents (feat/**, since 23.10.2026): the quick checks, smoke and each feature's own browser tests
-# (viz3/extra/*/tests.txt, one 'name[:args]' per line as for viz3/test/run.py) on a build with the website as asset base (the preview if there
+# Feature branches of the helper agents (feat/**, since 23.10.2026): the quick checks, smoke and the branch's own topic tests
+# (viz3/extra/<topic>/tests.txt, one 'name[:args]' per line as for viz3/test/run.py) on a build with the website as asset base (the preview if there
 # is one) plus the branch's extras (viz3/extra/*/dist). Screenshots and logs (out/) are kept as the artifact 'out' – the agents look at their
 # work there (gh run download), because the chat machine runs only one browser at a time. Nothing is published from here.
 name: Feature
@@ -51,10 +51,15 @@ jobs:
         run: bash tools/check.sh
       - name: Bauen wie veröffentlicht
         run: python viz3/build.py --fast --min
-      - name: Browser-Tests (smoke und die Tests der Features)
+      - name: Browser-Tests (smoke und die Tests des eigenen Themas)
         run: |
-          T=$(cat viz3/extra/*/tests.txt 2>/dev/null | grep -v '^\s*#' | xargs)
-          echo "Tests: smoke $T"
+          # only this branch's topic (since the agents merge src, every topic's tests.txt is here – all of them one after another took
+          # ~70 min); the topics run side by side on src (Prüfpaket). Branch feat/<name> → viz3/extra/<topic>/tests.txt
+          B=${GITHUB_REF_NAME#feat/}
+          case "$B" in dorf-leben|dorf) TOP=dorf ;; ortsvorsteher) TOP=amt ;; *) TOP=$B ;; esac
+          F=viz3/extra/$TOP/tests.txt
+          if [ -f "$F" ]; then T=$(grep -v '^\s*#' "$F" | xargs); else T=$(cat viz3/extra/*/tests.txt 2>/dev/null | grep -v '^\s*#' | xargs); fi
+          echo "Thema $TOP – Tests: smoke $T"
           python viz3/test/run.py --serve smoke $T
       - name: Bilder und Protokolle aufheben
         if: always()
