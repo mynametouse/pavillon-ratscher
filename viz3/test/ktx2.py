@@ -16,7 +16,7 @@ VIEWS = [('garten', "GAME.view(-14, 10, 1.7, 205, -4, 62)"),
          ('wald', "GAME.view(-520, -640, ROADS.groundAt(-520, -640) + 1.7, 60, 8, 62)")]
 STATE = """JSON.stringify((() => { const T = window.TEX2 || {}, f = T.files ? T.files() : [], tex = f.filter(x => /^tex\\//.test(x.file) && !/\\|i$/.test(x.file));
   const k2 = tex.filter(x => x.k2), img = tex.filter(x => !x.k2 && x.w);
-  return { on: !!T.on, why: T.why || '', names: T.names ? T.names.size : 0, n: T.n || 0, fails: T.fails || 0, back: T.back || 0, fmt: T.fmt || {},
+  return { on: !!T.on, why: T.why || '', names: T.names ? T.names.size : 0, n: T.n || 0, gnames: T.g ? Object.keys(T.g).length : 0, gn: T.gn || 0, fails: T.fails || 0, back: T.back || 0, fmt: T.fmt || {},
     gpu: T.gpu || [], soft: !!T.soft, half: !!T.half, drop: T.drop || 0, mb: Math.round((T.mb || 0) * 10) / 10, t0: T.t0 || 0, t1: T.t1 || 0, last: T.last || 0, files: tex.length,
     k2: k2.length, k2mb: Math.round(k2.reduce((s, x) => s + x.mb, 0) * 10) / 10, k2w: [...new Set(k2.map(x => x.w))],
     img: img.length, imgmb: Math.round(img.reduce((s, x) => s + x.w * x.w * 4 * 4 / 3, 0) / 1e5) / 10, imgw: [...new Set(img.map(x => x.w))],
@@ -67,6 +67,9 @@ else:
        f"{k2['programs']}/{k2.get('programs_after')} vs {img['programs']}/{img.get('programs_after')}"
        + ('' if k2['keys'] == img['keys'] else ' – keys differ: ' + str(sorted(set(k2['keys']) ^ set(img['keys'])))[:300]))
     ck('full-size base levels on the desktop', k2['k2w'] == [1024], str(k2['k2w']))
+    if k2['gnames']:
+        ck('images of the glTF models compressed (tex2/g/)', k2['gn'] > 50 and img['gn'] == 0,
+           f"{k2['gn']} of {k2['gnames']} known; scene: {k2['all']['compressed']} compressed textures")
     print(f"load: KTX2 {k2['load_s']} s (prepare GPU {k2['prep']} ms) vs images {img['load_s']} s (prepare GPU {img['prep']} ms); KTX2: first request at"
           f" {k2['t0']} ms, first texture transcoded at {k2['t1']} ms (transcoder download + worker start), last at {k2['last']} ms", flush=True)
     print(f"graphics memory of all scene textures (estimate): KTX2 {k2['all']} vs images {img['all']}", flush=True)

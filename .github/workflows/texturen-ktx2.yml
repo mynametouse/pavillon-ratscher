@@ -58,10 +58,10 @@ jobs:
           echo "LD_LIBRARY_PATH=$RUNNER_TEMP/ktx/lib" >> "$GITHUB_ENV"
           echo "KTX=$RUNNER_TEMP/ktx/bin/ktx" >> "$GITHUB_ENV"
           LD_LIBRARY_PATH="$RUNNER_TEMP/ktx/lib" "$RUNNER_TEMP/ktx/bin/ktx" --version
-      - name: Bilder der Website (gh-pages tex/) und das veröffentlichte tex2/
+      - name: Bilder der Website (gh-pages tex/, die Modelle der Seite und der Vorschau) und das veröffentlichte tex2/
         run: |
           git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
-          git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/tex/' '/tex2/'
+          git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/tex/' '/tex2/' '/models/' '/grass/' '/chars/' '/vorschau/models/' '/vorschau/grass/' '/vorschau/chars/'
           git -C "$RUNNER_TEMP/site" checkout -q
           echo "Bilder: $(ls "$RUNNER_TEMP/site/tex" | wc -l)"; du -sh "$RUNNER_TEMP/site/tex" "$RUNNER_TEMP/site/tex2" 2>/dev/null || true
       - name: Kodieren
@@ -69,7 +69,8 @@ jobs:
           set -o pipefail
           PREV=""
           if [ "${{ inputs.neu }}" != "true" ] && [ -f "$RUNNER_TEMP/site/tex2/tex2.json" ]; then PREV="--prev $RUNNER_TEMP/site/tex2"; fi
-          python -I -u tools/tex/ktx2.py --src "$RUNNER_TEMP/site/tex" --out out/tex2 --ktx "$KTX" --jobs 2 $PREV 2>&1 | tee ktx2.log
+          G=""; for d in models grass chars vorschau/models vorschau/grass vorschau/chars; do [ -d "$RUNNER_TEMP/site/$d" ] && G="$G,$RUNNER_TEMP/site/$d"; done
+          python -I -u tools/tex/ktx2.py --src "$RUNNER_TEMP/site/tex" --out out/tex2 --ktx "$KTX" --jobs 2 $PREV --gltf "${G#,}" 2>&1 | tee ktx2.log
       - name: Zusammenfassung
         if: always()
         run: |
@@ -77,7 +78,7 @@ jobs:
           {
             echo "### Texturen KTX2"
             echo '```'
-            head -1 ktx2.log; tail -1 ktx2.log
+            head -1 ktx2.log; grep -E "^glTF images|^tex2/g:" ktx2.log || true; tail -1 ktx2.log
             echo '```'
             du -sh out/tex2 out/tex2/h 2>/dev/null
           } >> "$GITHUB_STEP_SUMMARY"
@@ -134,7 +135,7 @@ jobs:
       - name: Bauen wie veröffentlicht
         run: python viz3/build.py --fast --min
       - name: ktx2 und ktx2prof
-        run: python viz3/test/run.py --serve ktx2 ktx2prof
+        run: python viz3/test/run.py --serve ktx2 ktx2prof:k2,img,astc,bc1
       - name: Ausgabe aufheben
         if: always()
         uses: actions/upload-artifact@v4

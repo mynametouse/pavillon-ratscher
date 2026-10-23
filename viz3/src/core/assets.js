@@ -260,109 +260,6 @@ if (TEXHALF.on) {
     LOADLOG.note('Texturen verkleinert: ' + TEXHALF.n + ', ' + Math.round(TEXHALF.mb) + ' MB gespart', true)
   );
 }
-// The glTF files carry geometry and images as data: URIs. Strict content-security policies (the artifact viewer in the Claude app) refuse
-// to fetch() data: URIs, so every model failed there. The parser now decodes them itself: buffers with atob, images through
-// createImageBitmap from a Blob (an <img> where that is missing). The loading manager stays busy until a model is fully parsed.
-export function b64bytes(uri) {
-  const s = atob(uri.slice(uri.indexOf(',') + 1));
-  const u = new Uint8Array(s.length);
-  for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
-  return u;
-}
-let GLTF_N = 0;
-export function gltfDataURIs(loader) {
-  loader.register(parser => {
-    const man = parser.options.manager || THREE.DefaultLoadingManager,
-      key = 'gltf-parse-' + ++GLTF_N;
-    let ended = false;
-    man.itemStart(key);
-    const done = () => {
-      if (!ended) {
-        ended = true;
-        man.itemEnd(key);
-      }
-    };
-    const op = parser.parse;
-    parser.parse = function (onLoad, onError) {
-      return op.call(
-        this,
-        r => {
-          try {
-            onLoad(r);
-          } finally {
-            done();
-          }
-        },
-        e => {
-          done();
-          if (onError) onError(e);
-        }
-      );
-    };
-    const lb = parser.loadBuffer;
-    parser.loadBuffer = function (i) {
-      const d = this.json.buffers[i];
-      if (d && d.uri && d.uri.startsWith('data:')) {
-        try {
-          return Promise.resolve(b64bytes(d.uri).buffer);
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      }
-      return lb.call(this, i);
-    };
-    const tl = parser.textureLoader;
-    parser.textureLoader = {
-      isImageBitmapLoader: true,
-      setCrossOrigin() {
-        return this;
-      },
-      setRequestHeader() {
-        return this;
-      },
-      setPath() {
-        return this;
-      },
-      load(url, onLoad, onProgress, onError) {
-        if (!url.startsWith('data:'))
-          return tl.isImageBitmapLoader
-            ? tl.load(url, onLoad, onProgress, onError)
-            : tl.load(url, t => onLoad(t.image), onProgress, onError);
-        const viaImg = () => {
-          const im = new Image();
-          im.onload = () => onLoad(halfImage(im));
-          im.onerror = onError;
-          im.src = url;
-        }; // V16b6: halved on phones
-        let blob;
-        try {
-          blob = new Blob([b64bytes(url)], { type: url.slice(5, url.indexOf(';')) });
-        } catch (e) {
-          viaImg();
-          return;
-        }
-        if (typeof createImageBitmap !== 'function') {
-          viaImg();
-          return;
-        }
-        let p;
-        try {
-          p = createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
-        } catch (e) {
-          viaImg();
-          return;
-        }
-        p.then(bm => onLoad(halfImage(bm)), viaImg);
-      },
-    };
-    return { name: 'PAV_data_uri' };
-  });
-  return loader;
-}
-export const GLL = gltfDataURIs(new GLTFLoader(LM));
-GLL.setMeshoptDecoder(MeshoptDecoder); // models: meshopt-compressed geometry and WebP images inside the JSON
-export const TEXMAN = window.TEXMAN || {}; // {name:{tile:[w,h], rot}} injected at build
-export const ANISO = Math.min(8, R.capabilities.getMaxAnisotropy());
 // ---------- GPU-compressed textures (KTX2 with Basis Universal, docs/features/texturen.md) ----------
 // The PBR images tex/<name>_{col,nrm,orm} also exist as tex2/<name>.ktx2 (tools/tex/ktx2.py; window.TEX2MAN lists those that belong to the
 // current images). Uploading ~430 decoded images (decode, mipmaps) was most of the start on a PC without graphics card, and the decoded
@@ -376,11 +273,15 @@ export const ANISO = Math.min(8, R.capabilities.getMaxAnisotropy());
 // the test servers (localhost, so the CI tests cover it); on the live site only with ?tex2=1. For everyone: TEX2_LIVE = true.
 const TEX2_LIVE = false;
 export const TEX2 = (() => {
+  // TEX2MAN (build): { t: tex/ stems, g: { key of a glTF image: its larger side } } (an array: the tex/ stems only)
+  const M = window.TEX2MAN || [];
   const S = {
     on: false,
     why: '',
-    names: new Set(window.TEX2MAN || []),
+    names: new Set(Array.isArray(M) ? M : M.t || []),
+    g: (!Array.isArray(M) && M.g) || {},
     n: 0,
+    gn: 0,
     fails: 0,
     back: 0,
     mb: 0,
@@ -392,7 +293,7 @@ export const TEX2 = (() => {
   S.dflt = TEX2_LIVE || /\/vorschau\//.test(location.pathname) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   if (q === '0') S.why = 'aus (?tex2=0)';
   else if (q !== '1' && !S.dflt) S.why = 'aus auf der Live-Seite (an mit ?tex2=1)';
-  else if (!S.names.size) S.why = 'keine KTX2-Dateien im Build';
+  else if (!S.names.size && !Object.keys(S.g).length) S.why = 'keine KTX2-Dateien im Build';
   else if (window.EMBED_URL) S.why = 'eingebettete Fassung';
   else if (typeof WebAssembly !== 'object' || typeof Worker !== 'function') S.why = 'kein WebAssembly/Worker';
   else
@@ -479,7 +380,7 @@ export const TEX2 = (() => {
   const arm = (ms, late) => {
     const due = performance.now() + ms;
     watch = setTimeout(() => {
-      if (S.n || !S.on) return;
+      if (S.n || S.gn || !S.on) return;
       if (!late && performance.now() - due > 2000) arm(10000, true);
       else giveUp('Transkodierer antwortet nicht');
     }, ms);
@@ -494,10 +395,9 @@ export const TEX2 = (() => {
       S.ended = (S.ended || 0) + 1;
     }, 3000);
   };
-  // load one texture into rec.tex; ok() after it is in place, bad(why) → the caller loads the image instead
-  S.load = (stem, rec, ok, bad) => {
-    const url = BASE + 'tex2/' + (S.half ? 'h/' : '') + stem + '.ktx2',
-      key = 'ktx2:' + stem;
+  // one KTX2 file: transcoded in a worker, then use(ct, mips) with the mip levels left after dropping `drop`; bad(why) → the image instead
+  const get = (path, tag, drop, use, bad) => {
+    const key = 'ktx2:' + tag;
     let over = false;
     if (!S.t0) S.t0 = Math.round(performance.now());
     LM.itemStart(key);
@@ -508,7 +408,7 @@ export const TEX2 = (() => {
         waiting.delete(w);
         idle();
         S.fails++;
-        console.warn('KTX2', stem, why);
+        console.warn('KTX2', tag, why);
         try {
           bad(why);
         } finally {
@@ -517,12 +417,11 @@ export const TEX2 = (() => {
       },
     };
     waiting.add(w);
-    const fl = new THREE.FileLoader(LM).setResponseType('arraybuffer');
-    fl.load(
-      url,
+    new THREE.FileLoader(LM).setResponseType('arraybuffer').load(
+      BASE + path,
       buf => {
         if (over) return;
-        if (!watch && !S.n) arm(40000);
+        if (!watch && !S.n && !S.gn) arm(40000);
         const a = performance.now();
         S.L.parse(
           buf,
@@ -533,21 +432,18 @@ export const TEX2 = (() => {
               w.bad('leer');
               return;
             }
-            if (S.drop && mips.length > 1) mips = mips.slice(Math.min(S.drop, mips.length - 1));
+            if (drop && mips.length > 1) mips = mips.slice(Math.min(drop, mips.length - 1));
             over = true;
             waiting.delete(w);
             idle();
             try {
-              rec.tex.image = { width: mips[0].width, height: mips[0].height };
-              for (const t of [rec.tex, ...rec.clones]) morph(t, mips, ct.format);
-              S.n++;
               S.ms += performance.now() - a;
               S.last = Math.round(performance.now());
               if (!S.t1) S.t1 = S.last;
               const f = NAMES[ct.format] || String(ct.format);
               S.fmt[f] = (S.fmt[f] || 0) + 1;
               S.mb += mips.reduce((s, m) => s + m.data.byteLength, 0) / 1e6;
-              ok();
+              use(ct, mips);
             } finally {
               LM.itemEnd(key);
             }
@@ -559,13 +455,66 @@ export const TEX2 = (() => {
       () => w.bad('Datei fehlt')
     );
   };
+  // phones: a texture from a half-size file counts as halved like the images (TEXHALF: count, RGBA megabytes saved)
+  const shrunk = (m, sh) => {
+    TEXHALF.n++;
+    TEXHALF.mb += ((m.width * m.height * 4) / 1e6) * ((1 << (2 * sh)) - 1);
+  };
+  // a texture of tex/: into rec.tex (and its clones) in place; ok() after it is there
+  S.load = (stem, rec, ok, bad) =>
+    get(
+      'tex2/' + (S.half ? 'h/' : '') + stem + '.ktx2',
+      stem,
+      S.drop,
+      (ct, mips) => {
+        rec.tex.image = { width: mips[0].width, height: mips[0].height };
+        for (const t of [rec.tex, ...rec.clones]) morph(t, mips, ct.format);
+        S.n++;
+        if (S.half) shrunk(mips[0], 1 + S.drop);
+        ok();
+      },
+      bad
+    );
+  // key of a glTF image (data URI): the length of its base64 text and FNV-1a over 4096 evenly spaced characters (tools/tex/ktx2.py gkey)
+  S.gkey = uri => {
+    const i0 = uri.indexOf(',') + 1,
+      n = uri.length - i0,
+      step = Math.max(1, Math.floor(n / 4096));
+    let h = 0x811c9dc5;
+    for (let i = 0; i < n; i += step) h = Math.imul(h ^ uri.charCodeAt(i0 + i), 16777619) >>> 0;
+    return n.toString(16) + h.toString(16).padStart(8, '0');
+  };
+  // an image of a glTF model: ok(texture) with a new compressed texture – the glTF loader sets its sampler and colour space like for an
+  // image. Phones: the rule of halfImage (from 512 px half size, after a broken-off attempt a quarter, from 256 px half) by mip levels
+  S.loadG = (key, dim, ok, bad) => {
+    const L = TEXHALF.level,
+      sh = dim >= 512 ? L : dim >= 256 && L >= 2 ? 1 : 0;
+    get(
+      'tex2/g/' + (sh ? 'h/' : '') + key + '.ktx2',
+      'g/' + key,
+      Math.max(0, sh - 1),
+      (ct, mips) => {
+        ct.mipmaps = mips;
+        ct.image = { width: mips[0].width, height: mips[0].height };
+        ct.minFilter = mips.length > 1 ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter;
+        ct.colorSpace = THREE.NoColorSpace;
+        ct.needsUpdate = true;
+        S.gn++;
+        if (sh) shrunk(mips[0], sh);
+        ok(ct);
+      },
+      bad
+    );
+  };
   whenLoaded(() => {
-    if (S.names.size)
+    if (S.names.size || S.gn)
       LOADLOG.note(
-        S.n
+        S.n || S.gn
           ? 'Texturen KTX2: ' +
               S.n +
-              ' (' +
+              ' + ' +
+              S.gn +
+              ' Modellbilder (' +
               Object.entries(S.fmt)
                 .map(([k, v]) => v + ' ' + k)
                 .join(', ') +
@@ -579,6 +528,125 @@ export const TEX2 = (() => {
   });
   return S;
 })();
+// The glTF files carry geometry and images as data: URIs. Strict content-security policies (the artifact viewer in the Claude app) refuse
+// to fetch() data: URIs, so every model failed there. The parser now decodes them itself: buffers with atob, images through
+// createImageBitmap from a Blob (an <img> where that is missing). The loading manager stays busy until a model is fully parsed.
+export function b64bytes(uri) {
+  const s = atob(uri.slice(uri.indexOf(',') + 1));
+  const u = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+  return u;
+}
+let GLTF_N = 0;
+export function gltfDataURIs(loader) {
+  loader.register(parser => {
+    const man = parser.options.manager || THREE.DefaultLoadingManager,
+      key = 'gltf-parse-' + ++GLTF_N;
+    let ended = false;
+    man.itemStart(key);
+    const done = () => {
+      if (!ended) {
+        ended = true;
+        man.itemEnd(key);
+      }
+    };
+    const op = parser.parse;
+    parser.parse = function (onLoad, onError) {
+      return op.call(
+        this,
+        r => {
+          try {
+            onLoad(r);
+          } finally {
+            done();
+          }
+        },
+        e => {
+          done();
+          if (onError) onError(e);
+        }
+      );
+    };
+    const lb = parser.loadBuffer;
+    parser.loadBuffer = function (i) {
+      const d = this.json.buffers[i];
+      if (d && d.uri && d.uri.startsWith('data:')) {
+        try {
+          return Promise.resolve(b64bytes(d.uri).buffer);
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }
+      return lb.call(this, i);
+    };
+    const tl = parser.textureLoader;
+    // the loader hands the glTF parser a finished texture (not an image): an image as before, or – where tex2/g/ has the image as KTX2
+    // (TEX2.g, key from the data URI) – a compressed texture; the parser sets sampler, flipY and colour space on either
+    const texOf = im => {
+      const t = new THREE.Texture(im);
+      t.needsUpdate = true;
+      return t;
+    };
+    parser.textureLoader = {
+      isImageBitmapLoader: false,
+      setCrossOrigin() {
+        return this;
+      },
+      setRequestHeader() {
+        return this;
+      },
+      setPath() {
+        return this;
+      },
+      load(url, onLoad0, onProgress, onError) {
+        if (!url.startsWith('data:'))
+          return tl.isImageBitmapLoader
+            ? tl.load(url, bm => onLoad0(texOf(bm)), onProgress, onError)
+            : tl.load(url, onLoad0, onProgress, onError);
+        const k = TEX2.on && TEX2.g ? TEX2.gkey(url) : null;
+        if (k && TEX2.g[k]) {
+          TEX2.loadG(k, TEX2.g[k], onLoad0, () => fromImage(url, onLoad0, onError));
+          return;
+        }
+        fromImage(url, onLoad0, onError);
+      },
+    };
+    const fromImage = (url, onLoad0, onError) => {
+      const onLoad = im => onLoad0(texOf(im));
+      const viaImg = () => {
+        const im = new Image();
+        im.onload = () => onLoad(halfImage(im));
+        im.onerror = onError;
+        im.src = url;
+      }; // V16b6: halved on phones
+      let blob;
+      try {
+        blob = new Blob([b64bytes(url)], { type: url.slice(5, url.indexOf(';')) });
+      } catch (e) {
+        viaImg();
+        return;
+      }
+      if (typeof createImageBitmap !== 'function') {
+        viaImg();
+        return;
+      }
+      let p;
+      try {
+        p = createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+      } catch (e) {
+        viaImg();
+        return;
+      }
+      p.then(bm => onLoad(halfImage(bm)), viaImg);
+    };
+    return { name: 'PAV_data_uri' };
+  });
+  return loader;
+}
+export const GLL = gltfDataURIs(new GLTFLoader(LM));
+GLL.setMeshoptDecoder(MeshoptDecoder); // models: meshopt-compressed geometry and WebP images inside the JSON
+export const TEXMAN = window.TEXMAN || {}; // {name:{tile:[w,h], rot}} injected at build
+export const ANISO = Math.min(8, R.capabilities.getMaxAnisotropy());
 const texCache = {};
 // for the tests: every texture file and how it came (compressed or image, size of the base level)
 TEX2.files = () =>

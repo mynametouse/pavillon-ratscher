@@ -50,7 +50,7 @@ for _fx in sorted(glob.glob(os.path.join(H, 'extra', '*'))):
             _c = M.get('credits', ''); _i = _c.rfind('</ul>')
             M['credits'] = _c[:_i] + _add + _c[_i:] if _i >= 0 else _c + _add
 # GPU-compressed textures (KTX2): the transcoder into dist/basis/, the names of the usable tex2/ files inline (buildlib/assets.py)
-TEX2 = BA.tex2_manifest(D) if BA.copy_basis(H, D) else []
+TEX2 = BA.tex2_manifest(D) if BA.copy_basis(H, D) else {'t': [], 'g': {}}
 site = open(os.path.join(H, 'site.js')).read().strip()
 try:   # build id shown in the error report (boot/report.js): source commit and build time
     _src = subprocess.run(['git', '-C', H, 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip()
@@ -93,4 +93,4 @@ open(os.path.join(D, 'pavillon-ratscher.html'), 'w').write(page())
 open(os.path.join(D, 'index.html'), 'w').write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>' + page('window.OFFLINE=!!new URLSearchParams(location.search).get("offline");') + '</body></html>')
 if not fast and os.environ.get('PACK', '1') == '1': print('packed glTF', BA.pack_gltf([os.path.join(D, s) for s in ('models', 'grass', 'chars')]))
 tot = sum(os.path.getsize(f) for f in glob.glob(os.path.join(D, '**', '*'), recursive=True) if os.path.isfile(f) and not f.endswith('index.html'))
-print('built', len(app) // 1024, 'KB app;', 'tex', len(M['tm']), 'tex2', len(TEX2), 'hdri', len(M['hm']), 'models', len(M['mm']), 'snd', len(M['sm']), 'sv', bool(M['svm']), '; dist total', round(tot / 1e6, 1), 'MB')
+print('built', len(app) // 1024, 'KB app;', 'tex', len(M['tm']), 'tex2', len(TEX2['t']), '+', len(TEX2['g']), 'model images', 'hdri', len(M['hm']), 'models', len(M['mm']), 'snd', len(M['sm']), 'sv', bool(M['svm']), '; dist total', round(tot / 1e6, 1), 'MB')
