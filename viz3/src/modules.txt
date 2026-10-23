@@ -21,17 +21,21 @@ pavilion/interior_ladder.js # variant B furnishing
 garden/stream_geo.js        # the stream: shared geometry (STREAM)
 garden/env.js               # sky dome, sun light + shadow box, ground, far terrain, neighbour sheds
 garden/site_base.js         # existing garden buildings: helpers and materials
+garden/garten_kit.js        # feat/garten: furnishing kit for the garden buildings (small things, canvas textures, lamp/seat registries)
 garden/carport.js           # 
 garden/holzhaus.js          # 
 garden/greenhouse.js        # 
 garden/bungalow.js          # 
 garden/washhouse.js         # 
 # feat/garten: new garden modules below this line (before render/zmerge.js, so their static meshes get merged)
+garden/garten_in.js         # feat/garten: the garden buildings to use – lamps with one shared light, sofa, bed, small jobs (GARTEN)
 garden/places.js            # place names and indoor test for the existing buildings
 garden/stream.js            # 
 garden/workshop.js          # workshop building Klingenholz with machines, band sawmill, generator (WORKS)
 garden/fences.js            # fences (FENCES)
 # feat/nachbarn: Hubert's and Ronald's yards below this line
+garden/hof_hubert.js        # Hubert's yard: workshops open to the east, drying huts, wood yard, table and chairs, the car's ramp (HOF)
+garden/hof_auto.js          # Hubert's estate car (about 2005, generic) on its ramp, the bonnet opens (HOFCAR)
 garden/trees.js             # 
 garden/grass.js             # 
 render/render.js            # render pipeline, quality tiers, HDRI image light, baked GI (and its day/night mixing)
@@ -64,6 +68,7 @@ world/village.js            # V16e Ratscher after photos: facades, roofs, chimne
 world/village_props.js      # V16e the centre: old school with turret and clock, Dorflinde, fountain, bus stop, street lamps, light at night (VPROPS)
 world/village_near.js       # V16e near the walker: fences, hedges, flower boxes, bins, woodpiles, door lamps – loaded and dropped by distance (VNEAR)
 world/worldcol.js           # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
+world/treehit.js            # small trees give way to vehicles: saplings bend, small trees tip over with the root plate, thick ones stop (TREEHIT)
 game/hud.js                 # HUD, menu, inventory window, pointer lock (HUD)
 game/avatar.js              # the player figure (AVATAR)
 # feat/figuren: below this line
@@ -76,6 +81,7 @@ time/daynight.js            # day and night after the clock: sun, moon, stars, l
 garden/workshop_lamp.js     # workshop LED lights with motion sensor (WLAMP)
 npc/hours.js                # neighbours at home at night
 # feat/nachbarn: neighbour routines below this line
+npc/life.js                 # the neighbours' day: work, mowing, the trip to the village, talks at the table (LIFE)
 vehicles/vsound.js          # V16b vehicle sounds: engine, tyres, wind, horn, doors (VSND)
 vehicles/vehicle.js         # V16b vehicles: physics, getting in and out, cameras, lights, HUD (VEH)
 vehicles/car.js             # V16b the car: estate in Logan MCV size (V16b1), Beige Sable (CAR)
@@ -89,6 +95,12 @@ werk/holz_dry.js            # V16d wood 3: the drying stack, drying by the clima
 werk/winde.js               # V16h the forestry winch on the tractor: cable out by hand, choker, winding in, the log dragged, skidding (WINDE)
 werk/kran.js                # V16h a timber crane on the stake trailer: takes a log however it lies, lays it between the stakes (KRAN)
 # feat/dorf: village life below this line
+dorf/dorf_cal.js            # feat/dorf the village calendar: Friday evening in the school, the fire every other Saturday (DCAL)
+dorf/dorf_text.js           # feat/dorf the villagers: names, ages, what they say; table talk, stories, the task (DTEXT)
+dorf/dorf_people.js         # feat/dorf the villagers as Rocketbox figures, loaded only for an evening nearby (DPEOPLE)
+dorf/dorf_school.js         # feat/dorf the room in the old school: door opening, tables, bar, windows, borrowed lamps (DSCHOOL)
+dorf/dorf_fire.js           # feat/dorf the fire on the field towards the Klinge: flames, sparks, light, crackle (DFIRE)
+dorf/dorf.js                # feat/dorf evenings, villagers placed, talk panel, table talk, card game, the task (DORF)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api

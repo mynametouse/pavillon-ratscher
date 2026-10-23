@@ -2,7 +2,7 @@
 // the frame rate; walking itself lives in game/walkable.js, player.js, camera.js and input.js (split in refactor phase 1) =====================
 import * as THREE from 'three';
 import { $, cam, OFFLINE, R, stage } from '../core/head.js';
-import { DIRTY, LOAD, markDirty, VEG } from '../core/assets.js';
+import { DIRTY, LOAD, LOADLOG, markDirty, VEG } from '../core/assets.js';
 import { STREAM } from '../garden/stream_geo.js';
 import { sunFollow } from '../garden/env.js';
 import { WORKS } from '../garden/workshop.js';
@@ -96,8 +96,10 @@ function frame0(now) {
         TICKS[i](dt);
       } catch (e) {
         if (!TICKS[i]._err) {
+          // once per callback: the feature stays broken but the rest runs on; the error report (boot/report.js) names it
           TICKS[i]._err = 1;
           console.warn('tick', e);
+          LOADLOG.err('Takt ' + (TICKS[i].name || '#' + i) + ': ' + ((e && (e.stack || e.message)) || e));
         }
       }
     }

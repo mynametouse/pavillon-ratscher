@@ -801,10 +801,30 @@ export const FOREST = (() => {
     sv3 = new THREE.Vector3(),
     up3 = new THREE.Vector3(0, 1, 0),
     colT = new THREE.Color();
+  // world/treehit.js: a tree bent, swaying or knocked over by a vehicle carries t.tilt = { q, o } – a rotation about its foot (three.js
+  // quaternion) and a shift of the foot (three.js vector: the root plate lifts it) – in every level of detail
+  const tiltOf = (t, q, p) => {
+    if (t.tilt) {
+      q.premultiply(t.tilt.q);
+      p.add(t.tilt.o);
+    }
+  };
   function matrixOf(t, Md, out) {
-    const s = t.h / Md.H;
+    const s = t.h / Md.H,
+      p = V(t.x, t.y, t.z - 0.05);
     q4.setFromAxisAngle(up3, t.rot);
-    out.compose(V(t.x, t.y, t.z - 0.05), q4, sv3.set(s * t.w, s, s * t.w));
+    tiltOf(t, q4, p);
+    out.compose(p, q4, sv3.set(s * t.w, s, s * t.w));
+    return out;
+  }
+  // the far cross card of tree t (atlas info I of its model)
+  function farMatrix(t, out) {
+    const I = A2.info[t.m],
+      s = t.h / MODELS0[t.m].H,
+      p = V(t.x, t.y, t.z - 0.1);
+    q4.setFromAxisAngle(up3, t.rot);
+    tiltOf(t, q4, p);
+    out.compose(p, q4, sv3.set(I.W * s * t.w, I.H * s, I.W * s * t.w));
     return out;
   }
   function build() {
@@ -996,11 +1016,7 @@ export const FOREST = (() => {
       g.setAttribute('aKind', new THREE.InstancedBufferAttribute(kk, 1));
       const im = new THREE.InstancedMesh(g, fm, grp.length);
       grp.forEach((t, i) => {
-        const I = A2.info[t.m],
-          s = t.h / MODELS0[t.m].H;
-        q4.setFromAxisAngle(up3, t.rot);
-        m4.compose(V(t.x, t.y, t.z - 0.1), q4, sv3.set(I.W * s * t.w, I.H * s, I.W * s * t.w));
-        im.setMatrixAt(i, m4);
+        im.setMatrixAt(i, farMatrix(t, m4));
         kk[i] = t.m;
         t.fi = [im, i];
         im.setColorAt(i, colT.setRGB(1, 1, 1).multiplyScalar(0.88 + (t.id % 7) * 0.035));
@@ -1092,6 +1108,7 @@ export const FOREST = (() => {
   const last = { x: 1e9, y: 1e9, tier: '' },
     sel0 = VARIANTS.map(() => []),
     sel1 = VARIANTS.map(() => []);
+  let GEN = 0; // which choice of near/middle trees is drawn (a tree's slots t.s0/t.s1 = [GEN, index] are valid only for it)
   function relod(force) {
     if (!S.ready) return;
     const cx = cam.position.x,
@@ -1127,13 +1144,16 @@ export const FOREST = (() => {
     }
     let n0 = 0,
       n1 = 0;
-    const fill = (I, sel, max) => {
+    GEN++;
+    const fill = (I, sel, max, lev) => {
       const n = Math.min(max, sel.length);
       for (let k = 0; k < n; k++) {
         const t = sel[k];
         matrixOf(t, I.Md, m4);
         I.b.setMatrixAt(k, m4);
         I.c.setMatrixAt(k, m4);
+        if (lev) t.s1 = [GEN, k];
+        else t.s0 = [GEN, k]; // its slots in this choice (S.retilt)
         const g = 0.86 + (t.id % 9) * 0.03;
         colT.setRGB(g, g, g);
         I.c.setColorAt(k, colT);
@@ -1147,10 +1167,10 @@ export const FOREST = (() => {
       return n;
     };
     IM0.forEach((I, i) => {
-      n0 += fill(I, sel0[i], MAX0);
+      n0 += fill(I, sel0[i], MAX0, 0);
     });
     IM1.forEach((I, i) => {
-      n1 += fill(I, sel1[i], MAX1);
+      n1 += fill(I, sel1[i], MAX1, 1);
     });
     for (const C of CIM) {
       let n = 0;
@@ -1316,6 +1336,28 @@ export const FOREST = (() => {
     }
     if (window.WCOL && LATE.WCOL.removeTree) LATE.WCOL.removeTree(t.x, t.y);
     relod(true);
+  };
+  // world/treehit.js: tree t got a new t.tilt (bent, swaying, falling) – its near and middle slots of the current choice and its far card follow
+  S.retilt = t => {
+    if (!S.ready || !t || t.gone) return;
+    for (const [sl, IM] of [
+      [t.s0, IM0],
+      [t.s1, IM1],
+    ]) {
+      if (!sl || sl[0] !== GEN) continue;
+      const I = IM[t.m];
+      if (!I || sl[1] >= I.b.count) continue;
+      matrixOf(t, I.Md, m4);
+      I.b.setMatrixAt(sl[1], m4);
+      I.c.setMatrixAt(sl[1], m4);
+      I.b.instanceMatrix.needsUpdate = true;
+      I.c.instanceMatrix.needsUpdate = true;
+    }
+    if (t.fi && A2) {
+      const [im, i] = t.fi;
+      im.setMatrixAt(i, farMatrix(t, m4));
+      im.instanceMatrix.needsUpdate = true;
+    }
   };
   S.stats = () => ({
     trees: S.list.length,

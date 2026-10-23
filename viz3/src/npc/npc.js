@@ -2,8 +2,10 @@
 // Procedural low-poly figures, waypoint AI, positional voices (Piper TTS, free), goat bleats, tractor trips.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { LATE } from '../core/late.js';
 import { $, cam, scene, V } from '../core/head.js';
+import { KERN } from '../core/kern.js';
 import { ANISO, FIGSH, markDirty, patchSV, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { B, beam, COL, hingeDoor, PH, PH_END, phase, tagPh } from '../core/geo.js';
@@ -347,8 +349,14 @@ function makeTractor() {
     },
   };
 }
-// ---- paddock on the east neighbour's land ----
-export const PAD = { x0: 19, x1: 33, y0: -10.3, y1: 8.2 };
+// ---- paddock on the east neighbour's land: since 23.10.2026 further south, at the height of the garden's southern boundary (Falko:
+// "Seine Ziegen sind weiter südlich: etwa auf der Höhe der Südgrenze von Falkos Grundstück, dort eingezäunt"); the gate on the west side
+// (gy0 … gy1) faces the garden's south-east corner. Everything in the paddock (shelter, hay, trough, salt lick) is placed relative to it.
+export const PAD = { x0: 19.5, x1: 34, y0: -52, y1: -33.5, gy0: -41.6, gy1: -39.2 };
+PAD.gy = (PAD.gy0 + PAD.gy1) / 2;
+PAD.hay = [PAD.x1 - 2.4, PAD.y1 - 1.25]; // the hay in the shelter (north-east corner, open to the west)
+PAD.rack = [PAD.x1 - 4.6, PAD.y1 - 2.2]; // in front of the shelter: where the hay goes for the goats
+PAD.trough = [PAD.x0 + 4.6, PAD.y0 + 5.9];
 window.NPC_PAD = PAD;
 {
   const post = (x, y) => B(x - 0.06, x + 0.06, y - 0.06, y + 0.06, 0, 1.25, MAT.plank, { col: false, grain: 'z' });
@@ -382,8 +390,8 @@ window.NPC_PAD = PAD;
       post(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t);
     }
     if (i === 3) {
-      rail(a[0], a[1], a[0], -0.3);
-      rail(a[0], -2.7, b[0], b[1]);
+      rail(a[0], a[1], a[0], PAD.gy1 + 0.02);
+      rail(a[0], PAD.gy0 - 0.02, b[0], b[1]);
     } else rail(a[0], a[1], b[0], b[1]);
   }
   // the gate (west side): a wooden farm gate on a hinge at the north post, swings into the paddock; it stands open until Ronald shuts it (V14)
@@ -403,7 +411,7 @@ window.NPC_PAD = PAD;
     }
     const d = hingeDoor('paddockgate', gl, {
       hx: PAD.x0,
-      hy: -0.32,
+      hy: PAD.gy1 - 0.02,
       a: [0, -1],
       w: gw,
       sign: 1,
@@ -416,32 +424,52 @@ window.NPC_PAD = PAD;
     d.t = d.target = 1;
     poseDoor(d);
   }
-  // Unterstand (offen nach Westen), Heuraufe, Tränke
+  // Unterstand (offen nach Westen), Heuraufe, Tränke – in the north-east corner of the paddock (sx, sy: its corner)
+  const sx = PAD.x1,
+    sy = PAD.y1;
   for (const [x, y] of [
-    [29.1, 4.3],
-    [32.1, 4.3],
-    [29.1, 7.7],
-    [32.1, 7.7],
+    [sx - 3.9, sy - 3.9],
+    [sx - 0.9, sy - 3.9],
+    [sx - 3.9, sy - 0.5],
+    [sx - 0.9, sy - 0.5],
   ])
-    B(x - 0.07, x + 0.07, y - 0.07, y + 0.07, 0, y > 5.7 ? 2.1 : 2.4, MAT.kvh, { col: true, grain: 'z' });
-  B(32.2, 32.8, 4.2, 7.8, 0, 2.1, MAT.plank, { grain: 'z' });
-  B(29, 32.3, 7.65, 7.8, 0, 2.1, MAT.plank, { grain: 'x' });
-  B(29, 32.3, 4.2, 4.35, 0, 2.4, MAT.plank, { grain: 'x' });
+    B(x - 0.07, x + 0.07, y - 0.07, y + 0.07, 0, y > sy - 2.5 ? 2.1 : 2.4, MAT.kvh, { col: true, grain: 'z' });
+  B(sx - 0.8, sx - 0.2, sy - 4.0, sy - 0.4, 0, 2.1, MAT.plank, { grain: 'z' });
+  B(sx - 4, sx - 0.7, sy - 0.55, sy - 0.4, 0, 2.1, MAT.plank, { grain: 'x' });
+  B(sx - 4, sx - 0.7, sy - 4.0, sy - 3.85, 0, 2.4, MAT.plank, { grain: 'x' });
   {
     const geo = new THREE.BoxGeometry(3.7, 0.04, 4.0);
     const me = new THREE.Mesh(geo, MAT.roofGrey);
-    me.position.copy(V(30.6, 6, 2.45));
+    me.position.copy(V(sx - 2.4, sy - 2.2, 2.45));
     me.rotation.x = Math.atan2(0.3, 3.4);
     me.castShadow = true;
     scene.add(me);
     tagPh(me);
-    COL.push([28.8, 32.9, 4, 8, 2.0, 2.7, 'roof', null, null]);
+    COL.push([sx - 4.2, sx - 0.1, sy - 4.2, sy - 0.2, 2.0, 2.7, 'roof', null, null]);
   }
-  B(29.3, 31.9, 6.9, 7.6, 0.0, 0.55, NM.hay, { col: true });
-  B(29.3, 31.9, 6.7, 7.65, 0.55, 0.65, NM.hay, { col: false, cast: false });
-  B(22.5, 23.7, -4.8, -4, 0, 0.45, NM.trough, { col: true });
-  B(22.55, 23.65, -4.75, -4.05, 0.38, 0.4, NM.water, { col: false, cast: false });
-  B(19.5, 20.4, 3.2, 3.7, 0, 0.9, MAT.plank, { col: true }); // Pfahl für den Salzleckstein
+  B(sx - 3.7, sx - 1.1, sy - 1.3, sy - 0.6, 0.0, 0.55, NM.hay, { col: true });
+  B(sx - 3.7, sx - 1.1, sy - 1.5, sy - 0.55, 0.55, 0.65, NM.hay, { col: false, cast: false });
+  // the hay rack in front of the shelter (Ronald fills it mornings and evenings): a slatted wooden crib on legs
+  {
+    const [rx, ry] = PAD.rack;
+    for (const [x, y] of [
+      [rx - 0.75, ry - 0.3],
+      [rx + 0.75, ry - 0.3],
+      [rx - 0.75, ry + 0.3],
+      [rx + 0.75, ry + 0.3],
+    ])
+      B(x - 0.04, x + 0.04, y - 0.04, y + 0.04, 0, 1.1, MAT.kvh, { col: false, grain: 'z' });
+    B(rx - 0.8, rx + 0.8, ry - 0.32, ry + 0.32, 0.38, 0.44, MAT.plank, { col: true, grain: 'x' });
+    for (let k = 0; k < 8; k++) {
+      const x = rx - 0.7 + k * 0.2;
+      for (const s of [-1, 1]) beam([x, ry + s * 0.3, 0.45], [x, ry + s * 0.42, 1.08], 0.025, 0.025, MAT.plank);
+    }
+    for (const s of [-1, 1]) B(rx - 0.8, rx + 0.8, ry + s * 0.42 - 0.03, ry + s * 0.42 + 0.03, 1.04, 1.1, MAT.plank);
+  }
+  const [tx, ty] = PAD.trough;
+  B(tx - 0.6, tx + 0.6, ty - 0.4, ty + 0.4, 0, 0.45, NM.trough, { col: true });
+  B(tx - 0.55, tx + 0.55, ty - 0.35, ty + 0.35, 0.38, 0.4, NM.water, { col: false, cast: false });
+  B(PAD.x0 + 1.0, PAD.x0 + 1.9, PAD.y0 + 4.0, PAD.y0 + 4.5, 0, 0.9, MAT.plank, { col: true }); // Pfahl für den Salzleckstein
 }
 // ---- Hubert's side: tractor parked by the northern shed, a woodpile, a bench ----
 export const TRACTOR = makeTractor();
@@ -449,12 +477,50 @@ TRACTOR.g.position.copy(V(-15.1, 27.2, 0));
 TRACTOR.g.rotation.y = -((20 * Math.PI) / 180);
 scene.add(TRACTOR.g);
 COL.push([-16.5, -13.7, 25.3, 29.1, 0, 1.8, 'tractor', null, null]);
+// its collider at home is lowered out of reach while it is away (the grid keeps the entry; only its height changes)
+const TRACTOR_COL = COL[COL.length - 1];
+export function tractorCol(home) {
+  TRACTOR_COL[4] = home ? 0 : -20;
+  TRACTOR_COL[5] = home ? 1.8 : -19;
+}
 B(-16, -13, 15.7, 16.9, 0, 1.3, MAT.logs, { col: true });
 B(-15.9, -13.1, 15.8, 16.8, 1.3, 1.45, MAT.plank, { col: false });
 placeGLB('tyre_old', { x: -17.35, y: 28.6, z: 0, face: 35 });
 placeGLB('jerrycan', { x: -17.0, y: 29.45, z: 0, face: 70 });
 B(-13.45, -13.05, -0.85, 0.65, 0.42, 0.47, MAT.plank, { col: true, grain: 'y' });
 for (const y of [-0.75, 0.55]) B(-13.4, -13.1, y - 0.04, y + 0.04, 0, 0.42, MAT.plank, { col: false, grain: 'z' }); // V15: runs north–south, so who sits on it looks east into the garden
+// ---- Ronald's tractor with a side mower (23.10.2026, Falko: "Er fährt oft mit einem Traktor hin und her und mäht z. B. die Wiese"):
+// the same old tractor (npc/npc_real.js gives it the real model too), a cutter bar on the right between the axles; it stands north of
+// the paddock. Local frame as makeTractor: x right, y forward, z up. ----
+export const MOWER = makeTractor();
+MOWER.home = { x: PAD.x0 + 6.5, y: PAD.y1 + 3.0, az: 0 };
+MOWER.bar = (() => {
+  const g = new THREE.Group(),
+    parts = new THREE.Group();
+  box(parts, 1.95, 0.09, 0.05, NM.dark, 1.88, 0.25, 0.07); // the bar with its knife
+  for (let k = 0; k < 16; k++) box(parts, 0.045, 0.16, 0.035, NM.rim, 1.0 + k * 0.12, 0.33, 0.07); // fingers
+  box(parts, 0.32, 0.4, 0.3, NM.red, 0.95, 0.2, 0.25); // drive and guard
+  box(parts, 0.1, 0.5, 0.12, NM.dark, 2.84, 0.22, 0.08); // outer skid
+  box(parts, 0.06, 0.06, 0.9, NM.red, 0.9, 0.05, 0.6); // lifting arm
+  // one mesh per material (three draw calls instead of twenty)
+  const by = new Map();
+  parts.updateMatrixWorld(true);
+  for (const m of parts.children) {
+    const geo = m.geometry.clone().applyMatrix4(m.matrix);
+    (by.get(m.material) || by.set(m.material, []).get(m.material)).push(geo);
+  }
+  for (const [mat, geos] of by) {
+    const me = new THREE.Mesh(mergeGeometries(geos), mat);
+    me.castShadow = true;
+    me.userData.noMerge = true;
+    g.add(me);
+  }
+  return g;
+})();
+MOWER.g.add(MOWER.bar);
+MOWER.g.position.copy(V(MOWER.home.x, MOWER.home.y, 0));
+MOWER.g.rotation.y = -MOWER.home.az;
+scene.add(MOWER.g);
 // ---- controllers ----
 export const NPCS = {};
 export function headingTo(x, y, tx, ty) {
@@ -491,8 +557,10 @@ class Walker {
     this.avoidUntil = 0;
     this.state = 'roam';
   }
+  // z: the flat modelled square at 0, outside it the ground (Hubert in the village); zOff: sitting on a chair (npc/life.js)
   place() {
-    this.fig.g.position.copy(V(this.x, this.y, 0));
+    const z = Math.abs(this.x) < 115 && Math.abs(this.y) < 115 ? 0 : KERN.ground(this.x, this.y);
+    this.fig.g.position.copy(V(this.x, this.y, z + (this.zOff || 0)));
     this.fig.g.rotation.y = -this.az;
   }
   pick() {
@@ -565,6 +633,13 @@ class Walker {
     NPCUI.sub(this, VTXT[id] || '');
     return audio.voice(id, this.x, this.y, { vol });
   }
+  // a line without a recording (23.10.2026: the new everyday lines are text only) – subtitle, resolves after the time to read it
+  sayText(text, ms) {
+    if (this.away || !text) return Promise.resolve(false);
+    this.lastSay = performance.now() / 1000;
+    NPCUI.sub(this, text);
+    return new Promise(res => setTimeout(() => res(true), ms || Math.max(1800, text.length * 60)));
+  }
 }
 // Hubert
 const hubertFig = makePerson({
@@ -609,18 +684,19 @@ const ronaldFig = makePerson({
   h: 1.8,
 });
 scene.add(ronaldFig.g);
+// (fallback roaming around the paddock; his day is planned in npc/life.js)
 const RON_WPS = [
-  [23.1, -3.1],
-  [26.5, 1.7],
-  [28.5, 6.2],
-  [21.5, 4.2],
-  [25, -7.8],
-  [20.3, -0.3],
-  [30.5, -2.3],
+  [PAD.x0 + 4.1, PAD.y0 + 7.2],
+  [PAD.x0 + 7.5, PAD.y0 + 12],
+  [PAD.x0 + 9.5, PAD.y1 - 2.0],
+  [PAD.x0 + 2.5, PAD.y1 - 4.0],
+  [PAD.x0 + 6, PAD.y0 + 2.5],
+  [PAD.x0 - 1.5, PAD.gy + 1.5],
+  [PAD.x1 - 2.5, PAD.y0 + 8.0],
 ];
 NPCS.ronald = new Walker('ronald', ronaldFig, {
-  x: 24.5,
-  y: -0.3,
+  x: PAD.x0 + 5.5,
+  y: PAD.y0 + 10,
   az: 0,
   speed: 0.95,
   wps: RON_WPS,
@@ -632,10 +708,11 @@ NPCS.ronald = new Walker('ronald', ronaldFig, {
 NPCS.ronald.greeted = false;
 // goats
 export const GOATS = [];
+export const GOATLURE = { x: 0, y: 0, r: 1, until: 0 }; // where the goats go for a while (until: performance.now() seconds)
 for (const [name, m, big, x, y] of [
-  ['Lotte', NM.goatW, false, 28, 5],
-  ['Frieda', NM.goatB, false, 31, 1],
-  ['Egon', NM.goatK, true, 33.5, 6.5],
+  ['Lotte', NM.goatW, false, PAD.x1 - 5, PAD.y1 - 3.2],
+  ['Frieda', NM.goatB, false, PAD.x1 - 2, PAD.y0 + 11],
+  ['Egon', NM.goatK, true, PAD.x1 - 1.5, PAD.y1 - 5.5],
 ]) {
   const f = makeGoat(m, big);
   scene.add(f.g);
@@ -649,6 +726,13 @@ for (const [name, m, big, x, y] of [
     idleMax: 20,
   });
   w.pick = function () {
+    const L = GOATLURE; // hay in the rack, the shelter at night (npc/life.js), the herding task (game/quests.js)
+    if (L.until > performance.now() / 1000) {
+      const a = Math.random() * Math.PI * 2,
+        r = Math.random() * L.r;
+      this.target = [L.x + Math.cos(a) * r, L.y + Math.sin(a) * r * 0.7];
+      return;
+    }
     this.target = [
       PAD.x0 + 1.5 + Math.random() * (PAD.x1 - PAD.x0 - 3),
       PAD.y0 + 1.5 + Math.random() * (PAD.y1 - PAD.y0 - 3),
@@ -746,7 +830,8 @@ export const NPCUI = (() => {
     tp.querySelectorAll('button').forEach(b => (b.disabled = true));
     const qa = quest && window.QUESTS ? LATE.QUESTS.ask(w.name, k) : null;
     if (qa && qa.before) qa.before();
-    await w.sayId(w.name + '_t_' + k);
+    if (qa && qa.text) for (const t of [].concat(qa.text)) await w.sayText(t);
+    else await w.sayId(w.name + '_t_' + k);
     if (qa && qa.after) qa.after();
     if (!cur) return;
     if (qa && qa.end) {
@@ -815,7 +900,7 @@ const TRK = (() => {
     L = Math.hypot(dx, dy);
   return { P1, u: [dx / L, dy / L], L };
 })();
-const trkPt = t => [TRK.P1[0] + TRK.u[0] * t, TRK.P1[1] + TRK.u[1] * t];
+export const trkPt = t => [TRK.P1[0] + TRK.u[0] * t, TRK.P1[1] + TRK.u[1] * t];
 export const TRACTOR_HOME = { x: -15.1, y: 27.2, az: (20 * Math.PI) / 180 };
 const DRIVE_ROUTE = [
   [-14.7, 32.2],
@@ -831,11 +916,39 @@ const DRIVE_ROUTE = [
   [-14.9, 31.7],
   [TRACTOR_HOME.x, TRACTOR_HOME.y],
 ];
-export function startDrive(w) {
-  w.drive = { i: 0, az: TRACTOR_HOME.az, x: TRACTOR_HOME.x, y: TRACTOR_HOME.y, phase: 'start', t: 0 };
+// o.route: waypoints (default: the round on the field track that ends at home), o.sp: speed (m/s), o.onEnd(w): called at the last
+// waypoint instead of parking at home (Hubert's trip to the village stops there and gets off: npc/life.js)
+export function startDrive(w, o = {}) {
+  const T = TRACTOR.g;
+  w.drive = {
+    i: 0,
+    az: -T.rotation.y,
+    x: T.position.x,
+    y: -T.position.z,
+    phase: 'start',
+    t: 0,
+    route: o.route || DRIVE_ROUTE,
+    sp: o.sp || 2.3,
+    onEnd: o.onEnd || null,
+  };
   w.fig.mode = 'sit';
   w.state = 'drive';
+  tractorCol(false);
   audio.loopAt('tractor', 'tractor', w.drive.x, w.drive.y, { vol: 0.9, ref: 14, rate: 0.95 });
+}
+// the tractor follows the ground outside the flat modelled square (the road to the village): height under the middle, pitch from the axles
+function tractorGround(d) {
+  if (Math.abs(d.x) < 115 && Math.abs(d.y) < 115) {
+    d.z = 0;
+    d.pitch = 0;
+    return;
+  }
+  const fx = Math.sin(d.az),
+    fy = Math.cos(d.az),
+    zf = KERN.ground(d.x + fx * 1.1, d.y + fy * 1.1),
+    zb = KERN.ground(d.x - fx * 1.0, d.y - fy * 1.0);
+  d.z = (zf + zb) / 2;
+  d.pitch = Math.atan2(zf - zb, 2.1);
 }
 function updateDrive(w, dt) {
   const d = w.drive;
@@ -845,31 +958,56 @@ function updateDrive(w, dt) {
       d.phase = 'go';
     }
   } else if (d.phase === 'go') {
-    const tg = DRIVE_ROUTE[d.i];
+    const R = d.route,
+      tg = R[d.i];
     const dx = tg[0] - d.x,
       dy = tg[1] - d.y,
       dist = Math.hypot(dx, dy);
     const h = Math.atan2(dx, dy);
     d.az = lerpAngle(d.az, h, Math.min(1, dt * 1.6));
-    // V16b: waits while a vehicle stands in the way. (Since V16e the four statements after this were stuck inside the comment of this
-    // line, so Hubert's tractor never moved and he sat on it for good – Falko, 23.10.2026 2:28.)
-    const sp = window.VEH && LATE.VEH.blocked(d.x, d.y, d.az, 3.2) ? 0 : 2.3;
+    // V16b: waits while a vehicle stands in the way; slows down in tight turns and for the last point. (Since V16e the movement
+    // statements below were stuck inside the end-of-line comment here, so Hubert's tractor never moved – Falko, 23.10.2026 2:28.)
+    // (the look ahead reaches no further than its next point and a metre: the parked car beside the field path stopped him for good
+    // on his way back, 0.9 m before a point; and after 12 s of waiting he goes on anyway)
+    const last = d.i === R.length - 1,
+      turn = Math.abs(lerpAngle(0, h - d.az, 1)),
+      blocked = !(d.ignore > 0) && window.VEH && LATE.VEH.blocked(d.x, d.y, d.az, Math.min(3.2, dist + 1.0));
+    d.wait = blocked ? (d.wait || 0) + dt : 0;
+    if (d.wait > 12) {
+      d.ignore = 6;
+      d.wait = 0;
+    }
+    if (d.ignore > 0) d.ignore -= dt;
+    const sp = blocked ? 0 : d.sp * (turn > 0.6 ? 0.45 : 1) * (last ? Math.min(1, 0.25 + dist / 6) : 1); // slows down for the last point
     const mv = Math.min(dist, sp * dt);
     d.x += Math.sin(d.az) * mv;
     d.y += Math.cos(d.az) * mv;
     TRACTOR.roll(mv);
-    if (dist < 0.6) {
+    // the last point: close enough, or already beside/behind (no circling round it) – the parking rolls it into place
+    if (dist < (last ? 0.35 : 0.6 + (d.sp > 3 ? 0.8 : 0)) || (last && dist < 2 && Math.cos(h - d.az) < 0.3)) {
       d.i++;
-      if (window.QUESTS) LATE.QUESTS.driveWp(d.i);
-      if (d.i >= DRIVE_ROUTE.length) {
-        d.phase = 'park';
-        d.t = 0;
+      if (window.QUESTS && R === DRIVE_ROUTE) LATE.QUESTS.driveWp(d.i);
+      if (d.i >= R.length) {
+        if (d.onEnd) {
+          const f = d.onEnd;
+          d.onEnd = null;
+          f(w);
+          if (w.drive !== d) return;
+        } else {
+          d.phase = 'park';
+          d.t = 0;
+        }
       }
     }
   } else if (d.phase === 'park') {
     d.az = lerpAngle(d.az, TRACTOR_HOME.az, Math.min(1, dt * 1.5));
+    if (Math.hypot(d.x - TRACTOR_HOME.x, d.y - TRACTOR_HOME.y) < 2) {
+      d.x += (TRACTOR_HOME.x - d.x) * Math.min(1, dt * 2); // rolls into its place (the tasks look for it there)
+      d.y += (TRACTOR_HOME.y - d.y) * Math.min(1, dt * 2);
+    }
     if (d.t > 2.5) {
       audio.stopLoop('tractor', 1.2);
+      if (Math.hypot(d.x - TRACTOR_HOME.x, d.y - TRACTOR_HOME.y) < 1.5) tractorCol(true);
       w.drive = null;
       w.fig.mode = 'stand';
       w.state = 'roam';
@@ -883,8 +1021,9 @@ function updateDrive(w, dt) {
       return;
     }
   }
-  TRACTOR.g.position.copy(V(d.x, d.y, 0));
-  TRACTOR.g.rotation.y = -d.az;
+  tractorGround(d);
+  TRACTOR.g.position.copy(V(d.x, d.y, d.z));
+  TRACTOR.g.rotation.set(d.pitch, -d.az, 0, 'YXZ');
   audio.moveLoop('tractor', d.x, d.y);
   // Hubert on the seat
   const st = TRACTOR.seat || { back: 0.62, z: 0.14 },
@@ -892,9 +1031,23 @@ function updateDrive(w, dt) {
   w.x = d.x - Math.sin(d.az) * st.back;
   w.y = d.y - Math.cos(d.az) * st.back;
   w.az = d.az;
-  w.fig.g.position.copy(V(w.x, w.y, sz));
-  w.fig.g.rotation.y = -d.az;
+  w.fig.g.position.copy(V(w.x, w.y, sz + d.z - Math.sin(d.pitch) * st.back));
+  w.fig.g.rotation.set(d.pitch, -d.az, 0, 'YXZ');
   w.fig.anim(dt, 0);
+}
+// Hubert gets off where the tractor stands (the trip to the village): the tractor stays, he walks on from its left side
+export function leaveTractor(w) {
+  const d = w.drive;
+  if (!d) return;
+  audio.stopLoop('tractor', 1.2);
+  w.drive = null;
+  w.fig.mode = 'stand';
+  w.state = 'roam';
+  w.x = d.x - Math.sin(d.az + Math.PI / 2) * 0.9;
+  w.y = d.y - Math.cos(d.az + Math.PI / 2) * 0.9;
+  w.az = d.az;
+  w.target = null;
+  w.fig.g.rotation.set(0, -w.az, 0);
 }
 // ---- per-frame update ----
 const _frus = new THREE.Frustum(),
@@ -920,9 +1073,11 @@ function updateNPC(dt) {
     updateDrive(h, dt);
     dirty = dirty || inView(TRACTOR.g.position.x, -TRACTOR.g.position.z) || inView(h.x, h.y);
   } else {
-    h.tractorT -= dt;
     const pd = h.dist();
+    // without his day plan (npc/life.js) he roams and takes the tractor for a round now and then (V14)
+    if (!h.life) h.tractorT -= dt;
     if (
+      !h.life &&
       h.tractorT <= 0 &&
       !h.talking &&
       !h.away &&
@@ -930,7 +1085,7 @@ function updateNPC(dt) {
       Math.hypot(h.x - TRACTOR_HOME.x, h.y - TRACTOR_HOME.y) < 2.5
     )
       startDrive(h);
-    else if (h.tractorT <= 0 && !h.talking && h.state !== 'toTractor') {
+    else if (!h.life && h.tractorT <= 0 && !h.talking && h.state !== 'toTractor') {
       h.state = 'toTractor';
       h.target = [TRACTOR_HOME.x + 1.0, TRACTOR_HOME.y - 1.2];
     } else {
@@ -941,25 +1096,35 @@ function updateNPC(dt) {
           h.tractorT = 60;
         }
       }
-      // keeps his distance: steps away when approached, says so
+      // keeps his distance: steps away when approached, says so (at work or on a chair he stays and only says so)
       if (
         !h.talking &&
-        !h.ctl &&
+        (!h.ctl || h.ctl === h.lifeCtl) &&
         pd < 2.2 &&
         now > h.avoidUntil - 85 &&
         h.state !== 'toTractor' &&
         !(window.QUESTS && LATE.QUESTS.friendly('hubert'))
       ) {
-        const ax = h.x - P.x,
-          ay = h.y - P.y,
-          L = Math.hypot(ax, ay) || 1;
-        h.target = [h.x + (ax / L) * 3.5, h.y + (ay / L) * 3.5];
-        if (now - h.lastSay > 12) h.say('near', { force: true });
-      } else if (!h.talking && pd < h.hear && Math.random() < dt / 30) h.say('idle');
+        if (h.life && h.life.busy()) {
+          if (now - h.lastSay > 14) h.say('near', { force: true });
+        } else {
+          const ax = h.x - P.x,
+            ay = h.y - P.y,
+            L = Math.hypot(ax, ay) || 1;
+          h.target = [h.x + (ax / L) * 3.5, h.y + (ay / L) * 3.5];
+          h.shy = 3.5;
+          if (now - h.lastSay > 12) h.say('near', { force: true });
+        }
+      } else if (!h.talking && pd < h.hear && Math.random() < dt / 30 && !(h.life && h.life.chatting())) h.say('idle');
+      if (h.shy > 0) h.shy -= dt;
       if (h.talking && pd > 5.5) NPCUI.end(false);
       h.step(dt, now < h.avoidUntil ? 1.35 : 1);
     }
-    dirty = dirty || ((h.v > 0 || (h.fig.real && h.dist() < 25)) && inView(h.x, h.y));
+    // (at work – a pose, a talk – he is drawn further away too: chopping seen from the garden)
+    dirty =
+      dirty ||
+      ((h.v > 0 || (h.fig.real && (h.dist() < 25 || ((h.fig.pose || h.fig.speak) && h.dist() < 50)))) &&
+        inView(h.x, h.y));
   }
   // Ronald
   const r = NPCS.ronald;
@@ -969,10 +1134,11 @@ function updateNPC(dt) {
       r.greeted = true;
       r.sayId('ronald_idle_04');
     }
-    if (!r.talking && pd < r.hear && Math.random() < dt / 26) r.say('idle');
+    if (!r.talking && pd < r.hear && Math.random() < dt / 26 && !(r.life && r.life.chatting())) r.say('idle');
     if (r.talking && pd > 5.5) NPCUI.end(false);
     r.step(dt);
-    dirty = dirty || ((r.v > 0 || (r.fig.real && pd < 25)) && inView(r.x, r.y));
+    dirty =
+      dirty || ((r.v > 0 || (r.fig.real && (pd < 25 || ((r.fig.pose || r.fig.speak) && pd < 50)))) && inView(r.x, r.y));
   }
   // goats
   for (const gt of GOATS) {
@@ -1079,10 +1245,13 @@ addBlob(hubertFig, 0.55, 0.5, 0.9);
 addBlob(ronaldFig, 0.55, 0.5, 0.9);
 for (const gt of GOATS) addBlob(gt.fig, 0.55, 0.8, 0.45);
 addBlob(TRACTOR, 1.9, 2.6, 1.0);
+addBlob(MOWER, 1.9, 2.6, 1.0);
 window.NPC = {
   NPCS,
   GOATS,
   TRACTOR,
+  MOWER,
+  PAD,
   update: updateNPC,
   startDrive: () => startDrive(NPCS.hubert),
   talk: n => NPCUI.start(NPCS[n]),
