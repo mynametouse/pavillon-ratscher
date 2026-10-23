@@ -24,7 +24,7 @@ LANDMARK = {'w117931129': 'turm', 'w121648569': 'turm', 'w121648570': 'westbau',
             'w117931173': 'kornhaus', 'w121649695': 'klausur', 'w121649703': 'klausur', 'w117931181': 'kreuzgang'}
 RUIN = {'area': 'w948084437', 'transept': 'w948084438', 'north': 'w948084439', 'south': 'w948084440'}
 # the masonry ranges of the monastery and the domain (red sandstone rubble, photos 2022, 2025)
-STONE = {'Westklausur', 'Südklausur', 'Kreuzgang', 'Kornhaus', 'Domänenscheune', 'Pferdestall', 'Domänenstallgebäude', 'Neuer Pferdestall',
+STONE = {'Westklausur', 'Südklausur', 'Kreuzgang', 'Domänenscheune', 'Pferdestall', 'Domänenstallgebäude', 'Neuer Pferdestall',
          'Schafstall / Alter Pferdestall', 'Torhaus', 'Henneberger Kapelle', 'Südkapelle', 'Torkirche St. Erhard', 'Klostermühle',
          'Hofteichscheune', 'Domänengebäude'}
 FW = {'Bauernhaus', 'Schmiede', 'Dorfbrauhaus', 'Totenhofkapelle', 'Karstmühle', 'Backhaus', 'Gemeindehaus', 'Schweinestall', 'Bienenhaus',
@@ -207,7 +207,7 @@ def main():
         kind = 2 if small else 1 if big else 0
         h = (zlib.crc32(fid.encode()) & 0xffff) / 65535.0
         mat = tags.get('building:material', '')
-        stone = name in STONE or mat == 'sandstone' or lm in ('klausur', 'kreuzgang', 'kornhaus', 'torhaus', 'torkirche', 'henneberg', 'suedkapelle')
+        stone = name in STONE or mat == 'sandstone' or lm in ('klausur', 'kreuzgang', 'torhaus', 'torkirche', 'henneberg', 'suedkapelle')
         fw = (name in FW or mat == 'timber_framing') and not stone
         hist = bool(tags.get('historic')) or stone or fw
         if lm in ('klausur', 'kornhaus') or name in ('Domänenscheune', 'Domänenstallgebäude', 'Pferdestall', 'Neuer Pferdestall'):
@@ -419,6 +419,8 @@ def main():
             k = 'cemetery'
         elif tags.get('leisure') == 'garden':
             k = 'garden'
+        elif tags.get('tourism') == 'attraction' and 'Museum' in tags.get('name', ''):
+            k = 'museum'
         if not k:
             continue
         pts = line(wid)[:-1]
@@ -495,6 +497,87 @@ def main():
                         break
             d += 32.0 if ok else 8.0
             k += 1
+    # trees from the orthophoto: dark green crowns (excess green, low luminance), smoothed; local maxima at least 6 m apart, outside
+    # buildings, roads, water, the church and the nursery (the app plants its own stock there) -> [x, y, crown radius]
+    if isinstance(ortho, OrthoWMS):
+        from scipy import ndimage
+        img = ortho.img.astype(np.float32) / 255.0
+        e0, n0, e1, n1 = ortho.bb
+        H, W = img.shape[:2]
+        px = (e1 - e0) / W
+        r_, g_, b_ = img[..., 0], img[..., 1], img[..., 2]
+        lum = 0.3 * r_ + 0.59 * g_ + 0.11 * b_
+        veg = ((2 * g_ - r_ - b_) > 0.035) & (lum < 0.3) & (lum > 0.04)
+        sm = ndimage.gaussian_filter(veg.astype(np.float32), 1.6 / px)
+        mx_ = ndimage.maximum_filter(sm, size=int(6.0 / px) | 1)
+        peaks = np.argwhere((sm == mx_) & (sm > 0.62))
+        blocked = [p for p, _, _ in polys]
+        nurs = [Polygon(list(zip(r['p'][::2], r['p'][1::2]))) for r in areas if r['k'] in ('nursery', 'water')]
+        if kirche.get('area'):
+            nurs.append(Polygon(list(zip(kirche['area'][::2], kirche['area'][1::2]))).buffer(2.0))
+        road_ls = [s_['_ls'].buffer({1: 4.5, 2: 4.0, 3: 3.5, 5: 2.5}.get(s_['k'], 1.5)) for s_ in streets if s_['k'] <= 8]
+        from shapely.strtree import STRtree as _T
+        rt = _T(road_ls) if road_ls else None
+        found = []
+        for (r0, c0) in peaks:
+            E_ = e0 + (c0 + 0.5) * px
+            N_ = n1 - (r0 + 0.5) * px
+            x, y = model_from_utm(E_, N_)
+            if not inz(x, y):
+                continue
+            pt = Point(x, y)
+            if any(bp.distance(pt) < 1.5 for bp in (blocked[j] for j in tree.query(pt.buffer(2.0)))):
+                continue
+            if any(n_.contains(pt) for n_ in nurs):
+                continue
+            if rt is not None and len(rt.query(pt, predicate='intersects')):
+                continue
+            # crown radius: how far the smoothed mask stays above half its peak along four directions
+            rad = []
+            for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                k = 1
+                while k < int(9 / px) and 0 <= r0 + dr * k < H and 0 <= c0 + dc * k < W and sm[r0 + dr * k, c0 + dc * k] > sm[r0, c0] * 0.5:
+                    k += 1
+                rad.append(k * px)
+            found.append((float(sm[r0, c0]), x, y, float(np.clip(np.mean(rad), 1.8, 7.5))))
+        # the forests around are full of them: the nearest to the place first
+        found.sort(key=lambda q: math.hypot(q[1] - ORT[0], q[2] - ORT[1]))
+        for sc_, x, y, rr in found[:450]:
+            trees.append([r2(x), r2(y), r2(rr), 0])
+        log('Bäume aus dem Luftbild:', min(len(found), 450), 'von', len(found))
+    # deciduous trees: the DOP flight of 7 April 2024 shows them leafless (no green crowns to find) - on the lawns of the monastery grounds
+    # and in the village gardens, after the drone photos 2021 (Ermell): a jittered 10 m grid away from buildings, streets, paths, water
+    from shapely.strtree import STRtree as _T2
+    mus = next((Polygon(list(zip(r['p'][::2], r['p'][1::2]))) for r in areas if r['k'] == 'museum'), None)
+    block = [p.buffer(4.0) for p, _, _ in polys]
+    block += [s_['_ls'].buffer({1: 5.0, 2: 4.5, 3: 4.0, 5: 3.0, 6: 2.5}.get(s_['k'], 2.0)) for s_ in streets]
+    block += [Polygon(list(zip(r['p'][::2], r['p'][1::2]))).buffer(1.5) for r in areas if r['k'] in ('water', 'cemetery', 'nursery', 'parking', 'garden')]
+    if kirche.get('area'):
+        block.append(Polygon(list(zip(kirche['area'][::2], kirche['area'][1::2]))).buffer(9.0))
+    block += [LineString(list(zip(w['p'][::2], w['p'][1::2]))).buffer(1.5) for w in walls if len(w['p']) >= 4]
+    bt = _T2(block)
+    houses = _T2([p for p, _, _ in polys])
+    rng2 = np.random.default_rng(11)
+    have = [(t_[0], t_[1]) for t_ in trees]
+    nd = 0
+    for gx in np.arange(zone[0], zone[2], 10.0):
+        for gy in np.arange(zone[1], zone[3], 10.0):
+            x, y = gx + rng2.uniform(-3.5, 3.5), gy + rng2.uniform(-3.5, 3.5)
+            pt = Point(x, y)
+            if mus is not None and mus.contains(pt):
+                pr = 0.42
+            elif len(houses.query(pt.buffer(28.0))):
+                pr = 0.14
+            else:
+                continue
+            if rng2.random() > pr or len(bt.query(pt, predicate='intersects')):
+                continue
+            if any(abs(hx - x) < 6 and abs(hy - y) < 6 for hx, hy in have):
+                continue
+            have.append((x, y))
+            trees.append([r2(x), r2(y), r2(rng2.uniform(2.8, 5.5)), 1])
+            nd += 1
+    log('Laubbäume auf den Wiesen und in den Gärten:', nd)
     log('Bäume:', len(trees), 'Laternen:', len(lamps), 'Bänke:', len(benches), 'Orte:', len(pois))
 
     os.makedirs(a.out, exist_ok=True)

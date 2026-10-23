@@ -71,6 +71,7 @@ world/village_near.js       # V16e near the walker: fences, hedges, flower boxes
 welt/welt.js                # the tiled world (tools/welt) streamed around the camera where a zone needs it; terrain for KERN (WELT)
 welt/schleusingen.js        # Schleusingen after photos: the old town walkable, Rathaus to enter, landmarks, lamps, street names (SCHL)
 # feat/vessra: Kloster Veßra below this line (the monastery, the village, the tree nursery)
+welt/vessra.js              # Kloster Veßra: the monastery ruin and its grounds, the village, the tree nursery Baumschule Kammbach – walkable (VESSRA)
 world/worldcol.js           # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
 world/treehit.js            # small trees give way to vehicles: saplings bend, small trees tip over with the root plate, thick ones stop (TREEHIT)
 game/hud.js                 # HUD, menu, inventory window, pointer lock (HUD)

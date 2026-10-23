@@ -9,7 +9,67 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   `welt-test/zonen/vessra/` (eigene `meta.json`) vom eigenen Workflow `.github/workflows/welt-vessra.yml` (Push auf `feat/vessra`, der
   die Pipeline-Dateien ändert, oder von Hand). Stufe 12 (100-m-Kacheln, Luftbild 20 cm/px) über 2 × 2 km um Klosteranlage und
   Baumschule, Stufen 7–11 über 8,0 × 6,4 km. Lauf 39918421150 (23.10. 9:32): 4359 Dateien, **71,8 MB**, 273 s.
-- In Arbeit: Menü → Orte → „Kloster Veßra“, Gebäude aus OSM mit den Dorf-Shadern, die Klosteranlage nach Fotos, die Baumschule.
+- **Menü → Orte → „Kloster Veßra“**: ans Tor in der Klostermauer an der Schleusinger Straße, Blick zur Kirche (`SPOTS.vessra`).
+- **Nichts davon beim Start**: geladen wird erst, wenn die Spielfigur (sonst die Kamera) näher als 950 m an der Ortsmitte (−8850, −300)
+  ist; ab 1350 m wird alles wieder freigegeben (Gebäude sofort, Welt-Kacheln nach 20 s). Beim Laden der Seite meldet `welt/vessra.js`
+  nur seinen Kachel-Satz an (ohne Abruf), den Menüort, den Aktionsknopf „Hinsetzen“ und die `KERN`-Anbieter.
+- **Gelände und Boden** aus den eigenen Welt-Kacheln (Luftbild 20 cm/px nah), darüber die **Straßen** (OSM, Karte 1024² über 920 m):
+  Asphalt mit Bordstein auf Schleusinger, Neuhofer und Schulstraße, rötlicher Kies auf den Wegen der Klosteranlage, dem Besucherparkplatz
+  und im Verkaufshof der Baumschule (neue Belagsart „Kies“ in `welt/welt.js`).
+- **Ort**: 156 Gebäude aus OpenStreetMap (`tools/welt/zone_vessra.py` → `viz3/extra/vessra/dist/vessra/ort.json`, 0,15 MB) mit den
+  Fassaden- und Dach-Shadern des Dorfs: Putzhäuser im Ort (weiß, creme, hellgelb, grau), die Klausur-, Domänen- und Wirtschaftsbauten aus
+  rotem Sandstein, die Fachwerkhäuser des Freilichtmuseums (Bauernhaus aus Witzelroda, Schmiede, Dorfbrauhaus, Backhaus,
+  Totenhofkapelle …), Ziegeldächer mit Farbe aus dem Luftbild, Brandwände ohne Fenster, Türen zur Straße.
+- **Klosterkirche St. Marien** (Ruine seit dem Brand 1939; Fotos Wikimedia Commons 2017–2025, Drohnenbilder Ermell 2021, Plan des
+  Klosterbezirks): die **Doppelturmfront** – heller Quaderbau mit Lisenen, zwei Rundbogenfriesen und dem gestuften Rundbogenportal
+  (man geht hindurch ins Langhaus), darüber die roten Sandsteintürme mit drei Geschossen (spitzbogige Blendarkaden, Uhr am Nordturm,
+  Zwillingsfenster), Pyramidendächern und Stangen, dazwischen die Galerie mit Satteldach; das **Langhaus** ohne Dach: die beiden
+  Außenwände mit hohen Rundbogenfenstern, in der Südwand die Tür zum Kreuzgang, die Stümpfe der Arkadenpfeiler (die östlichsten hoch);
+  die **Vierung** mit Triumphbogen und zwei Seitenbögen, die Querhausmauern mit Fenstern und dem vermauerten Chorbogen, die
+  **Fundamente des Chors** mit Apsis im Gras; die **Henneberger Kapelle** (Sandstein, weiß verputzte Apsis mit Kegeldach) und die
+  **Südkapelle** mit ihrer Apsis. Alle Mauern als Geometrie mit Sandstein-Muster (das Plattenbild des Dorfplatzes, kein neues Programm).
+- **Torkirche St. Erhard** (Kalkputz, Spitzbogenfenster, Eckquader aus Sandstein, Tür), **Klostermauer** (OSM: rote Bruchsteinmauer
+  3,2 m mit Abdeckung; an den Toren Lücken mit Pfeilern), Zäune (Holz; der grüne Metallzaun der Baumschule) und Hecken, der **Friedhof**
+  nördlich der Kirche (Gräber in Reihen mit Steinen und Kreuzen), die Teiche (Klosterteich, Dorfteich) als Wasserfläche.
+- **Bäume**: 700 Kronen aus dem Luftbild (dunkles Grün, Abstand ≥ 6 m, nicht auf Häusern, Straßen, Wasser, in der Kirche, in der
+  Baumschule) – die 30 nächsten an der Kirche als Esche des Gartens (instanziert), die übrigen als einfache Kronen in Herbstfarben und
+  Nadelbäume (ein Mesh).
+- **Baumschule Kammbach** (OSM `landuse=plant_nursery`, Schulstraße 52; Name auf Schild und im HUD, Falko 23.10. 9:27, kein Logo):
+  hinter dem Südtor ein Verkaufshof aus Kies, südlich des Wegs drei Parkplätze und die **Verkaufshütte** mit Theke, Kasse und Vordach,
+  nördlich **fünf Beete** nach Art – Obstgehölze (Bäumchen im Container, angepfählt), Beerenobst, Ziergehölze (Herbstlaub: rot, gelb,
+  panaschiert), Kletterpflanzen (am Bambus-Dreibein), Bodendecker – mit Bändchengewebe, Brettereinfassung und Schild; die Gebäude der
+  Baumschule wie in OSM; westlich davon **Jungbäume in Reihen** auf dem Feld (rund 600, die Wege bleiben frei). Schild „Baumschule
+  Kammbach“ am Tor und an der Hütte. Ohne Fotos vom Gelände (nur von der Straße aus): generisch.
+- **Laternen** (OSM und entlang der Straßen nahe Häusern, 53): nachts an, Lichtflecken, sie beleuchten die Wände wie im Dorf;
+  **Bänke** (OSM, zur Kirche gewandt; eine an der Hütte der Baumschule) – **Hinsetzen** mit dem Aktionsknopf.
+- **Ortsnamen** im HUD: „Klosterkirche St. Marien (Ruine)“, die benannten Gebäude (Torkirche St. Erhard, Henneberger Kapelle, Kornhaus,
+  Westklausur …), „Baumschule Kammbach“, Friedhof, Teiche, die nächste Straße („Schleusinger Straße, Kloster Veßra“), sonst
+  „Klosteranlage (Hennebergisches Museum)“ bzw. „Kloster Veßra“.
+- **Kollision**: alle Hauswände, die Mauern der Kirche (Tür und Bögen offen), Pfeiler, Kloster- und andere Mauern (Tore offen), Zäune,
+  Hecken, Gräber, Bäume, Laternen, Beete und Hütte der Baumschule, die Teichufer.
+
+## Für den Gartenplaner
+`window.VESSRA` / `import { VESSRA } from '../welt/vessra.js'` (Modul direkt unter `welt/schleusingen.js`). `VESSRA.state === 'ready'`, wenn
+gebaut; `VESSRA.baumschule` (sonst `null`):
+- `name`: „Baumschule Kammbach“; `eingang`, `kasse`, `parkplatz`: `{ x, y, z, yaw }` – Modellmeter, `yaw` Blickrichtung als Kompass in Grad
+  (wie `SCHL.rathaus.spots`): am Tor in den Hof blickend, vor der Theke zur Kasse blickend, auf dem mittleren Parkplatz (ein Auto steht dort
+  mit der Front in diese Richtung).
+- `beete`: je Beet `{ x, y, w, h, yaw, art, name, slots, label }` – Mitte `[x, y]`, Länge `w` entlang `yaw` (Kompass in Grad), Breite `h`
+  quer dazu, `art` ∈ `'obst' | 'beeren' | 'zier' | 'kletter' | 'boden'`, `name` (Schildtext), `slots`: die Stellplätze der Töpfe
+  `[[x, y], …]` (30–78 je Beet), `label`: Schild `[x, y, z]`.
+- `frame`: `{ G, u, w }` – Ursprung am Südtor, `u` entlang der Schulstraße nach Norden, `w` ins Gelände (für eigene Stellen).
+- `VESSRA.place(x, y)` nennt im Gelände „Baumschule Kammbach, Kloster Veßra“; `VESSRA.gz(x, y)` ist der Boden.
+
+## Für den Kern-Chat
+- Gemeinsame Dateien (auf diesem Branch geändert): `viz3/src/modules.txt` (eine Zeile `welt/vessra.js` direkt unter `# feat/vessra`),
+  `viz3/shell/menu.html` (ein Eintrag Orte → „Kloster Veßra“ nach „Schleusingen“), `.github/workflows/welt-testblock.yml`: **`apply()`
+  behält jetzt `welt-test/zonen/`** (beiseite, `welt-test/` ersetzen, zurück) – sonst löschte der nächste Testblock-Lauf die Zonen-Kacheln.
+- `welt/welt.js` (eigene Datei): Kachel-Sätze (siehe „Für die Fahrt“), `WELT.overlay()`, Belag „Kies“ (g/r > 0,86) im Straßen-Overlay;
+  Schleusingen unverändert (seine Codes 40/120/200 bleiben Asphalt/Pflaster/Platten).
+- Neue `window`-Namen: `VESSRA`. Keine Speicher-Schlüssel. Shader-Programme: Steinmauern teilen das Programm des Dorfplatz-Pflasters
+  (`v16e-kit1.5`), Requisiten und Kronen das der Schleusinger Requisiten; neu nur Schilder und Wasser (gemessen im Test).
+- Eintrag für `docs/ARCHITECTURE.md` (Modulkarte, Abschnitt 6): `VESSRA` – welt/vessra.js – Kloster Veßra begehbar: Klosterkirche als
+  Ruine, Klosteranlage, Ort, Baumschule Kammbach mit Beeten und Stellen für den Gartenplaner.
 
 ## Für die Fahrt (Hilfs-Agent `fahrt`)
 - **Korridor**: die befahrbare OSM-Route Garten → Ratschner Anger → Geisenhöhner Weg → Flurweg → L 1625 (Schleusinger Straße) →

@@ -206,8 +206,8 @@ export const WELT = (() => {
         if ( code < 0.3 ) r = vec3( 0.085, 0.088, 0.092 ) * clamp( lum / 0.14, 0.75, 1.3 ) * ( 0.86 + 0.24 * n1 ) * ( 0.92 + 0.16 * n2 );   // asphalt, patches after the photo
         else if ( code < 0.62 ) r = setts( p, vec3( 0.168, 0.151, 0.13 ) * clamp( lum / 0.26, 0.75, 1.12 ) * ( 0.85 + 0.3 * n1 ), 8.0, fwp );   // sett: grey-brown, worn patches
         else if ( code < 0.86 ) r = setts( p * vec2( 1.0, 0.5 ), vec3( 0.27, 0.26, 0.245 ), 3.3, fwp );   // paving slabs
-        else { float fg = 1.0 - smoothstep( 0.2, 0.7, fwp * 9.0 );   // water-bound gravel, reddish (the paths and yards of Kloster Veßra)
-          r = vec3( 0.34, 0.25, 0.19 ) * clamp( lum / 0.3, 0.8, 1.15 ) * ( 0.85 + 0.22 * n1 ) * mix( 1.0, 0.82 + 0.36 * rdH( floor( p * 9.0 ) ), fg ); }
+        else { float fg = 1.0 - smoothstep( 0.25, 0.8, fwp * 23.0 ), fg2 = 1.0 - smoothstep( 0.25, 0.8, fwp * 6.0 );   // water-bound gravel, reddish (the paths and yards of Kloster Veßra): fine grain, a few coarser patches
+          r = vec3( 0.34, 0.25, 0.19 ) * clamp( lum / 0.3, 0.8, 1.15 ) * ( 0.86 + 0.2 * n1 ) * mix( 1.0, 0.9 + 0.2 * rdH( floor( p * 23.0 ) ), fg ) * mix( 1.0, 0.95 + 0.1 * rdH( floor( p * 6.0 ) + 3.1 ), fg2 ); }
         float kerb = code < 0.3 ? ( 1.0 - smoothstep( 0.08, 0.2, abs( cov - 0.42 ) ) ) * near : 0.0;   // a light kerb stone along the asphalt
         r = mix( r, vec3( 0.36, 0.355, 0.34 ) * ( 0.9 + 0.2 * n2 ), kerb );
         g = mix( g, r, clamp( smoothstep( 0.3, 0.55, cov ) + kerb, 0.0, 1.0 ) );
