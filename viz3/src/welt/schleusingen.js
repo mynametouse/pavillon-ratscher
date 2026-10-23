@@ -11,7 +11,9 @@ import * as THREE from 'three';
 import { BASE, cam, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
+import { TREES } from '../garden/trees.js';
 import { P } from '../game/walkable.js';
+import { PLAY } from '../game/play.js';
 import { SPOTS } from '../game/player.js';
 import { toast } from '../audio/audio.js';
 import { RATSCHER } from '../world/ratscher.js';
@@ -87,7 +89,7 @@ export const SCHL = (() => {
       [0.52, 0.6, 0.52],
       [0.72, 0.68, 0.62],
     ].map(c => linC(c, 0.85)),
-    SAND = linC([0.8, 0.74, 0.62], 0.82), // the sandstone of St. Johannis and the Bertholdsburg
+    SAND = linC([0.88, 0.82, 0.7], 0.82), // the sandstone of St. Johannis and the Bertholdsburg
     CREAM = linC([0.95, 0.87, 0.66], 0.82); // the Rathaus front
   function styleOf(b, i) {
     const k = hh(i * 3.7 + 1),
@@ -324,7 +326,27 @@ export const SCHL = (() => {
         }
         S.segs.push([ax, ay, ax + F.dx * h0, ay + F.dy * h0], [ax + F.dx * h1, ay + F.dy * h1, bx, by]);
       } else {
-        if (gable) {
+        if (b.band && !blind) {
+          // two bands (the castle): stone below, a half-timbered top storey with its own foot (photos 2025)
+          const zb = eave - b.band,
+            atU = Object.assign({}, at, {
+              st: ST.FW,
+              eave: b.band,
+              t0: t0 - zb,
+              tA: at.tA - zb,
+              t1: t1 - zb,
+              du: -1,
+              dw: 0,
+            }),
+            atL = Object.assign({}, at, { st: ST.PLASTER });
+          WB.quad(F, ax, ay, bx, by, 0, L, zb, zb, z0, low, atL);
+          if (gable) {
+            const mx = ax + F.dx * uA0,
+              my = ay + F.dy * uA0;
+            WB.quad(F, ax, ay, mx, my, 0, uA0, t0 - zb, tA0 - zb, z0 + zb, z0 + zb, atU);
+            WB.quad(F, mx, my, bx, by, uA0, L, tA0 - zb, t1 - zb, z0 + zb, z0 + zb, atU);
+          } else WB.quad(F, ax, ay, bx, by, 0, L, t0 - zb, t1 - zb, z0 + zb, z0 + zb, atU);
+        } else if (gable) {
           const mx = ax + F.dx * uA0,
             my = ay + F.dy * uA0;
           WB.quad(F, ax, ay, mx, my, 0, uA0, t0, tA0, z0, low, at);
@@ -360,6 +382,7 @@ export const SCHL = (() => {
         nz = -nz;
       }
       T.push({ v: [a, c, d], n: [nx, ny, nz], gx: nz > 0.05 ? -nx / nz : 0, gy: nz > 0.05 ? -ny / nz : 0 });
+      b.roofT = T;
     }
     const flat = !!b.fl;
     for (const t of T) {
@@ -581,6 +604,7 @@ export const SCHL = (() => {
       const r = await fetch(URL_);
       if (!r.ok) throw new Error('stadt.json ' + r.status);
       data = await r.json();
+      S.data = data;
       gz = await WELT.sampler(ZONE[0], ZONE[1], ZONE[2], ZONE[3]);
       S.loadMs = Math.round(performance.now() - t0);
       S.state = 'data';
@@ -640,6 +664,11 @@ export const SCHL = (() => {
     add(new THREE.Mesh(RB.geo(), rm), 'roofs');
     props();
     grid();
+    try {
+      streetMap();
+    } catch (e) {
+      console.warn('schleusingen streets', e);
+    }
     // level ground where one walks inside: the hall of the Rathaus (under its floor), the courtyard of the castle
     const pads = [];
     for (const b of S.bld) {
@@ -664,7 +693,7 @@ export const SCHL = (() => {
   S.dispose = () => {
     for (const m of S.meshes) {
       scene.remove(m);
-      m.geometry.dispose();
+      if (!m.userData.sharedGeo) m.geometry.dispose(); // the trees use the garden's geometries
       if (m.userData.own) m.material.dispose();
       if (m.userData.tex) m.userData.tex.dispose();
     }
@@ -679,8 +708,11 @@ export const SCHL = (() => {
     S.cells = null;
     S.bld = [];
     S.rathaus = null;
+    S.pool = null;
     if (WELT.setPads) WELT.setPads('schleusingen', []);
+    if (WELT.setOverlay) WELT.setOverlay(null);
     data = null;
+    S.data = null;
     gz = null;
     S.state = 'idle';
     markDirty(true);
@@ -716,8 +748,43 @@ export const SCHL = (() => {
       b.F.forEach(f => (f[8] |= 1)); // no house windows: the church windows are tall arches (props)
     },
     burg(b) {
-      b.stF = (f, k) => ST.FW_UP;
+      b.stF = () => ST.PLASTER;
+      b.band = 3.1;
       b.st.sp = 2.9;
+      b.st.timber = 0;
+      // two octagonal stair towers in the courtyard (photo of the courtyard 2008): in its northern corners, mostly in the yard, rising
+      // 4 m over the eaves; their walls are facades of the castle (stone below, half-timbered top, collisions), caps in props()
+      const h = b.h && b.h[0];
+      if (!h) return;
+      const pts = [];
+      for (let k = 0; k < h.length; k += 2) pts.push([h[k], h[k + 1]]);
+      const cx = pts.reduce((q, p) => q + p[0], 0) / pts.length,
+        cy = pts.reduce((q, p) => q + p[1], 0) / pts.length;
+      // corners: the ring points farthest from the centre in four directions, the two northern ones
+      const far = dir =>
+        pts.reduce((q, p) =>
+          (p[0] - cx) * dir[0] + (p[1] - cy) * dir[1] > (q[0] - cx) * dir[0] + (q[1] - cy) * dir[1] ? p : q
+        );
+      const corners = [far([-1, 1]), far([1, 1])];
+      b.stair = [];
+      const top = b.e + 4.0;
+      for (const c of corners) {
+        const d = Math.hypot(cx - c[0], cy - c[1]) || 1,
+          tx = c[0] + ((cx - c[0]) / d) * 2.4,
+          ty = c[1] + ((cy - c[1]) / d) * 2.4,
+          r = 2.1;
+        b.stair.push([tx, ty, r, top]);
+        for (let k = 0; k < 8; k++) {
+          const a0 = (k * Math.PI) / 4 + Math.PI / 8,
+            a1 = ((k + 1) * Math.PI) / 4 + Math.PI / 8,
+            ax = tx + Math.cos(a0) * r,
+            ay = ty + Math.sin(a0) * r,
+            bx = tx + Math.cos(a1) * r,
+            by = ty + Math.sin(a1) * r,
+            L = Math.hypot(bx - ax, by - ay);
+          b.F.push([ax, ay, bx, by, top, L / 2, top, top, 0, 99]);
+        }
+      }
     },
     turm(b) {
       b.stF = () => ST.PLASTER;
@@ -737,6 +804,22 @@ export const SCHL = (() => {
       WOOD = linC([0.42, 0.27, 0.16]),
       RED = linC([0.62, 0.14, 0.1]);
     const gzz = (x, y) => ground(x, y);
+    // dormers on the roofs round the Markt and in the old town (photos 2025: small shed dormers and gabled ones towards the street)
+    for (const b of S.bld) {
+      if (b.k !== 0 || b.fl || b.lm || !b.doorFac || !b.roofT || b.lv < 2) continue;
+      const dM = Math.hypot(b.cx - MARKT[0], b.cy - MARKT[1]);
+      if (dM > 260 || hh(b.i + 51) > (dM < 90 ? 0.95 : 0.5)) continue;
+      dormers(K, b);
+    }
+    // the castle: small dormers on the outer slopes of its roofs (courtyard photo 2008)
+    for (const b of S.bld) {
+      if (b.lm !== 'burg' || !b.roofT) continue;
+      const nOut = b.f.length / 2; // the outer ring comes first in the facades
+      b.F.forEach((f, k) => {
+        const L = Math.hypot(f[2] - f[0], f[3] - f[1]);
+        if (k < nOut && L > 9 && Math.abs(f[4] - b.e) < 0.3 && Math.abs(f[7] - b.e) < 0.3) dormers(K, b, f, 5);
+      });
+    }
     // the Marktbrunnen (photos 2025): octagonal platform, a big octagonal sandstone basin with bulging panels (covered in winter by a low
     // grey lid), a column with a capital and the figure of a woman in Renaissance dress, iron brackets
     {
@@ -819,26 +902,18 @@ export const SCHL = (() => {
         z = b.z0,
         w = 6.6,
         a = Math.atan2(b.F[0][3] - b.F[0][1], b.F[0][2] - b.F[0][0]);
-      K.box(
-        tx,
-        ty,
-        z - 1,
-        w,
-        w,
-        31,
-        a,
-        SAND.map(v => v * 1.0)
-      );
-      K.box(tx, ty, z + 30, w + 0.4, w + 0.4, 0.5, a, STONE);
+      // the square tower rises two storeys over the ridge, then the octagon with its arches, the dark cupola (photos 2008, 2025)
+      K.box(tx, ty, z - 1, w, w, 39, a, SAND);
+      K.box(tx, ty, z + 37.6, w + 0.4, w + 0.4, 0.5, a, STONE);
       K.lathe(
         tx,
         ty,
-        z + 30.5,
+        z + 38.1,
         [
           [3.0, 0],
           [3.0, 6.5],
-          [3.2, 6.5],
-          [3.2, 6.9],
+          [3.25, 6.5],
+          [3.25, 6.9],
         ],
         8,
         SAND,
@@ -847,7 +922,7 @@ export const SCHL = (() => {
       K.lathe(
         tx,
         ty,
-        z + 37.4,
+        z + 45.0,
         [
           [3.2, 0],
           [2.6, 1.2],
@@ -861,7 +936,7 @@ export const SCHL = (() => {
       K.lathe(
         tx,
         ty,
-        z + 40.6,
+        z + 48.2,
         [
           [0.9, 0],
           [0.9, 2.0],
@@ -874,7 +949,13 @@ export const SCHL = (() => {
         SLATE,
         Math.PI / 8
       );
-      K.ball(tx, ty, z + 46.0, 0.25, GOLD, 8);
+      K.ball(tx, ty, z + 53.6, 0.25, GOLD, 8);
+      for (let k = 0; k < 8; k++) {
+        const an = (k * Math.PI) / 4 + Math.PI / 8,
+          ox = tx + Math.cos(an) * 3.05,
+          oy = ty + Math.sin(an) * 3.05;
+        arch(K, ox, oy, -Math.sin(an), Math.cos(an), z + 39.6, 0.9, 3.0, DARK);
+      }
       // sound openings and tall arched windows: dark panes with a light frame
       for (let s = 0; s < 4; s++) {
         const an = a + (s * Math.PI) / 2,
@@ -884,7 +965,31 @@ export const SCHL = (() => {
           oy = ty + ny * (w / 2 + 0.03),
           ex = -ny,
           ey = nx;
-        arch(K, ox, oy, ex, ey, z + 23, 1.3, 3.2, DARK);
+        arch(K, ox, oy, ex, ey, z + 31, 1.3, 3.4, DARK);
+      }
+      // the portal on the side towards the street: a round-arched door in a stone frame
+      {
+        let fp = null;
+        for (const f of b.F) {
+          const L = Math.hypot(f[2] - f[0], f[3] - f[1]);
+          if (L > 6 && (!fp || f[9] < fp[9])) fp = f;
+        }
+        if (fp) {
+          const L = Math.hypot(fp[2] - fp[0], fp[3] - fp[1]),
+            dx = (fp[2] - fp[0]) / L,
+            dy = (fp[3] - fp[1]) / L;
+          arch(
+            K,
+            fp[0] + dx * (L / 2) + dy * 0.05,
+            fp[1] + dy * (L / 2) - dx * 0.05,
+            dx,
+            dy,
+            z - 0.1,
+            2.2,
+            3.7,
+            linC([0.16, 0.09, 0.05])
+          );
+        }
       }
       // nave windows on the long sides: every ~5.5 m, sill 3.5 m, 5 m tall
       for (const f of b.F) {
@@ -946,6 +1051,39 @@ export const SCHL = (() => {
         );
         K.ball(x, y, z + h + r * 2.4 + 3.4, 0.16, GOLD, 6);
         S.segs.push(...circleSegs(x, y, r, 10));
+      }
+      // the caps of the stair towers: a dark curved cap with a lantern and a finial (courtyard photo 2008)
+      for (const [x, y, r, top] of b.stair || []) {
+        const z = b.z0 + top;
+        K.lathe(
+          x,
+          y,
+          z - 0.1,
+          [
+            [r + 0.35, 0],
+            [r * 0.95, 0.9],
+            [r * 0.45, 2.0],
+            [0.35, 2.3],
+          ],
+          8,
+          SLATE,
+          Math.PI / 8
+        );
+        K.lathe(
+          x,
+          y,
+          z + 2.2,
+          [
+            [0.35, 0],
+            [0.35, 0.9],
+            [0.5, 1.0],
+            [0.06, 2.4],
+          ],
+          8,
+          SLATE,
+          Math.PI / 8
+        );
+        K.ball(x, y, z + 4.7, 0.12, GOLD, 6);
       }
       if (b.lm === 'burg') {
         // the fountain in the courtyard (OSM; photos 1969, 2002, 2008): a round basin with a short column
@@ -1020,6 +1158,7 @@ export const SCHL = (() => {
     // the Rathaus: roof turret with clock and cupola over the gable, red portal, the hall behind the door
     for (const b of S.bld.filter(q => q.lm === 'rathaus')) rathaus(K, b, { IRON, STONE, DARK, SLATE, GOLD, WOOD, RED });
     // benches (OSM): wood on iron, facing the fountain
+    S.benchSpots = [];
     const WOODB = linC([0.4, 0.26, 0.15]);
     for (const [x, y] of data.benches || []) {
       const z = gzz(x, y),
@@ -1028,6 +1167,7 @@ export const SCHL = (() => {
         s = Math.sin(a),
         rot = a + Math.PI / 2,
         len = 1.7;
+      S.benchSpots.push({ x, y, z, yaw: (Math.atan2(Math.cos(a), Math.sin(a)) * 180) / Math.PI });
       for (let i = 0; i < 3; i++)
         K.box(x + c * (0.12 - i * 0.13), y + s * (0.12 - i * 0.13), z + 0.42, len, 0.11, 0.035, rot, WOODB);
       for (let i = 0; i < 2; i++) K.box(x - c * 0.3, y - s * 0.3, z + 0.58 + i * 0.16, len, 0.03, 0.1, rot, WOODB);
@@ -1048,6 +1188,53 @@ export const SCHL = (() => {
     pm.userData.own = true;
     lamps();
     signs();
+    trees();
+  }
+  // ---- trees round the Markt (photos 2025: young trees along the edges of the square): the garden's ash, instanced ----
+  function trees() {
+    const K = TREES.ash || TREES.oakA,
+      M = data.marktplatz;
+    if (!K || !K.bg || !M) return;
+    const pts = [];
+    for (let k = 0; k < M.length; k += 2) {
+      const ax = M[k],
+        ay = M[k + 1],
+        bx = M[(k + 2) % M.length],
+        by = M[(k + 3) % M.length],
+        L = Math.hypot(bx - ax, by - ay);
+      for (let d = 6; d < L - 4; d += 13) {
+        const x = ax + ((bx - ax) * d) / L,
+          y = ay + ((by - ay) * d) / L,
+          // 3.5 m into the square (towards its middle)
+          mx = (MARKT[0] - x) / (Math.hypot(MARKT[0] - x, MARKT[1] - y) || 1),
+          my = (MARKT[1] - y) / (Math.hypot(MARKT[0] - x, MARKT[1] - y) || 1),
+          tx = x + mx * 3.5,
+          ty = y + my * 3.5;
+        if (Math.hypot(tx - MARKT[0], ty - MARKT[1]) < 9 || pts.some(q => Math.hypot(q[0] - tx, q[1] - ty) < 9))
+          continue;
+        if (S.rathaus && Math.hypot(tx - S.rathaus.door[0], ty - S.rathaus.door[1]) < 12) continue;
+        pts.push([tx, ty]);
+      }
+    }
+    if (!pts.length) return;
+    const ib = new THREE.InstancedMesh(K.bg, K.bark, pts.length),
+      il = new THREE.InstancedMesh(K.lg, K.leaf, pts.length),
+      m4 = new THREE.Matrix4(),
+      q = new THREE.Quaternion();
+    pts.forEach(([x, y], i) => {
+      const h = 8.5 + hh(i + 71) * 2.5,
+        sc = h / K.H;
+      q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), hh(i + 73) * 6.28);
+      m4.compose(V(x, y, ground(x, y) - 0.1), q, new THREE.Vector3(sc * 0.8, sc, sc * 0.8));
+      ib.setMatrixAt(i, m4);
+      il.setMatrixAt(i, m4);
+      S.segs.push(...circleSegs(x, y, 0.22, 6));
+    });
+    for (const im of [ib, il]) {
+      im.computeBoundingSphere();
+      add(im, 'trees').userData.sharedGeo = true;
+    }
+    S.trees = pts.length;
   }
   // ---- signs over the doors of shops, inns and offices (names from OSM) and over the Rathaus portal: one canvas atlas ----
   function signs() {
@@ -1065,18 +1252,11 @@ export const SCHL = (() => {
         z: b.z0 + (name === 'RATHAUS' ? 3.35 : 2.95),
       });
     }
-    if (S.rathaus) {
-      // over the counter of the hall, on the back wall, facing the door
+    if (S.rathaus && S.rathaus.counterSign) {
+      // over the counter of the Bürgerbüro on the right wall, facing into the hall
       const R = S.rathaus,
-        p = R.Q(R.L / 2, R.w1 - 0.04, 0);
-      list.unshift({
-        b: { i: 0 },
-        name: 'Bürgerbüro',
-        d: { dx: -R.dx, dy: -R.dy },
-        x: p[0],
-        y: p[1],
-        z: R.floor + 2.55,
-      });
+        p = R.counterSign;
+      list.unshift({ b: { i: 0 }, name: 'Bürgerbüro', d: { dx: R.nx, dy: R.ny }, x: p[0], y: p[1], z: p[2] });
     }
     if (!list.length) return;
     const W = 1024,
@@ -1147,6 +1327,108 @@ export const SCHL = (() => {
     m.userData.own = true;
     m.userData.tex = tex;
     S.signs = list.slice(0, rows).map(it => it.name);
+  }
+  // the roof height over a point (top faces of the building's roof), or null
+  function roofZ(b, x, y) {
+    let best = null;
+    for (const t of b.roofT) {
+      const [a, c, d] = t.v,
+        d0 = (c[1] - d[1]) * (a[0] - d[0]) + (d[0] - c[0]) * (a[1] - d[1]);
+      if (Math.abs(d0) < 1e-9) continue;
+      const l1 = ((c[1] - d[1]) * (x - d[0]) + (d[0] - c[0]) * (y - d[1])) / d0,
+        l2 = ((d[1] - a[1]) * (x - d[0]) + (a[0] - d[0]) * (y - d[1])) / d0,
+        l3 = 1 - l1 - l2;
+      if (l1 < -1e-4 || l2 < -1e-4 || l3 < -1e-4) continue;
+      const z = l1 * a[2] + l2 * c[2] + l3 * d[2];
+      if (best === null || z > best) best = z;
+    }
+    return best;
+  }
+  // shed dormers over the street facade: front with a window, cheeks, a flat roof back into the main roof
+  function dormers(K, b, f0, nMax = 4) {
+    const f =
+      f0 || (b.doorFac && b.F.find(q => Math.abs(q[0] - b.doorFac.ax) < 1e-6 && Math.abs(q[1] - b.doorFac.ay) < 1e-6));
+    if (!f) return;
+    const L = Math.hypot(f[2] - f[0], f[3] - f[1]),
+      d = { dx: (f[2] - f[0]) / L, dy: (f[3] - f[1]) / L },
+      ix = -d.dy,
+      iy = d.dx, // into the house
+      n = Math.min(nMax, Math.floor((L - 1.2) / 3.4)),
+      col = b.st.col,
+      rc = b.rc.map(lin).map(v => v * 0.85),
+      FR = linC([0.92, 0.92, 0.9]),
+      GL = linC([0.1, 0.12, 0.14]),
+      shed = hh(b.i + 57) < 0.5;
+    if (n < 1) return;
+    for (let k = 0; k < n; k++) {
+      const u = ((k + 0.5) * L) / n,
+        px = f[0] + d.dx * u,
+        py = f[1] + d.dy * u,
+        d1 = 0.9,
+        zb = roofZ(b, px + ix * d1, py + iy * d1);
+      if (zb === null || zb < b.z0 + b.e - 0.5) continue;
+      const hf = 1.35,
+        zt = zb + hf,
+        w = shed ? 2.0 : 1.35;
+      let d2 = null;
+      for (let dd = d1 + 0.2; dd < d1 + 7; dd += 0.1) {
+        const z = roofZ(b, px + ix * dd, py + iy * dd);
+        if (z === null) break;
+        if (z >= zt + 0.12) {
+          d2 = dd;
+          break;
+        }
+      }
+      if (d2 === null) continue;
+      const P_ = (s2, dd, z) => [px + d.dx * s2 + ix * dd, py + d.dy * s2 + iy * dd, z],
+        hw = w / 2;
+      // front wall (faces the street), window with a frame
+      K.quad(P_(-hw, d1, zb - 0.1), P_(hw, d1, zb - 0.1), P_(hw, d1, zt), P_(-hw, d1, zt), col);
+      K.quad(
+        P_(-0.45, d1 - 0.02, zb + 0.25),
+        P_(0.45, d1 - 0.02, zb + 0.25),
+        P_(0.45, d1 - 0.02, zb + 1.15),
+        P_(-0.45, d1 - 0.02, zb + 1.15),
+        FR
+      );
+      K.quad(
+        P_(-0.37, d1 - 0.03, zb + 0.32),
+        P_(0.37, d1 - 0.03, zb + 0.32),
+        P_(0.37, d1 - 0.03, zb + 1.07),
+        P_(-0.37, d1 - 0.03, zb + 1.07),
+        GL
+      );
+      // cheeks
+      K.tri(P_(-hw, d1, zb - 0.1), P_(-hw, d1, zt), P_(-hw, d2, zt + 0.12), col);
+      K.tri(P_(hw, d1, zb - 0.1), P_(hw, d2, zt + 0.12), P_(hw, d1, zt), col);
+      if (shed)
+        K.quad(
+          P_(-hw - 0.12, d1 - 0.2, zt + 0.02),
+          P_(hw + 0.12, d1 - 0.2, zt + 0.02),
+          P_(hw + 0.12, d2, zt + 0.14),
+          P_(-hw - 0.12, d2, zt + 0.14),
+          rc
+        );
+      else {
+        // a small gable: two slopes from a ridge over the middle
+        const zr = zt + 0.55;
+        K.quad(
+          P_(-hw - 0.12, d1 - 0.2, zt - 0.05),
+          P_(0, d1 - 0.2, zr),
+          P_(0, d2, zr),
+          P_(-hw - 0.12, d2, zt - 0.05),
+          rc
+        );
+        K.quad(
+          P_(0, d1 - 0.2, zr),
+          P_(hw + 0.12, d1 - 0.2, zt - 0.05),
+          P_(hw + 0.12, d2, zt - 0.05),
+          P_(0, d2, zr),
+          rc
+        );
+        K.tri(P_(-hw, d1, zt), P_(hw, d1, zt), P_(0, d1, zr - 0.04), col);
+      }
+    }
   }
   // a tall window with a round arch on a wall: lower left corner on the wall line (ox, oy), along (ex, ey)
   function arch(K, ox, oy, ex, ey, z0, w, h, col) {
@@ -1259,6 +1541,27 @@ export const SCHL = (() => {
       K.disc(cx, cy, top + 0.4, nx * sg, ny * sg, 0.62, linC([0.92, 0.9, 0.82]), 16, false);
       K.box(cx + nx * sg * 0.02, cy + ny * sg * 0.02, top + 0.4, 0.05, 0.05, 0.45, Math.atan2(dy, dx), C.IRON);
     }
+    // the decorated front gable (Renaissance, photo 2008): steps with finials along both slopes, cream with yellow
+    if (f[6] > Math.max(f[4], f[7]) + 1) {
+      const uA = f[5],
+        a = Math.atan2(dy, dx),
+        CR = linC([0.95, 0.88, 0.62]);
+      for (const [ua, ta, ub, tb] of [
+        [0, f[4], uA, f[6]],
+        [L, f[7], uA, f[6]],
+      ])
+        for (let k = 1; k <= 3; k++) {
+          const t = k / 4,
+            u = ua + (ub - ua) * t,
+            zz = z + ta + (tb - ta) * t,
+            [x, y] = [f[0] + dx * u + nx * 0.05, f[1] + dy * u + ny * 0.05];
+          K.box(x, y, zz - 0.2, 0.55, 0.5, 0.75, a, CR);
+          K.ball(x, y, zz + 0.68, 0.13, C.GOLD, 6);
+        }
+      const [x, y] = [f[0] + dx * uA + nx * 0.05, f[1] + dy * uA + ny * 0.05];
+      K.box(x, y, z + f[6] - 0.2, 0.7, 0.5, 1.0, a, CR);
+      K.ball(x, y, z + f[6] + 0.95, 0.16, C.GOLD, 6);
+    }
     // a clock in the front gable, under the apex
     {
       const [cx, cy] = [f[0] + dx * (f[5] || L / 2) + nx * 0.04, f[1] + dy * (f[5] || L / 2) + ny * 0.04];
@@ -1332,45 +1635,245 @@ export const SCHL = (() => {
       k2.quad(h0, h1, [h1[0], h1[1], fl + 2.55], [h0[0], h0[1], fl + 2.55], linC([0.45, 0.08, 0.06]));
       k2.quad(h1, h0, [h0[0], h0[1], fl + 2.55], [h1[0], h1[1], fl + 2.55], linC([0.4, 0.07, 0.05]));
     }
-    // the counter of the Bürgerbüro along the back wall, a bench, a table, ceiling lamps (bright patches), the arms of the town
+    // ---- the council chamber (Ratssaal) with the Bürgerbüro: U of tables with the chair's seat under the arms, flags, rows for visitors,
+    // the counter on the right wall, windows, beams, ceiling lights, panelling, parquet; named spots for the tasks (S.rathaus.spots) ----
     const a = Math.atan2(dy, dx),
-      box = (u, w, zz, su, sw, sz, col) => {
+      uc = (u0 + u1) / 2,
+      box = (u, w, zz, su, sw, sz, col, rot = 0) => {
         const [x, y] = Q(u, w, 0);
-        k2.box(x, y, zz, su, sw, sz, a, col);
-      };
-    box(L / 2, w1 - 2.2, fl, Math.min(7, L - 3), 0.7, 1.05, linC([0.5, 0.34, 0.2]));
-    box(L / 2, w1 - 2.2, fl + 1.05, Math.min(7.2, L - 2.8), 0.85, 0.06, linC([0.8, 0.78, 0.72]));
-    box(L / 2, w1 - 0.9, fl, Math.min(6, L - 4), 0.6, 0.75, linC([0.35, 0.33, 0.32]));
-    box(u0 + 0.35, (w0 + w1) / 2, fl, 0.45, Math.min(5, w1 - w0 - 2), 0.45, linC([0.45, 0.3, 0.18]));
-    box(u1 - 2.2, w0 + 2.6, fl, 1.6, 0.9, 0.74, linC([0.5, 0.34, 0.2]));
-    for (const [u, w] of [
-      [L * 0.3, w0 + 3],
-      [L * 0.7, w0 + 3],
-      [L * 0.5, w1 - 4.5],
-    ])
-      box(u, w, zc - 0.06, 1.2, 0.3, 0.05, linC([1.6, 1.5, 1.2]));
-    // the arms (Henneberg: black hen on a green triple hill, gold field) on the back wall
-    {
-      const [x, y] = Q(L / 2, w1 - 0.03, 0);
-      k2.disc(x, y, fl + 2.35, nx, ny, 0.55, linC([0.85, 0.66, 0.2]), 16, false);
-      k2.disc(x + nx * 0.01, y + ny * 0.01, fl + 2.25, nx, ny, 0.22, linC([0.06, 0.06, 0.06]), 10, false);
-      k2.disc(x + nx * 0.01, y + ny * 0.01, fl + 1.95, nx, ny, 0.3, linC([0.1, 0.4, 0.15]), 10, false);
+        k2.box(x, y, zz, su, sw, sz, a + rot, col);
+      },
+      WOODD = linC([0.3, 0.18, 0.1]),
+      WOODM = linC([0.45, 0.29, 0.16]),
+      TOP = linC([0.36, 0.22, 0.12]),
+      CLOTH = linC([0.16, 0.25, 0.18]),
+      SEAT = linC([0.45, 0.12, 0.1]),
+      spots = { seats: [], visitors: [] },
+      spot = (u, w, face) => {
+        const [x, y] = Q(u, w, 0);
+        return { x, y, z: fl, yaw: (Math.atan2(face[0], face[1]) * 180) / Math.PI };
+      },
+      dirU = [dx, dy],
+      dirW = [-nx, -ny];
+    // a chair facing direction ang (relative to the front: 0 = towards +u); tall back for the chair's seat
+    const chair = (u, w, ang, tall) => {
+      const c = Math.cos(ang),
+        s2 = Math.sin(ang),
+        at = (du2, dw2) => [u + du2 * c - dw2 * s2, w + du2 * s2 + dw2 * c];
+      for (const [p, q] of [
+        [-0.19, -0.19],
+        [0.19, -0.19],
+        [-0.19, 0.19],
+        [0.19, 0.19],
+      ]) {
+        const [uu, ww] = at(p, q);
+        box(uu, ww, fl, 0.04, 0.04, 0.45, WOODD);
+      }
+      box(u, w, fl + 0.45, 0.46, 0.46, 0.06, tall ? SEAT : WOODM, ang);
+      const [bu, bw] = at(-0.22, 0);
+      box(bu, bw, fl + 0.5, 0.05, 0.46, tall ? 1.05 : 0.48, tall ? SEAT : WOODM, ang);
+    };
+    // the U: head table under the arms, two legs towards the door
+    const hw = 3.0,
+      wh = w1 - 1.6,
+      wl = w1 - 5.8;
+    box(uc, wh, fl, 2 * hw + 0.8, 0.8, 0.72, WOODD);
+    box(uc, wh, fl + 0.72, 2 * hw + 0.9, 0.9, 0.05, TOP);
+    for (const sg of [-1, 1]) {
+      box(uc + sg * hw, (wh + wl) / 2, fl, 0.8, wh - wl, 0.72, WOODD);
+      box(uc + sg * hw, (wh + wl) / 2, fl + 0.72, 0.9, wh - wl + 0.1, 0.05, TOP);
     }
-    const im = add(new THREE.Mesh(k2.geo(), new THREE.MeshBasicMaterial({ vertexColors: true })), 'rathaus innen');
+    box(uc, wh - 0.2, fl + 0.77, 2 * hw - 0.6, 0.35, 0.01, CLOTH);
+    // chairs behind the head table (the middle one: the chair's seat), along the legs outside
+    for (let k = -2; k <= 2; k++) {
+      chair(uc + k * 1.15, w1 - 0.75, -Math.PI / 2, k === 0);
+      spots.seats.push(spot(uc + k * 1.15, w1 - 0.75, [-dirW[0], -dirW[1]]));
+    }
+    spots.vorsitz = spots.seats[2];
+    for (const sg of [-1, 1])
+      for (let w = wh - 1.0; w > wl + 0.3; w -= 1.05) {
+        chair(uc + sg * (hw + 0.75), w, sg < 0 ? 0 : Math.PI, false);
+        spots.seats.push(spot(uc + sg * (hw + 0.75), w, sg < 0 ? dirU : [-dirU[0], -dirU[1]]));
+      }
+    // rows for visitors, facing the council; an aisle from the door
+    for (const w of [2.0, 2.85, 3.7])
+      for (let u = uc - hw - 0.4; u <= uc + hw + 0.4; u += 0.72) {
+        if (Math.abs(u - du) < 0.85 || u < u0 + 0.6 || u > u1 - 3.2) continue;
+        chair(u, w, Math.PI / 2, false);
+        spots.visitors.push(spot(u, w, dirW));
+      }
+    // the speaker's place in front of the U (where the Ortsvorsteher speaks)
+    spots.rednerpult = spot(uc, wl - 0.9, dirW);
+    box(uc, wl - 0.45, fl, 0.6, 0.45, 1.1, WOODM);
+    box(uc, wl - 0.45, fl + 1.1, 0.7, 0.5, 0.05, TOP);
+    // the Bürgerbüro: a counter along the right wall, a desk behind it
+    const ub = u1 - 2.1,
+      wb0 = 1.3,
+      wb1 = Math.min(4.9, wl - 0.5);
+    box(ub, (wb0 + wb1) / 2, fl, 0.65, wb1 - wb0, 1.05, linC([0.55, 0.37, 0.21]));
+    box(ub, (wb0 + wb1) / 2, fl + 1.05, 0.8, wb1 - wb0 + 0.1, 0.05, linC([0.82, 0.8, 0.74]));
+    box(u1 - 0.8, (wb0 + wb1) / 2, fl, 0.7, 1.4, 0.74, WOODM);
+    box(u1 - 0.8, (wb0 + wb1) / 2 - 0.3, fl + 0.74, 0.25, 0.4, 0.3, linC([0.08, 0.08, 0.09]));
+    spots.counter = spot(ub - 0.9, (wb0 + wb1) / 2, dirU);
+    spots.clerk = spot(u1 - 1.3, (wb0 + wb1) / 2, [-dirU[0], -dirU[1]]);
+    // flags left and right of the arms: Thuringia (white over red) and Germany (black, red, gold)
+    for (const [sg, cols] of [
+      [-1, [linC([0.95, 0.95, 0.95]), linC([0.75, 0.05, 0.06])]],
+      [1, [linC([0.04, 0.04, 0.04]), linC([0.75, 0.05, 0.06]), linC([0.95, 0.75, 0.05])]],
+    ]) {
+      const uu = uc + sg * 1.7,
+        ww = w1 - 0.4;
+      box(uu, ww, fl, 0.05, 0.05, 2.7, linC([0.7, 0.62, 0.35]));
+      const n = cols.length;
+      cols.forEach((col, k) => {
+        const z0 = fl + 2.6 - ((k + 1) * 1.3) / n,
+          z1 = fl + 2.6 - (k * 1.3) / n,
+          A_ = Q(uu + 0.03, ww, z0),
+          B_ = Q(uu + 0.03 + 0.8 * sg, ww, z0);
+        k2.quad(A_, B_, [B_[0], B_[1], z1], [A_[0], A_[1], z1], col);
+        k2.quad(B_, A_, [A_[0], A_[1], z1], [B_[0], B_[1], z1], col);
+      });
+    }
+    // windows (daylight in the panes) in the front and the left wall, with frames and sills
+    const SKY = linC([0.78, 0.86, 0.95]),
+      FRM = linC([0.95, 0.95, 0.93]);
+    const win = (P0, P1, nrm) => {
+      // P0, P1: the window's lower corners on the wall (z = fl + 0.95), nrm: into the room (only to push the panes off the wall)
+      const o = (p, d) => [p[0] + nrm[0] * d, p[1] + nrm[1] * d],
+        [a0, a1] = [o(P0, 0.02), o(P1, 0.02)],
+        [b0, b1] = [o(P0, 0.03), o(P1, 0.03)],
+        za = fl + 0.95,
+        zb = fl + 2.55;
+      k2.quad(
+        [a0[0], a0[1], za - 0.08],
+        [a1[0], a1[1], za - 0.08],
+        [a1[0], a1[1], zb + 0.08],
+        [a0[0], a0[1], zb + 0.08],
+        FRM
+      );
+      k2.quad([b0[0], b0[1], za], [b1[0], b1[1], za], [b1[0], b1[1], zb], [b0[0], b0[1], zb], SKY);
+      const m0 = [(b0[0] + b1[0]) / 2, (b0[1] + b1[1]) / 2],
+        m1 = o(m0, 0.005);
+      k2.box(m1[0], m1[1], za, 0.05, 0.05, zb - za, Math.atan2(b1[1] - b0[1], b1[0] - b0[0]), FRM);
+    };
+    for (const u of [1.6, 3.6, du + 2.6, du + 4.6, u1 - 1.4])
+      if (u > u0 + 0.6 && u < u1 - 0.6 && Math.abs(u - du) > 1.4) win(Q(u + 0.5, w0 + 0.0), Q(u - 0.5, w0 + 0.0), dirW);
+    for (const w of [2.5, 5.5, 8.5]) if (w < w1 - 0.8) win(Q(u0, w - 0.5), Q(u0, w + 0.5), dirU);
+    // ceiling: beams across, round lights
+    for (let w = w0 + 1.6; w < w1 - 0.5; w += 2.2) box(uc, w, zc - 0.3, u1 - u0, 0.24, 0.3, WOODD);
+    for (const [u, w] of [
+      [uc - 3.5, 2.6],
+      [uc + 3.5, 2.6],
+      [uc - 3.5, 6.9],
+      [uc + 3.5, 6.9],
+      [uc, 4.7],
+      [uc, w1 - 2.2],
+    ]) {
+      const [x, y] = Q(u, w, 0);
+      k2.disc(x, y, zc - 0.33, 0, 0, 0.3, linC([1.9, 1.85, 1.7]), 14, true);
+    }
+    // panelling round the walls (a dark wood band to 1 m) and a picture rail
+    const panel = (A_, B_, nrm) => {
+      const o = (p, d) => [p[0] + nrm[0] * d, p[1] + nrm[1] * d],
+        a0 = o(A_, 0.015),
+        a1 = o(B_, 0.015);
+      k2.quad(
+        [a0[0], a0[1], fl],
+        [a1[0], a1[1], fl],
+        [a1[0], a1[1], fl + 1.0],
+        [a0[0], a0[1], fl + 1.0],
+        linC([0.33, 0.21, 0.12])
+      );
+    };
+    panel(Q(dg0, w0), Q(u0, w0), dirW);
+    panel(Q(u1, w0), Q(dg1, w0), dirW);
+    panel(Q(u0, w0), Q(u0, w1), dirU);
+    panel(Q(u0, w1), Q(u1, w1), [-dirW[0], -dirW[1]]);
+    panel(Q(u1, w1), Q(u1, w0), [-dirU[0], -dirU[1]]);
+    // parquet: boards along the room
+    for (let k = 0, w = w0; w < w1 - 0.01; w += 0.6, k++) {
+      const wa = w,
+        wb2 = Math.min(w1, w + 0.6);
+      k2.quad(
+        Q(u0, wa, fl + 0.005),
+        Q(u1, wa, fl + 0.005),
+        Q(u1, wb2, fl + 0.005),
+        Q(u0, wb2, fl + 0.005),
+        k % 2 ? linC([0.5, 0.33, 0.19]) : linC([0.56, 0.38, 0.22])
+      );
+    }
+    // the arms of Schleusingen (Henneberg: a black hen with a red comb on a green triple hill, gold field) as a shield on the back wall
+    {
+      const GD = linC([0.88, 0.68, 0.2]),
+        GR = linC([0.12, 0.42, 0.16]),
+        BK = linC([0.05, 0.05, 0.05]),
+        RD = linC([0.75, 0.08, 0.06]),
+        zs = fl + 1.75,
+        S_ = (u, v, off) => {
+          const p = Q(uc + u, w1 - 0.03 - off, 0);
+          return [p[0], p[1], zs + v];
+        };
+      k2.quad(S_(-0.45, 0.25, 0), S_(0.45, 0.25, 0), S_(0.45, 1.05, 0), S_(-0.45, 1.05, 0), GD);
+      k2.tri(S_(-0.45, 0.25, 0), S_(0, -0.25, 0), S_(0.45, 0.25, 0), GD);
+      for (const [uh, r] of [
+        [-0.25, 0.2],
+        [0, 0.26],
+        [0.25, 0.2],
+      ]) {
+        const q = S_(uh, 0, 0.01);
+        k2.disc(q[0], q[1], zs + 0.22, nx, ny, r, GR, 12, false);
+      }
+      const disc = (u, v, r, col) => {
+        const q = S_(u, 0, 0.02);
+        k2.disc(q[0], q[1], zs + v, nx, ny, r, col, 12, false);
+      };
+      disc(0, 0.62, 0.17, BK);
+      disc(0.13, 0.78, 0.07, BK);
+      disc(0.17, 0.88, 0.06, BK);
+      disc(0.17, 0.95, 0.035, RD);
+      k2.tri(S_(-0.12, 0.62, 0.02), S_(-0.05, 0.75, 0.02), S_(-0.3, 0.92, 0.02), BK);
+      k2.quad(S_(-0.04, 0.38, 0.02), S_(-0.02, 0.38, 0.02), S_(-0.02, 0.5, 0.02), S_(-0.04, 0.5, 0.02), BK);
+      k2.quad(S_(0.04, 0.38, 0.02), S_(0.06, 0.38, 0.02), S_(0.06, 0.5, 0.02), S_(0.04, 0.5, 0.02), BK);
+    }
+    // light baked into the colours: brighter under the ceiling lights and in the middle, darker in the corners and low down
+    const g2 = k2.geo(),
+      P2 = g2.attributes.position,
+      C2 = g2.attributes.color,
+      [cx0, cy0] = Q(uc, (w0 + w1) / 2, 0),
+      rmax = Math.hypot(u1 - u0, w1 - w0) / 2;
+    for (let i = 0; i < P2.count; i++) {
+      const x = P2.getX(i),
+        y = -P2.getZ(i),
+        zz = P2.getY(i),
+        r = Math.min(1, Math.hypot(x - cx0, y - cy0) / rmax),
+        k = 0.72 + 0.28 * (1 - r * r) + 0.08 * Math.min(1, Math.max(0, (zz - fl) / 3.3));
+      C2.setXYZ(i, C2.getX(i) * k, C2.getY(i) * k, C2.getZ(i) * k);
+    }
+    const im = add(new THREE.Mesh(g2, new THREE.MeshBasicMaterial({ vertexColors: true })), 'rathaus innen');
     im.userData.own = true;
-    // collisions inside: the walls of the hall (the door gap stays open), the counter
+    // collisions inside: the walls of the hall (the door gap stays open), the U of tables, the counter, the speaker's desk
     const seg = (p, q) => S.segs.push([p[0], p[1], q[0], q[1]]);
     seg(Q(u0, w0), Q(dg0, w0));
     seg(Q(dg1, w0), Q(u1, w0));
     seg(Q(u0, w0), Q(u0, w1));
     seg(Q(u0, w1), Q(u1, w1));
     seg(Q(u1, w1), Q(u1, w0));
-    const cu = Math.min(7, L - 3) / 2;
-    seg(Q(L / 2 - cu, w1 - 2.55), Q(L / 2 + cu, w1 - 2.55));
-    seg(Q(L / 2 - cu, w1 - 1.85), Q(L / 2 + cu, w1 - 1.85));
+    const rect = (ua, wa, ub2, wb3) => {
+      seg(Q(ua, wa), Q(ub2, wa));
+      seg(Q(ub2, wa), Q(ub2, wb3));
+      seg(Q(ub2, wb3), Q(ua, wb3));
+      seg(Q(ua, wb3), Q(ua, wa));
+    };
+    rect(uc - hw - 0.4, wh - 0.4, uc + hw + 0.4, wh + 0.4);
+    rect(uc - hw - 0.4, wl, uc - hw + 0.4, wh);
+    rect(uc + hw - 0.4, wl, uc + hw + 0.4, wh);
+    rect(ub - 0.33, wb0, ub + 0.33, wb1);
+    rect(uc - 0.3, wl - 0.68, uc + 0.3, wl - 0.22);
     S.rathaus.Q = Q;
-    S.rathaus.counter = Q(L / 2, w1 - 3.1); // where one stands at the counter (Ortsvorsteher: the concerns of Ratscher)
-    S.rathaus.clerk = Q(L / 2, w1 - 1.5); // behind the counter
+    S.rathaus.spots = spots;
+    S.rathaus.counter = [spots.counter.x, spots.counter.y]; // where one stands at the counter (Ortsvorsteher: the concerns of Ratscher)
+    S.rathaus.clerk = [spots.clerk.x, spots.clerk.y]; // behind the counter
+    S.rathaus.counterSign = Q(u1 - 0.04, (wb0 + wb1) / 2, fl + 2.1);
   }
   // a second kit for the hall (unlit colours: the light of the ceiling lamps is in them)
   const kit2 = () => VPROPS.kit();
@@ -1454,6 +1957,76 @@ export const SCHL = (() => {
     }
     iL.userData.own = true;
     if (VPROPS.lamps) VPROPS.lamps.push(...S.lamps);
+    // light on the ground under each lamp at night: the soft disc of the village lamps (same material, shown with theirs)
+    if (VPROPS.pool) {
+      const pg = new THREE.PlaneGeometry(9, 9);
+      pg.rotateX(-Math.PI / 2);
+      const iP = new THREE.InstancedMesh(pg, VPROPS.pool.material, L.length);
+      L.forEach(([x, y], i) => {
+        m4.makeTranslation(x, ground(x, y) + 0.12, -y);
+        iP.setMatrixAt(i, m4);
+      });
+      iP.renderOrder = 2;
+      iP.computeBoundingSphere();
+      iP.visible = VPROPS.pool.visible;
+      S.pool = add(iP, 'lamp light');
+    }
+  }
+  // ---- the streets over the photo (welt/welt.js overlay): asphalt with kerbs on the through roads, sett in the old town and on the Markt,
+  // paving on footways; r = cover, g/r = surface (OSM surface, else by class and place) ----
+  function streetMap() {
+    const half = 460,
+      size = 2 * half,
+      N = 1024,
+      x0 = MARKT[0] - half,
+      y0 = MARKT[1] - half,
+      sc = N / size,
+      cv = document.createElement('canvas');
+    cv.width = cv.height = N;
+    const g = cv.getContext('2d'),
+      X = x => (x - x0) * sc,
+      Y = y => (y0 + size - y) * sc,
+      SURF = {
+        asphalt: 40,
+        concrete: 40,
+        paved: 40,
+        sett: 120,
+        cobblestone: 120,
+        'cobblestone:flattened': 120,
+        unhewn_cobblestone: 120,
+        paving_stones: 200,
+      },
+      W = { 1: 8.0, 2: 7.0, 3: 5.6, 5: 3.6, 8: 2.2 };
+    g.fillStyle = '#000';
+    g.fillRect(0, 0, N, N);
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    const list = data.st.filter(s2 => W[s2.k]).sort((p2, q) => W[q.k] - W[p2.k]);
+    for (const s2 of list) {
+      const p = s2.p,
+        mx = p[(p.length >> 2) * 2],
+        my = p[(p.length >> 2) * 2 + 1];
+      let code = SURF[s2.s];
+      if (code === undefined)
+        code = s2.k <= 2 ? 40 : s2.k === 8 ? 200 : Math.hypot(mx - MARKT[0], my - MARKT[1]) < 320 ? 120 : 40;
+      g.strokeStyle = `rgb(255,${code},0)`;
+      g.lineWidth = W[s2.k] * sc;
+      g.beginPath();
+      for (let k = 0; k < p.length; k += 2) (k ? g.lineTo : g.moveTo).call(g, X(p[k]), Y(p[k + 1]));
+      g.stroke();
+    }
+    if (data.marktplatz) {
+      const m = data.marktplatz;
+      g.fillStyle = 'rgb(255,120,0)';
+      g.beginPath();
+      for (let k = 0; k < m.length; k += 2) (k ? g.lineTo : g.moveTo).call(g, X(m[k]), Y(m[k + 1]));
+      g.closePath();
+      g.fill();
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.NoColorSpace;
+    tex.anisotropy = 4;
+    if (WELT.setOverlay) WELT.setOverlay(tex, x0, y0, size);
   }
   // ---- collisions: wall segments in a 16 m grid ----
   function grid() {
@@ -1565,6 +2138,36 @@ export const SCHL = (() => {
     return best ? best + ', Schleusingen' : 'Schleusingen';
   }
   S.place = place;
+  // sitting down: on the benches of the Markt and on every chair of the council chamber (the tasks have their own seats too)
+  const nearSeat = () => {
+    if (S.state !== 'ready' || P.mode !== 'walk') return null;
+    const R = S.rathaus,
+      all = (S.benchSpots || []).concat(R && R.spots ? R.spots.seats.concat(R.spots.visitors) : []);
+    let best = null,
+      bd = 1.3;
+    for (const s2 of all) {
+      const d = Math.hypot(s2.x - P.x, s2.y - P.y);
+      if (d < bd && Math.abs(s2.z - P.feet) < 0.8) {
+        bd = d;
+        best = s2;
+      }
+    }
+    return best;
+  };
+  PLAY.act({
+    id: 'schl:sit',
+    r: 1.3,
+    prio: 0.03,
+    label: () => (!PLAY.seat && nearSeat() ? 'Hinsetzen' : null),
+    pos: () => {
+      const s2 = nearSeat();
+      return s2 ? [s2.x, s2.y, s2.z + 0.6] : null;
+    },
+    run: () => {
+      const s2 = nearSeat();
+      if (s2) PLAY.sit({ x: s2.x, y: s2.y, eye: s2.z + 1.2, yaw: s2.yaw, pitch: -6, leaveLabel: 'Aufstehen' });
+    },
+  });
   KERN.provide('place', place, 20);
   KERN.provide('ground', (x, y) => (S.state === 'ready' && inHall(x, y) ? S.rathaus.floor : undefined), 10);
   KERN.provide('pushOut', pushOut, 10);
@@ -1575,6 +2178,10 @@ export const SCHL = (() => {
     acc += dt;
     if (acc < 0.4) return;
     acc = 0;
+    if (S.pool && VPROPS.pool && S.pool.visible !== VPROPS.pool.visible) {
+      S.pool.visible = VPROPS.pool.visible;
+      markDirty();
+    }
     const walk = P.mode === 'walk',
       cx = walk ? P.x : cam.position.x,
       cy = walk ? P.y : -cam.position.z,
@@ -1602,6 +2209,8 @@ export const SCHL = (() => {
     buildings: S.bld.length,
     segs: S.segs.length,
     lamps: S.lamps.length,
+    trees: S.trees || 0,
+    signs: (S.signs || []).length,
     ms: S.ms,
     loadMs: S.loadMs || 0,
     err: S.err,
