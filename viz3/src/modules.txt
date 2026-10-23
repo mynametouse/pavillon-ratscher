@@ -34,6 +34,8 @@ garden/stream.js            #
 garden/workshop.js          # workshop building Klingenholz with machines, band sawmill, generator (WORKS)
 garden/fences.js            # fences (FENCES)
 # feat/nachbarn: Hubert's and Ronald's yards below this line
+garden/hof_hubert.js        # Hubert's yard: workshops open to the east, drying huts, wood yard, table and chairs, the car's ramp (HOF)
+garden/hof_auto.js          # Hubert's estate car (about 2005, generic) on its ramp, the bonnet opens (HOFCAR)
 garden/trees.js             # 
 garden/grass.js             # 
 render/render.js            # render pipeline, quality tiers, HDRI image light, baked GI (and its day/night mixing)
@@ -78,6 +80,7 @@ time/daynight.js            # day and night after the clock: sun, moon, stars, l
 garden/workshop_lamp.js     # workshop LED lights with motion sensor (WLAMP)
 npc/hours.js                # neighbours at home at night
 # feat/nachbarn: neighbour routines below this line
+npc/life.js                 # the neighbours' day: work, mowing, the trip to the village, talks at the table (LIFE)
 vehicles/vsound.js          # V16b vehicle sounds: engine, tyres, wind, horn, doors (VSND)
 vehicles/vehicle.js         # V16b vehicles: physics, getting in and out, cameras, lights, HUD (VEH)
 vehicles/car.js             # V16b the car: estate in Logan MCV size (V16b1), Beige Sable (CAR)
