@@ -1022,9 +1022,12 @@ export const SCHL = (() => {
         for (let k = 0; k < b.f.length; k += 2) r += Math.hypot(b.f[k] - cx, b.f[k + 1] - cy) / n;
         tw.push([cx, cy, r]);
       }
-      for (const [x, y, r] of tw) {
-        const z = b.z0,
-          h = b.lm === 'turm' ? 13 : b.e + 4;
+      for (const [x, y, r0] of tw) {
+        // the round towers: a sandstone shaft with small windows, a slender pointed slate helm (photos from the south, 2025)
+        const r = Math.min(r0, 4.0),
+          z = b.z0,
+          h = b.lm === 'turm' ? 13 : b.e + 4,
+          hc = r * 2.7 + 2.5;
         K.lathe(
           x,
           y,
@@ -1040,16 +1043,32 @@ export const SCHL = (() => {
         K.lathe(
           x,
           y,
-          z + h,
+          z + h + 0.9,
           [
-            [r + 0.45, 0],
-            [0.12, r * 2.4 + 2],
-            [0.04, r * 2.4 + 3.4],
+            [r + 0.25, 0],
+            [0.12, hc],
+            [0.04, hc + 1.4],
           ],
           14,
           SLATE
         );
-        K.ball(x, y, z + h + r * 2.4 + 3.4, 0.16, GOLD, 6);
+        K.ball(x, y, z + h + 0.9 + hc + 1.4, 0.16, GOLD, 6);
+        for (let fl2 = 0; fl2 < Math.floor((h - 2) / 3.2); fl2++)
+          for (let k = 0; k < 3; k++) {
+            const an = (k / 3) * Math.PI * 2 + fl2 * 0.9 + x,
+              ox = x + Math.cos(an) * (r + 0.02),
+              oy = y + Math.sin(an) * (r + 0.02),
+              ex = -Math.sin(an),
+              ey = Math.cos(an),
+              zz = z + 2.2 + fl2 * 3.2;
+            K.quad(
+              [ox - ex * 0.3, oy - ey * 0.3, zz],
+              [ox + ex * 0.3, oy + ey * 0.3, zz],
+              [ox + ex * 0.3, oy + ey * 0.3, zz + 1.0],
+              [ox - ex * 0.3, oy - ey * 0.3, zz + 1.0],
+              DARK
+            );
+          }
         S.segs.push(...circleSegs(x, y, r, 10));
       }
       // the caps of the stair towers: a dark curved cap with a lantern and a finial (courtyard photo 2008)

@@ -159,7 +159,7 @@ with lib.browser() as b:
             x, y = vp['burg']
             view(x, y, yaw(x, y, -1290, 1172), 14)
             lib.shot(pg, OUT, 'e_bertholdsburg')
-        # the castle: its courtyard with the stair towers from above, and from the north-east
+        # the castle: its courtyard with the stair towers from above, and from the north-west (as the photo 2025)
         cb = json.loads(E("JSON.stringify((() => { const b = SCHL.bld.find(q => q.lm === 'burg'); return b ? [b.cx, b.cy, b.z0] : null; })())"))
         if cb:
             E(f"GAME.orbit(150, 38, 75, [{cb[0]}, {cb[1]}, {cb[2] + 8}]); GAME.step(0.5)")
@@ -169,8 +169,8 @@ with lib.browser() as b:
                     break
                 time.sleep(0.3)
             lib.shot(pg, OUT, 'e2_burg_hof')
-            E(f"GAME.orbit(40, 14, 95, [{cb[0]}, {cb[1]}, {cb[2] + 10}]); GAME.step(0.5)")
-            lib.shot(pg, OUT, 'e3_burg_nordost')
+            E(f"GAME.orbit(318, 12, 105, [{cb[0]}, {cb[1]}, {cb[2] + 10}]); GAME.step(0.5)")
+            lib.shot(pg, OUT, 'e3_burg_nordwest')
         E("""(() => { const R = SCHL.rathaus, p = R.Q(R.L / 2 - 2, 1.4, 0), q = R.Q(R.L / 2, R.w1, 0);
             GAME.view(p[0], p[1], R.floor + 1.62, Math.atan2(q[0] - p[0], q[1] - p[1]) * 180 / Math.PI, -4, 70); for (let i = 0; i < 8; i++) GAME.step(0.25); })()""")
         lib.shot(pg, OUT, 'f_rathaus_halle')
