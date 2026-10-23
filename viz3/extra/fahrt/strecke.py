@@ -358,6 +358,70 @@ def inside_box(x, y, m=0.0):
     return BOX[0] + m < x < BOX[2] - m and BOX[1] + m < y < BOX[3] - m
 
 
+def solve_pinned(pos, chains, dem, pin=1e7):
+    """tools/welt/roads.py solve_profile (the same data and curvature terms), and the nodes inside the square held at the app's 10 m
+    terrain – the ground the car drives on there. Smoothed freely, a profile that leaves the square could sit a metre and more off that
+    terrain at the edge (L 1625 west: 1.4 m below it; the tiles outside are lower) – a step at the edge. Held, it leaves the square at
+    the terrain's height and slope and the smoothing happens outside."""
+    from scipy.sparse import coo_matrix, diags
+    from scipy.sparse.linalg import spsolve
+    N = len(pos)
+    rows_d, vals_d, rhs_d = [], [], []
+    axis = dem.sample(pos[:, 0], pos[:, 1])
+    data_t = np.full(N, np.nan)
+    for w, ids in chains:
+        P = pos[ids]
+        t, L = WR.tangents(P)
+        nrm = np.stack([-t[:, 1], t[:, 0]], 1)
+        hw = max(w['w'] / 2, 1.0)
+        offs = np.linspace(-hw, hw, max(3, int(round(2 * hw / 0.5)) + 1))
+        S = P[:, None, :] + offs[None, :, None] * nrm[:, None, :]
+        H = dem.sample(S[..., 0].ravel(), S[..., 1].ravel()).reshape(len(P), len(offs))
+        med = np.nanmedian(H, axis=1)
+        mad = np.nanmedian(np.abs(H - med[:, None]), axis=1)
+        ds = np.zeros(len(P))
+        ds[:-1] += L / 2
+        ds[1:] += L / 2
+        conf = 1.0 / (1.0 + (mad / 0.35) ** 2)
+        wgt = np.where(w['fl'] & 3, 1e-6, np.maximum(ds, 0.2) * conf)
+        rows_d.append(ids)
+        vals_d.append(wgt)
+        rhs_d.append(wgt * med)
+        data_t[ids] = np.where(np.isfinite(data_t[ids]), data_t[ids], med)
+    I = np.concatenate(rows_d)
+    Wd = np.bincount(I, weights=np.concatenate(vals_d), minlength=N)
+    bd = np.bincount(I, weights=np.concatenate(rhs_d), minlength=N)
+    Wd += 1e-6
+    bd += 1e-6 * np.nan_to_num(axis, nan=np.nanmean(axis))
+    # held: inside the square, at the terrain under the axis (TileDem.sample gives the 10 m terrain there)
+    mx, my = u2m(pos[:, 0], pos[:, 1])
+    ins = (mx > BOX[0]) & (mx < BOX[2]) & (my > BOX[1]) & (my < BOX[3]) & np.isfinite(axis)
+    Wd[ins] += pin
+    bd[ins] += pin * axis[ins]
+    rr, cc, vv = [], [], []
+    r0 = 0
+    for w, ids in chains:
+        if len(ids) < 3:
+            continue
+        P = pos[ids]
+        d = np.maximum(np.hypot(*np.diff(P, axis=0).T), 0.05)
+        d1, d2 = d[:-1], d[1:]
+        dm = (d1 + d2) / 2
+        lam = 1e9 if w['fl'] & 3 else (WR.KINDS[w['kind']][3] / (2 * math.pi)) ** 4
+        sw = np.sqrt(lam * dm)
+        n = len(d1)
+        rows = np.arange(r0, r0 + n)
+        rr += [rows, rows, rows]
+        cc += [ids[:-2], ids[1:-1], ids[2:]]
+        vv += [sw / (d1 * dm), -sw * (1 / d1 + 1 / d2) / dm, sw / (d2 * dm)]
+        r0 += n
+    C = coo_matrix((np.concatenate(vv), (np.concatenate(rr), np.concatenate(cc))), shape=(r0, N)).tocsr()
+    A = (C.T @ C + diags(Wd)).tocsc()
+    h = spsolve(A, bd)
+    log('Profile: im Quadrat gehalten', int(ins.sum()), 'Knoten')
+    return h, axis, data_t
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--raw', required=True)
@@ -392,7 +456,7 @@ def main():
     log('Straßen', len(keep), 'von', len(W))
     pos, chains = WR.network(keep, nodeE, step=2.0)
     dem.prefetch(pos[:, 0], pos[:, 1])
-    h, axis, data_t = WR.solve_profile(pos, chains, dem)
+    h, axis, data_t = solve_pinned(pos, chains, dem)
     h = overpasses(pos, chains, h)
     res = WR.metrics(pos, chains, h, axis)
     WR.print_metrics(res, '(Fahrt: vorher = Kachelhöhe an der Achse, nachher = geglättetes Längsprofil)')

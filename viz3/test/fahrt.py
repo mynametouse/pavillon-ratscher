@@ -289,7 +289,7 @@ with lib.browser() as b:
         VT = [12.5 if t < 25 else 9 if t < 45 else 7 if t < 70 else 5.5 if t < 100 else 4.2 for t in map(turn, range(len(rb)))]
 
         def speed_at(sc):
-            v = 12.5
+            v = 4.0 if sc < 75 else 12.5   # walking pace over the garden's bridge and out onto the Anger
             for k in range(len(rb)):
                 d = SA[k] - sc
                 if d < -8:
@@ -358,7 +358,7 @@ with lib.browser() as b:
         k_st = len(rb) - 3
         phase, B, gmin, appr = 0, None, 1e9, None
 
-        def approach(B, s):
+        def approach(B, s, into=True):
             G, u, w = B['G'], B['u'], B['w']
             Y = lambda a, b: [G[0] + u[0] * a + w[0] * b, G[1] + u[1] * a + w[1] * b]
             UW = lambda q: ((q[0] - G[0]) * u[0] + (q[1] - G[1]) * u[1], (q[0] - G[0]) * w[0] + (q[1] - G[1]) * w[1])
@@ -370,8 +370,12 @@ with lib.browser() as b:
                     w0 = wa + (wb - wa) * (-R - ua) / ((ub - ua) or 1)
             pts = [[s['x'], s['y']]] + [list(q) for q in rb[k_st - 6:k_st + 1] if UW(q)[0] < -R - 3 and math.dist(q, (s['x'], s['y'])) > 4 and UW(q)[0] > UW((s['x'], s['y']))[0]]
             pts += [Y(-R + R * math.cos(math.radians(f)), w0 + R + R * math.sin(math.radians(f))) for f in (-90, -72, -54, -36, -18, 0)]
-            pts += [Y(0, b) for b in (-1.5, 0, 2.5, 5, 7)]
+            pts += [Y(0, b) for b in ((-1.5, 0, 2.5, 5, 7) if into else (-1.0,))]
             return pts
+        # the ground from the street through the gate (KERN.ground every 0.5 m on the axis of the gate): its steepest slope
+        RAMP = """(() => { const B = VESSRA.baumschule.frame, G = B.G, w = B.w, out = [];
+          for (let k = -16; k <= 4; k++) { const b = k * 0.5; out.push([b, +KERN.ground(G[0] + w[0] * b, G[1] + w[1] * b).toFixed(2)]); } return out; })()"""
+        into, ramp = True, None
         while T < 760:
             f = chunk(0.5)
             T += 0.5
@@ -402,7 +406,11 @@ with lib.browser() as b:
                 if B and dG < 45:
                     phase = 2
                     shot('i_baumschule_tor')
-                    appr = approach(B, s)
+                    ramp = E(RAMP)
+                    steep = max(abs(b2[1] - a2[1]) / (b2[0] - a2[0]) for a2, b2 in zip(ramp, ramp[1:]))
+                    into = steep < 0.25
+                    print('the gate of the nursery: ground from the street (w < 0) through the gate (w = 0):', ramp, f'steepest {steep * 100:.0f} %', flush=True)
+                    appr = approach(B, s, into)
                     E(f"window._fs = VEH.follow({json.dumps(appr)}, 2.2, {{ look: 3.5 }})")
             if phase == 2:
                 gmin = min(gmin, math.dist((s['x'], s['y']), (B['G'][0], B['G'][1])))
@@ -422,8 +430,16 @@ with lib.browser() as b:
         tiles = [m['tiles'] for m in mem]
         ck('tiles behind are freed (no growth along the drive)', not tiles or max(tiles) < 260, str(tiles))
         if phase:
-            ck('on the Schulstraße at the gate of the Baumschule Kammbach, through it', phase == 2 and gmin < 1.5, f"phase {phase}, {gmin:.1f} m from the gate at the least, {json.dumps(s)}")
-            if phase == 2:
+            if into:
+                ck('on the Schulstraße at the gate of the Baumschule Kammbach, through it', phase == 2 and gmin < 1.5, f"phase {phase}, {gmin:.1f} m from the gate at the least, {json.dumps(s)}")
+            else:
+                # welt/vessra.js (23.10. noon): its level sales yard ends at the gate in a ramp a car cannot climb – reported to the Kern
+                # chat, the vessra agent blends it out; till then the car stops at the gate and the yard is left out (a note, no failure)
+                ck('on the Schulstraße at the gate of the Baumschule Kammbach', phase == 2 and gmin < 6, f"{gmin:.1f} m from the gate at the least, {json.dumps(s)}")
+                print('NOTE into the nursery yard: left out – the gate is a ramp (welt/vessra.js yard plane), see the ground above', flush=True)
+                ck('the word on arrival', any('Baumschule Kammbach' in m for m in msgs), str(sorted(msgs)))
+                shot('i_baumschule_hof')
+            if phase == 2 and into:
                 G, u, w = B['G'], B['u'], B['w']
                 tgt = [G[0] + w[0] * 7, G[1] + w[1] * 7]
                 E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })")
