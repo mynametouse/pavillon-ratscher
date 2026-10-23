@@ -8,7 +8,7 @@
 // (game/quests.js). Site coordinates: x east, y north, z up (metres).
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
-import { ANISO, patchSV, plain } from '../core/assets.js';
+import { ANISO, markDirty, patchSV, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { B, beam, COL, cyl, siteUV } from '../core/geo.js';
 import { S0 } from './env.js';
@@ -36,42 +36,48 @@ function canvasTex(w, h, draw, rep) {
 const LOGEND = patchSV(
   new THREE.MeshStandardMaterial({
     map: canvasTex(256, 256, (q, w, h) => {
-      q.fillStyle = '#2a1f17';
+      q.fillStyle = '#35271c';
       q.fillRect(0, 0, w, h);
       const r0 = (
         s => () =>
           ((s = (s * 16807) % 2147483647) - 1) / 2147483646
       )(99);
-      for (let row = 0; row < 9; row++)
-        for (let col = 0; col < 9; col++) {
-          const cx = (col + 0.5 + (row % 2) * 0.5) * (w / 8.6) + (r0() - 0.5) * 6,
-            cy = (row + 0.5) * (h / 8.6) + (r0() - 0.5) * 5,
-            r = 11 + r0() * 6,
-            a0 = r0() * Math.PI * 2,
-            kind = r0();
-          const l = 0.75 + r0() * 0.3;
-          q.fillStyle = `rgb(${(205 * l) | 0},${(160 * l) | 0},${(112 * l) | 0})`;
+      // a piece of split wood seen from its end: a wedge (quarter), a half or a whole round, bark on the round side, rings
+      const piece = (cx, cy, r, a0, kind, l) => {
+        const span = kind < 0.42 ? Math.PI / 2 + r0() * 0.5 : kind < 0.84 ? Math.PI : Math.PI * 2;
+        q.fillStyle = `rgb(${(208 * l) | 0},${(163 * l) | 0},${(114 * l) | 0})`;
+        q.beginPath();
+        if (span < 6) q.moveTo(cx, cy);
+        q.arc(cx, cy, r, a0, a0 + span);
+        q.closePath();
+        q.fill();
+        q.strokeStyle = 'rgba(80,55,35,0.6)';
+        q.lineWidth = 1.2;
+        q.stroke();
+        q.strokeStyle = 'rgba(88,62,44,0.9)'; // bark
+        q.lineWidth = 2.4;
+        q.beginPath();
+        q.arc(cx, cy, r - 1, a0 + 0.05, a0 + span - 0.05);
+        q.stroke();
+        q.strokeStyle = 'rgba(125,85,48,0.3)';
+        q.lineWidth = 1;
+        for (let k = 1; k < 4; k++) {
           q.beginPath();
-          if (kind < 0.45) {
-            q.moveTo(cx, cy);
-            q.arc(cx, cy, r * 1.25, a0, a0 + Math.PI / 2 + r0() * 0.6);
-          } else if (kind < 0.85) {
-            q.moveTo(cx, cy);
-            q.arc(cx, cy, r, a0, a0 + Math.PI);
-          } else q.arc(cx, cy, r * 0.8, 0, Math.PI * 2);
-          q.closePath();
-          q.fill();
-          q.strokeStyle = 'rgba(70,45,25,0.55)';
-          q.lineWidth = 2;
+          q.arc(cx, cy, (r * k) / 4.2, a0, a0 + Math.min(span, Math.PI * 1.99));
           q.stroke();
-          q.strokeStyle = 'rgba(120,80,45,0.25)';
-          q.lineWidth = 1;
-          for (let k = 1; k < 4; k++) {
-            q.beginPath();
-            q.arc(cx, cy, (r * k) / 4, a0, a0 + Math.PI);
-            q.stroke();
-          }
         }
+      };
+      for (let row = 0; row < 11; row++)
+        for (let col = 0; col < 11; col++)
+          piece(
+            (col + 0.5 + (row % 2) * 0.5) * (w / 10.6) + (r0() - 0.5) * 5,
+            (row + 0.5) * (h / 10.6) + (r0() - 0.5) * 4,
+            10 + r0() * 5,
+            r0() * Math.PI * 2,
+            r0(),
+            0.72 + r0() * 0.32
+          );
+      for (let k = 0; k < 50; k++) piece(r0() * w, r0() * h, 5 + r0() * 3, r0() * 6.3, r0() * 0.84, 0.7 + r0() * 0.3);
     }),
     roughness: 0.95,
   })
@@ -531,6 +537,7 @@ HOF.fillHut = f => {
   hut.fill = Math.max(0.05, Math.min(1, f));
   HOF.stack.scale.y = 1.62 * hut.fill;
   stackUV(HOF.stack.geometry, HOF.stack.scale.y, HOF.stackHut);
+  markDirty();
 };
 // ---- the wood yard: long logs on sleepers, a sawhorse with a log, the chopping block, rounds and split wood ----
 {
@@ -706,9 +713,9 @@ RAMP.y1 = RAMP.ax + 0.55;
   const EARTH = plain(Object.assign({ color: 0x5c4b3a }, flat));
   const patch = (cx, cy, r, m, seed, sx = 1) => {
     const pts = [];
-    for (let i = 0; i < 20; i++) {
-      const a = (i / 20) * Math.PI * 2,
-        k = r * (0.8 + 0.14 * Math.sin(i * 2.7 + seed) + 0.08 * Math.sin(i * 5.3 + seed * 2));
+    for (let i = 0; i < 32; i++) {
+      const a = (i / 32) * Math.PI * 2,
+        k = r * (0.86 + 0.09 * Math.sin(i * 0.59 + seed) + 0.05 * Math.sin(i * 1.37 + seed * 2)); // a soft, irregular edge
       pts.push(new THREE.Vector2(Math.cos(a) * k * sx, Math.sin(a) * k));
     }
     const geo = new THREE.ShapeGeometry(new THREE.Shape(pts));

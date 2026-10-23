@@ -19,7 +19,7 @@ export const HOFCAR = (() => {
     trim: std({ color: 0x0e0f10, roughness: 0.4 }),
     chrome: std({ color: 0xc4c8cb, metalness: 1, roughness: 0.2 }),
     tyre: std({ color: 0x151515, roughness: 0.92 }),
-    rim: std({ color: 0xa9adb1, metalness: 0.7, roughness: 0.3 }),
+    rim: std({ color: 0x868b90, metalness: 0.7, roughness: 0.36 }),
     lamp: std({ color: 0xd2d8dc, metalness: 0.4, roughness: 0.1 }),
     tail: std({ color: 0x7a0d0b, roughness: 0.25 }),
     amber: std({ color: 0xc8701a, roughness: 0.3 }),

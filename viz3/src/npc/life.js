@@ -345,7 +345,7 @@ export const LIFE = (() => {
       h.userData.f = { t: 0, a: j ? 0.9 : -2.2 + Math.random() * 0.4, x: bx, y: by };
     });
     halvesT = 6;
-    markDirty(true);
+    markDirty();
   }
   function tickHalves(dt) {
     if (halvesT <= 0) return;
@@ -403,7 +403,7 @@ export const LIFE = (() => {
         yield* hold(w, 1.3, 'place');
         hand(w, null);
         HOF.fillHut(hut.fill >= 0.99 ? 0.3 : hut.fill + 0.03); // a full hut: he starts it again (the dry wood went into the stove)
-        markDirty(true);
+        markDirty();
         yield* hold(w, 0.6);
       }
     } finally {
@@ -837,9 +837,11 @@ export const LIFE = (() => {
         MS.y += Math.cos(MS.az) * mv;
         MOWER.roll(mv);
         mowerAt();
+        w.v = mv / DT; // (npc/npc.js draws a moving neighbour)
         if (cut) swathTo();
         audio.moveLoop('mower', MS.x, MS.y);
       }
+      if (hold_) w.v = 0;
       seatOn(w);
       w.place();
       w.fig.anim(DT, 0);
@@ -1171,6 +1173,37 @@ export const LIFE = (() => {
     if (hearing()) NPCUI.sub(sp, text);
     markDirty();
   }
+  // ---- what they mutter at their work when the visitor stands close by (text only) ----
+  const MUTTER = {
+    chop: [
+      'Buche. Die brennt lange.',
+      'Zwei Jahre muss das trocknen. Mindestens.',
+      'Ein Schlag, ein Scheit. So muss das.',
+    ],
+    stack: ['Rinde nach oben, sonst zieht der Regen rein.', 'Die fünfte wird diese Woche voll.', 'Luft muss durch.'],
+    car: [
+      'Der Krümmer. Immer der Krümmer.',
+      'Zwanzig Jahre und läuft. Noch.',
+      'Wer hat denn den Schlüssel wieder verlegt.',
+    ],
+    putter: ['Wo ist denn die Zange hin.', 'Ordnung ist das halbe Leben.'],
+    feed: [
+      'Na, ihr Rabauken? Essen gibt es!',
+      'Egon, lass Lotte auch was übrig.',
+      'Nicht drängeln, für jeden ist was da.',
+    ],
+    paddock: ['Der Pfosten hier muss mal neu.', 'Na, Frieda, heute schon ausgebüxt?', 'Wasser ist auch noch genug.'],
+    stall: ['Rein mit euch, es wird kalt.', 'Morgen früh gibt es wieder Heu.'],
+  };
+  const muttered = { hubert: 0, ronald: 0 };
+  function mutter(a) {
+    const w = a.w,
+      L = MUTTER[a.cur];
+    if (!L || TALK.on || NPCUI.cur() || w.talking || !w.fig.g.visible || P.mode !== 'walk') return;
+    if (Math.hypot(P.x - w.x, P.y - w.y) > 7 || now() - muttered[a.name] < 40 || Math.random() > 0.12) return;
+    muttered[a.name] = now();
+    w.sayText(L[(Math.random() * L.length) | 0]);
+  }
   // ================= per tick =================
   let acc = 0,
     wasAway = { hubert: false, ronald: false };
@@ -1232,6 +1265,7 @@ export const LIFE = (() => {
         if (a.it) stop(a);
         continue;
       }
+      mutter(a);
       if (a.cur && !a.lock && !w.drive) {
         const want = a.forced || a.plan(m, d),
           t1 = w.since && w.since >= a.t0 ? w.since : null; // arrived at the work (else still on the way)

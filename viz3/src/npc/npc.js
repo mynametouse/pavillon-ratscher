@@ -1103,7 +1103,11 @@ function updateNPC(dt) {
       if (h.talking && pd > 5.5) NPCUI.end(false);
       h.step(dt, now < h.avoidUntil ? 1.35 : 1);
     }
-    dirty = dirty || ((h.v > 0 || (h.fig.real && h.dist() < 25)) && inView(h.x, h.y));
+    // (at work – a pose, a talk – he is drawn further away too: chopping seen from the garden)
+    dirty =
+      dirty ||
+      ((h.v > 0 || (h.fig.real && (h.dist() < 25 || ((h.fig.pose || h.fig.speak) && h.dist() < 50)))) &&
+        inView(h.x, h.y));
   }
   // Ronald
   const r = NPCS.ronald;
@@ -1116,7 +1120,8 @@ function updateNPC(dt) {
     if (!r.talking && pd < r.hear && Math.random() < dt / 26 && !(r.life && r.life.chatting())) r.say('idle');
     if (r.talking && pd > 5.5) NPCUI.end(false);
     r.step(dt);
-    dirty = dirty || ((r.v > 0 || (r.fig.real && pd < 25)) && inView(r.x, r.y));
+    dirty =
+      dirty || ((r.v > 0 || (r.fig.real && (pd < 25 || ((r.fig.pose || r.fig.speak) && pd < 50)))) && inView(r.x, r.y));
   }
   // goats
   for (const gt of GOATS) {
