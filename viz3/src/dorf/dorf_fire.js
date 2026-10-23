@@ -86,22 +86,89 @@ export const DFIRE = (() => {
         }`,
     });
   }
-  function glowMat() {
-    return new THREE.ShaderMaterial({
-      uniforms: U,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      polygonOffset: true,
-      polygonOffsetFactor: -4,
-      polygonOffsetUnits: -4,
-      vertexShader:
-        'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }',
-      fragmentShader: `uniform float uT, uK; varying vec2 vUv;
-        void main() { float r = length( vUv - 0.5 ) * 2.0; float fl = 0.85 + 0.15 * sin( uT * 9.0 ) * sin( uT * 5.3 + 1.0 );
-          float a = pow( max( 0.0, 1.0 - r ), 2.2 ) * uK * fl; gl_FragColor = vec4( vec3( 1.0, 0.45, 0.12 ) * a * 0.9, 1.0 ); }`,
-    });
+  // the trampled ground round the fire: bare earth and ash, a ragged edge into the field; its normals point straight up (on the coarse
+  // terrain the light of the fire showed the edges of its triangles), the glow of the embers in its emissive map (no additive plane over
+  // the stones)
+  const PATCH = 0.025; // above the terrain
+  function glowMap() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const x = c.getContext('2d'),
+      g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.18, 'rgba(255,255,255,0.75)');
+    g.addColorStop(0.45, 'rgba(255,255,255,0.22)');
+    g.addColorStop(0.75, 'rgba(255,255,255,0.05)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = '#000';
+    x.fillRect(0, 0, 64, 64);
+    x.fillStyle = g;
+    x.fillRect(0, 0, 64, 64);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
   }
+  function patch(R, fx, fy) {
+    const SEG = 56,
+      RINGS = 7,
+      pos = [],
+      nrm = [],
+      uv = [],
+      col = [],
+      idx = [],
+      z0 = KERN.terrain(fx, fy);
+    const vert = (x, y, r) => {
+      pos.push(x, KERN.terrain(fx + x, fy + y) - z0 + PATCH, -y);
+      nrm.push(0, 1, 0);
+      uv.push(0.5 + x / (2 * R * 1.15), 0.5 + y / (2 * R * 1.15));
+      // ash grey in the middle, dark earth, lighter trampled earth with a little green towards the edge
+      const q = r / R,
+        n = hh(Math.round(x * 3) * 7.1 + Math.round(y * 3) * 3.3) * 0.06,
+        ash = Math.max(0, 1 - q / 0.32),
+        rim = Math.max(0, (q - 0.6) / 0.5);
+      col.push(
+        lin(0.2 + n - ash * 0.08 + rim * 0.06),
+        lin(0.16 + n - ash * 0.05 + rim * 0.1),
+        lin(0.12 + n - ash * 0.02 + rim * 0.03)
+      );
+    };
+    vert(0, 0, 0);
+    for (let i = 1; i <= RINGS; i++)
+      for (let k = 0; k < SEG; k++) {
+        const a = (k / SEG) * Math.PI * 2,
+          rag = i === RINGS ? 0.82 + 0.22 * hh(k * 1.7 + 3) + 0.08 * Math.sin(a * 5 + 1) : 1,
+          r = (R * i * rag) / RINGS;
+        vert(Math.cos(a) * r, Math.sin(a) * r, r);
+      }
+    for (let k = 0; k < SEG; k++) idx.push(0, 1 + k, 1 + ((k + 1) % SEG));
+    for (let i = 1; i < RINGS; i++)
+      for (let k = 0; k < SEG; k++) {
+        const a = 1 + (i - 1) * SEG + k,
+          b = 1 + (i - 1) * SEG + ((k + 1) % SEG),
+          c = a + SEG,
+          d = b + SEG;
+        idx.push(a, c, b, b, c, d);
+      }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setIndex(idx);
+    g.computeBoundingSphere();
+    return g;
+  }
+  const PATCHMAT = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.95,
+    envMapIntensity: 0.4,
+    emissive: 0xff5a14,
+    emissiveMap: glowMap(),
+    emissiveIntensity: 0,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -2,
+  });
   // smoke: soft puffs rising, lit orange near the flames, grey and fading higher up (points, moved in the vertex shader)
   function smokeMat() {
     return new THREE.ShaderMaterial({
@@ -177,7 +244,7 @@ export const DFIRE = (() => {
       g.translate(cx, dz + h * 0.25, -cy);
       g.computeVertexNormals();
       const col = new Float32Array(p.count * 3),
-        base = 0.26 + 0.12 * hh(i + 4), // grey field stones, some with a little rust of sandstone
+        base = 0.2 + 0.1 * hh(i + 4), // grey field stones, some with a little rust of sandstone
         warm = hh(i + 5) < 0.35 ? 0.04 + hh(i + 7) * 0.05 : 0.005;
       C.set(cx, dz + h * 0.25, -cy);
       const ix = -cx / r,
@@ -218,7 +285,7 @@ export const DFIRE = (() => {
       kit.lathe(
         0,
         0,
-        0.0,
+        PATCH,
         [
           [0.95, 0],
           [0.0, 0.03],
@@ -226,6 +293,9 @@ export const DFIRE = (() => {
         18,
         L(0.1, 0.09, 0.085)
       ); // the ash bed
+      const pm = new THREE.Mesh(patch(4.6, x, y), PATCHMAT);
+      pm.receiveShadow = true;
+      grp.add(pm);
       // log benches around (three), a few spare logs, straw bales
       for (const [a, len] of [
         [200, 2.2],
@@ -313,10 +383,6 @@ export const DFIRE = (() => {
         me.renderOrder = 3;
         fl.add(me);
       }
-      const gl = new THREE.Mesh(new THREE.PlaneGeometry(6, 6).rotateX(-Math.PI / 2), glowMat());
-      gl.position.y = 0.03;
-      gl.renderOrder = 2;
-      fl.add(gl);
       const N = 70,
         sg = new THREE.BufferGeometry(),
         seed = new Float32Array(N);
@@ -458,6 +524,7 @@ export const DFIRE = (() => {
     }
     if (!on) {
       EMBER.emissiveIntensity = 0;
+      PATCHMAT.emissiveIntensity = 0;
       if (lent) light(false);
       crackle(0, 1e9);
       return;
@@ -476,6 +543,7 @@ export const DFIRE = (() => {
       lent.l.color.setHex(0xff8f45);
       lent.l.intensity = 31 * S.k * fl;
       EMBER.emissiveIntensity = (0.55 + 0.45 * fl) * S.k;
+      PATCHMAT.emissiveIntensity = 0.9 * S.k * (0.85 + 0.15 * Math.sin(S.t * 9) * Math.sin(S.t * 5.3 + 1));
     }
     crackle(S.k, dist);
     if (dist < 400 || Math.abs(S.k - k0) > 1e-3) markDirty();
@@ -513,7 +581,7 @@ export const DFIRE = (() => {
         : null,
     11
   );
-  Object.assign(S, { build, tick, spots, light });
+  Object.assign(S, { build, tick, spots, light, PATCH });
   return S;
 })();
 window.DFIRE = DFIRE;

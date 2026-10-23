@@ -511,7 +511,7 @@ export const DORF = (() => {
       if (!DPEOPLE.figs[k]) return;
       const s = i < 5 ? stand[i] : sit[i - 5];
       if (!s) return;
-      const z = KERN.terrain(s.x, s.y);
+      const z = KERN.terrain(s.x, s.y) + (s.sit ? 0 : DFIRE.PATCH); // standing on the trampled ground round the fire
       DPEOPLE.place(k, s.x, s.y, z, s.hd, s.sit ? 'sit' : 'stand', 0.42);
     });
   }

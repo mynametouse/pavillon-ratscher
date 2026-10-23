@@ -33,7 +33,8 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   Feuer am Acker kommen und mit Wolfgang sprechen. Stand im Gesprächsfenster oben.
 - **Feuer am Acker** (`dorf_fire.js`, `DFIRE`): Feuerstelle mit einem Ring aus Feldsteinen (rund, unregelmäßig, jeder etwas anders,
   zum Feuer hin verrußt) und Holzbänken (immer da); beim Feuer ein Kegel aus Rundhölzern mit Rinde, oben verkohlt mit glühenden Rissen
-  (Leuchtkarte statt einer Farbe über dem ganzen Scheit), Flammen (Rausch-Shader), Glut am Boden, Funkenflug, Rauch, flackerndes Licht
+  (Leuchtkarte statt einer Farbe über dem ganzen Scheit), Flammen (Rausch-Shader), festgetretener Boden mit Asche ringsum, der im
+  Feuerschein glimmt (Normalen senkrecht – auf dem groben Gelände zeigte das Licht sonst Dreieckskanten), Funkenflug, Rauch, flackerndes Licht
   (geliehene Ofenlampe des Pavillons), Knistern (Web Audio). Die Shader werden schon beim Herankommen übersetzt (kein Ruckeln, wenn das
   Feuer angeht). Ortsname „Feuer am Acker · Richtung Klinge“.
 
