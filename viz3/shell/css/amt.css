@@ -11,7 +11,7 @@
 #amtpanel .x{border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer;padding:4px 6px}
 #amtpanel .task{padding:8px 14px;font:400 12.5px/1.4 var(--f-body);background:var(--plate);border-bottom:1px solid var(--line)}
 #amtpanel .scene{padding:10px 14px 0}
-#amtpanel .scene .pic{display:block;width:100%;height:auto;border-radius:8px}
+#amtpanel .scene .pic{display:block;width:100%;height:auto;max-height:110px;border-radius:8px}
 #amtpanel .say .notice{margin:12px 0 0;white-space:pre-wrap;font:400 12px/1.45 var(--f-body);background:#f6f1e4;color:#2b241c;border:1px solid #c9b896;border-radius:6px;padding:10px 12px}
 #amtpanel .am-letter{font:italic 400 14px/1.55 var(--f-body)}
 #amtpanel .scene .notice{margin:0;white-space:pre-wrap;font:400 12px/1.45 var(--f-body);background:#f6f1e4;color:#2b241c;border:1px solid #c9b896;border-radius:6px;padding:10px 12px}
