@@ -27,7 +27,9 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
    gehören heute laufenden Agenten (Fahrzeuge, Welt, Gartengebäude, Planer, Rendern), daher am Abend in einem Zug, wenn sie fertig sind; neue
    Module nehmen gleich `KERN.tick`; offen auch: **Speicher nach einem Zonenbesuch** – Bericht `fahrt` 23.10.: nach der Fahrt zum Markt und zurück
    371 → 410 Texturen, 770 → 1266 Geometrien, nicht von `FAHRT`; prüfen, ob `drop` der Zonen (Schleusingen, Veßra) und die Felder des Dorfs alles
-   freigeben – ein Test dafür braucht die Kachel-Hilfen der Tests gemeinsam (`viz3/test/*_tiles.py`), abends):
+   freigeben – ein Test dafür braucht die Kachel-Hilfen der Tests gemeinsam (`viz3/test/*_tiles.py`), abends; dazu der Vorschlag von `fahrt`:
+   in `world/roads.js` `endZ` der Brückenenden = Höhe der Straßenmitte + 0,02 statt höchster Boden quer + 0,08 – dann können die Rampen in
+   `welt/fahrt.js` wieder weg):
    - `KERN.places`: Ortsnamen und Menüorte als Register (Fläche oder Kreis, Name, Vorrang, Innen/Außen) – ersetzt das Überschreiben von
      `window.sitePlace` und das Ergänzen von `SPOTS`.
    - `KERN.lights`: ein fester Satz geteilter Punktlichter, nach Nähe ausgeliehen und automatisch zurückgegeben (keine neuen Lampen, also
