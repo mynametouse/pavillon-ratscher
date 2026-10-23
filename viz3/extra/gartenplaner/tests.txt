@@ -1,2 +1,3 @@
 # browser tests of the garden planner (viz3/test/<name>.py), run by .github/workflows/feat.yml on feat/gartenplaner; phone: also the panel on a phone
 gartenplaner:phone
+gartenplaner_kammbach

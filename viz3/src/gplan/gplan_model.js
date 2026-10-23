@@ -148,28 +148,239 @@ export const GPMODEL = (() => {
       s,
     };
   }
-  // ---------------- the plan: { v: 1, items: [{ id, x, y, jahr }], show, age, month, hour } ----------------
+  // ---------------- the plan (saved as pav-gplan-v1, shape v: 2) ----------------
+  // { v: 2, items: [{ id, x, y, jahr, st, sch, pd, w, cut, mu, h }], show, age, month, hour, off, kuebel: [{ k, id, loc, x, y, tag, s }], ernte }
+  //   st: 'geplant' | 'gepflanzt'; sch: planting steps done; pd: planting day; w: last watering; cut: year of the last pruning; mu: mulched;
+  //   h: year of the last harvest – days are garden days (days since 1.1.1970 on the game calendar plus the garden time-lapse, gardenDay);
+  //   off: garden years of the time-lapse; kuebel: containers of bought plants (loc below); ernte: { year: { plant id: kg } }.
+  // Version 1 (round 1: only planned plants) is taken over: every item 'geplant'.
   const AGES = [0, 5, 10, 20];
   const ITEMS_MAX = 600;
+  const LOCS = ['korb', 'kasse', 'liefer', 'tor', 'auto', 'anh', 'boden', 'hand'];
+  const isDay = v => Number.isInteger(v) && v > 0 && v < 200000;
   // a stored plan (any shape) → a clean plan; broken items are dropped one by one (known: a set of plant ids – unknown ids are kept
   // when it is missing, so a plan survives a data file that is still loading)
   function sanitize(st, known, year) {
-    const out = { v: 1, items: [], show: true, age: 0, month: 6, hour: 14 };
+    const out = {
+      v: 2,
+      items: [],
+      show: true,
+      age: 0,
+      month: 6,
+      hour: 14,
+      off: 0,
+      kuebel: [],
+      ernte: {},
+    };
     if (!st || typeof st !== 'object' || Array.isArray(st)) return out;
     if (typeof st.show === 'boolean') out.show = st.show;
     if (AGES.includes(st.age)) out.age = st.age;
     if (Number.isInteger(st.month) && st.month >= 1 && st.month <= 12) out.month = st.month;
     if (isNum(st.hour) && st.hour >= 0 && st.hour <= 24) out.hour = st.hour;
+    if (Number.isInteger(st.off) && st.off >= 0 && st.off <= 200) out.off = st.off;
     const y0 = isNum(year) ? year : 2026;
+    const okId = id => typeof id === 'string' && /^[a-z0-9-]{1,80}$/.test(id) && (!known || known.has(id));
+    const okXY = (x, y) => isNum(x) && isNum(y) && Math.abs(x) < 30000 && Math.abs(y) < 30000;
+    const r2 = v => Math.round(v * 100) / 100;
     if (Array.isArray(st.items))
       for (const it of st.items.slice(0, ITEMS_MAX)) {
-        if (!it || typeof it !== 'object' || typeof it.id !== 'string' || !/^[a-z0-9-]{1,80}$/.test(it.id)) continue;
+        if (!it || typeof it !== 'object' || !okId(it.id)) continue;
         if (!isNum(it.x) || !isNum(it.y) || Math.abs(it.x) > 500 || Math.abs(it.y) > 500) continue;
-        if (known && !known.has(it.id)) continue;
         const jahr = Number.isInteger(it.jahr) && it.jahr >= 1990 && it.jahr <= 2200 ? it.jahr : y0;
-        out.items.push({ id: it.id, x: Math.round(it.x * 100) / 100, y: Math.round(it.y * 100) / 100, jahr });
+        const o = { id: it.id, x: r2(it.x), y: r2(it.y), jahr, st: 'geplant' };
+        if (st.v === 2 && it.st === 'gepflanzt' && isDay(it.pd)) {
+          o.st = 'gepflanzt';
+          o.pd = it.pd;
+          if (isDay(it.w)) o.w = it.w;
+          if (Number.isInteger(it.cut)) o.cut = it.cut;
+          if (Number.isInteger(it.h)) o.h = it.h;
+          if (it.mu === true) o.mu = true;
+        } else if (st.v === 2 && Number.isInteger(it.sch) && it.sch > 0 && it.sch < 12) o.sch = it.sch;
+        out.items.push(o);
+      }
+    if (st.v === 2 && Array.isArray(st.kuebel))
+      for (const c of st.kuebel.slice(0, 200)) {
+        if (!c || typeof c !== 'object' || !okId(c.id) || !LOCS.includes(c.loc)) continue;
+        if (typeof c.k !== 'string' || !/^[a-z0-9-]{1,40}$/.test(c.k)) continue;
+        const o = { k: c.k, id: c.id, loc: c.loc };
+        if (okXY(c.x, c.y)) {
+          o.x = r2(c.x);
+          o.y = r2(c.y);
+        } else if (c.loc === 'boden') continue;
+        if (isDay(c.tag)) o.tag = c.tag;
+        if (typeof c.s === 'string' && /^[a-z]{3,10}:\d{1,3}$/.test(c.s)) o.s = c.s;
+        out.kuebel.push(o);
+      }
+    if (st.v === 2 && st.ernte && typeof st.ernte === 'object' && !Array.isArray(st.ernte))
+      for (const [y, m] of Object.entries(st.ernte)) {
+        if (!/^\d{4}$/.test(y) || !m || typeof m !== 'object' || Array.isArray(m)) continue;
+        for (const [id, kg] of Object.entries(m))
+          if (okId(id) && isNum(kg) && kg >= 0 && kg < 100000)
+            (out.ernte[y] = out.ernte[y] || {})[id] = Math.round(kg * 10) / 10;
       }
     return out;
+  }
+  // ---------------- garden time: the game calendar plus the time-lapse of the garden (years ahead) ----------------
+  const DAY_YEAR = 365;
+  const gardenDay = (gameDay, off) => gameDay + (off || 0) * DAY_YEAR;
+  const yearOfDay = d => new Date(d * 864e5).getUTCFullYear();
+  const monthOfDay = d => new Date(d * 864e5).getUTCMonth() + 1;
+  const dayDe = d => {
+    const t = new Date(d * 864e5);
+    return t.getUTCDate() + '.' + (t.getUTCMonth() + 1) + '.' + t.getUTCFullYear();
+  };
+  // age (years) of an item: planted – since its planting day at the garden day, plus the preview; planned – the preview from its planned
+  // year on (null: not planted in the year shown)
+  function itemAge(it, gday, preview, viewYear) {
+    if (it.st === 'gepflanzt' && isDay(it.pd)) return Math.max(0, (gday - it.pd) / DAY_YEAR) + (preview || 0);
+    return viewYear < it.jahr ? null : viewYear - it.jahr;
+  }
+  // ---------------- planting: the steps, then care and harvest ----------------
+  const STEP = {
+    loch: { label: 'Pflanzloch graben', dur: 3.2, anim: 'chop' },
+    korb: { label: 'Wühlmauskorb einsetzen', dur: 2.4, anim: 'kneelIdle' },
+    pfahl: { label: 'Pfahl setzen', dur: 2.4, anim: 'chop' },
+    pflanzen: { label: 'Einpflanzen', dur: 3, anim: 'kneelIdle' },
+    binden: { label: 'Anbinden', dur: 2, anim: 'interactLoop' },
+    giessen: { label: 'Angießen', dur: 2.4, anim: 'pour' },
+  };
+  // the steps of one plant: the hole, a vole basket and a stake where its protection asks for them, planting, tying, watering in
+  function plantSteps(p) {
+    const s = p.schutz || [];
+    return [
+      'loch',
+      ...(s.includes('wuehlmauskorb') ? ['korb'] : []),
+      ...(s.includes('pfahl') ? ['pfahl'] : []),
+      'pflanzen',
+      ...(s.includes('pfahl') ? ['binden'] : []),
+      'giessen',
+    ];
+  }
+  // width of the planting hole (m) from the layer and the form (the container or the root ball)
+  function holeW(p) {
+    if (isTree(p)) return p.form === 'hochstamm' || p.form === 'halbstamm' ? 0.7 : 0.55;
+    if (p.schicht === 'strauch' || p.schicht === 'kletter') return 0.45;
+    return p.form === 'zwiebel' || p.schicht === 'wurzel' ? 0.15 : 0.25;
+  }
+  // young plants want water in their first two summers (May–September) when the last watering (or the planting) is a week ago;
+  // → days since then, or null (no weather in the game: a rule of thumb)
+  function thirst(it, gday) {
+    if (it.st !== 'gepflanzt' || !isDay(it.pd) || gday - it.pd > 2 * DAY_YEAR) return null;
+    const m = monthOfDay(gday);
+    if (m < 5 || m > 9) return null;
+    const since = gday - (isDay(it.w) && it.w > it.pd ? it.w : it.pd);
+    return since >= 7 ? since : null;
+  }
+  // from which age a plant bears fruit (years)
+  function bearingAge(p) {
+    if (isTree(p)) return { spindel: 2, busch: 3, halbstamm: 4, hochstamm: 5, solitaer: 5 }[p.form] || 4;
+    if (p.schicht === 'strauch' || p.schicht === 'kletter') return 2;
+    return 1;
+  }
+  // the harvest of one plant at an age (kg, 0.1): the middle of kg_jahr, growing in from the bearing age to the final size, ±15 % by seed
+  // kg a grown plant bears in a year: from the data, else a rough value by kind and form (the data leave kg_jahr empty for most plants)
+  const KG_FORM = { hochstamm: 50, halbstamm: 35, busch: 18, spindel: 12 };
+  function kgFull(p) {
+    const e = p.ernte || {},
+      t = (p.darstellung && p.darstellung.typ) || '';
+    if (Array.isArray(e.kg_jahr)) return (e.kg_jahr[0] + e.kg_jahr[1]) / 2;
+    if (t === 'obstbaum') return KG_FORM[p.form] || 20;
+    if (t === 'laubbaum' || t === 'nadelbaum') return 20;
+    if (t === 'kletter') return 6;
+    if (t === 'strauch') return isTree(p) ? 6 : 3;
+    if (p.schicht === 'kraut') return 1.5;
+    return 0.3;
+  }
+  function harvestKg(p, age, seed) {
+    if (!p.ernte) return 0;
+    const b = bearingAge(p);
+    if (age < b) return 0;
+    const kg = kgFull(p);
+    const T = Math.max(b + 1, p.jahre_bis_endgroesse || 10),
+      ramp = clamp((age - b + 1) / (T - b + 1), 0.2, 1),
+      v = 0.85 + 0.3 * hash01(String(seed) + ':kg');
+    return Math.max(0.1, Math.round(kg * ramp * v * 10) / 10);
+  }
+  // what can be done at a planted plant on a garden day (most urgent first): harvest, water, prune (fruit trees in late winter), mulch
+  function careOf(it, p, gday) {
+    if (it.st !== 'gepflanzt' || !p) return [];
+    const out = [],
+      m = monthOfDay(gday),
+      y = yearOfDay(gday),
+      age = (gday - it.pd) / DAY_YEAR;
+    if (p.ernte && inMonths(m, p.ernte.monate) && age >= bearingAge(p) && it.h !== y) out.push('ernten');
+    if (thirst(it, gday) !== null) out.push('giessen');
+    if (p.darstellung && p.darstellung.typ === 'obstbaum' && m >= 1 && m <= 3 && it.cut !== y && age >= 0.3)
+      out.push('schneiden');
+    if (!it.mu && age < 1) out.push('mulchen');
+    return out;
+  }
+  const CARE = {
+    ernten: { label: 'Ernten', dur: 3, anim: 'interactLoop' },
+    giessen: { label: 'Gießen', dur: 2.4, anim: 'pour' },
+    schneiden: { label: 'Schneiden', dur: 3, anim: 'interactLoop' },
+    mulchen: { label: 'Mulchen', dur: 2, anim: 'kneelIdle' },
+  };
+  // the harvest book: add a harvest, one line per year („Ernte 2027: 14,2 kg Apfel ‚Rebella‘, …“)
+  function addHarvest(log, year, id, kg) {
+    const y = String(year);
+    (log[y] = log[y] || {})[id] = Math.round(((log[y][id] || 0) + kg) * 10) / 10;
+    return log;
+  }
+  function harvestLines(log, db) {
+    return Object.keys(log)
+      .sort()
+      .map(y => {
+        const parts = Object.entries(log[y])
+          .sort((a, b) => b[1] - a[1])
+          .map(([id, kg]) => de(kg) + ' kg ' + (db.byId.get(id) ? fullName(db.byId.get(id)) : id));
+        const sum = Object.values(log[y]).reduce((s, v) => s + v, 0);
+        return 'Ernte ' + y + ': ' + de(sum) + ' kg – ' + parts.join(', ');
+      });
+  }
+  // containers of bought plants: where they are, in words
+  const LOC_TEXT = {
+    korb: 'im Korb (noch nicht bezahlt)',
+    kasse: 'an der Kasse in Kloster Veßra',
+    liefer: 'wird geliefert',
+    tor: 'am Gartentor',
+    auto: 'im Auto',
+    anh: 'auf dem Anhänger',
+    boden: 'im Garten abgestellt',
+    hand: 'in der Hand',
+  };
+  // the nursery: the bed a plant stands on (VESSRA.baumschule beete[].art) – fruit trees and nut trees, berries, ornamentals, climbers,
+  // ground cover and perennials
+  function bedArt(p) {
+    const t = (p.darstellung && p.darstellung.typ) || '',
+      f = p.funktionen || [];
+    if (t === 'kletter' || p.schicht === 'kletter') return 'kletter';
+    if (t === 'obstbaum' || (isTree(p) && f.includes('ertrag') && t !== 'strauch')) return 'obst';
+    if (t === 'strauch' || p.schicht === 'strauch') return f.includes('ertrag') ? 'beeren' : 'zier';
+    if (isTree(p)) return 'zier';
+    return 'boden';
+  }
+  // free places of a bed whose slots all hold the nursery's own pots: the middles between neighbouring pots of a row
+  function freePlaces(slots) {
+    const L = slots || [],
+      d = i => Math.hypot(L[i + 1][0] - L[i][0], L[i + 1][1] - L[i][1]);
+    let dmin = 1e9;
+    for (let i = 0; i + 1 < L.length; i++) dmin = Math.min(dmin, d(i));
+    const out = [];
+    for (let i = 0; i + 1 < L.length; i++)
+      if (d(i) < dmin * 1.3) out.push([(L[i][0] + L[i + 1][0]) / 2, (L[i][1] + L[i + 1][1]) / 2]);
+    return out;
+  }
+  // the stock (bought, not planted yet) per plant and place: [{ id, loc, n }]
+  function stock(kuebel) {
+    const m = new Map();
+    for (const c of kuebel) {
+      if (c.loc === 'korb') continue;
+      const k = c.id + '|' + c.loc;
+      if (!m.has(k)) m.set(k, { id: c.id, loc: c.loc, n: 0 });
+      m.get(k).n++;
+    }
+    return [...m.values()];
   }
   // age of a plan item in the view year (null: not planted yet)
   const ageOf = (it, viewYear) => (viewYear < it.jahr ? null : viewYear - it.jahr);
@@ -302,8 +513,8 @@ export const GPMODEL = (() => {
               de(it.x) +
               ' / y ' +
               de(it.y) +
-              ' m, Pflanzjahr ' +
-              it.jahr +
+              ' m' +
+              (it.st === 'gepflanzt' && isDay(it.pd) ? ', gepflanzt am ' + dayDe(it.pd) : ', Pflanzjahr ' + it.jahr) +
               (opts.where ? opts.where(it) : '')
           );
       }
@@ -372,8 +583,30 @@ export const GPMODEL = (() => {
     season,
     colours,
     AGES,
+    LOCS,
     sanitize,
     ageOf,
+    DAY_YEAR,
+    gardenDay,
+    yearOfDay,
+    monthOfDay,
+    dayDe,
+    itemAge,
+    STEP,
+    plantSteps,
+    holeW,
+    thirst,
+    bearingAge,
+    harvestKg,
+    kgFull,
+    careOf,
+    CARE,
+    addHarvest,
+    harvestLines,
+    LOC_TEXT,
+    stock,
+    bedArt,
+    freePlaces,
     seedOf,
     guildPlace,
     LAYER,

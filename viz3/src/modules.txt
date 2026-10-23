@@ -130,6 +130,8 @@ gplan/gplan_sun.js          # feat/gartenplaner the sun over the garden, shadows
 gplan/gplan_rules.js        # feat/gartenplaner the adviser: warnings with reasons (boundary, buildings, brook, frost, pollinator …), tips – pure (GPRULES)
 gplan/gplan_3d.js           # feat/gartenplaner the planned plants in the 3D garden: ez-tree kinds (garden trees, fruit tree, bushes, clumps), instanced, made on first use (GP3D)
 gplan/gplan.js              # feat/gartenplaner the planner: data on demand, panel, plan view hooks, on site, the saved plan pav-gplan-v1 (GPLAN)
+gplan/gplan_game.js         # feat/gartenplaner planting step by step, watering, pruning, harvest in the game – KERN.act, events gplan:* (GPGAME)
+gplan/gplan_shop.js         # feat/gartenplaner buying at the Baumschule Kammbach, receipt, delivery, car and trailer, carrying; task gplan-kaufen (GPSHOP)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api
