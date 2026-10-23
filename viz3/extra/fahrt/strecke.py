@@ -134,11 +134,40 @@ def decode(b):
     return (q / 100.0).astype(np.float32)
 
 
+class Inner:
+    """the app's 10 m terrain of the square (world/ratscher.js hMesh: the drawn triangles), model metres -> height above H0"""
+
+    def __init__(self, raw):
+        import base64
+        p = os.path.join(REPO, 'viz3', 'dist', 'geo', G['terrain']['file'])
+        b = open(p, 'rb').read() if os.path.exists(p) else get(SITE.replace('welt-test/', 'geo/') + G['terrain']['file'], os.path.join(raw, 'geo', G['terrain']['file']))
+        j = json.loads(b)
+        u = j['b64']
+        buf = base64.b64decode(u[u.index(',') + 1:] if ',' in u else u)
+        n = TI['n']
+        self.z = np.frombuffer(buf, '<i2', n * n).reshape(n, n).astype(np.float64) / 10.0
+        self.n, self.x0, self.y0, self.st = n, TI['x0'], TI['y0'], TI['step']
+
+    def __call__(self, x, y):
+        n, st = self.n, self.st
+        fu = (np.asarray(x) - self.x0) / st
+        fv = (np.asarray(y) - self.y0) / st
+        i = np.clip(np.floor(fu).astype(int), 0, n - 2)
+        j = np.clip(np.floor(fv).astype(int), 0, n - 2)
+        u = np.clip(fu - i, 0, 1)
+        v = np.clip(fv - j, 0, 1)
+        Z = self.z
+        za, zb, zc, zd = Z[j, i], Z[j, i + 1], Z[j + 1, i + 1], Z[j + 1, i]
+        return np.where(u >= v, za + u * (zb - za) + v * (zc - zb), za + v * (zd - za) + u * (zc - zd))
+
+
 class TileDem:
-    """dem.sample(E, N) for tools/welt/roads.py: NHN heights from the finest tile level holding each point (both tile sets)"""
+    """dem.sample(E, N) for tools/welt/roads.py: NHN heights from the finest tile level holding each point (both tile sets); inside
+    the square the app's own 10 m terrain, so that the profiles meet the roads there"""
 
     def __init__(self, raw):
         self.raw = raw
+        self.inner = Inner(raw)
         self.meta = []
         for sub in SETS:
             b = get(SITE + sub + 'meta.json', os.path.join(raw, 'tiles', sub or 'main', 'meta.json'))
@@ -204,6 +233,11 @@ class TileDem:
             u = np.clip(fu - i0, 0, 1)
             v = np.clip(fv - j0, 0, 1)
             out[idx] = (h[j0, i0] * (1 - u) + h[j0, i0 + 1] * u) * (1 - v) + (h[j0 + 1, i0] * (1 - u) + h[j0 + 1, i0 + 1] * u) * v
+        # inside the square (but off the flat garden near ground): the 10 m terrain the vehicles drive on there
+        mx, my = u2m(E, N)
+        ins = (mx > BOX[0]) & (mx < BOX[2]) & (my > BOX[1]) & (my < BOX[3]) & ~((np.abs(mx) < 125) & (np.abs(my) < 125))
+        if ins.any():
+            out[ins] = self.inner(mx[ins], my[ins])
         return out + H0   # NHN, as roads.py expects
 
 
@@ -231,6 +265,87 @@ def simplify(P, tol_xy=0.2, tol_z=0.03, max_len=24.0):
             keep[m] = True
             st += [(a, m), (m, b)]
     return P[keep]
+
+
+def overpasses(pos, chains, h, clear=4.7, taper=120.0):
+    """a bridge over another road keeps at least `clear` metres above it: the bridge is raised and its approaches follow over `taper`
+    metres (the 30 m surface model does not know how high a bridge is)"""
+    from scipy.spatial import cKDTree
+    segs = []   # (chain index, a, b) of the roads that are no bridges
+    for ci, (w, ids) in enumerate(chains):
+        if not w['fl'] & 3:
+            for a, b in zip(ids[:-1], ids[1:]):
+                segs.append((ci, a, b))
+    if not segs:
+        return h
+    mid = np.array([(pos[a] + pos[b]) / 2 for _, a, b in segs])
+    kd = cKDTree(mid)
+    adj = {}
+    for w, ids in chains:
+        for a, b in zip(ids[:-1], ids[1:]):
+            d = float(np.hypot(*(pos[a] - pos[b])))
+            adj.setdefault(int(a), []).append((int(b), d))
+            adj.setdefault(int(b), []).append((int(a), d))
+    raise_ = np.zeros(len(h))
+    n = 0
+    for ci, (w, ids) in enumerate(chains):
+        if not w['fl'] & 1:
+            continue
+        need = 0.0
+        low = set()
+        for a, b in zip(ids[:-1], ids[1:]):
+            P, Q = pos[a], pos[b]
+            for k in kd.query_ball_point((P + Q) / 2, float(np.hypot(*(Q - P))) / 2 + 3):
+                cj, c, d = segs[k]
+                A, B = pos[c], pos[d]
+                r, sv = Q - P, B - A
+                den = r[0] * sv[1] - r[1] * sv[0]
+                if abs(den) < 1e-9:
+                    continue
+                t = ((A[0] - P[0]) * sv[1] - (A[1] - P[1]) * sv[0]) / den
+                u = ((A[0] - P[0]) * r[1] - (A[1] - P[1]) * r[0]) / den
+                if not (0 <= t <= 1 and 0 <= u <= 1):
+                    continue
+                zb = h[a] + t * (h[b] - h[a])
+                zr = h[c] + u * (h[d] - h[c])
+                if zb - zr > -1.0 and zb - zr < clear:
+                    need = max(need, clear - (zb - zr))
+                    low.add(cj)
+        if need <= 0 or need > 3.5:
+            continue   # more than 3.5 m: the heights there are not to be trusted – left as they are
+        n += 1
+        lowset = {int(i) for cj in low for i in chains[cj][1]}
+        # how far (along the roads) each node is from the road below: a ramp down to it keeps its foot
+        dlow = {i: 0.0 for i in lowset}
+        pq = [(0.0, i) for i in lowset]
+        heapq.heapify(pq)
+        while pq:
+            d0, u0 = heapq.heappop(pq)
+            if d0 > dlow.get(u0, 1e18) or d0 > 90:
+                continue
+            for v0, L in adj.get(u0, ()):
+                if d0 + L < dlow.get(v0, 1e18):
+                    dlow[v0] = d0 + L
+                    heapq.heappush(pq, (d0 + L, v0))
+        dist = {int(i): 0.0 for i in ids}
+        pq = [(0.0, int(i)) for i in ids]
+        heapq.heapify(pq)
+        while pq:
+            d0, u0 = heapq.heappop(pq)
+            if d0 > dist.get(u0, 1e18) or d0 > taper:
+                continue
+            for v0, L in adj.get(u0, ()):
+                if v0 in lowset:
+                    continue
+                if d0 + L < dist.get(v0, 1e18):
+                    dist[v0] = d0 + L
+                    heapq.heappush(pq, (d0 + L, v0))
+        for i, d0 in dist.items():
+            if d0 < taper:
+                k = min(1.0, dlow.get(i, 1e9) / 90.0)
+                raise_[i] = max(raise_[i], need * 0.5 * (1 + math.cos(math.pi * d0 / taper)) * k * k * (3 - 2 * k))
+    log('Überführungen angehoben:', n, 'Brücken, bis', round(float(raise_.max()), 2), 'm')
+    return h + raise_
 
 
 def inside_box(x, y, m=0.0):
@@ -272,6 +387,7 @@ def main():
     pos, chains = WR.network(keep, nodeE, step=2.0)
     dem.prefetch(pos[:, 0], pos[:, 1])
     h, axis, data_t = WR.solve_profile(pos, chains, dem)
+    h = overpasses(pos, chains, h)
     res = WR.metrics(pos, chains, h, axis)
     WR.print_metrics(res, '(Fahrt: vorher = Kachelhöhe an der Achse, nachher = geglättetes Längsprofil)')
     # ---- ways (model dm) ----
@@ -453,7 +569,33 @@ def main():
                 bd, best = d, name
         s['b'] = best or ''
     log('Ortstafeln', len(signs), sorted({s['n'] for s in signs}))
-    # ---- direction signs: on the two routes, where the route turns off onto another road ----
+    # ---- direction signs: on the two routes at the junctions with main, county and connecting roads – the route's destination with
+    # its arrow, and where the other road leads (the first village along it) ----
+    RANK = {'motorway': 0, 'main': 1, 'county': 2, 'lane': 3, 'street': 4, 'service': 5, 'track': 6}
+    wclass = {wid: WR.classify(tg) for wid, (refs, tg) in ways_osm.items() if 'highway' in tg}
+    key_of = lambda wid: (ways_osm[wid][1].get('ref') or ways_osm[wid][1].get('name') or str(wid))
+
+    def lead(u, v, wid, maxd=9000):
+        """follow the road from u over v (the same ref or name, else the straightest continuation) until it enters a village"""
+        k0, d, prev_n, cur = key_of(wid), math.dist(M[u], M[v]), u, v
+        seen = {u, v}
+        while d < maxd:
+            pl = next((n for n, ar in areas.items() if ar.contains(Point(*M[cur]))), None)
+            if pl:
+                return pl, d
+            nxt = [(q, w2) for q, c, L, w2 in Gr.get(cur, ()) if q not in seen and wclass.get(w2) and RANK.get(wclass[w2][0], 9) <= 4]
+            if not nxt:
+                return None, d
+            same = [t for t in nxt if key_of(t[1]) == k0]
+            if same:
+                q, w2 = same[0]
+            else:
+                ax, ay = M[cur][0] - M[prev_n][0], M[cur][1] - M[prev_n][1]
+                q, w2 = max(nxt, key=lambda t: ((M[t[0]][0] - M[cur][0]) * ax + (M[t[0]][1] - M[cur][1]) * ay) / (math.dist(M[t[0]], M[cur]) * math.hypot(ax, ay) + 1e-9))
+            d += math.dist(M[cur], M[q])
+            seen.add(q)
+            prev_n, cur = cur, q
+        return None, d
     wsigns = []
     for key, dest in (('markt', 'Schleusingen'), ('baumschule', 'Kloster Veßra')):
         p = routes[key]['nodes']
@@ -461,35 +603,53 @@ def main():
         for u, v in zip(p, p[1:]):
             cum.append(cum[-1] + math.dist(M[u], M[v]))
         tot = cum[-1]
-        last_w = None
-        for k in range(1, len(p) - 1):
+        for k in range(2, len(p) - 1):
             u = p[k]
-            wid_in = prev[p[k]][2] if p[k] in prev else None
-            wid_out = prev[p[k + 1]][2] if p[k + 1] in prev else None
-            deg = len(Gr.get(u, ()))
-            if deg < 3 or wid_in is None or wid_out is None:
+            if u not in prev or p[k + 1] not in prev:
                 continue
-            tin, tout = ways_osm[wid_in][1], ways_osm[wid_out][1]
-            same = (tin.get('ref') or tin.get('name')) and (tin.get('ref') or tin.get('name')) == (tout.get('ref') or tout.get('name'))
-            if same:
+            wid_in, wid_out = prev[u][2], prev[p[k + 1]][2]
+            cin = wclass.get(wid_in)
+            # the other roads at this junction (not the way in, not the way on)
+            others = [(q, w2) for q, c, L, w2 in Gr.get(u, ()) if q not in (p[k - 1], p[k + 1]) and wclass.get(w2) and RANK.get(wclass[w2][0], 9) <= 3]
+            turned = key_of(wid_in) != key_of(wid_out)
+            if not cin or (not others and not turned) or RANK.get(cin[0], 9) > 4:
                 continue
             x, y = M[u]
-            if inside_box(x, y, 60) or tot - cum[k] < 250:
+            if inside_box(x, y, 300) or tot - cum[k] < 200:
                 continue
             ax, ay = M[p[k - 1]]
             dx, dy = x - ax, y - ay
             L = math.hypot(dx, dy) or 1
             dx, dy = dx / L, dy / L
-            bx, by = M[p[k + 1]]
-            turn = math.degrees(math.atan2((bx - x) * dy - (by - y) * dx, (bx - x) * dx + (by - y) * dy))
-            c = WR.classify(tin) or ('street', 'asphalt', 5.0, 0)
-            sx, sy = x - dx * 14 + dy * (c[2] / 2 + 1.6), y - dy * 14 - dx * (c[2] / 2 + 1.6)
-            if any(math.dist((w['x'], w['y']), (sx, sy)) < 40 for w in wsigns):
+
+            def arrow(q, wid2):
+                # the direction 25 m along the road that leaves over q
+                prv, cur, d = u, q, math.dist(M[u], M[q])
+                while d < 25:
+                    nx = [t for t in Gr.get(cur, ()) if t[0] != prv and key_of(t[3]) == key_of(wid2)]
+                    if not nx:
+                        break
+                    prv, cur = cur, nx[0][0]
+                    d += math.dist(M[prv], M[cur])
+                bx, by = M[cur]
+                t = math.degrees(math.atan2((bx - x) * dy - (by - y) * dx, (bx - x) * dx + (by - y) * dy))
+                return 'r' if t > 35 else 'l' if t < -35 else 'g'
+            rest = tot - cum[k]
+            name = dest if rest > 1500 else {'markt': 'Zentrum', 'baumschule': 'Baumschule'}[key]
+            lines = [[name, round(rest / 1000, 1), arrow(p[k + 1], wid_out)]]
+            for q, w2 in others[:2]:
+                pl, d2 = lead(u, q, w2)
+                if pl and d2 > 300 and pl != dest and pl not in [l[0] for l in lines]:
+                    lines.append([pl, round(d2 / 1000, 1), arrow(q, w2)])
+            if len(lines) < 2 and not turned:
                 continue
-            km = (tot - cum[k]) / 1000
+            back = 18 if RANK.get(cin[0], 9) <= 2 else 12
+            sx, sy = x - dx * back + dy * (cin[2] / 2 + 1.8), y - dy * back - dx * (cin[2] / 2 + 1.8)
+            if any(math.dist((w['x'], w['y']), (sx, sy)) < 60 for w in wsigns):
+                continue
             wsigns.append({'t': 'weg', 'x': round(sx, 1), 'y': round(sy, 1), 'h': round(math.degrees(math.atan2(-dx, -dy)), 1),
-                           'n': dest, 'km': round(km, 1), 'dir': 'r' if turn > 25 else 'l' if turn < -25 else 'g'})
-    log('Wegweiser', len(wsigns), [(w['n'], w['km'], w['dir']) for w in wsigns])
+                           'n': dest, 'l': lines})
+    log('Wegweiser', len(wsigns), [w['l'] for w in wsigns])
     for r in routes.values():
         r.pop('nodes')
     out = {

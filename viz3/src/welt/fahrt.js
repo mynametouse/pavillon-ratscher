@@ -6,22 +6,24 @@
 // - The edge (vehicles/vehicle.js VEH.edge): a vehicle drives on where loaded tiles carry its four corners; where they are still
 //   loading it is held („Gelände lädt …“, and VEH.limit brakes it in time before such ground ahead); where no tile set reaches,
 //   „Hier endet die Karte.“
-// - Roads (OSM, profiles from the same smoother as the tile pipeline): KERN.surface (grip, rolling resistance), KERN.ground on the
-//   carriageway (the smooth longitudinal profile with a crown, instead of the 2 m mesh of a 30 m surface model), the tile mesh carved
-//   to the same profile (WELT.setPads, under the pads of the zones), simple decks with railings on the bridges, place names (KERN.place:
-//   „L 1625 · bei Rappelsdorf“, „Hauptstraße, Kloster Veßra“).
+// - Roads (OSM, profiles from the same smoother as the tile pipeline): the tile mesh carved to the smooth longitudinal profile with a
+//   crown, shoulder and slopes (WELT.setPads, under the pads of the zones) – one ground for wheels, feet and eyes instead of the bumps of
+//   a 30 m surface model; KERN.surface (grip, rolling resistance); asphalt on the photo near the vehicle (WELT.setOverlay, while no zone
+//   lays its streets); decks with railings on the bridges (their own KERN.ground); place names (KERN.place: „L 1625 · bei Rappelsdorf“,
+//   „Hauptstraße, Kloster Veßra“).
 // - Signs: the yellow place-name signs at the village entries (front: name and municipality, back: the next place, the name struck
 //   through) and direction signs where the routes turn, built within 450 m of the vehicle; routes and roads on the small map (MMAP).
 // - Walls of the zones (Schleusingen) stop vehicles through KERN.pushOut (VEH.hitsOut).
 // © OpenStreetMap contributors (ODbL 1.0) for the roads, places and signs.
 import * as THREE from 'three';
-import { BASE, scene, V } from '../core/head.js';
+import { BASE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { WELT } from './welt.js';
+import { SCHL } from './schleusingen.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { MMAP } from '../vehicles/minimap.js';
 export const FAHRT = (() => {
@@ -124,6 +126,18 @@ export const FAHRT = (() => {
     D.routes = {};
     for (const k in j.routes) D.routes[k] = Array.from(j.routes[k].pts, v => v / 10);
     D.park = j.park || {};
+    // a parking sign beside the place to park at the nursery, facing the arriving car
+    const pk = D.park.baumschule;
+    if (pk) {
+      const a = (pk[2] * Math.PI) / 180;
+      D.signs.push({
+        t: 'park',
+        n: 'Baumschule Kammbach',
+        x: pk[0] + Math.cos(a) * 4.5,
+        y: pk[1] - Math.sin(a) * 4.5,
+        h: pk[2] + 180,
+      });
+    }
   }
   // the nearest road under / near (x, y) within reach of its edge: the segment, the lateral offset, the profile height there
   const R0 = { w: null, d: 0, lat: 0, e: 0, z: 0, t: 0, s: -1, dx: 0, dy: 0 };
@@ -163,15 +177,6 @@ export const FAHRT = (() => {
     }
     return best;
   }
-  // near the square the tiles blend into the edge of the 10 m terrain over 80 m (welt/welt.js innerFix): the roads too
-  function edgeBlend(x, y, z) {
-    const d = outRB(x, y);
-    if (d > 80 || !RATSCHER.hMesh) return z;
-    const hb = RATSCHER.hMesh(Math.min(RB[2], Math.max(RB[0], x)), Math.min(RB[3], Math.max(RB[1], y))),
-      t = Math.max(0, d) / 80,
-      w = t * t * (3 - 2 * t);
-    return hb + (z - hb) * w;
-  }
   const paved = w => w.surf <= 2;
   S.roadAt = roadAt;
   // ---------------- KERN: surface, ground, place ----------------
@@ -185,29 +190,30 @@ export const FAHRT = (() => {
     5
   );
   // the ground on the roads is the tile mesh carved to the profile (carveZ below) – one surface for wheels, feet and eyes, under the
-  // pads of the zones; only the bridge decks are this module's own ground (when coming from their level: a walker in the valley stays)
+  // pads of the zones. This module's own ground: the bridge decks (when coming from their level: a walker in the valley stays), and the
+  // first 3 m beyond the square, where the tile mesh dips towards its hidden vertices under the 10 m terrain (the profiles meet that
+  // terrain at the edge: strecke.py solves them on it)
   KERN.provide(
     'ground',
     (x, y, z) => {
       if (!S.ready || insideRB(x, y)) return undefined;
       const r = roadAt(x, y, 0.5);
-      if (!r || !(r.w.fl & 1)) return undefined;
-      const g = edgeBlend(x, y, r.z);
-      return z != null && z < g - 1.2 ? undefined : g;
+      if (!r) return undefined;
+      if (!(r.w.fl & 1))
+        return outRB(x, y) < 3 && !(r.w.fl & 2) ? r.z - (paved(r.w) ? 0.025 : 0.04) * Math.min(r.d, r.w.hw) : undefined;
+      return z != null && z < r.z - 1.2 ? undefined : r.z;
     },
     7
   );
   // the carving of the tile mesh (WELT pads): the carriageway on the profile, the shoulder falling 8 %, beyond it the terrain cut or
   // filled with 1 : 1.5 slopes until it meets the ground (tools/welt/roads.py does the same in its detail block)
-  // (not in the old town of Schleusingen: its buildings stand on the tiles as they are, the Markt has its own plane)
-  const OLD = [-1084.7, 1241.9];
   function carveZ(x, y, raw) {
-    if (insideRB(x, y) || Math.hypot(x - OLD[0], y - OLD[1]) < 300) return raw;
+    if (insideRB(x, y)) return raw;
     const r = roadAt(x, y, 18, true);
     if (!r) return raw;
     const w = r.w,
       sh = w.kind <= 2 ? 1.5 : 0.6,
-      zc = edgeBlend(x, y, r.z),
+      zc = r.z,
       cr = paved(w) ? 0.025 : 0.04;
     if (r.d <= w.hw) return zc - cr * r.d;
     const zs = zc - cr * w.hw - 0.08 * Math.min(r.d - w.hw, sh);
@@ -455,6 +461,21 @@ export const FAHRT = (() => {
         }
       }
       S.cap = cap;
+      // arrived: at the end of a route, standing
+      if (S.ready && sp < 0.6) {
+        const rm = D.routes.markt,
+          pk = D.park.baumschule;
+        const at =
+          pk && Math.hypot(s.x - pk[0], s.y - pk[1]) < 30
+            ? 'Baumschule Kammbach – hier parken.'
+            : rm && Math.hypot(s.x - rm[rm.length - 2], s.y - rm[rm.length - 1]) < 40
+              ? 'Markt Schleusingen.'
+              : null;
+        if (at && S.arrived !== at) {
+          S.arrived = at;
+          PLAY.think(at, 3200);
+        }
+      } else if (S.arrived && sp > 8) S.arrived = null;
       if (cap < sp - 0.5 && performance.now() - (S.msgT || 0) > 5000) {
         S.msgT = performance.now();
         PLAY.think(S.capEnd ? 'Hier endet die Karte.' : 'Gelände lädt …', 2200);
@@ -509,6 +530,7 @@ export const FAHRT = (() => {
     S.n.dropped++;
   }
   function dropAll() {
+    overlayOff();
     for (const k of [...built.keys()]) dropKey(k);
     S.signs = [];
     S.decks = [];
@@ -563,7 +585,7 @@ export const FAHRT = (() => {
           C = P8[c2],
           u = [B[0] - A[0], B[1] - A[1], B[2] - A[2]],
           w = [C[0] - A[0], C[1] - A[1], C[2] - A[2]],
-          n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]],
+          n = [w[1] * u[2] - w[2] * u[1], w[2] * u[0] - w[0] * u[2], w[0] * u[1] - w[1] * u[0]],
           L = Math.hypot(n[0], n[1], n[2]) || 1;
         for (const q of [A, B, C, P8[d]]) {
           pos.push(q[0], q[2], -q[1]);
@@ -582,7 +604,24 @@ export const FAHRT = (() => {
       g.computeBoundingSphere();
       return g;
     };
-    return { box, geo, n: () => pos.length };
+    // a strip of quads between two polylines of site points [x, y, z] (the face turned towards the right of a → b)
+    const strip = (A, B2, c) => {
+      for (let i = 0; i < A.length - 1; i++) {
+        const q = [A[i], A[i + 1], B2[i + 1], B2[i]],
+          n0 = pos.length / 3,
+          u = [q[1][0] - q[0][0], q[1][1] - q[0][1], q[1][2] - q[0][2]],
+          w = [q[3][0] - q[0][0], q[3][1] - q[0][1], q[3][2] - q[0][2]],
+          n = [w[1] * u[2] - w[2] * u[1], w[2] * u[0] - w[0] * u[2], w[0] * u[1] - w[1] * u[0]],
+          L = Math.hypot(n[0], n[1], n[2]) || 1;
+        for (const v of q) {
+          pos.push(v[0], v[2], -v[1]);
+          nrm.push(n[0] / L, n[2] / L, -n[1] / L);
+          col.push(c[0], c[1], c[2]);
+        }
+        idx.push(n0, n0 + 2, n0 + 1, n0, n0 + 3, n0 + 2);
+      }
+    };
+    return { box, strip, geo, n: () => pos.length };
   }
   const lin = c => c.map(v => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
   const C_DECK = lin([0.34, 0.34, 0.35]),
@@ -593,49 +632,85 @@ export const FAHRT = (() => {
   function buildDeck(w) {
     const K = kit(),
       p = w.p,
-      extra = [];
-    for (let i = 0; i < w.n - 1; i++) {
-      const ax = p[i * 3],
-        ay = p[i * 3 + 1],
-        az = p[i * 3 + 2],
-        bx = p[i * 3 + 3],
-        by = p[i * 3 + 4],
-        bz = p[i * 3 + 5],
-        L = Math.hypot(bx - ax, by - ay);
-      if (L < 0.2) continue;
-      const a = Math.atan2(bx - ax, by - ay),
-        mx = (ax + bx) / 2,
-        my = (ay + by) / 2,
-        // the deck: as the road on the bridge, a little crown left out
-        mz = edgeBlend(mx, my, (az + bz) / 2),
-        hw = w.hw + 0.5;
-      // short boxes along the segment follow its slope in steps of 2 m
-      const steps = Math.max(1, Math.ceil(L / 2));
-      for (let k = 0; k < steps; k++) {
-        const t = (k + 0.5) / steps,
-          x = ax + (bx - ax) * t,
-          y = ay + (by - ay) * t,
-          z = edgeBlend(x, y, az + (bz - az) * t),
-          l = L / steps + 0.05;
-        K.box(x, y, z - 0.02, hw * 2, l, 0.03, a, C_DECK);
-        K.box(x, y, z - 0.75, hw * 2 + 0.2, l, 0.73, a, C_SIDE);
-        for (const sd of [-1, 1]) {
-          const rx = x + Math.cos(a) * (hw - 0.12) * sd,
-            ry = y - Math.sin(a) * (hw - 0.12) * sd;
-          K.box(rx, ry, z, 0.25, l, 0.32, a, C_SIDE);
-          K.box(rx, ry, z + 0.95, 0.07, l, 0.07, a, C_RAIL);
-          if (k % 2 === 0) K.box(rx, ry, z + 0.3, 0.06, 0.06, 0.66, a, C_RAIL);
-        }
+      extra = [],
+      hw = w.hw + 0.5,
+      // per point: the deck edges (left, right) at the profile height, the direction across
+      E = [];
+    for (let i = 0; i < w.n; i++) {
+      const a = Math.max(0, i - 1),
+        b = Math.min(w.n - 1, i + 1),
+        dx = p[b * 3] - p[a * 3],
+        dy = p[b * 3 + 1] - p[a * 3 + 1],
+        L = Math.hypot(dx, dy) || 1,
+        rx = dy / L,
+        ry = -dx / L,
+        x = p[i * 3],
+        y = p[i * 3 + 1],
+        z = p[i * 3 + 2];
+      E.push({ x, y, z, rx, ry });
+    }
+    const at = (o, dz) => E.map(e => [e.x + e.rx * o, e.y + e.ry * o, e.z + dz]);
+    // the deck (asphalt), its edges (concrete caps), the sides and the underside
+    K.strip(at(-hw, 0.01), at(hw, 0.01), C_DECK);
+    for (const sd of [-1, 1]) {
+      const o0 = sd * hw,
+        o1 = sd * (hw + 0.3);
+      K.strip(sd > 0 ? at(o0, 0.22) : at(o1, 0.22), sd > 0 ? at(o1, 0.22) : at(o0, 0.22), C_SIDE);
+      K.strip(sd > 0 ? at(o1, 0.22) : at(o1, -0.85), sd > 0 ? at(o1, -0.85) : at(o1, 0.22), C_SIDE);
+      K.strip(sd > 0 ? at(o0, 0.01) : at(o0, 0.22), sd > 0 ? at(o0, 0.22) : at(o0, 0.01), C_SIDE);
+      // the railing: a bar on posts
+      K.strip(
+        sd > 0 ? at(o1 - sd * 0.12, 1.05) : at(o1 - sd * 0.12, 0.97),
+        sd > 0 ? at(o1 - sd * 0.12, 0.97) : at(o1 - sd * 0.12, 1.05),
+        C_RAIL
+      );
+      K.strip(
+        sd > 0 ? at(o1 - sd * 0.12, 0.97) : at(o1 - sd * 0.12, 1.05),
+        sd > 0 ? at(o1 - sd * 0.12, 1.05) : at(o1 - sd * 0.12, 0.97),
+        C_RAIL
+      );
+    }
+    K.strip(at(hw + 0.3, -0.85), at(-hw - 0.3, -0.85), C_SIDE);
+    let run = 0;
+    for (let i = 0; i < w.n; i++) {
+      const e = E[i],
+        a = Math.atan2(-e.ry, e.rx);
+      if (i === 0 || run >= 2.4) {
+        run = 0;
+        for (const sd of [-1, 1])
+          K.box(e.x + e.rx * sd * (hw + 0.18), e.y + e.ry * sd * (hw + 0.18), e.z + 0.22, 0.07, 0.07, 0.8, a, C_RAIL);
       }
-      // the railings hold the wheels (vehicles/vehicle.js guides)
+      if (i < w.n - 1) run += Math.hypot(E[i + 1].x - e.x, E[i + 1].y - e.y);
+      // posts on long segments too
+      if (i < w.n - 1) {
+        const n2 = Math.floor(Math.hypot(E[i + 1].x - e.x, E[i + 1].y - e.y) / 2.4);
+        for (let k = 1; k <= n2; k++) {
+          const t = k / (n2 + 1),
+            x = e.x + (E[i + 1].x - e.x) * t,
+            y = e.y + (E[i + 1].y - e.y) * t,
+            z = e.z + (E[i + 1].z - e.z) * t;
+          for (const sd of [-1, 1])
+            K.box(x + e.rx * sd * (hw + 0.18), y + e.ry * sd * (hw + 0.18), z + 0.22, 0.07, 0.07, 0.8, a, C_RAIL);
+        }
+        run = 0;
+      }
+    }
+    // the railings hold the wheels (vehicles/vehicle.js guides), one box per segment and side
+    for (let i = 0; i < w.n - 1; i++) {
+      const A = E[i],
+        B2 = E[i + 1],
+        L = Math.hypot(B2.x - A.x, B2.y - A.y);
+      if (L < 0.2) continue;
+      const f = [(B2.x - A.x) / L, (B2.y - A.y) / L],
+        r = [f[1], -f[0]],
+        mz = (A.z + B2.z) / 2;
       for (const sd of [-1, 1]) {
-        const cx = mx + Math.cos(a) * (hw + 0.05) * sd,
-          cy = my - Math.sin(a) * (hw + 0.05) * sd,
-          f = [Math.sin(a), Math.cos(a)],
-          r = [Math.cos(a), -Math.sin(a)];
+        const cx = (A.x + B2.x) / 2 + r[0] * sd * (hw + 0.2),
+          cy = (A.y + B2.y) / 2 + r[1] * sd * (hw + 0.2);
+        // only for wheels at the deck level (a road below passes under the railings)
         extra.push({
           guide: true,
-          box: () => ({ c: [cx, cy], ax: r, ay: f, ex: 0.15, ey: L / 2 + 0.3, z0: mz - 1.5, z1: mz + 1.5 }),
+          box: () => ({ c: [cx, cy], ax: r, ay: f, ex: 0.15, ey: L / 2 + 0.3, z0: mz - 0.6, z1: mz + 1.5 }),
         });
       }
     }
@@ -678,14 +753,37 @@ export const FAHRT = (() => {
     g.save();
     frame(g, W, H);
     g.fillStyle = BLK;
-    if (sg.t === 'ort') {
+    if (sg.t === 'park') {
+      // a parking sign: white P on blue, the name below
+      g.fillStyle = '#1d5aa6';
+      g.fillRect(0, 0, W, H);
+      g.strokeStyle = '#fff';
+      g.lineWidth = 8;
+      g.strokeRect(10, 10, W - 20, H - 20);
+      g.fillStyle = '#fff';
+      fitText(g, 'P', W / 2, H * 0.4, W * 0.5, 150);
+      fitText(g, sg.n, W / 2, H * 0.8, W * 0.84, 34, 600);
+    } else if (sg.t === 'ort') {
       fitText(g, sg.n, W / 2, H * 0.42, W * 0.84, 82);
       fitText(g, sg.m || '', W / 2, H * 0.72, W * 0.8, 30, 600);
     } else {
-      // a direction sign: the destination, its distance, an arrow
-      const arrow = { l: '←', r: '→', g: '↑' }[sg.dir] || '↑';
-      fitText(g, arrow + ' ' + sg.n, W / 2, H * 0.42, W * 0.84, 66);
-      fitText(g, String(sg.km).replace('.', ',') + ' km', W / 2, H * 0.74, W * 0.6, 44, 600);
+      // a direction sign (table): per line the arrow, the destination, its distance
+      const L = sg.l || [[sg.n, sg.km, sg.dir]],
+        rh = H / Math.max(2, L.length);
+      L.forEach(([n, km, dir], i) => {
+        const y = rh * (i + 0.5) + (L.length === 1 ? H * 0.25 - rh * 0.5 + rh * 0.5 : 0),
+          ar = { l: '←', r: '→', g: '↑' }[dir] || '↑';
+        g.textAlign = 'center';
+        fitText(g, ar, dir === 'r' ? W * 0.88 : W * 0.12, y, W * 0.16, rh * 0.62);
+        g.textAlign = 'left';
+        fitText(g, n, dir === 'r' ? W * 0.06 : W * 0.22, y, W * 0.5, rh * 0.42);
+        g.textAlign = 'right';
+        fitText(g, String(km).replace('.', ','), dir === 'r' ? W * 0.74 : W * 0.94, y, W * 0.2, rh * 0.42, 600);
+        if (i) {
+          g.fillRect(W * 0.06, rh * i - 2, W * 0.88, 4);
+        }
+      });
+      g.textAlign = 'center';
     }
     g.restore();
     // back (right half): the end of the place – the next place above, this one struck through
@@ -721,8 +819,8 @@ export const FAHRT = (() => {
       ax = Math.cos(az),
       ay = -Math.sin(az),
       gz = KERN.ground(sg.x, sg.y),
-      Wd = sg.t === 'ort' ? Math.max(1.05, Math.min(1.9, 0.62 + sg.n.length * 0.075)) : 1.3,
-      Hd = sg.t === 'ort' ? 0.7 : 0.62,
+      Wd = sg.t === 'ort' ? Math.max(1.05, Math.min(1.9, 0.62 + sg.n.length * 0.075)) : sg.t === 'park' ? 0.9 : 1.7,
+      Hd = sg.t === 'ort' ? 0.7 : sg.t === 'park' ? 0.6 : sg.l && sg.l.length > 1 ? 0.84 : 0.5,
       z0 = gz + 1.55;
     for (const sd of [-1, 1])
       K.box(sg.x + ax * sd * Wd * 0.32, sg.y + ay * sd * Wd * 0.32, gz - 0.3, 0.07, 0.07, 2.25 + Hd, az, C_POST);
@@ -743,7 +841,8 @@ export const FAHRT = (() => {
         [1, 1, u1, 1],
         [-1, 1, u0, 1],
       ]) {
-        const sx = s * sgn;
+        // the left edge of the picture on the viewer's left (looking at this face)
+        const sx = -s * sgn;
         pos.push(cx + ax * sx * (Wd / 2), z0 + h * Hd, -(cy + ay * sx * (Wd / 2)));
         nrm.push(nx * sgn, 0, -ny * sgn);
         uv.push(u, v);
@@ -765,7 +864,58 @@ export const FAHRT = (() => {
     panel.userData.own = true;
     return { meshes: [posts, panel] };
   }
+  // ---- the road surfaces on the tiles near the vehicle: asphalt (and sett) instead of the photo's grey, which the tile shader would
+  // turn into sett up close – an overlay of 1 km² around the vehicle (WELT.setOverlay), only while no zone has laid its own streets ----
+  const OV = { tex: null, cv: null, x0: 0, y0: 0, size: 1024 };
+  function overlay(x, y) {
+    if (!WELT.setOverlay) return;
+    const cur = WELT.overlay ? WELT.overlay() : OV.tex,
+      zone = (cur && cur !== OV.tex) || (SCHL && SCHL.state === 'ready');
+    if (zone) {
+      OV.tex = null; // a zone's streets lie there now (its overlay replaced and freed ours)
+      return;
+    }
+    if (OV.tex && Math.abs(x - OV.x0 - 512) < 260 && Math.abs(y - OV.y0 - 512) < 260) return;
+    const N = 1024,
+      x0 = Math.round(x - 512),
+      y0 = Math.round(y - 512);
+    if (!OV.cv) {
+      OV.cv = document.createElement('canvas');
+      OV.cv.width = OV.cv.height = N;
+    }
+    const g = OV.cv.getContext('2d'),
+      X = v => v - x0,
+      Y = v => y0 + N - v;
+    g.fillStyle = '#000';
+    g.fillRect(0, 0, N, N);
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    for (let k = 5; k >= 0; k--)
+      for (const w of D.ways) {
+        if (w.kind !== k || w.fl & 3 || w.bb[2] < x0 || w.bb[0] > x0 + N || w.bb[3] < y0 || w.bb[1] > y0 + N) continue;
+        // asphalt (40) or sett (120), as welt/schleusingen.js
+        g.strokeStyle = `rgb(255,${w.surf === 2 ? 120 : 40},0)`;
+        g.lineWidth = w.hw * 2;
+        g.beginPath();
+        for (let i = 0; i < w.n; i++) (i ? g.lineTo : g.moveTo).call(g, X(w.p[i * 3]), Y(w.p[i * 3 + 1]));
+        g.stroke();
+      }
+    if (!OV.tex) {
+      OV.tex = new THREE.CanvasTexture(OV.cv);
+      OV.tex.colorSpace = THREE.NoColorSpace;
+      OV.tex.anisotropy = 4;
+    } else OV.tex.needsUpdate = true;
+    OV.x0 = x0;
+    OV.y0 = y0;
+    WELT.setOverlay(OV.tex, x0, y0, N);
+  }
+  function overlayOff() {
+    if (OV.tex && (!WELT.overlay || WELT.overlay() === OV.tex) && !(SCHL && SCHL.state === 'ready'))
+      WELT.setOverlay(null);
+    OV.tex = null;
+  }
   function near(x, y) {
+    overlay(x, y);
     // the ground near the square is the 10 m terrain: signs there wait until the vehicle comes
     let ch = false;
     const want = new Set();

@@ -124,8 +124,10 @@ with lib.browser() as b:
            json.dumps(st0['f']))
         ck('vehicle hooks in place (edge, limit, walls)', E("typeof VEH.edge === 'function' && typeof VEH.limit === 'function' && typeof VEH.hitsOut === 'function'"))
     E(REC)
-    E("if (!DN.active) GAME.setMode('auto'); CLOCK.t = 14 * 60 + 30; DN.update(true)")
+    # 14:30, and the clock in real time (a long drive must not run into the evening: other textures, other light)
+    E("if (!DN.active) GAME.setMode('auto'); CLOCK.t = 14 * 60 + 30; CLOCK.rate = 'real'; DN.update(true)")
     lib.settle_light(pg)
+    tex0 = E("GAME.R.info.memory.textures")
     st = lambda: json.loads(E("JSON.stringify(VEH.state().find(v => v.id === 'car'))"))
     sub = lambda: E("(() => { const e = document.getElementById('npcsub'); return e && !e.hidden ? e.textContent : ''; })()")
     where = lambda: E("document.getElementById('where').textContent")
@@ -157,6 +159,7 @@ with lib.browser() as b:
         lib.shot(pg, OUT, name)
 
     def place_on(route, i, back=0):
+        E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null")
         a, c = route[i], route[min(len(route) - 1, i + 1)]
         E(f"VEH.place('car', {a[0]}, {a[1]}, Math.atan2({c[0] - a[0]}, {c[1] - a[1]}))")
 
@@ -291,7 +294,7 @@ with lib.browser() as b:
                f"x {s['x']}, {s['kmh']} km/h, {sorted(msgs)}")
             shot('g_ende')
     if want('free'):
-        E("VEH.place('car', 8.6, 33.4, 2.04)")
+        E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null; VEH.place('car', 8.6, 33.4, 2.04); CLOCK.t = 14 * 60 + 30; DN.update(true)")
         for _ in range(4):
             E("for (let i = 0; i < 400; i++) GAME.step(0.025)")
             time.sleep(0.3)
@@ -299,7 +302,7 @@ with lib.browser() as b:
         mem = json.loads(E("JSON.stringify({ tex: GAME.R.info.memory.textures, geo: GAME.R.info.memory.geometries })"))
         print('home', json.dumps(f), json.dumps(mem), flush=True)
         ck('home again: asleep, tiles and signs freed', not f['active'] and f['welt']['tiles'] == 0 and not f['signsNear'] and not f['carved'], json.dumps(f))
-        ck('textures back near the start', mem['tex'] <= st0['tex'] + 12, f"{st0['tex']} → {mem['tex']}")
+        ck('textures back near the start', mem['tex'] <= tex0 + 12, f"{tex0} → {mem['tex']}")
     if want('gl'):
         ok, rep = lib.check_gl(pg, 16)
         ck('textures per shader ≤ 16, no broken program', ok, json.dumps({k: rep[k] for k in ('programs', 'maxFrag', 'maxVert', 'bad', 'broken')}))
