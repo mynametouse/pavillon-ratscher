@@ -51,17 +51,41 @@ with lib.browser() as b:
     if want('yard'):
         E("LIFE.force('hubert', 'putter'); LIFE.force('ronald', 'paddock'); __N.clock(11, 0)")
         lib.settle_light(pg)
-        view(-10.5, 2.0, 1.7, -100, -4, 70); shot('yard_from_garden')
+        view(-10.5, 2.0, 1.7, -100, -4, 70)
+        E("GAME.R.info.autoReset = false; GAME.R.info.reset()"); shot('yard_from_garden')
+        print('cost', E("JSON.stringify({ calls: GAME.R.info.render.calls, tris: GAME.R.info.render.triangles, programs: GAME.R.info.programs.length, geometries: GAME.R.info.memory.geometries, textures: GAME.R.info.memory.textures })"), flush=True)
+        E("GAME.R.info.autoReset = true")
         view(-14.0, -3.0, 1.7, -55, -6, 65); shot('workshops_open_east')
         view(-17.2, 4.0, 1.6, -78, -4, 60); shot('drying_huts')
         view(-13.6, -15.0, 1.5, -95, -6, 60); shot('car_on_ramp_side')
         view(-17.4, -9.8, 1.7, 180, -10, 60); shot('car_front_bonnet')
         view(-14.8, 12.0, 1.7, -105, -12, 60); shot('wood_yard')
         view(-16.4, -4.2, 1.5, -110, -10, 60); shot('table_chairs')
+        lbl = E("__N.go('seat:hof1', 1.0)"); ck('a free chair at the table to sit on', lbl == 'Auf den Stuhl setzen', lbl)
         view(-23.0, 1.0, 1.7, -78, -6, 70); shot('inside_workshop')
         E("(() => { const P = GAME.P; P.mode = 'top'; P.tx = -22; P.ty = 2; P.th = 52; document.body.dataset.mode = 'top'; GAME.step(0.05); })()"); shot('top_yard')
         E(f"(() => {{ const P = GAME.P; P.mode = 'top'; P.tx = {(pad['x0'] + pad['x1']) / 2}; P.ty = {(pad['y0'] + pad['y1']) / 2 + 6}; P.th = 46; document.body.dataset.mode = 'top'; GAME.step(0.05); }})()"); shot('top_paddock')
         view(pad['x0'] - 5, pad['gy'] + 2.5, 1.7, 100, -8, 65); shot('paddock_gate')
+    if want('plan'):
+        # the day plan by the clock (no forcing): what each of them is meant to do at a few times of a day
+        E("LIFE.force('hubert', null); LIFE.force('ronald', null)")
+        plans = {}
+        for h, m in ((6, 30), (9, 0), (12, 30), (16, 30), (19, 0), (20, 0)):
+            E(f"__N.clock({h}, {m})")
+            plans[f'{h}:{m:02d}'] = E("[LIFE.plan('hubert'), LIFE.plan('ronald')]")
+        print('plans', json.dumps(plans), flush=True)
+        ck('day plan: Hubert works with wood or at the car in the morning', plans['9:00'][0] in ('chop', 'saw', 'stack', 'car'), plans['9:00'])
+        ck('day plan: lunch at the table, evening on the bench', plans['12:30'][0] == 'table' and plans['20:00'][0] == 'bench', plans)
+        ck('day plan: Ronald feeds the goats in the morning, brings them in in the evening', plans['6:30'][1] == 'feed' and plans['20:00'][1] == 'stall', plans)
+        # night: out of sight they go home, the bonnet shuts, the goats sleep in the shelter
+        E("__N.clock(22, 30)"); E("GAME.view(0, 10, 1.7, 60, 0)")  # looking north-east: neither the yard nor the paddock in sight
+        t = E("__N.until(() => NPC.NPCS.hubert.away && NPC.NPCS.ronald.away, 20)")
+        E("__N.run(3)")
+        night = E("JSON.stringify({ h: !!NPC.NPCS.hubert.away, r: !!NPC.NPCS.ronald.away, bonnet: HOFCAR.open, goats: NPC.GOATS.map(g => [+g.x.toFixed(1), +g.y.toFixed(1)]) })")
+        print('night', t, night, flush=True)
+        ck('night: both at home, bonnet shut', t >= 0 and '"bonnet":0' in night, night)
+        E("__N.clock(6, 40)"); t = E("__N.until(() => !NPC.NPCS.hubert.away && !NPC.NPCS.ronald.away, 20)")
+        ck('morning: both come out again', t >= 0)
     if want('day'):
         E("__N.clock(9, 0)")
         lib.settle_light(pg)

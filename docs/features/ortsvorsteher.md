@@ -137,3 +137,20 @@ bash tools/browser_lock.sh python3 viz3/test/run.py --port 8978 --serve amt:ask,
 Abschnitte: `start,ask,rathaus,wahltag,zaehlen,amt,welt,aufgaben,hydrant,gl`. Im Browser: `index.html?amt=brief|wahlkampf|wahltag|zaehlen|amt|stadtrat`
 springt an die Stelle (`?noamt` schaltet den Brief ab). Konsole: `AMT.state()`, `AMT.jump('wahltag')`, `AMT.talk('gerhard')`,
 `AMT.press('Unterschreibst')`, `AMT.count(true)`, `AMT.ortsrat()`, `AMT.council()`, `AMT.reset()`, `AMTWORLD.state()`.
+
+## Für den Kern-Chat
+
+- **Gemeinsame Dateien** (im Branch schon drin, beim Zusammenführen behalten): `core/save.js` eine Zeile `K('pav-amt-v1', …)` (nach
+  `pav-trees-v1`); `src/modules.txt` der Block `# feat/ortsvorsteher` mit den vier Modulen `amt/*` hinter dem Dorf-Block, vor
+  `game/game.js` (kommen weitere `dorf/*.js` dazu, gehören sie über `dorf/dorf.js`, also über diesen Block); `shell/parts.txt` die Zeile
+  `css/amt.css` (nach `css/winde.css`).
+- **Noch zu tun in geteilten Dokumenten**: ARCHITECTURE.md – Abschnitt 8 Schlüssel `pav-amt-v1`, Abschnitt 6/9 Ordner `amt/` und die
+  `window`-Namen `AMT`, `AMTWORLD`; CHANGELOG-Eintrag; PARALLEL.md-Zeile.
+- **Keine Änderungen in fremden Modulen.** Zur Laufzeit eingehängt (Kandidaten für die Dienste aus Phase 2): ein Knopf in den
+  Gesprächsfenstern `#dorfpanel .topics` und `#np-topics` (MutationObserver), der Gruß im Amt über `DORF.UI.say`, zwei Einträge in der
+  Menüliste „Spiel“ (hinter `#invbtn`), der Knopf `#amtbtn` in `#hudtr` (vor `#menubtn`). Ein offizieller Weg wäre besser: z. B.
+  `DORF.topics.add(fn)` und `NPCUI.topics.add(fn)` (fn(person) → Knöpfe) – dann fällt der Observer weg.
+- **Vorschläge für andere Bereiche**: `dorf/dorf_life.js` lässt Ingrid dienstags und donnerstags ins Rathaus fahren – sobald der Spieler
+  Ortsvorsteher ist (`AMT.ST.phase === 'office'`), könnte sie das lassen (oder er fährt). Die Aufgaben des Wahlkampfs könnten in das
+  gemeinsame Aufgabensystem (Phase 2) wandern; bis dahin hat AMT seine eigene Mappe (O) und Zielanzeige (`#amttrack`).
+- **Schleusingen**: siehe „Das Rathaus – die Naht“ oben (`AMT.rathaus()`, `AMT.council()`, `AMT.trip()`).
