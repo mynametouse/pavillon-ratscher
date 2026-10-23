@@ -2083,6 +2083,48 @@ export const VESSRA = (() => {
       benchAt(K, x, y, z, rot);
       S.seats.push({ x, y, z, yaw: yawOf([t[0], t[1]]) });
     }
+    // the yard: two plant trolleys with three shelves of pots at the east end of the beds, behind the hut a pallet of potting soil and
+    // stacks of empty containers
+    {
+      const GALV = linC([0.55, 0.56, 0.56]),
+        TYRE = linC([0.08, 0.08, 0.08]);
+      [
+        [22.8, 7.2],
+        [22.8, 17.4],
+      ].forEach(([u, w], i) => {
+        for (const du of [-0.64, 0.64])
+          for (const dw of [-0.25, 0.25]) {
+            box(u + du, w + dw, 0.12, 0.035, 0.035, 1.8, GALV);
+            box(u + du, w + dw, 0, 0.1, 0.06, 0.12, TYRE);
+          }
+        for (const zs of [0.22, 0.78, 1.34]) {
+          box(u, w, zs, 1.32, 0.56, 0.03, GALV);
+          for (let a = 0; a < 5; a++)
+            for (let b = 0; b < 2; b++) {
+              const [x, y, z] = Yz(u - 0.52 + a * 0.26, w - 0.13 + b * 0.26, zs + 0.03);
+              plant(K, 'boden', x, y, z, hh(x * 5.1 + y * 2.3 + i), { POT, BAMBOO, WOOD });
+            }
+        }
+        const [x, y] = Y(u, w);
+        S.segs.push(...boxSegs(x, y, 1.4, 0.62, rot));
+      });
+      const BAG = [linC([0.14, 0.3, 0.17]), linC([0.36, 0.22, 0.12])],
+        [px, py] = Y(-11.0, 13.0);
+      box(-11.0, 13.0, 0, 1.2, 0.8, 0.14, WOOD);
+      for (let l = 0; l < 4; l++)
+        for (const du of [-0.29, 0.29])
+          box(-11.0 + du, 13.0, 0.14 + l * 0.12, 0.56, 0.76, 0.11, BAG[(l + (du > 0 ? 1 : 0)) % 2]);
+      S.segs.push(...boxSegs(px, py, 1.2, 0.8, rot));
+      for (const [u, w, n] of [
+        [-10.9, 14.7, 7],
+        [-11.4, 15.2, 5],
+        [-10.5, 15.3, 9],
+      ]) {
+        const [x, y, z] = Yz(u, w);
+        K.cyl(x, y, z, z + 0.32 + n * 0.06, 0.2, 0.24, 8, POT, true);
+        S.segs.push(...circleSegs(x, y, 0.26, 6));
+      }
+    }
     // the beds: a ground cloth with an edge of boards, plants in black containers in rows, a label at the path end
     const beete = [];
     const U0 = 3.0,

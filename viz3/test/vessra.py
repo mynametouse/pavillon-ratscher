@@ -4,7 +4,7 @@
 # place names; pictures at the places of photos (Panoramax 2025, Wikimedia Commons), from above and at night; going home frees it again.
 # The tiles come from the published site and are copied into viz3/dist/welt-test/zonen/vessra/ first (the test server serves dist).
 # Sections (optional second argument, comma-separated): start,load,walk,kirche,baumschule,names,shots,night,free
-import sys, os, json, time, math, urllib.request, concurrent.futures
+import sys, os, json, time, math, urllib.request, urllib.error, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
@@ -24,6 +24,9 @@ def utm(x, y):
     return XF['a'] * x - XF['b'] * y + XF['ex'], XF['b'] * x + XF['a'] * y + XF['ey']
 
 
+FAILED = []
+
+
 def fetch_tiles():
     """the tiles the app asks for in the zone (levels 10-12, rings of welt/welt.js) and under it (sampler), into dist/welt-test/zonen/vessra/"""
     os.makedirs(DIST, exist_ok=True)
@@ -33,12 +36,22 @@ def fetch_tiles():
         if os.path.exists(p) and os.path.getsize(p) > 0:
             return 0
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        try:
-            with urllib.request.urlopen(SITE + rel, timeout=60) as r:
-                b = r.read()
-        except Exception:
+        for k in range(4):   # GitHub Pages now and then drops a connection: try again
+            try:
+                with urllib.request.urlopen(SITE + rel, timeout=60) as r:
+                    b = r.read()
+                break
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    return 0
+            except Exception:
+                pass
+            time.sleep(1 + 2 * k)
+        else:
+            FAILED.append(rel)
             return 0
-        open(p, 'wb').write(b)
+        open(p + '.part', 'wb').write(b)
+        os.replace(p + '.part', p)
         return len(b)
     get('meta.json')
     try:
@@ -62,7 +75,7 @@ def fetch_tiles():
     t0 = time.time()
     with concurrent.futures.ThreadPoolExecutor(8) as ex:
         n = sum(ex.map(get, sorted(jobs)))
-    print(f'zone tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s', flush=True)
+    print(f'zone tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s' + (f', not fetched: {FAILED[:5]}' if FAILED else ''), flush=True)
 
 
 fetch_tiles()
