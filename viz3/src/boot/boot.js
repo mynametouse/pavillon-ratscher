@@ -380,6 +380,7 @@ window.GAME = {
       physics(0.025, f, turn, side, run);
       if (P.mode === 'walk' && !(window.VEH && VEH.cur)) cam3Update(0.025);
       adaptExposure(0.025);
+      KERN.update(0.025); // zones, borrowed lights, waits – as in the frame loop (game/game.js)
       for (const fn of window.TICKS || []) fn(0.025);
     }
     return {
