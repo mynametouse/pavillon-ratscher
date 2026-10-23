@@ -38,9 +38,12 @@ jobs:
           python-version: '3.12'
       - name: Website als Asset-Basis (Branch gh-pages, Vorschau wenn vorhanden)
         run: |
-          git clone -q --depth 1 --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          # sparse: only the preview (or the site without preview and world tiles) – the full branch is ~400 MB (welt-test/, 23.10.2026)
+          git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          else git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"; fi
+          git -C "$RUNNER_TEMP/site" checkout -q
           mkdir -p viz3/dist
-          B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
       - name: Werkzeuge
         run: |
@@ -80,9 +83,12 @@ jobs:
           python-version: '3.12'
       - name: Website als Asset-Basis (Branch gh-pages, Vorschau wenn vorhanden)
         run: |
-          git clone -q --depth 1 --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          # sparse: only the preview (or the site without preview and world tiles) – the full branch is ~400 MB (welt-test/, 23.10.2026)
+          git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          else git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"; fi
+          git -C "$RUNNER_TEMP/site" checkout -q
           mkdir -p viz3/dist
-          B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
       - name: Werkzeuge
         run: |
@@ -117,9 +123,12 @@ jobs:
           python-version: '3.12'
       - name: Website als Asset-Basis
         run: |
-          git clone -q --depth 1 --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          # sparse: only the preview (or the site without preview and world tiles) – the full branch is ~400 MB (welt-test/, 23.10.2026)
+          git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          else git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"; fi
+          git -C "$RUNNER_TEMP/site" checkout -q
           mkdir -p viz3/dist
-          B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
       - name: Werkzeuge
         run: |
@@ -143,8 +152,11 @@ jobs:
           python-version: '3.12'
       - name: Gelände der Website (Vorschau wenn vorhanden)
         run: |
-          git clone -q --depth 1 --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
-          B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
+          # sparse: only the preview (or the site without preview and world tiles) – the full branch is ~400 MB (welt-test/, 23.10.2026)
+          git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          if git -C "$RUNNER_TEMP/site" cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          else git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"; fi
+          git -C "$RUNNER_TEMP/site" checkout -q
           echo "GEO=$B/geo" >> "$GITHUB_ENV"
       - name: Wellen je km messen
         run: |
