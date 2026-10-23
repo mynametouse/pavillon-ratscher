@@ -24,11 +24,12 @@ und detailliert ausgearbeitet, anhand von echten Bildern“ – Grundlage für d
   Platz des Vorsitzenden unter dem Wappen, Fahnen (Thüringen, Deutschland), Stuhlreihen für Besucher, Rednerpult, Tresen „Bürgerbüro“
   mit Schild, Fenster, Deckenbalken und -leuchten, Holzvertäfelung, Parkett. **St. Johannis** mit Turm, Achteck und Haube, hohen
   Rundbogenfenstern, Portal; **Bertholdsburg**: Vierflügelbau aus Sandstein mit Fachwerk-Obergeschoss und hohen Dächern, Rundtürme mit
-  Spitzhelmen, zwei Treppentürme im Hof mit Fachwerk und dunklen Hauben, Uhrturm, Brunnen im Hof; **Marktbrunnen** (achteckiges Becken,
+  Spitzhelmen, zwei Treppentürme im Hof mit Fachwerk und dunklen Hauben, Gauben, Uhrturm, Brunnen im Hof; **Marktbrunnen** (achteckiges Becken,
   Säule mit Frauenfigur); Heckenturm.
 - **Laternen** (OSM und entlang der Altstadtgassen, 208): nachts an, Lichtflecken am Boden, sie beleuchten die Wände wie im Dorf.
   **Bänke** aus OSM. **Schilder** über Läden und Gasthäusern (Namen aus OSM: Ratsstube, Stadtcafé, Adler Apotheke …).
 - **Ortsnamen** im HUD: Rathaus, Markt, Kirche, Burg, sonst die nächste Straße („Burgstraße, Schleusingen“).
+- **Hinsetzen** (Aktionsknopf): auf den Bänken am Markt und auf jedem Stuhl im Ratssaal; Aufstehen wie im Garten.
 - **Kollision**: alle Hauswände, Brunnen, Laternen, Türme, Bäume; im Saal die Wände, die Tische, der Tresen, das Pult.
 
 ## Für die Aufgabe „Ortsvorsteher“ (`feat/ortsvorsteher`)

@@ -13,6 +13,7 @@ import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { TREES } from '../garden/trees.js';
 import { P } from '../game/walkable.js';
+import { PLAY } from '../game/play.js';
 import { SPOTS } from '../game/player.js';
 import { toast } from '../audio/audio.js';
 import { RATSCHER } from '../world/ratscher.js';
@@ -692,7 +693,7 @@ export const SCHL = (() => {
   S.dispose = () => {
     for (const m of S.meshes) {
       scene.remove(m);
-      m.geometry.dispose();
+      if (!m.userData.sharedGeo) m.geometry.dispose(); // the trees use the garden's geometries
       if (m.userData.own) m.material.dispose();
       if (m.userData.tex) m.userData.tex.dispose();
     }
@@ -809,6 +810,15 @@ export const SCHL = (() => {
       const dM = Math.hypot(b.cx - MARKT[0], b.cy - MARKT[1]);
       if (dM > 260 || hh(b.i + 51) > (dM < 90 ? 0.95 : 0.5)) continue;
       dormers(K, b);
+    }
+    // the castle: small dormers on the outer slopes of its roofs (courtyard photo 2008)
+    for (const b of S.bld) {
+      if (b.lm !== 'burg' || !b.roofT) continue;
+      const nOut = b.f.length / 2; // the outer ring comes first in the facades
+      b.F.forEach((f, k) => {
+        const L = Math.hypot(f[2] - f[0], f[3] - f[1]);
+        if (k < nOut && L > 9 && Math.abs(f[4] - b.e) < 0.3 && Math.abs(f[7] - b.e) < 0.3) dormers(K, b, f, 5);
+      });
     }
     // the Marktbrunnen (photos 2025): octagonal platform, a big octagonal sandstone basin with bulging panels (covered in winter by a low
     // grey lid), a column with a capital and the figure of a woman in Renaissance dress, iron brackets
@@ -1148,6 +1158,7 @@ export const SCHL = (() => {
     // the Rathaus: roof turret with clock and cupola over the gable, red portal, the hall behind the door
     for (const b of S.bld.filter(q => q.lm === 'rathaus')) rathaus(K, b, { IRON, STONE, DARK, SLATE, GOLD, WOOD, RED });
     // benches (OSM): wood on iron, facing the fountain
+    S.benchSpots = [];
     const WOODB = linC([0.4, 0.26, 0.15]);
     for (const [x, y] of data.benches || []) {
       const z = gzz(x, y),
@@ -1156,6 +1167,7 @@ export const SCHL = (() => {
         s = Math.sin(a),
         rot = a + Math.PI / 2,
         len = 1.7;
+      S.benchSpots.push({ x, y, z, yaw: (Math.atan2(Math.cos(a), Math.sin(a)) * 180) / Math.PI });
       for (let i = 0; i < 3; i++)
         K.box(x + c * (0.12 - i * 0.13), y + s * (0.12 - i * 0.13), z + 0.42, len, 0.11, 0.035, rot, WOODB);
       for (let i = 0; i < 2; i++) K.box(x - c * 0.3, y - s * 0.3, z + 0.58 + i * 0.16, len, 0.03, 0.1, rot, WOODB);
@@ -1220,7 +1232,7 @@ export const SCHL = (() => {
     });
     for (const im of [ib, il]) {
       im.computeBoundingSphere();
-      add(im, 'trees');
+      add(im, 'trees').userData.sharedGeo = true;
     }
     S.trees = pts.length;
   }
@@ -1333,14 +1345,15 @@ export const SCHL = (() => {
     return best;
   }
   // shed dormers over the street facade: front with a window, cheeks, a flat roof back into the main roof
-  function dormers(K, b) {
-    const d = b.doorFac,
-      f = b.F.find(q => Math.abs(q[0] - d.ax) < 1e-6 && Math.abs(q[1] - d.ay) < 1e-6);
+  function dormers(K, b, f0, nMax = 4) {
+    const f =
+      f0 || (b.doorFac && b.F.find(q => Math.abs(q[0] - b.doorFac.ax) < 1e-6 && Math.abs(q[1] - b.doorFac.ay) < 1e-6));
     if (!f) return;
     const L = Math.hypot(f[2] - f[0], f[3] - f[1]),
+      d = { dx: (f[2] - f[0]) / L, dy: (f[3] - f[1]) / L },
       ix = -d.dy,
       iy = d.dx, // into the house
-      n = Math.min(4, Math.floor((L - 1.2) / 3.4)),
+      n = Math.min(nMax, Math.floor((L - 1.2) / 3.4)),
       col = b.st.col,
       rc = b.rc.map(lin).map(v => v * 0.85),
       FR = linC([0.92, 0.92, 0.9]),
@@ -2125,6 +2138,36 @@ export const SCHL = (() => {
     return best ? best + ', Schleusingen' : 'Schleusingen';
   }
   S.place = place;
+  // sitting down: on the benches of the Markt and on every chair of the council chamber (the tasks have their own seats too)
+  const nearSeat = () => {
+    if (S.state !== 'ready' || P.mode !== 'walk') return null;
+    const R = S.rathaus,
+      all = (S.benchSpots || []).concat(R && R.spots ? R.spots.seats.concat(R.spots.visitors) : []);
+    let best = null,
+      bd = 1.3;
+    for (const s2 of all) {
+      const d = Math.hypot(s2.x - P.x, s2.y - P.y);
+      if (d < bd && Math.abs(s2.z - P.feet) < 0.8) {
+        bd = d;
+        best = s2;
+      }
+    }
+    return best;
+  };
+  PLAY.act({
+    id: 'schl:sit',
+    r: 1.3,
+    prio: 0.03,
+    label: () => (!PLAY.seat && nearSeat() ? 'Hinsetzen' : null),
+    pos: () => {
+      const s2 = nearSeat();
+      return s2 ? [s2.x, s2.y, s2.z + 0.6] : null;
+    },
+    run: () => {
+      const s2 = nearSeat();
+      if (s2) PLAY.sit({ x: s2.x, y: s2.y, eye: s2.z + 1.2, yaw: s2.yaw, pitch: -6, leaveLabel: 'Aufstehen' });
+    },
+  });
   KERN.provide('place', place, 20);
   KERN.provide('ground', (x, y) => (S.state === 'ready' && inHall(x, y) ? S.rathaus.floor : undefined), 10);
   KERN.provide('pushOut', pushOut, 10);

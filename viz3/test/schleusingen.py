@@ -117,6 +117,13 @@ with lib.browser() as b:
         ck('the hall has a name', 'Rathaus' in (r['where'] or ''), r['where'] or '')
         r2 = json.loads(E("""JSON.stringify((() => { GAME.step(6, 1); return { inHall: SCHL.inHall(GAME.P.x, GAME.P.y), x: GAME.P.x, y: GAME.P.y }; })())"""))
         ck('the back wall of the hall stops the walker', r2['inHall'], json.dumps(r2))
+        # the named spots of the council chamber (for the Ortsvorsteher task) and sitting down on a visitor's chair
+        sp = json.loads(E("""JSON.stringify((() => { const s = SCHL.rathaus.spots; return { vorsitz: !!s.vorsitz, seats: s.seats.length, visitors: s.visitors.length,
+            counter: !!s.counter, clerk: !!s.clerk, pult: !!s.rednerpult, inside: [s.vorsitz, s.counter, s.rednerpult].every(q => SCHL.inHall(q.x, q.y)) }; })())"""))
+        ck('council chamber: chair, seats, visitors, counter, clerk, speaker – all inside the hall', sp['vorsitz'] and sp['seats'] >= 9 and sp['visitors'] >= 10 and sp['counter'] and sp['clerk'] and sp['pult'] and sp['inside'], json.dumps(sp))
+        si = json.loads(E("""JSON.stringify((() => { const v = SCHL.rathaus.spots.visitors[0]; GAME.view(v.x + 0.5, v.y, v.z + 1.62, 0, 0, 60); const st = GAME.step(0.5);
+            const label = st.best; let sat = false; if (label === 'Hinsetzen') { PLAY.best.run(); GAME.step(1); sat = !!PLAY.seat; PLAY.stand(true); GAME.step(0.5); } return { label, sat }; })())"""))
+        ck('sitting down on a chair in the hall', si['label'] == 'Hinsetzen' and si['sat'], json.dumps(si, ensure_ascii=False))
     if want('names'):
         n = json.loads(E("JSON.stringify([[-1085, 1230], [-1180, 1190], [-1290, 1185], [-1250, 1203]].map(([x, y]) => SCHL.place(x, y)))"))
         ck('place names: Markt, a street, the castle, the church', n[0].startswith('Markt') and 'Schleusingen' in n[1] and 'Bertholdsburg' in n[2] and 'Johannis' in n[3], json.dumps(n, ensure_ascii=False))
