@@ -24,6 +24,7 @@ import { CHL, rbPerson } from '../npc/npc_real.js';
 import { VILLAGE } from '../world/village.js';
 import { WCOL } from '../world/worldcol.js';
 import { VEH } from '../vehicles/vehicle.js';
+import { SCHL } from '../welt/schleusingen.js';
 import { DCAL } from '../dorf/dorf_cal.js';
 import { DTEXT } from '../dorf/dorf_text.js';
 import { DPEOPLE } from '../dorf/dorf_people.js';
@@ -1091,8 +1092,8 @@ export const AMT = (() => {
       if (done) done();
     }
   }
-  // the walkable town (welt/schleusingen.js, branch feat/schleusingen – read through window until it is merged): its Rathaus hall
-  const town = () => (window.SCHL && window.SCHL.on ? window.SCHL : null);
+  // the walkable town (welt/schleusingen.js, SCHL): its Rathaus hall with the counter of the Bürgerbüro
+  const town = () => (SCHL && SCHL.on ? SCHL : null);
   const rathausReal = () => {
     const S = town();
     return S && S.state === 'ready' && S.rathaus && S.rathaus.counter ? S.rathaus : null;

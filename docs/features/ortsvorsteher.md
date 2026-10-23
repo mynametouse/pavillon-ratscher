@@ -110,8 +110,8 @@ Stimmen für dich); mit etwa +10 bei allen und vielen Gesprächen wird es knapp;
 Ohne begehbare Stadt ist der Besuch eine **eigene Szene** im Fenster (`AMT.rathaus()`): Fahrt 25 Spielminuten hin und zurück
 (`CLOCK.wait`, das Dorf dunkelt hinter dem Fenster ab), Wahlamt, Bauamt, Sitzungssaal (`AMT.council()`, donnerstags).
 
-Mit der begehbaren Stadt (Branch `feat/schleusingen`, `welt/schleusingen.js`, `SCHL`) – schon eingebaut, wird aktiv, sobald `SCHL` da ist
-(bis zum Zusammenführen über `window.SCHL` gelesen, danach besser ein Import):
+Mit der begehbaren Stadt (`welt/schleusingen.js`, `SCHL`, seit 23.10. auf `src`, von AMT importiert) – aktiv, sobald `SCHL.on` (die
+Kachelwelt ist da):
 - „Ins Rathaus“ (Auto, Mappe, Menü) fragt: **selbst hinfahren** (die Zielanzeige zeigt den Weg zum Markt bzw. zum Schalter) oder abkürzen.
 - Im Bürgerbüro steht am Schalter (`SCHL.rathaus.counter`) die Aktion **„Am Schalter: Wahlamt, Bauamt, Stadtrat“** – dieselbe Szene ohne
   Fahrt (`AMT.rathaus(true)`), donnerstags mit dem Weg in den Sitzungssaal.
@@ -152,7 +152,7 @@ springt an die Stelle (`?noamt` schaltet den Brief ab). Konsole: `AMT.state()`, 
 - **Gemeinsame Dateien** (im Branch schon drin, beim Zusammenführen behalten): `core/save.js` eine Zeile `K('pav-amt-v1', …)` (nach
   `pav-trees-v1`); `src/modules.txt` der Block `# feat/ortsvorsteher` mit den vier Modulen `amt/*` hinter dem Dorf-Block, vor
   `game/game.js` (kommen weitere `dorf/*.js` dazu, gehören sie über `dorf/dorf.js`, also über diesen Block); `shell/parts.txt` die Zeile
-  `css/amt.css` (nach `css/winde.css`).
+  `css/amt.css` (nach `css/schleusingen.css`).
 - **Noch zu tun in geteilten Dokumenten**: ARCHITECTURE.md – Abschnitt 8 Schlüssel `pav-amt-v1`, Abschnitt 6/9 Ordner `amt/` und die
   `window`-Namen `AMT`, `AMTWORLD`; CHANGELOG-Eintrag; PARALLEL.md-Zeile.
 - **Keine Änderungen in fremden Modulen.** Zur Laufzeit eingehängt (Kandidaten für die Dienste aus Phase 2): ein Knopf in den
