@@ -95,7 +95,7 @@ with lib.browser() as b:
     E("GAME.step(1)")
     s = json.loads(E("JSON.stringify(SCHL.status())"))
     print('loaded', json.dumps(s), flush=True)
-    p = json.loads(E("JSON.stringify({ x: GAME.P.x, y: GAME.P.y, feet: GAME.P.feet, g: KERN.ground(GAME.P.x, GAME.P.y), w: WELT.heightAt(GAME.P.x, GAME.P.y), where: (document.getElementById('where') || {}).textContent || '' })"))
+    p = json.loads(E("JSON.stringify({ x: GAME.P.x, y: GAME.P.y, feet: GAME.P.feet, g: KERN.ground(GAME.P.x, GAME.P.y), w: WELT.heightAt(GAME.P.x, GAME.P.y) ?? null, where: (document.getElementById('where') || {}).textContent || '' })"))
     if want('load'):
         ck('Orte → Schleusingen: on the Markt', math.hypot(p['x'] + 1100.5, p['y'] - 1214.5) < 2, json.dumps(p, ensure_ascii=False))
         ck('the old town is built there', s['state'] == 'ready' and s['buildings'] > 700 and s['segs'] > 3000, f"{s['buildings']} buildings, {s['segs']} wall segments, {s['ms']} ms build, {s['loadMs']} ms data + {round(dt)} s")

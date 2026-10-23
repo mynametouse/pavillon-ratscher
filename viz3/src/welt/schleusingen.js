@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { BASE, cam, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
+import { P } from '../game/walkable.js';
 import { SPOTS } from '../game/player.js';
 import { toast } from '../audio/audio.js';
 import { RATSCHER } from '../world/ratscher.js';
@@ -273,6 +274,7 @@ export const SCHL = (() => {
           dw = Math.min(2.5, L * 0.6);
         }
       }
+      if (du >= 0) b.doorFac = { ax, ay, dx: F.dx, dy: F.dy, u: du, w: dw };
       const at = {
         u0,
         w: 4 * i + o.typ,
@@ -609,6 +611,7 @@ export const SCHL = (() => {
       }
       b.cx = cx;
       b.cy = cy;
+      b.i = i;
       // the foot: the lowest ground along the walls
       let z0 = 1e9;
       for (const f of b.F) {
@@ -654,6 +657,7 @@ export const SCHL = (() => {
       scene.remove(m);
       m.geometry.dispose();
       if (m.userData.own) m.material.dispose();
+      if (m.userData.tex) m.userData.tex.dispose();
     }
     S.meshes.length = 0;
     if (VPROPS.lamps)
@@ -665,6 +669,7 @@ export const SCHL = (() => {
     S.segs = [];
     S.cells = null;
     S.bld = [];
+    S.rathaus = null;
     data = null;
     gz = null;
     S.state = 'idle';
@@ -675,12 +680,15 @@ export const SCHL = (() => {
     rathaus(b) {
       // the front to the Markt: cream with yellow ornament and a grey stone ground floor; slate on the gable at the back (photos 2008, 2025)
       let fm = -1,
-        dm = 1e9;
+        dm = -1e9;
       b.F.forEach((f, k) => {
-        const d = Math.hypot((f[0] + f[2]) / 2 - MARKT[0], (f[1] + f[3]) / 2 - MARKT[1]),
-          L = Math.hypot(f[2] - f[0], f[3] - f[1]);
-        if (L > 8 && d < dm) {
-          dm = d;
+        const L = Math.hypot(f[2] - f[0], f[3] - f[1]),
+          mx = (f[0] + f[2]) / 2,
+          my = (f[1] + f[3]) / 2,
+          d = Math.hypot(MARKT[0] - mx, MARKT[1] - my),
+          sc = ((((f[3] - f[1]) / L) * (MARKT[0] - mx) - ((f[2] - f[0]) / L) * (MARKT[1] - my)) / d) * Math.min(L, 16);
+        if (L > 8 && sc > dm) {
+          dm = sc;
           fm = k;
         }
       });
@@ -717,61 +725,81 @@ export const SCHL = (() => {
       SLATE = linC([0.2, 0.21, 0.23]),
       GOLD = linC([0.85, 0.66, 0.25]),
       WOOD = linC([0.42, 0.27, 0.16]),
-      RED = linC([0.62, 0.14, 0.1]),
-      WATER = linC([0.2, 0.3, 0.32]);
+      RED = linC([0.62, 0.14, 0.1]);
     const gzz = (x, y) => ground(x, y);
-    // the Marktbrunnen: an octagonal sandstone basin with a column and a figure (Markt photos 2025)
+    // the Marktbrunnen (photos 2025): octagonal platform, a big octagonal sandstone basin with bulging panels (covered in winter by a low
+    // grey lid), a column with a capital and the figure of a woman in Renaissance dress, iron brackets
     {
       const [x, y] = MARKT,
-        z = gzz(x, y);
+        z = gzz(x, y),
+        a8 = Math.PI / 8,
+        LID = linC([0.72, 0.73, 0.72]);
       K.lathe(
         x,
         y,
-        z - 0.3,
+        z - 0.25,
         [
-          [2.7, 0],
-          [2.7, 1.0],
-          [2.45, 1.0],
-          [2.45, 0.35],
+          [4.4, 0],
+          [4.4, 0.4],
+          [3.2, 0.4],
+        ],
+        8,
+        linC([0.6, 0.57, 0.52]),
+        a8
+      );
+      K.lathe(
+        x,
+        y,
+        z + 0.1,
+        [
+          [3.05, 0],
+          [3.2, 0.35],
+          [3.2, 0.7],
+          [3.05, 1.05],
+          [2.85, 1.12],
         ],
         8,
         STONE,
-        Math.PI / 8
+        a8
       );
       K.lathe(
         x,
         y,
-        z + 0.6,
+        z + 1.12,
         [
-          [2.45, 0],
-          [0, 0],
+          [2.9, 0],
+          [0.45, 0.62],
         ],
         8,
-        WATER,
-        Math.PI / 8
+        LID,
+        a8
       );
+      K.cyl(x, y, z + 1.6, z + 4.3, 0.36, 0.3, 12, STONE);
+      K.cyl(x, y, z + 4.3, z + 4.45, 0.42, 0.5, 8, STONE);
+      K.box(x, y, z + 4.45, 1.0, 1.0, 0.24, 0, STONE, true);
+      // the figure: dress, bodice, sleeves, head
       K.lathe(
         x,
         y,
-        z + 0.6,
+        z + 4.69,
         [
-          [0, 0],
-          [2.45, 0],
+          [0.42, 0],
+          [0.36, 0.5],
+          [0.22, 0.95],
+          [0.16, 1.05],
         ],
-        8,
-        WATER,
-        Math.PI / 8
+        10,
+        linC([0.62, 0.6, 0.55])
       );
-      K.cyl(x, y, z, z + 0.5, 0.7, 0.6, 8, STONE, true);
-      K.cyl(x, y, z + 0.5, z + 2.6, 0.32, 0.26, 8, STONE);
-      K.cyl(x, y, z + 2.6, z + 2.8, 0.45, 0.45, 8, STONE, true);
-      K.cyl(x, y, z + 2.8, z + 3.9, 0.17, 0.2, 8, STONE, true);
-      K.ball(x, y, z + 4.05, 0.15, STONE, 8);
+      K.cyl(x, y, z + 5.74, z + 6.1, 0.17, 0.2, 8, linC([0.64, 0.62, 0.57]), true);
+      for (const sg of [-1, 1]) K.box(x + sg * 0.26, y, z + 5.62, 0.14, 0.14, 0.42, 0, linC([0.6, 0.58, 0.53]));
+      K.ball(x, y, z + 6.24, 0.12, linC([0.66, 0.64, 0.6]), 8);
       for (let k = 0; k < 4; k++) {
-        const a = (k * Math.PI) / 2;
-        K.box(x + Math.cos(a) * 0.4, y + Math.sin(a) * 0.4, z + 1.2, 0.12, 0.12, 0.12, a, linC([0.55, 0.5, 0.45]));
+        const an = (k * Math.PI) / 2 + 0.3;
+        K.box(x + Math.cos(an) * 0.55, y + Math.sin(an) * 0.55, z + 2.6, 0.5, 0.03, 0.03, an, IRON);
+        K.box(x + Math.cos(an) * 0.78, y + Math.sin(an) * 0.78, z + 2.35, 0.04, 0.04, 0.3, an, IRON);
       }
-      S.segs.push(...circleSegs(x, y, 2.8, 8));
+      S.segs.push(...circleSegs(x, y, 3.2, 8));
       S.fountain = [x, y, z];
     }
     // St. Johannis: the tower by the choir – square shaft, octagon, dark cupola with lantern and spire (photos 2008, 2025)
@@ -959,15 +987,25 @@ export const SCHL = (() => {
     }
     // the Rathaus: roof turret with clock and cupola over the gable, red portal, the hall behind the door
     for (const b of S.bld.filter(q => q.lm === 'rathaus')) rathaus(K, b, { IRON, STONE, DARK, SLATE, GOLD, WOOD, RED });
-    // benches (OSM)
-    if (VPROPS.bench)
-      for (const [x, y] of data.benches || []) {
-        try {
-          VPROPS.bench(K, x, y, 0, 1.6);
-        } catch (e) {
-          break;
-        }
+    // benches (OSM): wood on iron, facing the fountain
+    const WOODB = linC([0.4, 0.26, 0.15]);
+    for (const [x, y] of data.benches || []) {
+      const z = gzz(x, y),
+        a = Math.atan2(MARKT[1] - y, MARKT[0] - x),
+        c = Math.cos(a),
+        s = Math.sin(a),
+        rot = a + Math.PI / 2,
+        len = 1.7;
+      for (let i = 0; i < 3; i++)
+        K.box(x + c * (0.12 - i * 0.13), y + s * (0.12 - i * 0.13), z + 0.42, len, 0.11, 0.035, rot, WOODB);
+      for (let i = 0; i < 2; i++) K.box(x - c * 0.3, y - s * 0.3, z + 0.58 + i * 0.16, len, 0.03, 0.1, rot, WOODB);
+      for (const t of [-len / 2 + 0.15, len / 2 - 0.15]) {
+        const px = x - s * t,
+          py = y + c * t;
+        K.box(px, py, z, 0.06, 0.46, 0.42, rot, IRON);
+        K.box(px - c * 0.3, py - s * 0.3, z, 0.05, 0.05, 0.86, rot, IRON);
       }
+    }
     const mp = new THREE.MeshStandardMaterial({
       vertexColors: true,
       roughness: 0.8,
@@ -977,6 +1015,106 @@ export const SCHL = (() => {
     const pm = add(new THREE.Mesh(K.geo(), mp), 'props');
     pm.userData.own = true;
     lamps();
+    signs();
+  }
+  // ---- signs over the doors of shops, inns and offices (names from OSM) and over the Rathaus portal: one canvas atlas ----
+  function signs() {
+    const list = [];
+    for (const b of S.bld) {
+      const name = b.lm === 'rathaus' ? 'RATHAUS' : b.s && b.s[0];
+      if (!name || !b.doorFac) continue;
+      const d = b.doorFac;
+      list.push({
+        b,
+        name,
+        d,
+        x: d.ax + d.dx * d.u + d.dy * 0.07,
+        y: d.ay + d.dy * d.u - d.dx * 0.07,
+        z: b.z0 + (name === 'RATHAUS' ? 3.35 : 2.95),
+      });
+    }
+    if (S.rathaus) {
+      // over the counter of the hall, on the back wall, facing the door
+      const R = S.rathaus,
+        p = R.Q(R.L / 2, R.w1 - 0.04, 0);
+      list.unshift({
+        b: { i: 0 },
+        name: 'Bürgerbüro',
+        d: { dx: -R.dx, dy: -R.dy },
+        x: p[0],
+        y: p[1],
+        z: R.floor + 2.55,
+      });
+    }
+    if (!list.length) return;
+    const W = 1024,
+      RH = 64,
+      rows = Math.min(16, list.length),
+      cv = document.createElement('canvas');
+    cv.width = W;
+    cv.height = RH * rows;
+    const g = cv.getContext('2d'),
+      BG = ['#24412d', '#5c1f1a', '#ece4cf', '#1e3050', '#3b2a1a'];
+    list.slice(0, rows).forEach((it, r) => {
+      const bg = it.name === 'RATHAUS' ? '#ece4cf' : BG[Math.floor(hh(it.b.i + 3) * BG.length)],
+        fg = bg === '#ece4cf' ? '#5a1a12' : '#f2e2b0';
+      g.font = 'bold 38px Georgia, "Times New Roman", serif';
+      const tw = Math.min(W - 40, g.measureText(it.name).width);
+      it.w = tw + 40;
+      it.r = r;
+      g.fillStyle = bg;
+      g.fillRect(0, r * RH, it.w, RH);
+      g.fillStyle = fg;
+      g.textBaseline = 'middle';
+      g.fillText(it.name, 20, r * RH + RH / 2 + 2, W - 40);
+      g.strokeStyle = fg;
+      g.lineWidth = 3;
+      g.strokeRect(5, r * RH + 5, it.w - 10, RH - 10);
+    });
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    const pos = [],
+      uv = [],
+      nrm = [],
+      idx = [];
+    for (const it of list.slice(0, rows)) {
+      const d = it.d,
+        h = it.name === 'RATHAUS' ? 0.42 : 0.5,
+        w = (h * it.w) / RH,
+        nx = d.dy,
+        ny = -d.dx,
+        cx = it.x,
+        cy = it.y,
+        z = it.z,
+        n = pos.length / 3,
+        v0 = 1 - ((it.r + 1) * RH) / (RH * rows),
+        v1 = 1 - (it.r * RH) / (RH * rows);
+      for (const [s2, v, uu, vv] of [
+        [-1, 0, 0, v0],
+        [1, 0, it.w / W, v0],
+        [1, 1, it.w / W, v1],
+        [-1, 1, 0, v1],
+      ]) {
+        pos.push(cx + d.dx * s2 * (w / 2), z + v * h, -(cy + d.dy * s2 * (w / 2)));
+        nrm.push(nx, 0, -ny);
+        uv.push(uu, vv);
+      }
+      idx.push(n, n + 1, n + 2, n, n + 2, n + 3);
+    }
+    const gg = new THREE.BufferGeometry();
+    gg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    gg.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+    gg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    gg.setIndex(idx);
+    gg.computeBoundingSphere();
+    const m = add(
+      new THREE.Mesh(gg, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7, metalness: 0 })),
+      'signs'
+    );
+    m.userData.own = true;
+    m.userData.tex = tex;
+    S.signs = list.slice(0, rows).map(it => it.name);
   }
   // a tall window with a round arch on a wall: lower left corner on the wall line (ox, oy), along (ex, ey)
   function arch(K, ox, oy, ex, ey, z0, w, h, col) {
@@ -1199,6 +1337,8 @@ export const SCHL = (() => {
     seg(Q(L / 2 - cu, w1 - 2.55), Q(L / 2 + cu, w1 - 2.55));
     seg(Q(L / 2 - cu, w1 - 1.85), Q(L / 2 + cu, w1 - 1.85));
     S.rathaus.Q = Q;
+    S.rathaus.counter = Q(L / 2, w1 - 3.1); // where one stands at the counter (Ortsvorsteher: the concerns of Ratscher)
+    S.rathaus.clerk = Q(L / 2, w1 - 1.5); // behind the counter
   }
   // a second kit for the hall (unlit colours: the light of the ceiling lamps is in them)
   const kit2 = () => VPROPS.kit();
@@ -1403,8 +1543,9 @@ export const SCHL = (() => {
     acc += dt;
     if (acc < 0.4) return;
     acc = 0;
-    const cx = cam.position.x,
-      cy = -cam.position.z,
+    const walk = P.mode === 'walk',
+      cx = walk ? P.x : cam.position.x,
+      cy = walk ? P.y : -cam.position.z,
       d = Math.hypot(cx - MARKT[0], cy - MARKT[1]);
     if (d < NEAR) {
       WELT.need('schleusingen', true);

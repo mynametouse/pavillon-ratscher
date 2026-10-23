@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { scene, cam } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { ANISO, markDirty } from '../core/assets.js';
+import { P } from '../game/walkable.js';
 import { RATSCHER } from '../world/ratscher.js';
 export const WELT = (() => {
   const M = window.GEOMAN;
@@ -519,8 +520,10 @@ export const WELT = (() => {
       return;
     }
     S.active = true;
-    const cx = cam.position.x,
-      cy = -cam.position.z,
+    // where the tiles are needed: the walker (the camera follows it), else the camera
+    const walk = P.mode === 'walk',
+      cx = walk ? P.x : cam.position.x,
+      cy = walk ? P.y : -cam.position.z,
       [E, N] = toU(cx, cy);
     if (acc > 0.5 || Math.hypot(E - lastE, N - lastN) > 25) {
       acc = 0;
