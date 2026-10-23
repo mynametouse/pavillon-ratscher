@@ -74,6 +74,11 @@ with lib.browser() as b:
     # ---- the atelier: pictures from the door and the corners ----
     if want('atelier'):
         view(pg, 'holzhaus', -0.88, 1.45, EYE_A, 90, -14, 80); shot(pg, 'atelier_von_tuer')
+        # the HUD button „Einrichtung“ shows while one is inside a building with styles (KERN.tick, four times a second), not outside
+        HB = "(() => { const b = document.getElementById('stilbtn'); return b ? [!b.hidden, STIL.where()] : null; })()"
+        ev(pg, "GAME.step(0.6)"); hb_in = ev(pg, HB)
+        view(pg, 'holzhaus', -3.4, 3.2, 1.7, 0, -5, 70); ev(pg, "GAME.step(0.6)"); hb_out = ev(pg, HB)
+        ck('HUD button „Einrichtung“ inside the atelier, not outside', hb_in == [True, 'atelier'] and hb_out == [False, None], [hb_in, hb_out])
         view(pg, 'holzhaus', -1.25, 1.5, EYE_A, 45, -16, 82); shot(pg, 'atelier_ecke_nordwest')
         view(pg, 'holzhaus', 0.35, -1.5, EYE_A, -110, -14, 82); shot(pg, 'atelier_ecke_sued')
         view(pg, 'holzhaus', 0.5, 1.3, EYE_A, 140, -16, 82); shot(pg, 'atelier_ecke_nordost')
@@ -183,6 +188,8 @@ with lib.browser() as b:
         l0 = act(pg, 'garten:sitzecke-bett'); s0 = act(pg, 'seat:garten:wohnwagen-sitz')
         run(pg, 'garten:sitzecke-bett', 1.6)
         l1 = act(pg, 'garten:sitzecke-bett'); b1 = act(pg, 'seat:garten:wohnwagen-gaestebett'); s1 = act(pg, 'seat:garten:wohnwagen-sitz')
+        LANTERN = "(() => { const it = (window.GLB_PLACED || []).find(i => i.type === 'lantern_t' && i.bld === 'carport'); return it && it.root ? it.root.visible : null; })()"
+        lan1 = ev(pg, LANTERN)
         view(pg, 'carport', 0.35 + 0.9, -0.35, EYE_C, 0, -38, 84); shot(pg, 'wohnwagen_sitzecke_als_bett')
         ck('caravan: the dinette table lowers into a bed (then „Hinlegen“)', l0 == 'Tisch absenken – Bett bauen' and s0 == 'In die Sitzecke setzen' and l1 == 'Bett wieder zur Sitzecke' and b1 == 'Hinlegen' and s1 is None, [l0, s0, l1, b1, s1])
         run(pg, 'seat:garten:wohnwagen-gaestebett', 1.2)
@@ -191,6 +198,8 @@ with lib.browser() as b:
         ev(pg, f"(() => {{ const w = {W}('carport', 0.35 + 0.95, -0.35); GAME.view(w[0], w[1], {EYE_C}, SITE.bld.carport.az, -16, 80); GAME.step(0.1); }})()")
         run(pg, 'garten:sitzecke-bett', 1.6)
         ck('caravan: back to the dinette', act(pg, 'seat:garten:wohnwagen-sitz') == 'In die Sitzecke setzen' and ev(pg, "WOHNWAGEN.dinette.k") == 0)
+        lan2 = ev(pg, LANTERN)
+        ck('caravan: the table lantern is put away while the dinette is a bed, back on the table after', lan1 is not True and lan2 is not False, [lan1, lan2])
         # its ceiling light at night (the garden's one shared lamp light goes there)
         lbl = act(pg, 'garten:licht:wohnwagen')
         ev(pg, "GARTEN.set('wohnwagen', true); GAME.setMode('night')"); lib.settle_light(pg)
@@ -205,7 +214,7 @@ with lib.browser() as b:
         progs0 = ev(pg, PROGS)
         VIEWS = {
             'atelier': [('holzhaus', -0.88, 1.45, EYE_A, 90, -14), ('holzhaus', 0.35, -1.5, EYE_A, -110, -14)],
-            'wohnwagen': [('carport', 0.87, 0.4, EYE_C, 90, -12), ('carport', 1.15, -0.25, EYE_C, 165, -14)],
+            'wohnwagen': [('carport', 0.87, 0.4, EYE_C, 90, -12), ('carport', 1.15, -0.25, EYE_C, 165, -14), ('carport', 0.95, -0.35, EYE_C, 0, -6)],
             'bungalow': [('bungalow', 0.7, 0.2, 1.72, -140, -12), ('bungalow', -0.3, 0.0, 1.72, 125, -14)],
         }
         info = {}

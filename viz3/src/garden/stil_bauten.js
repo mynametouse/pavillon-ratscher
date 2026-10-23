@@ -63,6 +63,7 @@ const BSTYLES = [
     floor: ['oakF', 0xc49a70],
     wood: ['oak', 0xffffff],
     velvet: 0x55705a,
+    fronts: [0xf1ece0, 0xd9e3e8, 0xbccbd4], // kitchen fronts, wardrobe, its trim
     sofa: [0xd07b55],
     cush: 0x93a084,
     throw: 0xfff6ea,
@@ -87,6 +88,7 @@ const BSTYLES = [
     floor: ['paint', 0xe4e0d7],
     wood: ['larch', 0xfff3e2],
     velvet: 0xb7c2c8,
+    fronts: [0xf6f5f1, 0xf3f2ee, 0xe2e0da], // kitchen fronts, wardrobe, its trim
     sofa: [0xc9c9c5],
     cush: 0x8ea3b8,
     throw: 0xf2f0ea,
@@ -115,6 +117,7 @@ const BSTYLES = [
     floor: ['oak', 0xcfa982],
     wood: ['oak', 0xf2d2a6],
     velvet: 0x8f3f34,
+    fronts: [0xc5cfb9, 0xece2c8, 0xd2c3a2], // kitchen fronts, wardrobe, its trim
     sofa: [0x9aa889],
     cush: 0xb0502e,
     throw: 0xe2cfa8,
@@ -145,6 +148,7 @@ const BSTYLES = [
     floor: ['conc', 0xcfcac2],
     wood: ['larch', 0x54473c],
     velvet: 0x3e3d3b,
+    fronts: [0x404244, 0x5c5e60, 0x3a3b3d], // kitchen fronts, wardrobe, its trim
     sofa: [0x8a5530, 0.55],
     cush: 0x4b4b4b,
     throw: 0x77736c,
@@ -177,6 +181,7 @@ const BSTYLES = [
     floor: ['oakF', 0xe2c09a],
     wood: ['oak', 0xffffff],
     velvet: 0xc99a3a,
+    fronts: [0xd8b48a, 0xeadbc0, 0xc98a64], // kitchen fronts, wardrobe, its trim
     sofa: [0xb0502e],
     cush: 0xc99a3a,
     throw: 0x2b6070,
@@ -211,6 +216,9 @@ function bApply(h) {
   surf(KM.floor, s.floor);
   surf(BW.wood, s.wood);
   KM.velvet.color.set(s.velvet);
+  KM.front.color.set(s.fronts[0]);
+  KM.wardrobe.color.set(s.fronts[1]);
+  KM.wardrobeTrim.color.set(s.fronts[2]);
   BW.sofa.color.set(s.sofa[0]);
   BW.sofa.roughness = s.sofa[1] ?? BW.sofa.userData.rough0;
   BW.cush.color.set(s.cush);
@@ -711,6 +719,8 @@ STIL.house('wohnwagen', {
     if (it && it.root) {
       if (S.lanY === null) S.lanY = it.root.position.y;
       it.root.position.y = S.lanY - 0.26 * e;
+      // made up as a bed the lantern is put away (into the locker), with the dinette it is back on the table
+      it.root.visible = k < 0.98;
     }
     CV.bed = k > 0.5 ? 1 : 0;
   }

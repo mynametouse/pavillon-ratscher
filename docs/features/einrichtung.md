@@ -42,11 +42,12 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
   - Wohnwagen: Wie heute (80er) · Retro 70er · Skandinavisch hell · Landhaus · Boho
 
   Ein Stil ändert Wände, Decke, Boden (auch Bild und Struktur: Dielen, gekalkt, Eiche, Beton), Möbelholz, Polster, Vorhänge, Teppiche,
-  Bettwäsche, Bilder – und die Einrichtung: im Bungalow das Sofa (Polstersofa, schlankes Holzsofa, Chesterfield, Landhaussofa mit Volant,
-  Tagesbett), den Couchtisch, den Lampenschirm um die Glühbirne (Papier, Falten, Gitter, Rattan), Pflanzen (auch hängend), Schaffell,
-  Teller und Uhr, Bogenlampe, Makramee, Lichterkette, Sitzkissen; im Atelier Lampenschirm, Bilder, Kissen, Pflanzen, Schaffell, Korb, Trockenblumen,
-  Metallhocker, Makramee, Lichterkette; im Wohnwagen Vorhänge, Kissen, Tischdecke, Läufer, Steppdecke, Blumen. Die Akzentfarbe färbt
-  Kissen, Vasen, Becher.
+  Bettwäsche, Bilder, im Bungalow auch Küchenfronten und Kleiderschrank (bei „Wie heute“ creme und taubenblau wie bisher) – und die
+  Einrichtung: im Bungalow das Sofa (Polstersofa, schlankes Holzsofa, Chesterfield, Landhaussofa mit Volant, Tagesbett), den Couchtisch,
+  den Lampenschirm um die Glühbirne (Papier, Falten, Gitter, Rattan), Pflanzen (auch hängend), Schaffell, Teller und Uhr, Bogenlampe,
+  Makramee, Lichterkette, Sitzkissen; im Atelier Lampenschirm, Bilder, Kissen, Pflanzen, Schaffell, Korb, Trockenblumen, Metallhocker,
+  Makramee, Lichterkette; im Wohnwagen Vorhänge, Kissen, Tischdecke, Läufer, Steppdecke, Blumen und eine Hängelampe über dem Tisch
+  (70er-Kuppel, Papierkugel, Faltenschirm, Rattan). Die Akzentfarbe färbt Kissen, Vasen, Becher und die glasierten Schalen.
 - Gespeichert in **`pav-stil-v1`** (eine Zeile in `core/save.js`): `{ v: 1, h: { bungalow|atelier|wohnwagen: { s: Stil, a: Akzent } },
   x: { atelier: { sofa, bowls, fired, glazed, gfired, pic, motif }, wohnwagen: { bed }, hint } }`.
 - Ereignisse (`KERN.on`): `einrichtung:stil` { house, style, acc }, `einrichtung:sofa`, `einrichtung:schale`, `einrichtung:brand` { glaze },
@@ -86,5 +87,6 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
   `garden/garten_in.js`.
 - `test/garten.py`: zwei Prüfungen angepasst (Ort „Atelier“; Gießen im Gewächshaus). `garden/greenhouse.js`: unteres Regalbrett mit drei
   Anzuchtschalen und „Setzlinge gießen“ (vorher im Holzhaus).
-- Bitte nachtragen: `docs/ARCHITECTURE.md` (Abschnitt 6: `STIL`, `ATELIER`; Abschnitt 8: `pav-stil-v1`; Modulkarte), `docs/CHANGELOG.md`.
-- Neue `window`-Namen: `STIL`, `ATELIER` (nur für Tests).
+- Bitte nachtragen: `docs/ARCHITECTURE.md` (Abschnitt 6: `STIL`, `ATELIER`, `WOHNWAGEN`; Abschnitt 8: `pav-stil-v1`; Modulkarte), `docs/CHANGELOG.md`.
+- Neue `window`-Namen: `STIL`, `ATELIER`, `WOHNWAGEN` (nur für Tests). Der Takt des Knopfes „Einrichtung“ läuft schon über `KERN.tick`
+  (`garden/garten_in.js` nutzt wie bisher `window.TICKS`).
