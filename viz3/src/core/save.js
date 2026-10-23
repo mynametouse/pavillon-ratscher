@@ -212,6 +212,7 @@ window.SAVE = SAVE;
     'pav-v16c2',
     'pav-v16d',
     'pav-v16e',
+    'pav-winde',
   ])
     K(h, 'Hinweis „Neu“ einmal gezeigt', 'flag', false);
 }
