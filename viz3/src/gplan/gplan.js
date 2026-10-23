@@ -599,7 +599,7 @@ export const GPLAN = (() => {
       M.AGES.map(
         a => `<button type="button" data-age="${a}">${a ? a + (a === 20 ? ' Jahre' : '') : 'heute'}</button>`
       ).join('') +
-      '</div><button type="button" class="gp-show" data-gp="show" aria-pressed="true" title="Geplante Pflanzen im 3D-Garten zeigen (bleibt nach dem Schließen)">im Garten</button></div>' +
+      '</div><button type="button" class="gp-show" data-gp="show" aria-pressed="true" title="Geplante Pflanzen im 3D-Garten zeigen (bleibt nach dem Schließen; gepflanzte stehen immer)">im Garten</button></div>' +
       '<div class="gp-sel" hidden></div>' +
       '<nav class="gp-tabs" role="tablist">' +
       [
