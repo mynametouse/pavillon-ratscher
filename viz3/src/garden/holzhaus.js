@@ -32,6 +32,7 @@ import {
   keysBegin,
   KM,
   mug,
+  interiorNoShadow,
   paletteize,
   picture,
   plant,
@@ -511,6 +512,10 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
   gB(g, DN.a1 + 0.12, DN.a1 + 0.14, hy + 0.55, hy + 0.85, 0, 0.12, MAT.blacksteel, { cast: false });
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: zf - 0.1, z1: zH + 0.4, name: 'Holzhaus' });
   FOOT.push({ b, hx: hx + 0.1, hy: hy + 0.1, ox: 0, oy: 0 });
+  interiorNoShadow(
+    g,
+    (x, y, z) => z > zf + 0.03 && z < zL - 0.05 && Math.abs(x) < hx - T - 0.02 && Math.abs(y) < hy - T - 0.02
+  );
   paletteize(g, []);
 }
 

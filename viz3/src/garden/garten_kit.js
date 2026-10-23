@@ -482,6 +482,24 @@ export function paletteize(g, keep = []) {
   return n;
 }
 export { PAL };
+// furniture under a roof casts no sun shadow (the roof and walls shade the room anyway): fewer meshes in the shadow pass and fewer
+// merge buckets (cast / no cast). inside(lx, ly, z) tells which local points are in the room
+export function interiorNoShadow(g, inside) {
+  g.updateMatrixWorld(true);
+  const inv = g.matrixWorld.clone().invert(),
+    v = new THREE.Vector3();
+  let n = 0;
+  g.traverse(o => {
+    if (!o.isMesh || !o.castShadow) return;
+    if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+    v.copy(o.geometry.boundingSphere.center).applyMatrix4(o.matrixWorld).applyMatrix4(inv);
+    if (inside(v.x, -v.z, v.y)) {
+      o.castShadow = false;
+      n++;
+    }
+  });
+  return n;
+}
 // ---- registries for garden/garten_in.js (local coordinates; the world position follows the building when it is moved in the plan view) ----
 export const GLAMPS = []; // {key, b, lx, ly, z, mat, dist, inten, color, sw: [lx, ly, z], label, room: (x, y, z) => bool}
 export const GSEATS = []; // {key, b, lx, ly, eye, yaw (local compass deg), pitch, kind: 'sit'|'lie', label, r, at: [lx, ly]}

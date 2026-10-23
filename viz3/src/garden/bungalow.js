@@ -40,6 +40,7 @@ import {
   keysEnd,
   KM,
   mug,
+  interiorNoShadow,
   paletteize,
   picture,
   plant,
@@ -1142,6 +1143,14 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   FOOT.push({ b, hx: hx + 0.1, hy: hy + 0.1, ox: 0, oy: 0 });
   FOOT.push({ b, hx: ANX.hx + 0.1, hy: ANX.hy + 0.1, ox: ANX.ox, oy: ANX.oy });
   keysEnd();
+  interiorNoShadow(
+    g,
+    (x, y, z) =>
+      z > 0.16 &&
+      z < 2.08 &&
+      ((Math.abs(x) < hx - T - 0.02 && Math.abs(y) < hy - T - 0.02) ||
+        (x > -hx + T && x < AX1 - T && y > AY0 + T && y < -hy))
+  );
   paletteize(g, [plateM]);
 }
 
