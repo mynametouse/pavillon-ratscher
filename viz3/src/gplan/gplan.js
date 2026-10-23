@@ -1344,7 +1344,7 @@ export const GPLAN = (() => {
     acc = 0,
     lastMonth = 0;
   const inUse = () => ST.kuebel.length > 0 || ST.items.some(it => planted(it) || it.sch);
-  (window.TICKS = window.TICKS || []).push(dt => {
+  KERN.tick(dt => {
     if (P.mode !== lastMode) {
       lastMode = P.mode;
       // left the plan view (its „Fertig“, a place in the menu): the planner closes; in the plan view again: back to planning
@@ -1363,7 +1363,7 @@ export const GPLAN = (() => {
       lastMonth = m;
       view3d();
     }
-  });
+  }, 'gplan/gplan');
   // a plan saved with „im Garten: an“ stands in the garden after a reload: its data load once the model stands (not before)
   whenLoaded(() => {
     if ((ST.show && ST.items.length) || inUse())

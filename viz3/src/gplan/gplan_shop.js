@@ -296,15 +296,14 @@ export const GPSHOP = (() => {
       changed();
     },
   });
-  // the counter: pay; with paid plants waiting: into the car (within 15 m of the counter, or on the nursery's parking place) or delivered
+  // the counter: pay; with paid plants waiting: into the car or delivered. The car counts within 15 m of the counter, on the nursery's
+  // parking place, or at its gate (where a car stands that did not drive into the yard)
   const carNear = () => {
     const v = car(),
       B = nursery();
     if (!v || !B) return false;
-    return (
-      Math.hypot(v.st.x - B.kasse.x, v.st.y - B.kasse.y) < 15 ||
-      Math.hypot(v.st.x - B.parkplatz.x, v.st.y - B.parkplatz.y) < 8
-    );
+    const near = (p, r) => Math.hypot(v.st.x - p.x, v.st.y - p.y) < r;
+    return near(B.kasse, 15) || near(B.parkplatz, 8) || near(B.eingang, 12);
   };
   function counterLabel() {
     if (!atNursery()) return null;
@@ -532,7 +531,7 @@ export const GPSHOP = (() => {
     if (b) b.focus();
   }
   // ---------------- the frame tick: near the nursery, deliveries, the plant in the hands ----------------
-  (window.TICKS = window.TICKS || []).push(dt => {
+  KERN.tick(dt => {
     const h = S.anchor && S.anchor.parent && ST().kuebel.some(c => c.loc === 'hand');
     if (h) {
       // in the figure's arms (third person); seen from the eyes: a little to the right and low, so the crown does not fill the view
@@ -582,7 +581,7 @@ export const GPSHOP = (() => {
       dirty = true;
     }
     if (dirty && GPLAN.ready) refresh();
-  });
+  }, 'gplan/gplan_shop');
   // a saved plant in the hands comes back set down where it was taken (the hands are empty after a reload)
   for (const c of GPLAN.state.kuebel) if (c.loc === 'hand') c.loc = Number.isFinite(c.x) ? 'boden' : 'tor';
   // the containers shown once the plan's data are there

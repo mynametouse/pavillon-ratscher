@@ -67,7 +67,8 @@ Zeitraffer, in der Baumschule Kammbach kaufen und die Pflanzen heimbringen (Lief
 - **Kasse**: „Bezahlen – n Pflanzen“ zeigt den **Kassenzettel** (Pflanzen, Form, Datum und Uhrzeit, keine Preise) mit „Liefern lassen –
   morgen früh am Gartentor“ oder „Selbst mitnehmen“ (die Pflanzen warten neben der Theke). Dort dann „Ins Auto laden“, wenn das Auto auf
   dem Parkplatz der Baumschule oder bis 15 m von der Kasse steht: kleine Pflanzen stehend, Bäume bis 2,2 m liegend (Krone zwischen den
-  umgeklappten Sitzen), Hochstämme auf den Anhänger, wenn er am Auto hängt – sonst „Liefern lassen“ für den Rest.
+  umgeklappten Sitzen), Hochstämme auf den Anhänger, wenn er am Auto hängt – sonst „Liefern lassen“ für den Rest. Ein Auto, das am Tor
+  der Baumschule stehen geblieben ist (bis 12 m), zählt auch.
 - **Daheim**: „Ausladen“ an der Heckklappe stellt sie hinter das Auto, die Lieferung steht am nächsten Morgen ab 7 Uhr am Gartentor.
   „Tragen – …“ nimmt eine in die Arme (die Figur trägt sie, der zweite Knopf stellt sie ab), am Pflanzloch dann „Einpflanzen – …“.
 - **Aufgabe im Tagebuch** (J): „Pflanzen in der Baumschule Kammbach kaufen“ beginnt, sobald man die Einkaufsliste ansieht: hinfahren,
@@ -189,7 +190,11 @@ Bild neu gerechnet wird (nur der Anker beim Tragen).
   Pflanzen nicht (die Baumschule hat nachgefüllt). `GPMODEL.freePlaces` (Mitten zwischen Töpfen) bleibt als reine Hilfe mit Test.
 - **Auto in der Baumschule**: ohne die Fahrt (`feat/fahrt`, noch nicht in `src` beim Stand dieses Zweigs) hält `vehicle.js` Fahrzeuge
   am Rand des 2,4-km-Quadrats – `VEH.place('car', parkplatz …)` landet am Kartenrand. Der Test erkennt das und prüft dann „Liefern
-  lassen“ für alles; mit der Fahrt in `src` laufen „Ins Auto laden“, Ausladen und der Anhänger-Fall mit.
+  lassen“ für alles; mit der Fahrt laufen „Ins Auto laden“ und Ausladen mit – lokal geprüft mit `origin/feat/fahrt` hineingeführt
+  (Zweig nur lokal, nicht gepusht): `gartenplaner_kammbach` 20/20 (Auto 8,1 m von der Kasse auf dem Parkplatz, drei Pflanzen
+  eingeladen, die Walnuss geliefert, die Ladung im Auto gezeichnet, daheim hinter dem Auto ausgeladen). Der Anhänger-Fall ist ungeprüft.
+- **Takt**: die drei Bild-Rückrufe laufen über `KERN.tick(fn, 'gplan/gplan' | 'gplan/gplan_game' | 'gplan/gplan_shop')`, nicht mehr über
+  `window.TICKS`.
 - **TASKS** (erster echter Nutzer, `gplan-kaufen`) – was fehlte: (1) eine Aufgabe lässt sich nicht wiederholen – `start` geht nur einmal,
   für den nächsten Einkauf braucht es `reset` + `start` (hier von Hand beim nächsten `gplan:einkaufsliste`); ein `repeat: true` wäre
   besser; (2) Schritttexte sind fest – Zahlen („noch 3 Pflanzen“) gehen nicht, `text` als Funktion wäre einfach; (3) keine Zweige
