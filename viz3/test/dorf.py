@@ -103,9 +103,14 @@ with lib.browser() as b:
             ck('task: then the card game', J('DORF.ST.step') == 'play', J('DORF.ST.step'))
             E("for (let i = 0; i < 14; i++) GAME.step(0.1)")   # Katrin turns to one (0.9 s of game time after the story)
             if J('DORF.state().talk') != 'katrin': E("DORF.UI.open('katrin')")
-            E("[...document.querySelectorAll('#dorfpanel .topics button')].find(b => b.classList.contains('quest')).click()")
-            for i in range(5):
-                E("[...document.querySelectorAll('#dorfpanel .topics button')].find(b => b.textContent === (Math.random() < 0.5 ? 'Höher' : 'Tiefer')).click()")
+            # the card game: all clicks in one go (nothing of the world runs in between), with what the panel showed
+            r = J("""(() => { const B = () => [...document.querySelectorAll('#dorfpanel .topics button')], txt = () => B().map(b => b.textContent).join('|');
+              const out = { cur: DORF.UI.cur, before: txt(), clicks: [] }, q = B().find(b => b.classList.contains('quest'));
+              if (q) q.click(); out.after = txt(); out.on = DORF.game.on;
+              for (let i = 0; i < 5; i++) { const want = Math.random() < 0.5 ? 'Höher' : 'Tiefer', b = B().find(b => b.textContent === want);   // one choice per click
+                if (!b) { out.clicks.push('none: ' + txt()); break; } b.click(); out.clicks.push(b.textContent + ' ' + DORF.game.round); }
+              return out; })()""")
+            print('game', json.dumps(r, ensure_ascii=False), flush=True)
             page_shot(pg, 'd_cardgame')
             txt = E("document.querySelector('#dorfpanel .say').textContent"); print('game', txt, flush=True)
             ck('five rounds „Höher oder tiefer“, the fire is next', J('DORF.ST.step') == 'fire' and 'von 5' in txt, J('DORF.ST.step') + ' | ' + txt[:100])
