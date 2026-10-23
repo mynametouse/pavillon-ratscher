@@ -123,7 +123,7 @@ const GARTEN = (() => {
     }
     for (const a of GACTS) {
       const st = a.st;
-      st.think = t => PLAY.think(t, 3200);
+      st.think = t => PLAY.think(t); // shown as long as it takes to read (play.js: 65 ms a letter)
       PLAY.act({
         id: 'garten:' + a.key,
         r: a.r || 1.2,

@@ -32,6 +32,7 @@ import {
   keysBegin,
   KM,
   mug,
+  interiorNoShadow,
   paletteize,
   picture,
   plant,
@@ -144,20 +145,22 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     beam([gx, -hy + 0.05, 1.0], [gx + 0.12, -hy + 0.3, 0.92], 0.07, 0.07, MAT.zinc, { parent: g });
     GL('rain_barrel', gx + 0.14, -hy + 0.36, 0, 0);
   }
-  // PV module on a ground stand west of the hut (it charges the battery inside): tilted 30° to the south on aluminium legs, cable to the hut
+  // PV module on a ground stand south of the hut (it charges the battery inside): tilted 30° to the south on aluminium legs, cable to the
+  // hut's south wall. Not west of the hut any more: on its stand it stood in the tractor's drive past the pavilion to the log yard
+  // (test v16d:bridge), now ≥ 3 m clear of that line
   {
-    const px = -hx - 1.4,
-      py = 0.2,
+    const px = -0.4,
+      py = -hy - 2.3,
       ang = 0.52,
       Lp = 1.7,
       Wp = 1.0,
       z0 = 0.32,
       dy = (Lp / 2) * Math.cos(ang),
       dz = (Lp / 2) * Math.sin(ang);
-    put(
+    const panel = put(
       g,
       new THREE.BoxGeometry(Wp, 0.035, Lp),
-      [MAT.alu, MAT.alu, KM.pvCells, KM.cream, MAT.alu, MAT.alu],
+      [MAT.alu, MAT.alu, KM.pvCells, MAT.alu, MAT.alu, MAT.alu],
       px,
       py,
       z0 + dz + 0.02,
@@ -165,6 +168,17 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
         rx: ang,
       }
     );
+    // junction box and two cross rails on the back
+    for (const [w, h, d, x, z] of [
+      [0.16, 0.03, 0.1, 0, -0.45],
+      [Wp - 0.1, 0.03, 0.04, 0, -0.3],
+      [Wp - 0.1, 0.03, 0.04, 0, 0.35],
+    ]) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), w < 0.2 ? MAT.black : MAT.alu);
+      m.position.set(x, -0.03, z);
+      m.castShadow = true;
+      panel.add(m);
+    }
     for (const sx of [-1, 1]) {
       const x = px + sx * (Wp / 2 - 0.08);
       beam([x, py - dy + 0.05, 0], [x, py - dy + 0.05, z0 + 0.03], 0.04, 0.04, MAT.alu, { parent: g });
@@ -174,8 +188,8 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
       gB(g, x - 0.08, x + 0.08, py + dy - 0.13, py + dy + 0.03, 0, 0.04, MAT.conc, { cast: false });
     }
     beam([px + 0.4, py + dy - 0.05, 0.5], [px + 0.5, py + dy - 0.05, 0.03], 0.012, 0.012, MAT.black, { parent: g });
-    beam([px + 0.5, py + dy - 0.05, 0.02], [-hx - 0.02, 0.6, 0.02], 0.014, 0.014, MAT.black, { parent: g });
-    beam([-hx - 0.02, 0.6, 0.02], [-hx - 0.02, 0.6, zf], 0.014, 0.014, MAT.black, { parent: g });
+    beam([px + 0.5, py + dy - 0.05, 0.02], [0.3, -hy - 0.02, 0.02], 0.014, 0.014, MAT.black, { parent: g });
+    beam([0.3, -hy - 0.02, 0.02], [0.3, -hy - 0.02, zf], 0.014, 0.014, MAT.black, { parent: g });
     lcol(r, px - Wp / 2, px + Wp / 2, py - dy, py + dy, 0, z0 + 2 * dz, 'pv');
   }
   // ===================== inside: Sarah's potting hut =====================
@@ -422,7 +436,9 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     label: st => (st.wet ? null : 'Setzlinge gießen'),
     run: st => {
       st.wet = 1;
-      st.think('Die Setzlinge sind gegossen – Sarah wird sich freuen.');
+      st.think(
+        'Mit der feinen Brause gießen, nur auf die Erde, nicht auf die Blättchen – feucht, nicht nass. Sarah wird sich freuen.'
+      );
       KM.traySoil.color.copy(MAT.soil.color).multiplyScalar(0.5);
       st.dirty();
     },
@@ -511,6 +527,10 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
   gB(g, DN.a1 + 0.12, DN.a1 + 0.14, hy + 0.55, hy + 0.85, 0, 0.12, MAT.blacksteel, { cast: false });
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: zf - 0.1, z1: zH + 0.4, name: 'Holzhaus' });
   FOOT.push({ b, hx: hx + 0.1, hy: hy + 0.1, ox: 0, oy: 0 });
+  interiorNoShadow(
+    g,
+    (x, y, z) => z > zf + 0.03 && z < zL - 0.05 && Math.abs(x) < hx - T - 0.02 && Math.abs(y) < hy - T - 0.02
+  );
   paletteize(g, []);
 }
 
