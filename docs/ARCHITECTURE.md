@@ -31,7 +31,8 @@ Oberfläche Deutsch.
 - Viele Module sind IIFEs (`const X = (() => { … return api; })();`): innen privat, außen nur die Rückgabe.
 - **Reihenfolge zählt**: Module laufen beim Laden von oben nach unten. Was `render/zmerge.js` vorfindet, wird zu wenigen Draw-Calls
   zusammengefasst; spätere Module (Spiel, Werkstatt, Tag/Nacht) bleiben einzelne Meshes. Punktlichter entstehen in
-  `pavilion/interior.js` (7, `window.LIGHTS`) und `garden/workshop_lamp.js` (1).
+  `pavilion/interior.js` (7, `window.LIGHTS`), `garden/workshop_lamp.js` (1) und `garden/garten_in.js` (1, `garten-lamp`, von den Lampen der
+  Gartengebäude geteilt). Jedes neue Licht übersetzt alle Shader neu – Themen leihen vorhandene (Dorf: `LIGHTS[0,1,3,4]` während eines Abends).
 - Die Seite liegt in Teilen unter `viz3/shell/` (Reihenfolge `parts.txt`): `head.html`, CSS je Bereich (`css/layout, stage3d, siteplan, variants, pano,
   gallery, phases, game, hud, werk_clock, vehicles`), `header.html`, `panel_3d.html` (Bühne, HUD, Overlays), `menu.html` (Menü mit Orten, Licht, Spiel,
   Steuerung/Hilfe), `windows.html` (Inventar, Maschine, Uhr, PSA, Werkstattbuch), `panel_pano|film|gallery.html`, `notes.html`, `tail.html`.
@@ -90,7 +91,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `LIFE` | npc/life.js | Tagesablauf der Nachbarn nach der Spieluhr (hacken, sägen, stapeln, Auto, Mähen, Füttern, Fahrt zum Anger, Gespräch am Tisch/Auto), Schwaden, Ortsnamen ihrer Höfe; `LIFE.force(name, tätigkeit \| null \| 'off')` für Tests (`docs/features/nachbarn.md`) |
 | `HOF`, `HOFCAR` | garden/hof_hubert.js, hof_auto.js | Huberts Hof: nach Osten offene Werkstätten, Trockenhütchen (`fillHut`), Holzplatz, Tisch mit Stühlen; sein Kombi auf der Rampe (Haube) |
 | `GARTEN` | garden/garten_in.js, garten_kit.js | Gartengebäude zum Benutzen: Lampen mit einem geteilten Licht, Sofa, Bett, Ofen, Wasserkessel, Ernte; Baukasten und Schlüsselbereich der Möbel (`keysBegin/keysEnd`, `docs/features/garten.md`) |
-| `DORF`, `DCAL`, `DTEXT`, `DPEOPLE`, `DSCHOOL`, `DFIRE` | dorf/ | Dorfleben: Kalender (Freitag Skat, jeden zweiten Samstag Feuer), Texte, Dorfbewohner (Rocketbox, nur abends in der Nähe geladen), Raum der alten Schule, Feuer am Acker, Gesprächsfenster, Aufgabe (`pav-dorf-v1`); Start mit `?dorf=freitag \| feuer` (`docs/features/dorf.md`) |
+| `DORF`, `DCAL`, `DTEXT`, `DPEOPLE`, `DSCHOOL`, `DFIRE`, `DLIFE`, `DCARS` | dorf/ | Dorfleben: Kalender (Freitag Skat, jeden zweiten Samstag Feuer), Texte, Dorfbewohner (Rocketbox, nur geladen, wenn sie draußen und nah sind), ihr Alltag (Häuser, Vorgärten, Besorgungen, Grüße – `DLIFE`) und Autos nach Fahrplan (`DCARS`), Raum der alten Schule, Feuer am Acker, Gesprächsfenster, Aufgabe (`pav-dorf-v1`); Start mit `?dorf=freitag \| feuer` (`docs/features/dorf.md`) |
 | `WINDE`, `KRAN` | werk/winde.js, kran.js | Forstseilwinde am Traktorheck (Seil, Choker, Funk, Gefahrenbereich, Rücken) und Kran am Rungenwagen (Hubmoment, Reichweite); Hinweise der Gabel (`HOLZ.whyNot`) (`docs/features/winde.md`) |
 | `TREEHIT` | world/treehit.js | kleine Bäume geben Fahrzeugen nach: biegen, kippen mit Wurzelteller, bleiben liegen (`pav-trees-v1`), dicke halten auf (`give`, `standUp`, `axisOf`); Jungbäume nur für Fahrzeuge in `WCOL` (`each(…, soft)`) (`docs/features/baeume.md`) |
 | `WELT`, `SCHL` | welt/welt.js, schleusingen.js | Kachelwelt aus `tools/welt` (Gelände, Luftbilder) nach Bedarf um die Kamera gestreamt (Zonen fordern sie an); Schleusingen begehbar: Altstadt aus OSM mit den Dorf-Shadern, Markt, Rathaus mit Halle, Wahrzeichen |

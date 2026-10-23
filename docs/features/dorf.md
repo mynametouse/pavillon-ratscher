@@ -55,6 +55,10 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   „Ein Brett für die Tombola“ (Ingrid: ein fertiges Stirnholzbrett aus der Klingenholz-Werkstatt bringen – `WERK.handOver`),
   „Wolfgangs Lehrstück“ (an der Klinge einen markierten Baum fällen und vermessen – `FELL.logs`), „Ein Päckchen für Hubert“ (Jens:
   Zündkerzen für den Mondeo), „Ziegenmist für die Beete“ (Heike: bei Ronald abholen). Stand in `pav-dorf-v1` (`err`).
+- **Mit dem Ortsvorsteher** (`amt/amt.js`, abgesichert – ohne AMT läuft alles wie zuvor): hat Ingrid das Amt abgegeben
+  (`AMT.ST.phase` `office`, `lost` oder `missed`), fährt sie nicht mehr dienstags und donnerstags ins Rathaus; im Gesprächsfenster
+  steht ihre Rolle nach AMT (`AMT.roleOf`, falls es das gibt, sonst „war elf Jahre Ortsteilbürgermeisterin“), ihre Grüße am Tag und
+  der Text der Freitagsaufgabe passen sich an.
 - **Freitag draußen**: an milden Abenden (Mai bis September, bis 22 Uhr) sitzen Jens und Heike an einer Bierzeltgarnitur vor der Schule,
   sonst am langen Tisch drinnen.
 

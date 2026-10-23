@@ -53,9 +53,9 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
 
 - `docs/ARCHITECTURE.md` (Zeile `GARTEN` und Modulkarte sind seit cdd2176 drin): in Abschnitt 1 „Punktlichter entstehen in …“ noch
   `garden/garten_in.js` (1, `garten-lamp`, von allen Gartenlampen und dem Ofenfeuer geteilt).
-- `docs/CHANGELOG.md` (nächste Runde nach V16i): Vorhänge im Bungalow zum Zuziehen, Tomaten ausgeizen, Handgriffe mit kurzen Tipps (Ofen
-  von oben anzünden, Tee, Gießen, Ernten, Ausgeizen), Geranien mit runden Blättern und Dolden, Tomaten ohne grüne Kugeln, **PV-Modul
-  südlich der Hütte** (in V16i steht es noch westlich im Weg des Traktors zum Holzplatz).
+- `docs/CHANGELOG.md` (V16i nennt Vorhänge, Ausgeizen und das PV-Modul südlich der Hütte schon), wahlweise noch: die Handgriffe sagen
+  kurz, wie man es richtig macht (Ofen von oben anzünden, Tee, Gießen, Ernten, Ausgeizen); Geranien mit runden Blättern und Dolden;
+  Tomatenpflanzen mit Blattquirlen statt grüner Kugeln.
 - `docs/PARALLEL.md`: Stand.
 - Wahlweise `viz3/site.js`: Gewächshaus `az: 6` und Mitte 0,5 m nach Norden (`[12.49, -0.09]`) – dann den Block am Anfang von
   `garden/greenhouse.js` streichen.
