@@ -17,7 +17,7 @@ import {
   slopeSlab,
   worldOf,
 } from './site_base.js';
-import { GACTS, jar, KM, leaf, paletteize, plant, pot, put, rng, stone, wateringCan } from './garten_kit.js';
+import { GACTS, jar, KM, leaf, paletteize, plant, pot, put, rng, wateringCan } from './garten_kit.js';
 // Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends now face north and south: turned
 // by 90° about its centre (site data: heading 96°, the long side east–west) and moved 0.5 m north, clear of the hut's new door
 {
@@ -250,15 +250,6 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
   lcol(r, -hx + 0.1, hx - 0.1, -hy + 0.06, -0.27, 0.12, 0.8, 'bed');
   lcol(r, -hx + 0.1, hx - 0.1, 0.27, hy - 0.06, 0.12, 0.8, 'bed');
   lcol(r, -hx, -hx + 0.32, -0.27, 0.27, 0.42, 0.76, 'shelf');
-  // stepping stones from the gravel path (west) round to the door
-  for (const [x, y, sz] of [
-    [-0.15, 1.35, 0.22],
-    [0.45, 1.2, 0.21],
-    [1.05, 1.0, 0.22],
-    [1.5, 0.45, 0.2],
-    [1.55, -0.1, 0.22],
-  ])
-    stone(g, b, x, y, sz, R, FOOT);
   // pick the ripe tomatoes (the green ones stay)
   const ghIn = (x, y, z) => {
     const a = (b.az * Math.PI) / 180,
