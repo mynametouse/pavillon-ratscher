@@ -33,6 +33,13 @@ Verdickung der Arme), bereitet die Texturen vor (`fig_tex.py`) und schreibt `viz
 `player_christoph.json` (je < 2 MB, Texturen 1024 px WebP). `build.py` kopiert sie nach `dist/chars/`; das Manifest legt
 `PLAYERMAN.player_f` auf Sarah und `player_c` auf Christoph.
 
+Ohne Browser ansehen (Bilder von vorn, Seite, hinten, gehend, hockend, Kopf nah; ein Sammelbild `<prefix>_sheet.jpg`):
+
+```bash
+cd tools/player && node fig_preview.mjs ../../viz3/extra/figuren/dist/chars/player_christoph.json ../../viz3/dist/chars/pclips_m.json \
+  /tmp/fig/christoph fig_views.json --headwear
+```
+
 ## Testen
 
 ```bash
