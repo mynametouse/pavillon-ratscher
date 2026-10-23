@@ -38,8 +38,10 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
   die Nordtüren, geschlossene Tür und Wände halten auf, Lampen und Sitze im Spiel, Bilder nach `out/garten/` (außen, innen, vom Bett,
   vom Sofa, Schrank offen, Hütte, Gewächshaus, nachts mit Licht und mit zugezogenen Vorhängen), Handgriffe (Kessel, Vorhänge, Gießen,
   Ernten, Ausgeizen, Ofen).
-- Bei GitHub läuft `garten` bei jedem Push auf `feat/garten` mit (`viz3/extra/garten/tests.txt`), Bilder im Artefakt `out`; dazu
-  `v16d:bridge` (Traktor mit Anhänger durch den Garten zum Holzplatz – führt zwischen Pavillon und Hütte durch).
+- Bei GitHub läuft `garten` bei jedem Push auf `feat/garten` mit (`viz3/extra/garten/tests.txt`), Bilder im Artefakt `out`.
+- `v16d:bridge` (Traktor mit Anhänger durch den Garten zum Holzplatz, zwischen Pavillon und Hütte durch) lief nach dem Umsetzen des
+  PV-Moduls einmal auf `feat/garten` mit (Lauf 39891480342, grün: 1,1 m vor dem Holzplatz, nichts gestreift); auf `src` steht er in
+  `viz3/extra/winde/tests.txt`. `garten` prüft selbst, dass das PV-Modul ≥ 2,5 m von der Fahrlinie entfernt bleibt (jetzt 3,56 m).
 
 ## Außerhalb der eigenen Dateien (mit dem Kern-Chat abgesprochen, 23.10. 3:40)
 
@@ -49,11 +51,12 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
 
 ## Für den Kern-Chat (gemeinsame Dateien, noch zu tun)
 
-- `docs/ARCHITECTURE.md`: Modulkarte um `garden/garten_kit.js` (Bausatz, Register `GLAMPS`/`GSEATS`/`GACTS`, `paletteize`,
-  `interiorNoShadow`) und `garden/garten_in.js` (`GARTEN`) ergänzen; Abschnitt 1 „Punktlichter entstehen in …“: dazu `garden/garten_in.js`
-  (1, `garten-lamp`, von allen Gartenlampen und dem Ofenfeuer geteilt); neuer Window-Name `GARTEN`; `window.ITEM_N` schreibt auch
-  `garten_kit.js` (`keysBegin/keysEnd`, eigener Schlüsselbereich der Gartenmodelle).
-- `docs/CHANGELOG.md`, `docs/PARALLEL.md`: Eintrag/Stand.
+- `docs/ARCHITECTURE.md` (Zeile `GARTEN` und Modulkarte sind seit cdd2176 drin): in Abschnitt 1 „Punktlichter entstehen in …“ noch
+  `garden/garten_in.js` (1, `garten-lamp`, von allen Gartenlampen und dem Ofenfeuer geteilt).
+- `docs/CHANGELOG.md` (nächste Runde nach V16i): Vorhänge im Bungalow zum Zuziehen, Tomaten ausgeizen, Handgriffe mit kurzen Tipps (Ofen
+  von oben anzünden, Tee, Gießen, Ernten, Ausgeizen), Geranien mit runden Blättern und Dolden, Tomaten ohne grüne Kugeln, **PV-Modul
+  südlich der Hütte** (in V16i steht es noch westlich im Weg des Traktors zum Holzplatz).
+- `docs/PARALLEL.md`: Stand.
 - Wahlweise `viz3/site.js`: Gewächshaus `az: 6` und Mitte 0,5 m nach Norden (`[12.49, -0.09]`) – dann den Block am Anfang von
   `garden/greenhouse.js` streichen.
 - Sonst nichts: `garden/env.js` (Wege) und `game/player.js` (Ort „Holzhaus“) sind auf `feat/garten` schon geändert (siehe oben).
