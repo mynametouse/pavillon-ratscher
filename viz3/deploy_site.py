@@ -25,7 +25,7 @@ HEAD = ('<!doctype html>\n<html lang="de">\n<head>\n<meta charset="utf-8">\n<met
 SKIP = {'index.html', 'pavillon-ratscher.html', 'app.js', '_files.json', '_pub.json'}
 os.makedirs(OUT, exist_ok=True)
 # replace the site's content (keep .git and the published plan of the owner, plan.json, which the page itself writes)
-KEEP = set() if SUB else {'.git', 'plan.json', 'vorschau', 'welt-test'}   # a pending preview and the world test tiles survive a deploy
+KEEP = set() if SUB else {'.git', 'plan.json', 'vorschau', 'welt-test', 'tex2'}   # a pending preview, the world test tiles and the KTX2 textures (texturen-ktx2.yml) survive a deploy
 for name in os.listdir(OUT):
     if name in KEEP: continue
     p = os.path.join(OUT, name); shutil.rmtree(p) if os.path.isdir(p) and not os.path.islink(p) else os.remove(p)
@@ -34,6 +34,7 @@ for f in sorted(glob.glob(os.path.join(SRC, '**', '*'), recursive=True)):
     if not os.path.isfile(f): continue
     rel = os.path.relpath(f, SRC).replace(os.sep, '/')
     if rel in SKIP or (rel == 'plan.json' and os.path.exists(os.path.join(SITE, 'plan.json'))): continue   # the owner's published plan in the repo wins
+    if not SUB and rel.startswith('tex2/'): continue   # the site's tex2/ is written by texturen-ktx2.yml only (a build may hold an older copy); the preview gets one
     dst = os.path.join(OUT, rel); os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy2(f, dst); n += 1; tot += os.path.getsize(f)
 # small, and after 8 s faint – on a phone it must not cover the HUD (Falko, 23.10.2026)
 BADGE = ('<div style="position:fixed;top:calc(3px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:99999;background:#b45309;color:#fff;'
