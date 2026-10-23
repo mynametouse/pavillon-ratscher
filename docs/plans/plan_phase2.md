@@ -45,7 +45,10 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
 4. **Pakete nachladen** (~2 Tage). Messung 23.10. (`test/loadprof.py`, Software-Grafik, fertig gebauter Pavillon): die Startzeit geht fast
    ganz in das **Hochladen der Texturen** (`uploadTextures`/`initTexture` ~24–32 s von ~430 Texturen) und `applyTier` (~9 s); das Bündel selbst
    und die Aufbauschritte sind klein; 141 Shader-Programme mit 11,7 Mio. Zeichen GLSL. Also zuerst **Texturen je Zone erst beim Hinkommen**
-   (Dorf, Wald, Werkstatt innen, Holz, Schleusingen/Veßra haben es schon), dann der Code: jedes Thema in `viz3/src/<paket>/` mit `paket.json` (Module, Abhängigkeiten, Zonen, Tests, Spielstände);
+   (Dorf, Wald, Werkstatt innen, Holz, Schleusingen/Veßra haben es schon), dann der Code. **Nachgemessen (`test/texprobe.py`):** 456 von 462
+   Texturen haben einen Nutzer im Umkreis von 60 m um den Garten (Holz, Stoffe, Metall, Rinde werden überall geteilt) – Aufschieben nach
+   Entfernung bringt beim Start fast nichts. Der bessere Hebel: **komprimierte Texturen** (KTX2/Basis: kleiner Upload, ~¼ Speicher am iPhone)
+   und große Einzelbilder (3072², Himmel 4096 × 1147) prüfen; danach erst Code-Pakete: jedes Thema in `viz3/src/<paket>/` mit `paket.json` (Module, Abhängigkeiten, Zonen, Tests, Spielstände);
    `build.py` baut den Kern und je Paket ein eigenes Bündel, geladen beim Hinkommen (`import()`). Der Start lädt Kern und Garten; Dorf,
    Wald, Holz, Schleusingen und das Rathaus erst, wenn man hinfährt.
 5. **Logik ohne Browser** (laufend): Zustand und Regeln von Aufgaben, Tagesablauf der Nachbarn (`LIFE`), Dorfkalender (`DCAL`), Wahl und
