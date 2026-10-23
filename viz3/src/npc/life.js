@@ -43,6 +43,9 @@ export const LIFE = (() => {
   const H = NPCS.hubert,
     R = NPCS.ronald;
   const now = () => performance.now() / 1000;
+  // the activities' clock: seconds of simulation (frames and GAME.step alike; tests step the world faster than real time)
+  let SIMT = 0;
+  const simNow = () => SIMT;
   const mins = () => ((CLOCK.t % 1440) + 1440) % 1440;
   const D2R = Math.PI / 180;
   let DT = 0.025;
@@ -73,7 +76,7 @@ export const LIFE = (() => {
     return false;
   }
   // the walk to the work is done: the activity's minimum time counts from here (a long walk is no work)
-  const arrived = w => (w.since = now());
+  const arrived = w => (w.since = simNow());
   function* go(w, path, sp) {
     if (w.fig.pose && w.fig.pose.k !== 'carry') pose(w, null); // (only an armful is carried while walking)
     for (const p of path) while (!walk(w, p[0], p[1], sp)) yield;
@@ -115,7 +118,7 @@ export const LIFE = (() => {
     w.fig.mode = 'sit';
     w.zOff = c.seat - (w.fig.hipH || 0.9) + 0.1;
     w.seated = c;
-    w.since = now();
+    w.since = simNow();
   }
   function rise(w) {
     if (!w.seated) return;
@@ -392,7 +395,7 @@ export const LIFE = (() => {
     }
   }
   function* hStack(w) {
-    const t0 = now(),
+    const t0 = simNow(),
       heap = [HOF.heap[0] - 0.62, HOF.heap[1] + 0.28];
     try {
       for (;;) {
@@ -418,7 +421,7 @@ export const LIFE = (() => {
     }
   }
   function* hCar(w) {
-    const t0 = now();
+    const t0 = simNow();
     HOFCAR.bonnet(1);
     try {
       for (;;) {
@@ -1037,7 +1040,7 @@ export const LIFE = (() => {
     const m = mins(),
       d = CLOCK.day();
     a.cur = a.forced || a.plan(m, d);
-    a.t0 = now();
+    a.t0 = simNow();
     a.it = ACTS[a.cur](a.w, a);
   }
   function stop(a) {
@@ -1240,6 +1243,7 @@ export const LIFE = (() => {
   let acc = 0,
     wasAway = { hubert: false, ronald: false };
   function tick(dt) {
+    SIMT += dt;
     tickHalves(dt);
     tickTalk(dt);
     acc += dt;
@@ -1301,7 +1305,7 @@ export const LIFE = (() => {
       if (a.cur && !a.lock && !w.drive) {
         const want = a.forced || a.plan(m, d),
           t1 = w.since && w.since >= a.t0 ? w.since : null; // arrived at the work (else still on the way)
-        if (want !== a.cur && ((t1 && now() - t1 > (MIN[a.cur] || 20)) || (!t1 && now() - a.t0 > 150))) stop(a);
+        if (want !== a.cur && ((t1 && simNow() - t1 > (MIN[a.cur] || 20)) || (!t1 && simNow() - a.t0 > 150))) stop(a);
       }
     }
     if (HOFCAR.open > 0 && m >= 21 * 60 && AG.hubert.cur !== 'car') HOFCAR.bonnet(0);
