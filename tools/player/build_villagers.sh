@@ -2,13 +2,14 @@
 # The people of Ratscher for the village life (feat/dorf, Falko 23.10.2026: Skat and Rummy evening in the old school, bonfire at the field):
 # six Microsoft Rocketbox avatars (https://github.com/microsoft/Microsoft-Rocketbox, MIT) with the Biped rig of the player and the neighbours,
 # moved in the app by the player's clip sets (chars/pclips_m.json, pclips_f.json):
-#   gerhard  = Adults/Male_Adult_03        (grey hair, tweed jacket – retired teacher, keeps the village chronicle)
+#   gerhard  = Adults/Male_Adult_03        (grey hair, tweed jacket – retired teacher, keeps the village chronicle); without the faint
+#              hair cards (alpha-tested they showed as dark blotches on the grey hair of the head texture)
 #   manfred  = Adults/Male_Adult_14        (grey shirt, chinos – head of the volunteer fire brigade)
 #   wolfgang = Adults/Male_Adult_05        (grey stubble, quilted vest – forest worker)
 #   uwe      = Adults/Male_Adult_13        (argyle pullover – farmer, behind the bar on Fridays)
 #   katrin   = Adults/Female_Adult_09      (cardigan – Rummy)
 #   ingrid   = Professions/Business_Female_02 (glasses, blazer – mayor of the village)
-# Mesh with the rig, WebP textures (face 1024 px, clothes, normals, hair and glasses 512/256 – vtex.mjs), meshopt, images embedded
+# Mesh with the rig, WebP textures (face 1024 px; clothes, normals, hair 512; glasses 256 – vtex.mjs), meshopt, images embedded
 # → viz3/extra/dorf/dist/chars/dorf_<name>.json (charman keys dorf_<name>, viz3/extra/dorf/manifest.json).
 #   PAV_WORK=<work dir> bash tools/player/build_villagers.sh [names…]
 # Sources in $PAV_WORK/src/<Avatar>/Export/<Avatar>.fbx and $PAV_WORK/src/<Avatar>/Textures/*.tga; from a partial clone of the Rocketbox repo:
@@ -38,8 +39,8 @@ open(out, 'w').write(json.dumps(g, separators=(',', ':'))); print(out, round(os.
 PY
 }
 ARGS="$*"
-for spec in 'gerhard Male_Adult_03 m004' 'manfred Male_Adult_14 m012' 'wolfgang Male_Adult_05 m009' 'uwe Male_Adult_13 m010' \
+for spec in 'gerhard Male_Adult_03 m004 opacity' 'manfred Male_Adult_14 m012' 'wolfgang Male_Adult_05 m009' 'uwe Male_Adult_13 m010' \
             'katrin Female_Adult_09 f009' 'ingrid Business_Female_02 f015'; do
   set -- $spec
-  if [ -z "$ARGS" ] || [[ " $ARGS " == *" $1 "* ]]; then build "$1" "$2" "$3"; fi
+  if [ -z "$ARGS" ] || [[ " $ARGS " == *" $1 "* ]]; then build "$1" "$2" "$3" "$4"; fi
 done

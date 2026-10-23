@@ -69,8 +69,8 @@ with lib.browser() as b:
         try:
             E("DORF.enter(); GAME.step(0.3)")
             # go to Ingrid and talk (the action button)
-            ix, iy = J("DSCHOOL.toW(DSCHOOL.seats.ingrid.x - 0.9, DSCHOOL.seats.ingrid.y - 0.5)"); z = J("DSCHOOL.F.zF")
-            E(f"GAME.view({ix}, {iy}, {z} + 1.62, DSCHOOL.az(0.9, 0.5), -10, 62); GAME.step(0.3)")
+            ix, iy = J("DSCHOOL.toW(DSCHOOL.seats.ingrid.x - 0.3, DSCHOOL.seats.ingrid.y + 1.3)"); z = J("DSCHOOL.F.zF")
+            E(f"GAME.view({ix}, {iy}, {z} + 1.62, DSCHOOL.az(0.2, -1), -12, 62); GAME.step(0.3)")
             best = J("GAME.step(0.1).best"); ck('the action button offers to talk to Ingrid', best == 'Mit Ingrid sprechen', str(best))
             E("PLAY.primary(); GAME.step(0.2)")
             st = J('DORF.state()'); ck('the talk panel opens', st['talk'] == 'ingrid' and not E("document.getElementById('dorfpanel').hidden"), str(st['talk']))

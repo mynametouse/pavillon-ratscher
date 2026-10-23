@@ -40,8 +40,37 @@ function readTGA(file) {
   }
   return { w, h, ch, data: out };
 }
+// hair cards and glasses: the colour under the transparent pixels becomes the mean colour of the opaque ones, so filtered edges do not
+// blend into black (the dark fringes that made grey hair look like dirt at 512 px)
+function bleed(t) {
+  if (t.ch !== 4) return t;
+  const d = t.data;
+  let r = 0,
+    g = 0,
+    b = 0,
+    n = 0;
+  for (let i = 0; i < d.length; i += 4)
+    if (d[i + 3] > 128) {
+      r += d[i];
+      g += d[i + 1];
+      b += d[i + 2];
+      n++;
+    }
+  if (!n) return t;
+  r = Math.round(r / n);
+  g = Math.round(g / n);
+  b = Math.round(b / n);
+  for (let i = 0; i < d.length; i += 4)
+    if (d[i + 3] < 128) {
+      const k = d[i + 3] / 128;
+      d[i] = Math.round(r + (d[i] - r) * k);
+      d[i + 1] = Math.round(g + (d[i + 1] - g) * k);
+      d[i + 2] = Math.round(b + (d[i + 2] - b) * k);
+    }
+  return t;
+}
 async function webp(file, max, alpha) {
-  const t = readTGA(file);
+  const t = alpha ? bleed(readTGA(file)) : readTGA(file);
   let img = sharp(t.data, { raw: { width: t.w, height: t.h, channels: t.ch } }).resize(Math.min(max, t.w), Math.min(max, t.h));
   if (!alpha && t.ch === 4) img = img.removeAlpha();
   return await img.webp({ quality: 84, alphaQuality: 90 }).toBuffer();
@@ -72,7 +101,7 @@ for (const m of root.listMaterials()) {
   const n = m.getName();
   m.setMetallicFactor(0).setRoughnessFactor(0.8);
   if (/glasses/i.test(n)) {
-    m.setBaseColorTexture(await T('glasses_opacity_color', SZ.opa / 2, true));
+    m.setBaseColorTexture(await T('glasses_opacity_color', 256, true));
     m.setAlphaMode('MASK').setAlphaCutoff(0.3).setDoubleSided(true);
   } else if (/body/i.test(n)) {
     m.setBaseColorTexture(await T('body_color', SZ.body));

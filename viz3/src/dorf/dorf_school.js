@@ -213,6 +213,29 @@ export const DSCHOOL = (() => {
     t.anisotropy = 4;
     return t;
   }
+  function pennantTex() {
+    const c = document.createElement('canvas');
+    c.width = 320;
+    c.height = 200;
+    const x = c.getContext('2d');
+    x.fillStyle = '#9c1712';
+    x.fillRect(0, 0, 320, 200);
+    x.strokeStyle = '#e9c46a';
+    x.lineWidth = 6;
+    x.strokeRect(10, 10, 300, 180);
+    x.fillStyle = '#f4ead2';
+    x.textAlign = 'center';
+    x.font = 'bold 30px Georgia, serif';
+    x.fillText('Freiwillige', 160, 62);
+    x.fillText('Feuerwehr', 160, 100);
+    x.font = 'bold 36px Georgia, serif';
+    x.fillText('Ratscher', 160, 146);
+    x.font = 'italic 18px Georgia, serif';
+    x.fillText('Gott zur Ehr, dem Nächsten zur Wehr', 160, 178);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }
   // ---- the room ----
   const R0 = { wall: 0.3, hW: 2.2, hC: 4.25, slopeW: 2.2 }; // wall thickness, height of the walls, of the flat ceiling, width of the slopes
   function room(kit) {
@@ -481,6 +504,16 @@ export const DSCHOOL = (() => {
       kit.box(T2[0] - 0.05, T2[1] - 0.05, 0.757 + k * 0.002, 0.063, 0.09, 0.002, 0.1, L(0.2, 0.25, 0.55)); // the stock
     kit.cyl(T2[0] + 0.3, T2[1] + 0.3, 0.755, 0.84, 0.04, 0.035, 8, L(0.95, 0.94, 0.9), true); // tea cups
     kit.cyl(T2[0] + 0.3, T2[1] - 0.3, 0.755, 0.84, 0.04, 0.035, 8, L(0.95, 0.94, 0.9), true);
+    // a second round table, nobody there yet (the chairs pushed in), and a rug under the Rummy table
+    const T4 = [7.0, 3.3];
+    cylY(M.wood, T4[0], T4[1], 0.71, 0.75, 0.5, 0.5, 18);
+    cylY(M.wood, T4[0], T4[1], 0.06, 0.71, 0.05, 0.05, 8);
+    cylY(M.wood, T4[0], T4[1], 0, 0.06, 0.26, 0.26, 12);
+    col(T4[0] - 0.5, T4[0] + 0.5, T4[1] - 0.5, T4[1] + 0.5, 0, 0.76);
+    for (const a of [0.4, 2.5, 4.4]) chair(T4[0] + Math.cos(a) * 0.62, T4[1] + Math.sin(a) * 0.62, a + Math.PI, kit);
+    kit.cyl(T4[0] + 0.1, T4[1], 0.75, 0.83, 0.05, 0.05, 10, L(0.85, 0.83, 0.78), true); // an ashtray-sized candle holder
+    kit.cyl(T4[0] + 0.1, T4[1], 0.83, 0.93, 0.018, 0.018, 8, L(0.95, 0.93, 0.85), true);
+    if (MAT.rugP) box(MAT.rugP, T2[0] - 1.3, T2[0] + 1.3, T2[1] - 1.2, T2[1] + 1.2, 0, 0.012, { grain: 'x' });
     // the long table of the brigade under the north windows, benches
     const T3 = [6.2, D - 1.25];
     box(M.wood, T3[0] - 1.6, T3[0] + 1.6, T3[1] - 0.4, T3[1] + 0.4, 0.71, 0.76, { grain: 'x' });
@@ -525,8 +558,13 @@ export const DSCHOOL = (() => {
     S.seats.uwe = { x: 1.9, y: by1 + 0.55, a: -Math.PI / 2, stand: true };
     S.bar = { x: 1.9, y: by0 - 0.4 };
     // pennant of the brigade over the bar, the old school photo
-    kit.box(t + 0.03, by0 - 0.9, 2.45, 0.02, 1.0, 0.62, 0, L(0.62, 0.08, 0.06));
-    kit.box(t + 0.045, by0 - 0.9, 2.58, 0.02, 0.56, 0.36, 0, L(0.95, 0.92, 0.82));
+    {
+      // the pennant of the brigade on the west gable, over the bar
+      const g = new THREE.PlaneGeometry(1.0, 0.62);
+      g.rotateY(Math.PI / 2); // faces +x (into the room) in the group's frame
+      g.translate(t + 0.032, 2.76, -(by0 - 0.9));
+      add(new THREE.Mesh(g, plain({ map: pennantTex(), roughness: 0.85 })));
+    }
     kit.box(7.95, t + 0.03, 1.5, 0.6, 0.02, 0.45, 0, L(0.3, 0.2, 0.12));
     kit.box(7.95, t + 0.045, 1.54, 0.52, 0.02, 0.37, 0, L(0.62, 0.58, 0.5));
     // coat hooks by the door
