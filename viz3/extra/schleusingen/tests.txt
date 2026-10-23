@@ -1,0 +1,2 @@
+# Schleusingen (welt/schleusingen.js): start without it, Orte → Schleusingen, walk, Rathaus hall, names, pictures, freed again
+schleusingen

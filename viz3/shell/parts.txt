@@ -18,6 +18,7 @@ css/figuren.css
 css/nachbarn.css
 css/dorf.css
 css/winde.css
+css/schleusingen.css
 css/amt.css
 header.html
 panel_3d.html

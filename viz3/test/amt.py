@@ -179,6 +179,10 @@ with lib.browser() as b:
         E("AMT.UI.close(); AMT.talk('hubert', 'panel'); AMT.press('wählen'); AMT.press('Vollmacht')")
         st = J('AMT.state()'); ck('Hubert gives his proxy for the postal vote', st['tasks'].get('briefwahl') == 1, json.dumps(st['tasks']))
         E("AMT.UI.close(); AMT.trip()")
+        # with the walkable town (welt/schleusingen.js on) the trip asks first: drive there oneself or shorten it
+        if J('AMT.state().panel') == 'trip':
+            ck('with the walkable Schleusingen: drive yourself (the way is shown) or shorten the drive', any('Selbst hinfahren' in x for x in J('AMT.state().buttons')), '')
+            E("AMT.press('Abkürzen')")
         for i in range(8): E("GAME.step(0.5)")
         st = J('AMT.state()'); ck('the trip to the town hall (25 min by car), the election office hands out the documents', st['panel'] == 'rathaus' and any('Briefwahlunterlagen' in x for x in st['buttons']), json.dumps(st['buttons'], ensure_ascii=False))
         E("AMT.press('Briefwahlunterlagen'); AMT.press('Zurück nach Ratscher')")
