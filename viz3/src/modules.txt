@@ -21,12 +21,14 @@ pavilion/interior_ladder.js # variant B furnishing
 garden/stream_geo.js        # the stream: shared geometry (STREAM)
 garden/env.js               # sky dome, sun light + shadow box, ground, far terrain, neighbour sheds
 garden/site_base.js         # existing garden buildings: helpers and materials
+garden/garten_kit.js        # feat/garten: furnishing kit for the garden buildings (small things, canvas textures, lamp/seat registries)
 garden/carport.js           # 
 garden/holzhaus.js          # 
 garden/greenhouse.js        # 
 garden/bungalow.js          # 
 garden/washhouse.js         # 
 # feat/garten: new garden modules below this line (before render/zmerge.js, so their static meshes get merged)
+garden/garten_in.js         # feat/garten: the garden buildings to use – lamps with one shared light, sofa, bed, small jobs (GARTEN)
 garden/places.js            # place names and indoor test for the existing buildings
 garden/stream.js            # 
 garden/workshop.js          # workshop building Klingenholz with machines, band sawmill, generator (WORKS)
