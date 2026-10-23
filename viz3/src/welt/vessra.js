@@ -2268,8 +2268,17 @@ export const VESSRA = (() => {
         S.segs.push(...circleSegs(x, y, 0.26, 6));
       }
     }
-    // the beds: a ground cloth with an edge of boards, plants in black containers in rows, a label at the path end
-    const beete = [];
+    // the beds: a ground cloth with an edge of boards, plants in black containers in rows, a label at the path end. The plants of the
+    // beds are a mesh of their own whose vertex range per slot is known – a plant can be taken out (bought) and put back (take/putBack)
+    const beete = [],
+      KP = VPROPS.kit(),
+      tri0 = KP.tri,
+      ranges = new Map();
+    let nv = 0;
+    KP.tri = (...q) => {
+      nv += 3;
+      return tri0(...q);
+    };
     const U0 = 3.0,
       U1 = 21.0;
     for (const A of ARTEN) {
@@ -2286,7 +2295,9 @@ export const VESSRA = (() => {
           const [x, y, z] = Yz(u, w, 0.03),
             k = hh(x * 3.1 + y * 1.7);
           slots.push([Math.round(x * 100) / 100, Math.round(y * 100) / 100]);
-          plant(K, A.art, x, y, z, k, { POT, BAMBOO, WOOD });
+          const v0 = nv;
+          plant(KP, A.art, x, y, z, k, { POT, BAMBOO, WOOD });
+          ranges.set(A.art + ':' + (slots.length - 1), [v0, nv]);
         }
       }
       // the label: a board on a post at the path end of the bed
@@ -2345,6 +2356,25 @@ export const VESSRA = (() => {
     const [sx, sy, sz] = Yz(3.2, -0.9);
     for (const o of [-1.2, 1.2]) K.box(sx + t[0] * o, sy + t[1] * o, sz - 0.2, 0.1, 0.1, 2.5, rot, WOODD);
     S.gateSign = { at: [sx - wv[0] * 0.07, sy - wv[1] * 0.07, sz + 1.55], d: [t[0], t[1]], h: 0.62 };
+    // the plants of the beds: taking one collapses its vertices to a point (no new geometry, no new draw call), putting back restores them
+    let pm = null,
+      orig = null;
+    if (!KP.empty()) {
+      pm = add(new THREE.Mesh(KP.geo(), propMat()), 'plants', true);
+      orig = pm.geometry.attributes.position.array.slice();
+    }
+    const taken = new Set(),
+      setRange = (key, back) => {
+        const r = ranges.get(key);
+        if (!pm || !r) return false;
+        const a = pm.geometry.attributes.position,
+          A2 = a.array;
+        for (let i = r[0]; i < r[1]; i++)
+          for (let c = 0; c < 3; c++) A2[i * 3 + c] = back ? orig[i * 3 + c] : orig[r[0] * 3 + c];
+        a.needsUpdate = true;
+        markDirty();
+        return true;
+      };
     S.baumschule = {
       name: 'Baumschule Kammbach',
       eingang: spot(0.5, 1.5, wv),
@@ -2352,6 +2382,23 @@ export const VESSRA = (() => {
       parkplatz: spot(-5.8, 6.0, wv),
       beete,
       frame: { G, u: t, w: wv },
+      // take a plant out of its bed (to the till, into the car): { art, name, slot, x, y, z } or null if there is none or it is gone
+      take(art, slot) {
+        const b = beete.find(q => q.art === art),
+          sl = b && b.slots[slot],
+          key = art + ':' + slot;
+        if (!sl || taken.has(key) || !setRange(key, false)) return null;
+        taken.add(key);
+        return { art, name: b.name, slot, x: sl[0], y: sl[1], z: ground(sl[0], sl[1]) };
+      },
+      putBack(art, slot) {
+        const key = art + ':' + slot;
+        if (!taken.has(key) || !setRange(key, true)) return false;
+        taken.delete(key);
+        return true;
+      },
+      isTaken: (art, slot) => taken.has(art + ':' + slot),
+      taken: () => [...taken],
     };
   }
   const nearPolyEdge = (p, x, y) => {

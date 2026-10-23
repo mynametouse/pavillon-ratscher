@@ -147,6 +147,11 @@ with lib.browser() as b:
                     prev = [x, y, z]; } }
                 return { n, slope: +slope.toFixed(3), step: +step.toFixed(3), at, gate: +KERN.ground(...Y(0, 0.5)).toFixed(2), street: +KERN.ground(...Y(0, -8)).toFixed(2), park: +KERN.ground(pk.x, pk.y).toFixed(2) }; })()""")
             ck('a car drives in: Schulstraße → gate → parking place at most 15 % steep, no step over 0.15 m', dr['n'] > 20 and dr['slope'] <= 0.15 and dr['step'] <= 0.15, json.dumps(dr))
+            # buying (the planner's next round): a plant comes out of its bed and goes back
+            tk = J("""(() => { const B = VESSRA.baumschule, a = B.take('obst', 3), again = B.take('obst', 3), t1 = B.isTaken('obst', 3);
+                const back = B.putBack('obst', 3); return { a, again, t1, back, after: B.isTaken('obst', 3), n: B.taken().length }; })()""")
+            ck('a plant can be taken out of its bed and put back (VESSRA.baumschule.take/putBack)',
+               bool(tk['a']) and tk['a']['art'] == 'obst' and tk['again'] is None and tk['t1'] and tk['back'] and not tk['after'] and tk['n'] == 0, json.dumps(tk, ensure_ascii=False))
             r = J(f"""(() => {{ const e = VESSRA.baumschule.eingang; GAME.view(e.x, e.y, e.z + 1.62, e.yaw, 0, 60); GAME.step(0.5); GAME.step(4, 1);
                 return {{ x: GAME.P.x, y: GAME.P.y, where: VESSRA.place(GAME.P.x, GAME.P.y), sign: (VESSRA.signs || []).filter(s => /Kammbach/.test(s)).length, young: VESSRA.youngTrees }}; }})()""")
             ck('from the gate into the sales yard; its signs; young trees on the field', 'Baumschule' in (r['where'] or '') and r['sign'] >= 2 and r['young'] > 150, json.dumps(r, ensure_ascii=False))
