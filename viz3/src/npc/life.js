@@ -71,6 +71,7 @@ export const LIFE = (() => {
     return false;
   }
   function* go(w, path, sp) {
+    if (w.fig.pose && w.fig.pose.k !== 'carry') pose(w, null); // (only an armful is carried while walking)
     for (const p of path) while (!walk(w, p[0], p[1], sp)) yield;
   }
   function* turn(w, az) {
@@ -656,7 +657,7 @@ export const LIFE = (() => {
     try {
       for (let n = 0; n < 2; n++) {
         yield* rGo(w, ...hay);
-        yield* turn(w, Math.PI / 2);
+        yield* turn(w, 0.35); // the hay lies north of him
         yield* hold(w, 1.3, 'pick');
         hand(w, HAY);
         pose(w, 'carry');
@@ -808,7 +809,7 @@ export const LIFE = (() => {
   const CH = () => HOF.chairs; // [south chair (looks north), north chair (looks south)]
   function* rVisit(w) {
     const c = CH()[1];
-    yield* rGo(w, c.x - 0.7, c.y + 0.5);
+    yield* rGo(w, HOF.table[0] - 1.3, HOF.table[1]); // round the west end of the table
     yield* sitFor(w, c);
   }
   function* hTalk(w) {
@@ -880,8 +881,10 @@ export const LIFE = (() => {
     const a = { name: w.name, w, plan, home, cur: null, it: null, t0: 0, lock: false, forced: null };
     a.ctl = dt => {
       if (w.drive || w.away) return false;
-      if (w.talking && !w.seated && !w.mow) return false; // the visitor talks to him: he turns to them (npc/npc.js)
-      if (w.shy > 0) return false;
+      if ((w.talking && !w.seated && !w.mow) || w.shy > 0) {
+        if (w.fig.pose && w.fig.pose.k !== 'carry') w.fig.pose = null; // he turns to the visitor (npc/npc.js); the work waits
+        return false;
+      }
       DT = Math.min(dt, 0.1);
       if (!a.it) begin(a);
       try {
@@ -929,7 +932,6 @@ export const LIFE = (() => {
   }
   agent(H, hubertPlan, [-34.5, 38.5]);
   agent(R, ronaldPlan, [40, -42]);
-  for (const w of [H, R]) w.fig.after = holdProp;
   // ================= the two at the table: conversations about the village =================
   // [speaker, line] – Hubert says little and expects rain, Ronald talks (village life after docs/plans/plan_leben.md section 2)
   const TALKS = [
@@ -1093,6 +1095,7 @@ export const LIFE = (() => {
         fillRack(0);
       }
       wasAway[a.name] = !!w.away;
+      if (w.fig.after !== holdProp) w.fig.after = holdProp; // (the real figures replace the simple ones after loading)
       if (w.away) continue;
       // a task steers him (game/quests.js sets its own controller): the activity waits and starts again afterwards
       if (w.ctl && w.ctl !== a.ctl) {
