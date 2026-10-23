@@ -3,7 +3,8 @@
 # wound in by radio until the log lies against the shield (dragged on the ground, past the trunks), the choker off, the cable hung in, the
 # winch up; the fork takes the log from the side and puts it on the trailer. Skidding: a log lifted at the shield, dragged along by driving.
 # A log behind a trunk hangs and stops the winch. The saved state; the fork's hints (lengthwise, too heavy).
-# Pictures in out/winde/.   python3 viz3/test/winde.py 8975 [sections: model,pull,fork,skid,stuck,save,hints]
+# The crane on the trailer (werk/kran.js) loads a log lying at an angle.
+# Pictures in out/winde/.   python3 viz3/test/winde.py 8975 [sections: model,pull,fork,skid,stuck,save,kran,hints]
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]; OUT = lib.out('winde'); ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else None
@@ -241,6 +242,32 @@ with lib.browser() as b:
             E("WINDE.release()"); E(f"WINDE.fasten(HOLZ.by['{lid3}'], {1 - ne})"); m0 = J(f"HOLZ.mid(HOLZ.by['{lid3}'])"); E("WINDE.pullStart()"); steps(6)
             m1 = J(f"HOLZ.mid(HOLZ.by['{lid3}'])"); print('other end', st(), round(math.hypot(m1[0] - m0[0], m1[1] - m0[1]), 2), flush=True)
             E("WINDE.reset()")
+    if want('kran'):   # the crane on the trailer: a log lying at an angle beside it – grip, swing over the bed, lay it between the stakes
+        E("VEH.cur && VEH.exit(); WINDE.reset(); TRAILER.tow && TRAILER.uncouple(true)"); steps(0.3)
+        E("(() => { const s = TRAILER.st; s.x = -2; s.y = -11; s.psi = 0; s.z = ROADS.groundAt(-2, -11); TRAILER.pose(); })()"); steps(0.3)
+        E("VEH.place('tractor', 8, -30, 0)"); steps(0.3)
+        E("HOLZ.logs.filter(l => l.st === 'trailer').forEach(l => { l.st = 'ground'; l.p0 = [20, -40 - l.L, 0]; l.p1 = [20, -40, 0]; }); HOLZ.trailerMass(); HOLZ.redraw()")
+        lk = E("HOLZ.testLog({ sp: 'spruce', x: -6.3, y: -8.6, az: 0.5, L: 4.0, d0: 32, d1: 26 })"); steps(0.2)
+        cp = J("(() => { const T = TRAILER, c = T.toW(0.86 + 0.7, 2.62 + 0.2); return c; })()"); m = J(f"HOLZ.mid(HOLZ.by['{lk}'])")
+        stand(cp[0], cp[1], math.degrees(math.atan2(m[0] - cp[0], m[1] - cp[1]))); steps(0.2)
+        b6 = best(); print('at the crane:', b6, flush=True)
+        ck('at the crane\'s levers: „Kran: … aufladen“', b6.startswith('kran:op') and 'aufladen' in b6, b6)
+        act(); steps(0.1); ck('the crane works', E("KRAN.busy"))
+        shotA = shotB = False
+        for k in range(80):
+            steps(0.5); q = J(f"(() => {{ const l = HOLZ.by['{lk}']; return {{ busy: KRAN.busy, st: l.st, z: HOLZ.mid(l)[2] - KERN.ground(HOLZ.mid(l)[0], HOLZ.mid(l)[1]), i: KRAN.Q && 0 }}; }})()")
+            if not shotA and E("KRAN.Q.open") > 0.9:
+                shotA = True; t = J("TRAILER.st"); orbit(t['x'] - 3.5, t['y'] + 1.5, J(f"KERN.ground({t['x']}, {t['y']})") + 1.5, 215, 22, 11); shot('k_crane_reach')
+            if not shotB and q['st'] == 'crane' and q['z'] > 1.5:
+                shotB = True; t = J("TRAILER.st"); orbit(t['x'] - 2.5, t['y'] + 1.0, J(f"KERN.ground({t['x']}, {t['y']})") + 2.0, 235, 18, 11); shot('l_crane_lift')
+            if not q['busy']: break
+        r = J(f"(() => {{ const l = HOLZ.by['{lk}'], a = TRAILER.local(l.wp0), b = TRAILER.local(l.wp1); return {{ st: l.st, cargo: TRAILER.cargo || 0, along: Math.abs(a[0] - b[0]) < 0.05 && a[1] > b[1], busy: KRAN.busy }}; }})()")
+        ck('the crane lays the log on the trailer, lengthwise, butt to the front', r['st'] == 'trailer' and r['cargo'] > 100 and r['along'] and not r['busy'], str(r))
+        t = J("TRAILER.st"); orbit(t['x'], t['y'] + 0.5, J(f"KERN.ground({t['x']}, {t['y']})") + 1.2, 230, 20, 9); shot('m_crane_loaded')
+        lk2 = E("HOLZ.testLog({ sp: 'larch', x: -6.6, y: -11.3, az: 0.2, L: 6.0, d0: 52, d1: 44 })"); steps(0.2)
+        m2 = J(f"HOLZ.mid(HOLZ.by['{lk2}'])"); stand(cp[0], cp[1], math.degrees(math.atan2(m2[0] - cp[0], m2[1] - cp[1]))); steps(0.2)
+        act(); steps(0.2); said = sub()
+        ck('a heavy log far out: too heavy at that reach, it says so', not E("KRAN.busy") and 'schwer' in said and E(f"HOLZ.by['{lk2}'].st") == 'ground', said[:120])
     if want('hints'):
         E("VEH.cur && VEH.exit(); WINDE.reset()"); steps(0.3)
         lh = E("HOLZ.testLog({ sp: 'spruce', x: -5, y: -17.5, az: Math.PI / 2, L: 4.1, d0: 34, d1: 28 })"); steps(0.2)   # lying east–west

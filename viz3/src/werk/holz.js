@@ -218,7 +218,7 @@ export const HOLZ = (() => {
   function place(l) {
     const G = SP[l.isp];
     if (!G) return;
-    if (l.st === 'ground' || l.st === 'saw' || l.st === 'winch') {
+    if (l.st === 'ground' || l.st === 'saw' || l.st === 'winch' || l.st === 'crane') {
       l.wp0 = l.p0;
       l.wp1 = l.p1;
     } else if (l.st === 'fork' && S.forkObj()) {
@@ -828,11 +828,14 @@ export const HOLZ = (() => {
           JSON.stringify({
             v: 1,
             logs: S.logs.map(l => {
-              // V16h: a log on the winch's cable is kept as lying where it is (older builds read it so); werk/winde.js keeps the cable
-              const o = { id: l.id, st: l.st === 'winch' ? 'ground' : l.st };
-              if (l.st === 'ground' || l.st === 'saw' || l.st === 'winch') {
-                o.p0 = l.p0.map(v => +v.toFixed(3));
-                o.p1 = l.p1.map(v => +v.toFixed(3));
+              // V16h: a log on the winch's cable is kept as lying where it is (older builds read it so); werk/winde.js keeps the cable.
+              // One in the crane's grapple (werk/kran.js) as lying where the crane took it.
+              const o = { id: l.id, st: l.st === 'winch' || l.st === 'crane' ? 'ground' : l.st };
+              if (l.st === 'ground' || l.st === 'saw' || l.st === 'winch' || l.st === 'crane') {
+                const a = l.st === 'crane' && l.cp0 ? l.cp0 : l.p0,
+                  b = l.st === 'crane' && l.cp1 ? l.cp1 : l.p1;
+                o.p0 = a.map(v => +v.toFixed(3));
+                o.p1 = b.map(v => +v.toFixed(3));
               }
               if (l.st === 'fork') {
                 o.f0 = l.f0;

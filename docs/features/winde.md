@@ -24,6 +24,11 @@ Heck zieht den Stamm aus dem Bestand.
 9. **Aufladen mit der Gabel**: wie bisher – die Gabel muss **quer** unter den Stamm, also von der Seite heranfahren (G ganz runter, darunter,
    R heben, T kippen). Höchstens 1500 kg.
 
+10. **Oder mit dem Kran** (neu: der Rungenanhänger ist jetzt ein Rückewagen mit Kran): Anhänger neben die Stämme stellen (Reichweite etwa
+    6 m um die Kransäule vorn am Anhänger), zu Fuß an die Steuerventile rechts vorn am Anhänger, zum gewünschten Stamm schauen, **E**
+    „Kran: … aufladen“. Der Kran greift den Stamm, wie er liegt, schwenkt über die Ladefläche und legt ihn längs zwischen die Rungen
+    (Stammfuß nach vorn). Hubmoment 3,6 t·m: nah etwa 1,4 t, ganz außen 0,6 t – sonst sagt er „Zu schwer bei dieser Ausladung“.
+
 Hinweise, wenn die Gabel nichts hebt: Der Traktor sagt jetzt, warum – Stamm liegt längs zur Gabel, Zinken nicht darunter, noch nicht weit
 genug untergefahren, zu schwer, noch ein Seil daran, oder der Baum ist noch nicht aufgearbeitet (erst entasten, ablängen, **vermessen** –
 Waldbuch B; erst dann gibt es Stammstücke für Gabel und Winde). Das war vermutlich Falkos Fall am 23.10.
@@ -38,6 +43,7 @@ Waldbuch B; erst dann gibt es Stammstücke für Gabel und Winde). Das war vermut
 | Noch nicht vermessener Baum in der Nähe | `viz3/src/world/fell.js` (`FELL.openStem`) |
 | Traktor gehalten, solange die Winde unten ist (1 Zeile) | `viz3/src/vehicles/vehicle.js` (`model.hold`) |
 | Knopf am Tacho | wird von `werk/winde.js` in `#vhud .vbtns` eingesetzt; Stil `viz3/shell/css/winde.css` |
+| Kran auf dem Anhänger (Säule, Ausleger, Knickarm mit Teleskop, Rotator, Greifer; Bewegungsablauf, Reichweite, Hubmoment) | `viz3/src/werk/kran.js` (`KRAN`, hängt am Modell von `TRAILER.g`; Stamm im Greifer: Zustand `crane`, gespeichert als liegend am Aufnahmeort) |
 
 Gespeichert: die Hubhöhe der Winde als dritter Wert des Traktors in `pav-veh-v1` (fehlt er – ältere Stände –, ist sie oben); Seil und
 angeschlagener Stamm in `pav-holz-v1` unter `part2.winde` (`c`, `out`, `end`, `log`, `ae`, `sh`); der Stamm am Seil steht dort als `ground` mit
@@ -47,8 +53,8 @@ seiner Lage – ältere Builds lesen ihn als liegenden Stamm. Kaputte Werte werd
 
 ```bash
 bash tools/browser_lock.sh python3 viz3/test/run.py --port 8975 --serve winde            # alles (~15 min)
-bash tools/browser_lock.sh python3 viz3/test/run.py --port 8975 --serve winde:model,pull  # Abschnitte: model,pull,fork,skid,stuck,save,hints
+bash tools/browser_lock.sh python3 viz3/test/run.py --port 8975 --serve winde:model,pull  # Abschnitte: model,pull,fork,skid,stuck,save,kran,hints
 ```
 
-Bilder in `out/winde/` (Winde oben/unten, Seil ausgezogen, Choker, Ziehen, am Schild, Gabel, Anhänger, Rücken, festgehangen).
+Bilder in `out/winde/` (Winde oben/unten, Seil ausgezogen, Choker, Ziehen, am Schild, Gabel, Anhänger, Rücken, festgehangen, Kran).
 Bei GitHub läuft der Test bei jedem Push auf `feat/winde` mit (`viz3/extra/winde/tests.txt`).
