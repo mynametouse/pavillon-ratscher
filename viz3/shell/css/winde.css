@@ -1,0 +1,2 @@
+/* V16h the forestry winch (werk/winde.js): its button at the tacho shows when the winch is down */
+#vhud .vbtns button[data-vb="winch"][aria-pressed="true"]{background:#e2753a;color:#1d1b16}

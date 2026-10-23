@@ -200,6 +200,7 @@ window.SAVE = SAVE;
   K('pav-fell-v1', 'Fällen', 'json', null, obj);
   K('pav-veh-v1', 'Fahrzeuge', 'json', {}, obj);
   K('pav-trailer-v1', 'Anhänger', 'json', null, obj);
+  K('pav-dorf-v1', 'Dorfleben: Aufgabe Skatabend, Besuche, Kartenspiel', 'json', null, obj); // feat/dorf (dorf/dorf.js)
   K('pav-trees-v1', 'Umgefahrene Bäume', 'json', null, obj); // world/treehit.js: { v: 1, t: [[x, y, azimuth°, angle], …] }
   for (const h of [
     'pav-v14',
