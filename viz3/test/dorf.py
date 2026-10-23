@@ -26,6 +26,18 @@ with lib.browser() as b:
             ck('section ran: ' + "want('light')", False, repr(ex)[:400])
     # an October calendar: dark at 20 h (the game's day 1 is 1 June by default – light until after 21 h)
     E("if (!DN.active) GAME.setMode('auto'); DN.e0 = Date.UTC(2026, 9, 12) / 864e5 - Math.floor(CLOCK.t / 1440)")
+    if want('door'):
+        try:   # a Monday afternoon: the room is built when one comes near, but the door is shut and nobody is there
+            E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 15 * 60; DN.update(true)"); lib.settle_light(pg)
+            E("DORF.atDoor(); for (let i = 0; i < 30; i++) GAME.step(0.1)")
+            st = J('DORF.state()'); dx, dy = J("DSCHOOL.toW(DSCHOOL.F.du, -1.0)")
+            E(f"GAME.view({dx}, {dy}, DSCHOOL.F.zF - 0.3 + 1.62, DSCHOOL.az(0, 1), 0, 62); GAME.step(0.2)"); best = J("GAME.step(0.1).best")
+            ck('Monday afternoon: the door is shut, nobody loaded', st['school']['built'] and st['school']['open'] == 0 and not st['figs'] and not st['skat'], json.dumps(st['school']))
+            ck('the shut door says when the evening is', best == 'Tür der alten Schule', str(best))
+            x, y = J("DSCHOOL.toW(DSCHOOL.F.du, -4.2)"); z = J("DSCHOOL.F.zF")
+            E(f"GAME.view({x}, {y}, {z} + 1.3, DSCHOOL.az(0, 1), 4, 62); GAME.step(0.3)"); lib.shot(pg, OUT, 'a_door_shut_day')
+        except Exception as ex:
+            ck('section ran: door shut', False, repr(ex)[:400])
     if want('door') or want('inside') or want('talk') or want('task'):
         try:
             d = E("DORF.jump('skat', 20)"); lib.settle_light(pg)
