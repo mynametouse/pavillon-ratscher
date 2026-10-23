@@ -8,7 +8,7 @@ Bach (~375 m), Auenlehm (pH geschätzt ~6), Spätfrostlage, Wühlmäuse, Ziegen 
 
 | Datei (`viz3/extra/pflanzen/dist/gartenplaner/`) | Inhalt |
 |---|---|
-| `pflanzen.json` | 44 Arten und Sorten in allen Schichten: Baum 12, Kleinbaum 5, Strauch 13, Kraut 4, Boden 5, Wurzel 2, Kletter 3 – mit Größe, Wuchs, Licht, Boden, Frosthärte, Blüte und Spätfrostrisiko, Funktionen, Befruchtern, Nachbarn, Ernte, Pflege, Schutz beim Pflanzen, Grenzabstand-Kategorie, Bezug Kammbach, Farben für die Zeichnung und 1–4 Quellen je Pflanze (71 Quellen; in allen drei Dateien zusammen 85) |
+| `pflanzen.json` | 44 Arten und Sorten in allen Schichten: Baum 12, Kleinbaum 5, Strauch 13, Kraut 4, Boden 5, Wurzel 2, Kletter 3 – mit Größe, Wuchs, Licht, Boden, Frosthärte, Blüte und Spätfrostrisiko, Funktionen, Befruchtern, Nachbarn, Ernte, Pflege, Schutz beim Pflanzen, Grenzabstand-Kategorie, Bezug Kammbach, Farben für die Zeichnung und 1–4 Quellen je Pflanze (74 Quellen; in allen drei Dateien zusammen 87) |
 | `regeln.json` | 19 Grenzabstand-Kategorien nach dem Thüringer Nachbarrechtsgesetz (§ 44 Nr. 1–7, § 45 Abs. 1 Nr. 1–4, § 50; Kräuter und Stauden ohne Abstand), Messregel (§ 47) und 30 Fakten mit Beleg: Ausnahmen und Fristen (§§ 46, 48, 49, 51–53 ThürNRG, § 39 BNatSchG, § 910 BGB) sowie Ratschläge zu Klima, Spätfrost, Staunässe, Wühlmäusen, Juglon, Befruchtung, Unterlagen, Ziegen, Bodenprobe und Waldgarten-Abständen |
 | `gilden.json` | 5 Gilden: Apfel (Rebella), Zwetsche, Wildobst-Hecke an der Ostgrenze, nasse Stelle am Bach (Schwarzerle), warme Südwand am Pavillon (Quitte, Wein, Kiwibeere) |
 
