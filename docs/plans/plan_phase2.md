@@ -32,7 +32,8 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
      und Speicher je Zone im Ladeprotokoll.
    - `KERN.act`: Einträge für den Aktionsknopf („Mit … sprechen“, „Öffnen“, „Aufheben“) als Register statt Abfragen in `game/play.js`.
    - `KERN.emit/on`: Ereignisse (gesprochen, aufgehoben, angekommen, gefällt, geladen …) für Aufgaben und Statistik.
-2. **Ein Aufgaben-System** (~1–2 Tage): `TASKS.define({ id, title, who, steps: [{ text, target, done }], reward, rep })` – ein Tagebuch,
+2. **Ein Aufgaben-System** (~1–2 Tage) – **begonnen 23.10.2026:** ein Tagebuch über `KERN.tasks` (Quellen: Nachbarn, Dorf, Ortsvorsteher;
+   die Aufgabenkarte folgt jeder); offen: `TASKS.define` mit Schritten auf Ereignisse, die Logik der alten Aufgaben umziehen, `pav-tasks-v1`: `TASKS.define({ id, title, who, steps: [{ text, target, done }], reward, rep })` – ein Tagebuch,
    eine Aufgabenkarte, ein Spielstand `pav-tasks-v1` über `SAVE` (die Stände aus `pav-quests-v1` und `pav-dorf-v1` werden übernommen).
    Die festen Aufgaben, die der Nachbarn, die des Dorfs und die Ortsvorsteher-Kette ziehen um; Schritte reagieren auf Ereignisse statt
    in jedem Bild abzufragen. Texte als Daten (JSON), damit neue Aufgaben ohne Code entstehen.

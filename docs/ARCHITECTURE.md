@@ -36,6 +36,10 @@ Oberfläche Deutsch.
     sonst die Kamera) näher als `near` kommt (`build` darf ein Promise liefern), freigegeben jenseits von `far` (nach `keep` s); Zeit und
     Fehler im Ladeprotokoll, Stand in `KERN.zones()`. `KERN.until(bed, s)` wartet auf eine Bedingung. Beispiel: Schleusingen
     (`welt/schleusingen.js`: Daten, Kacheln, Stadt ab 950 m, frei ab 1350 m). Tests treiben `KERN.update` mit `GAME.step` mit.
+  - **Ein Tagebuch (Baustein 2, Anfang):** `KERN.tasks.source({ id, order, list })` – jede Quelle nennt ihre Aufgaben als Einträge
+    `{ id, title, who, status: 'offen' | 'läuft' | 'erledigt', text, target: () => [x, y] | null, z }`; das Tagebuch (J) und die
+    Aufgabenkarte in `game/quests.js` zeigen alle (Nachbarn 10, Dorf 20, Ortsvorsteher 30), verfolgt wird ein Schlüssel `quelle:id`.
+    Test `test/kern2.py` (Themen-Test `kern`, `extra/kern/tests.txt`).
   - **Startsituationen (Baustein 3):** `KERN.scenario(name, { label, run, order })` – `?szenario=name` startet nach dem Laden darin
     (`boot/boot.js`), Tests laden mit `lib.boot(pg, port, '?szenario=…')`: `garten`, `werkstatt`, `dorf`, `freitag`, `feuer`,
     `schleusingen`, `brief`, `wahlkampf`, `wahltag`, `zaehlen`, `amt`, `stadtrat`; `KERN.scenarios()` listet sie.
