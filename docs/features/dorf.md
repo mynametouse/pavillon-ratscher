@@ -41,7 +41,9 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   (aus `world/village.js`, eines mit Tür, die Häuser verteilt), eine Haustür und einen Platz im Vorgarten neben dem Weg. Der Tag kommt
   aus Spieluhr und Kalender, jeden Tag anders: April bis Oktober morgens und abends eine Runde im Garten (Unkraut jäten kniend, in den
   warmen Monaten gießen mit der Kanne), im Winter ab und zu kurz an die Tür; Heike und Katrin reden an manchen Abenden am Gartenzaun.
-  Sie kommen aus der Tür, gehen die paar Schritte, arbeiten, gehen wieder hinein; wer angesprochen wird, steht auf und dreht sich her.
+  Sie kommen aus der Tür, gehen die paar Schritte, arbeiten an ihrem Beet (Gemüse bei Heike, Uwe und Wolfgang, Rosen bei Ingrid, sonst
+  Blumen – ein Beet mit Brettrand vor jedem ihrer Häuser), gehen wieder hinein; wer angesprochen wird, steht auf, dreht sich her und
+  grüßt nach der Uhrzeit („Guten Morgen! Brauchst du Eier? …“), die Abendgrüße gibt es nur in der Schule und am Feuer.
   Geladen werden nur die, die draußen sind und in der Nähe (140 m), wenige auf einmal; nach 25 s ohne Bedarf wieder freigegeben.
 - **Autos** (`dorf_cars.js`, `DCARS`): Katrin und Jens fahren werktags zur Arbeit, Ingrid dienstags und donnerstags ins Rathaus, Manfred
   manchmal einkaufen. Das Auto (schlicht, ohne Marke) parkt am Straßenrand der nächsten Straße, rechts in Fahrtrichtung hinaus; der

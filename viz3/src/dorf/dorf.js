@@ -568,7 +568,7 @@ export const DORF = (() => {
     pos: () =>
       DSCHOOL.built && DSCHOOL.noticeAt ? [DSCHOOL.noticeAt[0], DSCHOOL.noticeAt[1], DSCHOOL.F.zF + 1.2] : null,
     run: () => {
-      toast(T.NOTICE.replace(/\n+/g, ' · '), 9000);
+      toast(T.NOTICE.replace(/\n+/g, ' · '), 14000);
       if (stepI(ST.step) < 1) {
         setStep('invite');
         news(

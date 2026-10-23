@@ -572,6 +572,6 @@ export const DTEXT = (() => {
     },
   };
   const NOTICE =
-    'AUSHANG – Freiwillige Feuerwehr Ratscher\n\nSkat- und Rommé-Abend\njeden Freitag ab 19 Uhr in der alten Schule.\nGäste sind herzlich willkommen!\n\nJeden zweiten Samstag Feuer am Acker Richtung Klinge.';
+    'AUSHANG – Freiwillige Feuerwehr Ratscher\n\nSkat- und Rommé-Abend\njeden Freitag ab 19 Uhr in der alten Schule.\nGäste sind herzlich willkommen!\n\nJeden zweiten Samstag Feuer am Acker Richtung Klinge.\n\nWer hilft? Gerhard sucht Mithilfe für die Dorfchronik, Ingrid einen Hauptpreis für die Tombola, Heike verkauft Eier. Man trifft sie morgens und am frühen Abend in ihren Vorgärten – oder freitags hier.';
   return { P, TALK, STORY, STORIES, FIRE, TASK, NOTICE, ERRANDS };
 })();
