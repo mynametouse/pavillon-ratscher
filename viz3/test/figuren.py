@@ -46,8 +46,11 @@ window.__F = {
     const eye = (() => { let e = null; F.model.traverse(x => { if (x.name === 'Bip01_LEye') e = x; }); return e ? e.getWorldPosition(GAME.cam.position.clone()) : null; })();
     const hd = F.B.Head.getWorldPosition(GAME.cam.position.clone()), c = box(h.cap.children[0]), b = box(h.buds);
     const cx = (c.lo[0] + c.hi[0]) / 2, cz = (c.lo[2] + c.hi[2]) / 2;
+    // the cap's middle in the head bone's own frame (m): the same in every pose if it sits on the head
+    const s = F.B.Head.getWorldScale(GAME.cam.position.clone()).x, loc = F.B.Head.worldToLocal(GAME.cam.position.clone().set(cx, (c.lo[1] + c.hi[1]) / 2, cz)).multiplyScalar(s);
     return { cap: h.cap.visible, buds: h.buds.visible, capLow: +(c.lo[1] - (eye ? eye.y : hd.y)).toFixed(3), capTop: +(c.hi[1] - hd.y).toFixed(3),
-      capOff: +Math.hypot(cx - hd.x, cz - hd.z).toFixed(3), budsToHead: +Math.hypot((b.lo[0] + b.hi[0]) / 2 - hd.x, (b.lo[2] + b.hi[2]) / 2 - hd.z).toFixed(3) };
+      capOff: +Math.hypot(cx - hd.x, cz - hd.z).toFixed(3), budsToHead: +Math.hypot((b.lo[0] + b.hi[0]) / 2 - hd.x, (b.lo[2] + b.hi[2]) / 2 - hd.z).toFixed(3),
+      local: loc.toArray().map(x => +x.toFixed(4)) };
   },
 };
 __F.install();
@@ -97,17 +100,20 @@ with lib.browser() as b:
             E("AVATAR.buds(true)")
         E("__F.place()")
         heights[k] = E("__F.headH()")
+        lib.shot(pg, OUT, f'{n}_game')  # what the player sees: the shoulder camera behind the figure
         views(f'{n}_stand', VIEWS_STAND)
         if k == 'c':
             hw = E("__F.hw()")
             ck('christoph: cap and earbuds on, standing', hw and hw['cap'] and hw['buds'], json.dumps(hw))
             ck('christoph: cap above the eyes, over the head', hw and 0.0 < hw['capLow'] < 0.09 and 0.1 < hw['capTop'] < 0.3 and hw['capOff'] < 0.09, json.dumps(hw))
+            local0 = hw and hw['local']
+        same = lambda hw: bool(hw and local0 and max(abs(a - b) for a, b in zip(hw['local'], local0)) < 0.003)
         # walking (a normal pace), then crouching and crouch-walking
         E("GAME.step(0.7, 1, 0, 0, 0.55)")
         views(f'{n}_walk', VIEWS_MOVE)
         if k == 'c':
             hw = E("__F.hw()")
-            ck('christoph: cap over the head while walking', hw and 0.1 < hw['capTop'] < 0.3 and hw['capOff'] < 0.09, json.dumps(hw))
+            ck('christoph: cap on the head while walking', same(hw) and 0.1 < hw['capTop'] < 0.3, json.dumps(hw))
         E("__F.place()")
         pg.keyboard.press('c')
         E("GAME.step(1.0)")
@@ -115,10 +121,10 @@ with lib.browser() as b:
         views(f'{n}_crouch', [('side', dict(az=80, d=1.1, dh=0.1, at='head')), ('front', dict(az=20, d=1.0, dh=0.15, at='head')),
                               ('full', dict(az=50, d=2.6, at='body', h=0.55, fov=40))])
         E("GAME.step(0.6, 1, 0, 0)")
-        views(f'{n}_crouchwalk', [('side', dict(az=90, d=1.1, dh=0.1, at='head')), ('back', dict(az=170, d=1.1, dh=0.2, at='head'))])
+        views(f'{n}_crouchwalk', [('side', dict(az=90, d=1.1, dh=0.1, at='head')), ('back', dict(az=165, d=1.6, dh=0.45, at='head'))])
         if k == 'c':
             hw = E("__F.hw()")
-            ck('christoph: cap over the head while crouching', st == 'crouch' and hw and hw['capOff'] < 0.12, f'stance {st} ' + json.dumps(hw))
+            ck('christoph: cap on the head while crouching (same place on the head bone)', st == 'crouch' and same(hw), f'stance {st} ' + json.dumps(hw))
         pg.keyboard.press('c')
         E("GAME.step(0.6)")
         # protective gear on the figure

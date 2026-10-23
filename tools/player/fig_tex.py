@@ -61,6 +61,7 @@ def face_skin(head):
     return median_rgb(head, skin_mask(head) * reg)
 
 
+HAIR = np.array([1.55, 1.5, 1.42], np.float32)   # Sarah's hair: gain per channel (lighter, a little warmer)
 if WHO == 'sarah':
     head = load(tga('Female_Party_02', 'f022_head_color.tga'))
     body = load(tga('Female_Adult_04', 'f004_body_color.tga'))
@@ -70,9 +71,24 @@ if WHO == 'sarah':
     body = match_skin(body, face_skin(head), np.minimum(region, 1))
     save(body, 'sarah_body_color.tga')
     copy('Female_Adult_04', 'f004_body_normal.tga', 'sarah_body_normal.tga')
-    copy('Female_Party_02', 'f022_head_color.tga', 'sarah_head_color.tga')
+    # brunette, not black: in the model's light the dark brown of the curls read as black – hair a little lighter and warmer (the face,
+    # the eyes and the mouth – lower left of the layout – stay)
+    hh, hw_, _ = head.shape
+    hm = ((head @ np.array([0.3, 0.59, 0.11], np.float32)) < 0.3) & (skin_mask(head) < 0.5)
+    hm = cv2.GaussianBlur((hm * (1 - box(hh, hw_, 0.0, 0.38, 0.6, 1.0))).astype(np.float32), (0, 0), 1.5)
+    save(head * (1 + hm[..., None] * (HAIR - 1)), 'sarah_head_color.tga')
     copy('Female_Party_02', 'f022_head_normal.tga', 'sarah_head_normal.tga')
-    copy('Female_Party_02', 'f022_opacity_color.tga', 'sarah_opacity_color.tga')
+    # the hair cards: their inner bands are opaque black (a dark base for blending in the original renderer); with alpha testing in the
+    # model they showed as grey stripes across the curls – there they go, the modelled hair of the head underneath carries the volume
+    op = np.asarray(Image.open(tga('Female_Party_02', 'f022_opacity_color.tga')).convert('RGBA')).copy()
+    lum = op[..., :3].astype(np.float32) @ np.array([0.3, 0.59, 0.11], np.float32)
+    band = (lum < 10) & (op[..., 3] > 100)
+    band = cv2.dilate(band.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+    op[..., 3][band & (lum < 14)] = 0
+    rgb = op[..., :3].astype(np.float32) / 255   # the strands as light as the hair of the head
+    op[..., :3] = (np.clip(rgb * HAIR, 0, 1) * 255 + 0.5).astype(np.uint8)
+    print('hair cards: black band pixels made transparent', int(band.sum()))
+    Image.fromarray(op, 'RGBA').save(os.path.join(OUT, 'sarah_opacity_color.tga'))
 elif WHO == 'christoph':
     head = load(tga('Sports_Male_01', 'm021_head_color.tga'))
     body8 = np.asarray(Image.open(tga('Male_Adult_09', 'm017_body_color.tga')).convert('RGB'))
