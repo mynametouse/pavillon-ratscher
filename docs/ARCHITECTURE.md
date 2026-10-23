@@ -34,7 +34,11 @@ Oberfläche Deutsch.
     (Nachbarn, Dorfbewohner), `act`, `take`, `fell`, `zone` – für Aufgaben und Statistik (Baustein 2).
   - **Zonen:** `KERN.zone({ id, x, y, near, far, build, drop, tick, keep })` – gebaut, wenn der Beobachter (`KERN.where()`: die Spielfigur,
     sonst die Kamera) näher als `near` kommt (`build` darf ein Promise liefern), freigegeben jenseits von `far` (nach `keep` s); Zeit und
-    Fehler im Ladeprotokoll, Stand in `KERN.zones()`. `KERN.until(bed, s)` wartet auf eine Bedingung.
+    Fehler im Ladeprotokoll, Stand in `KERN.zones()`. `KERN.until(bed, s)` wartet auf eine Bedingung. Beispiel: Schleusingen
+    (`welt/schleusingen.js`: Daten, Kacheln, Stadt ab 950 m, frei ab 1350 m). Tests treiben `KERN.update` mit `GAME.step` mit.
+  - **Startsituationen (Baustein 3):** `KERN.scenario(name, { label, run, order })` – `?szenario=name` startet nach dem Laden darin
+    (`boot/boot.js`), Tests laden mit `lib.boot(pg, port, '?szenario=…')`: `garten`, `werkstatt`, `dorf`, `freitag`, `feuer`,
+    `schleusingen`, `brief`, `wahlkampf`, `wahltag`, `zaehlen`, `amt`, `stadtrat`; `KERN.scenarios()` listet sie.
   - **Lampen leihen:** `KERN.lights.pool(liste, { home, restore })` (die Punktlichter L1, L4, L5, L3, L2 des Pavillons, solange man nicht
     näher als 60 m am Pavillon ist) und `KERN.lights.borrow({ id, n, prio, want, on, tick, off })` – keine neuen Lampen, also keine neu
     übersetzten Shader; Farbe, Ort, Reichweite und Stärke kommen von selbst zurück (Schulraum und Feuer im Dorf).
