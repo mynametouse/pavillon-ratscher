@@ -176,6 +176,9 @@ KERN.provide(
     const inT = x > G.TW.x0 && x < G.TW.x1 && y > G.TW.y0 && y < G.TW.y1,
       inEG = x > 0 && x < 4 && y > 0 && y < 4,
       inOG = x > G.OG.x0 && x < G.OG.x1 && y > G.OG.y0 && y < G.OG.y1;
+    // before the frame stands: the old garage (phase 0, the start), then the building site on the slab
+    if (PHASE < PHN.egFrame)
+      return inEG ? (PHASE <= PHN.bestand ? 'Alte Garage' : 'Bauplatz des Pavillons') : undefined;
     const rough = PHASE < PHN.floors ? ' (Rohbau)' : '';
     if (inT) {
       if (f > G.zD - 0.1) return 'Turmkopf, Ausgang Dachterrasse';

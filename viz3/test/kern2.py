@@ -22,7 +22,7 @@ with lib.browser() as b:
     ck('scenarios listed', len(J("KERN.scenarios()")) >= 10, ','.join(J("KERN.scenarios().map(s => s.name)")))
     # places: the provider chain answers in the garden, at the pavilion, at Hubert's, in the village
     pl = J("[KERN.place(3, 15.2, 0), KERN.place(2, 2, 0.05), KERN.place(-20, 15, 0), KERN.place(241, -101, 0)]")
-    ck('places by priority (garden, library, Hubert, village)', pl[0] and pl[1] and pl[2] and pl[3] and pl[1] != pl[0], json.dumps(pl, ensure_ascii=False))
+    ck('places by priority (garden, the old garage in phase 0, Hubert, village)', pl[0] == 'Garten' and pl[1] == 'Alte Garage' and pl[2] and pl[3], json.dumps(pl, ensure_ascii=False))
     ck('jump spots in the registry', all(k in J("Object.keys(KERN.spots())") for k in ['garten', 'dorf', 'schleusingen', 'werkstatt']), '')
     ck('action button entries in KERN', len(J("KERN.acts().map(a => a.id)")) > 5, str(len(J("KERN.acts().map(a => a.id)"))))
     # the journal: the neighbours' tasks plus the village's task once one is invited
