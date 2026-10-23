@@ -1,5 +1,4 @@
 # Kloster Veßra (welt/vessra.js): start without it, Orte → Kloster Veßra, walk, the monastery, the nursery, names, night, freed again;
-# the start situation ?szenario=baumschule; Schleusingen too while welt/welt.js changes (its pads are drawn again a few tiles per frame)
+# the start situation ?szenario=baumschule (add schleusingen here while welt/welt.js changes)
 vessra
 vessra_szenario
-schleusingen
