@@ -46,9 +46,12 @@ Oberfläche Deutsch.
     über die Ereignisse `task:start`, `task:step`, `task:done` (`game/quests.js`). `TASKS.start/advance/reset/state`; Unit-Tests
     `test/unit/tasks.test.mjs`. Neue Aufgaben nur noch so; die alten (Nachbarn, Dorf, Ortsvorsteher) ziehen nach und nach um.
   - **`KERN.tick(fn, name)`:** ein Takt je Frame für Dienste (aus `KERN.update`); die Features nutzen noch `window.TICKS`.
-  - **Startsituationen (Baustein 3):** `KERN.scenario(name, { label, run, order })` – `?szenario=name` startet nach dem Laden darin
-    (`boot/boot.js`), Tests laden mit `lib.boot(pg, port, '?szenario=…')`: `garten`, `werkstatt`, `dorf`, `freitag`, `feuer`,
-    `schleusingen`, `vessra`, `baumschule`, `brief`, `wahlkampf`, `wahltag`, `zaehlen`, `amt`, `stadtrat`; `KERN.scenarios()` listet sie.
+  - **Startsituationen (Baustein 3):** `KERN.scenario(name, { label, run, order, ask, menu })` – `?szenario=name` startet nach dem Laden
+    darin (`boot/boot.js`), Tests laden mit `lib.boot(pg, port, '?szenario=…')`; im **Menü unter „Szenen“** (`game/hud.js`, seit V16o) alle,
+    die nicht schon ein Ort unter „Orte“ sind (gleicher Name wie ein `data-spot`) und nicht `menu: false` haben; eine Szene, die den
+    Spielstand oder die Uhr umstellt, sagt in `ask`, was (Ortsvorsteher, Skatabend, Feuer), und startet erst beim zweiten Tippen.
+    Heute: `garten`, `werkstatt`, `dorf`, `freitag`, `feuer`, `schleusingen`, `vessra`, `baumschule`, `gartenplaner`, `atelier`, `brief`,
+    `wahlkampf`, `wahltag`, `zaehlen`, `amt`, `stadtrat`; `KERN.scenarios()` listet sie nach `order`.
   - **Lampen leihen:** `KERN.lights.pool(liste, { home, restore })` (die Punktlichter L1, L4, L5, L3, L2 des Pavillons, solange man nicht
     näher als 60 m am Pavillon ist) und `KERN.lights.borrow({ id, n, prio, want, on, tick, off })` – keine neuen Lampen, also keine neu
     übersetzten Shader; Farbe, Ort, Reichweite und Stärke kommen von selbst zurück (Schulraum und Feuer im Dorf).

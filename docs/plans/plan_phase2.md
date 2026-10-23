@@ -38,8 +38,9 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
    eine Aufgabenkarte, ein Spielstand `pav-tasks-v1` über `SAVE` (die Stände aus `pav-quests-v1` und `pav-dorf-v1` werden übernommen).
    Die festen Aufgaben, die der Nachbarn, die des Dorfs und die Ortsvorsteher-Kette ziehen um; Schritte reagieren auf Ereignisse statt
    in jedem Bild abzufragen. Texte als Daten (JSON), damit neue Aufgaben ohne Code entstehen.
-3. **Szenarien** (~1 Tag) – **begonnen 23.10.2026:** `KERN.scenario`, `?szenario=…` (Liste in `docs/ARCHITECTURE.md`); offen: Menü
-   „Direkt zu …“, Zonen/Pakete je Szenario, `?nogeo` als Szenario `garten`: `?szenario=garten|dorf|freitag|wald|holz|schleusingen` – Startort, Uhrzeit, Tag, welche Zonen und Pakete
+3. **Szenarien** (~1 Tag) – **begonnen 23.10.2026:** `KERN.scenario`, `?szenario=…` (Liste in `docs/ARCHITECTURE.md`), seit V16o im
+   Menü unter „Szenen“ (Szenen, die Spielstand oder Uhr umstellen, mit zweitem Tippen); offen: Zonen/Pakete je Szenario, `?nogeo` als
+   Szenario `garten`: `?szenario=garten|dorf|freitag|wald|holz|schleusingen` – Startort, Uhrzeit, Tag, welche Zonen und Pakete
    laden (Garten ohne Umgebung wie heute `?nogeo=1`). Dieselben Szenarien starten die Tests (`lib.boot(pg, port, szenario='dorf')`) und
    stehen im Menü („Direkt zu …“). Die heutigen Schalter (`?dorf=freitag`, `?nogeo=1`, `?fell` …) werden Szenarien.
 4. **Pakete nachladen** (~2 Tage). Messung 23.10. (`test/loadprof.py`, Software-Grafik, fertig gebauter Pavillon): die Startzeit geht fast
