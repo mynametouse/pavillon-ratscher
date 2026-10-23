@@ -1,0 +1,5 @@
+garage
+# temporary on feat/garage (removed before the hand-over): the neighbours' tasks fetch the diesel can, the garden
+garten:nogeo=1
+nachbarn:quests
+v14b:diesel

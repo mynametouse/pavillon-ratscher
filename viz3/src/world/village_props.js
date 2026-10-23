@@ -1114,10 +1114,10 @@ export const VPROPS = (() => {
       if (!S.lindeMeshes || !S.lindeMeshes.slice(1).includes(m)) {
         if (m !== S.pool) RATSCHER.bld.push(m);
       } // hidden with the buildings in the map view
-    (window.TICKS || (window.TICKS = [])).push(tick);
+    S.offTick = KERN.tick(tick, 'world/village_props:1');
     // what is new, once (after the V16b hint)
     let intro = false;
-    TICKS.push(() => {
+    KERN.tick(() => {
       if (intro || P.mode !== 'walk' || !LOAD.ready) return;
       intro = true;
       const seen = !SAVE.once('pav-v16e'); // one-time hint
@@ -1131,7 +1131,7 @@ export const VPROPS = (() => {
             ),
           32000
         );
-    });
+    }, 'world/village_props:2');
     S.on = true;
     S.ready = true;
     S.ms = Math.round(performance.now() - t0);
@@ -1146,8 +1146,8 @@ export const VPROPS = (() => {
     }
     S.meshes.length = 0;
     S.lamps.length = 0;
-    const i = (window.TICKS || []).indexOf(tick);
-    if (i >= 0) TICKS.splice(i, 1);
+    if (S.offTick) S.offTick();
+    S.offTick = null;
     for (const L2 of [...VEG.lod])
       if (S.lindeMeshes && S.lindeMeshes.includes(L2.hi)) VEG.lod.splice(VEG.lod.indexOf(L2), 1);
     CLK.hands = null;

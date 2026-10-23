@@ -788,7 +788,7 @@ export const HUD = (() => {
   let seatedWas = null,
     readyWas = null,
     acc = 0;
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     acc += dt;
     if (acc < 0.2) return;
     acc = 0;
@@ -804,7 +804,7 @@ export const HUD = (() => {
     }
     if (S.inv && P.mode !== 'walk') setInv(false);
     if (LOCK.on && !canLockKeep()) unlock();
-  });
+  }, 'game/hud:1');
   const canLockKeep = () => P.mode === 'walk' && !S.open && !S.inv && !(typeof PLAN !== 'undefined' && PLAN.on);
   function modeChanged() {
     placePhases();
@@ -849,7 +849,7 @@ export const HUD = (() => {
   }
   // first visit of version 15: a short word about the new controls
   let intro = false;
-  window.TICKS.push(() => {
+  KERN.tick(() => {
     if (intro || P.mode !== 'walk' || !LOAD.ready) return;
     intro = true;
     const seen = !SAVE.once('pav-v15'); // one-time hint
@@ -864,9 +864,9 @@ export const HUD = (() => {
           ),
         900
       );
-  });
+  }, 'game/hud:2');
   let intro2 = false;
-  window.TICKS.push(() => {
+  KERN.tick(() => {
     if (intro2 || P.mode !== 'walk' || !LOAD.ready || !window.WERK || !LATE.WERK.on) return;
     intro2 = true;
     const seen = !SAVE.once('pav-v15b'); // one-time hint
@@ -881,9 +881,9 @@ export const HUD = (() => {
           ),
         12000
       );
-  });
+  }, 'game/hud:3');
   let intro3 = false;
-  window.TICKS.push(() => {
+  KERN.tick(() => {
     if (intro3 || P.mode !== 'walk' || !LOAD.ready) return;
     intro3 = true;
     const seen = !SAVE.once('pav-v16a'); // one-time hint
@@ -896,7 +896,7 @@ export const HUD = (() => {
           ),
         2500
       );
-  });
+  }, 'game/hud:4');
   placePhases();
   render();
   stanceChanged();

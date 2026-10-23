@@ -91,7 +91,8 @@ function frame0(now) {
   }
   if (P.mode === 'walk' && !(window.VEH && VEH.cur)) cam3Update(dt);
   adaptExposure(dt);
-  KERN.update(dt); // phase 2: zones built near and dropped far, borrowed lights, waits (core/kern.js)
+  KERN.update(dt); // phase 2: per-frame callbacks (KERN.tick), zones built near and dropped far, borrowed lights, waits (core/kern.js)
+  // the old list window.TICKS – only modules not moved to KERN.tick yet (phase 2)
   if (window.TICKS)
     for (let i = 0; i < TICKS.length; i++) {
       try {

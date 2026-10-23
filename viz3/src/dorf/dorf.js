@@ -762,7 +762,7 @@ export const DORF = (() => {
     const where = show === 'school' && inside ? 'school' : show === 'fire' && dF < 14 ? 'fire' : null;
     talkTick(dt, where);
   }
-  (window.TICKS || (window.TICKS = [])).push(tick);
+  KERN.tick(tick, 'dorf/dorf');
   // the owner walks from the door to the car before it leaves, and back into the house when it is home again (if the figure is there)
   const CARHOOKS = {
     // the owner's figure is wanted (true when it is there)

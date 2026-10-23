@@ -46,7 +46,7 @@ with lib.browser() as b:
     E("VEH.by.tractor.st.u = NaN; VEH.by.tractor.st.x = NaN"); steps(0.3)
     check('a vehicle state set to NaN goes back to the last good one', E(FIN), E("JSON.stringify(VEH.state()[1])"))
     # 3) the real frame loop: drive at the stump again, then an error inside a frame
-    E(f"VEH.place('tractor', {sx}, {sy}, Math.atan2({t['x'] - sx}, {t['y'] - sy})); window.__n = 0; TICKS.push(() => __n++); window.FREEZE = false")
+    E(f"VEH.place('tractor', {sx}, {sy}, Math.atan2({t['x'] - sx}, {t['y'] - sy})); window.__n = 0; KERN.tick(() => __n++, 'test:fellcrash'); window.FREEZE = false")
     E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })"); time.sleep(8); E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })"); time.sleep(2); E("VEH.auto = null")
     n1 = E("__n"); check('the tractor at the stump with the real frame loop: valid state, frames go on', E(FIN) and n1 > 5, f"{n1} frames, {E('JSON.stringify(VEH.state()[1])')}")
     E("window.__toasts = []; new MutationObserver(() => __toasts.push(document.getElementById('toast').textContent)).observe(document.getElementById('toast'), { childList: true, characterData: true, subtree: true })")

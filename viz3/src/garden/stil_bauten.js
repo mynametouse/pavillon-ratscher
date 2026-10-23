@@ -550,6 +550,7 @@ const CSTYLES = [
     curtains: ['stripes', [0xc0702a, 0x6b4a2a, 0xd9a03a, 0xf0e2c0]],
     quilt: ['patch', [0xc0702a, 0xd9a03a, 0x6b4a2a, 0xf0e2c0]],
     cush: [0x6b4a2a, 0xd9a03a],
+    shade: ['dome', 0xd9782a],
   },
   {
     id: 'skandi',
@@ -569,6 +570,7 @@ const CSTYLES = [
     quilt: ['stripes', [0xf4f2ee, 0xdfe3e6, 0xf4f2ee, 0x9fb0bd]],
     cush: [0x8ea3b8, 0xf2f0ea],
     plant: true,
+    shade: ['globe', null],
   },
   {
     id: 'landhaus',
@@ -588,6 +590,7 @@ const CSTYLES = [
     quilt: ['patch', [0xb0502e, 0xe8dcc0, 0x7d93a8, 0x9aa889, 0xd9b36a]],
     cush: [0xb0502e, 0xf3ead6],
     flowers: true,
+    shade: ['pleat', 0xefe3c8],
   },
   {
     id: 'boho',
@@ -608,6 +611,7 @@ const CSTYLES = [
     cush: [0xb0502e, 0x2b6070],
     plant: true,
     boho: true,
+    shade: ['rattan', 0xc8a46a],
   },
 ];
 function cApply(h) {
@@ -667,6 +671,17 @@ function cBuild(L, h) {
         { cast: false }
       );
     }
+  }
+  // a pendant over the dinette table, its shade after the style (decor: the caravan's light is the dome in the middle)
+  if (s.shade) {
+    const [kind, col] = s.shade,
+      zb = 2.2;
+    put(L, new THREE.CylinderGeometry(0.004, 0.004, 2.53 - zb - 0.06, 5), KM.cord, 1.68, 0, (2.53 + zb + 0.06) / 2, {
+      cast: false,
+    });
+    put(L, new THREE.CylinderGeometry(0.018, 0.02, 0.06, 10), KM.bakelite, 1.68, 0, zb + 0.06, { cast: false });
+    put(L, new THREE.SphereGeometry(0.03, 10, 8), KM.porcelain, 1.68, 0, zb, { cast: false });
+    shadeAround(L, kind, 1.68, 0, zb, kind === 'globe' ? BPAPER : pal(col, 0.6));
   }
   if (s.plant)
     pottedPlant(L, -0.3, 0.85, zf + 0.65, 0.35, 'trailing', s.id === 'skandi' ? pal(0xf4f2ee) : KM.terracotta, h.R);

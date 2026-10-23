@@ -13,6 +13,7 @@ import { scene } from '../core/head.js';
 import { markDirty, texFile, texFileOf, TEXMAN, whenLoaded } from '../core/assets.js';
 import { RATSCHER } from './ratscher.js';
 import { ROADS } from './roads.js';
+import { KERN } from '../core/kern.js';
 export const VILLAGE = (() => {
   const S = { on: false, ready: false, bld: [], byId: new Map(), meshes: [], U: null, ANGER: [222, -108] };
   if (!window.RATSCHER || !RATSCHER.on) return S;
@@ -1094,7 +1095,7 @@ export const VILLAGE = (() => {
     S.roof0 = old;
     RATSCHER.bld[1] = rm;
     S.meshes.push(rm);
-    (window.TICKS || (window.TICKS = [])).push(tick);
+    S.offTick = KERN.tick(tick, 'world/village');
     tick();
     S.on = true;
     S.ready = true;
@@ -1111,8 +1112,8 @@ export const VILLAGE = (() => {
       S.roof0.visible = true;
     }
     if (S.wall0) RATSCHER.bld[0].material = S.wall0;
-    const i = (window.TICKS || []).indexOf(tick);
-    if (i >= 0) TICKS.splice(i, 1);
+    if (S.offTick) S.offTick();
+    S.offTick = null;
     S.meshes.length = 0;
     S.bld.length = 0;
     S.byId.clear();

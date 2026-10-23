@@ -2929,7 +2929,7 @@ export const FELL = (() => {
     ptsTick(dt);
     sawTick(dt);
   }
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     try {
       tick(dt);
     } catch (e) {
@@ -2938,15 +2938,15 @@ export const FELL = (() => {
         console.warn('fell', e);
       }
     }
-  });
+  }, 'world/fell:1');
   let cardAcc = 0;
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     cardAcc += dt;
     if (cardAcc > 0.5) {
       cardAcc = 0;
       renderCard();
     }
-  });
+  }, 'world/fell:2');
   window.addEventListener(
     'keydown',
     e => {
@@ -2987,7 +2987,7 @@ export const FELL = (() => {
   });
   // first visit of V16c2: a word about felling
   let intro = false;
-  window.TICKS.push(() => {
+  KERN.tick(() => {
     if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return;
     intro = true;
     const seen = !SAVE.once('pav-v16c2'); // one-time hint
@@ -3000,7 +3000,7 @@ export const FELL = (() => {
           ),
         44000
       );
-  });
+  }, 'world/fell:3');
   // test and tool hooks
   // V16d: werk/holz.js takes over the measured logs as objects of their own – the felled tree's log meshes are then hidden
   S.hideLogs = tid => {

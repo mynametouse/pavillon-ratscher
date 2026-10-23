@@ -12,6 +12,7 @@ import { HUD } from '../game/hud.js';
 import { CLOCK } from '../time/clock.js';
 import { GEAR } from './gear.js';
 import { WERK } from './werk.js';
+import { KERN } from '../core/kern.js';
 phase(null);
 export const WUI = (() => {
   const mw = $('machwin'),
@@ -224,13 +225,13 @@ export const WUI = (() => {
     return out;
   }
   let acc = 0;
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     acc += dt;
     if (acc < 0.5) return;
     acc = 0;
     renderCard();
     if (S.bookOpen) renderBook(true);
-  });
+  }, 'werk/werkui');
   // ---------------- the workshop book ----------------
   function book(v) {
     if (!bk) return;
