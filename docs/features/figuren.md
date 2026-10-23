@@ -9,7 +9,7 @@ Wahl im Menü → Spiel → „Spielfigur“ (`#figseg`), gespeichert in `pav-fi
 | Figur | Körper (Kleidung) | Kopf | Bewegungen | Besonderes |
 |---|---|---|---|---|
 | Falko | Rocketbox `Professions/Delivery_Male_01` (bisherige Figur, unverändert) | dto. | `pclips_m` | – |
-| Sarah | `Adults/Female_Adult_04`: Lederjacke, Cargohose, Stiefel | `Adults/Female_Party_02`: brünette Locken | `pclips_f` | Haut von Händen und Ausschnitt an das Gesicht angeglichen |
+| Sarah | `Adults/Female_Adult_04`: Lederjacke, Cargohose, Stiefel | `Adults/Female_Party_02`: brünette Locken | `pclips_f` | Haut von Händen und Ausschnitt an das Gesicht angeglichen; Haare etwas heller (im Licht des Modells sonst fast schwarz), die schwarzen Innenbänder der Haarkarten durchsichtig (sonst graue Streifen) |
 | Christoph | `Adults/Male_Adult_09`: dunkles T-Shirt, Jeans (Tattoo entfernt), Arme, Schultern, Brust etwas kräftiger | `Professions/Sports_Male_01`: kurze braune Haare, leichter Bart | `pclips_m` | 1,5 cm kleiner als Falko; Schildmütze und Ohrhörer (`figHeadwear` in `game/avatar.js`) |
 
 Alle erwachsenen Rocketbox-Frauen teilen ein Skelett, alle Männer ein anderes – deshalb passen Kopf und Körper zweier Figuren
