@@ -153,7 +153,50 @@ export const WELT = (() => {
     m.color.setScalar(0.86); // aerial photos are developed brighter than the ground (world/ratscher.js uGGain)
     return m;
   }
+  // ---- level pads: a zone may set the terrain flat inside a polygon (a courtyard, the floor of a hall) ----
+  const pads = [];
+  const inPoly = (P, x, y) => {
+    let c = false;
+    for (let p = 0, q = P.length - 2; p < P.length; q = p, p += 2) {
+      const xi = P[p],
+        yi = P[p + 1],
+        xj = P[q],
+        yj = P[q + 1];
+      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
+    }
+    return c;
+  };
+  function padZ(x, y) {
+    for (const p of pads)
+      if (x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y)) return p.z;
+    return undefined;
+  }
+  S.setPads = (id, list) => {
+    for (let i = pads.length - 1; i >= 0; i--) if (pads[i].id === id) pads.splice(i, 1);
+    for (const { poly, z } of list || []) {
+      const xs = poly.filter((v, k) => k % 2 === 0),
+        ys = poly.filter((v, k) => k % 2 === 1);
+      pads.push({ id, poly, z, bb: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] });
+    }
+    for (const t of S.tiles.values())
+      if (t.mesh && t.h) {
+        const old = t.mesh.geometry;
+        t.mesh.geometry = makeGeo(t);
+        old.dispose();
+      }
+    markDirty(true);
+  };
   function buildMesh(t) {
+    const me = new THREE.Mesh(makeGeo(t), tileMat(t.tex));
+    me.userData.noMerge = true;
+    me.receiveShadow = false;
+    me.castShadow = false;
+    me.visible = false;
+    me.name = 'welt ' + t.k;
+    scene.add(me);
+    t.mesh = me;
+  }
+  function makeGeo(t) {
     const n = t.n,
       st = (n - 1) / (NS - 1),
       s = tsize(t.L),
@@ -166,7 +209,8 @@ export const WELT = (() => {
         const E = t.e0 + (i / (NS - 1)) * s,
           N = t.n0 + (j / (NS - 1)) * s,
           [x, y] = toM(E, N),
-          z = innerFix(x, y, t.h[j * st * n + i * st], cell),
+          pz = pads.length ? padZ(x, y) : undefined,
+          z = pz !== undefined ? pz : innerFix(x, y, t.h[j * st * n + i * st], cell),
           k = j * NS + i;
         hz[k] = z;
         pos[k * 3] = x;
@@ -214,16 +258,8 @@ export const WELT = (() => {
     g.setIndex(idx);
     g.computeVertexNormals();
     g.computeBoundingSphere();
-    const me = new THREE.Mesh(g, tileMat(t.tex));
-    me.userData.noMerge = true;
-    me.receiveShadow = false;
-    me.castShadow = false;
-    me.visible = false;
-    me.name = 'welt ' + t.k;
-    scene.add(me);
-    t.mesh = me;
-    t.hz = hz;
-    t.h = null; // the drawn heights are kept (hz), the raw ones not
+    t.hz = hz; // the drawn heights (KERN), the raw ones stay for a rebuild with pads
+    return g;
   }
   const queue = [];
   let busy = 0;

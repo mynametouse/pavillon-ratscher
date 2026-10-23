@@ -292,7 +292,7 @@ export const SCHL = (() => {
         col: b.colF ? b.colF(f, k) : o.col,
         pk,
       };
-      const low = z0 - 2.0;
+      const low = Math.min(z0 - 2.0, (b.zmin !== undefined ? b.zmin : z0) - 1.0);
       if (b.hole && b.hole.k === k) {
         // a real opening (the Rathaus door): left part, right part, lintel
         const h0 = b.hole.u - b.hole.w / 2,
@@ -612,13 +612,15 @@ export const SCHL = (() => {
       b.cx = cx;
       b.cy = cy;
       b.i = i;
-      // the foot: the lowest ground along the walls
-      let z0 = 1e9;
-      for (const f of b.F) {
-        z0 = Math.min(z0, ground(f[0], f[1]), ground((f[0] + f[2]) / 2, (f[1] + f[3]) / 2));
-      }
-      if (!isFinite(z0)) z0 = ground(cx, cy);
-      b.z0 = z0 - 0.1;
+      // the foot: the lowest ground along the walls; on a slope the ground floor keeps to the upper side and the walls go down to the
+      // lowest point (an exposed plinth, as the castle and the church stand on the edge of the old-town spur)
+      const zs = [];
+      for (const f of b.F) zs.push(ground(f[0], f[1]), ground((f[0] + f[2]) / 2, (f[1] + f[3]) / 2));
+      zs.sort((p, q) => p - q);
+      const zmin = zs.length ? zs[0] : ground(cx, cy),
+        z70 = zs.length ? zs[Math.floor(zs.length * 0.7)] : zmin;
+      b.zmin = zmin;
+      b.z0 = z70 - zmin < 1.0 ? zmin - 0.1 : z70 - 0.4;
       b.st = styleOf(b, i);
       LM_PREP[b.lm] && LM_PREP[b.lm](b);
       try {
@@ -638,6 +640,13 @@ export const SCHL = (() => {
     add(new THREE.Mesh(RB.geo(), rm), 'roofs');
     props();
     grid();
+    // level ground where one walks inside: the hall of the Rathaus (under its floor), the courtyard of the castle
+    const pads = [];
+    for (const b of S.bld) {
+      if (b.lm === 'rathaus') pads.push({ poly: b.f, z: b.z0 + 0.1 });
+      if (b.lm === 'burg' && b.h) for (const h of b.h) pads.push({ poly: h, z: b.z0 + 0.05 });
+    }
+    if (WELT.setPads) WELT.setPads('schleusingen', pads);
     S.ms = Math.round(performance.now() - t0);
     S.state = 'ready';
     SPOTS.schleusingen.z = ground(START[0], START[1]);
@@ -670,6 +679,7 @@ export const SCHL = (() => {
     S.cells = null;
     S.bld = [];
     S.rathaus = null;
+    if (WELT.setPads) WELT.setPads('schleusingen', []);
     data = null;
     gz = null;
     S.state = 'idle';
@@ -938,6 +948,28 @@ export const SCHL = (() => {
         S.segs.push(...circleSegs(x, y, r, 10));
       }
       if (b.lm === 'burg') {
+        // the fountain in the courtyard (OSM; photos 1969, 2002, 2008): a round basin with a short column
+        for (const [fx, fy] of data.fountains || []) {
+          if (!b.h || !b.h.some(h => inPoly(h, fx, fy))) continue;
+          const z = b.z0 + 0.05;
+          K.lathe(
+            fx,
+            fy,
+            z,
+            [
+              [1.3, 0],
+              [1.3, 0.75],
+              [1.12, 0.75],
+              [1.12, 0.3],
+            ],
+            12,
+            STONE
+          );
+          K.cyl(fx, fy, z, z + 0.32, 1.12, 1.12, 12, linC([0.2, 0.3, 0.32]), true);
+          K.cyl(fx, fy, z, z + 1.7, 0.2, 0.16, 8, STONE, true);
+          K.ball(fx, fy, z + 1.8, 0.14, STONE, 8);
+          S.segs.push(...circleSegs(fx, fy, 1.35, 10));
+        }
         // the clock tower on the south wing (photo from the south): square, a dark cupola with lantern
         const x = -1290.5,
           y = 1158.5,
