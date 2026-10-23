@@ -397,6 +397,21 @@ export const DORF = (() => {
     },
   });
   const CLOCK_T = () => (window.CLOCK ? window.CLOCK.t : 0);
+  // locked in (the door shut behind one, or one got in some other way): out through the door
+  PLAY.act({
+    id: 'dorf:out',
+    r: 1.8,
+    label: () => (DSCHOOL.built && DSCHOOL.want < 0.5 && DSCHOOL.inside() ? 'Hinausgehen' : null),
+    pos: () => {
+      if (!DSCHOOL.built) return null;
+      const [x, y] = DSCHOOL.toW(DSCHOOL.F.du, 0.6);
+      return [x, y, DSCHOOL.F.zF + 1.0];
+    },
+    run: () => {
+      const [x, y] = DSCHOOL.toW(DSCHOOL.F.du, -1.4);
+      putPlayer(x, y, DSCHOOL.az(0, -1), DSCHOOL.F.zF - 0.3);
+    },
+  });
   PLAY.act({
     id: 'dorf:notice',
     r: 1.6,

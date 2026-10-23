@@ -72,7 +72,7 @@ export const DTEXT = (() => {
         ],
         nachbarn: [
           'Hubert und Ronald',
-          'Hubert schraubt an seinem Mondeo, seit ich denken kann. Der Wagen läuft – Hubert sagt, wegen ihm, ich sage, trotz ihm.',
+          'Hubert schraubt an seinem Mondeo, seit er ihn hat. Der Wagen läuft – Hubert sagt, wegen ihm, ich sage, trotz ihm.',
           'Ronald war früher öfter hier. Seit er die Ziegen hat, geht er mit den Hühnern ins Bett.',
         ],
       },
@@ -129,7 +129,7 @@ export const DTEXT = (() => {
         trinken: [
           'Etwas zu trinken',
           'Eine Apfelschorle, kommt sofort. Geht aufs Haus – beim ersten Mal zahlt bei uns keiner.',
-          'Die Fassbrause ist aus Schleusingen. Die Skatrunde trinkt Bier, die Rommé-Damen Kräutertee mit Schuss.',
+          'Die Skatrunde trinkt Bier, die Rommé-Runde Kräutertee – mit Schuss, sagen sie. Fragen tu ich nicht.',
         ],
         acker: [
           'Der Acker',
