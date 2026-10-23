@@ -217,10 +217,16 @@ with lib.browser() as b:
         reset_rec()
         T = 0
         shots = {'b_ortstafel': True, 'c_altstadt': False}
+        slow = False
         while T < 400:
             f = chunk(0.5)
             T += 0.5
             s = st()
+            # the old town is a 30 zone (OSM maxspeed on Burgstraße and Markt): the last 400 m at 30 km/h
+            if not slow and math.dist((s['x'], s['y']), rm[-1]) < 400:
+                slow = True
+                i_n = min(range(len(rm)), key=lambda i: math.dist(rm[i], (s['x'], s['y'])))
+                E(f"window._fs = VEH.follow({json.dumps(rm[i_n:])}, 8.3, {{ look: 7 }})")
             fs = json.loads(E("JSON.stringify(window._fs)"))
             if not shots['b_ortstafel'] and 'Schleusingen' in f['signsNear']:
                 d = E("""(() => { const v = VEH.cur.st; let best = 1e9; for (const s of FAHRT.data.signs) if (s.n === 'Schleusingen' && s.t === 'ort') best = Math.min(best, Math.hypot(s.x - v.x, s.y - v.y)); return best; })()""")

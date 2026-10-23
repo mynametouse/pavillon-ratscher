@@ -264,10 +264,18 @@ export const WELT = (() => {
   };
   // z: a height, or a function (x, y, raw height) → height (a zone's own smoothing, e.g. a square as an inclined plane)
   function padZ(x, y, raw) {
+    // feat/fahrt: pads marked 'under' (the roads of welt/fahrt.js) shape the ground first; a zone's pad builds on that ground (its edge
+    // blends into the carved road, not into the raw terrain)
+    let base;
     for (const p of pads)
-      if (x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y))
-        return typeof p.z === 'function' ? p.z(x, y, raw) : p.z;
-    return undefined;
+      if (p.under && x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y)) {
+        base = typeof p.z === 'function' ? p.z(x, y, raw) : p.z;
+        break;
+      }
+    for (const p of pads)
+      if (!p.under && x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y))
+        return typeof p.z === 'function' ? p.z(x, y, base !== undefined ? base : raw) : p.z;
+    return base;
   }
   S.setPads = (id, list) => {
     for (let i = pads.length - 1; i >= 0; i--) if (pads[i].id === id) pads.splice(i, 1);
