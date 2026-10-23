@@ -20,6 +20,7 @@ css/dorf.css
 css/winde.css
 css/schleusingen.css
 css/amt.css
+css/gartenplaner.css
 header.html
 panel_3d.html
 menu.html
