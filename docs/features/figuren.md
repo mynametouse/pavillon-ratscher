@@ -10,7 +10,7 @@ Wahl im Menü → Spiel → „Spielfigur“ (`#figseg`), gespeichert in `pav-fi
 |---|---|---|---|---|
 | Falko | Rocketbox `Professions/Delivery_Male_01` (bisherige Figur, unverändert) | dto. | `pclips_m` | – |
 | Sarah | `Adults/Female_Adult_04` – die bisherige Frau: Gesicht, Haut, Ohrringe, Lederjacke, Cargohose, Stiefel bleiben | dto., nur die Haare neu: die gewellten Locken bis zur Schulter von `Adults/Female_Party_01`, brünett gefärbt (auch die eigenen aufgemalten Haare und die Brauen); der eigene Dutt fällt weg | `pclips_f` | Sarah ist eine echte Person: nur geändert, was Falko wollte (brünett, Locken) |
-| Christoph | `Adults/Male_Adult_09`: dunkles T-Shirt, Jeans (Tattoo entfernt), Arme, Schultern, Brust etwas kräftiger | `Professions/Sports_Male_01`: kurze braune Haare, leichter Bart | `pclips_m` | 1,5 cm kleiner als Falko; Schildmütze und Ohrhörer (`figHeadwear` in `game/avatar.js`) |
+| Christoph | `Adults/Male_Adult_09`: dunkles T-Shirt, Jeans (Tattoo entfernt), Arme, Schultern, Brust etwas kräftiger | `Professions/Sports_Male_01`: kurze braune Haare, leichter Bart | `pclips_m` | gut 1 cm kleiner als Falko (Kopf 1,2 cm tiefer); Schildmütze und Ohrhörer (`figHeadwear` in `game/avatar.js`) |
 
 Alle erwachsenen Rocketbox-Frauen teilen ein Skelett, alle Männer ein anderes – deshalb passen Kopf, Haare und Körper verschiedener
 Figuren zusammen und die Bewegungen der bisherigen Figuren ohne Änderung. Sarahs neue Haare: die Dreiecke des Spenderkopfs, die als Haar
@@ -19,7 +19,7 @@ Streuhaare); kleine Inseln unter 10 Dreiecken fallen weg. Lizenz MIT (Microsoft)
 
 - **Mütze und Ohrhörer** werden beim Laden aus den Kopf-Punkten der Figur gebaut, im Raum des Kopfknochens: sie sitzen in jeder Haltung.
   Die Mütze fällt unter dem Forsthelm und dem Kapselgehörschutz weg, die Ohrhörer bei jedem Gehörschutz; sonst sind sie „manchmal“
-  drin (einige Minuten an, einige aus). Test-Haken: `AVATAR.buds(true|false|null)`.
+  drin (einige Minuten an, einige aus); im Gespräch mit einem Nachbarn nimmt er sie heraus. Test-Haken: `AVATAR.buds(true|false|null)`.
 - Schutzausrüstung (Brille, Maske, Gehörschutz, Forsthelm, Forstkleidung) wirkt auf alle drei Figuren. Unter dem Forsthelm drückt der
   Vertex-Shader die Haare oberhalb des Helmrands in die Schale (`helmHair`) – Sarahs Locken standen sonst durch den Helm.
 
@@ -51,3 +51,8 @@ bash tools/browser_lock.sh python3 viz3/test/run.py --port 8972 --serve figuren
 `viz3/test/figuren.py`: Menü, gespeicherter alter Wert `f`, eigene Modelle, Größen, Mütze über dem Kopf (stehen, gehen, hocken), Ausrüstung;
 Bilder aller Figuren von vorn, der Seite und hinten nah und ganz, stehend, gehend, hockend → `out/figuren/`. Läuft bei jedem Push auf
 `feat/figuren` in GitHub Actions (`viz3/extra/figuren/tests.txt`).
+
+## Offen
+
+- Sarahs Stiefel haben (wie bei der bisherigen Frau) einen kleinen Absatz; Rocketbox hat keine flachen Stiefel zu dieser Hose.
+- Die neuen Haare sind gewellte Locken bis zur Schulter (aus Rocketbox); engere Locken bräuchten ein anderes Haarmodell.
