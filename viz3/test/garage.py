@@ -144,7 +144,8 @@ with lib.browser() as b:
         ck('pushed out through the door to the north', m['y'] > 5.0 and r['y'] > 3.6, {'m': m, 'p': r})
         # the figure pushing it, seen from behind (third person; GAME.view would move the walker – only the view turns here)
         E("CAM3.want = true; GAME.P.yaw = GPLAY.M.az; GAME.P.pitch = -16; GAME.step(1.0)"); shot('maeher_schieben')
-        E("CAM3.want = false; GAME.P.pitch = -10; GAME.step(0.1)")
+        E("CAM3.want = false; GAME.P.pitch = -28; GAME.step(0.2)"); shot('maeher_ich_sicht')
+        E("GAME.P.pitch = -10; GAME.step(0.1)")
         # turning with the view: the heading follows
         E("(() => { GAME.P.yaw = GPLAY.M.az + 60; })(); GAME.step(1.2)")
         m2 = J("__G.m()"); ck('the mower turns with the view', abs(((m2['az'] - m['az'] + 540) % 360) - 180) > 40, [m['az'], m2['az']])

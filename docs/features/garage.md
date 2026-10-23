@@ -17,7 +17,7 @@ den Rasenmäher herausholen und den Rasen mähen, Werkzeug in den Regalen, Benzi
 | **Stromaggregat an der Werkstatt läuft mit Benzin**: Tank 12 l, leert sich, solange Maschinen laufen (1,1 l/h); leer bleiben die Maschinen aus; Anzeige „Stromaggregat (Benzin) · Tank …“, mit dem Kanister „Aggregat tanken“ | `garden/garage_play.js`, Beschriftung `garden/workshop.js` |
 | **Huberts Dieselkanister** (jetzt olivgrün, der rote ist Benzin) steht in der alten Garage (Phase 0) bzw. in der Garage am Südende (ab Phase 1); Text der Aufgabe und Huberts Antworten (als Untertitel) nennen die Garage; durch das geschlossene Tor nimmt man nichts | `game/quests.js` (Diesel-Teile), `GARAGE.home` |
 | Wechselt die Bauphase, ziehen Mäher und Kanister mit um, wenn sie an ihrem Platz standen (oder auf der Platte der alten Garage) | `garden/garage_play.js` (`onPhase`) |
-| Sprungziel `garage`, Startsituation `?szenario=garage` (Bauphase 0, vor dem Tor), drinnen „innen“ (`KERN.inside`) | `garden/garage_play.js` |
+| Sprungziel `garage`, Startsituation `?szenario=garage` (Bauphase 0, vor dem Tor; im Menü unter „Szenen“), drinnen „innen“ (`KERN.inside`); beim ersten Besuch ein Gedanke („Die alte Blechgarage – zwei Schiebetore …“) | `garden/garage_play.js` |
 | Gespeichert: `pav-garage-v1` (Tore, Mäher: Ort, Richtung, Tank; Kanister: Ort, Inhalt; Aggregat-Tank; Licht; gemähter Rasen als Raster 0,25 m mit Stunden seit dem Mähen und Streifenrichtung, lauflängenkodiert) | `core/save.js` (eine Zeile), `garden/garage_play.js` |
 
 Ereignisse: `garage:start` beim Anspringen, `garage:gemaeht` `{ m2, gesamt }` beim Abstellen (und alle 10 m² während des Mähens, dann mit
@@ -49,4 +49,8 @@ Bilder in `out/garage/`. Bei GitHub läuft `garage` bei jedem Push auf `feat/gar
   `garden/garage_play.js`; das Punktlicht der Garage ist geliehen (Abschnitt 1, „Punktlichter“).
 - Die Aufnahmen `hubert_t_q_hilfe` / `hubert_t_q_kanister` (sie nannten das Aggregat) werden nicht mehr gespielt; neu vertonen wäre
   `tools/voices/lines3.py`.
-- Die versetzte Garage hat den Gebäudeschlüssel `garage` behalten (gleicher Drehpunkt): gespeicherte Verschiebungen gelten weiter.
+- Die versetzte Garage hat den Gebäudeschlüssel `garage` behalten (gleicher Drehpunkt): gespeicherte Verschiebungen gelten weiter. Ihre Wände
+  sind jetzt echte Kollisionen (Typ `wall`); der alte Kasten hatte einen `house`-Kasten, durch den Fahrzeuge fuhren.
+- Takt: `KERN.tick(…, 'garage')` (läuft nach der Gehphysik und vor `window.TICKS` – die Spielfigur sieht so schon, wo der Mäher sie hält).
+- Durch das geschlossene Tor nimmt man nur in der alten Garage (Phase 0) nichts; an der Garage im Süden bleiben Kanister und Mäher wie bisher
+  überall in Reichweite (die Aufgaben-Tests der Nachbarn holen den Dieselkanister von irgendwo um sie herum).
