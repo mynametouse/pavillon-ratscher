@@ -748,10 +748,14 @@ export const VESSRA = (() => {
     const w = Math.max(0, Math.min(1, Math.min(x - ZONE[0], ZONE[2] - x, y - ZONE[1], ZONE[3] - y) / 100));
     return z + w * (c - z);
   };
-  // the sales yard of the nursery is level gravel: a plane fitted to the ground over it (u −13…26 m along the street, w 0.5…31 m into the
-  // grounds; slope at most 1 %), blended into the ground around it over 4 m – another pad, before the zone's
+  // the sales yard of the nursery: one smooth plane instead of the bumps of the surface model – fitted to the ground over it (u −13…26 m
+  // along the street, w 0.5…31 m into the grounds; the hillside rises some 10 % both ways, the plane at most 8 %), pinned at the gate to
+  // the street in front of it, so a car drives in from the Schulstraße at the street's own grade (Kern/fahrt 23.10.: the level plane of
+  // e561492 stood 1.8 m above the gate, a 40–57 % ramp); blended linearly into the ground around it – 4 m towards the street, 10 m on the
+  // other sides. Another pad, before the zone's
   const YARD = [-13, 0.5, 26, 31],
-    YM = 4;
+    YF = 4,
+    YS = 10;
   let yd = null;
   function yardPlane(F) {
     const pts = [];
@@ -777,8 +781,14 @@ export const VESSRA = (() => {
       uz += (u - uc) * (z - zc);
       wz += (w - wc) * (z - zc);
     }
-    const cl = v => Math.max(-0.01, Math.min(0.01, v)); // nearly level: the beds lie flat on it
-    return { G: F.G, t: F.t, wv: F.wv, uc, wc, a: zc, b: cl(uz / (uu || 1)), c: cl(wz / (ww || 1)) };
+    const cl = v => Math.max(-0.08, Math.min(0.08, v)),
+      b = cl(uz / (uu || 1)),
+      c = cl(wz / (ww || 1)),
+      xs = F.G[0] + F.wv[0] * (YARD[1] - YF),
+      ys = F.G[1] + F.wv[1] * (YARD[1] - YF),
+      zs = gz(xs, ys),
+      z0 = zs === undefined || zs === null ? zc : adj(xs, ys, zs);
+    return { G: F.G, t: F.t, wv: F.wv, uc, wc, a: z0 - b * (0 - uc) - c * (YARD[1] - wc), b, c };
   }
   const yardAdj = (x, y, z) => {
     if (!yd) return z;
@@ -786,15 +796,17 @@ export const VESSRA = (() => {
       dy = y - yd.G[1],
       u = dx * yd.t[0] + dy * yd.t[1],
       w = dx * yd.wv[0] + dy * yd.wv[1],
-      dd = Math.hypot(Math.max(YARD[0] - u, 0, u - YARD[2]), Math.max(YARD[1] - w, 0, w - YARD[3]));
-    if (dd >= YM) return z;
+      dn = Math.hypot(
+        Math.max(YARD[0] - u, 0, u - YARD[2]) / YS,
+        Math.max(YARD[1] - w, 0) / YF,
+        Math.max(w - YARD[3], 0) / YS
+      );
+    if (dn >= 1) return z;
     const pz =
-        yd.a +
-        yd.b * (Math.max(YARD[0], Math.min(YARD[2], u)) - yd.uc) +
-        yd.c * (Math.max(YARD[1], Math.min(YARD[3], w)) - yd.wc),
-      s2 = dd / YM,
-      k = s2 * s2 * (3 - 2 * s2);
-    return pz + (z - pz) * k;
+      yd.a +
+      yd.b * (Math.max(YARD[0], Math.min(YARD[2], u)) - yd.uc) +
+      yd.c * (Math.max(YARD[1], Math.min(YARD[3], w)) - yd.wc);
+    return pz + (z - pz) * dn;
   };
   const ground = (x, y) => {
     const z = gz && gz(x, y);
@@ -1614,10 +1626,10 @@ export const VESSRA = (() => {
         const Q = (u, w) => [yd.G[0] + yd.t[0] * u + yd.wv[0] * w, yd.G[1] + yd.t[1] * u + yd.wv[1] * w];
         pads.push({
           poly: [
-            ...Q(YARD[0] - YM, YARD[1] - YM),
-            ...Q(YARD[2] + YM, YARD[1] - YM),
-            ...Q(YARD[2] + YM, YARD[3] + YM),
-            ...Q(YARD[0] - YM, YARD[3] + YM),
+            ...Q(YARD[0] - YS, YARD[1] - YF),
+            ...Q(YARD[2] + YS, YARD[1] - YF),
+            ...Q(YARD[2] + YS, YARD[3] + YS),
+            ...Q(YARD[0] - YS, YARD[3] + YS),
           ],
           z: (x, y, raw) => yardAdj(x, y, adj(x, y, raw)),
         });
@@ -2137,6 +2149,30 @@ export const VESSRA = (() => {
         const [x, y, z] = Yz(u, w, dz);
         K.box(x, y, z, su, sw, sz, rot + rr, col);
       },
+      // a flat box lying on the (sloping) yard: its corners at the ground + d0 below and + d1 on top
+      slab = (u0, w0, u1, w1, d0, d1, col) => {
+        const C = [
+            [u0, w0],
+            [u1, w0],
+            [u1, w1],
+            [u0, w1],
+          ].map(([u, w]) => Yz(u, w)),
+          Bt = C.map(p => [p[0], p[1], p[2] + d0]),
+          T = C.map(p => [p[0], p[1], p[2] + d1]),
+          [mx, my] = Y((u0 + u1) / 2, (w0 + w1) / 2),
+          uv0 = () => [0, 0];
+        poly(K, T, [0, 0, 1], col, uv0);
+        for (let k = 0; k < 4; k++) {
+          const k2 = (k + 1) % 4;
+          poly(
+            K,
+            [Bt[k], Bt[k2], T[k2], T[k]],
+            [(C[k][0] + C[k2][0]) / 2 - mx, (C[k][1] + C[k2][1]) / 2 - my, 0],
+            col,
+            uv0
+          );
+        }
+      },
       POT = linC([0.06, 0.06, 0.065]),
       WOOD = linC([0.46, 0.33, 0.2]),
       WOODD = linC([0.3, 0.2, 0.12]),
@@ -2150,7 +2186,7 @@ export const VESSRA = (() => {
       hw1 = 15.5;
     {
       const zH = 2.5;
-      box((hu0 + hu1) / 2, (hw0 + hw1) / 2, -0.3, hu1 - hu0, hw1 - hw0, 0.45, linC([0.45, 0.44, 0.42])); // base
+      box((hu0 + hu1) / 2, (hw0 + hw1) / 2, -0.7, hu1 - hu0, hw1 - hw0, 0.85, linC([0.45, 0.44, 0.42])); // base (deep: the yard slopes)
       // walls: the counter side (u = hu1) has a window opening between 0.95 and 2.0 m
       box((hu0 + hu1) / 2, hw0 + 0.06, 0.1, hu1 - hu0, 0.12, zH, WOOD);
       box((hu0 + hu1) / 2, hw1 - 0.06, 0.1, hu1 - hu0, 0.12, zH + 0.5, WOOD);
@@ -2240,9 +2276,10 @@ export const VESSRA = (() => {
       const wm = (A.w0 + A.w1) / 2,
         [cx, cy] = Y((U0 + U1) / 2, wm),
         slots = [];
-      box((U0 + U1) / 2, wm, -0.05, U1 - U0, A.w1 - A.w0, 0.08, CLOTH);
-      for (const w of [A.w0, A.w1]) box((U0 + U1) / 2, w, -0.05, U1 - U0 + 0.1, 0.05, 0.16, WOOD);
-      for (const u of [U0, U1]) box(u, wm, -0.05, 0.05, A.w1 - A.w0, 0.16, WOOD);
+      // on the yard's slope: the cloth and the edge boards follow the ground
+      slab(U0, A.w0, U1, A.w1, -0.05, 0.03, CLOTH);
+      for (const w of [A.w0, A.w1]) slab(U0 - 0.05, w - 0.025, U1 + 0.05, w + 0.025, -0.05, 0.11, WOOD);
+      for (const u of [U0, U1]) slab(u - 0.025, A.w0, u + 0.025, A.w1, -0.05, 0.11, WOOD);
       for (let r = 0; r < A.rows; r++) {
         const w = A.w0 + ((r + 0.5) * (A.w1 - A.w0)) / A.rows;
         for (let u = U0 + A.step / 2; u < U1 - A.step / 4; u += A.step) {

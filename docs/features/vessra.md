@@ -53,8 +53,11 @@ Stand 23.10.2026 (Hilfs-Agent `vessra`, Branch `feat/vessra`). Detailzone aus `c
   nördlich **fünf Beete** nach Art – Obstgehölze (Bäumchen im Container, angepfählt), Beerenobst, Ziergehölze (Herbstlaub: rot, gelb,
   panaschiert), Kletterpflanzen (am Bambus-Dreibein), Bodendecker – mit Bändchengewebe, Brettereinfassung und Schild; die Gebäude der
   Baumschule wie in OSM; westlich davon **Jungbäume in Reihen** auf dem Feld (rund 700, die Wege bleiben frei). Im Hof zwei
-  Pflanzenwagen mit drei Etagen Töpfen, hinter der Hütte eine Palette Blumenerde und Stapel leerer Container. Der Hof ist eben (eine
-  Ebene, höchstens 1 % Gefälle, 4 m Übergang – ebenfalls ein Polster). Schild „Baumschule Kammbach“ am Tor und an der Hütte. Ohne Fotos
+  Pflanzenwagen mit drei Etagen Töpfen, hinter der Hütte eine Palette Blumenerde und Stapel leerer Container. Der Hof ist eine glatte
+  Ebene statt der Buckel des Oberflächenmodells (der Hang steigt hier rund 10 % in beide Richtungen, die Ebene höchstens 8 %), am Tor auf
+  Straßenhöhe festgelegt – ein Auto fährt von der Schulstraße mit deren eigener Neigung hinein (Fehlerbericht der Fahrt 23.10.: die ebene
+  Fläche von e561492 lag am Tor 1,8 m zu hoch); Übergang 4 m zur Straße, 10 m an den anderen Seiten, ebenfalls ein Polster. Beete,
+  Tuch und Randbretter folgen der Neigung. Schild „Baumschule Kammbach“ am Tor und an der Hütte. Ohne Fotos
   vom Gelände (nur von der Straße aus): generisch.
 - **Straßenschilder**: je benannter Straße ein weißes Namensschild mit schwarzer Schrift an der Einmündung, die dem Klostertor am
   nächsten ist (6: Schleusinger Straße, Schulstraße, Gartenstraße, Fabrikstraße, Neuhofer Straße, Zwick), beidseitig lesbar.
@@ -114,7 +117,7 @@ gebaut; `VESSRA.baumschule` (sonst `null`):
 - Ohne veröffentlichte Kacheln (z. B. lokaler Testserver ohne `dist/welt-test/zonen/vessra/`) bleibt der Ort auf dem 120-m-Gelände von
   `world/ratscher.js` stehen (`VESSRA.status().noTiles`).
 - Solange die Zone gebaut ist, setzt sie zwei Polster (`WELT.setPads('vessra', …)`): den Boden neben den Autostraßen abgesenkt und den
-  Hof der Baumschule eben. Die Fahrbahn selbst bleibt, wie die Pipeline sie geschnitten hat; Fahrzeuge fahren auf denselben Höhen
+  Hof der Baumschule als glatte Ebene, am Tor auf Straßenhöhe (Weg Schulstraße → Tor → `parkplatz` höchstens 15 % steil, geprüft). Die Fahrbahn selbst bleibt, wie die Pipeline sie geschnitten hat; Fahrzeuge fahren auf denselben Höhen
   (`KERN.ground`), beim Bauen der Zone (950 m) werden die geladenen Kacheln einmal neu gerechnet.
 - `welt/welt.js` gehört heute `feat/vessra`; Änderungen der Fahrt bitte nur an markierten Zeilen (`// feat/fahrt`).
 
@@ -134,6 +137,8 @@ Ermell 2021/2022, Tilman2007 2025), keine Bilder im Repo.
   Torkirche, zwei Panoramax-Stellen an der Schleusinger Straße, Baumschule nah und von oben, Ort von oben), Nacht (Laternen), Freigeben,
   höchstens 6 neue Shader-Programme, Texturen je Shader. Abschnitte einzeln: `vessra:start,load,walk,kirche,baumschule,names,shots,night,free`.
   Bei GitHub: `feat.yml` (Artefakt „out“).
+- `… --serve vessra_szenario` – startet mit `?szenario=baumschule`: die Spielfigur vor dem Tor der Baumschule, die Zone baut sich um sie,
+  Boden, durchs Tor in den Verkaufshof, Bild `m_szenario_baumschule`. Die Kacheln holen beide Tests über `viz3/test/vessra_tiles.py`.
 - Kacheln neu bauen: Push auf `feat/vessra` mit Änderungen an `tools/welt/*.py` (außer `zone_*.py`, `test_welt.py`) oder an
   `.github/workflows/welt-vessra.yml`. Zonendaten: `python3 -I tools/welt/zone_vessra.py --raw <Cache-Ordner>` (OSM-API, Luftbild per WMS)
   → `viz3/extra/vessra/dist/vessra/ort.json`.
