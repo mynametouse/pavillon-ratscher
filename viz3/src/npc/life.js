@@ -345,7 +345,7 @@ export const LIFE = (() => {
       h.userData.f = { t: 0, a: j ? 0.9 : -2.2 + Math.random() * 0.4, x: bx, y: by };
     });
     halvesT = 6;
-    markDirty(true);
+    markDirty();
   }
   function tickHalves(dt) {
     if (halvesT <= 0) return;
@@ -403,7 +403,7 @@ export const LIFE = (() => {
         yield* hold(w, 1.3, 'place');
         hand(w, null);
         HOF.fillHut(hut.fill >= 0.99 ? 0.3 : hut.fill + 0.03); // a full hut: he starts it again (the dry wood went into the stove)
-        markDirty(true);
+        markDirty();
         yield* hold(w, 0.6);
       }
     } finally {
@@ -837,9 +837,11 @@ export const LIFE = (() => {
         MS.y += Math.cos(MS.az) * mv;
         MOWER.roll(mv);
         mowerAt();
+        w.v = mv / DT; // (npc/npc.js draws a moving neighbour)
         if (cut) swathTo();
         audio.moveLoop('mower', MS.x, MS.y);
       }
+      if (hold_) w.v = 0;
       seatOn(w);
       w.place();
       w.fig.anim(DT, 0);

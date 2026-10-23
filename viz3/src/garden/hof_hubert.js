@@ -8,7 +8,7 @@
 // (game/quests.js). Site coordinates: x east, y north, z up (metres).
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
-import { ANISO, patchSV, plain } from '../core/assets.js';
+import { ANISO, markDirty, patchSV, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { B, beam, COL, cyl, siteUV } from '../core/geo.js';
 import { S0 } from './env.js';
@@ -531,6 +531,7 @@ HOF.fillHut = f => {
   hut.fill = Math.max(0.05, Math.min(1, f));
   HOF.stack.scale.y = 1.62 * hut.fill;
   stackUV(HOF.stack.geometry, HOF.stack.scale.y, HOF.stackHut);
+  markDirty();
 };
 // ---- the wood yard: long logs on sleepers, a sawhorse with a log, the chopping block, rounds and split wood ----
 {
