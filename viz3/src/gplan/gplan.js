@@ -240,7 +240,7 @@ export const GPLAN = (() => {
   function parts(it, p, age) {
     if (!it.sch && !planted(it)) return null;
     const L = M.plantSteps(p),
-      did = k => planted(it) || (L.includes(k) && it.sch > L.indexOf(k)),
+      did = k => L.includes(k) && (planted(it) || it.sch > L.indexOf(k)),
       open = did('loch') && !did('pflanzen'),
       young = a => age === null || age < a;
     return {

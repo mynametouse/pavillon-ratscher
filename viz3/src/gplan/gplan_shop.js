@@ -122,7 +122,9 @@ export const GPSHOP = (() => {
       y = K.y + r[1] * u + f[1] * w;
     return [x, y, VESSRA.gz(x, y)];
   }
-  // delivered: by the garden gate, a little into the garden (towards the pavilion), in rows of five
+  // delivered: by the garden gate, a little into the garden (towards the pavilion) in rows of five, the first row where all five stand
+  // in the garden and clear of the brook's ditch
+  let torW = null;
   function torPos(j) {
     const E = S0.entrance || [-8.86, 39.08],
       dx = 2.95 - E[0],
@@ -130,9 +132,18 @@ export const GPSHOP = (() => {
       L = Math.hypot(dx, dy) || 1,
       f = [dx / L, dy / L],
       r = [f[1], -f[0]],
-      u = ((j % 5) - 2) * 0.6,
-      w = 2.2 + Math.floor(j / 5) * 0.6;
-    return [E[0] + f[0] * w + r[0] * u, E[1] + f[1] * w + r[1] * u];
+      at = (u, w) => [E[0] + f[0] * w + r[0] * u, E[1] + f[1] * w + r[1] * u];
+    if (torW === null) {
+      const S1 = GPLAN.site(),
+        dry = ([x, y]) => S1.brook(x, y) > S1.ditch / 2 + 1 && GPLAN.RULES.inPoly(x, y, S1.boundary);
+      torW = 2.2;
+      for (let w = 2.2; w < 20; w += 0.5)
+        if ([-2, -1, 0, 1, 2].every(k => dry(at(k * 0.6, w)) && dry(at(k * 0.6, w + 0.6)))) {
+          torW = w;
+          break;
+        }
+    }
+    return at(((j % 5) - 2) * 0.6, torW + Math.floor(j / 5) * 0.6);
   }
   // the car's load space (car.js model.cargo, the car's frame: x right, y ahead, z up): small plants upright in rows, plants up to 2.2 m
   // lying (the pot at the tailgate, the crown ahead between the folded seats); null for one that does not fit
@@ -416,10 +427,8 @@ export const GPSHOP = (() => {
       let q;
       if (loc === 'auto') q = VEH.toW(v, -0.6 + (j % 3) * 0.6, v.model.cargo.y0 - 0.9 - Math.floor(j / 3) * 0.6);
       else {
-        const s = TRAILER.st,
-          r = [Math.cos(s.psi), -Math.sin(s.psi)],
-          f = [Math.sin(s.psi), Math.cos(s.psi)];
-        q = [s.x + r[0] * 1.6 + f[0] * (j * 0.6 - 1), s.y + r[1] * 1.6 + f[1] * (j * 0.6 - 1)];
+        // beside the trailer's bed, on its right
+        q = TRAILER.toW(TRAILER.bed.hw + 0.9, TRAILER.bed.y0 + 0.4 + j * 0.6);
       }
       c.loc = 'boden';
       c.x = Math.round(q[0] * 100) / 100;
@@ -544,7 +553,12 @@ export const GPSHOP = (() => {
     let dirty = false;
     if (near !== S.near) {
       S.near = near;
-      if (near) GPLAN.loadData().then(() => refresh());
+      // at the nursery with plants to buy: the task starts here too, if the shopping list was not looked at
+      if (near)
+        GPLAN.loadData().then(() => {
+          refresh();
+          if (S.shelf.length) KERN.emit('gplan:einkaufsliste', { n: S.shelf.length, at: 'baumschule' });
+        });
       dirty = true;
     }
     // the delivery comes the next morning at seven

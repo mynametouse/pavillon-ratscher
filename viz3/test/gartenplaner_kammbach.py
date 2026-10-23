@@ -123,6 +123,7 @@ with lib.browser() as b:
         E("GPSHOP.refresh(); GAME.step(0.1); GAME.shot()"); pB = E("GAME.R.info.programs.length")
         ck('no new shader programs for the plants in containers at the nursery', pB <= pA, f'{pA} -> {pB}')
         lib.shot(pg, OUT, 'a_beet')
+        E("GAME.step(0.6)")
         t = J("TASKS.state('gplan-kaufen')")
         ck('the task: at the nursery (step 2: choose the plants)', t and t['i'] >= 1, json.dumps(t))
         # ---- „Aussuchen“ with the action button, each container ----
@@ -189,7 +190,10 @@ with lib.browser() as b:
         tor = J("GPLAN.state.kuebel.filter(c => c.loc === 'tor')")
         n_tor = 1 if G['car'] else 4
         ck('the next morning the delivery stands by the garden gate' + (' (the walnut)' if G['car'] else ''), len(tor) == n_tor and (not G['car'] or tor[0]['id'] == ids['nut']) and all(math.hypot(c['x'] + 8.86, c['y'] - 39.08) < 6 for c in tor), json.dumps(tor))
-        E("GAME.view(-8.4, 36.6, KERN.ground(-8.4, 36.6) + 1.7, 160, -20, 62); GAME.step(0.2)"); lib.shot(pg, OUT, 'd_gartentor')
+        # a picture of the delivery: from a few metres inside the garden, looking back at the gate
+        E("""(() => { const T = GPLAN.state.kuebel.filter(c => c.loc === 'tor'); if (!T.length) return; const cx = T.reduce((s, c) => s + c.x, 0) / T.length,
+          cy = T.reduce((s, c) => s + c.y, 0) / T.length, E = [-8.86, 39.08], f = [cx - E[0], cy - E[1]], L = Math.hypot(f[0], f[1]) || 1, x = cx + f[0] / L * 4, y = cy + f[1] / L * 4;
+          GAME.view(x, y, KERN.ground(x, y) + 1.7, Math.atan2(cx - x, cy - y) * 180 / Math.PI, -18, 62); GAME.step(0.2); })()"""); lib.shot(pg, OUT, 'd_gartentor')
         t = J("TASKS.state('gplan-kaufen')")
         ck('the task: all bought plants at home (step 5: plant them)', t and t['i'] == 4, json.dumps(t))
         # ---- carrying each to its hole and planting it ----
