@@ -1124,6 +1124,20 @@ export const LIFE = (() => {
       ['h', 'Bin ich doch letztes Jahr auch. Hat keiner was gesagt.'],
       ['r', 'Weil keiner sich getraut hat.'],
     ],
+    [
+      ['h', 'Deine Frieda war wieder in meinem Kohl.'],
+      ['r', 'Die mag deinen Kohl eben. Das ist ein Kompliment.'],
+      ['h', 'Dann soll sie ihn bezahlen.'],
+      ['r', 'Ich bring dir Käse vorbei. Von Frieda persönlich.'],
+      ['h', 'Hm. Na gut.'],
+    ],
+    [
+      ['r', 'Der Junge drüben macht jetzt Schneidebretter. Stirnholz, aus Eiche.'],
+      ['h', 'Stirnholz? Da muss man genau arbeiten.'],
+      ['r', 'Ich hab eins bestellt. Für die Küche.'],
+      ['h', 'Wenn es was taugt, will ich auch eins.'],
+      ['r', 'Sag ihm das selber. Der beißt nicht.'],
+    ],
   ];
   const TALK = { on: false, i: 0, line: 0, t: 0, gap: 4, n: 0 };
   function hearing() {
