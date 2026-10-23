@@ -205,6 +205,7 @@ with lib.browser() as b:
         n0 = E("GPLAN.state.items.length"); E("PLAY.primary(); GAME.step(0.2)")
         it = J("GPLAN.state.items[GPLAN.state.items.length - 1]")
         ck('on site: the plant stands 2.2 m in front of the walker', E("GPLAN.state.items.length") == n0 + 1 and abs(it['x'] - (-6 + 2.2)) < 0.1 and abs(it['y'] - (-12)) < 0.1, json.dumps(it))
+        ck('undo takes the plant back', E("GPLAN.undo()") and E("GPLAN.state.items.length") == n0, str(E("GPLAN.state.items.length")))
         ck('on site: walking, the panel open in its small form', J("({ m: GAME.P.mode, site: document.getElementById('gplan').classList.contains('site'), open: !document.getElementById('gplan').hidden })") == {'m': 'walk', 'site': True, 'open': True}, '')
         page_shot(pg, 'g_vor_ort')
         E("GPLAN.siteMode(false); GAME.step(0.1)")

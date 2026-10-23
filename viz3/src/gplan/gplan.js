@@ -261,8 +261,30 @@ export const GPLAN = (() => {
     if (P.mode === 'top' && SITEPLAN.S.on) SITEPLAN.drawOverlay();
     markDirty();
   };
+  // undo: the plan's items before each change (setting, moving, deleting, a guild, the planting year), at most 40
+  const UNDO = [];
+  function snap() {
+    UNDO.push(JSON.stringify(ST.items));
+    if (UNDO.length > 40) UNDO.shift();
+    renderUndo();
+  }
+  function undo() {
+    if (!UNDO.length) return false;
+    ST.items = JSON.parse(UNDO.pop());
+    U.sel = -1;
+    U.drag = null;
+    changed();
+    renderSel();
+    renderUndo();
+    return true;
+  }
+  function renderUndo() {
+    const b = U.el && q$('[data-gp="undo"]');
+    if (b) b.disabled = !UNDO.length;
+  }
   function add(id, x, y, o = {}) {
     if (!D.db.byId.get(id)) return -1;
+    if (!o.quiet) snap();
     ST.items.push({ id, x: r2(x), y: r2(y), jahr: o.jahr || YEAR });
     if (!o.quiet) {
       U.sel = ST.items.length - 1;
@@ -273,6 +295,7 @@ export const GPLAN = (() => {
   }
   function remove(i) {
     if (i < 0 || i >= ST.items.length) return;
+    snap();
     ST.items.splice(i, 1);
     U.sel = -1;
     changed();
@@ -287,6 +310,7 @@ export const GPLAN = (() => {
     const g = D.db.guilds.find(q => q.id === gid);
     if (!g) return 0;
     const L = M.guildPlace(g, D.db, x, y);
+    snap();
     const i0 = ST.items.length;
     for (const q of L) add(q.id, q.x, q.y, { quiet: true });
     U.sel = i0;
@@ -450,6 +474,7 @@ export const GPLAN = (() => {
       const g = U.drag;
       if (!g || !ST.items[g.i]) return;
       const it = ST.items[g.i];
+      if (!g.moved) snap();
       it.x = r2(gp[0] + g.dx);
       it.y = r2(gp[1] + g.dy);
       g.moved = true;
@@ -505,6 +530,7 @@ export const GPLAN = (() => {
     el.innerHTML =
       '<header><h3>Garten planen</h3><span class="gp-badge" hidden title="Die echten Pflanzendaten fehlen noch – Platzhalter, keine echten Werte">Testdaten</span>' +
       '<button type="button" class="gp-mode" data-gp="site" title="Im Garten gehen und die Pflanze vor dir setzen">Vor Ort</button>' +
+      '<button type="button" class="gp-undo" data-gp="undo" title="Rückgängig (Strg+Z)" aria-label="Rückgängig" disabled>↶</button>' +
       '<button type="button" class="gp-fold" data-gp="fold" aria-label="Einklappen" aria-expanded="true">▾</button>' +
       '<button type="button" class="x" data-gp="close" aria-label="Schließen">×</button></header>' +
       '<div class="gp-ages"><span>Alter</span><div class="gp-seg">' +
@@ -856,6 +882,7 @@ export const GPLAN = (() => {
   function act(a) {
     const it = ST.items[U.sel];
     if (a === 'close') close();
+    else if (a === 'undo') undo();
     else if (a === 'fold') {
       const f = U.el.classList.toggle('folded');
       q$('[data-gp="fold"]').setAttribute('aria-expanded', f ? 'false' : 'true');
@@ -864,6 +891,7 @@ export const GPLAN = (() => {
     else if (a === 'desel') select(-1);
     else if (a === 'del' && it) remove(U.sel);
     else if ((a === 'y-' || a === 'y+') && it) {
+      snap();
       it.jahr = Math.max(YEAR - 30, Math.min(YEAR + 30, it.jahr + (a === 'y+' ? 1 : -1)));
       changed();
       renderSel();
@@ -946,6 +974,7 @@ export const GPLAN = (() => {
     const b = $('gplanbtn');
     if (b) b.setAttribute('aria-pressed', 'true');
     renderAges();
+    renderUndo();
     renderBody();
     if (U.mode === 'plan') {
       if (P.mode !== 'top') go('draufsicht');
@@ -1034,6 +1063,7 @@ export const GPLAN = (() => {
   function moveHere() {
     const it = ST.items[U.sel];
     if (!it) return false;
+    snap();
     const [x, y] = front();
     it.x = r2(x);
     it.y = r2(y);
@@ -1096,6 +1126,19 @@ export const GPLAN = (() => {
   // a start situation: ?szenario=gartenplaner opens the planner over the garden (tests, the menu's „Direkt zu …“)
   KERN.scenario('gartenplaner', { label: 'Gartenplaner', order: 14, run: () => open() });
   // ---------------- keys, the menu entry, the frame tick, the start ----------------
+  // Strg+Z while the planner is open undoes the planner's last change first (before the plan view's own undo of buildings and fences)
+  window.addEventListener(
+    'keydown',
+    e => {
+      if (!U.open || !UNDO.length || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+      if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)) {
+        undo();
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    },
+    true
+  );
   window.addEventListener('keydown', e => {
     if (!U.open || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
     if ((e.key === 'Delete' || e.key === 'Backspace') && U.sel >= 0 && P.mode === 'top') {
@@ -1157,6 +1200,7 @@ export const GPLAN = (() => {
     placeHere,
     moveHere,
     probe,
+    undo,
     listText,
     frameGarden,
     site,

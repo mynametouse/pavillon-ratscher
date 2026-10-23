@@ -6,6 +6,7 @@
 #gplan header{display:flex;align-items:center;gap:6px;padding:10px 10px 6px 14px}
 #gplan h3{margin:0;font:700 16px/1.2 var(--f-display);flex:1;min-width:0}
 #gplan header button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:7px 10px;cursor:pointer}
+#gplan header .gp-undo{font-size:16px;padding:5px 10px}
 #gplan header .x,#gplan .gp-selh .x{border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);padding:2px 6px}
 #gplan .gp-badge{font:600 10.5px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:#7a4a00;background:#ffe1a3;border-radius:5px;padding:4px 6px}
 #gplan button{min-height:34px}

@@ -13,6 +13,8 @@ und die günstigen Teile von Meilenstein 4 (Berater, Gilden-Vorlagen, Listen). K
   ausgewachsen, Pflanzjahr (−/+), „Berater“ (Wuchs, Boden, Licht, Partner, Befruchtung, Blüte, Ernte, Pflege, Pflanzzeit, Kammbach),
   „Löschen“ (oder Entf). Im Plan: Kronen als Scheiben im gewählten Alter, Farbe nach Schicht, Stammpunkt; die ausgewählte Pflanze mit
   ausgewachsener Krone (gestrichelt) und ihrem Grenzabstand (Ring); rot umrandet = Warnung, gelb = Hinweis.
+- **↶ Rückgängig** (oder Strg+Z bei offenem Planer, vor dem Rückgängig der Draufsicht): Setzen, Verschieben, Löschen, Gilde, Pflanzjahr –
+  die letzten 40 Schritte.
 - **Alter**: „heute | 5 | 10 | 20 Jahre“ (Plan und 3D-Garten). **„im Garten: an/aus“** = die Einstellung „Geplante Pflanzen zeigen“: die
   geplanten Pflanzen stehen im 3D-Garten im gewählten Alter und zur Jahreszeit (mit offenem Planer dessen Monat, sonst das Datum der
   Spieluhr) – auch nach dem Schließen, so lässt sich durch den künftigen Garten gehen. Bäume ab 5 Jahren halten den Gehenden auf.
