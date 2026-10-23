@@ -1153,6 +1153,21 @@ export const VESSRA = (() => {
     block(0, uW, vM - vp, vM + vp, z + 5.3, zc, LIGHT, true); // over the passage (a flat vault)
     S.segs.push(...boxSegs(...Q(uW / 2, (vT0 + vM - vp) / 2), uW, vM - vp - vT0, a));
     S.segs.push(...boxSegs(...Q(uW / 2, (vM + vp + vT1) / 2), uW, vT1 - vM - vp, a));
+    // on the side of the nave the block is mixed rubble, grey and red (drone photo 2021 from the east), not the ashlar of the front
+    {
+      const MIX = linC([0.63, 0.5, 0.46]),
+        face = (v0, v1, z0, z1) =>
+          poly(
+            KS,
+            [Qz(uW + 0.02, v0, z0), Qz(uW + 0.02, v1, z0), Qz(uW + 0.02, v1, z1), Qz(uW + 0.02, v0, z1)],
+            [ex[0], ex[1], 0],
+            MIX,
+            p => [U(p[0], p[1])[1], p[2]]
+          );
+      face(vT0, vM - vp, zb, zc);
+      face(vM + vp, vT1, zb, zc);
+      face(vM - vp, vM + vp, z + 5.3, zc);
+    }
     // the portal: a round arch in a stepped frame over the passage, filled above the arch
     for (let k = 0; k < 7; k++) {
       const t0 = (k / 7) * Math.PI,
