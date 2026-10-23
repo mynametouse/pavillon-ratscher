@@ -334,6 +334,13 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   const xi0 = -hx + T,
     xi1 = hx - T,
     yi1 = hy - T;
+  // curtains that can be drawn ('Vorhänge zuziehen'): a pair along a wall, A = a0..a1 and B = b0..b1 with the window between a1 and b0; both
+  // panels slide to the middle of the window (registered as small jobs further down, once the rooms are known)
+  const drapes = [];
+  const drape = (key, run, A, B, meshes, at) => {
+    for (const me of meshes) me.userData.noMerge = true;
+    drapes.push({ key, run, A, B, m: (A[1] + B[0]) / 2, meshes, at });
+  };
   // ---- kitchen in the north-west corner (right after the front door): L of base units, butcher-block top, sink under the window,
   // a small enamel cooker by the door, open shelves, tiles, café curtains ----
   const KX = 1.8, // front of the north run (it runs along the front wall, x KX..xi1)
@@ -462,7 +469,9 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       if (st.k === 1 && st.t > 9) {
         st.k = 2;
         st.sound('whistle');
-        st.think('Das Teewasser kocht.');
+        st.think(
+          'Das Wasser kocht – der Dampf pfeift durch die Flöte. Schwarzer Tee mag es sprudelnd, grüner lieber etwas abgekühlt.'
+        );
       }
       steamM.opacity = st.k === 2 ? 0.13 + 0.06 * Math.sin(st.t * 5.3) : Math.max(0, steamM.opacity - dt * 0.3);
       return true;
@@ -622,7 +631,11 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       run: st => {
         st.k = st.k ? 0 : 1;
         st.t = 0;
-        if (st.k) st.think('Das Holz knistert – gleich wird es warm.');
+        st.think(
+          st.k
+            ? 'Unten zwei Scheite, obendrauf Anzündholz und ein Anzünder, von oben anzünden, Luftklappe auf – so brennt es sauber und raucht kaum. Das Holz knistert.'
+            : 'Kein Holz mehr nachlegen – die Glut hält den Ofen noch eine Weile warm.'
+        );
         st.lamp('ofen', !!st.k);
         st.dirty();
       },
@@ -644,8 +657,17 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   }
   picture(g, 'x', -1.85, yi1, 1.55, 0.46, 0.36, 0, '-y');
   picture(g, 'y', -2.0, xi0, 1.55, 0.3, 0.38, 1, '+x', MAT.black);
-  curtain(g, 'x', -1.62, -1.3, yi1 - 0.06, 0.98, 1.95, KM.curtainSage, '-y', 3, 0.03);
-  curtain(g, 'x', -0.6, -0.28, yi1 - 0.06, 0.98, 1.95, KM.curtainSage, '-y', 3, 0.03);
+  drape(
+    'sofa',
+    'x',
+    [-1.62, -1.3],
+    [-0.6, -0.28],
+    [
+      curtain(g, 'x', -1.62, -1.3, yi1 - 0.06, 0.98, 1.95, KM.curtainSage, '-y', 3, 0.03),
+      curtain(g, 'x', -0.6, -0.28, yi1 - 0.06, 0.98, 1.95, KM.curtainSage, '-y', 3, 0.03),
+    ],
+    [-0.95, yi1 - 0.1, 1.45, 1.75]
+  );
   gB(g, -1.7, -0.2, yi1 - 0.07, yi1 - 0.05, 1.96, 1.98, MAT.oak, { cast: false });
   // radio cabinet west of the back door: old valve radio, a succulent, a framed photo
   gB(g, xi0, xi0 + 0.38, 0.56, 1.3, zf, zf + 0.7, MAT.oak);
@@ -820,8 +842,17 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     plant(g, sx0b + 0.13, -2.75, zs, 0.2, 'herb', R);
   }
   picture(g, 'y', -3.1, xi0, 1.48, 0.4, 0.3, 2, '+x');
-  curtain(g, 'x', -1.78, -1.5, AY0 + T + 0.06, 1.0, 1.85, KM.curtainLinen, '+y', 3, 0.025);
-  curtain(g, 'x', -1.0, -0.72, AY0 + T + 0.06, 1.0, 1.85, KM.curtainLinen, '+y', 3, 0.025);
+  drape(
+    'anbau',
+    'x',
+    [-1.78, -1.5],
+    [-1.0, -0.72],
+    [
+      curtain(g, 'x', -1.78, -1.5, AY0 + T + 0.06, 1.0, 1.85, KM.curtainLinen, '+y', 3, 0.025),
+      curtain(g, 'x', -1.0, -0.72, AY0 + T + 0.06, 1.0, 1.85, KM.curtainLinen, '+y', 3, 0.025),
+    ],
+    [-1.25, AY0 + T + 0.1, 1.4, 2.0]
+  );
   // ---- table for two in the room (east of the walk from door to door) ----
   gB(g, 0.38, 1.12, -1.78, -1.14, zf + 0.72, zf + 0.75, MAT.oak, { bevel: 0.006 });
   for (const [x, y] of [
@@ -873,17 +904,29 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     cast: false,
   });
   picture(g, 'x', -0.3, AY0 + T, 1.5, 0.34, 0.27, 3, '+y', MAT.black);
-  for (const [a0, a1] of [
+  drape(
+    'nordost',
+    'y',
     [-2.2, -1.9],
     [-1.2, -0.9],
-  ])
-    curtain(g, 'y', a0, a1, xi1 - 0.06, 0.93, 1.95, KM.curtainLinen, '-x', 3, 0.025);
+    [
+      curtain(g, 'y', -2.2, -1.9, xi1 - 0.06, 0.93, 1.95, KM.curtainLinen, '-x', 3, 0.025),
+      curtain(g, 'y', -1.2, -0.9, xi1 - 0.06, 0.93, 1.95, KM.curtainLinen, '-x', 3, 0.025),
+    ],
+    [xi1 - 0.1, -1.55, 1.45, 1.5]
+  );
   gB(g, xi1 - 0.07, xi1 - 0.05, -2.25, -0.85, 1.96, 1.98, MAT.oak, { cast: false });
-  for (const [a0, a1] of [
+  drape(
+    'hinten',
+    'y',
     [0.4, 0.66],
     [1.28, 1.54],
-  ])
-    curtain(g, 'y', a0, a1, xi0 + 0.06, 0.98, 1.95, KM.curtainSage, '+x', 3, 0.025);
+    [
+      curtain(g, 'y', 0.4, 0.66, xi0 + 0.06, 0.98, 1.95, KM.curtainSage, '+x', 3, 0.025),
+      curtain(g, 'y', 1.28, 1.54, xi0 + 0.06, 0.98, 1.95, KM.curtainSage, '+x', 3, 0.025),
+    ],
+    [xi0 + 0.1, 0.97, 1.45, 1.6]
+  );
   gB(g, xi0 + 0.05, xi0 + 0.07, 0.35, 1.6, 1.96, 1.98, MAT.oak, { cast: false });
   // ---- the bare bulb in the middle of the room ----
   const bulb = bareBulb(g, 0.1, -0.15, zw - 0.02, 1.9);
@@ -899,6 +942,43 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   };
   const inside = (x, y, z) =>
     z > -0.5 && z < 2.6 && (inLoc(x, y, 0, 0, hx, hy) || inLoc(x, y, ANX.ox, ANX.oy, ANX.hx, ANX.hy));
+  // draw the curtains: k = 0 open … 1 closed; the inner edges meet in the middle of the window, the folds flatten as the cloth spreads
+  for (const d of drapes) {
+    const pose = k => {
+      d.meshes.forEach((me, i) => {
+        const [o, n] = i ? [d.B[1], d.B[0]] : [d.A[0], d.A[1]],
+          inner = n + (d.m - n) * k,
+          s = Math.abs(inner - o) / Math.abs(n - o),
+          c = (o + inner) / 2;
+        me.scale.x = s;
+        me.scale.z = 1 / Math.sqrt(s);
+        if (d.run === 'x') me.position.x = c;
+        else me.position.z = -c;
+      });
+    };
+    GACTS.push({
+      key: 'vorhang:' + d.key,
+      b,
+      lx: d.at[0],
+      ly: d.at[1],
+      z: d.at[2],
+      r: d.at[3],
+      room: inside,
+      label: st => (st.k ? 'Vorhänge aufziehen' : 'Vorhänge zuziehen'),
+      run: st => {
+        st.k = st.k ? 0 : 1;
+        st.dirty();
+      },
+      tick: (dt, st) => {
+        const want = st.k ? 1 : 0,
+          f = st.f || 0;
+        if (f === want) return false;
+        st.f = f + Math.sign(want - f) * Math.min(Math.abs(want - f), dt / 0.8);
+        pose(st.f);
+        return true;
+      },
+    });
+  }
   GLAMPS.push(
     {
       key: 'ofen',

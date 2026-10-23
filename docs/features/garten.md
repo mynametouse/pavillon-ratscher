@@ -19,9 +19,14 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
   **Nachttischlampe**; **Aufs Sofa setzen**,
   **Aufs Sofa legen**, **Ins Bett legen** (nachts: Schlafen bis 7 Uhr), **In den Sessel setzen**, Stühle am Tisch; **Schranktür öffnen**;
   **Wasser aufsetzen** (die Herdplatte glüht, nach ein paar Sekunden pfeift der Kessel und dampft; dann „Kessel vom Herd nehmen“);
-  **Feuer im Ofen anzünden** (das Feuer glüht hinter der Ofentür, das Licht flackert).
+  **Feuer im Ofen anzünden** (das Feuer glüht hinter der Ofentür, das Licht flackert); **Vorhänge zuziehen/aufziehen** an vier Fenstern
+  (Sofa, Hintertür, Nordost, Anbau – die Vorhänge gleiten zur Fenstermitte).
 - Hütte: **Lampe an/aus** (Schalter an der Tür), **Setzlinge gießen** (die Erde in den Schalen wird dunkel), Stuhl in der Ecke.
-- Gewächshaus: **Dachfenster öffnen**, **Tomaten ernten** (die reifen sind dann gepflückt), Tür.
+- Gewächshaus: **Dachfenster öffnen**, **Tomaten ernten** (die reifen sind dann gepflückt), **Tomaten ausgeizen** (die Geiztriebe in den
+  Blattachseln verschwinden), Tür.
+- Zum Lernen (Falko, Nachtrag 6: Methoden realistisch): die Handgriffe sagen kurz, wie man es richtig macht – Ofen von oben anzünden
+  (Scheite unten, Anzündholz und Anzünder oben, Luftklappe auf), Teewasser (schwarzer Tee sprudelnd, grüner abgekühlt), Setzlinge mit feiner
+  Brause nur auf die Erde gießen, Tomaten am Knick über dem Kelch abbrechen, Geiztriebe klein ausbrechen.
 - Ein einziges Punktlicht bedient alle Lampen (und das Ofenfeuer): es geht zur eingeschalteten Lampe in dem Gebäude, in dem man steht
   (sonst zur nächsten, dann mit kürzerer Reichweite, damit es nachts nicht durch Wände und Dach auf Rasen und Bäume scheint).
 - Leistung: einfarbige Teile eines Gebäudes teilen sich ein Material (Farbe, Rauheit, Metall aus zwei 64-px-Bildern, `paletteize` in
@@ -31,7 +36,8 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
 
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8971 --serve garten:nogeo=1` (≈ 5 min) – Türen nach Norden, Hineingehen durch
   die Nordtüren, geschlossene Tür und Wände halten auf, Lampen und Sitze im Spiel, Bilder nach `out/garten/` (außen, innen, vom Bett,
-  vom Sofa, Schrank offen, Hütte, Gewächshaus, nachts mit Licht).
+  vom Sofa, Schrank offen, Hütte, Gewächshaus, nachts mit Licht und mit zugezogenen Vorhängen), Handgriffe (Kessel, Vorhänge, Gießen,
+  Ernten, Ausgeizen, Ofen).
 - Bei GitHub läuft `garten` bei jedem Push auf `feat/garten` mit (`viz3/extra/garten/tests.txt`), Bilder im Artefakt `out`.
 
 ## Außerhalb der eigenen Dateien (mit dem Kern-Chat abgesprochen, 23.10. 3:40)
@@ -59,3 +65,5 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
   `keysBegin/keysEnd`), damit die Modelle weiter unten (Werkstatt) ihre gespeicherten Schlüssel behalten.
 - Ein Punktlicht mehr in allen Shadern (`garden/garten_in.js`, Name `garten-lamp`); neues `window.GARTEN` (Test- und Spiel-API).
 - Möbel unter Dach werfen keinen Sonnenschatten (`interiorNoShadow`), einfarbige Teile teilen sich ein Material (`paletteize`).
+- Die acht Vorhänge im Bungalow, die man zuziehen kann, werden nicht zusammengefasst (`userData.noMerge`, 8 Draw-Calls, nur innen sichtbar);
+  die Geiztriebe haben ein eigenes Material, das beim Ausgeizen unsichtbar wird (geht auch nach dem Zusammenfassen).

@@ -155,6 +155,27 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
       leaf(g, lx + Math.cos(a) * 0.05, -0.45 + Math.sin(a) * 0.05, z, 0.14 + R() * 0.06, a, 0.7 + R() * 0.5, MATS.leaf);
     }
   }
+  // side shoots in the leaf axils ('Geiztriebe'): a thin stem slanting out with a tuft of young leaves; own material, so pinching them out
+  // ('Tomaten ausgeizen') only has to hide it, also after the merge
+  const shootM = MATS.leaf.clone();
+  shootM.color.offsetHSL(0.02, 0.05, 0.06);
+  {
+    const RS = rng(1907);
+    for (let i = 0; i < 4; i++) {
+      const lx = -hx + 0.35 + (i * (b.L - 0.7)) / 3;
+      for (let k = 0; k < 3; k++) {
+        const a = RS() * 6.28,
+          z = 0.72 + k * 0.27 + RS() * 0.06,
+          ex = lx + Math.cos(a) * 0.075,
+          ey = -0.45 + Math.sin(a) * 0.075;
+        beam([lx + Math.cos(a) * 0.012, -0.45 + Math.sin(a) * 0.012, z], [ex, ey, z + 0.09], 0.006, 0.006, shootM, {
+          parent: g,
+        });
+        for (let j = 0; j < 3; j++)
+          leaf(g, ex, ey, z + 0.085, 0.06 + RS() * 0.03, a + (j - 1) * 0.9, 0.5 + RS() * 0.4, shootM);
+      }
+    }
+  }
   // cucumbers climbing strings in the west bed
   for (let i = 0; i < 3; i++) {
     const lx = -hx + 0.45 + i * 0.5;
@@ -273,13 +294,34 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     run: st => {
       st.done = 1;
       KM.tomato.color.set(0x8aa646);
-      st.think('Eine Schüssel voll Tomaten – sie schmecken nach Sommer.');
+      st.think(
+        'Reife Tomaten am Knick über dem Kelch abbrechen – mit Kelch halten sie länger. Die grünen reifen an der Pflanze nach. Eine Schüssel voll!'
+      );
+      st.dirty();
+    },
+  });
+  // pinch out the side shoots, so the plant puts its strength into the fruit
+  GACTS.push({
+    key: 'geizen',
+    b,
+    lx: 0.55,
+    ly: -0.35,
+    z: 1.1,
+    r: 1.3,
+    room: ghIn,
+    label: st => (st.done ? null : 'Tomaten ausgeizen'),
+    run: st => {
+      st.done = 1;
+      shootM.visible = false;
+      st.think(
+        'Die Geiztriebe in den Blattachseln mit zwei Fingern ausbrechen, solange sie klein sind – dann geht die Kraft in die Früchte statt in neue Triebe.'
+      );
       st.dirty();
     },
   });
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: 0, z1: 2.1, name: 'Gewächshaus' });
   FOOT.push({ b, hx: hx + 0.05, hy: hy + 0.05, ox: 0, oy: 0 });
-  paletteize(g, []);
+  paletteize(g, [shootM]);
 }
 
 const GHB = bldEnd(BLD.greenhouse);

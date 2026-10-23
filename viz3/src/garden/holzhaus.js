@@ -434,7 +434,9 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     label: st => (st.wet ? null : 'Setzlinge gießen'),
     run: st => {
       st.wet = 1;
-      st.think('Die Setzlinge sind gegossen – Sarah wird sich freuen.');
+      st.think(
+        'Mit der feinen Brause gießen, nur auf die Erde, nicht auf die Blättchen – feucht, nicht nass. Sarah wird sich freuen.'
+      );
       KM.traySoil.color.copy(MAT.soil.color).multiplyScalar(0.5);
       st.dirty();
     },

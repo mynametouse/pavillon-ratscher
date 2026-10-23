@@ -589,7 +589,16 @@ const blob = new THREE.IcosahedronGeometry(1, 0),
     s.quadraticCurveTo(0.5, 0.35, 0, 1);
     s.quadraticCurveTo(-0.5, 0.35, 0, 0);
     return new THREE.ShapeGeometry(s, 3);
-  })();
+  })(),
+  // round leaf (radius 1, cupped: the rim a little raised towards its front), a thin stalk 1 m long
+  discG = (() => {
+    const geo = new THREE.CircleGeometry(1, 9),
+      p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) p.setZ(i, (p.getX(i) ** 2 + p.getY(i) ** 2) * 0.25);
+    geo.computeVertexNormals();
+    return geo;
+  })(),
+  stalkG = new THREE.CylinderGeometry(0.004, 0.005, 1, 5, 1, true);
 // one leaf (pointing up and out), e.g. for climbing plants
 export function leaf(g, lx, ly, z, size, yaw, tilt, m) {
   return put(g, leafG, m, lx, ly, z, { s: [size * 0.7, size, 1], ry: yaw, rx: -tilt, order: 'YXZ', cast: false });
@@ -617,24 +626,46 @@ export function plant(g, lx, ly, z, size, kind, rnd = R0) {
       });
     return;
   }
-  const n = kind === 'geranium' ? 5 : 4;
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * 6.28 + rnd(),
+  if (kind === 'geranium') {
+    // round, slightly cupped leaves in a low mound; three flower umbels on stalks above them (a dome of small florets each)
+    for (let i = 0; i < 7; i++) {
+      const a = (i / 7) * 6.28 + rnd() * 0.6,
+        rr = size * (0.16 + rnd() * 0.12);
+      // the leaf faces up and a little outwards (ry turns three's +Z to the local direction a)
+      put(g, discG, KM.herb, lx + Math.cos(a) * rr, ly + Math.sin(a) * rr, z + size * (0.22 + rnd() * 0.2), {
+        s: [size * 0.2, size * 0.2, size * 0.2],
+        ry: a + Math.PI / 2,
+        rx: -Math.PI / 2 + 0.35 + rnd() * 0.3,
+        order: 'YXZ',
+        cast: false,
+      });
+    }
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * 6.28 + rnd(),
+        rr = size * 0.14,
+        x = lx + Math.cos(a) * rr,
+        y = ly + Math.sin(a) * rr,
+        zt = z + size * (0.78 + rnd() * 0.2);
+      put(g, stalkG, KM.herb, x, y, (z + size * 0.3 + zt) / 2, { s: [1, zt - z - size * 0.3, 1], cast: false });
+      for (let k = 0; k < 7; k++) {
+        const b = (k / 6) * 6.28,
+          q = k ? size * 0.085 : 0;
+        put(g, blob, KM.red, x + Math.cos(b) * q, y + Math.sin(b) * q, zt + (k ? 0 : size * 0.04), {
+          s: [size * 0.058, size * 0.05, size * 0.058],
+          cast: false,
+        });
+      }
+    }
+    return;
+  }
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * 6.28 + rnd(),
       rr = size * 0.3;
     put(g, blob, KM.herb, lx + Math.cos(a) * rr, ly + Math.sin(a) * rr, z + size * (0.35 + rnd() * 0.25), {
       s: [size * 0.36, size * 0.3, size * 0.36],
       cast: false,
     });
   }
-  if (kind === 'geranium')
-    for (let i = 0; i < 4; i++) {
-      const a = rnd() * 6.28,
-        rr = size * 0.25 * rnd();
-      put(g, blob, KM.red, lx + Math.cos(a) * rr, ly + Math.sin(a) * rr, z + size * (0.75 + rnd() * 0.2), {
-        s: [size * 0.16, size * 0.14, size * 0.16],
-        cast: false,
-      });
-    }
 }
 // watering can (body, spout with rose, handle over the top); yaw = local compass degrees the spout points to
 export function wateringCan(g, lx, ly, z, yaw, m = MAT.zinc, s = 1) {
