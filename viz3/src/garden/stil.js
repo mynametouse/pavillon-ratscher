@@ -55,8 +55,8 @@ export const PATTERN = {
       q.fillRect(R() * w, R() * h, 1 + R() * 3, 1);
     }
   },
-  // gingham check (two colours)
-  check(q, w, h, [a, b = 0xf6f3ec], n = 8) {
+  // gingham check (two colours, n squares across)
+  check(q, w, h, [a, b = 0xf6f3ec, n = 8]) {
     q.fillStyle = hex(b);
     q.fillRect(0, 0, w, h);
     const s = w / n,
@@ -313,6 +313,32 @@ export const ART = {
         q.fillRect(x + S * (0.1 + i * 0.135), y + S * (0.1 + j * 0.135), S * 0.1, S * 0.1);
       }
   },
+  // the garden: the green bungalow under trees (as it hung in the bungalow before)
+  garden(q, x, y, S) {
+    const k = S / 256;
+    q.fillStyle = '#a9c7d8';
+    q.fillRect(x, y, S, S * 0.5);
+    q.fillStyle = '#7f9f55';
+    q.fillRect(x, y + S * 0.5, S, S * 0.5);
+    q.fillStyle = '#5c7e3e';
+    for (let i = 0; i < 5; i++) {
+      q.beginPath();
+      q.arc(x + (20 + i * 52) * k, y + S * 0.38, (34 + (i % 3) * 4) * k, 0, Math.PI * 2);
+      q.fill();
+    }
+    q.fillStyle = '#8aa37c';
+    q.fillRect(x + 80 * k, y + S * 0.45, 100 * k, 60 * k);
+    q.fillStyle = '#e8e6df';
+    q.beginPath();
+    q.moveTo(x + 70 * k, y + S * 0.46);
+    q.lineTo(x + 130 * k, y + S * 0.3);
+    q.lineTo(x + 190 * k, y + S * 0.46);
+    q.fill();
+    q.fillStyle = '#f4f2ea';
+    q.fillRect(x + 118 * k, y + S * 0.52, 22 * k, 40 * k);
+    q.fillRect(x + 92 * k, y + S * 0.52, 18 * k, 18 * k);
+    q.fillRect(x + 150 * k, y + S * 0.52, 18 * k, 18 * k);
+  },
   portrait(q, x, y, S, c = ['#d8c3a5', '#6b4f3a', '#e7cdb0', '#2f3a4a']) {
     q.fillStyle = c[0];
     q.fillRect(x, y, S, S);
@@ -359,10 +385,11 @@ export function framed(g, mArt, run, a, t, zc, w, h, cell, dir, fm) {
       run === 'x'
         ? gB(g, p0, p1, t0, t1, q0, q1, fm, { cast: false })
         : gB(g, t0, t1, p0, p1, q0, q1, fm, { cast: false });
-  b(a - w / 2 - f, a + w / 2 + f, t0, t1, zc - h / 2 - f, zc - h / 2);
-  b(a - w / 2 - f, a + w / 2 + f, t0, t1, zc + h / 2, zc + h / 2 + f);
-  b(a - w / 2 - f, a - w / 2, t0, t1, zc - h / 2, zc + h / 2);
-  b(a + w / 2, a + w / 2 + f, t0, t1, zc - h / 2, zc + h / 2);
+  // (feat/einrichtung: the four bars around the picture – until 23.10.2026 the wall thickness went in as their height)
+  b(a - w / 2 - f, a + w / 2 + f, zc - h / 2 - f, zc - h / 2);
+  b(a - w / 2 - f, a + w / 2 + f, zc + h / 2, zc + h / 2 + f);
+  b(a - w / 2 - f, a - w / 2, zc - h / 2, zc + h / 2);
+  b(a + w / 2, a + w / 2 + f, zc - h / 2, zc + h / 2);
 }
 // ---- small furnishing builders for the style layers (local frame of a building: x, y, z up; materials passed in) ----
 const cylY = (r0, r1, h, n = 12) => new THREE.CylinderGeometry(r0, r1, h, n);
@@ -475,6 +502,27 @@ export function pottedPlant(g, lx, ly, z, size, kind, mPot, R = rng(9)) {
   plant(g, lx, ly, zs, size * 0.6, kind === 'spiky' ? 'spiky' : 'herb', R);
   return zs;
 }
+// a plant hanging from the ceiling in a pot on three cords (zTop: the ceiling, len: down to the pot)
+export function hangingPlant(g, lx, ly, zTop, len, size, mPot, R = rng(13)) {
+  const z = zTop - len;
+  for (let k = 0; k < 3; k++) {
+    const a = (k / 3) * Math.PI * 2;
+    put(
+      g,
+      cylY(0.003, 0.003, len - 0.06, 4),
+      KM.twine,
+      lx + Math.cos(a) * 0.05,
+      ly + Math.sin(a) * 0.05,
+      z + len / 2 + 0.03,
+      {
+        rx: Math.sin(a) * 0.08,
+        rz: -Math.cos(a) * 0.08,
+        cast: false,
+      }
+    );
+  }
+  return pottedPlant(g, lx, ly, z, size, 'trailing', mPot, R);
+}
 // lamp shades around a bulb at (lx, ly, zb) – kind: 'cone' (enamel), 'dome', 'globe' (paper), 'cage' (metal wires), 'rattan', 'pleat' (fabric)
 export function shadeAround(g, kind, lx, ly, zb, m, mMetal = MAT.blacksteel) {
   if (kind === 'cone') put(g, new THREE.ConeGeometry(0.2, 0.16, 20, 1, true), m, lx, ly, zb + 0.06, { cast: false });
@@ -531,10 +579,10 @@ export function shadeAround(g, kind, lx, ly, zb, m, mMetal = MAT.blacksteel) {
 // cushions standing on a seat: list of [x, y, width, turn]; run 'x' = their broad side along x (a back along x), 'y' = along y; mats cycle
 export function cushions(g, list, z, mats, R = rng(5), run = 'x') {
   list.forEach(([x, y, w, ry], i) => {
-    const [ax, ay] = run === 'x' ? [w / 2, 0.07] : [0.07, w / 2];
-    soft(g, x - ax, x + ax, y - ay, y + ay, z, z + w * 0.9, 0.06, mats[i % mats.length], {
+    const [ax, ay] = run === 'x' ? [w / 2, 0.08] : [0.08, w / 2];
+    soft(g, x - ax, x + ax, y - ay, y + ay, z, z + w * 0.85, 0.075, mats[i % mats.length], {
       ry: ry ?? (R() - 0.5) * 0.4,
-      puff: 0.02,
+      puff: 0.03,
       cast: false,
     });
   });
@@ -630,6 +678,15 @@ export const STIL = (() => {
     h.anchor.add(g);
     h.R = rng(1000 + h.n++);
     sty.build(g, h);
+    // parts the house shows and hides on its own (userData.sep: the sofa's cushions while it is a bed) are merged by themselves
+    const seps = [];
+    g.traverse(o => {
+      if (o !== g && o.userData.sep) seps.push(o);
+    });
+    for (const s of seps) {
+      paletteize(s, []);
+      for (const me of mergeGroup(s, { cast: false })) me.userData.keep = true;
+    }
     paletteize(g, []);
     mergeGroup(g, { cast: false });
     h.layer = g;

@@ -10,10 +10,11 @@
 import * as THREE from 'three';
 import { LATE } from '../core/late.js';
 import { V } from '../core/head.js';
-import { markDirty, plain } from '../core/assets.js';
+import { markDirty, plain, whenLoaded } from '../core/assets.js';
+import { KERN } from '../core/kern.js';
 import { MAT } from '../core/mats.js';
 import { bldBegin, bldEnd, COL } from '../core/geo.js';
-import { BLD, gB, lcol, MATS, rotDesc, siteGroup } from './site_base.js';
+import { BLD, gB, lcol, MATS, rotDesc, siteGroup, worldOf } from './site_base.js';
 import {
   bulbMat,
   canvasTex,
@@ -65,6 +66,7 @@ const hx = b.L / 2,
   DN = { a0: -1.3, a1: -0.45 };
 const r = rotDesc(b);
 const deg = Math.PI / 180;
+const worldOfB = (lx, ly) => worldOf(b, lx, ly);
 // ---- the atelier's own materials (twins of the kit's: no new shader programs; the styles change their colours and images) ----
 const AM = {
   wall: MATS.pale,
@@ -208,7 +210,7 @@ gB(g, wt.x0 + 0.1, wt.x1 - 0.1, wt.y1 - 0.42, wt.y1 - 0.08, FZ + 0.24, FZ + 0.36
     );
   // clamp lamp: base on the table edge, two arms, a small shade looking down on the work
   const lx = wt.x1 - 0.06,
-    ly = 1.2;
+    ly = 0.32;
   gB(g, lx - 0.03, lx + 0.03, ly - 0.03, ly + 0.03, z - 0.05, z + 0.03, MAT.blacksteel, { cast: false });
   put(g, new THREE.CylinderGeometry(0.008, 0.008, 0.42, 6), MAT.blacksteel, lx - 0.04, ly - 0.05, z + 0.24, {
     rx: -0.25,
@@ -756,7 +758,7 @@ const STYLES = [
     rug: ['sisal', [0xc8b48a]],
     art: ['hills', 'flowers', 'abstract', 'botanical'],
     shade: ['cone', 0xf2f0ea],
-    plants: [['leafy', xi0 + 0.3, -0.55, 0.75]],
+    plants: [['leafy', 0.3, yi0 + 0.2, 0.62, () => FZ + 0.42]],
   },
   {
     id: 'skandi',
@@ -773,7 +775,7 @@ const STYLES = [
     art: ['lines', 'botanical', ['abstract', ['#f2efe8', '#8ea3b8', '#3a3a3a', '#d9c7a0']], 'grid'],
     shade: ['globe', null],
     plants: [
-      ['leafy', xi0 + 0.3, -0.55, 0.85],
+      ['leafy', 0.3, yi0 + 0.2, 0.7, () => FZ + 0.42],
       ['trailing', 0.05, 1.58, 0.35, SH => SH.z[4] + 0.022],
     ],
     skin: true,
@@ -814,7 +816,7 @@ const STYLES = [
       ['portrait', ['#9a958d', '#2b2b2b', '#c9b49a', '#5a3b2a']],
     ],
     shade: ['cage', null],
-    plants: [['cactus', xi0 + 0.3, -0.55, 0.5]],
+    plants: [['cactus', 0.3, yi0 + 0.2, 0.5, () => FZ + 0.42]],
     stool: true,
   },
   {
@@ -837,9 +839,10 @@ const STYLES = [
     ],
     shade: ['rattan', 0xc8a46a],
     plants: [
-      ['leafy', xi0 + 0.3, -0.55, 0.9],
-      ['tall', 0.38, -1.5, 0.95],
+      ['leafy', 0.3, yi0 + 0.2, 0.7, () => FZ + 0.42],
+      ['tall', -0.15, -1.45, 0.95],
       ['trailing', 0.05, 1.58, 0.35, SH => SH.z[4] + 0.022],
+      ['trailing', wt.x0 + 0.12, 1.22, 0.3, () => wt.z],
     ],
     boho: true,
   },
@@ -1495,6 +1498,18 @@ GACTS.push({
 // ---- static parts: the room's furniture into the palette, no sun shadows indoors ----
 paletteize(g, []);
 bldEnd();
+// the menu spot „Holzhaus“ is called „Atelier“ now (after game/player.js registered its spots), a spot inside and a start situation
+// (?szenario=atelier – the tests start there)
+whenLoaded(() => KERN.spot('holzhaus', { label: 'Atelier' }));
+{
+  const w = worldOfB(-0.85, 1.3);
+  KERN.spot('atelier', { mode: 'walk', pos: w, z: FZ, yaw: b.az + 62, pitch: -10, bld: 'holzhaus', label: 'Atelier' });
+  KERN.scenario('atelier', {
+    label: 'Atelier (innen)',
+    order: 14,
+    run: () => window.GAME && window.GAME.go('atelier'),
+  });
+}
 window.ATELIER = {
   house: ATELIER,
   sofa: SB,

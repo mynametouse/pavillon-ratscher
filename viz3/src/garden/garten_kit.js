@@ -306,6 +306,7 @@ KM.glassJar.depthWrite = false;
 KM.wall = dimIndoor(plain({ color: 0xf6efe2, roughness: 0.85 }), 0.7, 0.45); // warm white lining of the bungalow
 KM.ceil = dimIndoor(boardMat(0xd9b98c, 0.1, false, { wear: 0.05 }), 0.75, 0.25); // pine boards on the ceiling (Datsche)
 KM.velvet = plain({ color: 0x55705a, roughness: 0.92 }); // bottle-green upholstery
+KM.velvet.userData.own = true; // feat/einrichtung: the styles recolour it – not into the palette
 // the same material for use indoors: less sky light (as the walls of the site buildings, dimIndoor), one copy per material
 const INDOOR = new Map();
 export function indoor(m, k = 0.62, desat = 0.45) {
@@ -561,10 +562,11 @@ export function picture(g, run, a, t, zc, w, h, cell, dir, fm = MAT.oak) {
       run === 'x'
         ? gB(g, p0, p1, t0, t1, q0, q1, fm, { cast: false })
         : gB(g, t0, t1, p0, p1, q0, q1, fm, { cast: false });
-  b(a - w / 2 - f, a + w / 2 + f, t0, t1, zc - h / 2 - f, zc - h / 2);
-  b(a - w / 2 - f, a + w / 2 + f, t0, t1, zc + h / 2, zc + h / 2 + f);
-  b(a - w / 2 - f, a - w / 2, t0, t1, zc - h / 2, zc + h / 2);
-  b(a + w / 2, a + w / 2 + f, t0, t1, zc - h / 2, zc + h / 2);
+  // (feat/einrichtung: the four bars around the picture – until 23.10.2026 the wall thickness went in as their height)
+  b(a - w / 2 - f, a + w / 2 + f, zc - h / 2 - f, zc - h / 2);
+  b(a - w / 2 - f, a + w / 2 + f, zc + h / 2, zc + h / 2 + f);
+  b(a - w / 2 - f, a - w / 2, zc - h / 2, zc + h / 2);
+  b(a + w / 2, a + w / 2 + f, zc - h / 2, zc + h / 2);
 }
 // terracotta pot (turned profile with rim) and soil; returns the soil height
 const potGeo = (() => {
@@ -737,7 +739,7 @@ export function keysEnd() {
 // models that were placed here once and are gone now (the potting hut became the atelier, feat/einrichtung): their numbers stay taken, so
 // the keys of the models after them (bungalow …) stay the same
 export function keysSkip(ids) {
-  for (const id of ids) if (MODELS[id]) window.ITEM_N = (window.ITEM_N || 0) + 1;
+  for (const id of ids) if (MODELS[id]) ITEMKEY.n++;
 }
 // ===================== feat/einrichtung (Falko, 23.10.2026): helpers for the interior styles of the garden buildings =====================
 // a copy of a material that compiles to the same shader program (patchSV's key depends on userData only: sky dimming, grime, lamp mask),

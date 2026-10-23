@@ -33,7 +33,7 @@ export const CW = {
   bedB: twin(MAT.woolLight),
   sheet: twin(MAT.linen),
 };
-export const CV = { anchor: null, inside: () => false, zf: 0.5 };
+export const CV = { anchor: null, inside: () => false, zf: 0.5, windows: [] };
 bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', pad: 0.3 });
 // ===== B: carport 6,0 × 4,0 m, ca. 3,5 m hoch (Pfosten 12/12, Pfetten, Sparren, Trapezblech) with the Tabbert caravan; door side faces the garden entrance (north) =====
 {
@@ -234,6 +234,7 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
       [-2.3, -1.3, 1.3, 1.85],
     ],
   };
+  CV.windows = [...HOLES[1].filter(q => q[0] !== 0.2).map(q => [1, ...q]), ...HOLES[-1].map(q => [-1, ...q])];
   for (const sy of [1, -1]) {
     for (const [pts, yy, m] of [
       [OUT, sy * HW, MATS.cream],

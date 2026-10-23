@@ -169,14 +169,19 @@ with lib.browser() as b:
         for k, lx, ly, eye, yaw in (('holzhaus', -0.88, 1.45, EYE_A, 90), ('carport', 0.87, 0.4, EYE_C, 90), ('bungalow', 2.3, 0.0, 1.76, 180)):
             view(pg, k, lx, ly, eye, yaw, -12, 80); ev(pg, "GAME.shot()")
         progs0 = ev(pg, PROGS)
-        VIEWS = {'atelier': ('holzhaus', -0.88, 1.45, EYE_A, 90), 'wohnwagen': ('carport', 0.87, 0.4, EYE_C, 90), 'bungalow': ('bungalow', 2.3, 0.0, 1.76, 180)}
+        VIEWS = {
+            'atelier': [('holzhaus', -0.88, 1.45, EYE_A, 90, -14), ('holzhaus', 0.35, -1.5, EYE_A, -110, -14)],
+            'wohnwagen': [('carport', 0.87, 0.4, EYE_C, 90, -12), ('carport', 1.15, -0.25, EYE_C, 165, -14)],
+            'bungalow': [('bungalow', 0.7, 0.2, 1.72, -140, -12), ('bungalow', -0.3, 0.0, 1.72, 125, -14)],
+        }
         info = {}
         for h in st['houses']:
-            k = h['key']; v = VIEWS.get(k)
+            k = h['key']
             for sid in h['styles']:
                 ok = ev(pg, f"STIL.set('{k}', '{sid}')")
-                if v: view(pg, v[0], v[1], v[2], v[3], v[4], -12, 80)
-                shot(pg, f'stil_{k}_{sid}')
+                for i, v in enumerate(VIEWS.get(k, [])):
+                    view(pg, v[0], v[1], v[2], v[3], v[4], v[5], 80)
+                    shot(pg, f'stil_{k}_{sid}_{i + 1}')
                 info[f'{k}:{sid}'] = ev(pg, f"STIL.layerInfo('{k}')")
                 ck(f'style {k}: {sid}', ok and ev(pg, f"STIL.get('{k}').cur") == sid, info[f'{k}:{sid}'])
         print('layers', json.dumps(info), flush=True)

@@ -48,8 +48,18 @@ import {
   put,
   rng,
   soft,
-  teapot,
+  twin,
 } from './garten_kit.js';
+// feat/einrichtung: the bungalow's own materials (twins: the same shader programs) – the interior styles change their colours; the
+// furniture that changes with the style is built by garden/stil_bauten.js into BUNG.anchor
+export const BW = {
+  wood: twin(MAT.oak),
+  sofa: twin(MAT.rust),
+  cush: twin(MAT.sage),
+  throw: twin(MAT.woolLight),
+  rug: twin(MAT.rug),
+};
+export const BUNG = {};
 // ===== D: grüner Bungalow (5,0 × 5,0 m) wie der Wohnwagen zur Pforte ausgerichtet: Giebel mit Haustür nach Norden, First Nord–Süd, Hintertür im Südgiebel
 // geradeaus gegenüber. Seit 23.10.2026 (Falko) mit Anbau im Osten: eine kleine angebaute Garage, zum Raum ausgebaut – 1 m hinter dem Eingang
 // buchtet die linke (östliche) Wand 1,5 m aus, dort steht das Bett. Innen: rechts in der Ecke die Küche, dahinter das Sofa; links der Hintertür ein
@@ -380,8 +390,8 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     panelY(x0, x1, zf + 0.68, kz);
   }
   // worktop (oak, butcher block) with the sink cut-out look
-  gB(g, KX - 0.02, xi1, 1.15, yi1, kz, kz + wt, MAT.oak, { grain: 'y', cast: false });
-  gB(g, 0.53, KX - 0.02, KY - 0.02, yi1, kz, kz + wt, MAT.oak, { grain: 'x', cast: false });
+  gB(g, KX - 0.02, xi1, 1.15, yi1, kz, kz + wt, BW.wood, { grain: 'y', cast: false });
+  gB(g, 0.53, KX - 0.02, KY - 0.02, yi1, kz, kz + wt, BW.wood, { grain: 'x', cast: false });
   gB(g, 1.9, 2.3, 1.32, 1.84, kz + wt, kz + wt + 0.006, SINK, { cast: false });
   gB(g, 1.95, 2.25, 1.37, 1.79, kz + wt + 0.006, kz + wt + 0.008, MAT.blacksteel, { cast: false });
   cyl(2.32, 1.58, kz + wt, kz + wt + 0.24, 0.012, SINK, 8, undefined, { parent: g, col: false });
@@ -487,9 +497,9 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   gB(g, 1.35, xi1, yi1 - 0.008, yi1, tz, zf + 1.5, KM.tiles, { cast: false });
   gB(g, 0.53, 1.35, yi1 - 0.008, yi1, tz, 1.1, KM.tiles, { cast: false });
   // open shelves on the west wall next to the window: plates, mugs, jars
-  for (const zs of [zf + 1.34, zf + 1.66]) gB(g, 1.42, 2.34, yi1 - 0.24, yi1, zs, zs + 0.025, MAT.oak, { cast: false });
+  for (const zs of [zf + 1.34, zf + 1.66]) gB(g, 1.42, 2.34, yi1 - 0.24, yi1, zs, zs + 0.025, BW.wood, { cast: false });
   for (const xb of [1.45, 2.31])
-    gB(g, xb - 0.012, xb + 0.012, yi1 - 0.22, yi1, zf + 1.24, zf + 1.36, MAT.oak, { cast: false });
+    gB(g, xb - 0.012, xb + 0.012, yi1 - 0.22, yi1, zf + 1.24, zf + 1.36, BW.wood, { cast: false });
   for (let i = 0; i < 6; i++)
     put(
       g,
@@ -504,15 +514,15 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       }
     );
   for (const xx of [1.5, 1.7])
-    gB(g, xx, xx + 0.01, yi1 - 0.2, yi1 - 0.06, zf + 1.365, zf + 1.43, MAT.oak, { cast: false });
+    gB(g, xx, xx + 0.01, yi1 - 0.2, yi1 - 0.06, zf + 1.365, zf + 1.43, BW.wood, { cast: false });
   for (let i = 0; i < 4; i++)
     mug(g, 1.82 + i * 0.12, yi1 - 0.12, zf + 1.365, i % 2 ? KM.porcelain : KM.enamelGreen, 90);
   const jarFill = [KM.cream, MAT.logEnd, KM.straw, MAT.rust];
   for (let i = 0; i < 4; i++) jar(g, 1.55 + i * 0.18, yi1 - 0.12, zf + 1.685, 0.05, 0.16, jarFill[i]);
   // on the counter: Klingenholz end-grain board, bread box, fruit bowl, a jar with wooden spoons; herbs on the window sill
   gB(g, 0.72, 1.12, 1.9, 2.2, tz, tz + 0.04, KM.endgrain, { cast: false, bevel: 0.004 });
-  gB(g, 1.47, 1.77, 2.06, yi1 - 0.02, tz, tz + 0.16, MAT.oak);
-  put(g, new THREE.CylinderGeometry(0.1, 0.1, 0.3, 14, 1, false, 0, Math.PI), MAT.oak, 1.62, 2.22, tz + 0.16, {
+  gB(g, 1.47, 1.77, 2.06, yi1 - 0.02, tz, tz + 0.16, BW.wood);
+  put(g, new THREE.CylinderGeometry(0.1, 0.1, 0.3, 14, 1, false, 0, Math.PI), BW.wood, 1.62, 2.22, tz + 0.16, {
     rz: Math.PI / 2,
     s: [0.7, 1, 1.55],
   });
@@ -526,7 +536,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   }
   cyl(1.32, 2.3, tz, tz + 0.14, 0.05, KM.terracottaDark, 12, undefined, { parent: g, col: false });
   for (let i = 0; i < 3; i++)
-    beam([1.32, 2.3, tz + 0.1], [1.32 + (i - 1) * 0.03, 2.3 + (i - 1) * 0.02, tz + 0.33], 0.012, 0.02, MAT.oak, {
+    beam([1.32, 2.3, tz + 0.1], [1.32 + (i - 1) * 0.03, 2.3 + (i - 1) * 0.02, tz + 0.33], 0.012, 0.02, BW.wood, {
       parent: g,
     });
   // café curtains (red gingham) on rods in both kitchen windows, close to the glass
@@ -540,41 +550,11 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     sy0 = 1.5,
     sy1 = yi1,
     ss = zf + 0.43;
-  for (const [x, y] of [
-    [sx0 + 0.06, sy0 + 0.06],
-    [sx1 - 0.06, sy0 + 0.06],
-    [sx0 + 0.06, sy1 - 0.06],
-    [sx1 - 0.06, sy1 - 0.06],
-  ])
-    cyl(x, y, zf, zf + 0.09, 0.022, MAT.oak, 8, 0.016, { parent: g, col: false });
-  soft(g, sx0 + 0.02, sx1 - 0.02, sy0, sy1, zf + 0.08, zf + 0.24, 0.04, MAT.rust);
-  soft(g, sx0 + 0.18, (sx0 + sx1) / 2 - 0.005, sy0 + 0.02, sy1 - 0.22, zf + 0.22, ss, 0.05, MAT.rust, { puff: 0.015 });
-  soft(g, (sx0 + sx1) / 2 + 0.005, sx1 - 0.18, sy0 + 0.02, sy1 - 0.22, zf + 0.22, ss, 0.05, MAT.rust, { puff: 0.015 });
-  soft(g, sx0 + 0.18, sx1 - 0.18, sy1 - 0.26, sy1 - 0.02, zf + 0.22, zf + 0.8, 0.07, MAT.rust);
-  for (const [a0, a1] of [
-    [sx0, sx0 + 0.18],
-    [sx1 - 0.18, sx1],
-  ])
-    soft(g, a0, a1, sy0, sy1, zf + 0.1, zf + 0.6, 0.06, MAT.rust);
-  soft(g, sx0 + 0.24, sx0 + 0.66, sy1 - 0.38, sy1 - 0.2, ss - 0.02, ss + 0.36, 0.07, MAT.sage, { ry: 0.25 });
-  soft(g, sx1 - 0.62, sx1 - 0.22, sy1 - 0.36, sy1 - 0.2, ss - 0.02, ss + 0.33, 0.07, KM.cream, { ry: -0.3 });
-  soft(g, sx1 - 0.75, sx1 - 0.2, sy0 + 0.05, sy1 - 0.25, ss, ss + 0.06, 0.025, MAT.woolLight); // folded blanket
-  soft(g, sx1 - 0.7, sx1 - 0.25, sy1 - 0.18, sy1 - 0.02, zf + 0.62, zf + 0.84, 0.03, MAT.woolLight); // … and over the back
-  // coffee table
-  gB(g, -1.62, -0.92, 0.86, 1.34, zf + 0.39, zf + 0.42, MAT.oak, { bevel: 0.006 });
-  for (const [x, y] of [
-    [-1.58, 0.9],
-    [-0.96, 0.9],
-    [-1.58, 1.3],
-    [-0.96, 1.3],
-  ])
-    gB(g, x - 0.018, x + 0.018, y - 0.018, y + 0.018, zf, zf + 0.39, MAT.oak, { grain: 'z', cast: false });
-  teapot(g, -1.35, 1.05, zf + 0.42, KM.porcelain, 200);
-  mug(g, -1.12, 1.2, zf + 0.42, KM.enamelGreen, 110);
-  mug(g, -1.5, 1.22, zf + 0.42, KM.porcelain, 30);
-  gB(g, -1.2, -0.99, 0.92, 1.08, zf + 0.42, zf + 0.445, MAT.rust, { cast: false });
+  // (feat/einrichtung: the sofa with its cushions and blanket and the coffee table with the tea are built per interior style –
+  // garden/stil_bauten.js; „Wie heute“ is the furniture that stood here)
+  Object.assign(BUNG, { sx0, sx1, sy0, sy1, ss, zf });
   // rugs: wool in front of the sofa, a rag runner from door to door, a small one by the bed
-  gB(g, -2.05, -0.42, 0.55, 1.45, zf, zf + 0.01, MAT.rug, { cast: false, grain: 'x' });
+  gB(g, -2.05, -0.42, 0.55, 1.45, zf, zf + 0.01, BW.rug, { cast: false, grain: 'x' });
   gB(g, -2.2, 2.2, -0.36, 0.36, zf, zf + 0.008, KM.rag, { cast: false, grain: 'x' });
   gB(g, -1.9, -0.65, -2.24, -1.82, zf, zf + 0.008, KM.rag, { cast: false, grain: 'y' });
   {
@@ -668,14 +648,14 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     ],
     [-0.95, yi1 - 0.1, 1.45, 1.75]
   );
-  gB(g, -1.7, -0.2, yi1 - 0.07, yi1 - 0.05, 1.96, 1.98, MAT.oak, { cast: false });
+  gB(g, -1.7, -0.2, yi1 - 0.07, yi1 - 0.05, 1.96, 1.98, BW.wood, { cast: false });
   // radio cabinet west of the back door: old valve radio, a succulent, a framed photo
-  gB(g, xi0, xi0 + 0.38, 0.56, 1.3, zf, zf + 0.7, MAT.oak);
-  gB(g, xi0 + 0.38, xi0 + 0.39, 0.6, 0.92, zf + 0.06, zf + 0.64, MAT.oak, { cast: false });
-  gB(g, xi0 + 0.38, xi0 + 0.39, 0.94, 1.26, zf + 0.06, zf + 0.64, MAT.oak, { cast: false });
+  gB(g, xi0, xi0 + 0.38, 0.56, 1.3, zf, zf + 0.7, BW.wood);
+  gB(g, xi0 + 0.38, xi0 + 0.39, 0.6, 0.92, zf + 0.06, zf + 0.64, BW.wood, { cast: false });
+  gB(g, xi0 + 0.38, xi0 + 0.39, 0.94, 1.26, zf + 0.06, zf + 0.64, BW.wood, { cast: false });
   {
     const rz = zf + 0.7;
-    gB(g, xi0 + 0.06, xi0 + 0.3, 0.62, 1.06, rz, rz + 0.25, MAT.oak, { bevel: 0.012 });
+    gB(g, xi0 + 0.06, xi0 + 0.3, 0.62, 1.06, rz, rz + 0.25, BW.wood, { bevel: 0.012 });
     gB(g, xi0 + 0.3, xi0 + 0.305, 0.66, 0.92, rz + 0.08, rz + 0.22, KM.straw, { cast: false });
     gB(g, xi0 + 0.3, xi0 + 0.305, 0.66, 1.02, rz + 0.03, rz + 0.06, KM.porcelain, { cast: false });
     for (const y of [0.95, 1.0])
@@ -770,8 +750,8 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     }
   }
   // night table with a reading lamp, a book and a glass of water
-  gB(g, xi0, xi0 + 0.4, -2.24, -1.8, zf, zf + 0.52, MAT.oak, { bevel: 0.006 });
-  gB(g, xi0 + 0.4, xi0 + 0.405, -2.2, -1.84, zf + 0.36, zf + 0.48, MAT.oak, { cast: false });
+  gB(g, xi0, xi0 + 0.4, -2.24, -1.8, zf, zf + 0.52, BW.wood, { bevel: 0.006 });
+  gB(g, xi0 + 0.4, xi0 + 0.405, -2.2, -1.84, zf + 0.36, zf + 0.48, BW.wood, { cast: false });
   cyl(xi0 + 0.41, -2.02, zf + 0.41, zf + 0.43, 0.012, MAT.brass, 8, undefined, { parent: g, col: false });
   const nightMat = bulbMat(0xf3ead6);
   cyl(xi0 + 0.15, -2.1, zf + 0.52, zf + 0.54, 0.06, MAT.brass, 12, undefined, { parent: g, col: false });
@@ -787,14 +767,14 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     by0 = AY0 + T + 0.01,
     by1 = by0 + 1.6,
     bm = zf + 0.46;
-  gB(g, bx0, bx0 + 0.06, by0, by1, zf, zf + 1.0, MAT.oak, { bevel: 0.008 });
-  gB(g, bx0, bx0 + 0.07, by0 - 0.005, by1 + 0.005, zf + 0.96, zf + 1.02, MAT.oak, { bevel: 0.01 });
-  gB(g, bx1 - 0.06, bx1, by0, by1, zf, zf + 0.55, MAT.oak, { bevel: 0.008 });
+  gB(g, bx0, bx0 + 0.06, by0, by1, zf, zf + 1.0, BW.wood, { bevel: 0.008 });
+  gB(g, bx0, bx0 + 0.07, by0 - 0.005, by1 + 0.005, zf + 0.96, zf + 1.02, BW.wood, { bevel: 0.01 });
+  gB(g, bx1 - 0.06, bx1, by0, by1, zf, zf + 0.55, BW.wood, { bevel: 0.008 });
   for (const [y0, y1] of [
     [by0, by0 + 0.04],
     [by1 - 0.04, by1],
   ])
-    gB(g, bx0 + 0.06, bx1 - 0.06, y0, y1, zf + 0.14, zf + 0.36, MAT.oak, { bevel: 0.006 });
+    gB(g, bx0 + 0.06, bx1 - 0.06, y0, y1, zf + 0.14, zf + 0.36, BW.wood, { bevel: 0.006 });
   soft(g, bx0 + 0.07, bx1 - 0.07, by0 + 0.04, by1 - 0.04, zf + 0.26, bm, 0.05, MAT.linen);
   soft(g, bx0 + 0.42, bx1 - 0.05, by0 + 0.02, by1 - 0.02, bm - 0.02, bm + 0.11, 0.05, KM.duvet, { puff: 0.03 });
   soft(g, bx0 + 0.4, bx0 + 0.58, by0 + 0.03, by1 - 0.03, bm + 0.04, bm + 0.13, 0.04, MAT.linen);
@@ -831,10 +811,10 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     const sx0b = AX1 - T - 0.26,
       sx1b = AX1 - T,
       y1 = -2.42;
-    gB(g, sx0b, sx1b, -3.32, y1 - 0.04, zf, zf + 0.025, MAT.oak, { cast: false });
+    gB(g, sx0b, sx1b, -3.32, y1 - 0.04, zf, zf + 0.025, BW.wood, { cast: false });
     for (const zs of [zf + 0.33, zf + 0.66])
-      gB(g, sx0b, sx1b, -3.32, y1 - 0.04, zs, zs + 0.025, MAT.oak, { cast: false });
-    for (const yy of [-3.32, y1 - 0.06]) gB(g, sx0b, sx1b, yy, yy + 0.02, zf, zf + 0.685, MAT.oak, { cast: false });
+      gB(g, sx0b, sx1b, -3.32, y1 - 0.04, zs, zs + 0.025, BW.wood, { cast: false });
+    for (const yy of [-3.32, y1 - 0.06]) gB(g, sx0b, sx1b, yy, yy + 0.02, zf, zf + 0.685, BW.wood, { cast: false });
     for (const zs of [zf + 0.025, zf + 0.355])
       bookRow(books, 'y', -3.29, y1 - 0.07, sx1b - 0.23, sx1b - 0.01, zs, 0.29, R);
     lcol(r, sx0b, sx1b, -3.32, y1 - 0.04, zf, zf + 0.69, 'shelf');
@@ -854,14 +834,14 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     [-1.25, AY0 + T + 0.1, 1.4, 2.0]
   );
   // ---- table for two in the room (east of the walk from door to door) ----
-  gB(g, 0.38, 1.12, -1.78, -1.14, zf + 0.72, zf + 0.75, MAT.oak, { bevel: 0.006 });
+  gB(g, 0.38, 1.12, -1.78, -1.14, zf + 0.72, zf + 0.75, BW.wood, { bevel: 0.006 });
   for (const [x, y] of [
     [0.43, -1.73],
     [1.07, -1.73],
     [0.43, -1.19],
     [1.07, -1.19],
   ])
-    gB(g, x - 0.022, x + 0.022, y - 0.022, y + 0.022, zf, zf + 0.72, MAT.oak, { grain: 'z', cast: false });
+    gB(g, x - 0.022, x + 0.022, y - 0.022, y + 0.022, zf, zf + 0.72, BW.wood, { grain: 'z', cast: false });
   gB(g, 0.5, 1.0, -1.62, -1.3, zf + 0.75, zf + 0.752, KM.curtainRed, { cast: false });
   {
     const zs = pot(g, 0.75, -1.46, zf + 0.752, 0.055, 0.09, KM.porcelain);
@@ -876,9 +856,9 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   }
   // ---- by the front door: shoe bench, coat rail with jackets and a straw hat, the light switch, a picture ----
   const ey = -hy + T;
-  gB(g, 1.55, 2.32, ey, ey + 0.34, zf + 0.38, zf + 0.42, MAT.oak, { bevel: 0.005 });
-  for (const x of [1.58, 2.29]) gB(g, x - 0.02, x + 0.02, ey, ey + 0.34, zf, zf + 0.38, MAT.oak, { cast: false });
-  gB(g, 1.6, 2.28, ey, ey + 0.32, zf + 0.12, zf + 0.14, MAT.oak, { cast: false });
+  gB(g, 1.55, 2.32, ey, ey + 0.34, zf + 0.38, zf + 0.42, BW.wood, { bevel: 0.005 });
+  for (const x of [1.58, 2.29]) gB(g, x - 0.02, x + 0.02, ey, ey + 0.34, zf, zf + 0.38, BW.wood, { cast: false });
+  gB(g, 1.6, 2.28, ey, ey + 0.32, zf + 0.12, zf + 0.14, BW.wood, { cast: false });
   for (const [x, m] of [
     [1.72, MAT.black],
     [1.86, MAT.black],
@@ -886,7 +866,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     [2.2, MAT.rust],
   ])
     soft(g, x - 0.05, x + 0.05, ey + 0.04, ey + 0.3, zf + 0.14, zf + 0.24, 0.03, m);
-  gB(g, 1.52, 2.34, ey, ey + 0.025, zf + 1.56, zf + 1.66, MAT.oak, { cast: false });
+  gB(g, 1.52, 2.34, ey, ey + 0.025, zf + 1.56, zf + 1.66, BW.wood, { cast: false });
   for (const x of [1.66, 1.88, 2.1, 2.28])
     cyl(x, ey + 0.05, zf + 1.6, zf + 1.62, 0.012, MAT.brass, 6, undefined, { parent: g, col: false });
   garment(g, 1.68, ey + 0.08, zf + 1.6, 0.42, 0.8, 0.09, KM.cloth[1]);
@@ -915,7 +895,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     ],
     [xi1 - 0.1, -1.55, 1.45, 1.5]
   );
-  gB(g, xi1 - 0.07, xi1 - 0.05, -2.25, -0.85, 1.96, 1.98, MAT.oak, { cast: false });
+  gB(g, xi1 - 0.07, xi1 - 0.05, -2.25, -0.85, 1.96, 1.98, BW.wood, { cast: false });
   drape(
     'hinten',
     'y',
@@ -927,7 +907,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     ],
     [xi0 + 0.1, 0.97, 1.45, 1.6]
   );
-  gB(g, xi0 + 0.05, xi0 + 0.07, 0.35, 1.6, 1.96, 1.98, MAT.oak, { cast: false });
+  gB(g, xi0 + 0.05, xi0 + 0.07, 0.35, 1.6, 1.96, 1.98, BW.wood, { cast: false });
   // ---- the bare bulb in the middle of the room ----
   const bulb = bareBulb(g, 0.1, -0.15, zw - 0.02, 1.9);
   bookMesh(g, books, R);
@@ -1218,6 +1198,9 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     lcol(r, x0, x1, y0 - 0.04, y1 + 0.04, 0, 1.05, 'wood');
     gB(g, -hx - 0.5, -hx - 0.1, -0.35, 0.35, 0.08, 0.095, MATS.felt, { cast: false });
   }
+  // feat/einrichtung: the style layer hangs here (it moves with the building in the plan view)
+  BUNG.anchor = siteGroup(b);
+  Object.assign(BUNG, { inside, xi0, xi1, yi0: -hy + T, yi1, zw, AX1, AY0, T, bulb: [0.1, -0.15, 1.9], R });
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: 0, z1: zw + 0.8, name: 'Bungalow' });
   INSIDE.push({ b, hx: ANX.hx, hy: ANX.hy, ox: ANX.ox, oy: ANX.oy, z0: 0, z1: zaw + 0.6, name: 'Bungalow – Anbau' });
   FOOT.push({ b, hx: hx + 0.1, hy: hy + 0.1, ox: 0, oy: 0 });
