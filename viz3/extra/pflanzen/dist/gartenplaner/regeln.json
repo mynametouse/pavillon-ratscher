@@ -1,0 +1,430 @@
+{
+  "version": 1,
+  "stand": "2026-10-23",
+  "_hinweis": "Grenzabstände nach dem Thüringer Nachbarrechtsgesetz (ThürNRG) und Ratschläge für den Garten bei Ratscher (Tallage am Bach, Auenlehm). Eigene Zusammenfassung, keine Rechtsberatung – vor dem Pflanzen an der Grenze die amtliche Fassung (landesrecht.thueringen.de) prüfen. Die Zuordnung einzelner Arten zu den Kategorien steht in pflanzen.json (Feld nachbarrecht); Arten, die das Gesetz nicht beim Namen nennt, sind nach ihrem Wuchs eingeordnet.",
+  "quellen": {
+    "thuernrg": {
+      "titel": "Thüringer Nachbarrechtsgesetz (ThürNRG) vom 22.12.1992 (GVBl. S. 599), zuletzt geändert durch Gesetz vom 8.3.2016 – Gesetzestext in der Broschüre „Nachbarrecht in Thüringen“ (März 2017)",
+      "url": "https://www.nordhausen.de/_daten/mm_objekte/2011/06/24828_0404_22879791.pdf",
+      "herausgeber": "Stadt Nordhausen (Abdruck des Landesgesetzes)",
+      "abgerufen": "2026-10-23",
+      "lizenz": "Gesetzestext: amtliches Werk (§ 5 UrhG); hier nur in eigenen Worten zusammengefasst"
+    },
+    "thuernrg-aenderung-2016": {
+      "titel": "Erstes Gesetz zur Änderung des Thüringer Nachbarrechtsgesetzes – Gesetzentwurf der Landesregierung, Drucksache 6/1173 (Neufassung § 46 Abs. 1, § 46 Abs. 2, § 49, § 51 Abs. 2)",
+      "url": "https://parldok.thueringer-landtag.de/ParlDok/dokument/56133/erstes-gesetz-zur-",
+      "herausgeber": "Thüringer Landtag",
+      "abgerufen": "2026-10-23",
+      "lizenz": "amtliches Werk (§ 5 UrhG)"
+    },
+    "bnatschg-39": {
+      "titel": "§ 39 Bundesnaturschutzgesetz (BNatSchG) – Allgemeiner Schutz wild lebender Tiere und Pflanzen",
+      "url": "https://www.gesetze-im-internet.de/bnatschg_2009/__39.html",
+      "herausgeber": "Bundesministerium der Justiz (gesetze-im-internet.de)",
+      "abgerufen": "2026-10-23",
+      "lizenz": "amtliches Werk (§ 5 UrhG)"
+    },
+    "bgb-910": {
+      "titel": "§ 910 Bürgerliches Gesetzbuch (BGB) – Überhang",
+      "url": "https://www.gesetze-im-internet.de/bgb/__910.html",
+      "herausgeber": "Bundesministerium der Justiz (gesetze-im-internet.de)",
+      "abgerufen": "2026-10-23",
+      "lizenz": "amtliches Werk (§ 5 UrhG)"
+    },
+    "lwf-spaetfrost": {
+      "titel": "Spätfrostschäden – erkennen und vermeiden (Merkblatt 31, November 2022)",
+      "url": "https://lfl.bayern.de/mam/cms04/service/dateien/mb31_frostschaeden_nd2022_rz_web_bf.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Wald und Forstwirtschaft (LWF)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "kob-spaetfrost": {
+      "titel": "Sortenempfehlungen Apfel und Birne – EIP-Projekt „Vermeidung von Spätfrostschäden im Obstbau“",
+      "url": "https://www.kob-bavendorf.de/files/bereiche/Streuobst/Projekte%20Streuobst/EIP%20Sp%C3%A4tfrost/Sortenempfehlungen%20Apfel%2BBirne_KOB-Homepage.pdf",
+      "herausgeber": "Kompetenzzentrum Obstbau Bodensee (KOB) mit LVWO Heuchlingen",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "ltz-wuehlmaus": {
+      "titel": "Hinweise zur Pflanzengesundheit, Haus- und Kleingarten: Wühlmäuse (Februar 2021)",
+      "url": "https://studio.isip.de/isip/servlet/resource/blob/323910/8085cf0241b9dc81c4bebaaae7eec0be/pflanzengesundheit-wuehlmaus-data.pdf",
+      "herausgeber": "Landwirtschaftliches Technologiezentrum Augustenberg (LTZ), Baden-Württemberg",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "muenster-wuehlmaus": {
+      "titel": "Tipps zum Umgang mit der Wühlmaus (4. Auflage, Mai 2024)",
+      "url": "https://stadt-muenster.de/fileadmin/user_upload/stadt-muenster/67_umwelt/pdf/tipps/gs_wuehlmaus.pdf",
+      "herausgeber": "Stadt Münster mit der Landwirtschaftskammer Nordrhein-Westfalen",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lwg-unterlagen": {
+      "titel": "Veredlungsunterlagen von Obstgehölzen für den Hausgarten (Merkblatt 3101, Juli 2016)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/3101_-_veredlungsunterlagen_von_obstgehoelzen.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lwg-streuobst-apfel": {
+      "titel": "Bewährte Apfelsorten für den Streuobstanbau (Publikation 3151, September 2022)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/3151_info_bf.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "psu-juglon": {
+      "titel": "Landscaping and Gardening Around Walnuts and Other Juglone Producing Plants",
+      "url": "https://extension.psu.edu/landscaping-and-gardening-around-walnuts-and-other-juglone-producing-plants",
+      "herausgeber": "Penn State Extension (The Pennsylvania State University)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lfulg-baumobst": {
+      "titel": "Baumobst für den Garten (Vortrag C. Kröling, Dresden-Pillnitz 2015)",
+      "url": "https://www.gartenbau.sachsen.de/download/Baumobst_fuer_den_Garten.pdf",
+      "herausgeber": "Sächsisches Landesamt für Umwelt, Landwirtschaft und Geologie (LfULG), Gartenbau Sachsen",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "aelf-unternutzung": {
+      "titel": "Unternutzung von Streuobstwiesen – Kostenfaktor oder Chance? (Vortrag G. Stöckl, Bio-Streuobsttagung Freising, 31.01.2013)",
+      "url": "https://lfl.bayern.de/mam/cms07/iab/dateien/unternutzung-streuobstwiesenst__ckl.pdf",
+      "herausgeber": "Amt für Ernährung, Landwirtschaft und Forsten Neumarkt i. d. OPf., Fachzentrum Ökologischer Landbau (veröffentlicht von der LfL Bayern)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "mluk-vegagley": {
+      "titel": "Steckbriefe Brandenburger Böden: Vega-Gley (3. Auflage, Dezember 2020)",
+      "url": "https://mleuv-daten.brandenburg.de/Steckbriefe-BB-Boeden/SB-9-3-Vegagley.pdf",
+      "herausgeber": "Ministerium für Landwirtschaft, Umwelt und Klimaschutz des Landes Brandenburg",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lwg-bodenprobe": {
+      "titel": "Hinweise zur Bodenprobenahme und Bodenuntersuchung (Merkblatt 1201, Juli 2022)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/1201_info_bf.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "bl-waldgarten": {
+      "titel": "Leitfaden Freiraumgestaltung auf Privatgrund – Obstgarten, Merkblatt Nr. 5 (Mai 2022)",
+      "url": "https://kanton.baselland.ch/volkswirtschafts-und-gesundheitsdirektion/landw-zentrum-ebenrain/nl_files/nl_merkblaetter/bafu_klimagarten_obst_waldgarten.pdf",
+      "herausgeber": "Kanton Basel-Landschaft, Landwirtschaftliches Zentrum Ebenrain (Bereitstellung)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "hswt-waldgarten": {
+      "titel": "Evaluierung der finanziellen Rentabilität eines Waldgartens am Standort Freising/Dürneck (Bachelorarbeit J. Knoll, Juni 2025)",
+      "url": "https://agroforst-info.de/wp-content/uploads/2025/11/Bachelorarbeit_Waldgarten_Knoll_Juni_2025.pdf",
+      "herausgeber": "Hochschule Weihenstephan-Triesdorf, Fakultät Wald und Forstwirtschaft (über agroforst-info.de)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lvgl-wuehlmaus": {
+      "titel": "Wühlmäuse im Garten (Reihe „Die Bayerischen Obst- und Gartenbauvereine informieren“, 2002)",
+      "url": "https://mv.gartenbauvereine.org/wp-content/uploads/2020/05/WuehlmaeuseImGarten.pdf",
+      "herausgeber": "Bayerischer Landesverband für Gartenbau und Landespflege e. V.",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "wetcc-gilde": {
+      "titel": "Fruit Tree Guild – Layers and Categories",
+      "url": "https://wetcc.edu/wp-content/uploads/pdf/Fruit-Tree-Guild-Layers-Categories.pdf",
+      "herausgeber": "White Earth Tribal and Community College, Community Extension (gefördert von USDA NIFA)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lwg-birne": {
+      "titel": "Birnensorten für den Garten (Merkblatt 3152, Juni 2016)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/infoschrift_birne_3152.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "tlubn-klima-sm": {
+      "titel": "Klimaentwicklung Schmalkalden-Meiningen (Faktenblatt, erstellt 16.04.2025)",
+      "url": "https://rekisviewer.hydro.tu-dresden.de/viewer/rekis_domain/Klima_Steckbriefe/Thueringen/Landkreise/16066/000_GESAMT.pdf",
+      "herausgeber": "Thüringer Landesamt für Umwelt, Bergbau und Naturschutz (TLUBN), Kompetenzzentrum Klima; Auswertung TU Dresden (ReKIS)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    }
+  },
+  "messung": "Gemessen wird von der Mitte des Stammes – bei Sträuchern, Hecken und Rebstöcken von der Mitte der Pflanze – bis zur Grenzlinie, und zwar an der Stelle, an der die Pflanze aus dem Boden tritt (§ 47 ThürNRG). Die Breite der Krone zählt dabei nicht; über die Grenze ragende Äste und Wurzeln regelt § 910 BGB.",
+  "grenzabstand": [
+    {
+      "id": "baum-sehr-stark",
+      "text": "Sehr stark wachsende Bäume (außer Obstbäumen), z. B. Bergahorn, Linden, Pappeln, Platane, Rosskastanie, Rotbuche, Stieleiche, Esche, Douglasie, Fichte, Kiefern, Tannen, Atlaszeder",
+      "abstand_m": 4,
+      "paragraf": "§ 44 Nr. 1 Buchst. a ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "baum-stark",
+      "text": "Stark wachsende Bäume (außer Obstbäumen), z. B. Hainbuche, Schwedische Mehlbeere, Vogelbeere, Sandbirke, Grauerle, Japanische Zierkirsche, Lebensbaum; hier auch Schwarzerle, Speierling und Elsbeere (nach Wuchs eingeordnet, nicht namentlich genannt)",
+      "abstand_m": 2,
+      "paragraf": "§ 44 Nr. 1 Buchst. b ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "baum-uebrige",
+      "text": "Alle übrigen Bäume (außer Obstbäumen)",
+      "abstand_m": 1.5,
+      "paragraf": "§ 44 Nr. 1 Buchst. c ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "walnuss-saemling",
+      "text": "Walnusssämlinge (nicht veredelte Walnussbäume)",
+      "abstand_m": 4,
+      "paragraf": "§ 44 Nr. 2 Buchst. a ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "obst-stark",
+      "text": "Kernobstbäume auf stark wachsender Unterlage (z. B. Apfel- oder Birnensämling – Halb- und Hochstämme), Süßkirschen und veredelte Walnussbäume. Mittelstarke Unterlagen nennt das Gesetz nicht; im Zweifel wie stark wachsend planen.",
+      "abstand_m": 2,
+      "paragraf": "§ 44 Nr. 2 Buchst. b ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "obst-schwach",
+      "text": "Kernobstbäume auf schwach wachsender Unterlage (z. B. Apfel auf M 9, Quitte auf Quitte A) und Steinobstbäume außer Süßkirschen (Zwetsche, Pflaume, Sauerkirsche, Pfirsich, Aprikose)",
+      "abstand_m": 1.5,
+      "paragraf": "§ 44 Nr. 2 Buchst. c ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "strauch-stark",
+      "text": "Stark wachsende Sträucher (außer Beerenobst), z. B. Rhododendron-Hybriden, Hasel, Felsenmispel, Flieder, Forsythie, Wacholder; hier auch Holunder, Kornelkirsche, Felsenbirne, Sanddorn, Erbsenstrauch, Hundsrose und Kiwibeere (nach Wuchs eingeordnet)",
+      "abstand_m": 1,
+      "paragraf": "§ 44 Nr. 3 Buchst. a ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "strauch-uebrige",
+      "text": "Alle übrigen Sträucher (außer Beerenobst), z. B. Goumi",
+      "abstand_m": 0.5,
+      "paragraf": "§ 44 Nr. 3 Buchst. b ThürNRG",
+      "quelle": "thuernrg"
+    },
+    { "id": "brombeere", "text": "Brombeersträucher", "abstand_m": 1, "paragraf": "§ 44 Nr. 4 Buchst. a ThürNRG", "quelle": "thuernrg" },
+    {
+      "id": "beerenobst",
+      "text": "Alle übrigen Beerenobststräucher, z. B. Johannis-, Stachel-, Josta- und Himbeere, Aronia, Maibeere",
+      "abstand_m": 0.5,
+      "paragraf": "§ 44 Nr. 4 Buchst. b ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "rebstock",
+      "text": "Einzelne Rebstöcke (Wein an Wand, Spalier oder Pergola)",
+      "abstand_m": 0.5,
+      "paragraf": "§ 44 Nr. 5 ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "baumschule",
+      "text": "Baumschulbestände; höher als 2 m nur mit den Abständen für Bäume oder Obstbäume",
+      "abstand_m": 1,
+      "paragraf": "§ 44 Nr. 6 ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "weihnachtsbaeume",
+      "text": "Weihnachtsbaumpflanzungen; höher als 2 m nur mit den Abständen für Bäume",
+      "abstand_m": 1,
+      "paragraf": "§ 44 Nr. 7 ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "hecke-bis-1m",
+      "text": "Hecke bis 1 m Höhe (geschnittene oder sonst als Hecke gezogene Pflanzung)",
+      "abstand_m": 0.25,
+      "paragraf": "§ 45 Abs. 1 Nr. 1 ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "hecke-bis-1-5m",
+      "text": "Hecke bis 1,5 m Höhe",
+      "abstand_m": 0.5,
+      "paragraf": "§ 45 Abs. 1 Nr. 2 ThürNRG",
+      "quelle": "thuernrg"
+    },
+    { "id": "hecke-bis-2m", "text": "Hecke bis 2 m Höhe", "abstand_m": 0.75, "paragraf": "§ 45 Abs. 1 Nr. 3 ThürNRG", "quelle": "thuernrg" },
+    {
+      "id": "hecke-ueber-2m",
+      "text": "Hecke über 2 m Höhe: 0,75 m zuzüglich des Maßes, um das die Hecke höher als 2 m ist (z. B. 3 m hohe Hecke: 1,75 m)",
+      "abstand_m": 0.75,
+      "paragraf": "§ 45 Abs. 1 Nr. 4 ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "spalier-pergola",
+      "text": "Spaliervorrichtung oder Pergola bis 2 m Höhe; darüber wächst der Abstand um das Maß, um das sie höher als 2 m ist",
+      "abstand_m": 0.5,
+      "paragraf": "§ 50 Abs. 1 ThürNRG",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "krautig",
+      "text": "Kräuter, Stauden, Zwiebelpflanzen, Einjährige und Bodendecker ohne Holz: das Gesetz regelt Abstände nur für Bäume, Sträucher, Rebstöcke, Hecken und Spaliere – kein Mindestabstand",
+      "abstand_m": 0,
+      "paragraf": "§§ 44, 45 ThürNRG (nicht erfasst)",
+      "quelle": "thuernrg"
+    }
+  ],
+  "fakten": [
+    {
+      "id": "grenzabstand-landwirtschaft",
+      "text": "Grenzt das Nachbargrundstück an Weinbau, Landwirtschaft, Erwerbsgartenbau oder eine kleingartenähnliche Nutzung (oder ist es per Bebauungsplan dafür vorgesehen), gelten die doppelten Abstände nach §§ 44 und 45; bei sehr stark wachsenden Bäumen und Walnusssämlingen nur die anderthalbfachen, bei Pappeln wieder die doppelten (§ 46 Abs. 1 ThürNRG). Ob eine Ziegenweide dazu zählt, im Einzelfall klären.",
+      "quelle": "thuernrg-aenderung-2016"
+    },
+    {
+      "id": "grenzabstand-ausnahmen",
+      "text": "Keine Grenzabstände gelten für Pflanzen hinter einer undurchsichtigen Einfriedung, die sie nicht überragen, an Grenzen zu öffentlichen Grünflächen und zu Gewässern (der Änderungsentwurf von 2015 nennt zusätzlich öffentliche Verkehrsflächen), auf öffentlichen Straßen, zum Schutz rutschgefährdeter Böschungen und gegenüber ungenutzten oder geringwertigen Flächen außerhalb des geschlossenen Baugebiets (§ 46 Abs. 2 Nr. 1–5 ThürNRG).",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "grenzabstand-gewaesser",
+      "text": "Zum Bach hin gilt kein Grenzabstand, wenn das Gewässer ein eigenes Flurstück bildet (Grenze zu einem Gewässer, § 46 Abs. 2 Nr. 2 ThürNRG). Wo die Grenze in der Wiese liegt, gelten die normalen Abstände.",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "beseitigung-fuenf-jahre",
+      "text": "Der Nachbar kann zu nah gepflanzte Gehölze beseitigen lassen; der Anspruch ist ausgeschlossen, wenn er nicht bis zum Ende des fünften Kalenderjahres nach der Pflanzung klagt (bei Hecken, die durchwachsen, ab dem Jahr, in dem sie keine Hecke mehr sind). Das gilt nicht an Wirtschaftswegen, und eine Ersatzpflanzung muss die Abstände wieder einhalten (§ 51 Abs. 1, 3–5 ThürNRG).",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "hecke-rueckschnitt-nachbar",
+      "text": "Ist eine Hecke höher, als ihr Abstand erlaubt, kann der Nachbar den Rückschnitt verlangen – zu leisten nur zwischen 1. Oktober und 28. Februar (§ 51 Abs. 2 ThürNRG, Frist seit 2016).",
+      "quelle": "thuernrg-aenderung-2016"
+    },
+    {
+      "id": "gehoelzschnitt-schonzeit",
+      "text": "Vom 1. März bis 30. September dürfen Hecken, Gebüsche und andere Gehölze außerhalb von Wald und gärtnerisch genutzter Grundfläche nicht abgeschnitten oder auf den Stock gesetzt werden; schonende Form- und Pflegeschnitte bleiben erlaubt (§ 39 Abs. 5 Satz 1 Nr. 2 BNatSchG).",
+      "quelle": "bnatschg-39"
+    },
+    {
+      "id": "grenzaenderung",
+      "text": "Wird die Grenze später verlegt, wird eine bis dahin zulässige Pflanzung dadurch nicht unzulässig (§ 52 ThürNRG).",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "verjaehrung",
+      "text": "Schadensersatz- und Geldansprüche aus dem Nachbarrecht verjähren nach dem BGB; die übrigen Ansprüche verjähren nicht – für zu nah gepflanzte Gehölze zählt daher die Ausschlussfrist des § 51 (§ 53 ThürNRG).",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "ueberhang",
+      "text": "Wurzeln vom Nachbargrundstück darf man abschneiden; überhängende Zweige erst, wenn eine angemessene Frist zur Beseitigung verstrichen ist – und beides nur, wenn sie die Nutzung des Grundstücks beeinträchtigen (§ 910 BGB).",
+      "quelle": "bgb-910"
+    },
+    {
+      "id": "rebanlage",
+      "text": "Für geschlossene Rebanlagen gelten eigene Abstände: zu Grenzen parallel zu den Zeilen der halbe Zeilenabstand, mindestens 0,75 m (Zeilen bis 2 m breit) bzw. 1,40 m, zu anderen Grenzen mindestens 1 m (§ 48 ThürNRG). Ein einzelner Rebstock: 0,5 m.",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "wald-abstand",
+      "text": "Wer Wald neu begründet oder verjüngt, braucht große Abstände: 30 m zu bebauten oder bebaubaren Grundstücken, 5 m zu landwirtschaftlich oder gärtnerisch genutzten, 1,5 m zu Wald (§ 49 Abs. 1 ThürNRG). Ein Waldgarten aus Obstgehölzen wird im Planer nach §§ 44, 45 geprüft.",
+      "quelle": "thuernrg"
+    },
+    {
+      "id": "spaetfrost-tallage",
+      "text": "Kalte Luft fließt in klaren, windstillen Nächten hangabwärts und sammelt sich in Senken und Tälern als Kaltluftsee – dort ist die Spätfrostgefahr am größten. Hecken oder dichte Gehölzränder quer zum Tal stauen die Kaltluft zusätzlich. Spätfröste kommen vor allem im April und Mai vor, gelegentlich noch im Juni.",
+      "quelle": "lwf-spaetfrost"
+    },
+    {
+      "id": "spaetfrost-sortenwahl",
+      "text": "In Frostlagen spät blühende oder blütenfrostrobuste Sorten wählen – beim Apfel z. B. Luxemburger Renette, Roter Bellefleur, Grahams Jubiläumsapfel, Heslacher Gereutapfel; bei der Birne Metzer Bratbirne, Welsche Bratbirne, Prinzessin Marianne. Ontario blüht frostfest, ihr Holz ist aber nicht winterhart genug für sehr kalte Lagen.",
+      "quelle": "kob-spaetfrost"
+    },
+    {
+      "id": "klima-region",
+      "text": "Klima im Nachbarkreis Schmalkalden-Meiningen (für Ratscher das nächste belegte Mittel): 1961–1990 im Flächenmittel 7,5 °C, 102 Frost- und 29 Eistage, 761 mm Niederschlag; 1991–2020 um 1,2 °C wärmer und 13 Frosttage weniger. Im Szenario ohne Klimaschutz wird es weiter wärmer, die Sommer bis 2100 um etwa ein Fünftel trockener. Für die Tallage am Bach gilt zusätzlich die Kaltluft-Regel (spaetfrost-tallage).",
+      "quelle": "tlubn-klima-sm"
+    },
+    {
+      "id": "aprikose-pfirsich",
+      "text": "Aprikose und Pfirsich blühen früh und leiden unter Frost; der Pfirsich braucht einen frostfreien, warmen Platz (am besten als Spalier an einer Südwand) und verträgt keinen schweren, nassen, kalten Boden. Für die Tallage am Bach nur an der warmen Pavillonwand denkbar.",
+      "quelle": "lfulg-baumobst"
+    },
+    {
+      "id": "auenlehm-grundwasser",
+      "text": "Auenböden aus Auenlehm entstehen durch Überflutung und hoch stehendes Grundwasser; wie tief Wurzeln reichen, hängt vom Grundwasserstand ab. Oft überflutete Stellen taugen eher für Grünland oder Auwaldgehölze. Ein typisches Profil ist schwach sauer (pH um 6). Obstbäume, die keine Staunässe vertragen, nicht in die tiefsten Stellen setzen.",
+      "quelle": "mluk-vegagley"
+    },
+    {
+      "id": "staunaesse-steinobst",
+      "text": "Pflaume, Zwetsche, Sauerkirsche und Pfirsich vertragen keine Staunässe und keine Spätfrostlagen; Pflaumen brauchen tiefgründigen, sich rasch erwärmenden Boden mit genug Wasser. Für Kirschen auf schwerem Boden eignet sich die Vogelkirsche als Unterlage.",
+      "quelle": "lfulg-baumobst"
+    },
+    {
+      "id": "unterlage-halbstamm",
+      "text": "Halb- und Hochstämme stehen auf stark wachsenden Unterlagen (Apfel: Sämling wie ‘Bittenfelder’, A 2, M 25, M 11; Birne: Sämling wie ‘Kirchensaller Mostbirne’). Ein Apfel-Halbstamm braucht rund 65–80 m² Standraum und trägt ab dem 4.–7. Standjahr; schwache Unterlagen (M 9, M 26, M 27) brauchen zeitlebens einen Pfahl und werden nur 15–20 Jahre alt.",
+      "quelle": "lwg-unterlagen"
+    },
+    {
+      "id": "befruchtung-apfel",
+      "text": "Apfelsorten sind fast alle auf fremden Pollen einer anderen, gleichzeitig blühenden Sorte angewiesen. Triploide Sorten (z. B. Boskoop, Jakob Fischer, Kaiser Wilhelm) taugen nicht als Befruchter und brauchen selbst zwei diploide Partner; die schorftoleranten Re- und Pi-Sorten sind diploid und gute Befruchter.",
+      "quelle": "lwg-streuobst-apfel"
+    },
+    {
+      "id": "befruchtung-birne",
+      "text": "Birnen brauchen mehr Wärme als Äpfel und blühen früher, die Blüte ist daher spätfrostgefährdet – in rauen Lagen an geschützte Stellen oder als Wandspalier. Die meisten Birnen sind diploid; gute Befruchter sind z. B. ‘Williams Christ’, ‘Conférence’ und ‘Vereinsdechant’, triploide Sorten taugen nicht als Pollenspender.",
+      "quelle": "lwg-birne"
+    },
+    {
+      "id": "befruchtung-suesskirsche",
+      "text": "Die meisten Süßkirschensorten sind selbstunfruchtbar und brauchen eine passende zweite Sorte in der Nähe; selbstfruchtbare Ausnahmen gibt es (bei den Pillnitzer Sorten z. B. ‘Achat’ und ‘Jade’).",
+      "quelle": "lfulg-baumobst"
+    },
+    {
+      "id": "wuehlmaus-drahtkorb",
+      "text": "Auf gefährdeten Flächen Obstbäume und andere empfindliche Gehölze in einem Korb aus verzinktem Drahtgeflecht (Maschenweite höchstens 16 mm) pflanzen, der oben am Wurzelhals geschlossen wird; Fallobst auflesen.",
+      "quelle": "muenster-wuehlmaus"
+    },
+    {
+      "id": "wuehlmaus-abwehrpflanzen",
+      "text": "Pflanzen, die oft gegen Wühlmäuse empfohlen werden (Kaiserkrone, Knoblauch, Basilikum), zeigten in Versuchen keine Wirkung. Narzissen nennt das Merkblatt nicht; auch für sie fehlt ein Beleg, dass sie einen Baum schützen. Verlass ist nur auf den Drahtkorb (und Fallen).",
+      "quelle": "ltz-wuehlmaus"
+    },
+    {
+      "id": "juglon-walnuss",
+      "text": "Walnüsse bilden Juglon, die Echte Walnuss weniger als die Schwarznuss. Am meisten steckt in Knospen, Blättern, Fruchtschalen und Wurzeln; gefährdet sind empfindliche Pflanzen vor allem unter der Krone und auf schlecht durchlüftetem, nassem Boden. Johannisbeeren, Zwiebeln, Bohnen und Kürbis gelten als tolerant. Walnusslaub nicht als Mulch im Beet verwenden.",
+      "quelle": "psu-juglon"
+    },
+    {
+      "id": "ziegen-verbiss",
+      "text": "Ziegen fressen mit Vorliebe Gehölze und schälen Rinde; unter Obstbäumen gehen sie nur unter Aufsicht und mit massivem Baumschutz. Grenzt die Ziegenweide des Nachbarn im Osten an, junge Gehölze dort mit Verbiss- und Stammschutz pflanzen und den Zaun dicht halten.",
+      "quelle": "aelf-unternutzung"
+    },
+    {
+      "id": "bodenprobe",
+      "text": "Vor dem Pflanzen (danach alle 3–5 Jahre) eine Bodenprobe nehmen: je Nutzung (Obstwiese, Beete) 10–15 Einstiche, 25–30 cm tief, gut mischen, etwa 500 g ins Labor. Die Standarduntersuchung ergibt Phosphat, Kalium und Kalkbedarf; Magnesium und Humus extra beauftragen. Bis dahin gilt die Schätzung pH um 6 (Auenlehm).",
+      "quelle": "lwg-bodenprobe"
+    },
+    {
+      "id": "wuehlmaus-pflanzzeit",
+      "text": "Wo viele Wühlmäuse sind, Gehölze lieber im Frühjahr als im Herbst pflanzen – im Herbst gesetzte Bäume werden bevorzugt angefressen. Gras um junge Bäume kurz halten, dicke Mulchdecken in gefährdeten Bereichen vermeiden, Fallobst aufsammeln, Fallen im Spätherbst und zeitigen Frühjahr stellen.",
+      "quelle": "lvgl-wuehlmaus"
+    },
+    {
+      "id": "waldgarten-abstand",
+      "text": "Ein essbarer Wald soll eher licht sein; die kleineren Bäume gehören auf die Südseite. Faustregel eines Schweizer Leitfadens: zwei Bäume mindestens so weit auseinander, wie ihre Endhöhen zusammen ergeben – dann wächst darunter noch etwas.",
+      "quelle": "bl-waldgarten"
+    },
+    {
+      "id": "waldgarten-naehrstoffe",
+      "text": "Nährstoffhungrige Obstbäume (Apfel, Birne, Quitte, Pflaume) neben Stickstoffsammler wie Erle oder Ölweide setzen; niedrige Sträucher auf die Südseite, damit Licht an die Bäume kommt. Ein Waldgarten nutzt bis zu sieben Schichten.",
+      "quelle": "hswt-waldgarten"
+    },
+    {
+      "id": "gilde-funktionen",
+      "text": "Eine Gilde kombiniert um den Baum Pflanzen mit verschiedenen Aufgaben: Bodendecker und Zwiebeln unterdrücken Gras (Obstbäume vertragen kein Gras unter der Krone), Beinwell holt Nährstoffe aus der Tiefe und liefert Mulch, Lauchgewächse wehren Schädlinge ab, Blüten locken Nützlinge, Leguminosen sammeln Stickstoff.",
+      "quelle": "wetcc-gilde"
+    }
+  ]
+}
