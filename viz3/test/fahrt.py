@@ -365,6 +365,7 @@ with lib.browser() as b:
         g = grades(route, i_end)
         print(name, 'grade changes along the route (app ground, ±4 m): worst', g[:10], flush=True)
         ck(f'{name}: the grade along the route changes by less than 8 % (±4 m)', bool(g) and g[0][0] < 8, f"worst {g[:5]}")
+    print('ramps at the decks of the square', json.loads(E("JSON.stringify(FAHRT.status().ramps)")), flush=True)
     if want('nord'):
         # garden -> Schleusingen: out of Ratscher, at 60 km/h on the main road and the L 3004 to the edge of the square (round 2: the take-off
         # at (-360, 833) before the place sign and the grade jumps on the way, fixed in the inner terrain – viz3/extra/fahrt/innen.py)

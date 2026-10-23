@@ -199,12 +199,16 @@ export const FAHRT = (() => {
   // 465/-201). The wheels (and feet) roll up a ramp over the last 5 m before the deck instead; the drawn road stays as it is (the ramp
   // lifts at most that step, at the deck's edge).
   const RAMP = 5;
-  let ramps = null;
+  let ramps = [],
+    rampN = 0;
   function rampAt(x, y) {
-    if (!ramps) {
-      if (!ROADS.ready || !ROADS.decks) return undefined;
+    const DK = ROADS.decks;
+    if (!DK || !DK.length || !RATSCHER.ready) return undefined;
+    // the decks come after ROADS.ready (world/roads.js builds them once the terrain is there): the ramps follow them
+    if (rampN !== DK.length) {
+      rampN = DK.length;
       ramps = [];
-      for (const d of ROADS.decks) {
+      for (const d of DK) {
         const p = d.p,
           n = p.length / 2;
         if (n < 2) continue;
@@ -1225,6 +1229,7 @@ export const FAHRT = (() => {
     active: S.active,
     state: S.state,
     ready: !!S.ready,
+    ramps: (rampAt(0, 0), ramps.length), // the ramps up to the decks of the square (built with the decks)
     ways: D.ways.length,
     signsNear: S.signs.slice(),
     decks: S.decks,
