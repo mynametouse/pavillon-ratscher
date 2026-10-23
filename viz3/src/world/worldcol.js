@@ -173,6 +173,9 @@ export const WCOL = (() => {
     S.dead[t] = 1;
     return true;
   };
+  S.revive = t => {
+    if (S.ready && t >= 0 && t < S.nTree && TREE[t * 3 + 2] > 0) S.dead[t] = 0; // stood up again (world/treehit.js standUp), not a felled one
+  };
   // the trunk index nearest to (x, y) within r (dead ones not), or -1; soft (saplings) only if asked
   S.treeAt = (x, y, r = 0.3, soft = false) => {
     let best = -1,

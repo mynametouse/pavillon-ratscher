@@ -125,6 +125,7 @@ export const TREEHIT = (() => {
     _m = new THREE.Matrix4();
   // tree T leans by th (rad) towards dir (site x, y); the foot moves with a root plate hinge e m out in that direction
   function pose(T, dir, th, e) {
+    T.th = th;
     _ax.set(-dir[1], 0, -dir[0]).normalize(); // site (−dy, dx, 0) as three.js (x, z, −y)
     _q.setFromAxisAngle(_ax, th);
     _o.set(0, 0, 0);
@@ -170,7 +171,7 @@ export const TREEHIT = (() => {
         w = 0.82 + 0.18 * Math.sin(a * 3 + 1.3) + 0.1 * Math.sin(a * 7);
       P.setXYZ(k, x * w, y + (rr > 0.5 && y < 0 ? 0.15 * Math.sin(a * 5) : 0), z * w);
       const top = y > 0.45 && rr < 1.01,
-        c = top ? [0.27, 0.25, 0.15] : [0.2, 0.14, 0.09],
+        c = top ? [0.11, 0.08, 0.035] : [0.075, 0.042, 0.02], // linear: litter sRGB ≈ (95, 80, 50), soil ≈ (78, 58, 40)
         n = 0.85 + 0.3 * Math.abs(Math.sin(a * 11 + y * 7));
       col.set([c[0] * n, c[1] * n, c[2] * n], k * 3);
     }
@@ -391,6 +392,7 @@ export const TREEHIT = (() => {
         );
     }
   }
+  const swayW = T => THREE.MathUtils.clamp(14 / Math.max(2, T.H), 1.2, 5); // rad/s: small trees swing faster
   // a stem that holds: the vehicle stops (vehicles/vehicle.js resolves the hit as before), the crown sways – pushed slowly it leans
   function sway(T, h, a, ratio, v, need, P) {
     let A = ACT.get(T.i);
@@ -401,13 +403,15 @@ export const TREEHIT = (() => {
       A.mode = 'sway'; // the push stopped short of tearing the roots
       A.w = 0;
     }
-    const thMax = THREE.MathUtils.clamp(0.006 / T.D, 0.002, 0.08),
+    // elastic: under a share r of the force that would tear it, the stem leans r · TEAR / 2 (an 11 cm spruce against the car ≈ 6°, a thick
+    // one not visibly); a knock sets it swinging by about as much
+    const lean = Math.min(1, ratio) * TEAR * 0.5,
       start = S.time - A.pushT > 0.25;
     A.dir = [-h.n[0], -h.n[1]];
     A.pushT = S.time;
-    A.push = Math.min(1, ratio) * thMax;
+    A.push = lean;
     if (start) {
-      A.w += Math.min(1, ratio) * thMax * (a > 0.3 ? 3 : 1);
+      A.w += lean * swayW(T) * (a > 0.3 ? 0.8 : 0.3);
       if (ratio > 0.25 || a > 1.5) {
         S.n.stop++;
         snd(ratio > 0.5 ? 'creak' : 'swish', T.x, T.y, Math.min(1, T.D * 6));
@@ -466,9 +470,17 @@ export const TREEHIT = (() => {
     }
   }
   // the stem gives way: out of the collisions at once, the vehicle pays the work, the tree tips over in the push direction with its root plate
-  function fall(T, v, h, w, a, hc, need, F) {
+  // out of the collisions: the trunk (WCOL dead) and, near the garden, its box among the garden's colliders
+  function knock(T) {
     WCOL.removeIdx(T.i);
-    if (T.r && T.r.col >= 0 && COL[T.r.col] && COL[T.r.col][6] === 'tree') COL[T.r.col][5] = COL[T.r.col][4] - 1; // its garden box too
+    const c = T.r && T.r.col >= 0 ? COL[T.r.col] : null;
+    if (c && c[6] === 'tree' && T.z5 == null) {
+      T.z5 = c[5];
+      c[5] = c[4] - 1;
+    }
+  }
+  function fall(T, v, h, w, a, hc, need, F) {
+    knock(T);
     // the vehicle loses M · TURN of its energy (along the contact normal)
     const m = massOf(v),
       W = T.M * TURN;
@@ -620,7 +632,7 @@ export const TREEHIT = (() => {
             z = pressed ? 0.9 : 0.15;
           } else {
             if (S.time - A.pushT < 0.15) tgt = A.push;
-            wn = THREE.MathUtils.clamp(14 / Math.max(2, T.H), 1.2, 5);
+            wn = swayW(T);
             z = 0.12;
           }
           A.w += (-wn * wn * (A.th - tgt) - 2 * z * wn * A.w) * hh;
@@ -679,8 +691,7 @@ export const TREEHIT = (() => {
       A.th = A.end = THREE.MathUtils.clamp(th, 0.9, 1.65);
       A.mode = 'rest';
       ACT.delete(i);
-      WCOL.removeIdx(i);
-      if (T.r && T.r.col >= 0 && COL[T.r.col] && COL[T.r.col][6] === 'tree') COL[T.r.col][5] = COL[T.r.col][4] - 1;
+      knock(T);
       pose(T, dir, A.th, A.e);
       S.down.push([+x.toFixed(2), +y.toFixed(2), +az.toFixed(1), +A.th.toFixed(3)]);
       n++;
@@ -734,9 +745,42 @@ export const TREEHIT = (() => {
       T = INFO[i];
     return {
       mode: A ? A.mode : T && T.down ? 'rest' : 'still',
-      th: A ? +A.th.toFixed(3) : T && T.f && T.f.tilt ? 2 * Math.acos(Math.min(1, Math.abs(T.f.tilt.q.w))) : 0,
+      th: A ? +A.th.toFixed(3) : T && T.th ? +T.th.toFixed(3) : 0,
       dead: !!WCOL.dead[i],
     };
+  };
+  // every knocked-over tree upright again, the save cleared (tests; a tool for the menu later)
+  S.standUp = () => {
+    for (const L of LOGS) {
+      const T = L.T;
+      ACT.delete(T.i);
+      pose(T, L.dir, 0, 0);
+      if (T.r && T.r.m0)
+        T.r.inst.forEach(([im, k], j) => {
+          im.setMatrixAt(k, T.r.m0[j]);
+          im.instanceMatrix.needsUpdate = true;
+        });
+      T.down = false;
+      WCOL.revive(T.i);
+      if (T.z5 != null && T.r && COL[T.r.col]) COL[T.r.col][5] = T.z5;
+      T.z5 = null;
+      T.plate = null;
+    }
+    if (PLATES) PLATES.count = 0;
+    LOGS.length = 0;
+    S.down = [];
+    SAVE.del(LSK);
+    markDirty(true);
+  };
+  // the stem axis of trunk i as drawn (site x, y, z) – read back from its instance matrix: the far card of a forest tree (every level shares
+  // the tilt), the first instance of a measured crown (tests: does it lie in the push direction?)
+  S.axisOf = i => {
+    const T = INFO[i],
+      hd = T && (T.f ? T.f.fi : T.r && T.r.inst[0]);
+    if (!hd) return null;
+    hd[0].getMatrixAt(hd[1], _m);
+    const a = new THREE.Vector3(0, 1, 0).transformDirection(_m);
+    return [+a.x.toFixed(3), +(-a.z).toFixed(3), +a.y.toFixed(3)];
   };
   S.active = () => ACT.size;
   S.stats = () => ({ ready: S.ready, active: ACT.size, down: S.down.length, restored: S.restored || 0, n: S.n });
