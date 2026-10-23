@@ -3,6 +3,7 @@
     --plan A   4 x 4 km detail block (level 12) with levels 8-11 around it and the 25.6 km context (levels 5-7)
     --plan B   the same with levels 8-11 over 9.6 x 9.6 km (Schleusingen, Talsperre, Ratscher)
     --plan T   1.6 km block for a quick local run
+    --plan V   the detail zone Kloster Veßra (wlib.ZONES): level 12 over 2 x 2 km, levels 7-11 over 6.4 x 6.4 km -> gh-pages/welt-test/zonen/vessra/
     --no-dgm   skip the DGM1 download (Copernicus GLO-30 only)
 Prints the road metric (waves per km per class before/after) and the sizes per level; writes meta.json and ATTRIBUTION.md.
 Output (= gh-pages/welt-test/, later Cloudflare R2):
@@ -52,6 +53,7 @@ def main():
     a = ap.parse_args()
     t0 = time.time()
     plan = PLANS[a.plan]
+    zone = wlib.ZONES.get(a.plan)   # a detail zone with its own block (published under welt-test/<sub>)
     levels = sorted(plan)
     # areas per level: levels 5-7 share the context square, 8-11 the block (aligned at level 8), 12 the detail block
     area = {}
@@ -123,7 +125,8 @@ def main():
             log('Bildflugdaten nicht abrufbar – ohne Farbausgleich:', repr(e)[:200])
             dates = {}
         cimg, cbb = wms_mosaic(a.raw, 7, area[7], 5)
-        harm = Harmonizer(cimg, cbb, dates, anchor=(XF['ex'], XF['ey']))
+        # the reference flight: the garden's (a zone: the one over the zone, its colours stay as flown)
+        harm = Harmonizer(cimg, cbb, dates, anchor=zone['centre'] if zone else (XF['ex'], XF['ey']))
         harm_info = {'model': 'one tone curve per flight day and channel (quantile matching across the km lines where flights meet)',
                      **harm.stats}
         del cimg
@@ -135,7 +138,8 @@ def main():
                 ip.reduce(L, area[L])
             ip.from_wms(a.raw, 7, area[7], chunk_level=5)
             for L in (6, 5):
-                ip.reduce(L, area[L])
+                if L in area:
+                    ip.reduce(L, area[L])
             iinfo = {L: dict(n=ip.count.get(L, 0), bytes=ip.bytes.get(L, 0)) for L in levels}
 
     # ---- place names (OSM place nodes and named peaks inside the context square) -> names.json ----
@@ -224,6 +228,9 @@ def main():
         'roads': {k: v for k, v in rmeta.items() if k != 'tiles'},
         'buildings': {k: v for k, v in bmeta.items() if k != 'tiles'},
     }
+    if zone:
+        meta['zone'] = {'name': zone['name'], 'title': zone['title'], 'sub': zone['sub'], 'centre': list(zone['centre']),
+                        'note': 'eigener Block einer Detailzone (welt-test/' + zone['sub'] + '), gleiche Kachelung wie welt-test/'}
     json.dump(meta, open(os.path.join(a.out, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
     # the same GLB tiles as 3D Tiles 1.1 tilesets (standard loaders, e.g. 3DTilesRendererJS): local frame x east, y north, z up with the
     # origin at the model origin (E, N, H0); glTF y-up content is turned z-up by the 3D Tiles convention

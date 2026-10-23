@@ -37,10 +37,10 @@ if [ "$cmd" = worktree ]; then
   else
     git worktree add -q -b "feat/$t" "$d" origin/src || exit 1
   fi
-  # node_modules (built once by tools/check.sh / npm ci) and the built assets (the fast build needs them) from the first worktree that has
-  # them – usually the Kern-Chat's own
+  # node_modules (built once by tools/check.sh / npm ci) and the built assets (the fast build needs them) from this checkout if it has them,
+  # else from the first worktree that has them – run it from the Kern-Chat's own worktree (its dist is current)
   SRCWT=""
-  for w in $(git worktree list --porcelain | sed -n 's/^worktree //p'); do
+  for w in "$ROOT" $(git worktree list --porcelain | sed -n 's/^worktree //p'); do
     [ -d "$w/viz3/node_modules" ] && [ ! -L "$w/viz3/node_modules" ] && [ -d "$w/viz3/dist" ] && { SRCWT=$w; break; }
   done
   if [ -n "$SRCWT" ]; then
