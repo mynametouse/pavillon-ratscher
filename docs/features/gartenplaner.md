@@ -25,7 +25,9 @@ und die günstigen Teile von Meilenstein 4 (Berater, Gilden-Vorlagen, Listen). K
   Einkaufsliste für Kammbach (Anzahl je Art/Sorte, Form, Unterlage, „bei Kammbach: … (Stand …)“, Pflanzzeit, Zubehör aus „Schutz“:
   Wühlmauskorb, Pfahl, Verbissschutz …) – „Kopieren“, „Herunterladen“ (.txt), „Drucken“.
 - **Vor Ort**: im Garten gehen (die Figur steht vor der ausgewählten Pflanze); „Hier setzen“ setzt die gewählte Pflanze 2,2 m vor die
-  Figur (Höhe aus `KERN.ground`), „Ausgewählte hierher“ holt die ausgewählte dorthin; „Draufsicht“ zurück.
+  Figur (Höhe aus `KERN.ground`), „Ausgewählte hierher“ holt die ausgewählte dorthin; „Draufsicht“ zurück. Dasselbe über den
+  Aktionsknopf (E / großer Knopf): „… hier setzen“, „… hierher“ (`KERN.act`, ids `gplan:here`, `gplan:move`).
+- **Startsituation** `?szenario=gartenplaner` (`KERN.scenario`): öffnet den Planer über dem Garten.
 
 ## Was der Berater prüft (`gplan/gplan_rules.js`, Texte deutsch mit Grund)
 
@@ -75,9 +77,13 @@ zeigt „Testdaten“. Geladen wird erst beim Öffnen; geprüft mit `GPSCHEMA.va
 - **Ein Menüeintrag**: `shell/menu.html` → Gestalten → „Garten planen“ (`#gplanbtn`); **eine Zeile** in `core/save.js` (`pav-gplan-v1`);
   `shell/css/gartenplaner.css` in `parts.txt` nach `css/amt.css`; Module unter `# feat/gartenplaner` in `modules.txt`.
 - Wer einen gespeicherten Plan mit „im Garten: an“ hat, lädt die Pflanzendaten nach dem Start (1,5 s nach `whenLoaded`), sonst nie.
-- Die echten Daten von `feat/pflanzen` (Stand 23.10. 10:29, 44 Pflanzen, 19 Grenzabstands-Kategorien, 28 Fakten, 5 Gilden) bestehen
-  `GPSCHEMA.validateAll` ohne Fehler und laufen durch Berater, Gilden und Listen (geprüft in node, nicht eingecheckt). Sobald sie auf `src`
-  sind, nimmt der Planer sie statt der Testdaten.
+- Seit dem Merge von `src` (bf31955) nimmt der Planer die echten Daten (`viz3/extra/pflanzen/dist/gartenplaner/`: 44 Pflanzen,
+  19 Grenzabstands-Kategorien, 30 Fakten, 5 Gilden – ohne Fehler gegen den Vertrag); `testdaten.json` bleibt als Rückfall (Abzeichen
+  „Testdaten“ nur dann).
+- Dienste aus Baustein 1 genutzt: `KERN.scenario('gartenplaner')`, `KERN.act` (`gplan:here`, `gplan:move`). Kein Eintrag im Tagebuch
+  (`KERN.tasks.source`) – Aufgaben kommen mit Kaufen und Pflanzen (nächste Runde).
+- Bauphase 0 (alte Garage beim Start): der Berater misst immer zum geplanten Pavillon (Rechteck wie `world/siteplan.js`), unabhängig von
+  der gezeigten Phase.
 - Ein Feld im Vertrag fehlt nicht zwingend; nützlich wären später: Höhe des Stammes je Form (heute fest im Modell: Hochstamm 1,8 m,
   Halbstamm 1,2 m, Busch 0,6 m …) und eine Wurzeltiefe/-art für Abstände zu Leitungen.
 - `docs/ARCHITECTURE.md`: Abschnitt 6 `GPLAN`, Abschnitt 8 `pav-gplan-v1` ergänzen; Fenster `#gplan` steht nicht in `HUD.PANELS`

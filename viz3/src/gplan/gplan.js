@@ -9,6 +9,7 @@
 // Saved: pav-gplan-v1 { v: 1, items: [{ id, x, y, jahr }], show, age, month, hour } through SAVE. Plan view: hooks of world/siteplan.js.
 import { SAVE } from '../core/save.js';
 import { $, BASE, stage } from '../core/head.js';
+import { KERN } from '../core/kern.js';
 import { LOADLOG, markDirty, whenLoaded } from '../core/assets.js';
 import { BUILD, bldRects, rectCorners } from '../core/geo.js';
 import { STREAM } from '../garden/stream_geo.js';
@@ -1040,6 +1041,34 @@ export const GPLAN = (() => {
     renderSel();
     return true;
   }
+  // ---------------- on site through the action button (KERN.act): set the chosen plant, fetch the selected one ----------------
+  const onSite = () => U.open && U.mode === 'site' && D.st === 'ok' && P.mode === 'walk';
+  const frontPos = () => {
+    const [x, y] = front();
+    return [x, y, P.feet + 0.4];
+  };
+  KERN.act({
+    id: 'gplan:here',
+    r: 3,
+    prio: 0.6,
+    label: () => (onSite() && U.arm && U.arm.id ? M.fullName(D.db.byId.get(U.arm.id)) + ' hier setzen' : null),
+    pos: frontPos,
+    run: () => placeHere(),
+    gest3: 'pickupLow',
+  });
+  KERN.act({
+    id: 'gplan:move',
+    r: 3,
+    prio: 0.5,
+    label: () =>
+      onSite() && !(U.arm && U.arm.id) && ST.items[U.sel]
+        ? M.fullName(D.db.byId.get(ST.items[U.sel].id)) + ' hierher'
+        : null,
+    pos: frontPos,
+    run: () => moveHere(),
+  });
+  // a start situation: ?szenario=gartenplaner opens the planner over the garden (tests, the menu's „Direkt zu …“)
+  KERN.scenario('gartenplaner', { label: 'Gartenplaner', order: 14, run: () => open() });
   // ---------------- keys, the menu entry, the frame tick, the start ----------------
   window.addEventListener('keydown', e => {
     if (!U.open || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;

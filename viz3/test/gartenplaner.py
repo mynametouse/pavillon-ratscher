@@ -59,7 +59,7 @@ with lib.browser() as b:
         G['p0'] = st['programs']; G['mem0'] = st['mem']
         ck('start: no request for the planner’s data', not reqs, str(reqs))
         ck('start: no panel, no 3D plants, no collisions, data not loaded', not st['panel'] and not st['g3'] and st['gcol'] == 0 and st['data'] == 'none', json.dumps(st))
-        ck('menu entry „Garten planen“ and one plan view hook', st['btn'] and st['hooks'] == 1, json.dumps(st))
+        ck('menu entry „Garten planen“, one plan view hook, the start situation „gartenplaner“', st['btn'] and st['hooks'] == 1 and E("!!KERN.scenario('gartenplaner')"), json.dumps(st))
     section('start', start)
     # ---- open from the menu: plan view, test data ----
     def open_():
@@ -198,9 +198,12 @@ with lib.browser() as b:
         E("GPLAN.open(); GPLAN.select(0); GPLAN.siteMode(true); GAME.step(0.2)")
         ids = J("GPLAN.data.db.list.filter(p => p.schicht !== 'baum').map(p => p.id)")
         E(f"GPLAN.arm({{ id: '{ids[0]}' }}); GAME.view(-6, -12, 1.7, 90, -10, 62); GAME.step(0.1)")
-        n0 = E("GPLAN.state.items.length"); i = E("GPLAN.placeHere()"); E("GAME.step(0.2)")
-        it = J(f"GPLAN.state.items[{i}]")
-        ck('on site: „Hier setzen“ puts the plant 2.2 m in front of the walker', E("GPLAN.state.items.length") == n0 + 1 and abs(it['x'] - (-6 + 2.2)) < 0.1 and abs(it['y'] - (-12)) < 0.1, json.dumps(it))
+        # the action button (KERN.act) offers to set it; pressing it puts the plant 2.2 m in front of the walker
+        best = J("GAME.step(0.1).best")
+        ck('on site: the action button offers „… hier setzen“', bool(best) and best.endswith('hier setzen'), str(best))
+        n0 = E("GPLAN.state.items.length"); E("PLAY.primary(); GAME.step(0.2)")
+        it = J("GPLAN.state.items[GPLAN.state.items.length - 1]")
+        ck('on site: the plant stands 2.2 m in front of the walker', E("GPLAN.state.items.length") == n0 + 1 and abs(it['x'] - (-6 + 2.2)) < 0.1 and abs(it['y'] - (-12)) < 0.1, json.dumps(it))
         ck('on site: walking, the panel open in its small form', J("({ m: GAME.P.mode, site: document.getElementById('gplan').classList.contains('site'), open: !document.getElementById('gplan').hidden })") == {'m': 'walk', 'site': True, 'open': True}, '')
         page_shot(pg, 'g_vor_ort')
         E("GPLAN.siteMode(false); GAME.step(0.1)")
