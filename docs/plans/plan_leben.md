@@ -54,6 +54,17 @@ Die Feature-Pause des Umbau-Plans (`claude/pavillon-umbau.md`) ist damit für di
 - „Neu“-Hinweise höchstens einer je Besuch, Antippen schließt ihn; Knopf „Sicht“ (freie Sicht); Aufgabenkarte faltet sich; Ortsname
   verblasst; Kopfzeile am Handy beim Gehen weg; Querformat.
 
+## 6 Nachträge (Falko, 23.10. 2:24–2:52)
+- **Werkzeuge und Methoden so realistisch wie möglich** – man soll dabei etwas lernen; gern mehrere Wege, kreativ sein erlaubt.
+  Beispiel: der gefällte Stamm – mit einer **Seilwinde (Rückewinde)** aus dem Bestand an den Weg ziehen, dann laden (Gabel, später Kran).
+- **Kleine Bäume** können mit Traktor und Auto **umgefahren** werden – alles, was realistischerweise umfallen würde, oder sich zumindest
+  ein Stück **verbiegen**.
+- **Menschen im Dorf**, mit denen man reden kann – möglichst realistisch aussehend, erfundene Charaktere mit unterschiedlichen Geschichten,
+  die Aufgaben haben oder Teil von Aufgaben sind („wie GTA 3, aber im Dorfkontext“, passend zu Ratscher, Klingenholz und den Leuten).
+  Selten laufen Leute durchs Dorf; meist sind sie in ihren Häusern, kommen ab und zu heraus und kümmern sich um die Gärten, steigen in ihre
+  Autos und fahren davon oder kommen zurück. **Freitags** kommen alle heraus: Karten in der alten Schule oder **davor sitzen** und reden.
+- **Grundlagen weiterentwickeln**: schneller und robuster entwickeln, parallel, weniger lange laden und testen (Umbau Phase 2).
+
 ## Umsetzung in der Nacht (Kern-Chat, Hilfs-Agenten)
 
 | Thema | Branch | Eigene Dateien | Gemeinsame Dateien – nur hier |
@@ -61,7 +72,7 @@ Die Feature-Pause des Umbau-Plans (`claude/pavillon-umbau.md`) ist damit für di
 | Garten: Türen, Dach, Bungalow mit Anbau, Hütte, Gewächshaus, Einrichtung | `feat/garten` | `garden/bungalow.js`, `garden/holzhaus.js`, `garden/greenhouse.js`, neue `garden/*_in.js`, `viz3/extra/garten/`, `shell/css/garten.css`, `viz3/test/garten*.py` | `modules.txt` unter `# feat/garten`, `garden/places.js` (Raumnamen) |
 | Spielfiguren Falko, Sarah, Christoph | `feat/figuren` | `game/avatar.js`, `tools/player/*` (neue Skripte), `viz3/extra/figuren/`, `shell/css/figuren.css`, `viz3/test/figuren*.py` | Figurenwahl in `shell/menu.html`, `modules.txt` unter `# feat/figuren` |
 | Nachbarn: Huberts Hof (Werkstätten, Trockenhütchen, Mondeo auf Rampe), Alltag beider, Ziegen nach Süden, Mähen, Gespräche, Aufgaben | `feat/nachbarn` | `npc/*`, `game/quests.js`, neue `garden/hof_*.js`, `viz3/extra/nachbarn/`, `shell/css/nachbarn.css`, `viz3/test/nachbarn*.py` | `modules.txt` unter `# feat/nachbarn …` |
-| Dorfleben: Skatabend in der alten Schule, Feuer am Acker, Dorfbewohner | `feat/dorf` | neuer Ordner `viz3/src/dorf/`, `world/village*.js`, `viz3/extra/dorf/`, `shell/css/dorf.css`, `viz3/test/dorf*.py` | `modules.txt` unter `# feat/dorf` |
+| Dorfleben: Skatabend in der alten Schule, Feuer am Acker, Dorfbewohner mit Alltag | `feat/dorf-leben` | neuer Ordner `viz3/src/dorf/`, `world/village*.js`, `viz3/extra/dorf/`, `shell/css/dorf.css`, `viz3/test/dorf*.py` | `modules.txt` unter `# feat/dorf` |
 
-Regeln: `docs/PARALLEL.md`; Browser im Chat-Rechner nur über `tools/browser_lock.sh` und mit eigenem Port; GitHub Actions
+Dazu ab 2:45 die Rückewinde (`feat/winde`) und ab 3:00 Bäume, die Fahrzeugen weichen (`feat/baeume`). Regeln: `docs/PARALLEL.md`; Browser im Chat-Rechner nur über `tools/browser_lock.sh` und mit eigenem Port; GitHub Actions
 `.github/workflows/feat.yml` prüft jeden Push auf `feat/**` und hebt Bilder auf; kleine eigene Dateien über `viz3/extra/<thema>/`.

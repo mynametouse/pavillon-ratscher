@@ -19,6 +19,7 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 | Nachbarn: Huberts Hof, Alltag, Ziegen nach Süden, Mähen, Gespräche, Aufgaben (1) | Hilfs-Agent `nachbarn` | `feat/nachbarn` | ab 23.10. 1:45 | `npc/*`, `game/quests.js`, neue `garden/hof_*.js`, `viz3/extra/nachbarn/`, `shell/css/nachbarn.css`, `viz3/test/nachbarn*.py`; Port 8973 |
 | Dorfleben: Skatabend in der alten Schule, Feuer am Acker, Dorfbewohner (2) | Hilfs-Agent `dorf` | `feat/dorf-leben` (`feat/dorf` ist ein alter Zweig des V16e-Chats) | ab 23.10. 1:45 | neuer Ordner `viz3/src/dorf/`, `world/village*.js`, `viz3/extra/dorf/`, `shell/css/dorf.css`, `viz3/test/dorf*.py`; Port 8974 |
 | Rückewinde am Traktor: Stamm aus dem Bestand an den Weg ziehen, Hinweise beim Laden (Falko 2:24) | Hilfs-Agent `winde` | `feat/winde` | ab 23.10. 2:45 | `vehicles/tractor.js`, `werk/holz*.js`, `world/fell.js` (Hinweise, Übergabe), neues `werk/winde.js`, `viz3/extra/winde/`, `shell/css/winde.css`, `viz3/test/winde*.py`; Port 8975 |
+| Kleine Bäume weichen Fahrzeugen: biegen sich, kippen um (Falko 2:52) | Hilfs-Agent `baeume` | `feat/baeume` | ab 23.10. 3:00 | `world/worldcol.js`, Bauminstanzen in `world/ratscher.js`, `world/forest.js`, kleine Gartenbäume `garden/trees.js`, neues `world/treehit.js`, kleiner Haken in `vehicles/vehicle.js`, `viz3/extra/baeume/`, `viz3/test/baeume*.py`; Port 8976 |
 
 ## Absprachen
 
