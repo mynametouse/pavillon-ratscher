@@ -147,7 +147,9 @@ with lib.browser() as b:
         kl2 = act(pg, 'garten:brennofen'); run(pg, 'garten:brennofen', 9.5)
         gf = ev(pg, "[ATELIER.state.glazed, ATELIER.state.gfired]")
         ck('glazing: „Schalen glasieren“, then „Glasurbrand starten“', gl == 'Schalen glasieren' and kl2 == 'Glasurbrand starten' and gf[1] >= 1, [gl, kl2, gf])
-        view(pg, 'holzhaus', 0.5, 0.95, 1.22, -90, -20, 55); shot(pg, 'atelier_schalen_glasiert')
+        bw = ev(pg, "(() => { const m = ATELIER.bowls[0]; return [m.visible, m.material === ATELIER.glaze, ATELIER.glaze.color.equals(STIL.get('atelier').M.acc.color)]; })()")
+        ck('glazing: the first bowl on the drying shelf shines in the atelier’s accent colour', bw == [True, True, True], bw)
+        view(pg, 'holzhaus', 0.5, 0.95, 1.05, -90, -28, 55); shot(pg, 'atelier_schalen_glasiert')
         # the journal: the atelier's tasks started when we came in, pottery done after bowl and firing, the guest bed done after unfolding
         tk = json.loads(ev(pg, "JSON.stringify(['atelier-toepfern', 'atelier-malen', 'atelier-gaestebett'].map(id => [id, TASKS.state(id)]))"))
         print('tasks', tk, flush=True)

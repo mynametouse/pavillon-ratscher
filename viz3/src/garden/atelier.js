@@ -294,13 +294,14 @@ lcol(r, SH.x0, SH.x1, SH.y0, SH.y1, FZ, FZ + 1.84, 'shelf');
     { cast: false }
   );
   put(g, new THREE.CylinderGeometry(0.1, 0.1, 0.01, 16), CLAY.wet, 0.5, ym, SH.z[0] + 0.27, { cast: false });
-  // drying (leather-hard): bowls, cups, a vase
-  const row = (z, mats, kinds) =>
+  // drying (leather-hard): bowls, cups, a vase – places left and right of the middle post (x 0.26…0.285), three and four
+  const XS = [-0.12, 0.02, 0.16, 0.35, 0.46, 0.57, 0.665];
+  const row = (z, mats, kinds, xs = XS) =>
     kinds.forEach((k, i) => {
-      const x = SH.x0 + 0.1 + i * 0.13,
-        [kind, rr, hh] = k;
-      vessel(g, kind, x, ym, z + 0.022, rr, hh, mats[i % mats.length]);
+      const [kind, rr, hh] = k;
+      vessel(g, kind, xs[i], ym, z + 0.022, rr, hh, mats[i % mats.length]);
     });
+  // (the right half of this board is kept free for the bowls turned while playing)
   row(
     SH.z[1],
     [CLAY.leather],
@@ -309,7 +310,8 @@ lcol(r, SH.x0, SH.x1, SH.y0, SH.y1, FZ, FZ + 1.84, 'shelf');
       ['cup', 0.035, 0.08],
       ['cup', 0.035, 0.08],
       ['vase', 0.05, 0.2],
-    ]
+    ],
+    [-0.12, 0.0, 0.1, 0.2]
   );
   row(
     SH.z[2],
@@ -1693,6 +1695,8 @@ whenLoaded(() => KERN.spot('holzhaus', { label: 'Atelier' }));
 }
 window.ATELIER = {
   house: ATELIER,
+  bowls: MYBOWLS,
+  glaze: AM.glaze,
   sofa: SB,
   rock,
   potter,
