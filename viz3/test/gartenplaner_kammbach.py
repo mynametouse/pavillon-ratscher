@@ -189,7 +189,7 @@ with lib.browser() as b:
         E("CLOCK.t = (Math.floor(CLOCK.t / 1440) + 1) * 1440 + 7.5 * 60; GAME.step(1.5)")
         tor = J("GPLAN.state.kuebel.filter(c => c.loc === 'tor')")
         n_tor = 1 if G['car'] else 4
-        ck('the next morning the delivery stands by the garden gate' + (' (the walnut)' if G['car'] else ''), len(tor) == n_tor and (not G['car'] or tor[0]['id'] == ids['nut']) and all(math.hypot(c['x'] + 8.86, c['y'] - 39.08) < 6 for c in tor), json.dumps(tor))
+        ck('the next morning the delivery stands by the garden gate' + (' (the walnut)' if G['car'] else ''), len(tor) == n_tor and (not G['car'] or tor[0]['id'] == ids['nut']) and all(math.hypot(c['x'] + 8.86, c['y'] - 39.08) < 16 for c in tor), json.dumps(tor))
         # a picture of the delivery: from a few metres inside the garden, looking back at the gate
         E("""(() => { const T = GPLAN.state.kuebel.filter(c => c.loc === 'tor'); if (!T.length) return; const cx = T.reduce((s, c) => s + c.x, 0) / T.length,
           cy = T.reduce((s, c) => s + c.y, 0) / T.length, E = [-8.86, 39.08], f = [cx - E[0], cy - E[1]], L = Math.hypot(f[0], f[1]) || 1, x = cx + f[0] / L * 4, y = cy + f[1] / L * 4;

@@ -123,7 +123,7 @@ export const GPSHOP = (() => {
     return [x, y, VESSRA.gz(x, y)];
   }
   // delivered: by the garden gate, a little into the garden (towards the pavilion) in rows of five, the first row where all five stand
-  // in the garden and clear of the brook's ditch
+  // in the garden, clear of the brook's ditch and of the trees' trunks
   let torW = null;
   function torPos(j) {
     const E = S0.entrance || [-8.86, 39.08],
@@ -135,7 +135,10 @@ export const GPSHOP = (() => {
       at = (u, w) => [E[0] + f[0] * w + r[0] * u, E[1] + f[1] * w + r[1] * u];
     if (torW === null) {
       const S1 = GPLAN.site(),
-        dry = ([x, y]) => S1.brook(x, y) > S1.ditch / 2 + 1 && GPLAN.RULES.inPoly(x, y, S1.boundary);
+        dry = ([x, y]) =>
+          S1.brook(x, y) > S1.ditch / 2 + 1 &&
+          GPLAN.RULES.inPoly(x, y, S1.boundary) &&
+          S1.trees.every(t => Math.hypot(x - t[0], y - t[1]) > 0.8);
       torW = 2.2;
       for (let w = 2.2; w < 20; w += 0.5)
         if ([-2, -1, 0, 1, 2].every(k => dry(at(k * 0.6, w)) && dry(at(k * 0.6, w + 0.6)))) {
@@ -597,7 +600,12 @@ export const GPSHOP = (() => {
     steps: [
       {
         text: 'Fahr zur Baumschule Kammbach nach Kloster Veßra (Orte → Kloster Veßra).',
-        target: () => (nursery() ? [nursery().eingang.x, nursery().eingang.y] : null),
+        // the gate of the nursery (before the zone is built: its jump spot)
+        target: () => {
+          const B = nursery(),
+            sp = !B && KERN.spots && KERN.spots().baumschule;
+          return B ? [B.eingang.x, B.eingang.y] : sp && sp.pos ? [sp.pos[0], sp.pos[1]] : null;
+        },
         check: () => atNursery(),
       },
       {
