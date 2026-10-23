@@ -94,7 +94,7 @@ with lib.browser() as b:
         E("HUD.setMenu(false)")
         ck(f'{n}: chosen in the menu, button pressed, saved', pressed == 'true' and E("SAVE.raw('pav-fig')") == k, f"pressed={pressed} saved={E('SAVE.raw(\"pav-fig\")')}")
         mats = E("__F.mats()")
-        want = {'m': 'm112', 'f': 'player_sarah', 'c': 'player_christoph'}[k]
+        want = {'m': 'm112', 'f': 'player_sarah_hairop', 'c': 'player_christoph'}[k]   # Sarah: her own head with the new hair (cards)
         ck(f'{n}: own model loaded', want in mats, mats)
         if k == 'c':
             E("AVATAR.buds(true)")
