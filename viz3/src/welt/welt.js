@@ -5,6 +5,9 @@
 // Under drawn tiles the outer 120 m terrain of world/ratscher.js is lowered; where the inner 10 m terrain lies (bare earth, DGM1) the tiles
 // step down instead and blend into its edge. KERN gets the height of the drawn triangles (terrain, ground) and 'free' (one may walk there).
 // Tiles: <site>/welt-test/ (tests: dist/welt-test/, ?welt=<url> for another base). Sources and licences: welt-test/ATTRIBUTION.md.
+// Tile sets: the test block (welt-test/) and blocks of their own for detail zones beyond it (welt-test/<sub>, e.g. zonen/vessra/: Kloster
+// Veßra and the road corridor there from the test block, tools/welt/wlib.py ZONES), each with its own meta.json – WELT.addSet(sub) once;
+// a tile comes from the first set whose level rect holds it, wherever the camera is (walking in a zone or driving between them).
 import * as THREE from 'three';
 import { scene, cam } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -56,34 +59,52 @@ export const WELT = (() => {
     if (k >= 0) return location.origin + p.slice(0, k) + '/pavillon-ratscher/welt-test/';
     return 'welt-test/'; // the local test server serves viz3/dist (the tests copy the tiles they need there)
   })();
-  // ---- zones that need the tiles: { at: (x, y) => boolean } ----
+  // ---- tile sets: the test block and the blocks of detail zones (sub path below the base, own meta.json) ----
+  const MAIN = { sub: '', base: S.base, meta: null, p: null, fail: -1e9, err: '' },
+    SETS = [MAIN];
+  S.addSet = sub => {
+    let st = SETS.find(q => q.sub === sub);
+    if (!st) SETS.push((st = { sub, base: S.base + sub, meta: null, p: null, fail: -1e9, err: '' }));
+    return st;
+  };
+  // ---- zones that need the tiles (a zone may name its own tile set: WELT.need('vessra', true, 'zonen/vessra/')) ----
   const needs = new Set();
-  S.need = (id, on) => {
+  S.need = (id, on, sub) => {
+    if (sub) S.addSet(sub);
     if (on) needs.add(id);
     else needs.delete(id);
   };
   // ---- meta ----
-  let metaP = null;
-  let metaFail = -1e9;
-  function meta() {
+  function metaOf(st) {
     // a host without the tiles answers once; asked again at most every 30 s
-    if (!metaP && performance.now() - metaFail < 30000) return Promise.reject(new Error(S.err || 'meta'));
-    if (!metaP)
-      metaP = fetch(S.base + 'meta.json')
+    if (st.meta) return Promise.resolve(st.meta);
+    if (!st.p && performance.now() - st.fail < 30000) return Promise.reject(new Error(st.err || 'meta'));
+    if (!st.p)
+      st.p = fetch(st.base + 'meta.json')
         .then(r => (r.ok ? r.json() : Promise.reject(new Error('meta ' + r.status))))
-        .then(j => (S.meta = j))
+        .then(j => {
+          st.meta = j;
+          if (st === MAIN) S.meta = j;
+          return j;
+        })
         .catch(e => {
-          metaP = null;
-          metaFail = performance.now();
-          S.err = String(e);
+          st.p = null;
+          st.fail = performance.now();
+          st.err = String(e);
+          if (st === MAIN) S.err = st.err;
           throw e;
         });
-    return metaP;
+    return st.p;
   }
-  const inRect = (L, x, y) => {
-    const r = S.meta && S.meta.tiling.levels[L] && S.meta.tiling.levels[L].rect;
-    return !!r && x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3];
+  // the set whose level rect holds tile (L, x, y)
+  const setOf = (L, x, y) => {
+    for (const st of SETS) {
+      const r = st.meta && st.meta.tiling.levels[L] && st.meta.tiling.levels[L].rect;
+      if (r && x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3]) return st;
+    }
+    return null;
   };
+  const inRect = (L, x, y) => !!setOf(L, x, y);
   // ---- terrain decoding (tools/welt/tiles.py: Lorenzo residuals in cm, zlib) ----
   async function inflate(buf) {
     const ds = new DecompressionStream('deflate');
@@ -146,13 +167,14 @@ export const WELT = (() => {
   // ---- tiles ----
   // the ground of the tiles looks like the land of world/ratscher.js: the photo lifted from haze, bright land compressed, grain of grass
   // and soil up close (ROADS.shader: landDetail), and grey surfaces (streets, squares) get sett stones up close
-  // a zone may lay its streets over the photo (WELT.setOverlay: a canvas over a square, r = cover, g/r = surface: asphalt with kerbs,
-  // sett, paving slabs)
+  // a zone may lay its streets over the photo (WELT.setOverlay: a canvas over a square, r = cover, g/r = surface: asphalt with kerbs (< 0.3),
+  // sett (< 0.62), paving slabs (< 0.86), gravel)
   const OVER = {
     tOver: { value: new THREE.DataTexture(new Uint8Array(4), 1, 1) },
     uOver: { value: new THREE.Vector4(0, 0, 0, 0) },
   };
   OVER.tOver.value.needsUpdate = true;
+  S.overlay = () => (OVER.uOver.value.w > 0 ? OVER.tOver.value : null); // whose streets lie on the photo (a zone frees only its own)
   S.setOverlay = (tex, x0, y0, size) => {
     const old = OVER.tOver.value;
     OVER.tOver.value = tex || new THREE.DataTexture(new Uint8Array(4), 1, 1);
@@ -183,7 +205,9 @@ export const WELT = (() => {
         vec3 r;
         if ( code < 0.3 ) r = vec3( 0.085, 0.088, 0.092 ) * clamp( lum / 0.14, 0.75, 1.3 ) * ( 0.86 + 0.24 * n1 ) * ( 0.92 + 0.16 * n2 );   // asphalt, patches after the photo
         else if ( code < 0.62 ) r = setts( p, vec3( 0.168, 0.151, 0.13 ) * clamp( lum / 0.26, 0.75, 1.12 ) * ( 0.85 + 0.3 * n1 ), 8.0, fwp );   // sett: grey-brown, worn patches
-        else r = setts( p * vec2( 1.0, 0.5 ), vec3( 0.27, 0.26, 0.245 ), 3.3, fwp );   // paving slabs
+        else if ( code < 0.86 ) r = setts( p * vec2( 1.0, 0.5 ), vec3( 0.27, 0.26, 0.245 ), 3.3, fwp );   // paving slabs
+        else { float fg = 1.0 - smoothstep( 0.25, 0.8, fwp * 23.0 ), fg2 = 1.0 - smoothstep( 0.25, 0.8, fwp * 6.0 );   // water-bound gravel, reddish (the paths and yards of Kloster Veßra): fine grain, a few coarser patches
+          r = vec3( 0.34, 0.25, 0.19 ) * clamp( lum / 0.3, 0.8, 1.15 ) * ( 0.86 + 0.2 * n1 ) * mix( 1.0, 0.9 + 0.2 * rdH( floor( p * 23.0 ) ), fg ) * mix( 1.0, 0.95 + 0.1 * rdH( floor( p * 6.0 ) + 3.1 ), fg2 ); }
         float kerb = code < 0.3 ? ( 1.0 - smoothstep( 0.08, 0.2, abs( cov - 0.42 ) ) ) * near : 0.0;   // a light kerb stone along the asphalt
         r = mix( r, vec3( 0.36, 0.355, 0.34 ) * ( 0.9 + 0.2 * n2 ), kerb );
         g = mix( g, r, clamp( smoothstep( 0.3, 0.55, cov ) + kerb, 0.0, 1.0 ) );
@@ -344,6 +368,7 @@ export const WELT = (() => {
     if (t) return t;
     const s = tsize(L);
     t = { k, L, x, y, e0: ROOT_E0 + x * s, n0: ROOT_N0 + y * s, st: 'wait', mesh: null, used: 0 };
+    t.base = (setOf(L, x, y) || MAIN).base;
     S.tiles.set(k, t);
     queue.push(t);
     return t;
@@ -356,9 +381,9 @@ export const WELT = (() => {
       t.st = 'load';
       busy++;
       S.n.req++;
-      const tp = terrain(S.base + `t/${t.L}/${t.x}/${t.y}.bin`),
+      const tp = terrain(t.base + `t/${t.L}/${t.x}/${t.y}.bin`),
         ip = new Promise((res, rej) =>
-          new THREE.TextureLoader().load(S.base + `i/${t.L}/${t.x}/${t.y}.webp`, res, undefined, rej)
+          new THREE.TextureLoader().load(t.base + `i/${t.L}/${t.x}/${t.y}.webp`, res, undefined, rej)
         );
       Promise.all([tp, ip])
         .then(([tr, tex]) => {
@@ -558,7 +583,8 @@ export const WELT = (() => {
   S.heightAt = heightAt;
   // raw heights of level L (12, else 11) over a model rectangle, for placing things (buildings stand on the same ground at every level)
   S.sampler = async (x0, y0, x1, y1) => {
-    await meta();
+    await Promise.allSettled(SETS.map(metaOf));
+    if (!SETS.some(st => st.meta)) throw new Error(S.err || 'meta');
     const cs = [toU(x0, y0), toU(x1, y0), toU(x0, y1), toU(x1, y1)],
       E0 = Math.min(...cs.map(c => c[0])),
       E1 = Math.max(...cs.map(c => c[0])),
@@ -572,13 +598,13 @@ export const WELT = (() => {
         for (let y = Math.floor((N0 - ROOT_N0) / s); y <= Math.floor((N1 - ROOT_N0) / s); y++)
           if (inRect(L, x, y))
             jobs.push(
-              terrain(S.base + `t/${L}/${x}/${y}.bin`)
+              terrain(setOf(L, x, y).base + `t/${L}/${x}/${y}.bin`)
                 .then(t => T.set(key(L, x, y), t))
                 .catch(() => {})
             );
     }
     for (let i = 0; i < jobs.length; i += 12) await Promise.all(jobs.slice(i, i + 12));
-    return (x, y) => {
+    const f = (x, y) => {
       const [E, N] = toU(x, y);
       for (const L of [12, 11]) {
         const s = tsize(L),
@@ -600,6 +626,8 @@ export const WELT = (() => {
       }
       return undefined;
     };
+    f.tiles = T.size; // 0: no set holds this rectangle
+    return f;
   };
   S.covers = (x, y) => {
     if (!S.active || !covered.size) return false;
@@ -626,10 +654,8 @@ export const WELT = (() => {
       return;
     }
     idle = 0;
-    if (!S.meta) {
-      if (!metaP) meta().catch(() => {});
-      return;
-    }
+    for (const st of SETS) if (!st.meta && !st.p) metaOf(st).catch(() => {});
+    if (!SETS.some(st => st.meta)) return;
     S.active = true;
     // where the tiles are needed: the walker (the camera follows it), else the camera
     const walk = P.mode === 'walk',
@@ -678,6 +704,7 @@ export const WELT = (() => {
     err: S.n.err,
     lowered: S.lowered,
     base: S.base,
+    sets: SETS.map(st => (st.meta ? '+' : st.err ? '!' : '?') + (st.sub || '/')).join(' '),
     lastErr: S.lastErr || '',
   });
   (window.TICKS || (window.TICKS = [])).push(tick);
