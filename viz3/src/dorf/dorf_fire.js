@@ -61,6 +61,27 @@ export const DFIRE = (() => {
           float a = pow( max( 0.0, 1.0 - r ), 2.2 ) * uK * fl; gl_FragColor = vec4( vec3( 1.0, 0.45, 0.12 ) * a * 0.9, 1.0 ); }`,
     });
   }
+  // smoke: soft puffs rising, lit orange near the flames, grey and fading higher up (points, moved in the vertex shader)
+  function smokeMat() {
+    return new THREE.ShaderMaterial({
+      uniforms: U,
+      transparent: true,
+      depthWrite: false,
+      vertexShader: `attribute float aSeed; uniform float uT, uK; varying float vA, vH;
+        void main() {
+          float life = 6.0 + fract( aSeed * 5.3 ) * 4.0, ph = fract( uT / life + aSeed * 7.7 );
+          float h = 1.4 + ph * 5.5, a = aSeed * 61.0;
+          vec3 p = vec3( cos( a ) * 0.2 + sin( uT * 0.25 + aSeed * 9.0 ) * 0.9 * ph + ph * ph * 1.6, h, sin( a ) * 0.2 + ph * 0.6 );
+          vA = smoothstep( 0.0, 0.12, ph ) * ( 1.0 - ph ) * uK; vH = ph;
+          vec4 mv = modelViewMatrix * vec4( p, 1.0 );
+          gl_PointSize = clamp( ( 0.6 + ph * 2.2 ) * 300.0 / max( -mv.z, 0.5 ), 2.0, 160.0 );
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `varying float vA, vH; void main() { vec2 q = gl_PointCoord - 0.5; float d = 1.0 - smoothstep( 0.15, 0.5, length( q ) );
+          vec3 c = mix( vec3( 0.32, 0.17, 0.08 ), vec3( 0.06, 0.06, 0.065 ), smoothstep( 0.0, 0.35, vH ) );
+          gl_FragColor = vec4( c, d * vA * 0.32 ); }`,
+    });
+  }
   function sparkMat() {
     return new THREE.ShaderMaterial({
       uniforms: U,
@@ -195,6 +216,16 @@ export const DFIRE = (() => {
       const pts = new THREE.Points(sg, sparkMat());
       pts.renderOrder = 4;
       fl.add(pts);
+      const NS = 22,
+        mg = new THREE.BufferGeometry(),
+        ms = new Float32Array(NS);
+      for (let i = 0; i < NS; i++) ms[i] = (i + Math.random() * 0.5) / NS;
+      mg.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(NS * 3), 3));
+      mg.setAttribute('aSeed', new THREE.Float32BufferAttribute(ms, 1));
+      mg.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 4, 0), 8);
+      const smoke = new THREE.Points(mg, smokeMat());
+      smoke.renderOrder = 5;
+      fl.add(smoke);
       fl.traverse(o => {
         o.userData.noMerge = true;
         o.castShadow = false;
@@ -205,8 +236,11 @@ export const DFIRE = (() => {
       S.fl = fl;
       grp.traverse(o => (o.userData.noMerge = true));
       try {
+        // the flame, spark and smoke programs now, while the fire is cold (compile() takes only what is visible at the call)
+        fl.visible = true;
         if (R.compileAsync) R.compileAsync(grp, cam, scene).catch(() => {});
       } catch (e) {}
+      fl.visible = false;
       S.built = true;
       markDirty(true);
     } catch (e) {

@@ -30,7 +30,8 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   am Rommé-Tisch hinsetzen → Gerhards Geschichte von der Schuluhr → mit Katrin „Höher oder tiefer“ spielen (fünf Runden, Skatblatt) → zum
   Feuer am Acker kommen und mit Wolfgang sprechen. Stand im Gesprächsfenster oben.
 - **Feuer am Acker** (`dorf_fire.js`, `DFIRE`): Feuerstelle mit Steinring und Holzbänken (immer da), beim Feuer Holzkegel, Flammen
-  (Rausch-Shader), Glut am Boden, Funkenflug, flackerndes Licht (geliehene Ofenlampe des Pavillons), Knistern (Web Audio). Ortsname
+  (Rausch-Shader), glühende Scheite, Glut am Boden, Funkenflug, Rauch, flackerndes Licht (geliehene Ofenlampe des Pavillons),
+  Knistern (Web Audio). Die Shader werden schon beim Herankommen übersetzt (kein Ruckeln, wenn das Feuer angeht). Ortsname
   „Feuer am Acker · Richtung Klinge“.
 
 ## Testen
