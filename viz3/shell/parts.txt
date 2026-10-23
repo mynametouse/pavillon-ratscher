@@ -14,6 +14,7 @@ css/vehicles.css
 css/forst.css
 css/screen.css
 css/garten.css
+css/einrichtung.css
 css/figuren.css
 css/nachbarn.css
 css/dorf.css

@@ -88,7 +88,7 @@ with lib.browser() as b:
         ck('bungalow annex: east wall blocks from outside', r['local'][1] < -3.98, r)
         ev(pg, "GAME.setDoorNow('bungalowN', 1)")
         r = walk(pg, 'holzhaus', -0.88, 2.7, 90, 2.4, 'holzhaus', True)
-        ck('hut: walk in through the north door', r['place'] == 'Holzhaus' and r['local'][1] < 1.6, r)
+        ck('hut: walk in through the north door', r['place'] in ('Holzhaus', 'Atelier') and r['local'][1] < 1.6, r)  # an atelier since feat/einrichtung
         r = walk(pg, 'holzhaus', 0.25, -2.6, -90, 2.0)
         ck('hut: no door in the south wall any more', r['local'][1] < -1.75, r)
         r = walk(pg, 'greenhouse', 1.9, 0.0, 180, 2.0, 'greenhouse', True)
@@ -184,11 +184,11 @@ with lib.browser() as b:
         lbl2 = ev(pg, "PLAY.acts().find(a => a.id === 'garten:vorhang:hinten').label()")
         ev(pg, "PLAY.acts().find(a => a.id === 'garten:vorhang:hinten').run(); GAME.step(1.2)")
         ck('bungalow: draw the curtains, open them again', lbl == 'Vorhänge zuziehen' and lbl2 == 'Vorhänge aufziehen', [lbl, lbl2])
-        view(pg, 'holzhaus', -0.5, -0.3, 1.98, -90, -20, 70)
+        view(pg, 'greenhouse', 0.0, 0.0, 1.76, 180, -20, 70)  # feat/einrichtung: the seedlings moved from the hut (now an atelier) to the greenhouse
         lbl = ev(pg, "PLAY.acts().find(a => a.id === 'garten:giessen').label()")
         ev(pg, "PLAY.acts().find(a => a.id === 'garten:giessen').run(); GAME.step(0.2)")
         lbl2 = ev(pg, "PLAY.acts().find(a => a.id === 'garten:giessen').label()")
-        ck('hut: water the seedlings once', lbl == 'Setzlinge gießen' and lbl2 is None, [lbl, lbl2])
+        ck('greenhouse: water the seedlings once', lbl == 'Setzlinge gießen' and lbl2 is None, [lbl, lbl2])
         view(pg, 'greenhouse', 0.6, 0.0, 1.76, 180, -20, 70)
         lbl = ev(pg, "PLAY.acts().find(a => a.id === 'garten:tomaten').label()")
         ev(pg, "PLAY.acts().find(a => a.id === 'garten:tomaten').run(); GAME.step(0.2)")

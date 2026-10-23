@@ -1,0 +1,18 @@
+/* interior styles of the garden buildings (feat/einrichtung): the panel #stilpanel (look of the pavilion's #interior), the HUD button #stilbtn */
+#stilpanel{position:absolute;z-index:5;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(360px,calc(100% - 24px));max-height:68%;overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:12px 14px 14px}
+#stilpanel[hidden]{display:none}
+#stilpanel h3{margin:0 0 6px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center}
+#stilpanel h3 .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer;padding:2px 4px}
+#stilpanel h4{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+#stilpanel .stabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:8px}
+#stilpanel .stabs button{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:7px 11px;cursor:pointer}
+#stilpanel .stabs button[aria-selected="true"]{background:var(--plate);border-color:var(--ink);font-weight:700}
+#stilpanel .sstyles{display:flex;flex-wrap:wrap;gap:6px}
+#stilpanel .sstyles button{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:7px 11px 7px 7px;cursor:pointer}
+#stilpanel .sstyles button i{width:22px;height:18px;border-radius:9px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);flex:none}
+#stilpanel .sstyles button[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+#stilpanel .saccents{display:flex;flex-wrap:wrap;gap:8px}
+#stilpanel .saccents button{width:28px;height:28px;border-radius:50%;border:2px solid var(--paper);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+#stilpanel .saccents button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+#stilpanel .fnote{margin:12px 0 0;font:400 12px/1.45 var(--f-body);color:var(--muted)}
+@media (max-width:560px){ #stilpanel{top:104px;left:max(12px,env(safe-area-inset-left,0px));right:auto;max-height:58%} body[data-full="1"] #stilpanel{top:56px} }
