@@ -671,7 +671,15 @@ export const VESSRA = (() => {
   // most 10 cm + 6 % of the distance from the road's edge + a little curvature (4 mm/m², so a hillside stays) above it, by at most 2.5 m
   // (a wood beside the road stays a wood), tapering off from 20 to 40 m; on a 4 m grid, faded out over the outer 100 m of the zone; a
   // pad of WELT with the same function, so the drawn tiles, KERN's ground and the feet of the houses agree
-  let capG = null;
+  let capG = null,
+    padsSet = false;
+  // the ground under the zone's own pads: the tiles, with what other pads made of them (the roads of welt/fahrt.js are carved 'under'
+  // the zones' pads – welt/welt.js padZ); the cap, the yard and the feet of the houses build on it, as the drawn tiles do
+  const base = (x, y) => {
+    const z = gz(x, y);
+    if (z === undefined || z === null) return undefined;
+    return WELT.padAt ? WELT.padAt(x, y, z) : z;
+  };
   function roadCap() {
     const G = 4,
       n = Math.round((ZONE[2] - ZONE[0]) / G) + 1,
@@ -680,8 +688,8 @@ export const VESSRA = (() => {
       R = 40;
     for (let j = 0; j < n; j++)
       for (let i = 0; i < n; i++) {
-        const z = gz(ZONE[0] + i * G, ZONE[1] + j * G);
-        zc[j * n + i] = z === undefined || z === null ? NaN : z;
+        const z = base(ZONE[0] + i * G, ZONE[1] + j * G);
+        zc[j * n + i] = z === undefined ? NaN : z;
       }
     for (const st of data.st || []) {
       if (st.k > 5 || st.b) continue;
@@ -695,8 +703,8 @@ export const VESSRA = (() => {
         for (let q = k ? 1 : 0; q <= m; q++) {
           const x = p[k] + ((p[k + 2] - p[k]) * q) / m,
             y = p[k + 1] + ((p[k + 3] - p[k + 1]) * q) / m,
-            z = gz(x, y);
-          pts.push(x, y, z === undefined || z === null ? NaN : z);
+            z = base(x, y);
+          pts.push(x, y, z === undefined ? NaN : z);
         }
       }
       for (let k = 0; k + 5 < pts.length; k += 3) {
@@ -763,8 +771,8 @@ export const VESSRA = (() => {
       for (let w = YARD[1]; w <= YARD[3] + 1e-6; w += 2) {
         const x = F.G[0] + F.t[0] * u + F.wv[0] * w,
           y = F.G[1] + F.t[1] * u + F.wv[1] * w,
-          z = gz(x, y);
-        if (z !== undefined && z !== null) pts.push([u, w, adj(x, y, z)]);
+          z = base(x, y);
+        if (z !== undefined) pts.push([u, w, adj(x, y, z)]);
       }
     if (pts.length < 20) return null;
     const n = pts.length,
@@ -786,8 +794,8 @@ export const VESSRA = (() => {
       c = cl(wz / (ww || 1)),
       xs = F.G[0] + F.wv[0] * (YARD[1] - YF),
       ys = F.G[1] + F.wv[1] * (YARD[1] - YF),
-      zs = gz(xs, ys),
-      z0 = zs === undefined || zs === null ? zc : adj(xs, ys, zs);
+      zs = base(xs, ys),
+      z0 = zs === undefined ? zc : adj(xs, ys, zs);
     return { G: F.G, t: F.t, wv: F.wv, uc, wc, a: z0 - b * (0 - uc) - c * (YARD[1] - wc), b, c };
   }
   const yardAdj = (x, y, z) => {
@@ -810,7 +818,10 @@ export const VESSRA = (() => {
   };
   const ground = (x, y) => {
     const z = gz && gz(x, y);
-    return z !== undefined && z !== null ? yardAdj(x, y, adj(x, y, z)) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
+    if (z === undefined || z === null) return RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
+    // once the zone's pads are set: exactly what WELT draws (its pads on whatever lies under them)
+    if (padsSet && WELT.padAt) return WELT.padAt(x, y, z);
+    return yardAdj(x, y, adj(x, y, z));
   };
   S.gz = ground;
   S.raw = (x, y) => (gz ? gz(x, y) : undefined); // the tiles' own height (tests: the banks beside the roads)
@@ -876,6 +887,7 @@ export const VESSRA = (() => {
     S.seats = [];
     S.baumschule = null;
     if (WELT.setPads) WELT.setPads('vessra', []);
+    padsSet = false;
     capG = null;
     yd = null;
     if (WELT.setOverlay && S.overlayTex && WELT.overlay && WELT.overlay() === S.overlayTex) WELT.setOverlay(null);
@@ -1627,6 +1639,10 @@ export const VESSRA = (() => {
     S.segs = [];
     S.bld = [];
     S.seats = [];
+    if (padsSet && WELT.setPads) {
+      WELT.setPads('vessra', []);
+      padsSet = false;
+    }
     if (gz) {
       capG = roadCap();
       const F = nurseryFrame();
@@ -1649,7 +1665,10 @@ export const VESSRA = (() => {
         poly: [ZONE[0], ZONE[1], ZONE[2], ZONE[1], ZONE[2], ZONE[3], ZONE[0], ZONE[3]],
         z: (x, y, raw) => adj(x, y, raw),
       });
-      if (WELT.setPads) WELT.setPads('vessra', pads);
+      if (WELT.setPads) {
+        WELT.setPads('vessra', pads);
+        padsSet = true;
+      }
       mark('ground');
       await nextFrame();
       tp = performance.now();

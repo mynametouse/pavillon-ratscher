@@ -280,6 +280,11 @@ export const WELT = (() => {
         return typeof p.z === 'function' ? p.z(x, y, base !== undefined ? base : raw) : p.z;
     return base;
   }
+  // the height WELT draws for a raw tile height at (x, y): the pads applied (a zone builds its own ground with it – the same as the tiles)
+  S.padAt = (x, y, raw) => {
+    const z = pads.length ? padZ(x, y, raw) : undefined;
+    return z === undefined ? raw : z;
+  };
   S.setPads = (id, list) => {
     for (let i = pads.length - 1; i >= 0; i--) if (pads[i].id === id) pads.splice(i, 1);
     for (const { poly, z, under } of list || []) {
