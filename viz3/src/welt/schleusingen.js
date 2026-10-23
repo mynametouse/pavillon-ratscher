@@ -656,6 +656,7 @@ export const SCHL = (() => {
         gz = null;
         S.noTiles = true;
       }
+      mk = gz ? marktPlane() : null;
       S.loadMs = Math.round(performance.now() - t0);
       S.state = 'data';
     } catch (e) {
@@ -664,9 +665,80 @@ export const SCHL = (() => {
       console.warn('schleusingen', e);
     }
   }
+  // the Markt as a smooth inclined plane: over the old town the tiles carry the 30 m surface model of Copernicus, lumps up to 1.7 m where
+  // the houses bleed in; the plane is fitted to it and blended in over 3 m either side of the square's edge – one ground for the houses'
+  // feet, the props and the drawn tiles (a pad of WELT with this function)
+  let mk = null;
+  function marktPlane() {
+    const P = data && data.marktplatz;
+    if (!P || P.length < 6) return null;
+    const xs = P.filter((v, k) => k % 2 === 0),
+      ys = P.filter((v, k) => k % 2 === 1),
+      bb = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)],
+      mx = (bb[0] + bb[2]) / 2,
+      my = (bb[1] + bb[3]) / 2;
+    let n = 0,
+      su = 0,
+      sv = 0,
+      sz = 0,
+      suu = 0,
+      svv = 0,
+      suv = 0,
+      suz = 0,
+      svz = 0;
+    for (let x = bb[0]; x <= bb[2]; x += 2)
+      for (let y = bb[1]; y <= bb[3]; y += 2) {
+        if (!inPoly(P, x, y)) continue;
+        const z = gz(x, y),
+          u = x - mx,
+          v = y - my;
+        if (z === undefined || z === null) continue;
+        n++;
+        su += u;
+        sv += v;
+        sz += z;
+        suu += u * u;
+        svv += v * v;
+        suv += u * v;
+        suz += u * z;
+        svz += v * z;
+      }
+    if (n < 20) return null;
+    const det3 = m =>
+        m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+        m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+        m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]),
+      M = [
+        [n, su, sv],
+        [su, suu, suv],
+        [sv, suv, svv],
+      ],
+      R = [sz, suz, svz],
+      D = det3(M);
+    if (Math.abs(D) < 1e-9) return null;
+    const [a, gx, gy] = [0, 1, 2].map(i => det3(M.map((row, r) => row.map((v, c) => (c === i ? R[r] : v)))) / D);
+    return { P, bb, mx, my, a, gx, gy };
+  }
+  const distSeg = (x, y, ax, ay, bx, by) => {
+    const dx = bx - ax,
+      dy = by - ay,
+      t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy || 1)));
+    return Math.hypot(x - ax - dx * t, y - ay - dy * t);
+  };
+  function marktAdj(x, y, raw) {
+    const m = mk,
+      B = 3;
+    if (!m || x < m.bb[0] - B || x > m.bb[2] + B || y < m.bb[1] - B || y > m.bb[3] + B) return raw;
+    let d = 1e9;
+    for (let p = 0, q = m.P.length - 2; p < m.P.length; q = p, p += 2)
+      d = Math.min(d, distSeg(x, y, m.P[q], m.P[q + 1], m.P[p], m.P[p + 1]));
+    const s = (inPoly(m.P, x, y) ? d : -d) / B,
+      w = s >= 1 ? 1 : s <= -1 ? 0 : 0.5 + 0.75 * s - 0.25 * s * s * s; // smooth from 0 (3 m outside) to 1 (3 m inside)
+    return w <= 0 ? raw : raw + w * (m.a + m.gx * (x - m.mx) + m.gy * (y - m.my) - raw);
+  }
   const ground = (x, y) => {
     const z = gz && gz(x, y);
-    return z !== undefined && z !== null ? z : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
+    return z !== undefined && z !== null ? marktAdj(x, y, z) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
   };
   S.gz = ground;
   function build() {
@@ -725,9 +797,19 @@ export const SCHL = (() => {
       if (b.lm === 'rathaus') pads.push({ poly: b.f, z: b.z0 + 0.1 });
       if (b.lm === 'burg' && b.h) for (const h of b.h) pads.push({ poly: h, z: b.z0 + 0.05 });
     }
+    if (mk) {
+      // the Markt plane (after the Rathaus: the first pad that holds a point wins)
+      const [x0, y0, x1, y1] = mk.bb,
+        e = 3.5;
+      pads.push({
+        poly: [x0 - e, y0 - e, x1 + e, y0 - e, x1 + e, y1 + e, x0 - e, y1 + e],
+        z: (x, y, raw) => marktAdj(x, y, raw),
+      });
+    }
     if (WELT.setPads) WELT.setPads('schleusingen', pads);
     S.ms = Math.round(performance.now() - t0);
     S.state = 'ready';
+    pc = [1e9, 0, null]; // the cached place name was given before the town stood
     SPOTS.schleusingen.z = ground(START[0], START[1]);
     markDirty(true);
   }
@@ -764,7 +846,9 @@ export const SCHL = (() => {
     data = null;
     S.data = null;
     gz = null;
+    mk = null;
     S.state = 'idle';
+    pc = [1e9, 0, null];
     markDirty(true);
   };
   // ---- landmarks: what the generic building gets in addition (style per facade, the door hole, towers, turret …) ----
