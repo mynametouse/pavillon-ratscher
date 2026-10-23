@@ -91,6 +91,9 @@ Grundlage: Falkos Wunsch vom 23.10. 9:54 (Auftrag `docs/plans/auftraege/einricht
   `garden/garten_in.js`.
 - `test/garten.py`: zwei Prüfungen angepasst (Ort „Atelier“; Gießen im Gewächshaus). `garden/greenhouse.js`: unteres Regalbrett mit drei
   Anzuchtschalen und „Setzlinge gießen“ (vorher im Holzhaus).
-- Bitte nachtragen: `docs/ARCHITECTURE.md` (Abschnitt 6: `STIL`, `ATELIER`, `WOHNWAGEN`; Abschnitt 8: `pav-stil-v1`; Modulkarte), `docs/CHANGELOG.md`.
+- In `docs/ARCHITECTURE.md` stehen `STIL`, `ATELIER` und `pav-stil-v1` schon (V16o); noch nachzutragen: `WOHNWAGEN` (Abschnitt 6) und in
+  `pav-stil-v1` die Felder `x.atelier.glazed`, `x.atelier.gfired` und `x.hint` (der Hinweis beim ersten Besuch). Für `docs/CHANGELOG.md`
+  nach V16q: weichere Kissen, Hängelampe über dem Tisch im Wohnwagen (je Stil), Küchenfronten und Kleiderschrank im Bungalow je Stil, die
+  Laterne wird beim Bettenbauen weggeräumt, kleine Geräusche (Brennofen, Glasieren, Malen), das Regal im Atelier aufgeräumt.
 - Neue `window`-Namen: `STIL`, `ATELIER`, `WOHNWAGEN` (nur für Tests). Der Takt des Knopfes „Einrichtung“ läuft schon über `KERN.tick`
   (`garden/garten_in.js` nutzt wie bisher `window.TICKS`).
