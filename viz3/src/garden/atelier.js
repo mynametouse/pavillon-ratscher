@@ -12,6 +12,7 @@ import { LATE } from '../core/late.js';
 import { V } from '../core/head.js';
 import { markDirty, plain, whenLoaded } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
+import { TASKS } from '../core/tasks.js';
 import { MAT } from '../core/mats.js';
 import { beam, bldBegin, bldEnd, COL } from '../core/geo.js';
 import { BLD, gB, lcol, MATS, rotDesc, siteGroup, worldOf } from './site_base.js';
@@ -993,10 +994,8 @@ const AS = {
   fired: Number.isInteger(SAVED.fired) ? Math.max(0, Math.min(6, SAVED.fired)) : 0,
   pic: Number.isInteger(SAVED.pic) ? Math.max(0, Math.min(5, SAVED.pic)) : 1,
   motif: Number.isInteger(SAVED.motif) ? SAVED.motif % 3 : 0,
-  seen: SAVED.seen === 1 ? 1 : 0,
 };
-const keep = () =>
-  STIL.x('atelier', { sofa: AS.sofa, bowls: AS.bowls, fired: AS.fired, pic: AS.pic, motif: AS.motif, seen: AS.seen });
+const keep = () => STIL.x('atelier', { sofa: AS.sofa, bowls: AS.bowls, fired: AS.fired, pic: AS.pic, motif: AS.motif });
 SB.k = SB.want = AS.sofa;
 sofaPose(SB.k);
 sofaCol[0] = AS.sofa ? 0.16 : 0.56;
@@ -1210,11 +1209,6 @@ GACTS.push({
   label: () => null,
   run: () => {},
   tick: (dt, st) => {
-    // (once inside the atelier its things to do appear in the journal)
-    if (!AS.seen && LATE.P && atelierIn(LATE.P.x, LATE.P.y, LATE.P.feet + 1)) {
-      AS.seen = 1;
-      keep();
-    }
     const want = rock.on ? 0.075 : 0;
     if (!rock.on && rock.amp < 0.002 && Math.abs(rock.th) < 0.002) {
       if (rock.th !== 0) {
@@ -1500,51 +1494,59 @@ GACTS.push({
     st.dirty();
   },
 });
-// ---- the journal (key J, KERN.tasks): what one can do in the atelier – shown once one has been inside ----
+// ---- the journal (key J): three small tasks as data (core/tasks.js) – they start the first time one comes into the atelier and advance
+// on the atelier's own events ----
 {
-  const at = (x, y) => () => worldOf(b, x, y);
-  KERN.tasks.source({
-    id: 'atelier',
-    order: 25,
-    list: () =>
-      !AS.seen
-        ? []
-        : [
-            {
-              id: 'schalen',
-              title: 'Töpfern: Schalen drehen und brennen',
-              who: 'Atelier',
-              status: AS.fired >= 1 ? 'erledigt' : AS.bowls >= 1 ? 'läuft' : 'offen',
-              text:
-                AS.fired >= 1
-                  ? AS.fired + ' Schalen geschrüht – hell und hart, bereit zum Glasieren.'
-                  : AS.bowls >= 1
-                    ? AS.bowls + ' Schalen trocknen im Regal. Wenn sie lederhart sind: in den Brennofen.'
-                    : 'An der Töpferscheibe eine Schale drehen, im Regal trocknen lassen, im Ofen brennen.',
-              target: at(WH.x, WH.y),
-            },
-            {
-              id: 'bild',
-              title: 'Malen: ein Bild fertig malen',
-              who: 'Atelier',
-              status: AS.pic >= 5 ? 'erledigt' : AS.pic >= 2 ? 'läuft' : 'offen',
-              text:
-                AS.pic >= 5
-                  ? MOTIFS[AS.motif] + ' – fertig und signiert.'
-                  : MOTIFS[AS.motif] + ' an der Staffelei: Schritt ' + AS.pic + ' von 5.',
-              target: at(EZ.x, EZ.y),
-            },
-            {
-              id: 'gaestebett',
-              title: 'Ein Gästebett für Besuch',
-              who: 'Atelier',
-              status: AS.sofa ? 'erledigt' : 'offen',
-              text: AS.sofa
-                ? 'Das Klappsofa ist ausgeklappt, Bettzeug liegt darauf.'
-                : 'Das Klappsofa im Atelier zum Bett ausklappen.',
-              target: at(0.9, SB.yc),
-            },
-          ],
+  const at = (x, y) => () => worldOf(b, x, y),
+    start = { on: 'place', when: d => !!d && d.name === 'Atelier' };
+  TASKS.define({
+    id: 'atelier-toepfern',
+    title: 'Töpfern: eine Schale drehen und brennen',
+    who: 'Atelier',
+    start,
+    steps: [
+      {
+        text: 'An die Töpferscheibe setzen, eine Schale drehen und ins Regal stellen.',
+        target: at(WH.x, WH.y),
+        on: 'einrichtung:schale',
+      },
+      {
+        text: 'Die Schalen trocknen lassen und im Brennofen brennen (Schrühbrand).',
+        target: at(KI.x, KI.y),
+        on: 'einrichtung:brand',
+      },
+    ],
+    done: 'Die Schalen sind geschrüht – hell und hart, bereit zum Glasieren.',
+  });
+  TASKS.define({
+    id: 'atelier-malen',
+    title: 'Malen: ein Bild fertig malen',
+    who: 'Atelier',
+    start,
+    steps: [
+      {
+        text: 'An der Staffelei weitermalen, bis das Bild fertig und signiert ist.',
+        target: at(EZ.x, EZ.y),
+        on: 'einrichtung:bild',
+        when: d => !!d && d.step >= 5,
+      },
+    ],
+    done: 'Fertig und signiert.',
+  });
+  TASKS.define({
+    id: 'atelier-gaestebett',
+    title: 'Ein Gästebett für Besuch',
+    who: 'Atelier',
+    start,
+    steps: [
+      {
+        text: 'Das Klappsofa im Atelier zum Bett ausklappen.',
+        target: at(0.9, SB.yc),
+        on: 'einrichtung:sofa',
+        when: d => !!d && d.bed === 1,
+      },
+    ],
+    done: 'Das Gästebett steht, Bettzeug liegt darauf.',
   });
 }
 // ---- static parts: the room's furniture into the palette, no sun shadows indoors ----
