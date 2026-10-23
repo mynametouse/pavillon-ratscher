@@ -1,0 +1,132 @@
+{
+  "_hinweis": "Testdaten für die Unit-Tests und als Platzhalter des Planers, bis pflanzen.json, regeln.json und gilden.json da sind. Keine echten Werte – nicht als Beleg verwenden.",
+  "pflanzen": {
+    "version": 1,
+    "stand": "2026-10-23",
+    "quellen": {
+      "test": { "titel": "Testdaten (keine Quelle)", "url": "https://example.org/testdaten", "abgerufen": "2026-10-23" }
+    },
+    "arten": [
+      {
+        "id": "apfel-test",
+        "name": "Apfel",
+        "sorte": "Testsorte",
+        "unterlage": "MM 106",
+        "form": "halbstamm",
+        "art": "Malus domestica",
+        "schicht": "baum",
+        "hoehe_m": [4, 5],
+        "breite_m": [4, 5],
+        "pflanzhoehe_m": 1.8,
+        "jahre_bis_endgroesse": 15,
+        "lebensdauer_j": 60,
+        "licht": ["sonne"],
+        "boden": { "art": ["lehm", "lehmsand"], "ph": [5.5, 7.5], "feuchte": ["frisch"], "staunaesse": "nein" },
+        "frosthaerte_c": -25,
+        "bluete": { "monate": [4, 5], "spaetfrost": "mittel", "farbe": "#f6dbe4" },
+        "laub": "sommergruen",
+        "funktionen": ["ertrag", "insekten"],
+        "befruchtung": { "selbstfruchtbar": "nein", "befruchter": ["Testsorte B"] },
+        "unvertraeglich": [],
+        "partner": [{ "mit": "beinwell-test", "grund": "Testgrund: Mulch an der Kronentraufe" }],
+        "ernte": { "monate": [9, 10], "kg_jahr": [20, 40], "text": null },
+        "pflanzzeit": [10, 4],
+        "pflege": "Testtext: Erziehungsschnitt in den ersten Jahren.",
+        "schutz": ["wuehlmauskorb", "pfahl", "verbissschutz"],
+        "nachbarrecht": "test-obst",
+        "bezug": { "kammbach": "kategorie", "stand": "2026-10-22", "hinweis": null },
+        "darstellung": { "typ": "obstbaum", "krone": "rund", "laub": "#6f8f3e", "bluete": "#f6dbe4", "frucht": "#c0392b", "herbst": "#c9a23a" },
+        "text": "Testeintrag: ein Apfel-Halbstamm als Mitte einer Gilde.",
+        "quellen": [],
+        "entwurf": true
+      },
+      {
+        "id": "goumi-test",
+        "name": "Goumi",
+        "sorte": null,
+        "art": "Elaeagnus multiflora",
+        "schicht": "strauch",
+        "hoehe_m": [2, 3],
+        "breite_m": [2, 3],
+        "pflanzhoehe_m": 0.6,
+        "jahre_bis_endgroesse": 8,
+        "lebensdauer_j": 30,
+        "licht": ["sonne", "halbschatten"],
+        "boden": { "art": ["lehm", "lehmsand", "sand"], "ph": [5.5, 7.5], "feuchte": ["frisch"], "staunaesse": "kurz" },
+        "frosthaerte_c": -25,
+        "bluete": { "monate": [4, 5], "spaetfrost": "gering", "farbe": "#f2edd0" },
+        "laub": "sommergruen",
+        "funktionen": ["stickstoff", "ertrag", "insekten"],
+        "befruchtung": null,
+        "pflanzzeit": [3, 11],
+        "pflege": "Testtext: kaum Schnitt nötig.",
+        "nachbarrecht": "test-strauch",
+        "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22" },
+        "darstellung": { "typ": "strauch", "krone": "buschig", "laub": "#8a9a6a", "bluete": "#f2edd0", "frucht": "#c4302b", "herbst": null },
+        "text": "Testeintrag: ein Stickstoffsammler am Rand der Gilde.",
+        "quellen": [],
+        "entwurf": true
+      },
+      {
+        "id": "beinwell-test",
+        "name": "Beinwell",
+        "sorte": null,
+        "art": "Symphytum officinale",
+        "schicht": "kraut",
+        "hoehe_m": [0.6, 1.2],
+        "breite_m": [0.5, 0.8],
+        "pflanzhoehe_m": 0.15,
+        "jahre_bis_endgroesse": 2,
+        "lebensdauer_j": 20,
+        "licht": ["sonne", "halbschatten"],
+        "boden": { "art": ["lehm", "tonlehm"], "ph": [6, 7.5], "feuchte": ["frisch", "feucht"], "staunaesse": "kurz" },
+        "frosthaerte_c": -30,
+        "bluete": { "monate": [5, 7], "spaetfrost": "gering", "farbe": "#8a5a9a" },
+        "laub": "einziehend",
+        "funktionen": ["mulch", "insekten"],
+        "pflanzzeit": [3, 10],
+        "pflege": "Testtext: mehrmals im Jahr abschneiden und als Mulch liegen lassen.",
+        "nachbarrecht": "test-frei",
+        "bezug": { "kammbach": "unbekannt", "stand": "2026-10-22" },
+        "darstellung": { "typ": "staude", "krone": "buschig", "laub": "#4f7a3a", "bluete": "#8a5a9a" },
+        "text": "Testeintrag: Mulchpflanze im Ring an der Kronentraufe.",
+        "quellen": [],
+        "entwurf": true
+      }
+    ]
+  },
+  "regeln": {
+    "version": 1,
+    "stand": "2026-10-23",
+    "quellen": {
+      "test": { "titel": "Testdaten (keine Quelle)", "url": "https://example.org/testdaten", "abgerufen": "2026-10-23" }
+    },
+    "messung": "Testtext: gemessen waagerecht von der Stammmitte am Boden bis zur Grenze.",
+    "grenzabstand": [
+      { "id": "test-obst", "text": "Testkategorie Obstbaum", "abstand_m": 1.5, "paragraf": "Testparagraf", "quelle": "test" },
+      { "id": "test-strauch", "text": "Testkategorie Strauch", "abstand_m": 0.5, "paragraf": "Testparagraf", "quelle": "test" },
+      { "id": "test-frei", "text": "Testkategorie ohne Abstand", "abstand_m": 0, "paragraf": "Testparagraf", "quelle": "test" }
+    ],
+    "fakten": [{ "id": "test-spaetfrost", "text": "Testtext: In Tallagen sammelt sich Kaltluft.", "quelle": "test" }]
+  },
+  "gilden": {
+    "version": 1,
+    "stand": "2026-10-23",
+    "quellen": {
+      "test": { "titel": "Testdaten (keine Quelle)", "url": "https://example.org/testdaten", "abgerufen": "2026-10-23" }
+    },
+    "gilden": [
+      {
+        "id": "apfel-gilde-test",
+        "name": "Apfel-Gilde (Test)",
+        "text": "Testtext: Apfel in der Mitte, Beinwell an der Traufe, Goumi im Süden.",
+        "mitte": "apfel-test",
+        "ringe": [
+          { "radius_rel": 1, "seite": null, "pflanzen": [{ "id": "beinwell-test", "anzahl": 6 }] },
+          { "radius_rel": 1.3, "seite": "sued", "pflanzen": [{ "id": "goumi-test", "anzahl": 1 }] }
+        ],
+        "quellen": ["test"]
+      }
+    ]
+  }
+}
