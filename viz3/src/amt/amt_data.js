@@ -477,7 +477,7 @@ export const AMTDATA = (() => {
     ],
     [
       'Die Wahl',
-      'Wählen darf, wer 16 ist, Deutscher oder EU-Bürger und seit drei Monaten hier wohnt; gewählt werden kann man ab 18. Wer allein antritt, braucht Unterstützungsunterschriften: fünfmal so viele, wie der Ortsteilrat Mitglieder hat – in Ratscher 20. Gewählt ist, wer mehr als die Hälfte der gültigen Stimmen hat; sonst gibt es zwei Wochen später eine Stichwahl. Die Auszählung ist öffentlich. Die Amtszeit läuft mit der des Stadtrats (fünf Jahre), nach einer Nachwahl für den Rest.',
+      'Wählen darf, wer 16 ist, Deutscher oder EU-Bürger und seit drei Monaten hier wohnt; gewählt werden kann man ab 18. Wer allein antritt, braucht Unterstützungsunterschriften: fünfmal so viele, wie der Ortsteilrat Mitglieder hat – in Ratscher 20. Gewählt ist, wer mehr als die Hälfte der gültigen Stimmen hat; sonst gibt es zwei Wochen später eine Stichwahl. Die Auszählung ist öffentlich, das Ergebnis wird bekannt gemacht; binnen zwei Wochen kann jeder Wahlberechtigte die Wahl beim Landratsamt anfechten. Die Amtszeit läuft mit der des Stadtrats (fünf Jahre), nach einer Nachwahl für den Rest.',
     ],
     [
       'Das Amt',

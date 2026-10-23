@@ -107,6 +107,9 @@ with lib.browser() as b:
         ck('the result: the numbers add up, a majority of the valid votes decides', v.get('counted') and v['me'] + v['opp'] + v['inv'] == v['turnout'] and v['turnout'] <= v['eligible'], json.dumps(v))
         print('result', json.dumps(v), st['say'][:200], flush=True)
         page_shot(pg, 'g_ergebnis')
+        E("AMT.UI.close(); AMT.notice()"); st = J('AMT.state()')
+        ck('the result is published in the notice box (with the right to challenge it)', 'Ergebnis der Nachwahl' in st['say'] and 'anfechten' in st['say'], st['say'][:80])
+        E("AMT.UI.close(); AMT.result()")
         if v.get('won'):
             E("AMT.press('nehme die Wahl an')"); st = J('AMT.state()')
             ck('accepted: in office, the first concerns', st['phase'] == 'office' and len(st['anl']) >= 2, json.dumps(st['anl']))

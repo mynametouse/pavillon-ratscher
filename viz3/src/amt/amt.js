@@ -82,6 +82,12 @@ export const AMT = (() => {
   const minOf = t => ((Math.floor(t) % 1440) + 1440) % 1440;
   const dateOf = t => (DN && DN.dateStr ? DN.dateStr(t, true) : 'Tag ' + (dayOf(t) + 1));
   const female = () => !!(window.AVATAR && (window.AVATAR.kind === 'f' || /sarah/i.test(String(window.AVATAR.kind))));
+  // the player's first name (game/avatar.js: Falko, Sarah, Christoph) – for the letter, the ballot and the chronicle
+  const pname = () => {
+    const A = window.AVATAR,
+      F = A && A.FIGS && A.FIGS[A.kind];
+    return F && typeof F.name === 'string' ? F.name : null;
+  };
   const TITLE = () => (female() ? 'Ortsvorsteherin' : 'Ortsvorsteher');
   const eStart = () => (ST.eday != null ? ST.eday * 1440 : Infinity);
   const isEday = (t = now()) => ST.eday != null && dayOf(t) === ST.eday;
@@ -593,7 +599,12 @@ export const AMT = (() => {
         esc(
           again
             ? 'Uwe Bachmann hat das Amt niedergelegt – der Hof lässt ihm keine Zeit. Die Stadt setzt eine neue Nachwahl an. Diesmal fragt Ingrid nicht: Du kennst den Weg.'
-            : D.T.letter
+            : pname()
+              ? D.T.letter.replace(
+                  'Liebe Nachbarin, lieber Nachbar im Garten,',
+                  (female() ? 'Liebe ' : 'Lieber ') + pname() + ','
+                )
+              : D.T.letter
         ) +
         '</div><pre class="notice">' +
         esc(D.T.notice(dateOf(eStart() + 600), dateOf(ST.deadline))) +
@@ -1375,8 +1386,10 @@ export const AMT = (() => {
     UI.say(
       'Beifall. Ingrid umarmt dich und drückt dir eine dicke Mappe in die Hand: „Die Anliegen. Und der Schlüssel fürs Gemeindebüro – das ist das kleine Zimmer hinten in der Schule.“ Uwe schüttelt dir die Hand: „Glückwunsch. Ich bleib im Ortsteilrat – wir kriegen das hin.“ Gerhard schreibt: „' +
         dateOf(now()) +
-        ': neuer ' +
+        ': ' +
+        (female() ? 'neue ' : 'neuer ') +
         TITLE() +
+        (pname() ? ' ' + pname() : '') +
         ' gewählt.“ Vereidigt wirst du in der nächsten Sitzung des Stadtrats in Schleusingen – donnerstags.'
     );
     think('Du bist ' + TITLE() + ' von Ratscher! Die Mappe (O) enthält die ersten Anliegen.', 8000);
@@ -2060,6 +2073,68 @@ export const AMT = (() => {
       rathaus(true);
     },
   });
+  // the notice box at the old school: beside the fire brigade's notice hangs the town's (the election; after it, the result)
+  const noticePos = () => {
+    if (!DSCHOOL.built || !DSCHOOL.noticeAt || !DSCHOOL.toW) return null;
+    const o = DSCHOOL.toW(0, 0),
+      u = DSCHOOL.toW(1, 0),
+      dx = u[0] - o[0],
+      dy = u[1] - o[1];
+    return [DSCHOOL.noticeAt[0] + dx * 0.9, DSCHOOL.noticeAt[1] + dy * 0.9, (DSCHOOL.F ? DSCHOOL.F.zF : 0) + 1.2];
+  };
+  PLAY.act({
+    id: 'amt:notice',
+    r: 1.5,
+    prio: 0.12,
+    label: () => (ST.phase !== 'none' && !UI.cur ? 'Bekanntmachung der Stadt lesen' : null),
+    pos: noticePos,
+    run: () => notice(),
+  });
+  function notice() {
+    const v = ST.vote;
+    if (v && v.counted) {
+      const valid = v.me + v.opp,
+        pc = n => Math.round((100 * n) / Math.max(1, valid)) + ' %';
+      UI.open('Bekanntmachung der Stadt Schleusingen', 'Aushangkasten an der alten Schule', '', { id: 'notice' });
+      UI.html(
+        '<pre class="notice">' +
+          esc(
+            'Ergebnis der Nachwahl des Ortsteilbürgermeisters im Ortsteil Ratscher\n\nWahlberechtigte: ' +
+              v.eligible +
+              '\nWähler: ' +
+              v.turnout +
+              ' (' +
+              Math.round((100 * v.turnout) / Math.max(1, v.eligible)) +
+              ' %)\nungültige Stimmen: ' +
+              v.inv +
+              '\ngültige Stimmen: ' +
+              valid +
+              '\n\nBachmann, Uwe: ' +
+              v.opp +
+              ' (' +
+              pc(v.opp) +
+              ')\n' +
+              (pname() || 'Du') +
+              ': ' +
+              v.me +
+              ' (' +
+              pc(v.me) +
+              ')\n\nGewählt ist ' +
+              (v.won ? (pname() || 'du') + '.' : 'Uwe Bachmann.') +
+              ' Jeder Wahlberechtigte kann die Wahl binnen zwei Wochen nach dieser Bekanntmachung schriftlich beim Landratsamt Hildburghausen (Kommunalaufsicht) anfechten.\n\nDer Wahlleiter'
+          ) +
+          '</pre>'
+      );
+      UI.buttons([bye('Schließen')]);
+      return;
+    }
+    UI.open('Bekanntmachung der Stadt Schleusingen', 'Aushangkasten an der alten Schule', '', { id: 'notice' });
+    UI.html('<pre class="notice">' + esc(D.T.notice(dateOf(eStart() + 600), dateOf(ST.deadline))) + '</pre>');
+    UI.buttons([
+      ST.phase === 'asked' ? ['Ich stelle mich zur Wahl', () => stand('letter'), 'quest'] : null,
+      bye('Schließen'),
+    ]);
+  }
   // the car: off to the town hall
   PLAY.act({
     id: 'amt:car',
@@ -2408,7 +2483,9 @@ export const AMT = (() => {
       [90, 116, 196, 222].map(x => '<rect x="' + x + '" y="52" width="14" height="20"/>').join('') +
       '</g><rect x="150" y="30" width="20" height="14" fill="#f4ecd9" stroke="#7d6a4f"/><text x="160" y="41" font-size="7" text-anchor="middle" fill="#3b2f22">⌚</text><circle cx="40" cy="70" r="20" fill="#7d9a5a"/><rect x="38" y="80" width="4" height="16" fill="#5b4430"/><circle cx="285" cy="72" r="18" fill="#8aa866"/><rect x="283" y="82" width="4" height="14" fill="#5b4430"/></svg>',
     ballot: () =>
-      '<svg viewBox="0 0 320 110" class="pic" aria-hidden="true"><rect x="0" y="0" width="320" height="110" fill="#efe6d4"/><rect x="20" y="20" width="90" height="70" fill="#fffdf6" stroke="#8d7b62"/><text x="65" y="34" font-size="7" text-anchor="middle" fill="#3b2f22">Stimmzettel</text><text x="30" y="52" font-size="7" fill="#3b2f22">○ Bachmann, Uwe</text><text x="30" y="68" font-size="7" fill="#3b2f22">○ (du)</text><rect x="140" y="30" width="60" height="60" fill="#3d4c5e"/><rect x="160" y="28" width="20" height="4" fill="#111"/><text x="170" y="66" font-size="8" text-anchor="middle" fill="#e8eef4">Urne</text><path d="M230 90V20h70v70" fill="#d9cdb6" stroke="#8d7b62"/><text x="265" y="56" font-size="8" text-anchor="middle" fill="#3b2f22">Kabine</text></svg>',
+      '<svg viewBox="0 0 320 110" class="pic" aria-hidden="true"><rect x="0" y="0" width="320" height="110" fill="#efe6d4"/><rect x="20" y="20" width="90" height="70" fill="#fffdf6" stroke="#8d7b62"/><text x="65" y="34" font-size="7" text-anchor="middle" fill="#3b2f22">Stimmzettel</text><text x="30" y="52" font-size="7" fill="#3b2f22">○ Bachmann, Uwe</text><text x="30" y="68" font-size="7" fill="#3b2f22">○ ' +
+      esc(pname() || '(du)') +
+      '</text><rect x="140" y="30" width="60" height="60" fill="#3d4c5e"/><rect x="160" y="28" width="20" height="4" fill="#111"/><text x="170" y="66" font-size="8" text-anchor="middle" fill="#e8eef4">Urne</text><path d="M230 90V20h70v70" fill="#d9cdb6" stroke="#8d7b62"/><text x="265" y="56" font-size="8" text-anchor="middle" fill="#3b2f22">Kabine</text></svg>',
     tally: c => {
       const n = Math.max(1, c.me + c.opp + c.inv);
       const bar = (v, col) => Math.round((260 * v) / Math.max(20, n));
@@ -2597,6 +2674,7 @@ export const AMT = (() => {
     homes,
     reset,
     put,
+    notice,
     avail,
     model: M,
     data: D,

@@ -65,7 +65,7 @@ Stimmen für dich); mit etwa +10 bei allen und vielen Gesprächen wird es knapp;
    Tage später, 8–18 Uhr, Wahlraum alte Schule; Wahlvorschläge bis Mittwoch davor, 18 Uhr, im Rathaus.
 2. Jeder, mit dem man redet, spricht einen darauf an (ein Knopf „Die Nachwahl …“ im Gesprächsfenster der Dorfbewohner und der Nachbarn; an
    der Haustür jedes Dorfbewohners „Bei … klingeln“, 8–21 Uhr – nicht wenn er gerade mit dem Auto weg ist oder Freitagabend in der Schule).
-   Es klingelt (ding-dong), und wer öffnet, steht als Figur in der Tür, solange man redet. Wo jemand wohnt, steht in der Mappe unter
+   Es klingelt (ding-dong), und wer öffnet, kommt als Figur vor die Haustür, solange man redet. Wo jemand wohnt, steht in der Mappe unter
    „Menschen“; „Weg“ zeigt den Weg (Markierung über dem Ziel, Richtung und Entfernung oben links – antippen beendet es). Auch die Ziele der
    Aufgaben (Hydrant, Zaun, Haltestelle) werden so gezeigt.
 3. **Kandidieren** → 20 Unterschriften sammeln (wer dich ein bisschen kennt – Meinung ab 40 – unterschreibt mit seinem Haushalt, damit das Dorf eine Wahl hat; gute Freunde ab 60
