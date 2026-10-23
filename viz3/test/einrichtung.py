@@ -146,6 +146,10 @@ with lib.browser() as b:
         ck('night: the shared lamp light is in the atelier', ev(pg, "GARTEN.cur() === 'holzhaus' && GARTEN.light.intensity > 0"), ev(pg, "GARTEN.cur()"))
         ev(pg, "GARTEN.set('holzhaus', false); GAME.setMode('day')"); lib.settle_light(pg)
         ev(pg, "GAME.go('holzhaus'); GAME.step(0.6)"); shot(pg, 'ort_atelier')
+        # the start situation ?szenario=atelier: inside at the door
+        sz = ev(pg, "(() => { const s = KERN.scenario('atelier'); if (!s) return null; s.run(); GAME.step(0.4); return sitePlace(GAME.P.x, GAME.P.y, GAME.P.feet + 0.5); })()")
+        ck('start situation „atelier“ (?szenario=atelier) puts one inside', sz == 'Atelier', sz)
+        shot(pg, 'szenario_atelier')
     # ---- the caravan: from the door the bed is on the right ----
     if want('caravan'):
         cv = json.loads(ev(pg, """JSON.stringify((() => { const b = SITE.bld.carport, r = GAME.COL.filter(c => c && (c[6] === 'bed' || c[6] === 'bench' || c[6] === 'kitchen') && c[9] && Math.abs(c[9].cx - b.c[0]) < 4 && Math.abs(c[9].cy - b.c[1]) < 4);
@@ -172,7 +176,7 @@ with lib.browser() as b:
         l0 = act(pg, 'garten:sitzecke-bett'); s0 = act(pg, 'seat:garten:wohnwagen-sitz')
         run(pg, 'garten:sitzecke-bett', 1.6)
         l1 = act(pg, 'garten:sitzecke-bett'); b1 = act(pg, 'seat:garten:wohnwagen-gaestebett'); s1 = act(pg, 'seat:garten:wohnwagen-sitz')
-        shot(pg, 'wohnwagen_sitzecke_als_bett')
+        view(pg, 'carport', 0.35 + 0.9, -0.35, EYE_C, 0, -38, 84); shot(pg, 'wohnwagen_sitzecke_als_bett')
         ck('caravan: the dinette table lowers into a bed (then „Hinlegen“)', l0 == 'Tisch absenken – Bett bauen' and s0 == 'In die Sitzecke setzen' and l1 == 'Bett wieder zur Sitzecke' and b1 == 'Hinlegen' and s1 is None, [l0, s0, l1, b1, s1])
         run(pg, 'seat:garten:wohnwagen-gaestebett', 1.2)
         ck('caravan: lying on the dinette bed', ev(pg, "!!(PLAY.seat && PLAY.seat.kind === 'lie')"))
