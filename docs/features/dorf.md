@@ -45,3 +45,8 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
 
 - Neuer Speicher-Schlüssel `pav-dorf-v1` (Zeile in `core/save.js`), neue `window`-Namen `DCAL`, `DPEOPLE`, `DSCHOOL`, `DFIRE`, `DORF`.
 - Die Aufgabe hat ein eigenes kleines Tagebuch im Gesprächsfenster; `game/quests.js` ist unberührt (zum späteren Einbinden: `DORF.ST.step`).
+- Zur Laufzeit, ohne fremde Dateien zu ändern: die Wand der Schule (`RATSCHER.bld[0]`, Viereck mit der Tür) wird ersetzt; ein
+  `KERN.provide('pushOut', …, 1)` lässt in der offenen Tür die Weltwände (`WCOL`) aus; `LIGHTS[0,3,4]` (Schule) und `LIGHTS[1]` (Feuer)
+  werden während eines Abends in der Nähe geliehen und danach mit `LIGHTSTATE.apply()` zurückgegeben.
+- `credits_add` aus `viz3/extra/dorf/manifest.json` landet in `build.py` hinter dem schließenden `</details>` der Quellenliste – das `<li>`
+  steht dann außerhalb der Liste (besser vor `</ul>` einfügen).
