@@ -8,6 +8,7 @@ import {
   faceOf,
   FOOT,
   gB,
+  inLocal,
   INSIDE,
   lcol,
   ldoor,
@@ -21,6 +22,18 @@ import {
   wheel,
   worldOf,
 } from './site_base.js';
+import { bulbMat, GLAMPS, GSEATS, mergeGroup, put, twin } from './garten_kit.js';
+// feat/einrichtung: the caravan's own materials (twins: the same shader programs) – the interior styles change their colours
+export const CW = {
+  floor: twin(MAT.oakF),
+  wood: twin(MAT.larchIn),
+  wood2: twin(MAT.oak),
+  fab: twin(MAT.sage),
+  bedA: twin(MAT.wool),
+  bedB: twin(MAT.woolLight),
+  sheet: twin(MAT.linen),
+};
+export const CV = { anchor: null, inside: () => false, zf: 0.5, windows: [], bed: 0 };
 bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', pad: 0.3 });
 // ===== B: carport 6,0 × 4,0 m, ca. 3,5 m hoch (Pfosten 12/12, Pfetten, Sparren, Trapezblech) with the Tabbert caravan; door side faces the garden entrance (north) =====
 {
@@ -206,18 +219,22 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
   ribbon(INN, -HW + 0.035, HW - 0.035, true, MATS.liner);
   ribbon(offs(OUT, 0.012), -HW, HW, false, MATS.tint, true);
   // side panels with real holes: door (north), windows; outer skin and inner lining
+  // feat/einrichtung (Falko, 23.10.2026: „das Bett rechts und nicht links … sozusagen gespiegelt“): the windows follow the mirrored interior –
+  // bed windows at the front, the dinette's at the rear, the kitchen window over the kitchen; the door stays where it is
   const HOLES = {
     1: [
       [0.2, 0.85, 0.55, 2.25],
-      [-1.3, -0.35, 1.2, 1.85],
+      [-0.55, 0.05, 1.2, 1.85],
       [1.45, 2.3, 1.3, 1.85],
+      [-2.3, -1.3, 1.3, 1.85],
     ],
     [-1]: [
-      [-1.75, -0.55, 1.2, 1.9],
-      [-0.2, 0.75, 1.5, 1.95],
-      [1.45, 2.3, 1.3, 1.85],
+      [0.75, 1.75, 1.2, 1.9],
+      [-0.45, 0.5, 1.5, 1.95],
+      [-2.3, -1.3, 1.3, 1.85],
     ],
   };
+  CV.windows = [...HOLES[1].filter(q => q[0] !== 0.2).map(q => [1, ...q]), ...HOLES[-1].map(q => [-1, ...q])];
   for (const sy of [1, -1]) {
     for (const [pts, yy, m] of [
       [OUT, sy * HW, MATS.cream],
@@ -296,44 +313,65 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
     gB(cv, X1 - 0.005, X1 + 0.012, sy * 0.85 - 0.08, sy * 0.85 + 0.08, 0.6, 0.85, MATS.tomato, { cast: false });
   gB(cv, -0.6, 0.0, -0.3, 0.3, Z1 - 0.01, Z1 + 0.07, MATS.white);
   gB(cv, -0.55, -0.05, -0.25, 0.25, Z1 + 0.07, Z1 + 0.075, MATS.tint, { cast: false });
-  // --- interior: floor, dinette (front, west), cupboard, kitchen (south), wardrobe, transverse double bed (rear, east), overhead lockers
-  gB(cv, X0 + 0.05, X1 - 0.05, -HW + 0.04, HW - 0.04, zf - 0.03, zf, MAT.oakF, { grain: 'x', cast: false });
-  gB(cv, X0 + 0.04, X0 + 0.5, -1.05, 1.05, zf, zf + 0.42, MAT.larchIn);
-  RB(X0 + 0.06, X0 + 0.5, -1.03, 1.03, zf + 0.42, zf + 0.5, 0.025, MAT.sage, { parent: cv });
-  RB(X0 + 0.06, X0 + 0.2, -1.0, 1.0, zf + 0.5, zf + 0.92, 0.04, MAT.sage, { parent: cv });
+  // --- interior (feat/einrichtung: mirrored – entering through the door the bed is on the right): transverse double bed at the front (west,
+  // under the panorama window), wardrobes, cupboard west of the door, kitchen opposite (south), dinette at the rear (east), overhead lockers.
+  // The own materials (CW) let the interior styles change colours (garden/stil_bauten.js); CV.anchor carries the style layer.
+  gB(cv, X0 + 0.05, X1 - 0.05, -HW + 0.04, HW - 0.04, zf - 0.03, zf, CW.floor, { grain: 'x', cast: false });
+  // dinette (rear): bench across the rear wall, two side benches, table on one leg
+  gB(cv, X1 - 0.5, X1 - 0.04, -1.05, 1.05, zf, zf + 0.42, CW.wood);
+  RB(X1 - 0.5, X1 - 0.06, -1.03, 1.03, zf + 0.42, zf + 0.5, 0.025, CW.fab, { parent: cv });
+  RB(X1 - 0.2, X1 - 0.06, -1.0, 1.0, zf + 0.5, zf + 0.92, 0.04, CW.fab, { parent: cv });
   for (const sy of [-1, 1]) {
-    gB(cv, X0 + 0.5, -1.35, sy > 0 ? 0.5 : -1.05, sy > 0 ? 1.05 : -0.5, zf, zf + 0.42, MAT.larchIn);
-    RB(X0 + 0.5, -1.37, sy > 0 ? 0.52 : -1.03, sy > 0 ? 1.03 : -0.52, zf + 0.42, zf + 0.5, 0.025, MAT.sage, {
+    gB(cv, 1.35, X1 - 0.5, sy > 0 ? 0.5 : -1.05, sy > 0 ? 1.05 : -0.5, zf, zf + 0.42, CW.wood);
+    RB(1.37, X1 - 0.5, sy > 0 ? 0.52 : -1.03, sy > 0 ? 1.03 : -0.52, zf + 0.42, zf + 0.5, 0.025, CW.fab, {
       parent: cv,
     });
-    RB(X0 + 0.5, -1.37, sy > 0 ? 0.9 : -1.03, sy > 0 ? 1.03 : -0.9, zf + 0.5, zf + 0.9, 0.04, MAT.sage, { parent: cv });
+    RB(1.37, X1 - 0.5, sy > 0 ? 0.9 : -1.03, sy > 0 ? 1.03 : -0.9, zf + 0.5, zf + 0.9, 0.04, CW.fab, { parent: cv });
   }
-  gB(cv, X0 + 0.55, -1.42, -0.42, 0.42, zf + 0.68, zf + 0.72, MAT.larchIn);
-  gB(cv, -1.95, -1.88, -0.04, 0.04, zf, zf + 0.68, MAT.alu, { grain: 'z', cast: false });
-  gB(cv, -1.3, -0.35, 0.6, 1.06, zf, zf + 0.62, MAT.larchIn);
-  gB(cv, -1.32, -0.33, 0.58, 1.06, zf + 0.62, zf + 0.65, MAT.oak, { cast: false });
-  gB(cv, -0.95, -0.36, -1.06, -0.84, zf, zf + 0.2, MAT.larchIn); // cupboard (north), wheel box (south)
-  gB(cv, -0.35, 0.95, -1.06, -0.5, zf, zf + 0.88, MAT.larchIn);
-  gB(cv, -0.37, 0.97, -1.06, -0.48, zf + 0.88, zf + 0.92, MATS.white, { cast: false });
-  cyl(0.6, -0.78, zf + 0.92, zf + 0.93, 0.15, SINK, 18, undefined, { parent: cv, cast: false });
-  gB(cv, -0.25, 0.2, -0.98, -0.58, zf + 0.925, zf + 0.945, MAT.black, { cast: false });
-  gB(cv, 0.95, 1.38, 0.5, 1.06, zf, zf + 1.86, MAT.larchIn, { grain: 'z' });
-  gB(cv, 0.95, 1.38, -1.06, -0.5, zf, zf + 1.86, MAT.larchIn, { grain: 'z' });
-  gB(cv, 1.4, X1 - 0.06, -1.05, 1.05, zf, zf + 0.42, MAT.larchIn);
-  gB(cv, 1.42, X1 - 0.08, -1.03, 1.03, zf + 0.42, zf + 0.58, MAT.linen, { cast: false });
-  RB(1.45, X1 - 0.1, -1.0, 1.0, zf + 0.58, zf + 0.64, 0.03, MAT.wool, { parent: cv });
-  RB(X1 - 0.6, X1 - 0.12, -0.92, -0.1, zf + 0.62, zf + 0.76, 0.05, MAT.woolLight, { parent: cv });
-  RB(X1 - 0.6, X1 - 0.12, 0.1, 0.92, zf + 0.62, zf + 0.76, 0.05, MAT.woolLight, { parent: cv });
+  // the table can be lowered onto the benches – with two cushions on it the dinette becomes a bed (garden/stil_bauten.js): table top and leg,
+  // and the filler cushions, are groups of their own (merged by themselves, not with the caravan)
+  {
+    const tg = new THREE.Group(),
+      leg = new THREE.Group(),
+      fill = new THREE.Group();
+    cv.add(tg, leg, fill);
+    gB(tg, 1.42, X1 - 0.55, -0.42, 0.42, zf + 0.68, zf + 0.72, CW.wood2);
+    gB(leg, 1.88, 1.95, -0.04, 0.04, zf, zf + 0.68, MAT.alu, { grain: 'z', cast: false });
+    for (const [y0, y1] of [
+      [-0.42, -0.005],
+      [0.005, 0.42],
+    ])
+      RB(1.43, X1 - 0.56, y0, y1, zf + 0.42, zf + 0.5, 0.025, CW.fab, { parent: fill });
+    fill.visible = false;
+    for (const gg of [tg, leg, fill]) mergeGroup(gg, { cast: false });
+    Object.assign(CV, { table: tg, leg, fill });
+  }
+  // cupboard between the wardrobe and the door (north), kitchen opposite the door (south): worktop, sink, two-burner hob
+  gB(cv, -0.62, 0.12, 0.6, 1.06, zf, zf + 0.62, CW.wood);
+  gB(cv, -0.64, 0.14, 0.58, 1.06, zf + 0.62, zf + 0.65, CW.wood2, { cast: false });
+  gB(cv, -0.62, 0.68, -1.06, -0.5, zf, zf + 0.88, CW.wood);
+  gB(cv, -0.64, 0.7, -1.06, -0.48, zf + 0.88, zf + 0.92, MATS.white, { cast: false });
+  cyl(-0.3, -0.78, zf + 0.92, zf + 0.93, 0.15, SINK, 18, undefined, { parent: cv, cast: false });
+  gB(cv, 0.12, 0.57, -0.98, -0.58, zf + 0.925, zf + 0.945, MAT.black, { cast: false });
+  // two wardrobes (full height) between the bed and the middle
+  gB(cv, -1.1, -0.67, 0.5, 1.06, zf, zf + 1.86, CW.wood, { grain: 'z' });
+  gB(cv, -1.1, -0.67, -1.06, -0.5, zf, zf + 1.86, CW.wood, { grain: 'z' });
+  // the transverse double bed (one lies across the caravan, head at the north side): base, mattress, duvet, two pillows
+  gB(cv, X0 + 0.06, -1.12, -1.05, 1.05, zf, zf + 0.42, CW.wood);
+  gB(cv, X0 + 0.08, -1.14, -1.03, 1.03, zf + 0.42, zf + 0.58, CW.sheet, { cast: false });
+  RB(X0 + 0.1, -1.16, -1.0, 0.52, zf + 0.58, zf + 0.65, 0.03, CW.bedA, { parent: cv });
+  RB(X0 + 0.14, -1.86, 0.58, 0.96, zf + 0.6, zf + 0.74, 0.05, CW.bedB, { parent: cv });
+  RB(-1.8, -1.2, 0.58, 0.96, zf + 0.6, zf + 0.74, 0.05, CW.bedB, { parent: cv });
   for (const [x0, x1] of [
-    [X0 + 0.3, -1.4],
-    [1.45, X1 - 0.2],
+    [1.4, X1 - 0.3],
+    [X0 + 0.2, -1.17],
   ])
     for (const sy of [-1, 1])
-      gB(cv, x0, x1, sy > 0 ? 0.72 : -1.05, sy > 0 ? 1.05 : -0.72, 1.95, 2.3, MAT.larchIn, { cast: false });
+      gB(cv, x0, x1, sy > 0 ? 0.72 : -1.05, sy > 0 ? 1.05 : -0.72, 1.95, 2.3, CW.wood, { cast: false });
   gB(cv, 0.22, 0.83, HW + 0.03, HW + 0.4, 0.22, 0.25, MAT.galv);
   gB(cv, 0.25, 0.8, HW + 0.36, HW + 0.4, 0.0, 0.22, MAT.galv, { cast: false }); // Einstiegstritt
   {
-    const w = worldOf(b, cvx - 1.65, cvy);
+    const w = worldOf(b, cvx + 1.65, cvy);
     placeGLB('lantern_t', { x: w[0], y: w[1], z: zf + 0.72, face: 30, h: 0.3, col: false });
   }
   // --- collision and floors (local frame of the caravan body)
@@ -346,13 +384,83 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
   lcol(r, X1 - 0.04, X1 + 0.03, -HW, HW, zf, Z1, 'caravan');
   lcol(r, X0, X1, -HW, HW, 0, 0.47, 'caravan');
   lcol(r, X0 - 1.3, X0, -0.45, 0.45, 0, 0.82, 'drawbar');
-  lcol(r, X0 + 0.04, -1.35, -1.05, 1.05, zf, zf + 0.5, 'bench');
-  lcol(r, X0 + 0.55, -1.42, -0.42, 0.42, zf + 0.25, zf + 0.72, 'table');
-  lcol(r, -1.3, -0.35, 0.6, 1.06, zf, zf + 0.65, 'cupboard');
-  lcol(r, -0.35, 0.95, -1.06, -0.5, zf, zf + 0.92, 'kitchen');
-  lcol(r, 0.95, 1.38, 0.5, 1.06, zf, zf + 1.86, 'wardrobe');
-  lcol(r, 0.95, 1.38, -1.06, -0.5, zf, zf + 1.86, 'wardrobe');
-  lcol(r, 1.4, X1 - 0.06, -1.05, 1.05, zf, zf + 0.64, 'bed');
+  lcol(r, 1.35, X1 - 0.04, -1.05, 1.05, zf, zf + 0.5, 'bench');
+  lcol(r, 1.42, X1 - 0.55, -0.42, 0.42, zf + 0.25, zf + 0.72, 'table');
+  CV.tableCol = COL[COL.length - 1];
+  lcol(r, -0.62, 0.12, 0.6, 1.06, zf, zf + 0.65, 'cupboard');
+  lcol(r, -0.62, 0.68, -1.06, -0.5, zf, zf + 0.92, 'kitchen');
+  lcol(r, -1.1, -0.67, 0.5, 1.06, zf, zf + 1.86, 'wardrobe');
+  lcol(r, -1.1, -0.67, -1.06, -0.5, zf, zf + 1.86, 'wardrobe');
+  lcol(r, X0 + 0.06, -1.12, -1.05, 1.05, zf, zf + 0.64, 'bed');
+  // places: the dinette (north bench, looking at the table) and the bed (head at the north side, looking along it)
+  GSEATS.push(
+    {
+      key: 'wohnwagen-sitz',
+      b,
+      lx: cvx + 1.72,
+      ly: cvy + 0.78,
+      eye: zf + 0.5 + 0.72,
+      yaw: 90,
+      pitch: -6,
+      kind: 'sit',
+      label: () => (CV.bed ? null : 'In die Sitzecke setzen'),
+      at: [cvx + 1.0, cvy + 0.25],
+      r: 1.2,
+    },
+    {
+      key: 'wohnwagen-bett',
+      b,
+      lx: cvx - 1.8,
+      ly: cvy + 0.74,
+      eye: zf + 0.58 + 0.32,
+      yaw: 90,
+      pitch: 2,
+      kind: 'lie',
+      label: 'Ins Bett legen',
+      at: [cvx - 0.88, cvy],
+      r: 1.6,
+    }
+  );
+  // a ceiling light (round plastic dome as in the 80s) over the middle, switch inside by the door – it borrows the garden's one lamp light
+  // (garden/garten_in.js: no new point light)
+  {
+    const domeM = bulbMat(0xf6efe0);
+    put(
+      cv,
+      new THREE.SphereGeometry(0.15, 18, 6, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2),
+      domeM,
+      0.3,
+      0,
+      Z1 - 0.045,
+      {
+        s: [1, 0.45, 1],
+        cast: false,
+      }
+    );
+    put(cv, new THREE.CylinderGeometry(0.16, 0.16, 0.012, 20), MATS.white, 0.3, 0, Z1 - 0.042, { cast: false });
+    gB(cv, 0.08, 0.14, HW - 0.04, HW - 0.035, 1.42, 1.5, MATS.white, { cast: false });
+    gB(cv, 0.1, 0.12, HW - 0.045, HW - 0.04, 1.44, 1.48, MAT.black, { cast: false });
+    GLAMPS.push({
+      key: 'wohnwagen',
+      b,
+      lx: cvx + 0.3,
+      ly: cvy,
+      z: Z1 - 0.12,
+      mat: domeM,
+      glow: 1.6,
+      dist: 3.6,
+      inten: 3.4,
+      color: 0xffe2b8,
+      sw: [cvx + 0.11, cvy + HW - 0.05, 1.46],
+      label: 'Licht',
+      room: (x, y, z) => CV.inside(x, y, z),
+      r: 1.2,
+    });
+  }
+  CV.anchor = cv;
+  Object.assign(CV, { cvx, cvy, b });
+  CV.inside = (x, y, z) => z > zf - 0.6 && z < Z1 + 0.2 && inLocal(b, x, y, X1, HW, cvx, cvy);
+  CV.zf = zf;
   // door: hinged at the front (west) jamb as on German caravans, opens outwards
   ldoor('caravan', b, boardLeaf(0.65, 1.7, { boards: false, mat: MATS.creamBox, glass: [0.33, 0.44, 0.95, 1.45] }), {
     lx: 0.2,
