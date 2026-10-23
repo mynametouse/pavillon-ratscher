@@ -22,6 +22,7 @@ import { VILLAGE } from '../world/village.js';
 import { VPROPS } from '../world/village_props.js';
 import { WCOL } from '../world/worldcol.js';
 import { DN } from '../time/daynight.js';
+import { audio } from '../audio/audio.js';
 export const DSCHOOL = (() => {
   const S = {
     built: false,
@@ -856,6 +857,7 @@ export const DSCHOOL = (() => {
       me.position.set(x, h, -y);
       me.rotation.set(0, S.skat.seats[i].a + 0.3 * TR.n, 0);
       if (TR.t <= 0) {
+        sound('card', x, y);
         TR.n++;
         TR.t = 1.4 + Math.random() * 1.6;
         if (TR.n >= 3) {
@@ -883,11 +885,68 @@ export const DSCHOOL = (() => {
     }
     markDirty();
   }
+  // ---- small sounds of the room, made in the Web Audio graph: a card slapped on the table, glasses clinking ----
+  let nbuf = null;
+  function sound(kind, x, y) {
+    const A = audio.raw && audio.raw();
+    if (!A || A.ctx.state !== 'running') return;
+    const [wx, wy] = toW(x, y),
+      sp = audio.spatial ? audio.spatial(wx, wy, 4) : { vol: 0.5, pan: 0 };
+    if (sp.vol < 0.02) return;
+    const ctx = A.ctx,
+      t = ctx.currentTime + 0.01,
+      g = ctx.createGain();
+    g.connect(A.sfx);
+    if (kind === 'card') {
+      if (!nbuf) {
+        nbuf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+        const a = nbuf.getChannelData(0);
+        for (let i = 0; i < a.length; i++) a[i] = Math.random() * 2 - 1;
+      }
+      const s = ctx.createBufferSource(),
+        f = ctx.createBiquadFilter();
+      s.buffer = nbuf;
+      f.type = 'bandpass';
+      f.frequency.value = 1400 + Math.random() * 600;
+      f.Q.value = 0.9;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.35 * sp.vol, t + 0.003);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+      s.connect(f);
+      f.connect(g);
+      s.start(t, 0, 0.1);
+    } else {
+      for (const [f0, dt] of [
+        [2650 + Math.random() * 500, 0],
+        [3100 + Math.random() * 500, 0.06 + Math.random() * 0.05],
+      ]) {
+        const o = ctx.createOscillator(),
+          og = ctx.createGain();
+        o.frequency.value = f0;
+        og.gain.setValueAtTime(0.0001, t + dt);
+        og.gain.exponentialRampToValueAtTime(0.12 * sp.vol, t + dt + 0.002);
+        og.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.45);
+        o.connect(og);
+        og.connect(g);
+        o.start(t + dt);
+        o.stop(t + dt + 0.5);
+      }
+      g.gain.value = 1;
+    }
+  }
+  let clinkT = 6;
   // ---- per frame (from dorf/dorf.js): door animation, lights, the glass by daylight ----
   function tick(dt, evening, near) {
     if (!S.built) return;
-    if (evening && near && S.skat) cardTick(dt);
-    else if (TR.cards && TR.cards[0].visible) for (const me of TR.cards) me.visible = false;
+    if (evening && near && S.skat) {
+      cardTick(dt);
+      clinkT -= dt;
+      if (clinkT < 0) {
+        clinkT = 9 + Math.random() * 16;
+        const b = S.lamps[Math.floor(Math.random() * S.lamps.length)];
+        sound('clink', b[0], b[1]);
+      }
+    } else if (TR.cards && TR.cards[0].visible) for (const me of TR.cards) me.visible = false;
     if (Math.abs(S.open - S.want) > 1e-3) {
       S.open += Math.sign(S.want - S.open) * Math.min(Math.abs(S.want - S.open), dt * 0.9);
       pose();

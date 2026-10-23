@@ -494,6 +494,20 @@ export const DORF = (() => {
     S.calT -= dt;
     const skatCal = S.skatCal,
       fireCal = S.fireCal;
+    // an evening is on and one is around (garden, village): a hint once per evening
+    const ev = skatCal ? 'skat' : fireCal ? 'fire' : null;
+    if (ev && P.mode === 'walk' && S.hinted !== ev + DCAL.eday()) {
+      const d = ev === 'skat' ? dS : dF;
+      if (d > 60 && d < 900) {
+        S.hinted = ev + DCAL.eday();
+        toast(
+          ev === 'skat'
+            ? 'Freitagabend: In der alten Schule brennt Licht – Skat- und Rommé-Abend, das Dorf trifft sich.'
+            : 'Samstagabend: Auf dem Acker Richtung Klinge brennt ein Feuer – das Dorf kommt zusammen.',
+          7000
+        );
+      }
+    }
     if (skatCal && (inside || dS < 30)) S.skatStick = true;
     if (!inside && dS > 30) S.skatStick = false;
     if (fireCal && dF < 25) S.fireStick = true;
