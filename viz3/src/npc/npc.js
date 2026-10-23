@@ -775,6 +775,10 @@ export const NPCUI = (() => {
   function sub(w, text) {
     if (!sb) return;
     if (!text) return;
+    // a thought or hint of the player (PLAY.think, e.g. why the fork lifts nothing) stays readable: a line said in passing does not
+    // cover it, only the one the player is talking to (the voice still plays)
+    if (!sb.hidden && sb.classList.contains('think') && cur !== w) return;
+    sb.classList.remove('think');
     sb.textContent = (labels[w.name] || w.gname || '') + ': ' + text;
     sb.hidden = false;
     clearTimeout(subT);
