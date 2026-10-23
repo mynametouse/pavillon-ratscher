@@ -129,12 +129,14 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     gB(g, lx - 0.012, lx + 0.012, ly - 0.012, ly + 0.012, 0.4, 1.7, MATS.stake, { grain: 'z', cast: false });
     for (let k = 0; k < 4; k++) {
       const z = 0.6 + k * 0.28;
-      const s = new THREE.Mesh(new THREE.SphereGeometry(0.14 + rnd() * 0.05, 8, 6), MATS.leaf);
-      s.position.copy(V(lx + (rnd() - 0.5) * 0.12, ly + (rnd() - 0.5) * 0.1, z));
-      s.scale.set(0.45, 0.35, 0.45); // a small core of leaves – the plant is made by the leaves added below
-      s.castShadow = true;
-      g.add(s);
-      tagPh(s);
+      // a whorl of leaves (was a green ball; the same random draws: its radius and position)
+      const rad = 0.14 + rnd() * 0.05,
+        cx = lx + (rnd() - 0.5) * 0.12,
+        cy = ly + (rnd() - 0.5) * 0.1;
+      for (let j = 0; j < 4; j++) {
+        const a = (j / 4) * 6.28 + k * 0.8;
+        leaf(g, cx + Math.cos(a) * 0.025, cy + Math.sin(a) * 0.025, z - 0.05, rad, a, 0.8 + (j % 2) * 0.35, MATS.leaf);
+      }
       if (k > 0 && rnd() < 0.8) {
         const t = new THREE.Mesh(new THREE.SphereGeometry(0.03 + rnd() * 0.012, 8, 6), KM.tomato);
         t.position.copy(V(lx + (rnd() - 0.5) * 0.2, ly + 0.12 * (rnd() > 0.5 ? 1 : -1), z - 0.12));
