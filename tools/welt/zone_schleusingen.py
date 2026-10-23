@@ -378,7 +378,7 @@ def main():
             ux, uy = np.array([1.0, 0.0]), np.array([0.0, 1.0])
             outer = orient(Polygon(ring - ctr).convex_hull.simplify(1.5), 1.0)
             inner = [orient(Polygon(np.array(hh_.coords)[:-1] - ctr).convex_hull.simplify(1.0), 1.0) for hh_ in poly.interiors]
-            eave, pitch = 14.0, 50.0
+            eave, pitch = 14.0, 56.0   # the high roofs of the Renaissance wings (photos 2025)
             kk = math.tan(math.radians(pitch))
             planes, iplanes = [], []
             for rg, sgn in [(np.array(outer.exterior.coords)[:-1], 1)] + [(np.array(q.exterior.coords)[:-1], -1) for q in inner]:

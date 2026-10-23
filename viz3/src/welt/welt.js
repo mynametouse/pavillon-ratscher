@@ -140,22 +140,48 @@ export const WELT = (() => {
     return !!b && x > b[0] && x < b[2] && y > b[1] && y < b[3];
   };
   // ---- tiles ----
-  // one material per tile (its photo); all share one program
   // the ground of the tiles looks like the land of world/ratscher.js: the photo lifted from haze, bright land compressed, grain of grass
   // and soil up close (ROADS.shader: landDetail), and grey surfaces (streets, squares) get sett stones up close
-  const TILE_GLSL = `vec3 weltGround( vec2 p, vec3 c, float dist ) {
-      float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), chroma = ( mx - mn ) / max( mx, 0.02 );
-      float pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * ( 1.0 - smoothstep( 40.0, 90.0, dist ) );
+  // a zone may lay its streets over the photo (WELT.setOverlay: a canvas over a square, r = cover, g/r = surface: asphalt with kerbs,
+  // sett, paving slabs)
+  const OVER = {
+    tOver: { value: new THREE.DataTexture(new Uint8Array(4), 1, 1) },
+    uOver: { value: new THREE.Vector4(0, 0, 0, 0) },
+  };
+  OVER.tOver.value.needsUpdate = true;
+  S.setOverlay = (tex, x0, y0, size) => {
+    const old = OVER.tOver.value;
+    OVER.tOver.value = tex || new THREE.DataTexture(new Uint8Array(4), 1, 1);
+    if (!tex) OVER.tOver.value.needsUpdate = true;
+    OVER.uOver.value.set(x0 || 0, y0 || 0, size ? 1 / size : 0, tex ? 1 : 0);
+    if (old && old !== tex) old.dispose();
+    markDirty(true);
+  };
+  const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver;
+    vec3 setts( vec2 p, vec3 c, float sc ) {   // small stones in offset rows, each a little different, dark joints
+      vec2 q = p * sc; q.x += 0.5 * mod( floor( q.y ), 2.0 );
+      vec2 f = fract( q ); float fw = fwidth( q.x ) + fwidth( q.y ), fine = 1.0 - smoothstep( 0.15, 0.6, fw );
+      float jt = ( 1.0 - smoothstep( 0.0, 0.14, min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) ) ) ) * fine;
+      return c * ( 0.84 + 0.32 * rdH( floor( q ) ) * fine ) * ( 1.0 - 0.45 * jt ); }
+    vec3 weltGround( vec2 p, vec3 c, float dist ) {
+      float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), chroma = ( mx - mn ) / max( mx, 0.02 ), lum = dot( c, vec3( 0.3, 0.59, 0.11 ) );
+      float near = 1.0 - smoothstep( 40.0, 90.0, dist ), pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * near;
       vec3 g = landDetail( p, c, dist );
-      if ( pave > 0.01 ) {
-        vec2 q = p * 7.5; q.x += 0.5 * mod( floor( q.y ), 2.0 );
-        vec2 f = fract( q ); float fw = fwidth( q.x ) + fwidth( q.y ), fine = 1.0 - smoothstep( 0.15, 0.6, fw );
-        float jt = ( 1.0 - smoothstep( 0.0, 0.14, min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) ) ) ) * fine;
-        vec3 st = landHi( c ) * 0.78 * ( 0.84 + 0.32 * rdH( floor( q ) ) * fine ) * ( 1.0 - 0.45 * jt );
-        g = mix( g, st, pave ); }
+      vec4 o = vec4( 0.0 ); vec2 ou = ( p - uOver.xy ) * uOver.z;
+      if ( uOver.w > 0.5 && ou.x > 0.0 && ou.y > 0.0 && ou.x < 1.0 && ou.y < 1.0 ) o = texture( tOver, ou );
+      if ( o.r > 0.03 ) {
+        float code = o.g / max( o.r, 0.01 ), cov = o.r, n1 = rdN( p * 0.6 ), n2 = rdN( p * 5.0 );
+        vec3 r;
+        if ( code < 0.3 ) r = vec3( 0.085, 0.088, 0.092 ) * clamp( lum / 0.14, 0.75, 1.3 ) * ( 0.86 + 0.24 * n1 ) * ( 0.92 + 0.16 * n2 );   // asphalt, patches after the photo
+        else if ( code < 0.62 ) r = setts( p, vec3( 0.2, 0.19, 0.175 ) * clamp( lum / 0.2, 0.8, 1.25 ), 8.0 );   // sett
+        else r = setts( p * vec2( 1.0, 0.5 ), vec3( 0.27, 0.26, 0.245 ), 3.3 );   // paving slabs
+        float kerb = code < 0.3 ? ( 1.0 - smoothstep( 0.08, 0.2, abs( cov - 0.42 ) ) ) * near : 0.0;   // a light kerb stone along the asphalt
+        r = mix( r, vec3( 0.36, 0.355, 0.34 ) * ( 0.9 + 0.2 * n2 ), kerb );
+        g = mix( g, r, clamp( smoothstep( 0.3, 0.55, cov ) + kerb, 0.0, 1.0 ) );
+      } else if ( pave > 0.01 ) g = mix( g, setts( p, landHi( c ) * 0.78, 7.5 ), pave );
       return g; }`;
   const STUB =
-    'float rdH( vec2 p ) { return 0.5; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }';
+    'float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }';
   // one material per tile (its photo); all share one program
   function tileMat(tex) {
     const m = new THREE.MeshStandardMaterial({
@@ -169,6 +195,7 @@ export const WELT = (() => {
     });
     m.onBeforeCompile = sh => {
       const G = ROADS.shader ? ROADS.shader(sh) : STUB;
+      Object.assign(sh.uniforms, OVER);
       sh.vertexShader =
         'varying vec2 vGeo;\n' +
         sh.vertexShader.replace(
