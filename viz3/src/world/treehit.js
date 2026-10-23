@@ -53,8 +53,7 @@ export const TREEHIT = (() => {
   function recAt(x, y) {
     if (!RECS) {
       RECS = new Map();
-      for (const r of (window.RATSCHER && RATSCHER.treeRecs) || [])
-        RECS.set(Math.round(r.x * 10) * 1e5 + Math.round(r.y * 10), r);
+      for (const r of RATSCHER.treeRecs || []) RECS.set(Math.round(r.x * 10) * 1e5 + Math.round(r.y * 10), r);
     }
     return RECS.get(Math.round(x * 10) * 1e5 + Math.round(y * 10)) || null;
   }
@@ -145,7 +144,13 @@ export const TREEHIT = (() => {
       FOREST.retilt(T.f);
     } else if (T.r) {
       const r = T.r;
-      if (!r.m0) r.m0 = r.inst.map(([im, k]) => im.getMatrixAt(k, new THREE.Matrix4()));
+      // the upright matrices, once (InstancedMesh.getMatrixAt fills the matrix it is given – it returns nothing)
+      if (!r.m0)
+        r.m0 = r.inst.map(([im, k]) => {
+          const m = new THREE.Matrix4();
+          im.getMatrixAt(k, m);
+          return m;
+        });
       r.inst.forEach(([im, k], j) => {
         r.m0[j].decompose(_p, _q0, _s);
         _m.compose(_p.add(_o), _q0.premultiply(_q), _s);
@@ -646,7 +651,16 @@ export const TREEHIT = (() => {
           if (A.mode === 'bend' && A.th < -0.4) A.th = -0.4;
         }
       }
-      pose(T, A.dir, Math.max(-0.5, A.th), A.e || 0);
+      try {
+        pose(T, A.dir, Math.max(-0.5, A.th), A.e || 0);
+      } catch (e) {
+        ACT.delete(i); // this tree is left as it is; the others go on
+        if (!S.perr) {
+          S.perr = 1;
+          console.warn('treehit pose', e);
+        }
+        continue;
+      }
       shadow = true;
       if (A.mode === 'rest') ACT.delete(i);
       else if (A.mode !== 'fall' && A.mode !== 'push') {
@@ -698,9 +712,13 @@ export const TREEHIT = (() => {
       A.mode = 'rest';
       ACT.delete(i);
       knock(T);
-      pose(T, dir, A.th, A.e);
       S.down.push([+x.toFixed(2), +y.toFixed(2), +az.toFixed(1), +A.th.toFixed(3)]);
       n++;
+      try {
+        pose(T, dir, A.th, A.e);
+      } catch (err) {
+        console.warn('treehit restore pose', err); // it is out of the way; only its picture stays upright
+      }
     }
     S.restored = n;
     if (n) markDirty(true);
@@ -760,12 +778,17 @@ export const TREEHIT = (() => {
     for (const L of LOGS) {
       const T = L.T;
       ACT.delete(T.i);
-      pose(T, L.dir, 0, 0);
-      if (T.r && T.r.m0)
-        T.r.inst.forEach(([im, k], j) => {
-          im.setMatrixAt(k, T.r.m0[j]);
-          im.instanceMatrix.needsUpdate = true;
-        });
+      try {
+        pose(T, L.dir, 0, 0);
+        if (T.r && T.r.m0)
+          T.r.inst.forEach(([im, k], j) => {
+            if (!T.r.m0[j]) return;
+            im.setMatrixAt(k, T.r.m0[j]);
+            im.instanceMatrix.needsUpdate = true;
+          });
+      } catch (err) {
+        console.warn('treehit standUp', err);
+      }
       T.down = false;
       WCOL.revive(T.i);
       if (T.z5 != null && T.r && COL[T.r.col]) COL[T.r.col][5] = T.z5;

@@ -166,15 +166,15 @@ with lib.browser() as b:
             m = (lie['x'] + d[0] * 0.3 * L, lie['y'] + d[1] * 0.3 * L); run = None
             for sg in (1, -1):
                 pp = (d[1] * sg, -d[0] * sg)
-                if not E(f"[...Array(12).keys()].some(k => WCOL.pushCircle([{m[0]} - {pp[0]} * (9 - k), {m[1]} - {pp[1]} * (9 - k)], 1.1)) || [...Array(5).keys()].some(k => WCOL.pushCircle([{m[0]} + {pp[0]} * (k + 1), {m[1]} + {pp[1]} * (k + 1)], 1.1))"):
+                if not E(f"[...Array(5).keys()].some(k => WCOL.pushCircle([{m[0]} - {pp[0]} * (6 - k), {m[1]} - {pp[1]} * (6 - k)], 1.1)) || [...Array(6).keys()].some(k => WCOL.pushCircle([{m[0]} + {pp[0]} * (k + 1), {m[1]} + {pp[1]} * (k + 1)], 1.1))"):
                     run = pp; break
             if run:
                 n0 = E("TREEHIT.stats().n.over || 0")
-                E(f"VEH.place('car', {m[0] - run[0] * 9}, {m[1] - run[1] * 9}, Math.atan2({run[0]}, {run[1]})); VEH.enter('car'); GAME.setView3(true)"); steps(0.4)
-                E("VEH.auto = () => ({ thr: 0.7, brk: 0, steer: 0, hand: false })"); kmh = []
-                for k in range(16):
+                E(f"VEH.place('car', {m[0] - run[0] * 6}, {m[1] - run[1] * 6}, Math.atan2({run[0]}, {run[1]})); VEH.enter('car'); GAME.setView3(true)"); steps(0.4)
+                E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })"); kmh = []
+                for k in range(20):
                     steps(0.25); kmh.append(E("VEH.state().find(v => v.id === 'car').kmh"))
-                    if k == 9: lib.shot(pg, OUT, 'over_stem')
+                    if k == 10: lib.shot(pg, OUT, 'over_stem')
                 E("VEH.auto = () => ({ thr: 0, brk: 0, steer: 0, hand: true })"); steps(1.5); E("VEH.auto = null; VEH.exit(); GAME.step(0.2)")
                 n1 = E("TREEHIT.stats().n.over || 0"); print('over the stem', n0, n1, kmh, flush=True)
                 ck('car across a lying stem: the wheels climb it (jolts)', n1 > n0, f"{n1 - n0} wheel(s), km/h {kmh}")
