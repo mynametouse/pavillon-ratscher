@@ -598,9 +598,9 @@ for (const z of [2.3, zO + 2.25]) {
 varOff();
 window.LIGHTS = [L1, L2, L3, L4, L5, T1, T2];
 for (const l of window.LIGHTS) {
-  tagPh(l);
-  // phases before the built-ins switch a light off by its intensity, not by visibility (game/walkable.js setPhase): the number of lights
-  // – and so every shader program – stays the same; a light lent to another place (KERN.lights) shines there in any phase
+  // not tagged with a phase (tagPh would hide it before the built-ins): phases before the built-ins switch a light off by its intensity
+  // (game/walkable.js setPhase) – the number of lights, and so every shader program, stays the same; a light lent to another place
+  // (KERN.lights) shines there in any phase
   let i0 = l.intensity;
   Object.defineProperty(l, 'intensity', {
     configurable: true,
