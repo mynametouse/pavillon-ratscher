@@ -128,11 +128,15 @@ with lib.browser() as b:
         # ---- „Aussuchen“ with the action button, each container ----
         picked = []
         for s in sh:
-            look(s)
+            # standing at the container (the nearest one is taken)
+            E(f"GAME.view({s['x']}, {s['y']}, {s['z']} + 1.7, 0, -30, 62); GAME.step(0.1)")
             best = J("GAME.step(0.1).best"); picked.append(best)
             E("PLAY.primary(); GAME.step(0.3)")
         n = E("GPLAN.state.kuebel.filter(c => c.loc === 'korb').length")
         print('picked', picked, flush=True)
+        tk = J("VESSRA.baumschule.taken ? VESSRA.baumschule.taken() : null")
+        print('taken out of the beds', tk, flush=True)
+        ck('the nursery’s own plants are taken out where the containers stood (VESSRA.baumschule.take)', tk is None or len(tk) == 4, json.dumps(tk))
         ck('„Aussuchen – …“ at each container puts it into the basket, the beds are empty then', n == 4 and all(p and p.startswith('Aussuchen') for p in picked) and E("GPSHOP.shelf().length") == 0, json.dumps(picked, ensure_ascii=False))
         E("GAME.step(0.6)")
         # ---- the counter: pay, the receipt ----
@@ -151,31 +155,41 @@ with lib.browser() as b:
         E("(() => { const B = VESSRA.baumschule; VEH.place('car', B.parkplatz.x, B.parkplatz.y, B.parkplatz.yaw * Math.PI / 180); })(); GAME.step(0.3)")
         E(f"GAME.view({k['x']}, {k['y']}, {k['z']} + 1.7, {k['yaw']}, -8, 62); GAME.step(0.1)")
         d = E("(() => { const v = VEH.by.car, K = VESSRA.baumschule.kasse; return Math.hypot(v.st.x - K.x, v.st.y - K.y); })()")
-        best = J("GAME.step(0.1).best")
-        E("PLAY.primary(); GAME.step(2.0)")
-        locs = J("GPLAN.state.kuebel.map(c => [c.id, c.loc])")
-        print('car', round(d, 1), 'm from the counter;', best, locs, flush=True)
-        ck('„Ins Auto laden“ with the car on the parking place: the apple, the shrub and the perennial in the car, the walnut left',
-           bool(best) and best.startswith('Ins Auto laden') and sorted(l for i, l in locs) == ['auto', 'auto', 'auto', 'kasse'] and dict(locs).get(ids['nut']) == 'kasse', json.dumps(locs))
-        best = J("GAME.step(0.1).best")
-        E("PLAY.primary(); GAME.step(2.0)")
-        ck('the walnut (a tall standard): „Liefern lassen“', bool(best) and best.startswith('Liefern lassen') and dict(J("GPLAN.state.kuebel.map(c => [c.id, c.loc])")).get(ids['nut']) == 'liefer', str(best))
-        # a picture of the load: behind the car, the tailgate
-        E("(() => { const v = VEH.by.car, C = v.model.cargo, p = VEH.toW(v, 0.9, C.y0 - 2.2), c = VEH.toW(v, 0, C.y0); GAME.view(p[0], p[1], v.st.z + 2.1, Math.atan2(c[0] - p[0], c[1] - p[1]) * 180 / Math.PI, -25, 62); GAME.step(0.2); })()")
-        lib.shot(pg, OUT, 'c_auto_beladen')
-        ck('the load drawn in the car (a set hung on it)', J("GPLAN.G3.sets()").get('auto', 0) == 3, json.dumps(J("GPLAN.G3.sets()")))
-        # ---- home: the car by the garden, „Ausladen“ behind it ----
-        E("VEH.reset(); GAME.step(0.5)")
-        E("(() => { const v = VEH.by.car, C = v.model.cargo, p = VEH.toW(v, 0, C.y0 - 1.3), c = VEH.toW(v, 0, C.y0); GAME.view(p[0], p[1], KERN.ground(p[0], p[1]) + 1.7, Math.atan2(c[0] - p[0], c[1] - p[1]) * 180 / Math.PI, -15, 62); GAME.step(0.2); })()")
-        best = J("GAME.step(0.1).best")
-        E("PLAY.primary(); GAME.step(2.0)")
-        bo = J("GPLAN.state.kuebel.filter(c => c.loc === 'boden')")
-        ck('home: „Ausladen“ at the tailgate sets the three plants down behind the car', bool(best) and best.startswith('Ausladen') and len(bo) == 3, f'{best} {json.dumps(bo)}')
-        lib.shot(pg, OUT, 'd_ausgeladen')
+        G['car'] = d < 40
+        if G['car']:
+            best = J("GAME.step(0.1).best")
+            E("PLAY.primary(); GAME.step(2.0)")
+            locs = J("GPLAN.state.kuebel.map(c => [c.id, c.loc])")
+            print('car', round(d, 1), 'm from the counter;', best, locs, flush=True)
+            ck('„Ins Auto laden“ with the car on the parking place: the apple, the shrub and the perennial in the car, the walnut left',
+               bool(best) and best.startswith('Ins Auto laden') and sorted(l for i, l in locs) == ['auto', 'auto', 'auto', 'kasse'] and dict(locs).get(ids['nut']) == 'kasse', json.dumps(locs))
+            best = J("GAME.step(0.1).best")
+            E("PLAY.primary(); GAME.step(2.0)")
+            ck('the walnut (a tall standard): „Liefern lassen“', bool(best) and best.startswith('Liefern lassen') and dict(J("GPLAN.state.kuebel.map(c => [c.id, c.loc])")).get(ids['nut']) == 'liefer', str(best))
+            # a picture of the load: behind the car, the tailgate
+            E("(() => { const v = VEH.by.car, C = v.model.cargo, p = VEH.toW(v, 0.9, C.y0 - 2.2), c = VEH.toW(v, 0, C.y0); GAME.view(p[0], p[1], v.st.z + 2.1, Math.atan2(c[0] - p[0], c[1] - p[1]) * 180 / Math.PI, -25, 62); GAME.step(0.2); })()")
+            lib.shot(pg, OUT, 'c_auto_beladen')
+            ck('the load drawn in the car (a set hung on it)', J("GPLAN.G3.sets()").get('auto', 0) == 3, json.dumps(J("GPLAN.G3.sets()")))
+            # ---- home: the car by the garden, „Ausladen“ behind it ----
+            E("VEH.reset(); GAME.step(0.5)")
+            E("(() => { const v = VEH.by.car, C = v.model.cargo, p = VEH.toW(v, 0, C.y0 - 1.3), c = VEH.toW(v, 0, C.y0); GAME.view(p[0], p[1], KERN.ground(p[0], p[1]) + 1.7, Math.atan2(c[0] - p[0], c[1] - p[1]) * 180 / Math.PI, -15, 62); GAME.step(0.2); })()")
+            best = J("GAME.step(0.1).best")
+            E("PLAY.primary(); GAME.step(2.0)")
+            bo = J("GPLAN.state.kuebel.filter(c => c.loc === 'boden')")
+            ck('home: „Ausladen“ at the tailgate sets the three plants down behind the car', bool(best) and best.startswith('Ausladen') and len(bo) == 3, f'{best} {json.dumps(bo)}')
+            lib.shot(pg, OUT, 'd_ausgeladen')
+        else:
+            # vehicles stop at the edge of the 2.4 km square until the drive (feat/fahrt) is in this build: everything delivered
+            print(f'note: the car cannot stand at the nursery in this build ({d:.0f} m from the counter) – the car part is skipped, all delivered', flush=True)
+            best = J("GAME.step(0.1).best")
+            E("PLAY.primary(); GAME.step(2.0)")
+            ck('without the car at the nursery: „Liefern lassen“ for all four', bool(best) and best.startswith('Liefern lassen') and E("GPLAN.state.kuebel.filter(c => c.loc === 'liefer').length") == 4, str(best))
         # ---- the delivery: the next morning by the garden gate ----
         E("CLOCK.t = (Math.floor(CLOCK.t / 1440) + 1) * 1440 + 7.5 * 60; GAME.step(1.5)")
         tor = J("GPLAN.state.kuebel.filter(c => c.loc === 'tor')")
-        ck('the next morning the walnut stands by the garden gate', len(tor) == 1 and tor[0]['id'] == ids['nut'] and math.hypot(tor[0]['x'] + 8.86, tor[0]['y'] - 39.08) < 6, json.dumps(tor))
+        n_tor = 1 if G['car'] else 4
+        ck('the next morning the delivery stands by the garden gate' + (' (the walnut)' if G['car'] else ''), len(tor) == n_tor and (not G['car'] or tor[0]['id'] == ids['nut']) and all(math.hypot(c['x'] + 8.86, c['y'] - 39.08) < 6 for c in tor), json.dumps(tor))
+        E("GAME.view(-8.4, 36.6, KERN.ground(-8.4, 36.6) + 1.7, 160, -20, 62); GAME.step(0.2)"); lib.shot(pg, OUT, 'd_gartentor')
         t = J("TASKS.state('gplan-kaufen')")
         ck('the task: all bought plants at home (step 5: plant them)', t and t['i'] == 4, json.dumps(t))
         # ---- carrying each to its hole and planting it ----

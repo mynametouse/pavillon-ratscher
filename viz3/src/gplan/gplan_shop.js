@@ -1,14 +1,16 @@
 // ===================== garden planner 7: buying at the Baumschule Kammbach, bringing the plants home (GPSHOP) =====================
 // At the nursery in Kloster Veßra (welt/vessra.js: VESSRA.baumschule once VESSRA.state is 'ready') the plants of the shopping list stand in
-// black containers with a white tag on free places of the beds of their kind (fruit, berries, ornamentals, climbers, ground cover – between
-// the nursery's own pots, which stand on the slots). „Aussuchen“ puts one into the basket; „Bezahlen“ at the counter shows the receipt
-// (the plants and the date, no prices) with „Liefern lassen“ (next game morning by the garden gate) or „Selbst mitnehmen“ (the plants wait
-// at the counter). There „Ins Auto laden“ when the estate car stands within 15 m or on the nursery's parking place: small plants
-// upright in the load space, trees up to 2.2 m lying with the crown between the folded seats; tall standards go on the trailer when it
-// is coupled to the car, else they wait for the delivery („Liefern lassen“ at the counter). „Ausladen“ at the tailgate sets them down behind the car; „Tragen“ takes one into the arms
-// (the arms pose of PLAY, the second button puts it down) – with it the planting step „Einpflanzen“ at its hole (gplan/gplan_game.js).
-// Planting needs a bought plant unless GPLAN.frei (a switch for tests). The containers are the plan's kuebel (saved with it):
-// { k, id, loc: korb | kasse | liefer | tor | auto | anh | boden | hand, x, y, tag (game day of buying) }.
+// black containers with a white tag in the slots of the beds of their kind (fruit, berries, ornamentals, climbers, ground cover), the
+// nursery's own plant taken out there (VESSRA.baumschule.take; putBack when it is not wanted any more). „Aussuchen“ puts one into the
+// basket; „Bezahlen“ at the counter shows the receipt (the plants and the date, no prices) with „Liefern lassen“ (next game morning by
+// the garden gate) or „Selbst mitnehmen“ (the plants wait at the counter). There „Ins Auto laden“ when the estate car stands within 15 m
+// or on the nursery's parking place: small plants upright in the load space, trees up to 2.2 m lying with the crown between the folded
+// seats; tall standards go on the trailer when it is coupled to the car, else they wait for the delivery („Liefern lassen“ at the
+// counter). „Ausladen“ at the tailgate sets them down behind the car; „Tragen“ takes one into the arms (the arms pose of PLAY, the second
+// button puts it down) – with it the planting step „Einpflanzen“ at its hole (gplan/gplan_game.js).
+// Planting needs a bought plant unless GPLAN.frei (a switch for tests) or there is no nursery (the world around Ratscher off). The
+// containers are the plan's kuebel (saved with it): { k, id, loc: korb | kasse | liefer | tor | auto | anh | boden | hand, x, y, tag (game
+// day of buying), s (the nursery slot it came from, 'art:slot') }.
 // Task gplan-kaufen (core/tasks.js): from the shopping list to the last bought plant in the ground. Events: gplan:ausgesucht,
 // gplan:gekauft { n, ids }, gplan:liefern, gplan:geliefert, gplan:geladen, gplan:ausgeladen, gplan:getragen, gplan:abgestellt.
 import * as THREE from 'three';
@@ -39,13 +41,8 @@ export const GPSHOP = (() => {
   const car = () => VEH.by && VEH.by.car;
   const nOf = loc => ST().kuebel.filter(c => c.loc === loc).length;
   const plural = n => n + (n === 1 ? ' Pflanze' : ' Pflanzen');
-  // ---------------- the nursery's beds: which bed a plant stands on, the free places between the nursery's own pots ----------------
+  // ---------------- the nursery's beds: which bed a plant stands on (GPMODEL.bedArt), which slot ----------------
   const artOf = M.bedArt;
-  const PLACES = new WeakMap();
-  function places(bed) {
-    if (!PLACES.has(bed)) PLACES.set(bed, M.freePlaces(bed.slots));
-    return PLACES.get(bed);
-  }
   // the plan items still to buy and not in the basket yet
   function wanted() {
     const inBasket = new Map();
@@ -57,38 +54,59 @@ export const GPSHOP = (() => {
       return false;
     });
   }
-  // the containers on the beds: each plant still to buy on the next free place of a bed of its kind (another bed when that one is full);
-  // the places are given out before taking away what is in the basket, so the others stay where they stand
+  // the containers on the beds: each plant still to buy in a slot of a bed of its kind, the nursery's own plant taken out there
+  // (VESSRA.baumschule.take; all of them are back after the zone is built anew). A container in the basket or at the counter keeps its
+  // slot empty, so the others stay where they stand; a bought one's slot stays empty while the zone stands (taken out of the bed).
+  const MINE = new Set();
+  let bsRef = null;
   function shelf() {
     const B = nursery();
     if (!B || !GPLAN.ready) return [];
-    const used = new Map(),
-      out = [],
+    if (B !== bsRef) {
+      bsRef = B;
+      MINE.clear();
+    }
+    const K = ST().kuebel,
+      held = new Set(K.filter(c => c.s).map(c => c.s)),
+      busy = new Set(K.filter(c => c.s && (c.loc === 'korb' || c.loc === 'kasse')).map(c => c.s)),
       inBasket = new Map();
-    for (const c of ST().kuebel) if (c.loc === 'korb') inBasket.set(c.id, (inBasket.get(c.id) || 0) + 1);
-    for (const it of GPLAN.toBuy().slice(0, 48)) {
+    for (const c of K) if (c.loc === 'korb') inBasket.set(c.id, (inBasket.get(c.id) || 0) + 1);
+    const list = GPLAN.toBuy().filter(it => {
+      const n = inBasket.get(it.id) || 0;
+      if (!n) return true;
+      inBasket.set(it.id, n - 1);
+      return false;
+    });
+    const next = {},
+      out = [],
+      want = new Set();
+    for (const it of list.slice(0, 48)) {
       const p = db().byId.get(it.id);
       if (!p) continue;
       const art = artOf(p),
-        order = B.beete.map((b, i) => i).sort((i, j) => +(B.beete[i].art !== art) - +(B.beete[j].art !== art));
-      let at = null;
-      for (const bi of order) {
-        const L = places(B.beete[bi]),
-          n = used.get(bi) || 0;
-        if (n < L.length) {
-          at = L[n];
-          used.set(bi, n + 1);
-          break;
-        }
-      }
-      if (!at) break;
-      const n = inBasket.get(it.id) || 0;
-      if (n) {
-        inBasket.set(it.id, n - 1);
-        continue;
-      }
-      out.push({ it, p, x: at[0], y: at[1], z: VESSRA.gz(at[0], at[1]) + 0.03, seed: 'kb:' + M.seedOf(it), tag: true });
+        bed = B.beete.find(b => b.art === art) || B.beete[0];
+      let i = next[bed.art] || 0;
+      while (i < bed.slots.length && busy.has(bed.art + ':' + i)) i++;
+      if (i >= bed.slots.length) continue;
+      next[bed.art] = i + 1;
+      const key = bed.art + ':' + i,
+        [x, y] = bed.slots[i];
+      want.add(key);
+      out.push({ it, p, x, y, z: VESSRA.gz(x, y) + 0.03, seed: 'kb:' + M.seedOf(it), tag: true, s: key });
     }
+    if (B.take)
+      for (const key of [...want, ...busy])
+        if (!MINE.has(key)) {
+          const [a, n] = key.split(':');
+          if (B.take(a, +n)) MINE.add(key);
+        }
+    if (B.putBack)
+      for (const key of [...MINE])
+        if (!want.has(key) && !held.has(key)) {
+          const [a, n] = key.split(':');
+          B.putBack(a, +n);
+          MINE.delete(key);
+        }
     return out;
   }
   // ---------------- where the containers stand ----------------
@@ -257,7 +275,7 @@ export const GPSHOP = (() => {
     run: () => {
       const s = nearest(S.shelf, 1.7);
       if (!s) return;
-      ST().kuebel.push({ k: newKey(), id: s.it.id, loc: 'korb' });
+      ST().kuebel.push({ k: newKey(), id: s.it.id, loc: 'korb', s: s.s });
       const n = nOf('korb');
       KERN.emit('gplan:ausgesucht', { id: s.it.id, n });
       toast(M.fullName(s.p) + ' ausgesucht – ' + plural(n) + ' im Korb.', 2200);
@@ -607,7 +625,6 @@ export const GPSHOP = (() => {
     shelf: () => S.shelf,
     wanted,
     artOf,
-    places,
     cargoPlan,
     pay,
     deliver,

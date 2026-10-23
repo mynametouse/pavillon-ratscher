@@ -149,7 +149,7 @@ export const GPMODEL = (() => {
     };
   }
   // ---------------- the plan (saved as pav-gplan-v1, shape v: 2) ----------------
-  // { v: 2, items: [{ id, x, y, jahr, st, sch, pd, w, cut, mu, h }], show, age, month, hour, off, kuebel: [{ k, id, loc, x, y, tag }], ernte }
+  // { v: 2, items: [{ id, x, y, jahr, st, sch, pd, w, cut, mu, h }], show, age, month, hour, off, kuebel: [{ k, id, loc, x, y, tag, s }], ernte }
   //   st: 'geplant' | 'gepflanzt'; sch: planting steps done; pd: planting day; w: last watering; cut: year of the last pruning; mu: mulched;
   //   h: year of the last harvest – days are garden days (days since 1.1.1970 on the game calendar plus the garden time-lapse, gardenDay);
   //   off: garden years of the time-lapse; kuebel: containers of bought plants (loc below); ernte: { year: { plant id: kg } }.
@@ -208,6 +208,7 @@ export const GPMODEL = (() => {
           o.y = r2(c.y);
         } else if (c.loc === 'boden') continue;
         if (isDay(c.tag)) o.tag = c.tag;
+        if (typeof c.s === 'string' && /^[a-z]{3,10}:\d{1,3}$/.test(c.s)) o.s = c.s;
         out.kuebel.push(o);
       }
     if (st.v === 2 && st.ernte && typeof st.ernte === 'object' && !Array.isArray(st.ernte))

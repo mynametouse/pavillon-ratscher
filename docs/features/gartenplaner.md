@@ -60,9 +60,10 @@ Zeitraffer, in der Baumschule Kammbach kaufen und die Pflanzen heimbringen (Lief
 ### In der Baumschule Kammbach kaufen und heimbringen (Runde 2, `gplan/gplan_shop.js`)
 
 - **Hinkommen**: Orte → Kloster Veßra oder `?szenario=baumschule` (`KERN.scenario('baumschule')`), mit dem Auto über die Fahrt.
-- **Beete**: die Pflanzen der Einkaufsliste stehen in schwarzen Töpfen mit weißem Schild auf freien Plätzen der Beete ihrer Art
-  (Obstgehölze, Beerenobst, Ziergehölze, Kletterpflanzen, Bodendecker – zwischen den Töpfen der Baumschule, die auf den `slots` stehen).
-  „Aussuchen – …“ legt eine in den Korb.
+- **Beete**: die Pflanzen der Einkaufsliste stehen in schwarzen Töpfen mit weißem Schild in den Stellplätzen der Beete ihrer Art
+  (Obstgehölze, Beerenobst, Ziergehölze, Kletterpflanzen, Bodendecker); die eigene Pflanze der Baumschule an dem Platz ist dafür
+  herausgenommen (`VESSRA.baumschule.take`, zurück mit `putBack`, wenn der Platz nicht mehr gebraucht wird). „Aussuchen – …“ legt eine
+  in den Korb; ihr Platz bleibt leer, solange die Zone steht (der Planer merkt sich den Platz am Topf, `s`).
 - **Kasse**: „Bezahlen – n Pflanzen“ zeigt den **Kassenzettel** (Pflanzen, Form, Datum und Uhrzeit, keine Preise) mit „Liefern lassen –
   morgen früh am Gartentor“ oder „Selbst mitnehmen“ (die Pflanzen warten neben der Theke). Dort dann „Ins Auto laden“, wenn das Auto auf
   dem Parkplatz der Baumschule oder bis 15 m von der Kasse steht: kleine Pflanzen stehend, Bäume bis 2,2 m liegend (Krone zwischen den
@@ -175,9 +176,12 @@ Bild neu gerechnet wird (nur der Anker beim Tragen).
   `gplan:geliefert`, `gplan:geladen { n, anh }`, `gplan:ausgeladen`, `gplan:getragen`, `gplan:abgestellt`; Aktionen `gplan:work`,
   `gplan:pick`, `gplan:kasse`, `gplan:ausladen`, `gplan:abladen`, `gplan:tragen`; ein PLAY-Ding `gplan-topf` (nur für die Armhaltung,
   ohne eigenes Bild – keine Shader der Hand-Szene).
-- **Baumschule**: `welt/vessra.js` stellt in jeden `slot` einen eigenen Topf; „freie Plätze“ sind deshalb die Mitten zwischen zwei
-  benachbarten Töpfen einer Reihe (Obst 0,9 m, Bodendecker 0,35 m Abstand). Schöner wäre eine Liste freigehaltener Plätze je Beet
-  (`beete[i].frei`) vom Agenten `vessra`.
+- **Baumschule**: mit `take/putBack` (feat/vessra 3f3fbe7, auf diesem Zweig hineingeführt) stehen die Töpfe in den echten Stellplätzen;
+  ein Platz eines Topfes im Korb oder an der Kasse wird nach einem Neubau der Zone wieder freigenommen, Plätze schon heimgebrachter
+  Pflanzen nicht (die Baumschule hat nachgefüllt). `GPMODEL.freePlaces` (Mitten zwischen Töpfen) bleibt als reine Hilfe mit Test.
+- **Auto in der Baumschule**: ohne die Fahrt (`feat/fahrt`, noch nicht in `src` beim Stand dieses Zweigs) hält `vehicle.js` Fahrzeuge
+  am Rand des 2,4-km-Quadrats – `VEH.place('car', parkplatz …)` landet am Kartenrand. Der Test erkennt das und prüft dann „Liefern
+  lassen“ für alles; mit der Fahrt in `src` laufen „Ins Auto laden“, Ausladen und der Anhänger-Fall mit.
 - **TASKS** (erster echter Nutzer, `gplan-kaufen`) – was fehlte: (1) eine Aufgabe lässt sich nicht wiederholen – `start` geht nur einmal,
   für den nächsten Einkauf braucht es `reset` + `start` (hier von Hand beim nächsten `gplan:einkaufsliste`); ein `repeat: true` wäre
   besser; (2) Schritttexte sind fest – Zahlen („noch 3 Pflanzen“) gehen nicht, `text` als Funktion wäre einfach; (3) keine Zweige
