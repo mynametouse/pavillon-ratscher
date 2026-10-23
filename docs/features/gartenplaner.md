@@ -67,7 +67,8 @@ Zeitraffer, in der Baumschule Kammbach kaufen und die Pflanzen heimbringen (Lief
 - **Kasse**: „Bezahlen – n Pflanzen“ zeigt den **Kassenzettel** (Pflanzen, Form, Datum und Uhrzeit, keine Preise) mit „Liefern lassen –
   morgen früh am Gartentor“ oder „Selbst mitnehmen“ (die Pflanzen warten neben der Theke). Dort dann „Ins Auto laden“, wenn das Auto auf
   dem Parkplatz der Baumschule oder bis 15 m von der Kasse steht: kleine Pflanzen stehend, Bäume bis 2,2 m liegend (Krone zwischen den
-  umgeklappten Sitzen), Hochstämme auf den Anhänger, wenn er am Auto hängt – sonst „Liefern lassen“ für den Rest.
+  umgeklappten Sitzen), Hochstämme auf den Anhänger, wenn er am Auto hängt – sonst „Liefern lassen“ für den Rest. Ein Auto, das am Tor
+  der Baumschule stehen geblieben ist (bis 12 m), zählt auch.
 - **Daheim**: „Ausladen“ an der Heckklappe stellt sie hinter das Auto, die Lieferung steht am nächsten Morgen ab 7 Uhr am Gartentor.
   „Tragen – …“ nimmt eine in die Arme (die Figur trägt sie, der zweite Knopf stellt sie ab), am Pflanzloch dann „Einpflanzen – …“.
 - **Aufgabe im Tagebuch** (J): „Pflanzen in der Baumschule Kammbach kaufen“ beginnt, sobald man die Einkaufsliste ansieht: hinfahren,
@@ -164,7 +165,15 @@ Bild neu gerechnet wird (nur der Anker beim Tragen).
 
 ### Runde 2 (Meilensteine 2 und 3)
 
-- **Grüne Stände** (neueste oben): siehe unten, wird mit jedem grünen Lauf ergänzt.
+- **Grüne Stände** (neueste oben):
+  - `f3fed7d` (mit `src` 4c9fed2 und `feat/vessra` 3f3fbe7 zusammengeführt): GitHub-Lauf 39947562995 grün – smoke,
+    `gartenplaner:phone` 52/52 (Pflanzen Schritt für Schritt, Gießen, Zeitraffer, Ernte, Schneiden, Draufsicht, Neuladen v 2, Telefon),
+    `gartenplaner_kammbach` 17/17 (Töpfe in den Stellplätzen, keine neuen Shader 151 → 151, Aussuchen, Kassenzettel, Liefern lassen,
+    Lieferung am Gartentor, Tragen mit Armhaltung, Einpflanzen aus den Armen, Aufgabe erledigt). Der Auto-Teil („Ins Auto laden“,
+    Ausladen) läuft erst mit der Fahrt in `src` (dieser Stand: Auto am Kartenrand, der Test sagt es und prüft die Lieferung).
+  - Bilder im Artefakt `out` des Laufs: `gartenplaner/j_pflanzloch.jpg`, `k_gepflanzt.jpg`, `l_plan_gepflanzt.png`,
+    `m_zeitraffer.jpg`, `n_vor_der_ernte.jpg`, `o_garten_ernte.png`; `gartenplaner_kammbach/a_beet.jpg`, `b_kassenzettel.png`,
+    `d_gartentor.jpg`, `e_tragen.jpg`, `f_gepflanzt.jpg`.
 - **Gemeinsame Dateien**: die eine Zeile in `core/save.js` nimmt jetzt `v: 1` und `v: 2` an (`pav-gplan-v1`); zwei neue Module unter
   `# feat/gartenplaner` in `modules.txt` (`gplan/gplan_game.js`, `gplan/gplan_shop.js`); ein Test mehr in
   `viz3/extra/gartenplaner/tests.txt` (`gartenplaner_kammbach`). Nicht angefasst: `welt/vessra.js`, `vehicles/*` (nur gelesen:
@@ -181,7 +190,11 @@ Bild neu gerechnet wird (nur der Anker beim Tragen).
   Pflanzen nicht (die Baumschule hat nachgefüllt). `GPMODEL.freePlaces` (Mitten zwischen Töpfen) bleibt als reine Hilfe mit Test.
 - **Auto in der Baumschule**: ohne die Fahrt (`feat/fahrt`, noch nicht in `src` beim Stand dieses Zweigs) hält `vehicle.js` Fahrzeuge
   am Rand des 2,4-km-Quadrats – `VEH.place('car', parkplatz …)` landet am Kartenrand. Der Test erkennt das und prüft dann „Liefern
-  lassen“ für alles; mit der Fahrt in `src` laufen „Ins Auto laden“, Ausladen und der Anhänger-Fall mit.
+  lassen“ für alles; mit der Fahrt laufen „Ins Auto laden“ und Ausladen mit – lokal geprüft mit `origin/feat/fahrt` hineingeführt
+  (Zweig nur lokal, nicht gepusht): `gartenplaner_kammbach` 20/20 (Auto 8,1 m von der Kasse auf dem Parkplatz, drei Pflanzen
+  eingeladen, die Walnuss geliefert, die Ladung im Auto gezeichnet, daheim hinter dem Auto ausgeladen). Der Anhänger-Fall ist ungeprüft.
+- **Takt**: die drei Bild-Rückrufe laufen über `KERN.tick(fn, 'gplan/gplan' | 'gplan/gplan_game' | 'gplan/gplan_shop')`, nicht mehr über
+  `window.TICKS`.
 - **TASKS** (erster echter Nutzer, `gplan-kaufen`) – was fehlte: (1) eine Aufgabe lässt sich nicht wiederholen – `start` geht nur einmal,
   für den nächsten Einkauf braucht es `reset` + `start` (hier von Hand beim nächsten `gplan:einkaufsliste`); ein `repeat: true` wäre
   besser; (2) Schritttexte sind fest – Zahlen („noch 3 Pflanzen“) gehen nicht, `text` als Funktion wäre einfach; (3) keine Zweige

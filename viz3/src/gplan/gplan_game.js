@@ -204,13 +204,13 @@ export const GPGAME = (() => {
     S.ringKey = key;
     GP3D.marks(R);
   }
-  (window.TICKS = window.TICKS || []).push(dt => {
+  KERN.tick(dt => {
     S.frame++;
     S.acc += dt;
     if (S.acc < 0.5) return;
     S.acc = 0;
     rings();
-  });
+  }, 'gplan/gplan_game');
   const api = {
     find,
     next,
