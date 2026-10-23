@@ -27,5 +27,12 @@ bash tools/browser_lock.sh python3 viz3/test/run.py --port 8973 --serve nachbarn
 bash tools/browser_lock.sh python3 viz3/test/run.py --port 8973 --serve nachbarn:yard,day  # nur Hof und Tagesablauf
 ```
 
+Abschnitte: `yard` (Bilder vom Hof, der Weide), `plan` (Tagesplan nach der Uhr, nachts daheim, morgens wieder da), `day` (Hacken, Sägen,
+Stapeln, Auto, Füttern, Mähen mit Schwaden), `talk` (am Tisch und beim Auto, Untertitel), `trip` (Fahrt zum Anger und zurück), `quests`
+(Ziegen mit der neuen Weide, die drei neuen Aufgaben, Diesel-Mitfahrt).
+
 Bilder in `out/nachbarn/`. Im Browser (Konsole): `LIFE.force('hubert', 'chop' | 'saw' | 'stack' | 'car' | 'trip' | 'talk' …)`,
-`LIFE.force('ronald', 'mow' | 'feed' | 'visit' | 'stall' …)`, `LIFE.force(name, null)` zurück zum Plan; `CLOCK.t` setzt die Uhrzeit.
+`LIFE.force('ronald', 'mow' | 'feed' | 'visit' | 'visitCar' | 'stall' …)`, `LIFE.force(name, null)` zurück zum Plan, `LIFE.force(name, 'off')`
+schaltet den Tagesablauf ab (der einfache Läufer aus `npc/npc.js`, für Tests, die eine Figur von Hand stellen); `CLOCK.t` setzt die Uhrzeit.
+Ein anderes Modul kann einen Nachbarn übernehmen, indem es `NPCS.<name>.ctl` auf eine eigene Steuerung setzt (wie die Aufgaben):
+`npc/life.js` hält dann still und macht danach weiter.
