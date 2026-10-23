@@ -31,6 +31,7 @@ import {
   startDrive,
   TRACTOR,
   TRACTOR_HOME,
+  tractorCol,
   trkPt,
 } from './npc.js';
 import { PLAY } from '../game/play.js';
@@ -103,6 +104,11 @@ export const LIFE = (() => {
     const a = c.az * D2R;
     yield* go(w, [[c.x + Math.cos(a) * 0.6, c.y - Math.sin(a) * 0.6]]); // beside the seat (on the sitter's right)
     yield* turn(w, a);
+    // the visitor sits there: he waits beside it
+    while (PLAY.seat && Math.hypot(PLAY.seat.x - c.x, PLAY.seat.y - c.y) < 0.5) {
+      stand(w);
+      yield;
+    }
     w.x = c.x;
     w.y = c.y;
     w.az = a;
@@ -583,6 +589,7 @@ export const LIFE = (() => {
     }
     TRACTOR.g.position.copy(V(TRACTOR_HOME.x, TRACTOR_HOME.y, 0));
     TRACTOR.g.rotation.set(0, -TRACTOR_HOME.az, 0);
+    tractorCol(true);
     w.fig.mode = 'stand';
     w.state = 'roam';
     w.inside = false;
@@ -1117,6 +1124,20 @@ export const LIFE = (() => {
       ['h', 'Bin ich doch letztes Jahr auch. Hat keiner was gesagt.'],
       ['r', 'Weil keiner sich getraut hat.'],
     ],
+    [
+      ['h', 'Deine Frieda war wieder in meinem Kohl.'],
+      ['r', 'Die mag deinen Kohl eben. Das ist ein Kompliment.'],
+      ['h', 'Dann soll sie ihn bezahlen.'],
+      ['r', 'Ich bring dir Käse vorbei. Von Frieda persönlich.'],
+      ['h', 'Hm. Na gut.'],
+    ],
+    [
+      ['r', 'Der Junge drüben macht jetzt Schneidebretter. Stirnholz, aus Eiche.'],
+      ['h', 'Stirnholz? Da muss man genau arbeiten.'],
+      ['r', 'Ich hab eins bestellt. Für die Küche.'],
+      ['h', 'Wenn es was taugt, will ich auch eins.'],
+      ['r', 'Sag ihm das selber. Der beißt nicht.'],
+    ],
   ];
   const TALK = { on: false, i: 0, line: 0, t: 0, gap: 4, n: 0 };
   function hearing() {
@@ -1276,6 +1297,17 @@ export const LIFE = (() => {
     if (m >= 6 * 60 && m < 21 * 60 && HOFCAR.open < 1 && AG.hubert.cur === 'car') HOFCAR.bonnet(1);
   }
   window.TICKS.push(tick);
+  // the visitor may sit down at Hubert's table too (a free chair): to listen to the two, or to wait for them
+  HOF.chairs.forEach((c, i) =>
+    PLAY.act({
+      id: 'seat:hof' + i,
+      r: 1.3,
+      prio: -0.1,
+      pos: [c.x, c.y, c.seat],
+      label: () => (PLAY.seat || H.seated === c || R.seated === c ? null : 'Auf den Stuhl setzen'),
+      run: () => PLAY.sit({ x: c.x, y: c.y, eye: c.seat + 0.78, yaw: c.az, pitch: -4, kind: 'sit' }),
+    })
+  );
   // while Hubert sits on his bench, the visitor cannot sit down on him (the seat of game/home.js)
   {
     const b = PLAY.acts().find(a => a.id === 'seat:hubertbench');

@@ -2,6 +2,7 @@
 // Procedural low-poly figures, waypoint AI, positional voices (Piper TTS, free), goat bleats, tractor trips.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { LATE } from '../core/late.js';
 import { $, cam, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -476,6 +477,12 @@ TRACTOR.g.position.copy(V(-15.1, 27.2, 0));
 TRACTOR.g.rotation.y = -((20 * Math.PI) / 180);
 scene.add(TRACTOR.g);
 COL.push([-16.5, -13.7, 25.3, 29.1, 0, 1.8, 'tractor', null, null]);
+// its collider at home is lowered out of reach while it is away (the grid keeps the entry; only its height changes)
+const TRACTOR_COL = COL[COL.length - 1];
+export function tractorCol(home) {
+  TRACTOR_COL[4] = home ? 0 : -20;
+  TRACTOR_COL[5] = home ? 1.8 : -19;
+}
 B(-16, -13, 15.7, 16.9, 0, 1.3, MAT.logs, { col: true });
 B(-15.9, -13.1, 15.8, 16.8, 1.3, 1.45, MAT.plank, { col: false });
 placeGLB('tyre_old', { x: -17.35, y: 28.6, z: 0, face: 35 });
@@ -488,18 +495,26 @@ for (const y of [-0.75, 0.55]) B(-13.4, -13.1, y - 0.04, y + 0.04, 0, 0.42, MAT.
 export const MOWER = makeTractor();
 MOWER.home = { x: PAD.x0 + 6.5, y: PAD.y1 + 3.0, az: 0 };
 MOWER.bar = (() => {
-  const g = new THREE.Group();
-  box(g, 1.95, 0.09, 0.05, NM.dark, 1.88, 0.25, 0.07); // the bar with its knife
-  for (let k = 0; k < 16; k++) box(g, 0.045, 0.16, 0.035, NM.rim, 1.0 + k * 0.12, 0.33, 0.07); // fingers
-  box(g, 0.32, 0.4, 0.3, NM.red, 0.95, 0.2, 0.25, { r: 0.03 }); // drive and guard
-  box(g, 0.1, 0.5, 0.12, NM.dark, 2.84, 0.22, 0.08); // outer skid
-  box(g, 0.06, 0.06, 0.9, NM.red, 0.9, 0.05, 0.6); // lifting arm
-  g.traverse(o => {
-    if (o.isMesh) {
-      o.castShadow = true;
-      o.userData.noMerge = true;
-    }
-  });
+  const g = new THREE.Group(),
+    parts = new THREE.Group();
+  box(parts, 1.95, 0.09, 0.05, NM.dark, 1.88, 0.25, 0.07); // the bar with its knife
+  for (let k = 0; k < 16; k++) box(parts, 0.045, 0.16, 0.035, NM.rim, 1.0 + k * 0.12, 0.33, 0.07); // fingers
+  box(parts, 0.32, 0.4, 0.3, NM.red, 0.95, 0.2, 0.25); // drive and guard
+  box(parts, 0.1, 0.5, 0.12, NM.dark, 2.84, 0.22, 0.08); // outer skid
+  box(parts, 0.06, 0.06, 0.9, NM.red, 0.9, 0.05, 0.6); // lifting arm
+  // one mesh per material (three draw calls instead of twenty)
+  const by = new Map();
+  parts.updateMatrixWorld(true);
+  for (const m of parts.children) {
+    const geo = m.geometry.clone().applyMatrix4(m.matrix);
+    (by.get(m.material) || by.set(m.material, []).get(m.material)).push(geo);
+  }
+  for (const [mat, geos] of by) {
+    const me = new THREE.Mesh(mergeGeometries(geos), mat);
+    me.castShadow = true;
+    me.userData.noMerge = true;
+    g.add(me);
+  }
   return g;
 })();
 MOWER.g.add(MOWER.bar);
@@ -918,6 +933,7 @@ export function startDrive(w, o = {}) {
   };
   w.fig.mode = 'sit';
   w.state = 'drive';
+  tractorCol(false);
   audio.loopAt('tractor', 'tractor', w.drive.x, w.drive.y, { vol: 0.9, ref: 14, rate: 0.95 });
 }
 // the tractor follows the ground outside the flat modelled square (the road to the village): height under the middle, pitch from the axles
@@ -991,6 +1007,7 @@ function updateDrive(w, dt) {
     }
     if (d.t > 2.5) {
       audio.stopLoop('tractor', 1.2);
+      if (Math.hypot(d.x - TRACTOR_HOME.x, d.y - TRACTOR_HOME.y) < 1.5) tractorCol(true);
       w.drive = null;
       w.fig.mode = 'stand';
       w.state = 'roam';

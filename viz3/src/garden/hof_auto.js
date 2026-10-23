@@ -48,6 +48,7 @@ export const HOFCAR = (() => {
     const me = add(g, m, o.par);
     me.position.copy(P(x, y, z));
     if (o.rx) me.rotation.x = o.rx;
+    if (o.rz) me.rotation.y = o.rz; // (a turn about the vertical: rz in the car's frame)
     return me;
   };
   const smooth = (a, b, t) => {
@@ -183,16 +184,23 @@ export const HOFCAR = (() => {
   }
   // ---- front: headlamps, grille without a badge, intake, indicators, plate; rear: tall lamps beside the tailgate, plate, bumper ----
   for (const s of [-1, 1]) {
-    bx(0.42, 0.1, 0.15, M.lamp, s * 0.6, 2.36, 0.66, { r: 0.03 });
-    bx(0.1, 0.06, 0.05, M.amber, s * 0.82, 2.33, 0.6);
+    // headlamps swept back along the wings, indicators at their outer ends, fog lamps low in the bumper
+    bx(0.44, 0.1, 0.15, M.lamp, s * 0.58, 2.33, 0.67, { r: 0.03, rz: -s * 0.32 }); // (outer end back)
+    bx(0.09, 0.08, 0.06, M.amber, s * 0.8, 2.22, 0.66, { rz: -s * 0.5 });
+    const f = add(new THREE.CylinderGeometry(0.045, 0.045, 0.03, 12), M.lamp);
+    f.rotation.x = Math.PI / 2;
+    f.position.copy(P(s * 0.56, 2.43, 0.38));
     bx(0.12, 0.08, 0.42, M.tail, s * 0.8, -2.36, 0.83, { r: 0.02 });
   }
-  bx(0.56, 0.05, 0.13, M.trim, 0, 2.4, 0.64, { r: 0.02 });
-  bx(0.62, 0.03, 0.17, M.chrome, 0, 2.385, 0.64, { r: 0.02 });
+  // the grille: wide, a chrome frame, no badge
+  bx(0.7, 0.05, 0.14, M.trim, 0, 2.4, 0.64, { r: 0.02 });
+  bx(0.76, 0.03, 0.19, M.chrome, 0, 2.385, 0.64, { r: 0.03 });
   bx(1.0, 0.05, 0.13, M.trim, 0, 2.415, 0.38, { r: 0.02 });
   bx(0.52, 0.02, 0.11, M.plate, 0, 2.43, 0.5);
   bx(0.52, 0.02, 0.11, M.plate, 0, -2.41, 0.72);
   bx(1.7, 0.06, 0.08, M.trim, 0, -2.4, 0.46, { r: 0.02 });
+  bx(0.9, 0.02, 0.03, M.chrome, 0, -2.38, 0.82); // the strip over the plate
+  bx(0.02, 0.03, 0.42, M.black, 0.08, -2.35, 1.08, { rx: 0.45 }); // rear wiper
   // ---- wheels: tyres, five-spoke look as a disc with a hub ----
   for (const [y] of [[AF], [AR]])
     for (const s of [-1, 1]) {
