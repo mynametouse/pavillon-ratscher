@@ -61,7 +61,7 @@ Stimmen für dich); mit etwa +10 bei allen und vielen Gesprächen wird es knapp;
    Tage später, 8–18 Uhr, Wahlraum alte Schule; Wahlvorschläge bis Mittwoch davor, 18 Uhr, im Rathaus.
 2. Jeder, mit dem man redet, spricht einen darauf an (ein Knopf „Die Nachwahl …“ im Gesprächsfenster der Dorfbewohner und der Nachbarn; an
    der Haustür jedes Dorfbewohners „Bei … klingeln“, 8–21 Uhr – nicht wenn er gerade mit dem Auto weg ist oder Freitagabend in der Schule).
-3. **Kandidieren** → 20 Unterschriften sammeln (wer dich mag – Meinung ab 45 – unterschreibt mit seinem Haushalt; gute Freunde ab 65
+3. **Kandidieren** → 20 Unterschriften sammeln (wer dich ein bisschen kennt – Meinung ab 40 – unterschreibt mit seinem Haushalt, damit das Dorf eine Wahl hat; gute Freunde ab 60
    sammeln noch bei den Nachbarn) → **im Rathaus einreichen** (Auto „Mit dem Auto ins Rathaus“ oder Tagebuch „Ins Rathaus fahren“).
    Frist verpasst → Uwe ist einziger Bewerber.
 4. **Wahlkampf**: reden, Fragen beantworten, Aufgaben, da sein.

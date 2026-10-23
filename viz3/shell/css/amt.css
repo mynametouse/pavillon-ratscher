@@ -2,6 +2,7 @@
    councils, town hall); the folder #amtbook (O) with tabs; the HUD button #amtbtn with a dot for news */
 #amtpanel{position:absolute;z-index:5;top:60px;left:max(12px,env(safe-area-inset-left,0px));width:min(380px,calc(100% - 24px));max-height:calc(100% - 140px);overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);display:flex;flex-direction:column}
 #amtpanel[hidden]{display:none}
+#amtpanel>*{flex:none}
 #amtpanel.wide{width:min(560px,calc(100% - 24px))}
 #amtpanel header{display:flex;align-items:flex-start;gap:8px;padding:12px 14px 8px;border-bottom:1px solid var(--line)}
 #amtpanel .who{flex:1;min-width:0}

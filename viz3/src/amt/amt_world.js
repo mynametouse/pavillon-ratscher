@@ -108,6 +108,22 @@ export const AMTWORLD = (() => {
     scene.add(p);
     return p;
   }
+  // a soft round glow (the light of the lamp on the ground): white in the middle, fading to nothing
+  let GLOW = null;
+  function glowTex() {
+    if (GLOW) return GLOW;
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const g = c.getContext('2d'),
+      r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    r.addColorStop(0, 'rgba(255,255,255,1)');
+    r.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+    r.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = r;
+    g.fillRect(0, 0, 128, 128);
+    GLOW = new THREE.CanvasTexture(c);
+    return GLOW;
+  }
   // ---- the things ----
   const BUILD = {
     laterne() {
@@ -148,8 +164,9 @@ export const AMTWORLD = (() => {
       g.add(lens);
       // the pool of warm light on the ground (only at night)
       const pool = new THREE.Mesh(
-        new THREE.CircleGeometry(3.2, 24),
+        new THREE.CircleGeometry(3.6, 32),
         new THREE.MeshBasicMaterial({
+          map: glowTex(),
           color: 0xffb35c,
           transparent: true,
           opacity: 0,
@@ -209,14 +226,22 @@ export const AMTWORLD = (() => {
       let p = [BUS[0] + c * 34, BUS[1] + s * 34];
       p = beside(p[0], p[1], -1.6, -0.5, 14) || p;
       const [x, y] = p,
-        z = gz(x, y),
-        [ax, ay, tx, ty] = along(x, y);
+        z = gz(x, y);
+      let [ax, ay, tx, ty] = along(x, y);
+      // the display faces the drivers coming into the village: its face looks out of the village, along the road
+      if (ax * (x - ANGER[0]) + ay * (y - ANGER[1]) < 0) {
+        ax = -ax;
+        ay = -ay;
+      }
+      const hx = x + tx * 0.25,
+        hy = y + ty * 0.25;
       const km = VPROPS.kit();
-      km.cyl(x, y, z, z + 2.6, 0.05, 0.05, 8, C(0.6, 0.62, 0.64), true);
-      km.box(x, y, z + 2.25, 0.62, 0.14, 0.5, Math.atan2(ay, ax), C(0.12, 0.13, 0.14));
+      km.cyl(x, y, z, z + 2.9, 0.05, 0.05, 8, C(0.6, 0.62, 0.64), true);
+      km.box(hx, hy, z + 2.2, 0.16, 0.86, 0.66, Math.atan2(ay, ax), C(0.1, 0.11, 0.12));
+      km.box(x + tx * 0.12, y + ty * 0.12, z + 2.45, 0.26, 0.06, 0.06, Math.atan2(ty, tx), C(0.5, 0.5, 0.52));
       const g = new THREE.Group();
       g.add(mesh(km, mats().metal, 'anzeige'));
-      // the display: „Ihre Geschwindigkeit“ and a friendly face (shown to drivers coming into the village)
+      // „Ihre Geschwindigkeit“ and a friendly face for those who keep to it
       g.add(
         sign(
           [
@@ -224,18 +249,18 @@ export const AMTWORLD = (() => {
             ['28 km/h', 46, true],
             ['☺ Danke!', 28, true],
           ],
-          0.5,
-          0.38,
-          x + tx * 0.08,
-          y + ty * 0.08,
-          z + 2.25,
-          tx,
-          ty,
+          0.76,
+          0.56,
+          hx + ax * 0.09,
+          hy + ay * 0.09,
+          z + 2.53,
+          ax,
+          ay,
           { bg: '#101214', fg: '#7dff8a', top: 40 }
         )
       );
       scene.add(g);
-      return { g, at: [x, y] };
+      return { g, at: [x, y], face: [ax, ay] };
     },
     kirmes() {
       if (!DSCHOOL.built || !DSCHOOL.F) return null;

@@ -72,7 +72,7 @@ test('promises: the first word counts, the same word again adds a listener, anot
 
 test('signatures: people who know you sign with their household; good friends gather more; the rival does not sign', () => {
   const S = M.fresh();
-  S.rep.gerhard = 40;
+  S.rep.gerhard = 35;
   assert.equal(M.trySign(S, 'gerhard'), 'no');
   S.rep.gerhard = 55;
   assert.equal(M.trySign(S, 'gerhard'), 'yes');
@@ -80,7 +80,7 @@ test('signatures: people who know you sign with their household; good friends ga
   assert.equal(M.sigCount(S), D.P.gerhard.hh);
   S.rep.manfred = 70;
   assert.equal(M.trySign(S, 'manfred'), 'more');
-  assert.equal(M.sigCount(S), D.P.gerhard.hh + D.P.manfred.hh + (D.P.manfred.circle >> 2));
+  assert.equal(M.sigCount(S), D.P.gerhard.hh + D.P.manfred.hh + Math.min(5, (D.P.manfred.circle >> 2) + 1));
   S.rep.uwe = 100;
   assert.equal(M.trySign(S, 'uwe'), 'no');
 });

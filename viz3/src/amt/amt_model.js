@@ -171,11 +171,13 @@ export const AMTMODEL = (() => {
     const p = D.P[k];
     if (!p || p.opp) return 'no';
     if (S.sig.includes(k)) return 'done';
+    // a signature is no vote: people sign to give the village a choice – if they know you a little (40); good friends (60) also go round
+    // their neighbours
     const r = S.rep[k];
-    if (r < 45) return 'no';
+    if (r < 40) return 'no';
     S.sig.push(k);
-    if (r >= 65) {
-      S.extra = Math.min(40, S.extra + Math.min(4, p.circle >> 2));
+    if (r >= 60) {
+      S.extra = Math.min(40, S.extra + Math.min(5, (p.circle >> 2) + 1));
       return 'more';
     }
     return 'yes';

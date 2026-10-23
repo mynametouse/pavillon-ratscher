@@ -425,7 +425,7 @@ export const AMTDATA = (() => {
       ingrid:
         'Du hast meinen Brief gelesen? Ich meine es ernst. Uwe ist ein guter Mann, aber ein Dorf sollte eine Wahl haben. Stellst du dich zur Wahl?',
       gerhard:
-        'Hast du gehört? Ingrid hört auf, im Herbst ist Nachwahl. In der Chronik stehen elf Ortsvorsteher seit 1950 – ein zwölfter Name wäre schön. Wie wär’s mit dir?',
+        'Hast du gehört? Ingrid hört auf, bald ist Nachwahl. In der Chronik stehen alle Bürgermeister von Ratscher – und seit 1994, als wir zu Schleusingen kamen, die Ortsteilbürgermeister. Ein neuer Name wäre schön. Wie wär’s mit dir?',
       manfred:
         'Ingrid hört auf, Uwe will’s machen. Der Uwe ist in Ordnung – aber wenn noch einer antritt, muss er sich wenigstens anstrengen. Was ist mit dir?',
       katrin:

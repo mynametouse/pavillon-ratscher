@@ -28,7 +28,7 @@ with lib.browser() as b:
         yaw = math.degrees(math.atan2(x - cx, y - cy))
         E(f"(() => {{ const z = KERN.terrain({cx}, {cy}); GAME.view({cx}, {cy}, z + {h}, {yaw}, {pitch}, {fov}); for (let i = 0; i < 6; i++) GAME.step(0.1); }})()")
     def put(x, y, yaw):   # the walker to (x, y), turned to yaw (as DORF.atDoor does)
-        E(f"(() => {{ P.mode = 'walk'; document.body.dataset.mode = 'walk'; P.x = {x}; P.y = {y}; P.feet = KERN.terrain({x}, {y}); P.vz = 0; P.yaw = P.body = {yaw}; P.pitch = 0; P.air = false; GAME.step(0.2); }})()")
+        E(f"AMT.put({x}, {y}, {yaw}); GAME.step(0.2)")
     def start():
         st = J('AMT.state()'); print('start', json.dumps(st, ensure_ascii=False), flush=True)
         ck('the matter waits for game day 2 (phase none, no HUD button)', st['phase'] == 'none' and E("document.getElementById('amtbtn').hidden"), st['phase'])
@@ -131,7 +131,9 @@ with lib.browser() as b:
         E("DORF.atDoor(); GAME.step(0.5); const S = AMT.ST; for (const k of ['laterne', 'mitfahrbank', 'anzeige', 'kirmes', 'tafel']) S.built[k] = CLOCK.t - 1; AMTWORLD.refresh(S, CLOCK.t); GAME.step(0.6)")
         w = J('AMTWORLD.state()'); print('world', json.dumps(w), flush=True)
         ck('the things stand: lamp, Mitfahrbank, speed display, Kirmes poster, board', len(w['items']) == 5 and all(w['at'][k] for k in w['items']), json.dumps(w['at']))
-        for k, (dd, az, h, p) in {'laterne': (8, 200, 2.0, 6), 'mitfahrbank': (6, 160, 1.6, -4), 'anzeige': (7, 120, 1.8, 2), 'kirmes': (4.5, 200, 1.6, -2), 'tafel': (4.0, 160, 1.5, -6)}.items():
+        import math
+        fa = J('AMTWORLD.S.items.anzeige && AMTWORLD.S.items.anzeige.face') or [0, 1]
+        for k, (dd, az, h, p) in {'laterne': (8, 200, 2.0, 6), 'mitfahrbank': (6, 160, 1.6, -4), 'anzeige': (8, math.degrees(math.atan2(fa[0], fa[1])) + 12, 1.8, 4), 'kirmes': (4.5, 200, 1.6, -2), 'tafel': (4.0, 160, 1.5, -6)}.items():
             if w['at'].get(k):
                 look_at(w['at'][k][0], w['at'][k][1], dd, h, az, p); lib.shot(pg, OUT, 'k_' + k)
         # the lamp at night

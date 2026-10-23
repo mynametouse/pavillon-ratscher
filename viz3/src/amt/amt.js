@@ -12,9 +12,10 @@ import { $, BASE, QS, scene, V } from '../core/head.js';
 import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
 import { LOAD, markDirty, whenLoaded } from '../core/assets.js';
-import { P } from '../game/walkable.js';
+import { floorAt, P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { QUESTS } from '../game/quests.js';
+import { HUD } from '../game/hud.js';
 import { audio, toast } from '../audio/audio.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
@@ -234,7 +235,25 @@ export const AMT = (() => {
       mb = $('menubtn');
     if (tr) tr.insertBefore(btn, mb && mb.parentNode === tr ? mb : null);
     btn.addEventListener('click', () => toggleBook());
-    return { el, btn, tab: 'stand' };
+    // two entries in the menu's „Spiel“ section: the folder, and the trip to the town hall
+    const ml = $('invbtn') && $('invbtn').parentNode,
+      mk = (id, html, fn) => {
+        const e = document.createElement('button');
+        e.type = 'button';
+        e.className = 'tog';
+        e.id = id;
+        e.hidden = true;
+        e.innerHTML = html;
+        e.addEventListener('click', () => {
+          if (HUD && HUD.setMenu) HUD.setMenu(false);
+          fn();
+        });
+        if (ml) ml.appendChild(e);
+        return e;
+      };
+    const mBook = mk('amtmenubtn', 'Wahl und Amt<span>O</span>', () => toggleBook(true)),
+      mTrip = mk('amttripbtn', 'Ins Rathaus Schleusingen<span>Fahrt</span>', () => trip());
+    return { el, btn, tab: 'stand', mBook, mTrip };
   })();
   function toggleBook(v) {
     BOOK.el.hidden = !(v ?? BOOK.el.hidden);
@@ -265,6 +284,8 @@ export const AMT = (() => {
   function renderBook() {
     UI.task();
     BOOK.btn.hidden = ST.phase === 'none';
+    BOOK.mBook.hidden = ST.phase === 'none';
+    BOOK.mTrip.hidden = !canTrip();
     if (BOOK.el.hidden) return;
     const tabs = [
       ['stand', 'Stand'],
@@ -485,7 +506,7 @@ export const AMT = (() => {
       const n = M.sigCount(ST);
       if (n < D.SIGS)
         out.push(
-          'Unterschriften sammeln: Wer dich kennt und mag (Meinung „unentschieden“ oder besser), unterschreibt mit seinem Haushalt. Noch ' +
+          'Unterschriften sammeln: Wer dich ein bisschen kennt, unterschreibt mit seinem Haushalt – damit das Dorf eine Wahl hat; gute Freunde sammeln bei den Nachbarn. Noch ' +
             (D.SIGS - n) +
             '.'
         );
@@ -975,7 +996,7 @@ export const AMT = (() => {
     const items = [];
     UI.open(
       'Rathaus Schleusingen',
-      'Markt 9 · ' + dateOf(t) + ', ' + CLOCK.hm(t) + ' Uhr',
+      'am Markt · ' + dateOf(t) + ', ' + CLOCK.hm(t) + ' Uhr',
       'Das Rathaus am Markt, unten das Bürgerbüro, oben der Sitzungssaal. Wohin?',
       { id: 'rathaus', free: true, wide: true, scene: SCENES.rathaus() }
     );
@@ -1736,7 +1757,7 @@ export const AMT = (() => {
             think('Es ist ' + (m < 8 * 60 ? 'noch zu früh' : 'zu spät') + ' – da klingelt man im Dorf nicht mehr.');
             return;
           }
-          if (awayNow(k) || (DCAL.on('skat') && k !== 'katrin')) {
+          if (awayNow(k) || DCAL.on('skat')) {
             think(
               'Niemand öffnet. ' +
                 (DCAL.on('skat') ? 'Freitagabend – alle sind in der alten Schule.' : 'Das Auto ist weg.')
@@ -2083,7 +2104,7 @@ export const AMT = (() => {
     rathaus: () =>
       '<svg viewBox="0 0 320 120" class="pic" aria-hidden="true"><rect x="0" y="96" width="320" height="24" fill="#cdbfa6"/><path d="M70 96V44l90-28 90 28v52z" fill="#e9dcc2" stroke="#7d6a4f"/><path d="M60 46 160 14l100 32" fill="none" stroke="#7a3b2a" stroke-width="7"/><rect x="146" y="64" width="28" height="32" fill="#6b4a2b"/><g fill="#9fb4c4" stroke="#6d5a42">' +
       [90, 116, 196, 222].map(x => '<rect x="' + x + '" y="52" width="14" height="20"/>').join('') +
-      '</g><rect x="150" y="30" width="20" height="14" fill="#f4ecd9" stroke="#7d6a4f"/><text x="160" y="41" font-size="7" text-anchor="middle" fill="#3b2f22">1550</text><circle cx="40" cy="70" r="20" fill="#7d9a5a"/><rect x="38" y="80" width="4" height="16" fill="#5b4430"/><circle cx="285" cy="72" r="18" fill="#8aa866"/><rect x="283" y="82" width="4" height="14" fill="#5b4430"/></svg>',
+      '</g><rect x="150" y="30" width="20" height="14" fill="#f4ecd9" stroke="#7d6a4f"/><text x="160" y="41" font-size="7" text-anchor="middle" fill="#3b2f22">⌚</text><circle cx="40" cy="70" r="20" fill="#7d9a5a"/><rect x="38" y="80" width="4" height="16" fill="#5b4430"/><circle cx="285" cy="72" r="18" fill="#8aa866"/><rect x="283" y="82" width="4" height="14" fill="#5b4430"/></svg>',
     ballot: () =>
       '<svg viewBox="0 0 320 110" class="pic" aria-hidden="true"><rect x="0" y="0" width="320" height="110" fill="#efe6d4"/><rect x="20" y="20" width="90" height="70" fill="#fffdf6" stroke="#8d7b62"/><text x="65" y="34" font-size="7" text-anchor="middle" fill="#3b2f22">Stimmzettel</text><text x="30" y="52" font-size="7" fill="#3b2f22">○ Bachmann, Uwe</text><text x="30" y="68" font-size="7" fill="#3b2f22">○ (du)</text><rect x="140" y="30" width="60" height="60" fill="#3d4c5e"/><rect x="160" y="28" width="20" height="4" fill="#111"/><text x="170" y="66" font-size="8" text-anchor="middle" fill="#e8eef4">Urne</text><path d="M230 90V20h70v70" fill="#d9cdb6" stroke="#8d7b62"/><text x="265" y="56" font-size="8" text-anchor="middle" fill="#3b2f22">Kabine</text></svg>',
     tally: c => {
@@ -2167,11 +2188,12 @@ export const AMT = (() => {
       letter();
       return state();
     }
-    if (['wahlkampf', 'wahltag', 'zaehlen', 'amt', 'stadtrat'].includes(stage) && ST.phase === 'asked') {
+    if (['wahlkampf', 'wahltag', 'zaehlen', 'amt', 'stadtrat'].includes(stage) && ST.phase === 'asked')
       ST.phase = 'candidate';
-      if (o.sig !== false)
-        for (const k of ['ingrid', 'gerhard', 'manfred', 'katrin', 'wolfgang', 'heike', 'jens', 'ronald'])
-          if (avail(k)) M.trySign(ST, k);
+    if (ST.phase === 'candidate' && o.sig !== false && M.sigCount(ST) < D.SIGS) {
+      // the signatures as if gathered: everyone who knows the player a little, the rest by good friends among the neighbours
+      for (const k of ['ingrid', 'gerhard', 'manfred', 'katrin', 'wolfgang', 'heike', 'jens', 'ronald'])
+        if (avail(k)) M.trySign(ST, k);
       ST.extra = Math.max(ST.extra, D.SIGS - M.sigCount(ST) + ST.extra);
     }
     if (['wahltag', 'zaehlen', 'amt', 'stadtrat'].includes(stage) && ST.phase === 'candidate') ST.phase = 'nominated';
@@ -2195,6 +2217,20 @@ export const AMT = (() => {
     save();
     renderBook();
     return state();
+  }
+  // the walker to (x, y), turned to yaw (deg) – as the village life puts one at the school door (tests)
+  function put(x, y, yaw = 0) {
+    if (PLAY.seated && PLAY.seated()) PLAY.stand(true);
+    P.mode = 'walk';
+    document.body.dataset.mode = 'walk';
+    P.x = x;
+    P.y = y;
+    P.feet = floorAt(x, y, KERN.terrain(x, y) + 0.3);
+    P.vz = 0;
+    P.yaw = P.body = yaw;
+    P.pitch = 0;
+    P.air = false;
+    markDirty(true);
   }
   function reset() {
     ST = M.fresh(bonus());
@@ -2255,6 +2291,7 @@ export const AMT = (() => {
     renderBook,
     homes,
     reset,
+    put,
     avail,
     model: M,
     data: D,
