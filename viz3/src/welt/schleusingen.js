@@ -90,7 +90,9 @@ export const SCHL = (() => {
       [0.72, 0.68, 0.62],
     ].map(c => linC(c, 0.85)),
     SAND = linC([0.88, 0.82, 0.7], 0.82), // the sandstone of St. Johannis and the Bertholdsburg
-    CREAM = linC([0.95, 0.87, 0.66], 0.82); // the Rathaus front
+    CREAM = linC([0.95, 0.87, 0.66], 0.82), // the Rathaus front
+    SAND_B = linC([0.74, 0.67, 0.56], 0.82), // rough sandstone under the castle and the church
+    BASE_C = linC([0.6, 0.58, 0.54], 0.82); // the stone base of a house on a slope
   function styleOf(b, i) {
     const k = hh(i * 3.7 + 1),
       k2 = hh(i + 11.3),
@@ -294,7 +296,39 @@ export const SCHL = (() => {
         col: b.colF ? b.colF(f, k) : o.col,
         pk,
       };
-      const low = Math.min(z0 - 2.0, (b.zmin !== undefined ? b.zmin : z0) - 1.0);
+      let low = Math.min(z0 - 2.0, (b.zmin !== undefined ? b.zmin : z0) - 1.0);
+      if (b.zmin !== undefined && z0 - b.zmin > 1.2) {
+        // an exposed foot on a slope: a stone base of its own without windows (the shader's plaster plinth below the ground floor
+        // would be a dark slab metres high; the castle and the church stand on rough sandstone, photos 2025)
+        const hb = z0 - low;
+        WB.quad(
+          F,
+          ax,
+          ay,
+          bx,
+          by,
+          0,
+          L,
+          hb,
+          hb,
+          low,
+          low,
+          Object.assign({}, at, {
+            LF: 0.5,
+            eave: hb,
+            st: ST.PLASTER,
+            t0: hb,
+            tA: hb,
+            uA: L / 2,
+            t1: hb,
+            du: -1,
+            dw: 0,
+            fl: 0,
+            col: b.lm ? SAND_B : BASE_C,
+          })
+        );
+        low = z0;
+      }
       if (b.hole && b.hole.k === k) {
         // a real opening (the Rathaus door): left part, right part, lintel
         const h0 = b.hole.u - b.hole.w / 2,
@@ -1034,15 +1068,17 @@ export const SCHL = (() => {
         const r = Math.min(r0, 4.0),
           z = b.z0,
           h = b.lm === 'turm' ? 13 : b.e + 4,
-          hc = r * 2.7 + 2.5;
+          hc = r * 2.7 + 2.5,
+          zf = Math.min(z, ground(x, y), ground(x + r, y), ground(x - r, y), ground(x, y + r), ground(x, y - r)) - 1; // down the slope
         K.lathe(
           x,
           y,
-          z - 1,
+          zf,
           [
-            [r + 0.15, 0],
-            [r, 1.6],
-            [r, h + 1],
+            [r + 0.25, 0],
+            [r + 0.15, z - zf + 0.6],
+            [r, z - zf + 1.6],
+            [r, z - zf + h],
           ],
           14,
           SAND
