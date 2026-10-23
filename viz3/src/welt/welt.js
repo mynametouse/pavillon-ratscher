@@ -172,10 +172,13 @@ export const WELT = (() => {
   const OVER = {
     tOver: { value: new THREE.DataTexture(new Uint8Array(4), 1, 1) },
     uOver: { value: new THREE.Vector4(0, 0, 0, 0) },
+    // feat/fahrt: grey land near the camera as sett (1) – the roads of welt/fahrt.js lay asphalt and turn it off out in the country
+    uPave: { value: 1 },
   };
   OVER.tOver.value.needsUpdate = true;
   S.overlay = () => (OVER.uOver.value.w > 0 ? OVER.tOver.value : null); // whose streets lie on the photo (a zone frees only its own)
-  S.setOverlay = (tex, x0, y0, size) => {
+  S.setOverlay = (tex, x0, y0, size, pave) => {
+    OVER.uPave.value = pave === undefined ? 1 : pave;
     const old = OVER.tOver.value;
     OVER.tOver.value = tex || new THREE.DataTexture(new Uint8Array(4), 1, 1);
     if (!tex) OVER.tOver.value.needsUpdate = true;
@@ -183,7 +186,7 @@ export const WELT = (() => {
     if (old && old !== tex) old.dispose();
     markDirty(true);
   };
-  const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver;
+  const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver; uniform float uPave;
     vec3 setts( vec2 p, vec3 c, float sc, float fwp ) {   // small stones in offset rows, each a little different, dark joints
       vec2 q = p * sc; q.x += 0.5 * mod( floor( q.y ), 2.0 );
       vec2 f = fract( q ); float fine = 1.0 - smoothstep( 0.15, 0.6, fwp * sc );
@@ -198,7 +201,7 @@ export const WELT = (() => {
       float ins = uOver.w * step( 0.0, ou.x ) * step( 0.0, ou.y ) * step( ou.x, 1.0 ) * step( ou.y, 1.0 );
       vec4 o = texture( tOver, clamp( ou, 0.0, 1.0 ) ) * ins;
       float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), chroma = ( mx - mn ) / max( mx, 0.02 ), lum = dot( c, vec3( 0.3, 0.59, 0.11 ) );
-      float near = 1.0 - smoothstep( 40.0, 90.0, dist ), pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * near;
+      float near = 1.0 - smoothstep( 40.0, 90.0, dist ), pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * near * uPave;
       vec3 g = landDetail( p, c, dist );
       if ( o.r > 0.03 ) {
         float code = o.g / max( o.r, 0.01 ), cov = o.r, n1 = rdN( p * 0.6 ), n2 = rdN( p * 5.0 );
@@ -264,18 +267,34 @@ export const WELT = (() => {
   };
   // z: a height, or a function (x, y, raw height) → height (a zone's own smoothing, e.g. a square as an inclined plane)
   function padZ(x, y, raw) {
+    // feat/fahrt: pads marked 'under' (the roads of welt/fahrt.js) shape the ground first; a zone's pad builds on that ground (its edge
+    // blends into the carved road, not into the raw terrain)
+    let base;
     for (const p of pads)
-      if (x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y))
-        return typeof p.z === 'function' ? p.z(x, y, raw) : p.z;
-    return undefined;
+      if (p.under && x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y)) {
+        base = typeof p.z === 'function' ? p.z(x, y, raw) : p.z;
+        break;
+      }
+    for (const p of pads)
+      if (!p.under && x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y))
+        return typeof p.z === 'function' ? p.z(x, y, base !== undefined ? base : raw) : p.z;
+    return base;
   }
   S.setPads = (id, list) => {
     for (let i = pads.length - 1; i >= 0; i--) if (pads[i].id === id) pads.splice(i, 1);
-    for (const { poly, z } of list || []) {
+    for (const { poly, z, under } of list || []) {
       const xs = poly.filter((v, k) => k % 2 === 0),
         ys = poly.filter((v, k) => k % 2 === 1);
-      pads.push({ id, poly, z, bb: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] });
+      pads.push({
+        id,
+        poly,
+        z,
+        under: !!under,
+        bb: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)],
+      });
     }
+    // feat/fahrt: pads marked 'under' (the roads of welt/fahrt.js) come last – the pads of a zone (a square, a hall) win
+    pads.sort((a, b) => a.under - b.under);
     for (const t of S.tiles.values())
       if (t.mesh && t.h) {
         const old = t.mesh.geometry;
@@ -658,18 +677,20 @@ export const WELT = (() => {
     if (!SETS.some(st => st.meta)) return;
     S.active = true;
     // where the tiles are needed: the walker (the camera follows it), else the camera
+    // feat/fahrt: or a point ahead of a moving vehicle (S.focus, welt/fahrt.js), so the ground is there before the wheels
     const walk = P.mode === 'walk',
-      cx = walk ? P.x : cam.position.x,
-      cy = walk ? P.y : -cam.position.z,
+      fo = S.focus && S.focus(),
+      cx = fo ? fo[0] : walk ? P.x : cam.position.x,
+      cy = fo ? fo[1] : walk ? P.y : -cam.position.z,
       [E, N] = toU(cx, cy);
     if (acc > 0.5 || Math.hypot(E - lastE, N - lastN) > 25) {
       acc = 0;
       lastE = E;
       lastN = N;
       plan(E, N);
-      // tiles nobody wants for 30 s are freed
+      // tiles nobody wants for 30 s are freed (feat/fahrt: S.keep ms, shorter while a vehicle drives fast)
       const now = performance.now();
-      for (const t of [...S.tiles.values()]) if (now - t.used > 30000 && t.st !== 'load') drop(t);
+      for (const t of [...S.tiles.values()]) if (now - t.used > (S.keep || 30000) && t.st !== 'load') drop(t);
       dirty = true;
     }
     pump();
