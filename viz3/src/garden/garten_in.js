@@ -81,10 +81,10 @@ const GARTEN = (() => {
       PLAY.act({
         id: 'garten:licht:' + l.key,
         r: l.r || 1.3,
-        prio: -0.2,
+        prio: l.prio ?? -0.2,
         label: () => {
           const p = P();
-          return p && l.room(p.x, p.y, p.feet + 1) ? l.label + (S.on[l.key] ? ' aus' : ' an') : null;
+          return p && (l.swRoom || l.room)(p.x, p.y, p.feet + 1) ? l.label + (S.on[l.key] ? ' aus' : ' an') : null;
         },
         pos: () => {
           const w = W(l.b, l.sw[0], l.sw[1]);
@@ -169,6 +169,37 @@ const GARTEN = (() => {
     o.stop(t + 4.5);
     lfo.stop(t + 4.5);
   }
+  // the stove crackles: a few short noise bursts (synthesised), only near it
+  let noiseBuf = null;
+  function crackle() {
+    const A = LATE.audio,
+      r = A && A.ready && A.ready() && A.raw();
+    if (!r) return;
+    const c = r.ctx;
+    if (!noiseBuf) {
+      noiseBuf = c.createBuffer(1, c.sampleRate * 0.5, c.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    const n = 1 + Math.floor(Math.random() * 3);
+    for (let k = 0; k < n; k++) {
+      const t = c.currentTime + 0.02 + k * (0.03 + Math.random() * 0.09),
+        src = c.createBufferSource(),
+        f = c.createBiquadFilter(),
+        gn = c.createGain();
+      src.buffer = noiseBuf;
+      f.type = 'bandpass';
+      f.frequency.value = 900 + Math.random() * 2500;
+      f.Q.value = 1.2;
+      gn.gain.setValueAtTime(0.0001, t);
+      gn.gain.exponentialRampToValueAtTime(0.05 + Math.random() * 0.05, t + 0.004);
+      gn.gain.exponentialRampToValueAtTime(0.0001, t + 0.04 + Math.random() * 0.05);
+      src.connect(f);
+      f.connect(gn);
+      gn.connect(r.sfx);
+      src.start(t, Math.random() * 0.4, 0.12);
+    }
+  }
   for (const a of GACTS) {
     a.st = {
       k: 0,
@@ -180,7 +211,9 @@ const GARTEN = (() => {
       sound: k => {
         const P = LATE.P,
           w = W(a.b, a.lx, a.ly);
-        if (k === 'whistle' && P && Math.hypot(P.x - w[0], P.y - w[1]) < 14) whistle();
+        const d = P ? Math.hypot(P.x - w[0], P.y - w[1]) : 1e9;
+        if (k === 'whistle' && d < 14) whistle();
+        if (k === 'crackle' && d < 6) crackle();
       },
     };
   }
