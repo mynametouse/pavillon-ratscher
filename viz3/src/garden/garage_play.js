@@ -785,6 +785,8 @@ export const GPLAY = (() => {
     if (M.mode === 'push') pushTick(dt);
     if (M.run) runTick(dt, dmin);
     genTick(dmin);
+    // the can taken out of the inventory by someone else (Menü → Aufgaben zurücksetzen empties the bag): back to its place
+    if (CANT.state === 'inv' && !PLAY.has(CANT)) canHome(CANT, GARAGE.home(PHASE).petrol);
     if (C.refillAt != null && t >= C.refillAt) {
       C.fuel = CAN_L;
       C.refillAt = null;
