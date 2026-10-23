@@ -937,7 +937,6 @@ export const DN = (() => {
     S.mode = m === 'night' ? 'night' : 'auto';
     S.active = true;
     setModeId(S.mode);
-    window.MODE_NOW = S.mode;
     S.ap = null;
     S.envKey = '';
     S.giKey = '';
