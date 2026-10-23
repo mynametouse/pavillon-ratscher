@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { LATE } from './late.js';
 import { SAVE } from './save.js';
@@ -362,24 +363,231 @@ export const GLL = gltfDataURIs(new GLTFLoader(LM));
 GLL.setMeshoptDecoder(MeshoptDecoder); // models: meshopt-compressed geometry and WebP images inside the JSON
 export const TEXMAN = window.TEXMAN || {}; // {name:{tile:[w,h], rot}} injected at build
 export const ANISO = Math.min(8, R.capabilities.getMaxAnisotropy());
+// ---------- GPU-compressed textures (KTX2 with Basis Universal, docs/features/texturen.md) ----------
+// The PBR images tex/<name>_{col,nrm,orm} also exist as tex2/<name>.ktx2 (tools/tex/ktx2.py; window.TEX2MAN lists those that belong to the
+// current images). Uploading ~430 decoded images (decode, mipmaps) was most of the start on a PC without graphics card, and the decoded
+// RGBA images were what made Safari drop the page on the iPhone. A KTX2 file is transcoded in a worker (three's KTX2Loader) to what the GPU
+// samples directly – BC7/BC1 on desktops, ASTC/ETC2 on phones – with every mip level made by the encoder: a quarter (BC1/ETC: an eighth)
+// of the memory, nothing decoded on the main thread. Phones load tex2/h/ (half size, as TEXHALF did with the images) and leave out one
+// more mip level after a broken-off attempt. The texture objects stay the same: a loaded KTX2 texture is turned into a compressed texture
+// in place (clones made before included), so wrap, repeat, rotation, anisotropy, colour space – and the shader programs – stay as they are.
+// Any problem (file, transcoder, no compressed format on this GPU) falls back to the image, per texture. ?tex2=0 switches it off.
+export const TEX2 = (() => {
+  const S = {
+    on: false,
+    why: '',
+    names: new Set(window.TEX2MAN || []),
+    n: 0,
+    fails: 0,
+    back: 0,
+    mb: 0,
+    fmt: {},
+    ms: 0,
+  };
+  window.TEX2 = S;
+  const q = (location.search.match(/[?&]tex2=(\d)/) || [])[1];
+  if (q === '0') S.why = 'aus (?tex2=0)';
+  else if (!S.names.size) S.why = 'keine KTX2-Dateien im Build';
+  else if (window.EMBED_URL) S.why = 'eingebettete Fassung';
+  else if (typeof WebAssembly !== 'object' || typeof Worker !== 'function') S.why = 'kein WebAssembly/Worker';
+  else
+    try {
+      const L = new KTX2Loader(LM).setTranscoderPath(BASE + 'basis/').detectSupport(R),
+        c = L.workerConfig;
+      // colour maps are sRGB: as BC1/BC3 they need the sRGB variant of S3TC (three finds no format without it)
+      if (c.dxtSupported && !R.extensions.has('WEBGL_compressed_texture_s3tc_srgb')) c.dxtSupported = false;
+      c.etc1Supported = false; // ETC1 has no sRGB variant – ETC2 covers the same files
+      S.gpu = Object.keys(c).filter(k => c[k]);
+      if (!(c.astcSupported || c.bptcSupported || c.etc2Supported || c.dxtSupported))
+        S.why = 'keine komprimierten Formate auf dieser GPU';
+      else {
+        L.setWorkerLimit(Math.max(1, Math.min(TEXHALF.on ? 2 : 3, (navigator.hardwareConcurrency || 2) - 1)));
+        S.L = L;
+        S.on = true;
+      }
+    } catch (e) {
+      S.why = 'Fehler: ' + ((e && e.message) || e);
+    }
+  // phones: the half-size files; after a broken-off attempt one mip level less (the same rule as halfImage for the 1024 px images)
+  S.half = TEXHALF.on;
+  S.drop = TEXHALF.level > 1 ? 1 : 0;
+  S.stem = file => {
+    const m = /^tex\/([\w-]+)\.(webp|jpg|png)$/.exec(file);
+    return m && S.names.has(m[1]) ? m[1] : null;
+  };
+  const NAMES = {
+    [THREE.RGBA_BPTC_Format]: 'BC7',
+    [THREE.RGBA_S3TC_DXT1_Format]: 'BC1',
+    [THREE.RGBA_S3TC_DXT5_Format]: 'BC3',
+    [THREE.RGBA_ASTC_4x4_Format]: 'ASTC',
+    [THREE.RGB_ETC2_Format]: 'ETC2',
+    [THREE.RGBA_ETC2_EAC_Format]: 'ETC2A',
+    [THREE.RGBAFormat]: 'RGBA',
+  };
+  // a texture object (Texture) becomes a compressed texture with the transcoded levels – in place, so every reference stays valid
+  const morph = (t, mips, fmt) => {
+    Object.setPrototypeOf(t, THREE.CompressedTexture.prototype);
+    t.isCompressedTexture = true;
+    t.mipmaps = mips;
+    t.format = fmt;
+    t.type = THREE.UnsignedByteType;
+    t.flipY = false;
+    t.generateMipmaps = false;
+    t.premultiplyAlpha = false;
+    t.minFilter = mips.length > 1 ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.needsUpdate = true;
+  };
+  // the transcoder must answer: no texture transcoded 40 s after the first file arrived (a worker that cannot start its WebAssembly) →
+  // every waiting texture takes its image. A timer that fires late (the page was busy building the scene) waits once more.
+  const waiting = new Set();
+  let watch = 0;
+  const giveUp = why => {
+    S.on = false;
+    S.why = why;
+    LOADLOG.note('KTX2 aus: ' + why, true);
+    for (const w of [...waiting]) w.bad(why);
+  };
+  const arm = (ms, late) => {
+    const due = performance.now() + ms;
+    watch = setTimeout(() => {
+      if (S.n || !S.on) return;
+      if (!late && performance.now() - due > 2000) arm(10000, true);
+      else giveUp('Transkodierer antwortet nicht');
+    }, ms);
+  };
+  // load one texture into rec.tex; ok() after it is in place, bad(why) → the caller loads the image instead
+  S.load = (stem, rec, ok, bad) => {
+    const url = BASE + 'tex2/' + (S.half ? 'h/' : '') + stem + '.ktx2',
+      key = 'ktx2:' + stem;
+    let over = false;
+    LM.itemStart(key);
+    const w = {
+      bad: why => {
+        if (over) return;
+        over = true;
+        waiting.delete(w);
+        S.fails++;
+        console.warn('KTX2', stem, why);
+        try {
+          bad(why);
+        } finally {
+          LM.itemEnd(key);
+        }
+      },
+    };
+    waiting.add(w);
+    const fl = new THREE.FileLoader(LM).setResponseType('arraybuffer');
+    fl.load(
+      url,
+      buf => {
+        if (over) return;
+        if (!watch && !S.n) arm(40000);
+        const a = performance.now();
+        S.L.parse(
+          buf,
+          ct => {
+            if (over) return;
+            let mips = (ct && ct.mipmaps) || [];
+            if (!mips.length || !mips[0].data || !ct.isCompressedTexture) {
+              w.bad('leer');
+              return;
+            }
+            if (S.drop && mips.length > 1) mips = mips.slice(Math.min(S.drop, mips.length - 1));
+            over = true;
+            waiting.delete(w);
+            try {
+              rec.tex.image = { width: mips[0].width, height: mips[0].height };
+              for (const t of [rec.tex, ...rec.clones]) morph(t, mips, ct.format);
+              S.n++;
+              S.ms += performance.now() - a;
+              S.last = Math.round(performance.now());
+              const f = NAMES[ct.format] || String(ct.format);
+              S.fmt[f] = (S.fmt[f] || 0) + 1;
+              S.mb += mips.reduce((s, m) => s + m.data.byteLength, 0) / 1e6;
+              ok();
+            } finally {
+              LM.itemEnd(key);
+            }
+          },
+          e => w.bad((e && e.message) || String(e))
+        );
+      },
+      undefined,
+      () => w.bad('Datei fehlt')
+    );
+  };
+  whenLoaded(() => {
+    if (S.names.size)
+      LOADLOG.note(
+        S.n
+          ? 'Texturen KTX2: ' +
+              S.n +
+              ' (' +
+              Object.entries(S.fmt)
+                .map(([k, v]) => v + ' ' + k)
+                .join(', ') +
+              '), ' +
+              Math.round(S.mb) +
+              ' MB' +
+              (S.fails ? ', ' + S.fails + ' als Bild' : '')
+          : 'Texturen KTX2 aus: ' + (S.why || 'keine geladen'),
+        true
+      );
+  });
+  return S;
+})();
 const texCache = {};
-export function texFile(file, srgb) {
-  const key = file + (srgb ? '|s' : '|l');
+// for the tests: every texture file and how it came (compressed or image, size of the base level)
+TEX2.files = () =>
+  Object.entries(texCache).map(([k, r]) => ({
+    file: k,
+    k2: !!r.tex.isCompressedTexture,
+    ok: r.ok,
+    w: (r.tex.image && r.tex.image.width) || 0,
+    mb: r.tex.isCompressedTexture ? r.tex.mipmaps.reduce((s, m) => s + m.data.byteLength, 0) / 1e6 : 0,
+  }));
+// img: always the image (pixels on the CPU – the ground's detail array draws them into a canvas)
+export function texFile(file, srgb, img) {
+  const key = file + (srgb ? '|s' : '|l') + (img ? '|i' : '');
   if (texCache[key]) return texCache[key];
   const rec = { tex: null, ok: null, fails: [], clones: [] };
-  rec.tex = TXL.load(
-    BASE + file,
-    () => {
+  const done = () => {
       rec.ok = true;
       rec.clones.forEach(c => (c.needsUpdate = true));
       markDirty(true);
     },
-    undefined,
-    () => {
+    fail = () => {
       rec.ok = false;
       rec.fails.forEach(f => f());
-    }
-  );
+    };
+  const stem = TEX2.on && !img ? TEX2.stem(file) : null;
+  if (stem) {
+    rec.tex = new THREE.Texture();
+    rec.k2 = stem;
+    TEX2.load(
+      stem,
+      rec,
+      () => {
+        rec.ok = true;
+        markDirty(true);
+      },
+      () => {
+        rec.k2 = null;
+        TEX2.back++;
+        new THREE.ImageLoader(LM).setCrossOrigin('anonymous').load(
+          BASE + file,
+          im => {
+            rec.tex.image = im;
+            rec.tex.needsUpdate = true;
+            done();
+          },
+          undefined,
+          fail
+        );
+      }
+    );
+  } else rec.tex = TXL.load(BASE + file, done, undefined, fail);
   rec.tex.wrapS = rec.tex.wrapT = THREE.RepeatWrapping;
   rec.tex.anisotropy = ANISO;
   if (srgb) rec.tex.colorSpace = THREE.SRGBColorSpace;

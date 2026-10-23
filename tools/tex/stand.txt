@@ -1,0 +1,2 @@
+Stand der KTX2-Texturen (tools/tex/ktx2.py) – diese Zeile ändern und pushen baut gh-pages/tex2/ neu (.github/workflows/texturen-ktx2.yml)
+2026-10-23 erste Fassung

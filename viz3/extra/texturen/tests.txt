@@ -1,0 +1,6 @@
+# KTX2/Basis textures (core/assets.js TEX2): KTX2 vs ?tex2=0 – programs, pictures, memory, phone half size
+ktx2
+# the required tests that load textures, with tex2/ in the build (feat.yml copies the site's tex2/)
+memphone
+softgl
+gpu

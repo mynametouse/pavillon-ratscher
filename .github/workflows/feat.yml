@@ -34,13 +34,15 @@ jobs:
           git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
           cd "$RUNNER_TEMP/site"
           if git cat-file -e HEAD:vorschau/index.html 2>/dev/null; then
-            git sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+            git sparse-checkout set --no-cone '/vorschau/' '/tex2/'; B="$RUNNER_TEMP/site/vorschau"
           else
             git sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"
           fi
           git checkout -q
           cd "$GITHUB_WORKSPACE"; mkdir -p viz3/dist
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+          # KTX2 textures (texturen-ktx2.yml): the site's own tex2/, as the published builds take it
+          if [ -d "$RUNNER_TEMP/site/tex2" ]; then rm -rf viz3/dist/tex2 && cp -r "$RUNNER_TEMP/site/tex2" viz3/dist/tex2; fi
       - name: Werkzeuge
         run: |
           npm ci --prefix viz3 --no-audit --no-fund
