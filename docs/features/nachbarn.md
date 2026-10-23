@@ -29,7 +29,7 @@ bash tools/browser_lock.sh python3 viz3/test/run.py --port 8973 --serve nachbarn
 
 Abschnitte: `yard` (Bilder vom Hof, der Weide), `plan` (Tagesplan nach der Uhr, nachts daheim, morgens wieder da), `day` (Hacken, Sägen,
 Stapeln, Auto, Füttern, Mähen mit Schwaden), `talk` (am Tisch und beim Auto, Untertitel), `trip` (Fahrt zum Anger und zurück), `quests`
-(Ziegen mit der neuen Weide, die drei neuen Aufgaben, Diesel-Mitfahrt).
+(Ziegen mit der neuen Weide, die drei neuen Aufgaben, Diesel-Mitfahrt), `daylong` (ein ganzer Tag nach Plan in 10-s-Schritten).
 
 Bilder in `out/nachbarn/`. Im Browser (Konsole): `LIFE.force('hubert', 'chop' | 'saw' | 'stack' | 'car' | 'trip' | 'talk' …)`,
 `LIFE.force('ronald', 'mow' | 'feed' | 'visit' | 'visitCar' | 'stall' …)`, `LIFE.force(name, null)` zurück zum Plan, `LIFE.force(name, 'off')`
