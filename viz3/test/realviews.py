@@ -8,9 +8,9 @@ OUT = lib.out('real'); os.makedirs(OUT, exist_ok=True)
 VIEWS = [
   ('modell', "GAME.orbit(225, 16, 21)"),
   ('garten', "GAME.go('garten')"),
-  ('ronald', "(() => { const w = NPC.NPCS.ronald; w.target = null; w.wait = 30; GAME.view(w.x - 3.2, w.y - 1.0, 1.62, Math.atan2(3.2, 1.0) * 180 / Math.PI, -6, 55); })()"),
+  ('ronald', "(() => { window.LIFE && LIFE.force('hubert', 'off'); window.LIFE && LIFE.force('ronald', 'off'); const w = NPC.NPCS.ronald; w.target = null; w.wait = 30; GAME.view(w.x - 3.2, w.y - 1.0, 1.62, Math.atan2(3.2, 1.0) * 180 / Math.PI, -6, 55); })()"),
   ('ziegen', "(() => { const g = NPC.GOATS[0]; g.target = null; g.wait = 30; GAME.view(g.x - 3.0, g.y - 1.4, 1.5, Math.atan2(3.0, 1.4) * 180 / Math.PI, -14, 55); })()"),
-  ('hubert', "(() => { const w = NPC.NPCS.hubert; w.target = null; w.wait = 30; GAME.view(w.x + 3.2, w.y - 1.0, 1.62, Math.atan2(-3.2, 1.0) * 180 / Math.PI, -6, 55); })()"),
+  ('hubert', "(() => { window.LIFE && LIFE.force('hubert', 'off'); window.LIFE && LIFE.force('ronald', 'off'); const w = NPC.NPCS.hubert; w.target = null; w.wait = 30; GAME.view(w.x + 3.2, w.y - 1.0, 1.62, Math.atan2(-3.2, 1.0) * 180 / Math.PI, -6, 55); })()"),
   ('bungalow', "GAME.view(3.2, 9.0, 1.62, 40, 2, 68)"),
   ('holzhaus', "GAME.view(7.6, -9.6, 1.62, 40, 3, 68)"),
   ('carport', "GAME.go('carport')"),

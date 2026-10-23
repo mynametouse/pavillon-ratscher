@@ -50,9 +50,16 @@ bash tools/browser_lock.sh python3 viz3/test/run.py --port 8972 --serve figuren
 
 `viz3/test/figuren.py`: Menü, gespeicherter alter Wert `f`, eigene Modelle, Größen, Mütze über dem Kopf (stehen, gehen, hocken), Ausrüstung;
 Bilder aller Figuren von vorn, der Seite und hinten nah und ganz, stehend, gehend, hockend → `out/figuren/`. Läuft bei jedem Push auf
-`feat/figuren` in GitHub Actions (`viz3/extra/figuren/tests.txt`).
+`feat/figuren` in GitHub Actions (`viz3/extra/figuren/tests.txt`) in zwei Teilen: `figuren:f,m` (Sarah, Falko) und `figuren:c`
+(Christoph mit Mütze, Ohrhörern, Ausrüstung, Größenvergleich) – je etwa 10 Minuten.
 
 ## Offen
 
 - Sarahs Stiefel haben (wie bei der bisherigen Frau) einen kleinen Absatz; Rocketbox hat keine flachen Stiefel zu dieser Hose.
 - Die neuen Haare sind gewellte Locken bis zur Schulter (aus Rocketbox); engere Locken bräuchten ein anderes Haarmodell.
+
+## Für den Kern-Chat (gemeinsame Dateien)
+
+- Erledigt (e81b368): `shell/notes.html`, `buildlib/credits.py`, `docs/ARCHITECTURE.md` nennen Falko, Sarah und Christoph.
+- Wahlweise `viz3/src/core/save.js`: `K('pav-fig', …)` mit Prüfung `oneOf('m', 'f', 'c')` (avatar.js prüft selbst).
+- Die alte `dist/chars/player_f.json` auf `gh-pages` wird nicht mehr geladen (Sarah: `player_sarah.json`).

@@ -520,6 +520,20 @@ export const TRACTOR2 = (() => {
         drum.add(b);
       }
     }
+    // core, flanges and bolts merged per material (the wound cable keeps its own mesh: its radius changes)
+    const by = new Map();
+    for (const c of [...drum.children]) {
+      if (c === WN.woundM) continue;
+      c.updateMatrix();
+      if (!by.has(c.material)) by.set(c.material, []);
+      by.get(c.material).push(c.geometry.clone().applyMatrix4(c.matrix));
+      drum.remove(c);
+    }
+    for (const [mat, list] of by) {
+      const me = new THREE.Mesh(BufferGeometryUtils.mergeGeometries(list), mat);
+      me.castShadow = me.receiveShadow = true;
+      drum.add(me);
+    }
   }
   // the hook parked at the fairlead while the cable is wound in: the slider, the choker chain hanging down
   const parked = new THREE.Group();

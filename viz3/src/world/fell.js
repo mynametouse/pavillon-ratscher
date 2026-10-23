@@ -2795,7 +2795,7 @@ export const FELL = (() => {
         '</table>';
       // V16h: getting the logs out where the tractor cannot reach them (werk/winde.js)
       h +=
-        '<h4>Rücken mit der Seilwinde</h4><p class="bk-i">Traktor auf dem Weg, Heck zum Stamm, Anhänger vorher ab. Winde absenken (N im Traktor oder Außenbedienung am Kotflügel), Seil ausziehen (bis 50 m), Choker ums nähere Stammende, dann raus aus Seillinie und Stammbereich und per Funk einholen. Am Rückeschild: Choker lösen – oder die Winde anlüften (N) und den Stamm zum Weg schleifen. Die Gabel nimmt ihn quer von der Seite (bis 1500 kg).</p>';
+        '<h4>Rücken mit der Seilwinde</h4><p class="bk-i">Traktor auf dem Weg, Heck zum Stamm, Anhänger vorher ab. Winde absenken (N im Traktor oder Außenbedienung am Kotflügel), Seil ausziehen (bis 50 m), Choker ums nähere Stammende, dann raus aus Seillinie und Stammbereich und per Funk einholen. Am Rückeschild: Choker lösen – oder die Winde anlüften (N) und den Stamm zum Weg schleifen. Aufladen: die Gabel quer von der Seite (bis 1500 kg) oder der Kran am Anhänger, wie der Stamm liegt (etwa 6 m Reichweite).</p>';
     }
     h +=
       '<p class="bk-n">Quellen: DGUV Information 214-046 „Sichere Waldarbeiten“, SVLFG/BBV „Sicherheitsfälltechnik“, Bayerische Staatsforsten „Sicher Holz machen“.</p>';

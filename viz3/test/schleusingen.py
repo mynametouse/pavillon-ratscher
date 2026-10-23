@@ -117,6 +117,13 @@ with lib.browser() as b:
         ck('the hall has a name', 'Rathaus' in (r['where'] or ''), r['where'] or '')
         r2 = json.loads(E("""JSON.stringify((() => { GAME.step(6, 1); return { inHall: SCHL.inHall(GAME.P.x, GAME.P.y), x: GAME.P.x, y: GAME.P.y }; })())"""))
         ck('the back wall of the hall stops the walker', r2['inHall'], json.dumps(r2))
+        # the named spots of the council chamber (for the Ortsvorsteher task) and sitting down on a visitor's chair
+        sp = json.loads(E("""JSON.stringify((() => { const s = SCHL.rathaus.spots; return { vorsitz: !!s.vorsitz, seats: s.seats.length, visitors: s.visitors.length,
+            counter: !!s.counter, clerk: !!s.clerk, pult: !!s.rednerpult, inside: [s.vorsitz, s.counter, s.rednerpult].every(q => SCHL.inHall(q.x, q.y)) }; })())"""))
+        ck('council chamber: chair, seats, visitors, counter, clerk, speaker – all inside the hall', sp['vorsitz'] and sp['seats'] >= 9 and sp['visitors'] >= 10 and sp['counter'] and sp['clerk'] and sp['pult'] and sp['inside'], json.dumps(sp))
+        si = json.loads(E("""JSON.stringify((() => { const v = SCHL.rathaus.spots.visitors[0]; GAME.view(v.x + 0.5, v.y, v.z + 1.62, 0, 0, 60); const st = GAME.step(0.5);
+            const label = st.best; let sat = false; if (label === 'Hinsetzen') { PLAY.best.run(); GAME.step(1); sat = !!PLAY.seat; PLAY.stand(true); GAME.step(0.5); } return { label, sat }; })())"""))
+        ck('sitting down on a chair in the hall', si['label'] == 'Hinsetzen' and si['sat'], json.dumps(si, ensure_ascii=False))
     if want('names'):
         n = json.loads(E("JSON.stringify([[-1085, 1230], [-1180, 1190], [-1290, 1185], [-1250, 1203]].map(([x, y]) => SCHL.place(x, y)))"))
         ck('place names: Markt, a street, the castle, the church', n[0].startswith('Markt') and 'Schleusingen' in n[1] and 'Bertholdsburg' in n[2] and 'Johannis' in n[3], json.dumps(n, ensure_ascii=False))
@@ -138,10 +145,32 @@ with lib.browser() as b:
         lib.shot(pg, OUT, 'b_rathaus')
         view(-1088, 1214, yaw(-1088, 1214, -1080, 1260), 3)
         lib.shot(pg, OUT, 'c_markt_nord')
-        view(-1205, 1222, yaw(-1205, 1222, -1246, 1213), 16)
-        lib.shot(pg, OUT, 'd_johannis')
-        view(-1228, 1128, yaw(-1228, 1128, -1290, 1180), 10)
-        lib.shot(pg, OUT, 'e_bertholdsburg')
+        # viewpoints on the streets near the church tower and below the castle (found in the street data)
+        vp = json.loads(E("""JSON.stringify((() => { const st = SCHL.data ? SCHL.data.st : [], best = (tx, ty, d0, d1, f) => { let b = null, bs = -1e9;
+              for (const s of st) { if (s.k > 5) continue; for (let k = 0; k < s.p.length; k += 2) { const x = s.p[k], y = s.p[k + 1], d = Math.hypot(x - tx, y - ty);
+                if (d < d0 || d > d1) continue; const sc = f(x, y); if (sc > bs) { bs = sc; b = [x, y]; } } } return b; };
+            return { kirche: best(-1246, 1213, 40, 70, (x, y) => x + y * 0.3), burg: best(-1293, 1175, 75, 120, (x, y) => -y - Math.abs(x + 1290) * 0.5) }; })())"""))
+        print('viewpoints', vp, flush=True)
+        if vp.get('kirche'):
+            x, y = vp['kirche']
+            view(x, y, yaw(x, y, -1246, 1210), 18)
+            lib.shot(pg, OUT, 'd_johannis')
+        if vp.get('burg'):
+            x, y = vp['burg']
+            view(x, y, yaw(x, y, -1290, 1172), 14)
+            lib.shot(pg, OUT, 'e_bertholdsburg')
+        # the castle: its courtyard with the stair towers from above, and from the north-east
+        cb = json.loads(E("JSON.stringify((() => { const b = SCHL.bld.find(q => q.lm === 'burg'); return b ? [b.cx, b.cy, b.z0] : null; })())"))
+        if cb:
+            E(f"GAME.orbit(150, 38, 75, [{cb[0]}, {cb[1]}, {cb[2] + 8}]); GAME.step(0.5)")
+            for _ in range(20):
+                E("GAME.step(0.25)")
+                if json.loads(E("JSON.stringify(WELT.state())"))['loading'] == 0:
+                    break
+                time.sleep(0.3)
+            lib.shot(pg, OUT, 'e2_burg_hof')
+            E(f"GAME.orbit(40, 14, 95, [{cb[0]}, {cb[1]}, {cb[2] + 10}]); GAME.step(0.5)")
+            lib.shot(pg, OUT, 'e3_burg_nordost')
         E("""(() => { const R = SCHL.rathaus, p = R.Q(R.L / 2 - 2, 1.4, 0), q = R.Q(R.L / 2, R.w1, 0);
             GAME.view(p[0], p[1], R.floor + 1.62, Math.atan2(q[0] - p[0], q[1] - p[1]) * 180 / Math.PI, -4, 70); for (let i = 0; i < 8; i++) GAME.step(0.25); })()""")
         lib.shot(pg, OUT, 'f_rathaus_halle')

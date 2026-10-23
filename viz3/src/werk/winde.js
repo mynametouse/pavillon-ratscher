@@ -389,6 +389,11 @@ export const WINDE = (() => {
     const nE = [ex, ey, 0],
       nO = [ox, oy, 0];
     nE[2] = HOLZ.support(ex, ey, l) + rE;
+    // close to the winch the cable (from 1.7 m up) lifts the fastened end a little off the ground
+    if (!free && S.pull && S.Xw) {
+      const dh = Math.hypot(ex - S.Xw[0], ey - S.Xw[1]);
+      nE[2] += 0.28 * clamp(1 - dh / 6, 0, 1);
+    }
     nO[2] = HOLZ.support(ox, oy, l) + rO;
     if (e) {
       l.p1 = nE;
@@ -409,6 +414,7 @@ export const WINDE = (() => {
       X = exitW();
     if (!l || !l.p0) return;
     gatherTrunks(l, 1.5);
+    S.Xw = X;
     let moved = false;
     if (S.atShield) {
       // lying against the shield: the end goes with the winch (raised: the tractor drags the log)
@@ -732,7 +738,33 @@ export const WINDE = (() => {
       b = VEH.fwd(T.st.psi),
       dh = H ? Math.hypot(H[0] - X[0], H[1] - X[1]) : 0,
       cs = dh > 1 ? -((H[0] - X[0]) * b[0] + (H[1] - X[1]) * b[1]) / dh : 1;
-    if (S.cable === 'log' && cs < 0.34)
+    // a standing tree in the cable's line: the cable rubs on it and the log runs towards it
+    let inLine = false;
+    if (S.cable === 'log' && H && dh > 3)
+      WCOL.each(
+        Math.min(X[0], H[0]) - 1,
+        Math.min(X[1], H[1]) - 1,
+        Math.max(X[0], H[0]) + 1,
+        Math.max(X[1], H[1]) + 1,
+        null,
+        (i, Q) => {
+          const ux = H[0] - X[0],
+            uy = H[1] - X[1],
+            t = ((Q[i * 3] - X[0]) * ux + (Q[i * 3 + 1] - X[1]) * uy) / (dh * dh);
+          if (
+            t > 0.08 &&
+            t < 0.9 &&
+            Math.hypot(X[0] + ux * t - Q[i * 3], X[1] + uy * t - Q[i * 3 + 1]) < Q[i * 3 + 2] + 0.04
+          )
+            inLine = true;
+        }
+      );
+    if (inLine)
+      think(
+        'Die Winde zieht – aber in der Seillinie steht ein Baum: das Seil scheuert, der Stamm läuft auf ihn zu. Notfalls stoppen und anders ansetzen.',
+        4200
+      );
+    else if (S.cable === 'log' && cs < 0.34)
       think(
         'Die Winde zieht – das Seil läuft aber sehr schräg über die Seilführung. Besser das Heck zum Stamm stellen.',
         3600
@@ -790,19 +822,19 @@ export const WINDE = (() => {
   PLAY.act({
     id: 'winde:lift',
     r: 1.9,
-    prio: 0.4,
+    prio: 1.0, // at the wing the outside control comes first (the remote and a log end nearby wait)
     obj: () => WN.g,
     pos: () => {
       const p = VEH.toW(T, -1.22, -1.95);
       return [p[0], p[1], T.st.z + 1.1];
     },
+    // always offered on foot: up or down; with the cable out it says why the winch stays down (toggleLift)
     label: () => {
       if (!onFoot()) return null;
       if (WN.liftT >= 0.9) return 'Winde absenken (Außenbedienung)';
-      if (S.cable === 'drum') return 'Winde anheben (Außenbedienung)';
       if (S.cable === 'log' && S.atShield)
         return WN.liftT < 0.4 ? 'Winde anheben – Stamm anlüften' : 'Winde absenken – Stamm ablegen';
-      return null;
+      return 'Winde anheben (Außenbedienung)';
     },
     run: () => toggleLift(),
   });
@@ -810,7 +842,10 @@ export const WINDE = (() => {
   PLAY.act({
     id: 'winde:cable',
     r: 2.1,
-    prio: 0.5,
+    // with the hook in my hand behind the winch, hooking it in wins over a log end lying there (the log just released at the shield)
+    get prio() {
+      return S.cable === 'hand' ? 2.5 : 0.5;
+    },
     obj: () => WN.g,
     pos: () => {
       const p = WN.toW([0, -0.9, 1.0]);
@@ -867,7 +902,7 @@ export const WINDE = (() => {
   PLAY.act({
     id: 'winde:funk',
     r: 6,
-    prio: -1.6,
+    prio: -3, // anything else within reach in front of me comes first (felling, the neighbours …)
     obj: () => null,
     pos: () => [P.x, P.y, P.feet + 1.0],
     label: () => {
@@ -1277,8 +1312,9 @@ export const WINDE = (() => {
         () =>
           news(
             'Neu: Seilwinde am Traktor. Steht er auf dem Weg und kommt nicht an den Stamm: hinten die Winde absenken, das Seil ausziehen (E), am Stammende den Choker anschlagen, aus dem Gefahrenbereich gehen und per Funk einholen. ' +
-              (COARSE ? 'Am Tacho: Winde heben/senken.' : 'Im Traktor: N hebt und senkt die Winde.'),
-            13000
+              (COARSE ? 'Am Tacho: Winde heben/senken.' : 'Im Traktor: N hebt und senkt die Winde.') +
+              ' Und der Anhänger hat einen Kran: an den Ventilen rechts vorn lädt er Stämme, wie sie liegen.',
+            15000
           ),
         4000
       );
