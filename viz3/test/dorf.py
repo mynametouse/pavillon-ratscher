@@ -7,8 +7,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]; OUT = lib.out('dorf'); ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else None
 def want(k): return not ONLY or k in ONLY
 ck = lib.Checks('dorf')
-def page_shot(pg, name):
-    pg.evaluate("GAME.shot()"); pg.screenshot(path=os.path.join(OUT, name + '.png')); print('page shot', name, flush=True)
+def page_shot(pg, name):   # the whole page with the panels (slow in SwiftShader: a long time limit, and never fatal)
+    try:
+        pg.evaluate("GAME.shot()"); pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=120000); print('page shot', name, flush=True)
+    except Exception as ex:
+        print('note: page shot', name, 'failed:', repr(ex)[:160], flush=True)
 with lib.browser() as b:
     errs = []; pg = lib.page(b, 1100, 700, errs, tier='mittel'); lib.boot(pg, port); E = pg.evaluate
     J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
@@ -88,7 +91,6 @@ with lib.browser() as b:
             ck('task: after greeting Ingrid one should sit down', J('DORF.ST.step') == 'sit', J('DORF.ST.step'))
             E("DORF.UI.close(); DORF.sitDown(); GAME.step(0.6)")
             page_shot(pg, 'd_seated')
-            time.sleep(1.5)
             lines = []
             for i in range(70):
                 E("GAME.step(0.5)"); s = J("DORF.state().sub")
@@ -97,7 +99,7 @@ with lib.browser() as b:
             print('story', lines, flush=True)
             ck('sitting down: Gerhard tells the story of the clock', any('Gerhard' in l and '1828' in l for l in lines), str(lines[:3]))
             ck('task: then the card game', J('DORF.ST.step') == 'play', J('DORF.ST.step'))
-            time.sleep(1.2); E("GAME.step(0.2)")
+            E("for (let i = 0; i < 14; i++) GAME.step(0.1)")   # Katrin turns to one (0.9 s of game time after the story)
             if J('DORF.state().talk') != 'katrin': E("DORF.UI.open('katrin')")
             E("[...document.querySelectorAll('#dorfpanel .topics button')].find(b => b.classList.contains('quest')).click()")
             for i in range(5):
@@ -124,6 +126,8 @@ with lib.browser() as b:
             fx, fy = J("DFIRE.at"); fz = J("DFIRE.z")
             E(f"GAME.view({fx} - 6.5, {fy} - 3.0, {fz} + 1.7, Math.atan2(6.5, 3.0) * 180 / Math.PI, -6, 60); for (let i = 0; i < 6; i++) GAME.step(0.1)"); lib.shot(pg, OUT, 'e_fire_side')
             E(f"GAME.view({fx} + 30, {fy} + 45, {fz} + 3, Math.atan2(-30, -45) * 180 / Math.PI, -3, 55); GAME.step(0.2)"); lib.shot(pg, OUT, 'e_fire_far')
+            E(f"GAME.orbit(200, 62, 11, [{fx}, {fy}, {fz} + 0.5]); GAME.step(0.2)"); lib.shot(pg, OUT, 'e_fire_top')
+            E(f"GAME.view({fx} + 2.6, {fy} + 2.2, {fz} + 1.5, Math.atan2(-2.6, -2.2) * 180 / Math.PI, -10, 60); GAME.step(0.2)"); lib.shot(pg, OUT, 'e_fire_close')
             print('place', E(f"KERN.place({fx} + 2, {fy})"), flush=True)
             if J('DORF.ST.step') == 'fire':
                 E("DORF.toFire(); GAME.step(0.2); DORF.UI.open('wolfgang')")

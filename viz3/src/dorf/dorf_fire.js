@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import { R, cam, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
-import { markDirty } from '../core/assets.js';
+import { markDirty, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { LIGHTSTATE } from '../game/home.js';
 import { audio } from '../audio/audio.js';
@@ -18,6 +18,8 @@ export const DFIRE = (() => {
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
     L = (r, g, b) => [lin(r), lin(g), lin(b)];
   const U = { uT: { value: 0 }, uK: { value: 0 } };
+  // the burning logs glow from inside (a plain material: the same shader program as others of its kind)
+  const EMBER = plain({ color: 0x3a2a1e, roughness: 0.9, emissive: 0xff4a12, emissiveIntensity: 0 });
   const NOISE = `float fh( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
     float fn( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
       return mix( mix( fh( i ), fh( i + vec2( 1.0, 0.0 ) ), f.x ), mix( fh( i + vec2( 0.0, 1.0 ) ), fh( i + vec2( 1.0, 1.0 ) ), f.x ), f.y ); }
@@ -38,8 +40,8 @@ export const DFIRE = (() => {
           float w = ( 1.0 - v ) * ( 0.95 - abs( u - 0.5 ) * 2.0 * ( 0.55 + 0.9 * v ) );   // wide at the root, a tip at the top
           float f = smoothstep( 0.08, 0.5, w + ( n - 0.5 ) * 0.62 + ( n2 - 0.5 ) * 0.18 );
           vec3 c = mix( vec3( 1.0, 0.22, 0.03 ), vec3( 1.0, 0.72, 0.32 ), smoothstep( 0.35, 0.95, f ) );
-          c = mix( c, vec3( 1.0, 0.95, 0.75 ), smoothstep( 0.85, 1.0, f ) * ( 1.0 - v ) );
-          gl_FragColor = vec4( c * f * uK * 2.2, 1.0 );
+          c = mix( c, vec3( 1.0, 0.9, 0.62 ), smoothstep( 0.9, 1.0, f ) * ( 1.0 - v ) * 0.7 );
+          gl_FragColor = vec4( c * f * uK * 1.45, 1.0 );
         }`,
     });
   }
@@ -68,11 +70,11 @@ export const DFIRE = (() => {
       vertexShader: `attribute float aSeed; uniform float uT, uK; varying float vA;
         void main() {
           float life = 1.8 + fract( aSeed * 7.13 ) * 2.2, ph = fract( uT / life + aSeed * 3.1 );
-          float h = 0.5 + ph * ( 3.0 + fract( aSeed * 3.7 ) * 4.0 ), a = aSeed * 107.0 + ph * 2.5, r = 0.12 + ph * ( 0.3 + fract( aSeed * 5.1 ) * 0.9 );
+          float h = 0.5 + ph * ( 2.2 + fract( aSeed * 3.7 ) * 2.8 ), a = aSeed * 107.0 + ph * 2.5, r = 0.12 + ph * ( 0.3 + fract( aSeed * 5.1 ) * 0.9 );
           vec3 p = vec3( cos( a ) * r + sin( uT * 0.7 + aSeed * 20.0 ) * 0.5 * ph * ph, h, sin( a ) * r );
           vA = ( 1.0 - ph ) * ( 0.6 + 0.4 * sin( uT * 13.0 + aSeed * 40.0 ) ) * uK;
           vec4 mv = modelViewMatrix * vec4( p, 1.0 );
-          gl_PointSize = clamp( ( 1.6 + 2.0 * fract( aSeed * 11.0 ) ) * 26.0 / max( -mv.z, 0.5 ), 1.0, 7.0 );
+          gl_PointSize = clamp( ( 1.0 + 1.6 * fract( aSeed * 11.0 ) ) * 14.0 / max( -mv.z, 0.5 ), 1.0, 4.0 );
           gl_Position = projectionMatrix * mv;
         }`,
       fragmentShader: `varying float vA; void main() { vec2 q = gl_PointCoord - 0.5; float d = 1.0 - smoothstep( 0.2, 0.5, length( q ) );
@@ -147,7 +149,7 @@ export const DFIRE = (() => {
           len = dir.length() + 0.12,
           g = new THREE.CylinderGeometry(0.05, 0.075, len, 7);
         g.translate(0, len / 2, 0);
-        const me = new THREE.Mesh(g, i % 3 ? MAT.logs : MAT.char);
+        const me = new THREE.Mesh(g, i % 3 ? EMBER : MAT.char);
         me.position.copy(foot);
         me.quaternion.setFromUnitVectors(up, dir.normalize());
         me.castShadow = true;
@@ -183,7 +185,7 @@ export const DFIRE = (() => {
       gl.position.y = 0.03;
       gl.renderOrder = 2;
       fl.add(gl);
-      const N = 90,
+      const N = 70,
         sg = new THREE.BufferGeometry(),
         seed = new Float32Array(N);
       for (let i = 0; i < N; i++) seed[i] = Math.random();
@@ -310,6 +312,7 @@ export const DFIRE = (() => {
       markDirty(true);
     }
     if (!on) {
+      EMBER.emissiveIntensity = 0;
       if (lent) light(false);
       crackle(0, 1e9);
       return;
@@ -326,7 +329,8 @@ export const DFIRE = (() => {
       lent.l.distance = 18;
       lent.l.decay = 1.3;
       lent.l.color.setHex(0xff8f45);
-      lent.l.intensity = 36 * S.k * fl;
+      lent.l.intensity = 26 * S.k * fl;
+      EMBER.emissiveIntensity = (0.5 + 0.5 * fl) * S.k;
     }
     crackle(S.k, dist);
     if (dist < 400 || Math.abs(S.k - k0) > 1e-3) markDirty();

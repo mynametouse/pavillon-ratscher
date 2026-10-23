@@ -325,7 +325,7 @@ export const DORF = (() => {
         Q.wait = 16 + Math.random() * 18;
         if (wasStory && ST.step === 'story') {
           setStep('play');
-          setTimeout(() => UI.open('katrin'), 900);
+          later(0.9, () => UI.cur !== 'katrin' && UI.open('katrin'));
         }
         return;
       }
@@ -457,10 +457,15 @@ export const DORF = (() => {
       onSit: () => {
         if (ST.step === 'sit') {
           setStep('story');
-          setTimeout(() => play(T.STORY, true), 1200);
+          later(1.2, () => play(T.STORY, true));
         }
       },
     });
+  }
+  // things to do a little later, in the frame loop's time (no timers: tests step the world, timers would race them)
+  const LATER = [];
+  function later(sec, fn) {
+    LATER.push({ t: S.t + sec, fn });
   }
   // ---- per frame ----
   let acc = 0;
@@ -468,6 +473,15 @@ export const DORF = (() => {
     dt = Math.min(dt, 0.25);
     acc += dt;
     S.t += dt;
+    for (let i = LATER.length - 1; i >= 0; i--)
+      if (LATER[i].t <= S.t) {
+        const f = LATER.splice(i, 1)[0].fn;
+        try {
+          f();
+        } catch (e) {
+          console.warn('dorf', e);
+        }
+      }
     const sc = school();
     if (!sc) return;
     const mx = P.mode === 'walk' ? P.x : cam.position.x,
