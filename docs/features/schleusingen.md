@@ -6,8 +6,9 @@ und detailliert ausgearbeitet, anhand von echten Bildern“ – Grundlage für d
 ## Was es gibt
 - **Menü → Orte → „Schleusingen“**: auf den Markt, Blick zum Rathaus. Zu Fuß geht es auch (vom Dorf nach Nordwesten).
 - **Nichts davon beim Start**: geladen wird erst, wenn die Spielfigur (sonst die Kamera) näher als 950 m am Markt ist; ab 1350 m wird alles
-  wieder freigegeben (Gebäude sofort, Welt-Kacheln nach 20 s). Messung im Test: beim Start 0 Anfragen, Shader-Programme 142 → 143 nach
-  dem Besuch (+ Schilder), Texturen 368 → 434 (Kacheln, wieder frei).
+  wieder freigegeben (Gebäude sofort, Welt-Kacheln nach 20 s). Messung im Test (CI, 23.10.): beim Start 0 Anfragen, Shader-Programme
+  149 → 153 nach dem Besuch (Kacheln, Saal, Schilder), Texturen 368 → 468 (vor allem Luftbilder der Kacheln, beim Verlassen wieder frei).
+  Ohne Welt-Kacheln (eine Website ohne `welt-test/`) steht die Stadt auf dem Gelände von `world/ratscher.js` (`SCHL.status().noTiles`).
 - **Gelände und Boden** aus den Welt-Kacheln (`tools/welt`, auf der Website unter `welt-test/`): Stufen 10–12 (400/200/100 m) in Ringen um die
   Spielfigur, Luftbild 20 cm/px nah, im Shader wie das Land um Ratscher (`ROADS.shader`: Dunst weg, helles Land gedämpft, Korn nah). Darüber
   die **Straßen** der Altstadt (OSM, eigene Karte 1024² über 920 m): Asphalt mit Bordstein auf den Durchgangsstraßen, Kopfsteinpflaster in
@@ -18,9 +19,12 @@ und detailliert ausgearbeitet, anhand von echten Bildern“ – Grundlage für d
   0,7 MB): Fassaden mit Traufe/Giebel, Dächer mit Überstand, Dachfarbe aus dem Luftbild, Brandwände ohne Fenster, Türen zur Straße, Gauben
   rund um den Markt, Bäume auf dem Markt. Gezeichnet mit den Fassaden- und Dach-Shadern des Dorfs (`world/village.js`) – keine neuen
   Shader-Programme. Farben nach den Markt-Fotos (gelb, lachs, ocker, salbeigrün, creme, weiß), Schiefer an Obergeschossen und Giebeln,
-  Fachwerk in den Seitengassen. Am Hang bleibt das Erdgeschoss oben, die Wand geht bis zum tiefsten Punkt hinunter (Burg, Kirche).
-- **Wahrzeichen** (Fotos Wikimedia Commons 2008–2025): **Rathaus** mit dem Giebel zum Markt (gestufter Renaissancegiebel, Uhr), Dachreiter
-  mit Uhr und dunkler Haube, rotem Portal und Schild – die Tür ist offen, dahinter der **Ratssaal mit Bürgerbüro**: Tische in U-Form, der
+  Fachwerk in den Seitengassen. Am Hang bleibt das Erdgeschoss oben, darunter ein eigener Sockel bis zum tiefsten Punkt (Sandstein unter
+  Burg und Kirche, sonst grauer Stein). Auf dem Markt Kopfsteinpflaster aus gemischten Steinen (grau, blaugrau, warm) wie auf den Fotos.
+- **Wahrzeichen** (Fotos Wikimedia Commons 2008–2025): **Rathaus** mit dem Giebel zum Markt und dem **Uhrturm** in seiner Mitte (wie auf
+  dem Foto von 2025: Fenster mit roten Rahmen, Wappen über dem Portal, Uhr unter dem dunklen Gesims, achteckige Laterne mit Schieferhaube
+  und Wetterfahne), blaugrauem Erdgeschoss unter rotem Fries, gelben Zierdreiecken im Giebel, Portal mit zwei Säulen und Vordach
+  („RATHAUS“ in Gold) – die Tür ist offen, dahinter der **Ratssaal mit Bürgerbüro**: Tische in U-Form, der
   Platz des Vorsitzenden unter dem Wappen, Fahnen (Thüringen, Deutschland), Stuhlreihen für Besucher, Rednerpult, Tresen „Bürgerbüro“
   mit Schild, Fenster, Deckenbalken und -leuchten, Holzvertäfelung, Parkett. **St. Johannis** mit Turm, Achteck und Haube, hohen
   Rundbogenfenstern, Portal; **Bertholdsburg**: Vierflügelbau aus Sandstein mit Fachwerk-Obergeschoss und hohen Dächern, Rundtürme mit
@@ -46,9 +50,11 @@ Außerdem `SCHL.inHall(x, y)`, `SCHL.place(x, y)`, `SPOTS.schleusingen`.
 - `viz3/src/game/walkable.js`: `groundZ` über `KERN.ground` (statt direkt `ROADS.groundAt`), `walkBounds` fragt zuerst `KERN.free`.
 - `viz3/src/modules.txt`: Marke `# feat/schleusingen` mit `welt/welt.js` und `welt/schleusingen.js` direkt unter `world/village_near.js`.
 - `viz3/shell/menu.html`: ein Eintrag Orte → „Schleusingen“ (nach „Dorf“); `viz3/shell/parts.txt`: `css/schleusingen.css` nach `css/dorf.css`.
-- Noch offen für den Kern-Chat: `docs/ARCHITECTURE.md` (WELT, SCHL in Abschnitt 6/9, `KERN.free`), `docs/CHANGELOG.md`; die Fahrzeuge bleiben
-  im 2,4-km-Quadrat: in `vehicles/vehicle.js` (Rand der Karte, „Hier endet die Karte.“) `if (!KERN.free(s.x, s.y) && (s.x < B[0] || …))` –
-  dann ginge die Fahrt bis Schleusingen (Boden und Wände kommen schon über `KERN`).
+- Noch offen für den Kern-Chat: in `docs/ARCHITECTURE.md` beim Abschnitt zu `KERN` der Dienst `KERN.free` und die Regel „`undefined` = der
+  nächste Anbieter“; im nächsten CHANGELOG-Eintrag die Rathausfront (Uhrturm, Portal, Fenster, Erdgeschoss) und der Sockel am Hang. Die
+  Fahrzeuge bleiben im 2,4-km-Quadrat: in `vehicles/vehicle.js` (Rand der Karte, „Hier endet die Karte.“)
+  `if (!KERN.free(s.x, s.y) && (s.x < B[0] || …))` – dann ginge die Fahrt bis Schleusingen (Boden und Wände kommen schon über `KERN`);
+  „Selbst hinfahren“ der Ortsvorsteher-Aufgabe geht bis dahin nur zu Fuß.
 
 ## Quellen
 Gebäude, Straßen, Orte © OpenStreetMap-Mitwirkende (ODbL); Gelände/Luftbild der Kacheln © GDI-Th (CC BY 4.0), Copernicus DEM, ESA WorldCover
@@ -65,4 +71,5 @@ Gebäude, Straßen, Orte © OpenStreetMap-Mitwirkende (ODbL); Gelände/Luftbild 
 - Gelände: die Kacheln haben über Schleusingen nur Copernicus (30 m Oberflächenmodell, Straßen eingeschnitten) – DGM1 Thüringen war am
   22./23.10. nicht abrufbar. Sobald es da ist, reicht ein neuer Lauf der Welt-Pipeline.
 - Auto-Fahrt bis Schleusingen (siehe oben, `vehicles/vehicle.js`).
-- Wahrzeichen weiter verfeinern: Treppengiebel an der Burg, Chor von St. Johannis mit Walm, Fachwerk-Erker am Rathaus.
+- Wahrzeichen weiter verfeinern: Treppengiebel an der Burg, Chor von St. Johannis mit Walm, die Fachwerk-Loggia rechts am Rathaus, rote
+  Fensterrahmen und gelbe Bögen über den Fenstern der Rathausfront (die Fenster der Fassaden kommen aus dem Shader des Dorfs).

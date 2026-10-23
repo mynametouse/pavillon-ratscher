@@ -161,6 +161,10 @@ with lib.browser() as b:
             lib.shot(pg, OUT, 'e_bertholdsburg')
         # the castle: its courtyard with the stair towers from above, and from the north-west (as the photo 2025)
         cb = json.loads(E("JSON.stringify((() => { const b = SCHL.bld.find(q => q.lm === 'burg'); return b ? [b.cx, b.cy, b.z0] : null; })())"))
+        ft = json.loads(E("""JSON.stringify((() => { const b = SCHL.bld.find(q => q.lm === 'burg'); if (!b) return null; let mn = 1e9, mx = -1e9;
+            for (const f of b.F) { const L = Math.hypot(f[2] - f[0], f[3] - f[1]); for (let u = 0; u <= L; u += 2) { const z = SCHL.gz(f[0] + (f[2] - f[0]) * u / L, f[1] + (f[3] - f[1]) * u / L); mn = Math.min(mn, z); mx = Math.max(mx, z); } }
+            return { z0: b.z0, zmin: b.zmin, wallMin: mn, wallMax: mx, eave: b.e }; })())"""))
+        print('castle foot', ft, flush=True)
         if cb:
             E(f"GAME.orbit(150, 38, 75, [{cb[0]}, {cb[1]}, {cb[2] + 8}]); GAME.step(0.5)")
             for _ in range(20):

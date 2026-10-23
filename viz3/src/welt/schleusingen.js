@@ -90,7 +90,9 @@ export const SCHL = (() => {
       [0.72, 0.68, 0.62],
     ].map(c => linC(c, 0.85)),
     SAND = linC([0.88, 0.82, 0.7], 0.82), // the sandstone of St. Johannis and the Bertholdsburg
-    CREAM = linC([0.95, 0.87, 0.66], 0.82); // the Rathaus front
+    CREAM = linC([0.95, 0.87, 0.66], 0.82), // the Rathaus front
+    SAND_B = linC([0.74, 0.67, 0.56], 0.82), // rough sandstone under the castle and the church
+    BASE_C = linC([0.6, 0.58, 0.54], 0.82); // the stone base of a house on a slope
   function styleOf(b, i) {
     const k = hh(i * 3.7 + 1),
       k2 = hh(i + 11.3),
@@ -247,6 +249,15 @@ export const SCHL = (() => {
       }
     });
     if (b.door != null) doorF = b.door;
+    // the Rathaus: a blue-grey stone ground floor under the cream plaster (photos 2025) – its facade quads are split at the floor line
+    const gf = b.gf,
+      wq = (F, ax, ay, bx, by, ua, ub, ta, tb, zz, zLow, at) => {
+        const zs = gf ? z0 + gf.h : -1e9;
+        if (zs > zLow + 0.01 && zs < zz + Math.min(ta, tb) - 0.01) {
+          WB.quad(F, ax, ay, bx, by, ua, ub, zs - zz, zs - zz, zz, zLow, Object.assign({}, at, { col: gf.col }));
+          WB.quad(F, ax, ay, bx, by, ua, ub, ta, tb, zz, zs, at);
+        } else WB.quad(F, ax, ay, bx, by, ua, ub, ta, tb, zz, zLow, at);
+      };
     let u0 = 0;
     b.F.forEach((f, k) => {
       const [ax, ay, bx, by, t0, uA0, tA0, t1, fl] = f,
@@ -294,7 +305,39 @@ export const SCHL = (() => {
         col: b.colF ? b.colF(f, k) : o.col,
         pk,
       };
-      const low = Math.min(z0 - 2.0, (b.zmin !== undefined ? b.zmin : z0) - 1.0);
+      let low = Math.min(z0 - 2.0, (b.zmin !== undefined ? b.zmin : z0) - 1.0);
+      if (b.zmin !== undefined && z0 - b.zmin > 1.2) {
+        // an exposed foot on a slope: a stone base of its own without windows (the shader's plaster plinth below the ground floor
+        // would be a dark slab metres high; the castle and the church stand on rough sandstone, photos 2025)
+        const hb = z0 - low;
+        WB.quad(
+          F,
+          ax,
+          ay,
+          bx,
+          by,
+          0,
+          L,
+          hb,
+          hb,
+          low,
+          low,
+          Object.assign({}, at, {
+            LF: 0.5,
+            eave: hb,
+            st: ST.PLASTER,
+            t0: hb,
+            tA: hb,
+            uA: L / 2,
+            t1: hb,
+            du: -1,
+            dw: 0,
+            fl: 0,
+            col: b.lm ? SAND_B : BASE_C,
+          })
+        );
+        low = z0;
+      }
       if (b.hole && b.hole.k === k) {
         // a real opening (the Rathaus door): left part, right part, lintel
         const h0 = b.hole.u - b.hole.w / 2,
@@ -310,7 +353,7 @@ export const SCHL = (() => {
         const seg = (ua, ub, zb, tt) => {
           const [x0, y0] = P_(ua),
             [x1, y1] = P_(ub);
-          WB.quad(F, x0, y0, x1, y1, ua, ub, tt ? top : tAt(ua), tt ? top : tAt(ub), z0, zb, at);
+          wq(F, x0, y0, x1, y1, ua, ub, tt ? top : tAt(ua), tt ? top : tAt(ub), z0, zb, at);
         };
         const cuts = [0, h0, h1, L].concat(gable ? [uA0] : []).sort((p, q) => p - q);
         for (let c = 0; c + 1 < cuts.length; c++) {
@@ -321,7 +364,7 @@ export const SCHL = (() => {
             // above the opening: from the lintel up
             const [x0, y0] = P_(ua),
               [x1, y1] = P_(ub);
-            WB.quad(F, x0, y0, x1, y1, ua, ub, tAt(ua), tAt(ub), z0, z0 + top, at);
+            wq(F, x0, y0, x1, y1, ua, ub, tAt(ua), tAt(ub), z0, z0 + top, at);
           } else seg(ua, ub, low, false);
         }
         S.segs.push([ax, ay, ax + F.dx * h0, ay + F.dy * h0], [ax + F.dx * h1, ay + F.dy * h1, bx, by]);
@@ -349,9 +392,9 @@ export const SCHL = (() => {
         } else if (gable) {
           const mx = ax + F.dx * uA0,
             my = ay + F.dy * uA0;
-          WB.quad(F, ax, ay, mx, my, 0, uA0, t0, tA0, z0, low, at);
-          WB.quad(F, mx, my, bx, by, uA0, L, tA0, t1, z0, low, at);
-        } else WB.quad(F, ax, ay, bx, by, 0, L, t0, t1, z0, low, at);
+          wq(F, ax, ay, mx, my, 0, uA0, t0, tA0, z0, low, at);
+          wq(F, mx, my, bx, by, uA0, L, tA0, t1, z0, low, at);
+        } else wq(F, ax, ay, bx, by, 0, L, t0, t1, z0, low, at);
         S.segs.push([ax, ay, bx, by]);
       }
       u0 += L;
@@ -742,12 +785,14 @@ export const SCHL = (() => {
         }
       });
       const f = b.F[fm],
-        L = Math.hypot(f[2] - f[0], f[3] - f[1]);
+        L = Math.hypot(f[2] - f[0], f[3] - f[1]),
+        uD = f[5] > 3 && f[5] < L - 3 ? f[5] : L / 2; // the portal under the apex, at the foot of the clock tower (photo 2025)
       b.door = fm;
-      b.doorU = L * 0.38;
+      b.doorU = uD;
       b.doorW = 1.5;
-      b.hole = { k: fm, u: L * 0.38, w: 1.5, h: 2.6 };
+      b.hole = { k: fm, u: uD, w: 1.5, h: 2.6 };
       b.front = { k: fm, f, L };
+      b.gf = { h: 3.3, col: linC([0.6, 0.64, 0.66], 0.82) }; // the blue-grey stone ground floor
       b.stF = (ff, k) => (k === fm ? ST.PLASTER : ff[6] > ff[4] + 1 ? ST.SLATE_UP : ST.PLASTER);
     },
     kirche(b) {
@@ -1034,15 +1079,17 @@ export const SCHL = (() => {
         const r = Math.min(r0, 4.0),
           z = b.z0,
           h = b.lm === 'turm' ? 13 : b.e + 4,
-          hc = r * 2.7 + 2.5;
+          hc = r * 2.7 + 2.5,
+          zf = Math.min(z, ground(x, y), ground(x + r, y), ground(x - r, y), ground(x, y + r), ground(x, y - r)) - 1; // down the slope
         K.lathe(
           x,
           y,
-          z - 1,
+          zf,
           [
-            [r + 0.15, 0],
-            [r, 1.6],
-            [r, h + 1],
+            [r + 0.25, 0],
+            [r + 0.15, z - zf + 0.6],
+            [r, z - zf + 1.6],
+            [r, z - zf + h],
           ],
           14,
           SAND
@@ -1268,14 +1315,16 @@ export const SCHL = (() => {
     for (const b of S.bld) {
       const name = b.lm === 'rathaus' ? 'RATHAUS' : b.s && b.s[0];
       if (!name || !b.doorFac) continue;
-      const d = b.doorFac;
+      const d = b.doorFac,
+        sa = b.signAt; // the Rathaus: on its portal's canopy
       list.push({
         b,
         name,
         d,
-        x: d.ax + d.dx * d.u + d.dy * 0.07,
-        y: d.ay + d.dy * d.u - d.dx * 0.07,
-        z: b.z0 + (name === 'RATHAUS' ? 3.35 : 2.95),
+        x: sa ? sa[0] : d.ax + d.dx * d.u + d.dy * 0.07,
+        y: sa ? sa[1] : d.ay + d.dy * d.u - d.dx * 0.07,
+        z: sa ? sa[2] : b.z0 + (name === 'RATHAUS' ? 3.35 : 2.95),
+        h: sa ? sa[3] : 0,
       });
     }
     if (S.rathaus && S.rathaus.counterSign) {
@@ -1294,8 +1343,8 @@ export const SCHL = (() => {
     const g = cv.getContext('2d'),
       BG = ['#24412d', '#5c1f1a', '#ece4cf', '#1e3050', '#3b2a1a'];
     list.slice(0, rows).forEach((it, r) => {
-      const bg = it.name === 'RATHAUS' ? '#ece4cf' : BG[Math.floor(hh(it.b.i + 3) * BG.length)],
-        fg = bg === '#ece4cf' ? '#5a1a12' : '#f2e2b0';
+      const bg = it.name === 'RATHAUS' ? '#2b2622' : BG[Math.floor(hh(it.b.i + 3) * BG.length)],
+        fg = it.name === 'RATHAUS' ? '#e2bc55' : bg === '#ece4cf' ? '#5a1a12' : '#f2e2b0'; // the Rathaus: gold letters on dark
       g.font = 'bold 38px Georgia, "Times New Roman", serif';
       const tw = Math.min(W - 40, g.measureText(it.name).width);
       it.w = tw + 40;
@@ -1318,7 +1367,7 @@ export const SCHL = (() => {
       idx = [];
     for (const it of list.slice(0, rows)) {
       const d = it.d,
-        h = it.name === 'RATHAUS' ? 0.42 : 0.5,
+        h = it.h || (it.name === 'RATHAUS' ? 0.42 : 0.5),
         w = (h * it.w) / RH,
         nx = d.dy,
         ny = -d.dx,
@@ -1458,11 +1507,13 @@ export const SCHL = (() => {
   }
   // a tall window with a round arch on a wall: lower left corner on the wall line (ox, oy), along (ex, ey)
   function arch(K, ox, oy, ex, ey, z0, w, h, col) {
-    const p = (u, v) => [ox + ex * u, oy + ey * u, z0 + v],
+    // the frame 4 cm, the pane 8 cm off the wall (out = (ey, -ex)): in one plane they flickered into each other and the wall from afar
+    const p = (u, v, o = 0.04) => [ox + ex * u + ey * o, oy + ey * u - ex * o, z0 + v],
+      q = (u, v) => p(u, v, 0.08),
       r = w / 2,
       FR = linC([0.78, 0.74, 0.66]);
     K.quad(p(-r - 0.12, -0.12), p(r + 0.12, -0.12), p(r + 0.12, h - r), p(-r - 0.12, h - r), FR);
-    K.quad(p(-r, 0), p(r, 0), p(r, h - r), p(-r, h - r), col);
+    K.quad(q(-r, 0), q(r, 0), q(r, h - r), q(-r, h - r), col);
     for (let k = 0; k < 6; k++) {
       const a0 = (k / 6) * Math.PI,
         a1 = ((k + 1) / 6) * Math.PI;
@@ -1473,9 +1524,9 @@ export const SCHL = (() => {
         FR
       );
       K.tri(
-        p(0, h - r + 0.001),
-        p(Math.cos(a0) * r, h - r + Math.sin(a0) * r + 0.001),
-        p(Math.cos(a1) * r, h - r + Math.sin(a1) * r + 0.001),
+        q(0, h - r),
+        q(Math.cos(a0) * r, h - r + Math.sin(a0) * r),
+        q(Math.cos(a1) * r, h - r + Math.sin(a1) * r),
         col
       );
     }
@@ -1529,95 +1580,251 @@ export const SCHL = (() => {
       w0: 0.45,
       w1: Math.min(11, L),
     };
-    // roof turret over the front gable: a square base, clock faces, a dark cupola with lantern (photo 2008)
-    const top = Math.max(...b.rv.filter((v, k) => k % 3 === 2)) + z,
-      [tx, ty] = D(L / 2, 3.2);
-    K.box(tx, ty, top - 1.5, 2.2, 2.2, 3.4, Math.atan2(dy, dx), linC([0.95, 0.9, 0.75]));
-    K.lathe(
-      tx,
-      ty,
-      top + 1.9,
-      [
-        [1.6, 0],
-        [1.2, 0.8],
-        [0.6, 1.6],
-        [0.45, 1.8],
-      ],
-      8,
-      C.SLATE,
-      Math.PI / 8
-    );
-    K.lathe(
-      tx,
-      ty,
-      top + 3.7,
-      [
-        [0.45, 0],
-        [0.45, 0.9],
-        [0.6, 1.0],
-        [0.05, 2.8],
-      ],
-      8,
-      C.SLATE,
-      Math.PI / 8
-    );
-    K.ball(tx, ty, top + 6.5, 0.12, C.GOLD, 6);
-    for (const sg of [-1, 1]) {
-      const [cx, cy] = [tx + nx * 1.12 * sg, ty + ny * 1.12 * sg];
-      K.disc(cx, cy, top + 0.4, nx * sg, ny * sg, 0.62, linC([0.92, 0.9, 0.82]), 16, false);
-      K.box(cx + nx * sg * 0.02, cy + ny * sg * 0.02, top + 0.4, 0.05, 0.05, 0.45, Math.atan2(dy, dx), C.IRON);
-    }
-    // the decorated front gable (Renaissance, photo 2008): steps with finials along both slopes, cream with yellow
-    if (f[6] > Math.max(f[4], f[7]) + 1) {
-      const uA = f[5],
-        a = Math.atan2(dy, dx),
-        CR = linC([0.95, 0.88, 0.62]);
-      for (const [ua, ta, ub, tb] of [
-        [0, f[4], uA, f[6]],
-        [L, f[7], uA, f[6]],
-      ])
-        for (let k = 1; k <= 3; k++) {
-          const t = k / 4,
-            u = ua + (ub - ua) * t,
-            zz = z + ta + (tb - ta) * t,
-            [x, y] = [f[0] + dx * u + nx * 0.05, f[1] + dy * u + ny * 0.05];
-          K.box(x, y, zz - 0.2, 0.55, 0.5, 0.75, a, CR);
-          K.ball(x, y, zz + 0.68, 0.13, C.GOLD, 6);
+    {
+      // ---- the front to the Markt (photo 2025): a clock tower stands out of the middle of the gable, from the portal up to the apex – windows
+      // with red frames, the town's arms over the portal, a clock under its dark cornice, on top an octagonal lantern with a slate cap and a
+      // vane; a portal with two columns and a canopy (RATHAUS), a red frieze over the blue-grey ground floor, yellow ornaments in the gable
+      const a = Math.atan2(dy, dx),
+        P_ = (u, w) => [f[0] + dx * u + nx * w, f[1] + dy * u + ny * w], // w out of the facade
+        TW = 3.6,
+        TD = 0.55,
+        CRT = linC([0.95, 0.89, 0.72]),
+        RF = linC([0.5, 0.11, 0.09]),
+        top = z + Math.max(f[4], f[6], f[7]) + 1.6, // the clock at the height of the apex, the tower above the roof
+        onF = (u, zz, o) => {
+          const p = P_(u, o);
+          return [p[0], p[1], zz];
+        };
+      {
+        // two piers beside the portal, the shaft from the lintel up; the part inside the house only above the hall's ceiling
+        for (const sg of [-1, 1]) {
+          const [x, y] = P_(du + sg * (0.75 + (TW / 2 - 0.75) / 2), TD / 2);
+          K.box(x, y, z - 0.6, TW / 2 - 0.75, TD, 3.25, a, CRT);
+          S.segs.push(...boxSegs(x, y, TW / 2 - 0.75, TD, a));
         }
-      const [x, y] = [f[0] + dx * uA + nx * 0.05, f[1] + dy * uA + ny * 0.05];
-      K.box(x, y, z + f[6] - 0.2, 0.7, 0.5, 1.0, a, CR);
-      K.ball(x, y, z + f[6] + 0.95, 0.16, C.GOLD, 6);
-    }
-    // a clock in the front gable, under the apex
-    {
-      const [cx, cy] = [f[0] + dx * (f[5] || L / 2) + nx * 0.04, f[1] + dy * (f[5] || L / 2) + ny * 0.04];
-      K.disc(cx, cy, z + Math.max(f[4], f[7]) + 2.2, nx, ny, 0.7, linC([0.94, 0.92, 0.85]), 16, false);
-      K.disc(
-        cx + nx * 0.01,
-        cy + ny * 0.01,
-        z + Math.max(f[4], f[7]) + 2.2,
-        nx,
-        ny,
-        0.55,
-        linC([0.1, 0.1, 0.12]),
-        16,
-        false
-      );
-    }
-    // the red portal around the door, steps
-    {
-      const u0 = du - 0.95,
-        u1 = du + 0.95,
-        P_ = (u, w) => [f[0] + dx * u + nx * w, f[1] + dy * u + ny * w],
-        a = Math.atan2(dy, dx);
-      for (const u of [u0, u1]) {
-        const [x, y] = P_(u, 0.12);
-        K.box(x, y, z, 0.32, 0.24, 2.95, a, C.RED);
+        let [x, y] = P_(du, TD / 2);
+        K.box(x, y, z + 2.6, TW, TD, top - z - 2.6, a, CRT, true);
+        [x, y] = P_(du, -1.3);
+        K.box(x, y, z + 3.9, TW, 2.6, top - z - 3.9, a, CRT);
+        [x, y] = P_(du, -0.95);
+        K.box(x, y, top - 0.05, TW + 0.35, 3.75, 0.32, a, linC([0.24, 0.15, 0.1]));
       }
-      const [x, y] = P_(du, 0.12);
-      K.box(x, y, z + 2.75, 2.25, 0.3, 0.45, a, C.RED);
-      const [sx, sy] = P_(du, 0.55);
-      K.box(sx, sy, z - 0.4, 2.4, 1.1, 0.4 + (fl - z) / 2, a, linC([0.6, 0.58, 0.55]));
+      // windows of the tower in the rows of the facade: a red frame, white casements and transom, glass
+      const GL = linC([0.08, 0.1, 0.13]),
+        WF = linC([0.93, 0.93, 0.9]);
+      const rect = (u0, u1, z0, z1, o, col) =>
+        K.quad(onF(u0, z0, o), onF(u1, z0, o), onF(u1, z1, o), onF(u0, z1, o), col);
+      for (let fi = 1; ; fi++) {
+        const zz = z + 0.35 + fi * 2.75 + 0.85,
+          h = 1.3,
+          w = 0.95;
+        if (zz + h > top - 2.3) break;
+        rect(du - w / 2 - 0.13, du + w / 2 + 0.13, zz - 0.13, zz + h + 0.13, TD + 0.02, RF);
+        rect(du - w / 2, du + w / 2, zz, zz + h, TD + 0.04, WF);
+        for (const [p0, p1, q0, q1] of [
+          [du - w / 2 + 0.07, du - 0.03, zz + 0.07, zz + h * 0.68],
+          [du + 0.03, du + w / 2 - 0.07, zz + 0.07, zz + h * 0.68],
+          [du - w / 2 + 0.07, du - 0.03, zz + h * 0.72, zz + h - 0.07],
+          [du + 0.03, du + w / 2 - 0.07, zz + h * 0.72, zz + h - 0.07],
+        ])
+          rect(p0, p1, q0, q1, TD + 0.06, GL);
+      }
+      // the clock under the cornice: dark rim, white face, hands at ten past ten
+      {
+        const zc = top - 1.25,
+          [x, y] = P_(du, TD + 0.02),
+          [x2, y2] = P_(du, TD + 0.04);
+        K.disc(x, y, zc, nx, ny, 0.68, linC([0.18, 0.12, 0.08]), 20, false);
+        K.disc(x2, y2, zc, nx, ny, 0.58, linC([0.95, 0.94, 0.9]), 20, false);
+        for (const [th, len, hw] of [
+          [-Math.PI / 3, 0.32, 0.035],
+          [Math.PI / 3, 0.48, 0.025],
+        ]) {
+          const su = Math.sin(th),
+            sz = Math.cos(th),
+            o = TD + 0.06;
+          K.quad(
+            onF(du + sz * hw, zc - su * hw, o),
+            onF(du + su * len + sz * hw, zc + sz * len - su * hw, o),
+            onF(du + su * len - sz * hw, zc + sz * len + su * hw, o),
+            onF(du - sz * hw, zc + su * hw, o),
+            C.IRON
+          );
+        }
+      }
+      // the lantern: a slate foot, the open octagon with its posts, a curved slate cap, a golden ball, the vane
+      {
+        const [cx, cy] = P_(du, -0.95),
+          tz = top + 0.27;
+        K.lathe(
+          cx,
+          cy,
+          tz,
+          [
+            [1.55, 0],
+            [1.4, 0.35],
+            [1.0, 1.5],
+          ],
+          8,
+          C.SLATE,
+          Math.PI / 8
+        );
+        K.lathe(
+          cx,
+          cy,
+          tz + 1.5,
+          [
+            [0.98, 0],
+            [0.98, 1.7],
+          ],
+          8,
+          C.DARK,
+          Math.PI / 8
+        );
+        for (let k = 0; k < 8; k++) {
+          const an = Math.PI / 8 + (k * Math.PI) / 4;
+          K.box(
+            cx + Math.cos(an) * 0.98,
+            cy + Math.sin(an) * 0.98,
+            tz + 1.5,
+            0.15,
+            0.15,
+            1.7,
+            an,
+            linC([0.24, 0.15, 0.1])
+          );
+        }
+        K.lathe(
+          cx,
+          cy,
+          tz + 3.2,
+          [
+            [1.22, 0],
+            [1.12, 0.25],
+            [0.55, 1.3],
+            [0.16, 2.3],
+            [0.04, 3.1],
+          ],
+          8,
+          C.SLATE,
+          Math.PI / 8
+        );
+        K.ball(cx, cy, tz + 6.4, 0.2, C.GOLD, 8);
+        K.box(cx, cy, tz + 6.5, 0.04, 0.04, 1.4, 0, C.IRON);
+        K.box(cx + dx * 0.3, cy + dy * 0.3, tz + 7.35, 0.9, 0.03, 0.32, a, C.IRON);
+      }
+      // the portal: two columns on red bases with red capitals, a stone canopy with the name (signs()), steps
+      for (const sg of [-1, 1]) {
+        const [x, y] = P_(du + sg * 1.05, 1.42);
+        K.box(x, y, z - 0.1, 0.36, 0.36, 0.38, a, C.RED);
+        K.cyl(x, y, z + 0.28, z + 2.45, 0.14, 0.12, 10, CRT);
+        K.box(x, y, z + 2.45, 0.34, 0.34, 0.2, a, C.RED);
+        S.segs.push(...circleSegs(x, y, 0.2, 6));
+      }
+      {
+        const [x, y] = P_(du, 1.1);
+        K.box(x, y, z + 2.65, 2.7, 1.1, 0.42, a, linC([0.62, 0.62, 0.6]), true);
+        const [sx, sy] = P_(du, 1.66);
+        b.signAt = [sx, sy, z + 2.68, 0.36];
+        const [tx, ty] = P_(du, 0.55);
+        K.box(tx, ty, z - 0.4, 2.4, 1.1, 0.4 + (fl - z) / 2, a, linC([0.6, 0.58, 0.55]));
+      }
+      // the arms over the portal (a green wreath, the gold field, the black hen with its red comb)
+      {
+        const zA = z + 3.45,
+          dsc = (o, r, col, du2 = 0, dz = 0) => {
+            const [x, y] = P_(du + du2, TD + o);
+            K.disc(x, y, zA + dz, nx, ny, r, col, 14, false);
+          };
+        dsc(0.02, 0.34, linC([0.15, 0.4, 0.17]));
+        dsc(0.04, 0.27, linC([0.88, 0.68, 0.2]));
+        dsc(0.06, 0.11, linC([0.05, 0.05, 0.05]), 0, -0.03);
+        dsc(0.06, 0.06, linC([0.05, 0.05, 0.05]), 0.07, 0.09);
+        dsc(0.08, 0.035, C.RED, 0.08, 0.15);
+      }
+      // a red frieze over the ground floor, along the whole front
+      {
+        const [x, y] = P_(L / 2, 0.05);
+        K.box(x, y, z + 3.2, L, 0.1, 0.22, a, RF);
+      }
+      // red surrounds round the windows of the front and yellow arches over those of the upper floors (photo 2025); the openings come
+      // from the wall shader (world/village.js) – bays and storeys computed here the same way
+      {
+        const LF = L,
+          nb = Math.max(1, Math.floor((LF - 0.6) / b.st.sp)),
+          bw = LF / nb,
+          [t0, uA, tA, t1] = [f[4], f[5], f[6], f[7]],
+          gableF = tA > Math.max(t0, t1) + 0.6 && uA > 0.3 && uA < L - 0.3,
+          cl = (v, lo, hi) => Math.min(hi, Math.max(lo, v)),
+          topAt = u =>
+            !gableF
+              ? t0 + ((t1 - t0) * u) / L
+              : u < uA
+                ? t0 + (tA - t0) * cl(u / Math.max(uA, 0.01), 0, 1)
+                : tA + (t1 - tA) * cl((u - uA) / Math.max(LF - uA, 0.01), 0, 1),
+          YL = linC([0.93, 0.77, 0.36]),
+          o = 0.03,
+          frame = (u0, u1, z0, z1, bd) => {
+            rect(u0 - bd, u1 + bd, z0 - bd, z0, o, RF);
+            rect(u0 - bd, u1 + bd, z1, z1 + bd, o, RF);
+            rect(u0 - bd, u0, z0, z1, o, RF);
+            rect(u1, u1 + bd, z0, z1, o, RF);
+          };
+        for (let bi = 0; bi < nb; bi++) {
+          const bc = (bi + 0.5) * bw;
+          if (Math.abs(bc - du) < TW / 2 + 0.4) continue; // behind the tower
+          for (let fi = 0; fi < 9; fi++) {
+            const fb = 0.35 + fi * 2.75;
+            let ww = 0.95,
+              wh = 1.3;
+            const lo = fb + 0.85,
+              attic = lo > b.e - 0.2;
+            if (attic) {
+              ww = 0.8;
+              wh = 1.0;
+            }
+            const room = Math.min(topAt(bc - ww / 2), topAt(bc + ww / 2)) - (lo + wh);
+            if (room <= (attic ? 0.4 : 0.18) || (attic && !gableF)) {
+              if (attic) continue;
+              break;
+            }
+            if (fi === 0 && Math.abs(bc - du) < Math.max(bw / 2, 0.75 + ww / 2 + 0.1)) continue;
+            frame(bc - ww / 2, bc + ww / 2, z + lo, z + lo + wh, 0.1);
+            if ((fi === 1 || fi === 2) && !attic) {
+              // a segmental arch over the window
+              const r = ww / 2 + 0.16,
+                zb = z + lo + wh + 0.16;
+              for (let k = 0; k < 8; k++) {
+                const a0 = (k / 8) * Math.PI,
+                  a1 = ((k + 1) / 8) * Math.PI;
+                K.tri(
+                  onF(bc, zb, o),
+                  onF(bc + Math.cos(a0) * r, zb + Math.sin(a0) * r * 0.55, o),
+                  onF(bc + Math.cos(a1) * r, zb + Math.sin(a1) * r * 0.55, o),
+                  YL
+                );
+              }
+              rect(bc - r, bc + r, zb - 0.06, zb, o, YL);
+            }
+          }
+        }
+      }
+      // yellow ornaments in the gable: triangles beside the windows, as on the photo
+      if (f[6] > Math.max(f[4], f[7]) + 2) {
+        const uA = f[5],
+          YL = linC([0.93, 0.77, 0.36]),
+          zg = u => z + (u < uA ? f[4] + ((f[6] - f[4]) * u) / uA : f[6] + ((f[7] - f[6]) * (u - uA)) / (L - uA));
+        for (const [du2, zb, w, h] of [
+          [4.8, f[4] + 1.0, 1.4, 1.1],
+          [3.0, f[4] + 3.8, 1.2, 1.0],
+        ])
+          for (const sg of [-1, 1]) {
+            const u = uA + sg * du2;
+            if (u - w / 2 < 0.3 || u + w / 2 > L - 0.3 || z + zb + h > Math.min(zg(u - w / 2), zg(u + w / 2)) - 0.3)
+              continue;
+            K.tri(onF(u - w / 2, z + zb, 0.05), onF(u + w / 2, z + zb, 0.05), onF(u, z + zb + h, 0.05), YL);
+          }
+      }
     }
     // inside: a box of walls 0.45 m behind the outside, the hall floor, a ceiling at 3.3 m
     const k2 = kit2(),

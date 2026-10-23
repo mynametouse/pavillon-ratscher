@@ -166,7 +166,9 @@ export const WELT = (() => {
       vec2 q = p * sc; q.x += 0.5 * mod( floor( q.y ), 2.0 );
       vec2 f = fract( q ); float fine = 1.0 - smoothstep( 0.15, 0.6, fwp * sc );
       float jt = ( 1.0 - smoothstep( 0.0, 0.14, min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) ) ) ) * fine;
-      return c * ( 0.84 + 0.32 * rdH( floor( q ) ) * fine ) * ( 1.0 - 0.45 * jt ); }
+      float h2 = rdH( floor( q ) + vec2( 17.3, 5.1 ) );   // mixed stones as on the Markt photos: grey, a few blue-grey, some warm
+      vec3 tint = mix( mix( vec3( 1.0 ), vec3( 0.92, 0.97, 1.05 ), step( h2, 0.22 ) ), vec3( 1.12, 0.98, 0.84 ), step( 0.68, h2 ) );
+      return c * mix( vec3( 1.0 ), tint, fine ) * ( 0.84 + 0.32 * rdH( floor( q ) ) * fine ) * ( 1.0 - 0.45 * jt ); }
     vec3 weltGround( vec2 p, vec3 c, float dist ) {
       // derivatives and texture reads first, before any branch that differs per pixel
       float fwp = fwidth( p.x ) + fwidth( p.y );
@@ -180,7 +182,7 @@ export const WELT = (() => {
         float code = o.g / max( o.r, 0.01 ), cov = o.r, n1 = rdN( p * 0.6 ), n2 = rdN( p * 5.0 );
         vec3 r;
         if ( code < 0.3 ) r = vec3( 0.085, 0.088, 0.092 ) * clamp( lum / 0.14, 0.75, 1.3 ) * ( 0.86 + 0.24 * n1 ) * ( 0.92 + 0.16 * n2 );   // asphalt, patches after the photo
-        else if ( code < 0.62 ) r = setts( p, vec3( 0.165, 0.152, 0.138 ) * clamp( lum / 0.26, 0.75, 1.12 ) * ( 0.85 + 0.3 * n1 ), 8.0, fwp );   // sett: grey-brown, worn patches
+        else if ( code < 0.62 ) r = setts( p, vec3( 0.168, 0.151, 0.13 ) * clamp( lum / 0.26, 0.75, 1.12 ) * ( 0.85 + 0.3 * n1 ), 8.0, fwp );   // sett: grey-brown, worn patches
         else r = setts( p * vec2( 1.0, 0.5 ), vec3( 0.27, 0.26, 0.245 ), 3.3, fwp );   // paving slabs
         float kerb = code < 0.3 ? ( 1.0 - smoothstep( 0.08, 0.2, abs( cov - 0.42 ) ) ) * near : 0.0;   // a light kerb stone along the asphalt
         r = mix( r, vec3( 0.36, 0.355, 0.34 ) * ( 0.9 + 0.2 * n2 ), kerb );
