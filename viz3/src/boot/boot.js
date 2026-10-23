@@ -4,7 +4,8 @@
 // under the loading text, the others and the GPU preparation still run (before, the rest of the start was skipped and the page stayed at
 // „Modell wird aufgebaut …“ for ever)
 import { SAVE } from '../core/save.js';
-import { $, cam, OFFLINE, R, scene, VARIANT } from '../core/head.js';
+import { $, cam, OFFLINE, QS, R, scene, VARIANT } from '../core/head.js';
+import { KERN } from '../core/kern.js';
 import { DIRTY, LOAD, LOADLOG, markDirty, SV, VEG, whenLoaded } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { COL, WALK } from '../core/geo.js';
@@ -63,6 +64,34 @@ bootStep('Luken', () => {
   for (const k of ['hatch', 'roofhatch']) setDoorNow(k, true);
 }); // the trapdoor and the roof hatch usually stand open
 requestAnimationFrame(frame);
+// phase 2: ?szenario=name starts in a situation a feature registered (KERN.scenario, core/kern.js) – once the model is up
+{
+  const sz = QS.get('szenario');
+  if (sz)
+    KERN.until(() => LOAD.ready, 3600).then(
+      () =>
+        setTimeout(() => {
+          const s = KERN.scenario(sz);
+          if (!s)
+            return LOADLOG.err(
+              'Szenario „' +
+                sz +
+                '“ gibt es nicht (' +
+                KERN.scenarios()
+                  .map(x => x.name)
+                  .join(', ') +
+                ')'
+            );
+          try {
+            s.run();
+            KERN.emit('scenario', { name: sz });
+          } catch (e) {
+            LOADLOG.err('Szenario ' + sz + ': ' + ((e && e.message) || e));
+          }
+        }, 400),
+      () => {}
+    );
+}
 const hideLoading = () => {
   const ld = $('loading');
   if (ld) ld.hidden = true;

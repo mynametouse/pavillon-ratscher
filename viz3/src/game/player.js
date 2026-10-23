@@ -117,6 +117,8 @@ for (const [k, v] of Object.entries({
 }))
   KERN.spot(k, v);
 export const SPOTS = KERN.spots();
+KERN.scenario('garten', { label: 'Garten', order: 10, run: () => go('garten') });
+KERN.scenario('werkstatt', { label: 'Werkstatt Klingenholz', order: 12, run: () => go('werkstatt') });
 // viewpoints that differ per variant (B: front door in the EG east wall under the cantilever, ladder stair instead of the tower, terrace 4 cm higher)
 const SPOTS_VAR = {
   A: {

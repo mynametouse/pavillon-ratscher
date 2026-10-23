@@ -10,6 +10,7 @@
 import * as THREE from 'three';
 import { BASE, cam, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
+import { go } from '../game/player.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { TREES } from '../garden/trees.js';
 import { P } from '../game/walkable.js';
@@ -38,6 +39,7 @@ export const SCHL = (() => {
     linC = (c, k = 1) => c.map(v => lin(v) * k);
   // ---- the menu place: on the Markt, looking at the Rathaus ----
   const START = [-1100.5, 1214.5];
+  KERN.scenario('schleusingen', { label: 'Schleusingen, Markt', order: 30, run: () => go('schleusingen') });
   KERN.spot('schleusingen', {
     mode: 'walk',
     pos: START,

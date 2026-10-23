@@ -15,6 +15,8 @@
 //                          KERN.area({ name, rect | circle | poly, z, prio, inside }) adds a named area; KERN.inside(x, y, z) indoor acoustics
 //   KERN.spot(name, def)   a place to jump to (menu Orte, data-spot="name"): { mode, pos, z, yaw, pitch, label } – merged into an existing one;
 //                          KERN.spots() is the registry itself (game/player.js SPOTS is the same object)
+//   KERN.scenario(name, { label, run, order }) a start situation – ?szenario=name runs it after loading (boot/boot.js), tests use the same;
+//                          KERN.scenarios() lists them (garten, dorf, freitag, feuer, schleusingen, wald, brief, wahlkampf, wahltag, stadtrat …)
 //   KERN.act(a) / KERN.unact(id) / KERN.acts()   entries of the action button (game/play.js picks the nearest and runs it):
 //                          { id, label: () => text | null, pos: () => [x, y, z], r, run, prio, hold, gauge, need, start, cancel, gest3 }
 //   KERN.on(name, fn) → off, KERN.emit(name, data)   events for tasks and statistics (list below), KERN.events() the last ones
@@ -83,6 +85,8 @@
  * @property {(x: number, y: number, z?: number) => boolean} inside  indoors (areas with inside: true, providers 'inside')
  * @property {(name: string, def?: object) => any} spot  a place to jump to; without def: the one registered
  * @property {() => Record<string, any>} spots  the registry of places to jump to
+ * @property {(name: string, def?: { label?: string, run: () => any, order?: number }) => any} scenario  a start situation; without def: the one registered or null
+ * @property {() => any[]} scenarios  all start situations by order (tests, menu)
  * @property {(a: any) => any} act  an entry of the action button (replaces one with the same id)
  * @property {(id: string) => void} unact
  * @property {() => any[]} acts
@@ -162,6 +166,14 @@ export const KERN = (() => {
     if (def === undefined) return SPOTS[name];
     SPOTS[name] = Object.assign(SPOTS[name] || {}, def);
     return SPOTS[name];
+  }
+
+  // ---- scenarios: a start situation (place, time, state) – ?szenario=name at the start (boot/boot.js), the tests (lib.boot query) ----
+  const SCEN = {};
+  function scenario(name, def) {
+    if (def === undefined) return SCEN[name] || null;
+    SCEN[name] = Object.assign({ name, label: name, order: 50 }, SCEN[name], def);
+    return SCEN[name];
   }
 
   // ---- the action button ----
@@ -408,6 +420,8 @@ export const KERN = (() => {
     inside,
     spot,
     spots: () => SPOTS,
+    scenario,
+    scenarios: () => Object.values(SCEN).sort((a, b) => a.order - b.order),
     act,
     unact,
     acts: () => ACTS,

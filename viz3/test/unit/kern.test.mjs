@@ -245,3 +245,21 @@ test('lights are lent by need and come back with their colour, place and range',
   assert.deepEqual(got, ['on 2', 'off', 'feuer on']);
   assert.equal(restored, 1);
 });
+
+test('scenarios: registered by name, merged, listed by order', async () => {
+  const K = await fresh();
+  let ran = '';
+  K.scenario('freitag', { label: 'Skatabend', order: 21, run: () => (ran = 'skat') });
+  K.scenario('garten', { label: 'Garten', order: 10, run: () => (ran = 'garten') });
+  K.scenario('freitag', { label: 'Skatabend (Freitag)' });
+  assert.equal(K.scenario('nirgends'), null);
+  assert.deepEqual(
+    K.scenarios().map(s => [s.name, s.label]),
+    [
+      ['garten', 'Garten'],
+      ['freitag', 'Skatabend (Freitag)'],
+    ]
+  );
+  K.scenario('freitag').run();
+  assert.equal(ran, 'skat');
+});

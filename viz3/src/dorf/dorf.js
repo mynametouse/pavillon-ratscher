@@ -10,7 +10,7 @@ import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { floorAt, P } from '../game/walkable.js';
-import { CAM3 } from '../game/player.js';
+import { CAM3, go } from '../game/player.js';
 import { PLAY } from '../game/play.js';
 import { news, toast } from '../audio/audio.js';
 import { VILLAGE } from '../world/village.js';
@@ -916,6 +916,24 @@ export const DORF = (() => {
     homesErr: DLIFE.err,
     talk: UI.cur,
     sub: UI.sub.hidden ? null : UI.sub.textContent,
+  });
+  // start situations (KERN.scenario; ?szenario=dorf|freitag|feuer – the older ?dorf=freitag|feuer does the same)
+  KERN.scenario('dorf', { label: 'Dorf (Anger)', order: 20, run: () => go('dorf') });
+  KERN.scenario('freitag', {
+    label: 'Skatabend in der alten Schule (Freitag, 19:30)',
+    order: 21,
+    run: () => {
+      DCAL.jump('skat');
+      atDoor();
+    },
+  });
+  KERN.scenario('feuer', {
+    label: 'Feuer am Acker (Samstagabend)',
+    order: 22,
+    run: () => {
+      DCAL.jump('fire');
+      toFire();
+    },
   });
   whenLoaded(() => {
     const q = QS.get('dorf');
