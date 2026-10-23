@@ -29,6 +29,7 @@ import { news, toast } from '../audio/audio.js';
 import { NPCS, TRACTOR } from '../npc/npc.js';
 import { PLAY } from '../game/play.js';
 import { WCOL } from '../world/worldcol.js';
+import { TREEHIT } from '../world/treehit.js';
 import { HUD } from '../game/hud.js';
 import { DN } from '../time/daynight.js';
 import { VSND } from './vsound.js';
@@ -624,7 +625,7 @@ export const VEH = (() => {
       },
       (i, Q) => {
         const h = circBox(A, Q[i * 3], Q[i * 3 + 1], Q[i * 3 + 2]);
-        if (h) hits.push([h, null]);
+        if (h && !TREEHIT.give(i, h, z0, skip)) hits.push([h, null]); // world/treehit.js: a small tree gives way (bends, tips over)
       }
     );
     if (Math.abs(A.c[0]) < 140 && Math.abs(A.c[1]) < 140 && typeof CG !== 'undefined' && CG) {
