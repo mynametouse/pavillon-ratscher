@@ -71,6 +71,8 @@ export const LIFE = (() => {
     if (w.prop && !w.fig.real) holdProp(w);
     return false;
   }
+  // the walk to the work is done: the activity's minimum time counts from here (a long walk is no work)
+  const arrived = w => (w.since = now());
   function* go(w, path, sp) {
     if (w.fig.pose && w.fig.pose.k !== 'carry') pose(w, null); // (only an armful is carried while walking)
     for (const p of path) while (!walk(w, p[0], p[1], sp)) yield;
@@ -107,6 +109,7 @@ export const LIFE = (() => {
     w.fig.mode = 'sit';
     w.zOff = c.seat - (w.fig.hipH || 0.9) + 0.1;
     w.seated = c;
+    w.since = now();
   }
   function rise(w) {
     if (!w.seated) return;
@@ -307,6 +310,7 @@ export const LIFE = (() => {
       az = Math.atan2(bx - spot[0], by - spot[1]);
     yield* go(w, [spot]);
     yield* turn(w, az);
+    arrived(w);
     try {
       STUCK.visible = false;
       hand(w, AXE);
@@ -365,6 +369,7 @@ export const LIFE = (() => {
       spot = [hx + 0.45, hy - 0.72];
     yield* go(w, [spot]);
     yield* turn(w, 0);
+    arrived(w);
     try {
       hand(w, SAW);
       for (;;) {
@@ -381,13 +386,15 @@ export const LIFE = (() => {
     }
   }
   function* hStack(w) {
-    const heap = [HOF.heap[0] - 0.62, HOF.heap[1] + 0.28];
+    const t0 = now(),
+      heap = [HOF.heap[0] - 0.62, HOF.heap[1] + 0.28];
     try {
       for (;;) {
         const hut = HUT(),
           front = [hut.x + 0.92, hut.y];
         yield* go(w, [heap]);
         yield* turn(w, Math.atan2(HOF.heap[0] - heap[0], HOF.heap[1] - heap[1]));
+        if (!w.since || w.since < t0) arrived(w);
         yield* hold(w, 1.5, 'pick');
         hand(w, ARM);
         pose(w, 'carry');
@@ -405,11 +412,13 @@ export const LIFE = (() => {
     }
   }
   function* hCar(w) {
+    const t0 = now();
     HOFCAR.bonnet(1);
     try {
       for (;;) {
         yield* go(w, [HOFCAR.front]);
         yield* turn(w, Math.PI);
+        if (!w.since || w.since < t0) arrived(w);
         hand(w, WRENCH);
         yield* hold(w, 12 + Math.random() * 10, 'bonnet');
         hand(w, null);
@@ -434,6 +443,7 @@ export const LIFE = (() => {
     const b = benchFront(SHEDS[2] || SHEDS[0]);
     yield* go(w, [b.p]);
     yield* turn(w, b.az);
+    arrived(w);
     try {
       for (;;) yield* hold(w, 8, 'bench');
     } finally {
@@ -658,6 +668,7 @@ export const LIFE = (() => {
     try {
       for (let n = 0; n < 2; n++) {
         yield* rGo(w, ...hay);
+        if (!n) arrived(w);
         yield* turn(w, 0.35); // the hay lies north of him
         yield* hold(w, 1.3, 'pick');
         hand(w, HAY);
@@ -685,8 +696,13 @@ export const LIFE = (() => {
   }
   // looking after the paddock: a post of the fence, a goat, the trough
   function* rPaddock(w) {
+    let first = true;
     try {
       for (;;) {
+        if (first && inPad(w.x, w.y)) {
+          arrived(w);
+          first = false;
+        }
         const r = Math.random();
         if (r < 0.35) {
           const g = GOATS[(Math.random() * GOATS.length) | 0];
@@ -716,6 +732,7 @@ export const LIFE = (() => {
   // in the evening the goats go into the shelter (the task "Ziegen in den Stall": the visitor herds them, game/quests.js)
   function* rStall(w) {
     yield* rGo(w, PAD.x1 - 5.5, PAD.y1 - 3.0);
+    arrived(w);
     try {
       for (;;) {
         if (!QUESTS.holds('goats')) lure(PAD.x1 - 2.4, PAD.y1 - 2.2, 1.0, 30);
@@ -875,6 +892,7 @@ export const LIFE = (() => {
     atCarNow = false;
     const p = [HOFCAR.side[0] - 0.4, HOFCAR.side[1] + 1.5];
     yield* rGo(w, ...p);
+    arrived(w);
     try {
       atCarNow = true;
       for (;;) {
@@ -900,7 +918,8 @@ export const LIFE = (() => {
     if (m < 7 * 60) return 'putter';
     if (m >= 21 * 60) return 'putter';
     if (m >= 19 * 60 + 30) return 'bench';
-    if (talkDay(d) && m >= 16 * 60 && m < 18 * 60) return talkAtCar(d) ? 'car' : 'talk';
+    if (talkDay(d) && ((m >= 15 * 60 + 45 && m < 18 * 60) || AG.ronald.cur === 'visit' || AG.ronald.cur === 'visitCar'))
+      return talkAtCar(d) ? 'car' : 'talk';
     if (m >= 12 * 60 && m < 13 * 60) return 'table';
     if (tripDay(d) && m >= 14 * 60 + 30 && m < 15 * 60 + 30 && !tripBlocked()) return 'trip';
     const blk = Math.floor((m - 7 * 60) / 65);
@@ -910,7 +929,7 @@ export const LIFE = (() => {
     const q = QUESTS.wants('ronald');
     if (q) return q;
     if (m < 7 * 60 + 30) return 'feed';
-    if (talkDay(d) && m >= 16 * 60 && m < 17 * 60 + 50) return talkAtCar(d) ? 'visitCar' : 'visit';
+    if (talkDay(d) && m >= 15 * 60 + 30 && m < 17 * 60 + 50) return talkAtCar(d) ? 'visitCar' : 'visit';
     if (m >= 17 * 60 + 50 && m < 19 * 60) return 'feed';
     if (m >= 19 * 60) return 'stall';
     if (d % 2 === 1 && m >= 8 * 60 && m < 11 * 60) return 'mow';
@@ -945,12 +964,12 @@ export const LIFE = (() => {
     putter: 15,
     table: 20,
     bench: 20,
-    talk: 20,
+    talk: 30,
     feed: 30,
     paddock: 15,
     stall: 15,
-    visit: 40,
-    visitCar: 40,
+    visit: 75,
+    visitCar: 60,
   };
   const AG = {};
   function agent(w, plan, home) {
@@ -1203,8 +1222,9 @@ export const LIFE = (() => {
         w.place();
       }
       if (a.cur && !a.lock && !w.drive) {
-        const want = a.forced || a.plan(m, d);
-        if (want !== a.cur && now() - a.t0 > (MIN[a.cur] || 20)) stop(a);
+        const want = a.forced || a.plan(m, d),
+          t1 = w.since && w.since >= a.t0 ? w.since : null; // arrived at the work (else still on the way)
+        if (want !== a.cur && ((t1 && now() - t1 > (MIN[a.cur] || 20)) || (!t1 && now() - a.t0 > 150))) stop(a);
       }
     }
     if (HOFCAR.open > 0 && m >= 21 * 60 && AG.hubert.cur !== 'car') HOFCAR.bonnet(0);
