@@ -6,9 +6,8 @@
 # graphics memory of the tex/ textures (compressed bytes vs RGBA with mipmaps). Without tex2/ in the build only the fallback is checked.
 # Pictures: out/ktx2/<view>_k2.png, <view>_img.png and <view>_diff.png (difference ×4).
 #   python3 viz3/test/ktx2.py 8985        (~4 min on GitHub, ~10 min here)
-import sys, os, json, time, base64, io
+import sys, os, json, time, base64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
-from PIL import Image, ImageChops, ImageStat
 port = sys.argv[1]; OUT = lib.out('ktx2'); ck = lib.Checks('ktx2')
 VIEWS = [('garten', "GAME.view(-14, 10, 1.7, 205, -4, 62)"),
          ('pavillon', "GAME.orbit(-35, 16, 24)"),
@@ -39,8 +38,7 @@ def visit(query, ctx=None, views=True):
             pg.evaluate("document.querySelectorAll('.ov,#doorbtn,#joy,header,#ppanel,#talkbtn,#npcsub,#toast').forEach(e => e.style.visibility = 'hidden')")
             for name, js in VIEWS:
                 pg.evaluate(js + "; GAME.step(0.3)"); time.sleep(0.5)
-                data = pg.evaluate("(() => { GAME.shot(); GAME.shot(); return document.querySelector('#stage canvas').toDataURL('image/png'); })()")
-                ims[name] = Image.open(io.BytesIO(base64.b64decode(data.split(',')[1]))).convert('RGB')
+                ims[name] = pg.evaluate("(() => { GAME.shot(); GAME.shot(); return document.querySelector('#stage canvas').toDataURL('image/png'); })()")
             st2 = json.loads(pg.evaluate(STATE)); st['programs_after'] = st2['programs']; st['keys_after'] = st2['keys']
         return st, ims, errs
 k2, ik2, ek2 = visit('')
@@ -64,11 +62,23 @@ else:
        + ('' if k2['keys'] == img['keys'] else ' – keys differ: ' + str(sorted(set(k2['keys']) ^ set(img['keys'])))[:300]))
     ck('full-size base levels on the desktop', k2['k2w'] == [1024], str(k2['k2w']))
     print(f"load: KTX2 {k2['load_s']} s (prepare GPU {k2['prep']} ms) vs images {img['load_s']} s (prepare GPU {img['prep']} ms)", flush=True)
-for name, _ in VIEWS:
-    a, c = ik2[name], iimg[name]; a.save(os.path.join(OUT, f'{name}_k2.png')); c.save(os.path.join(OUT, f'{name}_img.png'))
-    d = ImageChops.difference(a, c); Image.eval(d, lambda v: min(255, v * 4)).save(os.path.join(OUT, f'{name}_diff.png'))
-    mean = sum(ImageStat.Stat(d).mean) / 3; big = sum(1 for p in d.convert('L').getdata() if p > 60) / (d.size[0] * d.size[1])
-    ck(f'{name}: the same picture (mean difference, share of strongly changed pixels)', mean < 5 and big < 0.02, f"mean {mean:.2f}, {big * 100:.2f} % > 60")
+# the pictures compared in a blank page (canvas pixels; no image library needed on the CI machines): mean difference over RGB, share of
+# pixels with a difference > 60 in their mean, and the difference ×4 as a picture
+CMP = """async ([a, b]) => { const load = u => new Promise((r, e) => { const i = new Image(); i.onload = () => r(i); i.onerror = e; i.src = u; });
+  const [A, B] = await Promise.all([load(a), load(b)]), w = A.width, h = A.height, px = im => { const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const x = c.getContext('2d'); x.drawImage(im, 0, 0); return x.getImageData(0, 0, w, h); };
+  const p = px(A).data, q = px(B).data, c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'), D = x.createImageData(w, h);
+  let s = 0, big = 0; for (let i = 0; i < p.length; i += 4) { const r = Math.abs(p[i] - q[i]), g = Math.abs(p[i + 1] - q[i + 1]), bl = Math.abs(p[i + 2] - q[i + 2]);
+    s += r + g + bl; if ((r + g + bl) / 3 > 60) big++; D.data[i] = Math.min(255, r * 4); D.data[i + 1] = Math.min(255, g * 4); D.data[i + 2] = Math.min(255, bl * 4); D.data[i + 3] = 255; }
+  x.putImageData(D, 0, 0); return { mean: s / (p.length / 4) / 3, big: big / (p.length / 4), diff: c.toDataURL('image/png') }; }"""
+save = lambda name, url: open(os.path.join(OUT, name + '.png'), 'wb').write(base64.b64decode(url.split(',')[1]))
+with lib.browser() as b:
+    pc = b.new_page()
+    for name, _ in VIEWS:
+        save(f'{name}_k2', ik2[name]); save(f'{name}_img', iimg[name])
+        r = pc.evaluate(CMP, [ik2[name], iimg[name]]); save(f'{name}_diff', r['diff'])
+        ck(f'{name}: the same picture (mean difference, share of strongly changed pixels)', r['mean'] < 5 and r['big'] < 0.02,
+           f"mean {r['mean']:.2f}, {r['big'] * 100:.2f} % > 60")
 if have:
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p: phone = dict(p.devices['iPhone 13'])
