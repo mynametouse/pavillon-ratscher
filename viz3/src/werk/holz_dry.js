@@ -24,6 +24,7 @@ import { WUI } from './werkui.js';
 import { DN } from '../time/daynight.js';
 import { HOLZ } from './holz.js';
 import { HOLZSAW } from './holz_saw.js';
+import { KERN } from '../core/kern.js';
 const HOLZDRY = (() => {
   const de = (v, d = 1) => Number(v).toFixed(d).replace('.', ','),
     think = (t, ms) => PLAY.think(t, ms);
@@ -871,7 +872,7 @@ const HOLZDRY = (() => {
     rebuild();
   };
   let acc = 0;
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     acc += dt;
     if (acc < 1) return;
     acc = 0;
@@ -883,7 +884,7 @@ const HOLZDRY = (() => {
         console.warn('holzdry', e);
       }
     }
-  });
+  }, 'werk/holz_dry');
   Object.assign(S, { clim, doyOf, advance, stackMC, forecast, rebuild, layOne, nextLayer, rateOf, stepDay });
   return S;
 })();

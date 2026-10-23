@@ -1193,7 +1193,7 @@ export const FOREST = (() => {
   }
   // per frame: the sun's shadow box for the canopy shade, the draw sets
   let seasT = 0;
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     if (!S.ready) return;
     if (typeof sunC !== 'undefined') CU.uSunBox.value.set(sunC[0], sunC[1], sunHalf, 0.8);
     relod(false);
@@ -1213,7 +1213,7 @@ export const FOREST = (() => {
     const a = A2 && A2.seas;
     if (a && Math.abs(a.x - u.x) + Math.abs(a.y - u.y) + Math.abs(a.z - u.z) > 0.12)
       A2 = atlas(A2.models, A2.mats, A2.rt);
-  });
+  }, 'world/forest:1');
   whenLoaded(() => {
     if (!window.RATSCHER || !RATSCHER.ready) return;
     try {
@@ -1224,7 +1224,7 @@ export const FOREST = (() => {
   });
   // what is new (once)
   let intro = false;
-  window.TICKS.push(() => {
+  KERN.tick(() => {
     if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return;
     intro = true;
     const seen = !SAVE.once('pav-v16c'); // one-time hint
@@ -1237,7 +1237,7 @@ export const FOREST = (() => {
           ),
         44000
       );
-  });
+  }, 'world/forest:2');
   // ---------- the ground shader part (world/ratscher.js terrain): needle litter and moss under the crowns, light under the canopy ----------
   const FS_STUB = 'float fCan = 0.0, fOut = 1.0; vec3 forestFloor( vec2 p, vec3 c, float d ) { return c; }';
   S.shader = sh => {

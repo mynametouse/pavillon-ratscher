@@ -936,7 +936,7 @@ export const HOLZ = (() => {
     if (S.onStart) S.onStart(s ? s.part2 : null);
     markDirty(true);
   }
-  window.TICKS.push(dt => {
+  KERN.tick(dt => {
     try {
       tick(dt);
     } catch (e) {
@@ -945,10 +945,10 @@ export const HOLZ = (() => {
         console.warn('holz', e);
       }
     }
-  });
+  }, 'werk/holz:1');
   // first visit of V16d: a word about the way of the wood
   let intro = false;
-  window.TICKS.push(() => {
+  KERN.tick(() => {
     if (intro || !S.ready || P.mode !== 'walk' || !LOAD.ready) return;
     intro = true;
     const seen = !SAVE.once('pav-v16d'); // one-time hint
@@ -961,7 +961,7 @@ export const HOLZ = (() => {
           ),
         44000
       );
-  });
+  }, 'werk/holz:2');
   // colliders of the wood places (blocks, stack, drying cabinet) in the garden's list (COL; the grids are rebuilt). By tag: the old entries
   // are switched off (other code may hold COL indices), the new ones appended. Boxes in workshop coordinates as built → world AABB.
   S.setCol = (tag, boxes) => {

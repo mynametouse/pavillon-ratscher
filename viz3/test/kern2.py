@@ -59,6 +59,10 @@ with lib.browser() as b:
     E("HUD.setMenu(false); HUD.setMenu(true); document.querySelector('#scen-menu [data-scen=\"atelier\"]').click(); for (let i = 0; i < 10; i++) GAME.step(0.1)")
     at = J("{ open: !document.getElementById('menu').hidden, note: !document.getElementById('scen-note').hidden, place: KERN.place(GAME.P.x, GAME.P.y, GAME.P.feet + 0.5), ev: KERN.events().filter(e => e.name === 'scenario').map(e => e.data && e.data.name) }")
     ck('… one tap on a plain scene starts it and closes the menu (Atelier, inside)', not at['open'] and not at['note'] and at['place'] == 'Atelier' and 'atelier' in at['ev'], json.dumps(at, ensure_ascii=False))
+    # the per-frame callbacks run on KERN.tick (phase 2) – named, none of them broken; the old list only for the modules not moved yet
+    tk = J("{ ticks: KERN.ticks(), old: (window.TICKS || []).length, broken: (LOADLOG.errs || []).filter(e => /^Takt/.test(e)) }")
+    ck('per-frame callbacks on KERN.tick, named, none broken', len(tk['ticks']) >= 20 and any(t.startswith('world/forest') for t in tk['ticks']) and not tk['broken'],
+       f"{len(tk['ticks'])} on KERN.tick, {tk['old']} on window.TICKS; broken: {tk['broken']}")
     zs = J("KERN.zones()")
     ck('zones registered (Schleusingen idle far away)', any(z['id'] == 'schleusingen' and z['state'] == 'idle' for z in zs), json.dumps(zs))
     ck.errors(errs)

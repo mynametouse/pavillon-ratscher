@@ -21,6 +21,7 @@ import { QUESTS } from '../game/quests.js';
 import { HUD } from '../game/hud.js';
 import { CLOCK } from '../time/clock.js';
 import { GEAR } from './gear.js';
+import { KERN } from '../core/kern.js';
 phase(null);
 export const WERK = (() => {
   const ON = !OFFLINE && !QS.get('noplay');
@@ -1948,12 +1949,11 @@ export const WERK = (() => {
       if (t > 0.55) {
         WG.remove(p);
         p.geometry.dispose();
-        const i = window.TICKS.indexOf(fn);
-        if (i >= 0) window.TICKS.splice(i, 1);
+        off();
       }
       return true;
     };
-    window.TICKS.push(fn);
+    const off = KERN.tick(fn, 'werk/werk:rueckschlag');
     SFX.chop();
     setTimeout(() => SFX.clunk(), 260);
     banner('Rückschlag!', 'Die Scheibe hat zwischen Blatt und Parallelanschlag verklemmt');
