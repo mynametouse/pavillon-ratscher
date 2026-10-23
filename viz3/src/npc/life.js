@@ -1059,20 +1059,21 @@ export const LIFE = (() => {
   agent(H, hubertPlan, [-24, 38.5]);
   agent(R, ronaldPlan, [37, -36]);
   // ================= the two at the table: conversations about the village =================
-  // [speaker, line] – Hubert says little and expects rain, Ronald talks (village life after docs/plans/plan_leben.md section 2)
+  // [speaker, line] – Hubert says little and expects rain, Ronald talks (village life after docs/plans/plan_leben.md section 2; the
+  // villagers named are those of the evenings in the old school, viz3/src/dorf/dorf_text.js)
   const TALKS = [
     [
       ['r', 'Freitag ist wieder Skat in der alten Schule. Kommst du?'],
-      ['h', 'Wenn der Karl nicht wieder mischt wie ein Bäcker.'],
+      ['h', 'Wenn der Gerhard nicht wieder mischt wie ein Bäcker.'],
       ['r', 'Der hat letzte Woche dreimal Grand Hand gespielt.'],
       ['h', 'Und dreimal verloren.'],
-      ['r', 'Die Inge bringt wieder ihren Zwiebelkuchen mit.'],
+      ['r', 'Die Katrin bringt wieder ihren Zwiebelkuchen mit. Und Uwe zapft.'],
       ['h', 'Dann komm ich.'],
     ],
     [
       ['r', 'Die Jungs wollen Samstag ein Feuer machen, draußen am Acker Richtung Klinge.'],
       ['h', 'Bei dem Wind? Da brennt die halbe Klinge mit.'],
-      ['r', 'Die Feuerwehr ist doch dabei.'],
+      ['r', 'Der Manfred ist doch mit der Feuerwehr dabei.'],
       ['h', 'Eben. Die stehen rum und trinken Bier.'],
       ['r', 'Bring Kartoffeln mit. Die vom Acker.'],
       ['h', 'Nu. Ein paar.'],
@@ -1096,7 +1097,7 @@ export const LIFE = (() => {
     [
       ['r', 'Die Wildschweine waren wieder in den Kartoffeln, unten am Waldrand.'],
       ['h', 'Hab ich gesehen. Der ganze Acker umgegraben.'],
-      ['r', 'Der Jäger sagt, nächste Woche sitzt er an.'],
+      ['r', 'Der Wolfgang sagt, der Jäger sitzt nächste Woche an.'],
       ['h', 'Der sitzt seit zwanzig Jahren an. Gesehen hat er noch keins.'],
       ['r', 'Aber der Schnaps im Hochsitz ist immer alle.'],
     ],
@@ -1111,10 +1112,10 @@ export const LIFE = (() => {
     [
       ['r', 'Die Uhr an der alten Schule geht wieder nach.'],
       ['h', 'Seit sie den Strom umgestellt haben.'],
-      ['r', 'Die Gerda sagt, im Frühjahr wird die Linde geschnitten.'],
+      ['r', 'Die Ingrid sagt, im Frühjahr wird die Linde geschnitten.'],
       ['h', 'Die Linde steht seit achtzehnhundertachtundachtzig. Die braucht keinen Schnitt.'],
-      ['r', 'Sag das der Gemeinde.'],
-      ['h', 'Mach ich. Freitag. Beim Skat.'],
+      ['r', 'Sag das der Ingrid.'],
+      ['h', 'Mach ich. Freitag. Wenn sie beim Rommé mal verliert.'],
     ],
     [
       ['r', 'Wie viele Hütten hast du jetzt eigentlich voll?'],
