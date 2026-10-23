@@ -152,7 +152,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          apply() { rm -rf welt-test && cp -r ../new/welt-test welt-test && git add -A welt-test; }
+          # the blocks of detail zones (welt-test/zonen/<name>/, e.g. Kloster Veßra from .github/workflows/welt-vessra.yml) stay: moved aside,
+          # welt-test/ replaced, moved back
+          apply() {
+            rm -rf ../zonen_keep
+            if [ -d welt-test/zonen ]; then mv welt-test/zonen ../zonen_keep; fi
+            rm -rf welt-test && cp -r ../new/welt-test welt-test
+            if [ -d ../zonen_keep ]; then rm -rf welt-test/zonen && mv ../zonen_keep welt-test/zonen; fi
+            git add -A welt-test
+          }
           apply
           if git diff --cached --quiet; then echo "keine Änderung"; echo "generated=$(python3 -c "import json;print(json.load(open('welt-test/meta.json'))['generated'])")" >> "$GITHUB_OUTPUT"; exit 0; fi
           MSG="Welt-Testkacheln: Plan $PLAN aus ${GITHUB_SHA::7} (${GITHUB_REF_NAME})
