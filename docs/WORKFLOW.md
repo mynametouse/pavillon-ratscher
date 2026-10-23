@@ -121,6 +121,25 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
 - Browser-Tests im Chat-Rechner nie zwei gleichzeitig (2 Kerne); Agenten testen im Browser bei GitHub Actions.
 - Versionsnummern: nächste freie Nummer aus `docs/CHANGELOG.md` beim Live-Stellen vergeben.
 - Arbeitsstand für Menschen: Projekt-Dokumente `claude/pavillon-umbau.md` (Plan und Stand) und `claude/pavillon-ratscher-stand.md`.
+- **Agenten starten:** `bash tools/agents.sh worktree <thema>` legt `/home/claude/wt-<thema>` auf `feat/<thema>` an (`node_modules`
+  verlinkt, eigene Kopie von `viz3/dist`); den Auftrag (englisch, mit Ordnern, Port, Test- und Lieferregeln) **zuerst** als
+  `docs/plans/auftraege/<thema>.md` auf `src` sichern, dann den Agenten damit starten; Zeile in `docs/PARALLEL.md` unter „Belegung“.
+  `bash tools/agents.sh` zeigt alle `feat/*`-Zweige: Kopf, Commits noch nicht in `src`, letzter CI-Lauf, Notizen und Auftrag.
+
+### Wiederanlauf nach einem Absturz des Chats
+
+Der Chat und seine Hilfs-Agenten laufen in einem Container, der verloren gehen kann. Alles, was zählt, liegt deshalb auf GitHub und im
+Claude-Projekt „Garten“ – ein neuer Chat findet so wieder hinein:
+
+1. `CLAUDE.md`, dann `git fetch -q origin && git show origin/src:docs/PARALLEL.md` – wer woran arbeitet, Absprachen, letzte Nachrichten.
+2. `bash tools/agents.sh` – Stand jedes Agenten-Zweigs. Für jedes Thema, das in „Belegung“ noch nicht „fertig“ ist: `docs/features/<thema>.md`
+   und `git log origin/src..origin/feat/<thema>` lesen (was schon da ist), dann einen neuen Hilfs-Agenten mit dem Auftrag aus
+   `docs/plans/auftraege/<thema>.md` starten – mit dem Zusatz „continue on the existing branch feat/<thema> (read docs/features/<thema>.md and
+   the git log first)“ – im Worktree aus `bash tools/agents.sh worktree <thema>`.
+3. Was grün ist (CI `feat.yml`), wie gewohnt zusammenführen (Abschnitt 5, Zusammenführen) und veröffentlichen (Abschnitt 4).
+4. Laufende Arbeit des Kern-Chats selbst liegt auf `wip/kern` (Zwischenstände, noch nicht auf `src`) und `kern/*` (Prüfpaket-Läufe).
+5. Pläne: `docs/plans/` (z. B. `plan_phase2.md`, `plan_leben.md`), Feature-Konzepte im Projekt (`claude/pavillon-gartenplaner.md`,
+   `claude/pavillon-welt.md`), Versionen in `docs/CHANGELOG.md`, Einstieg für Entwickler `claude/pavillon-entwicklung.md`.
 
 ## 6 Regeln
 
