@@ -105,6 +105,39 @@ for (const p of parts) {
   for (const m of res.messages)
     (m.severity === 2 || m.fatal ? errs : warns).push({ ...m, file: p.rel });
 }
+// code trapped in an end-of-line comment ("x = 1; // note y = 2; z();" – the rest never runs). On 23.10.2026 two such lines were found that
+// had silently switched off Hubert's tractor trip and the light restore after the far trees since the module split of V16e.
+const espree = await import("espree").catch(() => null);
+const TRAPPED =
+  /;\s*(const|let|var|if|for|while|return)\b|;\s*[A-Za-z_$][\w$.[\]]*\s*(\(|[+\-*/]?=(?!=))/;
+if (espree)
+  for (const p of parts) {
+    let ast;
+    try {
+      ast = espree.parse(p.text, {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        comment: true,
+        loc: true,
+      });
+    } catch (e) {
+      continue; // parse errors are reported by ESLint above
+    }
+    const lines = p.text.split("\n");
+    for (const c of ast.comments) {
+      if (c.type !== "Line") continue;
+      const line = lines[c.loc.start.line - 1];
+      if (!line.slice(0, c.loc.start.column).trim()) continue; // a comment of its own line
+      if (TRAPPED.test(c.value))
+        errs.push({
+          file: p.rel,
+          line: c.loc.start.line,
+          column: c.loc.start.column + 1,
+          ruleId: "trapped-code",
+          message: "code after a // comment on the same line never runs – put it on its own line",
+        });
+    }
+  }
 const show = (m) =>
   `${m.file}:${m.line}:${m.column}  ${m.ruleId || "parse"}  ${m.message}`;
 for (const m of errs) console.log("ERROR " + show(m));

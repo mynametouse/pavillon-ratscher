@@ -1,0 +1,37 @@
+# Welt: which geodata endpoints answer from a GitHub runner (the chat sandbox only reaches an allowlist).
+# Manual or on a push that changes this file; prints status, size and type per endpoint, never fails.
+name: Welt-Quellen-Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['welt/**']
+    paths: ['.github/workflows/welt-probe.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Endpunkte
+        run: |
+          probe() { printf '%-100s ' "$1"; curl -sS -L -o /tmp/p -w '%{http_code} %{size_download} %{content_type}' --max-time 60 "$1" || true; printf '  %s\n' "$(head -c 120 /tmp/p | tr -dc '[:print:]' | head -c 100)"; }
+          probe "https://geoportal.geoportal-th.de/hoehendaten/DGM/dgm_2020-2025/dgm1_32_625_5595_1_th_2020-2025.zip"
+          probe "https://geoportal.geoportal-th.de/hoehendaten/DGM/dgm_2014-2019/dgm1_32_625_5595_1_th_2014-2019.zip"
+          probe "https://geoportal.geoportal-th.de/hoehendaten/DOM/dom_2020-2025/dom1_32_625_5595_1_th_2020-2025.zip"
+          probe "https://geoportal.geoportal-th.de/dienste/atom_th_hoehendaten_dgm"
+          probe "https://geoportal.geoportal-th.de/gaialight-th/_apps/dladownload/dl-dhm.html"
+          probe "https://geoportal.thueringen.de/gdi-th/download-offene-geodaten/download-hoehendaten"
+          probe "https://www.geoproxy.geoportal-th.de/geoproxy/services/DOP?SERVICE=WMS&REQUEST=GetCapabilities"
+          probe "https://overpass-api.de/api/status"
+          probe "https://overpass.kumi.systems/api/status"
+          probe "https://overpass.private.coffee/api/status"
+          probe "https://api.openstreetmap.org/api/0.6/capabilities"
+          probe "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N50_00_E010_00_DEM/Copernicus_DSM_COG_10_N50_00_E010_00_DEM.tif"
+          probe "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N48E009_Map.tif"
+          probe "https://geodaten.bayern.de/odd/a/dgm/dgm1/meta/metalink/09473.meta4"
+          probe "https://download1.bayernwolke.de/a/dgm/dgm1/32620_5570.tif"
+          probe "https://inspire-hessen.de/raster/dgm1/ows?SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCapabilities"
