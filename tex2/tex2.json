@@ -1,0 +1,1030 @@
+{
+ "v": 1,
+ "ktx": "4.4.2",
+ "made": "2026-10-23 10:36",
+ "files": {
+  "asphalt_col": {
+   "src": "asphalt_col.webp",
+   "bytes": 93610,
+   "sha1": "3833724700cb3c3a8458e729c8f2b2db0bb573b1",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    198991,
+    77697
+   ]
+  },
+  "asphalt_nrm": {
+   "src": "asphalt_nrm.jpg",
+   "bytes": 521501,
+   "sha1": "f20ce88d622ed62464c381a79ba20f8bc5533023",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1195002,
+    294596
+   ]
+  },
+  "asphalt_orm": {
+   "src": "asphalt_orm.webp",
+   "bytes": 150934,
+   "sha1": "f9dc44ec1ff08a90ff4cf40f11e93a909a4d11f2",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    894639,
+    222138
+   ]
+  },
+  "bark_col": {
+   "src": "bark_col.jpg",
+   "bytes": 330984,
+   "sha1": "c77e597514b6622c76490f907f2a5589011434f9",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    288167,
+    103899
+   ]
+  },
+  "bark_nrm": {
+   "src": "bark_nrm.jpg",
+   "bytes": 394326,
+   "sha1": "d44addd793ad4f05e892a7390978c57fbfb911fa",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1288956,
+    327705
+   ]
+  },
+  "bark_orm": {
+   "src": "bark_orm.webp",
+   "bytes": 160622,
+   "sha1": "dec5f18b841344643326f4625075f8eced64cddc",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    767262,
+    208151
+   ]
+  },
+  "barndoor_col": {
+   "src": "barndoor_col.webp",
+   "bytes": 61540,
+   "sha1": "bfd533265ef8c5c2e12b360a23b9d24b92b56283",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    183546,
+    67679
+   ]
+  },
+  "barndoor_nrm": {
+   "src": "barndoor_nrm.webp",
+   "bytes": 76496,
+   "sha1": "9a4f4e7e46f868fbb71674e4d5a7a9de11e15e00",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    507164,
+    151909
+   ]
+  },
+  "barndoor_orm": {
+   "src": "barndoor_orm.webp",
+   "bytes": 51228,
+   "sha1": "e02edcc7d28d06ddf0af0a59f85951b55accd921",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    527123,
+    152976
+   ]
+  },
+  "blacksteel_col": {
+   "src": "blacksteel_col.webp",
+   "bytes": 18346,
+   "sha1": "29d7061e649d2232176f7dfeffbd7ab69d1de82c",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    60216,
+    20494
+   ]
+  },
+  "blacksteel_nrm": {
+   "src": "blacksteel_nrm.webp",
+   "bytes": 68204,
+   "sha1": "b76d85c2eab0e6b7b7351a8d3e675ec07bd59bc2",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    458830,
+    117541
+   ]
+  },
+  "blacksteel_orm": {
+   "src": "blacksteel_orm.webp",
+   "bytes": 17970,
+   "sha1": "cff15fd0eecabfc7e0c9a25a2266e26023ce57e3",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    287088,
+    109229
+   ]
+  },
+  "boxprofile_col": {
+   "src": "boxprofile_col.webp",
+   "bytes": 14494,
+   "sha1": "d8be33a0ce4d42ce541e58b72f43c4715b71b711",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    64958,
+    22236
+   ]
+  },
+  "boxprofile_nrm": {
+   "src": "boxprofile_nrm.webp",
+   "bytes": 49096,
+   "sha1": "9ef1446891d74e00fc93be88d4f15ae50f6b5864",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    510637,
+    142876
+   ]
+  },
+  "boxprofile_orm": {
+   "src": "boxprofile_orm.webp",
+   "bytes": 77554,
+   "sha1": "95384c39dc82530c2552ff573c60aa4cbc9fa7c2",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    637344,
+    168574
+   ]
+  },
+  "char_col": {
+   "src": "char_col.webp",
+   "bytes": 66878,
+   "sha1": "ef8001afd074dcc14fa4c519d9e8513d3309c123",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    173420,
+    66266
+   ]
+  },
+  "char_nrm": {
+   "src": "char_nrm.webp",
+   "bytes": 304512,
+   "sha1": "bbc567032dc8aed65d8f91408d51cf2c33c54a45",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1056061,
+    286497
+   ]
+  },
+  "char_orm": {
+   "src": "char_orm.webp",
+   "bytes": 230592,
+   "sha1": "e930cc439a95acc824654d05004c0399037cf11e",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    895750,
+    246225
+   ]
+  },
+  "clay_col": {
+   "src": "clay_col.webp",
+   "bytes": 111870,
+   "sha1": "3f49a11255e009809deeebfa46dbefabab768b51",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    219210,
+    85599
+   ]
+  },
+  "clay_nrm": {
+   "src": "clay_nrm.webp",
+   "bytes": 176810,
+   "sha1": "af2193c11a03be62fdae2badc76462e757686dc8",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    885578,
+    230680
+   ]
+  },
+  "clay_orm": {
+   "src": "clay_orm.webp",
+   "bytes": 47518,
+   "sha1": "d70c3722fb753c61b9abcc6988f1bc0d83a98a1e",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    496818,
+    136496
+   ]
+  },
+  "concrete_col": {
+   "src": "concrete_col.jpg",
+   "bytes": 394041,
+   "sha1": "37e4b0cd7406a01f386c3252c286b26526cc555e",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    263710,
+    99003
+   ]
+  },
+  "concrete_nrm": {
+   "src": "concrete_nrm.jpg",
+   "bytes": 241683,
+   "sha1": "548db1827176bf8c3516e87c29a7ae2cdeb9f1d5",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    991319,
+    223731
+   ]
+  },
+  "concrete_orm": {
+   "src": "concrete_orm.webp",
+   "bytes": 101910,
+   "sha1": "5ce13fd8318a19b5b9035d1845312f1248090488",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    688607,
+    185097
+   ]
+  },
+  "corrugated_col": {
+   "src": "corrugated_col.webp",
+   "bytes": 186254,
+   "sha1": "53a74d52b896b8464bbe523bd6e8525151b83af8",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    259536,
+    95833
+   ]
+  },
+  "corrugated_nrm": {
+   "src": "corrugated_nrm.jpg",
+   "bytes": 360494,
+   "sha1": "00cf57fc74edc5665b0c0615a8432c7f8a507526",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1145638,
+    260207
+   ]
+  },
+  "corrugated_orm": {
+   "src": "corrugated_orm.webp",
+   "bytes": 126638,
+   "sha1": "a75a96e57748cd69b355b8a14dba538a7cbf0af9",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    796073,
+    229024
+   ]
+  },
+  "deck_col": {
+   "src": "deck_col.jpg",
+   "bytes": 273833,
+   "sha1": "c551028105ea87144235b838cd65f44245af3b3e",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    252497,
+    93275
+   ]
+  },
+  "deck_nrm": {
+   "src": "deck_nrm.webp",
+   "bytes": 134438,
+   "sha1": "f72c277d5cd7426a21ba938423a55ac1b0aa9b4f",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    614978,
+    155476
+   ]
+  },
+  "deck_orm": {
+   "src": "deck_orm.webp",
+   "bytes": 69460,
+   "sha1": "7c907f5d62fdeeea8e2ec2545391f8aa57ce9362",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    587009,
+    157225
+   ]
+  },
+  "fibrecement_col": {
+   "src": "fibrecement_col.webp",
+   "bytes": 94244,
+   "sha1": "7060b96a426aac2533d111df0ed8c687e6ad127d",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    203667,
+    82095
+   ]
+  },
+  "fibrecement_nrm": {
+   "src": "fibrecement_nrm.webp",
+   "bytes": 79782,
+   "sha1": "763f0289873edf3b65f20af78aed9596c3124d5e",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    590157,
+    141275
+   ]
+  },
+  "fibrecement_orm": {
+   "src": "fibrecement_orm.webp",
+   "bytes": 30518,
+   "sha1": "b05649b5a6b7f5f03f8f609b09b7cb5d432f5b60",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    442905,
+    121127
+   ]
+  },
+  "flagstone_col": {
+   "src": "flagstone_col.jpg",
+   "bytes": 292201,
+   "sha1": "3f7c59eec12a739d04bd365de219b61fd7cbba4e",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    258186,
+    96181
+   ]
+  },
+  "flagstone_nrm": {
+   "src": "flagstone_nrm.jpg",
+   "bytes": 336952,
+   "sha1": "ef2b15693bc04b844f475825dc3cc63b18892d56",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1223651,
+    311538
+   ]
+  },
+  "flagstone_orm": {
+   "src": "flagstone_orm.webp",
+   "bytes": 122892,
+   "sha1": "39069b58e1f52a8a7d7c45c4981c1bfa9be7d971",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    794824,
+    241254
+   ]
+  },
+  "forestfloor_col": {
+   "src": "forestfloor_col.jpg",
+   "bytes": 399091,
+   "sha1": "0f36f80536c0d507abb334b05110bbb97ab00cea",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    307683,
+    110672
+   ]
+  },
+  "forestfloor_nrm": {
+   "src": "forestfloor_nrm.jpg",
+   "bytes": 538446,
+   "sha1": "9b65be03e45f2fa39d45745f3c317bb27469b8e0",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1317521,
+    330782
+   ]
+  },
+  "forestfloor_orm": {
+   "src": "forestfloor_orm.jpg",
+   "bytes": 293569,
+   "sha1": "e3951333004f6847a5b0be30f75d6d3dd38a3a32",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    1028562,
+    283648
+   ]
+  },
+  "gravel_col": {
+   "src": "gravel_col.jpg",
+   "bytes": 346450,
+   "sha1": "5420bc2b64f9cdb262e85c0dd5c7598ff1cf85dc",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    276209,
+    100723
+   ]
+  },
+  "gravel_nrm": {
+   "src": "gravel_nrm.jpg",
+   "bytes": 425853,
+   "sha1": "9a2c64833f0b38a8b4a7b23781c96bf971f8cbc1",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1264391,
+    317512
+   ]
+  },
+  "gravel_orm": {
+   "src": "gravel_orm.jpg",
+   "bytes": 275477,
+   "sha1": "6c5055693d701826fdf7aa4f73777da31712a67a",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    1155343,
+    302919
+   ]
+  },
+  "larch_col": {
+   "src": "larch_col.webp",
+   "bytes": 70924,
+   "sha1": "80f3b0719315a796cd9f575bbdd918cdc6d8375f",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    183069,
+    62619
+   ]
+  },
+  "larch_nrm": {
+   "src": "larch_nrm.webp",
+   "bytes": 33606,
+   "sha1": "9cf93e386dd70cc919fc2f0ffc8f5ff5820721f2",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    252916,
+    83353
+   ]
+  },
+  "larch_orm": {
+   "src": "larch_orm.webp",
+   "bytes": 22504,
+   "sha1": "03998463c3ca45fd1abc120c7dcf58197f29a47e",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    287127,
+    106658
+   ]
+  },
+  "lawn2_col": {
+   "src": "lawn2_col.jpg",
+   "bytes": 358271,
+   "sha1": "3e90e3850ac5fec675bbe1b7d695f194c0b2ca11",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    297863,
+    105726
+   ]
+  },
+  "lawn2_nrm": {
+   "src": "lawn2_nrm.jpg",
+   "bytes": 638307,
+   "sha1": "0a9e5f4365487a68d1844640381a0e775b97f3b1",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1304451,
+    327927
+   ]
+  },
+  "lawn2_orm": {
+   "src": "lawn2_orm.webp",
+   "bytes": 302022,
+   "sha1": "a799b4ab62fa1c04496a9d30db1ebb3d12e40ee8",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    997416,
+    256235
+   ]
+  },
+  "lawn_col": {
+   "src": "lawn_col.jpg",
+   "bytes": 371267,
+   "sha1": "d1bc6b0a6389c710c3fd7b2aa044181cfa95dc70",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    291594,
+    103405
+   ]
+  },
+  "lawn_nrm": {
+   "src": "lawn_nrm.jpg",
+   "bytes": 522914,
+   "sha1": "7561062b83012c328f3e8497d25bf2aeafef3d17",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1290942,
+    323586
+   ]
+  },
+  "lawn_orm": {
+   "src": "lawn_orm.jpg",
+   "bytes": 342845,
+   "sha1": "e86eb1d09ab95c985a6c260dc9141f6ec1767b1d",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    1175970,
+    293312
+   ]
+  },
+  "linen_col": {
+   "src": "linen_col.jpg",
+   "bytes": 237462,
+   "sha1": "b590ba30c4481d3878f35884a825c85398bf3777",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    217730,
+    79210
+   ]
+  },
+  "linen_nrm": {
+   "src": "linen_nrm.jpg",
+   "bytes": 296832,
+   "sha1": "49bbc8a943acc67c51bccec9af638b855005faa3",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1054833,
+    234618
+   ]
+  },
+  "linen_orm": {
+   "src": "linen_orm.jpg",
+   "bytes": 345306,
+   "sha1": "49e0ca75cd56d3621fd7a46cd1f8b17389bf6d1e",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    1165976,
+    286285
+   ]
+  },
+  "mossfloor_col": {
+   "src": "mossfloor_col.jpg",
+   "bytes": 437368,
+   "sha1": "861dc86626bc62364a2a96fa8f431da57b232f42",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    307344,
+    110275
+   ]
+  },
+  "mossfloor_nrm": {
+   "src": "mossfloor_nrm.jpg",
+   "bytes": 664400,
+   "sha1": "f90ff8491306c5d14840b20a89057c16f67c7e58",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1322404,
+    331920
+   ]
+  },
+  "mossfloor_orm": {
+   "src": "mossfloor_orm.webp",
+   "bytes": 242668,
+   "sha1": "d91a4d02a8c152ef8f957a526f7b484e4932fbd1",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    1008370,
+    278902
+   ]
+  },
+  "needles_col": {
+   "src": "needles_col.jpg",
+   "bytes": 446138,
+   "sha1": "5617740719678683af940376d671b7a33c130dfc",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    269349,
+    99687
+   ]
+  },
+  "needles_nrm": {
+   "src": "needles_nrm.jpg",
+   "bytes": 668968,
+   "sha1": "e90ad4f81a474b6fc6a2814ab4077d4dde05d346",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1307495,
+    324194
+   ]
+  },
+  "needles_orm": {
+   "src": "needles_orm.webp",
+   "bytes": 213814,
+   "sha1": "07391367277b0f1d42e48fc6ba1e4271e261a0c8",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    1035067,
+    283937
+   ]
+  },
+  "oak_col": {
+   "src": "oak_col.webp",
+   "bytes": 130084,
+   "sha1": "3415304039cc29bff77c690f2aa5a80f70fef912",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    221131,
+    84102
+   ]
+  },
+  "oak_nrm": {
+   "src": "oak_nrm.webp",
+   "bytes": 23116,
+   "sha1": "fbc1eda9372beded67b283281450d17a072e69d1",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    222482,
+    76022
+   ]
+  },
+  "oak_orm": {
+   "src": "oak_orm.webp",
+   "bytes": 33064,
+   "sha1": "6aa1a7dffc956e760637b4911d64a72e1eeb80b6",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    467964,
+    139780
+   ]
+  },
+  "paintwood_col": {
+   "src": "paintwood_col.webp",
+   "bytes": 28510,
+   "sha1": "df20246d8216d93ae1565e5f5bc8b28671b0e288",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    110653,
+    34813
+   ]
+  },
+  "paintwood_nrm": {
+   "src": "paintwood_nrm.webp",
+   "bytes": 22962,
+   "sha1": "c65c060427b35e709b6cefd6dc799c3f935300a1",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    281857,
+    89924
+   ]
+  },
+  "paintwood_orm": {
+   "src": "paintwood_orm.webp",
+   "bytes": 25386,
+   "sha1": "0e593154f517fac24418201b8bc9ec5cd95b14b6",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    353733,
+    110535
+   ]
+  },
+  "pavers_col": {
+   "src": "pavers_col.webp",
+   "bytes": 170250,
+   "sha1": "685dbac2715c438b43868dc92d0cb0bcf3cc402b",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    239187,
+    90167
+   ]
+  },
+  "pavers_nrm": {
+   "src": "pavers_nrm.jpg",
+   "bytes": 347996,
+   "sha1": "990bded7bed7df99857e48a3a7d87115951ff825",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1082553,
+    247348
+   ]
+  },
+  "pavers_orm": {
+   "src": "pavers_orm.webp",
+   "bytes": 110602,
+   "sha1": "65bf8141b4568bca34ff366a229c5e08ee8d896d",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    732052,
+    214384
+   ]
+  },
+  "pinebark_col": {
+   "src": "pinebark_col.webp",
+   "bytes": 167462,
+   "sha1": "018dcf462a4e1047f9c92840ac5e945b18f28a14",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    253744,
+    96366
+   ]
+  },
+  "pinebark_nrm": {
+   "src": "pinebark_nrm.jpg",
+   "bytes": 458881,
+   "sha1": "c0d319ffb47b57388a9cdfefdc32322ad1ce27e6",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1294253,
+    326438
+   ]
+  },
+  "pinebark_orm": {
+   "src": "pinebark_orm.webp",
+   "bytes": 140132,
+   "sha1": "75691aae4de922926ad309c61572f05d75ebfc31",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    827120,
+    227002
+   ]
+  },
+  "plaster_ext_col": {
+   "src": "plaster_ext_col.webp",
+   "bytes": 139210,
+   "sha1": "767f060e483c666eba9b47d7058a1603e1a8101f",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    217831,
+    81885
+   ]
+  },
+  "plaster_ext_nrm": {
+   "src": "plaster_ext_nrm.jpg",
+   "bytes": 267972,
+   "sha1": "04c78e05fa3f79b1b3140d35b418f6dd010a4325",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1012255,
+    219804
+   ]
+  },
+  "plaster_ext_orm": {
+   "src": "plaster_ext_orm.webp",
+   "bytes": 16394,
+   "sha1": "48b15bf963ec341c286168b11284bd37163372ca",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    286675,
+    109098
+   ]
+  },
+  "roofmetal_col": {
+   "src": "roofmetal_col.webp",
+   "bytes": 165168,
+   "sha1": "1b1b33f037153d752627cda18a7da6416bfc612a",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    232785,
+    90450
+   ]
+  },
+  "roofmetal_nrm": {
+   "src": "roofmetal_nrm.webp",
+   "bytes": 145784,
+   "sha1": "4582ebf0de50ee6654a8c4459dfb4f71172cbc66",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    825123,
+    161140
+   ]
+  },
+  "roofmetal_orm": {
+   "src": "roofmetal_orm.webp",
+   "bytes": 38108,
+   "sha1": "5725160233f2b9379c6e9f48897c61183750b171",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    476315,
+    141519
+   ]
+  },
+  "rooftiles_col": {
+   "src": "rooftiles_col.jpg",
+   "bytes": 265442,
+   "sha1": "34323644dc73cba82c07e2a58b9fc7ad1d54e695",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    272472,
+    98515
+   ]
+  },
+  "rooftiles_nrm": {
+   "src": "rooftiles_nrm.jpg",
+   "bytes": 325458,
+   "sha1": "a7eb88c5854464c7305c0a5a34d873b92857157b",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1106087,
+    277313
+   ]
+  },
+  "rooftiles_orm": {
+   "src": "rooftiles_orm.webp",
+   "bytes": 79892,
+   "sha1": "8a1a90fc3167e611a87f2d25fd5436e7babf9eec",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    640782,
+    175132
+   ]
+  },
+  "slate_col": {
+   "src": "slate_col.webp",
+   "bytes": 122344,
+   "sha1": "a945e0a8155bd532ce86c402b0df723a977012ba",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    214149,
+    84205
+   ]
+  },
+  "slate_nrm": {
+   "src": "slate_nrm.webp",
+   "bytes": 73078,
+   "sha1": "a4acc0ed97eee592a1bf75d07733feba86e457c2",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    398199,
+    111355
+   ]
+  },
+  "slate_orm": {
+   "src": "slate_orm.webp",
+   "bytes": 82324,
+   "sha1": "8d0eea01e4baa9bfa6d6080fd09814940adf5be1",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    583218,
+    139817
+   ]
+  },
+  "sprucebark_col": {
+   "src": "sprucebark_col.webp",
+   "bytes": 173290,
+   "sha1": "8a2e33019cefff0cb1605b51300778e697edf806",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    241131,
+    92274
+   ]
+  },
+  "sprucebark_nrm": {
+   "src": "sprucebark_nrm.jpg",
+   "bytes": 580473,
+   "sha1": "1224204618bb1c81cb57520619c986da4516793f",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    1302972,
+    325312
+   ]
+  },
+  "sprucebark_orm": {
+   "src": "sprucebark_orm.webp",
+   "bytes": 156058,
+   "sha1": "a1d7ad6d7a970e50ac668cd27a039e3037d657e7",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    886820,
+    247889
+   ]
+  },
+  "weatherwood_col": {
+   "src": "weatherwood_col.webp",
+   "bytes": 167272,
+   "sha1": "bf4dff70a3ea35da4c69670de18c80354af74600",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    241069,
+    91398
+   ]
+  },
+  "weatherwood_nrm": {
+   "src": "weatherwood_nrm.webp",
+   "bytes": 153556,
+   "sha1": "91fcc89c589aca8f9d7077774c77c2e3273de13c",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    829158,
+    207014
+   ]
+  },
+  "weatherwood_orm": {
+   "src": "weatherwood_orm.webp",
+   "bytes": 86326,
+   "sha1": "0f816513c31da925d70ebc4014947ed07d5be9ff",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    563196,
+    153739
+   ]
+  },
+  "wool_col": {
+   "src": "wool_col.webp",
+   "bytes": 109074,
+   "sha1": "c740e28011b93a66e89e90c4ddaba1ece6b0d46b",
+   "enc": "etc1s",
+   "recipe": "9944c48bded0",
+   "size": [
+    223981,
+    87129
+   ]
+  },
+  "wool_nrm": {
+   "src": "wool_nrm.webp",
+   "bytes": 118716,
+   "sha1": "9027aa5133a31a78dd56b91de76cf85ef94e5154",
+   "enc": "uastc",
+   "recipe": "87fbe97a3be5",
+   "size": [
+    768120,
+    255281
+   ]
+  },
+  "wool_orm": {
+   "src": "wool_orm.webp",
+   "bytes": 266476,
+   "sha1": "7fa27d0f4b366257563e0d3f6e696da470abd1f6",
+   "enc": "uastc",
+   "recipe": "09b8c8ac9cca",
+   "size": [
+    1073046,
+    299529
+   ]
+  }
+ }
+}
