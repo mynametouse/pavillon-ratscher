@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { LATE } from '../core/late.js';
+import { KERN } from '../core/kern.js';
 import { rnd, rr, scene, V, VARIANT, varOk } from '../core/head.js';
 import { loadModel, markDirty, MODELS, patchSV, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
@@ -17,6 +18,9 @@ export const NW = 4 - T,
   IY1 = OG.y1 - T; // inner faces EG (north/east) and OG box (A)
 export const IX1B = OGB.x1 - T; // OG east inner face (B)
 phase(PHN.builtins);
+// keys of placed models for the planner ('type#n', counted in load order; variant B 'B:type#n') – garden/garten_kit.js counts the garden
+// buildings in their own range (keysBegin/keysEnd), so the keys saved furniture layouts refer to stay the same
+export const ITEMKEY = { n: 0, nb: 0 };
 export function placeGLB(id, { x, y, z, face = 0, h = null, w = null, col = true, colPad = 0, mat = null }, fallback) {
   const mm = MODELS[id];
   if (!mm) {
@@ -35,10 +39,7 @@ export function placeGLB(id, { x, y, z, face = 0, h = null, w = null, col = true
     fy = ((bb[0] * sn + bb[2] * c) * s) / 2 + colPad;
   const colIdx = col ? COL.length : null;
   if (col) COL.push([x - fx, x + fx, y - fy, y + fy, z, z + bb[1] * s, 'furn', PH, PH_END]);
-  const key =
-    vv === 'B'
-      ? 'B:' + id + '#' + (window.ITEM_NB = (window.ITEM_NB || 0) + 1)
-      : id + '#' + (window.ITEM_N = (window.ITEM_N || 0) + 1);
+  const key = vv === 'B' ? 'B:' + id + '#' + ++ITEMKEY.nb : id + '#' + ++ITEMKEY.n;
   const it = {
     kind: 'glb',
     type: id,
@@ -596,4 +597,30 @@ for (const z of [2.3, zO + 2.25]) {
 }
 varOff();
 window.LIGHTS = [L1, L2, L3, L4, L5, T1, T2];
-for (const l of window.LIGHTS) tagPh(l);
+for (const l of window.LIGHTS) {
+  // not tagged with a phase (tagPh would hide it before the built-ins): phases before the built-ins switch a light off by its intensity
+  // (game/walkable.js setPhase) – the number of lights, and so every shader program, stays the same; a light lent to another place
+  // (KERN.lights) shines there in any phase
+  let i0 = l.intensity;
+  Object.defineProperty(l, 'intensity', {
+    configurable: true,
+    enumerable: true,
+    get: () => (l.userData.off && !l.userData.lent ? 0 : i0),
+    set: v => {
+      i0 = v;
+    },
+  });
+}
+// Phase 2: the lights other places borrow while the pavilion does not need them (KERN.lights, core/kern.js) – the room of the old school on a
+// Friday evening, the fire on the field; no new lamps, so no newly compiled shaders. T1/T2 stay home (they move with the variant).
+KERN.lights.pool([L1, L4, L5, L3, L2], {
+  home: () => {
+    if ((window.PHASE ?? 99) < PHN.builtins) return false; // nothing built yet: the lights are free
+    const o = KERN.where();
+    return !o || Math.hypot(o[0] - 2, o[1] - 2) < 60;
+  },
+  restore: () => {
+    if (window.LIGHTSTATE) LATE.LIGHTSTATE.apply();
+    markDirty(true);
+  },
+});

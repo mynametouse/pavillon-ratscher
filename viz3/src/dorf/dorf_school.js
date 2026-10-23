@@ -16,7 +16,6 @@ import { markDirty, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { COL, WALK } from '../core/geo.js';
 import { P, rebuildGrids } from '../game/walkable.js';
-import { LIGHTSTATE } from '../game/home.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
 import { VPROPS } from '../world/village_props.js';
@@ -850,49 +849,38 @@ export const DSCHOOL = (() => {
     return Math.abs(lx - S.F.du) < S.F.dw / 2 + 0.05 && ly > -0.7 && ly < 0.75;
   };
   KERN.provide('pushOut', (p, r) => (inDoor(p[0], p[1]) ? false : WCOL.pushCircle(p, r)), 1);
-  // ---- light: the pavilion's interior lights 0, 3, 4 (L1, L4, L5) are borrowed while the evening runs and one is near ----
-  const LENT = [0, 3, 4];
-  let saved = null;
-  function lights(on) {
-    const LS = window.LIGHTS;
-    if (!LS || !S.built) return;
-    if (on && !saved) {
-      saved = LENT.map((i, k) => {
-        const l = LS[i],
-          [x, y, h] = S.lamps[k],
+  // ---- light: three of the pavilion's lights (KERN.lights, core/kern.js) hang over the tables and the bar while the evening runs and one
+  // is near; they go back by themselves when the evening ends, one leaves or the pavilion needs them ----
+  const LT = { want: false, ls: null, at: null };
+  KERN.lights.borrow({
+    id: 'dorf-schule',
+    n: 3,
+    prio: 1,
+    want: () => LT.want && S.built,
+    on: ls => {
+      LT.ls = ls;
+      LT.at = ls.map((l, k) => {
+        const [x, y, h] = S.lamps[k],
           [wx, wy] = toW(x, y);
-        return {
-          l,
-          p: l.position.clone(),
-          d: l.distance,
-          c: l.color.getHex(),
-          dec: l.decay,
-          at: V(wx, wy, S.F.zF + h - 0.12),
-        };
+        return V(wx, wy, S.F.zF + h - 0.12);
       });
       S.lit = true;
-    } else if (!on && saved) {
-      for (const o of saved) {
-        o.l.position.copy(o.p);
-        o.l.distance = o.d;
-        o.l.decay = o.dec;
-        o.l.color.setHex(o.c);
-      }
-      saved = null;
+    },
+    off: () => {
+      LT.ls = null;
       S.lit = false;
-      if (LIGHTSTATE) LIGHTSTATE.apply();
       M.lamp.emissiveIntensity = 0;
       markDirty(true);
-    }
-  }
+    },
+  });
   function lightTick(k) {
-    if (!saved) return;
-    saved.forEach((o, i) => {
-      if (o.l.position.distanceToSquared(o.at) > 1e-6) o.l.position.copy(o.at);
-      o.l.distance = 9;
-      o.l.decay = 1.6;
-      o.l.color.setHex(0xffc58a);
-      o.l.intensity = (i === 2 ? 9 : 12) * k;
+    if (!LT.ls) return;
+    LT.ls.forEach((l, i) => {
+      if (l.position.distanceToSquared(LT.at[i]) > 1e-6) l.position.copy(LT.at[i]);
+      l.distance = 9;
+      l.decay = 1.6;
+      l.color.setHex(0xffc58a);
+      l.intensity = (i === 2 ? 9 : 12) * k;
     });
     M.lamp.emissiveIntensity = 1.6 * k;
   }
@@ -1036,9 +1024,8 @@ export const DSCHOOL = (() => {
       S.open += Math.sign(S.want - S.open) * Math.min(Math.abs(S.want - S.open), dt * 0.9);
       pose();
     }
-    const want = evening && near;
-    if (want !== !!saved) lights(want);
-    if (saved) lightTick(1);
+    LT.want = evening && near;
+    if (LT.ls) lightTick(1);
     const day = DN && DN.active && DN.state ? 1 - DN.state.night : 0.6;
     const e = 0.02 + 0.5 * day;
     if (Math.abs(M.glass.emissive.r - e * 0.55) > 0.01) {
@@ -1063,8 +1050,7 @@ export const DSCHOOL = (() => {
   S.toL = toL;
   S.az = az;
   S.at = at;
-  S.lights = lights;
-  S.LENT = LENT;
+  S.lights = () => LT.ls; // the borrowed lights while the evening runs (KERN.lights), else null
   S.R0 = R0;
   return S;
 })();

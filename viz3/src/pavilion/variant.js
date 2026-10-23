@@ -16,7 +16,6 @@ export function setVariant(v, { save = true } = {}) {
   if (v !== 'A' && v !== 'B') return;
   const changed = v !== VARIANT;
   setVariantId(v);
-  window.VARIANT = v;
   document.body.dataset.variant = v;
   for (const k of Object.keys(GEO)) delete GEO[k];
   Object.assign(GEO, v === 'A' ? GEO_A : GEO_B);

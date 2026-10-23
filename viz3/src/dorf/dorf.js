@@ -10,7 +10,7 @@ import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { floorAt, P } from '../game/walkable.js';
-import { CAM3 } from '../game/player.js';
+import { CAM3, go } from '../game/player.js';
 import { PLAY } from '../game/play.js';
 import { news, toast } from '../audio/audio.js';
 import { VILLAGE } from '../world/village.js';
@@ -815,6 +815,7 @@ export const DORF = (() => {
         // talking: standing, turned to the visitor
         if (f.g.visible && f.at && S.talkTo !== k) {
           S.talkTo = k;
+          KERN.emit('talk', { who: k });
           DPEOPLE.place(k, f.at.x, f.at.y, f.at.z, (Math.atan2(P.x - f.at.x, P.y - f.at.y) * 180) / Math.PI, 'stand');
         }
         continue;
@@ -915,6 +916,55 @@ export const DORF = (() => {
     homesErr: DLIFE.err,
     talk: UI.cur,
     sub: UI.sub.hidden ? null : UI.sub.textContent,
+  });
+  // the journal (KERN.tasks, core/kern.js; shown by game/quests.js, key J): the evening's task and the errands taken on
+  KERN.tasks.source({
+    id: 'dorf',
+    order: 20,
+    list: () => {
+      const out = [];
+      if (stepI(ST.step) >= 1)
+        out.push({
+          id: 'freitag',
+          title: T.TASK.title,
+          who: 'Alte Schule · freitags 19–23 Uhr',
+          status: ST.step === 'done' ? 'erledigt' : 'läuft',
+          text: stepText(ST.step) || '',
+          target: () =>
+            ST.step === 'fire' ? DFIRE.at : DSCHOOL.F && DSCHOOL.toW ? DSCHOOL.toW(DSCHOOL.F.du, -2.6) : null,
+        });
+      for (const [id, e] of Object.entries(ST.err)) {
+        const E = T.ERRANDS[id];
+        if (!E) continue;
+        out.push({
+          id: 'err-' + id,
+          title: E.title,
+          who: (T.P[E.who] && T.P[E.who].name) || E.who,
+          status: e.st === 'done' ? 'erledigt' : 'läuft',
+          text: e.st === 'done' ? 'Erledigt.' : (E.steps[e.i] && E.steps[e.i].text) || '',
+          target: null,
+        });
+      }
+      return out;
+    },
+  });
+  // start situations (KERN.scenario; ?szenario=dorf|freitag|feuer – the older ?dorf=freitag|feuer does the same)
+  KERN.scenario('dorf', { label: 'Dorf (Anger)', order: 20, run: () => go('dorf') });
+  KERN.scenario('freitag', {
+    label: 'Skatabend in der alten Schule (Freitag, 19:30)',
+    order: 21,
+    run: () => {
+      DCAL.jump('skat');
+      atDoor();
+    },
+  });
+  KERN.scenario('feuer', {
+    label: 'Feuer am Acker (Samstagabend)',
+    order: 22,
+    run: () => {
+      DCAL.jump('fire');
+      toFire();
+    },
   });
   whenLoaded(() => {
     const q = QS.get('dorf');

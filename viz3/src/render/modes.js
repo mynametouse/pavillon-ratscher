@@ -9,6 +9,7 @@ import { giApply, setEnvFor } from './render.js';
 export let MODE = 'gold';
 export function setModeId(m) {
   MODE = m; // time/daynight.js takes over the mode (auto/night)
+  window.MODE_NOW = m;
 }
 export const MODES = {
   day: {
@@ -117,8 +118,7 @@ export function setMode(m) {
   const M = MODES[m];
   if (!M) return;
   if (window.DN) LATE.DN.disable();
-  MODE = m;
-  window.MODE_NOW = m;
+  setModeId(m);
   const L = window.LIGHTS;
   const topV = typeof LATE.P !== 'undefined' && LATE.P.mode === 'top';
   setSunDir(topV ? dirFromAz(205, 52) : dirFromAz(M.az, M.el));

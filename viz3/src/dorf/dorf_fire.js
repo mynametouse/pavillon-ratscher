@@ -11,7 +11,6 @@ import { R, cam, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, pbrMat } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { LIGHTSTATE } from '../game/home.js';
 import { audio } from '../audio/audio.js';
 import { VPROPS } from '../world/village_props.js';
 export const DFIRE = (() => {
@@ -430,23 +429,18 @@ export const DFIRE = (() => {
     }
     return S.built;
   }
-  // ---- the light: the pavilion's stove light (LIGHTS[1], orange) borrowed while the fire burns and one is near ----
-  let lent = null;
-  function light(on) {
-    const LS = window.LIGHTS;
-    if (!LS) return;
-    const l = LS[1];
-    if (on && !lent) lent = { l, p: l.position.clone(), d: l.distance, dec: l.decay, c: l.color.getHex() };
-    else if (!on && lent) {
-      l.position.copy(lent.p);
-      l.distance = lent.d;
-      l.decay = lent.dec;
-      l.color.setHex(lent.c);
-      lent = null;
-      if (LIGHTSTATE) LIGHTSTATE.apply();
+  // ---- the light: one of the pavilion's lights (KERN.lights, core/kern.js) while the fire burns and one is near; it goes back by itself ----
+  const FL = { want: false, ls: null };
+  KERN.lights.borrow({
+    id: 'dorf-feuer',
+    n: 1,
+    want: () => FL.want,
+    on: ls => (FL.ls = ls),
+    off: () => {
+      FL.ls = null;
       markDirty(true);
-    }
-  }
+    },
+  });
   // ---- the crackle: noise bursts through a band-pass, now and then a pop; a low roar under it ----
   let nb = null,
     nextT = 0,
@@ -529,7 +523,7 @@ export const DFIRE = (() => {
     if (!on) {
       EMBER.emissiveIntensity = 0;
       PATCHMAT.emissiveIntensity = 0;
-      if (lent) light(false);
+      FL.want = false;
       crackle(0, 1e9);
       return;
     }
@@ -537,15 +531,18 @@ export const DFIRE = (() => {
     U.uT.value = S.t;
     U.uK.value = S.k;
     const near = dist < 140;
-    if (near !== !!lent) light(near);
-    if (lent) {
+    FL.want = near;
+    if (near) {
       const fl = 0.8 + 0.12 * Math.sin(S.t * 11.3) + 0.08 * Math.sin(S.t * 23.1 + 1.3) + 0.06 * Math.sin(S.t * 4.1);
-      if (!S.lightAt) S.lightAt = V(S.at[0], S.at[1], S.z + 2.6);
-      lent.l.position.copy(S.lightAt);
-      lent.l.distance = 18;
-      lent.l.decay = 1.3;
-      lent.l.color.setHex(0xff8f45);
-      lent.l.intensity = 31 * S.k * fl;
+      const l = FL.ls && FL.ls[0];
+      if (l) {
+        if (!S.lightAt) S.lightAt = V(S.at[0], S.at[1], S.z + 2.6);
+        l.position.copy(S.lightAt);
+        l.distance = 18;
+        l.decay = 1.3;
+        l.color.setHex(0xff8f45);
+        l.intensity = 31 * S.k * fl;
+      }
       EMBER.emissiveIntensity = (0.55 + 0.45 * fl) * S.k;
       PATCHMAT.emissiveIntensity = 0.7 * S.k * (0.85 + 0.15 * Math.sin(S.t * 9) * Math.sin(S.t * 5.3 + 1));
     }
@@ -585,7 +582,7 @@ export const DFIRE = (() => {
         : null,
     11
   );
-  Object.assign(S, { build, tick, spots, light, PATCH });
+  Object.assign(S, { build, tick, spots, light: () => FL.ls && FL.ls[0], PATCH });
   return S;
 })();
 window.DFIRE = DFIRE;

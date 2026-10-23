@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "stand": "2026-10-23",
+  "_hinweis": "Gilden-Vorlagen für den Garten bei Ratscher. radius_rel: Anteil am Kronenradius des ausgewachsenen Baums in der Mitte (1 = Kronentraufe); seite: null = rundum, sonst die Seite des Baums. Eigene Zusammenstellung nach den genannten Quellen zur Waldgarten- und Gildenplanung und den Ansprüchen der Pflanzen in pflanzen.json.",
+  "quellen": {
+    "wetcc-gilde": {
+      "titel": "Fruit Tree Guild – Layers and Categories",
+      "url": "https://wetcc.edu/wp-content/uploads/pdf/Fruit-Tree-Guild-Layers-Categories.pdf",
+      "herausgeber": "White Earth Tribal and Community College, Community Extension (gefördert von USDA NIFA)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "hswt-waldgarten": {
+      "titel": "Evaluierung der finanziellen Rentabilität eines Waldgartens am Standort Freising/Dürneck (Bachelorarbeit J. Knoll, Juni 2025)",
+      "url": "https://agroforst-info.de/wp-content/uploads/2025/11/Bachelorarbeit_Waldgarten_Knoll_Juni_2025.pdf",
+      "herausgeber": "Hochschule Weihenstephan-Triesdorf, Fakultät Wald und Forstwirtschaft (über agroforst-info.de)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "rhs-beinwell": {
+      "titel": "3 ways to use comfrey to feed your plants",
+      "url": "https://www.rhs.org.uk/advice/grow-your-own/features/making-comfrey-feed",
+      "herausgeber": "Royal Horticultural Society (RHS)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "pfaf-allium-schoenoprasum": {
+      "titel": "Allium schoenoprasum – Plant Database",
+      "url": "https://pfaf.org/user/Plant.aspx?LatinName=Allium+schoenoprasum",
+      "herausgeber": "Plants For A Future (PFAF)",
+      "abgerufen": "2026-10-23",
+      "lizenz": "© Plants For A Future; nur Fakten übernommen"
+    },
+    "pfaf-elaeagnus-multiflora": {
+      "titel": "Elaeagnus multiflora – Plant Database",
+      "url": "https://pfaf.org/user/Plant.aspx?LatinName=Elaeagnus+multiflora",
+      "herausgeber": "Plants For A Future (PFAF)",
+      "abgerufen": "2026-10-23",
+      "lizenz": "© Plants For A Future; nur Fakten übernommen"
+    },
+    "ltz-wuehlmaus": {
+      "titel": "Hinweise zur Pflanzengesundheit, Haus- und Kleingarten: Wühlmäuse (Februar 2021)",
+      "url": "https://studio.isip.de/isip/servlet/resource/blob/323910/8085cf0241b9dc81c4bebaaae7eec0be/pflanzengesundheit-wuehlmaus-data.pdf",
+      "herausgeber": "Landwirtschaftliches Technologiezentrum Augustenberg (LTZ), Baden-Württemberg",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "pfaf-caragana-arborescens": {
+      "titel": "Caragana arborescens – Plant Database",
+      "url": "https://pfaf.org/user/Plant.aspx?LatinName=Caragana+arborescens",
+      "herausgeber": "Plants For A Future (PFAF)",
+      "abgerufen": "2026-10-23",
+      "lizenz": "© Plants For A Future; nur Fakten übernommen"
+    },
+    "pfaf-achillea-millefolium": {
+      "titel": "Achillea millefolium – Plant Database",
+      "url": "https://pfaf.org/user/Plant.aspx?LatinName=Achillea+millefolium",
+      "herausgeber": "Plants For A Future (PFAF)",
+      "abgerufen": "2026-10-23",
+      "lizenz": "© Plants For A Future; nur Fakten übernommen"
+    },
+    "bl-waldgarten": {
+      "titel": "Leitfaden Freiraumgestaltung auf Privatgrund – Obstgarten, Merkblatt Nr. 5 (Mai 2022)",
+      "url": "https://kanton.baselland.ch/volkswirtschafts-und-gesundheitsdirektion/landw-zentrum-ebenrain/nl_files/nl_merkblaetter/bafu_klimagarten_obst_waldgarten.pdf",
+      "herausgeber": "Kanton Basel-Landschaft, Landwirtschaftliches Zentrum Ebenrain (Bereitstellung)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "aelf-unternutzung": {
+      "titel": "Unternutzung von Streuobstwiesen – Kostenfaktor oder Chance? (Vortrag G. Stöckl, Bio-Streuobsttagung Freising, 31.01.2013)",
+      "url": "https://lfl.bayern.de/mam/cms07/iab/dateien/unternutzung-streuobstwiesenst__ckl.pdf",
+      "herausgeber": "Amt für Ernährung, Landwirtschaft und Forsten Neumarkt i. d. OPf., Fachzentrum Ökologischer Landbau (veröffentlicht von der LfL Bayern)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "pfaf-rosa-canina": {
+      "titel": "Rosa canina – Plant Database",
+      "url": "https://pfaf.org/user/Plant.aspx?LatinName=Rosa+canina",
+      "herausgeber": "Plants For A Future (PFAF)",
+      "abgerufen": "2026-10-23",
+      "lizenz": "© Plants For A Future; nur Fakten übernommen"
+    },
+    "llg-haskap": {
+      "titel": "Haskapbeere – eine Obstart mit viel Potenzial (Stand August 2023)",
+      "url": "https://llfg.sachsen-anhalt.de/fileadmin/Bibliothek/Politik_und_Verwaltung/MLU/LLFG/Dokumente/04_themen/gartenbau/OEA_Flyer_Haspkap_Entwurf.pdf",
+      "herausgeber": "Landesanstalt für Landwirtschaft und Gartenbau Sachsen-Anhalt (LLG)",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "pfaf-alnus-glutinosa": {
+      "titel": "Alnus glutinosa – Plant Database",
+      "url": "https://pfaf.org/user/Plant.aspx?LatinName=Alnus+glutinosa",
+      "herausgeber": "Plants For A Future (PFAF)",
+      "abgerufen": "2026-10-23",
+      "lizenz": "© Plants For A Future; nur Fakten übernommen"
+    },
+    "mluk-vegagley": {
+      "titel": "Steckbriefe Brandenburger Böden: Vega-Gley (3. Auflage, Dezember 2020)",
+      "url": "https://mleuv-daten.brandenburg.de/Steckbriefe-BB-Boeden/SB-9-3-Vegagley.pdf",
+      "herausgeber": "Ministerium für Landwirtschaft, Umwelt und Klimaschutz des Landes Brandenburg",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lwg-quitte": {
+      "titel": "Die Quitte (Cydonia oblonga) (Publikation 3154, Juli 2022)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/3154_info_bf.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lwg-tafeltrauben": {
+      "titel": "Traubensorten für den Haus- und Kleingarten (Merkblatt 3181, April 2020)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/tafeltrauben_sorten_infoschrift.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lwg-kiwibeere": {
+      "titel": "Kiwibeere, die kleinfruchtige Kiwi (Actinidia arguta) (Merkblatt 3170, Mai 2017)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/3170-kiwibeere_kleinfruchtige_kiwi.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    },
+    "lwg-birne": {
+      "titel": "Birnensorten für den Garten (Merkblatt 3152, Juni 2016)",
+      "url": "https://www.lwg.bayern.de/mam/cms06/gartenakademie/dateien/infoschrift_birne_3152.pdf",
+      "herausgeber": "Bayerische Landesanstalt für Weinbau und Gartenbau (LWG), Bayerische Gartenakademie",
+      "abgerufen": "2026-10-23",
+      "lizenz": null
+    }
+  },
+  "gilden": [
+    {
+      "id": "apfel-gilde",
+      "name": "Apfel-Gilde",
+      "text": "Apfel-Halbstamm in der Mitte, im Drahtkorb und mit Stamm- und Verbissschutz. Schnittlauch und Knoblauch als Ring am Stamm, Narzissen unter der Krone (verdrängen Gras; als Schutz gegen Wühlmäuse nicht belegt), ein Beinwell-Ring an der Kronentraufe liefert Mulch, Johannisbeeren am sonnigen Südrand, ein Goumi im Westen als Stickstoffsammler.",
+      "mitte": "apfel-rebella",
+      "ringe": [
+        {
+          "radius_rel": 0.25,
+          "seite": null,
+          "pflanzen": [{ "id": "schnittlauch", "anzahl": 6 }, { "id": "knoblauch", "anzahl": 6 }]
+        },
+        {
+          "radius_rel": 0.6,
+          "seite": null,
+          "pflanzen": [{ "id": "narzisse", "anzahl": 20 }]
+        },
+        {
+          "radius_rel": 1,
+          "seite": null,
+          "pflanzen": [{ "id": "beinwell-bocking-14", "anzahl": 6 }]
+        },
+        {
+          "radius_rel": 1.3,
+          "seite": "sued",
+          "pflanzen": [{ "id": "johannisbeere-rot", "anzahl": 2 }, { "id": "johannisbeere-schwarz", "anzahl": 1 }]
+        },
+        {
+          "radius_rel": 1.4,
+          "seite": "west",
+          "pflanzen": [{ "id": "goumi", "anzahl": 1 }]
+        }
+      ],
+      "quellen": ["wetcc-gilde", "hswt-waldgarten", "rhs-beinwell", "pfaf-allium-schoenoprasum", "pfaf-elaeagnus-multiflora", "ltz-wuehlmaus"]
+    },
+    {
+      "id": "zwetschen-gilde",
+      "name": "Zwetschen-Gilde",
+      "text": "Zwetsche in der Mitte, Knoblauch am Stamm, Walderdbeeren als Bodendecker unter der Krone statt Gras, an der Traufe Beinwell (Mulch) und Schafgarbe (lockt Nützlinge); Stachelbeeren am Südrand, ein Erbsenstrauch im Westen als Stickstoffsammler. Für einen sonnigen, nicht staunassen Platz.",
+      "mitte": "zwetsche-wangenheim",
+      "ringe": [
+        {
+          "radius_rel": 0.25,
+          "seite": null,
+          "pflanzen": [{ "id": "knoblauch", "anzahl": 6 }]
+        },
+        {
+          "radius_rel": 0.6,
+          "seite": null,
+          "pflanzen": [{ "id": "walderdbeere", "anzahl": 10 }]
+        },
+        {
+          "radius_rel": 1,
+          "seite": null,
+          "pflanzen": [{ "id": "beinwell-bocking-14", "anzahl": 4 }, { "id": "schafgarbe", "anzahl": 4 }]
+        },
+        {
+          "radius_rel": 1.3,
+          "seite": "sued",
+          "pflanzen": [{ "id": "stachelbeere", "anzahl": 2 }]
+        },
+        {
+          "radius_rel": 1.5,
+          "seite": "west",
+          "pflanzen": [{ "id": "erbsenstrauch", "anzahl": 1 }]
+        }
+      ],
+      "quellen": ["wetcc-gilde", "hswt-waldgarten", "pfaf-caragana-arborescens", "pfaf-achillea-millefolium"]
+    },
+    {
+      "id": "wildobst-hecke",
+      "name": "Wildobst-Hecke an der Ostgrenze",
+      "text": "Hecke entlang der Ostgrenze (Ziegen beim Nachbarn): Kornelkirsche in der Mitte, nach Norden und Süden Hasel, Hundsrose, Holunder, Aronia und zwei Maibeeren-Sorten – dicht, teils dornig und mit Ernte von Mai bis Oktober. Auf der Gartenseite (West) Walderdbeere und Waldmeister im Halbschatten. Grenzabstände beachten (Hasel, Holunder, Hundsrose 1 m; bei landwirtschaftlich genutztem Nachbargrund doppelt).",
+      "mitte": "kornelkirsche",
+      "ringe": [
+        {
+          "radius_rel": 1.2,
+          "seite": "nord",
+          "pflanzen": [{ "id": "hasel", "anzahl": 1 }]
+        },
+        {
+          "radius_rel": 1.2,
+          "seite": "sued",
+          "pflanzen": [{ "id": "hundsrose", "anzahl": 1 }]
+        },
+        {
+          "radius_rel": 2,
+          "seite": "nord",
+          "pflanzen": [{ "id": "holunder", "anzahl": 1 }]
+        },
+        {
+          "radius_rel": 2,
+          "seite": "sued",
+          "pflanzen": [{ "id": "aronia", "anzahl": 1 }]
+        },
+        {
+          "radius_rel": 2.5,
+          "seite": "nord",
+          "pflanzen": [{ "id": "maibeere", "anzahl": 2 }]
+        },
+        {
+          "radius_rel": 2.5,
+          "seite": "sued",
+          "pflanzen": [{ "id": "hasel", "anzahl": 1 }]
+        },
+        {
+          "radius_rel": 0.8,
+          "seite": "west",
+          "pflanzen": [{ "id": "walderdbeere", "anzahl": 8 }, { "id": "waldmeister", "anzahl": 6 }]
+        }
+      ],
+      "quellen": ["bl-waldgarten", "aelf-unternutzung", "pfaf-rosa-canina", "llg-haskap"]
+    },
+    {
+      "id": "bach-gilde",
+      "name": "Nasse Stelle am Bach",
+      "text": "Für die nasse Stelle am Bach: Schwarzerle als Stickstoffsammler – auf den Stock gesetzt bleibt sie klein. Bärlauch im Halbschatten darunter, am sonnigen Südrand Holunder und zwei Maibeeren-Sorten (vertragen Nässe besser als die meisten Obstarten), im Westen Beinwell für Mulch. Hier keine Obstbäume, die Staunässe scheuen.",
+      "mitte": "schwarzerle",
+      "ringe": [
+        {
+          "radius_rel": 0.5,
+          "seite": null,
+          "pflanzen": [{ "id": "baerlauch", "anzahl": 20 }]
+        },
+        {
+          "radius_rel": 1,
+          "seite": "sued",
+          "pflanzen": [{ "id": "holunder", "anzahl": 1 }, { "id": "maibeere", "anzahl": 2 }]
+        },
+        {
+          "radius_rel": 1,
+          "seite": "west",
+          "pflanzen": [{ "id": "beinwell-bocking-14", "anzahl": 3 }]
+        }
+      ],
+      "quellen": ["pfaf-alnus-glutinosa", "hswt-waldgarten", "llg-haskap", "mluk-vegagley"]
+    },
+    {
+      "id": "suedwand-gilde",
+      "name": "Warme Südwand am Pavillon",
+      "text": "Für die Südseite des Pavillons, den wärmsten und am besten vor Spätfrost geschützten Platz: Quitte als kleiner Baum davor, an der Wand am Spalier Tafeltraube ‘Venus’ und Kiwibeere (weiblich und männlich). Darunter Schnittlauch, Walderdbeeren und in den ersten Jahren Kapuzinerkresse.",
+      "mitte": "quitte",
+      "ringe": [
+        {
+          "radius_rel": 1.5,
+          "seite": "nord",
+          "pflanzen": [{ "id": "wein-venus", "anzahl": 1 }, { "id": "kiwibeere-weiki", "anzahl": 1 }, { "id": "kiwibeere-maennlich", "anzahl": 1 }]
+        },
+        {
+          "radius_rel": 0.3,
+          "seite": null,
+          "pflanzen": [{ "id": "schnittlauch", "anzahl": 4 }]
+        },
+        {
+          "radius_rel": 1,
+          "seite": "sued",
+          "pflanzen": [{ "id": "walderdbeere", "anzahl": 6 }]
+        },
+        {
+          "radius_rel": 1,
+          "seite": null,
+          "pflanzen": [{ "id": "kapuzinerkresse", "anzahl": 4 }]
+        }
+      ],
+      "quellen": ["lwg-quitte", "lwg-tafeltrauben", "lwg-kiwibeere", "lwg-birne"]
+    }
+  ]
+}

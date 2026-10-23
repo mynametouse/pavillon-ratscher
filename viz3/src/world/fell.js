@@ -1817,6 +1817,7 @@ export const FELL = (() => {
         if (F.th >= F.th1) {
           F.th = F.th1;
           F.landed = true;
+          KERN.emit('fell', { id: rec.id });
           F.w = -F.w * 0.18;
           F.bt = 0;
           dust(rec);
