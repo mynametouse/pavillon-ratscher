@@ -636,17 +636,17 @@ const SUED = (() => {
   for (const x of [-hx + 0.2, 0, hx - 0.2]) G(x - 0.05, x + 0.05, -hy, hy, 0.06, zf - 0.03, MAT.kvh, { grain: 'y' });
   G(-hx, hx, -hy, hy, zf - 0.03, zf, MAT.plank, { grain: 'y' });
   lwalk(r, -hx, hx, -hy, hy, zf, 'wood');
-  // walls (ribs upright); the north end beside and above the opening
-  const W = (x0, x1, y0, y1) => {
-    G(x0, x1, y0, y1, zf - 0.03, zw, MAT.metal, { grain: 'z', cast: true });
-    lcol(r, x0, x1, y0, y1, zf - 0.03, zw, 'wall');
+  // walls (ribs upright), the inner faces darker as in the old garage; the north end beside and above the opening
+  const W = (x0, x1, y0, y1, inner, z0 = zf - 0.03) => {
+    G(x0, x1, y0, y1, z0, zw, { def: MAT.metal, [inner]: wallIn }, { grain: 'z', cast: true });
+    if (z0 < zf) lcol(r, x0, x1, y0, y1, z0, zw, 'wall');
   };
-  W(-hx, -hx + T, -hy, hy);
-  W(hx - T, hx, -hy, hy);
-  W(-hx + T, hx - T, -hy, -hy + T);
-  W(-hx + T, -op, hy - T, hy);
-  W(op, hx - T, hy - T, hy);
-  G(-op, op, hy - T, hy, zf + 1.98, zw, MAT.metal, { grain: 'z', cast: true });
+  W(-hx, -hx + T, -hy, hy, 'e');
+  W(hx - T, hx, -hy, hy, 'w');
+  W(-hx + T, hx - T, -hy, -hy + T, 'n');
+  W(-hx + T, -op, hy - T, hy, 's');
+  W(op, hx - T, hy - T, hy, 's');
+  W(-op, op, hy - T, hy, 's', zf + 1.98);
   for (const [x, y] of [
     [-hx, -hy],
     [hx - 0.06, -hy],

@@ -11,10 +11,14 @@
 //    while machines run, empty it stops them); an empty can is full again the next morning (the petrol station)
 //  - where the mower and the cans stand: phase 0 in the old garage, from phase 1 at the garage at the south end (GARAGE.home); Hubert's
 //    diesel can (game/quests.js) follows when the phase changes
-// Saved: one key, pav-garage-v1 (doors, mower, can, generator, the mown lawn as a coarse grid). Test: viz3/test/garage.py.
+//  - a task in the journal (TASKS): „Rasen mähen“ begins with the first start of the mower, ends when 120 m² are short and the mower is
+//    back in the garage; once the lawn has grown again it begins anew
+// Saved: one key, pav-garage-v1 (doors, mower, can, generator, the mown lawn as a coarse grid; the task's state is TASKS' own).
+// Test: viz3/test/garage.py.
 import * as THREE from 'three';
 import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
+import { TASKS } from '../core/tasks.js';
 import { scene, V } from '../core/head.js';
 import { dimIndoor, markDirty, patchSV, whenLoaded } from '../core/assets.js';
 import { DOORS, PHN } from '../core/geo.js';
@@ -272,7 +276,7 @@ export const GPLAY = (() => {
   });
   let dimNow = null;
   function dimTick() {
-    const d = on0() && GARAGE.inside(M.x, M.y);
+    const d = inGarage(M.x, M.y);
     if (d === dimNow) return;
     dimNow = d;
     MW.g.traverse(o => {
@@ -807,6 +811,9 @@ export const GPLAY = (() => {
     if (growAcc >= 20) {
       growAcc = 0;
       GRASS.grow(t);
+      // the lawn has grown again: the task begins anew with the next start of the mower
+      const ts = TASKS.state(LAWN.id);
+      if (ts && ts.st === 'erledigt' && GRASS.cutArea(t) < 1) TASKS.reset(LAWN.id);
     }
     S.saveAcc += dt;
     if (S.dirty && S.saveAcc > 4) {
@@ -814,7 +821,7 @@ export const GPLAY = (() => {
       save();
     }
   }
-  KERN.tick(tick, 'garage'); // runs before window.TICKS: the figure (game/avatar.js) then sees where the mower holds it
+  KERN.tick(tick, 'garden/garage_play'); // KERN ticks run before window.TICKS: the figure (game/avatar.js) sees where the mower holds it
   whenLoaded(() => setTimeout(load, 450));
   // ---- the fluorescent tube: switched at the door; its light is one of the pavilion's, free before the built-ins (KERN.lights) ----
   const LAMP = { on: false, ls: null, t: 0 };
@@ -882,6 +889,33 @@ export const GPLAY = (() => {
       go('garage');
     },
   });
+  // ---- a task in the one journal (TASKS, core/tasks.js): it begins when the mower runs, ends with a short lawn and the mower parked ----
+  const LAWN = { id: 'garage-rasen', m2: 120 };
+  TASKS.define({
+    id: LAWN.id,
+    title: 'Rasen mähen',
+    who: 'Garten',
+    start: { on: 'garage:start' },
+    steps: [
+      {
+        // read whenever the journal or the task card shows it: the area mown so far, in quarters (the card unfolds when its text changes)
+        get text() {
+          const q = Math.floor(GRASS.cutArea(CLOCK.t) / (LAWN.m2 / 4)) * (LAWN.m2 / 4);
+          return q > 0
+            ? `Mäh weiter: gut ${Math.round(q)} von ${LAWN.m2} m² sind kurz.`
+            : `Mäh den Rasen: ${LAWN.m2} m² sollen kurz werden.`;
+        },
+        check: () => GRASS.cutArea(CLOCK.t) >= LAWN.m2,
+      },
+      {
+        text: 'Stell den Rasenmäher zurück in die Garage.',
+        target: () => GARAGE.home(PHASE).mower.slice(0, 2),
+        z: 1.2,
+        check: () => M.mode === 'park' && inGarage(M.x, M.y),
+      },
+    ],
+    done: 'Der Rasen ist gemäht. In ein paar Tagen ist er nachgewachsen – dann wieder.',
+  });
   return {
     M,
     C,
@@ -899,6 +933,7 @@ export const GPLAY = (() => {
     load,
     home: () => GARAGE.home(PHASE),
     mowerHome,
+    LAWN,
     TANK,
     CAN_L,
     GEN_L,

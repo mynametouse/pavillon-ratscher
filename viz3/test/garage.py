@@ -1,6 +1,7 @@
 # feat/garage (Falko, 23.10.2026 10:53): the old tin garage of construction phase 0 – two sliding leaves to the north, shelves with tools,
-# the petrol lawn mower (take it out, start it, mow a strip, the tank goes down, refuel, park it), the red petrol can, the generator's
-# petrol, Hubert's diesel can in the garage, a reload keeps the mown lawn and the mower's place. Pictures into out/garage/.
+# the petrol lawn mower (take it out, start it, mow a strip, the tank goes down, refuel, park it; the task „Rasen mähen“ in the journal),
+# the red petrol can, the generator's petrol, Hubert's diesel can in the garage, a reload keeps the mown lawn and the mower's place.
+# Pictures into out/garage/.
 #   python3 viz3/test/garage.py PORT [nogeo=1,tier=hoch,only=programs+doors+inside+night+mower+petrol+diesel+sued+reload]
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -39,6 +40,8 @@ def E(js): return pg.evaluate(js)
 def J(js): return json.loads(pg.evaluate('JSON.stringify(' + js + ')'))
 def shot(name): lib.shot(pg, OUT, name)
 def view(x, y, z, yaw, pitch, fov=70): E(f"GAME.view({x}, {y}, {z}, {yaw}, {pitch}, {fov}); GAME.step(0.05)")
+# the mowing task in the journal: its state and its entry (text, status, where its arrow points)
+TASK = "(() => { const e = KERN.tasks.list().find(e => e.key === 'aufgaben:garage-rasen'); return { st: TASKS.state('garage-rasen'), e: e ? { text: e.text, status: e.status, tg: typeof e.target === 'function' ? e.target() : null } : null }; })()"
 
 def boot():
     t0 = time.time(); pg.goto(f'http://localhost:{port}/index.html{QUERY}', timeout=300000, wait_until='domcontentloaded')
@@ -156,6 +159,8 @@ with lib.browser() as b:
         r1 = J("__G.m()")
         if not r1['run']: E("__G.run('garage:motor', 1.0)")
         m = J("__G.m()"); ck('the engine runs (pull cord, a cold engine twice)', m['run'], m)
+        tk = J(TASK)
+        ck('journal: "Rasen mähen" begins with the engine', bool(tk['st']) and tk['st']['st'] == 'läuft' and bool(tk['e']) and 'm²' in tk['e']['text'], tk)
         f0 = m['fuel']; t0 = E("CLOCK.t")
         a0 = E("GRASS.cutArea(CLOCK.t)")
         # mow a strip to the north, between the carport and the bungalow
@@ -175,6 +180,10 @@ with lib.browser() as b:
         ck('mown area grows', a1 > a0 + 0.5, f'{a0} → {a1} m²')
         m = J("__G.m()"); dt_ = E("CLOCK.t") - t0
         ck('the tank goes down while it runs (about 1 l per game hour)', m['fuel'] < f0 and abs((f0 - m['fuel']) - dt_ / 60) < 0.02, f"{f0} → {m['fuel']} l in {dt_:.1f} game min")
+        # the task: for the test a small lawn is enough – then it asks for the mower back in the garage
+        E("GPLAY.LAWN.m2 = 0.5; GAME.step(0.6)")
+        tk = J(TASK)
+        ck('… mown: next "Stell den Rasenmäher zurück in die Garage" (with a target)', bool(tk['st']) and tk['st']['i'] == 1 and 'Garage' in tk['e']['text'] and tk['e']['tg'] is not None, tk)
         E("CAM3.want = true; GAME.P.pitch = -16; GAME.step(1.0)"); shot('maehen')
         E("CAM3.want = false; GAME.step(0.1)")
         strip = (p0, p1)
@@ -209,7 +218,10 @@ with lib.browser() as b:
         r = J("__G.walk(4.0)")
         m = J("__G.m()")
         ck('pushed back into the garage', 0.4 < m['y'] < 3.6 and 0.4 < m['x'] < 3.6 and m['mode'] == 'push', {'m': m, 'p': r})
-        E("PLAY.secondary(); GAME.step(0.2)")
+        E("PLAY.secondary(); GAME.step(0.6)")
+        tk = J(TASK)
+        ck('… parked: the task "Rasen mähen" is done', bool(tk['st']) and tk['st']['st'] == 'erledigt' and 'gemäht' in tk['e']['text'], tk)
+        E("GPLAY.LAWN.m2 = 120")
         view(2.0, 5.6, 1.65, 180, -16, 70); shot('maeher_geparkt')
     # ---------------- petrol for the generator ----------------
     if want('petrol'):
@@ -299,6 +311,8 @@ with lib.browser() as b:
         E("CLOCK.t = CLOCK.t + 3 * 1440; GAME.step(0.2)")
         late = J("GRASS.cutCount(6.0, 12.0, 0.4)")
         ck('the lawn grows back over a few game days', late['n'] == 0, {'after 2.5 d': mid, 'after 5.5 d': late})
+        tk = J(TASK)
+        ck('… and the task "Rasen mähen" can begin again', tk['st'] is None and tk['e'] is None, tk)
     ck('GL: textures per program within 16', *lib.check_gl(pg, 16)[:1], '')
     ck.errors(errs)
     ck.done()
