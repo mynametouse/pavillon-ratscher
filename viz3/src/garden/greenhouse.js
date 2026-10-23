@@ -129,12 +129,14 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     gB(g, lx - 0.012, lx + 0.012, ly - 0.012, ly + 0.012, 0.4, 1.7, MATS.stake, { grain: 'z', cast: false });
     for (let k = 0; k < 4; k++) {
       const z = 0.6 + k * 0.28;
-      const s = new THREE.Mesh(new THREE.SphereGeometry(0.14 + rnd() * 0.05, 8, 6), MATS.leaf);
-      s.position.copy(V(lx + (rnd() - 0.5) * 0.12, ly + (rnd() - 0.5) * 0.1, z));
-      s.scale.set(0.45, 0.35, 0.45); // a small core of leaves – the plant is made by the leaves added below
-      s.castShadow = true;
-      g.add(s);
-      tagPh(s);
+      // a whorl of leaves (was a green ball; the same random draws: its radius and position)
+      const rad = 0.14 + rnd() * 0.05,
+        cx = lx + (rnd() - 0.5) * 0.12,
+        cy = ly + (rnd() - 0.5) * 0.1;
+      for (let j = 0; j < 4; j++) {
+        const a = (j / 4) * 6.28 + k * 0.8;
+        leaf(g, cx + Math.cos(a) * 0.025, cy + Math.sin(a) * 0.025, z - 0.05, rad, a, 0.8 + (j % 2) * 0.35, MATS.leaf);
+      }
       if (k > 0 && rnd() < 0.8) {
         const t = new THREE.Mesh(new THREE.SphereGeometry(0.03 + rnd() * 0.012, 8, 6), KM.tomato);
         t.position.copy(V(lx + (rnd() - 0.5) * 0.2, ly + 0.12 * (rnd() > 0.5 ? 1 : -1), z - 0.12));
@@ -153,6 +155,27 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
       const a = R() * 6.28,
         z = 0.48 + k * 0.1;
       leaf(g, lx + Math.cos(a) * 0.05, -0.45 + Math.sin(a) * 0.05, z, 0.14 + R() * 0.06, a, 0.7 + R() * 0.5, MATS.leaf);
+    }
+  }
+  // side shoots in the leaf axils ('Geiztriebe'): a thin stem slanting out with a tuft of young leaves; own material, so pinching them out
+  // ('Tomaten ausgeizen') only has to hide it, also after the merge
+  const shootM = MATS.leaf.clone();
+  shootM.color.offsetHSL(0.02, 0.05, 0.06);
+  {
+    const RS = rng(1907);
+    for (let i = 0; i < 4; i++) {
+      const lx = -hx + 0.35 + (i * (b.L - 0.7)) / 3;
+      for (let k = 0; k < 3; k++) {
+        const a = RS() * 6.28,
+          z = 0.72 + k * 0.27 + RS() * 0.06,
+          ex = lx + Math.cos(a) * 0.075,
+          ey = -0.45 + Math.sin(a) * 0.075;
+        beam([lx + Math.cos(a) * 0.012, -0.45 + Math.sin(a) * 0.012, z], [ex, ey, z + 0.09], 0.006, 0.006, shootM, {
+          parent: g,
+        });
+        for (let j = 0; j < 3; j++)
+          leaf(g, ex, ey, z + 0.085, 0.06 + RS() * 0.03, a + (j - 1) * 0.9, 0.5 + RS() * 0.4, shootM);
+      }
     }
   }
   // cucumbers climbing strings in the west bed
@@ -273,13 +296,34 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     run: st => {
       st.done = 1;
       KM.tomato.color.set(0x8aa646);
-      st.think('Eine Schüssel voll Tomaten – sie schmecken nach Sommer.');
+      st.think(
+        'Reife Tomaten am Knick über dem Kelch abbrechen – mit Kelch halten sie länger. Die grünen reifen an der Pflanze nach. Eine Schüssel voll!'
+      );
+      st.dirty();
+    },
+  });
+  // pinch out the side shoots, so the plant puts its strength into the fruit
+  GACTS.push({
+    key: 'geizen',
+    b,
+    lx: 0.55,
+    ly: -0.35,
+    z: 1.1,
+    r: 1.3,
+    room: ghIn,
+    label: st => (st.done ? null : 'Tomaten ausgeizen'),
+    run: st => {
+      st.done = 1;
+      shootM.visible = false;
+      st.think(
+        'Die Geiztriebe in den Blattachseln mit zwei Fingern ausbrechen, solange sie klein sind – dann geht die Kraft in die Früchte statt in neue Triebe.'
+      );
       st.dirty();
     },
   });
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: 0, z1: 2.1, name: 'Gewächshaus' });
   FOOT.push({ b, hx: hx + 0.05, hy: hy + 0.05, ox: 0, oy: 0 });
-  paletteize(g, []);
+  paletteize(g, [shootM]);
 }
 
 const GHB = bldEnd(BLD.greenhouse);

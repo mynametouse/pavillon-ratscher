@@ -50,4 +50,7 @@ body[data-clean="1"] #hudtr .hb{background:rgba(24,23,21,.36)}
   #qbanner{top:10%}
   #npcpanel{top:48px;max-height:calc(100% - 58px);overflow:auto}
   #talkbtn{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+  /* the villagers' talk panel and table talk (dorf.css loads later – body raises the weight) */
+  body #dorfpanel{top:48px;bottom:auto;right:auto;width:min(360px,46vw);max-height:calc(100% - 58px);overflow:auto}
+  body #dorfsub{bottom:calc(108px + env(safe-area-inset-bottom,0px));max-width:min(520px,56%)}
 }

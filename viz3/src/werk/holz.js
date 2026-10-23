@@ -229,6 +229,7 @@ export const HOLZ = (() => {
       l.wp0 = mw(a);
       l.wp1 = mw(b);
     } else if (l.st === 'trailer' && window.TRAILER) {
+      TRAILER.g.updateWorldMatrix(true, false); // V16h: placed or moved since the last frame (tests, the crane) – not last frame's matrix
       const M = TRAILER.g.matrixWorld,
         z = TRAILER.bed.z + l.tz,
         a = V(l.tx, l.ta + l.L / 2, z).applyMatrix4(M),
@@ -423,6 +424,7 @@ export const HOLZ = (() => {
     l.f0 = [cx - (sx * l.L) / 2, y, cz];
     l.f1 = [cx + (sx * l.L) / 2, y, cz];
     l.from = from;
+    lastSpd = TRACTOR2.st.u; // V16h: the reference for the braking test starts now – a stale one (0, or the last carry's) threw a log off at once when the tractor still crept
     place(l);
     for (const G of Object.values(SP)) G.mS.instanceMatrix.needsUpdate = true;
     SFX.drop && SFX.drop();

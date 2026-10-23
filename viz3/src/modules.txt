@@ -67,6 +67,7 @@ world/forest.js             # V16c the forest at the Klinge: stand, procedural s
 world/village.js            # V16e Ratscher after photos: facades, roofs, chimneys, windows lit at night (VILLAGE)
 world/village_props.js      # V16e the centre: old school with turret and clock, Dorflinde, fountain, bus stop, street lamps, light at night (VPROPS)
 world/village_near.js       # V16e near the walker: fences, hedges, flower boxes, bins, woodpiles, door lamps – loaded and dropped by distance (VNEAR)
+# feat/schleusingen: the tiled world and Schleusingen below this line
 welt/welt.js                # the tiled world (tools/welt) streamed around the camera where a zone needs it; terrain for KERN (WELT)
 welt/schleusingen.js        # Schleusingen after photos: the old town walkable, Rathaus to enter, landmarks, lamps, street names (SCHL)
 world/worldcol.js           # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
@@ -105,6 +106,11 @@ dorf/dorf_fire.js           # feat/dorf the fire on the field towards the Klinge
 dorf/dorf_life.js           # feat/dorf homes and the everyday of the villagers: front gardens, the fence, out and in (DLIFE)
 dorf/dorf_cars.js           # feat/dorf the villagers' cars: parked at the kerb, driving out of the village and back (DCARS)
 dorf/dorf.js                # feat/dorf evenings, villagers placed, talk panel, table talk, card game, the task (DORF)
+# feat/ortsvorsteher: the election and the office below this line (after the village life, before the frame loop)
+amt/amt_data.js             # feat/ortsvorsteher the election and the office as data: villagers, issues, tasks, concerns, texts, how it really works (AMTDATA)
+amt/amt_model.js            # feat/ortsvorsteher opinions, promises, signatures, the count, the Ortsteilrat and the town council – pure logic (AMTMODEL)
+amt/amt_world.js            # feat/ortsvorsteher what the councils decide stands in the village: lamp, Mitfahrbank, speed display, poster, board (AMTWORLD)
+amt/amt.js                  # feat/ortsvorsteher the letter, the campaign, election day with the public count, the office, the town hall scene (AMT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api

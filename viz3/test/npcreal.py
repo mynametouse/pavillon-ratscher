@@ -17,6 +17,7 @@ with sync_playwright() as p:
     pg.evaluate("document.querySelectorAll('.ov,#doorbtn,#joy,header,#ppanel,#talkbtn,#npcsub,#toast').forEach(e=>e.style.visibility='hidden')")
     pg.evaluate(f"GAME.setMode('{MODE}'); GAME.setPhase(GAME.PHASES.length-1)"); time.sleep(2)
     # standing figures, close
+    pg.evaluate("window.LIFE && LIFE.force('hubert', 'off'); window.LIFE && LIFE.force('ronald', 'off');")  # since 23.10.2026 they follow a day plan (npc/life.js) – posed by hand here
     pg.evaluate("(() => { const w = NPC.NPCS.ronald; w.target = null; w.wait = 60; w.az = 0.4; w.place(); GAME.view(w.x + Math.sin(0.4) * 2.6, w.y + Math.cos(0.4) * 2.6, 1.6, (0.4 * 180 / Math.PI) + 180, -8, 50); })()"); time.sleep(1.5); shot(pg, 'ronald_front')
     pg.evaluate("(() => { const w = NPC.NPCS.ronald; GAME.view(w.x + Math.sin(0.4) * 1.1, w.y + Math.cos(0.4) * 1.1, 1.62, (0.4 * 180 / Math.PI) + 180, -6, 40); })()"); time.sleep(0.5); shot(pg, 'ronald_face')
     pg.evaluate("(() => { const w = NPC.NPCS.hubert; w.target = null; w.wait = 60; w.az = 1.2; w.place(); GAME.view(w.x + Math.sin(1.2) * 2.6, w.y + Math.cos(1.2) * 2.6, 1.6, (1.2 * 180 / Math.PI) + 180, -8, 50); })()"); time.sleep(1.5); shot(pg, 'hubert_front')

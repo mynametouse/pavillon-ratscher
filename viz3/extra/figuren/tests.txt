@@ -1,1 +1,2 @@
-figuren
+figuren:f,m
+figuren:c
