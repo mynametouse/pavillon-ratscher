@@ -1,0 +1,2 @@
+einrichtung:nogeo=1
+garten:nogeo=1

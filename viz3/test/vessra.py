@@ -248,6 +248,12 @@ with lib.browser() as b:
         E(f"GAME.orbit(200, 38, 520, [{ORT[0]}, {ORT[1]}, VESSRA.gz({ORT[0]}, {ORT[1]})]); GAME.step(0.5)")
         settle()
         lib.shot(pg, OUT, 'j_oben')
+        sg = J("(() => { const q = (VESSRA.streetSigns || []).find(q => q.name === 'Schleusinger Straße'); return q ? { at: q.at, d: q.d } : null; })()")
+        if sg:   # the street sign by the gate, from 6 m in front of it
+            nx, ny = sg['d'][1], -sg['d'][0]
+            x, y = sg['at'][0] + nx * 6, sg['at'][1] + ny * 6
+            view(x, y, yaw(x, y, sg['at'][0], sg['at'][1]), 8, 55)
+            lib.shot(pg, OUT, 'l_strassenschild')
     if want('night'):
         E("if (!DN.active) GAME.setMode('auto'); CLOCK.t = 22 * 60 + 40; DN.update(true)")
         lib.settle_light(pg)
@@ -256,6 +262,8 @@ with lib.browser() as b:
         lib.shot(pg, OUT, 'k_tor_nacht')
         n = J("{ glass: VPROPS.glass ? VPROPS.glass.emissiveIntensity : -1, mine: VESSRA.lamps.length, pool: VESSRA.pool ? VESSRA.pool.visible : null }")
         ck('night: the lamps glow', n['glass'] > 3 and n['mine'] > 30, json.dumps(n))
+        lt = J("{ lit: VESSRA.lit(), lights: KERN.lights.status().filter(b => b.id === 'vessra-laternen') }")
+        ck('night: two borrowed lights stand in the lamps nearest the walker (KERN.lights)', len(lt['lit']) == 2 and lt['lights'] and lt['lights'][0]['has'] == 2, json.dumps(lt))
     progs = E("(GAME.R.info.programs || []).length")
     tri = E("GAME.R.info.render.triangles")
     print('programs at the start', st0['progs'], 'after Kloster Veßra', progs, 'textures', st0['tex'], '->', E("GAME.R.info.memory.textures"), 'triangles last frame', tri, flush=True)

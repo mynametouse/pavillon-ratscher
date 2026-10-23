@@ -23,7 +23,9 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
 
 1. **Kern-Dienste für Erweiterungen** (~1 Tag) – statt Haken in fremde Objekte. **Erledigt 23.10.2026** (`core/kern.js`, `docs/ARCHITECTURE.md`
    „Dienste für Erweiterungen“; umgezogen: Ortsnamen von Garten und Nachbarn, Sprungziele, Aktionsknopf, Lampen von Schulraum und Feuer;
-   Schleusingen läuft auf `KERN.zone`; offen: der Schulraum auf `KERN.zone`, `window.TICKS` → ein Kern-Dienst):
+   Schleusingen läuft auf `KERN.zone`; offen: der Schulraum auf `KERN.zone`, `window.TICKS` → `KERN.tick` – 35 Module, viele davon
+   gehören heute laufenden Agenten (Fahrzeuge, Welt, Gartengebäude, Planer, Rendern), daher am Abend in einem Zug, wenn sie fertig sind; neue
+   Module nehmen gleich `KERN.tick`):
    - `KERN.places`: Ortsnamen und Menüorte als Register (Fläche oder Kreis, Name, Vorrang, Innen/Außen) – ersetzt das Überschreiben von
      `window.sitePlace` und das Ergänzen von `SPOTS`.
    - `KERN.lights`: ein fester Satz geteilter Punktlichter, nach Nähe ausgeliehen und automatisch zurückgegeben (keine neuen Lampen, also
@@ -38,8 +40,9 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
    eine Aufgabenkarte, ein Spielstand `pav-tasks-v1` über `SAVE` (die Stände aus `pav-quests-v1` und `pav-dorf-v1` werden übernommen).
    Die festen Aufgaben, die der Nachbarn, die des Dorfs und die Ortsvorsteher-Kette ziehen um; Schritte reagieren auf Ereignisse statt
    in jedem Bild abzufragen. Texte als Daten (JSON), damit neue Aufgaben ohne Code entstehen.
-3. **Szenarien** (~1 Tag) – **begonnen 23.10.2026:** `KERN.scenario`, `?szenario=…` (Liste in `docs/ARCHITECTURE.md`); offen: Menü
-   „Direkt zu …“, Zonen/Pakete je Szenario, `?nogeo` als Szenario `garten`: `?szenario=garten|dorf|freitag|wald|holz|schleusingen` – Startort, Uhrzeit, Tag, welche Zonen und Pakete
+3. **Szenarien** (~1 Tag) – **begonnen 23.10.2026:** `KERN.scenario`, `?szenario=…` (Liste in `docs/ARCHITECTURE.md`), seit V16o im
+   Menü unter „Szenen“ (Szenen, die Spielstand oder Uhr umstellen, mit zweitem Tippen); offen: Zonen/Pakete je Szenario, `?nogeo` als
+   Szenario `garten`: `?szenario=garten|dorf|freitag|wald|holz|schleusingen` – Startort, Uhrzeit, Tag, welche Zonen und Pakete
    laden (Garten ohne Umgebung wie heute `?nogeo=1`). Dieselben Szenarien starten die Tests (`lib.boot(pg, port, szenario='dorf')`) und
    stehen im Menü („Direkt zu …“). Die heutigen Schalter (`?dorf=freitag`, `?nogeo=1`, `?fell` …) werden Szenarien.
 4. **Pakete nachladen** (~2 Tage). Messung 23.10. (`test/loadprof.py`, Software-Grafik, fertig gebauter Pavillon): die Startzeit geht fast
