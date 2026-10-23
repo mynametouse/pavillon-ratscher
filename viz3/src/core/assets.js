@@ -274,6 +274,9 @@ if (TEXHALF.on) {
 const TEX2_LIVE = false;
 // on PCs without a graphics card (software rendering): BC7 from KTX2 (true) or the images as before (false); ?tex2=1 forces KTX2 there too
 const TEX2_SOFT = true;
+// the images inside the glTF models as KTX2 on desktops too (true), or only on phones and tablets (false: ~50 MB less to download on a
+// first visit there – the models still carry their own images, the KTX2 files come on top)
+const TEX2_MODELS = true;
 export const TEX2 = (() => {
   // TEX2MAN (build): { t: tex/ stems, g: { key of a glTF image: its larger side } } (an array: the tex/ stems only)
   const M = window.TEX2MAN || [];
@@ -281,7 +284,7 @@ export const TEX2 = (() => {
     on: false,
     why: '',
     names: new Set(Array.isArray(M) ? M : M.t || []),
-    g: (!Array.isArray(M) && M.g) || {},
+    g: (!Array.isArray(M) && M.g && (TEX2_MODELS || TEXHALF.on) && M.g) || {},
     n: 0,
     gn: 0,
     fails: 0,
