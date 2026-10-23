@@ -953,6 +953,7 @@ export const DORF = (() => {
   KERN.scenario('freitag', {
     label: 'Skatabend in der alten Schule (Freitag, 19:30)',
     order: 21,
+    ask: 'stellt die Spieluhr auf Freitag, 19:30',
     run: () => {
       DCAL.jump('skat');
       atDoor();
@@ -961,6 +962,7 @@ export const DORF = (() => {
   KERN.scenario('feuer', {
     label: 'Feuer am Acker (Samstagabend)',
     order: 22,
+    ask: 'stellt die Spieluhr auf Samstagabend',
     run: () => {
       DCAL.jump('fire');
       toFire();

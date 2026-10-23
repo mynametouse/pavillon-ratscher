@@ -206,6 +206,13 @@ window.SAVE = SAVE;
   K('pav-amt-v1', 'Ortsvorsteher: Wahl, Meinungen, Versprechen, Anliegen', 'json', null, obj); // feat/ortsvorsteher (amt/amt.js)
   K('pav-gplan-v1', 'Gartenplaner', 'json', null, v => !!v && v.v === 1 && Array.isArray(v.items)); // gplan/gplan.js
   K(
+    'pav-stil-v1',
+    'Einrichtung der Gartengebäude: Stil, Akzentfarbe, Klappsofa, Töpfern, Malen',
+    'json',
+    null,
+    v => obj(v) && (v === null || (v.v === 1 && obj(v.h)))
+  ); // feat/einrichtung (garden/stil.js)
+  K(
     'pav-garage-v1',
     'Alte Garage: Tore, Rasenmäher, Benzin, gemähter Rasen',
     'json',

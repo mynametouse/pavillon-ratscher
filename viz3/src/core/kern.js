@@ -15,8 +15,10 @@
 //                          KERN.area({ name, rect | circle | poly, z, prio, inside }) adds a named area; KERN.inside(x, y, z) indoor acoustics
 //   KERN.spot(name, def)   a place to jump to (menu Orte, data-spot="name"): { mode, pos, z, yaw, pitch, label } – merged into an existing one;
 //                          KERN.spots() is the registry itself (game/player.js SPOTS is the same object)
-//   KERN.scenario(name, { label, run, order }) a start situation – ?szenario=name runs it after loading (boot/boot.js), tests use the same;
-//                          KERN.scenarios() lists them (garten, dorf, freitag, feuer, schleusingen, wald, brief, wahlkampf, wahltag, stadtrat …)
+//   KERN.scenario(name, { label, run, order, ask, menu }) a start situation – ?szenario=name runs it after loading (boot/boot.js), tests use
+//                          the same, the menu lists it under „Szenen“ (game/hud.js; menu: false keeps it out, ask: what it changes in the saved
+//                          progress or the clock – then it needs a second tap); KERN.scenarios() lists them by order
+//                          (garten, dorf, freitag, feuer, schleusingen, vessra, baumschule, gartenplaner, atelier, brief, wahlkampf, wahltag …)
 //   KERN.tasks.source({ id, order, list }) / KERN.tasks.list()   one journal for the tasks of every feature (game/quests.js shows it, key J):
 //                          an entry { id, title, who, status: 'offen' | 'läuft' | 'erledigt', text, target: () => [x, y] | null, z }
 //   KERN.act(a) / KERN.unact(id) / KERN.acts()   entries of the action button (game/play.js picks the nearest and runs it):

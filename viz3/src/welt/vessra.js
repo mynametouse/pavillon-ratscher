@@ -1153,6 +1153,21 @@ export const VESSRA = (() => {
     block(0, uW, vM - vp, vM + vp, z + 5.3, zc, LIGHT, true); // over the passage (a flat vault)
     S.segs.push(...boxSegs(...Q(uW / 2, (vT0 + vM - vp) / 2), uW, vM - vp - vT0, a));
     S.segs.push(...boxSegs(...Q(uW / 2, (vM + vp + vT1) / 2), uW, vT1 - vM - vp, a));
+    // on the side of the nave the block is mixed rubble, grey and red (drone photo 2021 from the east), not the ashlar of the front
+    {
+      const MIX = linC([0.63, 0.5, 0.46]),
+        face = (v0, v1, z0, z1) =>
+          poly(
+            KS,
+            [Qz(uW + 0.02, v0, z0), Qz(uW + 0.02, v1, z0), Qz(uW + 0.02, v1, z1), Qz(uW + 0.02, v0, z1)],
+            [ex[0], ex[1], 0],
+            MIX,
+            p => [U(p[0], p[1])[1], p[2]]
+          );
+      face(vT0, vM - vp, zb, zc);
+      face(vM + vp, vT1, zb, zc);
+      face(vM - vp, vM + vp, z + 5.3, zc);
+    }
     // the portal: a round arch in a stepped frame over the passage, filled above the arch
     for (let k = 0; k < 7; k++) {
       const t0 = (k / 7) * Math.PI,
@@ -1304,9 +1319,11 @@ export const VESSRA = (() => {
     {
       const Ls = Math.hypot(S1[0] - S0[0], S1[1] - S0[1]);
       stoneWall(KS, N0, N1, zb, z + 10.2, 1.15, winsAt(0, Ln, z + 5.3), RED);
+      coping(K, N0, N1, z + 10.2, z + 10.2, 1.15);
       const ws = winsAt(0, Ls, z + 5.0);
       ws.push({ u: 2.6, w: 1.8, z0: zb, zs: z + 2.3, r: 0.9 }); // the door to the cloister
       stoneWall(KS, S0, S1, zb, z + 9.6, 1.15, ws, RED2);
+      coping(K, S0, S1, z + 9.6, z + 9.6, 1.15);
     }
     for (const sg of [-1, 1])
       for (let u = uW + 3.4, k = 0; u < uX - 1.5; u += 4.3, k++) {
@@ -1314,8 +1331,9 @@ export const VESSRA = (() => {
           last = u + 4.3 >= uX - 1.5,
           h = last ? 7.2 : 0.9 + hh(k * 3 + sg) * 0.7;
         KS.box(x, y, zb, 1.35, 1.35, h + (z - zb), a, k % 2 ? RED : RED2);
+        KS.box(x, y, zb, 1.8, 1.8, z - zb + 0.32, a, RED2); // the plinth (photo of the nave 2025)
         KS.box(x, y, z + h, 1.55, 1.55, 0.18, a, RED);
-        S.segs.push(...boxSegs(x, y, 1.4, 1.4, a));
+        S.segs.push(...boxSegs(x, y, 1.8, 1.8, a));
       }
     // -- the crossing: the wall with the triumphal arch and the two aisle arches; the transept walls around --
     const tv = [];
@@ -1341,6 +1359,7 @@ export const VESSRA = (() => {
         RED,
         { ends: true }
       );
+      coping(K, A1, B1, z + 15.6, z + 15.6, 1.4);
     }
     if (C.transept && C.transept.length >= 8) {
       // the ring of the transept (OSM): its east, north and south walls stand to the eaves, windows high up
@@ -1362,6 +1381,7 @@ export const VESSRA = (() => {
           );
         } else holes.push({ u: L / 2, w: 1.2, z0: z + 9.0, zs: z + 11.4, r: 0.6 });
         stoneWall(KS, p, q, zb, z + 14.2, 1.3, holes, k % 2 ? RED : RED2);
+        coping(K, p, q, z + 14.2, z + 14.2, 1.3);
         if (east) {
           // the walled-up arch of the old choir on the inner face (a shade darker, framed – photo of the nave from the west 2025)
           const mx = (p[0] + q[0]) / 2 - ex[0] * 0.62,
@@ -1390,6 +1410,23 @@ export const VESSRA = (() => {
         );
       }
     }
+  }
+  // a ridge of tiles on the crown of a ruin wall (the walls of the church are capped so: drone photo 2021, the nave from the west 2025)
+  const TILE = linC([0.6, 0.3, 0.2]);
+  function coping(K, a, b, za, zb2, th) {
+    const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (L < 0.2) return;
+    const d = [(b[0] - a[0]) / L, (b[1] - a[1]) / L],
+      n = [d[1], -d[0]],
+      e = th / 2 + 0.1,
+      rz = Math.min(0.45, th * 0.3),
+      zAt = u => za + ((zb2 - za) * u) / L,
+      P = (u, sg) => [a[0] + d[0] * u + n[0] * sg * e, a[1] + d[1] * u + n[1] * sg * e, zAt(u) - 0.04],
+      R = u => [a[0] + d[0] * u, a[1] + d[1] * u, zAt(u) + rz],
+      uvA = p => [(p[0] - a[0]) * d[0] + (p[1] - a[1]) * d[1], p[2]];
+    for (const sg of [-1, 1]) poly(K, [P(0, sg), P(L, sg), R(L), R(0)], [n[0] * sg, n[1] * sg, 0.8], TILE, uvA);
+    poly(K, [P(0, -1), P(0, 1), R(0)], [-d[0], -d[1], 0], TILE, uvA);
+    poly(K, [P(L, -1), P(L, 1), R(L)], [d[0], d[1], 0], TILE, uvA);
   }
   // ---- the apses of the two chapels: half round, the Henneberg one plastered white under a cone of tiles (photo 2025) ----
   function apses(KS, K, RB) {
@@ -3083,6 +3120,58 @@ export const VESSRA = (() => {
   KERN.provide('place', place, 20);
   KERN.provide('pushOut', pushOut, 10);
   KERN.provide('free', (x, y) => (inZone(x, y) ? true : undefined), 10);
+  // ---- at night two of the pavilion's lights (KERN.lights, core/kern.js) stand in the two street lamps nearest the walker: real light
+  // on the ground, the ruin, the trees around them (the village shader lights only the house walls) – no new lamps, no new shaders; they
+  // go back by themselves when the walker leaves or the day comes ----
+  const LB = { ls: null, acc: 0, at: [] };
+  const nightOn = () => (VPROPS.glass ? Math.min(1, VPROPS.glass.emissiveIntensity / 6) : 0);
+  KERN.lights.borrow({
+    id: 'vessra-laternen',
+    n: 2,
+    prio: 1,
+    want: () => {
+      if (S.state !== 'ready' || !S.lamps.length || nightOn() < 0.05) return false;
+      const o = KERN.where();
+      return !!o && inZone(o[0], o[1]);
+    },
+    on: ls => {
+      LB.ls = ls;
+      LB.acc = 1;
+    },
+    tick: (ls, dt) => {
+      LB.acc += dt;
+      if (LB.acc < 0.5) return;
+      LB.acc = 0;
+      const o = KERN.where();
+      if (!o) return;
+      const near = S.lamps
+        .map(l => [Math.hypot(l.x - o[0], l.y - o[1]), l])
+        .sort((a, b) => a[0] - b[0])
+        .slice(0, ls.length);
+      const k = nightOn();
+      LB.at = [];
+      ls.forEach((l, i) => {
+        const p = near[i] && near[i][1];
+        if (!p || near[i][0] > 90) {
+          l.intensity = 0;
+          return;
+        }
+        l.position.copy(V(p.x, p.y, p.z - 0.15));
+        l.color.setHex(0xffc98a);
+        l.distance = 17;
+        l.decay = 1.6;
+        l.intensity = 16 * k;
+        LB.at.push([p.x, p.y]);
+      });
+      markDirty();
+    },
+    off: () => {
+      LB.ls = null;
+      LB.at = [];
+      markDirty(true);
+    },
+  });
+  S.lit = () => LB.at.slice(); // tests: the lamps with a borrowed light
   // ---- near the place its tiles and the place are loaded, far away freed (KERN.zone, core/kern.js: build near, drop far, measured from
   // KERN.where() – the walker, else the camera) ----
   KERN.zone({

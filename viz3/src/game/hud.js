@@ -16,6 +16,7 @@ import { SITEPLAN } from '../world/siteplan.js';
 import { PLAY } from './play.js';
 import { PIANO } from '../audio/music.js';
 import { QUESTS } from './quests.js';
+import { KERN } from '../core/kern.js';
 phase(null);
 // ---- pictures of the things: their own 3D model, lit from the front, rendered once into a small image (cached) ----
 const ICON = (() => {
@@ -233,11 +234,63 @@ export const HUD = (() => {
     if (phEl && home && phEl.parentNode !== home) home.appendChild(phEl);
     if (phSec) phSec.hidden = inOrbit;
   }
+  // ---------------- scenes: the start situations of the features (KERN.scenario) as chips (phase 2, building block 3) ----------------
+  // Places the „Orte“ chips already offer (a data-spot of the same name) are left out, and so is a scene with menu: false. A scene that
+  // changes saved progress or the clock says what in def.ask and needs a second tap.
+  const scenEl = $('scen-menu'),
+    scenNote = $('scen-note');
+  let scenN = -1,
+    armed = null;
+  function disarm() {
+    armed = null;
+    if (scenNote) scenNote.hidden = true;
+  }
+  function fillScenes() {
+    if (!scenEl) return;
+    const spots = new Set([...menu.querySelectorAll('[data-spot]')].map(b => b.dataset.spot)),
+      L = KERN.scenarios().filter(s => s.menu !== false && !spots.has(s.name));
+    if (L.length === scenN) return;
+    scenN = L.length;
+    scenEl.textContent = '';
+    for (const s of L) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.dataset.scen = s.name;
+      b.textContent = s.label;
+      if (s.ask) b.title = s.label + ': ' + s.ask;
+      scenEl.appendChild(b);
+    }
+    const sec = scenEl.closest('.msec');
+    if (sec) sec.hidden = !L.length;
+  }
+  scenEl?.addEventListener('click', e => {
+    const b = e.target instanceof Element ? e.target.closest('[data-scen]') : null,
+      s = b && KERN.scenario(b.dataset.scen);
+    if (!s) return;
+    if (s.ask && armed !== s.name) {
+      armed = s.name;
+      if (scenNote) {
+        scenNote.textContent = '„' + s.label + '“ ' + s.ask + ' – noch einmal tippen, dann geht es los.';
+        scenNote.hidden = false;
+      }
+      return;
+    }
+    setMenu(false);
+    try {
+      s.run();
+      KERN.emit('scenario', { name: s.name, menu: true });
+    } catch (err) {
+      console.warn('scenario', s.name, err);
+      toast('Diese Szene ließ sich nicht starten.');
+    }
+  });
   function setMenu(v) {
     v = !!v;
     if (v === S.open) return;
     S.open = v;
     menu.hidden = !v;
+    disarm();
     mbtn.setAttribute('aria-expanded', v ? 'true' : 'false');
     if (v) {
       keys.clear();
@@ -305,6 +358,7 @@ export const HUD = (() => {
     })
   );
   function refresh() {
+    fillScenes();
     const av = window.AVATAR,
       ready = !!(av && av.ready),
       kind = av ? av.kind : 'm';

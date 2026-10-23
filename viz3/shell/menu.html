@@ -16,7 +16,7 @@
             <button class="chip" data-spot="lounge" aria-pressed="false">Lounge<span class="lv">+2,99</span></button>
             <button class="chip" data-spot="dach" aria-pressed="false">Dachterrasse<span class="lv">+5,95</span></button>
             <button class="chip" data-spot="wohnwagen" aria-pressed="false">Wohnwagen</button>
-            <button class="chip" data-spot="holzhaus" aria-pressed="false">Holzhaus</button>
+            <button class="chip" data-spot="holzhaus" aria-pressed="false">Atelier</button>
             <button class="chip" data-spot="bungalow" aria-pressed="false">Bungalow</button>
             <button class="chip" data-spot="ziegen" aria-pressed="false">Ziegen</button>
             <button class="chip" data-spot="hubert" aria-pressed="false">Hubert</button>
@@ -29,6 +29,8 @@
             <button class="chip" data-vreset title="Auto und Traktor wieder an ihren Platz stellen (wenn eins festsitzt)">Fahrzeuge zurückstellen</button>
             <button class="chip" data-treereset title="Alle Bäume, die Auto oder Traktor umgedrückt haben, wieder aufstellen">Bäume aufstellen</button>
           </div></section>
+          <section class="msec" aria-label="Szenen"><h3>Szenen</h3><div class="mchips" id="scen-menu"></div>
+            <p class="mnote" id="scen-note" hidden></p></section>
           <section class="msec" aria-label="Bauphase"><h3>Bauphase</h3><div id="ph-menu"></div></section>
           <section class="msec" aria-label="Licht und Variante"><h3>Licht</h3><div class="mchips">
             <button class="chip" data-light="auto" aria-pressed="true" title="Sonne, Mond und Sterne folgen der Spieluhr – wie sie über Ratscher wirklich stehen">Tageslauf</button>
@@ -56,6 +58,7 @@
               <button class="tog" id="gplanbtn" aria-pressed="false" title="Bäume, Gilden und Waldgarten im echten Garten planen: setzen, wachsen sehen, Schatten, Hinweise, Pflanz- und Einkaufsliste">Garten planen</button>
               <button class="tog" id="facbtn" aria-pressed="false" title="Fassade: Material und Farbe für Haus (und Turm) ausprobieren">Fassade</button>
               <button class="tog" id="intbtn" aria-pressed="false" title="Einrichtung: Stil, Boden, Wände, Decke, Möbelholz und Stoffe im Pavillon">Einrichtung</button>
+              <button class="tog" id="stilmenubtn" aria-pressed="false" title="Einrichtung der Gartengebäude: Bungalow, Atelier und Wohnwagen – Stil mit einem Klick, Akzentfarbe">Gartengebäude</button>
               <button class="tog" id="sharebtn" aria-pressed="false" title="Öffentlicher Link ohne Claude-Konto, Planstand für alle veröffentlichen, Plan-Code">Teilen</button>
             </div></section>
           <section class="msec" aria-label="Einstellungen"><h3>Einstellungen</h3><div class="mlist">

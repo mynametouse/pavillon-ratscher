@@ -92,6 +92,8 @@ const GARTEN = (() => {
         },
         run: () => set(l.key),
       });
+    // seats (feat/einrichtung: a label can be a function – null hides the seat –, and a seat may bring its own primary action, a moving
+    // eye (follow: a rocking chair) and hooks when one sits down or gets up)
     for (const s of GSEATS) {
       const pose = () => {
         const w = W(s.b, s.lx, s.ly);
@@ -100,15 +102,19 @@ const GARTEN = (() => {
       PLAY.act({
         id: 'seat:garten:' + s.key,
         r: s.r || 1.3,
-        prio: -0.15,
-        label: () => (PLAY.seat ? null : s.label),
+        prio: s.prio ?? -0.15,
+        label: () => (PLAY.seat ? null : typeof s.label === 'function' ? s.label() : s.label),
         pos: () => {
           const w = W(s.b, s.at[0], s.at[1]);
           return [w[0], w[1], s.eye - 0.6];
         },
         run: () => {
           const o = Object.assign(pose(), {
-            onSit: () => LATE.SFX && LATE.SFX.drop && LATE.SFX.drop(),
+            onSit: () => {
+              if (LATE.SFX && LATE.SFX.drop) LATE.SFX.drop();
+              if (s.onSit) s.onSit();
+            },
+            onLeave: () => s.onLeave && s.onLeave(),
             leaveLabel: 'Aufstehen',
           });
           if (s.kind === 'lie') {
@@ -117,11 +123,23 @@ const GARTEN = (() => {
             };
             o.primaryLabel = () => (LATE.DN && LATE.DN.canSleep() ? 'Schlafen bis 7 Uhr' : '');
           }
+          if (s.primary) {
+            o.primary = () => s.primary();
+            o.primaryLabel = () => s.primaryLabel() || '';
+          }
+          if (s.follow)
+            o.follow = () => {
+              const f = s.follow();
+              if (!f) return null;
+              const w = W(s.b, f[0], f[1]);
+              return { x: w[0], y: w[1], z: f[2] };
+            };
           PLAY.sit(o);
         },
       });
     }
     for (const a of GACTS) {
+      initAct(a);
       const st = a.st;
       st.think = t => PLAY.think(t); // shown as long as it takes to read (play.js: 65 ms a letter)
       PLAY.act({
@@ -200,7 +218,9 @@ const GARTEN = (() => {
       src.start(t, Math.random() * 0.4, 0.12);
     }
   }
-  for (const a of GACTS) {
+  // the state of a small job (also for jobs registered by modules further down: feat/einrichtung, garden/atelier.js)
+  function initAct(a) {
+    if (a.st) return;
     a.st = {
       k: 0,
       t: 0,
@@ -208,15 +228,22 @@ const GARTEN = (() => {
       dirty: () => markDirty(true),
       lamp: (key, v) => set(key, v, true),
       flicker,
+      near: r => {
+        const P = LATE.P,
+          w = W(a.b, a.lx, a.ly);
+        return !!P && Math.hypot(P.x - w[0], P.y - w[1]) < r;
+      },
       sound: k => {
         const P = LATE.P,
           w = W(a.b, a.lx, a.ly);
         const d = P ? Math.hypot(P.x - w[0], P.y - w[1]) : 1e9;
         if (k === 'whistle' && d < 14) whistle();
         if (k === 'crackle' && d < 6) crackle();
+        if (typeof k === 'function' && d < 12) k(LATE.audio);
       },
     };
   }
+  for (const a of GACTS) initAct(a);
   whenLoaded(wire);
   let tickAcc = 0;
   // per frame (throttled): the light follows the walker from building to building
@@ -225,7 +252,7 @@ const GARTEN = (() => {
     tickAcc += dt;
     if (tickAcc > 1 / 15) {
       let moved = false;
-      for (const a of GACTS) if (a.tick && a.tick(tickAcc, a.st)) moved = true;
+      for (const a of GACTS) if (a.tick && a.st && a.tick(tickAcc, a.st)) moved = true;
       if (moved) markDirty();
       tickAcc = 0;
     }
@@ -235,6 +262,7 @@ const GARTEN = (() => {
     place(false);
   });
   for (const l of GLAMPS) setGlow(l);
+  whenLoaded(() => GLAMPS.forEach(setGlow)); // lamps registered further down (garden/atelier.js)
   return {
     light,
     lamps: GLAMPS,
