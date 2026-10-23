@@ -113,10 +113,8 @@ const GARTEN = (() => {
       });
     }
     for (const a of GACTS) {
-      const st = {
-        think: t => PLAY.think(t, 3200),
-        dirty: () => markDirty(true),
-      };
+      const st = a.st;
+      st.think = t => PLAY.think(t, 3200);
       PLAY.act({
         id: 'garten:' + a.key,
         r: a.r || 1.2,
@@ -133,10 +131,60 @@ const GARTEN = (() => {
       });
     }
   }
+  // a whistling kettle (synthesised, only when the walker is near)
+  function whistle() {
+    const A = LATE.audio,
+      r = A && A.ready && A.ready() && A.raw();
+    if (!r) return;
+    const c = r.ctx,
+      t = c.currentTime + 0.02,
+      o = c.createOscillator(),
+      lfo = c.createOscillator(),
+      lg = c.createGain(),
+      gn = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(1450, t);
+    o.frequency.linearRampToValueAtTime(2150, t + 1.4);
+    lfo.frequency.value = 7;
+    lg.gain.value = 30;
+    lfo.connect(lg);
+    lg.connect(o.frequency);
+    gn.gain.setValueAtTime(0.0001, t);
+    gn.gain.exponentialRampToValueAtTime(0.045, t + 1.1);
+    gn.gain.setValueAtTime(0.045, t + 3.2);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t + 4.4);
+    o.connect(gn);
+    gn.connect(r.sfx);
+    o.start(t);
+    lfo.start(t);
+    o.stop(t + 4.5);
+    lfo.stop(t + 4.5);
+  }
+  for (const a of GACTS) {
+    a.st = {
+      k: 0,
+      t: 0,
+      think: () => {},
+      dirty: () => markDirty(true),
+      sound: k => {
+        const P = LATE.P,
+          w = W(a.b, a.lx, a.ly);
+        if (k === 'whistle' && P && Math.hypot(P.x - w[0], P.y - w[1]) < 14) whistle();
+      },
+    };
+  }
   whenLoaded(wire);
+  let tickAcc = 0;
   // per frame (throttled): the light follows the walker from building to building
   (window.TICKS = window.TICKS || []).push(dt => {
     if (!S.wired) wire();
+    tickAcc += dt;
+    if (tickAcc > 1 / 15) {
+      let moved = false;
+      for (const a of GACTS) if (a.tick && a.tick(tickAcc, a.st)) moved = true;
+      if (moved) markDirty();
+      tickAcc = 0;
+    }
     S.acc += dt;
     if (S.acc < 0.3) return;
     S.acc = 0;

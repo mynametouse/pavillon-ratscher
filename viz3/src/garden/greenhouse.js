@@ -17,7 +17,7 @@ import {
   slopeSlab,
   worldOf,
 } from './site_base.js';
-import { jar, KM, plant, pot, put, rng, wateringCan } from './garten_kit.js';
+import { jar, KM, leaf, plant, pot, put, rng, stone, wateringCan } from './garten_kit.js';
 // Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends now face north and south: turned
 // by 90° about its centre (site data: heading 96°, the long side east–west) and moved 0.5 m north, clear of the hut's new door
 {
@@ -131,7 +131,7 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
       const z = 0.6 + k * 0.28;
       const s = new THREE.Mesh(new THREE.SphereGeometry(0.14 + rnd() * 0.05, 8, 6), MATS.leaf);
       s.position.copy(V(lx + (rnd() - 0.5) * 0.12, ly + (rnd() - 0.5) * 0.1, z));
-      s.scale.set(1, 0.6, 1);
+      s.scale.set(0.45, 0.35, 0.45); // a small core of leaves – the plant is made by the leaves added below
       s.castShadow = true;
       g.add(s);
       tagPh(s);
@@ -146,23 +146,22 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     fernItems.push({ x: w[0], y: w[1], z: 0.4, s: 1.0 + rnd() * 0.3 });
   }
   if (MODELS.fern) instanceVariants('fern', fernItems, { cast: true, env: 0.6, tint: 0xd9f0b8 });
+  // more foliage on the tomatoes (own random numbers)
+  for (let i = 0; i < 4; i++) {
+    const lx = -hx + 0.35 + (i * (b.L - 0.7)) / 3;
+    for (let k = 0; k < 12; k++) {
+      const a = R() * 6.28,
+        z = 0.48 + k * 0.1;
+      leaf(g, lx + Math.cos(a) * 0.05, -0.45 + Math.sin(a) * 0.05, z, 0.14 + R() * 0.06, a, 0.7 + R() * 0.5, MATS.leaf);
+    }
+  }
   // cucumbers climbing strings in the west bed
   for (let i = 0; i < 3; i++) {
     const lx = -hx + 0.45 + i * 0.5;
     beam([lx, 0.5, 0.4], [lx + 0.05, 0.5, ze - 0.05], 0.004, 0.004, KM.twine, { parent: g });
     for (let k = 0; k < 4; k++) {
-      put(
-        g,
-        new THREE.IcosahedronGeometry(1, 0),
-        MATS.leaf,
-        lx + 0.02 + (R() - 0.5) * 0.1,
-        0.5 + (R() - 0.5) * 0.12,
-        0.65 + k * 0.2,
-        {
-          s: [0.09, 0.05, 0.09],
-          cast: false,
-        }
-      );
+      for (let j = 0; j < 3; j++)
+        leaf(g, lx + 0.02, 0.5, 0.58 + k * 0.2 + j * 0.05, 0.15 + R() * 0.06, R() * 6.28, 0.9 + R() * 0.5, MATS.leaf);
       if (k % 2)
         put(g, new THREE.CylinderGeometry(0.018, 0.016, 0.13, 7), MATS.leaf, lx + 0.04, 0.47, 0.6 + k * 0.2, {
           rz: 0.15,
@@ -251,6 +250,15 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
   lcol(r, -hx + 0.1, hx - 0.1, -hy + 0.06, -0.27, 0.12, 0.8, 'bed');
   lcol(r, -hx + 0.1, hx - 0.1, 0.27, hy - 0.06, 0.12, 0.8, 'bed');
   lcol(r, -hx, -hx + 0.32, -0.27, 0.27, 0.42, 0.76, 'shelf');
+  // stepping stones from the gravel path (west) round to the door
+  for (const [x, y, sz] of [
+    [-0.15, 1.35, 0.22],
+    [0.45, 1.2, 0.21],
+    [1.05, 1.0, 0.22],
+    [1.5, 0.45, 0.2],
+    [1.55, -0.1, 0.22],
+  ])
+    stone(g, b, x, y, sz, R, FOOT);
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: 0, z1: 2.1, name: 'Gewächshaus' });
   FOOT.push({ b, hx: hx + 0.05, hy: hy + 0.05, ox: 0, oy: 0 });
 }

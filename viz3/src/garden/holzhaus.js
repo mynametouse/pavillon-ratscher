@@ -37,6 +37,7 @@ import {
   rng,
   seedTray,
   soft,
+  stone,
   teapot,
   wateringCan,
 } from './garten_kit.js';
@@ -221,7 +222,7 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
   }
   {
     const w = worldOf(b, 0.15, yi1 - 0.12);
-    placeGLB('books', { x: w[0], y: w[1], z: zf + 1.425, face: faceOf(b, 180), w: 0.45, col: false });
+    placeGLB('books', { x: w[0], y: w[1], z: zf + 1.425, face: faceOf(b, 90), w: 0.45, col: false });
   }
   GL('basket', 0.2, yi1 - 0.14, zf + 0.475, 180, { h: 0.18, col: false });
   for (let i = 0; i < 5; i++)
@@ -314,8 +315,24 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     const x = -0.6 + i * 0.32,
       y = -1.3,
       z = zTop(x) - 0.25;
-    cyl(x, y, z + 0.12, zTop(x) - 0.02, 0.003, KM.twine, 4, undefined, { parent: g, col: false });
-    put(g, new THREE.ConeGeometry(0.06, 0.22, 7), i % 2 ? KM.herb : KM.straw, x, y, z, { rx: Math.PI, cast: false });
+    cyl(x, y, z + 0.1, zTop(x) - 0.02, 0.003, KM.twine, 4, undefined, { parent: g, col: false });
+    cyl(x, y, z + 0.07, z + 0.1, 0.018, KM.twine, 6, undefined, { parent: g, col: false });
+    for (let k = 0; k < 5; k++) {
+      const a = (k / 5) * 6.28 + R();
+      put(
+        g,
+        new THREE.ConeGeometry(0.03, 0.2, 5),
+        i % 2 ? KM.herbDry : KM.straw,
+        x + Math.cos(a) * 0.025,
+        y + Math.sin(a) * 0.025,
+        z - 0.02,
+        {
+          rx: Math.PI + Math.cos(a) * 0.25,
+          rz: Math.sin(a) * 0.25,
+          cast: false,
+        }
+      );
+    }
   }
   // ---- the lamp: green enamel shade over the bench, switch by the door ----
   const lampM = bulbMat(0xfff2d6);
@@ -399,6 +416,22 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     z0: zf + 0.01,
     z1: zf + 1.99,
   });
+  // stepping stones from the gravel path (west) to the new door
+  for (const [x, y, sz] of [
+    [-2.05, 1.55, 0.24],
+    [-1.75, 2.2, 0.22],
+    [-1.15, 2.72, 0.25],
+  ])
+    stone(g, b, x, y, sz, R, FOOT);
+  // geraniums in pots beside the step, a boot scraper
+  for (const [x, y, sz] of [
+    [DN.a0 - 0.32, hy + 0.22, 0.13],
+    [DN.a1 + 0.28, hy + 0.2, 0.11],
+  ]) {
+    const zs = pot(g, x, y, 0, sz, sz * 1.3);
+    plant(g, x, y, zs, sz * 2.2, 'geranium', R);
+  }
+  gB(g, DN.a1 + 0.12, DN.a1 + 0.14, hy + 0.55, hy + 0.85, 0, 0.12, MAT.blacksteel, { cast: false });
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: zf - 0.1, z1: zH + 0.4, name: 'Holzhaus' });
   FOOT.push({ b, hx: hx + 0.1, hy: hy + 0.1, ox: 0, oy: 0 });
 }

@@ -8,9 +8,7 @@ import {
   faceOf,
   FOOT,
   gB,
-  ICEIL,
   INSIDE,
-  IW,
   lbox,
   lcol,
   ldoor,
@@ -28,11 +26,14 @@ import {
   worldOf,
 } from './site_base.js';
 import {
+  armchair,
   bareBulb,
   bookMesh,
   bookRow,
   bulbMat,
   curtain,
+  GACTS,
+  garment,
   GLAMPS,
   GSEATS,
   jar,
@@ -106,29 +107,29 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   const wm = MATS.greenBoards;
   // west wall (full length)
   lw(g, 'x', -hx, hx, hy - T + L, hy, z0, zw, OPS.W, wm, { grain: 'x' });
-  lw(g, 'x', -hx + T, hx - T, hy - T, hy - T + L, zf, zw, OPS.W, IW, { cast: false });
+  lw(g, 'x', -hx + T, hx - T, hy - T, hy - T + L, zf, zw, OPS.W, KM.wall, { cast: false });
   // east wall: only the stub north of the annex is left
   lw(g, 'x', AX1, hx, -hy, -hy + T - L, z0, zw, [], wm, { grain: 'x' });
-  lw(g, 'x', AX1 - T, hx - T, -hy + T - L, -hy + T, zf, zw, [], IW, { cast: false });
+  lw(g, 'x', AX1 - T, hx - T, -hy + T - L, -hy + T, zf, zw, [], KM.wall, { cast: false });
   // north (front) gable
   lw(g, 'y', -hy + T - L, hy - T + L, hx - T + L, hx, z0, zw, OPS.N, wm, { grain: 'y' });
-  lw(g, 'y', -hy + T, hy - T, hx - T, hx - T + L, zf, zw, OPS.N, IW, { cast: false });
+  lw(g, 'y', -hy + T, hy - T, hx - T, hx - T + L, zf, zw, OPS.N, KM.wall, { cast: false });
   // south (back) gable, the annex part lower
   lw(g, 'y', -hy, hy - T + L, -hx, -hx + T - L, z0, zw, OPS.S, wm, { grain: 'y' });
   lw(g, 'y', AY0, -hy, -hx, -hx + T - L, z0, zaw, [], wm, { grain: 'y' });
-  lw(g, 'y', -hy, hy - T, -hx + T - L, -hx + T, zf, zw, OPS.S, IW, { cast: false });
-  lw(g, 'y', AY0 + T, -hy, -hx + T - L, -hx + T, zf, za, [], IW, { cast: false });
+  lw(g, 'y', -hy, hy - T, -hx + T - L, -hx + T, zf, zw, OPS.S, KM.wall, { cast: false });
+  lw(g, 'y', AY0 + T, -hy, -hx + T - L, -hx + T, zf, za, [], KM.wall, { cast: false });
   // annex east and north walls
   lw(g, 'x', -hx, AX1, AY0, AY0 + T - L, z0, zaw, OPS.AE, wm, { grain: 'x' });
-  lw(g, 'x', -hx + T, AX1 - T, AY0 + T - L, AY0 + T, zf, za, OPS.AE, IW, { cast: false });
+  lw(g, 'x', -hx + T, AX1 - T, AY0 + T - L, AY0 + T, zf, za, OPS.AE, KM.wall, { cast: false });
   lw(g, 'y', AY0, -hy, AX1 - T + L, AX1, z0, zaw, OPS.AN, wm, { grain: 'y' });
-  lw(g, 'y', AY0 + T, -hy + T, AX1 - T, AX1 - T + L, zf, za, OPS.AN, IW, { cast: false });
+  lw(g, 'y', AY0 + T, -hy + T, AX1 - T, AX1 - T + L, zf, za, OPS.AN, KM.wall, { cast: false });
   // floors, ceilings, the header where the old east wall was opened
-  gB(g, -hx + T, hx - T, -hy + T, hy - T, z0, zf, MAT.plank, { grain: 'x', cast: false });
-  gB(g, -hx + T, AX1 - T, AY0 + T, -hy + T, z0, zf, MAT.plank, { grain: 'x', cast: false });
-  gB(g, -hx + T, hx - T, -hy, hy - T, zw - 0.02, zw, ICEIL, { cast: false });
-  gB(g, -hx + T, AX1 - T, AY0 + T, -hy, za - 0.02, za, ICEIL, { cast: false });
-  gB(g, -hx + T, AX1 - T, -hy - 0.06, -hy + 0.06, za - 0.07, zw - 0.02, IW, { cast: false });
+  gB(g, -hx + T, hx - T, -hy + T, hy - T, z0, zf, KM.floor, { grain: 'x', cast: false });
+  gB(g, -hx + T, AX1 - T, AY0 + T, -hy + T, z0, zf, KM.floor, { grain: 'x', cast: false });
+  gB(g, -hx + T, hx - T, -hy, hy - T, zw - 0.02, zw, KM.ceil, { grain: 'x', cast: false });
+  gB(g, -hx + T, AX1 - T, AY0 + T, -hy, za - 0.02, za, KM.ceil, { grain: 'x', cast: false });
+  gB(g, -hx + T, AX1 - T, -hy - 0.06, -hy + 0.06, za - 0.07, zw - 0.02, KM.wall, { cast: false });
   // white trim: corner boards, windows with shutters, door linings
   const corner = (x, y, sy, zt) =>
     gB(g, x - 0.02, x + 0.02, sy > 0 ? y - 0.12 : y - 0.02, sy > 0 ? y + 0.02 : y + 0.12, z0, zt, MATS.white, {
@@ -379,17 +380,71 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   gB(g, KX - 0.02, KX - 0.008, 0.72, 1.07, zf + 0.6, zf + 0.615, MAT.steel, { cast: false });
   for (const y of [0.74, 0.86, 0.98, 1.08])
     cyl(KX - 0.012, y, zf + 0.72, zf + 0.75, 0.016, MAT.black, 10, undefined, { parent: g, col: false });
-  for (const [x, y] of [
-    [2.08, 0.79],
-    [2.22, 1.0],
-  ])
-    cyl(x, y, kz + wt, kz + wt + 0.015, 0.075, MAT.blacksteel, 18, undefined, { parent: g, col: false });
+  const plateM = new THREE.MeshStandardMaterial({
+    color: 0x2b2826,
+    emissive: 0xff3c12,
+    emissiveIntensity: 0,
+    roughness: 0.55,
+  });
+  cyl(2.08, 0.79, kz + wt, kz + wt + 0.015, 0.075, plateM, 18, undefined, { parent: g, col: false });
+  cyl(2.22, 1.0, kz + wt, kz + wt + 0.015, 0.075, MAT.blacksteel, 18, undefined, { parent: g, col: false });
+  const steamM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
   {
     const kz2 = kz + wt + 0.015;
     put(g, new THREE.SphereGeometry(0.09, 14, 10), KM.enamelRed, 2.08, 0.79, kz2 + 0.07, { s: [1, 0.8, 1] });
     put(g, new THREE.CylinderGeometry(0.012, 0.018, 0.1, 7), KM.enamelRed, 2.0, 0.79, kz2 + 0.1, { rz: 0.9 });
     put(g, new THREE.TorusGeometry(0.06, 0.008, 5, 10, Math.PI), MAT.black, 2.08, 0.79, kz2 + 0.12, { cast: false });
+    for (let i = 0; i < 4; i++) {
+      const s = put(
+        g,
+        new THREE.SphereGeometry(0.03 + i * 0.012, 8, 6),
+        steamM,
+        1.95 - i * 0.04,
+        0.79,
+        kz2 + 0.17 + i * 0.07,
+        {
+          cast: false,
+        }
+      );
+      s.renderOrder = 3;
+      s.receiveShadow = false;
+    }
   }
+  // put the kettle on: the hotplate glows, after a while the kettle whistles and steams; take it off again
+  GACTS.push({
+    key: 'kessel',
+    b,
+    lx: KX - 0.25,
+    ly: 0.85,
+    z: kz,
+    r: 1.0,
+    room: (x, y, z) => inLoc(x, y, 0, 0, hx, hy) && z < 2.6,
+    label: st => (st.k === 1 ? null : st.k === 2 ? 'Kessel vom Herd nehmen' : 'Wasser aufsetzen'),
+    run: st => {
+      if (st.k === 2) {
+        st.k = 0;
+        st.think('Tee ist fertig.');
+      } else {
+        st.k = 1;
+        st.t = 0;
+        st.think('Der Kessel steht auf dem Herd …');
+      }
+      st.dirty();
+    },
+    tick: (dt, st) => {
+      if (!st.k && plateM.emissiveIntensity === 0 && steamM.opacity === 0) return false;
+      st.t = (st.t || 0) + dt;
+      const heat = st.k ? Math.min(1, st.t / 4) : Math.max(0, plateM.emissiveIntensity / 1.1 - dt / 3);
+      plateM.emissiveIntensity = heat * 1.1;
+      if (st.k === 1 && st.t > 9) {
+        st.k = 2;
+        st.sound('whistle');
+        st.think('Das Teewasser kocht.');
+      }
+      steamM.opacity = st.k === 2 ? 0.22 + 0.1 * Math.sin(st.t * 5.3) : Math.max(0, steamM.opacity - dt * 0.4);
+      return true;
+    },
+  });
   // tea towel on the oven rail
   gB(g, KX - 0.03, KX - 0.02, 0.92, 1.04, zf + 0.42, zf + 0.615, KM.curtainRed, { cast: false });
   // tiles over the worktops (not where the windows are)
@@ -521,11 +576,9 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   cyl(wx0 + 0.28, (wy0 + wy1) / 2, zf + 1.56, zf + 1.565, 0.012, MAT.steel, 6, undefined, { parent: g, col: false });
   gB(g, wx0 + 0.27, wx0 + 0.29, wy0 + 0.03, wy1 - 0.03, zf + 1.55, zf + 1.565, MAT.steel, { cast: false });
   for (let i = 0; i < 7; i++) {
-    const y = wy0 + 0.12 + i * 0.15,
+    const y = wy0 + 0.13 + i * 0.155,
       h = 0.6 + R() * 0.35;
-    gB(g, wx0 + 0.08, wx0 + 0.48, y - 0.03, y + 0.03, zf + 1.53 - h, zf + 1.53, KM.cloth[i % KM.cloth.length], {
-      cast: false,
-    });
+    garment(g, wx0 + 0.28, y, zf + 1.5, 0.4, h, 0.05, KM.cloth[i % KM.cloth.length]);
   }
   for (let i = 0; i < 3; i++)
     gB(
@@ -628,10 +681,9 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     soft(g, bx0 + 0.08, bx0 + 0.45, y0, y1, bm - 0.01, bm + 0.15, 0.06, MAT.linen, { puff: 0.03 });
   soft(g, bx1 - 0.5, bx1 - 0.08, by0 + 0.05, by1 - 0.05, bm + 0.1, bm + 0.15, 0.02, MAT.wool);
   // ---- the annex's north end: reading chair by the window, floor lamp, low book shelf, side table with a mug, basket ----
-  {
-    const w = W(0.62, AY0 + 0.6);
-    placeGLB('armchair', { x: w[0], y: w[1], z: zf, face: faceOf(b, -90), h: 1.0 });
-  }
+  armchair(g, 0.24, 1.0, AY0 + 0.14, AY0 + 0.94, zf, KM.velvet, '-y');
+  soft(g, 0.3, 0.62, AY0 + 0.32, AY0 + 0.5, zf + 0.42, zf + 0.72, 0.06, KM.cream, { ry: 0.3 });
+  lcol(r, 0.24, 1.0, AY0 + 0.14, AY0 + 0.94, zf, zf + 0.95, 'chair');
   GL('side_table', -0.1, AY0 + 0.38, zf, 0, { h: 0.5 });
   mug(g, -0.1, AY0 + 0.38, zf + 0.5, KM.enamelGreen, 40);
   GL('basket', -0.1, -3.1, zf, 20, { h: 0.2, col: false });
@@ -704,8 +756,8 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   gB(g, 1.52, 2.34, ey, ey + 0.025, zf + 1.56, zf + 1.66, MAT.oak, { cast: false });
   for (const x of [1.66, 1.88, 2.1, 2.28])
     cyl(x, ey + 0.05, zf + 1.6, zf + 1.62, 0.012, MAT.brass, 6, undefined, { parent: g, col: false });
-  soft(g, 1.58, 1.8, ey + 0.03, ey + 0.16, zf + 0.82, zf + 1.6, 0.05, KM.cloth[2]);
-  soft(g, 1.8, 2.0, ey + 0.03, ey + 0.14, zf + 0.95, zf + 1.6, 0.05, KM.cloth[3]);
+  garment(g, 1.68, ey + 0.08, zf + 1.6, 0.42, 0.8, 0.09, KM.cloth[1]);
+  garment(g, 1.98, ey + 0.08, zf + 1.6, 0.38, 0.62, 0.07, KM.cloth[3]);
   cyl(2.18, ey + 0.2, zf + 1.48, zf + 1.495, 0.17, KM.straw, 20, undefined, { parent: g, col: false });
   cyl(2.18, ey + 0.2, zf + 1.495, zf + 1.6, 0.09, KM.straw, 16, 0.08, { parent: g, col: false });
   lcol(r, 1.52, 2.34, ey, ey + 0.36, zf, zf + 0.45, 'bench');
@@ -741,8 +793,8 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       z: 1.86,
       mat: bulb,
       glow: 2.6,
-      dist: 5.2,
-      inten: 7,
+      dist: 4.3,
+      inten: 8.5,
       color: 0xffd6a0,
       sw: SW,
       label: 'Licht',
@@ -757,8 +809,8 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       z: zf + 1.44,
       mat: lampMat,
       glow: 1.2,
-      dist: 3.2,
-      inten: 2.2,
+      dist: 2.5,
+      inten: 1.8,
       color: 0xffcf8f,
       sw: [AX1 - T - 0.2, AY0 + T + 0.2, zf + 1.1],
       label: 'Leselampe',
@@ -773,7 +825,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       z: zf + 0.82,
       mat: nightMat,
       glow: 1.0,
-      dist: 2.6,
+      dist: 2.2,
       inten: 1.4,
       color: 0xffcf8f,
       sw: [xi0 + 0.15, -2.1, zf + 0.6],
@@ -814,13 +866,26 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       b,
       lx: bx0 + 0.3,
       ly: by1 - 0.42,
-      eye: bm + 0.24,
+      eye: bm + 0.32,
       yaw: 0,
-      pitch: 8,
+      pitch: 2,
       kind: 'lie',
       label: 'Ins Bett legen',
       at: [-1.2, by1 - 0.1],
       r: 1.5,
+    },
+    {
+      key: 'sessel',
+      b,
+      lx: 0.62,
+      ly: AY0 + 0.5,
+      eye: zf + 0.42 + 0.78,
+      yaw: -90,
+      pitch: -4,
+      kind: 'sit',
+      label: 'In den Sessel setzen',
+      at: [0.62, AY0 + 1.0],
+      r: 1.2,
     }
   );
   // ---- walking, colliders, doors ----
@@ -868,8 +933,42 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   GL('boots', hx + 0.32, 0.45, 0.08, 180, { col: false });
   GL('bench_out', hx + 0.42, 1.55, 0.08, 180);
   GL('rain_barrel', AX1 + 0.32, AY0 + 0.05, 0, 0);
+  // firewood stacked against the annex's back wall, a board on top; a doormat at the back door
+  {
+    const x0 = -hx - 0.4,
+      x1 = -hx - 0.04,
+      y0 = AY0 + 0.12,
+      y1 = -hy - 0.15,
+      logGeo = (rr, len) => new THREE.CylinderGeometry(rr, rr * 1.03, len, 9);
+    gB(g, x0, x1, y0 - 0.04, y1 + 0.04, 0, 0.06, MAT.weather, { cast: false });
+    for (let row = 0, z = 0.06; row < 9; row++) {
+      let y = y0 + (row % 2) * 0.04;
+      let top = 0;
+      while (y < y1 - 0.06) {
+        const rr = 0.045 + R() * 0.025;
+        put(
+          g,
+          logGeo(rr, x1 - x0 - R() * 0.05),
+          [MAT.logs, MAT.logEnd, MAT.logEnd],
+          (x0 + x1) / 2 + (R() - 0.5) * 0.04,
+          y + rr,
+          z + rr,
+          {
+            rz: Math.PI / 2,
+            ry: (R() - 0.5) * 0.06,
+          }
+        );
+        y += 2 * rr + 0.004;
+        top = Math.max(top, 2 * rr);
+      }
+      z += top * 0.88;
+    }
+    gB(g, x0 - 0.05, x1 + 0.02, y0 - 0.08, y1 + 0.08, 1.02, 1.045, MAT.weather);
+    lcol(r, x0, x1, y0 - 0.04, y1 + 0.04, 0, 1.05, 'wood');
+    gB(g, -hx - 0.5, -hx - 0.1, -0.35, 0.35, 0.08, 0.095, MATS.felt, { cast: false });
+  }
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: 0, z1: zw + 0.8, name: 'Bungalow' });
-  INSIDE.push({ b, hx: ANX.hx, hy: ANX.hy, ox: ANX.ox, oy: ANX.oy, z0: 0, z1: zaw + 0.6, name: 'Bungalow' });
+  INSIDE.push({ b, hx: ANX.hx, hy: ANX.hy, ox: ANX.ox, oy: ANX.oy, z0: 0, z1: zaw + 0.6, name: 'Bungalow – Anbau' });
   FOOT.push({ b, hx: hx + 0.1, hy: hy + 0.1, ox: 0, oy: 0 });
   FOOT.push({ b, hx: ANX.hx + 0.1, hy: ANX.hy + 0.1, ox: ANX.ox, oy: ANX.oy });
   keysEnd();

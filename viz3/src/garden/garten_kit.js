@@ -5,10 +5,10 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { V } from '../core/head.js';
-import { ANISO, dimIndoor, plain } from '../core/assets.js';
+import { ANISO, dimIndoor, patchSV, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { tagPh } from '../core/geo.js';
-import { gB } from './site_base.js';
+import { boardMat, gB } from './site_base.js';
 // ---- local random numbers (own seed per use) ----
 export function rng(seed = 1) {
   let s = seed % 2147483647 || 1;
@@ -267,6 +267,7 @@ export const KM = {
   seedling: plain({ color: 0x78b04e, roughness: 0.8, side: THREE.DoubleSide }),
   traySoil: plain({ color: 0x5a4838, roughness: 1 }),
   herb: plain({ color: 0x4f7d3a, roughness: 0.85, side: THREE.DoubleSide }),
+  herbDry: plain({ color: 0x6f7a4a, roughness: 0.95 }),
   red: plain({ color: 0xc8352b, roughness: 0.6 }),
   yellow: plain({ color: 0xe8b93a, roughness: 0.6 }),
   cream: plain({ color: 0xf3ead6, roughness: 0.6 }),
@@ -280,6 +281,98 @@ export const KM = {
   cloth: [0x7a3b2e, 0x3f5a46, 0x2f4561, 0xcdbb9a, 0x8c6b4f, 0x5d6f86].map(c => plain({ color: c, roughness: 0.95 })),
 };
 KM.glassJar.depthWrite = false;
+KM.wall = dimIndoor(plain({ color: 0xf6efe2, roughness: 0.85 }), 0.7, 0.45); // warm white lining of the bungalow
+KM.ceil = dimIndoor(boardMat(0xd9b98c, 0.1, false, { wear: 0.05 }), 0.75, 0.25); // pine boards on the ceiling (Datsche)
+KM.velvet = plain({ color: 0x55705a, roughness: 0.92 }); // bottle-green upholstery
+// the same material for use indoors: less sky light (as the walls of the site buildings, dimIndoor), one copy per material
+const INDOOR = new Map();
+export function indoor(m, k = 0.62, desat = 0.45) {
+  if (!m || !m.isMaterial) return m;
+  if (!INDOOR.has(m)) {
+    const c = m.clone();
+    delete c.userData.svPatched;
+    c.userData.svDim = [k, desat];
+    if (m.userData.grime) delete c.userData.grime;
+    INDOOR.set(m, patchSV(c));
+  }
+  return INDOOR.get(m);
+}
+KM.floor = indoor(MAT.oakF, 0.8, 0.25);
+// a garment on a hanger: broad side facing ±y, shoulders across x (width w), hanging from zTop down by len
+export function garment(g, cx, cy, zTop, w, len, d, m) {
+  soft(g, cx - w / 2, cx + w / 2, cy - d / 2, cy + d / 2, zTop - 0.13, zTop, 0.05, m);
+  soft(g, cx - w * 0.44, cx + w * 0.44, cy - d * 0.42, cy + d * 0.42, zTop - len, zTop - 0.08, 0.035, m);
+  for (const s of [-1, 1])
+    soft(
+      g,
+      cx + s * (w / 2 - 0.045) - 0.045,
+      cx + s * (w / 2 - 0.045) + 0.045,
+      cy - d * 0.35,
+      cy + d * 0.35,
+      zTop - len * 0.8,
+      zTop - 0.06,
+      0.03,
+      m
+    );
+  put(g, new THREE.TorusGeometry(0.03, 0.004, 4, 10, Math.PI * 1.4), MAT.steel, cx, cy, zTop + 0.03, {
+    rz: -0.2 * Math.PI,
+    cast: false,
+  });
+}
+// upholstered armchair (wooden legs, cushion, back and arms); the back is on the side 'back' ('-y' = towards −y …)
+export function armchair(g, x0, x1, y0, y1, z, m, back = '-y') {
+  const sh = z + 0.42,
+    bk = 0.2,
+    ar = 0.13,
+    ax = back === '-y' || back === '+y';
+  for (const x of [x0 + 0.06, x1 - 0.06])
+    for (const y of [y0 + 0.06, y1 - 0.06])
+      put(g, new THREE.CylinderGeometry(0.018, 0.013, 0.14, 8), MAT.oak, x, y, z + 0.07, { cast: false });
+  soft(g, x0, x1, y0, y1, z + 0.14, sh - 0.1, 0.04, m);
+  if (ax) {
+    const yb0 = back === '-y' ? y0 : y1 - bk,
+      yb1 = back === '-y' ? y0 + bk : y1;
+    soft(
+      g,
+      x0 + ar - 0.02,
+      x1 - ar + 0.02,
+      back === '-y' ? y0 + bk - 0.02 : y0,
+      back === '-y' ? y1 : y1 - bk + 0.02,
+      sh - 0.12,
+      sh,
+      0.06,
+      m,
+      { puff: 0.02 }
+    );
+    soft(g, x0, x1, yb0, yb1, sh - 0.12, z + 0.98, 0.08, m);
+    for (const [a0, a1] of [
+      [x0, x0 + ar],
+      [x1 - ar, x1],
+    ])
+      soft(g, a0, a1, y0, y1, sh - 0.14, z + 0.66, 0.05, m);
+  } else {
+    const xb0 = back === '-x' ? x0 : x1 - bk,
+      xb1 = back === '-x' ? x0 + bk : x1;
+    soft(
+      g,
+      back === '-x' ? x0 + bk - 0.02 : x0,
+      back === '-x' ? x1 : x1 - bk + 0.02,
+      y0 + ar - 0.02,
+      y1 - ar + 0.02,
+      sh - 0.12,
+      sh,
+      0.06,
+      m,
+      { puff: 0.02 }
+    );
+    soft(g, xb0, xb1, y0, y1, sh - 0.12, z + 0.98, 0.08, m);
+    for (const [a0, a1] of [
+      [y0, y0 + ar],
+      [y1 - ar, y1],
+    ])
+      soft(g, x0, x1, a0, a1, sh - 0.14, z + 0.66, 0.05, m);
+  }
+}
 // a lamp's glowing part: own material each, its emissive is switched at run time (garden/garten_in.js)
 export function bulbMat(col = 0xfff2d6) {
   return new THREE.MeshStandardMaterial({ color: col, emissive: 0xffd28a, emissiveIntensity: 0, roughness: 0.3 });
@@ -374,6 +467,10 @@ const blob = new THREE.IcosahedronGeometry(1, 0),
     s.quadraticCurveTo(-0.5, 0.35, 0, 0);
     return new THREE.ShapeGeometry(s, 3);
   })();
+// one leaf (pointing up and out), e.g. for climbing plants
+export function leaf(g, lx, ly, z, size, yaw, tilt, m) {
+  return put(g, leafG, m, lx, ly, z, { s: [size * 0.7, size, 1], ry: yaw, rx: -tilt, order: 'YXZ', cast: false });
+}
 export function plant(g, lx, ly, z, size, kind, rnd = R0) {
   if (kind === 'seedling') {
     for (const s of [-1, 1])
@@ -467,6 +564,12 @@ export function teapot(g, lx, ly, z, m = KM.porcelain, yaw = 0) {
     cast: false,
   });
   return grp;
+}
+// stepping stone (flagstone) in the lawn, its own little footprint so the grass leaves it free
+export function stone(g, b, lx, ly, sz, rnd = R0, FOOT = null) {
+  const geo = new THREE.CylinderGeometry(sz, sz * 1.04, 0.05, 7);
+  put(g, geo, MAT.stone, lx, ly, 0.0, { ry: rnd() * 6.28, s: [1, 1, 0.7 + rnd() * 0.3], cast: false });
+  if (FOOT) FOOT.push({ b, hx: sz * 0.9, hy: sz * 0.9, ox: lx, oy: ly });
 }
 // keys of placed models (planner: 'type#n', counted in load order): the garden buildings count in their own range, so the models placed
 // further down (the workshop …) keep the keys saved furniture layouts refer to (13 models were placed here before 23.10.2026)
