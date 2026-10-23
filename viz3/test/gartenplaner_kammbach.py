@@ -91,10 +91,11 @@ with lib.browser() as b:
             time.sleep(0.5)
         ids = J("""(() => { const L = GPLAN.data.db.list, f = q => (L.find(q) || {}).id;
           return { apple: f(p => p.form === 'halbstamm' && p.darstellung && p.darstellung.typ === 'obstbaum'), nut: f(p => p.form === 'hochstamm'),
-            bush: f(p => p.schicht === 'strauch' && (p.funktionen || []).includes('ertrag')), herb: f(p => p.schicht === 'kraut') }; })()""")
+            bush: f(p => p.schicht === 'strauch' && (p.funktionen || []).includes('ertrag')), herb: f(p => p.schicht === 'kraut'),
+            erle: f(p => p.form === 'solitaer') }; })()""")
         print('plants', ids, flush=True)
-        spots = {'apple': (-3.5, -8.5), 'nut': (6.0, -24.0), 'bush': (-6.5, -12.0), 'herb': (-1.5, -11.5)}
-        for k, (x, y) in spots.items(): E(f"GPLAN.add('{ids[k]}', {x}, {y})")
+        spots = {'apple': (-3.5, -8.5), 'nut': (6.0, -24.0), 'bush': (-6.5, -12.0), 'herb': (-1.5, -11.5), 'erle': (9.0, -31.0)}
+        for k in ('apple', 'nut', 'bush', 'herb'): E(f"GPLAN.add('{ids[k]}', {spots[k][0]}, {spots[k][1]})")
         E("GPLAN.setFrei(false); GPLAN.setShow(true)")
         # the shopping list looked at: the task starts
         E("document.querySelector('#gplan [data-tab=\"listen\"]').click(); document.querySelector('#gplan [data-list=\"shop\"]').click()")
@@ -233,6 +234,48 @@ with lib.browser() as b:
         # ---- reload: the planted plants and the harvest book stay; nothing left in containers ----
         st = J("GPLAN.state")
         ck('saved: v 2 with the planted plants', st['v'] == 2 and sum(1 for i in st['items'] if i.get('st') == 'gepflanzt') == 4, '')
+        # ---- the stake trailer: the tractor brings it to the nursery, a tall standard onto it, home, „Abladen“ beside it, planted ----
+        if G['car']:
+            E(f"GPLAN.add('{ids['erle']}', {spots['erle'][0]}, {spots['erle'][1]}); GPLAN.close(); KERN.scenario('baumschule').run()")
+            t1 = time.time()
+            while time.time() - t1 < 400:
+                E("GAME.step(0.3)")
+                if E("!!(window.VESSRA && VESSRA.state === 'ready' && VESSRA.baumschule) && GPSHOP.near && GPSHOP.shelf().length === 1"): break
+                time.sleep(0.5)
+            s = J("(() => { const s = GPSHOP.shelf()[0]; return s ? { x: s.x, y: s.y, z: s.z } : null; })()")
+            E(f"GAME.view({s['x']}, {s['y']}, {s['z']} + 1.7, 0, -30, 62); GAME.step(0.1); PLAY.primary(); GAME.step(0.3)")
+            k = J("VESSRA.baumschule.kasse")
+            E(f"GAME.view({k['x']}, {k['y']}, {k['z']} + 1.7, {k['yaw']}, -8, 62); GAME.step(0.1); PLAY.primary(); GAME.step(0.2)")
+            E("document.querySelector('#gpbon [data-b=\"mit\"]').click(); GAME.step(0.3)")
+            E("(() => { const B = VESSRA.baumschule; VEH.place('tractor', B.parkplatz.x, B.parkplatz.y, B.parkplatz.yaw * Math.PI / 180); TRAILER.home(); })(); GAME.step(0.3)")
+            E(f"GAME.view({k['x']}, {k['y']}, {k['z']} + 1.7, {k['yaw']}, -8, 62); GAME.step(0.1)")
+            best = J("GAME.step(0.1).best")
+            E("PLAY.primary(); GAME.step(2.0)")
+            loc = E(f"(GPLAN.state.kuebel.find(c => c.id === '{ids['erle']}') || {{}}).loc")
+            print('trailer', best, loc, J("GPLAN.G3.sets()"), flush=True)
+            ck('the stake trailer near the counter: „Auf den Anhänger laden“ takes the tall standard, drawn on the trailer',
+               bool(best) and best.startswith('Auf den Anhänger laden') and loc == 'anh' and J("GPLAN.G3.sets()").get('anh', 0) == 1, f'{best} {loc}')
+            E("(() => { const s = TRAILER.st, p = TRAILER.toW(TRAILER.bed.hw + 2.5, (TRAILER.bed.y0 + TRAILER.bed.y1) / 2); GAME.view(p[0], p[1], KERN.ground(p[0], p[1]) + 2.2, Math.atan2(s.x - p[0], s.y - p[1]) * 180 / Math.PI, -25, 62); GAME.step(0.2); })()")
+            lib.shot(pg, OUT, 'g_anhaenger')
+            # home: the tractor and the trailer back home, „Abladen“ beside the trailer, carried to its hole and planted
+            E("VEH.reset(); GAME.step(0.5)")
+            E("(() => { const s = TRAILER.st, p = TRAILER.toW(TRAILER.bed.hw + 1.0, 0); GAME.view(p[0], p[1], KERN.ground(p[0], p[1]) + 1.7, Math.atan2(s.x - p[0], s.y - p[1]) * 180 / Math.PI, -15, 62); GAME.step(0.2); })()")
+            best = J("GAME.step(0.1).best")
+            E("PLAY.primary(); GAME.step(2.0)")
+            c = J(f"GPLAN.state.kuebel.find(c => c.id === '{ids['erle']}') || null")
+            ok_un = bool(best) and best.startswith('Abladen') and c and c['loc'] == 'boden'
+            if c:
+                E(f"GAME.view({c['x']}, {c['y']}, KERN.ground({c['x']}, {c['y']}) + 1.7, 0, -30, 62); GAME.step(0.1); PLAY.primary(); GAME.step(0.3)")
+            x, y = spots['erle']
+            E(f"GAME.view({x}, {y} - 1.3, KERN.ground({x}, {y} - 1.3) + 1.7, 0, -24, 62); GAME.step(0.1)")
+            for i in range(8):
+                best = J("GAME.step(0.05).best")
+                if not best or 'Mulchen' in best: break
+                k2 = next((k3 for k3, v in J("GPLAN.M.STEP").items() if best.startswith(v['label'])), None)
+                dur = E(f"GPLAN.M.STEP['{k2}'].dur") if k2 else 0.5
+                E("PLAY.primary()"); E(f"GAME.step({dur + 0.25})")
+            it = J(f"GPLAN.state.items.find(it => it.id === '{ids['erle']}')")
+            ck('home: „Abladen“ beside the trailer, carried to its hole and planted', ok_un and it.get('st') == 'gepflanzt' and E("GPLAN.state.kuebel.length") == 0, f"{best} {json.dumps(c)} {it.get('st')}")
     except Exception as ex:
         ck('the nursery test ran', False, repr(ex)[:500])
     ck.errors(errs)

@@ -4,9 +4,9 @@
 // nursery's own plant taken out there (VESSRA.baumschule.take; putBack when it is not wanted any more). „Aussuchen“ puts one into the
 // basket; „Bezahlen“ at the counter shows the receipt (the plants and the date, no prices) with „Liefern lassen“ (next game morning by
 // the garden gate) or „Selbst mitnehmen“ (the plants wait at the counter). There „Ins Auto laden“ when the estate car stands within 15 m
-// or on the nursery's parking place: small plants upright in the load space, trees up to 2.2 m lying with the crown between the folded
-// seats; tall standards go on the trailer when it is coupled to the car, else they wait for the delivery („Liefern lassen“ at the
-// counter). „Ausladen“ at the tailgate sets them down behind the car; „Tragen“ takes one into the arms (the arms pose of PLAY, the second
+// or on the nursery's parking place (or at its gate): small plants upright in the load space, trees up to 2.2 m lying with the crown
+// between the folded seats; the stake trailer standing near the counter (the tractor brings it) takes what the car cannot, tall
+// standards too („Auf den Anhänger laden“); what is left waits for the delivery („Liefern lassen“ at the counter). „Ausladen“ at the tailgate sets them down behind the car; „Tragen“ takes one into the arms (the arms pose of PLAY, the second
 // button puts it down) – with it the planting step „Einpflanzen“ at its hole (gplan/gplan_game.js).
 // Planting needs a bought plant unless GPLAN.frei (a switch for tests) or there is no nursery (the world around Ratscher off). The
 // containers are the plan's kuebel (saved with it): { k, id, loc: korb | kasse | liefer | tor | auto | anh | boden | hand, x, y, tag (game
@@ -194,9 +194,16 @@ export const GPSHOP = (() => {
     return list.map((c, i) => out[i] || null);
   }
   // the trailer's bed (trailer.js bed, the trailer's frame): tall standards lying along it
-  function trailerPos(j) {
-    const B = TRAILER.bed;
-    return { x: -B.hw + 0.3 + (j % 4) * 0.42, y: B.y0 + 0.3, z: B.z + 0.02, tilt: 1.45 };
+  // on the stake trailer's bed (trailer.js bed, the trailer's frame): four across, rows along it; trees lying with the crown ahead
+  function trailerPos(j, p) {
+    const B = TRAILER.bed,
+      lie = !!p && M.sizeAt(p, 0, '').h > 0.9;
+    return {
+      x: -B.hw + 0.3 + (j % 4) * 0.42,
+      y: B.y0 + 0.3 + Math.floor(j / 4) * 1.4,
+      z: B.z + 0.02,
+      tilt: lie ? 1.45 : 0,
+    };
   }
   // ---------------- the 3D sets: the world, the car, the trailer, the hands ----------------
   function refresh() {
@@ -241,7 +248,7 @@ export const GPSHOP = (() => {
     GP3D.potSet(
       'anh',
       TRAILER.g,
-      onTr.map((c, j) => Object.assign({ p: at(c), seed: 'kb:' + c.k, tag: true }, trailerPos(j))),
+      onTr.map((c, j) => Object.assign({ p: at(c), seed: 'kb:' + c.k, tag: true }, trailerPos(j, at(c)))),
       month
     );
     // the hands
@@ -305,23 +312,45 @@ export const GPSHOP = (() => {
     const near = (p, r) => Math.hypot(v.st.x - p.x, v.st.y - p.y) < r;
     return near(B.kasse, 15) || near(B.parkplatz, 8) || near(B.eingang, 12);
   };
+  // the stake trailer (towed by the tractor) standing within 18 m of the counter, on the parking place or at the gate
+  const trailerNear = () => {
+    const B = nursery(),
+      s = TRAILER.st;
+    if (!B || !s || !TRAILER.g) return false;
+    const near = (p, r) => Math.hypot(s.x - p.x, s.y - p.y) < r;
+    return near(B.kasse, 18) || near(B.parkplatz, 12) || near(B.eingang, 14);
+  };
+  const TRAILER_MAX = 12;
+  // where the paid plants waiting at the counter go: into the car what fits there (no tall standards), onto the trailer the rest
+  // (tall standards too, up to twelve) – [[container, 'auto' | 'anh']]
+  function loadPlan() {
+    const W = ST().kuebel.filter(c => c.loc === 'kasse'),
+      inCar = ST().kuebel.filter(c => c.loc === 'auto'),
+      plan = carNear() ? cargoPlan([...inCar, ...W]).slice(inCar.length) : W.map(() => null),
+      tr = trailerNear();
+    let nt = nOf('anh');
+    const out = [];
+    W.forEach((c, i) => {
+      if (plan[i]) out.push([c, 'auto']);
+      else if (tr && nt < TRAILER_MAX) {
+        nt++;
+        out.push([c, 'anh']);
+      }
+    });
+    return out;
+  }
   function counterLabel() {
     if (!atNursery()) return null;
     const nk = nOf('korb'),
       nw = nOf('kasse');
     if (nk) return 'Bezahlen – ' + plural(nk);
     if (!nw) return null;
-    return carNear() && loadable().length
-      ? 'Ins Auto laden – ' + plural(loadable().length)
-      : 'Liefern lassen – ' + plural(nw);
-  }
-  // the paid plants waiting at the counter that go into the car (or onto the coupled trailer)
-  function loadable() {
-    const W = ST().kuebel.filter(c => c.loc === 'kasse'),
-      inCar = ST().kuebel.filter(c => c.loc === 'auto'),
-      plan = cargoPlan([...inCar, ...W]).slice(inCar.length),
-      tr = TRAILER.tow && TRAILER.tow === car();
-    return W.filter((c, i) => plan[i] || (tr && tallStandard(db().byId.get(c.id) || {})));
+    const L = loadPlan(),
+      na = L.filter(x => x[1] === 'auto').length,
+      nt = L.length - na;
+    if (na) return 'Ins Auto laden – ' + plural(na) + (nt ? ' (' + nt + ' auf den Anhänger)' : '');
+    if (nt) return 'Auf den Anhänger laden – ' + plural(nt);
+    return 'Liefern lassen – ' + plural(nw);
   }
   KERN.act({
     id: 'gplan:kasse',
@@ -336,7 +365,7 @@ export const GPSHOP = (() => {
     anim3: 'interactLoop',
     run: () => {
       if (nOf('korb')) return pay();
-      if (carNear() && loadable().length) return load();
+      if (loadPlan().length) return load();
       deliver(ST().kuebel.filter(c => c.loc === 'kasse'));
     },
   });
@@ -368,14 +397,12 @@ export const GPSHOP = (() => {
     return list.length;
   }
   function load() {
-    const L = loadable(),
-      tr = TRAILER.tow && TRAILER.tow === car();
+    const L = loadPlan();
     let nt = 0;
-    for (const c of L)
-      if (tr && tallStandard(db().byId.get(c.id) || {})) {
-        c.loc = 'anh';
-        nt++;
-      } else c.loc = 'auto';
+    for (const [c, to] of L) {
+      c.loc = to;
+      if (to === 'anh') nt++;
+    }
     const rest = nOf('kasse');
     KERN.emit('gplan:geladen', { n: L.length, anh: nt });
     toast(
@@ -383,7 +410,7 @@ export const GPSHOP = (() => {
         ' eingeladen' +
         (nt ? ' (' + nt + ' auf dem Anhänger)' : '') +
         '.' +
-        (rest ? ' ' + plural(rest) + ' passen nicht hinein – „Liefern lassen“ an der Kasse.' : ''),
+        (rest ? ' ' + plural(rest) + ' passen nicht mehr hinein – „Liefern lassen“ an der Kasse.' : ''),
       3600
     );
     changed();

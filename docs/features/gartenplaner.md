@@ -67,8 +67,9 @@ Zeitraffer, in der Baumschule Kammbach kaufen und die Pflanzen heimbringen (Lief
 - **Kasse**: „Bezahlen – n Pflanzen“ zeigt den **Kassenzettel** (Pflanzen, Form, Datum und Uhrzeit, keine Preise) mit „Liefern lassen –
   morgen früh am Gartentor“ oder „Selbst mitnehmen“ (die Pflanzen warten neben der Theke). Dort dann „Ins Auto laden“, wenn das Auto auf
   dem Parkplatz der Baumschule oder bis 15 m von der Kasse steht: kleine Pflanzen stehend, Bäume bis 2,2 m liegend (Krone zwischen den
-  umgeklappten Sitzen), Hochstämme auf den Anhänger, wenn er am Auto hängt – sonst „Liefern lassen“ für den Rest. Ein Auto, das am Tor
-  der Baumschule stehen geblieben ist (bis 12 m), zählt auch.
+  umgeklappten Sitzen). Steht der Rungenanhänger (vom Traktor gebracht) bei der Kasse, auf dem Parkplatz oder am Tor, nimmt er, was ins
+  Auto nicht passt – Hochstämme auch („Auf den Anhänger laden“, bis 12 Töpfe); der Rest: „Liefern lassen“. Ein Auto, das am Tor der
+  Baumschule stehen geblieben ist (bis 12 m), zählt auch. Daheim „Abladen“ neben dem Anhänger.
 - **Daheim**: „Ausladen“ an der Heckklappe stellt sie hinter das Auto, die Lieferung steht am nächsten Morgen ab 7 Uhr am Gartentor.
   „Tragen – …“ nimmt eine in die Arme (die Figur trägt sie, der zweite Knopf stellt sie ab), am Pflanzloch dann „Einpflanzen – …“.
 - **Aufgabe im Tagebuch** (J): „Pflanzen in der Baumschule Kammbach kaufen“ beginnt, sobald man die Einkaufsliste ansieht: hinfahren,
@@ -194,7 +195,9 @@ Bild neu gerechnet wird (nur der Anker beim Tragen).
   am Rand des 2,4-km-Quadrats – `VEH.place('car', parkplatz …)` landet am Kartenrand. Der Test erkennt das und prüft dann „Liefern
   lassen“ für alles; mit der Fahrt laufen „Ins Auto laden“ und Ausladen mit – lokal geprüft mit `origin/feat/fahrt` hineingeführt
   (Zweig nur lokal, nicht gepusht): `gartenplaner_kammbach` 20/20 (Auto 8,1 m von der Kasse auf dem Parkplatz, drei Pflanzen
-  eingeladen, die Walnuss geliefert, die Ladung im Auto gezeichnet, daheim hinter dem Auto ausgeladen). Der Anhänger-Fall ist ungeprüft.
+  eingeladen, die Walnuss geliefert, die Ladung im Auto gezeichnet, daheim hinter dem Auto ausgeladen). Seit `src` die Fahrt hat, läuft
+  das bei GitHub mit, dazu der Anhänger: Traktor mit Anhänger auf dem Parkplatz, eine Schwarzerle (Solitär) „Auf den Anhänger laden“,
+  daheim „Abladen“, tragen, pflanzen.
 - **Takt**: die drei Bild-Rückrufe laufen über `KERN.tick(fn, 'gplan/gplan' | 'gplan/gplan_game' | 'gplan/gplan_shop')`, nicht mehr über
   `window.TICKS`.
 - **TASKS** (erster echter Nutzer, `gplan-kaufen`) – was fehlte: (1) eine Aufgabe lässt sich nicht wiederholen – `start` geht nur einmal,
@@ -203,7 +206,6 @@ Bild neu gerechnet wird (nur der Anker beim Tragen).
   (liefern lassen **oder** selbst fahren) – hier mit einem `check`, der beides abdeckt; (4) ein Schritt mit `check`, der schon wahr ist,
   rückt erst beim nächsten Halbsekundentakt weiter – mehrere auf einmal brauchen mehrere Takte; (5) `start.when` sieht nur die
   Ereignisdaten, keinen Zustand (ob es überhaupt etwas zu kaufen gibt, prüft hier der Sender).
-- **Auto/Anhänger**: der Anhänger gehört zum Traktor; ob er am Auto hängen kann (`TRAILER.couple(car)`), entscheidet `trailer.js` –
-  hängt er am Auto (`TRAILER.tow === VEH.by.car`), kommen Hochstämme darauf, sonst bleiben sie für die Lieferung. Gebraucht wird nur das
-  Lesen; keine Zeile in `car.js`/`trailer.js` geändert.
+- **Auto/Anhänger**: der Rungenanhänger koppelt nur an den Traktor (`trailer.js`); er zählt, wenn er bei der Kasse steht – der Traktor
+  bringt ihn hin. Gebraucht wird nur das Lesen (`TRAILER.st/g/bed/toW`); keine Zeile in `car.js`/`trailer.js` geändert.
 
