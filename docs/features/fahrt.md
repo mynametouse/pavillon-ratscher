@@ -18,8 +18,8 @@ schickt; unterwegs Schleusingen.
   Längsprofil** – derselbe Glätter wie die Kachel-Pipeline (`tools/welt/roads.py`: gemeinsame Knoten, Brücken gerade), gerechnet auf den
   Kachelhöhen (Wellen je km: Landstraßen 9,0 → 0,1, Ortsstraßen 13,8 → 3,1). Das Kachelnetz wird an den Straßen auf dieses Profil
   **eingeschnitten** (Fahrbahn mit Dachprofil, Bankett, Böschungen 1 : 2; `WELT.setPads` unter den Flächen der Zonen) – Räder, Füße
-  und Augen stehen auf demselben Boden. Am Rand des Quadrats treffen die Profile das 10-m-Gelände (im Quadrat sind dessen Höhen die
-  Daten des Glätters): keine Stufe, kein Überblenden. Fahrbahnbelag für Haftung und Rollwiderstand (`KERN.surface`); auf dem Luftbild
+  und Augen stehen auf demselben Boden. Am Rand des Quadrats treffen die Profile das 10-m-Gelände: im Quadrat hält der Glätter sie an
+  dessen Höhen fest, geglättet wird draußen – an allen 29 Übergängen weniger als 5 cm Unterschied (frei geglättet waren es bis 4,7 m). Fahrbahnbelag für Haftung und Rollwiderstand (`KERN.surface`); auf dem Luftbild
   nahe dem Fahrzeug Asphalt statt der Pflastersteine, die der Kachel-Shader sonst aus grauen Flächen macht (`WELT.setOverlay`, solange
   keine Zone ihre Straßen auflegt); Brücken mit Fahrbahnplatte und Geländer (die Geländer halten die Räder auf der Brücke, unten fährt
   man durch); Wände der Zonen (Schleusingen) halten Fahrzeuge auf (`KERN.pushOut`).
@@ -47,6 +47,10 @@ in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide R
   bleibt grob; Bäume und Häuser außerhalb der Zonen gibt es dort nur auf dem Luftbild.
 - Brücken über andere Straßen: die Höhe kennt das 30-m-Modell nicht – manche Überführung ist niedrig (das Auto passt darunter durch).
 - Ein draußen abgestelltes Auto steht nach dem Neuladen wieder vor dem Garten.
+- Im Quadrat liegen die Straßen weiter auf dem 10-m-Gelände des Modells (ohne geglättetes Längsprofil): an Knicken der Dreiecke hebt
+  das Auto bei Landstraßentempo ab, etwa auf der L 3004 kurz vor der Ortstafel Schleusingen (−360, 833: Gefälle springt von 5 auf 17 %).
+- Der Hof der Baumschule: seit dem Veßra-Feinschliff (23.10. mittags) liegt seine ebene Fläche am Tor 1,8 m über der Straße – eine Rampe
+  von über 50 %, durch die das Auto nicht hineinkommt; der Veßra-Agent gleicht sie an (der Test fährt dann wieder bis in den Hof).
 
 ## Für den Kern-Chat (gemeinsame Dateien)
 - `vehicles/vehicle.js`: Rand der Karte (`VEH.edge`: `null` | `'wait'` | `'end'`, ohne FAHRT wie vorgeschlagen `KERN.free`), Tempo-Grenze
@@ -70,7 +74,7 @@ in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide R
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8982 --serve fahrt` – holt die Kacheln entlang der Routen nach
   `viz3/dist/welt-test/`; Abschnitte `start,edge,markt,garten,west,free,gl` (`garten` und `west` zusammen sind die ganze Fahrt vom
   Stellplatz im Garten bis in den Hof der Baumschule Kammbach); Bilder in `out/fahrt/`. Bei GitHub: `feat.yml` (Artefakt „out“).
-  Dauer bei GitHub etwa 15 Minuten (rund 18 Minuten Spielzeit, davon 11 auf der Strecke zur Baumschule).
+  Dauer bei GitHub knapp 10 Minuten (rund 14 Minuten Spielzeit, davon gut 11 für die ganze Fahrt vom Garten zur Baumschule).
 - Daten neu bauen: `python3 -I viz3/extra/fahrt/strecke.py --raw <Cache-Ordner>` (OSM-API in Zellen, Kacheln der Website).
 
 ## Quellen
