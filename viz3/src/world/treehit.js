@@ -42,8 +42,8 @@ export const TREEHIT = (() => {
   const NAME = { spruce: 'Fichte', larch: 'Lärche', pine: 'Kiefer' };
   // per vehicle: contact height of the body (m), the force its front takes on a narrow stem (N), traction when pushing slowly (N)
   const VP = {
-    car: { h: 0.45, front: 6000, trac: 4000, der: 'das Auto', dem: 'dem Auto' },
-    tractor: { h: 0.75, front: 22000, trac: 30000, der: 'der Traktor', dem: 'dem Traktor' },
+    car: { h: 0.45, hv: 0.45, front: 6000, trac: 4000, der: 'das Auto', dem: 'dem Auto' },
+    tractor: { h: 0.75, hv: 0.53, front: 22000, trac: 30000, der: 'der Traktor', dem: 'dem Traktor' }, // hv: what touches first – the loader, lowered
   };
   const vpOf = v => VP[v.id] || { h: 0.6, front: 8000, trac: 6000, der: 'das Fahrzeug', dem: 'dem Fahrzeug' };
   // ---------------- what stands where: WCOL trunk → tree ----------------
@@ -53,8 +53,7 @@ export const TREEHIT = (() => {
   function recAt(x, y) {
     if (!RECS) {
       RECS = new Map();
-      for (const r of (window.RATSCHER && RATSCHER.treeRecs) || [])
-        RECS.set(Math.round(r.x * 10) * 1e5 + Math.round(r.y * 10), r);
+      for (const r of RATSCHER.treeRecs || []) RECS.set(Math.round(r.x * 10) * 1e5 + Math.round(r.y * 10), r);
     }
     return RECS.get(Math.round(x * 10) * 1e5 + Math.round(y * 10)) || null;
   }
@@ -145,7 +144,13 @@ export const TREEHIT = (() => {
       FOREST.retilt(T.f);
     } else if (T.r) {
       const r = T.r;
-      if (!r.m0) r.m0 = r.inst.map(([im, k]) => im.getMatrixAt(k, new THREE.Matrix4()));
+      // the upright matrices, once (InstancedMesh.getMatrixAt fills the matrix it is given – it returns nothing)
+      if (!r.m0)
+        r.m0 = r.inst.map(([im, k]) => {
+          const m = new THREE.Matrix4();
+          im.getMatrixAt(k, m);
+          return m;
+        });
       r.inst.forEach(([im, k], j) => {
         r.m0[j].decompose(_p, _q0, _s);
         _m.compose(_p.add(_o), _q0.premultiply(_q), _s);
@@ -572,10 +577,11 @@ export const TREEHIT = (() => {
           on = al > 0.2 && al < L.L * 0.6 && la < T.D / 2 + 0.12,
           bit = 1 << k;
         if (on && !(L.on & bit)) {
-          // the stem under a wheel: the thicker and the faster, the harder the jolt
-          const j = Math.min(0.35, T.D * 2.2) * Math.min(1, spd / 4);
-          s.u *= 1 - j;
-          s.v *= 1 - j;
+          // the stem under a wheel: the wheel's share of the vehicle climbs it, the springs swallow about that energy (m/n · g · D) –
+          // slowly that is a good part of the speed, fast hardly any; the faster and the thicker, the harder the jolt
+          const k = Math.sqrt(Math.max(0, 1 - (2 * G * T.D) / (Math.max(2, v.W.length) * spd * spd)));
+          s.u *= k;
+          s.v *= k;
           s.pv += Math.sign(w.y || 1) * Math.min(0.5, T.D * 4) * Math.min(1, spd / 2);
           s.rv += Math.sign(w.x || 1) * Math.min(0.35, T.D * 3) * Math.min(1, spd / 2);
           snd('bump', p[0], p[1], Math.min(1, T.D * 6));
@@ -645,7 +651,16 @@ export const TREEHIT = (() => {
           if (A.mode === 'bend' && A.th < -0.4) A.th = -0.4;
         }
       }
-      pose(T, A.dir, Math.max(-0.5, A.th), A.e || 0);
+      try {
+        pose(T, A.dir, Math.max(-0.5, A.th), A.e || 0);
+      } catch (e) {
+        ACT.delete(i); // this tree is left as it is; the others go on
+        if (!S.perr) {
+          S.perr = 1;
+          console.warn('treehit pose', e);
+        }
+        continue;
+      }
       shadow = true;
       if (A.mode === 'rest') ACT.delete(i);
       else if (A.mode !== 'fall' && A.mode !== 'push') {
@@ -697,9 +712,13 @@ export const TREEHIT = (() => {
       A.mode = 'rest';
       ACT.delete(i);
       knock(T);
-      pose(T, dir, A.th, A.e);
       S.down.push([+x.toFixed(2), +y.toFixed(2), +az.toFixed(1), +A.th.toFixed(3)]);
       n++;
+      try {
+        pose(T, dir, A.th, A.e);
+      } catch (err) {
+        console.warn('treehit restore pose', err); // it is out of the way; only its picture stays upright
+      }
     }
     S.restored = n;
     if (n) markDirty(true);
@@ -732,7 +751,7 @@ export const TREEHIT = (() => {
         }
       : null;
   };
-  // what vehicle vid (car/tractor) does to trunk i when it hits it at kmh with the body (or at height hc)
+  // what vehicle vid (car/tractor) does to trunk i when it hits it at kmh with what touches first (or at height hc)
   S.verdict = (i, vid, kmh = 20, hc) => {
     const T = info(i);
     if (!T) return 'hard';
@@ -742,7 +761,7 @@ export const TREEHIT = (() => {
       m = vv ? massOf(vv) : vid === 'tractor' ? 5400 : 1230,
       a = kmh / 3.6,
       F = Math.min(P.front, (m * a * a) / (2 * YIELD)),
-      need = T.M / (hc || P.h);
+      need = T.M / (hc || P.hv || P.h);
     return F >= need ? 'fall' : 'stop';
   };
   S.state = i => {
@@ -759,12 +778,17 @@ export const TREEHIT = (() => {
     for (const L of LOGS) {
       const T = L.T;
       ACT.delete(T.i);
-      pose(T, L.dir, 0, 0);
-      if (T.r && T.r.m0)
-        T.r.inst.forEach(([im, k], j) => {
-          im.setMatrixAt(k, T.r.m0[j]);
-          im.instanceMatrix.needsUpdate = true;
-        });
+      try {
+        pose(T, L.dir, 0, 0);
+        if (T.r && T.r.m0)
+          T.r.inst.forEach(([im, k], j) => {
+            if (!T.r.m0[j]) return;
+            im.setMatrixAt(k, T.r.m0[j]);
+            im.instanceMatrix.needsUpdate = true;
+          });
+      } catch (err) {
+        console.warn('treehit standUp', err);
+      }
       T.down = false;
       WCOL.revive(T.i);
       if (T.z5 != null && T.r && COL[T.r.col]) COL[T.r.col][5] = T.z5;
@@ -787,6 +811,22 @@ export const TREEHIT = (() => {
     const a = new THREE.Vector3(0, 1, 0).transformDirection(_m);
     return [+a.x.toFixed(3), +(-a.z).toFixed(3), +a.y.toFixed(3)];
   };
+  // the menu's „Bäume aufstellen“ (shell/menu.html, data-treereset): every knocked-over tree up again, the save cleared
+  document.querySelectorAll('[data-treereset]').forEach(b =>
+    b.addEventListener('click', () => {
+      const n = LOGS.length;
+      S.standUp();
+      toast(
+        n === 0
+          ? 'Es liegt kein umgedrückter Baum.'
+          : n === 1
+            ? 'Der umgedrückte Baum steht wieder.'
+            : `${n} umgedrückte Bäume stehen wieder.`,
+        3500
+      );
+      if (LATE.HUD && LATE.HUD.open) LATE.HUD.setMenu(false);
+    })
+  );
   S.active = () => ACT.size;
   S.stats = () => ({ ready: S.ready, active: ACT.size, down: S.down.length, restored: S.restored || 0, n: S.n });
   S.rule = { SIG, YIELD, TURN, D_BEND, ANCHOR, VP };

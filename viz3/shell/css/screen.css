@@ -15,7 +15,7 @@ body[data-mode="walk"] .where.faded{opacity:0;pointer-events:none}
 #cleanbtn[aria-pressed="true"] .off{display:inline}
 body[data-clean="1"] .where,body[data-clean="1"] #qtrack,body[data-clean="1"] .toast,body[data-clean="1"] #hotbar,body[data-clean="1"] #hbname,
 body[data-clean="1"] #stancetag,body[data-clean="1"] #clockbtn,body[data-clean="1"] #gearbtn,body[data-clean="1"] #camtog,body[data-clean="1"] #vmap,
-body[data-clean="1"] #vmaplab,body[data-clean="1"] #vkeys,body[data-clean="1"] .hint{display:none!important}
+body[data-clean="1"] #vmaplab,body[data-clean="1"] #vkeys,body[data-clean="1"] .hint,body[data-clean="1"] #amttrack,body[data-clean="1"] #amtbtn{display:none!important}
 body[data-clean="1"] #hudtr .hb{background:rgba(24,23,21,.36)}
 @media (pointer:coarse){
   /* playing on a touch screen: the page header with title and tabs goes away, the picture gets the whole screen */
@@ -53,4 +53,8 @@ body[data-clean="1"] #hudtr .hb{background:rgba(24,23,21,.36)}
   /* the villagers' talk panel and table talk (dorf.css loads later – body raises the weight) */
   body #dorfpanel{top:48px;bottom:auto;right:auto;width:min(360px,46vw);max-height:calc(100% - 58px);overflow:auto}
   body #dorfsub{bottom:calc(108px + env(safe-area-inset-bottom,0px));max-width:min(520px,56%)}
+  /* the Ortsvorsteher's letter/talk panel and folder (amt.css) */
+  body #amtpanel{top:48px;bottom:auto;right:auto;width:min(380px,48vw);max-height:calc(100% - 58px)}
+  body #amtbook{top:48px;max-height:calc(100% - 58px)}
+  body #amttrack{top:96px}
 }

@@ -46,10 +46,9 @@ Außerdem `SCHL.inHall(x, y)`, `SCHL.place(x, y)`, `SPOTS.schleusingen`.
 - `viz3/src/game/walkable.js`: `groundZ` über `KERN.ground` (statt direkt `ROADS.groundAt`), `walkBounds` fragt zuerst `KERN.free`.
 - `viz3/src/modules.txt`: Marke `# feat/schleusingen` mit `welt/welt.js` und `welt/schleusingen.js` direkt unter `world/village_near.js`.
 - `viz3/shell/menu.html`: ein Eintrag Orte → „Schleusingen“ (nach „Dorf“); `viz3/shell/parts.txt`: `css/schleusingen.css` nach `css/dorf.css`.
-- `.github/workflows/schleusingen-bilder.yml`: nur der Schleusingen-Test auf `feat/schleusingen` (schnelle Bilder) – kann nach dem Zusammenführen
-  entfallen oder bleiben (läuft nur auf diesem Branch).
 - Noch offen für den Kern-Chat: `docs/ARCHITECTURE.md` (WELT, SCHL in Abschnitt 6/9, `KERN.free`), `docs/CHANGELOG.md`; die Fahrzeuge bleiben
-  im 2,4-km-Quadrat (`vehicles/vehicle.js` müsste `KERN.free` fragen, dann ginge die Fahrt bis Schleusingen).
+  im 2,4-km-Quadrat: in `vehicles/vehicle.js` (Rand der Karte, „Hier endet die Karte.“) `if (!KERN.free(s.x, s.y) && (s.x < B[0] || …))` –
+  dann ginge die Fahrt bis Schleusingen (Boden und Wände kommen schon über `KERN`).
 
 ## Quellen
 Gebäude, Straßen, Orte © OpenStreetMap-Mitwirkende (ODbL); Gelände/Luftbild der Kacheln © GDI-Th (CC BY 4.0), Copernicus DEM, ESA WorldCover
@@ -59,7 +58,7 @@ Gebäude, Straßen, Orte © OpenStreetMap-Mitwirkende (ODbL); Gelände/Luftbild 
 ## Testen
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8977 --serve schleusingen` – holt die nötigen Welt-Kacheln nach
   `viz3/dist/welt-test/`, prüft: nichts beim Start, Menü, Laden, Boden, Wand hält auf, durch die Tür in den Saal, Rückwand, Namen, Nacht,
-  Freigeben, Texturen je Shader; Bilder in `out/schleusingen/`. Bei GitHub: `feat.yml` (alle Features) und `schleusingen-bilder.yml`.
+  Freigeben, Texturen je Shader; Bilder in `out/schleusingen/`. Bei GitHub: `feat.yml` (Artefakt „out“).
 - Daten neu bauen: `python3 -I tools/welt/zone_schleusingen.py --raw <Cache-Ordner>` (OSM-API, Luftbild-Kacheln der Website).
 
 ## Offen

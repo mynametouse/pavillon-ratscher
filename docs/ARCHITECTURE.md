@@ -94,6 +94,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `WINDE`, `KRAN` | werk/winde.js, kran.js | Forstseilwinde am Traktorheck (Seil, Choker, Funk, Gefahrenbereich, Rücken) und Kran am Rungenwagen (Hubmoment, Reichweite); Hinweise der Gabel (`HOLZ.whyNot`) (`docs/features/winde.md`) |
 | `TREEHIT` | world/treehit.js | kleine Bäume geben Fahrzeugen nach: biegen, kippen mit Wurzelteller, bleiben liegen (`pav-trees-v1`), dicke halten auf (`give`, `standUp`, `axisOf`); Jungbäume nur für Fahrzeuge in `WCOL` (`each(…, soft)`) (`docs/features/baeume.md`) |
 | `WELT`, `SCHL` | welt/welt.js, schleusingen.js | Kachelwelt aus `tools/welt` (Gelände, Luftbilder) nach Bedarf um die Kamera gestreamt (Zonen fordern sie an); Schleusingen begehbar: Altstadt aus OSM mit den Dorf-Shadern, Markt, Rathaus mit Halle, Wahrzeichen |
+| `AMT`, `AMTDATA`, `AMTMODEL`, `AMTWORLD` | amt/ | Ortsvorsteher: Wahl und Amt nach Thüringer Recht – Daten (Menschen, Anliegen, Aufgaben, Texte), reine Logik (Meinungen, Versprechen, Unterschriften, Auszählung, Ortsteilrat, Stadtrat; Einheitentests), was im Dorf entsteht (Laterne, Mitfahrbank, Anzeige …), Brief, Mappe (O), Wahltag, Rathaus über `SCHL`; Start mit `?amt=brief\|wahlkampf\|wahltag\|zaehlen\|amt\|stadtrat` (`docs/features/ortsvorsteher.md`) |
 | `CLOCK` | time/clock.js | Spielzeit (Minuten seit Tag 1, 0:00), Tempo, Warten/Zeitraffer, `CLOCK.on(fn)`, `CLOCK.jobs(fn)` |
 | `DN` | time/daynight.js | Kalender, Sonne/Mond/Sterne, Licht; `DN.sky(jd)`, `DN.jdOf(t)`, `DN.dateStr()` |
 | `GEAR` | werk/gear.js | Schutzausrüstung, `GEAR.check(req)` |
@@ -144,6 +145,7 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | `pav-trailer-v1`, `pav-holz-v1` | Holz (V16d): Anhänger (Lage, angekuppelt); Stämme (wo, Lage), Säge, Bretter mit Feuchte, Stapel, Trockenschrank |
 | `pav-dorf-v1` | Dorfleben (V16h): Stand der Aufgabe „Freitagabend in der alten Schule“, Besuche, Kartenspiel |
 | `pav-trees-v1` | umgefahrene Bäume (V16i): Lage, Richtung, Winkel |
+| `pav-amt-v1` | Ortsvorsteher (V16i): Abschnitt der Wahl, Meinungen je Person, Versprechen, Unterschriften, Aufgaben, Anliegen, Beschlüsse |
 | `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16d`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt (`SAVE.once`) |
 | `pav-loadlog`, `pav-texlevel` | Ladeprotokoll des letzten Versuchs; halbe Texturen nach abgebrochenem Laden am Telefon |
 
@@ -167,6 +169,7 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus, Tagesablauf (`life`)
 - `dorf/` – Dorfleben (Kalender, Texte, Dorfbewohner, Schule, Feuer)
 - `welt/` – Kachelwelt um die Kamera, Schleusingen
+- `amt/` – Ortsvorsteher: Daten, Logik, Dinge im Dorf, Spiel und Oberfläche
 - `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Wald an der Klinge (`forest`), Fällen (`fell`, V16c2), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
   Kollision mit der Umgebung (`worldcol`), Bäume, die Fahrzeugen nachgeben (`treehit`)
 - `time/` – Uhr, Sterndaten, Tag und Nacht

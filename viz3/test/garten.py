@@ -147,13 +147,11 @@ with lib.browser() as b:
         ev(pg, "GAME.setMode('night')"); lib.settle_light(pg)
         view(pg, 'bungalow', 2.3, 0.0, 1.76, 180, -10, 78); shot(pg, 'nacht_bungalow_innen')
         view(pg, 'bungalow', 7.5, -5.5, 1.7, 180 + 35, -6, 62); shot(pg, 'nacht_bungalow_aussen')
-        # draw all curtains: inside, and from the south-west (back window and sofa window glow through the cloth)
+        # draw all curtains (back window and sofa window in view), then open them again
         drapes = ['sofa', 'hinten', 'nordost', 'anbau']
         view(pg, 'bungalow', 2.3, 0.0, 1.76, 180, -10, 78)
         for k in drapes: ev(pg, f"PLAY.acts().find(a => a.id === 'garten:vorhang:{k}').run()")
         ev(pg, "GAME.step(1.2)"); shot(pg, 'nacht_bungalow_vorhaenge')
-        view(pg, 'bungalow', -5.5, 4.5, 1.7, 40, -6, 62); ev(pg, "GAME.step(0.4)"); shot(pg, 'nacht_bungalow_vorhaenge_aussen')
-        view(pg, 'bungalow', 2.3, 0.0, 1.76, 180, -10, 78)
         for k in drapes: ev(pg, f"PLAY.acts().find(a => a.id === 'garten:vorhang:{k}').run()")
         ev(pg, "GAME.step(1.2)")
         ev(pg, "GARTEN.set('holzhaus', true)")
