@@ -1,6 +1,6 @@
 /* the election and the office (feat/ortsvorsteher): the panel #amtpanel (look of the villagers' #dorfpanel), wide for scenes (count,
    councils, town hall); the folder #amtbook (O) with tabs; the HUD button #amtbtn with a dot for news */
-#amtpanel{position:absolute;z-index:5;top:60px;left:max(12px,env(safe-area-inset-left,0px));width:min(380px,calc(100% - 24px));max-height:calc(100% - 140px);overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);display:flex;flex-direction:column}
+#amtpanel{position:absolute;z-index:5;top:60px;left:max(12px,env(safe-area-inset-left,0px));width:min(380px,calc(100% - 24px));max-height:calc(100% - 200px);overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);display:flex;flex-direction:column}
 #amtpanel[hidden]{display:none}
 #amtpanel>*{flex:none}
 #amtpanel.wide{width:min(560px,calc(100% - 24px))}
@@ -12,6 +12,8 @@
 #amtpanel .task{padding:8px 14px;font:400 12.5px/1.4 var(--f-body);background:var(--plate);border-bottom:1px solid var(--line)}
 #amtpanel .scene{padding:10px 14px 0}
 #amtpanel .scene .pic{display:block;width:100%;height:auto;border-radius:8px}
+#amtpanel .say .notice{margin:12px 0 0;white-space:pre-wrap;font:400 12px/1.45 var(--f-body);background:#f6f1e4;color:#2b241c;border:1px solid #c9b896;border-radius:6px;padding:10px 12px}
+#amtpanel .am-letter{font:italic 400 14px/1.55 var(--f-body)}
 #amtpanel .scene .notice{margin:0;white-space:pre-wrap;font:400 12px/1.45 var(--f-body);background:#f6f1e4;color:#2b241c;border:1px solid #c9b896;border-radius:6px;padding:10px 12px}
 #amtpanel .say{padding:12px 14px;font:400 14px/1.5 var(--f-body);min-height:58px;border-bottom:1px solid var(--line);white-space:pre-wrap}
 #amtpanel .topics{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 14px}

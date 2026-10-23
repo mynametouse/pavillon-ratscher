@@ -570,15 +570,23 @@ export const AMT = (() => {
     if (ST.phase === 'asked' && avail('ingrid') && !TRK.k) track('ingrid');
     save();
     const again = ST.tries > 0;
-    UI.open(
-      again ? 'Neue Nachwahl' : 'Ein Brief von Ingrid',
-      'Ratscher, ' + dateOf(ST.t0 ?? now()),
-      again
-        ? 'Uwe Bachmann hat das Amt niedergelegt – der Hof lässt ihm keine Zeit. Die Stadt setzt eine neue Nachwahl an. Diesmal fragt Ingrid nicht: Du kennst den Weg.'
-        : D.T.letter,
-      { id: 'letter', free: true }
+    UI.open(again ? 'Neue Nachwahl' : 'Ein Brief von Ingrid', 'Ratscher, ' + dateOf(ST.t0 ?? now()), '', {
+      id: 'letter',
+      free: true,
+      wide: true,
+    });
+    // the letter first, then the notice of the town as it hangs in the box at the school
+    UI.html(
+      '<div class="am-letter">' +
+        esc(
+          again
+            ? 'Uwe Bachmann hat das Amt niedergelegt – der Hof lässt ihm keine Zeit. Die Stadt setzt eine neue Nachwahl an. Diesmal fragt Ingrid nicht: Du kennst den Weg.'
+            : D.T.letter
+        ) +
+        '</div><pre class="notice">' +
+        esc(D.T.notice(dateOf(eStart() + 600), dateOf(ST.deadline))) +
+        '</pre>'
     );
-    UI.scene('<pre class="notice">' + esc(D.T.notice(dateOf(eStart() + 600), dateOf(ST.deadline))) + '</pre>');
     UI.buttons([
       ST.phase === 'asked' ? ['Ich stelle mich zur Wahl', () => stand('letter'), 'quest'] : null,
       ['So funktioniert das Amt', () => ((BOOK.tab = 'lernen'), UI.close(), toggleBook(true))],

@@ -44,7 +44,8 @@ Freundeskreis, der ihm ein Stück weit folgt; dazu sechs Wähler ohne Kreis. Zus
   beantragen“). **Wer seine Meinung ändert**, verliert bei allen, die das Erste gehört haben, Vertrauen (−5) – im Dorf spricht sich alles herum.
 - **Aufgaben** im Wahlkampf (je eine Person): der **Hydrant** am Anger (Manfred: Hinweisschild „H 80 · 1,5 · 4,0“ lesen, den Deckel
   freiräumen), die **Chronik** (Gerhard: warum kandidierst du?), der **Schulbus** (Katrin: an einem Schultag 6:45–7:30 an der Haltestelle
-  stehen), **Ziegen im Gemüse** (Heike und Ronald: Partei ergreifen – oder gemeinsam den Zaun flicken), **Briefwahl für Hubert** (er ist am
+  stehen), **Ziegen im Gemüse** (Heike und Ronald: Partei ergreifen – oder gemeinsam den Zaun flicken; in einem Stand ohne Heike sind es
+  Gerhards Bohnen), **Briefwahl für Hubert** (er ist am
   Wahlsonntag bei seiner Schwester; Vollmacht, Unterlagen im Rathaus abholen), **Was kann das Amt?** (Ingrid fragt drei Dinge – wer sie weiß,
   bekommt ihre Empfehlung), **Vorstellen beim Skatabend** (eine kurze Rede).
 - Was man vorher schon getan hat, zählt: die Freitags-Aufgabe der alten Schule, erledigte Besorgungen der Dorfbewohner, Huberts und Ronalds
@@ -77,16 +78,19 @@ Stimmen für dich); mit etwa +10 bei allen und vielen Gesprächen wird es knapp;
 6. **Im Amt**: Die Leute grüßen anders („Tag, Herr Ortsvorsteher!“, verärgerte eher spitz). Jeden zweiten Morgen liegt ein Zettel mit
    einem neuen Anliegen im Briefkasten. Sie bringen **Anliegen** („Hast du ein
    Anliegen?“): Laterne am Gartenweg (Katrin), Kirmes (Manfred), Mitfahrbank (Ingrid), Infotafel an der Schule (Gerhard), Tempo 30 (Katrin),
-   Feldweg zur Klinge (Hubert), Ziegen und Zaun (Heike). **Ortsteilrat** (abends 17–22 Uhr an der Schultür „Sitzung eröffnen“): Manfred,
+   Bushäuschen mit undichtem Dach und ohne Fahrplan (Wolfgang), Feldweg zur Klinge (Hubert), Ziegen und Zaun (Heike). Nach drei Tagen im Amt
+   kommt der **Entwurf des städtischen Haushalts**: Der Ortsteilrat wird **angehört** und schlägt vor, was die Stadt im nächsten Jahr für
+   Ratscher einplanen soll (etwa den Feldweg – das einzige, was dafür groß genug ist). **Ortsteilrat** (abends 17–22 Uhr an der Schultür „Sitzung eröffnen“): Manfred,
    Katrin, Gerhard, Uwe und du stimmen ab; Sachen des Ortsteils bezahlt er selbst (600 Euro im Jahr – Kirmes **oder** Mitfahrbank und Tafel,
    nicht alles), der Rest geht als Empfehlung an die Stadt. **Stadtrat** (donnerstags 17–21 Uhr im Rathaus): zuerst die **Vereidigung**
    (Diensteid), dann trägst du vor; der Stadtrat beschließt **ja, nein oder vertagt – immer mit Begründung** (Geld im Haushalt, Zuständigkeit,
    Kostenschätzung des Bauamts, Einigkeit des Ortsteilrats, dein Ansehen in der Stadt, der Kompromiss). Tempo 30: die Stadt beantragt beim
    Landratsamt und stellt erst eine **Geschwindigkeitsanzeige** auf.
 7. **Was beschlossen ist, steht ein paar Tage später im Dorf** (`amt/amt_world.js`): die abgeschirmte Laterne am Weg zu den Gärten (nachts
-   warmes Licht), die **Mitfahrbank** an der Bushaltestelle, die **Geschwindigkeitsanzeige** am Ortseingang, das **Kirmes-Plakat** und die
-   **Infotafel** an der alten Schule – und die Meinungen ändern sich wieder (wer es wollte +, wer dagegen war −; gehaltene Versprechen +3,
-   gebrochene −6).
+   warmes Licht), die **Mitfahrbank** an der Bushaltestelle, das **Bushäuschen** mit neuem Dach und Fahrplan, die **Geschwindigkeitsanzeige**
+   am Ortseingang (zu den Fahrern gedreht, die ins Dorf kommen), das **Kirmes-Plakat** mit dem Datum und die **Infotafel** an der alten Schule
+   – und die Meinungen ändern sich wieder (wer es wollte +, wer dagegen war −; gehaltene Versprechen +3, gebrochene −6). Am Kirmes-Samstag
+   (14–22 Uhr) ist das Dorf am Anger; wer hingeht, wird gesehen.
 
 ## Was vereinfacht ist
 
