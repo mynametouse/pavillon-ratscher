@@ -187,6 +187,7 @@ window.SAVE = SAVE;
   K('pav-clock-v1', 'Spielzeit', 'json', null, obj);
   K('pav-dn-v1', 'Tag und Nacht', 'json', null, obj);
   K('pav-quests-v1', 'Aufgaben', 'json', null, obj);
+  K('pav-tasks-v1', 'Aufgaben als Daten (TASKS): Stand je Aufgabe', 'json', null, obj); // core/tasks.js
   K('pav-gear-v1', 'Schutzausrüstung', 'json', null, obj);
   // the preview of 22.10.2026 (23:09–23:45) called the neighbour east Bernd: workpieces given to him there come back to Ronald
   // (werk/werk.js does the same when it loads)

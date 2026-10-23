@@ -102,6 +102,7 @@
  * @property {(cond: () => any, s?: number) => Promise<any>} until  resolves when cond() is truthy, rejects after s seconds (default 60)
  * @property {{ pool: (list: any[], o?: { home?: () => boolean, restore?: () => void }) => void, borrow: (b: Borrow) => Borrow, status: () => Array<{ id: string, n: number, has: number }> }} lights
  * @property {() => number[] | null} where  where the observer is: [x, y] of the walker, else of the camera (provider 'observer', game/player.js)
+ * @property {(fn: (dt: number) => void, name?: string) => () => void} tick  a per-frame callback of a service (returns off)
  * @property {(dt: number) => void} update  once per frame from the frame loop (game/game.js): zones, lights, waits
  */
 /** @type {Kern} – type-checked (// @ts-check above; tools/check/tsconfig.json, run by tools/check.sh) */
@@ -390,6 +391,17 @@ export const KERN = (() => {
       } catch (e) {}
   }
 
+  // ---- per-frame callbacks of core services (KERN.tick; the features still use window.TICKS – phase 2 moves them here) ----
+  const TICK = [];
+  function tick(fn, name) {
+    const T = { fn, name: name || 'tick', err: 0 };
+    TICK.push(T);
+    return () => {
+      const i = TICK.indexOf(T);
+      if (i >= 0) TICK.splice(i, 1);
+    };
+  }
+
   // ---- once per frame ----
   let acc = 0;
   function update(dt) {
@@ -413,6 +425,16 @@ export const KERN = (() => {
       }
     }
     lightUpdate(dt);
+    for (const T of TICK)
+      try {
+        T.fn(dt);
+      } catch (e) {
+        if (!T.err) {
+          T.err = 1;
+          console.warn('KERN tick', T.name, e);
+          log('Takt ' + T.name + ': ' + ((e && e.message) || e), true);
+        }
+      }
     acc += dt;
     const check = acc >= 0.25;
     if (check) acc = 0;
@@ -476,6 +498,7 @@ export const KERN = (() => {
     until,
     lights,
     where: () => observer(),
+    tick,
     update,
   };
 })();
