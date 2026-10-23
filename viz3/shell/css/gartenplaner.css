@@ -1,0 +1,109 @@
+/* the garden planner (feat/gartenplaner, gplan/gplan.js): the panel #gplan beside the plan view (a sheet at the bottom on a phone held
+   upright, at the top when walking on site), its tabs, plant list, warnings, lists; the crowns, rings and shadows in the plan view's SVG */
+#gplan{position:absolute;z-index:5;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(360px,calc(100% - 24px));max-height:calc(100% - 128px);display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);font:400 13px/1.45 var(--f-body);overflow:hidden}
+#gplan[hidden]{display:none}
+#gplan>*{flex:none}
+#gplan header{display:flex;align-items:center;gap:6px;padding:10px 10px 6px 14px}
+#gplan h3{margin:0;font:700 16px/1.2 var(--f-display);flex:1;min-width:0}
+#gplan header button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:7px 10px;cursor:pointer}
+#gplan header .gp-undo{font-size:16px;padding:5px 10px}
+#gplan header .x,#gplan .gp-selh .x{border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);padding:2px 6px}
+#gplan .gp-badge{font:600 10.5px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:#7a4a00;background:#ffe1a3;border-radius:5px;padding:4px 6px}
+#gplan button{min-height:34px}
+#gplan button:disabled{opacity:.45;cursor:default}
+#gplan .gp-ages{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:2px 12px 8px;border-bottom:1px solid var(--line)}
+#gplan .gp-ages>span{font:500 11px/1 var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+#gplan .gp-seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+#gplan .gp-seg button{border:0;background:transparent;color:var(--ink);font:500 12.5px/1 var(--f-body);padding:8px 10px;cursor:pointer;min-height:32px}
+#gplan .gp-seg button+button{border-left:1px solid var(--line)}
+#gplan .gp-seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+#gplan .gp-show{margin-left:auto;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;font:500 12px/1 var(--f-body);padding:7px 10px;cursor:pointer}
+#gplan .gp-show[aria-pressed="true"]{color:var(--ink);border-color:var(--larch)}
+#gplan .gp-tabs{display:flex;gap:2px;padding:6px 8px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+#gplan .gp-tabs button{border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:500 12.5px/1 var(--f-body);padding:9px 8px;cursor:pointer;white-space:nowrap}
+#gplan .gp-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--larch)}
+#gplan .gp-tabs b{margin-left:4px;font:700 10.5px/1 var(--f-mono);background:var(--plate);border-radius:999px;padding:2px 5px}
+#gplan .gp-tabs b:empty{display:none}
+#gplan .gp-tabs b.bad{background:#d9534f;color:#fff}
+#gplan .gp-body{flex:1 1 auto;min-height:0;overflow:auto;padding:8px 12px 12px}
+#gplan .gp-find{display:flex;gap:6px;align-items:center}
+#gplan .gp-q{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:400 14px/1.2 var(--f-body);background:var(--plate);color:var(--ink)}
+#gplan .gp-find button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:8px 11px;cursor:pointer;white-space:nowrap}
+#gplan .gp-find button[aria-expanded="true"]{border-color:var(--larch)}
+#gplan .gp-chips{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+#gplan .gp-chips button,#gplan .gp-row button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12px/1 var(--f-body);padding:7px 10px;cursor:pointer}
+#gplan .gp-chips button{min-height:30px}
+#gplan .gp-chips button[aria-pressed="true"],#gplan .gp-row button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#gplan .gp-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+#gplan .gp-row button.acc{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#gplan .gp-hint{margin:6px 0;color:var(--muted);font-size:12.5px}
+#gplan .gp-ok{margin:8px 0;color:var(--muted)}
+#gplan .gp-msg{margin:8px 0}
+#gplan .gp-msg.bad{color:#d9534f}
+#gplan ul{list-style:none;margin:0;padding:0}
+#gplan .gp-list li.gp-lh{font:500 11px/1 var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 0 4px}
+#gplan .gp-list button,#gplan .gp-guilds button,#gplan .gp-warns button{display:grid;grid-template-columns:auto 1fr;gap:1px 8px;align-items:center;width:100%;text-align:left;border:1px solid transparent;background:none;color:var(--ink);border-radius:8px;padding:6px 8px;cursor:pointer;font:500 13.5px/1.3 var(--f-body)}
+#gplan .gp-list button:hover,#gplan .gp-guilds button:hover,#gplan .gp-warns button:hover{background:var(--plate)}
+#gplan .gp-list button[aria-pressed="true"],#gplan .gp-guilds button[aria-pressed="true"]{background:var(--plate);border-color:var(--larch)}
+#gplan .gp-list i,#gplan .gp-selh i{width:12px;height:12px;border-radius:50%;grid-row:span 2}
+#gplan .gp-list small,#gplan .gp-guilds small,#gplan .gp-warns small{grid-column:2;font:400 11.5px/1.35 var(--f-body);color:var(--muted)}
+#gplan .gp-guilds button{grid-template-columns:1fr}
+#gplan .gp-guilds small{grid-column:1}
+#gplan .gp-warns li{margin:2px 0;border-left:3px solid #ffd24a;border-radius:2px}
+#gplan .gp-warns li.warn{border-left-color:#d9534f}
+#gplan .gp-warns button{grid-template-columns:1fr;font-weight:400}
+#gplan .gp-warns b{font:700 10.5px/1 var(--f-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-right:4px}
+#gplan .gp-warns li.warn b{color:#d9534f}
+#gplan .gp-warns small{grid-column:1}
+#gplan .gp-sel{padding:8px 12px;background:var(--plate);border-bottom:1px solid var(--line);max-height:42vh;overflow:auto}
+#gplan .gp-selh{display:flex;align-items:center;gap:8px}
+#gplan .gp-selh b{flex:1;font:700 14px/1.3 var(--f-display)}
+#gplan .gp-sel p{margin:4px 0;font-size:12.5px}
+#gplan .gp-year{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;margin-right:auto}
+#gplan .gp-year button{min-height:30px;padding:4px 10px}
+#gplan .gp-w,#gplan .gp-tips{margin:6px 0 0;font-size:12.5px}
+#gplan .gp-w li{padding:2px 0 2px 8px;border-left:3px solid #ffd24a;margin:3px 0}
+#gplan .gp-w li.warn{border-left-color:#d9534f}
+#gplan .gp-tips li{padding:3px 0;border-top:1px solid var(--line)}
+#gplan .gp-sl{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center;margin:8px 0;font-size:12.5px}
+#gplan .gp-sl input{grid-column:1/-1;width:100%}
+#gplan .gp-sinfo{margin:8px 0;font-size:12.5px}
+#gplan .gp-text{white-space:pre-wrap;font:400 11.5px/1.45 var(--f-mono);background:var(--plate);border-radius:8px;padding:8px 10px;margin:6px 0;max-height:46vh;overflow:auto}
+#gplan .gp-site{padding:8px 12px 12px;border-top:1px solid var(--line)}
+#gplan .gp-site p{margin:0 0 6px;font-size:12.5px}
+#gplan.folded .gp-tabs,#gplan.folded .gp-body,#gplan.folded .gp-sel{display:none}
+#gplan.site .gp-tabs button:not([data-tab="pflanzen"]){display:none}
+#gplan.site .gp-body{max-height:30vh}
+body[data-gparm="1"][data-mode="top"] #stage{cursor:crosshair}
+body[data-gplan="1"] #topsvg .bound{stroke:#ffe9b8;stroke-width:2.4;stroke-dasharray:3 4}
+/* in the plan view's SVG */
+#topsvg .gp-c{stroke-width:1.6;fill-opacity:.34}
+#topsvg .gp-baum{fill:#3f8f2f;stroke:#7fd36a}
+#topsvg .gp-kleinbaum{fill:#86b83c;stroke:#b8e57a}
+#topsvg .gp-strauch{fill:#c9c42b;stroke:#ece66a}
+#topsvg .gp-kraut{fill:#f0a830;stroke:#ffcb70}
+#topsvg .gp-boden{fill:#ef7b45;stroke:#ffa77c}
+#topsvg .gp-wurzel{fill:#a87b5c;stroke:#d4a888}
+#topsvg .gp-kletter{fill:#b065c6;stroke:#d9a2ea}
+#topsvg .gp-c.later{fill-opacity:.08;stroke-dasharray:4 3}
+#topsvg .gp-c.hint{stroke:#ffd24a;stroke-width:2.2}
+#topsvg .gp-c.bad{stroke:#ff5a3c;stroke-width:2.6}
+#topsvg .gp-c.on{stroke:#fff;stroke-width:3;fill-opacity:.48}
+#topsvg .gp-t{fill:#4a3424;stroke:#fff;stroke-width:1}
+#topsvg .gp-grown{fill:none;stroke:#fff;stroke-width:1.4;stroke-dasharray:6 4;opacity:.9}
+#topsvg .gp-ring{fill:none;stroke:#ff8a5c;stroke-width:1.8;stroke-dasharray:3 3}
+#topsvg text.gp-rl{font:600 11px var(--f-body);fill:#ffd2bf}
+#topsvg text.gp-lb{font:500 11px var(--f-body);fill:#f2f7e8}
+#topsvg .gp-shade polygon{fill:rgba(14,22,52,.3);stroke:none}
+#topsvg .gp-probe{fill:#ffd24a;stroke:#23241f;stroke-width:1.5}
+@media (max-width:640px) and (orientation:portrait){
+  #gplan{top:auto;bottom:0;left:0;right:0;width:auto;max-height:48%;border-radius:14px 14px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  #gplan.folded{max-height:none}
+  #gplan.site{top:8px;bottom:auto;left:8px;right:8px;max-height:44%;border-radius:12px}
+  #gplan .gp-text{max-height:28vh}
+  #gplan .gp-sel{max-height:22vh}
+}
+@media (max-height:520px) and (orientation:landscape){
+  #gplan{top:8px;max-height:calc(100% - 16px);width:min(330px,46%)}
+  body[data-mode="top"] #gplan{top:64px;max-height:calc(100% - 72px)}
+}
