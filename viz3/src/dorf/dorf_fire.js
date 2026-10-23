@@ -96,10 +96,10 @@ export const DFIRE = (() => {
     const x = c.getContext('2d'),
       g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
     g.addColorStop(0, 'rgba(255,255,255,1)');
-    g.addColorStop(0.18, 'rgba(255,255,255,0.75)');
-    g.addColorStop(0.45, 'rgba(255,255,255,0.22)');
-    g.addColorStop(0.75, 'rgba(255,255,255,0.05)');
-    g.addColorStop(1, 'rgba(255,255,255,0)');
+    g.addColorStop(0.1, 'rgba(255,255,255,0.7)');
+    g.addColorStop(0.24, 'rgba(255,255,255,0.18)');
+    g.addColorStop(0.42, 'rgba(255,255,255,0.03)');
+    g.addColorStop(0.6, 'rgba(255,255,255,0)');
     x.fillStyle = '#000';
     x.fillRect(0, 0, 64, 64);
     x.fillStyle = g;
@@ -121,15 +121,16 @@ export const DFIRE = (() => {
       pos.push(x, KERN.terrain(fx + x, fy + y) - z0 + PATCH, -y);
       nrm.push(0, 1, 0);
       uv.push(0.5 + x / (2 * R * 1.15), 0.5 + y / (2 * R * 1.15));
-      // ash grey in the middle, dark earth, lighter trampled earth with a little green towards the edge
+      // ash grey in the middle, trampled grey-brown earth, worn grass towards the edge, where it fades into the field (vertex alpha)
       const q = r / R,
-        n = hh(Math.round(x * 3) * 7.1 + Math.round(y * 3) * 3.3) * 0.06,
-        ash = Math.max(0, 1 - q / 0.32),
-        rim = Math.max(0, (q - 0.6) / 0.5);
+        n = hh(Math.round(x * 3) * 7.1 + Math.round(y * 3) * 3.3) * 0.05,
+        ash = Math.max(0, 1 - q / 0.3),
+        rim = Math.min(1, Math.max(0, (q - 0.45) / 0.45));
       col.push(
-        lin(0.2 + n - ash * 0.08 + rim * 0.06),
-        lin(0.16 + n - ash * 0.05 + rim * 0.1),
-        lin(0.12 + n - ash * 0.02 + rim * 0.03)
+        lin(0.21 + n - ash * 0.06 - rim * 0.03),
+        lin(0.19 + n - ash * 0.05 + rim * 0.02),
+        lin(0.16 + n - ash * 0.03 - rim * 0.03),
+        Math.max(0, Math.min(1, (1.0 - q) / 0.35))
       );
     };
     vert(0, 0, 0);
@@ -153,7 +154,7 @@ export const DFIRE = (() => {
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     g.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 4));
     g.setIndex(idx);
     g.computeBoundingSphere();
     return g;
@@ -165,6 +166,8 @@ export const DFIRE = (() => {
     emissive: 0xff5a14,
     emissiveMap: glowMap(),
     emissiveIntensity: 0,
+    transparent: true, // the edge fades into the field
+    depthWrite: false,
     polygonOffset: true,
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -2,
@@ -293,8 +296,9 @@ export const DFIRE = (() => {
         18,
         L(0.1, 0.09, 0.085)
       ); // the ash bed
-      const pm = new THREE.Mesh(patch(4.6, x, y), PATCHMAT);
+      const pm = new THREE.Mesh(patch(4.4, x, y), PATCHMAT);
       pm.receiveShadow = true;
+      pm.renderOrder = 1;
       grp.add(pm);
       // log benches around (three), a few spare logs, straw bales
       for (const [a, len] of [
@@ -543,7 +547,7 @@ export const DFIRE = (() => {
       lent.l.color.setHex(0xff8f45);
       lent.l.intensity = 31 * S.k * fl;
       EMBER.emissiveIntensity = (0.55 + 0.45 * fl) * S.k;
-      PATCHMAT.emissiveIntensity = 0.9 * S.k * (0.85 + 0.15 * Math.sin(S.t * 9) * Math.sin(S.t * 5.3 + 1));
+      PATCHMAT.emissiveIntensity = 0.7 * S.k * (0.85 + 0.15 * Math.sin(S.t * 9) * Math.sin(S.t * 5.3 + 1));
     }
     crackle(S.k, dist);
     if (dist < 400 || Math.abs(S.k - k0) > 1e-3) markDirty();
