@@ -40,6 +40,12 @@ Oberfläche Deutsch.
     `{ id, title, who, status: 'offen' | 'läuft' | 'erledigt', text, target: () => [x, y] | null, z }`; das Tagebuch (J) und die
     Aufgabenkarte in `game/quests.js` zeigen alle (Nachbarn 10, Dorf 20, Ortsvorsteher 30), verfolgt wird ein Schlüssel `quelle:id`.
     Test `test/kern2.py` (Themen-Test `kern`, `extra/kern/tests.txt`).
+  - **Aufgaben als Daten (Baustein 2):** `TASKS.define({ id, title, who, start: { on, when }, steps: [{ text, target, on, when, check }],
+    done })` (`core/tasks.js`) – ein Schritt ist erledigt, wenn sein Ereignis kommt (`KERN.emit`, mit Bedingung auf die Daten) oder seine
+    Prüfung (`check`, zweimal je Sekunde) wahr wird; Stand je Aufgabe in `pav-tasks-v1`; im Tagebuch als Quelle `aufgaben` (15); Hinweise
+    über die Ereignisse `task:start`, `task:step`, `task:done` (`game/quests.js`). `TASKS.start/advance/reset/state`; Unit-Tests
+    `test/unit/tasks.test.mjs`. Neue Aufgaben nur noch so; die alten (Nachbarn, Dorf, Ortsvorsteher) ziehen nach und nach um.
+  - **`KERN.tick(fn, name)`:** ein Takt je Frame für Dienste (aus `KERN.update`); die Features nutzen noch `window.TICKS`.
   - **Startsituationen (Baustein 3):** `KERN.scenario(name, { label, run, order })` – `?szenario=name` startet nach dem Laden darin
     (`boot/boot.js`), Tests laden mit `lib.boot(pg, port, '?szenario=…')`: `garten`, `werkstatt`, `dorf`, `freitag`, `feuer`,
     `schleusingen`, `brief`, `wahlkampf`, `wahltag`, `zaehlen`, `amt`, `stadtrat`; `KERN.scenarios()` listet sie.
