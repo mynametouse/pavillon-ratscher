@@ -447,49 +447,48 @@ export const TRACTOR2 = (() => {
         (round ? new THREE.CylinderGeometry(w, w, len, 10) : new THREE.BoxGeometry(w, len, d)).applyMatrix4(m4)
       );
     };
-    // the shield: leaning towards the tractor, teeth along its lower edge, side cheeks, a rolled upper edge
+    // the shield: leaning towards the tractor, teeth along its lower edge, side cheeks, a rolled upper edge; the drum sits in the box
+    // behind it (y −0.38 … +0.06), the A-frame with its grille above
     bar('paint', [0, -0.56, 0], [0, -0.42, 0.62], 1.66, 0.025);
     for (let i = 0; i < 9; i++) box('steel', 0.05, 0.03, 0.08, -0.76 + i * 0.19, -0.565, -0.03);
-    for (const sx of [-1, 1]) {
-      box('paint', 0.025, 0.52, 0.62, sx * 0.82, -0.31, 0.31);
-      box('paint', 0.025, 0.2, 0.3, sx * 0.6, -0.1, 0.5);
-    }
+    for (const sx of [-1, 1]) box('paint', 0.025, 0.66, 0.62, sx * 0.82, -0.245, 0.31);
     bar('steel', [-0.84, -0.42, 0.64], [0.84, -0.42, 0.64], 0.035, 0, true);
-    box('paint', 1.64, 0.4, 0.03, 0, -0.32, 0.2);
-    box('paint', 1.1, 0.1, 0.12, 0, -0.04, 0.42);
-    // the A-frame: posts, cross beams, the grille between them
-    for (const sx of [-1, 1]) bar('paint', [sx * 0.6, -0.2, 0.42], [sx * 0.27, -0.25, 1.78], 0.1, 0.1);
-    box('paint', 1.0, 0.08, 0.08, 0, -0.22, 1.12);
+    box('paint', 1.64, 0.6, 0.03, 0, -0.26, 0.03);
+    box('paint', 1.1, 0.1, 0.12, 0, 0.0, 0.3);
+    // the A-frame: posts, a middle post for the top link, cross beams, the grille between them
+    for (const sx of [-1, 1]) bar('paint', [sx * 0.62, -0.22, 0.3], [sx * 0.27, -0.26, 1.78], 0.1, 0.1);
+    bar('paint', [0, -0.16, 0.9], [0, -0.22, 1.78], 0.08, 0.08);
+    box('paint', 1.06, 0.08, 0.08, 0, -0.2, 0.9);
     box('paint', 0.62, 0.12, 0.1, 0, -0.26, 1.78);
-    for (const x of [-0.36, -0.18, 0, 0.18, 0.36])
-      bar('dark', [x, -0.34, 0.66], [x * 0.5, -0.34, 1.72], 0.011, 0, true);
-    for (const z of [0.95, 1.42]) {
-      const hw = 0.6 - ((z - 0.42) / 1.36) * 0.33;
-      bar('dark', [-hw, -0.34, z], [hw, -0.34, z], 0.011, 0, true);
+    for (const x of [-0.42, -0.21, 0.21, 0.42]) bar('dark', [x, -0.4, 0.94], [x * 0.55, -0.4, 1.72], 0.011, 0, true);
+    for (const z of [0.94, 1.33]) {
+      const hw = 0.62 - ((z - 0.3) / 1.48) * 0.35;
+      bar('dark', [-hw, -0.4, z], [hw, -0.4, z], 0.011, 0, true);
     }
-    // hitch: lower pins and the top-link brackets
+    // hitch: lower pins, the top-link brackets on the middle post
     for (const sx of [-1, 1]) {
-      for (const o of [-0.045, 0.045]) box('paint', 0.025, 0.18, 0.22, sx * 0.43 + o, 0.0, 0.42);
+      for (const o of [-0.045, 0.045]) box('paint', 0.025, 0.18, 0.24, sx * 0.43 + o, 0.0, 0.4);
       bar('steel', [sx * 0.37, 0.03, 0.42], [sx * 0.5, 0.03, 0.42], 0.022, 0, true);
-      box('paint', 0.025, 0.16, 0.24, sx * 0.055, -0.05, 1.32);
+      box('paint', 0.025, 0.2, 0.24, sx * 0.055, -0.06, 1.34);
     }
     bar('steel', [-0.08, 0.0, 1.34], [0.08, 0.0, 1.34], 0.02, 0, true);
-    // drive: input shaft, chain case on the right, clutch and brake on the left
-    bar('steel', [0, 0.06, 0.86], [0, -0.12, 0.86], 0.03, 0, true);
-    box('dark', 0.16, 0.36, 0.46, 0.44, -0.1, 0.88);
-    bar('dark', [-0.27, -0.1, 0.88], [-0.4, -0.1, 0.88], 0.17, 0, true);
+    // drive: the PTO input into the gearbox in front of the drum, the chain case on the right, clutch and brake on the left
+    box('dark', 0.24, 0.14, 0.26, 0, 0.12, 0.62);
+    bar('steel', [0, 0.26, 0.62], [0, 0.18, 0.62], 0.03, 0, true);
+    box('dark', 0.14, 0.42, 0.44, 0.45, -0.14, 0.62);
+    bar('dark', [-0.27, -0.16, 0.62], [-0.4, -0.16, 0.62], 0.17, 0, true);
     // pulley at the top, the fairlead with four rollers, the cable from the drum up over the pulley
     box('paint', 0.16, 0.32, 0.1, 0, -0.34, 1.83);
     bar('dark', [-0.022, -0.38, 1.74], [0.022, -0.38, 1.74], 0.1, 0, true);
     for (const sx of [-1, 1]) bar('steel', [sx * 0.05, -0.53, 1.56], [sx * 0.05, -0.53, 1.77], 0.02, 0, true);
     for (const z of [1.58, 1.75]) bar('steel', [-0.08, -0.53, z], [0.08, -0.53, z], 0.02, 0, true);
     for (const sx of [-1, 1]) box('paint', 0.02, 0.2, 0.26, sx * 0.09, -0.46, 1.68);
-    bar('rope', [0, -0.18, 1.04], [0, -0.33, 1.66], 0.006, 0, true);
+    bar('rope', [0, -0.3, 0.8], [0, -0.33, 1.66], 0.006, 0, true);
     bar('rope', [0, -0.45, 1.72], [0, -0.53, 1.66], 0.006, 0, true);
-    // the radio receiver with its aerial (the remote control goes with the cable)
-    box('dark', 0.14, 0.1, 0.22, -0.68, -0.14, 1.28);
-    box('paint', 0.142, 0.102, 0.03, -0.68, -0.14, 1.33);
-    bar('dark', [-0.68, -0.14, 1.39], [-0.68, -0.14, 1.68], 0.006, 0, true);
+    // the radio receiver on the left post, with its aerial (the remote control goes with the cable)
+    box('dark', 0.12, 0.1, 0.2, -0.52, -0.2, 1.06);
+    box('paint', 0.122, 0.102, 0.03, -0.52, -0.2, 1.1);
+    bar('dark', [-0.52, -0.2, 1.16], [-0.52, -0.2, 1.46], 0.006, 0, true);
     for (const [k, list] of Object.entries(L)) {
       const me = new THREE.Mesh(BufferGeometryUtils.mergeGeometries(list), k === 'steel' ? M.steel : MW[k]);
       me.castShadow = me.receiveShadow = true;
@@ -498,7 +497,7 @@ export const TRACTOR2 = (() => {
   }
   // the drum (turns): core, the wound cable (its radius after what is on it), flanges with bolts
   const drum = new THREE.Group();
-  drum.position.copy(V(0, -0.1, 0.88));
+  drum.position.copy(V(0, -0.16, 0.62));
   wg.add(drum);
   {
     const cylX = (r, w, mat, x = 0) => {
@@ -584,7 +583,7 @@ export const TRACTOR2 = (() => {
     const top = [0, WN.y0 - 0.05, zp + 1.34];
     stretch(topA, [0, -1.56, 1.22], lerp3([0, -1.56, 1.22], top, 0.62));
     stretch(topB, lerp3([0, -1.56, 1.22], top, 0.5), top);
-    const inp = [0, WN.y0 + 0.06, zp + 0.86];
+    const inp = [0, WN.y0 + 0.26, zp + 0.62];
     stretch(pto, [0, -1.7, 0.78], inp);
     stretch(ptoG, lerp3([0, -1.7, 0.78], inp, 0.18), lerp3([0, -1.7, 0.78], inp, 0.82));
     drum.rotation.x = -WN.spin;

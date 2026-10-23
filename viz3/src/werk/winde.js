@@ -283,9 +283,16 @@ export const WINDE = (() => {
     );
   }
   // ---------------- dragging the log: the fastened end towards the fairlead, the other end follows like a towed bar ----------------
-  const TR = [];
+  const TR = [],
+    BX = [];
   function gatherTrunks(l, pad) {
     TR.length = 0;
+    BX.length = 0;
+    // a parked trailer's bed is in the way too (the coupled one cannot be: the winch is down only without it)
+    if (TRAILER && TRAILER.st && !TRAILER.tow && TRAILER.box) {
+      const B = TRAILER.box();
+      if (B && Math.hypot(B.c[0] - l.p0[0], B.c[1] - l.p0[1]) < l.L + 8) BX.push(B);
+    }
     const a = l.p0,
       b = l.p1;
     WCOL.each(
@@ -309,7 +316,7 @@ export const WINDE = (() => {
       m = Math.hypot(mx, my);
     let ex = E[0] + mx,
       ey = E[1] + my;
-    if (!free)
+    if (!free) {
       for (let i = 0; i < TR.length; i += 3) {
         const dx = ex - TR[i],
           dy = ey - TR[i + 1],
@@ -320,6 +327,14 @@ export const WINDE = (() => {
           ey = TR[i + 1] + (dy / d) * rr;
         }
       }
+      for (const B of BX) {
+        const h = VEH.circBox(B, ex, ey, rE);
+        if (h) {
+          ex -= h.n[0] * h.d;
+          ey -= h.n[1] * h.d;
+        }
+      }
+    }
     const dzL = O[2] - E[2],
       Lh = Math.sqrt(Math.max(0.25, l.L * l.L - dzL * dzL));
     let ox = O[0],
@@ -360,6 +375,14 @@ export const WINDE = (() => {
         oy += ny * Math.min(pen / t, 0.5);
         left = Math.max(left, pen);
       }
+      for (const B of BX)
+        for (let t = 0.2; t < 1.01; t += 0.2) {
+          const h = VEH.circBox(B, ex + (ox - ex) * t, ey + (oy - ey) * t, rE + (rO - rE) * t);
+          if (!h) continue;
+          ox -= h.n[0] * Math.min(h.d / t, 0.5);
+          oy -= h.n[1] * Math.min(h.d / t, 0.5);
+          left = Math.max(left, h.d);
+        }
       if (left < 0.01) break;
     }
     if (left > 0.06 && !free) return -1; // wedged between trunks
@@ -438,6 +461,13 @@ export const WINDE = (() => {
           S.stuckT = wedged || got < go * 0.25 ? S.stuckT + dt : Math.max(0, S.stuckT - dt);
           if (S.stuckT > 0.7) stuck();
         }
+        // the clutch slips: the drum winds only what the log gives
+        const C2 = chokerAt(l),
+          real = Math.hypot(C2[0] - X[0], C2[1] - X[1], C2[2] - X[2]);
+        if (real > S.out + 0.01) {
+          spin(S.out - real);
+          S.out = Math.min(S.MAX, real);
+        }
       }
       // arrived at the shield?
       const R = restPt(l),
@@ -479,8 +509,22 @@ export const WINDE = (() => {
     changed();
   }
   // ---------------- the winch: down / up, the cable out and in ----------------
+  // a trailer parked right behind the tractor (just uncoupled): its drawbar is where the shield goes down
+  function trailerBehind() {
+    if (!TRAILER || !TRAILER.st || TRAILER.tow || !TRAILER.eyeW) return false;
+    const e = TRAILER.eyeW(),
+      w = WN.toW([0, -0.3, 0]);
+    return Math.hypot(e[0] - w[0], e[1] - w[1]) < 1.7;
+  }
   function setLift(t, why) {
     if (t === WN.liftT) return;
+    if (t < WN.liftT && trailerBehind()) {
+      think(
+        'Der Anhänger steht direkt hinter dem Traktor – erst ein paar Meter vorfahren, dann die Winde absenken.',
+        3800
+      );
+      return;
+    }
     if (t < WN.liftT && TRAILER && TRAILER.tow === T) {
       think('Erst den Anhänger abkuppeln (K) – sein Zugmaul sitzt unter der Winde.', 3600);
       return;
@@ -535,6 +579,13 @@ export const WINDE = (() => {
     if (!down()) {
       if (TRAILER && TRAILER.tow === T) {
         think('Erst den Anhänger abkuppeln – die Winde muss ganz herunter.', 3200);
+        return;
+      }
+      if (trailerBehind()) {
+        think(
+          'Der Anhänger steht direkt hinter dem Traktor – erst ein paar Meter vorfahren, dann die Winde absenken.',
+          3800
+        );
         return;
       }
       WN.liftT = 0;
@@ -675,7 +726,18 @@ export const WINDE = (() => {
     S.pull = true;
     S.stuckT = 0;
     S.dangerT = 0;
-    think(S.cable === 'log' ? 'Die Winde zieht …' : 'Seil wird eingeholt …', 1800);
+    // a cable far off to the side runs hard against the fairlead's rollers – it works, but the rear belongs towards the log
+    const X = exitW(),
+      H = hookPos(),
+      b = VEH.fwd(T.st.psi),
+      dh = H ? Math.hypot(H[0] - X[0], H[1] - X[1]) : 0,
+      cs = dh > 1 ? -((H[0] - X[0]) * b[0] + (H[1] - X[1]) * b[1]) / dh : 1;
+    if (S.cable === 'log' && cs < 0.34)
+      think(
+        'Die Winde zieht – das Seil läuft aber sehr schräg über die Seilführung. Besser das Heck zum Stamm stellen.',
+        3600
+      );
+    else think(S.cable === 'log' ? 'Die Winde zieht …' : 'Seil wird eingeholt …', 1800);
     changed();
   }
   function pullStop(msg) {
