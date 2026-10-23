@@ -19,7 +19,7 @@ ORT = (-8850.0, -300.0)
 HALF = 560.0
 KIRCHE = (-8770.0, -377.0)   # the church (crossing of the nave axis and the middle of the ruin)
 # OSM ids: the church parts the app models itself, and buildings with a role
-LANDMARK = {'w117931129': 'turm', 'w121648569': 'turm', 'w121648570': 'westbau', 'w121648567': 'henneberg', 'w121648571': 'apsis',
+LANDMARK = {'w117931129': 'turm', 'w121648569': 'turm', 'w121648570': 'westbau', 'w121648567': 'henneberg', 'w121648571': 'hchor', 'w121648565': 'apsis',
             'w121648574': 'suedkapelle', 'w121648572': 'apsis', 'w121649693': 'torkirche', 'w117931177': 'torhaus',
             'w117931173': 'kornhaus', 'w121649695': 'klausur', 'w121649703': 'klausur', 'w117931181': 'kreuzgang'}
 RUIN = {'area': 'w948084437', 'transept': 'w948084438', 'north': 'w948084439', 'south': 'w948084440'}
@@ -207,7 +207,7 @@ def main():
         kind = 2 if small else 1 if big else 0
         h = (zlib.crc32(fid.encode()) & 0xffff) / 65535.0
         mat = tags.get('building:material', '')
-        stone = name in STONE or mat == 'sandstone' or lm in ('klausur', 'kreuzgang', 'torhaus', 'torkirche', 'henneberg', 'suedkapelle')
+        stone = name in STONE or mat == 'sandstone' or lm in ('klausur', 'kreuzgang', 'torhaus', 'torkirche', 'henneberg', 'hchor', 'suedkapelle')
         fw = (name in FW or mat == 'timber_framing') and not stone
         hist = bool(tags.get('historic')) or stone or fw
         if lm in ('klausur', 'kornhaus') or name in ('Domänenscheune', 'Domänenstallgebäude', 'Pferdestall', 'Neuer Pferdestall'):
@@ -219,7 +219,7 @@ def main():
                 lv = 2
             elif lm in ('kornhaus',):
                 lv = 3
-            elif lm in ('henneberg', 'suedkapelle', 'torkirche', 'kreuzgang', 'apsis', 'torhaus'):
+            elif lm in ('henneberg', 'hchor', 'suedkapelle', 'torkirche', 'kreuzgang', 'apsis', 'torhaus'):
                 lv = 1
             elif big:
                 lv = 1
@@ -229,7 +229,13 @@ def main():
                 lv = 2 if A > 70 else 1
         mrr = np.array(poly.minimum_rotated_rectangle.exterior.coords)[:4]
         e1, e2 = mrr[1] - mrr[0], mrr[2] - mrr[1]
-        if np.hypot(*e1) >= np.hypot(*e2):
+        if lm == 'torhaus':
+            # the gate tower: its ridge along the passage (north–south), the gables to the street and the courtyard (photo 2025)
+            n1, n2 = abs(e1[1]) / max(np.hypot(*e1), 1e-9), abs(e2[1]) / max(np.hypot(*e2), 1e-9)
+            pick = n1 >= n2
+        else:
+            pick = np.hypot(*e1) >= np.hypot(*e2)
+        if pick:
             ux, W, Lr = e1 / max(np.hypot(*e1), 1e-9), np.hypot(*e2), np.hypot(*e1)
         else:
             ux, W, Lr = e2 / max(np.hypot(*e2), 1e-9), np.hypot(*e1), np.hypot(*e2)
@@ -242,12 +248,14 @@ def main():
             eave = max(4.2, 3.4 * lv)
         if lm in ('henneberg', 'suedkapelle'):
             eave = 6.5   # the chapels: tall walls under steep roofs (photos 2019, 2025)
+        if lm == 'hchor':
+            eave = 5.0   # the square choir of the Henneberg chapel between its nave and the white apse, lower (photo 2025)
         if lm == 'torkirche':
             eave = 7.0   # the gate church: the passage below, the chapel above (photos 2019, 2025)
         if lm == 'kreuzgang':
             eave = 4.0
         if lm == 'torhaus':
-            eave = 6.2   # the gate house: the vaulted passage below, a storey over it (photo 2022)
+            eave = 11.5   # the gate tower: the vaulted passage below, two storeys of slit windows over it (photo 2025 „Torgebäude“)
         if lm == 'apsis':
             eave = 4.2
         ht = None
@@ -264,7 +272,7 @@ def main():
         pitch = 35.0 if big else 25.0 if small else 48.0 if hist else 42.0
         if lm == 'kornhaus':
             pitch = 52.0
-        if lm in ('henneberg', 'suedkapelle', 'torkirche'):
+        if lm in ('henneberg', 'hchor', 'suedkapelle', 'torkirche', 'torhaus'):
             pitch = 50.0
         hip = shape in ('hipped', 'half-hipped') or (kind == 0 and A > 240 and not hist and h < 0.3)
         rise = 0.0 if flat else min(W / 2 * math.tan(math.radians(pitch)), 12.0)

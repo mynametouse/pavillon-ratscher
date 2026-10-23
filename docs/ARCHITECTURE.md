@@ -46,9 +46,12 @@ Oberfläche Deutsch.
     über die Ereignisse `task:start`, `task:step`, `task:done` (`game/quests.js`). `TASKS.start/advance/reset/state`; Unit-Tests
     `test/unit/tasks.test.mjs`. Neue Aufgaben nur noch so; die alten (Nachbarn, Dorf, Ortsvorsteher) ziehen nach und nach um.
   - **`KERN.tick(fn, name)`:** ein Takt je Frame für Dienste (aus `KERN.update`); die Features nutzen noch `window.TICKS`.
-  - **Startsituationen (Baustein 3):** `KERN.scenario(name, { label, run, order })` – `?szenario=name` startet nach dem Laden darin
-    (`boot/boot.js`), Tests laden mit `lib.boot(pg, port, '?szenario=…')`: `garten`, `werkstatt`, `dorf`, `freitag`, `feuer`,
-    `schleusingen`, `vessra`, `baumschule`, `brief`, `wahlkampf`, `wahltag`, `zaehlen`, `amt`, `stadtrat`; `KERN.scenarios()` listet sie.
+  - **Startsituationen (Baustein 3):** `KERN.scenario(name, { label, run, order, ask, menu })` – `?szenario=name` startet nach dem Laden
+    darin (`boot/boot.js`), Tests laden mit `lib.boot(pg, port, '?szenario=…')`; im **Menü unter „Szenen“** (`game/hud.js`, seit V16o) alle,
+    die nicht schon ein Ort unter „Orte“ sind (gleicher Name wie ein `data-spot`) und nicht `menu: false` haben; eine Szene, die den
+    Spielstand oder die Uhr umstellt, sagt in `ask`, was (Ortsvorsteher, Skatabend, Feuer), und startet erst beim zweiten Tippen.
+    Heute: `garten`, `werkstatt`, `dorf`, `freitag`, `feuer`, `schleusingen`, `vessra`, `baumschule`, `gartenplaner`, `atelier`, `brief`,
+    `wahlkampf`, `wahltag`, `zaehlen`, `amt`, `stadtrat`; `KERN.scenarios()` listet sie nach `order`.
   - **Lampen leihen:** `KERN.lights.pool(liste, { home, restore })` (die Punktlichter L1, L4, L5, L3, L2 des Pavillons, solange man nicht
     näher als 60 m am Pavillon ist) und `KERN.lights.borrow({ id, n, prio, want, on, tick, off })` – keine neuen Lampen, also keine neu
     übersetzten Shader; Farbe, Ort, Reichweite und Stärke kommen von selbst zurück (Schulraum und Feuer im Dorf).
@@ -123,11 +126,15 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `LIFE` | npc/life.js | Tagesablauf der Nachbarn nach der Spieluhr (hacken, sägen, stapeln, Auto, Mähen, Füttern, Fahrt zum Anger, Gespräch am Tisch/Auto), Schwaden, Ortsnamen ihrer Höfe; `LIFE.force(name, tätigkeit \| null \| 'off')` für Tests (`docs/features/nachbarn.md`) |
 | `HOF`, `HOFCAR` | garden/hof_hubert.js, hof_auto.js | Huberts Hof: nach Osten offene Werkstätten, Trockenhütchen (`fillHut`), Holzplatz, Tisch mit Stühlen; sein Kombi auf der Rampe (Haube) |
 | `GARTEN` | garden/garten_in.js, garten_kit.js | Gartengebäude zum Benutzen: Lampen mit einem geteilten Licht, Sofa, Bett, Ofen, Wasserkessel, Ernte; Baukasten und Schlüsselbereich der Möbel (`keysBegin/keysEnd`, `docs/features/garten.md`) |
+| `STIL`, `ATELIER` | garden/stil.js, stil_bauten.js, atelier.js | Einrichtung der Gartengebäude (V16o): je Gebäude (Bungalow, Atelier, Wohnwagen) fünf Stile und acht Akzentfarben mit einem Klick – Stil-Schicht je Gebäude, Materialzwillinge (`garten_kit.js` `twin`, keine neuen Programme), Feld „Einrichtung“ (Menü → Gestalten → „Gartengebäude“); das Holzhaus als Atelier: Töpfern, Brennofen, Malen, Schaukelstuhl, Klappsofa als Gästebett; Ereignisse `einrichtung:*` (`docs/features/einrichtung.md`) |
 | `DORF`, `DCAL`, `DTEXT`, `DPEOPLE`, `DSCHOOL`, `DFIRE`, `DLIFE`, `DCARS` | dorf/ | Dorfleben: Kalender (Freitag Skat, jeden zweiten Samstag Feuer), Texte, Dorfbewohner (Rocketbox, nur geladen, wenn sie draußen und nah sind), ihr Alltag (Häuser, Vorgärten, Besorgungen, Grüße – `DLIFE`) und Autos nach Fahrplan (`DCARS`), Raum der alten Schule, Feuer am Acker, Gesprächsfenster, Aufgabe (`pav-dorf-v1`); Start mit `?dorf=freitag \| feuer` (`docs/features/dorf.md`) |
 | `WINDE`, `KRAN` | werk/winde.js, kran.js | Forstseilwinde am Traktorheck (Seil, Choker, Funk, Gefahrenbereich, Rücken) und Kran am Rungenwagen (Hubmoment, Reichweite); Hinweise der Gabel (`HOLZ.whyNot`) (`docs/features/winde.md`) |
 | `TREEHIT` | world/treehit.js | kleine Bäume geben Fahrzeugen nach: biegen, kippen mit Wurzelteller, bleiben liegen (`pav-trees-v1`), dicke halten auf (`give`, `standUp`, `axisOf`); Jungbäume nur für Fahrzeuge in `WCOL` (`each(…, soft)`) (`docs/features/baeume.md`) |
 | `WELT`, `SCHL` | welt/welt.js, schleusingen.js | Kachelwelt aus `tools/welt` (Gelände, Luftbilder) nach Bedarf um die Kamera gestreamt (Zonen fordern sie an); Schleusingen begehbar: Altstadt aus OSM mit den Dorf-Shadern, Markt, Rathaus mit Halle, Wahrzeichen |
 | `AMT`, `AMTDATA`, `AMTMODEL`, `AMTWORLD` | amt/ | Ortsvorsteher: Wahl und Amt nach Thüringer Recht – Daten (Menschen, Anliegen, Aufgaben, Texte), reine Logik (Meinungen, Versprechen, Unterschriften, Auszählung, Ortsteilrat, Stadtrat; Einheitentests), was im Dorf entsteht (Laterne, Mitfahrbank, Anzeige …), Brief, Mappe (O), Wahltag, Rathaus über `SCHL`; Start mit `?amt=brief\|wahlkampf\|wahltag\|zaehlen\|amt\|stadtrat` (`docs/features/ortsvorsteher.md`) |
+| `GPLAN`, `GPMODEL`, `GPRULES`, `GPSUN`, `GP3D`, `GPSCHEMA` | gplan/ | Gartenplaner (V16n): Datenvertrag der Pflanzendaten (`gplan_schema.js`, Daten in `extra/pflanzen/dist/gartenplaner/`), reine Logik mit Einheitentests – Wachsen und Jahreszeiten, Plan, Gilden, Listen (`gplan_model.js`), Sonne und Schatten über Ratscher (`gplan_sun.js`), Berater mit Gründen (`gplan_rules.js`: Grenzabstand ThürNRG, Gebäude – immer der geplante Pavillon –, Bach, Spätfrost, Befruchter, Nachbarn, Licht) –, Pflanzen in 3D ohne neue Programme (`gplan_3d.js`), Fenster und Draufsicht über `SITEPLAN.hooks` (`gplan.js`); Menü → Gestalten → „Garten planen“, `?szenario=gartenplaner` (`docs/features/gartenplaner.md`) |
+| `VESSRA` | welt/vessra.js | Kloster Veßra (V16m): eine `KERN.zone` mit eigenem Kachelsatz (`welt-test/zonen/vessra/`, auch die Straße dorthin), Klosterruine, Torkirche, Mauer, Häuser aus OSM, die Baumschule Kammbach mit Beeten und benannten Stellen (`VESSRA.baumschule`); `?szenario=vessra`, `?szenario=baumschule` (`docs/features/vessra.md`) |
+| `TASKS` | core/tasks.js | Aufgaben als Daten (Phase 2): Schritte auf Ereignisse oder Prüfungen, `pav-tasks-v1`, im Tagebuch (Abschnitt 3, „Dienste für Erweiterungen“) |
 | `CLOCK` | time/clock.js | Spielzeit (Minuten seit Tag 1, 0:00), Tempo, Warten/Zeitraffer, `CLOCK.on(fn)`, `CLOCK.jobs(fn)` |
 | `DN` | time/daynight.js | Kalender, Sonne/Mond/Sterne, Licht; `DN.sky(jd)`, `DN.jdOf(t)`, `DN.dateStr()` |
 | `GEAR` | werk/gear.js | Schutzausrüstung, `GEAR.check(req)` |
@@ -179,6 +186,9 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | `pav-dorf-v1` | Dorfleben (V16h): Stand der Aufgabe „Freitagabend in der alten Schule“, Besuche, Kartenspiel |
 | `pav-trees-v1` | umgefahrene Bäume (V16i): Lage, Richtung, Winkel |
 | `pav-amt-v1` | Ortsvorsteher (V16i): Abschnitt der Wahl, Meinungen je Person, Versprechen, Unterschriften, Aufgaben, Anliegen, Beschlüsse |
+| `pav-gplan-v1` | Gartenplaner (V16n): `{ v, items: [{ id, x, y, jahr }], show, age, month, hour }` – geplante Pflanzen, Anzeige im Garten, Alter, Schatten-Monat/-Stunde |
+| `pav-stil-v1` | Einrichtung der Gartengebäude (V16o): `{ v: 1, h: { bungalow|atelier|wohnwagen: { s: Stil, a: Akzent } }, x: { atelier: { sofa, bowls, fired, pic, motif }, wohnwagen: { bed } } }` |
+| `pav-tasks-v1` | Aufgaben als Daten (`core/tasks.js`): `{ v: 1, t: { id: { st: 'läuft' \| 'erledigt', i } } }` |
 | `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16d`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt (`SAVE.once`) |
 | `pav-loadlog`, `pav-texlevel` | Ladeprotokoll des letzten Versuchs; halbe Texturen nach abgebrochenem Laden am Telefon |
 

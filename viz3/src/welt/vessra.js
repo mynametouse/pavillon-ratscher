@@ -111,6 +111,8 @@ export const VESSRA = (() => {
     [0.53, 0.36, 0.3],
     [0.61, 0.44, 0.38],
   ].map(c => linC(c, 0.85));
+  // the mixed pink and yellow rubble of the gate tower over its red ashlar (photo 2025 „Torgebäude“)
+  const RUBBLE = linC([0.74, 0.6, 0.55], 0.85);
   const LIME = linC([0.86, 0.84, 0.78], 0.82), // the lime render of the gate church
     BOARDS = [
       [0.52, 0.48, 0.43],
@@ -664,11 +666,142 @@ export const VESSRA = (() => {
       console.warn('vessra', e);
     }
   }
+  // the ground beside the car roads: the 30 m surface model of Copernicus carries the houses and trees of the village, and the pipeline
+  // cut the roads into it with 1:1.5 banks – a road in a trough a metre deep. Beside them the ground is lowered towards the road: to at
+  // most 10 cm + 6 % of the distance from the road's edge + a little curvature (4 mm/m², so a hillside stays) above it, by at most 2.5 m
+  // (a wood beside the road stays a wood), tapering off from 20 to 40 m; on a 4 m grid, faded out over the outer 100 m of the zone; a
+  // pad of WELT with the same function, so the drawn tiles, KERN's ground and the feet of the houses agree
+  let capG = null;
+  function roadCap() {
+    const G = 4,
+      n = Math.round((ZONE[2] - ZONE[0]) / G) + 1,
+      cap = new Float32Array(n * n).fill(1e9),
+      zc = new Float32Array(n * n),
+      R = 40;
+    for (let j = 0; j < n; j++)
+      for (let i = 0; i < n; i++) {
+        const z = gz(ZONE[0] + i * G, ZONE[1] + j * G);
+        zc[j * n + i] = z === undefined || z === null ? NaN : z;
+      }
+    for (const st of data.st || []) {
+      if (st.k > 5 || st.b) continue;
+      const hw = st.k <= 2 ? 4.5 : st.k === 3 ? 3.0 : 2.0,
+        p = st.p,
+        pts = [];
+      // the axis every 4 m with the height of the carved road
+      for (let k = 0; k + 3 < p.length; k += 2) {
+        const L = Math.hypot(p[k + 2] - p[k], p[k + 3] - p[k + 1]),
+          m = Math.max(1, Math.ceil(L / 4));
+        for (let q = k ? 1 : 0; q <= m; q++) {
+          const x = p[k] + ((p[k + 2] - p[k]) * q) / m,
+            y = p[k + 1] + ((p[k + 3] - p[k + 1]) * q) / m,
+            z = gz(x, y);
+          pts.push(x, y, z === undefined || z === null ? NaN : z);
+        }
+      }
+      for (let k = 0; k + 5 < pts.length; k += 3) {
+        const ax = pts[k],
+          ay = pts[k + 1],
+          za = pts[k + 2],
+          ex = pts[k + 3] - ax,
+          ey = pts[k + 4] - ay,
+          zb = pts[k + 5],
+          l2 = ex * ex + ey * ey || 1;
+        if (!(za === za && zb === zb)) continue;
+        const i0 = Math.max(0, Math.floor((Math.min(ax, ax + ex) - hw - R - ZONE[0]) / G)),
+          i1 = Math.min(n - 1, Math.ceil((Math.max(ax, ax + ex) + hw + R - ZONE[0]) / G)),
+          j0 = Math.max(0, Math.floor((Math.min(ay, ay + ey) - hw - R - ZONE[1]) / G)),
+          j1 = Math.min(n - 1, Math.ceil((Math.max(ay, ay + ey) + hw + R - ZONE[1]) / G));
+        for (let j = j0; j <= j1; j++)
+          for (let i = i0; i <= i1; i++) {
+            const x = ZONE[0] + i * G,
+              y = ZONE[1] + j * G,
+              t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / l2)),
+              d = Math.max(0, Math.hypot(x - ax - ex * t, y - ay - ey * t) - hw);
+            if (d > R) continue;
+            const k = j * n + i,
+              c = za + (zb - za) * t + 0.1 + 0.06 * d + 0.004 * d * d,
+              lo = zc[k] - 2.5 * Math.min(1, (R - d) / 20),
+              v = c > lo ? c : lo;
+            if (v < cap[k]) cap[k] = v;
+          }
+      }
+    }
+    return { G, n, cap };
+  }
+  const adj = (x, y, z) => {
+    if (!capG || !inZone(x, y)) return z;
+    const { G, n, cap } = capG,
+      fi = (x - ZONE[0]) / G,
+      fj = (y - ZONE[1]) / G,
+      i = Math.min(n - 2, Math.floor(fi)),
+      j = Math.min(n - 2, Math.floor(fj)),
+      tx = fi - i,
+      ty = fj - j,
+      k = j * n + i,
+      c =
+        cap[k] * (1 - tx) * (1 - ty) +
+        cap[k + 1] * tx * (1 - ty) +
+        cap[k + n] * (1 - tx) * ty +
+        cap[k + n + 1] * tx * ty;
+    if (!(c < z)) return z;
+    const w = Math.max(0, Math.min(1, Math.min(x - ZONE[0], ZONE[2] - x, y - ZONE[1], ZONE[3] - y) / 100));
+    return z + w * (c - z);
+  };
+  // the sales yard of the nursery is level gravel: a plane fitted to the ground over it (u −13…26 m along the street, w 0.5…31 m into the
+  // grounds; slope at most 1 %), blended into the ground around it over 4 m – another pad, before the zone's
+  const YARD = [-13, 0.5, 26, 31],
+    YM = 4;
+  let yd = null;
+  function yardPlane(F) {
+    const pts = [];
+    for (let u = YARD[0]; u <= YARD[2] + 1e-6; u += 2)
+      for (let w = YARD[1]; w <= YARD[3] + 1e-6; w += 2) {
+        const x = F.G[0] + F.t[0] * u + F.wv[0] * w,
+          y = F.G[1] + F.t[1] * u + F.wv[1] * w,
+          z = gz(x, y);
+        if (z !== undefined && z !== null) pts.push([u, w, adj(x, y, z)]);
+      }
+    if (pts.length < 20) return null;
+    const n = pts.length,
+      uc = pts.reduce((a, p) => a + p[0], 0) / n,
+      wc = pts.reduce((a, p) => a + p[1], 0) / n,
+      zc = pts.reduce((a, p) => a + p[2], 0) / n;
+    let uu = 0,
+      ww = 0,
+      uz = 0,
+      wz = 0;
+    for (const [u, w, z] of pts) {
+      uu += (u - uc) * (u - uc);
+      ww += (w - wc) * (w - wc);
+      uz += (u - uc) * (z - zc);
+      wz += (w - wc) * (z - zc);
+    }
+    const cl = v => Math.max(-0.01, Math.min(0.01, v)); // nearly level: the beds lie flat on it
+    return { G: F.G, t: F.t, wv: F.wv, uc, wc, a: zc, b: cl(uz / (uu || 1)), c: cl(wz / (ww || 1)) };
+  }
+  const yardAdj = (x, y, z) => {
+    if (!yd) return z;
+    const dx = x - yd.G[0],
+      dy = y - yd.G[1],
+      u = dx * yd.t[0] + dy * yd.t[1],
+      w = dx * yd.wv[0] + dy * yd.wv[1],
+      dd = Math.hypot(Math.max(YARD[0] - u, 0, u - YARD[2]), Math.max(YARD[1] - w, 0, w - YARD[3]));
+    if (dd >= YM) return z;
+    const pz =
+        yd.a +
+        yd.b * (Math.max(YARD[0], Math.min(YARD[2], u)) - yd.uc) +
+        yd.c * (Math.max(YARD[1], Math.min(YARD[3], w)) - yd.wc),
+      s2 = dd / YM,
+      k = s2 * s2 * (3 - 2 * s2);
+    return pz + (z - pz) * k;
+  };
   const ground = (x, y) => {
     const z = gz && gz(x, y);
-    return z !== undefined && z !== null ? z : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
+    return z !== undefined && z !== null ? yardAdj(x, y, adj(x, y, z)) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
   };
   S.gz = ground;
+  S.raw = (x, y) => (gz ? gz(x, y) : undefined); // the tiles' own height (tests: the banks beside the roads)
   function add(m, name, own) {
     m.name = 'vessra ' + name;
     m.userData.noMerge = true;
@@ -731,6 +864,8 @@ export const VESSRA = (() => {
     S.seats = [];
     S.baumschule = null;
     if (WELT.setPads) WELT.setPads('vessra', []);
+    capG = null;
+    yd = null;
     if (WELT.setOverlay && S.overlayTex && WELT.overlay && WELT.overlay() === S.overlayTex) WELT.setOverlay(null);
     S.overlayTex = null;
     data = null;
@@ -1018,6 +1153,21 @@ export const VESSRA = (() => {
     block(0, uW, vM - vp, vM + vp, z + 5.3, zc, LIGHT, true); // over the passage (a flat vault)
     S.segs.push(...boxSegs(...Q(uW / 2, (vT0 + vM - vp) / 2), uW, vM - vp - vT0, a));
     S.segs.push(...boxSegs(...Q(uW / 2, (vM + vp + vT1) / 2), uW, vT1 - vM - vp, a));
+    // on the side of the nave the block is mixed rubble, grey and red (drone photo 2021 from the east), not the ashlar of the front
+    {
+      const MIX = linC([0.63, 0.5, 0.46]),
+        face = (v0, v1, z0, z1) =>
+          poly(
+            KS,
+            [Qz(uW + 0.02, v0, z0), Qz(uW + 0.02, v1, z0), Qz(uW + 0.02, v1, z1), Qz(uW + 0.02, v0, z1)],
+            [ex[0], ex[1], 0],
+            MIX,
+            p => [U(p[0], p[1])[1], p[2]]
+          );
+      face(vT0, vM - vp, zb, zc);
+      face(vM + vp, vT1, zb, zc);
+      face(vM - vp, vM + vp, z + 5.3, zc);
+    }
     // the portal: a round arch in a stepped frame over the passage, filled above the arch
     for (let k = 0; k < 7; k++) {
       const t0 = (k / 7) * Math.PI,
@@ -1169,9 +1319,11 @@ export const VESSRA = (() => {
     {
       const Ls = Math.hypot(S1[0] - S0[0], S1[1] - S0[1]);
       stoneWall(KS, N0, N1, zb, z + 10.2, 1.15, winsAt(0, Ln, z + 5.3), RED);
+      coping(K, N0, N1, z + 10.2, z + 10.2, 1.15);
       const ws = winsAt(0, Ls, z + 5.0);
       ws.push({ u: 2.6, w: 1.8, z0: zb, zs: z + 2.3, r: 0.9 }); // the door to the cloister
       stoneWall(KS, S0, S1, zb, z + 9.6, 1.15, ws, RED2);
+      coping(K, S0, S1, z + 9.6, z + 9.6, 1.15);
     }
     for (const sg of [-1, 1])
       for (let u = uW + 3.4, k = 0; u < uX - 1.5; u += 4.3, k++) {
@@ -1179,8 +1331,9 @@ export const VESSRA = (() => {
           last = u + 4.3 >= uX - 1.5,
           h = last ? 7.2 : 0.9 + hh(k * 3 + sg) * 0.7;
         KS.box(x, y, zb, 1.35, 1.35, h + (z - zb), a, k % 2 ? RED : RED2);
+        KS.box(x, y, zb, 1.8, 1.8, z - zb + 0.32, a, RED2); // the plinth (photo of the nave 2025)
         KS.box(x, y, z + h, 1.55, 1.55, 0.18, a, RED);
-        S.segs.push(...boxSegs(x, y, 1.4, 1.4, a));
+        S.segs.push(...boxSegs(x, y, 1.8, 1.8, a));
       }
     // -- the crossing: the wall with the triumphal arch and the two aisle arches; the transept walls around --
     const tv = [];
@@ -1206,6 +1359,7 @@ export const VESSRA = (() => {
         RED,
         { ends: true }
       );
+      coping(K, A1, B1, z + 15.6, z + 15.6, 1.4);
     }
     if (C.transept && C.transept.length >= 8) {
       // the ring of the transept (OSM): its east, north and south walls stand to the eaves, windows high up
@@ -1227,6 +1381,7 @@ export const VESSRA = (() => {
           );
         } else holes.push({ u: L / 2, w: 1.2, z0: z + 9.0, zs: z + 11.4, r: 0.6 });
         stoneWall(KS, p, q, zb, z + 14.2, 1.3, holes, k % 2 ? RED : RED2);
+        coping(K, p, q, z + 14.2, z + 14.2, 1.3);
         if (east) {
           // the walled-up arch of the old choir on the inner face (a shade darker, framed – photo of the nave from the west 2025)
           const mx = (p[0] + q[0]) / 2 - ex[0] * 0.62,
@@ -1256,9 +1411,27 @@ export const VESSRA = (() => {
       }
     }
   }
+  // a ridge of tiles on the crown of a ruin wall (the walls of the church are capped so: drone photo 2021, the nave from the west 2025)
+  const TILE = linC([0.6, 0.3, 0.2]);
+  function coping(K, a, b, za, zb2, th) {
+    const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (L < 0.2) return;
+    const d = [(b[0] - a[0]) / L, (b[1] - a[1]) / L],
+      n = [d[1], -d[0]],
+      e = th / 2 + 0.1,
+      rz = Math.min(0.45, th * 0.3),
+      zAt = u => za + ((zb2 - za) * u) / L,
+      P = (u, sg) => [a[0] + d[0] * u + n[0] * sg * e, a[1] + d[1] * u + n[1] * sg * e, zAt(u) - 0.04],
+      R = u => [a[0] + d[0] * u, a[1] + d[1] * u, zAt(u) + rz],
+      uvA = p => [(p[0] - a[0]) * d[0] + (p[1] - a[1]) * d[1], p[2]];
+    for (const sg of [-1, 1]) poly(K, [P(0, sg), P(L, sg), R(L), R(0)], [n[0] * sg, n[1] * sg, 0.8], TILE, uvA);
+    poly(K, [P(0, -1), P(0, 1), R(0)], [-d[0], -d[1], 0], TILE, uvA);
+    poly(K, [P(L, -1), P(L, 1), R(L)], [d[0], d[1], 0], TILE, uvA);
+  }
   // ---- the apses of the two chapels: half round, the Henneberg one plastered white under a cone of tiles (photo 2025) ----
   function apses(KS, K, RB) {
-    const chapels = S.bld.filter(b => b.lm === 'henneberg' || b.lm === 'suedkapelle');
+    // the round apses (OSM) at the east ends: the white one of the Henneberg chapel beyond its square choir, the one of the south chapel
+    const chapels = S.bld.filter(b => b.lm === 'henneberg' || b.lm === 'hchor' || b.lm === 'suedkapelle');
     for (const b of S.bld.filter(q => q.lm === 'apsis')) {
       if (!chapels.length) break;
       const ch = chapels.reduce((m, q) =>
@@ -1290,7 +1463,7 @@ export const VESSRA = (() => {
         cx = ch.cx + dx * s0 + px * wc,
         cy = ch.cy + dy * s0 + py * wc,
         z0 = ch.z0 - 0.4,
-        white = ch.lm === 'henneberg',
+        white = ch.lm === 'henneberg' || ch.lm === 'hchor',
         col = white ? linC([0.93, 0.92, 0.88]) : STONE[0],
         h = white ? 4.6 : 3.4,
         a0 = Math.atan2(dy, dx) - Math.PI / 2,
@@ -1418,6 +1591,9 @@ export const VESSRA = (() => {
       b.F.forEach(f => (f[8] |= 1));
       b.noDoor = true;
     },
+    hchor(b) {
+      b.noDoor = true;
+    },
     suedkapelle(b) {
       b.F.forEach(f => (f[8] |= 1));
       b.noDoor = true;
@@ -1428,6 +1604,30 @@ export const VESSRA = (() => {
     S.segs = [];
     S.bld = [];
     S.seats = [];
+    if (gz) {
+      capG = roadCap();
+      const F = nurseryFrame();
+      yd = F ? yardPlane(F) : null;
+      S.capMs = Math.round(performance.now() - t0);
+      const pads = [];
+      if (yd) {
+        const Q = (u, w) => [yd.G[0] + yd.t[0] * u + yd.wv[0] * w, yd.G[1] + yd.t[1] * u + yd.wv[1] * w];
+        pads.push({
+          poly: [
+            ...Q(YARD[0] - YM, YARD[1] - YM),
+            ...Q(YARD[2] + YM, YARD[1] - YM),
+            ...Q(YARD[2] + YM, YARD[3] + YM),
+            ...Q(YARD[0] - YM, YARD[3] + YM),
+          ],
+          z: (x, y, raw) => yardAdj(x, y, adj(x, y, raw)),
+        });
+      }
+      pads.push({
+        poly: [ZONE[0], ZONE[1], ZONE[2], ZONE[1], ZONE[2], ZONE[3], ZONE[0], ZONE[3]],
+        z: (x, y, raw) => adj(x, y, raw),
+      });
+      if (WELT.setPads) WELT.setPads('vessra', pads);
+    }
     const WB = wallBuf(),
       RB = roofBuf();
     data.b.forEach((b, i) => {
@@ -1488,6 +1688,7 @@ export const VESSRA = (() => {
       step('nursery', () => nursery(K));
       step('benches', () => benches(K));
       step('museum sign', () => museumSign(K));
+      step('street signs', () => streetSigns(K));
       add(new THREE.Mesh(KS.geo(), stoneMat()), 'stone', true);
       if (!KA.empty()) add(new THREE.Mesh(scaledGeo(KA, 0.34), stoneMat('pavers', 1.3)), 'ashlar', true);
       add(new THREE.Mesh(K.geo(), propMat()), 'props', true);
@@ -1545,14 +1746,18 @@ export const VESSRA = (() => {
       }
     }
     if (!nf) return;
+    // a tall gate tower (photo 2025 „Torgebäude“): red sandstone ashlar up to above the arch, mixed pink and yellow rubble over it, two slit
+    // windows over the arch on either gable
     const dir = [-nf[0], -nf[1]],
       side = [-dir[1], dir[0]],
       c = [b.cx, b.cy],
       z0 = b.z0,
       top = z0 + b.e,
-      W = 3.0,
-      zs = z0 + 2.5,
-      col = STONE[0],
+      W = 3.6,
+      zs = z0 + 3.2,
+      zb = zs + W / 2 + 0.7,
+      col = STONE[1],
+      RUB = RUBBLE,
       cross = (p, q) => {
         // where the passage's centre line crosses the wall p → q (u along the wall), or null
         const ex = q[0] - p[0],
@@ -1563,31 +1768,56 @@ export const VESSRA = (() => {
           u = ((p[0] - c[0]) * dir[1] - (p[1] - c[1]) * dir[0]) / den;
         return u >= 0 && u <= 1 ? { t, u: u * Math.hypot(ex, ey) } : null;
       };
-    const ends = [];
+    const ends = [],
+      FRAME = linC([0.66, 0.46, 0.4]),
+      GLASS = linC([0.08, 0.08, 0.09]);
     for (let k = 0; k < pts.length; k++) {
       const p = pts[k],
         q = pts[(k + 1) % pts.length],
         x = cross(p, q),
         holes = x ? [{ u: x.u, w: W, z0: z0 - 0.7, zs, r: W / 2 }] : [];
       if (x) ends.push(x.t);
-      stoneWall(KS, p, q, z0 - 0.7, top, 0.7, holes, col);
+      stoneWall(KS, p, q, z0 - 0.7, zb, 0.7, holes, col);
+      stoneWall(KS, p, q, zb, top, 0.7, [], RUB, { collide: false });
+      if (!x) continue;
+      // the slit windows in a frame of red sandstone, on the outer face
+      const L = Math.hypot(q[0] - p[0], q[1] - p[1]),
+        d = [(q[0] - p[0]) / L, (q[1] - p[1]) / L],
+        mx = p[0] + d[0] * x.u,
+        my = p[1] + d[1] * x.u;
+      let n = [d[1], -d[0]];
+      if ((mx - c[0]) * n[0] + (my - c[1]) * n[1] < 0) n = [-n[0], -n[1]];
+      const rot = Math.atan2(d[1], d[0]);
+      for (const [zw, hw] of [
+        [z0 + 6.7, 0.95],
+        [z0 + 9.3, 0.8],
+      ]) {
+        if (zw + hw > top - 0.3) continue;
+        K.box(mx + n[0] * 0.36, my + n[1] * 0.36, zw - 0.14, 0.52, 0.06, hw + 0.28, rot, FRAME);
+        K.box(mx + n[0] * 0.39, my + n[1] * 0.39, zw, 0.2, 0.04, hw, rot, GLASS);
+      }
     }
-    // the gables over the walls (the generic roof stands on the eaves)
+    // the gables over the walls, flush with their outer faces (the generic roof stands on the eaves)
     for (const f of b.F) {
-      const [ax, ay, bx, by, t0, uA, tA, t1] = f,
-        L = Math.hypot(bx - ax, by - ay);
+      const [ax0, ay0, bx0, by0, t0, uA, tA, t1] = f,
+        L = Math.hypot(bx0 - ax0, by0 - ay0);
       if (L < 0.5 || tA < Math.max(t0, t1) + 0.6) continue;
-      const dx = (bx - ax) / L,
-        dy = (by - ay) / L;
+      const dx = (bx0 - ax0) / L,
+        dy = (by0 - ay0) / L,
+        sg = ((ax0 + bx0) / 2 - c[0]) * dy - ((ay0 + by0) / 2 - c[1]) * dx < 0 ? -1 : 1,
+        nx = dy * sg,
+        ny = -dx * sg,
+        ax = ax0 + nx * 0.35,
+        ay = ay0 + ny * 0.35;
       poly(
         KS,
         [
           [ax, ay, z0 + t0],
-          [bx, by, z0 + t1],
+          [bx0 + nx * 0.35, by0 + ny * 0.35, z0 + t1],
           [ax + dx * uA, ay + dy * uA, z0 + tA],
         ],
-        [dy, -dx, 0],
-        col,
+        [nx, ny, 0],
+        RUB,
         p => [(p[0] - ax) * dx + (p[1] - ay) * dy, p[2]]
       );
     }
@@ -1612,7 +1842,6 @@ export const VESSRA = (() => {
       );
     }
     S.torhaus = { a: P(t0 - 0.4, 0), b: P(t1 + 0.4, 0), dir, w: W };
-    void K;
   }
   // ---- the monastery wall and the other walls (OSM barrier=wall): red sandstone rubble, ~3.2 m, gaps with pillars at the gates ----
   function gapsOn(a, b, L, wGate) {
@@ -1629,12 +1858,19 @@ export const VESSRA = (() => {
     }
     return out.sort((p, q) => p[0] - q[0]);
   }
+  // the monastery wall and the other walls: grey-beige rubble with a pink tinge, moss on the coping (photos of the north and the south
+  // monastery wall 2025)
+  const WALLC = [
+    [0.62, 0.56, 0.52],
+    [0.66, 0.59, 0.54],
+    [0.58, 0.52, 0.48],
+  ].map(c => linC(c, 0.85));
   function walls(KS, K) {
-    const COP = linC([0.5, 0.36, 0.32]);
+    const COP = linC([0.42, 0.44, 0.33]);
     (data.walls || []).forEach((w, wi) => {
       const p = w.p,
         h = Math.min(4.2, Math.max(1.2, w.h || 3.2)),
-        col = STONE[wi % STONE.length];
+        col = WALLC[wi % WALLC.length];
       for (let k = 0; k + 3 < p.length; k += 2) {
         const a = [p[k], p[k + 1]],
           b = [p[k + 2], p[k + 3]],
@@ -1866,11 +2102,12 @@ export const VESSRA = (() => {
     { art: 'kletter', name: 'Kletterpflanzen', w0: 21.0, w1: 24.5, rows: 2, step: 1.0 },
     { art: 'boden', name: 'Bodendecker', w0: 26.5, w1: 29.5, rows: 3, step: 0.7 },
   ];
-  function nursery(K) {
+  // the frame of the nursery: from its south gate on the Schulstraße (G) along the street towards the north gate (t), into the grounds (wv)
+  function nurseryFrame() {
     const ar = (data.areas || []).find(q => q.k === 'nursery');
-    if (!ar) return;
+    if (!ar) return null;
     const gs = (data.gates || []).filter(g => g[2] === 'gate' && nearPolyEdge(ar.p, g[0], g[1]) < 4);
-    if (gs.length < 1) return;
+    if (gs.length < 1) return null;
     gs.sort((p, q) => p[1] - q[1]);
     const G = [gs[0][0], gs[0][1]],
       N2 = gs.length > 1 ? [gs[gs.length - 1][0], gs[gs.length - 1][1]] : [G[0] - 6, G[1] + 40];
@@ -1879,6 +2116,12 @@ export const VESSRA = (() => {
     t = [t[0] / lt, t[1] / lt];
     let wv = [-t[1], t[0]];
     if (!inPoly(ar.p, G[0] + wv[0] * 6, G[1] + wv[1] * 6)) wv = [-wv[0], -wv[1]];
+    return { ar, G, t, wv };
+  }
+  function nursery(K) {
+    const F = nurseryFrame();
+    if (!F) return;
+    const { ar, G, t, wv } = F;
     const Y = (u, w) => [G[0] + t[0] * u + wv[0] * w, G[1] + t[1] * u + wv[1] * w],
       Yz = (u, w, dz = 0) => {
         const [x, y] = Y(u, w);
@@ -1946,6 +2189,48 @@ export const VESSRA = (() => {
       const [x, y, z] = Yz(-3.2, 17.5);
       benchAt(K, x, y, z, rot);
       S.seats.push({ x, y, z, yaw: yawOf([t[0], t[1]]) });
+    }
+    // the yard: two plant trolleys with three shelves of pots at the east end of the beds, behind the hut a pallet of potting soil and
+    // stacks of empty containers
+    {
+      const GALV = linC([0.55, 0.56, 0.56]),
+        TYRE = linC([0.08, 0.08, 0.08]);
+      [
+        [22.8, 7.2],
+        [22.8, 17.4],
+      ].forEach(([u, w], i) => {
+        for (const du of [-0.64, 0.64])
+          for (const dw of [-0.25, 0.25]) {
+            box(u + du, w + dw, 0.12, 0.035, 0.035, 1.8, GALV);
+            box(u + du, w + dw, 0, 0.1, 0.06, 0.12, TYRE);
+          }
+        for (const zs of [0.22, 0.78, 1.34]) {
+          box(u, w, zs, 1.32, 0.56, 0.03, GALV);
+          for (let a = 0; a < 5; a++)
+            for (let b = 0; b < 2; b++) {
+              const [x, y, z] = Yz(u - 0.52 + a * 0.26, w - 0.13 + b * 0.26, zs + 0.03);
+              plant(K, 'boden', x, y, z, hh(x * 5.1 + y * 2.3 + i), { POT, BAMBOO, WOOD });
+            }
+        }
+        const [x, y] = Y(u, w);
+        S.segs.push(...boxSegs(x, y, 1.4, 0.62, rot));
+      });
+      const BAG = [linC([0.14, 0.3, 0.17]), linC([0.36, 0.22, 0.12])],
+        [px, py] = Y(-11.0, 13.0);
+      box(-11.0, 13.0, 0, 1.2, 0.8, 0.14, WOOD);
+      for (let l = 0; l < 4; l++)
+        for (const du of [-0.29, 0.29])
+          box(-11.0 + du, 13.0, 0.14 + l * 0.12, 0.56, 0.76, 0.11, BAG[(l + (du > 0 ? 1 : 0)) % 2]);
+      S.segs.push(...boxSegs(px, py, 1.2, 0.8, rot));
+      for (const [u, w, n] of [
+        [-10.9, 14.7, 7],
+        [-11.4, 15.2, 5],
+        [-10.5, 15.3, 9],
+      ]) {
+        const [x, y, z] = Yz(u, w);
+        K.cyl(x, y, z, z + 0.32 + n * 0.06, 0.2, 0.24, 8, POT, true);
+        S.segs.push(...circleSegs(x, y, 0.26, 6));
+      }
     }
     // the beds: a ground cloth with an edge of boards, plants in black containers in rows, a label at the path end
     const beete = [];
@@ -2061,8 +2346,8 @@ export const VESSRA = (() => {
       K.cyl(x, y, z, z + 0.38, 0.2, 0.24, 8, C.POT, true);
       K.box(x + 0.08, y, z, 0.03, 0.03, 2.0, 0, C.BAMBOO);
       K.cyl(x, y, z + 0.3, z + 1.25, 0.03, 0.022, 5, linC([0.32, 0.24, 0.17]));
-      const r = 0.42 + k * 0.18,
-        hc = 0.8 + k * 0.4;
+      const r = 0.3 + k * 0.12,
+        hc = 0.7 + k * 0.3;
       K.lathe(
         x,
         y,
@@ -2212,6 +2497,67 @@ export const VESSRA = (() => {
       K.box(x + d[0] * o, y + d[1] * o, z - 0.2, 0.1, 0.1, 2.75, rot, linC([0.25, 0.17, 0.1]));
     S.museumSign = { at: [x, y, z + 1.85], d, h: 0.42 };
   }
+  // ---- street name signs at the junctions of the village (white, black lettering and border, on a grey pole): one per named street,
+  // where it leaves another road, parallel to it and readable from both sides ----
+  const distLine = (p, x, y) => {
+    let d = 1e9;
+    for (let k = 0; k + 3 < p.length; k += 2) {
+      const ax = p[k],
+        ay = p[k + 1],
+        ex = p[k + 2] - ax,
+        ey = p[k + 3] - ay,
+        l2 = ex * ex + ey * ey || 1,
+        t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / l2));
+      d = Math.min(d, Math.hypot(x - ax - ex * t, y - ay - ey * t));
+    }
+    return d;
+  };
+  function streetSigns(K) {
+    const roads = (data.st || []).filter(q => q.k <= 5),
+      best = new Map(),
+      out = [],
+      POLE = linC([0.45, 0.46, 0.47]),
+      inHouse = (x, y) => S.bld.some(b => Math.abs(b.cx - x) < 40 && Math.abs(b.cy - y) < 40 && inPoly(b.f, x, y));
+    // per street the junction nearest the monastery gate
+    for (const st of roads) {
+      if (!st.n) continue;
+      const p = st.p;
+      for (const e of [0, p.length - 2]) {
+        const x = p[e],
+          y = p[e + 1],
+          dg = Math.hypot(x - GATE[0], y - GATE[1]);
+        if (Math.hypot(x - ORT[0], y - ORT[1]) > 560 || (best.has(st.n) && best.get(st.n).dg <= dg)) continue;
+        if (!roads.some(o => o !== st && o.n !== st.n && distLine(o.p, x, y) < 2.5)) continue;
+        // 5 m into the street from the junction, on its right beside the carriageway
+        const k = e ? e - 2 : 2,
+          L = Math.hypot(p[k] - x, p[k + 1] - y) || 1,
+          ux = (p[k] - x) / L,
+          uy = (p[k + 1] - y) / L,
+          hw = st.k <= 2 ? 4.3 : 3.4,
+          sx = x + ux * Math.min(5, L * 0.5) + uy * hw,
+          sy = y + uy * Math.min(5, L * 0.5) - ux * hw;
+        if (inHouse(sx, sy) || roads.some(o => distLine(o.p, sx, sy) < hw - 0.8)) continue;
+        best.set(st.n, { dg, sx, sy, ux, uy });
+      }
+    }
+    for (const [name, c] of best) {
+      const z = ground(c.sx, c.sy);
+      K.cyl(c.sx, c.sy, z - 0.3, z + 2.75, 0.03, 0.03, 6, POLE);
+      S.segs.push(...circleSegs(c.sx, c.sy, 0.06, 4));
+      for (const sg of [1, -1])
+        out.push({
+          name,
+          at: [c.sx, c.sy, z + 2.36],
+          d: [c.ux * sg, c.uy * sg],
+          h: 0.19,
+          bg: '#f7f7f4',
+          fg: '#141414',
+          font: 'bold 40px "DejaVu Sans", Arial, Helvetica, sans-serif',
+          back: 0.015,
+        });
+    }
+    S.streetSigns = out;
+  }
   // ---- street lamps: the lantern of world/village_props.js, lit with the village's lamps (and lighting the walls) ----
   function lamps() {
     const L = data.lamps || [];
@@ -2345,7 +2691,7 @@ export const VESSRA = (() => {
       nrm = [],
       col = [],
       idx = [],
-      SEG = 7,
+      SEG = 9,
       LEAF = [
         [0.17, 0.27, 0.1],
         [0.24, 0.31, 0.11],
@@ -2356,24 +2702,81 @@ export const VESSRA = (() => {
       ].map(c => linC(c)),
       FIR = linC([0.08, 0.15, 0.08]),
       BARK = linC([0.24, 0.2, 0.16]);
-    // one ring of SEG vertices; the normal leans up (nz > 0) or down (nz < 0) from the horizontal out of the crown
-    const ring = (cx, cy, z, r, c, nz) => {
+    // one ring of SEG vertices, its radius a little lumpy (jit); the normal leans up (nz > 0) or down (nz < 0) out of the crown
+    const ring = (cx, cy, z, r, c, nz, jit = 0, seed = 0) => {
       const base = pos.length / 3,
         hz = Math.sqrt(Math.max(0, 1 - nz * nz));
-      for (let s = 0; s < SEG; s++) {
-        const a = (s / SEG) * Math.PI * 2;
-        pos.push(cx + Math.cos(a) * r, z, -(cy + Math.sin(a) * r));
+      for (let s2 = 0; s2 < SEG; s2++) {
+        const a = (s2 / SEG) * Math.PI * 2 + seed,
+          rs = r * (1 + (hh(seed * 13.1 + s2 * 7.3 + z) - 0.5) * jit);
+        pos.push(cx + Math.cos(a) * rs, z, -(cy + Math.sin(a) * rs));
         nrm.push(Math.cos(a) * hz, nz, -Math.sin(a) * hz);
         col.push(c[0], c[1], c[2]);
       }
       return base;
     };
     const band = (a, b) => {
-      for (let s = 0; s < SEG; s++) {
-        const s2 = (s + 1) % SEG;
-        idx.push(a + s, a + s2, b + s2, a + s, b + s2, b + s);
+      for (let s2 = 0; s2 < SEG; s2++) {
+        const s3 = (s2 + 1) % SEG;
+        idx.push(a + s2, a + s3, b + s3, a + s2, b + s3, b + s2);
       }
     };
+    // a closing fan from a ring to one point above (up) or below
+    const fan = (r0, x, y, z, c, up) => {
+      const v = pos.length / 3;
+      pos.push(x, z, -y);
+      nrm.push(0, up ? 1 : -1, 0);
+      col.push(c[0], c[1], c[2]);
+      for (let s2 = 0; s2 < SEG; s2++) {
+        const s3 = (s2 + 1) % SEG;
+        if (up) idx.push(r0 + s2, r0 + s3, v);
+        else idx.push(r0 + s3, r0 + s2, v);
+      }
+    };
+    // a crown of rings along a profile [radius factor, height factor, normal lean]
+    const crown = (x, y, z, Ht, rr, prof, c, jit, seed) => {
+      let prev = -1,
+        first = -1;
+      prof.forEach(([f, hz, nz], j) => {
+        const sh = 0.72 + 0.28 * (j / (prof.length - 1)),
+          b = ring(
+            x + (hh(x + j + seed) - 0.5) * rr * 0.15,
+            y + (hh(y + j + seed) - 0.5) * rr * 0.15,
+            z + Ht * hz,
+            rr * f,
+            c.map(v => v * sh),
+            nz,
+            jit,
+            seed
+          );
+        if (prev >= 0) band(prev, b);
+        else first = b;
+        prev = b;
+      });
+      fan(prev, x, y, z + Ht * prof[prof.length - 1][1] + rr * 0.06, c, true);
+      fan(
+        first,
+        x,
+        y,
+        z + Ht * prof[0][1] - rr * 0.05,
+        c.map(v => v * 0.7),
+        false
+      );
+    };
+    const FIRP = [
+        [0.75, 0.12, -0.6],
+        [0.62, 0.35, 0.1],
+        [0.42, 0.6, 0.4],
+        [0.22, 0.82, 0.7],
+        [0.02, 1.0, 1.0],
+      ],
+      LEAFP = [
+        [0.3, 0.28, -0.9],
+        [0.88, 0.42, -0.35],
+        [1.0, 0.62, 0.1],
+        [0.75, 0.84, 0.6],
+        [0.12, 1.0, 1.0],
+      ];
     T.forEach(tr => {
       const [x, y] = tr,
         R = tr[2] || 3,
@@ -2386,37 +2789,27 @@ export const VESSRA = (() => {
       const t0 = ring(x, y, z, 0.16 + R * 0.02, BARK, 0),
         t1 = ring(x, y, z + Ht * 0.45, 0.1 + R * 0.01, BARK, 0);
       band(t0, t1);
-      // the crown: rings of a round (or conical) profile, normals out of the crown, darker below
-      const prof = fir
-          ? [
-              [0.75, 0.12, -0.6],
-              [0.62, 0.35, 0.1],
-              [0.42, 0.6, 0.4],
-              [0.22, 0.82, 0.7],
-              [0.02, 1.0, 1.0],
-            ]
-          : [
-              [0.3, 0.28, -0.9],
-              [0.88, 0.42, -0.35],
-              [1.0, 0.62, 0.1],
-              [0.75, 0.84, 0.6],
-              [0.12, 1.0, 1.0],
-            ],
-        rr = fir ? R * 0.75 : R;
-      let prev = -1;
-      prof.forEach(([f, hz, nz], j) => {
-        const sh = 0.72 + 0.28 * (j / (prof.length - 1)),
-          b = ring(
-            x + (hh(x + j) - 0.5) * R * 0.15,
-            y + (hh(y + j) - 0.5) * R * 0.15,
-            z + Ht * hz,
-            rr * f,
-            c.map(v => v * sh),
-            nz
+      if (fir) crown(x, y, z, Ht, R * 0.75, FIRP, c, 0.18, k * 6.28);
+      else {
+        // a broad leaf tree: the main crown and two lobes beside it, a little lower – no round ball
+        crown(x, y, z, Ht, R * 0.82, LEAFP, c, 0.3, k * 6.28);
+        for (let j = 0; j < 2; j++) {
+          const a = k * 6.28 + j * 2.6 + 0.8,
+            ox = x + Math.cos(a) * R * 0.5,
+            oy = y + Math.sin(a) * R * 0.5;
+          crown(
+            ox,
+            oy,
+            z + Ht * 0.12,
+            Ht * 0.72,
+            R * 0.55,
+            LEAFP,
+            c.map(v => v * (0.92 + 0.12 * j)),
+            0.3,
+            a
           );
-        if (prev >= 0) band(prev, b);
-        prev = b;
-      });
+        }
+      }
       S.segs.push(...circleSegs(x, y, 0.3, 5));
     });
     const g = new THREE.BufferGeometry();
@@ -2439,19 +2832,29 @@ export const VESSRA = (() => {
       }
     if (S.museumSign)
       list.push({ name: 'Hennebergisches Museum Kloster Veßra', ...S.museumSign, bg: '#5c1f1a', fg: '#f2e2b0' });
+    for (const it of S.streetSigns || []) list.push(it);
     if (!list.length) return;
+    // one atlas row per text and style (a street sign is drawn twice, back to back, from the same row)
+    const rowOf = new Map(),
+      texts = [];
+    for (const it of list) {
+      const key = it.name + '|' + it.bg;
+      if (!rowOf.has(key)) {
+        rowOf.set(key, texts.length);
+        texts.push(it);
+      }
+    }
     const W = 1024,
       RH = 64,
-      rows = Math.min(16, list.length),
+      rows = Math.min(32, texts.length),
       cv = document.createElement('canvas');
     cv.width = W;
     cv.height = RH * rows;
     const g = cv.getContext('2d');
-    list.slice(0, rows).forEach((it, r) => {
-      g.font = 'bold 38px Georgia, "Times New Roman", serif';
+    texts.slice(0, rows).forEach((it, r) => {
+      g.font = it.font || 'bold 38px Georgia, "Times New Roman", serif';
       const tw = Math.min(W - 40, g.measureText(it.name).width);
       it.w = tw + 40;
-      it.r = r;
       g.fillStyle = it.bg;
       g.fillRect(0, r * RH, it.w, RH);
       g.fillStyle = it.fg;
@@ -2461,6 +2864,12 @@ export const VESSRA = (() => {
       g.lineWidth = 3;
       g.strokeRect(5, r * RH + 5, it.w - 10, RH - 10);
     });
+    for (const it of list) {
+      const t0 = texts[rowOf.get(it.name + '|' + it.bg)];
+      it.r = rowOf.get(it.name + '|' + it.bg);
+      it.w = t0.w;
+    }
+    list.splice(0, list.length, ...list.filter(it => it.r < rows));
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
@@ -2468,13 +2877,15 @@ export const VESSRA = (() => {
       uv = [],
       nrm = [],
       idx = [];
-    for (const it of list.slice(0, rows)) {
+    for (const it of list) {
       const d = it.d,
         h = it.h,
         w = (h * it.w) / RH,
         nx = d[1],
         ny = -d[0],
-        [cx, cy, z] = it.at,
+        [cx0, cy0, z] = it.at,
+        cx = cx0 + nx * (it.back || 0),
+        cy = cy0 + ny * (it.back || 0),
         n = pos.length / 3,
         v0 = 1 - ((it.r + 1) * RH) / (RH * rows),
         v1 = 1 - (it.r * RH) / (RH * rows);
@@ -2502,7 +2913,7 @@ export const VESSRA = (() => {
       true
     );
     m.userData.tex = tex;
-    S.signs = list.slice(0, rows).map(it => it.name);
+    S.signs = list.map(it => it.name);
   }
   // ---- the streets over the photo (welt/welt.js overlay): asphalt on the roads, water-bound gravel on the paths of the monastery,
   // the parking and the nursery's yard; r = cover, g/r = surface ----
@@ -2625,6 +3036,7 @@ export const VESSRA = (() => {
   const LMN = {
     torkirche: 'Torkirche St. Erhard',
     henneberg: 'Henneberger Kapelle',
+    hchor: 'Henneberger Kapelle',
     suedkapelle: 'Südkapelle',
     kornhaus: 'Kornhaus',
     kreuzgang: 'Kreuzgang',
@@ -2708,6 +3120,58 @@ export const VESSRA = (() => {
   KERN.provide('place', place, 20);
   KERN.provide('pushOut', pushOut, 10);
   KERN.provide('free', (x, y) => (inZone(x, y) ? true : undefined), 10);
+  // ---- at night two of the pavilion's lights (KERN.lights, core/kern.js) stand in the two street lamps nearest the walker: real light
+  // on the ground, the ruin, the trees around them (the village shader lights only the house walls) – no new lamps, no new shaders; they
+  // go back by themselves when the walker leaves or the day comes ----
+  const LB = { ls: null, acc: 0, at: [] };
+  const nightOn = () => (VPROPS.glass ? Math.min(1, VPROPS.glass.emissiveIntensity / 6) : 0);
+  KERN.lights.borrow({
+    id: 'vessra-laternen',
+    n: 2,
+    prio: 1,
+    want: () => {
+      if (S.state !== 'ready' || !S.lamps.length || nightOn() < 0.05) return false;
+      const o = KERN.where();
+      return !!o && inZone(o[0], o[1]);
+    },
+    on: ls => {
+      LB.ls = ls;
+      LB.acc = 1;
+    },
+    tick: (ls, dt) => {
+      LB.acc += dt;
+      if (LB.acc < 0.5) return;
+      LB.acc = 0;
+      const o = KERN.where();
+      if (!o) return;
+      const near = S.lamps
+        .map(l => [Math.hypot(l.x - o[0], l.y - o[1]), l])
+        .sort((a, b) => a[0] - b[0])
+        .slice(0, ls.length);
+      const k = nightOn();
+      LB.at = [];
+      ls.forEach((l, i) => {
+        const p = near[i] && near[i][1];
+        if (!p || near[i][0] > 90) {
+          l.intensity = 0;
+          return;
+        }
+        l.position.copy(V(p.x, p.y, p.z - 0.15));
+        l.color.setHex(0xffc98a);
+        l.distance = 17;
+        l.decay = 1.6;
+        l.intensity = 16 * k;
+        LB.at.push([p.x, p.y]);
+      });
+      markDirty();
+    },
+    off: () => {
+      LB.ls = null;
+      LB.at = [];
+      markDirty(true);
+    },
+  });
+  S.lit = () => LB.at.slice(); // tests: the lamps with a borrowed light
   // ---- near the place its tiles and the place are loaded, far away freed (KERN.zone, core/kern.js: build near, drop far, measured from
   // KERN.where() – the walker, else the camera) ----
   KERN.zone({
