@@ -6,9 +6,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]; OUT = lib.out('kern2')
 ck = lib.Checks('kern2')
 with lib.browser() as b:
-    errs = []; pg = lib.page(b, 1100, 700, errs, tier='mittel'); lib.boot(pg, port, '?szenario=freitag'); E = pg.evaluate
+    errs = []; pg = lib.page(b, 1100, 700, errs, tier='mittel'); lib.boot(pg, port, '?szenario=freitag&bauphase=0'); E = pg.evaluate
     J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
     E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden'); GAME.setView3(false)")
+    # the real start: construction phase 0, the old garage – the pavilion's lights stay in the scene (switched off by intensity)
+    ph = J("{ phase: window.PHASE, lights: LIGHTS.map(l => [l.visible, l.intensity, !!l.userData.lent]), progs: GAME.perf().programs }")
+    ck('starts in construction phase 0 (Bestand)', ph['phase'] == 0, json.dumps(ph))
+    ck('… the pavilion lights stay visible, dark (unless lent)', all(v for v, i, lent in ph['lights']) and all(i == 0 for v, i, lent in ph['lights'] if not lent), json.dumps(ph['lights']))
     # the start situation ran after loading: Friday evening, in front of the old school
     E("for (let i = 0; i < 40; i++) GAME.step(0.1)")
     ev = J("KERN.events().map(e => e.name)")
@@ -36,7 +40,14 @@ with lib.browser() as b:
     # lights: the school's evening borrows three of the pavilion's lights (KERN.lights) when one is near
     E("DORF.atDoor && DORF.atDoor(); for (let i = 0; i < 30; i++) GAME.step(0.1)")
     ls = J("KERN.lights.status()")
-    ck('lights lent to the school', any(l['id'] == 'dorf-schule' and l['has'] == 3 for l in ls), json.dumps(ls))
+    ck('lights lent to the school (in phase 0, too)', any(l['id'] == 'dorf-schule' and l['has'] == 3 for l in ls), json.dumps(ls))
+    lit = J("LIGHTS.filter(l => l.userData.lent).map(l => +l.intensity.toFixed(1))")
+    ck('… and they shine there', len(lit) == 3 and all(i > 1 for i in lit), json.dumps(lit))
+    p2 = J("GAME.perf().programs")
+    ck('no shader recompiled for the lent lights', p2 <= ph['progs'] + 2, f"{ph['progs']} → {p2}")
+    E("KERN.scenario('garten').run(); GAME.step(0.2)")
+    E("document.querySelector('[data-spot=\"bibliothek\"]').click(); GAME.step(0.2)")
+    ck('jumping into the library shows the pavilion built', J("window.PHASE") == J("PHASES.length - 1"), str(J("window.PHASE")))
     zs = J("KERN.zones()")
     ck('zones registered (Schleusingen idle far away)', any(z['id'] == 'schleusingen' and z['state'] == 'idle' for z in zs), json.dumps(zs))
     ck.errors(errs)

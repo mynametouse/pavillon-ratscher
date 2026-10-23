@@ -597,11 +597,25 @@ for (const z of [2.3, zO + 2.25]) {
 }
 varOff();
 window.LIGHTS = [L1, L2, L3, L4, L5, T1, T2];
-for (const l of window.LIGHTS) tagPh(l);
+for (const l of window.LIGHTS) {
+  tagPh(l);
+  // phases before the built-ins switch a light off by its intensity, not by visibility (game/walkable.js setPhase): the number of lights
+  // – and so every shader program – stays the same; a light lent to another place (KERN.lights) shines there in any phase
+  let i0 = l.intensity;
+  Object.defineProperty(l, 'intensity', {
+    configurable: true,
+    enumerable: true,
+    get: () => (l.userData.off && !l.userData.lent ? 0 : i0),
+    set: v => {
+      i0 = v;
+    },
+  });
+}
 // Phase 2: the lights other places borrow while the pavilion does not need them (KERN.lights, core/kern.js) – the room of the old school on a
 // Friday evening, the fire on the field; no new lamps, so no newly compiled shaders. T1/T2 stay home (they move with the variant).
 KERN.lights.pool([L1, L4, L5, L3, L2], {
   home: () => {
+    if ((window.PHASE ?? 99) < PHN.builtins) return false; // nothing built yet: the lights are free
     const o = KERN.where();
     return !o || Math.hypot(o[0] - 2, o[1] - 2) < 60;
   },

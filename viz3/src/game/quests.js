@@ -474,7 +474,11 @@ export const QUESTS = (() => {
     if (Q.board.st === 'make') setSt('board', 'deliver');
   }
   const allDone = () => Object.values(Q).every(q => q.st === 'done');
-  const nextOpen = () => KEYS.find(k => Q[k].st !== 'done' && Q[k].st !== 'new') || KEYS.find(k => Q[k].st !== 'done');
+  // the stove of the pavilion exists only from the built-ins on (the start is phase 0, the old garage – boot/boot.js)
+  const avail = k => k !== 'fire' || PHASE >= PHN.builtins;
+  const nextOpen = () =>
+    KEYS.find(k => avail(k) && Q[k].st !== 'done' && Q[k].st !== 'new') ||
+    KEYS.find(k => avail(k) && Q[k].st !== 'done');
   let saveT = null;
   function save() {
     clearTimeout(saveT);
@@ -1548,7 +1552,7 @@ export const QUESTS = (() => {
     id: 'nachbarn',
     order: 10,
     list: () =>
-      KEYS.map(k => {
+      KEYS.filter(avail).map(k => {
         const o = objective(k) || ['', null],
           st = Q[k].st;
         return {
@@ -1641,7 +1645,7 @@ export const QUESTS = (() => {
     const key = keyOf(track);
     if (key.startsWith('nachbarn:')) {
       const k = key.slice(9);
-      if (!Q[k]) return null;
+      if (!Q[k] || !avail(k)) return null;
       const o = objective(k) || ['', null];
       return {
         key,

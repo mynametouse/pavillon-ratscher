@@ -353,7 +353,10 @@ export const KERN = (() => {
         const free = POOL.list.filter(l => !LENT.has(l));
         if (free.length >= B.n) {
           B.ls = free.slice(0, B.n);
-          for (const l of B.ls) LENT.set(l, keep(l));
+          for (const l of B.ls) {
+            LENT.set(l, keep(l));
+            if (l.userData) l.userData.lent = true;
+          }
           try {
             B.on && B.on(B.ls);
           } catch (e) {
@@ -364,6 +367,7 @@ export const KERN = (() => {
         for (const l of B.ls) {
           back(l, LENT.get(l));
           LENT.delete(l);
+          if (l.userData) l.userData.lent = false;
         }
         B.ls = null;
         gave = true;

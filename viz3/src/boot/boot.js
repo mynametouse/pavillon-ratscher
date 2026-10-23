@@ -92,7 +92,24 @@ requestAnimationFrame(frame);
       () => {}
     );
 }
+// Falko, 23.10.2026: the start shows today's garden – construction phase 0 'Bestand' (the old garage on its slab), not the pavilion.
+// The model is built and the GPU prepared with the whole pavilion (bootStep 'Bauphase'), so later phases need no new shaders.
+// ?bauphase=N or ?bauphase=fertig starts elsewhere. On the test server (localhost) the default is 'fertig', so every older test keeps its
+// built pavilion; test/kern2.py checks the real start with ?bauphase=0.
+let phase0Done = false;
+function startPhase() {
+  if (phase0Done) return;
+  phase0Done = true;
+  const q = QS.get('bauphase') ?? (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'fertig' : '0'),
+    n = q === 'fertig' ? PHASES.length - 1 : parseInt(q, 10);
+  try {
+    setPhase(Number.isFinite(n) ? n : 0);
+  } catch (e) {
+    LOADLOG.err('Bauphase: ' + ((e && e.message) || e));
+  }
+}
 const hideLoading = () => {
+  startPhase();
   const ld = $('loading');
   if (ld) ld.hidden = true;
   const li = $('loadinfo');

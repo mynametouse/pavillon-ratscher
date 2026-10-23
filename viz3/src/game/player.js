@@ -22,6 +22,7 @@ import {
   STANCES,
   STEP,
   surfaces,
+  setPhase,
   toLocal,
 } from './walkable.js';
 export const CAM3 = {
@@ -84,23 +85,25 @@ for (const [k, v] of Object.entries({
   eingang: { mode: 'walk', pos: [9.2, 3.7], z: 0, yaw: dirYaw(9.2, 3.7, 5.3, 2.7), pitch: 2, label: 'Vor der Tür' },
   bibliothek: {
     mode: 'walk',
+    pav: true,
     pos: [3.3, 3.08],
     z: G.zF,
     yaw: dirYaw(3.3, 3.0, 1.0, 1.4),
     pitch: -8,
     label: 'Bibliothek',
   },
-  treppe: { mode: 'walk', pos: [6.15, 3.12], z: G.zT0, yaw: -96, pitch: 6, label: 'Treppenturm' },
+  treppe: { mode: 'walk', pos: [6.15, 3.12], z: G.zT0, yaw: -96, pitch: 6, label: 'Treppenturm', pav: true },
   arbeitsraum: {
     mode: 'walk',
+    pav: true,
     pos: [3.3, 3.1],
     z: G.zO,
     yaw: dirYaw(3.3, 3.05, 0.6, 0.9),
     pitch: -6,
     label: 'Arbeitsraum',
   },
-  lounge: { mode: 'walk', pos: [1.9, 2.0], z: G.zO, yaw: -92, pitch: -5, label: 'Lounge' },
-  dach: { mode: 'walk', pos: [2.6, 2.0], z: G.zD, yaw: -95, pitch: -6, label: 'Dachterrasse' },
+  lounge: { mode: 'walk', pos: [1.9, 2.0], z: G.zO, yaw: -92, pitch: -5, label: 'Lounge', pav: true },
+  dach: { mode: 'walk', pos: [2.6, 2.0], z: G.zD, yaw: -95, pitch: -6, label: 'Dachterrasse', pav: true },
   wohnwagen: { mode: 'walk', pos: [-0.9, 16.5], z: 0, yaw: 182, pitch: -2, bld: 'carport', label: 'Wohnwagen' },
   holzhaus: { mode: 'walk', pos: [9.5, 1.4], z: 0, yaw: 154, pitch: -2, bld: 'holzhaus', label: 'Holzhaus' }, // door to the north (23.10.2026)
   bungalow: { mode: 'walk', pos: [8.6, 21.4], z: 0, yaw: 180, pitch: -2, bld: 'bungalow', label: 'Bungalow' },
@@ -207,6 +210,8 @@ window.inHouseNow = () =>
 export function go(name) {
   const s = SPOTS[name];
   if (window.PLAY && LATE.PLAY.seated()) LATE.PLAY.stand(true);
+  // a place inside the planned pavilion: show it built (the start is phase 0, the old garage – boot/boot.js)
+  if (s.pav && PHASE < LATE.PHASES.length - 1) setPhase(LATE.PHASES.length - 1);
   P.mode = s.mode;
   if (s.mode === 'orbit') {
     P.az = s.az;

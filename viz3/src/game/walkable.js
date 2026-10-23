@@ -131,8 +131,10 @@ export function setPhase(n) {
   SV.on.value = PHASE >= PHN.egOSB ? 1 : 0;
   SV.floor.value = PHASE >= PHN.windows ? (window.SVMAN?.floor ?? 0.15) : 0.55;
   if (window.giApply) giApply();
+  // the pavilion's lights stay visible in every phase (an invisible light changes the light count and recompiles every shader); before
+  // the built-ins they shine with 0 unless lent (pavilion/interior.js, KERN.lights)
   const L = window.LIGHTS || [];
-  for (const l of L) l.visible = PHASE >= PHN.builtins;
+  for (const l of L) l.userData.off = PHASE < PHN.builtins;
   if (P.mode === 'walk') {
     const fl = floorAt(P.x, P.y, P.feet + 3);
     if (P.feet > fl + 0.01) {
