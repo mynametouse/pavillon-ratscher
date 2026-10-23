@@ -719,6 +719,8 @@ STIL.house('wohnwagen', {
     if (it && it.root) {
       if (S.lanY === null) S.lanY = it.root.position.y;
       it.root.position.y = S.lanY - 0.26 * e;
+      // made up as a bed the lantern is put away (into the locker), with the dinette it is back on the table
+      it.root.visible = k < 0.98;
     }
     CV.bed = k > 0.5 ? 1 : 0;
   }
