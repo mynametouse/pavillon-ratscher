@@ -976,7 +976,6 @@ function build(L, h) {
         { rx: Math.sin(a) * 0.15, rz: -Math.cos(a) * 0.15, cast: false }
       );
     }
-    gB(L, wt.x0 + 0.02, wt.x1 - 0.04, -0.28, -0.02, FZ + 1.5, FZ + 1.52, MAT.blacksteel, { cast: false });
   }
   if (s.boho) {
     macrame(L, 'y', -0.05, xi1 - 0.04, FZ + 1.95, 0.42, 0.55);
