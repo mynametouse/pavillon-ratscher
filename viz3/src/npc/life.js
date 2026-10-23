@@ -802,9 +802,9 @@ export const LIFE = (() => {
       const dx = tx - MS.x,
         dy = ty - MS.y,
         d = Math.hypot(dx, dy);
-      if (d < 0.8) return;
-      const hold_ = w.talking || Math.hypot(P.x - MS.x, P.y - MS.y) < 5.5; // somebody close by: he stops
       const h = Math.atan2(dx, dy);
+      if (d < 0.8 || (d < 2.5 && Math.cos(h - MS.az) < 0.2)) return; // there, or passed it (no circling round the point)
+      const hold_ = w.talking || Math.hypot(P.x - MS.x, P.y - MS.y) < 5.5; // somebody close by: he stops
       if (!hold_) {
         MS.az = lerpAngle(MS.az, h, Math.min(1, DT * 1.5));
         const err = Math.abs(lerpAngle(0, h - MS.az, 1)),

@@ -961,7 +961,8 @@ function updateDrive(w, dt) {
     d.x += Math.sin(d.az) * mv;
     d.y += Math.cos(d.az) * mv;
     TRACTOR.roll(mv);
-    if (dist < (last ? 0.35 : 0.6 + (d.sp > 3 ? 0.8 : 0))) {
+    // the last point: close enough, or already beside/behind (no circling round it) – the parking rolls it into place
+    if (dist < (last ? 0.35 : 0.6 + (d.sp > 3 ? 0.8 : 0)) || (last && dist < 2 && Math.cos(h - d.az) < 0.3)) {
       d.i++;
       if (window.QUESTS && R === DRIVE_ROUTE) LATE.QUESTS.driveWp(d.i);
       if (d.i >= R.length) {

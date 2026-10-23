@@ -199,7 +199,8 @@ with lib.browser() as b:
         t2 = E("__N.until(() => !NPC.NPCS.hubert.drive, 260)")
         time.sleep(3.0)  # (the task ends on a timer after the ride)
         E("GAME.step(0.1)")
-        print('ride', t, t2, E("__N.st().diesel"), flush=True)
+        print('ride', t, t2, E("__N.st().diesel"), E("JSON.stringify(NPC.NPCS.hubert.drive && (({ i, phase, x, y, az, t }) => ({ i, phase, x, y, az, t }))(NPC.NPCS.hubert.drive))"),
+              E("(() => { const d = NPC.NPCS.hubert.drive; return d && window.VEH ? VEH.blocked(d.x, d.y, d.az, 3.2) : null; })()"), flush=True)
         ck('diesel task: Hubert drives the round and it ends (tractor moves)', t >= 0 and t2 >= 0 and E("__N.st().diesel") == 'done', E("__N.st().diesel"))
         ck('all old tasks still listed', all(k in E("__N.st()") for k in ('goat', 'fire', 'diesel', 'board')))
     ck.errors(errs)
