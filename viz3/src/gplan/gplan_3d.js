@@ -2,7 +2,7 @@
 // Nothing at start: the group, the kinds and the instanced meshes are made on the first sync. Trees are ez-tree kinds like the garden's
 // (garden/trees.js buildTreeKind: preset + seed + tint + mods) – the garden's own ash, oak, aspen and pine, plus a fruit tree (Oak Small,
 // spreading, small aspen leaves) and two bushes (presets Bush 1 and 2), built on first use from the bark and leaf pictures the garden has
-// loaded already; perennials and ground cover are mounds of leaf cards. Their materials are made the way the garden's are, so the shader
+// loaded already (perennials and ground cover: a low clump of the second bush). Their materials are made the way the garden's are, so the shader
 // programs are the ones the garden already has (tested: test/gartenplaner.py). Foliage, spring and autumn colour through the instance
 // colour (like the garden trees), bare in winter; blossom and fruit as small dots on the leaf cards of the crown, in the material of the
 // books in the bungalow (garden/garten_kit.js bookMesh: plain + instance colour). Trunks of trees from 5 years on stop the walker (COL).
@@ -22,8 +22,8 @@ export const GP3D = (() => {
     sc = new THREE.Vector3(),
     v3 = new THREE.Vector3(),
     col = new THREE.Color(),
-    ref = new THREE.Color('#6b8a3a'),
-    fresh = new THREE.Color(1.25, 1.35, 1.0);
+    tmp = new THREE.Color(),
+    ref = new THREE.Color('#6b8a3a');
   // own kinds, built on first use (the garden's kinds are taken as they are)
   const OWN = {
     obst: {
@@ -31,16 +31,30 @@ export const GP3D = (() => {
       preset: 'Oak Small',
       seed: 3131,
       tint: 0xb9cc8f,
+      // a fruit tree: short stem, spreading crown, many small leaves (the preset has 24 twigs with 14 big leaves each)
       mod: o => {
-        o.branch.angle['1'] = 58;
+        o.branch.angle['1'] = 60;
+        o.branch.children = { 0: 5, 1: 3, 2: 3 };
+        o.branch.start = { 1: 0.32, 2: 0.06, 3: 0.12 };
         o.leaves.type = 'aspen';
-        o.leaves.size = 0.95;
-        o.leaves.count = 22;
+        o.leaves.size = 1.25;
+        o.leaves.count = 30;
         o.bark.type = 'willow';
       },
     },
     busch1: { key: 'gp-busch1', preset: 'Bush 1', seed: 501, tint: 0xc5d29a },
     busch2: { key: 'gp-busch2', preset: 'Bush 2', seed: 77, tint: 0xc9d6a0 },
+    // perennials, ground cover, bulbs: a low, leafy clump
+    kraut: {
+      key: 'gp-kraut',
+      preset: 'Bush 2',
+      seed: 913,
+      tint: 0xc9d6a0,
+      mod: o => {
+        o.leaves.count = 14;
+        o.leaves.size = 2.8;
+      },
+    },
   };
   function kind(k) {
     if (S.kinds[k]) return S.kinds[k];
@@ -73,18 +87,6 @@ export const GP3D = (() => {
     if (!t) return M.isTree(p) ? 'tree' : p.schicht === 'strauch' ? 'bush' : 'herb';
     return 'herb';
   };
-  // a mound of leaf cards standing on the ground: unit size (1 wide, 1 high), from a tree's crown
-  function mound(K, keep, grow) {
-    const g = thinCards(K.lg, keep, grow);
-    g.computeBoundingBox();
-    const b = g.boundingBox,
-      c = b.getCenter(new THREE.Vector3()),
-      s = b.getSize(new THREE.Vector3());
-    g.translate(-c.x, -b.min.y, -c.z);
-    g.scale(1 / Math.max(s.x, s.z), 1 / s.y, 1 / Math.max(s.x, s.z));
-    g.computeBoundingSphere();
-    return g;
-  }
   // centres of (up to n) leaf cards of a leaf geometry, in its own space – where blossom and fruit sit
   function cards(geo, n = 360) {
     if (geo.userData.gpCards) return geo.userData.gpCards;
@@ -127,9 +129,6 @@ export const GP3D = (() => {
     S.G.name = 'gplan';
     S.G.userData.noMerge = true;
     scene.add(S.G);
-    S.herbGeo = mound(base, 0.4, 1.7);
-    S.leafMat = base.leaf;
-    S.depth = base.depth;
     S.dotMat = plain({ roughness: 0.7 });
     S.dotGeo = new THREE.IcosahedronGeometry(1, 0);
     return true;
@@ -149,22 +148,55 @@ export const GP3D = (() => {
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
     m.computeBoundingSphere();
   };
-  // instance colour that turns the leaf texture towards a target colour (the texture is roughly ref)
-  function tint(hex, k = 1) {
+  // mean colour of a kind's leaf picture times its material colour (linear) – what the instance colour multiplies
+  function avgOf(K, mat) {
+    if (K && K.gpAvg) return K.gpAvg;
+    const img = mat.map && mat.map.image;
+    if (!img || !img.width) return ref;
+    try {
+      const c = document.createElement('canvas');
+      c.width = c.height = 32;
+      const g = c.getContext('2d', { willReadFrequently: true });
+      g.drawImage(img, 0, 0, 32, 32);
+      const d = g.getImageData(0, 0, 32, 32).data;
+      let r = 0,
+        gg = 0,
+        b = 0,
+        n = 0;
+      for (let i = 0; i < d.length; i += 4)
+        if (d[i + 3] > 128) {
+          r += d[i];
+          gg += d[i + 1];
+          b += d[i + 2];
+          n++;
+        }
+      if (!n) return ref;
+      const a = new THREE.Color()
+        .setRGB(r / n / 255, gg / n / 255, b / n / 255, THREE.SRGBColorSpace)
+        .multiply(mat.color);
+      if (K) K.gpAvg = a;
+      return a;
+    } catch (e) {
+      return ref;
+    }
+  }
+  // instance colour that turns the leaf picture (mean avg) towards a target colour
+  function tint(hex, avg, k = 1) {
     col.set(hex);
     col.setRGB(
-      THREE.MathUtils.clamp(col.r / ref.r, 0.25, 4) * k,
-      THREE.MathUtils.clamp(col.g / ref.g, 0.25, 4) * k,
-      THREE.MathUtils.clamp(col.b / ref.b, 0.25, 4) * k
+      THREE.MathUtils.clamp(col.r / Math.max(0.01, avg.r), 0.3, 2.6) * k,
+      THREE.MathUtils.clamp(col.g / Math.max(0.01, avg.g), 0.3, 2.6) * k,
+      THREE.MathUtils.clamp(col.b / Math.max(0.01, avg.b), 0.3, 2.6) * k
     );
     return col;
   }
-  function leafColour(p, s, seed) {
+  // foliage of the month: the plant's own green, fresh light green while budding, its autumn colour
+  function leafColour(p, s, seed, avg) {
     const C = M.colours(p, s.month),
-      k = 0.9 + 0.16 * M.hash01(seed + 'c');
-    const c = tint(C.leaf, k);
-    if (s.leaf === 'austrieb') c.lerp(fresh, 0.4);
-    return c;
+      k = 0.92 + 0.14 * M.hash01(seed + 'c');
+    if (s.leaf === 'austrieb')
+      return tint('#' + tmp.set(C.leaf).lerp(new THREE.Color('#b9d97a'), 0.45).getHexString(), avg, k);
+    return tint(C.leaf, avg, k);
   }
   // blossom or fruit: n dots on leaf cards of the crown (deterministic), in world space through the plant's matrix
   function dotsOn(out, geo, mat, n, size, hex, seed) {
@@ -191,7 +223,6 @@ export const GP3D = (() => {
     S.G.visible = true;
     const month = (o && o.month) || 6;
     const byKind = {},
-      herbs = [],
       dots = [],
       cols = [];
     for (const e of list) {
@@ -201,12 +232,12 @@ export const GP3D = (() => {
         se = M.season(p, month),
         z0 = KERN.ground(e.x, e.y),
         sh = shapeOf(p);
+      // perennials that die back: gone in winter, low while budding
       if (sh === 'herb') {
         if (se.k <= 0) continue;
-        herbs.push({ e, h: s.h * (0.35 + 0.65 * se.k), w: s.w, z0, se });
-        continue;
+        s.h *= 0.35 + 0.65 * se.k;
       }
-      const k = kindOf(p);
+      const k = sh === 'herb' ? 'kraut' : kindOf(p);
       (byKind[k] = byKind[k] || []).push({ e, s, se, z0, sh, c: M.crown(p, s) });
       if (sh === 'tree' && e.age >= 5) cols.push([e.x, e.y, Math.max(0.08, M.crown(p, s).tr)]);
     }
@@ -227,8 +258,17 @@ export const GP3D = (() => {
         bark.setMatrixAt(i, m4);
         const C = M.colours(e.p, month),
           kk = se.k <= 0.01 ? 0 : 0.7 + 0.3 * se.k;
+        const small = sh === 'herb';
         if (se.bloom && C.bloom)
-          dotsOn(dots, K.gpLeaf, m4, Math.round(THREE.MathUtils.clamp(c.r * c.r * 22, 14, 170)), 0.04, C.bloom, e.seed);
+          dotsOn(
+            dots,
+            K.gpLeaf,
+            m4,
+            Math.round(THREE.MathUtils.clamp(c.r * c.r * (small ? 60 : 22), small ? 5 : 14, 170)),
+            small ? 0.025 : 0.04,
+            C.bloom,
+            e.seed
+          );
         if (se.fruit && C.fruit && (sh === 'bush' || e.age >= 2))
           dotsOn(
             dots,
@@ -241,28 +281,13 @@ export const GP3D = (() => {
           );
         if (kk < 1) m4.compose(V(e.x, e.y, z0), q, sc.set(sx * kk, sy * (kk ? 1 : 0), sx * kk));
         leaf.setMatrixAt(i, m4);
-        leaf.setColorAt(i, leafColour(e.p, se, e.seed));
+        leaf.setColorAt(i, leafColour(e.p, se, e.seed, avgOf(K, K.leaf)));
       });
       bark.count = leaf.count = L.length;
       done(bark);
       done(leaf);
       for (const x of L) x.sh === 'tree' ? nt++ : nb++;
     }
-    // perennials, ground cover: mounds of leaf cards
-    const hm = slot('herb', herbs.length, n => im(S.herbGeo, S.leafMat, n, true, S.depth));
-    herbs.forEach(({ e, h, w, z0, se }, i) => {
-      q.setFromAxisAngle(up, M.hash01(e.seed + 'r') * 6.283);
-      m4.compose(V(e.x, e.y, z0), q, sc.set(w, Math.max(0.05, h), w));
-      hm.setMatrixAt(i, m4);
-      hm.setColorAt(i, leafColour(e.p, se, e.seed));
-      const C = M.colours(e.p, month);
-      if (se.bloom && C.bloom)
-        dotsOn(dots, S.herbGeo, m4, Math.round(THREE.MathUtils.clamp(w * w * 40, 5, 40)), 0.025, C.bloom, e.seed);
-      if (se.fruit && C.fruit)
-        dotsOn(dots, S.herbGeo, m4, Math.round(THREE.MathUtils.clamp(w * w * 25, 4, 30)), 0.02, C.fruit, e.seed + 'f');
-    });
-    hm.count = herbs.length;
-    done(hm);
     // blossom and fruit (already in world space)
     const dm = slot('dots', dots.length, n => {
       const m = new THREE.InstancedMesh(S.dotGeo, S.dotMat, n);
@@ -281,7 +306,7 @@ export const GP3D = (() => {
     dm.count = dots.length;
     done(dm);
     setCols(cols);
-    S.stats = { trees: nt, bushes: nb + herbs.length, dots: dots.length, cols: cols.length };
+    S.stats = { trees: nt, bushes: nb, dots: dots.length, cols: cols.length };
     markDirty(true);
   }
   // trunks in the walker's collision grid: own entries of COL, reused on every change (other modules keep indices into COL, so

@@ -132,6 +132,13 @@ with lib.browser() as b:
         ck('the crowns grow with the age (plan view)', sizes[0] < sizes[5] < sizes[10] <= sizes[20], json.dumps(sizes))
         # 3D: stand south of the apple in the lawn, look at it (the planner closes when leaving the plan view; the plants stay)
         E("GAME.go('garten')")
+        # shader programs in the 3D garden: the same views without and with the planned plants (trees, bushes, perennials, blossom)
+        pv = []
+        for view in ("-3.5, -16.5, 1.7, 8, 4, 62", "5.2, -33.2, 1.7, 135, -6, 62"):
+            E(f"GPLAN.setShow(false); GPLAN.setAge(10); GAME.view({view}); GAME.step(0.2); GAME.shot()"); a = E("GAME.R.info.programs.length")
+            E(f"GPLAN.setShow(true); GAME.step(0.2); GAME.shot()"); b2 = E("GAME.R.info.programs.length")
+            pv.append((a, b2))
+        ck('3D garden: no new shader programs for the planned plants (same views without and with them)', all(b2 <= a for a, b2 in pv), str(pv))
         stats = {}
         for a in (0, 5, 10, 20):
             E(f"GPLAN.setAge({a}); GAME.view(-3.5, -16.5, 1.7, 8, 4, 62); GAME.step(0.2)")
