@@ -1,2 +1,5 @@
 # Driving out of the square (welt/fahrt.js): to the Markt of Schleusingen, west on the L 1625, the end of the map or Kloster Veßra
 fahrt
+# once on this branch: the zone and the vehicles stay green with the drive (not for the Prüfpaket: their own topics list them)
+schleusingen
+v16b:car,drive,crash,route

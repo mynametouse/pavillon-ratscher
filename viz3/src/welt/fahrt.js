@@ -214,21 +214,67 @@ export const FAHRT = (() => {
   );
   // the carving of the tile mesh (WELT pads): the carriageway on the profile with its crown, a flat apron beside it, beyond it the
   // terrain cut or filled with 1 : 2 slopes until it meets the ground (tools/welt/roads.py does the like in its detail block)
+  // every road near (x, y): per way its nearest segment – the distance to its axis and the profile height there (no bridges, tunnels)
+  const CAND = [];
+  function roadsAt(x, y, reach) {
+    CAND.length = 0;
+    const a = D.grid.get(Math.floor(x / CELL) * 100003 + Math.floor(y / CELL));
+    if (!a) return CAND;
+    for (const s of a) {
+      const w = D.ways[D.segW[s]];
+      if (w.fl & 3) continue;
+      const i = D.segI[s] * 3,
+        p = w.p,
+        ax = p[i],
+        ay = p[i + 1],
+        ex = p[i + 3] - ax,
+        ey = p[i + 4] - ay,
+        l2 = ex * ex + ey * ey || 1e-9,
+        t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / l2)),
+        d = Math.hypot(x - ax - ex * t, y - ay - ey * t);
+      if (d - w.hw > reach) continue;
+      const z = p[i + 2] + (p[i + 5] - p[i + 2]) * t;
+      let c = null;
+      for (const q of CAND)
+        if (q.w === w) {
+          c = q;
+          break;
+        }
+      if (!c) CAND.push({ w, d, z });
+      else if (d < c.d) {
+        c.d = d;
+        c.z = z;
+      }
+    }
+    return CAND;
+  }
+  // one road's carved height at distance d from its axis: the carriageway with its crown, a flat apron of 2.5 m beside it (pavement,
+  // verge), then slopes of 1 : 2 down or up to the terrain
+  function surfOf(c, raw) {
+    const w = c.w,
+      cr = paved(w) ? 0.025 : 0.04;
+    if (c.d <= w.hw) return c.z - cr * c.d;
+    const zs = c.z - cr * w.hw - 0.02 * Math.min(c.d - w.hw, 2.5);
+    if (c.d <= w.hw + 2.5) return zs;
+    const k = (c.d - w.hw - 2.5) / 2;
+    return Math.max(zs - k, Math.min(zs + k, raw));
+  }
+  // several roads (a junction, a corner between two streets): weighted by the distance to their edges, so that no step forms where
+  // the nearest road changes
   function carveZ(x, y, raw) {
     if (insideRB(x, y)) return raw;
-    const r = roadAt(x, y, 18, true);
-    if (!r) return raw;
-    // beside the carriageway a flat apron of 2.5 m (pavement, verge – a car cutting a corner at a junction stays on level ground),
-    // then slopes of 1 : 2 down or up to the terrain
-    const w = r.w,
-      sh = 2.5,
-      zc = r.z,
-      cr = paved(w) ? 0.025 : 0.04;
-    if (r.d <= w.hw) return zc - cr * r.d;
-    const zs = zc - cr * w.hw - 0.02 * Math.min(r.d - w.hw, sh);
-    if (r.d <= w.hw + sh) return zs;
-    const k = (r.d - w.hw - sh) / 2;
-    return Math.max(zs - k, Math.min(zs + k, raw));
+    const C = roadsAt(x, y, 18);
+    if (!C.length) return raw;
+    if (C.length === 1) return surfOf(C[0], raw);
+    let sw = 0,
+      sz = 0;
+    for (const c of C) {
+      const e = Math.max(0, c.d - c.w.hw) + 0.4,
+        wt = 1 / (e * e);
+      sw += wt;
+      sz += wt * surfOf(c, raw);
+    }
+    return sz / sw;
   }
   // place names: in a village its street (or its name), on a road its number or name and the nearest village
   const inPoly = (r, x, y) => {

@@ -103,10 +103,11 @@ def along(route, i0, dist):
 fetch_tiles()
 # a recorder in the page: per frame of the driven vehicle – vertical acceleration (from the vertical speed of the body), flights, the gap to
 # the drawn ground, the speed
-REC = """window._rec = { n: 0, az4: 0, az8: 0, azMax: 0, air: 0, gap: 0, gapAt: null, out: 0, outNoGround: 0, spd: [], last: null, t: 0 };
+REC = """window._rec = { n: 0, az4: 0, az8: 0, azMax: 0, air: 0, gap: 0, gapAt: null, out: 0, outNoGround: 0, spd: [], last: null, t: 0, bumps: [] };
 window.TICKS.push(dt => { const v = VEH.cur, R = window._rec; if (!v || !dt) return; const s = v.st; R.t += dt;
   const vz = s.air ? s.vz : s.vzLP; if (R.last !== null) { const a = Math.abs(vz - R.last) / dt; if (Math.abs(s.u) > 3) { R.n++; if (a > 4) R.az4++; if (a > 8) R.az8++;
-    if (a > R.azMax) { R.azMax = a; R.azAt = [+s.x.toFixed(1), +s.y.toFixed(1), +(s.u * 3.6).toFixed(0)]; } } } R.last = vz; if (s.air) R.air++;
+    if (a > R.azMax) { R.azMax = a; R.azAt = [+s.x.toFixed(1), +s.y.toFixed(1), +(s.u * 3.6).toFixed(0)]; }
+    if (a > 8) { const b = R.bumps, l = b[b.length - 1]; if (!l || Math.hypot(l[0] - s.x, l[1] - s.y) > 6) b.push([+s.x.toFixed(1), +s.y.toFixed(1), +(s.u * 3.6).toFixed(0), +a.toFixed(1)]); else if (a > l[3]) l[3] = +a.toFixed(1); } } } R.last = vz; if (s.air) R.air++;
   const B = RATSCHER.box, o = s.x < B[0] || s.x > B[2] || s.y < B[1] || s.y > B[3];
   if (o) { R.out++; const w = WELT.heightAt(s.x, s.y); if (w === undefined) R.outNoGround++; else if (!s.air) { const g = Math.abs(s.z - KERN.ground(s.x, s.y, s.z)); if (g > R.gap) { R.gap = g; R.gapAt = [+s.x.toFixed(1), +s.y.toFixed(1)]; } } }
   if (R.t > 0.5) { R.t = 0; R.spd.push([+s.x.toFixed(0), +s.y.toFixed(0), +(s.u * 3.6).toFixed(1)]); } });"""
@@ -164,10 +165,10 @@ with lib.browser() as b:
         E(f"VEH.place('car', {a[0]}, {a[1]}, Math.atan2({c[0] - a[0]}, {c[1] - a[1]}))")
 
     def stats():
-        return json.loads(E("JSON.stringify((() => { const R = window._rec; return { n: R.n, az4: R.az4, az8: R.az8, azMax: +R.azMax.toFixed(1), azAt: R.azAt, air: R.air, gap: +R.gap.toFixed(2), gapAt: R.gapAt, out: R.out, outNoGround: R.outNoGround }; })())"))
+        return json.loads(E("JSON.stringify((() => { const R = window._rec; return { n: R.n, az4: R.az4, az8: R.az8, azMax: +R.azMax.toFixed(1), azAt: R.azAt, air: R.air, gap: +R.gap.toFixed(2), gapAt: R.gapAt, out: R.out, outNoGround: R.outNoGround, bumps: R.bumps.slice().sort((a, b) => b[3] - a[3]).slice(0, 12) }; })())"))
 
     def reset_rec():
-        E("Object.assign(window._rec, { n: 0, az4: 0, az8: 0, azMax: 0, air: 0, gap: 0, gapAt: null, out: 0, outNoGround: 0, spd: [], last: null })")
+        E("Object.assign(window._rec, { n: 0, az4: 0, az8: 0, azMax: 0, air: 0, gap: 0, gapAt: null, out: 0, outNoGround: 0, spd: [], last: null, bumps: [] })")
 
     E("VEH.enter('car'); GAME.setView3(true)")
     E("for (let i = 0; i < 20; i++) GAME.step(0.025)")
@@ -180,7 +181,7 @@ with lib.browser() as b:
         i_sg = min(range(len(rm)), key=lambda i: math.dist(rm[i], (sg['x'], sg['y'])))
         i0 = along(rm, i_sg, -120)
         place_on(rm, i0)
-        E(f"window._fs = VEH.follow({json.dumps(rm[i0:])}, 22, {{ look: 14 }})")
+        E(f"window._fs = VEH.follow({json.dumps(rm[i0:])}, 16, {{ look: 12 }})")
         reset_rec()
         held = False
         caps = []
@@ -236,7 +237,7 @@ with lib.browser() as b:
         print('markt', T, 's', json.dumps(r), json.dumps(s), flush=True)
         ck('at the Markt of Schleusingen', math.dist((s['x'], s['y']), rm[-1]) < 12, f"{math.dist((s['x'], s['y']), rm[-1]):.1f} m from the end, {T} s")
         ck('on the ground all the way (no flights, no gap)', r['outNoGround'] == 0 and r['gap'] < 0.3 and r['air'] < 10, json.dumps(r))
-        ck('smooth: few hard bumps (> 8 m/s² vertical)', r['n'] > 0 and r['az8'] / max(1, r['n']) < 0.01, f"{r['az8']} of {r['n']} frames, max {r['azMax']} at {r['azAt']}")
+        ck('smooth: few hard bumps (> 8 m/s² vertical)', r['n'] > 0 and r['az8'] / max(1, r['n']) < 0.01, f"{r['az8']} of {r['n']} frames, max {r['azMax']} at {r['azAt']}; worst {r['bumps'][:8]}")
         ck('place-name sign Schleusingen on the way', 'Schleusingen' in signs, str(sorted(signs)))
         ck('place names on the way', any('Schleusingen' in p for p in places), str(sorted(p for p in places if p)[:14]))
         E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })")
@@ -303,7 +304,7 @@ with lib.browser() as b:
         print('west', T, 's', json.dumps(r), json.dumps(s), 'speeds', main[::6], 'memory', mem, flush=True)
         ck('speed holds on the L 1625 (median ≥ 70 km/h)', med >= 70, f'median {med} km/h over {len(main)} samples')
         ck('west: on the ground, no flights', r['outNoGround'] == 0 and r['gap'] < 0.3 and r['air'] < 10, json.dumps(r))
-        ck('west: few hard bumps', r['n'] > 0 and r['az8'] / max(1, r['n']) < 0.01, f"{r['az8']} of {r['n']} frames, max {r['azMax']} at {r['azAt']}")
+        ck('west: few hard bumps', r['n'] > 0 and r['az8'] / max(1, r['n']) < 0.01, f"{r['az8']} of {r['n']} frames, max {r['azMax']} at {r['azAt']}; worst {r['bumps'][:8]}")
         ck('names on the L 1625', any('L 1625' in p for p in places), str(sorted(p for p in places if p and 'L 1625' in p)))
         tiles = [m['tiles'] for m in mem]
         ck('tiles behind are freed (no growth along the drive)', not tiles or max(tiles) < 260, str(tiles))

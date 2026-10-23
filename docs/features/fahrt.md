@@ -30,6 +30,9 @@ schickt; unterwegs Schleusingen.
 - **Karte beim Fahren**: draußen die Straßen und die beiden Routen (Garten → Markt Schleusingen 3,7 km, Garten → Baumschule 10,8 km),
   unten das Ziel in Fahrtrichtung mit Entfernung.
 
+- **Szenario** `?szenario=fahrt` („Im Auto auf der Straße nach Schleusingen“): im Auto auf der L 3004, 160 m vor der Ortstafel von
+  Schleusingen. **Ereignis** `fahrt:ankunft` `{ ziel: 'markt' | 'baumschule', x, y }` beim Ankommen (`KERN.on`).
+
 ## Hinfahren
 Ins Auto (Menü „Zum Auto“), dann über den Ratschner Anger und den Geisenhöhner Weg auf den Flurweg; für Schleusingen nach Norden
 (Weißer Berg, Schützenstraße, Burgstraße zum Markt), für Kloster Veßra auf der L 1625 nach Westen, an Rappelsdorf und Zollbrück vorbei,
