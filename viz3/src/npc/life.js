@@ -983,7 +983,7 @@ export const LIFE = (() => {
     const a = { name: w.name, w, plan, home, cur: null, it: null, t0: 0, lock: false, forced: null };
     a.after = () => holdProp(w); // npc/npc_real.js calls fig.after(fig) after each pose update
     a.ctl = dt => {
-      if (w.drive || w.away) return false;
+      if (w.drive || w.away || a.forced === 'off') return false; // ('off': the plain walker of npc/npc.js – tests that pose him by hand)
       if ((w.talking && !w.seated && !w.mow) || w.shy > 0) {
         if (w.fig.pose && w.fig.pose.k !== 'carry') w.fig.pose = null; // he turns to the visitor (npc/npc.js); the work waits
         return false;
@@ -1227,6 +1227,10 @@ export const LIFE = (() => {
         w.y = TRACTOR_HOME.y - 1.2;
         w.fig.g.visible = true;
         w.place();
+      }
+      if (a.forced === 'off') {
+        if (a.it) stop(a);
+        continue;
       }
       if (a.cur && !a.lock && !w.drive) {
         const want = a.forced || a.plan(m, d),
