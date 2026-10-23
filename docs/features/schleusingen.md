@@ -15,6 +15,8 @@ und detailliert ausgearbeitet, anhand von echten Bildern“ – Grundlage für d
   der Altstadt und auf dem Markt, Platten auf Fußwegen. Modul `viz3/src/welt/welt.js` (`WELT`) – meldet sich bei `KERN` für Gelände, Boden
   und `free` (dort darf man laufen); `WELT.setPads` ebnet Flächen (Rathaus-Halle, Burghof), `WELT.setOverlay` legt die Straßen auf.
   Unter den Kacheln wird das grobe 120-m-Gelände abgesenkt; das 10-m-Gelände um Ratscher bleibt, die Kacheln gehen an seinem Rand hinein.
+  Der Markt ist eine glatte, leicht geneigte Ebene (an die Kachelhöhen angepasst, am Rand über 3 m eingeblendet) – das Oberflächenmodell
+  hatte dort Buckel bis 1,7 m; `WELT.setPads` nimmt dafür auch eine Höhenfunktion.
 - **Altstadt**: 789 Gebäude aus OpenStreetMap (`tools/welt/zone_schleusingen.py` → `viz3/extra/schleusingen/dist/schleusingen/stadt.json`,
   0,7 MB): Fassaden mit Traufe/Giebel, Dächer mit Überstand, Dachfarbe aus dem Luftbild, Brandwände ohne Fenster, Türen zur Straße, Gauben
   rund um den Markt, Bäume auf dem Markt. Gezeichnet mit den Fassaden- und Dach-Shadern des Dorfs (`world/village.js`) – keine neuen

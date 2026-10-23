@@ -238,9 +238,11 @@ export const WELT = (() => {
     }
     return c;
   };
-  function padZ(x, y) {
+  // z: a height, or a function (x, y, raw height) → height (a zone's own smoothing, e.g. a square as an inclined plane)
+  function padZ(x, y, raw) {
     for (const p of pads)
-      if (x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y)) return p.z;
+      if (x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y))
+        return typeof p.z === 'function' ? p.z(x, y, raw) : p.z;
     return undefined;
   }
   S.setPads = (id, list) => {
@@ -281,8 +283,9 @@ export const WELT = (() => {
         const E = t.e0 + (i / (NS - 1)) * s,
           N = t.n0 + (j / (NS - 1)) * s,
           [x, y] = toM(E, N),
-          pz = pads.length ? padZ(x, y) : undefined,
-          z = pz !== undefined ? pz : innerFix(x, y, t.h[j * st * n + i * st], cell),
+          raw = innerFix(x, y, t.h[j * st * n + i * st], cell),
+          pz = pads.length ? padZ(x, y, raw) : undefined,
+          z = pz !== undefined ? pz : raw,
           k = j * NS + i;
         hz[k] = z;
         pos[k * 3] = x;
