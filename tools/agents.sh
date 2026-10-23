@@ -37,10 +37,19 @@ if [ "$cmd" = worktree ]; then
   else
     git worktree add -q -b "feat/$t" "$d" origin/src || exit 1
   fi
-  # the main checkout's node_modules (built once by tools/check.sh / npm ci) and the built assets (fast build needs them)
-  [ -d "$ROOT/viz3/node_modules" ] && ln -sfn "$ROOT/viz3/node_modules" "$d/viz3/node_modules"
-  [ -d "$ROOT/tools/check/node_modules" ] && ln -sfn "$ROOT/tools/check/node_modules" "$d/tools/check/node_modules"
-  [ -d "$ROOT/viz3/dist" ] && cp -a "$ROOT/viz3/dist" "$d/viz3/dist"
+  # node_modules (built once by tools/check.sh / npm ci) and the built assets (the fast build needs them) from the first worktree that has
+  # them – usually the Kern-Chat's own
+  SRCWT=""
+  for w in $(git worktree list --porcelain | sed -n 's/^worktree //p'); do
+    [ -d "$w/viz3/node_modules" ] && [ ! -L "$w/viz3/node_modules" ] && [ -d "$w/viz3/dist" ] && { SRCWT=$w; break; }
+  done
+  if [ -n "$SRCWT" ]; then
+    ln -sfn "$SRCWT/viz3/node_modules" "$d/viz3/node_modules"
+    [ -d "$SRCWT/tools/check/node_modules" ] && ln -sfn "$SRCWT/tools/check/node_modules" "$d/tools/check/node_modules"
+    cp -a "$SRCWT/viz3/dist" "$d/viz3/dist"
+  else
+    echo "no worktree with viz3/node_modules and viz3/dist – run bash tools/bootstrap.sh in one first"
+  fi
   echo "ready: $d on feat/$t ($(git -C "$d" log --oneline -1))"
   exit 0
 fi
