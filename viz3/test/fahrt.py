@@ -310,8 +310,26 @@ with lib.browser() as b:
         ck('tiles behind are freed (no growth along the drive)', not tiles or max(tiles) < 260, str(tiles))
         if fs['done']:
             pk = DATA['park']['baumschule']
-            ck('at the Baumschule Kammbach', math.dist((s['x'], s['y']), (pk[0], pk[1])) < 20, json.dumps(s))
-            shot('i_baumschule')
+            ck('at the gate of the Baumschule Kammbach (Schulstraße)', math.dist((s['x'], s['y']), (pk[0], pk[1])) < 12, json.dumps(s))
+            shot('i_baumschule_tor')
+            # through the gate onto the nursery's parking (welt/vessra.js), slowly
+            B = json.loads(E("JSON.stringify(window.VESSRA && VESSRA.baumschule ? { e: VESSRA.baumschule.eingang, p: VESSRA.baumschule.parkplatz } : null)"))
+            if B:
+                e, p2 = B['e'], B['p']
+                E(f"window._fs = VEH.follow([[VEH.cur.st.x, VEH.cur.st.y], [{e['x']}, {e['y']}], [{p2['x']}, {p2['y']}]], 2.5, {{ look: 4 }})")
+                for _ in range(120):
+                    chunk(0.5)
+                    if json.loads(E("JSON.stringify(window._fs)"))['done']:
+                        break
+                E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })")
+                chunk(1.5)
+                E("VEH.auto = null")
+                chunk(1)
+                s = st()
+                ck('parked on the nursery parking', math.dist((s['x'], s['y']), (p2['x'], p2['y'])) < 4 and abs(s['kmh']) < 1,
+                   f"{math.dist((s['x'], s['y']), (p2['x'], p2['y'])):.1f} m from the space, {sorted(msgs)}")
+                ck('the word on arrival', any('Baumschule Kammbach' in m for m in msgs), str(sorted(msgs)))
+                shot('i_baumschule_parkplatz')
         else:
             ck('the end of the map: held at the edge of the tiles, with a word', s['x'] < -4300 and abs(s['kmh']) < 3 and any('endet' in m for m in msgs),
                f"x {s['x']}, {s['kmh']} km/h, {sorted(msgs)}")

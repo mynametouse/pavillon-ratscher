@@ -6,7 +6,8 @@ schickt; unterwegs Schleusingen.
 
 ## Was es gibt
 - **Fahren über den Rand des 2,4-km-Quadrats**: Auto und Traktor fahren überall weiter, wo die Welt-Kacheln (`welt/welt.js`) Boden haben –
-  bis Schleusingen, Geisenhöhn, Rappelsdorf (Block B, 9,6 × 9,6 km), mit den Kacheln von `feat/vessra` weiter bis Kloster Veßra.
+  bis Schleusingen, Geisenhöhn, Rappelsdorf (Block B, 9,6 × 9,6 km) und mit dem Kachel-Satz `zonen/vessra/` (`WELT.addSet`) auf der L 1625
+  weiter bis Kloster Veßra (Block Veßra, 8,0 × 6,4 km).
 - **Nichts beim Start**: `welt/fahrt.js` (`FAHRT`) wacht erst auf, wenn ein gefahrenes Fahrzeug auf den Rand zufährt (geradeaus vor ihm
   liegt der Rand näher als 350 m), 60 m davor ist oder man draußen ist; dann holt es die Straßendaten (`fahrt/strassen.json`, 290 kB) und
   bittet `WELT` um Kacheln – um einen Punkt **vor** dem Fahrzeug (bis 110 m, je nach Tempo), damit der Boden vor den Rädern da ist;
@@ -22,7 +23,9 @@ schickt; unterwegs Schleusingen.
   nahe dem Fahrzeug Asphalt statt der Pflastersteine, die der Kachel-Shader sonst aus grauen Flächen macht (`WELT.setOverlay`, solange
   keine Zone ihre Straßen auflegt); Brücken mit Fahrbahnplatte und Geländer (die Geländer halten die Räder auf der Brücke, unten fährt
   man durch); Wände der Zonen (Schleusingen) halten Fahrzeuge auf (`KERN.pushOut`).
-- **Ankommen**: am Markt „Markt Schleusingen.“, an der Baumschule ein Parkschild und „Baumschule Kammbach – hier parken.“
+- **Ankommen**: am Markt „Markt Schleusingen.“; die Route nach Kloster Veßra endet vor dem Tor der Baumschule an der Schulstraße
+  (Parkschild), durchs Tor geht es auf die Parkplätze im Verkaufshof (`welt/vessra.js`: `VESSRA.baumschule.parkplatz`) – „Baumschule
+  Kammbach – hier parken.“
 - **Ortsnamen** im HUD: „L 1625 · bei Rappelsdorf“, „Burgstraße, Schleusingen“, „Feldflur bei …“ (`KERN.place`).
 - **Ortstafeln** (gelb, schwarzer Rand) an den Ortseingängen: vorn Name und Gemeinde („Stadt Schleusingen“) bzw. Landkreis, hinten der
   nächste Ort und der durchgestrichene Name; wo OSM sie kennt, an ihrem Ort, sonst am Rand der Bebauung. **Wegweiser** an den Kreuzungen

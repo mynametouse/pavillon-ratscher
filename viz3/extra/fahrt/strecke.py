@@ -36,6 +36,7 @@ ROOT_E0, ROOT_N0, ROOT = 420700.0, 5390800.0, 409600.0
 GARDEN = (7.5, 31.2)        # the car's place in front of the garden (first point of the route to the Klinge)
 MARKT = (-1084.7, 1241.9)   # welt/schleusingen.js
 NURSERY = 'Baumschule Kammbach'
+NURSERY_GATE = (-8863.3, -171.3)   # welt/vessra.js: in front of the gate on the Schulstraße
 KINDS = ['motorway', 'main', 'county', 'street', 'lane', 'service', 'track', 'path', 'foot']
 SURF = ['asphalt', 'concrete', 'paving', 'gravel', 'ground', 'grass']
 # second line of the place-name sign: the municipality of an Ortsteil (OSM is_in / boundaries), else the district
@@ -463,15 +464,14 @@ def main():
             p.append(prev[p[-1]][0])
         return p[::-1]
     # the nursery: its landuse polygon, the parking place on the street beside it
-    nur = next((refs for refs, tg in ways_osm.values() if tg.get('name') == NURSERY), None)
-    NP = np.array([M[r] for r in nur]) if nur else np.array([[-8930.0, -170.0]])
-    nc = NP.mean(0)
+    # the nursery's gate on the Schulstraße (welt/vessra.js builds the yard behind it: KERN.spot 'baumschule')
+    nc = np.array(NURSERY_GATE)
     s0 = nearest(*GARDEN)
     dist, prev = dijkstra(s0)
     routes = {}
     for key, (x, y) in {'markt': MARKT, 'baumschule': tuple(nc)}.items():
         # the goal: a reachable node near the target (the Markt itself is a one-way loop)
-        cand = sorted((k for k in dist if (M[k][0] - x) ** 2 + (M[k][1] - y) ** 2 < 120 ** 2), key=lambda k: math.dist(M[k], (x, y)))
+        cand = sorted((k for k in dist if (M[k][0] - x) ** 2 + (M[k][1] - y) ** 2 < 120 ** 2 and k in Gr), key=lambda k: math.dist(M[k], (x, y)))
         g = cand[0]
         p = path(prev, s0, g)
         pts = np.array([M[k] for k in p])
