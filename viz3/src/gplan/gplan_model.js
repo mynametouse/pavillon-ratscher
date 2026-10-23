@@ -277,11 +277,24 @@ export const GPMODEL = (() => {
     return 1;
   }
   // the harvest of one plant at an age (kg, 0.1): the middle of kg_jahr, growing in from the bearing age to the final size, ±15 % by seed
+  // kg a grown plant bears in a year: from the data, else a rough value by kind and form (the data leave kg_jahr empty for most plants)
+  const KG_FORM = { hochstamm: 50, halbstamm: 35, busch: 18, spindel: 12 };
+  function kgFull(p) {
+    const e = p.ernte || {},
+      t = (p.darstellung && p.darstellung.typ) || '';
+    if (Array.isArray(e.kg_jahr)) return (e.kg_jahr[0] + e.kg_jahr[1]) / 2;
+    if (t === 'obstbaum') return KG_FORM[p.form] || 20;
+    if (t === 'laubbaum' || t === 'nadelbaum') return 20;
+    if (t === 'kletter') return 6;
+    if (t === 'strauch') return isTree(p) ? 6 : 3;
+    if (p.schicht === 'kraut') return 1.5;
+    return 0.3;
+  }
   function harvestKg(p, age, seed) {
     if (!p.ernte) return 0;
     const b = bearingAge(p);
     if (age < b) return 0;
-    const kg = p.ernte.kg_jahr ? (p.ernte.kg_jahr[0] + p.ernte.kg_jahr[1]) / 2 : 0.3;
+    const kg = kgFull(p);
     const T = Math.max(b + 1, p.jahre_bis_endgroesse || 10),
       ramp = clamp((age - b + 1) / (T - b + 1), 0.2, 1),
       v = 0.85 + 0.3 * hash01(String(seed) + ':kg');
@@ -562,6 +575,7 @@ export const GPMODEL = (() => {
     thirst,
     bearingAge,
     harvestKg,
+    kgFull,
     careOf,
     CARE,
     addHarvest,

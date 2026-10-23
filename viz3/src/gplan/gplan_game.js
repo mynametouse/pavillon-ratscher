@@ -16,14 +16,14 @@ import { GP3D } from './gplan_3d.js';
 import { GPLAN } from './gplan.js';
 export const GPGAME = (() => {
   const REACH = 2; // m from the figure to the plant
-  const S = { frame: 0, f: -1, cur: null, lock: null, ringKey: '', acc: 0 };
+  const S = { frame: 0, f: -1, cur: null, lock: null, ringKey: null, acc: 0 };
   // the containers of a plant that can go into this hole: in the hand, or set down within 3 m
   function source(it) {
     if (GPLAN.frei) return 'vorrat';
     const K = GPLAN.state.kuebel;
     const k =
       K.find(c => c.id === it.id && c.loc === 'hand') ||
-      K.find(c => c.id === it.id && c.loc === 'boden' && Math.hypot(c.x - it.x, c.y - it.y) < 3);
+      K.find(c => c.id === it.id && (c.loc === 'boden' || c.loc === 'tor') && Math.hypot(c.x - it.x, c.y - it.y) < 3);
     return k || null;
   }
   // what comes next at a plan item: a planting step or the most urgent care
@@ -74,7 +74,7 @@ export const GPGAME = (() => {
     if (t.kind === 'step') {
       if (t.k === 'pflanzen') {
         const src = source(t.it);
-        if (!src) return null;
+        if (!src) return M.STEP.pflanzen.label + ' – erst ' + name + ' herbringen';
         return M.STEP.pflanzen.label + ' – ' + name + (src === 'vorrat' ? ' (aus dem Vorrat)' : '');
       }
       return M.STEP[t.k].label + ' – ' + name;
@@ -105,7 +105,14 @@ export const GPGAME = (() => {
       if (L[it.sch || 0] !== t.k) return false;
       if (t.k === 'pflanzen') {
         const src = source(it);
-        if (!src) return false;
+        if (!src) {
+          toast(
+            name +
+              ' fehlt noch: in der Baumschule Kammbach kaufen (Einkaufsliste im Planer) und zum Pflanzloch tragen.',
+            4200
+          );
+          return false;
+        }
         // a bought container goes into the hole
         if (src !== 'vorrat') ST.kuebel.splice(ST.kuebel.indexOf(src), 1);
       }
@@ -140,7 +147,7 @@ export const GPGAME = (() => {
     }
     GPLAN.changed({ game: true });
     S.f = -1;
-    S.ringKey = '';
+    S.ringKey = null;
     return true;
   }
   KERN.act({
@@ -157,7 +164,7 @@ export const GPGAME = (() => {
     },
     hold: () => {
       const t = cur();
-      return t ? info(t).dur : 0;
+      return t && !(t.k === 'pflanzen' && !source(t.it)) ? info(t).dur : 0;
     },
     anim3: () => {
       const t = S.lock || cur();
@@ -179,7 +186,7 @@ export const GPGAME = (() => {
   function rings() {
     if (!GPLAN.ready || P.mode !== 'walk' || GPLAN.onSite()) {
       if (S.ringKey) {
-        S.ringKey = '';
+        S.ringKey = null;
         if (!GPLAN.onSite()) GP3D.marks([]);
       }
       return;

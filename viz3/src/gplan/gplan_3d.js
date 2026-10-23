@@ -21,6 +21,9 @@ export const GP3D = (() => {
   const m4 = new THREE.Matrix4(),
     q = new THREE.Quaternion(),
     up = new THREE.Vector3(0, 1, 0),
+    xAxis = new THREE.Vector3(1, 0, 0),
+    q2 = new THREE.Quaternion(),
+    v4 = new THREE.Vector3(),
     sc = new THREE.Vector3(),
     v3 = new THREE.Vector3(),
     col = new THREE.Color(),
@@ -334,8 +337,8 @@ export const GP3D = (() => {
     return { d: 0.13, h: 0.11 };
   }
   const PART = {
-    hole: '#2b1f16',
-    heap: '#5b4331',
+    hole: '#21170f',
+    heap: '#4a3726',
     korb: '#9aa1a3',
     disc: '#4a3626',
     mulch: '#7a5a3a',
@@ -397,9 +400,7 @@ export const GP3D = (() => {
     });
     K.count = sticks.length;
     done(K);
-    const T = partMesh('part:pot', potList.length, () =>
-      new THREE.CylinderGeometry(0.5, 0.38, 1, 12).translate(0, 0.5, 0)
-    );
+    const T = partMesh('part:pot', potList.length, potGeo);
     potList.forEach(([x, y, z, pot], i) => {
       m4.compose(V(x, y, z), q.identity(), sc.set(pot.d, pot.h, pot.d));
       T.setMatrixAt(i, m4);
@@ -461,8 +462,127 @@ export const GP3D = (() => {
     S.ncol = list.length;
     rebuildGrids();
   }
+  // ---------------- plants in containers as sets hung on something: the world (the nursery's beds, the counter, the garden gate, set
+  // down), the car's load space, the trailer, the hands. Positions in the parent's frame (V: x right/east, y ahead/north, z up); a set is
+  // made anew only when it changes – a moving parent carries it along. list: [{ p, x, y, z (the pot's foot), seed, tilt (rad: lying,
+  // the crown ahead), tag (a white label in the pot) }] ----------------
+  const SETS = {};
+  function potSet(name, parent, list, month = 6) {
+    let T = SETS[name];
+    if (!list.length || !parent) {
+      if (T && T.G.visible) {
+        T.G.visible = false;
+        markDirty(true);
+      }
+      return 0;
+    }
+    if (!build()) return 0;
+    if (!T) {
+      T = SETS[name] = { G: new THREE.Group(), m: {} };
+      T.G.name = 'gplan-' + name;
+      T.G.userData.noMerge = true;
+    }
+    if (T.G.parent !== parent) parent.add(T.G);
+    T.G.visible = true;
+    const get = (key, n, geo, mat, colour, depth, shadow) => {
+      const cur = T.m[key];
+      if (cur && cur.instanceMatrix.count >= n) return cur;
+      if (cur) {
+        T.G.remove(cur);
+        cur.dispose();
+      }
+      const m = new THREE.InstancedMesh(geo, mat, Math.max(4, n * 2));
+      m.count = 0;
+      if (colour) m.setColorAt(0, col.setRGB(1, 1, 1));
+      m.castShadow = shadow;
+      m.receiveShadow = true;
+      m.userData.noMerge = true;
+      if (depth) m.customDepthMaterial = depth;
+      T.G.add(m);
+      return (T.m[key] = m);
+    };
+    const byKind = {},
+      pots = [],
+      tags = [];
+    for (const c of list) {
+      const sh = shapeOf(c.p),
+        k = sh === 'herb' ? 'kraut' : kindOf(c.p),
+        pot = potSize(c.p),
+        t = c.tilt || 0;
+      // the pot: upright, or on its side with the crown ahead (raised by half its width)
+      q.setFromAxisAngle(xAxis, -t);
+      const z = c.z + (t ? (pot.d / 2) * Math.sin(t) : 0);
+      m4.compose(V(c.x, c.y, z), q, sc.set(pot.d, pot.h, pot.d));
+      pots.push(m4.clone());
+      v4.set(0, pot.h * 0.92, 0).applyQuaternion(q);
+      const base = V(c.x, c.y, z).add(v4);
+      (byKind[k] = byKind[k] || []).push({ c, sh, base, qt: q.clone() });
+      if (c.tag) {
+        v4.set(pot.d * 0.36, pot.h + 0.06, 0).applyQuaternion(q);
+        m4.compose(V(c.x, c.y, z).add(v4), q, sc.set(0.05, 0.085, 0.006));
+        tags.push(m4.clone());
+      }
+    }
+    const kinds = new Set([
+      ...Object.keys(byKind),
+      ...Object.keys(T.m)
+        .filter(x => x.endsWith(':b'))
+        .map(x => x.slice(0, -2)),
+    ]);
+    for (const k of kinds) {
+      const L = byKind[k] || [],
+        K = kind(k);
+      if (!K) continue;
+      const bark = get(k + ':b', L.length, K.bg, K.bark, false, null, true),
+        leaf = get(k + ':l', L.length, K.gpLeaf, K.leaf, true, K.depth, true);
+      L.forEach(({ c, base, qt }, i) => {
+        const s = M.sizeAt(c.p, 0, c.seed),
+          se = M.season(c.p, month),
+          climb = c.p.darstellung && c.p.darstellung.typ === 'kletter',
+          sy = s.h / K.H,
+          sx = climb
+            ? THREE.MathUtils.clamp((s.w * 0.22) / K.R, sy * 0.25, sy * 0.6)
+            : THREE.MathUtils.clamp(s.w / 2 / K.R, sy * 0.5, sy * 1.8),
+          kk = se.k <= 0.01 ? 0 : 0.7 + 0.3 * se.k;
+        q2.setFromAxisAngle(up, M.hash01(c.seed + 'r') * 6.283);
+        q.copy(qt).multiply(q2);
+        m4.compose(base, q, sc.set(sx, sy, sx));
+        bark.setMatrixAt(i, m4);
+        if (kk < 1) m4.compose(base, q, sc.set(sx * kk, sy * (kk ? 1 : 0), sx * kk));
+        leaf.setMatrixAt(i, m4);
+        leaf.setColorAt(i, leafColour(c.p, se, c.seed, avgOf(K, K.leaf)));
+      });
+      bark.count = leaf.count = L.length;
+      done(bark);
+      done(leaf);
+    }
+    const pm = get('pot', pots.length, potGeo(), S.dotMat, true, null, true);
+    pots.forEach((m, i) => {
+      pm.setMatrixAt(i, m);
+      pm.setColorAt(i, col.set(PART.pot));
+    });
+    pm.count = pots.length;
+    done(pm);
+    const tm = get('tag', tags.length, tagGeo(), S.dotMat, true, null, false);
+    tags.forEach((m, i) => {
+      tm.setMatrixAt(i, m);
+      tm.setColorAt(i, col.set('#f2f1ea'));
+    });
+    tm.count = tags.length;
+    done(tm);
+    markDirty(true);
+    return list.length;
+  }
+  let PG = null,
+    TG = null;
+  const potGeo = () => PG || (PG = new THREE.CylinderGeometry(0.5, 0.38, 1, 12).translate(0, 0.5, 0)),
+    tagGeo = () => TG || (TG = new THREE.BoxGeometry(1, 1, 1));
   return {
     sync,
+    potSet,
+    potSize,
+    sets: () =>
+      Object.fromEntries(Object.entries(SETS).map(([k, T]) => [k, T.G.visible && T.m.pot ? T.m.pot.count : 0])),
     marks,
     get nMarks() {
       return nMark;

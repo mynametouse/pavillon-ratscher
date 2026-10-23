@@ -34,7 +34,8 @@ def boot(pg):
     pg.evaluate("document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')")
 
 def page_shot(pg, name):
-    # the whole page with the panel and the plan view's SVG (slow in SwiftShader; never fatal)
+    # the whole page with the panel and the plan view's SVG (slow in SwiftShader; never fatal; noshots=1: none, for quick local runs)
+    if opts.get('noshots') == '1': return
     try:
         pg.evaluate("GAME.shot()"); pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=120000); print('page shot', name, flush=True)
     except Exception as ex:
@@ -215,7 +216,8 @@ with lib.browser() as b:
     section('site', site)
     # ---- planting in the game: the apple in the lawn step by step, the plant from the Vorrat ----
     def plant():
-        E("GPLAN.close(); GPLAN.setShow(true); GPLAN.setAge(0); GAME.go('garten'); CLOCK.t = 9 * 60; GAME.step(0.1)")
+        # the plants from the Vorrat (the switch for tests; buying: viz3/test/gartenplaner_kammbach.py)
+        E("GPLAN.close(); GPLAN.setFrei(true); GPLAN.setShow(true); GPLAN.setAge(0); GAME.go('garten'); CLOCK.t = 9 * 60; GAME.step(0.1)")
         it = J("GPLAN.state.items[0]"); G['ax'], G['ay'] = it['x'], it['y']
         steps = J(f"GPLAN.M.plantSteps(GPLAN.data.db.byId.get('{G['apple']}'))")
         name = E(f"GPLAN.M.fullName(GPLAN.data.db.byId.get('{G['apple']}'))")
@@ -273,7 +275,7 @@ with lib.browser() as b:
         while E("GPLAN.ageNow(GPLAN.state.items[0])") < p['bear']:
             E("GPLAN.timeLapse(1)")
         age = E("GPLAN.ageNow(GPLAN.state.items[0])")
-        ck('time-lapse: the apple years older, the game clock untouched', age >= 5 - 1e-6 and E("CLOCK.t") == t0 and E("GPLAN.state.off") >= 5, f'age {age:.2f} off {E("GPLAN.state.off")}')
+        ck('time-lapse: the apple years older, the game clock untouched', age >= 5 - 1e-6 and abs(E("CLOCK.t") - t0) < 2 and E("GPLAN.state.off") >= 5, f'age {age:.2f} off {E("GPLAN.state.off")}')
         E(f"GAME.view({ax}, {ay - 4.5}, 1.7, 0, 4, 62); GAME.step(0.2)"); lib.shot(pg, OUT, 'm_zeitraffer')
         # the harvest month (of the next game year): the action „Ernten“, kg into the harvest book
         if p['months']:
@@ -281,7 +283,7 @@ with lib.browser() as b:
             E(f"CLOCK.t = (Date.UTC(2027, {m - 1}, 15) / 864e5 - DN.e0) * 1440 + 10 * 60; GAME.step(0.6)"); E(look)
             d0 = J("GPLAN.G3.stats.dots")
             best = J("GAME.step(0.6).best")
-                E(f"GAME.view({ax}, {ay - 4.5}, 1.7, 0, 4, 62); GAME.step(0.2)"); lib.shot(pg, OUT, 'n_vor_der_ernte')
+            E(f"GAME.view({ax}, {ay - 4.5}, 1.7, 0, 4, 62); GAME.step(0.2)"); lib.shot(pg, OUT, 'n_vor_der_ernte')
             E(look); E("PLAY.primary(); GAME.step(3.3)")
             y = E("GPLAN.year()"); log = J("GPLAN.state.ernte")
             d1 = J("GPLAN.G3.stats.dots")

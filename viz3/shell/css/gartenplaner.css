@@ -1,6 +1,6 @@
 /* the garden planner (feat/gartenplaner, gplan/gplan.js): the panel #gplan beside the plan view (a sheet at the bottom on a phone held
    upright, at the top when walking on site), its tabs, plant list, warnings, lists; the crowns, rings and shadows in the plan view's SVG */
-#gplan{position:absolute;z-index:5;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(360px,calc(100% - 24px));max-height:calc(100% - 128px);display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);font:400 13px/1.45 var(--f-body);overflow:hidden}
+#gplan{position:absolute;z-index:5;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(380px,calc(100% - 24px));max-height:calc(100% - 128px);display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);font:400 13px/1.45 var(--f-body);overflow:hidden}
 #gplan[hidden]{display:none}
 #gplan>*{flex:none}
 #gplan header{display:flex;align-items:center;gap:6px;padding:10px 10px 6px 14px}
@@ -19,8 +19,8 @@
 #gplan .gp-seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 #gplan .gp-show{margin-left:auto;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;font:500 12px/1 var(--f-body);padding:7px 10px;cursor:pointer}
 #gplan .gp-show[aria-pressed="true"]{color:var(--ink);border-color:var(--larch)}
-#gplan .gp-tabs{display:flex;gap:2px;padding:6px 8px 0;border-bottom:1px solid var(--line);overflow-x:auto}
-#gplan .gp-tabs button{border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:500 12.5px/1 var(--f-body);padding:9px 8px;cursor:pointer;white-space:nowrap}
+#gplan .gp-tabs{display:flex;gap:0;padding:6px 6px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+#gplan .gp-tabs button{border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:500 12.5px/1 var(--f-body);padding:9px 6px;cursor:pointer;white-space:nowrap}
 #gplan .gp-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--larch)}
 #gplan .gp-tabs b{margin-left:4px;font:700 10.5px/1 var(--f-mono);background:var(--plate);border-radius:999px;padding:2px 5px}
 #gplan .gp-tabs b:empty{display:none}
@@ -114,3 +114,16 @@ body[data-gplan="1"] #topsvg .bound{stroke:#ffe9b8;stroke-width:2.4;stroke-dasha
 #gplan .gp-body h4{margin:14px 0 6px;font:600 12px/1.2 var(--f-body);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 #gplan .gp-gy{margin:6px 0}
 #gplan .gp-stock,#gplan .gp-harvest{margin:0;padding-left:18px;font-size:13px;line-height:1.5}
+#gpbon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(340px,calc(100% - 32px));max-height:calc(100% - 32px);overflow:auto;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.35);padding:14px}
+#gpbon[hidden]{display:none}
+#gpbon .gb-paper{background:#fbfaf4;color:#222;border-radius:6px;padding:14px 16px;font:13px/1.45 var(--f-mono);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+#gpbon .gb-paper h3{margin:0;font:700 15px/1.2 var(--f-body);text-align:center}
+#gpbon .gb-paper>p{margin:2px 0;text-align:center}
+#gpbon .gb-d{border-bottom:1px dashed #999;padding-bottom:8px;margin-bottom:8px!important}
+#gpbon ul{list-style:none;margin:0;padding:0}
+#gpbon li{padding:2px 0}
+#gpbon .gb-n{border-top:1px dashed #999;margin-top:8px!important;padding-top:6px;font-weight:700}
+#gpbon .gb-t{font-style:italic}
+#gpbon .gb-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+#gpbon .gb-row button{flex:1 1 auto;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 13px/1.2 var(--f-body);padding:10px 12px;cursor:pointer}
+#gpbon .gb-row button.acc{background:var(--ink);color:var(--paper);border-color:var(--ink)}

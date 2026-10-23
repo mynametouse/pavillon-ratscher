@@ -53,8 +53,8 @@ export const GPLAN = (() => {
     list: 'shop',
     probe: null,
     el: null,
-    // plants come from the Vorrat without buying them (a switch for tests; until buying at the nursery works)
-    frei: true,
+    // plants come from the Vorrat without buying them (a switch for tests; else only bought plants are planted)
+    frei: false,
   };
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const de = M.de;
@@ -129,6 +129,7 @@ export const GPLAN = (() => {
       }
       D.db = M.index({ pflanzen, regeln, gilden });
       D.st = 'ok';
+      setTimeout(() => KERN.emit('gplan:daten', { n: D.db.list.length, test: D.test }), 0);
       // plants of the saved plan that are not in the data any more are dropped
       const n0 = ST.items.length;
       ST = M.sanitize(ST, new Set(D.db.byId.keys()), year());
@@ -934,6 +935,8 @@ export const GPLAN = (() => {
       body.innerHTML = gardenHTML();
     } else if (U.tab === 'listen') {
       const txt = listText();
+      // the shopping list looked at: the task „Pflanzen in der Baumschule Kammbach kaufen“ (gplan/gplan_shop.js)
+      if (U.list === 'shop' && toBuy().length) KERN.emit('gplan:einkaufsliste', { n: toBuy().length });
       body.innerHTML =
         `<div class="gp-row"><button type="button" data-list="plan" aria-pressed="${U.list === 'plan' ? 'true' : 'false'}">Pflanzliste</button><button type="button" data-list="shop" aria-pressed="${U.list === 'shop' ? 'true' : 'false'}">Einkaufsliste</button></div>` +
         `<pre class="gp-text">${esc(txt)}</pre>` +
@@ -1336,7 +1339,7 @@ export const GPLAN = (() => {
   let lastMode = P.mode,
     acc = 0,
     lastMonth = 0;
-  const inUse = () => ST.items.some(it => planted(it) || it.sch);
+  const inUse = () => ST.kuebel.length > 0 || ST.items.some(it => planted(it) || it.sch);
   (window.TICKS = window.TICKS || []).push(dt => {
     if (P.mode !== lastMode) {
       lastMode = P.mode;
@@ -1391,6 +1394,7 @@ export const GPLAN = (() => {
     gday,
     gameDay,
     year,
+    seasonMonth,
     ageNow,
     inGround,
     toBuy,
