@@ -605,7 +605,14 @@ export const SCHL = (() => {
       if (!r.ok) throw new Error('stadt.json ' + r.status);
       data = await r.json();
       S.data = data;
-      gz = await WELT.sampler(ZONE[0], ZONE[1], ZONE[2], ZONE[3]);
+      // the ground from the world tiles; without them (no welt-test/ on this host) the town stands on the terrain of world/ratscher.js
+      try {
+        gz = await WELT.sampler(ZONE[0], ZONE[1], ZONE[2], ZONE[3]);
+        S.noTiles = false;
+      } catch (e) {
+        gz = null;
+        S.noTiles = true;
+      }
       S.loadMs = Math.round(performance.now() - t0);
       S.state = 'data';
     } catch (e) {
@@ -2212,7 +2219,10 @@ export const SCHL = (() => {
       WELT.need('schleusingen', false);
       if (S.state === 'ready') S.dispose();
     }
-    if (S.state === 'data' && WELT.heightAt(MARKT[0], MARKT[1]) !== undefined && WELT.state().loading === 0) {
+    if (
+      S.state === 'data' &&
+      (S.noTiles || (WELT.heightAt(MARKT[0], MARKT[1]) !== undefined && WELT.state().loading === 0))
+    ) {
       try {
         build();
       } catch (e) {
@@ -2232,6 +2242,7 @@ export const SCHL = (() => {
     signs: (S.signs || []).length,
     ms: S.ms,
     loadMs: S.loadMs || 0,
+    noTiles: !!S.noTiles,
     err: S.err,
     welt: WELT.state(),
   });

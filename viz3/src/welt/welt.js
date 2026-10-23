@@ -64,13 +64,17 @@ export const WELT = (() => {
   };
   // ---- meta ----
   let metaP = null;
+  let metaFail = -1e9;
   function meta() {
+    // a host without the tiles answers once; asked again at most every 30 s
+    if (!metaP && performance.now() - metaFail < 30000) return Promise.reject(new Error(S.err || 'meta'));
     if (!metaP)
       metaP = fetch(S.base + 'meta.json')
         .then(r => (r.ok ? r.json() : Promise.reject(new Error('meta ' + r.status))))
         .then(j => (S.meta = j))
         .catch(e => {
           metaP = null;
+          metaFail = performance.now();
           S.err = String(e);
           throw e;
         });
