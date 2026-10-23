@@ -62,6 +62,26 @@ with lib.browser() as b:
         E("(() => { const P = GAME.P; P.mode = 'top'; P.tx = -22; P.ty = 2; P.th = 52; document.body.dataset.mode = 'top'; GAME.step(0.05); })()"); shot('top_yard')
         E(f"(() => {{ const P = GAME.P; P.mode = 'top'; P.tx = {(pad['x0'] + pad['x1']) / 2}; P.ty = {(pad['y0'] + pad['y1']) / 2 + 6}; P.th = 46; document.body.dataset.mode = 'top'; GAME.step(0.05); }})()"); shot('top_paddock')
         view(pad['x0'] - 5, pad['gy'] + 2.5, 1.7, 100, -8, 65); shot('paddock_gate')
+    if want('plan'):
+        # the day plan by the clock (no forcing): what each of them is meant to do at a few times of a day
+        E("LIFE.force('hubert', null); LIFE.force('ronald', null)")
+        plans = {}
+        for h, m in ((6, 30), (9, 0), (12, 30), (16, 30), (19, 0), (20, 0)):
+            E(f"__N.clock({h}, {m})")
+            plans[f'{h}:{m:02d}'] = E("[LIFE.plan('hubert'), LIFE.plan('ronald')]")
+        print('plans', json.dumps(plans), flush=True)
+        ck('day plan: Hubert works with wood or at the car in the morning', plans['9:00'][0] in ('chop', 'saw', 'stack', 'car'), plans['9:00'])
+        ck('day plan: lunch at the table, evening on the bench', plans['12:30'][0] == 'table' and plans['20:00'][0] == 'bench', plans)
+        ck('day plan: Ronald feeds the goats in the morning, brings them in in the evening', plans['6:30'][1] == 'feed' and plans['20:00'][1] == 'stall', plans)
+        # night: out of sight they go home, the bonnet shuts, the goats sleep in the shelter
+        E("__N.clock(22, 30)"); E("GAME.view(0, -20, 1.7, 180, 0)")
+        t = E("__N.until(() => NPC.NPCS.hubert.away && NPC.NPCS.ronald.away, 20)")
+        E("__N.run(3)")
+        night = E("JSON.stringify({ h: NPC.NPCS.hubert.away, r: NPC.NPCS.ronald.away, bonnet: HOFCAR.open, goats: NPC.GOATS.map(g => [+g.x.toFixed(1), +g.y.toFixed(1)]) })")
+        print('night', t, night, flush=True)
+        ck('night: both at home, bonnet shut', t >= 0 and '"bonnet":0' in night, night)
+        E("__N.clock(6, 40)"); t = E("__N.until(() => !NPC.NPCS.hubert.away && !NPC.NPCS.ronald.away, 20)")
+        ck('morning: both come out again', t >= 0)
     if want('day'):
         E("__N.clock(9, 0)")
         lib.settle_light(pg)

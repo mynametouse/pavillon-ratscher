@@ -706,9 +706,9 @@ RAMP.y1 = RAMP.ax + 0.55;
   const EARTH = plain(Object.assign({ color: 0x5c4b3a }, flat));
   const patch = (cx, cy, r, m, seed, sx = 1) => {
     const pts = [];
-    for (let i = 0; i < 20; i++) {
-      const a = (i / 20) * Math.PI * 2,
-        k = r * (0.8 + 0.14 * Math.sin(i * 2.7 + seed) + 0.08 * Math.sin(i * 5.3 + seed * 2));
+    for (let i = 0; i < 32; i++) {
+      const a = (i / 32) * Math.PI * 2,
+        k = r * (0.86 + 0.09 * Math.sin(i * 0.59 + seed) + 0.05 * Math.sin(i * 1.37 + seed * 2)); // a soft, irregular edge
       pts.push(new THREE.Vector2(Math.cos(a) * k * sx, Math.sin(a) * k));
     }
     const geo = new THREE.ShapeGeometry(new THREE.Shape(pts));
