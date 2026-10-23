@@ -53,6 +53,20 @@ test('a broken saved state falls back field by field', () => {
   assert.equal(s.vote.won, true);
 });
 
+test('a saved state with prototype keys or odd shapes does not throw', () => {
+  const evil = JSON.parse(
+    '{"phase":"office","pos":{"__proto__":{"o":"ja"},"constructor":{"o":"x"}},"anl":{"__proto__":{"st":"open"},"toString":{"st":"yes"}},"tasks":{"__proto__":1,"hasOwnProperty":2},"met":{"__proto__":3},"built":{"__proto__":5,"laterne":7},"sig":["__proto__","gerhard"],"log":[[1,"x",2,"y"],"z"]}'
+  );
+  const s = M.sanitize(evil);
+  assert.equal(s.phase, 'office');
+  assert.deepEqual(Object.keys(s.pos), []);
+  assert.deepEqual(Object.keys(s.anl), []);
+  assert.deepEqual(Object.keys(s.tasks), []);
+  assert.deepEqual(s.built, { laterne: 7 });
+  assert.deepEqual(s.sig, ['gerhard']);
+  assert.equal(s.log.length, 1);
+});
+
 test('promises: the first word counts, the same word again adds a listener, another word costs trust', () => {
   const S = M.fresh();
   const k0 = S.rep.katrin,

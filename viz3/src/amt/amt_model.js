@@ -11,6 +11,7 @@ export const AMTMODEL = (() => {
   const PHASES = ['none', 'asked', 'candidate', 'nominated', 'office', 'lost', 'missed'];
   const AST = ['open', 'rat', 'stadt', 'yes', 'no', 'later', 'kreis', 'built', 'privat'];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const own = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k); // saved keys: never '__proto__' & Co.
   const num = (v, d, a, b) => (Number.isFinite(v) ? clamp(v, a, b) : d);
   // ---- a small seeded random generator (mulberry32) ----
   function rng(seed) {
@@ -54,32 +55,42 @@ export const AMTMODEL = (() => {
       sworn: false, // sworn in at the town council
       council: 0, // standing in the town council (0–100)
       retry: null, // game minute a new chance comes (after a lost or missed election)
+      kd: null, // the Kirmes: game minute of its Saturday (once the Ortsteilrat has paid for it)
+      hh: null, // the hearing on the town's draft budget: null, 'open' (the letter came), 'done'
     };
   }
   // a saved state, checked field by field: broken values fall back to fresh ones (the page must start whatever is stored)
   function sanitize(s, bonus) {
+    try {
+      return sanitize0(s, bonus);
+    } catch (e) {
+      return fresh(bonus);
+    }
+  }
+  function sanitize0(s, bonus) {
     const o = fresh(bonus);
     if (!s || typeof s !== 'object' || Array.isArray(s)) return o;
     if (PHASES.includes(s.phase)) o.phase = s.phase;
-    for (const k of ['t0', 'deadline', 'since', 'retry']) if (Number.isFinite(s[k])) o[k] = s[k];
+    for (const k of ['t0', 'deadline', 'since', 'retry', 'kd']) if (Number.isFinite(s[k])) o[k] = s[k];
     if (Number.isFinite(s.eday)) o.eday = Math.floor(s.eday);
     o.letter = s.letter === true;
+    if (s.hh === 'open' || s.hh === 'done') o.hh = s.hh;
     o.voted = s.voted === true ? true : s.voted === 'opp' ? 'opp' : false;
     o.sworn = s.sworn === true;
     if (s.rep && typeof s.rep === 'object') for (const k of D.KEYS) o.rep[k] = num(s.rep[k], o.rep[k], 0, 100);
-    if (Array.isArray(s.sig)) o.sig = [...new Set(s.sig.filter(k => D.P[k]))];
+    if (Array.isArray(s.sig)) o.sig = [...new Set(s.sig.filter(k => own(D.P, k)))];
     o.extra = num(s.extra, 0, 0, 40) | 0;
     if (s.pos && typeof s.pos === 'object')
       for (const [i, p] of Object.entries(s.pos))
-        if (D.ISSUES[i] && p && D.ISSUES[i].opts[p.o])
-          o.pos[i] = { o: p.o, told: Array.isArray(p.told) ? [...new Set(p.told.filter(k => D.P[k]))] : [] };
+        if (own(D.ISSUES, i) && p && typeof p === 'object' && own(D.ISSUES[i].opts, p.o))
+          o.pos[i] = { o: p.o, told: Array.isArray(p.told) ? [...new Set(p.told.filter(k => own(D.P, k)))] : [] };
     o.flips = num(s.flips, 0, 0, 99) | 0;
     if (s.tasks && typeof s.tasks === 'object')
       for (const [k, v] of Object.entries(s.tasks))
-        if (D.TASKS[k] && (v === 'done' || Number.isFinite(v)))
+        if (own(D.TASKS, k) && (v === 'done' || Number.isFinite(v)))
           o.tasks[k] = v === 'done' ? 'done' : clamp(v | 0, 0, 20);
     if (s.met && typeof s.met === 'object')
-      for (const [k, v] of Object.entries(s.met)) if (D.P[k] && Number.isFinite(v)) o.met[k] = v | 0;
+      for (const [k, v] of Object.entries(s.met)) if (own(D.P, k) && Number.isFinite(v)) o.met[k] = v | 0;
     if (Array.isArray(s.seen)) o.seen = s.seen.filter(x => typeof x === 'string').slice(-60);
     if (Array.isArray(s.log))
       o.log = s.log
@@ -105,7 +116,7 @@ export const AMTMODEL = (() => {
     o.tries = num(s.tries, 0, 0, 99) | 0;
     if (s.anl && typeof s.anl === 'object')
       for (const [k, a] of Object.entries(s.anl))
-        if (D.ANLIEGEN[k] && a && AST.includes(a.st))
+        if (own(D.ANLIEGEN, k) && a && typeof a === 'object' && AST.includes(a.st))
           o.anl[k] = {
             st: a.st,
             t: Number.isFinite(a.t) ? a.t : 0,
@@ -117,8 +128,7 @@ export const AMTMODEL = (() => {
     o.budget = num(s.budget, D.BUDGET, -1e5, 1e5);
     if (Number.isFinite(s.byear)) o.byear = s.byear | 0;
     if (s.built && typeof s.built === 'object')
-      for (const [k, t] of Object.entries(s.built))
-        if (typeof k === 'string' && k.length < 20 && Number.isFinite(t)) o.built[k] = t;
+      for (const [k, t] of Object.entries(s.built)) if (/^[a-z]{2,16}$/.test(k) && Number.isFinite(t)) o.built[k] = t;
     o.council = num(s.council, 0, 0, 100);
     return o;
   }
@@ -205,6 +215,7 @@ export const AMTMODEL = (() => {
       out.push({
         k,
         n: post === false ? 0 : p.hh,
+        elig: p.hh, // eligible all the same
         r: p.opp ? 0 : S.rep[k],
         o: p.opp ? 100 : p.rival,
         met,
@@ -237,7 +248,7 @@ export const AMTMODEL = (() => {
     const ballots = [];
     let eligible = 0;
     for (const g of groups(S, avail)) {
-      eligible += g.n;
+      eligible += g.elig != null ? g.elig : g.n;
       const pt = pTurn(g, S),
         pm = pMe(g);
       for (let i = 0; i < g.n; i++) {

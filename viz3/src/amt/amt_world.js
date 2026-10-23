@@ -17,7 +17,7 @@ import { ROADS } from '../world/roads.js';
 import { WCOL } from '../world/worldcol.js';
 import { DSCHOOL } from '../dorf/dorf_school.js';
 export const AMTWORLD = (() => {
-  const S = { items: {}, spots: {}, mats: null, hyd: null, hydFound: false, fence: null, lampMat: null, on: -1 };
+  const S = { items: {}, spots: {}, mats: null, hyd: null, hydFound: false, fence: null, lampMat: null, on: -1, T: {} };
   const ANGER = [222, -108],
     BUS = [250.6, -99.6],
     BUSA = ((180 - 200) * Math.PI) / 180;
@@ -262,6 +262,42 @@ export const AMTWORLD = (() => {
       scene.add(g);
       return { g, at: [x, y], face: [ax, ay] };
     },
+    bushaus() {
+      // the shelter of world/village_props.js (same place and turn): a new roof over the old one, a timetable on the back wall
+      const c = Math.cos(BUSA),
+        s = Math.sin(BUSA),
+        z = gz(BUS[0], BUS[1]);
+      const lx = (u, v) => [BUS[0] + c * u - s * v, BUS[1] + s * u + c * v];
+      const km = VPROPS.kit();
+      const r = lx(0, 0);
+      km.box(r[0], r[1], z + 2.43, 3.56, 2.04, 0.05, BUSA, C(0.62, 0.65, 0.68));
+      km.box(r[0], r[1], z + 2.39, 3.6, 0.06, 0.06, BUSA, C(0.55, 0.57, 0.6));
+      const g = new THREE.Group();
+      g.add(mesh(km, mats().metal, 'bushaus'));
+      const t = lx(0.75, 0.6),
+        nx = s,
+        ny = -c;
+      g.add(
+        sign(
+          [
+            ['Ratscher, Schulbushaltestelle', 15, true],
+            ['Mo–Fr  6:52  7:12  13:05  15:40', 15],
+            ['Sa  8:10  12:10', 15],
+            ['→ Schleusingen, Busbahnhof', 15],
+          ],
+          0.62,
+          0.42,
+          t[0] + nx * 0.02,
+          t[1] + ny * 0.02,
+          z + 1.55,
+          nx,
+          ny,
+          { bg: '#fbfbf6', fg: '#14311d', border: '#2f6b3a', top: 40 }
+        )
+      );
+      scene.add(g);
+      return { g, at: [BUS[0], BUS[1]] };
+    },
     kirmes() {
       if (!DSCHOOL.built || !DSCHOOL.F) return null;
       const [x, y] = DSCHOOL.toW(DSCHOOL.F.du - 2.2, -1.1),
@@ -280,7 +316,7 @@ export const AMTWORLD = (() => {
           [
             ['KIRMES', 44, true],
             ['in Ratscher', 26],
-            ['Samstag & Sonntag', 22],
+            [S.T.kirmes || 'Samstag & Sonntag', S.T.kirmes ? 18 : 22],
             ['Festzelt am Anger · Musik', 18],
             ['Kinderprogramm · Feuerwehr', 18],
             ['Kaffee & Kuchen von jedem Hof', 18],
@@ -513,6 +549,6 @@ export const AMTWORLD = (() => {
     hydFound: S.hydFound,
     fence: S.fence ? (S.fenceBroken ? 'broken' : 'fixed') : null,
   });
-  return { refresh, hydrant, hydrantAt, fence, fenceAt, state, S };
+  return { refresh, hydrant, hydrantAt, fence, fenceAt, state, S, T: S.T };
 })();
 window.AMTWORLD = AMTWORLD;

@@ -389,6 +389,18 @@ export const AMTDATA = (() => {
       build: 'tafel',
       days: 3,
     },
+    bushaus: {
+      title: 'Bushäuschen: Dach und Fahrplan',
+      from: 'wolfgang',
+      ask: 'Am Bushäuschen ist das Dach undicht, und der Fahrplan ist seit dem Winter weg. Morgens stehen die Kinder im Regen und wissen nicht, ob der Bus schon durch ist.',
+      by: 'stadt',
+      cost: 1600,
+      need: 50,
+      fans: { wolfgang: 5, katrin: 4, ingrid: 2, heike: 2 },
+      foes: {},
+      build: 'bushaus',
+      days: 5,
+    },
     ziegenzaun: {
       title: 'Ziegen und Zaun',
       from: 'heike',
@@ -410,6 +422,7 @@ export const AMTDATA = (() => {
     kirmes: { manfred: 3, katrin: 1, gerhard: 2, uwe: 1 },
     feldweg: { manfred: 0, katrin: -1, gerhard: 0, uwe: 3 },
     tafel: { manfred: 1, katrin: 0, gerhard: 3, uwe: -1 },
+    bushaus: { manfred: 1, katrin: 2, gerhard: 1, uwe: 0 },
   };
   // ---- texts ----
   const T = {

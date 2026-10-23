@@ -1,7 +1,7 @@
 # feat/ortsvorsteher: the election of the Ortsvorsteher and the office – Ingrid's letter, standing, signatures, ringing at a door, an issue
 # question, the nomination in the town hall, election day (voting in the old school, the public count, the result), the office (a concern,
 # the Ortsteilrat, the town council with the swearing in) and what then stands in the village; the hydrant task; textures per shader.
-# Pictures (canvas and page) in out/amt/. Sections (second argument, comma-separated): start,ask,rathaus,wahltag,zaehlen,amt,welt,hydrant,gl
+# Pictures (canvas and page) in out/amt/. Sections (second argument, comma-separated): start,ask,rathaus,wahltag,zaehlen,amt,welt,aufgaben,hydrant,gl
 #   python3 viz3/test/run.py --port 8978 --serve amt          (or: python3 viz3/test/amt.py 8978 ask,rathaus)
 import sys, os, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -52,6 +52,18 @@ with lib.browser() as b:
         best = J("GAME.step(0.2).best"); ck('the action button: ring at Gerhard’s door', best == 'Bei Gerhard klingeln', str(best))
         E("PLAY.primary(); GAME.step(0.2)"); st = J('AMT.state()')
         ck('Gerhard opens the door, the election topics', st['panel'] == 'gerhard' and 'öffnet die Tür' in st['say'] and any('Unterschreibst' in x for x in st['buttons']), json.dumps(st['buttons'], ensure_ascii=False))
+        # the one who opens: his own figure in the doorway (loaded now – wait for it, stepping the world)
+        for i in range(60):
+            E("GAME.step(0.2)")
+            if J('AMT.state().door'): break
+            time.sleep(0.5)
+        ck('Gerhard stands in the doorway (a figure of its own)', J('AMT.state().door') == 'gerhard', str(J('AMT.state().door')))
+        import math
+        dx, dy = h['step'][0] - h['door'][0], h['step'][1] - h['door'][1]; L = math.hypot(dx, dy) or 1
+        cx, cy = h['door'][0] + dx / L * 3.4 + dy / L * 0.8, h['door'][1] + dy / L * 3.4 - dx / L * 0.8
+        yaw = math.degrees(math.atan2(h['door'][0] - cx, h['door'][1] - cy))
+        E(f"(() => {{ const z = KERN.terrain({cx}, {cy}); GAME.view({cx}, {cy}, z + 1.6, {yaw}, -4, 55); for (let i = 0; i < 4; i++) GAME.step(0.1); }})()")
+        lib.shot(pg, OUT, 'b_tuer_gerhard')
         r0 = st['rep']['gerhard']
         E("AMT.press('Was ist dir wichtig')"); st = J('AMT.state()')
         ck('he asks about an issue (the lamp)', 'Laterne' in st['say'] and len(st['buttons']) >= 3, st['say'][:80])
@@ -108,12 +120,13 @@ with lib.browser() as b:
         ck('greeted as Ortsvorsteher; a concern to ask for', any('Anliegen' in x for x in st['buttons']), st['say'][:80])
         E("AMT.press('Anliegen')"); st = J('AMT.state()')
         ck('Gerhard’s concern: the information board', st['anl'].get('tafel') == 'open', json.dumps(st['anl']))
-        E("AMT.UI.close(); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 19 * 60; AMT.ortsrat()"); st = J('AMT.state()')
+        E("AMT.UI.close(); AMT.ST.hh = 'open'; CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 19 * 60; AMT.ortsrat()"); st = J('AMT.state()')
         ck('the Ortsteilrat session', st['panel'] == 'ortsrat' and 'Tagesordnung' in st['say'], st['say'][:100])
         page_shot(pg, 'h_ortsteilrat')
-        for i in range(8):
-            if not E("AMT.press('Erster Punkt') || AMT.press('Nächster Punkt') || AMT.press('Ich stimme dafür')"): break
+        for i in range(12):
+            if not E("AMT.press('Erster Punkt') || AMT.press('Nächster Punkt') || AMT.press('Ich stimme dafür') || AMT.press('Feldweg zur Klinge')"): break
         st = J('AMT.state()'); print('after the session', json.dumps(st['anl']), st['budget'], flush=True)
+        ck('the hearing on the draft budget: the Ortsteilrat proposes the field track, the town plans it', st['anl'].get('feldweg') == 'yes' and J('AMT.ST.hh') == 'done', json.dumps(st['anl']))
         ck('decided: own money for Ratscher matters, the rest to the town council', st['anl'].get('kirmes') in ('yes', 'no', 'later') and st['anl'].get('laterne') in ('stadt', 'no'), json.dumps(st['anl']))
         E("AMT.UI.close()")
     section('amt', amt)
@@ -144,6 +157,39 @@ with lib.browser() as b:
         ck('the lamp glows at night', J('AMTWORLD.S.on') > 0.5, str(J('AMTWORLD.S.on')))
         E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 1440 + 11 * 60"); lib.settle_light(pg)
     section('welt', welt)
+    def aufgaben():
+        # the campaign tasks in conversation: Ingrid's questions, Gerhard's chronicle, Hubert's postal vote, the goats and the fence
+        E("AMT.jump('wahlkampf', { fresh: true }); AMT.ST.rep.hubert = 60; AMT.talk('ingrid', 'panel')")
+        E("AMT.press('Was kann so ein Ortsvorsteher')")
+        for i in range(3):
+            E("AMT.press('aber er darf mitreden') || AMT.press('kleines Budget') || AMT.press('drei Monaten')")
+            E("AMT.press('Weiter')")
+        st = J('AMT.state()'); ck('Ingrid’s three questions: all right, she recommends you', st['tasks'].get('amt') == 'done' and 'wählen würde' in st['say'], st['say'][:80])
+        E("AMT.UI.close(); AMT.talk('gerhard', 'panel'); AMT.press('Für die Chronik'); AMT.press('zuhören')")
+        st = J('AMT.state()'); ck('the chronicle: why you stand', st['tasks'].get('chronik') == 'done' and 'Zuhören' in st['say'], st['say'][:60])
+        E("AMT.UI.close(); AMT.talk('hubert', 'panel'); AMT.press('wählen'); AMT.press('Vollmacht')")
+        st = J('AMT.state()'); ck('Hubert gives his proxy for the postal vote', st['tasks'].get('briefwahl') == 1, json.dumps(st['tasks']))
+        E("AMT.UI.close(); AMT.trip()")
+        for i in range(8): E("GAME.step(0.5)")
+        st = J('AMT.state()'); ck('the trip to the town hall (25 min by car), the election office hands out the documents', st['panel'] == 'rathaus' and any('Briefwahlunterlagen' in x for x in st['buttons']), json.dumps(st['buttons'], ensure_ascii=False))
+        E("AMT.press('Briefwahlunterlagen'); AMT.press('Zurück nach Ratscher')")
+        for i in range(8): E("GAME.step(0.5)")
+        E("AMT.talk('hubert', 'panel'); AMT.press('Briefwahlunterlagen')")
+        st = J('AMT.state()'); ck('Hubert votes by post: his vote counts now', st['tasks'].get('briefwahl') == 'done' and J("AMT.model.groups(AMT.ST).find(g => g.k === 'hubert' && g.hh).n") > 0, json.dumps(st['tasks']))
+        E("AMT.UI.close(); AMT.talk('ronald', 'panel'); AMT.press('Ziegen und die Bohnen'); AMT.press('Zaun zu flicken')")
+        st = J('AMT.state()'); w = J('AMTWORLD.state()')
+        ck('the goats: mediating – the rotten fence at the pasture', st['tasks'].get('zaun') == 0 and w['fence'] == 'broken', json.dumps(w))
+        f = J('AMTWORLD.fenceAt()')
+        if f:
+            put(f[0] + 1.0, f[1], -90)
+            best = J("GAME.step(0.2).best"); ck('the action: mend the fence with Ronald', best == 'Mit Ronald den Zaun flicken', str(best))
+            E("PLAY.primary(); for (let i = 0; i < 16; i++) GAME.step(0.25)")
+            ck('mended: new posts, back to Heike or Ronald', J('AMT.state().tasks.zaun') == 1 and J('AMTWORLD.state().fence') == 'fixed', '')
+            look_at(f[0], f[1], 4.5, 1.6, 90, -10); lib.shot(pg, OUT, 'm_zaun')
+        E("AMT.talk('ronald', 'panel'); AMT.press('Der Zaun ist geflickt')")
+        st = J('AMT.state()'); ck('the goats settled the village way', st['tasks'].get('zaun') == 'done' and st['pos'].get('ziegen') == 'mitte', json.dumps(st['pos']))
+        E("AMT.UI.close(); AMT.toggleBook(true); AMT.BOOK.tab = 'stand'; AMT.renderBook()"); page_shot(pg, 'n_mappe_stand'); E("AMT.toggleBook(false)")
+    section('aufgaben', aufgaben)
     def hydrant():
         E("AMT.jump('wahlkampf', { fresh: true }); AMT.talk('manfred', 'panel')"); st = J('AMT.state()')
         ck('Manfred offers the hydrant task', any('Feuerwehr' in x for x in st['buttons']), json.dumps(st['buttons'], ensure_ascii=False))

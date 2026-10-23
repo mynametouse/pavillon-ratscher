@@ -99,6 +99,11 @@ export const AMT = (() => {
       '<header><div class="who"><h3></h3><span class="role"></span></div><button type="button" class="x" aria-label="Schließen">×</button></header>' +
       '<div class="task" hidden></div><div class="scene" hidden></div><div class="say"></div><div class="topics"></div>';
     host.appendChild(el);
+    // away from Ratscher (the town hall): the village fades behind the panel
+    const back = document.createElement('div');
+    back.id = 'amtback';
+    back.hidden = true;
+    host.insertBefore(back, el);
     const h3 = el.querySelector('h3'),
       role = el.querySelector('.role'),
       task = el.querySelector('.task'),
@@ -113,6 +118,7 @@ export const AMT = (() => {
       role.textContent = sub || '';
       say.textContent = text || '';
       el.classList.toggle('wide', !!opts.wide);
+      back.hidden = !opts.away;
       scene.hidden = !opts.scene;
       scene.innerHTML = opts.scene || '';
       U.onClose = opts.onClose || null;
@@ -161,6 +167,7 @@ export const AMT = (() => {
       if (!U.cur) return;
       U.cur = null;
       el.hidden = true;
+      back.hidden = true;
       const f = U.onClose;
       U.onClose = null;
       if (f) f();
@@ -370,7 +377,7 @@ export const AMT = (() => {
       if (acts.length) body += '<p class="acts">' + acts.join(' ') + '</p>';
     } else if (BOOK.tab === 'menschen') {
       body +=
-        '<p class="hint">Was die Leute von dir halten. Es ändert sich mit dem, was du für sie tust, ob du da bist, was du versprichst – und ob du es hältst.</p><ul class="people">' +
+        '<p class="am-hint">Was die Leute von dir halten. Es ändert sich mit dem, was du für sie tust, ob du da bist, was du versprichst – und ob du es hältst.</p><ul class="people">' +
         D.KEYS.filter(avail)
           .map(k => {
             const r = Math.round(ST.rep[k]);
@@ -380,7 +387,7 @@ export const AMT = (() => {
               '</b><small>' +
               esc(roleOf(k)) +
               (where(k) ? ' · ' + esc(where(k)) : '') +
-              '</small><span class="bar"><i style="width:' +
+              '</small><span class="am-bar"><i style="width:' +
               r +
               '%"></i></span><em>' +
               M.mood(r) +
@@ -425,9 +432,9 @@ export const AMT = (() => {
             .join('') +
           '</ul>' +
           (ST.flips
-            ? '<p class="hint">Du hast ' + ST.flips + '-mal deine Meinung geändert. Im Dorf merkt man sich das.</p>'
+            ? '<p class="am-hint">Du hast ' + ST.flips + '-mal deine Meinung geändert. Im Dorf merkt man sich das.</p>'
             : '')
-        : '<p class="hint">Noch nichts versprochen. Wer fragt, will eine Antwort – und merkt sie sich.</p>';
+        : '<p class="am-hint">Noch nichts versprochen. Wer fragt, will eine Antwort – und merkt sie sich.</p>';
     } else if (BOOK.tab === 'anliegen') {
       const as = Object.entries(ST.anl);
       body += as.length
@@ -456,7 +463,7 @@ export const AMT = (() => {
             )
             .join('') +
           '</ul>'
-        : '<p class="hint">' +
+        : '<p class="am-hint">' +
           (office()
             ? 'Noch keine Anliegen. Frag die Leute – oder warte, bis sie zu dir kommen.'
             : 'Anliegen bringen die Leute dem Ortsvorsteher.') +
@@ -519,8 +526,11 @@ export const AMT = (() => {
         out.push('Freitagabend in der alten Schule: Dort sind alle – eine gute Gelegenheit, dich vorzustellen.');
     }
     if (office()) {
-      if (Object.values(ST.anl).some(a => a.st === 'open'))
-        out.push('Ortsteilrat einberufen: abends (17–22 Uhr) an der Tür der alten Schule.');
+      if (Object.values(ST.anl).some(a => a.st === 'open') || ST.hh === 'open')
+        out.push(
+          'Ortsteilrat einberufen: abends (17–22 Uhr) an der Tür der alten Schule.' +
+            (ST.hh === 'open' ? ' Auf die Tagesordnung gehört die Anhörung zum Haushaltsentwurf.' : '')
+        );
       if (Object.values(ST.anl).some(a => a.st === 'stadt') || !ST.sworn)
         out.push('Donnerstags ab 17 Uhr in den Stadtrat nach Schleusingen (Auto oder unten „Ins Rathaus“).');
       if (Object.values(ST.anl).some(a => (a.st === 'stadt' || a.st === 'later') && !a.est))
@@ -809,7 +819,7 @@ export const AMT = (() => {
         },
         'quest',
       ]);
-    if ((k === 'heike' || k === 'ronald') && avail('heike') && avail('ronald') && st('zaun') !== 'done')
+    if ((k === victim() || k === 'ronald') && avail('ronald') && st('zaun') !== 'done')
       out.push([st('zaun') === 1 ? 'Der Zaun ist geflickt' : 'Die Ziegen und die Bohnen', () => zaun(k), 'quest']);
     if (k === 'hubert' && st('briefwahl') !== 'done')
       out.push([
@@ -852,33 +862,53 @@ export const AMT = (() => {
       ])
     );
   }
+  // whose beans the goats ate: Heike's (her big vegetable garden) – in a build without Heike, Gerhard's
+  const victim = () => (avail('heike') ? 'heike' : 'gerhard');
+  // the goats' issue said to someone: the effects as in the data, Heike's part going to the victim if that is someone else
+  function goats(o, k) {
+    const V = victim();
+    M.promise(ST, 'ziegen', o, k, now());
+    const d = D.ISSUES.ziegen.opts[o].eff.heike || 0;
+    if (V !== 'heike' && d) L(V, d, 'Ziegen im Gemüse: ' + D.ISSUES.ziegen.opts[o].say);
+  }
   function zaun(k) {
-    const s = ST.tasks.zaun;
+    const s = ST.tasks.zaun,
+      V = victim(),
+      vn = nameOf(V),
+      vf = V === 'heike';
     if (s === 1) {
       ST.tasks.zaun = 'done';
-      M.promise(ST, 'ziegen', 'mitte', k, now());
+      goats('mitte', k);
       save();
       UI.say(
-        k === 'heike'
+        k === V
           ? 'Ihr habt den Zaun zusammen geflickt? Und Ronald bringt mir Mist für die Beete? Dann ist’s gut. So macht man das im Dorf.'
-          : 'Hält wieder, der Zaun. Und Heike kriegt ihren Mist. Danke dir – allein hätt ich mich nicht getraut, zu ihr zu gehen.'
+          : 'Hält wieder, der Zaun. Und ' +
+              vn +
+              ' kriegt Mist für die Beete. Danke dir – allein hätt ich mich nicht getraut, zu ' +
+              (vf ? 'ihr' : 'ihm') +
+              ' zu gehen.'
       );
       UI.buttons([bye()]);
       return;
     }
     UI.say(
-      k === 'heike'
+      k === V
         ? 'Ronalds Ziegen waren in meinen Bohnen! Die halbe Reihe ist weg. Kann man da als Ortsvorsteher nicht was machen?'
-        : 'Die Heike ist sauer, weil die Ziegen in ihren Bohnen waren. Der Zaun hinten ist morsch. Was soll ich machen?'
+        : (vf ? 'Die ' : 'Der ') +
+            vn +
+            ' ist sauer, weil die Ziegen in ' +
+            (vf ? 'ihren' : 'seinen') +
+            ' Bohnen waren. Der Zaun hinten ist morsch. Was soll ich machen?'
     );
     UI.buttons([
       [
         D.ISSUES.ziegen.opts.heike.say,
         () => {
           ST.tasks.zaun = 'done';
-          M.promise(ST, 'ziegen', 'heike', k, now());
+          goats('heike', k);
           save();
-          UI.say(k === 'heike' ? 'Genau so sehe ich das!' : 'Na danke. Das merk ich mir.');
+          UI.say(k === V ? 'Genau so sehe ich das!' : 'Na danke. Das merk ich mir.');
           UI.buttons([bye()]);
         },
       ],
@@ -886,7 +916,7 @@ export const AMT = (() => {
         D.ISSUES.ziegen.opts.ronald.say,
         () => {
           ST.tasks.zaun = 'done';
-          M.promise(ST, 'ziegen', 'ronald', k, now());
+          goats('ronald', k);
           save();
           UI.say(k === 'ronald' ? 'Siehst du, du verstehst das.' : 'Ein paar Bohnen? Das war meine Ernte!');
           UI.buttons([bye()]);
@@ -900,7 +930,7 @@ export const AMT = (() => {
           AMTWORLD.fence(true);
           track('fence');
           UI.say(
-            k === 'heike'
+            k === V
               ? 'Wenn das hält, bin ich zufrieden. Ronald hat hinten an der Weide ein Stück Zaun liegen.'
               : 'Das wär was! Das morsche Stück ist hinten an der Westseite, beim Gatter.'
           );
@@ -985,11 +1015,18 @@ export const AMT = (() => {
   }
   // ======================= the town hall in Schleusingen (a scene until the walkable town has one) =======================
   const canTrip = () => campaign() || office();
+  // the drive takes time (the clock races, CLOCK.wait – it runs only while one walks; from another view the time just moves on)
+  function drive(min, label, done) {
+    if (P.mode === 'walk') CLOCK.wait(min, label, done);
+    else {
+      CLOCK.t = now() + min;
+      if (done) done();
+    }
+  }
   function trip() {
     if (!canTrip()) return;
     UI.close();
-    if (P.mode !== 'walk') return;
-    CLOCK.wait(25, 'Fahrt nach Schleusingen', () => rathaus());
+    drive(25, 'Fahrt nach Schleusingen', () => rathaus());
   }
   function rathaus() {
     const t = now();
@@ -998,7 +1035,7 @@ export const AMT = (() => {
       'Rathaus Schleusingen',
       'am Markt · ' + dateOf(t) + ', ' + CLOCK.hm(t) + ' Uhr',
       'Das Rathaus am Markt, unten das Bürgerbüro, oben der Sitzungssaal. Wohin?',
-      { id: 'rathaus', free: true, wide: true, scene: SCENES.rathaus() }
+      { id: 'rathaus', free: true, wide: true, away: true, scene: SCENES.rathaus() }
     );
     if (ST.phase === 'candidate')
       items.push([
@@ -1076,7 +1113,7 @@ export const AMT = (() => {
         'Zurück nach Ratscher',
         () => {
           UI.close();
-          CLOCK.wait(25, 'Zurück nach Ratscher');
+          drive(25, 'Zurück nach Ratscher');
         },
         'bye',
       ],
@@ -1307,6 +1344,7 @@ export const AMT = (() => {
       ST.budget = D.BUDGET;
     }
     RAT.items = Object.keys(ST.anl).filter(id => ST.anl[id].st === 'open');
+    if (ST.hh === 'open') RAT.items.unshift('haushalt');
     RAT.i = 0;
     UI.open(
       'Sitzung des Ortsteilrats',
@@ -1331,8 +1369,9 @@ export const AMT = (() => {
       renderBook();
       return;
     }
-    const id = RAT.items[RAT.i],
-      A = D.ANLIEGEN[id];
+    const id = RAT.items[RAT.i];
+    if (id === 'haushalt') return hearing();
+    const A = D.ANLIEGEN[id];
     const lean = D.LEAN[id] || {};
     const voices = D.ORTSRAT.filter(avail)
       .map(k => {
@@ -1422,6 +1461,7 @@ export const AMT = (() => {
           A.cost +
           ' Euro).';
         ST.built[A.build] = now() + A.days * 1440;
+        if (A.build === 'kirmes') kirmesDate();
         E(A.fans, 'Beschlossen: ' + A.title);
         E(A.foes, 'Beschlossen: ' + A.title);
         keep(A, 'Versprechen gehalten: ' + A.title);
@@ -1448,6 +1488,62 @@ export const AMT = (() => {
     UI.buttons([['Nächster Punkt', () => ratItem(), 'quest']]);
     AMTWORLD.refresh(ST, now());
   }
+  // the hearing on the draft budget (§ 45 (5) ThürKO: before the town council decides its budget, the Ortsteilrat is heard): what
+  // should the town plan for Ratscher next year? The choice goes into the budget – built in spring (here: some days later)
+  function hearing() {
+    const cand = Object.keys(D.ANLIEGEN).filter(
+      id => D.ANLIEGEN[id].by === 'stadt' && (!ST.anl[id] || ['open', 'no', 'later', 'stadt'].includes(ST.anl[id].st))
+    );
+    UI.say(
+      'Anhörung zum Haushaltsentwurf: Die Stadt legt den Entwurf für das nächste Jahr vor und muss den Ortsteilrat hören, bevor der Stadtrat beschließt. Für Ratscher steht bisher nichts darin. Was schlägt der Ortsteilrat vor?'
+    );
+    const done = (id, txt) => {
+      ST.hh = 'done';
+      if (id) {
+        const A = D.ANLIEGEN[id];
+        ST.anl[id] = Object.assign(ST.anl[id] || { t: now(), d: '' }, {
+          st: 'yes',
+          t: now(),
+          why: 'Auf Vorschlag des Ortsteilrats im Haushalt des nächsten Jahres eingeplant (Anhörung zum Haushaltsentwurf).',
+          d: 'yes',
+        });
+        if (A.build) ST.built[A.build] = now() + Math.max(A.days, 7) * 1440;
+        E(A.fans, 'Im Haushalt eingeplant: ' + A.title);
+        keep(A, 'Versprechen gehalten: ' + A.title);
+      }
+      save();
+      UI.say(txt);
+      RAT.i++;
+      UI.buttons([['Nächster Punkt', () => ratItem(), 'quest']]);
+    };
+    UI.buttons([
+      ...cand.map(id => [
+        D.ANLIEGEN[id].title + ' (' + D.ANLIEGEN[id].cost.toLocaleString('de-DE') + ' Euro)',
+        () =>
+          done(
+            id,
+            'Einstimmig: Der Ortsteilrat schlägt „' +
+              D.ANLIEGEN[id].title +
+              '“ vor. Zwei Wochen später kommt die Antwort aus Schleusingen: Es steht im Haushalt. Wenn der Haushalt beschlossen ist, kann die Stadt es bezahlen.'
+          ),
+        'quest',
+      ]),
+      [
+        'Nichts Neues – die Stadt soll sparen',
+        () => {
+          L('uwe', 2, 'Sparsam – das gefällt ihm');
+          done(null, 'Der Ortsteilrat nimmt den Entwurf zur Kenntnis. Uwe nickt zufrieden, Katrin schüttelt den Kopf.');
+        },
+      ],
+    ]);
+  }
+  // the Kirmes: on the first Saturday at least ten days on (time for the tent, the band, the cakes)
+  function kirmesDate() {
+    let d = dayOf(now()) + 10;
+    while (DCAL.wd(d * 1440 + 600) !== 6) d++;
+    ST.kd = d * 1440;
+    AMTWORLD.T.kirmes = DCAL.dateOf(ST.kd + 600);
+  }
   function keep(A, why) {
     const pr = A.issue && ST.pos[A.issue];
     if (pr && pr.o !== 'nein') for (const k of pr.told) L(k, 3, why);
@@ -1463,6 +1559,7 @@ export const AMT = (() => {
       id: 'council',
       free: true,
       wide: true,
+      away: true,
       scene: SCENES.room('stadtrat'),
     });
     if (!ST.sworn) {
@@ -1489,7 +1586,7 @@ export const AMT = (() => {
           'Zurück nach Ratscher',
           () => {
             UI.close();
-            CLOCK.wait(30, 'Zurück nach Ratscher');
+            drive(30, 'Zurück nach Ratscher');
           },
           'bye',
         ],
@@ -1524,6 +1621,7 @@ export const AMT = (() => {
           if (st === 'yes' || st === 'kreis') {
             CITY.spent += A.cost;
             ST.built[A.build] = now() + A.days * 1440;
+            if (A.build === 'kirmes') kirmesDate();
             E(A.fans, (st === 'kreis' ? 'Angegangen: ' : 'Beschlossen: ') + A.title);
             E(A.foes, 'Beschlossen: ' + A.title);
             keep(A, 'Versprechen gehalten: ' + A.title);
@@ -1786,7 +1884,7 @@ export const AMT = (() => {
       if (ST.vote && ST.vote.counted && isEday() && counting() && !ST.vote.accepted) return 'Das Ergebnis';
       if (
         office() &&
-        Object.values(ST.anl).some(a => a.st === 'open') &&
+        (Object.values(ST.anl).some(a => a.st === 'open') || ST.hh === 'open') &&
         minOf(now()) >= 17 * 60 &&
         minOf(now()) < 22 * 60
       )
@@ -2058,6 +2156,39 @@ export const AMT = (() => {
         }
       }
     }
+    // three days into the office: the town sends its draft budget – the Ortsteilrat is to be heard
+    if (office() && ST.hh == null && ST.since != null && t > ST.since + 3 * 1440 + 9 * 60) {
+      ST.hh = 'open';
+      save();
+      toast(
+        'Post aus Schleusingen: der Entwurf des Haushalts für das nächste Jahr. Der Ortsteilrat wird angehört – nächste Sitzung in der alten Schule.',
+        10000
+      );
+      BOOK.btn.querySelector('.dot').hidden = false;
+    }
+    // the Kirmes day: the village is out on the Anger (14–22 h) – being there counts once
+    if (ST.kd != null && dayOf(t) === dayOf(ST.kd)) {
+      const m = minOf(t);
+      if (m >= 14 * 60 && m < 22 * 60 && TK.kirmes !== ST.kd) {
+        if (TK.kirmesHint !== ST.kd) {
+          TK.kirmesHint = ST.kd;
+          toast('Heute ist Kirmes in Ratscher: Festzelt am Anger, Musik, Kaffee und Kuchen von jedem Hof.', 9000);
+        }
+        if (P.mode === 'walk' && Math.hypot(P.x - 222, P.y + 108) < 120) {
+          TK.kirmes = ST.kd;
+          if (!ST.seen.includes('kirmes:' + dayOf(t))) {
+            ST.seen.push('kirmes:' + dayOf(t));
+            for (const k of D.KEYS) if (!D.P[k].npc && avail(k)) L(k, 2, 'Du warst auf der Kirmes');
+            save();
+            think(
+              'Kirmes! Blasmusik vom Anger, Manfred am Grill, Gerhard verkauft Lose. Und alle sagen: Endlich wieder.',
+              8000
+            );
+          }
+        }
+      }
+    }
+    if (ST.kd != null && !AMTWORLD.T.kirmes) AMTWORLD.T.kirmes = DCAL.dateOf(ST.kd + 600);
     // Katrin's school bus: on a school day 6:45–7:30 at the stop
     if (ST.tasks.bus === 0 && P.mode === 'walk') {
       const wd = DCAL.wd(t),
@@ -2167,6 +2298,8 @@ export const AMT = (() => {
     buttons: [...UI.el.querySelectorAll('.topics button')].map(b => b.textContent),
     book: !BOOK.el.hidden,
     homes: homes() ? Object.keys(homes()).length : 0,
+    door: DF.f ? DF.k : null,
+    track: TRK.k,
     world: AMTWORLD.state(),
     avail: D.KEYS.filter(avail),
   });
@@ -2245,6 +2378,7 @@ export const AMT = (() => {
       try {
         watchPanels();
         renderBook();
+        if (ST.kd != null) AMTWORLD.T.kirmes = DCAL.dateOf(ST.kd + 600);
         AMTWORLD.refresh(ST, now());
       } catch (e) {
         console.warn('amt start', e);

@@ -49,6 +49,7 @@ Freundeskreis, der ihm ein Stück weit folgt; dazu sechs Wähler ohne Kreis. Zus
   bekommt ihre Empfehlung), **Vorstellen beim Skatabend** (eine kurze Rede).
 - Was man vorher schon getan hat, zählt: die Freitags-Aufgabe der alten Schule, erledigte Besorgungen der Dorfbewohner, Huberts und Ronalds
   Aufgaben (`QUESTS.friendly`).
+- **Hubert** ist am Wahlsonntag bei seiner Schwester: Ohne die Briefwahl-Aufgabe fehlt seine Stimme ganz, mit ihr kommt sie sicher.
 
 **Die Wahl**: Jeder Haushalt und Freundeskreis stimmt nach der Meinung von dir gegen Uwes Ansehen (`rival`), der Rest nach der allgemeinen
 Stimmung; Wahlbeteiligung höher bei starken Gefühlen und bei denen, mit denen du geredet hast; etwa 1,5 % ungültig. Gezogen wird Stimmzettel
@@ -61,16 +62,20 @@ Stimmen für dich); mit etwa +10 bei allen und vielen Gesprächen wird es knapp;
    Tage später, 8–18 Uhr, Wahlraum alte Schule; Wahlvorschläge bis Mittwoch davor, 18 Uhr, im Rathaus.
 2. Jeder, mit dem man redet, spricht einen darauf an (ein Knopf „Die Nachwahl …“ im Gesprächsfenster der Dorfbewohner und der Nachbarn; an
    der Haustür jedes Dorfbewohners „Bei … klingeln“, 8–21 Uhr – nicht wenn er gerade mit dem Auto weg ist oder Freitagabend in der Schule).
+   Es klingelt (ding-dong), und wer öffnet, steht als Figur in der Tür, solange man redet. Wo jemand wohnt, steht in der Mappe unter
+   „Menschen“; „Weg“ zeigt den Weg (Markierung über dem Ziel, Richtung und Entfernung oben links – antippen beendet es). Auch die Ziele der
+   Aufgaben (Hydrant, Zaun, Haltestelle) werden so gezeigt.
 3. **Kandidieren** → 20 Unterschriften sammeln (wer dich ein bisschen kennt – Meinung ab 40 – unterschreibt mit seinem Haushalt, damit das Dorf eine Wahl hat; gute Freunde ab 60
    sammeln noch bei den Nachbarn) → **im Rathaus einreichen** (Auto „Mit dem Auto ins Rathaus“ oder Tagebuch „Ins Rathaus fahren“).
-   Frist verpasst → Uwe ist einziger Bewerber.
+   Frist verpasst → Uwe ist einziger Bewerber. Die Mappe und die Fahrt ins Rathaus gibt es auch im Menü (Abschnitt „Spiel“).
 4. **Wahlkampf**: reden, Fragen beantworten, Aufgaben, da sein.
 5. **Wahltag** (Sonntag): an der Tür der alten Schule „Wählen gehen“ (Wahlbenachrichtigung, Ausweis, Kabine, Urne; man darf sich selbst
    wählen); ab 18 Uhr „**Bei der Auszählung zuschauen**“ (öffentlich, Stapel für Stapel). Gewonnen: „Nehmen Sie die Wahl an?“ – Ingrid gibt
    die Mappe und den Schlüssel fürs Gemeindebüro, Uwe gratuliert, Gerhard schreibt es in die Chronik. Wer nicht hingeht, erfährt das Ergebnis
    um 21 Uhr. **Verloren**: Uwe ist Ortsvorsteher; nach zwölf Tagen legt er das Amt nieder (zu wenig Zeit neben dem Hof) – neue Nachwahl,
    die Meinungen bleiben.
-6. **Im Amt**: Die Leute grüßen anders („Tag, Herr Ortsvorsteher!“, verärgerte eher spitz). Sie bringen **Anliegen** („Hast du ein
+6. **Im Amt**: Die Leute grüßen anders („Tag, Herr Ortsvorsteher!“, verärgerte eher spitz). Jeden zweiten Morgen liegt ein Zettel mit
+   einem neuen Anliegen im Briefkasten. Sie bringen **Anliegen** („Hast du ein
    Anliegen?“): Laterne am Gartenweg (Katrin), Kirmes (Manfred), Mitfahrbank (Ingrid), Infotafel an der Schule (Gerhard), Tempo 30 (Katrin),
    Feldweg zur Klinge (Hubert), Ziegen und Zaun (Heike). **Ortsteilrat** (abends 17–22 Uhr an der Schultür „Sitzung eröffnen“): Manfred,
    Katrin, Gerhard, Uwe und du stimmen ab; Sachen des Ortsteils bezahlt er selbst (600 Euro im Jahr – Kirmes **oder** Mitfahrbank und Tafel,
@@ -110,7 +115,7 @@ ruft an seinem Eingang bzw. im Sitzungssaal `AMT.rathaus()` (Bürgerbüro: Wahla
 | Was im Dorf entsteht; Hydrant, Zaun | `viz3/src/amt/amt_world.js` (`AMTWORLD`) |
 | Spiel: Brief, Gespräche, Aufgaben, Rathaus, Wahltag, Amt, Fenster `#amtpanel`, Mappe `#amtbook` (O), Knopf `#amtbtn` | `viz3/src/amt/amt.js` (`AMT`) |
 | Aussehen | `viz3/shell/css/amt.css` |
-| Gespeichert | `pav-amt-v1` (`core/save.js`; jedes Feld einzeln geprüft, `AMTMODEL.sanitize`) |
+| Gespeichert | `pav-amt-v1` (`core/save.js`; jedes Feld einzeln geprüft, `AMTMODEL.sanitize` – wirft nie, auch nicht bei Schlüsseln wie `__proto__`) |
 
 Außerhalb des eigenen Ordners: je eine Zeile in `core/save.js` (Schlüssel), `src/modules.txt` (vier Module am Ende des Dorf-Blocks),
 `shell/parts.txt` (`css/amt.css`). In fremden Modulen wird nichts geändert: Der Knopf in den Gesprächsfenstern der Dorfbewohner
@@ -125,6 +130,6 @@ bash tools/browser_lock.sh python3 viz3/test/run.py --port 8978 --serve amt     
 bash tools/browser_lock.sh python3 viz3/test/run.py --port 8978 --serve amt:ask,rathaus   # nur Abschnitte
 ```
 
-Abschnitte: `start,ask,rathaus,wahltag,zaehlen,amt,welt,hydrant,gl`. Im Browser: `index.html?amt=brief|wahlkampf|wahltag|zaehlen|amt|stadtrat`
+Abschnitte: `start,ask,rathaus,wahltag,zaehlen,amt,welt,aufgaben,hydrant,gl`. Im Browser: `index.html?amt=brief|wahlkampf|wahltag|zaehlen|amt|stadtrat`
 springt an die Stelle (`?noamt` schaltet den Brief ab). Konsole: `AMT.state()`, `AMT.jump('wahltag')`, `AMT.talk('gerhard')`,
 `AMT.press('Unterschreibst')`, `AMT.count(true)`, `AMT.ortsrat()`, `AMT.council()`, `AMT.reset()`, `AMTWORLD.state()`.
