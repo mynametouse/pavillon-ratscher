@@ -136,18 +136,59 @@ export const DLIFE = (() => {
             [x, y] = at(-0.68 + i * 0.34 + (hh(j) - 0.5) * 0.06, (r ? 0.2 : -0.2) + (hh(j + 1) - 0.5) * 0.06),
             g = 0.28 + hh(j + 2) * 0.12,
             green = L(g * 0.75, g * 1.25, g * 0.45);
-          if (VEG.has(key)) {
-            // cabbage, lettuce: a round head of leaves
-            const rr = 0.11 + hh(j + 3) * 0.05;
-            k.ball(x, y, z + 0.08 + rr * 0.6, rr, green, 7);
+          if (VEG.has(key) && r === 0) {
+            // cabbage and lettuce: a head of leaves, a few loose leaves round it
+            const rr = 0.09 + hh(j + 3) * 0.04;
+            k.ball(x, y, z + 0.08 + rr * 0.7, rr, green, 7);
+            for (let b = 0; b < 3; b++) {
+              const ba = (b / 3) * Math.PI * 2 + hh(j + 6) * 2;
+              k.ball(
+                x + Math.cos(ba) * rr * 0.9,
+                y + Math.sin(ba) * rr * 0.9,
+                z + 0.1,
+                rr * 0.55,
+                green.map(v => v * 0.8),
+                5
+              );
+            }
+          } else if (VEG.has(key)) {
+            // leeks and onions: upright stalks
+            for (let b = 0; b < 3; b++) {
+              const sx = x + (hh(j + 7 + b) - 0.5) * 0.12,
+                sy = y + (hh(j + 9 + b) - 0.5) * 0.12,
+                ht = 0.22 + hh(j + 11 + b) * 0.14;
+              k.cyl(
+                sx,
+                sy,
+                z + 0.08,
+                z + 0.08 + ht,
+                0.018,
+                0.008,
+                5,
+                green.map(v => v * 0.85),
+                true
+              );
+            }
           } else {
-            // a little bush with blossoms
-            const rr = 0.1 + hh(j + 3) * 0.05,
+            // a little bush (three or four clumps of leaves) with blossoms
+            const rr = 0.08 + hh(j + 3) * 0.04,
               fl = key === 'ingrid' ? FL[0] : FL[Math.floor(hh(j + 4) * FL.length)];
-            k.ball(x, y, z + 0.08 + rr * 0.9, rr, green, 6);
             for (let b = 0; b < 4; b++) {
-              const ba = hh(j + 5 + b) * Math.PI * 2;
-              k.ball(x + Math.cos(ba) * rr * 0.6, y + Math.sin(ba) * rr * 0.6, z + 0.08 + rr * 1.6, 0.035, fl, 5);
+              const ba = (b / 3) * Math.PI * 2 + hh(j + 6) * 2,
+                o = b === 3 ? 0 : rr * 0.55;
+              k.ball(x + Math.cos(ba) * o, y + Math.sin(ba) * o, z + 0.08 + rr * (b === 3 ? 1.4 : 0.8), rr, green, 6);
+            }
+            for (let b = 0; b < 6; b++) {
+              const ba = hh(j + 5 + b) * Math.PI * 2,
+                o = rr * (0.5 + hh(j + 13 + b) * 0.6);
+              k.ball(
+                x + Math.cos(ba) * o,
+                y + Math.sin(ba) * o,
+                z + 0.08 + rr * (1.5 + hh(j + 17 + b) * 0.7),
+                0.04,
+                fl,
+                5
+              );
             }
           }
         }
