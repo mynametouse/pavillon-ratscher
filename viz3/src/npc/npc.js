@@ -951,12 +951,18 @@ function updateDrive(w, dt) {
     d.az = lerpAngle(d.az, h, Math.min(1, dt * 1.6));
     // V16b: waits while a vehicle stands in the way; slows down in tight turns and for the last point. (Since V16e the movement
     // statements below were stuck inside the end-of-line comment here, so Hubert's tractor never moved – Falko, 23.10.2026 2:28.)
+    // (the look ahead reaches no further than its next point and a metre: the parked car beside the field path stopped him for good
+    // on his way back, 0.9 m before a point; and after 12 s of waiting he goes on anyway)
     const last = d.i === R.length - 1,
       turn = Math.abs(lerpAngle(0, h - d.az, 1)),
-      sp =
-        window.VEH && LATE.VEH.blocked(d.x, d.y, d.az, 3.2)
-          ? 0
-          : d.sp * (turn > 0.6 ? 0.45 : 1) * (last ? Math.min(1, 0.25 + dist / 6) : 1); // slows down for the last point
+      blocked = !(d.ignore > 0) && window.VEH && LATE.VEH.blocked(d.x, d.y, d.az, Math.min(3.2, dist + 1.0));
+    d.wait = blocked ? (d.wait || 0) + dt : 0;
+    if (d.wait > 12) {
+      d.ignore = 6;
+      d.wait = 0;
+    }
+    if (d.ignore > 0) d.ignore -= dt;
+    const sp = blocked ? 0 : d.sp * (turn > 0.6 ? 0.45 : 1) * (last ? Math.min(1, 0.25 + dist / 6) : 1); // slows down for the last point
     const mv = Math.min(dist, sp * dt);
     d.x += Math.sin(d.az) * mv;
     d.y += Math.cos(d.az) * mv;
