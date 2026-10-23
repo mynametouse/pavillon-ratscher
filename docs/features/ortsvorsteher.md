@@ -47,7 +47,9 @@ Freundeskreis, der ihm ein Stück weit folgt; dazu sechs Wähler ohne Kreis. Zus
   stehen), **Ziegen im Gemüse** (Heike und Ronald: Partei ergreifen – oder gemeinsam den Zaun flicken; in einem Stand ohne Heike sind es
   Gerhards Bohnen), **Briefwahl für Hubert** (er ist am
   Wahlsonntag bei seiner Schwester; Vollmacht, Unterlagen im Rathaus abholen), **Was kann das Amt?** (Ingrid fragt drei Dinge – wer sie weiß,
-  bekommt ihre Empfehlung), **Vorstellen beim Skatabend** (eine kurze Rede).
+  bekommt ihre Empfehlung), **Vorstellung der Kandidaten** (freitagabends in der alten Schule bittet Ingrid nach vorn: erst Uwe, dann du –
+  was du betonst, freut die einen mehr als die anderen –, dann eine **Frage aus dem Saal**: die Antwort hören alle, wer sie später ändert,
+  verliert bei allen Vertrauen).
 - Was man vorher schon getan hat, zählt: die Freitags-Aufgabe der alten Schule, erledigte Besorgungen der Dorfbewohner, Huberts und Ronalds
   Aufgaben (`QUESTS.friendly`).
 - **Hubert** ist am Wahlsonntag bei seiner Schwester: Ohne die Briefwahl-Aufgabe fehlt seine Stimme ganz, mit ihr kommt sie sicher.
@@ -126,10 +128,12 @@ Mit der begehbaren Stadt (Branch `feat/schleusingen`, `welt/schleusingen.js`, `S
 | Aussehen | `viz3/shell/css/amt.css` |
 | Gespeichert | `pav-amt-v1` (`core/save.js`; jedes Feld einzeln geprüft, `AMTMODEL.sanitize` – wirft nie, auch nicht bei Schlüsseln wie `__proto__`) |
 
-Außerhalb des eigenen Ordners: je eine Zeile in `core/save.js` (Schlüssel), `src/modules.txt` (vier Module am Ende des Dorf-Blocks),
-`shell/parts.txt` (`css/amt.css`). In fremden Modulen wird nichts geändert: Der Knopf in den Gesprächsfenstern der Dorfbewohner
+Außerhalb des eigenen Ordners: eine Zeile in `core/save.js` (Schlüssel), der eigene Block `# feat/ortsvorsteher` in `src/modules.txt`
+(vier Module hinter dem Dorf-Block), eine Zeile in `shell/parts.txt` (`css/amt.css`). In fremden Modulen wird nichts geändert: Der Knopf in den Gesprächsfenstern der Dorfbewohner
 (`#dorfpanel .topics`) und der Nachbarn (`#np-topics`) wird zur Laufzeit eingefügt (MutationObserver), der Gruß im Amt über `DORF.UI.say`;
-gelesen werden `DORF.S`/`DORF.ST`, `DPEOPLE.figs`, `DSCHOOL`, `DLIFE.homes/away` (wenn vorhanden), `QUESTS.friendly`, `NPCS`, `PAD`, `VEH.by.car`.
+gelesen werden `DORF.S`/`DORF.ST`, `DPEOPLE.figs`, `DSCHOOL`, `DLIFE.homes/away` und `SCHL` (wenn vorhanden), `QUESTS.friendly`, `NPCS`,
+`PAD`, `VEH.by.car`. Die Figur in der Haustür lädt AMT selbst (dieselben Dateien `chars/dorf_*.json`, `rbPerson`), damit das Dorfleben seine
+Figuren nicht mittendrin verwirft.
 
 ## Testen
 

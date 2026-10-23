@@ -135,9 +135,14 @@ with lib.browser() as b:
         st = J("AMT.jump('stadtrat')"); E("AMT.council()"); st = J('AMT.state()')
         ck('the town council: swearing in first', st['panel'] == 'council' and 'schwöre' in st['say'] and st['sworn'], st['say'][:80])
         page_shot(pg, 'i_stadtrat_eid')
-        for i in range(8):
+        for i in range(10):
+            if J("AMT.state().say").find('Dorfgemeinschaftshäuser') >= 0: break
             if not E("AMT.press('Zur Tagesordnung') || AMT.press('Vortragen') || AMT.press('Weiter')"): break
         st = J('AMT.state()'); print('after the council', json.dumps(st['anl']), flush=True)
+        ck('a citywide item: the fee rules for the village halls – you may speak, not vote', 'Dorfgemeinschaftshäuser' in st['say'] and any('Vereine frei' in x for x in st['buttons']), st['say'][:80])
+        page_shot(pg, 'j_stadtrat_satzung')
+        E("AMT.press('Vereine frei, private Feiern')"); ck('your compromise is taken', J('AMT.ST.sat') == 'mitte', str(J('AMT.ST.sat')))
+        E("AMT.press('Weiter')")
         ck('the council decided with reasons (the speed limit goes to the district office)', st['anl'].get('tempo30') in ('kreis', 'later') and st['anl'].get('laterne') in ('yes', 'later', 'no'), json.dumps(st['anl']))
         page_shot(pg, 'j_stadtrat_beschluss')
         E("AMT.UI.close()")

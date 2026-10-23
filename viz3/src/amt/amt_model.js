@@ -57,6 +57,7 @@ export const AMTMODEL = (() => {
       retry: null, // game minute a new chance comes (after a lost or missed election)
       kd: null, // the Kirmes: game minute of its Saturday (once the Ortsteilrat has paid for it)
       hh: null, // the hearing on the town's draft budget: null, 'open' (the letter came), 'done'
+      sat: null, // the town's new fee rules for the village halls (a citywide item in the council): what one said – 'frei', 'mitte', 'still'
     };
   }
   // a saved state, checked field by field: broken values fall back to fresh ones (the page must start whatever is stored)
@@ -75,6 +76,7 @@ export const AMTMODEL = (() => {
     if (Number.isFinite(s.eday)) o.eday = Math.floor(s.eday);
     o.letter = s.letter === true;
     if (s.hh === 'open' || s.hh === 'done') o.hh = s.hh;
+    if (['frei', 'mitte', 'still'].includes(s.sat)) o.sat = s.sat;
     o.voted = s.voted === true ? true : s.voted === 'opp' ? 'opp' : false;
     o.sworn = s.sworn === true;
     if (s.rep && typeof s.rep === 'object') for (const k of D.KEYS) o.rep[k] = num(s.rep[k], o.rep[k], 0, 100);

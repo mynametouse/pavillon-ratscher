@@ -1629,12 +1629,13 @@ export const AMT = (() => {
     if (pr && pr.o !== 'nein') for (const k of pr.told) L(k, 3, why);
   }
   // the town council in Schleusingen (Thursdays): swearing in, then the motions of the Ortsteilrat
-  const CNC = { items: [], i: 0 };
+  const CNC = { items: [], i: 0, sat: 0 };
   function council() {
     CNC.items = Object.keys(ST.anl).filter(
       id => ST.anl[id].st === 'stadt' || (ST.anl[id].st === 'later' && ST.anl[id].est)
     );
     CNC.i = 0;
+    CNC.sat = 0;
     UI.open('Stadtratssitzung', 'Sitzungssaal im Rathaus Schleusingen · öffentlich', '', {
       id: 'council',
       free: !RATH.real,
@@ -1654,7 +1655,64 @@ export const AMT = (() => {
     }
     cncItem();
   }
+  // a citywide item: the town's new rules for the village halls (fees). The Ortsvorsteher may speak – not vote. What one says, and how
+  // much one counts in the council, decides what Ratscher's fire brigade will pay for its Friday evenings in the old school.
+  function satzung() {
+    UI.say(
+      'Nächster Tagesordnungspunkt, für die ganze Stadt: die Satzung über die Benutzung der Dorfgemeinschaftshäuser. Die Verwaltung schlägt vor: Wer ein Haus der Stadt nutzt, zahlt künftig 15 Euro je Abend – auch die Vereine. Das träfe die Feuerwehr in der alten Schule, jeden Freitag. Du darfst reden, abstimmen nicht.'
+    );
+    const done = (sat, txt, eff, why) => {
+      ST.sat = sat;
+      E(eff, why);
+      save();
+      UI.say(txt);
+      UI.buttons([['Weiter', () => cncItem(), 'quest']]);
+    };
+    UI.buttons([
+      [
+        'Reden: Vereine pflegen die Häuser selbst – sie sollen frei bleiben',
+        () => {
+          const ok = ST.council >= 40;
+          done(
+            'frei',
+            ok
+              ? 'Du erzählst von den Wochenenden, an denen die Feuerwehr die alte Schule hergerichtet hat. Zwei Stadträte nicken, dann noch einer. Die Satzung wird geändert: Vereine bleiben frei.'
+              : 'Du erzählst von den Wochenenden in der alten Schule. Höflicher Beifall – aber die Mehrheit beschließt die Satzung wie vorgeschlagen: 15 Euro je Abend, auch für Vereine. Wer im Rathaus noch neu ist, muss sich erst Gehör verschaffen.',
+            ok ? { manfred: 6, jens: 3, gerhard: 2, ingrid: 2 } : { manfred: 2 },
+            ok ? 'Du hast im Stadtrat für die Vereine gesprochen – mit Erfolg' : 'Du hast es im Stadtrat versucht'
+          );
+          ST.council = Math.min(100, ST.council + (ok ? 6 : 3));
+        },
+        'quest',
+      ],
+      [
+        'Vorschlag: Vereine frei, private Feiern zahlen',
+        () =>
+          done(
+            'mitte',
+            'Du schlägst vor: Vereine nutzen die Häuser frei, wer privat feiert, zahlt. Die Verwaltung rechnet kurz – so kommen die Kosten trotzdem herein. Angenommen, mit deiner Änderung.',
+            { manfred: 4, jens: 2, uwe: 2, gerhard: 1 },
+            'Dein Kompromiss im Stadtrat: Vereine frei, private Feiern zahlen'
+          ),
+        'quest',
+      ],
+      [
+        'Nichts sagen – das ist Sache der Stadt',
+        () =>
+          done(
+            'still',
+            'Die Satzung wird beschlossen: 15 Euro je Abend, auch für Vereine. Am Freitag fragt Manfred, warum der Ortsvorsteher nichts gesagt hat.',
+            { manfred: -8, jens: -4, gerhard: -2, ingrid: -2 },
+            'Du hast im Stadtrat geschwiegen, als es um die alte Schule ging'
+          ),
+      ],
+    ]);
+  }
   function cncItem() {
+    if (CNC.i >= CNC.items.length && ST.sworn && ST.sat == null && CNC.sat !== 1) {
+      CNC.sat = 1;
+      return satzung();
+    }
     if (CNC.i >= CNC.items.length) {
       UI.say(
         CNC.items.length
