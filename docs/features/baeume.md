@@ -39,7 +39,8 @@ biegt sich wenigstens. Das Spiel soll dabei etwas lehren: Stammdurchmesser, Kraf
 5. **Liegen bleiben**: ein umgedrückter Baum verlässt sofort die Kollisionen (kein Hindernis mehr, auch nicht für Gehende), liegt auf dem
    Boden (Hang beachtet, Krone hält den Stamm etwas hoch) mit aufgestelltem Wurzelteller und bleibt nach dem Neuladen liegen
    (Speicher `pav-trees-v1`: `{ v: 1, t: [[x, y, Richtung°, Winkel], …] }`, höchstens 2000). Darüberfahren: rollt ein Rad über den
-   liegenden Stamm, ruckt das Fahrzeug (Nicken/Wanken) und verliert Tempo – je dicker und schneller, desto mehr –, in der Krone knacken Äste.
+   liegenden Stamm, ruckt das Fahrzeug (Nicken/Wanken) und verliert Tempo: die Federn schlucken etwa die Hubarbeit des Rads (Masse je Rad ·
+   g · Stammdurchmesser) – im Schritttempo ein guter Teil, schnell kaum etwas; in der Krone knacken Äste und bremsen ein wenig.
 
 ## Wo der Code ist
 

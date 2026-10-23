@@ -572,10 +572,11 @@ export const TREEHIT = (() => {
           on = al > 0.2 && al < L.L * 0.6 && la < T.D / 2 + 0.12,
           bit = 1 << k;
         if (on && !(L.on & bit)) {
-          // the stem under a wheel: the thicker and the faster, the harder the jolt
-          const j = Math.min(0.35, T.D * 2.2) * Math.min(1, spd / 4);
-          s.u *= 1 - j;
-          s.v *= 1 - j;
+          // the stem under a wheel: the wheel's share of the vehicle climbs it, the springs swallow about that energy (m/n · g · D) –
+          // slowly that is a good part of the speed, fast hardly any; the faster and the thicker, the harder the jolt
+          const k = Math.sqrt(Math.max(0, 1 - (2 * G * T.D) / (Math.max(2, v.W.length) * spd * spd)));
+          s.u *= k;
+          s.v *= k;
           s.pv += Math.sign(w.y || 1) * Math.min(0.5, T.D * 4) * Math.min(1, spd / 2);
           s.rv += Math.sign(w.x || 1) * Math.min(0.35, T.D * 3) * Math.min(1, spd / 2);
           snd('bump', p[0], p[1], Math.min(1, T.D * 6));
