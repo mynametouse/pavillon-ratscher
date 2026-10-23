@@ -173,7 +173,7 @@ window.SAVE = SAVE;
   K('pav-loadlog', 'Ladeprotokoll', 'json', null, obj);
   K('pav-view', 'Kamera: Schulter (3) oder Augen (1)', 'text', null, oneOf('3', '1'));
   K('pav-sound', 'Ton an/aus', 'text', null, oneOf('1', '0'));
-  K('pav-fig', 'Figur', 'text', null);
+  K('pav-fig', 'Spielfigur (m Falko, f Sarah, c Christoph)', 'text', null, oneOf('m', 'f', 'c'));
   K('pav-lock', 'Maus fangen', 'text', null, oneOf('1', '0'));
   K('pav-wpcard', 'Werkstück-Karte', 'text', null, oneOf('1', '0'));
   K('pav-clean', 'Freie Sicht (Anzeigen aus)', 'text', null, oneOf('1', '0'));
