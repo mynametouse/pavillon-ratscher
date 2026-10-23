@@ -17,7 +17,7 @@ schickt; unterwegs Schleusingen.
 - **Straßen**: alle Autostraßen aus OpenStreetMap um Schleusingen bis Kloster Veßra (828 Wege, 175 km) mit einem **geglätteten
   Längsprofil** – derselbe Glätter wie die Kachel-Pipeline (`tools/welt/roads.py`: gemeinsame Knoten, Brücken gerade), gerechnet auf den
   Kachelhöhen (Wellen je km: Landstraßen 9,0 → 0,1, Ortsstraßen 13,8 → 3,1). Das Kachelnetz wird an den Straßen auf dieses Profil
-  **eingeschnitten** (Fahrbahn mit Dachprofil, Bankett, Böschungen 1 : 1,5; `WELT.setPads` unter den Flächen der Zonen) – Räder, Füße
+  **eingeschnitten** (Fahrbahn mit Dachprofil, Bankett, Böschungen 1 : 2; `WELT.setPads` unter den Flächen der Zonen) – Räder, Füße
   und Augen stehen auf demselben Boden. Am Rand des Quadrats treffen die Profile das 10-m-Gelände (im Quadrat sind dessen Höhen die
   Daten des Glätters): keine Stufe, kein Überblenden. Fahrbahnbelag für Haftung und Rollwiderstand (`KERN.surface`); auf dem Luftbild
   nahe dem Fahrzeug Asphalt statt der Pflastersteine, die der Kachel-Shader sonst aus grauen Flächen macht (`WELT.setOverlay`, solange
@@ -30,7 +30,7 @@ schickt; unterwegs Schleusingen.
 - **Ortstafeln** (gelb, schwarzer Rand) an den Ortseingängen: vorn Name und Gemeinde („Stadt Schleusingen“) bzw. Landkreis, hinten der
   nächste Ort und der durchgestrichene Name; wo OSM sie kennt, an ihrem Ort, sonst am Rand der Bebauung. **Wegweiser** an den Kreuzungen
   der beiden Routen („Kloster Veßra 8,4 ↑ / Schleusingen 0,7 →“). Gebaut nur im Umkreis von 450 m.
-- **Karte beim Fahren**: draußen die Straßen und die beiden Routen (Garten → Markt Schleusingen 3,7 km, Garten → Baumschule 10,8 km),
+- **Karte beim Fahren**: draußen die Straßen und die beiden Routen (Garten → Markt Schleusingen 3,7 km, Garten → Baumschule 10,7 km),
   unten das Ziel in Fahrtrichtung mit Entfernung.
 
 - **Szenarien** `?szenario=fahrt` („Im Auto auf der Straße nach Schleusingen“): im Auto auf der L 3004, 160 m vor der Ortstafel von
@@ -62,7 +62,8 @@ in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide R
 - Neuer `window`-Name: `FAHRT` (`status()`, `data`, `roadAt`, `place`). Keine Speicher-Schlüssel. Shader-Programme: Schilder und Brücken
   teilen die der Schleusinger Schilder und Requisiten (Standard-Material mit Bild bzw. mit Vertexfarben); gemessen +1 bis +3.
 - Eintrag für `docs/ARCHITECTURE.md` (Modulkarte, Abschnitt 6): `FAHRT` – welt/fahrt.js – Fahrt über das 2,4-km-Quadrat hinaus:
-  Kacheln vor dem Fahrzeug, Rand der Karte, Straßen mit Längsprofil (eingeschnitten), Brücken, Ortstafeln, Wegweiser, Karte, Szenario `fahrt`.
+  Kacheln vor dem Fahrzeug, Rand der Karte, Straßen mit Längsprofil (eingeschnitten), Brücken, Ortstafeln, Wegweiser, Karte, Szenarien
+  `fahrt` und `fahrt-vessra`.
 - `viz3/extra/fahrt/tests.txt` nennt beim Übergeben nur `fahrt` (Schleusingen und Veßra liefen auf diesem Branch mit, grün).
 
 ## Testen
