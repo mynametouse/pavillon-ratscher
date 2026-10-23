@@ -402,6 +402,7 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
   lwc(r, 'x', -hx, hx, hy - T, hy + 0.01, zf, zH, [{ a0: DN.a0, a1: DN.a1, s: zf - 0.1, h: zf + 2.0 }]);
   lwc(r, 'x', -hx, hx, -hy - 0.01, -hy + T, 0, zH);
   lcol(r, -hx, hx, -hy, hy, 0, 0.24, 'base');
+  lwalk(r, -hx + T, hx - T, -hy + T, hy - T, zL); // the roof as a surface: keeps the shoulder camera inside
   lcol(r, px0, px1, py0, py1, zf, zt + 0.06, 'bench');
   lcol(r, sx0, sx1, sy0, yi1, zf, zf + 1.9, 'shelf');
   lcol(r, xi1 - 0.35, xi1, -0.5, 0.75, zf, zf + 0.35, 'cans');

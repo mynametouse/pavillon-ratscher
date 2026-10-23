@@ -20,8 +20,13 @@ const GARTEN = (() => {
     return [w[0], w[1], l.z];
   };
   function setGlow(l) {
+    if (!l.mat) return;
     l.mat.emissiveIntensity = S.on[l.key] ? l.glow : 0;
     l.mat.color.set(S.on[l.key] ? 0xfff6e6 : 0xf3ead6);
+  }
+  // a lamp whose light flickers (the stove): k = 0..1 of its intensity, only while the light is with it
+  function flicker(key, k) {
+    if (S.cur && S.cur.key === key) light.intensity = S.cur.inten * k;
   }
   // which lamp the one light belongs to: a lit lamp in the room the walker is in, else the nearest lit one within 30 m
   function pick() {
@@ -40,26 +45,30 @@ const GARTEN = (() => {
     }
     return best && bd < 30 ? best : null;
   }
+  // seen from outside the lamp reaches less far (no shadows: the light would shine through walls and roof onto lawn and trees)
   function place(force) {
-    const l = pick();
-    if (l === S.cur && !force) return;
+    const l = pick(),
+      P = LATE.P,
+      inRoom = !!(l && P && l.room(P.x, P.y, P.feet + 1));
+    if (l === S.cur && inRoom === S.inRoom && !force) return;
     S.cur = l;
+    S.inRoom = inRoom;
     if (l) {
       const p = pos(l);
       light.position.copy(V(p[0], p[1], p[2] - 0.06));
-      light.distance = l.dist;
+      light.distance = inRoom ? l.dist : l.dist * 0.68;
       light.color.set(l.color);
       light.intensity = l.inten;
     } else light.intensity = 0;
     markDirty();
   }
-  function set(key, v) {
+  function set(key, v, quiet) {
     const l = GLAMPS.find(q => q.key === key);
     if (!l) return false;
     S.on[key] = v === undefined ? !S.on[key] : !!v;
     setGlow(l);
     place(true);
-    if (LATE.SFX && LATE.SFX.click) LATE.SFX.click();
+    if (!quiet && LATE.SFX && LATE.SFX.click) LATE.SFX.click();
     return S.on[key];
   }
   // ---- actions: switches, seats, small jobs (registered once the game layer is there) ----
@@ -68,7 +77,7 @@ const GARTEN = (() => {
     if (S.wired || !PLAY) return;
     S.wired = true;
     const P = () => LATE.P;
-    for (const l of GLAMPS)
+    for (const l of GLAMPS.filter(q => q.sw))
       PLAY.act({
         id: 'garten:licht:' + l.key,
         r: l.r || 1.3,
@@ -166,6 +175,8 @@ const GARTEN = (() => {
       t: 0,
       think: () => {},
       dirty: () => markDirty(true),
+      lamp: (key, v) => set(key, v, true),
+      flicker,
       sound: k => {
         const P = LATE.P,
           w = W(a.b, a.lx, a.ly);

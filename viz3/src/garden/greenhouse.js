@@ -17,7 +17,7 @@ import {
   slopeSlab,
   worldOf,
 } from './site_base.js';
-import { jar, KM, leaf, plant, pot, put, rng, stone, wateringCan } from './garten_kit.js';
+import { GACTS, jar, KM, leaf, plant, pot, put, rng, stone, wateringCan } from './garten_kit.js';
 // Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends now face north and south: turned
 // by 90° about its centre (site data: heading 96°, the long side east–west) and moved 0.5 m north, clear of the hut's new door
 {
@@ -136,7 +136,7 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
       g.add(s);
       tagPh(s);
       if (k > 0 && rnd() < 0.8) {
-        const t = new THREE.Mesh(new THREE.SphereGeometry(0.03 + rnd() * 0.012, 8, 6), MATS.tomato);
+        const t = new THREE.Mesh(new THREE.SphereGeometry(0.03 + rnd() * 0.012, 8, 6), KM.tomato);
         t.position.copy(V(lx + (rnd() - 0.5) * 0.2, ly + 0.12 * (rnd() > 0.5 ? 1 : -1), z - 0.12));
         g.add(t);
         tagPh(t);
@@ -259,6 +259,33 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     [1.55, -0.1, 0.22],
   ])
     stone(g, b, x, y, sz, R, FOOT);
+  // pick the ripe tomatoes (the green ones stay)
+  const ghIn = (x, y, z) => {
+    const a = (b.az * Math.PI) / 180,
+      dx = x - b.c[0],
+      dy = y - b.c[1];
+    return (
+      z < 2.5 &&
+      Math.abs(dx * Math.sin(a) + dy * Math.cos(a)) < hx + 0.6 &&
+      Math.abs(-dx * Math.cos(a) + dy * Math.sin(a)) < hy
+    );
+  };
+  GACTS.push({
+    key: 'tomaten',
+    b,
+    lx: 0.1,
+    ly: -0.2,
+    z: 0.9,
+    r: 1.3,
+    room: ghIn,
+    label: st => (st.done ? null : 'Tomaten ernten'),
+    run: st => {
+      st.done = 1;
+      KM.tomato.color.set(0x8aa646);
+      st.think('Eine Schüssel voll Tomaten – sie schmecken nach Sommer.');
+      st.dirty();
+    },
+  });
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: 0, z1: 2.1, name: 'Gewächshaus' });
   FOOT.push({ b, hx: hx + 0.05, hy: hy + 0.05, ox: 0, oy: 0 });
 }

@@ -323,6 +323,11 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     gB(g, hx + 0.02, hx + 0.2, a0 + 0.02, a1 - 0.02, zb - 0.16, zb, MAT.larch, { cast: false });
     for (let i = 0; i < 4; i++) plant(g, hx + 0.11, a0 + 0.13 + i * 0.18, zb - 0.02, 0.2, 'geranium', R);
   }
+  for (const o of OPS.W) {
+    const zb = o.s - 0.06;
+    gB(g, o.a0 + 0.02, o.a1 - 0.02, hy + 0.02, hy + 0.2, zb - 0.16, zb, MAT.larch, { cast: false });
+    for (let i = 0; i < 4; i++) plant(g, o.a0 + 0.13 + i * 0.18, hy + 0.11, zb - 0.02, 0.2, 'geranium', R);
+  }
   // ===================== inside =====================
   const xi0 = -hx + T,
     xi1 = hx - T,
@@ -391,17 +396,33 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   const steamM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
   {
     const kz2 = kz + wt + 0.015;
-    put(g, new THREE.SphereGeometry(0.09, 14, 10), KM.enamelRed, 2.08, 0.79, kz2 + 0.07, { s: [1, 0.8, 1] });
-    put(g, new THREE.CylinderGeometry(0.012, 0.018, 0.1, 7), KM.enamelRed, 2.0, 0.79, kz2 + 0.1, { rz: 0.9 });
-    put(g, new THREE.TorusGeometry(0.06, 0.008, 5, 10, Math.PI), MAT.black, 2.08, 0.79, kz2 + 0.12, { cast: false });
+    // whistling kettle: turned enamel body, lid with knob, spout with whistle cap, black handle
+    const prof = [
+      [0, 0],
+      [0.085, 0],
+      [0.1, 0.03],
+      [0.098, 0.07],
+      [0.075, 0.13],
+      [0.045, 0.155],
+      [0.045, 0.165],
+      [0, 0.165],
+    ].map(([x, y]) => new THREE.Vector2(x, y));
+    put(g, new THREE.LatheGeometry(prof, 18), KM.enamelRed, 2.08, 0.79, kz2);
+    put(g, new THREE.SphereGeometry(0.014, 8, 6), MAT.black, 2.08, 0.79, kz2 + 0.175, { cast: false });
+    put(g, new THREE.CylinderGeometry(0.011, 0.02, 0.12, 8), KM.enamelRed, 1.99, 0.79, kz2 + 0.09, { rz: 0.95 });
+    put(g, new THREE.CylinderGeometry(0.014, 0.014, 0.025, 8), MAT.black, 1.94, 0.79, kz2 + 0.125, {
+      rz: 0.95,
+      cast: false,
+    });
+    put(g, new THREE.TorusGeometry(0.065, 0.009, 6, 12, Math.PI), MAT.black, 2.09, 0.79, kz2 + 0.15, { cast: false });
     for (let i = 0; i < 4; i++) {
       const s = put(
         g,
-        new THREE.SphereGeometry(0.03 + i * 0.012, 8, 6),
+        new THREE.SphereGeometry(0.02 + i * 0.012, 8, 6),
         steamM,
-        1.95 - i * 0.04,
+        1.92 - i * 0.035,
         0.79,
-        kz2 + 0.17 + i * 0.07,
+        kz2 + 0.16 + i * 0.065,
         {
           cast: false,
         }
@@ -441,7 +462,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
         st.sound('whistle');
         st.think('Das Teewasser kocht.');
       }
-      steamM.opacity = st.k === 2 ? 0.22 + 0.1 * Math.sin(st.t * 5.3) : Math.max(0, steamM.opacity - dt * 0.4);
+      steamM.opacity = st.k === 2 ? 0.13 + 0.06 * Math.sin(st.t * 5.3) : Math.max(0, steamM.opacity - dt * 0.3);
       return true;
     },
   });
@@ -459,10 +480,20 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   for (const xb of [1.45, 2.31])
     gB(g, xb - 0.012, xb + 0.012, yi1 - 0.22, yi1, zf + 1.24, zf + 1.36, MAT.oak, { cast: false });
   for (let i = 0; i < 6; i++)
-    put(g, new THREE.CylinderGeometry(0.11, 0.11, 0.012, 18), KM.porcelain, 1.55 + i * 0.012, yi1 - 0.13, zf + 1.47, {
-      rz: Math.PI / 2 - 0.15,
-      cast: false,
-    });
+    put(
+      g,
+      new THREE.CylinderGeometry(0.095, 0.095, 0.01, 20),
+      i % 3 ? KM.porcelain : KM.enamelGreen,
+      1.52 + i * 0.03,
+      yi1 - 0.13,
+      zf + 1.462,
+      {
+        rz: Math.PI / 2 - 0.12,
+        cast: false,
+      }
+    );
+  for (const xx of [1.5, 1.7])
+    gB(g, xx, xx + 0.01, yi1 - 0.2, yi1 - 0.06, zf + 1.365, zf + 1.43, MAT.oak, { cast: false });
   for (let i = 0; i < 4; i++)
     mug(g, 1.82 + i * 0.12, yi1 - 0.12, zf + 1.365, i % 2 ? KM.porcelain : KM.enamelGreen, 90);
   const jarFill = [KM.cream, MAT.logEnd, KM.straw, MAT.rust];
@@ -536,12 +567,77 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   gB(g, -2.2, 2.2, -0.36, 0.36, zf, zf + 0.008, KM.rag, { cast: false, grain: 'x' });
   gB(g, -1.9, -0.65, -2.24, -1.82, zf, zf + 0.008, KM.rag, { cast: false, grain: 'y' });
   {
-    const w = W(0.1, 2.02);
-    placeGLB('plant_a', { x: w[0], y: w[1], z: zf, face: 30, h: 0.95, col: false });
-    lcol(r, -0.18, 0.38, 1.75, 2.35, zf, zf + 0.9, 'plant');
+    const w = W(2.02, -1.55);
+    placeGLB('plant_a', { x: w[0], y: w[1], z: zf, face: 30, h: 0.9, col: false });
+    lcol(r, 1.75, 2.35, -1.85, -1.25, zf, zf + 0.85, 'plant');
+  }
+  // a little cast-iron stove (Kanonenofen) between sofa and kitchen on a tile plate, the pipe up through the west roof;
+  // light it: the fire glows behind the door and flickers on the walls (it shares the one lamp light)
+  const fireM = new THREE.MeshBasicMaterial({ color: 0x1a0d06 });
+  {
+    const sx = 0.1,
+      sy = 2.05,
+      zr0 = zw + (hy - sy) * pitch; // roof surface above the stove
+    gB(g, sx - 0.38, sx + 0.38, sy - 0.33, yi1, zf, zf + 0.02, MAT.slate, { cast: false });
+    gB(g, sx - 0.36, sx + 0.36, yi1 - 0.012, yi1, zf + 0.02, zf + 1.3, KM.tiles, { cast: false });
+    cyl(sx, sy, zf + 0.02, zf + 0.12, 0.2, MAT.blacksteel, 18, 0.22, { parent: g, col: false });
+    cyl(sx, sy, zf + 0.12, zf + 0.72, 0.19, MAT.blacksteel, 20, undefined, { parent: g, col: false });
+    cyl(sx, sy, zf + 0.72, zf + 0.8, 0.21, MAT.blacksteel, 20, 0.19, { parent: g, col: false });
+    for (const z of [zf + 0.3, zf + 0.6])
+      put(g, new THREE.TorusGeometry(0.195, 0.012, 6, 24), MAT.brass, sx, sy, z, { rx: Math.PI / 2, cast: false });
+    // fire door towards the room (−y) with a mica window, handle
+    gB(g, sx - 0.09, sx + 0.09, sy - 0.205, sy - 0.18, zf + 0.22, zf + 0.42, MAT.blacksteel, { cast: false });
+    gB(g, sx - 0.065, sx + 0.065, sy - 0.209, sy - 0.2, zf + 0.25, zf + 0.39, fireM, { cast: false });
+    gB(g, sx + 0.06, sx + 0.1, sy - 0.225, sy - 0.205, zf + 0.31, zf + 0.33, MAT.brass, { cast: false });
+    cyl(sx, sy, zf + 0.8, zr0 + 0.62, 0.06, MAT.blacksteel, 14, undefined, { parent: g, col: false });
+    put(g, new THREE.ConeGeometry(0.12, 0.08, 14), MAT.blacksteel, sx, sy, zr0 + 0.68);
+    gB(g, sx - 0.1, sx + 0.1, sy - 0.1, sy + 0.1, zr0 + 0.04, zr0 + 0.1, MAT.zinc, { cast: false });
+    // a basket of firewood beside it
+    GL('basket', sx + 0.28, sy - 0.43, zf, 30, { h: 0.22, col: false });
+    for (let i = 0; i < 4; i++)
+      put(
+        g,
+        new THREE.CylinderGeometry(0.035, 0.035, 0.3, 8),
+        [MAT.logs, MAT.logEnd, MAT.logEnd],
+        sx + 0.28,
+        sy - 0.43 + (i - 1.5) * 0.06,
+        zf + 0.2 + (i % 2) * 0.05,
+        {
+          rz: Math.PI / 2,
+          cast: false,
+        }
+      );
+    lcol(r, sx - 0.25, sx + 0.25, sy - 0.25, sy + 0.25, zf, zf + 0.85, 'stove');
+    GACTS.push({
+      key: 'ofen',
+      b,
+      lx: sx,
+      ly: sy - 0.5,
+      z: zf + 0.5,
+      r: 1.1,
+      room: (x, y, z) => inLoc(x, y, 0, 0, hx, hy) && z < 2.6,
+      label: st => (st.k ? 'Feuer ausgehen lassen' : 'Feuer im Ofen anzünden'),
+      run: st => {
+        st.k = st.k ? 0 : 1;
+        st.t = 0;
+        if (st.k) st.think('Das Holz knistert – gleich wird es warm.');
+        st.lamp('ofen', !!st.k);
+        st.dirty();
+      },
+      tick: (dt, st) => {
+        st.t = (st.t || 0) + dt;
+        const want = st.k ? 1 : 0;
+        st.f = (st.f || 0) + Math.sign(want - (st.f || 0)) * Math.min(Math.abs(want - (st.f || 0)), dt / 3);
+        if (st.f < 0.002 && !st.k) return false;
+        const fl = st.f * (0.8 + 0.2 * Math.sin(st.t * 13.1) * Math.sin(st.t * 7.3 + 1.2));
+        fireM.color.setRGB(0.1 + 0.9 * fl, 0.05 + 0.4 * fl, 0.02 + 0.05 * fl);
+        st.flicker('ofen', fl);
+        return true;
+      },
+    });
   }
   picture(g, 'x', -1.85, yi1, 1.55, 0.46, 0.36, 0, '-y');
-  picture(g, 'x', 0.1, yi1, 1.62, 0.32, 0.42, 1, '-y', MAT.black);
+  picture(g, 'y', -2.0, xi0, 1.55, 0.3, 0.38, 1, '+x', MAT.black);
   curtain(g, 'x', -1.62, -1.3, yi1 - 0.06, 0.98, 1.95, KM.curtainSage, '-y', 3, 0.03);
   curtain(g, 'x', -0.6, -0.28, yi1 - 0.06, 0.98, 1.95, KM.curtainSage, '-y', 3, 0.03);
   gB(g, -1.7, -0.2, yi1 - 0.07, yi1 - 0.05, 1.96, 1.98, MAT.oak, { cast: false });
@@ -770,7 +866,19 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   gB(g, xi1 - 0.05, xi1 - 0.028, SW[1] - 0.007, SW[1] + 0.007, SW[2] - 0.026, SW[2] + 0.026, KM.bakelite, {
     cast: false,
   });
-  picture(g, 'y', -0.92, xi1, 1.62, 0.3, 0.24, 3, '-x', MAT.black);
+  picture(g, 'x', -0.3, AY0 + T, 1.5, 0.34, 0.27, 3, '+y', MAT.black);
+  for (const [a0, a1] of [
+    [-2.2, -1.9],
+    [-1.2, -0.9],
+  ])
+    curtain(g, 'y', a0, a1, xi1 - 0.06, 0.93, 1.95, KM.curtainLinen, '-x', 3, 0.025);
+  gB(g, xi1 - 0.07, xi1 - 0.05, -2.25, -0.85, 1.96, 1.98, MAT.oak, { cast: false });
+  for (const [a0, a1] of [
+    [0.4, 0.66],
+    [1.28, 1.54],
+  ])
+    curtain(g, 'y', a0, a1, xi0 + 0.06, 0.98, 1.95, KM.curtainSage, '+x', 3, 0.025);
+  gB(g, xi0 + 0.05, xi0 + 0.07, 0.35, 1.6, 1.96, 1.98, MAT.oak, { cast: false });
   // ---- the bare bulb in the middle of the room ----
   const bulb = bareBulb(g, 0.1, -0.15, zw - 0.02, 1.9);
   bookMesh(g, books, R);
@@ -785,6 +893,22 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   const inside = (x, y, z) =>
     z > -0.5 && z < 2.6 && (inLoc(x, y, 0, 0, hx, hy) || inLoc(x, y, ANX.ox, ANX.oy, ANX.hx, ANX.hy));
   GLAMPS.push(
+    {
+      key: 'ofen',
+      b,
+      lx: 0.1,
+      ly: 1.75,
+      z: zf + 0.4,
+      mat: null,
+      glow: 0,
+      dist: 3.2,
+      inten: 2.2,
+      color: 0xff8a3a,
+      sw: null,
+      label: 'Ofen',
+      room: inside,
+      r: 1.0,
+    },
     {
       key: 'bungalow',
       b,
@@ -899,6 +1023,9 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   lcol(r, AX1 - T, hx, -hy - 0.02, -hy + T, 0, zw + 0.3);
   lcol(r, -hx, AX1, AY0 - 0.02, AY0 + T, 0, zaw + 0.3);
   lcol(r, AX1 - T, AX1 + 0.02, AY0, -hy + T, 0, zaw + 0.3);
+  // ceilings as surfaces (like an upper floor): the shoulder camera stays below them, the walker never reaches them
+  lwalk(r, -hx + T, hx - T, -hy, hy - T, zw);
+  lwalk(r, -hx + T, AX1 - T, AY0 + T, -hy, za);
   lcol(r, KX - 0.02, xi1, 0.62, yi1, zf, kz + wt, 'kitchen');
   lcol(r, 0.53, KX, KY - 0.02, yi1, zf, kz + wt, 'kitchen');
   lcol(r, sx0, sx1, sy0, sy1, zf, zf + 0.8, 'sofa');

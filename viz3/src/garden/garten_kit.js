@@ -269,6 +269,7 @@ export const KM = {
   herb: plain({ color: 0x4f7d3a, roughness: 0.85, side: THREE.DoubleSide }),
   herbDry: plain({ color: 0x6f7a4a, roughness: 0.95 }),
   red: plain({ color: 0xc8352b, roughness: 0.6 }),
+  tomato: plain({ color: 0xc2352a, roughness: 0.4 }),
   yellow: plain({ color: 0xe8b93a, roughness: 0.6 }),
   cream: plain({ color: 0xf3ead6, roughness: 0.6 }),
   blackPlastic: plain({ color: 0x1d1d1b, roughness: 0.7 }),
