@@ -145,8 +145,40 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     beam([gx, -hy + 0.05, 1.0], [gx + 0.12, -hy + 0.3, 0.92], 0.07, 0.07, MAT.zinc, { parent: g });
     GL('rain_barrel', gx + 0.14, -hy + 0.36, 0, 0);
   }
-  gB(g, -hx - 1.9, -hx - 0.9, -0.6, 1.1, 0.25, 0.28, MAT.pv);
-  gB(g, -hx - 1.9, -hx - 0.9, -0.6, 1.1, 0.22, 0.25, MAT.pvframe, { cast: false }); // PV-Modul am Boden
+  // PV module on a ground stand west of the hut (it charges the battery inside): tilted 30° to the south on aluminium legs, cable to the hut
+  {
+    const px = -hx - 1.4,
+      py = 0.2,
+      ang = 0.52,
+      Lp = 1.7,
+      Wp = 1.0,
+      z0 = 0.32,
+      dy = (Lp / 2) * Math.cos(ang),
+      dz = (Lp / 2) * Math.sin(ang);
+    put(
+      g,
+      new THREE.BoxGeometry(Wp, 0.035, Lp),
+      [MAT.alu, MAT.alu, KM.pvCells, KM.cream, MAT.alu, MAT.alu],
+      px,
+      py,
+      z0 + dz + 0.02,
+      {
+        rx: ang,
+      }
+    );
+    for (const sx of [-1, 1]) {
+      const x = px + sx * (Wp / 2 - 0.08);
+      beam([x, py - dy + 0.05, 0], [x, py - dy + 0.05, z0 + 0.03], 0.04, 0.04, MAT.alu, { parent: g });
+      beam([x, py + dy - 0.05, 0], [x, py + dy - 0.05, z0 + 2 * dz - 0.02], 0.04, 0.04, MAT.alu, { parent: g });
+      beam([x, py - dy + 0.05, 0.05], [x, py + dy - 0.05, z0 + 2 * dz - 0.12], 0.03, 0.03, MAT.alu, { parent: g });
+      gB(g, x - 0.08, x + 0.08, py - dy - 0.03, py - dy + 0.13, 0, 0.04, MAT.conc, { cast: false });
+      gB(g, x - 0.08, x + 0.08, py + dy - 0.13, py + dy + 0.03, 0, 0.04, MAT.conc, { cast: false });
+    }
+    beam([px + 0.4, py + dy - 0.05, 0.5], [px + 0.5, py + dy - 0.05, 0.03], 0.012, 0.012, MAT.black, { parent: g });
+    beam([px + 0.5, py + dy - 0.05, 0.02], [-hx - 0.02, 0.6, 0.02], 0.014, 0.014, MAT.black, { parent: g });
+    beam([-hx - 0.02, 0.6, 0.02], [-hx - 0.02, 0.6, zf], 0.014, 0.014, MAT.black, { parent: g });
+    lcol(r, px - Wp / 2, px + Wp / 2, py - dy, py + dy, 0, z0 + 2 * dz, 'pv');
+  }
   // ===================== inside: Sarah's potting hut =====================
   const xi0 = -hx + T,
     xi1 = hx - T,
@@ -435,6 +467,16 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     z0: zf + 0.01,
     z1: zf + 1.99,
   });
+  // a long flower box under the window band (west), on two brackets
+  {
+    const bx = -hx - 0.02,
+      bz = zf + 0.78;
+    gB(g, bx - 0.2, bx, -1.25, 1.25, bz, bz + 0.16, MAT.larch);
+    for (const y of [-0.9, 0.9])
+      gB(g, bx - 0.16, bx, y - 0.02, y + 0.02, bz - 0.14, bz, MAT.blacksteel, { cast: false });
+    for (let i = 0; i < 8; i++)
+      plant(g, bx - 0.1, -1.1 + i * 0.315, bz + 0.14, 0.2, i % 3 === 1 ? 'herb' : 'geranium', R);
+  }
   // outside the south wall: the hose reel on the wall, a wheelbarrow with soil parked below the small window
   GL('hose_reel', 0.62, -hy - 0.13, 0.75, 90, { h: 0.5, col: false });
   {
