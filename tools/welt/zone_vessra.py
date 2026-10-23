@@ -229,7 +229,13 @@ def main():
                 lv = 2 if A > 70 else 1
         mrr = np.array(poly.minimum_rotated_rectangle.exterior.coords)[:4]
         e1, e2 = mrr[1] - mrr[0], mrr[2] - mrr[1]
-        if np.hypot(*e1) >= np.hypot(*e2):
+        if lm == 'torhaus':
+            # the gate tower: its ridge along the passage (north–south), the gables to the street and the courtyard (photo 2025)
+            n1, n2 = abs(e1[1]) / max(np.hypot(*e1), 1e-9), abs(e2[1]) / max(np.hypot(*e2), 1e-9)
+            pick = n1 >= n2
+        else:
+            pick = np.hypot(*e1) >= np.hypot(*e2)
+        if pick:
             ux, W, Lr = e1 / max(np.hypot(*e1), 1e-9), np.hypot(*e2), np.hypot(*e1)
         else:
             ux, W, Lr = e2 / max(np.hypot(*e2), 1e-9), np.hypot(*e1), np.hypot(*e2)
@@ -247,7 +253,7 @@ def main():
         if lm == 'kreuzgang':
             eave = 4.0
         if lm == 'torhaus':
-            eave = 6.2   # the gate house: the vaulted passage below, a storey over it (photo 2022)
+            eave = 11.5   # the gate tower: the vaulted passage below, two storeys of slit windows over it (photo 2025 „Torgebäude“)
         if lm == 'apsis':
             eave = 4.2
         ht = None
@@ -264,7 +270,7 @@ def main():
         pitch = 35.0 if big else 25.0 if small else 48.0 if hist else 42.0
         if lm == 'kornhaus':
             pitch = 52.0
-        if lm in ('henneberg', 'suedkapelle', 'torkirche'):
+        if lm in ('henneberg', 'suedkapelle', 'torkirche', 'torhaus'):
             pitch = 50.0
         hip = shape in ('hipped', 'half-hipped') or (kind == 0 and A > 240 and not hist and h < 0.3)
         rise = 0.0 if flat else min(W / 2 * math.tan(math.radians(pitch)), 12.0)

@@ -111,6 +111,8 @@ export const VESSRA = (() => {
     [0.53, 0.36, 0.3],
     [0.61, 0.44, 0.38],
   ].map(c => linC(c, 0.85));
+  // the mixed pink and yellow rubble of the gate tower over its red ashlar (photo 2025 „Torgebäude“)
+  const RUBBLE = linC([0.74, 0.6, 0.55], 0.85);
   const LIME = linC([0.86, 0.84, 0.78], 0.82), // the lime render of the gate church
     BOARDS = [
       [0.52, 0.48, 0.43],
@@ -1545,14 +1547,18 @@ export const VESSRA = (() => {
       }
     }
     if (!nf) return;
+    // a tall gate tower (photo 2025 „Torgebäude“): red sandstone ashlar up to above the arch, mixed pink and yellow rubble over it, two slit
+    // windows over the arch on either gable
     const dir = [-nf[0], -nf[1]],
       side = [-dir[1], dir[0]],
       c = [b.cx, b.cy],
       z0 = b.z0,
       top = z0 + b.e,
-      W = 3.0,
-      zs = z0 + 2.5,
-      col = STONE[0],
+      W = 3.6,
+      zs = z0 + 3.2,
+      zb = zs + W / 2 + 0.7,
+      col = STONE[1],
+      RUB = RUBBLE,
       cross = (p, q) => {
         // where the passage's centre line crosses the wall p → q (u along the wall), or null
         const ex = q[0] - p[0],
@@ -1563,31 +1569,56 @@ export const VESSRA = (() => {
           u = ((p[0] - c[0]) * dir[1] - (p[1] - c[1]) * dir[0]) / den;
         return u >= 0 && u <= 1 ? { t, u: u * Math.hypot(ex, ey) } : null;
       };
-    const ends = [];
+    const ends = [],
+      FRAME = linC([0.66, 0.46, 0.4]),
+      GLASS = linC([0.08, 0.08, 0.09]);
     for (let k = 0; k < pts.length; k++) {
       const p = pts[k],
         q = pts[(k + 1) % pts.length],
         x = cross(p, q),
         holes = x ? [{ u: x.u, w: W, z0: z0 - 0.7, zs, r: W / 2 }] : [];
       if (x) ends.push(x.t);
-      stoneWall(KS, p, q, z0 - 0.7, top, 0.7, holes, col);
+      stoneWall(KS, p, q, z0 - 0.7, zb, 0.7, holes, col);
+      stoneWall(KS, p, q, zb, top, 0.7, [], RUB, { collide: false });
+      if (!x) continue;
+      // the slit windows in a frame of red sandstone, on the outer face
+      const L = Math.hypot(q[0] - p[0], q[1] - p[1]),
+        d = [(q[0] - p[0]) / L, (q[1] - p[1]) / L],
+        mx = p[0] + d[0] * x.u,
+        my = p[1] + d[1] * x.u;
+      let n = [d[1], -d[0]];
+      if ((mx - c[0]) * n[0] + (my - c[1]) * n[1] < 0) n = [-n[0], -n[1]];
+      const rot = Math.atan2(d[1], d[0]);
+      for (const [zw, hw] of [
+        [z0 + 6.7, 0.95],
+        [z0 + 9.3, 0.8],
+      ]) {
+        if (zw + hw > top - 0.3) continue;
+        K.box(mx + n[0] * 0.36, my + n[1] * 0.36, zw - 0.14, 0.52, 0.06, hw + 0.28, rot, FRAME);
+        K.box(mx + n[0] * 0.39, my + n[1] * 0.39, zw, 0.2, 0.04, hw, rot, GLASS);
+      }
     }
-    // the gables over the walls (the generic roof stands on the eaves)
+    // the gables over the walls, flush with their outer faces (the generic roof stands on the eaves)
     for (const f of b.F) {
-      const [ax, ay, bx, by, t0, uA, tA, t1] = f,
-        L = Math.hypot(bx - ax, by - ay);
+      const [ax0, ay0, bx0, by0, t0, uA, tA, t1] = f,
+        L = Math.hypot(bx0 - ax0, by0 - ay0);
       if (L < 0.5 || tA < Math.max(t0, t1) + 0.6) continue;
-      const dx = (bx - ax) / L,
-        dy = (by - ay) / L;
+      const dx = (bx0 - ax0) / L,
+        dy = (by0 - ay0) / L,
+        sg = ((ax0 + bx0) / 2 - c[0]) * dy - ((ay0 + by0) / 2 - c[1]) * dx < 0 ? -1 : 1,
+        nx = dy * sg,
+        ny = -dx * sg,
+        ax = ax0 + nx * 0.35,
+        ay = ay0 + ny * 0.35;
       poly(
         KS,
         [
           [ax, ay, z0 + t0],
-          [bx, by, z0 + t1],
+          [bx0 + nx * 0.35, by0 + ny * 0.35, z0 + t1],
           [ax + dx * uA, ay + dy * uA, z0 + tA],
         ],
-        [dy, -dx, 0],
-        col,
+        [nx, ny, 0],
+        RUB,
         p => [(p[0] - ax) * dx + (p[1] - ay) * dy, p[2]]
       );
     }
@@ -1612,7 +1643,6 @@ export const VESSRA = (() => {
       );
     }
     S.torhaus = { a: P(t0 - 0.4, 0), b: P(t1 + 0.4, 0), dir, w: W };
-    void K;
   }
   // ---- the monastery wall and the other walls (OSM barrier=wall): red sandstone rubble, ~3.2 m, gaps with pillars at the gates ----
   function gapsOn(a, b, L, wGate) {
@@ -1629,12 +1659,19 @@ export const VESSRA = (() => {
     }
     return out.sort((p, q) => p[0] - q[0]);
   }
+  // the monastery wall and the other walls: grey-beige rubble with a pink tinge, moss on the coping (photos of the north and the south
+  // monastery wall 2025)
+  const WALLC = [
+    [0.62, 0.56, 0.52],
+    [0.66, 0.59, 0.54],
+    [0.58, 0.52, 0.48],
+  ].map(c => linC(c, 0.85));
   function walls(KS, K) {
-    const COP = linC([0.5, 0.36, 0.32]);
+    const COP = linC([0.42, 0.44, 0.33]);
     (data.walls || []).forEach((w, wi) => {
       const p = w.p,
         h = Math.min(4.2, Math.max(1.2, w.h || 3.2)),
-        col = STONE[wi % STONE.length];
+        col = WALLC[wi % WALLC.length];
       for (let k = 0; k + 3 < p.length; k += 2) {
         const a = [p[k], p[k + 1]],
           b = [p[k + 2], p[k + 3]],
@@ -2061,8 +2098,8 @@ export const VESSRA = (() => {
       K.cyl(x, y, z, z + 0.38, 0.2, 0.24, 8, C.POT, true);
       K.box(x + 0.08, y, z, 0.03, 0.03, 2.0, 0, C.BAMBOO);
       K.cyl(x, y, z + 0.3, z + 1.25, 0.03, 0.022, 5, linC([0.32, 0.24, 0.17]));
-      const r = 0.42 + k * 0.18,
-        hc = 0.8 + k * 0.4;
+      const r = 0.3 + k * 0.12,
+        hc = 0.7 + k * 0.3;
       K.lathe(
         x,
         y,
