@@ -1283,8 +1283,9 @@ export const WINDE = (() => {
         () =>
           news(
             'Neu: Seilwinde am Traktor. Steht er auf dem Weg und kommt nicht an den Stamm: hinten die Winde absenken, das Seil ausziehen (E), am Stammende den Choker anschlagen, aus dem Gefahrenbereich gehen und per Funk einholen. ' +
-              (COARSE ? 'Am Tacho: Winde heben/senken.' : 'Im Traktor: N hebt und senkt die Winde.'),
-            13000
+              (COARSE ? 'Am Tacho: Winde heben/senken.' : 'Im Traktor: N hebt und senkt die Winde.') +
+              ' Und der Anhänger hat einen Kran: an den Ventilen rechts vorn lädt er Stämme, wie sie liegen.',
+            15000
           ),
         4000
       );
