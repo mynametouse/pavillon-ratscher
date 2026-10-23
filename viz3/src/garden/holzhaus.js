@@ -145,10 +145,12 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     beam([gx, -hy + 0.05, 1.0], [gx + 0.12, -hy + 0.3, 0.92], 0.07, 0.07, MAT.zinc, { parent: g });
     GL('rain_barrel', gx + 0.14, -hy + 0.36, 0, 0);
   }
-  // PV module on a ground stand west of the hut (it charges the battery inside): tilted 30° to the south on aluminium legs, cable to the hut
+  // PV module on a ground stand south of the hut (it charges the battery inside): tilted 30° to the south on aluminium legs, cable to the
+  // hut's south wall. Not west of the hut any more: on its stand it stood in the tractor's drive past the pavilion to the log yard
+  // (test v16d:bridge), now ≥ 3 m clear of that line
   {
-    const px = -hx - 1.4,
-      py = 0.2,
+    const px = -0.4,
+      py = -hy - 2.3,
       ang = 0.52,
       Lp = 1.7,
       Wp = 1.0,
@@ -186,8 +188,8 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
       gB(g, x - 0.08, x + 0.08, py + dy - 0.13, py + dy + 0.03, 0, 0.04, MAT.conc, { cast: false });
     }
     beam([px + 0.4, py + dy - 0.05, 0.5], [px + 0.5, py + dy - 0.05, 0.03], 0.012, 0.012, MAT.black, { parent: g });
-    beam([px + 0.5, py + dy - 0.05, 0.02], [-hx - 0.02, 0.6, 0.02], 0.014, 0.014, MAT.black, { parent: g });
-    beam([-hx - 0.02, 0.6, 0.02], [-hx - 0.02, 0.6, zf], 0.014, 0.014, MAT.black, { parent: g });
+    beam([px + 0.5, py + dy - 0.05, 0.02], [0.3, -hy - 0.02, 0.02], 0.014, 0.014, MAT.black, { parent: g });
+    beam([0.3, -hy - 0.02, 0.02], [0.3, -hy - 0.02, zf], 0.014, 0.014, MAT.black, { parent: g });
     lcol(r, px - Wp / 2, px + Wp / 2, py - dy, py + dy, 0, z0 + 2 * dz, 'pv');
   }
   // ===================== inside: Sarah's potting hut =====================
