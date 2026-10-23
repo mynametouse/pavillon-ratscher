@@ -1594,6 +1594,26 @@ export const QUESTS = (() => {
       }),
   });
   const keyOf = t => (t && t.includes(':') ? t : 'nachbarn:' + t);
+  // tasks defined as data (core/tasks.js) announce themselves like the neighbours' tasks
+  KERN.on('task:start', d => {
+    banner('Neue Aufgabe', d.title);
+    SFX.note();
+    const cur = KERN.tasks.list().find(e => e.key === keyOf(track));
+    if (!cur || cur.status === 'erledigt') {
+      track = 'aufgaben:' + d.id;
+      save();
+    }
+    renderJournal();
+  });
+  KERN.on('task:step', d => {
+    PLAY.think(d.title + ': ' + d.step, 6500);
+    renderJournal();
+  });
+  KERN.on('task:done', d => {
+    banner('Erledigt', d.title + (d.done ? ' · ' + d.done : ''));
+    SFX.chime();
+    renderJournal();
+  });
   const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
   function renderJournal() {
     if (jr.hidden) {

@@ -33,7 +33,8 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
    - `KERN.act`: Einträge für den Aktionsknopf („Mit … sprechen“, „Öffnen“, „Aufheben“) als Register statt Abfragen in `game/play.js`.
    - `KERN.emit/on`: Ereignisse (gesprochen, aufgehoben, angekommen, gefällt, geladen …) für Aufgaben und Statistik.
 2. **Ein Aufgaben-System** (~1–2 Tage) – **begonnen 23.10.2026:** ein Tagebuch über `KERN.tasks` (Quellen: Nachbarn, Dorf, Ortsvorsteher;
-   die Aufgabenkarte folgt jeder); offen: `TASKS.define` mit Schritten auf Ereignisse, die Logik der alten Aufgaben umziehen, `pav-tasks-v1`: `TASKS.define({ id, title, who, steps: [{ text, target, done }], reward, rep })` – ein Tagebuch,
+   die Aufgabenkarte folgt jeder) und `TASKS.define` (`core/tasks.js`: Schritte auf Ereignisse oder Prüfungen, `pav-tasks-v1`); offen: die
+   Logik der alten Aufgaben umziehen, Texte als JSON: `TASKS.define({ id, title, who, steps: [{ text, target, done }], reward, rep })` – ein Tagebuch,
    eine Aufgabenkarte, ein Spielstand `pav-tasks-v1` über `SAVE` (die Stände aus `pav-quests-v1` und `pav-dorf-v1` werden übernommen).
    Die festen Aufgaben, die der Nachbarn, die des Dorfs und die Ortsvorsteher-Kette ziehen um; Schritte reagieren auf Ereignisse statt
    in jedem Bild abzufragen. Texte als Daten (JSON), damit neue Aufgaben ohne Code entstehen.
@@ -41,7 +42,13 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
    „Direkt zu …“, Zonen/Pakete je Szenario, `?nogeo` als Szenario `garten`: `?szenario=garten|dorf|freitag|wald|holz|schleusingen` – Startort, Uhrzeit, Tag, welche Zonen und Pakete
    laden (Garten ohne Umgebung wie heute `?nogeo=1`). Dieselben Szenarien starten die Tests (`lib.boot(pg, port, szenario='dorf')`) und
    stehen im Menü („Direkt zu …“). Die heutigen Schalter (`?dorf=freitag`, `?nogeo=1`, `?fell` …) werden Szenarien.
-4. **Pakete nachladen** (~2 Tage): jedes Thema in `viz3/src/<paket>/` mit `paket.json` (Module, Abhängigkeiten, Zonen, Tests, Spielstände);
+4. **Pakete nachladen** (~2 Tage). Messung 23.10. (`test/loadprof.py`, Software-Grafik, fertig gebauter Pavillon): die Startzeit geht fast
+   ganz in das **Hochladen der Texturen** (`uploadTextures`/`initTexture` ~24–32 s von ~430 Texturen) und `applyTier` (~9 s); das Bündel selbst
+   und die Aufbauschritte sind klein; 141 Shader-Programme mit 11,7 Mio. Zeichen GLSL. Also zuerst **Texturen je Zone erst beim Hinkommen**
+   (Dorf, Wald, Werkstatt innen, Holz, Schleusingen/Veßra haben es schon), dann der Code. **Nachgemessen (`test/texprobe.py`):** 456 von 462
+   Texturen haben einen Nutzer im Umkreis von 60 m um den Garten (Holz, Stoffe, Metall, Rinde werden überall geteilt) – Aufschieben nach
+   Entfernung bringt beim Start fast nichts. Der bessere Hebel: **komprimierte Texturen** (KTX2/Basis: kleiner Upload, ~¼ Speicher am iPhone)
+   und große Einzelbilder (3072², Himmel 4096 × 1147) prüfen; danach erst Code-Pakete: jedes Thema in `viz3/src/<paket>/` mit `paket.json` (Module, Abhängigkeiten, Zonen, Tests, Spielstände);
    `build.py` baut den Kern und je Paket ein eigenes Bündel, geladen beim Hinkommen (`import()`). Der Start lädt Kern und Garten; Dorf,
    Wald, Holz, Schleusingen und das Rathaus erst, wenn man hinfährt.
 5. **Logik ohne Browser** (laufend): Zustand und Regeln von Aufgaben, Tagesablauf der Nachbarn (`LIFE`), Dorfkalender (`DCAL`), Wahl und

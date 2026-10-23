@@ -48,6 +48,20 @@ PLANS = {
 }
 CONTENT_LEVEL = 9      # roads and buildings are cut into level-9 tiles (800 m)
 
+# Detail zones outside the test block get a block of their own, published under welt-test/<sub> with its own meta.json; the app
+# (viz3/src/welt/welt.js) takes a tile from whichever block holds it. Kloster Veßra (~9 km west of the garden; the monastery
+# 50.4915/10.6430, the tree nursery Baumschule Kammbach 50.4932/10.6417): level 12 over 2 x 2 km around both; levels 7-11 over the
+# zone and the road corridor from the western edge of block B (E 620700) to the nursery - the drivable OSM route garden -> Ratschner
+# Anger -> Geisenhöhner Weg -> Flurweg -> L 1625 (Schleusinger Straße) -> Schulstraße, 10.1 km; west of block B it runs within
+# E 616502..620698, N 5594206..5594799, with 600 m margin E 615902..621298, N 5593606..5595399 - rounded out to the level-8 grid:
+# 8.0 x 6.4 km, adjoining block B. Level 7 only feeds the colour balance of the flight days.
+VESSRA_C = (616500.0, 5594650.0)
+VESSRA_DET = (615500.0, 5593600.0, 617500.0, 5595600.0)
+VESSRA_BLK = (614000.0, 5592150.0, 620700.0, 5597150.0)
+VESSRA_ROUTE = (615902.0, 5593606.0, 620700.0, 5595399.0)   # the corridor west of block B (route + 600 m), checked in test_welt.py
+PLANS['V'] = {7: VESSRA_BLK, 8: VESSRA_BLK, 9: VESSRA_BLK, 10: VESSRA_BLK, 11: VESSRA_BLK, 12: VESSRA_DET}
+ZONES = {'V': {'name': 'vessra', 'title': 'Kloster Veßra', 'centre': VESSRA_C, 'sub': 'zonen/vessra/'}}
+
 
 def tsize(L):
     return ROOT_SIZE / (1 << L)

@@ -7,6 +7,7 @@ core/late.js                # LATE: what a module needs from a module further do
 core/save.js                # SAVE: every value kept in this browser (registry, safe reads/writes, migrations, test hooks)
 core/head.js                # renderer, scene, camera, query flags, small helpers (THREE also on window)
 core/kern.js                # KERN: ground, terrain, road surface, collision, place names – services the world modules provide
+core/tasks.js               # TASKS: tasks as data – steps advance on KERN events, saved (pav-tasks-v1), listed in the one journal
 core/rig.js                 # canonical bone names of the people (Mixamo, CC, Biped, UE) and the compact clip format
 core/assets.js              # loading manager, textures, PBR materials, patchSV (sky visibility, baked GI, figure shadows, lamp-spill mask)
 core/mats.js                # shared materials MAT
@@ -73,6 +74,7 @@ world/village_near.js       # V16e near the walker: fences, hedges, flower boxes
 welt/welt.js                # the tiled world (tools/welt) streamed around the camera where a zone needs it; terrain for KERN (WELT)
 welt/schleusingen.js        # Schleusingen after photos: the old town walkable, Rathaus to enter, landmarks, lamps, street names (SCHL)
 # feat/vessra: Kloster Veßra below this line (the monastery, the village, the tree nursery)
+welt/vessra.js              # Kloster Veßra: the monastery ruin and its grounds, the village, the tree nursery Baumschule Kammbach – walkable (VESSRA)
 world/worldcol.js           # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
 world/treehit.js            # small trees give way to vehicles: saplings bend, small trees tip over with the root plate, thick ones stop (TREEHIT)
 game/hud.js                 # HUD, menu, inventory window, pointer lock (HUD)
@@ -118,6 +120,11 @@ amt/amt_world.js            # feat/ortsvorsteher what the councils decide stands
 amt/amt.js                  # feat/ortsvorsteher the letter, the campaign, election day with the public count, the office, the town hall scene (AMT)
 # feat/gartenplaner: the garden planner below this line (after the office, before the frame loop)
 gplan/gplan_schema.js       # the plant data contract: fields, enums, checks of pflanzen.json, regeln.json, gilden.json – pure (GPSCHEMA)
+gplan/gplan_model.js        # feat/gartenplaner growth, seasons, the saved plan, guilds, plant and shopping lists – pure (GPMODEL)
+gplan/gplan_sun.js          # feat/gartenplaner the sun over the garden, shadows of crowns and buildings, shade over a day – pure (GPSUN)
+gplan/gplan_rules.js        # feat/gartenplaner the adviser: warnings with reasons (boundary, buildings, brook, frost, pollinator …), tips – pure (GPRULES)
+gplan/gplan_3d.js           # feat/gartenplaner the planned plants in the 3D garden: ez-tree kinds (garden trees, fruit tree, bushes, clumps), instanced, made on first use (GP3D)
+gplan/gplan.js              # feat/gartenplaner the planner: data on demand, panel, plan view hooks, on site, the saved plan pav-gplan-v1 (GPLAN)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api
