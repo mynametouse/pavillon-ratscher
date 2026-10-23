@@ -25,7 +25,10 @@
 #gplan .gp-tabs b:empty{display:none}
 #gplan .gp-tabs b.bad{background:#d9534f;color:#fff}
 #gplan .gp-body{flex:1 1 auto;min-height:0;overflow:auto;padding:8px 12px 12px}
-#gplan .gp-q{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:400 14px/1.2 var(--f-body);background:var(--plate);color:var(--ink)}
+#gplan .gp-find{display:flex;gap:6px;align-items:center}
+#gplan .gp-q{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:400 14px/1.2 var(--f-body);background:var(--plate);color:var(--ink)}
+#gplan .gp-find button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:8px 11px;cursor:pointer;white-space:nowrap}
+#gplan .gp-find button[aria-expanded="true"]{border-color:var(--larch)}
 #gplan .gp-chips{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
 #gplan .gp-chips button,#gplan .gp-row button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12px/1 var(--f-body);padding:7px 10px;cursor:pointer}
 #gplan .gp-chips button{min-height:30px}

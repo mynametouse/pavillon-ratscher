@@ -98,7 +98,8 @@ with lib.browser() as b:
         E(f"GPLAN.add('{G['apple']}', {pt[0]}, {pt[1]})")
         d = E(f"GPLAN.RULES.edgeDist({pt[0]}, {pt[1]}, GPLAN.site().boundary)")
         gid = J("GPLAN.data.db.guilds.map(g => g.id)")
-        n = E(f"GPLAN.placeGuild('{gid[0]}', 4.5, -11)") if gid else 0
+        # the guild far enough (> 30 m) from the lonely apple that a cultivar in its middle cannot pollinate it
+        n = E(f"GPLAN.placeGuild('{gid[0]}', 10, -38)") if gid else 0
         E("GAME.step(0.3)"); time.sleep(0.5); E("GAME.step(0.3); GAME.shot()")
         pB = E("GAME.R.info.programs.length"); G['pB'] = pB
         ck('no new shader programs for the planned plants (trees, mounds; plan view)', pB <= pA, f'{pA} -> {pB}')
@@ -137,6 +138,9 @@ with lib.browser() as b:
             stats[a] = J("GPLAN.G3.stats")
             lib.shot(pg, OUT, f'c_garten_{a:02d}_jahre')
         print('3D', json.dumps(stats), flush=True)
+        # the guild, ten years on
+        E("GPLAN.setAge(10); GAME.view(5.2, -33.2, 1.7, 135, -6, 62); GAME.step(0.2)")
+        lib.shot(pg, OUT, 'c_gilde_10_jahre')
         ck('3D: the planned plants stand in the garden at every age', all(s['trees'] >= 3 and s['bushes'] >= 1 for s in stats.values()), json.dumps(stats))
         ck('trunks of trees from 5 years on stop the walker (not at planting)', stats[0]['cols'] == 0 and stats[5]['cols'] >= 3, json.dumps(stats))
         # walk north into the apple (from 1.5 m south of it): the trunk holds
@@ -149,6 +153,8 @@ with lib.browser() as b:
             E(f"GPLAN.setShade({m}, 14); GPLAN.setAge(10); GAME.view(-3.5, -16.5, 1.7, 8, 4, 62); GAME.step(0.2)")
             st = J("GPLAN.G3.stats")
             lib.shot(pg, OUT, f'd_garten_10_jahre_{name}')
+            E("GAME.view(5.2, -33.2, 1.7, 135, -6, 62); GAME.step(0.2)")
+            lib.shot(pg, OUT, f'd_gilde_10_jahre_{name}')
             print('season', name, json.dumps(st), flush=True)
             if m == 4: ck('April: blossom on the trees', st['dots'] > 10, json.dumps(st))
         pD = E("GAME.R.info.programs.length")

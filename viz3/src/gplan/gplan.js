@@ -79,7 +79,7 @@ export const GPLAN = (() => {
     return bad.size ? arr.filter((_, i) => !bad.has(i)) : arr;
   }
   function loadData() {
-    if (D.p) return D.p;
+    if (D.p && D.st !== 'fail') return D.p;
     D.st = 'loading';
     D.p = (async () => {
       let [pflanzen, regeln, gilden] = await Promise.all(['pflanzen.json', 'regeln.json', 'gilden.json'].map(getJSON));
@@ -139,7 +139,15 @@ export const GPLAN = (() => {
     washhouse: ['Waschhaus', 'n', 2.6, 'des Waschhauses'],
     carport: ['Carport', 'm', 2.9, 'des Carports'],
   };
+  // the site changes only when a building is moved in the plan view: cached by the buildings' offsets
+  let siteC = null,
+    siteK = '';
   function site() {
+    const k = Object.keys(BLD)
+      .map(b => (BUILD[b] ? BUILD[b].dx + ',' + BUILD[b].dy + ',' + BUILD[b].da : ''))
+      .join('|');
+    if (siteC && k === siteK) return siteC;
+    siteK = k;
     const buildings = [
       { key: 'pavillon', name: 'Pavillon', g: 'm', h: 7.2, gen: 'des Pavillons', foot: rectCorners(PAV) },
     ];
@@ -155,7 +163,7 @@ export const GPLAN = (() => {
       [1, 1],
       [-1, 1],
     ].map(([i, j]) => [B.c[0] + U0[0] * B.w * i + N0[0] * B.l * j, B.c[1] + U0[1] * B.w * i + N0[1] * B.l * j]);
-    return {
+    return (siteC = {
       boundary: S0.garden,
       buildings,
       paths: PATHS,
@@ -165,7 +173,7 @@ export const GPLAN = (() => {
       ditch: STREAM.WT,
       wet: 6,
       trees: S0.trees.filter(t => GPRULES.inPoly(t[0], t[1], S0.garden) || GPRULES.edgeDist(t[0], t[1], S0.garden) < 8),
-    };
+    });
   }
   // where a plant stands, for the plant list: distance and direction from the nearest building, distance to the boundary
   const DIRS = [
@@ -242,6 +250,7 @@ export const GPLAN = (() => {
     else checkT = setTimeout(run, 120);
   }
   function changed(o = {}) {
+    U.ver = (U.ver || 0) + 1;
     save();
     recheck(o.now);
     if (!o.no3d) view3d();
@@ -320,7 +329,16 @@ export const GPLAN = (() => {
     kletter: '#b065c6',
   };
   const sunNow = () => GPSUN.sun(YEAR, ST.month, 15, ST.hour);
+  // shadow polygons of the month and hour (cached until the plan, the age, the time or a building changes)
+  let shC = null;
   function shadows() {
+    const S0k = site(),
+      key = [U.ver || 0, ST.age, ST.month, ST.hour, siteK, ST.items.length].join('|');
+    if (shC && shC.key === key) return shC;
+    shC = Object.assign(shadows0(S0k), { key });
+    return shC;
+  }
+  function shadows0(S) {
     const s = sunNow();
     if (s.el <= 0.5) return { s, polys: [] };
     const polys = [];
@@ -332,7 +350,6 @@ export const GPLAN = (() => {
       const t = GPSUN.trunkShadow(e.x, e.y, c.zb, Math.max(0.05, c.tr), s.az, s.el);
       if (t && c.zb > 0.2) polys.push(t);
     }
-    const S = site();
     for (const b of S.buildings) {
       const p = GPSUN.boxShadow(b.foot, b.h, s.az, s.el);
       if (p) polys.push(p);
@@ -407,8 +424,8 @@ export const GPLAN = (() => {
       const age = M.ageOf(it, viewYear()),
         s = M.sizeAt(p, age === null ? 0 : age, M.seedOf(it)),
         d = Math.hypot(gp[0] - it.x, gp[1] - it.y),
-        r = Math.max(tol, Math.min(s.w / 2, 3));
-      // the nearest trunk wins, a small plant inside a big crown can still be taken
+        r = Math.max(tol, Math.min(s.w / 2, 1.2));
+      // near the trunk only (dragging over a big crown still pans the plan); the nearest trunk wins
       if (d < r && d - r * 0.3 < bd) {
         bd = d - r * 0.3;
         best = i;
@@ -435,6 +452,7 @@ export const GPLAN = (() => {
       it.x = r2(gp[0] + g.dx);
       it.y = r2(gp[1] + g.dy);
       g.moved = true;
+      U.ver = (U.ver || 0) + 1;
       renderSel(true);
       redraw();
     },
@@ -646,6 +664,14 @@ export const GPLAN = (() => {
     const dir = SUNDIR[Math.round((((s.az % 360) + 360) % 360) / 45) % 8];
     q$('.gp-mlab').textContent = M.monthName(ST.month);
     q$('.gp-hlab').textContent = hm(ST.hour) + ' Uhr';
+    // the sliders follow a change from elsewhere (not while one drags them)
+    for (const [c, v] of [
+      ['.gp-month', ST.month],
+      ['.gp-hour', ST.hour],
+    ]) {
+      const el = q$(c);
+      if (el && document.activeElement !== el && +el.value !== v) el.value = String(v);
+    }
     box.innerHTML =
       (s.el > 0 ? `Sonne im ${dir}, ${de(s.el, 0)}° hoch (Azimut ${de(s.az, 0)}°).` : 'Die Sonne ist untergegangen.') +
       (dl.rise !== null ? ` Tageslicht am 15. ${M.monthName(ST.month)}: ${hm(dl.rise)}–${hm(dl.set)} Uhr.` : '') +
@@ -666,8 +692,9 @@ export const GPLAN = (() => {
     }
     if (U.tab === 'pflanzen') {
       body.innerHTML =
-        `<input type="search" class="gp-q" placeholder="Suchen: Apfel, Stickstoff, Beere …" value="${esc(U.q)}" aria-label="Pflanzen suchen">` +
-        '<div class="gp-chips">' +
+        `<div class="gp-find"><input type="search" class="gp-q" placeholder="Suchen: Apfel, Stickstoff, Beere …" value="${esc(U.q)}" aria-label="Pflanzen suchen">` +
+        `<button type="button" data-gp="filters" aria-expanded="${U.fopen ? 'true' : 'false'}">Filter${U.f.size ? ' (' + U.f.size + ')' : ''}</button></div>` +
+        `<div class="gp-chips"${U.fopen ? '' : ' hidden'}>` +
         FILTERS.map(
           ([k, t]) =>
             `<button type="button" data-f="${k}" aria-pressed="${U.f.has(k) ? 'true' : 'false'}">${t}</button>`
@@ -814,6 +841,8 @@ export const GPLAN = (() => {
     } else if (d.f) {
       U.f.has(d.f) ? U.f.delete(d.f) : U.f.add(d.f);
       b.setAttribute('aria-pressed', U.f.has(d.f) ? 'true' : 'false');
+      const fb = q$('[data-gp="filters"]');
+      if (fb) fb.textContent = 'Filter' + (U.f.size ? ' (' + U.f.size + ')' : '');
       renderList();
     } else if (d.w !== undefined) {
       const w = U.warns[+d.w];
@@ -845,6 +874,10 @@ export const GPLAN = (() => {
       if (!U.shade) U.probe = null;
       renderBody();
       redraw();
+    } else if (a === 'filters') {
+      U.fopen = !U.fopen;
+      q$('.gp-chips').hidden = !U.fopen;
+      q$('[data-gp="filters"]').setAttribute('aria-expanded', U.fopen ? 'true' : 'false');
     } else if (a === 'copy') copy();
     else if (a === 'dl') download();
     else if (a === 'print') printList();
@@ -966,6 +999,7 @@ export const GPLAN = (() => {
   function siteMode(on, quiet) {
     U.mode = on ? 'site' : 'plan';
     if (on) {
+      U.tab = 'pflanzen';
       const it = ST.items[U.sel];
       if (P.mode !== 'walk') go('garten');
       // stand a few steps south of the selected plant, looking at it
