@@ -73,8 +73,8 @@ def fetch_tiles():
     for L, pad in ((10, 900), (11, 500), (12, 270)):
         s = 409600 / (1 << L)
         for x, y in pts:
-            if not outside(x, y, -400):
-                continue
+            if not outside(x, y, 400):
+                continue   # deep inside the square nobody asks for tiles
             E, N = utm(x, y)
             for tx in range(int((E - pad - 420700) // s), int((E + pad - 420700) // s) + 1):
                 for ty in range(int((N - pad - 5390800) // s), int((N + pad - 5390800) // s) + 1):
@@ -107,7 +107,7 @@ REC = """window._rec = { n: 0, az4: 0, az8: 0, azMax: 0, air: 0, gap: 0, gapAt: 
 window.TICKS.push(dt => { const v = VEH.cur, R = window._rec; if (!v || !dt) return; const s = v.st; R.t += dt;
   const vz = s.air ? s.vz : s.vzLP; if (R.last !== null) { const a = Math.abs(vz - R.last) / dt; if (Math.abs(s.u) > 3) { R.n++; if (a > 4) R.az4++; if (a > 8) R.az8++;
     if (a > R.azMax) { R.azMax = a; R.azAt = [+s.x.toFixed(1), +s.y.toFixed(1), +(s.u * 3.6).toFixed(0)]; } } } R.last = vz; if (s.air) R.air++;
-  const B = RATSCHER.box, o = s.x < B[0] + 12 || s.x > B[2] - 12 || s.y < B[1] + 12 || s.y > B[3] - 12;
+  const B = RATSCHER.box, o = s.x < B[0] || s.x > B[2] || s.y < B[1] || s.y > B[3];
   if (o) { R.out++; const w = WELT.heightAt(s.x, s.y); if (w === undefined) R.outNoGround++; else if (!s.air) { const g = Math.abs(s.z - KERN.ground(s.x, s.y, s.z)); if (g > R.gap) { R.gap = g; R.gapAt = [+s.x.toFixed(1), +s.y.toFixed(1)]; } } }
   if (R.t > 0.5) { R.t = 0; R.spd.push([+s.x.toFixed(0), +s.y.toFixed(0), +(s.u * 3.6).toFixed(1)]); } });"""
 with lib.browser() as b:
@@ -241,10 +241,15 @@ with lib.browser() as b:
         # on the L 1625 west of the square
         i0 = next(i for i, p in enumerate(rb) if outside(*p) and p[0] < RB[0] - 60)
         place_on(rb, i0)
-        E(f"window._fs = VEH.follow({json.dumps(rb[i0:])}, 22, {{ look: 15 }})")
-        reset_rec()
+        # put there by hand: first the ground comes (tiles), then it drives
         for _ in range(40):
             chunk(0.25)
+            if json.loads(E("JSON.stringify(WELT.state())"))['loading'] == 0 and E(f"WELT.heightAt({rb[i0][0]}, {rb[i0][1]}) !== undefined"):
+                break
+        E(f"VEH.place('car', {rb[i0][0]}, {rb[i0][1]}, Math.atan2({rb[i0 + 1][0] - rb[i0][0]}, {rb[i0 + 1][1] - rb[i0][1]}))")
+        chunk(0.5)
+        E(f"window._fs = VEH.follow({json.dumps(rb[i0:])}, 22, {{ look: 15 }})")
+        reset_rec()
         T = 0
         mem = []
         stop_t = 0
