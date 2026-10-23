@@ -768,7 +768,7 @@ export const GPLAY = (() => {
     dimTick();
     markDirty(true);
   }
-  // ======================= every frame (first among the ticks: the figure then sees where the mower holds it) =======================
+  // ======================= every frame (KERN.tick: after the walk physics, before the figure is posed) =======================
   let growAcc = 0;
   function tick(dt) {
     if (!S.loaded) return;
@@ -785,6 +785,8 @@ export const GPLAY = (() => {
     if (M.mode === 'push') pushTick(dt);
     if (M.run) runTick(dt, dmin);
     genTick(dmin);
+    // the can taken out of the inventory by someone else (Menü → Aufgaben zurücksetzen empties the bag): back to its place
+    if (CANT.state === 'inv' && !PLAY.has(CANT)) canHome(CANT, GARAGE.home(PHASE).petrol);
     if (C.refillAt != null && t >= C.refillAt) {
       C.fuel = CAN_L;
       C.refillAt = null;
@@ -812,7 +814,7 @@ export const GPLAY = (() => {
       save();
     }
   }
-  (window.TICKS = window.TICKS || []).unshift(tick);
+  KERN.tick(tick, 'garage'); // runs before window.TICKS: the figure (game/avatar.js) then sees where the mower holds it
   whenLoaded(() => setTimeout(load, 450));
   // ---- the fluorescent tube: switched at the door; its light is one of the pavilion's, free before the built-ins (KERN.lights) ----
   const LAMP = { on: false, ls: null, t: 0 };

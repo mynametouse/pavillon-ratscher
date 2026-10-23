@@ -638,7 +638,7 @@ const SUED = (() => {
   lwalk(r, -hx, hx, -hy, hy, zf, 'wood');
   // walls (ribs upright); the north end beside and above the opening
   const W = (x0, x1, y0, y1) => {
-    G(x0, x1, y0, y1, zf - 0.03, zw, MAT.corr, { grain: 'z', cast: true });
+    G(x0, x1, y0, y1, zf - 0.03, zw, MAT.metal, { grain: 'z', cast: true });
     lcol(r, x0, x1, y0, y1, zf - 0.03, zw, 'wall');
   };
   W(-hx, -hx + T, -hy, hy);
@@ -646,7 +646,7 @@ const SUED = (() => {
   W(-hx + T, hx - T, -hy, -hy + T);
   W(-hx + T, -op, hy - T, hy);
   W(op, hx - T, hy - T, hy);
-  G(-op, op, hy - T, hy, zf + 1.98, zw, MAT.corr, { grain: 'z', cast: true });
+  G(-op, op, hy - T, hy, zf + 1.98, zw, MAT.metal, { grain: 'z', cast: true });
   for (const [x, y] of [
     [-hx, -hy],
     [hx - 0.06, -hy],
