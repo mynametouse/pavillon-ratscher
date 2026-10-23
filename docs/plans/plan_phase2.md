@@ -23,7 +23,9 @@ parallel an Falkos Wünschen (`docs/plans/plan_leben.md`), zusammengeführt vom 
 
 1. **Kern-Dienste für Erweiterungen** (~1 Tag) – statt Haken in fremde Objekte. **Erledigt 23.10.2026** (`core/kern.js`, `docs/ARCHITECTURE.md`
    „Dienste für Erweiterungen“; umgezogen: Ortsnamen von Garten und Nachbarn, Sprungziele, Aktionsknopf, Lampen von Schulraum und Feuer;
-   Schleusingen läuft auf `KERN.zone`; offen: der Schulraum auf `KERN.zone`, `window.TICKS` → ein Kern-Dienst):
+   Schleusingen läuft auf `KERN.zone`; offen: der Schulraum auf `KERN.zone`, `window.TICKS` → `KERN.tick` – 35 Module, viele davon
+   gehören heute laufenden Agenten (Fahrzeuge, Welt, Gartengebäude, Planer, Rendern), daher am Abend in einem Zug, wenn sie fertig sind; neue
+   Module nehmen gleich `KERN.tick`):
    - `KERN.places`: Ortsnamen und Menüorte als Register (Fläche oder Kreis, Name, Vorrang, Innen/Außen) – ersetzt das Überschreiben von
      `window.sitePlace` und das Ergänzen von `SPOTS`.
    - `KERN.lights`: ein fester Satz geteilter Punktlichter, nach Nähe ausgeliehen und automatisch zurückgegeben (keine neuen Lampen, also
