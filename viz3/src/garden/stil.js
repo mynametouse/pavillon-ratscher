@@ -895,7 +895,7 @@ const UI = (() => {
   // the HUD button follows the walker in and out of the buildings (four times a second)
   let acc = 0,
     last;
-  (window.TICKS = window.TICKS || []).push(dt => {
+  KERN.tick(dt => {
     acc += dt;
     if (acc < 0.25) return;
     acc = 0;
@@ -915,7 +915,7 @@ const UI = (() => {
         setTimeout(() => U.btn.classList.remove('new'), 9000);
       }
     }
-  });
+  }, 'einrichtung');
   return U;
 })();
 STIL.open = (v = true, key) => UI.open(v, key);

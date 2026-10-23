@@ -74,6 +74,11 @@ with lib.browser() as b:
     # ---- the atelier: pictures from the door and the corners ----
     if want('atelier'):
         view(pg, 'holzhaus', -0.88, 1.45, EYE_A, 90, -14, 80); shot(pg, 'atelier_von_tuer')
+        # the HUD button „Einrichtung“ shows while one is inside a building with styles (KERN.tick, four times a second), not outside
+        HB = "(() => { const b = document.getElementById('stilbtn'); return b ? [!b.hidden, STIL.where()] : null; })()"
+        ev(pg, "GAME.step(0.6)"); hb_in = ev(pg, HB)
+        view(pg, 'holzhaus', -3.4, 3.2, 1.7, 0, -5, 70); ev(pg, "GAME.step(0.6)"); hb_out = ev(pg, HB)
+        ck('HUD button „Einrichtung“ inside the atelier, not outside', hb_in == [True, 'atelier'] and hb_out == [False, None], [hb_in, hb_out])
         view(pg, 'holzhaus', -1.25, 1.5, EYE_A, 45, -16, 82); shot(pg, 'atelier_ecke_nordwest')
         view(pg, 'holzhaus', 0.35, -1.5, EYE_A, -110, -14, 82); shot(pg, 'atelier_ecke_sued')
         view(pg, 'holzhaus', 0.5, 1.3, EYE_A, 140, -16, 82); shot(pg, 'atelier_ecke_nordost')
