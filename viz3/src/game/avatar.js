@@ -794,16 +794,20 @@ export const AVATAR = (() => {
     if (F.gest || P.air || P.speed > 0.05 || Math.abs(P.eyeH - MOVE.STANCES[P.stance].eye) > 0.02)
       MOTION.lastMove = now;
   } // bigger movements: smooth frames (the light-weight motion path), not the slow still frames
-  KERN.tick(dt => {
-    try {
-      update(dt);
-    } catch (e) {
-      if (!A._err) {
-        A._err = 1;
-        console.warn('avatar', e);
+  KERN.tick(
+    dt => {
+      try {
+        update(dt);
+      } catch (e) {
+        if (!A._err) {
+          A._err = 1;
+          console.warn('avatar', e);
+        }
       }
-    }
-  }, 'game/avatar');
+    },
+    'game/avatar',
+    { late: true }
+  ); // after the features: what the figure holds or pushes (the mower, a plant, a can) has moved already
   // ---- one-shot gestures: picking something up, a hand movement, chopping ----
   function gesture(k, ts = 1) {
     const F = A.fig;

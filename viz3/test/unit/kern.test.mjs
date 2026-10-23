@@ -314,3 +314,14 @@ test('ticks: run in order, switch off from inside the round, a broken one is rep
   assert.equal(K.profile().d.n, 2);
   assert.equal(K.profile(false), null);
 });
+
+test('ticks: a late tick runs after all the others, whenever it came', async () => {
+  const K = await fresh();
+  const log = [];
+  K.tick(() => log.push('figure'), 'figure', { late: true });
+  K.tick(() => log.push('mower'), 'mower');
+  K.tick(() => log.push('plant'), 'plant');
+  K.update(0.016);
+  assert.deepEqual(log, ['mower', 'plant', 'figure']);
+  assert.deepEqual(K.ticks(), ['mower', 'plant', 'figure']);
+});

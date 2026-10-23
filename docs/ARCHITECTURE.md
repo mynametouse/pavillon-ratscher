@@ -48,7 +48,8 @@ Oberfläche Deutsch.
   - **`KERN.tick(fn, name)`:** ein Takt je Frame (aus `KERN.update`, auch in `GAME.step`), gibt eine Funktion zum Abschalten zurück – auch
     aus dem eigenen Takt heraus. Seit 23.10. mittags laufen darüber auch die Features; nur Module laufender Agenten (Fahrzeuge, Welt,
     Gartengebäude, Planer, Rendern, Aufgaben der Nachbarn) nutzen noch die alte Liste `window.TICKS` und ziehen abends um. `KERN.ticks()`
-    nennt die Takte, `KERN.profile(true)` misst die Zeit je Takt (`test/prof.py`); ein Fehler in einem Takt landet einmal im Ladeprotokoll
+    nennt die Takte, `KERN.profile(true)` misst die Zeit je Takt (`test/prof.py`); `{ late: true }` läuft nach allen anderen (die Spielfigur:
+    was sie hält oder schiebt – Mäher, Pflanze, Kanister – ist dann schon bewegt); ein Fehler in einem Takt landet einmal im Ladeprotokoll
     („Takt <name>: …“), der Rest läuft weiter.
   - **Startsituationen (Baustein 3):** `KERN.scenario(name, { label, run, order, ask, menu })` – `?szenario=name` startet nach dem Laden
     darin (`boot/boot.js`), Tests laden mit `lib.boot(pg, port, '?szenario=…')`; im **Menü unter „Szenen“** (`game/hud.js`, seit V16o) alle,

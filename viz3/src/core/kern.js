@@ -104,7 +104,8 @@
  * @property {(cond: () => any, s?: number) => Promise<any>} until  resolves when cond() is truthy, rejects after s seconds (default 60)
  * @property {{ pool: (list: any[], o?: { home?: () => boolean, restore?: () => void }) => void, borrow: (b: Borrow) => Borrow, status: () => Array<{ id: string, n: number, has: number }> }} lights
  * @property {() => number[] | null} where  where the observer is: [x, y] of the walker, else of the camera (provider 'observer', game/player.js)
- * @property {(fn: (dt: number) => void, name?: string) => () => void} tick  a per-frame callback (returns off; replaces window.TICKS)
+ * @property {(fn: (dt: number) => void, name?: string, opt?: { late?: boolean }) => () => void} tick  a per-frame callback (returns off;
+ *   replaces window.TICKS); late: after all the others (the figure)
  * @property {() => string[]} ticks  the names of the per-frame callbacks (tests, error report)
  * @property {(on?: boolean) => Record<string, { ms: number, n: number }> | null} profile  true: start timing each callback, false: stop; the table
  * @property {(dt: number) => void} update  once per frame from the frame loop (game/game.js): zones, lights, waits
@@ -398,13 +399,15 @@ export const KERN = (() => {
   // ---- per-frame callbacks (KERN.tick): of the services and the features, run by KERN.update in the order they came. The returned
   // function switches one off – also from inside a callback while the list runs: it is skipped at once and dropped after the round.
   // (phase 2: replaces window.TICKS; the modules of the agents still at work move in the evening) ----
-  const TICK = [];
+  const TICK = [],
+    LATE_TICK = []; // { late: true }: after all the others – the figure is posed once everything it holds or pushes has moved
   let tickGone = false,
     /** @type {Record<string, { ms: number, n: number }> | null} */
     PROF = null; // KERN.profile(true): time per callback (viz3/test/prof.py)
-  function tick(fn, name) {
+  const TICK_LISTS = [TICK, LATE_TICK];
+  function tick(fn, name, opt) {
     const T = { fn, name: name || fn.name || 'tick', err: 0 };
-    TICK.push(T);
+    (opt && opt.late ? LATE_TICK : TICK).push(T);
     return () => {
       if (!T.fn) return;
       T.fn = null;
@@ -435,29 +438,30 @@ export const KERN = (() => {
       }
     }
     lightUpdate(dt);
-    for (let i = 0; i < TICK.length; i++) {
-      const T = TICK[i];
-      if (T.fn)
-        try {
-          if (PROF) {
-            const a = now();
-            T.fn(dt);
-            const r = PROF[T.name] || (PROF[T.name] = { ms: 0, n: 0 });
-            r.ms += now() - a;
-            r.n++;
-          } else T.fn(dt);
-        } catch (e) {
-          // once per callback: the feature stays broken, the rest runs on; the error report (boot/report.js) names it
-          if (!T.err) {
-            T.err = 1;
-            console.warn('KERN tick', T.name, e);
-            log('Takt ' + T.name + ': ' + ((e && (e.stack || e.message)) || e), true);
+    for (const L of TICK_LISTS)
+      for (let i = 0; i < L.length; i++) {
+        const T = L[i];
+        if (T.fn)
+          try {
+            if (PROF) {
+              const a = now();
+              T.fn(dt);
+              const r = PROF[T.name] || (PROF[T.name] = { ms: 0, n: 0 });
+              r.ms += now() - a;
+              r.n++;
+            } else T.fn(dt);
+          } catch (e) {
+            // once per callback: the feature stays broken, the rest runs on; the error report (boot/report.js) names it
+            if (!T.err) {
+              T.err = 1;
+              console.warn('KERN tick', T.name, e);
+              log('Takt ' + T.name + ': ' + ((e && (e.stack || e.message)) || e), true);
+            }
           }
-        }
-    }
+      }
     if (tickGone) {
       tickGone = false;
-      for (let i = TICK.length - 1; i >= 0; i--) if (!TICK[i].fn) TICK.splice(i, 1);
+      for (const L of TICK_LISTS) for (let i = L.length - 1; i >= 0; i--) if (!L[i].fn) L.splice(i, 1);
     }
     acc += dt;
     const check = acc >= 0.25;
@@ -523,7 +527,10 @@ export const KERN = (() => {
     lights,
     where: () => observer(),
     tick,
-    ticks: () => TICK.filter(T => T.fn).map(T => T.name),
+    ticks: () =>
+      TICK.concat(LATE_TICK)
+        .filter(T => T.fn)
+        .map(T => T.name),
     profile: on => {
       if (on === true) PROF = {};
       else if (on === false) PROF = null;
