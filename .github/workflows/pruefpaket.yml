@@ -243,6 +243,8 @@ jobs:
       - name: Wellen je km messen
         run: |
           pip install numpy scipy
+          # what the build will use: an extra's terrain (viz3/extra/<thema>/dist/geo/, e.g. fahrt's repaired roads) lies over the site's, as in build.py
+          cp viz3/extra/*/dist/geo/terrain.b64.json "$GEO"/ 2>/dev/null || true
           python -I tools/geo/smooth_roads.py "$GEO" viz3/manifests.json "$RUNNER_TEMP/roads" --measure
 
   vorschau:
