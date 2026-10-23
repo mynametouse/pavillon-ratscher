@@ -203,6 +203,13 @@ window.SAVE = SAVE;
   K('pav-dorf-v1', 'Dorfleben: Aufgabe Skatabend, Besuche, Kartenspiel', 'json', null, obj); // feat/dorf (dorf/dorf.js)
   K('pav-trees-v1', 'Umgefahrene Bäume', 'json', null, obj); // world/treehit.js: { v: 1, t: [[x, y, azimuth°, angle], …] }
   K('pav-amt-v1', 'Ortsvorsteher: Wahl, Meinungen, Versprechen, Anliegen', 'json', null, obj); // feat/ortsvorsteher (amt/amt.js)
+  K(
+    'pav-garage-v1',
+    'Alte Garage: Tore, Rasenmäher, Benzin, gemähter Rasen',
+    'json',
+    null,
+    v => v === null || (obj(v) && v.v === 1)
+  ); // feat/garage (garden/garage_play.js)
   for (const h of [
     'pav-v14',
     'pav-v15',

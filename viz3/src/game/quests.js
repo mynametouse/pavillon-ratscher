@@ -10,6 +10,7 @@ import { MAT } from '../core/mats.js';
 import { B, BUILD, phase, PHN } from '../core/geo.js';
 import { mulberry } from '../garden/grass.js';
 import { HOF, SHEDS } from '../garden/hof_hubert.js';
+import { GARAGE, oliveCan } from '../garden/garage.js';
 import { DOOR, G, P, PHASE, poseDoor, toggleDoor } from './walkable.js';
 import { audio, toast } from '../audio/audio.js';
 import {
@@ -307,8 +308,12 @@ export const QUESTS = (() => {
       if (Q.fire.st === 'gather') setSt('fire', 'carry');
     },
   });
+  // feat/garage: Hubert's diesel can stands in the old garage (phase 0) or at the garage at the south end (GARAGE.home), olive green –
+  // the red can is the petrol (garden/garage_play.js); not to be taken through the closed garage
   const CAN = glbThing('can', 'jerrycan', {
     name: 'Kanister',
+    prep: oliveCan,
+    can: () => !GARAGE.reach || GARAGE.reach(CAN.pos),
     carry3: 'side',
     grip3: { hang: 0.44 },
     desc: () => (CAN.empty ? 'Leerer 20-Liter-Kanister.' : '20 Liter Diesel für Huberts Traktor.'),
@@ -546,7 +551,12 @@ export const QUESTS = (() => {
           new: ['Hubert sieht aus, als bräuchte er Hilfe. Sprich mit ihm.', () => [H().x, H().y]],
           fetch: H_(CAN)
             ? ['Bring den Kanister zu Huberts Traktor und tank ihn auf.', () => tankPos()]
-            : ['Hol den Dieselkanister beim Stromaggregat an der Werkstatt.', () => CAN.pos],
+            : [
+                PHASE <= PHN.bestand
+                  ? 'Hol den grünen Dieselkanister aus der alten Garage (das Schiebetor aufschieben).'
+                  : 'Hol den grünen Dieselkanister von der Garage am Südende des Gartens.',
+                () => CAN.pos,
+              ],
           tell: ['Sag Hubert, dass der Traktor voll ist.', () => [H().x, H().y]],
           mount: ['Steig auf den Traktor (links auf den Kotflügel).', () => mountPos()],
           ride: ['Festhalten! Hubert fährt eine Runde über den Feldweg.', null],
@@ -637,8 +647,25 @@ export const QUESTS = (() => {
   function ask(who, k) {
     if (who === 'hubert')
       switch (k) {
-        case 'q_hilfe':
-          return { after: () => setSt('diesel', 'fetch') };
+        case 'q_hilfe': // feat/garage: the can is in the garage now (text instead of the recorded line, which named the generator)
+          return {
+            text: [
+              'Hilfe? Ich brauch keine Hilfe. Na gut. Der Traktor ist leer, und mit meinem Rücken schlepp ich keinen Kanister.',
+              (PHASE <= PHN.bestand
+                ? 'In Ihrer alten Blechgarage steht ein Dieselkanister, der grüne.'
+                : 'Hinten an Ihrer Garage am Ende vom Garten steht ein Dieselkanister, der grüne.') +
+                ' Bringen Sie mir den. Dann sehen wir weiter.',
+            ],
+            after: () => setSt('diesel', 'fetch'),
+          };
+        case 'q_kanister':
+          return {
+            text: [
+              PHASE <= PHN.bestand
+                ? 'In der alten Blechgarage, rechts vorn in der Ecke. Das Tor schiebt man auf. Ich warte hier nicht ewig.'
+                : 'Hinten an Ihrer Garage, am Ende vom Garten. Ich warte hier nicht ewig.',
+            ],
+          };
         case 'q_voll':
           return {
             after: () => {
@@ -1763,13 +1790,17 @@ export const QUESTS = (() => {
       const [x, y] = keyHome();
       KEY.place(x, y, 0.9, 0.3);
     }
-    const [x, y] = WT(3.78, -37.95);
     CAN.empty = false;
-    CAN.place(x, y, 0, 0.3 + WDA());
+    canHome();
     HAY.gone();
     WOOD.gone();
     logOnBlock(false);
     showPile(0);
+  }
+  // feat/garage: where the diesel can stands by default (the garage of the current phase)
+  function canHome() {
+    const h = GARAGE.home(PHASE).diesel;
+    CAN.place(h[0], h[1], h[2], (-h[3] * Math.PI) / 180);
   }
   function load() {
     const s = LS.get();
@@ -1806,6 +1837,9 @@ export const QUESTS = (() => {
         T.gone();
       }
     }
+    // feat/garage: a can left where it stood before (by the generator at the workshop) goes to the garage
+    if (CAN.state === 'world' && Math.hypot(CAN.pos[0] - WT(3.78, -37.95)[0], CAN.pos[1] - WT(3.78, -37.95)[1]) < 0.6)
+      canHome();
     if (inv.length)
       setTimeout(() => {
         for (const [T, sl] of inv) PLAY.give(T, sl);
