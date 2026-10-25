@@ -20,8 +20,7 @@ veröffentlicht.
 - **Neu seit 25.10. abends (Sitzung session_01C3rwfQiBXst7Xxmc9qjjx7):** freie **KI-Gespräche** mit Hubert und Ronald (Stimme, Claude
   Haiku 5.5 mit eigenem Schlüssel, Sprachausgabe, Meinung, Aufgaben, Weitererzählen am Tisch – `docs/features/ki.md`) und **Duzen im Dorf**
   (Texte in `game/quests.js`, `amt/*`; Huberts 16 Sätze neu aufgenommen über `.github/workflows/stimmen.yml`, Extra `viz3/extra/stimmen/`).
-  Auf `src` seit 09201b1; nach grünem Prüfpaket in der Vorschau, live erst, wenn Falko es mit Schlüssel probiert hat (oder grün ohne
-  Rückfrage nach der Regel unten – ohne Schlüssel ändert sich für Besucher nichts außer dem Duzen).
+  **Live als V16s** (src 09201b1, 25.10.2026 abends, Prüfpaket grün).
 - Arbeitszweig des Kern-Chats: `wip/kern` (Worktree `kern-wt`); `src` bekommt `git push origin wip/kern:src`, Prüfpaket läuft dort.
 - Veröffentlichen: grüner Stand ohne Rückfrage live (`git push origin <sha>:refs/heads/live`, danach `PAV_BUILD` auf der Seite prüfen),
   Eintrag unter „Veröffentlichung“ in `docs/PARALLEL.md`. Kein Force-Push auf `main`.
