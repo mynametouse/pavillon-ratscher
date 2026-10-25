@@ -30,6 +30,8 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 | Alte Blechgarage (Bauphase 0): zwei Schiebetore nach Norden, Werkzeug in Regalen, Rasenmäher (Benzin) herausholen und den Rasen mähen; Aggregat mit Benzin, Dieselkanister für Hubert in die Garage (Falko 10:53) | Hilfs-Agent `garage` | `feat/garage` | fertig 23.10. 13:40 (099a5ff, mit V16q/V16r: Tore, Regale, Rasenmäher, Benzin, Aufgabe „Rasen mähen“, Garage im Süden; offen: Huberts zwei Antworten neu vertonen, `tools/voices/lines3.py`) (Auftrag `docs/plans/auftraege/garage.md`) | neues `garden/garage.js` (unter `garden/fences.js`), Garage von Phase 0 in `pavilion/house_common.js`, ein Satz in `pavilion/phases.js`, versetzte Garage in `garden/env.js`, Mäh-Schnittstelle in `garden/grass.js`, Aggregat in `garden/workshop.js`, Diesel-Teile in `game/quests.js`, `viz3/extra/garage/`, `viz3/test/garage*.py`, `docs/features/garage.md`, eine Zeile in `core/save.js`; Port 8984 |
 | Komprimierte Texturen (KTX2/Basis): schneller laden, ~¼ Speicher am iPhone (Phase 2, Baustein 4) | Hilfs-Agent `texturen` | `feat/texturen` | gestartet 23.10. 11:35 (Auftrag `docs/plans/auftraege/texturen.md`) | Laden der Texturen in `core/assets.js` (und nur wenn nötig `core/detail.js`, `render/render.js`), `build.py`/`buildlib/assets.py`, `deploy_site.py` (KEEP), eigener Workflow, `tools/tex/**`, `viz3/test/ktx2*.py`, `docs/features/texturen.md`; auf `gh-pages` nur `tex2/`; Port 8985 |
 | Frei reden mit Hubert und Ronald per Stimme und KI (Claude Haiku 5.5, eigener Schlüssel), Sprachausgabe, Meinung, Aufgaben, Weitererzählen; im Dorf duzen alle (Falko, 25.10.2026) | Kern-Chat, session_01C3rwfQiBXst7Xxmc9qjjx7 | `wip/kern` → `src` (+ `stimmen/du` für die Neuaufnahmen) | erste Fassung 25.10. abends (`docs/features/ki.md`) | `npc/ki*.js`, `src/lazy/`, `shell/css/ki.css`, Haken in `npc/npc.js` (`NPCUI.extend`), `npc/life.js` (`LIFE.talkSource`), `game/quests.js` (`QUESTS.befriend`, Ereignis `reset`), `viz3/extra/ki/`, `viz3/extra/stimmen/`, `viz3/test/ki.py`, `tools/voices/du_lines.py` |
+| Leute schlendern durchs Dorf und durch Schleusingen, Autos fahren, Autos anhalten (mitfahren, selbst fahren) (Falko, 25.10.2026 spät) | Hilfs-Agent `verkehr` | `feat/verkehr` | gestartet 25.10. spät (Auftrag `docs/plans/auftraege/verkehr.md`) | neuer Ordner `viz3/src/verkehr/`, `viz3/extra/verkehr/`, `shell/css/verkehr.css`, `viz3/test/verkehr*.py`, `docs/features/verkehr.md`; kleine markierte Haken in `dorf/dorf_cars.js`, `welt/schleusingen.js`, `vehicles/*`; Port 8986 |
+| Natürliche Stimmen im Browser, kostenlos (Piper), eine Stimme je Person (Falko, 25.10.2026 spät) | Hilfs-Agent `piper` | `feat/piper` | gestartet 25.10. spät (Auftrag `docs/plans/auftraege/piper.md`) | `audio/piper.js`, `src/lazy/piper.js`, `viz3/package.json`, kleine Ergänzung in `viz3/build.py`, `viz3/extra/piper/`, `viz3/test/piper*.py`, `docs/features/piper.md`; Port 8987 |
 
 ## Absprachen
 
@@ -51,6 +53,10 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
    sich daran, Änderungen nur über den Kern-Chat (Testdaten: `viz3/test/unit/fixtures/gplan_mini.json`).
 
 ## Nachrichten (neueste oben)
+
+- 25.10. spät Kern: Falko wünscht Lautstärke je Kanal, Gespräche mit allen Dorfbewohnern, natürlichere kostenlose Stimmen, Leben auf den
+  Straßen (Leute, Autos, anhalten). Kern-Chat: Lautstärke (`pav-ton-v1`), `audio/stimme.js` (Stimme je Person), Dorfbewohner in den
+  KI-Gesprächen (`DORF.extend`, `KI.person`/`KI.talk` für weitere) – auf `src` seit 44d6fb5d. Hilfs-Agenten `verkehr` und `piper` gestartet.
 
 - 25.10. 23:00 Kern (neue Sitzung, session_01C3rwfQiBXst7Xxmc9qjjx7, übernimmt nach `docs/UEBERGABE.md`): Falko wünscht freie Gespräche mit
   Hubert und Ronald per Stimme und KI (`docs/features/ki.md`) und dass im Dorf alle den Spieler duzen. Neue Haken für Erweiterungen:
