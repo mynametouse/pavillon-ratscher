@@ -1,0 +1,124 @@
+{
+ "vm_replace": [
+  {
+   "file": "voice/du/hubert_near_01.mp3",
+   "who": "hubert",
+   "id": "hubert_near_01",
+   "text": "Bleib mal da drüben.",
+   "dur": 1.42
+  },
+  {
+   "file": "voice/du/hubert_greet_01.mp3",
+   "who": "hubert",
+   "id": "hubert_greet_01",
+   "text": "Was willst du?",
+   "dur": 1.15
+  },
+  {
+   "file": "voice/du/hubert_greet_02.mp3",
+   "who": "hubert",
+   "id": "hubert_greet_02",
+   "text": "Ja? Mach es kurz.",
+   "dur": 2.5
+  },
+  {
+   "file": "voice/du/hubert_greetf_01.mp3",
+   "who": "hubert",
+   "id": "hubert_greetf_01",
+   "text": "Ach, du bist es. Na?",
+   "dur": 2.74
+  },
+  {
+   "file": "voice/du/hubert_t_garten.mp3",
+   "who": "hubert",
+   "id": "hubert_t_garten",
+   "text": "Dein Garten? Lag lange genug brach. Mäh wenigstens regelmäßig, sonst hab ich die Samen bei mir.",
+   "dur": 8.11
+  },
+  {
+   "file": "voice/du/hubert_t_wer.mp3",
+   "who": "hubert",
+   "id": "hubert_t_wer",
+   "text": "Hubert. Mehr musst du nicht wissen. Und jetzt lass mich arbeiten.",
+   "dur": 5.81
+  },
+  {
+   "file": "voice/du/hubert_t_q_hilfe.mp3",
+   "who": "hubert",
+   "id": "hubert_t_q_hilfe",
+   "text": "Hilfe? Ich brauch keine Hilfe. Na gut. Der Traktor ist leer, und mit meinem Rücken schlepp ich keinen Kanister. Du hast doch Diesel hinten an deinem Aggregat. Bring mir den Kanister. Dann sehen wir weiter.",
+   "dur": 17.81
+  },
+  {
+   "file": "voice/du/hubert_t_q_kanister.mp3",
+   "who": "hubert",
+   "id": "hubert_t_q_kanister",
+   "text": "Der Kanister steht hinten bei deiner Werkstatt, neben dem Aggregat. Ich warte hier nicht ewig.",
+   "dur": 6.62
+  },
+  {
+   "file": "voice/du/hubert_t_q_voll.mp3",
+   "who": "hubert",
+   "id": "hubert_t_q_voll",
+   "text": "Na also. Geht doch. Dann steig auf, links auf den Kotflügel. Festhalten und nichts anfassen.",
+   "dur": 9.12
+  },
+  {
+   "file": "voice/du/hubert_t_q_auf.mp3",
+   "who": "hubert",
+   "id": "hubert_t_q_auf",
+   "text": "Was stehst du da noch rum? Aufsteigen.",
+   "dur": 3.58
+  },
+  {
+   "file": "voice/du/hubert_t_q_fahrt.mp3",
+   "who": "hubert",
+   "id": "hubert_t_q_fahrt",
+   "text": "Schon gut. Wenn du mal Holz brauchst, weißt du ja, wo ich wohne.",
+   "dur": 5.4
+  },
+  {
+   "file": "voice/du/hubert_t_q_brett.mp3",
+   "who": "hubert",
+   "id": "hubert_t_q_brett",
+   "text": "Stirnholz. Hm. Saubere Fugen. Das hast du selbst gemacht? Nicht schlecht.",
+   "dur": 7.85
+  },
+  {
+   "file": "voice/du/hubert_t_q_frieda.mp3",
+   "who": "hubert",
+   "id": "hubert_t_q_frieda",
+   "text": "Die braune Ziege? Die steht in meinem Kohl! Hol die da raus, aber schnell.",
+   "dur": 6.7
+  },
+  {
+   "file": "voice/du/hubert_frieda.mp3",
+   "who": "hubert",
+   "id": "hubert_frieda",
+   "text": "Ist das Ronalds Ziege? Die frisst meinen Kohl! Schaff das Vieh hier weg!",
+   "dur": 6.46
+  },
+  {
+   "file": "voice/du/hubert_frieda2.mp3",
+   "who": "hubert",
+   "id": "hubert_frieda2",
+   "text": "Und sag Ronald, er soll sein Gatter zumachen!",
+   "dur": 3.12
+  },
+  {
+   "file": "voice/du/hubert_ride_end.mp3",
+   "who": "hubert",
+   "id": "hubert_ride_end",
+   "text": "Absteigen. Und danke. Aber sag es keinem.",
+   "dur": 5.04
+  }
+ ],
+ "vm": {
+  "topics": {
+   "hubert": {
+    "garten": "Dein Garten",
+    "wer": "Wer bist du?"
+   }
+  }
+ }
+}
