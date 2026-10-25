@@ -446,7 +446,7 @@ export const AMTDATA = (() => {
       heike: 'Ingrid hört auf. Willst du nicht? Du kommst doch rum, mit deinem Holz und dem Pavillon.',
       jens: 'Na, Ortsvorsteher? Im Dorf wird erzählt, Ingrid hätte dich gefragt. Mach doch!',
       wolfgang: 'Ingrid hört auf. Wenn du kandidierst, red mit den Leuten, nicht über sie. Dann wird das was.',
-      hubert: 'Ortsvorsteher werden? Sie? Hm. Schlechter als die anderen können Sie’s auch nicht machen.',
+      hubert: 'Ortsvorsteher werden? Du? Hm. Schlechter als die anderen kannst du’s auch nicht machen.',
       ronald:
         'Die Ingrid hört auf, hab ich gehört. Wär das nichts für dich? Ich würd dich wählen – wenn die Ziegen mitwählen dürften, sowieso.',
       uwe: 'Ich trete an, das weißt du ja. Wenn du auch willst – nur zu. Dann haben die Leute eine Wahl. So gehört sich das.',

@@ -1155,7 +1155,21 @@ export const LIFE = (() => {
       ['r', 'Sag ihm das selber. Der beißt nicht.'],
     ],
   ];
-  const TALK = { on: false, i: 0, line: 0, t: 0, gap: 4, n: 0 };
+  const TALK = { on: false, i: 0, line: 0, t: 0, gap: 4, n: 0, extra: null };
+  // other topics for the table (npc/ki.js: what one of them heard from the visitor): a source gives { lines: [[who, text]],
+  // line(speaker, text, hearing), done() } or nothing; it is asked before each new topic
+  const TALK_SRC = [];
+  function extraTopic() {
+    for (const f of TALK_SRC) {
+      try {
+        const x = f();
+        if (x && Array.isArray(x.lines) && x.lines.length) return x;
+      } catch (e) {
+        console.warn('life talk source', e);
+      }
+    }
+    return null;
+  }
   function hearing() {
     return !NPCUI.cur() && Math.hypot(P.x - H.x, P.y - H.y) < 18 && P.mode === 'walk';
   }
@@ -1189,12 +1203,17 @@ export const LIFE = (() => {
     }
     TALK.t += dt;
     if (TALK.t < TALK.gap) return;
-    const C = TALKS[TALK.i];
+    if (TALK.line === -1) TALK.extra = extraTopic();
+    const X = TALK.extra,
+      C = X ? X.lines : TALKS[TALK.i];
     TALK.line++;
     TALK.t = 0;
     if (TALK.line >= C.length) {
       // a pause, then the next topic
-      TALK.i = (TALK.i + 1) % TALKS.length;
+      if (X) {
+        TALK.extra = null;
+        if (X.done) X.done();
+      } else TALK.i = (TALK.i + 1) % TALKS.length;
       TALK.line = -1;
       TALK.gap = 14 + Math.random() * 10;
       H.fig.speak = R.fig.speak = false;
@@ -1207,7 +1226,8 @@ export const LIFE = (() => {
     li.fig.speak = false;
     TALK.gap = Math.max(2.4, text.length * 0.062) + 0.7;
     TALK.last = text;
-    if (hearing()) NPCUI.sub(sp, text);
+    if (X && X.line) X.line(sp, text, hearing());
+    else if (hearing()) NPCUI.sub(sp, text);
     markDirty();
   }
   // ---- what they mutter at their work when the visitor stands close by (text only) ----
@@ -1365,6 +1385,7 @@ export const LIFE = (() => {
     },
     TALK,
     TALKS,
+    talkSource: f => TALK_SRC.push(f),
     LANES,
     MS,
     plan: n => AG[n] && AG[n].plan(mins(), CLOCK.day()),

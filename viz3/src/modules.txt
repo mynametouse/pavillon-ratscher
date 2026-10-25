@@ -93,6 +93,10 @@ garden/workshop_lamp.js     # workshop LED lights with motion sensor (WLAMP)
 npc/hours.js                # neighbours at home at night
 # feat/nachbarn: neighbour routines below this line
 npc/life.js                 # the neighbours' day: work, mowing, the trip to the village, talks at the table (LIFE)
+# feat/ki: free conversations with the neighbours below this line
+npc/ki_text.js              # feat/ki who Hubert and Ronald are, the world they know, the places, doings and activities of their tasks – data
+npc/ki_core.js              # feat/ki memory, prompts, tools and their effects, summary and gossip, sentences for the voice – pure (KI core)
+npc/ki.js                   # feat/ki talking with Hubert and Ronald by voice: speech recognition, Claude Haiku, voice output, settings (KI)
 vehicles/vsound.js          # V16b vehicle sounds: engine, tyres, wind, horn, doors (VSND)
 vehicles/vehicle.js         # V16b vehicles: physics, getting in and out, cameras, lights, HUD (VEH)
 vehicles/car.js             # V16b the car: estate in Logan MCV size (V16b1), Beige Sable (CAR)

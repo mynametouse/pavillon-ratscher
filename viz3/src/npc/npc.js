@@ -772,9 +772,21 @@ export const NPCUI = (() => {
     busy = false,
     subT = null;
   const labels = { hubert: 'Hubert', ronald: 'Ronald' };
+  // extensions of the talk (npc/ki.js, the free conversation): { start(w), asked(w, label, texts), end(w), free(w) → true while it leads }
+  const EXT = [];
+  const free = w => EXT.some(x => x.free && x.free(w));
+  const tell = (f, ...a) => {
+    for (const x of EXT)
+      try {
+        if (x[f]) x[f](...a);
+      } catch (e) {
+        console.warn('NPCUI', f, e);
+      }
+  };
   function sub(w, text) {
     if (!sb) return;
     if (!text) return;
+    w.lastLine = text;
     // a thought or hint of the player (PLAY.think, e.g. why the fork lifts nothing) stays readable: a line said in passing does not
     // cover it, only the one the player is talking to (the voice still plays)
     if (!sb.hidden && sb.classList.contains('think') && cur !== w) return;
@@ -804,17 +816,20 @@ export const NPCUI = (() => {
     renderTopics();
     await w.say(friendly(w) && VL[w.name + ':greetf'] ? 'greetf' : 'greet', { force: true });
     busy = false;
+    if (cur === w) tell('start', w);
   }
   // topics: quest topics first (game/quests.js decides which apply right now), then the small talk
   function renderTopics() {
     if (!tp || !cur) return;
     tp.innerHTML = '';
-    const topics = Object.entries((VM.topics && VM.topics[cur.name]) || {}),
+    // the recorded small talk gives way to the free conversation (npc/ki.js); the tasks stay as buttons
+    const topics = free(cur) ? [] : Object.entries((VM.topics && VM.topics[cur.name]) || {}),
       qt = window.QUESTS ? LATE.QUESTS.topics(cur.name) : [];
     for (const [k, label, quest] of [...qt.map(q => [q.k, q.label, true]), ...topics]) {
       const b = document.createElement('button');
       b.type = 'button';
       b.textContent = label;
+      b.dataset.k = k;
       if (quest) b.className = 'quest';
       b.addEventListener('click', () => ask(k));
       tp.appendChild(b);
@@ -834,16 +849,19 @@ export const NPCUI = (() => {
     if (!quest) w.talks++;
     tp.querySelectorAll('button').forEach(b => (b.disabled = true));
     const qa = quest && window.QUESTS ? LATE.QUESTS.ask(w.name, k) : null;
+    const label = (tp.querySelector(`button[data-k="${k}"]`) || {}).textContent || k;
     if (qa && qa.before) qa.before();
-    if (qa && qa.text) for (const t of [].concat(qa.text)) await w.sayText(t);
+    const said = qa && qa.text ? [].concat(qa.text) : [VTXT[w.name + '_t_' + k] || ''];
+    if (qa && qa.text) for (const t of said) await w.sayText(t);
     else await w.sayId(w.name + '_t_' + k);
     if (qa && qa.after) qa.after();
+    tell('asked', w, label, said.filter(Boolean));
     if (!cur) return;
     if (qa && qa.end) {
       end(false);
       return;
     }
-    if (w.name === 'hubert' && w.talks >= 2 && !friendly(w)) {
+    if (w.name === 'hubert' && w.talks >= 2 && !friendly(w) && !free(w)) {
       await w.say('bye', { force: true });
       w.avoidUntil = performance.now() / 1000 + 90;
       end(false);
@@ -861,6 +879,7 @@ export const NPCUI = (() => {
     w.talks = 0;
     w.wait = 1.5;
     busy = false;
+    tell('end', w);
     if (sayBye) {
       w.say('bye', { force: true });
       if (w.name === 'hubert') w.avoidUntil = performance.now() / 1000 + 60;
@@ -871,7 +890,7 @@ export const NPCUI = (() => {
     if (w) start(w);
   }); // (with the game layer the one action button starts talks; this one stays hidden)
   cl?.addEventListener('click', () => end(true));
-  return { start, end, sub, cur: () => cur, busy: () => busy, btn };
+  return { start, end, sub, cur: () => cur, busy: () => busy, btn, extend: x => EXT.push(x), renderTopics };
 })();
 function nearNPC() {
   if (P.mode !== 'walk') return null;
@@ -1260,5 +1279,6 @@ window.NPC = {
   update: updateNPC,
   startDrive: () => startDrive(NPCS.hubert),
   talk: n => NPCUI.start(NPCS[n]),
+  NPCUI,
 };
 if (typeof rebuildGrids === 'function') rebuildGrids(); // fence, shelter and tractor colliders were added after the grid was built

@@ -32,6 +32,7 @@ import { STOVE } from './home.js';
 import { PIANO } from '../audio/music.js';
 phase(null);
 export const QUESTS = (() => {
+  const FRIEND = []; // befriend(f): f(who) → true makes the neighbour friendly as a finished task does
   const LSK = 'pav-quests-v1',
     LS = {
       get() {
@@ -622,12 +623,12 @@ export const QUESTS = (() => {
       d = Q.diesel.st,
       b = Q.board.st;
     if (who === 'hubert') {
-      if (d === 'new') out.push({ k: 'q_hilfe', label: 'Brauchen Sie Hilfe?' });
+      if (d === 'new') out.push({ k: 'q_hilfe', label: 'Brauchst du Hilfe?' });
       if (d === 'fetch') out.push({ k: 'q_kanister', label: 'Wo ist der Kanister?' });
       if (d === 'tell') out.push({ k: 'q_voll', label: 'Der Traktor ist voll' });
       if (d === 'mount') out.push({ k: 'q_auf', label: 'Kann ich mitfahren?' });
       if (d === 'done' && !Q.diesel.thanked) out.push({ k: 'q_fahrt', label: 'Danke für die Fahrt' });
-      if (g === 'search' || g === 'lead') out.push({ k: 'q_frieda', label: 'Haben Sie Frieda gesehen?' });
+      if (g === 'search' || g === 'lead') out.push({ k: 'q_frieda', label: 'Hast du Frieda gesehen?' });
       if (hasB && !Q.board.shown) out.push({ k: 'q_brett', label: 'Mein Schneidebrett' });
       if (Q.holz.st === 'new') out.push({ k: 'q_holz', label: 'Soll ich mit anpacken?' });
       if (Q.werkzeug.st === 'new' && atCar()) out.push({ k: 'q_auto', label: 'Was hat das Auto?' });
@@ -652,9 +653,9 @@ export const QUESTS = (() => {
             text: [
               'Hilfe? Ich brauch keine Hilfe. Na gut. Der Traktor ist leer, und mit meinem Rücken schlepp ich keinen Kanister.',
               (PHASE <= PHN.bestand
-                ? 'In Ihrer alten Blechgarage steht ein Dieselkanister, der grüne.'
-                : 'Hinten an Ihrer Garage am Ende vom Garten steht ein Dieselkanister, der grüne.') +
-                ' Bringen Sie mir den. Dann sehen wir weiter.',
+                ? 'In deiner alten Blechgarage steht ein Dieselkanister, der grüne.'
+                : 'Hinten an deiner Garage am Ende vom Garten steht ein Dieselkanister, der grüne.') +
+                ' Bring mir den. Dann sehen wir weiter.',
             ],
             after: () => setSt('diesel', 'fetch'),
           };
@@ -663,7 +664,7 @@ export const QUESTS = (() => {
             text: [
               PHASE <= PHN.bestand
                 ? 'In der alten Blechgarage, rechts vorn in der Ecke. Das Tor schiebt man auf. Ich warte hier nicht ewig.'
-                : 'Hinten an Ihrer Garage, am Ende vom Garten. Ich warte hier nicht ewig.',
+                : 'Hinten an deiner Garage, am Ende vom Garten. Ich warte hier nicht ewig.',
             ],
           };
         case 'q_voll':
@@ -705,7 +706,7 @@ export const QUESTS = (() => {
           return {
             text: [
               'Der Krümmer zieht Luft. Hört man doch.',
-              'In der Werkstatt hinter dem Auto liegt auf der Bank der Dreizehner-Ringschlüssel. Bringen Sie mir den mal?',
+              'In der Werkstatt hinter dem Auto liegt auf der Bank der Dreizehner-Ringschlüssel. Bringst du mir den mal?',
             ],
             after: () => setSt('werkzeug', 'fetch'),
           };
@@ -1387,7 +1388,7 @@ export const QUESTS = (() => {
       HOF.fillHut(Math.min(1, h.fill + 0.05));
       if (Q.holz.n >= 4) {
         setSt('holz', 'done');
-        if (near(H(), 25)) setTimeout(() => H().sayText('Nicht schlecht. Sie können ja doch was.'), 900);
+        if (near(H(), 25)) setTimeout(() => H().sayText('Nicht schlecht. Du kannst ja doch was.'), 900);
       } else {
         if (Q.holz.n === 2 && near(H(), 20)) H().sayText('Rinde nach oben, hab ich gesagt.');
         save();
@@ -1914,6 +1915,7 @@ export const QUESTS = (() => {
     placeDefaults();
     save();
     renderJournal();
+    KERN.emit('reset', {}); // features with their own saved progress start anew too (npc/ki.js: what the neighbours remember)
     toast('Alle Aufgaben zurückgesetzt.');
   }
   if (ON) whenLoaded(() => setTimeout(load, 300));
@@ -1924,9 +1926,11 @@ export const QUESTS = (() => {
       if (n === 'hubertbench' && near(H(), 16)) bark(H(), 'bench', 120);
     },
     friendly: who =>
-      who === 'hubert'
+      (who === 'hubert'
         ? Q.diesel.st === 'done' || Q.holz.st === 'done' || Q.werkzeug.st === 'done'
-        : Q.goat.st === 'done' || Q.board.st === 'done',
+        : Q.goat.st === 'done' || Q.board.st === 'done') || FRIEND.some(f => f(who)),
+    // more reasons to be friends, from later modules (npc/ki.js: the neighbour's opinion of the player after free conversations)
+    befriend: f => FRIEND.push(f),
     // feat/nachbarn (npc/life.js): what a task needs of the neighbours' day – holds(kind): keep the tractor at home / the goats free;
     // wants(who): the activity a task needs right now (Hubert at his car while you fetch the spanner, Ronald at the shelter while you herd)
     holds: k =>

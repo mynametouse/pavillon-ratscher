@@ -219,6 +219,7 @@ export const HUD = (() => {
     'gearwin',
     'clockwin',
     'werkbuch',
+    'kipanel',
   ];
   const panelOpen = () =>
     PANELS.some(id => {

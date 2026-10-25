@@ -76,6 +76,11 @@ r = subprocess.run(cmd, cwd=H, capture_output=True, text=True)
 if r.returncode: print(r.stdout, r.stderr); sys.exit(1)
 if r.stderr.strip(): print(r.stderr[:2000])
 app = open(os.path.join(D, 'app.js')).read()
+# ---- packages loaded on demand (src/lazy/*.js → dist/lazy/*.js, always minified; e.g. the Anthropic SDK for npc/ki.js) ----
+for _lz in sorted(glob.glob(os.path.join(H, 'src', 'lazy', '*.js'))):
+    r = subprocess.run(['npx', '--yes', 'esbuild@0.24.0', _lz, '--bundle', '--minify', '--format=esm', '--target=es2020',
+                        '--outfile=' + os.path.join(D, 'lazy', os.path.basename(_lz)), '--log-level=warning'], cwd=H, capture_output=True, text=True)
+    if r.returncode: print(r.stdout, r.stderr); sys.exit(1)
 # ---- HTML ----
 def shell_text():   # the page: shell/parts.txt lists its parts in order (head, CSS by area, header, 3D stage, menu, windows, tabs, notes, tail)
     lst = os.path.join(H, 'shell', 'parts.txt')

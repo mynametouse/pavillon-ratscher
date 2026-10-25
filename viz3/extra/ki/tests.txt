@@ -1,0 +1,2 @@
+# free conversations with the neighbours (npc/ki.js), against a stand-in for the Claude API
+ki

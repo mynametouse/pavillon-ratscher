@@ -877,10 +877,10 @@ export const AMT = (() => {
     if (k === 'hubert' && st('briefwahl') !== 'done')
       out.push([
         st('briefwahl') === 2
-          ? 'Hier sind Ihre Briefwahlunterlagen'
+          ? 'Hier sind deine Briefwahlunterlagen'
           : st('briefwahl') === 1
             ? 'Die Briefwahl …'
-            : 'Gehen Sie am Sonntag wählen?',
+            : 'Gehst du am Sonntag wählen?',
         () => briefwahl(),
         'quest',
       ]);
@@ -998,7 +998,7 @@ export const AMT = (() => {
     const s = ST.tasks.briefwahl;
     if (s === 1 || s === 2) {
       if (s === 1) {
-        UI.say('Die Unterlagen? Die müssen Sie erst im Rathaus abholen. Die Vollmacht haben Sie ja.');
+        UI.say('Die Unterlagen? Die musst du erst im Rathaus abholen. Die Vollmacht hast du ja.');
         UI.buttons([bye()]);
         return;
       }
@@ -1006,7 +1006,7 @@ export const AMT = (() => {
       E(D.TASKS.briefwahl.gain, 'Du hast Hubert die Briefwahl möglich gemacht');
       save();
       UI.say(
-        'Wahlschein, Stimmzettel, zwei Umschläge. Ankreuzen, den Stimmzettel in den kleinen Umschlag, mit dem unterschriebenen Wahlschein in den großen, ab in den Briefkasten – rechtzeitig, er muss am Wahlsonntag da sein. Und wen ich ankreuze, geht Sie nichts an. (Er grinst.)'
+        'Wahlschein, Stimmzettel, zwei Umschläge. Ankreuzen, den Stimmzettel in den kleinen Umschlag, mit dem unterschriebenen Wahlschein in den großen, ab in den Briefkasten – rechtzeitig, er muss am Wahlsonntag da sein. Und wen ich ankreuze, geht dich nichts an. (Er grinst.)'
       );
       UI.buttons([bye()]);
       return;
@@ -1022,12 +1022,12 @@ export const AMT = (() => {
     );
     UI.buttons([
       [
-        'Ich hole Ihnen die Unterlagen – mit Ihrer Vollmacht.',
+        'Ich hole dir die Unterlagen – mit deiner Vollmacht.',
         () => {
           ST.tasks.briefwahl = 1;
           save();
           UI.say(
-            'Hinten auf der Wahlbenachrichtigung ist der Antrag. Hier, unterschrieben – und das da ist die Vollmacht. Ohne die gibt man Ihnen nichts raus.'
+            'Hinten auf der Wahlbenachrichtigung ist der Antrag. Hier, unterschrieben – und das da ist die Vollmacht. Ohne die gibt man dir nichts raus.'
           );
           think(
             'Aufgabe: Im Rathaus Schleusingen Huberts Briefwahlunterlagen abholen (mit Vollmacht) und ihm bringen.'
@@ -1258,7 +1258,7 @@ export const AMT = (() => {
     }
     UI.say(
       (avail('gerhard') ? 'Gerhard sitzt als Wahlvorsteher am Tisch: ' : 'Der Wahlvorsteher: ') +
-        '„Wahlbenachrichtigung und Ausweis, bitte. – Danke. Hier ist Ihr Stimmzettel. In der Kabine ein Kreuz, falten, in die Urne.“'
+        '„Wahlbenachrichtigung und Ausweis, bitte. – Danke. Hier ist dein Stimmzettel. In der Kabine ein Kreuz, falten, in die Urne.“'
     );
     UI.buttons([
       [
@@ -1375,7 +1375,7 @@ export const AMT = (() => {
           (v.tie
             ? 'Gleichstand! Eigentlich gäbe es jetzt eine Stichwahl – hier entscheidet das Los (vereinfacht): Es fällt auf dich. '
             : 'Mehr als die Hälfte der gültigen Stimmen: ') +
-          'Du bist gewählt. Der Wahlleiter fragt: „Nehmen Sie die Wahl an?“'
+          'Du bist gewählt. Der Wahlleiter fragt: „Nimmst du die Wahl an?“'
       );
       UI.buttons([['Ja, ich nehme die Wahl an.', () => accept(), 'quest']]);
     } else {
