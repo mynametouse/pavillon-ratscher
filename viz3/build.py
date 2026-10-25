@@ -49,6 +49,11 @@ for _fx in sorted(glob.glob(os.path.join(H, 'extra', '*'))):
         if _add:   # into the list of sources (before its </ul>), not behind the licence texts
             _c = M.get('credits', ''); _i = _c.rfind('</ul>')
             M['credits'] = _c[:_i] + _add + _c[_i:] if _i >= 0 else _c + _add
+# an extra may replace recorded lines by their id ('vm_replace'; viz3/extra/stimmen: Hubert's lines with du instead of Sie)
+for _l in M.pop('vm_replace', []):
+    _L = M['vm']['lines']; _i = next((i for i, x in enumerate(_L) if x['id'] == _l['id']), None)
+    if _i is None: _L.append(_l)
+    else: _L[_i] = _l
 site = open(os.path.join(H, 'site.js')).read().strip()
 try:   # build id shown in the error report (boot/report.js): source commit and build time
     _src = subprocess.run(['git', '-C', H, 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip()

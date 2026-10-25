@@ -1,0 +1,41 @@
+# Hubert's lines with du instead of Sie (Falko, 25.10.2026), recorded anew with the same Microsoft Edge voice (tools/voices/du_lines.py) – here,
+# because the chat machine cannot reach the speech service. A push to stimmen/** records the lines and commits the feature extra
+# viz3/extra/stimmen/ (recordings + manifest) back to the same branch; the Kern-Chat merges it into src.
+name: Stimmen
+
+on:
+  push:
+    branches: ['stimmen/**']
+    paths: ['tools/voices/du_lines.py', '.github/workflows/stimmen.yml']
+
+concurrency:
+  group: stimmen-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    name: Aufnehmen
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: edge-tts und ffmpeg
+        run: |
+          pip install -q edge-tts
+          command -v ffmpeg || (sudo apt-get update -q && sudo apt-get install -y -q ffmpeg)
+      - name: Aufnehmen
+        run: python tools/voices/du_lines.py
+      - name: Ins Repo
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add viz3/extra/stimmen
+          git diff --cached --quiet && { echo 'nothing new'; exit 0; }
+          git commit -q -m "Stimmen: Huberts Sätze mit du statt Sie neu aufgenommen (tools/voices/du_lines.py)"
+          git push -q origin HEAD:${{ github.ref_name }}
