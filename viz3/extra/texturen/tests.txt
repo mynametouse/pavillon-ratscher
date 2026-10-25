@@ -1,0 +1,3 @@
+# KTX2/Basis textures (core/assets.js TEX2): KTX2 vs ?tex2=0 – programs, pictures, memory, phone half size
+ktx2
+# start time KTX2 vs the images (diagnostic, by hand): python3 viz3/test/run.py --serve ktx2prof:k2,img,astc

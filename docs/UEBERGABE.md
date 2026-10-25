@@ -73,10 +73,10 @@ Aufträge wörtlich in `docs/plans/auftraege/`, Stand mit `bash tools/agents.sh`
 3. **KI-Gespräche, nächste Schritte** (`docs/features/ki.md`, „Offen“): echte Probe mit Schlüssel auf iPhone und Laptop (ElevenLabs aus dem
    Browser ungetestet); ein kleiner Server für den Schlüssel, damit Sarah und Christoph ohne eigenen reden können; das Weitererzählte am
    Skattisch und am Feuer vorlesen.
-4. **Texturen (KTX2/Basis) übernehmen:** Branch `feat/texturen` (Abschlussbericht des Agenten steht aus). Probe-Merge am 25.10.: nur
-   `viz3/deploy_site.py` hat einen Konflikt (beide Seiten wollen `tex2/` behalten – `KEEP` und das Überspringen von `tex2/` beim Kopieren
-   zusammenführen). Dazu `tex/` und glTF-Bilder, Doku, Kopierzeilen in `pruefpaket.yml` und `check.yml`. `TEX2_LIVE` bleibt `false`
-   (core/assets.js), bis Falko die Vorschau auf iPhone **und** Laptop geprüft hat. Texturspeicher am iPhone geschätzt 125 statt 314 MB.
+4. **Texturen (KTX2/Basis):** `feat/texturen` am 26.10. früh in `wip/kern` zusammengeführt (Konflikte `deploy_site.py`: neue Regel des Agenten
+   – `tex2/` nie aus einem Build kopieren, die Vorschau lädt `../tex2/`; `build.py`: `vm_replace` und TEX2 beide behalten). In der Vorschau an,
+   live aus (`TEX2_LIVE = false` in `core/assets.js`) – bis Falko die Vorschau auf iPhone **und** Laptop angesehen hat (`docs/features/texturen.md`,
+   „Was Falko ansehen sollte“). `extra/texturen/tests.txt`: nur noch `ktx2` (memphone/softgl/gpu laufen im Prüfpaket ohnehin, `ktx2prof` von Hand).
 5. **Letzte `window.TICKS`-Nutzer auf `KERN.tick` umstellen:** `boot.js`, `game.js`, `home.js`, `quests.js`, `garten_in.js`,
    `workshop_lamp.js`, `garage_play.js`, `render.js`, `minimap.js`, `vehicle.js`, `fahrt.js`, `welt.js` (Stand 25.10.: 18 Stellen).
    Werkzeug: `node tools/check/ticks_to_kern.mjs <Dateien>`; Figur/Avatar mit `{ late: true }`. Danach `window.TICKS` entfernen.
