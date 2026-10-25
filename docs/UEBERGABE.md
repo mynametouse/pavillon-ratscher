@@ -17,6 +17,11 @@ veröffentlicht.
 - **Live: V16r** (`PAV_BUILD` src `e50dbd2`, 25.10.2026): Gartenplaner Runde 2 (pflanzen, pflegen, ernten, kaufen bei Baumschule Kammbach,
   Zeitraffer), Aufgabe „Rasen mähen“ (alte Garage), geglättete Fahrt (kein Sprung auf der L 3004), Atelier-Geräusche und Einrichtungsdetails,
   Kloster Veßra ruckelfrei, `KERN.tick`. Davor V16q: Fahren bis Schleusingen und Kloster Veßra, alte Blechgarage als Start (Bauphase 0).
+- **Neu seit 25.10. abends (Sitzung session_01C3rwfQiBXst7Xxmc9qjjx7):** freie **KI-Gespräche** mit Hubert und Ronald (Stimme, Claude
+  Haiku 5.5 mit eigenem Schlüssel, Sprachausgabe, Meinung, Aufgaben, Weitererzählen am Tisch – `docs/features/ki.md`) und **Duzen im Dorf**
+  (Texte in `game/quests.js`, `amt/*`; Huberts 16 Sätze neu aufgenommen über `.github/workflows/stimmen.yml`, Extra `viz3/extra/stimmen/`).
+  Auf `src` seit 09201b1; nach grünem Prüfpaket in der Vorschau, live erst, wenn Falko es mit Schlüssel probiert hat (oder grün ohne
+  Rückfrage nach der Regel unten – ohne Schlüssel ändert sich für Besucher nichts außer dem Duzen).
 - Arbeitszweig des Kern-Chats: `wip/kern` (Worktree `kern-wt`); `src` bekommt `git push origin wip/kern:src`, Prüfpaket läuft dort.
 - Veröffentlichen: grüner Stand ohne Rückfrage live (`git push origin <sha>:refs/heads/live`, danach `PAV_BUILD` auf der Seite prüfen),
   Eintrag unter „Veröffentlichung“ in `docs/PARALLEL.md`. Kein Force-Push auf `main`.
@@ -52,9 +57,14 @@ Ohne die alte Sitzung gehen die Agenten verloren – dann neu starten mit dem Au
 8. **Phase 2, Rest:** Szenarien mit Zonen/Paketen (`?szenario=…`), Pakete nachladen (erst Texturen, dann Code) – `docs/plans/plan_phase2.md`.
 9. **Rückmeldungen der Agenten nach dem 28.10.:** Gartenplaner Runde 2 und Fahrt Runde 2 haben Nachläufer; Berichte lesen, grüne Stände mergen.
 
+10. **KI-Gespräche, nächste Schritte** (`docs/features/ki.md`, „Offen“): echte Probe mit Schlüssel auf iPhone und Laptop (ElevenLabs aus dem
+    Browser ist ungetestet), ein kleiner Server für den Schlüssel, damit Sarah und Christoph ohne eigenen reden können, Dorfbewohner frei
+    reden lassen.
+
 ## Wünsche von Falko (23.–25.10.2026), die weiter gelten
 
-Gartenplaner mit Baumschule Kammbach; Fahren von Ratscher nach Schleusingen und Kloster Veßra; Startszene = Bauphase 0 (alte Blechgarage mit
+Mit Hubert und Ronald frei reden (KI, Stimme, Sprachausgabe, Meinungen, Aufgaben, Weitererzählen); im Dorf duzen alle den Spieler
+(und er sie); Gartenplaner mit Baumschule Kammbach; Fahren von Ratscher nach Schleusingen und Kloster Veßra; Startszene = Bauphase 0 (alte Blechgarage mit
 zwei Schiebetoren nach Norden, Rasenmäher mit Benzin, Werkzeug, Stromerzeuger mit Benzin); umschaltbare Innenräume der Gartengebäude (Holzhaus
 als Atelier mit Schaukelstuhl und ausklappbarem Gästesofa, Wohnwagen gespiegelt mit Bett rechts); Zwischenstände früh in die Vorschau und ihm
 Bescheid sagen; alles dokumentieren, damit ein Chat-Absturz nichts kostet; sauberer Code.
