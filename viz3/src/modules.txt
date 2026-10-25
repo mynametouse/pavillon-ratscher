@@ -51,6 +51,7 @@ game/player.js              # third-person view state, viewpoints, place name, g
 game/camera.js              # every view mode, the third-person camera kept out of walls, resize
 game/input.js               # keys, mouse, touch, joystick, click to pick, fullscreen
 audio/audio.js              # sound engine: recordings, synthesis, ambience, voices, toast()
+audio/stimme.js             # a voice of its own for each person for what is said live: the device's best voices, ElevenLabs, more engines (STIMME)
 pavilion/phases.js          # construction phases with materials and costs (data)
 pavilion/phaseui.js         # 
 npc/npc.js                  # Hubert, Ronald, goats, tractor: walkers, dialogue UI
@@ -93,10 +94,6 @@ garden/workshop_lamp.js     # workshop LED lights with motion sensor (WLAMP)
 npc/hours.js                # neighbours at home at night
 # feat/nachbarn: neighbour routines below this line
 npc/life.js                 # the neighbours' day: work, mowing, the trip to the village, talks at the table (LIFE)
-# feat/ki: free conversations with the neighbours below this line
-npc/ki_text.js              # feat/ki who Hubert and Ronald are, the world they know, the places, doings and activities of their tasks – data
-npc/ki_core.js              # feat/ki memory, prompts, tools and their effects, summary and gossip, sentences for the voice – pure (KI core)
-npc/ki.js                   # feat/ki talking with Hubert and Ronald by voice: speech recognition, Claude Haiku, voice output, settings (KI)
 vehicles/vsound.js          # V16b vehicle sounds: engine, tyres, wind, horn, doors (VSND)
 vehicles/vehicle.js         # V16b vehicles: physics, getting in and out, cameras, lights, HUD (VEH)
 vehicles/car.js             # V16b the car: estate in Logan MCV size (V16b1), Beige Sable (CAR)
@@ -127,6 +124,10 @@ amt/amt_data.js             # feat/ortsvorsteher the election and the office as 
 amt/amt_model.js            # feat/ortsvorsteher opinions, promises, signatures, the count, the Ortsteilrat and the town council – pure logic (AMTMODEL)
 amt/amt_world.js            # feat/ortsvorsteher what the councils decide stands in the village: lamp, Mitfahrbank, speed display, poster, board (AMTWORLD)
 amt/amt.js                  # feat/ortsvorsteher the letter, the campaign, election day with the public count, the office, the town hall scene (AMT)
+# feat/ki: free conversations below this line (after the neighbours, the village and the office: it talks through their panels)
+npc/ki_text.js              # feat/ki who Hubert and Ronald are, the world they know, the places, doings and activities of their tasks – data
+npc/ki_core.js              # feat/ki the people, memory, prompts, tools and their effects, summary and gossip, sentences for the voice – pure (KI core)
+npc/ki.js                   # feat/ki talking with the people of Ratscher by voice: speech recognition, Claude Haiku, their voices, settings (KI)
 # feat/gartenplaner: the garden planner below this line (after the office, before the frame loop)
 gplan/gplan_schema.js       # the plant data contract: fields, enums, checks of pflanzen.json, regeln.json, gilden.json – pure (GPSCHEMA)
 gplan/gplan_model.js        # feat/gartenplaner growth, seasons, the saved plan, guilds, plant and shopping lists – pure (GPMODEL)

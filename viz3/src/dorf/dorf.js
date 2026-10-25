@@ -100,6 +100,17 @@ export const DORF = (() => {
     if (b) S.sc = [b.cx, b.cy];
     return S.sc;
   };
+  // ---- extensions of the talk (npc/ki.js, the free conversation): { start(k), end(k), free(k) → true while it leads } ----
+  const EXT = [];
+  const free = k => EXT.some(x => x.free && x.free(k));
+  const tell = (f, k) => {
+    for (const x of EXT)
+      try {
+        if (x[f]) x[f](k);
+      } catch (e) {
+        console.warn('DORF talk', f, e);
+      }
+  };
   // ---- the talk panel and the subtitles ----
   const UI = (() => {
     const host = ($('npcpanel') && $('npcpanel').parentNode) || $('stage') || document.body;
@@ -161,7 +172,8 @@ export const DORF = (() => {
       const q = questTopic(k);
       if (q) button(q.label, q.run, 'quest');
       for (const e of errandTopics(k)) button(e.label, e.run, 'quest');
-      for (const [id, [label]] of Object.entries(p.topics)) button(label, () => ask(k, id));
+      // the fixed small talk gives way to the free conversation (npc/ki.js); the tasks stay as buttons
+      if (!free(k)) for (const [id, [label]] of Object.entries(p.topics)) button(label, () => ask(k, id));
       button('Tschüss', () => U.close(), 'bye');
     }
     function ask(k, id) {
@@ -203,15 +215,19 @@ export const DORF = (() => {
       else topics(k);
       onTalk(k);
       markDirty();
+      if (mode !== 'game') tell('start', k);
     };
     U.close = () => {
       if (!U.cur) return;
-      const f = DPEOPLE.figs[U.cur];
+      const k = U.cur,
+        f = DPEOPLE.figs[k];
       if (f) f.walker.talking = false;
       U.cur = null;
       el.hidden = true;
       game.on = false;
+      tell('end', k);
     };
+    U.line = () => say.textContent;
     U.say = (k, text) => {
       if (U.cur !== k) return;
       say.textContent = text;
@@ -1002,6 +1018,7 @@ export const DORF = (() => {
     school: DSCHOOL,
     fire: DFIRE,
     people: DPEOPLE,
+    extend: x => EXT.push(x),
   };
 })();
 window.DORF = DORF;

@@ -139,7 +139,7 @@ export const PIANO = (() => {
     if (!st.bus || st.bus.context !== r.ctx) {
       st.bus = r.ctx.createGain();
       st.bus.gain.value = 0.85;
-      st.bus.connect(r.sfx);
+      st.bus.connect(r.mus || r.sfx);
     }
     return st.bus;
   }
@@ -640,8 +640,8 @@ const RECORDS = (() => {
       st.lp.connect(st.g);
       if (st.pan) {
         st.g.connect(st.pan);
-        st.pan.connect(r.sfx);
-      } else st.g.connect(r.sfx);
+        st.pan.connect(r.mus || r.sfx);
+      } else st.g.connect(r.mus || r.sfx);
       st.mode = 'webaudio';
       return true;
     } catch (e) {
@@ -825,7 +825,7 @@ window.RECORDS = RECORDS;
         const g = r.ctx.createGain();
         g.gain.value = 0.55;
         s.connect(g);
-        g.connect(r.sfx);
+        g.connect(r.mus || r.sfx);
         s.start(t0 + k * 0.028);
       });
     },

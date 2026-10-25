@@ -80,6 +80,23 @@ const LOOPLEN = {};
 for (const s of SNDMAN) if (s.loop) LOOPLEN[s.kind] = s.loop;
 export const audio = (() => {
   const AC = window.AudioContext || window.webkitAudioContext;
+  const VDEF = { gesamt: 1, stimmen: 1, umgebung: 1, effekte: 1, musik: 1 };
+  const KVOL = SAVE.key('pav-ton-v1', {
+    owner: 'audio',
+    def: VDEF,
+    check: v => !!v && typeof v === 'object',
+    migrate: v => {
+      const o = { ...VDEF };
+      for (const k of Object.keys(VDEF)) if (v && Number.isFinite(+v[k])) o[k] = Math.max(0, Math.min(1, +v[k]));
+      return o;
+    },
+  });
+  const VOLS = SAVE.get(KVOL);
+  // squared: the slider's middle sounds like half as loud
+  function applyVols() {
+    if (!UV || !ctx) return;
+    for (const k of Object.keys(UV)) UV[k].gain.setTargetAtTime(VOLS[k] * VOLS[k], ctx.currentTime, 0.05);
+  }
   let mufF = null,
     mufG = null,
     mufK = 0;
@@ -90,6 +107,9 @@ export const audio = (() => {
     amb,
     ambLP,
     wetBus,
+    vox,
+    mus,
+    UV = null,
     on = false,
     vis = true,
     tod = 'gold',
@@ -237,7 +257,10 @@ export const audio = (() => {
     comp.attack.value = 0.004;
     comp.release.value = 0.25;
     master = gain(0);
-    master.connect(comp);
+    // the player's volumes (menu → Einstellungen → Lautstärke): one gain each for everything, voices, surroundings, effects, music
+    UV = { gesamt: gain(1), stimmen: gain(1), umgebung: gain(1), effekte: gain(1), musik: gain(1) };
+    master.connect(UV.gesamt);
+    UV.gesamt.connect(comp);
     mufF = filt('lowpass', 20000, 0.6);
     mufG = gain(1);
     comp.connect(mufF);
@@ -245,17 +268,28 @@ export const audio = (() => {
     mufG.connect(ctx.destination);
     if (mufK) muffle(mufK);
     sfx = gain(1);
-    sfx.connect(master);
+    sfx.connect(UV.effekte);
+    UV.effekte.connect(master);
     const conv = ctx.createConvolver();
     conv.buffer = mkIR(0.55, 3.2);
     wetBus = gain(0);
-    sfx.connect(wetBus);
+    UV.effekte.connect(wetBus);
     wetBus.connect(conv);
     conv.connect(master);
+    // voices (recorded lines, the free conversations) and music (record player, piano) on buses of their own
+    vox = gain(1);
+    vox.connect(UV.stimmen);
+    UV.stimmen.connect(master);
+    UV.stimmen.connect(wetBus);
+    mus = gain(1);
+    mus.connect(UV.musik);
+    UV.musik.connect(master);
     ambLP = filt('lowpass', 16000, 0.5);
     amb = gain(1);
     amb.connect(ambLP);
-    ambLP.connect(master);
+    ambLP.connect(UV.umgebung);
+    UV.umgebung.connect(master);
+    applyVols();
     loadAll();
     scheduleOneShots();
   }
@@ -322,6 +356,14 @@ export const audio = (() => {
     s.start(ctx.currentTime + 0.005);
     return s;
   }
+  // a decoded voice (npc/ki.js: a sentence of a free conversation) at a place, on the voices' bus; resolves when it has been said
+  function voiceBuf(b, x, y, { vol = 1.2, ref = 7 } = {}) {
+    return new Promise(res => {
+      const s = b && at(null, x, y, { vol, ref, buf: b, dest: vox });
+      if (!s) return res(false);
+      s.onended = () => res(true);
+    });
+  }
   function voice(id, x, y, { vol = 1.2, ref = 7 } = {}) {
     return new Promise(res => {
       const b = BUF['v:' + id] && BUF['v:' + id][0];
@@ -329,7 +371,7 @@ export const audio = (() => {
         res(false);
         return;
       }
-      const s = at(null, x, y, { vol, ref, buf: b });
+      const s = at(null, x, y, { vol, ref, buf: b, dest: vox });
       if (!s) {
         res(false);
         return;
@@ -782,6 +824,17 @@ export const audio = (() => {
     spatial,
     has: k => !!(ctx && has(k)),
     hasVoice: id => !!(ctx && BUF['v:' + id]),
+    voiceBuf,
+    // the player's volumes 0–1: gesamt, stimmen, umgebung, effekte, musik (saved: pav-ton-v1)
+    vol(k, v) {
+      if (!(k in VOLS)) return;
+      VOLS[k] = Math.max(0, Math.min(1, +v || 0));
+      SAVE.set(KVOL, VOLS);
+      applyVols();
+    },
+    vols: () => ({ ...VOLS }),
+    // what a sound outside the graph (the browser's speech) should be multiplied by: everything × voices, 0 when the sound is off
+    voiceLevel: () => (opt.sound ? VOLS.gesamt * VOLS.stimmen : 0),
     ctxTime: () => (ctx ? ctx.currentTime : 0),
     ready,
     tap() {
@@ -792,7 +845,7 @@ export const audio = (() => {
     },
     muffle,
     raw() {
-      return ctx ? { ctx, sfx, amb, master, wet: wetBus } : null;
+      return ctx ? { ctx, sfx, amb, master, wet: wetBus, vox, mus } : null;
     },
     buf(k) {
       return ctx && has(k) ? pick(k) : null;
@@ -804,3 +857,15 @@ export const audio = (() => {
   };
 })();
 LATE.audio = audio;
+// the volume sliders in the menu (shell/menu.html #volbox)
+for (const r of document.querySelectorAll('#volbox input[data-vol]')) {
+  const k = r.dataset.vol,
+    out = r.parentNode.querySelector('output');
+  const show = () => out && (out.textContent = r.value + ' %');
+  r.value = String(Math.round(audio.vols()[k] * 100));
+  show();
+  r.addEventListener('input', () => {
+    audio.vol(k, +r.value / 100);
+    show();
+  });
+}

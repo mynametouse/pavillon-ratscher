@@ -69,6 +69,13 @@
               <button class="tog" id="fullbtn" aria-pressed="false" title="Vollbild: Kopfzeile ausblenden, Modell über den ganzen Bildschirm">Vollbild</button>
               <button class="tog" id="perfbtn" aria-pressed="false" title="Leistungstest: misst ca. 15 Sekunden lang die Bildrate in sechs typischen Ansichten">Leistung</button>
               <button class="tog" id="reportbtn" title="Gerät, Grafik, Ladeprotokoll und Fehler zum Kopieren oder als Meldung auf GitHub">Fehlerbericht</button>
+            </div>
+            <div class="mvol" id="volbox" aria-label="Lautstärke"><h4>Lautstärke</h4>
+              <label><span>Gesamt</span><input type="range" min="0" max="100" step="1" data-vol="gesamt"><output></output></label>
+              <label><span>Stimmen</span><input type="range" min="0" max="100" step="1" data-vol="stimmen"><output></output></label>
+              <label><span>Umgebung</span><input type="range" min="0" max="100" step="1" data-vol="umgebung" title="Vögel, Wind, Glocken, Wald, Wasser"><output></output></label>
+              <label><span>Effekte</span><input type="range" min="0" max="100" step="1" data-vol="effekte" title="Schritte, Türen, Werkzeug, Fahrzeuge, Tiere in der Nähe"><output></output></label>
+              <label><span>Musik</span><input type="range" min="0" max="100" step="1" data-vol="musik" title="Plattenspieler, Klavier, Gitarre"><output></output></label>
             </div></section>
           <section class="msec" aria-label="Steuerung"><h3>Steuerung</h3>
             <div class="mhelp" id="hint">

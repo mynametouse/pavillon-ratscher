@@ -107,3 +107,9 @@ body[data-seated="1"] #moves{display:none!important}
 body[data-mode="walk"] .where small{display:none}
 body[data-mode="walk"] #qtrack{top:58px}
 @media (max-width:560px){ .toast{top:128px;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));max-width:none} body:not([data-mode="walk"]) .toast{top:60px} }
+/* the volumes in the menu (audio/audio.js, pav-ton-v1) */
+.mvol{margin-top:12px;display:grid;gap:6px}
+.mvol h4{margin:0 0 2px;font:700 13px/1.2 var(--f-body)}
+.mvol label{display:grid;grid-template-columns:76px 1fr 38px;align-items:center;gap:8px;font:500 13px/1.2 var(--f-body)}
+.mvol input[type=range]{width:100%;accent-color:var(--larch)}
+.mvol output{font:500 12px/1 var(--f-body);color:var(--muted);text-align:right}

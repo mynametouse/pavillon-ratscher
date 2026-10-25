@@ -1,6 +1,7 @@
-// ===================== KI core: memory, prompts, tools and their effects for free conversations with Hubert and Ronald (Falko, 25.10.2026) =====================
-// Pure logic without the page (unit tests: viz3/test/unit/ki.test.mjs): what a neighbour remembers about the player (opinion 0–100, notes,
-// short summaries of earlier talks, news to pass on to the other one), the prompt of one conversation (a fixed character part that the API
+// ===================== KI core: memory, prompts, tools and their effects for free conversations with the people of Ratscher (Falko, 25.10.2026) =====================
+// Pure logic without the page (unit tests: viz3/test/unit/ki.test.mjs): the people one can talk to (Hubert and Ronald from ki_text.js, the
+// villagers and others registered by npc/ki.js), what each remembers about the player (opinion 0–100, notes, short summaries of earlier
+// talks, news to pass on – Hubert and Ronald tell each other at the table, the villagers spread it in the village), the prompt of one conversation (a fixed character part that the API
 // caches, the memory, then each turn a <lage> block with the situation before the player's words), the tools the model may call and what
 // they do (opinion, notes, a task as data for TASKS, one of the old tasks of game/quests.js, an activity of npc/life.js, the end of the
 // talk), the summary after a talk (with the gossip for the next time the two sit at the table) and the sentence splitter that hands
@@ -10,15 +11,55 @@ import { KI_CHARS, KI_ORTE, KI_PLAYERS, KI_TAETIGKEIT, KI_TUN, KI_WORLD } from '
 
 export const KI_MODEL = 'claude-haiku-5-5'; // Falko: a very fast, very token-efficient model (Haiku)
 export const MEM_KEY = 'pav-ki-v1';
-export const WHO = ['hubert', 'ronald'];
-const START = { hubert: 35, ronald: 45 }; // as in the campaign (amt/amt_data.js rep0)
+export const WHO = ['hubert', 'ronald']; // the two neighbours at the table (gossip as a dialogue)
 const MAX = { notizen: 30, gespraeche: 8, klatsch: 3, erledigt: 6, tasks: 12 };
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const str = (s, n) => (typeof s === 'string' ? s.replace(/\s+/g, ' ').trim().slice(0, n) : '');
 
+// ---------------- the people (key → { name, sheet, g: 'm' | 'f', start, other, acts, quests, intro }) ----------------
+// other: the one he tells at the table (a dialogue); acts: what he may do after the talk (npc/life.js); quests: old tasks as topics
+const PEOPLE = {};
+const KEY_RE = /^[a-z][a-z0-9_]{1,23}$/;
+const isKey = k => typeof k === 'string' && KEY_RE.test(k);
+export function person(key, p) {
+  if (!isKey(key) || !p || !p.name || !p.sheet) return null;
+  PEOPLE[key] = Object.assign({ g: 'm', start: 50, other: null, acts: null, quests: false, intro: '' }, PEOPLE[key], p);
+  return PEOPLE[key];
+}
+export const people = () => PEOPLE;
+// a villager's character from dorf/dorf_text.js: who he is, what he likes to talk about, how he talks (his own lines as examples)
+export function villagerSheet(p) {
+  const T = Object.values(p.topics || {});
+  const ex = [...(p.greet || []), ...(p.day || []), ...T.map(t => t[1])]
+    .filter(Boolean)
+    .map(t => String(t).replace('{gruss}', 'Hallo'))
+    .slice(0, 8);
+  return `Du bist ${p.full}, ${p.age} Jahre alt, ${p.role}, und wohnst in Ratscher.
+Worüber du gern redest: ${T.map(t => t[0]).join(', ')}.
+So redest du (Sätze von dir): ${ex.map(t => '„' + t + '“').join(' ')}
+Wie du sprichst: wie in den Beispielen – herzlich, im Alltagston, ohne starken Dialekt, meist ein bis drei Sätze. Du duzt dein Gegenüber.`;
+}
+for (const [k, C] of Object.entries(KI_CHARS))
+  person(k, {
+    name: C.name,
+    sheet: C.sheet,
+    g: 'm',
+    start: C.start,
+    other: C.other,
+    acts: KI_TAETIGKEIT[k],
+    quests: true,
+    intro: 'Jemand aus dem Nachbargarten spricht dich an.',
+  });
+const nameOf = k => (PEOPLE[k] ? PEOPLE[k].name : k);
+
 // ---------------- memory (one saved value, SAVE key pav-ki-v1) ----------------
 function whoDefault(k) {
-  return { meinung: START[k], notizen: [], gespraeche: [], klatsch: [], erledigt: [], tell: [], neu: [], n: 0 };
+  const st = PEOPLE[k] && Number.isFinite(PEOPLE[k].start) ? PEOPLE[k].start : 50;
+  return { meinung: st, notizen: [], gespraeche: [], klatsch: [], erledigt: [], tell: [], neu: [], n: 0 };
+}
+// what one person remembers (made on first use)
+export function whoOf(mem, k) {
+  return mem.who[k] || (mem.who[k] = whoDefault(k));
 }
 export function memDefault() {
   return { v: 1, who: { hubert: whoDefault('hubert'), ronald: whoDefault('ronald') }, tasks: [], seq: 0 };
@@ -28,14 +69,16 @@ const arr = (a, n, f) => (Array.isArray(a) ? a.map(f).filter(Boolean).slice(-n) 
 export function memCheck(m) {
   if (!m || typeof m !== 'object' || m.v !== 1 || !m.who) return null;
   const out = memDefault();
-  for (const k of WHO) {
+  for (const k of Object.keys(m.who).filter(isKey).slice(0, 40)) {
     const w = m.who[k];
     if (!w || typeof w !== 'object') continue;
-    const o = out.who[k];
+    const o = whoOf(out, k);
     if (Number.isFinite(w.meinung)) o.meinung = clamp(Math.round(w.meinung), 0, 100);
     o.n = Number.isInteger(w.n) && w.n >= 0 ? w.n : 0;
     o.notizen = arr(w.notizen, MAX.notizen, x =>
-      x && str(x.text, 240) ? { t: x.t | 0, text: str(x.text, 240), von: WHO.includes(x.von) ? x.von : 'selbst' } : null
+      x && str(x.text, 240)
+        ? { t: x.t | 0, text: str(x.text, 240), von: isKey(x.von) && x.von !== 'selbst' ? x.von : 'selbst' }
+        : null
     );
     o.gespraeche = arr(w.gespraeche, MAX.gespraeche, x =>
       x && str(x.text, 400) ? { t: x.t | 0, text: str(x.text, 400) } : null
@@ -59,8 +102,7 @@ function klatschCheck(x) {
   return { zeilen, notiz: str(x.notiz, 240), meinung: clamp(Math.round(+x.meinung || 0), -10, 10) };
 }
 function taskCheck(t) {
-  if (!t || typeof t.id !== 'string' || !WHO.includes(t.who) || !str(t.titel, 80) || !Array.isArray(t.schritte))
-    return null;
+  if (!t || typeof t.id !== 'string' || !isKey(t.who) || !str(t.titel, 80) || !Array.isArray(t.schritte)) return null;
   const schritte = t.schritte.map(s => stepCheck(s)).filter(Boolean);
   if (!schritte.length) return null;
   return {
@@ -81,7 +123,7 @@ function stepCheck(s) {
 export function addNote(mem, who, text, von = 'selbst', day = 0) {
   const t = str(text, 240);
   if (!t) return false;
-  const L = mem.who[who].notizen;
+  const L = whoOf(mem, who).notizen;
   const i = L.findIndex(n => n.text.toLowerCase() === t.toLowerCase());
   if (i >= 0) L.splice(i, 1);
   L.push({ t: day, text: t, von });
@@ -90,13 +132,13 @@ export function addNote(mem, who, text, von = 'selbst', day = 0) {
 }
 // the opinion moves at most 15 points per call (a finished task: its reward, up to 20) and stays within 0–100; returns the new value
 export function opinion(mem, who, delta, lim = 15) {
-  const w = mem.who[who];
+  const w = whoOf(mem, who);
   const d = clamp(Math.round(+delta || 0), -lim, lim);
   w.meinung = clamp(w.meinung + d, 0, 100);
   return w.meinung;
 }
 export function likes(mem, who) {
-  return mem.who[who].meinung >= 65;
+  return whoOf(mem, who).meinung >= 65;
 }
 // words for the opinion, as the neighbour would put it (prompt; journal)
 export function meinungWort(v) {
@@ -108,43 +150,54 @@ export function meinungWort(v) {
 }
 
 // ---------------- prompts ----------------
-// the fixed part (character, world, rules) – the same for every talk with this neighbour, so the API caches it (cache_control)
+// the fixed part (character, world, rules) – the same for every talk with this person, so the API caches it (cache_control)
 export function systemFixed(who) {
-  const C = KI_CHARS[who],
-    O = KI_CHARS[C.other].name;
+  const C = PEOPLE[who],
+    O = C.other ? nameOf(C.other) : '';
+  const tell = O ? `erzählst du es ${O}, wenn ihr das nächste Mal am Tisch sitzt` : 'erzählst du es im Dorf weiter';
   return `${C.sheet}
 
 Was du über die Gegend weißt:
 ${KI_WORLD}
 
 So läuft das Gespräch:
-- Jemand aus dem Nachbargarten spricht dich an. Was er sagt, kommt aus einer Spracherkennung und kann Hörfehler enthalten – versteh es wohlwollend, so wie man im echten Leben nachfragt oder es richtig deutet.
+- ${C.intro || 'Jemand aus dem Garten bei Hubert und Ronald spricht dich an.'} Was er sagt, kommt aus einer Spracherkennung und kann Hörfehler enthalten – versteh es wohlwollend, so wie man im echten Leben nachfragt oder es richtig deutet.
 - Vor seinen Worten steht in <lage>…</lage>, was du gerade siehst und weißt (Uhrzeit, Ort, laufende Aufgaben, was er in der Hand hat). Das sagt er nicht, das weißt du einfach. Erwähne es nur, wenn es passt.
 - Du antwortest nur mit dem, was ${C.name} laut sagt: gesprochenes Deutsch, keine Regieanweisungen, keine Sternchen, keine Aufzählungen, kein Markdown, keine Emojis. Halte dich kurz wie im echten Gespräch – meist ein bis drei Sätze, eine Frage zurück ist erlaubt.
-- Du bist ${C.name} und bleibst es. Du bist kein Assistent und kein Computerprogramm; fragt dich jemand danach, reagierst du verwundert wie ${C.name}. Du weißt nur, was ein Nachbar wissen kann; kleine Alltagsdinge darfst du erfinden, aber nichts, was den Tatsachen oben widerspricht.
+- Du bist ${C.name} und bleibst es. Du bist kein Assistent und kein Computerprogramm; fragt dich jemand danach, reagierst du verwundert wie ${C.name}. Du weißt nur, was jemand aus dem Dorf wissen kann; kleine Alltagsdinge darfst du erfinden, aber nichts, was den Tatsachen oben widerspricht.
 - Duzen: Im Dorf duzen sich alle, du duzt dein Gegenüber.
 - Du hast Werkzeuge. Sag erst, was du sagen willst, und benutze dann die Werkzeuge; schreib nie über die Werkzeuge selbst. Wenn kein Werkzeug passt, versprich nichts, was das Spiel nicht kann.
   • meinung_aendern, wenn dich etwas wirklich freut oder ärgert (Hilfe, Lob, Frechheit, Lügen) – nicht bei jedem Satz.
-  • merken für Dinge, die du dir über dein Gegenüber merken willst (Pläne, Vorlieben, Versprechen, was er erzählt hat). Mit weitererzaehlen = true erzählst du es ${O}, wenn ihr das nächste Mal am Tisch sitzt.
-  • aufgabe_geben, wenn du um Hilfe bittest oder dein Gegenüber etwas für dich tun will. Nur aus den Orten und Tätigkeiten, die das Werkzeug kennt; danach soll er zu dir zurückkommen. Höchstens eine neue Aufgabe pro Gespräch, und nur, wenn es passt.
-  • spielaufgabe, wenn das Gespräch zu einem der Themen in <lage> unter „Spielaufgaben“ führt – dann startet oder erledigt das die Aufgabe im Spiel; sag sinngemäß, was im Ergebnis steht.
-  • taetigkeit, wenn du nach dem Gespräch etwas anderes tun willst (zum Beispiel ${who === 'hubert' ? 'mit dem Traktor ins Dorf fahren' : 'zu Hubert rübergehen'}).
+  • merken für Dinge, die du dir über dein Gegenüber merken willst (Pläne, Vorlieben, Versprechen, was er erzählt hat). Mit weitererzaehlen = true ${tell}.
+  • aufgabe_geben, wenn du um Hilfe bittest oder dein Gegenüber etwas für dich tun will. Nur aus den Orten und Tätigkeiten, die das Werkzeug kennt; danach soll er zu dir zurückkommen. Höchstens eine neue Aufgabe pro Gespräch, und nur, wenn es passt.${
+    C.quests
+      ? `
+  • spielaufgabe, wenn das Gespräch zu einem der Themen in <lage> unter „Spielaufgaben“ führt – dann startet oder erledigt das die Aufgabe im Spiel; sag sinngemäß, was im Ergebnis steht.`
+      : ''
+  }${
+    C.acts
+      ? `
+  • taetigkeit, wenn du nach dem Gespräch etwas anderes tun willst (zum Beispiel ${Object.values(C.acts)
+    .slice(-2)
+    .map(v => (typeof v === 'string' ? v : v.label))
+    .join(' oder ')}).`
+      : ''
+  }
   • gespraech_beenden, wenn du keine Lust mehr hast oder alles gesagt ist – nach deinem letzten Satz.`;
 }
 // what this neighbour remembers about the player – part of the system prompt of the next talk (not changed while one runs)
 export function systemMemory(mem, who, player = 'Falko') {
-  const w = mem.who[who],
-    P = KI_PLAYERS[player] || player,
-    O = KI_CHARS[KI_CHARS[who].other].name;
+  const w = whoOf(mem, who),
+    P = KI_PLAYERS[player] || player;
   const own = w.notizen.filter(n => n.von === 'selbst').map(n => '- ' + n.text);
-  const heard = w.notizen.filter(n => n.von !== 'selbst').map(n => '- ' + n.text);
+  const heard = w.notizen.filter(n => n.von !== 'selbst').map(n => `- ${nameOf(n.von)}: ${n.text}`);
   const talks = w.gespraeche.map(g => '- ' + g.text);
   return [
     `Dein Gegenüber ist ${P}. Deine Meinung über ihn: ${w.meinung} von 100 – ${meinungWort(w.meinung)}. Danach richtet sich, wie freundlich und geduldig du bist.`,
     w.n ? `Ihr habt schon ${w.n}-mal miteinander geredet.` : 'Ihr redet heute zum ersten Mal richtig miteinander.',
     talks.length ? 'Frühere Gespräche:\n' + talks.join('\n') : '',
     own.length ? 'Was du dir gemerkt hast:\n' + own.join('\n') : '',
-    heard.length ? `Was dir ${O} erzählt hat:\n` + heard.join('\n') : '',
+    heard.length ? 'Was man dir erzählt hat:\n' + heard.join('\n') : '',
     w.erledigt.length ? 'Was er für dich erledigt hat: ' + w.erledigt.join('; ') + '.' : '',
   ]
     .filter(Boolean)
@@ -183,7 +236,8 @@ const obj = (props, req = Object.keys(props)) => ({
   additionalProperties: false,
 });
 export function tools(who) {
-  const act = KI_TAETIGKEIT[who];
+  const C = PEOPLE[who],
+    act = C.acts;
   const label = v => (typeof v === 'string' ? v : v.label);
   const T = [
     {
@@ -198,7 +252,7 @@ export function tools(who) {
     {
       name: 'merken',
       description:
-        'Merk dir etwas über dein Gegenüber oder das Gespräch für später (ein kurzer Satz aus deiner Sicht, z. B. „Falko will im Frühjahr einen Teich graben.“). weitererzaehlen: true, wenn du es dem anderen Nachbarn erzählen willst.',
+        'Merk dir etwas über dein Gegenüber oder das Gespräch für später (ein kurzer Satz aus deiner Sicht, z. B. „Falko will im Frühjahr einen Teich graben.“). weitererzaehlen: true, wenn du es weitererzählen willst.',
       input_schema: obj({ notiz: { type: 'string' }, weitererzaehlen: { type: 'boolean' } }),
     },
     {
@@ -236,11 +290,11 @@ export function tools(who) {
       name: 'taetigkeit',
       description:
         'Was du nach dem Gespräch tust (für eine Weile, dann wieder dein normaler Tag). was einer von: ' +
-        Object.entries(act)
+        Object.entries(act || {})
           .map(([k, v]) => `${k} (${label(v)})`)
           .join(', ') +
         '.',
-      input_schema: obj({ was: { type: 'string', enum: Object.keys(act) } }),
+      input_schema: obj({ was: { type: 'string', enum: Object.keys(act || {}) } }),
     },
     {
       name: 'gespraech_beenden',
@@ -250,7 +304,10 @@ export function tools(who) {
     },
   ];
   // the tool inputs are small, but streamed requests with client tools get eager input streaming (the inputs are checked here anyway)
-  return T.map(t => ({ ...t, eager_input_streaming: true }));
+  return T.filter(t => (t.name !== 'taetigkeit' || act) && (t.name !== 'spielaufgabe' || C.quests)).map(t => ({
+    ...t,
+    eager_input_streaming: true,
+  }));
 }
 // a task of a neighbour from the model's input → a stored record (null + why when nothing usable came)
 export function buildTask(mem, who, input) {
@@ -285,7 +342,7 @@ export function buildTask(mem, who, input) {
 // the task as data for TASKS (core/tasks.js): its steps, then back to the neighbour. env: { near(spot, r) → bool, npcAt(who) → [x, y] | null,
 // spotAt(spot) → [x, y] | null }
 export function taskDef(rec, env) {
-  const Name = KI_CHARS[rec.who].name;
+  const Name = nameOf(rec.who);
   const steps = rec.schritte.map(s => {
     if (s.art === 'tun') {
       const d = KI_TUN[s.ziel];
@@ -316,13 +373,13 @@ export function runTool(mem, who, name, input, env = {}) {
   switch (name) {
     case 'meinung_aendern': {
       if (!Number.isFinite(+I.delta)) return bad('delta muss eine Zahl sein');
-      const before = mem.who[who].meinung,
+      const before = whoOf(mem, who).meinung,
         now = opinion(mem, who, I.delta);
       return ok(`Meinung jetzt ${now}/100.`, { k: 'meinung', who, from: before, to: now, grund: str(I.grund, 120) });
     }
     case 'merken': {
       if (!addNote(mem, who, I.notiz, 'selbst', day)) return bad('notiz fehlt');
-      if (I.weitererzaehlen === true) mem.who[who].tell = mem.who[who].tell.concat(str(I.notiz, 240)).slice(-4);
+      if (I.weitererzaehlen === true) whoOf(mem, who).tell = whoOf(mem, who).tell.concat(str(I.notiz, 240)).slice(-4);
       return ok('Gemerkt.', { k: 'merken', who, text: str(I.notiz, 240), tell: I.weitererzaehlen === true });
     }
     case 'aufgabe_geben': {
@@ -342,7 +399,7 @@ export function runTool(mem, who, name, input, env = {}) {
       });
     }
     case 'taetigkeit': {
-      const a = KI_TAETIGKEIT[who][I.was];
+      const a = (PEOPLE[who].acts || {})[I.was];
       if (!a) return bad('unbekannte Tätigkeit');
       return ok('Nach dem Gespräch machst du das.', {
         k: 'taetigkeit',
@@ -359,13 +416,19 @@ export function runTool(mem, who, name, input, env = {}) {
 
 // ---------------- after the talk: summary and gossip (one small request with structured output) ----------------
 export function summarySystem(who) {
-  const C = KI_CHARS[who],
-    O = KI_CHARS[C.other];
-  return `Du schreibst für ein Spiel das Gedächtnis von ${C.name}, einem Nachbarn im Dorf Ratscher in Thüringen. Im Dorf duzen sich alle.
-${C.name}: ${C.sheet.split('\n')[1] || ''}
-${O.name}: ${O.sheet.split('\n')[1] || ''}
+  const C = PEOPLE[who],
+    O = C.other ? PEOPLE[C.other] : null;
+  const head = `Du schreibst für ein Spiel das Gedächtnis von ${C.name} aus dem Dorf Ratscher in Thüringen. Im Dorf duzen sich alle.
+${C.name}: ${C.sheet.split('\n')[0]}
 Du bekommst das Gespräch, das ${C.name} eben mit seinem Gegenüber geführt hat, und die Dinge, die ${C.name} weitererzählen will.
-- zusammenfassung: ein, höchstens zwei Sätze aus Sicht von ${C.name}, was besprochen oder versprochen wurde (in der dritten Person über das Gegenüber, mit Namen).
+- zusammenfassung: ein, höchstens zwei Sätze aus Sicht von ${C.name}, was besprochen oder versprochen wurde (in der dritten Person über das Gegenüber, mit Namen).`;
+  if (!O)
+    return `${head}
+- zeilen: immer eine leere Liste.
+- notiz_fuer_anderen: wenn es etwas weiterzuerzählen gibt, ein Satz, wie es danach im Dorf die Runde macht (so, wie es sich die anderen merken), sonst leer.
+- meinung_anderer: wie sich die Meinung der anderen im Dorf über das Gegenüber dadurch ändert, ganze Zahl von -5 bis 5.`;
+  return `${head}
+${O.name}: ${O.sheet.split('\n')[0]}
 - zeilen: wenn es etwas weiterzuerzählen gibt, ein kurzer Dialog (2 bis 6 Zeilen) zwischen ${C.name} (wer "${C.name[0].toLowerCase()}") und ${O.name} (wer "${O.name[0].toLowerCase()}") beim nächsten Treffen am Tisch: ${C.name} erzählt es, ${O.name} reagiert, wie es zu ihm passt. Gesprochenes Deutsch, jede Zeile ein, zwei Sätze, keine Regieanweisungen. Sonst eine leere Liste.
 - notiz_fuer_anderen: was ${O.name} sich danach über das Gegenüber merkt (ein Satz aus seiner Sicht), sonst leer.
 - meinung_anderer: wie sich ${O.name}s Meinung über das Gegenüber dadurch ändert, ganze Zahl von -10 bis 10.`;
@@ -377,23 +440,28 @@ export const SUMMARY_SCHEMA = obj({
   meinung_anderer: { type: 'integer' },
 });
 export function summaryInput(mem, who, transcript, player = 'Falko') {
-  const tell = mem.who[who].tell;
+  const tell = whoOf(mem, who).tell;
   return (
     `Gegenüber: ${KI_PLAYERS[player] || player}.\nGespräch:\n` +
-    transcript.map(([s, t]) => (s === 'p' ? player : KI_CHARS[who].name) + ': ' + t).join('\n') +
+    transcript.map(([s, t]) => (s === 'p' ? player : nameOf(who)) + ': ' + t).join('\n') +
     '\n\nWeitererzählen will er: ' +
     (tell.length ? tell.join('; ') : 'nichts')
   );
 }
-// the result of the summary request → memory (summary, gossip for the table); returns the gossip entry or null
+// the result of the summary request → memory (summary, gossip for the table); returns the gossip entry or null – for one without a
+// partner at a table: { spread: note, meinung } for the village (spread)
 export function applySummary(mem, who, res, day = 0) {
-  const w = mem.who[who];
+  const w = whoOf(mem, who);
   w.tell = [];
   if (!res || typeof res !== 'object') return null;
   const s = str(res.zusammenfassung, 400);
   if (s) {
     w.gespraeche.push({ t: day, text: s });
     if (w.gespraeche.length > MAX.gespraeche) w.gespraeche.splice(0, w.gespraeche.length - MAX.gespraeche);
+  }
+  if (!PEOPLE[who] || !PEOPLE[who].other) {
+    const n = str(res.notiz_fuer_anderen, 240);
+    return n ? { spread: n, meinung: clamp(Math.round(+res.meinung_anderer || 0), -5, 5) } : null;
   }
   const k = klatschCheck({
     zeilen: Array.isArray(res.zeilen) ? res.zeilen.map(z => [z && z.wer, z && z.text]) : [],
@@ -413,16 +481,24 @@ export function nextGossip(mem) {
 export function gossipHeard(mem, who, day = 0) {
   const k = mem.who[who].klatsch.shift();
   if (!k) return null;
-  const other = KI_CHARS[who].other;
+  const other = PEOPLE[who].other;
   if (k.notiz) addNote(mem, other, k.notiz, who, day);
   if (k.meinung) opinion(mem, other, k.meinung);
   return k;
+}
+// the village talks: what one told goes to a few others (their notes „from“ him, their opinion a little)
+export function spread(mem, who, note, to, meinung = 0, day = 0) {
+  for (const k of to) {
+    if (k === who) continue;
+    addNote(mem, k, note, who, day);
+    if (meinung) opinion(mem, k, meinung, 5);
+  }
 }
 // a finished task of a neighbour: its reward, a line for his memory
 export function taskDone(mem, id) {
   const t = mem.tasks.find(x => x.id === id);
   if (!t) return null;
-  const w = mem.who[t.who];
+  const w = whoOf(mem, t.who);
   opinion(mem, t.who, t.belohnung, 20);
   w.erledigt.push(t.titel);
   if (w.erledigt.length > MAX.erledigt) w.erledigt.shift();

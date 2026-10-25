@@ -177,11 +177,36 @@ with lib.browser() as b:
     MODE['auth'] = False
     # settings panel
     E("KI.settings(true)")
-    ck('settings panel', E("!document.getElementById('kipanel').hidden && /Hubert \\d+\\/100/.test(document.getElementById('kipanel').textContent)"))
+    ck('settings panel', E("!document.getElementById('kipanel').hidden && /Hubert \\d+/.test(document.querySelector('#kipanel .kmeinung').textContent)"))
+    ck('settings: the voices of the people', E("document.querySelectorAll('#ki-stimme .strow').length") >= 10, str(E("document.querySelectorAll('#ki-stimme .strow').length")))
     lib.shot(pg, OUT, 'settings')
     E("KI.settings(false)")
     # reset: the neighbours forget
     E("KERN.emit('reset', {})")
     ck('reset: memory anew', E("KI.mem.who.hubert.meinung === 35 && !KI.mem.tasks.length"))
+    # a villager: the free talk in the village's panel, the task, the village hears of it
+    E(f"KI.configure({{ base: '{base}' }})")
+    n0 = len(REQ)
+    E("DORF.UI.open('gerhard')")
+    ck('villager: conversation begins', wait("!!KI.conv && KI.conv.who === 'gerhard'", 10))
+    ck('villager: microphone in the village panel', E("document.getElementById('dorfpanel').contains(document.getElementById('np-ki')) && !document.getElementById('np-ki').hidden"))
+    ck('villager: small talk gives way', E("[...document.querySelectorAll('#dorfpanel .topics button')].every(b => /quest|bye/.test(b.className))"))
+    E("KI.turn('Erzähl mal von der Chronik')")
+    wait("KI.conv && !KI.conv.busy && KI.conv.messages.length >= 4", 40)
+    vr = [r for r in REQ[n0:] if r.get('stream')]
+    ck('villager: his character', bool(vr) and 'Du bist Gerhard Möller' in vr[0]['system'][0]['text'] and 'Dorfchronik' in vr[0]['system'][0]['text'])
+    ck('villager: no activity tool, no old tasks', bool(vr) and not any(t['name'] in ('taetigkeit', 'spielaufgabe') for t in vr[0]['tools']))
+    ck('villager: opinion from the campaign', E("KI.mem.who.gerhard.meinung") > 0, str(E("KI.mem.who.gerhard.meinung")))
+    ck('villager: task in the journal', E("!!TASKS.state('ki-gerhard-1')"))
+    ck('villager: the answer in the village panel', 'Rasen steht kniehoch' in E("document.querySelector('#dorfpanel .say').textContent"))
+    E("DORF.UI.close()")
+    ck('villager: summary', wait("KI.mem.who.gerhard.gespraeche.length === 1", 20))
+    ck('the village hears of it', E("Object.values(KI.mem.who).some(w => w.notizen.some(n => n.von === 'gerhard'))"))
+    # voices: one per person, women and men
+    ck('voices: profiles', E("STIMME.profile('katrin').g === 'f' && STIMME.profile('hubert').g === 'm' && STIMME.profile('gerhard').age === 72"))
+    # volumes: sliders in the menu, saved
+    ck('volume sliders in the menu', E("document.querySelectorAll('#volbox input[data-vol]').length") == 5)
+    E("const r = document.querySelector('#volbox input[data-vol=stimmen]'); r.value = '40'; r.dispatchEvent(new Event('input'))")
+    ck('volume saved', E("JSON.parse(localStorage.getItem('pav-ton-v1') || '{}').stimmen") == 0.4, E("localStorage.getItem('pav-ton-v1')"))
     ck.errors(errs)
 ck.done()

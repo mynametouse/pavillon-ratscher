@@ -15,10 +15,16 @@ test('memory: defaults, repair of broken parts, limits', () => {
   const r = K.memCheck({
     v: 1,
     who: {
-      hubert: { meinung: 140, notizen: [{ text: 'x' }, null, { text: '' }, { text: 'Plant einen Teich.', von: 'ronald' }], n: -3 },
+      hubert: {
+        meinung: 140,
+        notizen: [{ text: 'x' }, null, { text: '' }, { text: 'Plant einen Teich.', von: 'ronald' }],
+        n: -3,
+      },
       ronald: 'kaputt',
     },
-    tasks: [{ id: 'ki-hubert-1', who: 'hubert', titel: 'Holz', schritte: [{ art: 'tun', ziel: 'gibtsnicht', text: 'a' }] }],
+    tasks: [
+      { id: 'ki-hubert-1', who: 'hubert', titel: 'Holz', schritte: [{ art: 'tun', ziel: 'gibtsnicht', text: 'a' }] },
+    ],
   });
   assert.equal(r.who.hubert.meinung, 100);
   assert.equal(r.who.hubert.n, 0);
@@ -34,7 +40,11 @@ test('memory: defaults, repair of broken parts, limits', () => {
   for (let i = 0; i < 40; i++) K.addNote(m, 'ronald', 'Notiz ' + i);
   assert.equal(m.who.ronald.notizen.length, 30);
   K.addNote(m, 'ronald', 'notiz 39');
-  assert.equal(m.who.ronald.notizen.filter(n => /39/.test(n.text)).length, 1, 'the same note again replaces the old one');
+  assert.equal(
+    m.who.ronald.notizen.filter(n => /39/.test(n.text)).length,
+    1,
+    'the same note again replaces the old one'
+  );
 });
 
 test('opinion: at most 15 per step, within 0–100; friends from 65', () => {
@@ -61,11 +71,16 @@ test('prompts: the fixed part says du and names the tools; memory and situation'
   assert.match(s, /Sarah, Falkos Freundin/);
   assert.match(s, /35 von 100/);
   assert.match(s, /Was du dir gemerkt hast:\n- Er hat beim Holz geholfen\./);
-  assert.match(s, /Was dir Ronald erzählt hat:\n- Er will einen Teich graben\./);
+  assert.match(s, /Was man dir erzählt hat:\n- Ronald: Er will einen Teich graben\./);
   const b = K.systemBlocks(m, 'ronald', 'Falko');
   assert.deepEqual(b[0].cache_control, { type: 'ephemeral' });
   assert.equal(b[1].cache_control, undefined);
-  const l = K.situation({ zeit: 'Sa 14:20 Uhr', ort: 'Ziegenweide', themen: [{ k: 'q_helfen', label: 'Kann ich dir helfen?' }], meinung: 50 });
+  const l = K.situation({
+    zeit: 'Sa 14:20 Uhr',
+    ort: 'Ziegenweide',
+    themen: [{ k: 'q_helfen', label: 'Kann ich dir helfen?' }],
+    meinung: 50,
+  });
   assert.match(l, /^<lage>\n/);
   assert.match(l, /q_helfen „Kann ich dir helfen\?“/);
   assert.doesNotMatch(l, /Hand/);
@@ -83,10 +98,17 @@ test('tools: definitions per neighbour', () => {
     assert.equal(t.input_schema.additionalProperties, false);
     assert.equal(t.eager_input_streaming, true);
   }
-  assert.deepEqual(h.find(t => t.name === 'taetigkeit').input_schema.properties.was.enum, Object.keys(KI_TAETIGKEIT.hubert));
-  assert.deepEqual(r.find(t => t.name === 'taetigkeit').input_schema.properties.was.enum, Object.keys(KI_TAETIGKEIT.ronald));
+  assert.deepEqual(
+    h.find(t => t.name === 'taetigkeit').input_schema.properties.was.enum,
+    Object.keys(KI_TAETIGKEIT.hubert)
+  );
+  assert.deepEqual(
+    r.find(t => t.name === 'taetigkeit').input_schema.properties.was.enum,
+    Object.keys(KI_TAETIGKEIT.ronald)
+  );
   const d = h.find(t => t.name === 'aufgabe_geben').description;
-  for (const k of [...Object.keys(KI_ORTE), ...Object.keys(KI_TUN)]) assert.ok(d.includes(k), 'named in the description: ' + k);
+  for (const k of [...Object.keys(KI_ORTE), ...Object.keys(KI_TUN)])
+    assert.ok(d.includes(k), 'named in the description: ' + k);
 });
 
 test('runTool: opinion, notes to pass on, activity, end, errors', () => {
@@ -105,7 +127,10 @@ test('runTool: opinion, notes to pass on, activity, end, errors', () => {
   assert.equal(K.runTool(m, 'hubert', 'gespraech_beenden', {}).fx[0].k, 'ende');
   assert.equal(K.runTool(m, 'hubert', 'zaubern', {}).error, true);
   // an old task: only one that is offered right now; its line goes back to the model
-  const env = { themen: [{ k: 'q_hilfe', label: 'Brauchst du Hilfe?' }], quest: k => ({ text: 'Bring mir den grünen Kanister.', end: false }) };
+  const env = {
+    themen: [{ k: 'q_hilfe', label: 'Brauchst du Hilfe?' }],
+    quest: k => ({ text: 'Bring mir den grünen Kanister.', end: false }),
+  };
   assert.equal(K.runTool(m, 'hubert', 'spielaufgabe', { thema: 'q_holz' }, env).error, true);
   r = K.runTool(m, 'hubert', 'spielaufgabe', { thema: 'q_hilfe' }, env);
   assert.equal(r.error, false);
@@ -114,7 +139,11 @@ test('runTool: opinion, notes to pass on, activity, end, errors', () => {
 
 test('aufgabe_geben: steps checked, the task as data for TASKS, the reward when done', () => {
   const m = K.memDefault();
-  let r = K.runTool(m, 'hubert', 'aufgabe_geben', { titel: 'Zum Bäcker', schritte: [{ art: 'ort', ziel: 'baecker', text: 'Hol Brot.' }], belohnung: 5 });
+  let r = K.runTool(m, 'hubert', 'aufgabe_geben', {
+    titel: 'Zum Bäcker',
+    schritte: [{ art: 'ort', ziel: 'baecker', text: 'Hol Brot.' }],
+    belohnung: 5,
+  });
   assert.equal(r.error, true);
   assert.match(r.text, /unbekanntes ziel: baecker/);
   assert.match(r.text, /schleusingen/);
@@ -130,7 +159,11 @@ test('aufgabe_geben: steps checked, the task as data for TASKS, the reward when 
   const rec = r.fx[0].rec;
   assert.equal(rec.id, 'ki-hubert-1');
   assert.equal(rec.belohnung, 20, 'reward at most 20');
-  assert.equal(K.runTool(m, 'hubert', 'aufgabe_geben', { titel: 'Rasen und Markt', schritte: rec.schritte }).error, true, 'not twice');
+  assert.equal(
+    K.runTool(m, 'hubert', 'aufgabe_geben', { titel: 'Rasen und Markt', schritte: rec.schritte }).error,
+    true,
+    'not twice'
+  );
   let near = false;
   const def = K.taskDef(rec, { near: () => near, spotAt: () => [1, 2], npcAt: () => [3, 4] });
   assert.equal(def.steps.length, 3);
@@ -195,7 +228,15 @@ test('summary and gossip: stored, told at the table, remembered by the listener'
   assert.equal(K.nextGossip(m), null);
   assert.equal(m.who.ronald.meinung, 55);
   assert.deepEqual(m.who.ronald.notizen[0], { t: 5, text: 'Falko will Hühner halten.', von: 'hubert' });
-  assert.equal(K.applySummary(m, 'ronald', { zusammenfassung: 'Nur Wetter.', zeilen: [], notiz_fuer_anderen: '', meinung_anderer: 0 }), null);
+  assert.equal(
+    K.applySummary(m, 'ronald', {
+      zusammenfassung: 'Nur Wetter.',
+      zeilen: [],
+      notiz_fuer_anderen: '',
+      meinung_anderer: 0,
+    }),
+    null
+  );
 });
 
 test('sentences: each sentence as soon as it is complete, short ones wait, markup removed', () => {
@@ -207,4 +248,41 @@ test('sentences: each sentence as soon as it is complete, short ones wait, marku
   s.flush();
   assert.equal(out[2], 'Sonst reißt es');
   assert.equal(K.spoken('*brummt* Hm. [lacht] Na gut.'), 'Hm. Na gut.');
+});
+
+test('people: villagers registered with a sheet from their lines, memory made on first use, the village spreads news', () => {
+  const p = {
+    name: 'Heike',
+    full: 'Heike Ritter',
+    age: 47,
+    role: 'großer Gemüsegarten, Hühner, Eier am Gartentor',
+    greet: ['{gruss}! Frische Eier gibt es am Tor.'],
+    topics: { huehner: ['Die Hühner', 'Die legen wie verrückt.'] },
+  };
+  const sheet = K.villagerSheet(p);
+  assert.match(sheet, /^Du bist Heike Ritter, 47 Jahre alt/);
+  assert.match(sheet, /Worüber du gern redest: Die Hühner\./);
+  assert.match(sheet, /„Hallo! Frische Eier gibt es am Tor\.“/);
+  assert.equal(K.person('Heike!', { name: 'x', sheet: 'y' }), null, 'keys are plain words');
+  K.person('heike', { name: 'Heike', sheet, g: 'f', start: 60 });
+  const m = K.memDefault();
+  assert.equal(K.whoOf(m, 'heike').meinung, 60);
+  const t = K.tools('heike').map(x => x.name);
+  assert.ok(!t.includes('taetigkeit') && !t.includes('spielaufgabe'));
+  assert.match(K.systemFixed('heike'), /im Dorf weiter/);
+  const r = K.applySummary(m, 'heike', {
+    zusammenfassung: 'Falko will Hühner.',
+    zeilen: [],
+    notiz_fuer_anderen: 'Falko will Hühner halten.',
+    meinung_anderer: 9,
+  });
+  assert.deepEqual(r, { spread: 'Falko will Hühner halten.', meinung: 5 });
+  K.spread(m, 'heike', r.spread, ['hubert', 'heike', 'ronald'], r.meinung, 3);
+  assert.equal(m.who.hubert.notizen[0].von, 'heike');
+  assert.equal(m.who.hubert.meinung, 40);
+  assert.equal(m.who.heike.notizen.length, 0, 'not to herself');
+  assert.match(K.systemMemory(m, 'hubert'), /- Heike: Falko will Hühner halten\./);
+  const again = K.memCheck(JSON.parse(JSON.stringify(m)));
+  assert.equal(again.who.heike.meinung, 60);
+  assert.equal(again.who.hubert.notizen[0].von, 'heike');
 });

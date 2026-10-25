@@ -5,6 +5,12 @@ hören und darauf antworten können … ein sehr schnelles, sehr token-effizient
 nach Gesprächsverlauf neue Quests, Aktionen oder auch Meinungen über mich entwickeln und ggf. den anderen erzählen, wenn sie miteinander
 sprechen.“ Dazu: „Alle sollen sich um mich übrigen duzen, nicht siezen im Dorf.“
 
+**Seit V16t (25.10.2026 spät):** auch mit den **acht Dorfbewohnern** frei reden (Gerhard, Manfred, Wolfgang, Uwe, Katrin, Ingrid, Jens,
+Heike – ihr Charakter aus ihren Sätzen in `dorf/dorf_text.js`, Startmeinung aus dem Wahlkampf), **jede Person mit eigener Stimme**
+(`audio/stimme.js`), **Lautstärke** getrennt für Gesamt, Stimmen, Umgebung, Effekte und Musik (Menü → Einstellungen → Lautstärke). Was ein
+Dorfbewohner hört, macht im Dorf die Runde (zwei, drei andere merken es sich). Weitere Personen (Spaziergänger, Autofahrer) melden sich mit
+`KI.person({ … })` an und öffnen das Gespräch mit `KI.talk(key)`.
+
 ## So geht es
 
 1. Menü → Einstellungen → **KI-Gespräche**: eigenen Claude-API-Schlüssel eintragen (Anthropic-Konsole → API Keys), „Schlüssel prüfen“.
@@ -12,9 +18,12 @@ sprechen.“ Dazu: „Alle sollen sich um mich übrigen duzen, nicht siezen im D
    Statt des Schlüssels geht auch ein eigener Server, der an die Claude-API weiterleitet und den Schlüssel hinzufügt („Server statt Schlüssel“).
 2. Zu Hubert oder Ronald gehen, ansprechen (E / Knopf). Nach der Begrüßung hört das Spiel zu (Mikrofon rot): einfach reden. Nach jeder
    Antwort hört es wieder zu („Zuhören: nach jeder Antwort“) – oder nur per Mikrofon-Knopf. Schreiben geht immer (Textfeld, Enter).
-3. Die Antwort kommt Satz für Satz, während das Modell noch schreibt, und wird gesprochen: **Browserstimme** (ohne Schlüssel; in Edge
-   dieselben Microsoft-Stimmen wie die Aufnahmen, Hubert tiefer und langsamer) oder **ElevenLabs** (eigener Schlüssel, Stimmen „Darius –
-   Grumpy & Critical“ für Hubert und „Mats – Warm and Genuine“ für Ronald, Voice-IDs änderbar) oder nur Text.
+3. Die Antwort kommt Satz für Satz, während das Modell noch schreibt, und wird gesprochen – in der Stimme der Person (`audio/stimme.js`):
+   **Gerät** (kostenlos: für jede Person die beste deutsche Stimme des richtigen Geschlechts, die das Gerät hat – in Edge die neuronalen
+   Microsoft-Stimmen, auf iPhone/Mac die „Premium“-/„Erweitert“-Stimmen, sonst die Google-Stimme; Alter macht Tonhöhe und Tempo; zwei Personen
+   teilen sich eine Stimme nur, wenn es zu wenige gibt, dann klingt die zweite höher oder tiefer; unter „Stimmen der Personen“ von Hand wählbar
+   und probehörbar), **ElevenLabs** (eigener Schlüssel, je Person eine deutsche Bibliotheksstimme, z. B. „Darius – Grumpy & Critical“ für Hubert,
+   „Silke“ für Katrin, Voice-IDs änderbar) oder nur Text. Piper (natürliche Stimmen im Browser, kostenlos) kommt als weitere Wahl dazu.
 4. Ohne Schlüssel bleibt alles wie bisher (aufgenommene Sätze, Themen-Knöpfe); im Gesprächsfenster steht dann „Frei reden – KI-Gespräche
    einrichten …“.
 
@@ -42,9 +51,11 @@ Der Zuhörer merkt sich, was er gehört hat (Notiz „von Hubert“), und seine 
 |---|---|
 | Figuren, Welt, Orte, Tätigkeiten (Daten, Deutsch) | `viz3/src/npc/ki_text.js` |
 | Gedächtnis (`pav-ki-v1`), Prompts, Werkzeuge und ihre Wirkung, Aufgaben für `TASKS`, Zusammenfassung, Weitererzählen, Sätze für die Stimme – ohne Seite | `viz3/src/npc/ki_core.js` (Unit-Tests `viz3/test/unit/ki.test.mjs`) |
-| Gespräch, Spracherkennung, Stimme, Einstellungen (`#kipanel`), Haken | `viz3/src/npc/ki.js` |
+| Gespräch, Spracherkennung, Personen (Nachbarn, Dorfbewohner, angemeldete), Einstellungen (`#kipanel`), Haken | `viz3/src/npc/ki.js` |
+| Stimmen je Person: Wahl der Gerätestimme, ElevenLabs, weitere Engines (`STIMME.engine`), Einstellungsteil (`pav-stimme-v1`) | `viz3/src/audio/stimme.js` |
+| Lautstärke: eigene Kanäle für Stimmen und Musik, je ein Regler (`pav-ton-v1`, `audio.vol`, `audio.voiceBuf`) | `viz3/src/audio/audio.js`, `#volbox` in `viz3/shell/menu.html` |
 | Claude-SDK als eigenes Paket, erst bei der ersten Anfrage geladen (~350 KB, die Seite bleibt so klein wie vorher) | `viz3/src/lazy/anthropic.js` → `dist/lazy/anthropic.js` (`viz3/build.py`) |
-| Haken in fremden Modulen | `NPCUI.extend` (`npc/npc.js`), `QUESTS.befriend` und Ereignis `reset` (`game/quests.js`), `LIFE.talkSource` (`npc/life.js`) |
+| Haken in fremden Modulen | `NPCUI.extend` (`npc/npc.js`), `DORF.extend` (`dorf/dorf.js`), `QUESTS.befriend` und Ereignis `reset` (`game/quests.js`), `LIFE.talkSource` (`npc/life.js`) |
 | Aussehen | `viz3/shell/css/ki.css`, Menüknopf `#kibtn` in `viz3/shell/menu.html` |
 | Browsertest (gegen einen nachgebauten KI-Dienst auf demselben Server) | `viz3/test/ki.py`, `viz3/extra/ki/tests.txt` |
 
@@ -66,5 +77,5 @@ Beim „Sie“ bleiben das Bürgerbüro und der Bürgermeister in Schleusingen u
 
 - Ein eigener kleiner Server (z. B. Cloudflare Worker), der den Schlüssel hält, damit auch Sarah und Christoph ohne eigenen Schlüssel reden
   können – Feld „Server statt Schlüssel“ ist schon da.
-- Die Dorfbewohner (Skatabend, Feuer) und Hubert/Ronald beim Arbeiten (`MUTTER`) könnten genauso frei reden.
+- Die Gespräche am Skattisch und am Feuer könnten das Weitererzählte vorlesen (heute nur die Notizen).
 - Echte Probe mit Schlüssel auf iPhone und Laptop (die Tests laufen gegen einen nachgebauten Dienst).
