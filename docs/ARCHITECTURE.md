@@ -60,6 +60,11 @@ Oberfläche Deutsch.
   - **Lampen leihen:** `KERN.lights.pool(liste, { home, restore })` (die Punktlichter L1, L4, L5, L3, L2 des Pavillons, solange man nicht
     näher als 60 m am Pavillon ist) und `KERN.lights.borrow({ id, n, prio, want, on, tick, off })` – keine neuen Lampen, also keine neu
     übersetzten Shader; Farbe, Ort, Reichweite und Stärke kommen von selbst zurück (Schulraum und Feuer im Dorf).
+  - **Gespräche und Tisch (feat/ki, 25.10.2026):** `NPCUI.extend({ start, asked, end, free })` (`npc/npc.js`) hängt sich an das
+    Gesprächsfenster der Nachbarn, `LIFE.talkSource(fn)` (`npc/life.js`) gibt den beiden am Tisch ein Thema (`{ lines, line, done }`),
+    `QUESTS.befriend(fn)` zählt weitere Gründe für „befreundet“, `KERN.emit('reset')` kommt beim „Neu beginnen“ im Tagebuch.
+  - **Pakete bei Bedarf:** `src/lazy/*.js` baut `build.py` einzeln nach `dist/lazy/` (immer verkleinert); ein Modul lädt sie mit
+    `import(new URL('lazy/….js', document.baseURI).href)` – heute das Claude-SDK für `npc/ki.js` (~350 KB, nicht in der Seite).
   - **Keine Zuweisung an fremde `window`-Namen:** `tools/check/deps.mjs` meldet einen zweiten Schreiber als Fehler.
 - Was Tests oder die Fehlersuche brauchen, steht zusätzlich auf `window` (`window.WERK`, `window.DN` …); dazu die Manifeste aus dem
   Build (`window.TEXMAN` …). Querverbindungen zwischen Modulen laufen über Importe und Kern-Dienste, nicht über `window`.

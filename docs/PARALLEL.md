@@ -29,6 +29,7 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 | Einrichtung der Gartengebäude mit einem Klick umstellen (Stile, Akzentfarben), Holzhaus als Atelier (Töpfern, Malen, Schaukelstuhl, Klappsofa als Gästebett), Wohnwagen gespiegelt – Bett rechts (Falko 9:54) | Hilfs-Agent `einrichtung` | `feat/einrichtung` | erste Fassung in `src` (41cd2a6, V16o: Stile, Atelier, Wohnwagen gespiegelt); arbeitet weiter (Auftrag `docs/plans/auftraege/einrichtung.md`) | `garden/holzhaus.js` (innen), `garden/garten_in.js`, `garden/garten_kit.js`, Wohnwagen innen in `garden/carport.js`, Bungalow innen in `garden/bungalow.js`, neue Module unter `garden/garten_in.js`, `viz3/extra/einrichtung/`, `shell/css/einrichtung.css`, `viz3/test/einrichtung*.py`, `docs/features/einrichtung.md`, ein Menüeintrag, eine Zeile in `core/save.js`; Port 8983 |
 | Alte Blechgarage (Bauphase 0): zwei Schiebetore nach Norden, Werkzeug in Regalen, Rasenmäher (Benzin) herausholen und den Rasen mähen; Aggregat mit Benzin, Dieselkanister für Hubert in die Garage (Falko 10:53) | Hilfs-Agent `garage` | `feat/garage` | fertig 23.10. 13:40 (099a5ff, mit V16q/V16r: Tore, Regale, Rasenmäher, Benzin, Aufgabe „Rasen mähen“, Garage im Süden; offen: Huberts zwei Antworten neu vertonen, `tools/voices/lines3.py`) (Auftrag `docs/plans/auftraege/garage.md`) | neues `garden/garage.js` (unter `garden/fences.js`), Garage von Phase 0 in `pavilion/house_common.js`, ein Satz in `pavilion/phases.js`, versetzte Garage in `garden/env.js`, Mäh-Schnittstelle in `garden/grass.js`, Aggregat in `garden/workshop.js`, Diesel-Teile in `game/quests.js`, `viz3/extra/garage/`, `viz3/test/garage*.py`, `docs/features/garage.md`, eine Zeile in `core/save.js`; Port 8984 |
 | Komprimierte Texturen (KTX2/Basis): schneller laden, ~¼ Speicher am iPhone (Phase 2, Baustein 4) | Hilfs-Agent `texturen` | `feat/texturen` | gestartet 23.10. 11:35 (Auftrag `docs/plans/auftraege/texturen.md`) | Laden der Texturen in `core/assets.js` (und nur wenn nötig `core/detail.js`, `render/render.js`), `build.py`/`buildlib/assets.py`, `deploy_site.py` (KEEP), eigener Workflow, `tools/tex/**`, `viz3/test/ktx2*.py`, `docs/features/texturen.md`; auf `gh-pages` nur `tex2/`; Port 8985 |
+| Frei reden mit Hubert und Ronald per Stimme und KI (Claude Haiku 5.5, eigener Schlüssel), Sprachausgabe, Meinung, Aufgaben, Weitererzählen; im Dorf duzen alle (Falko, 25.10.2026) | Kern-Chat, session_01C3rwfQiBXst7Xxmc9qjjx7 | `wip/kern` → `src` (+ `stimmen/du` für die Neuaufnahmen) | erste Fassung 25.10. abends (`docs/features/ki.md`) | `npc/ki*.js`, `src/lazy/`, `shell/css/ki.css`, Haken in `npc/npc.js` (`NPCUI.extend`), `npc/life.js` (`LIFE.talkSource`), `game/quests.js` (`QUESTS.befriend`, Ereignis `reset`), `viz3/extra/ki/`, `viz3/extra/stimmen/`, `viz3/test/ki.py`, `tools/voices/du_lines.py` |
 
 ## Absprachen
 
@@ -50,6 +51,12 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
    sich daran, Änderungen nur über den Kern-Chat (Testdaten: `viz3/test/unit/fixtures/gplan_mini.json`).
 
 ## Nachrichten (neueste oben)
+
+- 25.10. 23:00 Kern (neue Sitzung, session_01C3rwfQiBXst7Xxmc9qjjx7, übernimmt nach `docs/UEBERGABE.md`): Falko wünscht freie Gespräche mit
+  Hubert und Ronald per Stimme und KI (`docs/features/ki.md`) und dass im Dorf alle den Spieler duzen. Neue Haken für Erweiterungen:
+  `NPCUI.extend` (Gesprächsfenster), `LIFE.talkSource` (Themen am Tisch), `QUESTS.befriend`, Ereignis `reset` beim „Neu beginnen“. Pakete,
+  die erst bei Bedarf laden: `viz3/src/lazy/*.js` → `dist/lazy/` (`build.py`). Aufnahmen, die der Chat-Rechner nicht erzeugen kann (Edge-Stimmen):
+  Workflow `stimmen.yml` auf `stimmen/**`.
 
 - 23.10. 10:40 Kern: Phase 2, Baustein 1 ist auf `src` – neue Dienste in `core/kern.js` (`docs/ARCHITECTURE.md`, „Dienste für Erweiterungen“):
   `KERN.place`-Anbieter/`KERN.area`, `KERN.spot`, `KERN.act`, `KERN.on/emit`, `KERN.zone` (Beispiel `welt/schleusingen.js`), `KERN.until`,
