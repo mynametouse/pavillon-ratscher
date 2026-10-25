@@ -22,6 +22,7 @@ import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { RATSCHER } from '../world/ratscher.js';
+import { ROADS } from '../world/roads.js';
 import { WELT } from './welt.js';
 import { SCHL } from './schleusingen.js';
 import { VEH } from '../vehicles/vehicle.js';
@@ -193,12 +194,64 @@ export const FAHRT = (() => {
   // pads of the zones. This module's own ground: the bridge decks (when coming from their level: a walker in the valley stays), and the
   // first 3 m beyond the square, where the tile mesh dips towards its hidden vertices under the 10 m terrain (the profiles meet that
   // terrain at the edge: strecke.py solves them on it)
+  // inside the square: the ends of the bridge decks of world/roads.js. A deck starts on the highest ground across its width + 0.08 m, so
+  // it stood 0.1-0.3 m above the road it continues – a step that threw a car into the air at 50 km/h (main road north of the garden,
+  // 465/-201). The wheels (and feet) roll up a ramp over the last 5 m before the deck instead; the drawn road stays as it is (the ramp
+  // lifts at most that step, at the deck's edge).
+  const RAMP = 5;
+  let ramps = [],
+    rampN = 0;
+  function rampAt(x, y) {
+    const DK = ROADS.decks;
+    if (!DK || !DK.length || !RATSCHER.ready) return undefined;
+    // the decks come after ROADS.ready (world/roads.js builds them once the terrain is there): the ramps follow them
+    if (rampN !== DK.length) {
+      rampN = DK.length;
+      ramps = [];
+      for (const d of DK) {
+        const p = d.p,
+          n = p.length / 2;
+        if (n < 2) continue;
+        for (const [k, k2, sv] of [
+          [0, 1, 0],
+          [n - 1, n - 2, d.L],
+        ]) {
+          const ex = p[k * 2],
+            ey = p[k * 2 + 1],
+            dx = ex - p[k2 * 2],
+            dy = ey - p[k2 * 2 + 1],
+            l = Math.hypot(dx, dy) || 1,
+            ux = dx / l,
+            uy = dy / l,
+            zd = d.zOf(sv) + 0.02,
+            zr = RATSCHER.hMesh(ex + ux * 0.3, ey + uy * 0.3);
+          // not where the deck goes on in another deck, not in the modelled garden
+          if (
+            zd - zr > 0.02 &&
+            zd - zr < 0.6 &&
+            (Math.abs(ex) > 125 || Math.abs(ey) > 125) &&
+            !ROADS.deckAt(ex + ux * 0.3, ey + uy * 0.3)
+          )
+            ramps.push({ x: ex, y: ey, ux, uy, hw: d.hw, dz: zd - zr });
+        }
+      }
+    }
+    for (const r of ramps) {
+      if (Math.abs(x - r.x) > RAMP + r.hw || Math.abs(y - r.y) > RAMP + r.hw) continue;
+      const t = (x - r.x) * r.ux + (y - r.y) * r.uy;
+      if (t < 0 || t > RAMP || Math.abs((x - r.x) * r.uy - (y - r.y) * r.ux) > r.hw) continue;
+      return ROADS.deckAt(x, y) ? undefined : RATSCHER.hMesh(x, y) + r.dz * (1 - t / RAMP);
+    }
+    return undefined;
+  }
+  S.rampAt = rampAt;
   KERN.provide(
     'ground',
     (x, y, z) => {
-      if (!S.ready || insideRB(x, y)) return undefined;
+      if (insideRB(x, y)) return rampAt(x, y);
+      if (!S.ready) return undefined;
       const r = roadAt(x, y, 0.5);
-      if (!r) return undefined;
+      if (!r || ownFade(x, y) < 0.5) return undefined; // in a zone with its own roads (Kloster Veßra) its ground carries
       if (!(r.w.fl & 1))
         return outRB(x, y) < 3 && !(r.w.fl & 2) ? r.z - (paved(r.w) ? 0.025 : 0.04) * Math.min(r.d, r.w.hw) : undefined;
       const deck = r.z;
@@ -261,20 +314,39 @@ export const FAHRT = (() => {
   }
   // several roads (a junction, a corner between two streets): weighted by the distance to their edges, so that no step forms where
   // the nearest road changes
+  // a zone that treats its own roads (welt/vessra.js: its road cap and banks over the tiles, the houses placed on that ground) keeps
+  // its ground: the carving fades out over the 100 m before the zone's square and stays out of it, so the zone's ground and the drawn
+  // tiles agree there and the profile meets the zone's road at the edge (Kern chat 23.10.: two systems must not carve the same streets)
+  const OWN_FADE = 100;
+  function ownFade(x, y) {
+    const V = window.VESSRA;
+    if (!V || !V.ORT) return 1;
+    const Z = V.ZONE || [V.ORT[0] - 650, V.ORT[1] - 650, V.ORT[0] + 650, V.ORT[1] + 650], // welt/vessra.js ZONE: ORT ± 650 m
+      dx = Math.max(Z[0] - x, 0, x - Z[2]),
+      dy = Math.max(Z[1] - y, 0, y - Z[3]),
+      t = Math.min(1, Math.hypot(dx, dy) / OWN_FADE);
+    return t * t * (3 - 2 * t);
+  }
   function carveZ(x, y, raw) {
     if (insideRB(x, y)) return raw;
+    const f = ownFade(x, y);
+    if (f <= 0) return raw;
     const C = roadsAt(x, y, 18);
     if (!C.length) return raw;
-    if (C.length === 1) return surfOf(C[0], raw);
-    let sw = 0,
-      sz = 0;
-    for (const c of C) {
-      const e = Math.max(0, c.d - c.w.hw) + 0.4,
-        wt = 1 / (e * e);
-      sw += wt;
-      sz += wt * surfOf(c, raw);
+    let z;
+    if (C.length === 1) z = surfOf(C[0], raw);
+    else {
+      let sw = 0,
+        sz = 0;
+      for (const c of C) {
+        const e = Math.max(0, c.d - c.w.hw) + 0.4,
+          wt = 1 / (e * e);
+        sw += wt;
+        sz += wt * surfOf(c, raw);
+      }
+      z = sz / sw;
     }
-    return sz / sw;
+    return raw + (z - raw) * f;
   }
   // place names: in a village its street (or its name), on a road its number or name and the nearest village
   const inPoly = (r, x, y) => {
@@ -1017,7 +1089,14 @@ export const FAHRT = (() => {
       if (Math.hypot(sg.x - x, sg.y - y) < 450) want.add('s' + i);
     });
     D.ways.forEach((w, i) => {
-      if (w.fl & 1 && x > w.bb[0] - 500 && x < w.bb[2] + 500 && y > w.bb[1] - 500 && y < w.bb[3] + 500)
+      if (
+        w.fl & 1 &&
+        x > w.bb[0] - 500 &&
+        x < w.bb[2] + 500 &&
+        y > w.bb[1] - 500 &&
+        y < w.bb[3] + 500 &&
+        ownFade((w.bb[0] + w.bb[2]) / 2, (w.bb[1] + w.bb[3]) / 2) >= 0.5
+      )
         want.add('b' + i);
     });
     for (const k of [...built.keys()])
@@ -1150,6 +1229,7 @@ export const FAHRT = (() => {
     active: S.active,
     state: S.state,
     ready: !!S.ready,
+    ramps: (rampAt(0, 0), ramps.length), // the ramps up to the decks of the square (built with the decks)
     ways: D.ways.length,
     signsNear: S.signs.slice(),
     decks: S.decks,

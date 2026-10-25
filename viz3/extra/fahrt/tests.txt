@@ -1,3 +1,6 @@
 # Driving out of the square (welt/fahrt.js): to the Markt of Schleusingen; from the garden through the village and west on the L 1625
-# to Kloster Veßra, through the gate into the nursery yard (schleusingen and vessra ran on this branch too, green at 3c8c7d2)
+# to Kloster Veßra, through the gate into the nursery yard; from the garden north on the L 3004 to the edge (round 2: the inner terrain)
 fahrt
+# for this run: the Veßra zone (strassen.json re-pinned) and the Prüfpaket's driving test (the ramps at the decks of the square)
+vessra
+v16b:car,drive,crash,route

@@ -18,8 +18,8 @@ schickt; unterwegs Schleusingen.
   Längsprofil** – derselbe Glätter wie die Kachel-Pipeline (`tools/welt/roads.py`: gemeinsame Knoten, Brücken gerade), gerechnet auf den
   Kachelhöhen (Wellen je km: Landstraßen 9,0 → 0,1, Ortsstraßen 13,8 → 3,1). Das Kachelnetz wird an den Straßen auf dieses Profil
   **eingeschnitten** (Fahrbahn mit Dachprofil, Bankett, Böschungen 1 : 2; `WELT.setPads` unter den Flächen der Zonen) – Räder, Füße
-  und Augen stehen auf demselben Boden. Am Rand des Quadrats treffen die Profile das 10-m-Gelände (im Quadrat sind dessen Höhen die
-  Daten des Glätters): keine Stufe, kein Überblenden. Fahrbahnbelag für Haftung und Rollwiderstand (`KERN.surface`); auf dem Luftbild
+  und Augen stehen auf demselben Boden. Am Rand des Quadrats treffen die Profile das 10-m-Gelände: im Quadrat hält der Glätter sie an
+  dessen Höhen fest, geglättet wird draußen – an allen 29 Übergängen weniger als 5 cm Unterschied (frei geglättet waren es bis 4,7 m). Fahrbahnbelag für Haftung und Rollwiderstand (`KERN.surface`); auf dem Luftbild
   nahe dem Fahrzeug Asphalt statt der Pflastersteine, die der Kachel-Shader sonst aus grauen Flächen macht (`WELT.setOverlay`, solange
   keine Zone ihre Straßen auflegt); Brücken mit Fahrbahnplatte und Geländer (die Geländer halten die Räder auf der Brücke, unten fährt
   man durch); Wände der Zonen (Schleusingen) halten Fahrzeuge auf (`KERN.pushOut`).
@@ -42,11 +42,49 @@ Ins Auto (Menü „Zum Auto“), dann über den Ratschner Anger und den Geisenh�
 (Weißer Berg, Schützenstraße, Burgstraße zum Markt), für Kloster Veßra auf der L 1625 nach Westen, an Rappelsdorf und Zollbrück vorbei,
 in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide Routen.
 
+## Straßen im Quadrat (Runde 2, 23.10. nachmittags)
+Die L 3004 warf das Auto vor der Ortstafel Schleusingen in die Luft (−360, 833: Gefälle 5 → 17 % auf 10 m, bei 60 km/h 0,5 s Flug),
+dazu Sprünge bis 34 % an einer Brücke und am Steilstück nördlich des Gartens. Ursachen im veröffentlichten 10-m-Gelände (V16f,
+`tools/geo/smooth_roads.py`): ein Gitterpunkt nahe mehrerer Straßen nahm den Mittelwert ihrer Profile (der Feldweg neben der L 3004 zog
+ihre Fahrbahn auf seine Höhe), dabei je Weg dessen nächsten Knoten (das Ende eines Wegs an der Kreuzung 8 m weiter zählte voll), die
+Krümmung war an den Stößen zwischen zwei OSM-Wegen frei (ein Knick an jeder Teilung), die Punkte bis 6 m neben einer Brücke blieben im
+Tal (eine Mulde vor dem Brückenkopf), T-Kreuzungen wurden nur bis 0,3 m verbunden (Dezimeter mit 3 verglichen).
+`viz3/extra/fahrt/innen.py` bessert das veröffentlichte Gelände nach (gleiches Netz, gleiche Profile wie smooth_roads.py): Klassen in
+Rangfolge (die höhere Straße bestimmt ihre Fahrbahn), je Klasse der nächste Knoten, Krümmung über die Stöße, Brückenköpfe auf das Profil
+(unter den ersten und letzten 9 m einer Brücke steigt der Boden zur Straße), T-Kreuzungen bis 3 m. Ergebnis auf den Routen im Quadrat
+(Sprünge der Steigung > 5 % über ±4 m): Garten → Schleusingen 36 → 2 (größter 34 → 5,8 %), Garten → Kloster Veßra 1 → 0; amtliches Maß
+(„Straßen glatt“, `smooth_roads.py --measure`): Hauptstraße 3,9 → 0,2, Kreisstraße 4,6 → 2,6 Wellen je km; 6905 Gitterpunkte geändert
+(Ø 0,25 m, p95 0,76 m; an Hauswänden begrenzt wie in smooth_roads.py). Die Datei reist als Extra (`viz3/extra/README.md`):
+`viz3/extra/fahrt/dist/geo/terrain.b64.json` ersetzt im Bau die der Website – so haben CI, Vorschau und die nächste Veröffentlichung sie.
+Soll sie ein gewöhnliches Website-Asset werden: nach `gh-pages` `geo/terrain.b64.json` (und `vorschau/geo/`) kopieren und aus dem
+Extra löschen. Neu bauen: `python3 -I viz3/extra/fahrt/innen.py <veröffentlichtes geo/> viz3/manifests.json` (nicht `viz3/dist/geo`, dort
+liegt nach dem Bau schon diese Datei – das Skript erkennt sie an ihrer Marke und bricht ab).
+
+Die Längsprofile draußen hält `strecke.py` an den Rändern am inneren Gelände fest; es liest es aus `viz3/dist/geo/terrain.b64.json`,
+also nach dem Bau das nachgebesserte. Reihenfolge beim Neubauen: `innen.py` → bauen (`build.py` legt das Extra nach `dist/geo/`) →
+`strecke.py` (sonst eine Stufe am Rand: die Nachbesserung hatte die Übergänge um bis 1,4 m verschoben).
+**Brückenköpfe im Quadrat**: `world/roads.js` setzt das Ende einer Brückenplatte auf das höchste Gelände quer über ihre Breite + 8 cm –
+0,1 bis 0,5 m über der Straße davor (14 von 16 Enden der 8 Brücken im Quadrat). Räder und Füße rollen dort über die letzten 5 m eine
+Rampe hinauf (`KERN.ground` in `welt/fahrt.js`, nur im Quadrat, nie auf einer Platte); die gezeichnete Straße bleibt, an der Kante liegen
+die Räder also bis zur Stufenhöhe darüber. Sauberer wäre in `world/roads.js` (`endZ`) die Höhe der Straßenmitte + 2 cm statt des
+Höchsten quer + 8 cm – das ist die Datei des Kern-Chats.
+
+**Zonen mit eigenen Straßen** (Kern-Chat 23.10. 14:05): Kloster Veßra behandelt seine Straßen selbst (Straßenkappe, Böschungen, der Hof
+der Baumschule; Häuser stehen auf `VESSRA.gz`). Dort bleibt das Einschneiden der Fahrt draußen – es blendet über die 100 m vor dem
+Quadrat der Zone (`VESSRA.ORT` ± 650 m) aus, die Brückenplatten der Fahrt dort entfallen; am Rand der Zone ist ihre Anpassung null, das
+Profil trifft also ihren Boden ohne Stufe. Schleusingen (nur Rathaus, Burghof, Markt als Flächen) baut weiter auf den eingeschnittenen
+Straßen auf.
+
 ## Grenzen
 - Gelände über Schleusingen und westlich davon: Copernicus 30 m (Oberflächenmodell) – die Straßen sind geglättet, das Land daneben
   bleibt grob; Bäume und Häuser außerhalb der Zonen gibt es dort nur auf dem Luftbild.
 - Brücken über andere Straßen: die Höhe kennt das 30-m-Modell nicht – manche Überführung ist niedrig (das Auto passt darunter durch).
 - Ein draußen abgestelltes Auto steht nach dem Neuladen wieder vor dem Garten.
+- Im Quadrat bleibt es das 10-m-Gitter: an steilen Stellen (die Hauptstraße nördlich des Gartens, 11 %) wechselt die Steigung noch um
+  bis 6 % über wenige Meter – spürbar, aber ohne Abheben.
+- Der Hof der Baumschule: der Test fährt durchs Tor in den Hof, wenn die Einfahrt flacher als 25 % ist, sonst hält er davor und
+  schreibt eine NOTE ins Protokoll (23.10. mittags war das Tor durch die ebene Hoffläche eine Rampe von 52 %; behoben in vessra 11f7b20,
+  Hof am Tor auf Straßenhöhe, höchstens 8,8 %).
 
 ## Für den Kern-Chat (gemeinsame Dateien)
 - `vehicles/vehicle.js`: Rand der Karte (`VEH.edge`: `null` | `'wait'` | `'end'`, ohne FAHRT wie vorgeschlagen `KERN.free`), Tempo-Grenze
@@ -64,13 +102,30 @@ in Kloster Veßra rechts in die Schulstraße. Die Karte links oben zeigt beide R
 - Eintrag für `docs/ARCHITECTURE.md` (Modulkarte, Abschnitt 6): `FAHRT` – welt/fahrt.js – Fahrt über das 2,4-km-Quadrat hinaus:
   Kacheln vor dem Fahrzeug, Rand der Karte, Straßen mit Längsprofil (eingeschnitten), Brücken, Ortstafeln, Wegweiser, Karte, Szenarien
   `fahrt` und `fahrt-vessra`.
-- `viz3/extra/fahrt/tests.txt` nennt beim Übergeben nur `fahrt` (Schleusingen und Veßra liefen auf diesem Branch mit, grün).
+- Das Gelände im Quadrat (Runde 2): `viz3/extra/fahrt/dist/geo/terrain.b64.json` (262 708 Bytes, die der Website 262 631: inneres
+  10-m-Gitter nachgebessert, äußeres 120-m-Gitter unverändert) ersetzt im Bau `geo/terrain.b64.json` der Website; `viz3/extra/fahrt/
+  manifest.json` ergänzt im gebauten Manifest die Marke `geoman.terrain.roads` (das `viz3/manifests.json` des Repos behält die alte –
+  `smooth_roads.py` ohne `--measure` liest dieses und weigert sich wie bisher, ein zweites Mal zu glätten). Kein Code außerhalb der eigenen
+  Dateien.
+  - Grundlage bleibt die Datei der Website: `innen.py` liest sie (und `roads.b64.json`, `buildings.b64.json`) als Eingabe. „Straßen
+    glatt“ im Prüfpaket misst `"$GEO"` = `geo/` der Vorschau bzw. Website, also bis zur nächsten Veröffentlichung die alte Datei (beide
+    bestehen: Hauptstraße 3,9 bzw. 0,2, Kreisstraße 4,6 bzw. 2,6 Wellen je km); damit es die gebaute misst, vor dem Messen
+    `cp viz3/extra/*/dist/geo/terrain.b64.json "$GEO"/ 2>/dev/null || true` (wie build.py das Extra über dist/ legt).
+  - Ändert sich das Gelände der Website (neuer Geo-Bau, neues Glätten), muss das Extra neu gebaut werden, sonst überdeckt es die neue
+    Datei mit der alten Grundlage: `python3 -I viz3/extra/fahrt/innen.py <Ordner mit terrain.b64.json, roads.b64.json,
+    buildings.b64.json wie auf der Website> viz3/manifests.json` (etwa die drei Dateien von …/pavillon-ratscher/geo/ in einen Ordner
+    laden; nicht `viz3/dist/geo` – dort liegt nach dem Bau schon das Extra, das Skript erkennt es an seiner Marke `fahrt` und bricht ab);
+    numpy, scipy, ~10 s; es druckt die Sprünge auf den Routen und die Wellen je km vorher/nachher. Oder das Extra löschen (dann gilt
+    wieder die Datei der Website).
+- `viz3/extra/fahrt/tests.txt`: in den Runden mit Änderungen für andere auch deren Tests (Veßra, v16b, v16d); zum Übergeben nur `fahrt`.
 
 ## Testen
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8982 --serve fahrt` – holt die Kacheln entlang der Routen nach
-  `viz3/dist/welt-test/`; Abschnitte `start,edge,markt,garten,west,free,gl` (`garten` und `west` zusammen sind die ganze Fahrt vom
-  Stellplatz im Garten bis in den Hof der Baumschule Kammbach); Bilder in `out/fahrt/`. Bei GitHub: `feat.yml` (Artefakt „out“).
-  Dauer bei GitHub etwa 15 Minuten (rund 18 Minuten Spielzeit, davon 11 auf der Strecke zur Baumschule).
+  `viz3/dist/welt-test/`; Abschnitte `start,edge,markt,nord,garten,west,free,gl` (`nord`: vom Stellplatz im Garten auf der L 3004 bis
+  zum Rand, mit 60 km/h auf den Landstraßen; `garten` und `west` zusammen sind die ganze Fahrt bis in den Hof der Baumschule Kammbach;
+  beide Wege vom Garten messen Stöße > 8 m/s², Flüge und die Steigung entlang der Route auf dem Boden der App); Bilder in `out/fahrt/`.
+  Bei GitHub: `feat.yml` (Artefakt „out“).
+  Dauer bei GitHub knapp 10 Minuten (rund 14 Minuten Spielzeit, davon gut 11 für die ganze Fahrt vom Garten zur Baumschule).
 - Daten neu bauen: `python3 -I viz3/extra/fahrt/strecke.py --raw <Cache-Ordner>` (OSM-API in Zellen, Kacheln der Website).
 
 ## Quellen

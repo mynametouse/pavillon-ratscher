@@ -4,8 +4,9 @@
 # edge of the tiles (or on to the Baumschule Kammbach in Kloster Veßra when the tiles of feat/vessra are there), tiles freed behind and
 # after coming home, textures per shader. Pictures in out/fahrt/.
 # The world tiles come from the published site (welt-test/, welt-test/zonen/vessra/) and are copied into viz3/dist/welt-test/ first.
-# Sections (optional second argument, comma-separated): start,edge,markt,garten,west,free,gl (garten: from the car's place at home to the
-# western edge, west goes on from there to the nursery – together the whole drive garden → Baumschule Kammbach)
+# Sections (optional second argument, comma-separated): start,edge,markt,nord,garten,west,free,gl (nord: from the car's place at home to
+# the northern edge on the L 3004; garten: to the western edge, west goes on from there to the nursery – together the whole drive
+# garden → Baumschule Kammbach)
 import sys, os, json, time, math, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
@@ -247,7 +248,8 @@ with lib.browser() as b:
         ck('smooth: few hard bumps (> 8 m/s² vertical)', r['n'] > 0 and r['az8'] / max(1, r['n']) < 0.01, f"{r['az8']} of {r['n']} frames, max {r['azMax']} at {r['azAt']}; worst {r['bumps'][:8]}")
         ck('place-name sign Schleusingen on the way', 'Schleusingen' in signs, str(sorted(signs)))
         ck('place names on the way', any('Schleusingen' in p for p in places), str(sorted(p for p in places if p)[:14]))
-        E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })")
+        # stand: the handbrake – the brake key reverses once the car stands (vehicles/vehicle.js), held 2 s it drove the car backwards
+        E("VEH.auto = () => ({ thr: 0, brk: 0, steer: 0, hand: true })")
         chunk(2)
         E("VEH.auto = null")
         shot('d_markt')
@@ -264,75 +266,120 @@ with lib.browser() as b:
         print('memory at the Markt', json.dumps(mem), flush=True)
     rb = ROUTE['baumschule']
     i_w = next(i for i, p in enumerate(rb) if outside(*p) and p[0] < RB[0] - 60)   # on the L 1625 west of the square
+    i_n = next(i for i, p in enumerate(rm) if outside(*p, 0) and (p[1] > RB[3] + 40 or p[0] < RB[0] - 40))   # on the L 3004, out
     cont = False
-    if want('garten'):
-        # the whole way from the garden: from the car's place at home along the route to the Baumschule Kammbach – inside the square on
-        # the model's own roads (Ratschner Anger, the village, the lanes; the first 330 m are those of the Klinge route of v16b), a speed
-        # for every bend, then over the western edge onto the L 1625 without stopping; the section west goes on from there
+
+    def out_d(x, y):
+        """distance outside the square of the 10 m terrain (negative inside)"""
+        dx, dy = max(RB[0] - x, x - RB[2]), max(RB[1] - y, y - RB[3])
+        return math.hypot(max(dx, 0), max(dy, 0)) if dx > 0 or dy > 0 else max(dx, dy)
+
+    def grades(route, i_end):
+        """the ground of the app (KERN.ground: the 10 m mesh, bridge decks, the garden) along the route inside the square every metre:
+        the change of grade over 4 m before and after each point (%), the largest and where"""
+        pts = resample(route[:i_end + 1], 1.0)
+        pts = [q for q in pts if not outside(*q, 0)]
+        h = E(f"(() => {json.dumps([[round(q[0], 2), round(q[1], 2)] for q in pts])}.map(q => +KERN.ground(q[0], q[1]).toFixed(3)))()")
+        K = 4
+        jumps = []
+        for i in range(K, len(h) - K):
+            if abs(pts[i][0]) < 130 and abs(pts[i][1]) < 130:
+                continue   # the modelled garden (its bridge, the gate): no road, the car goes at walking pace there
+            gb, ga = (h[i] - h[i - K]) / K, (h[i + K] - h[i]) / K
+            jumps.append((round(abs(ga - gb) * 100, 1), round(gb * 100, 1), round(ga * 100, 1), [round(pts[i][0], 1), round(pts[i][1], 1)]))
+        jumps.sort(key=lambda q: -q[0])
+        return jumps
+
+    def from_home(route, i_end, vmax, name):
+        """from the car's place at home along the route to route[i_end] (out of the square): 40 s at home first (the drive asleep),
+        a speed for every bend (braking 1.8 m/s² before it), walking pace over the garden's bridge, over the edge without stopping"""
         E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null; VEH.place('car', 8.6, 33.4, 2.04)")
-        for _ in range(4):   # 40 s at home: the drive falls asleep, nothing of it stays loaded
+        for _ in range(4):
             E("for (let i = 0; i < 400; i++) GAME.step(0.025)")
             time.sleep(0.3)
-        f = json.loads(E("JSON.stringify(FAHRT.status())"))
-        ck('at home: nothing of the drive awake', not f['active'] and f['welt']['tiles'] == 0 and not f['carved'], json.dumps(f['welt']))
+        f0 = json.loads(E("JSON.stringify(FAHRT.status())"))
         SA = [0]
-        for a, c in zip(rb, rb[1:]):
-            SA.append(SA[-1] + math.dist(a, c))
+        for a2, c2 in zip(route, route[1:]):
+            SA.append(SA[-1] + math.dist(a2, c2))
 
         def turn(k):
-            if k <= 0 or k >= len(rb) - 1:
+            if k <= 0 or k >= len(route) - 1:
                 return 0
-            h1 = math.atan2(rb[k][1] - rb[k - 1][1], rb[k][0] - rb[k - 1][0])
-            h2 = math.atan2(rb[k + 1][1] - rb[k][1], rb[k + 1][0] - rb[k][0])
+            h1 = math.atan2(route[k][1] - route[k - 1][1], route[k][0] - route[k - 1][0])
+            h2 = math.atan2(route[k + 1][1] - route[k][1], route[k + 1][0] - route[k][0])
             return abs(math.degrees((h2 - h1 + math.pi) % (2 * math.pi) - math.pi))
-        # the speed through the bend at every corner of the route (m/s), braking 1.8 m/s² before it
-        VT = [12.5 if t < 25 else 9 if t < 45 else 7 if t < 70 else 5.5 if t < 100 else 4.2 for t in map(turn, range(len(rb)))]
+        VT = [99 if t < 15 else 12.5 if t < 25 else 9 if t < 45 else 7 if t < 70 else 5.5 if t < 100 else 4.2 for t in map(turn, range(len(route)))]
 
         def speed_at(sc):
-            v = 4.0 if sc < 75 else 12.5   # walking pace over the garden's bridge and out onto the Anger
-            for k in range(len(rb)):
+            v = 4.0 if sc < 75 else vmax(sc)
+            for k in range(len(route)):
                 d = SA[k] - sc
                 if d < -8:
                     continue
-                if d > 120:
+                if d > 150:
                     break
                 v = min(v, math.sqrt(VT[k] ** 2 + 2 * 1.8 * max(0, d - 6)))
             return v
 
         def s_of(x, y, j0):
             best = (1e9, SA[j0], j0)
-            for j in range(max(0, j0 - 2), min(len(rb) - 1, j0 + 8)):
-                a, c = rb[j], rb[j + 1]
-                dx, dy = c[0] - a[0], c[1] - a[1]
+            for j in range(max(0, j0 - 2), min(len(route) - 1, j0 + 8)):
+                a2, c2 = route[j], route[j + 1]
+                dx, dy = c2[0] - a2[0], c2[1] - a2[1]
                 L2 = dx * dx + dy * dy or 1
-                t = max(0, min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L2))
-                d = math.hypot(a[0] + dx * t - x, a[1] + dy * t - y)
+                t = max(0, min(1, ((x - a2[0]) * dx + (y - a2[1]) * dy) / L2))
+                d = math.hypot(a2[0] + dx * t - x, a2[1] + dy * t - y)
                 if d < best[0]:
                     best = (d, SA[j] + t * math.sqrt(L2), j)
             return best
         reset_rec()
         T, j, vset, off, vx = 0, 0, None, 0, []
-        while T < 480:
+        while T < 600:
             s = st()
             d, sc, j = s_of(s['x'], s['y'], j)
             off = max(off, d)
             v = round(speed_at(sc) * 2) / 2
             if v != vset:
                 vset = v
-                E(f"window._fs = VEH.follow({json.dumps(rb[max(0, j - 1):i_w + 4])}, {v}, {{ look: {7 if v < 8 else 10} }})")
+                E(f"window._fs = VEH.follow({json.dumps(route[max(0, j - 1):i_end + 4])}, {v}, {{ look: {7 if v < 8 else 10 if v < 14 else 13} }})")
             chunk(0.5)
             T += 0.5
-            if RB[0] - 60 < s['x'] < RB[0] + 120:
+            if -120 < out_d(s['x'], s['y']) < 60:
                 vx.append(abs(s['kmh']))
-            if j >= i_w:
+            if j >= i_end:
                 break
         r = stats()
         s = st()
-        print('garten', T, 's', json.dumps(r), json.dumps(s), 'off the line max', round(off, 1), 'speeds at the edge', vx[::4], flush=True)
-        cont = j >= i_w and math.dist((s['x'], s['y']), rb[i_w]) < 60
-        ck('from the garden through the village and the fields to the western edge', cont, f"{T} s, route point {j} of {i_w}, {json.dumps(s)}")
-        ck('garden to the edge: on the ground, no flights', r['air'] < 10, json.dumps(r))
-        ck('over the edge of the square without being held', bool(vx) and min(vx) > 20, f"{min(vx) if vx else None} km/h at the least")
+        spd = json.loads(E("JSON.stringify(window._rec.spd)"))
+        print(name, T, 's', json.dumps(r), json.dumps(s), 'off the line max', round(off, 1), 'speeds at the edge', vx[::4],
+              'top speeds', sorted(v2 for x2, y2, v2 in spd)[-3:], flush=True)
+        return dict(T=T, j=j, s=s, r=r, vx=vx, asleep=not f0['active'] and f0['welt']['tiles'] == 0 and not f0['carved'], f0=f0)
+
+    def leg_checks(name, route, i_end, R, where_to):
+        r = R['r']
+        ck(f'{name}: from the garden to the edge ({where_to})', R['j'] >= i_end, f"{R['T']} s, route point {R['j']} of {i_end}, {json.dumps(R['s'])}")
+        ck(f'{name}: on the ground, no flights', r['air'] < 10, json.dumps(r))
+        ck(f'{name}: few hard bumps (> 8 m/s² vertical)', r['n'] > 0 and r['az8'] / max(1, r['n']) < 0.01,
+           f"{r['az8']} of {r['n']} frames, max {r['azMax']} at {r['azAt']}; worst {r['bumps'][:8]}")
+        ck(f'{name}: over the edge of the square without being held', bool(R['vx']) and min(R['vx']) > 20, f"{min(R['vx']) if R['vx'] else None} km/h at the least")
+        g = grades(route, i_end)
+        print(name, 'grade changes along the route (app ground, ±4 m): worst', g[:10], flush=True)
+        ck(f'{name}: the grade along the route changes by less than 8 % (±4 m)', bool(g) and g[0][0] < 8, f"worst {g[:5]}")
+    print('ramps at the decks of the square', json.loads(E("JSON.stringify(FAHRT.status().ramps)")), flush=True)
+    if want('nord'):
+        # garden -> Schleusingen: out of Ratscher, at 60 km/h on the main road and the L 3004 to the edge of the square (round 2: the take-off
+        # at (-360, 833) before the place sign and the grade jumps on the way, fixed in the inner terrain – viz3/extra/fahrt/innen.py)
+        Rn = from_home(rm, i_n, lambda sc: 16.7 if sc > 700 else 12.5, 'nord')
+        ck('at home: nothing of the drive awake', Rn['asleep'], json.dumps(Rn['f0']['welt']))
+        leg_checks('north', rm, i_n, Rn, 'L 3004')
+    if want('garten'):
+        # garden -> Kloster Veßra: the model's own roads (Ratschner Anger, the village, the lanes; the first 330 m are those of the Klinge
+        # route of v16b), at 60 km/h on the main road and the L 1625 to the western edge and over it; the section west goes on from there
+        Rw = from_home(rb, i_w, lambda sc: 16.7 if sc > 700 else 12.5, 'garten')
+        if not want('nord'):
+            ck('at home: nothing of the drive awake', Rw['asleep'], json.dumps(Rw['f0']['welt']))
+        cont = Rw['j'] >= i_w and math.dist((Rw['s']['x'], Rw['s']['y']), rb[i_w]) < 60
+        leg_checks('west', rb, i_w, Rw, 'L 1625')
     if want('west'):
         if not cont:
             place_on(rb, i_w)
@@ -414,6 +461,14 @@ with lib.browser() as b:
                     E(f"window._fs = VEH.follow({json.dumps(appr)}, 2.2, {{ look: 3.5 }})")
             if phase == 2:
                 gmin = min(gmin, math.dist((s['x'], s['y']), (B['G'][0], B['G'][1])))
+                # every step at the gate: what moves or holds the car (the speed cap and the edge of welt/fahrt.js, the follower, walls)
+                tr = json.loads(E("""JSON.stringify((() => { const v = VEH.cur, st = v.st, f = VEH.fwd(st.psi), pu = [];
+                  for (const k of [-1, 0, 1]) { const p = [st.x + f[0] * 1.4 * k, st.y + f[1] * 1.4 * k], q = p.slice(); pu.push(KERN.pushOut(q, 1.0) ? [+(q[0] - p[0]).toFixed(2), +(q[1] - p[1]).toFixed(2)] : 0); }
+                  const fs = FAHRT.status(); return { thr: +(st.thr || 0).toFixed(2), brk: +(st.brk || 0).toFixed(2), gear: st.gear, cap: fs.cap, edge: VEH.edge ? VEH.edge(v) : null,
+                    loading: fs.welt.loading, err: fs.welt.err, h: WELT.heightAt(st.x + f[0] * 6, st.y + f[1] * 6) !== undefined, push: pu, fs: window._fs }; })())"""))
+                G2, uu2, ww2 = B['G'], B['u'], B['w']
+                du, dw = s['x'] - G2[0], s['y'] - G2[1]
+                print(f"  gate u {du * uu2[0] + dw * uu2[1]:6.2f} w {du * ww2[0] + dw * ww2[1]:6.2f} {s['kmh']:5.1f} km/h", json.dumps(tr), flush=True)
             stop_t = stop_t + 0.5 if abs(s['kmh']) < 2 else 0
             if (fs['done'] and phase != 1) or stop_t > (15 if phase == 1 else 6):
                 break
@@ -442,7 +497,10 @@ with lib.browser() as b:
             if phase == 2 and into:
                 G, u, w = B['G'], B['u'], B['w']
                 tgt = [G[0] + w[0] * 7, G[1] + w[1] * 7]
-                E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })")
+                # stand with the handbrake (the follower has stopped the car in the yard): holding the brake key reversed it 6.8 m back
+                # onto the Schulstraße (vehicles/vehicle.js: the brake key reverses once the car stands) – that was the red yard check of
+                # V16q and CI 11, a fault of this test, not of the drive
+                E("VEH.auto = () => ({ thr: 0, brk: 0, steer: 0, hand: true })")
                 chunk(1.5)
                 E("VEH.auto = null")
                 chunk(1)
