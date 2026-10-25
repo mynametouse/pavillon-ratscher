@@ -360,8 +360,7 @@ export const KI = (() => {
       busy: false,
     };
     if (C.greet) C.transcript.push(['n', C.greet]);
-    UI.open(true);
-    UI.npc('');
+    UI.open(true); // the greeting stays in the panel until he answers
     if (S.set.hands && EAR.ok) setTimeout(() => C && C.w === w && listen(), 350);
   }
   // the player's words → one turn (a few requests when he uses tools), spoken while it streams
@@ -782,7 +781,7 @@ export const KI = (() => {
           : '') +
         `<div class="mrow"><span>Zuhören</span><div class="mseg">${seg('hands', true, 'nach jeder Antwort')}${seg('hands', false, 'nur per Knopf')}</div></div>` +
         (EAR.ok
-          ? ''
+          ? '<p class="fnote">Zuhören macht die Spracherkennung des Browsers (Chrome und Edge schicken die Sprache dafür an ihren Dienst, Safari an Apple); die Antwort spricht die gewählte Stimme.</p>'
           : '<p class="fnote">Dieser Browser hat keine Spracherkennung – du kannst schreiben. Chrome, Edge und Safari können zuhören.</p>') +
         `<details><summary>Server statt Schlüssel</summary><label class="kf">Adresse (leitet an die Claude-API weiter und fügt den Schlüssel hinzu)<input id="ki-base" type="url" spellcheck="false" placeholder="https://…" value="${esc(s.base)}"></label></details>` +
         `<h4>Was sie von dir halten</h4><p class="kmeinung">Hubert ${m.hubert.meinung}/100 · Ronald ${m.ronald.meinung}/100</p>` +
