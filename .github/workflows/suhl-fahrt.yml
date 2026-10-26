@@ -1,0 +1,79 @@
+# Hinfahren nach Suhl (feat/suhl-fahrt): Straßen, Autobahn A 73/A 71, Schilder und die beiden Routen Ratscher -> Suhl aus OpenStreetMap,
+# Längsprofile auf den Welt-Kacheln der Website (welt-test/, welt-test/zonen/suhl/ sobald veröffentlicht; sonst Copernicus GLO-30).
+# Der Chat-Rechner erreicht weder OSM noch die Website – deshalb hier. Das Ergebnis (klein, JSON) committet der Lauf auf feat/suhl-fahrt:
+#   viz3/extra/suhl-fahrt/dist/fahrt/suhl.json (Daten der App), viz3/extra/suhl-fahrt/recherche.json (Routen, Wege, Anschlussstellen).
+# Nichts wird veröffentlicht; gh-pages bleibt unberührt.
+name: Suhl-Fahrt Daten
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['feat/suhl-fahrt']
+    paths: ['viz3/extra/suhl-fahrt/*.py', '.github/workflows/suhl-fahrt.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: suhl-fahrt-daten
+  cancel-in-progress: true
+
+jobs:
+  daten:
+    name: OSM, Profile, Schilder, Routen
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests
+      - name: Rohdaten aus dem Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/suhl-raw
+          key: suhl-fahrt-raw-v1-${{ github.run_id }}
+          restore-keys: |
+            suhl-fahrt-raw-v1-
+      - name: Daten bauen
+        run: |
+          set -o pipefail
+          # OSM fresh every run (cheap); tiles of the website fresh too (the suhl agent publishes zonen/suhl/ during the night)
+          rm -f ~/suhl-raw/osm_suhl_v1.json; rm -rf ~/suhl-raw/tiles
+          python -I -u viz3/extra/suhl-fahrt/suhl_strecke.py --raw ~/suhl-raw 2>&1 | tee daten.log
+      - name: Rohdaten in den Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/suhl-raw
+          key: suhl-fahrt-raw-v1-${{ github.run_id }}
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          [ -f daten.log ] || exit 0
+          { echo "### Suhl-Fahrt Daten"; echo '```'; grep -E "Route|Anschluss|Dreieck|Tunnel|Brücken|Ortstafeln|Wegweiser|Autobahnschilder|Höhen|Kachelsätze|fertig|Wellen|motorway|main|county" daten.log | cut -c1-400 | head -60; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Ergebnis auf feat/suhl-fahrt committen
+        run: |
+          set -e
+          mkdir -p "$RUNNER_TEMP/res"
+          cp viz3/extra/suhl-fahrt/dist/fahrt/suhl.json viz3/extra/suhl-fahrt/recherche.json "$RUNNER_TEMP/res/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            git fetch -q origin feat/suhl-fahrt
+            git checkout -q -B up FETCH_HEAD
+            mkdir -p viz3/extra/suhl-fahrt/dist/fahrt
+            cp "$RUNNER_TEMP/res/suhl.json" viz3/extra/suhl-fahrt/dist/fahrt/suhl.json
+            cp "$RUNNER_TEMP/res/recherche.json" viz3/extra/suhl-fahrt/recherche.json
+            git add viz3/extra/suhl-fahrt/dist/fahrt/suhl.json viz3/extra/suhl-fahrt/recherche.json
+            if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+            git commit -q -m "Suhl drive data: roads, motorway, signs, routes from ${GITHUB_SHA::7}
+
+          Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_01C3rwfQiBXst7Xxmc9qjjx7"
+            if git push -q origin up:feat/suhl-fahrt; then echo "gepusht"; git log --oneline -1; exit 0; fi
+            echo "Push abgelehnt (Versuch $i)"; sleep $((i * 5))
+          done
+          exit 1
