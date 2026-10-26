@@ -191,6 +191,10 @@ with lib.browser() as b:
     ck('villager: conversation begins', wait("!!KI.conv && KI.conv.who === 'gerhard'", 10))
     ck('villager: microphone in the village panel', E("document.getElementById('dorfpanel').contains(document.getElementById('np-ki')) && !document.getElementById('np-ki').hidden"))
     ck('villager: small talk gives way', E("[...document.querySelectorAll('#dorfpanel .topics button')].every(b => /quest|bye/.test(b.className))"))
+    # the box looks as in the neighbours' panel (Falko, 26.10.: in the village only an empty square instead of the microphone)
+    st = J("(() => { const m = document.getElementById('np-mic'), r = m.getBoundingClientRect(), sv = m.querySelector('svg').getBoundingClientRect(); return { hidden: m.hidden, w: r.width, h: r.height, svg: sv.width, round: getComputedStyle(document.getElementById('np-say')).borderRadius }; })()")
+    ck('villager: the microphone drawn as with Hubert (40 px, icon 20 px, round field)', (st['hidden'] or (st['w'] >= 38 and st['svg'] >= 18)) and st['round'] == '999px', json.dumps(st))
+    pg.screenshot(path=os.path.join(OUT, 'dorf_ki.png'))
     E("KI.turn('Erzähl mal von der Chronik')")
     wait("KI.conv && !KI.conv.busy && KI.conv.messages.length >= 4", 40)
     vr = [r for r in REQ[n0:] if r.get('stream')]

@@ -1,19 +1,20 @@
-/* free conversations with the neighbours (feat/ki, npc/ki.js): microphone, text field and notes in the talk panel #npcpanel, the settings panel #kipanel */
-#npcpanel .np-ki{padding:0 14px 12px;display:flex;flex-direction:column;gap:6px}
-#npcpanel .np-ki[hidden]{display:none}
-#npcpanel .np-me{font:italic 400 13px/1.4 var(--f-body);color:var(--muted);min-height:18px}
-#npcpanel .np-in{display:flex;gap:6px;align-items:center}
-#npcpanel .np-in input{flex:1;min-width:0;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:400 14px/1.2 var(--f-body);padding:9px 12px}
-#npcpanel .np-in button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 13px/1 var(--f-body);padding:9px 12px;cursor:pointer}
-#npcpanel .np-in .mic{width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
-#npcpanel .np-in .mic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
-#npcpanel .np-in .mic.on{background:#b4332a;border-color:#b4332a;color:#fff;animation:kipulse 1.2s ease-in-out infinite}
-#npcpanel .np-ki.busy .np-me::after{content:' · denkt nach …';font-style:normal}
-#npcpanel .np-note{color:var(--muted);font:400 12px/1.35 var(--f-body);min-height:0}
-#npcpanel .np-setup{margin:0 14px 12px;border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:8px;font:500 12px/1.2 var(--f-body);padding:8px 10px;cursor:pointer;text-align:left}
-#npcpanel .np-setup[hidden]{display:none}
+/* free conversations (feat/ki, npc/ki.js): microphone, text field and notes in whichever talk panel it sits – the neighbours' #npcpanel, the
+   villagers' #dorfpanel, any other host (.ki-host, set by npc/ki.js) –, the settings panel #kipanel */
+:is(#npcpanel,#dorfpanel,.ki-host) .np-ki{padding:0 14px 12px;display:flex;flex-direction:column;gap:6px}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-ki[hidden]{display:none}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-me{font:italic 400 13px/1.4 var(--f-body);color:var(--muted);min-height:18px}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-in{display:flex;gap:6px;align-items:center}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-in input{flex:1;min-width:0;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:400 14px/1.2 var(--f-body);padding:9px 12px}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-in button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 13px/1 var(--f-body);padding:9px 12px;cursor:pointer}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-in .mic{width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-in .mic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-in .mic.on{background:#b4332a;border-color:#b4332a;color:#fff;animation:kipulse 1.2s ease-in-out infinite}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-ki.busy .np-me::after{content:' · denkt nach …';font-style:normal}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-note{color:var(--muted);font:400 12px/1.35 var(--f-body);min-height:0}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-setup{margin:0 14px 12px;border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:8px;font:500 12px/1.2 var(--f-body);padding:8px 10px;cursor:pointer;text-align:left}
+:is(#npcpanel,#dorfpanel,.ki-host) .np-setup[hidden]{display:none}
 @keyframes kipulse{50%{box-shadow:0 0 0 6px rgba(180,51,42,.25)}}
-@media (prefers-reduced-motion: reduce){#npcpanel .np-in .mic.on{animation:none}}
+@media (prefers-reduced-motion: reduce){:is(#npcpanel,#dorfpanel,.ki-host) .np-in .mic.on{animation:none}}
 #kipanel{position:absolute;z-index:5;top:112px;right:max(12px,env(safe-area-inset-right,0px));width:min(380px,calc(100% - 24px));max-height:72%;overflow:auto;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:12px 14px 14px}
 #kipanel[hidden]{display:none}
 #kipanel h3{margin:0 0 6px;font:700 16px/1.2 var(--f-display);display:flex;align-items:center}
