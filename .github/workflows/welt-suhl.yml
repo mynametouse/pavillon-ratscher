@@ -1,0 +1,235 @@
+# Welt-Zone Suhl (~13 km NNW des Gartens): die Stadt (Zentrum, Suhler Aue, Suhl-Nord) aus OSM und die eigenen Welt-Kacheln.
+#   daten:    tools/welt/zone_suhl.py – Stadt (Gebäude in 400-m-Zellen, Straßen, Wahrzeichen, Laternen, Bänke, Haltestellen, Bäume) nach
+#             viz3/extra/suhl/dist/suhl/ und die beiden Fahrten Garten → Markt Suhl (Landstraße, Autobahn A73/A71) mit ihren Korridoren
+#             (+600 m) als Kachel-Plan viz3/extra/suhl/plan.json – beides wird auf feat/suhl committet (kleine JSON-Dateien).
+#   kacheln:  tools/welt/build.py --plan S --planfile (Stufe 12 über der Stadt, 10–11 nur auf der Maske: Stadt + 900 m und die Korridore,
+#             7–9 über dem Block), nur mit „[kacheln]“ in der Commit-Nachricht oder von Hand.
+#   deploy:   nach gh-pages/welt-test/zonen/suhl/ (eigene meta.json); sonst bleibt gh-pages unberührt.
+#   fotos:    Kontaktbögen ausgewählter Panoramax-/Commons-Fotos (nur CC0/CC BY/CC BY-SA) auf den Wegwerf-Branch ref/suhl-fotos,
+#             nur mit „[fotos]“ in der Commit-Nachricht oder von Hand.
+# Die App (viz3/src/welt/welt.js, suhl.js) lädt den Block nur, solange man in Suhl oder auf dem Weg dorthin ist.
+#   Ergebnis: https://mynametouse.github.io/pavillon-ratscher/welt-test/zonen/suhl/meta.json
+name: Welt-Zone Suhl
+
+on:
+  workflow_dispatch:
+    inputs:
+      daten:
+        description: 'Stadtdaten und Plan neu (zone_suhl.py) und auf feat/suhl committen'
+        type: boolean
+        default: true
+      kacheln:
+        description: 'Kacheln bauen und nach gh-pages/welt-test/zonen/suhl/ veröffentlichen'
+        type: boolean
+        default: false
+      fotos:
+        description: 'Kontaktbögen nach ref/suhl-fotos'
+        type: boolean
+        default: false
+  push:
+    branches: ['feat/suhl']
+    paths: ['tools/welt/zone_suhl.py', '.github/workflows/welt-suhl.yml', 'tools/welt/build.py', 'tools/welt/wlib.py', 'tools/welt/tiles.py',
+            'viz3/extra/suhl/fotos.py']
+
+permissions:
+  contents: write
+
+jobs:
+  daten:
+    name: Stadtdaten und Kachel-Plan
+    if: github.event_name == 'push' || inputs.daten || inputs.kacheln
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: welt-suhl-daten
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests mapbox-earcut rasterio osmium
+      - name: Rohdaten aus dem Cache (Downloads früherer Läufe)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/welt-raw
+          key: welt-raw-S-v1-${{ github.run_id }}
+          restore-keys: |
+            welt-raw-S-v1-
+      - name: Stadt Suhl aus OSM (Gebäude, Straßen, Wahrzeichen, Laternen, Bäume)
+        run: |
+          set -o pipefail
+          python -I -u tools/welt/zone_suhl.py --raw ~/welt-raw 2>&1 | tee zone.log
+      - name: Fahrten Garten → Suhl und Kachel-Plan
+        run: |
+          set -o pipefail
+          python -I -u tools/welt/zone_suhl.py --routes --raw ~/welt-raw --plan viz3/extra/suhl/plan.json 2>&1 | tee routes.log
+      - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
+        if: always()
+        run: echo "RAWKEY=$(cd ~/welt-raw 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+      - name: Rohdaten in den Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/welt-raw
+          key: welt-raw-S-v1-${{ env.RAWKEY }}
+      - name: Daten auf feat/suhl committen (bei Wettlauf neu aufsetzen)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          du -sh viz3/extra/suhl/dist/suhl; ls -la viz3/extra/suhl/dist/suhl viz3/extra/suhl/dist/suhl/c | head -80
+          MSG="suhl: town data and tile plan from OSM (zone_suhl.py, run ${GITHUB_RUN_ID})
+
+          Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_01C3rwfQiBXst7Xxmc9qjjx7"
+          cp -r viz3/extra/suhl /tmp/suhl-new
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin feat/suhl
+            git reset -q --hard origin/feat/suhl
+            rm -rf viz3/extra/suhl/dist/suhl viz3/extra/suhl/plan.json
+            mkdir -p viz3/extra/suhl/dist
+            cp -r /tmp/suhl-new/dist/suhl viz3/extra/suhl/dist/suhl
+            cp /tmp/suhl-new/plan.json viz3/extra/suhl/plan.json
+            git add -A viz3/extra/suhl/dist/suhl viz3/extra/suhl/plan.json
+            if git diff --cached --quiet; then echo "keine Änderung"; break; fi
+            git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+            if git push -q origin HEAD:feat/suhl; then echo "gepusht"; break; fi
+            echo "Push abgelehnt (Versuch $i)"; sleep $((i * 5))
+          done
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          {
+            echo "### Welt-Zone Suhl: Daten"
+            echo '```'
+            [ -f zone.log ] && grep -E "== |Markt|Gebäude:|Straßen:|Flächen:|Bäume:|Stadtblock|index.json" zone.log | head -40
+            [ -f routes.log ] && grep -E "Route|UTM|Plan S|Schätzung" routes.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Plan für die Kacheln
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-plan
+          path: viz3/extra/suhl/plan.json
+          retention-days: 3
+
+  kacheln:
+    name: Kacheln Suhl bauen
+    needs: daten
+    if: inputs.kacheln || contains(github.event.head_commit.message, '[kacheln]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    concurrency:
+      group: welt-suhl-build
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests mapbox-earcut rasterio
+      - name: Kurztests der Pipeline (Sekunden)
+        run: python -I tools/welt/test_welt.py
+      - uses: actions/download-artifact@v4
+        with:
+          name: suhl-plan
+          path: plan
+      - name: Rohdaten aus dem Cache (Downloads früherer Läufe)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/welt-raw
+          key: welt-raw-ST-v1-${{ github.run_id }}
+          restore-keys: |
+            welt-raw-ST-v1-
+            welt-raw-S-v1-
+      - name: Pipeline (Laden, Gelände, Straßen, Luftbild) – Plan S
+        run: |
+          set -o pipefail
+          free -g; df -h . | tail -1
+          python -I -u tools/welt/build.py --plan S --planfile plan/plan.json --raw ~/welt-raw --out site/suhl 2>&1 | tee build.log
+      - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
+        if: always()
+        run: echo "RAWKEY=$(cd ~/welt-raw 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+      - name: Rohdaten in den Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/welt-raw
+          key: welt-raw-ST-v1-${{ env.RAWKEY }}
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          [ -f build.log ] || exit 0
+          {
+            echo "### Welt-Zone Suhl (Plan S)"
+            echo '```'
+            grep -E "Plan|Straßen|Wellen|Gelände|Gebäude:|DEM source|DGM1|Farbausgleich|fertig in|Stufe|Luftbild" build.log | head -60
+            echo '```'
+            du -sh site/suhl 2>/dev/null
+          } >> "$GITHUB_STEP_SUMMARY"
+          du -sh site/suhl; find site/suhl -type f | wc -l; du -sh site/suhl/* | sort -h | tail
+      - name: Kacheln für die Veröffentlichung
+        uses: actions/upload-artifact@v4
+        with:
+          name: welt-suhl
+          path: site/suhl
+          retention-days: 3
+          compression-level: 0
+
+  deploy:
+    name: Nach gh-pages/welt-test/zonen/suhl/
+    needs: kacheln
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: welt-suhl
+          path: new/suhl
+      - name: Größe prüfen (Grenze 300 MB)
+        run: |
+          MB=$(du -sm new/suhl | cut -f1); echo "zonen/suhl: $MB MB"
+          [ "$MB" -lt 300 ] || { echo "zu groß für gh-pages"; exit 1; }
+          [ -f new/suhl/meta.json ] || { echo "keine meta.json"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: welt-test/zonen/suhl
+      - name: Nur welt-test/zonen/suhl/ ersetzen, committen, pushen (bei Wettlauf neu aufsetzen)
+        working-directory: pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          apply() { rm -rf welt-test/zonen/suhl && mkdir -p welt-test/zonen && cp -r ../new/suhl welt-test/zonen/suhl && git add -A welt-test/zonen/suhl; }
+          apply
+          if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+          # only this folder may change on gh-pages
+          if git diff --cached --name-only | grep -v '^welt-test/zonen/suhl/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
+          MSG="Welt-Zone Suhl: Kacheln aus ${GITHUB_SHA::7} (${GITHUB_REF_NAME})
+
+          Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_01C3rwfQiBXst7Xxmc9qjjx7"
+          git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+          for i in 1 2 3 4 5; do
+            if git push -q origin HEAD:gh-pages; then echo "gepusht"; break; fi
+            echo "Push abgelehnt (Versuch $i) – neu holen und den eigenen Commit darauf setzen"
+            git fetch -q --depth 1 --filter=blob:none origin gh-pages
+            if ! git rebase -q --onto FETCH_HEAD HEAD~1; then
+              git rebase --abort || true
+              git reset -q --hard FETCH_HEAD
+              apply
+              git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+            fi
+            [ "$i" = 5 ] && exit 1
+            sleep $((i * 7))
+          done
+          git log --oneline -2
+          echo "### Veröffentlicht: welt-test/zonen/suhl/ ($(du -sh welt-test/zonen/suhl | cut -f1))" >> "$GITHUB_STEP_SUMMARY"

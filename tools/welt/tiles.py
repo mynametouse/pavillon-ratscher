@@ -16,6 +16,7 @@ import os, sys, struct, zlib
 import numpy as np
 from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import wlib
 from wlib import log, tbounds, tsize, tiles, TILE_PX, TERR_N, H0
 
 Image.MAX_IMAGE_PIXELS = None
@@ -290,7 +291,7 @@ class ImagePyramid:
         cl = chunk_level if chunk_level is not None else L - 3
         k = 1 << (L - cl)
         px = TILE_PX * k
-        chunks = tiles(cl, area)
+        chunks = [c for c in tiles(cl, area) if wlib.hits(L, cl, *c)]   # feat/suhl: only chunks with tiles of the mask
         # download the chunks three at a time first (the server takes ~20 s per 4096 px image), cut them afterwards
         from concurrent.futures import ThreadPoolExecutor
         with ThreadPoolExecutor(3) as ex:
@@ -306,7 +307,7 @@ class ImagePyramid:
                 for i in range(k):
                     x, y = x0 + i, y0 + j
                     e0, n0, e1, n1 = tbounds(L, x, y)
-                    if e1 <= area[0] or e0 >= area[2] or n1 <= area[1] or n0 >= area[3]:
+                    if e1 <= area[0] or e0 >= area[2] or n1 <= area[1] or n0 >= area[3] or not wlib.keep(L, x, y):
                         continue
                     r0 = (k - 1 - j) * TILE_PX
                     jobs.append((np.ascontiguousarray(img[r0:r0 + TILE_PX, i * TILE_PX:(i + 1) * TILE_PX]), self.path(L, x, y), self.q))

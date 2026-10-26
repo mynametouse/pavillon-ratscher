@@ -50,8 +50,13 @@ def main():
     ap.add_argument('--quality', type=int, default=74)
     ap.add_argument('--jobs', type=int, default=os.cpu_count() or 2)
     ap.add_argument('--skip-imagery', action='store_true')
+    ap.add_argument('--planfile', default='')   # feat/suhl: areas per level and tile masks from a file (tools/welt/zone_suhl.py --routes)
     a = ap.parse_args()
     t0 = time.time()
+    if a.planfile:
+        pf = json.load(open(a.planfile))
+        PLANS[a.plan] = {int(k): tuple(v) for k, v in pf['plan'].items()}
+        wlib.MASK.update({int(k): {tuple(t) for t in v} for k, v in pf.get('mask', {}).items()})
     plan = PLANS[a.plan]
     zone = wlib.ZONES.get(a.plan)   # a detail zone with its own block (published under welt-test/<sub>)
     levels = sorted(plan)
@@ -70,7 +75,8 @@ def main():
     from fetch import fetch_osm
     toLL = Transformer.from_crs('EPSG:25832', 'EPSG:4326', always_xy=True)
     m = 400.0
-    lo, la = toLL.transform([blk[0] - m, blk[2] + m, blk[0] - m, blk[2] + m], [blk[1] - m, blk[1] - m, blk[3] + m, blk[3] + m])
+    oa = det if a.planfile else blk   # feat/suhl: OSM, buildings and trees only over the detail block (the corridors are terrain only)
+    lo, la = toLL.transform([oa[0] - m, oa[2] + m, oa[0] - m, oa[2] + m], [oa[1] - m, oa[1] - m, oa[3] + m, oa[3] + m])
     ll = (round(min(lo), 4), round(min(la), 4), round(max(lo), 4), round(max(la), 4))
     osm = fetch_osm(a.raw, ll)
     log('OSM', {k: len(v) for k, v in osm.items() if isinstance(v, dict)})
@@ -102,14 +108,14 @@ def main():
     lla = np.array([osm['nodes'][i][:2] for i in ids], float)
     E, N = tr.transform(lla[:, 0], lla[:, 1])
     nodeE = {i: (e, n) for i, e, n in zip(ids, E, N)}
-    bmeta = buildings.build(osm, nodeE, dem, blk, a.out)
+    bmeta = buildings.build(osm, nodeE, dem, oa, a.out)
     circles = bmeta.pop('_circles', [])
 
     # ---- single trees in the forests (WorldCover tree cover; away from roads and buildings) ----
     import trees
-    rways, rnodes = roads.load_ways(osm, blk, margin=50)
+    rways, rnodes = roads.load_ways(osm, oa, margin=50)
     road_lines = [(np.array([rnodes[r] for r in w['refs']]), w['w'] / 2) for w in rways if not (w['fl'] & 2)]
-    vmeta = trees.build(dem, road_lines, circles, blk, a.out)
+    vmeta = trees.build(dem, road_lines, circles, oa, a.out)
 
     # ---- imagery ----
     iinfo = {}
@@ -197,6 +203,8 @@ def main():
         x0, y0, x1, y1 = trange(L, area[L])
         lv[str(L)] = {'size': tsize(L), 'rect': [x0, y0, x1, y1], 'terrain_step': tsize(L) / (TERR_N - 1), 'px': tsize(L) / TILE_PX,
                       'terrain': tinfo.get(L), 'image': iinfo.get(L)}
+        if L in wlib.MASK:   # feat/suhl: only these tiles of the rect exist (the app checks them: viz3/src/welt/welt.js setOf)
+            lv[str(L)]['has'] = sorted([list(t) for t in wlib.MASK[L]])
     terr_src = {'dgm1': 'DGM1 Thüringen (1 m, © GDI-Th, CC BY 4.0)', 'cop30': 'Copernicus DEM GLO-30 (Oberflächenmodell 30 m; Ersatz: DGM1-Server nicht erreichbar)',
                 'dgm1+cop30': 'DGM1 Thüringen, außerhalb Copernicus DEM GLO-30'}[dem.source]
     meta = {

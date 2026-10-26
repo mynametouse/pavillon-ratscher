@@ -61,6 +61,27 @@ VESSRA_BLK = (614000.0, 5592150.0, 620700.0, 5597150.0)
 VESSRA_ROUTE = (615902.0, 5593606.0, 620700.0, 5595399.0)   # the corridor west of block B (route + 600 m), checked in test_welt.py
 PLANS['V'] = {7: VESSRA_BLK, 8: VESSRA_BLK, 9: VESSRA_BLK, 10: VESSRA_BLK, 11: VESSRA_BLK, 12: VESSRA_DET}
 ZONES = {'V': {'name': 'vessra', 'title': 'Kloster Veßra', 'centre': VESSRA_C, 'sub': 'zonen/vessra/'}}
+# feat/suhl: Suhl (~13 km NNW of the garden, Markt 50.6097/10.6928): a block of its own (welt-test/zonen/suhl/) whose areas per level come
+# from a plan file (tools/welt/zone_suhl.py --routes -> build.py --plan S --planfile): level 12 over the town, levels 10-11 only on the
+# tiles of a mask (the town + 900 m and the two road corridors from the test block to Suhl + 600 m), levels 7-9 over the block around them
+SUHL_C = (620045.0, 5607990.0)
+ZONES['S'] = {'name': 'suhl', 'title': 'Suhl', 'centre': SUHL_C, 'sub': 'zonen/suhl/'}
+MASK = {}   # feat/suhl: level -> set of (x, y); only these tiles of a masked level are built (empty: all tiles of the level's area)
+_MASK_UP = {}
+
+
+def keep(L, x, y):
+    return L not in MASK or (x, y) in MASK[L]
+
+
+def hits(L, cl, cx, cy):
+    """does chunk (cx, cy) of level cl hold a tile of level L that the mask keeps? (feat/suhl)"""
+    if L not in MASK:
+        return True
+    k = (L, cl)
+    if k not in _MASK_UP:
+        _MASK_UP[k] = {(x >> (L - cl), y >> (L - cl)) for x, y in MASK[L]}
+    return (cx, cy) in _MASK_UP[k]
 
 
 def tsize(L):
@@ -93,7 +114,7 @@ def aligned(L, area):
 
 def tiles(L, area):
     x0, y0, x1, y1 = trange(L, area)
-    return [(x, y) for y in range(y0, y1 + 1) for x in range(x0, x1 + 1)]
+    return [(x, y) for y in range(y0, y1 + 1) for x in range(x0, x1 + 1) if keep(L, x, y)]
 
 
 def union_area(areas):
