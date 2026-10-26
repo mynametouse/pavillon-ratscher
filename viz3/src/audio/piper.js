@@ -493,6 +493,7 @@ export const PIPER = (() => {
       return synth(v, text);
     },
     stat: () => (W ? call({ op: 'stat' }, 10000) : Promise.resolve({ mem: 0, sessions: [] })),
+    phonemes: text => call({ op: 'phon', text }, 20000).then(r => r.ids),
     drop: () => (W ? call({ op: 'drop' }, 10000) : Promise.resolve({ mem: 0 })),
     end,
     state: () => ({

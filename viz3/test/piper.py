@@ -202,6 +202,10 @@ with lib.browser() as b:
     ck('at most the allowed number of models in memory', len(stat.get('sessions', [])) <= E("PIPER.state().keep"), str(stat))
     if not FAKE:
         ck('a sentence ready within 3 s once the voice is in memory (CI runner)', 0 < ms2 < 3000, f'{ms2} ms')
+    # ---- many sentences in a row: the phonemizer keeps going (eSpeak NG leaks a little per call; a fresh instance every few) ----
+    many = pg.evaluate("""async () => { let ok = 0, first = null; for (let i = 0; i < 200; i++) { const ids = await PIPER.phonemes('Hallo, ich bin aus dem Dorf. Heute Abend gehen wir zum Feuer am Acker, kommst du mit? ' + i);
+      if (ids && ids.length > 100) ok++; if (i === 0) first = ids.length; } return { ok, first }; }""")
+    ck('200 sentences in a row through the phonemizer', many['ok'] == 200, json.dumps(many))
     # ---- through the voices' bus, not the browser's speech ----
     pg.mouse.click(500, 320)
     E("window.__spk = 0; const o = speechSynthesis.speak.bind(speechSynthesis); speechSynthesis.speak = u => { __spk++; return o(u); }; 0")

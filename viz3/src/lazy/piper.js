@@ -15,45 +15,79 @@ import * as ort from 'onnxruntime-web/wasm';
 const BASE = new URL('../piper/', import.meta.url).href;
 const CACHE = 'pav-piper-v1';
 // every WebAssembly memory made here (ONNX Runtime, the phonemizer) – what the voices cost in memory
+// (weak references: a phonemizer instance that was replaced must be free to go)
 const MEMS = new Set();
+const keepMem = m => {
+  if (m instanceof WebAssembly.Memory) MEMS.add(typeof WeakRef !== 'undefined' ? new WeakRef(m) : { deref: () => m });
+};
 for (const fn of ['instantiate', 'instantiateStreaming']) {
   const orig = WebAssembly[fn];
   if (!orig) continue;
   WebAssembly[fn] = function (src, imp) {
     return orig.call(WebAssembly, src, imp).then(r => {
       const inst = r.instance || r;
-      for (const m of Object.values(inst.exports || {})) if (m instanceof WebAssembly.Memory) MEMS.add(m);
-      if (imp)
-        for (const ns of Object.values(imp))
-          for (const v of Object.values(ns || {})) if (v instanceof WebAssembly.Memory) MEMS.add(v);
+      for (const m of Object.values(inst.exports || {})) keepMem(m);
+      if (imp) for (const ns of Object.values(imp)) for (const v of Object.values(ns || {})) keepMem(v);
       return r;
     });
   };
 }
-const memMB = () => Math.round([...MEMS].reduce((s, m) => s + m.buffer.byteLength, 0) / 1e6);
+function memMB() {
+  let b = 0;
+  for (const w of [...MEMS]) {
+    const m = w.deref();
+    if (m) b += m.buffer.byteLength;
+    else MEMS.delete(w);
+  }
+  return Math.round(b / 1e6);
+}
 
 ort.env.wasm.numThreads = 1;
 ort.env.wasm.proxy = false;
 ort.env.wasm.wasmPaths = BASE; // ort-wasm-simd-threaded.mjs and .wasm (copied by build.py)
 ort.env.logLevel = 'error';
 
-// ---------------- the phonemizer: one instance, called again for every sentence ----------------
-let PH = null;
+// ---------------- the phonemizer: one instance for a few sentences ----------------
+// eSpeak NG starts anew with every call and does not give all of its memory back; the program has a fixed heap of 16 MB and runs out of
+// it after some 75 sentences (measured in node). So a fresh instance every PH_MAX sentences – from the compiled module and the data
+// already in memory (a few milliseconds), the old one is collected.
+const PH_MAX = 24;
+let PH = null,
+  PHN = 0,
+  PHMOD = null,
+  PHDATA = null,
+  PHJS = null;
 const lines = [];
 function phonemizer() {
-  if (!PH)
-    PH = import(/* @vite-ignore */ BASE + 'phonemize.mjs')
-      .then(m =>
-        m.default({
-          print: l => lines.push(l),
-          printErr: () => {},
-          locateFile: f => BASE + f,
-        })
-      )
-      .catch(e => {
-        PH = null;
-        throw e;
-      });
+  if (PH && PHN < PH_MAX) return PH;
+  PHN = 0;
+  if (!PHJS) PHJS = import(/* @vite-ignore */ BASE + 'phonemize.mjs');
+  if (!PHMOD)
+    PHMOD = fetch(BASE + 'phonemize.wasm')
+      .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('phonemize.wasm ' + r.status))))
+      .then(b => WebAssembly.compile(b));
+  if (!PHDATA)
+    PHDATA = fetch(BASE + 'phonemize_de.data').then(r =>
+      r.ok ? r.arrayBuffer() : Promise.reject(new Error('phonemize_de.data ' + r.status))
+    );
+  PH = Promise.all([PHJS, PHMOD, PHDATA])
+    .then(([js, mod, data]) =>
+      js.default({
+        print: l => lines.push(l),
+        printErr: () => {},
+        locateFile: f => BASE + f,
+        // the data package as bytes already here (the files of each instance point into the same bytes; eSpeak only reads them)
+        getPreloadedPackage: () => data,
+        instantiateWasm: (imports, done) => {
+          WebAssembly.instantiate(mod, imports).then(inst => done(inst, mod));
+          return {};
+        },
+      })
+    )
+    .catch(e => {
+      PH = PHJS = PHMOD = PHDATA = null;
+      throw e;
+    });
   return PH;
 }
 // what the phonemizer should not see: markup, emoji, quotes it would spell
@@ -63,13 +97,16 @@ const clean = t =>
     .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
     .replace(/\s+/g, ' ')
     .trim();
-async function phonemes(text, voice, map) {
+async function phonemes(text, voice, map, again) {
   const m = await phonemizer();
+  PHN++;
   lines.length = 0;
   try {
     m.callMain(['-l', voice || 'de', '--input', JSON.stringify([{ text }]), '--espeak_data', '/espeak-ng-data']);
   } catch (e) {
-    PH = null; // a broken instance: a fresh one next time
+    // a broken instance: once more with a fresh one
+    PH = null;
+    if (!again) return phonemes(text, voice, map, true);
     throw e;
   }
   const ids = [];
@@ -296,6 +333,10 @@ self.onmessage = e => {
         await phonemizer();
         if (m.model) await session(m.model, m.keep);
         self.postMessage({ id: m.id, ok: true, mem: memMB() });
+      } else if (m.op === 'phon') {
+        // tests: the phoneme ids of a text (the phonemizer alone)
+        const ids = await phonemes(clean(m.text), 'de', null);
+        self.postMessage({ id: m.id, ids, n: PHN });
       } else if (m.op === 'stat') {
         self.postMessage({
           id: m.id,
