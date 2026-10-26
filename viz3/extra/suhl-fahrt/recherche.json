@@ -1,0 +1,3790 @@
+{
+ "made": "2026-10-26 03:10 UTC",
+ "source": "OpenStreetMap (ODbL 1.0)",
+ "routes": {
+  "suhl_ab": {
+   "m": 28439,
+   "legs": [
+    {
+     "road": "service",
+     "hw": "service",
+     "name": "",
+     "m": 109,
+     "ways": [
+      1484532662
+     ]
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "residential",
+     "name": "Ratschner Anger",
+     "m": 173,
+     "ways": [
+      759632860
+     ]
+    },
+    {
+     "road": "Geisenhöhner Weg",
+     "hw": "residential",
+     "name": "Geisenhöhner Weg",
+     "m": 96,
+     "ways": [
+      759632859,
+      144531901
+     ]
+    },
+    {
+     "road": "An der Mühle",
+     "hw": "unclassified",
+     "name": "An der Mühle",
+     "m": 213,
+     "ways": [
+      759632858
+     ]
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "unclassified",
+     "name": "Ratschner Anger",
+     "m": 94,
+     "ways": [
+      144531899
+     ]
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 2738,
+     "ways": [
+      4057664,
+      4779433,
+      294041805,
+      294041819,
+      331403346,
+      331403349,
+      229394145,
+      294041820,
+      294041810,
+      294041813,
+      294041800,
+      229394144,
+      4057611,
+      4779379,
+      172263034,
+      172263033,
+      4779420,
+      4779387,
+      36830674,
+      36830673,
+      214069187,
+      314985338,
+      4779368
+     ]
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 117,
+     "ways": [
+      314985337,
+      184589981,
+      4955643,
+      314985335,
+      4955641
+     ]
+    },
+    {
+     "road": "secondary",
+     "hw": "secondary",
+     "name": "",
+     "m": 80,
+     "ways": [
+      80282017,
+      1005183128
+     ]
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 245,
+     "ways": [
+      28661017,
+      314985327,
+      314985329
+     ]
+    },
+    {
+     "road": "A 73",
+     "hw": "motorway",
+     "name": "",
+     "m": 14981,
+     "ways": [
+      856303197,
+      214069182,
+      214069176,
+      36931358,
+      36931359,
+      4779443,
+      4779395,
+      4779430,
+      4779369,
+      4779421,
+      4779445,
+      4779366,
+      4779423,
+      4779444,
+      4779396,
+      729908660,
+      856302840,
+      328719968,
+      328719969,
+      4779440,
+      4779424,
+      4779447,
+      131904089,
+      274631108,
+      26005921,
+      26005923,
+      856300579,
+      729908664,
+      670904581,
+      274631112,
+      274631106,
+      4779429,
+      4779380,
+      4779419,
+      4779370,
+      211131942,
+      729908667,
+      211131926,
+      25202705,
+      25202706,
+      729908670,
+      211131947,
+      670905128,
+      211131931,
+      4048431,
+      141470295,
+      211110671
+     ]
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 856,
+     "ways": [
+      1414322000,
+      403641509,
+      25609994,
+      318885084
+     ]
+    },
+    {
+     "road": "A 71",
+     "hw": "motorway",
+     "name": "",
+     "m": 4356,
+     "ways": [
+      211110664,
+      211110666,
+      729876733,
+      27823133,
+      146849616,
+      256487250,
+      729876734,
+      4605127,
+      4782436,
+      256487234,
+      4779372,
+      662874709
+     ]
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 419,
+     "ways": [
+      27600356,
+      210995343,
+      368104201,
+      210995346,
+      312650185
+     ]
+    },
+    {
+     "road": "B 62",
+     "hw": "secondary",
+     "name": "Suhler Straße",
+     "m": 113,
+     "ways": [
+      312650187,
+      312650190
+     ]
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Suhler Straße",
+     "m": 3647,
+     "ways": [
+      36871632,
+      297114746,
+      27289484,
+      242704036,
+      1299960244,
+      312644144,
+      1337263781,
+      312644140,
+      32301223,
+      312644148,
+      312644146,
+      312644147,
+      1337263644,
+      32301024,
+      32301405,
+      312643258,
+      312643259,
+      1230841642,
+      312643260,
+      1337263545,
+      32301402,
+      312643253,
+      51556749,
+      45985836,
+      368104193,
+      368104196,
+      1228749265,
+      368104191,
+      55220669
+     ]
+    },
+    {
+     "road": "Friedrich-König-Straße",
+     "hw": "residential",
+     "name": "Friedrich-König-Straße",
+     "m": 91,
+     "ways": [
+      312636471,
+      312636472,
+      176363092,
+      81160196
+     ]
+    },
+    {
+     "road": "Marktplatz",
+     "hw": "living_street",
+     "name": "Marktplatz",
+     "m": 78,
+     "ways": [
+      32083905,
+      100127375
+     ]
+    }
+   ],
+   "junctions": [
+    {
+     "id": 28396437,
+     "ref": "",
+     "name": "Rastplatz Adlersberg",
+     "x": -2349.7,
+     "y": 6572.7,
+     "lat": 50.5579571,
+     "lon": 10.7306002,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "id": 28396393,
+     "ref": "3",
+     "name": "Suhl-Friedberg",
+     "x": -2780.9,
+     "y": 8546.4,
+     "lat": 50.5757504,
+     "lon": 10.7229325,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "id": 205152355,
+     "ref": "2",
+     "name": "Suhl-Zentrum",
+     "x": -5907.6,
+     "y": 9998.8,
+     "lat": 50.5874799,
+     "lon": 10.6770402,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "id": 12996309190,
+     "ref": "1",
+     "name": "Dreieck Suhl",
+     "x": -7971.2,
+     "y": 12144.9,
+     "lat": 50.6060419,
+     "lon": 10.6458224,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "id": 21453694,
+     "ref": "19",
+     "name": "Suhl / Zella-Mehlis",
+     "x": -4662.9,
+     "y": 16016.2,
+     "lat": 50.642964,
+     "lon": 10.6902784,
+     "on": [
+      "A 71"
+     ]
+    }
+   ],
+   "bridges": [
+    {
+     "id": 4048431,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 335,
+     "lanes": "2",
+     "maxspeed": "130",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Haseltal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779366,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 343,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Silbachtal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779372,
+     "highway": "motorway",
+     "ref": "A 71",
+     "name": "",
+     "m": 440,
+     "lanes": "3",
+     "maxspeed": "80",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Steinatalbrücke",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779379,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 83,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779387,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 33,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779419,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 269,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Wiesental",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779421,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 213,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Ochsengrund",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779429,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 392,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Langer Grund",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779430,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 165,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Feuchter Grund",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779433,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 46,
+     "lanes": "2",
+     "maxspeed": "60",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779440,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 393,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Dambachtal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779443,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 444,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke St. Kilian",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779444,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 230,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Leuketal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779447,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 555,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Wallersbachtal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4955643,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 55,
+     "lanes": "2",
+     "maxspeed": "",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 25202705,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 30,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "Schweinfurt;Erfurt",
+     "destination:ref": ""
+    },
+    {
+     "id": 26005921,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 39,
+     "lanes": "3",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 27823133,
+     "highway": "motorway",
+     "ref": "A 71",
+     "name": "",
+     "m": 31,
+     "lanes": "2",
+     "maxspeed": "80",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 36830673,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 11,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 36931358,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 39,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 141470295,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 320,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Haseltal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 172263033,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 27,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 211110671,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 194,
+     "lanes": "3",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Haseltal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 1414322000,
+     "highway": "motorway_link",
+     "ref": "",
+     "name": "",
+     "m": 17,
+     "lanes": "1",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "Erfurt;Suhl/Zella-Mehlis",
+     "destination:ref": "A 71"
+    }
+   ],
+   "tunnels": [
+    {
+     "id": 4605127,
+     "highway": "motorway",
+     "ref": "A 71",
+     "name": "",
+     "m": 2674,
+     "lanes": "2",
+     "maxspeed": "80",
+     "bridge": "",
+     "tunnel": "yes",
+     "bridge:name": "",
+     "tunnel:name": "Tunnel Berg Bock",
+     "destination": "",
+     "destination:ref": ""
+    }
+   ],
+   "maxspeed": [
+    "100",
+    "130",
+    "80",
+    "none"
+   ]
+  },
+  "suhl_land": {
+   "m": 18875,
+   "legs": [
+    {
+     "road": "service",
+     "hw": "service",
+     "name": "",
+     "m": 109,
+     "ways": [
+      1484532662
+     ]
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "residential",
+     "name": "Ratschner Anger",
+     "m": 173,
+     "ways": [
+      759632860
+     ]
+    },
+    {
+     "road": "Geisenhöhner Weg",
+     "hw": "residential",
+     "name": "Geisenhöhner Weg",
+     "m": 96,
+     "ways": [
+      759632859,
+      144531901
+     ]
+    },
+    {
+     "road": "An der Mühle",
+     "hw": "unclassified",
+     "name": "An der Mühle",
+     "m": 213,
+     "ways": [
+      759632858
+     ]
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "unclassified",
+     "name": "Ratschner Anger",
+     "m": 94,
+     "ways": [
+      144531899
+     ]
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 2738,
+     "ways": [
+      4057664,
+      4779433,
+      294041805,
+      294041819,
+      331403346,
+      331403349,
+      229394145,
+      294041820,
+      294041810,
+      294041813,
+      294041800,
+      229394144,
+      4057611,
+      4779379,
+      172263034,
+      172263033,
+      4779420,
+      4779387,
+      36830674,
+      36830673,
+      214069187,
+      314985338,
+      4779368
+     ]
+    },
+    {
+     "road": "secondary",
+     "hw": "secondary",
+     "name": "",
+     "m": 77,
+     "ways": [
+      1005183129,
+      4057810,
+      1005183131
+     ]
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Ilmenauer Straße",
+     "m": 356,
+     "ways": [
+      4955533,
+      314985331,
+      214069186
+     ]
+    },
+    {
+     "road": "Am Sättel",
+     "hw": "unclassified",
+     "name": "Am Sättel",
+     "m": 1242,
+     "ways": [
+      45857456,
+      1007644839,
+      1007644840,
+      35342187,
+      610753084,
+      39515201
+     ]
+    },
+    {
+     "road": "Kilianstraße",
+     "hw": "unclassified",
+     "name": "Kilianstraße",
+     "m": 325,
+     "ways": [
+      169929798,
+      169929799,
+      763475468
+     ]
+    },
+    {
+     "road": "K 517",
+     "hw": "tertiary",
+     "name": "Breitenbacher Straße",
+     "m": 534,
+     "ways": [
+      38548715,
+      44717081,
+      44717080
+     ]
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "",
+     "m": 12745,
+     "ways": [
+      312593068,
+      610818353,
+      300512207,
+      312593069,
+      312593066,
+      312593067,
+      754694562,
+      754694561,
+      175996104,
+      175996103,
+      300512208,
+      300512209,
+      300512210,
+      297037406,
+      297037405,
+      297037404,
+      297037403,
+      297037402,
+      297037401,
+      297037400,
+      297037399,
+      297037398,
+      297037395,
+      297037396,
+      297037397,
+      300512212,
+      297037407,
+      1298835963,
+      26006239,
+      26006242,
+      297037408,
+      107489472,
+      107489474,
+      49802095,
+      107489473,
+      312593070,
+      297037409,
+      118164337,
+      297063257,
+      297063256,
+      118164322,
+      297063262,
+      1242210296,
+      297063264,
+      1242210297,
+      312601132,
+      32523368,
+      297411677,
+      1421532677,
+      1298835964,
+      144189114,
+      297063269,
+      297063268,
+      297063270,
+      45985835,
+      1228749577,
+      71194837,
+      297063272,
+      297063271,
+      45985839,
+      45985837,
+      297063301,
+      312601115,
+      51557554,
+      297411682,
+      70993244,
+      297411711,
+      297411710,
+      297293049,
+      297293092,
+      297293085,
+      297293173,
+      297293086,
+      297293133,
+      297293233,
+      297293236,
+      312636469,
+      45985850
+     ]
+    },
+    {
+     "road": "Friedrich-König-Straße",
+     "hw": "residential",
+     "name": "Friedrich-König-Straße",
+     "m": 79,
+     "ways": [
+      312636472,
+      176363092,
+      81160196
+     ]
+    },
+    {
+     "road": "Marktplatz",
+     "hw": "living_street",
+     "name": "Marktplatz",
+     "m": 78,
+     "ways": [
+      32083905,
+      100127375
+     ]
+    }
+   ],
+   "junctions": [],
+   "bridges": [
+    {
+     "id": 4779379,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 83,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779387,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 33,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779433,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 46,
+     "lanes": "2",
+     "maxspeed": "60",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 26006242,
+     "highway": "secondary",
+     "ref": "L 3247",
+     "name": "",
+     "m": 55,
+     "lanes": "4",
+     "maxspeed": "50",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 36830673,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 11,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 44717081,
+     "highway": "tertiary",
+     "ref": "K 517",
+     "name": "",
+     "m": 27,
+     "lanes": "2",
+     "maxspeed": "",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 45985839,
+     "highway": "secondary",
+     "ref": "L 3247",
+     "name": "Schleusinger Straße",
+     "m": 34,
+     "lanes": "2",
+     "maxspeed": "60",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 169929799,
+     "highway": "unclassified",
+     "ref": "",
+     "name": "Kilianstraße",
+     "m": 15,
+     "lanes": "",
+     "maxspeed": "",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 172263033,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 27,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 175996103,
+     "highway": "secondary",
+     "ref": "L 3247",
+     "name": "Erlauer Hauptstraße",
+     "m": 9,
+     "lanes": "2",
+     "maxspeed": "",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 754694561,
+     "highway": "secondary",
+     "ref": "L 3247",
+     "name": "Erlauer Hauptstraße",
+     "m": 9,
+     "lanes": "2",
+     "maxspeed": "50",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    }
+   ],
+   "tunnels": [],
+   "maxspeed": []
+  },
+  "suhl_ab_rueck": {
+   "m": 28294,
+   "legs": [
+    {
+     "road": "Marktplatz",
+     "hw": "living_street",
+     "name": "Marktplatz",
+     "m": 78,
+     "ways": [
+      100127375,
+      32083905
+     ]
+    },
+    {
+     "road": "Friedrich-König-Straße",
+     "hw": "living_street",
+     "name": "Friedrich-König-Straße",
+     "m": 79,
+     "ways": [
+      81160196,
+      176363092,
+      312636472
+     ]
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Friedrich-König-Straße",
+     "m": 3740,
+     "ways": [
+      46338766,
+      70993267,
+      368104197,
+      70993248,
+      368104192,
+      312643249,
+      211369201,
+      1337263615,
+      312643251,
+      312643255,
+      1230841641,
+      312643254,
+      312643250,
+      312643256,
+      32301024,
+      1337263644,
+      27289483,
+      1463938590,
+      312644141,
+      981628236,
+      312644145,
+      312644142,
+      1463938591,
+      32301225,
+      242704039,
+      297114743,
+      32301034,
+      312650192
+     ]
+    },
+    {
+     "road": "B 62",
+     "hw": "secondary",
+     "name": "Suhler Straße",
+     "m": 385,
+     "ways": [
+      36871631,
+      998142851,
+      998142850,
+      80415855,
+      312650188,
+      312650194
+     ]
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 385,
+     "ways": [
+      1360061135,
+      312650184,
+      312650183,
+      27600354,
+      943966482,
+      27600353
+     ]
+    },
+    {
+     "road": "A 71",
+     "hw": "motorway",
+     "name": "",
+     "m": 4167,
+     "ways": [
+      144069941,
+      4779448,
+      256487244,
+      729876735,
+      4605247,
+      4605284,
+      27823135,
+      729876732,
+      27823136,
+      729876731,
+      211110662,
+      211110665
+     ]
+    },
+    {
+     "road": "motorway",
+     "hw": "motorway",
+     "name": "",
+     "m": 830,
+     "ways": [
+      4970143,
+      1007336322,
+      1007336323
+     ]
+    },
+    {
+     "road": "A 73",
+     "hw": "motorway",
+     "name": "",
+     "m": 14754,
+     "ways": [
+      4779417,
+      211110672,
+      211110670,
+      4779435,
+      25202703,
+      25202704,
+      211131948,
+      729908669,
+      211131950,
+      729908668,
+      211131946,
+      211131924,
+      4779388,
+      4779450,
+      4779391,
+      4779431,
+      914125512,
+      274631114,
+      729908666,
+      274631116,
+      729908665,
+      856300580,
+      274631115,
+      26005924,
+      26005922,
+      648773074,
+      4779367,
+      40545091,
+      4779373,
+      4779432,
+      328719966,
+      328719971,
+      729908659,
+      729908662,
+      328719970,
+      856302839,
+      4779451,
+      4779384,
+      4779427,
+      4779377,
+      4779393,
+      179417963,
+      4779439,
+      4779376,
+      4779441,
+      144869212,
+      214069172,
+      36931356,
+      36931357,
+      994858717
+     ]
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 390,
+     "ways": [
+      28661015,
+      314985328,
+      28661014
+     ]
+    },
+    {
+     "road": "secondary",
+     "hw": "secondary",
+     "name": "",
+     "m": 53,
+     "ways": [
+      1005183131,
+      1005183130
+     ]
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 2738,
+     "ways": [
+      4779368,
+      314985338,
+      214069187,
+      36830673,
+      36830674,
+      4779387,
+      4779420,
+      172263033,
+      172263034,
+      4779379,
+      4057611,
+      229394144,
+      294041800,
+      294041813,
+      294041810,
+      294041820,
+      229394145,
+      331403349,
+      331403346,
+      294041819,
+      294041805,
+      4779433,
+      4057664
+     ]
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "unclassified",
+     "name": "Ratschner Anger",
+     "m": 94,
+     "ways": [
+      144531899
+     ]
+    },
+    {
+     "road": "An der Mühle",
+     "hw": "unclassified",
+     "name": "An der Mühle",
+     "m": 213,
+     "ways": [
+      759632858
+     ]
+    },
+    {
+     "road": "Geisenhöhner Weg",
+     "hw": "unclassified",
+     "name": "Geisenhöhner Weg",
+     "m": 96,
+     "ways": [
+      144531901,
+      759632859
+     ]
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "residential",
+     "name": "Ratschner Anger",
+     "m": 173,
+     "ways": [
+      759632860
+     ]
+    },
+    {
+     "road": "service",
+     "hw": "service",
+     "name": "",
+     "m": 109,
+     "ways": [
+      1484532662
+     ]
+    }
+   ],
+   "junctions": [
+    {
+     "id": 14209303,
+     "ref": "20",
+     "name": "Dreieck Suhl",
+     "x": -7520.7,
+     "y": 12614.4,
+     "lat": 50.6105445,
+     "lon": 10.651916,
+     "on": [
+      "",
+      "A 71"
+     ]
+    },
+    {
+     "id": 14209943,
+     "ref": "2",
+     "name": "Suhl-Zentrum",
+     "x": -6512.3,
+     "y": 9897.9,
+     "lat": 50.5862643,
+     "lon": 10.6684543,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "id": 14209963,
+     "ref": "3",
+     "name": "Suhl-Friedberg",
+     "x": -3011.7,
+     "y": 8652.4,
+     "lat": 50.5766051,
+     "lon": 10.7195462,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "id": 30580808,
+     "ref": "",
+     "name": "Rastplatz Adlersberg",
+     "x": -2359.6,
+     "y": 6924.7,
+     "lat": 50.5611625,
+     "lon": 10.7301924,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "id": 1945868504,
+     "ref": "4",
+     "name": "Schleusingen",
+     "x": -147.8,
+     "y": 2078.2,
+     "lat": 50.5180202,
+     "lon": 10.7654888,
+     "on": [
+      "A 73"
+     ]
+    }
+   ],
+   "bridges": [
+    {
+     "id": 4779367,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 547,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Wallersbachtal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779373,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 393,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Dambachtal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779379,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 83,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779387,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 33,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779388,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 269,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Wiesental",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779391,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 392,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Langer Grund",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779393,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 211,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Ochsengrund",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779417,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 104,
+     "lanes": "2",
+     "maxspeed": "80",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Haseltal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779427,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 342,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Silbachtal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779433,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 46,
+     "lanes": "2",
+     "maxspeed": "60",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779439,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 165,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Feuchter Grund",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779441,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 445,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke St. Kilian",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779451,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 232,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Leuketal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 25202703,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 30,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 26005924,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 39,
+     "lanes": "3",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "Schleusingen",
+     "destination:ref": ""
+    },
+    {
+     "id": 27600353,
+     "highway": "motorway_link",
+     "ref": "",
+     "name": "",
+     "m": 171,
+     "lanes": "1",
+     "maxspeed": "",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "Schweinfurt;Dreieck Suhl",
+     "destination:ref": "A 71"
+    },
+    {
+     "id": 27823135,
+     "highway": "motorway",
+     "ref": "A 71",
+     "name": "",
+     "m": 33,
+     "lanes": "2",
+     "maxspeed": "80",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 36830673,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 11,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 36931356,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 40,
+     "lanes": "3",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 144069941,
+     "highway": "motorway",
+     "ref": "A 71",
+     "name": "",
+     "m": 134,
+     "lanes": "3",
+     "maxspeed": "80",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Steinatalbrücke",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 172263033,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 27,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 211110670,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 524,
+     "lanes": "2",
+     "maxspeed": "none",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Haseltal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 211110672,
+     "highway": "motorway",
+     "ref": "A 73",
+     "name": "",
+     "m": 226,
+     "lanes": "3",
+     "maxspeed": "80",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "Talbrücke Haseltal",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    }
+   ],
+   "tunnels": [
+    {
+     "id": 4605247,
+     "highway": "motorway",
+     "ref": "A 71",
+     "name": "",
+     "m": 2694,
+     "lanes": "2",
+     "maxspeed": "80",
+     "bridge": "",
+     "tunnel": "yes",
+     "bridge:name": "",
+     "tunnel:name": "Tunnel Berg Bock",
+     "destination": "",
+     "destination:ref": ""
+    }
+   ],
+   "maxspeed": [
+    "100",
+    "80",
+    "none"
+   ]
+  },
+  "suhl_land_rueck": {
+   "m": 18900,
+   "legs": [
+    {
+     "road": "Marktplatz",
+     "hw": "living_street",
+     "name": "Marktplatz",
+     "m": 78,
+     "ways": [
+      100127375,
+      32083905
+     ]
+    },
+    {
+     "road": "Friedrich-König-Straße",
+     "hw": "living_street",
+     "name": "Friedrich-König-Straße",
+     "m": 91,
+     "ways": [
+      81160196,
+      176363092,
+      312636472,
+      312636471
+     ]
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Dr.-Theodor-Neubauer-Straße",
+     "m": 5089,
+     "ways": [
+      32301021,
+      312636464,
+      312636467,
+      297293185,
+      297293055,
+      297293087,
+      297293180,
+      297293089,
+      51556747,
+      297411684,
+      32301015,
+      297411681,
+      32301407,
+      45552419,
+      45552417,
+      297063272,
+      71194837,
+      1228749577,
+      45985835,
+      297063270,
+      297063268,
+      297063269,
+      144189114,
+      1298835964,
+      1421532677,
+      297411677,
+      32523368,
+      312601132,
+      1242210297,
+      297063264,
+      1242210296,
+      297063262,
+      118164322,
+      297063256,
+      297063257,
+      118164337,
+      297037409,
+      312593070,
+      107489473
+     ]
+    },
+    {
+     "road": "Schützenstraße",
+     "hw": "secondary_link",
+     "name": "Schützenstraße",
+     "m": 99,
+     "ways": [
+      23376175,
+      26132500
+     ]
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Schleusinger Straße",
+     "m": 7617,
+     "ways": [
+      107489472,
+      297037408,
+      26006242,
+      26006239,
+      1298835963,
+      297037407,
+      300512212,
+      297037397,
+      297037396,
+      297037395,
+      297037398,
+      297037399,
+      297037400,
+      297037401,
+      297037402,
+      297037403,
+      297037404,
+      297037405,
+      297037406,
+      300512210,
+      300512209,
+      300512208,
+      175996103,
+      175996104,
+      754694561,
+      754694562,
+      312593067,
+      312593066,
+      312593069,
+      300512207,
+      610818353,
+      312593068
+     ]
+    },
+    {
+     "road": "K 517",
+     "hw": "tertiary",
+     "name": "",
+     "m": 534,
+     "ways": [
+      44717080,
+      44717081,
+      38548715
+     ]
+    },
+    {
+     "road": "Kilianstraße",
+     "hw": "unclassified",
+     "name": "Kilianstraße",
+     "m": 325,
+     "ways": [
+      763475468,
+      169929799,
+      169929798
+     ]
+    },
+    {
+     "road": "Am Sättel",
+     "hw": "unclassified",
+     "name": "Am Sättel",
+     "m": 1242,
+     "ways": [
+      39515201,
+      610753084,
+      35342187,
+      1007644840,
+      1007644839,
+      45857456
+     ]
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Ilmenauer Straße",
+     "m": 356,
+     "ways": [
+      214069186,
+      314985331,
+      4955533
+     ]
+    },
+    {
+     "road": "secondary",
+     "hw": "secondary",
+     "name": "",
+     "m": 31,
+     "ways": [
+      1005183130
+     ]
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 2738,
+     "ways": [
+      4779368,
+      314985338,
+      214069187,
+      36830673,
+      36830674,
+      4779387,
+      4779420,
+      172263033,
+      172263034,
+      4779379,
+      4057611,
+      229394144,
+      294041800,
+      294041813,
+      294041810,
+      294041820,
+      229394145,
+      331403349,
+      331403346,
+      294041819,
+      294041805,
+      4779433,
+      4057664
+     ]
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "unclassified",
+     "name": "Ratschner Anger",
+     "m": 94,
+     "ways": [
+      144531899
+     ]
+    },
+    {
+     "road": "An der Mühle",
+     "hw": "unclassified",
+     "name": "An der Mühle",
+     "m": 213,
+     "ways": [
+      759632858
+     ]
+    },
+    {
+     "road": "Geisenhöhner Weg",
+     "hw": "unclassified",
+     "name": "Geisenhöhner Weg",
+     "m": 96,
+     "ways": [
+      144531901,
+      759632859
+     ]
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "residential",
+     "name": "Ratschner Anger",
+     "m": 173,
+     "ways": [
+      759632860
+     ]
+    },
+    {
+     "road": "service",
+     "hw": "service",
+     "name": "",
+     "m": 109,
+     "ways": [
+      1484532662
+     ]
+    }
+   ],
+   "junctions": [],
+   "bridges": [
+    {
+     "id": 4779379,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 83,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779387,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 33,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 4779433,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 46,
+     "lanes": "2",
+     "maxspeed": "60",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 26006242,
+     "highway": "secondary",
+     "ref": "L 3247",
+     "name": "",
+     "m": 55,
+     "lanes": "4",
+     "maxspeed": "50",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 36830673,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 11,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 44717081,
+     "highway": "tertiary",
+     "ref": "K 517",
+     "name": "",
+     "m": 27,
+     "lanes": "2",
+     "maxspeed": "",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 45552419,
+     "highway": "secondary",
+     "ref": "L 3247",
+     "name": "Schleusinger Straße",
+     "m": 34,
+     "lanes": "2",
+     "maxspeed": "60",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 169929799,
+     "highway": "unclassified",
+     "ref": "",
+     "name": "Kilianstraße",
+     "m": 15,
+     "lanes": "",
+     "maxspeed": "",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 172263033,
+     "highway": "secondary",
+     "ref": "L 3004",
+     "name": "",
+     "m": 27,
+     "lanes": "2",
+     "maxspeed": "100",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 175996103,
+     "highway": "secondary",
+     "ref": "L 3247",
+     "name": "Erlauer Hauptstraße",
+     "m": 9,
+     "lanes": "2",
+     "maxspeed": "",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    },
+    {
+     "id": 754694561,
+     "highway": "secondary",
+     "ref": "L 3247",
+     "name": "Erlauer Hauptstraße",
+     "m": 9,
+     "lanes": "2",
+     "maxspeed": "50",
+     "bridge": "yes",
+     "tunnel": "",
+     "bridge:name": "",
+     "tunnel:name": "",
+     "destination": "",
+     "destination:ref": ""
+    }
+   ],
+   "tunnels": [],
+   "maxspeed": []
+  }
+ },
+ "junctions": [
+  {
+   "id": 203901286,
+   "ref": "18",
+   "name": "Oberhof",
+   "x": -4626.3,
+   "y": 18728.1,
+   "lat": 50.6677144,
+   "lon": 10.6887309,
+   "on": [
+    "A 71"
+   ]
+  },
+  {
+   "id": 605695982,
+   "ref": "18",
+   "name": "Oberhof",
+   "x": -4605.6,
+   "y": 18290.0,
+   "lat": 50.663729,
+   "lon": 10.6893616,
+   "on": [
+    "A 71"
+   ]
+  },
+  {
+   "id": 21453694,
+   "ref": "19",
+   "name": "Suhl / Zella-Mehlis",
+   "x": -4662.9,
+   "y": 16016.2,
+   "lat": 50.642964,
+   "lon": 10.6902784,
+   "on": [
+    "A 71"
+   ]
+  },
+  {
+   "id": 1576527060,
+   "ref": "19",
+   "name": "Suhl / Zella-Mehlis",
+   "x": -4745.6,
+   "y": 15907.4,
+   "lat": 50.6419322,
+   "lon": 10.6891757,
+   "on": [
+    "A 71"
+   ]
+  },
+  {
+   "id": 14209303,
+   "ref": "20",
+   "name": "Dreieck Suhl",
+   "x": -7520.7,
+   "y": 12614.4,
+   "lat": 50.6105445,
+   "lon": 10.651916,
+   "on": [
+    "",
+    "A 71"
+   ]
+  },
+  {
+   "id": 26559565,
+   "ref": "20",
+   "name": "Dreieck Suhl",
+   "x": -8214.8,
+   "y": 12430.3,
+   "lat": 50.6085248,
+   "lon": 10.6421096,
+   "on": [
+    "A 71"
+   ]
+  },
+  {
+   "id": 12996309190,
+   "ref": "1",
+   "name": "Dreieck Suhl",
+   "x": -7971.2,
+   "y": 12144.9,
+   "lat": 50.6060419,
+   "lon": 10.6458224,
+   "on": [
+    "A 73"
+   ]
+  },
+  {
+   "id": 205152355,
+   "ref": "2",
+   "name": "Suhl-Zentrum",
+   "x": -5907.6,
+   "y": 9998.8,
+   "lat": 50.5874799,
+   "lon": 10.6770402,
+   "on": [
+    "A 73"
+   ]
+  },
+  {
+   "id": 14209943,
+   "ref": "2",
+   "name": "Suhl-Zentrum",
+   "x": -6512.3,
+   "y": 9897.9,
+   "lat": 50.5862643,
+   "lon": 10.6684543,
+   "on": [
+    "A 73"
+   ]
+  },
+  {
+   "id": 14209963,
+   "ref": "3",
+   "name": "Suhl-Friedberg",
+   "x": -3011.7,
+   "y": 8652.4,
+   "lat": 50.5766051,
+   "lon": 10.7195462,
+   "on": [
+    "A 73"
+   ]
+  },
+  {
+   "id": 28396393,
+   "ref": "3",
+   "name": "Suhl-Friedberg",
+   "x": -2780.9,
+   "y": 8546.4,
+   "lat": 50.5757504,
+   "lon": 10.7229325,
+   "on": [
+    "A 73"
+   ]
+  },
+  {
+   "id": 30580808,
+   "ref": "",
+   "name": "Rastplatz Adlersberg",
+   "x": -2359.6,
+   "y": 6924.7,
+   "lat": 50.5611625,
+   "lon": 10.7301924,
+   "on": [
+    "A 73"
+   ]
+  },
+  {
+   "id": 28396437,
+   "ref": "",
+   "name": "Rastplatz Adlersberg",
+   "x": -2349.7,
+   "y": 6572.7,
+   "lat": 50.5579571,
+   "lon": 10.7306002,
+   "on": [
+    "A 73"
+   ]
+  },
+  {
+   "id": 1945868504,
+   "ref": "4",
+   "name": "Schleusingen",
+   "x": -147.8,
+   "y": 2078.2,
+   "lat": 50.5180202,
+   "lon": 10.7654888,
+   "on": [
+    "A 73"
+   ]
+  },
+  {
+   "id": 1945868374,
+   "ref": "4",
+   "name": "Schleusingen",
+   "x": 179.3,
+   "y": 1817.4,
+   "lat": 50.5157981,
+   "lon": 10.7703641,
+   "on": [
+    "A 73"
+   ]
+  }
+ ],
+ "tunnels": [
+  {
+   "way": 4605127,
+   "name": "Tunnel Berg Bock",
+   "ref": "A 71",
+   "m": 2674
+  },
+  {
+   "way": 4605247,
+   "name": "Tunnel Berg Bock",
+   "ref": "A 71",
+   "m": 2694
+  }
+ ],
+ "bridges_motorway": [
+  {
+   "way": 4048431,
+   "name": "Talbrücke Haseltal",
+   "ref": "A 73",
+   "m": 335,
+   "z": 44.3
+  },
+  {
+   "way": 4779366,
+   "name": "Talbrücke Silbachtal",
+   "ref": "A 73",
+   "m": 343,
+   "z": 106.8
+  },
+  {
+   "way": 4779367,
+   "name": "Talbrücke Wallersbachtal",
+   "ref": "A 73",
+   "m": 547,
+   "z": 154.8
+  },
+  {
+   "way": 4779371,
+   "name": "Steinatalbrücke",
+   "ref": "A 71",
+   "m": 90,
+   "z": 138.7
+  },
+  {
+   "way": 4779372,
+   "name": "Steinatalbrücke",
+   "ref": "A 71",
+   "m": 440,
+   "z": 162.5
+  },
+  {
+   "way": 4779373,
+   "name": "Talbrücke Dambachtal",
+   "ref": "A 73",
+   "m": 393,
+   "z": 145.2
+  },
+  {
+   "way": 4779388,
+   "name": "Talbrücke Wiesental",
+   "ref": "A 73",
+   "m": 269,
+   "z": 167.7
+  },
+  {
+   "way": 4779391,
+   "name": "Talbrücke Langer Grund",
+   "ref": "A 73",
+   "m": 392,
+   "z": 167.9
+  },
+  {
+   "way": 4779393,
+   "name": "Talbrücke Ochsengrund",
+   "ref": "A 73",
+   "m": 211,
+   "z": 97.9
+  },
+  {
+   "way": 4779417,
+   "name": "Talbrücke Haseltal",
+   "ref": "A 73",
+   "m": 104,
+   "z": 90.0
+  },
+  {
+   "way": 4779419,
+   "name": "Talbrücke Wiesental",
+   "ref": "A 73",
+   "m": 269,
+   "z": 167.3
+  },
+  {
+   "way": 4779421,
+   "name": "Talbrücke Ochsengrund",
+   "ref": "A 73",
+   "m": 213,
+   "z": 97.1
+  },
+  {
+   "way": 4779427,
+   "name": "Talbrücke Silbachtal",
+   "ref": "A 73",
+   "m": 342,
+   "z": 106.1
+  },
+  {
+   "way": 4779429,
+   "name": "Talbrücke Langer Grund",
+   "ref": "A 73",
+   "m": 392,
+   "z": 166.9
+  },
+  {
+   "way": 4779430,
+   "name": "Talbrücke Feuchter Grund",
+   "ref": "A 73",
+   "m": 165,
+   "z": 77.6
+  },
+  {
+   "way": 4779439,
+   "name": "Talbrücke Feuchter Grund",
+   "ref": "A 73",
+   "m": 165,
+   "z": 82.6
+  },
+  {
+   "way": 4779440,
+   "name": "Talbrücke Dambachtal",
+   "ref": "A 73",
+   "m": 393,
+   "z": 146.2
+  },
+  {
+   "way": 4779441,
+   "name": "Talbrücke St. Kilian",
+   "ref": "A 73",
+   "m": 445,
+   "z": 11.8
+  },
+  {
+   "way": 4779443,
+   "name": "Talbrücke St. Kilian",
+   "ref": "A 73",
+   "m": 444,
+   "z": 5.5
+  },
+  {
+   "way": 4779444,
+   "name": "Talbrücke Leuketal",
+   "ref": "A 73",
+   "m": 230,
+   "z": 135.6
+  },
+  {
+   "way": 4779447,
+   "name": "Talbrücke Wallersbachtal",
+   "ref": "A 73",
+   "m": 555,
+   "z": 154.4
+  },
+  {
+   "way": 4779451,
+   "name": "Talbrücke Leuketal",
+   "ref": "A 73",
+   "m": 232,
+   "z": 136.0
+  },
+  {
+   "way": 27600353,
+   "name": "",
+   "ref": "",
+   "m": 171,
+   "z": 159.0
+  },
+  {
+   "way": 27600359,
+   "name": "",
+   "ref": "",
+   "m": 145,
+   "z": 149.2
+  },
+  {
+   "way": 36472274,
+   "name": "Nahe-Talbrücke",
+   "ref": "A 73",
+   "m": 458,
+   "z": 19.9
+  },
+  {
+   "way": 36472276,
+   "name": "Nahe-Talbrücke",
+   "ref": "A 73",
+   "m": 460,
+   "z": 17.5
+  },
+  {
+   "way": 141470295,
+   "name": "Talbrücke Haseltal",
+   "ref": "A 73",
+   "m": 320,
+   "z": 15.0
+  },
+  {
+   "way": 144069941,
+   "name": "Steinatalbrücke",
+   "ref": "A 71",
+   "m": 134,
+   "z": 157.9
+  },
+  {
+   "way": 152201651,
+   "name": "Talbrücke Albrechtsgraben",
+   "ref": "A 71",
+   "m": 515,
+   "z": 57.1
+  },
+  {
+   "way": 154304768,
+   "name": "Talbrücke Albrechtsgraben",
+   "ref": "A 71",
+   "m": 787,
+   "z": 58.8
+  },
+  {
+   "way": 185494384,
+   "name": "",
+   "ref": "",
+   "m": 105,
+   "z": 88.8
+  },
+  {
+   "way": 211110669,
+   "name": "Talbrücke Albrechtsgraben",
+   "ref": "A 71",
+   "m": 151,
+   "z": 77.4
+  },
+  {
+   "way": 211110670,
+   "name": "Talbrücke Haseltal",
+   "ref": "A 73",
+   "m": 524,
+   "z": 41.3
+  },
+  {
+   "way": 211110671,
+   "name": "Talbrücke Haseltal",
+   "ref": "A 73",
+   "m": 194,
+   "z": 67.9
+  },
+  {
+   "way": 211110672,
+   "name": "Talbrücke Haseltal",
+   "ref": "A 73",
+   "m": 226,
+   "z": 35.8
+  },
+  {
+   "way": 248882620,
+   "name": "",
+   "ref": "A 71",
+   "m": 63,
+   "z": 151.4
+  },
+  {
+   "way": 256487251,
+   "name": "Talbrücke Albrechtsgraben",
+   "ref": "A 71",
+   "m": 124,
+   "z": 37.2
+  },
+  {
+   "way": 672085007,
+   "name": "Steinatalbrücke",
+   "ref": "A 71",
+   "m": 42,
+   "z": 160.8
+  },
+  {
+   "way": 729876726,
+   "name": "Steinatalbrücke",
+   "ref": "A 71",
+   "m": 68,
+   "z": 132.1
+  },
+  {
+   "way": 729876727,
+   "name": "Steinatalbrücke",
+   "ref": "A 71",
+   "m": 43,
+   "z": 156.2
+  }
+ ],
+ "city_limits": [
+  {
+   "name": "Schmiedefeld",
+   "x": 4042,
+   "y": 11254
+  },
+  {
+   "name": "Schönbrunn",
+   "x": 6407,
+   "y": 1351
+  },
+  {
+   "name": "Langenbach",
+   "x": 5491,
+   "y": 525
+  },
+  {
+   "name": "Waldau",
+   "x": 4434,
+   "y": 431
+  },
+  {
+   "name": "Ahlstädt",
+   "x": -5681,
+   "y": 3315
+  },
+  {
+   "name": "Manebach",
+   "x": 6611,
+   "y": 17632
+  },
+  {
+   "name": "Schleusingen",
+   "x": -1910,
+   "y": 283
+  },
+  {
+   "name": "Gethles",
+   "x": -4952,
+   "y": 1966
+  },
+  {
+   "name": "Langenbach",
+   "x": 5411,
+   "y": 375
+  },
+  {
+   "name": "Goldlauter-Heidersbach",
+   "x": -2514,
+   "y": 15452
+  },
+  {
+   "name": "Allzunah",
+   "x": 6919,
+   "y": 11261
+  },
+  {
+   "name": "Zella-Mehlis",
+   "x": -4324,
+   "y": 15532
+  },
+  {
+   "name": "Suhl",
+   "x": -4334,
+   "y": 15525
+  },
+  {
+   "name": "Schleusingerneundorf",
+   "x": 3824,
+   "y": 3984
+  },
+  {
+   "name": "Schleusingerneundorf",
+   "x": 4578,
+   "y": 5798
+  },
+  {
+   "name": "Breitenbach",
+   "x": 1197,
+   "y": 5198
+  },
+  {
+   "name": "Stützerbach",
+   "x": 6854,
+   "y": 15238
+  },
+  {
+   "name": "Stützerbach",
+   "x": 6974,
+   "y": 13912
+  },
+  {
+   "name": "Steinbach",
+   "x": 5633,
+   "y": 2722
+  },
+  {
+   "name": "Langenbach",
+   "x": 5336,
+   "y": 511
+  },
+  {
+   "name": "Langenbach",
+   "x": 5295,
+   "y": 1001
+  },
+  {
+   "name": "Lichtenau",
+   "x": 5014,
+   "y": 223
+  },
+  {
+   "name": "Bischofrod",
+   "x": -6784,
+   "y": 4682
+  },
+  {
+   "name": "Bischofrod",
+   "x": -7069,
+   "y": 4378
+  },
+  {
+   "name": "Ahlstädt",
+   "x": -5833,
+   "y": 3581
+  },
+  {
+   "name": "Waldau",
+   "x": 3311,
+   "y": -366
+  },
+  {
+   "name": "Frauenwald",
+   "x": 6653,
+   "y": 8104
+  },
+  {
+   "name": "Tachbach",
+   "x": -10675,
+   "y": 3702
+  },
+  {
+   "name": "Tachbach",
+   "x": -10427,
+   "y": 3975
+  },
+  {
+   "name": "Lengfeld",
+   "x": -7957,
+   "y": 3812
+  },
+  {
+   "name": "Grub",
+   "x": -9170,
+   "y": 5722
+  },
+  {
+   "name": "Grub",
+   "x": -9240,
+   "y": 6354
+  },
+  {
+   "name": "Eichenberg",
+   "x": -7632,
+   "y": 5649
+  },
+  {
+   "name": "Stadt Suhl",
+   "x": -3284,
+   "y": 15353
+  },
+  {
+   "name": "Bischofrod",
+   "x": -7275,
+   "y": 4846
+  },
+  {
+   "name": "Themar",
+   "x": -10915,
+   "y": 2269
+  },
+  {
+   "name": "Suhl",
+   "x": -3078,
+   "y": 12725
+  },
+  {
+   "name": "Rappelsdorf",
+   "x": -3277,
+   "y": 214
+  },
+  {
+   "name": "Altendambach",
+   "x": -2919,
+   "y": 7333
+  },
+  {
+   "name": "Altendambach",
+   "x": -4128,
+   "y": 6861
+  },
+  {
+   "name": "Hinternah",
+   "x": 1300,
+   "y": 1806
+  },
+  {
+   "name": "Hinternah",
+   "x": 2470,
+   "y": 2711
+  },
+  {
+   "name": "Frauenwald",
+   "x": 6774,
+   "y": 10200
+  },
+  {
+   "name": "Schmiedefeld",
+   "x": 4482,
+   "y": 12104
+  },
+  {
+   "name": "Rappelsdorf",
+   "x": -3222,
+   "y": 189
+  },
+  {
+   "name": "Zella-Mehlis",
+   "x": -4918,
+   "y": 18688
+  },
+  {
+   "name": "Engenstein",
+   "x": 6086,
+   "y": -730
+  },
+  {
+   "name": "Engenstein",
+   "x": 5297,
+   "y": 150
+  },
+  {
+   "name": "Dietzhausen",
+   "x": -10698,
+   "y": 11669
+  },
+  {
+   "name": "Ahlstädt",
+   "x": -5701,
+   "y": 3344
+  },
+  {
+   "name": "Stützerbach",
+   "x": 6284,
+   "y": 13838
+  },
+  {
+   "name": "Frauenwald",
+   "x": 6674,
+   "y": 10178
+  },
+  {
+   "name": "Benshausen",
+   "x": -10453,
+   "y": 17568
+  },
+  {
+   "name": "Benshausen",
+   "x": -10673,
+   "y": 17698
+  },
+  {
+   "name": "Zella-Mehlis",
+   "x": -8302,
+   "y": 17999
+  },
+  {
+   "name": "Hinternah",
+   "x": 2319,
+   "y": 2579
+  },
+  {
+   "name": "Langenbach",
+   "x": 5296,
+   "y": 420
+  },
+  {
+   "name": "Heckengereuth",
+   "x": 1713,
+   "y": -862
+  },
+  {
+   "name": "Zella-Mehlis",
+   "x": -4913,
+   "y": 18688
+  },
+  {
+   "name": "Mäbendorf",
+   "x": -9652,
+   "y": 11950
+  },
+  {
+   "name": "Stadt Suhl",
+   "x": -8860,
+   "y": 11916
+  },
+  {
+   "name": "Albrechts",
+   "x": -9457,
+   "y": 14510
+  },
+  {
+   "name": "",
+   "x": -7032,
+   "y": 13155
+  },
+  {
+   "name": "",
+   "x": -7274,
+   "y": 13229
+  },
+  {
+   "name": "Albrechts",
+   "x": -8525,
+   "y": 12892
+  },
+  {
+   "name": "Rappelsdorf",
+   "x": -3437,
+   "y": -136
+  },
+  {
+   "name": "Schmiedefeld am Rennsteig",
+   "x": 2676,
+   "y": 11896
+  }
+ ],
+ "links": [
+  {
+   "id": 4057667,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 234,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Suhl-Friedberg;Erlau;Hirschbach",
+   "destination:ref": "L 3247"
+  },
+  {
+   "id": 4550425,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 96,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Suhl-Friedberg;Hirschbach",
+   "destination:ref": "L 3247"
+  },
+  {
+   "id": 4779374,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 114,
+   "lanes": "1",
+   "maxspeed": "50",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Oberhof",
+   "destination:ref": "L 3247"
+  },
+  {
+   "id": 4779426,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 260,
+   "lanes": "1",
+   "maxspeed": "80",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 19733822,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 506,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Suhl-Zentrum;Suhl-Heinrichs;Suhl-Sehmar",
+   "destination:ref": "L 3140"
+  },
+  {
+   "id": 20880078,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 238,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Oberhof;Gehlberg;Zella-Mehlis-Nord",
+   "destination:ref": "L 3247"
+  },
+  {
+   "id": 24351034,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 105,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "",
+   "destination:ref": "A 73;L 3247"
+  },
+  {
+   "id": 25202698,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 161,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Suhl-Zentrum;Suhl-Heinrichs;Suhl-Sehmar;Schmiedefeld/Rennsteig",
+   "destination:ref": "L 3140"
+  },
+  {
+   "id": 25202702,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 379,
+   "lanes": "1",
+   "maxspeed": "80",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Nürnberg;Coburg;Suhl-Zentrum",
+   "destination:ref": "A 73"
+  },
+  {
+   "id": 25609994,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 581,
+   "lanes": "1",
+   "maxspeed": "100",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt;Suhl/Zella-Mehlis",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 27289488,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 56,
+   "lanes": "1",
+   "maxspeed": "70",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 27289489,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 78,
+   "lanes": "1",
+   "maxspeed": "80",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt;Oberhof",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 27600350,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 51,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "",
+   "destination:ref": "B 62"
+  },
+  {
+   "id": 27600353,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 171,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "yes",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Schweinfurt;Dreieck Suhl",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 27600356,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 148,
+   "lanes": "1",
+   "maxspeed": "80",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Suhl;Zella-Mehlis;Schmalkalden;Steinbach-Hallenberg",
+   "destination:ref": "B 62"
+  },
+  {
+   "id": 27600357,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 33,
+   "lanes": "1",
+   "maxspeed": "80",
+   "bridge": "yes",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt;Oberhof",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 27600359,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 145,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "yes",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Suhl/Zella-Mehlis;Schmalkalden;Steinbach-Hallenberg",
+   "destination:ref": "B 62"
+  },
+  {
+   "id": 28661015,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 139,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Schleusingen;Masserberg;Hildburghausen;Themar",
+   "destination:ref": "L 3004"
+  },
+  {
+   "id": 28661016,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 112,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Schleusingen;Schmiedefeld/Rennsteig;Erlau;Themar",
+   "destination:ref": "L 3004"
+  },
+  {
+   "id": 129118563,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 64,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Schweinfurt",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 185494384,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 105,
+   "lanes": "1",
+   "maxspeed": "80",
+   "bridge": "yes",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Nürnberg;Coburg;Suhl-Zentrum",
+   "destination:ref": "A 73"
+  },
+  {
+   "id": 220707609,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 99,
+   "lanes": "1",
+   "maxspeed": "30",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Oberhof;Gehlberg;Zella-Mehlis-Nord",
+   "destination:ref": "L 3247"
+  },
+  {
+   "id": 246499294,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 264,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Schweinfurt",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 297037393,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 55,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "",
+   "destination:ref": "A 73"
+  },
+  {
+   "id": 314985323,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 286,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Schleusingen;Coburg",
+   "destination:ref": "A 73"
+  },
+  {
+   "id": 314985324,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 169,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Coburg;Nürnberg",
+   "destination:ref": "A 73"
+  },
+  {
+   "id": 314985326,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 102,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Suhl-Zentrum",
+   "destination:ref": "A 73"
+  },
+  {
+   "id": 314985329,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 126,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Suhl",
+   "destination:ref": "A 73"
+  },
+  {
+   "id": 314985330,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 104,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Nürnberg",
+   "destination:ref": "A 73"
+  },
+  {
+   "id": 314985339,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 268,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Autobahndreieck Suhl",
+   "destination:ref": "A 73"
+  },
+  {
+   "id": 318885084,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 197,
+   "lanes": "1",
+   "maxspeed": "80",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt;Suhl/Zella-Mehlis",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 403641509,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 62,
+   "lanes": "1",
+   "maxspeed": "100",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt;Suhl/Zella-Mehlis",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 943966482,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 48,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Schweinfurt;Dreieck Suhl",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 943966484,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 49,
+   "lanes": "1",
+   "maxspeed": "",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Suhl/Zella-Mehlis;Schmalkalden;Steinbach-Hallenberg",
+   "destination:ref": "B 62"
+  },
+  {
+   "id": 943966491,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 17,
+   "lanes": "1",
+   "maxspeed": "80",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt;Oberhof",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 1360061136,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 60,
+   "lanes": "1",
+   "maxspeed": "80",
+   "bridge": "",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt;Oberhof",
+   "destination:ref": "A 71"
+  },
+  {
+   "id": 1414322000,
+   "highway": "motorway_link",
+   "ref": "",
+   "name": "",
+   "m": 17,
+   "lanes": "1",
+   "maxspeed": "100",
+   "bridge": "yes",
+   "tunnel": "",
+   "bridge:name": "",
+   "tunnel:name": "",
+   "destination": "Erfurt;Suhl/Zella-Mehlis",
+   "destination:ref": "A 71"
+  }
+ ],
+ "metric": {
+  "street": {
+   "km": 45.2,
+   "wellen_je_km_vorher": 15.1,
+   "wellen_je_km": 2.4,
+   "steigungswechsel_10m_vorher": 3.11,
+   "steigungswechsel_10m": 0.76,
+   "max_steigung_vorher": 106.0,
+   "max_steigung": 37.7,
+   "grenzwerte": {
+    "wellen_je_km": 4,
+    "steigungswechsel_10m": 1.0
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 8.0,
+    "min_kuppe": 3000,
+    "min_wanne": 2000
+   },
+   "anteil_ueber_steigung": 0.224,
+   "anteil_kuppe_zu_eng": 0.089,
+   "anteil_wanne_zu_eng": 0.026
+  },
+  "motorway": {
+   "km": 31.13,
+   "wellen_je_km_vorher": 16.4,
+   "wellen_je_km": 0.0,
+   "steigungswechsel_10m_vorher": 2.58,
+   "steigungswechsel_10m": 0.11,
+   "max_steigung_vorher": 39.4,
+   "max_steigung": 14.4,
+   "grenzwerte": {
+    "wellen_je_km": 1,
+    "steigungswechsel_10m": 0.3
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 4.0,
+    "min_kuppe": 13000,
+    "min_wanne": 8800
+   },
+   "anteil_ueber_steigung": 0.314,
+   "anteil_kuppe_zu_eng": 0.052,
+   "anteil_wanne_zu_eng": 0.014
+  },
+  "service": {
+   "km": 30.5,
+   "wellen_je_km_vorher": 17.2,
+   "wellen_je_km": 4.2,
+   "steigungswechsel_10m_vorher": 3.39,
+   "steigungswechsel_10m": 1.11,
+   "max_steigung_vorher": 66.5,
+   "max_steigung": 49.8,
+   "grenzwerte": {
+    "wellen_je_km": 5,
+    "steigungswechsel_10m": 1.2
+   },
+   "test": true
+  },
+  "main": {
+   "km": 26.33,
+   "wellen_je_km_vorher": 16.4,
+   "wellen_je_km": 0.2,
+   "steigungswechsel_10m_vorher": 2.94,
+   "steigungswechsel_10m": 0.22,
+   "max_steigung_vorher": 34.3,
+   "max_steigung": 12.7,
+   "grenzwerte": {
+    "wellen_je_km": 2,
+    "steigungswechsel_10m": 0.5
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 5.5,
+    "min_kuppe": 6000,
+    "min_wanne": 3500
+   },
+   "anteil_ueber_steigung": 0.213,
+   "anteil_kuppe_zu_eng": 0.029,
+   "anteil_wanne_zu_eng": 0.005
+  },
+  "county": {
+   "km": 8.83,
+   "wellen_je_km_vorher": 13.7,
+   "wellen_je_km": 0.1,
+   "steigungswechsel_10m_vorher": 2.81,
+   "steigungswechsel_10m": 0.3,
+   "max_steigung_vorher": 32.5,
+   "max_steigung": 14.4,
+   "grenzwerte": {
+    "wellen_je_km": 3,
+    "steigungswechsel_10m": 0.7
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 6.5,
+    "min_kuppe": 5000,
+    "min_wanne": 3000
+   },
+   "anteil_ueber_steigung": 0.145,
+   "anteil_kuppe_zu_eng": 0.06,
+   "anteil_wanne_zu_eng": 0.005
+  },
+  "lane": {
+   "km": 4.84,
+   "wellen_je_km_vorher": 14.3,
+   "wellen_je_km": 2.5,
+   "steigungswechsel_10m_vorher": 2.69,
+   "steigungswechsel_10m": 0.7,
+   "max_steigung_vorher": 26.1,
+   "max_steigung": 19.8,
+   "grenzwerte": {
+    "wellen_je_km": 4,
+    "steigungswechsel_10m": 1.0
+   },
+   "test": true,
+   "ral": {
+    "max_steigung": 8.0,
+    "min_kuppe": 3000,
+    "min_wanne": 2000
+   },
+   "anteil_ueber_steigung": 0.154,
+   "anteil_kuppe_zu_eng": 0.081,
+   "anteil_wanne_zu_eng": 0.017
+  }
+ }
+}
