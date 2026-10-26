@@ -578,14 +578,41 @@ export const VAUTO = (() => {
       }
       if (o.kind === 'player') playerBlocks = true;
     }
+    // the player's own car: let it by – to the kerb and slow when it comes towards me in my half of the road or catches up from behind
+    let yieldLat = 0;
+    const pv = VEH.cur;
+    if (pv && c.st === 'fahren' && pv.g.visible) {
+      const ps = pv.st,
+        pr =
+          Math.abs(ps.x - c.x) < 80 && Math.abs(ps.y - c.y) < 80 ? VNETZ.project(R, ps.x, ps.y, s - 45, s + 70) : null;
+      if (pr && pr.d < 6) {
+        const same = Math.cos(ps.psi - c.hd),
+          sp = Math.hypot(ps.u, ps.v),
+          dS = pr.s - s,
+          head = same < -0.3 && dS > 0 && sp > 1,
+          behind = same > 0.3 && dS < -3 && sp > c.v + 0.5;
+        if ((head || behind) && pr.lat < 2.4) {
+          yieldLat = Math.max(0.8, 1.9 - (c.laneOff || 1.2));
+          vT = Math.min(vT, head ? (dS < 30 ? 1.5 : 4) : 3);
+          c.yieldT = 1.2;
+        }
+      }
+    }
+    c.yieldT = Math.max(0, (c.yieldT || 0) - dt);
+    if (c.yieldT > 0 && !yieldLat) yieldLat = Math.max(0.8, 1.9 - (c.laneOff || 1.2));
     // lane: back to the middle of the lane when nothing needs passing; at a stop to the kerb (a little to the right)
-    // (standing it keeps its place; sideways only while it rolls)
-    if (c.st === 'steht' || c.st === 'parkt') c.latT = c.lat;
+    // (standing it keeps its place; sideways only while it rolls – or makes room for the player's car)
+    if ((c.st === 'steht' || c.st === 'parkt') && !yieldLat) c.latT = c.lat;
     else
-      c.latT =
-        latNeed < 0 ? latNeed : c.stop && c.stop.kerb && c.stop.s - s < 25 ? Math.min(0.6, c.kerbRoom ?? 0.6) : 0;
+      c.latT = yieldLat
+        ? yieldLat
+        : latNeed < 0
+          ? latNeed
+          : c.stop && c.stop.kerb && c.stop.s - s < 25
+            ? Math.min(0.6, c.kerbRoom ?? 0.6)
+            : 0;
     const dl = c.latT - c.lat;
-    c.lat += Math.sign(dl) * Math.min(Math.abs(dl), dt * (c.v > 0.2 ? 0.35 + c.v * 0.18 : 0.05));
+    c.lat += Math.sign(dl) * Math.min(Math.abs(dl), dt * (c.v > 0.2 || yieldLat ? 0.5 + c.v * 0.18 : 0.05));
     c.passT = Math.max(0, (c.passT || 0) - dt);
     // speed: braking to stop before stopAt (3 m/s² normal, up to 6 when it must), accelerating at 1.6 m/s²
     if (stopAt < Infinity) {

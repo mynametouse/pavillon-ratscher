@@ -36,7 +36,9 @@ Schleusingen. Ich möchte die Autos auch anhalten können. Wenn es sich anbietet
   langsam darum herum, wenn die Gegenspur frei ist; steht der Spieler lange auf der Fahrbahn, wird gehupt und dann langsam um ihn herum
   gefahren. Ein vorbeifahrendes Auto ist zu hören (Reifen, Motor, nach Entfernung).
 - **Reden**: „Mit … sprechen“ öffnet ein kleines Fenster (`#verkehrpanel`, Aussehen wie bei den Dorfbewohnern). Mit eingerichteten
-  KI-Gesprächen (`npc/ki.js`) redet man frei – alle zehn sind mit `KI.person` angemeldet (Schlüssel `vk_<name>`).
+  KI-Gesprächen (`npc/ki.js`) redet man frei – alle zehn sind mit `KI.person` angemeldet (Schlüssel `vk_<name>`). Die festen Sätze
+  (Gruß, Themen, Fahrer) sprechen sie mit ihrer eigenen Stimme, wenn „Feste Sätze vorlesen“ an ist (`STIMME.say`, `audio/stimme.js`).
+- **Platz machen**: fährt man selbst, fahren die Autos vor einem und entgegenkommende an den Rand und langsam, damit man vorbeikommt.
 
 ## Ereignisse (KERN.on)
 
@@ -46,7 +48,7 @@ Schleusingen. Ich möchte die Autos auch anhalten können. Wenn es sich anbietet
 ## Testen
 
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8986 --serve verkehr` (Abschnitte `net,walk,night,car,brake,wave,ride,selbst,
-  fahrt,stadt,prof,gl`, z. B. `verkehr:walk,car`); Bilder in `out/verkehr/`. Bei GitHub `feat.yml` (Artefakt „out“).
+  yield,fahrt,stadt,prof,gl`, z. B. `verkehr:walk,car`); Bilder in `out/verkehr/`. Bei GitHub `feat.yml` (Artefakt „out“).
 - Einheitentests: `node --test viz3/test/unit/verkehr.test.mjs` (Netz, Fahrspur rechts, Fußgänger links, Kurven, Personendaten).
 - Konsole: `VERKEHR.state()`, `VERKEHR.addPed('bettina')`, `VERKEHR.addCar()`, `VERKEHR.wave()`, `VERKEHR.ride()`, `VERKEHR.selbst()`,
   `VERKEHR.force({ peds: 4, cars: 2 })`, `VERKEHR.autoOn(false)`, `VERKEHR.clear()`; Start am Anger: `?szenario=verkehr`.
@@ -60,7 +62,7 @@ Schleusingen. Ich möchte die Autos auch anhalten können. Wenn es sich anbietet
   mit der Physik von `VEH.by.car`, wartet unsichtbar weit draußen bei −905/−1215, bis es ein angehaltenes Auto ersetzt; sein Eintrag am
   Aktionsknopf `veh:verkehr` ist durch einen eigenen ersetzt, der nur bei verliehenem Auto „Einsteigen“ zeigt), `VEH.extra` (die Autos
   sind Hindernisse für das eigene Auto und für Fußgänger), `VEH.enter/exit/place`, `PLAY.sit` (Beifahrersitz, `kind: 'ride', fp: true`),
-  `KERN.zone`, `KERN.act`, `KERN.tick`, `KERN.pushOut`, `KI.person/talk/ended`. `pav-veh-v1` speichert die Lage des Fahrzeugs `verkehr` mit
+  `KERN.zone`, `KERN.act`, `KERN.tick`, `KERN.pushOut`, `KI.person/talk/ended`, `STIMME.person/say/speaks`. `pav-veh-v1` speichert die Lage des Fahrzeugs `verkehr` mit
   (wird beim Laden wieder nach draußen gestellt).
 - Personen für die KI: `VLEUTE.P` (Schlüssel = Name klein; in KI `vk_<name>`), Felder `name, full, g, age, role, sheet`.
 - Neue Dateien in gemeinsamen Ordnern: `viz3/test/unit/verkehr.test.mjs`.

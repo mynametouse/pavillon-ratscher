@@ -31,6 +31,7 @@ import { VEH } from '../vehicles/vehicle.js';
 import { DPEOPLE } from '../dorf/dorf_people.js';
 import { DORF } from '../dorf/dorf.js';
 import { KI } from '../npc/ki.js';
+import { STIMME } from '../audio/stimme.js';
 import { VLEUTE } from './verkehr_leute.js';
 import { VNETZ } from './verkehr_netz.js';
 import { VFIG } from './verkehr_fig.js';
@@ -687,13 +688,16 @@ export const VERKEHR = (() => {
       clearTimeout(f._tt);
       f._tt = setTimeout(() => (f.walker.talking = false), Math.max(2200, text.length * 60));
     }
-    U.subtitle = (r, text, ms) => {
+    // a line as a subtitle (and spoken, audio/stimme.js: a recording or the person's voice, setting „Feste Sätze vorlesen“; quiet: the
+    // free conversation speaks for itself)
+    U.subtitle = (r, text, ms, quiet) => {
       const k = r && (r.key || r.who);
       sub.textContent = (k && PP[k] ? PP[k].name + ': ' : '') + text;
       sub.hidden = false;
       clearTimeout(subT);
       subT = setTimeout(() => (sub.hidden = true), ms || Math.max(2600, text.length * 62));
       if (r && r.f) mouth(r.f, text);
+      if (!quiet && k) voice(k, text);
     };
     function button(label, fn, cls) {
       const b = document.createElement('button');
@@ -712,9 +716,10 @@ export const VERKEHR = (() => {
           U.say(lines[(n - 1) % lines.length]);
         });
     }
-    U.say = text => {
+    U.say = (text, quiet) => {
       sayEl.textContent = text;
       mouth(figOf(U.cur), text);
+      if (!quiet && U.cur) voice(U.cur.key, text);
     };
     U.line = () => sayEl.textContent;
     function top(k, extra) {
@@ -803,13 +808,29 @@ export const VERKEHR = (() => {
             f = d ? d.f : S.lent && S.lent.who === k && S.lent.driver ? S.lent.driver.f : null;
           if (f) f.walker.talking = !!on;
         },
-        sub: t => UI.subtitle({ key: k }, t),
-        show: t => UI.cur && UI.cur.key === k && UI.say(t || '…'),
+        sub: t => UI.subtitle({ key: k }, t, 0, true),
+        show: t => UI.cur && UI.cur.key === k && UI.say(t || '…', true),
         host: () => UI.el,
         close: () => UI.close(),
         line: () => UI.line(),
       });
     }
+  // every person a voice of its own for the fixed lines too (KI.person gives them one already; without KI here)
+  for (const k of VLEUTE.KEYS)
+    if (STIMME && STIMME.person && !STIMME.profile('vk_' + k))
+      STIMME.person('vk_' + k, { name: PP[k].name, g: PP[k].g, age: PP[k].age });
+  // where a person is (for the voice): walking, driving, waiting at the kerb
+  function posOf(k) {
+    const d = S.peds.find(q => q.key === k);
+    if (d) return [d.x, d.y];
+    if (S.lent && S.lent.who === k && S.lent.driver) return [S.lent.driver.x, S.lent.driver.y];
+    const c = VAUTO.cars.find(q => q.who === k);
+    return c ? [c.x, c.y] : null;
+  }
+  function voice(k, text) {
+    if (!text || !STIMME || !STIMME.speaks || !STIMME.speaks('vk_' + k, text)) return null;
+    return STIMME.say('vk_' + k, text, { at: posOf(k) });
+  }
   // ---- waving a car down, riding along, driving it ----
   const HW = VAUTO.DIM.HW;
   // beside the car on the right (the passenger door), out of walls

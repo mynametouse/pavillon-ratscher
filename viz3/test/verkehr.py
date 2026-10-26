@@ -4,7 +4,7 @@
 # Schleusingen has people and cars when one is there and frees them when one leaves (textures/geometries before and after); the time
 # per frame; textures per shader. Pictures in out/verkehr/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 8986 --serve verkehr        (or: python3 viz3/test/verkehr.py 8986 walk,car)
-# Sections (second argument, comma-separated): net,walk,night,car,brake,wave,ride,selbst,fahrt,stadt,prof,gl
+# Sections (second argument, comma-separated): net,walk,night,car,brake,wave,ride,selbst,yield,fahrt,stadt,prof,gl
 import sys, os, time, json, math, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
@@ -394,6 +394,50 @@ with lib.browser() as b:
             E(pg, "VERKEHR.clear()")
         except Exception as ex:
             ck('section ran: selbst', False, repr(ex)[:400])
+
+    if want('yield'):
+        try:
+            # the player drives his car along the middle of the village street (like a test driver following a route): a car ahead in
+            # the same direction and one coming towards him make room at the kerb – no bump
+            E(pg, "VERKEHR.autoOn(false); VERKEHR.clear(); VERKEHR.force({ peds: 0, cars: 0 })")
+            thr = J(pg, f"__vk.through('dorf', {ANGER[0]}, {ANGER[1]})")
+            E(pg, f"""(() => {{ const Pl = VERKEHR.places.dorf, path = VNETZ.route(Pl.G, {thr['a']}, {thr['b']}, Pl.cost);
+                window.__mid = VNETZ.line(path, {{ off: () => 0, cut: 6 }}); }})()""")
+            s0 = max(0, thr['s'] - 140)
+            res = {}
+            for case in ('behind', 'head'):
+                E(pg, "VERKEHR.clear(); if (VEH.cur) VEH.exit(); VEH.auto = null")
+                if case == 'behind':
+                    cid = E(pg, f"VERKEHR.addCar({{ from: {thr['a']}, to: {thr['b']}, s: {s0 + 45}, v: 5 }})")
+                else:
+                    cid = E(pg, f"VERKEHR.addCar({{ from: {thr['b']}, to: {thr['a']}, s: 0, v: 7 }})")
+                    # the other way round: start it some 150 m ahead of the player on its own line
+                    E(pg, f"""(() => {{ const c = VERKEHR.car({cid}), p = VNETZ.at(__mid, {s0}), pr = VNETZ.project(c.line, p.x, p.y, 0, c.line.L);
+                        c.s = Math.max(2, pr.s - 150); }})()""")
+                pts = J(pg, f"(() => {{ const o = []; for (let s = {s0}; s < Math.min(__mid.L, {s0} + 320); s += 4) {{ const p = VNETZ.at(__mid, s); o.push([+p.x.toFixed(2), +p.y.toFixed(2)]); }} return o; }})()")
+                hd = math.atan2(pts[1][0] - pts[0][0], pts[1][1] - pts[0][1])
+                E(pg, f"VEH.enter('car'); VEH.place('car', {pts[0][0]}, {pts[0][1]}, {hd}); GAME.step(0.3); window._fs = VEH.follow({json.dumps(pts)}, 11, {{ look: 9 }})")
+                bump, latmax, mind, prev = 0, 0, 1e9, None
+                for i in range(120):
+                    E(pg, "GAME.step(0.25)")
+                    r = J(pg, f"(() => {{ const c = VERKEHR.car({cid}), v = VEH.cur; return c && v ? {{ u: v.st.u, lat: c.lat, d: Math.hypot(c.x - v.st.x, c.y - v.st.y) }} : null; }})()")
+                    if not r:
+                        break
+                    if prev is not None and prev - r['u'] > 2.2:
+                        bump += 1
+                    prev = r['u']
+                    latmax = max(latmax, r['lat'])
+                    mind = min(mind, r['d'])
+                    if case == 'head' and i > 4 and r['d'] < 14 and 'shot' not in res:
+                        lib.shot(pg, OUT, 'l_yield_head')
+                        res['shot'] = 1
+                res[case] = (bump, latmax, mind)
+                print('yield', case, 'bumps', bump, 'kerb', round(latmax, 2), 'nearest', round(mind, 1), flush=True)
+            E(pg, "VEH.auto = null; if (VEH.cur) VEH.exit(); VERKEHR.clear(); VERKEHR.force(null)")
+            ck('a car ahead makes room for the player\'s car (to the kerb, no bump)', res['behind'][0] == 0 and res['behind'][1] > 0.5, str(res['behind']))
+            ck('a car coming towards the player\'s car keeps to the kerb (no bump)', res['head'][0] == 0 and res['head'][1] > 0.5, str(res['head']))
+        except Exception as ex:
+            ck('section ran: yield', False, repr(ex)[:400])
 
     if want('fahrt'):
         try:

@@ -1,1 +1,6 @@
+# feat/verkehr: walkers, cars, waving down, riding along, driving, Schleusingen (viz3/test/verkehr.py)
 verkehr
+# while this branch is at work: the tests of the places it lives in must stay green (the Kern-Chat runs only „verkehr“ when merging)
+dorf
+schleusingen
+fahrt
