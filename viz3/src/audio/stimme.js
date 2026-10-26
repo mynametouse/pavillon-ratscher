@@ -179,8 +179,9 @@ export const STIMME = (() => {
       E = ENG[e];
     const h = { k, text, at: o.at || null, vol: o.vol || 1, e, gen };
     if (E.buf) {
+      // feat/piper hook: the options go to the engine too ({ probe: true } – a probe may wait for its voice to load)
       h.data = Promise.resolve()
-        .then(() => E.buf(text, k, PROF[k] || {}))
+        .then(() => E.buf(text, k, PROF[k] || {}, o))
         .then(ab => decode(ab))
         .catch(err => {
           h.err = err;
@@ -218,6 +219,8 @@ export const STIMME = (() => {
     gen++;
     const s = synth();
     if (s) s.cancel();
+    // feat/piper hook: an engine drops what it still prepares
+    for (const E of Object.values(ENG)) if (E.stop) E.stop();
   }
   // Safari and phones speak only after a gesture: a silent utterance on the first tap opens the way
   let unlocked = false;
@@ -262,7 +265,9 @@ export const STIMME = (() => {
             ? `<select data-st-voice="${k}" aria-label="Stimme von ${esc(p.name)}">${opts(k)}</select>`
             : S.engine === 'eleven'
               ? `<input data-st-el="${k}" spellcheck="false" placeholder="${esc(EL_DEF[k] || EL_DEF[p.g] || '')}" value="${esc(S.elv[k] || '')}" aria-label="ElevenLabs-Voice-ID von ${esc(p.name)}">`
-              : '<i></i>') +
+              : ENG[S.engine] && ENG[S.engine].row // feat/piper hook: an engine's own choice per person
+                ? ENG[S.engine].row(k, p)
+                : '<i></i>') +
           `<button type="button" data-st="probe:${k}" aria-label="${esc(p.name)} probehören">▶</button></div>`
       )
       .join('');
@@ -288,7 +293,7 @@ export const STIMME = (() => {
         } else if (what === 'probe') {
           unlock();
           const p = PROF[val];
-          const h = prepare(val, `Hallo, ich bin ${p ? p.name : val}. So klinge ich.`);
+          const h = prepare(val, `Hallo, ich bin ${p ? p.name : val}. So klinge ich.`, { probe: true });
           play(h);
         } else if (ENG[S.engine] && ENG[S.engine].click) ENG[S.engine].click(what, val, () => panel(el));
       });
@@ -306,6 +311,9 @@ export const STIMME = (() => {
         } else if ('stElkey' in t.dataset) {
           elKey = t.value.trim();
           SAVE.set(KE, elKey);
+        } else if ('stEng' in t.dataset && ENG[S.engine] && ENG[S.engine].change) {
+          // feat/piper hook: an engine's own fields (its row per person, its part of the panel)
+          ENG[S.engine].change(t, () => panel(el));
         }
       });
     }
@@ -322,6 +330,10 @@ export const STIMME = (() => {
     panel,
     get engineName() {
       return cur();
+    },
+    // feat/piper hook: the engine the player chose, also while it cannot speak yet (cur() then falls back to the browser's voice)
+    get chosen() {
+      return S.engine;
     },
     set engineName(v) {
       if (ENG[v]) {

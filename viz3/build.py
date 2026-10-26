@@ -86,6 +86,10 @@ for _lz in sorted(glob.glob(os.path.join(H, 'src', 'lazy', '*.js'))):
     r = subprocess.run(['npx', '--yes', 'esbuild@0.24.0', _lz, '--bundle', '--minify', '--format=esm', '--target=es2020',
                         '--outfile=' + os.path.join(D, 'lazy', os.path.basename(_lz)), '--log-level=warning'], cwd=H, capture_output=True, text=True)
     if r.returncode: print(r.stdout, r.stderr); sys.exit(1)
+# feat/piper: the WebAssembly runtime of the voices „Natürlich“ (lazy/piper.js, onnxruntime-web, 11 MB) beside its phonemizer in dist/piper/
+for _ow in ('ort-wasm-simd-threaded.wasm', 'ort-wasm-simd-threaded.mjs'):
+    _ow = os.path.join(H, 'node_modules', 'onnxruntime-web', 'dist', _ow)
+    if os.path.exists(_ow): os.makedirs(os.path.join(D, 'piper'), exist_ok=True); _sh.copy2(_ow, os.path.join(D, 'piper', os.path.basename(_ow)))
 # ---- HTML ----
 def shell_text():   # the page: shell/parts.txt lists its parts in order (head, CSS by area, header, 3D stage, menu, windows, tabs, notes, tail)
     lst = os.path.join(H, 'shell', 'parts.txt')
