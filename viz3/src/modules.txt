@@ -80,6 +80,7 @@ welt/welt.js                # the tiled world (tools/welt) streamed around the c
 welt/schleusingen.js        # Schleusingen after photos: the old town walkable, Rathaus to enter, landmarks, lamps, street names (SCHL)
 # feat/vessra: Kloster Veßra below this line (the monastery, the village, the tree nursery)
 welt/vessra.js              # Kloster Veßra: the monastery ruin and its grounds, the village, the tree nursery Baumschule Kammbach – walkable (VESSRA)
+# feat/suhl: Suhl below this line, in this order: welt/suhl.js (the town), welt/suhl_innen.js (buildings to enter), welt/suhl_leute.js (the people)
 world/worldcol.js           # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
 world/treehit.js            # small trees give way to vehicles: saplings bend, small trees tip over with the root plate, thick ones stop (TREEHIT)
 game/hud.js                 # HUD, menu, inventory window, pointer lock (HUD)

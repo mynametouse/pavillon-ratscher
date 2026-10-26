@@ -2,7 +2,8 @@
 // Falko (25.10.2026): „Stimmen realistischer, ohne dass sie Credits oder Geld kosten … eine realistischere Stimme jeweils, die zum NPC passt.“
 // Engines: 'browser' – the device's own voices (free; the best German one of the right gender for each person: Edge has Microsoft's
 // neural voices, Safari/macOS/iOS the Premium and Enhanced ones, Chrome the Google voice); 'eleven' – ElevenLabs with the player's own
-// key (one library voice per person); further engines register themselves (STIMME.engine: e.g. Piper in the browser, audio/piper.js);
+// key (one library voice per person); 'microsoft' – Microsoft's speech service with the player's own (free) key: the very voices, pace and
+// pitch of the recorded lines (REC); further engines register themselves (STIMME.engine: e.g. Piper in the browser, audio/piper.js);
 // 'aus' – text only. A person is a profile { name, g: 'm' | 'f', age } (STIMME.person); the voice follows gender and age (pitch, pace),
 // two people never share a voice while there are enough. Buffer engines (ElevenLabs, Piper) play through the voices' bus of
 // audio/audio.js (positional, the player's volume „Stimmen“); the browser's speech gets the same volume. Settings: pav-stimme-v1.
@@ -28,7 +29,7 @@ export const STIMME = (() => {
     m: 'A2eYGaZmwykOiEVBlQ7h', // Michael – Calm and Clear
     f: 'yMouMDT5kvrfmH76gqc1', // Nadine – Naturally Nuanced
   };
-  const DEF = { engine: 'browser', over: {}, elv: {}, fest: true };
+  const DEF = { engine: 'browser', over: {}, elv: {}, fest: true, msreg: 'westeurope' };
   const KS = SAVE.key('pav-stimme-v1', {
     owner: 'stimme',
     def: DEF,
@@ -38,15 +39,84 @@ export const STIMME = (() => {
       over: s && s.over && typeof s.over === 'object' ? s.over : {},
       elv: s && s.elv && typeof s.elv === 'object' ? s.elv : {},
       fest: !(s && s.fest === false),
+      msreg: typeof (s && s.msreg) === 'string' && /^[a-z0-9]{3,30}$/.test(s.msreg) ? s.msreg : 'westeurope',
     }),
   });
   const KE = SAVE.key('pav-ki-el', { owner: 'stimme', kind: 'text', def: '', secret: true }); // ElevenLabs API key (this browser only)
+  const KM = SAVE.key('pav-ms-key', { owner: 'stimme', kind: 'text', def: '', secret: true }); // Azure AI Speech key (this browser only)
   const S = SAVE.get(KS);
-  let elKey = SAVE.get(KE) || '';
+  let elKey = SAVE.get(KE) || '',
+    msKey = SAVE.get(KM) || '';
   const save = () => SAVE.set(KS, S);
   const PROF = {}; // key → { name, g, age }
   const ENG = {}; // name → { label, note, ok(), buf?(text, prof, voiceOf), speak?(text, prof, vol), warm?() }
   const synth = () => window.speechSynthesis || null;
+
+  // ---------------- the voices of the recordings: Microsoft's neural voices with each person's pace and pitch ----------------
+  // Falko (26.10.2026): „Die KI-Stimmen klingen ganz anders als die Stimmen, mit denen die NPCs sonst sprechen.“ The fixed lines were
+  // recorded with these (tools/voices/record_lines.py WHO, lines3.py – keep in step); live speech takes the same where it can: in Edge the
+  // browser's own copies of them (pitch is ignored there), everywhere with the engine 'microsoft' (Azure, the player's free key).
+  // [voice, rate in %, pitch in Hz]; the voice the recordings really got (window.VOICEX.voices) wins.
+  const REC = {
+    hubert: ['de-DE-ConradNeural', -10, -8],
+    ronald: ['de-DE-FlorianMultilingualNeural', 2, -2],
+    gerhard: ['en-US-AndrewMultilingualNeural', -10, -6],
+    manfred: ['de-DE-KillianNeural', -4, -6],
+    wolfgang: ['en-US-BrianMultilingualNeural', -6, -6],
+    uwe: ['de-AT-JonasNeural', 0, -2],
+    jens: ['de-DE-KillianNeural', 7, 3],
+    katrin: ['de-DE-KatjaNeural', 2, 0],
+    ingrid: ['de-DE-AmalaNeural', -4, -6],
+    heike: ['de-DE-SeraphinaMultilingualNeural', 0, -2],
+  };
+  // someone without recordings (strollers, drivers, the people of other towns): a Microsoft voice of the right gender, the least used first
+  const MS_POOL = {
+    m: [
+      'de-DE-KillianNeural',
+      'de-AT-JonasNeural',
+      'de-DE-ConradNeural',
+      'de-DE-FlorianMultilingualNeural',
+      'de-CH-JanNeural',
+    ],
+    f: [
+      'de-DE-KatjaNeural',
+      'de-DE-AmalaNeural',
+      'de-DE-SeraphinaMultilingualNeural',
+      'de-AT-IngridNeural',
+      'de-CH-LeniNeural',
+    ],
+  };
+  function recOf(k) {
+    const r = REC[k],
+      v = (window.VOICEX && window.VOICEX.voices && window.VOICEX.voices[k]) || (r && r[0]);
+    if (v) return { voice: v, rate: r ? r[1] : 0, pitch: r ? r[2] : 0, rec: true };
+    const p = PROF[k] || { g: 'm', age: 50 },
+      pool = MS_POOL[p.g === 'f' ? 'f' : 'm'],
+      n = new Map(pool.map(x => [x, 0]));
+    for (const q of Object.keys(PROF)) {
+      if (q === k) break;
+      const o = REC[q] ? REC[q][0] : null;
+      if (o && n.has(o)) n.set(o, n.get(o) + 1);
+    }
+    const j = (hash(k) % 7) - 3;
+    return {
+      voice: pool.slice().sort((a, b) => n.get(a) - n.get(b) || pool.indexOf(a) - pool.indexOf(b))[hash(k) % 2],
+      rate: (p.age >= 65 ? -8 : p.age < 35 ? 4 : 0) + j,
+      pitch: (p.age >= 65 ? -6 : p.age < 35 ? 3 : 0) + j,
+      rec: false,
+    };
+  }
+  // 'de-DE-ConradNeural' → 'Conrad', as the name stands in Edge's list („Microsoft Conrad Online (Natural) - German (Germany)“)
+  const shortOf = v => v.replace(/^[a-z]{2}-[A-Z]{2}-/, '').replace(/Neural$/, '');
+  // the recordings' voices of another language (Andrew, Brian: multilingual, they speak German) belong to the browser's list too
+  const OTHER_REC = new RegExp(
+    '\\b(' +
+      Object.values(REC)
+        .filter(r => !/^de-/.test(r[0]))
+        .map(r => shortOf(r[0]))
+        .join('|') +
+      ')\\b'
+  );
 
   // ---------------- the browser's voices, the best first ----------------
   const FEM =
@@ -74,7 +144,7 @@ export const STIMME = (() => {
     VO = s
       ? s
           .getVoices()
-          .filter(v => /^de([-_]|$)/i.test(v.lang))
+          .filter(v => (/^de([-_]|$)/i.test(v.lang) || OTHER_REC.test(v.name)) && !/undefined/.test(v.name)) // Edge 150 listed „Microsoft undefined Online“
           .map(v => ({ v, name: v.name, q: quality(v), g: genderOf(v) }))
           .sort((a, b) => b.q - a.q)
       : [];
@@ -99,16 +169,29 @@ export const STIMME = (() => {
     const used = new Map();
     for (const k of Object.keys(PROF)) {
       const p = PROF[k];
-      let pick = VO.find(o => o.name === S.over[k]) || null;
+      let pick = VO.find(o => o.name === S.over[k]) || null,
+        rec = null;
+      // Edge: the very voice of the recordings, at the recordings' pace
+      if (!pick) {
+        const r = recOf(k);
+        if (r && r.rec) {
+          const re = new RegExp('\\b' + shortOf(r.voice) + '\\b');
+          pick = VO.find(o => re.test(o.name) && /Online|Natural/i.test(o.name)) || null;
+          if (pick) rec = r;
+        }
+      }
       if (!pick && VO.length) {
         const score = o => o.q - 35 * (used.get(o.name) || 0) - (o.g === p.g ? 0 : o.g === '?' ? 25 : 80);
         pick = VO.slice().sort((a, b) => score(b) - score(a))[0];
       }
       if (pick) used.set(pick.name, (used.get(pick.name) || 0) + 1);
-      MAP[k] = Object.assign({ voice: pick ? pick.v : null, name: pick ? pick.name : '' }, tune(k));
-      // the same voice for two people: the second one a little lower or higher
+      MAP[k] = Object.assign(
+        { voice: pick ? pick.v : null, name: pick ? pick.name : '' },
+        rec ? { pitch: 1 + rec.pitch / 100, rate: 1 + rec.rate / 100, rec: true } : tune(k)
+      );
+      // the same voice for two people: the second one a little lower or higher (as the recordings have it, when they share one)
       const n = pick ? used.get(pick.name) : 1;
-      if (n > 1) MAP[k].pitch += (n % 2 ? 1 : -1) * 0.08 * Math.ceil((n - 1) / 2);
+      if (n > 1 && !rec) MAP[k].pitch += (n % 2 ? 1 : -1) * 0.08 * Math.ceil((n - 1) / 2);
     }
   }
   const s0 = synth();
@@ -134,7 +217,8 @@ export const STIMME = (() => {
         const m = MAP[k] || {},
           u = new SpeechSynthesisUtterance(text);
         if (m.voice) u.voice = m.voice;
-        u.lang = (m.voice && m.voice.lang) || 'de-DE';
+        // a multilingual voice (Edge: Andrew, Brian) speaks German when asked to
+        u.lang = m.voice && /^de/i.test(m.voice.lang) ? m.voice.lang : 'de-DE';
         u.pitch = Math.max(0.5, Math.min(1.6, m.pitch || 1));
         u.rate = Math.max(0.7, Math.min(1.3, m.rate || 1));
         u.volume = Math.max(0, Math.min(1, vol * audio.voiceLevel()));
@@ -150,6 +234,46 @@ export const STIMME = (() => {
         s.speak(u);
       });
     },
+  });
+  // Microsoft's speech service (Azure AI Speech, REST), the player's own key: the free tier F0 is enough for the talks; the SSML as
+  // edge-tts sends it (tools/voices/etts.py), so a live sentence sounds like the recorded ones
+  const xmlEsc = t =>
+    String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[c]);
+  const signed = (n, u) => (n >= 0 ? '+' : '') + Math.round(n) + u;
+  function ssml(text, k) {
+    const r = recOf(k);
+    return (
+      `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="${r.voice}">` +
+      `<prosody pitch="${signed(r.pitch, 'Hz')}" rate="${signed(r.rate, '%')}" volume="+0%">${xmlEsc(text)}</prosody></voice></speak>`
+    );
+  }
+  const msUrl = () => STIMME.msBase || `https://${S.msreg}.tts.speech.microsoft.com/cognitiveservices/v1`;
+  engine('microsoft', {
+    label: 'Wie die Aufnahmen',
+    note: 'dieselben Microsoft-Stimmen wie die festen Sätze – eigener kostenloser Azure-Schlüssel',
+    ok: () => !!msKey,
+    buf(text, k) {
+      return fetch(msUrl(), {
+        method: 'POST',
+        headers: {
+          'Ocp-Apim-Subscription-Key': msKey,
+          'Content-Type': 'application/ssml+xml',
+          'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+        },
+        body: ssml(text, k),
+      }).then(r => {
+        if (!r.ok)
+          throw new Error(
+            r.status === 401 || r.status === 403
+              ? 'Schlüssel oder Region passen nicht'
+              : r.status === 429
+                ? 'gerade zu viele Sätze (kostenloser Tarif), kurz warten'
+                : 'Dienst antwortet ' + r.status
+          );
+        return r.arrayBuffer();
+      });
+    },
+    row: k => `<i class="stms">${esc(shortOf(recOf(k).voice))}</i>`,
   });
   engine('eleven', {
     label: 'ElevenLabs',
@@ -294,6 +418,27 @@ export const STIMME = (() => {
 
   // ---------------- the settings (a section in the panel of npc/ki.js) ----------------
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  // the part for 'microsoft': the key, the region, how to get both
+  const MS_REG = [
+    'westeurope',
+    'germanywestcentral',
+    'northeurope',
+    'swedencentral',
+    'francecentral',
+    'switzerlandnorth',
+    'uksouth',
+    'eastus',
+  ];
+  function msPanel() {
+    const reg = MS_REG.includes(S.msreg) ? MS_REG : [S.msreg].concat(MS_REG);
+    return (
+      `<label class="kf">Azure-Speech-Schlüssel<input data-st-mskey type="password" autocomplete="off" spellcheck="false" value="${esc(msKey)}"></label>` +
+      `<label class="kf">Region<select data-st-msreg>${reg.map(r => `<option${r === S.msreg ? ' selected' : ''}>${r}</option>`).join('')}</select></label>` +
+      '<p class="fnote">Dieselben Microsoft-Stimmen wie die festen Sätze – Tempo und Tonhöhe je Person wie in den Aufnahmen. Schlüssel (einmal): ' +
+      '<a href="https://portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices" target="_blank" rel="noopener">portal.azure.com → Speech-Dienst erstellen</a>, ' +
+      'Tarif <b>Free F0</b>, danach unter „Schlüssel und Endpunkt“ Schlüssel 1 und die Region. Der Schlüssel bleibt nur in diesem Browser.</p>'
+    );
+  }
   function panel(el) {
     if (!el) return;
     if (!VO.length) scan();
@@ -333,6 +478,7 @@ export const STIMME = (() => {
       (S.engine === 'eleven'
         ? `<label class="kf">ElevenLabs-Schlüssel<input data-st-elkey type="password" autocomplete="off" spellcheck="false" value="${esc(elKey)}"></label>`
         : '') +
+      (S.engine === 'microsoft' ? msPanel() : '') +
       (ENG[S.engine] && ENG[S.engine].panel ? ENG[S.engine].panel() : '') +
       `<div class="mrow"><span>Feste Sätze vorlesen</span><div class="mseg"><button type="button" data-st="fest:1" aria-pressed="${String(!!S.fest)}" title="Was die Leute ohne Aufnahme sagen (Dorfbewohner, Tischgespräche) in ihrer Stimme vorlesen">an</button><button type="button" data-st="fest:0" aria-pressed="${String(!S.fest)}">aus</button></div></div>` +
       `<details class="stlist"><summary>Stimmen der Personen</summary>${rows}</details>`;
@@ -358,6 +504,12 @@ export const STIMME = (() => {
           play(h);
         } else if (ENG[S.engine] && ENG[S.engine].click) ENG[S.engine].click(what, val, () => panel(el));
       });
+      // keys kept with every letter (a phone may leave the field without a change event)
+      el.addEventListener('input', e => {
+        const t = e.target;
+        if ('stMskey' in t.dataset) SAVE.set(KM, (msKey = t.value.trim()));
+        else if ('stElkey' in t.dataset) SAVE.set(KE, (elKey = t.value.trim()));
+      });
       el.addEventListener('change', e => {
         const t = e.target;
         if (t.dataset.stVoice) {
@@ -372,6 +524,12 @@ export const STIMME = (() => {
         } else if ('stElkey' in t.dataset) {
           elKey = t.value.trim();
           SAVE.set(KE, elKey);
+        } else if ('stMskey' in t.dataset) {
+          msKey = t.value.trim();
+          SAVE.set(KM, msKey);
+        } else if ('stMsreg' in t.dataset) {
+          S.msreg = t.value;
+          save();
         } else if ('stEng' in t.dataset && ENG[S.engine] && ENG[S.engine].change) {
           // feat/piper hook: an engine's own fields (its row per person, its part of the panel)
           ENG[S.engine].change(t, () => panel(el));
@@ -410,6 +568,9 @@ export const STIMME = (() => {
       }
     },
     voices: () => VO.map(o => ({ name: o.name, q: o.q, g: o.g })),
+    // the voice of the recordings for a person ({ voice, rate %, pitch Hz, rec }); tests: another address for the Microsoft service
+    recOf,
+    msBase: '',
     voiceOf: k => (MAP[k] ? { ...MAP[k], voice: undefined } : null),
     onError: null,
   };
