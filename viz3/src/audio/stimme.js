@@ -436,7 +436,9 @@ export const STIMME = (() => {
       `<label class="kf">Region<select data-st-msreg>${reg.map(r => `<option${r === S.msreg ? ' selected' : ''}>${r}</option>`).join('')}</select></label>` +
       '<p class="fnote">Dieselben Microsoft-Stimmen wie die festen Sätze – Tempo und Tonhöhe je Person wie in den Aufnahmen. Schlüssel (einmal): ' +
       '<a href="https://portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices" target="_blank" rel="noopener">portal.azure.com → Speech-Dienst erstellen</a>, ' +
-      'Tarif <b>Free F0</b>, danach unter „Schlüssel und Endpunkt“ Schlüssel 1 und die Region. Der Schlüssel bleibt nur in diesem Browser.</p>'
+      'Tarif <b>Free F0</b>, danach unter „Schlüssel und Endpunkt“ Schlüssel 1 und die Region. Kostenlos sind 500 000 Zeichen im Monat ' +
+      '(gut 1 000 Antworten), danach hält der Dienst bis zum Monatsende an – es entstehen keine Kosten. Microsoft verlangt für das Konto ' +
+      'Telefonnummer und Kreditkarte. Der Schlüssel bleibt nur in diesem Browser.</p>'
     );
   }
   function panel(el) {

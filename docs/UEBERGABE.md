@@ -22,8 +22,9 @@ veröffentlicht.
 - **Stimmen wie die Aufnahmen (26.10., auf `wip/kern` `4a5019e`):** Falko: „Die KI-Stimmen klingen ganz anders …“ – `audio/stimme.js` `REC`
   (Stimme, Tempo, Tonhöhe je Person wie `record_lines.py`); in Edge nimmt „Gerät“ genau diese Stimmen; neue Wahl „Wie die Aufnahmen“
   (Azure AI Speech REST, eigener Schlüssel, Tarif F0 kostenlos: 500 000 Zeichen/Monat, 20 Anfragen/min; Azure-Konto braucht Telefon und
-  Kreditkarte). CORS der REST-Adresse wird mit `feat/msprobe` (`viz3/test/msprobe.py`, Einmal-Probe) auf GitHub geprüft – fällt sie durch,
-  das Speech-SDK als Paket auf Abruf (`src/lazy/`). Danach `feat/msprobe` und `ref/*` löschen.
+  Kreditkarte). CORS geprüft (26.10. ~3:00 UTC, Einmal-Probe auf GitHub; Zweig `feat/msprobe` steht noch – Löschen über git ist aus dem Container gesperrt (403), später von Hand): Vorabfrage 204 mit
+  `Access-Control-Allow-Origin: *` und dem Schlüssel-Header, ein Abruf aus einer Seite bekommt die Antwort (401 bei falschem Schlüssel)
+  lesbar – die REST-Adresse geht direkt aus dem Browser, auch am iPhone; kein SDK nötig. Mit echtem Schlüssel noch nicht probiert.
 - **Suhl (Falko 26.10. ~2:40 UTC):** Zentrum, Suhler Aue mit Sportplatz und Wohngebiet, Suhl-Nord, möglichst alle Gebäude aus Daten, einzelne
   begehbar, typische Suhler Leute, Anfahrt über Landstraße und A73/A71, flüssig auf dem iPhone. Vier Hilfs-Agenten seit ~2:55 UTC: `suhl`,
   `suhl-innen`, `suhl-leute`, `suhl-fahrt` (Aufträge `docs/plans/auftraege/suhl*.md`, Verträge `SUHL.*` darin, Marker `# feat/suhl` in
