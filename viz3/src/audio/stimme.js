@@ -9,6 +9,7 @@
 //   const h = STIMME.prepare('hubert', 'Nu.', { at: [x, y] })   // starts synthesis at once (buffer engines)
 //   await STIMME.play(h)                                          // in turn; resolves when said · STIMME.stop()
 import { SAVE } from '../core/save.js';
+import { BASE } from '../core/head.js';
 import { audio } from './audio.js';
 
 export const STIMME = (() => {
@@ -27,7 +28,7 @@ export const STIMME = (() => {
     m: 'A2eYGaZmwykOiEVBlQ7h', // Michael – Calm and Clear
     f: 'yMouMDT5kvrfmH76gqc1', // Nadine – Naturally Nuanced
   };
-  const DEF = { engine: 'browser', over: {}, elv: {} };
+  const DEF = { engine: 'browser', over: {}, elv: {}, fest: true };
   const KS = SAVE.key('pav-stimme-v1', {
     owner: 'stimme',
     def: DEF,
@@ -36,6 +37,7 @@ export const STIMME = (() => {
       engine: typeof (s && s.engine) === 'string' ? s.engine : 'browser',
       over: s && s.over && typeof s.over === 'object' ? s.over : {},
       elv: s && s.elv && typeof s.elv === 'object' ? s.elv : {},
+      fest: !(s && s.fest === false),
     }),
   });
   const KE = SAVE.key('pav-ki-el', { owner: 'stimme', kind: 'text', def: '', secret: true }); // ElevenLabs API key (this browser only)
@@ -197,7 +199,19 @@ export const STIMME = (() => {
     if (typeof AudioBuffer !== 'undefined' && ab instanceof AudioBuffer) return ab;
     return new Promise((res, rej) => r.ctx.decodeAudioData(ab, res, rej));
   }
+  // how many are speaking right now; whenIdle(fn) runs fn when nobody is (npc/ki.js listens only then – the microphone must not hear them)
+  let active = 0;
+  const idleFns = [];
   async function play(h) {
+    active++;
+    try {
+      return await play1(h);
+    } finally {
+      active--;
+      if (!active) for (const f of idleFns.splice(0)) f();
+    }
+  }
+  async function play1(h) {
     if (h.gen !== gen) return false;
     const E = ENG[h.e];
     if (E.buf) {
@@ -234,6 +248,48 @@ export const STIMME = (() => {
       s.speak(u);
     } catch (e) {}
     for (const E of Object.values(ENG)) if (E.warm) E.warm();
+  }
+
+  // a fixed line without a recording (the villagers' topics, Hubert's newer lines, the table talk): said in the person's voice when the
+  // player wants it (settings „Feste Sätze vorlesen“); resolves when said (false: not said, the caller waits the reading time itself)
+  const reads = () => S.fest && cur() !== 'aus';
+  // recorded fixed lines (tools/voices/record_lines.py, extra viz3/extra/saetze → window.VOICEX): who + words → file, loaded when said
+  const VX = {};
+  for (const l of (window.VOICEX && window.VOICEX.lines) || []) VX[l.who + ':' + l.text] = l.file;
+  const XB = new Map(); // file → decoded buffer (the last few)
+  function recorded(k, text) {
+    const f = VX[k + ':' + text];
+    if (!f || !audio.ready()) return null;
+    if (!XB.has(f)) {
+      XB.set(
+        f,
+        fetch(BASE + 'snd/' + f)
+          .then(r => (r.ok ? r.arrayBuffer() : null))
+          .then(ab => (ab ? decode(ab) : null))
+          .catch(() => null)
+      );
+      if (XB.size > 24) XB.delete(XB.keys().next().value);
+    }
+    return XB.get(f);
+  }
+  // a fixed line: its recording if there is one with these words, else (setting „Feste Sätze vorlesen“) the person's voice
+  async function say(k, text, o = {}) {
+    if (!text) return false;
+    const rec = recorded(k, text);
+    if (rec) {
+      active++;
+      try {
+        const b = await rec;
+        const [x, y] = o.at || [0, 0];
+        if (b && (await audio.voiceBuf(b, x, y, { vol: 1.2, ref: o.at ? 7 : 1e6 }))) return true;
+      } finally {
+        active--;
+        if (!active) for (const f of idleFns.splice(0)) f();
+      }
+    }
+    if (!reads() || !PROF[k]) return false;
+    await play(prepare(k, text, o));
+    return true;
   }
 
   // ---------------- the settings (a section in the panel of npc/ki.js) ----------------
@@ -278,6 +334,7 @@ export const STIMME = (() => {
         ? `<label class="kf">ElevenLabs-Schlüssel<input data-st-elkey type="password" autocomplete="off" spellcheck="false" value="${esc(elKey)}"></label>`
         : '') +
       (ENG[S.engine] && ENG[S.engine].panel ? ENG[S.engine].panel() : '') +
+      `<div class="mrow"><span>Feste Sätze vorlesen</span><div class="mseg"><button type="button" data-st="fest:1" aria-pressed="${String(!!S.fest)}" title="Was die Leute ohne Aufnahme sagen (Dorfbewohner, Tischgespräche) in ihrer Stimme vorlesen">an</button><button type="button" data-st="fest:0" aria-pressed="${String(!S.fest)}">aus</button></div></div>` +
       `<details class="stlist"><summary>Stimmen der Personen</summary>${rows}</details>`;
     if (!el.dataset.wired) {
       el.dataset.wired = '1';
@@ -289,6 +346,10 @@ export const STIMME = (() => {
           S.engine = val;
           save();
           if (ENG[val] && ENG[val].warm) ENG[val].warm();
+          panel(el);
+        } else if (what === 'fest') {
+          S.fest = val === '1';
+          save();
           panel(el);
         } else if (what === 'probe') {
           unlock();
@@ -325,7 +386,12 @@ export const STIMME = (() => {
     engine,
     prepare,
     play,
+    say,
+    reads,
+    // will say() speak this line (a recording of these words, or the person's voice)?
+    speaks: (k, text) => !!VX[k + ':' + text] || (reads() && !!PROF[k]),
     stop,
+    whenIdle: fn => (active ? idleFns.push(fn) : fn()),
     unlock,
     panel,
     get engineName() {

@@ -42,6 +42,8 @@ jobs:
           mkdir -p viz3/dist
           B="$RUNNER_TEMP/site"; [ -f "$B/vorschau/index.html" ] && B="$B/vorschau"
           (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+          # KTX2 textures (texturen-ktx2.yml): the site's tex2/ for the build (TEX2MAN); deploy_site.py leaves the site's own in place
+          if [ -d "$RUNNER_TEMP/site/tex2" ]; then rm -rf viz3/dist/tex2 && cp -r "$RUNNER_TEMP/site/tex2" viz3/dist/tex2; fi
       - name: Bauen wie veröffentlicht
         run: |
           npm ci --prefix viz3 --no-audit --no-fund

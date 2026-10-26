@@ -1,0 +1,206 @@
+# Komprimierte Texturen (KTX2 mit Basis Universal, docs/features/texturen.md): die PBR-Bilder der Website (gh-pages tex/*_col|nrm|orm)
+# als KTX2 – tools/tex/ktx2.py mit dem ktx-Werkzeug aus dem Release von KhronosGroup/KTX-Software. Veröffentlicht wird NUR gh-pages/tex2/
+# (sonst bleibt gh-pages unberührt); die Website-Builds nehmen tex2/ in dist/ mit (live.yml, Vorschau in pruefpaket.yml), viz3/deploy_site.py
+# lässt es beim Live-Stellen stehen. Bilder, die sich nicht geändert haben (gleiche Quelle, gleiches Rezept), werden aus dem veröffentlichten
+# tex2/ übernommen statt neu kodiert.
+#   Ergebnis: https://mynametouse.github.io/pavillon-ratscher/tex2/tex2.json
+#   Neu bauen (z. B. nach neuen Texturen auf der Website): tools/tex/stand.txt ändern und auf src pushen – veröffentlicht wird bei Pushes
+#   auf src; auf feat/texturen nur, wenn die erste Zeile der Commit-Nachricht damit beginnt: „[tex2 veröffentlichen]“ (sonst nur kodieren
+#   und messen; ein bloßes Zitat der Marke weiter hinten löst nichts aus).
+# Job „Messen“: die neuen Dateien in einem Build wie veröffentlicht (Website als Asset-Basis + dieses tex2/), dann viz3/test/ktx2.py und
+# ktx2prof.py (KTX2 gegen die Bilder, Formate) – unabhängig davon, ob tex2/ schon auf gh-pages liegt. Ergebnis: Artefakt „messung“.
+name: Texturen KTX2
+
+on:
+  workflow_dispatch:
+    inputs:
+      veroeffentlichen:
+        description: 'nach gh-pages/tex2/ veröffentlichen'
+        type: boolean
+        default: true
+      neu:
+        description: 'alles neu kodieren (das veröffentlichte tex2/ nicht übernehmen)'
+        type: boolean
+        default: false
+  push:
+    branches: ['feat/texturen', 'src']
+    paths: ['tools/tex/**', '.github/workflows/texturen-ktx2.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: KTX2 kodieren
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    concurrency:
+      group: texturen-ktx2-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/tex
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge (Pillow, KTX-Software)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pip install --quiet pillow
+          V=$(sed -n "s/^KTX_VERSION = '\(.*\)'/\1/p" tools/tex/ktx2.py)
+          F="KTX-Software-$V-Linux-x86_64.tar.bz2"
+          mkdir -p "$RUNNER_TEMP/ktxdl" "$RUNNER_TEMP/ktx"
+          gh release download "v$V" -R KhronosGroup/KTX-Software -p "$F" -D "$RUNNER_TEMP/ktxdl" \
+            || curl -sSfL -o "$RUNNER_TEMP/ktxdl/$F" "https://github.com/KhronosGroup/KTX-Software/releases/download/v$V/$F"
+          tar -xjf "$RUNNER_TEMP/ktxdl/$F" -C "$RUNNER_TEMP/ktx" --strip-components=1
+          echo "LD_LIBRARY_PATH=$RUNNER_TEMP/ktx/lib" >> "$GITHUB_ENV"
+          echo "KTX=$RUNNER_TEMP/ktx/bin/ktx" >> "$GITHUB_ENV"
+          LD_LIBRARY_PATH="$RUNNER_TEMP/ktx/lib" "$RUNNER_TEMP/ktx/bin/ktx" --version
+      - name: Bilder der Website (gh-pages tex/, die Modelle der Seite und der Vorschau) und das veröffentlichte tex2/
+        run: |
+          git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          git -C "$RUNNER_TEMP/site" sparse-checkout set --no-cone '/tex/' '/tex2/' '/models/' '/grass/' '/chars/' '/vorschau/models/' '/vorschau/grass/' '/vorschau/chars/'
+          git -C "$RUNNER_TEMP/site" checkout -q
+          echo "Bilder: $(ls "$RUNNER_TEMP/site/tex" | wc -l)"; du -sh "$RUNNER_TEMP/site/tex" "$RUNNER_TEMP/site/tex2" 2>/dev/null || true
+      - name: Kodieren
+        run: |
+          set -o pipefail
+          PREV=""
+          if [ "${{ inputs.neu }}" != "true" ] && [ -f "$RUNNER_TEMP/site/tex2/tex2.json" ]; then PREV="--prev $RUNNER_TEMP/site/tex2"; fi
+          G=""; for d in models grass chars vorschau/models vorschau/grass vorschau/chars; do [ -d "$RUNNER_TEMP/site/$d" ] && G="$G,$RUNNER_TEMP/site/$d"; done
+          python -I -u tools/tex/ktx2.py --src "$RUNNER_TEMP/site/tex" --out out/tex2 --ktx "$KTX" --jobs 2 $PREV --gltf "${G#,}" 2>&1 | tee ktx2.log
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          [ -f ktx2.log ] || exit 0
+          {
+            echo "### Texturen KTX2"
+            echo '```'
+            head -1 ktx2.log; grep -E "^glTF images|^tex2/g:" ktx2.log || true; tail -1 ktx2.log
+            echo '```'
+            du -sh out/tex2 out/tex2/h 2>/dev/null
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: tex2 für die Veröffentlichung
+        uses: actions/upload-artifact@v4
+        with:
+          name: tex2
+          path: out/tex2
+          retention-days: 3
+          compression-level: 0
+      - name: Protokoll
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tex2-protokoll
+          path: |
+            ktx2.log
+            out/tex2/tex2.json
+          if-no-files-found: ignore
+
+  messen:
+    name: Messen (KTX2 gegen Bilder)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Website als Asset-Basis (Vorschau bzw. Seite) und das neue tex2/
+        run: |
+          git clone -q --depth 1 --filter=blob:none --no-checkout --branch gh-pages --single-branch "https://github.com/${{ github.repository }}" "$RUNNER_TEMP/site"
+          cd "$RUNNER_TEMP/site"
+          if git cat-file -e HEAD:vorschau/index.html 2>/dev/null; then git sparse-checkout set --no-cone '/vorschau/'; B="$RUNNER_TEMP/site/vorschau"
+          else git sparse-checkout set --no-cone '/*' '!/vorschau/' '!/welt-test/'; B="$RUNNER_TEMP/site"; fi
+          git checkout -q
+          cd "$GITHUB_WORKSPACE"; mkdir -p viz3/dist
+          (cd "$B" && tar --exclude=.git --exclude=./vorschau --exclude=./welt-test -cf - .) | (cd viz3/dist && tar -xf -)
+          rm -rf viz3/dist/tex2
+      - uses: actions/download-artifact@v4
+        with:
+          name: tex2
+          path: viz3/dist/tex2
+      - name: Werkzeuge
+        run: |
+          npm ci --prefix viz3 --no-audit --no-fund
+          pip install playwright
+          timeout 300 python -m playwright install --with-deps chromium || python -m playwright install chromium
+      - name: Bauen wie veröffentlicht
+        run: python viz3/build.py --fast --min
+      - name: ktx2 und ktx2prof
+        run: python viz3/test/run.py --serve ktx2 ktx2prof:k2,img,astc,bc1
+      - name: Ausgabe aufheben
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: messung
+          path: out/
+          if-no-files-found: ignore
+          retention-days: 5
+
+  deploy:
+    name: Nach gh-pages/tex2/
+    needs: build
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.veroeffentlichen) || github.ref == 'refs/heads/src' ||
+      (github.event_name == 'push' && startsWith(github.event.head_commit.message, '[tex2 veröffentlichen]'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: tex2
+          path: new/tex2
+      - name: Größe prüfen (Grenze 300 MB)
+        run: |
+          MB=$(du -sm new/tex2 | cut -f1); echo "tex2: $MB MB"
+          [ "$MB" -lt 300 ] || { echo "zu groß für gh-pages"; exit 1; }
+          [ -f new/tex2/tex2.json ] || { echo "keine tex2.json"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: tex2
+      - name: Nur tex2/ ersetzen, committen, pushen (bei Wettlauf neu aufsetzen)
+        working-directory: pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          apply() { rm -rf tex2 && cp -r ../new/tex2 tex2 && git add -A tex2; }
+          apply
+          # tex2.json carries the time of the run: no new commit when only that changed
+          if git diff --cached --quiet -- . ':(exclude)tex2/tex2.json'; then echo "keine Änderung"; exit 0; fi
+          # only this folder may change on gh-pages
+          if git diff --cached --name-only | grep -v '^tex2/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
+          MSG="Texturen KTX2: tex2/ aus ${GITHUB_SHA::7} (${GITHUB_REF_NAME})
+
+          Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_01GdUYaP2XXAAEDXZpGWVkBm"
+          git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+          for i in 1 2 3 4 5; do
+            if git push -q origin HEAD:gh-pages; then echo "gepusht"; break; fi
+            echo "Push abgelehnt (Versuch $i) – neu holen und den eigenen Commit darauf setzen"
+            git fetch -q --depth 1 --filter=blob:none origin gh-pages
+            if ! git rebase -q --onto FETCH_HEAD HEAD~1; then
+              git rebase --abort || true
+              git reset -q --hard FETCH_HEAD
+              apply
+              git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+            fi
+            [ "$i" = 5 ] && exit 1
+            sleep $((i * 7))
+          done
+          git log --oneline -2
+          echo "### Veröffentlicht: tex2/ ($(du -sh tex2 | cut -f1))" >> "$GITHUB_STEP_SUMMARY"

@@ -150,6 +150,43 @@ def collect(H, SP, A, D):
     return {'tm': tm, 'hm': hm, 'mm': mm, 'sm': sm, 'svm': svm, 'svmb': svmb, 'vm': vm, 'panoman': panoman, 'skyman': skyman, 'charman': charman,
             'playerman': playerman, 'giman_a': giman_a, 'giman_b': giman_b, 'musicman': musicman, 'geoman': geoman}
 
+# GPU-compressed textures (docs/features/texturen.md): dist/tex2/ comes with the site (published by .github/workflows/texturen-ktx2.yml,
+# made by tools/tex/ktx2.py). The page gets the names of the KTX2 files that belong to the current images in dist/tex/ (same SHA-1 as
+# when they were encoded) – window.TEX2MAN; an image changed since then stays an image until tex2/ is rebuilt.
+# The images inside the glTF models (tex2/g/<key>.ktx2) are found by a key of their own content (tools/tex/ktx2.py gkey), so a changed
+# image simply has no file: {'t': [tex/ stems], 'g': {key: larger side}}.
+def tex2_manifest(D):
+    import hashlib
+    p = os.path.join(D, 'tex2', 'tex2.json')
+    if not os.path.exists(p): return {'t': [], 'g': {}}
+    try: m = json.load(open(p)); files = m.get('files', {}); gl = m.get('gltf', {})
+    except Exception as e: print('tex2 manifest', e); return {'t': [], 'g': {}}
+    out = []
+    for stem, e in files.items():
+        src = os.path.join(D, 'tex', e.get('src', ''))
+        if not e.get('src') or not os.path.isfile(src) or os.path.getsize(src) != e.get('bytes'): continue
+        if not all(os.path.exists(os.path.join(D, 'tex2', s, stem + '.ktx2')) for s in ('', 'h')): continue
+        if hashlib.sha1(open(src, 'rb').read()).hexdigest() != e.get('sha1'): continue
+        out.append(stem)
+    g = {}
+    for k, e in gl.items():
+        dim = max(e.get('w', 0), e.get('h', 0))
+        if not os.path.exists(os.path.join(D, 'tex2', 'g', k + '.ktx2')): continue
+        if dim >= 256 and not os.path.exists(os.path.join(D, 'tex2', 'g', 'h', k + '.ktx2')): continue
+        g[k] = dim
+    return {'t': sorted(out), 'g': dict(sorted(g.items()))}
+
+# three's Basis Universal transcoder (worker script + WebAssembly, ~0.6 MB) for KTX2Loader → dist/basis/
+def copy_basis(H, D):
+    src = os.path.join(H, 'node_modules', 'three', 'examples', 'jsm', 'libs', 'basis'); n = 0
+    os.makedirs(os.path.join(D, 'basis'), exist_ok=True)
+    for f in ('basis_transcoder.js', 'basis_transcoder.wasm'):
+        s, t = os.path.join(src, f), os.path.join(D, 'basis', f)
+        if not os.path.exists(s): continue
+        if not os.path.exists(t) or os.path.getsize(t) != os.path.getsize(s) or os.path.getmtime(t) < os.path.getmtime(s): shutil.copy2(s, t)
+        n += 1
+    return n == 2
+
 # fewer files: the images of the glTF models (props, grass, figures) go into their JSON as data URIs – one published version of the
 # Claude artifact holds at most 511 files (PACK=0 keeps them separate)
 def pack_gltf(dirs):

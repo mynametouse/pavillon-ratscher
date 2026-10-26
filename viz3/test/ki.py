@@ -202,6 +202,9 @@ with lib.browser() as b:
     E("DORF.UI.close()")
     ck('villager: summary', wait("KI.mem.who.gerhard.gespraeche.length === 1", 20))
     ck('the village hears of it', E("Object.values(KI.mem.who).some(w => w.notizen.some(n => n.von === 'gerhard'))"))
+    # fixed lines: recorded ones known (tools/voices/record_lines.py, loaded when said), the rest read in the person's voice
+    ck('recorded fixed lines known', E("(window.VOICEX && VOICEX.lines || []).length") >= 250, str(E("(window.VOICEX && VOICEX.lines || []).length")))
+    ck('a villager line will be spoken', E("STIMME.speaks('heike', VOICEX.lines.find(l => l.who === 'heike').text)"))
     # voices: one per person, women and men
     ck('voices: profiles', E("STIMME.profile('katrin').g === 'f' && STIMME.profile('hubert').g === 'm' && STIMME.profile('gerhard').age === 72"))
     # volumes: sliders in the menu, saved

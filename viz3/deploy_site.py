@@ -34,7 +34,7 @@ for f in sorted(glob.glob(os.path.join(SRC, '**', '*'), recursive=True)):
     if not os.path.isfile(f): continue
     rel = os.path.relpath(f, SRC).replace(os.sep, '/')
     if rel in SKIP or (rel == 'plan.json' and os.path.exists(os.path.join(SITE, 'plan.json'))): continue   # the owner's published plan in the repo wins
-    if not SUB and rel.startswith('tex2/'): continue   # the site's tex2/ is written by texturen-ktx2.yml only (a build may hold an older copy); the preview gets one
+    if rel.startswith('tex2/'): continue   # tex2/ only at the site root, written by texturen-ktx2.yml (a build may hold an older copy); the preview loads it from there
     dst = os.path.join(OUT, rel); os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy2(f, dst); n += 1; tot += os.path.getsize(f)
 # small, and after 8 s faint – on a phone it must not cover the HUD (Falko, 23.10.2026)
 BADGE = ('<div style="position:fixed;top:calc(3px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:99999;background:#b45309;color:#fff;'

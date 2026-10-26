@@ -157,7 +157,7 @@ export const KI = (() => {
           if (f) f.walker.talking = !!v && f.mode !== 'sit';
         },
         sub: t => DORF.UI.subtitle(k, t),
-        show: t => DORF.UI.say(k, t || '…'),
+        show: t => DORF.UI.show(k, t || '…'),
         host: () => DORF.UI.el,
         close: () => DORF.UI.close(),
         line: () => DORF.UI.line(),
@@ -335,7 +335,8 @@ export const KI = (() => {
     };
     if (C.greet) C.transcript.push(['n', C.greet]);
     UI.open(pa); // the greeting stays in the panel until he answers
-    if (S.set.hands && EAR.ok) setTimeout(() => C && C.pa === pa && listen(), 350);
+    // after the greeting has been said (a villager's greeting is read aloud now): the microphone must not hear it
+    if (S.set.hands && EAR.ok) STIMME.whenIdle(() => setTimeout(() => C && C.pa === pa && listen(), 350));
   }
   // the player's words → one turn (a few requests when he uses tools), spoken while it streams
   async function turn(text) {
