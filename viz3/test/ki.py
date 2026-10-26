@@ -69,6 +69,16 @@ def route(r):
     st, ct, text = answer(body)
     r.fulfill(status=st, headers={'content-type': ct, 'request-id': 'req_test'}, body=text)
 
+# a stand-in for Microsoft's speech service (engine 'microsoft' in audio/stimme.js): it keeps the SSML and answers with a recorded line
+MS = {'req': [], 'status': 200}
+def route_ms(r):
+    MS['req'].append({'ssml': r.request.post_data or '', 'h': {k.lower(): v for k, v in r.request.headers.items()}})
+    if MS['status'] != 200:
+        return r.fulfill(status=MS['status'], body='')
+    d = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dist', 'snd', 'voice', 'x')
+    f = sorted(x for x in os.listdir(d) if x.endswith('.mp3'))[0]
+    r.fulfill(status=200, headers={'content-type': 'audio/mpeg'}, body=open(os.path.join(d, f), 'rb').read())
+
 def E(js): return pg.evaluate(js)
 def J(js): return json.loads(pg.evaluate('JSON.stringify(' + js + ')'))
 def steps(n, dt=0.1): E(f"for (let i = 0; i < {n}; i++) GAME.step({dt})")
@@ -83,6 +93,7 @@ def wait(cond, secs=30, step=True):
 with lib.browser() as b:
     pg = lib.page(b, 1100, 700, errs=errs)
     pg.route('**/__ki/**', route)
+    pg.route('**/__ms/**', route_ms)
     lib.boot(pg, port, QUERY)
     base = f'http://localhost:{port}/__ki'
     ck('KI module loaded', E("!!(window.KI && KI.VOICE && KI.EAR)"))
@@ -191,6 +202,10 @@ with lib.browser() as b:
     ck('villager: conversation begins', wait("!!KI.conv && KI.conv.who === 'gerhard'", 10))
     ck('villager: microphone in the village panel', E("document.getElementById('dorfpanel').contains(document.getElementById('np-ki')) && !document.getElementById('np-ki').hidden"))
     ck('villager: small talk gives way', E("[...document.querySelectorAll('#dorfpanel .topics button')].every(b => /quest|bye/.test(b.className))"))
+    # the box looks as in the neighbours' panel (Falko, 26.10.: in the village only an empty square instead of the microphone)
+    st = J("(() => { const m = document.getElementById('np-mic'), r = m.getBoundingClientRect(), sv = m.querySelector('svg').getBoundingClientRect(); return { hidden: m.hidden, w: r.width, h: r.height, svg: sv.width, round: getComputedStyle(document.getElementById('np-say')).borderRadius }; })()")
+    ck('villager: the microphone drawn as with Hubert (40 px, icon 20 px, round field)', (st['hidden'] or (st['w'] >= 38 and st['svg'] >= 18)) and st['round'] == '999px', json.dumps(st))
+    pg.screenshot(path=os.path.join(OUT, 'dorf_ki.png'))
     E("KI.turn('Erzähl mal von der Chronik')")
     wait("KI.conv && !KI.conv.busy && KI.conv.messages.length >= 4", 40)
     vr = [r for r in REQ[n0:] if r.get('stream')]
@@ -223,6 +238,32 @@ with lib.browser() as b:
     ck('a villager line will be spoken', E("STIMME.speaks('heike', VOICEX.lines.find(l => l.who === 'heike').text)"))
     # voices: one per person, women and men
     ck('voices: profiles', E("STIMME.profile('katrin').g === 'f' && STIMME.profile('hubert').g === 'm' && STIMME.profile('gerhard').age === 72"))
+    # the voices of the recordings (Falko, 26.10.: the KI voices sound quite unlike the recorded ones) – the table, the Microsoft engine
+    r = J("STIMME.recOf('hubert')")
+    ck('recording voices: Hubert is Conrad, slower and lower as recorded', r == {'voice': 'de-DE-ConradNeural', 'rate': -10, 'pitch': -8, 'rec': True}, json.dumps(r))
+    ck('recording voices: what the recordings really got (VOICEX)', E("STIMME.recOf('gerhard').voice === VOICEX.voices.gerhard && STIMME.recOf('ingrid').voice === VOICEX.voices.ingrid"))
+    E("STIMME.person('probe_frau', { name: 'Probe', g: 'f', age: 30 })")
+    r = J("STIMME.recOf('probe_frau')")
+    ck('someone without recordings: a Microsoft voice of the right gender', not r['rec'] and r['voice'] in ('de-DE-KatjaNeural', 'de-DE-AmalaNeural', 'de-DE-SeraphinaMultilingualNeural', 'de-AT-IngridNeural', 'de-CH-LeniNeural'), json.dumps(r))
+    E("KI.settings(true)")
+    E("document.querySelector('#ki-stimme [data-st=\"engine:microsoft\"]').click()")
+    ck('settings: „Wie die Aufnahmen“ asks for the key and the region', E("!!document.querySelector('#ki-stimme [data-st-mskey]') && !!document.querySelector('#ki-stimme [data-st-msreg]')"))
+    E("(i => { i.value = 'test-schluessel'; i.dispatchEvent(new Event('input', { bubbles: true })); })(document.querySelector('#ki-stimme [data-st-mskey]'))")
+    ck('the key kept with every letter, the engine ready', E("SAVE.raw('pav-ms-key') === 'test-schluessel' && STIMME.engineName === 'microsoft'"), str(E("STIMME.engineName")))
+    E(f"STIMME.msBase = 'http://localhost:{port}/__ms/v1'")
+    E("window.__msp = STIMME.play(STIMME.prepare('hubert', 'Nu, das ist so & so.'))")
+    t0 = time.time()
+    while not MS['req'] and time.time() - t0 < 10: time.sleep(0.2)
+    q = MS['req'][0] if MS['req'] else {'ssml': '', 'h': {}}
+    ck('Microsoft: Conrad with the recordings\' pace and pitch, the text escaped', '<voice name="de-DE-ConradNeural">' in q['ssml'] and 'pitch="-8Hz" rate="-10%"' in q['ssml'] and 'so &amp; so' in q['ssml'], q['ssml'][:220])
+    ck('Microsoft: the key and the mp3 format in the request', q['h'].get('ocp-apim-subscription-key') == 'test-schluessel' and 'mp3' in q['h'].get('x-microsoft-outputformat', ''), json.dumps({k: v for k, v in q['h'].items() if k.startswith(('ocp', 'x-mic', 'content'))}))
+    E("STIMME.stop()")
+    MS['status'] = 401; n0 = len(MS['req'])
+    E("window.__mserr = ''; STIMME.onError = t => (window.__mserr = t); STIMME.play(STIMME.prepare('ronald', 'Siehste.'))")
+    t0 = time.time()
+    while not E("window.__mserr") and time.time() - t0 < 10: time.sleep(0.2)
+    ck('Microsoft refuses the key: said, the device voice speaks instead', 'Schlüssel' in (E("window.__mserr") or '') and 'FlorianMultilingual' in MS['req'][n0]['ssml'], E("window.__mserr"))
+    E("STIMME.stop(); KI.settings(false); KI.configure({ voice: 'aus' })")
     # volumes: sliders in the menu, saved
     ck('volume sliders in the menu', E("document.querySelectorAll('#volbox input[data-vol]').length") == 5)
     E("const r = document.querySelector('#volbox input[data-vol=stimmen]'); r.value = '40'; r.dispatchEvent(new Event('input'))")

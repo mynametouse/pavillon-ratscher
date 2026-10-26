@@ -16,10 +16,21 @@ veröffentlicht.
 
 ## Stand
 
-- **Live: V16u** (`PAV_BUILD` src `ec01bde`, 26.10.2026 vormittags, Falko: „stell alles live. Wenn grün“, Prüfpaket grün inkl. Thema `dorf`,
-  `ki`, `piper`): KI-Gespräch gleich nach dem Schlüssel (iPhone-Fall unten), Piper-Stimmenwahl „Natürlich“, Tischgespräch im Dorf wartet auf den
-  gesagten Satz. Davor V16t (`687a8e3`): Lautstärke je Kanal, KI mit allen Dorfbewohnern, eine Stimme je Person, 284 aufgenommene Sätze;
-  V16s (`09201b1`): KI-Gespräche mit Hubert und Ronald, Duzen im Dorf. KTX2 weiter nur in der Vorschau.
+- **Live: V16v** (`PAV_BUILD` src `e95de05`, 26.10.2026 2:47 UTC, Falko: „nimm automatisch live, was nach Tests grün ist, in den nächsten
+  6 Stunden (ich bin schlafen)“ – gilt bis ~08:45 UTC): Menü in Seiten, Einführung, Mikrofon im Dorf. Davor V16u (`ec01bde`): KI-Gespräch gleich
+  nach dem Schlüssel, Piper „Natürlich“; V16t (`687a8e3`), V16s (`09201b1`). KTX2 weiter nur in der Vorschau.
+- **Stimmen wie die Aufnahmen (26.10., auf `wip/kern` `4a5019e`):** Falko: „Die KI-Stimmen klingen ganz anders …“ – `audio/stimme.js` `REC`
+  (Stimme, Tempo, Tonhöhe je Person wie `record_lines.py`); in Edge nimmt „Gerät“ genau diese Stimmen; neue Wahl „Wie die Aufnahmen“
+  (Azure AI Speech REST, eigener Schlüssel, Tarif F0 kostenlos: 500 000 Zeichen/Monat, 20 Anfragen/min; Azure-Konto braucht Telefon und
+  Kreditkarte). CORS der REST-Adresse wird mit `feat/msprobe` (`viz3/test/msprobe.py`, Einmal-Probe) auf GitHub geprüft – fällt sie durch,
+  das Speech-SDK als Paket auf Abruf (`src/lazy/`). Danach `feat/msprobe` und `ref/*` löschen.
+- **Suhl (Falko 26.10. ~2:40 UTC):** Zentrum, Suhler Aue mit Sportplatz und Wohngebiet, Suhl-Nord, möglichst alle Gebäude aus Daten, einzelne
+  begehbar, typische Suhler Leute, Anfahrt über Landstraße und A73/A71, flüssig auf dem iPhone. Vier Hilfs-Agenten seit ~2:55 UTC: `suhl`,
+  `suhl-innen`, `suhl-leute`, `suhl-fahrt` (Aufträge `docs/plans/auftraege/suhl*.md`, Verträge `SUHL.*` darin, Marker `# feat/suhl` in
+  modules.txt). Daten und Fotos nur über eigene Actions-Workflows (der Container erreicht OSM, Commons, Panoramax, GDI-Th nicht); Fotos zum
+  Ansehen als Kontaktabzüge auf `ref/suhl*`-Zweigen (nie gemergt, am Ende löschen).
+- **Konzept (Falko 26.10.):** umfassendes Konzept des Simulators (Welt aus Geodaten und Fotos, Lernen und Karriere in Themenbereichen,
+  Spielspaß, Rätsel, Quests) – entsteht im Workflow, Ziel `docs/plans/konzept_simulator.md`.
 - **Menü und Einführung (26.10., Falko: „Das Menü ist total überladen … Konzept für ein Tutorial“):** Menü in Seiten (Start: Weiter,
   Neu hier?, Aufgaben, Inventar, fünf Bereiche; Seiten Hingehen, Erleben, Gestalten, Einstellungen, Hilfe mit Zurück), Einführung
   `game/tutorial.js` (TUT, neun Schritte, erkennt selbst, was getan ist). Konzept und Umsetzung: `docs/features/tutorial.md`. Test `menu`

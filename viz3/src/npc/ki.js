@@ -666,7 +666,12 @@ export const KI = (() => {
     // the box (and the hint) into a person's panel; null: hidden
     function open(pa) {
       build();
-      if (pa && pa.host && pa.host()) pa.host().appendChild(U.box);
+      // the panel it sits in gets the look of the box (shell/css/ki.css: the villagers' panel, a stroller's)
+      const h = pa && pa.host && pa.host();
+      if (h) {
+        h.classList.add('ki-host');
+        h.appendChild(U.box);
+      }
       U.box.hidden = !pa;
       if (pa) {
         U.box.querySelector('#np-me').textContent = '';
@@ -677,7 +682,11 @@ export const KI = (() => {
     // without a key: the hint under the panel of whoever one just talks to
     function hint(pa) {
       build();
-      if (pa && pa.host && pa.host()) pa.host().appendChild(U.setup);
+      const h = pa && pa.host && pa.host();
+      if (h) {
+        h.classList.add('ki-host');
+        h.appendChild(U.setup);
+      }
       U.setup.hidden = !pa || ready() || !S.set.on;
     }
     const me = t =>

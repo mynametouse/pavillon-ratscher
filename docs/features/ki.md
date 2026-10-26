@@ -24,6 +24,15 @@ Dorfbewohner hört, macht im Dorf die Runde (zwei, drei andere merken es sich). 
    teilen sich eine Stimme nur, wenn es zu wenige gibt, dann klingt die zweite höher oder tiefer; unter „Stimmen der Personen“ von Hand wählbar
    und probehörbar), **ElevenLabs** (eigener Schlüssel, je Person eine deutsche Bibliotheksstimme, z. B. „Darius – Grumpy & Critical“ für Hubert,
    „Silke“ für Katrin, Voice-IDs änderbar) oder nur Text. Piper (natürliche Stimmen im Browser, kostenlos) kommt als weitere Wahl dazu.
+   **Dieselben Stimmen wie die Aufnahmen** (Falko, 26.10.: „Die KI-Stimmen klingen ganz anders als die Stimmen, mit denen die NPCs sonst
+   sprechen“): Die festen Sätze sind mit Microsofts neuronalen Stimmen aufgenommen (`tools/voices/record_lines.py`: Hubert Conrad −10 %/−8 Hz,
+   Ronald Florian Multilingual, Gerhard Andrew, Manfred und Jens Killian, Wolfgang Brian, Uwe Jonas, Katrin Katja, Ingrid Amala, Heike
+   Seraphina). `audio/stimme.js` kennt diese Tabelle (`REC`, `STIMME.recOf`): **in Edge** nimmt „Gerät“ von selbst genau diese Stimmen
+   (kostenlos, ohne Schlüssel; Edge übergeht nur die Tonhöhe), **überall** – auch am iPhone – die Wahl **„Wie die Aufnahmen“**: Microsofts
+   Sprachdienst (Azure AI Speech) mit eigenem Schlüssel, dasselbe SSML wie bei den Aufnahmen (Stimme, Tempo, Tonhöhe). Kostenloser Tarif
+   F0: 500 000 Zeichen im Monat (rund 1 200–3 000 Antworten, je nach Länge), 20 Anfragen pro Minute, danach hält er an – es entstehen keine
+   Kosten. Ein Azure-Konto verlangt Telefonnummer und Kreditkarte; nach 30 Tagen auf „Nutzungsbasierte Bezahlung“ umstellen, die
+   F0-Ressource bleibt kostenlos. Leute ohne Aufnahmen bekommen eine Microsoft-Stimme ihres Geschlechts.
 4. Ohne Schlüssel bleibt alles wie bisher (aufgenommene Sätze, Themen-Knöpfe); im Gesprächsfenster steht dann „Frei reden – KI-Gespräche
    einrichten …“. Wer darüber den Schlüssel einträgt, redet beim Schließen der Einstellungen gleich frei mit derselben Person (seit 26.10.,
    Falko am iPhone: vorher blieben die Themen-Knöpfe stehen, der Hinweis verschwand). Der Schlüssel wird bei jedem Buchstaben gespeichert.
