@@ -5,7 +5,7 @@
 # per frame; textures per shader. Pictures in out/verkehr/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 8986 --serve verkehr        (or: python3 viz3/test/verkehr.py 8986 walk,car)
 # Sections (second argument, comma-separated): net,walk,night,car,brake,wave,ride,selbst,stadt,prof,gl
-import sys, os, time, json, math
+import sys, os, time, json, math, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
@@ -15,6 +15,54 @@ ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else None
 want = lambda k: not ONLY or k in ONLY
 ck = lib.Checks('verkehr')
 ANGER = (222, -108)
+SITE = os.environ.get('WELT_SITE', 'https://mynametouse.github.io/pavillon-ratscher/welt-test/')
+DIST = os.path.join(lib.ROOT, 'viz3', 'dist', 'welt-test')
+XF = json.load(open(os.path.join(lib.ROOT, 'viz3', 'manifests.json')))['geoman']['xf']
+MARKT = (-1084.7, 1241.9)
+
+
+# the world tiles around the Markt (as viz3/test/schleusingen.py: from the published site into dist/welt-test/; without them the town
+# stands on the coarse terrain)
+def utm(x, y):
+    return XF['a'] * x - XF['b'] * y + XF['ex'], XF['b'] * x + XF['a'] * y + XF['ey']
+
+
+def fetch_tiles():
+    """the tiles the app asks for around the Markt (levels 10-12, rings of welt/welt.js) and under the zone (sampler), into dist/welt-test/"""
+    os.makedirs(DIST, exist_ok=True)
+
+    def get(rel):
+        p = os.path.join(DIST, rel)
+        if os.path.exists(p) and os.path.getsize(p) > 0:
+            return 0
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        try:
+            with urllib.request.urlopen(SITE + rel, timeout=60) as r:
+                b = r.read()
+        except Exception:
+            return 0
+        open(p, 'wb').write(b)
+        return len(b)
+    get('meta.json')
+    meta = json.load(open(os.path.join(DIST, 'meta.json')))
+    lv = meta['tiling']['levels']
+    jobs = set()
+    cs = [utm(MARKT[0] + sx * 650, MARKT[1] + sy * 650) for sx in (-1, 1) for sy in (-1, 1)]
+    for L, pad in ((10, 900), (11, 450), (12, 150)):
+        s = 409600 / (1 << L)
+        r = lv[str(L)]['rect']
+        E0, E1 = min(c[0] for c in cs) - pad, max(c[0] for c in cs) + pad
+        N0, N1 = min(c[1] for c in cs) - pad, max(c[1] for c in cs) + pad
+        for x in range(int((E0 - 420700) // s), int((E1 - 420700) // s) + 1):
+            for y in range(int((N0 - 5390800) // s), int((N1 - 5390800) // s) + 1):
+                if r[0] <= x <= r[2] and r[1] <= y <= r[3]:
+                    jobs.add(f't/{L}/{x}/{y}.bin')
+                    jobs.add(f'i/{L}/{x}/{y}.webp')
+    t0 = time.time()
+    with concurrent.futures.ThreadPoolExecutor(8) as ex:
+        n = sum(ex.map(get, sorted(jobs)))
+    print(f'welt tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s', flush=True)
+
 
 HELP = r"""
 window.VNETZ = VERKEHR.net;
@@ -67,6 +115,11 @@ def look_at(pg, x, y, z, dist=7, side=25, h=1.5):
       GAME.view(ax, ay, KERN.ground(ax, ay) + {h}, Math.atan2(x - ax, y - ay) * 180 / Math.PI, -4); }})()""")
 
 
+if want('stadt'):
+    try:
+        fetch_tiles()
+    except Exception as ex:
+        print('note: no world tiles:', repr(ex)[:200], flush=True)
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 700, errs, tier='mittel')
@@ -89,6 +142,8 @@ with lib.browser() as b:
             ck('Ratscher: the walkers have their side of most ways (not through walls)', d['walkOk'] >= 0.7 * d['walkEdges'] and d['walkEdges'] > 20,
                f"{d['walkOk']}/{d['walkEdges']}")
             ck('built quickly', (d['ms'] or 0) < 1500, f"{d['ms']} ms")
+            ki = J(pg, "window.KI && KI.people ? KI.people().filter(k => k.startsWith('vk_')) : []")
+            ck('all ten registered for the free conversation (KI.person)', len(ki) == 10, str(ki))
         except Exception as ex:
             ck('section ran: net', False, repr(ex)[:400])
 
@@ -127,6 +182,15 @@ with lib.browser() as b:
                 look_at(pg, p['x'], p['y'], p['z'], 6, 30)
                 E(pg, "GAME.step(0.1)")
                 lib.shot(pg, OUT, 'a_walker_day')
+            # Bettina with her dachshund
+            if E(pg, f"VERKEHR.addPed('bettina', 'dorf', [GAME.P.x, GAME.P.y], true)") or any(q['key'] == 'bettina' for q in s['peds']):
+                E(pg, "__vk.until(() => VERKEHR.state().peds.some(p => p.key === 'bettina' && p.shown), 30)")
+                q = next((q for q in J(pg, "VERKEHR.state()")['peds'] if q['key'] == 'bettina'), None)
+                if q:
+                    look_at(pg, q['x'], q['y'], q['z'], 4.5, 40, 1.3)
+                    E(pg, "GAME.step(0.1)")
+                    lib.shot(pg, OUT, 'a2_walker_dog')
+                    ck('Bettina walks her dog', q['dog'], json.dumps(q))
             # talking to a walker: walk up to him, the action button, the panel
             p = next((q for q in J(pg, "VERKEHR.state()")['peds'] if q['shown']), None)
             if p:
@@ -155,6 +219,17 @@ with lib.browser() as b:
                 mx = max(mx, len(J(pg, "VERKEHR.state().peds")))
             s = J(pg, "VERKEHR.state()")
             ck('at night almost nobody walks (2 o\'clock: at most one in 90 s)', mx <= 1, f"max {mx}, targets {s['places']['dorf']['target']}")
+            # a car at night: head lamps and the light on the road
+            E(pg, "VERKEHR.autoOn(false); VERKEHR.clear()")
+            thr = J(pg, f"__vk.through('dorf', {ANGER[0]}, {ANGER[1]})")
+            cid = E(pg, f"VERKEHR.addCar({{ from: {thr['a']}, to: {thr['b']}, s: {max(0, thr['s'] - 60)}, v: 6 }})")
+            x, y, hd = J(pg, f"__vk.ahead({cid}, 30, 4.5)")
+            stand(pg, x, y, math.degrees(hd) + 200, -3)
+            E(pg, "GAME.step(1.5)")
+            lamps = J(pg, "VAUTO.LM.head.emissiveIntensity")
+            lib.shot(pg, OUT, 'j_car_night')
+            ck('at night the cars have their lamps on', lamps > 1, str(lamps))
+            E(pg, "VERKEHR.clear(); VERKEHR.autoOn(true)")
             E(pg, "__vk.day(10)")
             lib.settle_light(pg)
         except Exception as ex:
@@ -250,7 +325,7 @@ with lib.browser() as b:
             s = J(pg, "VERKEHR.state()")
             ev = J(pg, "KERN.events().filter(e => e.name === 'verkehr:angehalten').length")
             ck('the driver asks (panel opens), event verkehr:angehalten', s['panel'] is not None and ev >= 1, f"{s['panel']} {ev}")
-            page_shot(pg, 'e_waved_down')
+            lib.shot(pg, OUT, 'e_waved_down')
             if want('ride'):
                 E(pg, "VERKEHR.ride()")
                 E(pg, "GAME.step(0.6)")

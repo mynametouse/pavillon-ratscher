@@ -159,7 +159,7 @@ export const VFIG = (() => {
       L.box(0, 0, -D.leg, 0.045, 0.05, D.leg + 0.02, 0, Dk, true);
       dogGeo[kind].leg = L.geo();
       const T = VPROPS.kit();
-      T.box(0, 0.1, 0, 0.03, 0.2, 0.03, 0, C, true);
+      T.box(0, 0.07, 0, 0.025, 0.14, 0.025, 0, C, true);
       dogGeo[kind].tail = T.geo();
     }
     const G = dogGeo[kind],

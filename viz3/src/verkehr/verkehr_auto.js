@@ -37,14 +37,40 @@ export const VAUTO = (() => {
   S.DIM = { A, B, YF, YR, HW, HL, CY };
   const L = VFIG.L;
   // ---- the model (car frame of the kit: x right, y forward, z up; origin on the ground under the centre of mass) ----
-  function prism(k, b, t, z0, z1, col) {
+  function prism(k, b, t, z0, z1, col, top = true) {
     const [bx0, bx1, by0, by1] = b,
       [tx0, tx1, ty0, ty1] = t;
     k.quad([bx1, by0, z0], [bx1, by1, z0], [tx1, ty1, z1], [tx1, ty0, z1], col);
     k.quad([bx1, by1, z0], [bx0, by1, z0], [tx0, ty1, z1], [tx1, ty1, z1], col);
     k.quad([bx0, by1, z0], [bx0, by0, z0], [tx0, ty0, z1], [tx0, ty1, z1], col);
     k.quad([bx0, by0, z0], [bx1, by0, z0], [tx1, ty0, z1], [tx0, ty0, z1], col);
-    k.quad([tx0, ty0, z1], [tx1, ty0, z1], [tx1, ty1, z1], [tx0, ty1, z1], col);
+    if (top) k.quad([tx0, ty0, z1], [tx1, ty0, z1], [tx1, ty1, z1], [tx0, ty1, z1], col);
+  }
+  // a square beam from a to b (thickness t)
+  function beam(k, a, b, t, col) {
+    const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+      l = Math.hypot(...d) || 1,
+      u0 = Math.abs(d[2]) / l > 0.9 ? [1, 0, 0] : [0, 0, 1],
+      cr = (p, q) => [p[1] * q[2] - p[2] * q[1], p[2] * q[0] - p[0] * q[2], p[0] * q[1] - p[1] * q[0]],
+      n = v => {
+        const m = Math.hypot(...v) || 1;
+        return v.map(x => (x / m) * (t / 2));
+      },
+      u = n(cr(d, u0)),
+      w = n(cr(d, u)),
+      P = (o, su, sw) => [o[0] + u[0] * su + w[0] * sw, o[1] + u[1] * su + w[1] * sw, o[2] + u[2] * su + w[2] * sw],
+      C = [
+        [1, 1],
+        [-1, 1],
+        [-1, -1],
+        [1, -1],
+      ];
+    for (let i = 0; i < 4; i++) {
+      const [s0, w0] = C[i],
+        [s1, w1] = C[(i + 1) % 4];
+      k.quad(P(a, s0, w0), P(a, s1, w1), P(b, s1, w1), P(b, s0, w0), col);
+      k.quad(P(a, s0, w0), P(b, s0, w0), P(b, s1, w1), P(a, s1, w1), col); // both windings: seen from either side
+    }
   }
   const bodyGeo = {};
   function bodyOf(hex) {
@@ -58,7 +84,7 @@ export const VAUTO = (() => {
       inner = L(0.13, 0.13, 0.14);
     k.box(0, CY, 0.3, 2 * HW, YF - YR - 0.06, 0.5, 0, body); // lower body
     prism(k, [-HW, HW, 1.0, YF - 0.03], [-HW + 0.04, HW - 0.04, 1.1, YF - 0.12], 0.8, 0.9, body); // the bonnet, falling to the front
-    prism(k, [-HW, HW, YR + 0.03, 1.0], [-HW + 0.02, HW - 0.02, YR + 0.05, 1.0], 0.8, 0.86, body); // the waist under the windows
+    prism(k, [-HW, HW, YR + 0.03, 1.0], [-HW + 0.02, HW - 0.02, YR + 0.05, 1.0], 0.8, 0.86, body, false); // the waist under the windows (open on top: the cabin)
     prism(k, [-HW + 0.06, HW - 0.06, YR + 0.1, 1.0], [-0.72, 0.72, YR + 0.18, -0.05], 0.86, 1.47, glass); // glasshouse
     prism(k, [-0.73, 0.73, YR + 0.17, -0.04], [-0.7, 0.7, YR + 0.2, -0.1], 1.47, 1.54, body); // roof
     for (const sx of [-0.62, 0.62]) k.box(sx, (YR + 0.1) / 2 - 0.05, 1.54, 0.04, -YR - 0.25, 0.05, 0, dark); // roof rails
@@ -66,13 +92,28 @@ export const VAUTO = (() => {
     k.box(0, YF - 0.02, 0.48, 0.9, 0.04, 0.16, 0, dark); // grille
     for (const sx of [-1, 1]) {
       // A-pillars along the windscreen and B-pillars (seen from inside as well)
-      k.box(sx * 0.79, 0.5, 0.86, 0.05, 0.05, 0.62, 0, trim);
-      k.box(sx * 0.81, -0.75, 0.86, 0.05, 0.08, 0.6, 0, trim);
+      beam(k, [sx * 0.8, 1.0, 0.85], [sx * 0.7, -0.06, 1.48], 0.05, trim);
+      beam(k, [sx * 0.83, -0.75, 0.85], [sx * 0.71, -0.75, 1.48], 0.07, trim);
     }
-    // inside: the dashboard, the roof lining (facing down), the seats
-    k.box(0, 0.75, 0.78, 1.5, 0.42, 0.22, 0, inner, true);
-    k.quad([-0.72, YR + 0.25, 1.44], [0.72, YR + 0.25, 1.44], [0.72, -0.12, 1.44], [-0.72, -0.12, 1.44], inner);
-    for (const sx of [-0.38, 0.38]) k.box(sx, -0.35, 0.5, 0.5, 0.5, 0.45, 0, inner, true);
+    // inside (seen by a passenger): a dark floor over the body, the dashboard up to the windscreen, the steering wheel, the seats,
+    // the roof lining (facing down)
+    k.box(0, -0.65, 0.8, 1.66, 3.2, 0.04, 0, inner);
+    k.box(0, 0.73, 0.8, 1.64, 0.52, 0.24, 0, inner, true);
+    k.box(0, 0.62, 1.04, 1.6, 0.3, 0.03, 0, dark);
+    for (let i = 0; i < 14; i++) {
+      // the steering wheel: a ring of short beams, tilted towards the driver
+      const a0 = (i / 14) * Math.PI * 2,
+        a1 = ((i + 1) / 14) * Math.PI * 2,
+        p = a => [-0.36 + Math.cos(a) * 0.18, 0.44 + Math.sin(a) * 0.18 * 0.35, 1.02 + Math.sin(a) * 0.18 * 0.94];
+      beam(k, p(a0), p(a1), 0.03, dark);
+    }
+    beam(k, [-0.36, 0.44, 1.02], [-0.36, 0.62, 0.92], 0.05, dark);
+    k.quad([-0.71, -0.1, 1.46], [0.71, -0.1, 1.46], [0.71, YR + 0.24, 1.46], [-0.71, YR + 0.24, 1.46], inner);
+    for (const sx of [-0.38, 0.38]) {
+      k.box(sx, -0.3, 0.5, 0.5, 0.5, 0.42, 0, inner, true);
+      k.box(sx, -0.62, 0.92, 0.48, 0.12, 0.46, 0, inner, true);
+    }
+    k.box(0, -1.5, 0.5, 1.4, 0.55, 0.42, 0, inner, true);
     for (const sx of [-1, 1]) {
       k.box(sx * 0.86, -0.2, 0.62, 0.02, 0.04, 0.03, 0, trim); // door handle
       k.box(sx * 0.93, 0.62, 0.95, 0.12, 0.06, 0.08, 0, dark); // mirror
