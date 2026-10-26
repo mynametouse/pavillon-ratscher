@@ -27,7 +27,13 @@ veröffentlicht.
 - **Seit 26.10. früh auf `src`/`wip/kern`:** `feat/texturen` zusammengeführt (`5f06afb`, KTX2 in der Vorschau, live aus); feste Sätze werden
   gesprochen (`78ba6d1`): `STIMME.say` spielt eine Aufnahme mit genau diesen Worten (`window.VOICEX`, auf Abruf) oder liest in der Stimme der
   Person vor („Feste Sätze vorlesen“) – Dorfbewohner, Tischgespräche, Murmeln, Aufgabensätze; 284 Sätze (`tools/voices/linien.mjs` →
-  `linien.json`) werden auf GitHub aufgenommen (Zweig `stimmen/saetze`, `record_lines.py`, Extra `viz3/extra/saetze/`), danach mergen.
+  `linien.json`) sind aufgenommen (Zweig `stimmen/saetze`, `record_lines.py`, Extra `viz3/extra/saetze/`, 8,6 MB, gemergt `7ec4809`).
+  edge-tts hat nur drei deutsche Männer (Conrad = Hubert, Florian = Ronald, Killian): Gerhard spricht mit Andrew, Wolfgang mit Brian
+  (beide „Multilingual“, evtl. leichter Akzent), Uwe mit Jonas (de-AT), Manfred und Jens mit Killian; Frauen Katja, Amala, Seraphina.
+  Hörproben an Falko geschickt – seine Rückmeldung abwarten, ggf. `WHO` in `record_lines.py` ändern und neu aufnehmen lassen.
+- **Offen aus dem Prüfpaket `5f06afb`:** Thema-Test `ktx2` (nur Meldung) 14/15 – mit KTX2 ein Shader-Programm weniger als mit Bildern
+  (144/154 gegen 145/155, Schlüssel `physical,STANDARD,…`): vielleicht fehlt einer Oberfläche die Textur. Nur Vorschau betroffen (TEX2 live aus).
+  Artefakt „thema-ktx2“ ließ sich aus dem Container nicht laden (Blob-Speicher gesperrt) – lokal mit `?tex2=1` und `tex2/` nachstellen.
 - Arbeitszweig des Kern-Chats: `wip/kern`; `src` bekommt `git push origin wip/kern:src` (vorher `git merge-base --is-ancestor origin/src HEAD`).
   In der Cloud-Sitzung liegt der Worktree unter `/home/user/src-wt` (Branch `wip/kern`), das Session-Repo `/home/user/pavillon-ratscher`
   (Branch `claude/fervent-wright-c0adaf`, nur die gebaute Seite – nicht zum Arbeiten).
