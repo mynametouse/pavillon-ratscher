@@ -243,6 +243,12 @@ with lib.browser() as b:
                 print('MODEL_CARD', p, '|', ' '.join(card.split())[:400], flush=True)
             except Exception as e:
                 print('MODEL_CARD', p, 'not read', str(e)[:80], flush=True)
+            try:
+                n = p.split('/')[0]; cf = json.loads(urllib.request.urlopen(HF + f"de/de_DE/{p}/de_DE-{n}-{p.split('/')[1]}.onnx.json", timeout=20).read())
+                mp = cf.get('phoneme_id_map', {})
+                print('MODEL_CONF', p, '| symbols', cf.get('num_symbols'), '| ids', len(mp), '| ç', mp.get('ç'), '| cedilla', mp.get('\u0327'), '| inference', cf.get('inference'), '| sr', cf.get('audio', {}).get('sample_rate'), '| piper', cf.get('piper_version'), flush=True)
+            except Exception as e:
+                print('MODEL_CONF', p, 'not read', str(e)[:80], flush=True)
         try:
             spk = json.loads(urllib.request.urlopen(HF + 'de/de_DE/mls/medium/de_DE-mls-medium.onnx.json', timeout=20).read())['speaker_id_map']
             print('MLS speakers', json.dumps(spk), flush=True)

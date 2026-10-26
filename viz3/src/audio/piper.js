@@ -317,8 +317,9 @@ export const PIPER = (() => {
       if (STIMME.chosen !== 'piper' || typeof Worker === 'undefined') return;
       scanned.then(() => {
         const list = needed();
+        // all there: the runtime starts (a computer also takes Hubert's voice into memory; a phone only when someone speaks)
         if (list.every(m => st.cached.has(m)))
-          call({ op: 'warm', model: spec(voiceFor('hubert').m), keep: CFG.keep })
+          call({ op: 'warm', model: mobile ? null : spec(voiceFor('hubert').m), keep: CFG.keep })
             .then(touch)
             .catch(() => {});
         else load(list).catch(() => {});

@@ -63,7 +63,7 @@ const clean = t =>
     .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
     .replace(/\s+/g, ' ')
     .trim();
-async function phonemes(text, voice) {
+async function phonemes(text, voice, map) {
   const m = await phonemizer();
   lines.length = 0;
   try {
@@ -75,10 +75,52 @@ async function phonemes(text, voice) {
   const ids = [];
   for (const l of lines) {
     try {
-      ids.push(...JSON.parse(l).phoneme_ids);
+      ids.push(...toIds(JSON.parse(l), map));
     } catch (e) {}
   }
   return ids;
+}
+// the phonemes in the ids of this model (its phoneme_id_map, as Piper does): ^ _ (phoneme _)* $ per sentence. The phonemizer's own ids
+// follow the newest map; older models (the „low“ ones) know fewer symbols – „ç“ there is one sign, not c + a combining cedilla
+function toIds(line, map) {
+  const D = line.phoneme_ids || [],
+    P = line.phonemes || [];
+  if (!map) return D;
+  const one = k => (map[k] ? map[k] : null);
+  const pad = (one('_') || [0])[0],
+    bos = (one('^') || [1])[0],
+    eos = (one('$') || [2])[0];
+  // sentence lengths from the phonemizer's ids (1 begins a sentence, 2 ends it, 0 is the pad between)
+  const lens = [];
+  let n = 0;
+  for (const i of D) {
+    if (i === 1) n = 0;
+    else if (i === 2) lens.push(n);
+    else if (i !== 0) n++;
+  }
+  if (lens.reduce((a, b) => a + b, 0) !== P.length) {
+    const known = new Set([].concat(...Object.values(map)));
+    return D.filter(i => known.has(i));
+  }
+  const out = [];
+  let pi = 0;
+  for (const len of lens) {
+    out.push(bos, pad);
+    const end = pi + len;
+    for (; pi < end; pi++) {
+      let ph = P[pi];
+      const next = P[pi + 1];
+      if (next && /[\u0300-\u036f]/.test(next) && !one(next) && one((ph + next).normalize('NFC'))) {
+        ph = (ph + next).normalize('NFC');
+        pi++;
+      }
+      const v = one(ph) || one(ph.normalize('NFC'));
+      if (!v) continue;
+      out.push(...v, pad);
+    }
+    out.push(eos);
+  }
+  return out;
 }
 
 // ---------------- models: Cache Storage, download with progress ----------------
@@ -179,7 +221,7 @@ async function say(m) {
   t.dl = Math.round(dl);
   t.fresh = fresh;
   t0 = performance.now();
-  const ids = await phonemes(clean(m.text), s.conf.espeak && s.conf.espeak.voice);
+  const ids = await phonemes(clean(m.text), s.conf.espeak && s.conf.espeak.voice, s.conf.phoneme_id_map);
   t.phon = Math.round(performance.now() - t0);
   if (!ids.length) return { pcm: new Float32Array(0), sr: s.conf.audio.sample_rate, t };
   const inf = s.conf.inference || {};
