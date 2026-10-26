@@ -21,9 +21,15 @@ for reg in REG:
         st, h = raw('POST', url, {'Origin': 'https://mynametouse.github.io', 'Ocp-Apim-Subscription-Key': '00000000000000000000000000000000',
                                     'Content-Type': 'application/ssml+xml', 'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3'}, b'<speak/>')
         print('POST', url, st, json.dumps({k: v for k, v in h.items() if k.lower().startswith('access-control')}), flush=True)
+        if reg == 'westeurope': FIND.append(f"post-{path.split('/')[-1][:5]} {st} o={h.get('Access-Control-Allow-Origin') or h.get('access-control-allow-origin')}")
 with lib.browser() as b:
     pg = lib.page(b, 800, 600)
-    pg.goto(f'http://localhost:{port}/index.html?nogeo=1', wait_until='domcontentloaded')
+    # a page WITHOUT the test server's content policy (connect-src 'self' would block every outside fetch, as in the first probe)
+    import http.server, threading, functools, tempfile
+    d = tempfile.mkdtemp(); open(os.path.join(d, 'blank.html'), 'w').write('<!doctype html><title>probe</title>')
+    srv = http.server.ThreadingHTTPServer(('', 8999), functools.partial(http.server.SimpleHTTPRequestHandler, directory=d))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    pg.goto('http://localhost:8999/blank.html', wait_until='domcontentloaded')
     for reg in REG:
         js = """async ([reg]) => { const out = {};
           for (const [name, url, headers, body] of [
@@ -36,7 +42,7 @@ with lib.browser() as b:
         FIND.append(f"browser-{reg} tts={res['tts'][:40]} token={res['token'][:40]}")
 # the findings as the names of (failing) checks: run.py shows them in its one verdict line in the job log
 # run.py shows the first three FAIL lines (300 characters) in the job log: the browser's answer first
-for f in sorted(FIND, key=lambda f: not f.startswith('browser-westeurope')):
+for f in sorted(FIND, key=lambda f: (not f.startswith('browser-westeurope'), not f.startswith('post-v1'))):
     print('FAIL ' + f.replace('status ', '').replace(' (CORS ok)', ' ok')[:95], flush=True)
 print('RESULT msprobe: 0/%d ok' % len(FIND), flush=True)
 sys.exit(1)
