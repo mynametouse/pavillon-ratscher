@@ -1,0 +1,1 @@
+# Suhl interiors (welt/suhl_innen.js): the test comes with the first increment
