@@ -1,0 +1,1 @@
+{"audio": {"sample_rate": 16000, "quality": "fake"}, "espeak": {"voice": "de"}, "inference": {"noise_scale": 0.667, "length_scale": 1, "noise_w": 0.8}, "num_speakers": 4, "speaker_id_map": {"a": 0, "b": 1, "c": 2, "d": 3}, "phoneme_type": "espeak", "language": {"code": "de_DE"}}
