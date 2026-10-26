@@ -1,0 +1,66 @@
+WBS 70
+https://de.wikipedia.org/wiki/WBS_70
+Lizenz: CC BY-SA 4.0 (Text nur gelesen)
+
+WBS 70 steht als Abkürzung für Wohnungsbauserie 70. Ursprünglich war es die Abkürzung für den Namen Wohnungsbausystem 70, der aber im zweiten Erzeugniskatalog geändert wurde. Die Zahl 70 steht für das Jahr 1970, in dem das Wohnungsbauprogramm beginnen und bis 1990 stattfinden sollte. 
+WBS 70 war ein in der Deutschen Demokratischen Republik (DDR) verwendeter Typenbau eines Wohnhauses in Plattenbauweise. Entwickelt wurde er Ende der 1960er Jahre im Erzeugnisgruppenverband aus verschiedenen Forschungen heraus zusammengefasst von der Deutschen Bauakademie und der Technischen Universität Dresden.
+
+
+== Entwicklung ==
+
+
+=== Deutsche Demokratische Republik (DDR) ===
+Auf der 5. Baukonferenz des Zentralkomitees der SED und des Ministerrats der DDR wurde die Entwicklung eines „Einheitssystem Bau“ beschlossen. 1969 hatten Wilfried Stallknecht und Achim Felz eine Studie erstellt und entwickelten ab 1970 unter Nutzung der Erfahrungen mit den Typen P1, P2 und QP die Wohnbauserie 70. Der „Typ P2“ erfüllte nicht die gewünschten Einsparungen. Für WBS 70 wurden weniger Bauteile, ein reduzierter Typenkatalog und einheitliche Bauweise für alle Wohnungsbaukombinate standardisiert.
+In einem neu errichteten Plattenwerk des Wohnungsbaukombinates Neubrandenburg begann am 3. Juli 1972 ein Probelauf und am 7. Oktober 1972 die Produktion von Elementen der WBS 70. Ab 2. April 1973 begann die Montage des ersten Wohnhauses der WBS 70. Im selben Jahr wurde der erste WBS-70-Block bezugsfertig. Im Wohnkomplex Leninallee/Ho-Chi-Minh-Straße in Berlin-Lichtenberg realisierte Heinz Mehlan 1973/1974 dann erstmals eine elfgeschossige Ausführung, den Wohnbautyp WBS 70-11.
+Anfangs wurden einheitliche Eckwerte für die Wohnungsbauserie festgelegt, um eine rationellere Fertigung von Wohnhäusern zu erreichen. Im Laufe der Anwendung dieses Typs gab es unterschiedliche Veränderungen und gesonderte Entwicklungen in einzelnen Wohnungsbaukombinaten auch mit konischen und Sonderelementen für abgewinkelte Bauten und Lückenschließungen. Wenn der WBS 70 in einem umgebauten P2-Plattenwerk eingeführt wurde, musste er als eine 10,80 m tiefe Variante abskaliert werden.
+Die Gebäudetiefe wurde in den 1980er Jahren bei den Weiterentwicklungen bzw. Ableitungen des Typs WBS 70/14.40 auf 14,40 Meter und bei der WBR 85 auf 15 Meter vergrößert.
+Ab 1971 entstand eine Mischform aus dem WBS 70 (Frontseite) und dem Typ QP (Gebäuderückseite), der sogenannte WBS/QP71-R.
+Die ab dem Ende der 1950er Jahre verfügbaren industriell vorgefertigten Wohnbauten ließen sich nur schwer in bestehende Straßenraster einfügen, und die durch Kriegszerstörungen entstandenen Freiflächen zwischen Altbauten blieben über Jahrzehnte unbebaut. Zu Beginn der 1980er Jahre wurde der Block zwischen Helsingforser Straße, Marchlewskistraße und Helsingforser Platz in Ostberlin als Standort für Wohnungsneubau im Fünfjahresplan 1981–1985 festgelegt und hier mit dem Projekt Komplex Marchlewskistraße ein neuer Ansatz erprobt. Vorgesehen war die Errichtung von Plattenbauten der WBS 70, die sich stärker an den vorhandenen Häuserfluchten und Traufhöhen orientierten. In den Jahren 1983 und 1984 entstanden dort insgesamt 262 familiengerechte Wohnungen. Charakteristisch für die Neubauten waren geneigte und farblich gestaltete Drempelgeschosse, in denen unter anderem Entwässerungs- und Abluftsysteme untergebracht waren und die eine Annäherung an die Dachformen der Altbauten ermöglichten. Zwar kam es nicht zu vollständig harmonischen Übergängen, doch wirkten die Neubauten weniger kontrastreich als frühere Wohnblöcke in vergleichbaren Situationen. Erstmals wurden in industrieller Bauweise auch die für Berlin typischen Berliner Ecken realisiert. Zudem kamen Boden- und Deckenplatten mit nicht-quadratischen Grundrissen zum Einsatz. Das Projekt gilt als wichtiger Entwicklungsschritt innerhalb der Architektur der DDR, da es neue Möglichkeiten zur städtebaulichen Integration industriell gefertigter Wohnbauten in kriegsbedingte Baulücken aufzeigte.
+
+
+=== Nachwendezeit ===
+In Berlin-Hellersdorf, Hellersdorfer Straße 179, befindet sich eine zu besichtigende Museumswohnung des Typs WBS 70/11 Berlin. Die 61 Quadratmeter große Dreiraumwohnung wurde originalgetreu mit Einrichtungsgegenständen aus DDR-Produktion ausgestattet.
+Das Thüringer Ministerium für Umwelt, Energie und Naturschutz ließ 2023 einen ersten WBS 70 für acht Millionen Euro energetisch sanieren und „klimaneutral“ umgestalten. Die Maßnahmen umfassten unter anderem die Wärmerückgewinnung aus Brauchwasser, neue Belüftungsanlagen, Balkonverglasungen sowie die Installation einer 57-kWp-Dachsolaranlage.
+
+
+== Technische Details ==
+Laststufe: 6,3 Tonnen (als 63 kN geführt)
+Durchgängiges, einheitliches Modularsystem mit Grundmodul: M = 100 mm und als Großrastermaß 12 M = 1,20 m, Abstände der Systemlinien n × 1,20 m, bei einem Grundraster: 6,00 m × 6,00 m
+Maximale Elementeabmessungen
+Wandelemente 6,00 m × 2,80 m
+Deckenelemente 6,00 m mal 3,00 m Spannbeton sowie 3,60 m mal 3,00 m Stahlbeton
+Gebäudetiefe: 10,8 Meter / 12,0 Meter / 14,4 Meter / 15,0 Meter
+Geschosshöhe: 2,80 Meter (WBS 70/G: 3,30 Meter)
+Geschosszahl: Primär 5, 6 oder 11
+Außenwand: dreischichtig mit Kerndämmung, zweistufig gedichtetes Fugensystem mit sogenannten „offenen Fugen“
+Innenliegende Bäder, teilweise innen-, vorwiegend außenliegende Küchen. Erstere mit Durchreichen, letztere mit Tür und Fenster
+Vorgefertigte Sanitärraumzellen (Nasszelle) einschließlich kompletter Ausstattung und Rohrbündel
+Außenliegendes Treppenhaus
+
+
+== Funktionelle Hauptmerkmale ==
+Minimierung der Verkehrsflächen in Gebäude und Wohnung zugunsten der Wohnfläche
+Variierbarkeit der Wohnungsgrößen und Belegungsdichte durch unterschiedliches Zusammensetzen der Funktionseinheiten
+Anpassung der Zahl der Geschosse und der Gliederung der Grundrisse an die funktionellen und städtebaulichen Forderungen durch vertikale und horizontale Kombination der Funktionseinheiten.
+
+
+== Bedeutung ==
+Von den rund 1,52 Millionen errichteten Wohnungen (Wohneinheiten = WE) in Plattenbauweise bis 1990 ist der Typ WBS 70 mit insgesamt 644 900 Wohneinheiten und einem Anteil von etwa 42 Prozent am weitesten verbreitet. Er gilt trotz seiner Einheitsbauweise als flexibel und wandelbar wie kein anderer Bautyp.
+Die erste Anwendung des WBS 70, ein fünfgeschossiges WBS 70/C1 des Wohnungsbaukombinat Neubrandenburg, befindet sich in der Koszaliner Straße 1/3/5/7 in der Oststadt Neubrandenburgs. Es wurde bereits zu DDR-Zeiten 1984 unter Denkmalschutz gestellt, der Status wurde nach 1990 übernommen.
+Im Jahre 2018 wurden in Dresden ein WBS 70/14.40 G3 des Wohnungsbaukombinats Dresden und weitere Gebäude und Kunstwerke aus der DDR unter Denkmalschutz gestellt. In dem Artikel wird dieser irrtümlich als WBS 70/10.80, ein älterer Typ, bezeichnet.
+
+
+== Literatur ==
+WBS70. Fünfzig Jahre danach. Sphere Publishers, Leipzig 2020/21, ISBN 978-3-9821327-5-4.
+
+
+== Weblinks ==
+
+Museumswohnung WBS 70, Webseite des Museums
+Museumswohnung WBS 70 auf berlin.de
+Denkmalschutz für WBS70
+WBS 70 – Die Einheitsplatte auf Internet Archive, archiviert von einer Website der Wohnungsbaugesellschaft Berlin-Mitte
+360°-Ansicht eines Modells der Wohnungsbauserie 70 (Virtuelles Landesmuseum Mecklenburg)
+
+
+== Einzelnachweise ==

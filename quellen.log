@@ -1,0 +1,85 @@
+--- OSM: Overpass
+overpass https://overpass-api.de/api/interpreter 502 # 502 Gateway Timeout
+
+This Overpass API server is currently at capacity. All query workers are busy
+and the request queue is full.
+
+## What to do
+
+Retry your request using exponential backoff: wait a
+overpass https://overpass-api.de/api/interpreter 502 # 502 Gateway Timeout
+
+This Overpass API server is currently at capacity. All query workers are busy
+and the request queue is full.
+
+## What to do
+
+Retry your request using exponential backoff: wait a
+overpass https://overpass.kumi.systems/api/interpreter HTTPSConnectionPool(host='overpass.kumi.systems', port=443): Read timed out. (read timeout=180)
+overpass https://overpass.kumi.systems/api/interpreter HTTPSConnectionPool(host='overpass.kumi.systems', port=443): Read timed out. (read timeout=180)
+overpass https://overpass.private.coffee/api/interpreter HTTPSConnectionPool(host='overpass.private.coffee', port=443): Read timed out. (read timeout=180)
+overpass https://overpass.private.coffee/api/interpreter 504 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:
+elements 0
+POIs 0 needing buildings 0
+
+=== places
+
+=== POIs
+
+=== blocks (levels ≥ 5 or apartments) 0
+[]
+
+--- Panoramax at the candidates
+  photos 0
+  pmx: 0 photos on 0 sheets
+
+--- Wikipedia (de)
+  missing Hauptkirche St. Marien (Suhl)
+  ok Kreuzkirche (Suhl) 3615
+  ok Waffenmuseum Suhl 5636
+  ok Congress Centrum Suhl 5636
+  missing Malzhaus (Suhl)
+  missing Suhl-Nord
+  ok Suhl 46769
+  missing Aue (Suhl)
+  ok WBS 70 7255
+  missing Steinweg (Suhl)
+  missing Sportplatz Aue
+  missing Lautenberg (Suhl)
+  ok Kaufhalle 1433
+  ok Plattenbau 113382
+  ok Ottilienstein 251
+  ok Simson (Unternehmen) 23917
+  missing Stadion Auenkampfbahn
+  missing Auenkampfbahn
+  missing Kulturhaus Suhl
+  missing Suhl-Mitte
+  ok Liste der Kulturdenkmale der Suhler Kernstadt 2743
+  missing Neues Rathaus Suhl
+  ok Rathaus Suhl 890
+
+--- Commons
+  marien: 10 files, 10 with open licence; first: ['Treppen vom Steinweg zur Hauptkirche St. Mari', 'Hauptkirche - panoramio.jpg', 'Hauptkirche St. Marien Suhl vom Steinweg aus ', 'Lutherbuche vor der Hauptkirche St. Marien Bi', 'Lutherbuche vor der Hauptkirche St. Marien Bi', 'Lutherbuche vor der Hauptkirche St. Marien Bi', 'Lutherbuche vor der Hauptkirche St. Marien Bi', 'Lutherbuche vor der Hauptkirche St. Marien Su']
+  marien: 10 photos on 2 sheets
+  kreuz: 76 files, 71 with open licence; first: ['Ausgerollter Teppich und Banner für die Sonde', 'Stadtkirche Suhl.jpg', 'Suhl Kreuzkirche Orgel (01).jpg', 'Suhl Kreuzkirche Orgel (02).jpg', 'Suhl Kreuzkirche Orgel (03).jpg', 'Suhl Kreuzkirche Orgel (1).JPG', 'Suhl Kreuzkirche Orgel (2).JPG', 'Suhl Kreuzkirche Orgel (3).JPG']
+  kreuz: 30 photos on 5 sheets
+  waffen: 77 files, 71 with open licence; first: ['.22 lfB Sprengstoffwerk Schönebeck.jpg', '.22 lfB Sprengstoffwerk Schönebeck blau 1.jpg', '.22 lfB Sprengstoffwerk Schönebeck blau 2.jpg', '.22 lfB Sprengstoffwerk Schönebeck rot 1.jpg', '.22 lfB Sprengstoffwerk Schönebeck rot 2.jpg', 'Bundesarchiv Bild 183-1984-0217-021, Suhl, Fa', 'Bundesarchiv Bild 183-1986-1020-011, Suhl, Fa', 'Bundesarchiv Bild 183-1988-0921-013, Suhl, Fa']
+  waffen: 24 photos on 4 sheets
+  ccs: 71 files, 62 with open licence; first: ['Bundesarchiv Bild 183-L1108-0028, Suhl, Satdt', 'Bundesarchiv Bild 183-L1209-0008, Suhl, Stadt', 'Bundesarchiv Bild 183-M0722-0010, Suhl, Stadt', 'Bundesarchiv Bild 183-M0722-0011, Suhl, Stadt', 'Bundesarchiv Bild 183-N0727-0007, Suhl, Stadt', 'Stadthalle der Freundschaft,Skoda mit Willi N', '20151010 xl P1000194 Suhl am Rennsteig und Um', '20151010 xl P1000262 Suhl am Rennsteig und Um']
+  ccs: 24 photos on 4 sheets
+  markt: 106 files, 104 with open licence; first: ['Ausgerollter Teppich und Banner für die Sonde', 'Treppen vom Steinweg zur Hauptkirche St. Mari', '20151010 xl P1000213 Suhl am Rennsteig und Um', '20151010 xl P1000223 Suhl am Rennsteig und Um', 'Adam-Riese-Straße vom Brunnen im Steinweg aus', 'Brunnen im Steinweg Suhl vor der Kreuzkirche ', 'Brunnen im Steinweg Suhl vor der Kreuzkirche ', 'Brunnen mit Plakatwänden davor im Steinweg Su']
+  markt: 24 photos on 4 sheets
+  nord: 228 files, 168 with open licence; first: ['Bundesarchiv Bild 183-U0626-0019, Suhl, Blick', 'Doebereiner Hörsaal.JPG', '003 Jena 1991 P1250440.jpg', 'Bundesarchiv Bild 183-1982-0713-008, Suhl, Su', 'Bundesarchiv Bild 183-M1209-0001, Suhl, Wohnb', 'Bundesarchiv Bild 183-P0304-0013, Suhl, Neuba', 'Bundesarchiv Bild 183-P0922-0007, Suhl, Bauar', 'Bundesarchiv Bild 183-W0926-0014, Baustelle S']
+  nord: 24 photos on 4 sheets
+  aue: 78 files, 77 with open licence; first: ['Bundesarchiv Bild 183-U0626-0019, Suhl, Blick', 'Bundesarchiv Bild 183-U1022-0016, Suhl, Aue I', 'Dürerstraße in Plauen 20190828 008.jpg', 'Plauen, Blick zum Kemmler und uo den Häusern ', 'Plauen, Dürerbrücke.JPG', 'Plauen, Dürerstraße 01.jpg', 'Plauen, Dürerstraße 03.jpg', 'Plauen, Dürerstraße 04.JPG']
+  aue: 24 photos on 4 sheets
+  wbs70: 180 files, 178 with open licence; first: ['19860513140NR Halle Brunos Warte innerstädt P', '19860513501NR Halle (Saale) Gebiet Domplatz E', '19860513505NR Halle (Saale) Gebiet Domplatz E', '19860513520NR Halle (Saale) Gebiet Domplatz E', '19870724010NR Berlin DDR Bauausstellung Außen', '19870724015NR Berlin DDR Bauausstellung Außen', '19870724020NR Berlin DDR Bauausstellung Außen', '19870724025NR Berlin DDR Bauausstellung Außen']
+  wbs70: 30 photos on 5 sheets
+  kaufhalle: 83 files, 83 with open licence; first: ['20070627010DR Dresden-Johannstadt Kaufhalle M', '20070627015DR Dresden-Johannstadt Kaufhalle M', '20161114230DR Dresden-Johannstadt Kaufhalle M', '2022113052 Stephanienstrasse 1 (ehemalige DDR', '2022113052 Stephanienstrasse 1 Eckansicht (eh', 'DDR, Ringkolonnaden Marzahn, südlicher Teil, ', 'DDR, Ringkolonnaden Marzahn, südlicher Teil, ', 'DDR, Ringkolonnaden Marzahn, südlicher Teil, ']
+  kaufhalle: 30 photos on 5 sheets
+  historisch: 118 files, 116 with open licence; first: ['Bundesarchiv Bild 183-59307-0003, Suhl, Kultu', 'Bundesarchiv Bild 183-59307-0004, Suhl, Kultu', 'Bundesarchiv Bild 183-B0506-0010-002, Suhl, I', 'Bundesarchiv Bild 183-B0506-0010-003, Suhl, I', 'Bundesarchiv Bild 183-F0811-0008-001, Suhl, I', 'Bundesarchiv Bild 183-M0722-0011, Suhl, Stadt', 'Bundesarchiv Bild 183-N0727-0007, Suhl, Stadt', 'Fotothek-df ge 0000135-Wasungen.jpg']
+  historisch: 24 photos on 4 sheets
+done
