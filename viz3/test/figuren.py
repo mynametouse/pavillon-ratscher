@@ -92,6 +92,8 @@ with lib.browser() as b:
         if E("AVATAR.kind") != k or not E("!!AVATAR.fig && AVATAR.fig.kind === AVATAR.kind"):
             pg.click('#menubtn')
             time.sleep(0.4)
+            pg.click('#menu [data-go="einstellungen"]')   # the menu's pages (26.10.2026): the figure is under Einstellungen
+            time.sleep(0.3)
             pg.click(f'#figseg [data-fig="{k}"]')
             time.sleep(0.3)
         pg.wait_for_function(f"AVATAR.ready && AVATAR.fig && AVATAR.fig.kind === '{k}'", timeout=300000, polling=500)

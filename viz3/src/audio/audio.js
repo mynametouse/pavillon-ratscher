@@ -23,13 +23,15 @@ export function toast(msg, ms = 3600) {
 let newsQ = [],
   newsOn = false,
   newsDone = false;
+// While the introduction runs (game/tutorial.js, body data-tut) no hint: it explains the same and would cover the card.
+const tutOn = () => document.body.dataset.tut === '1';
 export function news(msg, ms = 11000) {
-  if (newsDone) return;
+  if (newsDone || tutOn()) return;
   newsQ.push([msg, ms]);
   if (!newsOn) newsNext();
 }
 function newsNext() {
-  const n = newsDone ? null : newsQ.shift();
+  const n = newsDone || tutOn() ? null : newsQ.shift();
   if (!n) {
     newsOn = false;
     return;

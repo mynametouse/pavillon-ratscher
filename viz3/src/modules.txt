@@ -144,6 +144,7 @@ verkehr/verkehr_netz.js     # feat/verkehr the street network: junctions, exits,
 verkehr/verkehr_fig.js      # feat/verkehr the people as Rocketbox figures (loaded near, freed far), their dogs and bags (VFIG)
 verkehr/verkehr_auto.js     # feat/verkehr cars: model, driving and braking on their line, lamps at night, the car one may drive (VAUTO)
 verkehr/verkehr.js          # feat/verkehr walkers and cars in Ratscher and Schleusingen, talking, waving down, riding along, driving (VERKEHR)
+game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
 boot/boot.js                # start: light mode, variant, first view, loading screen, GAME api

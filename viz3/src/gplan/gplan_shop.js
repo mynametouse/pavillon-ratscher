@@ -598,7 +598,7 @@ export const GPSHOP = (() => {
     start: { on: 'gplan:einkaufsliste' },
     steps: [
       {
-        text: 'Fahr zur Baumschule Kammbach nach Kloster Veßra (Orte → Kloster Veßra).',
+        text: 'Fahr zur Baumschule Kammbach nach Kloster Veßra (Menü → Hingehen → Kloster Veßra).',
         // the gate of the nursery (before the zone is built: its jump spot)
         target: () => {
           const B = nursery(),

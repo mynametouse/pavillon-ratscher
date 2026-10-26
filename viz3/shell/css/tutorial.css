@@ -1,0 +1,27 @@
+/* the introduction for beginners (src/game/tutorial.js): a card at the top of the picture, what is meant lights up */
+#tutcard{position:absolute;z-index:12;top:64px;left:50%;transform:translateX(-50%);width:min(400px,calc(100% - 32px));box-sizing:border-box;background:var(--paper);color:var(--ink);border-left:4px solid var(--larch);border-radius:14px;box-shadow:0 10px 32px rgba(0,0,0,.34);padding:10px 12px 12px 16px}
+#tutcard[hidden]{display:none}
+#tutcard .tut-top{display:flex;align-items:center;gap:8px}
+#tutcard .tut-n{font:500 10.5px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#tutcard .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 22px/1 var(--f-body);cursor:pointer;padding:0 4px}
+#tutcard h3{margin:4px 0 4px;font:700 17px/1.2 var(--f-display)}
+#tutcard .tut-t{margin:0;font:400 14px/1.45 var(--f-body)}
+#tutcard .tut-t kbd{display:inline-block;min-width:1.5em;text-align:center;font:500 11px/1 var(--f-mono);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:3px 4px;margin:0 1px;background:var(--plate)}
+#tutcard .tut-b{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+#tutcard .tut-b button{border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 13px/1 var(--f-body);padding:9px 14px;cursor:pointer}
+#tutcard .tut-b .tut-go{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#tutcard .tut-b button[hidden]{display:none}
+.tut-hi{animation:tutpulse 1.5s ease-in-out infinite;position:relative;z-index:2}
+@keyframes tutpulse{0%,100%{box-shadow:0 0 0 3px rgba(210,154,98,.95),0 0 0 0 rgba(210,154,98,.5)}50%{box-shadow:0 0 0 3px rgba(210,154,98,.95),0 0 0 10px rgba(210,154,98,0)}}
+@media (prefers-reduced-motion:reduce){ .tut-hi{animation:none;box-shadow:0 0 0 3px rgba(210,154,98,.95)} }
+/* the menu open: on wide screens the card in the middle of what the sheet leaves; on phones small at the very top, the sheet below it */
+@media (min-width:561px){ body[data-menu="1"] #tutcard{left:calc(100% - min(430px,100%) - 16px);transform:translateX(-100%);max-width:calc(100% - min(430px,100%) - 32px)} }
+@media (max-width:560px){
+  #tutcard{top:60px}
+  body[data-menu="1"] #tutcard{top:8px;padding:8px 10px 8px 12px}
+  body[data-menu="1"] #tutcard .tut-top,body[data-menu="1"] #tutcard h3{display:none}
+  body[data-menu="1"] #tutcard .tut-t{font-size:13px;line-height:1.35}
+  body[data-menu="1"] #tutcard .tut-b{margin-top:6px}
+  body[data-menu="1"] #tutcard .tut-b button{padding:7px 11px;font-size:12px}
+  body[data-tut="1"] #menu .msheet{max-height:calc(100% - 126px)}
+}

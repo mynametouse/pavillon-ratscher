@@ -16,9 +16,14 @@ veröffentlicht.
 
 ## Stand
 
-- **Live: V16t** (`PAV_BUILD` src `687a8e3`, 26.10.2026 ~1:15, Falko: „Stell 687a8e3 live“): Lautstärke je Kanal, KI-Gespräche mit allen
-  Dorfbewohnern, eine Stimme je Person (`audio/stimme.js`), 284 aufgenommene feste Sätze (`viz3/extra/saetze/`), Huberts Kanister-Sätze; KTX2
-  nur in der Vorschau. Davor V16s (`09201b1`): KI-Gespräche mit Hubert und Ronald, Duzen im Dorf.
+- **Live: V16u** (`PAV_BUILD` src `ec01bde`, 26.10.2026 vormittags, Falko: „stell alles live. Wenn grün“, Prüfpaket grün inkl. Thema `dorf`,
+  `ki`, `piper`): KI-Gespräch gleich nach dem Schlüssel (iPhone-Fall unten), Piper-Stimmenwahl „Natürlich“, Tischgespräch im Dorf wartet auf den
+  gesagten Satz. Davor V16t (`687a8e3`): Lautstärke je Kanal, KI mit allen Dorfbewohnern, eine Stimme je Person, 284 aufgenommene Sätze;
+  V16s (`09201b1`): KI-Gespräche mit Hubert und Ronald, Duzen im Dorf. KTX2 weiter nur in der Vorschau.
+- **Menü und Einführung (26.10., Falko: „Das Menü ist total überladen … Konzept für ein Tutorial“):** Menü in Seiten (Start: Weiter,
+  Neu hier?, Aufgaben, Inventar, fünf Bereiche; Seiten Hingehen, Erleben, Gestalten, Einstellungen, Hilfe mit Zurück), Einführung
+  `game/tutorial.js` (TUT, neun Schritte, erkennt selbst, was getan ist). Konzept und Umsetzung: `docs/features/tutorial.md`. Test `menu`
+  49/49, `smoke` und `ki` grün; `figuren.py`/`v15a.py` öffnen jetzt die Seite. Auf `src`, live nach Falkos Freigabe.
 - **Piper zusammengeführt (26.10. früh, `a049b00`):** Stimmenwahl „Natürlich“ (kostenlose Piper-Stimmen im Browser, einmal ~140 MB von
   Hugging Face, ~13 MB Laufzeit selbst gehostet, nur bei Wahl geladen); Standard bleibt „Gerät“. eSpeak NG (GPL) liegt als eigenes Programm mit
   Lizenz daneben (`viz3/extra/piper/dist/piper/`). Noch niemand hat zugehört (Artefakte aus dem Container nicht ladbar) – Falko fragen;
@@ -29,9 +34,6 @@ veröffentlicht.
   Sprachausgabe beim ersten Tipp. Hubert und Ronald „nicht gefunden“: Freitagabend nach dem Skatabend ist es nach 22 Uhr – dann sind sie zu
   Hause (`npc/hours.js`, 22–6 Uhr); Falko auf Menü → Orte bzw. die Uhr hingewiesen. Kein Fehler gefunden; falls sie auch tagsüber fehlen,
   `NPC.real` (echte Figuren laden auf dem iPhone?) prüfen.
-- **Auf `src`, noch nicht live:** `ae90b7f` – das Tischgespräch im Dorf wartet auf den gesagten Satz (statt geschätzter Pausen), Dorf-Test mit
-  längerem Zeitfenster (Thema `dorf` war bei `687a8e3` 32/34). Falko (26.10.): „Bitte veröffentliche, wenn alle wesentlichen Tests grün“ – die
-  Sicherheitsprüfung verlangt trotzdem je Stand eine Anweisung im Chat („Stell <sha> live“); ihn darum bitten, sobald das Prüfpaket grün ist.
 - **Seit 26.10. früh auf `src`/`wip/kern`:** `feat/texturen` zusammengeführt (`5f06afb`, KTX2 in der Vorschau, live aus); feste Sätze werden
   gesprochen (`78ba6d1`): `STIMME.say` spielt eine Aufnahme mit genau diesen Worten (`window.VOICEX`, auf Abruf) oder liest in der Stimme der
   Person vor („Feste Sätze vorlesen“) – Dorfbewohner, Tischgespräche, Murmeln, Aufgabensätze; 284 Sätze (`tools/voices/linien.mjs` →
@@ -87,9 +89,9 @@ Aufträge wörtlich in `docs/plans/auftraege/`, Stand mit `bash tools/agents.sh`
 
 ## Offen, in dieser Reihenfolge sinnvoll
 
-1. **V16t:** Prüfpaket von `44d6fb5d` prüfen; Falko die Vorschau zeigen (KI-Schlüssel, Lautstärke, Stimmen je Person, Dorfbewohner); live erst
-   auf seine Freigabe; CHANGELOG.
-2. **Agenten `verkehr` und `piper`:** Berichte lesen, CI-Ergebnisse und Bilder (Artefakt „out“) ansehen, mergen, Vorschau, Falko fragen.
+1. **Rückmeldung von Falko zu V16u:** KI-Gespräch am iPhone (Schlüssel, Mikrofon, Sprachausgabe), Stimmen der Dorfbewohner (Edge-Aufnahmen)
+   und „Natürlich“ (Piper), Hubert und Ronald tagsüber sichtbar? KTX2 in der Vorschau auf iPhone und Laptop.
+2. **Agent `verkehr`** (`piper` ist gemergt): Bericht lesen, CI-Ergebnisse und Bilder (Artefakt „out“) ansehen, mergen, Vorschau, Falko fragen.
    Danach: Spaziergänger und Fahrer mit `KI.person` anmelden (falls der Agent es nicht schon tut), Piper als Standard-Stimme, wenn schnell genug.
 3. **KI-Gespräche, nächste Schritte** (`docs/features/ki.md`, „Offen“): echte Probe mit Schlüssel auf iPhone und Laptop (ElevenLabs aus dem
    Browser ungetestet); ein kleiner Server für den Schlüssel, damit Sarah und Christoph ohne eigenen reden können; das Weitererzählte am
@@ -124,6 +126,9 @@ Aufträge wörtlich in `docs/plans/auftraege/`, Stand mit `bash tools/agents.sh`
 - Falko: „Arbeite und veröffentliche weiter“ (26.10. ~0:30) → der Live-Push wurde trotzdem von der Sicherheitsprüfung blockiert (jede
   Veröffentlichung braucht seine ausdrückliche Freigabe im Chat). V16t (`44d6fb5`, Vorschau) wartet darauf. Weiter: Texturen zusammengeführt,
   feste Sätze sprechen lassen, Aufnahmen auf GitHub.
+
+- 26.10. vormittags: Falkos iPhone-Fall (Schlüssel im offenen Gespräch) behoben, V16u live (`ec01bde`, „stell alles live. Wenn grün“).
+  Dann: Menü vereinfachen und eine Einführung – Konzept in `docs/features/tutorial.md`, Menü in Seiten, `game/tutorial.js`, Test `menu`.
 
 ## Wünsche von Falko (23.–25.10.2026), die weiter gelten
 

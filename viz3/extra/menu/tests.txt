@@ -1,0 +1,2 @@
+# the simpler menu (pages) and the introduction for beginners (game/hud.js, game/tutorial.js)
+menu
