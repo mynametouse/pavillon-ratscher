@@ -15,18 +15,20 @@ os.makedirs(OUT, exist_ok=True); os.makedirs(TMP, exist_ok=True)
 WHO = {
     'hubert': (['de-DE-ConradNeural'], '-10%', '-8Hz', 'highpass=f=70,lowpass=f=9000'),
     'ronald': (['de-DE-FlorianMultilingualNeural'], '+2%', '-2Hz', 'highpass=f=80'),
-    'gerhard': (['de-DE-BerndNeural', 'de-DE-KlausNeural', 'de-DE-KillianNeural'], '-12%', '-10Hz', 'highpass=f=70'),
-    'manfred': (['de-DE-KlausNeural', 'de-DE-RalfNeural', 'de-DE-KillianNeural'], '-2%', '-5Hz', 'highpass=f=70'),
-    'wolfgang': (['de-DE-RalfNeural', 'de-DE-KasperNeural', 'de-DE-KillianNeural'], '-6%', '-9Hz', 'highpass=f=70'),
-    'uwe': (['de-DE-KasperNeural', 'de-DE-ChristophNeural', 'de-DE-KillianNeural'], '+0%', '-3Hz', 'highpass=f=70'),
-    'jens': (['de-DE-ChristophNeural', 'de-DE-KillianNeural'], '+6%', '+2Hz', 'highpass=f=80'),
+    # edge-tts offers only three German men (Conrad and Florian are Hubert's and Ronald's): the multilingual voices (they speak German) and
+    # the Austrian one make the villagers sound different from each other (26.10.2026; a light accent possible – Falko listens)
+    'gerhard': (['en-US-AndrewMultilingualNeural', 'de-DE-KillianNeural'], '-10%', '-6Hz', 'highpass=f=70'),
+    'manfred': (['de-DE-KillianNeural'], '-4%', '-6Hz', 'highpass=f=70'),
+    'wolfgang': (['en-US-BrianMultilingualNeural', 'de-DE-KillianNeural'], '-6%', '-6Hz', 'highpass=f=70'),
+    'uwe': (['de-AT-JonasNeural', 'de-DE-KillianNeural'], '+0%', '-2Hz', 'highpass=f=70'),
+    'jens': (['de-DE-KillianNeural'], '+7%', '+3Hz', 'highpass=f=80'),
     'katrin': (['de-DE-KatjaNeural', 'de-DE-AmalaNeural'], '+2%', '+0Hz', 'highpass=f=90'),
     'ingrid': (['de-DE-ElkeNeural', 'de-DE-AmalaNeural', 'de-DE-SeraphinaMultilingualNeural'], '-4%', '-6Hz', 'highpass=f=90'),
     'heike': (['de-DE-TanjaNeural', 'de-DE-SeraphinaMultilingualNeural', 'de-DE-AmalaNeural'], '+0%', '-2Hz', 'highpass=f=90'),
 }
 
 async def voices():
-    return {v['ShortName'] for v in await edge_tts.list_voices() if v['Locale'] == 'de-DE'}
+    return {v['ShortName'] for v in await edge_tts.list_voices()}
 
 async def say(text, voice, rate, pitch, raw):
     for k in range(4):
@@ -42,7 +44,7 @@ def dur(f): return float(subprocess.run(['ffprobe', '-v', 'error', '-show_entrie
 
 lines = json.load(open(os.path.join(H, 'linien.json')))
 have = asyncio.run(voices())
-print('de-DE voices:', ' '.join(sorted(have)), flush=True)
+print('German and multilingual voices:', ' '.join(sorted(v for v in have if v.startswith('de-') or 'Multilingual' in v)), flush=True)
 pick = {w: next((v for v in pref if v in have), None) for w, (pref, *_rest) in WHO.items()}
 mf = os.path.join(EX, 'manifest.json')
 old = json.load(open(mf))['vx'] if os.path.exists(mf) else {'voices': {}, 'lines': []}
