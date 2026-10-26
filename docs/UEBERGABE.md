@@ -19,6 +19,10 @@ veröffentlicht.
 - **Live: V16t** (`PAV_BUILD` src `687a8e3`, 26.10.2026 ~1:15, Falko: „Stell 687a8e3 live“): Lautstärke je Kanal, KI-Gespräche mit allen
   Dorfbewohnern, eine Stimme je Person (`audio/stimme.js`), 284 aufgenommene feste Sätze (`viz3/extra/saetze/`), Huberts Kanister-Sätze; KTX2
   nur in der Vorschau. Davor V16s (`09201b1`): KI-Gespräche mit Hubert und Ronald, Duzen im Dorf.
+- **Piper zusammengeführt (26.10. früh, `a049b00`):** Stimmenwahl „Natürlich“ (kostenlose Piper-Stimmen im Browser, einmal ~140 MB von
+  Hugging Face, ~13 MB Laufzeit selbst gehostet, nur bei Wahl geladen); Standard bleibt „Gerät“. eSpeak NG (GPL) liegt als eigenes Programm mit
+  Lizenz daneben (`viz3/extra/piper/dist/piper/`). Noch niemand hat zugehört (Artefakte aus dem Container nicht ladbar) – Falko fragen;
+  iPhone-Speicher (~200 MB je Modell) erst am Gerät beurteilen. Empfehlung des Agenten: „Natürlich“ später Standard auf Rechnern.
 - **Auf `src`, noch nicht live:** `ae90b7f` – das Tischgespräch im Dorf wartet auf den gesagten Satz (statt geschätzter Pausen), Dorf-Test mit
   längerem Zeitfenster (Thema `dorf` war bei `687a8e3` 32/34). Falko (26.10.): „Bitte veröffentliche, wenn alle wesentlichen Tests grün“ – die
   Sicherheitsprüfung verlangt trotzdem je Stand eine Anweisung im Chat („Stell <sha> live“); ihn darum bitten, sobald das Prüfpaket grün ist.
