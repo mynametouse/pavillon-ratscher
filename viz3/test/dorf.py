@@ -106,7 +106,7 @@ with lib.browser() as b:
             E("DORF.UI.close(); DORF.sitDown(); GAME.step(0.6)")
             page_shot(pg, 'd_seated')
             lines = []
-            for i in range(70):
+            for i in range(180):   # 26.10.: the story is spoken now (recordings) – the next line waits until the last one has been said
                 E("GAME.step(0.5)"); s = J("DORF.state().sub")
                 if s and (not lines or lines[-1] != s): lines.append(s)
                 if J('DORF.ST.step') == 'play': break

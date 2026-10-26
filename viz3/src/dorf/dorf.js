@@ -115,10 +115,9 @@ export const DORF = (() => {
   // a fixed line spoken: its recording (tools/voices/record_lines.py) or the person's own voice (audio/stimme.js, settings „Feste Sätze
   // vorlesen“); the free talk speaks for itself
   const voice = (k, text) => {
-    if (!text || !STIMME.speaks(k, text)) return false;
+    if (!text || !STIMME.speaks(k, text)) return null;
     const h = DPEOPLE.head(k);
-    STIMME.say(k, text, { at: h ? [h[0], h[1]] : null });
-    return true;
+    return STIMME.say(k, text, { at: h ? [h[0], h[1]] : null }); // resolves when said
   };
   // ---- the talk panel and the subtitles ----
   const UI = (() => {
@@ -491,7 +490,7 @@ export const DORF = (() => {
     }
   }
   // ---- table talk, stories ----
-  const TALKQ = { lines: null, i: 0, t: 0, story: false, wait: 8, last: -1 };
+  const TALKQ = { lines: null, i: 0, t: 0, story: false, wait: 8, last: -1, speaking: false, hold: 0 };
   function play(lines, story) {
     TALKQ.lines = lines;
     TALKQ.i = 0;
@@ -502,7 +501,9 @@ export const DORF = (() => {
     const Q = TALKQ;
     if (Q.lines) {
       Q.t -= dt;
-      if (Q.t > 0) return;
+      Q.hold -= dt;
+      // the next line when this one has been read – and said, if it is spoken (at most twice the reading time)
+      if (Q.t > 0 || (Q.speaking && Q.hold > 0)) return;
       if (Q.i >= Q.lines.length) {
         const wasStory = Q.story;
         Q.lines = null;
@@ -517,7 +518,10 @@ export const DORF = (() => {
         ms = Math.max(2800, text.length * 62);
       UI.subtitle(who, text, ms);
       Q.t = ms / 1000 + 0.5;
-      if (voice(who, text)) Q.t = Math.max(Q.t, text.length * 0.075 + 1.2); // spoken lines take longer than read ones
+      const said = voice(who, text);
+      Q.speaking = !!said;
+      Q.hold = Q.t * 2;
+      if (said) said.then(() => (Q.speaking = false));
       return;
     }
     if (!where || UI.cur) return;
