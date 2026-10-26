@@ -1,0 +1,48 @@
+# feat/suhl-leute: research for the people of Suhl – OpenStreetMap places and ways and German Wikipedia extracts about Suhl
+# (viz3/extra/suhl-leute/recherche.py), because the chat machine reaches neither. The results go to the scratch branch
+# ref/suhl-leute-fotos (never merged, deleted when the topic is done); the agent derives the small data of the people from them.
+name: Suhl-Leute Recherche
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['feat/suhl-leute']
+    paths: ['viz3/extra/suhl-leute/recherche.py', '.github/workflows/suhl-leute.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: suhl-leute-recherche
+  cancel-in-progress: false
+
+jobs:
+  research:
+    name: Orte und Wissen über Suhl
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet requests pyproj
+      - name: Recherche
+        run: python -I -u viz3/extra/suhl-leute/recherche.py "$RUNNER_TEMP/rech"
+      - name: Auf den Notizzweig ref/suhl-leute-fotos
+        run: |
+          R="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          if git ls-remote --exit-code --heads "$R" ref/suhl-leute-fotos >/dev/null; then
+            git clone -q --depth 1 --branch ref/suhl-leute-fotos "$R" "$RUNNER_TEMP/ref"
+          else
+            git init -q "$RUNNER_TEMP/ref" && git -C "$RUNNER_TEMP/ref" checkout -q --orphan ref/suhl-leute-fotos
+            git -C "$RUNNER_TEMP/ref" remote add origin "$R"
+          fi
+          cd "$RUNNER_TEMP/ref"
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          rm -rf recherche && cp -r "$RUNNER_TEMP/rech" recherche
+          git add -A recherche
+          git commit -qm "Suhl-Leute: Recherche $(date -u +%FT%TZ) (OSM ODbL, Wikipedia CC BY-SA 4.0)" || true
+          git push -q origin HEAD:refs/heads/ref/suhl-leute-fotos
