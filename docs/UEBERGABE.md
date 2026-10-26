@@ -16,14 +16,12 @@ veröffentlicht.
 
 ## Stand
 
-- **Live: V16s** (`PAV_BUILD` src `09201b1`, 25.10.2026 ~23:15): freie **KI-Gespräche** mit Hubert und Ronald (Stimme, Claude Haiku 5.5 mit
-  eigenem Schlüssel, Sprachausgabe, Meinung, Aufgaben, Weitererzählen am Tisch) und **Duzen im Dorf** (Texte in `game/quests.js`, `amt/*`;
-  Huberts 16 Sätze neu aufgenommen). Davor V16r (`e50dbd2`): Gartenplaner Runde 2, „Rasen mähen“, geglättete Fahrt, `KERN.tick`.
-- **Auf `src`, noch nicht live (Kandidat V16t, `44d6fb5d`, Prüfpaket lief um ~23:50):** Lautstärke je Kanal (Gesamt, Stimmen, Umgebung,
-  Effekte, Musik – `pav-ton-v1`, Menü → Einstellungen → Lautstärke), `audio/stimme.js` (eine Stimme je Person: beste Gerätestimme,
-  ElevenLabs je Person, Engines registrierbar), KI-Gespräche mit den **acht Dorfbewohnern** (`DORF.extend`, Charakter aus `dorf/dorf_text.js`,
-  Startmeinung aus `amt/amt_data.js`), Gehörtes macht im Dorf die Runde, `KI.person`/`KI.talk` für weitere Personen. Ist das Prüfpaket grün:
-  Falko Bescheid sagen (Vorschau), **live nur, wenn Falko es ausdrücklich sagt** (siehe „Veröffentlichen“), dann V16t in `docs/CHANGELOG.md`.
+- **Live: V16t** (`PAV_BUILD` src `687a8e3`, 26.10.2026 ~1:15, Falko: „Stell 687a8e3 live“): Lautstärke je Kanal, KI-Gespräche mit allen
+  Dorfbewohnern, eine Stimme je Person (`audio/stimme.js`), 284 aufgenommene feste Sätze (`viz3/extra/saetze/`), Huberts Kanister-Sätze; KTX2
+  nur in der Vorschau. Davor V16s (`09201b1`): KI-Gespräche mit Hubert und Ronald, Duzen im Dorf.
+- **Auf `src`, noch nicht live:** `ae90b7f` – das Tischgespräch im Dorf wartet auf den gesagten Satz (statt geschätzter Pausen), Dorf-Test mit
+  längerem Zeitfenster (Thema `dorf` war bei `687a8e3` 32/34). Falko (26.10.): „Bitte veröffentliche, wenn alle wesentlichen Tests grün“ – die
+  Sicherheitsprüfung verlangt trotzdem je Stand eine Anweisung im Chat („Stell <sha> live“); ihn darum bitten, sobald das Prüfpaket grün ist.
 - **Seit 26.10. früh auf `src`/`wip/kern`:** `feat/texturen` zusammengeführt (`5f06afb`, KTX2 in der Vorschau, live aus); feste Sätze werden
   gesprochen (`78ba6d1`): `STIMME.say` spielt eine Aufnahme mit genau diesen Worten (`window.VOICEX`, auf Abruf) oder liest in der Stimme der
   Person vor („Feste Sätze vorlesen“) – Dorfbewohner, Tischgespräche, Murmeln, Aufgabensätze; 284 Sätze (`tools/voices/linien.mjs` →
