@@ -57,7 +57,7 @@ export const PIPER = (() => {
     },
   };
   // speakers of the multi-speaker models that may be chosen by hand: [id, gender, short description]. The audiobook model (Multilingual
-  // LibriSpeech, 236 readers): the clearest readers of the survey (periodic, little noise), by pitch and colour
+  // LibriSpeech, 236 readers): the clearest readers of the survey (piper.py survey=1, 26.10.2026: steady voice, little noise), by pitch and colour
   const SPEAKERS = {
     thorsten_emotional: [
       ['neutral', 'm', 'ruhig'],
@@ -67,22 +67,23 @@ export const PIPER = (() => {
       ['angry', 'm', 'grimmig'],
     ],
     mls: [
-      ['3', 'm', 'Mann, warm'],
-      ['13', 'm', 'Mann, klar'],
-      ['56', 'm', 'Mann, ruhig'],
-      ['85', 'm', 'Mann, mittel'],
-      ['6', 'm', 'Mann, tief'],
-      ['44', 'm', 'Mann, gesetzt'],
-      ['34', 'm', 'Mann, hell'],
-      ['83', 'm', 'Mann, jung'],
-      ['60', 'm', 'Mann, kräftig'],
-      ['68', 'f', 'Frau, klar'],
+      ['122', 'm', 'Mann, warm'],
+      ['171', 'm', 'Mann, sehr warm'],
+      ['141', 'm', 'Mann, ruhig'],
+      ['128', 'm', 'Mann, mittel'],
+      ['152', 'm', 'Mann, tief und klar'],
+      ['156', 'm', 'Mann, tief'],
+      ['13', 'm', 'Mann, klar, jung'],
+      ['172', 'm', 'Mann, hell'],
+      ['105', 'm', 'Mann, sehr hell'],
+      ['36', 'f', 'Frau, klar'],
       ['46', 'f', 'Frau, warm'],
       ['73', 'f', 'Frau, freundlich'],
-      ['38', 'f', 'Frau, weich'],
-      ['84', 'f', 'Frau, mittel'],
-      ['15', 'f', 'Frau, hell'],
-      ['57', 'f', 'Frau, ruhig'],
+      ['143', 'f', 'Frau, dunkel'],
+      ['162', 'f', 'Frau, ruhig'],
+      ['68', 'f', 'Frau, hell'],
+      ['26', 'f', 'Frau, jung'],
+      ['15', 'f', 'Frau, sehr hell'],
     ],
   };
   // ---------------- who sounds how (the cast first; ls > 1 slower, pitch < 1 lower) ----------------
@@ -90,20 +91,20 @@ export const PIPER = (() => {
   // download (140 MB together) and every person sounds like somebody else
   const VOICES = {
     hubert: { v: 'thorsten', ls: 1.08, pitch: 0.9 }, // 75, gruff, older: low and slow (~100 Hz)
-    ronald: { v: 'mls:3', ls: 0.95, pitch: 0.97 }, // 55, warm, talkative: a warm voice, a little quicker
-    gerhard: { v: 'mls:44', ls: 1.1, pitch: 0.95 }, // 72, retired teacher: measured, lower
-    manfred: { v: 'mls:56', ls: 1.0, pitch: 0.98 }, // 56, fire chief: calm, firm
-    wolfgang: { v: 'mls:6', ls: 1.04, pitch: 0.97 }, // 59, forest worker: deep
-    uwe: { v: 'mls:85', ls: 0.98, pitch: 1.0 }, // 46, farmer
+    ronald: { v: 'mls:122', ls: 0.94, pitch: 1.0 }, // 55, warm, talkative: a warm voice (~120 Hz), a little quicker
+    gerhard: { v: 'mls:152', ls: 1.1, pitch: 0.96 }, // 72, retired teacher: deep and clear, measured
+    manfred: { v: 'mls:141', ls: 1.0, pitch: 0.98 }, // 56, fire chief: calm, firm
+    wolfgang: { v: 'mls:156', ls: 1.05, pitch: 0.98 }, // 59, forest worker: deep (~95 Hz)
+    uwe: { v: 'mls:171', ls: 0.98, pitch: 1.0 }, // 46, farmer: very warm
     jens: { v: 'mls:13', ls: 0.93, pitch: 1.04 }, // 34, mechanic: clear, young, quick
-    katrin: { v: 'mls:68', ls: 0.96, pitch: 1.02 }, // 39, nurse: clear
+    katrin: { v: 'mls:36', ls: 0.96, pitch: 1.0 }, // 39, nurse: clear (~210 Hz)
     ingrid: { v: 'mls:46', ls: 1.04, pitch: 0.97 }, // 58, Ortsteilbürgermeisterin: warm, mature
     heike: { v: 'mls:73', ls: 1.0, pitch: 1.0 }, // 47, garden and hens: friendly
   };
   // for persons registered later (strollers, drivers): readers of the same model the cast does not use
   const POOL = {
-    m: ['mls:34', 'mls:83', 'mls:60', 'mls:27', 'mls:81', 'mls:49'],
-    f: ['mls:38', 'mls:84', 'mls:15', 'mls:57', 'mls:12', 'mls:64'],
+    m: ['mls:128', 'mls:212', 'mls:148', 'mls:58', 'mls:172', 'mls:34', 'mls:121', 'mls:209'],
+    f: ['mls:143', 'mls:162', 'mls:51', 'mls:68', 'mls:26', 'mls:177', 'mls:228', 'mls:187'],
   };
 
   // ---------------- saved: a voice per person chosen by hand ----------------

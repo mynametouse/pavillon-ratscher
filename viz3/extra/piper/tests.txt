@@ -1,2 +1,3 @@
-# natural voices in the browser (audio/piper.js), real Piper voices from Hugging Face on GitHub Actions (a stand-in model without internet)
-piper:survey=1
+# natural voices in the browser (audio/piper.js): real Piper voices from Hugging Face on GitHub Actions, a stand-in model without internet
+# (piper:survey=1 adds every German voice and all 236 audiobook readers, ~10 min)
+piper
