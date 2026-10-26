@@ -35,7 +35,7 @@ with sync_playwright() as p:
         pg.click('#menubtn'); time.sleep(0.6); ui(pg, 'a2_menu')
         print('menu open', E("HUD.open"), 'phases in', E("document.querySelector('.phases').parentNode.id"), flush=True)
         pg.keyboard.press('Escape'); time.sleep(0.3); print('after esc', E("HUD.open"), flush=True)
-        pg.click('#menubtn'); time.sleep(0.4); pg.click('#menu [data-spot="werkstatt"]'); time.sleep(0.6)
+        pg.click('#menubtn'); time.sleep(0.4); pg.click('#menu [data-go="orte"]'); time.sleep(0.3); pg.click('#menu [data-spot="werkstatt"]'); time.sleep(0.6)
         print('mode', E("GAME.P.mode"), 'menu', E("HUD.open"), 'phases in', E("document.querySelector('.phases').parentNode.id"), flush=True)
         E("GAME.step(0.5)"); ui(pg, 'a3_walk')
     if want('inv'):

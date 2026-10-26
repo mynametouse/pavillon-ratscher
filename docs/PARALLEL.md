@@ -54,6 +54,11 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 26.10. Kern: **Das Menü hat jetzt Seiten** (Falko: „total überladen“): Start (Weiter, Aufgaben, Inventar, fünf Bereiche) und je eine Seite
+  Hingehen, Erleben, Gestalten, Einstellungen, Hilfe (`shell/menu.html`, `game/hud.js`). Alle IDs und `data-…` der Knöpfe sind geblieben. Neue
+  Knöpfe auf die Seite ihres Bereichs, neue Orte nach Hingehen in die passende Gruppe; Tests mit `pg.click` öffnen erst die Seite
+  (`HUD.setMenu(true, 'orte')`). Neu: Einführung `game/tutorial.js` (TUT) – erscheint unter Testautomatik nie von selbst.
+
 - 25.10. spät Kern: Falko wünscht Lautstärke je Kanal, Gespräche mit allen Dorfbewohnern, natürlichere kostenlose Stimmen, Leben auf den
   Straßen (Leute, Autos, anhalten). Kern-Chat: Lautstärke (`pav-ton-v1`), `audio/stimme.js` (Stimme je Person), Dorfbewohner in den
   KI-Gesprächen (`DORF.extend`, `KI.person`/`KI.talk` für weitere) – auf `src` seit 44d6fb5d. Hilfs-Agenten `verkehr` und `piper` gestartet.

@@ -23,6 +23,7 @@ css/schleusingen.css
 css/amt.css
 css/gartenplaner.css
 css/ki.css
+css/tutorial.css
 header.html
 panel_3d.html
 menu.html

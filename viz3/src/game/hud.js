@@ -236,7 +236,7 @@ export const HUD = (() => {
     if (phSec) phSec.hidden = inOrbit;
   }
   // ---------------- scenes: the start situations of the features (KERN.scenario) as chips (phase 2, building block 3) ----------------
-  // Places the „Orte“ chips already offer (a data-spot of the same name) are left out, and so is a scene with menu: false. A scene that
+  // Places the „Hingehen“ chips already offer (a data-spot of the same name) are left out, and so is a scene with menu: false. A scene that
   // changes saved progress or the clock says what in def.ask and needs a second tap.
   const scenEl = $('scen-menu'),
     scenNote = $('scen-note');
@@ -286,11 +286,39 @@ export const HUD = (() => {
       toast('Diese Szene ließ sich nicht starten.');
     }
   });
-  function setMenu(v) {
+  // ---------------- the menu's pages (Falko, 26.10.2026: „Das Menü ist total überladen“): the start – back to the game, the introduction,
+  // tasks and things, five areas – and one page per area with a back button (shell/menu.html) ----------------
+  const pages = [...menu.querySelectorAll('.mpage')],
+    mTitle = $('m-title'),
+    mBack = $('mback');
+  function page(name) {
+    const pg = pages.find(p => p.dataset.page === name) || pages[0];
+    for (const p of pages) p.hidden = p !== pg;
+    menu.dataset.page = pg.dataset.page;
+    if (mTitle) mTitle.textContent = pg.dataset.title || 'Menü';
+    if (mBack) mBack.hidden = pg === pages[0];
+    const body = menu.querySelector('.mbody');
+    if (body) body.scrollTop = 0;
+    disarm();
+    KERN.emit('menu:page', { name: pg.dataset.page });
+    setTimeout(() => {
+      const b = pg === pages[0] ? menu.querySelector('.mresume') : mBack;
+      if (b && S.open)
+        try {
+          b.focus({ preventScroll: true });
+        } catch (e) {}
+    }, 40);
+  }
+  menu.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => page(b.dataset.go)));
+  mBack?.addEventListener('click', () => page('start'));
+  // open (on a page: 'orte', 'erleben', 'gestalten', 'einstellungen', 'hilfe'; the start by default) or close
+  function setMenu(v, where) {
     v = !!v;
+    if (v && where && S.open) return page(where);
     if (v === S.open) return;
     S.open = v;
     menu.hidden = !v;
+    document.body.dataset.menu = v ? '1' : '';
     disarm();
     mbtn.setAttribute('aria-expanded', v ? 'true' : 'false');
     if (v) {
@@ -298,13 +326,7 @@ export const HUD = (() => {
       if (S.inv) setInv(false);
       unlock();
       refresh();
-      setTimeout(() => {
-        const b = menu.querySelector('.mresume');
-        if (b && S.open)
-          try {
-            b.focus({ preventScroll: true });
-          } catch (e) {}
-      }, 40);
+      page(where || 'start');
     } else {
       try {
         mbtn.focus({ preventScroll: true });
@@ -746,6 +768,11 @@ export const HUD = (() => {
       )
         return;
       if ((k === 'Tab' || k === 'Enter' || k === ' ') && S.open) return;
+      // Backspace: from a page back to the start
+      if (k === 'Backspace' && S.open && menu.dataset.page !== 'start') {
+        page('start');
+        e.preventDefault();
+      }
       e.stopImmediatePropagation();
     },
     true
@@ -904,6 +931,10 @@ export const HUD = (() => {
   viewChanged();
   return {
     setMenu,
+    menuPage: page,
+    get page() {
+      return S.open ? menu.dataset.page : null;
+    },
     setClean,
     get open() {
       return S.open;

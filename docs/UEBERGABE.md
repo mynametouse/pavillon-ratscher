@@ -20,6 +20,10 @@ veröffentlicht.
   `ki`, `piper`): KI-Gespräch gleich nach dem Schlüssel (iPhone-Fall unten), Piper-Stimmenwahl „Natürlich“, Tischgespräch im Dorf wartet auf den
   gesagten Satz. Davor V16t (`687a8e3`): Lautstärke je Kanal, KI mit allen Dorfbewohnern, eine Stimme je Person, 284 aufgenommene Sätze;
   V16s (`09201b1`): KI-Gespräche mit Hubert und Ronald, Duzen im Dorf. KTX2 weiter nur in der Vorschau.
+- **Menü und Einführung (26.10., Falko: „Das Menü ist total überladen … Konzept für ein Tutorial“):** Menü in Seiten (Start: Weiter,
+  Neu hier?, Aufgaben, Inventar, fünf Bereiche; Seiten Hingehen, Erleben, Gestalten, Einstellungen, Hilfe mit Zurück), Einführung
+  `game/tutorial.js` (TUT, neun Schritte, erkennt selbst, was getan ist). Konzept und Umsetzung: `docs/features/tutorial.md`. Test `menu`
+  49/49, `smoke` und `ki` grün; `figuren.py`/`v15a.py` öffnen jetzt die Seite. Auf `src`, live nach Falkos Freigabe.
 - **Piper zusammengeführt (26.10. früh, `a049b00`):** Stimmenwahl „Natürlich“ (kostenlose Piper-Stimmen im Browser, einmal ~140 MB von
   Hugging Face, ~13 MB Laufzeit selbst gehostet, nur bei Wahl geladen); Standard bleibt „Gerät“. eSpeak NG (GPL) liegt als eigenes Programm mit
   Lizenz daneben (`viz3/extra/piper/dist/piper/`). Noch niemand hat zugehört (Artefakte aus dem Container nicht ladbar) – Falko fragen;
@@ -122,6 +126,9 @@ Aufträge wörtlich in `docs/plans/auftraege/`, Stand mit `bash tools/agents.sh`
 - Falko: „Arbeite und veröffentliche weiter“ (26.10. ~0:30) → der Live-Push wurde trotzdem von der Sicherheitsprüfung blockiert (jede
   Veröffentlichung braucht seine ausdrückliche Freigabe im Chat). V16t (`44d6fb5`, Vorschau) wartet darauf. Weiter: Texturen zusammengeführt,
   feste Sätze sprechen lassen, Aufnahmen auf GitHub.
+
+- 26.10. vormittags: Falkos iPhone-Fall (Schlüssel im offenen Gespräch) behoben, V16u live (`ec01bde`, „stell alles live. Wenn grün“).
+  Dann: Menü vereinfachen und eine Einführung – Konzept in `docs/features/tutorial.md`, Menü in Seiten, `game/tutorial.js`, Test `menu`.
 
 ## Wünsche von Falko (23.–25.10.2026), die weiter gelten
 

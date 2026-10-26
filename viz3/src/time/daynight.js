@@ -1020,7 +1020,7 @@ export const DN = (() => {
       .map(q => q[1] + ' ' + hmOf(q[0]))
       .join(' ')}${rm.up == null && rm.down == null ? '–' : ''} · ${ph}</span></div>
       <div class="mrow"><span>Datum</span><div class="mseg"><button type="button" data-dmon="-1">◀ Monat</button><button type="button" data-dmon="0">Heute</button><button type="button" data-dmon="1">Monat ▶</button></div></div>
-      ${S.active ? '' : '<p class="mnote">Das Licht steht fest (Menü → Licht). Mit „Tageslauf“ folgen Sonne, Mond und Sterne der Uhr.</p>'}`;
+      ${S.active ? '' : '<p class="mnote">Das Licht steht fest (Menü → Erleben → Tageszeit und Licht). Mit „Tageslauf“ folgen Sonne, Mond und Sterne der Uhr.</p>'}`;
   }
   function winBind(win) {
     win.querySelectorAll('[data-dmon]').forEach(b =>
