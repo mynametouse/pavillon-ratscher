@@ -30,6 +30,11 @@ Schleusingen. Ich möchte die Autos auch anhalten können. Wenn es sich anbietet
   des eigenen Autos – dieselbe Physik; steigt man aus, kommt der Fahrer herüber und fährt weiter; steht es weit weg, holt er es später –
   nichts bleibt gestohlen, kein Schaden), ein paar Sätze reden oder Tschüss.
 - **Schleusingen**: dasselbe in der Altstadt (Straßen aus `welt/schleusingen.js`), sobald die Stadt steht; beim Weggehen alles frei.
+- **Unterwegs** (zwischen den Orten, auf der Landstraße im Quadrat und auf den Straßen von `welt/fahrt.js` draußen): fährt man selbst, kommt
+  ab und zu ein Auto entgegen (aus 400 m Entfernung auf der Gegenspur, fährt vorbei, ist dahinter weg).
+- **Ausweichen**: Autos warten kurz hinter einem stehenden Auto (angehalten, geparkt – auch die Autos der Dorfbewohner) und fahren dann
+  langsam darum herum, wenn die Gegenspur frei ist; steht der Spieler lange auf der Fahrbahn, wird gehupt und dann langsam um ihn herum
+  gefahren. Ein vorbeifahrendes Auto ist zu hören (Reifen, Motor, nach Entfernung).
 - **Reden**: „Mit … sprechen“ öffnet ein kleines Fenster (`#verkehrpanel`, Aussehen wie bei den Dorfbewohnern). Mit eingerichteten
   KI-Gesprächen (`npc/ki.js`) redet man frei – alle zehn sind mit `KI.person` angemeldet (Schlüssel `vk_<name>`).
 
@@ -41,7 +46,7 @@ Schleusingen. Ich möchte die Autos auch anhalten können. Wenn es sich anbietet
 ## Testen
 
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8986 --serve verkehr` (Abschnitte `net,walk,night,car,brake,wave,ride,selbst,
-  stadt,prof,gl`, z. B. `verkehr:walk,car`); Bilder in `out/verkehr/`. Bei GitHub `feat.yml` (Artefakt „out“).
+  fahrt,stadt,prof,gl`, z. B. `verkehr:walk,car`); Bilder in `out/verkehr/`. Bei GitHub `feat.yml` (Artefakt „out“).
 - Einheitentests: `node --test viz3/test/unit/verkehr.test.mjs` (Netz, Fahrspur rechts, Fußgänger links, Kurven, Personendaten).
 - Konsole: `VERKEHR.state()`, `VERKEHR.addPed('bettina')`, `VERKEHR.addCar()`, `VERKEHR.wave()`, `VERKEHR.ride()`, `VERKEHR.selbst()`,
   `VERKEHR.force({ peds: 4, cars: 2 })`, `VERKEHR.autoOn(false)`, `VERKEHR.clear()`; Start am Anger: `?szenario=verkehr`.

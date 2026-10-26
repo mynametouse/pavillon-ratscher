@@ -4,7 +4,7 @@
 # Schleusingen has people and cars when one is there and frees them when one leaves (textures/geometries before and after); the time
 # per frame; textures per shader. Pictures in out/verkehr/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 8986 --serve verkehr        (or: python3 viz3/test/verkehr.py 8986 walk,car)
-# Sections (second argument, comma-separated): net,walk,night,car,brake,wave,ride,selbst,stadt,prof,gl
+# Sections (second argument, comma-separated): net,walk,night,car,brake,wave,ride,selbst,fahrt,stadt,prof,gl
 import sys, os, time, json, math, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
@@ -184,7 +184,11 @@ with lib.browser() as b:
                 lib.shot(pg, OUT, 'a_walker_day')
             # Bettina with her dachshund
             if E(pg, f"VERKEHR.addPed('bettina', 'dorf', [GAME.P.x, GAME.P.y], true)") or any(q['key'] == 'bettina' for q in s['peds']):
-                E(pg, "__vk.until(() => VERKEHR.state().peds.some(p => p.key === 'bettina' && p.shown), 30)")
+                for i in range(40):   # the figure loads over the network: real time, not only game time
+                    E(pg, "GAME.step(0.5)")
+                    if J(pg, "VERKEHR.state().peds.some(p => p.key === 'bettina' && p.shown)"):
+                        break
+                    time.sleep(0.5)
                 q = next((q for q in J(pg, "VERKEHR.state()")['peds'] if q['key'] == 'bettina'), None)
                 if q:
                     look_at(pg, q['x'], q['y'], q['z'], 4.5, 40, 1.3)
@@ -291,7 +295,8 @@ with lib.browser() as b:
             E(pg, f"(() => {{ const c = VERKEHR.car({cid}); const f = [Math.sin(c.hd), Math.cos(c.hd)], x = c.x + f[0] * 11 + Math.cos(c.hd) * 2.5, y = c.y + f[1] * 11 - Math.sin(c.hd) * 2.5;"
                   f" GAME.view(x, y, KERN.ground(x, y) + 1.6, Math.atan2(c.x - x, c.y - y) * 180 / Math.PI, -6); }})()")
             lib.shot(pg, OUT, 'd_car_waits')
-            ck('a car brakes for the player standing in its lane (never drives through him)', stopped and mind > 2.9, f'{mind:.1f} m')
+            ck('a car brakes for the player standing in its lane (never drives through him; after a while it goes round him slowly)',
+               stopped and mind > 1.25, f'{mind:.1f} m')
             ck('it honks if he stays', honk >= 1, str(honk))
             stand(pg, x + 30, y + 30, 0)
             moved = E(pg, f"(() => {{ const s0 = VERKEHR.car({cid}).s; for (let i = 0; i < 16; i++) GAME.step(0.5); return VERKEHR.car({cid}).s - s0; }})()")
@@ -326,6 +331,16 @@ with lib.browser() as b:
             ev = J(pg, "KERN.events().filter(e => e.name === 'verkehr:angehalten').length")
             ck('the driver asks (panel opens), event verkehr:angehalten', s['panel'] is not None and ev >= 1, f"{s['panel']} {ev}")
             lib.shot(pg, OUT, 'e_waved_down')
+            # a second car comes along behind the one that stands: it waits a moment, then goes round it
+            sh = J(pg, f"VERKEHR.car({cid}).s")
+            c2 = E(pg, f"VERKEHR.addCar({{ from: {thr['a']}, to: {thr['b']}, s: {max(0, sh - 90)}, v: 8 }})")
+            t2 = -1
+            for i in range(10):
+                if E(pg, f"__vk.until(() => VERKEHR.car({c2}) && VERKEHR.car({c2}).s > VERKEHR.car({cid}).s + 8, 4)") >= 0:
+                    t2 = i * 4 + 1
+                    break
+                print('behind', json.dumps(J(pg, f"(() => {{ const c = VERKEHR.car({c2}), h = VERKEHR.car({cid}); return {{ st: c.st, v: c.v, s: c.s, hs: h.s, why: c.why, lat: c.lat, block: c.blockT, pass: c.passT, lane: c.laneOff }}; }})()")), flush=True)
+            ck('a car behind a stopped one waits, then goes round it', t2 > 2, f'{t2} s')
             if want('ride'):
                 E(pg, "VERKEHR.ride()")
                 E(pg, "GAME.step(0.6)")
@@ -380,6 +395,43 @@ with lib.browser() as b:
         except Exception as ex:
             ck('section ran: selbst', False, repr(ex)[:400])
 
+    if want('fahrt'):
+        try:
+            # in the car on the main road west of the village (way to Ratscher from the L 1625), the oncoming car
+            E(pg, "VERKEHR.clear(); VERKEHR.autoOn(true); VERKEHR.force({ peds: 0, cars: 0 })")
+            x0, y0, x1, y1 = -600.2, -126.1, -35.5, -487.1
+            x, y = x0 + (x1 - x0) * 0.15, y0 + (y1 - y0) * 0.15
+            psi = math.atan2(x1 - x0, y1 - y0)
+            x, y = x + math.cos(psi) * 1.7, y - math.sin(psi) * 1.7  # in the right-hand lane
+            E(pg, f"VEH.enter('car'); VEH.place('car', {x}, {y}, {psi}); GAME.step(0.5); VEH.cur.st.u = 9; VERKEHR.oncoming(); GAME.step(0.1);"
+                  "VEH.auto = () => ({ thr: 0, brk: 0, steer: 0, hand: true })")
+            s = J(pg, "VERKEHR.state()")
+            on = [c for c in s['cars'] if c['place'] == 'fahrt']
+            print('oncoming', json.dumps(on), flush=True)
+            ck('on the drive: now and then an oncoming car on the road ahead', len(on) == 1, json.dumps(on))
+            if on:
+                cid = on[0]['id']
+                me = J(pg, "({ x: VEH.cur.st.x, y: VEH.cur.st.y })")
+                mind, stopped, shot = 1e9, 0, False
+                for i in range(90):
+                    E(pg, "GAME.step(0.5)")
+                    c = J(pg, f"(() => {{ const c = VERKEHR.car({cid}); return c ? {{ x: c.x, y: c.y, v: c.v }} : null; }})()")
+                    if not c:
+                        break
+                    d = math.hypot(c['x'] - me['x'], c['y'] - me['y'])
+                    mind = min(mind, d)
+                    stopped += 1 if c['v'] < 0.5 else 0
+                    if not shot and d < 45:
+                        lib.shot(pg, OUT, 'k_oncoming')
+                        shot = True
+                    if d > mind + 60:
+                        break
+                print(f'oncoming: nearest {mind:.1f} m, stood {stopped} steps', flush=True)
+                ck('it passes in the other lane without stopping', 1.8 < mind < 6 and stopped == 0, f'{mind:.1f} m')
+            E(pg, "VEH.auto = null; VEH.exit(); VERKEHR.force(null); VERKEHR.clear()")
+        except Exception as ex:
+            ck('section ran: fahrt', False, repr(ex)[:400])
+
     if want('prof'):
         try:
             E(pg, "VERKEHR.clear(); VERKEHR.force({ peds: 4, cars: 2 }); VERKEHR.autoOn(true)")
@@ -395,6 +447,13 @@ with lib.browser() as b:
             s = J(pg, "VERKEHR.state()")
             print(f"per frame: verkehr {per:.3f} ms of {tot:.3f} ms of all ticks; {len(s['peds'])} walkers, {len(s['cars'])} cars", flush=True)
             ck('the frame time: walkers and cars cost little per frame', per < 0.6, f'{per:.3f} ms ({len(s["peds"])} walkers, {len(s["cars"])} cars)')
+            # memory of the figures: decoded images of each loaded figure (an iPhone gets them at half size, core/assets.js TEXHALF)
+            fm = J(pg, """Object.fromEntries(Object.entries(VFIG.figs).map(([k, f]) => { const seen = new Set(); let mb = 0;
+              f.g.traverse(o => { for (const m of o.material ? [].concat(o.material) : []) for (const t of ['map', 'normalMap', 'alphaMap'])
+                { const x = m[t]; if (x && x.image && !seen.has(x.image)) { seen.add(x.image); mb += x.image.width * x.image.height * 4 / 1e6; } } });
+              return [k, +mb.toFixed(1)]; }))""")
+            print('figure images (MB decoded):', json.dumps(fm), 'draw calls', J(pg, "GAME.R.info.render.calls"), flush=True)
+            ck('each figure light on memory (< 8 MB of images, a phone halves them)', fm and max(fm.values()) < 8, json.dumps(fm))
             E(pg, "VERKEHR.force(null)")
         except Exception as ex:
             ck('section ran: prof', False, repr(ex)[:400])
@@ -404,8 +463,15 @@ with lib.browser() as b:
             E(pg, "VERKEHR.clear(); VERKEHR.force({ peds: 3, cars: 2 }); VERKEHR.autoOn(true)")
             m0 = J(pg, "GAME.R.info.memory")
             E(pg, "GAME.go('schleusingen')")
-            t = E(pg, "__vk.until(() => SCHL.state === 'ready' && VERKEHR.state().places.stadt && VERKEHR.state().places.stadt.on, 120)")
-            print('Schleusingen ready after', t, 's', json.dumps(J(pg, "VERKEHR.state().places.stadt")), flush=True)
+            t0 = time.time()
+            t = -1
+            for i in range(150):   # the town loads over the network: real time
+                E(pg, "GAME.step(0.5)")
+                if J(pg, "SCHL.state === 'ready' && !!VERKEHR.state().places.stadt && VERKEHR.state().places.stadt.on"):
+                    t = round(time.time() - t0)
+                    break
+                time.sleep(0.5)
+            print('Schleusingen ready after', t, 's', json.dumps(J(pg, "VERKEHR.state().places.stadt")), 'no tiles:', J(pg, "!!SCHL.noTiles"), flush=True)
             for i in range(60):
                 E(pg, "GAME.step(1)")
                 s = J(pg, "VERKEHR.state()")
@@ -423,7 +489,12 @@ with lib.browser() as b:
             m1 = J(pg, "GAME.R.info.memory")
             E(pg, "VERKEHR.force(null); GAME.go('garten')")
             t = E(pg, "__vk.until(() => !VERKEHR.state().places.stadt.on && !VERKEHR.state().peds.some(p => p.place === 'stadt') && !VERKEHR.state().cars.some(c => c.place === 'stadt'), 60)")
-            E(pg, "GAME.step(20)")
+            # the town and its world tiles go too (welt/schleusingen.js, welt/welt.js keep them a while): then everything is back
+            for i in range(60):
+                E(pg, "GAME.step(1)")
+                if J(pg, "SCHL.state !== 'ready' && (!window.WELT || !WELT.state || !WELT.state().tiles) && !Object.keys(VFIG.figs).length"):
+                    break
+                time.sleep(0.3)
             s = J(pg, "VERKEHR.state()")
             m2 = J(pg, "GAME.R.info.memory")
             print('memory before', m0, 'in town', m1, 'after', m2, 'figures', s['figs'], flush=True)

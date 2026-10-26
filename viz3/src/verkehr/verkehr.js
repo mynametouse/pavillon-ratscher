@@ -25,6 +25,7 @@ import { ROADS } from '../world/roads.js';
 import { VILLAGE } from '../world/village.js';
 import { WCOL } from '../world/worldcol.js';
 import { SCHL } from '../welt/schleusingen.js';
+import { FAHRT } from '../welt/fahrt.js';
 import { CLOCK } from '../time/clock.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { DPEOPLE } from '../dorf/dorf_people.js';
@@ -1137,6 +1138,119 @@ export const VERKEHR = (() => {
     },
     run: () => S.halted && UI.openCar(S.halted),
   });
+  // ---- on the drive between the places: now and then an oncoming car on the road the player drives (welt/fahrt.js roads beyond the
+  // square, world/roads.js inside it) – it comes from 400 m ahead in the other lane, passes and is gone behind ----
+  const FAHR = { next: 15, n: 0 };
+  function roadLine(x, y, psi) {
+    const F = FAHRT && FAHRT.ready && FAHRT.data && FAHRT.data.ways && FAHRT.active,
+      src = [];
+    if (F)
+      for (const w of FAHRT.data.ways) {
+        if (
+          w.kind < 1 ||
+          w.kind > 3 ||
+          w.bb[2] < x - 700 ||
+          w.bb[0] > x + 700 ||
+          w.bb[3] < y - 700 ||
+          w.bb[1] > y + 700
+        )
+          continue;
+        const p = [];
+        for (let i = 0; i < w.n; i++) p.push(w.p[i * 3], w.p[i * 3 + 1]);
+        src.push({ kind: w.kind, w: w.hw * 2, p });
+      }
+    else if (ROADS.ready) for (const w of ROADS.ways) if (w.kind >= 1 && w.kind <= 3) src.push(w);
+    if (!src.length) return null;
+    const G = VNETZ.graph(src, { kinds: new Set([1, 2, 3]), clip: [x, y, 650] }),
+      fx = Math.sin(psi),
+      fy = Math.cos(psi);
+    // the edge under the player, in his direction
+    let cur = null;
+    for (const e of G.edges)
+      for (let k = 0; k + 1 < e.pts.length; k++) {
+        const a = e.pts[k],
+          b = e.pts[k + 1],
+          dx = b[0] - a[0],
+          dy = b[1] - a[1],
+          l = Math.hypot(dx, dy) || 1,
+          t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / (l * l))),
+          d = Math.hypot(x - a[0] - dx * t, y - a[1] - dy * t),
+          al = (dx * fx + dy * fy) / l;
+        if (d < 8 && Math.abs(al) > 0.6 && (!cur || d < cur.d)) cur = { e, d, fwd: al > 0 };
+      }
+    if (!cur) return null;
+    // on along the way with the smallest turn, ahead 420 m and back 150 m
+    const dirAt = (e, fwd, end) => {
+      const q = fwd ? e.pts : e.pts.slice().reverse(),
+        a = end ? q[q.length - 2] : q[0],
+        b = end ? q[q.length - 1] : q[1];
+      return Math.atan2(b[0] - a[0], b[1] - a[1]);
+    };
+    function walk(e, fwd, len) {
+      const out = [];
+      let acc = 0;
+      for (let hop = 0; hop < 20 && acc < len; hop++) {
+        const node = fwd ? e.b : e.a,
+          h0 = dirAt(e, fwd, true);
+        let best = null;
+        for (const n of G.nodes[node].edges) {
+          if (n === e) continue;
+          const nf = n.a === node,
+            tu = Math.abs(wrap(dirAt(n, nf, false) - h0));
+          if (tu < 1.1 && (!best || tu < best.tu)) best = { e: n, fwd: nf, tu };
+        }
+        if (!best) break;
+        out.push({ e: best.e, fwd: best.fwd });
+        acc += best.e.len;
+        e = best.e;
+        fwd = best.fwd;
+      }
+      return out;
+    }
+    const ahead = walk(cur.e, cur.fwd, 420),
+      back = walk(cur.e, !cur.fwd, 150);
+    // the player's way from behind to ahead; the car takes it the other way round
+    const mine = [...back.reverse().map(p => ({ e: p.e, fwd: !p.fwd })), { e: cur.e, fwd: cur.fwd }, ...ahead];
+    const theirs = mine.reverse().map(p => ({ e: p.e, fwd: !p.fwd }));
+    const line = VNETZ.line(theirs, {
+      off: e => laneOff(e),
+      vmax: e => (e.kind <= 2 ? 19.4 : 13.9),
+      cut: 6,
+      aLat: 2.0,
+      aBrk: 2.0,
+      vMin: 3,
+    });
+    if (!line) return null;
+    const pr = VNETZ.project(line, x, y, 0, line.L);
+    if (!pr || pr.s < 250) return null;
+    return { line, s0: Math.max(0, pr.s - 420) };
+  }
+  function fahrTick(dt, o) {
+    for (const c of VAUTO.cars) {
+      if (c.place !== 'fahrt' || c === S.halted || (S.ride && S.ride.c === c) || (S.lent && S.lent.c === c)) continue;
+      const d = Math.hypot(c.x - o[0], c.y - o[1]);
+      if (c.st === 'ende' || (d > 450 && !seen(c.x, c.y)) || c.age > 300) removeCar(c);
+    }
+    const v = VEH.cur;
+    if (!v || !S.auto || (FAHR.next -= dt) > 0) return;
+    FAHR.next = 30 + rnd() * 45;
+    // the places have their own traffic; at night rarely; only while one drives on
+    if (Object.values(S.places).some(Pl => Math.hypot(o[0] - Pl.c[0], o[1] - Pl.c[1]) < Pl.carR + 100)) return;
+    const h = hour();
+    if ((h < 5 || h >= 23) && rnd() > 0.25) return;
+    if (Math.hypot(v.st.u, v.st.v) < 5 || VAUTO.cars.some(c => c.place === 'fahrt')) return;
+    const who = VLEUTE.KEYS.filter(k => PP[k].car && !S.busy[k]);
+    if (!who.length) return;
+    const r = roadLine(v.st.x, v.st.y, v.st.psi);
+    if (!r) return;
+    const k = pick(who),
+      c = VAUTO.spawn({ place: 'fahrt', line: r.line, s: r.s0, who: k, col: PP[k].car, v: 14 });
+    c.vk = 0.9 + rnd() * 0.1;
+    c.laneOff = 1.3;
+    S.busy[k] = 'car';
+    S.stats.cars++;
+    FAHR.n++;
+  }
   // ---- per frame ----
   let acc = 0;
   function tick(dt) {
@@ -1230,6 +1344,7 @@ export const VERKEHR = (() => {
       if (!p || Math.hypot(p[0] - P.x, p[1] - P.y) > (r.c ? 9 : 4.8) || (r.d && !S.peds.includes(r.d))) UI.close();
     }
     if (S.lent) lentTick(dt);
+    fahrTick(dt, o);
     // figures nobody needs any more: freed after a while (memory on the phone)
     for (const k of Object.keys(VFIG.figs)) {
       const used = S.peds.some(d => d.key === k) || (S.lent && S.lent.who === k && S.lent.driver);
@@ -1351,6 +1466,9 @@ export const VERKEHR = (() => {
   return {
     S,
     net: VNETZ,
+    oncoming: () => {
+      FAHR.next = 0;
+    },
     places: S.places,
     state,
     addPed,

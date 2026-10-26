@@ -19,6 +19,7 @@ import { DN } from '../time/daynight.js';
 import { VPROPS } from '../world/village_props.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { DCARS } from '../dorf/dorf_cars.js';
+import { NPCS, TRACTOR } from '../npc/npc.js';
 import { VNETZ } from './verkehr_netz.js';
 import { VFIG } from './verkehr_fig.js';
 export const VAUTO = (() => {
@@ -365,6 +366,65 @@ export const VAUTO = (() => {
       os.stop(t + 0.46);
     }
   }
+  // ---- the sound of the nearest car that moves: tyres on the road and a low engine, louder the nearer and the faster (Web Audio on
+  // the game's sound bus, one chain for all, built the first time a car comes near) ----
+  const SND = { g: null, os: null, t: 0 };
+  function sound(dt) {
+    if ((SND.t += dt) < 0.1) return;
+    SND.t = 0;
+    const r = audio.raw && audio.raw();
+    if (!r || !audio.ready()) return;
+    let best = null,
+      bd = 50;
+    for (const c of S.cars) {
+      if (!c.g.visible || c.v < 0.5) continue;
+      const d = Math.hypot(c.x - cam.position.x, c.y + cam.position.z);
+      if (d < bd) {
+        bd = d;
+        best = c;
+      }
+    }
+    const C = r.ctx;
+    if (!SND.g) {
+      if (!best) return;
+      const n = C.sampleRate * 2,
+        buf = C.createBuffer(1, n, C.sampleRate),
+        d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      const src = C.createBufferSource(),
+        bp = C.createBiquadFilter(),
+        os = C.createOscillator(),
+        lp = C.createBiquadFilter(),
+        eg = C.createGain(),
+        g = C.createGain();
+      src.buffer = buf;
+      src.loop = true;
+      bp.type = 'bandpass';
+      bp.frequency.value = 520;
+      bp.Q.value = 0.6;
+      os.type = 'sawtooth';
+      os.frequency.value = 40;
+      lp.type = 'lowpass';
+      lp.frequency.value = 220;
+      eg.gain.value = 0.35;
+      g.gain.value = 0;
+      src.connect(bp);
+      bp.connect(g);
+      os.connect(lp);
+      lp.connect(eg);
+      eg.connect(g);
+      g.connect(r.sfx);
+      src.start();
+      os.start();
+      Object.assign(SND, { g, os, bp });
+    }
+    const want = best ? Math.min(0.05, (0.01 + best.v * 0.0035) * Math.min(1, 7 / Math.max(3, bd))) : 0;
+    SND.g.gain.setTargetAtTime(want, C.currentTime, 0.25);
+    if (best) {
+      SND.os.frequency.setTargetAtTime(32 + best.v * 3.5, C.currentTime, 0.3);
+      SND.bp.frequency.setTargetAtTime(380 + best.v * 25, C.currentTime, 0.3);
+    }
+  }
   // ---- obstacles: what stands or moves near a car's way ----
   // walkers: [{ x, y, r, kind: 'player' | 'ped', ref }] from verkehr/verkehr.js; vehicles and the villagers' cars from their modules
   const OB = [];
@@ -383,19 +443,31 @@ export const VAUTO = (() => {
           OB.push({ x: s.x + f[0] * o, y: s.y + f[1] * o, r: b.hw, kind: 'veh', moving, ref: v });
         }
       }
+    // Hubert's old tractor (on its trip to the Anger, or parked) and the two neighbours on foot
+    if (TRACTOR && TRACTOR.g && TRACTOR.g.visible) {
+      const tp = TRACTOR.g.position,
+        az = -TRACTOR.g.rotation.y;
+      for (const t of [-0.6, 0.9])
+        OB.push({ x: tp.x + Math.sin(az) * t, y: -tp.z + Math.cos(az) * t, r: 1.0, kind: 'veh', moving: false });
+    }
+    for (const w of [NPCS.hubert, NPCS.ronald])
+      if (w && w.fig && w.fig.g.visible && !w.drive) OB.push({ x: w.x, y: w.y, r: 0.32, kind: 'ped' });
     if (DCARS && DCARS.cars)
       for (const d of Object.values(DCARS.cars)) {
         if (!d.g || !d.g.visible || !d.at) continue;
         const h = -d.g.rotation.y;
+        const moving = d.st === 'leaving' || d.st === 'arriving';
         for (const t of [-1.3, 0, 1.3])
-          OB.push({ x: d.at[0] + Math.sin(h) * t, y: d.at[1] + Math.cos(h) * t, r: 0.9, kind: 'dcar' });
+          OB.push({ x: d.at[0] + Math.sin(h) * t, y: d.at[1] + Math.cos(h) * t, r: 0.9, kind: 'dcar', moving });
       }
     return OB;
   }
+  const OWN = [];
   // ---- per frame: every car ----
   // ctx: { walkers, night, near(x, y) → is it near the observer (full detail) }
   let lampsOn = null;
   function tick(dt, ctx) {
+    sound(dt);
     if (!S.cars.length) return;
     const night = dark();
     if (night !== lampsOn) {
@@ -438,6 +510,8 @@ export const VAUTO = (() => {
     if (c.st === 'steht' || c.st === 'parkt') stopAt = Math.min(stopAt, s);
     // oncoming traffic close ahead: no going round
     let oncoming = false;
+    const own = OWN;
+    own.length = 0;
     for (const o of S.cars) {
       if (o === c || o.st === 'weg' || o.st === 'geliehen' || o.place !== c.place) continue;
       const dx = o.x - c.x,
@@ -450,7 +524,13 @@ export const VAUTO = (() => {
         same = Math.cos(o.hd - c.hd);
       if (ahead < 0) continue;
       if (same < -0.5 && ahead < 45) oncoming = true;
-      if (same > 0.3) {
+      if (same > 0.3 && (o.st === 'steht' || o.st === 'parkt') && o.v < 0.1) {
+        // a car standing in front (stopped for someone, letting someone out): like a parked vehicle – wait, then round it
+        for (const t of [-1, 0, 1]) {
+          const off = CY + t * (HL - HW);
+          own.push({ x: o.x + Math.sin(o.hd) * off, y: o.y + Math.cos(o.hd) * off, r: HW, kind: 'veh', moving: false });
+        }
+      } else if (same > 0.3) {
         // a car in front on my way: keep the distance (bumper to bumper 2 m standing, about 1 s moving)
         const pr = VNETZ.project(R, o.x, o.y, s, s + look);
         if (pr && pr.d < 1.6 && pr.s > s) {
@@ -463,7 +543,7 @@ export const VAUTO = (() => {
     }
     // walkers, the player, vehicles: in the lane ahead → go round (a walker at the edge, the other lane free) or stop before them
     let playerBlocks = false;
-    for (const o of obs) {
+    for (const o of own.length ? obs.concat(own) : obs) {
       if (Math.abs(o.x - c.x) > look + 6 || Math.abs(o.y - c.y) > look + 6) continue;
       const pr = VNETZ.project(R, o.x, o.y, s - 4, s + look);
       if (!pr || pr.d > 5) continue;
@@ -471,22 +551,27 @@ export const VAUTO = (() => {
         clear = HW + o.r + 0.35;
       if (Math.abs(rel) > clear) continue;
       const ahead = pr.s - s;
-      // a walker beside the way (or the player, after a while): round him on the left if the other lane is free
+      // a walker beside the way at once; the player, a parked car or one that stands after a moment of waiting: round it on the left
+      // if the other lane is free (once begun, it goes on round it: passT)
       const canPass =
         (o.kind === 'ped' ||
-          (o.kind === 'player' && c.blockT > 5) ||
-          (o.kind === 'veh' && !o.moving && c.blockT > 4)) &&
+          (o.kind === 'player' && (c.blockT > 5 || c.passT > 0)) ||
+          ((o.kind === 'veh' || o.kind === 'dcar') && !o.moving && (c.blockT > 3 || c.passT > 0))) &&
         !oncoming &&
         c.st === 'fahren';
       const need = pr.lat - (HW + o.r + 0.5),
-        maxLeft = -(c.laneOff || 1.2) - 0.7;
+        lo = c.laneOff || 1.2,
+        maxLeft = -(lo + Math.max(0.7, 2.1 - lo)); // over the middle, on a narrow lane a wheel on the verge
       if (canPass && rel > -0.3 && need >= maxLeft) {
         latNeed = Math.min(latNeed, need);
-        if (ahead > 0) vT = Math.min(vT, o.kind === 'ped' ? 6 : 3);
+        if (o.kind !== 'ped') c.passT = 2.5;
+        if (ahead > -3) vT = Math.min(vT, c.lat - need > 0.35 ? 1.0 : o.kind === 'ped' ? 6 : 4);
         continue;
       }
       if (ahead < 1.2) continue; // beside or behind the front: nothing to stop for
-      const stopS = s + ahead - (HL + 0.1 + o.r + 1.4);
+      // (before something it may go round later: a few metres more, to swing out)
+      const room = o.kind === 'player' || ((o.kind === 'veh' || o.kind === 'dcar') && !o.moving) ? 3.5 : 0,
+        stopS = s + ahead - (HL + 0.1 + o.r + 1.4 + room);
       if (stopS < stopAt) {
         stopAt = stopS;
         why = o.kind;
@@ -500,7 +585,8 @@ export const VAUTO = (() => {
       c.latT =
         latNeed < 0 ? latNeed : c.stop && c.stop.kerb && c.stop.s - s < 25 ? Math.min(0.6, c.kerbRoom ?? 0.6) : 0;
     const dl = c.latT - c.lat;
-    c.lat += Math.sign(dl) * Math.min(Math.abs(dl), dt * (0.1 + c.v * 0.12));
+    c.lat += Math.sign(dl) * Math.min(Math.abs(dl), dt * (c.v > 0.2 ? 0.35 + c.v * 0.18 : 0.05));
+    c.passT = Math.max(0, (c.passT || 0) - dt);
     // speed: braking to stop before stopAt (3 m/s² normal, up to 6 when it must), accelerating at 1.6 m/s²
     if (stopAt < Infinity) {
       const d = stopAt - s;
@@ -521,8 +607,8 @@ export const VAUTO = (() => {
         c.honkT = 7;
         if (ctx.onHonk) ctx.onHonk(c);
       }
-    } else if (!playerBlocks && why !== 'veh') c.blockT = Math.max(0, c.blockT - dt * 2);
-    else if (why === 'veh' && c.v < 0.5) c.blockT += dt;
+    } else if ((why === 'veh' || why === 'dcar') && c.v < 0.5) c.blockT += dt;
+    else if (!playerBlocks) c.blockT = Math.max(0, c.blockT - dt * 0.5);
     c.honkT -= dt;
     // the stop is reached
     if (c.stop && c.v < 0.05 && c.stop.s - c.s < 0.6) {
