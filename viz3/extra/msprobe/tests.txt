@@ -1,0 +1,2 @@
+# one-off: does Microsoft speech (Azure TTS REST) answer a web page (CORS)?
+msprobe
