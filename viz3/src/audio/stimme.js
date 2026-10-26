@@ -380,6 +380,8 @@ export const STIMME = (() => {
     }
   }
   scan();
+  // the first tap or key anywhere: a talk starts by itself and its answer comes later, without a gesture of its own (iPhone)
+  for (const ev of ['touchend', 'click', 'keydown']) window.addEventListener(ev, unlock, { once: true, capture: true });
   return {
     person,
     profile: k => PROF[k] || null,

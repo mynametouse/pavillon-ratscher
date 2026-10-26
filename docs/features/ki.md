@@ -25,7 +25,9 @@ Dorfbewohner hört, macht im Dorf die Runde (zwei, drei andere merken es sich). 
    und probehörbar), **ElevenLabs** (eigener Schlüssel, je Person eine deutsche Bibliotheksstimme, z. B. „Darius – Grumpy & Critical“ für Hubert,
    „Silke“ für Katrin, Voice-IDs änderbar) oder nur Text. Piper (natürliche Stimmen im Browser, kostenlos) kommt als weitere Wahl dazu.
 4. Ohne Schlüssel bleibt alles wie bisher (aufgenommene Sätze, Themen-Knöpfe); im Gesprächsfenster steht dann „Frei reden – KI-Gespräche
-   einrichten …“.
+   einrichten …“. Wer darüber den Schlüssel einträgt, redet beim Schließen der Einstellungen gleich frei mit derselben Person (seit 26.10.,
+   Falko am iPhone: vorher blieben die Themen-Knöpfe stehen, der Hinweis verschwand). Der Schlüssel wird bei jedem Buchstaben gespeichert.
+   Auf dem iPhone öffnet der erste Fingertipp die Sprachausgabe (Safari spricht sonst erst nach einem Tipp).
 
 Spracherkennung: Chrome, Edge und Safari (auch iPhone, Diktierfunktion muss an sein); Firefox hat keine – dort das Textfeld.
 

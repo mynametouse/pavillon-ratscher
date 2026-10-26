@@ -23,6 +23,12 @@ veröffentlicht.
   Hugging Face, ~13 MB Laufzeit selbst gehostet, nur bei Wahl geladen); Standard bleibt „Gerät“. eSpeak NG (GPL) liegt als eigenes Programm mit
   Lizenz daneben (`viz3/extra/piper/dist/piper/`). Noch niemand hat zugehört (Artefakte aus dem Container nicht ladbar) – Falko fragen;
   iPhone-Speicher (~200 MB je Modell) erst am Gerät beurteilen. Empfehlung des Agenten: „Natürlich“ später Standard auf Rechnern.
+- **Falko am iPhone (26.10. vormittags):** Schlüssel eingetragen, aber kein KI-Gespräch (Ingrid zeigte die Themen-Knöpfe). Ursache: der
+  Schlüssel kam über den Hinweis im offenen Gespräch, das Panel schaltete danach nicht um (Hinweis weg, Themen blieben). Behoben in `npc/ki.js`
+  (`rewire()` beim Schließen der Einstellungen, Schlüssel bei jedem Buchstaben gespeichert, Test `ki` 64/64); `audio/stimme.js` öffnet die
+  Sprachausgabe beim ersten Tipp. Hubert und Ronald „nicht gefunden“: Freitagabend nach dem Skatabend ist es nach 22 Uhr – dann sind sie zu
+  Hause (`npc/hours.js`, 22–6 Uhr); Falko auf Menü → Orte bzw. die Uhr hingewiesen. Kein Fehler gefunden; falls sie auch tagsüber fehlen,
+  `NPC.real` (echte Figuren laden auf dem iPhone?) prüfen.
 - **Auf `src`, noch nicht live:** `ae90b7f` – das Tischgespräch im Dorf wartet auf den gesagten Satz (statt geschätzter Pausen), Dorf-Test mit
   längerem Zeitfenster (Thema `dorf` war bei `687a8e3` 32/34). Falko (26.10.): „Bitte veröffentliche, wenn alle wesentlichen Tests grün“ – die
   Sicherheitsprüfung verlangt trotzdem je Stand eine Anweisung im Chat („Stell <sha> live“); ihn darum bitten, sobald das Prüfpaket grün ist.

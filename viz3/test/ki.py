@@ -202,6 +202,22 @@ with lib.browser() as b:
     E("DORF.UI.close()")
     ck('villager: summary', wait("KI.mem.who.gerhard.gespraeche.length === 1", 20))
     ck('the village hears of it', E("Object.values(KI.mem.who).some(w => w.notizen.some(n => n.von === 'gerhard'))"))
+    # the key entered while a panel is open (the hint there leads to the settings – Falko on the iPhone, 26.10.): when the settings close,
+    # that talk turns free at once
+    E("KI.configure({ base: '' })")
+    E("DORF.UI.open('ingrid')")
+    ck('no key: the hint in the village panel', E("document.getElementById('dorfpanel').contains(document.getElementById('np-setup')) && !document.getElementById('np-setup').hidden"))
+    ck('no key: small talk in the village panel', E("[...document.querySelectorAll('#dorfpanel .topics button')].some(b => !/quest|bye/.test(b.className))"))
+    E("document.getElementById('np-setup').click()")
+    ck('the hint opens the settings', E("!document.getElementById('kipanel').hidden"))
+    E(f"(i => {{ i.value = '{base}'; i.dispatchEvent(new Event('input', {{ bubbles: true }})) }})(document.getElementById('ki-base'))")
+    ck('typed: kept at once, the field stays', E("JSON.parse(localStorage.getItem('pav-ki-set-v1')).base.endsWith('/__ki') && !!document.getElementById('ki-base')"))
+    ck('no talk while the settings are open', E("!KI.conv"))
+    E("document.querySelector('#kipanel [data-ki=close]').click()")
+    ck('settings closed: Ingrid talks freely', wait("!!KI.conv && KI.conv.who === 'ingrid'", 10))
+    ck('settings closed: small talk gives way', E("[...document.querySelectorAll('#dorfpanel .topics button')].every(b => /quest|bye/.test(b.className))"))
+    ck('settings closed: microphone in the panel, no hint', E("!document.getElementById('np-ki').hidden && document.getElementById('dorfpanel').contains(document.getElementById('np-ki')) && document.getElementById('np-setup').hidden"))
+    E("DORF.UI.close()")
     # fixed lines: recorded ones known (tools/voices/record_lines.py, loaded when said), the rest read in the person's voice
     ck('recorded fixed lines known', E("(window.VOICEX && VOICEX.lines || []).length") >= 250, str(E("(window.VOICEX && VOICEX.lines || []).length")))
     ck('a villager line will be spoken', E("STIMME.speaks('heike', VOICEX.lines.find(l => l.who === 'heike').text)"))
