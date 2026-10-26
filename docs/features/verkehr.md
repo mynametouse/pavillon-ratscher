@@ -53,6 +53,16 @@ Schleusingen. Ich möchte die Autos auch anhalten können. Wenn es sich anbietet
 - Konsole: `VERKEHR.state()`, `VERKEHR.addPed('bettina')`, `VERKEHR.addCar()`, `VERKEHR.wave()`, `VERKEHR.ride()`, `VERKEHR.selbst()`,
   `VERKEHR.force({ peds: 4, cars: 2 })`, `VERKEHR.autoOn(false)`, `VERKEHR.clear()`; Start am Anger: `?szenario=verkehr`.
 
+## Gemessen (26.10.2026)
+
+- Takt `verkehr/verkehr` mit vier Spaziergängern und zwei Autos: 0,02–0,08 ms je Bild (SwiftShader, `KERN.profile`).
+- Figuren: je 8,4 MB entpackte Bilder am Rechner (Gesicht 1024 px, Rest 512 px – wie die Dorfbewohner), am Telefon halbiert (≈ 2 MB);
+  höchstens vier Spaziergänger (Telefon zwei) und ein Fahrer zugleich, nach 15 s ohne Bedarf frei. `memphone` (Start im Garten):
+  236 MB entpackte Bilder, wie ohne Verkehr (es lädt dort keine Figur).
+- Schleusingen: Texturen/Geometrien vor dem Besuch, in der Stadt, danach 417/1317 → 429/1339 → 417/1317 (lokal, ohne Welt-Kacheln).
+- Mit dem Verkehr laufen `dorf` (35/35), `schleusingen` (18/18) und `fahrt` (34/34) grün (GitHub-Lauf 40256092736): die Autos machen dem
+  gefahrenen Auto Platz, auch dem Testfahrer, der in der Straßenmitte fährt.
+
 ## Für den Kern-Chat
 
 - Neue Module unter der Marke `# feat/verkehr` in `modules.txt` (vor `game/game.js`, nach KI und Gartenplaner):
@@ -65,4 +75,8 @@ Schleusingen. Ich möchte die Autos auch anhalten können. Wenn es sich anbietet
   `KERN.zone`, `KERN.act`, `KERN.tick`, `KERN.pushOut`, `KI.person/talk/ended`, `STIMME.person/say/speaks`. `pav-veh-v1` speichert die Lage des Fahrzeugs `verkehr` mit
   (wird beim Laden wieder nach draußen gestellt).
 - Personen für die KI: `VLEUTE.P` (Schlüssel = Name klein; in KI `vk_<name>`), Felder `name, full, g, age, role, sheet`.
-- Neue Dateien in gemeinsamen Ordnern: `viz3/test/unit/verkehr.test.mjs`.
+- Neue Dateien in gemeinsamen Ordnern: `viz3/test/unit/verkehr.test.mjs`. Kein Menüeintrag (die Szene `?szenario=verkehr` hat
+  `menu: false`); `dorf/dorf_cars.js` (DCARS) ist unverändert: die Verkehrsautos sind ein eigenes Modell (Räder, die sich drehen,
+  Innenraum für den Beifahrer, Lampen) mit denselben Material-Parametern wie die Autos der Dorfbewohner (ein Shader-Programm); die
+  geparkten und fahrenden Autos der Dorfbewohner sind für sie Hindernisse.
+- Offen / denkbar: Leute kommen aus Haustüren; Kreuzungen mit Vorfahrt (bei höchstens drei Autos je Ort bisher nicht nötig); ein Bus.

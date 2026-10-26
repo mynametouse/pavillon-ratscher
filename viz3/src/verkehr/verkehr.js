@@ -1131,7 +1131,7 @@ export const VERKEHR = (() => {
     id: 'verkehr:winken',
     r: 3,
     prio: 0.4,
-    label: () => (S.waveCar && !busyUI() ? 'Auto anhalten' : null),
+    label: () => (S.waveCar && !busyUI() && !S.nearPed ? 'Auto anhalten' : null), // someone right here to talk to comes first
     pos: () => {
       const c = S.waveCar;
       if (!c) return null;

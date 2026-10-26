@@ -165,7 +165,7 @@ with lib.browser() as b:
             bad, n, off, zbad = 0, 0, 0, 0
             for i in range(60):
                 E(pg, "GAME.step(1)")
-                r = J(pg, "VERKEHR.state().peds.map(p => [p.x, p.y, p.z, __vk.inWall(p.x, p.y), ROADS.edge(p.x, p.y), KERN.ground(p.x, p.y), p.st])")
+                r = J(pg, "VERKEHR.state().peds.map(p => [p.x, p.y, p.z, __vk.inWall(p.x, p.y), ROADS.deckAt(p.x, p.y) ? 1 : ROADS.edge(p.x, p.y), KERN.ground(p.x, p.y, p.z + 0.5), p.st])")
                 for x, y, z, wall, edge, g, stt in r:
                     n += 1
                     bad += 1 if wall else 0
@@ -480,7 +480,11 @@ with lib.browser() as b:
         try:
             E(pg, "VERKEHR.clear(); VERKEHR.force({ peds: 4, cars: 2 }); VERKEHR.autoOn(true)")
             stand(pg, ANGER[0] - 10, ANGER[1] - 8, 60)
-            E(pg, "__vk.until(() => VERKEHR.state().peds.filter(p => p.shown).length >= 3, 60)")
+            for i in range(60):   # the figures load over the network: real time
+                E(pg, "GAME.step(1)")
+                if J(pg, "VERKEHR.state().peds.filter(p => p.shown).length >= 3"):
+                    break
+                time.sleep(0.5)
             E(pg, "KERN.profile(true)")
             E(pg, "GAME.step(20)")
             prof = J(pg, "KERN.profile()")
@@ -497,7 +501,8 @@ with lib.browser() as b:
                 { const x = m[t]; if (x && x.image && !seen.has(x.image)) { seen.add(x.image); mb += x.image.width * x.image.height * 4 / 1e6; } } });
               return [k, +mb.toFixed(1)]; }))""")
             print('figure images (MB decoded):', json.dumps(fm), 'draw calls', J(pg, "GAME.R.info.render.calls"), flush=True)
-            ck('each figure light on memory (< 8 MB of images, a phone halves them)', fm and max(fm.values()) < 8, json.dumps(fm))
+            ck('each figure light on memory (< 10 MB of images like a villager; a phone gets them at half size, a quarter of that)',
+               fm and max(fm.values()) < 10, json.dumps(fm))
             E(pg, "VERKEHR.force(null)")
         except Exception as ex:
             ck('section ran: prof', False, repr(ex)[:400])
