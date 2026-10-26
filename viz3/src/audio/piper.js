@@ -14,54 +14,96 @@ import { audio } from './audio.js';
 import { STIMME } from './stimme.js';
 
 export const PIPER = (() => {
-  // ---------------- the German voices of rhasspy/piper-voices (MIT; mb = download size) ----------------
+  // ---------------- the German voices of rhasspy/piper-voices (MIT; mb = download size, lic = the dataset's licence) ----------------
+  // measured on GitHub Actions (one thread, viz3/test/piper.py survey): medium 22 kHz ≈ 0.25 × real time, low 16 kHz ≈ 0.18 ×, high ≈ 2.4 ×
+  // (too slow); one medium model takes ~200 MB of WebAssembly memory. hide: not offered by hand (too slow, a non-commercial licence)
   const HF = 'https://huggingface.co/rhasspy/piper-voices/resolve/main/';
   const MODELS = {
-    thorsten: { p: 'de/de_DE/thorsten/medium/de_DE-thorsten-medium', mb: 63, name: 'Thorsten', g: 'm' },
-    thorsten_high: { p: 'de/de_DE/thorsten/high/de_DE-thorsten-high', mb: 114, name: 'Thorsten (hoch)', g: 'm' },
-    thorsten_low: { p: 'de/de_DE/thorsten/low/de_DE-thorsten-low', mb: 63, name: 'Thorsten (leicht)', g: 'm' },
+    thorsten: { p: 'de/de_DE/thorsten/medium/de_DE-thorsten-medium', mb: 63, name: 'Thorsten', g: 'm', lic: 'CC0' },
     thorsten_emotional: {
       p: 'de/de_DE/thorsten_emotional/medium/de_DE-thorsten_emotional-medium',
       mb: 77,
       name: 'Thorsten',
       g: 'm',
+      lic: 'CC0',
       spk: { amused: 0, angry: 1, disgusted: 2, drunk: 3, neutral: 4, sleepy: 5, surprised: 6, whisper: 7 },
     },
-    karlsson: { p: 'de/de_DE/karlsson/low/de_DE-karlsson-low', mb: 63, name: 'Karlsson', g: 'm' },
-    pavoque: { p: 'de/de_DE/pavoque/low/de_DE-pavoque-low', mb: 63, name: 'Pavoque', g: 'm' },
-    kerstin: { p: 'de/de_DE/kerstin/low/de_DE-kerstin-low', mb: 63, name: 'Kerstin', g: 'f' },
-    ramona: { p: 'de/de_DE/ramona/low/de_DE-ramona-low', mb: 63, name: 'Ramona', g: 'f' },
-    eva_k: { p: 'de/de_DE/eva_k/x_low/de_DE-eva_k-x_low', mb: 21, name: 'Eva K.', g: 'f' },
-    mls: { p: 'de/de_DE/mls/medium/de_DE-mls-medium', mb: 77, name: 'MLS', g: '?', multi: true },
+    mls: { p: 'de/de_DE/mls/medium/de_DE-mls-medium', mb: 77, name: 'Hörbuch', g: '?', lic: 'CC BY 4.0', multi: true },
+    kerstin: { p: 'de/de_DE/kerstin/low/de_DE-kerstin-low', mb: 63, name: 'Kerstin', g: 'f', lic: 'CC0' },
+    ramona: { p: 'de/de_DE/ramona/low/de_DE-ramona-low', mb: 63, name: 'Ramona', g: 'f', lic: 'M-AILABS' },
+    eva_k: { p: 'de/de_DE/eva_k/x_low/de_DE-eva_k-x_low', mb: 21, name: 'Eva K.', g: 'f', lic: 'M-AILABS' },
+    karlsson: { p: 'de/de_DE/karlsson/low/de_DE-karlsson-low', mb: 63, name: 'Karlsson', g: 'm', lic: 'M-AILABS' },
+    thorsten_low: {
+      p: 'de/de_DE/thorsten/low/de_DE-thorsten-low',
+      mb: 63,
+      name: 'Thorsten (leicht)',
+      g: 'm',
+      hide: true,
+    },
+    thorsten_high: {
+      p: 'de/de_DE/thorsten/high/de_DE-thorsten-high',
+      mb: 114,
+      name: 'Thorsten (hoch)',
+      g: 'm',
+      hide: true,
+    },
+    pavoque: {
+      p: 'de/de_DE/pavoque/low/de_DE-pavoque-low',
+      mb: 63,
+      name: 'Pavoque',
+      g: 'm',
+      hide: true,
+      lic: 'CC BY-NC-SA 4.0',
+    },
   };
-  // speakers of the multi-speaker models that may be chosen by hand: [id, gender, short description]
+  // speakers of the multi-speaker models that may be chosen by hand: [id, gender, short description]. The audiobook model (Multilingual
+  // LibriSpeech, 236 readers): the clearest readers of the survey (periodic, little noise), by pitch and colour
   const SPEAKERS = {
     thorsten_emotional: [
       ['neutral', 'm', 'ruhig'],
       ['amused', 'm', 'heiter'],
-      ['angry', 'm', 'grimmig'],
-      ['sleepy', 'm', 'müde'],
       ['surprised', 'm', 'erstaunt'],
+      ['sleepy', 'm', 'müde'],
+      ['angry', 'm', 'grimmig'],
     ],
-    mls: [],
+    mls: [
+      ['3', 'm', 'Mann, warm'],
+      ['13', 'm', 'Mann, klar'],
+      ['56', 'm', 'Mann, ruhig'],
+      ['85', 'm', 'Mann, mittel'],
+      ['6', 'm', 'Mann, tief'],
+      ['44', 'm', 'Mann, gesetzt'],
+      ['34', 'm', 'Mann, hell'],
+      ['83', 'm', 'Mann, jung'],
+      ['60', 'm', 'Mann, kräftig'],
+      ['68', 'f', 'Frau, klar'],
+      ['46', 'f', 'Frau, warm'],
+      ['73', 'f', 'Frau, freundlich'],
+      ['38', 'f', 'Frau, weich'],
+      ['84', 'f', 'Frau, mittel'],
+      ['15', 'f', 'Frau, hell'],
+      ['57', 'f', 'Frau, ruhig'],
+    ],
   };
   // ---------------- who sounds how (the cast first; ls > 1 slower, pitch < 1 lower) ----------------
+  // Hubert gets the clearest German voice (Thorsten), lowered; everyone else a reader of the audiobook model of their own – one more
+  // download (140 MB together) and every person sounds like somebody else
   const VOICES = {
-    hubert: { v: 'thorsten', ls: 1.1, pitch: 0.9 }, // 75, gruff: the clearest male voice, lower and slower
-    ronald: { v: 'thorsten_emotional:amused', ls: 0.94, pitch: 1.0 }, // 55, warm and talkative: the cheerful Thorsten, a little faster
-    gerhard: { v: 'thorsten_emotional:neutral', ls: 1.12, pitch: 0.94 }, // 72, retired teacher: calm, measured
-    manfred: { v: 'thorsten', ls: 0.98, pitch: 0.95 }, // 56, fire chief
-    wolfgang: { v: 'thorsten_emotional:sleepy', ls: 1.04, pitch: 0.93 }, // 59, forest worker: slow, quiet
-    uwe: { v: 'thorsten_emotional:neutral', ls: 0.98, pitch: 1.02 }, // 46, farmer
-    jens: { v: 'thorsten', ls: 0.92, pitch: 1.06 }, // 34, mechanic: young, quick
-    katrin: { v: 'kerstin', ls: 0.96, pitch: 1.03 }, // 39, nurse
-    ingrid: { v: 'kerstin', ls: 1.06, pitch: 0.94 }, // 58, Ortsteilbürgermeisterin
-    heike: { v: 'kerstin', ls: 1.0, pitch: 0.99 }, // 47, garden, hens
+    hubert: { v: 'thorsten', ls: 1.08, pitch: 0.9 }, // 75, gruff, older: low and slow (~100 Hz)
+    ronald: { v: 'mls:3', ls: 0.95, pitch: 0.97 }, // 55, warm, talkative: a warm voice, a little quicker
+    gerhard: { v: 'mls:44', ls: 1.1, pitch: 0.95 }, // 72, retired teacher: measured, lower
+    manfred: { v: 'mls:56', ls: 1.0, pitch: 0.98 }, // 56, fire chief: calm, firm
+    wolfgang: { v: 'mls:6', ls: 1.04, pitch: 0.97 }, // 59, forest worker: deep
+    uwe: { v: 'mls:85', ls: 0.98, pitch: 1.0 }, // 46, farmer
+    jens: { v: 'mls:13', ls: 0.93, pitch: 1.04 }, // 34, mechanic: clear, young, quick
+    katrin: { v: 'mls:68', ls: 0.96, pitch: 1.02 }, // 39, nurse: clear
+    ingrid: { v: 'mls:46', ls: 1.04, pitch: 0.97 }, // 58, Ortsteilbürgermeisterin: warm, mature
+    heike: { v: 'mls:73', ls: 1.0, pitch: 1.0 }, // 47, garden and hens: friendly
   };
-  // for persons registered later (strollers, drivers): the voices of the cast, told apart by pace and pitch
+  // for persons registered later (strollers, drivers): readers of the same model the cast does not use
   const POOL = {
-    m: ['thorsten', 'thorsten_emotional:neutral', 'thorsten_emotional:amused'],
-    f: ['kerstin'],
+    m: ['mls:34', 'mls:83', 'mls:60', 'mls:27', 'mls:81', 'mls:49'],
+    f: ['mls:38', 'mls:84', 'mls:15', 'mls:57', 'mls:12', 'mls:64'],
   };
 
   // ---------------- saved: a voice per person chosen by hand ----------------
@@ -109,6 +151,14 @@ export const PIPER = (() => {
     }
     const id = (S.over[k] && parse(S.over[k]) && S.over[k]) || base.v;
     return Object.assign({ id, auto: id === base.v }, parse(id), { ls: base.ls, pitch: base.pitch });
+  }
+  // a voice's gender: the speaker's for a multi-speaker model, else the model's
+  function genderOf(id) {
+    const p = parse(id);
+    if (!p) return '?';
+    const sp = String(id).split(':')[1],
+      row = sp != null && (SPEAKERS[p.m] || []).find(r => r[0] === sp);
+    return row ? row[1] : POOL.f.includes(id) ? 'f' : POOL.m.includes(id) ? 'm' : MODELS[p.m].g;
   }
   const spec = m => ({ id: m, url: CFG.base + MODELS[m].p + '.onnx', cfg: CFG.base + MODELS[m].p + '.onnx.json' });
   // the models the cast and the pool need, Hubert's and Ronald's first
@@ -349,6 +399,7 @@ export const PIPER = (() => {
   function choices() {
     const out = [];
     for (const [m, M] of Object.entries(MODELS)) {
+      if (M.hide) continue;
       if (M.multi || M.spk) for (const [s, g, d] of SPEAKERS[m] || []) out.push([m + ':' + s, M.name + ' – ' + d, g]);
       else out.push([m, M.name, M.g]);
     }
@@ -425,6 +476,7 @@ export const PIPER = (() => {
     VOICES,
     POOL,
     voiceFor,
+    genderOf,
     needed,
     load,
     clear,

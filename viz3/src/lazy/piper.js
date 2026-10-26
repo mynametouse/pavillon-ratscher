@@ -203,9 +203,12 @@ async function session(model, keep, onp) {
     SESS.delete(old);
   }
   const t0 = performance.now();
+  // no memory arena and no memory pattern: every sentence has another length, and freed memory goes back to the heap at once
   const sess = await ort.InferenceSession.create(new Uint8Array(await blob.arrayBuffer()), {
     executionProviders: ['wasm'],
     graphOptimizationLevel: 'all',
+    enableCpuMemArena: false,
+    enableMemPattern: false,
   });
   const s = { sess, conf, used: performance.now() };
   SESS.set(model.id, s);
@@ -243,10 +246,30 @@ async function say(m) {
   t0 = performance.now();
   const out = await s.sess.run(feeds);
   t.infer = Math.round(performance.now() - t0);
-  const pcm = new Float32Array(out.output.data);
+  const pcm = level(new Float32Array(out.output.data));
   out.output.dispose && out.output.dispose();
   t.mem = memMB();
   return { pcm, sr: s.conf.audio.sample_rate, t };
+}
+
+// every voice about equally loud (the audiobook readers differ by 10 dB): the loud part of the sentence to a common level, peaks below 0.95
+function level(pcm) {
+  const blk = 512,
+    e = [];
+  for (let i = 0; i + blk <= pcm.length; i += blk) {
+    let s = 0;
+    for (let j = i; j < i + blk; j++) s += pcm[j] * pcm[j];
+    e.push(s / blk);
+  }
+  if (!e.length) return pcm;
+  e.sort((a, b) => a - b);
+  const loud = Math.sqrt(e[Math.floor(e.length * 0.8)]) || 0;
+  let peak = 0;
+  for (let i = 0; i < pcm.length; i++) peak = Math.max(peak, Math.abs(pcm[i]));
+  if (loud < 1e-4 || peak < 1e-4) return pcm;
+  const g = Math.min(0.12 / loud, 0.95 / peak, 6);
+  for (let i = 0; i < pcm.length; i++) pcm[i] *= g;
+  return pcm;
 }
 
 // one request after the other (a session runs one at a time); 'cancel' drops what still waits

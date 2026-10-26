@@ -92,7 +92,7 @@ window.__ana = (pcm, sr) => { const fl = Math.round(sr * 0.04), hop = Math.round
   const med = a => { const b = a.slice().sort((x, y) => x - y); return b.length ? b[b.length >> 1] : 0; }, q = (a, p) => { const b = a.slice().sort((x, y) => x - y); return b.length ? b[Math.floor(p * (b.length - 1))] : 0; };
   const db = x => 20 * Math.log10(Math.max(1e-6, x));
   return { sec: +(pcm.length / sr).toFixed(2), f0: Math.round(med(f0)), f0lo: Math.round(q(f0, 0.1)), f0hi: Math.round(q(f0, 0.9)), voiced: +(f0.length / Math.max(1, rms.length)).toFixed(2),
-    per: +med(per).toFixed(2), cen: Math.round(med(cen)), floor: Math.round(db(q(rms, 0.1)) - db(q(rms, 0.9))), peak: +Math.max(...pcm.map(Math.abs)).toFixed(2) }; };
+    per: +med(per).toFixed(2), cen: Math.round(med(cen)), floor: Math.round(db(q(rms, 0.1)) - db(q(rms, 0.9))), peak: +pcm.reduce((m, v) => Math.max(m, Math.abs(v)), 0).toFixed(2), loud: +q(rms, 0.8).toFixed(3) }; };
 window.__say = async (who, text, save) => { const t0 = performance.now(); const r = await PIPER.synth(who, text); const ms = Math.round(performance.now() - t0);
   if (!r || r.cancelled) return { cancelled: true }; const v = typeof who === 'string' ? PIPER.voiceFor(who) : who; const sr = Math.round(r.sr * (v.pitch || 1));
   return Object.assign({ ms, sr: r.sr, t: r.t, a: __ana(r.pcm, sr) }, save ? { wav: __wav(r.pcm, sr) } : {}); };
@@ -141,11 +141,13 @@ with lib.browser() as b:
     ck('Hubert and Katrin: different voices', V['hubert']['id'] != V['katrin']['id'])
     ck('Hubert and Ronald: different voices', V['hubert']['id'] != V['ronald']['id'])
     G = J("Object.fromEntries(Object.entries(PIPER.MODELS).map(([k, m]) => [k, m.g]))")
-    ck('women get a woman’s voice, men a man’s', all(G[V[k]['m']] in ('f', '?') for k in ('katrin', 'ingrid', 'heike')) and all(G[V[k]['m']] in ('m', '?') for k in ('hubert', 'ronald', 'jens')))
+    GV = J("Object.fromEntries(['hubert', 'ronald', 'gerhard', 'manfred', 'wolfgang', 'uwe', 'jens', 'katrin', 'ingrid', 'heike'].map(k => [k, PIPER.genderOf(PIPER.voiceFor(k).id)]))")
+    ck('women get a woman’s voice, men a man’s', all(GV[k] == 'f' for k in ('katrin', 'ingrid', 'heike')) and all(GV[k] == 'm' for k in ('hubert', 'ronald', 'gerhard', 'manfred', 'wolfgang', 'uwe', 'jens')), json.dumps(GV))
     ck('older people slower and lower', V['hubert']['ls'] > V['jens']['ls'] and V['hubert']['pitch'] < V['jens']['pitch'] and V['ingrid']['pitch'] < V['katrin']['pitch'])
     E("STIMME.person('spazier_f', { name: 'Gisela', g: 'f', age: 71 }); STIMME.person('fahrer_m', { name: 'Kai', g: 'm', age: 28 })")
     L = J("{ f: PIPER.voiceFor('spazier_f'), m: PIPER.voiceFor('fahrer_m') }")
-    ck('a person registered later: a voice by gender and age', G[L['f']['m']] in ('f', '?') and G[L['m']['m']] in ('m', '?') and L['f']['ls'] > 1 and L['m']['ls'] < 1, json.dumps(L))
+    LG = J("[PIPER.genderOf(PIPER.voiceFor('spazier_f').id), PIPER.genderOf(PIPER.voiceFor('fahrer_m').id)]")
+    ck('a person registered later: a voice by gender and age', LG == ['f', 'm'] and L['f']['ls'] > 1 and L['m']['ls'] < 1, json.dumps(L))
     need = J("PIPER.needed()")
     mb = E("PIPER.needed().reduce((s, m) => s + PIPER.MODELS[m].mb, 0)")
     print('models needed', need, mb, 'MB', flush=True)
@@ -170,6 +172,17 @@ with lib.browser() as b:
     k1 = say('katrin', T_KAT, 'katrin_1')
     print('katrin first', json.dumps(k1), flush=True)
     k2 = say('katrin', T2, 'katrin_2')
+    # the whole cast, one sentence each (WAVs to listen to: out/piper/cast_<name>.wav)
+    CAST = {}
+    for k in ['hubert', 'ronald', 'gerhard', 'manfred', 'wolfgang', 'uwe', 'jens', 'katrin', 'ingrid', 'heike']:
+        r = say(k, f"Ich bin {k.capitalize()}. Morgen früh fahre ich mit dem Traktor in den Wald an der Klinge, kommst du mit?", 'cast_' + k)
+        CAST[k] = r.get('a', {})
+        print('CAST', k, V[k]['id'], json.dumps(r.get('a')), json.dumps(r.get('t')), flush=True)
+    if not FAKE:
+        ck('men below 165 Hz, women above (median pitch)', all(0 < CAST[k].get('f0', 0) < 165 for k in CAST if GV[k] == 'm') and all(CAST[k].get('f0', 0) > 165 for k in CAST if GV[k] == 'f'),
+           ' '.join(f"{k} {CAST[k].get('f0')}" for k in CAST))
+        lv = [CAST[k].get('loud', 0) for k in CAST]
+        ck('every voice about equally loud', min(lv) > 0 and max(lv) / min(lv) < 2.0, str(lv))
     ck('Hubert speaks', h1.get('a', {}).get('sec', 0) > 1.5, json.dumps(h1.get('a')))
     ck('Katrin speaks', k1.get('a', {}).get('sec', 0) > 1.5, json.dumps(k1.get('a')))
     if not FAKE:
@@ -263,14 +276,14 @@ with lib.browser() as b:
         for m, sid in voices:
             try:
                 r = say({'v': f'{m}:{sid}' if m in ('mls',) else m if m != 'thorsten_emotional' else f"{m}:{['amused', 'angry', 'disgusted', 'drunk', 'neutral', 'sleepy', 'surprised', 'whisper'][sid]}", 'ls': 1, 'pitch': 1}, S,
-                        f'survey_{m}_{sid}' if m != 'mls' or sid % 1 == 0 else None)
+                        f'survey_{m}_{sid}' if m != 'mls' else None)
                 a = r.get('a', {})
                 rows.append(dict(m=m, sid=sid, **a, infer=r.get('t', {}).get('infer'), load=r.get('t', {}).get('load'), mem=r.get('t', {}).get('mem')))
                 print('SURVEY', json.dumps(rows[-1]), flush=True)
             except Exception as e:
                 print('SURVEY FAIL', m, sid, str(e)[:200], flush=True)
-            if m != 'mls' or sid == 0:
-                pg.evaluate("PIPER.drop()")
+            if m != 'mls':
+                pg.evaluate("PIPER.end()")   # a fresh worker for the next model (the WebAssembly heap never shrinks)
         json.dump(rows, open(os.path.join(OUT, 'survey.json'), 'w'), indent=1)
         ck('survey: every voice spoke', len(rows) == len(voices), f'{len(rows)}/{len(voices)}')
     ck.errors(errs)
