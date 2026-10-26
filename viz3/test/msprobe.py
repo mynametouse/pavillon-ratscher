@@ -4,6 +4,7 @@ import sys, os, json, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]
 REG = ['westeurope', 'germanywestcentral']
+FIND = []
 def raw(method, url, headers, body=None):
     try:
         req = urllib.request.Request(url, data=body, method=method, headers=headers)
@@ -16,6 +17,7 @@ for reg in REG:
         st, h = raw('OPTIONS', url, {'Origin': 'https://mynametouse.github.io', 'Access-Control-Request-Method': 'POST',
                                        'Access-Control-Request-Headers': 'ocp-apim-subscription-key,content-type,x-microsoft-outputformat'})
         print('PREFLIGHT', url, st, json.dumps({k: v for k, v in h.items() if k.lower().startswith('access-control')}), flush=True)
+        if reg == 'westeurope': FIND.append(f"pre-{path.split('/')[-1][:5]} {st} o={h.get('Access-Control-Allow-Origin') or h.get('access-control-allow-origin')} h={(h.get('Access-Control-Allow-Headers') or h.get('access-control-allow-headers') or '')[:40]}")
         st, h = raw('POST', url, {'Origin': 'https://mynametouse.github.io', 'Ocp-Apim-Subscription-Key': '00000000000000000000000000000000',
                                     'Content-Type': 'application/ssml+xml', 'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3'}, b'<speak/>')
         print('POST', url, st, json.dumps({k: v for k, v in h.items() if k.lower().startswith('access-control')}), flush=True)
@@ -29,5 +31,12 @@ with lib.browser() as b:
             ['token', `https://${reg}.api.cognitive.microsoft.com/sts/v1.0/issueToken`, { 'Ocp-Apim-Subscription-Key': '00000000000000000000000000000000' }, ''],
           ]) { try { const r = await fetch(url, { method: 'POST', headers, body }); out[name] = 'status ' + r.status + ' (CORS ok)'; } catch (e) { out[name] = 'blocked: ' + e; } }
           return out; }"""
-        print('BROWSER', reg, json.dumps(pg.evaluate(js, [reg])), flush=True)
-print('RESULT msprobe: 1/1 ok')
+        res = pg.evaluate(js, [reg])
+        print('BROWSER', reg, json.dumps(res), flush=True)
+        FIND.append(f"browser-{reg} tts={res['tts'][:40]} token={res['token'][:40]}")
+# the findings as the names of (failing) checks: run.py shows them in its one verdict line in the job log
+# run.py shows the first three FAIL lines (300 characters) in the job log: the browser's answer first
+for f in sorted(FIND, key=lambda f: not f.startswith('browser-westeurope')):
+    print('FAIL ' + f.replace('status ', '').replace(' (CORS ok)', ' ok')[:95], flush=True)
+print('RESULT msprobe: 0/%d ok' % len(FIND), flush=True)
+sys.exit(1)
