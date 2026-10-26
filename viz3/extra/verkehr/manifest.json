@@ -1,0 +1,15 @@
+{
+ "charman": {
+  "vk_f02": "vk_f02.json",
+  "vk_f14": "vk_f14.json",
+  "vk_f07": "vk_f07.json",
+  "vk_f15": "vk_f15.json",
+  "vk_f12": "vk_f12.json",
+  "vk_m02": "vk_m02.json",
+  "vk_m07": "vk_m07.json",
+  "vk_m20": "vk_m20.json",
+  "vk_m11": "vk_m11.json",
+  "vk_m16": "vk_m16.json"
+ },
+ "credits_add": "<li>Leute auf den Straßen von Ratscher und Schleusingen (Bettina „Female_Adult_14“, Sabine „Female_Adult_02“, Anja „Female_Adult_07“, Claudia „Female_Adult_15“, Lea „Female_Adult_12“, Thomas „Male_Adult_02“, Frank „Male_Adult_07“, Marco „Male_Adult_20“, Stefan „Male_Adult_11“, Jonas „Male_Adult_16“) mit den Bewegungen der Spielfiguren: Microsoft Rocketbox Avatar Library, MIT-Lizenz, Copyright (c) 2020 Microsoft, <a href=\"https://github.com/microsoft/Microsoft-Rocketbox\" target=\"_blank\" rel=\"noopener\">https://github.com/microsoft/Microsoft-Rocketbox</a></li>"
+}
