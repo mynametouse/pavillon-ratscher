@@ -1,80 +1,106 @@
-## Suhl Fußballverein Aue
-## Suhl Fußballverein Aue: failed Expecting value: line 1 column 1 (char 0)
-## Suhl Fußball Stadion Aue
-## Suhl Fußball Stadion Aue: failed Expecting value: line 1 column 1 (char 0)
-## Suhl Plattenbau Rückbau
-## Suhl Plattenbau Rückbau: failed Expecting value: line 1 column 1 (char 0)
-## Suhl Nord Neubaugebiet
-## Suhl Nord Neubaugebiet: failed Expecting value: line 1 column 1 (char 0)
-## Suhl Büchsenmacher Gravur
+## Suhler SV Fußball
+- 1. Suhler SV: Der 1. Suhler SV 06 ist ein deutscher Sportverein, der seinen Sitz in der Stadt Suhl (Thüringen) hat. Neben seinem Hauptbetätigungsfeld Fußball bietet
+- Fußball-Thüringenliga: Saalfeld FC Einheit Bad Berka (Aufsteiger) 1. Suhler SV (Aufsteiger) Thüringer Fußball-Verband www.thueringer-fussball.de – Tabelle und Spielergebnisse Hartmut
+- Fußball-Thüringenliga 2026/27: sechsthöchste Spielklasse im Fußball der Männer in Deutschland. Die Saison wurde am 31. Juli 2026 mit dem Spiel zwischen dem 1. Suhler SV und der SpVgg Geratal
+- DDR-Fußball-Liga 1990/91: gewertet. FSV Zwickau – 1. Suhler SV (18. Spieltag): Wertung 2:0 Punkte und 2:0 Tore für Zwickau, Suhl trat nicht an. SV Stahl Thale – SV Germania Ilmenau (30
+- Suhl:  V. Fußball: 1. Suhler SV, FSV Goldlauter Handball: HSG Suhl Schießsportzentrum Suhl-Friedberg Gewichtheben: AC Suhl e. V. Basketball Verein Suhl e. V
+- SV Germania Ilmenau: Der SV Germania Ilmenau ist ein Sportverein aus Ilmenau in Thüringen, der sich aus drei Sektionen (Fußball, Basketball und Tischtennis) zusammensetzt,
+- Fußball-Oberliga Nordost 1991/92: vorgesehen, welche sich schließlich in Soemtron Sömmerda und dem 1. Suhler SV sowie dem SV Merseburg 99 und dem abgeschlagenen VFC Plauen fanden. ﻿Teilnehmer
+- BSG Kali Werra Tiefenort: Aktuell spielen die Tiefenorter in einer Spielgemeinschaft mit dem SV 1930 Frauensee und dem SV Blau-Weiß 09 Kieselbach in der neuntklassigen Kreisliga Westthüringen
+
+## Auenstadion Suhl
+- Thüringer Landespokal: Freundschaft 1999 20.05. FC Carl Zeiss Jena Wacker Nordhausen 3:1 Suhl Auenstadion 2000 27.05. FC Rot-Weiß Erfurt SSV Erfurt-Nord 3:1 Erfurt Steigerwaldstadion
+
+## Suhl-Nord Rückbau Plattenbau
+- Suhl: Suhls Wohnlandschaft einem starken Rückbau unterworfen ist. Dies betrifft insbesondere Plattenbauten an der Stadtperipherie und im Ortsteil Suhl-Nord
+- Liste von Plattenbaugebieten in Thüringen: Diese Liste enthält die zu DDR-Zeiten errichteten Plattenbau-Wohngebiete (u. a. Großwohnsiedlungen) im heutigen Thüringen. Viele von ihnen entstanden im
+- Großwohnsiedlung: Christaller. Mit Ernst May wurde 1954 ein Architekt, der sich für den Plattenbau engagiert hatte, zum Leiter der Planungsabteilung der Neuen Heimat bestellt
+- Halle-Neustadt: deshalb, einen Rückbau vorzunehmen, der hauptsächlich an den Rändern des Stadtteils stattfinden sollte. Besonders im Visier für einen Rückbau standen auch
+- Liste der Straßen und Plätze in Berlin-Hellersdorf: Parzellen erweitert. Gartenland am Beerenpfuhl (Lage52.54403313.6064) Nach dem Rückbau einer Kita in der Tangermünder Straße wurde die Fläche parzelliert und
+- Liste der Kulturdenkmale in Hoyerswerda: vergleichbarer Bauten stark verändert ist (Cottbus und Schwedt innen, Gera und Suhl komplett). Die Lausitzhalle ist ein spätmoderner Bau, der aber auch dokumentiert
+
+## Suhl Aue Neubaugebiet
+- Suhl: in Suhl. Seine Hochzeit hatte der Suhler Wohnungsbau in den 1960er und 1970er Jahren. Große Neubaugebiete sind die Aue, die Friedbergsiedlung, Suhl-Nord
+- Liste von Plattenbaugebieten in Thüringen: Suhl Suhl-Nord (Die 3000 Wohnungen sollen bis 2025 komplett abgerissen werden.) Aue I und Aue II Döllberg Friedberg Leninring (Am Himmelreich) Suhl-Zentrum
+- Wismut (Unternehmen): trug erheblich zum Wachstum der Stadt bei; so wurde zum Beispiel das Neubaugebiet Bieblach ausdrücklich als Bergarbeitersiedlung angelegt. Nach der Einstellung
+- Berka/Werra: Berka/Werra ist der größte Ortsteil und Verwaltungssitz der Stadt Werra-Suhl-Tal im thüringischen Wartburgkreis, die am 1. Januar 2019 aus der bis dahin
+- Liste von Volksschwimmhallen: vorigen Woche war die jüngste Schwimmhalle in Berlin, Thomas-Mann-Straße (Neubaugebiet Greifswalder Straße), genau ein Vierteljahr alt geworden.“  Schwimmhalle
+- Solingen: Untenrüden, Weegerhof, Wippe, Widdert, Wüstenhof Gräfrath: Altenfeld, Apfelbaum, Aue, Bandesmühle, Bimerich, Blumental, Ehren, Flockertsberg, Flockertsholz, Focher
+- Liste der Kulturhäuser in der DDR: Freizeitzentrum Stadt Moskau am 7. Oktober 1984 als kultureller Mittelpunkt des Neubaugebietes Moskauer Platz eröffnet Gesamtnutzfläche 21.000 m², Mehrzwecksaal, Stadtteilbibliothek
+
+## Büchsenmacher Suhl Gravur
 - Merkel Jagd- und Sportwaffen: Jagdwaffenhersteller in Suhl, Thüringen. Das Unternehmen bezieht sich direkt auf die bis ins 15. Jahrhundert zurückreichende Tradition der Suhler Büchsenmacher. Merkel
 - Heinrich Scherping (Büchsenmacher): war ein deutscher Büchsenmacher und späterer Hoflieferant. Heinrich Scherping ging nach seiner Lehre zunächst nach Herzberg, Suhl und Wien. 1857 gründete
 
-## Suhl Weihnachtsmarkt
-- Thüringen: wurde es erst am 3. Oktober 1990 aus den drei Bezirken Erfurt, Gera und Suhl sowie einigen angrenzenden Gebieten wiedergegründet und ist heute in 17 Landkreise
-- Schmalkalden: Regionales Wirtschaftsarchiv Südthüringen in Suhl. Eine kurze Bestandsübersicht. Thüringisches Staatsarchiv, Suhl 1994, S. 16–24. Volker Knöppel: Geschichte
-- Hans-Georg Maaßen: Verfassungsschutzpräsident bei. Zur Bundestagswahl 2021 trat er im Wahlkreis Suhl – Schmalkalden-Meiningen – Hildburghausen – Sonneberg als Direktkandidat
-- Das Adventsfest der 100.000 Lichter: 2004 von Florian Silbereisen moderiert und live aus dem Congress Centrum Suhl (mit Ausnahme 2005 in Cottbus) präsentiert wird. Sie wird jährlich einen
-- Bamberg: Oktober: Antikmarkt 1. Advent–6. Januar: Bamberger Krippenweg und Weihnachtsmarkt am Maxplatz mit in Reih und Glied aufgestellten Buden Alle geraden
+## Suhl Nahverkehr Buslinie
+- Verkehrsverbund Mittelthüringen: Abellio Rail Mitteldeutschland, Süd-Thüringen-Bahn und Erfurter Bahn, der Nahverkehr in den Städten sowie der Regionalbusverkehr der kommunalen und privaten
+- IOV Omnibusverkehr Ilmenau: bis 15 eingeführt. Vier angebotene Linien gelten als Landesbedeutsame Buslinie. So ist die Linie 350 als „PlusBus-Linie“ und sind die Linien 300, 304
+- Erlangen: A 73 Nürnberg–Fürth–Erlangen–Bamberg–Lichtenfels–Coburg-Suhl Bundesstraßen B 4 Bad Bramstedt–Hamburg–Braunschweig–Erfurt–Ilmenau–Coburg–Bamberg–(weiter
+- Schleiz: Band 2: Bezirke Halle, Leipzig, Dresden, Karl-Marx-Stadt, Erfurt, Gera, Suhl. Henschelverlag, Berlin 1978, ISBN 3-406-03913-8, S. 522–524. Benno Prieß:
+- Busverkehr in Erfurt: dies die am stärksten frequentierte Buslinie in Erfurt (Linie 9). Andererseits wurden ab 1973 immer mehr Buslinien durch neugebaute Straßenbahnstrecken
+- Jena: innerstädtische ÖPNV wird durch Straßenbahn- (seit 1901) und Buslinien (seit 1928) der Jenaer Nahverkehr GmbH (JeNah) erbracht. Neben dem Tages- und Spätverkehr
+- Solingen: Altenglischen nachgewiesenen Substantiv sol „Pfütze, Sumpflache“ bzw. „Schlamm, Suhle, sumpfige Stelle“. Es könnte sich um eine Stelle handeln, an der Schweine
+- Bad Herrenalb: nicht ganz geklärt. Dabei stehen die Möglichkeiten, dass er aus der „Roten Suhle“, einer salzhaltigen „Wildwälze“, oder aus „rot“ (Moder, Fäulnis) und dem
+
+## Suhl Weihnachtsmarkt Marktplatz
+- Höchstadt an der Aisch: Bamberg und ist eine wichtige Umleitungsstrecke zwischen der A 73 (Nürnberg–Suhl) und der A 3 (Würzburg–Nürnberg). Bis 1984 war Höchstadt über die Bahnstrecke
 - Meiningen: Polizei, welche der Landespolizeiinspektion Suhl unterstellt ist. Sie ist mit Ausnahme des Altkreises Suhl für den gesamten Landkreis Schmalkalden-Meiningen
+- Erlangen: Wissenschaften (seit 2003 biennal) Dezember: Weihnachtsmarkt auf dem Schloßplatz und Historischer Weihnachtsmarkt auf dem Neustädter Kirchenplatz. Internationales
+- Langewiesen: statt, auf dem vor allem regionale Lebensmittel verkauft werden. Der Weihnachtsmarkt findet am zweiten Advent statt und bietet vor allem Kunsthandwerk an
+- Coburg: Coburg 1354 e. V. veranstaltet und zieht viele Besucher an. Neben dem Weihnachtsmarkt im Dezember finden weitere traditionelle Märkte statt. Der Coburger
+- Jena: Bewegungstheaterfestival im Theaterhaus (alle zwei Jahre) Dezember: Weihnachtsmarkt In Jena gibt es mehrere Sportanlagen. Die größte ist das Ernst-Abbe-Sportfeld
+- Pegnitz (Stadt): Pegnitz und Liste der Bodendenkmäler in Pegnitz Pegnitz ist für seinen Weihnachtsmarkt und vor allem wegen der Starkbierzeit „Flinderer“ bekannt. Dabei wird
+- Würzburg: Lichterglanz, Würzburger Wirtschaftssymposium, Würzburger Bachtage Dezember: Weihnachtsmarkt Universitätsbibliothek Würzburg. Bibliothek der Hochschule für angewandte
 
-## Suhl Stadtbus
-- Bamberg: (bamberg.basketball [abgerufen am 17. Mai 2024]).  Verlagsgruppe Hof, Coburg, Suhl Bayreuth: Eintracht Bamberg meldet Insolvenz an - Nordbayerischer Kurier
-- Meininger Busbetrieb: Schmalkalden-Meiningen. Einige Linien der MBB führen dabei bis in die kreisfreie Stadt Suhl sowie in den Wartburgkreis und in den Landkreis Hildburghausen. Die MBB wurde
-- Stadtverkehr Meiningen: Der Stadtverkehr Meiningen besteht aus einem weitverzweigten Stadtbus-Liniennetz, das vom Meininger Busbetrieb (MBB) betrieben wird. Mit acht reinen Stadtlinien
-- Oberleitungsbus Hoyerswerda: Braunkohle fördern. Außer in den Städten Neubrandenburg, Stendal, Stralsund, Suhl und Wismar wurde deshalb auch in Hoyerswerda die Einführung eines Obus-Systems
-- Busverkehr in Erfurt: außerhalb des Zentrums. Die EVAG betreibt auf einer Netzlänge von 196,1 km Stadtbus- und auf 84,0 km Länge Regionalbuslinien (Stand Ende 2012). Sie setzt 41
-- Erfurt Hauptbahnhof: und 6 dienten meist für die Züge von und nach Arnstadt und weiter Richtung Suhl, Ilmenau, Meiningen oder Saalfeld. Zusätzlich gab es auf der Südseite den
+## Suhler Wurst
+- Eberswalder Wurst: vertreibt die EWN Wurstspezialitäten GmbH &amp; Co. KG (vorher EWG Eberswalder Wurst GmbH und EFG Eberswalder Fleisch GmbH) Fleisch- und Wurstwaren. Seit Juni
+- Bratwurst: verschiedene Wurstsorten aus Fleisch bezeichnet. Man versteht darunter Würste, die zum Braten bestimmt sind oder gebraten wurden. Die Bezeichnung Bratwurst
+- Zimbo: Wurstwaren per Frischdienst an den Lebensmittelhandel. 1960 kam die erste Wurst in selbstbedienungsgerechter Verpackung in den Handel. Damit war Zimbo ein
+- SRH Zentralklinikum Suhl: Wiedervereinigung im Jahr 1990 übernahm der Freistaat Thüringen die Trägerschaft des Suhler Krankenhauses. Inzwischen zählte es 798 Betten und entwickelte sich zu einem
+- Thüringen: halbierte. Die Meininger Mediengesellschaft (MMG), an der zu je 50 % die Suhler Verlagsgesellschaft (SVG) und die Mediengruppe Oberfranken beteiligt sind
+- Zur-Mühlen-Gruppe: deutscher Hersteller von Fleisch und Fleischerzeugnissen, Marktführer bei SB-Wurst und Wurstkonserven. Mutterunternehmen ist die Zur Mühlen ApS &amp; Co. KG mit
+- Edeka: welches täglich 1.250 Supermärkte in fünf Bundesländern mit Fleisch und Wurst beliefere: Es soll ein neues Hochregallager mit 3.800 Paletten-Plätzen und
+- Premium Food Group: EWG Eberswalder Wurst in Britz (bei Eberswalde) Marten Fleischwarenfabrik in Gütersloh Redlefsen in Satrup Die frische Thüringer! in Suhl HN Produktion
 
-## Suhl Repair-Café
+## Suhl Hennebergisch Mundart Wörter
+- Thüringen: Südthüringen liegen die mainfränkischen Sprachgebiete mit Hennebergisch im Einzugsgebiet der Werra um Suhl, Schmalkalden und Meiningen, Itzgründisch im Einzugsgebiet
+- Südthüringen: Wiedervereinigung als eine Bezeichnung für das Gebiet des ehemaligen Bezirks Suhl der Deutschen Demokratischen Republik etabliert und bezeichnet somit in etwa
+- Sonneberg: „Sonneberg“. Quelle, Überlieferung, historisches Umfeld. In: Jahrbuch des Hennebergisch-Fränkischen Geschichtsvereins. Jahrgang 22, 2007, S. 43–59. Martin Zeiller:
+- Unterschönau (Steinbach-Hallenberg): in den Orten des Haseltals eine eigene Mundart des im Raum südlich des Rennsteigs gesprochenen Hennebergischen entwickelt. In Unterschönau wird diese
+- Ostfränkische Dialekte: Fränkisch) Unterostfränkisch ﻿Hennebärchisch = Hennebergisch (Thüringen: Meiningen, Zella-Mehlis, Suhl, Schleusingen) ﻿Grôbfeldisch = Grabfeldisch (Bayern:
+- Georg Karl Friedrich Emmrich: Fortsetzung der Chronik der Stadt Meiningen von 1676 bis 1834, die der hennebergische alterthumsforschende Verein herausgab. Um sich zu zerstreuen, ging er
+- Landkreis Sonneberg: dessen Sohn Heinrich – Besitzverzeichnisse (Urbare) aufstellen. In hennebergischem Besitz blieb die Herrschaft oder Pflege Coburg, wie dieses Gebiet auch
+- Bad Liebenstein: deren Ruine den Burgberg krönt. 1353 gelangte das Gebiet über eine hennebergische Erbteilung an die Wettiner, welche es 1360 an die Herren von Stein verlehnten
 
-## Suhl Markt Wochenmarkt
-- Ewiger Pfennig: Münzmeister Heinrich von Salza versprochen hatte, die Münzen auf den Wochenmärkten nicht mehr zu brechen (für den Handel unbrauchbar zu machen). Zur Einhaltung
-- Schaffhausen: Jahrhunderten fand dort der Wochenmarkt statt. Auch wurden artistische Darbietungen und Belustigungen dort abgehalten. 1961 musste der Markt im Zuge der aufkommenden
-- Solingen: dem Shoppingcenter Hofgarten Betrieben werden alle drei Wochenmärkte von der Solinger Wochenmärkte UG. In der Vergangenheit wurde beispielsweise ein Brezeltag
-- Liste der Straßen in Oberhausen: Innenstadt Seit der Gemeindegründung 1862 wird hier der Oberhausener Wochenmarkt abgehalten. Das Gelände wurde 1859 durch den Kaufmann Wilhelm Stöckmann
-- Lauscha: wurde durch einen als Parkfläche oder für den Kugelmarkt und für die Wochenmärkte nutzbaren Multifunktionsplatz auf der Abrissfläche des ehemaligen Ferienheimes
+## Schießsportzentrum Suhl Friedberg Weltcup
+- Ralf Schumann: Anstellung als Nachwuchstrainer beim Thüringer Schützenbund am Schießsportzentrum Suhl-Friedberg, für die er seine Stelle als Sägeblattschleifer aufgab. Neben
 
-## Suhler Mundart
-- Bezirk Suhl: Schmalkalden, Meiningen, Suhl, Hildburghausen und Bad Salzungen Itzgründisch in den Kreisen Sonneberg und Hildburghausen Rhöner Platt, eine Mundart des Osthessischen
-- Hennebergisch: Stadt Suhl. Im Norden jenseits des Salzbogens in Richtung Bad Salzungen und nordöstlich des Rennsteigs grenzt das Hennebergische an Mundarten des
-- Herbert Roth: Auftritt vor Publikum zu versuchen. Daraufhin gründete Herbert Roth 1950 die Suhler Volksmusik, später umbenannt in Herbert Roth und seine Instrumentalgruppe
-- Julius Kober: Heimattreue und Kontaktfreudigkeit zu anderen Menschen geerbt. Die Suhler Mundart wurde von ihm frühzeitig gesprochen, gepflegt und betreut. Sehr bald
-- Thüringische Dialekte: (auch Weimarer Mundart): Zwischen Ilm und Schwarza um die Städte Jena, Apolda, Weimar und Rudolstadt. Nordthüringisch (auch Nordhäuser Mundart): Im Norden
-- Zella-Mehlis: wurden von den Suhler Meistern nicht anerkannt. Erst 1593 endete der Existenzkampf für die Zellaer Meister mit der Unterwerfung unter die Suhler Bestimmungen
-
-## Suhl Simson Museum
-- Simson (Unternehmen): von den beiden jüdischen Brüdern Löb und Moses Simson in Suhl gegründet. Seine Bekanntheit erlangte Simson durch die in der DDR in großen Stückzahlen hergestellten
+## Simson Werk Suhl Meininger Straße
 - Suhl: Vergangenheit wurde Suhl sowohl für die seit Jahrhunderten ansässige Waffenherstellung als auch durch den Kraftfahrzeug- und Zweiradhersteller Simson bekannt. Viele
-- Simson S 51: Die Simson S 51 ist ein vom VEB Fahrzeug- und Jagdwaffenwerk „Ernst Thälmann“ unter dem Markennamen Simson zwischen 1980 und 1990 hergestelltes Kleinkraftrad
-- Simson S 70: Die Simson S 70 ist ein Leichtkraftrad von Simson, das auf dem Modell S 51 aufbaut. Sie hat einen 70-cm³-Motor mit 4,1 kW (5,6 PS). Der Motor dieser Modelle
-- Awtowelo: und umgewandelten BMW-Werk in Eisenach sowie der Jagdwaffenschmiede Simson in Suhl entstand. Der Name Awtowelo ist eine Verkürzung aus dem russischen Begriff
-- Thomas Bieberbach: Landmaschinenschlosser wurde Thomas Bieberbach mit 18 Jahren Mitglied beim MC Simson Suhl. Im selben Jahr wurde er Klassenbester in der 150-cm³-Klasse der Ausweisfahrer
+- Meiningen: „Kulturstiftung Meiningen-Eisenach“, die „Meininger Theaterstiftung“ und die „Stiftung Meininger Baudenkmäler“ bei. Zum Schutz der Meininger Kulturgüter gründeten
+- Schwarza (Thüringer Wald): (1763–1813), Mediziner und Musikschriftsteller Moses Simson (1808–1868), Mitbegründer der Simson-Werke in Suhl August Löhnert (1874–1941), kommunistischer Widerstandskämpfer
+- Liste von Markennamen und Produkten in der DDR: Motorrad, entwickelt aus der BMW R 23 im ehemaligen BMW-Werk in Eisenach, hergestellt im Simson-Werk in Suhl Axa: Senf, Konserven Azoangin: rote Lutschtabletten
+- Weihrauch & Weihrauch: Zella-Mehlis, Zella-Mehlis (Thür), Reissmannstraße 24 ab 1958 WERK II des VEB Fahrzeug- und Gerätewerk Simson; später Fahrzeug- und Jagdwaffenwerk „Ernst Thälmann“
+- Liste von Kombinaten der DDR: Zweiradfahrzeuge Suhl Suhl 14.184 MfALF Herstellung von motorisierten und unmotorisierten Zweirädern. Diese wurden unter den Marken Simson, MZ und MIFA vertrieben
 
-## Suhl Schießsport Weltcup Friedberg
-- Ralf Schumann: Nachwuchstrainer beim Thüringer Schützenbund am Schießsportzentrum Suhl-Friedberg, für die er seine Stelle als Sägeblattschleifer aufgab. Neben dieser
+## Suhl Waffenschmied Denkmal 1903
+- Suhl: (Erdgeschoss 1515; Prunkstück des Henneberger Fachwerkstils) Waffenschmied-Denkmal auf dem Marktplatz von 1903, Wahrzeichen der Stadt Fachwerkhäuser im Ortsteil
+- Liste der Kulturdenkmale der Suhler Kernstadt: Jahn: Denkmale in Suhl. Kleine Suhler Reihe (41), Suhl Juli 2014 Commons: Kulturdenkmale in Suhl – Sammlung von Bildern, Videos und Audiodateien Suhler Amtsblatt
 
-## Suhl Tierpark
-- Tierpark Suhl: 718676Koordinaten: 50° 36′ 40,8″ N, 10° 43′ 7,2″ O Der Tierpark Suhl ist ein Zoo im Osten der Stadt Suhl im Thüringer Wald, der sich auf die Haltung bedrohter
-- Suhl: Suhl über einen Tierpark. Gegenwärtig existieren in der Stadt sieben öffentliche Wasserspiele, die vom Eigenbetrieb Kommunale Dienstleistungen Suhl von
-- Ringberg (Suhl): mehrere Zufahrtsstraßen abzweigen. An der Straße befindet sich auch der Tierpark in Suhl. Das Hotel Ringberghaus befindet sich in Gipfellage und war ursprünglich
-- Städtische Nahverkehrsgesellschaft Suhl/Zella-Mehlis: – Zentrum – Suhl-Nord G Bahnhof – Zentrum – Friedberg H Friedberg – Suhl-Nord – Gewerbegebiet Zella-Mehlis K Bahnhof – Zentrum – Tierpark – Ringberghaus
-- Liste zoologischer Gärten in Deutschland: Die Liste von Zoos, Tierparks, Wildparks, Vogelparks und anderen öffentlich zugänglichen zoologischen Einrichtungen in Deutschland ist sortiert nach Ortsnamen
-- Karin Roth (Sängerin): Herbert Roth aktiv und engagiert sich gemeinsam mit anderen Suhler Bürgern für den Tierpark der Stadt. 1998: Zwischen Rennsteig und Rhön 1998: Singender
-
-## Suhl Gymnasium
-- Suhl: Suhl ist eine kreisfreie Mittelstadt im fränkisch geprägten Süden des Freistaats Thüringen und staatlich anerkannter Erholungsort. Sie liegt am Südhang
+## Kreuzkirche Suhl Orgel Köhler
+- Kreuzkirche (Suhl): evangelisch-lutherische Kreuzkirche in Suhl in Thüringen wurde von 1731 bis 1739 errichtet. Eine stark wachsende Bevölkerung führte für die westlichen Suhler Stadtteile
+- Suhl: für deportierte jüdische Bürger Nahe der Kreuzkirche liegt der kleine Stadtpark mit Rotbuchen, zudem verfügt Suhl über einen Tierpark. Gegenwärtig existieren
+- Eilert Köhler: Orgel in der Kreuzkirche Suhl ist zugleich die größte Orgel Südthüringens. Über sein Leben und Wirken ist nur wenig bekannt. Geboren wurde Köhler um 1710 in
 - Liste der Kulturdenkmale der Suhler Kernstadt: der Liste der Kulturdenkmale der Suhler Kernstadt sind alle Kulturdenkmale des Zentrums der thüringischen Stadt Suhl aufgelistet (Denkmalliste Freistaat
-- Schleusingen: Landkreis Suhl umbenannt. Die Stadt gehörte 1950 bis 1952 für zwei Jahre zum Landkreis Hildburghausen, kehrte danach aber wieder in den Kreis Suhl zurück
-- Marleen Lohse: Nebenrolle als Mama von Ida (2021 und 2018), Zimmer 205 (2011), Sushi in Suhl (2012), Frau Ella (2013) und Happy Burnout (2017). Unter dem Regisseur Erik
-- Sandra Hüller: Sandra Hüller (* 30. April 1978 in Suhl) ist eine deutsche Theater- und Filmschauspielerin und -dozentin. 2024 wurde sie von der National Society of Film
-- Schmalkalden: Regionales Wirtschaftsarchiv Südthüringen in Suhl. Eine kurze Bestandsübersicht. Thüringisches Staatsarchiv, Suhl 1994, S. 16–24. Volker Knöppel: Geschichte
+- Liste von Orgeln in Thüringen: 2022.  Orgel in Rengelrode, abgerufen am 28. August 2022. Orgel in Saalfeld. Abgerufen am 13. Februar 2025.  Hartmut Haupt: Orgeln im Bezirk Suhl. Rat d
+- Orgellandschaft Thüringen: (1742) und Andisleben (1743). Eilert Köhler, der aus Burhave stammte, baute 1738–1740 eine Orgel für die Suhler Kreuzkirche. Das Instrument von Johann Christoph
+- Böhm (Orgelbauer):  ISBN 3-932366-00-X.  Hartmut Haupt: Orgeln im Bezirk Suhl. Staatliche Museen Meiningen, Suhl 1985.  Hartmut Haupt: Orgeln im Bezirk Gera. Rat des Bezirkes
+- Hermann Eule Orgelbau Bautzen: Orgelbau Orgel-Verzeichnis Schmidt: Hermann Eule Orgelbau Bautzen Organ index: Hermann Eule Orgelbau Bautzen 1. Internationales Online Orgel Festival
 
-## Suhl Kirche Organist
-## Suhl Kirche Organist: failed Expecting value: line 1 column 1 (char 0)
-## Suhl Zella-Mehlis Waffenproduktion
-## Suhl Zella-Mehlis Waffenproduktion: failed Expecting value: line 1 column 1 (char 0)
-## Suhl Einwohnerentwicklung
-## Suhl Einwohnerentwicklung: failed Expecting value: line 1 column 1 (char 0)
-## Suhl Lauter Fluss Innenstadt
-## Suhl Lauter Fluss Innenstadt: failed Expecting value: line 1 column 1 (char 0)
+## Hauptkirche Suhl Rokoko Orgel Wagner
+- Suhl: von 1761 gilt sie als größte erhaltene Rokoko-Kirche Ostdeutschlands. Die Orgel ist von Johann Michael Wagner, die Wandmalereien in der Sakristei sind
+
+## Suhl Stadtumbau Abriss Wohnungen Nord
+- Großwohnsiedlung: alleine nicht aus, sondern durch einen qualitativen Stadtumbau sind die objektiven Mängel der Wohnungen, des Wohnumfeldes, des Stadtteils und seine regionale
+- Stadterneuerung Berlin: Stadterneuerung Berlins ist eine Form der Stadtentwicklung und war nach 1945 als Stadtumbau vorgesehen und nur zum Teil als Sanierung geplant. Diese Stadterneuerung
+

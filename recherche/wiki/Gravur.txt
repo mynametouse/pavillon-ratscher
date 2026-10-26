@@ -1,0 +1,51 @@
+Gravur
+https://de.wikipedia.org/wiki/Gravur
+Lizenz: CC BY-SA 4.0 (Wikipedia-Autoren)
+
+Gravuren sind Einschneidungen von Ornamenten, Schriften und Verzierungen in Metallen, wie z. B. Messing, Kupfer und Silber; Stahl, Glas, Stein und anderen festen Werkstoffen. Der Beruf zu einer Ausbildung heißt Graveur. Die formgebende Bearbeitung von Holz, Elfenbein und anderen weichen Materialien bezeichnet man in der Regel als Schnitzen.
+Die klassische Handgravur auf metallischen Oberflächen oder auf Glas wird mit dem Stichel als Werkzeug (oder Schleifwerkzeug bei Glas) ausgeführt. Ziel ist es, durch Abtragen von Material eine Oberflächenstruktur zu schaffen, die sich gegen den Hintergrund abhebt.
+Die mit den verschiedenen Formen des Stichels geschaffenen Vertiefungen können zusätzlich mit Farbpaste ausgelegt und optisch hervorgehoben werden. Diese spezielle Technik wird z. B. seit Jahrhunderten in der künstlerischen Drucktechnik angewendet. Bei Metallen, z. B. Silber, wird ein ähnlicher Effekt durch eine spezielle Aufschmelztechnik erzeugt (Niellotechnik oder Schwarzfleck).
+
+
+== Grundlagen ==
+Die Gravur, ob per Hand oder per Maschine, ist eine spanende Bearbeitung, die lokal Material vom Werkstück abträgt. Bei der Glasgravur ist dies auch der Fall, da der Vorgang des Schleifens unter dem Mikroskop gesehen ein mehrfacher, durch die Schleifkörper verursachter Schneidvorgang ist. Dies unterscheidet die Gravur deutlich von der Radierung, Ritzung oder der Punzierung (z. B. beim Treiben von Kupfer), die technisch gesehen Einprägungen sind. Hier erfolgt der Arbeitsvorgang ausschließlich spanlos. Dies drückt sich besonders bei der Ausdrucksweise einer Darstellung im unterschiedlichen Duktus bzw. Manier aus. Während bei einer Radierung oder Ritzung die Linienstärke nur schwach veränderbar ist, kann bei einem Stich mit dem Stichel die Linienstärke von sehr dünn bis sehr breit ausgeführt werden.
+
+
+== Gravierung im Bereich der Tafelmalerei ==
+
+Viele mittelalterliche Goldgrundbilder besitzen gravierte Goldgründe. Die Möglichkeiten dieser Verzierungsform sind groß. Sie reichen von einfachen Linienornamenten, Zickzacklinien, sogenannte Wuggelungen oder auch Tremolierungen bis zu stilisierten Pflanzen- oder Tiermotiven. Diese Gravierungen erfolgten vor der Vergoldung mit unterschiedlich geformten Graviereisen, indem man die Formen aus der dick aufgetragenen Grundierung »herausschnitt«. Als Vorbilder dienten reich ornamentierte Brokatstoffe, die seit dem 14. Jahrhundert im Handel waren.
+Früheste Beispiel dieser Technik finden sich an katalanischen Malereien des späten 13. Jahrhunderts. Im süddeutschen Raum findet man diese Technik erstmals ab 1400. Ihren Höhepunkt hat sie im 15. Jahrhundert.
+
+Eine spezielle Technik der Gravierung ist das Wuggeln, Stelzeln oder wie man heute sagt das Tremolieren. Beim Tremolieren arbeitet der Künstler mit einem Flach- oder Hohleisen und drückt es in Links- und Rechtswendungen leicht in die grundierte Fläche. Dadurch entsteht ein zickzackförmiger Abdruck. Diese Technik setzt sich nach 1450 nördlich der Alpen allgemein durch. Nach dem Verzieren erfolgte der Bolusauftrag, die Vergoldung und das Polieren. Unmittelbar nach dem Polieren der Goldoberfläche erfolgte das Trassieren, d. h. das Eindrücken ornamentaler Linien in die Goldoberfläche.
+
+
+== Gravur im Bereich des Vergolders ==
+Auch bei der Polimentvergoldung kommt die sogenannte Kreidegrundgravur vor. Der Untergrund, z. B. eine Sperrholzplatte, wird zuerst mit warmer Leimtränke bestrichen, dass sich die Poren öffnen und die Holzfasern aufstellen. Dadurch gibt es eine bessere Verbindung zwischen Untergrund und Kreidegrund. Nun beginnt das Auftragen des Steingrundes, welcher aus Hasenleim und Steinkreide besteht. Gegebenenfalls wird etwas Venezianerterpentin hinzugefügt, um die Bindung zu verbessern. Grobe Unebenheiten werden mit einem Kreidekitt geebnet. Dann erfolgt das zügige Auftragen des Weißgrundes, der aus einer Kombination von Hautleim, Champagnerkreide, Chinakreide und/oder Bologneserkreide besteht. Der Auftrag wird etwa 20-mal wiederholt, bis eine etwa 1 mm dicke Schicht entstanden ist. Geschlossene Räume und eine Weißgrundtemperatur von max. 40 °C sind wichtig, um Nissen zu vermeiden. Diese sind kleine Luftbläschen, die sich erst beim Trocknen des Kreidegrundes bemerkbar machen. Sie dürfen keineswegs zugespachtelt werden, da sonst eine ungleichmäßige Oberflächenspannung entsteht, was zu Rissen führt. Die Oberfläche wird mit Schleifpapier unterschiedlicher Körnung geglättet, damit die optimale Haftung des Blattgoldes gewährleistet ist und um den Charakter massiven Metalls perfekt imitieren zu können. Dann beginnt die eigentliche Gravur. Mit einem Gravurhaken werden Ornamente oder Muster in den harten Kreidegrund graviert. Dabei muss man äußerst aufpassen, nicht abzurutschen, denn eine Korrektur ist, außer man trägt erneut Kreidegrund auf, nicht möglich. Dann wird das gelbe und für eine Glanzvergoldung später zusätzlich das rote Poliment aufgetragen. Den roten Bolus trägt man zweimal auf. Der Auftrag erfolgt mit einem feinen Haarpinsel im Kreuzzug. Das Poliment besteht aus dem farbigen Bolus (Tonerde) und Gelatine. Früher wurde das Poliment mit Eigelb gebunden. Nun ist der Haftgrund für die Vergoldung gegeben. Nach dem Vergolden sind kleinste Kratzer und Unebenheiten sofort zu erkennen. Diese Technik ist anstrengend und sehr zeitaufwändig.
+
+
+== Elektrogravur ==
+Ein besonderes Verfahren ist die Elektrogravur, bei der durch einen schwingenden Stift in kurzen Abständen Funken erzeugt werden, die das Material nur oberflächlich durch Schmelzen und Verdampfen verändern. Entsprechende Werkzeuge erzeugen die Schwingungen durch einen Magnetanker im Wechselfeld eines Elektromagneten und liefern zugleich den erforderlichen Stromfluss, der bei jeder Berührung eine Materialveränderung auf der zu gravierenden Metallfläche verursacht. Das Verfahren ist verwandt mit dem Erodieren, wird jedoch meist von Hand und ohne dazwischen befindliche Flüssigkeit ausgeführt. Anwendungen sind u. a. das Eingravieren von Serien- und Chargennummern in Maschinenteile.
+
+
+== Maschinengravur ==
+
+Bei der Fertigung von Schildern oder im Formenbau findet die Maschinengravur Anwendung, bei welcher das Material durch rotierende Fräser (Frässtichel) abgetragen wird. Zur Herstellung dauerhafter Schilder können aus verschiedenfarbigen Schichten bestehende Plastwerkstoffe eingesetzt werden, wobei die Gravurtiefe bis in eine andersfarbige Schicht hineinreicht. Auch Leiterplattenprototypen können auf diese Weise hergestellt werden.
+Mit dem Einsatz computergesteuerter Graviermaschinen können diverse Vektordateiformate eingesetzt werden. Die Vektordaten ermöglichen eine verlustlose Replikation der Gravurmotive, die mit der manuellen Fertigung nicht möglich wäre.
+
+
+== Lasergravieren ==
+
+Die modernste Graviertechnik ist die Lasergravur, hierbei wird das Material durch den auftreffenden Laserstrahl so stark erhitzt, dass es die Farbe kontrasterzeugend ändert, verdampft oder verbrennt.
+Anwendungsgebiete sind die dauerhafte Markierung elektronischer Bauelemente, Frontplatten, Typenschilder oder die Beschriftung von Computertastaturen. Auch die Gravur von Trinkgläsern und von Flutlichtschildern aus Plexiglas sind Anwendungsgebiete.
+Der Laserstrahl wird dabei der Kontur nachgeführt oder mit einem Laserscanner zeilenweise über das Werkstück geführt, dabei wird der Laser in schneller Folge ein- und ausgeschaltet, um an den erforderlichen Stellen einen Abtrag hervorzurufen. Durch Steuerung der Pulsfolge oder -energie ist es sogar möglich, Halbtöne zu erzeugen und auf diese Weise z. B. Fotos auf Metall- oder Glasoberflächen zu übertragen.
+Ein weiteres Verfahren ist die Maskengravur, bei der eine im Laserstrahl liegende, die Vorlage bildende Maske verkleinert auf dem Werkstück abgebildet wird. Diese Maske kann feststehend oder eine sich wie ein Typenrad drehende Folge von Zeichen sein. Der Laserpuls ist dabei so energiereich und kurz, dass er mit einem einzigen Puls die gesamte abgebildete Kontur der Maske abträgt.
+Ein besonderes Verfahren ist die Glasinnengravur um im Inneren eines Glasblockes ein dreidimensionales Bild zu erzeugen. Dafür wird ein Laserstrahl stark aufgeweitet und im Inneren des Glases auf einen mikroskopischen Punkt fokussiert, an dieser Stelle wird das Glas undurchsichtig milchig. Durch eine Vielzahl an Punkten ergibt sich so ein Bild.
+
+
+== Weblinks ==
+
+Bundesinnungsverband der Galvaniseure Graveure und Gürtler
+Lasergravieren im Veredelungslexikon der Hochschule für Technik, Wirtschaft und Kultur Leipzig
+
+
+== Einzelnachweise ==

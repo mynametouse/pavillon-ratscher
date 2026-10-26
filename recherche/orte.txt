@@ -28,6 +28,7 @@ n13061290121	amenity=bank	Targobank	[-4797.8, 12435.6]	[50.610244, 10.691079]
 n1356472229	amenity=bank	Volksbank Thüringen Mitte eG	[-5010.7, 12171.7]	[50.607734, 10.68823]	Bahnhofstraße 7
 n1549000326	amenity=bar	Das Lädchen	[-7564.1, 11615.8]	[50.601417, 10.652064]	 
 n11398137962	amenity=bar	FAME - Tanz- und Cocktailbar	[-4986.1, 12420.4]	[50.610014, 10.688391]	 
+n1644551415	amenity=bar	Rick's Café Américain (Kinobar)	[-5132.1, 12328.6]	[50.609106, 10.686369]	 
 n1374061177	amenity=bar	Slickwillys Billardcafé	[-4417.1, 12830.1]	[50.614027, 10.696235]	Lauwetter 23
 n11455105966	amenity=bar	Zum Feierabend	[-4614.6, 12428.8]	[50.61027, 10.69371]	 
 w125678581	shop=beauty	House of Beauty	[-4244.0, 12923.3]	[50.614961, 10.698644]	Gothaer Straße 83
@@ -123,7 +124,7 @@ n10860026922	amenity=bench		[-4852.1, 12097.7]	[50.607136, 10.690558]
 n10860026923	amenity=bench		[-4849.7, 12105.6]	[50.607209, 10.690587]	 
 n10860026924	amenity=bench		[-4837.3, 12107.3]	[50.60723, 10.690763]	 
 n10860039102	amenity=bench		[-4824.9, 12091.7]	[50.607095, 10.690952]	 
-n10982475946	amenity=bench		[-1359.2, 14794.1]	[50.633414, 10.738585]	 
+n10982475946	amenity=bench		[-1357.2, 14793.9]	[50.633413, 10.738614]	 
 n11099099511	amenity=bench		[-3127.2, 12389.4]	[50.610631, 10.715059]	 
 n11099112168	amenity=bench		[-2933.5, 12504.2]	[50.611772, 10.717747]	 
 n11099125539	amenity=bench		[-2916.4, 12507.5]	[50.61181, 10.71799]	 
@@ -221,8 +222,6 @@ n13702428347	amenity=bench		[-5613.0, 13499.2]	[50.619547, 10.678581]
 n13731805064	amenity=bench		[-4911.5, 12243.6]	[50.608437, 10.689596]	 
 n13731805065	amenity=bench		[-4912.3, 12246.9]	[50.608467, 10.689582]	 
 n13988278079	amenity=bench		[-1572.2, 15226.1]	[50.637252, 10.735205]	 
-n14290814252	amenity=bench		[-5340.3, 11805.8]	[50.604236, 10.683785]	 
-n14290827548	amenity=bench		[-5341.0, 11800.1]	[50.604184, 10.68378]	 
 n1947342760	amenity=bench	Südthüringens schönste Aussichten	[-1939.6, 16174.3]	[50.645723, 10.729219]	 
 n5198181055	amenity=bench	Südthüringens schönste Aussichten	[-3116.8, 10683.9]	[50.595083, 10.716502]	 
 n11579970641	amenity=bench	Südthüringens schönste Aussichten	[-4988.4, 11233.9]	[50.599191, 10.689265]	 
@@ -300,7 +299,6 @@ n12554798942	shop=car_repair	Wintec Autoglas	[-3340.6, 10108.3]	[50.589724, 10.7
 n1236043669	shop=car_repair	Zu Max Schultz Werkstatt	[-3899.0, 15240.0]	[50.636256, 10.701825]	 
 w115751926	shop=car_repair	pitstop	[-5414.2, 12142.9]	[50.607274, 10.682469]	Würzburger Straße 3
 n13409573518	amenity=car_wash	Autowaschanlage	[-3661.0, 14957.3]	[50.633793, 10.705454]	 
-w162052247	amenity=car_wash	Circle K	[-2957.0, 9977.2]	[50.588714, 10.719326]	 
 n1237228666	amenity=car_wash	SB Waschbox	[-3627.6, 14955.4]	[50.633791, 10.705934]	 
 n9064303043	amenity=car_wash	Shell	[-4112.4, 12341.6]	[50.609719, 10.700973]	 
 n13409573545	amenity=car_wash	Soft und Clean Waschstraße	[-4062.8, 15468.0]	[50.638256, 10.699303]	Am Königswasser 5
@@ -327,8 +325,9 @@ w1485842941	amenity=charging_station	Zella-Mehlis Supercharger	[-5052.4, 16109.6
 n1358173744	shop=chemist	Müller	[-4835.1, 12271.1]	[50.608726, 10.690669]	Steinweg 30
 n5695741644	shop=chemist	Rossmann	[-4693.6, 16123.6]	[50.643929, 10.689756]	Industriestraße 4
 n12872129931	shop=chemist	dm	[-5844.5, 11646.6]	[50.602539, 10.676681]	Würzburger Straße 33
+w60341940	amenity=childcare	DRK Kindergarten Rennsteigkobolde	[-3185.4, 14911.2]	[50.633603, 10.712309]	Ringbergstraße 60
 n1831932930	amenity=childcare	Kita: "Heiligenland"	[-7851.6, 11373.0]	[50.599061, 10.648131]	Heiligenland 1
-n14108349803	amenity=cinema	Cineplex	[-5158.7, 12310.6]	[50.608928, 10.686002]	 
+w300432514	amenity=cinema	Cineplex	[-5162.5, 12296.8]	[50.6088, 10.685958]	 
 n1382049250	amenity=clinic	Ärztehaus Aue II	[-5881.2, 11759.0]	[50.603546, 10.67607]	Würzburger Straße 74
 w120453551	amenity=clinic	Ärztehaus Aue II	[-5887.7, 11756.8]	[50.603522, 10.675979]	 
 n1385077928	shop=clothes	Asia Shop	[-4588.9, 12468.6]	[50.610646, 10.694048]	 
@@ -382,7 +381,7 @@ n2841508266	amenity=dentist	Dr. med. Jürgen Kempf	[-5185.5, 12124.6]	[50.607219
 n11773218001	amenity=dentist	Reinhardt	[-4638.5, 12533.1]	[50.61121, 10.693287]	 
 n11398164562	amenity=dentist	Sebastian Emanuel Toma	[-4541.8, 12326.6]	[50.609374, 10.694832]	 
 n12603652890	amenity=dentist	Thea Heusinger	[-4432.2, 12032.8]	[50.606748, 10.696626]	Judithstraße 62
-n5358663005	amenity=dentist	Zahnarztpraxis Findeisen	[-6773.0, 11395.0]	[50.59979, 10.66357]	Leonhard-Frank-Straße 39
+n5358663005	amenity=dentist	Zahnarztpraxis Findeisen	[-6771.5, 11402.5]	[50.599859, 10.663586]	Leonhard-Frank-Straße 39
 n11107097321	amenity=dentist	Zahnmedizin Team Dr. Kleye	[-4914.4, 12181.1]	[50.607866, 10.689602]	Schleusinger Straße 2
 n5695373734	shop=department_store	Woolworth	[-4729.1, 16095.6]	[50.643656, 10.689268]	Industriestraße 
 n13061323906	shop=department_store	Woolworth	[-4752.8, 12432.2]	[50.610235, 10.691727]	 
@@ -409,7 +408,7 @@ n5646674243	amenity=doctors	Praxis Janet Pfeiffer	[-4839.6, 12464.6]	[50.610488,
 n10784467370	amenity=doctors	Praxis für Psychiatrie und Psychotheratie Michaela Förster	[-3427.0, 12381.4]	[50.610414, 10.710767]	Alexander-Gerbig-Straße 49
 n12649872913	amenity=doctors	SRH Hautarztpraxis Evgeni Mitsev	[-4515.8, 12545.6]	[50.611384, 10.695037]	Gothaer Straße 15
 n12692040425	amenity=doctors	dr. med. (Univ. Szeged) Carolin Langbein	[-5191.0, 12137.3]	[50.607332, 10.685672]	Bahnhofstraße 18a
-n1237228671	shop=doityourself	Globus Baumarkt	[-3444.3, 15150.7]	[50.635662, 10.708414]	Am Steinsfelder Wasser 13
+n1237228671	shop=doityourself	Globus Baumarkt	[-3444.3, 15150.7]	[50.635662, 10.708414]	Am Fröhlichen Mann 
 n3629591202	shop=doors	Tür & Tor Bauelemente	[-3741.3, 14880.4]	[50.633053, 10.704361]	Große Beerbergstraße 99
 n12306766930	amenity=drinking_water	Euro-Trinkbrunnen	[-4736.0, 12306.1]	[50.609093, 10.692064]	 
 n12692724508	amenity=driving_school	Fahrschule Hartenstein	[-5210.9, 12042.9]	[50.606462, 10.685459]	Dr.-Theodor-Neubauer-Straße 9
@@ -426,11 +425,11 @@ n1385077915	amenity=fast_food	Asia Bistro	[-4584.5, 12472.2]	[50.610681, 10.6941
 n1492340467	amenity=fast_food	Asia Hoado	[-4823.3, 12245.5]	[50.608498, 10.690859]	 
 n12559896539	amenity=fast_food	Asia Mai	[-5672.2, 11824.8]	[50.604248, 10.679014]	 
 n6355412535	amenity=fast_food	Backhaus Nahrstedt	[-5748.8, 11739.9]	[50.603436, 10.677981]	 
+n13415889673	amenity=fast_food	Backhaus Nahrstedt	[-5677.5, 11830.1]	[50.604294, 10.678935]	Würzburger Straße ´1
 n12556337959	amenity=fast_food	Betriebsrestaurant des SRH	[-3596.9, 11466.1]	[50.601984, 10.709028]	Albert-Schweitzer-Straße 2
 n1385078471	amenity=fast_food	David's Bistro	[-4734.0, 12328.6]	[50.609299, 10.692075]	 
 w1050971503	amenity=fast_food	Diana Grill	[-4704.2, 12417.0]	[50.610119, 10.692434]	 
 n10857472400	amenity=fast_food	Domino's	[-4588.1, 12397.0]	[50.609994, 10.694114]	 
-n13415889673	amenity=fast_food	Drei Ähren Bäckerei	[-5677.5, 11830.1]	[50.604294, 10.678935]	Würzburger Straße ´1
 w255108059	amenity=fast_food	Drei Ähren Bäckerei	[-6008.1, 11568.1]	[50.601743, 10.674398]	Am Bahnhof 32
 n1408901189	amenity=fast_food	Emek-Döner-Pizza-Haus	[-3585.5, 14264.2]	[50.627508, 10.707063]	Ringbergstraße 73
 n9947598042	amenity=fast_food	Fantasia	[-3510.1, 12767.1]	[50.613891, 10.709283]	 
@@ -459,7 +458,6 @@ n11398576645	leisure=fitness_centre	Fit unlimited - Fitnesstudio Suhl	[-6791.2, 
 n11398567884	leisure=fitness_centre	FitXpert	[-4532.2, 12419.1]	[50.610222, 10.694898]	Pfarrstraße 7
 n10756170514	leisure=fitness_centre	Fitness-Center Body-Style	[-3901.0, 13929.8]	[50.624306, 10.702795]	Kornbergstraße 4
 n11259834703	leisure=fitness_centre	Movement	[-5122.3, 12172.0]	[50.607682, 10.686629]	 
-n14144028608	leisure=fitness_centre	Namste Yoga	[-1378.7, 14783.9]	[50.633311, 10.738313]	 
 n1827519813	leisure=fitness_centre	Train Together Studio	[-3501.4, 9648.0]	[50.585449, 10.711778]	Pfütschbergstraße 16
 n12465513719	amenity=fixme	Schulamt	[-3987.9, 12345.6]	[50.609816, 10.702755]	Hölderlinstraße 1
 n977423083	shop=florist	Blume 2000	[-4677.8, 12394.7]	[50.609929, 10.69283]	Steinweg 9
@@ -530,19 +528,17 @@ n1356472228	shop=jewelry	Uhren Steigleder	[-4739.6, 12323.3]	[50.609248, 10.6919
 w253662493	amenity=kindergarten	Freier Kindergarten	[-4514.8, 12051.4]	[50.606878, 10.695428]	Riemenschneiderstraße 1
 n1426428715	amenity=kindergarten	Freier Kindergarten Suhl	[-4502.6, 12062.6]	[50.606985, 10.695594]	Riemenschneiderstraße 1
 w172270789	amenity=kindergarten	Heiligenland	[-7861.7, 11368.3]	[50.599013, 10.647991]	 
-w138359734	amenity=kindergarten	Integrative Kindertagesstätte Auenknirpse	[-5797.6, 11968.6]	[50.605498, 10.677107]	 
+w138359734	amenity=kindergarten	Integrative Kindertagesstätte Auenknirpse	[-5797.5, 11968.8]	[50.6055, 10.677109]	 
 w71131866	amenity=kindergarten	Kindergarten Arche Noah	[-4828.0, 12215.0]	[50.608217, 10.690814]	Steinweg 39
 w124092556	amenity=kindergarten	Kindergarten Auenknirpse	[-5784.8, 11951.1]	[50.605345, 10.677304]	 
 w137025588	amenity=kindergarten	Kindergarten Döllbergzwerge	[-3859.1, 11524.3]	[50.602388, 10.705227]	Hufelandstraße 9
 w141233089	amenity=kindergarten	Kindergarten Friedrich Fröbel	[-3557.1, 12877.0]	[50.614871, 10.708526]	 
 n1438611326	amenity=kindergarten	Kinderland	[-4281.3, 12040.0]	[50.606887, 10.698783]	Hennebergstraße 10
 w169230357	amenity=kindergarten	Kindertagesstätte "Wiesengeister" Goldlauter	[-1567.9, 14459.5]	[50.630262, 10.735845]	Schopfenstraße 15
-w138359733	amenity=kindergarten	Kindertagesstätte „Tausendfüßler"	[-5652.1, 12125.3]	[50.606998, 10.679072]	Auenstraße 32
-w136492570	amenity=kindergarten	Rennsteigkobolde	[-3177.4, 14909.7]	[50.633593, 10.712425]	Ringbergstraße 60
+w138359733	amenity=kindergarten	Kindertagesstätte „Tausendfüßler"	[-5651.3, 12117.2]	[50.606925, 10.679089]	Auenstraße 32
 w138359735	amenity=kindergarten	Tabaluga	[-6138.5, 12642.0]	[50.611473, 10.671705]	 
 n12093330673	shop=kiosk	Lokschuppen	[-5387.4, 11906.7]	[50.605133, 10.683033]	Bahnhofstraße 28
 n11263972716	shop=kiosk	Suhler Pfeifendeckel	[-4733.8, 12354.2]	[50.609533, 10.692058]	 
-n14232778941	shop=kiosk	Truckenbrodt GbR	[-5668.4, 11823.7]	[50.60424, 10.67907]	 
 n1244350056	shop=kitchen	Küchenstudio Am Domberg	[-3726.2, 14871.3]	[50.632977, 10.704585]	Große Beerbergstraße 101
 n3418177732	shop=laundry	Elis NL Zella-Mehlis	[-4358.9, 15688.9]	[50.640127, 10.694889]	Industriestraße 24
 n7113105110	shop=laundry	Wäscherei und Textilreinigung "Frischer Wind"	[-4302.4, 12264.1]	[50.608921, 10.69831]	Pfarrstraße 29
@@ -602,8 +598,8 @@ w133154254	amenity=parking	Globus Kundenparkplatz	[-3396.2, 15199.3]	[50.636128,
 n1671601827	amenity=parking	Gäste-Parkplatz	[-2688.4, 15516.4]	[50.639362, 10.718976]	 
 w161055599	amenity=parking	Johann-Stockmar-Platz	[-1710.4, 15114.8]	[50.63617, 10.733306]	 
 w108009400	amenity=parking	Kundenparkplatz Einkaufsmärkte	[-3702.1, 14911.7]	[50.633357, 10.7049]	 
-w457389187	amenity=parking	Kundenparkplatz Einkaufsmärkte	[-5806.0, 11668.8]	[50.60276, 10.677217]	 
-w457389188	amenity=parking	Kundenparkplatz Einkaufsmärkte	[-5795.0, 11724.0]	[50.603268, 10.677331]	 
+w457389187	amenity=parking	Kundenparkplatz Einkaufsmärkte	[-5806.0, 11668.8]	[50.60276, 10.677216]	 
+w457389188	amenity=parking	Kundenparkplatz Einkaufsmärkte	[-5792.6, 11724.4]	[50.603273, 10.677366]	 
 w108449950	amenity=parking	Kundenparkplatz Sagasser	[-4176.0, 14896.7]	[50.632991, 10.698115]	 
 w531205495	amenity=parking	LOMO Autohof	[-4458.2, 16227.2]	[50.644988, 10.693053]	 
 w24927875	amenity=parking	Lidl Kundenparkplatz	[-5085.2, 11990.8]	[50.606047, 10.687299]	 
@@ -613,7 +609,7 @@ w136413955	amenity=parking	Mitarbeiterparkplatz	[-5035.9, 11659.2]	[50.603048, 1
 w108105080	amenity=parking	Mitarbeiterparkplatz EbKDS Suhl	[-3737.3, 15455.3]	[50.638298, 10.70398]	 
 n2286534150	amenity=parking	Mitglieder-Parkplatz	[-2668.2, 15574.3]	[50.639899, 10.719223]	 
 w72039623	amenity=parking	Netto Kundenparkplatz	[-3662.4, 12437.7]	[50.610813, 10.70735]	 
-w304453283	amenity=parking	Netto Kundenparkplatz	[-6127.5, 11586.7]	[50.601854, 10.672672]	 
+w304453283	amenity=parking	Netto Kundenparkplatz	[-6127.2, 11585.9]	[50.601847, 10.672677]	 
 n655193772	amenity=parking	Parkgarage am Rathaus	[-4514.3, 12380.2]	[50.609876, 10.695184]	 
 w658251633	amenity=parking	Parkhaus am Zentralklinikum	[-3672.4, 11504.8]	[50.6023, 10.707916]	 
 w463550047	amenity=parking	Parkplatz El Greco	[-5732.9, 16531.1]	[50.647139, 10.674537]	 
@@ -733,7 +729,7 @@ w136181786	amenity=school	Lautenbergschule Suhl - Gemeinschaftsschule	[-6072.0, 
 n1420393103	amenity=school	Paul-Greifzu-Schule	[-3388.7, 12774.0]	[50.614013, 10.711019]	 
 n4369349434	amenity=school	Private Fachschule für Wirtschaft und Soziales - Suhl I	[-5241.3, 12421.1]	[50.609896, 10.684734]	Auenstraße 3-5
 n13727028580	amenity=school	Private Fachschule für Wirtschaft und Soziales Suhl II	[-5119.1, 11579.9]	[50.602284, 10.687128]	Neundorfer Straße 28
-w141247217	amenity=school	Regionales Förderzentrum	[-6006.7, 11725.6]	[50.60318, 10.674296]	 
+w141247217	amenity=school	Regionales Förderzentrum	[-6023.8, 11738.6]	[50.60329, 10.674042]	 
 w136202781	amenity=school	Ringbergschule	[-3556.0, 14450.1]	[50.629218, 10.707345]	 
 w247994730	amenity=school	Staatliches Berufsbildungszentrum Suhl/Zella-Mehlis	[-5225.0, 16171.6]	[50.644108, 10.682097]	Gewerbestraße 1
 w74151808	amenity=school	Staatliches Gymnasium Suhl	[-5000.4, 12141.0]	[50.607459, 10.6884]	Friedensstraße 1
@@ -753,7 +749,7 @@ w259788743	amenity=social_facility	Deutsches Rotes Kreuz	[-3905.4, 13787.4]	[50.
 n6356688375	amenity=social_facility	Johannispark Pflegezentrum	[-5419.4, 12076.1]	[50.606663, 10.682445]	 
 n1412470681	amenity=social_facility	Mutter-/Vater-/Kind-Wohnen Anker-platz	[-5061.3, 12104.2]	[50.607093, 10.687556]	Naumannstraße 4
 n1426428812	amenity=social_facility	Senioren-Heim	[-4421.0, 12198.4]	[50.608263, 10.69666]	Rimbachstraße 28
-n6355399536	amenity=social_facility	Seniorenresidenz Suhl	[-5560.4, 11913.1]	[50.605108, 10.680549]	 
+n6355399536	amenity=social_facility	Seniorenresidenz Suhl	[-5555.0, 11910.4]	[50.605086, 10.680629]	 
 n12608240323	amenity=social_facility	Suchtberatungs-und Behandlungsstelle Diakonisches Werk Henneberger Land e.V.	[-5244.5, 12421.4]	[50.609897, 10.684688]	Auenstraße 3
 n1438611120	amenity=social_facility	advita Haus Domberg	[-4226.4, 12117.6]	[50.607621, 10.699511]	Rimbachstraße 47
 n6359958816	shop=sports	Der Sportladen	[-4708.3, 12289.0]	[50.60895, 10.692473]	Stadelstraße 3
@@ -767,12 +763,12 @@ w47633500	leisure=sports_centre	Schießsportzentrum Suhl-Friedberg	[-3305.3, 936
 w169686645	leisure=sports_centre	Schwimmbad "Haseltal"	[-4661.0, 11146.1]	[50.59855, 10.694023]	 
 w248046101	leisure=sports_centre	Schöne Aussicht	[-5485.3, 16146.2]	[50.64375, 10.678383]	 
 n4674656181	leisure=sports_centre	Spielewald	[-2396.4, 13078.4]	[50.617268, 10.725012]	Ringberg 10
-n14190937766	leisure=sports_centre	Sportcenter Suhl	[-2951.5, 14990.3]	[50.634437, 10.715602]	Schneekopfstraße 78
+w123490113	leisure=sports_centre	Sportcenter Suhl	[-2958.9, 15002.9]	[50.634549, 10.715487]	Schneekopfstraße 78
 w133905861	leisure=sports_centre	Sporthalle Am Döllberg	[-4055.2, 11579.7]	[50.602798, 10.702374]	 
 w82880042	leisure=sports_centre	Sporthalle Reinhard Hess	[-6067.8, 11677.7]	[50.602713, 10.673457]	 
 w1175859123	leisure=sports_centre	Wolfsgrube	[-4453.9, 11920.1]	[50.605709, 10.696401]	Wolfsgrube 29
 w248003235	leisure=sports_hall	Arena "Schöne Aussicht"	[-5477.7, 16213.4]	[50.644366, 10.67844]	Gewerbestraße 3 A
-n14190937763	leisure=sports_hall	Lasertag Suhl	[-3087.0, 14952.3]	[50.634025, 10.713689]	Schneekopfstraße 72
+w136641192	leisure=sports_hall	Lasertag Suhl	[-3088.8, 14950.3]	[50.634006, 10.713664]	Schneekopfstraße 72
 w247992029	leisure=sports_hall	Sporthalle Berufsschule	[-5320.2, 16183.4]	[50.64417, 10.680722]	 
 w160196034	place=square	Zirkusplatz am fröhlichen Mann	[-3601.4, 15070.4]	[50.634853, 10.706222]	 
 w107172872	leisure=stadium	Auenstadion	[-5943.9, 11886.8]	[50.604681, 10.675073]	Auenstraße 1
@@ -785,7 +781,6 @@ n4674406673	place=suburb	Linsenhof	[-6134.7, 13151.5]	[50.616122, 10.671368]
 n298551715	place=suburb	Neundorf	[-5090.8, 11482.1]	[50.601405, 10.687608]	 
 n4080122512	shop=supermarket	ALDI	[-4714.5, 16073.9]	[50.643465, 10.689493]	Industriestraße 
 n13415889678	shop=supermarket	Aldi	[-5872.4, 11654.7]	[50.602599, 10.676276]	Würzburger Straße 35
-w457389192	shop=supermarket	Aldi Nord	[-5892.4, 11655.9]	[50.6026, 10.675988]	 
 n6507840251	shop=supermarket	Edeka	[-5735.9, 11733.8]	[50.603386, 10.678171]	Würzburger Straße 29
 n13415889671	shop=supermarket	Kaufland	[-5674.7, 11847.3]	[50.604452, 10.678961]	Würzburger Straße 1
 n10898558203	shop=supermarket	Lidl	[-4257.8, 12992.5]	[50.615585, 10.698394]	Mauerstraße 1
@@ -800,7 +795,6 @@ n471039580	shop=supermarket	REWE	[-4719.4, 16127.7]	[50.643953, 10.689382]	Indus
 n1358173817	shop=supermarket	REWE	[-4858.9, 12471.8]	[50.610544, 10.690176]	Friedrich-König-Straße 21
 n9049718678	shop=supermarket	REWE	[-3575.0, 12527.0]	[50.61167, 10.708536]	Ilmenauer Straße 12
 w71194821	shop=supermarket	REWE	[-3764.7, 11539.8]	[50.602575, 10.706567]	Hufelandstraße 1a
-w71537655	shop=supermarket	Rewe	[-3570.0, 12528.7]	[50.611688, 10.708606]	Ilmenauer Straße 12
 n442558315	shop=supermarket	tegut	[-6092.8, 12485.6]	[50.61007, 10.67248]	Linsenhofer Straße 63
 w1387749449	leisure=swimming_pool	Nichtschwimmerbecken	[-4602.1, 11119.1]	[50.598333, 10.694888]	 
 w1388490035	leisure=swimming_pool	Planschbecken	[-4590.6, 11114.5]	[50.598296, 10.695057]	 
@@ -997,6 +991,7 @@ n1564159211	office=association	Diakonisches Werk im Evangelischen Kirchenkreis H
 n10755902130	tourism=artwork	Diana auf der Jagd	[-4706.1, 12397.5]	[50.609941, 10.692423]	 
 n11398164564	office=political_party	Die Grünen	[-4574.7, 12332.1]	[50.609409, 10.694355]	 
 w120456376	building=yes	Die Insel	[-4103.2, 14395.2]	[50.628452, 10.699542]	 
+n12692040426	office=political_party	Die PARTEI Kreisverband Suhl	[-5587.6, 12041.4]	[50.606264, 10.680062]	Würzburger Straße 24
 n12642552559	office=company	Die Stöcklein	[-5714.6, 11209.7]	[50.598617, 10.678878]	Wilhelm-G.-Spangenberg-Straße 12
 w111732877	building=industrial	Die frische Thüringer GmbH	[-4224.8, 15491.1]	[50.638388, 10.696962]	Am Königswasser 1
 n12642552558	office=company	Dieter Rehbein - Rund ums Haus Service	[-5658.7, 11108.6]	[50.597722, 10.679757]	Wilhelm-G.-Spangenberg-Straße Halle 15
@@ -1077,6 +1072,7 @@ n13448316923	office=company	GSA Eventservice	[-4606.6, 12150.3]	[50.607735, 10.6
 n2769267576	historic=boundary_stone	GSH	[-6422.3, 15298.6]	[50.635562, 10.665596]	 
 w184610085	landuse=meadow	Gabelgrund	[-6518.2, 14840.3]	[50.631336, 10.664573]	 
 n584955170	tourism=hotel	Gasthaus Linsenhof	[-6221.7, 13094.3]	[50.615558, 10.670165]	 
+w70114755	building=office	GeWo	[-5126.7, 12290.7]	[50.608762, 10.686475]	 
 n12465513720	office=company	GeWo Städtische Wohnungsgesellschaft mbH Suhl	[-5116.4, 12290.9]	[50.608769, 10.686623]	Gutenbergstraße 4
 n12582795497	craft=metal_construction	Gebr. Fuchs	[-6036.5, 10880.0]	[50.595453, 10.674518]	Johann-Wendel-Straße 12
 n689004907	historic=memorial	Gedenkstein "Hans Renner"	[-7071.8, 16625.5]	[50.647346, 10.655259]	 
@@ -1117,7 +1113,7 @@ w141045364	building=yes	HOWI Bautischlerei Suhl	[-3736.9, 9745.2]	[50.586222, 10
 n12603668697	craft=joiner	HOWI Bautischlerei Suhl GmbH	[-3727.1, 9756.0]	[50.586325, 10.708461]	Erich-Krempel-Straße 10
 n12554836487	office=architect	HSP architekten ingenieure	[-5001.4, 11929.6]	[50.60553, 10.688548]	Neundorfer Straße 2
 n12554759678	craft=metal_construction	HST-Systemtechnik	[-3206.1, 9896.0]	[50.587853, 10.715819]	Hubertusstraße 3
-n11104109172	office=insurance	HUK-Coburg: Isabella Eisendraut	[-4893.8, 12149.3]	[50.607586, 10.689921]	Schleusinger Straße 1
+n11104109172	office=insurance	HUK-Coburg: Laura Craciunean	[-4893.8, 12149.3]	[50.607586, 10.689921]	Schleusinger Straße 1
 n1632391773	tourism=hotel	HVD Grand Hotel Suhl	[-5277.0, 12018.5]	[50.606207, 10.68453]	Bahnhofstraße 25
 n9878949224	tourism=attraction	Habichtskauz	[-2464.5, 12369.4]	[50.610769, 10.724572]	 
 n3252793183	tourism=information	Hammerwand	[-7595.2, 11793.1]	[50.603018, 10.651481]	 
@@ -1149,7 +1145,7 @@ w1182690574	public_transport=platform	Heidersbach, Stockmar Platz	[-1696.5, 1512
 w1182690575	public_transport=platform	Heidersbach, Stockmar Platz	[-1709.9, 15122.8]	[50.636243, 10.733308]	 
 r15986295	public_transport=stop_area	Heidersbach, Stockmar Platz	None	None	 
 n728558849	public_transport=stop_position	Heidersbach, Waldbad	[-2004.5, 15324.9]	[50.637945, 10.728931]	 
-n10982475955	highway=bus_stop	Heidersbach, Waldbad	[-2016.6, 15323.2]	[50.637924, 10.728758]	 
+n10982475955	highway=bus_stop	Heidersbach, Waldbad	[-2014.1, 15324.4]	[50.637936, 10.728793]	 
 n10982475956	highway=bus_stop	Heidersbach, Waldbad	[-2002.3, 15320.2]	[50.637903, 10.728965]	 
 n10982475957	public_transport=stop_position	Heidersbach, Waldbad	[-2012.2, 15320.9]	[50.637904, 10.728823]	 
 r15986296	public_transport=stop_area	Heidersbach, Waldbad	None	None	 
@@ -1157,6 +1153,7 @@ n11540212846	highway=bus_stop	Heidersbach, Zellaer Straße	[-2481.2, 15397.2]	[5
 n11540212847	public_transport=stop_position	Heidersbach, Zellaer Straße	[-2483.3, 15394.2]	[50.638347, 10.72201]	 
 r17065676	public_transport=stop_area	Heidersbach, Zellaer Straße	None	None	 
 r1789147	landuse=meadow	Heidersröder	None	None	 
+n277028358	tourism=museum	Heimatstube	[-1350.1, 14797.5]	[50.633449, 10.738713]	 
 n1416598710	historic=memorial	Heime-Jörge-Stein	[-5881.0, 10049.5]	[50.587956, 10.677382]	 
 n12691887374	craft=painter	Heinrich Schmid GmbH & Co. KG NL Suhl	[-3908.8, 10149.3]	[50.589824, 10.70556]	Weidbergstraße 31
 n270383441	highway=bus_stop	Heinrichs, Rathaus/VHS	[-7302.1, 11411.9]	[50.599686, 10.655975]	 
@@ -1301,7 +1298,6 @@ n9230524906	office=estate_agent	Petri & Partner	[-4984.2, 11355.7]	[50.600304, 1
 w83820777	historic=building	Pfarrhaus	[-4799.1, 12297.5]	[50.608983, 10.691165]	Steinweg 24
 w140096630	building=yes	Pfarrhaus	[-7285.3, 11349.3]	[50.599123, 10.656264]	 
 n13404494540	healthcare=physiotherapist	Physiotherapie Madlen Seeber	[-4143.1, 12018.3]	[50.606755, 10.70078]	Rimbachstraße 53a
-n14232778942	healthcare=physiotherapist	Physiotherapie Rehnig	[-5691.7, 11839.1]	[50.604368, 10.678724]	Am Bahnhof 25
 n10784501655	healthcare=physiotherapist	Physiotherapie Sander	[-3425.3, 12365.7]	[50.610271, 10.710804]	 
 n13066796101	healthcare=podiatrist	PodoFit	[-4646.4, 12046.4]	[50.606768, 10.693546]	Kellerstraße 4
 n11215913962	tourism=information	Poesieweg - Der Prinz und das Kaninchen	[-6501.9, 16879.6]	[50.649941, 10.663239]	 
@@ -1353,7 +1349,7 @@ n401352555	tourism=information	Rosenkopfstraße	[-1703.5, 15866.8]	[50.643031, 1
 n1276845258	tourism=information	Rosenkopfstraße	[-2356.5, 16154.3]	[50.64534, 10.723253]	 
 n9878733481	tourism=attraction	Rothirsch	[-2583.7, 12420.2]	[50.611175, 10.722825]	 
 w259649468	historic=ruins	Ruine Gasthaus Ottilienstein	[-4722.2, 12757.5]	[50.613216, 10.691917]	 
-n274400733	tourism=information	Rundwanderweg	[-2068.6, 15313.1]	[50.637806, 10.72802]	 
+n274400733	tourism=information	Rundwanderweg	[-2076.1, 15311.7]	[50.63779, 10.727913]	 
 n277028444	tourism=information	Rundwanderweg	[-1588.4, 14505.9]	[50.630675, 10.735515]	 
 n342909218	tourism=information	Rundwanderweg	[-2030.5, 14916.5]	[50.634207, 10.728866]	 
 n441873973	tourism=information	Rundwanderweg	[-1393.4, 15760.8]	[50.642213, 10.737364]	 
@@ -1399,7 +1395,6 @@ n11263944537	office=estate_agent	Sparkasse	[-4760.9, 12324.6]	[50.609249, 10.691
 n331774039	historic=ruins	St. Anne Kapelle	[-7656.9, 12389.2]	[50.608424, 10.650137]	 
 n1635051660	tourism=information	St. Anne Kapelle	[-7643.1, 12410.0]	[50.608621, 10.650319]	 
 n9878364478	tourism=attraction	Stachelschwein	[-2734.6, 12460.6]	[50.61147, 10.720631]	 
-n14191292027	office=association	Stadtsportbund Suhl	[-3211.4, 14805.3]	[50.632624, 10.712017]	Zum Kirchenwäldchen 2
 n3072264298	office=company	Stahl Schweißfachhandel GmbH	[-5895.3, 11212.7]	[50.598557, 10.676287]	Johann-Wendel-Straße 7
 n11099153309	tourism=information	Steckbrief Hummel	[-2747.7, 12490.3]	[50.611734, 10.720421]	 
 n2052518742	office=architect	Steiner + Palme	[-4912.7, 12080.3]	[50.606948, 10.689703]	 
@@ -1705,7 +1700,7 @@ n11540237085	highway=bus_stop	Suhl, Wohnpark Am Himmelreich	[-3428.7, 12948.0]	[
 n11540237086	public_transport=stop_position	Suhl, Wohnpark Am Himmelreich	[-3426.1, 12943.9]	[50.615544, 10.710352]	 
 r17065687	public_transport=stop_area	Suhl, Wohnpark Am Himmelreich	None	None	 
 n1564924837	highway=bus_stop	Suhl, Würzburger Straße	[-5732.5, 11831.2]	[50.604277, 10.678145]	 
-n1564924838	highway=bus_stop	Suhl, Würzburger Straße	[-5667.3, 11930.7]	[50.605216, 10.679003]	 
+n1564924838	highway=bus_stop	Suhl, Würzburger Straße	[-5670.3, 11923.3]	[50.605147, 10.678967]	 
 n10772648420	public_transport=stop_position	Suhl, Würzburger Straße	[-5739.0, 11837.6]	[50.604332, 10.678048]	 
 n11542628070	public_transport=stop_position	Suhl, Würzburger Straße	[-5662.0, 11915.6]	[50.605081, 10.679091]	 
 r17069554	public_transport=stop_area	Suhl, Würzburger Straße	None	None	 
@@ -1737,6 +1732,7 @@ n1202885788	tourism=information	Suhler Leube	[-3397.0, 15730.5]	[50.640972, 10.7
 n1276822642	tourism=information	Suhler Leube	[-3382.9, 15753.6]	[50.641189, 10.708837]	 
 n1276822644	tourism=information	Suhler Leube	[-3642.0, 15369.7]	[50.637563, 10.705412]	 
 n1329563834	tourism=information	Suhler Schweiz	[-3322.6, 12148.3]	[50.608338, 10.712441]	 
+w60341941	building=yes	Suhler Sportbund e.V.	[-3213.2, 14811.8]	[50.632682, 10.711986]	Zum Kirchenwäldchen 2
 n1244350073	office=company	Suhler Stadtbetrieb GmbH	[-3740.2, 15421.4]	[50.637987, 10.703964]	Am Fröhlichen Mann 
 w108105076	building=yes	Suhler Stadtbetrieb GmbH	[-3731.9, 15373.8]	[50.637557, 10.70412]	 
 r1837538	landuse=forest	Suhler Stadtwald	None	None	 
@@ -1763,6 +1759,7 @@ n1426428833	office=government	Thüringer Landesamt für Umwelt, Bergbau und Natu
 n13727028581	office=government	Thüringer Landesamt für Verbraucherschutz - Regionalinspektion Südthüringen	[-5108.6, 11632.4]	[50.602767, 10.687238]	Karl-Liebknecht-Straße 4
 n10110930071	office=government	Thüringer Landesverwaltungsamt - Außenstelle Suhl	[-5155.2, 11700.3]	[50.603364, 10.686519]	Karl-Liebknecht-Straße 4
 n9878700709	tourism=attraction	Thüringer Waldesel	[-2580.5, 12465.4]	[50.611589, 10.722837]	 
+n12465513717	tourism=zoo	Tierpark Suhl	[-2927.8, 12467.1]	[50.611437, 10.717857]	 
 w61904750	tourism=zoo	Tierpark Suhl	[-2763.2, 12436.2]	[50.611234, 10.72024]	 
 n13703047778	office=yes	Time Partner	[-4635.8, 12212.3]	[50.608286, 10.693571]	 
 n1641745879	craft=joiner	Tischlerei Weiss	[-1284.4, 14492.0]	[50.630695, 10.739885]	Zellaer Straße 32
@@ -1794,7 +1791,8 @@ w220637843	landuse=meadow	Wiesental	[-4860.9, 10319.9]	[50.590918, 10.69179]
 n13739634820	office=engineer	Wilfried Braune	[-5922.8, 12208.2]	[50.607622, 10.675129]	An der Stirn 10
 w128989331	building=yes	Windmühle	[-4817.4, 11928.4]	[50.605608, 10.691185]	 
 w107214171	building=yes	Wirtschaftsakademie	[-3553.6, 15287.8]	[50.636859, 10.706742]	Fröhliche-Mann-Straße 15
-w194665940	landuse=allotments	Wochenendsiedlerverein e.V. Hohe Haardt	[-7153.2, 11104.9]	[50.596958, 10.658345]	 
+n9878364046	tourism=attraction	Wisent	[-2813.1, 12477.5]	[50.611587, 10.719493]	 
+w194665940	landuse=allotments	Wochenendsiedlerverein e.V. Hohe Haardt	[-7207.5, 11096.5]	[50.596855, 10.657574]	 
 n12691956427	office=insurance	Württembergische Versicherung: Udo Frühauf	[-4905.0, 11786.3]	[50.60427, 10.690039]	Schleusinger Straße 28
 n12692724511	office=insurance	Württembergische: Rainer Graul	[-4578.0, 12326.4]	[50.609355, 10.694312]	Rimbachstraße 15
 n12692724505	office=insurance	Württembergische: Torsten Ertl	[-5352.4, 12216.3]	[50.607974, 10.683298]	Würzburger Straße 3
@@ -1846,7 +1844,7 @@ w127199546	building=yes	efw-suhl GmbH	[-5384.4, 12431.1]	[50.609917, 10.682675]	
 w219474017	historic=ruins	ehem. Naturtheater Suhl-Friedberg	[-2428.3, 10410.4]	[50.59292, 10.726573]	 
 w726897517	building=yes	ehemalige Anmeldung	[-5364.2, 14792.2]	[50.63146, 10.681158]	 
 r3313648	historic=building	ehemaliges Malzhaus	None	None	 
-w142351872	building=retail	ehemaliges Schützenhaus	[-5672.6, 11734.8]	[50.603427, 10.679077]	 
+w142351872	building=retail	ehemaliges Schützenhaus	[-5672.6, 11734.8]	[50.603427, 10.679078]	 
 n12617971087	office=company	evotron GmbH & Co. KG	[-3376.4, 10195.8]	[50.590506, 10.713153]	Pfütschbergstraße 1
 n12554773145	office=company	iiM GmbH	[-3545.9, 10188.2]	[50.590354, 10.71073]	Neuer Friedberg 5
 n2370417679	office=insurance	impuls Finanzmanagement AG	[-6005.6, 11090.6]	[50.59739, 10.674799]	Johann-Wendel-Straße 2
@@ -1925,7 +1923,7 @@ STREET	An der Struth	4	[-4285.4, 14979.1]
 STREET	Anton-Bruckner-Straße	1	[-6344.6, 12480.9]
 STREET	Aschenhofweg	4	[-7344.2, 11573.8]
 STREET	Asternweg	1	[-3454.1, 10933.6]
-STREET	Auenstraße	12	[-5498.1, 12209.2]
+STREET	Auenstraße	12	[-5498.3, 12208.9]
 STREET	Auf dem Domberg	3	[-5631.2, 13683.4]
 STREET	Auf der Mauer	1	[-4254.4, 12837.5]
 STREET	August-Bebel-Straße	2	[-4833.5, 11731.0]
@@ -1957,16 +1955,16 @@ STREET	Carl-Orff-Straße	1	[-6184.2, 12829.7]
 STREET	Cranachstraße	2	[-4164.5, 13768.7]
 STREET	Dahlienweg	3	[-3119.9, 10928.7]
 STREET	Damaschkeweg	2	[-3919.8, 14783.3]
-STREET	Doktor-Theodor-Neubauer-Straße	1	[-5193.2, 12297.8]
+STREET	Doktor-Theodor-Neubauer-Straße	2	[-4973.1, 11857.7]
 STREET	Doktorswinkel	1	[-7284.4, 11455.5]
 STREET	Dombergweg	1	[-5070.2, 12619.1]
 STREET	Dr.-Erfurth-Straße	1	[-4371.4, 12560.8]
 STREET	Dr.-Hermann-Engel-Straße	2	[-5027.0, 11816.5]
-STREET	Dr.-Theodor-Neubauer-Straße	38	[-5241.0, 12037.3]
+STREET	Dr.-Theodor-Neubauer-Straße	37	[-5241.0, 12037.3]
 STREET	Dr.-Wilhelm-Külz-Straße	1	[-5118.2, 11797.9]
 STREET	Drusselstraße	2	[-4620.0, 12630.8]
 STREET	Döllstraße	3	[-4568.0, 12562.8]
-STREET	Dörnbachstraße	5	[-5565.1, 15984.5]
+STREET	Dörnbachstraße	3	[-5616.5, 16012.1]
 STREET	Dörrenbachstraße	2	[-3810.8, 14245.8]
 STREET	Eckstraße	1	[-1514.8, 15068.2]
 STREET	Ellerstraße	1	[-7362.2, 11339.3]
@@ -1999,7 +1997,7 @@ STREET	Gewerbestraße	8	[-5307.4, 16608.5]
 STREET	Goethestraße	1	[-3841.0, 12278.7]
 STREET	Goldbachstraße	3	[-7393.9, 13239.5]
 STREET	Goldlauter-Heidersbach-Rundwanderweg	2	[-1308.7, 15539.7]
-STREET	Gothaer Straße	46	[-4284.4, 13209.5]
+STREET	Gothaer Straße	45	[-4284.4, 13209.5]
 STREET	Große Beerbergstraße	31	[-3847.4, 14447.9]
 STREET	Gräfenleite	7	[-6637.3, 11341.0]
 STREET	Grüner Weg	8	[-4846.3, 11655.4]
@@ -2029,7 +2027,7 @@ STREET	Hofleitengasse	3	[-4505.9, 12494.5]
 STREET	Hohe Feldstraße	1	[-5948.6, 12118.1]
 STREET	Hohe Röder	3	[-4324.6, 12584.7]
 STREET	Hoheloh	1	[-4383.3, 11570.4]
-STREET	Hohlweg Steinsburg	7	[-5599.6, 10000.9]
+STREET	Hohlweg Steinsburg	6	[-5641.9, 9897.4]
 STREET	Hollergrund	3	[-7811.8, 11811.6]
 STREET	Hopfenberg	4	[-5058.4, 12684.2]
 STREET	Hubertusstraße	10	[-3098.3, 9868.5]
@@ -2067,8 +2065,8 @@ STREET	Küttebahn	4	[-5807.6, 12967.8]
 STREET	Lauter	9	[-3483.2, 13688.5]
 STREET	Lauterkopfstraße	1	[-3779.4, 13876.5]
 STREET	Lauwetter	3	[-4418.3, 12815.1]
-STREET	Leitweg	4	[-2650.1, 13382.0]
-STREET	Leonhard-Frank-Straße	5	[-6676.6, 11460.4]
+STREET	Leitweg	3	[-2615.3, 13385.8]
+STREET	Leonhard-Frank-Straße	5	[-6674.3, 11491.2]
 STREET	Lessingstraße	3	[-4065.5, 12100.6]
 STREET	Lilienweg	2	[-3172.3, 10901.7]
 STREET	Lilliplatz	1	[-4590.3, 12151.2]
@@ -2145,10 +2143,10 @@ STREET	Saalhügel	1	[-1980.1, 14909.8]
 STREET	Schillerstraße	1	[-4078.1, 12093.8]
 STREET	Schlangenweg	2	[-1840.6, 10814.8]
 STREET	Schlauchgarten	1	[-4123.6, 13287.6]
-STREET	Schleusinger Straße	36	[-4900.1, 12218.7]
+STREET	Schleusinger Straße	35	[-4900.1, 12218.7]
 STREET	Schlossergasse	1	[-7205.4, 11374.1]
 STREET	Schnakenhügel	3	[-7296.4, 11407.4]
-STREET	Schneekopfstraße	8	[-3342.3, 14976.9]
+STREET	Schneekopfstraße	7	[-3342.3, 14976.9]
 STREET	Schneid	6	[-3769.8, 13488.4]
 STREET	Schopfenstraße	4	[-1475.3, 14233.2]
 STREET	Schubertstraße	1	[-6336.3, 12563.9]
@@ -2159,7 +2157,7 @@ STREET	Schützenstraße	9	[-2950.5, 10057.3]
 STREET	Seitenstraße	4	[-6340.9, 13215.2]
 STREET	Senfte	6	[-5088.4, 11948.5]
 STREET	Sibeliusstraße	1	[-6844.9, 11973.6]
-STREET	Silbergrund	4	[-2246.4, 15605.3]
+STREET	Silbergrund	2	[-2246.4, 15605.3]
 STREET	Simsonstraße	5	[-7988.4, 11627.3]
 STREET	Smetanastraße	1	[-6709.9, 11885.2]
 STREET	Sommerauweg	1	[-6470.9, 16895.8]
@@ -2169,7 +2167,7 @@ STREET	Stadelstraße	3	[-4681.3, 12237.6]
 STREET	Steiler Weg	1	[-5033.9, 11269.8]
 STREET	Steinatalbrücke	1	[-4675.9, 15993.1]
 STREET	Steinfelder Weg	2	[-7648.0, 13276.0]
-STREET	Steinhorstweg	4	[-880.5, 12757.6]
+STREET	Steinhorstweg	3	[-880.5, 12757.6]
 STREET	Steinsfeld	3	[-3926.3, 14868.1]
 STREET	Steinweg	5	[-4714.8, 12364.6]
 STREET	Strawinskistraße	1	[-6683.8, 11963.1]
@@ -2194,7 +2192,7 @@ STREET	Tulpenweg	2	[-3210.5, 10624.5]
 STREET	Turmstraße	1	[-4126.6, 12602.2]
 STREET	Untere Kirchgasse	2	[-4666.6, 12389.9]
 STREET	Untere Küttebahn	1	[-5736.8, 13112.6]
-STREET	Unterer Forstweg	1	[-2111.7, 15288.2]
+STREET	Unterer Forstweg	1	[-2116.3, 15286.0]
 STREET	Unterer Silberbrunnen	3	[-2203.9, 15349.2]
 STREET	Veilchenweg	1	[-3279.7, 10895.1]
 STREET	Vivaldistraße	1	[-6900.1, 11979.3]
