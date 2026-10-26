@@ -41,7 +41,8 @@ Q = """[out:json][timeout:240][bbox:{0},{1},{2},{3}];
   nwr["name"]["building"]; nwr["name"]["landuse"]; nwr["name"]["public_transport"];
   node["amenity"~"bench|bicycle_parking|waste_basket|fountain|drinking_water"]; node["highway"="bus_stop"];
   way["leisure"~"pitch|stadium|sports_centre|park|playground|track"]; nwr["place"];
-  way["amenity"~"parking|school|kindergarten|hospital"];
+  way["amenity"~"parking|school|kindergarten|hospital"]; nwr["landuse"="garages"]; way["building"~"garages|garage"];
+  way["leisure"="stadium"]; way["building"="apartments"];
 );
 out body;
 >;
@@ -117,24 +118,49 @@ else:
     print('no OSM data', flush=True)
 
 # ---------------- Wikipedia (de) ----------------
-TITLES = ['Suhl', 'Suhl-Nord', 'Suhler Aue', 'Aue (Suhl)', 'Simson (Unternehmen)', 'Simson S51', 'Simson Schwalbe', 'Waffenmuseum Suhl',
+TITLES = ['Hennebergisch', 'Städtische Nahverkehrsgesellschaft Suhl/Zella-Mehlis', 'Tierpark Suhl', 'Ringberg (Suhl)', 'Herbert Roth',
+          'Rennsteiglied', 'Rennsteig', 'C. G. Haenel', 'C.G. Haenel', 'Haenel', 'Merkel Jagd- und Sportwaffen', 'J. P. Sauer & Sohn', 'Sauer & Sohn',
+          'Lauter (Hasel)', 'Hasel (Fluss)', '1. Suhler SV 06', '1. Suhler SV', 'Schießsportzentrum Suhl-Friedberg', 'Schießsportzentrum Suhl',
+          'St. Marien (Suhl)', 'Kreuzkirche (Suhl)', 'Liste der Kulturdenkmale der Suhler Kernstadt', 'Bezirk Suhl', 'WBS 70', 'Simson SR 50',
+          'Simson KR 51', 'Simson S 50', 'Döllberg (Suhl)', 'Domberg (Suhl)', 'Ottilienstein', 'Friedberg (Suhl)', 'Steinweg (Suhl)',
+          'Plattenbau', 'Stadtumbau Ost', 'Rennsteiglauf', 'Oberhof (Thüringen)', 'Biathlon-Weltcup in Oberhof', 'VfB 91 Suhl',
+          'Suhler Gunslingers', 'Thüringer Rostbratwurst', 'Thüringer Klöße', 'Hütes', 'Suhler Knabenchor', 'Johann Michael Wagner (Orgelbauer)',
+          'Eilert Köhler', 'Waffenschmied-Denkmal', 'Zella-Mehlis', 'Carl Walther (Unternehmen)', 'Beschussamt Suhl', 'Paul Greifzu',
+          'Friedrich König (Erfinder)', 'Auenstadion (Suhl)', 'Aue (Suhl)', 'Suhl-Nord', 'Suhl Nord', 'Neundorf (Suhl)', 'Heinrichs (Suhl)',
+          'Lautenbergsiedlung', 'Fröhlicher Mann (Suhl)', 'Bratwurst', 'Feinmesszeugfabrik Suhl', 'Berufsfachschule für Büchsenmacher Suhl',
+          'Jagdwaffe', 'Bockflinte', 'Drilling (Waffe)', 'Gravur', 'Repair Café', 'Thüringer Philharmonie Suhl', 'Liste der Ortsteile von Suhl']
+_OLD_TITLES = ['Suhl', 'Suhl-Nord', 'Suhler Aue', 'Aue (Suhl)', 'Simson (Unternehmen)', 'Simson S51', 'Simson Schwalbe', 'Waffenmuseum Suhl',
           'Congress Centrum Suhl', 'SRH Zentralklinikum Suhl', 'Hauptkirche St. Marien (Suhl)', 'Kreuzkirche (Suhl)', 'Schießsportzentrum Suhl',
           'C. G. Haenel', 'Merkel Jagd- und Sportwaffen', 'J. P. Sauer & Sohn', 'Lauter (Hasel)', 'Hasel (Werra)', 'Hennebergisch',
           'Bezirk Suhl', 'WBS 70', 'Domberg (Suhl)', 'Ottilienstein', 'Steinweg (Suhl)', 'Rathaus Suhl', 'Waffenschmied (Suhl)',
           'Suhler Verkehrsgesellschaft', 'Friedberg (Suhl)', 'Oberhof', 'Heinrichs (Suhl)', 'Lautenberg (Suhl)', 'Döllberg',
           'Sportzentrum Suhl', 'VfB 91 Suhl', 'Liste der Kulturdenkmale in Suhl', 'Wolfsgrube (Suhl)', 'Suhler Neuendorf',
           'Fahrzeug- und Jagdwaffenwerk „Ernst Thälmann“ Suhl', 'Ringberg (Suhl)', 'Thüringer Rostbratwurst', 'Suhler Wurst']
-SEARCH = ['Suhl Fußballverein Aue', 'Suhl Fußball Stadion Aue', 'Suhl Plattenbau Rückbau', 'Suhl Nord Neubaugebiet', 'Suhl Büchsenmacher Gravur',
+SEARCH = ['Suhler SV Fußball', 'Auenstadion Suhl', 'Suhl-Nord Rückbau Plattenbau', 'Suhl Aue Neubaugebiet', 'Büchsenmacher Suhl Gravur',
+          'Suhl Nahverkehr Buslinie', 'Suhl Weihnachtsmarkt Marktplatz', 'Suhler Wurst', 'Suhl Hennebergisch Mundart Wörter',
+          'Schießsportzentrum Suhl Friedberg Weltcup', 'Simson Werk Suhl Meininger Straße', 'Suhl Waffenschmied Denkmal 1903',
+          'Kreuzkirche Suhl Orgel Köhler', 'Hauptkirche Suhl Rokoko Orgel Wagner', 'Suhl Stadtumbau Abriss Wohnungen Nord']
+_OLD_SEARCH = ['Suhl Fußballverein Aue', 'Suhl Fußball Stadion Aue', 'Suhl Plattenbau Rückbau', 'Suhl Nord Neubaugebiet', 'Suhl Büchsenmacher Gravur',
           'Suhl Weihnachtsmarkt', 'Suhl Stadtbus', 'Suhl Repair-Café', 'Suhl Markt Wochenmarkt', 'Suhler Mundart', 'Suhl Simson Museum',
           'Suhl Schießsport Weltcup Friedberg', 'Suhl Tierpark', 'Suhl Gymnasium', 'Suhl Kirche Organist', 'Suhl Zella-Mehlis Waffenproduktion',
           'Suhl Einwohnerentwicklung', 'Suhl Lauter Fluss Innenstadt']
 API = 'https://de.wikipedia.org/w/api.php'
 
 
+def wget(params, tries=4):
+    for k in range(tries):
+        r = S.get(API, params=params, timeout=60)
+        if r.status_code == 200 and r.content[:1] == b'{':
+            return r.json()
+        print('wiki', r.status_code, 'waiting', flush=True)
+        time.sleep(10 * (k + 1))
+    raise RuntimeError('wiki: no answer')
+
+
 def extract(title):
-    r = S.get(API, params={'action': 'query', 'prop': 'extracts|info', 'explaintext': 1, 'redirects': 1, 'inprop': 'url', 'titles': title,
-                           'format': 'json', 'formatversion': 2}, timeout=60)
-    p = r.json()['query']['pages'][0]
+    j = wget({'action': 'query', 'prop': 'extracts|info', 'explaintext': 1, 'redirects': 1, 'inprop': 'url', 'titles': title,
+                           'format': 'json', 'formatversion': 2})
+    p = j['query']['pages'][0]
     if p.get('missing'):
         return None, None
     return p['title'], p.get('extract') or ''
@@ -154,17 +180,17 @@ for t in TITLES:
         print('wiki', name, len(txt), flush=True)
     except Exception as e:
         print('wiki', t, 'failed', e, flush=True)
-    time.sleep(0.4)
+    time.sleep(1.5)
 with open(os.path.join(OUT, 'wiki', '_suche.txt'), 'w') as f:
     for q in SEARCH:
         try:
-            r = S.get(API, params={'action': 'query', 'list': 'search', 'srsearch': q, 'srlimit': 6, 'format': 'json', 'formatversion': 2}, timeout=60)
+            j = wget({'action': 'query', 'list': 'search', 'srsearch': q, 'srlimit': 8, 'format': 'json', 'formatversion': 2})
             f.write('## ' + q + '\n')
-            for h in r.json()['query']['search']:
+            for h in j['query']['search']:
                 sn = h['snippet'].replace('<span class="searchmatch">', '').replace('</span>', '')
                 f.write(f"- {h['title']}: {sn}\n")
             f.write('\n')
         except Exception as e:
             f.write(f'## {q}: failed {e}\n')
-        time.sleep(0.4)
+        time.sleep(1.5)
 print('wiki articles', len(got), flush=True)
