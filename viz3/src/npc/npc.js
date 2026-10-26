@@ -15,6 +15,7 @@ import { gB, MATS } from '../garden/site_base.js';
 import { RENDER } from '../render/render.js';
 import { nearDoor, P, poseDoor, rebuildGrids } from '../game/walkable.js';
 import { audio } from '../audio/audio.js';
+import { STIMME } from '../audio/stimme.js';
 import { PHASES } from '../pavilion/phases.js';
 phase(null);
 const VM = window.VOICEMAN || { lines: [], topics: {} };
@@ -26,6 +27,9 @@ for (const l of VM.lines)
   ).push(l);
 const VTXT = {};
 for (const l of VM.lines) VTXT[l.id] = l.text;
+// a line said as text that was recorded too (the same words): the recording plays (tools/voices/du_lines.py records new ones)
+const VBYTEXT = {};
+for (const l of VM.lines) VBYTEXT[l.who + ':' + l.text] = l.id;
 function plaidTex(c1, c2) {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
@@ -633,11 +637,22 @@ class Walker {
     NPCUI.sub(this, VTXT[id] || '');
     return audio.voice(id, this.x, this.y, { vol });
   }
-  // a line without a recording (23.10.2026: the new everyday lines are text only) – subtitle, resolves after the time to read it
+  // a line given as text (23.10.2026: the new everyday lines are text only) – subtitle; its recording if there is one with these words
+  // (the old ones preloaded, VOICEMAN; the newer ones on demand, audio/stimme.js), else read in his voice (settings „Feste Sätze
+  // vorlesen“), else the time to read it
   sayText(text, ms) {
     if (this.away || !text) return Promise.resolve(false);
     this.lastSay = performance.now() / 1000;
     NPCUI.sub(this, text);
+    const id = VBYTEXT[this.name + ':' + text];
+    if (id && audio.hasVoice(id)) return audio.voice(id, this.x, this.y, { vol: 1.2 }).then(() => true);
+    if (STIMME.speaks(this.name, text)) {
+      this.fig.speak = true;
+      return STIMME.say(this.name, text, { at: [this.x, this.y] }).then(ok => {
+        this.fig.speak = false;
+        return ok || new Promise(res => setTimeout(() => res(true), 1200));
+      });
+    }
     return new Promise(res => setTimeout(() => res(true), ms || Math.max(1800, text.length * 60)));
   }
 }

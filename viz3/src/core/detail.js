@@ -36,7 +36,7 @@ export const DETAIL = (() => {
   tex.needsUpdate = true;
   S.tex = tex;
   S.has = n => !!TEXMAN[n];
-  const recs = NAMES.map(n => (TEXMAN[n] ? texFile(texFileOf(n, 'col'), true) : null));
+  const recs = NAMES.map(n => (TEXMAN[n] ? texFile(texFileOf(n, 'col'), true, true) : null)); // the images (pixels for the canvas), not KTX2
   whenLoaded(() => {
     const cv = document.createElement('canvas');
     cv.width = cv.height = SZ;

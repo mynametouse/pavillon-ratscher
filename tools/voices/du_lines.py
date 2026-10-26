@@ -43,8 +43,12 @@ async def say(text, raw):
 def dur(f): return float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], capture_output=True, text=True).stdout.strip() or 0)
 
 lines = []
+mf = os.path.join(EX, 'manifest.json')
+old = {l['id']: l for l in json.load(open(mf))['vm_replace']} if os.path.exists(mf) else {}
 for id_, text in LINES.items():
     raw = os.path.join(TMP, id_ + '.mp3'); mp3 = os.path.join(OUT, id_ + '.mp3')
+    if id_ in old and old[id_]['text'] == text and os.path.exists(mp3):   # recorded already with these words: keep
+        lines.append(old[id_]); continue
     asyncio.run(say(text.replace('…', ','), raw))
     # trim silence at both ends, gentle EQ, loudness, mono 24 kHz (as lines3.py)
     af = f"silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.12,areverse,{VOICE['af']},loudnorm=I=-17:TP=-1.5:LRA=9"

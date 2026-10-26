@@ -157,7 +157,7 @@ export const KI = (() => {
           if (f) f.walker.talking = !!v && f.mode !== 'sit';
         },
         sub: t => DORF.UI.subtitle(k, t),
-        show: t => DORF.UI.say(k, t || '…'),
+        show: t => DORF.UI.show(k, t || '…'),
         host: () => DORF.UI.el,
         close: () => DORF.UI.close(),
         line: () => DORF.UI.line(),
@@ -335,7 +335,8 @@ export const KI = (() => {
     };
     if (C.greet) C.transcript.push(['n', C.greet]);
     UI.open(pa); // the greeting stays in the panel until he answers
-    if (S.set.hands && EAR.ok) setTimeout(() => C && C.pa === pa && listen(), 350);
+    // after the greeting has been said (a villager's greeting is read aloud now): the microphone must not hear it
+    if (S.set.hands && EAR.ok) STIMME.whenIdle(() => setTimeout(() => C && C.pa === pa && listen(), 350));
   }
   // the player's words → one turn (a few requests when he uses tools), spoken while it streams
   async function turn(text) {
@@ -708,15 +709,19 @@ export const KI = (() => {
           const b = e.target.closest('[data-ki]');
           if (b) act(b.dataset.ki, b);
         });
-        el.addEventListener('change', e => {
+        // kept with every letter (a phone may close the panel without a change event); no new drawing here, it would take away the
+        // button just tapped
+        const keep = e => {
           const t = e.target;
           if (t.id === 'ki-key') S.key = t.value.trim();
           else if (t.id === 'ki-base') S.set.base = t.value.trim().replace(/\/+$/, '');
           else return;
           SAVE.set(KK, S.key);
           saveSet();
-          sync();
-        });
+          sync(true);
+        };
+        el.addEventListener('input', keep);
+        el.addEventListener('change', keep);
         U.set = el;
       }
       if (v) {
@@ -729,6 +734,7 @@ export const KI = (() => {
       U.set.hidden = !v;
       const mb = $('kibtn');
       if (mb) mb.setAttribute('aria-pressed', v ? 'true' : 'false');
+      if (!v) rewire();
     }
     function render() {
       const el = U.set;
@@ -794,18 +800,36 @@ export const KI = (() => {
       saveSet();
       sync();
     }
-    // the menu button, the hint in the talk panel, the settings when open
-    function sync() {
+    // the menu button, the hint in the talk panel, the settings when open (quiet: not drawn again)
+    function sync(quiet) {
       const mb = $('kibtn');
       if (mb) {
         const sp = mb.querySelector('span');
         if (sp) sp.textContent = ready() ? 'an' : S.set.on ? 'einrichten' : 'aus';
       }
-      if (U.setup && ready()) U.setup.hidden = true;
-      if (U.set && !U.set.hidden) render();
+      if (U.set && !U.set.hidden) {
+        if (!quiet) render();
+      } else rewire();
     }
     return { open, hint, me, mic, busy, note, settings, sync, build };
   })();
+  // the key entered or KI switched on or off while someone's panel is open (the hint there leads to the settings): when the settings
+  // close, that talk turns free at once – or back to the fixed topics
+  let wasReady = ready();
+  function rewire() {
+    const r = ready();
+    if (r === wasReady) return;
+    wasReady = r;
+    const w = NPCUI.cur(),
+      k = DORF.UI.cur,
+      pa = w ? PERS[w.name] : k ? PERS[k] : null;
+    if (!pa) return;
+    if (C) end(C.pa);
+    if (w) NPCUI.renderTopics();
+    else DORF.UI.topics(k);
+    UI.hint(pa);
+    begin(pa);
+  }
   // ---------------- hooks: the neighbours' panel, the villagers' panel ----------------
   NPCUI.extend({
     free: () => ready(),

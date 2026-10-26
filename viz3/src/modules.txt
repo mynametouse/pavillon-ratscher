@@ -52,6 +52,7 @@ game/camera.js              # every view mode, the third-person camera kept out 
 game/input.js               # keys, mouse, touch, joystick, click to pick, fullscreen
 audio/audio.js              # sound engine: recordings, synthesis, ambience, voices, toast()
 audio/stimme.js             # a voice of its own for each person for what is said live: the device's best voices, ElevenLabs, more engines (STIMME)
+audio/piper.js              # feat/piper natural voices for free: Piper in a worker (lazy/piper.js), models cached, one fitting voice per person (PIPER)
 pavilion/phases.js          # construction phases with materials and costs (data)
 pavilion/phaseui.js         # 
 npc/npc.js                  # Hubert, Ronald, goats, tractor: walkers, dialogue UI

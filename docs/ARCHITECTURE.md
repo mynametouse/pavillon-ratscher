@@ -63,6 +63,11 @@ Oberfläche Deutsch.
   - **Gespräche und Tisch (feat/ki, 25.10.2026):** `NPCUI.extend({ start, asked, end, free })` (`npc/npc.js`) hängt sich an das
     Gesprächsfenster der Nachbarn, `LIFE.talkSource(fn)` (`npc/life.js`) gibt den beiden am Tisch ein Thema (`{ lines, line, done }`),
     `QUESTS.befriend(fn)` zählt weitere Gründe für „befreundet“, `KERN.emit('reset')` kommt beim „Neu beginnen“ im Tagebuch.
+  - **Stimmen (feat/ki, feat/piper, 26.10.2026):** `audio/stimme.js` (`STIMME`, Spielstand `pav-stimme-v1`) gibt jeder Person eine Stimme:
+    Engines `browser` (Gerätestimmen), `eleven` (ElevenLabs), `piper` (`audio/piper.js`, `window.PIPER`, `pav-piper-v1`, Cache Storage
+    `pav-piper-v1`: Piper-Modelle von Hugging Face im Worker `lazy/piper.js`, Laufzeit und Phonemizer in `dist/piper/`), `aus`. Feste Sätze
+    über `STIMME.say` (Aufnahme mit denselben Worten aus `window.VOICEX` auf Abruf, sonst die Engine); Lautstärke-Kanäle in `audio/audio.js`
+    (`pav-ton-v1`, `audio.voiceBuf`).
   - **Pakete bei Bedarf:** `src/lazy/*.js` baut `build.py` einzeln nach `dist/lazy/` (immer verkleinert); ein Modul lädt sie mit
     `import(new URL('lazy/….js', document.baseURI).href)` – heute das Claude-SDK für `npc/ki.js` (~350 KB, nicht in der Seite).
   - **Keine Zuweisung an fremde `window`-Namen:** `tools/check/deps.mjs` meldet einen zweiten Schreiber als Fehler.

@@ -1,0 +1,2006 @@
+{
+ "vx": {
+  "voices": {
+   "hubert": "de-DE-ConradNeural",
+   "ronald": "de-DE-FlorianMultilingualNeural",
+   "gerhard": "en-US-AndrewMultilingualNeural",
+   "manfred": "de-DE-KillianNeural",
+   "wolfgang": "en-US-BrianMultilingualNeural",
+   "uwe": "de-AT-JonasNeural",
+   "jens": "de-DE-KillianNeural",
+   "katrin": "de-DE-KatjaNeural",
+   "ingrid": "de-DE-AmalaNeural",
+   "heike": "de-DE-SeraphinaMultilingualNeural"
+  },
+  "lines": [
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1gxnwae",
+    "text": "Guten Abend! Setz dich ruhig dazu – zum Zuhören braucht man keine Karten.",
+    "file": "voice/x/x_gerhard_1gxnwae.mp3",
+    "dur": 5.04
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_urmj4v",
+    "text": "Na, wieder da? Die Chronik freut sich über jeden neuen Namen.",
+    "file": "voice/x/x_gerhard_urmj4v.mp3",
+    "dur": 4.61
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_b1rulg",
+    "text": "Guten Morgen! Ich zupfe nur ein bisschen Unkraut – an der Chronik schreibt es sich besser, wenn die Hände vorher etwas getan haben.",
+    "file": "voice/x/x_gerhard_b1rulg.mp3",
+    "dur": 8.4
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_nh8sez",
+    "text": "Hallo! Ich zupfe nur ein bisschen Unkraut – an der Chronik schreibt es sich besser, wenn die Hände vorher etwas getan haben.",
+    "file": "voice/x/x_gerhard_nh8sez.mp3",
+    "dur": 7.85
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1b2ylww",
+    "text": "Guten Abend! Ich zupfe nur ein bisschen Unkraut – an der Chronik schreibt es sich besser, wenn die Hände vorher etwas getan haben.",
+    "file": "voice/x/x_gerhard_1b2ylww.mp3",
+    "dur": 8.38
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_a22bd",
+    "text": "Guten Morgen! Schön, dass man dich auch mal im Dorf sieht. Wie weit ist der Pavillon?",
+    "file": "voice/x/x_gerhard_a22bd.mp3",
+    "dur": 6.17
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1ruswou",
+    "text": "Hallo! Schön, dass man dich auch mal im Dorf sieht. Wie weit ist der Pavillon?",
+    "file": "voice/x/x_gerhard_1ruswou.mp3",
+    "dur": 5.5
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_t4v1w5",
+    "text": "Guten Abend! Schön, dass man dich auch mal im Dorf sieht. Wie weit ist der Pavillon?",
+    "file": "voice/x/x_gerhard_t4v1w5.mp3",
+    "dur": 6.05
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_og1nmu",
+    "text": "1828 haben die Ratscher dieses Haus gebaut: Fachwerk, Schiefer an den Giebeln, oben der Dachreiter mit der Uhr. Dafür hat das Dorf jeden Taler zusammengelegt.",
+    "file": "voice/x/x_gerhard_og1nmu.mp3",
+    "dur": 12.41
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1515o0u",
+    "text": "Lange haben hier alle Kinder des Dorfes in einem Raum gelernt – die Kleinen vorn, die Großen hinten, und der Lehrer wohnte gleich mit im Haus.",
+    "file": "voice/x/x_gerhard_1515o0u.mp3",
+    "dur": 9.19
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_d2wrxy",
+    "text": "Heute gehört das Haus der Feuerwehr. Dass hier freitags wieder Leben drin ist, hätte den alten Schulmeistern gefallen.",
+    "file": "voice/x/x_gerhard_d2wrxy.mp3",
+    "dur": 7.51
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_106kldl",
+    "text": "Die Linde am Anger ist 1888 gepflanzt worden – im Dreikaiserjahr. Das merkt man sich leicht.",
+    "file": "voice/x/x_gerhard_106kldl.mp3",
+    "dur": 7.9
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_nlzkv5",
+    "text": "Unter der Linde wurde früher getanzt, gefeiert und verhandelt. Heute sitzen da die Alten auf der Bank und wissen alles zuerst.",
+    "file": "voice/x/x_gerhard_nlzkv5.mp3",
+    "dur": 8.54
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1eja7ry",
+    "text": "Ich schreibe auf, was im Dorf passiert: wer geheiratet hat, wer ein Dach neu gedeckt hat, wann der erste Frost kam. In hundert Jahren will das jemand wissen.",
+    "file": "voice/x/x_gerhard_1eja7ry.mp3",
+    "dur": 10.8
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_13zowqi",
+    "text": "Du stehst übrigens auch schon drin: „Neue Leute im Garten bei Hubert und Ronald, bauen einen Pavillon.“",
+    "file": "voice/x/x_gerhard_13zowqi.mp3",
+    "dur": 6.65
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1vyfs9c",
+    "text": "Die Uhr oben im Dachreiter geht nach dem Dorf, nicht nach dem Radio. Manfred stellt sie zweimal im Jahr – und meistens stimmt sie dann auch.",
+    "file": "voice/x/x_gerhard_1vyfs9c.mp3",
+    "dur": 9.02
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1ygq6fa",
+    "text": "Willkommen im Feuerwehrhaus! Die Garderobe ist der Haken neben der Tür.",
+    "file": "voice/x/x_manfred_1ygq6fa.mp3",
+    "dur": 5.06
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_fdf6kk",
+    "text": "Grüß dich! Schon gehört? Die Sirene läuft wieder wie neu.",
+    "file": "voice/x/x_manfred_fdf6kk.mp3",
+    "dur": 5.33
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1ayprsw",
+    "text": "Guten Morgen! Nur kurz Luft schnappen – nachher bringe ich noch die Atemschutzgeräte zur Prüfung nach Schleusingen.",
+    "file": "voice/x/x_manfred_1ayprsw.mp3",
+    "dur": 7.08
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1ta31yx",
+    "text": "Hallo! Nur kurz Luft schnappen – nachher bringe ich noch die Atemschutzgeräte zur Prüfung nach Schleusingen.",
+    "file": "voice/x/x_manfred_1ta31yx.mp3",
+    "dur": 6.7
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1hbqzxo",
+    "text": "Guten Abend! Nur kurz Luft schnappen – nachher bringe ich noch die Atemschutzgeräte zur Prüfung nach Schleusingen.",
+    "file": "voice/x/x_manfred_1hbqzxo.mp3",
+    "dur": 6.96
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_11fnx1o",
+    "text": "Guten Morgen! Dienstabend ist jeden zweiten Mittwoch im Gerätehaus. Wir können jeden gebrauchen, der mit anpackt.",
+    "file": "voice/x/x_manfred_11fnx1o.mp3",
+    "dur": 8.59
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_m82hmp",
+    "text": "Hallo! Dienstabend ist jeden zweiten Mittwoch im Gerätehaus. Wir können jeden gebrauchen, der mit anpackt.",
+    "file": "voice/x/x_manfred_m82hmp.mp3",
+    "dur": 8.21
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_j4deog",
+    "text": "Guten Abend! Dienstabend ist jeden zweiten Mittwoch im Gerätehaus. Wir können jeden gebrauchen, der mit anpackt.",
+    "file": "voice/x/x_manfred_j4deog.mp3",
+    "dur": 8.47
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1v5usk1",
+    "text": "Die alte Schule ist jetzt unser Vereinshaus. Hier unten trifft sich die Kameradschaft, und oben auf dem First sitzt die Sirene.",
+    "file": "voice/x/x_manfred_1v5usk1.mp3",
+    "dur": 7.94
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1i9vcen",
+    "text": "Wir sind nicht viele, aber wenn die Sirene geht, lässt hier jeder alles stehen und liegen. So ist das auf dem Dorf.",
+    "file": "voice/x/x_manfred_1i9vcen.mp3",
+    "dur": 7.58
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_2il6zl",
+    "text": "Wenn wir draußen ein Feuer machen, steht die Feuerwehr daneben. Ohne Wasserfass und Schaufel brennt bei uns nichts.",
+    "file": "voice/x/x_manfred_2il6zl.mp3",
+    "dur": 7.08
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_8gwef2",
+    "text": "Das Holz bringt Wolfgang aus dem Wald, Uwe stellt den Acker, und wer kommt, bringt etwas zu essen mit.",
+    "file": "voice/x/x_manfred_8gwef2.mp3",
+    "dur": 6.1
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_kkfl6o",
+    "text": "Achtzehn, zwanzig, zwo, null … Skat ist kein Glücksspiel. Na gut – ein bisschen.",
+    "file": "voice/x/x_manfred_kkfl6o.mp3",
+    "dur": 6.36
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1clob77",
+    "text": "Gerhard zählt im Kopf mit, welche Karten schon gefallen sind. Gegen den zu spielen ist wie Kopfrechnen in der Schule.",
+    "file": "voice/x/x_manfred_1clob77.mp3",
+    "dur": 7.61
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_f8nkb7",
+    "text": "Hubert schraubt an seinem Mondeo, seit er ihn hat. Der Wagen läuft – Hubert sagt, wegen ihm, ich sage, trotz ihm.",
+    "file": "voice/x/x_manfred_f8nkb7.mp3",
+    "dur": 7.61
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1wsnmxb",
+    "text": "Ronald war früher öfter hier. Seit er die Ziegen hat, geht er mit den Hühnern ins Bett.",
+    "file": "voice/x/x_manfred_1wsnmxb.mp3",
+    "dur": 5.93
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1vazbwq",
+    "text": "N’Abend. Schön, dass du dich mal blicken lässt.",
+    "file": "voice/x/x_wolfgang_1vazbwq.mp3",
+    "dur": 3.72
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_50qbn7",
+    "text": "Da ist ja der Pavillonbauer. Holz genug für den Winter?",
+    "file": "voice/x/x_wolfgang_50qbn7.mp3",
+    "dur": 4.44
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_pifs7v",
+    "text": "Guten Morgen! Heute mal kein Wald – die Kette ist beim Schärfen, und der Rücken freut sich.",
+    "file": "voice/x/x_wolfgang_pifs7v.mp3",
+    "dur": 6.46
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_15e4386",
+    "text": "Hallo! Heute mal kein Wald – die Kette ist beim Schärfen, und der Rücken freut sich.",
+    "file": "voice/x/x_wolfgang_15e4386.mp3",
+    "dur": 5.98
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_3xzwav",
+    "text": "Guten Abend! Heute mal kein Wald – die Kette ist beim Schärfen, und der Rücken freut sich.",
+    "file": "voice/x/x_wolfgang_3xzwav.mp3",
+    "dur": 6.41
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_7u3l0s",
+    "text": "Guten Morgen! Trocken ist es. Das sieht man an den Fichten zuerst, die werfen dann Nadeln.",
+    "file": "voice/x/x_wolfgang_7u3l0s.mp3",
+    "dur": 7.01
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_ymvcpj",
+    "text": "Hallo! Trocken ist es. Das sieht man an den Fichten zuerst, die werfen dann Nadeln.",
+    "file": "voice/x/x_wolfgang_ymvcpj.mp3",
+    "dur": 6.53
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1g7jcg0",
+    "text": "Guten Abend! Trocken ist es. Das sieht man an den Fichten zuerst, die werfen dann Nadeln.",
+    "file": "voice/x/x_wolfgang_1g7jcg0.mp3",
+    "dur": 6.96
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_gwmpdj",
+    "text": "Unten an der Klinge stehen Fichten, Lärchen und ein paar Kiefern. Die trockenen Jahre haben den Fichten zugesetzt.",
+    "file": "voice/x/x_wolfgang_gwmpdj.mp3",
+    "dur": 8.14
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_sjqllo",
+    "text": "Wo der Käfer drin war, pflanzen wir jetzt Buchen und Eichen nach. Die sehe ich nicht mehr groß – aber die Enkel.",
+    "file": "voice/x/x_wolfgang_sjqllo.mp3",
+    "dur": 7.68
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_ykwghr",
+    "text": "Die Klinge ist ein steiles Tälchen, im Frühjahr läuft da das Wasser runter. Wer dort Wald hat, braucht Geduld und gute Stiefel.",
+    "file": "voice/x/x_wolfgang_ykwghr.mp3",
+    "dur": 9.07
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1m1j98c",
+    "text": "Wenn du an der Klinge fällst: Fallkerb sauber, Bruchleiste stehen lassen, und immer erst nach oben schauen.",
+    "file": "voice/x/x_wolfgang_1m1j98c.mp3",
+    "dur": 7.39
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_nkipgw",
+    "text": "Liegt abends Nebel über dem Wald, wird der nächste Tag schön. Hat mein Vater gesagt, und der hat sich selten geirrt.",
+    "file": "voice/x/x_wolfgang_nkipgw.mp3",
+    "dur": 8.4
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1al0gu8",
+    "text": "Fliegen die Schwalben tief, gibt es Regen. Fliegen sie hoch, gibt es auch manchmal Regen. Das Wetter hier macht, was es will.",
+    "file": "voice/x/x_wolfgang_1al0gu8.mp3",
+    "dur": 9.55
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1j0t4bw",
+    "text": "Fürs Feuer nehmen wir nur trockenes Restholz aus dem Wald. Nasses Holz qualmt bloß und ärgert die Nachbarn.",
+    "file": "voice/x/x_wolfgang_1j0t4bw.mp3",
+    "dur": 7.51
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_133l58m",
+    "text": "Na, was darf’s sein? Fassbrause, Apfelschorle, ein Bier?",
+    "file": "voice/x/x_uwe_133l58m.mp3",
+    "dur": 4.49
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1jotppr",
+    "text": "Hallo! Die Gläser sind frisch gespült, die Brezeln von heute.",
+    "file": "voice/x/x_uwe_1jotppr.mp3",
+    "dur": 4.34
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_uies5c",
+    "text": "Guten Morgen! Ich bin nur kurz vom Hof rüber, die Kühe warten nicht.",
+    "file": "voice/x/x_uwe_uies5c.mp3",
+    "dur": 4.75
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_q3xd3z",
+    "text": "Hallo! Ich bin nur kurz vom Hof rüber, die Kühe warten nicht.",
+    "file": "voice/x/x_uwe_q3xd3z.mp3",
+    "dur": 4.42
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1dflzfg",
+    "text": "Guten Abend! Ich bin nur kurz vom Hof rüber, die Kühe warten nicht.",
+    "file": "voice/x/x_uwe_1dflzfg.mp3",
+    "dur": 4.8
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_11498uf",
+    "text": "Guten Morgen! Wenn das Wetter hält, mähe ich morgen die Wiese an der Klinge.",
+    "file": "voice/x/x_uwe_11498uf.mp3",
+    "dur": 4.7
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_hud0f4",
+    "text": "Hallo! Wenn das Wetter hält, mähe ich morgen die Wiese an der Klinge.",
+    "file": "voice/x/x_uwe_hud0f4.mp3",
+    "dur": 4.37
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_d5gthv",
+    "text": "Guten Abend! Wenn das Wetter hält, mähe ich morgen die Wiese an der Klinge.",
+    "file": "voice/x/x_uwe_d5gthv.mp3",
+    "dur": 4.75
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_eaxnal",
+    "text": "Eine Apfelschorle, kommt sofort. Geht aufs Haus – beim ersten Mal zahlt bei uns keiner.",
+    "file": "voice/x/x_uwe_eaxnal.mp3",
+    "dur": 5.81
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_wmwop",
+    "text": "Die Skatrunde trinkt Bier, die Rommé-Runde Kräutertee – mit Schuss, sagen sie. Fragen tu ich nicht.",
+    "file": "voice/x/x_uwe_wmwop.mp3",
+    "dur": 6.65
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1ltqkhy",
+    "text": "Der Acker Richtung Klinge gehört zu meinem Betrieb. Nach der Ernte machen wir dort ab und zu ein Feuer – dann kommt das ganze Dorf.",
+    "file": "voice/x/x_uwe_1ltqkhy.mp3",
+    "dur": 7.44
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_9zif3u",
+    "text": "Im Sommer zu trocken, zur Ernte zu nass. Bauer sein heißt, sich über das Wetter zu beschweren – jedes Jahr aufs Neue.",
+    "file": "voice/x/x_uwe_9zif3u.mp3",
+    "dur": 7.3
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_omjylq",
+    "text": "Im Herbst, wenn morgens Nebel über der Talsperre liegt, bin ich mit dem Boot draußen zum Angeln. So still ist es da, dass man die Uhr vom Schulturm hört.",
+    "file": "voice/x/x_uwe_omjylq.mp3",
+    "dur": 9.05
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_r7zxjz",
+    "text": "Im Sommer gehen die Kinder an der Talsperre baden. Wir früher auch – mit dem Fahrrad, über den Feldweg.",
+    "file": "voice/x/x_uwe_r7zxjz.mp3",
+    "dur": 6.26
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_y1u5na",
+    "text": "Hallo! Spielst du mit? Ich erklär’s dir, ist ganz einfach.",
+    "file": "voice/x/x_katrin_y1u5na.mp3",
+    "dur": 5.47
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1hupshi",
+    "text": "Da bist du ja wieder! Ingrid hat schon zweimal gewonnen.",
+    "file": "voice/x/x_katrin_1hupshi.mp3",
+    "dur": 3.94
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1u2qsep",
+    "text": "Guten Morgen! Frühdienst gehabt – jetzt noch schnell die Beete, dann Füße hoch.",
+    "file": "voice/x/x_katrin_1u2qsep.mp3",
+    "dur": 5.54
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1g1qeka",
+    "text": "Hallo! Frühdienst gehabt – jetzt noch schnell die Beete, dann Füße hoch.",
+    "file": "voice/x/x_katrin_1g1qeka.mp3",
+    "dur": 5.3
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_x0i4hx",
+    "text": "Guten Abend! Frühdienst gehabt – jetzt noch schnell die Beete, dann Füße hoch.",
+    "file": "voice/x/x_katrin_x0i4hx.mp3",
+    "dur": 5.69
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1y09ccf",
+    "text": "Guten Morgen! Kommst du Freitag zum Rommé? Ich brauche jemanden, der noch schlechter spielt als Ingrid.",
+    "file": "voice/x/x_katrin_1y09ccf.mp3",
+    "dur": 7.56
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_xfvcq0",
+    "text": "Hallo! Kommst du Freitag zum Rommé? Ich brauche jemanden, der noch schlechter spielt als Ingrid.",
+    "file": "voice/x/x_katrin_xfvcq0.mp3",
+    "dur": 7.32
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1u10k8b",
+    "text": "Guten Abend! Kommst du Freitag zum Rommé? Ich brauche jemanden, der noch schlechter spielt als Ingrid.",
+    "file": "voice/x/x_katrin_1u10k8b.mp3",
+    "dur": 7.7
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_ag6l7e",
+    "text": "Rommé ist einfach: Sätze und Folgen ablegen, und wer zuerst alle Karten los ist, gewinnt. Ingrid gewinnt trotzdem immer.",
+    "file": "voice/x/x_katrin_ag6l7e.mp3",
+    "dur": 8.81
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_7f1vou",
+    "text": "Ihr wohnt neben Hubert und Ronald? Die zwei streiten sich wie ein altes Ehepaar – und helfen sich doch jedes Mal.",
+    "file": "voice/x/x_katrin_7f1vou.mp3",
+    "dur": 7.15
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1wxbl86",
+    "text": "Letzten Sommer ist Ronalds Ziege Lotte ausgebüxt und stand plötzlich in Huberts Werkstatt. Hubert behauptet bis heute, sie hätte ihm beim Schrauben geholfen.",
+    "file": "voice/x/x_katrin_1wxbl86.mp3",
+    "dur": 10.08
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_115h6bb",
+    "text": "Ich arbeite in der Stadt, aber freitags will ich hier sein. Wo sonst erfährt man in zwei Stunden alles, was die Woche über passiert ist?",
+    "file": "voice/x/x_katrin_115h6bb.mp3",
+    "dur": 8.4
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1h47kw",
+    "text": "Unter der Dorflinde hat mein Mann mir den Antrag gemacht. Die Bank steht zum Glück noch.",
+    "file": "voice/x/x_katrin_1h47kw.mp3",
+    "dur": 5.52
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_w6m3fa",
+    "text": "Guten Abend! Schön, dass du da bist. Komm rein, hier duzen sich alle.",
+    "file": "voice/x/x_ingrid_w6m3fa.mp3",
+    "dur": 6.96
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1uu9noh",
+    "text": "Hallo! Freitags ist bei uns immer ein Stuhl frei.",
+    "file": "voice/x/x_ingrid_1uu9noh.mp3",
+    "dur": 4.7
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1arma1d",
+    "text": "Guten Morgen! Im Rathaus bin ich die Ortsteilbürgermeisterin, im Garten bin ich nur Ingrid.",
+    "file": "voice/x/x_ingrid_1arma1d.mp3",
+    "dur": 7.25
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_qkgzsq",
+    "text": "Hallo! Im Rathaus bin ich die Ortsteilbürgermeisterin, im Garten bin ich nur Ingrid.",
+    "file": "voice/x/x_ingrid_qkgzsq.mp3",
+    "dur": 6.86
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_137gnfp",
+    "text": "Guten Abend! Im Rathaus bin ich die Ortsteilbürgermeisterin, im Garten bin ich nur Ingrid.",
+    "file": "voice/x/x_ingrid_137gnfp.mp3",
+    "dur": 7.32
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_9odzex",
+    "text": "Guten Morgen! Die Rosen danken es einem, wenn man sie abends gießt und nicht in der Mittagssonne.",
+    "file": "voice/x/x_ingrid_9odzex.mp3",
+    "dur": 7.39
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1ka5kee",
+    "text": "Hallo! Die Rosen danken es einem, wenn man sie abends gießt und nicht in der Mittagssonne.",
+    "file": "voice/x/x_ingrid_1ka5kee.mp3",
+    "dur": 7.01
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_iagzm5",
+    "text": "Guten Abend! Die Rosen danken es einem, wenn man sie abends gießt und nicht in der Mittagssonne.",
+    "file": "voice/x/x_ingrid_iagzm5.mp3",
+    "dur": 7.46
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1eizjqr",
+    "text": "Guten Morgen! Seit ich das Amt abgegeben habe, haben meine Rosen endlich wieder eine Gärtnerin.",
+    "file": "voice/x/x_ingrid_1eizjqr.mp3",
+    "dur": 6.89
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_qu5njk",
+    "text": "Hallo! Seit ich das Amt abgegeben habe, haben meine Rosen endlich wieder eine Gärtnerin.",
+    "file": "voice/x/x_ingrid_qu5njk.mp3",
+    "dur": 6.5
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_re76o7",
+    "text": "Guten Abend! Seit ich das Amt abgegeben habe, haben meine Rosen endlich wieder eine Gärtnerin.",
+    "file": "voice/x/x_ingrid_re76o7.mp3",
+    "dur": 6.96
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_uxg109",
+    "text": "Guten Morgen! Elf Jahre Sitzungen – jetzt gieße ich, wann ich will. Das hat auch etwas.",
+    "file": "voice/x/x_ingrid_uxg109.mp3",
+    "dur": 7.73
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_15o4rnq",
+    "text": "Hallo! Elf Jahre Sitzungen – jetzt gieße ich, wann ich will. Das hat auch etwas.",
+    "file": "voice/x/x_ingrid_15o4rnq.mp3",
+    "dur": 7.37
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1o1b665",
+    "text": "Guten Abend! Elf Jahre Sitzungen – jetzt gieße ich, wann ich will. Das hat auch etwas.",
+    "file": "voice/x/x_ingrid_1o1b665.mp3",
+    "dur": 7.82
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_it9ii6",
+    "text": "Ratscher ist klein, aber wir halten zusammen. Wenn einer ein Dach deckt, stehen samstags fünf Leute auf dem Gerüst.",
+    "file": "voice/x/x_ingrid_it9ii6.mp3",
+    "dur": 9.14
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_wmsuxm",
+    "text": "Was im Dorf passiert, erfährt man freitags hier. Was nicht hier erzählt wird, ist auch nicht passiert.",
+    "file": "voice/x/x_ingrid_wmsuxm.mp3",
+    "dur": 7.37
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1hfubbw",
+    "text": "Die Talsperre gehört zu uns wie die Linde. Bevor das Wasser kam, war da unten ein Wiesental – die Älteren erzählen noch davon.",
+    "file": "voice/x/x_ingrid_1hfubbw.mp3",
+    "dur": 9.07
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_spltiq",
+    "text": "Als hier kein Unterricht mehr war, wollte erst keiner das Haus. Die Feuerwehr hat es übernommen und mit vielen Wochenenden wieder hergerichtet.",
+    "file": "voice/x/x_ingrid_spltiq.mp3",
+    "dur": 9.65
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_25hp78",
+    "text": "Jeden zweiten Samstag machen wir Feuer auf Uwes Acker, Richtung Klinge. Komm doch vorbei – ab sieben brennt es.",
+    "file": "voice/x/x_ingrid_25hp78.mp3",
+    "dur": 8.23
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1n5dpq9",
+    "text": "Na? Läuft alles, auch das Auto?",
+    "file": "voice/x/x_jens_1n5dpq9.mp3",
+    "dur": 3.12
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1safyfq",
+    "text": "Servus! Wenn’s irgendwo klappert – ich schau’s mir an.",
+    "file": "voice/x/x_jens_1safyfq.mp3",
+    "dur": 3.7
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1kr2kne",
+    "text": "Guten Morgen! Läuft Huberts Traktor noch? Wenn nicht – du weißt, wo ich wohne.",
+    "file": "voice/x/x_jens_1kr2kne.mp3",
+    "dur": 6.05
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1830g8d",
+    "text": "Hallo! Läuft Huberts Traktor noch? Wenn nicht – du weißt, wo ich wohne.",
+    "file": "voice/x/x_jens_1830g8d.mp3",
+    "dur": 5.69
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_838kim",
+    "text": "Guten Abend! Läuft Huberts Traktor noch? Wenn nicht – du weißt, wo ich wohne.",
+    "file": "voice/x/x_jens_838kim.mp3",
+    "dur": 5.95
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_16bc7jz",
+    "text": "Guten Morgen! Feierabend. Jetzt noch der Rasenmäher von meiner Mutter, der springt seit Ostern nicht an.",
+    "file": "voice/x/x_jens_16bc7jz.mp3",
+    "dur": 7.32
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1p798ni",
+    "text": "Hallo! Feierabend. Jetzt noch der Rasenmäher von meiner Mutter, der springt seit Ostern nicht an.",
+    "file": "voice/x/x_jens_1p798ni.mp3",
+    "dur": 6.96
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_y9luab",
+    "text": "Guten Abend! Feierabend. Jetzt noch der Rasenmäher von meiner Mutter, der springt seit Ostern nicht an.",
+    "file": "voice/x/x_jens_y9luab.mp3",
+    "dur": 7.22
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_oqp05c",
+    "text": "Hubert macht an seinem Mondeo alles selbst: Auto auf die Rampe, Teile besorgen, tauschen. Letztens war es die Zündspule – das Teil hab ich ihm mitgebracht.",
+    "file": "voice/x/x_jens_oqp05c.mp3",
+    "dur": 9.14
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_109l0nb",
+    "text": "So ein Kombi von 2005 hält ewig, wenn man ihn pflegt: Öl rechtzeitig wechseln, Rost früh behandeln, und im Winter Salz abwaschen.",
+    "file": "voice/x/x_jens_109l0nb.mp3",
+    "dur": 8.16
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1ar05f9",
+    "text": "In der Grundausbildung lernt man Knoten, Leitern, Schläuche kuppeln. Einmal im Monat ist Übung – an der Talsperre zum Beispiel, da saugen wir Wasser aus offenem Gewässer an.",
+    "file": "voice/x/x_jens_1ar05f9.mp3",
+    "dur": 10.08
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_zetdvl",
+    "text": "Bei einem Einsatz zählt jede Minute. Deshalb hängt bei mir die Jacke immer griffbereit an der Tür.",
+    "file": "voice/x/x_jens_zetdvl.mp3",
+    "dur": 5.78
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1ckmyfh",
+    "text": "Auf dem Dorf geht ohne Auto wenig. Der Bus fährt morgens zur Schule und mittags zurück, am Wochenende kaum.",
+    "file": "voice/x/x_jens_1ckmyfh.mp3",
+    "dur": 6.43
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_yagxy0",
+    "text": "Ihr macht die Bretter aus Eiche, mit dem Stirnholz nach oben? Auf so einem Brett bleiben die Messer länger scharf – die Klinge gleitet zwischen die Fasern.",
+    "file": "voice/x/x_jens_yagxy0.mp3",
+    "dur": 8.23
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_p1kprw",
+    "text": "Hallo! Pass auf die Beete auf, da sind gerade die Bohnen gekommen.",
+    "file": "voice/x/x_heike_p1kprw.mp3",
+    "dur": 4.85
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_jf93nf",
+    "text": "Na, schon mal Eier von meinen Hühnern probiert?",
+    "file": "voice/x/x_heike_jf93nf.mp3",
+    "dur": 3.31
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_13snciu",
+    "text": "Guten Morgen! Brauchst du Eier? Heute waren es zwölf, die Hühner sind fleißig.",
+    "file": "voice/x/x_heike_13snciu.mp3",
+    "dur": 6.43
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_6kdjgn",
+    "text": "Hallo! Brauchst du Eier? Heute waren es zwölf, die Hühner sind fleißig.",
+    "file": "voice/x/x_heike_6kdjgn.mp3",
+    "dur": 5.9
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_18wdzgq",
+    "text": "Guten Abend! Brauchst du Eier? Heute waren es zwölf, die Hühner sind fleißig.",
+    "file": "voice/x/x_heike_18wdzgq.mp3",
+    "dur": 6.43
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_1a5sx0z",
+    "text": "Guten Morgen! Pass auf, wo du hintrittst – da kommen gerade die Bohnen.",
+    "file": "voice/x/x_heike_1a5sx0z.mp3",
+    "dur": 5.11
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_1u5fe6e",
+    "text": "Hallo! Pass auf, wo du hintrittst – da kommen gerade die Bohnen.",
+    "file": "voice/x/x_heike_1u5fe6e.mp3",
+    "dur": 4.63
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_303yg7",
+    "text": "Guten Abend! Pass auf, wo du hintrittst – da kommen gerade die Bohnen.",
+    "file": "voice/x/x_heike_303yg7.mp3",
+    "dur": 5.11
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_1cclcgv",
+    "text": "Kartoffeln, Bohnen, Zwiebeln, Kohl – und Tomaten, wenn der Sommer mitspielt. Gegossen wird abends oder ganz früh, dann verdunstet weniger.",
+    "file": "voice/x/x_heike_1cclcgv.mp3",
+    "dur": 10.01
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_1m8r12o",
+    "text": "Mulchen spart Gießen: Rasenschnitt dünn zwischen die Reihen, dann bleibt der Boden feucht und das Unkraut kleiner.",
+    "file": "voice/x/x_heike_1m8r12o.mp3",
+    "dur": 7.2
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_9wklwu",
+    "text": "Gegen Schnecken hilft kein Wundermittel. Bretter auslegen, morgens drunter nachschauen und einsammeln. Wer kann, hält Laufenten.",
+    "file": "voice/x/x_heike_9wklwu.mp3",
+    "dur": 9.36
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_51to26",
+    "text": "Acht Hühner, ein Hahn. Im Winter legen sie weniger – die brauchen Licht. Das ist ganz normal.",
+    "file": "voice/x/x_heike_51to26.mp3",
+    "dur": 6.98
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_11m3zc5",
+    "text": "Am Gartentor steht eine Kasse des Vertrauens: sechs Eier, zwei Euro. Bisher hat noch keiner geschummelt.",
+    "file": "voice/x/x_heike_11m3zc5.mp3",
+    "dur": 7.68
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_1448ma3",
+    "text": "Ronald bringt mir ab und zu Ziegenmist für die Beete. Gut verrottet ist der Gold wert.",
+    "file": "voice/x/x_heike_1448ma3.mp3",
+    "dur": 5.81
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1gj6kjf",
+    "text": "Achtzehn?",
+    "file": "voice/x/x_manfred_1gj6kjf.mp3",
+    "dur": 0.84
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1xe2ni",
+    "text": "Ja.",
+    "file": "voice/x/x_gerhard_1xe2ni.mp3",
+    "dur": 0.55
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_14hm832",
+    "text": "Zwanzig?",
+    "file": "voice/x/x_manfred_14hm832.mp3",
+    "dur": 0.91
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1re0ilg",
+    "text": "Zwo?",
+    "file": "voice/x/x_manfred_1re0ilg.mp3",
+    "dur": 0.62
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_trquwb",
+    "text": "Passe.",
+    "file": "voice/x/x_gerhard_trquwb.mp3",
+    "dur": 0.62
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_slswk5",
+    "text": "Grand Hand! Ihr dürft schon mal mitschreiben.",
+    "file": "voice/x/x_wolfgang_slswk5.mp3",
+    "dur": 3.17
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1v1r74m",
+    "text": "Mit einem Buben? Mutig.",
+    "file": "voice/x/x_gerhard_1v1r74m.mp3",
+    "dur": 1.94
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_yuvufr",
+    "text": "Kontra!",
+    "file": "voice/x/x_manfred_yuvufr.mp3",
+    "dur": 0.72
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1qag3nn",
+    "text": "Re!",
+    "file": "voice/x/x_wolfgang_1qag3nn.mp3",
+    "dur": 0.46
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_vspga7",
+    "text": "Jetzt wird’s teuer, meine Herren.",
+    "file": "voice/x/x_gerhard_vspga7.mp3",
+    "dur": 2.33
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_czgsvf",
+    "text": "Ich lege raus: drei Damen und eine Folge in Herz.",
+    "file": "voice/x/x_ingrid_czgsvf.mp3",
+    "dur": 4.18
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1spzcx3",
+    "text": "Schon wieder? Das gibt’s doch nicht.",
+    "file": "voice/x/x_katrin_1spzcx3.mp3",
+    "dur": 2.78
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_clmdz",
+    "text": "Rommé!",
+    "file": "voice/x/x_ingrid_clmdz.mp3",
+    "dur": 0.67
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_11euu3m",
+    "text": "Ich hatte noch neunzig Punkte auf der Hand …",
+    "file": "voice/x/x_katrin_11euu3m.mp3",
+    "dur": 2.33
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_g4bc7n",
+    "text": "Die nächste Runde geht auf die Feuerwehr!",
+    "file": "voice/x/x_uwe_g4bc7n.mp3",
+    "dur": 2.04
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1ayrmqo",
+    "text": "Seit wann das denn?",
+    "file": "voice/x/x_manfred_1ayrmqo.mp3",
+    "dur": 1.3
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_rk4f97",
+    "text": "Wer noch was will, ruft – ich hab nur zwei Hände.",
+    "file": "voice/x/x_uwe_rk4f97.mp3",
+    "dur": 2.71
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1ekc5te",
+    "text": "Wer gibt?",
+    "file": "voice/x/x_gerhard_1ekc5te.mp3",
+    "dur": 0.77
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_2uxaqn",
+    "text": "Der, der fragt.",
+    "file": "voice/x/x_wolfgang_2uxaqn.mp3",
+    "dur": 1.56
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1exhzuc",
+    "text": "Hat jemand Hubert diese Woche gesehen? Der Mondeo stand wieder auf der Rampe.",
+    "file": "voice/x/x_katrin_1exhzuc.mp3",
+    "dur": 5.26
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1gu5jbh",
+    "text": "Der steht da öfter als auf der Straße.",
+    "file": "voice/x/x_manfred_1gu5jbh.mp3",
+    "dur": 2.16
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_h9gx4l",
+    "text": "Morgen gibt’s Nebel über dem Wald. Dann wird’s schön.",
+    "file": "voice/x/x_wolfgang_h9gx4l.mp3",
+    "dur": 3.91
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_19ewbsg",
+    "text": "Das sagst du jede Woche.",
+    "file": "voice/x/x_uwe_19ewbsg.mp3",
+    "dur": 1.37
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_142y4w4",
+    "text": "In der Chronik steht, dass beim Pflanzen der Linde das halbe Dorf dabei war.",
+    "file": "voice/x/x_gerhard_142y4w4.mp3",
+    "dur": 4.92
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1e5a3y7",
+    "text": "Und die andere Hälfte hat hinterher erzählt, sie wäre auch dabei gewesen.",
+    "file": "voice/x/x_ingrid_1e5a3y7.mp3",
+    "dur": 4.97
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_5fw0oa",
+    "text": "Will noch jemand Brezeln? Sonst ess ich sie.",
+    "file": "voice/x/x_uwe_5fw0oa.mp3",
+    "dur": 3.19
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1ua62ln",
+    "text": "Her damit.",
+    "file": "voice/x/x_wolfgang_1ua62ln.mp3",
+    "dur": 1.06
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_c9lwdz",
+    "text": "Nächsten Monat ist Übung an der Talsperre. Wer fährt mit?",
+    "file": "voice/x/x_manfred_c9lwdz.mp3",
+    "dur": 4.56
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1e7jul4",
+    "text": "Wenn’s nicht regnet.",
+    "file": "voice/x/x_uwe_1e7jul4.mp3",
+    "dur": 1.2
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1jif7nc",
+    "text": "Ingrid, wie machst du das bloß mit den Jokern?",
+    "file": "voice/x/x_katrin_1jif7nc.mp3",
+    "dur": 2.76
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_15vew37",
+    "text": "Erfahrung, meine Liebe. Und ein gutes Gedächtnis.",
+    "file": "voice/x/x_ingrid_15vew37.mp3",
+    "dur": 4.75
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1lxpmrh",
+    "text": "Der strengste Winter, den ich erlebt habe: Wir haben den Hydranten am Anger mit der Lötlampe aufgetaut.",
+    "file": "voice/x/x_manfred_1lxpmrh.mp3",
+    "dur": 6.17
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_ztc8nu",
+    "text": "Und meine Mutter hat euch Glühwein gebracht. Den Rest der Geschichte erzählen wir besser nicht.",
+    "file": "voice/x/x_ingrid_ztc8nu.mp3",
+    "dur": 6.29
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_wrhu44",
+    "text": "Einmal stand im Nebel an der Klinge ein Hirsch vor mir, keine zehn Meter weit.",
+    "file": "voice/x/x_wolfgang_wrhu44.mp3",
+    "dur": 5.33
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_xc0zmo",
+    "text": "Wir haben uns angeschaut, bis er sich umgedreht hat – als wollte er sagen: Das ist mein Wald.",
+    "file": "voice/x/x_wolfgang_xc0zmo.mp3",
+    "dur": 6.58
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_18kz9wc",
+    "text": "Als die Linde hundert wurde, 1988, haben wir am Anger gefeiert – mit Blasmusik und Kuchen von jedem Hof.",
+    "file": "voice/x/x_ingrid_18kz9wc.mp3",
+    "dur": 8.64
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_3gnou8",
+    "text": "Und ich habe die Rede gehalten. Zwanzig Minuten. Die Linde hat’s ausgehalten.",
+    "file": "voice/x/x_gerhard_3gnou8.mp3",
+    "dur": 5.86
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_q1tonf",
+    "text": "Letzten Sommer ist Ronalds Ziege Lotte ausgebüxt und stand in Huberts Werkstatt.",
+    "file": "voice/x/x_katrin_q1tonf.mp3",
+    "dur": 4.97
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1w6clyh",
+    "text": "Und Hubert hat ihr den Schraubenschlüssel erklärt, ich hab’s gesehen.",
+    "file": "voice/x/x_uwe_1w6clyh.mp3",
+    "dur": 3.55
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_bveo6e",
+    "text": "Als Junge habe ich hier auf dem Dachboden eine alte Schiefertafel gefunden. Darauf stand: Wer das liest, ist mit Fegen dran.",
+    "file": "voice/x/x_gerhard_bveo6e.mp3",
+    "dur": 8.78
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_18gf1w7",
+    "text": "Und? Hast du gefegt?",
+    "file": "voice/x/x_manfred_18gf1w7.mp3",
+    "dur": 2.47
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_gjvvkg",
+    "text": "Bis heute nicht.",
+    "file": "voice/x/x_gerhard_gjvvkg.mp3",
+    "dur": 1.13
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_jgqb2c",
+    "text": "Wer hat die Kartoffeln mitgebracht? Ab in die Glut damit.",
+    "file": "voice/x/x_uwe_jgqb2c.mp3",
+    "dur": 3.79
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_k1xabg",
+    "text": "In Alufolie, Uwe. Nicht wie letztes Mal.",
+    "file": "voice/x/x_katrin_k1xabg.mp3",
+    "dur": 3.91
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1wzmttx",
+    "text": "Den Funkenflug im Auge behalten, Leute. Der Wind dreht.",
+    "file": "voice/x/x_manfred_1wzmttx.mp3",
+    "dur": 4.58
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_70mpfu",
+    "text": "Schaut mal, die Sterne! In der Stadt sieht man die nie so.",
+    "file": "voice/x/x_katrin_70mpfu.mp3",
+    "dur": 4.22
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_pbayk8",
+    "text": "Da oben, das W – die Kassiopeia. Hab ich früher jeder Klasse gezeigt.",
+    "file": "voice/x/x_gerhard_pbayk8.mp3",
+    "dur": 5.38
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1rfum8w",
+    "text": "Früher gab es Feuer zu Walpurgis und zur Sonnenwende. Heute brauchen wir keinen Anlass mehr.",
+    "file": "voice/x/x_gerhard_1rfum8w.mp3",
+    "dur": 6.5
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_50ogk8",
+    "text": "Freitag wieder in der Schule?",
+    "file": "voice/x/x_ingrid_50ogk8.mp3",
+    "dur": 1.94
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_jaji8r",
+    "text": "Na klar. Wo sonst.",
+    "file": "voice/x/x_wolfgang_jaji8r.mp3",
+    "dur": 2.21
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_9rvql5",
+    "text": "Das Holz ist aus der Klinge – trockenes Restholz vom letzten Winter. Riecht ihr das Harz?",
+    "file": "voice/x/x_wolfgang_9rvql5.mp3",
+    "dur": 6.29
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1268djg",
+    "text": "Hört ihr den Kauz drüben an der Klinge? Der ruft jeden Abend um diese Zeit.",
+    "file": "voice/x/x_wolfgang_1268djg.mp3",
+    "dur": 5.47
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_3qwob2",
+    "text": "Nächstes Jahr säe ich hier Dinkel. Dann gibt’s beim Feuer Stockbrot vom eigenen Acker.",
+    "file": "voice/x/x_uwe_3qwob2.mp3",
+    "dur": 5.33
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1demepx",
+    "text": "Das sagst du jedes Jahr, Uwe.",
+    "file": "voice/x/x_katrin_1demepx.mp3",
+    "dur": 1.99
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_stwhco",
+    "text": "Soll ich erzählen, wie das Haus zu seiner Uhr kam?",
+    "file": "voice/x/x_gerhard_stwhco.mp3",
+    "dur": 3.31
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_abem3u",
+    "text": "Erzähl, Gerhard – die kenn ich auch noch nicht ganz.",
+    "file": "voice/x/x_katrin_abem3u.mp3",
+    "dur": 3.29
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1eo58pj",
+    "text": "1828 haben die Ratscher die Schule gebaut. Für eine Uhr im Turm war kein Geld mehr da.",
+    "file": "voice/x/x_gerhard_1eo58pj.mp3",
+    "dur": 7.44
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_mtbh7s",
+    "text": "So erzählt man es sich: Jede Familie hat einen Winter lang Holz geschlagen und verkauft, bis es für das Uhrwerk reichte.",
+    "file": "voice/x/x_gerhard_mtbh7s.mp3",
+    "dur": 8.02
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1e7z24w",
+    "text": "Seitdem heißt es: Die Uhr gehört dem ganzen Dorf.",
+    "file": "voice/x/x_gerhard_1e7z24w.mp3",
+    "dur": 3.65
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_11xa2gz",
+    "text": "Und deshalb muss die Feuerwehr sie heute aufziehen.",
+    "file": "voice/x/x_manfred_11xa2gz.mp3",
+    "dur": 2.66
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_h3dpib",
+    "text": "Und deshalb geht sie nach dem Dorf und nicht nach dem Radio.",
+    "file": "voice/x/x_ingrid_h3dpib.mp3",
+    "dur": 3.91
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_18nsvxr",
+    "text": "Freitag ist wieder Skat in der alten Schule. Kommst du?",
+    "file": "voice/x/x_ronald_18nsvxr.mp3",
+    "dur": 3.58
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_m4mux4",
+    "text": "Wenn der Gerhard nicht wieder mischt wie ein Bäcker.",
+    "file": "voice/x/x_hubert_m4mux4.mp3",
+    "dur": 2.74
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_11ji3yz",
+    "text": "Der hat letzte Woche dreimal Grand Hand gespielt.",
+    "file": "voice/x/x_ronald_11ji3yz.mp3",
+    "dur": 2.66
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_3wuvjt",
+    "text": "Und dreimal verloren.",
+    "file": "voice/x/x_hubert_3wuvjt.mp3",
+    "dur": 1.42
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_4r7noh",
+    "text": "Die Katrin bringt wieder ihren Zwiebelkuchen mit. Und Uwe zapft.",
+    "file": "voice/x/x_ronald_4r7noh.mp3",
+    "dur": 4.03
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1m335zg",
+    "text": "Dann komm ich.",
+    "file": "voice/x/x_hubert_1m335zg.mp3",
+    "dur": 0.98
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_4yvdmv",
+    "text": "Die Jungs wollen Samstag ein Feuer machen, draußen am Acker Richtung Klinge.",
+    "file": "voice/x/x_ronald_4yvdmv.mp3",
+    "dur": 3.94
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_z0s4b0",
+    "text": "Bei dem Wind? Da brennt die halbe Klinge mit.",
+    "file": "voice/x/x_hubert_z0s4b0.mp3",
+    "dur": 3.67
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_12iupgq",
+    "text": "Der Manfred ist doch mit der Feuerwehr dabei.",
+    "file": "voice/x/x_ronald_12iupgq.mp3",
+    "dur": 2.35
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1q7d32k",
+    "text": "Eben. Die stehen rum und trinken Bier.",
+    "file": "voice/x/x_hubert_1q7d32k.mp3",
+    "dur": 3.29
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_fnl1rl",
+    "text": "Bring Kartoffeln mit. Die vom Acker.",
+    "file": "voice/x/x_ronald_fnl1rl.mp3",
+    "dur": 2.64
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_19cz99w",
+    "text": "Nu. Ein paar.",
+    "file": "voice/x/x_hubert_19cz99w.mp3",
+    "dur": 2.06
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_edushn",
+    "text": "Und? Läuft er wieder, dein Kombi?",
+    "file": "voice/x/x_ronald_edushn.mp3",
+    "dur": 2.76
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1ta13yu",
+    "text": "Läuft. Bis er nicht mehr läuft.",
+    "file": "voice/x/x_hubert_1ta13yu.mp3",
+    "dur": 3.02
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_v6irxg",
+    "text": "Was war es diesmal?",
+    "file": "voice/x/x_ronald_v6irxg.mp3",
+    "dur": 1.25
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1m9aoeu",
+    "text": "Keilriemen. Lichtmaschine. Und der Auspuff hängt.",
+    "file": "voice/x/x_hubert_1m9aoeu.mp3",
+    "dur": 5.11
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_el8o9f",
+    "text": "Kauf dir doch mal einen neuen.",
+    "file": "voice/x/x_ronald_el8o9f.mp3",
+    "dur": 1.58
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_q3ud3n",
+    "text": "Einen neuen? Da ist nur noch Elektrik drin. Den kriegst du nie wieder heil.",
+    "file": "voice/x/x_hubert_q3ud3n.mp3",
+    "dur": 6.41
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1wg8x9z",
+    "text": "Hast du gesehen, was der Junge drüben baut? Ein Häuschen mit Dachterrasse.",
+    "file": "voice/x/x_ronald_1wg8x9z.mp3",
+    "dur": 4.49
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_cg24ct",
+    "text": "Gesehen. Lärche, sagt er.",
+    "file": "voice/x/x_hubert_cg24ct.mp3",
+    "dur": 3.24
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_14y9itv",
+    "text": "Fleißig ist er. Und freundlich.",
+    "file": "voice/x/x_ronald_14y9itv.mp3",
+    "dur": 2.5
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_60ywhc",
+    "text": "Hm. Wird sich zeigen, wenn der erste Winter kommt.",
+    "file": "voice/x/x_hubert_60ywhc.mp3",
+    "dur": 4.32
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1e1nfka",
+    "text": "Du warst auch mal jung, Hubert.",
+    "file": "voice/x/x_ronald_1e1nfka.mp3",
+    "dur": 1.9
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1h1lbfj",
+    "text": "Das ist lange her.",
+    "file": "voice/x/x_hubert_1h1lbfj.mp3",
+    "dur": 1.22
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_8nnwgz",
+    "text": "Die Wildschweine waren wieder in den Kartoffeln, unten am Waldrand.",
+    "file": "voice/x/x_ronald_8nnwgz.mp3",
+    "dur": 3.65
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_44zf7u",
+    "text": "Hab ich gesehen. Der ganze Acker umgegraben.",
+    "file": "voice/x/x_hubert_44zf7u.mp3",
+    "dur": 3.7
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1106nfz",
+    "text": "Der Wolfgang sagt, der Jäger sitzt nächste Woche an.",
+    "file": "voice/x/x_ronald_1106nfz.mp3",
+    "dur": 3.07
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1id7azf",
+    "text": "Der sitzt seit zwanzig Jahren an. Gesehen hat er noch keins.",
+    "file": "voice/x/x_hubert_1id7azf.mp3",
+    "dur": 4.8
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_wpcvt4",
+    "text": "Aber der Schnaps im Hochsitz ist immer alle.",
+    "file": "voice/x/x_ronald_wpcvt4.mp3",
+    "dur": 2.35
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_x58jzw",
+    "text": "Morgen gibt es Regen.",
+    "file": "voice/x/x_hubert_x58jzw.mp3",
+    "dur": 1.49
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_mmldrq",
+    "text": "Im Radio sagen sie Sonne.",
+    "file": "voice/x/x_ronald_mmldrq.mp3",
+    "dur": 1.61
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_zd76tn",
+    "text": "Mein Knie sagt Regen.",
+    "file": "voice/x/x_hubert_zd76tn.mp3",
+    "dur": 1.58
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1jzg1v7",
+    "text": "Dein Knie sagt seit dreißig Jahren Regen.",
+    "file": "voice/x/x_ronald_1jzg1v7.mp3",
+    "dur": 2.35
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_13kimbu",
+    "text": "Und meistens stimmt es.",
+    "file": "voice/x/x_hubert_13kimbu.mp3",
+    "dur": 1.49
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_18ykmyg",
+    "text": "Na, dann stapel dein Holz mal schnell rein.",
+    "file": "voice/x/x_ronald_18ykmyg.mp3",
+    "dur": 2.62
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_19ym0fw",
+    "text": "Die Uhr an der alten Schule geht wieder nach.",
+    "file": "voice/x/x_ronald_19ym0fw.mp3",
+    "dur": 2.35
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_g489kl",
+    "text": "Seit sie den Strom umgestellt haben.",
+    "file": "voice/x/x_hubert_g489kl.mp3",
+    "dur": 2.38
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1pf971x",
+    "text": "Die Ingrid sagt, im Frühjahr wird die Linde geschnitten.",
+    "file": "voice/x/x_ronald_1pf971x.mp3",
+    "dur": 2.98
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_5c5v4y",
+    "text": "Die Linde steht seit achtzehnhundertachtundachtzig. Die braucht keinen Schnitt.",
+    "file": "voice/x/x_hubert_5c5v4y.mp3",
+    "dur": 5.21
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_bhs7ky",
+    "text": "Sag das der Ingrid.",
+    "file": "voice/x/x_ronald_bhs7ky.mp3",
+    "dur": 1.37
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1fpvyko",
+    "text": "Mach ich. Freitag. Wenn sie beim Rommé mal verliert.",
+    "file": "voice/x/x_hubert_1fpvyko.mp3",
+    "dur": 5.3
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1m8eisz",
+    "text": "Wie viele Hütten hast du jetzt eigentlich voll?",
+    "file": "voice/x/x_ronald_1m8eisz.mp3",
+    "dur": 2.38
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_13tkf2h",
+    "text": "Vier. Die fünfte wird diese Woche.",
+    "file": "voice/x/x_hubert_13tkf2h.mp3",
+    "dur": 3.14
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_9dcuwk",
+    "text": "Damit heizt du doch drei Winter.",
+    "file": "voice/x/x_ronald_9dcuwk.mp3",
+    "dur": 1.82
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_4xagvn",
+    "text": "Zwei. Und einen für schlechte Zeiten.",
+    "file": "voice/x/x_hubert_4xagvn.mp3",
+    "dur": 3.46
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1ahj00u",
+    "text": "Du hast doch mehr Holz als die ganze Klinge.",
+    "file": "voice/x/x_ronald_1ahj00u.mp3",
+    "dur": 2.26
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1wbvpcu",
+    "text": "Holz ist nie genug.",
+    "file": "voice/x/x_hubert_1wbvpcu.mp3",
+    "dur": 1.34
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_22yghz",
+    "text": "Dein Bock hat heute früh wieder gebrüllt wie ein Ochse.",
+    "file": "voice/x/x_hubert_22yghz.mp3",
+    "dur": 3.05
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_7ae897",
+    "text": "Egon? Der hatte Hunger.",
+    "file": "voice/x/x_ronald_7ae897.mp3",
+    "dur": 1.97
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1pbyxmk",
+    "text": "Um fünf Uhr?",
+    "file": "voice/x/x_hubert_1pbyxmk.mp3",
+    "dur": 1.06
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1lf4qup",
+    "text": "Der hat immer um fünf Hunger. Wie du.",
+    "file": "voice/x/x_ronald_1lf4qup.mp3",
+    "dur": 2.59
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_opkmdy",
+    "text": "Hm. Gib ihm mehr Heu.",
+    "file": "voice/x/x_hubert_opkmdy.mp3",
+    "dur": 2.35
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_131a9ig",
+    "text": "Der Bus fährt ab Dezember nur noch zweimal am Tag nach Schleusingen.",
+    "file": "voice/x/x_ronald_131a9ig.mp3",
+    "dur": 3.48
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_zo81ch",
+    "text": "Mir egal. Ich hab den Traktor.",
+    "file": "voice/x/x_hubert_zo81ch.mp3",
+    "dur": 3.12
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1tnzsry",
+    "text": "Mit dem Traktor zum Arzt?",
+    "file": "voice/x/x_ronald_1tnzsry.mp3",
+    "dur": 1.7
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_9gddng",
+    "text": "Bin ich doch letztes Jahr auch. Hat keiner was gesagt.",
+    "file": "voice/x/x_hubert_9gddng.mp3",
+    "dur": 4.18
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_14yg4vc",
+    "text": "Weil keiner sich getraut hat.",
+    "file": "voice/x/x_ronald_14yg4vc.mp3",
+    "dur": 1.68
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_15ay9nd",
+    "text": "Deine Frieda war wieder in meinem Kohl.",
+    "file": "voice/x/x_hubert_15ay9nd.mp3",
+    "dur": 2.3
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1tnyntt",
+    "text": "Die mag deinen Kohl eben. Das ist ein Kompliment.",
+    "file": "voice/x/x_ronald_1tnyntt.mp3",
+    "dur": 3.29
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1pv4fwh",
+    "text": "Dann soll sie ihn bezahlen.",
+    "file": "voice/x/x_hubert_1pv4fwh.mp3",
+    "dur": 1.68
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1nosmcq",
+    "text": "Ich bring dir Käse vorbei. Von Frieda persönlich.",
+    "file": "voice/x/x_ronald_1nosmcq.mp3",
+    "dur": 3.38
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_crx2dl",
+    "text": "Hm. Na gut.",
+    "file": "voice/x/x_hubert_crx2dl.mp3",
+    "dur": 2.11
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1j018ni",
+    "text": "Der Junge drüben macht jetzt Schneidebretter. Stirnholz, aus Eiche.",
+    "file": "voice/x/x_ronald_1j018ni.mp3",
+    "dur": 4.49
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1xpi530",
+    "text": "Stirnholz? Da muss man genau arbeiten.",
+    "file": "voice/x/x_hubert_1xpi530.mp3",
+    "dur": 3.74
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_quepfb",
+    "text": "Ich hab eins bestellt. Für die Küche.",
+    "file": "voice/x/x_ronald_quepfb.mp3",
+    "dur": 2.52
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_we05h5",
+    "text": "Wenn es was taugt, will ich auch eins.",
+    "file": "voice/x/x_hubert_we05h5.mp3",
+    "dur": 2.57
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_y4r4oq",
+    "text": "Sag ihm das selber. Der beißt nicht.",
+    "file": "voice/x/x_ronald_y4r4oq.mp3",
+    "dur": 2.64
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1j1rj5i",
+    "text": "Buche. Die brennt lange.",
+    "file": "voice/x/x_hubert_1j1rj5i.mp3",
+    "dur": 2.64
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_ff7vd4",
+    "text": "Zwei Jahre muss das trocknen. Mindestens.",
+    "file": "voice/x/x_hubert_ff7vd4.mp3",
+    "dur": 3.84
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1nq3dcd",
+    "text": "Ein Schlag, ein Scheit. So muss das.",
+    "file": "voice/x/x_hubert_1nq3dcd.mp3",
+    "dur": 3.74
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1copa72",
+    "text": "Rinde nach oben, sonst zieht der Regen rein.",
+    "file": "voice/x/x_hubert_1copa72.mp3",
+    "dur": 2.83
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_8qqh0y",
+    "text": "Die fünfte wird diese Woche voll.",
+    "file": "voice/x/x_hubert_8qqh0y.mp3",
+    "dur": 1.94
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_vn25ge",
+    "text": "Luft muss durch.",
+    "file": "voice/x/x_hubert_vn25ge.mp3",
+    "dur": 1.22
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_c7xl39",
+    "text": "Der Krümmer. Immer der Krümmer.",
+    "file": "voice/x/x_hubert_c7xl39.mp3",
+    "dur": 2.78
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1gktvxe",
+    "text": "Zwanzig Jahre und läuft. Noch.",
+    "file": "voice/x/x_hubert_1gktvxe.mp3",
+    "dur": 3.12
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_7m3u51",
+    "text": "Wer hat denn den Schlüssel wieder verlegt.",
+    "file": "voice/x/x_hubert_7m3u51.mp3",
+    "dur": 2.21
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1q0ufus",
+    "text": "Wo ist denn die Zange hin.",
+    "file": "voice/x/x_hubert_1q0ufus.mp3",
+    "dur": 1.7
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1n182bg",
+    "text": "Ordnung ist das halbe Leben.",
+    "file": "voice/x/x_hubert_1n182bg.mp3",
+    "dur": 1.82
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_9qp9tk",
+    "text": "Na, ihr Rabauken? Essen gibt es!",
+    "file": "voice/x/x_ronald_9qp9tk.mp3",
+    "dur": 2.81
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_17224ps",
+    "text": "Egon, lass Lotte auch was übrig.",
+    "file": "voice/x/x_ronald_17224ps.mp3",
+    "dur": 2.3
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_101lmll",
+    "text": "Nicht drängeln, für jeden ist was da.",
+    "file": "voice/x/x_ronald_101lmll.mp3",
+    "dur": 2.35
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1f4cc65",
+    "text": "Der Pfosten hier muss mal neu.",
+    "file": "voice/x/x_ronald_1f4cc65.mp3",
+    "dur": 1.61
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_mltevk",
+    "text": "Na, Frieda, heute schon ausgebüxt?",
+    "file": "voice/x/x_ronald_mltevk.mp3",
+    "dur": 2.45
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1aq20cx",
+    "text": "Wasser ist auch noch genug.",
+    "file": "voice/x/x_ronald_1aq20cx.mp3",
+    "dur": 1.68
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1sq3t72",
+    "text": "Rein mit euch, es wird kalt.",
+    "file": "voice/x/x_ronald_1sq3t72.mp3",
+    "dur": 1.94
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_owgnfw",
+    "text": "Morgen früh gibt es wieder Heu.",
+    "file": "voice/x/x_ronald_owgnfw.mp3",
+    "dur": 1.73
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_qdb3b",
+    "text": "Nicht schlecht. Du kannst ja doch was.",
+    "file": "voice/x/x_hubert_qdb3b.mp3",
+    "dur": 3.29
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_rechvz",
+    "text": "Rinde nach oben, hab ich gesagt.",
+    "file": "voice/x/x_hubert_rechvz.mp3",
+    "dur": 2.3
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_szpzn2",
+    "text": "Na also. Der Dreizehner.",
+    "file": "voice/x/x_hubert_szpzn2.mp3",
+    "dur": 2.83
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_17gyuqd",
+    "text": "So. Der hält wieder. Bis zum nächsten Mal.",
+    "file": "voice/x/x_hubert_17gyuqd.mp3",
+    "dur": 4.97
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_epnhej",
+    "text": "Na bitte, alle drei drin! Freitag kommst du mit zum Skat, ja?",
+    "file": "voice/x/x_ronald_epnhej.mp3",
+    "dur": 4.32
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_egm25e",
+    "text": "In deiner alten Blechgarage steht ein Dieselkanister, der grüne. Bring mir den. Dann sehen wir weiter.",
+    "file": "voice/x/x_hubert_egm25e.mp3",
+    "dur": 8.3
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_18fhom7",
+    "text": "Hinten an deiner Garage am Ende vom Garten steht ein Dieselkanister, der grüne. Bring mir den. Dann sehen wir weiter.",
+    "file": "voice/x/x_hubert_18fhom7.mp3",
+    "dur": 9.22
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_urn07i",
+    "text": "Hilfe? Ich brauch keine Hilfe. Na gut. Der Traktor ist leer, und mit meinem Rücken schlepp ich keinen Kanister.",
+    "file": "voice/x/x_hubert_urn07i.mp3",
+    "dur": 9.62
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1n3zqis",
+    "text": "In der alten Blechgarage, rechts vorn in der Ecke. Das Tor schiebt man auf. Ich warte hier nicht ewig.",
+    "file": "voice/x/x_hubert_1n3zqis.mp3",
+    "dur": 8.23
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1x7zqom",
+    "text": "Hinten an deiner Garage, am Ende vom Garten. Ich warte hier nicht ewig.",
+    "file": "voice/x/x_hubert_1x7zqom.mp3",
+    "dur": 5.69
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_fd7ke7",
+    "text": "Anpacken? Hm. Na gut.",
+    "file": "voice/x/x_hubert_fd7ke7.mp3",
+    "dur": 3.84
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1td29bi",
+    "text": "Die Scheite vom Haufen am Hackklotz in die fünfte Hütte. Ordentlich schichten, Rinde nach oben.",
+    "file": "voice/x/x_hubert_1td29bi.mp3",
+    "dur": 6.48
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_122m375",
+    "text": "Der Krümmer zieht Luft. Hört man doch.",
+    "file": "voice/x/x_hubert_122m375.mp3",
+    "dur": 3.22
+   },
+   {
+    "who": "hubert",
+    "id": "x_hubert_1g5j87v",
+    "text": "In der Werkstatt hinter dem Auto liegt auf der Bank der Dreizehner-Ringschlüssel. Bringst du mir den mal?",
+    "file": "voice/x/x_hubert_1g5j87v.mp3",
+    "dur": 6.46
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_18tvj6l",
+    "text": "Au ja, gern! Die drei wollen abends nie rein.",
+    "file": "voice/x/x_ronald_18tvj6l.mp3",
+    "dur": 3.38
+   },
+   {
+    "who": "ronald",
+    "id": "x_ronald_1n9lue6",
+    "text": "Geh einfach hinter ihnen her, dann laufen sie vor dir weg. Rein in den Unterstand, hinten in der Ecke.",
+    "file": "voice/x/x_ronald_1n9lue6.mp3",
+    "dur": 6.12
+   }
+  ]
+ }
+}

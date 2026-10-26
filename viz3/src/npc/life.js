@@ -40,6 +40,7 @@ import { QUESTS } from '../game/quests.js';
 import { ROADS } from '../world/roads.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { CLOCK } from '../time/clock.js';
+import { STIMME } from '../audio/stimme.js';
 export const LIFE = (() => {
   const H = NPCS.hubert,
     R = NPCS.ronald;
@@ -1227,7 +1228,8 @@ export const LIFE = (() => {
     TALK.gap = Math.max(2.4, text.length * 0.062) + 0.7;
     TALK.last = text;
     if (X && X.line) X.line(sp, text, hearing());
-    else if (hearing()) NPCUI.sub(sp, text);
+    else if (hearing()) sp.sayText(text); // subtitle; read in his voice (audio/stimme.js) or his recording of these words
+    if (hearing() && STIMME.speaks(sp.name, text)) TALK.gap = Math.max(TALK.gap, text.length * 0.075 + 1.2); // spoken lines take longer
     markDirty();
   }
   // ---- what they mutter at their work when the visitor stands close by (text only) ----
