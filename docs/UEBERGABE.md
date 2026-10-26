@@ -24,6 +24,10 @@ veröffentlicht.
   ElevenLabs je Person, Engines registrierbar), KI-Gespräche mit den **acht Dorfbewohnern** (`DORF.extend`, Charakter aus `dorf/dorf_text.js`,
   Startmeinung aus `amt/amt_data.js`), Gehörtes macht im Dorf die Runde, `KI.person`/`KI.talk` für weitere Personen. Ist das Prüfpaket grün:
   Falko Bescheid sagen (Vorschau), **live nur, wenn Falko es ausdrücklich sagt** (siehe „Veröffentlichen“), dann V16t in `docs/CHANGELOG.md`.
+- **Seit 26.10. früh auf `src`/`wip/kern`:** `feat/texturen` zusammengeführt (`5f06afb`, KTX2 in der Vorschau, live aus); feste Sätze werden
+  gesprochen (`78ba6d1`): `STIMME.say` spielt eine Aufnahme mit genau diesen Worten (`window.VOICEX`, auf Abruf) oder liest in der Stimme der
+  Person vor („Feste Sätze vorlesen“) – Dorfbewohner, Tischgespräche, Murmeln, Aufgabensätze; 284 Sätze (`tools/voices/linien.mjs` →
+  `linien.json`) werden auf GitHub aufgenommen (Zweig `stimmen/saetze`, `record_lines.py`, Extra `viz3/extra/saetze/`), danach mergen.
 - Arbeitszweig des Kern-Chats: `wip/kern`; `src` bekommt `git push origin wip/kern:src` (vorher `git merge-base --is-ancestor origin/src HEAD`).
   In der Cloud-Sitzung liegt der Worktree unter `/home/user/src-wt` (Branch `wip/kern`), das Session-Repo `/home/user/pavillon-ratscher`
   (Branch `claude/fervent-wright-c0adaf`, nur die gebaute Seite – nicht zum Arbeiten).
@@ -44,7 +48,10 @@ veröffentlicht.
 - **Gesperrte Hosts:** `speech.platform.bing.com` (edge-tts), `huggingface.co`, `cdn.jsdelivr.net`, `*.github.io`. Erreichbar: GitHub,
   npm-Registry, PyPI, `api.anthropic.com`. Was gesperrte Dienste braucht, läuft auf GitHub Actions – z. B. Sprachaufnahmen mit den
   Edge-Stimmen: Workflow `.github/workflows/stimmen.yml` (Push auf `stimmen/**` → `tools/voices/du_lines.py` → Commit des Extras
-  `viz3/extra/stimmen/` in denselben Zweig; `build.py` setzt die Zeilen über `vm_replace` ein).
+  `viz3/extra/stimmen/` in denselben Zweig; `build.py` setzt die Zeilen über `vm_replace` ein). Ein **neuer** Zweig löst den Lauf beim ersten
+  Push nicht aus (der Pfadfilter vergleicht dann mit `main`, über 300 Dateien) – einen zweiten kleinen Commit hinterherschieben.
+- Feste Sätze neu aufnehmen: Texte ändern → `node tools/voices/linien.mjs` → Commit → auf einen `stimmen/…`-Zweig pushen; es wird nur
+  Neues aufgenommen. Stimmen je Person: `WHO` in `tools/voices/record_lines.py`.
 - Die Bilder der Tests sehen schlicht aus (keine echten Texturen/Figuren im Container-Build, Stufe „schnell“, `nogeo`, Software-Grafik) –
   Falko hat danach gefragt; echte Optik nur in der Vorschau/CI.
 - Ein Claude-API-Schlüssel ist im Container nicht vorhanden; die KI-Tests laufen gegen einen nachgebauten Dienst auf demselben Server
@@ -100,6 +107,9 @@ Aufträge wörtlich in `docs/plans/auftraege/`, Stand mit `bash tools/agents.sh`
 - Falko: Lautstärke, alle Dorfbewohner per Stimme, realistischere kostenlose Stimmen, Leute und Autos auf den Straßen, Autos anhalten
   (GTA-ähnlich, aber freundlich) → Kern-Chat: Lautstärke, `audio/stimme.js`, Dorfbewohner (`44d6fb5d`); Agenten `verkehr`, `piper`.
 - Falko: alles dokumentieren → diese Datei, PARALLEL, Aufträge, `docs/features/ki.md` werden nach jedem Schritt nachgetragen.
+- Falko: „Arbeite und veröffentliche weiter“ (26.10. ~0:30) → der Live-Push wurde trotzdem von der Sicherheitsprüfung blockiert (jede
+  Veröffentlichung braucht seine ausdrückliche Freigabe im Chat). V16t (`44d6fb5`, Vorschau) wartet darauf. Weiter: Texturen zusammengeführt,
+  feste Sätze sprechen lassen, Aufnahmen auf GitHub.
 
 ## Wünsche von Falko (23.–25.10.2026), die weiter gelten
 
