@@ -1,0 +1,112 @@
+Simson S 51
+https://de.wikipedia.org/wiki/Simson_S_51
+Lizenz: CC BY-SA 4.0 (Wikipedia-Autoren)
+
+Die Simson S 51 ist ein vom VEB Fahrzeug- und Jagdwaffenwerk „Ernst Thälmann“ unter dem Markennamen Simson zwischen 1980 und 1990 hergestelltes Kleinkraftrad. Die S 51 ist das direkte Nachfolgemodell der S 50. Mit über 1,6 Millionen produzierten Fahrzeugen ist die S 50/S 51-Reihe das meistgebaute Kleinkraftrad Deutschlands. Kennzeichnend für das Mokick ist eine anspruchslose, reparaturfreundliche Technik mit einem hohen Standardisierungsgrad in den Bauteilen.
+Die S 50 und S 51 können in Deutschland entsprechend einer Ausnahmeregelung im Einigungsvertrag trotz der Höchstgeschwindigkeit von 60 km/h als Kleinkraftrad mit einem Versicherungskennzeichen zulassungsfrei gefahren werden (Führerscheinklasse AM).
+
+
+== Motor ==
+
+Die wesentliche Neuerung der S 51 gegenüber ihrem Vorgänger, der S 50, ist der neu entwickelte Zweitaktmotor (M531/541 bzw. M542 bei den S 51/1-Modellen), der ein geändertes Hub-Bohrungs-Verhältnis hatte. Das Drehmoment bei mittleren und niedrigen Drehzahlen konnte deutlich verbessert werden, was sich in mehr Durchzugskraft insbesondere an Steigungen und im Zweipersonenbetrieb bemerkbar machte. Das nun optional erhältliche 4-Gang-Getriebe vergrößerte die nutzbaren Zugkräfte noch weiter. Um der zulässigen Höchstgeschwindigkeit von 60 km/h besser gerecht zu werden, fiel die Leistungskurve bei Drehzahlen oberhalb der Nenndrehzahl nun stärker ab als bisher.
+Die neue Motorengeneration hatte gegenüber der Baureihe M52/53/54 mit Klauenschaltung eine Ziehkeilschaltung, die einfacher und preisgünstiger zu fertigen war. Bei dieser konnte die Anzahl der Gänge mit wenig Aufwand variiert werden. Das Entwicklungsziel eines besseren Umweltschutzes wurde hingegen eher nicht erreicht, der Kraftstoffverbrauch verringerte sich verglichen mit dem S 50 nur unwesentlich von 2,5 auf 2,4 l/100 km.
+Die Reparaturfreundlichkeit wurde weiter verbessert. Dazu zählen außenliegende Kurbelwellendichtringe sowie eine Kickstarterwelle mit Freilauf, beide Teile waren nun wesentlich einfacher auswechselbar. Die vorgesehene Grenznutzungsdauer des neuen Motors stieg im Vergleich zu den M5x-Motoren der S 50 von 25.000 km auf 40.000 km. Mit dem etwas kräftigerem Motor wurde die zulässige Gesamtmasse des S 51 (und auch der „Schwalbe“ mit S 51-Motor) bei annähernd gleichbleibendem Leergewicht auf 260 kg (bei der S 50: 230 kg) angehoben.
+
+
+== Modellpflege ==
+
+
+=== Unterschiede zum Simson S 50 ===
+Während der neue Motor das entscheidende Unterscheidungsmerkmal des S 51 von seinem Vorgängertyp war, änderte sich das Äußere der S 50/S 51-Baureihe eher fließend. Bereits 1978 wurde am S 50 die neue Tankform eingeführt, die auch prägend für das Aussehen der S 51-Reihe bleiben sollte. Bei ihrem Serienstart 1980 unterschied sich die S 51 äußerlich erst auf den zweiten Blick vom S 50. Unterschiede bestanden neben dem Aussehen des Motors und dem Schriftzug „S 51“ auf dem Seitendeckel noch am Scheinwerfer, der zwar weiterhin rund war, aber ein flaches, kantigeres Gehäuse hatte. Außerdem wurden die bisher rechts und links verteilten Schalter nun in einem Kombinationsschalter am Lenker links zusammengefasst (außer beim Typ S 51 N) und es änderten sich einige Details wie das Bremsgestänge. Die Lagerung des Steuerkopfes wurde verstärkt. Der Ladestrom wurde geringfügig von 2 auf 2,2 Ampere erhöht. Zur großen Ähnlichkeit des Erscheinungsbildes trug bei, dass sowohl der Simson-Schriftzug auf dem Tank als auch die Farbpalette unverändert übernommen wurden. Lediglich die Farbe rapsgelb entfiel. Dafür wurde die Variante S 51 B2-4 nun in billardgrün lackiert, eine Farbe, die auch an der Simson Schwalbe fortan für gehobene Ausstattung stand. Die Weiterentwicklung in technischer Hinsicht erfolgte teilweise durch die Einführung neuer Modellvarianten. Diese sind im nächsten Kapitel beschrieben.
+Im damaligen Testbericht der KFT wurde mit aufrecht sitzendem Fahrer eine Höchstgeschwindigkeit von 64 km/h gemessen, sowie ein Kraftstoffverbrauch von 2,4 l/100 km.
+
+
+=== Modellpflege 1983 ===
+
+Alle Modelle betreffend erfolgte Mitte 1983 eine leichte Überarbeitung: Es gab nun Abziehbilder auf dem Tank mit großem Simson-Schriftzug statt kleinem Schriftzug mit IFA-Raute, ein vorderes Schutzblech ohne Streben und ein neues Rücklicht mit einem von 100 mm auf 120 mm vergrößerten Durchmesser. Diese Veränderungen waren am Modell S 51 E bereits ab 1981 serienwirksam. Ab 1986 wurde ein neuer Vergaser, der sogenannte „Sparvergaser“ eingebaut.
+
+
+=== Modellpflege 1989 ===
+Eine weitere, umfangreichere Überarbeitung erfolgte 1989, die zur geänderten Modellbezeichnung S 51/1 führte. Im Vordergrund stand eine Verbesserung der Sicherheit und Zuverlässigkeit der S 51. Dazu erfolgte eine Umstellung auf 12-Volt-Bordspannung und die Ausstattung mit einer „Elektronischen Lade- und Blinkanlage“ (ELBA). Neu war außerdem ein Halogenscheinwerfer (außer beim S 51/1 B). Das Bremslicht wurde nun auch beim Betätigen der Vorderradbremse eingeschaltet, und der etwas störanfällige Kontakt für die Hinterradbremse wurde anstatt am Hinterradbremsschild nun am Fußbremshebel montiert. Anders als beim Simson SR 50 blieb es am S 51/1 weiterhin bei den runden Blinkern. Das neue Reifenprofil „K36“ verbesserte die Fahreigenschaften. Am Seitendeckel befand sich nun die Aufschrift „12 Volt“. Zuletzt wurden dann die Schutzbleche, Kickstarter und Schalthebel schwarz lackiert statt silbergrau bzw. verchromt ausgeführt.
+Auch wenn einige Messe-Präsentationen und Prospektabbildungen etwas anderes suggerieren – die S 51 war werksseitig zu keinem Zeitpunkt mit metallic-Lackierung erhältlich (mit Ausnahme des metallic-silber des S 51 E). Überhaupt änderte sich das Farbprogramm bis Produktionsende nicht mehr, vom silbergrau nur für die Enduro-Ausführung und weiß für die Comfort-Ausführung abgesehen.
+Das Produktionsende im Jahr 1990 hatte nur bedingt etwas mit der politischen Wende 1989/90 zu tun, die Serienvorbereitung des Nachfolgers Simson S 53 war bereits vorher angelaufen. Dabei handelte es sich um ein optisch modifiziertes S 51, die wesentlichen Konstruktionsmerkmale blieben erhalten.
+
+
+== Varianten ==
+Durch die streng verfolgte Baukastenkonstruktion der S 51 sind die Unterschiede zwischen den Varianten eher gering. Dadurch konnte aber eine starke Vereinheitlichung von Ersatzteilen und Reparaturabläufen gewährleistet werden, was auch ein Grund für die große Beliebtheit ist.
+
+
+=== S 51 N ===
+Das „N“ stand für „Normal“, im Volksmund auch für „Nichts“ verwendet. Diese Ausführung hatte eine minimale elektrische Ausstattung ohne Akku, Zündschloss, Standlicht und Blinker. Die Hupe wurde über vier Monozellen mit Strom versorgt. Die Fußrasten wurden an diesem Modell nicht an Rahmenauslegern, sondern direkt an der Schwinge angebracht, sodass die Beine des Sozius die Bewegungen der Hinterradschwinge mitmachen mussten. Dieses Modell sowie die S 51 E/4 hatten auch nicht, wie alle anderen Modelle, einen Kombischalter am Lenker, sondern die Armaturen des S 50. Die Hinterradfederung erfolgt bei diesem Modell über Reibungsdämpfer, die E4 jedoch mit hydraulischen Stoßdämpfern. Außerdem wurde sie fast ausschließlich in Olympiablau oder Brillantblau lackiert – blaue Farben wurden ausschließlich am N-Modell verwendet. Es war als sehr wartungsarmes Fahrzeug zum Gebrauch in Gegenden mit geringem Verkehrsaufkommen (z. B. in der Land- und Forstwirtschaft) konzipiert. Es kostete unverändert zum S 50 N 1200 Mark. Die Produktion lief 1987 aus, weil die 3. Verordnung zur Änderung der StVZO der DDR ab 1988 Blinker für Kleinkrafträder vorschrieb.
+
+
+=== S 51 B ===
+
+Das „B“ stand für Blinker, im Volksmund auch für „Besser“ verwendet. Dieses Modell hatte Blinker, hydraulische Hinterradstoßdämpfer, Zündschloss, einen Bleiakkumulator und wurde in drei verschiedenen Varianten gebaut:
+
+S 51 B1-3 – 3-Gang-Getriebe, 25-W-Scheinwerfer, Unterbrecherzündung. Diese Variante wurde nur bis 1988 gebaut.
+S 51 B1-4 – 4-Gang-Getriebe, 25-W-Scheinwerfer, Unterbrecherzündung. Ab 1989 nannte sich dieses Modell S 51/1B. Neupreis: 1845 Mark (Stand 1986).
+S 51 B2-4 – 4-Gang-Getriebe, 35-W-Scheinwerfer, Elektronikzündung. Die Hochspannungskondensatorzündung (bereits ab 1976 am S 50 B2 verfügbar) war für die damalige Zeit bei einem Kleinkraftrad fortschrittlich und arbeitete verschleiß- und wartungsfrei, sodass sich die Zuverlässigkeit der Fahrzeuge erhöhte. Im Gegensatz zu den anderen B-Modellen war dieses Modell von Anfang an auch im Farbton „Billardgrün“ erhältlich und am „S 51-electronic“ Schriftzug auf den Seitendeckeln zu erkennen. Zusätzlich gab es bei dieser Ausführung ein im Durchmesser auf 60 mm vergrößertes, bis 100 km/h reichendes Tachometer mit Blinkkontrollleuchte, sowie freiliegende Federn der Federbeine hinten. Diese waren anfangs schwarz plastbeschichtet. In dieser Version kostete das Fahrzeug 1995 Mark der DDR. Mitte 1983 wurde die Ausstattung dieses Modells mit Details verbessert, die zum Teil bereits 1979 präsentiert, damals aber nicht in Serie realisiert wurden: Auf 120 mm vergrößerte, beidseitig statt nur links montierte Rückspiegel, Handhebel mit leicht veränderter Form, ein strukturierter Sitzbankbezug und Faltenbälge statt Staubabstreifer als Gabelschutz. Dadurch änderte sich die Bezeichnung zu S 51 B2-4/1. Ab 1989 hieß es schließlich S 51/1 C1.
+
+
+=== S 51 E ===
+
+Das „E“ stand für Enduro. Der Serienanlauf dieses Modells erfolgte im November 1981, sodass 1981 gut 700 Stück gebaut wurden. Diese Ausführung war nicht nur geländegängiger, sondern rundete auch die Ausstattung nach oben hin ab. Zwei zusätzliche Rahmenverstrebungen vom Lenkkopf zum Motorlager/Schwingenbolzen, die sogenannten Unterzugstreben, sollten den Rahmen für den Geländeeinsatz verstärken. Zur Vermeidung von Bodenkontakt gab es einen hochgezogenen Krümmer mit hochliegendem Auspuff und Hitzeschutz aus Lochblech. Der Seitendeckel auf der rechten Seite musste dazu geändert werden, außerdem wurden die Blinker hinten höher angeordnet, um der unmittelbaren Einwirkung der Auspuffgase zu entgehen. Grobstollige Bereifung (Profil K32), ein hochgezogener, 700 mm breiter Lenker, gekürzte Schutzbleche ohne Seitenstreben, zum Teil Stahlfelgen, breiterer Fußrastenträger und leicht schräg gestellte Fußrasten und ein klappbarer Kickstarter waren weitere Anpassungen für mehr Geländegängigkeit. Zudem hatte der Gepäckträger einen niedrigeren Bügel, um Verletzungen beim Abrutschen von der Sitzbank im Gelände zu vermeiden. Weitere Merkmale, die später auch an anderen S 51-Modellen Einzug hielten, waren eine strukturierte Sitzbank mit angehobenem Hinterteil, ein zweiter 120-mm-Rückspiegel, der größere Tachometer mit 100 km/h-Skala (diesen gab es bereits am Modell B2-4), verstellbare Federbeine am Hinterrad, Faltenbälge an der Telegabel, ein vergrößertes Rücklicht Typ BSL-122 und ein geänderter, größerer Simson-Schriftzug. Als Motor wurde die Viergang-Variante mit elektronischer Zündung eingebaut. Es war das einzige Simson-S 51-Modell, an dem serienmäßig Metallic-Lack verwendet wurde (metallic-silbergrau). Im Testbericht der damaligen Fachpresse wurde die Begehrtheit dieses Modells herausgestellt, gleichzeitig aber ein fünfter Gang für Geländefahrten als wünschenswert angesehen. Der Preis betrug 2390 Mark.
+
+S 51 E/4 – Simson reichte 1984 dieses Modell nach, um dem Wunsch nach einem preisgünstigen Enduro-Modell nachzukommen. Es besaß die Minimalelektrik des N-Modells, 25-W-Scheinwerfer, Unterbrecherzündung und verfügte nicht, wie die anderen Endurovarianten, über die verstellbare Hinterradfederung. Es hatte Stahlfelgen und einen Seitengepäckträger. Wie auch das N-Modell durfte die E/4 aufgrund geänderter Verkehrsbestimmungen nur bis 1987 produziert werden.
+S 51 E II – Dieses Modell konnte ab 1987 geordert werden. Es hatte einen hochgezogenen Kunststoffkotflügel, welcher einer oberen Klemmbrücke bedurfte, Seitenständer und die neben den Frontscheinwerfer verlegte Hupe. Außerdem gab es dieses Modell auch mit nur einem Spiegel. 1989 änderte sich die Bezeichnung in S 51/1 E.
+
+
+=== S 51 C ===
+
+Das „C“ stand für „Comfort“. Dieses Modell wurde ab Januar 1983 gebaut und basierte auf dem Modell S 51 B2-4. Darüber hinausgehend gab es am Comfort noch Drehzahlmesser mit Fernlichtkontrolleuchte, Seitenständer, Lackierung der Kotflügel in Tankfarbe im Farbton atlasweiß, Faltenbälge an der Telegabel, eine schwarze Lackierung für den Motor, eine aufgepolsterte Sitzbank, die aus den Enduromodellen bekannte verstellbare Hinterradfederung, einen klappbaren Kickstarter, einen zweiten 120-mm-Rückspiegel, einen Bremslichtkontakt auch für die Vorderradbremse, neue Handhebel am Lenker und neues Reifenprofil. Die Form der Seitendeckel wurde leicht geändert. Die kantigere Form passte nun besser zu dem bereits 1978 neu geformten Tank. Das Modell kostete entsprechend mehr. 1989 wurde es umbenannt in S 51/1 C.
+
+
+=== S 70 ===
+1983 wurde die S 70 vom S 51 abgeleitet und unterschied sich vor allem durch den größeren Motor mit 70 cm³ und eine zulässige Höchstgeschwindigkeit von mehr als 60 km/h. Deshalb handelt es sich beim S 70 damals wie heute um ein zulassungspflichtiges Leichtkraftrad.
+
+
+=== Zubehör ===
+Durch diverse Anbauteile, wie etwa eine Knieschutzdecke, Beinschild und Kofferträger (zur Montage der auch bei MZ verwendeten 26-Liter Pneumant-Koffer) konnte man den Gebrauchswert des Mokicks steigern. Auch eine Anhängerkupplung und -steckdose konnten angebaut werden. Beim Anschließen des Steckers des Anhängers wurde die rückwärtige Beleuchtung des Zugfahrzeugs außer Betrieb gesetzt. Die zulässige Anhängelast betrug 60 kg bei einer zulässigen Höchstgeschwindigkeit des Gespanns von 40 km/h.
+
+
+== Baukastenprinzip ==
+Die Modularität des S 51-Aufbaus und bei Simson generell zeigt sich beispielhaft darin, dass die kompletten Laufräder samt Naben vorne und hinten identisch und sogar kompatibel mit den Simson-Mokicks der Vogelserie sind. Ein anderes Beispiel ist die Konstruktion der elektronischen Zündung, bei der das Motorgehäuse der anderen S 51-Modelle mit Unterbrecherzündung verwendet werden konnte, weil die Außenmaße von Grundplatte und Polrad ganz bewusst nicht verändert wurden. Der gesamte Motor M541 wurde mit Blick auf große Variationsmöglichkeiten hin konstruiert. Er blieb bis zur Werksschließung 2002 Grundlage der meisten Simson-Modelle und ist bis heute eine beliebte Basis für verschiedenste Umbau- und Tuningmaßnahmen. Auch Federbeine, Auspuff, Bremsen, Vergaser, Luftfilter, Sitzbank und andere Teile mehr sind nicht nur innerhalb der S 51-Reihe hinweg beliebig austauschbar, sondern auch kompatibel mit vielen anderen Simson-Modellen. Von der elektronischen Zündung abgesehen gibt es am S 51 im Prinzip keine Teile, die nur beschwerlich oder gar nicht repariert werden können.
+
+
+== Verbreitung und Verfügbarkeit ==
+In der DDR war die S 51 insbesondere bei der Jugend, aber auch in breiten Bevölkerungsgruppen sehr beliebt, sodass trotz des großen Produktionsausstoßes oftmals Wartezeiten für ein neues Fahrzeug in Kauf genommen werden mussten. Sie waren aufgrund der DDR-Führerscheinregelungen auch für Jugendliche ab 15 Jahren fahrbar. Oft kauften sich die Jugendlichen das Fahrzeug von ihrem „Jugendweihegeld“, den Geldgeschenken der Verwandten zur Jugendweihe. Schon damals waren die S 51-Mokicks ein beliebter Gegenstand individueller Umbau- und Aufwertungsmaßnahmen. Nach der politischen Wende 1989/1990 verloren die Fahrzeuge rasch an Wertschätzung mit entsprechendem Wertverlust, sie blieben aufgrund der 60-km/h-Ausnahmeregelung aber weiterhin beliebt. Seitdem verzeichnet die S 51 kontinuierlich Wertzuwächse, alltagstaugliche Fahrzeuge werden inzwischen oberhalb von 3000 € gehandelt.
+Durch die große Verbreitung der S 51 – es wurden über eine Million Fahrzeuge gebaut – existiert auch heute noch ein großer Markt inklusive Herstellung von Ersatz- und Tuningteilen. Seit 2009 wird der Motor M541 mit 4-Gang-Getriebe von der MZA Meyer-Zweiradtechnik GmbH sogar wieder vollständig neu produziert. Zudem werden Umbau-Sets angeboten, mit denen herkömmliche S 51 beispielsweise auf die Enduro-Version oder auf eine zeitgemäßere 12-V-Elektrik umgerüstet werden können.
+
+
+== Fahrerlaubnisverordnung ==
+In Deutschland ist zum Fahren dieser Kleinkrafträder ein Führerschein der Klasse AM ausreichend, welcher normalerweise nur für Kleinkrafträder mit bis zu 45 km/h Höchstgeschwindigkeit gilt. Aufgrund der Fahrerlaubnisverordnung (§§ 76 FeV, Nr. 8 § 6 Abs. 1) und des Einigungsvertrages (Kapitel XI, Sgb. B, Abschnitt III, Ziffer 2, Maßgabe 21) darf die Simson S 51 jedoch, trotz einer Höchstgeschwindigkeit von 60 km/h, mit einem Führerschein der Klasse AM (ehemals M) gefahren werden. Voraussetzung dafür ist, dass das jeweilige Fahrzeug bis zum 29. Februar 1992 bereits in Verkehr gekommen war.
+Am 28. Mai 2021 hat der deutsche Bundesrat einem Gesetzentwurf für ein deutschlandweites Mindestalter von 15 Jahren für die Klasse AM zugestimmt. Seit dem Inkrafttreten am 28. Juli 2021 kann damit die Simson S 51 ab 15 Jahren gefahren werden.
+
+
+== Merkmale von Re-Importen ==
+Re-Import Fahrzeuge der Marke Simson besitzen oft eine geringere Ausstattung (Hupe am Lenker anstatt einer elektrischen Hupe, keine Blinker) und besitzen am Typenschild an der Lenkeraufnahme des Rahmens meist Kennzeichnen wie „CM50“, „50ccm“, „CM50ccm“, „C“, „H“, „HA“, „CS“ oder „D“. Das S 51 B-4-D war laut KBA ein Exportmodell für Westdeutschland und entsprechend auf 50 km/h umgerüstet. Außerdem fehlen häufig, aber nicht immer, die Rahmenausleger für die Fußrasten des Sozius, weil die Mokicks in einigen Exportländern nur für Einpersonenbetrieb vorgesehen waren. Ein sicheres Indiz ist dies jedoch nicht, weil auch die Inland-Ausführung „S 51 N“ ohne diese Rahmenausleger und im Übrigen auch ohne Blinker produziert wurde. Das Vorliegen eines original DDR-Registrierscheins weist auf ein Inland-Fahrzeug hin, allerdings sind auch Fälschungen dieser DDR-Papiere im Umlauf. Da auch das KBA keine Möglichkeiten hat, Re-Importe anhand der FIN zu identifizieren, ist ein zweifelsfreier Nachweis, ob es sich um einen Re-Import handelt oder nicht, praktisch mitunter kaum möglich.
+Eigentlich trifft die 60-km/h-Ausnahmeregelung laut Einigungsvertrag nicht auf Re-Importe zu, weil es sich bei Exportfahrzeugen nicht zwingend um Fahrzeuge handeln muss, die Kleinkrafträder im Sinne der Vorschriften der DDR darstellen. Dies ist jedoch eine eher theoretische Erwägung, da die exportierten Fahrzeuge sich baulich innerhalb der Vorschriften der DDR für Kleinkrafträder bewegten, auch wenn dafür damals streng genommen keine Typgenehmigung im Sinne einer Allgemeinen Betriebserlaubnis vorlag. Es gab mehrere politische Initiativen, die sich um eine ‚Gleichbehandlung‘ der re-importierten Fahrzeuge bemühten, z. B. vom Thüringer Landtag. Das hatte inzwischen Erfolg.
+
+
+== Fahrzeugdaten ==
+Hinweis: Die weiterentwickelten S 51/1-Modelle sind in der folgenden Aufstellung nicht enthalten.
+
+
+== Nachfolgemodell „S 52“ ==
+Bereits Mitte der 1980er Jahre gab es Entwicklungen für einen Nachfolger der S 51. Dieses Projekt trug intern die Bezeichnung S 52 (neue Baureihenbezeichnungen bei Simson wurden immer nach dem Schema des „Weiterzählens“ vorgenommen). Es sollte wesentliche Änderungen hinsichtlich des Fahrwerks (wie Zentralfederbein) und der Verkleidung geben. Jedoch wurden Ende der 1980er Jahre keine genügenden Mittel zur Weiterentwicklung bereitgestellt, da zu diesem Zeitpunkt vor allem die Viertakt-Motorentechnik für die PKWs gefördert werden sollte. So verblieb die S 52 im Prototypenstatus. Da es trotzdem ein Nachfolgemodell geben sollte, entschied man, das neue Modell nun „S 53“ zu nennen, das fast die gesamte Konstruktion des S 51 übernahm und bis auf die Verkleidung kaum Neues zu bieten hatte. Ein Versuchsmodell einer S 52 befindet sich heute im Fahrzeugmuseum in Suhl. Seit Oktober 2025 befinden sich im Technikmuseum Magdeburg je ein 1:1 Modell einer S 52-1 und S 52-2. Darüber hinaus präsentiert das Magdeburger Museum ein 1:2,5 Modell einer S 55.
+
+
+== Literatur ==
+Über Stock und Stein – Unterwegs mit einer Simson S 51 Enduro. In: Motor Jahr. transpress VEB Verlag für Verkehrswesen, Berlin 1983, S. 23–28.
+
+
+== Weblinks ==
+
+Meyer-Zweiradtechnik GmbH – Simson Lizenznehmer, Ersatzteilehersteller, Rahmen- und Motorenneubau
+Simmipage – Informationsseite zu Technik mit Anleitungen und Schaltplänen usw.
+S51.de – Informationsseite zu Geschichte und Technik mit Anleitungen usw.
+Interessengemeinschaft zur Erhaltung ostdeutscher Motorräder – Informationsseite S 50/S 51 zu Geschichte und Technik mit Anleitungen usw.
+
+
+== Einzelnachweise ==
