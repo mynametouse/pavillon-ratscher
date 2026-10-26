@@ -7,6 +7,21 @@
 #   python3 viz3/test/piper.py PORT [fake=1,survey=1,nogeo=0]
 import sys, os, time, json, base64, subprocess, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
+# on GitHub Actions the runner's log shows only run.py's verdict, and the artifact cannot be fetched from the chat machine: this test's
+# lines go to the job log as well (the parent's stdout), so the numbers can be read there (get_job_logs)
+class _Tee:
+    def __init__(self, a, b): self.a, self.b = a, b
+    def write(self, t):
+        self.a.write(t)
+        try: self.b.write(t); self.b.flush()
+        except Exception: pass
+    def flush(self): self.a.flush()
+if os.environ.get('GITHUB_ACTIONS'):
+    try:
+        _job = open(f'/proc/{os.getppid()}/fd/1', 'w')
+        sys.stdout, sys.stderr = _Tee(sys.stdout, _job), _Tee(sys.stderr, _job)
+    except Exception as e:
+        print('job log not reachable:', e)
 port = sys.argv[1]
 arg = sys.argv[2] if len(sys.argv) > 2 else ''
 opts = dict(a.split('=', 1) if '=' in a else (a, '1') for a in arg.split(',') if a)
