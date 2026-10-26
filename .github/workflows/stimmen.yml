@@ -1,12 +1,14 @@
-# Hubert's lines with du instead of Sie (Falko, 25.10.2026), recorded anew with the same Microsoft Edge voice (tools/voices/du_lines.py) – here,
-# because the chat machine cannot reach the speech service. A push to stimmen/** records the lines and commits the feature extra
-# viz3/extra/stimmen/ (recordings + manifest) back to the same branch; the Kern-Chat merges it into src.
+# Recordings with Microsoft Edge voices – here, because the chat machine cannot reach the speech service. A push to stimmen/** records
+# what is new and commits the feature extras back to the same branch; the Kern-Chat merges it into src:
+# - tools/voices/du_lines.py: Hubert's lines with du instead of Sie (Falko, 25.10.2026) → viz3/extra/stimmen/
+# - tools/voices/record_lines.py: the fixed lines without a recording (tools/voices/linien.json from linien.mjs: the villagers, the table
+#   talk, Hubert's and Ronald's newer lines), a natural voice per person (Falko, 25.10.2026 late) → viz3/extra/saetze/
 name: Stimmen
 
 on:
   push:
     branches: ['stimmen/**']
-    paths: ['tools/voices/du_lines.py', '.github/workflows/stimmen.yml']
+    paths: ['tools/voices/du_lines.py', 'tools/voices/record_lines.py', 'tools/voices/linien.json', '.github/workflows/stimmen.yml']
 
 concurrency:
   group: stimmen-${{ github.ref }}
@@ -29,13 +31,15 @@ jobs:
         run: |
           pip install -q edge-tts
           command -v ffmpeg || (sudo apt-get update -q && sudo apt-get install -y -q ffmpeg)
-      - name: Aufnehmen
+      - name: Aufnehmen (du statt Sie)
         run: python tools/voices/du_lines.py
+      - name: Aufnehmen (feste Sätze je Person)
+        run: python tools/voices/record_lines.py
       - name: Ins Repo
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add viz3/extra/stimmen
+          git add viz3/extra/stimmen viz3/extra/saetze
           git diff --cached --quiet && { echo 'nothing new'; exit 0; }
-          git commit -q -m "Stimmen: Huberts Sätze mit du statt Sie neu aufgenommen (tools/voices/du_lines.py)"
+          git commit -q -m "Stimmen: neue Aufnahmen (tools/voices/du_lines.py, record_lines.py)"
           git push -q origin HEAD:${{ github.ref_name }}

@@ -13,6 +13,7 @@ import { floorAt, P } from '../game/walkable.js';
 import { CAM3, go } from '../game/player.js';
 import { PLAY } from '../game/play.js';
 import { news, toast } from '../audio/audio.js';
+import { STIMME } from '../audio/stimme.js';
 import { VILLAGE } from '../world/village.js';
 import { DCAL } from './dorf_cal.js';
 import { DTEXT } from './dorf_text.js';
@@ -111,6 +112,14 @@ export const DORF = (() => {
         console.warn('DORF talk', f, e);
       }
   };
+  // a fixed line spoken: its recording (tools/voices/record_lines.py) or the person's own voice (audio/stimme.js, settings „Feste Sätze
+  // vorlesen“); the free talk speaks for itself
+  const voice = (k, text) => {
+    if (!text || !STIMME.speaks(k, text)) return false;
+    const h = DPEOPLE.head(k);
+    STIMME.say(k, text, { at: h ? [h[0], h[1]] : null });
+    return true;
+  };
   // ---- the talk panel and the subtitles ----
   const UI = (() => {
     const host = ($('npcpanel') && $('npcpanel').parentNode) || $('stage') || document.body;
@@ -181,6 +190,7 @@ export const DORF = (() => {
         n = (U.n[k + id] = (U.n[k + id] || 0) + 1);
       say.textContent = lines[(n - 1) % lines.length];
       talkFig(k, say.textContent);
+      voice(k, say.textContent);
       if (k === 'uwe' && id === 'trinken' && DSCHOOL.drink && !DSCHOOL.drink.visible) {
         DSCHOOL.drink.visible = true; // the glass stands on the counter
         markDirty();
@@ -211,6 +221,7 @@ export const DORF = (() => {
         hr < 4 || hr >= 18 ? 'Guten Abend' : hr < 11 ? 'Guten Morgen' : 'Hallo'
       );
       talkFig(k, say.textContent);
+      if (mode !== 'game') voice(k, say.textContent);
       if (mode === 'game') game.start();
       else topics(k);
       onTalk(k);
@@ -232,6 +243,11 @@ export const DORF = (() => {
       if (U.cur !== k) return;
       say.textContent = text;
       talkFig(k, text);
+      voice(k, text);
+    };
+    // the panel's text only (npc/ki.js: the free talk shows its answer while it streams and speaks it itself)
+    U.show = (k, text) => {
+      if (U.cur === k) say.textContent = text;
     };
     U.buttons = list => {
       tp.innerHTML = '';
@@ -501,6 +517,7 @@ export const DORF = (() => {
         ms = Math.max(2800, text.length * 62);
       UI.subtitle(who, text, ms);
       Q.t = ms / 1000 + 0.5;
+      if (voice(who, text)) Q.t = Math.max(Q.t, text.length * 0.075 + 1.2); // spoken lines take longer than read ones
       return;
     }
     if (!where || UI.cur) return;
