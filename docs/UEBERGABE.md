@@ -16,6 +16,7 @@ veröffentlicht.
 
 ## Stand
 
+- **Live: V16w** (`4ff9f90`, 28.10.2026 ~23:55 UTC, Kern-Chat session_01GdUYaP2XXAAEDXZpGWVkBm, Falko: „erstmal alles was weniger aufwendig ist fertig machen und live nehmen“): `feat/verkehr` gemergt (Leute und Autos, Auto anhalten, mitfahren, selbst fahren) und die Stimmenwahl „Wie die Aufnahmen“. Prüfpaket: Tor grün (browser, Straßen); rot nur Meldungs-Jobs: `ktx2` (bekannt), `menu` (erstes Seitenfoto 20–35 s in Software-Grafik, über der 30-s-Grenze – Test danach mit 120 s, lokal 49/49), `v16b-2` (wie schon bei `8d0bdcc`), `v16b-1`/`v16d-1` liefen in die 60-min-Grenze. Die Feature-Jobs dauerten etwa doppelt so lange wie bei `8d0bdcc`; lokal kostet der Verkehr mit vier Spaziergängern und zwei Autos nichts Messbares (gleiche Programme 145, gleiche Schritt- und Bildzeit) – beim nächsten Lauf die Dauern vergleichen. Hinweis: lokale Vergleiche nur mit frisch gebautem `viz3/dist` (alte Figuren dort verfälschen Programme und Startzeit).
 - **Live: V16v** (`PAV_BUILD` src `e95de05`, 26.10.2026 2:47 UTC, Falko: „nimm automatisch live, was nach Tests grün ist, in den nächsten
   6 Stunden (ich bin schlafen)“ – gilt bis ~08:45 UTC): Menü in Seiten, Einführung, Mikrofon im Dorf. Davor V16u (`ec01bde`): KI-Gespräch gleich
   nach dem Schlüssel, Piper „Natürlich“; V16t (`687a8e3`), V16s (`09201b1`). KTX2 weiter nur in der Vorschau.
@@ -103,7 +104,7 @@ Aufträge wörtlich in `docs/plans/auftraege/`, Stand mit `bash tools/agents.sh`
 
 1. **Rückmeldung von Falko zu V16u:** KI-Gespräch am iPhone (Schlüssel, Mikrofon, Sprachausgabe), Stimmen der Dorfbewohner (Edge-Aufnahmen)
    und „Natürlich“ (Piper), Hubert und Ronald tagsüber sichtbar? KTX2 in der Vorschau auf iPhone und Laptop.
-2. **Agent `verkehr`** (`piper` ist gemergt): Bericht lesen, CI-Ergebnisse und Bilder (Artefakt „out“) ansehen, mergen, Vorschau, Falko fragen.
+2. **Agent `verkehr`:** gemergt und live (V16w). Falko fragen, wie es sich anfühlt.
    Danach: Spaziergänger und Fahrer mit `KI.person` anmelden (falls der Agent es nicht schon tut), Piper als Standard-Stimme, wenn schnell genug.
 3. **KI-Gespräche, nächste Schritte** (`docs/features/ki.md`, „Offen“): echte Probe mit Schlüssel auf iPhone und Laptop (ElevenLabs aus dem
    Browser ungetestet); ein kleiner Server für den Schlüssel, damit Sarah und Christoph ohne eigenen reden können; das Weitererzählte am

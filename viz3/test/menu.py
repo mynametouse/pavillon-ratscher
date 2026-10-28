@@ -28,6 +28,8 @@ with lib.browser() as b:
     pg = lib.page(b, 1280, 800, errs=errs)
     E = pg.evaluate
     lib.boot(pg, port, QUERY)
+    # the first page screenshot draws the whole scene once more in software GL – ~20–35 s on CI and in the container, at the 30 s default
+    pg.set_default_timeout(120000)
     # ---------------- the menu ----------------
     ck('every button of the old menu is still there', E(f"{json.dumps(IDS)}.every(id => !!document.getElementById(id))"),
        str(E(f"{json.dumps(IDS)}.filter(id => !document.getElementById(id))")))
