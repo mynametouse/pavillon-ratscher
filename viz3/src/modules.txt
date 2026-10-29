@@ -44,6 +44,7 @@ garden/hof_hubert.js        # Hubert's yard: workshops open to the east, drying 
 garden/hof_auto.js          # Hubert's estate car (about 2005, generic) on its ramp, the bonnet opens (HOFCAR)
 garden/trees.js             # 
 garden/grass.js             # 
+garden/garten_heute.js      # the garden of today: small things on Falko's photos of 26.10.2026 (brush pile, table, parasol, board, stack, logs)
 render/render.js            # render pipeline, quality tiers, HDRI image light, baked GI (and its day/night mixing)
 render/modes.js             # light moods day/gold/dusk, setMode (auto/night → time/daynight.js)
 game/walkable.js            # the walkable model: player state P, phases, walk surfaces and colliders, floor, doors, collision

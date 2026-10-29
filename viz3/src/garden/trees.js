@@ -283,7 +283,22 @@ const GATES = [
   [17.8, 20.4, 1.6], // the small gate by the stream
   [-8.86, 39.08, 2.5], // site.json entrance
 ];
+// the brook's banks are overgrown (photos of 26.10.2026): low bushes and tall weeds just outside both top edges of the ditch, with gaps;
+// none at the bridge
+function bankBushes() {
+  for (let t = 1; t < STREAM.L0 - 1; t += 1.5) {
+    if (Math.abs(t - STREAM.TB) < 3.5) continue;
+    for (const side of [-1, 1]) {
+      if (rnd() < 0.3) continue;
+      const [x, y] = STREAM.wpt(t + rr(-0.5, 0.5), STREAM.OFF + side * (STREAM.WT + rr(0.35, 1.0)));
+      const r = rr(0.8, 1.3);
+      if (nearPath(x, y, 1.2) || inBuilding(x, y, r)) continue;
+      addTreeInst(rnd() < 0.5 ? 'bushA' : 'bushB', x, y, rr(1.4, 2.3), r);
+    }
+  }
+}
 function hedges() {
+  bankBushes();
   const P = S0.garden,
     dense = (x, y) => y > 18 || y < -36 || (x < -4 && y < -18),
     sparse = (x, y) => x > 10 && y > -36 && y <= 18;

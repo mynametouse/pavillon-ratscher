@@ -197,6 +197,7 @@ export const STREAM = (() => {
     paintMask,
     U,
     N,
+    L0,
     OFF,
     WT,
     WB,

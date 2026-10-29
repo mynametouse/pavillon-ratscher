@@ -34,6 +34,7 @@ export function todayLook(mat, todayHex, planHex) {
     base.b * (t.b / Math.max(p.b, 1e-3))
   );
   LOOKS.push({ mat, base, today });
+  mat.userData.own = true; // kept out of the colour palette (garten_kit paletteize bakes a plain colour once – the look would not switch)
   lookPh = -1;
   return mat;
 }
