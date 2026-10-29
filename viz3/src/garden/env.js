@@ -526,7 +526,8 @@ export function mkGroundMat(cut) {
           vec3 lawn2 = texture( tDet, vec3( mat2( 0.8, -0.6, 0.6, 0.8 ) * wq * 0.43 + 0.17, ${LY('lawn')} ) ).rgb;   // second, rotated sample against visible tiling
           lawn = mix( lawn, lawn2, smoothstep( 0.3, 0.7, lnNoise( gW * 0.09 + 11.0 ) ) );
           if ( uHasL2 > 0.5 ) { float lit = texture2D( uLit, vMapUv ).r * ( 0.75 + 0.25 * lnNoise( gW * 0.8 ) ); vec3 lf = texture( tDet, vec3( wq * uL2K, ${LY('lawn2')} ) ).rgb; lawn = mix( lawn, lf * vec3( 0.8, 0.82, 0.86 ), lit * 0.8 ); }
-          vec3 nearC = mix( lawn * vec3( 1.45, 1.4, 1.25 ) * ( 0.8 + 0.4 * clamp( gPaint.g / 0.42, 0.5, 1.5 ) * 0.5 ), grav * 1.1, gMsk.r );
+          // the lawn a fuller green than before (photos of 26.10.2026)
+        vec3 nearC = mix( lawn * vec3( 1.36, 1.47, 1.12 ) * ( 0.8 + 0.4 * clamp( gPaint.g / 0.42, 0.5, 1.5 ) * 0.5 ), grav * 1.1, gMsk.r );   // a fuller green than before (Falko's photos of 26.10.2026)
           gCol = mix( gPaint.rgb, nearC * mix( gTint, vec3( 1.0 ), gMsk.r ), gMsk.g * ( 1.0 - gFade * 0.9 ) ); }
         #endif
         gCol *= mix( vec3( 1.0 ), gTint, ( 1.0 - gMsk.g ) * 0.7 );
