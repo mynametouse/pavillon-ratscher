@@ -17,19 +17,26 @@ import {
   slopeSlab,
   worldOf,
 } from './site_base.js';
+import { GACTS, jar, KM, leaf, paletteize, plant, pot, put, rng, seedTray, wateringCan } from './garten_kit.js';
 // the panes are frosted glass (Milchglas), a few repaired ones yellowed plastic (Falko, 29.10.2026, photos of 26.10.2026) – plain transparent
 // materials like MATS.tint, no new program
-const PANE = plain({ color: 0xeef0ea, roughness: 0.35, metalness: 0, transparent: true, opacity: 0.7, envMapIntensity: 0.8 });
-const PATCH = plain({ color: 0xe2dcb2, roughness: 0.6, metalness: 0, transparent: true, opacity: 0.78, envMapIntensity: 0.5 });
-let paneN = 0;
-  color: 0xe6e5c8,
-  roughness: 0.55,
+const PANE = plain({
+  color: 0xeef0ea,
+  roughness: 0.35,
   metalness: 0,
   transparent: true,
-  opacity: 0.74,
-  envMapIntensity: 0.6,
+  opacity: 0.7,
+  envMapIntensity: 0.8,
 });
-import { GACTS, jar, KM, leaf, paletteize, plant, pot, put, rng, seedTray, wateringCan } from './garten_kit.js';
+const PATCH = plain({
+  color: 0xe2dcb2,
+  roughness: 0.6,
+  metalness: 0,
+  transparent: true,
+  opacity: 0.78,
+  envMapIntensity: 0.5,
+});
+let paneN = 0;
 // Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends now face north and south: turned
 // by 90° about its centre (site data: heading 96°, the long side east–west) and moved 0.5 m north, clear of the hut's new door
 {
