@@ -8,7 +8,7 @@ import { LATE } from '../core/late.js';
 import { rnd, rr, scene, V } from '../core/head.js';
 import { ANISO, grime, markDirty, patchSV, pbrMat, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { B, beam, bldBegin, bldEnd, BUILD, COL, cyl, DOORS, phase, tagPh } from '../core/geo.js';
+import { B, beam, bldBegin, bldEnd, BUILD, COL, cyl, DOORS, phase, tagPh, WALK } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import { boardMat } from './site_base.js';
 phase(null);
@@ -28,6 +28,15 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
     { c: [-1.5, -31.35], az: 0, hx: 3.6, hy: 1.2 },
   ],
 });
+// Falko, 29.10.2026: construction phase 0 shows the garden as it is today – there the workshop is an open lean-to with a table saw and a
+// workbench (photos of 26.10.2026); this hall with the band sawmill, the machines and the log yard comes with phase 1 (SAW_PH)
+export const SAW_PH = 1;
+phase(SAW_PH);
+const C0 = COL.length,
+  W0 = WALK.length,
+  N0 = scene.children.length;
+let NG0 = 0,
+  NG1 = 0;
 {
   const X0 = -6.6,
     X1 = 3.6,
@@ -528,6 +537,8 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
   }
   // --- petrol generator outside the east end, cable to the machines (feat/garage: its tank, refuelling with the red petrol can from the
   //     garage and the stop when it is empty – garden/garage_play.js) ---
+  NG0 = scene.children.length;
+  phase(null); // the generator stands there today too (under the bench of the lean-to it is now; feat/garage refuels it)
   const GEN = { x: 4.35, y: -38.6 };
   {
     const { x, y } = GEN;
@@ -554,6 +565,8 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
     snd: 'generator',
     hidden: true,
   });
+  phase(SAW_PH);
+  NG1 = scene.children.length;
   // --- V15b glue table (Leimtisch) where the first bench stood: a heavy beech top with a bench-dog grid and two hold-down bars (Niederhalter),
   //     parallel clamps on the wall above; a carpenter's bench for scraping, chamfering, oiling and the brand; the tool wall along the south wall ---
   const GT = { x0: -4.4, x1: -2.25, y0: -40.45, y1: -39.6, z: 0.86 };
@@ -1005,7 +1018,7 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
       pos: m.pos,
       r: m.r,
       z: m.z,
-      ph: null,
+      ph: SAW_PH,
       var: null,
       m,
     };
@@ -1099,5 +1112,81 @@ bldBegin('werkstatt', 'Werkstatt Klingenholz', [-1.5, -38.725], {
   placeGLB('ladder', { x: 5.05, y: -38.2, z: 0, face: 270, col: false });
   placeGLB('compost', { x: -8.6, y: -36.3, z: 0, face: 0 });
   placeGLB('spade', { x: -7.35, y: -36.15, z: 0, face: 25, col: false });
+  // meshes made without tagPh (custom roof and machine meshes), colliders and walk surfaces pushed by hand carry no phase: they belong to
+  // the hall too (the generator's stay)
+  for (let i = N0; i < scene.children.length; i++)
+    if (i < NG0 || i >= NG1)
+      scene.children[i].traverse(o => {
+        if (o.userData.ph === undefined) o.userData.ph = SAW_PH;
+      });
+  for (let i = C0; i < COL.length; i++) if (COL[i][7] == null && COL[i][6] !== 'gen') COL[i][7] = SAW_PH;
+  for (let i = W0; i < WALK.length; i++) if (WALK[i][6] == null) WALK[i][6] = SAW_PH;
+  // ---- today (phase 0 only): the open lean-to of the photos of 26.10.2026 – timber posts, a mono-pitch roof of corrugated sheets falling
+  //      to the back, a plywood back wall with the tool board, a workbench, a table saw on its stand, a drawer cabinet; beside it the red
+  //      machine and a pile of offcuts, both under blue tarpaulins ----
+  phase(0, SAW_PH);
+  {
+    const LX0 = -5.6,
+      LX1 = -0.6,
+      LYB = -40.5,
+      LYF = -38.0,
+      ZF = 2.35,
+      ZB = 1.98;
+    const tarp = plain({ color: 0x2d4170, roughness: 0.85 }),
+      ply = plain({ color: 0xc9a979, roughness: 0.85 }),
+      grey = plain({ color: 0xb9bcbe, roughness: 0.6, metalness: 0.2 });
+    for (const x of [LX0 + 0.06, (LX0 + LX1) / 2, LX1 - 0.06]) {
+      B(x - 0.05, x + 0.05, LYF - 0.05, LYF + 0.05, 0, ZF, MAT.kvh, { grain: 'z' });
+      B(x - 0.05, x + 0.05, LYB - 0.05, LYB + 0.05, 0, ZB, MAT.kvh, { grain: 'z' });
+      beam([x, LYF + 0.35, ZF + 0.02], [x, LYB - 0.3, ZB - 0.02], 0.06, 0.12, MAT.kvh);
+    }
+    B(LX0, LX1, LYF - 0.06, LYF + 0.06, ZF - 0.14, ZF, MAT.kvh, { grain: 'x', col: false });
+    // the roof: corrugated sheets in strips, the front overhanging
+    for (let x = LX0 - 0.3; x < LX1 + 0.3; x += 0.9)
+      beam([x + 0.45, LYF + 0.4, ZF + 0.1], [x + 0.45, LYB - 0.35, ZB + 0.06], 0.92, 0.02, MAT.corr, { cast: true });
+    // back wall of plywood, the tool board and the shelf with boxes
+    B(LX0, LX1, LYB - 0.03, LYB + 0.0, 0, ZB, ply, { grain: 'x' });
+    B(-4.9, -2.9, LYB + 0.0, LYB + 0.02, 1.05, 1.75, MAT.osb, { col: false });
+    for (let i = 0; i < 9; i++)
+      B(-4.8 + i * 0.21, -4.75 + i * 0.21, LYB + 0.02, LYB + 0.06, 1.2, 1.55 - (i % 3) * 0.1, M.steel, { col: false });
+    B(-2.6, -1.2, LYB, LYB + 0.3, 1.5, 1.53, ply, { col: false });
+    B(-2.5, -2.1, LYB + 0.02, LYB + 0.26, 1.53, 1.78, M.black, { col: false });
+    // workbench along the back wall
+    B(-5.4, -3.0, LYB + 0.05, LYB + 0.7, 0.86, 0.9, M.beech);
+    for (const x of [-5.3, -3.1])
+      for (const y of [LYB + 0.12, LYB + 0.62])
+        B(x - 0.03, x + 0.03, y - 0.03, y + 0.03, 0, 0.86, MAT.kvh, { col: false });
+    B(-5.35, -3.05, LYB + 0.1, LYB + 0.66, 0.25, 0.28, ply, { col: false });
+    // table saw on its stand, in front of the bench
+    B(-2.8, -2.0, -39.55, -38.95, 0.84, 0.9, M.machineL);
+    B(-2.62, -2.18, -39.45, -39.05, 0.55, 0.84, M.dark, { col: false });
+    for (const x of [-2.75, -2.05])
+      for (const y of [-39.5, -39.0]) beam([x, y, 0], [x + (x < -2.4 ? 0.1 : -0.1), y, 0.55], 0.03, 0.03, M.steel);
+    B(-2.42, -2.4, -39.3, -39.2, 0.9, 0.98, M.blade, { col: false });
+    // drawer cabinet with the sander on top
+    B(-1.45, -0.9, LYB + 0.05, LYB + 0.6, 0, 1.0, grey);
+    for (let i = 1; i < 5; i++)
+      B(-1.43, -0.92, LYB + 0.6, LYB + 0.61, i * 0.2 - 0.01, i * 0.2 + 0.01, M.dark, { col: false });
+    B(-1.3, -1.05, LYB + 0.2, LYB + 0.42, 1.0, 1.12, M.dark, { col: false });
+    // the red machine east of the lean-to under a blue tarpaulin
+    B(-0.35, 0.35, -40.1, -39.45, 0, 0.72, M.red);
+    B(-0.42, 0.42, -40.17, -39.38, 0.72, 1.05, tarp);
+    B(-0.43, 0.43, -40.18, -39.37, 0.3, 0.72, tarp, { col: false });
+    // offcuts west of the lean-to on pallets, under a blue tarpaulin on a frame
+    B(-7.6, -6.1, -40.0, -38.9, 0, 0.14, MAT.plank);
+    for (let i = 0; i < 6; i++)
+      B(
+        -7.5 + (i % 3) * 0.45,
+        -7.05 + (i % 3) * 0.45,
+        -39.9 + (i > 2 ? 0.5 : 0),
+        -39.45 + (i > 2 ? 0.5 : 0),
+        0.14,
+        0.32 + (i % 2) * 0.1,
+        M.fresh,
+        { col: false }
+      );
+    beam([-7.7, -40.05, 0.9], [-6.0, -38.85, 0.55], 1.9, 0.02, tarp);
+  }
+  phase(null);
 }
 bldEnd();

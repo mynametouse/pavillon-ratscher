@@ -6,6 +6,7 @@ import { BUILD } from '../core/geo.js';
 import { P } from '../game/walkable.js';
 import { SFX } from '../game/play.js';
 import { DN } from '../time/daynight.js';
+import { SAW_PH } from './workshop.js';
 const WLAMP = (() => {
   const Bw = window.BUILD && BUILD.werkstatt,
     g = new THREE.Group();
@@ -38,6 +39,8 @@ const WLAMP = (() => {
   );
   sensor.position.copy(V(-0.52, -36.95, 2.35));
   g.add(sensor);
+  // the battens hang in the hall, which comes with phase 1 (garden/workshop.js); the light stays in the scene (dark) so no shader recompiles
+  for (const o of g.children) if (o.isMesh) o.userData.ph = SAW_PH;
   const S = { on: false, k: 0, away: 0 },
     wp = new THREE.Vector3();
   window.TICKS.push(dt => {
@@ -50,7 +53,7 @@ const WLAMP = (() => {
       typeof P !== 'undefined' && P.mode === 'walk' && Math.hypot(P.x - wp.x, P.y + wp.z) < 6.6 && P.feet < 3;
     if (near) S.away = 0;
     else S.away += dt;
-    const want = dark && (near || (S.on && S.away < 20));
+    const want = (window.PHASE | 0) >= SAW_PH && dark && (near || (S.on && S.away < 20));
     if (want !== S.on) {
       S.on = want;
       if (want && window.SFX && SFX.click) SFX.click();

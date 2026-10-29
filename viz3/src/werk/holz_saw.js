@@ -14,7 +14,7 @@ import { scene, V } from '../core/head.js';
 import { ANISO, markDirty } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { BUILD, COL, DOORS } from '../core/geo.js';
-import { WORKS } from '../garden/workshop.js';
+import { SAW_PH, WORKS } from '../garden/workshop.js';
 import { mulberry } from '../garden/grass.js';
 import { PLAY, SFX } from '../game/play.js';
 import { QUESTS } from '../game/quests.js';
@@ -318,6 +318,7 @@ export const HOLZSAW = (() => {
       lb = toLoc(b),
       lm = toLoc(m);
     if (Math.abs(lm[0] - MX()) > 0.75 || lm[1] < LY0 - 0.8 || lm[1] > LY1 + 0.8) return null;
+    if ((window.PHASE | 0) < SAW_PH) return null; // the mill comes with phase 1: the log stays on the ground
     const ax = [lb[0] - la[0], lb[1] - la[1]],
       cosA = Math.abs(ax[1]) / (Math.hypot(ax[0], ax[1]) || 1);
     if (cosA < 0.9) {
@@ -688,6 +689,7 @@ export const HOLZSAW = (() => {
   S.rebuildPiles = rebuildPiles;
   // ---------------- the acts at the mill ----------------
   function opAt() {
+    if ((window.PHASE | 0) < SAW_PH) return null; // no band sawmill in the garden of today (construction phase 0)
     const l = curLog();
     if (!l) return null;
     if (!S.clamp)

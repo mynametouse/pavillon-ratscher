@@ -106,6 +106,7 @@ with lib.browser() as b:
         check('stakes opened at the back: the log rolls off the far side into the log yard, onto its timbers', lab and 'links' in lab and st5['st'] == 'ground' and st5['yard'] and st5['side'] < -1.0 and st5['cargo'] == 0 and st5['z'] > 0.22, str(st5))
         cam(Y[0] - 4.0, Y[1] - 3.2, 2.4, Y[0] + 1.2, Y[1] + 0.3, 0.4, 60); shot('h_log_yard')
     if want('fork') or want('saw') or want('stack'):   # a log in the garden: on the fork, to the sawmill
+        E("GAME.setPhase(1)")   # the band sawmill comes with construction phase 1 (phase 0 = the garden of today, Falko 29.10.2026)
         E("TRAILER.uncouple && TRAILER.tow && TRAILER.uncouple(true)")
         lid = E("HOLZ.testLog({ sp: 'spruce', x: -5, y: -17.5, az: 0, L: 4.1, d0: 34, d1: 28 })"); steps(0.2)
         # the tractor west of it, facing east; the tines' middle ~3.1 m ahead of its centre with the fork on the ground
