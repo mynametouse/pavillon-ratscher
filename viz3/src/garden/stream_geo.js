@@ -29,8 +29,31 @@ export const STREAM = (() => {
     const u = Math.min(1, Math.max(0, (x - a) / (b - a)));
     return u * u * (3 - 2 * u);
   };
+  // east of the garden the field path bends south towards the village (OSM track, orthophoto) and the brook keeps to its south side
+  // (Falko, 30.10.2026: no bridge there): the centre line follows the path's offset from the straight axis, [t, o] of the track's points
+  const BEND = [
+    [52, 0],
+    [56, 0.4],
+    [63.4, 3.3],
+    [76.8, 12.1],
+    [92.6, 23.1],
+    [108.3, 31.8],
+    [130, 45],
+  ];
+  const bend = t => {
+    if (t <= BEND[0][0]) return 0;
+    for (let i = 1; i < BEND.length; i++)
+      if (t <= BEND[i][0]) {
+        const [t0, o0] = BEND[i - 1],
+          [t1, o1] = BEND[i];
+        return o0 + ((o1 - o0) * (t - t0)) / (t1 - t0);
+      }
+    const [t0, o0] = BEND[BEND.length - 2],
+      [t1, o1] = BEND[BEND.length - 1];
+    return o1 + ((o1 - o0) * (t - t1)) / (t1 - t0);
+  };
   const cOff = t =>
-    OFF + ss(6.5, 13, Math.abs(t - TB)) * (0.45 * Math.sin(t / 6.3 + 1.1) + 0.22 * Math.sin(t / 2.6 + 0.4)); // gentle meander, straight at the bridge
+    OFF + bend(t) + ss(6.5, 13, Math.abs(t - TB)) * (0.45 * Math.sin(t / 6.3 + 1.1) + 0.22 * Math.sin(t / 2.6 + 0.4)); // gentle meander, straight at the bridge
   function prof(a) {
     a = Math.abs(a);
     if (a >= WT) return 0;
@@ -63,7 +86,7 @@ export const STREAM = (() => {
     let a = -400,
       b = 400;
     const inside = t => {
-      const p = wpt(t, OFF);
+      const p = wpt(t, cOff(t));
       return Math.abs(p[0]) < 119 && Math.abs(p[1]) < 119;
     };
     while (!inside(a)) a += 0.5;

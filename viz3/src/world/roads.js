@@ -153,8 +153,16 @@ export const ROADS = (() => {
       const p = new Float32Array(n * 2);
       for (let i = 0; i < n * 2; i++) p[i] = a[o + i] / 10;
       o += n * 2;
-      S.ways.push({ kind, surf, w, fl, p, mark: (M.mark || [])[kind] || 0 });
+      S.ways.push({ kind, surf, w, fl: notBridge(fl, p) ? fl & ~1 : fl, p, mark: (M.mark || [])[kind] || 0 });
     }
+  }
+  // OpenStreetMap marks a bridge on the field path east of the garden (by Ronald's garden, about (37, 11)); there is none – the path runs on
+  // into the village on the ground and the brook stays south of it (Falko, 30.10.2026; orthophoto). Bridges within 6 m of that spot are drawn
+  // as ground. (The garden's own bridge over the brook is garden/stream.js, not an OSM way.)
+  function notBridge(fl, p) {
+    if (!(fl & 1)) return false;
+    for (let i = 0; i < p.length; i += 2) if (Math.hypot(p[i] - 37, p[i + 1] - 11.5) < 6) return true;
+    return false;
   }
   function raster() {
     const t0 = performance.now();
