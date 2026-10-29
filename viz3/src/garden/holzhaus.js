@@ -1,10 +1,13 @@
 import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { V } from '../core/head.js';
+import { plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { beam, bldBegin, bldEnd, boardLeaf, cyl } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import {
+  planned,
+  todayLook,
   BLD,
   faceOf,
   FOOT,
@@ -24,6 +27,9 @@ import {
   slopeSlabX,
   worldOf,
 } from './site_base.js';
+// today (phase 0) the hut is lemon yellow with white window frames (Falko's photos of 26.10.2026); ochre with dark frames as planned
+todayLook(MATS.ochre, 0xe4c02a, 0xc8903c);
+const FRAME = todayLook(plain({ color: 0x6a3f2b, roughness: 0.7 }), 0xeeede6, 0x6a3f2b);
 import { keysBegin, keysSkip, KM, interiorNoShadow, paletteize, plant, pot, put, rng, twin } from './garten_kit.js';
 // the atelier's floor: its own copy of the bungalow's (the same shader program), so the interior styles can change it (garden/atelier.js)
 export const ATF = twin(KM.floor);
@@ -87,13 +93,13 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
   gB(g, -hx + T, hx - T, -hy + T, hy - T, zf, zf + 0.02, ATF, { grain: 'x', cast: false }); // the atelier's own floor (styles)
   // Fensterband West: alter Holzrahmen dunkelbraun, 3 Felder; kleines Fenster Süd; Türzarge Nord, Tritt davor
   lwin(g, 'y', -1.5, 1.5, -hx + T / 2, zf + 0.95, zf + 2.05, {
-    frame: MATS.oldFrame,
+    frame: FRAME,
     fw: 0.06,
     depth: T + 0.02,
     mull: [-0.5, 0.5],
   });
-  lwin(g, 'x', -1.2, -0.6, -hy + T / 2, zf + 1.05, zf + 1.65, { frame: MATS.oldFrame, fw: 0.05, depth: T + 0.02 });
-  ljamb(g, 'x', DN.a0, DN.a1, hy - T, hy + 0.005, zf, zf + 2.0, MATS.oldFrame);
+  lwin(g, 'x', -1.2, -0.6, -hy + T / 2, zf + 1.05, zf + 1.65, { frame: FRAME, fw: 0.05, depth: T + 0.02 });
+  ljamb(g, 'x', DN.a0, DN.a1, hy - T, hy + 0.005, zf, zf + 2.0, FRAME);
   gB(g, DN.a0 - 0.1, DN.a1 + 0.1, hy, hy + 0.5, 0.17, zf - 0.03, MAT.plank, { grain: 'x' });
   gB(g, DN.a0 - 0.1, DN.a1 + 0.1, hy, hy + 0.5, 0, 0.17, MAT.conc); // Tritt
   // roof: rafters along x (low at -x / garden side, high at +x / boundary), OSB, shingles, old bus roof hatch; gutter on the low west eave
@@ -213,8 +219,8 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     z0: zf + 0.01,
     z1: zf + 1.99,
   });
-  // a long flower box under the window band (west), on two brackets
-  {
+  // a long flower box under the window band (west), on two brackets – planned, not there today (photos 26.10.2026)
+  planned(g, () => {
     const bx = -hx - 0.02,
       bz = zf + 0.78;
     gB(g, bx - 0.2, bx, -1.25, 1.25, bz, bz + 0.16, MAT.larch);
@@ -222,7 +228,7 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
       gB(g, bx - 0.16, bx, y - 0.02, y + 0.02, bz - 0.14, bz, MAT.blacksteel, { cast: false });
     for (let i = 0; i < 8; i++)
       plant(g, bx - 0.1, -1.1 + i * 0.315, bz + 0.14, 0.2, i % 3 === 1 ? 'herb' : 'geranium', R);
-  }
+  });
   // outside the south wall: the hose reel on the wall, a wheelbarrow with soil parked below the small window
   GL('hose_reel', 0.62, -hy - 0.13, 0.75, 90, { h: 0.5, col: false });
   {

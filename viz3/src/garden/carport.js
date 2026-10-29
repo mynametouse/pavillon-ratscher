@@ -22,6 +22,8 @@ import {
   wheel,
   worldOf,
 } from './site_base.js';
+// the caravan's roof stands on white-painted steel posts with knee braces (photos 26.10.2026), not on timber
+const FRAMEW = MATS.white;
 import { bulbMat, GLAMPS, GSEATS, mergeGroup, put, twin } from './garten_kit.js';
 // feat/einrichtung: the caravan's own materials (twins: the same shader programs) – the interior styles change their colours
 export const CW = {
@@ -49,21 +51,21 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
     for (const sy of [-1, 1]) {
       const zt = sy > 0 ? zh : zl,
         y = sy * py;
-      gB(g, x - 0.06, x + 0.06, y - 0.06, y + 0.06, 0.12, zt, MAT.kvh, { grain: 'z' });
+      gB(g, x - 0.06, x + 0.06, y - 0.06, y + 0.06, 0.12, zt, FRAMEW, { grain: 'z' });
       gB(g, x - 0.08, x + 0.08, y - 0.08, y + 0.08, 0, 0.12, MAT.galv);
-      if (x !== 0) beam([x, y, zt - 0.75], [x - Math.sign(x) * 0.7, y, zt - 0.02], 0.06, 0.1, MAT.kvh, { parent: g });
-      beam([x, y, zt - 0.6], [x, y - sy * 0.55, zt - 0.02], 0.06, 0.1, MAT.kvh, { parent: g });
+      if (x !== 0) beam([x, y, zt - 0.75], [x - Math.sign(x) * 0.7, y, zt - 0.02], 0.06, 0.1, FRAMEW, { parent: g });
+      beam([x, y, zt - 0.6], [x, y - sy * 0.55, zt - 0.02], 0.06, 0.1, FRAMEW, { parent: g });
     }
   for (const sy of [-1, 1]) {
     const zt = sy > 0 ? zh : zl;
-    gB(g, -hx, hx, sy * py - 0.06, sy * py + 0.06, zt, zt + 0.2, MAT.kvh, { grain: 'x' });
+    gB(g, -hx, hx, sy * py - 0.06, sy * py + 0.06, zt, zt + 0.2, FRAMEW, { grain: 'x' });
   } // Pfetten
   const k = (zh - zl) / (2 * py),
     zr = y => zl + 0.2 + (y + py) * k; // underside of the rafters
   const nR = 9;
   for (let i = 0; i < nR; i++) {
     const x = -hx + 0.08 + (i * (b.L - 0.16)) / (nR - 1);
-    beam([x, -hy - 0.25, zr(-hy - 0.25) + 0.08], [x, hy + 0.25, zr(hy + 0.25) + 0.08], 0.08, 0.16, MAT.kvh, {
+    beam([x, -hy - 0.25, zr(-hy - 0.25) + 0.08], [x, hy + 0.25, zr(hy + 0.25) + 0.08], 0.08, 0.16, FRAMEW, {
       parent: g,
     });
   }

@@ -2,13 +2,50 @@
 // Walls are built with real openings (outside cladding and inside lining), every door opens outwards and every room is walkable.
 import * as THREE from 'three';
 import { rnd, rr, scene, V } from '../core/head.js';
-import { ANISO, dimIndoor, grime, patchSV, pbrMat, plain, TEXMAN } from '../core/assets.js';
+import { ANISO, dimIndoor, grime, markDirty, patchSV, pbrMat, plain, TEXMAN } from '../core/assets.js';
+import { KERN } from '../core/kern.js';
 import { MAT } from '../core/mats.js';
 import { B, COL, hingeDoor, PH, PH_END, phase, siteUV, tagPh, WALK } from '../core/geo.js';
 import { cutOps } from '../pavilion/house_base.js';
 import { S0 } from './env.js';
 phase(null);
 export const BLD = S0.bld;
+// ---- construction phase 0 shows the garden as it is today (Falko's photos of 26.10.2026); the planned look comes with phase 1 ----
+// planned(g, fn): everything fn adds to g (shutters, window boxes, panels …) is shown from phase 1 on only (userData.ph, as tagPh)
+export function planned(g, fn, from = 1) {
+  const n0 = g.children.length;
+  fn();
+  for (let i = n0; i < g.children.length; i++)
+    g.children[i].traverse(o => {
+      if (o.userData.ph === undefined || o.userData.ph < from) o.userData.ph = from;
+    });
+}
+// todayLook(mat, todayHex, planHex): the material shows todayHex in phase 0 and its own (planned) colour from phase 1 on – the colour is a
+// multiplier on the material, so a textured one keeps its texture; no new shader program, checked once per frame (one number compare)
+const LOOKS = [];
+let lookPh = -1;
+export function todayLook(mat, todayHex, planHex) {
+  const base = mat.color.clone(),
+    t = new THREE.Color(todayHex),
+    p = new THREE.Color(planHex);
+  const today = new THREE.Color(
+    base.r * (t.r / Math.max(p.r, 1e-3)),
+    base.g * (t.g / Math.max(p.g, 1e-3)),
+    base.b * (t.b / Math.max(p.b, 1e-3))
+  );
+  LOOKS.push({ mat, base, today });
+  lookPh = -1;
+  return mat;
+}
+export function applyLooks(ph) {
+  if (ph === lookPh) return false;
+  lookPh = ph;
+  for (const L of LOOKS) L.mat.color.copy(ph > 0 ? L.base : L.today);
+  return true;
+}
+KERN.tick(() => {
+  if (LOOKS.length && applyLooks(window.PHASE | 0)) markDirty();
+}, 'garden/site_base:looks');
 // local frame: x along the long side (compass heading az), y to the left of it (az - 90), z up
 export function siteGroup(b) {
   const g = new THREE.Group();

@@ -117,12 +117,13 @@ import { GSZ, mkGroundMat } from './env.js';
   })();
   const WT0 = { value: 0 };
   const waterMat = new THREE.MeshStandardMaterial({
-    color: 0x3a5446,
+    // dark, slow brook water under trees (photos 26.10.2026): almost black-brown, the sky only faintly mirrored
+    color: 0x1e2419,
     roughness: 0.05,
     metalness: 0,
     transparent: true,
-    opacity: 0.64,
-    envMapIntensity: 1.15,
+    opacity: 0.86,
+    envMapIntensity: 0.75,
     normalMap: wnTex,
     normalScale: new THREE.Vector2(0.32, 0.32),
     depthWrite: false,

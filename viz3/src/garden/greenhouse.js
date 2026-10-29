@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { rnd, V } from '../core/head.js';
-import { instanceVariants, MODELS } from '../core/assets.js';
+import { instanceVariants, MODELS, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { beam, bldBegin, bldEnd, flapDoor, tagPh } from '../core/geo.js';
 import {
@@ -17,6 +17,15 @@ import {
   slopeSlab,
   worldOf,
 } from './site_base.js';
+// the panes are milky twin-wall polycarbonate, yellowed (photos 26.10.2026) – a plain transparent material like MATS.tint, no new program
+const PANE = plain({
+  color: 0xe6e5c8,
+  roughness: 0.55,
+  metalness: 0,
+  transparent: true,
+  opacity: 0.74,
+  envMapIntensity: 0.6,
+});
 import { GACTS, jar, KM, leaf, paletteize, plant, pot, put, rng, seedTray, wateringCan } from './garten_kit.js';
 // Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends now face north and south: turned
 // by 90° about its centre (site data: heading 96°, the long side east–west) and moved 0.5 m north, clear of the hut's new door
@@ -62,7 +71,7 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
   for (const y of [-dy, dy]) gB(g, hx - f, hx + f, y - f, y + f, 0.12, zd + f, MAT.alu, { grain: 'z' });
   gB(g, hx - f, hx + f, -dy, dy, zd, zd + 2 * f, MAT.alu, { grain: 'y' });
   const glass = (x0, x1, y0, y1, z0, z1) => {
-    const m = gB(g, x0, x1, y0, y1, z0, z1, MAT.glass, { cast: false, recv: false });
+    const m = gB(g, x0, x1, y0, y1, z0, z1, PANE, { cast: false, recv: false });
     if (m) m.renderOrder = 2;
   };
   for (const sy of [-1, 1]) glass(-hx, hx, sy * hy - 0.003, sy * hy + 0.003, 0.12, ze);
@@ -88,7 +97,7 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     }
     sh.closePath();
     const geo = new THREE.ShapeGeometry(sh);
-    const me = new THREE.Mesh(geo, MAT.glass);
+    const me = new THREE.Mesh(geo, PANE);
     me.position.copy(V(sx * hx, 0, ze));
     me.rotation.y = Math.PI / 2;
     me.renderOrder = 2;
@@ -110,7 +119,7 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
       hy + 0.02,
       0.006,
       sy * -1 * (zr - ze),
-      MAT.glass,
+      PANE,
       { cast: false }
     );
     m.renderOrder = 2;
@@ -218,8 +227,8 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
       add = (bw, bh, bd, x, y, z, m) => {
         const me = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), m);
         me.position.set(x, y, z);
-        me.castShadow = m !== MAT.glass;
-        if (m === MAT.glass) me.renderOrder = 2;
+        me.castShadow = m !== PANE;
+        if (m === PANE) me.renderOrder = 2;
         lg.add(me);
       };
     add(0.035, h, 0.03, 0.0175, h / 2, 0, MAT.alu);
@@ -227,7 +236,7 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
     add(w, 0.035, 0.03, w / 2, 0.0175, 0, MAT.alu);
     add(w, 0.035, 0.03, w / 2, h - 0.0175, 0, MAT.alu);
     add(w, 0.025, 0.03, w / 2, h * 0.45, 0, MAT.alu);
-    add(w - 0.07, h - 0.07, 0.006, w / 2, h / 2, 0, MAT.glass);
+    add(w - 0.07, h - 0.07, 0.006, w / 2, h / 2, 0, PANE);
     add(0.02, 0.14, 0.03, w - 0.06, h * 0.52, 0.025, MAT.blacksteel);
     ldoor('greenhouse', b, lg, { lx: hx + 0.01, ly: dy - 0.01, dir: [0, -1], w, sign: 1, z0: 0.13, z1: zd - 0.01 });
   }
@@ -242,12 +251,12 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
       add = (bw, bh, bd, x, y, z, m) => {
         const me = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), m);
         me.position.set(x, y, z);
-        if (m === MAT.glass) me.renderOrder = 2;
+        if (m === PANE) me.renderOrder = 2;
         sub.add(me);
       };
     sub.rotation.x = -ang;
     vg.add(sub);
-    add(wv, 0.006, vs, wv / 2, 0.016, -vs / 2, MAT.glass);
+    add(wv, 0.006, vs, wv / 2, 0.016, -vs / 2, PANE);
     add(wv, 0.02, 0.025, wv / 2, 0.016, -vs + 0.0125, MAT.alu);
     add(0.025, 0.02, vs, 0.0125, 0.016, -vs / 2, MAT.alu);
     add(0.025, 0.02, vs, wv - 0.0125, 0.016, -vs / 2, MAT.alu);

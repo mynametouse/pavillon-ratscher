@@ -39,6 +39,9 @@ const TREE_KINDS = [
     },
   },
   { key: 'pine', preset: 'Pine Medium', seed: 555, tint: 0xffffff },
+  // the hedge belts round the garden (photos 26.10.2026): hazel, field maple, elder – two bush shapes
+  { key: 'bushA', preset: 'Bush 1', seed: 501, tint: 0xc9d39a },
+  { key: 'bushB', preset: 'Bush 2', seed: 77, tint: 0xd3d49a },
 ];
 const leafDepthMats = {};
 export function buildTreeKind(k) {
@@ -226,6 +229,64 @@ function nearPath(x, y, d) {
   for (const f of window.SITE_FOOT || []) if (inLocal(f.b, x, y, f.hx + 0.35, f.hy + 0.35, f.ox, f.oy)) return true;
   return false;
 }
+// inside the garden polygon (site.json) by at least m metres (m < 0: up to -m outside)
+function inGarden(x, y, m = 0) {
+  const P = S0.garden;
+  let c = false,
+    d = 1e9;
+  for (let i = 0, j = P.length - 1; i < P.length; j = i++) {
+    const [xi, yi] = P[i],
+      [xj, yj] = P[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
+    const ex = xj - xi,
+      ey = yj - yi,
+      t = Math.max(0, Math.min(1, ((x - xi) * ex + (y - yi) * ey) / (ex * ex + ey * ey || 1)));
+    d = Math.min(d, Math.hypot(x - xi - t * ex, y - yi - t * ey));
+  }
+  return c ? d >= m : -d >= m;
+}
+// hedge belts along the garden's edges as on Falko's photos of 26.10.2026: dense on the north side by the field path (with the two gates
+// open), along the south end and the south-west corner behind the workshop; sparse bushes on the east fence; none on the west side, which
+// opens onto Hubert's yard. A bush every ~1.7 m, 1 m inside the edge; never on a path or in a building (nearPath).
+const GATES = [
+  [4.0, 30.6, 2.6], // the double gate from the field path (x, y, half gap)
+  [17.8, 20.4, 1.6], // the small gate by the stream
+  [-8.86, 39.08, 2.5], // site.json entrance
+];
+function hedges() {
+  const P = S0.garden,
+    dense = (x, y) => y > 18 || y < -36 || (x < -4 && y < -18),
+    sparse = (x, y) => x > 10 && y > -36 && y <= 18;
+  for (let i = 0; i < P.length - 1; i++) {
+    const [x0, y0] = P[i],
+      [x1, y1] = P[i + 1],
+      L = Math.hypot(x1 - x0, y1 - y0);
+    if (L < 0.5) continue;
+    // inward normal: the side the polygon lies on
+    let nx = -(y1 - y0) / L,
+      ny = (x1 - x0) / L;
+    const mx = (x0 + x1) / 2,
+      my = (y0 + y1) / 2;
+    if (!inGarden(mx + nx * 1.2, my + ny * 1.2)) {
+      nx = -nx;
+      ny = -ny;
+    }
+    for (let t = 0.85; t < L; t += 1.7) {
+      const x = x0 + ((x1 - x0) * t) / L + nx * rr(0.7, 1.3),
+        y = y0 + ((y1 - y0) * t) / L + ny * rr(0.7, 1.3);
+      const d = dense(x, y),
+        sp = !d && sparse(x, y);
+      if (!d && !(sp && rnd() < 0.35)) continue;
+      if (
+        GATES.some(([gx, gy, r]) => Math.hypot(x - gx, y - gy) < r) ||
+        nearPath(x, y, 1.4) ||
+        STREAM.inDitch(x, y, 0.4)
+      )
+        continue;
+      addTreeInst(rnd() < 0.5 ? 'bushA' : 'bushB', x, y, rr(2.6, 4.2), rr(1.3, 2.0));
+    }
+  }
+}
 // distant ring: cheap crown blobs
 const farBlobs = [];
 function buildTrees() {
@@ -245,8 +306,11 @@ function buildTrees() {
     else if (r < 2.4 && h > 10.5) kind = i % 2 ? 'pine' : 'aspen';
     else if (r >= 3.0) kind = i % 2 ? 'oakB' : 'oakA';
     else kind = i % 3 === 0 ? 'aspen' : 'ash';
+    // the meadow south of the huts is an old orchard (photos 26.10.2026): apple, pear and cherry trees, not oaks
+    if (y < 6 && h <= 13 && inGarden(x, y, -1)) kind = 'apple';
     addTreeInst(kind, x, y, h, r);
   });
+  hedges();
   const keep0 = Object.fromEntries(Object.entries(TREES).map(([k, K]) => [k, K.items.length])),
     trunks0 = treeTrunks.length;
   for (let i = 0; i < 260; i++) {

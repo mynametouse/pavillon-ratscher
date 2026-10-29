@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import { V } from '../core/head.js';
+import { plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { beam, bldBegin, bldEnd, boardLeaf, cyl, tagPh } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import {
+  planned,
+  todayLook,
   BLD,
   faceOf,
   FOOT,
@@ -117,6 +120,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     AN: [{ a0: -3.5, a1: -2.95, s: 1.15, h: 1.7 }],
   };
   const wm = MATS.greenBoards;
+  const ROOF = todayLook(plain({ color: 0xd4d3cd, roughness: 0.95 }), 0x4e6a4a, 0xd4d3cd); // today: green bitumen shingles (photos 26.10.2026)
   // west wall (full length)
   lw(g, 'x', -hx, hx, hy - T + L, hy, z0, zw, OPS.W, wm, { grain: 'x' });
   lw(g, 'x', -hx + T, hx - T, hy - T, hy - T + L, zf, zw, OPS.W, KM.wall, { cast: false });
@@ -181,7 +185,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
         depth: T + 0.02,
         mull: [(o.a0 + o.a1) / 2],
       });
-      lshut(g, run, o.a0, o.a1, tOut, k, o.s, o.h, MATS.white);
+      planned(g, () => lshut(g, run, o.a0, o.a1, tOut, k, o.s, o.h, MATS.white)); // no shutters today (photos 26.10.2026)
       lbox(
         g,
         run,
@@ -225,7 +229,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
         p = geo.attributes.position;
       for (let i = 0; i < p.count; i++) uv.setXY(i, p.getZ(i), p.getY(i));
     }
-    const me = new THREE.Mesh(geo, [MATS.greenBoards, MATS.whiteRoof]);
+    const me = new THREE.Mesh(geo, [MATS.greenBoards, ROOF]);
     me.rotation.y = Math.PI / 2;
     me.position.copy(V(0, 0, zw));
     me.castShadow = true;
@@ -247,7 +251,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     hy + ovy,
     0.06,
     -(hy + ovy) * pitch,
-    MATS.whiteRoof
+    ROOF
   );
   gB(g, -hx - ovx, hx + ovx, hy + ovy - 0.015, hy + ovy + 0.015, ze - 0.19, ze + 0.02, MATS.white, {
     grain: 'x',
@@ -266,13 +270,13 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
       hy + ovy,
       0.06,
       (hy + ovy) * pitch,
-      MATS.whiteRoof
+      ROOF
     );
     gB(g, x0, x1, -hy - ovy - 0.015, -hy - ovy + 0.015, ze - 0.19, ze + 0.02, MATS.white, { grain: 'x', cast: false });
     gB(g, x0 - 0.015, x0 + 0.015, -hy - ovy, -hy, ze - 0.19, zw, MATS.white, { cast: false });
     const y0 = -hy,
       xs = -hx - ovx;
-    slopeSlab(g, (xs + x0) / 2, y0 / 2, zw + (hy * pitch) / 2 + 0.035, x0 - xs, hy, 0.06, hy * pitch, MATS.whiteRoof);
+    slopeSlab(g, (xs + x0) / 2, y0 / 2, zw + (hy * pitch) / 2 + 0.035, x0 - xs, hy, 0.06, hy * pitch, ROOF);
   }
   for (const sy of [-1, 1])
     for (const sx of [-1, 1]) {
@@ -327,19 +331,22 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   ])
     gB(g, x - 0.015, x + 0.015, y - 0.015, y + 0.015, 0.08, 0.44, MAT.sage, { grain: 'z', cast: false });
   gB(g, -hx - 0.6, -hx - 0.05, -0.5, 0.5, 0, 0.08, MAT.conc, { cast: false });
-  for (const [a0, a1] of [
-    [-1.95, -1.15],
-    [1.15, 1.95],
-  ]) {
-    const zb = a0 < 0 ? 0.95 - 0.06 : 1.12 - 0.06;
-    gB(g, hx + 0.02, hx + 0.2, a0 + 0.02, a1 - 0.02, zb - 0.16, zb, MAT.larch, { cast: false });
-    for (let i = 0; i < 4; i++) plant(g, hx + 0.11, a0 + 0.13 + i * 0.18, zb - 0.02, 0.2, 'geranium', R);
-  }
-  for (const o of OPS.W) {
-    const zb = o.s - 0.06;
-    gB(g, o.a0 + 0.02, o.a1 - 0.02, hy + 0.02, hy + 0.2, zb - 0.16, zb, MAT.larch, { cast: false });
-    for (let i = 0; i < 4; i++) plant(g, o.a0 + 0.13 + i * 0.18, hy + 0.11, zb - 0.02, 0.2, 'geranium', R);
-  }
+  // window boxes: planned – today there are none (photos 26.10.2026)
+  planned(g, () => {
+    for (const [a0, a1] of [
+      [-1.95, -1.15],
+      [1.15, 1.95],
+    ]) {
+      const zb = a0 < 0 ? 0.95 - 0.06 : 1.12 - 0.06;
+      gB(g, hx + 0.02, hx + 0.2, a0 + 0.02, a1 - 0.02, zb - 0.16, zb, MAT.larch, { cast: false });
+      for (let i = 0; i < 4; i++) plant(g, hx + 0.11, a0 + 0.13 + i * 0.18, zb - 0.02, 0.2, 'geranium', R);
+    }
+    for (const o of OPS.W) {
+      const zb = o.s - 0.06;
+      gB(g, o.a0 + 0.02, o.a1 - 0.02, hy + 0.02, hy + 0.2, zb - 0.16, zb, MAT.larch, { cast: false });
+      for (let i = 0; i < 4; i++) plant(g, o.a0 + 0.13 + i * 0.18, hy + 0.11, zb - 0.02, 0.2, 'geranium', R);
+    }
+  });
   // ===================== inside =====================
   const xi0 = -hx + T,
     xi1 = hx - T,
