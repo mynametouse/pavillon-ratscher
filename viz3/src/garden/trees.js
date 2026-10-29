@@ -306,8 +306,6 @@ function buildTrees() {
     else if (r < 2.4 && h > 10.5) kind = i % 2 ? 'pine' : 'aspen';
     else if (r >= 3.0) kind = i % 2 ? 'oakB' : 'oakA';
     else kind = i % 3 === 0 ? 'aspen' : 'ash';
-    // the meadow south of the huts is an old orchard (photos 26.10.2026): apple, pear and cherry trees, not oaks
-    if (y < 6 && h <= 13 && inGarden(x, y, -1)) kind = 'apple';
     addTreeInst(kind, x, y, h, r);
   });
   hedges();

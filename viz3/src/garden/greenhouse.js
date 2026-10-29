@@ -17,8 +17,11 @@ import {
   slopeSlab,
   worldOf,
 } from './site_base.js';
-// the panes are milky twin-wall polycarbonate, yellowed (photos 26.10.2026) – a plain transparent material like MATS.tint, no new program
-const PANE = plain({
+// the panes are frosted glass (Milchglas), a few repaired ones yellowed plastic (Falko, 29.10.2026, photos of 26.10.2026) – plain transparent
+// materials like MATS.tint, no new program
+const PANE = plain({ color: 0xeef0ea, roughness: 0.35, metalness: 0, transparent: true, opacity: 0.7, envMapIntensity: 0.8 });
+const PATCH = plain({ color: 0xe2dcb2, roughness: 0.6, metalness: 0, transparent: true, opacity: 0.78, envMapIntensity: 0.5 });
+let paneN = 0;
   color: 0xe6e5c8,
   roughness: 0.55,
   metalness: 0,
@@ -71,7 +74,7 @@ bldBegin('greenhouse', 'Gewächshaus', BLD.greenhouse.c, { short: 'Gewächshaus'
   for (const y of [-dy, dy]) gB(g, hx - f, hx + f, y - f, y + f, 0.12, zd + f, MAT.alu, { grain: 'z' });
   gB(g, hx - f, hx + f, -dy, dy, zd, zd + 2 * f, MAT.alu, { grain: 'y' });
   const glass = (x0, x1, y0, y1, z0, z1) => {
-    const m = gB(g, x0, x1, y0, y1, z0, z1, PANE, { cast: false, recv: false });
+    const m = gB(g, x0, x1, y0, y1, z0, z1, paneN++ === 2 ? PATCH : PANE, { cast: false, recv: false });
     if (m) m.renderOrder = 2;
   };
   for (const sy of [-1, 1]) glass(-hx, hx, sy * hy - 0.003, sy * hy + 0.003, 0.12, ze);

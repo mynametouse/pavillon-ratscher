@@ -22,7 +22,7 @@ import {
   wheel,
   worldOf,
 } from './site_base.js';
-// the caravan's roof stands on white-painted steel posts with knee braces (photos 26.10.2026), not on timber
+// the caravan's roof stands on white-painted timber posts and beams with knee braces (Falko, 29.10.2026; photos of 26.10.2026)
 const FRAMEW = MATS.white;
 import { bulbMat, GLAMPS, GSEATS, mergeGroup, put, twin } from './garten_kit.js';
 // feat/einrichtung: the caravan's own materials (twins: the same shader programs) – the interior styles change their colours

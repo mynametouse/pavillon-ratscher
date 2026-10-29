@@ -233,7 +233,8 @@ function colWall(a, b, t, z0, z1, tag = 'wall') {
   }
 }
 // ---------------- the workshops: the four buildings on Hubert's side, open to the east ----------------
-const ROOFS = [MAT.fibre, MAT.roofRed, MAT.corr, MAT.roofRed];
+// grey corrugated roofs, low and shallow, as on Falko's photos of 26.10.2026 (no red tiles on Hubert's sheds)
+const ROOFS = [MAT.corr, MAT.fibre, MAT.corr, MAT.fibre];
 export const SHEDS = [];
 function workshop(r, i) {
   const p0 = r[0],
@@ -250,7 +251,7 @@ function workshop(r, i) {
     c = [(r[0][0] + r[2][0]) / 2, (r[0][1] + r[2][1]) / 2],
     D = Wf * 0.8,
     he = 2.9,
-    hr = 1.45,
+    hr = 0.75,
     t = 0.12;
   const at = (lu, lv) => [c[0] + lu * ux + lv * vx, c[1] + lu * uy + lv * vy];
   const g = new THREE.Group();
