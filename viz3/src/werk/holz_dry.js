@@ -15,7 +15,7 @@ import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUti
 import { scene, V } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { BUILD } from '../core/geo.js';
+import { BUILD, COL } from '../core/geo.js';
 import { PLAY } from '../game/play.js';
 import { QUESTS } from '../game/quests.js';
 import { CLOCK } from '../time/clock.js';
@@ -25,6 +25,7 @@ import { DN } from '../time/daynight.js';
 import { HOLZ } from './holz.js';
 import { HOLZSAW } from './holz_saw.js';
 import { KERN } from '../core/kern.js';
+import { SAW_PH } from '../garden/workshop.js';
 const HOLZDRY = (() => {
   const de = (v, d = 1) => Number(v).toFixed(d).replace('.', ','),
     think = (t, ms) => PLAY.think(t, ms);
@@ -608,13 +609,18 @@ const HOLZDRY = (() => {
     for (const z of [0.25, 1.8]) bx(0.03, 0.12, 0.06, KP.x - KP.w / 2 - 0.02, KP.y - KP.l / 2 + 0.08, z, dark); // handle, hinges
     bx(0.4, 0.5, 0.25, KP.x, KP.y, KP.h + 0.125, dark);
     bx(0.01, 0.12, 0.06, KP.x - KP.w / 2 - 0.02, KP.y + 0.35, 1.55, led); // the dehumidifier on top, the display
+    // the cabinet stands at the hall's west wall: it comes with the hall in construction phase 1 (garden/workshop.js SAW_PH)
     g.traverse(o => {
-      if (o.isMesh) o.userData.noMerge = true;
+      if (o.isMesh) {
+        o.userData.noMerge = true;
+        o.userData.ph = SAW_PH;
+      }
     });
     G.add(g);
     HOLZ.setCol('holzofen', [
       [KP.x - KP.w / 2 - 0.03, KP.x + KP.w / 2, KP.y - KP.l / 2, KP.y + KP.l / 2, 0, KP.h + 0.25],
     ]);
+    for (const c of COL) if (c && c[6] === 'holzofen' && c[7] == null) c[7] = SAW_PH;
   }
   const kpos = () => {
     const [x, y] = WT(KP.x - KP.w / 2 - 0.6, KP.y);
@@ -623,6 +629,7 @@ const HOLZDRY = (() => {
   const inKiln = () => B().filter(b => b.st === 'kiln');
   const avgOf = bs => (bs.length ? bs.reduce((s, b) => s + b.mc, 0) / bs.length : 0);
   function kilnOp() {
+    if ((window.PHASE | 0) < SAW_PH) return null; // no drying cabinet in the garden of today
     const k = inKiln(),
       st = S.stack,
       sb = B().filter(b => b.st === 'stack');

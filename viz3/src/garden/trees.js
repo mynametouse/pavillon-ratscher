@@ -16,7 +16,7 @@ import {
   vegReady,
   whenLoaded,
 } from '../core/assets.js';
-import { COL } from '../core/geo.js';
+import { bldRects, BUILD, COL } from '../core/geo.js';
 import { STREAM } from './stream_geo.js';
 import { GEO_REAL, inLake, PATHS, S0 } from './env.js';
 import { inLocal } from './site_base.js';
@@ -229,6 +229,36 @@ function nearPath(x, y, d) {
   for (const f of window.SITE_FOOT || []) if (inLocal(f.b, x, y, f.hx + 0.35, f.hy + 0.35, f.ox, f.oy)) return true;
   return false;
 }
+// nothing grows through a building (Falko, 29.10.2026): true when (x, y) is within m metres of a building's footprint – every registered
+// building (BUILD rects: garden houses, workshop hall and lean-to, garage …), Hubert's sheds (site.json neigh) and the old garage
+function inRectM(r, x, y, m) {
+  const a = (r.az * Math.PI) / 180,
+    dx = x - r.c[0],
+    dy = y - r.c[1],
+    u = dx * Math.sin(a) + dy * Math.cos(a),
+    v = dx * Math.sin(a - Math.PI / 2) + dy * Math.cos(a - Math.PI / 2);
+  return Math.abs(u) < r.hx + m && Math.abs(v) < r.hy + m;
+}
+function inPolyM(P, x, y, m) {
+  let c = false,
+    d = 1e9;
+  for (let i = 0, j = P.length - 1; i < P.length; j = i++) {
+    const [xi, yi] = P[i],
+      [xj, yj] = P[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
+    const ex = xj - xi,
+      ey = yj - yi,
+      t = Math.max(0, Math.min(1, ((x - xi) * ex + (y - yi) * ey) / (ex * ex + ey * ey || 1)));
+    d = Math.min(d, Math.hypot(x - xi - t * ex, y - yi - t * ey));
+  }
+  return c || d < m;
+}
+function inBuilding(x, y, m) {
+  for (const k in BUILD) for (const r of bldRects(BUILD[k])) if (inRectM(r, x, y, m)) return true;
+  if ((S0.neigh || []).some(P => inPolyM(P, x, y, m))) return true;
+  if (S0.garage && inPolyM(S0.garage, x, y, m)) return true;
+  return false;
+}
 // inside the garden polygon (site.json) by at least m metres (m < 0: up to -m outside)
 function inGarden(x, y, m = 0) {
   const P = S0.garden;
@@ -283,7 +313,9 @@ function hedges() {
         STREAM.inDitch(x, y, 0.4)
       )
         continue;
-      addTreeInst(rnd() < 0.5 ? 'bushA' : 'bushB', x, y, rr(2.6, 4.2), rr(1.3, 2.0));
+      const r = rr(1.3, 2.0);
+      if (inBuilding(x, y, r * 0.9)) continue; // the crown keeps clear of walls and roofs
+      addTreeInst(rnd() < 0.5 ? 'bushA' : 'bushB', x, y, rr(2.6, 4.2), r);
     }
   }
 }
@@ -300,6 +332,7 @@ function buildTrees() {
   S0.trees.forEach((t, i) => {
     const [x, y, r, h] = t;
     if (nearPath(x, y, 1.2)) return;
+    if (inBuilding(x, y, 0.8)) return; // a trunk in a footprint: the tree would grow through the roof
     let kind = 'ash';
     if (r >= 4.5) kind = 'oakA';
     else if (h <= 8.0) kind = 'apple';

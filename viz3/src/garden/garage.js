@@ -151,9 +151,33 @@ phase(PHN.bestand, PHN.garage);
   box(OP.x0 - 0.05, OP.x0, 3.88, 4.0, Z0, OP.z1, MAT.galv, { grain: 'z' });
   box(OP.x1, OP.x1 + 0.05, 3.88, 4.0, Z0, OP.z1, MAT.galv, { grain: 'z' });
   box(OP.x0 - 0.05, OP.x1 + 0.05, 3.88, 4.0, OP.z1 - 0.05, OP.z1, MAT.galv, { grain: 'x' });
-  // roof: purlins and the sheet (as before)
+  // roof: purlins and the sheet – a shallow gable, ridge north–south, the gables to north and south (Falko's photos of 26.10.2026)
   for (let x = 0.3; x < 3.9; x += 0.5) box(x - 0.015, x + 0.015, 0.1, 3.9, HW, HW + 0.08, MAT.galv, { grain: 'y' });
-  B(-0.08, 4.08, -0.08, 4.08, HW + 0.08, HW + 0.12, MAT.roofGrey, { col: false });
+  {
+    const RISE = 0.38,
+      zr = HW + 0.1 + RISE;
+    for (const [xa, xb] of [
+      [-0.12, 2.0],
+      [4.12, 2.0],
+    ])
+      beam([xa, 2.0, HW + 0.08], [xb, 2.0, zr], 4.18, 0.03, MAT.roofGrey, { cast: true });
+    // the two gable triangles of corrugated sheet, both faces
+    for (const y of [0.04, 3.96]) {
+      const geo = new THREE.BufferGeometry().setFromPoints([
+        V(0.02, y, HW),
+        V(3.98, y, HW),
+        V(2.0, y, zr - 0.02),
+        V(3.98, y, HW),
+        V(0.02, y, HW),
+        V(2.0, y, zr - 0.02),
+      ]);
+      geo.computeVertexNormals();
+      const me = new THREE.Mesh(geo, MAT.metal);
+      me.castShadow = true;
+      me.receiveShadow = true;
+      scene.add(tagPh(me));
+    }
+  }
   // the top rail on the north side, on brackets; it runs on past both corners so the leaves can clear the opening
   box(RAIL.x0, RAIL.x1, RAIL.y0, RAIL.y1, RAIL.z0, RAIL.z1, MAT.galv, { grain: 'x', cast: true });
   for (const x of [-0.5, 0.35, 1.3, 2.0, 2.7, 3.65, 4.5]) {

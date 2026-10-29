@@ -757,3 +757,41 @@ const offHubT = KERN.tick(() => {
   COL.push([x - 1.9, x + 1.9, y - 1.2, y + 1.2, 0, 2.6, 'tractor', null, null]);
   markDirty(true);
 }, 'garden/hof_hubert:tractor');
+// ---- the long white box body in front of Hubert's sheds (photos of 26.10.2026: „Zeit zum Entspannen“ on its side facing the garden) ----
+{
+  const x0 = -23.6,
+    x1 = -21.3,
+    y0 = 10.0,
+    y1 = 16.2,
+    z0 = 0.45,
+    z1 = 3.0;
+  const white = plain({ color: 0xeeeeea, roughness: 0.55 });
+  B(x0, x1, y0, y1, z0, z1, white);
+  B(x0 + 0.1, x1 - 0.1, y0 + 0.4, y1 - 0.4, 0.05, z0, MAT.blacksteel, { col: false });
+  for (const y of [y0 + 1.2, y1 - 1.2])
+    for (const x of [x0 + 0.1, x1 - 0.1])
+      B(x - 0.11, x + 0.11, y - 0.36, y + 0.36, 0, 0.7, MAT.blacksteel, { col: false });
+  // the writing and the round logo on the east side, as a small canvas picture
+  const cv = document.createElement('canvas');
+  cv.width = 512;
+  cv.height = 160;
+  const c = cv.getContext('2d');
+  c.fillStyle = '#eeeeea';
+  c.fillRect(0, 0, 512, 160);
+  c.strokeStyle = '#5c8fb0';
+  c.lineWidth = 6;
+  c.beginPath();
+  c.arc(78, 80, 46, 0, Math.PI * 2);
+  c.stroke();
+  c.fillStyle = '#6d7174';
+  c.font = '600 34px sans-serif';
+  c.fillText('ZEIT ZUM', 150, 70);
+  c.fillText('ENTSPANNEN', 150, 112);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = ANISO;
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 1.0), plain({ map: tex, roughness: 0.6 }));
+  sign.position.copy(V(x1 + 0.012, (y0 + y1) / 2 + 0.6, 2.2));
+  sign.rotation.y = Math.PI / 2;
+  scene.add(sign);
+}
