@@ -73,9 +73,13 @@ game/quests.js              # tasks with the neighbours, journal, tracker (QUEST
 world/ratscher.js           # real surroundings from geodata: terrain, orthophotos, buildings, trees (RATSCHER)
 world/roads.js              # V16b roads and paths from OSM: road map for the ground shaders, surface under the wheels, bridges (ROADS)
 world/forest.js             # V16c the forest at the Klinge: stand, procedural spruce/larch/pine in three levels of detail, forest floor, cover (FOREST)
+# feat/dorfkern: the houses of the centre as Falko filmed them – data for world/village.js and world/dorfkern.js (below this line)
+world/dorfkern_data.js      # feat/dorfkern the look, heights and roofs of the houses around the Anger, the open space of the centre – data (DKDATA)
 world/village.js            # V16e Ratscher after photos: facades, roofs, chimneys, windows lit at night (VILLAGE)
 world/village_props.js      # V16e the centre: old school with turret and clock, Dorflinde, fountain, bus stop, street lamps, light at night (VPROPS)
 world/village_near.js       # V16e near the walker: fences, hedges, flower boxes, bins, woodpiles, door lamps – loaded and dropped by distance (VNEAR)
+# feat/dorfkern: the open space of the centre below this line (before world/worldcol.js: its collisions)
+world/dorfkern.js           # feat/dorfkern the well, benches, limes, hedges, roundabout, poles and lines, fences, Easter eggs – as in Falko's video (DORFKERN)
 # feat/schleusingen: the tiled world and Schleusingen below this line
 welt/welt.js                # the tiled world (tools/welt) streamed around the camera where a zone needs it; terrain for KERN (WELT)
 welt/schleusingen.js        # Schleusingen after photos: the old town walkable, Rathaus to enter, landmarks, lamps, street names (SCHL)

@@ -14,9 +14,21 @@ import { markDirty, texFile, texFileOf, TEXMAN, whenLoaded } from '../core/asset
 import { RATSCHER } from './ratscher.js';
 import { ROADS } from './roads.js';
 import { KERN } from '../core/kern.js';
+import { DKDATA } from './dorfkern_data.js';
 export const VILLAGE = (() => {
-  const S = { on: false, ready: false, bld: [], byId: new Map(), meshes: [], U: null, ANGER: [222, -108] };
+  const S = {
+    on: false,
+    ready: false,
+    bld: [],
+    byId: new Map(),
+    meshes: [],
+    U: null,
+    ANGER: [222, -108],
+    remap: new Map(),
+  };
   if (!window.RATSCHER || !RATSCHER.on) return S;
+  // feat/dorfkern: the houses of the centre as Falko filmed them (world/dorfkern_data.js) – their look instead of the hash, their heights
+  const LOOK = (DKDATA && DKDATA.houses) || {};
   const hh = n => {
     const s = Math.sin(n * 12.9898 + 4.1) * 43758.5453;
     return s - Math.floor(s);
@@ -39,6 +51,7 @@ export const VILLAGE = (() => {
     HALL: 10,
     SHED: 11,
     SCHOOL: 12,
+    SLATE_FWG: 13, // feat/dorfkern: slate below, half-timbered gable (Anger 11)
   };
   S.ST = ST;
   const PASTEL = [
@@ -64,6 +77,226 @@ export const VILLAGE = (() => {
       [0.72, 0.68, 0.62],
       [0.58, 0.26, 0.2],
     ].map(c => linC(c, 0.85));
+  // ---- feat/dorfkern: heights as measured in the video (the surface model put some eaves 1.5–3 m too low). The walls' tops and the roof's
+  // points of such a building are remapped piecewise linearly: the lowest wall top (eave) to the measured eave, the rise above it scaled so
+  // the highest wall top (gable apex) reaches the measured ridge – the fitted roof keeps its shape, only taller ----
+  function remapOf(e0, r0, h) {
+    const e1 = h[0],
+      k = h[1] && r0 - e0 > 0.3 ? (h[1] - e1) / (r0 - e0) : 1;
+    return z => (z <= e0 ? (z * e1) / Math.max(e0, 0.1) : e1 + (z - e0) * k);
+  }
+  function reshape() {
+    const g = RATSCHER.bld[0].geometry,
+      P = g.attributes.position.array,
+      W = g.attributes.aW.array,
+      nq = g.attributes.position.count / 4,
+      span = new Map(); // id -> [lowest, highest wall top]
+    const idOf = s => Math.round(W[s * 4 + 3]) >> 2;
+    for (let q = 0; q < nq; q++) {
+      const s = q * 4,
+        L = LOOK[idOf(s)];
+      if (!L || !L.h) continue;
+      const a = span.get(idOf(s)) || [1e9, -1e9];
+      a[0] = Math.min(a[0], W[s * 4 + 2], W[(s + 2) * 4 + 2]);
+      a[1] = Math.max(a[1], W[s * 4 + 2], W[(s + 2) * 4 + 2]);
+      span.set(idOf(s), a);
+    }
+    for (const [id, [e0, r0]] of span) S.remap.set(id, remapOf(e0, r0, LOOK[id].h));
+    if (!span.size) return;
+    for (let q = 0; q < nq; q++) {
+      const s = q * 4,
+        f = S.remap.get(idOf(s));
+      if (!f) continue;
+      for (let k = 0; k < 4; k++) {
+        const i = s + k,
+          foot = P[i * 3 + 1] - W[i * 4 + 1];
+        W[i * 4 + 1] = f(W[i * 4 + 1]);
+        W[i * 4 + 2] = f(W[i * 4 + 2]);
+        P[i * 3 + 1] = foot + W[i * 4 + 1];
+      }
+    }
+    g.attributes.position.needsUpdate = true;
+    g.attributes.aW.needsUpdate = true;
+    g.computeBoundingSphere();
+  }
+  // ---- feat/dorfkern: houses whose fitted roof failed (flat blocks east of the bus stop) or that the video shows otherwise get their walls
+  // and a gable roof made anew from the footprint – cut in two if the table says so (the house at the street, the barn behind), each part
+  // with its ridge (azimuth), eaves left and right of it, ridge height and the ridge's place across. The old wall quads collapse (code −1);
+  // the new ones go to the end of the wall geometry, each part's in a row around its outline (facades() needs that). Parts get ids from
+  // 4000 on (PART: look, roof triangles, the building they came from) ----
+  const PART = new Map();
+  const sideOf = (a, b, p) => (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]);
+  function clipHalf(poly, a, b, sgn) {
+    const out = [];
+    for (let i = 0; i < poly.length; i++) {
+      const p = poly[i],
+        q = poly[(i + 1) % poly.length],
+        sp = sideOf(a, b, p) * sgn,
+        sq = sideOf(a, b, q) * sgn;
+      if (sp >= 0) out.push(p);
+      if (sp * sq < 0) {
+        const t = sp / (sp - sq);
+        out.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]);
+      }
+    }
+    return out;
+  }
+  const areaOf = poly =>
+    poly.reduce((s, p, i) => s + p[0] * poly[(i + 1) % poly.length][1] - poly[(i + 1) % poly.length][0] * p[1], 0) / 2;
+  // the roof of a part: height above the foot at (x, y); ridge direction az, eaves [left, right] of it, ridge r, its place across `at`
+  function roofFn(poly, R) {
+    const az = (R.az * Math.PI) / 180,
+      n = [Math.cos(az), -Math.sin(az)],
+      s = p => p[0] * n[0] + p[1] * n[1],
+      ss = poly.map(s),
+      s0 = Math.min(...ss),
+      s1 = Math.max(...ss),
+      sr = s0 + (R.at === undefined ? 0.5 : R.at) * (s1 - s0),
+      [eL, eR] = Array.isArray(R.e) ? R.e : [R.e, R.e];
+    const z = p => {
+      const v = s(p);
+      return v <= sr
+        ? eL + ((R.r - eL) * (v - s0)) / Math.max(sr - s0, 0.01)
+        : eR + ((R.r - eR) * (s1 - v)) / Math.max(s1 - sr, 0.01);
+    };
+    return { z, sr, n, a: [Math.sin(az), Math.cos(az)] };
+  }
+  function synth() {
+    const g = RATSCHER.bld[0].geometry,
+      P0 = g.attributes.position.array,
+      W0 = g.attributes.aW.array,
+      nq = g.attributes.position.count / 4,
+      own = new Map(); // id -> [quad indices]
+    for (let q = 0; q < nq; q++) {
+      const id = Math.round(W0[q * 16 + 3]) >> 2;
+      if (LOOK[id] && LOOK[id].roof3) (own.get(id) || own.set(id, []).get(id)).push(q);
+    }
+    if (!own.size) return;
+    const pos = [],
+      nrm = [],
+      aw = [],
+      dead = [];
+    let next = 4000;
+    for (const [id, qs] of own) {
+      const L = LOOK[id];
+      let poly = [],
+        foot = 1e9;
+      for (const q of qs) {
+        const s = q * 4,
+          p = [P0[s * 3], -P0[s * 3 + 2]];
+        foot = Math.min(foot, P0[s * 3 + 1] - W0[s * 4 + 1]);
+        if (!poly.length || Math.hypot(p[0] - poly[poly.length - 1][0], p[1] - poly[poly.length - 1][1]) > 0.01)
+          poly.push(p);
+      }
+      if (poly.length < 3) continue;
+      if (areaOf(poly) < 0) poly.reverse(); // counter-clockwise: the right side of each edge is outside
+      const parts = [];
+      if (L.cut) {
+        const [a, b] = L.cut,
+          sg = sideOf(a, b, L.front) > 0 ? 1 : -1,
+          pf = clipHalf(poly, a, b, sg),
+          pb = clipHalf(poly, a, b, -sg);
+        if (pf.length >= 3) parts.push({ poly: pf, R: L.roof3, look: L, typ: 0 });
+        if (pb.length >= 3 && L.back)
+          parts.push({ poly: pb, R: L.back.roof3, look: L.back, typ: L.back.house ? 0 : 1 });
+      } else parts.push({ poly, R: L.roof3, look: L, typ: 0 });
+      if (!parts.length) continue;
+      for (const q of qs) dead.push(q);
+      for (const pt of parts) {
+        const pid = next++,
+          rf = roofFn(pt.poly, pt.R),
+          F = foot - 0.1,
+          code = 4 * pid + pt.typ;
+        // walls: every edge, split where the ridge line crosses it (the gable's apex)
+        let u = 0;
+        const ring = [];
+        for (let i = 0; i < pt.poly.length; i++) {
+          const A = pt.poly[i],
+            B = pt.poly[(i + 1) % pt.poly.length],
+            sa = A[0] * rf.n[0] + A[1] * rf.n[1] - rf.sr,
+            sb = B[0] * rf.n[0] + B[1] * rf.n[1] - rf.sr;
+          ring.push(A);
+          if (sa * sb < 0) {
+            const t = sa / (sa - sb);
+            ring.push([A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t]);
+          }
+        }
+        for (let i = 0; i < ring.length; i++) {
+          const A = ring[i],
+            B = ring[(i + 1) % ring.length],
+            len = Math.hypot(B[0] - A[0], B[1] - A[1]);
+          if (len < 0.02) continue;
+          const nx = (B[1] - A[1]) / len,
+            ny = -(B[0] - A[0]) / len,
+            tA = rf.z(A),
+            tB = rf.z(B);
+          for (const [p, v, t, uu] of [
+            [A, 0, tA, u],
+            [A, tA, tA, u],
+            [B, 0, tB, u + len],
+            [B, tB, tB, u + len],
+          ]) {
+            pos.push(p[0], F + v, -p[1]);
+            nrm.push(nx, 0, -ny);
+            aw.push(uu, v, t, code);
+          }
+          u += len;
+        }
+        // roof: both sides of the ridge, triangulated; points shared (the edges find the ridge and the outline)
+        const vs = new Map(),
+          vert = p => {
+            const k = p[0].toFixed(3) + ',' + p[1].toFixed(3);
+            if (!vs.has(k)) vs.set(k, { x: p[0], y: p[1], z: F + rf.z(p), tri: [], ox: 0, oy: 0, dz: 0 });
+            return vs.get(k);
+          },
+          r0 = [rf.n[0] * rf.sr, rf.n[1] * rf.sr],
+          r1 = [r0[0] + rf.a[0], r0[1] + rf.a[1]],
+          tris = [];
+        for (const sg of [1, -1]) {
+          const side = clipHalf(pt.poly, r0, r1, sg);
+          if (side.length < 3) continue;
+          for (const [i, j, k] of THREE.ShapeUtils.triangulateShape(
+            side.map(p => new THREE.Vector2(p[0], p[1])),
+            []
+          ))
+            tris.push([vert(side[i]), vert(side[j]), vert(side[k])]);
+        }
+        PART.set(pid, { look: pt.look, tris, of: id, rf, F });
+      }
+    }
+    if (!dead.length) return;
+    // the geometry grows by the new quads; the old ones collapse (index) and are marked (code −1: analyse() skips them)
+    const n0 = g.attributes.position.count,
+      n1 = n0 + pos.length / 3,
+      P = new Float32Array(n1 * 3),
+      N = new Float32Array(n1 * 3),
+      W = new Float32Array(n1 * 4),
+      I = new Uint32Array((n1 / 4) * 6),
+      I0 = g.index.array;
+    P.set(P0);
+    P.set(pos, n0 * 3);
+    N.set(g.attributes.normal ? g.attributes.normal.array : new Float32Array(n0 * 3));
+    N.set(nrm, n0 * 3);
+    W.set(W0);
+    W.set(aw, n0 * 4);
+    I.set(I0);
+    for (let s = n0, k = I0.length; s < n1; s += 4) (I.set([s, s + 2, s + 1, s + 1, s + 2, s + 3], k), (k += 6));
+    for (const q of dead) {
+      for (let k = 0; k < 6; k++) I[q * 6 + k] = q * 4;
+      for (let k = 0; k < 4; k++) W[(q * 4 + k) * 4 + 3] = -4;
+    }
+    g.setAttribute('position', new THREE.BufferAttribute(P, 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+    g.setAttribute('aW', new THREE.BufferAttribute(W, 4));
+    g.setIndex(new THREE.BufferAttribute(I, 1));
+    g.computeBoundingSphere();
+    S.parts = PART;
+  }
+  // the roof of a rebuilt house over (x, y): absolute height (dormers in world/dorfkern.js), null for other buildings
+  S.roofZ = (pid, x, y) => {
+    const p = PART.get(pid);
+    return p ? p.F + p.rf.z([x, y]) : null;
+  };
   // ---- the buildings of world/ratscher.js: walls as quads [A foot, A top, B foot, B top], u around the footprint, v above the foot ----
   function analyse() {
     const g = RATSCHER.bld[0].geometry,
@@ -75,6 +308,7 @@ export const VILLAGE = (() => {
       const s = q * 4,
         wv = Math.round(W[s * 4 + 3]),
         id = wv >> 2;
+      if (id < 0) continue; // feat/dorfkern: a wall replaced by a rebuilt house (synth)
       let b = B.get(id);
       if (!b) B.set(id, (b = { id, typ: wv & 3, quads: [] }));
       const ax = P[s * 3],
@@ -226,8 +460,34 @@ export const VILLAGE = (() => {
     const h = mx === c[0] ? ((c[1] - c[2]) / d) % 6 : mx === c[1] ? (c[2] - c[0]) / d + 2 : (c[0] - c[1]) / d + 4;
     return [(h * 60 + 360) % 360, s, l];
   }
-  // ---- style of a building: type, size, age (near the old centre around the Anger more slate and half-timbering), chance ----
+  // ---- feat/dorfkern: a house seen in the video gets its look from the table (world/dorfkern_data.js), the rest stays the hash's ----
+  const LOOK_KEYS = ['timber', 'frame', 'door', 'shut', 'shutters', 'orn', 'raised', 'sp', 'slate', 'board', 'surr'];
+  const lookOf = id => LOOK[id] || (PART.get(id) || {}).look;
   function styleOf(b) {
+    const o = styleOf0(b),
+      L = lookOf(b.id);
+    o.slate = o.slate || 0;
+    if (!L) return o;
+    if (L.st && ST[L.st] !== undefined) o.style = ST[L.st];
+    if (L.col) o.col = linC(L.col, 0.82);
+    for (const k of LOOK_KEYS) if (L[k] !== undefined) o[k] = L[k];
+    o.dk = L; // roof colour, chimneys, door facade (roofOf, doors)
+    if (L.faces)
+      o.faces = L.faces.map(([az, F]) => [
+        az,
+        Object.assign({}, F, F.col ? { col: linC(F.col, 0.82) } : {}, F.st ? { style: ST[F.st] } : {}),
+      ]);
+    return o;
+  }
+  // a facade facing within 50° of an azimuth in the table's `faces` takes that look over the house's
+  function faceLook(o, f) {
+    if (!o.faces) return o;
+    const az = (Math.atan2(f.nx, f.ny) * 180) / Math.PI;
+    for (const [a, F] of o.faces) if (Math.abs(((az - a + 540) % 360) - 180) < 50) return Object.assign({}, o, F);
+    return o;
+  }
+  // ---- style of a building: type, size, age (near the old centre around the Anger more slate and half-timbering), chance ----
+  function styleOf0(b) {
     const k = hh(b.id * 3.7 + 1),
       k2 = hh(b.id + 11.3),
       dC = Math.hypot(b.cx - S.ANGER[0], b.cy - S.ANGER[1]),
@@ -300,7 +560,9 @@ export const VILLAGE = (() => {
     float bnd( float x, float a, float b, float w ) { return clamp( ( x - a ) / w + 0.5, 0.0, 1.0 ) - clamp( ( x - b ) / w + 0.5, 0.0, 1.0 ); }   // 1 in [a, b], edges soft over w
     float topAt( float u ) { return u < vG.z ? mix( vG.x, vG.y, clamp( u / max( vG.z, 0.01 ), 0.0, 1.0 ) ) : mix( vG.y, vG.w, clamp( ( u - vG.z ) / max( vV.y - vG.z, 0.01 ), 0.0, 1.0 ) ); }
     vec3 timberCol( float i ) { return i < 0.5 ? vec3( 0.055, 0.032, 0.02 ) : i < 1.5 ? vec3( 0.27, 0.014, 0.018 ) : vec3( 0.022, 0.02, 0.018 ); }
-    vec3 doorCol( float i ) { return i < 0.5 ? vec3( 0.07, 0.035, 0.018 ) : i < 1.5 ? vec3( 0.17, 0.08, 0.035 ) : i < 2.5 ? vec3( 0.02, 0.075, 0.035 ) : i < 3.5 ? vec3( 0.09, 0.19, 0.42 ) : i < 4.5 ? vec3( 0.70, 0.69, 0.66 ) : vec3( 0.25, 0.02, 0.02 ); }
+    vec3 doorCol( float i ) { return i < 0.5 ? vec3( 0.07, 0.035, 0.018 ) : i < 1.5 ? vec3( 0.17, 0.08, 0.035 ) : i < 2.5 ? vec3( 0.02, 0.075, 0.035 ) : i < 3.5 ? vec3( 0.09, 0.19, 0.42 ) : i < 4.5 ? vec3( 0.70, 0.69, 0.66 ) : i < 5.5 ? vec3( 0.25, 0.02, 0.02 ) : i < 6.5 ? vec3( 0.25, 0.42, 0.74 ) : vec3( 0.24, 0.13, 0.06 ); }   // … 6 light blue, 7 oak
+    vec3 slateCol( float i ) { return i < 0.5 ? vec3( 0.13, 0.133, 0.145 ) : i < 1.5 ? vec3( 0.29, 0.30, 0.31 ) : vec3( 0.19, 0.195, 0.21 ); }   // feat/dorfkern: blue-black, silver-grey, mid grey (3: the house's colour)
+    vec3 frameCol( float i ) { return i < 0.5 ? vec3( 0.68, 0.68, 0.66 ) : i < 1.5 ? vec3( 0.07, 0.035, 0.02 ) : i < 2.5 ? vec3( 0.025, 0.11, 0.055 ) : vec3( 0.25, 0.26, 0.26 ); }   // white, brown, green, grey
     vec3 shutCol( float i ) { return i < 0.5 ? vec3( 0.025, 0.09, 0.045 ) : i < 1.5 ? vec3( 0.10, 0.05, 0.025 ) : vec3( 0.19, 0.20, 0.20 ); }
     vec3 texN( sampler2D t, vec2 p ) { return texture2D( t, p ).rgb / max( textureLod( t, vec2( 0.5 ), 12.0 ).rgb, vec3( 0.01 ) ); }   // a photo texture with mean 1
     float gWin = 0.0, gGlass = 0.0, gLit = 0.0, gNrmK = 0.0; vec3 gNrm = vec3( 0.0 );`;
@@ -326,10 +588,10 @@ export const VILLAGE = (() => {
         {
         float uF = vV.x, LF = vV.y, eave = vV.z, st = floor( vV.w + 0.5 ), v = vW.y;   // codes are rounded: interpolated integers come out a hair off (flags would flicker per pixel)
         float bid = floor( floor( vW.w + 0.5 ) / 4.0 ), k2 = vh( bid + 7.0 );
-        float fl = floor( vD.w + 0.5 ), isGable = mod( fl, 2.0 ), shut = mod( floor( fl / 2.0 ), 2.0 ), orn = mod( floor( fl / 4.0 ), 2.0 ), raised = mod( floor( fl / 8.0 ), 2.0 );
-        float pk = floor( vC.a + 0.5 ), tIdx = mod( pk, 4.0 ), fIdx = mod( floor( pk / 4.0 ), 4.0 ), dIdx = mod( floor( pk / 16.0 ), 8.0 ), sIdx = floor( pk / 128.0 );
+        float fl = floor( vD.w + 0.5 ), isGable = mod( fl, 2.0 ), shut = mod( floor( fl / 2.0 ), 2.0 ), orn = mod( floor( fl / 4.0 ), 2.0 ), raised = mod( floor( fl / 8.0 ), 2.0 ), brd = mod( floor( fl / 16.0 ), 4.0 ), surr = mod( floor( fl / 64.0 ), 2.0 );
+        float pk = floor( vC.a + 0.5 ), tIdx = mod( pk, 4.0 ), fIdx = mod( floor( pk / 4.0 ), 4.0 ), dIdx = mod( floor( pk / 16.0 ), 8.0 ), sIdx = mod( floor( pk / 128.0 ), 4.0 ), slT = floor( pk / 512.0 );
         vec2 fw = max( vec2( fwidth( uF ), fwidth( v ) ), vec2( 1e-4 ) ); float px = max( fw.x, fw.y ), aaF = smoothstep( 0.012, 0.05, px ), aaW = smoothstep( 0.16, 0.42, px );
-        bool school = st > 11.5, house = st < 6.5 || school, barn = st > 6.5 && st < 9.5, hall = st > 9.5 && st < 10.5, shed = st > 10.5 && st < 11.5;
+        bool school = st > 11.5 && st < 12.5, house = st < 6.5 || school || st > 12.5, barn = st > 6.5 && st < 9.5, hall = st > 9.5 && st < 10.5, shed = st > 10.5 && st < 11.5;
         // storeys and openings: bays evenly along the facade; a window only where it fits under the eave or the gable line
         float plH = house ? ( raised > 0.5 ? 0.6 : 0.35 ) : 0.0, stH = school ? 3.4 : 2.75;
         float ww = school ? 1.0 : st == 1.0 ? 1.25 : 0.95, wh = school ? 1.5 : st == 1.0 ? 1.4 : 1.3, sill = school ? 0.95 : 0.85;
@@ -350,13 +612,13 @@ export const VILLAGE = (() => {
         if ( dW > 0.0 && abs( bc - dU ) < max( bw * 0.5, dW * 0.5 + ww * 0.5 + 0.1 ) && fi < 0.5 ) win = 0.0;
         // ---- the wall itself ----
         bool upper = v > plH + stH - 0.15, inGable = isGable > 0.5 && v > eave - 0.02;
-        float sty = st; if ( st == 3.0 && !upper ) sty = 0.0; if ( st == 6.0 && !upper ) sty = 0.0; if ( st == 4.0 ) sty = inGable ? 2.0 : 0.0; if ( school ) sty = inGable ? 2.0 : 5.0;
+        float sty = st; if ( st == 3.0 && !upper ) sty = 0.0; if ( st == 6.0 && !upper ) sty = 0.0; if ( st == 4.0 ) sty = inGable ? 2.0 : 0.0; if ( st == 13.0 ) sty = inGable ? 5.0 : 2.0; if ( school ) sty = inGable ? 2.0 : 5.0;
         vec3 base = vC.rgb, c; vec2 tq = vec2( uF, v );
         if ( sty == 2.0 || sty == 3.0 ) {   // slate: small shingles in offset rows, each a little different; white ornament bands
           float rh = 0.17, sw = 0.21, r = floor( v / rh ), off = mod( r, 2.0 ) * 0.5, cc = floor( uF / sw + off ); vec2 f = vec2( fract( uF / sw + off ), fract( v / rh ) );
           float edge = 1.0 - smoothstep( 0.0, 0.1 + 0.22 * ( 1.0 - 4.0 * ( f.x - 0.5 ) * ( f.x - 0.5 ) ), f.y );   // the rounded lower edge of the shingle above
-          vec3 sl = vec3( 0.13, 0.133, 0.145 ) * ( 0.8 + 0.4 * vh2( vec2( r, cc ) ) ) * texN( tSlate, tq * 0.35 ).r;
-          c = mix( sl * mix( 1.0 - 0.5 * edge, 1.0, aaF ), vec3( 0.11, 0.115, 0.13 ), aaF );
+          vec3 slc = slT > 2.5 ? base : slateCol( slT ), sl = slc * ( 0.8 + 0.4 * vh2( vec2( r, cc ) ) ) * texN( tSlate, tq * 0.35 ).r;   // tone 3: shingles in the house's colour
+          c = mix( sl * mix( 1.0 - 0.5 * edge, 1.0, aaF ), slc * 0.86, aaF );
           if ( orn > 0.5 ) { float ob = mod( v - plH - 0.1, stH ), dz = abs( fract( uF / 0.84 ) - 0.5 ) * 2.0 + abs( ob - 0.36 ) / 0.3;   // a row of white diamonds under each floor line
             float o = ( 1.0 - smoothstep( 0.62 - px * 3.0, 0.62 + px * 3.0, dz ) ) * bnd( ob, 0.1, 0.62, fw.y ); if ( inGable ) o *= step( 0.5, topAt( uF ) - v ); c = mix( c, vec3( 0.62, 0.62, 0.60 ), o * ( 1.0 - aaF ) ); c = mix( c, c + vec3( 0.06 ) * bnd( ob, 0.1, 0.62, fw.y ), aaF * ( 1.0 - aaW ) ); } }
         else if ( sty == 5.0 || sty == 6.0 ) {   // half-timbering: sill beams and plates at the floors, rails at sill and lintel, posts beside the windows, braces in the end bays
@@ -381,9 +643,14 @@ export const VILLAGE = (() => {
           vec3 bk = base * ( 0.75 + 0.5 * vh2( vec2( row, floor( bu ) ) ) ); c = mix( mix( bk, vec3( 0.36, 0.34, 0.31 ), mor * ( 1.0 - aaF ) ), base, aaF * 0.6 ); }
         else if ( hall ) { c = base * ( 0.9 + 0.1 * sin( uF * 31.4 ) * ( 1.0 - aaF ) ); if ( v < 0.5 ) c = vec3( 0.26, 0.25, 0.23 ); }   // trapezoidal sheet, ribs every 0.2 m
         else { c = base * ( 0.9 + 0.1 * texN( tPlas, tq * 0.5 ).r ); if ( v < plH ) c = vec3( 0.24, 0.23, 0.21 ) * ( 0.9 + 0.1 * texN( tPlas, tq * 0.7 ).g ); }   // plaster, a stone plinth
+        if ( brd > 0.5 && inGable && !school && v > eave + ( brd < 1.5 ? 0.0 : brd < 2.5 ? 1.5 : 4.0 ) ) {   // feat/dorfkern: the gable (or its top) in vertical boards
+          float bw2 = 0.15, bf = fract( uF / bw2 ), gp = 1.0 - bnd( bf, 0.05, 0.95, fw.x / bw2 );
+          vec3 wd = vec3( 0.17, 0.085, 0.04 ) * ( 0.8 + 0.4 * vh( floor( uF / bw2 ) + bid * 3.0 ) ) * texN( tWood, vec2( uF / 1.4, v / 2.2 ) );
+          c = mix( wd * ( 1.0 - 0.55 * gp * ( 1.0 - aaF ) ), vec3( 0.13, 0.07, 0.035 ), aaW * 0.6 ); }
         c *= 0.8 + 0.2 * smoothstep( -0.3, 1.4, v );   // darker at the foot (splash, shade)
         // ---- shutters and sills, in the wall plane ----
         if ( win > 0.5 && aaW < 0.99 ) {
+          if ( surr > 0.5 ) c = mix( c, vec3( 0.40, 0.40, 0.385 ) * ( 0.92 + 0.08 * texN( tPlas, tq * 0.5 ).r ), bnd( uF, lo.x - 0.11, hi.x + 0.11, fw.x ) * bnd( v, lo.y - 0.11, hi.y + 0.11, fw.y ) * ( 1.0 - aaW ) );   // feat/dorfkern: light surrounds on slate houses
           if ( shut > 0.5 && !attic ) { float s1 = bnd( uF, lo.x - ww * 0.5, lo.x - 0.03, fw.x ) + bnd( uF, hi.x + 0.03, hi.x + ww * 0.5, fw.x ), s2 = bnd( v, lo.y, hi.y, fw.y );
             c = mix( c, shutCol( sIdx ) * ( 0.8 + 0.2 * step( 0.5, fract( v / 0.07 ) ) ), s1 * s2 * ( 1.0 - aaW ) ); }
           float sx = bnd( uF, lo.x - 0.07, hi.x + 0.07, fw.x ); c = mix( c, vec3( 0.42, 0.42, 0.41 ), sx * bnd( v, lo.y - 0.06, lo.y, fw.y ) * ( 1.0 - aaW ) );
@@ -398,7 +665,7 @@ export const VILLAGE = (() => {
           float tU = sl2.x > 1e-4 ? ( hi.x - p.x ) / sl2.x : sl2.x < -1e-4 ? ( lo.x - p.x ) / sl2.x : 1e9, tV = sl2.y > 1e-4 ? ( hi.y - p.y ) / sl2.y : sl2.y < -1e-4 ? ( lo.y - p.y ) / sl2.y : 1e9;
           vec3 oc;
           if ( min( tU, tV ) < dep && aaW < 0.5 ) {   // the reveal, with its own normal (the sun lights it right)
-            gNrm = tU < tV ? -sign( sl2.x ) * Tv : -sign( sl2.y ) * Uv; gNrmK = 1.0; oc = ( sty == 5.0 || sty == 2.0 || sty == 3.0 ? ( fIdx < 0.5 ? vec3( 0.62 ) : vec3( 0.07, 0.035, 0.02 ) ) : base ) * 0.9; }
+            gNrm = tU < tV ? -sign( sl2.x ) * Tv : -sign( sl2.y ) * Uv; gNrmK = 1.0; oc = ( sty == 5.0 || sty == 2.0 || sty == 3.0 || surr > 0.5 ? ( fIdx < 0.5 ? vec3( 0.62 ) : frameCol( fIdx ) ) : base ) * 0.9; }
           else {
             vec2 r = clamp( ( q - lo ) / ( hi - lo ), 0.0, 1.0 ), m = hi - lo, fr = 0.065 / m, sw = max( fr * 0.3, fw / m );   // edges never sharper than a pixel
             if ( door ) {
@@ -410,7 +677,7 @@ export const VILLAGE = (() => {
               else { float bd = fract( q.x / 0.16 ); oc = ( hall ? vec3( 0.36, 0.37, 0.36 ) : vec3( 0.11, 0.07, 0.04 ) ) * ( 0.8 + 0.2 * step( 0.08, bd ) );   // gate: boards with a brace, two leaves
                 if ( !hall ) { float zz = abs( r.y - ( r.x > 0.5 ? 2.0 - 2.0 * r.x : 2.0 * r.x ) ); oc *= 1.0 - 0.3 * step( zz, 0.04 ); oc *= 1.0 - 0.5 * bnd( r.x, 0.495, 0.505, fr.x ); } } }
             else {   // a window: frame, two casements and a transom (old houses), glass, curtains in many
-              vec3 fc = fIdx < 0.5 ? vec3( 0.68, 0.68, 0.66 ) : vec3( 0.07, 0.035, 0.02 );
+              vec3 fc = frameCol( fIdx );
               float frm = 1.0 - bnd( r.x, fr.x, 1.0 - fr.x, sw.x ) * bnd( r.y, fr.y, 1.0 - fr.y, sw.y );
               if ( st != 1.0 && !barn && !shed && !hall ) { frm = max( frm, bnd( r.x, 0.5 - fr.x * 0.5, 0.5 + fr.x * 0.5, sw.x ) * step( r.y, 0.7 ) ); frm = max( frm, bnd( r.y, 0.7 - fr.y * 0.4, 0.7 + fr.y * 0.4, sw.y ) ); }
               else if ( !barn && !shed && !hall ) frm = max( frm, bnd( r.x, 0.5 - fr.x * 0.5, 0.5 + fr.x * 0.5, sw.x ) );
@@ -455,10 +722,17 @@ export const VILLAGE = (() => {
       aC = new Float32Array(n * 4),
       aT = new Float32Array(n * 3);
     for (const b of S.bld) {
-      const o = b.st,
-        pk = o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut;
+      const o0 = b.st;
       for (const f of b.fac) {
-        const fl = (f.kind === 'gable' ? 1 : 0) + (o.shutters ? 2 : 0) + (o.orn ? 4 : 0) + (o.raised ? 8 : 0);
+        const o = faceLook(o0, f), // feat/dorfkern: a facade of its own (Anger 13: the light shingles of its west gable)
+          pk = o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut + 512 * (o.slate || 0),
+          fl =
+            (f.kind === 'gable' ? 1 : 0) +
+            (o.shutters ? 2 : 0) +
+            (o.orn ? 4 : 0) +
+            (o.raised ? 8 : 0) +
+            16 * Math.min(3, Math.max(0, Math.round(+o.board || 0))) +
+            (o.surr ? 64 : 0);
         for (const q of f.qs)
           for (let k = 0; k < 4; k++) {
             const i = q.q * 4 + k,
@@ -487,6 +761,15 @@ export const VILLAGE = (() => {
       const f = b.fac.filter(f => f.kind === 'eave').reduce((a, c) => (c.ny < a.ny ? c : a)),
         nb = Math.max(1, Math.floor((f.L - 0.6) / o.sp));
       f.door = { u: (1.5 * f.L) / nb, w: 1.1 };
+      return;
+    }
+    const L = o.dk;
+    if (L && L.doorAz !== undefined) {
+      // feat/dorfkern: the door where the video shows it – on the facade facing doorAz (degrees), at doorU of its length
+      const az = f => (Math.atan2(f.nx, f.ny) * 180) / Math.PI,
+        dd = f => Math.abs(((az(f) - L.doorAz + 540) % 360) - 180),
+        f = b.fac.filter(k => k.L > 2).reduce((a, c) => (dd(c) < dd(a) ? c : a));
+      f.door = { u: (L.doorU === undefined ? 0.5 : L.doorU) * f.L, w: L.doorW || 1.05 };
       return;
     }
     if (b.typ === 0 && b.eave < 2.2) return;
@@ -619,7 +902,7 @@ export const VILLAGE = (() => {
       tan.push(tg[0], 0, -tg[1]);
     };
     for (const b of S.bld) {
-      if (b.tris.length) roofOf(b, RP, RI, push, sample);
+      if (b.tris.length || PART.has(b.id)) roofOf(b, RP, RI, push, sample);
     }
     const G = new THREE.BufferGeometry();
     G.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -642,16 +925,25 @@ export const VILLAGE = (() => {
   }
   function roofOf(b, RP, RI, push, sample) {
     const V = new Map(),
-      T = []; // the building's own vertices (shared between its triangles) and triangles
+      T = [], // the building's own vertices (shared between its triangles) and triangles
+      rm = S.remap.get(b.id); // feat/dorfkern: measured heights (reshape)
     const vtx = i => {
       let v = V.get(i);
-      if (!v) V.set(i, (v = { x: RP[i * 3], y: -RP[i * 3 + 2], z: RP[i * 3 + 1], tri: [], ox: 0, oy: 0, dz: 0 }));
+      if (!v) {
+        const z = rm ? b.foot + rm(RP[i * 3 + 1] - b.foot) : RP[i * 3 + 1];
+        V.set(i, (v = { x: RP[i * 3], y: -RP[i * 3 + 2], z, tri: [], ox: 0, oy: 0, dz: 0 }));
+      }
       return v;
     };
-    for (const t of b.tris) {
-      const a = vtx(RI[t * 3]),
-        c = vtx(RI[t * 3 + 1]),
-        d = vtx(RI[t * 3 + 2]);
+    const part = PART.get(b.id),
+      list = part ? part.tris : b.tris.map(t => [vtx(RI[t * 3]), vtx(RI[t * 3 + 1]), vtx(RI[t * 3 + 2])]);
+    if (part)
+      for (const tr of part.tris)
+        for (const v of tr) {
+          if (!V.has(v)) Object.assign(v, { tri: [], ox: 0, oy: 0, dz: 0 });
+          V.set(v, v); // a rebuilt house: its own roof (synth)
+        }
+    for (const [a, c, d] of list) {
       const ux = c.x - a.x,
         uy = c.y - a.y,
         uz = c.z - a.z,
@@ -692,7 +984,9 @@ export const VILLAGE = (() => {
     );
     let col = mid.length ? [0, 1, 2].map(i => mid.reduce((s, c) => s + c[i], 0) / mid.length) : [0.55, 0.3, 0.22];
     if (b.st.style === ST.SCHOOL) col = [0.72, 0.29, 0.17]; // the school's red-orange tiles (photos 2013, 2026)
-    const kind = roofKind(b, col);
+    const dk = b.st.dk;
+    if (dk && dk.roof) col = dk.roof.slice(); // feat/dorfkern: the tiles as in the video (sRGB)
+    const kind = dk && dk.roofKind !== undefined ? dk.roofKind : roofKind(b, col);
     if (kind === 0) {
       const [h, s, l] = hsl(col);
       if (s < 0.22 || (h > 40 && h < 300)) col = l < 0.3 ? [0.4, 0.24, 0.18] : [0.66, 0.32, 0.22];
@@ -896,8 +1190,9 @@ export const VILLAGE = (() => {
       }
     }
     // a chimney on a house with a ridge
-    const school = b.st.style === ST.SCHOOL;
-    if (b.typ === 0 && !b.flat && (school || hh(b.id + 31) < 0.75)) {
+    const school = b.st.style === ST.SCHOOL,
+      nCh = dk && dk.chim !== undefined ? dk.chim : b.typ === 0 && (school || hh(b.id + 31) < 0.75) ? 1 : 0;
+    if (nCh && !b.flat) {
       const vs = [...V.values()],
         zm = Math.max(...vs.map(v => v.z)),
         top = vs.filter(v => v.z > zm - 0.12);
@@ -916,12 +1211,17 @@ export const VILLAGE = (() => {
           }
         if (school && A.x > C.x) [A, C] = [C, A];
         if (dm > 3) {
-          const f = school ? 0.62 : 0.25 + hh(b.id + 37) * 0.25,
-            cx = A.x + (C.x - A.x) * f,
-            cy = A.y + (C.y - A.y) * f,
-            kk = school ? 14 : 14 + Math.floor(hh(b.id + 41) * 3);
-          chimney(push, cx, cy, zm, 0.52, 0.42, zm + 0.95, Math.atan2(C.y - A.y, C.x - A.x), kk, col);
-          b.chim = [cx, cy, zm + 0.95];
+          // feat/dorfkern: count, places along the ridge (from its western end) and kind (14 brick, 15 slate, 16 plaster) from the table
+          if (dk && dk.chim !== undefined && A.x > C.x) [A, C] = [C, A];
+          const at = dk && dk.chimAt ? dk.chimAt : nCh > 1 ? [0.3, 0.7] : [school ? 0.62 : 0.25 + hh(b.id + 37) * 0.25];
+          for (let i = 0; i < Math.min(nCh, at.length); i++) {
+            const f = at[i],
+              cx = A.x + (C.x - A.x) * f,
+              cy = A.y + (C.y - A.y) * f,
+              kk = dk && dk.chimK ? dk.chimK : school ? 14 : 14 + Math.floor(hh(b.id + 41) * 3);
+            chimney(push, cx, cy, zm, 0.52, 0.42, zm + 0.95, Math.atan2(C.y - A.y, C.x - A.x), kk, col);
+            if (!i) b.chim = [cx, cy, zm + 0.95];
+          }
         }
       }
     }
@@ -1063,12 +1363,16 @@ export const VILLAGE = (() => {
   // ---- build ----
   function build() {
     const t0 = performance.now();
+    reshape();
+    synth();
     analyse();
     const sample = photoSampler();
     for (const b of S.bld) {
+      if (LOOK[b.id] && LOOK[b.id].house) b.typ = 0; // feat/dorfkern: a dwelling the data took for an outbuilding (doors, eaves, chimneys)
       b.st = styleOf(b);
       doors(b);
     }
+    S.look = LOOK;
     S.U = {
       tPlas: { value: tex('plaster_ext', 'col', true) },
       tSlate: { value: tex('slate', 'col', true) },

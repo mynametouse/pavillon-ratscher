@@ -14,7 +14,7 @@ import { RATSCHER } from './ratscher.js';
 import { ROADS } from './roads.js';
 import { VILLAGE } from './village.js';
 import { VPROPS } from './village_props.js';
-const VNEAR = (() => {
+export const VNEAR = (() => {
   const S = { on: false, cells: new Map(), built: 0, dropped: 0, CS: 80, R1: 95, R2: 170 };
   if (!window.RATSCHER || !RATSCHER.on) return S;
   const hh = n => {
@@ -74,7 +74,7 @@ const VNEAR = (() => {
       ST = VILLAGE.ST,
       out = [];
     if (
-      ![ST.PLASTER, ST.MODERN, ST.SLATE, ST.SLATE_UP, ST.SLATE_GABLE, ST.FW, ST.FW_UP].includes(st) ||
+      ![ST.PLASTER, ST.MODERN, ST.SLATE, ST.SLATE_UP, ST.SLATE_GABLE, ST.FW, ST.FW_UP, ST.SLATE_FWG].includes(st) ||
       f.kind !== 'eave'
     )
       return out;
@@ -412,6 +412,7 @@ const VNEAR = (() => {
     S.offTick = null;
     S.on = false;
   };
+  S.mat = () => M || (M = mat()); // feat/dorfkern: the same material for the hedges and fences of the centre (world/dorfkern.js)
   S.state = () => ({
     cells: S.cells.size,
     ready: [...S.cells.values()].filter(c => c.ready).length,

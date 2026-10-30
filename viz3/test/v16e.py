@@ -24,8 +24,9 @@ with lib.browser() as b:
         roofTris: VILLAGE.meshes[0].geometry.attributes.position.count / 3, lost: VILLAGE.lostTris || 0, wcol: [WCOL.nSeg, WCOL.nTree] })"""))
     print('village', json.dumps(st), flush=True)
     if want('load'):
-        check('village built from the 337 buildings', st['v'] and st['n'] == 337, f"{st['ms']} ms")
-        check('every building has a style, slate and half-timbering among the houses', sum(st['styles'].values()) == 337 and all(st['styles'].get(str(k), 0) > 0 for k in (2, 3, 5, 6, 0)), str(st['styles']))
+        # feat/dorfkern: houses rebuilt after Falko's video are split into the house and the barn behind (one building more each)
+        check('village built from the 337 buildings', st['v'] and 337 <= st['n'] <= 350, f"{st['n']} buildings, {st['ms']} ms")
+        check('every building has a style, slate and half-timbering among the houses', sum(st['styles'].values()) == st['n'] and all(st['styles'].get(str(k), 0) > 0 for k in (2, 3, 5, 6, 0)), str(st['styles']))
         check('roofs rebuilt with eaves (all but the few at the far edge of the data)', st['roofs'] >= 325 and st['lost'] < 10 and st['roofTris'] > 8000, f"{st['roofs']} roofs, {st['roofTris']} triangles, {st['flat']} flat, {st['lost']} roof triangles without a building")
         check('doors and gates towards the roads', st['doors'] > 250, str(st['doors']))
         check('chimneys on the houses', st['chim'] > 100, str(st['chim']))
