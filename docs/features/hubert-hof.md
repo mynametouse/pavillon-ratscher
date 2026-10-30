@@ -8,7 +8,7 @@ Stand in allen Bauphasen. Vorher (feat/nachbarn, V17a): vier bzw. zwei offene We
 
 | Was | Wo |
 |---|---|
-| **Hof am Feldweg**: Kiesfläche vom Weg bis zum Tor und als Fahrspur hinter den Hütchen nach Süden; der Bach läuft unter der Hofeinfahrt in einem **Rohr** (Betonblock im Graben, Rohrmündungen an beiden Enden, man geht und fährt eben darüber – `KERN.provide('ground')`) | `garden/hof_hubert.js` `LAYOUT.gravel`, `LAYOUT.culvert` |
+| **Hof am Feldweg**: Kiesfläche vom Weg bis zum Tor und als Fahrspur hinter den Hütchen nach Süden; der Bach läuft unter der Hofeinfahrt in einem **Rohr** (Betonblock im Graben – Lage aus `STREAM.cOff`/`WT`, folgt also dem Bach –, Rohrmündungen an beiden Enden, man geht und fährt eben darüber: `KERN.provide('ground')`); die Büsche vom Bachrand (`garden/trees.js` `bankBushes`), die dort auf dem Hof stünden, blendet das Modul nach dem Aufbau aus (Instanz auf Größe 0, Stamm-Kollision abgesenkt – trees.js und seine Zufallsfolge bleiben unverändert, `HOF.bushesHidden`) | `garden/hof_hubert.js` `LAYOUT.gravel`, `LAYOUT.culvert`, `HOF.culvert` |
 | **Langer, niedriger, offener Schuppen** hinten am Hof (14 m, Pultdach aus Wellblech, nach Osten offen): alter Anhänger, etwas Großes unter blauer Plane, Bretter, Werkbank | `SHEDS[0]` (`site.json` `neigh[0]`) |
 | Vor dem Schuppen: zwei Bretterstapel mit Stapelleisten und Wellblech obendrauf, ein weißes Brett, die **Sitzgarnitur** (Tisch mit Bänken), ein verzinktes Geländer, ein **aufrecht stehender Stammabschnitt**, das **weiße Lattentor**; unter den Bäumen am Tor der **Bretterstapel im roten Stahlrahmen** | `LAYOUT.north` |
 | **Schwarzes Hoftor**: zwei Flügel aus fünf Querbrettern mit Strebe, schwarze Pfosten, Zaunstücke zu Falkos Grenze und zur ersten Hütte. Zu wie auf den Fotos; mit E auf und zu („Tor“); öffnet sich, wenn Huberts Traktor kommt, und schließt sich wieder hinter ihm | `LAYOUT.gate`, `HOF.gate`; Traktor: `npc/life.js` `tickGate` |
@@ -65,8 +65,9 @@ er kommt zurück. Bilder in `out/hubert_hof/` (Hof vom Feldweg, Tor und Gasse mi
    Schuppen steht deshalb etwa 3 m westlich der Dachkante im Luftbild.
 2. **Bach**: Im Modell läuft der Bach entlang des Wegs durch Huberts Grundstück (`garden/stream_geo.js`); die Fotos zeigen den Kies direkt
    vom Weg in den Hof, keinen Graben. Hier: Rohr unter der Hofeinfahrt (t −13…11 entlang des Wegs). Ob der Bach dort wirklich verrohrt ist,
-   nördlich des Wegs liegt oder schon vorher endet, wissen wir nicht (Sache von `stream*.js`). Die Büsche am Bachrand stehen dadurch auf dem
-   Kies an den Rändern des Rohrs (`garden/trees.js` `bankBushes`; Weglassen würde die Zufallsfolge verschieben).
+   nördlich des Wegs liegt oder schon vorher endet, wissen wir nicht (Sache von `stream*.js`). Die Büsche am Bachrand, die auf dem Hof
+   stünden, blendet `hof_hubert.js` zur Laufzeit aus; sauberer wäre, `bankBushes` in `garden/trees.js` ließe den Hof aus (verschiebt aber die
+   Zufallsfolge – Entscheidung des Kern-Chats).
 3. **Bäume** (`garden/trees.js`, nicht hier): der große Baum an der Südseite der Hofeinfahrt und die buschige Weide an der Nordseite fehlen
    bzw. stehen nach dem Kronenmodell anders (Bäume 0–4 um das Tor); Baum 2 und 3 stehen auf dem Weg, den Huberts Traktor aus der Gasse auf
    den Feldweg nimmt (`npc/npc.js` `DRIVE_ROUTE`) – das war schon vorher so.

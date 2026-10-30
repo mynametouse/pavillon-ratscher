@@ -85,6 +85,11 @@ export const LAYOUT = {
     [1.6, 1.3],
     [6.0, 1.7],
   ],
+  // low pallet huts with a sloping roof of old tiles on the lane's other side, by Falko's boundary (photos 7195, 7204, 7208): [x, y, facing az]
+  lowHuts: [
+    [-11.3, 20.9, 280],
+    [-11.6, 18.6, 280],
+  ],
   pallets: [
     [0.6, -2.3], // stacks of pallets behind the huts
     [2.4, -2.4],
@@ -891,6 +896,24 @@ LAYOUT.pallets.forEach(([s, off], k) => {
     });
   COL.push([x - 0.75, x + 0.75, y - 0.75, y + 0.75, 0, n * 0.145, 'furn', null, null]);
 });
+// low pallet huts by Falko's boundary: three walls of pallets stood on end, open to the lane, a roof of old tiles falling to the back
+for (const [x, y, az] of LAYOUT.lowHuts) {
+  const a = (az * Math.PI) / 180,
+    g = frame(x, y, Math.sin(a), Math.cos(a)),
+    W = 2.0,
+    Dp = 1.2,
+    hf = 1.35,
+    hb = 1.05;
+  lbox(g, Dp, W, 0.12, MAT.plank, 0, 0, 0.06, { grain: 'y' });
+  lbox(g, 0.12, W, hb, MAT.weather, -Dp / 2 + 0.06, 0, hb / 2, { grain: 'y' });
+  for (const b of [-1, 1]) lbox(g, Dp, 0.12, hb, MAT.weather, 0, b * (W / 2 - 0.06), hb / 2, { grain: 'x' });
+  for (const b of [-1, 1]) lbox(g, 0.08, 0.08, hf, MAT.kvh, Dp / 2 - 0.05, b * (W / 2 - 0.06), hf / 2, { grain: 'z' });
+  monoRoof(g, Dp, W, hf, hb, MAT.roofRed, 0.2, 0.15, 0.12);
+  // split wood inside, end grain to the front
+  const st = lbox(g, Dp - 0.3, W - 0.3, 0.75, MAT.logs, -0.05, 0, 0.12 + 0.375);
+  st.material = [LOGEND, LOGEND, SPLIT, MAT.logs, MAT.logs, MAT.logs];
+  COL.push([x - 1.1, x + 1.1, y - 1.1, y + 1.1, 0, hf, 'hut', null, null]);
+}
 // ---------------- the black farm gate between the yard and the lane: two leaves of horizontal boards with a brace, on black posts ----------------
 {
   const G = LAYOUT.gate,
