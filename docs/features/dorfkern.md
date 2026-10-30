@@ -25,20 +25,20 @@ nicht im Repo** – hier stehen nur die daraus gemessenen Zahlen. Das Video vom 
   Eine einzelne Fassade kann anders aussehen als das Haus (`faces`: Anger 13 hat zur Straße dunklen Schiefer mit Rautenband und Vordach,
   am Westgiebel helle Schindeln).
 - **Der offene Platz** (`world/dorfkern.js`, `DORFKERN`): der Brunnen vor Anger 15 (OSM `man_made=water_well`) als achteckige Sandsteinmauer
-  mit Abdeckplatten, Becken, Stufen nach Süden und hölzernem Pumpenpfosten; braune und grüne Bank, grüne Tonne; Betonpflaster mit Granitbord
-  um den Brunnen und als Parkstreifen am Südrand der Straße (dort stand Falko); die zwei großen Linden am Brunnen und die kleinere am
-  Parkstreifen als 3D-Kronen (Kopien der Dorflinde, gedreht, auf den Stämmen aus dem Video; Stamm bis zum Kronenansatz gestreckt, Krone in
-  die übrige Höhe gedrückt, Stamm und Krone je auf ihre eigene Breite: die große Linde 13 m mit Kronenansatz 3,8 m, Kronenradius 6 m und
-  65 cm Stamm, die gekappte 8 m mit kleinem Kopf ab 4,6 m, die junge Linde auf der Wiese 8 m; auf der leichtesten Stufe „schnell"
-  stattdessen die billigen Kartenbäume des Kronenmodells, auf dieselben Stämme gerückt); die Drehscheibe des Spielplatzes (sah zuerst
-  wie ein Picknicktisch aus), Tonne und Balkenbank auf der Wiese,
-  die geschnittenen Hecken (die nahe am Parkstreifen und die quer über die Wiese, Lage aus ihren Fußpunkten im Video); Betonmasten mit der Freileitung auf der Nordseite der Straße; der Süßigkeitenautomat am Briefkasten; der
-  Staketenzaun (braune Latten, rotbraune Pfosten) an der Wiese hinter der Haltestelle; die weiße Kiste dahinter (2 m hoch, in der
-  Richtung 33–47° wie im Video); der Automat mit weißer Front zur Straße, tiefer als der Briefkasten, der dahinter hervorschaut; das kleine Vordach von
-  Anger 23 und 13, der geschnitzte Wegweiser und die Blumenschale vor der Schule; in den Osterwochen (Palmsonntag bis Weißer Sonntag,
-  `DORFKERN.isEaster`) ein Bogen mit bunten Eiern auf der Ostseite des Brunnens, wo im Video und auf dem Foto auch die Tonne steht. Alles aus dem
-  Baukasten von `world/village_props.js` mit dessen Materialien und dem von `world/village_near.js` – **keine neuen Shader-Programme**, vier
-  Meshes, Kollisionen vor `world/worldcol.js`.
+  mit Abdeckplatten, Becken, Stufen nach Süden und hölzernem Pumpenpfosten; braune und grüne Bank, grüne Tonne; Betonpflaster mit fast
+  bündigem Granitbord um den Brunnen und als Parkstreifen am Südrand der Straße (dort stand Falko); die große und die gekappte Linde am
+  Brunnen und die junge Linde auf der Wiese als 3D-Kronen – Kopien der Dorflinde, gedreht, auf den Stämmen aus dem Video; der Stamm bis zum
+  Kronenansatz gestreckt, die Krone in die übrige Höhe gedrückt, Stamm und Krone je auf ihre eigene Breite (große Linde 13 m, Kronenansatz
+  3,8 m, Kronenradius 6 m, Stamm 65 cm; gekappte 8 m mit kleinem Kopf ab 4,6 m; junge 8 m); auf der leichtesten Stufe „schnell" stehen
+  stattdessen die billigen Kartenbäume des Kronenmodells auf denselben Stämmen. Auf der Wiese die Drehscheibe des Spielplatzes (sah zuerst
+  wie ein Picknicktisch aus), Tonne und Balkenbank, die geschnittenen Hecken (die nahe am Parkstreifen und die quer über die Wiese, Lage aus
+  ihren Fußpunkten im Video). Betonmasten mit der Freileitung auf der Nordseite der Straße; der Süßigkeitenautomat mit weißer Front zur
+  Straße, tiefer als der Briefkasten, der dahinter hervorschaut; der Staketenzaun (braune Latten, rotbraune Pfosten) an der Wiese hinter der
+  Haltestelle und die weiße Kiste dahinter (2 m hoch, in der Richtung 33–47° wie im Video); die kleinen Vordächer von Anger 23 und 13, der
+  geschnitzte Wegweiser und die Blumenschale vor der Schule; in den Osterwochen (Palmsonntag bis Weißer Sonntag, `DORFKERN.isEaster`) ein
+  Bogen mit bunten Eiern auf der Ostseite des Brunnens, wo im Video und auf dem Foto auch die Tonne steht. Alles aus dem Baukasten von
+  `world/village_props.js` mit dessen Materialien und dem von `world/village_near.js` – **keine neuen Shader-Programme**; vier Meshes für
+  den Platz, je Linde Rinde und Laub mit den Materialien der Dorflinde; Kollisionen vor `world/worldcol.js`.
 - **Bushaltestelle wie im Video** (`world/village_props.js`): brauner Holzrahmen mit weißen Feldern und Andreaskreuzen an Rückwand und Seiten,
   Flachdach mit Blende, Bank – Lage und Richtung aus dem Video; die drei Laternen, die das Video zeigt (am Briefkasten, vor Anger 17, vor
   Anger 23), stehen fest; die Dorflinde mit dem Bankring steht in der Richtung, in der das Video ihren Stamm sieht.

@@ -79,7 +79,7 @@ world/village.js            # V16e Ratscher after photos: facades, roofs, chimne
 world/village_props.js      # V16e the centre: old school with turret and clock, Dorflinde, fountain, bus stop, street lamps, light at night (VPROPS)
 world/village_near.js       # V16e near the walker: fences, hedges, flower boxes, bins, woodpiles, door lamps – loaded and dropped by distance (VNEAR)
 # feat/dorfkern: the open space of the centre below this line (before world/worldcol.js: its collisions)
-world/dorfkern.js           # feat/dorfkern the well, benches, limes, hedges, picnic table, poles and lines, fences, Easter eggs – as in Falko's video (DORFKERN)
+world/dorfkern.js           # feat/dorfkern the well, benches, limes, hedges, roundabout, poles and lines, fences, Easter eggs – as in Falko's video (DORFKERN)
 # feat/schleusingen: the tiled world and Schleusingen below this line
 welt/welt.js                # the tiled world (tools/welt) streamed around the camera where a zone needs it; terrain for KERN (WELT)
 welt/schleusingen.js        # Schleusingen after photos: the old town walkable, Rathaus to enter, landmarks, lamps, street names (SCHL)
