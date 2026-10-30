@@ -10,30 +10,32 @@ import { MAT } from '../core/mats.js';
 import { B, beam, COL, cyl, phase, tagPh } from '../core/geo.js';
 import { S0 } from './env.js';
 import { STREAM } from './stream_geo.js';
-import { GSEATS } from './garten_kit.js';
+import { GSEATS, leaf, rng } from './garten_kit.js';
 import { FENCE_MAT } from './fences.js';
 import { worldOf } from './site_base.js';
 phase(null);
 const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
   pink = plain({ color: 0xd98fa0, roughness: 0.8, side: THREE.DoubleSide }),
   tarp = plain({ color: 0xdcdcd4, roughness: 0.8 }),
-  twig = plain({ color: 0x5a4a3a, roughness: 0.9 });
-// ---- brush pile: twigs and boards criss-cross on a low dark mound ----
+  twig = plain({ color: 0x5a4a3a, roughness: 0.9 }),
+  charred = plain({ color: 0x2a2420, roughness: 1 });
+// ---- the burnt-out fire place south-west of the caravan (7230, 7231: about 2 m in front of both confirmed standpoints): charred boards and
+// twigs criss-cross on a low dark patch of ash (the same random draws as the brush pile it was until 30.10.2026) ----
 {
-  const [x, y] = [-2.5, 7.6];
-  cyl(x, y, 0, 0.2, 0.5, plain({ color: 0x3b3328, roughness: 1 }), 12, 0.75, { col: false });
+  const [x, y] = [-0.4, 10.2];
+  cyl(x, y, 0, 0.06, 0.62, plain({ color: 0x2f2a25, roughness: 1 }), 12, 0.75, { col: false });
   for (let i = 0; i < 16; i++) {
     const a = rnd() * Math.PI,
       L = rr(0.8, 1.6),
       cx = x + rr(-0.45, 0.45),
       cy = y + rr(-0.45, 0.45),
-      z = rr(0.18, 0.6);
+      z = rr(0.18, 0.6) * 0.3;
     beam(
       [cx - (Math.cos(a) * L) / 2, cy - (Math.sin(a) * L) / 2, z],
       [cx + (Math.cos(a) * L) / 2, cy + (Math.sin(a) * L) / 2, z + rr(-0.15, 0.2)],
       0.03,
       0.03,
-      i % 2 ? twig : MAT.plank,
+      i % 2 ? twig : i % 3 ? charred : MAT.plank,
       { cast: true }
     );
   }
@@ -551,3 +553,65 @@ phase(null);
   const p = W2(0, 0);
   COL.push([p[0] - 0.35, p[0] + 0.35, p[1] - 0.35, p[1] + 0.35, 0, 0.6, 'chair', null, null]);
 }
+// ---- the young trees Falko planted in the meadow west of the hut, each in a dug patch (7248–7259): a small tree with red-orange autumn
+// leaves (7254–7258), one with dark berries (7248, 7249), a young apple tree (7250); two more patches dug for planting (7251–7253). Own
+// random numbers (rng), no colliders (thin stems; a vehicle would bend them) ----
+{
+  const R = rng(2610),
+    bark = plain({ color: 0x6b5a4a, roughness: 0.9 }),
+    soil = plain({ color: 0x4a3a2c, roughness: 1 }),
+    berry = plain({ color: 0x24161c, roughness: 0.4 });
+  const LEAF = {
+    red: [0xa8422e, 0xc0603a, 0x8c3a3a].map(c => plain({ color: c, roughness: 0.8, side: THREE.DoubleSide })),
+    berry: [0x7a3b2c, 0x6f7a3a].map(c => plain({ color: c, roughness: 0.8, side: THREE.DoubleSide })),
+    apple: [0x8a9a3a, 0xa2a63e].map(c => plain({ color: c, roughness: 0.8, side: THREE.DoubleSide })),
+  };
+  const patch = (x, y, r) => cyl(x, y, -0.01, 0.025, r, soil, 16, r * 1.05, { col: false, cast: false });
+  for (const [x, y, h, kind, nLeaves] of [
+    [-0.3, -10.9, 1.9, 'red', 34],
+    [-4.0, -7.2, 1.5, 'berry', 16],
+    [-4.4, -9.6, 2.0, 'apple', 22],
+  ]) {
+    patch(x, y, 0.45);
+    cyl(x, y, 0, h, 0.018, bark, 6, 0.01, { col: false });
+    const nb = 4;
+    for (let i = 0; i < nb; i++) {
+      const a = (i / nb) * 6.283 + R() * 0.8,
+        z = h * (0.45 + 0.13 * i),
+        L = 0.25 + R() * 0.2;
+      beam([x, y, z], [x + Math.cos(a) * L, y + Math.sin(a) * L, z + L * 0.8], 0.012, 0.012, bark, { cast: false });
+    }
+    for (let i = 0; i < nLeaves; i++) {
+      const a = R() * 6.283,
+        z = h * (0.4 + 0.6 * R()),
+        rr2 = 0.05 + R() * 0.22 * (1.1 - (z / h) * 0.6),
+        M = LEAF[kind][i % LEAF[kind].length];
+      leaf(scene, x + Math.cos(a) * rr2, y + Math.sin(a) * rr2, z, 0.08 + R() * 0.05, a, 0.6 + R() * 0.6, M);
+    }
+    if (kind === 'berry')
+      for (let i = 0; i < 9; i++) {
+        const a = R() * 6.283,
+          z = h * (0.5 + 0.4 * R());
+        const me = new THREE.Mesh(new THREE.SphereGeometry(0.018, 6, 4), berry);
+        me.position.set(x + Math.cos(a) * 0.12, z, -(y + Math.sin(a) * 0.12));
+        scene.add(tagPh(me));
+      }
+  }
+  patch(-5.4, -9.3, 0.42);
+  patch(-5.0, -10.5, 0.4);
+}
+// ---- phase 0: round concrete stepping stones in the lawn from the slab at the gate southwards (7197, 7201) – where the plan has its gravel
+// path ----
+phase(0, 1);
+{
+  const stone = plain({ color: 0x9a9890, roughness: 0.95 }),
+    [a, b] = [STREAM.bridgeGardenEnd, [2.35, 21.9]],
+    L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  for (let i = 0; i < 7; i++) {
+    const f = (0.45 + i * 0.62) / L,
+      x = a[0] + (b[0] - a[0]) * f + Math.sin(i * 2.1) * 0.06,
+      y = a[1] + (b[1] - a[1]) * f;
+    cyl(x, y, -0.02, 0.025, 0.19, stone, 14, 0.2, { col: false, cast: false });
+  }
+}
+phase(null);
