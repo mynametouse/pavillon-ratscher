@@ -183,7 +183,12 @@ export const GPLAN = (() => {
       brook: (x, y) => Math.abs(STREAM.across(x, y)),
       ditch: STREAM.WT,
       wet: 6,
-      trees: S0.trees.filter(t => GPRULES.inPoly(t[0], t[1], S0.garden) || GPRULES.edgeDist(t[0], t[1], S0.garden) < 8),
+      // a tree of today that goes with a construction phase (site.js [5], garden/trees.js) casts no shade from that phase on
+      trees: S0.trees.filter(
+        t =>
+          (t[5] == null || (window.PHASE | 0) < t[5]) &&
+          (GPRULES.inPoly(t[0], t[1], S0.garden) || GPRULES.edgeDist(t[0], t[1], S0.garden) < 8)
+      ),
     });
   }
   // where a plant stands, for the plant list: distance and direction from the nearest building, distance to the boundary
