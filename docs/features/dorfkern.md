@@ -27,11 +27,13 @@ nicht im Repo** – hier stehen nur die daraus gemessenen Zahlen. Das Video vom 
 - **Der offene Platz** (`world/dorfkern.js`, `DORFKERN`): der Brunnen vor Anger 15 (OSM `man_made=water_well`) als achteckige Sandsteinmauer
   mit Abdeckplatten, Becken, Stufen nach Süden und hölzernem Pumpenpfosten; braune und grüne Bank, grüne Tonne; Betonpflaster mit Granitbord
   um den Brunnen und als Parkstreifen am Südrand der Straße (dort stand Falko); die zwei großen Linden am Brunnen und die kleinere am
-  Parkstreifen als 3D-Kronen (Kopien der Dorflinde, gedreht und auf 13, 9,5 und 11 m skaliert, auf den Stämmen aus dem Video; auf der
-  leichtesten Stufe „schnell" stattdessen die billigen Kartenbäume des Kronenmodells, auf dieselben Stämme gerückt); Picknicktisch, Tonne und
-  Balkenbank auf der Wiese,
-  die langen geschnittenen Hecken; Betonmasten mit der Freileitung auf der Nordseite der Straße; der Süßigkeitenautomat am Briefkasten; der
-  Staketenzaun (braune Latten, rotbraune Pfosten) an der Wiese hinter der Haltestelle; die weiße Kiste dahinter; das kleine Vordach von
+  Parkstreifen als 3D-Kronen (Kopien der Dorflinde, gedreht, auf den Stämmen aus dem Video; Stamm bis zum Kronenansatz gestreckt, Krone in
+  die übrige Höhe gedrückt, Stamm und Krone je auf ihre eigene Breite: die große Linde 13 m mit Kronenansatz 3,8 m, Kronenradius 6 m und
+  65 cm Stamm, die gekappte 8 m mit kleinem Kopf ab 4,6 m, die junge Linde auf der Wiese 8 m; auf der leichtesten Stufe „schnell"
+  stattdessen die billigen Kartenbäume des Kronenmodells, auf dieselben Stämme gerückt); Picknicktisch, Tonne und Balkenbank auf der Wiese,
+  die geschnittenen Hecken (die nahe am Parkstreifen und die quer über die Wiese, Lage aus ihren Fußpunkten im Video); Betonmasten mit der Freileitung auf der Nordseite der Straße; der Süßigkeitenautomat am Briefkasten; der
+  Staketenzaun (braune Latten, rotbraune Pfosten) an der Wiese hinter der Haltestelle; die weiße Kiste dahinter (2 m hoch, in der
+  Richtung 33–47° wie im Video); der Automat mit weißer Front zur Straße, tiefer als der Briefkasten, der dahinter hervorschaut; das kleine Vordach von
   Anger 23 und 13, der geschnitzte Wegweiser und die Blumenschale vor der Schule; in den Osterwochen (Palmsonntag bis Weißer Sonntag,
   `DORFKERN.isEaster`) ein Bogen mit bunten Eiern auf der Ostseite des Brunnens, wo im Video und auf dem Foto auch die Tonne steht. Alles aus dem
   Baukasten von `world/village_props.js` mit dessen Materialien und dem von `world/village_near.js` – **keine neuen Shader-Programme**, vier
@@ -75,7 +77,7 @@ Fuß, gemessen im Video (Bildpunkt von Traufe bzw. First über der bekannten Eck
 | 242 | Ratschner Anger 21 | ockerfarbene Schindeln mit Rautenband, braune Fenster, dunkelbraune Ziegel | Traufe 4,3 m, First 8,8 m | 20–24 s |
 | 240 | Ratschner Anger 23 | mittelgrauer Schiefer mit Rauten im Giebel und Band, braune Fenster, Haustür zur Straße unter einem roten Vordach, Laterne davor | Traufe 6,3 m, First 10,8 m | 20–24 s |
 | 216 | Ratschner Anger 26 | ocker verputzt, langes Haus an der Einmündung, braune Fenster | – | 19–21 s |
-| 213 | Ratschner Anger 20 | cremeweiß verputzt, grüne Sprossenfenster, Giebelspitze in Brettern, Sandsteinsockel, rote Ziegel; Rückseite tief heruntergezogen; neu aufgebaut, dahinter die Scheune weiß mit dunklem Fachwerk | Traufen 4,8 (Straße) / 2,6 m, First 8,7 m | 4–10 s |
+| 213 | Ratschner Anger 20 | cremeweiß verputzt, grüne Sprossenfenster (fünf je Geschoss), Giebelspitze in Brettern, Sandsteinsockel, rote Ziegel; Rückseite tief heruntergezogen; neu aufgebaut, dahinter der niedrige Flügel und die Scheune: weiße Wände unter großen roten Dächern, dunkle Schiefergiebel | Traufen 4,8 (Straße) / 2,6 m, First 8,7 m; Flügel Traufe 2,8 m | 4–10 s |
 | 212 | Ratschner Anger 18 | dunkler Schiefer, weiße Fenster mit Faschen, hellblaue Haustür (mit Oberlicht) zur Straße, zwei Schiefergauben, rote Ziegel; neu aufgebaut | Traufe 4,8 m, First 8,7 m | 4–9 s |
 | 211 | Ratschner Anger 16 | dunkler Schiefer, weiße Fenster, rote Ziegel; neu aufgebaut | Traufe 4,9 m, First 9,2 m | 4–8 s |
 | 208, 207 | Ratschner Anger 14, 12 | die Reihe dunkler Schieferhäuser entlang der Straße, weiße Fenster | – | 4–8 s |
@@ -94,10 +96,12 @@ Fuß, gemessen im Video (Bildpunkt von Traufe bzw. First über der bekannten Eck
 
 ## Offen (was das Video nicht zeigt)
 
-- Rückseiten und Höfe, die Scheunen hinter den Häusern (ihr Aussehen ist geschätzt), die Südseite der Schule, Dachgauben (Anger 18 hat zwei –
-  noch keine Geometrie), der Seitenflügel von Anger 17 mit geschweiftem Dach.
+- Rückseiten und Höfe, die Scheunen hinter den Häusern (ihr Aussehen ist geschätzt; bei Anger 20 sind Flügel und Scheune ein Teil mit
+  einem Dach, im Video zwei Dächer und ein Stück Fachwerk), die Südseite der Schule, der Seitenflügel von Anger 17 mit geschweiftem Dach.
+  Gauben nur bei Anger 18.
 - Die Bäume sind belaubt (das ganze Modell zeigt Sommer), das Video zeigt sie kahl im April; die Linden sind Kopien der Dorflinde (eine Form,
-  gedreht und skaliert) – die gekappte Linde am Brunnen hat im Video keine Krone, nur Köpfe.
+  gedreht, gestreckt und skaliert) – die gekappte Linde am Brunnen hat im Video keine Krone, nur Köpfe (im Modell ein kleiner Sommerkopf).
+- Der Spielplatz auf der Wiese (Drehscheibe, Rutsche) fehlt noch.
 - Hecken, Picknicktisch und Bank liegen auf Strahlen des Videos auf dem Boden – auf 1–3 m genau; die Lage der Dorflinde nur aus der Richtung.
 - Die Freileitung hängt in geraden Stücken (keine Isolatoren), der Automat ist schlicht.
 

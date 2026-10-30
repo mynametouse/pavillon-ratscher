@@ -122,7 +122,9 @@ const DATA = {
       ],
       front: [271, -104],
       roof3: { az: 112, e: [2.6, 4.8], r: 8.7, at: 0.5 },
-      back: { st: 'FW', timber: 0, col: [0.88, 0.87, 0.83], roof3: { az: 19, e: 3.4, r: 6.6 } }, // white with dark timbers (video 8–10 s)
+      sp: 2.4, // five windows a floor to the street, three in the gable
+      // the low wing and barn behind: white walls under big red roofs, dark slate gables (video 8–10 s)
+      back: { st: 'SLATE_GABLE', slate: 0, frame: 2, col: [0.92, 0.91, 0.87], roof3: { az: 19, e: 2.8, r: 6.6 } },
     },
     212: {
       adr: 'Ratschner Anger 18',
@@ -218,24 +220,28 @@ const DATA = {
       [235.8, -113.1, [0.45, 0.45, 0.43]], // on the green
       [243.6, -99.2, [0.42, 0.3, 0.2]], // wooden bin by the power pole (video 14–18 s)
     ],
-    // the two limes by the well: the measured crowns (from) moved to the trunks the video shows (at), height, crown width factor
+    // the limes by the well and on the green: the measured crowns (from) moved to the trunks the video shows (at); height, crown base, crown
+    // radius and trunk diameter from the video (m); w: width factor of the measured crown's card (lightest tier)
     limes: [
-      { from: [260.2, -116.4], at: [257.9, -119.4], h: 13, w: 1.15, turn: 2.1 },
-      { from: [255.1, -119.0], at: [253.6, -117.2], h: 9.5, w: 0.8, turn: 4.4 }, // pollarded: a narrower crown
-      { at: [235.9, -107.3], h: 11, w: 0.85, turn: 1.2 }, // the smaller lime on the green by the parking strip (video 19–22 s)
+      { from: [260.2, -116.4], at: [257.9, -119.4], h: 13, cb: 3.8, rc: 6.0, dt: 0.65, w: 1.15, turn: 2.1 },
+      { from: [255.1, -119.0], at: [253.6, -117.2], h: 8, cb: 4.6, rc: 2.2, dt: 0.38, w: 0.5, turn: 4.4 }, // pollarded: heads at 5 m
+      { at: [235.9, -107.3], h: 8, cb: 2.6, rc: 3.8, dt: 0.3, turn: 1.2 }, // the young lime on the green by the parking strip (video 19–22 s)
     ],
     linde: [217.0, -109.0], // the Dorflinde with its ring of benches: bearing 265.5° in the video (was 216.5, −106.5)
+    // the trimmed hedges on the green: the near one along the parking strip, the one across the green (feet on the ground, video 19–24 s)
     hedges: [
       {
         p: [
-          [243.5, -110.8],
-          [237.0, -106.2],
+          [244.0, -111.2],
+          [239.4, -110.0],
+          [231.0, -108.5],
         ],
       },
       {
         p: [
-          [239.5, -117.8],
-          [223.0, -114.5],
+          [246.5, -118.0],
+          [241.2, -114.8],
+          [236.8, -111.2],
         ],
       },
     ],
@@ -283,10 +289,10 @@ const DATA = {
       [243.2, -97.6],
       [277.0, -109.6],
     ], // concrete power poles on the north side of the street, the overhead line between them
-    vending: [245.4, -99.7, 200],
+    vending: [245.6, -99.7, 160], // x, y, azimuth its front faces (to the street; the post box behind it, a little higher)
     signpost: [228.5, -94.0], // carved post with arrow signs, on the lawn before the school (video 19–21 s)
     planter: [227.0, -92.2], // concrete flower bowl beside it
-    whitebox: [261.0, -85.4, 119, 6.0, 2.4, 2.3], // x, y, azimuth of the long side, length, depth, height
+    whitebox: [265.2, -87.6, 119, 6.0, 2.4, 2.0], // x, y, azimuth of the long side, length, depth, height (bearing 33–47° in the video)
     porches: [
       [240, 1.9, 1.1, 2.6],
       [252, 1.6, 0.9, 2.5],

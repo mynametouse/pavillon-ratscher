@@ -760,8 +760,8 @@ export const VPROPS = (() => {
         py = -98.6,
         pz = gz(px, py);
       kM.cyl(px, py, pz, pz + 0.95, 0.04, 0.04, 6, L(0.3, 0.3, 0.3));
-      kP.box(px, py, pz + 0.95, 0.42, 0.3, 0.55, a, L(0.98, 0.78, 0.0));
-      kP.box(px, py, pz + 1.5, 0.46, 0.34, 0.05, a, L(0.85, 0.66, 0.0));
+      kP.box(px, py, pz + 0.95, 0.42, 0.3, 0.42, a, L(0.98, 0.78, 0.0)); // feat/dorfkern: as low as the video shows it
+      kP.box(px, py, pz + 1.37, 0.46, 0.34, 0.05, a, L(0.85, 0.66, 0.0));
       S.trunks.push([px, py, 2]);
     }
     // signpost at the green (photo: Themar, Schleusingen)

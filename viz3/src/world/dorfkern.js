@@ -298,22 +298,23 @@ export const DORFKERN = (() => {
       );
     }
     {
+      // a red case with a white front and three windows of sweets, on a grey post, its top below the post box's (video 14–18 s)
       const [x, y, az] = O.vending,
         z = gz(x, y),
         r = az2rot(az + 90);
-      kP.cyl(x, y, z, z + 1.0, 0.035, 0.035, 6, L(0.55, 0.55, 0.55));
-      kP.box(x, y, z + 1.0, 0.56, 0.22, 0.66, r, L(0.62, 0.08, 0.1));
-      const c = Math.cos(r - Math.PI / 2),
-        s = Math.sin(r - Math.PI / 2);
-      kP.box(x + c * 0.1, y + s * 0.1, z + 1.06, 0.46, 0.04, 0.54, r, L(0.92, 0.92, 0.9));
-      for (const o of [-0.14, 0, 0.14])
+      kP.cyl(x, y, z, z + 0.66, 0.035, 0.035, 6, L(0.55, 0.55, 0.55));
+      kP.box(x, y, z + 0.66, 0.52, 0.2, 0.5, r, L(0.62, 0.08, 0.1));
+      const c = Math.cos(r + Math.PI / 2),
+        s = Math.sin(r + Math.PI / 2);
+      kP.box(x + c * 0.09, y + s * 0.09, z + 0.7, 0.44, 0.04, 0.42, r, L(0.92, 0.92, 0.9));
+      for (const o of [-0.13, 0, 0.13])
         kP.box(
-          x + c * 0.125 + Math.cos(r) * o,
-          y + s * 0.125 + Math.sin(r) * o,
-          z + 1.18,
-          0.09,
+          x + c * 0.115 + Math.cos(r) * o,
+          y + s * 0.115 + Math.sin(r) * o,
+          z + 0.82,
+          0.08,
           0.02,
-          0.3,
+          0.22,
           r,
           L(0.85, 0.6, 0.2)
         );
@@ -502,14 +503,32 @@ export const DORFKERN = (() => {
         r.h = lm.h;
       } else if (T) T.push(lm.at[0], lm.at[1], lm.h);
       if (LM) {
-        const s = lm.h / H,
-          w = lm.w || 1;
-        m4.makeTranslation(-base.x, -base.y, -base.z)
-          .premultiply(new THREE.Matrix4().makeScale(s * w, s, s * w))
-          .premultiply(new THREE.Matrix4().makeRotationY(lm.turn || 0))
-          .premultiply(new THREE.Matrix4().makeTranslation(...V(lm.at[0], lm.at[1], z - 0.15).toArray()));
+        // the Dorflinde's crown reaches down to 2–3 m on a trunk of 2 m: stretch the trunk to the crown base the video shows (cb), squeeze
+        // the crown into what is left of the height, trunk and crown each to their own width (dt, rc) – one map for bark and leaves alike,
+        // so the branches stay in the leaves
+        const st = srcStats(LM, base),
+          s = lm.h / H,
+          cb = lm.cb || st.u0 * s,
+          kt = lm.dt ? lm.dt / 2 / st.rt : s * (lm.w || 1),
+          kc = lm.rc ? lm.rc / st.rc : s * (lm.w || 1),
+          up = (lm.h - cb) / Math.max(1, st.top - st.u0);
+        m4.makeRotationY(lm.turn || 0).premultiply(
+          new THREE.Matrix4().makeTranslation(...V(lm.at[0], lm.at[1], z - 0.15).toArray())
+        );
         for (const src of [LM[0], LM[3]]) {
-          const g = src.geometry.clone();
+          const g = src.geometry.clone(),
+            P = g.attributes.position;
+          for (let i = 0; i < P.count; i++) {
+            const u = P.getY(i) - base.y,
+              t = Math.min(1, Math.max(0, (u - 0.7 * st.u0) / (0.6 * st.u0))),
+              k = kt + (kc - kt) * t;
+            P.setXYZ(
+              i,
+              (P.getX(i) - base.x) * k,
+              u < st.u0 ? (u * cb) / st.u0 : cb + (u - st.u0) * up,
+              (P.getZ(i) - base.z) * k
+            );
+          }
           g.applyMatrix4(m4);
           g.computeBoundingSphere();
           const me = new THREE.Mesh(g, src.material);
@@ -525,6 +544,32 @@ export const DORFKERN = (() => {
       S.limes.push([lm.at[0], lm.at[1], lm.h]);
     }
     S.lite = null; // tick decides
+  }
+  // the Dorflinde's geometry measured once: trunk radius at 0.8–1.6 m, the crown's foot (3 % of the leaves lower), top, radius (95 %)
+  function srcStats(LM, base) {
+    if (S.src) return S.src;
+    const pb = LM[0].geometry.attributes.position,
+      pl = LM[3].geometry.attributes.position,
+      hs = [],
+      rs = [];
+    let rt = 0;
+    for (let i = 0; i < pb.count; i++) {
+      const u = pb.getY(i) - base.y;
+      if (u > 0.8 && u < 1.6) rt = Math.max(rt, Math.hypot(pb.getX(i) - base.x, pb.getZ(i) - base.z));
+    }
+    for (let i = 0; i < pl.count; i += 3) {
+      hs.push(pl.getY(i) - base.y);
+      rs.push(Math.hypot(pl.getX(i) - base.x, pl.getZ(i) - base.z));
+    }
+    hs.sort((a, b) => a - b);
+    rs.sort((a, b) => a - b);
+    S.src = {
+      rt: rt || 1,
+      u0: Math.max(0.5, hs[Math.floor(hs.length * 0.03)] || 3),
+      top: hs[hs.length - 1] || 21,
+      rc: rs[Math.floor(rs.length * 0.95)] || 9,
+    };
+    return S.src;
   }
   const Z0 = new THREE.Matrix4().makeScale(0, 0, 0);
   function limeTier() {
@@ -704,6 +749,7 @@ export const DORFKERN = (() => {
     meshes: S.meshes.length,
     segs: S.segs || 0,
     limes: (S.limes || []).length,
+    src: S.src && Object.fromEntries(Object.entries(S.src).map(([k, v]) => [k, +v.toFixed(2)])),
     easter: S.easter,
     ms: S.ms,
   });
