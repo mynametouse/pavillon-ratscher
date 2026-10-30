@@ -15,6 +15,7 @@ Stand in allen Bauphasen. Vorher (feat/nachbarn, V17a): vier bzw. zwei offene We
 | **Grasgasse** vom Tor nach Süden entlang Falkos Westgrenze | (frei, nur Gras) |
 | **Trockenhütchen**: sechs in zwei Gruppen an der Westseite der Gasse (Linie wie im Luftbild, 200°), Paletten- und Bretterwände, kleines Satteldach aus alten roten Ziegeln, vorn offen zur Gasse mit dem gestapelten Holz; die fünfte füllt sich (`HOF.fillHut`) | `LAYOUT.huts`, `HOF.huts` (`x, y, fill, front, look`) |
 | **Ziegelstapel** auf Paletten zwischen und vor den Hütchen, **Palettenstapel** dahinter | `LAYOUT.tiles`, `LAYOUT.pallets` |
+| Zwei **niedrige Palettenhütten** mit Pultdach aus alten Ziegeln auf der anderen Seite der Gasse an Falkos Grenze (7195, 7204, 7208) | `LAYOUT.lowHuts` |
 | **Werkhof** im Süden: Huberts **Werkstatt** (nach Osten offen, rostrotes Profilblech, Werkbank mit Werkzeugwand, Regal, Brennholz, Amboss, Schubkarre), der **Schuppen mit Tür und Fenster** nördlich daneben, der weiße **Kofferaufbau** „Zeit zum Entspannen“, Holzplatz (Hackklotz, Rugel, Scheithaufen, Sägebock), Tisch mit zwei Stühlen, der Kombi auf der Rampe und die **kleine Werkstatt hinter dem Auto** (zum Auto offen; dort liegt der 13er-Ringschlüssel – „In der Werkstatt hinter dem Auto …“, Huberts aufgenommener Satz) | `SHEDS[1]`, `SHEDS[2]`, `SHEDS[3]`, `HOF`, `garden/hof_auto.js` |
 | **Lange Gebäude am Westrand** wie im Luftbild: dunkles Pultdach (nördlich), langes rotbraunes Satteldach, helles Dach hinter der Werkstatt, Scheune mit rotem Dach in der Südwestecke – geschlossen, schlicht | `LAYOUT.long` |
 | Ortsnamen: „Huberts Hof“ (Hof, über dem Rohr, Gasse, Werkhof), „Huberts Schuppen“ (`SHEDS[0]`, `[1]`), „Huberts Werkstatt“ (`SHEDS[2]`, `[3]`) | `HOF.placeAt`, `npc/life.js` |
@@ -75,8 +76,8 @@ er kommt zurück. Bilder in `out/hubert_hof/` (Hof vom Feldweg, Tor und Gasse mi
    Tor (`npc/npc.js`, unverändert).
 5. **Tor**: Die GPS-Standorte der Fotos am Tor (7193–7196) liegen 5–8 m östlich der Stelle, an der das Tor im Modell steht; gesetzt nach
    Luftbild (Beginn der Hütchenreihe) und Falkos Westgrenze. Aufschlagrichtung (in den Hof) und Scharnierseiten angenommen.
-6. **Hütchen**: Zahl (sechs in zwei Gruppen), Maße (1,2 m, 2 m Traufe) und Abstände geschätzt; die Fotos zeigen weitere weiter südlich
-   und zwischen Gasse und Garten niedrige Palettenhütten mit Ziegeldach, weiße IBC-Tanks und Paletten (7195, 7204, 7208) – nicht gebaut.
+6. **Hütchen**: Zahl (sechs in zwei Gruppen), Maße (1,2 m, 2 m Traufe) und Abstände geschätzt; die Fotos zeigen weitere weiter südlich;
+   zwischen Gasse und Garten stehen zwei niedrige Palettenhütten (Lage geschätzt), weiße IBC-Tanks und Paletten dort (7195, 7196) fehlen.
 7. **Lange Gebäude**: Höhen, Wände und Dachformen geschätzt (nur die Dachfarben aus dem Luftbild); die grüne Dachfläche im Werkhof
    (≈ −34…−27 / 6…11) ist als helles Dach gebaut; die Scheune in der Südwestecke gehört vielleicht schon zum nächsten Grundstück.
 8. **Werkhof**: Palettentisch und weiße Stühle vor dem Kofferaufbau (7233) nicht gebaut – Huberts Tisch mit den zwei Stühlen bleibt (Gespräche).
