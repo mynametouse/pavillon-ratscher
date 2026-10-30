@@ -48,3 +48,7 @@ was noch offen ist. Private Rohdaten (Fotos, Videos, Flurstücke) kommen nie ins
 - **Huberts Hof genauer:** die Schuppen nach Luftbild und Fotos 7190–7196 (lange, niedrige, offene Schuppen hinten; die Gasse mit den
   Trockenhütchen am Gartenzaun), das Tor, die Kiesfläche.
 - **Garten Nord:** die vier gemessenen Bäume mitten in der Wiese zwischen Tor und Bungalow sind weg (Foto 7201 zeigt dort offene Wiese); die Bäume am Bach bleiben – ob es genau diese sind, kann Falko im Artefakt zeigen.
+- **Weitere Foto-Details für die nächste Runde:** am Bach die Plattenterrasse mit der grünen Bank (7205), Laterne und weißer Stuhl an der
+  Treppe zum Wasser (7207), der Durchlass mit Rohr am Tor (7199, 7200), der innere Maschendrahtzaun mit Tor (7197, 7198); die alte
+  Blechgarage auf den Fotos hellblau-grau mit Satteldach und weiß gerahmter Doppeltür (7236) – im Modell ein grauer Kasten mit Schiebetoren
+  nach Falkos Beschreibung vom 23.10.; Falkos blauer Wagen am Tor (7176, 7177, 7183–7185).
