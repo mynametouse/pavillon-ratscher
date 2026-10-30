@@ -185,6 +185,22 @@ with lib.browser() as b:
     ck('texts of today: the workbench, no thicknesser in the book', 'Dickenhobel' not in json.dumps(nx['book'], ensure_ascii=False) and any('Trommelschleifer' in t for t in nx['book']), nx['book'][7:9])
     E("__H.look(-2.25, -38.9, -2.25, -40.2, 0.9, 60)"); shot('j_workbench')
 
+    # ---------------- own boards: instead of the drying cabinet under the lean-to's roof ----------------
+    r = J("""(() => { const bs = HOLZSAW.boards; for (let i = 0; i < 4; i++) bs.push({ id: 'BT' + i, lid: 'T0', sp: 'spruce', n: i, t: 0.052, L: 4.1, zb: -0.05 + i * 0.054, zt: 0.002 + i * 0.054,
+        r0: 0.17, r1: 0.14, wS: 0.22, wW: 0.26, pith: false, mc0: 60, mc: 19, st: 'stack', layer: 0, sa: 0, t0: CLOCK.t, tu: CLOCK.t });
+        HOLZDRY.stack = HOLZDRY.stack || { found: 0.45, sp: 0.5, gap: true, seal: true, layers: [{ t: 0.052, boards: ['BT0', 'BT1', 'BT2', 'BT3'] }], roof: true, weight: true, L: 4.1, t0: CLOCK.t };
+        HOLZDRY.rebuild(); GAME.step(0.1); const a = PLAY.acts().find(a => a.id === 'hd:kiln'); const p = a.pos(); GAME.view(p[0] + 0.6, p[1] + 0.4, 1.62, 225, -12); GAME.step(0.05);
+        return { label: a.label(), pos: p.map(v => +v.toFixed(2)) }; })()""")
+    lab = r['label']; E("__H.run('hd:kiln')"); E("(() => { let n = 0; while (PLAY.hold && n < 400) { GAME.step(0.025); n++; } return n; })()")
+    sh = J("{ kiln: HOLZDRY.kiln, st: HOLZSAW.boards.filter(b => b.id.startsWith('BT')).map(b => b.st), label: __H.label('hd:kiln') }")
+    ck('today the dry boards go under the lean-to roof (no drying cabinet)', (lab or '').endswith('unter dem Pultdach nachtrocknen') and sh['kiln'] and sh['kiln'].get('shed') and all(s == 'kiln' for s in sh['st']) and (sh['label'] or '').startswith('Bretter unter dem Dach'), {'first': r, 'then': sh})
+    E("__H.look(-4.0, -38.9, -4.65, -40.15, 0.3, 60)"); shot('l_boards_under_the_roof')
+    n0 = E("WERK.RACK.items.length")
+    E("HOLZSAW.boards.filter(b => b.id.startsWith('BT')).forEach(b => b.mc = 11.6); GAME.step(0.05)")
+    lab = E("__H.label('hd:kiln')"); E("__H.run('hd:kiln')"); E("(() => { let n = 0; while (PLAY.hold && n < 400) { GAME.step(0.025); n++; } })()")
+    n1 = E("WERK.RACK.items.length")
+    ck('… dried below 12 %: own glued panels in the stock under the white bench', (lab or '').startswith('Trockene Bretter') and n1 > n0, {'label': lab, 'stock': [n0, n1]})
+
     # ---------------- phase 1: the hall, the mill north of it, as before ----------------
     E("GAME.setPhase(1); GAME.step(0.4)")
     p1 = J("""{ off: WORKS.machines.find(m => m.key === 'saw').state.off, door: DOORS.saw.pos.map(v => +v.toFixed(2)), want: __H.W(-0.55, -34.45).map(v => +v.toFixed(2)),

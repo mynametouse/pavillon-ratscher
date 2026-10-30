@@ -798,7 +798,7 @@ export const WERK = (() => {
       at: 0.2,
       desc: 'Schaumstoffrolle für Leim: schnell und gleichmäßig auf breiten Fugen.',
       at0: [-2.5, -40.33, 0.86, 0.3],
-      today: [-4.3, -40.3, 0.82, 0.3],
+      today: [-4.08, -40.3, 0.82, 0.3],
     },
     () => {
       const g = new THREE.Group();
@@ -819,7 +819,7 @@ export const WERK = (() => {
       at: 0.25,
       desc: 'Flachpinsel für Leim: genau, aber langsamer als die Rolle.',
       at0: [-2.66, -40.34, 0.86, 0.2],
-      today: [-4.47, -40.34, 0.82, 0.2],
+      today: [-4.24, -40.36, 0.82, 0.2],
     },
     () => {
       const g = new THREE.Group();
@@ -961,7 +961,7 @@ export const WERK = (() => {
       at: 0.35,
       desc: 'Widerstands-Holzfeuchtemesser: zwei Stifte ins Holz, Anzeige in Prozent (Holzart Eiche eingestellt).',
       at0: [-0.45, -39.9, 0.88, 0.4],
-      today: [-2.05, -39.98, 0.86, 0.4],
+      today: [-1.9, -39.97, 0.86, 0.4],
     },
     () => {
       const g = new THREE.Group();
@@ -1102,6 +1102,8 @@ export const WERK = (() => {
     ],
   };
   const RK = () => (PH0() ? 'im Vorrat' : 'im Regal'); // where the stock is, in words
+  const atName = n =>
+    (({ Tischkreissäge: 'an der ', Hobelbank: 'an der ', Werkbank: 'auf der ', Räucherzelt: 'im ' })[n] || 'am ') + n;
   const glueAt = () => (PH0() ? 'auf der Werkbank' : 'auf dem Leimtisch');
   // clamps and cauls at the glue table, the dish in the tent
   const GL = { clamps: [], cauls: [], f: [], hold: grp(WG, -3.32, -40.02, 0.86) };
@@ -1731,7 +1733,7 @@ export const WERK = (() => {
         : wp.where === 'rack'
           ? ' (liegt ' + RK() + ')'
           : !here && ST[wp.where]
-            ? ' (liegt am ' + ST[wp.where].name + ')'
+            ? ' (liegt ' + atName(ST[wp.where].name) + ')'
             : '';
     return [
       nameOf(wp) + ': ' + nx.t + where + '.',

@@ -108,6 +108,39 @@ const C0 = COL.length,
     tarp: plain({ color: 0x3d5786, roughness: 0.9 }), // the faded blue tarpaulins of today (photos of 26.10.2026)
   };
   const DUST = {}; // sawdust patches (material and a maker, set below)
+  // a tarpaulin thrown over a machine: a box of cloth that sags a little on top, hangs out further down, with folds and an uneven hem
+  const drape = (x0, x1, y0, y1, z0, z1, parent, o = {}) => {
+    const w = x1 - x0,
+      d = y1 - y0,
+      h = z1 - z0,
+      g = new THREE.BoxGeometry(w, h, d, 12, 6, 6),
+      p = g.attributes.position,
+      sd = (o.seed || 1) * 7.3,
+      fl = o.flare ?? 0.08,
+      A = o.folds ?? 0.035;
+    for (let i = 0; i < p.count; i++) {
+      let x = p.getX(i),
+        y = p.getY(i),
+        z = p.getZ(i); // three.js frame: x across, y up, z = −site y
+      const t = (y + h / 2) / h,
+        ex = Math.abs(x) > w / 2 - 1e-4,
+        ez = Math.abs(z) > d / 2 - 1e-4;
+      if (t > 0.999) y -= (o.sag ?? 0.03) * (1 - ((2 * x) / w) ** 2) * (1 - ((2 * z) / d) ** 2);
+      else {
+        const k = 1 - t;
+        if (ex) x += Math.sign(x) * k * (fl + A * Math.sin(z * 9 + sd + x));
+        if (ez) z += Math.sign(z) * k * (fl + A * Math.sin(x * 8 + sd * 1.7));
+        if (t < 1e-3) y += (0.5 + 0.5 * Math.sin(x * 5.3 + z * 4.1 + sd)) * (o.hem ?? 0.12);
+      }
+      p.setXYZ(i, x, y, z);
+    }
+    g.computeVertexNormals();
+    const me = new THREE.Mesh(g, M.tarp);
+    me.position.copy(V((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2));
+    me.castShadow = me.receiveShadow = true;
+    (parent || scene).add(tagPh(me));
+    return me;
+  };
   grime(M.boards, 0.45, 0.5, 0.08);
   grime(M.gable, 0.3, 0.4, 0.08);
   grime(M.foot, 0.3, 0.3, 0.1);
@@ -406,16 +439,8 @@ const C0 = COL.length,
     SAW.cover = new THREE.Group();
     h.add(SAW.cover);
     {
-      // draped over the frame: a top and four sides hanging out a little, two folds (head frame x −0.66 … 1.06 with the engine)
-      const PC = o => Object.assign({ parent: SAW.cover, col: false }, o),
-        BC = (p, q, w) => beam(p, q, w, 0.025, M.tarp, { parent: SAW.cover });
-      B(-0.74, 1.1, -0.34, 0.25, 1.88, 1.95, M.tarp, PC());
-      BC([0.18, 0.26, 1.92], [0.18, 0.38, 0.42], 1.9);
-      BC([0.18, -0.35, 1.92], [0.18, -0.47, 0.5], 1.9);
-      BC([-0.76, -0.05, 1.92], [-0.86, -0.05, 0.36], 0.66);
-      BC([1.12, -0.05, 1.92], [1.2, -0.05, 0.62], 0.66);
-      BC([-0.5, 0.3, 1.6], [-0.42, 0.42, 0.5], 0.08);
-      BC([0.7, -0.4, 1.7], [0.78, -0.5, 0.55], 0.07);
+      // draped over the frame (head frame x −0.66 … 1.06 with the engine, the push bar to the south)
+      drape(-0.76, 1.12, -0.37, 0.27, 0.34, 1.97, SAW.cover, { seed: 2, flare: 0.1, folds: 0.045, hem: 0.16 });
     }
     SAW.folded = new THREE.Group();
     SAW.folded.userData.mergeRoot = 'werkstatt:saw:folded'; // merged on its own: it shows only while the head is uncovered
@@ -1252,6 +1277,16 @@ const C0 = COL.length,
       B(cx + 0.27, cx + 0.31, cy - 0.12, cy - 0.02, 0.7, 0.8, M.red, { col: false }); // switch
       cyl(cx - 0.1, cy + 0.2, 0.55, 0.75, 0.04, M.black, 10, undefined, { col: false }); // dust port
       colBox(cx - 0.43, cx + 0.43, cy - 0.36, cy + 0.46, z + 0.05, 'machine');
+      B(cx - 0.2, cx + 0.2, cy - 0.13, cy + 0.13, 0.0, 0.2, M.black, { col: false }); // a tool case under the stand
+      B(cx - 0.05, cx + 0.05, cy - 0.14, cy - 0.13, 0.12, 0.17, M.orange, { col: false });
+    }
+    // F-clamps hanging on the middle front post, beside the mill's head (IMG_7290)
+    for (let i = 0; i < 3; i++) {
+      const x = (LX0 + LX1) / 2 - 0.07,
+        y = LYF - 0.03 + i * 0.03;
+      B(x - 0.008, x + 0.008, y - 0.008, y + 0.008, 1.05 + i * 0.06, 1.62, M.steel, { col: false });
+      B(x - 0.02, x + 0.02, y - 0.015, y + 0.015, 1.52, 1.58, M.red, { col: false });
+      B(x - 0.02, x + 0.02, y - 0.015, y + 0.015, 1.12 + i * 0.06, 1.18 + i * 0.06, M.orange, { col: false });
     }
     // --- east bay: the white bench with the end-grain blanks (and the stock of glued panels) below, clamps and a shelf above ---
     {
@@ -1378,15 +1413,14 @@ const C0 = COL.length,
       const cv = (T0.covers.sander = new THREE.Group());
       cv.userData.mergeRoot = 'werkstatt:cover:sander';
       scene.add(cv);
-      const PC = o => Object.assign({ parent: cv, col: false }, o),
-        BC = (p, q, w) => beam(p, q, w, 0.025, M.tarp, { parent: cv }),
-        xm = (x0 + x1) / 2,
-        ym = (y0 + y1) / 2;
-      B(x0 - 0.34, x1 + 0.34, y0 - 0.12, y1 + 0.16, z + 0.44, z + 0.51, M.tarp, PC());
-      BC([xm, y1 + 0.17, z + 0.48], [xm, y1 + 0.27, 0.4], x1 - x0 + 0.7);
-      BC([xm, y0 - 0.13, z + 0.48], [xm, y0 - 0.22, 0.3], x1 - x0 + 0.7);
-      BC([x0 - 0.36, ym, z + 0.48], [x0 - 0.42, ym, 0.36], y1 - y0 + 0.3);
-      BC([x1 + 0.36, ym, z + 0.48], [x1 + 0.4, ym, 0.6], y1 - y0 + 0.3);
+      const PC = o => Object.assign({ parent: cv, col: false }, o);
+      drape(x0 - 0.36, x1 + 0.36, y0 - 0.14, y1 + 0.18, 0.3, z + 0.5, cv, {
+        seed: 5,
+        flare: 0.06,
+        folds: 0.03,
+        sag: 0.015,
+        hem: 0.2,
+      });
       B(x0 - 0.2, x1 + 0.2, y0 - 0.02, y1 + 0.06, z + 0.52, z + 0.54, foil, PC());
       for (const [x, y, a] of [
         [x0 + 0.12, y0 + 0.2, 0.3],

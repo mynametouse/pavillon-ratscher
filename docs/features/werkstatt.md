@@ -72,15 +72,16 @@ Station, die es dort nicht gibt (Dickenhobel, Räucherzelt), kommt in den Vorrat
 bash tools/browser_lock.sh python3 viz3/test/run.py --port 8993 --serve werkstatt_heute:nogeo=1   # ~3 min (mit Gelände ~5 min)
 ```
 
-`viz3/test/werkstatt_heute.py` (25 Prüfungen): Start in Phase 0, beide Planen drauf; der Schuppen da, nichts von der Halle sichtbar; **kein
+`viz3/test/werkstatt_heute.py` (27 Prüfungen): Start in Phase 0, beide Planen drauf; der Schuppen da, nichts von der Halle sichtbar; **kein
 sichtbares Mesh im Bereich der Halle, das nicht von heute ist** (Mühle und Aggregat ausgenommen, Dinge nur auf dem Schuppen); **jede Aktion
 mit Beschriftung im Werkstattbereich hat ein Objekt** (≤ 1,3 m); keine Aktion von Dickenhobel, Räucherzelt, Trockenschrank, Hackklotz;
 Planen ab (gespeichert); abgedeckt lässt sich die Säge nicht einschalten; Trommelschleifer, Tischkreissäge, Blockbandsäge ein und aus (Ton,
 Aggregat); je Maschine ein Arbeitsschritt (Tischkreissäge ablängen, Trommelschleifer Leimholz plan, Blockbandsäge klemmen/planen/Schwarte,
-Werkbank fasen); Texte ohne Dickenhobel; Phase 1: Säge mit ihrem Stamm am Plan-Ort, Halle mit Hobel und Zelt, keine Plane; zurück in Phase 0.
-Bilder in `out/werkstatt_heute/`. Weiter grün halten: `v15b` (ganzes Brett in der Halle), `v16d:fork,saw,stack` (Säge in Phase 1),
-`garage` (Aggregat tanken). Bei GitHub (`feat.yml`): `viz3/extra/werkstatt-heute/tests.txt` (werkstatt_heute, garage, v15b);
-`v16d:fork,saw,stack` läuft im Prüfpaket als Feature v16d-2 (~45 min, zu lang für den Zweig-Lauf).
+Werkbank fasen); Texte ohne Dickenhobel; eigene Bretter unter dem Pultdach statt im Trockenschrank, unter 12 % in den Vorrat; Phase 1: Säge
+mit ihrem Stamm am Plan-Ort, Halle mit Hobel und Zelt, keine Plane; zurück in Phase 0. Bilder in `out/werkstatt_heute/`. Weiter grün halten:
+`v15b` (ganzes Brett in der Halle), `v16d:fork,saw,stack` (Säge in Phase 1), `garage` (Aggregat tanken). Bei GitHub (`feat.yml`):
+`viz3/extra/werkstatt-heute/tests.txt` (werkstatt_heute, garage, v15b); `v16d:fork,saw,stack` läuft im Prüfpaket als Feature v16d-2 (~45
+min, zu lang für den Zweig-Lauf).
 
 ## Offen
 
@@ -89,5 +90,6 @@ Bilder in `out/werkstatt_heute/`. Weiter grün halten: `v15b` (ganzes Brett in d
   Schleifer) folgt den Bildern IMG_7271, 7276, 7289, 7290. Maße des Schuppens wie vom Kern-Chat übernommen (5 m + 1,8 m Anbau, 2,5 m tief).
 - Auf den Fotos gibt es noch mehr (Kreissägeblätter, Akku-Geräte, Kabeltrommeln, Gerümpel östlich des Anbaus: blaue Säcke, Alu-Gestelle) –
   nur zum Teil nachgebaut.
-- Die Planen sind kantige Kästen mit schrägen Seiten; echte Falten wären eine eigene Geometrie.
+- Die Planen sind verformte Kästen (`drape` in `garden/workshop.js`: oben durchhängend, nach unten ausgestellt, Falten, unregelmäßiger
+  Saum), keine Stoffsimulation; die abgenommene Plane ist ein gefaltetes Paket.
 - Ronalds aufgenommene Sätze („… hobeln …“) bleiben allgemein.
