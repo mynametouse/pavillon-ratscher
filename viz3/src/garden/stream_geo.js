@@ -1,8 +1,8 @@
 // ---------- the stream (Bach) along the north boundary: shared geometry for ground painting, terrain, walking and meshes ----------
 // It runs parallel to the field path through all three plots (Hubert – owner – Ronald), 1.5 m below the meadow, and flows from east to west.
 // Cross-section: gravel bed with ~1 m of water (15–21 cm deep), banks rising steeply from the water and rounding off into the meadow 2.25 m
-// from the centre (4.5 m wide at the top). Asphalt bridge 2.5 m wide (no railing) north of the pavilion; on the garden side a stair of
-// oak sleepers to a stone landing at the water, 3 m left and right of the bridge.
+// from the centre (4.5 m wide at the top). Asphalt bridge 2.5 m wide (no railing) north of the pavilion; west of it, on the garden side, the
+// slab terrace with concrete steps down to a stone at the water (Falko's photos of 26.10.2026).
 import { LATE } from '../core/late.js';
 export const STREAM = (() => {
   const S = window.SITE,
@@ -52,8 +52,15 @@ export const STREAM = (() => {
       [t1, o1] = BEND[BEND.length - 1];
     return o1 + ((o1 - o0) * (t - t1)) / (t1 - t0);
   };
+  // west of the gate the brook keeps 1.5 m further from the path (Falko's photos of 26.10.2026: the board stack stands between the path and
+  // the water (7186, 7187, 7207; on the old aerial photo too), the slab terrace with its steps lies on the garden side (7204–7207)); it
+  // bends back over the last metres before the bridge, where the gate and the culvert stay
+  const WEST = t => 1.5 * (1 - ss(TB - 4.3, TB - 1.5, t));
   const cOff = t =>
-    OFF + bend(t) + ss(6.5, 13, Math.abs(t - TB)) * (0.45 * Math.sin(t / 6.3 + 1.1) + 0.22 * Math.sin(t / 2.6 + 0.4)); // gentle meander, straight at the bridge
+    OFF +
+    bend(t) +
+    WEST(t) +
+    ss(6.5, 13, Math.abs(t - TB)) * (0.45 * Math.sin(t / 6.3 + 1.1) + 0.22 * Math.sin(t / 2.6 + 0.4)); // gentle meander, straight at the bridge
   function prof(a) {
     a = Math.abs(a);
     if (a >= WT) return 0;
@@ -70,7 +77,10 @@ export const STREAM = (() => {
     YL1 = 1.05,
     YT = YL1 + (SR - 1) * TG,
     SW = 0.55;
-  const STAIRS = [-3.0, 3.0].map(dx => ({ t: TB + dx, side: Math.sign(dx) }));
+  // the steps: concrete slabs from the slab terrace down to the water, 4.75 m west of the bridge (photos 7205, 7207); the photos show no
+  // stairs beside the bridge (V11 had oak sleepers 3 m left and right of it). TERR: the terrace, centre (t, o) and half sizes
+  const STAIRS = [{ t: TB - 4.75, side: 1, kind: 'slab' }];
+  const TERR = { t: TB - 5.5, o: OFF + 1.5 + WT + 0.35 + 1.1, ht: 1.1, ho: 1.1 };
   function stairCut(t, a) {
     if (a < YL0 - 0.1 || a > YT + 0.05) return null;
     for (const s of STAIRS) {
@@ -242,6 +252,7 @@ export const STREAM = (() => {
     onBridge,
     BR,
     STAIRS,
+    TERR,
     SR,
     ZL,
     RH,

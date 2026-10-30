@@ -84,4 +84,12 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
 - **Bungalow:** Überdach über dem Rückgiebel (`CAN`, zwei Pfosten, darunter alte Fenster, Bretter, Plane). **Carport:** vorne zwei Pfosten.
 - **Kleinigkeiten** (`garden/garten_heute.js`): Reisighaufen, Tisch mit Stühlen und rosa Schirm vor dem Waschhaus, rostige Wäschestange,
   Bretterstapel unter weißer Plane und Stämme parallel neben dem Feldweg (Lage über `S0.path`).
+- **Am Bach** (Fotos 7186/7187, 7204–7207): westlich vom Tor hält der Bach 1,5 m mehr Abstand zum Feldweg (`WEST(t)` in
+  `garden/stream_geo.js`, vor der Brücke biegt er zurück) – so steht der Bretterstapel zwischen Weg und Wasser, nicht auf der Böschung. Auf
+  der Gartenseite die **Plattenterrasse** (`STREAM.TERR`, 5 × 5 Betonplatten, „Platz am Bach“ in `garden/places.js`) mit den Stufen aus
+  Betonplatten zum Wasser (`STREAM.STAIRS`, Art `slab`; die Eichenschwellen-Treppen links und rechts der Brücke aus V11 zeigen die Fotos
+  nicht), daneben die grüne Doppelbank mit Tischchen (zum Hinsetzen, `GSEATS`), Terrakottatopf, weißer Kunststoffstuhl, Laterne und zwei
+  Grablichter (`garden/garten_heute.js`). Die Uferbüsche lassen die Terrasse frei (`garden/trees.js`).
+- **Alte Blechgarage:** Blech hellgrau-grün gestrichen, Ecken, Torrahmen und Kanten der Schiebetore weiß, Dach hellgrau (Fotos 7197, 7236;
+  `PAINT`, `ROOF0`, `TRIM` in `garden/garage.js`).
 - Offene Fragen und Quellen: `docs/plans/garten_dorf_abgleich.md`.

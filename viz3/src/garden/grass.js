@@ -684,6 +684,20 @@ function buildDetailPlants() {
     if (!inPoly(x, y, S0.garden) || gravelAtPt0(x, y) || inFoot(x, y) || STREAM.inDitch(x, y, 0.2)) continue;
     dand.push({ x, y, s: rr(0.9, 1.3) });
   }
+  // nothing grows through the slab terrace at the brook, its bench or its steps (garden/garten_heute.js, STREAM.TERR); filtered after
+  // drawing, so the random sequence stays the same
+  {
+    const T = STREAM.TERR,
+      off = p => {
+        const [t, o] = STREAM.loc(p.x, p.y);
+        return !(t > T.t - T.ht - 0.85 && t < T.t + T.ht + 0.25 && o > T.o - T.ho - 0.9 && o < T.o + T.ho + 0.25);
+      };
+    for (const L of [tufts, ferns, dand]) {
+      const keep = L.filter(off);
+      L.length = 0;
+      L.push(...keep);
+    }
+  }
   const reg = (kind = 'plant') => {
     const L = [];
     return { list: L, done: () => L.forEach(im => footHideReg(im, kind)) };

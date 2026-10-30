@@ -22,6 +22,9 @@ export const sitePlace = (x, y, z) => {
   if (pd && x > pd.x0 - 0.2 && x < pd.x1 + 0.2 && y > pd.y0 - 0.2 && y < pd.y1 + 0.2) return 'Ziegenweide';
   if (window.STREAM) {
     if (STREAM.onBridge(x, y)) return z < -0.4 ? 'Unter der Brücke' : 'Brücke über den Bach';
+    const T = STREAM.TERR,
+      [tt, oo] = STREAM.loc(x, y);
+    if (Math.abs(tt - T.t) < T.ht + 0.75 && Math.abs(oo - T.o) < T.ho + 0.4) return 'Platz am Bach'; // the slab terrace with the bench
     const a = STREAM.across(x, y);
     if (Math.abs(a) < STREAM.WT) {
       const [t] = STREAM.loc(x, y);

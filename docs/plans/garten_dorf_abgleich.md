@@ -37,7 +37,12 @@ was noch offen ist. Private Rohdaten (Fotos, Videos, Flurstücke) kommen nie ins
 - Stämme und weißer Bretterstapel liegen parallel zum Feldweg daneben (Stämme feldseitig, Stapel gartenseitig).
 - Bungalow mit Überdach über dem Rückgiebel (zwei Pfosten, darunter alte Fenster, Bretter, Plane); Carport vorne nur zwei Pfosten.
 - Huberts Hof: nur zwei der vier Flächen tragen Schuppen, die sind kleiner und flacher; Huberts Traktor ist grün mit roten Felgen, der
-  zusätzliche geparkte Traktor ist weg.
+  zusätzliche geparkte Traktor ist weg. Den Hof nach Fotos 7186–7196 und Luftbild baut seit 30.10. ~4:00 der Hilfs-Agent `hubert-hof`
+  (`docs/plans/auftraege/hubert-hof.md`).
+- Bach westlich vom Tor 1,5 m weiter vom Weg weg (der Bretterstapel stand im alten Luftbild und auf 7186/7187/7207 zwischen Weg und Wasser,
+  im Modell aber auf der Böschung); Plattenterrasse mit Bank, Stufen zum Wasser, Laterne, Stuhl, Topf (7204–7207); die Treppen aus
+  Eichenschwellen neben der Brücke (V11) sind weg – auf 7199/7200 ist dort nur Bewuchs.
+- Alte Blechgarage hellgrau-grün mit weißen Ecken und Torrahmen, Dach hellgrau (7197, 7236) – die Schiebetore stimmen mit den Fotos überein.
 
 ## Offene Fragen (für „Garten zurechtrücken“ und die nächsten Runden)
 
@@ -47,7 +52,10 @@ was noch offen ist. Private Rohdaten (Fotos, Videos, Flurstücke) kommen nie ins
 - **Huberts Hof genauer:** die Schuppen nach Luftbild und Fotos 7190–7196 (lange, niedrige, offene Schuppen hinten; die Gasse mit den
   Trockenhütchen am Gartenzaun), das Tor, die Kiesfläche.
 - **Garten Nord:** die vier gemessenen Bäume mitten in der Wiese zwischen Tor und Bungalow sind weg (Foto 7201 zeigt dort offene Wiese); die Bäume am Bach bleiben – ob es genau diese sind, kann Falko im Artefakt zeigen.
-- **Weitere Foto-Details für die nächste Runde:** am Bach die Plattenterrasse mit der grünen Bank (7205), Laterne und weißer Stuhl an der
-  Treppe zum Wasser (7207), der Durchlass mit Rohr am Tor (7199, 7200), der innere Maschendrahtzaun mit Tor (7197, 7198); die alte
-  Blechgarage auf den Fotos hellblau-grau mit Satteldach und weiß gerahmter Doppeltür (7236) – im Modell ein grauer Kasten mit Schiebetoren
-  nach Falkos Beschreibung vom 23.10.; Falkos blauer Wagen am Tor (7176, 7177, 7183–7185).
+- **Weitere Foto-Details für die nächste Runde:** der Zaun am Feldweg (Maschendraht an Betonpfosten, das Tor mit rostigen Rahmen, 7176,
+  7197, 7198) – im Modell gibt es am Weg bisher nur Hecke mit Lücke; der Durchlass unter der Torplatte (7199, 7200) statt der Asphaltbrücke
+  mit 1,5 m tiefem Graben; der grüne Pflanztisch am Bach beim Tor und das kurze Maschendrahtstück über dem Bach (7199, 7206).
+- **Bach:** Falko beschrieb ihn (V11) ~1,5 m unter der Wiese, Graben oben ~4,5 m; auf 7205–7207 wirkt er an der Terrasse eher 0,6–0,8 m
+  tief und oben ~2,5–3 m breit – Falko fragen, bevor Tiefe und Breite geändert werden (Gelände, Brücke, Stufen hängen daran).
+- **Auto:** auf den Fotos steht am Tor ein blauer Kleinwagen (7176, 7177, 7183–7185); im Spiel ist „das Auto“ ein beiger Kombi in
+  Logan-MCV-Größe – ist der blaue jetzt eures? (Falko fragen; kein Kennzeichen ins Repo.)

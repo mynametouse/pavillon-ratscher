@@ -60,6 +60,23 @@ const GM = {
 };
 // the tube's glass: emissive when the light is on (a uniform – no new shader)
 const TUBE = plain({ color: 0xf4f6f2, roughness: 0.3, emissive: 0xeef4ff, emissiveIntensity: 0 });
+// today's garage on Falko's photos of 26.10.2026 (7197, 7236): the sheet painted a light grey-green, the corners, the frame of the opening
+// and the edges of the leaves white, the roof light grey (the colour scales the sheet's texture, so above 1 it lightens it)
+const PAINT = (() => {
+    const m = MAT.metal.clone();
+    delete m.userData.svPatched;
+    m.color.setRGB(1.75, 1.86, 1.7);
+    m.metalness = 0.15;
+    return patchSV(m);
+  })(),
+  ROOF0 = (() => {
+    const m = MAT.metal.clone();
+    delete m.userData.svPatched;
+    m.color.setRGB(1.45, 1.48, 1.46);
+    m.metalness = 0.35;
+    return patchSV(m);
+  })(),
+  TRIM = plain({ color: 0xeceae3, roughness: 0.5 });
 // pegboard over the bench: hardboard with holes in a 25 mm grid and the outlines where the tools hang
 const PEG = (() => {
   const c = document.createElement('canvas');
@@ -133,24 +150,24 @@ phase(PHN.bestand, PHN.garage);
 // walls of corrugated sheet (ribs upright), the inner faces darker; the north wall beside and above the opening
 {
   const W = (x0, x1, y0, y1, z0, z1, inner) =>
-    B(x0, x1, y0, y1, z0, z1, { def: MAT.metal, [inner]: wallIn }, { grain: 'z' });
+    B(x0, x1, y0, y1, z0, z1, { def: PAINT, [inner]: wallIn }, { grain: 'z' });
   W(0.02, 0.1, 0.02, 3.98, Z0, HW, 'e');
   W(3.9, 3.98, 0.02, 3.98, Z0, HW, 'w');
   W(0.1, 3.9, 0.02, 0.1, Z0, HW, 'n');
   W(0.1, OP.x0, 3.9, 3.98, Z0, HW, 's');
   W(OP.x1, 3.9, 3.9, 3.98, Z0, HW, 's');
   W(OP.x0, OP.x1, 3.9, 3.98, OP.z1, HW, 's');
-  // galvanised angles: the corners, the frame of the opening
+  // white angles: the corners, the frame of the opening
   for (const [x, y] of [
     [0.0, 0.0],
     [3.94, 0.0],
     [0.0, 3.94],
     [3.94, 3.94],
   ])
-    box(x, x + 0.06, y, y + 0.06, Z0, HW + 0.02, MAT.galv, { grain: 'z' });
-  box(OP.x0 - 0.05, OP.x0, 3.88, 4.0, Z0, OP.z1, MAT.galv, { grain: 'z' });
-  box(OP.x1, OP.x1 + 0.05, 3.88, 4.0, Z0, OP.z1, MAT.galv, { grain: 'z' });
-  box(OP.x0 - 0.05, OP.x1 + 0.05, 3.88, 4.0, OP.z1 - 0.05, OP.z1, MAT.galv, { grain: 'x' });
+    box(x, x + 0.06, y, y + 0.06, Z0, HW + 0.02, TRIM, { grain: 'z' });
+  box(OP.x0 - 0.05, OP.x0, 3.88, 4.0, Z0, OP.z1, TRIM, { grain: 'z' });
+  box(OP.x1, OP.x1 + 0.05, 3.88, 4.0, Z0, OP.z1, TRIM, { grain: 'z' });
+  box(OP.x0 - 0.05, OP.x1 + 0.05, 3.88, 4.0, OP.z1 - 0.05, OP.z1, TRIM, { grain: 'x' });
   // roof: purlins and the sheet – a shallow gable, ridge north–south, the gables to north and south (Falko's photos of 26.10.2026)
   for (let x = 0.3; x < 3.9; x += 0.5) box(x - 0.015, x + 0.015, 0.1, 3.9, HW, HW + 0.08, MAT.galv, { grain: 'y' });
   {
@@ -160,7 +177,7 @@ phase(PHN.bestand, PHN.garage);
       [-0.12, 2.0],
       [4.12, 2.0],
     ])
-      beam([xa, 2.0, HW + 0.08], [xb, 2.0, zr], 4.18, 0.03, MAT.roofGrey, { cast: true });
+      beam([xa, 2.0, HW + 0.08], [xb, 2.0, zr], 4.18, 0.03, ROOF0, { cast: true });
     // the two gable triangles of corrugated sheet, both faces
     for (const y of [0.04, 3.96]) {
       const geo = new THREE.BufferGeometry().setFromPoints([
@@ -172,7 +189,7 @@ phase(PHN.bestand, PHN.garage);
         V(2.0, y, zr - 0.02),
       ]);
       geo.computeVertexNormals();
-      const me = new THREE.Mesh(geo, MAT.metal);
+      const me = new THREE.Mesh(geo, PAINT);
       me.castShadow = true;
       me.receiveShadow = true;
       scene.add(tagPh(me));
@@ -196,7 +213,7 @@ phase(PHN.bestand, PHN.garage);
 // ---- the two sliding leaves: a steel frame with corrugated sheet outside, hung from two rollers each, a handle; the east one carries the
 //      hasp with the padlock. Closed they meet in the middle (xm); open each one slides `travel` to its side. Built in the coordinates of
 //      `parent` (the scene: site coordinates; a building's group: its local frame), each leaf a group of its own (it moves) ----
-function mkLeaves({ parent, keys, xm, w, y0, y1, z0, z1, zr, travel }) {
+function mkLeaves({ parent, keys, xm, w, y0, y1, z0, z1, zr, travel, sheet = MAT.metal, edge = null }) {
   const out = [];
   for (const side of [-1, 1]) {
     const x0 = side < 0 ? xm - w : xm,
@@ -218,7 +235,14 @@ function mkLeaves({ parent, keys, xm, w, y0, y1, z0, z1, zr, travel }) {
       me.castShadow = true;
     }
     // the sheet, ribs upright
-    B(x0 + 0.005, x1 - 0.005, ys, y1, z0 + 0.01, z1 - 0.005, MAT.metal, Object.assign({ grain: 'z' }, o));
+    B(x0 + 0.005, x1 - 0.005, ys, y1, z0 + 0.01, z1 - 0.005, sheet, Object.assign({ grain: 'z' }, o));
+    if (edge) {
+      // painted edges on the outside of the sheet (today's garage: white frames on the photos)
+      B(x0, x0 + 0.05, y1, y1 + 0.008, z0, z1, edge, o);
+      B(x1 - 0.05, x1, y1, y1 + 0.008, z0, z1, edge, o);
+      B(x0 + 0.05, x1 - 0.05, y1, y1 + 0.008, z1 - 0.05, z1, edge, o);
+      B(x0 + 0.05, x1 - 0.05, y1, y1 + 0.008, z0, z0 + 0.05, edge, o);
+    }
     // the handle near the meeting edge (outside), standing off on two bolts; a pull handle inside too
     const hx = side < 0 ? x1 - 0.16 : x0 + 0.16,
       zh = z0 - 0.025;
@@ -270,6 +294,8 @@ function mkLeaves({ parent, keys, xm, w, y0, y1, z0, z1, zr, travel }) {
 const leaves = mkLeaves({
   parent: scene,
   keys: ['garageW', 'garageO'],
+  sheet: PAINT,
+  edge: TRIM,
   xm: 2.0,
   w: LEAF.w,
   y0: LEAF.y0,

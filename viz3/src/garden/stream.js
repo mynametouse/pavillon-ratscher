@@ -241,14 +241,32 @@ import { GSZ, mkGroundMat } from './env.js';
     WALK.push([-w, w, -l, l, 0.06, 'stone', null, null, null, rot]);
     ST.BR.walkTop = 0.06;
   }
-  // --- stairs of oak sleepers to a stone landing at the water, 3 m left and right of the bridge (garden side) ---
+  // --- stairs to a stone landing at the water (garden side): oak sleepers with a handrail, or (kind 'slab', the steps from the terrace on
+  // Falko's photos 7205/7207) narrow concrete slabs in the grass ---
   {
     const SL = pbrMat('oak', { fallback: 0x6d5a46, color: 0xa8927a, nrm: 0.9, rough: 1.2 }),
       RAIL = MAT.kvh;
     for (const s of ST.STAIRS) {
       const { g, rot } = frameAt(s.t),
-        hw = ST.SW,
         y = a => -a; // local y = −(distance towards the garden)
+      if (s.kind === 'slab') {
+        const hw = 0.33;
+        B(-hw - 0.08, hw + 0.08, y(ST.YL1), y(ST.YL0), ST.ZL - 0.14, ST.ZL, MAT.stone, { parent: g, col: false });
+        WALK.push([-hw - 0.08, hw + 0.08, y(ST.YL1), y(ST.YL0), ST.ZL, 'stone', null, null, null, rot]);
+        for (let i = 1; i < ST.SR; i++) {
+          const a0 = ST.YL1 + (i - 1) * ST.TG,
+            a1 = a0 + ST.TG,
+            zt = ST.ZL + i * ST.RH,
+            dx = Math.sin(i * 7.1) * 0.03; // not rnd(): one sequence for the whole scene
+          B(-hw + dx, hw + dx, y(a1 + 0.02), y(a0 + 0.02), zt - 0.07, zt, MAT.conc, { parent: g, col: false });
+          WALK.push([-hw + dx, hw + dx, y(a1 + 0.02), y(a0 + 0.02), zt, 'stone', null, null, null, rot]);
+        }
+        const z6 = ST.ZL + (ST.SR - 1) * ST.RH; // the top step: a block up to the lawn
+        B(-hw, hw, y(ST.YT + 0.22), y(ST.YT - 0.04), z6 - 0.06, 0.015, MAT.conc, { parent: g, col: false });
+        WALK.push([-hw, hw, y(ST.YT + 0.22), y(ST.YT - 0.04), 0.015, 'stone', null, null, null, rot]);
+        continue;
+      }
+      const hw = ST.SW;
       B(-hw - 0.12, hw + 0.12, y(ST.YL1), y(ST.YL0), ST.ZL - 0.14, ST.ZL, MAT.stone, { parent: g, col: false });
       WALK.push([-hw - 0.12, hw + 0.12, y(ST.YL1), y(ST.YL0), ST.ZL, 'stone', null, null, null, rot]);
       for (let i = 1; i < ST.SR; i++) {
