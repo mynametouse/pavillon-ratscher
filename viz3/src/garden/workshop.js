@@ -1414,23 +1414,24 @@ const C0 = COL.length,
       cv.userData.mergeRoot = 'werkstatt:cover:sander';
       scene.add(cv);
       const PC = o => Object.assign({ parent: cv, col: false }, o);
-      drape(x0 - 0.36, x1 + 0.36, y0 - 0.14, y1 + 0.18, 0.3, z + 0.5, cv, {
+      // (over the motor on the north side and the dust port on top)
+      drape(x0 - 0.36, x1 + 0.36, y0 - 0.14, y1 + 0.27, 0.3, z + 0.62, cv, {
         seed: 5,
         flare: 0.06,
         folds: 0.03,
         sag: 0.015,
         hem: 0.2,
       });
-      B(x0 - 0.2, x1 + 0.2, y0 - 0.02, y1 + 0.06, z + 0.52, z + 0.54, foil, PC());
+      B(x0 - 0.2, x1 + 0.2, y0 - 0.02, y1 + 0.06, z + 0.6, z + 0.62, foil, PC());
       for (const [x, y, a] of [
         [x0 + 0.12, y0 + 0.2, 0.3],
         [(x0 + x1) / 2 + 0.05, y1 - 0.15, -0.2],
         [x1 - 0.05, y0 + 0.25, 0.1],
       ]) {
-        const me = B(x - 0.13, x + 0.13, y - 0.19, y + 0.19, z + 0.54, z + 0.57, tile, PC());
+        const me = B(x - 0.13, x + 0.13, y - 0.19, y + 0.19, z + 0.62, z + 0.65, tile, PC());
         if (me) me.rotation.y = a;
       }
-      B(x0 + 0.25, x0 + 0.49, y0 + 0.02, y0 + 0.13, z + 0.54, z + 0.62, tile, PC()); // the brick
+      B(x0 + 0.25, x0 + 0.49, y0 + 0.02, y0 + 0.13, z + 0.62, z + 0.7, tile, PC()); // the brick
       const fd = (T0.covers.sanderOff = new THREE.Group());
       fd.userData.mergeRoot = 'werkstatt:cover:sanderOff';
       scene.add(fd);
