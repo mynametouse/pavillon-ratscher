@@ -1226,7 +1226,7 @@ const C0 = COL.length,
       colBox(LX0 + 0.03, -3.75, LYB + 0.03, LYB + 0.66, z, 'bench');
       colBox(LX0 + 0.03, LX0 + 0.65, LYB + 0.66, -38.78, z, 'bench');
       B(LX0 + 0.1, LX0 + 0.55, -39.6, -39.22, 0.0, 0.28, green, { col: false }); // crate
-      B(-4.55, -4.05, LYB + 0.1, LYB + 0.5, 0.0, 0.34, M.black, { col: false }); // black box
+      B(-4.55, -4.05, LYB + 0.1, LYB + 0.5, 0.22, 0.52, M.black, { col: false }); // black box on the lower shelf
       // tool board: wire baskets with the cordless drills, a hand brush, a spirit level; F-clamps on the end wall
       B(-5.45, -3.85, LYB, LYB + 0.02, 1.05, 1.8, MAT.osb, { col: false });
       for (const x of [-5.2, -4.55]) {
