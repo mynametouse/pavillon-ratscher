@@ -8,7 +8,7 @@ import { LATE } from '../core/late.js';
 import { rnd, rr, scene, V } from '../core/head.js';
 import { ANISO, grime, markDirty, patchSV, pbrMat, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { B, beam, bldBegin, bldEnd, BUILD, COL, cyl, DOORS, phase, tagPh, WALK } from '../core/geo.js';
+import { B, beam, bldBegin, bldEnd, BUILD, COL, cyl, DOORS, phase, RB, tagPh, WALK } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import { boardMat } from './site_base.js';
 phase(null);
@@ -1535,6 +1535,25 @@ const C0 = COL.length,
       wh.castShadow = true;
       scene.add(tagPh(wh));
       colBox(x - 0.32, x + 0.32, y - 0.4, y + 0.7, 0.62, 'barrow');
+    }
+    {
+      // east of the annex (IMG_7294): blue sacks, an aluminium frame leaning on them, a white box, a black bag
+      const blue = plain({ color: 0x2f5fb4, roughness: 0.55 });
+      for (const [x, y, s] of [
+        [1.75, -40.15, 0.34],
+        [2.2, -40.05, 0.3],
+        [1.95, -39.6, 0.28],
+      ])
+        RB(x - s, x + s, y - s * 0.8, y + s * 0.8, 0, s * 1.6, 0.12, blue, { col: false });
+      for (const dy of [-0.3, 0.3])
+        beam([2.75, -39.85 + dy, 0], [2.45, -39.85 + dy, 1.35], 0.03, 0.04, alu, { cast: true });
+      for (let i = 1; i < 5; i++) {
+        const t = i / 5;
+        beam([2.75 - 0.3 * t, -40.15, 1.35 * t], [2.75 - 0.3 * t, -39.55, 1.35 * t], 0.025, 0.025, alu);
+      }
+      B(2.9, 3.35, -39.3, -38.95, 0, 0.32, white, { col: false });
+      RB(2.95, 3.4, -40.3, -39.9, 0, 0.42, 0.1, M.black, { col: false });
+      colBox(1.4, 3.45, -40.45, -38.9, 0.6, 'junk');
     }
   }
   phase(null);
