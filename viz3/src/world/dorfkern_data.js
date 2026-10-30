@@ -1,7 +1,7 @@
 // ===================== feat/dorfkern: the centre of Ratscher as Falko filmed it (pan of 10.04.2023, photo of Anger 15) – data =====================
 // The houses around the Anger seen in the video, each with its look as it really is (world/village.js applies it instead of the hash) and,
 // where the surface model's fit was wrong, its heights or a new gable roof; the open space of the centre (world/dorfkern.js): the well,
-// benches, bin, the limes, the hedge, picnic tables, poles and lines, fences, lamps. Positions in site metres (x east, y north), heights above
+// benches, bin, the limes, the hedges, the roundabout, poles and lines, fences, lamps. Positions in site metres (x east, y north), heights above
 // the building's foot, colours sRGB 0…1. How it was measured (camera fitted to the pan) and the table with sources: docs/features/dorfkern.md.
 // Keys of a house: adr (OSM address), st (style name of VILLAGE.ST), col (plaster or shingle colour), slate (0 blue-black, 1 silver-grey,
 // 2 mid grey, 3 coloured shingles in col), orn (white diamond band), board (gable in vertical boards: 1 from the eave, 2 from 1.5 m above it,
@@ -229,21 +229,22 @@ const DATA = {
       { at: [235.9, -107.3], h: 8, cb: 2.6, rc: 3.8, dt: 0.3, turn: 1.2 }, // the young lime on the green by the parking strip (video 19–22 s)
     ],
     linde: [217.0, -109.0], // the Dorflinde with its ring of benches: bearing 265.5° in the video (was 216.5, −106.5)
-    // the trimmed hedges on the green: the near one along the parking strip, the one across the green (their feet in the video 19–24 s on
+    // the trimmed hedges on the green: the near one along the parking strip, the one across the green (their feet in the video 20–24 s on
     // the model's ground, which falls 0.2–0.3 m from the street to the green)
     hedges: [
       {
         p: [
-          [244.0, -111.2],
-          [239.4, -110.0],
-          [229.5, -108.7],
+          [246.1, -110.1],
+          [241.5, -110.3],
+          [234.2, -108.3],
+          [230.8, -106.6],
         ],
       },
       {
         p: [
           [245.2, -119.0],
-          [240.1, -116.0],
-          [234.7, -111.3],
+          [240.5, -116.6],
+          [224.0, -116.2],
         ],
       },
     ],
@@ -273,8 +274,9 @@ const DATA = {
         kerb: [3, 4],
       },
     ],
-    picnic: [[231.5, -113.0, 290]],
-    logs: [[234.2, -116.7, 290, 4.0]],
+    picnic: [], // what looked like a picnic table on the green is the playground's roundabout
+    roundabout: [[231.0, -113.1, 1.05]], // x, y, radius (video 20–24 s, orthophoto)
+    logs: [[236.0, -116.2, 290, 4.0]],
     // the picket fence along the meadow behind the bus stop (video 8–12 s, 16–18 s)
     fences: [
       {

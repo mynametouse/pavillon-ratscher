@@ -9,7 +9,7 @@ nicht im Repo** – hier stehen nur die daraus gemessenen Zahlen. Das Video vom 
 ## Was es gibt
 
 - **Die Häuser um den Anger, wie sie sind** (`world/dorfkern_data.js`, `DKDATA.houses`, angewendet in `world/village.js` `styleOf`):
-  19 Gebäude bekommen statt des Zufalls aus der Gebäudenummer ihr Aussehen aus einer Tabelle – Stil, Putz- oder Schindelfarbe, Schieferton
+  16 Gebäude bekommen statt des Zufalls aus der Gebäudenummer ihr Aussehen aus einer Tabelle – Stil, Putz- oder Schindelfarbe, Schieferton
   (blauschwarz, silbergrau, mittelgrau, farbige Schindeln), Schmuckband aus Rauten, Giebel in senkrechten Brettern, helle Fensterfaschen,
   Fensterrahmen (weiß, braun, grün), Türfarbe und -seite (die hellblaue Tür von Anger 18), Ziegelfarbe, Schornsteine – und, wo das
   Oberflächenmodell danebenlag, ihre im Video gemessene Traufe und First. Alle anderen Häuser bleiben, wie sie waren.
@@ -30,7 +30,8 @@ nicht im Repo** – hier stehen nur die daraus gemessenen Zahlen. Das Video vom 
   Parkstreifen als 3D-Kronen (Kopien der Dorflinde, gedreht, auf den Stämmen aus dem Video; Stamm bis zum Kronenansatz gestreckt, Krone in
   die übrige Höhe gedrückt, Stamm und Krone je auf ihre eigene Breite: die große Linde 13 m mit Kronenansatz 3,8 m, Kronenradius 6 m und
   65 cm Stamm, die gekappte 8 m mit kleinem Kopf ab 4,6 m, die junge Linde auf der Wiese 8 m; auf der leichtesten Stufe „schnell"
-  stattdessen die billigen Kartenbäume des Kronenmodells, auf dieselben Stämme gerückt); Picknicktisch, Tonne und Balkenbank auf der Wiese,
+  stattdessen die billigen Kartenbäume des Kronenmodells, auf dieselben Stämme gerückt); die Drehscheibe des Spielplatzes (sah zuerst
+  wie ein Picknicktisch aus), Tonne und Balkenbank auf der Wiese,
   die geschnittenen Hecken (die nahe am Parkstreifen und die quer über die Wiese, Lage aus ihren Fußpunkten im Video); Betonmasten mit der Freileitung auf der Nordseite der Straße; der Süßigkeitenautomat am Briefkasten; der
   Staketenzaun (braune Latten, rotbraune Pfosten) an der Wiese hinter der Haltestelle; die weiße Kiste dahinter (2 m hoch, in der
   Richtung 33–47° wie im Video); der Automat mit weißer Front zur Straße, tiefer als der Briefkasten, der dahinter hervorschaut; das kleine Vordach von
@@ -102,8 +103,10 @@ Fuß, gemessen im Video (Bildpunkt von Traufe bzw. First über der bekannten Eck
   Gauben nur bei Anger 18.
 - Die Bäume sind belaubt (das ganze Modell zeigt Sommer), das Video zeigt sie kahl im April; die Linden sind Kopien der Dorflinde (eine Form,
   gedreht, gestreckt und skaliert) – die gekappte Linde am Brunnen hat im Video keine Krone, nur Köpfe (im Modell ein kleiner Sommerkopf).
-- Der Spielplatz auf der Wiese (Drehscheibe, Rutsche) fehlt noch.
-- Hecken, Picknicktisch und Bank liegen auf Strahlen des Videos auf dem Boden – auf 1–3 m genau; die Lage der Dorflinde nur aus der Richtung.
+- Vom Spielplatz auf der Wiese steht nur die Drehscheibe (die Rutsche und die Tische hinten an der Dorflinde fehlen); die Laternen am Platz
+  sind im Video hellgrau, im Modell schwarz wie alle Laternen des Dorfs; der Osterstrauch mit Eiern am Briefkasten fehlt.
+- Hecken, Drehscheibe, Balkenbank und Tonne liegen auf Strahlen des Videos auf dem Boden (aus zwei Blicken, mit dem Gefälle des
+  Geländes) – auf 1–2 m genau; die Lage der Dorflinde nur aus der Richtung.
 - Die Freileitung hängt in geraden Stücken (keine Isolatoren), der Automat ist schlicht.
 
 ## Testen
@@ -112,6 +115,9 @@ Fuß, gemessen im Video (Bildpunkt von Traufe bzw. First über der bekannten Eck
   offener Platz mit Kollisionen, Ostereier nur in den Osterwochen, Haltestellenname, Texturen je Shader, Bildzeit und Draw-Calls am Anger auf
   „schnell" nicht schlechter als vorher (Median + 10 % + 25 ms), keine Fehler; Bilder in `out/dorfkern/`.
 - `viz3/extra/dorfkern/tests.txt` lässt auf `feat/dorfkern` außerdem `v16e` (load, places, near, walk, gl) und `dorf` (door, inside) laufen.
+- GitHub-Lauf 40986728854 (2d30655, 30.10.): smoke, dorfkern 14/14, v16e, dorf grün; am Anger auf „schnell" Bildzeit (Median) 9 → 5 ms,
+  Draw-Calls [39, 41, 267] → [45, 51, 260] in drei Blicken, Shader-Programme 146 → 145, höchstens 15 Texturen je Fragment-Shader, 342
+  Gebäude (337 + 5 geteilte), Aufbau des Platzes 149 ms.
 
 ## Für den Kern-Chat
 

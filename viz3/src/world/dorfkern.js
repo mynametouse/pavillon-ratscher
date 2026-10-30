@@ -2,7 +2,7 @@
 // The well in front of Anger 15 (OSM man_made=water_well): a polygonal sandstone wall with copings round a sunken basin, steps down on its
 // south side, the wooden pump post; a brown and a green bench and the green bin beside it; concrete pavers round it and as the parking strip
 // on the south side of the street, with granite kerbs; the limes by the well and on the green as 3D crowns (copies of the Dorflinde's, on the
-// trunks the video shows); the picnic table, the bin and the log bench on the green, the long trimmed hedges; concrete power poles with the
+// trunks the video shows); the roundabout, the bin and the log bench on the green, the long trimmed hedges; concrete power poles with the
 // overhead line along the north side of the street, the vending machine by the post box, the picket fence (brown pickets, red-brown posts)
 // along the meadow behind the bus stop, the white box behind it, the carved signpost and the flower bowl before the school, the porch roofs
 // of Anger 23 and 13, the dormers of Anger 18; in the Easter weeks an arch of coloured eggs over the well. Places: rays of the video frames
@@ -266,9 +266,9 @@ export const DORFKERN = (() => {
       for (const [x, y, z] of [tops[i], tops[i + 1]]) kM.box(x, y, z - 0.35, 0.12, 1.0, 0.1, r, L(0.3, 0.3, 0.3)); // cross-arms
     }
   }
-  // ---- small things: the picnic table, the bins, the log bench, the vending machine, the white box ----
+  // ---- small things: the picnic table, the roundabout, the bins, the log bench, the vending machine, the white box ----
   function things(kP, kN, segs, trunks) {
-    for (const [x, y, az] of O.picnic) {
+    for (const [x, y, az] of O.picnic || []) {
       const z = gz(x, y),
         r = az2rot(az),
         c = Math.cos(r),
@@ -280,6 +280,37 @@ export const DORFKERN = (() => {
           kP.box(x + c * e - s * o * 0.5, y + s * e + c * o * 0.5, z, 0.05, 0.05, 0.72, r, L(0.4, 0.4, 0.4));
       }
       segs.push(x - c * 0.95, y - s * 0.95, x + c * 0.95, y + s * 0.95);
+    }
+    // the playground's roundabout on the green (video 20–24 s, the ring on the orthophoto): a round platform on its hub, a railing round
+    // the edge, a post in the middle
+    for (const [x, y, rad] of O.roundabout || []) {
+      const z = gz(x, y),
+        G = L(0.5, 0.56, 0.55),
+        n = 10,
+        rr = rad - 0.1;
+      kP.cyl(x, y, z, z + 0.2, 0.12, 0.12, 8, L(0.35, 0.35, 0.35));
+      kP.cyl(x, y, z + 0.2, z + 0.28, rad, rad, 20, G, true);
+      kP.cyl(x, y, z + 0.28, z + 0.95, 0.05, 0.05, 6, G, true);
+      for (let i = 0; i < n; i++) {
+        const a0 = (i / n) * 2 * Math.PI,
+          a1 = ((i + 1) / n) * 2 * Math.PI,
+          xa = x + Math.cos(a0) * rr,
+          ya = y + Math.sin(a0) * rr,
+          xb = x + Math.cos(a1) * rr,
+          yb = y + Math.sin(a1) * rr;
+        kP.box(
+          (xa + xb) / 2,
+          (ya + yb) / 2,
+          z + 0.8,
+          Math.hypot(xb - xa, yb - ya) + 0.04,
+          0.04,
+          0.04,
+          Math.atan2(yb - ya, xb - xa),
+          G
+        );
+        if (i % 2 === 0) kP.box(xa, ya, z + 0.28, 0.04, 0.04, 0.54, a0, G);
+        segs.push(xa, ya, xb, yb);
+      }
     }
     for (const [x, y, col] of O.bins) {
       const z = gz(x, y),

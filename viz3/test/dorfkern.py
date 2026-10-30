@@ -111,9 +111,10 @@ with lib.browser() as b:
     good, r = lib.check_gl(pg)
     ck('every shader within 16 textures per stage', good, f"fragment {r['maxFrag']}, vertex {r['maxVert']}, {r['bad'][:3]}")
     shots(pg, 'a_')
-    # Falko's photo of Anger 15 (portrait, from the paving north of the well, looking south-south-east)
+    # Falko's photo of Anger 15 (portrait, from the paving north-west of the well, looking south: the well at the left edge, the limes just
+    # outside on the right, their branches overhead)
     pg.set_viewport_size({'width': 405, 'height': 597}); time.sleep(1)
-    E("window.FOVX = 67; GAME.view(263.5, -116, KERN.ground(263.5, -116) + 1.5, 183, 3, 67); for (let i = 0; i < 6; i++) GAME.step(0.25)"); lib.shot(pg, OUT, 'p_anger15')
+    E("window.FOVX = 67; GAME.view(260, -112.5, KERN.ground(260, -112.5) + 1.5, 170, 3, 67); for (let i = 0; i < 6; i++) GAME.step(0.25)"); lib.shot(pg, OUT, 'p_anger15')
     errs = [e for e in errs if 'Texture marked' not in e]
     ck.errors(errs)
     ck.done()
