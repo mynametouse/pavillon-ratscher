@@ -39,6 +39,24 @@ const TREE_KINDS = [
     },
   },
   { key: 'pine', preset: 'Pine Medium', seed: 555, tint: 0xffffff },
+  // the one tall, wide alder behind the washhouse (photos 7210, 7224, 7236 of 26.10.2026): a dense oval crown on a straight stem – built
+  // like the Dorflinde (world/village_props.js) from the large oak, more upright
+  {
+    key: 'alder',
+    preset: 'Oak Large',
+    seed: 2026,
+    tint: 0x98b682,
+    mod: o => {
+      Object.assign(o.branch.angle, { 1: 50, 2: 40, 3: 32 });
+      Object.assign(o.branch.children, { 0: 12, 1: 6, 2: 4 });
+      o.branch.start['1'] = 0.24;
+      o.branch.gnarliness['1'] = 0.05;
+      o.leaves.count = 16;
+      o.leaves.size = 4.8;
+      o.leaves.sizeVariance = 0.5;
+      o.leaves.start = 0.0;
+    },
+  },
   // the hedge belts round the garden (photos 26.10.2026): hazel, field maple, elder – two bush shapes
   { key: 'bushA', preset: 'Bush 1', seed: 501, tint: 0xc9d39a },
   { key: 'bushB', preset: 'Bush 2', seed: 77, tint: 0xd3d49a },
@@ -375,7 +393,7 @@ function buildTrees() {
   }
   // the garden's trees as Falko's photos of 26.10.2026 show them carry their kind (site.js: [x, y, crown radius, height, kind]); the
   // others (the measured crowns round the garden) get one from their size
-  const KIND_OF = { alder: 'oakB', cherry: 'oakA', apple: 'apple', tree: 'ash' };
+  const KIND_OF = { alder: 'alder', cherry: 'oakA', apple: 'apple', tree: 'ash' };
   S0.trees.forEach((t, i) => {
     const [x, y, r, h] = t;
     if (nearPath(x, y, 1.2)) return;

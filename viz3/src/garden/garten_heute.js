@@ -1,7 +1,7 @@
 // ---------- the garden of today: the small things on Falko's photos of 26.10.2026 (placed where the photos see them, ±1–2 m) ----------
-// A brush pile in the meadow, the white plastic table with two chairs and the pink parasol on the lawn west of the washhouse; along the
-// field path (Falko 30.10.: beside it, not on it) the board stack under a white tarpaulin on the garden side and the logs on the field side –
-// two long ones, a pile of short ones further west. (The painted boards are the washhouse's front: garden/washhouse.js.) Plain materials
+// A brush pile in the meadow, the white plastic table with two chairs and the pink parasol on the lawn west of the washhouse, the rusty
+// clothes-line pole; along the field path (Falko 30.10.: beside it, not on it) the board stack under a white tarpaulin on the garden side
+// and the logs on the field side – two long ones, a pile of short ones further west. (The painted boards are the washhouse's front: garden/washhouse.js.) Plain materials
 // of the kind the garden has (no new shader programs); colliders where one would bump into them.
 import * as THREE from 'three';
 import { rnd, rr } from '../core/head.js';
@@ -36,7 +36,7 @@ const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
 }
 // ---- white plastic table, two chairs and the pink parasol ----
 {
-  const [x, y] = [5.2, 7.3];
+  const [x, y] = [9.6, 5.2]; // in front of the washhouse's painted front, north of the path (photo 7236)
   cyl(x, y, 0.7, 0.73, 0.55, white, 24);
   for (let i = 0; i < 4; i++) {
     const a = (i * Math.PI) / 2 + 0.4;
@@ -68,6 +68,14 @@ const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
     py = y + 0.75;
   cyl(px, py, 0, 2.05, 0.02, MAT.steel, 8, undefined, { col: false });
   cyl(px, py, 1.0, 2.05, 0.03, pink, 12, 0.16, { col: false });
+}
+// ---- the old clothes-line pole, rusty steel with a crossbar, by the lawn west of the washhouse (photo 7239) ----
+{
+  const [x, y] = [6.0, 7.8],
+    rust = plain({ color: 0x7a4a33, roughness: 0.85, metalness: 0.3 });
+  cyl(x, y, 0, 2.25, 0.035, rust, 10);
+  beam([x - 0.02, y, 2.2], [x + 0.75, y + 0.02, 2.2], 0.04, 0.04, rust);
+  beam([x, y, 1.75], [x + 0.45, y + 0.01, 2.18], 0.03, 0.03, rust, { cast: false });
 }
 // ---- along the field path (site.js path: the OSM track past the garden, heading 117°): s along it from its west end, o across (+ field side)
 const [PA, PB] = S0.path,
