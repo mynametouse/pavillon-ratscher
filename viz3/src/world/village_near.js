@@ -74,7 +74,7 @@ export const VNEAR = (() => {
       ST = VILLAGE.ST,
       out = [];
     if (
-      ![ST.PLASTER, ST.MODERN, ST.SLATE, ST.SLATE_UP, ST.SLATE_GABLE, ST.FW, ST.FW_UP].includes(st) ||
+      ![ST.PLASTER, ST.MODERN, ST.SLATE, ST.SLATE_UP, ST.SLATE_GABLE, ST.FW, ST.FW_UP, ST.SLATE_FWG].includes(st) ||
       f.kind !== 'eave'
     )
       return out;

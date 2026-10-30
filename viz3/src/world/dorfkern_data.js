@@ -10,14 +10,16 @@
 // roof (tile colour), chim/chimAt (chimneys: count, places along the ridge), h ([eave, ridge] as measured: walls and fitted roof remapped),
 // house (a dwelling the data took for an outbuilding), roof3 ({ az ridge azimuth, e eave or [left, right] of the ridge, r ridge, at its place
 // across 0…1 }: walls and roof made anew), cut/front/back (the footprint cut in two along the line `cut`: the part holding `front` is the house,
-// the other is `back`, with its own look and roof3), t (video seconds where it is seen).
+// the other is `back`, with its own look and roof3), faces ([[azimuth, look]]: a facade facing there looks otherwise), dormers
+// ({ az, at, w, h } on the roof side facing az of a rebuilt house), t (video seconds where it is seen).
 // ?dorfkern=0: the centre as before (hash looks, fitted roofs, the old places) – for comparisons and the frame-time test (test/dorfkern.py)
 const OFF = typeof location !== 'undefined' && /[?&]dorfkern=0(&|$)/.test(location.search || '');
 const DATA = {
-  // the camera of the pan: standing on the south edge of the Anger street by the bus stop, eye 1.6 m, 58.6° wide (iPhone SE, 1080p)
+  // the camera of the pan: on the south edge of the Anger street by the bus stop, eye 1.6 m, first frame towards 158.7°, 57.2° wide
+  // (iPhone SE, 1080p, 880 px focal at 960 px), the feature chain drifts 10.7° over the last 7 s
   cam: { x: 248.8, y: -107.1, eye: 1.6, h0: 158.7, hfov: 57.2, drift: 10.7 },
   houses: {
-    215: { adr: 'Ratschner Anger 24', h: [3.8, 9.7], t: '12–19' }, // the old school: style fixed in village.js, eave and ridge as measured
+    215: { adr: 'Ratschner Anger 24', h: [3.8, 9.7], frame: 3, t: '12–19' }, // the old school: style fixed in village.js; eave, ridge as measured, grey frames
     250: {
       adr: 'Ratschner Anger 15',
       t: '0–4, Foto',
@@ -31,7 +33,7 @@ const DATA = {
       doorAz: 287,
       doorU: 0.62,
       raised: true,
-      roof: [0.5, 0.23, 0.18],
+      roof: [0.42, 0.2, 0.16],
       chim: 2,
       chimAt: [0.45, 0.8],
       cut: [
@@ -50,7 +52,7 @@ const DATA = {
       slate: 0,
       frame: 0,
       house: true,
-      roof: [0.48, 0.2, 0.16],
+      roof: [0.4, 0.18, 0.15],
       chim: 1,
       h: [4.7, 7.4],
     },
@@ -102,7 +104,7 @@ const DATA = {
       st: 'PLASTER',
       col: [0.9, 0.74, 0.42],
       frame: 1,
-      roof: [0.5, 0.24, 0.19],
+      roof: [0.42, 0.2, 0.17],
     },
     213: {
       adr: 'Ratschner Anger 20',
@@ -120,7 +122,7 @@ const DATA = {
       ],
       front: [271, -104],
       roof3: { az: 112, e: [2.6, 4.8], r: 8.7, at: 0.5 },
-      back: { st: 'BARN', col: [0.8, 0.78, 0.72], roof3: { az: 19, e: 3.4, r: 6.6 } },
+      back: { st: 'FW', timber: 0, col: [0.88, 0.87, 0.83], roof3: { az: 19, e: 3.4, r: 6.6 } }, // white with dark timbers (video 8–10 s)
     },
     212: {
       adr: 'Ratschner Anger 18',
@@ -140,6 +142,7 @@ const DATA = {
       ],
       front: [280, -107],
       roof3: { az: 112, e: 4.8, r: 8.7 },
+      dormers: { az: 202, at: [0.3, 0.72], w: 1.3, h: 1.25 }, // two dormers in slate on the street side
       back: { st: 'BARN', col: [0.5, 0.42, 0.34], roof3: { az: 19, e: 3.4, r: 6.6 } },
     },
     211: {
@@ -176,17 +179,30 @@ const DATA = {
       house: true,
       roof: [0.62, 0.28, 0.21],
     },
+    // dark slate front to the street with the rauten band and a porch roof, the west gable (in the weather) in light shingles
     252: {
       adr: 'Ratschner Anger 13',
       t: '0–6',
       st: 'SLATE',
-      slate: 3,
-      col: [0.88, 0.86, 0.79],
+      slate: 0,
+      orn: true,
       frame: 0,
       house: true,
-      roof: [0.6, 0.28, 0.2],
+      door: 1,
+      doorAz: 16,
+      doorU: 0.6,
+      roof: [0.55, 0.25, 0.19],
+      faces: [[286, { slate: 3, col: [0.88, 0.86, 0.79], orn: false }]],
     },
-    253: { adr: 'Ratschner Anger 11', t: '3–6', st: 'SLATE', slate: 0, orn: true, frame: 0, roof: [0.55, 0.25, 0.19] },
+    253: {
+      adr: 'Ratschner Anger 11',
+      t: '3–6',
+      st: 'SLATE_FWG',
+      slate: 0,
+      timber: 0,
+      frame: 0,
+      roof: [0.55, 0.25, 0.19],
+    }, // half-timbered gable
     214: { t: '11–18', st: 'BRICK', col: [0.62, 0.3, 0.22], frame: 0, roof: [0.62, 0.27, 0.2] }, // the low red-brick building north of the school
   },
   // the open space (world/dorfkern.js, world/village_props.js): places from rays of the video frames on the ground, OSM and the orthophoto
@@ -198,13 +214,15 @@ const DATA = {
       [260.3, -118.0, 300, 1.8, [0.17, 0.48, 0.22]], // green
     ],
     bins: [
-      [263.2, -120.9, [0.2, 0.45, 0.25]], // the green bin at the well
+      [267.4, -119.0, [0.2, 0.45, 0.25]], // the green bin at the well, by the Easter arch
       [235.8, -113.1, [0.45, 0.45, 0.43]], // on the green
+      [243.6, -99.2, [0.42, 0.3, 0.2]], // wooden bin by the power pole (video 14–18 s)
     ],
     // the two limes by the well: the measured crowns (from) moved to the trunks the video shows (at), height, crown width factor
     limes: [
-      { from: [260.2, -116.4], at: [257.9, -119.4], h: 13, w: 1.2 },
-      { from: [255.1, -119.0], at: [253.6, -117.2], h: 9.5 },
+      { from: [260.2, -116.4], at: [257.9, -119.4], h: 13, w: 1.15, turn: 2.1 },
+      { from: [255.1, -119.0], at: [253.6, -117.2], h: 9.5, w: 0.8, turn: 4.4 }, // pollarded: a narrower crown
+      { at: [235.9, -107.3], h: 11, w: 0.85, turn: 1.2 }, // the smaller lime on the green by the parking strip (video 19–22 s)
     ],
     linde: [217.0, -109.0], // the Dorflinde with its ring of benches: bearing 265.5° in the video (was 216.5, −106.5)
     hedges: [
@@ -219,6 +237,32 @@ const DATA = {
           [239.5, -117.8],
           [223.0, -114.5],
         ],
+      },
+    ],
+    // concrete pavers: round the well (photo of Anger 15), the parking strip on the south side of the street where Falko stood
+    paving: [
+      {
+        p: [
+          [257.5, -113.5],
+          [268.5, -116.5],
+          [272.5, -120.5],
+          [271.5, -126.8],
+          [262.0, -128.0],
+          [256.5, -125.5],
+          [255.5, -118.5],
+        ],
+        kerb: [0, 1, 6],
+      },
+      {
+        p: [
+          [251.2, -107.7],
+          [238.6, -103.4],
+          [226.0, -99.9],
+          [225.4, -102.1],
+          [237.9, -105.6],
+          [250.5, -109.9],
+        ],
+        kerb: [3, 4],
       },
     ],
     picnic: [[231.5, -113.0, 290]],
@@ -240,8 +284,13 @@ const DATA = {
       [277.0, -109.6],
     ], // concrete power poles on the north side of the street, the overhead line between them
     vending: [245.4, -99.7, 200],
+    signpost: [228.5, -94.0], // carved post with arrow signs, on the lawn before the school (video 19–21 s)
+    planter: [227.0, -92.2], // concrete flower bowl beside it
     whitebox: [261.0, -85.4, 119, 6.0, 2.4, 2.3], // x, y, azimuth of the long side, length, depth, height
-    porches: [[240, 1.9, 1.1, 2.6]], // building, width, depth, height of the porch roof over its door
+    porches: [
+      [240, 1.9, 1.1, 2.6],
+      [252, 1.6, 0.9, 2.5],
+    ], // building, width, depth, height of the porch roof over its door
     lamps: [
       [246.1, -99.8],
       [254.1, -126.2],

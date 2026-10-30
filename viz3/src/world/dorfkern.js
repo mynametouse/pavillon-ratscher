@@ -1,18 +1,20 @@
 // ===================== feat/dorfkern: the open space of the centre as Falko filmed it (pan of 10.04.2023, photo of Anger 15) =====================
 // The well in front of Anger 15 (OSM man_made=water_well): a polygonal sandstone wall with copings round a sunken basin, steps down on its
-// south side, the wooden pump post; a brown and a green bench and the green bin beside it; concrete pavers around it with a granite kerb; the
-// two big limes by it (their measured crowns moved to the trunks of the video), the picnic table, the bin and the log bench on the green,
-// the long trimmed hedges; concrete power poles with the overhead line along the north side of the street, the vending machine by the post
-// box, the picket fence (brown pickets, red-brown posts) along the meadow behind the bus stop, the white box behind it, the small porch roof
-// of Anger 23; in the Easter weeks an arch of coloured eggs over the well. Places: rays of the video frames on the ground
-// (docs/features/dorfkern.md, data in world/dorfkern_data.js). Geometry from the kit of world/village_props.js, the materials of
-// world/village_props.js and world/village_near.js – no new shader programs; three meshes, built once, collisions before world/worldcol.js.
+// south side, the wooden pump post; a brown and a green bench and the green bin beside it; concrete pavers round it and as the parking strip
+// on the south side of the street, with granite kerbs; the limes by the well and on the green as 3D crowns (copies of the Dorflinde's, on the
+// trunks the video shows); the picnic table, the bin and the log bench on the green, the long trimmed hedges; concrete power poles with the
+// overhead line along the north side of the street, the vending machine by the post box, the picket fence (brown pickets, red-brown posts)
+// along the meadow behind the bus stop, the white box behind it, the carved signpost and the flower bowl before the school, the porch roofs
+// of Anger 23 and 13, the dormers of Anger 18; in the Easter weeks an arch of coloured eggs over the well. Places: rays of the video frames
+// on the ground (docs/features/dorfkern.md, data in world/dorfkern_data.js). Geometry from the kit of world/village_props.js with its
+// materials and the one of world/village_near.js – no new shader programs; a few meshes built once, collisions before world/worldcol.js.
 import * as THREE from 'three';
 import { LATE } from '../core/late.js';
 import { scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { RATSCHER } from './ratscher.js';
+import { RENDER } from '../render/render.js';
 import { VILLAGE } from './village.js';
 import { VPROPS } from './village_props.js';
 import { VNEAR } from './village_near.js';
@@ -100,6 +102,39 @@ export const DORFKERN = (() => {
       kP.box(P[0], P[1], z + 0.62, 0.08, 0.32, 0.07, rot + Math.PI / 2, L(0.3, 0.3, 0.3));
     }
     S.well = { c: w.c, rot, z };
+  }
+  // ---- paving (concrete pavers, the texture of world/village_props.js) with a granite kerb: round the well, the parking strip ----
+  function paving(kPv, kS) {
+    for (const pa of O.paving || []) {
+      const pts = pa.p,
+        T = THREE.ShapeUtils.triangulateShape(
+          pts.map(p => new THREE.Vector2(p[0], p[1])),
+          []
+        );
+      for (const [a, b, c] of T) {
+        const P3 = [a, b, c].map(i => [pts[i][0], pts[i][1], gz(pts[i][0], pts[i][1]) + 0.05]),
+          cr = (P3[1][0] - P3[0][0]) * (P3[2][1] - P3[0][1]) - (P3[1][1] - P3[0][1]) * (P3[2][0] - P3[0][0]),
+          o = cr > 0 ? [0, 1, 2] : [0, 2, 1];
+        kPv.tri(P3[o[0]], P3[o[1]], P3[o[2]], L(0.5, 0.49, 0.46), ...o.map(i => [P3[i][0], P3[i][1]]));
+      }
+      for (const k of pa.kerb || []) {
+        const A = pts[k],
+          B = pts[(k + 1) % pts.length],
+          l = Math.hypot(B[0] - A[0], B[1] - A[1]),
+          mx = (A[0] + B[0]) / 2,
+          my = (A[1] + B[1]) / 2;
+        kS.box(
+          mx,
+          my,
+          gz(mx, my) - 0.1,
+          l + 0.1,
+          0.16,
+          0.26,
+          Math.atan2(B[1] - A[1], B[0] - A[0]),
+          L(0.66, 0.66, 0.64)
+        );
+      }
+    }
   }
   // ---- benches: wooden slats on two frames, facing az (degrees), in a colour ----
   function bench(k, x, y, az, len, col, segs) {
@@ -284,6 +319,49 @@ export const DORFKERN = (() => {
         );
       trunks.push([x, y, 1]);
     }
+    // the carved wooden signpost with its little roof and the concrete flower bowl on the lawn before the school (video 19–21 s, Commons 2026)
+    if (O.signpost) {
+      const [x, y] = O.signpost,
+        z = gz(x, y);
+      kP.cyl(x, y, z, z + 2.7, 0.13, 0.1, 7, L(0.45, 0.32, 0.2), true);
+      kP.box(x, y, z + 2.7, 0.5, 0.42, 0.06, 0.4, L(0.3, 0.2, 0.12));
+      kP.box(x, y, z + 2.76, 0.12, 0.5, 0.18, 0.4, L(0.3, 0.2, 0.12));
+      for (const [ang, zz] of [
+        [20, 2.25],
+        [200, 2.05],
+        [290, 1.85],
+      ]) {
+        const r = az2rot(ang);
+        kP.box(x + Math.cos(r) * 0.32, y + Math.sin(r) * 0.32, z + zz, 0.5, 0.025, 0.14, r, L(0.12, 0.45, 0.2));
+      }
+      trunks.push([x, y, 1]);
+    }
+    if (O.planter) {
+      const [x, y] = O.planter,
+        z = gz(x, y);
+      kP.cyl(x, y, z, z + 0.45, 0.16, 0.13, 8, CONC);
+      kP.lathe(
+        x,
+        y,
+        z + 0.45,
+        [
+          [0.12, 0],
+          [0.42, 0.16],
+          [0.5, 0.3],
+          [0.42, 0.3],
+          [0.0, 0.26],
+        ],
+        12,
+        CONC
+      );
+      const FL = [L(0.85, 0.15, 0.35), L(0.9, 0.9, 0.88), L(0.6, 0.3, 0.75), L(0.2, 0.42, 0.15)];
+      for (let i = 0; i < 14; i++) {
+        const a = i * 2.4,
+          d = 0.1 + (i % 4) * 0.08;
+        kP.ball(x + Math.cos(a) * d, y + Math.sin(a) * d, z + 0.82, 0.08, FL[i % 4], 5);
+      }
+      trunks.push([x, y, 1]);
+    }
     {
       const [x, y, az, lx, ly, h] = O.whitebox,
         r = az2rot(az);
@@ -336,42 +414,132 @@ export const DORFKERN = (() => {
         );
     }
   }
-  // ---- the limes by the well: the measured crowns moved to the trunks seen in the video (world/ratscher.js treeRecs, cards beyond 100 m) ----
+  // ---- dormers on a rebuilt house (Anger 18): slate cheeks and front, a white window, a small gable roof in the house's tiles ----
+  function dormers(kP) {
+    if (!VILLAGE.parts || !VILLAGE.roofZ) return;
+    const SL = [0.13, 0.133, 0.145],
+      WH = L(0.88, 0.88, 0.86),
+      GL = L(0.05, 0.06, 0.07);
+    for (const [id, d] of Object.entries(DKDATA.houses)) {
+      if (!d.dormers) continue;
+      const e = [...VILLAGE.parts.entries()].find(([, p]) => p.of === +id && p.look === d),
+        b = e && VILLAGE.byId.get(e[0]);
+      if (!b) continue;
+      const D = d.dormers,
+        dd = f => Math.abs((((((Math.atan2(f.nx, f.ny) * 180) / Math.PI - D.az) % 360) + 540) % 360) - 180),
+        f = b.fac.filter(k => k.L > 3).reduce((a, c) => (dd(c) < dd(a) ? c : a)),
+        RF = d.roof ? L(...d.roof) : L(0.66, 0.32, 0.22),
+        rot = Math.atan2(f.dy, f.dx);
+      for (const at of D.at) {
+        const u = at * f.L,
+          fx = f.ax + f.dx * u - f.nx * 0.9,
+          fy = f.ay + f.dy * u - f.ny * 0.9,
+          z0 = VILLAGE.roofZ(e[0], fx, fy),
+          sl = VILLAGE.roofZ(e[0], fx - f.nx, fy - f.ny) - z0,
+          hf = D.h,
+          dep = (hf + 0.35) / Math.max(sl, 0.3),
+          half = D.w / 2 + 0.12,
+          zt = z0 + hf,
+          rise = 0.45;
+        if (z0 === null) continue;
+        kP.box(fx - (f.nx * dep) / 2, fy - (f.ny * dep) / 2, z0 - 0.35, D.w, dep, hf + 0.35, rot, SL);
+        kP.box(fx + f.nx * 0.02, fy + f.ny * 0.02, z0 + 0.2, D.w * 0.64, 0.04, hf - 0.42, rot, WH);
+        kP.box(fx + f.nx * 0.035, fy + f.ny * 0.035, z0 + 0.28, D.w * 0.52, 0.04, hf - 0.58, rot, GL);
+        const P = (a, c, z) => [fx + f.nx * c + f.dx * a, fy + f.ny * c + f.dy * a, z];
+        for (const sd of [-1, 1]) {
+          const A = P(sd * half, 0.15, zt - 0.05),
+            B = P(0, 0.15, zt + rise),
+            C = P(0, -dep - 0.2, zt + rise),
+            Dd = P(sd * half, -dep - 0.2, zt - 0.05);
+          kP.quad(A, B, C, Dd, RF);
+          kP.quad(Dd, C, B, A, RF);
+        }
+        kP.tri(P(-half + 0.1, 0.1, zt - 0.02), P(half - 0.1, 0.1, zt - 0.02), P(0, 0.1, zt + rise - 0.06), SL);
+        kP.tri(P(half - 0.1, 0.1, zt - 0.02), P(-half + 0.1, 0.1, zt - 0.02), P(0, 0.1, zt + rise - 0.06), SL);
+      }
+    }
+  }
+  // ---- the limes by the well and on the green: 3D crowns – copies of the Dorflinde's (world/village_props.js, same materials, the thinned
+  // leaf cards), turned and scaled to the trunks and heights the video shows. On the lightest tier the measured crowns of world/ratscher.js
+  // (cheap crossed cards) stand in for them, moved to the same trunks (tick switches by RENDER.tier) ----
   function limes() {
     const recs = RATSCHER.treeRecs || [],
       T = RATSCHER.treeXY,
+      LM = VPROPS.lindeMeshes,
+      [lx, ly] = VPROPS.LINDE,
+      base = V(lx, ly, gz(lx, ly) - 0.15),
+      H = 21, // the Dorflinde's height (world/village_props.js)
       m4 = new THREE.Matrix4(),
       p = new THREE.Vector3(),
       q = new THREE.Quaternion(),
       sc = new THREE.Vector3();
     S.limes = [];
+    S.limeCards = [];
+    S.limeMeshes = [];
     for (const lm of O.limes) {
-      const r = recs.find(k => Math.hypot(k.x - lm.from[0], k.y - lm.from[1]) < 0.6);
-      if (!r) continue;
-      const k = lm.h / r.h;
-      for (const [im, i] of r.inst) {
-        im.getMatrixAt(i, m4);
-        m4.decompose(p, q, sc);
-        p.copy(V(lm.at[0], lm.at[1], gz(lm.at[0], lm.at[1]) - 0.3));
-        sc.multiplyScalar(k);
-        if (lm.w) sc.x = sc.z = sc.x * lm.w;
-        m4.compose(p, q, sc);
-        im.setMatrixAt(i, m4);
-        im.instanceMatrix.needsUpdate = true;
-        im.computeBoundingSphere();
+      const r = lm.from && recs.find(k => Math.hypot(k.x - lm.from[0], k.y - lm.from[1]) < 0.6),
+        z = gz(lm.at[0], lm.at[1]);
+      if (r) {
+        // the measured crown: its card moved onto the trunk, scaled to the height (shown on the lightest tier only)
+        const k = lm.h / r.h;
+        for (const [im, i] of r.inst) {
+          im.getMatrixAt(i, m4);
+          m4.decompose(p, q, sc);
+          p.copy(V(lm.at[0], lm.at[1], z - 0.3));
+          sc.multiplyScalar(k);
+          if (lm.w) sc.x = sc.z = sc.x * lm.w;
+          S.limeCards.push([im, i, new THREE.Matrix4().compose(p, q, sc)]);
+        }
+        if (T)
+          for (let i = 0; i + 2 < T.length; i += 3)
+            if (Math.abs(T[i] - r.x) < 0.05 && Math.abs(T[i + 1] - r.y) < 0.05) {
+              T[i] = lm.at[0];
+              T[i + 1] = lm.at[1];
+              T[i + 2] = lm.h;
+            }
+        r.x = lm.at[0];
+        r.y = lm.at[1];
+        r.h = lm.h;
+      } else if (T) T.push(lm.at[0], lm.at[1], lm.h);
+      if (LM) {
+        const s = lm.h / H,
+          w = lm.w || 1;
+        m4.makeTranslation(-base.x, -base.y, -base.z)
+          .premultiply(new THREE.Matrix4().makeScale(s * w, s, s * w))
+          .premultiply(new THREE.Matrix4().makeRotationY(lm.turn || 0))
+          .premultiply(new THREE.Matrix4().makeTranslation(...V(lm.at[0], lm.at[1], z - 0.15).toArray()));
+        for (const src of [LM[0], LM[3]]) {
+          const g = src.geometry.clone();
+          g.applyMatrix4(m4);
+          g.computeBoundingSphere();
+          const me = new THREE.Mesh(g, src.material);
+          me.userData.noMerge = true;
+          me.castShadow = false;
+          me.receiveShadow = false;
+          me.visible = false;
+          scene.add(me);
+          S.meshes.push(me);
+          S.limeMeshes.push(me);
+        }
       }
-      if (T)
-        for (let i = 0; i + 2 < T.length; i += 3)
-          if (Math.abs(T[i] - r.x) < 0.05 && Math.abs(T[i + 1] - r.y) < 0.05) {
-            T[i] = lm.at[0];
-            T[i + 1] = lm.at[1];
-            T[i + 2] = lm.h;
-          }
-      r.x = lm.at[0];
-      r.y = lm.at[1];
-      r.h = lm.h;
-      S.limes.push([r.x, r.y, r.h]);
+      S.limes.push([lm.at[0], lm.at[1], lm.h]);
     }
+    S.lite = null; // tick decides
+  }
+  const Z0 = new THREE.Matrix4().makeScale(0, 0, 0);
+  function limeTier() {
+    const lite = RENDER.tier === 'schnell' || !S.limeMeshes.length,
+      map = !!RATSCHER.map,
+      key = (lite ? 1 : 0) + (map ? 2 : 0);
+    if (key === S.lite) return;
+    S.lite = key;
+    for (const me of S.limeMeshes) me.visible = !lite && !map;
+    for (const [im, i, m4] of S.limeCards) {
+      im.setMatrixAt(i, lite ? m4 : Z0);
+      im.instanceMatrix.needsUpdate = true;
+      im.computeBoundingSphere();
+    }
+    markDirty();
   }
   // ---- in the Easter weeks (Palm Sunday to the Sunday after Easter) an arch of coloured eggs over the well ----
   function easterDay(Y) {
@@ -407,7 +575,6 @@ export const DORFKERN = (() => {
       cs = Math.cos(rot),
       sn = Math.sin(rot),
       w = O.well,
-      a = w.size[0] / 2 - 0.4,
       cols = [
         L(0.95, 0.85, 0.1),
         L(0.9, 0.2, 0.25),
@@ -417,20 +584,21 @@ export const DORFKERN = (() => {
         L(0.75, 0.35, 0.85),
       ],
       GR = L(0.12, 0.35, 0.12);
-    // the arch over the long axis of the well, from one end wall to the other, wound with green and hung with eggs
-    for (let i = 0; i <= 28; i++) {
-      const t = i / 28,
+    // the arch on the end wall of the well (video 0–6 s: about 1.8 m wide and high), wound with green and hung with eggs
+    const b = w.size[1] / 2 - w.chamfer,
+      u0 = w.size[0] / 2 - 0.2; // the east-north-east end (left of the well in the video and in the photo, by the bin)
+    for (let i = 0; i <= 24; i++) {
+      const t = i / 24,
         ang = Math.PI * t,
-        u = -a * Math.cos(ang),
-        h = z + w.h + 0.12 + 1.6 * Math.sin(ang),
-        x = cx + u * cs,
-        y = cy + u * sn;
-      k.ball(x, y, h, 0.11, GR, 5);
-      const e = cols[i % cols.length];
+        v = -b * Math.cos(ang),
+        h = z + w.h + 0.13 + 1.55 * Math.sin(ang),
+        x = cx + u0 * cs - v * sn,
+        y = cy + u0 * sn + v * cs;
+      k.ball(x, y, h, 0.12, GR, 5);
       k.lathe(
-        x + 0.05 * Math.sin(i),
-        y + 0.05 * Math.cos(i),
-        h - 0.2,
+        x + 0.06 * Math.sin(i * 1.7),
+        y + 0.06 * Math.cos(i * 1.7),
+        h - 0.22,
         [
           [0.0, 0],
           [0.05, 0.02],
@@ -439,11 +607,12 @@ export const DORFKERN = (() => {
           [0.0, 0.14],
         ],
         6,
-        e
+        cols[i % cols.length]
       );
     }
   }
   function tick() {
+    if (S.limeMeshes) limeTier();
     const on = S.isEaster();
     if (on !== S.easter) {
       S.easter = on;
@@ -470,6 +639,8 @@ export const DORFKERN = (() => {
         console.warn('dorfkern ' + n, e);
       }
     };
+    const kPv = kit();
+    step('paving', () => paving(kPv, kS));
     step('well', () => well(kS, kP, segs));
     step('benches', () => {
       for (const [x, y, az, len, col] of O.benches) bench(kP, x, y, az, len, L(...col), segs);
@@ -479,6 +650,7 @@ export const DORFKERN = (() => {
     step('poles', () => poles(kP, kM, trunks));
     step('things', () => things(kP, kN, segs, trunks));
     step('porch', () => porch(kP));
+    step('dormers', () => dormers(kP));
     step('limes', () => limes());
     step('garland', () => garland(kE));
     const add = (k, m) => {
@@ -495,6 +667,7 @@ export const DORFKERN = (() => {
     add(kP, M.paint);
     add(kM, M.metal);
     add(kS, M.stone);
+    if (M.pave) add(kPv, M.pave);
     add(kN, VNEAR.mat ? VNEAR.mat() : M.paint);
     S.garland = add(kE, M.paint);
     if (S.garland) {

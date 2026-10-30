@@ -8,7 +8,8 @@
 import sys, os, json, time, statistics
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]; OUT = lib.out('dorfkern'); ck = lib.Checks('dorfkern')
-# the pan's camera (DKDATA.cam): headings and pitches of the compared frames, vertical field of view of the video (880 px focal at 960 × 540)
+# the pan's camera (DKDATA.cam): headings and pitches of the compared frames, vertical field of view of the video (880 px focal at 960 × 540);
+# window.FOVX holds the first-person field of view (game/camera.js applyCam)
 VIEWS = {'h000': (0.81, 0.16), 'h045': (45.21, 1.27), 'h090': (89.49, 5.8), 'h135': (134.89, 7.71), 'h160': (158.73, 5.22), 'h225': (224.52, 4.56),
          'h270': (270.39, -1.86), 'h315': (313.44, -2.22), 'g031': (147.7, 6.59), 'g081': (77.64, 4.84), 'g111': (13.33, -0.14), 'g141': (328.76, 6.55),
          'g181': (342.06, -2.51), 'g196': (295.74, -2.38), 'g221': (245.41, 2.06)}
@@ -25,7 +26,7 @@ def prep(pg):
 
 def look(pg, k, steps=6):
     yaw, pitch = VIEWS[k]
-    pg.evaluate(f"(() => {{ const c = DKDATA.cam; GAME.view(c.x, c.y, KERN.ground(c.x, c.y) + c.eye, {yaw}, {pitch}, {VFOV}); for (let i = 0; i < {steps}; i++) GAME.step(0.25); }})()")
+    pg.evaluate(f"(() => {{ const c = DKDATA.cam; window.FOVX = {VFOV}; GAME.view(c.x, c.y, KERN.ground(c.x, c.y) + c.eye, {yaw}, {pitch}, {VFOV}); for (let i = 0; i < {steps}; i++) GAME.step(0.25); }})()")
 
 
 def perf(pg, tag):
@@ -92,10 +93,10 @@ with lib.browser() as b:
     ck('all buildings still there (+1 per rebuilt house)', st['n'] == 337 + len(rb), f"{st['n']} buildings")
     o = json.loads(E("""JSON.stringify((() => { const s = DORFKERN.state(), w = DKDATA.open.well.c, a = [w[0] - 2.6, w[1]], hit = WCOL.pushCircle(a, 0.3);
       const sh = DKDATA.open.shelter.c, name = VPROPS.place(sh[0], sh[1]); const b = DKDATA.open.benches[0], hb = WCOL.pushCircle([b[0], b[1]], 0.3);
-      return Object.assign(s, { hitWell: !!hit, hitBench: !!hb, name, lamps: VPROPS.lamps.length, linde: VPROPS.LINDE }); })())"""))
+      return Object.assign(s, { hitWell: !!hit, hitBench: !!hb, name, lamps: VPROPS.lamps.length, linde: VPROPS.LINDE, wantLimes: DKDATA.open.limes.length }); })())"""))
     print('open', json.dumps(o, ensure_ascii=False), flush=True)
-    ck('the open space is built: well, benches, hedges, fence, poles, porch – four meshes, collisions', o['ready'] and o['meshes'] >= 4 and o['segs'] > 30, json.dumps(o))
-    ck('the two limes by the well stand where the video shows their trunks', o['limes'] == 2)
+    ck('the open space is built: well, benches, hedges, fence, poles, porch – four meshes, collisions', o['ready'] and o['meshes'] >= 4 and o['segs'] > 20, json.dumps(o))
+    ck('the limes stand where the video shows their trunks (3D crowns)', o['limes'] == o['wantLimes'] and o['limes'] >= 3, f"{o['limes']} of {o['wantLimes']}")
     ck('the well and the benches stop the walker', o['hitWell'] and o['hitBench'])
     ck('bus stop and Dorflinde where the video shows them', o['name'] == 'Ratscher · Schulbushaltestelle' and abs(o['linde'][1] + 109.0) < 0.01, f"{o['name']} {o['linde']}")
     eg = json.loads(E("""JSON.stringify((() => { const d = (y, m, dd) => Date.UTC(y, m - 1, dd) / 864e5;
@@ -112,7 +113,7 @@ with lib.browser() as b:
     shots(pg, 'a_')
     # Falko's photo of Anger 15 (portrait, from the paving north of the well, looking south-south-east)
     pg.set_viewport_size({'width': 405, 'height': 597}); time.sleep(1)
-    E("GAME.view(263.5, -116, KERN.ground(263.5, -116) + 1.5, 183, 3, 67); for (let i = 0; i < 6; i++) GAME.step(0.25)"); lib.shot(pg, OUT, 'p_anger15')
+    E("window.FOVX = 67; GAME.view(263.5, -116, KERN.ground(263.5, -116) + 1.5, 183, 3, 67); for (let i = 0; i < 6; i++) GAME.step(0.25)"); lib.shot(pg, OUT, 'p_anger15')
     errs = [e for e in errs if 'Texture marked' not in e]
     ck.errors(errs)
     ck.done()

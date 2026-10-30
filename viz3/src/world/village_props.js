@@ -1133,15 +1133,13 @@ export const VPROPS = (() => {
     mesh(kP.geo(), S.mat.paint);
     mesh(kM.geo(), S.mat.metal);
     mesh(kS.geo(), S.mat.stone);
-    const pv = mesh(
-      kPv.geo(),
-      texMat(tex('pavers', 'col', true), 1.3, {
-        roughness: 0.9,
-        polygonOffset: true,
-        polygonOffsetFactor: -2,
-        polygonOffsetUnits: -2,
-      })
-    );
+    S.mat.pave = texMat(tex('pavers', 'col', true), 1.3, {
+      roughness: 0.9,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    });
+    const pv = mesh(kPv.geo(), S.mat.pave);
     try {
       clockMeshes();
     } catch (e) {

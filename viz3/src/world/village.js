@@ -51,6 +51,7 @@ export const VILLAGE = (() => {
     HALL: 10,
     SHED: 11,
     SCHOOL: 12,
+    SLATE_FWG: 13, // feat/dorfkern: slate below, half-timbered gable (Anger 11)
   };
   S.ST = ST;
   const PASTEL = [
@@ -260,7 +261,7 @@ export const VILLAGE = (() => {
           ))
             tris.push([vert(side[i]), vert(side[j]), vert(side[k])]);
         }
-        PART.set(pid, { look: pt.look, tris, of: id });
+        PART.set(pid, { look: pt.look, tris, of: id, rf, F });
       }
     }
     if (!dead.length) return;
@@ -291,6 +292,11 @@ export const VILLAGE = (() => {
     g.computeBoundingSphere();
     S.parts = PART;
   }
+  // the roof of a rebuilt house over (x, y): absolute height (dormers in world/dorfkern.js), null for other buildings
+  S.roofZ = (pid, x, y) => {
+    const p = PART.get(pid);
+    return p ? p.F + p.rf.z([x, y]) : null;
+  };
   // ---- the buildings of world/ratscher.js: walls as quads [A foot, A top, B foot, B top], u around the footprint, v above the foot ----
   function analyse() {
     const g = RATSCHER.bld[0].geometry,
@@ -466,6 +472,18 @@ export const VILLAGE = (() => {
     if (L.col) o.col = linC(L.col, 0.82);
     for (const k of LOOK_KEYS) if (L[k] !== undefined) o[k] = L[k];
     o.dk = L; // roof colour, chimneys, door facade (roofOf, doors)
+    if (L.faces)
+      o.faces = L.faces.map(([az, F]) => [
+        az,
+        Object.assign({}, F, F.col ? { col: linC(F.col, 0.82) } : {}, F.st ? { style: ST[F.st] } : {}),
+      ]);
+    return o;
+  }
+  // a facade facing within 50° of an azimuth in the table's `faces` takes that look over the house's
+  function faceLook(o, f) {
+    if (!o.faces) return o;
+    const az = (Math.atan2(f.nx, f.ny) * 180) / Math.PI;
+    for (const [a, F] of o.faces) if (Math.abs(((az - a + 540) % 360) - 180) < 50) return Object.assign({}, o, F);
     return o;
   }
   // ---- style of a building: type, size, age (near the old centre around the Anger more slate and half-timbering), chance ----
@@ -573,7 +591,7 @@ export const VILLAGE = (() => {
         float fl = floor( vD.w + 0.5 ), isGable = mod( fl, 2.0 ), shut = mod( floor( fl / 2.0 ), 2.0 ), orn = mod( floor( fl / 4.0 ), 2.0 ), raised = mod( floor( fl / 8.0 ), 2.0 ), brd = mod( floor( fl / 16.0 ), 4.0 ), surr = mod( floor( fl / 64.0 ), 2.0 );
         float pk = floor( vC.a + 0.5 ), tIdx = mod( pk, 4.0 ), fIdx = mod( floor( pk / 4.0 ), 4.0 ), dIdx = mod( floor( pk / 16.0 ), 8.0 ), sIdx = mod( floor( pk / 128.0 ), 4.0 ), slT = floor( pk / 512.0 );
         vec2 fw = max( vec2( fwidth( uF ), fwidth( v ) ), vec2( 1e-4 ) ); float px = max( fw.x, fw.y ), aaF = smoothstep( 0.012, 0.05, px ), aaW = smoothstep( 0.16, 0.42, px );
-        bool school = st > 11.5, house = st < 6.5 || school, barn = st > 6.5 && st < 9.5, hall = st > 9.5 && st < 10.5, shed = st > 10.5 && st < 11.5;
+        bool school = st > 11.5 && st < 12.5, house = st < 6.5 || school || st > 12.5, barn = st > 6.5 && st < 9.5, hall = st > 9.5 && st < 10.5, shed = st > 10.5 && st < 11.5;
         // storeys and openings: bays evenly along the facade; a window only where it fits under the eave or the gable line
         float plH = house ? ( raised > 0.5 ? 0.6 : 0.35 ) : 0.0, stH = school ? 3.4 : 2.75;
         float ww = school ? 1.0 : st == 1.0 ? 1.25 : 0.95, wh = school ? 1.5 : st == 1.0 ? 1.4 : 1.3, sill = school ? 0.95 : 0.85;
@@ -594,7 +612,7 @@ export const VILLAGE = (() => {
         if ( dW > 0.0 && abs( bc - dU ) < max( bw * 0.5, dW * 0.5 + ww * 0.5 + 0.1 ) && fi < 0.5 ) win = 0.0;
         // ---- the wall itself ----
         bool upper = v > plH + stH - 0.15, inGable = isGable > 0.5 && v > eave - 0.02;
-        float sty = st; if ( st == 3.0 && !upper ) sty = 0.0; if ( st == 6.0 && !upper ) sty = 0.0; if ( st == 4.0 ) sty = inGable ? 2.0 : 0.0; if ( school ) sty = inGable ? 2.0 : 5.0;
+        float sty = st; if ( st == 3.0 && !upper ) sty = 0.0; if ( st == 6.0 && !upper ) sty = 0.0; if ( st == 4.0 ) sty = inGable ? 2.0 : 0.0; if ( st == 13.0 ) sty = inGable ? 5.0 : 2.0; if ( school ) sty = inGable ? 2.0 : 5.0;
         vec3 base = vC.rgb, c; vec2 tq = vec2( uF, v );
         if ( sty == 2.0 || sty == 3.0 ) {   // slate: small shingles in offset rows, each a little different; white ornament bands
           float rh = 0.17, sw = 0.21, r = floor( v / rh ), off = mod( r, 2.0 ) * 0.5, cc = floor( uF / sw + off ); vec2 f = vec2( fract( uF / sw + off ), fract( v / rh ) );
@@ -704,16 +722,17 @@ export const VILLAGE = (() => {
       aC = new Float32Array(n * 4),
       aT = new Float32Array(n * 3);
     for (const b of S.bld) {
-      const o = b.st,
-        pk = o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut + 512 * (o.slate || 0);
+      const o0 = b.st;
       for (const f of b.fac) {
-        const fl =
-          (f.kind === 'gable' ? 1 : 0) +
-          (o.shutters ? 2 : 0) +
-          (o.orn ? 4 : 0) +
-          (o.raised ? 8 : 0) +
-          16 * Math.min(3, Math.max(0, Math.round(+o.board || 0))) +
-          (o.surr ? 64 : 0);
+        const o = faceLook(o0, f), // feat/dorfkern: a facade of its own (Anger 13: the light shingles of its west gable)
+          pk = o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut + 512 * (o.slate || 0),
+          fl =
+            (f.kind === 'gable' ? 1 : 0) +
+            (o.shutters ? 2 : 0) +
+            (o.orn ? 4 : 0) +
+            (o.raised ? 8 : 0) +
+            16 * Math.min(3, Math.max(0, Math.round(+o.board || 0))) +
+            (o.surr ? 64 : 0);
         for (const q of f.qs)
           for (let k = 0; k < 4; k++) {
             const i = q.q * 4 + k,
