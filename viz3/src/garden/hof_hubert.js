@@ -8,7 +8,6 @@
 // (game/quests.js). Site coordinates: x east, y north, z up (metres).
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
-import { KERN } from '../core/kern.js';
 import { ANISO, markDirty, patchSV, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { B, beam, COL, cyl, siteUV } from '../core/geo.js';
@@ -250,9 +249,9 @@ function workshop(r, i) {
     vy = ux,
     L = Math.hypot(p3[0] - p0[0], p3[1] - p0[1]),
     c = [(r[0][0] + r[2][0]) / 2, (r[0][1] + r[2][1]) / 2],
-    D = Wf * 0.8,
-    he = 2.9,
-    hr = 0.75,
+    D = Math.min(Wf * 0.8, 5.0), // open sheds about 5 m deep, low, with a flat gable roof (photos 7190–7192, Falko 30.10.: not so big)
+    he = 2.35,
+    hr = 0.32,
     t = 0.12;
   const at = (lu, lv) => [c[0] + lu * ux + lv * vx, c[1] + lu * uy + lv * vy];
   const g = new THREE.Group();
@@ -406,14 +405,16 @@ function workshop(r, i) {
     lcyl(0.18, 0.08, TYRE, lu, lv + 0.62, 0.18, { rz: Math.PI / 2 });
     for (const s of [-1, 1]) lbox(g, 0.04, 1.3, 0.04, MAT.black, lu + s * 0.26, lv - 0.15, 0.5);
   }
-  SHEDS.push({ c, u: [ux, uy], v: [vx, vy], D, L, he, at, bench: [bx, by] });
+  SHEDS[i] = { c, u: [ux, uy], v: [vx, vy], D, L, he, at, bench: [bx, by] };
 }
 function bboxOf(pts) {
   const xs = pts.map(p => p[0]),
     ys = pts.map(p => p[1]);
   return [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
 }
-S0.neigh.forEach(workshop);
+// only two of the four plots in site.json carry a building – the orthophoto and the photos of 26.10.2026 show open yard and grass on the
+// second and the fourth (Falko 30.10.2026: the canopies were far too many and too big); their places in SHEDS stay empty
+S0.neigh.forEach((r, i) => (i === 1 || i === 3 ? (SHEDS[i] = undefined) : workshop(r, i)));
 // tools and things in the workshops (glTF, shared with the rest of the scene)
 {
   const s3 = SHEDS[2],
@@ -731,32 +732,6 @@ RAMP.y1 = RAMP.ax + 0.55;
   patch(HOF.horse[0], HOF.horse[1] + 0.2, 1.4, CHIPS, 2);
   patch(HOF.car.x, HOF.car.y + 0.4, 3.1, EARTH, 3, 0.55);
 }
-// ---- Hubert's own tractor (Falko, 29.10.2026: the green one with red rims on the photos of 26.10.2026 is Hubert's): parked in front of his
-// sheds, a still copy of the game's tractor (vehicles/tractor.js) sharing its geometry, with red rims and without lamps of its own ----
-const HUB_TRACTOR = { x: -13, y: -12, rot: -1.3 }; // where three photos of 26.10.2026 see it
-const offHubT = KERN.tick(() => {
-  const T = window.TRACTOR2;
-  if (!T || !T.g || !T.g.children.length) return;
-  offHubT();
-  const g = T.g.clone(true),
-    rim = plain({ color: 0xb3261e, roughness: 0.45, metalness: 0.3 });
-  const drop = [];
-  g.traverse(o => {
-    if (o.isLight) drop.push(o);
-    if (!o.isMesh || !o.material || !o.material.color) return;
-    const hex = o.material.color.getHex();
-    if (hex === 0xc3c6c8) o.material = rim;
-    else if (hex === 0xc4521f || hex === 0xd9ad1f || hex === 0x5b5e60) drop.push(o); // the game tractor's winch and fork: not on Hubert's
-  });
-  drop.forEach(o => o.parent.remove(o));
-  const { x, y, rot } = HUB_TRACTOR;
-  g.position.copy(V(x, y, KERN.ground(x, y)));
-  g.rotation.set(0, rot, 0);
-  g.userData = { hubertTractor: true };
-  scene.add(g);
-  COL.push([x - 1.9, x + 1.9, y - 1.2, y + 1.2, 0, 2.6, 'tractor', null, null]);
-  markDirty(true);
-}, 'garden/hof_hubert:tractor');
 // ---- the long white box body in front of Hubert's sheds (photos of 26.10.2026: „Zeit zum Entspannen“ on its side facing the garden) ----
 {
   const x0 = -23.6,

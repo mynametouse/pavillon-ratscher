@@ -1,12 +1,14 @@
 // ---------- the garden of today: the small things on Falko's photos of 26.10.2026 (placed where the photos see them, ±1–2 m) ----------
-// A brush pile in the meadow, the white plastic table with two chairs and the pink parasol by the big tree, the painted board (blue and
-// yellow) near the yellow hut, the board stack under a white tarpaulin by the gate to the field path, and four long logs on the field edge
-// opposite Hubert's entrance. Plain materials of the kind the garden has (no new shader programs); colliders where one would bump into them.
+// A brush pile in the meadow, the white plastic table with two chairs and the pink parasol on the lawn west of the washhouse; along the
+// field path (Falko 30.10.: beside it, not on it) the board stack under a white tarpaulin on the garden side and the logs on the field side –
+// two long ones, a pile of short ones further west. (The painted boards are the washhouse's front: garden/washhouse.js.) Plain materials
+// of the kind the garden has (no new shader programs); colliders where one would bump into them.
 import * as THREE from 'three';
-import { rnd, rr, scene, V } from '../core/head.js';
-import { ANISO, plain } from '../core/assets.js';
+import { rnd, rr } from '../core/head.js';
+import { plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { B, beam, COL, cyl, phase } from '../core/geo.js';
+import { S0 } from './env.js';
 phase(null);
 const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
   pink = plain({ color: 0xd98fa0, roughness: 0.8, side: THREE.DoubleSide }),
@@ -67,53 +69,94 @@ const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
   cyl(px, py, 0, 2.05, 0.02, MAT.steel, 8, undefined, { col: false });
   cyl(px, py, 1.0, 2.05, 0.03, pink, 12, 0.16, { col: false });
 }
-// ---- the painted board (blue ground, yellow shapes) on two posts, facing the meadow (west) ----
-{
-  const [x, y] = [11.2, 9.1];
-  const cv = document.createElement('canvas');
-  cv.width = 256;
-  cv.height = 192;
-  const c = cv.getContext('2d');
-  c.fillStyle = '#3d63b5';
-  c.fillRect(0, 0, 256, 192);
-  c.fillStyle = '#f1cf2e';
-  for (let i = 0; i < 9; i++) {
-    c.beginPath();
-    c.ellipse(20 + ((i * 53) % 230), 25 + ((i * 71) % 150), 14 + (i % 3) * 9, 9 + (i % 2) * 12, i, 0, Math.PI * 2);
-    c.fill();
+// ---- along the field path (site.js path: the OSM track past the garden, heading 117°): s along it from its west end, o across (+ field side)
+const [PA, PB] = S0.path,
+  PL = Math.hypot(PB[0] - PA[0], PB[1] - PA[1]),
+  U = [(PB[0] - PA[0]) / PL, (PB[1] - PA[1]) / PL],
+  N = [-U[1], U[0]];
+const at = (s, o, z = 0) => [PA[0] + U[0] * s + N[0] * o, PA[1] + U[1] * s + N[1] * o, z];
+// colliders along a member lying parallel to the path: one box per metre
+function colAlong(s0, s1, o, half, z1, tag) {
+  for (let s = s0; s < s1 - 1e-6; s += 1) {
+    const [x0, y0] = at(s, o),
+      [x1, y1] = at(Math.min(s + 1, s1), o);
+    COL.push([
+      Math.min(x0, x1) - half,
+      Math.max(x0, x1) + half,
+      Math.min(y0, y1) - half,
+      Math.max(y0, y1) + half,
+      0,
+      z1,
+      tag,
+      null,
+      null,
+    ]);
   }
-  c.fillRect(70, 90, 26, 80);
-  c.fillRect(150, 20, 20, 90);
-  const tex = new THREE.CanvasTexture(cv);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = ANISO;
-  const me = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.6, 1.2),
-    plain({ map: tex, roughness: 0.7, side: THREE.DoubleSide })
+}
+// ---- the board stack under a white tarpaulin on the garden side of the path, along it (photos 7186, 7187) ----
+{
+  const s = 17.0,
+    o = -3.0,
+    L = 3.6,
+    w = 1.25,
+    h = 1.1;
+  for (const ds of [-1.3, 0, 1.3])
+    beam(at(s + ds, o - w / 2 - 0.05, 0.06), at(s + ds, o + w / 2 + 0.05, 0.06), 0.1, 0.12, MAT.kvh);
+  beam(
+    at(s - L / 2 + 0.1, o, 0.12 + (h - 0.2) / 2),
+    at(s + L / 2 - 0.1, o, 0.12 + (h - 0.2) / 2),
+    w - 0.1,
+    h - 0.2,
+    MAT.plank
   );
-  me.position.copy(V(x, y, 0.75));
-  me.rotation.y = -Math.PI / 2;
-  me.castShadow = true;
-  scene.add(me);
-  for (const dy of [-0.6, 0.6]) B(x + 0.03, x + 0.08, y + dy - 0.03, y + dy + 0.03, 0, 1.3, MAT.kvh, { grain: 'z' });
+  beam(at(s - L / 2, o, h - 0.04), at(s + L / 2, o, h - 0.04), w + 0.06, 0.06, tarp, { bevel: 0.02 });
+  for (const side of [-1, 1])
+    beam(
+      at(s - L / 2, o + side * (w / 2 + 0.02), h * 0.62),
+      at(s + L / 2, o + side * (w / 2 + 0.02), h * 0.62),
+      0.02,
+      h * 0.68,
+      tarp,
+      {
+        cast: false,
+      }
+    );
+  for (const e of [-1, 1])
+    beam(
+      at(s + e * (L / 2 + 0.01), o - w / 2, h * 0.7),
+      at(s + e * (L / 2 + 0.01), o + w / 2, h * 0.7),
+      0.02,
+      h * 0.55,
+      tarp,
+      { cast: false }
+    );
+  colAlong(s - L / 2, s + L / 2, o, w / 2 + 0.05, h, 'boards');
 }
-// ---- board stack under a white tarpaulin by the gate to the field path ----
+// ---- the logs on the field side of the path, along it (photos 7188, 7189): two long ones on cross pieces, a pile of short ones further west ----
 {
-  const [x, y] = [-5.0, 36.8];
-  B(x - 1.3, x + 1.3, y - 0.6, y + 0.6, 0, 0.12, MAT.kvh);
-  B(x - 1.2, x + 1.2, y - 0.55, y + 0.55, 0.12, 0.95, MAT.plank);
-  B(x - 1.35, x + 1.35, y - 0.65, y + 0.65, 0.95, 1.0, tarp, { col: false });
-  for (const s of [-1, 1])
-    B(x - 1.35, x + 1.35, y + s * 0.65 - 0.01, y + s * 0.65 + 0.01, 0.3, 1.0, tarp, { col: false });
-}
-// ---- four long logs on the field edge opposite Hubert's entrance, on two cross pieces ----
-{
-  const [x, y, L] = [-9.5, 44.2, 9.0];
-  for (const dx of [-3, 3]) B(x + dx - 0.12, x + dx + 0.12, y - 1.3, y + 1.3, 0, 0.14, MAT.kvh, { col: false });
-  [0.62, 0.55, 0.5, 0.58].forEach((d, i) => {
-    const yy = y - 0.95 + i * 0.64,
-      z = 0.14 + d / 2;
-    beam([x - L / 2, yy, z], [x + L / 2, yy, z], d, d, MAT.logs, { bevel: d * 0.45, cast: true });
-  });
-  COL.push([x - L / 2, x + L / 2, y - 1.3, y + 1.3, 0, 0.75, 'logs', null, null]);
+  const s0 = 9.5,
+    L = 9.0;
+  for (const ds of [1.2, L - 1.2])
+    beam(at(s0 + ds, 2.7, 0.07), at(s0 + ds, 4.3, 0.07), 0.14, 0.14, MAT.kvh, { cast: false });
+  for (const [o, d] of [
+    [3.15, 0.62],
+    [3.85, 0.55],
+  ])
+    beam(at(s0, o, 0.14 + d / 2), at(s0 + L, o, 0.14 + d / 2), d, d, MAT.logs, { bevel: d * 0.45, cast: true });
+  colAlong(s0, s0 + L, 3.5, 0.75, 0.76, 'logs');
+  // the short ones: three below, two on top, 4 m long
+  const s1 = 2.0,
+    L2 = 4.0;
+  for (const [o, z, d] of [
+    [3.0, 0, 0.4],
+    [3.42, 0, 0.38],
+    [3.84, 0, 0.42],
+    [3.21, 0.36, 0.36],
+    [3.63, 0.36, 0.4],
+  ])
+    beam(at(s1 + rr(-0.15, 0.15), o, z + d / 2), at(s1 + L2 + rr(-0.15, 0.15), o, z + d / 2), d, d, MAT.logs, {
+      bevel: d * 0.45,
+      cast: true,
+    });
+  colAlong(s1, s1 + L2, 3.42, 0.65, 0.76, 'logs');
 }

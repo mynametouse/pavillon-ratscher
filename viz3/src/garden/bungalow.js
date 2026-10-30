@@ -239,6 +239,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   }
   const ovx = 0.5,
     ovy = 0.45,
+    CAN = 1.6, // the canopy: both slopes run on past the back gable's overhang (photos 7222–7225, Falko 30.10.2026)
     xCut = AX1 + 0.2; // the east eave keeps its overhang only north of the annex
   const ze = zw - ovy * pitch;
   // west slope
@@ -253,7 +254,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
     -(hy + ovy) * pitch,
     ROOF
   );
-  gB(g, -hx - ovx, hx + ovx, hy + ovy - 0.015, hy + ovy + 0.015, ze - 0.19, ze + 0.02, MATS.white, {
+  gB(g, -hx - ovx - CAN, hx + ovx, hy + ovy - 0.015, hy + ovy + 0.015, ze - 0.19, ze + 0.02, MATS.white, {
     grain: 'x',
     cast: false,
   });
@@ -280,16 +281,65 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   }
   for (const sy of [-1, 1])
     for (const sx of [-1, 1]) {
-      const yo = sy < 0 && sx < 0 ? hy : hy + ovy; // the south-east barge board ends at the annex
+      const yo = hy + ovy,
+        bx = sx > 0 ? hx + ovx : -hx - ovx - CAN; // the south barge boards at the canopy's end
       beam(
-        [sx * (hx + ovx), sy * yo, zw - (yo - hy) * pitch - 0.09],
-        [sx * (hx + ovx), 0, ze + (hy + ovy) * pitch - 0.09],
+        [bx, sy * yo, zw - (yo - hy) * pitch - 0.09],
+        [bx, 0, ze + (hy + ovy) * pitch - 0.09],
         0.03,
         0.2,
         MATS.white,
         { parent: g }
       );
     }
+  // the canopy over the back (south) gable: both slopes run on 1.6 m, on two posts at the eaves; under it what is kept dry – old
+  // windows leaning against the back wall, boards, a tarpaulin bundle (photos 7222, 7224, 7225)
+  {
+    const xa = -hx - ovx,
+      xb = xa - CAN,
+      zsl = ze + ((hy + ovy) * pitch) / 2 + 0.035;
+    slopeSlab(g, (xa + xb) / 2, (hy + ovy) / 2, zsl, CAN, hy + ovy, 0.06, -(hy + ovy) * pitch, ROOF);
+    slopeSlab(g, (xa + xb) / 2, -(hy + ovy) / 2, zsl, CAN, hy + ovy, 0.06, (hy + ovy) * pitch, ROOF);
+    gB(g, xb, xa, -hy - ovy - 0.015, -hy - ovy + 0.015, ze - 0.19, ze + 0.02, MATS.white, { grain: 'x', cast: false });
+    gB(g, xa - 0.015, xa + 0.015, -hy - ovy, -hy, ze - 0.19, zw, MATS.white, { cast: false }); // the step down to the annex's eave
+    const post = MAT.kvh;
+    for (const sy of [-1, 1]) {
+      const py = sy * (hy + ovy - 0.2);
+      gB(g, xb + 0.12, xb + 0.24, py - 0.06, py + 0.06, 0, ze - 0.04, post, { grain: 'z' });
+      beam([xb + 0.18, py, ze - 0.06], [-hx, py, ze - 0.06], 0.08, 0.1, post, { parent: g }); // the plate from the post to the gable
+    }
+    for (const sy of [-1, 1])
+      lcol(r, xb + 0.1, xb + 0.26, sy * (hy + ovy - 0.2) - 0.08, sy * (hy + ovy - 0.2) + 0.08, 0, ze, 'post');
+    // stored: three old window sashes (white frames, glass), a few boards, a blue tarpaulin bundle
+    // a sash standing upright a little off the wall: white frame, glass (x: its distance behind the gable wall)
+    const sash = (x, y0, w, h) => {
+      const x0 = -hx - x - 0.04,
+        x1 = -hx - x;
+      for (const [a, b2, c, d] of [
+        [y0, y0 + 0.055, 0.02, h],
+        [y0 + w - 0.055, y0 + w, 0.02, h],
+        [y0, y0 + w, 0.02, 0.08],
+        [y0, y0 + w, h - 0.06, h],
+      ])
+        gB(g, x0, x1, a, b2, c, d, MATS.white, { cast: false });
+      gB(g, x0 + 0.015, x1 - 0.015, y0 + 0.05, y0 + w - 0.05, 0.08, h - 0.06, MAT.glass, { cast: false });
+    };
+    sash(0.12, 0.9, 0.9, 1.35);
+    sash(0.2, 1.05, 0.75, 1.2);
+    sash(0.14, -1.7, 1.0, 1.1);
+    for (let i = 0; i < 4; i++)
+      beam(
+        [-hx - 0.4 - i * 0.05, -1.08 + i * 0.1, 0.02],
+        [-hx - 0.12 - i * 0.04, -1.04 + i * 0.1, 1.7 - i * 0.1],
+        0.18,
+        0.022,
+        MAT.plank,
+        {
+          parent: g,
+        }
+      );
+    gB(g, xb + 0.4, xb + 1.0, -2.3, -1.7, 0, 0.32, MATS.blue, { bevel: 0.08 }); // clear of the back door's swing
+  }
   // annex roof: felt, falling 7 cm to the east, white fascia, gutter and downpipe into a rain barrel at the north-east corner
   {
     const ys = -hy,

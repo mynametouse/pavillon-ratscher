@@ -111,7 +111,13 @@ TREEG.userData.noMerge = true;
 scene.add(TREEG);
 window.TREEG = TREEG; // trees within 55 m: hidden in the plan view on request
 const GLBT = { fir: [], smalltree: [] };
-function addTreeInst(kind, x, y, h, r) {
+// phEnd: the tree is there until that construction phase only (a tree of today where the plan builds) – own group, collider until then
+function addTreeInst(kind, x, y, h, r, phEnd) {
+  if (phEnd != null && TREES[kind]) {
+    TREES[kind].items.push([x, y, h, r, phEnd]);
+    treeTrunks.push([x, y, Math.min(0.28, 0.06 + h * 0.012), phEnd]);
+    return;
+  }
   if (kind === 'pine' && MODELS.fir) {
     GLBT.fir.push({ x, y, s: (h / 14.08) * rr(0.95, 1.05) });
     treeTrunks.push([x, y, 0.2]);
@@ -156,6 +162,22 @@ export function thinCards(geo, keep, grow) {
   return g2;
 }
 const sector8 = it => Math.floor((Math.atan2(it.x - 2, it.y - 2) + Math.PI) / (Math.PI / 4));
+// the trees of today that stand where the plan builds (the hall, the log store): one group per last phase, hidden by the phase switch
+// (game/walkable.js applyVisibility reads userData.ph / phEnd); the near/far switch of the crowns inside stays as it is
+const PHG = new Map();
+function phaseGroup(phEnd) {
+  let g = PHG.get(phEnd);
+  if (!g) {
+    g = new THREE.Group();
+    g.userData.ph = 0;
+    g.userData.phEnd = phEnd;
+    g.userData.noMerge = true;
+    g.visible = (window.PHASE ?? 0) < phEnd;
+    TREEG.add(g);
+    PHG.set(phEnd, g);
+  }
+  return g;
+}
 function flushTreeInst() {
   const m4 = new THREE.Matrix4(),
     q = new THREE.Quaternion(),
@@ -167,7 +189,12 @@ function flushTreeInst() {
     for (const a of K.items) (Math.hypot(a[0] - 2, a[1] - 2) < 55 ? near : far).push({ x: a[0], y: a[1], a });
     if (!K.lgFar) K.lgFar = thinCards(K.lg, 0.35, 1.55);
     // one InstancedMesh per 24 m cell in the garden (trees behind the camera are not drawn); the thinned ring outside is one mesh per kind
-    for (const [grp, isFar] of [...cellsOf(near, 24).map(g => [g, false]), ...(far.length ? [[far, true]] : [])]) {
+    const cellKey = it => (it.a[4] ?? '') + ':' + Math.floor(it.x / 24) + ':' + Math.floor(it.y / 24);
+    for (const [grp, isFar] of [
+      ...cellsOf(near, 24, cellKey).map(g => [g, false]),
+      ...(far.length ? [[far, true]] : []),
+    ]) {
+      const parent = grp[0].a[4] != null ? phaseGroup(grp[0].a[4]) : isFar ? scene : TREEG;
       const ib = new THREE.InstancedMesh(K.bg, K.bark, grp.length),
         il = new THREE.InstancedMesh(isFar ? K.lgFar : K.lg, K.leaf, grp.length);
       grp.forEach(({ a: [x, y, h, r] }, i) => {
@@ -184,7 +211,7 @@ function flushTreeInst() {
         im.receiveShadow = true;
         im.userData.noMerge = true;
         vegReady(im);
-        (isFar ? scene : TREEG).add(im);
+        parent.add(im);
       }
       il.customDepthMaterial = K.depth;
       // near cells: full crowns within 30 m of the camera, the thinned crowns (a third of the cards) beyond – same instances
@@ -199,13 +226,14 @@ function flushTreeInst() {
         lo.frustumCulled = true;
         lo.computeBoundingSphere();
         lo.visible = false;
-        TREEG.add(lo);
+        (parent === scene ? TREEG : parent).add(lo);
         il.computeBoundingSphere();
         VEG.lod.push({ hi: il, lo, d: 30 });
       }
     }
   }
-  for (const [x, y, rad] of treeTrunks) COL.push([x - rad, x + rad, y - rad, y + rad, 0, 4, 'tree']);
+  for (const [x, y, rad, ph] of treeTrunks)
+    COL.push([x - rad, x + rad, y - rad, y + rad, 0, 4, 'tree', ph != null ? 0 : undefined, ph]);
   if (GLBT.fir.length) instanceVariants('fir', GLBT.fir, { env: 0.6, tint: 0xe8f0dc, cell: 24, parent: TREEG });
   if (GLBT.smalltree.length)
     instanceVariants('smalltree', GLBT.smalltree, {
@@ -282,6 +310,7 @@ const GATES = [
   [4.0, 30.6, 2.6], // the double gate from the field path (x, y, half gap)
   [17.8, 20.4, 1.6], // the small gate by the stream
   [-8.86, 39.08, 2.5], // site.json entrance
+  [-4.6, 34.0, 2.3], // not a gate: the board stack under the white tarpaulin beside the field path (garden/garten_heute.js)
 ];
 // the brook's banks are overgrown (photos of 26.10.2026): low bushes and tall weeds just outside both top edges of the ditch, with gaps;
 // none at the bridge
@@ -344,10 +373,16 @@ function buildTrees() {
       console.warn('tree', k.key, e);
     }
   }
+  // the garden's trees as Falko's photos of 26.10.2026 show them carry their kind (site.js: [x, y, crown radius, height, kind]); the
+  // others (the measured crowns round the garden) get one from their size
+  const KIND_OF = { alder: 'oakB', cherry: 'oakA', apple: 'apple', tree: 'ash' };
   S0.trees.forEach((t, i) => {
     const [x, y, r, h] = t;
     if (nearPath(x, y, 1.2)) return;
-    if (inBuilding(x, y, 0.8)) return; // a trunk in a footprint: the tree would grow through the roof
+    // a trunk in a footprint: the tree would grow through the roof – not tested for a tree of today that stands where the plan builds
+    // (t[5]: its last phase; it goes with that phase, and the buildings it stands beside today are not in the way)
+    if (t[5] == null && inBuilding(x, y, 0.8)) return;
+    if (KIND_OF[t[4]]) return addTreeInst(KIND_OF[t[4]], x, y, h, r, t[5]);
     let kind = 'ash';
     if (r >= 4.5) kind = 'oakA';
     else if (h <= 8.0) kind = 'apple';

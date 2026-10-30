@@ -1359,6 +1359,7 @@ export const LIFE = (() => {
   {
     const inShed = (x, y) =>
       SHEDS.some(S => {
+        if (!S) return false; // a plot without a shed (garden/hof_hubert.js)
         const dx = x - S.c[0],
           dy = y - S.c[1];
         return Math.abs(dx * S.u[0] + dy * S.u[1]) < S.D / 2 && Math.abs(dx * S.v[0] + dy * S.v[1]) < S.L / 2;

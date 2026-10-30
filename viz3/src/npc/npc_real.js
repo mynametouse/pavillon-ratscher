@@ -684,6 +684,62 @@ function realGoat(gl, o) {
   return self;
 }
 // ---- Hubert's tractor: an old weathered red tractor (CC BY); its four wheels are cut out of the one wheel mesh so they can turn ----
+// Hubert's tractor is green with red rims (photos of 26.10.2026; Falko 30.10.: he has no red one) – the red model (CC BY) recoloured once
+// on load: its red paint (Tractor_01, _03) turned to green, the light grey of the rims (Tractor_04) to red; Ronald's copy keeps the red
+function recolourMap(t0, mode) {
+  const img = t0.image,
+    cv = document.createElement('canvas');
+  cv.width = img.width;
+  cv.height = img.height;
+  const c = cv.getContext('2d', { willReadFrequently: true });
+  c.drawImage(img, 0, 0);
+  const d = c.getImageData(0, 0, cv.width, cv.height),
+    p = d.data;
+  for (let i = 0; i < p.length; i += 4) {
+    const r = p[i],
+      g = p[i + 1],
+      b = p[i + 2],
+      mx = Math.max(r, g, b),
+      s = mx ? (mx - Math.min(r, g, b)) / mx : 0;
+    if (mode === 'paint') {
+      if (r > g * 1.3 && r > b * 1.2 && s > 0.25) {
+        p[i] = r * 0.3 + g * 0.2;
+        p[i + 1] = r * 0.62 + g * 0.25;
+        p[i + 2] = r * 0.2 + b * 0.2;
+      }
+    } else if (s < 0.2 && mx > 115) {
+      p[i] = mx * 0.82;
+      p[i + 1] = mx * 0.2;
+      p[i + 2] = mx * 0.14;
+    }
+  }
+  c.putImageData(d, 0, 0);
+  const t = t0.clone();
+  t.image = cv;
+  t.needsUpdate = true;
+  return t;
+}
+function greenTractor(root) {
+  const done = new Map();
+  root.traverse(o => {
+    const m0 = o.isMesh && o.material;
+    if (!m0 || !m0.map || !m0.map.image) return;
+    const mode = /Tractor_0[13]/.test(m0.name) ? 'paint' : /Tractor_04/.test(m0.name) ? 'rims' : null;
+    if (!mode) return;
+    let m = done.get(m0);
+    if (!m) {
+      try {
+        m = m0.clone();
+        m.map = recolourMap(m0.map, mode);
+      } catch (e) {
+        console.warn('tractor colour', e);
+        m = m0;
+      }
+      done.set(m0, m);
+    }
+    o.material = m;
+  });
+}
 function realTractor(gl) {
   const model = gl.scene,
     inner = new THREE.Group();
@@ -946,6 +1002,7 @@ async function loadReal() {
     ]);
     if (gt) {
       const gm = { scene: gt.scene.clone(true) }; // Ronald's mowing tractor: a copy (shared geometry and materials)
+      greenTractor(gt.scene); // Hubert's own materials, green
       swapTractor(realTractor(gt));
       TRACTOR.g.visible = true;
       swapTractor(realTractor(gm), MOWER, [MOWER.bar]);

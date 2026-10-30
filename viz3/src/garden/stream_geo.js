@@ -141,9 +141,11 @@ export const STREAM = (() => {
     tr[0] = +p[0].toFixed(2);
     tr[1] = +p[1].toFixed(2);
   }
-  // trees from the aerial photo that stand where the workshop and its log store are now (south end) are left out
+  // trees from the aerial photo that stand where the workshop and its log store are now (south end) are left out – not the trees of today
+  // that carry a last phase (site.js [5]: there until the hall is built, garden/trees.js)
   for (let i = S.trees.length - 1; i >= 0; i--) {
     const [x, y] = S.trees[i];
+    if (S.trees[i][5] != null) continue;
     if ((x > -7.8 && x < 4.8 && y > -41.8 && y < -35.4) || (x > -11.6 && x < -6.4 && y > -41.2 && y < -36.0))
       S.trees.splice(i, 1);
   }

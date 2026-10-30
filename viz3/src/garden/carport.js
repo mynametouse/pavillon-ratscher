@@ -46,9 +46,11 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
   const zh = 3.05,
     zl = 2.8,
     py = hy - 0.2;
-  const xs = [-hx + 0.25, 0, hx - 0.25];
+  const xs = [-hx + 0.25, 0, hx - 0.25],
+    hasPost = (x, sy) => !(x === 0 && sy > 0); // the front (north, the door side) has two posts only, no middle one (Falko 30.10.2026)
   for (const x of xs)
     for (const sy of [-1, 1]) {
+      if (!hasPost(x, sy)) continue;
       const zt = sy > 0 ? zh : zl,
         y = sy * py;
       gB(g, x - 0.06, x + 0.06, y - 0.06, y + 0.06, 0.12, zt, FRAMEW, { grain: 'z' });
@@ -72,6 +74,7 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
   slopeSlab(g, 0, 0, zr(0) + 0.175, b.L + 0.3, b.W + 0.5, 0.03, k * (b.W + 0.5), MAT.metal);
   for (const x of xs)
     for (const sy of [-1, 1]) {
+      if (!hasPost(x, sy)) continue;
       const c = worldOf(b, x, sy * py);
       COL.push([c[0] - 0.1, c[0] + 0.1, c[1] - 0.1, c[1] + 0.1, 0, 2.6, 'post', PH, PH_END]);
     }
