@@ -561,7 +561,8 @@ phase(null);
   COL.push([p[0] - 0.35, p[0] + 0.35, p[1] - 0.35, p[1] + 0.35, 0, 0.6, 'chair', null, null]);
 }
 // ---- the young trees Falko planted in the meadow west of the hut, each in a dug patch (7248–7259): a small tree with red-orange autumn
-// leaves (7254–7258), one with dark berries (7248, 7249), a young apple tree (7250); two more patches dug for planting (7251–7253). Own
+// leaves (7254–7258), one with dark berries (7248, 7249), a young apple tree (7250); two more patches dug for planting (7251–7253); one with
+// yellow leaves north of the bungalow (7212–7214). Own
 // random numbers (rng), no colliders (thin stems; a vehicle would bend them) ----
 {
   const R = rng(2610),
@@ -572,12 +573,14 @@ phase(null);
     red: [0xa8422e, 0xc0603a, 0x8c3a3a].map(c => plain({ color: c, roughness: 0.8, side: THREE.DoubleSide })),
     berry: [0x7a3b2c, 0x6f7a3a].map(c => plain({ color: c, roughness: 0.8, side: THREE.DoubleSide })),
     apple: [0x8a9a3a, 0xa2a63e].map(c => plain({ color: c, roughness: 0.8, side: THREE.DoubleSide })),
+    yellow: [0xc9a43a, 0xd8b84a, 0x9aa246].map(c => plain({ color: c, roughness: 0.8, side: THREE.DoubleSide })),
   };
   const patch = (x, y, r) => cyl(x, y, -0.01, 0.025, r, soil, 16, r * 1.05, { col: false, cast: false });
   for (const [x, y, h, kind, nLeaves] of [
     [-0.3, -10.9, 1.9, 'red', 34],
     [-4.0, -7.2, 1.5, 'berry', 16],
     [-4.4, -9.6, 2.0, 'apple', 22],
+    [9.1, 19.9, 1.7, 'yellow', 18], // north of the bungalow, by the east fence (7212–7214)
   ]) {
     patch(x, y, 0.45);
     cyl(x, y, 0, h, 0.018, bark, 6, 0.01, { col: false });
