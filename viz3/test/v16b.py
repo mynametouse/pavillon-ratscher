@@ -3,6 +3,8 @@
 # headlights at night, the HUD with the map, a phone. Pictures in out/v16b/. Sections (optional second argument, comma-separated):
 # car,drive,crash,route,walk,tractor,night,ui,phone
 import sys, os, time, json, math
+# never let an evaluate return VEH.cur (or another object of the scene): Playwright would serialise the whole scene graph behind it
+# (parent links, every geometry buffer) – hundreds of MB, minutes, and since the people and cars of V16w the renderer ran out of memory
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]; OUT = lib.out('v16b'); ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else None
 def want(k): return not ONLY or k in ONLY
@@ -25,7 +27,7 @@ with lib.browser() as b:
         E("GAME.setView3(false)"); steps(0.8); lib.shot(pg, OUT, 'a_car_driver'); E("GAME.setView3(true)")
         check('car entered', E("VEH.cur && VEH.cur.id === 'car' && PLAY.seat && PLAY.seat.kind === 'drive'"))
     if want('drive'):
-        if not E("VEH.cur"): E("VEH.enter('car')")
+        if not E("!!VEH.cur"): E("VEH.enter('car')")
         x0 = st()[0]; drive(6, thr=1); s = st()[0]; d = ((s['x'] - x0['x']) ** 2 + (s['y'] - x0['y']) ** 2) ** 0.5
         check('accelerates on the field path', s['kmh'] > 20 and d > 25, f"{s['kmh']} km/h, {d:.1f} m, gear {s['gear']}")
         # braking: held long enough it turns into reverse (as in GTA), so watch for the moment it stands
@@ -39,7 +41,7 @@ with lib.browser() as b:
         drive(3, thr=1); s = st()[0]; check('forward again', s['gear'] >= 1, f"gear {s['gear']} {s['kmh']} km/h")
         drive(3, brk=1)
     if want('crash'):   # straight into a house in Ratscher: stops at the wall, does not go through
-        if not E("VEH.cur"): E("VEH.enter('car')")
+        if not E("!!VEH.cur"): E("VEH.enter('car')")
         r = E("""(() => { const W = RATSCHER.walls; let best = null, bd = 1e9; for (let i = 0; i < W.length; i += 4) { const mx = (W[i] + W[i + 2]) / 2, my = (W[i + 1] + W[i + 3]) / 2, L = Math.hypot(W[i + 2] - W[i], W[i + 3] - W[i + 1]);
             const d = Math.hypot(mx - 260, my + 200); if (L > 8 && d < bd) { bd = d; best = [W[i], W[i + 1], W[i + 2], W[i + 3]]; } } return best; })()""")
         ax, ay, bx_, by = r; mx, my = (ax + bx_) / 2, (ay + by) / 2; L = ((bx_ - ax) ** 2 + (by - ay) ** 2) ** 0.5; nx, ny = -(by - ay) / L, (bx_ - ax) / L
@@ -52,7 +54,7 @@ with lib.browser() as b:
         check('stops at a house wall', side > 0.5, f"{side:.2f} m in front of the wall, {s['kmh']} km/h"); lib.shot(pg, OUT, 'b_crash')
         drive(3, brk=1)
     if want('route'):
-        if not E("VEH.cur"): E("VEH.enter('car')")
+        if not E("!!VEH.cur"): E("VEH.enter('car')")
         R = E("ROADS.routes.klinge"); E(f"VEH.place('car', {R[0][0]}, {R[0][1]}, Math.atan2({R[1][0] - R[0][0]}, {R[1][1] - R[0][1]}))")
         # since V16d Hubert's tractor waits on the last metres of the track with the trailer coupled behind it (vehicles/tractor.js and
         # trailer.js home), both collide – the car drives to 25 m before the tractor
@@ -69,10 +71,10 @@ with lib.browser() as b:
         check('names on the way', any(p.startswith('Ratscher') for p in places) and any('Landstraße' in p or 'Feldweg' in p for p in places), '')   # V16e: in the village also 'Ratscher · <Straße>'
         E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null"); lib.shot(pg, OUT, 'c_klinge')
     if want('walk') or want('tractor'):
-        if not E("VEH.cur") and not E("PLAY.seated()"):
+        if not E("!!VEH.cur") and not E("PLAY.seated()"):
             R = E("ROADS.routes.klinge"); E(f"VEH.place('car', {R[-1][0]}, {R[-1][1]}, Math.atan2({R[-1][0] - R[-2][0]}, {R[-1][1] - R[-2][1]})); VEH.enter('car')"); steps(0.5)
         E("VEH.exit()"); steps(0.6); w = E("JSON.stringify({ x: GAME.P.x, y: GAME.P.y, feet: GAME.P.feet, g: ROADS.groundAt(GAME.P.x, GAME.P.y), where: document.getElementById('where').textContent })"); print('out', w)
-        w = json.loads(w); check('gets out beside the car, on the ground', abs(w['feet'] - w['g']) < 0.15 and not E("VEH.cur"), str(w))
+        w = json.loads(w); check('gets out beside the car, on the ground', abs(w['feet'] - w['g']) < 0.15 and not E("!!VEH.cur"), str(w))
         lib.shot(pg, OUT, 'd_out_klinge')
         if want('walk'):
             z0 = E("GAME.P.feet"); r = E("GAME.step(4, 1, 0, 0)"); print('walked', r); z1 = E("GAME.P.feet")
@@ -89,7 +91,7 @@ with lib.browser() as b:
         x0 = st()[1]; drive(8, thr=1); s = st()[1]; check('tractor drives', s['kmh'] > 15, f"{s['kmh']} km/h gear {s['gear']}")
         drive(4, brk=1); E(f"GAME.P.yaw = {s['psi']} - 120; GAME.P.pitch = -10"); lib.shot(pg, OUT, 'e_tractor_front')
     if want('night'):
-        if not E("VEH.cur"): E("VEH.enter('car')")
+        if not E("!!VEH.cur"): E("VEH.enter('car')")
         E("CLOCK.t = 23 * 60 + 40; DN.update(true)"); lib.settle_light(pg)
         R = E("ROADS.routes.klinge"); i = 60; E(f"VEH.place(VEH.cur.id, {R[i][0]}, {R[i][1]}, Math.atan2({R[i + 1][0] - R[i][0]}, {R[i + 1][1] - R[i][1]}))"); steps(0.5)
         E("GAME.setView3(true)"); steps(0.5); lib.shot(pg, OUT, 'f_night_chase')
@@ -100,7 +102,7 @@ with lib.browser() as b:
     def overlap(a, c): return a and c and not a['hidden'] and not c['hidden'] and a['x'] < c['x'] + c['w'] and c['x'] < a['x'] + a['w'] and a['y'] < c['y'] + c['h'] and c['y'] < a['y'] + a['h']
     MAPPX = "(() => { const cv = document.getElementById('vmap'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let n = 0; for (let k = 3; k < d.length; k += 16) if (d[k] > 0) n++; return n; })()"
     if want('ui'):   # the driving HUD on the page: speedometer, the small map with the way to the Klinge, the destination below it
-        if not E("VEH.cur"): E("VEH.enter('car')")
+        if not E("!!VEH.cur"): E("VEH.enter('car')")
         E("CLOCK.t = 14 * 60; DN.update(true)"); lib.settle_light(pg)
         R = E("ROADS.routes.klinge"); i = 40; E(f"VEH.place(VEH.cur.id, {R[i][0]}, {R[i][1]}, Math.atan2({R[i + 1][0] - R[i][0]}, {R[i + 1][1] - R[i][1]}))")
         E(f"window._fs = VEH.follow(ROADS.routes.klinge.slice({i}), 9)"); steps(3)

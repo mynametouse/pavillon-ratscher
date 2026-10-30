@@ -26,9 +26,9 @@ with lib.browser() as b:
         # camera cleared, and nothing steps until shot() has rendered (GAME.shot applies the camera itself); shot() puts the vehicle back
         E(f"(() => {{ const inV = !!VEH.cur; if (inV) {{ window._vcur = VEH.cur; VEH.cur = null; }} GAME.P.cam = null; GAME.setView3(false, true); GAME.view({cx}, {cy}, {gz + ch}, {yaw}, {pitch}, {fov}); if (!inV) GAME.step(0.05); }})()")
     def shot(name): lib.shot(pg, OUT, name); E("if (window._vcur) { VEH.cur = window._vcur; window._vcur = null; }")
-    def drive(thr, brk, steer, secs): E("VEH.cur || VEH.enter('tractor')"); E(f"VEH.auto = () => ({{ thr: {thr}, brk: {brk}, steer: {steer}, hand: false }})"); steps(secs); E("VEH.auto = null")
+    def drive(thr, brk, steer, secs): E("!!(VEH.cur || VEH.enter('tractor'))"); E(f"VEH.auto = () => ({{ thr: {thr}, brk: {brk}, steer: {steer}, hand: false }})"); steps(secs); E("VEH.auto = null")
     # stop like a driver: the brake while rolling forward, the forward key while rolling back (the brake key reverses), then the handbrake
-    def stop(): E("VEH.cur || VEH.enter('tractor')"); E("VEH.auto = v => { if (!v) return { thr: 0, brk: 0, steer: 0, hand: true }; const u = v.st.u; return Math.abs(u) < 0.15 ? { thr: 0, brk: 0, steer: 0, hand: true } : u > 0 ? { thr: 0, brk: 1, steer: 0, hand: false } : { thr: 1, brk: 0, steer: 0, hand: false }; }"); steps(2.0); E("VEH.auto = null")
+    def stop(): E("!!(VEH.cur || VEH.enter('tractor'))"); E("VEH.auto = v => { if (!v) return { thr: 0, brk: 0, steer: 0, hand: true }; const u = v.st.u; return Math.abs(u) < 0.15 ? { thr: 0, brk: 0, steer: 0, hand: true } : u > 0 ? { thr: 0, brk: 1, steer: 0, hand: false } : { thr: 1, brk: 0, steer: 0, hand: false }; }"); steps(2.0); E("VEH.auto = null")
     gap = lambda: J("(() => { const v = VEH.by.tractor, h = TRAILER.hitchW(v), e = TRAILER.eyeW(); return Math.hypot(h[0] - e[0], h[1] - e[1]); })()")
     if want('trailer'):
         s0 = J("{ c: !!TRAILER.tow, t: TRAILER.st, v: VEH.by.tractor.st }"); print('start', s0['c'], {k: s0['t'][k] for k in ('x', 'y', 'psi')})
