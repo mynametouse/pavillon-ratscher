@@ -1,0 +1,4 @@
+# feat/dorfkern: the centre as in Falko's video – the table, the open space, frame time, pictures from the fitted camera; and the village tests it touches
+dorfkern
+v16e:load,places,near,walk,gl
+dorf:door,inside

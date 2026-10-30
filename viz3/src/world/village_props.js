@@ -20,6 +20,7 @@ import { news } from '../audio/audio.js';
 import { RATSCHER } from './ratscher.js';
 import { ROADS } from './roads.js';
 import { VILLAGE } from './village.js';
+import { DKDATA } from './dorfkern_data.js';
 export const VPROPS = (() => {
   const S = {
     on: false,
@@ -27,7 +28,7 @@ export const VPROPS = (() => {
     lamps: [],
     meshes: [],
     ANGER: [222, -108],
-    LINDE: [216.5, -106.5],
+    LINDE: (DKDATA.open && DKDATA.open.linde) || [216.5, -106.5], // feat/dorfkern: the trunk as the video sees it (bearing 265.5°)
     FOUNTAIN: [191.3, -114.4],
   };
   if (!window.RATSCHER || !RATSCHER.on) return S;
@@ -633,48 +634,97 @@ export const VPROPS = (() => {
   }
   // ---- bus stop "Ratscher, Schulbushaltestelle" (OSM: shelter, bench, bin, lit), post box, signpost ----
   function busStop(kP, kM) {
-    const x = 250.6,
-      y = -99.6,
-      a = ((180 - 200) * Math.PI) / 180,
+    // feat/dorfkern: place and look as in Falko's video (10.04.2023): a timber frame in dark brown with white panels and X-braces on the back
+    // and the sides, a flat roof with a brown fascia, a bench of boards; the open side to the road
+    const SH = (DKDATA.open && DKDATA.open.shelter) || { c: [250.6, -99.6], az: 200 },
+      [x, y] = SH.c,
+      a = ((180 - SH.az) * Math.PI) / 180,
       z = gz(x, y),
       c = Math.cos(a),
-      s = Math.sin(a); // the open side faces the road (azimuth 200°)
+      s = Math.sin(a); // the open side faces the road (azimuth SH.az)
     const lx = (u, v) => [x + c * u - s * v, y + s * u + c * v]; // u along the road, v away from it (back)
-    for (const [u, v, sx, sy] of [
-      [0, 0.7, 3.0, 0.08],
-      [-1.46, 0.0, 0.08, 1.45],
-      [1.46, 0.0, 0.08, 1.45],
-    ]) {
-      const p = lx(u, v);
-      kP.box(p[0], p[1], z, sx, sy, 2.25, a, WOODD);
+    const FR = L(0.24, 0.13, 0.08),
+      PAN = L(0.9, 0.89, 0.86),
+      P3 = (u, v, h) => [...lx(u, v), z + h];
+    // a brace: a flat strip from (u0, v0, h0) to (u1, v1, h1) on a panel whose outward normal is (nu, nv) in (u, v)
+    const brace = (u0, v0, h0, u1, v1, h1, nu, nv) => {
+      const du = u1 - u0,
+        dv = v1 - v0,
+        dh = h1 - h0,
+        l = Math.hypot(du, dv, dh),
+        w = 0.07,
+        // across the strip in the panel's plane: perpendicular to the strip and to the normal
+        ax = (dv * 0 - dh * nv) / l,
+        ay = (dh * nu - du * 0) / l,
+        ah = (du * nv - dv * nu) / l,
+        o = 0.045;
+      const q = (t, sg) =>
+        P3(
+          u0 + du * t + (ax * w * sg) / 2 + nu * o,
+          v0 + dv * t + (ay * w * sg) / 2 + nv * o,
+          h0 + dh * t + (ah * w * sg) / 2
+        );
+      kP.quad(q(0, -1), q(1, -1), q(1, 1), q(0, 1), FR, w, l);
+      kP.quad(q(0, 1), q(1, 1), q(1, -1), q(0, -1), FR, w, l);
+    };
+    const W2 = 1.5,
+      D2 = 0.72,
+      H2 = 2.2;
+    // panels: back (v = D2) and the two sides (u = ±W2)
+    {
+      const p = lx(0, D2);
+      kP.box(p[0], p[1], z + 0.05, 2 * W2, 0.05, H2 - 0.1, a, PAN);
     }
+    for (const sg of [-1, 1]) {
+      const p = lx(sg * W2, 0);
+      kP.box(p[0], p[1], z + 0.05, 0.05, 2 * D2, H2 - 0.1, a, PAN);
+    }
+    // the frame: corner posts, a post in the middle of the back, rails at the foot, at 0.9 m and under the roof
     for (const [u, v] of [
-      [-1.46, -0.7],
-      [1.46, -0.7],
-      [-1.46, 0.7],
-      [1.46, 0.7],
+      [-W2, -D2],
+      [W2, -D2],
+      [-W2, D2],
+      [W2, D2],
+      [0, D2],
     ]) {
       const p = lx(u, v);
-      kP.box(p[0], p[1], z, 0.1, 0.1, 2.3, a, WOOD);
+      kP.box(p[0], p[1], z, 0.11, 0.11, H2 + 0.05, a, FR);
     }
+    for (const h of [0.05, 0.9, H2 - 0.08]) {
+      const p = lx(0, D2 + 0.03);
+      kP.box(p[0], p[1], z + h, 2 * W2, 0.06, 0.09, a, FR);
+      for (const sg of [-1, 1]) {
+        const q2 = lx(sg * (W2 + 0.03), 0);
+        kP.box(q2[0], q2[1], z + h, 0.06, 2 * D2, 0.09, a, FR);
+      }
+    }
+    // X-braces in the upper field of the back (two halves) and of each side
+    for (const [u0, u1] of [
+      [-W2, 0],
+      [0, W2],
+    ]) {
+      brace(u0, D2, 0.95, u1, D2, H2 - 0.1, 0, -1);
+      brace(u1, D2, 0.95, u0, D2, H2 - 0.1, 0, -1);
+    }
+    for (const sg of [-1, 1]) {
+      brace(sg * W2, -D2, 0.1, sg * W2, D2, H2 - 0.1, -sg, 0);
+      brace(sg * W2, D2, 0.1, sg * W2, -D2, H2 - 0.1, -sg, 0);
+    }
+    // roof with a fascia, the bench
     {
       const p = lx(0, 0);
-      kP.box(p[0], p[1], z + 2.3, 3.4, 1.9, 0.08, a, L(0.25, 0.14, 0.1));
-      kP.box(p[0], p[1], z + 2.38, 3.3, 1.8, 0.05, a, L(0.45, 0.2, 0.14));
+      kP.box(p[0], p[1], z + H2 + 0.05, 2 * W2 + 0.4, 2 * D2 + 0.45, 0.07, a, L(0.3, 0.3, 0.29));
+      kP.box(p[0], p[1], z + H2 - 0.06, 2 * W2 + 0.44, 2 * D2 + 0.49, 0.12, a, FR);
     }
     {
-      const p = lx(0, 0.45);
-      kP.box(p[0], p[1], z + 0.42, 2.6, 0.35, 0.05, a, WOOD);
-      kP.box(p[0], p[1], z, 2.5, 0.06, 0.42, a, WOODD);
+      const p = lx(0, D2 - 0.25);
+      kP.box(p[0], p[1], z + 0.42, 2 * W2 - 0.4, 0.34, 0.05, a, L(0.4, 0.25, 0.15));
+      for (const sg of [-1, 0, 1]) {
+        const q2 = lx(sg * (W2 - 0.5), D2 - 0.25);
+        kP.box(q2[0], q2[1], z, 0.08, 0.3, 0.42, a, FR);
+      }
     }
-    S.segs.push(
-      ...lx(-1.5, 0.75),
-      ...lx(1.5, 0.75),
-      ...lx(-1.5, -0.75),
-      ...lx(-1.5, 0.75),
-      ...lx(1.5, -0.75),
-      ...lx(1.5, 0.75)
-    );
+    S.segs.push(...lx(-W2, D2), ...lx(W2, D2), ...lx(-W2, -D2), ...lx(-W2, D2), ...lx(W2, -D2), ...lx(W2, D2));
     // the H sign: a green H on a yellow disc
     {
       const p = lx(2.1, -0.6);
@@ -1038,7 +1088,7 @@ export const VPROPS = (() => {
     S.benches = [];
     S.pave = [];
     S.paveP = [];
-    S.lampsFix = [];
+    S.lampsFix = ((DKDATA.open && DKDATA.open.lamps) || []).map(p => p.slice()); // feat/dorfkern: the lamps the video shows
     const kP = kit(),
       kM = kit(),
       kS = kit(),
@@ -1069,12 +1119,20 @@ export const VPROPS = (() => {
     ])
       bench(kP, x, y, a, 1.8); // by the cycleway (OSM benches)
     paving(kPv, kS);
-    mesh(kP.geo(), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, envMapIntensity: 0.6 }));
-    mesh(
-      kM.geo(),
-      new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.55, envMapIntensity: 0.7 })
-    );
-    mesh(kS.geo(), texMat(tex('flagstone', 'col', true), 1.5, { roughness: 0.95 }));
+    // feat/dorfkern: the materials are kept for world/dorfkern.js (the same programs for the things of the centre)
+    S.mat = {
+      paint: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, envMapIntensity: 0.6 }),
+      metal: new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.4,
+        metalness: 0.55,
+        envMapIntensity: 0.7,
+      }),
+      stone: texMat(tex('flagstone', 'col', true), 1.5, { roughness: 0.95 }),
+    };
+    mesh(kP.geo(), S.mat.paint);
+    mesh(kM.geo(), S.mat.metal);
+    mesh(kS.geo(), S.mat.stone);
     const pv = mesh(
       kPv.geo(),
       texMat(tex('pavers', 'col', true), 1.3, {
@@ -1190,7 +1248,8 @@ export const VPROPS = (() => {
     if (S.school && d([S.school.cx + 5.5 * Math.cos(S.school.rot), S.school.cy + 5.5 * Math.sin(S.school.rot)], 15))
       return 'Ratscher · Alte Schule (1828)';
     if (d(S.FOUNTAIN, 11)) return 'Ratscher · Dorfbrunnen';
-    if (d([250.6, -99.6], 6)) return 'Ratscher · Schulbushaltestelle';
+    if (d(((DKDATA.open && DKDATA.open.shelter) || { c: [250.6, -99.6] }).c, 6))
+      return 'Ratscher · Schulbushaltestelle';
     let best = null,
       bd = 18;
     for (const [n, ls] of Object.entries(STREETS))
