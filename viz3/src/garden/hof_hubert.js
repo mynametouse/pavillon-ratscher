@@ -54,8 +54,9 @@ export const LAYOUT = {
     ['cul', 11],
     [-12.64, 30.21],
     [-16.96, 31.79],
-    [-19.3, 27.4],
-    [-22.8, 18.0],
+    [-17.6, 26.0],
+    [-20.7, 17.6],
+    [-24.6, 18.2],
     [-27.0, 19.5],
     [-29.0, 30.0],
     ['cul', -13],
@@ -68,12 +69,13 @@ export const LAYOUT = {
     ], // from the gate to Falko's boundary
     [
       [-16.96, 31.79],
-      [-18.25, 27.95],
-    ], // from the gate to the first drying hut
+      [-17.07, 24.98],
+    ], // from the gate along the tractor's place to the first drying hut
   ],
   // the drying huts: a row along the lane's west side (bearing 200°, their open fronts to the lane), groups with gaps
+  // (in the aerial their shadow is the dark line west of them; the first stands just south of where Hubert parks his tractor)
   huts: {
-    start: [-18.6, 26.6],
+    start: [-16.71, 24.21],
     dir: [-0.342, -0.94],
     at: [0, 1.7, 3.4, 6.0, 7.7, 9.4],
     fill: [1, 0.95, 1, 1, 0.45, 0.15],
@@ -81,7 +83,6 @@ export const LAYOUT = {
   tiles: [
     [4.7, 0], // [s along the row, offset towards the lane]: stacks of old roof tiles on pallets
     [4.7, 1.4],
-    [-1.3, 0.3],
     [1.6, 1.3],
     [6.0, 1.7],
   ],
@@ -94,7 +95,7 @@ export const LAYOUT = {
     [0.6, -2.3], // stacks of pallets behind the huts
     [2.4, -2.4],
     [6.2, -2.2],
-    [9.6, -2.6],
+    [7.6, -2.8],
   ],
   // the sheds of site.json neigh in the same order: [kind, name]; footprints [back N, front N, front S, back S] in site.json
   // (0: the long open shed by the path, 1: the shed with the door, 2: his workshop, 3: the small workshop behind the car, open to it)
@@ -666,7 +667,7 @@ export const HOF = {
   block: [-17.3, 10.3], // chopping block (top 0.5 m)
   rounds: [-18.7, 11.5], // sawn rounds waiting to be split
   heap: [-16.1, 9.2], // split wood
-  horse: [-19.2, 14.6], // sawhorse with a log
+  horse: [-20.0, 13.0], // sawhorse with a log
   toHuts: [[-16.2, 11.4]], // the way from the heap to the huts (round the chopping block)
   huts: [], // drying huts: { x, y, fill, front: [x, y] (where one stands to fill it), look (compass radians into the hut) }
   table: [-19.4, -5.8],
