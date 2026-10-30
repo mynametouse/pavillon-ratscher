@@ -71,3 +71,17 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
 - Möbel unter Dach werfen keinen Sonnenschatten (`interiorNoShadow`), einfarbige Teile teilen sich ein Material (`paletteize`).
 - Die acht Vorhänge im Bungalow, die man zuziehen kann, werden nicht zusammengefasst (`userData.noMerge`, 8 Draw-Calls, nur innen sichtbar);
   die Geiztriebe haben ein eigenes Material, das beim Ausgeizen unsichtbar wird (geht auch nach dem Zusammenfassen).
+
+## Garten wie heute (Kern-Chat, 29./30.10.2026 nach Falkos Fotos vom 26.10.)
+
+- **Bauphase 0 zeigt den Garten von heute**, alles Geplante kommt ab Bauphase 1 (`planned()`, `todayLook()` in `garden/site_base.js`).
+- **Bäume** stehen in `viz3/site.js` (`trees`: `[x, y, Kronenradius, Höhe, Art?, letzte Bauphase?]`). Die Art (`alder`, `cherry`, `apple`,
+  `tree`) wählt in `garden/trees.js` die Baumform (die Erle hat eine eigene, dichte Krone nach Art der Dorflinde); ohne Art entscheidet die
+  Größe. Ein Baum mit letzter Bauphase (z. B. `1`) steht nur bis dahin – die beiden Kirschbäume am Unterstand weichen der Halle und dem
+  Holzlager: eigene Gruppe mit `userData.ph/phEnd`, Stamm-Kollision nur bis zu dieser Phase; der Gartenplaner rechnet ihren Schatten nur bis
+  dahin. Lagen nach Fotos, Luftbild und Falkos Angaben – zum Nachkorrigieren das Artefakt „Garten zurechtrücken“ (Speicher `garten`).
+- **Waschhaus:** 2,0 × 2,4 m, die Front nach Westen bemalt (drei Tafeln, Canvas-Textur in `garden/washhouse.js`, die mittlere ist die Tür).
+- **Bungalow:** Überdach über dem Rückgiebel (`CAN`, zwei Pfosten, darunter alte Fenster, Bretter, Plane). **Carport:** vorne zwei Pfosten.
+- **Kleinigkeiten** (`garden/garten_heute.js`): Reisighaufen, Tisch mit Stühlen und rosa Schirm vor dem Waschhaus, rostige Wäschestange,
+  Bretterstapel unter weißer Plane und Stämme parallel neben dem Feldweg (Lage über `S0.path`).
+- Offene Fragen und Quellen: `docs/plans/garten_dorf_abgleich.md`.
