@@ -19,10 +19,10 @@ const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
   tarp = plain({ color: 0xdcdcd4, roughness: 0.8 }),
   twig = plain({ color: 0x5a4a3a, roughness: 0.9 }),
   charred = plain({ color: 0x2a2420, roughness: 1 });
-// ---- the burnt-out fire place south-west of the caravan (7230, 7231: about 2 m in front of both confirmed standpoints): charred boards and
+// ---- the burnt-out fire place south-east of the caravan (7230, 7231: 2–3 m in front of both confirmed standpoints): charred boards and
 // twigs criss-cross on a low dark patch of ash (the same random draws as the brush pile it was until 30.10.2026) ----
 {
-  const [x, y] = [-0.4, 10.2];
+  const [x, y] = [-1.25, 10.0];
   cyl(x, y, 0, 0.06, 0.62, plain({ color: 0x2f2a25, roughness: 1 }), 12, 0.75, { col: false });
   for (let i = 0; i < 16; i++) {
     const a = rnd() * Math.PI,
@@ -577,7 +577,7 @@ phase(null);
   };
   const patch = (x, y, r) => cyl(x, y, -0.01, 0.025, r, soil, 16, r * 1.05, { col: false, cast: false });
   for (const [x, y, h, kind, nLeaves] of [
-    [-0.3, -10.9, 1.9, 'red', 34],
+    [-0.3, -10.9, 1.9, 'red', 80],
     [-4.0, -7.2, 1.5, 'berry', 16],
     [-4.4, -9.6, 2.0, 'apple', 22],
     [9.1, 19.9, 1.7, 'yellow', 18], // north of the bungalow, by the east fence (7212–7214)
@@ -614,14 +614,14 @@ phase(null);
 // path ----
 phase(0, 1);
 {
-  const stone = plain({ color: 0x9a9890, roughness: 0.95 }),
+  const stone = plain({ color: 0x6f6e66, roughness: 0.95 }),
     [a, b] = [STREAM.bridgeGardenEnd, [2.35, 21.9]],
     L = Math.hypot(b[0] - a[0], b[1] - a[1]);
   for (let i = 0; i < 7; i++) {
     const f = (0.45 + i * 0.62) / L,
       x = a[0] + (b[0] - a[0]) * f + Math.sin(i * 2.1) * 0.06,
       y = a[1] + (b[1] - a[1]) * f;
-    cyl(x, y, -0.02, 0.025, 0.19, stone, 14, 0.2, { col: false, cast: false });
+    cyl(x, y, -0.02, 0.012, 0.21 + 0.03 * Math.sin(i * 1.7), stone, 9, undefined, { col: false, cast: false });
   }
 }
 phase(null);
