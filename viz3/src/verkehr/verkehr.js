@@ -1333,7 +1333,8 @@ export const VERKEHR = (() => {
       acc = 0;
       let best = null,
         bd = 1e9;
-      if (P.mode === 'walk' && !PLAY.seated() && !VEH.cur && !S.ride && !S.lent && !S.halted)
+      // not from indoors: a car passing outside the town hall's wall is no car to wave down (KERN.inside: indoor areas and providers)
+      if (P.mode === 'walk' && !PLAY.seated() && !VEH.cur && !S.ride && !S.lent && !S.halted && !KERN.inside(P.x, P.y, P.feet + 1))
         for (const c of VAUTO.cars) {
           if (c.st !== 'fahren' || !c.g.visible) continue;
           const d = Math.hypot(c.x - P.x, c.y - P.y);

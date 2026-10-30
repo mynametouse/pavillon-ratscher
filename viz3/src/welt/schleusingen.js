@@ -2488,6 +2488,7 @@ export const SCHL = (() => {
   });
   KERN.provide('place', place, 20);
   KERN.provide('ground', (x, y) => (S.state === 'ready' && inHall(x, y) ? S.rathaus.floor : undefined), 10);
+  KERN.provide('inside', (x, y) => S.state === 'ready' && inHall(x, y), 10); // the hall is indoors (acoustics, lamps, no waving down cars)
   KERN.provide('pushOut', pushOut, 10);
   KERN.provide('free', (x, y) => (inZone(x, y) ? true : undefined), 10);
   // ---- near the Markt the tiles and the town are loaded, far away freed (KERN.zone, core/kern.js: build near, drop far) ----
