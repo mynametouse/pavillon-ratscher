@@ -112,7 +112,8 @@ export function surfaces(x, y) {
   }
   return out;
 }
-export const doorOn = d => (d.ph == null || d.ph <= PHASE) && varOk(d.var);
+// d.can: a machine that cannot be switched now says so (garden/workshop.js: still under its tarpaulin in phase 0)
+export const doorOn = d => (d.ph == null || d.ph <= PHASE) && varOk(d.var) && !(d.can && !d.can());
 function applyVisibility() {
   scene.traverse(o => {
     const ph = o.userData.ph,

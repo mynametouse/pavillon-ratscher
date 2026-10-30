@@ -445,7 +445,12 @@ const HOLZDRY = (() => {
     if (!bs.length) return;
     const MT = window.WERK && WERK.TOOLS && WERK.TOOLS.meter;
     if (MT && !PLAY.has(MT)) {
-      think('Den Feuchtemesser von der Hobelbank in der Werkstatt holen.', 3400);
+      think(
+        (window.PHASE | 0) >= SAW_PH
+          ? 'Den Feuchtemesser von der Hobelbank in der Werkstatt holen.'
+          : 'Den Feuchtemesser von der weißen Werkbank im Werkstattschuppen holen.',
+        3400
+      );
       return;
     }
     const nL = st.layers.length,
@@ -614,6 +619,7 @@ const HOLZDRY = (() => {
       if (o.isMesh) {
         o.userData.noMerge = true;
         o.userData.ph = SAW_PH;
+        o.visible = (window.PHASE | 0) >= SAW_PH; // built after the phase was set (game/walkable.js applies it on the next change)
       }
     });
     G.add(g);

@@ -12,12 +12,14 @@ import { HUD } from '../game/hud.js';
 import { CLOCK } from '../time/clock.js';
 import { GEAR } from './gear.js';
 import { WERK } from './werk.js';
+import { SAW_PH } from '../garden/workshop.js';
 import { KERN } from '../core/kern.js';
 phase(null);
 export const WUI = (() => {
   const mw = $('machwin'),
     card = $('wpcard'),
     bk = $('werkbuch');
+  const today = () => (window.PHASE | 0) < SAW_PH; // construction phase 0: the lean-to of today (garden/workshop.js)
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const de = v => (Math.round(v * 100) / 100).toLocaleString('de-DE'),
     de1 = v => (Math.round(v * 10) / 10).toLocaleString('de-DE');
@@ -252,7 +254,9 @@ export const WUI = (() => {
       '<h3>Werkstattbuch<button type="button" class="x" aria-label="Schließen">×</button></h3><p class="bk-i">Ein Stirnholz-Schneidebrett aus Leimholz Eiche – Schritt für Schritt. ' +
       (wp
         ? 'Dein Werkstück: <b>' + esc(WERK.nameOf(wp)) + '</b>.'
-        : 'Leimholzplatten liegen im Regal an der Rückwand.') +
+        : today()
+          ? 'Leimholzplatten liegen im Werkstattschuppen unter der weißen Werkbank.'
+          : 'Leimholzplatten liegen im Regal an der Rückwand.') +
       '</p><ol class="bk">';
     B.forEach(([k, t, d], i) => {
       const st = !wp
@@ -280,7 +284,7 @@ export const WUI = (() => {
         fin
           .map(
             w =>
-              `<li><b>${esc(WERK.nameOf(w))}</b> ${'★'.repeat(w.stars || 0)}${'☆'.repeat(5 - (w.stars || 0))}<span>${esc(w.where === 'ronald' ? 'bei Ronald' : w.where === 'shelf' ? 'im Regal' : 'dabei')}${w.notes.length ? ' · ' + esc(w.notes.join('; ')) : ''}</span></li>`
+              `<li><b>${esc(WERK.nameOf(w))}</b> ${'★'.repeat(w.stars || 0)}${'☆'.repeat(5 - (w.stars || 0))}<span>${esc(w.where === 'ronald' ? 'bei Ronald' : w.where === 'shelf' ? (today() ? 'über der Werkbank' : 'im Regal') : 'dabei')}${w.notes.length ? ' · ' + esc(w.notes.join('; ')) : ''}</span></li>`
           )
           .join('') +
         '</ul>';

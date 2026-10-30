@@ -1,0 +1,6 @@
+# the workshop of today (construction phase 0: the lean-to of the photos of 26.10.2026) and the hall unchanged from phase 1
+# (garden/workshop.js, werk/*.js): the new test, the whole board in the hall (v15b), the generator's petrol (garage);
+# v16d:fork,saw,stack (the band sawmill in phase 1, ~45 min on CI) runs in the Prüfpaket's feature job v16d-2
+werkstatt_heute
+garage
+v15b

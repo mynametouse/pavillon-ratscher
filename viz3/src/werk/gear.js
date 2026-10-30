@@ -7,6 +7,7 @@ import { audio } from '../audio/audio.js';
 import { PLAY, SFX } from '../game/play.js';
 import { HUD } from '../game/hud.js';
 import { AVATAR } from '../game/avatar.js';
+import { SAW_PH } from '../garden/workshop.js';
 export const GEAR = (() => {
   const LSK = 'pav-gear-v1';
   const IT = {
@@ -69,6 +70,12 @@ export const GEAR = (() => {
     },
   };
   const SLOTS = ['eyes', 'ears', 'resp', 'hands', 'head', 'body', 'legs', 'feet'];
+  // where the gear hangs: today (construction phase 0) on hooks at the lean-to's back wall, from phase 1 on the PSA board of the hall
+  const today = () => (window.PHASE | 0) < SAW_PH;
+  const where = () =>
+    today()
+      ? 'an Haken an der Rückwand des Werkstattschuppens (zwischen der Sperrholzbank und der weißen Werkbank)'
+      : 'am PSA-Brett in der Werkstatt (Rückwand, neben dem Holzregal)';
   const S = {
     have: false,
     haveF: false,
@@ -159,7 +166,8 @@ export const GEAR = (() => {
       `<button type="button" class="gitem${worn(id) ? ' on' : ''}" data-g="${id}" aria-pressed="${worn(id)}"><i>${ICO[it.slot]}</i><span><b>${it.n}</b><small>${it.d}</small></span><em>${worn(id) ? 'angelegt' : 'anlegen'}</em></button>`;
     if (!S.have && !S.haveF)
       h +=
-        '<p class="gnote">Deine Schutzausrüstung hängt am PSA-Brett in der Werkstatt (Rückwand, neben dem Holzregal)' +
+        '<p class="gnote">Deine Schutzausrüstung hängt ' +
+        where() +
         (window.FELL && LATE.FELL.on
           ? '; die Forstausrüstung liegt in der Forstkiste am Traktor (Untere Klinge).'
           : '.') +
@@ -257,7 +265,9 @@ export const GEAR = (() => {
           ? 'Erst '
           : forest
             ? 'Erst die Forstausrüstung aus der Forstkiste am Traktor holen: '
-            : 'Erst die Schutzausrüstung vom PSA-Brett holen: ') +
+            : 'Erst die Schutzausrüstung ' +
+              (today() ? 'vom Haken an der Rückwand des Werkstattschuppens' : 'vom PSA-Brett') +
+              ' holen: ') +
           m.join(', ') +
           (got ? ' anlegen (PSA oben rechts).' : '.'),
         4600

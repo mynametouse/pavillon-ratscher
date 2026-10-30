@@ -35,8 +35,6 @@ phase(SAW_PH);
 const C0 = COL.length,
   W0 = WALK.length,
   N0 = scene.children.length;
-let NG0 = 0,
-  NG1 = 0;
 {
   const X0 = -6.6,
     X1 = 3.6,
@@ -107,7 +105,9 @@ let NG0 = 0,
     rubber: plain({ color: 0x1f2022, roughness: 0.9 }),
     yellow: plain({ color: 0xd6a51d, roughness: 0.5 }),
     sawdust: plain({ color: 0xd8bf92, roughness: 1, transparent: true, opacity: 0.85, depthWrite: false }),
+    tarp: plain({ color: 0x3d5786, roughness: 0.9 }), // the faded blue tarpaulins of today (photos of 26.10.2026)
   };
+  const DUST = {}; // sawdust patches (material and a maker, set below)
   grime(M.boards, 0.45, 0.5, 0.08);
   grime(M.gable, 0.3, 0.4, 0.08);
   grime(M.foot, 0.3, 0.3, 0.1);
@@ -282,10 +282,18 @@ let NG0 = 0,
   }
   // --- V15b band sawmill outside, north of the workshop: track south–north, short end towards the workshop, long sides towards Hubert (W) and Ronald (E);
   //     the saw head straddles the track and cuts along the log (its blade runs across, east–west) ---
+  // Falko 30.10.2026: in the garden of today (construction phase 0) the mill stands between the front posts of the lean-to, its head under a
+  // blue tarpaulin, the rails running out north on wooden blocks (photo IMG_7290); from phase 1 it stands where the plan has it. The whole
+  // mill is one group (SAWG, its frame = the workshop as built at the plan's place): one offset per phase moves the meshes, the colliders,
+  // the bunks the fork lays a log on, the head's travel, the sounds and the actions together (WORKS.layout; werk/holz_saw.js builds in it).
   const MX = -1.5,
     YS = -34.85,
     YN = -27.85,
     GA = 0.9; // track centre line x, south and north end, gauge
+  const SAWG = new THREE.Group();
+  SAWG.name = 'saw';
+  SAWG.userData.mergeRoot = 'werkstatt:saw'; // render/zmerge.js merges its static parts inside the group, so they move with it
+  scene.add(SAWG);
   const SAW = {
     s: YS + 0.55,
     s0: YS + 0.55,
@@ -299,36 +307,65 @@ let NG0 = 0,
     logY0: -33.75,
     logY1: -29.55,
     logR: 0.26,
+    g: SAWG,
+    off: [0, 0], // the offset of this phase (as built), set by WORKS.layout
+    OFF: [
+      [-0.45, -3.7],
+      [0, 0],
+    ], // phase 0: the head between the lean-to's front posts at x −3.1 and −0.66; from SAW_PH: the plan
+    cols: [],
   };
+  SAW.at = (x, y) => [x + SAW.off[0], y + SAW.off[1]]; // a point of the mill (plan) → the workshop as built in this phase
+  phase(null);
   {
     const xa = MX - GA / 2,
-      xb = MX + GA / 2;
-    for (const x of [xa, xb]) B(x - 0.04, x + 0.04, YS, YN, 0.36, 0.44, M.steel, { col: false, grain: 'y' });
+      xb = MX + GA / 2,
+      PG = o => Object.assign({ parent: SAWG, col: false }, o);
+    for (const x of [xa, xb]) B(x - 0.04, x + 0.04, YS, YN, 0.36, 0.44, M.steel, PG({ grain: 'y' }));
     for (let y = YS + 0.15; y < YN; y += 1.15) {
-      B(xa - 0.08, xb + 0.08, y - 0.04, y + 0.04, 0.3, 0.36, M.steel, { col: false });
+      B(xa - 0.08, xb + 0.08, y - 0.04, y + 0.04, 0.3, 0.36, M.steel, PG());
+      phase(SAW_PH); // the plan: steel legs on foot plates
       for (const x of [xa, xb]) {
-        B(x - 0.03, x + 0.03, y - 0.03, y + 0.03, 0.02, 0.3, M.steel, { col: false });
-        B(x - 0.07, x + 0.07, y - 0.07, y + 0.07, 0.0, 0.03, M.dark, { col: false });
+        B(x - 0.03, x + 0.03, y - 0.03, y + 0.03, 0.02, 0.3, M.steel, PG());
+        B(x - 0.07, x + 0.07, y - 0.07, y + 0.07, 0.0, 0.03, M.dark, PG());
       }
+      phase(0, SAW_PH); // today: the rails lie on stacked wooden blocks
+      for (const x of [xa, xb]) {
+        B(x - 0.11, x + 0.11, y - 0.09, y + 0.09, 0.0, 0.16, M.boards, PG({ grain: 'x' }));
+        B(x - 0.09, x + 0.09, y - 0.11, y + 0.11, 0.16, 0.3, M.boards, PG({ grain: 'y' }));
+      }
+      phase(null);
     }
-    for (const y of [YS, YN]) B(xa - 0.04, xb + 0.04, y - 0.03, y + 0.03, 0.36, 0.5, M.orange, { col: false }); // end stops
-    COL.push([xa - 0.1, xb + 0.1, YS, YN, 0, 0.5, 'saw', null, null]);
+    for (const y of [YS, YN]) B(xa - 0.04, xb + 0.04, y - 0.03, y + 0.03, 0.36, 0.5, M.orange, PG()); // end stops
+    SAW.cols.push(COL.push([xa - 0.1, xb + 0.1, YS, YN, 0, 0.5, 'saw', null, null]) - 1);
     // log bunks with stops (west) and a clamp (east)
     for (const y of [-33.35, -32.0, -30.65, -29.9]) {
-      B(xa - 0.04, xb + 0.04, y - 0.05, y + 0.05, 0.44, 0.5, M.dark, { col: false });
-      B(xa + 0.02, xa + 0.08, y - 0.04, y + 0.04, 0.5, 0.86, M.dark, { col: false });
+      B(xa - 0.04, xb + 0.04, y - 0.05, y + 0.05, 0.44, 0.5, M.dark, PG());
+      B(xa + 0.02, xa + 0.08, y - 0.04, y + 0.04, 0.5, 0.86, M.dark, PG());
     }
     for (const y of [-32.0, -30.65]) {
-      B(xb - 0.16, xb - 0.08, y - 0.04, y + 0.04, 0.5, 0.74, M.yellow, { col: false });
-      hcyl(xb - 0.3, xb - 0.08, y, 0.7, 0.018, M.steel, 8);
+      B(xb - 0.16, xb - 0.08, y - 0.04, y + 0.04, 0.5, 0.74, M.yellow, PG());
+      hcyl(xb - 0.3, xb - 0.08, y, 0.7, 0.018, M.steel, 8, SAWG);
     }
-    SAW.logMesh = ycyl(SAW.logY0, SAW.logY1, MX, 0.5 + SAW.logR, SAW.logR, [MAT.logs, MAT.logEnd, MAT.logEnd], 24);
+    SAW.logMesh = ycyl(
+      SAW.logY0,
+      SAW.logY1,
+      MX,
+      0.5 + SAW.logR,
+      SAW.logR,
+      [MAT.logs, MAT.logEnd, MAT.logEnd],
+      24,
+      SAWG
+    );
     SAW.logMesh.userData.noMerge = true;
-    COL.push([MX - SAW.logR, MX + SAW.logR, SAW.logY0, SAW.logY1, 0.4, 0.5 + 2 * SAW.logR, 'log', null, null]);
+    SAW.logMesh.userData.ph = SAW_PH; // the plan's decorative log on the bunks; today the rails are empty (photo IMG_7290)
+    SAW.cols.push(
+      COL.push([MX - SAW.logR, MX + SAW.logR, SAW.logY0, SAW.logY1, 0.4, 0.5 + 2 * SAW.logR, 'log', SAW_PH, null]) - 1
+    );
     // the saw head: a frame over the track on four rollers, the saw unit with both wheel housings across, the engine on Ronald's side, push bar to the south
     const h = SAW.head;
     h.position.copy(V(MX, SAW.s, 0));
-    scene.add(h);
+    SAWG.add(h);
     const P = o => Object.assign({ parent: h, col: false }, o);
     for (const x of [-0.62, 0.62]) {
       B(x - 0.05, x + 0.05, -0.16, 0.16, 0.38, 0.48, M.orange, P());
@@ -364,6 +401,32 @@ let NG0 = 0,
     hcyl(0.86, 1.0, 0.16, SAW.zBlade + 0.32, 0.05, M.dark, 12, U); // muffler
     B(-0.32, 0.32, -0.3, -0.27, 1.12, 1.15, M.black, P());
     for (const x of [-0.32, 0.32]) B(x - 0.015, x + 0.015, -0.3, -0.04, 1.12, 1.15, M.black, P()); // push bar (south)
+    // today the head stands under a blue tarpaulin (phase 0; WORKS.setCover); taken off, it lies folded beside the rails
+    phase(0, SAW_PH);
+    SAW.cover = new THREE.Group();
+    h.add(SAW.cover);
+    {
+      // draped over the frame: a top and four sides hanging out a little, two folds (head frame x −0.66 … 1.06 with the engine)
+      const PC = o => Object.assign({ parent: SAW.cover, col: false }, o),
+        BC = (p, q, w) => beam(p, q, w, 0.025, M.tarp, { parent: SAW.cover });
+      B(-0.74, 1.1, -0.34, 0.25, 1.88, 1.95, M.tarp, PC());
+      BC([0.18, 0.26, 1.92], [0.18, 0.38, 0.42], 1.9);
+      BC([0.18, -0.35, 1.92], [0.18, -0.47, 0.5], 1.9);
+      BC([-0.76, -0.05, 1.92], [-0.86, -0.05, 0.36], 0.66);
+      BC([1.12, -0.05, 1.92], [1.2, -0.05, 0.62], 0.66);
+      BC([-0.5, 0.3, 1.6], [-0.42, 0.42, 0.5], 0.08);
+      BC([0.7, -0.4, 1.7], [0.78, -0.5, 0.55], 0.07);
+    }
+    SAW.folded = new THREE.Group();
+    SAW.folded.userData.mergeRoot = 'werkstatt:saw:folded'; // merged on its own: it shows only while the head is uncovered
+    SAWG.add(SAW.folded);
+    B(MX - 1.12, MX - 0.62, YS + 0.05, YS + 0.45, 0, 0.12, M.tarp, { parent: SAW.folded, col: false });
+    phase(null);
+    // sawdust stays where the mill cuts (in its group: it moves with it)
+    SAW.dust = [
+      [MX, -31.4, 1.0, 0.012],
+      [MX + 0.2, -34.2, 0.6, 0.012],
+    ];
     WORKS.machines.push({
       key: 'saw',
       label: 'Blockbandsäge',
@@ -373,8 +436,10 @@ let NG0 = 0,
       snd: 'saw_run',
       snd2: 'saw_cut',
       state: SAW,
+      ph: null, // in every phase: today in front of the lean-to, from phase 1 north of the hall
     });
   }
+  phase(SAW_PH);
   // --- drum sander (feed along y, drum across) ---
   {
     const x0 = 0.35,
@@ -537,36 +602,52 @@ let NG0 = 0,
   }
   // --- petrol generator outside the east end, cable to the machines (feat/garage: its tank, refuelling with the red petrol can from the
   //     garage and the stop when it is empty – garden/garage_play.js) ---
-  NG0 = scene.children.length;
-  phase(null); // the generator stands there today too (under the bench of the lean-to it is now; feat/garage refuels it)
-  const GEN = { x: 4.35, y: -38.6 };
+  // It stands there in every phase – today west of the lean-to under a table top (photos IMG_7272/7273, orange frame), from phase 1 at the
+  // hall's east end: one group (GENG), moved by an offset per phase like the band sawmill (WORKS.layout); its 'gen' entry's pos follows.
+  phase(null);
+  const GEN = {
+    x: 4.35,
+    y: -38.6,
+    OFF: [
+      [-11.62, -0.67],
+      [0, 0],
+    ],
+    off: [0, 0],
+    cols: [],
+    g: new THREE.Group(),
+  };
+  const GENG = GEN.g;
+  GENG.name = 'gen';
+  GENG.userData.mergeRoot = 'werkstatt:gen';
+  scene.add(GENG);
   {
-    const { x, y } = GEN;
+    const { x, y } = GEN,
+      PG = o => Object.assign({ parent: GENG, col: false }, o);
     for (const dx of [-0.32, 0.32])
       for (const dy of [-0.22, 0.22])
-        B(x + dx - 0.015, x + dx + 0.015, y + dy - 0.015, y + dy + 0.015, 0.0, 0.5, M.red, { col: false });
+        B(x + dx - 0.015, x + dx + 0.015, y + dy - 0.015, y + dy + 0.015, 0.0, 0.5, M.orange, PG());
     for (const z of [0.02, 0.5]) {
-      B(x - 0.33, x + 0.33, y - 0.235, y - 0.205, z - 0.015, z + 0.015, M.red, { col: false });
-      B(x - 0.33, x + 0.33, y + 0.205, y + 0.235, z - 0.015, z + 0.015, M.red, { col: false });
+      B(x - 0.33, x + 0.33, y - 0.235, y - 0.205, z - 0.015, z + 0.015, M.orange, PG());
+      B(x - 0.33, x + 0.33, y + 0.205, y + 0.235, z - 0.015, z + 0.015, M.orange, PG());
     }
-    B(x - 0.22, x + 0.12, y - 0.17, y + 0.17, 0.06, 0.36, M.black, { col: false });
-    B(x + 0.12, x + 0.3, y - 0.16, y + 0.16, 0.08, 0.32, M.machineL, { col: false });
-    B(x - 0.25, x + 0.2, y - 0.18, y + 0.18, 0.4, 0.52, M.red, { col: false });
-    COL.push([x - 0.34, x + 0.34, y - 0.24, y + 0.24, 0, 0.55, 'gen', null, null]);
+    B(x - 0.22, x + 0.12, y - 0.17, y + 0.17, 0.06, 0.36, M.black, PG());
+    B(x + 0.12, x + 0.3, y - 0.16, y + 0.16, 0.08, 0.32, M.machineL, PG());
+    B(x - 0.25, x + 0.2, y - 0.18, y + 0.18, 0.4, 0.52, M.black, PG());
+    GEN.cols.push(COL.push([x - 0.34, x + 0.34, y - 0.24, y + 0.24, 0, 0.55, 'gen', null, null]) - 1);
+    phase(SAW_PH); // the cable to the hall's machines
     beam([x - 0.3, y, 0.02], [2.9, y + 0.4, 0.02], 0.012, 0.012, M.black, { cast: false });
     beam([2.9, y + 0.4, 0.02], [1.3, -38.3, 0.02], 0.012, 0.012, M.black, { cast: false });
   }
   WORKS.machines.push({
     key: 'gen',
     label: 'Benzin-Stromaggregat',
-    pos: [GEN.x, GEN.y + 0.8],
+    pos: [GEN.x, GEN.y + 0.8], // as built in this phase (WORKS.layout writes it; garden/garage_play.js reads it for the refuelling)
     r: 1.4,
     z: 0,
     snd: 'generator',
     hidden: true,
   });
-  phase(SAW_PH);
-  NG1 = scene.children.length;
+  WORKS.GEN = GEN;
   // --- V15b glue table (Leimtisch) where the first bench stood: a heavy beech top with a bench-dog grid and two hold-down bars (Niederhalter),
   //     parallel clamps on the wall above; a carpenter's bench for scraping, chamfering, oiling and the brand; the tool wall along the south wall ---
   const GT = { x0: -4.4, x1: -2.25, y0: -40.45, y1: -39.6, z: 0.86 };
@@ -688,7 +769,7 @@ let NG0 = 0,
       t.anisotropy = ANISO;
       return t;
     })();
-    const egM = patchSV(new THREE.MeshStandardMaterial({ map: eg, roughness: 0.55 }));
+    const egM = (DUST.eg = patchSV(new THREE.MeshStandardMaterial({ map: eg, roughness: 0.55 }))); // also the blanks of today
     B(1.0, 3.3, YB + 0.06, YB + 0.34, 1.28, 1.31, M.beech, { col: false });
     for (const x of [1.1, 3.2]) B(x - 0.012, x + 0.012, YB + 0.06, YB + 0.32, 1.12, 1.28, M.dark, { col: false });
     for (let i = 0; i < 6; i++) {
@@ -946,15 +1027,8 @@ let NG0 = 0,
       polygonOffset: true,
       polygonOffsetFactor: -1,
     });
-    for (const [x, y, r, z] of [
-      [-1.5, -31.4, 1.0, 0.012],
-      [-1.3, -34.2, 0.6, 0.012],
-      [-4.5, -37.7, 0.5, 0.043],
-      [-1.5, -37.65, 0.42, 0.043],
-      [0.85, -37.0, 0.42, 0.043],
-      [2.6, -37.5, 0.45, 0.043],
-      [-5.7, -38.0, 0.35, 0.043],
-    ]) {
+    DUST.mat = dm;
+    DUST.patch = (x, y, r, z, parent) => {
       const me = new THREE.Mesh(new THREE.PlaneGeometry(2 * r, 2 * r), dm);
       me.rotation.x = -Math.PI / 2;
       me.rotation.z = rnd() * 6.28;
@@ -962,8 +1036,22 @@ let NG0 = 0,
       me.scale.set(1, 0.65 + rnd() * 0.35, 1);
       me.receiveShadow = true;
       me.renderOrder = 1;
-      scene.add(me);
+      (parent || scene).add(tagPh(me));
+      return me;
+    };
+    for (const [x, y, r, z] of SAW.dust) {
+      phase(null); // under the band sawmill: in its group, in every phase
+      DUST.patch(x, y, r, z, SAWG);
+      phase(SAW_PH);
     }
+    for (const [x, y, r, z] of [
+      [-4.5, -37.7, 0.5, 0.043],
+      [-1.5, -37.65, 0.42, 0.043],
+      [0.85, -37.0, 0.42, 0.043],
+      [2.6, -37.5, 0.45, 0.043],
+      [-5.7, -38.0, 0.35, 0.043],
+    ])
+      DUST.patch(x, y, r, z);
   }
   // --- logs to the right (west), stacked on two sleepers; chopping block with axe ---
   {
@@ -1005,7 +1093,456 @@ let NG0 = 0,
   placeGLB('handdrill', { x: -0.25, y: YB + 0.14, z: 1.45, face: 180, col: false });
   placeGLB('toolchest', { x: 0.55, y: -40.25, z: 0.04, face: 180, colPad: 0.02 });
   placeGLB('wstool', { x: -5.55, y: -39.2, z: 0.04, face: 20, colPad: 0.02 });
-  // --- machines: switch on/off at the "door" button (E), sound, the saw head runs along the log ---
+  // yard clutter: stacked crates and a ladder at the east end, compost bags with a spade by the annex
+  placeGLB('crate', { x: 5.45, y: -36.95, z: 0, face: 10 });
+  placeGLB('crate', { x: 5.47, y: -36.97, z: 0.255, face: 4, col: false });
+  placeGLB('ladder', { x: 5.05, y: -38.2, z: 0, face: 270, col: false });
+  placeGLB('compost', { x: -8.6, y: -36.3, z: 0, face: 0 });
+  placeGLB('spade', { x: -7.35, y: -36.15, z: 0, face: 25, col: false });
+  // meshes made without tagPh (custom roof and machine meshes), colliders and walk surfaces pushed by hand carry no phase: they belong to
+  // the hall too – except the band sawmill and the generator, which are there in every phase (moved by WORKS.layout)
+  {
+    const keep = new Set([SAWG, GENG]),
+      keepCol = new Set([...SAW.cols, ...GEN.cols]);
+    for (let i = N0; i < scene.children.length; i++)
+      if (!keep.has(scene.children[i]))
+        scene.children[i].traverse(o => {
+          if (o.userData.ph === undefined) o.userData.ph = SAW_PH;
+        });
+    for (let i = C0; i < COL.length; i++) if (COL[i][7] == null && !keepCol.has(i)) COL[i][7] = SAW_PH;
+    for (let i = W0; i < WALK.length; i++) if (WALK[i][6] == null) WALK[i][6] = SAW_PH;
+  }
+  // ---- today (phase 0 only): the open lean-to of the photos of 26.10.2026 (IMG_7270–7294), seen from the garden from left (east) to right:
+  //      an annex under translucent corrugated sheets with the drum sander (Holzmann ZS 640P) under a blue tarpaulin and clear foil weighed
+  //      down with roof tiles, behind it the bench with the worn top, the black filing cabinet, sanding discs and a clock on the wall; the
+  //      lean-to proper (timber posts, mono-pitch roof of dark corrugated sheets falling to the back, plywood back wall with tool boards):
+  //      in its east bay the band sawmill's head between the front posts (above), behind it the grey drawer cabinet and the white bench
+  //      with the end-grain blanks; in its west bay the table saw on its folding stand in front of the L-shaped plywood bench. West of it a
+  //      worktable, the generator under a table top, the offcuts under a blue tarpaulin on a frame, the wheelbarrow ----
+  phase(0, SAW_PH);
+  const T0 = {
+    LX0: -5.6,
+    LX1: -0.6,
+    EX1: 1.2,
+    LYB: -40.5,
+    LYF: -38.0,
+    // the table saw (blade, table height), the drum sander (feed east → west, the operator on the east side)
+    ts: { cx: -4.1, cy: -38.85, by: -38.88, z: 0.9, blade: null },
+    sd: { x0: -0.05, x1: 0.7, y0: -39.4, y1: -38.8, z: 0.72 },
+    covers: {},
+  };
+  WORKS.T0 = T0;
+  {
+    const { LX0, LX1, EX1, LYB, LYF } = T0,
+      ZF = 2.35,
+      ZB = 1.98,
+      ZF2 = 2.2,
+      ZB2 = 1.88;
+    const ply = plain({ color: 0xc9a979, roughness: 0.85 }),
+      grey = plain({ color: 0xb9bcbe, roughness: 0.6, metalness: 0.2 }),
+      white = plain({ color: 0xe6e6e0, roughness: 0.6 }),
+      worn = plain({ color: 0x70463a, roughness: 0.75 }),
+      clear = plain({ color: 0xe4ecec, roughness: 0.3, transparent: true, opacity: 0.42, depthWrite: false }),
+      foil = plain({ color: 0xf2f5f5, roughness: 0.25, transparent: true, opacity: 0.55, depthWrite: false }),
+      green = plain({ color: 0x3b9d86, roughness: 0.7 }),
+      tile = plain({ color: 0x9e5136, roughness: 0.85 }),
+      alu = plain({ color: 0xc4c8ca, metalness: 0.6, roughness: 0.4 });
+    const colBox = (x0, x1, y0, y1, z1, tag) => COL.push([x0, x1, y0, y1, 0, z1, tag, 0, SAW_PH]);
+    const legs = (x0, x1, y0, y1, z, m, d = 0.03) => {
+      for (const x of [x0 + d, x1 - d])
+        for (const y of [y0 + d, y1 - d]) B(x - d, x + d, y - d, y + d, 0, z, m, { col: false });
+    };
+    // --- floor: concrete pavers, sawdust where the machines stand ---
+    B(LX0 - 0.1, EX1 + 0.05, LYB - 0.05, LYF + 0.2, -0.02, 0.012, M.pavers, { walk: 'stone', cast: false, grain: 'x' });
+    for (const [x, y, r] of [
+      [-4.1, -38.6, 0.5],
+      [-4.6, -38.9, 0.35],
+      [0.0, -39.0, 0.45],
+      [-2.0, -38.4, 0.4],
+    ])
+      DUST.patch(x, y, r, 0.016);
+    // --- the lean-to proper: three posts in front and at the back, rafters, the dark corrugated roof ---
+    for (const x of [LX0 + 0.06, (LX0 + LX1) / 2, LX1 - 0.06]) {
+      B(x - 0.05, x + 0.05, LYF - 0.05, LYF + 0.05, 0, ZF, MAT.kvh, { grain: 'z' });
+      B(x - 0.05, x + 0.05, LYB - 0.05, LYB + 0.05, 0, ZB, MAT.kvh, { grain: 'z' });
+      beam([x, LYF + 0.35, ZF + 0.02], [x, LYB - 0.3, ZB - 0.02], 0.06, 0.12, MAT.kvh);
+    }
+    B(LX0, LX1, LYF - 0.06, LYF + 0.06, ZF - 0.14, ZF, MAT.kvh, { grain: 'x', col: false });
+    B(LX0, LX1, LYB - 0.06, LYB + 0.06, ZB - 0.12, ZB, MAT.kvh, { grain: 'x', col: false });
+    for (let x = LX0 - 0.3; x < LX1 + 0.3; x += 0.9)
+      beam([x + 0.45, LYF + 0.4, ZF + 0.1], [x + 0.45, LYB - 0.35, ZB + 0.06], 0.92, 0.02, MAT.corr, { cast: true });
+    // back wall and the west end of plywood (the west end open towards the front)
+    B(LX0, EX1, LYB - 0.03, LYB + 0.0, 0, ZB, ply, { grain: 'x' });
+    B(LX0 - 0.03, LX0, LYB, LYF - 0.75, 0, ZB, ply, { grain: 'y' });
+    // --- the annex to the east: lower, under translucent corrugated sheets ---
+    for (const y of [LYF, LYB])
+      B(EX1 - 0.1, EX1, y - 0.05, y + 0.05, 0, y === LYF ? ZF2 : ZB2, MAT.kvh, { grain: 'z' });
+    B(LX1, EX1, LYF - 0.05, LYF + 0.05, ZF2 - 0.12, ZF2, MAT.kvh, { grain: 'x', col: false });
+    for (const x of [LX1 + 0.55, EX1 - 0.05])
+      beam([x, LYF + 0.3, ZF2 + 0.02], [x, LYB - 0.25, ZB2 - 0.02], 0.05, 0.1, MAT.kvh, { cast: true });
+    beam(
+      [(LX1 + EX1) / 2, LYF + 0.32, ZF2 + 0.08],
+      [(LX1 + EX1) / 2, LYB - 0.28, ZB2 + 0.04],
+      EX1 - LX1 + 0.3,
+      0.012,
+      clear,
+      {
+        cast: false,
+      }
+    );
+    // --- west bay: the L-shaped plywood bench (back wall and west end), a green crate and a black box below, the tool board ---
+    {
+      const z = 0.82;
+      B(LX0 + 0.03, -3.75, LYB + 0.03, LYB + 0.66, z - 0.03, z, ply, { grain: 'x' });
+      B(LX0 + 0.03, LX0 + 0.65, LYB + 0.66, -38.78, z - 0.03, z, ply, { grain: 'y' });
+      legs(LX0 + 0.03, -3.75, LYB + 0.03, LYB + 0.66, z - 0.03, MAT.kvh, 0.03);
+      legs(LX0 + 0.03, LX0 + 0.65, LYB + 0.66, -38.78, z - 0.03, MAT.kvh, 0.03);
+      B(LX0 + 0.05, -3.8, LYB + 0.05, LYB + 0.62, 0.2, 0.22, ply, { col: false });
+      colBox(LX0 + 0.03, -3.75, LYB + 0.03, LYB + 0.66, z, 'bench');
+      colBox(LX0 + 0.03, LX0 + 0.65, LYB + 0.66, -38.78, z, 'bench');
+      B(LX0 + 0.1, LX0 + 0.55, -39.6, -39.22, 0.0, 0.28, green, { col: false }); // crate
+      B(-4.55, -4.05, LYB + 0.1, LYB + 0.5, 0.0, 0.34, M.black, { col: false }); // black box
+      // tool board: wire baskets with the cordless drills, a hand brush, a spirit level; F-clamps on the end wall
+      B(-5.45, -3.85, LYB, LYB + 0.02, 1.05, 1.8, MAT.osb, { col: false });
+      for (const x of [-5.2, -4.55]) {
+        B(x - 0.2, x + 0.2, LYB + 0.02, LYB + 0.2, 1.3, 1.31, alu, { col: false });
+        B(x - 0.2, x + 0.2, LYB + 0.19, LYB + 0.2, 1.31, 1.4, alu, { col: false });
+      }
+      placeGLB('drill', { x: -5.2, y: LYB + 0.11, z: 1.31, face: 90, col: false });
+      placeGLB('drill', { x: -4.55, y: LYB + 0.11, z: 1.31, face: 70, col: false });
+      B(-4.15, -4.11, LYB + 0.02, LYB + 0.06, 1.05, 1.65, M.yellow, { col: false });
+      for (let i = 0; i < 4; i++) {
+        const y = -39.9 + i * 0.18;
+        B(LX0 + 0.0, LX0 + 0.02, y - 0.01, y + 0.01, 1.2, 1.75, M.steel, { col: false });
+        B(LX0 + 0.02, LX0 + 0.06, y - 0.03, y + 0.03, 1.66, 1.72, M.red, { col: false });
+        B(LX0 + 0.02, LX0 + 0.06, y - 0.03, y + 0.03, 1.28 + (i % 2) * 0.08, 1.34 + (i % 2) * 0.08, M.red, {
+          col: false,
+        });
+      }
+      placeGLB('screwdrivers', { x: -4.6, y: LYB + 0.2, z: z, face: 90, col: false });
+    }
+    // --- the table saw on its folding stand (feed from the east, sliding table to the north) ---
+    {
+      const { cx, cy, by, z } = T0.ts;
+      for (const x of [cx - 0.36, cx + 0.36])
+        for (const [y0, y1] of [
+          [cy - 0.34, cy - 0.14],
+          [cy + 0.34, cy + 0.14],
+        ])
+          beam([x, y0, 0], [x, y1, 0.58], 0.035, 0.035, M.steel);
+      for (const y of [cy - 0.16, cy + 0.16])
+        B(cx - 0.42, cx + 0.42, y - 0.025, y + 0.025, 0.56, 0.62, M.yellow, { col: false });
+      B(cx - 0.42, cx + 0.42, cy - 0.16, cy + 0.16, 0.6, 0.62, M.black, { col: false });
+      B(cx - 0.27, cx + 0.27, cy - 0.22, cy + 0.22, 0.62, z - 0.05, M.dark, { col: false }); // the saw's body
+      B(cx - 0.33, cx + 0.33, cy - 0.26, cy + 0.26, z - 0.05, z, M.machineL, { col: false, grain: 'x' }); // cast table
+      B(cx - 0.4, cx + 0.4, cy + 0.26, cy + 0.42, z - 0.04, z - 0.01, M.machineL, { col: false }); // sliding table
+      B(cx - 0.4, cx + 0.4, cy + 0.42, cy + 0.45, z - 0.01, z + 0.05, M.dark, { col: false });
+      B(cx - 0.36, cx + 0.36, by - 0.12, by - 0.09, z, z + 0.06, M.dark, { col: false }); // rip fence south of the blade
+      {
+        const me = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.105, 0.003, 36), M.blade);
+        me.rotation.x = Math.PI / 2;
+        me.position.copy(V(cx - 0.03, by, z + 0.055 - 0.105));
+        me.castShadow = true;
+        me.userData.noMerge = true;
+        scene.add(tagPh(me));
+        T0.ts.blade = me;
+      }
+      B(cx + 0.02, cx + 0.15, by - 0.002, by + 0.002, z, z + 0.08, M.dark, { col: false }); // riving knife
+      B(cx - 0.2, cx + 0.2, by - 0.05, by + 0.05, z + 0.12, z + 0.18, M.machineL, { col: false }); // guard
+      B(cx + 0.27, cx + 0.31, cy - 0.12, cy - 0.02, 0.7, 0.8, M.red, { col: false }); // switch
+      cyl(cx - 0.1, cy + 0.2, 0.55, 0.75, 0.04, M.black, 10, undefined, { col: false }); // dust port
+      colBox(cx - 0.43, cx + 0.43, cy - 0.36, cy + 0.46, z + 0.05, 'machine');
+    }
+    // --- east bay: the white bench with the end-grain blanks (and the stock of glued panels) below, clamps and a shelf above ---
+    {
+      const x0 = -3.0,
+        x1 = -1.5,
+        y0 = LYB + 0.03,
+        y1 = LYB + 0.63,
+        z = 0.86;
+      legs(x0, x1, y0, y1, z - 0.03, white, 0.025);
+      B(x0, x1, y0, y1, z - 0.03, z, ply, { grain: 'x' });
+      B(x0 + 0.03, x1 - 0.03, y0 + 0.03, y1 - 0.03, 0.18, 0.2, white, { col: false });
+      colBox(x0, x1, y0, y1, z, 'bench');
+      // end-grain blanks of Klingenholz stacked at the east end of the lower shelf
+      for (let k = 0; k < 6; k++)
+        B(
+          -1.95,
+          -1.6,
+          y0 + 0.08,
+          y0 + 0.45,
+          0.2 + k * 0.042,
+          0.2 + k * 0.042 + 0.04,
+          k % 2 ? M.oil : DUST.eg || M.oil,
+          {
+            col: false,
+          }
+        );
+      // tool board with F-clamps and a saw, the shelf for finished boards above
+      B(x0 + 0.05, x1 - 0.05, LYB, LYB + 0.02, 1.0, 1.42, MAT.osb, { col: false });
+      for (let i = 0; i < 6; i++) {
+        const x = x0 + 0.18 + i * 0.22;
+        B(x - 0.01, x + 0.01, LYB + 0.03, LYB + 0.05, 1.02, 1.4, M.steel, { col: false });
+        B(x - 0.012, x + 0.07, LYB + 0.02, LYB + 0.06, 1.34, 1.39, M.red, { col: false });
+        B(x - 0.012, x + 0.07, LYB + 0.02, LYB + 0.06, 1.08 + (i % 3) * 0.05, 1.13 + (i % 3) * 0.05, M.black, {
+          col: false,
+        });
+      }
+      B(x0 + 0.05, x1 - 0.05, LYB + 0.0, LYB + 0.3, 1.5, 1.53, ply, { col: false });
+      for (const x of [x0 + 0.1, x1 - 0.1]) B(x - 0.015, x + 0.015, LYB, LYB + 0.28, 1.38, 1.5, M.dark, { col: false });
+    }
+    // --- the grey drawer cabinet (two units stacked), the glue bucket on it ---
+    {
+      B(-1.45, -0.9, LYB + 0.05, LYB + 0.6, 0, 1.08, grey);
+      for (let i = 1; i < 6; i++)
+        B(-1.43, -0.92, LYB + 0.6, LYB + 0.61, i * 0.18 - 0.005, i * 0.18 + 0.005, M.dark, { col: false });
+      for (let i = 0; i < 6; i++)
+        B(-1.25, -1.1, LYB + 0.61, LYB + 0.63, 0.1 + i * 0.18, 0.12 + i * 0.18, alu, { col: false });
+      cyl(-1.1, LYB + 0.25, 1.08, 1.28, 0.12, white, 18, 0.11, { col: false }); // Holzleim D3
+      cyl(-1.33, LYB + 0.18, 1.08, 1.27, 0.035, white, 12, undefined, { col: false });
+      B(-0.93, -0.88, LYB + 0.5, LYB + 0.58, 0.05, 1.1, M.yellow, { col: false }); // spirit level leaning on it
+    }
+    // --- the annex: the bench with the worn top, the black filing cabinet, sanding discs, a clock, a green basket below ---
+    {
+      const x0 = -0.82,
+        x1 = EX1 - 0.12,
+        y0 = LYB + 0.03,
+        y1 = LYB + 0.65,
+        z = 0.86;
+      legs(x0, x1, y0, y1, z - 0.04, MAT.kvh, 0.03);
+      B(x0, x1, y0, y1, z - 0.04, z, worn, { grain: 'x' });
+      B(x0 + 0.04, x1 - 0.04, y0 + 0.04, y1 - 0.04, 0.16, 0.18, ply, { col: false });
+      colBox(x0, x1, y0, y1, z, 'bench');
+      B(x1 - 0.5, x1 - 0.06, y0 + 0.02, y0 + 0.47, z, z + 0.7, M.black, { col: false }); // filing cabinet
+      for (let i = 1; i < 6; i++)
+        B(x1 - 0.5, x1 - 0.06, y0 + 0.47, y0 + 0.48, z + i * 0.12, z + i * 0.12 + 0.006, M.dark, { col: false });
+      B(-0.75, -0.52, y0 + 0.08, y0 + 0.4, 0.18, 0.4, green, { col: false }); // basket
+      cyl(-0.3, y0 + 0.3, 0.18, 0.62, 0.08, white, 14, undefined, { col: false }); // paper roll
+      placeGLB('vice', { x: -0.62, y: y1 - 0.1, z, face: 180, col: false });
+      const disc = new THREE.CircleGeometry(0.075, 20);
+      for (let i = 0; i < 8; i++) {
+        const me = new THREE.Mesh(disc, green);
+        me.position.copy(V(-0.5 + (i % 4) * 0.19, LYB + 0.012, 1.18 + Math.floor(i / 4) * 0.2));
+        scene.add(tagPh(me));
+      }
+      B(-0.05, 0.25, LYB, LYB + 0.04, 1.72, 1.84, M.black, { col: false }); // the clock
+      B(0.0, 0.2, LYB + 0.04, LYB + 0.045, 1.74, 1.82, plain({ color: 0xa9b8a2, roughness: 0.3, emissive: 0x1c2a1c }), {
+        col: false,
+      });
+    }
+    // --- the drum sander Holzmann ZS 640P (Falko: „ZS 560“; the photo IMG_7285 reads ZS 640P): red base, grey drum hood, conveyor tables
+    //     east and west, the plate on the east side, where one stands to feed it ---
+    {
+      const { x0, x1, y0, y1, z } = T0.sd;
+      B(x0, x1, y0, y1, 0, z - 0.04, M.red); // base cabinet
+      B(x0 - 0.3, x1 + 0.3, y0 + 0.1, y1 - 0.1, z - 0.04, z, M.dark, { col: false }); // conveyor bed
+      B(x0 + 0.08, x1 - 0.08, y0 - 0.02, y1 + 0.02, z + 0.02, z + 0.36, M.machineL, { col: false }); // drum hood
+      B(x0 + 0.05, x1 - 0.05, y0 - 0.04, y1 + 0.04, z + 0.36, z + 0.42, M.red, { col: false });
+      hcyl(x0 + 0.1, x1 - 0.1, y1 + 0.12, z + 0.22, 0.09, M.red, 14); // the motor on the north side
+      cyl((x0 + x1) / 2, y0 + 0.15, z + 0.42, z + 0.58, 0.05, M.black, 12, undefined, { col: false }); // dust port
+      {
+        const tor = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.01, 8, 20), M.steel);
+        tor.rotation.x = Math.PI / 2;
+        tor.position.copy(V(x1 - 0.18, (y0 + y1) / 2, z + 0.47));
+        scene.add(tagPh(tor)); // height crank
+      }
+      {
+        const c = document.createElement('canvas');
+        c.width = 256;
+        c.height = 128;
+        const q = c.getContext('2d');
+        q.fillStyle = '#a3241c';
+        q.fillRect(0, 0, 256, 128);
+        q.fillStyle = '#f4f4f0';
+        q.fillRect(96, 8, 64, 60);
+        q.fillStyle = '#c0281f';
+        q.font = '700 13px system-ui, sans-serif';
+        q.textAlign = 'center';
+        q.fillText('HOLZMANN', 128, 26);
+        q.fillStyle = '#333';
+        q.font = '600 8px system-ui, sans-serif';
+        q.fillText('MASCHINEN', 128, 58);
+        q.fillStyle = '#161616';
+        q.font = '800 30px system-ui, sans-serif';
+        q.fillText('ZS 640P', 128, 106);
+        const t = new THREE.CanvasTexture(c);
+        t.colorSpace = THREE.SRGBColorSpace;
+        t.anisotropy = ANISO;
+        const me = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.25), plain({ map: t, roughness: 0.6 }));
+        me.position.copy(V(x1 + 0.003, (y0 + y1) / 2, 0.36));
+        me.rotation.y = Math.PI / 2;
+        scene.add(tagPh(me));
+      }
+      colBox(x0 - 0.3, x1 + 0.3, y0 - 0.05, y1 + 0.25, z + 0.45, 'machine');
+      // its cover: the blue tarpaulin, clear foil on top weighed down with three roof tiles and a brick; taken off: folded on the floor
+      const cv = (T0.covers.sander = new THREE.Group());
+      cv.userData.mergeRoot = 'werkstatt:cover:sander';
+      scene.add(cv);
+      const PC = o => Object.assign({ parent: cv, col: false }, o),
+        BC = (p, q, w) => beam(p, q, w, 0.025, M.tarp, { parent: cv }),
+        xm = (x0 + x1) / 2,
+        ym = (y0 + y1) / 2;
+      B(x0 - 0.34, x1 + 0.34, y0 - 0.12, y1 + 0.16, z + 0.44, z + 0.51, M.tarp, PC());
+      BC([xm, y1 + 0.17, z + 0.48], [xm, y1 + 0.27, 0.4], x1 - x0 + 0.7);
+      BC([xm, y0 - 0.13, z + 0.48], [xm, y0 - 0.22, 0.3], x1 - x0 + 0.7);
+      BC([x0 - 0.36, ym, z + 0.48], [x0 - 0.42, ym, 0.36], y1 - y0 + 0.3);
+      BC([x1 + 0.36, ym, z + 0.48], [x1 + 0.4, ym, 0.6], y1 - y0 + 0.3);
+      B(x0 - 0.2, x1 + 0.2, y0 - 0.02, y1 + 0.06, z + 0.52, z + 0.54, foil, PC());
+      for (const [x, y, a] of [
+        [x0 + 0.12, y0 + 0.2, 0.3],
+        [(x0 + x1) / 2 + 0.05, y1 - 0.15, -0.2],
+        [x1 - 0.05, y0 + 0.25, 0.1],
+      ]) {
+        const me = B(x - 0.13, x + 0.13, y - 0.19, y + 0.19, z + 0.54, z + 0.57, tile, PC());
+        if (me) me.rotation.y = a;
+      }
+      B(x0 + 0.25, x0 + 0.49, y0 + 0.02, y0 + 0.13, z + 0.54, z + 0.62, tile, PC()); // the brick
+      const fd = (T0.covers.sanderOff = new THREE.Group());
+      fd.userData.mergeRoot = 'werkstatt:cover:sanderOff';
+      scene.add(fd);
+      B(EX1 - 0.55, EX1 - 0.15, LYF - 0.45, LYF - 0.15, 0, 0.1, M.tarp, { parent: fd, col: false });
+      for (let i = 0; i < 3; i++)
+        B(EX1 - 0.5, EX1 - 0.24, LYF - 0.42, LYF - 0.18, 0.1 + i * 0.03, 0.13 + i * 0.03, tile, {
+          parent: fd,
+          col: false,
+        });
+    }
+    // --- in front: a white storage box, the tripod work light beside the mill's head ---
+    B(-0.6, -0.2, -38.5, -38.18, 0, 0.3, white, { col: false });
+    {
+      const [x, y] = [-2.95, -38.45];
+      for (let i = 0; i < 3; i++) {
+        const a = (i * Math.PI * 2) / 3 + 0.3;
+        beam([x + Math.cos(a) * 0.32, y + Math.sin(a) * 0.32, 0], [x, y, 0.55], 0.015, 0.015, M.black, { cast: false });
+      }
+      cyl(x, y, 0.5, 1.75, 0.012, M.black, 6, undefined, { col: false });
+      B(x - 0.12, x + 0.12, y - 0.04, y + 0.04, 1.62, 1.8, M.black, { col: false });
+    }
+    // --- protective gear on hooks at the back wall between the plywood bench and the white bench ---
+    {
+      const x = -3.4;
+      B(x - 0.25, x + 0.25, LYB, LYB + 0.02, 1.1, 1.7, ply, { col: false });
+      for (const dx of [-0.05, 0.05])
+        cyl(x - 0.12 + dx, LYB + 0.06, 1.48, 1.58, 0.035, plain({ color: 0xd8a21a, roughness: 0.5 }), 14, undefined, {
+          col: false,
+        });
+      B(
+        x + 0.02,
+        x + 0.14,
+        LYB + 0.03,
+        LYB + 0.08,
+        1.5,
+        1.56,
+        plain({ color: 0x9fc6d8, roughness: 0.15, transparent: true, opacity: 0.6 }),
+        {
+          col: false,
+        }
+      ); // goggles
+      B(x - 0.18, x - 0.06, LYB + 0.03, LYB + 0.1, 1.2, 1.28, white, { col: false }); // masks
+      B(x + 0.04, x + 0.16, LYB + 0.03, LYB + 0.1, 1.18, 1.27, plain({ color: 0x3b5fb0, roughness: 0.6 }), {
+        col: false,
+      }); // gloves
+    }
+    // --- buckets by the white bench: water with the sponge, galvanised for oily rags ---
+    cyl(-1.68, -39.62, 0.0, 0.28, 0.14, plain({ color: 0x2c64a8, roughness: 0.45 }), 18, 0.12, { col: false });
+    {
+      const w = new THREE.Mesh(
+        new THREE.CircleGeometry(0.125, 18),
+        plain({ color: 0x5a7a86, roughness: 0.08, metalness: 0.2 })
+      );
+      w.rotation.x = -Math.PI / 2;
+      w.position.copy(V(-1.68, -39.62, 0.24));
+      scene.add(tagPh(w));
+    }
+    cyl(-1.68, -39.28, 0.0, 0.32, 0.13, plain({ color: 0xa3a9a8, metalness: 0.75, roughness: 0.35 }), 18, 0.12, {
+      col: false,
+    });
+    // --- the cable from the generator to the lean-to ---
+    beam([-6.95, -39.2, 0.02], [-5.6, -38.7, 0.02], 0.012, 0.012, M.black, { cast: false });
+    beam([-5.6, -38.7, 0.02], [-4.4, -38.55, 0.02], 0.012, 0.012, M.black, { cast: false });
+    // --- west of the lean-to: a worktable, the table top over the generator, the offcuts under a tarpaulin on a frame, the wheelbarrow ---
+    {
+      const x0 = -6.75,
+        x1 = -5.85,
+        y0 = -39.35,
+        y1 = -38.7;
+      legs(x0, x1, y0, y1, 0.84, MAT.kvh, 0.035);
+      B(x0 - 0.03, x1 + 0.03, y0 - 0.03, y1 + 0.03, 0.84, 0.87, ply, { grain: 'x' });
+      B(x0 + 0.04, x1 - 0.04, y0 + 0.04, y1 - 0.04, 0.2, 0.22, ply, { col: false });
+      colBox(x0 - 0.03, x1 + 0.03, y0 - 0.03, y1 + 0.03, 0.87, 'table');
+      const g = [-7.27, -39.27];
+      legs(g[0] - 0.48, g[0] + 0.48, g[1] - 0.38, g[1] + 0.38, 0.62, MAT.kvh, 0.03);
+      B(g[0] - 0.5, g[0] + 0.5, g[1] - 0.4, g[1] + 0.4, 0.62, 0.64, ply, { grain: 'x' });
+      colBox(g[0] - 0.5, g[0] + 0.5, g[1] - 0.4, g[1] + 0.4, 0.64, 'table');
+    }
+    {
+      // offcuts on a pallet, the tarpaulin over a frame of white poles, falling to the west
+      const x0 = -9.5,
+        x1 = -7.9,
+        y0 = -40.35,
+        y1 = -38.75;
+      B(x0 + 0.1, x1 - 0.1, y0 + 0.15, y1 - 0.15, 0, 0.14, MAT.plank);
+      for (let i = 0; i < 9; i++) {
+        const a = (i % 3) * 0.5 - 0.5,
+          y = y0 + 0.3 + (i % 4) * 0.32,
+          x = (x0 + x1) / 2 + ((i * 37) % 7) * 0.08 - 0.25,
+          L = 0.6 + (i % 3) * 0.25;
+        beam(
+          [x - Math.cos(a) * L * 0.5, y - Math.sin(a) * L * 0.5, 0.18 + (i % 3) * 0.06],
+          [x + Math.cos(a) * L * 0.5, y + Math.sin(a) * L * 0.5, 0.2 + (i % 2) * 0.1],
+          0.1,
+          0.025,
+          i % 2 ? M.fresh : MAT.plank
+        );
+      }
+      for (const [x, y, h] of [
+        [x0, y0, 0.75],
+        [x0, y1, 0.75],
+        [x1, y0, 1.05],
+        [x1, y1, 1.05],
+      ])
+        cyl(x, y, 0, h, 0.02, white, 8, undefined, { col: false });
+      beam([x1 + 0.08, (y0 + y1) / 2, 1.06], [x0 - 0.1, (y0 + y1) / 2, 0.74], y1 - y0 + 0.3, 0.02, M.tarp);
+      beam([x0 - 0.12, y0 - 0.12, 0.74], [x0 - 0.12, y0 - 0.12, 0.25], 0.5, 0.02, M.tarp, { cast: false });
+      colBox(x0 - 0.1, x1 + 0.1, y0 - 0.1, y1 + 0.1, 1.06, 'stack');
+    }
+    {
+      // the wheelbarrow: grey tub, blue frame, one wheel to the north
+      const [x, y] = [-7.25, -36.85];
+      B(x - 0.3, x + 0.3, y - 0.35, y + 0.3, 0.38, 0.62, alu, { col: false });
+      B(x - 0.24, x + 0.24, y - 0.28, y + 0.24, 0.28, 0.38, alu, { col: false });
+      for (const dx of [-0.24, 0.24]) {
+        beam(
+          [x + dx, y - 0.95, 0.62],
+          [x + dx * 0.5, y + 0.5, 0.25],
+          0.03,
+          0.03,
+          plain({ color: 0x2a46b0, roughness: 0.5 }),
+          { cast: true }
+        );
+        beam(
+          [x + dx, y - 0.2, 0.3],
+          [x + dx, y - 0.25, 0.0],
+          0.025,
+          0.025,
+          plain({ color: 0x2a46b0, roughness: 0.5 }),
+          { cast: true }
+        );
+      }
+      const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.09, 18), M.rubber);
+      wh.rotation.z = Math.PI / 2;
+      wh.position.copy(V(x, y + 0.52, 0.19));
+      wh.castShadow = true;
+      scene.add(tagPh(wh));
+      colBox(x - 0.32, x + 0.32, y - 0.4, y + 0.7, 0.62, 'barrow');
+    }
+  }
+  phase(null);
+  // ---- the machines: switch on/off at the "door" button (E), sound, the saw head runs along the log ----
+  // The band sawmill, the table saw and the drum sander are there in every phase (today in and before the lean-to, from phase 1 in and
+  // at the hall): their door entries keep their key, their place follows the phase (WORKS.mpos, WORKS.layout); covered (phase 0, under the
+  // tarpaulin) they cannot be switched on (`can`, game/walkable.js doorOn). The planer and the thicknesser come with the hall.
+  const BOTH = new Set(['saw', 'tablesaw', 'sander']);
   for (const m of WORKS.machines) {
     if (m.hidden) continue;
     DOORS[m.key] = {
@@ -1015,16 +1552,124 @@ let NG0 = 0,
       group: null,
       t: 0,
       target: 0,
-      pos: m.pos,
+      pos: m.pos.slice(),
       r: m.r,
       z: m.z,
-      ph: SAW_PH,
+      ph: BOTH.has(m.key) ? null : SAW_PH,
       var: null,
       m,
+      can: BOTH.has(m.key) ? () => !WORKS.covered(m.key) : undefined,
     };
   }
   WORKS.WX = [X0, X1, YB, YF];
-  WORKS.noMerge = [SAW.head];
+  WORKS.noMerge = [SAW.head, T0.ts.blade];
+  // ---- the phase's layout: [phase 0, phase ≥ SAW_PH] (workshop coordinates as built) ----
+  const phNow = () => ((window.PHASE | 0) < SAW_PH ? 0 : 1);
+  const TSH = (TS.y0 + TS.y1) / 2;
+  const MPL = {
+    tablesaw: {
+      op: [
+        [-3.3, -38.88],
+        [TS.x1 + 0.55, TSH],
+      ],
+      snd: [
+        [T0.ts.cx, T0.ts.cy],
+        [-4.4, -38.05],
+      ],
+    },
+    sander: {
+      op: [
+        [1.3, -39.1],
+        [0.85, -36.75],
+      ],
+      snd: [
+        [0.33, -39.1],
+        [0.85, -38.0],
+      ],
+    },
+    orb: {
+      snd: [
+        [-2.25, -40.1],
+        [-0.9, -40.1],
+      ],
+    },
+  };
+  WORKS.phNow = phNow;
+  WORKS.cov = { saw: true, sander: true }; // today the band sawmill and the drum sander stand under tarpaulins (saved by werk/werk.js)
+  WORKS.covered = k => phNow() === 0 && !!WORKS.cov[k];
+  WORKS.mpos = k => (k === 'saw' ? SAW.at(MX + 0.95, YS + 0.4) : MPL[k] ? MPL[k].op[phNow()] : null);
+  WORKS.onLayout = []; // (ph) => …: other modules follow the phase's layout (werk/werk.js, werk/holz_saw.js, garden/workshop_lamp.js)
+  function showCovers() {
+    SAW.cover.visible = !!WORKS.cov.saw;
+    SAW.folded.visible = !WORKS.cov.saw;
+    T0.covers.sander.visible = !!WORKS.cov.sander;
+    T0.covers.sanderOff.visible = !WORKS.cov.sander;
+  }
+  // put a tarpaulin on (the machine stops, the saw head goes home first) or take it off
+  WORKS.setCover = (k, on) => {
+    if (!(k in WORKS.cov)) return;
+    WORKS.cov[k] = !!on;
+    if (on && DOORS[k]) DOORS[k].target = 0;
+    if (on && k === 'saw') {
+      SAW.s = SAW.s0;
+      SAW.dir = 1;
+      SAW.head.position.z = -SAW.s;
+    }
+    showCovers();
+    markDirty(true);
+  };
+  showCovers();
+  const LAY = { ph: -1, tf: null };
+  WORKS.layout = force => {
+    const ph = phNow(),
+      Bw = window.BUILD && BUILD.werkstatt,
+      tf = Bw ? Bw.tf : null;
+    if (!force && ph === LAY.ph && tf === LAY.tf) return false;
+    const newPh = force || ph !== LAY.ph;
+    LAY.ph = ph;
+    LAY.tf = tf;
+    if (newPh) {
+      for (const X of [SAW, GEN]) {
+        X.off = X.OFF[ph];
+        const g = X.g;
+        if (!g.userData.base) g.userData.base = g.position.clone();
+        g.position.copy(g.userData.base).add(V(X.off[0], X.off[1], 0));
+        g.updateMatrixWorld(true);
+        for (const i of X.cols) {
+          const e = COL[i];
+          if (!e) continue;
+          if (!e.b0) e.b0 = e.slice(0, 4);
+          e[0] = e.b0[0] + X.off[0];
+          e[1] = e.b0[1] + X.off[0];
+          e[2] = e.b0[2] + X.off[1];
+          e[3] = e.b0[3] + X.off[1];
+        }
+      }
+      const gm = WORKS.machines.find(m => m.key === 'gen');
+      if (gm) {
+        gm.pos[0] = GEN.x + GEN.off[0];
+        gm.pos[1] = GEN.y + 0.8 + GEN.off[1];
+      }
+      showCovers();
+      for (const k of BOTH) if (DOORS[k]) DOORS[k].target = 0; // a machine of the other phase's place stops
+      if (LATE.rebuildGrids) LATE.rebuildGrids();
+      for (const f of WORKS.onLayout)
+        try {
+          f(ph);
+        } catch (e) {
+          console.warn('workshop layout', e);
+        }
+    }
+    for (const k of BOTH) {
+      const d = DOORS[k],
+        p = WORKS.mpos(k);
+      if (!d || !p) continue;
+      const w = tf ? tf(p[0], p[1]) : p;
+      d.pos = [w[0], w[1]];
+    }
+    markDirty(true);
+    return true;
+  };
   // sound: positional loops that spin up when switched on and run down when switched off; the saw blends idle and cutting
   const SND = {
     saw: { snd: 'saw_run', vol: 1.0, ref: 7 },
@@ -1040,6 +1685,7 @@ let NG0 = 0,
   };
   const sndSet = (k, on, x, y, vol) => {
     const S = SND[k];
+    S.want = !!on;
     if (on) {
       if (!S.playing) {
         LATE.audio.loopAt(k, S.snd, x, y, { vol: vol ?? S.vol, ref: S.ref, rate: 0.5 });
@@ -1057,13 +1703,17 @@ let NG0 = 0,
       LATE.audio.stopLoop(k, 1.8);
     }
   };
+  WORKS.sndOn = k => !!(SND[k] && SND[k].playing); // tests: a loop playing (only with the sound on)
+  WORKS.sndWant = k => !!(SND[k] && SND[k].want); // tests: the loop wanted (also without sound, e.g. in the test browser)
   WORKS.update = dt => {
-    let moved = false;
-    const on = k => DOORS[k] && DOORS[k].target > 0.5;
+    let moved = WORKS.layout();
+    const on = k => DOORS[k] && DOORS[k].target > 0.5,
+      ph = phNow();
     const need = on('sander') || on('planer') || on('tablesaw') || on('thick') || !!WORKS.orbit;
     WORKS.genOn = need;
-    if (on('tablesaw') && TS.blade) {
-      TS.blade.rotation.y += dt * 40;
+    const blade = ph === 0 ? T0.ts.blade : TS.blade;
+    if (on('tablesaw') && blade) {
+      blade.rotation.y += dt * 40;
       moved = true;
     }
     if (on('saw')) {
@@ -1078,115 +1728,33 @@ let NG0 = 0,
         S.s = S.s0;
         S.dir = 1;
       }
-      S.head.position.z = -(S.s - WORKS.py);
+      S.head.position.z = -S.s; // in the mill's group (its frame: the workshop as built at the plan's place)
       for (const w of S.wheels) w.rotation.y += dt * 28;
       S.cut = cutting && S.dir > 0;
       moved = true;
     }
     try {
       const T = window.BUILD && BUILD.werkstatt ? BUILD.werkstatt.tf : (x, y) => [x, y],
-        ps = T(SAW.xc, SAW.s),
-        pd = T(0.85, -38.0),
+        ps = T(...SAW.at(SAW.xc, SAW.s)),
+        pd = T(...MPL.sander.snd[ph]),
         pp = T(2.6, -38.0),
-        pg = T(GEN.x, GEN.y);
+        pg = T(GEN.x + GEN.off[0], GEN.y + GEN.off[1]);
       sndSet('saw', on('saw'), ps[0], ps[1], SAW.cut ? 0.35 : 1.0);
       sndSet('saw2', on('saw'), ps[0], ps[1], SAW.cut ? 1.1 : 0.0);
       sndSet('sander', on('sander'), pd[0], pd[1], WORKS.cut.sander ? 1.0 : 0.75);
       sndSet('planer', on('planer'), pp[0], pp[1]);
       sndSet('gen', need, pg[0], pg[1]);
-      const pt = T(-4.4, -38.05),
-        ph = T(-1.55, -38.05),
-        pb = T(-0.9, -40.1);
+      const pt = T(...MPL.tablesaw.snd[ph]),
+        pth = T(-1.55, -38.05),
+        pb = T(...MPL.orb.snd[ph]);
       const C = WORKS.cut;
       sndSet('ts', on('tablesaw'), pt[0], pt[1], C.tablesaw ? 0.45 : 0.9);
       sndSet('ts2', on('tablesaw'), pt[0], pt[1], C.tablesaw ? 1.1 : 0.0);
-      sndSet('th', on('thick'), ph[0], ph[1], C.thick ? 0.5 : 0.95);
-      sndSet('th2', on('thick'), ph[0], ph[1], C.thick ? 1.1 : 0.0);
+      sndSet('th', on('thick'), pth[0], pth[1], C.thick ? 0.5 : 0.95);
+      sndSet('th2', on('thick'), pth[0], pth[1], C.thick ? 1.1 : 0.0);
       sndSet('orb', !!WORKS.orbit, pb[0], pb[1]);
     } catch (e) {}
     return moved;
   };
-  // yard clutter: stacked crates and a ladder at the east end, compost bags with a spade by the annex
-  placeGLB('crate', { x: 5.45, y: -36.95, z: 0, face: 10 });
-  placeGLB('crate', { x: 5.47, y: -36.97, z: 0.255, face: 4, col: false });
-  placeGLB('ladder', { x: 5.05, y: -38.2, z: 0, face: 270, col: false });
-  placeGLB('compost', { x: -8.6, y: -36.3, z: 0, face: 0 });
-  placeGLB('spade', { x: -7.35, y: -36.15, z: 0, face: 25, col: false });
-  // meshes made without tagPh (custom roof and machine meshes), colliders and walk surfaces pushed by hand carry no phase: they belong to
-  // the hall too (the generator's stay)
-  for (let i = N0; i < scene.children.length; i++)
-    if (i < NG0 || i >= NG1)
-      scene.children[i].traverse(o => {
-        if (o.userData.ph === undefined) o.userData.ph = SAW_PH;
-      });
-  for (let i = C0; i < COL.length; i++) if (COL[i][7] == null && COL[i][6] !== 'gen') COL[i][7] = SAW_PH;
-  for (let i = W0; i < WALK.length; i++) if (WALK[i][6] == null) WALK[i][6] = SAW_PH;
-  // ---- today (phase 0 only): the open lean-to of the photos of 26.10.2026 – timber posts, a mono-pitch roof of corrugated sheets falling
-  //      to the back, a plywood back wall with the tool board, a workbench, a table saw on its stand, a drawer cabinet; beside it the red
-  //      machine and a pile of offcuts, both under blue tarpaulins ----
-  phase(0, SAW_PH);
-  {
-    const LX0 = -5.6,
-      LX1 = -0.6,
-      LYB = -40.5,
-      LYF = -38.0,
-      ZF = 2.35,
-      ZB = 1.98;
-    const tarp = plain({ color: 0x2d4170, roughness: 0.85 }),
-      ply = plain({ color: 0xc9a979, roughness: 0.85 }),
-      grey = plain({ color: 0xb9bcbe, roughness: 0.6, metalness: 0.2 });
-    for (const x of [LX0 + 0.06, (LX0 + LX1) / 2, LX1 - 0.06]) {
-      B(x - 0.05, x + 0.05, LYF - 0.05, LYF + 0.05, 0, ZF, MAT.kvh, { grain: 'z' });
-      B(x - 0.05, x + 0.05, LYB - 0.05, LYB + 0.05, 0, ZB, MAT.kvh, { grain: 'z' });
-      beam([x, LYF + 0.35, ZF + 0.02], [x, LYB - 0.3, ZB - 0.02], 0.06, 0.12, MAT.kvh);
-    }
-    B(LX0, LX1, LYF - 0.06, LYF + 0.06, ZF - 0.14, ZF, MAT.kvh, { grain: 'x', col: false });
-    // the roof: corrugated sheets in strips, the front overhanging
-    for (let x = LX0 - 0.3; x < LX1 + 0.3; x += 0.9)
-      beam([x + 0.45, LYF + 0.4, ZF + 0.1], [x + 0.45, LYB - 0.35, ZB + 0.06], 0.92, 0.02, MAT.corr, { cast: true });
-    // back wall of plywood, the tool board and the shelf with boxes
-    B(LX0, LX1, LYB - 0.03, LYB + 0.0, 0, ZB, ply, { grain: 'x' });
-    B(-4.9, -2.9, LYB + 0.0, LYB + 0.02, 1.05, 1.75, MAT.osb, { col: false });
-    for (let i = 0; i < 9; i++)
-      B(-4.8 + i * 0.21, -4.75 + i * 0.21, LYB + 0.02, LYB + 0.06, 1.2, 1.55 - (i % 3) * 0.1, M.steel, { col: false });
-    B(-2.6, -1.2, LYB, LYB + 0.3, 1.5, 1.53, ply, { col: false });
-    B(-2.5, -2.1, LYB + 0.02, LYB + 0.26, 1.53, 1.78, M.black, { col: false });
-    // workbench along the back wall
-    B(-5.4, -3.0, LYB + 0.05, LYB + 0.7, 0.86, 0.9, M.beech);
-    for (const x of [-5.3, -3.1])
-      for (const y of [LYB + 0.12, LYB + 0.62])
-        B(x - 0.03, x + 0.03, y - 0.03, y + 0.03, 0, 0.86, MAT.kvh, { col: false });
-    B(-5.35, -3.05, LYB + 0.1, LYB + 0.66, 0.25, 0.28, ply, { col: false });
-    // table saw on its stand, in front of the bench
-    B(-2.8, -2.0, -39.55, -38.95, 0.84, 0.9, M.machineL);
-    B(-2.62, -2.18, -39.45, -39.05, 0.55, 0.84, M.dark, { col: false });
-    for (const x of [-2.75, -2.05])
-      for (const y of [-39.5, -39.0]) beam([x, y, 0], [x + (x < -2.4 ? 0.1 : -0.1), y, 0.55], 0.03, 0.03, M.steel);
-    B(-2.42, -2.4, -39.3, -39.2, 0.9, 0.98, M.blade, { col: false });
-    // drawer cabinet with the sander on top
-    B(-1.45, -0.9, LYB + 0.05, LYB + 0.6, 0, 1.0, grey);
-    for (let i = 1; i < 5; i++)
-      B(-1.43, -0.92, LYB + 0.6, LYB + 0.61, i * 0.2 - 0.01, i * 0.2 + 0.01, M.dark, { col: false });
-    B(-1.3, -1.05, LYB + 0.2, LYB + 0.42, 1.0, 1.12, M.dark, { col: false });
-    // the red machine east of the lean-to under a blue tarpaulin
-    B(-0.35, 0.35, -40.1, -39.45, 0, 0.72, M.red);
-    B(-0.42, 0.42, -40.17, -39.38, 0.72, 1.05, tarp);
-    B(-0.43, 0.43, -40.18, -39.37, 0.3, 0.72, tarp, { col: false });
-    // offcuts west of the lean-to on pallets, under a blue tarpaulin on a frame
-    B(-7.6, -6.1, -40.0, -38.9, 0, 0.14, MAT.plank);
-    for (let i = 0; i < 6; i++)
-      B(
-        -7.5 + (i % 3) * 0.45,
-        -7.05 + (i % 3) * 0.45,
-        -39.9 + (i > 2 ? 0.5 : 0),
-        -39.45 + (i > 2 ? 0.5 : 0),
-        0.14,
-        0.32 + (i % 2) * 0.1,
-        M.fresh,
-        { col: false }
-      );
-    beam([-7.7, -40.05, 0.9], [-6.0, -38.85, 0.55], 1.9, 0.02, tarp);
-  }
-  phase(null);
 }
 bldEnd();
