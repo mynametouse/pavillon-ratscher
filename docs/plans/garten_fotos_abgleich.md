@@ -51,7 +51,7 @@ Gegenstand im Bild passt.
 | 7202, 7203, 7208, 7211 | neu | Richtung unsicher | nicht verwendet |
 | 7204–7207 | neu | Plattenterrasse, Bank, Laterne, Stuhl ✓ (V17c); grüner Pflanztisch mit weißem Becken am Bach östlich der Terrasse fehlte; buschige Weide über der Bank | Pflanztisch, Weide (Baum 0) |
 | 7209, 7221, 7228, 7229 | ok/neu | Carport mit Wohnwagen ✓; das Dach auf den Fotos ist ein Pultdach aus Wellblech mit Kopfbändern an den Pfosten; grüner Plastikstuhl am Wohnwagen | nicht geändert (klein; Liste für die nächste Runde) |
-| 7210, 7212–7220 | neu | Bungalow von Norden/Nordwesten ✓, dichte Büsche am Bach ✓, Birnbaum am Bach | – |
+| 7210, 7212–7220 | neu | Bungalow von Norden/Nordwesten ✓, dichte Büsche am Bach ✓; 7216–7219 sehen von Osten die Rohrmündung unter der Torplatte und den großen Baum darüber; ein frisch gepflanztes Bäumchen mit gelben Blättern nördlich vom Bungalow am Ostzaun (7212–7214) | Durchlass und Baum am Tor (s. o.); Bäumchen |
 | 7222–7225 | ok/neu | Bungalow mit Schleppdach und Gerümpel ✓ (V17d); keine blaue Regentonne an der Ecke | nicht geändert (Bungalow ist Sache des Kern-Chats gewesen; Kleinigkeit) |
 | 7226, 7227 | neu/ok | 7227 „ok“ liegt im Bungalow (s. o.); Blechgarage, Gewächshaus, Hütte von Nordosten: Hütte und Gewächshaus südlich davon, nicht am Ostzaun | Hütte, Gewächshaus versetzt |
 | 7230, 7231 | ok | ausgebrannte Feuerstelle mit Bretterresten ~2 m vor beiden Standpunkten; Modell: Reisighaufen 3,5 m weiter südwestlich | Feuerstelle bei (−0,4 / 10,2), flach, verkohlt |
@@ -86,7 +86,8 @@ Gegenstand im Bild passt.
 - `garden/stream.js`: in Bauphase 0 ist die Torplatte alter Beton über einem Durchlass (Stirnwände mit dem Rohr, darunter verfüllt –
   Kollision); die Asphaltbrücke ab Bauphase 1. `STREAM.BR`, Lauf- und Fahrfläche unverändert.
 - `garden/garten_heute.js`: Zaun am Feldweg (Bauphase 0) mit Doppeltor (offen, an den Zaun geklappt), Maschendraht quer über den Bach,
-  Trittsteine; Pflanztisch am Bach, weiße Bank (zum Sitzen, `GSEATS` „weisse-bank“), weißer Liegestuhl, Bäumchen mit Pflanzflecken,
+  Trittsteine; Pflanztisch am Bach, weiße Bank (zum Sitzen, `GSEATS` „weisse-bank“), weißer Liegestuhl, runder weißer Wassertank,
+  vier Bäumchen mit Pflanzflecken (drei westlich der Hütte, eins nördlich vom Bungalow),
   Feuerstelle statt Reisighaufen, Schirm südwestlich vom Tisch.
 - `garden/carport.js`: Tisch mit Klappstühlen an der Südostecke ab Bauphase 1 (7228, 7229 zeigen dort keinen); `garden/bungalow.js`: Bank an
   der Haustür und Regentonne ab Bauphase 1 (7222, 7224, 7225), das Planenbündel unter dem Schleppdach grauweiß statt blau.

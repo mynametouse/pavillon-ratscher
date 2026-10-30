@@ -111,8 +111,8 @@ Methode in `docs/plans/garten_fotos_abgleich.md`. Alles gilt für Bauphase 0; ab
   Bauphase 1; runde Trittsteine vom Tor in den Garten.
 - **Keine Kieswege** in Bauphase 0 (`garden/env.js`: `NOPATH`, Uniform `uNoPath` im Bodenshader; die Masken für Gras und Schritte bleiben).
 - **Kleinigkeiten**: grüner Pflanztisch mit weißem Becken am Bach, weiße Gartenbank nordwestlich vom Gewächshaus (Sitz „Auf die weiße Bank
-  setzen“), weißer Kunststoff-Liegestuhl, drei frisch gepflanzte Bäumchen in umgegrabenen Flecken in der Wiese westlich der Hütte und zwei
-  leere Flecken, ausgebrannte Feuerstelle statt Reisighaufen, Schirm südwestlich vom Tisch; die Bank am Carport-Tisch, Bank und Regentonne am
+  setzen“), weißer Kunststoff-Liegestuhl, runder weißer Wassertank, frisch gepflanzte Bäumchen in umgegrabenen Flecken (drei in der Wiese
+  westlich der Hütte, eins nördlich vom Bungalow) und zwei leere Flecken, ausgebrannte Feuerstelle statt Reisighaufen, Schirm südwestlich vom Tisch; die Bank am Carport-Tisch, Bank und Regentonne am
   Bungalow ab Bauphase 1; das Planenbündel unter dem Schleppdach grauweiß statt blau.
 - **Bäume** (`site.js` `trees` 0–5, Kirschbaum): die buschige Weide an der Terrasse (Art `willow`), der große Baum am Tor, ein mehrstämmiger und
   zwei hohe schlanke Bäume am Bach hinter dem Bretterstapel; der gemessene Baum, der auf dem Feldweg stand, an den Bach; die alten Bäume 0–4
