@@ -106,7 +106,7 @@ for (const [k, v] of Object.entries({
   dach: { mode: 'walk', pos: [2.6, 2.0], z: G.zD, yaw: -95, pitch: -6, label: 'Dachterrasse', pav: true },
   wohnwagen: { mode: 'walk', pos: [-0.9, 16.5], z: 0, yaw: 182, pitch: -2, bld: 'carport', label: 'Wohnwagen' },
   holzhaus: { mode: 'walk', pos: [9.5, 1.4], z: 0, yaw: 154, pitch: -2, bld: 'holzhaus', label: 'Holzhaus' }, // door to the north (23.10.2026)
-  bungalow: { mode: 'walk', pos: [8.6, 21.4], z: 0, yaw: 180, pitch: -2, bld: 'bungalow', label: 'Bungalow' },
+  bungalow: { mode: 'walk', pos: [9.77, 14.67], z: 0, yaw: 186, pitch: -2, bld: 'bungalow', label: 'Bungalow' }, // in front of the porch (30.10.2026)
   ziegen: { mode: 'walk', pos: [17.0, -1.4], z: 0, yaw: 82, pitch: -1, label: 'Ziegenweide' },
   hubert: {
     mode: 'walk',

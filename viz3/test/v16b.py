@@ -121,13 +121,16 @@ with lib.browser() as b:
         mp.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); time.sleep(2); M = mp.evaluate; M("window.FREEZE = true")
         M("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
         mp.wait_for_function("!window.AVATAR || AVATAR.ready || AVATAR.failed", timeout=900000, polling=1000); M("GAME.step(0.1)")   # the figure loaded: no long busy frames any more
-        mp.tap('#menubtn', timeout=180000); time.sleep(0.5); mp.tap('[data-veh="car"]', timeout=180000); time.sleep(0.5); M("for (let i = 0; i < 12; i++) GAME.step(0.05)")
+        # since V16v the menu has pages: the car's chip is on „Hingehen“
+        mp.tap('#menubtn', timeout=180000); time.sleep(0.5); mp.tap('#menu [data-go="orte"]', timeout=180000); time.sleep(0.4)
+        mp.tap('[data-veh="car"]', timeout=180000); time.sleep(0.5); M("for (let i = 0; i < 12; i++) GAME.step(0.05)")
         lbl = M("(document.getElementById('doorbtn') || {}).textContent || ''"); print('phone action', lbl, flush=True)
         mp.tap('#doorbtn', timeout=180000); M("for (let i = 0; i < 20; i++) GAME.step(0.05)")
         check('phone: menu → car → tap gets in', M("!!(VEH.cur && VEH.cur.id === 'car')"), lbl)
         jr = rects(M, ['joy'])['joy']; cx, cy = jr['x'] + jr['w'] / 2, jr['y'] + jr['h'] / 2; cdp = ctx.new_cdp_session(mp)
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': cx, 'y': cy, 'id': 1}]})
-        cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': cx + 8, 'y': cy - jr['h'] * 0.42, 'id': 1}]})
+        # straight ahead: since V17 the brook and its bank bushes follow the field path, a slight steer (it was +8 px) took the car into them
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': cx, 'y': cy - jr['h'] * 0.42, 'id': 1}]})
         M("for (let i = 0; i < 160; i++) GAME.step(0.025)"); ph = json.loads(M("JSON.stringify(VEH.state()[0])"))
         u = rects(M, ['vhud', 'vmap', 'vmaplab', 'where', 'hudtr', 'actrow', 'joy', 'moves', 'menubtn']); print('phone', ph, u, flush=True)
         M("GAME.shot()"); mp.screenshot(path=os.path.join(OUT, 'h_phone_drive.png')); print('shot h_phone_drive', flush=True)

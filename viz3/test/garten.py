@@ -66,7 +66,7 @@ with lib.browser() as b:
     for k, lx, ly, wdy in dpos:
         ck(f'door {k} faces north', wdy > 0.5, f'world dy {wdy:.2f}')
     # the tractor's drive past the pavilion to the log yard (viz3/test/v16d.py 'bridge', world points): the hut's PV module keeps ≥ 2.5 m off it
-    pv = ev(pg, """(() => { const D = [[7.3, 3.8], [7.5, -3], [6.5, -8], [3.5, -12]];
+    pv = ev(pg, """(() => { const D = [[6.9, 3.4], [7.5, -3], [6.5, -8], [3.5, -12]];
       const seg = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy))); return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy); };
       let best = 1e9, n = 0;
       for (const e of GAME.COL) { if (e[6] !== 'pv') continue; n++; const r = e[9];

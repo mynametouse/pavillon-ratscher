@@ -1,0 +1,5 @@
+[
+  {"name": "tor_nach_sueden", "x": 2.6, "y": 29.0, "yaw": 180, "vfov": 62, "eye": 1.6, "pitch": -4},
+  {"name": "wiese_nach_osten", "x": 2.0, "y": 10.0, "yaw": 100, "vfov": 62, "eye": 1.6, "pitch": -3},
+  {"name": "sueden_nach_norden", "x": 2.0, "y": -30.0, "yaw": 0, "vfov": 62, "eye": 1.6, "pitch": -3}
+]

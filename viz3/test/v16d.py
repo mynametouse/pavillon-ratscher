@@ -53,10 +53,13 @@ with lib.browser() as b:
         stop(); E("VEH.exit()"); steps(0.3)
     if want('bridge'):   # the tractor with the trailer from the field path over the garden bridge, through the garden to the log yard
         # the rear axle's route (pure pursuit): in bridge coordinates (lat along the stream, lon across, from the deck's middle) over the deck,
-        # then 30° to the left between two garden trees (3.7 m past the deck end, 0.6 m left of the axis, and 4.5 m further right), along the
-        # gravel path between carport and bungalow to the pavilion, past its east side and the garage (in world coordinates) to the log yard
-        R = [[0, -12], [0, -3], [0, 1.2], [1.28, 4.6], [3.4, 7.6], [4.72, 8.6], [7.0, 12.0], [9.38, 15.31], [12.12, 17.62]]
-        W = [[7.3, 3.8], [7.5, -3], [6.5, -8], [3.5, -12], [2.6, -16], [2.6, -21]]
+        # then 30° to the left into the garden past the carport's east side; in world coordinates on round the west side of the old tin garage
+        # on the slab and south to the log yard. Since 30.10.2026 in construction phase 0 – the garden of today, where every visit starts: the
+        # bungalow stands 6.7 m further south, beside the washhouse, and with the pavilion built the tractor and trailer no longer fit between
+        # them (the drive east of the pavilion, as before, hit both)
+        R = [[0, -12], [0, -3], [0, 1.2], [1.28, 4.6], [3.4, 7.6], [4.72, 8.6], [7.0, 12.0]]
+        W = [[3.3, 10.4], [1.2, 7.7], [-1.3, 5.4], [-2.5, 2.8], [-2.4, -0.5], [-1.2, -4.0], [0.8, -8.0], [2.2, -12.0], [2.6, -16], [2.6, -21]]
+        ph_before = E("GAME.phase()"); E("GAME.setPhase(0)"); steps(0.3)
         pts = J(f"(() => {{ const c = STREAM.BR.c, U = STREAM.U, N = STREAM.N; return {json.dumps(R)}.map(([a, b]) => [c[0] + U[0] * a + N[0] * b, c[1] + U[1] * a + N[1] * b]).concat({json.dumps(W)}); }})()")
         nB = len(R)   # the first nB points: over the bridge into the garden
         E("VEH.place('car', 40, 52, Math.PI / 2)")   # the own car parks on the field path right in front of the bridge: out of the way for this drive
@@ -78,7 +81,7 @@ with lib.browser() as b:
         e = J("VEH.by.tractor.st"); dd = math.hypot(e['x'] - W[-1][0], e['y'] - W[-1][1])
         check('on through the garden to the log yard', dd < 4 and hitsY == 0, f"end {dd:.1f} m from the yard, steps with a hit {hitsY}")
         cam(e['x'] - 7, e['y'] - 6, 4, e['x'], e['y'] + 2, 0.8, 62); shot('b_at_the_yard'); E("GAME.setView3(true)")
-        E("VEH.auto = null"); stop(); E("VEH.exit()"); steps(0.3)
+        E("VEH.auto = null"); stop(); E("VEH.exit()"); E(f"GAME.setPhase({ph_before})"); steps(0.3)
     if want('load'):   # a log from the ground onto the parked trailer (from the side, over the stakes), then off it again and into the log yard
         E("TRAILER.tow && TRAILER.uncouple(true)")
         E("(() => { const s = TRAILER.st; s.x = -2; s.y = -11; s.psi = 0; s.z = ROADS.groundAt(-2, -11); TRAILER.pose(); TRAILER.save && TRAILER.save(); })()"); steps(0.3)

@@ -38,7 +38,7 @@ const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
 }
 // ---- white plastic table, two chairs and the pink parasol ----
 {
-  const [x, y] = [9.6, 5.2]; // in front of the washhouse's painted front, north of the path (photo 7236)
+  const [x, y] = [9.3, 3.7]; // in front of the washhouse's painted front, south-west of the bungalow (photos 7236, 7237)
   cyl(x, y, 0.7, 0.73, 0.55, white, 24);
   for (let i = 0; i < 4; i++) {
     const a = (i * Math.PI) / 2 + 0.4;
@@ -73,7 +73,7 @@ const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
 }
 // ---- the old clothes-line pole, rusty steel with a crossbar, by the lawn west of the washhouse (photo 7239) ----
 {
-  const [x, y] = [6.0, 7.8],
+  const [x, y] = [8.9, 0.2],
     rust = plain({ color: 0x7a4a33, roughness: 0.85, metalness: 0.3 });
   cyl(x, y, 0, 2.25, 0.035, rust, 10);
   beam([x - 0.02, y, 2.2], [x + 0.75, y + 0.02, 2.2], 0.04, 0.04, rust);

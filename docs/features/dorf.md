@@ -39,7 +39,11 @@ Wunsch von Falko (`docs/plans/plan_leben.md`, Abschnitt 2, 23.10.2026).
   Feuer angeht). Ortsname „Feuer am Acker · Richtung Klinge“.
 
 - **Alltag im Dorf** (`dorf_life.js`, `DLIFE`; Falko 23.10. 2:52): Die Leute sind meist im Haus. Jeder hat ein eigenes Haus am Anger
-  (aus `world/village.js`, eines mit Tür, die Häuser verteilt), eine Haustür und einen Platz im Vorgarten neben dem Weg. Der Tag kommt
+  (aus `world/village.js`, eines mit Tür, die Häuser verteilt), eine Haustür und einen Platz im Vorgarten neben dem Weg. Seit 30.10.2026
+  sind die Häuser fest (`PIN` in `dorf_life.js`, Gebäude-IDs: Gerhard 247, Manfred 219, Wolfgang 220, Uwe 260, Katrin 198, Ingrid 214,
+  Jens 246, Heike 191) – die Auswahl hing vom Aussehen aller Häuser ab, und der neue Dorfkern (V17c) hatte alle umziehen lassen: Katrins
+  Arbeitsweg war nur noch 60 m lang, ein geparktes Auto versperrte den Autos im Dorf den Weg (Tests `dorf`, `verkehr`). Ein Haus, das
+  nicht mehr passt, fällt auf die alte Auswahl zurück. Der Tag kommt
   aus Spieluhr und Kalender, jeden Tag anders: April bis Oktober morgens und abends eine Runde im Garten (Unkraut jäten kniend, in den
   warmen Monaten gießen mit der Kanne), im Winter ab und zu kurz an die Tür; Heike und Katrin reden an manchen Abenden am Gartenzaun.
   Sie kommen aus der Tür, gehen die paar Schritte, arbeiten an ihrem Beet (Gemüse bei Heike, Uwe und Wolfgang, Rosen bei Ingrid, sonst

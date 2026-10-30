@@ -81,7 +81,9 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
   Holzlager: eigene Gruppe mit `userData.ph/phEnd`, Stamm-Kollision nur bis zu dieser Phase; der Gartenplaner rechnet ihren Schatten nur bis
   dahin. Lagen nach Fotos, Luftbild und Falkos Angaben – zum Nachkorrigieren das Artefakt „Garten zurechtrücken“ (Speicher `garten`).
 - **Waschhaus:** 2,0 × 2,4 m, die Front nach Westen bemalt (drei Tafeln, Canvas-Textur in `garden/washhouse.js`, die mittlere ist die Tür).
-- **Bungalow:** Überdach über dem Rückgiebel (`CAN`, zwei Pfosten, darunter alte Fenster, Bretter, Plane). **Carport:** vorne zwei Pfosten.
+- **Bungalow** (30.10.2026, Luftbild vom 07.04.2024 und Fotos 7197, 7222–7225, 7237): steht bei (9,1, 8,3) neben dem Waschhaus, um 6° gedreht
+  (vorher 6,7 m nördlicher); Haustür im Nordgiebel unter einem tiefen Vordach (`OVF`), Anbau im Osten, dahinter das offene Schleppdach auf drei
+  Pfosten (`LT`) mit alten Fenstern, Brettern und Plane. **Carport:** vorne zwei Pfosten.
 - **Kleinigkeiten** (`garden/garten_heute.js`): Reisighaufen, Tisch mit Stühlen und rosa Schirm vor dem Waschhaus, rostige Wäschestange,
   Bretterstapel unter weißer Plane und Stämme parallel neben dem Feldweg (Lage über `S0.path`).
 - **Am Bach** (Fotos 7186/7187, 7204–7207): westlich vom Tor hält der Bach 1,5 m mehr Abstand zum Feldweg (`WEST(t)` in

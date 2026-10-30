@@ -61,12 +61,19 @@ export const DLIFE = (() => {
     return null;
   }
   // every villager a house near the Anger, at least 28 m from the others (the same houses in every visit: the village data is fixed);
-  // the candidates in a fixed spread order (a stride without common divisor with their number), not only the nearest
+  // the candidates in a fixed spread order (a stride without common divisor with their number), not only the nearest.
+  // Pinned since 30.10.2026 (building ids of world/village.js): the houses that order gave until V17b. The order depends on the look of
+  // every house, so refining the village (feat/dorfkern re-cut the centre) moved everyone – and their cars into other streets, where one
+  // blocked the traffic. A pinned house that no longer qualifies (Ingrid's became the brick building north of the school) falls back to
+  // the spread order, after all pinned ones are placed.
+  const PIN = { gerhard: 247, manfred: 219, wolfgang: 220, uwe: 260, katrin: 198, ingrid: 214, jens: 246, heike: 191 };
+  const fits = b =>
+    !!b && b.typ === 0 && b.id !== 215 && !!b.st && b.st.style !== VILLAGE.ST.SCHOOL && b.fac.some(f => f.door);
   function homes() {
     if (cache) return cache;
     if (!window.VILLAGE || !VILLAGE.ready || !window.WCOL || !WCOL.ready || !ROADS || !ROADS.ready) return null;
     const C = VILLAGE.bld
-      .filter(b => b.typ === 0 && b.id !== 215 && b.st && b.st.style !== VILLAGE.ST.SCHOOL && b.fac.some(f => f.door))
+      .filter(fits)
       .map(b => ({ b, d: Math.hypot(b.cx - ANGER[0], b.cy - ANGER[1]) }))
       .filter(o => o.d > 35 && o.d < 280)
       .sort((a, z) => a.d - z.d);
@@ -75,8 +82,17 @@ export const DLIFE = (() => {
       stride = [7, 11, 13, 5, 3, 1].find(s => gcd(s, n) === 1) || 1;
     const out = {},
       used = [];
+    for (const k of KEYS) {
+      const b = VILLAGE.byId.get(PIN[k]);
+      if (!fits(b) || used.some(u => Math.hypot(u.cx - b.cx, u.cy - b.cy) < 28)) continue;
+      const h = home(b);
+      if (!h) continue;
+      out[k] = h;
+      used.push(b);
+    }
     let i = 0;
     for (const k of KEYS) {
+      if (out[k]) continue;
       while (i < n) {
         const c = C[(i * stride) % n];
         i++;
