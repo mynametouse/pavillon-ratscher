@@ -1,5 +1,7 @@
 # Nachbarn: Huberts Hof, Ronalds Weide, Alltag und Aufgaben (feat/nachbarn, 23.10.2026)
 
+> **Seit V17e (30.10.2026) sieht Huberts Hof aus wie heute** – nach Falkos Fotos und dem Luftbild 2024 (Agent `hubert-hof`): langer offener Schuppen am Feldweg, schwarzes Tor, Gasse mit den Trockenhütchen, Werkhof. Was hier über die vier Werkstätten und die Hütchen auf der Wiese steht, ist der alte Stand; maßgeblich ist `docs/features/hubert-hof.md`.
+
 Grundlage: `docs/plans/plan_leben.md`, Abschnitt 1 (Falkos Wünsche).
 
 ## Was es gibt
