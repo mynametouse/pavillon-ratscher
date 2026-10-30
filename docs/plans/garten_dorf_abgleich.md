@@ -54,7 +54,7 @@ was noch offen ist. Private Rohdaten (Fotos, Videos, Flurstücke) kommen nie ins
   bestätigten Fotos 7224, 7225 und 7237 und der Blick vom Tor (7197) passen nur dazu (7227 schaut nach Süden und sagt über den Bungalow nichts –
   die frühere Notiz „steht wohl richtig“ war falsch). Er steht jetzt bei (9,1, 8,3), um 6° gedreht wie das Waschhaus; Haustür weiter im Norden
   mit tiefem Vordach, der Anbau im Osten und dahinter das offene Schleppdach mit dem Gerümpel (7222, 7223) – das „linke seitliche Überdach“.
-- **Gelbe Hütte:** mehrere Fotos (7256, 7258, 7267) sehen sie eher bei (5…7, −10) als bei (11,6, −3,4).
+- **Gelbe Hütte, Gewächshaus, Zaun und Tor am Feldweg, Durchlass, Kieswege (geklärt 30.10., V17f, `docs/plans/garten_fotos_abgleich.md`):** Hütte bei (6,8, −8,2), Gewächshaus bei (8,2, −4,0). Offen (Falko): die alte Blechgarage ist auf den Fotos und im Luftbild etwa 2,5 × 2,8 m groß und ~2 m weiter südlich als die 4 × 4 m des Modells auf (0…4, 0…4) – das ist der Ursprung des Modells und die Platte des Pavillons, darum unverändert; die Hütte ist auf den Fotos ~2,8 × 2,3 m (Modell 3,0 × 3,6 m wegen des Ateliers); bei (0,5, −22,5) zeigt 7268 ein junges schlankes Bäumchen statt des Apfelbaums; ist das Tor am Feldweg sonst zu (7176)?
 - **Weg 5** (OSM, vom Eingang nach Nordosten ins Feld): auf den Fotos 7188/7189 nicht zu sehen – gibt es ihn?
 - **Huberts Hof (gebaut 30.10., V17e, `docs/features/hubert-hof.md`) – offen:** der Feldweg liegt westlich vom Garten im Modell 4–5 m
   südwestlich vom echten (das rotdachige Gebäude des Luftbilds stünde auf dem Modellweg und fehlt darum); ob der Bach unter dem Hof wirklich
