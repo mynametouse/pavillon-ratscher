@@ -79,9 +79,11 @@ Planen ab (gespeichert); abgedeckt lässt sich die Säge nicht einschalten; Trom
 Aggregat); je Maschine ein Arbeitsschritt (Tischkreissäge ablängen, Trommelschleifer Leimholz plan, Blockbandsäge klemmen/planen/Schwarte,
 Werkbank fasen); Texte ohne Dickenhobel; eigene Bretter unter dem Pultdach statt im Trockenschrank, unter 12 % in den Vorrat; Phase 1: Säge
 mit ihrem Stamm am Plan-Ort, Halle mit Hobel und Zelt, keine Plane; zurück in Phase 0. Bilder in `out/werkstatt_heute/`. Weiter grün halten:
-`v15b` (ganzes Brett in der Halle), `v16d:fork,saw,stack` (Säge in Phase 1), `garage` (Aggregat tanken). Bei GitHub (`feat.yml`):
-`viz3/extra/werkstatt-heute/tests.txt` (werkstatt_heute, garage, v15b); `v16d:fork,saw,stack` läuft im Prüfpaket als Feature v16d-2 (~45
-min, zu lang für den Zweig-Lauf).
+`v15b` (ganzes Brett in der Halle), `v16d:fork,saw` (Stamm mit der Gabel auf die Säge, Brett für Brett, Phase 1), `garage` (Aggregat
+tanken). Bei GitHub (`feat.yml`, ~50 min): `viz3/extra/werkstatt-heute/tests.txt` (werkstatt_heute, garage, v15b, v16d:fork,saw); im
+Prüfpaket auf `src` wiederholen `garage` und `v16d:fork,saw` Jobs, die es dort schon gibt (Thema garage, Feature v16d-2) – beim
+Zusammenführen streichbar. Lokal stürzte `v16d` einmal ab (Renderer weg, vermutlich Speicher, während andere Agenten arbeiteten): lange
+Läufe besser bei GitHub.
 
 ## Offen
 
