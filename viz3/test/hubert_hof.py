@@ -108,12 +108,12 @@ with lib.browser() as b:
     inShed = J("HOF.sheds.some(S => { const dx = HOF.car.x - S.c[0], dy = HOF.car.y - S.c[1]; return Math.abs(dx * S.u[0] + dy * S.u[1]) < S.D / 2 + 1 && Math.abs(-dx * S.u[1] + dy * S.u[0]) < S.L / 2 + 1.5; })")
     ck('the car does not stand in a shed', not inShed)
     # the brook in its pipe under the yard: one stands on the yard, the ditch goes on beside it
-    gr = J("""(() => { const L = HOF.layout.culvert, P = HOF.path, t = (L.t[0] + L.t[1]) / 2, o = STREAM.cOff(t), [x, y] = P.xy(t, o), [x2, y2] = P.xy(L.t[0] - 2.5, STREAM.cOff(L.t[0] - 2.5));
+    gr = J("""(() => { const L = HOF.culvert, P = HOF.path, t = (L.t[0] + L.t[1]) / 2, o = STREAM.cOff(t), [x, y] = P.xy(t, o), [x2, y2] = P.xy(L.t[0] - 2.5, STREAM.cOff(L.t[0] - 2.5));
         return { on: +KERN.ground(x, y).toFixed(3), ditch: +STREAM.zAt(x, y).toFixed(2), beside: +KERN.ground(x2, y2).toFixed(2), place: KERN.place(x, y, 0) }; })()""")
     ck('over the brook the yard is level (the brook runs in a pipe), beside it the ditch', abs(gr['on']) < 0.05 and gr['ditch'] < -1 and gr['beside'] < -1, gr)
     places = J("""{ yard: KERN.place(-20, 40, 0), culvert: KERN.place(...HOF.path.xy(0, 4.6), 0), lane: KERN.place(-13.5, 24, 0),
         workshop: KERN.place(...HOF.sheds[2].c, 0), long: KERN.place(...HOF.sheds[0].c, 0) }""")
-    bush = J("""(() => { const m4 = new THREE.Matrix4(), p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3(), L = HOF.layout.culvert; let n = 0;
+    bush = J("""(() => { const m4 = new THREE.Matrix4(), p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3(), L = HOF.culvert; let n = 0;
         TREEG.traverse(o => { if (!o.isInstancedMesh) return; const bb = o.geometry.boundingBox; for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, m4); m4.decompose(p, q, s);
           const [t, oo] = HOF.path.to(p.x, -p.z); if (t > L.t[0] && t < L.t[1] && oo > L.o[0] && oo < L.o[1] && s.y > 0.01 && (!bb || s.y * (bb.max.y - bb.min.y) < 3.2)) n++; } });
         return { visible: n, hidden: HOF.bushesHidden }; })()""")

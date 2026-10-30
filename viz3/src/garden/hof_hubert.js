@@ -46,19 +46,19 @@ const PF = (() => {
 // stands where in front of them. The model's field path runs a few metres south-west of the real one west of Falko's garden (OSM), so the
 // yard keeps its relation to the path: the shed's front stands behind the brook.
 export const LAYOUT = {
-  culvert: { t: [-13, 11], o: [1.8, 7.4] }, // the brook in a concrete pipe under the yard's front (path frame)
+  culvert: { t: [-13, 11], pad: [0.45, 0.6] }, // the brook in a concrete pipe under the yard's front: t along the path, beyond the ditch's edges
   // the gravel of the yard: the culvert, the yard to the gate and the track behind the huts down to the work yard
   gravel: [
     ['to', -13, 1.6],
     ['to', 11, 1.6],
-    ['to', 11, 7.4],
+    ['cul', 11],
     [-12.64, 30.21],
     [-16.96, 31.79],
     [-19.3, 27.4],
     [-22.8, 18.0],
     [-27.0, 19.5],
     [-29.0, 30.0],
-    ['to', -13, 9.6],
+    ['cul', -13],
   ],
   gate: { c: [-14.8, 31.0], dir: [0.94, -0.342], w: 4.6, h: 1.3 }, // centre, the gate line (west → east), width between the posts
   fences: [
@@ -154,7 +154,7 @@ export const LAYOUT = {
     ],
     log: [-23.9, 26.9],
     lattice: [-24.7, 25.3, 100],
-    redStack: [-11.3, 32.1, 110], // the strapped stack of sawn boards in its red frame, under the trees by the gate
+    redStack: [-10.73, 30.49, 20], // the strapped stack of sawn boards in its red frame, under the trees east of the gate
   },
   boxBody: { x0: -23.6, x1: -21.3, y0: 10.6, y1: 16.8 }, // the long white box body, its writing towards the garden
 };
@@ -165,7 +165,18 @@ const SHED_KIND = [
   { name: 'Huberts Werkstatt', open: true, hf: 2.6, hb: 2.05, roof: 'boxRed', kind: 'workshop' },
   { name: 'Huberts Werkstatt', open: true, hf: 2.35, hb: 1.95, roof: 'corr', kind: 'car' }, // („In der Werkstatt hinter dem Auto …“)
 ];
-const pt = q => (q[0] === 'to' ? PF.xy(q[1], q[2]) : q);
+// the culvert's band across the path: the brook's ditch (garden/stream_geo.js: centre line cOff(t), half width WT) between t0 and t1, plus a margin
+const CUL = (() => {
+  const C = LAYOUT.culvert;
+  let lo = 1e9,
+    hi = -1e9;
+  for (let t = C.t[0]; t <= C.t[1] + 1e-6; t += 0.25) {
+    lo = Math.min(lo, STREAM.cOff(t));
+    hi = Math.max(hi, STREAM.cOff(t));
+  }
+  return { t: C.t, o: [lo - STREAM.WT - C.pad[0], hi + STREAM.WT + C.pad[1]] };
+})();
+const pt = q => (q[0] === 'to' ? PF.xy(q[1], q[2]) : q[0] === 'cul' ? PF.xy(q[1], CUL.o[1]) : q);
 // ---- canvas textures: end grain of stacked split wood, the tool wall, gravel ----
 function canvasTex(w, h, draw, rep) {
   const c = document.createElement('canvas');
@@ -665,7 +676,7 @@ export const HOF = {
 };
 window.HOF = HOF;
 // ---------------- the brook in a pipe under the yard's front: a concrete block fills the ditch, pipe mouths at both ends ----------------
-const CUL = LAYOUT.culvert;
+HOF.culvert = CUL;
 {
   const [t0, t1] = CUL.t,
     [o0, o1] = CUL.o,
@@ -694,6 +705,7 @@ const CUL = LAYOUT.culvert;
     colWall(PF.xy(t, o0), PF.xy(t, o1), 0.3, -1.8, 0.0);
   }
 }
+const onYard = (x, y) => inCulvert(x, y) || inPolyXY(x, y, YARD);
 const inCulvert = (x, y) => {
   const [t, o] = PF.to(x, y);
   return t > CUL.t[0] && t < CUL.t[1] && o > CUL.o[0] && o < CUL.o[1];
@@ -704,7 +716,7 @@ KERN.provide(
   (x, y, z) => (x < -40 || x > 0 || y < 28 || y > 56 || !inCulvert(x, y) || (z != null && z < -0.7) ? undefined : 0),
   15
 );
-// the brook's bank bushes (garden/trees.js, bankBushes) would stand in a row on the yard over the pipe: hidden there once the trees are built –
+// the brook's bank bushes (garden/trees.js, bankBushes) would stand in rows on the yard over the pipe: hidden there once the trees are built –
 // their instances scaled to nothing, their trunks lowered out of reach; trees.js and its random sequence stay as they are
 HOF.bushesHidden = 0;
 const HIDDEN = new Set();
@@ -721,7 +733,7 @@ KERN.until(() => window.TREEG && window.TREEG.children.length > 0, 600)
       for (let i = 0; i < o.count; i++) {
         o.getMatrixAt(i, m4);
         m4.decompose(p, q, s);
-        if (s.y * gh > 3.2 || !inCulvert(p.x, -p.z)) continue; // only bushes, only on the pipe
+        if (s.y * gh > 3.2 || !onYard(p.x, -p.z)) continue; // only bushes, only on the yard
         o.setMatrixAt(i, m4.compose(p, q, s.set(0, 0, 0)));
         o.instanceMatrix.needsUpdate = true;
         HIDDEN.add(p.x.toFixed(1) + ',' + p.z.toFixed(1));
@@ -1070,7 +1082,7 @@ LAYOUT.long.forEach(Lb => {
     for (const a of [-1, 1])
       for (const b of [-1, 1]) lbox(g, 0.06, 0.06, 1.45, FRAMERED, a * 0.5, b * 1.05, 0.72, { grain: 'z' });
     for (const b of [-0.55, 0.55]) lbox(g, 1.0, 0.03, 0.03, FRAMERED, 0, b, 1.36, { cast: false });
-    COL.push([x - 0.83, x + 0.83, y - 1.2, y + 1.2, 0, 1.45, 'wood', null, null]);
+    COL.push([x - 1.2, x + 1.2, y - 0.82, y + 0.82, 0, 1.45, 'wood', null, null]);
   }
 }
 // ---- the wood yard: a sawhorse with a log, the chopping block, rounds and split wood ----
