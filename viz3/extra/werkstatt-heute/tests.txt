@@ -1,7 +1,6 @@
 # the workshop of today (construction phase 0: the lean-to of the photos of 26.10.2026) and the hall unchanged from phase 1
-# (garden/workshop.js, werk/*.js): the new test, the whole board in the hall (v15b), the generator's petrol (garage; on src it repeats
-# the Prüfpaket's Thema garage). The band sawmill in phase 1 (v16d:fork,saw, 47 min) was green on this branch in run 40983116670
+# (garden/workshop.js, werk/*.js): the new test and the whole board in the hall (v15b); the generator's petrol is checked by
+# extra/garage's test (garage). The band sawmill in phase 1 (v16d:fork,saw, 47 min) was green on this branch in run 40983116670
 # (47f3123ab); it runs in the Prüfpaket's Feature v16d-2 – too long for the branch run (one job, 75 min limit).
 werkstatt_heute
-garage
 v15b

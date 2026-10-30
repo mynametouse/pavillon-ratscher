@@ -22,7 +22,9 @@ veröffentlicht.
   Stämme und Bretterstapel parallel neben dem Feldweg; Überdach am Bungalow-Rückgiebel; Carport vorne zwei Pfosten; Huberts Hof: zwei
   kleinere Schuppen statt vier, sein Traktor grün mit roten Felgen (`npc/npc_real.js` färbt das Modell beim Laden um). Quellen, Vorgehen und
   offene Fragen (Bungalow-Lage, gelbe Hütte, Weg 5, Huberts Hof genauer): `docs/plans/garten_dorf_abgleich.md`. Hilfs-Agenten seit ~0:30:
-  `werkstatt-heute` (Werkstatt Bauphase 0 nutzbar: Blockbandsäge zwischen den Pfosten, Trommelschleifer, Tischkreissäge) und `dorfkern`
+  `werkstatt-heute` (Werkstatt Bauphase 0 nutzbar: Blockbandsäge zwischen den Pfosten, Trommelschleifer, Tischkreissäge – fertig und auf
+  `src` zusammengeführt ~3:35, `docs/features/werkstatt.md`; offen: auf dem Typenschild in IMG_7285 steht „ZS 640P“, Falko schrieb „ZS 560“ –
+  im Modell ZS 640P, Falko fragen) und `dorfkern`
   (Dorfkern nach Falkos Rundum-Video vom Anger, Ostern 2023; das Innenraum-Video von Anger 15 nicht verwenden). Seite für Falko:
   Artefakt „Garten zurechtrücken“ (Bäume und Häuser auf der Draufsicht verschieben, Speicher `garten`) – seine Angaben ins Modell übernehmen.
 - **Garten nach Fotos (29.10.2026, V16x):** Falkos 125 Fotos vom 26.10. liegen privat in seinem Drive (Ordner „Garten“) – nie ins Repo. Verortet hat er sie auf einer privaten Seite (Artifact „Gartenfotos verorten“, Speicher `lage`: x, y, yaw je Foto). Ergebnis: das iPhone-GPS liegt unter Bäumen 10–20 m daneben, auf freier Wiese stimmt das Modell auf ~2 m. Falkos Entscheidung: **Bauphase 0 zeigt alles wie heute**, Geplantes ab Bauphase 1 (`planned()` / `todayLook()` in `garden/site_base.js`). Erledigt: Werkstatt in Phase 0 als Pultschuppen, die Halle mit Sägewerk ab Phase 1 (`SAW_PH` in `garden/workshop.js`, Falko 29.10.: „Ja los“; Test v16d schaltet für Gabel/Säge auf Phase 1; Aufgaben am Sägewerk zeigen in Phase 0 noch hin – prüfen); Huberts Traktor (V16y). Offen: der Bach ist schmaler und zugewachsen; die Schuppenreihe bei Hubert ist unregelmäßiger; Rasenfarbe kräftiger; Video „Anger“ im Drive noch nicht angesehen.
