@@ -117,22 +117,26 @@ export const DORFKERN = (() => {
           o = cr > 0 ? [0, 1, 2] : [0, 2, 1];
         kPv.tri(P3[o[0]], P3[o[1]], P3[o[2]], L(0.5, 0.49, 0.46), ...o.map(i => [P3[i][0], P3[i][1]]));
       }
+      // the kerb nearly flush (video, photo), in stones of up to 3 m that follow the ground
       for (const k of pa.kerb || []) {
         const A = pts[k],
           B = pts[(k + 1) % pts.length],
           l = Math.hypot(B[0] - A[0], B[1] - A[1]),
-          mx = (A[0] + B[0]) / 2,
-          my = (A[1] + B[1]) / 2;
-        kS.box(
-          mx,
-          my,
-          gz(mx, my) - 0.1,
-          l + 0.1,
-          0.16,
-          0.26,
-          Math.atan2(B[1] - A[1], B[0] - A[0]),
-          L(0.66, 0.66, 0.64)
-        );
+          n = Math.max(1, Math.ceil(l / 3));
+        for (let j = 0; j < n; j++) {
+          const mx = A[0] + ((B[0] - A[0]) * (j + 0.5)) / n,
+            my = A[1] + ((B[1] - A[1]) * (j + 0.5)) / n;
+          kS.box(
+            mx,
+            my,
+            gz(mx, my) - 0.18,
+            l / n + 0.02,
+            0.16,
+            0.27,
+            Math.atan2(B[1] - A[1], B[0] - A[0]),
+            L(0.66, 0.66, 0.64)
+          );
+        }
       }
     }
   }
@@ -503,31 +507,33 @@ export const DORFKERN = (() => {
         r.h = lm.h;
       } else if (T) T.push(lm.at[0], lm.at[1], lm.h);
       if (LM) {
-        // the Dorflinde's crown reaches down to 2–3 m on a trunk of 2 m: stretch the trunk to the crown base the video shows (cb), squeeze
-        // the crown into what is left of the height, trunk and crown each to their own width (dt, rc) – one map for bark and leaves alike,
-        // so the branches stay in the leaves
+        // the Dorflinde's crown reaches down to 3–4 m on a trunk of 3 m girth: stretch the trunk to the crown base the video shows (cb),
+        // squeeze the crown into what is left of the height; across, the trunk to its own diameter (dt) and the branches and leaves beyond
+        // it to the crown's radius (rc) – one map for bark and leaves alike, so the branches stay in the leaves
         const st = srcStats(LM, base),
           s = lm.h / H,
           cb = lm.cb || st.u0 * s,
           kt = lm.dt ? lm.dt / 2 / st.rt : s * (lm.w || 1),
-          kc = lm.rc ? lm.rc / st.rc : s * (lm.w || 1),
+          kc = lm.rc ? Math.max(0.05, (lm.rc - kt * st.rt) / Math.max(1, st.rc - st.rt)) : s * (lm.w || 1),
           up = (lm.h - cb) / Math.max(1, st.top - st.u0);
         m4.makeRotationY(lm.turn || 0).premultiply(
           new THREE.Matrix4().makeTranslation(...V(lm.at[0], lm.at[1], z - 0.15).toArray())
         );
         for (const src of [LM[0], LM[3]]) {
           const g = src.geometry.clone(),
-            P = g.attributes.position;
-          for (let i = 0; i < P.count; i++) {
-            const u = P.getY(i) - base.y,
-              t = Math.min(1, Math.max(0, (u - 0.7 * st.u0) / (0.6 * st.u0))),
-              k = kt + (kc - kt) * t;
-            P.setXYZ(
-              i,
-              (P.getX(i) - base.x) * k,
-              u < st.u0 ? (u * cb) / st.u0 : cb + (u - st.u0) * up,
-              (P.getZ(i) - base.z) * k
-            );
+            a = g.attributes.position.array,
+            bark = src === LM[0];
+          for (let i = 0; i < a.length; i += 3) {
+            const x = a[i] - base.x,
+              u = a[i + 1] - base.y,
+              y = a[i + 2] - base.z,
+              r = Math.hypot(x, y),
+              k = r <= st.rt ? kt : (kt * st.rt + kc * (r - st.rt)) / r,
+              vc = cb + (u - st.u0) * up, // the crown's map, also for leaves and twigs hanging below its foot
+              w = bark ? Math.min(1, Math.max(0, (r - st.rt) / st.rt)) : 1; // the trunk's own map near its axis
+            a[i] = x * k;
+            a[i + 1] = u < st.u0 ? (1 - w) * ((u * cb) / st.u0) + w * vc : vc;
+            a[i + 2] = y * k;
           }
           g.applyMatrix4(m4);
           g.computeBoundingSphere();
@@ -545,29 +551,29 @@ export const DORFKERN = (() => {
     }
     S.lite = null; // tick decides
   }
-  // the Dorflinde's geometry measured once: trunk radius at 0.8–1.6 m, the crown's foot (3 % of the leaves lower), top, radius (95 %)
+  // the Dorflinde's geometry measured once: trunk radius at 1–2 m (median), the crown's foot (3 % of the leaves lower), top, radius (95 %)
   function srcStats(LM, base) {
     if (S.src) return S.src;
-    const pb = LM[0].geometry.attributes.position,
-      pl = LM[3].geometry.attributes.position,
+    const b = LM[0].geometry.attributes.position.array,
+      l = LM[3].geometry.attributes.position.array,
+      rr = [],
       hs = [],
       rs = [];
-    let rt = 0;
-    for (let i = 0; i < pb.count; i++) {
-      const u = pb.getY(i) - base.y;
-      if (u > 0.8 && u < 1.6) rt = Math.max(rt, Math.hypot(pb.getX(i) - base.x, pb.getZ(i) - base.z));
+    for (let i = 0; i < b.length; i += 3) {
+      const u = b[i + 1] - base.y,
+        r = Math.hypot(b[i] - base.x, b[i + 2] - base.z);
+      if (u > 1 && u < 2 && r < 5) rr.push(r);
     }
-    for (let i = 0; i < pl.count; i += 3) {
-      hs.push(pl.getY(i) - base.y);
-      rs.push(Math.hypot(pl.getX(i) - base.x, pl.getZ(i) - base.z));
+    for (let i = 0; i < l.length; i += 9) {
+      hs.push(l[i + 1] - base.y);
+      rs.push(Math.hypot(l[i] - base.x, l[i + 2] - base.z));
     }
-    hs.sort((a, b) => a - b);
-    rs.sort((a, b) => a - b);
+    const q = (v, f, d) => (v.length ? v.sort((p, n) => p - n)[Math.floor(v.length * f)] : d);
     S.src = {
-      rt: rt || 1,
-      u0: Math.max(0.5, hs[Math.floor(hs.length * 0.03)] || 3),
-      top: hs[hs.length - 1] || 21,
-      rc: rs[Math.floor(rs.length * 0.95)] || 9,
+      rt: q(rr, 0.5, 1),
+      u0: Math.max(0.5, q(hs, 0.03, 3)),
+      top: hs.length ? hs[hs.length - 1] : 21,
+      rc: q(rs, 0.95, 9),
     };
     return S.src;
   }

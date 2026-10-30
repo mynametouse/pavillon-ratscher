@@ -9,7 +9,7 @@ nicht im Repo** – hier stehen nur die daraus gemessenen Zahlen. Das Video vom 
 ## Was es gibt
 
 - **Die Häuser um den Anger, wie sie sind** (`world/dorfkern_data.js`, `DKDATA.houses`, angewendet in `world/village.js` `styleOf`):
-  18 Gebäude bekommen statt des Zufalls aus der Gebäudenummer ihr Aussehen aus einer Tabelle – Stil, Putz- oder Schindelfarbe, Schieferton
+  19 Gebäude bekommen statt des Zufalls aus der Gebäudenummer ihr Aussehen aus einer Tabelle – Stil, Putz- oder Schindelfarbe, Schieferton
   (blauschwarz, silbergrau, mittelgrau, farbige Schindeln), Schmuckband aus Rauten, Giebel in senkrechten Brettern, helle Fensterfaschen,
   Fensterrahmen (weiß, braun, grün), Türfarbe und -seite (die hellblaue Tür von Anger 18), Ziegelfarbe, Schornsteine – und, wo das
   Oberflächenmodell danebenlag, ihre im Video gemessene Traufe und First. Alle anderen Häuser bleiben, wie sie waren.
@@ -81,6 +81,7 @@ Fuß, gemessen im Video (Bildpunkt von Traufe bzw. First über der bekannten Eck
 | 212 | Ratschner Anger 18 | dunkler Schiefer, weiße Fenster mit Faschen, hellblaue Haustür (mit Oberlicht) zur Straße, zwei Schiefergauben, rote Ziegel; neu aufgebaut | Traufe 4,8 m, First 8,7 m | 4–9 s |
 | 211 | Ratschner Anger 16 | dunkler Schiefer, weiße Fenster, rote Ziegel; neu aufgebaut | Traufe 4,9 m, First 9,2 m | 4–8 s |
 | 208, 207 | Ratschner Anger 14, 12 | die Reihe dunkler Schieferhäuser entlang der Straße, weiße Fenster | – | 4–8 s |
+| 205 | Ratschner Anger 10 | dunkler Schiefer, weiße Fenster (vorher zufällig Backstein) | – | 4–5 s |
 | 252 | Ratschner Anger 13 | zur Straße dunkler Schiefer mit Rautenband, Haustür unter rotem Vordach; Westgiebel in hellen cremefarbenen Schindeln | – | 0–6 s |
 | 253 | Ratschner Anger 11 | dunkler Schiefer, Giebel in Fachwerk (dunkle Hölzer, weiße Felder) | – | 3–6 s |
 | 214 | (keine Adresse) | der niedrige Backsteinbau nördlich der Schule, rote Ziegel | – | 11–18 s |

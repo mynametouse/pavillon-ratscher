@@ -181,6 +181,7 @@ const DATA = {
       house: true,
       roof: [0.62, 0.28, 0.21],
     },
+    205: { adr: 'Ratschner Anger 10', t: '4–5', st: 'SLATE', slate: 0, frame: 0, house: true, roof: [0.6, 0.27, 0.2] }, // was red brick by chance
     // dark slate front to the street with the rauten band and a porch roof, the west gable (in the weather) in light shingles
     252: {
       adr: 'Ratschner Anger 13',
@@ -217,7 +218,7 @@ const DATA = {
     ],
     bins: [
       [267.4, -119.0, [0.2, 0.45, 0.25]], // the green bin at the well, by the Easter arch
-      [235.8, -113.1, [0.45, 0.45, 0.43]], // on the green
+      [234.0, -113.3, [0.45, 0.45, 0.43]], // on the green
       [243.6, -99.2, [0.42, 0.3, 0.2]], // wooden bin by the power pole (video 14–18 s)
     ],
     // the limes by the well and on the green: the measured crowns (from) moved to the trunks the video shows (at); height, crown base, crown
@@ -228,20 +229,21 @@ const DATA = {
       { at: [235.9, -107.3], h: 8, cb: 2.6, rc: 3.8, dt: 0.3, turn: 1.2 }, // the young lime on the green by the parking strip (video 19–22 s)
     ],
     linde: [217.0, -109.0], // the Dorflinde with its ring of benches: bearing 265.5° in the video (was 216.5, −106.5)
-    // the trimmed hedges on the green: the near one along the parking strip, the one across the green (feet on the ground, video 19–24 s)
+    // the trimmed hedges on the green: the near one along the parking strip, the one across the green (their feet in the video 19–24 s on
+    // the model's ground, which falls 0.2–0.3 m from the street to the green)
     hedges: [
       {
         p: [
           [244.0, -111.2],
           [239.4, -110.0],
-          [231.0, -108.5],
+          [229.5, -108.7],
         ],
       },
       {
         p: [
-          [246.5, -118.0],
-          [241.2, -114.8],
-          [236.8, -111.2],
+          [245.2, -119.0],
+          [240.1, -116.0],
+          [234.7, -111.3],
         ],
       },
     ],
@@ -272,7 +274,7 @@ const DATA = {
       },
     ],
     picnic: [[231.5, -113.0, 290]],
-    logs: [[236.0, -116.2, 290, 4.0]],
+    logs: [[234.2, -116.7, 290, 4.0]],
     // the picket fence along the meadow behind the bus stop (video 8–12 s, 16–18 s)
     fences: [
       {
