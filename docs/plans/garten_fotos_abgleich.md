@@ -19,7 +19,9 @@ Arbeitsordner des Chats – hier stehen nur abgeleitete Lagen und Maße.
    Lage der Gebäude als Rechtecke. Fest: der Bungalow (Dach im DOP 2024). 19 Fotos, ~130 Richtungen, Restfehler meist 1–2°.
 3. **Luftbild DOP 2024** (`tools/geo/dop_th.py`): helles Dach 2,4 × 2,3 m bei (6,2…8,6 / −3,5…−5,8) – Glasdach mit Sprossen, also das
    Gewächshaus (die gelbe Hütte stand 2024 noch nicht); weißes Dach (−0,5…3,3 / −1,6…2,0) bei der alten Blechgarage.
-4. Ergebnis gegen Modellbilder auf GitHub geprüft (Lauf mit den Tests `garten`, `einrichtung`, `v16d:trailer,bridge,load`).
+4. Ergebnis gegen Modellbilder auf GitHub geprüft, mit den Tests `garten:nogeo=1` (33/33), `einrichtung:nogeo=1` (54/54),
+   `v16d:trailer,bridge,load` (über die Torplatte und durch den Garten bis ans Holzlager, nichts gestreift) – grün auf `422e507`
+   (Lauf 41015220577).
 
 ## Ergebnis Lage
 
