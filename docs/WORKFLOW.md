@@ -183,4 +183,9 @@ Claude-Projekt „Garten“ – ein neuer Chat findet so wieder hinein:
   `wallMat`, Dächer in `roofOf`; Wahrzeichen und Laternen in `world/village_props.js` (Lage in Grundstücks-Koordinaten, Fotostandorte im Kopf
   von `test/v16e.py`); Zäune, Tonnen usw. in `world/village_near.js` `house()`. Gebäudenummer an einer Stelle: im Testserver
   `VILLAGE.bld.filter(b => Math.hypot(b.cx - x, b.cy - y) < 20)`. Test `v16e.py`.
+- **Garten mit Fotos oder Luftbild abgleichen** (seit 30.10.2026): Modellbilder von Standpunkten (x, y, Blickrichtung, Bildwinkel) rechnet
+  `viz3/test/blickpunkte.py` – auf einem `feat/**`-Branch über `viz3/extra/<thema>/tests.txt` (`blickpunkte:viz3/extra/<thema>/views.json`)
+  auf GitHub Actions, die Bilder kommen mit `gh run download <run> -n out` zurück; private Fotos legt man nur im Arbeitsordner des Chats
+  daneben. Das aktuelle Luftbild (DOP 20 cm, Garten beflogen 07.04.2024) auf Modellachsen: `python3 tools/geo/dop_th.py OUT.jpg x0 x1 y0 y1
+  0.05` (nicht ins Repo). Quellen und offene Fragen: `docs/plans/garten_dorf_abgleich.md`.
 - **Oberfläche**: Menü-Einträge `shell/menu.html`, HUD-Knöpfe `shell/panel_3d.html`, Fenster-Container `shell/windows.html`, Stil im passenden `shell/css/*.css`, Hinweise „Was das Modell zeigt“ `shell/notes.html`.
