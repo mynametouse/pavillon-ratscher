@@ -80,10 +80,10 @@ Aggregat); je Maschine ein Arbeitsschritt (Tischkreissäge ablängen, Trommelsch
 Werkbank fasen); Texte ohne Dickenhobel; eigene Bretter unter dem Pultdach statt im Trockenschrank, unter 12 % in den Vorrat; Phase 1: Säge
 mit ihrem Stamm am Plan-Ort, Halle mit Hobel und Zelt, keine Plane; zurück in Phase 0. Bilder in `out/werkstatt_heute/`. Weiter grün halten:
 `v15b` (ganzes Brett in der Halle), `v16d:fork,saw` (Stamm mit der Gabel auf die Säge, Brett für Brett, Phase 1), `garage` (Aggregat
-tanken). Bei GitHub (`feat.yml`, ~50 min): `viz3/extra/werkstatt-heute/tests.txt` (werkstatt_heute, garage, v15b, v16d:fork,saw); im
-Prüfpaket auf `src` wiederholen `garage` und `v16d:fork,saw` Jobs, die es dort schon gibt (Thema garage, Feature v16d-2) – beim
-Zusammenführen streichbar. Lokal stürzte `v16d` einmal ab (Renderer weg, vermutlich Speicher, während andere Agenten arbeiteten): lange
-Läufe besser bei GitHub.
+tanken). Bei GitHub (`feat.yml`, ~15 min): `viz3/extra/werkstatt-heute/tests.txt` (werkstatt_heute, garage, v15b; `garage` wiederholt
+auf `src` das Thema garage des Prüfpakets). `v16d:fork,saw` war auf diesem Zweig grün (Lauf 40983116670, Stand 47f3123ab, 47 min) und
+läuft im Prüfpaket als Feature v16d-2 – für den Zweig-Lauf (ein Job, 75 min) zu lang. Lokal stürzte `v16d` einmal ab (Renderer weg,
+vermutlich Speicher, während andere Agenten arbeiteten): lange Läufe besser bei GitHub.
 
 ## Offen
 
