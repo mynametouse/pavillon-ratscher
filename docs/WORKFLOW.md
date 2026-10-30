@@ -86,6 +86,11 @@ Galeriebilder, 360°-Rundblicke, Raumführung und Zeitraffer-Video werden nicht 
 die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` liegen nur auf `gh-pages`).
 
 - Zwei CPU-Kerne: nicht mehrere Browser-Tests gleichzeitig laufen lassen (SwiftShader verliert sonst den WebGL-Kontext).
+- **Nie ein Objekt der Szene aus `evaluate` zurückgeben** (30.10.2026): `E("VEH.cur")` liefert das Fahrzeug – Playwright serialisiert dann
+  über `parent` den ganzen Szenengraphen samt Geometriepuffern (Hunderte MB durch den Treiber nach Python, minutenlang). Seit den Leuten und
+  Autos von V16w lief dabei hier der Renderer in die Speichergrenze (Absturz, der Test hängt) und bei GitHub v16b/v16d in die 60-min-Grenze.
+  Immer Wahrheitswerte, Zahlen oder `JSON.stringify(...)` zurückgeben: `E("!!VEH.cur")`. Der Speicher des Chat-Rechners (alle Sitzungen
+  zusammen) ist auf ~5,8 GB begrenzt; eine Seite in SwiftShader braucht 3–4 GB.
 - **Windows misst anders** (V16b3): Chrome übersetzt dort jeden Shader über Direct3D (0,3–1,4 s je Programm ohne Grafikkarte), SwiftShader hier nicht. Wer viele neue Materialien/Shader bringt, prüft das Laden vor dem Veröffentlichen zusätzlich im Chrome des Owners (Claude in Chrome, Testseite mit `window.ASSET_BASE` auf die Website, siehe Branch `test/softgl`): Zeitstrahl der Ladeanzeige und Lücken > 1,5 s mitschreiben.
 
 ## 4 Veröffentlichen (seit Umbau Phase 0: Vorschau zuerst)
