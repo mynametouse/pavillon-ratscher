@@ -401,16 +401,18 @@ export const LIFE = (() => {
       heap = [HOF.heap[0] - 0.62, HOF.heap[1] + 0.28];
     try {
       for (;;) {
+        // (the huts stand along the lane, garden/hof_hubert.js: each knows where one stands to fill it and which way one looks)
         const hut = HUT(),
-          front = [hut.x + 0.92, hut.y];
-        yield* go(w, [heap]);
+          front = hut.front || [hut.x + 0.92, hut.y],
+          way = HOF.toHuts || [];
+        yield* go(w, way.slice().reverse().concat([heap]));
         yield* turn(w, Math.atan2(HOF.heap[0] - heap[0], HOF.heap[1] - heap[1]));
         if (!w.since || w.since < t0) arrived(w);
         yield* hold(w, 1.5, 'pick');
         hand(w, ARM);
         pose(w, 'carry');
-        yield* go(w, [front], 0.75);
-        yield* turn(w, -Math.PI / 2);
+        yield* go(w, way.concat([front]), 0.75);
+        yield* turn(w, hut.look ?? -Math.PI / 2);
         yield* hold(w, 1.3, 'place');
         hand(w, null);
         HOF.fillHut(hut.fill >= 0.99 ? 0.3 : hut.fill + 0.03); // a full hut: he starts it again (the dry wood went into the stove)
@@ -422,11 +424,17 @@ export const LIFE = (() => {
       pose(w, null);
     }
   }
+  // the small workshop is behind the car (garden/hof_hubert.js SHEDS[3]): the way there and back goes round the car's east side
+  const carEast = () => [
+    [HOF.car.x + 1.4, HOF.car.y + 1.3],
+    [HOF.car.x + 1.4, HOF.car.y - 3.2],
+  ];
   function* hCar(w) {
     const t0 = simNow();
     HOFCAR.bonnet(1);
     try {
       for (;;) {
+        if (w.y < HOF.car.y - 1) yield* go(w, carEast().reverse());
         yield* go(w, [HOFCAR.front]);
         yield* turn(w, Math.PI);
         if (!w.since || w.since < t0) arrived(w);
@@ -436,7 +444,7 @@ export const LIFE = (() => {
         if (Math.random() < 0.5 && SHEDS[3]) {
           // fetches something from the bench in the workshop
           const b = benchFront(SHEDS[3]);
-          yield* go(w, [b.p]);
+          yield* go(w, carEast().concat([b.p]));
           yield* turn(w, b.az);
           yield* hold(w, 4, 'bench');
         } else {
@@ -640,7 +648,8 @@ export const LIFE = (() => {
     [-12.5, -46.8],
     [-16.5, -40],
     [-16.6, -28],
-    [-19.7, -19.5],
+    [-13.6, -24.0], // (east of the small workshop behind Hubert's car, garden/hof_hubert.js, and of the car itself)
+    [-13.4, -17.0],
     [-19.8, -8.6],
   ];
   const yard = x => x < -9;
@@ -1058,7 +1067,7 @@ export const LIFE = (() => {
     a.lock = false;
   }
   // where they come from in the morning (their houses are beyond: Hubert's north of his workshops, Ronald's east of the paddock)
-  agent(H, hubertPlan, [-24, 38.5]);
+  agent(H, hubertPlan, [-12.9, 29.2]); // (Hubert: in the lane behind his gate, garden/hof_hubert.js)
   agent(R, ronaldPlan, [37, -36]);
   // ================= the two at the table: conversations about the village =================
   // [speaker, line] – Hubert says little and expects rain, Ronald talks (village life after docs/plans/plan_leben.md section 2; the
@@ -1266,10 +1275,29 @@ export const LIFE = (() => {
   // ================= per tick =================
   let acc = 0,
     wasAway = { hubert: false, ronald: false };
+  // the black gate between the yard and the lane (garden/hof_hubert.js HOF.gate): it opens when Hubert's tractor comes near and shuts
+  // again a few seconds after it has gone (only when the tractor opened it – a gate the visitor opened stays as it is)
+  let gateUntil = -1;
+  function tickGate() {
+    const G = HOF.gate;
+    if (!G) return;
+    const T = TRACTOR.g.position,
+      near = !!H.drive && Math.hypot(T.x - G.c[0], -T.z - G.c[1]) < 11;
+    if (near) {
+      if (gateUntil < 0 && !G.open()) {
+        G.set(1);
+        gateUntil = SIMT + 6;
+      } else if (gateUntil >= 0) gateUntil = SIMT + 6;
+    } else if (gateUntil >= 0 && SIMT > gateUntil) {
+      G.set(0);
+      gateUntil = -1;
+    }
+  }
   function tick(dt) {
     SIMT += dt;
     tickHalves(dt);
     tickTalk(dt);
+    tickGate();
     acc += dt;
     if (acc < 0.4) return;
     acc = 0;
@@ -1359,7 +1387,7 @@ export const LIFE = (() => {
   {
     const inShed = (x, y) =>
       SHEDS.some(S => {
-        if (!S) return false; // a plot without a shed (garden/hof_hubert.js)
+        if (!S) return false; // (a plot without a shed)
         const dx = x - S.c[0],
           dy = y - S.c[1];
         return Math.abs(dx * S.u[0] + dy * S.u[1]) < S.D / 2 && Math.abs(dx * S.v[0] + dy * S.v[1]) < S.L / 2;
@@ -1368,8 +1396,10 @@ export const LIFE = (() => {
       'place',
       (x, y, z) => {
         if (Math.abs(x) > 50 || Math.abs(y) > 55) return undefined;
+        const h = x < -9 && x > -58 && y > -28 && y < 50 && HOF.placeAt && HOF.placeAt(x, y);
+        if (h) return h; // his sheds, the yard by the path (also over the brook's pipe), the gravel (garden/hof_hubert.js)
         const r = sitePlace(x, y, z);
-        if (r === 'Nachbargrundstück West' && y > -26 && y < 40 && x > -44)
+        if (r === 'Nachbargrundstück West' && y > -28 && y < 46 && x > -58)
           return inShed(x, y) ? 'Huberts Werkstatt' : 'Huberts Hof';
         if (r === 'Nachbargrundstück Ost' && x > PAD.x0 - 2 && x < PAD.x1 + 2 && y > PAD.y1 && y < 10)
           return 'Ronalds Wiese';

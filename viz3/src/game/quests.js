@@ -608,7 +608,7 @@ export const QUESTS = (() => {
           ];
         if (st === 'done') return ['Erledigt. Die fünfte Hütte füllt sich.', null];
         return H_(SCHEITE)
-          ? ['Schichte die Scheite in die fünfte Trockenhütte (' + q.n + '/4).', () => [hut.x + 0.6, hut.y]]
+          ? ['Schichte die Scheite in die fünfte Trockenhütte (' + q.n + '/4).', () => hutPut(hut)]
           : ['Nimm Scheite vom Haufen am Hackklotz (' + q.n + '/4).', () => HOF.heap];
       }
       case 'werkzeug':
@@ -1369,6 +1369,11 @@ export const QUESTS = (() => {
     setTimeout(() => setSt('diesel', 'done'), 2400);
   }
   // ---------------- feat/nachbarn: wood for Hubert's drying hut ----------------
+  // (the huts stand along the lane, their open fronts to it – garden/hof_hubert.js: where one stands to fill it is the hut's front)
+  function hutPut(h) {
+    const f = h.front || [h.x + 0.95, h.y];
+    return [h.x + (f[0] - h.x) * 0.6, h.y + (f[1] - h.y) * 0.6];
+  }
   const SCHEITE = PLAY.thing({
     id: 'scheite',
     name: 'Scheite',
@@ -1400,10 +1405,7 @@ export const QUESTS = (() => {
     r: 1.9,
     prio: 0.7,
     need: SCHEITE,
-    pos: () => {
-      const h = HOF.huts[HOF.stackHut];
-      return [h.x + 0.55, h.y, 0.9];
-    },
+    pos: () => [...hutPut(HOF.huts[HOF.stackHut]), 0.9],
     label: () =>
       ON && Q.holz.st === 'stack' && PLAY.has(SCHEITE) ? 'In die Trockenhütte schichten (' + Q.holz.n + '/4)' : null,
     hold: 1.6,
