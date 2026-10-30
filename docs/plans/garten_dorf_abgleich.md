@@ -41,8 +41,7 @@ was noch offen ist. Private Rohdaten (Fotos, Videos, Flurstücke) kommen nie ins
 
 ## Offene Fragen (für „Garten zurechtrücken“ und die nächsten Runden)
 
-- **Bungalow-Lage:** die iPhone-Standorte der Fotos 7224/7225 und das alte Luftbild (braunes Dach bei etwa (9, 8)) sprechen für eine Lage
-  gut 6 m südlicher als im Modell (8,6, 15); andere Fotos passen zum Modell. Falko soll es auf der Draufsicht zeigen.
+- **Bungalow-Lage:** die iPhone-Standorte von 7224/7225 und ein braunes Dach im alten Luftbild bei etwa (9, 8) sprachen für eine Lage weiter südlich – aber Foto 7227 (GPS bestätigt, (7,2, 10,5) nach Süden) zeigt dort offene Wiese mit Tisch und Garage: der Bungalow steht wohl richtig bei (8,6, 15); das braune Dach war ein älterer Bau. Falko kann es im Artefakt bestätigen.
 - **Gelbe Hütte:** mehrere Fotos (7256, 7258, 7267) sehen sie eher bei (5…7, −10) als bei (11,6, −3,4).
 - **Weg 5** (OSM, vom Eingang nach Nordosten ins Feld): auf den Fotos 7188/7189 nicht zu sehen – gibt es ihn?
 - **Huberts Hof genauer:** die Schuppen nach Luftbild und Fotos 7190–7196 (lange, niedrige, offene Schuppen hinten; die Gasse mit den
