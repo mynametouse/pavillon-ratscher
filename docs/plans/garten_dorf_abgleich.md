@@ -56,8 +56,10 @@ was noch offen ist. Private Rohdaten (Fotos, Videos, Flurstücke) kommen nie ins
   mit tiefem Vordach, der Anbau im Osten und dahinter das offene Schleppdach mit dem Gerümpel (7222, 7223) – das „linke seitliche Überdach“.
 - **Gelbe Hütte:** mehrere Fotos (7256, 7258, 7267) sehen sie eher bei (5…7, −10) als bei (11,6, −3,4).
 - **Weg 5** (OSM, vom Eingang nach Nordosten ins Feld): auf den Fotos 7188/7189 nicht zu sehen – gibt es ihn?
-- **Huberts Hof genauer:** die Schuppen nach Luftbild und Fotos 7190–7196 (lange, niedrige, offene Schuppen hinten; die Gasse mit den
-  Trockenhütchen am Gartenzaun), das Tor, die Kiesfläche.
+- **Huberts Hof (gebaut 30.10., V17e, `docs/features/hubert-hof.md`) – offen:** der Feldweg liegt westlich vom Garten im Modell 4–5 m
+  südwestlich vom echten (das rotdachige Gebäude des Luftbilds stünde auf dem Modellweg und fehlt darum); ob der Bach unter dem Hof wirklich
+  im Rohr läuft; der große Baum südlich der Hofeinfahrt und die Weide nördlich davon; Huberts Traktor steht auf 7233/7234/7247 vor der
+  Werkstatt im Werkhof (im Modell in der Gasse); Tor laut GPS der Fotos 7193–7196 5–8 m weiter östlich; Größe der Hütchen und Gebäude geschätzt.
 - **Garten Nord:** die vier gemessenen Bäume mitten in der Wiese zwischen Tor und Bungalow sind weg (Foto 7201 zeigt dort offene Wiese); die Bäume am Bach bleiben – ob es genau diese sind, kann Falko im Artefakt zeigen.
 - **Weitere Foto-Details für die nächste Runde:** der Zaun am Feldweg (Maschendraht an Betonpfosten, das Tor mit rostigen Rahmen, 7176,
   7197, 7198) – im Modell gibt es am Weg bisher nur Hecke mit Lücke; der Durchlass unter der Torplatte (7199, 7200) statt der Asphaltbrücke
