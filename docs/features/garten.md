@@ -95,3 +95,29 @@ Neue Module: `garden/garten_kit.js` (Bausatz: Kleinteile, Stoffe, Fliesen, Bilde
 - **Alte Blechgarage:** Blech hellgrau-grün gestrichen, Ecken, Torrahmen und Kanten der Schiebetore weiß, Dach hellgrau (Fotos 7197, 7236;
   `PAINT`, `ROOF0`, `TRIM` in `garden/garage.js`).
 - Offene Fragen und Quellen: `docs/plans/garten_dorf_abgleich.md`.
+
+## Garten wie heute, Runde 3: Foto für Foto (Hilfs-Agent `garten-fotos`, 30.10.2026)
+
+Abgleich aller Fotos vom 26.10. mit Modellbildern von denselben Standpunkten (GitHub Actions, `viz3/extra/garten-fotos/`), Tabelle und
+Methode in `docs/plans/garten_fotos_abgleich.md`. Alles gilt für Bauphase 0; ab Bauphase 1 bleibt der Plan.
+
+- **Gelbe Hütte** steht südwestlich vom Gewächshaus bei (6,8 / −8,2), Kurs 106° (vorher am Ostzaun bei (11,6 / −3,4)); **Gewächshaus** bei
+  (8,2 / −4,0), Giebel mit Tür nach Norden (`site.js` `bld`, Kurs 16°). Hütte von heute (`garden/holzhaus.js`): unten an der Südwand rohe
+  Bretter, Stehleiter an der Nordwand, OSB-Platte an der Westwand, Bretter und Wellblech auf dem Dach, das PV-Modul flach im Gras westlich der
+  Hütte; Regentonne, Schlauchtrommel, Schubkarre, Geranien und das PV-Gestell südlich der Hütte erst ab Bauphase 1. Ort „Holzhaus“ vor der Tür.
+- **Feldweg** (`garden/garten_heute.js`): Maschendrahtzaun an Betonpfosten auf der Wegseite des Bachs, Doppeltor aus rostigen Rahmen (offen,
+  an den Zaun geklappt), ein Stück Maschendraht quer über den Bach westlich vom Tor; **Durchlass** statt Asphaltbrücke (`garden/stream.js`:
+  alte bemooste Platte, Stirnwände mit dem Rohr, darunter verfüllt) – Lauf- und Fahrfläche (`STREAM.BR`) unverändert, die Asphaltbrücke ab
+  Bauphase 1; runde Trittsteine vom Tor in den Garten.
+- **Keine Kieswege** in Bauphase 0 (`garden/env.js`: `NOPATH`, Uniform `uNoPath` im Bodenshader; die Masken für Gras und Schritte bleiben).
+- **Kleinigkeiten**: grüner Pflanztisch mit weißem Becken am Bach, weiße Gartenbank nordwestlich vom Gewächshaus (Sitz „Auf die weiße Bank
+  setzen“), weißer Kunststoff-Liegestuhl, drei frisch gepflanzte Bäumchen in umgegrabenen Flecken in der Wiese westlich der Hütte und zwei
+  leere Flecken, ausgebrannte Feuerstelle statt Reisighaufen, Schirm südwestlich vom Tisch; die Bank am Carport-Tisch, Bank und Regentonne am
+  Bungalow ab Bauphase 1; das Planenbündel unter dem Schleppdach grauweiß statt blau.
+- **Bäume** (`site.js` `trees` 0–5, Kirschbaum): die buschige Weide an der Terrasse (Art `willow`), der große Baum am Tor, ein mehrstämmiger und
+  zwei hohe schlanke Bäume am Bach hinter dem Bretterstapel; der gemessene Baum, der auf dem Feldweg stand, an den Bach; die alten Bäume 0–4
+  standen auf Huberts Hof und auf dem Weg seines Traktors. Der große Kirschbaum bei (7,4 / −32,7). Bäume mit Art rückt `garden/stream_geo.js`
+  nicht mehr aus dem Graben.
+- Offen (Falko fragen): Größe und Lage der alten Blechgarage (auf den Fotos etwa 2,5 × 2,8 m, ~2 m südlicher), Maße der Hütte, Apfelbaum bei
+  (0,5 / −22,5), Tiefe des Bachs, Tor offen oder zu.
+

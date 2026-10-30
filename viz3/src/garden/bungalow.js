@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { V } from '../core/head.js';
 import { plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { beam, bldBegin, bldEnd, boardLeaf, cyl, tagPh } from '../core/geo.js';
+import { beam, bldBegin, bldEnd, boardLeaf, cyl, PH, PH_END, phase, tagPh } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import {
   planned,
@@ -358,7 +358,7 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
         MAT.plank,
         { parent: g }
       ); // boards leaning against the annex
-    gB(g, -1.1, -0.5, yo + 0.25, yo + 0.85, 0, 0.32, MATS.blue, { bevel: 0.08 });
+    gB(g, -1.1, -0.5, yo + 0.25, yo + 0.85, 0, 0.32, plain({ color: 0xcfd2cc, roughness: 0.8 }), { bevel: 0.08 }); // the bundled tarpaulin (7224: white-grey)
   }
   // annex roof: shingles, falling 7 cm to the east, white fascia, gutter and downpipe into a rain barrel at the north-east corner
   {
@@ -1239,8 +1239,15 @@ bldBegin('bungalow', 'Bungalow', b0.c, {
   });
   gB(g, xi1 - 0.045, xi1 - 0.028, -0.806, -0.794, 1.098, 1.142, KM.bakelite, { cast: false });
   GL('boots', hx + 0.32, 0.45, 0.08, 180, { col: false });
-  GL('bench_out', hx + 0.42, 1.55, 0.08, 180);
-  GL('rain_barrel', AX1 + 0.32, AY0 + 0.05, 0, 0);
+  {
+    // the painted bench by the door and the rain barrel are planned: Falko's photos of 26.10.2026 (7222, 7224, 7225) show neither today
+    const P0 = PH,
+      E0 = PH_END;
+    phase(1);
+    GL('bench_out', hx + 0.42, 1.55, 0.08, 180);
+    GL('rain_barrel', AX1 + 0.32, AY0 + 0.05, 0, 0);
+    phase(P0, E0);
+  }
   // firewood stacked against the annex's back wall, a board on top; a doormat at the back door
   {
     const x0 = -hx - 0.4,

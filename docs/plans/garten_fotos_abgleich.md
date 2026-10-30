@@ -41,15 +41,15 @@ Gegenstand im Bild passt.
 | 7176 | neu | Zaun am Feldweg: Maschendraht an Betonpfosten, Tor aus zwei rostigen Rahmen (hier zu); großer Baum links (östlich) am Tor; Modell: Hecke mit Lücke, Asphaltbrücke | Zaun, Tor, Baum am Tor (Bauphase 0) |
 | 7177–7180, 7182–7185 | neu | Feldweg, Auto, Acker – Richtungen passen zu nichts Sicherem im Garten | nicht verwendet |
 | 7181 | ok | Acker nördlich des Wegs, Waldrand | passt |
-| 7186, 7187 | neu | Bretterstapel unter Plane am Weg ✓; hohe, dünne Bäume am Bach dahinter; Huberts Hofeinfahrt mit großem Baum (östlich) und buschiger Weide (nordwestlich) | Baum hinter dem Stapel, Weide und großer Baum bei Huberts Tor (Bäume 0–4, s. u.) |
+| 7186, 7187 | neu | Bretterstapel unter Plane am Weg ✓; hohe, dünne Bäume am Bach dahinter; Huberts Hofeinfahrt mit großem Baum (östlich, = Baum 6) | zwei schlanke Bäume hinter dem Stapel; Baum 5 vom Weg an den Bach |
 | 7188, 7189 | neu | Stämme am Weg ✓ | – |
-| 7190–7192 | neu | Huberts Hof: großer Baum über dem Bretterstapel im roten Rahmen östlich des Tors, Weide nordwestlich; Hof frei – die Bäume 2 und 3 standen im Modell mitten auf dem Hof und auf dem Weg von Huberts Traktor | Bäume 0–4 neu (s. u.); Hof und Traktorweg frei |
+| 7190–7192 | neu | Huberts Hof: großer Baum über dem Bretterstapel im roten Rahmen östlich des Tors (Baum 6 ✓), buschiger gelber Baum am Nordwestrand; der Hof frei – die alten Bäume 0–4 standen auf dem Hof und auf dem Weg von Huberts Traktor | Bäume 0–4 woandershin (s. u.), Hof und Traktorweg frei; der gelbe Baum am Nordwestrand nicht gesetzt: beide Fotos sehen ihn aus fast derselben Richtung, seine Lage bleibt offen (dort steht im Luftbild auch das rote Gebäude jenseits des Wegs) |
 | 7193–7196 | ok | an Huberts Tor und Gasse – die bestätigten Standpunkte liegen 8–13 m östlich/nördlich des Modell-Tors | Sache von `hubert-hof` (dort vermerkt) |
 | 7197, 7198 | neu | Torplatte (bemoost) über einem Durchlass; Betonpfosten mit Strebe, rostige Torflügel; Trittsteine im Rasen; Modell: Asphaltbrücke, Kiesweg | Durchlass, Zaun, Tor, Trittsteine, keine Kieswege (Bauphase 0) |
 | 7199, 7200 | neu | Bach im schmalen Graben, unter der Platte durch ein Rohr; Stück Maschendraht quer über den Bach westlich vom Tor; mehrstämmiger Baum am Bach; großer Baum östlich am Tor | Rohr mit Stirnwänden, Maschendraht über dem Bach, beide Bäume. Grabentiefe/-breite: Falko fragen (nicht geändert) |
 | 7201 | neu | vom Tor nach Süden: Trittsteine statt Kiesweg | Trittsteine (Bauphase 0) |
 | 7202, 7203, 7208, 7211 | neu | Richtung unsicher | nicht verwendet |
-| 7204–7207 | neu | Plattenterrasse, Bank, Laterne, Stuhl ✓ (V17c); grüner Pflanztisch mit weißem Becken am Bach östlich der Terrasse fehlte | Pflanztisch |
+| 7204–7207 | neu | Plattenterrasse, Bank, Laterne, Stuhl ✓ (V17c); grüner Pflanztisch mit weißem Becken am Bach östlich der Terrasse fehlte; buschige Weide über der Bank | Pflanztisch, Weide (Baum 0) |
 | 7209, 7221, 7228, 7229 | ok/neu | Carport mit Wohnwagen ✓; das Dach auf den Fotos ist ein Pultdach aus Wellblech mit Kopfbändern an den Pfosten; grüner Plastikstuhl am Wohnwagen | nicht geändert (klein; Liste für die nächste Runde) |
 | 7210, 7212–7220 | neu | Bungalow von Norden/Nordwesten ✓, dichte Büsche am Bach ✓, Birnbaum am Bach | – |
 | 7222–7225 | ok/neu | Bungalow mit Schleppdach und Gerümpel ✓ (V17d); keine blaue Regentonne an der Ecke | nicht geändert (Bungalow ist Sache des Kern-Chats gewesen; Kleinigkeit) |
@@ -75,16 +75,21 @@ Gegenstand im Bild passt.
 - `viz3/site.js`/`site.json` `bld`: Hütte (6,8 / −8,2), Kurs 106°; Gewächshaus (8,2 / −4,0), Kurs 16° (die Drehung in `garden/greenhouse.js`
   greift nur noch bei alten Daten mit Kurs 96°). Ort „Holzhaus“ (`game/player.js`) vor der Tür. Die Kieswege des Plans (`garden/env.js`
   `PATHS`) führen zu den versetzten Türen.
-- `trees`: 0 Weide nordwestlich von Huberts Hof, 1 großer Baum an Falkos Tor, 2 großer Baum östlich von Huberts Tor über dem roten Stapel,
-  3 mehrstämmiger Baum am Bach westlich vom Tor, 4 hoher dünner Baum hinter dem Bretterstapel; der große Kirschbaum (7,4 / −32,7). Bäume mit
-  Art (`[4]`, nach Fotos gesetzt) rückt `garden/stream_geo.js` nicht mehr aus dem Graben; neue Art `willow` (Buschform, `garden/trees.js`).
+- `trees`: 0 die buschige Weide an der Westseite der Terrasse über der grünen Bank (7205, 7207; neue Art `willow`, Buschform in
+  `garden/trees.js`), 1 der große Baum am Tor (östlich der Pfosten, 7176, 7198, 7200), 2 und 4 hohe schlanke Bäume am Bach hinter dem
+  Bretterstapel (7186, 7187), 3 ein mehrstämmiger Baum am Bach westlich vom Tor (7199, 7204); 5 (ein gemessener Baum, der auf dem Feldweg
+  stand) an den Bach neben dem Stapel. Die alten Bäume 0–4 standen auf Huberts Hof und auf dem Weg seines Traktors aus der Gasse (`npc/npc.js`
+  `DRIVE_ROUTE`) – der große Baum östlich von Huberts Tor über dem rot gerahmten Stapel ist Baum 6 (unverändert). Der große Kirschbaum
+  (7,4 / −32,7). Bäume mit Art (`[4]`, nach Fotos gesetzt) rückt `garden/stream_geo.js` nicht mehr aus dem Graben.
 - `garden/env.js`: in Bauphase 0 keine Kieswege (`uNoPath` im Bodenshader; die Masken für Gras und Schritte bleiben, damit die Zufallsfolge beim
   Laden gleich bleibt).
 - `garden/stream.js`: in Bauphase 0 ist die Torplatte alter Beton über einem Durchlass (Stirnwände mit dem Rohr, darunter verfüllt –
   Kollision); die Asphaltbrücke ab Bauphase 1. `STREAM.BR`, Lauf- und Fahrfläche unverändert.
-- `garden/garten_heute.js`: Zaun am Feldweg (Bauphase 0) mit Doppeltor (offen über den Böschungen), Maschendraht quer über den Bach,
+- `garden/garten_heute.js`: Zaun am Feldweg (Bauphase 0) mit Doppeltor (offen, an den Zaun geklappt), Maschendraht quer über den Bach,
   Trittsteine; Pflanztisch am Bach, weiße Bank (zum Sitzen, `GSEATS` „weisse-bank“), weißer Liegestuhl, Bäumchen mit Pflanzflecken,
   Feuerstelle statt Reisighaufen, Schirm südwestlich vom Tisch.
+- `garden/carport.js`: Tisch mit Klappstühlen an der Südostecke ab Bauphase 1 (7228, 7229 zeigen dort keinen); `garden/bungalow.js`: Bank an
+  der Haustür und Regentonne ab Bauphase 1 (7222, 7224, 7225), das Planenbündel unter dem Schleppdach grauweiß statt blau.
 - `garden/holzhaus.js`: Hütte von heute (Bauphase 0) – rohe Bretter unten an der Südwand, Stehleiter, OSB-Platte, Dachreste, PV-Modul flach im
   Gras westlich; Regentonne, Schlauchtrommel, Schubkarre, Geranien und das PV-Gestell südlich der Hütte ab Bauphase 1.
 - `garden/fences.js`: `FENCE_MAT` exportiert (Maschendraht ohne neues Programm).

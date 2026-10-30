@@ -385,15 +385,15 @@ phase(0, 1);
       colLine(pts[i], pts[i + 3], H, 'zaun0', 0, 1);
     }
   }
-  // the two gate leaves: frames of rusty tube with chain-link, hinged at the posts, standing open into the garden (over the banks beside
-  // the slab: the drive keeps clear)
+  // the two gate leaves: frames of rusty tube with chain-link, hinged at the posts, folded back open against the fence on the path's side
+  // (the tractor with the trailer drives through: test v16d:bridge)
   for (const sgn of [-1, 1]) {
     const tp = ST.TB + sgn * G,
-      [hx, hy] = P(tp),
-      along = [ST.U[0] * -sgn, ST.U[1] * -sgn], // closed: towards the gate's middle
-      into = ST.N, // into the garden
-      a = (100 * Math.PI) / 180,
-      d = [along[0] * Math.cos(a) + into[0] * Math.sin(a), along[1] * Math.cos(a) + into[1] * Math.sin(a)],
+      [h0, h1] = P(tp),
+      off = [-ST.N[0] * 0.12, -ST.N[1] * 0.12], // 12 cm in front of the fence, path side
+      hx = h0 + off[0],
+      hy = h1 + off[1],
+      d = [ST.U[0] * sgn, ST.U[1] * sgn], // away from the gate's middle, along the fence
       Lw = G - 0.05,
       e = [hx + d[0] * Lw, hy + d[1] * Lw];
     for (const z of [0.12, H - 0.04]) bar([hx, hy, z], [e[0], e[1], z], 0.04, rust);
