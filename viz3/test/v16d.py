@@ -58,7 +58,7 @@ with lib.browser() as b:
         # bungalow stands 6.7 m further south, beside the washhouse, and with the pavilion built the tractor and trailer no longer fit between
         # them (the drive east of the pavilion, as before, hit both)
         R = [[0, -12], [0, -3], [0, 1.2], [1.28, 4.6], [3.4, 7.6], [4.72, 8.6], [7.0, 12.0]]
-        W = [[3.8, 9.6], [1.8, 8.4], [-1.0, 7.0], [-3.0, 4.6], [-3.3, 1.0], [-2.2, -4.0], [0.3, -8.4], [2.0, -12.3], [2.6, -16], [2.6, -21]]
+        W = [[4.6, 11.6], [4.3, 8.9], [2.2, 7.5], [-0.8, 6.7], [-3.0, 4.6], [-3.3, 1.0], [-2.2, -4.0], [0.3, -8.4], [2.0, -12.3], [2.6, -16], [2.6, -21]]
         ph_before = E("GAME.phase()"); E("GAME.setPhase(0)"); steps(0.3)
         pts = J(f"(() => {{ const c = STREAM.BR.c, U = STREAM.U, N = STREAM.N; return {json.dumps(R)}.map(([a, b]) => [c[0] + U[0] * a + N[0] * b, c[1] + U[1] * a + N[1] * b]).concat({json.dumps(W)}); }})()")
         nB = len(R)   # the first nB points: over the bridge into the garden
