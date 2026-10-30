@@ -534,6 +534,13 @@ phase(null);
     r: 1.2,
   });
 }
+// ---- a round white water tank with a black lid between the bench and the greenhouse (7240, 7242, 7243) ----
+{
+  const [x, y] = [9.85, -2.4];
+  cyl(x, y, 0, 0.42, 0.32, white, 18, 0.3, { col: false });
+  cyl(x, y, 0.42, 0.45, 0.17, plain({ color: 0x1e1f1d, roughness: 0.6 }), 14, undefined, { col: false, cast: false });
+  COL.push([x - 0.33, x + 0.33, y - 0.33, y + 0.33, 0, 0.45, 'tank', null, null]);
+}
 // ---- the white plastic lounge chair south of the greenhouse (7243, 7244) ----
 {
   const b = { c: [8.35, -5.65], az: 290 },
