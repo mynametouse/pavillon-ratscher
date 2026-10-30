@@ -57,7 +57,7 @@ def main(argv):
                 results.append({'test': spec, 'ok': False, 'why': 'no such test', 's': 0}); print(f'FAIL {spec:18s} no such test', flush=True); continue
             limit = LIMIT.get(name, DEFAULT_LIMIT) * scale
             cmd = [sys.executable, script, str(port)] + ([extra] if extra else [])
-            log = os.path.join(OUT, spec.replace(':', '_').replace(',', '-') + '.log')
+            log = os.path.join(OUT, spec.replace(':', '_').replace(',', '-').replace('/', '-') + '.log')  # an argument may be a path
             print(f'…    {spec:18s} running (limit {round(limit / 60)} min, log {os.path.relpath(log, ROOT)})', flush=True)
             t0 = time.time(); timed_out = False
             with open(log, 'w') as f:
