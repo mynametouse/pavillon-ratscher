@@ -1,1 +1,4 @@
+garten:nogeo=1
+einrichtung:nogeo=1
+v16d:trailer,bridge,load
 blickpunkte:viz3/extra/garten-fotos/views.json

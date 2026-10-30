@@ -3,7 +3,7 @@ import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUti
 import { V } from '../core/head.js';
 import { plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { beam, bldBegin, bldEnd, boardLeaf, cyl } from '../core/geo.js';
+import { beam, bldBegin, bldEnd, boardLeaf, cyl, PH, PH_END, phase } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import {
   planned,
@@ -38,11 +38,16 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
 // ===== C: Holzhaus (3,0 × 3,6 m, an der Ostgrenze ausgerichtet; Pfosten auf Betonsteinen, Fensterband West, Pultdach mit grünen
 // Biberschwanz-Schindeln, alte Busluke, Fassade ocker). Seit 23.10.2026 (Falko): Tür nach Norden, das Dach fällt nach Westen ab; innen ein Atelier
 // (Töpfern, Malen, Schaukelstuhl, Klappsofa als Gästebett) – eingerichtet in garden/atelier.js (feat/einrichtung); hier Hülle, Boden und außen =====
-// local frame (az 96): +x ≈ east, +y ≈ north
+// Where it stands (30.10.2026): Falko's photos of 26.10.2026 see the yellow hut south-west of the greenhouse, 7–9 m from the confirmed
+// standpoints 7256–7259 west of it – not at the east fence (site.js bld, docs/plans/garten_fotos_abgleich.md). On the photos it is smaller
+// (about 2.8 × 2.3 m) than here; the shell keeps its size, the atelier inside is laid out for it.
+// local frame (az 106): +x ≈ east, +y ≈ north
 {
   const b = BLD.holzhaus,
     g = siteGroup(b),
-    R = rng(1966);
+    R = rng(1966),
+    PH0 = PH,
+    PE0 = PH_END;
   const hx = b.L / 2,
     hy = b.W / 2,
     zf = 0.35,
@@ -132,8 +137,90 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     });
     cyl(gx, -hy + 0.05, 0.98, gz, 0.04, MAT.zinc, 10, undefined, { parent: g, col: false });
     beam([gx, -hy + 0.05, 1.0], [gx + 0.12, -hy + 0.3, 0.92], 0.07, 0.07, MAT.zinc, { parent: g });
+    phase(1); // the rain barrel is planned: the photos of 26.10.2026 show none at the hut
     GL('rain_barrel', gx + 0.14, -hy + 0.36, 0, 0);
+    phase(PH0, PE0);
   }
+  // ---- the hut of today (construction phase 0, Falko's photos 7240–7243, 7255–7259 of 26.10.2026): the lower part of the south wall
+  // clad with bare boards, a stepladder at the north wall beside the door, an OSB board leaning against the west wall, offcuts and an old
+  // corrugated sheet on the roof, the PV module lying nearly flat on a low frame in the grass west of the hut ----
+  phase(0, 1);
+  {
+    const bare = plain({ color: 0xd8bf8e, roughness: 0.85 }),
+      osb = MAT.osb,
+      alu = MAT.alu;
+    // bare boards on the south wall below the window, 1 m high
+    for (let i = 0; i < 9; i++) {
+      const z0 = 0.08 + i * 0.115;
+      gB(g, -hx + 0.04, hx - 0.04, -hy - 0.03, -hy - 0.008, z0, z0 + 0.11, bare, { grain: 'x', cast: false });
+    }
+    // the stepladder in front of the north wall, east of the door (two frames, five treads, splayed)
+    {
+      const x0 = 0.35,
+        y0 = hy + 0.32,
+        hL = 1.45,
+        spread = 0.38;
+      for (const sx of [-0.22, 0.22]) {
+        beam([x0 + sx, y0 - spread, 0], [x0 + sx, y0 - 0.03, hL], 0.04, 0.02, alu, { parent: g });
+        beam([x0 + sx, y0 + spread, 0], [x0 + sx, y0 + 0.03, hL], 0.04, 0.02, alu, { parent: g });
+      }
+      for (let k = 1; k <= 5; k++) {
+        const z = (k / 6) * hL,
+          y = y0 - spread * (1 - z / hL);
+        gB(g, x0 - 0.22, x0 + 0.22, y - 0.05, y + 0.05, z - 0.015, z + 0.015, alu, { cast: false });
+      }
+      gB(g, x0 - 0.24, x0 + 0.24, y0 - 0.12, y0 + 0.12, hL, hL + 0.03, alu);
+    }
+    // the OSB board against the west wall at its north end, foot 25 cm out
+    put(g, new THREE.BoxGeometry(0.018, 2.3, 0.62), osb, -hx - 0.17, hy - 0.55, 1.12, { rz: -0.11 });
+    // offcuts and an old corrugated sheet on the roof (they are weighted down there)
+    for (const [y, x0, x1, w] of [
+      [hy - 0.35, -hx - 0.2, hx - 0.3, 0.14],
+      [hy - 0.62, -hx + 0.1, hx - 0.6, 0.12],
+      [0.2, -hx - 0.1, 0.4, 0.16],
+    ])
+      beam([x0, y, zTop(x0) + 0.2], [x1, y, zTop(x1) + 0.2], w, 0.03, MAT.weather, { parent: g });
+    slopeSlabX(g, 0.35, -0.75, zTop(0.35) + 0.21, 1.4, 1.0, 0.025, ((zH - zL) * 1.4) / (2 * hx), MAT.galv);
+    // the PV module: on a low frame, tilted 8° (east edge lower), west of the hut's south half (photos 7257–7259); ≥ 2.5 m off the
+    // tractor's drive to the log yard (test v16d:bridge, garten)
+    {
+      const px = -hx - 1.2,
+        py = -0.6,
+        Lp = 1.7,
+        Wp = 1.0,
+        ang = 0.14;
+      put(
+        g,
+        new THREE.BoxGeometry(Lp, 0.035, Wp),
+        [MAT.alu, MAT.alu, KM.pvCells, MAT.alu, MAT.alu, MAT.alu],
+        px,
+        py,
+        0.2,
+        {
+          rx: ang,
+          ry: Math.PI / 2,
+          order: 'YXZ',
+        }
+      );
+      for (const sy of [-1, 1])
+        for (const sx of [-1, 1])
+          gB(
+            g,
+            px + sx * 0.42 - 0.025,
+            px + sx * 0.42 + 0.025,
+            py + sy * 0.7 - 0.025,
+            py + sy * 0.7 + 0.025,
+            0,
+            0.2 - sx * 0.06,
+            alu,
+            {
+              cast: false,
+            }
+          );
+      lcol(r, px - Wp / 2, px + Wp / 2, py - Lp / 2, py + Lp / 2, 0, 0.32, 'pv');
+    }
+  }
+  phase(1); // from construction phase 1 the PV module stands on its stand south of the hut (below)
   // PV module on a ground stand south of the hut (it charges the battery inside): tilted 30° to the south on aluminium legs, cable to the
   // hut's south wall. Not west of the hut any more: on its stand it stood in the tractor's drive past the pavilion to the log yard
   // (test v16d:bridge), now ≥ 3 m clear of that line
@@ -181,6 +268,7 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     beam([0.3, -hy - 0.02, 0.02], [0.3, -hy - 0.02, zf], 0.014, 0.014, MAT.black, { parent: g });
     lcol(r, px - Wp / 2, px + Wp / 2, py - dy, py + dy, 0, z0 + 2 * dz, 'pv');
   }
+  phase(PH0, PE0);
   // ===================== inside: the atelier (feat/einrichtung, garden/atelier.js) – until 23.10.2026 Sarah's potting hut here =====================
   // the hut's seven models inside are gone (bench crate, lantern, books, basket, chair, side table, crate): their key numbers stay taken
   keysSkip(['crate', 'lantern_t', 'books', 'basket', 'desk_chair', 'side_table', 'crate']);
@@ -229,7 +317,9 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     for (let i = 0; i < 8; i++)
       plant(g, bx - 0.1, -1.1 + i * 0.315, bz + 0.14, 0.2, i % 3 === 1 ? 'herb' : 'geranium', R);
   });
-  // outside the south wall: the hose reel on the wall, a wheelbarrow with soil parked below the small window
+  // outside the south wall: the hose reel on the wall, a wheelbarrow with soil parked below the small window; the geraniums by the step and
+  // the boot scraper – all planned (from phase 1): the photos of 26.10.2026 show bare boards there and a stepladder by the door
+  phase(1);
   GL('hose_reel', 0.62, -hy - 0.13, 0.75, 90, { h: 0.5, col: false });
   {
     const wg = new THREE.Group();
@@ -262,6 +352,7 @@ bldBegin('holzhaus', 'Holzhaus', BLD.holzhaus.c, { short: 'Holzhaus', pad: 0.25 
     plant(g, x, y, zs, sz * 2.2, 'geranium', R);
   }
   gB(g, DN.a1 + 0.12, DN.a1 + 0.14, hy + 0.55, hy + 0.85, 0, 0.12, MAT.blacksteel, { cast: false });
+  phase(PH0, PE0);
   INSIDE.push({ b, hx, hy, ox: 0, oy: 0, z0: zf - 0.1, z1: zH + 0.4, name: 'Atelier' }); // feat/einrichtung: the hut is an atelier
   FOOT.push({ b, hx: hx + 0.1, hy: hy + 0.1, ox: 0, oy: 0 });
   interiorNoShadow(

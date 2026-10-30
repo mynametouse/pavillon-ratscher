@@ -139,8 +139,10 @@ export const STREAM = (() => {
     const [t, o] = loc(x, y);
     return Math.abs(t - TB) < BR.w && Math.abs(o - OFF) < BR.l;
   };
-  // trees from the aerial photo that would stand in the ditch move to the top of the nearer bank; none on the bridge or the stairs
+  // trees from the aerial photo that would stand in the ditch move to the top of the nearer bank; none on the bridge or the stairs. Trees
+  // set from Falko's photos (they carry a kind, site.js [4]) stand where they were set
   for (const tr of S.trees) {
+    if (tr[4]) continue;
     const [t, o] = loc(tr[0], tr[1]);
     const a = o - cOff(t);
     if (Math.abs(a) >= WT + 0.5) continue;

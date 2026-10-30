@@ -4,13 +4,15 @@
 // and the logs on the field side – two long ones, a pile of short ones further west. (The painted boards are the washhouse's front: garden/washhouse.js.) Plain materials
 // of the kind the garden has (no new shader programs); colliders where one would bump into them.
 import * as THREE from 'three';
-import { rnd, rr } from '../core/head.js';
+import { rnd, rr, scene } from '../core/head.js';
 import { plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { B, beam, COL, cyl, phase } from '../core/geo.js';
+import { B, beam, COL, cyl, phase, tagPh } from '../core/geo.js';
 import { S0 } from './env.js';
 import { STREAM } from './stream_geo.js';
 import { GSEATS } from './garten_kit.js';
+import { FENCE_MAT } from './fences.js';
+import { worldOf } from './site_base.js';
 phase(null);
 const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
   pink = plain({ color: 0xd98fa0, roughness: 0.8, side: THREE.DoubleSide }),
@@ -65,9 +67,9 @@ const white = plain({ color: 0xf1f1ec, roughness: 0.5 }),
     ])
       B(cx + dx - 0.02, cx + dx + 0.02, cy + dy - 0.02, cy + dy + 0.02, 0, 0.42, white, { col: false });
   }
-  // the parasol a little to the side, closed
-  const px = x - 0.55,
-    py = y + 0.75;
+  // the parasol beside it, closed – south-west of the table (7227, 7236, 7237, 7244: right of the table seen from the west and from the north-east)
+  const px = x - 0.35,
+    py = y - 0.85;
   cyl(px, py, 0, 2.05, 0.02, MAT.steel, 8, undefined, { col: false });
   cyl(px, py, 1.0, 2.05, 0.03, pink, 12, 0.16, { col: false });
 }
@@ -288,4 +290,264 @@ function colAlong(s0, s1, o, half, z1, tag) {
       cyl(gx, gy, gz + 0.11, gz + 0.13, 0.037, cap, 10, undefined, { col: false, cast: false });
     }
   }
+}
+
+// ===================== round 3 (30.10.2026): what the photos of 26.10.2026 still showed (docs/plans/garten_fotos_abgleich.md) =====================
+const rust = plain({ color: 0x7a4a33, roughness: 0.85, metalness: 0.3 }),
+  greenM = plain({ color: 0x3f8f45, roughness: 0.55 });
+// a member as a box between two site points (no collider)
+const bar = (p, q, w, m, o = {}) => beam(p, q, w, w, m, Object.assign({ cast: false }, o));
+// chain-link between two posts: a ribbon with the fence's wire mesh (garden/fences.js FENCE_MAT.mesh – no new program)
+function meshRibbon(pts, z0, z1, topAbs = null) {
+  const pos = [],
+    uv = [],
+    idx = [];
+  let s = 0;
+  pts.forEach((p, k) => {
+    if (k) s += Math.hypot(p[0] - pts[k - 1][0], p[1] - pts[k - 1][1]);
+    const za = (p[2] ?? 0) + z0,
+      zb = topAbs ?? (p[2] ?? 0) + z1;
+    pos.push(p[0], za, -p[1], p[0], zb, -p[1]);
+    uv.push(s / 0.2, za / 0.2, s / 0.2, zb / 0.2);
+    if (k) {
+      const a = (k - 1) * 2;
+      idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
+    }
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  const me = new THREE.Mesh(geo, FENCE_MAT.mesh);
+  me.renderOrder = 1;
+  me.receiveShadow = true;
+  me.userData.noMerge = true;
+  return me;
+}
+// a thin wall collider along a member (rotated box, as the fences of garden/fences.js)
+function colLine(a, b, z1, tag, ph0, ph1) {
+  const L = Math.hypot(b[0] - a[0], b[1] - a[1]),
+    ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+  COL.push([
+    -L / 2,
+    L / 2,
+    -0.05,
+    0.05,
+    0,
+    z1,
+    tag,
+    ph0,
+    ph1,
+    { cx: (a[0] + b[0]) / 2, cy: (a[1] + b[1]) / 2, c: Math.cos(ang), s: Math.sin(ang) },
+  ]);
+}
+// ---- the fence along the field path (construction phase 0; photos 7176, 7187, 7197, 7198, 7200, 7213, 7214): chain-link 1.3 m high on
+// concrete posts, on the path's side of the brook along the top of its bank, from the garden's north-west corner to the east boundary; at
+// the slab over the culvert the double gate of rusty frames with chain-link, both leaves open into the garden over the banks (the drive of
+// v16d:bridge passes between its posts); a short piece of chain-link across the brook west of the gate (7199, 7206) ----
+phase(0, 1);
+{
+  const ST = STREAM,
+    oF = t => ST.cOff(t) - ST.WT - 0.08, // just outside the top of the bank, path side
+    P = t => {
+      const [x, y] = ST.wpt(t, oF(t));
+      return [x, y, 0];
+    },
+    G = 1.5, // half width of the gate opening (the tractor is 2.28 m wide)
+    t0 = 13.5,
+    t1 = 38.2,
+    H = 1.3;
+  const greyPost = MAT.conc;
+  for (const [ta, tb] of [
+    [t0, ST.TB - G],
+    [ST.TB + G, t1],
+  ]) {
+    const n = Math.max(1, Math.ceil((tb - ta) / 2.6)),
+      pts = [];
+    for (let i = 0; i <= n * 3; i++) pts.push(P(ta + ((tb - ta) * i) / (n * 3)));
+    scene.add(tagPh(meshRibbon(pts, 0.05, H)));
+    for (let i = 0; i <= n; i++) {
+      const [x, y] = P(ta + ((tb - ta) * i) / n),
+        end = i === 0 || i === n;
+      B(x - 0.055, x + 0.055, y - 0.055, y + 0.055, 0, H + 0.25, greyPost, { col: false, cast: true });
+      if (end && ((i === n && tb < ST.TB) || (i === 0 && ta > ST.TB))) {
+        // a strut from the gate post down to the ground, on the fence's side (7197)
+        const q = P(i === 0 ? ta + 1.1 : tb - 1.1);
+        bar([x, y, 1.0], [q[0], q[1], 0.02], 0.04, rust);
+      }
+    }
+    for (let i = 0; i < pts.length - 1; i += 3) {
+      bar([pts[i][0], pts[i][1], H - 0.02], [pts[i + 3][0], pts[i + 3][1], H - 0.02], 0.008, rust);
+      bar([pts[i][0], pts[i][1], 0.08], [pts[i + 3][0], pts[i + 3][1], 0.08], 0.008, rust);
+      colLine(pts[i], pts[i + 3], H, 'zaun0', 0, 1);
+    }
+  }
+  // the two gate leaves: frames of rusty tube with chain-link, hinged at the posts, standing open into the garden (over the banks beside
+  // the slab: the drive keeps clear)
+  for (const sgn of [-1, 1]) {
+    const tp = ST.TB + sgn * G,
+      [hx, hy] = P(tp),
+      along = [ST.U[0] * -sgn, ST.U[1] * -sgn], // closed: towards the gate's middle
+      into = ST.N, // into the garden
+      a = (100 * Math.PI) / 180,
+      d = [along[0] * Math.cos(a) + into[0] * Math.sin(a), along[1] * Math.cos(a) + into[1] * Math.sin(a)],
+      Lw = G - 0.05,
+      e = [hx + d[0] * Lw, hy + d[1] * Lw];
+    for (const z of [0.12, H - 0.04]) bar([hx, hy, z], [e[0], e[1], z], 0.04, rust);
+    bar([hx, hy, 0.12], [hx, hy, H - 0.04], 0.04, rust);
+    bar([e[0], e[1], 0.12], [e[0], e[1], H - 0.04], 0.04, rust);
+    bar([hx, hy, 0.14], [e[0], e[1], H - 0.06], 0.025, rust); // the diagonal brace
+    const rib = meshRibbon(
+      [
+        [hx + d[0] * 0.03, hy + d[1] * 0.03, 0],
+        [e[0] - d[0] * 0.03, e[1] - d[1] * 0.03, 0],
+      ],
+      0.14,
+      H - 0.06
+    );
+    scene.add(tagPh(rib));
+    colLine([hx, hy], e, H, 'zaun0', 0, 1);
+  }
+  // chain-link across the brook, 2.6 m west of the gate's middle: two rusty posts in the banks, the mesh down to the water
+  {
+    const t = ST.TB - 2.6,
+      c = ST.cOff(t),
+      pa = ST.wpt(t, c - 1.15),
+      pb = ST.wpt(t, c + 1.15),
+      za = ST.zAt(pa[0], pa[1]),
+      zb = ST.zAt(pb[0], pb[1]),
+      zm = ST.WZ - 0.05,
+      pts = [];
+    for (let i = 0; i <= 8; i++) {
+      const a = -1.15 + (2.3 * i) / 8,
+        [x, y] = ST.wpt(t, c + a);
+      pts.push([x, y, Math.max(zm, ST.zAt(x, y))]);
+    }
+    const rib = meshRibbon(pts, 0.0, 1.0, Math.max(za, zb) + 0.7); // from the ground in the ditch up to a level top
+    scene.add(tagPh(rib));
+    for (const [p, z] of [
+      [pa, za],
+      [pb, zb],
+    ])
+      bar([p[0], p[1], z - 0.2], [p[0], p[1], Math.max(za, zb) + 0.75], 0.045, rust);
+    bar([pa[0], pa[1], Math.max(za, zb) + 0.7], [pb[0], pb[1], Math.max(za, zb) + 0.7], 0.03, rust);
+  }
+}
+phase(null);
+// ---- the green potting table at the brook (7199, 7206): a green metal stand with a white sink, pots and bowls on the top, a shelf below;
+// on the garden-side top of the bank between the slab terrace and the gate, its back to the brook ----
+{
+  const t = STREAM.TB - 2.5,
+    o = STREAM.cOff(t) + STREAM.WT + 0.6,
+    [x, y] = STREAM.wpt(t, o),
+    b = { c: [x, y], az: (Math.atan2(STREAM.U[0], STREAM.U[1]) * 180) / Math.PI }, // local x along the brook, y towards it
+    W2 = (lx, ly) => worldOf(b, lx, ly),
+    box = (lx0, lx1, ly0, ly1, z0, z1, m) => {
+      const p = W2((lx0 + lx1) / 2, (ly0 + ly1) / 2);
+      beam(
+        [p[0] - (b.u[0] * (lx1 - lx0)) / 2, p[1] - (b.u[1] * (lx1 - lx0)) / 2, (z0 + z1) / 2],
+        [p[0] + (b.u[0] * (lx1 - lx0)) / 2, p[1] + (b.u[1] * (lx1 - lx0)) / 2, (z0 + z1) / 2],
+        ly1 - ly0,
+        z1 - z0,
+        m,
+        { cast: z1 - z0 > 0.05 }
+      );
+    };
+  b.u = STREAM.U;
+  const sinkM = plain({ color: 0xf2f2ee, roughness: 0.35 }),
+    terra = plain({ color: 0xb0603a, roughness: 0.9 }),
+    blue = plain({ color: 0x5c86b8, roughness: 0.5 });
+  for (const lx of [-0.47, 0.47])
+    for (const ly of [-0.22, 0.22]) box(lx - 0.02, lx + 0.02, ly - 0.02, ly + 0.02, 0, 0.88, greenM);
+  box(-0.52, 0.52, -0.27, 0.27, 0.86, 0.9, greenM); // the top
+  box(-0.5, 0.5, -0.25, 0.25, 0.3, 0.33, greenM); // the shelf
+  box(-0.52, 0.52, 0.25, 0.28, 0.9, 1.12, greenM); // the upstand at the back (towards the brook)
+  box(-0.12, 0.26, -0.18, 0.18, 0.9, 1.0, sinkM); // the white sink set into the top
+  // pots, a blue bowl, a stack of small pots on the shelf
+  for (const [lx, ly, h, r, m] of [
+    [-0.36, -0.08, 0.16, 0.08, terra],
+    [-0.22, 0.12, 0.12, 0.06, terra],
+    [0.4, -0.05, 0.08, 0.11, blue],
+    [-0.3, 0.0, 0.22, 0.07, terra],
+    [0.25, 0.05, 0.18, 0.06, terra],
+  ]) {
+    const [px2, py2] = W2(lx, ly),
+      z = h > 0.2 ? 0.33 : 0.9;
+    cyl(px2, py2, z, z + h, r, m, 12, r * 0.75, { col: false });
+  }
+  const c4 = [W2(-0.55, -0.3), W2(0.55, -0.3), W2(-0.55, 0.3), W2(0.55, 0.3)];
+  COL.push([
+    Math.min(...c4.map(q => q[0])),
+    Math.max(...c4.map(q => q[0])),
+    Math.min(...c4.map(q => q[1])),
+    Math.max(...c4.map(q => q[1])),
+    0,
+    1.1,
+    'table',
+    null,
+    null,
+  ]);
+}
+// ---- the white garden bench north-west of the greenhouse, facing west over the lawn (7237, 7240, 7243, 7244): slats, backrest, armrests;
+// one can sit on it ----
+{
+  const b = { c: [9.6, -1.1], az: 16 }, // local x along the bench, y to the west (its front)
+    W2 = (lx, ly) => worldOf(b, lx, ly),
+    seg = (lx0, lx1, ly, z, w, h) => {
+      const p = W2(lx0, ly),
+        q = W2(lx1, ly);
+      beam([p[0], p[1], z], [q[0], q[1], z], w, h, white, { cast: true });
+    };
+  for (let k = 0; k < 4; k++) seg(-0.72, 0.72, 0.02 + k * 0.11, 0.44, 0.09, 0.025); // seat slats
+  for (const z of [0.6, 0.72, 0.84]) seg(-0.72, 0.72, -0.17, z, 0.025, 0.08); // backrest boards (east side)
+  for (const lx of [-0.7, 0.7]) {
+    seg(lx - 0.025, lx + 0.025, 0.3, 0.21, 0.05, 0.42); // front leg
+    seg(lx - 0.025, lx + 0.025, -0.15, 0.45, 0.05, 0.9); // back leg up into the backrest
+    seg(lx - 0.025, lx + 0.025, 0.07, 0.65, 0.5, 0.04); // armrest
+  }
+  const c4 = [W2(-0.78, -0.22), W2(0.78, -0.22), W2(-0.78, 0.36), W2(0.78, 0.36)];
+  COL.push([
+    Math.min(...c4.map(q => q[0])),
+    Math.max(...c4.map(q => q[0])),
+    Math.min(...c4.map(q => q[1])),
+    Math.max(...c4.map(q => q[1])),
+    0,
+    0.45,
+    'bench',
+    null,
+    null,
+  ]);
+  GSEATS.push({
+    key: 'weisse-bank',
+    b,
+    lx: -0.3,
+    ly: 0.1,
+    eye: 0.44 + 0.72,
+    yaw: -90,
+    pitch: -6,
+    kind: 'sit',
+    label: 'Auf die weiße Bank setzen',
+    at: [-0.3, 0.75],
+    r: 1.2,
+  });
+}
+// ---- the white plastic lounge chair south of the greenhouse (7243, 7244) ----
+{
+  const b = { c: [8.35, -5.65], az: 290 },
+    W2 = (lx, ly) => worldOf(b, lx, ly),
+    seg = (lx0, lx1, ly, z0, z1, w) => {
+      const p = W2(lx0, ly),
+        q = W2(lx1, ly);
+      beam([p[0], p[1], z0], [q[0], q[1], z1], w, 0.03, white, { cast: true });
+    };
+  for (const ly of [-0.22, -0.07, 0.07, 0.22]) seg(-0.3, 0.25, ly, 0.38, 0.4, 0.13); // the seat
+  for (const ly of [-0.22, -0.07, 0.07, 0.22]) seg(-0.32, -0.45, ly, 0.42, 0.85, 0.13); // the backrest, leaning back
+  for (const ly of [-0.27, 0.27]) {
+    seg(0.22, 0.22, ly, 0.0, 0.38, 0.05);
+    seg(-0.28, -0.28, ly, 0.0, 0.38, 0.05);
+    seg(-0.3, 0.2, ly, 0.6, 0.58, 0.05);
+  }
+  const p = W2(0, 0);
+  COL.push([p[0] - 0.35, p[0] + 0.35, p[1] - 0.35, p[1] + 0.35, 0, 0.6, 'chair', null, null]);
 }

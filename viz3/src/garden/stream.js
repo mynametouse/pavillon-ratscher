@@ -1,9 +1,9 @@
 // ---------- stream: ditch surface, water, bridge, stairs to the water, stones (geometry in garden/stream_geo.js) ----------
 import * as THREE from 'three';
 import { rnd, scene, V } from '../core/head.js';
-import { ANISO, pbrMat } from '../core/assets.js';
+import { ANISO, pbrMat, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { B, beam, COL, cyl, WALK } from '../core/geo.js';
+import { B, beam, COL, cyl, PH, PH_END, phase, tagPh, WALK } from '../core/geo.js';
 import { STREAM } from './stream_geo.js';
 import { GSZ, mkGroundMat } from './env.js';
 {
@@ -226,13 +226,60 @@ import { GSZ, mkGroundMat } from './env.js';
     scene.add(im);
   }
   // --- bridge: concrete slab with asphalt, 2.5 m wide and 6.2 m long, no railing ---
+  // Today (construction phase 0, Falko's photos 7197–7200 of 26.10.2026) the slab at the gate is old moss-grown concrete over a culvert: a
+  // headwall on each side of the slab with the pipe the brook runs through; the asphalt bridge comes with phase 1 (plan). The deck's walking
+  // and driving surface (WALK, STREAM.BR, the guides of VEH) is the same in every phase.
   {
     const { g, rot } = frameAt(ST.TB),
       w = ST.BR.w,
-      l = ST.BR.l;
+      l = ST.BR.l,
+      PH0 = PH,
+      PE0 = PH_END;
     MAT.asphalt = MAT.asphalt || pbrMat('asphalt', { fallback: 0x3e3e3c, nrm: 0.9, rough: 1.0 });
     B(-w, w, -l, l, -0.24, 0.025, MAT.conc, { parent: g, col: false, grain: 'y' });
+    phase(1);
     B(-w + 0.02, w - 0.02, -l, l, 0.025, 0.06, MAT.asphalt, { parent: g, col: false, grain: 'y' });
+    phase(0, 1);
+    {
+      const moss = plain({ color: 0x6d7058, roughness: 0.95 }),
+        pipeIn = plain({ color: 0x1d1f1a, roughness: 1, side: THREE.DoubleSide }),
+        zt = -0.24,
+        aMax = ST.WB + (ST.WT - ST.WB) * (1 - Math.sqrt(-zt / ST.D)), // where the bank meets the slab's underside
+        pr = 0.42,
+        pz = -ST.D + 0.08 + pr; // the pipe: Ø 84 cm, its invert just above the bed
+      B(-w + 0.02, w - 0.02, -l, l, 0.025, 0.06, moss, { parent: g, col: false, grain: 'y' }); // the old slab's top, moss in the joints
+      // headwalls: the ditch's cross-section from the bed up to the slab, with the pipe's mouth
+      const sh = new THREE.Shape();
+      sh.moveTo(-aMax, zt);
+      for (let i = 0; i <= 24; i++) {
+        const a = -aMax + (2 * aMax * i) / 24;
+        sh.lineTo(a, Math.min(zt, ST.prof(a) - 0.02));
+      }
+      sh.lineTo(aMax, zt);
+      sh.closePath();
+      const hole = new THREE.Path();
+      hole.absarc(0, pz, pr, 0, Math.PI * 2, true);
+      sh.holes.push(hole);
+      const hw = new THREE.ExtrudeGeometry(sh, { depth: 0.22, bevelEnabled: false, curveSegments: 18 });
+      for (const sx of [-1, 1]) {
+        const m = new THREE.Mesh(hw, MAT.conc);
+        m.rotation.y = Math.PI / 2;
+        m.position.copy(V(sx * w - 0.11, 0, 0));
+        m.castShadow = m.receiveShadow = true;
+        g.add(tagPh(m));
+        const lip = new THREE.Mesh(new THREE.TorusGeometry(pr + 0.02, 0.035, 6, 20), MAT.conc);
+        lip.rotation.y = Math.PI / 2;
+        lip.position.copy(V(sx * (w + 0.12), 0, pz));
+        g.add(tagPh(lip));
+      }
+      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(pr, pr, 2 * w + 0.2, 18, 1, true), pipeIn);
+      pipe.rotation.z = Math.PI / 2;
+      pipe.position.copy(V(0, 0, pz));
+      g.add(tagPh(pipe));
+      // the culvert is filled: nobody walks under the slab today
+      COL.push([-w - 0.12, w + 0.12, -aMax, aMax, -ST.D - 0.2, zt - 0.02, 'culvert', 0, 1, rot]);
+    }
+    phase(PH0, PE0);
     for (const sy of [-1, 1])
       B(-w - 0.05, w + 0.05, sy > 0 ? 1.1 : -1.45, sy > 0 ? 1.45 : -1.1, -1.0, -0.24, MAT.conc, {
         parent: g,

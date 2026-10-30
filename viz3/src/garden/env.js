@@ -6,6 +6,7 @@ import { ANISO, cellsOf, LM, markDirty, patchSV, pbrMat, texFileOf, TEXMAN, texU
 import { MAT } from '../core/mats.js';
 import { phase } from '../core/geo.js';
 import { DETAIL } from '../core/detail.js';
+import { KERN } from '../core/kern.js';
 import { STREAM } from './stream_geo.js';
 export const S0 = window.SITE;
 // real surroundings (27_ratscher): with the geodata package the made-up far land, forest blobs, lake and village are only a fallback –
@@ -263,16 +264,28 @@ export const PATHS = [
   ],
   [
     [9.4, 4.1],
-    [10.3, 1.4],
-    [11.5, 1.45],
-    [12.55, 1.35],
-  ], // to the greenhouse door (north gable, since 23.10.2026)
+    [9.05, 0.4],
+    [8.75, -1.4],
+    [8.58, -2.62],
+  ], // to the greenhouse door (north gable; where the greenhouse stands since 30.10.2026)
   [
-    [10.3, 1.4],
-    [10.45, 0.2],
-    [10.85, -0.75],
-  ], // to the wooden hut's door (north, since 23.10.2026)
+    [8.75, -1.4],
+    [7.3, -2.5],
+    [6.75, -4.0],
+    [6.6, -5.55],
+  ], // to the wooden hut's door (north), west of the greenhouse (30.10.2026)
 ];
+// construction phase 0 – the garden of today – has no gravel paths (Falko's photos of 26.10.2026: lawn up to the doors): the near ground
+// shows lawn where the paths are painted (uniform uNoPath, set while the phase is 0; the ditch keeps its gravel bed). The paths stay in
+// the masks (grass, footsteps), so nothing drawn from the random sequence at load changes.
+export const NOPATH = { value: 0 };
+KERN.tick(() => {
+  const v = (window.PHASE | 0) === 0 ? 1 : 0;
+  if (NOPATH.value !== v) {
+    NOPATH.value = v;
+    markDirty();
+  }
+}, 'garden/env:paths');
 const PATH = PATHS[0];
 window.PATH = PATH;
 window.PATHS = PATHS;
@@ -495,6 +508,7 @@ export function mkGroundMat(cut) {
       uL2K: { value: l2k },
       uLit: { value: litTex },
       uHasL2: { value: TEXMAN.lawn2 ? 1 : 0 },
+      uNoPath: NOPATH,
     },
     GEOGU
   );
@@ -510,12 +524,13 @@ export function mkGroundMat(cut) {
       RD +
       '\n' +
       decl +
-      'uniform sampler2D uMask, uGravN, uLit, uGeoTex; uniform float uGK, uHasL, uCut, uL2K, uHasL2, uGeoOn, uGeoGain, uGeoMap, uGeoFlat, uGeoFlatK, uGeoCurve; vec3 gGeoEm = vec3( 0.0 );\nvec3 geoAlbN( vec3 c, float g ) { return uGeoMap > 0.5 ? c * g : mix( c * g, 0.62 * pow( max( c, vec3( 0.0 ) ), vec3( 0.75 ) ) * g / 0.86, uGeoCurve ); } uniform vec2 uGeoAB; uniform vec3 uGeoBox; uniform vec4 uGeoZone, uGeoPath;\nfloat lnHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat lnNoise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(lnHash(i), lnHash(i + vec2(1.0, 0.0)), u.x), mix(lnHash(i + vec2(0.0, 1.0)), lnHash(i + vec2(1.0, 1.0)), u.x), u.y); }\n' +
+      'uniform sampler2D uMask, uGravN, uLit, uGeoTex; uniform float uGK, uHasL, uCut, uL2K, uHasL2, uNoPath, uGeoOn, uGeoGain, uGeoMap, uGeoFlat, uGeoFlatK, uGeoCurve; vec3 gGeoEm = vec3( 0.0 );\nvec3 geoAlbN( vec3 c, float g ) { return uGeoMap > 0.5 ? c * g : mix( c * g, 0.62 * pow( max( c, vec3( 0.0 ) ), vec3( 0.75 ) ) * g / 0.86, uGeoCurve ); } uniform vec2 uGeoAB; uniform vec3 uGeoBox; uniform vec4 uGeoZone, uGeoPath;\nfloat lnHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat lnNoise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(lnHash(i), lnHash(i + vec2(1.0, 0.0)), u.x), mix(lnHash(i + vec2(0.0, 1.0)), lnHash(i + vec2(1.0, 1.0)), u.x), u.y); }\n' +
       sh.fragmentShader
         .replace(
           '#include <map_fragment>',
           `
         vec4 gPaint = texture2D( map, vMapUv ); vec4 gMsk = texture2D( uMask, vMapUv ); if ( uCut > 0.5 && gMsk.b > 0.5 ) discard;
+        if ( uNoPath * uCut > 0.5 ) { gPaint.rgb = mix( gPaint.rgb, vec3( 0.165, 0.227, 0.074 ), smoothstep( 0.02, 0.45, gMsk.r ) ); gMsk.r = 0.0; }   // phase 0: lawn, no gravel paths
         float gFade = smoothstep( 22.0, 75.0, length( vViewPosition ) );
         vec3 gCol = gPaint.rgb;
         vec2 gW = ( vMapUv - 0.5 ) * 240.0;   // world metres (x east, y south)

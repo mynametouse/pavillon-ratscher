@@ -37,8 +37,10 @@ const PATCH = plain({
   envMapIntensity: 0.5,
 });
 let paneN = 0;
-// Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends now face north and south: turned
-// by 90° about its centre (site data: heading 96°, the long side east–west) and moved 0.5 m north, clear of the hut's new door
+// Falko (23.10.2026): the entrance faces north. A small greenhouse has its door in a gable end, so the gable ends face north and south. Since
+// 30.10.2026 the site data say so themselves (heading 16°: local +x = the door gable) – the greenhouse stands where the 2024 aerial shows a light
+// roof and Falko's photos of 26.10.2026 put it, north of the yellow hut and south-west of the washhouse (docs/plans/garten_fotos_abgleich.md).
+// Older site data (heading 96°, the long side east–west) are turned here as before.
 {
   const b = BLD.greenhouse;
   if (b.az === 96) {
