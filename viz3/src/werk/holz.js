@@ -14,6 +14,7 @@ import { KERN } from '../core/kern.js';
 import { LOAD, markDirty } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { BUILD, COL } from '../core/geo.js';
+import { SAW_PH } from '../garden/workshop.js';
 import { P, rebuildGrids } from '../game/walkable.js';
 import { news } from '../audio/audio.js';
 import { PLAY, SFX } from '../game/play.js';
@@ -510,7 +511,7 @@ export const HOLZ = (() => {
   // the ground (or a log lying there, or the log yard's squared timbers) under a point
   function support(x, y, self) {
     let z = KERN.ground(x, y);
-    for (const u of YARD.under || []) {
+    for (const u of yardOn() ? YARD.under : []) {
       const dx = x - u.x,
         dy = y - u.y,
         a = dx * u.ux + dy * u.uy,
@@ -642,7 +643,10 @@ export const HOLZ = (() => {
     TRAILER.loadList = S.logs.filter(l => l.st === 'trailer');
   }
   // ---------------- the log yard (Holzlager) beside the band sawmill: two squared timbers across, logs on them ----------------
+  // It comes with the workshop hall (construction phase 1, garden/workshop.js SAW_PH): today there is meadow (photos of 26.10.2026), logs
+  // are unloaded onto the ground.
   const YARD = { under: [], inside: () => false };
+  const yardOn = () => (window.PHASE | 0) >= SAW_PH;
   // the log yard north of the band sawmill, logs lying north–south like on the mill (workshop coordinates as built → where it stands now)
   const WT = (x, y) => (window.BUILD && BUILD.werkstatt ? BUILD.werkstatt.tf(x, y) : [x, y]);
   S.YARD0 = (() => {
@@ -670,10 +674,15 @@ export const HOLZ = (() => {
       YARD.under.push({ x, y, z, ux: uy, uy: -ux, l: Y.w });
     }
     g.traverse(o => {
-      if (o.isMesh) o.userData.noMerge = true;
+      if (o.isMesh) {
+        o.userData.noMerge = true;
+        o.userData.ph = SAW_PH;
+        o.visible = yardOn(); // built after the phase was set (game/walkable.js applies it on the next change)
+      }
     });
     scene.add(g);
     YARD.inside = p => {
+      if (!yardOn()) return false;
       const dx = p[0] - Y.x,
         dy = p[1] - Y.y,
         a = dx * ux + dy * uy,

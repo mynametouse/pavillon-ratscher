@@ -12,7 +12,7 @@ import { SAVE } from '../core/save.js';
 import { COARSE, OFFLINE, QS, scene, V } from '../core/head.js';
 import { ANISO, markDirty, plain, whenLoaded } from '../core/assets.js';
 import { BUILD, phase } from '../core/geo.js';
-import { WORKS } from '../garden/workshop.js';
+import { SAW_PH, WORKS } from '../garden/workshop.js';
 import { mulberry } from '../garden/grass.js';
 import { DOOR, P, toggleDoor } from '../game/walkable.js';
 import { toast } from '../audio/audio.js';
@@ -40,6 +40,11 @@ export const WERK = (() => {
   }
   const think = (t, ms) => PLAY.think(t, ms);
   const now = () => CLOCK.t;
+  // Falko 30.10.2026: in construction phase 0 (the garden of today) the workshop is the open lean-to of the photos – table saw, drum
+  // sander, band sawmill and benches, no thickness planer, no glue table, no fuming tent (they come with the hall, SAW_PH). Stations, the
+  // stock, the tools and the texts have a place per phase: index 0 = the lean-to, 1 = the hall (garden/workshop.js WORKS.layout).
+  const PH = () => (window.WORKS && WORKS.phNow ? WORKS.phNow() : (window.PHASE | 0) < SAW_PH ? 0 : 1);
+  const PH0 = () => PH() === 0;
   const de = v => (Math.round(v * 10) / 10).toLocaleString('de-DE');
   const KERF = 3.2,
     OT = 12,
@@ -778,6 +783,7 @@ export const WERK = (() => {
     T.art = o.art || name;
     T.home = o.home || '';
     T.def = o.at0;
+    T.def0 = o.today || null; // its place in the lean-to of today (phase 0); none: not there (the ammonia goes with the fuming tent)
     T.tool = true;
     TOOLS[id] = T;
     return T;
@@ -792,6 +798,7 @@ export const WERK = (() => {
       at: 0.2,
       desc: 'Schaumstoffrolle für Leim: schnell und gleichmäßig auf breiten Fugen.',
       at0: [-2.5, -40.33, 0.86, 0.3],
+      today: [-4.08, -40.3, 0.82, 0.3],
     },
     () => {
       const g = new THREE.Group();
@@ -812,6 +819,7 @@ export const WERK = (() => {
       at: 0.25,
       desc: 'Flachpinsel für Leim: genau, aber langsamer als die Rolle.',
       at0: [-2.66, -40.34, 0.86, 0.2],
+      today: [-4.24, -40.36, 0.82, 0.2],
     },
     () => {
       const g = new THREE.Group();
@@ -831,6 +839,7 @@ export const WERK = (() => {
       at: 0.3,
       desc: 'Gehärtetes Stahlblech mit Grat: nimmt getrockneten Leim und feine Späne ab.',
       at0: [-1.4, -40.36, 0.88, 0.1],
+      today: [-2.85, -40.38, 0.86, 0.1],
     },
     () => {
       const g = new THREE.Group();
@@ -849,6 +858,7 @@ export const WERK = (() => {
       upright: true,
       desc: 'Kleiner Hobel mit flachem Winkel: für Fasen an Langholz- und Stirnholzkanten.',
       at0: [-1.35, -39.93, 0.88, 0.5],
+      today: [-2.8, -40.0, 0.86, 0.5],
     },
     () => {
       const g = new THREE.Group();
@@ -870,6 +880,7 @@ export const WERK = (() => {
       at: 0.6,
       desc: 'Schleifteller 125 mm, Klett-Schleifpapier K80 bis K240; Absaugung angeschlossen.',
       at0: [0.0, -40.17, 0.88, 0],
+      today: [-1.72, -40.2, 0.86, 0],
     },
     () => {
       const g = new THREE.Group();
@@ -890,6 +901,7 @@ export const WERK = (() => {
       at: 0.5,
       desc: 'Feuchter Schwamm: richtet die Fasern auf (Wässern), damit das Brett nach dem Spülen glatt bleibt.',
       at0: [0.32, -39.92, 0.245, 0.2],
+      today: [-1.68, -39.62, 0.245, 0.2],
     },
     () => {
       const g = new THREE.Group();
@@ -907,6 +919,7 @@ export const WERK = (() => {
       hang: 0.12,
       desc: 'Lebensmittelechtes Öl auf Leinölbasis mit Baumwolllappen. Getränkte Lappen können sich selbst entzünden!',
       at0: [-0.12, -40.36, 0.88, 0],
+      today: [-1.62, -40.42, 0.86, 0],
     },
     () => {
       const g = new THREE.Group();
@@ -927,6 +940,7 @@ export const WERK = (() => {
       at: 0.2,
       desc: 'Elektrisches Brandeisen mit Messingstempel „KLINGENHOLZ“; braucht etwa 5 Minuten zum Aufheizen.',
       at0: [-0.58, -40.38, 0.88, 0],
+      today: [-2.45, -40.42, 0.86, 0],
     },
     () => {
       const g = new THREE.Group();
@@ -947,6 +961,7 @@ export const WERK = (() => {
       at: 0.35,
       desc: 'Widerstands-Holzfeuchtemesser: zwei Stifte ins Holz, Anzeige in Prozent (Holzart Eiche eingestellt).',
       at0: [-0.45, -39.9, 0.88, 0.4],
+      today: [-1.9, -39.97, 0.86, 0.4],
     },
     () => {
       const g = new THREE.Group();
@@ -967,6 +982,7 @@ export const WERK = (() => {
       vm: { x: 0.3, y: -0.28, z: -0.55, rx: -0.95, rz: 0.35, s: 0.55 },
       desc: 'Pflicht bei Schnittbreiten unter 120 mm: die Hand bleibt weit weg vom Sägeblatt.',
       at0: [-3.82, -37.72, 0.86, 1.57],
+      today: [-3.95, -38.5, 0.89, 1.57],
     },
     () => {
       const g = new THREE.Group();
@@ -995,30 +1011,100 @@ export const WERK = (() => {
     }
   );
   const TOOL_LIST = [ROLLER, BRUSH, SCRAPER, PLANE, SANDER, SPONGE, OIL, BRAND, METER, PUSH, AMMO];
-  function toolDefaults() {
-    for (const T of TOOL_LIST) {
-      const [x, y, z, a] = T.def,
-        [px, py] = WT(x, y);
-      T.place(px, py, z, (a || 0) + WDA());
+  function toolHome(T) {
+    const d = PH0() ? T.def0 : T.def;
+    if (!d) {
+      if (T.state === 'world') T.gone();
+      return;
     }
+    const [x, y, z, a] = d,
+      [px, py] = WT(x, y);
+    T.place(px, py, z, (a || 0) + WDA());
+  }
+  function toolDefaults() {
+    for (const T of TOOL_LIST) toolHome(T);
   }
   // ---------------- stations ----------------
-  // at: where the workpiece lies (site coordinates of the workshop as built), op: where the player stands to work
+  // at: where the workpiece lies (site coordinates of the workshop as built), op: where the player stands to work; per phase (index 0: the
+  // lean-to of today, 1: the hall): at0/op0/name0/rot0 for phase 0 – a station without op0 is not there today (no planer, no fuming tent)
   const ST = {};
   function station(key, o) {
     const S = (ST[key] = Object.assign({ key, wp: null, hold: grp(WG, o.at[0], o.at[1], o.at[2]) }, o));
     S.base = S.hold.position.clone();
+    S.AT = [o.at0 || o.at, o.at];
+    S.OP = [o.op0 || null, o.op];
+    S.NAME = [o.name0 || o.name, o.name];
+    S.ROT = [o.rot0 || 0, 0];
     return S;
   }
-  station('saw', { at: [-4.45, -38.1, 0.86], op: [-3.3, -38.05, 0.9], r: 1.45, name: 'Tischkreissäge' });
-  station('glue', { at: [-3.32, -40.02, 0.86], op: [-3.32, -39.3, 0.9], r: 1.55, name: 'Leimtisch' });
+  station('saw', {
+    at: [-4.45, -38.1, 0.86],
+    op: [-3.3, -38.05, 0.9],
+    at0: [-4.13, -38.88, 0.9],
+    op0: [-3.3, -38.88, 0.9],
+    r: 1.45,
+    name: 'Tischkreissäge',
+  });
+  station('glue', {
+    at: [-3.32, -40.02, 0.86],
+    op: [-3.32, -39.3, 0.9],
+    at0: [-4.75, -40.16, 0.82],
+    op0: [-4.75, -39.45, 0.9],
+    r: 1.55,
+    name: 'Leimtisch',
+    name0: 'Werkbank',
+  });
   station('planer', { at: [-1.55, -38.05, 0.62], op: [-0.55, -38.05, 0.7], r: 1.35, name: 'Dickenhobel' });
-  station('sander', { at: [0.85, -38.0, 0.83], op: [0.85, -36.85, 0.9], r: 1.45, name: 'Trommelschleifer' });
-  station('bench', { at: [-0.9, -40.12, 0.88], op: [-0.9, -39.4, 0.9], r: 1.55, name: 'Hobelbank' });
+  // today the drum sander is fed from the east (its plate side): the station is turned a quarter, the board runs east → west
+  station('sander', {
+    at: [0.85, -38.0, 0.83],
+    op: [0.85, -36.85, 0.9],
+    at0: [0.33, -39.1, 0.72],
+    op0: [1.3, -39.1, 0.9],
+    rot0: -Math.PI / 2,
+    r: 1.45,
+    name: 'Trommelschleifer',
+  });
+  station('bench', {
+    at: [-0.9, -40.12, 0.88],
+    op: [-0.9, -39.4, 0.9],
+    at0: [-2.25, -40.17, 0.86],
+    op0: [-2.25, -39.45, 0.9],
+    r: 1.55,
+    name: 'Hobelbank',
+    name0: 'Werkbank',
+  });
   station('tent', { at: [5.25, -40.05, 0.16], op: [5.25, -39.3, 0.6], r: 1.5, name: 'Räucherzelt' });
-  const RACK = { items: [], hold: grp(WG, 0, 0, 0), op: [2.15, -39.72, 0.6] },
-    SHELF = { items: [], hold: grp(WG, 0, 0, 0), op: [2.15, -40.15, 1.5] };
-  const PSA = { op: [0.63, -39.9, 1.35] };
+  // the stock of glued panels (today on the lower shelf of the white bench), the finished boards (today on the shelf above it), the gear
+  const RACK = {
+      items: [],
+      hold: grp(WG, 0, 0, 0),
+      op: [2.15, -39.72, 0.6],
+      OP: [
+        [-2.75, -39.5, 0.5],
+        [2.15, -39.72, 0.6],
+      ],
+    },
+    SHELF = {
+      items: [],
+      hold: grp(WG, 0, 0, 0),
+      op: [2.15, -40.15, 1.5],
+      OP: [
+        [-2.45, -39.75, 1.4],
+        [2.15, -40.15, 1.5],
+      ],
+    };
+  const PSA = {
+    op: [0.63, -39.9, 1.35],
+    OP: [
+      [-3.4, -39.95, 1.35],
+      [0.63, -39.9, 1.35],
+    ],
+  };
+  const RK = () => (PH0() ? 'im Vorrat' : 'im Regal'); // where the stock is, in words
+  const atName = n =>
+    (({ Tischkreissäge: 'an der ', Hobelbank: 'an der ', Werkbank: 'auf der ', Räucherzelt: 'im ' })[n] || 'am ') + n;
+  const glueAt = () => (PH0() ? 'auf der Werkbank' : 'auf dem Leimtisch');
   // clamps and cauls at the glue table, the dish in the tent
   const GL = { clamps: [], cauls: [], f: [], hold: grp(WG, -3.32, -40.02, 0.86) };
   for (let i = 0; i < 5; i++) {
@@ -1366,17 +1452,23 @@ export const WERK = (() => {
   }
   // ---------------- the rack (stock and stored work) and the shelf (finished boards) ----------------
   function renderRack() {
+    const p0 = PH0();
     clear(RACK.hold);
     RACK.items.forEach((wp, k) => {
       const m = wpMesh(wp, { edge: true });
-      m.position.copy(V(2.15 - (wp.L > 600 ? 0 : 0.5) + (k % 2) * 0.02, -40.27 + k * 0.052, 0.1));
+      // today on edge on the lower shelf of the white bench, beside the end-grain blanks; in the hall in the rack at the back wall
+      m.position.copy(
+        p0
+          ? V(-2.45 - (wp.L > 600 ? 0 : 0.25) + (k % 2) * 0.02, -40.38 + k * 0.05, 0.2)
+          : V(2.15 - (wp.L > 600 ? 0 : 0.5) + (k % 2) * 0.02, -40.27 + k * 0.052, 0.1)
+      );
       RACK.hold.add(m);
     });
     clear(SHELF.hold);
     SHELF.items.forEach((wp, k) => {
       const m = wpMesh(wp, { edge: true });
       m.rotation.x = -0.16;
-      m.position.copy(V(1.25 + k * 0.36, -40.33, 1.69));
+      m.position.copy(p0 ? V(-2.75 + k * 0.23, -40.36, 1.53) : V(1.25 + k * 0.36, -40.33, 1.69));
       SHELF.hold.add(m);
     });
     markDirty(true);
@@ -1463,6 +1555,32 @@ export const WERK = (() => {
     ['brandmark', 'Brandzeichen „KLINGENHOLZ“', 'Brandeisen 5 min aufheizen, gleichmäßig drücken, nicht zu lange.'],
     ['done', 'Einlagern oder verschenken', 'Fertige Bretter ins Regal (obere Ablage) oder Ronald bringen.'],
   ];
+  // the same way in the lean-to of today (phase 0): no thickness planer, no glue table, no fuming tent – what is done instead
+  const BOOK0 = BOOK.map(([k, t, d]) => {
+    switch (k) {
+      case 'material':
+        return [k, 'Leimholzplatte Eiche aus dem Vorrat unter der weißen Werkbank holen', d];
+      case 'psa':
+        return [k, 'Schutzausrüstung vom Haken an der Rückwand', d];
+      case 'lay1':
+        return [k, 'Kanteln hochkant auf der Werkbank auslegen, Verleimung vorbereiten', d];
+      case 'plane':
+        return [
+          k,
+          'Leim abkratzen, am Trommelschleifer plan schleifen',
+          'Ziehklinge auf der Werkbank – getrockneter Leim verklebt das Schleifpapier. Einen Dickenhobel gibt es im Schuppen noch nicht: der Trommelschleifer schleift das Leimholz beidseitig plan, Langholz bis 0,5 mm je Durchgang, nach jedem Durchgang wenden.',
+        ];
+      case 'fume':
+        return [
+          k,
+          'Räuchern (erst mit dem Räucherzelt der Werkstatthalle, Bauphase 1)',
+          'Im Schuppen gibt es kein Räucherzelt: das Brett bleibt naturhell. Später räuchert Ammoniak 25 % im Zelt das Stirnholz tief, Langholz nur ein paar Millimeter.',
+        ];
+      case 'done':
+        return [k, t, 'Fertige Bretter aufs Brett über der weißen Werkbank stellen oder Ronald bringen.'];
+    }
+    return [k, t, d];
+  });
   const ORDER = {
     panel: 2,
     blank: 3,
@@ -1497,7 +1615,7 @@ export const WERK = (() => {
       case 'rip':
         return { t: 'weiter Kanteln sägen (' + wp.cut + '/' + wp.nRip + ')', at: 'saw' };
       case 'strips':
-        return { t: 'auf dem Leimtisch auslegen', at: 'glue' };
+        return { t: glueAt() + ' auslegen', at: 'glue' };
       case 'lay1':
       case 'lay2':
         return wp.dirty
@@ -1516,22 +1634,24 @@ export const WERK = (() => {
       }
       case 'panel1':
         return wp.sq
-          ? { t: 'Leim abkratzen (Hobelbank, Ziehklinge)', at: 'bench' }
-          : { t: 'Dickenhobel: beidseitig sauber hobeln', at: 'planer' };
+          ? { t: 'Leim abkratzen (' + ST.bench.name + ', Ziehklinge)', at: 'bench' }
+          : PH0()
+            ? { t: 'Trommelschleifer: beidseitig plan schleifen', at: 'sander' }
+            : { t: 'Dickenhobel: beidseitig sauber hobeln', at: 'planer' };
       case 'planed1':
         return { t: 'an der Tischkreissäge in Scheiben sägen', at: 'saw' };
       case 'slice':
         return { t: 'weiter Scheiben sägen (' + wp.cut + '/' + wp.nSl + ')', at: 'saw' };
       case 'slices':
-        return { t: 'auf dem Leimtisch drehen und auslegen', at: 'glue' };
+        return { t: glueAt() + ' drehen und auslegen', at: 'glue' };
       case 'board':
         return wp.sq
-          ? { t: 'Leim abkratzen (Hobelbank, Ziehklinge)', at: 'bench' }
+          ? { t: 'Leim abkratzen (' + ST.bench.name + ', Ziehklinge)', at: 'bench' }
           : { t: 'Trommelschleifer: plan schleifen', at: 'sander' };
       case 'flat':
         return { t: 'an der Tischkreissäge besäumen', at: 'saw' };
       case 'trimmed':
-        return { t: 'Kanten fasen (Blockhobel, Hobelbank)', at: 'bench' };
+        return { t: 'Kanten fasen (Blockhobel, ' + ST.bench.name + ')', at: 'bench' };
       case 'finish': {
         const o = wp.oil;
         if (wp.grit < 240)
@@ -1560,7 +1680,10 @@ export const WERK = (() => {
         };
       }
       case 'done':
-        return { t: 'ins Regal stellen oder Ronald bringen', at: 'shelf' };
+        return {
+          t: (PH0() ? 'aufs Brett über der Werkbank' : 'ins Regal') + ' stellen oder Ronald bringen',
+          at: 'shelf',
+        };
     }
     return null;
   }
@@ -1568,8 +1691,9 @@ export const WERK = (() => {
   // where a station is now (site coordinates) – for the tracker and the arrow
   const posOf = key => {
     const S = ST[key];
-    if (S) return WT(S.op[0], S.op[1]);
-    if (key === 'shelf' || key === 'rack') return WT(RACK.op[0], RACK.op[1]);
+    if (S) return S.op ? WT(S.op[0], S.op[1]) : null;
+    if (key === 'shelf') return WT(SHELF.op[0], SHELF.op[1]);
+    if (key === 'rack') return WT(RACK.op[0], RACK.op[1]);
     return null;
   };
   // the most advanced workpiece that is not finished: the player's current project
@@ -1591,8 +1715,12 @@ export const WERK = (() => {
       if (fin) return ['Fertig: ' + nameOf(fin) + '.', null];
       return [
         RACK.items.length
-          ? 'Hol eine Leimholzplatte Eiche aus dem Regal in der Werkstatt.'
-          : 'Das Regal ist leer – Platten nachbestellen (am Regal).',
+          ? PH0()
+            ? 'Hol eine Leimholzplatte Eiche aus dem Vorrat unter der weißen Werkbank im Werkstattschuppen.'
+            : 'Hol eine Leimholzplatte Eiche aus dem Regal in der Werkstatt.'
+          : PH0()
+            ? 'Der Vorrat ist leer – Platten nachbestellen (unter der weißen Werkbank).'
+            : 'Das Regal ist leer – Platten nachbestellen (am Regal).',
         () => posOf('rack'),
       ];
     }
@@ -1603,9 +1731,9 @@ export const WERK = (() => {
       wp.where === 'inv'
         ? ''
         : wp.where === 'rack'
-          ? ' (liegt im Regal)'
+          ? ' (liegt ' + RK() + ')'
           : !here && ST[wp.where]
-            ? ' (liegt am ' + ST[wp.where].name + ')'
+            ? ' (liegt ' + atName(ST[wp.where].name) + ')'
             : '';
     return [
       nameOf(wp) + ': ' + nx.t + where + '.',
@@ -1868,7 +1996,12 @@ export const WERK = (() => {
         fum: JSON.parse(JSON.stringify(wp.fum || {})),
       });
       rackPut(b, true);
-      think('Abgelängt. Die zweite Hälfte (500 mm) lege ich ins Regal – daraus wird ein zweites Brett.', 3800);
+      think(
+        'Abgelängt. Die zweite Hälfte (500 mm) lege ich ' +
+          (PH0() ? 'in den Vorrat' : 'ins Regal') +
+          ' – daraus wird ein zweites Brett.',
+        3800
+      );
       SFX.drop();
       mach('tablesaw', false);
     } else if (md === 'rip') {
@@ -2483,8 +2616,39 @@ export const WERK = (() => {
   function sanderOps(S) {
     const wp = S.wp,
       c = carriedWP();
+    if (WORKS.covered('sander'))
+      return c && (c.st === 'board' || c.st === 'panel1')
+        ? { key: 'cov', label: 'Trommelschleifer: erst die Plane abnehmen', run: () => cover('sander', false) }
+        : null;
     if (!wp) {
       if (!c) return null;
+      // today there is no thickness planer: the drum sander flattens the long-grain panel too (slower, but just as flat)
+      if (c.st === 'panel1' && PH0()) {
+        if (c.sq)
+          return {
+            key: 'sq',
+            label: 'Erst den Leim abkratzen',
+            run: () =>
+              think(
+                'Getrockneter Leim verklebt das Schleifpapier sofort. Erst mit der Ziehklinge abkratzen (Werkbank).',
+                3600
+              ),
+          };
+        if (now() - c.tc < CURE)
+          return {
+            key: 'cure',
+            label: 'Leim noch zu frisch (noch ' + CLOCK.dur(c.tc + CURE - now()) + ')',
+            run: () => CLOCK.wait(c.tc + CURE - now() + 0.5, 'Leim härtet'),
+          };
+        return {
+          key: 'put',
+          label: 'Leimholz auf den Trommelschleifer legen',
+          run: () => {
+            toStation(c, 'sander');
+            openSander();
+          },
+        };
+      }
       if (c.st === 'board') {
         if (c.sq)
           return {
@@ -2511,16 +2675,27 @@ export const WERK = (() => {
       return null;
     }
     if (PLAY.carry === METER) return { key: 'm', label: 'Holzfeuchte messen', run: () => measure(wp) };
+    const panel = wp.st === 'panel1';
     if (wp.rmT[0] >= wp.need[0] - 1e-6 && wp.rmT[1] >= wp.need[1] - 1e-6)
-      return {
-        key: 'take',
-        label: 'Brett nehmen (plan, ' + de(wp.H) + ' mm)',
-        run: () => {
-          wp.st = 'flat';
-          wp.grit = 80;
-          fromStation('sander');
-        },
-      };
+      return panel
+        ? {
+            key: 'take',
+            label: 'Leimholz nehmen (plan, ' + de(wp.Zcur) + ' mm)',
+            run: () => {
+              wp.st = 'planed1';
+              wp.Z = wp.Zcur;
+              fromStation('sander');
+            },
+          }
+        : {
+            key: 'take',
+            label: 'Brett nehmen (plan, ' + de(wp.H) + ' mm)',
+            run: () => {
+              wp.st = 'flat';
+              wp.grit = 80;
+              fromStation('sander');
+            },
+          };
     if (!wp.sd || !wp.sd.ok) return { key: 'set', label: 'Trommelschleifer einstellen', run: () => openSander() };
     const f = wp.face,
       r = wp.sd.r;
@@ -2551,16 +2726,18 @@ export const WERK = (() => {
       },
       run: () => {
         WORKS.cut.sander = 0;
-        sandPass(wp);
+        if (panel) sandPanel(wp);
+        else sandPass(wp);
       },
     };
   }
   function openSander() {
     const wp = ST.sander.wp;
     if (!wp) return;
-    const p = wp.sd || (wp.sd = { r: 0.3 });
+    const panel = wp.st === 'panel1',
+      p = wp.sd || (wp.sd = { r: panel ? 0.5 : 0.3 });
     LATE.WUI.machine({
-      title: 'Trommelschleifer · K80',
+      title: 'Trommelschleifer · K80' + (panel ? ' · Leimholz' : ''),
       sub: nameOf(wp) + ' · ' + dimsOf(wp),
       rows: [
         {
@@ -2571,7 +2748,9 @@ export const WERK = (() => {
           max: 1.0,
           step: 0.05,
           unit: 'mm',
-          hint: 'Stirnholz höchstens 0,3–0,5 mm: sonst wird es heiß und verbrennt.',
+          hint: panel
+            ? 'Langholz verträgt bis 0,5 mm je Durchgang; das Leimholz nach jedem Durchgang wenden.'
+            : 'Stirnholz höchstens 0,3–0,5 mm: sonst wird es heiß und verbrennt.',
         },
       ],
       info:
@@ -2588,6 +2767,42 @@ export const WERK = (() => {
         changed();
       },
     });
+  }
+  // the long-grain panel flattened on the drum sander (phase 0, instead of the thickness planer)
+  function sandPanel(wp) {
+    const f = wp.face,
+      r = wp.sd.r;
+    if (r > 0.8) {
+      think(
+        'Zu viel auf einmal – die Trommel würgt ab, der Vorschub rutscht. Langholz höchstens 0,5 mm je Durchgang.',
+        4000
+      );
+      mach('sander', false);
+      render('sander');
+      changed();
+      return;
+    }
+    if (r > 0.6) {
+      wp.need[f] = Math.max(wp.need[f], wp.rmT[f] + r + 0.2);
+      think('Brandstreifen quer über das Leimholz – zu viel Abnahme. Mit wenig Abnahme wieder herausschleifen.', 3600);
+    }
+    wp.rmT[f] += r;
+    wp.Zcur -= r;
+    if (f === 1) wp.rmB[1] += r;
+    wp.face = 1 - f;
+    if (wp.rmT[0] >= wp.need[0] - 1e-6 && wp.rmT[1] >= wp.need[1] - 1e-6) {
+      mach('sander', false);
+      think(
+        'Beide Seiten plan: ' +
+          de(wp.Zcur) +
+          ' mm. Ohne Dickenhobel dauert es länger, aber das Leimholz ist eben.' +
+          (wp.stainB ? ' Die Eisenflecken sind mit weggeschliffen.' : ''),
+        4000
+      );
+      wp.stainB = false;
+    }
+    render('sander');
+    changed();
   }
   function sandPass(wp) {
     const f = wp.face,
@@ -2630,7 +2845,11 @@ export const WERK = (() => {
       c = carriedWP();
     if (!wp) {
       if (c && (c.sq || ['trimmed', 'finish'].includes(c.st)))
-        return { key: 'put', label: FF(c.st) + ' auf die Hobelbank legen', run: () => toStation(c, 'bench') };
+        return {
+          key: 'put',
+          label: FF(c.st) + ' auf die ' + ST.bench.name + ' legen',
+          run: () => toStation(c, 'bench'),
+        };
       return null;
     }
     if (PLAY.carry === METER) return { key: 'm', label: 'Holzfeuchte messen', run: () => measure(wp) };
@@ -2652,7 +2871,9 @@ export const WERK = (() => {
             think(
               'Leim ab. ' +
                 (wp.st === 'panel1'
-                  ? 'Jetzt in den Dickenhobel.'
+                  ? PH0()
+                    ? 'Jetzt am Trommelschleifer beidseitig plan schleifen – einen Dickenhobel gibt es hier noch nicht.'
+                    : 'Jetzt in den Dickenhobel.'
                   : 'Jetzt plan schleifen (Trommelschleifer) – nicht in den Dickenhobel!'),
               3000
             );
@@ -3138,18 +3359,18 @@ export const WERK = (() => {
     label: () => {
       if (!ON) return null;
       const c = carriedWP();
-      if (PLAY.carry === METER && RACK.items.length) return 'Holzfeuchte messen (Regal)';
-      if (c && !c.done) return FF(c.st) + ' ins Regal legen';
+      if (PLAY.carry === METER && RACK.items.length) return 'Holzfeuchte messen (' + (PH0() ? 'Vorrat' : 'Regal') + ')';
+      if (c && !c.done) return FF(c.st) + (PH0() ? ' in den Vorrat legen' : ' ins Regal legen');
       if (c) return null;
       if (RACK.items.length) {
         const wp = RACK.items[RACK.items.length - 1];
-        return nameOf(wp) + ' nehmen' + (RACK.items.length > 1 ? ' (' + RACK.items.length + ' im Regal)' : '');
+        return nameOf(wp) + ' nehmen' + (RACK.items.length > 1 ? ' (' + RACK.items.length + ' ' + RK() + ')' : '');
       }
       return W.order
         ? 'Lieferung kommt ' +
             (W.order.t - now() < 1440 && CLOCK.day(W.order.t) === CLOCK.day() ? 'heute' : 'morgen') +
             ' um 9:00'
-        : 'Regal leer: 2 Leimholzplatten bestellen';
+        : (PH0() ? 'Vorrat' : 'Regal') + ' leer: 2 Leimholzplatten bestellen';
     },
     run: () => {
       const c = carriedWP();
@@ -3186,7 +3407,8 @@ export const WERK = (() => {
     label: () => {
       if (!ON) return null;
       const c = carriedWP();
-      if (c && c.done) return 'Schneidebrett ins Regal stellen (oben)';
+      if (c && c.done)
+        return PH0() ? 'Schneidebrett aufs Brett über der Werkbank stellen' : 'Schneidebrett ins Regal stellen (oben)';
       if (!c && SHELF.items.length) return nameOf(SHELF.items[SHELF.items.length - 1]) + ' nehmen';
       return null;
     },
@@ -3227,7 +3449,12 @@ export const WERK = (() => {
     prio: 0.75,
     gest3: 'interact',
     pos: () => [...WT(PSA.op[0], PSA.op[1]), PSA.op[2]],
-    label: () => (ON ? (GEAR.have ? 'Schutzausrüstung an- und ablegen' : 'Schutzausrüstung nehmen (PSA-Brett)') : null),
+    label: () =>
+      ON
+        ? GEAR.have
+          ? 'Schutzausrüstung an- und ablegen'
+          : 'Schutzausrüstung nehmen (' + (PH0() ? 'Haken an der Rückwand' : 'PSA-Brett') + ')'
+        : null,
     run: () => {
       if (!GEAR.have) {
         GEAR.give();
@@ -3276,11 +3503,109 @@ export const WERK = (() => {
       if (b) measure(b);
     },
   });
+  // ---------------- today's tarpaulins (phase 0): over the band sawmill's head and over the drum sander (Falko 30.10.2026) ----------------
+  // Off, the machine can be switched on and used; on again only while it stands still. The state is kept with the workshop ('cov').
+  const COVER = {
+    saw: {
+      name: 'Blockbandsäge',
+      pos: () => {
+        const p = WORKS.mpos('saw'); // the operator's place by the head: the tarpaulin is taken off from the garden side
+        return [...WT(p[0] - 0.95, p[1] + 0.55), 1.0];
+      },
+      off: 'Plane ab. Die Blockbandsäge ist bereit: den Stamm mit der Traktorgabel längs auf die Bänke legen, festklemmen, Einschnitt planen.',
+    },
+    sander: {
+      name: 'Trommelschleifer',
+      pos: () => [...WT(0.33, -38.55), 1.0],
+      off: 'Ziegel runter, Folie und Plane ab. Der Trommelschleifer (Holzmann) ist bereit – Strom gibt das Aggregat.',
+    },
+  };
+  function cover(k, on) {
+    if (on && DOOR[k] && DOOR[k].target > 0.5) mach(k, false);
+    WORKS.setCover(k, on);
+    SFX.cloth();
+    think(on ? 'Plane drauf – so bleibt die Maschine trocken.' : COVER[k].off, on ? 2400 : 4600);
+    KERN.emit('werkstatt:plane', { k, on: !!on });
+    save();
+  }
+  for (const k of Object.keys(COVER))
+    PLAY.act({
+      id: 'werk:plane:' + k,
+      r: k === 'saw' ? 1.9 : 1.5,
+      prio: 0.3,
+      pos: COVER[k].pos,
+      label: () => {
+        if (!ON || !PH0()) return null;
+        if (WORKS.cov[k]) return 'Plane abnehmen (' + COVER[k].name + ')';
+        if (DOOR[k] && DOOR[k].target > 0.5) return null;
+        if (k === 'saw' && window.HOLZSAW && LATE.HOLZSAW.cutting && LATE.HOLZSAW.cutting()) return null;
+        return 'Plane auflegen (' + COVER[k].name + ')';
+      },
+      hold: 1.4,
+      holdLabel: 'Plane …',
+      anim3: 'interactLoop',
+      run: () => cover(k, !WORKS.cov[k]),
+    });
+  // ---------------- the phase's places (garden/workshop.js WORKS.layout calls this when the phase changes) ----------------
+  let LOADED = false;
+  const inShop = p => {
+    const [cx, cy] = WT(-1.5, -38.7),
+      a = -WDA(),
+      dx = p[0] - cx,
+      dy = p[1] - cy,
+      lx = dx * Math.cos(a) - dy * Math.sin(a),
+      ly = dx * Math.sin(a) + dy * Math.cos(a);
+    return Math.abs(lx) < 8.6 && ly > -2.8 && ly < 2.4;
+  };
+  function shelfPut(wp) {
+    if (wp.T && PLAY.has(wp.T)) PLAY.take(wp.T);
+    if (wp.T) wp.T.gone();
+    wp.where = 'shelf';
+    SHELF.items.push(wp);
+  }
+  function applyPhase(ph) {
+    for (const S of Object.values(ST)) {
+      S.at = S.AT[ph];
+      S.op = S.OP[ph];
+      S.name = S.NAME[ph];
+      S.hold.position.copy(V(S.at[0], S.at[1], S.at[2]));
+      S.base = S.hold.position.clone();
+      S.hold.rotation.y = S.ROT[ph];
+      S.hold.visible = !!S.op;
+    }
+    RACK.op = RACK.OP[ph];
+    SHELF.op = SHELF.OP[ph];
+    PSA.op = PSA.OP[ph];
+    GL.hold.position.copy(ST.glue.hold.position);
+    TENT.dish.visible = !!ST.tent.op && TENT.amm > 0.02;
+    if (!LOADED) return; // the game's things are placed by load()
+    // a workpiece at a station that is not there now goes to the stock; tools and workpieces lying in the workshop to this phase's places
+    for (const S of Object.values(ST))
+      if (!S.op && S.wp) {
+        const wp = S.wp;
+        S.wp = null;
+        if (wp.done) shelfPut(wp);
+        else rackPut(wp, true);
+      }
+    for (const T of TOOL_LIST) if (T.state === 'world' && inShop(T.pos)) toolHome(T);
+    if (PH0() && AMMO.state === 'world') AMMO.gone();
+    if (!PH0() && AMMO.state === 'gone') toolHome(AMMO);
+    for (const wp of W.list)
+      if (wp.T && wp.T.state === 'world' && inShop(wp.T.pos)) {
+        if (wp.done) shelfPut(wp);
+        else rackPut(wp, true);
+      }
+    for (const k of Object.keys(ST)) render(k);
+    renderRack();
+    changed();
+  }
+  WORKS.onLayout.push(applyPhase);
+  applyPhase(PH());
   // ---------------- one act per station; the operation decides the label ----------------
   const OPS = { saw: sawOps, glue: glueOps, planer: planerOps, sander: sanderOps, bench: benchOps, tent: tentOps };
   const opOf = S => {
     try {
-      return ON ? OPS[S.key](S) : null;
+      return ON && S.op ? OPS[S.key](S) : null;
     } catch (e) {
       console.warn('werk op', S.key, e);
       return null;
@@ -3300,16 +3625,26 @@ export const WERK = (() => {
       return T;
     }
     think(
-      'Dafür brauche ich ' + list.map(t => t.art).join(' oder ') + (list[0].home ? ' – ' + list[0].home : '') + '.',
+      'Dafür brauche ich ' + list.map(t => t.art).join(' oder ') + (list[0].home ? ' – ' + homeTxt(list[0]) : '') + '.',
       3600
     );
     return null;
+  }
+  // where a tool lies, in the words of the phase (the lean-to of today has workbenches, no Hobelbank, no glue table, no fuming tent)
+  function homeTxt(T) {
+    if (!PH0()) return T.home;
+    if (!T.def0) return 'erst mit der Werkstatthalle (Bauphase 1)';
+    return T.home
+      .replace('am Leimtisch', 'auf der Werkbank an der Westwand')
+      .replace('neben der Hobelbank', 'vor der weißen Werkbank')
+      .replace('an der Tischkreissäge', 'auf der Tischkreissäge')
+      .replace('der Hobelbank', 'der weißen Werkbank');
   }
   function syn(o, S) {
     const key = o.key;
     return {
       id: 'werk:h:' + S.key,
-      pos: () => [...WT(S.op[0], S.op[1]), S.op[2] ?? 0.9],
+      pos: () => (S.op ? [...WT(S.op[0], S.op[1]), S.op[2] ?? 0.9] : null),
       hold: o.hold,
       gauge: o.gauge,
       anim3: o.anim3,
@@ -3352,7 +3687,7 @@ export const WERK = (() => {
       r: S.r,
       prio: 0.9,
       gest3: false,
-      pos: () => [...WT(S.op[0], S.op[1]), S.op[2] ?? 0.9],
+      pos: () => (S.op ? [...WT(S.op[0], S.op[1]), S.op[2] ?? 0.9] : null),
       obj: () => S.hold,
       label: () => {
         const o = opOf(S);
@@ -3369,7 +3704,7 @@ export const WERK = (() => {
     let best = null,
       bd = 1e9;
     for (const S of Object.values(ST)) {
-      if (!S.wp) continue;
+      if (!S.wp || !S.op) continue;
       const [x, y] = WT(S.op[0], S.op[1]),
         d = Math.hypot(P.x - x, P.y - y);
       if (d < S.r && d < bd) {
@@ -3418,14 +3753,15 @@ export const WERK = (() => {
       }
       renderRack();
       save();
-      if (P.mode === 'walk') banner('Lieferung', n + ' Leimholzplatten Eiche liegen im Regal');
+      if (P.mode === 'walk')
+        banner('Lieferung', n + ' Leimholzplatten Eiche liegen ' + (PH0() ? 'unter der weißen Werkbank' : 'im Regal'));
     }
     const gw = ST.glue.wp;
     if (gw && gw.g && gw.g.t0 != null && !gw.g.tc && CLOCK.focused) {
       const [x, y] = WT(ST.glue.op[0], ST.glue.op[1]);
       if (Math.hypot(P.x - x, P.y - y) > 7) {
         unfocus();
-        think('Weg vom Leimtisch – der Leim zieht ohne mich an.', 3000);
+        think('Weg ' + (PH0() ? 'von der Werkbank' : 'vom Leimtisch') + ' – der Leim zieht ohne mich an.', 3000);
       }
     }
     if (gw && gw.g && gw.g.t0 != null && !gw.g.tc && t - gw.g.t0 > OT + 4) {
@@ -3437,7 +3773,7 @@ export const WERK = (() => {
       render('glue');
       save();
       if (P.mode === 'walk')
-        think('Der Leim auf dem Leimtisch ist angezogen, bevor gespannt war. Leim abkratzen, neu anfangen.', 4600);
+        think('Der Leim ' + glueAt() + ' ist angezogen, bevor gespannt war. Leim abkratzen, neu anfangen.', 4600);
     }
     if (gw && (gw.st === 'clamp1' || gw.st === 'clamp2') && gw.sq && t - gw.g.tc > 25 && !gw._dryShown) {
       gw._dryShown = true;
@@ -3499,6 +3835,7 @@ export const WERK = (() => {
             tent: { amm: TENT.amm, open: TENT.open, airT: TENT.airT, t0: TENT.t0 },
             tools,
             q: W.quality,
+            cov: { saw: !!WORKS.cov.saw, sander: !!WORKS.cov.sander },
           })
         );
       } catch (e) {
@@ -3533,6 +3870,7 @@ export const WERK = (() => {
       s = JSON.parse(SAVE.raw(LSK) || 'null');
     } catch (e) {}
     for (const S of Object.values(ST)) S.wp = null;
+    LOADED = true;
     if (!s || s.v !== 1) {
       defaults();
       toolDefaults();
@@ -3540,6 +3878,8 @@ export const WERK = (() => {
       for (const k of Object.keys(ST)) render(k);
       return;
     }
+    // the tarpaulins of today (only booleans count; anything else: covered, as on the photos)
+    for (const k of ['saw', 'sander']) WORKS.setCover(k, !(s.cov && s.cov[k] === false));
     for (const o of s.list || []) if (o.where === 'bernd') o.where = 'ronald'; // the preview of 22.10.2026 23:09–23:45 called him Bernd
     W.list.length = 0;
     W.n = s.n || 0;
@@ -3592,6 +3932,7 @@ export const WERK = (() => {
     for (const wp of W.list) if (wp.T) killThing(wp);
     for (const S of Object.values(ST)) S.wp = null;
     Object.assign(TENT, { amm: 0, open: true, airT: null });
+    for (const k of ['saw', 'sander']) WORKS.setCover(k, true);
     unfocus();
     defaults();
     toolDefaults();
@@ -3606,6 +3947,7 @@ export const WERK = (() => {
           load();
         } catch (e) {
           console.warn('werk load', e);
+          LOADED = true;
           defaults();
           toolDefaults();
           renderRack();
@@ -3634,8 +3976,12 @@ export const WERK = (() => {
     nameOf,
     dimsOf,
     descOf,
-    BOOK,
+    get BOOK() {
+      return PH0() ? BOOK0 : BOOK;
+    },
     ORDER,
+    cover,
+    PSA,
     posOf,
     carriedWP,
     render,

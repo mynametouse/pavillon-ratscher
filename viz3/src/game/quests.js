@@ -11,6 +11,7 @@ import { B, BUILD, phase, PHN } from '../core/geo.js';
 import { mulberry } from '../garden/grass.js';
 import { HOF, SHEDS } from '../garden/hof_hubert.js';
 import { GARAGE, oliveCan } from '../garden/garage.js';
+import { SAW_PH } from '../garden/workshop.js';
 import { DOOR, G, P, PHASE, poseDoor, toggleDoor } from './walkable.js';
 import { audio, toast } from '../audio/audio.js';
 import {
@@ -369,6 +370,25 @@ export const QUESTS = (() => {
     LOG.visible = v;
     markDirty(true);
   }
+  // Falko 30.10.2026: the chopping place west of the workshop (block, the axe stuck in it, the log on it, split halves) comes with the
+  // workshop hall (construction phase 1, garden/workshop.js SAW_PH); in the garden of today it is not there – nor the axe stuck in it
+  const chopOn = () => PHASE >= SAW_PH;
+  let chopPh = null;
+  function chopPhase() {
+    const on = chopOn();
+    if (on === chopPh) return;
+    chopPh = on;
+    if (!on) {
+      if (AXE.state === 'world' && AXE.mode === 'stuck') AXE.gone();
+      LOG.visible = false;
+      showPile(0);
+    } else {
+      if (AXE.state === 'gone' && AXE.mode === 'stuck') axeInBlock();
+      if (Q.fire.st === 'gather') showPile(6);
+      else if (Q.fire.st === 'chop') showPile(Q.fire.chopped * 2);
+    }
+    markDirty(true);
+  }
   function pileSpot(i) {
     const [x, y] = blockPos(),
       a = WDA() + 0.9 + (i % 3) * 0.32,
@@ -569,7 +589,9 @@ export const QUESTS = (() => {
         if (window.WERK && LATE.WERK.hasFinished()) return ['Bring das Schneidebrett zu Ronald.', () => [R().x, R().y]];
         if (st === 'deliver')
           return [
-            'Nimm ein fertiges Schneidebrett (Regal, obere Ablage) und bring es Ronald.',
+            PHASE >= SAW_PH
+              ? 'Nimm ein fertiges Schneidebrett (Regal, obere Ablage) und bring es Ronald.'
+              : 'Nimm ein fertiges Schneidebrett (Brett über der weißen Werkbank) und bring es Ronald.',
             () => LATE.WERK.posOf('shelf'),
           ];
         const o = window.WERK && LATE.WERK.objective();
@@ -1115,7 +1137,12 @@ export const QUESTS = (() => {
     need: AXE,
     gest3: false,
     label: () =>
-      ON && PLAY.has(AXE) && (Q.fire.st === 'chop' || Q.fire.st === 'axe') && Q.fire.chopped < 3 && !chopping
+      ON &&
+      chopOn() &&
+      PLAY.has(AXE) &&
+      (Q.fire.st === 'chop' || Q.fire.st === 'axe') &&
+      Q.fire.chopped < 3 &&
+      !chopping
         ? 'Holz spalten (' + Q.fire.chopped + '/3)'
         : null,
     run: async () => {
@@ -1190,7 +1217,9 @@ export const QUESTS = (() => {
       return [x, y, 0.1];
     },
     label: () =>
-      ON && Q.fire.st === 'gather' && WOOD.state !== 'world' && !PLAY.has(WOOD) ? 'Brennholz aufsammeln' : null,
+      ON && chopOn() && Q.fire.st === 'gather' && WOOD.state !== 'world' && !PLAY.has(WOOD)
+        ? 'Brennholz aufsammeln'
+        : null,
     run: () => {
       showPile(0);
       WOOD.state = 'gone';
@@ -1783,6 +1812,7 @@ export const QUESTS = (() => {
   window.TICKS.push(dt => {
     if (!ON) return;
     hideItems();
+    chopPhase();
     for (let i = tufts.length - 1; i >= 0; i--) {
       const t = tufts[i];
       t.life -= dt;
@@ -1806,6 +1836,7 @@ export const QUESTS = (() => {
   // ---------------- load / reset ----------------
   function placeDefaults() {
     axeInBlock();
+    chopPh = null; // the next tick hides it again if the chopping place is not there in this phase
     SCHEITE.gone();
     {
       const [x, y] = keyHome();

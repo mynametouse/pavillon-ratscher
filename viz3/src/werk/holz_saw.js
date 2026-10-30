@@ -14,7 +14,7 @@ import { scene, V } from '../core/head.js';
 import { ANISO, markDirty } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { BUILD, COL, DOORS } from '../core/geo.js';
-import { SAW_PH, WORKS } from '../garden/workshop.js';
+import { WORKS } from '../garden/workshop.js';
 import { mulberry } from '../garden/grass.js';
 import { PLAY, SFX } from '../game/play.js';
 import { QUESTS } from '../game/quests.js';
@@ -49,16 +49,20 @@ export const HOLZSAW = (() => {
     const m = SAWm();
     return m && m.state;
   };
-  // the sawmill's own frame: the workshop as built (it may have been moved in the top view: BUILD.werkstatt)
+  // the sawmill's own frame: the mill's group in the workshop (garden/workshop.js SAWG – the workshop as built at the plan's place, moved
+  // by the phase's offset: today in front of the lean-to, from phase 1 north of the hall; the workshop may have been moved in the top view)
   const G = new THREE.Group();
   {
-    const Bw = window.BUILD && BUILD.werkstatt;
-    if (Bw) {
+    const SG = SAWs() && SAWs().g,
+      Bw = window.BUILD && BUILD.werkstatt;
+    if (SG) SG.add(G);
+    else if (Bw) {
       Bw.root.add(G);
       G.position.copy(V(-Bw.pivot[0], -Bw.pivot[1], 0));
     } else scene.add(G);
   }
   const WT = (x, y) => (window.BUILD && BUILD.werkstatt ? BUILD.werkstatt.tf(x, y) : [x, y]);
+  const OFF = () => (SAWs() && SAWs().off) || [0, 0]; // the phase's offset of the mill (workshop as built)
   const toLoc = p => {
     G.updateWorldMatrix(true, false);
     const v = V(p[0], p[1], p[2]);
@@ -318,7 +322,6 @@ export const HOLZSAW = (() => {
       lb = toLoc(b),
       lm = toLoc(m);
     if (Math.abs(lm[0] - MX()) > 0.75 || lm[1] < LY0 - 0.8 || lm[1] > LY1 + 0.8) return null;
-    if ((window.PHASE | 0) < SAW_PH) return null; // the mill comes with phase 1: the log stays on the ground
     const ax = [lb[0] - la[0], lb[1] - la[1]],
       cosA = Math.abs(ax[1]) / (Math.hypot(ax[0], ax[1]) || 1);
     if (cosA < 0.9) {
@@ -355,8 +358,9 @@ export const HOLZSAW = (() => {
   function hideDeco() {
     const s = SAWs();
     if (!s) return;
-    if (s.logMesh && s.logMesh.visible) {
+    if (s.logMesh && s.logMesh.userData.ph !== 1e9) {
       s.logMesh.visible = false;
+      s.logMesh.userData.ph = 1e9; // gone for good: a change of the construction phase does not bring it back (game/walkable.js)
       S.decoGone = true;
       markDirty(true);
     }
@@ -514,7 +518,7 @@ export const HOLZSAW = (() => {
         if (!s) return;
         s.dir = 1;
         s.s = s.s0 + (s.s1 - s.s0) * k;
-        s.head.position.z = -(s.s - WORKS.py);
+        s.head.position.z = -s.s; // in the mill's group
         markDirty();
       },
       cancel: () => {
@@ -663,12 +667,13 @@ export const HOLZSAW = (() => {
       }
     });
     PG = S.mergeSet(list, G, PG);
+    const o = OFF(); // the colliders in the workshop as built: with the phase's offset of the mill
     HOLZ.setCol(
       'holzblock',
       logs.map((lid, k) => {
-        const x = MX() + 1.35 + k * 0.7,
+        const x = MX() + 1.35 + k * 0.7 + o[0],
           h = S.boards.filter(b => b.st === 'pile' && b.lid === lid).reduce((a, b) => a + b.t, 0.14);
-        return [x - 0.3, x + 0.3, LY0 - 0.25, LY1 + 0.25, 0, h];
+        return [x - 0.3, x + 0.3, LY0 - 0.25 + o[1], LY1 + 0.25 + o[1], 0, h];
       })
     );
     // the timbers under the blocks
@@ -684,12 +689,13 @@ export const HOLZSAW = (() => {
         }
       G.add(S.under);
     }
+    S.under.visible = logs.length > 0; // the timbers lie there only while there are boards on them
   }
   S.pileBoards = () => S.boards.filter(b => b.st === 'pile');
   S.rebuildPiles = rebuildPiles;
   // ---------------- the acts at the mill ----------------
   function opAt() {
-    if ((window.PHASE | 0) < SAW_PH) return null; // no band sawmill in the garden of today (construction phase 0)
+    if (WORKS.covered && WORKS.covered('saw')) return null; // today under its tarpaulin: take it off first (werk/werk.js)
     const l = curLog();
     if (!l) return null;
     if (!S.clamp)
@@ -711,8 +717,7 @@ export const HOLZSAW = (() => {
   }
   function register() {
     const pos = () => {
-      const s = SAWs(),
-        [x, y] = WT(MX() + 0.95, (LY0 + LY1) / 2 - 2.3);
+      const [x, y] = toW([MX() + 0.95, (LY0 + LY1) / 2 - 2.3, 0]);
       return [x, y, 0.9];
     };
     PLAY.act({
@@ -785,6 +790,21 @@ export const HOLZSAW = (() => {
   KERN.tick(() => {
     if (anim.on) markDirty();
   }, 'werk/holz_saw');
+  S.cutting = () => anim.on;
+  // the phase moved the mill (garden/workshop.js WORKS.layout): the log on its bunks and the boards' colliders follow
+  if (WORKS.onLayout)
+    WORKS.onLayout.push(() => {
+      if (!HOLZ.ready) return;
+      const l = curLog();
+      if (l) {
+        seat(l);
+        l.wp0 = l.p0; // also while it is drawn as the part left after the cuts (remain(): l.hide)
+        l.wp1 = l.p1;
+      }
+      rebuildPiles();
+      remain();
+      HOLZ.redraw();
+    });
   return S;
 })();
 LATE.HOLZSAW = HOLZSAW;

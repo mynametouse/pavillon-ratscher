@@ -71,6 +71,7 @@ const HOLZDRY = (() => {
     return k;
   }
   function emcOf(b, E, st) {
+    if (b.st === 'kiln' && S.kiln && S.kiln.shed) return Math.max(10.5, E - 2); // phase 0: under the lean-to's roof, dry and airy
     if (b.st === 'kiln') return S.kiln && S.kiln.on ? 8 : Math.max(9, E - 3.5);
     if (b.st === 'shop') return Math.max(9, E - 3.5);
     if (b.st === 'pile') return E + 3;
@@ -81,9 +82,11 @@ const HOLZDRY = (() => {
     const c = clim(doy),
       T =
         b.st === 'kiln'
-          ? S.kiln && S.kiln.on
-            ? 32
-            : Math.max(12, c.T + 5)
+          ? S.kiln && S.kiln.shed
+            ? c.T
+            : S.kiln && S.kiln.on
+              ? 32
+              : Math.max(12, c.T + 5)
           : b.st === 'shop'
             ? Math.max(12, c.T + 5)
             : c.T,
@@ -445,7 +448,12 @@ const HOLZDRY = (() => {
     if (!bs.length) return;
     const MT = window.WERK && WERK.TOOLS && WERK.TOOLS.meter;
     if (MT && !PLAY.has(MT)) {
-      think('Den Feuchtemesser von der Hobelbank in der Werkstatt holen.', 3400);
+      think(
+        (window.PHASE | 0) >= SAW_PH
+          ? 'Den Feuchtemesser von der Hobelbank in der Werkstatt holen.'
+          : 'Den Feuchtemesser von der weißen Werkbank im Werkstattschuppen holen.',
+        3400
+      );
       return;
     }
     const nL = st.layers.length,
@@ -557,7 +565,9 @@ const HOLZDRY = (() => {
           ],
         },
       ],
-      info: 'Luftgetrocknet erreicht Holz hier im Sommer 13–15 %, im Winter nur um 20 %: Die Luft ist dann zu feucht. Für die Werkstatt (Möbel, Schneidebretter) braucht es 8–10 % – das schafft erst der Trockenschrank.',
+      info: today()
+        ? 'Luftgetrocknet erreicht Holz hier im Sommer 13–15 %, im Winter nur um 20 %: Die Luft ist dann zu feucht. Für Schneidebretter braucht es unter 12 %: lufttrocken auf 1 m abgelängt unter dem Pultdach nachtrocknen (im Sommer 11–12 %); 8–10 % schafft erst der Trockenschrank der Werkstatthalle.'
+        : 'Luftgetrocknet erreicht Holz hier im Sommer 13–15 %, im Winter nur um 20 %: Die Luft ist dann zu feucht. Für die Werkstatt (Möbel, Schneidebretter) braucht es 8–10 % – das schafft erst der Trockenschrank.',
       go: 'Vorspulen',
       onGo: v => {
         let days = v.span === 'w' ? 7 : v.span === 'm' ? 30 : v.span === 'q' ? 91 : forecast(+v.span);
@@ -614,6 +624,7 @@ const HOLZDRY = (() => {
       if (o.isMesh) {
         o.userData.noMerge = true;
         o.userData.ph = SAW_PH;
+        o.visible = (window.PHASE | 0) >= SAW_PH; // built after the phase was set (game/walkable.js applies it on the next change)
       }
     });
     G.add(g);
@@ -622,14 +633,163 @@ const HOLZDRY = (() => {
     ]);
     for (const c of COL) if (c && c[6] === 'holzofen' && c[7] == null) c[7] = SAW_PH;
   }
+  const today = () => (window.PHASE | 0) < SAW_PH;
   const kpos = () => {
-    const [x, y] = WT(KP.x - KP.w / 2 - 0.6, KP.y);
+    const [x, y] = today() ? WT(-5.05, -38.4) : WT(KP.x - KP.w / 2 - 0.6, KP.y); // today: at the front of the lean-to's west bay
     return [x, y, 1.0];
   };
   const inKiln = () => B().filter(b => b.st === 'kiln');
   const avgOf = bs => (bs.length ? bs.reduce((s, b) => s + b.mc, 0) / bs.length : 0);
+  // ---------------- today (phase 0) instead of the drying cabinet: the 1 m pieces on stickers under the lean-to's roof ----------------
+  // On the lower shelf of the plywood bench, sheltered and airy: there they come to ~11–12 % in summer, not below ~18 % in winter (no heat).
+  const SHED = { x: -4.65, y0: -40.4, y1: -39.9, z: 0.22 }; // workshop coordinates as built
+  let SMESH = null;
+  function shedRebuild() {
+    if (SMESH) {
+      G.remove(SMESH);
+      SMESH.traverse(o => {
+        if (o.isMesh) o.geometry.dispose();
+      });
+      SMESH = null;
+    }
+    const bs = S.kiln && S.kiln.shed ? inKiln() : [];
+    if (!bs.length || !SAW()) {
+      markDirty(true);
+      return;
+    }
+    const list = [];
+    let z = SHED.z,
+      y = SHED.y0,
+      layerT = 0;
+    for (const b of bs.slice(0, 24)) {
+      const w = Math.max(b.wS, b.wW);
+      if (y + w > SHED.y1 + 1e-3) {
+        y = SHED.y0;
+        z += layerT + STICK;
+        layerT = 0;
+      }
+      if (z > 0.72) break;
+      const p = V(SHED.x - 0.5, y + w / 2, z - b.zb),
+        m = new THREE.Matrix4().makeRotationY(-Math.PI / 2).setPosition(p.x, p.y, p.z);
+      list.push({ b: Object.assign({}, b, { L: 1.0 }), m });
+      y += w + 0.02;
+      layerT = Math.max(layerT, b.t);
+    }
+    const g = new THREE.Group();
+    SAW().mergeSet(list, g, null);
+    g.traverse(o => {
+      if (o.isMesh) {
+        o.userData.noMerge = true;
+        o.userData.ph = 0;
+        o.userData.phEnd = SAW_PH;
+        o.visible = today();
+      }
+    });
+    G.add(g);
+    SMESH = g;
+    markDirty(true);
+  }
+  function shedDays() {
+    const bs = inKiln().map(b => Object.assign({}, b));
+    let t = CLOCK.t;
+    for (let d = 1; d <= 365; d++) {
+      const doy = doyOf(t);
+      for (const b of bs) stepDay(b, doy, S.stack);
+      t += 1440;
+      if (avgOf(bs) <= 12) return d;
+    }
+    return -1;
+  }
+  function shedOp() {
+    const k = inKiln(),
+      st = S.stack,
+      sb = B().filter(b => b.st === 'stack');
+    if (!k.length) {
+      if (!sb.length) return null;
+      const m = avgOf(sb);
+      return {
+        label: 'Lufttrockene Bretter auf 1 m ablängen, unter dem Pultdach nachtrocknen',
+        run: () => {
+          if (m > 21) {
+            think(`Erst lufttrocken: im Mittel ${de(m)} %. Draußen im Stapel weitertrocknen lassen.`, 4200);
+            return;
+          }
+          PLAY.run({
+            id: 'hd:sin',
+            r: 3,
+            rMove: 2.5,
+            pos: kpos,
+            label: () => 'Einlagern',
+            hold: 4,
+            holdLabel: 'Ablängen, mit Leisten unter die Werkbank …',
+            anim3: 'interactLoop',
+            run: () => {
+              for (const b of sb) {
+                b.st = 'kiln';
+                b.Lw = Math.max(0, b.L - 2 * (b.endck || 0));
+              }
+              if (st) {
+                st.layers = [];
+                st.roof = false;
+              }
+              S.kiln = { on: false, shed: true, t0: CLOCK.t };
+              CLOCK.t += 40;
+              rebuild();
+              shedRebuild();
+              save();
+              think(
+                'Auf Leisten unter dem Pultdach, auf dem Brett unter der Sperrholzbank. Ohne Trockenschrank kommen sie hier im Sommer auf 11–12 %, im Winter nicht unter 18 %.',
+                5200
+              );
+            },
+          });
+        },
+      };
+    }
+    const m = avgOf(k);
+    if (m > 12)
+      return {
+        label: `Bretter unter dem Dach: ${de(m)} % – warten (Zeitraffer)`,
+        run: () => {
+          const days = shedDays();
+          if (days < 0) {
+            think(
+              'Unter 12 % kommen sie hier erst im Sommer – oder in der Werkstatthalle mit dem Trockenschrank.',
+              4200
+            );
+            return;
+          }
+          CLOCK.wait(days * 1440, 'Zeitraffer', () => {
+            advance();
+            think(`Unter dem Dach jetzt ${de(avgOf(inKiln()))} %.`, 3200);
+          });
+        },
+      };
+    return {
+      label: `Trockene Bretter (${de(m)} %) hervorholen – Leimholz für die Werkstatt`,
+      run: () =>
+        PLAY.run({
+          id: 'hd:sout',
+          r: 3,
+          rMove: 2.5,
+          pos: kpos,
+          label: () => 'Hervorholen',
+          hold: 3,
+          holdLabel: 'Hervorholen …',
+          anim3: 'interactLoop',
+          run: () => {
+            toShop();
+            shedRebuild();
+          },
+        }),
+    };
+  }
   function kilnOp() {
-    if ((window.PHASE | 0) < SAW_PH) return null; // no drying cabinet in the garden of today
+    if (today()) return shedOp(); // no drying cabinet in the garden of today: the boards dry on under the lean-to's roof
+    if (S.kiln && S.kiln.shed) {
+      S.kiln.shed = false; // back in the hall: the cabinet takes them as they are
+      shedRebuild();
+    }
     const k = inKiln(),
       st = S.stack,
       sb = B().filter(b => b.st === 'stack');
@@ -750,7 +910,7 @@ const HOLZDRY = (() => {
     if (n && window.WERK && WERK.addOwn) WERK.addOwn(n, sp, m);
     think(
       n
-        ? `${n} Leimholzplatte${n > 1 ? 'n' : ''} ${{ larch: 'Lärche', spruce: 'Fichte' }[sp] || ''} aus den eigenen Bohlen (abgerichtet, gehobelt, verleimt) liegen jetzt im Werkstattregal – daraus wird ein Stirnholzbrett.${thin ? ` Dazu ${thin} m dünnere Bretter auf Vorrat.` : ''}`
+        ? `${n} Leimholzplatte${n > 1 ? 'n' : ''} ${{ larch: 'Lärche', spruce: 'Fichte' }[sp] || ''} aus den eigenen Bohlen ${today() ? '(an der Tischkreissäge besäumt, am Trommelschleifer plan, mit Zwingen auf der Werkbank verleimt) liegen jetzt im Vorrat unter der weißen Werkbank' : '(abgerichtet, gehobelt, verleimt) liegen jetzt im Werkstattregal'} – daraus wird ein Stirnholzbrett.${thin ? ` Dazu ${thin} m dünnere Bretter auf Vorrat.` : ''}`
         : `Die Bretter (${thin} m) liegen auf Vorrat in der Werkstatt. Für Leimholz braucht es Bohlen ab 35 mm.`,
       6500
     );
@@ -875,6 +1035,7 @@ const HOLZDRY = (() => {
     }
     buildKiln();
     if (S.kiln && S.kiln.on && S.led) S.led.emissiveIntensity = 1.5;
+    shedRebuild();
     register();
     rebuild();
   };

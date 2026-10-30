@@ -1,4 +1,4 @@
-// ---------------- workshop: LED battens with a motion sensor (on after dark while someone is in the shed) ----------------
+// ---------------- workshop: LED battens with a motion sensor (on after dark while someone is in the shed) – today one LED floodlight ----------------
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
@@ -41,9 +41,38 @@ const WLAMP = (() => {
   g.add(sensor);
   // the battens hang in the hall, which comes with phase 1 (garden/workshop.js); the light stays in the scene (dark) so no shader recompiles
   for (const o of g.children) if (o.isMesh) o.userData.ph = SAW_PH;
+  // today (phase 0) a flat LED floodlight hangs from a rafter of the lean-to (photos IMG_7276/7280): the same light, moved there
+  const flood = new THREE.Group();
+  {
+    const frame = new THREE.Mesh(
+      new THREE.BoxGeometry(0.26, 0.05, 0.2),
+      new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.5 })
+    );
+    flood.add(frame);
+    const face = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.01, 0.16), tube);
+    face.position.y = -0.028;
+    flood.add(face);
+    flood.position.copy(V(-3.1, -39.3, 2.08));
+    flood.rotation.x = 0.35; // turned a little towards the front
+    for (const o of flood.children) {
+      o.userData.ph = 0;
+      o.userData.phEnd = SAW_PH;
+      o.castShadow = true;
+    }
+    g.add(flood);
+  }
+  const LP = [V(-3.1, -39.3, 1.95), V(-1.5, -38.72, 2.3)]; // the light's place per phase: today under the floodlight, from phase 1 in the hall
+  let lph = -1;
   const S = { on: false, k: 0, away: 0 },
     wp = new THREE.Vector3();
   window.TICKS.push(dt => {
+    const ph = (window.PHASE | 0) < SAW_PH ? 0 : 1;
+    if (ph !== lph) {
+      lph = ph;
+      light.position.copy(LP[ph]);
+      for (const o of flood.children) o.visible = ph === 0;
+      markDirty(true);
+    }
     const dark =
       window.DN && DN.active
         ? DN.state && DN.state.sunEl < 4
@@ -53,7 +82,7 @@ const WLAMP = (() => {
       typeof P !== 'undefined' && P.mode === 'walk' && Math.hypot(P.x - wp.x, P.y + wp.z) < 6.6 && P.feet < 3;
     if (near) S.away = 0;
     else S.away += dt;
-    const want = (window.PHASE | 0) >= SAW_PH && dark && (near || (S.on && S.away < 20));
+    const want = dark && (near || (S.on && S.away < 20));
     if (want !== S.on) {
       S.on = want;
       if (want && window.SFX && SFX.click) SFX.click();
