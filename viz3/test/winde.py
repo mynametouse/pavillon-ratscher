@@ -291,6 +291,7 @@ with lib.browser() as b:
         E("VEH.place('tractor', -5 - 3.4, -23, Math.PI / 2); VEH.enter('tractor'); (() => { const LD = TRACTOR2.model.LD; LD.liftT = LD.min; LD.tiltT = 0; })()"); steps(3)
         E(f"""(() => {{ const F = TRACTOR2.model.fork; F.tool.updateWorldMatrix(true, false); const p = new THREE.Vector3(0, F.top, -(F.y0 + F.y1) / 2).applyMatrix4(F.tool.matrixWorld), q = [p.x, -p.z];
           const m = HOLZ.mid(HOLZ.by['{lh2}']), v = VEH.by.tractor.st; VEH.place('tractor', v.x + m[0] - q[0], v.y, v.psi); }})()"""); steps(0.4)
+        time.sleep(6.5)   # the fork's hints come at most once per 6 s of real time (werk/holz.js warnOnce): the last one must have run out
         E("TRACTOR2.model.key('r', true)"); steps(1.5); E("TRACTOR2.model.key('r', false)"); steps(0.2)
         said = sub(); ck('a log over 1500 kg: too heavy, it says so', 'schwer' in said and E(f"HOLZ.by['{lh2}'].st") == 'ground', said[:120])
         E("VEH.exit()"); steps(0.2)
