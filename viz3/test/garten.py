@@ -55,7 +55,8 @@ with lib.browser() as b:
     # ---- data: building frames, registries ----
     st = json.loads(ev(pg, "JSON.stringify({ bld: SITE.bld, lamps: GARTEN.lamps.map(l => l.key), seats: GARTEN.seats.map(s => s.key), acts: PLAY.acts().filter(a => /garten/.test(a.id)).map(a => a.id), doors: Object.keys(DOORS).filter(k => /bungalow|holzhaus|greenhouse|schrank|ghvent/.test(k)) })"))
     print('state', json.dumps(st), flush=True)
-    ck('greenhouse turned: gable ends north/south (az 6)', abs(st['bld']['greenhouse']['az'] - 6) < 1e-6, st['bld']['greenhouse'])
+    # the greenhouse's own frame: local +x is the door gable, within 30° of north (az 6 until 30.10.2026, then 16 where the photos put it)
+    ck('greenhouse turned: gable ends north/south', abs((st['bld']['greenhouse']['az'] + 180) % 360 - 180) < 30, st['bld']['greenhouse'])
     ck('lamps registered (bulb, reading lamp, night lamp, hut)', {'bungalow', 'leselampe', 'nachttisch', 'holzhaus'} <= set(st['lamps']), st['lamps'])
     ck('seats registered (sofa, bed)', {'sofa', 'bett'} <= set(st['seats']), st['seats'])
     ck('actions in the game layer', any('garten:licht:bungalow' in a for a in st['acts']) and any('seat:garten:bett' in a for a in st['acts']), st['acts'])
@@ -65,11 +66,12 @@ with lib.browser() as b:
     print('door positions (local x, local y, world dy)', dpos, flush=True)
     for k, lx, ly, wdy in dpos:
         ck(f'door {k} faces north', wdy > 0.5, f'world dy {wdy:.2f}')
-    # the tractor's drive past the pavilion to the log yard (viz3/test/v16d.py 'bridge', world points): the hut's PV module keeps ≥ 2.5 m off it
-    pv = ev(pg, """(() => { const D = [[6.9, 3.4], [7.5, -3], [6.5, -8], [3.5, -12]];
+    # the tractor's drive to the log yard in construction phase 0 (viz3/test/v16d.py 'bridge', world points, west of the old tin garage since
+    # V17d): the hut's PV module of phase 0 (lying in the grass west of the hut since 30.10.2026) keeps ≥ 2.5 m off it
+    pv = ev(pg, """(() => { const D = [[4.6, 11.6], [4.3, 8.9], [2.2, 7.5], [-0.8, 6.7], [-3.0, 4.6], [-3.3, 1.0], [-2.2, -4.0], [0.3, -8.4], [2.0, -12.3], [2.6, -16], [2.6, -21]];
       const seg = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy))); return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy); };
       let best = 1e9, n = 0;
-      for (const e of GAME.COL) { if (e[6] !== 'pv') continue; n++; const r = e[9];
+      for (const e of GAME.COL) { if (e[6] !== 'pv' || !((e[7] == null || e[7] <= 0) && (e[8] == null || 0 < e[8]))) continue; n++; const r = e[9];
         for (const lx of [e[0], e[1]]) for (const ly of [e[2], e[3]]) { const p = r ? [r.cx + lx * r.c - ly * r.s, r.cy + lx * r.s + ly * r.c] : [lx, ly];
           for (let i = 0; i + 1 < D.length; i++) best = Math.min(best, seg(p, D[i], D[i + 1])); } }
       return { n, best: +best.toFixed(2) }; })()""")

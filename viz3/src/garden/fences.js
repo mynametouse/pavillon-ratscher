@@ -70,7 +70,7 @@ const FENCE_TEX = {
     return t;
   })(),
 };
-const FENCE_MAT = {
+export const FENCE_MAT = {
   mesh: patchSV(
     new THREE.MeshStandardMaterial({
       color: 0x2e4a2b,

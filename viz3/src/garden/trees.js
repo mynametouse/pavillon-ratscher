@@ -395,7 +395,7 @@ function buildTrees() {
   }
   // the garden's trees as Falko's photos of 26.10.2026 show them carry their kind (site.js: [x, y, crown radius, height, kind]); the
   // others (the measured crowns round the garden) get one from their size
-  const KIND_OF = { alder: 'alder', cherry: 'oakA', apple: 'apple', tree: 'ash' };
+  const KIND_OF = { alder: 'alder', cherry: 'oakA', apple: 'apple', tree: 'ash', willow: 'bushB' };
   S0.trees.forEach((t, i) => {
     const [x, y, r, h] = t;
     if (nearPath(x, y, 1.2)) return;

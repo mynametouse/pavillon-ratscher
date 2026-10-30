@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { V } from '../core/head.js';
 import { MAT } from '../core/mats.js';
-import { beam, bldBegin, bldEnd, boardLeaf, COL, cyl, PH, PH_END, RB, tagPh } from '../core/geo.js';
+import { beam, bldBegin, bldEnd, boardLeaf, COL, cyl, PH, PH_END, phase, RB, tagPh } from '../core/geo.js';
 import { placeGLB } from '../pavilion/interior.js';
 import {
   BLD,
@@ -79,8 +79,12 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
       COL.push([c[0] - 0.1, c[0] + 0.1, c[1] - 0.1, c[1] + 0.1, 0, 2.6, 'post', PH, PH_END]);
     }
   FOOT.push({ b, hx, hy, ox: 0, oy: 0 });
-  // garden table and two folding chairs just outside the south-east corner (photo-scanned bistro set; the box version stays as fallback)
+  // garden table and two folding chairs just outside the south-east corner (photo-scanned bistro set; the box version stays as fallback) –
+  // from construction phase 1: Falko's photos of 26.10.2026 (7228, 7229) show no table there today
   {
+    const P0 = PH,
+      E0 = PH_END;
+    phase(1);
     const w = worldOf(b, hx + 0.15, -hy - 0.85);
     placeGLB('garden_set', { x: w[0], y: w[1], z: 0, face: faceOf(b, 90), h: 0.86 }, () => {
       gB(g, hx - 0.2, hx + 0.5, -hy - 1.2, -hy - 0.5, 0.68, 0.72, MAT.larch);
@@ -98,6 +102,7 @@ bldBegin('carport', 'Carport mit Wohnwagen', BLD.carport.c, { short: 'Carport', 
       const r = rotDesc(b);
       lcol(r, hx - 0.25, hx + 0.55, -hy - 1.25, -hy - 0.45, 0, 0.75, 'table');
     });
+    phase(P0, E0);
   }
 }
 // ===== Wohnwagen (Tabbert, Bj. 80er): Aufbau 5,0 × 2,2 m, Deichsel nach Westen, Tür auf der Nordseite zum Garteneingang (links), Innenhöhe 1,90 m =====
