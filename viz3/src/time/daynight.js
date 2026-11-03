@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { LATE } from '../core/late.js';
 import { SAVE } from '../core/save.js';
 import { $, R, scene, V } from '../core/head.js';
-import { GI, markDirty } from '../core/assets.js';
+import { GI, markDirty, SHADOWN } from '../core/assets.js';
 import { phase } from '../core/geo.js';
 import { glowMat } from '../pavilion/interior.js';
 import { FIELDU, hemi, placeSun, setSunDir, sky, skyLoad, skyMat, skyU, sun, sunC } from '../garden/env.js';
@@ -838,19 +838,19 @@ export const DN = (() => {
       mVis: s.mVis,
     };
     hudIcon(s);
-    // V17g: a new shadow map only when the light has turned by a visible step since the last one (0.5° high, 0.15° low in the sky; it
-    // was every 0.12° – about 1.5 new maps a second at the game's clock, each as costly as the whole scene: the stutter Falko saw,
-    // 3.11.2026). The shading turns at once; the map keeps the matrix it was drawn with, so the shadows stay where they fell. With no
-    // light to speak of the map waits until there is.
+    // V17g: a new shadow map only when the light has turned by a visible step since the last one was drawn, for whatever reason (0.5°
+    // high, 0.15° low in the sky; it was every 0.12° – about 1.5 new maps a second at the game's clock, each as costly as the whole
+    // scene: the stutter Falko saw, 3.11.2026). The shading turns at once; the map keeps the matrix it was drawn with, so the shadows stay
+    // where they fell. With no light to speak of the map waits until there is.
     let shadow = false;
     if (moved) {
-      const Z = S.sh,
+      const Z = SHADOWN,
         step = s.sunEl > 25 ? 0.0087 : s.sunEl > 10 ? 0.0052 : 0.0026,
-        due = force || !Z || Z.moon !== lo.moon || Z.pend || lo.dir.angleTo(Z.dir) > step;
-      if (due && (force || !Z || lo.I > 0.02)) {
-        S.sh = { dir: lo.dir.clone(), moon: lo.moon, pend: false };
+        due = force || !Z.n || S.shMoon !== lo.moon || lo.dir.angleTo(Z.dir) > step;
+      if (due && (force || !Z.n || lo.I > 0.02)) {
+        S.shMoon = lo.moon;
         shadow = true;
-      } else if (due) Z.pend = true;
+      }
     }
     markDirty(shadow);
   }

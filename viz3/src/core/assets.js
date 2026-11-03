@@ -1187,7 +1187,11 @@ export const VEG = {
   },
 };
 window.VEG = VEG;
-// the sun's shadow map is drawn with the coarser levels (it is drawn rarely, but then all at once: the cost was a stutter)
+// the sun's shadow map is drawn with the coarser levels (it is drawn rarely, but then all at once: the cost was a stutter); SHADOWN keeps
+// the direction it was last drawn with (time/daynight.js asks for a new one only when the sun has turned a visible step since – whoever
+// asked for the last one) and how many there were
+export const SHADOWN = { dir: new THREE.Vector3(), n: 0 };
+window.SHADOWN = SHADOWN;
 {
   const sm = R.shadowMap,
     smr = sm.render.bind(sm);
@@ -1198,6 +1202,9 @@ window.VEG = VEG;
       return smr(lights, scn, camera);
     } finally {
       VEG.shadowLOD(false);
+      const L = lights.find(l => l.isDirectionalLight);
+      if (L) SHADOWN.dir.subVectors(L.position, L.target.position).normalize();
+      SHADOWN.n++;
     }
   };
 }

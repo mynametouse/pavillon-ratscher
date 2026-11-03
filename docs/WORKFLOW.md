@@ -188,4 +188,10 @@ Claude-Projekt „Garten“ – ein neuer Chat findet so wieder hinein:
   auf GitHub Actions, die Bilder kommen mit `gh run download <run> -n out` zurück; private Fotos legt man nur im Arbeitsordner des Chats
   daneben. Das aktuelle Luftbild (DOP 20 cm, Garten beflogen 07.04.2024) auf Modellachsen: `python3 tools/geo/dop_th.py OUT.jpg x0 x1 y0 y1
   0.05` (nicht ins Repo). Quellen und offene Fragen: `docs/plans/garten_dorf_abgleich.md`.
+- **Ruckeln untersuchen** (seit V17g, 3.11.2026): wer ein neues Bild oder eine neue Schattenkarte anfordert, zeigt ein Getter/Setter auf
+  `window.DIRTY` (`Object.defineProperty(DIRTY, 'shadow', { set: v => … new Error().stack … })`, im Testserver ohne `--min` mit lesbaren
+  Namen); was ein Bild kostet, eine Hülle um `GAME.R.renderBufferDirect` (Draw-Calls und Dreiecke je Mesh, `scene == null` = Schattenpass) –
+  immer mit `GAME.film(0, true)` oder `GAME.shot()` (beide setzen Detailstufen und Sichtweiten für die Kamera). Vergleich mit `?nolod` /
+  `?nocull`; Messung und Grenzen: `viz3/test/leistung.py`; Regeln und gemessene Zahlen: ARCHITECTURE.md §10. In SwiftShader sagen
+  Bildzeiten nichts – Draw-Calls, Dreiecke und Anforderungen zählen. Nie Szenenobjekte aus `evaluate` zurückgeben.
 - **Oberfläche**: Menü-Einträge `shell/menu.html`, HUD-Knöpfe `shell/panel_3d.html`, Fenster-Container `shell/windows.html`, Stil im passenden `shell/css/*.css`, Hinweise „Was das Modell zeigt“ `shell/notes.html`.

@@ -47,17 +47,21 @@ with lib.browser() as b:
     an = res['spots']['Anger']
     ck('the Anger: small things far away not drawn', an['culled'] > 100, f"{an['culled']} meshes")
     ck('the Anger: the garden trees in their coarse levels', an['lod'] > 10, f"{an['lod']} sets")
-    # standing still in the garden, 10 s game time: new shadow maps asked for (the frame loop clears the request each frame)
-    E("GAME.view(3.6, 15.2, KERN.ground(3.6, 15.2) + 1.6, 200, 0, 62); GAME.step(1); DIRTY.shadow = false")
+    # standing still in the garden, 10 s game time: new shadow maps asked for. GAME.step draws nothing, so a request is taken as drawn
+    # (as the frame loop would draw it): cleared, and the sun's direction noted as the map's (core/assets.js SHADOWN)
+    E("""window.__drawn = () => { if (!DIRTY.shadow) return false; DIRTY.shadow = false;
+      const L = GAME.scene.children.find(o => o.isDirectionalLight && o.castShadow);
+      if (L && window.SHADOWN) { SHADOWN.dir.subVectors(L.position, L.target.position).normalize(); SHADOWN.n++; } return true; }; true""")
+    E("GAME.view(3.6, 15.2, KERN.ground(3.6, 15.2) + 1.6, 200, 0, 62); GAME.step(1); __drawn()")
     n = 0
     for i in range(100):
         E("GAME.step(0.1)")
-        if E("DIRTY.shadow"): n += 1; E("DIRTY.shadow = false")
+        if E("__drawn()"): n += 1
     res['idle_shadow_10s'] = n
     ck('standing still: few new shadow maps', n <= 6, f'{n} in 10 s (V17f: about 15)')
     # walking (collisions off, the walker's own steps)
     E("GAME.setCollide && GAME.setCollide(false)")
-    E(f"GAME.view({ROUTE[0][0]}, {ROUTE[0][1]}, KERN.ground({ROUTE[0][0]}, {ROUTE[0][1]}) + 1.6, 0, 0, 62); GAME.step(0.1); DIRTY.shadow = false")
+    E(f"GAME.view({ROUTE[0][0]}, {ROUTE[0][1]}, KERN.ground({ROUTE[0][0]}, {ROUTE[0][1]}) + 1.6, 0, 0, 62); GAME.step(0.1); __drawn()")
     walked, n = 0.0, 0
     for (tx, ty) in ROUTE[1:]:
         for k in range(300):
@@ -65,7 +69,7 @@ with lib.browser() as b:
             if math.hypot(tx - x, ty - y) < 1.0: break
             E(f"GAME.P.yaw = {math.degrees(math.atan2(tx - x, ty - y))}; GAME.step(0.1, 1, 0, 0, 1)")
             x2, y2 = E("[GAME.P.x, GAME.P.y]"); walked += math.hypot(x2 - x, y2 - y)
-            if E("DIRTY.shadow"): n += 1; E("DIRTY.shadow = false")
+            if E("__drawn()"): n += 1
     res['walk'] = {'m': round(walked), 'shadow': n}
     ck('walking: new shadow maps per 100 m', walked > 80 and n / walked * 100 <= 40, f'{n} on {walked:.0f} m (V17f: about 85 per 100 m)')
     json.dump(res, open(os.path.join(OUT, 'leistung.json'), 'w'), indent=1)
