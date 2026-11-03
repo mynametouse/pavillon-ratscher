@@ -276,6 +276,10 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
     vorher höchstens alle 90 ms, Hubert ging ruckend); Autos und Fußgänger des Verkehrs fordern nur Bilder an, wenn sie nah oder voraus
     sind. Die Bewegungsstufe (`MOTION.level`) verdoppelt die Wartezeit vor dem nächsten Hochschalten (bis 60 s), wenn es binnen 4 s
     zurückging (sie pendelte, jeder Wechsel ein neues Render-Target).
+  - Nach Grafikstufe (`applyTier`, `render/render.js`): „mittel“ Sonnenkarte 2048², Stufen- und Rasenabstände ×0,8, Sichtweite kleiner
+    Dinge ×0,75; „schnell“ 1024², ×0,6, ×0,55 (Falkos Laptop mit Intel UHD 620 landet auf „mittel“ oder „schnell“). Die Einträge von
+    `CULL` stehen in einer WeakMap, nicht in `userData` (three kopiert `userData` beim Klonen über JSON – ein Verweis aufs Mesh dort
+    warf „Converting circular structure to JSON“); ein Klon, der den Layer 29 mitbringt, bekommt beim nächsten Blick (alle 6 s) Layer 0.
   - Zum Vergleichen: `?nolod` (feinste Stufe überall, Rasen voll), `?nocull` (alles in jeder Entfernung). Test: `viz3/test/leistung.py`
     (Draw-Calls, Dreiecke, Schattenkarte an Gartentor, Huberts Hof, Anger; neue Schattenkarten im Stehen und auf ~140 m Weg; Thema
     `viz3/extra/leistung/tests.txt`).
