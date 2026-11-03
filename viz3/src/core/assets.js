@@ -1134,6 +1134,7 @@ export const VEG = {
   lod: [],
   last: new THREE.Vector3(1e9, 0, 0),
   k: -1,
+  lodK: 1, // the level distances and the lawn's thinning scaled by the render tier (render/render.js applyTier)
   update(p) {
     CULL.update(p);
     const k = window.inHouseNow && inHouseNow() ? 0.5 : 1;
@@ -1147,7 +1148,9 @@ export const VEG = {
         th = im.userData.thin;
       im.visible = d < im.userData.maxD * k;
       // V17g: thinned with distance (userData.thin [d1, d2]: half beyond d1, a quarter beyond d2 – the instances lie in random order)
-      if (th && !NOLOD) im.count = d < th[0] ? im.userData.n0 : d < th[1] ? im.userData.n0 >> 1 : im.userData.n0 >> 2;
+      if (th && !NOLOD)
+        im.count =
+          d < th[0] * this.lodK ? im.userData.n0 : d < th[1] * this.lodK ? im.userData.n0 >> 1 : im.userData.n0 >> 2;
     }
     // the plan and model views look from far: there the second level at most (the crowns as before)
     const lim = window.GAME && GAME.P && GAME.P.mode !== 'walk' ? 1 : 9;
@@ -1157,7 +1160,7 @@ export const VEG = {
         if (!bs) continue;
         const d = bs.center.distanceTo(p) - bs.radius;
         let i = 0;
-        while (!NOLOD && i < L.d.length && i < lim && d >= L.d[i]) i++;
+        while (!NOLOD && i < L.d.length && i < lim && d >= L.d[i] * this.lodK) i++;
         L.cur = i;
         for (let j = 0; j < L.ms.length; j++) L.ms[j].visible = j === i;
         continue;
@@ -1224,6 +1227,7 @@ export const CULL = {
   fullT: 0,
   last: new THREE.Vector3(1e9, 0, 0),
   fov: 0,
+  k: 1, // scaled by the render tier (render/render.js applyTier)
   BIT: 29,
   scan() {
     const L = [],
@@ -1285,7 +1289,7 @@ export const CULL = {
     this.last.copy(p);
     this.fov = fov;
     this.t = now;
-    const k = 62 / fov;
+    const k = (62 / fov) * this.k;
     let n = 0;
     for (const e of this.list) {
       const far = _cv.copy(e.c).applyMatrix4(e.o.matrixWorld).distanceTo(p) - e.r > e.d * k;

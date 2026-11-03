@@ -12,7 +12,7 @@ import { N8AOPass } from 'n8ao';
 import { LATE } from '../core/late.js';
 import { SAVE } from '../core/save.js';
 import { BASE, cam, DPR, HQ0, OFFLINE, QS, R, scene, stage, VARIANT } from '../core/head.js';
-import { FIGSH, GI, LM, LOAD, LOADLOG, markDirty, SV } from '../core/assets.js';
+import { CULL, FIGSH, GI, LM, LOAD, LOADLOG, markDirty, SV, VEG } from '../core/assets.js';
 import { PHN } from '../core/geo.js';
 import { GLCHECK } from '../core/detail.js';
 import { pmrem, sun, sunDir } from '../garden/env.js';
@@ -163,9 +163,27 @@ export function motionTrack(now) {
   }
 }
 buildMotion();
+// the sun's shadow map size the page started with (garden/env.js: 4096² on computers, 2048² on phones and tablets)
+const SHS0 = sun.shadow.mapSize.x;
 export function applyTier(name, save) {
   const T = TIERS[name] || TIERS.mittel;
   RENDER.tier = name;
+  // V17g: below „hoch“ a smaller sun shadow map (2048², „schnell“ 1024²: onboard graphics fill every texel of each new one), the trees'
+  // coarser levels and the thinner lawn nearer, small things drawn less far
+  {
+    const n = OFFLINE ? SHS0 : name === 'hoch' ? SHS0 : name === 'mittel' ? Math.min(SHS0, 2048) : 1024;
+    if (sun.shadow.mapSize.x !== n) {
+      sun.shadow.mapSize.set(n, n);
+      if (sun.shadow.map) {
+        sun.shadow.map.dispose();
+        sun.shadow.map = null;
+      }
+    }
+    VEG.lodK = OFFLINE || name === 'hoch' ? 1 : name === 'mittel' ? 0.8 : 0.6;
+    CULL.k = OFFLINE || name === 'hoch' ? 1 : name === 'mittel' ? 0.75 : 0.55;
+    VEG.last.set(1e9, 0, 0);
+    CULL.last.set(1e9, 0, 0);
+  }
   const aoOn = !!(T.ao && RENDER.ao);
   if (RENDER.ao) {
     RENDER.ao.enabled = aoOn;
@@ -181,7 +199,7 @@ export function applyTier(name, save) {
   }
   if (window._resize) window._resize();
   sizeMotion();
-  markDirty();
+  markDirty(true); // a new shadow map (its size may have changed)
 }
 export function setQuality(v) {
   const name = typeof v === 'string' ? v : v ? 'hoch' : 'schnell';
