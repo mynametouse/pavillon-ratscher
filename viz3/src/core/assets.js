@@ -1221,6 +1221,7 @@ export const CULL = {
   geo: -1,
   t: 0,
   scanT: 0,
+  fullT: 0,
   last: new THREE.Vector3(1e9, 0, 0),
   fov: 0,
   BIT: 29,
@@ -1231,10 +1232,13 @@ export const CULL = {
     scene.updateMatrixWorld();
     scene.traverse(o => {
       if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || o.frustumCulled === false || vf.has(o)) return;
-      if (o.userData.cullE) {
-        L.push(o.userData.cullE);
+      const known = CULLE.get(o);
+      if (known) {
+        L.push(known);
         return;
       }
+      // a copy of a mesh that was out of view when it was cloned carries the cull layer along (clone copies the layers): back to layer 0
+      if (o.layers.mask === 1 << this.BIT) o.layers.mask = 1;
       if (o.layers.mask !== 1 || !o.geometry) return;
       const g = o.geometry;
       if (!g.boundingSphere) g.computeBoundingSphere();
@@ -1252,7 +1256,7 @@ export const CULL = {
             !!m.emissiveMap ||
             (!!m.emissive && m.emissive.r + m.emissive.g + m.emissive.b > 0.01)),
         e = { o, c: bs.center, r, d: Math.max(20, r * (COARSE ? 170 : 240)) * (glow ? 4 : 1), far: false };
-      o.userData.cullE = e;
+      CULLE.set(o, e); // not in userData: three copies userData through JSON (clone), and e points back at the mesh
       L.push(e);
     });
     this.list = L;
@@ -1268,7 +1272,12 @@ export const CULL = {
     }
     if (now - this.scanT > 2000) {
       this.scanT = now;
-      if (R.info.memory.geometries !== this.geo) this.scan();
+      // new geometry (a zone built) at once; anyway every 6 s (clones share their geometry: a copy made while the original was out of
+      // view would keep its layer until the next look)
+      if (R.info.memory.geometries !== this.geo || now - this.fullT > 6000) {
+        this.fullT = now;
+        this.scan();
+      }
     }
     const cam = window.GAME && GAME.cam,
       fov = (cam && cam.fov) || 62;
@@ -1299,7 +1308,8 @@ export const CULL = {
   },
 };
 const _cv = new THREE.Vector3(),
-  _cq = new THREE.Quaternion();
+  _cq = new THREE.Quaternion(),
+  CULLE = new WeakMap();
 window.CULL = CULL;
 export function cellsOf(items, cell, key) {
   const m = new Map();
