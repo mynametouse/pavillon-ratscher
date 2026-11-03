@@ -133,7 +133,9 @@ function frame0(now) {
       MOTION.stillDue = true;
       PERF.js += performance.now() - t0;
       PERF.n++;
-    } else if (now - MOTION.lastStill > Math.max(90, MOTION.stillMs * 2.5)) {
+    } else if (now - MOTION.lastStill > Math.max([33, 45, 60][MOTION.level] || 90, MOTION.stillMs * 2.5)) {
+      // V17g: figures walking while the view stands still – as often as this graphics card manages moving frames (it was 11 a second at
+      // most on every card: Hubert walked in jerks)
       if (window.VEG) VEG.update(cam.position);
       renderFrame('still');
       DIRTY.frame = false;
@@ -384,8 +386,13 @@ export function physics(dt, f, turn, side, run) {
       P.ty,
       THREE.MathUtils.clamp(P.th * 0.75 * Math.max(1, stage.clientWidth / Math.max(1, stage.clientHeight)), 16, 90)
     );
-  else if (!(window.VEH && VEH.sun()))
-    sunFollow(P.mode === 'walk' ? P.x : P.tgt[0], P.mode === 'walk' ? P.y : P.tgt[1]);
+  else if (!(window.VEH && VEH.sun())) {
+    // V17g: walking, the shadow box covers a point 6 m ahead (env.js moves it in larger steps now)
+    if (P.mode === 'walk') {
+      const a = (P.yaw * Math.PI) / 180;
+      sunFollow(P.x + Math.sin(a) * 6, P.y + Math.cos(a) * 6, 16, P.x, P.y);
+    } else sunFollow(P.tgt[0], P.tgt[1]);
+  }
   if (window.WORKS && WORKS.update && WORKS.update(dt)) markDirty();
   if (P.mode === 'walk') STREAM.listen(P.x, P.y);
   else if (P.mode === 'top') STREAM.listen(P.tx, P.ty);

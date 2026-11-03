@@ -102,6 +102,7 @@ export const MOTION = {
   lastT: 0,
   lastDown: -1e9,
   lastUp: -1e9,
+  upWait: 5000,
   sig: new Float64Array(8),
   frames: 0,
 };
@@ -150,10 +151,13 @@ export function motionTrack(now) {
     med = b[b.length >> 1];
   MOTION.buf = [];
   if (TIER_USER === 'fix') return;
+  // V17g: a step up that has to be taken back within 4 s doubles the wait before the next try (up to a minute) – the level swung between two
+  // steps every few seconds, each change a new render target (a stutter) and a jump in sharpness
   if (med > 20.5 && MOTION.level < MLEVELS.length - 1) {
     setMotionLevel(MOTION.level + 1);
+    if (now - MOTION.lastUp < 4000) MOTION.upWait = Math.min(60000, MOTION.upWait * 2);
     MOTION.lastDown = now;
-  } else if (med < 17.6 && MOTION.level > 0 && now - MOTION.lastDown > 5000 && now - MOTION.lastUp > 2500) {
+  } else if (med < 17.6 && MOTION.level > 0 && now - MOTION.lastDown > MOTION.upWait && now - MOTION.lastUp > 2500) {
     setMotionLevel(MOTION.level - 1);
     MOTION.lastUp = now;
   }

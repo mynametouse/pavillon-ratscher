@@ -360,6 +360,7 @@ window.GAME = {
   },
   shot() {
     applyCam();
+    if (window.VEG) VEG.update(cam.position); // V17g: levels of detail and view distances for this camera, as in the frame loop
     adaptExposure(0, true);
     if (DIRTY.shadow) {
       R.shadowMap.needsUpdate = true;

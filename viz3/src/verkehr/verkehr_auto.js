@@ -466,6 +466,7 @@ export const VAUTO = (() => {
   // ---- per frame: every car ----
   // ctx: { walkers, night, near(x, y) → is it near the observer (full detail) }
   let lampsOn = null;
+  const camF = new THREE.Vector3();
   function tick(dt, ctx) {
     sound(dt);
     if (!S.cars.length) return;
@@ -478,6 +479,7 @@ export const VAUTO = (() => {
       markDirty();
     }
     const obs = obstacles(ctx.walkers || [], ctx.skipVeh);
+    cam.getWorldDirection(camF);
     for (const c of S.cars) {
       if (c.st === 'weg' || c.st === 'geliehen') continue;
       c.age += dt;
@@ -490,7 +492,14 @@ export const VAUTO = (() => {
         const brk = c.brake || (c.v < 0.1 && c.st !== 'parkt');
         c.tail.material = brk ? LM.brake : LM.tail;
         c.pool.visible = night && c.g.visible;
-        if (c.v > 0.01 || c.moved) markDirty();
+        // V17g: a new frame only for a car that can be seen – within 60 m, or within 250 m ahead of the camera (cars anywhere in the village
+        // kept the picture redrawing while standing still)
+        if ((c.v > 0.01 || c.moved) && c.g.visible) {
+          const dx = c.x - cam.position.x,
+            dy = c.y + cam.position.z,
+            d2 = dx * dx + dy * dy;
+          if (d2 < 3600 || (d2 < 62500 && dx * camF.x - dy * camF.z > Math.sqrt(d2) * 0.4)) markDirty();
+        }
         c.moved = c.v > 0.01;
       }
     }

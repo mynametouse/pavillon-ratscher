@@ -11,6 +11,39 @@ import { V } from '../core/head.js';
 import { ANISO } from '../core/assets.js';
 import { ROADS } from '../world/roads.js';
 import { VEH } from './vehicle.js';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+// the meshes under root (in root's frame) merged by material and shadow flags; transparent ones stay apart
+function mergeParts(root) {
+  root.updateMatrixWorld(true);
+  const inv = root.matrixWorld.clone().invert(),
+    by = new Map(),
+    kill = [];
+  root.traverse(o => {
+    if (!o.isMesh || Array.isArray(o.material) || o.material.transparent) return;
+    const g = (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()).applyMatrix4(
+      inv.clone().multiply(o.matrixWorld)
+    );
+    for (const k of Object.keys(g.attributes))
+      if (k !== 'position' && k !== 'normal' && k !== 'uv') g.deleteAttribute(k);
+    if (!g.attributes.normal) g.computeVertexNormals();
+    if (!g.attributes.uv)
+      g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+    g.clearGroups();
+    const key = o.material.uuid + (o.castShadow ? 'c' : '') + (o.receiveShadow ? 'r' : '') + (o.renderOrder || 0);
+    if (!by.has(key)) by.set(key, { o, gs: [] });
+    by.get(key).gs.push(g);
+    kill.push(o);
+  });
+  if (kill.length < 2) return;
+  for (const o of kill) o.parent.remove(o);
+  for (const { o, gs } of by.values()) {
+    const me = new THREE.Mesh(BufferGeometryUtils.mergeGeometries(gs), o.material);
+    me.castShadow = o.castShadow;
+    me.receiveShadow = o.receiveShadow;
+    me.renderOrder = o.renderOrder;
+    root.add(me);
+  }
+}
 const CAR = (() => {
   const A = 1.25,
     B = 1.655,
@@ -518,6 +551,10 @@ const CAR = (() => {
     }
     wheels.push({ x, y, r: RW, w: 0.185, steer, drive, piv, node });
   }
+  // V17g: the fixed parts in one mesh per material – the body with its inside, each wheel apart (it rolls). The car was 141 draw calls in
+  // every frame it was in view and in every shadow map; the lamps keep their materials, the glass stays as it is (transparent)
+  mergeParts(body);
+  for (const w of wheels) mergeParts(w.node);
   const model = {
     g,
     body,

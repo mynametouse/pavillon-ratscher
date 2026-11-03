@@ -23,7 +23,7 @@ const FOOTHIDE = { list: [] };
 function footHideReg(im, kind = 'plant') {
   if (!im || !im.isInstancedMesh) return;
   const a = im.instanceMatrix.array,
-    n = im.count,
+    n = im.userData.n0 ?? im.count,
     pos = new Float32Array(n * 2);
   for (let i = 0; i < n; i++) {
     pos[i * 2] = a[i * 16 + 12];
@@ -68,7 +68,7 @@ function footRects() {
 function footHideOne(e, R) {
   const a = e.im.instanceMatrix.array,
     o = e.orig,
-    n = e.im.count;
+    n = e.pos.length / 2; // all instances (VEG thins the lawn with distance: im.count is what is drawn)
   let ch = false;
   for (let i = 0; i < n; i++) {
     const x = e.pos[i * 2],
@@ -109,7 +109,7 @@ MOW.sh = new Int8Array(MOW.nx * MOW.ny); // the stripe: +1 lighter, -1 darker
 MOW.hash = new Map(); // 1 m cells → packed (entry << 17 | instance)
 const mowKey = (cx, cy) => (cx + 2048) * 4096 + (cy + 2048);
 function mowReg(e, ei) {
-  const n = e.im.count;
+  const n = e.pos.length / 2;
   e.f = new Float32Array(n).fill(1);
   e.tc = new Float64Array(n).fill(NaN);
   e.sh = new Int8Array(n);
@@ -516,6 +516,8 @@ function buildGrass() {
       im.receiveShadow = true;
       im.castShadow = false;
       im.userData.noMerge = true;
+      im.userData.n0 = im.count;
+      im.userData.thin = [22, 40]; // V17g: half the clumps of a cell beyond 22 m, a quarter beyond 40 m (core/assets.js VEG)
       vegReady(im, 70);
       scene.add(im);
       GRASS.meshes.push(im);
@@ -714,7 +716,9 @@ function buildDetailPlants() {
       tufts.filter((_, i) => i % 2 === 1),
       Object.assign({ cast: false, env: 0.6, maxD: 38 }, reg())
     );
-  if (MODELS.fern) instanceVariants('fern', ferns, Object.assign({ cast: true, env: 0.6, maxD: 45 }, reg()));
+  // V17g: the ferns cast no sun shadow (under the trees and on the banks it was a third of the shadow map's triangles there; the ambient
+  // occlusion still darkens the ground under them)
+  if (MODELS.fern) instanceVariants('fern', ferns, Object.assign({ cast: false, env: 0.6, maxD: 45 }, reg()));
   if (MODELS.dandelion)
     instanceVariants('dandelion', dand, Object.assign({ cast: false, env: 0.6, maxD: 30 }, reg('flower')));
 }

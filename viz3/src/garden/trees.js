@@ -120,7 +120,58 @@ export function buildTreeKind(k) {
       map: ol.map,
       alphaTest: leaf.alphaTest,
     });
-  return { bg, lg, bark, leaf, depth: leafDepthMats[k.preset], H, R: Rr, items: [] };
+  // V17g: the bark's levels of detail (barkLOD): without the twigs from 30 m, only the stem and the main boughs from 110 m
+  const L = t.options.branch.levels,
+    meta = t.branchMeta || [],
+    bgMid = meta.length ? barkLOD(bg, meta, L >= 2 ? L - 1 : L, 0.5, 0.5) : bg,
+    bgFar = meta.length ? barkLOD(bg, meta, Math.min(1, Math.max(0, L - 1)), 0.34, 0.4) : bg;
+  return { bg, bgMid, bgFar, lg, bark, leaf, depth: leafDepthMats[k.preset], H, R: Rr, items: [] };
+}
+// V17g: a coarser bark from the rings of the full model, so nothing moves when the level changes: branches up to maxLevel, of each about
+// kSec of its rings and kSeg of its sides (at least 3). The bark was the largest cost of a frame (the alder alone 10 000 triangles, drawn
+// even 250 m away) and of every shadow map.
+export function barkLOD(bg, meta, maxLevel, kSec, kSeg) {
+  const P = bg.attributes.position.array,
+    N = bg.attributes.normal.array,
+    pos = [],
+    nor = [],
+    uv = [],
+    idx = [];
+  for (const [off, sec, seg, lv] of meta) {
+    if (lv > maxLevel) continue;
+    const ns = Math.max(1, Math.round(sec * kSec)),
+      ng = Math.max(3, Math.round(seg * kSeg)),
+      base = pos.length / 3;
+    for (let m = 0; m <= ns; m++) {
+      const i = Math.round((m * sec) / ns);
+      for (let k = 0; k <= ng; k++) {
+        const v = off + i * (seg + 1) + Math.round((k * seg) / ng);
+        pos.push(P[v * 3], P[v * 3 + 1], P[v * 3 + 2]);
+        nor.push(N[v * 3], N[v * 3 + 1], N[v * 3 + 2]);
+        uv.push(k / ng, m % 2);
+      }
+    }
+    for (let m = 0; m < ns; m++)
+      for (let k = 0; k < ng; k++) {
+        const a = base + m * (ng + 1) + k,
+          c = a + ng + 1;
+        idx.push(a, c, a + 1, a + 1, c, c + 1);
+      }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  g.computeBoundingBox();
+  g.computeBoundingSphere();
+  return g;
+}
+// the leaf cards' levels: all near, a third (enlarged) from 30 m, a sixth (more enlarged) from 110 m – the same cards, a subset each
+export function treeLeafLevels(K) {
+  if (!K.lgFar) K.lgFar = thinCards(K.lg, 0.35, 1.55);
+  if (!K.lgFar2) K.lgFar2 = thinCards(K.lg, 0.17, 2.1);
+  return [K.lg, K.lgFar, K.lgFar2];
 }
 export const TREES = {};
 const treeTrunks = [];
@@ -205,7 +256,7 @@ function flushTreeInst() {
     const near = [],
       far = [];
     for (const a of K.items) (Math.hypot(a[0] - 2, a[1] - 2) < 55 ? near : far).push({ x: a[0], y: a[1], a });
-    if (!K.lgFar) K.lgFar = thinCards(K.lg, 0.35, 1.55);
+    const LG = treeLeafLevels(K);
     // one InstancedMesh per 24 m cell in the garden (trees behind the camera are not drawn); the thinned ring outside is one mesh per kind
     const cellKey = it => (it.a[4] ?? '') + ':' + Math.floor(it.x / 24) + ':' + Math.floor(it.y / 24);
     for (const [grp, isFar] of [
@@ -213,7 +264,7 @@ function flushTreeInst() {
       ...(far.length ? [[far, true]] : []),
     ]) {
       const parent = grp[0].a[4] != null ? phaseGroup(grp[0].a[4]) : isFar ? scene : TREEG;
-      const ib = new THREE.InstancedMesh(K.bg, K.bark, grp.length),
+      const ib = new THREE.InstancedMesh(isFar ? K.bgMid : K.bg, K.bark, grp.length),
         il = new THREE.InstancedMesh(isFar ? K.lgFar : K.lg, K.leaf, grp.length);
       grp.forEach(({ a: [x, y, h, r] }, i) => {
         const sy = h / K.H,
@@ -221,43 +272,55 @@ function flushTreeInst() {
         q.setFromAxisAngle(up, rnd() * 6.283);
         m4.compose(V(x, y, 0), q, new THREE.Vector3(sx, sy, sx));
         ib.setMatrixAt(i, m4);
-        il.setMatrixAt(i, m4);
         il.setColorAt(i, new THREE.Color(1, 1, 1).multiplyScalar(rr(0.82, 1.06)));
       });
-      for (const im of [ib, il]) {
+      il.instanceMatrix = ib.instanceMatrix; // bark and crown of every level: one set of instance matrices
+      const ms = [ib, il];
+      // V17g near cells: three levels each for bark and crown (full within 30 m of the camera, mid to 110 m, far beyond); the shadow map is
+      // drawn with the mid level
+      const lv = isFar
+        ? []
+        : [1, 2].map(j => [
+            new THREE.InstancedMesh(j === 1 ? K.bgMid : K.bgFar, K.bark, grp.length),
+            new THREE.InstancedMesh(LG[j], K.leaf, grp.length),
+          ]);
+      for (const [b, l] of lv) {
+        b.instanceMatrix = l.instanceMatrix = ib.instanceMatrix;
+        l.instanceColor = il.instanceColor;
+        ms.push(b, l);
+      }
+      for (const im of ms) {
         im.castShadow = !isFar;
         im.receiveShadow = true;
         im.userData.noMerge = true;
+        if (im.material === K.leaf) im.customDepthMaterial = K.depth;
         vegReady(im);
         parent.add(im);
       }
-      il.customDepthMaterial = K.depth;
-      // near cells: full crowns within 30 m of the camera, the thinned crowns (a third of the cards) beyond – same instances
       if (!isFar) {
-        const lo = new THREE.InstancedMesh(K.lgFar, K.leaf, grp.length);
-        lo.instanceMatrix = il.instanceMatrix;
-        lo.instanceColor = il.instanceColor;
-        lo.castShadow = true;
-        lo.receiveShadow = true;
-        lo.userData.noMerge = true;
-        lo.customDepthMaterial = K.depth;
-        lo.frustumCulled = true;
-        lo.computeBoundingSphere();
-        lo.visible = false;
-        (parent === scene ? TREEG : parent).add(lo);
-        il.computeBoundingSphere();
-        VEG.lod.push({ hi: il, lo, d: 30 });
+        VEG.add({ ms: [ib, lv[0][0], lv[1][0]], d: [30, 110], sh: 1 });
+        VEG.add({ ms: [il, lv[0][1], lv[1][1]], d: [30, 110], sh: 1 });
       }
     }
   }
   for (const [x, y, rad, ph] of treeTrunks)
     COL.push([x - rad, x + rad, y - rad, y + rad, 0, 4, 'tree', ph != null ? 0 : undefined, ph]);
-  if (GLBT.fir.length) instanceVariants('fir', GLBT.fir, { env: 0.6, tint: 0xe8f0dc, cell: 24, parent: TREEG });
+  // V17g: the glTF fir and apple trees thin their twigs and leaves beyond 30 / 40 m, the apples draw no boughs beyond 45 m (inside the crown)
+  if (GLBT.fir.length)
+    instanceVariants('fir', GLBT.fir, {
+      env: 0.6,
+      tint: 0xe8f0dc,
+      cell: 24,
+      parent: TREEG,
+      lod: { match: /twig/i, keep: 0.38, grow: 1.5, d: 30 },
+    });
   if (GLBT.smalltree.length)
     instanceVariants('smalltree', GLBT.smalltree, {
       env: 0.6,
       cell: 24,
       thin: { match: /leaves/i, keep: 0.42, grow: 1.45 },
+      lod: { match: /leaves/i, keep: 0.45, grow: 1.4, d: 40 },
+      partD: [/branches/i, 45],
       parent: TREEG,
     });
 }

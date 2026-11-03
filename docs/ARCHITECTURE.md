@@ -240,13 +240,45 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `boot/` – Start
 - `vehicles/` – Fahrzeug-Kern (`vehicle`: Physik, Ein-/Aussteigen, Kameras, Licht, HUD), Töne (`vsound`), Auto (`car`), Traktor mit Frontlader (`tractor`), Rungenanhänger (`trailer`, V16d), Karte beim Fahren (`minimap`)
 
-## 10 Leistung (gemessen, SwiftShader-Test, test/prof.py)
+## 10 Leistung (gemessen, SwiftShader-Test, test/prof.py, test/leistung.py)
 
 - Spiel-Logik pro Frame (alle TICKS zusammen) < 0,5 ms; teuerster Posten die GI-Mischung während eines Übergangs (≈ 0,2 ms) und die Spielfigur.
-- Szene ≈ 1080 Meshes, ≈ 120 Shader-Programme, ≈ 400 Texturen, JS-Heap ≈ 150 MB. Kosten liegen auf der GPU (Draw-Calls, Schatten, AO).
-- Regeln: in TICKS nichts pro Frame allozieren, Arbeit drosseln (Zeitakkumulator), nur bei echter Änderung `markDirty()`;
-  große Rechnungen in Teilen über mehrere Frames (Beispiel `giMix`); neue statische Geometrie vor `render/zmerge.js` einhängen oder
-  selbst zusammenfassen (InstancedMesh, `BufferGeometryUtils.mergeGeometries`).
+- Szene (V17f) ≈ 2050 Meshes, ≈ 156 Shader-Programme, ≈ 410 Texturen, JS-Heap ≈ 150 MB. Kosten liegen auf der GPU (Draw-Calls, Dreiecke,
+  Schattenkarte, AO).
+- Regeln: in TICKS nichts pro Frame allozieren, Arbeit drosseln (Zeitakkumulator), nur bei echter Änderung `markDirty()` – und nur
+  `markDirty(true)` (neue Sonnen-Schattenkarte, so teuer wie ein Bild der ganzen Szene), wenn sich ein Schattenwerfer bewegt hat; Figuren
+  werfen in ihre eigene kleine Karte (`FIGSHADOW`, `npc/npc_real.js`); große Rechnungen in Teilen über mehrere Frames (Beispiel `giMix`);
+  neue statische Geometrie vor `render/zmerge.js` einhängen oder selbst zusammenfassen (InstancedMesh, `BufferGeometryUtils.mergeGeometries`,
+  Beispiel `mergeParts` in `vehicles/car.js`).
+- **V17g (Falko 3.11.2026: „ruckelt auch am Rechner“)** – gefunden mit `window.DIRTY` (Getter/Setter mit Aufrufstapel: wer fordert Bild und
+  Schatten an) und einer Zählung je Draw-Call (`renderBufferDirect`):
+  - **Schattenkarte**: der Tag-Nacht-Lauf (`time/daynight.js`) verlangte eine neue bei jedem 0,12° der Sonne – bei der Spieluhr ~1,5-mal je
+    Sekunde, auch im Stehen; jetzt erst nach 0,5° (Sonne über 25°), 0,3° (10–25°), 0,15° (tiefer); das Licht dreht sofort, die Karte behält
+    ihre Matrix. Der Schattenkasten (`garden/env.js` `sunFollow`) folgt nicht mehr im 4-m-Raster, sondern einem Punkt 6 m voraus (Fahrzeuge:
+    ihrem Vorauspunkt) erst, wenn der eine halbe Kastenhälfte (8 m) von der Mitte weg ist; beim Fahren ab 65 km/h ein größerer Kasten (±32 m).
+    Ausrüstung der Spielfigur wirft nicht in die Sonnenkarte, das Ein-/Ausblenden der Figur verlangt keine. Gemessen (Probe, 218 m Weg):
+    185 → 60 neue Karten, im Stehen 15 → 4 je 10 s.
+  - **Schattenpass grob**: `VEG.shadowLOD` (um `R.shadowMap.render`, `core/assets.js`) zeigt beim Zeichnen der Karte die mittlere Stufe jeder
+    Baumzelle; Farne werfen keinen Schatten; Teile unter 8 cm auch nicht. Gartentor: 880 k → 350 k Dreiecke je Karte.
+  - **Detailstufen** (`VEG.add({ ms: [nah, …, fern], d: [m, …], sh })`, eine Stufe sichtbar; Plan- und Modellansicht höchstens die zweite):
+    EZ-Tree-Rinde in drei Stufen aus den Ringen des vollen Modells (`barkLOD`, `garden/trees.js`; dafür merkt `eztree/tree.js` je Ast
+    `branchMeta`): voll bis 30 m, ohne Zweige mit halben Ringen/Seiten bis 110 m (Welt-Bäume 90 m), nur Stamm und Hauptäste dahinter; Kronen
+    voll / ein Drittel / ein Sechstel der Karten (`treeLeafLevels`). Die Welt-Bäume um den Garten (`world/ratscher.js`) in 32-m-Zellen statt
+    einem Mesh je Art (das wurde vom Anger aus ganz gezeichnet), die Kartenansicht blendet ihre Gruppe `S.midG` aus. glTF-Tanne und
+    -Apfelbäume: `instanceVariants(…, { lod: { match, keep, grow, d }, partD: [match, d] })`. Rasen: `userData.thin [22, 40]` – halb so viele
+    Büschel einer Zelle ab 22 m, ein Viertel ab 40 m (`im.count`; Mähen und Fußabdrücke zählen alle Instanzen über `e.pos`).
+  - **Sichtweite kleiner Dinge** (`CULL`, `core/assets.js`): jedes Mesh unter 4 m Durchmesser bekommt 240 × Radius (Telefon 170, mindestens
+    20 m, Leuchtendes ×4, mit dem Sichtfeld skaliert); dahinter wechselt es auf Layer 29, den keine Kamera zeichnet – `visible` bleibt
+    unberührt (Phasen, Varianten, Türen, Innenräume schalten weiter). Nur im Gehen; neue Meshes, wenn sich die Zahl der Geometrien ändert.
+    Vom Anger: 1090 → 511 Draw-Calls. `GAME.shot()` ruft jetzt `VEG.update` (wie `GAME.film` und die Bildschleife).
+  - Falkos Auto (`vehicles/car.js`): feste Teile je Material zusammengefasst (141 → ~30 Draw-Calls).
+  - Ruhebilder (Kamera steht, Figuren gehen): so oft wie die Karte bewegte Bilder schafft (Stufe 0: alle 33 ms, 1: 45, 2: 60, sonst 90 ms –
+    vorher höchstens alle 90 ms, Hubert ging ruckend); Autos und Fußgänger des Verkehrs fordern nur Bilder an, wenn sie nah oder voraus
+    sind. Die Bewegungsstufe (`MOTION.level`) verdoppelt die Wartezeit vor dem nächsten Hochschalten (bis 60 s), wenn es binnen 4 s
+    zurückging (sie pendelte, jeder Wechsel ein neues Render-Target).
+  - Zum Vergleichen: `?nolod` (feinste Stufe überall, Rasen voll), `?nocull` (alles in jeder Entfernung). Test: `viz3/test/leistung.py`
+    (Draw-Calls, Dreiecke, Schattenkarte an Gartentor, Huberts Hof, Anger; neue Schattenkarten im Stehen und auf ~140 m Weg; Thema
+    `viz3/extra/leistung/tests.txt`).
 
 ## 11 Boden, Straßen, Fahrzeuge (V16b, V16b1)
 

@@ -283,7 +283,7 @@ function figHeadwear(THREE, F, o = {}) {
     const me = new THREE.Mesh(geo, mat);
     me.matrixAutoUpdate = false;
     me.matrix.copy(toBone);
-    me.castShadow = true;
+    me.castShadow = false; // V17g: worn gear stays out of the sun's shadow map (it moves with the figure; the figures' own shadow map draws figures)
     me.userData.noMerge = true;
     return me;
   };
@@ -685,7 +685,7 @@ export const AVATAR = (() => {
     const show = CAM3.on && P.mode === 'walk' && CAM3.cur > 0.85;
     if (F.g.visible !== show) {
       F.g.visible = show;
-      markDirty(true);
+      markDirty(); // V17g: no new sun shadow map – nothing of the figure casts into it (its shadow comes from the figures' own map)
     }
     if (!show) {
       attach(null);
@@ -868,7 +868,7 @@ export const AVATAR = (() => {
     const box = (par, x, y, z, sx, sy, sz, m) => {
       const me = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m);
       me.position.set(x, y, z);
-      me.castShadow = true;
+      me.castShadow = false;
       par.add(me);
       return me;
     };
@@ -876,7 +876,7 @@ export const AVATAR = (() => {
       const me = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 16), m);
       me.position.set(x, y, z);
       me.rotation.set(rx, 0, rz);
-      me.castShadow = true;
+      me.castShadow = false;
       par.add(me);
       return me;
     };
@@ -912,7 +912,7 @@ export const AVATAR = (() => {
       c.rotation.x = -Math.PI / 2;
       c.scale.set(1, 0.62, 0.95);
       c.position.set(0, -0.065, -0.03);
-      c.castShadow = true;
+      c.castShadow = false;
       g.add(c);
       const t = new THREE.Mesh(new THREE.TorusGeometry(0.094, 0.003, 4, 24), GM.ffp);
       t.rotation.x = Math.PI / 2;
@@ -925,7 +925,7 @@ export const AVATAR = (() => {
       c.rotation.x = -Math.PI / 2;
       c.scale.set(1, 0.7, 0.9);
       c.position.set(0, -0.07, -0.03);
-      c.castShadow = true;
+      c.castShadow = false;
       g.add(c);
       for (const x of [-0.052, 0.052]) {
         cylr(g, x, -0.085, -0.07, 0.03, 0.028, GM.filt, Math.PI / 2 - 0.4, x < 0 ? 0.5 : -0.5);
@@ -942,12 +942,12 @@ export const AVATAR = (() => {
       const sh = new THREE.Mesh(new THREE.SphereGeometry(0.128, 22, 12, 0, Math.PI * 2, 0, Math.PI / 2), GM.helm);
       sh.scale.set(1.0, 0.92, 1.14);
       sh.position.set(0, 0.055, 0.075);
-      sh.castShadow = true;
+      sh.castShadow = false;
       g.add(sh);
       const br = new THREE.Mesh(new THREE.CylinderGeometry(0.142, 0.146, 0.012, 26), GM.helm);
       br.scale.set(1, 1, 1.12);
       br.position.set(0, 0.052, 0.07);
-      br.castShadow = true;
+      br.castShadow = false;
       g.add(br);
       for (const x of [-0.096, 0.096]) {
         cylr(g, x, -0.025, 0.078, 0.042, 0.03, GM.helm, 0, Math.PI / 2);

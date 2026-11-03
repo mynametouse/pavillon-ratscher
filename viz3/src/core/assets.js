@@ -6,7 +6,7 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { LATE } from './late.js';
 import { SAVE } from './save.js';
-import { $, BASE, R, rnd, scene, V } from './head.js';
+import { $, BASE, COARSE, R, rnd, scene, V } from './head.js';
 export const LM = new THREE.LoadingManager();
 export const LOAD = { done: 0, total: 0, finished: false, cbs: [] };
 // V16b4: load log – every step of loading with its time, written to localStorage while the page loads ('pav-loadlog'). If the browser kills the
@@ -1118,27 +1118,50 @@ export function loadModel(id, cb, matFix) {
 }
 // render requests: a new frame (frame) and a new shadow map (shadow) are due – set through markDirty, cleared by the render loops
 export const DIRTY = { frame: true, shadow: true };
+window.DIRTY = DIRTY; // tests: who asks for a new frame or a new shadow map (scratch probes, viz3/test/leistung.py)
 export function markDirty(shadow) {
   DIRTY.frame = true;
   if (shadow) DIRTY.shadow = true;
 }
 // ---------- vegetation: one InstancedMesh per spatial cell, so frustum culling works; small detail additionally fades out of the draw list beyond maxD ----------
 // Inside the house (walls all round) the far rule is halved; near tree cells switch between full and thinned leaf cards (lod pairs).
+// V17g: a set may have several levels – { ms: [near, …, far], d: [beyond d[0] the second, …], sh } (one visible at a time; sh: the level the
+// sun's shadow map is drawn with when the one in view is finer, VEG.shadowLOD around the shadow pass); and CULL below. ?nolod keeps the
+// finest level everywhere and the lawn unthinned (to compare).
+const NOLOD = /[?&]nolod\b/.test(location.search);
 export const VEG = {
   far: [],
   lod: [],
   last: new THREE.Vector3(1e9, 0, 0),
   k: -1,
   update(p) {
+    CULL.update(p);
     const k = window.inHouseNow && inHouseNow() ? 0.5 : 1;
     if (p.distanceToSquared(this.last) < 1 && k === this.k) return;
     this.last.copy(p);
     this.k = k;
     for (const im of this.far) {
       const bs = im.boundingSphere;
-      if (bs) im.visible = bs.center.distanceTo(p) - bs.radius < im.userData.maxD * k;
+      if (!bs) continue;
+      const d = bs.center.distanceTo(p) - bs.radius,
+        th = im.userData.thin;
+      im.visible = d < im.userData.maxD * k;
+      // V17g: thinned with distance (userData.thin [d1, d2]: half beyond d1, a quarter beyond d2 – the instances lie in random order)
+      if (th && !NOLOD) im.count = d < th[0] ? im.userData.n0 : d < th[1] ? im.userData.n0 >> 1 : im.userData.n0 >> 2;
     }
+    // the plan and model views look from far: there the second level at most (the crowns as before)
+    const lim = window.GAME && GAME.P && GAME.P.mode !== 'walk' ? 1 : 9;
     for (const L of this.lod) {
+      if (L.ms) {
+        const bs = L.bs || (L.bs = L.ms[0].boundingSphere);
+        if (!bs) continue;
+        const d = bs.center.distanceTo(p) - bs.radius;
+        let i = 0;
+        while (!NOLOD && i < L.d.length && i < lim && d >= L.d[i]) i++;
+        L.cur = i;
+        for (let j = 0; j < L.ms.length; j++) L.ms[j].visible = j === i;
+        continue;
+      }
       const bs = L.hi.boundingSphere;
       if (!bs) continue;
       const near = bs.center.distanceTo(p) - bs.radius < L.d;
@@ -1146,8 +1169,131 @@ export const VEG = {
       L.lo.visible = !near;
     }
   },
+  // a new set: its first level shows until the next update, which comes at once
+  add(L) {
+    L.cur = 0;
+    L.ms.forEach((m, j) => (m.visible = j === 0));
+    this.lod.push(L);
+    this.last.set(1e9, 0, 0);
+    return L;
+  },
+  shadowLOD(on) {
+    if (NOLOD) return;
+    for (const L of this.lod) {
+      if (!L.ms || L.sh == null) continue;
+      const i = on ? Math.max(L.cur || 0, L.sh) : L.cur || 0;
+      for (let j = 0; j < L.ms.length; j++) L.ms[j].visible = j === i;
+    }
+  },
 };
 window.VEG = VEG;
+// the sun's shadow map is drawn with the coarser levels (it is drawn rarely, but then all at once: the cost was a stutter)
+{
+  const sm = R.shadowMap,
+    smr = sm.render.bind(sm);
+  sm.render = function (lights, scn, camera) {
+    if (!sm.needsUpdate || scn !== scene || !lights.length) return smr(lights, scn, camera);
+    VEG.shadowLOD(true);
+    try {
+      return smr(lights, scn, camera);
+    } finally {
+      VEG.shadowLOD(false);
+    }
+  };
+}
+// ---------- V17g: small things are not drawn far away – a cup at 60 m is less than a pixel but costs a draw call (from the Anger every
+// tool in the workshop was drawn). Each mesh of the scene under 4 m across gets a view distance from its size (240 × its radius, 170 on
+// phones and tablets, at least 20 m; scaled with the field of view); beyond it the mesh moves to a layer no camera draws. Only the layers change, so whatever
+// shows or hides things (phases, variants, interiors, doors) keeps working; walking only (plan and model views draw everything); the
+// smallest pieces (< 8 cm) cast no sun shadow. ?nocull switches it off. New meshes (zones built later) are found when the count of
+// geometries changes. ----------
+export const CULL = {
+  on: !/[?&]nocull\b/.test(location.search),
+  list: [],
+  n: 0,
+  geo: -1,
+  t: 0,
+  scanT: 0,
+  last: new THREE.Vector3(1e9, 0, 0),
+  fov: 0,
+  BIT: 29,
+  scan() {
+    const L = [],
+      vf = new Set(VEG.far),
+      s = new THREE.Vector3();
+    scene.updateMatrixWorld();
+    scene.traverse(o => {
+      if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || o.frustumCulled === false || vf.has(o)) return;
+      if (o.userData.cullE) {
+        L.push(o.userData.cullE);
+        return;
+      }
+      if (o.layers.mask !== 1 || !o.geometry) return;
+      const g = o.geometry;
+      if (!g.boundingSphere) g.computeBoundingSphere();
+      const bs = g.boundingSphere;
+      if (!bs || !(bs.radius > 0)) return;
+      o.matrixWorld.decompose(_cv, _cq, s);
+      const r = bs.radius * Math.max(Math.abs(s.x), Math.abs(s.y), Math.abs(s.z));
+      if (!(r < 2)) return;
+      if (r < 0.08) o.castShadow = false;
+      // what can glow (lamps, lit windows, unlit colours) is seen four times as far
+      const m = Array.isArray(o.material) ? o.material[0] : o.material,
+        glow =
+          !!m &&
+          (m.isMeshBasicMaterial ||
+            !!m.emissiveMap ||
+            (!!m.emissive && m.emissive.r + m.emissive.g + m.emissive.b > 0.01)),
+        e = { o, c: bs.center, r, d: Math.max(20, r * (COARSE ? 170 : 240)) * (glow ? 4 : 1), far: false };
+      o.userData.cullE = e;
+      L.push(e);
+    });
+    this.list = L;
+    this.geo = R.info.memory.geometries;
+    this.last.set(1e9, 0, 0);
+  },
+  update(p) {
+    const now = performance.now(),
+      walk = this.on && window.GAME && GAME.P && GAME.P.mode === 'walk';
+    if (!walk) {
+      if (this.n) this.all();
+      return;
+    }
+    if (now - this.scanT > 2000) {
+      this.scanT = now;
+      if (R.info.memory.geometries !== this.geo) this.scan();
+    }
+    const cam = window.GAME && GAME.cam,
+      fov = (cam && cam.fov) || 62;
+    if (p.distanceToSquared(this.last) < 2.25 && fov === this.fov && now - this.t < 400) return;
+    this.last.copy(p);
+    this.fov = fov;
+    this.t = now;
+    const k = 62 / fov;
+    let n = 0;
+    for (const e of this.list) {
+      const far = _cv.copy(e.c).applyMatrix4(e.o.matrixWorld).distanceTo(p) - e.r > e.d * k;
+      if (far !== e.far) {
+        e.far = far;
+        e.o.layers.mask = far ? 1 << this.BIT : 1;
+      }
+      if (far) n++;
+    }
+    this.n = n;
+  },
+  all() {
+    for (const e of this.list)
+      if (e.far) {
+        e.far = false;
+        e.o.layers.mask = 1;
+      }
+    this.n = 0;
+    this.last.set(1e9, 0, 0);
+  },
+};
+const _cv = new THREE.Vector3(),
+  _cq = new THREE.Quaternion();
+window.CULL = CULL;
 export function cellsOf(items, cell, key) {
   const m = new Map();
   for (const it of items) {
@@ -1283,6 +1429,12 @@ export function instanceVariants(id, items, o = {}) {
       for (const part of vr.parts) {
         const mats = Array.isArray(part.mat) ? part.mat : [part.mat];
         let depthMat = null;
+        // V17g: o.lod { match, keep, grow, d }: the matching part's cards thinned again beyond d m of the camera (and in the sun's shadow
+        // map); o.partD [match, d]: the matching part not drawn beyond d m (the boughs inside a crown far away)
+        const nm = (mats[0].map && mats[0].map.name) || mats[0].name || '',
+          lod = o.lod && o.lod.match.test(nm) ? o.lod : null,
+          maxD = o.partD && o.partD[0].test(nm) ? o.partD[1] : o.maxD;
+        if (lod && !part.geoLo) part.geoLo = thinIslands(part.geo, lod.keep, lod.grow);
         mats.forEach(mt => {
           if (mt.isMeshStandardMaterial) {
             patchSV(mt);
@@ -1310,7 +1462,7 @@ export function instanceVariants(id, items, o = {}) {
           im.castShadow = o.cast ?? true;
           im.receiveShadow = true;
           im.userData.noMerge = true;
-          vegReady(im, o.maxD);
+          vegReady(im, maxD);
           if (o.cast !== false && mats.some(mt => mt.alphaTest > 0 && mt.map)) {
             const mt = mats.find(mm2 => mm2.alphaTest > 0 && mm2.map);
             im.customDepthMaterial =
@@ -1323,6 +1475,19 @@ export function instanceVariants(id, items, o = {}) {
           }
           (o.parent || scene).add(im);
           if (o.list) o.list.push(im);
+          if (lod) {
+            const lo = new THREE.InstancedMesh(part.geoLo, part.mat, list.length);
+            lo.instanceMatrix = im.instanceMatrix;
+            if (im.instanceColor) lo.instanceColor = im.instanceColor;
+            lo.castShadow = im.castShadow;
+            lo.receiveShadow = true;
+            lo.userData.noMerge = true;
+            if (im.customDepthMaterial) lo.customDepthMaterial = im.customDepthMaterial;
+            vegReady(lo);
+            (o.parent || scene).add(lo);
+            if (o.list) o.list.push(lo);
+            VEG.add({ ms: [im, lo], d: [lod.d], sh: 1 });
+          }
         }
       }
     });

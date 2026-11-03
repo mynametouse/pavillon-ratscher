@@ -10,11 +10,11 @@ import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUti
 import { LATE } from '../core/late.js';
 import { BASE, OFFLINE, QUALITY, R, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
-import { ANISO, b64bytes, cellsOf, GI, LM, markDirty, SV, vegReady, whenLoaded } from '../core/assets.js';
+import { ANISO, b64bytes, cellsOf, GI, LM, markDirty, SV, VEG, vegReady, whenLoaded } from '../core/assets.js';
 import { COL } from '../core/geo.js';
 import { STREAM } from '../garden/stream_geo.js';
 import { FAKEENV, FIELD_GLSL, FIELDU, GEO_REAL, GEOGU, S0 } from '../garden/env.js';
-import { thinCards, TREES } from '../garden/trees.js';
+import { TREES, treeLeafLevels } from '../garden/trees.js';
 import { GRADE } from '../render/render.js';
 import { P, rebuildGrids } from '../game/walkable.js';
 import { go } from '../game/player.js';
@@ -706,32 +706,49 @@ export const RATSCHER = (() => {
       if (!a) byK.set(k, (a = []));
       a.push(it);
     }
-    for (const [k, list] of byK) {
-      const K = TREES[k];
-      if (!K.lgFar) K.lgFar = thinCards(K.lg, 0.35, 1.55);
-      const ib = new THREE.InstancedMesh(K.bg, K.bark, list.length),
-        il = new THREE.InstancedMesh(K.lgFar, K.leaf, list.length);
-      list.forEach((it, i) => {
-        const sy = it.h / K.H,
-          sx = THREE.MathUtils.clamp(it.r / K.R, sy * 0.75, sy * 1.3);
-        q.setFromAxisAngle(up, it.hs * 6.283);
-        m4.compose(V(it.x, it.y, it.z - 0.1), q, sv.set(sx, sy, sx));
-        ib.setMatrixAt(i, m4);
-        il.setMatrixAt(i, m4);
-        il.setColorAt(i, new THREE.Color(1, 1, 1).multiplyScalar(0.84 + it.hs * 0.2));
-        it.inst.push([ib, i], [il, i]);
-        if (Math.hypot(it.x - 2, it.y - 2) < 90) {
-          COL.push([it.x - 0.3, it.x + 0.3, it.y - 0.3, it.y + 0.3, 0, 4, 'tree']);
-          it.col = COL.length - 1;
+    // the map view hides them as a group (the levels below set each mesh's own visibility)
+    const midG = new THREE.Group();
+    midG.userData.noMerge = true;
+    scene.add(midG);
+    S.midG = midG;
+    // V17g: in 32 m cells (one mesh per kind for all 100 m was drawn whenever any of it was in view, from the Anger too) with levels of
+    // detail – the full bark within 30 m, the mid bark to 90 m, the far one beyond; the crown thinned, more so beyond 90 m. Bark and crown of
+    // every level share one set of instance matrices (world/treehit.js tips the first pair, the others follow).
+    for (const [k, all] of byK) {
+      const K = TREES[k],
+        LG = treeLeafLevels(K);
+      for (const list of cellsOf(all, 32)) {
+        const ib = new THREE.InstancedMesh(K.bg, K.bark, list.length),
+          il = new THREE.InstancedMesh(LG[1], K.leaf, list.length);
+        list.forEach((it, i) => {
+          const sy = it.h / K.H,
+            sx = THREE.MathUtils.clamp(it.r / K.R, sy * 0.75, sy * 1.3);
+          q.setFromAxisAngle(up, it.hs * 6.283);
+          m4.compose(V(it.x, it.y, it.z - 0.1), q, sv.set(sx, sy, sx));
+          ib.setMatrixAt(i, m4);
+          il.setColorAt(i, new THREE.Color(1, 1, 1).multiplyScalar(0.84 + it.hs * 0.2));
+          it.inst.push([ib, i]);
+          if (Math.hypot(it.x - 2, it.y - 2) < 90) {
+            COL.push([it.x - 0.3, it.x + 0.3, it.y - 0.3, it.y + 0.3, 0, 4, 'tree']);
+            it.col = COL.length - 1;
+          }
+        });
+        il.instanceMatrix = ib.instanceMatrix;
+        const bm = new THREE.InstancedMesh(K.bgMid, K.bark, list.length),
+          bf = new THREE.InstancedMesh(K.bgFar, K.bark, list.length),
+          lf = new THREE.InstancedMesh(LG[2], K.leaf, list.length);
+        bm.instanceMatrix = bf.instanceMatrix = lf.instanceMatrix = ib.instanceMatrix;
+        lf.instanceColor = il.instanceColor;
+        for (const im of [ib, il, bm, bf, lf]) {
+          im.castShadow = false;
+          im.receiveShadow = false;
+          im.userData.noMerge = true;
+          vegReady(im);
+          midG.add(im);
+          S.mid.push(im);
         }
-      });
-      for (const im of [ib, il]) {
-        im.castShadow = false;
-        im.receiveShadow = false;
-        im.userData.noMerge = true;
-        vegReady(im);
-        scene.add(im);
-        S.mid.push(im);
+        VEG.add({ ms: [ib, bm, bf], d: [30, 90] });
+        VEG.add({ ms: [il, lf], d: [90] });
       }
     }
     rebuildGrids();
@@ -861,7 +878,8 @@ export const RATSCHER = (() => {
       setTex(S.tex);
       GU.uGMap.value = 0;
     }
-    for (const m of [...S.trees, ...S.bld, ...S.water, ...S.mid]) m.visible = !v;
+    for (const m of [...S.trees, ...S.bld, ...S.water]) m.visible = !v;
+    if (S.midG) S.midG.visible = !v;
     GEOGU.uGeoMap.value = v ? 1 : 0;
     S.topMode(S.top);
   };

@@ -1240,7 +1240,8 @@ export const VEH = (() => {
     const s = v.st,
       f = fwd(s.psi),
       ahead = Math.min(14, Math.abs(s.u) * 0.8);
-    sunFollow(s.x + f[0] * ahead, s.y + f[1] * ahead, Math.abs(s.u) > 8 ? 24 : 20);
+    // V17g: a larger box at speed (it moves in steps of half its half size: fewer new shadow maps a second)
+    sunFollow(s.x + f[0] * ahead, s.y + f[1] * ahead, Math.abs(s.u) > 18 ? 32 : Math.abs(s.u) > 8 ? 24 : 20, s.x, s.y);
     return true;
   };
   // ---------------- HUD: speed, gear, revs; touch buttons ----------------

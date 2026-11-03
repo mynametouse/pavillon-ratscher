@@ -81,6 +81,8 @@ export class Tree extends THREE.Group {
       indices: [],
       uvs: [],
     };
+    // pavillon V17g: [first vertex, sections, segments, level] per branch – the rings the bark's levels of detail are taken from
+    this.branchMeta = [];
 
     this.rng = new RNG(this.options.seed);
 
@@ -506,6 +508,7 @@ export class Tree extends THREE.Group {
    * @param {Branch} branch
    */
   generateBranchIndices(indexOffset, branch) {
+    this.branchMeta.push([indexOffset, branch.sectionCount, branch.segmentCount, branch.level]);
     // Build geometry each section of the branch (cylinder without end caps)
     let v1, v2, v3, v4;
     const N = branch.segmentCount + 1;

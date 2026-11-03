@@ -196,17 +196,24 @@ export function placeSun(center) {
   sun.target.updateMatrixWorld();
 }
 placeSun();
-// the sun's shadow box (±16 m) follows the walker in 4 m steps (workshop, stream); near the house and in the model view it stays on the house.
+// the sun's shadow box (±16 m) follows the walker (workshop, stream); near the house and in the model view it stays on the house.
 // The plan view from above widens it (half size `half`) so every building in the picture casts its shadow.
+// V17g: the box moves only when the point it should cover (callers pass one a few metres ahead of the walker or the vehicle) has gone
+// half its half size from its middle – it was a 4 m grid: a new shadow map, as costly as a frame of everything, every 4 m walked and
+// every few frames at the wheel. (px, py): where the walker stands, for the rule near the house.
 export let sunC = [2, 2];
-export function sunFollow(x, y, half = 16) {
+let sunAway = false;
+export function sunFollow(x, y, half = 16, px = x, py = y) {
+  half = Math.ceil(half / 4) * 4;
   let cx = 2,
     cy = 2;
-  if (half > 16 || Math.hypot(x - 2, y - 2) > 9) {
-    cx = Math.round(x / 4) * 4;
-    cy = Math.round(y / 4) * 4;
+  const away = half > 16 || Math.hypot(px - 2, py - 2) > 9;
+  if (away) {
+    if (sunAway && half === sunHalf && Math.hypot(x - sunC[0], y - sunC[1]) < half * 0.5) return;
+    cx = Math.round(x * 2) / 2;
+    cy = Math.round(y * 2) / 2;
   }
-  half = Math.ceil(half / 4) * 4;
+  sunAway = away;
   if (cx === sunC[0] && cy === sunC[1] && half === sunHalf) return;
   sunC = [cx, cy];
   if (half !== sunHalf) {

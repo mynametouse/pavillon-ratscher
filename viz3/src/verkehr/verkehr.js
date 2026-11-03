@@ -486,7 +486,8 @@ export const VERKEHR = (() => {
         g.visible = true;
         d.dog.anim(dt, sp);
       }
-      if (sp > 0.05 || dp < 30) markDirty();
+      // V17g: walking people far from the camera ask for no new frame
+      if ((sp > 0.05 && (d.x - cam.position.x) ** 2 + (d.y + cam.position.z) ** 2 < 25600) || dp < 30) markDirty();
     }
   }
   const _h = new THREE.Vector3();
