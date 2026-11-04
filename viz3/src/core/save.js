@@ -219,6 +219,13 @@ window.SAVE = SAVE;
     null,
     v => v === null || (obj(v) && v.v === 1)
   ); // feat/garage (garden/garage_play.js)
+  K(
+    'pav-zombie-v1',
+    'Zombie-Nacht: Stand, Vorräte, Waffen, Häuser, Clan',
+    'json',
+    null,
+    v => v === null || (obj(v) && v.v === 1)
+  ); // feat/zombie (zombie/z_state.js)
   for (const h of [
     'pav-v14',
     'pav-v15',
