@@ -500,11 +500,11 @@ export const ZIEINR = (() => {
     if (C.look !== 'nachwende') L.deckchen(C, ...F.P(u, v + 0.21, 0).slice(0, 2), z + 0.481, 0.15);
   };
   // the three-piece suite: couch and two armchairs around a low table on a rug (ddr-4/6/13/21; after 1990 a leather couch)
-  L.sitzgruppe = (C, F, room) => {
+  L.sitzgruppe = (C, F, room, arms = 2) => {
     const m = C.m,
       M = C.M,
       z = C.z,
-      u0 = F.u0,
+      u0 = F.u0 + (arms === 2 ? 0.95 : 0),
       leather = C.look === 'nachwende',
       fab = leather
         ? C.col(0x5a3a26, 0.45)
@@ -541,7 +541,7 @@ export const ZIEINR = (() => {
     for (const [cu, a] of [
       [u0 - 0.55, 0],
       [u0 + w + 0.55, Math.PI],
-    ]) {
+    ].slice(arms === 2 ? 0 : 1, arms ? 2 : 0)) {
       const p = F.P(cu, 1.55, 0),
         ang = Math.atan2(F.a[1], F.a[0]) + a;
       m.box(fab, p[0] - 0.42, p[0] + 0.42, p[1] - 0.42, p[1] + 0.42, z + 0.12, z + 0.44, { a: ang });
@@ -1348,12 +1348,22 @@ export const ZIEINR = (() => {
           );
         F = null;
         let cs = null;
-        for (const c of cands)
-          if (!F && Pl.S[c] && Pl.S[c].L >= 2.3) {
-            F = Pl.place(c, 2.0, 3.0, 0.8, 0.5);
-            if (F) cs = c;
-          }
-        if (F) L.sitzgruppe(C, F, room);
+        // the whole suite (3.9 m with both armchairs) where it fits, else with one armchair, else the couch and its table
+        let arms = 2;
+        for (const [wd, na] of [
+          [3.9, 2],
+          [2.95, 1],
+          [2.0, 0],
+        ])
+          for (const c of cands)
+            if (!F && Pl.S[c] && Pl.S[c].L >= wd + 0.1) {
+              F = Pl.place(c, wd, 2.2, 0.8, 0.5);
+              if (F) {
+                cs = c;
+                arms = na;
+              }
+            }
+        if (F) L.sitzgruppe(C, F, room, arms);
         F = Pl.any(all, 0.4, 0.4, 1.7, 0.95);
         if (F) L.stehlampe(C, F, F.u0 + 0.2, 0.2);
         const W = Pl.S[outer.find(s => s !== cs) || inner[1] || 'y1'];

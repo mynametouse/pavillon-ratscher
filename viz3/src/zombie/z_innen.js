@@ -349,7 +349,7 @@ export const ZINNEN = (() => {
       const mat = look === 'alt' && kind === 'kueche' ? M.gingham : M.stores,
         top = look === 'alt' && kind === 'kueche' ? h.z0 + (h.z1 - h.z0) * 0.55 : cz1;
       folds(C.furn, mat, P, h.u0 - 0.1, h.u1 + 0.1, -0.06, cz0, top, s.n);
-      if (look === 'ddr' && kind !== 'kueche') {
+      if (look === 'ddr' && kind !== 'kueche' && kind !== 'bad') {
         const side = C.col(C.R.pick([0xa8562a, 0x7a3a28, 0x6a7a4a, 0xc89a4a]), 0.95);
         folds(C.furn, side, P, h.u0 - 0.45, h.u0 - 0.05, -0.1, h.z0 - 0.3, cz1, s.n, 3);
         folds(C.furn, side, P, h.u1 + 0.05, h.u1 + 0.45, -0.1, h.z0 - 0.3, cz1, s.n, 3);
