@@ -12,8 +12,10 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
 - **Die Sirene** vom Mast der alten Schule (Gebäude 215): E57-Heulton (Aufnahme, CC BY-SA) mit Echo übers Tal, morgens Dorfsirene mit
   Kirchenglocken (CC0); ohne Dateien synthetisch. Dorfbewohner draußen verwandeln sich an Ort und Stelle (knien, krampfen, stehen auf); ist
   keiner draußen, verwandeln sich zwei in Sichtweite. Mehr kommen aus Haustüren 35–110 m entfernt, lieber hinter dem Spieler.
-- **Zombies** (`z_fig.js`, `z_horde.js`): die Rocketbox-Figuren der Dorfbewohner (`dorf_*`) und Fremden (`vk_*`), grau-grün, Blut an Brust
-  und Kinn, Arme vor, Kopf schief, Hinken, Zucken. Sehen ~14 m (hell/Taschenlampe 24 m), hören Motorsäge (70 m), Schuss (220 m), Motor,
+- **Zombies** (`z_fig.js`, `z_horde.js`): die Rocketbox-Figuren der Dorfbewohner (`dorf_*`) und Fremden (`vk_*`); das Aussehen ist in ihre
+  eigenen Texturen gemalt (einmal je Person, höchstens 1024 px, am Handy 512): Haut grau-grün und fleckig, Kleider stumpf und schmutzig, Blut
+  am Kinn, als Läufe über die Brust, an Händen und Knien – wo das ist, sagen die Eckpunkte in der Grundhaltung (Kinn, Brust, Finger) und ihre
+  Texturkoordinaten. Arme vor, Kopf schief, Hinken, Zucken. Sehen ~14 m (hell/Taschenlampe 24 m), hören Motorsäge (70 m), Schuss (220 m), Motor,
   Hämmern; jagen über ein Flussfeld (1,5-m-Raster: Grundrisse, Wände, Gartenhindernisse; Breitensuche vom Spieler ±75 m, 2×/s); Schlag nach
   0,45 s Ausholen (12 Schaden, +2 je Nacht). Ohne Beine kriechen sie, ohne Kopf fallen sie. Autos schleudern sie weg (Schaden ~5·v^1,65).
 - **Waffen** (`z_waffe.js`): Spaten (alte Garage), Beil (Holzhaus), Huberts Axt (Hackklotz), Mistgabel (Ziegenweide), Brechstange und
@@ -27,13 +29,24 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   Türen und Fenster verbarrikadieren (2 Bretter, Nägel, 2,6 s hämmern – hörbar), Bett (Zeit vergeht, wenn keiner nah ist), Radio, Ofen.
   Nachts riechen sie den Spieler im Haus (70 m), kommen an Türen und Fenster, hämmern auf die Bretter und steigen ein. Tagsüber lauern einige
   in den Häusern, in die sie morgens gegangen sind; manchmal versteckt sich dort ein Überlebender.
+- **Zu zweit** (`z_netz.js`, Paket `dist/lazy/raum.js` = Trystero 0.26, MIT): im Panel „Zu zweit“ → „Raum erstellen“ gibt einen Code
+  (z. B. `KLOSS7`) und einen Link (`?szenario=zombie&raum=KLOSS7`); der andere öffnet den Link oder tippt den Code bei „Beitreten“. Die Browser
+  sprechen direkt miteinander (WebRTC), bekannt gemacht über öffentliche Nostr-Relais – kein eigener Server, nichts zu bezahlen. Der
+  Gastgeber ist die Welt: seine Uhr, seine Zombies, die Sirene; beim Gast sind es Puppen (8 Bilder/s: Ort, Richtung, Gang, Leben, Glieder,
+  tot). Seine Schläge gehen als Treffer zum Gastgeber, die Zombies jagen den Näheren und schlagen den Gast per Nachricht; neue kommen aus den
+  Häusern bei beiden. Laut (Säge, Schuss, Motor, Hämmern) hören die Zombies des Gastgebers auch vom Gast, sein Auto schleudert sie weg, ein
+  Treffer zählt für den, der schlug. Jeder sieht den anderen als seine Figur mit Namen, im Auto das Auto; Barrikaden sind gemeinsam; Vorräte,
+  Waffen, Leben hat jeder für sich. `?lokal=1`: zwei Fenster eines Browsers über einen BroadcastChannel (Test `zombie_netz`).
+  Grenze: hinter manchen Mobilfunknetzen finden sich zwei Browser ohne Vermittlungsserver (TURN) nicht – dann im WLAN probieren.
 - **Verbündete** (`z_bund.js`): Hubert („um Hilfe bitten“) und Ronald (will erst etwas zu essen) kommen mit, kämpfen, warten auf Zuruf;
   niedergeschlagen sind sie nur verletzt (Verbandskasten hilft auf, morgens wieder auf den Beinen). Überlebende aus Häusern gegen Essen; sterben
   sie, stehen sie als Zombies wieder auf. Der erste Verbündete gründet den Clan (Name im Panel).
 
 ## Testen
 
-- `python3 viz3/test/run.py --port 8996 --serve zombie` (Logik, ~5 min) und `zombie_look` (Bilder aus der Nähe, Gore, Nacht mit Lampe).
+- `python3 viz3/test/run.py --port 8996 --serve zombie` (Logik, ~5 min), `zombie_look` (Bilder aus der Nähe, Gore, Nacht mit Lampe) und
+  `zombie_netz` (zu zweit: zwei Seiten eines Browsers, `?lokal=1`; mit `zombie_netz:netz` über das Internet – nicht im Chat-Rechner, und der
+  Testserver erlaubt mit `connect-src 'self'` keine Relais).
 - Spielzustand ansehen: `ZSTATE` (Stand), `ZHORDE`, `ZWAFFE.info()`, `ZOMBIE.times()`; Zombies anhalten: `e.hold = 'idle' | 'walk' | …`.
 - Beim Testen ohne Ton: die Sirene braucht einen Klick (Audio-Kontext).
 
@@ -41,6 +54,7 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
 
 - Haken außerhalb des Ordners: `dorf/dorf.js` (`DORF.S.hold` – abends und nachts keine Dorfbewohner), `npc/hours.js` (`w.keep` – Verbündete
   bleiben nachts draußen), `core/save.js` (`pav-zombie-v1`).
-- Neue `window`-Namen: `ZDATA`, `ZSTATE`, `ZTON`, `ZFX`, `ZFIG`, `ZINNEN`, `ZHORDE`, `ZHAUS`, `ZWAFFE`, `ZBUND`, `ZHUD`, `ZOMBIE`.
+- Neue `window`-Namen: `ZDATA`, `ZSTATE`, `ZTON`, `ZFX`, `ZFIG`, `ZINNEN`, `ZHORDE`, `ZHAUS`, `ZWAFFE`, `ZBUND`, `ZHUD`, `ZNETZ`, `ZOMBIE`.
+- Neues Fremdpaket: `trystero` (npm, MIT) nur im eigenen Lazy-Paket `src/lazy/raum.js`; geladen erst, wenn jemand einen Raum öffnet.
 - Ereignisse: `zombie:start|stop|phase|siren|night|survived|hurt|dead|kill|hit|loot|eat|weapon|enter|leave|barricade|ally`.
 - Nichts läuft und nichts wird gebaut, bevor die Szene startet (Takte prüfen `Z.on`); Materialien von `plain` (keine eigenen Shader).
