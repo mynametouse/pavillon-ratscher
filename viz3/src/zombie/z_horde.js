@@ -356,8 +356,10 @@ export const ZHORDE = (() => {
       ux = (o.dx || 0) / L,
       uy = (o.dy || 0) / L;
     const k = o.knock || 0;
-    e.kv = [ux * k * 3.2, uy * k * 3.2];
+    e.kv = [ux * k * 4.5, uy * k * 4.5];
     e.stag = Math.min(0.9, 0.18 + k * 0.18);
+    // a hard blow throws them to the ground for a moment
+    if (k >= 2.2 && !e.crawl && rnd() < 0.3 + (k - 2.2) * 0.25) e.downT = 1.4 + rnd() * 0.8;
     const hz = e.z + (e.crawl ? 0.3 : 1.2);
     ZTON.hit(e.x, e.y, o.kind);
     if (o.kind !== 'blunt' || dmg > 30) ZTON.splat(e.x, e.y, Math.min(1.4, dmg / 40));
@@ -564,6 +566,26 @@ export const ZHORDE = (() => {
       }
       return;
     }
+    // knocked down: on the ground for a moment, sliding with the blow, then up again
+    if (e.downT > 0) {
+      e.downT -= dt;
+      e.x += e.kv[0] * dt;
+      e.y += e.kv[1] * dt;
+      e.kv[0] *= Math.exp(-dt * 4);
+      e.kv[1] *= Math.exp(-dt * 4);
+      const p = [e.x, e.y];
+      collide(p, e.z, true);
+      e.x = p[0];
+      e.y = p[1];
+      e.z = floorAt(e.x, e.y, e.z + 0.45);
+      if (F) {
+        F.mode = 'dead';
+        F.speed = 0;
+        F.g.position.copy(V(e.x, e.y, e.z));
+        F.anim(dt, near);
+      }
+      return;
+    }
     // held in a pose (tests, a scene): no thinking, no moving
     if (e.hold) {
       if (F) {
@@ -706,8 +728,8 @@ export const ZHORDE = (() => {
     if (e.stag > 0) e.stag -= dt;
     const kx = e.kv[0],
       ky = e.kv[1];
-    e.kv[0] *= Math.exp(-dt * 7);
-    e.kv[1] *= Math.exp(-dt * 7);
+    e.kv[0] *= Math.exp(-dt * 5);
+    e.kv[1] *= Math.exp(-dt * 5);
     // move, then out of walls, the garden's things and parked cars; apart from the others
     const px = e.x,
       py = e.y;
@@ -817,9 +839,31 @@ export const ZHORDE = (() => {
     if (Z.ents.length) markDirty();
   }
   // the night begins: the villagers turn, more come
+  // somebody in sight turns (if nobody of the village was out): 12–22 m ahead of the player, on a free place
+  function turnInSight(k) {
+    const t = me(),
+      out = [],
+      yaw = (P.yaw * Math.PI) / 180,
+      vk = ZFIG.people().filter(q => ZFIG.byKey[q].src === 'dorf');
+    for (let i = 0, tries = 0; i < k && tries < 40; tries++) {
+      const a = yaw + (rnd() - 0.5) * 1.1,
+        r = 12 + rnd() * 10,
+        x = t.x + Math.sin(a) * r,
+        y = t.y + Math.cos(a) * r;
+      if (blockedAt(x, y) || !los(t.x, t.y, x, y)) continue;
+      const key = vk.length ? vk[(i + Math.floor(rnd() * vk.length)) % vk.length] : pickKey();
+      if (!key) break;
+      const e = ent(key, x, y, KERN.ground(x, y), (Math.atan2(t.x - x, t.y - y) * 180) / Math.PI, { st: 'turn' });
+      e.turnT = 4 + rnd() * 2.5;
+      out.push(e.name);
+      i++;
+    }
+    return out;
+  }
   function night(n) {
     S.budget = Math.round(ZDATA.night(n).count * 1.6);
     const turned = turnVillagers();
+    if (turned.length < 2 && !(VEH && VEH.cur)) turned.push(...turnInSight(2 - turned.length));
     const first = Math.max(0, Math.min(ZDATA.night(n).count, COARSE ? 6 : 10) - turned.length);
     S.budget -= spawnSome(first);
     S.spawnT = 6;

@@ -7,6 +7,18 @@ export const ZDATA = (() => {
   // ---- weapons: melee (dmg per hit, reach, arc in degrees, cd = time between swings, knock = push back in m, stam = stamina per swing,
   // wear = condition lost per hit of 100), the chainsaw (dps while cutting, fuel in litres), the shotgun (pellets) ----
   const WEAPONS = {
+    tritt: {
+      name: 'Tritt',
+      dmg: 6,
+      reach: 1.25,
+      arc: 60,
+      cd: 0.9,
+      knock: 3.4,
+      stam: 12,
+      kind: 'blunt',
+      gest: 'push',
+      wind: 0.2,
+    },
     faust: {
       name: 'Fäuste',
       dmg: 9,
@@ -268,7 +280,7 @@ export const ZDATA = (() => {
   // ---- texts (German, the player is du) ----
   const T = {
     intro:
-      'Ratscher, 31. Oktober, später Nachmittag. Seit Tagen ist das Radio voller Rauschen. Wenn es dunkel wird, heult die Sirene auf der alten Schule – such dir vorher etwas, womit du dich wehren kannst (Spaten an der alten Garage, Motorsäge in der Werkstatt). Y oder Klick: zuschlagen, T: Taschenlampe, R: nachladen.',
+      'Ratscher, 31. Oktober, später Nachmittag. Seit Tagen ist das Radio voller Rauschen. Wenn es dunkel wird, heult die Sirene auf der alten Schule – such dir vorher etwas, womit du dich wehren kannst (Spaten an der alten Garage, Motorsäge in der Werkstatt). Y oder Klick: zuschlagen, G: Tritt, T: Taschenlampe, R: nachladen.',
     warn: 'Die Sonne geht unter. Bald heult die Sirene.',
     siren: 'Die Sirene heult. Irgendetwas stimmt mit den Leuten nicht …',
     turn: name => name + ' krümmt sich – und dreht sich langsam zu dir um.',

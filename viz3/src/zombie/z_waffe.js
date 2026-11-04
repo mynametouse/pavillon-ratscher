@@ -286,7 +286,7 @@ export const ZWAFFE = (() => {
       });
       n++;
     }
-    if (n && id !== 'faust') wear(id, w.wear || 0.5);
+    if (n && id !== 'faust' && id !== 'tritt') wear(id, w.wear || 0.5);
     if (n) S.kick = 0.06;
     return n;
   }
@@ -502,6 +502,11 @@ export const ZWAFFE = (() => {
       Z.save();
     }
   }
+  // ---- G: a kick – little harm, but it throws them back (and often down), whatever is in the hand ----
+  function kick() {
+    if (S.cd > 0 || S.sw) return false;
+    return swing('tritt');
+  }
   // ---- input ----
   const can = () => Z.on && P.mode === 'walk' && !(VEH && VEH.cur) && !PLAY.seat && !HUD.open && Z.hp > 0;
   function press() {
@@ -562,6 +567,7 @@ export const ZWAFFE = (() => {
     if (k === 'y') {
       if (press()) e.preventDefault();
     } else if (k === 'r' && can()) reload();
+    else if (k === 'g' && can() && cur() !== 'motorsaege') kick();
   });
   window.addEventListener('keyup', e => {
     if (e.key.toLowerCase() === 'y') release();
@@ -616,6 +622,7 @@ export const ZWAFFE = (() => {
     reload,
     shoot,
     swing,
+    kick,
     land,
     targets,
     info,
