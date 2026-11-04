@@ -1,0 +1,97 @@
+Kuckucksuhr
+https://de.wikipedia.org/wiki/Kuckucksuhr
+Lizenz: CC BY-SA 4.0 (Text nur gelesen)
+
+Als Kuckucksuhr wird eine mechanische Uhr bezeichnet, deren Schlagwerk den Ruf eines Kuckucks imitiert. Meist ertönt dieser Ruf zur vollen Stunde gemeinsam mit einem Gong, wobei die Anzahl der Kuckucksrufe die Stunde angibt. Zusätzlich zum Schlag fährt aus einer Klappe oberhalb des Zifferblatts eine Kuckucksfigur heraus.
+Kuckucksuhren als charakteristisch deutsches Kulturgut sind weltweit bekannt als aufwendig verzierte Objekte, deren Gestaltung Wald- oder Jagdthemen aufgreift. Sie werden traditionell vor allem im Schwarzwald gefertigt. Häufig sind es Wanduhren, deren mechanisches Pendelwerk mit Kettenzug und Schlagwerk ausgestattet ist. Die Grundform des Gehäuses ist seit Mitte des 19. Jahrhunderts meist einem Bahnwärterhäuschen mit Schrägdach nachempfunden und mit geschnitzten Holzornamenten verziert.
+Der „Kuckucksruf“ wird traditionell durch ein Paar unterschiedlich hoher Pfeifen im Inneren der Uhr erzeugt. Einige Patente kommen jedoch auch mit einer einzigen Flöte aus. Je nach Ausführung wird die mechanische Kuckucksfigur – traditionell aus Holz geschnitzt und bemalt, heute oft aus Kunststoff – passend zum Kuckucksruf bewegt oder öffnet den Schnabel. Zusätzlich können außen an der Uhr noch andere bewegliche Zierelemente angebracht sein, die sich (meist nur zur vollen Stunde) mitbewegen (Tänzer, weitere Vögel). Heute werden neben den traditionell mechanischen Kuckucksuhren auch elektro-mechanische Modelle angeboten mit Quarzuhrwerk, elektronisch erzeugtem Kuckucksruf, sowie Kettenzug- und Pendelattrappen.
+
+
+== Funktionsweise eines mechanischen Kuckucksuhrwerks ==
+Heute ist das mechanische Uhrwerk einer Kuckucksuhr meist einem herkömmlichen Schlaguhrwerk ähnlich. Es besitzt zusätzlich die sogenannte „Vogelstange“, eine Schwenkvorrichtung, die den „Kuckuck“ bei Schlagauslösung in Richtung Klappe bewegt. Die Klappe wird dabei mit einem Drahtbügel geöffnet, der am Fuß des Vogels befestigt ist. Am Ende des Schlagvorgangs wird die Vogelstange wieder in Gegenrichtung geschwenkt und damit die Klappe geschlossen.
+Die Auslösung des Kuckucksrufs erfolgt durch zwei grundsätzlich unterschiedliche Prinzipien. Bis ins 20. Jahrhundert hinein wurde das Schlagwerk in der Regel durch eine Schlossscheibe gesteuert. Auf diese historische Funktionsweise der Kuckucksuhr wird hier nicht eingegangen, sondern nur auf das heute übliche Ineinanderspiel von Stufenrad und Auslösehebel. Während sich das Gewicht am Uhrwerk-Kettenzug permanent nach unten bewegt, ist die Schlagauslösung blockiert. Mit dem Stundenzeiger ist ein Stufenrad mit zwölf Stufen (auch Rechenscheibe genannt) gekoppelt. Befindet sich der Minutenzeiger in „Zwölf-Uhr-Stellung“ löst sich für einen kurzen Moment eine Sperre und ein vertikal verzahnter Auslöserhebel (Rechen) fällt auf das Stufenrad, also je nach Uhrzeit unterschiedlich tief. Um zwölf Uhr ist die Stufe am kleinsten und der Auslöser fällt am tiefsten. Die Blockierung wird gelöst und der Schlag-Kettenzug setzt sich in Bewegung. Er treibt ein Nockenrad an, welches die „Bedienung“ des Schlagwerks übernimmt. Dabei werden zeitversetzt über ein Drahtgestänge zwei mit kleinen Gewichten oder Holzblöcken beschwerte Blasebälge angehoben und wieder losgelassen. Jeder Blasebalg pumpt Luft in eine kleine Pfeife, wodurch der Kuckuckston entsteht (zuerst der hohe Ton, dann der tiefere). Der Eindruck eines Kuckucksrufs kommt nur zustande, wenn das Auslösen der Pfeifen im richtigen Abstand zueinander liegt. Das Nockenrad löst nach der zweiten Pfeife noch den Schlag auf eine Tonfeder (Gong) aus. Es kann zusätzlich noch andere Zierelemente wie außen angebrachte Vögel, Tänzer usw. bewegen.
+Bei jedem einzelnen „Schlag“ wird der vertikal verzahnte Auslöserhebel mittels eines an das Nockenrad gekoppelten rotierenden Nockenelements um einen Zahn angehoben und durch die Sperre, die den Auslöserhebel außerhalb des Schlagbetriebes oben hält, bei jedem Zahn eingerastet. Bei zwölf Uhr kann sich das Nockenelement also zwölfmal drehen, bis der Auslöserhebel wieder an seinem Ausgangspunkt angelangt ist und das Schlagwerk wieder blockiert wird.
+Bei sehr aufwendig animierten Außendekorationen kann ein weiteres Schlagwerk im Einsatz sein oder es gibt ein weiteres „Türchen“ für die Wachtel, die im Viertel- oder Halbstundentakt schlägt. Derartige Uhren haben dann drei Kettenzugwerke. Muss man die Kuckucksuhr neu einstellen, so dass die Anzahl der Rufe der Wachtel und des Kuckucks mit der Stundenzahl übereinstimmen, schaut man zunächst auf der linken Seite in das Uhrwerk, betätigt dort kurz den Drahthebel, um das Rufen der Wachtel auszulösen. Dann öffnet man den Uhrkasten auf der rechten Seite, um den Stundenruf des Kuckucks einzustellen. Ausgelöst wird der Ruf durch kurzes Antippen des Einstelldrahtes, den man sofort wieder loslassen muss. Das Antippen so oft wiederholen, bis die richtige Anzahl der Rufe erreicht ist.
+Je nach Ausführung müssen Kuckucksuhren heute alle 24 Stunden bis 8 Tage neu aufgezogen werden. Zum Aufziehen müssen wie bei anderen Kettenzugwerken die abgesenkten Gewichte von Hand wieder hochgezogen werden. Dass die Kettenzuguhrwerke in der Regel eine geringere Laufzeit haben als Federuhrwerke, wird dadurch teilweise kompensiert, dass die Laufreserve jederzeit direkt an der Position der Gewichte ersichtlich ist und eine Beschädigung des Uhrwerks durch unkontrolliertes Aufziehen („Überziehen“) nicht möglich ist. Einige Modelle besitzen wie andere Schlaguhren einen Schlagabsteller, der es ermöglicht, den Kuckucksruf zum Beispiel nachts abzustellen.
+
+
+== Die ersten Kuckucksuhren ==
+
+Die Ursprünge der Kuckucksuhr liegen im Dunkeln.
+Bereits 1619 gelangte eine Uhr mit Kuckucksschrei in die Sammlung des Kurfürsten Johann Georg I. von Sachsen.
+Wie der Kuckucksruf mit zwei Pfeifen mechanisch nachgeahmt werden konnte, hatte der Mechaniker Salomon de Caus schon 1615 beschrieben. Offensichtlich orientierte sich Athanasius Kircher in dem weit verbreiteten Handbuch zur Musik Musurgia Universalis fünfunddreißig Jahre später an de Caus (1650), als er eine mechanische Orgel mit verschiedenen Figurenautomaten vorstellte, darunter auch eine mechanische Kuckucksfigur. Dieser Kuckuck öffnet automatisch den Schnabel und bewegt Flügel und Schwanzspitze. Gleichzeitig ertönt der Kuckucksruf, erzeugt von zwei Orgelpfeifen, die auf eine kleine oder große Terz gestimmt sind.
+1669 schlug Domenico Martinelli in seinem Buch Horologi Elementari vor, den Kuckucksruf für die Anzeige der Stunden zu verwenden. Spätestens ab diesem Zeitpunkt war der Mechanismus für eine Kuckucksuhr bekannt.
+
+
+== Die ersten Schwarzwälder Kuckucksuhren ==
+
+Wer die ersten Schwarzwälder Kuckucksuhren konstruiert hat, ist umstritten. Bereits die beiden ersten Geschichtsschreiber über die Schwarzwälder Uhrmacherei widersprechen sich in dieser Frage. Markus Fidelis Jäck behauptete 1810, dass Franz Anton Ketterer aus Schönwald zu Beginn der 1730er-Jahre als erster Kuckucksuhren gefertigt habe. Franz Steyrer hingegen berichtet in seiner Geschichte der Schwarzwälder Uhrmacherkunst (1796), dass Michael Dilger in Neukirch und Matthäus Hummel 1742 anfingen, Kuckucksuhren zu bauen. Wolfgang Altendorff schreibt die erste Schwarzwälder Kuckucksuhr dagegen Franz Anton Ketterers Vater Franziskus Ketterer (* 1676; † 2. Juli 1753 in Schönwald) zu.
+Im 19. Jahrhundert fand sich der Kuckuck ebenso in Lackschilduhren als auch in Rahmenuhren, bevor die Bahnhäusleuhr alle anderen Formen der Kuckucksuhr innerhalb weniger Jahre vom Markt verdrängte.
+
+
+== Die Bahnhäusle-Uhr ==
+
+Im September 1850 rief Robert Gerwig, der Direktor der Großherzoglich Badischen Uhrmacherschule in Furtwangen, zu einem Wettbewerb für ein zeitgemäßes Uhrendesign auf.
+Der folgenreichste Entwurf stammt von Friedrich Eisenlohr, der als Architekt für die meisten Bauten entlang der badischen Staatseisenbahn verantwortlich war. Eisenlohr versah die Fassade eines von ihm entworfenen und gebauten Bahnwärterhäuschens mit einem Zifferblatt. Das Urbild der heute noch als Souvenir beliebten Kuckucksuhr war somit 120 Jahren nach den ersten Schwarzwälder Uhren geboren.
+Um 1860 entfernte sich die Bahnhäusleuhr deutlich von der ursprünglich eher strengen grafischen Form. 1862 bot Johann Baptist Beha aus Eisenbach zum ersten Mal reich verzierte Kuckucksuhren mit geschnitzten Beinzeigern sowie Gewichten in Form von Tannenzapfen an.
+Seit dieser Zeit ist die Bahnhäusleuhr mit üppigen dreidimensionalen Pflanzen- und Tierschnitzereien ein Dauerbrenner als Souvenir. Im Ausland gilt die Kuckucksuhr nicht nur als Symbol für den Schwarzwald, sondern für ganz Deutschland, aufgrund der kulturellen Ähnlichkeiten und der Verbreitung der Uhren auch für die Schweiz und Österreich.
+
+
+== Bedeutung in der populären Kultur ==
+Kuckucksuhren sind in der Literatur verbreitet. Von einer Kuckucksuhr handelt etwa Astrid Lindgrens Kinderbuch Kuckuck Lustig, in dem allerdings der Vater den Kindern erklärt, die Kuckucksuhren kämen aus der Schweiz.
+Die Kuckucksuhr ist ein in zahlreichen Comics und Zeichentrickfilmen verwendetes Requisit, wobei der Kuckuck fast immer – im Unterschied zu den handelsüblichen Kuckucksuhren – an einem Scherenarm befestigt ist und ein Stück aus der Uhr herausschnellen kann.
+In dem Film Eins, Zwei, Drei taucht immer wieder eine „Kuckucksuhr“ auf, die statt eines Kuckucks einen Uncle Sam enthält, mit der Melodie von Yankee Doodle.
+Sowohl in der Kunst (z. B. Stefan Strumbel) und der Mode (z. B. Hermès) als auch im Uhrenhandwerk wird an modernen Versionen der Kuckucksuhr gearbeitet. Dabei wird versucht, traditionelle Bestandteile wie das Schwarzwälder Uhrwerk mit entsprechend verändertem Äußeren zu kombinieren.
+In Fritz Benschers Quizsendung Tick-Tack-Quiz, die zwischen 1958 und 1967 in der ARD zu sehen war, erhielt der unterlegene Kandidat als Trostpreis eine Kuckucksuhr.
+Auch in Michael Endes „Der satanarchäolügenialkohöllische Wunschpunsch“ kommt eine Aua-Uhr vor, die entfernt an eine Kuckucksuhr erinnert.
+Im Film „Der dritte Mann“ (1949) hält Orson Welles die sogenannte „Kuckucksuhr-Rede“. Welles behauptet, die Kuckucksuhr käme aus der Schweiz.
+In Anspielung auf diese Behauptung finden sich im Asterix-Comic Asterix bei den Schweizern in den Herbergen Sanduhren, die immer herumgedreht werden müssen, wenn der Wirt "Kuckuck" ruft.
+In der US-amerikanischen Komödie Trabbi goes to Hollywood ist eine Kuckucksuhr wichtiger Bestandteil des Trabis, der durch einen Umbau 250 km/h schnell fahren kann und mit Rübensaft betankt wird.
+
+
+== Absatzprobleme ==
+Seit Jahren ist der Verkauf dieser Uhrenart rückläufig. Im Jahre 2024 wurden weltweit nur noch rund 150 Tausend Stück verkauft. Um dieser Absatzkrise entgegenzuwirken, will der Verein für die Schwarzwalduhr die Kuckucksuhr auf die UNESCO-Liste des immateriellen Kulturerbes eintragen lassen.
+
+
+== Überdimensionale Kuckucksuhren ==
+
+Es gibt einige überdimensionale Kuckucksuhren, welche in separaten Häusern untergebracht wurden und teils den Anspruch erheben (bzw. erhoben), die größte der Welt zu sein (die entsprechenden Selbstbezeichnungen sind in Anführungszeichen beigefügt):
+
+„Weltgrößte Kuckucksuhr“, Triberg, Deutschland , dort wurde im Maßstab 60:1 ein Original-Uhrwerk einer Kuckucksuhr nachgebaut. Der größte Raddurchmesser beträgt 2,60 m. Das Werk hat ein Gewicht von 6 t, das Pendel eine Länge von 8 m. Die Bauzeit betrug 5 Jahre.
+Harzer Kuckucksuhr, Quedlinburg-Stadt Gernrode, Deutschland 
+„Erste weltgrößte Kuckucksuhr“, Schonach, Deutschland 
+Breiteste Kuckucksuhr, Hornberg, Deutschland 
+Kuckucksuhr der Landesgartenschau Villingen-Schwenningen 2010, Deutschland 
+Kuckucksuhr Villa Carlos Paz, Argentinien 
+„Größte Kuckuckuhr [sic] der Welt“ in Wiesbaden (seit 1946) 
+
+
+== Siehe auch ==
+Deutsches Uhrenmuseum
+Uhrenproduktion im Schwarzwald
+Uhrmacherschule Furtwangen
+
+
+== Literatur ==
+Wilhelm Schneider: Zur Entstehungsgeschichte der Kuckucksuhr. In: Alte Uhren. Heft 3, 1985, S. 13–21.
+Wilhelm Schneider: Frühe Kuckucksuhren von Johann Baptist Beha in Eisenbach im Hochschwarzwald. In: Uhren. Heft 3, 1987, S. 45–53.
+Richard Mühe, Helmut Kahlert, Beatrice Techen: Kuckucksuhren. Callwey, München 1988, ISBN 3-7667-0909-7.
+Wilhelm Schneider: Die eiserne Kuckucksuhr. In: Uhren, 12. Jg., 1989, Heft 5, S. 37–44.
+Helmut Kahlert: Erinnerung an ein geniales Design. 150 Jahre Bahnhäusle-Uhren. In: Klassik-Uhren. 2002, H. 4, S. 26–30.
+Herbert Jüttemann: Die Schwarzwalduhr. Badenia, Karlsruhe 1991, ISBN 3-7617-0280-9; 2000, ISBN 978-3-89735-360-2.
+Johannes Graf: Erfolgsgeschichte der Schwarzwälder Kuckucksuhr. In: Klassik-Uhren. 2006, H. 5.
+Julia Scholz: Kuckucksuhr Mon Amour. Faszination Schwarzwalduhr. Theiss, Stuttgart 2013, ISBN 978-3-8062-2797-0 (Katalog zur Sonderausstellung des Deutschen Uhrenmuseums Furtwangen).
+
+
+== Filme ==
+Wie man eine Kuckucksuhr baut auf YouTube aus der SWR-Reihe Handwerkskunst! vom 26. November 2018, abgerufen am 4. Dezember 2022
+
+
+== Weblinks ==
+
+Literatur von und über Kuckucksuhr im Katalog der Deutschen Nationalbibliothek
+Artikel über Designer-Kuckucksuhren
+Baden-Württemberg. 175 Jahre Kuckucksuhr: Schwarzwälder wollen sie nun als Unesco-Kulturerbe schützen am 2. November 2025 auf tagesschau.de
+
+
+== Einzelnachweise ==
