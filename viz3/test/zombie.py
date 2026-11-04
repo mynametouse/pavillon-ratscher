@@ -138,5 +138,6 @@ with lib.browser() as b:
     print('programs', E("GAME.R.info.programs.length"), flush=True)
     terr = pg.evaluate("(window.LOADLOG && LOADLOG.errs || []).filter(e => /Takt (zombie|zinnen)/.test(e)).map(e => e.slice(0, 300))")
     ck('no zombie tick broke', not terr, ' | '.join(terr[:2]))
+    ck('no zombie lost its place (NaN)', not pg.evaluate("ZHORDE.badAt || ''"), pg.evaluate("ZHORDE.badAt || ''"))
     ck.errors(errs)
 ck.done()

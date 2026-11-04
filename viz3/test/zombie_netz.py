@@ -85,5 +85,6 @@ with lib.browser() as b:
     ck('no zombie tick broke (A)', not terr, ' | '.join(terr[:2]))
     terr = B.evaluate("(window.LOADLOG && LOADLOG.errs || []).filter(e => /Takt (zombie|zinnen)/.test(e)).map(e => e.slice(0, 300))")
     ck('no zombie tick broke (B)', not terr, ' | '.join(terr[:2]))
+    ck('no zombie lost its place (NaN)', not A.evaluate("ZHORDE.badAt || ''"), A.evaluate("ZHORDE.badAt || ''"))
     ck.errors(errs)
 ck.done()
