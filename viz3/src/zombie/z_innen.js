@@ -25,16 +25,1465 @@
 //     H.stats  { ms, meshes, draws, tris }
 //   ZINNEN.unmount(H)    removes it all (meshes disposed, COL/WALK entries neutralised, doors and actions gone, lights given back)
 //   ZINNEN.mounted()     → the handles built now (normally one)
+// Additions of feat/zombie-innen (beyond the contract):
+//   H.roomAt(x, y, z) → the room id there or null   H.light(roomId, on?) → switch a room's light (no argument: toggle), returns the state
+//   H.doors [{ id, key, room, pos: [x, y, z] }]     the inner doors (DOORS keys: open/close with GAME.toggleDoor or setDoorNow)
+//   H.hatch { key, pos } | null                     the cellar trapdoor (a DOORS flap)   H.plan   the floor plan (zombie/z_innen_plan.js)
+//   ZINNEN.pick(x, y)  → the id of the enterable house nearest to (x, y)
+import * as THREE from 'three';
+import { scene, V, QS } from '../core/head.js';
 import { KERN } from '../core/kern.js';
+import { markDirty } from '../core/assets.js';
+import { COL, WALK, hingeDoor, flapDoor, DOORS } from '../core/geo.js';
+import { P as WALKER, rebuildGrids } from '../game/walkable.js';
+import { go, setView3 } from '../game/player.js';
+import { PLAY } from '../game/play.js';
+import { VILLAGE } from '../world/village.js';
+import { ZIPLAN } from './z_innen_plan.js';
+import { ZIMOB } from './z_innen_mob.js';
+import { ZIEINR } from './z_innen_einr.js';
 export const ZINNEN = (() => {
-  const S = { ready: false, built: [] };
-  S.list = () => [];
-  S.info = () => null;
-  S.mount = async () => null;
-  S.unmount = () => {};
+  const S = { ready: false, built: [], wired: false, poolCol: [], poolWalk: [] };
+  const PW = ZIPLAN.PW,
+    SLAB = ZIPLAN.SLAB,
+    TAG = 'zinnen';
+  const tick0 = () => new Promise(r => setTimeout(r, 0));
+  // ---- the enterable houses ----
+  let LIST = null;
+  S.list = () => {
+    if (LIST) return LIST.map(o => Object.assign({}, o, { door: Object.assign({}, o.door) }));
+    if (!VILLAGE.ready) return [];
+    LIST = [];
+    for (const b of VILLAGE.bld) {
+      if (!ZIPLAN.enterable(b)) continue;
+      const P = ZIPLAN.plan(b.id);
+      if (!P) continue;
+      const f = P.F.f,
+        d = P.toW(P.front.x, 0);
+      LIST.push({
+        id: b.id,
+        cx: b.cx,
+        cy: b.cy,
+        door: { x: d[0], y: d[1], z: P.foot, nx: f.nx, ny: f.ny, w: P.front.w },
+      });
+    }
+    return S.list();
+  };
+  S.info = id => {
+    const P = ZIPLAN.plan(id);
+    if (!P) return null;
+    return {
+      id,
+      storeys: P.nSt,
+      cellar: !!P.cellar,
+      attic: !!P.attic,
+      style: P.look,
+      owner: P.owner,
+      rooms: P.rooms.map(r => ({ id: r.id, kind: r.kind, floor: r.fl, name: r.name })),
+    };
+  };
+  S.pick = (x, y) => {
+    let best = null,
+      bd = 1e9;
+    for (const o of S.list()) {
+      const d = Math.hypot(o.cx - x, o.cy - y);
+      if (d < bd) {
+        bd = d;
+        best = o.id;
+      }
+    }
+    return best;
+  };
+  // ---- the sides of a room: line, inward normal, outer edge, what is cut into it ----
+  function roomSides(P, r) {
+    const out = {
+      y0: { A: [r.x0, r.y0], B: [r.x1, r.y0], n: [0, 1], outer: Math.abs(r.y0 - P.yi0) < 0.02 ? 'front' : null },
+      x1: { A: [r.x1, r.y0], B: [r.x1, r.y1], n: [-1, 0], outer: Math.abs(r.x1 - P.xi1) < 0.02 ? 'right' : null },
+      y1: { A: [r.x1, r.y1], B: [r.x0, r.y1], n: [0, -1], outer: Math.abs(r.y1 - P.yi1) < 0.02 ? 'back' : null },
+      x0: { A: [r.x0, r.y1], B: [r.x0, r.y0], n: [1, 0], outer: Math.abs(r.x0 - P.xi0) < 0.02 ? 'left' : null },
+    };
+    if (r.kind === 'keller') for (const k in out) out[k].outer = null;
+    for (const k of Object.keys(out)) {
+      const s = out[k];
+      s.L = Math.hypot(s.B[0] - s.A[0], s.B[1] - s.A[1]);
+      s.d = [(s.B[0] - s.A[0]) / s.L, (s.B[1] - s.A[1]) / s.L];
+      s.u = (x, y) => (x - s.A[0]) * s.d[0] + (y - s.A[1]) * s.d[1];
+      s.holes = [];
+    }
+    if (r.kind === 'keller') return out;
+    // windows on outer sides
+    for (const w of P.windows) {
+      if (w.fl !== r.fl) continue;
+      for (const k of Object.keys(out)) {
+        const s = out[k];
+        if (s.outer !== w.edge) continue;
+        const along = k === 'y0' || k === 'y1' ? 0 : 1,
+          lo = Math.min(s.A[along], s.B[along]),
+          hi = Math.max(s.A[along], s.B[along]);
+        if (w.a < lo + 0.05 || w.b > hi - 0.05) continue;
+        const pa = along ? [s.A[0], w.a] : [w.a, s.A[1]],
+          pb = along ? [s.A[0], w.b] : [w.b, s.A[1]],
+          u0 = Math.min(s.u(...pa), s.u(...pb)),
+          u1 = Math.max(s.u(...pa), s.u(...pb));
+        s.holes.push({ kind: 'window', u0, u1, z0: w.z0, z1: w.z1, w });
+      }
+    }
+    // inner doors (in the partition beside the side), the front door
+    for (const d of P.doors) {
+      if (d.fl !== r.fl) continue;
+      for (const k of Object.keys(out)) {
+        const s = out[k],
+          vert = k === 'x0' || k === 'x1';
+        if (vert !== (d.axis === 'y')) continue;
+        const wallC = vert ? s.A[0] + s.n[0] * -PW * 0.5 : s.A[1] + s.n[1] * -PW * 0.5,
+          dc = vert ? d.x : d.y;
+        if (Math.abs(wallC - dc) > 0.09) continue;
+        const along = vert ? d.y : d.x,
+          lo = vert ? Math.min(s.A[1], s.B[1]) : Math.min(s.A[0], s.B[0]),
+          hi = vert ? Math.max(s.A[1], s.B[1]) : Math.max(s.A[0], s.B[0]);
+        if (along < lo || along > hi) continue;
+        const pa = vert ? [s.A[0], along - d.w / 2] : [along - d.w / 2, s.A[1]],
+          pb = vert ? [s.A[0], along + d.w / 2] : [along + d.w / 2, s.A[1]];
+        s.holes.push({
+          kind: 'door',
+          u0: Math.min(s.u(...pa), s.u(...pb)),
+          u1: Math.max(s.u(...pa), s.u(...pb)),
+          z0: d.z0,
+          z1: d.z1,
+          d,
+        });
+      }
+    }
+    if (r.kind === 'flur' && r.fl === 0) {
+      const s = out.y0,
+        u = s.u(P.front.x, s.A[1]);
+      s.holes.push({ kind: 'front', u0: u - P.front.w / 2, u1: u + P.front.w / 2, z0: P.front.z0, z1: P.front.z1 });
+    }
+    return out;
+  }
+  // ---- materials of a room after the look ----
+  function roomMats(P, r, M, R) {
+    const look = P.look,
+      k = r.kind;
+    let wall = M.putz,
+      floor = M.dielen,
+      ceil = M.decke,
+      wainscot = null;
+    if (k === 'keller') return { wall: M.stein, floor: M.stein, ceil: M.holzdecke };
+    if (k === 'boden') return { wall: M.holzdecke, floor: M.dielen, ceil: M.holzdecke };
+    if (k === 'bad')
+      return {
+        wall: look === 'alt' ? M.putz : M.fliesen,
+        floor: M.fliesen,
+        ceil: M.decke,
+        tiles: look === 'alt' ? M.fliesenWand : null,
+      };
+    if (look === 'alt') {
+      if (k === 'stube') {
+        wall = R.pick([M.tapete.streifen, M.tapete.schablone, M.putz]);
+        ceil = M.holzdecke;
+        wainscot = true;
+      } else if (k === 'kammer' || k === 'schlafzimmer' || k === 'kinderzimmer')
+        wall = R.pick([M.tapete.schablone, M.putz, M.tapete.streifen]);
+      if (k === 'flur' || k === 'kueche' || k === 'vorrat' || k === 'waschkueche') floor = M.platten;
+      if (k === 'kammer' || k === 'schlafzimmer') ceil = R.chance(0.5) ? M.holzdecke : M.decke;
+    } else if (look === 'ddr') {
+      if (k === 'stube' || k === 'wohnzimmer') wall = R.pick([M.tapete.ddr, M.tapete.blume]);
+      else if (k === 'schlafzimmer' || k === 'kammer' || k === 'kinderzimmer')
+        wall = R.pick([M.tapete.blume, M.tapete.streifen, M.putz]);
+      if (k === 'kueche' || k === 'flur') floor = M.linoleum;
+    } else {
+      if (k !== 'kueche') floor = M.laminat;
+      else floor = M.platten;
+    }
+    return { wall, floor, ceil, wainscot };
+  }
+  // ---- a wall face with rectangular holes (grid of cells), facing n; A → B along u ----
+  function wallFace(m, mat, A, d, L, z0, z1, n, holes) {
+    const us = [0, L],
+      zs = [z0, z1];
+    for (const h of holes) {
+      us.push(Math.max(0, Math.min(L, h.u0)), Math.max(0, Math.min(L, h.u1)));
+      zs.push(Math.max(z0, Math.min(z1, h.z0)), Math.max(z0, Math.min(z1, h.z1)));
+    }
+    const U = [...new Set(us.map(v => +v.toFixed(4)))].sort((a, b) => a - b),
+      Z = [...new Set(zs.map(v => +v.toFixed(4)))].sort((a, b) => a - b),
+      P = (u, z) => [A[0] + d[0] * u, A[1] + d[1] * u, z],
+      nn = [n[0], n[1], 0];
+    for (let i = 0; i < U.length - 1; i++)
+      for (let j = 0; j < Z.length - 1; j++) {
+        const um = (U[i] + U[i + 1]) / 2,
+          zm = (Z[j] + Z[j + 1]) / 2;
+        if (U[i + 1] - U[i] < 1e-3 || Z[j + 1] - Z[j] < 1e-3) continue;
+        if (holes.some(h => um > h.u0 && um < h.u1 && zm > h.z0 && zm < h.z1)) continue;
+        m.quad(mat, P(U[i], Z[j]), P(U[i + 1], Z[j]), P(U[i + 1], Z[j + 1]), P(U[i], Z[j + 1]), nn, [
+          [U[i], Z[j]],
+          [U[i + 1], Z[j]],
+          [U[i + 1], Z[j + 1]],
+          [U[i], Z[j + 1]],
+        ]);
+      }
+  }
+  // the reveal of a hole through the outer wall (depth t outwards), the window frame, glass, sill; or the front door's leaf
+  const FRAME = [0xe8e8e2, 0x4a3020, 0x2a4a34, 0x8a8c8c];
+  function opening(C, s, h, t, house) {
+    const m = C.shell,
+      M = C.M,
+      o = [-s.n[0], -s.n[1]],
+      P = (u, z, k) => [s.A[0] + s.d[0] * u + o[0] * k, s.A[1] + s.d[1] * u + o[1] * k, z],
+      revealMat = C.mats.wall === M.fliesen ? M.putz : C.mats.wall;
+    // jambs, head, sill of the reveal
+    m.quad(revealMat, P(h.u0, h.z0, 0), P(h.u0, h.z0, t), P(h.u0, h.z1, t), P(h.u0, h.z1, 0), [s.d[0], s.d[1], 0]);
+    m.quad(revealMat, P(h.u1, h.z0, 0), P(h.u1, h.z1, 0), P(h.u1, h.z1, t), P(h.u1, h.z0, t), [-s.d[0], -s.d[1], 0]);
+    m.quad(revealMat, P(h.u0, h.z1, 0), P(h.u0, h.z1, t), P(h.u1, h.z1, t), P(h.u1, h.z1, 0), [0, 0, -1]);
+    m.quad(revealMat, P(h.u0, h.z0, 0), P(h.u1, h.z0, 0), P(h.u1, h.z0, t), P(h.u0, h.z0, t), [0, 0, 1]);
+    const k = t - 0.07,
+      fc = C.col(FRAME[house.frame] || FRAME[0], 0.5),
+      bar = (u0, u1, z0, z1) => {
+        const p = P(u0, 0, k - 0.03),
+          q = P(u1, 0, k + 0.03);
+        C.furn.box(fc, Math.min(p[0], q[0]), Math.max(p[0], q[0]), Math.min(p[1], q[1]), Math.max(p[1], q[1]), z0, z1);
+      };
+    if (h.kind === 'front') {
+      // the front door from inside: a panelled leaf in the reveal (the game leaves the house through it), its frame and handle
+      const leaf = C.col(0x5a3a22, 0.6);
+      const p = P(h.u0, 0, k - 0.02),
+        q = P(h.u1, 0, k + 0.03);
+      C.furn.box(
+        leaf,
+        Math.min(p[0], q[0]),
+        Math.max(p[0], q[0]),
+        Math.min(p[1], q[1]),
+        Math.max(p[1], q[1]),
+        h.z0,
+        h.z1
+      );
+      for (const [za, zb] of [
+        [h.z0 + 0.15, h.z0 + 0.95],
+        [h.z0 + 1.1, h.z1 - 0.15],
+      ]) {
+        const p2 = P(h.u0 + 0.14, 0, k - 0.04),
+          q2 = P(h.u1 - 0.14, 0, k - 0.02);
+        C.furn.box(
+          C.col(0x4a2e1a, 0.65),
+          Math.min(p2[0], q2[0]),
+          Math.max(p2[0], q2[0]),
+          Math.min(p2[1], q2[1]),
+          Math.max(p2[1], q2[1]),
+          za,
+          zb
+        );
+      }
+      const hp = P(h.u1 - 0.12, 0, k - 0.08);
+      C.furn.box(M.messing, hp[0] - 0.03, hp[0] + 0.03, hp[1] - 0.03, hp[1] + 0.03, h.z0 + 1.0, h.z0 + 1.08);
+      return;
+    }
+    // window: frame, mullion and transom as the facade paints them, glass, the sill board inside, curtains
+    const w = h.u1 - h.u0,
+      fw = 0.065;
+    bar(h.u0, h.u0 + fw, h.z0, h.z1);
+    bar(h.u1 - fw, h.u1, h.z0, h.z1);
+    bar(h.u0, h.u1, h.z0, h.z0 + fw);
+    bar(h.u0, h.u1, h.z1 - fw, h.z1);
+    const zt = h.z0 + (h.z1 - h.z0) * 0.7;
+    if (!h.w.attic) {
+      bar(h.u0 + w / 2 - 0.03, h.u0 + w / 2 + 0.03, h.z0, zt);
+      bar(h.u0, h.u1, zt - 0.025, zt + 0.025);
+    }
+    m.quad(
+      M.glas,
+      P(h.u0, h.z0, k + 0.035),
+      P(h.u1, h.z0, k + 0.035),
+      P(h.u1, h.z1, k + 0.035),
+      P(h.u0, h.z1, k + 0.035),
+      [s.n[0], s.n[1], 0]
+    );
+    const p = P(h.u0 - 0.05, 0, -0.14),
+      q = P(h.u1 + 0.05, 0, 0.05);
+    C.furn.box(
+      C.mats.sill || C.M.holz,
+      Math.min(p[0], q[0]),
+      Math.max(p[0], q[0]),
+      Math.min(p[1], q[1]),
+      Math.max(p[1], q[1]),
+      h.z0 - 0.04,
+      h.z0
+    );
+    // a flower pot on some sills (geraniums)
+    if (C.R() < 0.35 && h.z0 - C.room.z0 < 1.2) {
+      const pp = P(h.u0 + w * C.R.r(0.25, 0.75), 0, -0.04);
+      C.furn.cyl(C.col(0xb4653f, 0.88), pp[0], pp[1], h.z0, h.z0 + 0.13, 0.06, 0.08, 8);
+      C.furn.lathe(
+        C.col(0x4f7d3a, 0.85),
+        pp[0],
+        pp[1],
+        [
+          [0.09, h.z0 + 0.12],
+          [0.13, h.z0 + 0.2],
+          [0.0, h.z0 + 0.28],
+        ],
+        7,
+        { caps: false }
+      );
+      C.furn.lathe(
+        C.col(0xc8352b, 0.6),
+        pp[0],
+        pp[1],
+        [
+          [0.04, h.z0 + 0.26],
+          [0.06, h.z0 + 0.3],
+          [0.0, h.z0 + 0.33],
+        ],
+        6,
+        { caps: false }
+      );
+    }
+    // curtains: net curtains (Stores) over the window in the DDR and later looks, a checked half curtain in old kitchens
+    const kind = C.room.kind,
+      look = C.look;
+    if (kind === 'keller' || kind === 'boden' || kind === 'flur') return;
+    const cz1 = h.z1 + 0.12,
+      cz0 = look === 'alt' && kind === 'kueche' ? h.z0 + 0.05 : h.z0 - 0.02;
+    if (look !== 'alt' || kind === 'stube' || kind === 'kueche' || C.R() < 0.4) {
+      const mat = look === 'alt' && kind === 'kueche' ? M.gingham : M.stores,
+        top = look === 'alt' && kind === 'kueche' ? h.z0 + (h.z1 - h.z0) * 0.55 : cz1;
+      folds(C.furn, mat, P, h.u0 - 0.1, h.u1 + 0.1, -0.06, cz0, top, s.n);
+      if (look === 'ddr' && kind !== 'kueche') {
+        const side = C.col(C.R.pick([0xa8562a, 0x7a3a28, 0x6a7a4a, 0xc89a4a]), 0.95);
+        folds(C.furn, side, P, h.u0 - 0.45, h.u0 - 0.05, -0.1, h.z0 - 0.3, cz1, s.n, 3);
+        folds(C.furn, side, P, h.u1 + 0.05, h.u1 + 0.45, -0.1, h.z0 - 0.3, cz1, s.n, 3);
+      }
+      const r0 = P(h.u0 - 0.5, 0, -0.08),
+        r1 = P(h.u1 + 0.5, 0, -0.08);
+      C.furn.rod(C.col(0xd8d0b8, 0.4, 0.3), [r0[0], r0[1], cz1 + 0.03], [r1[0], r1[1], cz1 + 0.03], 0.012, 5);
+    }
+  }
+  // a curtain with folds: a zig-zag strip from u0 to u1 at offset k (inside: negative), z0..z1
+  function folds(m, mat, P, u0, u1, k, z0, z1, n, nf) {
+    const N = nf || Math.max(4, Math.round((u1 - u0) / 0.09));
+    for (let i = 0; i < N; i++) {
+      const a = u0 + ((u1 - u0) * i) / N,
+        b = u0 + ((u1 - u0) * (i + 1)) / N,
+        ka = k - (i % 2 ? 0.025 : 0),
+        kb = k - ((i + 1) % 2 ? 0.025 : 0);
+      m.quad(
+        mat,
+        P(a, z0, ka),
+        P(b, z0, kb),
+        P(b, z1, kb),
+        P(a, z1, ka),
+        [n[0], n[1], 0],
+        [
+          [a, z0],
+          [b, z0],
+          [b, z1],
+          [a, z1],
+        ]
+      );
+    }
+  }
+  // rect minus a hole (axis-aligned, all in the house frame): up to four rects
+  function minus(r, h) {
+    if (!h || h[0] >= r[1] || h[1] <= r[0] || h[2] >= r[3] || h[3] <= r[2]) return [r];
+    const out = [],
+      a = Math.max(r[0], h[0]),
+      b = Math.min(r[1], h[1]);
+    if (h[2] > r[2]) out.push([r[0], r[1], r[2], h[2]]);
+    if (h[3] < r[3]) out.push([r[0], r[1], h[3], r[3]]);
+    const y0 = Math.max(r[2], h[2]),
+      y1 = Math.min(r[3], h[3]);
+    if (a > r[0]) out.push([r[0], a, y0, y1]);
+    if (b < r[1]) out.push([b, r[1], y0, y1]);
+    return out.filter(q => q[1] - q[0] > 1e-3 && q[3] - q[2] > 1e-3);
+  }
+  const minusAll = (r, holes) => holes.reduce((list, h) => list.flatMap(q => minus(q, h)), [r]);
+  function hFloor(m, mat, r, z, up) {
+    const P = (x, y) => [x, y, z];
+    if (up)
+      m.quad(
+        mat,
+        P(r[0], r[2]),
+        P(r[1], r[2]),
+        P(r[1], r[3]),
+        P(r[0], r[3]),
+        [0, 0, 1],
+        [
+          [r[0], r[2]],
+          [r[1], r[2]],
+          [r[1], r[3]],
+          [r[0], r[3]],
+        ]
+      );
+    else
+      m.quad(
+        mat,
+        P(r[0], r[2]),
+        P(r[0], r[3]),
+        P(r[1], r[3]),
+        P(r[1], r[2]),
+        [0, 0, -1],
+        [
+          [r[0], r[2]],
+          [r[0], r[3]],
+          [r[1], r[3]],
+          [r[1], r[2]],
+        ]
+      );
+  }
+  // ---- mounting ----
+  let NEXT = 1;
+  S.mount = async id => {
+    const t0 = performance.now();
+    if (!VILLAGE.ready) return null;
+    const P = ZIPLAN.plan(id);
+    if (!P) return null;
+    const M = ZIMOB.mats(),
+      R = ZIPLAN.rng(P.seed),
+      mem0 = window.GAME && GAME.R ? { g: GAME.R.info.memory.geometries, t: GAME.R.info.memory.textures } : null;
+    const H = {
+      id,
+      n: NEXT++,
+      plan: P,
+      cols: [],
+      walks: [],
+      doors: [],
+      doorKeys: [],
+      acts: [],
+      lamps: [],
+      parts: [],
+      containers: [],
+      spots: [],
+      openings: [],
+      rooms: [],
+      onSearch: null,
+      onUse: null,
+      lit: {},
+    };
+    const G = new THREE.Group();
+    G.name = 'zinnen-' + id;
+    G.position.copy(V(P.F.ox, P.F.oy, 0));
+    G.rotation.y = Math.atan2(P.F.s, P.F.c);
+    G.updateMatrixWorld(true);
+    H.group = G;
+    // colliders and walk surfaces in the house frame (rotated boxes, game/walkable.js index 9); the slots of an earlier house are used again
+    const rot = P.rot,
+      fill = (e, v) => {
+        for (let i = 0; i < 11; i++) e[i] = v[i];
+        e.length = v.length;
+        return e;
+      },
+      col = (x0, x1, y0, y1, z0, z1) => {
+        const v = [x0, x1, y0, y1, z0, z1, TAG, null, null, rot],
+          e = S.poolCol.length ? fill(S.poolCol.pop(), v) : (COL.push(v), v);
+        H.cols.push(e);
+      },
+      walk = (x0, x1, y0, y1, z, typ = 'wood', key = null) => {
+        const v = [x0, x1, y0, y1, z, typ, null, null, key, rot],
+          e = S.poolWalk.length ? fill(S.poolWalk.pop(), v) : (WALK.push(v), v);
+        H.walks.push(e);
+      };
+    const shell = new ZIMOB.Mesher(),
+      furn = new ZIMOB.Mesher();
+    const house = { frame: (P.b.st && P.b.st.frame) || 0 };
+    // the context for the furniture (zombie/z_innen_einr.js)
+    const C = {
+      P,
+      M,
+      R,
+      look: P.look,
+      owner: P.owner,
+      shell,
+      furn,
+      m: furn,
+      col: ZIMOB.col,
+      z: P.zG,
+      room: null,
+      mats: {},
+      found: {},
+    };
+    C.find = kind => C.found[kind] || null;
+    C.solid = (r, z0, z1) => col(r[0], r[1], r[2], r[3], z0, z1);
+    C.solidW = C.solid;
+    C.container = (kind, label, pos) => {
+      const c = {
+        id: kind + '_' + H.containers.length,
+        kind,
+        room: C.room.id,
+        pos: P.toW(pos[0], pos[1]).concat(pos[2]),
+        label,
+        parts: [],
+        t: 0,
+        want: 0,
+      };
+      c.lp = pos;
+      H.containers.push(c);
+      return c;
+    };
+    C.part = o => {
+      if (o.container && o.container.parts.length >= 2) o = Object.assign({}, o, { container: null }); // two moving parts at most
+      if (!o.container) {
+        // a leaf that never opens: part of the furniture
+        const F = o.F,
+          hp = F.P(o.hinge[0], o.hinge[1], 0),
+          PF = ZIEINR.frame([hp[0], hp[1]], F.a, F.n);
+        const zf = o.kind === 'lid' ? o.z : 0;
+        const PP = Object.assign({}, PF, { P: (u, v, z) => PF.P(u, v, z + zf) });
+        if (o.kind === 'lid')
+          PP.box = (m, mat, u0, u1, v0, v1, z0, z1, oo) => PF.box(m, mat, u0, u1, v0, v1, z0 + zf, z1 + zf, oo);
+        o.build(furn, o.kind === 'lid' ? PP : PF);
+        return null;
+      }
+      const F = o.F,
+        hp = F.P(o.hinge[0], o.hinge[1], o.kind === 'lid' ? o.z : 0),
+        pm = new ZIMOB.Mesher(hp),
+        PF = ZIEINR.frame([hp[0], hp[1]], F.a, F.n);
+      if (o.kind === 'lid') {
+        const PP = Object.assign({}, PF);
+        PP.box = (m, mat, u0, u1, v0, v1, z0, z1, oo) => PF.box(m, mat, u0, u1, v0, v1, z0 + hp[2], z1 + hp[2], oo);
+        o.build(pm, PP);
+      } else o.build(pm, PF);
+      const pivot = new THREE.Group();
+      pivot.position.copy(V(hp[0], hp[1], hp[2]));
+      G.add(pivot);
+      const meshes = pm.finish(pivot, false);
+      for (const me of meshes) me.matrixAutoUpdate = true;
+      // the opening: a leaf turns into the room (its free edge towards n), a drawer slides out, a lid turns up about its back edge
+      // a leaf from its hinge along dir·a: turned counter-clockwise its free edge goes to (−a_y, a_x)·dir – into the room if that is n
+      const dir = o.dir || 1,
+        turn = Math.sign(dir * (-F.a[1] * F.n[0] + F.a[0] * F.n[1])) || 1,
+        part = { pivot, kind: o.kind, F, turn, set: null };
+      part.set = e => {
+        if (o.kind === 'hinge') pivot.rotation.y = turn * 1.75 * e;
+        else if (o.kind === 'drawer')
+          pivot.position.copy(V(hp[0] + F.n[0] * 0.32 * e, hp[1] + F.n[1] * 0.32 * e, hp[2]));
+        else {
+          const ax = new THREE.Vector3(F.a[0], 0, -F.a[1]).normalize();
+          pivot.quaternion.setFromAxisAngle(ax, 1.6 * e); // a × n is up: the front edge rises
+        }
+      };
+      o.container.parts.push(part);
+      H.parts.push(part);
+      return part;
+    };
+    C.spot = (kind, pos, F, label, o = {}) => {
+      // the compass heading of one facing the thing (towards its wall: −n turned into the site)
+      const w = P.toW(pos[0], pos[1]),
+        az = F
+          ? (Math.atan2(-(F.n[0] * P.F.c - F.n[1] * P.F.s), -(F.n[0] * P.F.s + F.n[1] * P.F.c)) * 180) / Math.PI
+          : 0;
+      const sp = {
+        id: kind + '_' + H.spots.length,
+        kind,
+        room: C.room.id,
+        pos: [w[0], w[1], pos[2]],
+        yaw: az,
+        label,
+        o,
+      };
+      if (o.head) sp.head = P.toW(o.head[0], o.head[1]).concat(o.head[2]);
+      H.spots.push(sp);
+      C.found[kind] = pos;
+      return sp;
+    };
+    C.seat = (pos, F, label) => C.spot('sitz', pos, F, label);
+    C.lamp = (pos, kind, r) => {
+      const mat = ZIMOB.glowMat(kind === 'bulb' ? 0xfff2d6 : C.R.pick([0xf3ead8, 0xe8c890, 0xf0e0c0])),
+        pm = new ZIMOB.Mesher(pos),
+        x = pos[0],
+        y = pos[1],
+        z = pos[2];
+      if (kind === 'bulb')
+        pm.lathe(
+          mat,
+          x,
+          y,
+          [
+            [0.0, z - 0.04],
+            [0.035, z - 0.02],
+            [0.03, z + 0.03],
+            [0.012, z + 0.06],
+          ],
+          8,
+          { caps: false }
+        );
+      else if (kind === 'small')
+        pm.lathe(
+          mat,
+          x,
+          y,
+          [
+            [r, z - 0.1],
+            [r * 0.6, z + 0.08],
+          ],
+          10,
+          { caps: false }
+        );
+      else
+        pm.lathe(
+          mat,
+          x,
+          y,
+          [
+            [r, z - 0.06],
+            [r * 0.85, z],
+            [r * 0.35, z + 0.12],
+            [0.03, z + 0.16],
+          ],
+          12,
+          { caps: false }
+        );
+      const g = new THREE.Group();
+      g.position.copy(V(x, y, z));
+      G.add(g);
+      pm.finish(g, false);
+      H.lamps.push({ room: C.room.id, mat, pos: P.toW(x, y).concat(z), kind });
+    };
+    // ---- the rooms: walls, floors, ceilings, openings ----
+    const rooms = P.rooms.filter(r => r.kind !== 'boden'); // the attic: next round
+    const blocksOf = {};
+    for (const r of rooms) {
+      C.room = r;
+      C.R = ZIPLAN.rng(P.seed + r.fl * 101 + r.x0 * 7 + r.y0 * 13);
+      const mats = (C.mats = roomMats(P, r, M, C.R));
+      const sd = roomSides(P, r),
+        blocks = [];
+      r.outer = {};
+      for (const k of Object.keys(sd)) {
+        const s = sd[k];
+        r.outer[k] = !!s.outer;
+        const z0 = r.z0,
+          z1 = r.z1;
+        wallFace(shell, mats.wall, s.A, s.d, s.L, z0, z1, s.n, s.holes);
+        if (mats.tiles)
+          wallFace(
+            shell,
+            mats.tiles,
+            [s.A[0] + s.n[0] * 0.005, s.A[1] + s.n[1] * 0.005],
+            s.d,
+            s.L,
+            z0,
+            z0 + 1.4,
+            s.n,
+            s.holes
+          );
+        for (const h of s.holes) {
+          if (s.outer && (h.kind === 'window' || h.kind === 'front')) opening(C, s, h, P.t, house);
+          blocks.push({ side: k, u0: h.u0 - 0.1, u1: h.u1 + 0.1, z0: h.z0, door: h.kind !== 'window' });
+        }
+        // the wainscot of an old Stube (Lambris, stube-2): boards to 1 m
+        if (mats.wainscot) {
+          const wm = C.col(C.R.pick([0x6a4a30, 0x8a6a48, 0x4a5a48]), 0.6),
+            hs = s.holes.filter(h => h.z0 < z0 + 1.05).map(h => ({ u0: h.u0, u1: h.u1 }));
+          let u = 0;
+          for (const h of hs.sort((a, b) => a.u0 - b.u0).concat([{ u0: s.L, u1: s.L }])) {
+            if (h.u0 - u > 0.05) {
+              const p = [s.A[0] + s.d[0] * u, s.A[1] + s.d[1] * u],
+                q = [s.A[0] + s.d[0] * h.u0 + s.n[0] * 0.025, s.A[1] + s.d[1] * h.u0 + s.n[1] * 0.025];
+              furn.box(
+                wm,
+                Math.min(p[0], q[0]),
+                Math.max(p[0], q[0]),
+                Math.min(p[1], q[1]),
+                Math.max(p[1], q[1]),
+                z0,
+                z0 + 1.0
+              );
+            }
+            u = Math.max(u, h.u1);
+          }
+        }
+        // colliders: the partition beside an inner side (both rooms add theirs), the outer wall out to the facade line; doorways stay free
+        const al = k === 'y0' || k === 'y1' ? 0 : 1,
+          c0 = al ? s.A[0] : s.A[1],
+          cs = al ? -s.n[0] : -s.n[1],
+          off = s.outer ? P.t + 0.05 : PW,
+          cA = Math.min(c0, c0 + cs * off),
+          cB = Math.max(c0, c0 + cs * off),
+          ext = s.outer ? P.t : 0,
+          lo = Math.min(s.A[al], s.B[al]) - ext,
+          hi = Math.max(s.A[al], s.B[al]) + ext,
+          gaps = s.holes
+            .filter(h => h.kind === 'door')
+            .map(h => [s.A[al] + s.d[al] * h.u0, s.A[al] + s.d[al] * h.u1])
+            .map(([p, q]) => [Math.min(p, q), Math.max(p, q)])
+            .sort((p, q) => p[0] - q[0]),
+          seg = (a, b) => {
+            if (b - a < 0.01) return;
+            if (al) col(cA, cB, a, b, z0 - 0.05, z1 + 0.05);
+            else col(a, b, cA, cB, z0 - 0.05, z1 + 0.05);
+          };
+        let a = lo;
+        for (const [g0, g1] of gaps) {
+          seg(a, g0);
+          a = Math.max(a, g1);
+        }
+        seg(a, hi);
+      }
+      r.blocks = blocks;
+      blocksOf[r.id] = blocks;
+      // floor and ceiling (minus the stair hole and the hatch)
+      const rect = [r.x0, r.x1, r.y0, r.y1],
+        holesF = [],
+        holesC = [];
+      if (P.stair && r.fl === 1)
+        holesF.push([P.stair.x0, P.stair.x1, P.stair.y0 + P.stair.holeK * P.stair.tread, P.stair.y1]);
+      if (P.stair && r.fl === 0 && P.nSt > 1)
+        holesC.push([P.stair.x0, P.stair.x1, P.stair.y0 + P.stair.holeK * P.stair.tread, P.stair.y1]);
+      if (P.hatch && r.fl === 0) holesF.push([P.hatch.x0, P.hatch.x1, P.hatch.y0, P.hatch.y1]);
+      if (P.hatch && r.kind === 'keller') holesC.push([P.hatch.x0, P.hatch.x1, P.hatch.y0, P.hatch.y1]);
+      // the floor reaches under the partitions and into the door gaps (no seams in a doorway)
+      const ext = [
+        r.x0 - (r.outer.x0 ? 0 : PW / 2),
+        r.x1 + (r.outer.x1 ? 0 : PW / 2),
+        r.y0 - (r.outer.y0 ? 0 : PW / 2),
+        r.y1 + (r.outer.y1 ? 0 : PW / 2),
+      ];
+      for (const q of minusAll(r.kind === 'keller' ? rect : ext, holesF)) hFloor(shell, mats.floor, q, r.z0, true);
+      const cext = [
+        r.x0 - (r.outer.x0 ? P.t : PW / 2),
+        r.x1 + (r.outer.x1 ? P.t : PW / 2),
+        r.y0 - (r.outer.y0 ? P.t : PW / 2),
+        r.y1 + (r.outer.y1 ? P.t : PW / 2),
+      ];
+      for (const q of minusAll(r.kind === 'keller' ? rect : cext, holesC)) hFloor(shell, mats.ceil, q, r.z1, false);
+      await tick0();
+    }
+    // ---- walk surfaces: one slab per storey (minus holes), the cellar floor ----
+    for (let k = 0; k < P.nSt; k++) {
+      const holes = [];
+      if (k === 1 && P.stair)
+        holes.push([P.stair.x0, P.stair.x1, P.stair.y0 + P.stair.holeK * P.stair.tread, P.stair.y1]);
+      if (k === 0 && P.hatch) holes.push([P.hatch.x0, P.hatch.x1, P.hatch.y0, P.hatch.y1]);
+      for (const q of minusAll([P.xi0, P.xi1, P.yi0, P.yi1], holes)) walk(q[0], q[1], q[2], q[3], P.zF[k], 'wood');
+    }
+    if (P.cellar) walk(P.cellar.x0, P.cellar.x1, P.cellar.y0, P.cellar.y1, P.cellar.z0, 'stone');
+    // ---- the stairs up (in the hall): steps, stringers, a handrail; the opening upstairs gets a railing ----
+    if (P.stair && P.nSt > 1) {
+      const st = P.stair,
+        z0 = P.zF[0],
+        wood = P.look === 'alt' ? M.holz : P.look === 'ddr' ? M.hell : M.eiche;
+      for (let k = 1; k < st.n; k++) {
+        const ya = st.y0 + (k - 1) * st.tread,
+          yb = ya + st.tread,
+          zt = z0 + k * st.rise;
+        furn.box(wood, st.x0, st.x1, ya - 0.02, yb, zt - 0.04, zt);
+        furn.box(wood, st.x0 + 0.03, st.x1 - 0.03, ya - 0.02, ya, zt - st.rise, zt - 0.04);
+        walk(st.x0, st.x1, ya, yb, zt, 'wood');
+      }
+      const open = st.side === 'R' ? st.x0 : st.x1,
+        wall = st.side === 'R' ? st.x1 : st.x0;
+      for (const x of [open, wall]) {
+        const xa = x === open ? (st.side === 'R' ? x - 0.05 : x) : st.side === 'R' ? x - 0.04 : x,
+          yA = st.y0 - 0.25,
+          yB = st.y1;
+        // the stringer: a sloped board under the nosing line
+        shell.quad(
+          wood,
+          [xa, yA, z0],
+          [xa, yB, z0 + (st.n - 1) * st.rise - 0.25],
+          [xa, yB, z0 + (st.n - 1) * st.rise + 0.1],
+          [xa, yA, z0 + 0.25],
+          [x === open ? (st.side === 'R' ? -1 : 1) : st.side === 'R' ? -1 : 1, 0, 0]
+        );
+        shell.quad(
+          wood,
+          [xa + 0.05, yA, z0],
+          [xa + 0.05, yB, z0 + (st.n - 1) * st.rise - 0.25],
+          [xa + 0.05, yB, z0 + (st.n - 1) * st.rise + 0.1],
+          [xa + 0.05, yA, z0 + 0.25],
+          [x === open ? (st.side === 'R' ? 1 : -1) : st.side === 'R' ? 1 : -1, 0, 0]
+        );
+      }
+      const hx = st.side === 'R' ? open - 0.03 : open + 0.03;
+      furn.rod(wood, [hx, st.y0, z0 + 0.95], [hx, st.y1, z0 + (st.n - 1) * st.rise + 0.95], 0.025, 6);
+      for (let k = 1; k < st.n; k += 4)
+        furn.box(
+          wood,
+          hx - 0.02,
+          hx + 0.02,
+          st.y0 + (k - 0.5) * st.tread - 0.02,
+          st.y0 + (k - 0.5) * st.tread + 0.02,
+          z0 + k * st.rise,
+          z0 + k * st.rise + 0.95
+        );
+      // upstairs: the railing round the opening (open side and its front end)
+      const z1 = P.zF[1],
+        yh = st.y0 + st.holeK * st.tread;
+      furn.rod(wood, [hx, yh, z1 + 0.95], [hx, st.y1 - 0.02, z1 + 0.95], 0.025, 6);
+      furn.rod(wood, [st.x0, yh - 0.03, z1 + 0.95], [st.x1, yh - 0.03, z1 + 0.95], 0.025, 6);
+      for (let y = yh; y < st.y1; y += 0.12)
+        furn.box(wood, hx - 0.012, hx + 0.012, y - 0.012, y + 0.012, z1, z1 + 0.95);
+      col(Math.min(hx - 0.04, hx + 0.04), Math.max(hx - 0.04, hx + 0.04), yh - 0.05, st.y1 - 0.3, z1 - 0.05, z1 + 1.0);
+      col(st.x0, st.x1, yh - 0.08, yh, z1 - 0.05, z1 + 1.0);
+      // the slab's edge at the opening
+      shell.quad(M.decke, [st.x0, yh, z1 - SLAB], [st.x1, yh, z1 - SLAB], [st.x1, yh, z1], [st.x0, yh, z1], [0, 1, 0]);
+      shell.quad(
+        M.decke,
+        [hx, yh, z1 - SLAB],
+        [hx, st.y1, z1 - SLAB],
+        [hx, st.y1, z1],
+        [hx, yh, z1],
+        [st.side === 'R' ? 1 : -1, 0, 0]
+      );
+    }
+    // ---- the cellar: steep steps under the trapdoor in the kitchen ----
+    if (P.hatch) {
+      const h = P.hatch,
+        z0 = P.zG;
+      for (let k = 1; k < h.n; k++) {
+        const ya = h.y0 + (k - 1) * h.tread,
+          yb = ya + h.tread,
+          zt = z0 - k * h.rise;
+        furn.box(M.hell, h.x0 + 0.05, h.x1 - 0.05, ya, yb + 0.03, zt - 0.04, zt);
+        walk(h.x0, h.x1, ya, yb, zt, 'wood');
+      }
+      for (const x of [h.x0 + 0.02, h.x1 - 0.06])
+        shell.quad(
+          M.hell,
+          [x, h.y0 - 0.05, z0 - 0.15],
+          [x, h.y1 + 0.05, z0 - h.n * h.rise],
+          [x, h.y1 + 0.05, z0 - h.n * h.rise + 0.25],
+          [x, h.y0 - 0.05, z0 + 0.0],
+          [1, 0, 0]
+        );
+      // the hole's edges and the lid (a DOORS flap: closed it is floor, open it stands up)
+      for (const [a, b, n] of [
+        [
+          [h.x0, h.y0],
+          [h.x1, h.y0],
+          [0, 1],
+        ],
+        [
+          [h.x1, h.y1],
+          [h.x0, h.y1],
+          [0, -1],
+        ],
+        [
+          [h.x0, h.y1],
+          [h.x0, h.y0],
+          [1, 0],
+        ],
+        [
+          [h.x1, h.y0],
+          [h.x1, h.y1],
+          [-1, 0],
+        ],
+      ])
+        shell.quad(
+          M.hell,
+          [a[0], a[1], z0 - SLAB],
+          [b[0], b[1], z0 - SLAB],
+          [b[0], b[1], z0],
+          [a[0], a[1], z0],
+          [n[0], n[1], 0]
+        );
+      const key = 'zinnen:' + id + ':luke',
+        lg = new THREE.Group(),
+        lm = new ZIMOB.Mesher([h.x0, h.y0, z0]),
+        lid = C.col(0x6a4a30, 0.7);
+      lm.box(lid, h.x0, h.x1, h.y0, h.y1, z0 - 0.03, z0 + 0.005);
+      for (const yy of [h.y0 + 0.15, h.y1 - 0.2])
+        lm.box(C.col(0x3a2a1a, 0.5), h.x0 + 0.05, h.x1 - 0.05, yy, yy + 0.05, z0 - 0.06, z0 - 0.03);
+      lm.box(
+        M.schwarz,
+        (h.x0 + h.x1) / 2 - 0.08,
+        (h.x0 + h.x1) / 2 + 0.08,
+        h.y1 - 0.12,
+        h.y1 - 0.06,
+        z0 + 0.005,
+        z0 + 0.02
+      );
+      const hw = P.toW(h.x0, h.y0),
+        pw = P.toW((h.x0 + h.x1) / 2, h.y0 - 0.5);
+      const inner = new THREE.Group();
+      lg.add(inner);
+      lm.finish(inner, false);
+      const D = flapDoor(key, lg, { hx: hw[0], hy: hw[1], z: z0, rot: 'x', open: 1.75, pos: pw, label: 'Luke' });
+      lg.rotation.order = 'YXZ';
+      lg.rotation.y = Math.atan2(P.F.s, P.F.c);
+      D.ph = null;
+      D.r = 1.5;
+      lg.traverse(o => {
+        delete o.userData.ph;
+        delete o.userData.phEnd;
+      });
+      walk(h.x0, h.x1, h.y0, h.y1, z0, 'wood', key);
+      H.doorKeys.push(key);
+      H.hatch = { key, pos: P.toW((h.x0 + h.x1) / 2, (h.y0 + h.y1) / 2).concat(z0) };
+      // from below: the lid can be opened from the steps
+      const below = P.toW((h.x0 + h.x1) / 2, h.y0 + 0.9);
+      act({
+        id: 'luke-unten',
+        label: () => (DOORS[key] && DOORS[key].target < 0.5 && WALKER.feet < z0 - 0.5 ? 'Luke aufdrücken' : null),
+        pos: [below[0], below[1], z0 - 1.0],
+        r: 1.4,
+        run: () => (DOORS[key].target = 1),
+      });
+    }
+    // ---- inner doors: hinged leaves (DOORS: the action button and the colliders know them), frames ----
+    for (const d of P.doors) {
+      const r = P.rooms.find(q => q.id === d.room);
+      if (!r || r.kind === 'boden') continue;
+      const vert = d.axis === 'y',
+        w = d.w,
+        hgt = d.z1 - d.z0,
+        // hinge at one end of the opening, the leaf along the wall
+        hA = vert ? [d.x, d.y - w / 2] : [d.x - w / 2, d.y],
+        aL = vert ? [0, 1] : [1, 0],
+        into = vert ? [Math.sign((r.x0 + r.x1) / 2 - d.x), 0] : [0, Math.sign((r.y0 + r.y1) / 2 - d.y)];
+      // the leaf sits at the room's face of the partition and opens into the room
+      const hp = [hA[0] + into[0] * (PW / 2 - 0.03), hA[1] + into[1] * (PW / 2 - 0.03)],
+        hw = P.toW(hp[0], hp[1]),
+        aw = [aL[0] * P.F.c - aL[1] * P.F.s, aL[0] * P.F.s + aL[1] * P.F.c],
+        iw = [into[0] * P.F.c - into[1] * P.F.s, into[0] * P.F.s + into[1] * P.F.c],
+        sign = -aw[1] * iw[0] + aw[0] * iw[1] > 0 ? 1 : -1;
+      const key = 'zinnen:' + id + ':' + d.id,
+        g = new THREE.Group(),
+        lm = new ZIMOB.Mesher(),
+        leafCol = P.look === 'alt' ? C.R.pick([0x7a5a3a, 0xe8e0cc, 0x5a3a22]) : P.look === 'ddr' ? 0xf0ece0 : 0x9a7a52,
+        lc = C.col(leafCol, 0.55);
+      lm.box(lc, 0.01, w - 0.01, -0.02, 0.02, 0, hgt - 0.01);
+      for (const [za, zb] of [
+        [0.15, 0.9],
+        [1.05, hgt - 0.15],
+      ])
+        for (const sgn of [-1, 1])
+          lm.box(C.col(leafCol, 0.6), 0.12, w - 0.12, sgn > 0 ? 0.02 : -0.028, sgn > 0 ? 0.028 : -0.02, za, zb);
+      for (const sgn of [-1, 1])
+        lm.box(M.messing, w - 0.11, w - 0.05, sgn * 0.02 - 0.012, sgn * 0.02 + 0.012 + sgn * 0.03, 1.0, 1.03);
+      lm.finish(g, false);
+      const Dd = hingeDoor(key, g, { hx: hw[0], hy: hw[1], a: aw, w, sign, z0: d.z0, z1: d.z1, thick: 0.05 });
+      Dd.ph = null;
+      g.traverse(o => {
+        delete o.userData.ph;
+        delete o.userData.phEnd;
+      });
+      Dd.r = 1.4;
+      H.doorKeys.push(key);
+      H.doors.push({ id: d.id, key, room: d.room, pos: P.toW(d.x, d.y).concat(d.z0) });
+      // the frame (Zarge) through the partition
+      const fz = C.col(leafCol, 0.5),
+        t0 = vert ? d.x - PW / 2 - 0.02 : d.y - PW / 2 - 0.02,
+        t1 = vert ? d.x + PW / 2 + 0.02 : d.y + PW / 2 + 0.02;
+      if (vert) {
+        furn.box(fz, t0, t1, d.y - w / 2 - 0.05, d.y - w / 2, d.z0, d.z1 + 0.05);
+        furn.box(fz, t0, t1, d.y + w / 2, d.y + w / 2 + 0.05, d.z0, d.z1 + 0.05);
+        furn.box(fz, t0, t1, d.y - w / 2 - 0.05, d.y + w / 2 + 0.05, d.z1, d.z1 + 0.05);
+      } else {
+        furn.box(fz, d.x - w / 2 - 0.05, d.x - w / 2, t0, t1, d.z0, d.z1 + 0.05);
+        furn.box(fz, d.x + w / 2, d.x + w / 2 + 0.05, t0, t1, d.z0, d.z1 + 0.05);
+        furn.box(fz, d.x - w / 2 - 0.05, d.x + w / 2 + 0.05, t0, t1, d.z1, d.z1 + 0.05);
+      }
+      // the wall above the door in the gap between both faces (closed from both sides)
+      if (vert) furn.box(M.putz, d.x - PW / 2, d.x + PW / 2, d.y - w / 2, d.y + w / 2, d.z1 + 0.05, r.z1);
+      else furn.box(M.putz, d.x - w / 2, d.x + w / 2, d.y - PW / 2, d.y + PW / 2, d.z1 + 0.05, r.z1);
+    }
+    await tick0();
+    // ---- furniture ----
+    for (const r of rooms) {
+      C.R = ZIPLAN.rng(P.seed * 3 + r.fl * 31 + Math.round(r.x0 * 10) + Math.round(r.y0 * 100));
+      C.room = r;
+      // keep the doorways free (a square in front of each door), the stair and the hatch
+      r.keep = [];
+      for (const d of P.doors)
+        if (d.fl === r.fl) {
+          const vert = d.axis === 'y';
+          r.keep.push(
+            vert
+              ? [d.x - 1.0, d.x + 1.0, d.y - d.w / 2 - 0.1, d.y + d.w / 2 + 0.1]
+              : [d.x - d.w / 2 - 0.1, d.x + d.w / 2 + 0.1, d.y - 1.0, d.y + 1.0]
+          );
+        }
+      if (r.fl === 0 && r.kind === 'flur') r.keep.push([P.front.x - 0.8, P.front.x + 0.8, P.yi0, P.yi0 + 1.4]);
+      if (P.stair && r.kind === 'flur')
+        r.keep.push([P.stair.x0 - 0.1, P.stair.x1 + 0.1, P.stair.y0 - 1.0, P.stair.y1 + 1.0]);
+      if (P.hatch && r.id === P.hatch.room.id)
+        r.keep.push([P.hatch.x0 - 0.25, P.hatch.x1 + 0.25, P.hatch.y0 - 0.8, P.hatch.y1 + 0.1]);
+      if (P.hatch && r.kind === 'keller')
+        r.keep.push([P.hatch.x0 - 0.1, P.hatch.x1 + 0.1, P.hatch.y0 - 0.3, P.hatch.y1 + 1.2]);
+      // the tiled stove of the Stube stands at the wall to the kitchen, near the hall
+      if (r.kind === 'stube' || r.kind === 'kueche') {
+        const k = r.kind === 'stube' ? 'y1' : 'y0',
+          hallLeft = r.side === 'R';
+        r.stoveSide = k;
+        r.stovePref = k === 'y1' ? (hallLeft ? 0.95 : 0.05) : hallLeft ? 0.05 : 0.95;
+      }
+      try {
+        ZIEINR.furnish(C, r);
+      } catch (e) {
+        console.warn('zinnen furnish', r.id, e);
+        S.err = String((e && e.stack) || e);
+      }
+      await tick0();
+    }
+    // ---- meshes ----
+    const shellMeshes = shell.finish(G, true),
+      furnMeshes = furn.finish(G, false);
+    scene.add(G);
+    G.traverse(o => {
+      if (o.userData) {
+        delete o.userData.ph;
+        delete o.userData.phEnd;
+      }
+    });
+    // ---- the handle: entry, exit, openings, rooms, graph ----
+    const fr = P.F,
+      yawIn = (Math.atan2(-fr.s, fr.c) * 180) / Math.PI,
+      ent = P.toW(P.front.x, P.yi0 + 0.9),
+      ex = P.toW(P.front.x, -1.3);
+    H.entry = { x: ent[0], y: ent[1], z: P.zG, yaw: yawIn };
+    H.exit = { x: ex[0], y: ex[1], z: KERN.ground(ex[0], ex[1]), yaw: (yawIn + 180) % 360 };
+    for (const r of rooms) {
+      const poly = [P.toW(r.x0, r.y0), P.toW(r.x1, r.y0), P.toW(r.x1, r.y1), P.toW(r.x0, r.y1)];
+      H.rooms.push({ id: r.id, kind: r.kind, floor: r.fl, name: r.name, poly, z0: r.z0, z1: r.z1 });
+    }
+    const outN = { front: [0, -1], back: [0, 1], left: [-1, 0], right: [1, 0] },
+      wN = n => [n[0] * fr.c - n[1] * fr.s, n[0] * fr.s + n[1] * fr.c];
+    {
+      const a = P.toW(P.front.x - P.front.w / 2, P.yi0),
+        b = P.toW(P.front.x + P.front.w / 2, P.yi0);
+      H.openings.push({
+        id: 'haustuer',
+        kind: 'door',
+        floor: 0,
+        a,
+        b,
+        z0: P.zG,
+        z1: P.zG + 2.15,
+        n: wN(outN.front),
+        room: rooms.find(r => r.kind === 'flur' && r.fl === 0).id,
+        front: true,
+      });
+    }
+    P.windows.forEach((w, i) => {
+      if (w.fl !== 0) return;
+      const inner = { front: P.yi0, back: P.yi1, left: P.xi0, right: P.xi1 }[w.edge],
+        horiz = w.edge === 'front' || w.edge === 'back',
+        a = horiz ? P.toW(w.a, inner) : P.toW(inner, w.a),
+        b = horiz ? P.toW(w.b, inner) : P.toW(inner, w.b),
+        mid = horiz ? [(w.a + w.b) / 2, inner] : [inner, (w.a + w.b) / 2],
+        rm = rooms.find(
+          r =>
+            r.fl === 0 &&
+            mid[0] >= r.x0 - 0.05 &&
+            mid[0] <= r.x1 + 0.05 &&
+            mid[1] >= r.y0 - 0.05 &&
+            mid[1] <= r.y1 + 0.05
+        );
+      H.openings.push({
+        id: 'fenster' + i,
+        kind: 'window',
+        floor: 0,
+        a,
+        b,
+        z0: w.z0,
+        z1: w.z1,
+        n: wN(outN[w.edge]),
+        room: rm ? rm.id : null,
+        front: w.edge === 'front',
+      });
+    });
+    // waypoints: room centres, both sides of every door, the stairs and the hatch
+    const nodes = [],
+      edges = [],
+      node = (x, y, z, room) => (
+        nodes.push(Object.assign({ x: 0, y: 0 }, (([a, b]) => ({ x: a, y: b }))(P.toW(x, y)), { z, room })),
+        nodes.length - 1
+      ),
+      centre = {};
+    for (const r of rooms) centre[r.id] = node((r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2, r.z0, r.id);
+    for (const d of P.doors) {
+      const r = rooms.find(q => q.id === d.room);
+      if (!r) continue;
+      const vert = d.axis === 'y',
+        into = vert ? Math.sign((r.x0 + r.x1) / 2 - d.x) : Math.sign((r.y0 + r.y1) / 2 - d.y),
+        other = d.from ? rooms.find(q => q.id === d.from) : rooms.find(q => q.kind === 'flur' && q.fl === d.fl);
+      if (!other) continue;
+      const a = vert ? node(d.x + into * 0.5, d.y, d.z0, r.id) : node(d.x, d.y + into * 0.5, d.z0, r.id),
+        b = vert ? node(d.x - into * 0.5, d.y, d.z0, other.id) : node(d.x, d.y - into * 0.5, d.z0, other.id);
+      edges.push([a, b], [a, centre[r.id]], [b, centre[other.id]]);
+    }
+    const flur0 = rooms.find(r => r.kind === 'flur' && r.fl === 0),
+      flur1 = rooms.find(r => r.kind === 'flur' && r.fl === 1);
+    if (P.stair && flur1) {
+      const st = P.stair,
+        cx = (st.x0 + st.x1) / 2,
+        a = node(cx, st.y0 - 0.4, P.zF[0], flur0.id),
+        b = node(cx, st.y1 + 0.4, P.zF[1], flur1.id);
+      edges.push([a, b], [a, centre[flur0.id]], [b, centre[flur1.id]]);
+    }
+    const kel = rooms.find(r => r.kind === 'keller');
+    if (P.hatch && kel) {
+      const h = P.hatch,
+        cx = (h.x0 + h.x1) / 2,
+        a = node(cx, h.y0 - 0.4, P.zG, h.room.id),
+        b = node(cx, Math.min(h.y1 + 0.5, kel.y1 - 0.3), kel.z0, kel.id);
+      edges.push([a, b], [a, centre[h.room.id]], [b, centre[kel.id]]);
+    }
+    const en = node(P.front.x, P.yi0 + 0.6, P.zG, flur0.id);
+    edges.push([en, centre[flur0.id]]);
+    H.graph = { nodes, edges, entry: en };
+    // inside: the rectangle, from the cellar floor to the top storey's ceiling
+    const zLo = P.cellar ? P.cellar.z0 : P.zG,
+      zHi = P.zC[P.nSt - 1];
+    H.inside = (x, y, z) => {
+      const [lx, ly] = P.toL(x, y);
+      if (lx < P.xi0 - 0.05 || lx > P.xi1 + 0.05 || ly < P.yi0 - 0.05 || ly > P.yi1 + 0.05) return false;
+      if (z === undefined) return true;
+      if (z < zLo - 0.3 || z > zHi + 0.3) return false;
+      if (z < P.zG - 0.3)
+        return !!P.cellar && lx >= P.cellar.x0 && lx <= P.cellar.x1 && ly >= P.cellar.y0 && ly <= P.cellar.y1;
+      return true;
+    };
+    H.roomAt = (x, y, z) => {
+      const [lx, ly] = P.toL(x, y);
+      for (const r of rooms)
+        if (
+          lx >= r.x0 - 0.06 &&
+          lx <= r.x1 + 0.06 &&
+          ly >= r.y0 - 0.06 &&
+          ly <= r.y1 + 0.06 &&
+          z >= r.z0 - 0.5 &&
+          z <= r.z1
+        )
+          return r.id;
+      return null;
+    };
+    H.zLo = zLo;
+    // ---- lights, containers, spots: the action button ----
+    function act(a) {
+      const full = Object.assign({}, a, { id: 'zinnen:' + id + ':' + a.id });
+      if (!full.label.call) full.label = () => a.label;
+      KERN.act(full);
+      H.acts.push(full.id);
+    }
+    H.light = (roomId, on) => {
+      const v = on === undefined ? !H.lit[roomId] : !!on;
+      H.lit[roomId] = v;
+      for (const l of H.lamps) if (l.room === roomId) l.mat.emissiveIntensity = v ? (l.kind === 'bulb' ? 2.2 : 1.4) : 0;
+      S.lightDirty = true;
+      markDirty();
+      return v;
+    };
+    const inRoom = (roomId, slack = 0) => {
+      const r = rooms.find(q => q.id === roomId),
+        [lx, ly] = P.toL(WALKER.x, WALKER.y);
+      return (
+        !!r &&
+        lx >= r.x0 - slack &&
+        lx <= r.x1 + slack &&
+        ly >= r.y0 - slack &&
+        ly <= r.y1 + slack &&
+        WALKER.feet > r.z0 - 0.4 &&
+        WALKER.feet < r.z1 - 0.5
+      );
+    };
+    for (const r of rooms) {
+      if (!H.lamps.some(l => l.room === r.id)) continue;
+      // the switch beside the room's door (inside), else in the middle
+      const d = P.doors.find(q => q.room === r.id);
+      let sp = [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2];
+      if (d) {
+        const vert = d.axis === 'y',
+          into = vert ? Math.sign((r.x0 + r.x1) / 2 - d.x) : Math.sign((r.y0 + r.y1) / 2 - d.y);
+        sp = vert ? [d.x + into * 0.3, d.y + d.w / 2 + 0.2] : [d.x + d.w / 2 + 0.2, d.y + into * 0.3];
+      } else if (r.kind === 'flur' && r.fl === 0) sp = [P.front.x + P.front.w / 2 + 0.25, P.yi0 + 0.3];
+      const w = P.toW(sp[0], sp[1]);
+      act({
+        id: 'licht:' + r.id,
+        label: () => (inRoom(r.id, 0.3) && !PLAY.seat ? (H.lit[r.id] ? 'Licht aus' : 'Licht an') : null),
+        pos: [w[0], w[1], r.z0 + 1.2],
+        r: 1.3,
+        prio: -0.25,
+        run: () => H.light(r.id),
+      });
+    }
+    for (const c of H.containers) {
+      act({
+        id: 'c:' + c.id,
+        label: () => (inRoom(c.room, 0.4) && !PLAY.seat ? (c.want > 0.5 ? 'Schließen' : c.label) : null),
+        pos: c.pos,
+        r: 1.35,
+        prio: -0.05,
+        run: () => {
+          c.want = c.want > 0.5 ? 0 : 1;
+          S.anim = true;
+          if (c.want > 0.5) {
+            let res = null;
+            try {
+              res = H.onSearch ? H.onSearch(c, H) : null;
+            } catch (e) {
+              console.warn('zinnen onSearch', e);
+            }
+            const txt =
+              res && res.text
+                ? res.text
+                : res
+                  ? null
+                  : c.searched
+                    ? 'Hier habe ich schon nachgesehen.'
+                    : DEFAULT_FIND[c.kind] || 'Nichts Brauchbares.';
+            if (txt && PLAY.think) PLAY.think(txt);
+            c.searched = true;
+            KERN.emit('zinnen:search', { house: id, id: c.id, kind: c.kind });
+          }
+        },
+      });
+    }
+    for (const sp of H.spots) {
+      const label = sp.label || SPOT_LABEL[sp.kind];
+      if (!label) continue;
+      act({
+        id: 's:' + sp.id,
+        label: () => (inRoom(sp.room, 0.4) && !PLAY.seat ? label : null),
+        pos: sp.pos,
+        r: 1.5,
+        prio: -0.12,
+        run: () => useSpot(H, sp),
+      });
+    }
+    // ---- done ----
+    H.stats = {
+      ms: Math.round(performance.now() - t0),
+      meshes: shellMeshes.length + furnMeshes.length + H.parts.length + H.lamps.length + H.doorKeys.length,
+      draws: 0,
+      tris: shell.tris + furn.tris,
+      cols: H.cols.length,
+      walks: H.walks.length,
+      mem0,
+    };
+    G.traverse(o => {
+      if (o.isMesh) {
+        H.stats.draws++;
+        if (o.geometry !== undefined && !o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+      }
+    });
+    for (const k of H.doorKeys)
+      DOORS[k].group.traverse(o => {
+        if (o.isMesh) H.stats.draws++;
+      });
+    S.built.push(H);
+    wire();
+    rebuildGrids();
+    markDirty(true);
+    KERN.emit('zinnen:mount', { id, ms: H.stats.ms });
+    return H;
+  };
+  const DEFAULT_FIND = {
+    buefett: 'Teller, Tassen, eine Dose Kaffee – nichts für die Nacht.',
+    schrank: 'Nur Geschirr und alte Zeitungen.',
+    schublade: 'Besteck, Bindfaden, ein Bleistift.',
+    kuehlschrank: 'Eine Flasche Milch, Butter, ein Glas Gurken.',
+    kleiderschrank: 'Kleider, Bettwäsche, ganz unten ein Schuhkarton.',
+    nachttisch: 'Eine Taschenlampe ohne Batterien, ein Buch.',
+    truhe: 'Alte Decken und ein Stapel Briefe.',
+    regal: 'Eingewecktes: Kirschen, Gurken, Apfelmus.',
+    werkbank: 'Schrauben, Nägel, eine Zange.',
+  };
+  const SPOT_LABEL = {
+    bett: 'Ins Bett legen',
+    ofen: 'Ofen anheizen',
+    herd: 'Herd anmachen',
+    radio: 'Radio einschalten',
+    tv: 'Fernseher einschalten',
+    spuele: 'Wasser aufdrehen',
+    wanne: 'Wasser einlassen',
+    tisch: 'Am Tisch setzen',
+  };
+  function useSpot(H, sp) {
+    let done = false;
+    try {
+      done = H.onUse ? !!H.onUse(sp, H) : false;
+    } catch (e) {
+      console.warn('zinnen onUse', e);
+    }
+    KERN.emit('zinnen:use', { house: H.id, id: sp.id, kind: sp.kind });
+    if (done) return;
+    if (sp.kind === 'bett' || sp.kind === 'sitz' || sp.kind === 'tisch') {
+      const lie = sp.kind === 'bett',
+        hp = sp.head || sp.pos;
+      PLAY.sit({
+        x: lie ? hp[0] : sp.pos[0],
+        y: lie ? hp[1] : sp.pos[1],
+        eye: sp.pos[2] + (lie ? 0.75 : 1.2),
+        yaw: sp.yaw + (lie ? 180 : 180),
+        pitch: lie ? 60 : -5,
+        kind: lie ? 'lie' : 'sit',
+        leaveLabel: 'Aufstehen',
+      });
+      return;
+    }
+    const T = {
+      ofen: 'Ohne Holz und Kohlen wird das nichts.',
+      herd: 'Die Platte wird langsam warm.',
+      spuele: 'Das Wasser läuft – kalt.',
+      wanne: 'Für ein Bad ist jetzt keine Zeit.',
+      tv: 'Nur Rauschen.',
+      radio: 'Rauschen, dann leise Musik.',
+    };
+    if (T[sp.kind] && PLAY.think) PLAY.think(T[sp.kind]);
+  }
+  // ---- per frame: open/close animations, the borrowed light follows the lit room the walker is in ----
+  const ease = t => t * t * (3 - 2 * t);
+  let offTick = null,
+    borrow = null;
+  function wire() {
+    if (S.wired) return;
+    S.wired = true;
+    offTick = KERN.tick(dt => {
+      if (!S.built.length) return;
+      let moving = false;
+      for (const H of S.built)
+        for (const c of H.containers) {
+          if (Math.abs(c.t - c.want) < 1e-3) continue;
+          c.t += Math.sign(c.want - c.t) * Math.min(Math.abs(c.want - c.t), dt * 2.6);
+          for (const p of c.parts) p.set(ease(c.t));
+          moving = true;
+        }
+      if (moving) markDirty();
+      // by day the rooms get a little light of their own (zombie/z_innen_mob.js daylight), checked twice a second
+      S.dayAcc = (S.dayAcc || 0) + dt;
+      if (S.dayAcc > 0.5) {
+        S.dayAcc = 0;
+        if (ZIMOB.daylight(1 - Math.min(1, Math.max(0, VILLAGE.night())))) markDirty();
+      }
+    }, 'zombie/z_innen');
+    // the ground inside a mounted house is ours: only its floors and steps count (the terrain may cross the cellar or the floor)
+    KERN.provide(
+      'ground',
+      (x, y) => {
+        for (const H of S.built) if (H.inside(x, y)) return H.zLo - 3;
+        return undefined;
+      },
+      90
+    );
+    KERN.provide('inside', (x, y, z) => S.built.some(H => H.inside(x, y, z)));
+    KERN.provide(
+      'place',
+      (x, y, z) => {
+        for (const H of S.built)
+          if (H.inside(x, y, z)) {
+            const r = H.roomAt(x, y, z);
+            const rr = r && H.rooms.find(q => q.id === r);
+            const own = H.plan.owner ? ' – bei ' + H.plan.owner.charAt(0).toUpperCase() + H.plan.owner.slice(1) : '';
+            return (rr ? rr.name : 'Im Haus') + own;
+          }
+        return undefined;
+      },
+      95
+    );
+    borrow = KERN.lights.borrow({
+      id: 'zinnen',
+      n: 1,
+      prio: 4,
+      want: () =>
+        S.built.some(H => Object.values(H.lit).some(Boolean) && H.inside(WALKER.x, WALKER.y, WALKER.feet + 1)),
+      on: ls => place(ls, true),
+      tick: ls => place(ls, false),
+      off: () => markDirty(),
+    });
+  }
+  let lastRoom = null;
+  function place(ls, force) {
+    const l = ls && ls[0];
+    if (!l) return;
+    let best = null;
+    for (const H of S.built) {
+      if (!H.inside(WALKER.x, WALKER.y, WALKER.feet + 1)) continue;
+      const here = H.roomAt(WALKER.x, WALKER.y, WALKER.feet + 1);
+      const lamps = H.lamps.filter(q => H.lit[q.room]);
+      best =
+        lamps.find(q => q.room === here) ||
+        lamps.sort(
+          (a, b) =>
+            Math.hypot(a.pos[0] - WALKER.x, a.pos[1] - WALKER.y) - Math.hypot(b.pos[0] - WALKER.x, b.pos[1] - WALKER.y)
+        )[0] ||
+        null;
+    }
+    const key = best ? best.room + best.pos.join(',') : null;
+    if (!force && key === lastRoom && !S.lightDirty) return;
+    lastRoom = key;
+    S.lightDirty = false;
+    if (best) {
+      l.position.copy(V(best.pos[0], best.pos[1], best.pos[2] - 0.15));
+      l.color.set(0xffd6a0);
+      l.distance = 7.5;
+      l.decay = 2;
+      l.intensity = best.kind === 'bulb' ? 5 : 7;
+    } else l.intensity = 0;
+    markDirty();
+  }
+  // ---- unmounting ----
+  S.unmount = H => {
+    if (!H) return;
+    const i = S.built.indexOf(H);
+    if (i >= 0) S.built.splice(i, 1);
+    for (const e of H.cols) {
+      e[0] = 1e9;
+      e[1] = -1e9;
+      e[4] = -99;
+      e[5] = -99;
+      e[9] = undefined;
+    }
+    for (const e of H.walks) {
+      e[0] = 1e9;
+      e[1] = -1e9;
+      e[4] = -99;
+      e[8] = null;
+      e[9] = undefined;
+    }
+    for (const a of H.acts) KERN.unact(a);
+    for (const k of H.doorKeys) {
+      const d = DOORS[k];
+      if (!d) continue;
+      scene.remove(d.group);
+      d.group.traverse(o => o.isMesh && o.geometry.dispose());
+      delete DOORS[k];
+    }
+    H.group.traverse(o => {
+      if (o.isMesh) o.geometry.dispose();
+      if (o.isMesh && H.lamps.some(l => l.mat === o.material)) o.material.dispose();
+    });
+    scene.remove(H.group);
+    // the neutralised slots stay in COL and WALK (other modules keep indices into them) and serve the next house
+    S.poolCol.push(...H.cols);
+    S.poolWalk.push(...H.walks);
+    if (!S.built.length) ZIMOB.release();
+    rebuildGrids();
+    markDirty(true);
+    KERN.emit('zinnen:unmount', { id: H.id });
+  };
   S.mounted = () => S.built.slice();
-  // a test scenario of the agent: ?szenario=zombie-innen goes into a house (menu: false)
-  KERN.scenario('zombie-innen', { label: 'Haus von innen (Test)', menu: false, order: 99, run: () => null });
+  // ---- the test scenario: ?szenario=zombie-innen (&haus=<id>) goes into a house near the Anger (or the given one), third person ----
+  S.enter = H => {
+    KERN.spot('zinnen', {
+      mode: 'walk',
+      pos: [H.entry.x, H.entry.y],
+      z: H.entry.z,
+      yaw: H.entry.yaw,
+      pitch: -4,
+      label: 'Haus von innen',
+    });
+    go('zinnen');
+    setView3(true, true);
+  };
+  KERN.scenario('zombie-innen', {
+    label: 'Haus von innen (Test)',
+    menu: false,
+    order: 99,
+    run: () => {
+      const want = +QS.get('haus') || 0,
+        id = want && ZIPLAN.plan(want) ? want : S.pick(VILLAGE.ANGER[0] + 25, VILLAGE.ANGER[1] + 10);
+      return S.mount(id).then(H => {
+        if (H) S.enter(H);
+        S.scen = H;
+        return H;
+      });
+    },
+  });
+  S.ready = true;
+  void offTick;
+  void borrow;
   return S;
 })();
 window.ZINNEN = ZINNEN;
