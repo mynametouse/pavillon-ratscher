@@ -110,7 +110,13 @@ export const ZIEINR = (() => {
       used.push(r);
       return r;
     }
-    return { S, place, any, mid, used, at };
+    // is a stretch of a wall free of doors and windows between heights z0 and z1 (things hung on the wall above the furniture)
+    function wallFree(side, u0, u1, z0, z1) {
+      const s = S[side];
+      if (!s || u0 < 0.02 || u1 > s.L - 0.02) return false;
+      return !blocks.some(b => b.side === side && u0 < b.u1 && u1 > b.u0 && (b.door || z1 > b.z0));
+    }
+    return { S, place, any, mid, used, at, wallFree };
   }
   // ---- furniture (F: an item frame from the placer, u from F.u0) ----
   const L = {}; // the catalogue
@@ -981,6 +987,31 @@ export const ZIEINR = (() => {
     C.spot('bett', F.P(u0 + w / 2, 1.1, z), F, 'Ins Bett legen', { lie: true, head: F.P(u0 + w / 2, 0.3, z + 0.45) });
     C.solid(F.rect(u0, u0 + w, 0, 2.0), z, z + 1.7);
   };
+  // a rack with ladles and a whisk (Hakenleiste, stube-8)
+  L.kellen = (C, F, u, z) => {
+    const m = C.m,
+      st = C.M.stahl;
+    F.box(m, C.M.holz, u - 0.4, u + 0.4, 0, 0.03, z - 0.05, z + 0.05);
+    for (let i = 0; i < 4; i++) {
+      const x = u - 0.3 + i * 0.2;
+      F.rod(m, st, [x, 0.04, z - 0.02], [x, 0.04, z - 0.45], 0.008, 4);
+      if (i % 2)
+        F.lathe(
+          m,
+          st,
+          x,
+          0.06,
+          [
+            [0.0, z - 0.55],
+            [0.045, z - 0.52],
+            [0.04, z - 0.47],
+            [0.0, z - 0.45],
+          ],
+          8
+        );
+      else F.cyl(m, C.col(0x6a5a40, 0.6), x, 0.05, z - 0.62, z - 0.45, 0.03, 0.01, 6);
+    }
+  };
   // a picture frame on the wall: cell 0 stag, 1 Bible verse, 2 wall cloth, 3 landscape
   L.bild = (C, F, u, z, w, h, cell, frameCol = 0x5a3a22) => {
     const m = C.m;
@@ -1412,6 +1443,18 @@ export const ZIEINR = (() => {
       }
       const W = Pl.S[inner[1] || inner[0] || 'y1'];
       if (W && look !== 'nachwende') L.bild(C, frame(W.O, W.a, W.n), W.L * 0.5, C.z + 1.6, 0.55, 0.42, 2, 0xf0ece0);
+      // the rack with ladles over the range or on a free wall (stube-8)
+      if (look !== 'nachwende')
+        for (const sd of inner.concat(outer)) {
+          const Wk = Pl.S[sd],
+            uk = [0.25, 0.5, 0.75]
+              .map(f => Wk.L * f)
+              .find(u => Pl.wallFree(sd, u - 0.45, u + 0.45, C.z + 0.9, C.z + 1.65));
+          if (uk !== undefined) {
+            L.kellen(C, frame(Wk.O, Wk.a, Wk.n), uk, C.z + 1.55);
+            break;
+          }
+        }
     } else if (kind === 'kammer' || kind === 'schlafzimmer' || kind === 'kinderzimmer') {
       const dbl = kind === 'schlafzimmer' && room.x1 - room.x0 > 3.2 && room.y1 - room.y0 > 3.2,
         bunk = kind === 'kinderzimmer' && look !== 'alt' && R.chance(0.7);
@@ -1476,7 +1519,14 @@ export const ZIEINR = (() => {
       if (F) L.regal(C, F, F.w, 'Regal durchsuchen');
     } else if (kind === 'flur') {
       F = Pl.any(['x0', 'x1'], 1.0, 0.32, 1.75, 0.15);
-      if (F) L.garderobe(C, F);
+      if (F) {
+        L.garderobe(C, F);
+        // a mirror beside the coat rack, where the wall is free
+        if (Pl.at(F.side, F.u0 + 1.05, 0.5, 0.04, 1.9)) {
+          F.box(C.m, C.col(0x6a4a30, 0.5), F.u0 + 1.05, F.u0 + 1.55, 0, 0.03, C.z + 1.2, C.z + 1.85);
+          F.box(C.m, C.col(0xa8b8c0, 0.05, 0.9), F.u0 + 1.09, F.u0 + 1.51, 0.03, 0.035, C.z + 1.24, C.z + 1.81);
+        }
+      }
       F = Pl.any(['x1', 'x0', 'y1'], 1.0, 0.5, 0.6, 0.8);
       if (F) L.truhe(C, F, 'Truhe im Flur öffnen');
       // a runner rug along the hall
