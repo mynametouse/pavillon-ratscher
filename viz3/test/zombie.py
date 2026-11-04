@@ -36,6 +36,7 @@ with lib.browser() as b:
     steps(1.0)
     st = J("({ phase: ZSTATE.phase, night: ZSTATE.night, siren: ZTON.sirenOn(), hm: CLOCK.hm() })")
     ck('at dusk the siren, the night begins', st['phase'] == 'nacht' and st['night'] == 1, str(st))
+    E("CLOCK.focus('test')")  # the clock in real time from here (a fast machine would step through the whole night in the loops below)
     # they turn after a few seconds and load
     t0 = time.time()
     while time.time() - t0 < 120:

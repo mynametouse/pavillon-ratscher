@@ -71,6 +71,7 @@ with lib.browser() as b:
     lib.settle_light(pg)
     steps(1.0)
     ck('the night begins with the player inside', E("ZSTATE.phase") == 'nacht', E("ZSTATE.phase"))
+    E("CLOCK.focus('test')")  # real time from here (a fast machine would step through the night)
     zid = None
     t0 = time.time()
     while time.time() - t0 < 90:

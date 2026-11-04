@@ -647,6 +647,7 @@ export const ZHORDE = (() => {
       const a = S.pick(e, t);
       if (a) t = a;
     }
+    e.tg = t.remote ? 'mitspieler' : t.ally ? 'verbuendet' : 'spieler'; // (whom it goes for – for the tests)
     if (e.st !== 'hide') think(e, dt, t);
     if (e.st === 'eat') {
       if (F) {

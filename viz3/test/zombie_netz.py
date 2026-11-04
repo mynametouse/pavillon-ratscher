@@ -44,6 +44,7 @@ with lib.browser() as b:
     # the night on the host – the guest's clock follows
     A.evaluate("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + ZOMBIE.times().siren - 0.5")
     stepA(1.0); time.sleep(3); stepA(1.0); stepB(1.0)
+    A.evaluate("CLOCK.focus('test')"); B.evaluate("CLOCK.focus('test')")
     ck('the night falls on both', JA("ZSTATE.phase") == 'nacht' and JB("ZSTATE.phase") == 'nacht', f"{JA('[ZSTATE.phase, CLOCK.hm()]')} | {JB('[ZSTATE.phase, CLOCK.hm()]')}")
     # zombies on the host, puppets on the guest
     t0 = time.time()
@@ -70,7 +71,9 @@ with lib.browser() as b:
     for i in range(20):
         stepA(0.25); time.sleep(0.2); stepB(0.25)
         if B.evaluate("ZSTATE.hp") < hb0: break
-    ck('the host\'s zombie strikes the guest', B.evaluate("ZSTATE.hp") < hb0, f"{hb0} -> {B.evaluate('ZSTATE.hp')}")
+    zs = JA(f"""(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zid}'), p = Object.values(ZNETZ.peers)[0]; return e ? {{ st: e.st, tg: e.tg, d: e.d, wind: e.wind, cd: e.cd, down: e.downT, stag: e.stag, hold: e.hold,
+      x: e.x, y: e.y, guest: p && p.st ? [p.st.x, p.st.y, p.st.hp] : null, age: p ? Math.round(performance.now() - (p.stT || 0)) : null }} : null; }})()""")
+    ck('the host\'s zombie strikes the guest', B.evaluate("ZSTATE.hp") < hb0, f"{hb0} -> {B.evaluate('ZSTATE.hp')} {zs}")
     # it dies on the host – the guest sees it fall
     A.evaluate(f"(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zid}'); if (e) ZHORDE.damage(e, 999, {{ dx: 1, dy: 0, kind: 'blade', gore: 1, part: 'kopf' }}); }})()")
     stepA(0.3); time.sleep(0.6); stepB(0.5)
