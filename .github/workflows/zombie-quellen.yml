@@ -1,0 +1,51 @@
+# Zombie night (feat/zombie): research that needs the internet the chat machine has not – German Wikipedia (layouts and furnishing of
+# Thuringian village houses), Wikimedia Commons (contact sheets of interior photos with open licences only; siren recordings listed).
+# Everything goes to the scratch branch ref/zombie-innen-fotos (never merged, deleted at the end of the work); nothing is published,
+# nothing lands on the feature branch.
+name: Zombie – Quellen
+
+on:
+  push:
+    branches: ['feat/zombie']
+    paths: ['viz3/extra/zombie/quellen/**', '.github/workflows/zombie-quellen.yml']
+
+concurrency:
+  group: zombie-quellen
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    name: Wikipedia, Commons
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet requests pillow
+      - name: Recherche
+        run: python -u viz3/extra/zombie/quellen/quellen.py "$RUNNER_TEMP/ref" 2>&1 | tee "$RUNNER_TEMP/quellen.log"
+      - name: Auf ref/zombie-innen-fotos legen
+        run: |
+          cp "$RUNNER_TEMP/quellen.log" "$RUNNER_TEMP/ref/quellen.log"
+          cd "$RUNNER_TEMP"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone -q --depth 1 "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" repo
+          cd repo
+          if git ls-remote --exit-code origin refs/heads/ref/zombie-innen-fotos >/dev/null; then
+            git fetch -q --depth 1 origin ref/zombie-innen-fotos && git checkout -q -B ref/zombie-innen-fotos FETCH_HEAD
+          else
+            git checkout -q --orphan ref/zombie-innen-fotos && git rm -rq . || true
+          fi
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -r "$RUNNER_TEMP/ref/." .
+          git add -A
+          git commit -q -m "Zombie innen: research from ${GITHUB_SHA::7} (not for merging)" || { echo "nothing new"; exit 0; }
+          git push -q origin HEAD:refs/heads/ref/zombie-innen-fotos
+          du -sh . ; ls sheets | wc -l
