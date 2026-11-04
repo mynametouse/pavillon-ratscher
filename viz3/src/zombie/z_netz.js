@@ -350,7 +350,6 @@ export const ZNETZ = (() => {
     status('');
   }
   // ---- the host's zombies also go for the guest; their blows reach him by message ----
-  const prevPick = () => S.prevPick;
   function hookHorde() {
     S.prevPick = ZHORDE.pick;
     ZHORDE.pick = (e, me) => {
@@ -568,7 +567,7 @@ export const ZNETZ = (() => {
     );
   KERN.on('zombie:stop', () => close());
   hookHorde();
-  Object.assign(S, { open, close, transport, snapshot, puppets, ui, clean, newCode, prevPick });
+  Object.assign(S, { open, close, transport, snapshot, puppets, ui, clean, newCode });
   return S;
 })();
 window.ZNETZ = ZNETZ;

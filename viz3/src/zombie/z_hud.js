@@ -89,7 +89,8 @@ body[data-zombie="1"] #qtrack{display:none!important}
     );
     S.touch = div(
       'ztouch',
-      `<button class="s" data-z="r">R</button><button data-z="atk" aria-label="Schlagen">✊</button>`
+      `<button class="s" data-z="lampe" aria-label="Taschenlampe">🔦</button><button class="s" data-z="tritt" aria-label="Treten">🦶</button>` +
+        `<button class="s" data-z="r" aria-label="Nachladen, nachtanken">R</button><button data-z="atk" aria-label="Schlagen">✊</button>`
     );
     S.cross = div('zcross');
     S.el.addEventListener('click', e => {
@@ -105,6 +106,8 @@ body[data-zombie="1"] #qtrack{display:none!important}
     });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) atk.addEventListener(ev, () => ZWAFFE.release());
     S.touch.querySelector('[data-z="r"]').addEventListener('click', () => ZWAFFE.reload());
+    S.touch.querySelector('[data-z="tritt"]').addEventListener('click', () => ZWAFFE.kick());
+    S.touch.querySelector('[data-z="lampe"]').addEventListener('click', () => window.ZOMBIE && window.ZOMBIE.torch());
     $('zdeadb').addEventListener('click', () => {
       S.dead.hidden = true;
       if (S.onRevive) S.onRevive();

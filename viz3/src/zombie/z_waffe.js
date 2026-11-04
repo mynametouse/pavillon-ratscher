@@ -31,7 +31,7 @@ export const ZWAFFE = (() => {
     sw: null,
     saw: { run: false, start: 0, loops: false, cut: 0, rpm: 0 },
     relT: 0,
-    kick: 0,
+    shake: 0,
   };
   // ---- models: the handle along +y from 0 (the lower end) to len; the head at the top ----
   let MT = null;
@@ -299,7 +299,7 @@ export const ZWAFFE = (() => {
       n++;
     }
     if (n && id !== 'faust' && id !== 'tritt') wear(id, w.wear || 0.5);
-    if (n) S.kick = 0.06;
+    if (n) S.shake = 0.06;
     return n;
   }
   function wear(id, k) {
@@ -431,7 +431,7 @@ export const ZWAFFE = (() => {
     Z.emit('schuss', { x: P.x, y: P.y });
     ZFX.flash(P.x + fx * 0.9, P.y + fy * 0.9, ez + Math.sin(pitch) * 0.9 - 0.1);
     Z.noise(P.x, P.y, w.loud, 2, 'schuss');
-    S.kick = 0.18;
+    S.shake = 0.18;
     P.pitch = Math.min(72, P.pitch + 3.5);
     // the pellets: each a ray in a cone; the nearest zombie each ray passes close to takes it
     const hitsBy = new Map();
@@ -606,7 +606,7 @@ export const ZWAFFE = (() => {
       if (id !== 'motorsaege' && id !== 'flinte' && can()) swing(id);
     }
     sawTick(dt);
-    if (S.kick > 0) S.kick = Math.max(0, S.kick - dt);
+    if (S.shake > 0) S.shake = Math.max(0, S.shake - dt);
   }
   KERN.tick(tick, 'zombie/waffe');
   function info() {

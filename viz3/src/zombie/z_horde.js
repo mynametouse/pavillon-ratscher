@@ -551,6 +551,21 @@ export const ZHORDE = (() => {
     F.anim(dt, near);
     if (e.dead && e.deadT > 75) remove(e);
   }
+  // a position gone bad (NaN): back to where it was, and once a note what did it
+  const badSeen = new Set();
+  function bad(e, where, px, py, pz, info) {
+    if (Number.isFinite(e.x) && Number.isFinite(e.y) && Number.isFinite(e.z)) return false;
+    if (!badSeen.has(where)) {
+      badSeen.add(where);
+      console.warn('zombie NaN', where, JSON.stringify(info));
+      S.badAt = where + ' ' + JSON.stringify(info);
+    }
+    e.x = px;
+    e.y = py;
+    e.z = Number.isFinite(pz) ? pz : floorAt(px, py, 300);
+    e.kv = [0, 0];
+    return true;
+  }
   function step(e, dt, t, near) {
     e.t += dt;
     if (e.net) return puppet(e, dt, near);
@@ -781,14 +796,19 @@ export const ZHORDE = (() => {
     e.kv[1] *= Math.exp(-dt * 5);
     // move, then out of walls, the garden's things and parked cars; apart from the others
     const px = e.x,
-      py = e.y;
+      py = e.y,
+      pz = e.z;
     e.x += (gx * v + kx) * dt;
     e.y += (gy * v + ky) * dt;
+    if (bad(e, 'move', px, py, pz, { gx, gy, v, kx, ky, tx: t.x, ty: t.y, side: e.stuck.side, sideT: e.stuck.sideT }))
+      return;
     const p = [e.x, e.y];
     collide(p, e.z, true);
     e.x = p[0];
     e.y = p[1];
+    if (bad(e, 'collide', px, py, pz, { z: e.z })) return;
     e.z = floorAt(e.x, e.y, e.z + 0.45);
+    if (bad(e, 'floor', px, py, pz, { x: e.x, y: e.y })) return;
     const sp = hyp(e.x - px, e.y - py) / Math.max(dt, 1e-3);
     e.lastSp = sp;
     // facing: where it goes, or the player when close
