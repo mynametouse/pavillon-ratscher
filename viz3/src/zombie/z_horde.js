@@ -30,6 +30,11 @@ export const ZHORDE = (() => {
     house: null,
     pick: null,
     hitAlly: null,
+    hitRemote: null,
+    netHit: null,
+    netKill: null,
+    spawnAt: null,
+    guest: false,
     fieldT: 0,
     queue: [],
     busy: false,
@@ -293,6 +298,10 @@ export const ZHORDE = (() => {
   // ---- the siren: those out of doors turn where they stand ----
   function turnVillagers() {
     const out = [];
+    if (S.guest) {
+      for (const k of Object.keys((DPEOPLE && DPEOPLE.figs) || {})) DPEOPLE.hide(k);
+      return out;
+    }
     for (const [k, f] of Object.entries((DPEOPLE && DPEOPLE.figs) || {})) {
       if (!f || !f.g.visible || !f.at || !ZFIG.avail(k)) continue;
       const e = ent(k, f.at.x, f.at.y, f.at.z, f.at.hd || 0, { st: 'turn' });
@@ -302,9 +311,10 @@ export const ZHORDE = (() => {
     }
     return out;
   }
-  // where new ones come from: the doors of houses 35–110 m from the player, rather behind him
-  function doorSpots() {
-    const t = me(),
+  // where new ones come from: the doors of houses 35–110 m from the player (c: another player – zombie/z_netz.js), rather behind him
+  function doorSpots(c) {
+    const t = c || me(),
+      yawDeg = c && c.yaw != null ? c.yaw : P.yaw,
       out = [];
     for (const b of (VILLAGE && VILLAGE.bld) || []) {
       const f = b.fac && b.fac.find(q => q.door);
@@ -313,7 +323,7 @@ export const ZHORDE = (() => {
         y = f.ay + f.dy * f.door.u + f.ny * 1.3,
         d = hyp(x - t.x, y - t.y);
       if (d < 35 || d > 110) continue;
-      const yaw = (P.yaw * Math.PI) / 180,
+      const yaw = (yawDeg * Math.PI) / 180,
         ahead = ((x - t.x) * Math.sin(yaw) + (y - t.y) * Math.cos(yaw)) / d;
       out.push({
         x,
@@ -326,7 +336,8 @@ export const ZHORDE = (() => {
     return out;
   }
   function spawnSome(n) {
-    const spots = doorSpots();
+    if (S.guest) return 0;
+    const spots = doorSpots(S.spawnAt ? S.spawnAt() : null);
     if (!spots.length) return 0;
     let made = 0;
     for (let i = 0; i < n; i++) {
@@ -351,6 +362,14 @@ export const ZHORDE = (() => {
   // ---- damage (zombie/z_waffe.js): o = { dx, dy (from the attacker towards the zombie), knock m, kind, gore 0…1, part, by } ----
   function damage(e, dmg, o = {}) {
     if (!e || e.dead || !(dmg > 0)) return false;
+    // the host's zombie: the hit goes to the host, here only what one sees and hears
+    if (e.net) {
+      if (S.netHit) S.netHit(e, dmg, o);
+      const L0 = hyp(o.dx || 0, o.dy || 0) || 1;
+      ZTON.hit(e.x, e.y, o.kind);
+      ZFX.spray(e.x, e.y, e.z + 1.2, (o.dx || 0) / L0, (o.dy || 0) / L0, Math.round(6 + dmg * 0.2), 1.6, 1.2);
+      return true;
+    }
     e.hp -= dmg;
     const L = hyp(o.dx || 0, o.dy || 0) || 1,
       ux = (o.dx || 0) / L,
@@ -398,7 +417,7 @@ export const ZHORDE = (() => {
         e.st = 'chase';
         ZTON.snarl(e.x, e.y);
       }
-      e.seen = { x: me().x, y: me().y, t: performance.now() };
+      e.seen = o.at ? { x: o.at[0], y: o.at[1], t: performance.now() } : { x: me().x, y: me().y, t: performance.now() };
     }
     return true;
   }
@@ -408,7 +427,9 @@ export const ZHORDE = (() => {
     e.st = 'dead';
     e.deadT = 0;
     e.hp = 0;
-    Z.kills++;
+    // the other player's blow: his kill (zombie/z_netz.js tells him)
+    if (o.remote && S.netKill) S.netKill(o.remote, e, o);
+    else Z.kills++;
     Z.save();
     ZTON.die(e.x, e.y);
     if (e.F) e.F.mode = 'dead';
@@ -419,7 +440,7 @@ export const ZHORDE = (() => {
   function vehicles(dt) {
     for (const v of (VEH && VEH.list) || []) {
       const s = v.st,
-        u = s.u;
+        u = v.netU !== undefined && v !== VEH.cur ? v.netU : s.u; // (the other player's car: its speed by message)
       if (!(Math.abs(u) > 1.4)) continue;
       const B = v.spec.box,
         f = VEH.fwd(s.psi),
@@ -427,7 +448,7 @@ export const ZHORDE = (() => {
         cx = s.x + f[0] * B.cy,
         cy = s.y + f[1] * B.cy;
       for (const e of Z.ents) {
-        if (e.kind !== 'zombie' || e.fly || (e.dead && e.deadT > 2)) continue;
+        if (e.kind !== 'zombie' || e.net || e.fly || (e.dead && e.deadT > 2)) continue;
         const dx = e.x - cx,
           dy = e.y - cy;
         if (Math.abs(dx) > 6 || Math.abs(dy) > 6) continue;
@@ -507,8 +528,32 @@ export const ZHORDE = (() => {
     }
     if (e.st === 'search' && (e.t > 18 || hyp(e.tx - e.x, e.ty - e.y) < 1.2)) e.st = 'wander';
   }
+  // a puppet of the host's zombie (zombie/z_netz.js moves it): only the pose here
+  function puppet(e, dt, near) {
+    const F = e.F;
+    if (e.dead) e.deadT = (e.deadT || 0) + dt;
+    if (!F) return;
+    const m = e.netMode || 'walk';
+    F.mode =
+      e.dead || m === 'dead' || m === 'fly' || m === 'down'
+        ? 'dead'
+        : m === 'chase'
+          ? 'chase'
+          : m === 'walk'
+            ? e.netSp > 0.05
+              ? 'walk'
+              : 'idle'
+            : m;
+    F.speed = e.netSp || 0;
+    if (m === 'turn') F.turnK = Math.min(1, (F.turnK || 0) + dt / 5);
+    F.g.position.copy(V(e.x, e.y, e.z));
+    F.g.rotation.y = (-e.hd * Math.PI) / 180;
+    F.anim(dt, near);
+    if (e.dead && e.deadT > 75) remove(e);
+  }
   function step(e, dt, t, near) {
     e.t += dt;
+    if (e.net) return puppet(e, dt, near);
     const F = e.F;
     // flying from a car: a tumbling throw, then on the ground
     if (e.fly) {
@@ -623,7 +668,9 @@ export const ZHORDE = (() => {
     if (e.wind > 0) {
       e.wind -= dt;
       if (e.wind <= 0 && e.d < D.reach + 0.65 && !t.car) {
-        if (t.ally) {
+        if (t.remote) {
+          if (S.hitRemote) S.hitRemote(t.remote, e.hit * (e.crawl ? 0.6 : 1), e);
+        } else if (t.ally) {
           if (S.hitAlly) S.hitAlly(t.ally, e.hit * (e.crawl ? 0.6 : 1), e);
         } else {
           Z.hurt(e.hit * (e.crawl ? 0.6 : 1), e.name);
@@ -647,7 +694,7 @@ export const ZHORDE = (() => {
     let gx = 0,
       gy = 0,
       v = D.walk * e.sp;
-    const hz = e.st === 'chase' && !t.ally && S.house && S.house.inside() ? S.house.redirect(e) : null;
+    const hz = e.st === 'chase' && !t.ally && !t.remote && S.house && S.house.inside() ? S.house.redirect(e) : null;
     if (hz) {
       v = (e.crawl ? 0.45 : D.chase) * e.sp;
       if (hz.d < 1.15) {
@@ -662,7 +709,8 @@ export const ZHORDE = (() => {
       }
     } else if (e.st === 'chase') {
       v = (e.crawl ? 0.45 : D.chase) * e.sp;
-      const fl = !e.los && e.d > 2 && !e.house ? flow(e.x, e.y) : null;
+      // (the flow field leads to this browser's player – for the other player straight on, sidestepping when stuck)
+      const fl = !e.los && e.d > 2 && !e.house && !t.remote ? flow(e.x, e.y) : null;
       if (fl) {
         gx = fl[0];
         gy = fl[1];
@@ -741,6 +789,7 @@ export const ZHORDE = (() => {
     e.y = p[1];
     e.z = floorAt(e.x, e.y, e.z + 0.45);
     const sp = hyp(e.x - px, e.y - py) / Math.max(dt, 1e-3);
+    e.lastSp = sp;
     // facing: where it goes, or the player when close
     let hd = e.hd;
     if (e.st === 'chase' && e.d < 3) hd = (Math.atan2(t.x - e.x, t.y - e.y) * 180) / Math.PI;
@@ -841,6 +890,7 @@ export const ZHORDE = (() => {
   // the night begins: the villagers turn, more come
   // somebody in sight turns (if nobody of the village was out): 12–22 m ahead of the player, on a free place
   function turnInSight(k) {
+    if (S.guest) return [];
     const t = me(),
       out = [],
       yaw = (P.yaw * Math.PI) / 180,
@@ -872,7 +922,7 @@ export const ZHORDE = (() => {
   // dawn: they go back into the houses
   function dawn() {
     for (const e of Z.ents) {
-      if (e.kind !== 'zombie' || e.dead) continue;
+      if (e.kind !== 'zombie' || e.dead || e.net) continue;
       e.st = 'hide';
       let best = null,
         bd = 1e9;

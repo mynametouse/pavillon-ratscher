@@ -78,7 +78,7 @@ body[data-zombie="1"] #qtrack{display:none!important}
        <div class="zk" id="zkills"></div>
        <div class="zk" id="zclan"></div>
        <div class="zq" id="zclanq" hidden><input id="zclanin" maxlength="28" placeholder="Name eures Clans"><button data-z="clan">Gründen</button></div>
-       <div class="zx"><button data-z="eat">Essen</button><button data-z="drink">Trinken</button><button data-z="heal">Verbinden</button><button data-z="wait">Warten</button><button data-z="end">Beenden</button></div>`
+       <div class="zx"><button data-z="eat">Essen</button><button data-z="drink">Trinken</button><button data-z="heal">Verbinden</button><button data-z="wait">Warten</button><button data-z="netz">Zu zweit</button><button data-z="end">Beenden</button></div>`
     );
     S.flashEl = div('zflash');
     S.flashEl.hidden = false;

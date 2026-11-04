@@ -257,6 +257,7 @@ export const ZWAFFE = (() => {
     }
     S.cd = w.cd;
     S.sw = { id, t: 0, wind: w.wind || 0.3, done: false };
+    Z.emit('swing', { id });
     ZTON.swing(P.x, P.y);
     // the figure (third person) and the thing in the hand (first person)
     if (CAM3.on && AVATAR.ready) AVATAR.gesture(w.gest || 'chop', w.gest === 'push' ? 1.6 : 1.35);
@@ -416,6 +417,7 @@ export const ZWAFFE = (() => {
       fy = Math.cos(yaw),
       ez = P.feet + (P.eyeH || 1.6) - 0.15;
     ZTON.shot(P.x, P.y);
+    Z.emit('schuss', { x: P.x, y: P.y });
     ZFX.flash(P.x + fx * 0.9, P.y + fy * 0.9, ez + Math.sin(pitch) * 0.9 - 0.1);
     Z.noise(P.x, P.y, w.loud, 2, 'schuss');
     S.kick = 0.18;

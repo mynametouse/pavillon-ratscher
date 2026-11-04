@@ -30,6 +30,7 @@ import { ZFIG } from './z_fig.js';
 import { ZHORDE } from './z_horde.js';
 import { ZWAFFE } from './z_waffe.js';
 import { ZHUD } from './z_hud.js';
+import { ZNETZ } from './z_netz.js';
 export const ZOMBIE = (() => {
   const TX = ZDATA.T;
   const S = { prevMode: null, offs: [], deadT: 0, started: 0, tday: null, tcache: null, lamp: false };
@@ -168,9 +169,9 @@ export const ZOMBIE = (() => {
     Z.save(true);
   }
   function revive() {
-    // the next dawn, in the garden; a third of the supplies gone
+    // the next dawn, in the garden; a third of the supplies gone (two playing: the clock goes on, one wakes in the garden at once)
     const m = minute(),
-      add = (times().dawn + 15 - m + 1440) % 1440;
+      add = ZNETZ.on ? 0 : (times().dawn + 15 - m + 1440) % 1440;
     CLOCK.t += add;
     if (DN && DN.active) DN.update(true);
     for (const k of Object.keys(Z.sup)) {
@@ -180,8 +181,10 @@ export const ZOMBIE = (() => {
     Z.hp = 60;
     Z.stam = 60;
     Z.food = Math.max(Z.food, 40);
-    ZHORDE.clear();
-    Z.phase = 'tag';
+    if (!ZNETZ.on) {
+      ZHORDE.clear();
+      Z.phase = 'tag';
+    }
     go('garten');
     ZWAFFE.placeAll();
     nightStreets(false);
@@ -293,8 +296,8 @@ export const ZOMBIE = (() => {
         text: 'Such dir eine Waffe – einen Spaten an der alten Garage, eine Axt bei Hubert, eine Motorsäge in der Werkstatt …',
         on: 'zombie:weapon',
       },
-      { text: 'Halte durch, bis die Sirene heult (21 Uhr).', on: 'zombie:siren' },
-      { text: 'Überlebe die Nacht bis zum Morgengrauen (5:30).', on: 'zombie:survived' },
+      { text: 'Halte durch, bis die Sirene heult – kurz nach Einbruch der Dunkelheit.', on: 'zombie:siren' },
+      { text: 'Überlebe die Nacht bis zum Morgengrauen.', on: 'zombie:survived' },
     ],
     done: 'Du hast die erste Nacht überlebt. Sie kommen wieder – sammle Vorräte, verbarrikadiere ein Haus.',
   });
@@ -302,7 +305,8 @@ export const ZOMBIE = (() => {
   whenLoaded(() =>
     setTimeout(() => {
       try {
-        if (Z.load() && Z.on) begin(false);
+        // (already started – ?szenario=zombie, a link to a room – the scene's fresh start stands)
+        if (!Z.on && Z.load() && Z.on) begin(false);
       } catch (e) {
         console.warn('zombie resume', e);
       }

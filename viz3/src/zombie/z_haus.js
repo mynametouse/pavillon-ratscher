@@ -291,6 +291,7 @@ export const ZHAUS = (() => {
           const st = Z.house(S.bid);
           if ((st.bar[op.id] || 0) >= 99) {
             st.bar[op.id] = 0;
+            Z.emit('bar', { bid: S.bid, op: op.id, hp: 0 });
             Z.add('brett', 1);
             boardsFor(op);
             PLAY.think('Die Bretter sind ab.', 1400);
@@ -306,6 +307,7 @@ export const ZHAUS = (() => {
           st.bar[op.id] = 100;
           boardsFor(op);
           Z.emit('barricade', { id: S.bid, op: op.id });
+          Z.emit('bar', { bid: S.bid, op: op.id, hp: 100 });
           Z.save();
         },
       });
@@ -326,6 +328,7 @@ export const ZHAUS = (() => {
     if (hp <= 0) return false;
     const p = [(op.a[0] + op.b[0]) / 2, (op.a[1] + op.b[1]) / 2];
     st.bar[op.id] = Math.max(0, hp - dmg);
+    Z.emit('bar', { bid: S.bid, op: op.id, hp: st.bar[op.id] });
     if (st.bar[op.id] <= 0) {
       ZTON.splinter(p[0], p[1]);
       PLAY.think(op.kind === 'door' ? 'Die Tür gibt nach!' : 'Ein Fenster ist offen!', 1800);
@@ -467,7 +470,12 @@ export const ZHAUS = (() => {
       S.bid = null;
     }
   }, 'zombie/haus');
-  Object.assign(S, { doors, nearDoor, enter, leave, search, use, hitBar, boardsAll, VILLAGE });
+  // a barricade changed elsewhere (the other player, zombie/z_netz.js): its boards anew
+  function refresh(opId) {
+    const op = S.H && (S.H.openings || []).find(o => o.id === opId);
+    if (op) boardsFor(op);
+  }
+  Object.assign(S, { doors, nearDoor, enter, leave, search, use, hitBar, boardsAll, refresh, VILLAGE });
   return S;
 })();
 window.ZHAUS = ZHAUS;

@@ -11,8 +11,8 @@ import { KERN } from '../core/kern.js';
 import { floorAt } from '../game/walkable.js';
 export const ZFX = (() => {
   const S = { built: false, drops: [], stains: 0, gibs: [], flashM: null, flashT: 0, g: null };
-  const ND = 260,
-    NS = 180;
+  const ND = 300,
+    NS = 420;
   let dropIM = null,
     stainIM = null,
     M = null;
@@ -21,16 +21,19 @@ export const ZFX = (() => {
     _e = new THREE.Euler(),
     _s = new THREE.Vector3(),
     _p = new THREE.Vector3(),
-    UP = new THREE.Vector3(0, 1, 0);
+    UP = new THREE.Vector3(0, 1, 0),
+    _dv = new THREE.Vector3();
   function build() {
     if (S.built) return;
     S.built = true;
     M = {
-      blood: plain({ color: 0x6a0707, roughness: 0.35 }),
-      stain: plain({ color: 0x400404, roughness: 0.18, transparent: true, opacity: 0.88, depthWrite: false }),
-      skin: plain({ color: 0x8f8a74, roughness: 0.8 }),
-      flesh: plain({ color: 0x7a1010, roughness: 0.5 }),
-      cloth: plain({ color: 0x3b3a36, roughness: 0.95 }),
+      blood: plain({ color: 0x4a0303, roughness: 0.3 }),
+      stain: plain({ color: 0x260202, roughness: 0.32, transparent: true, opacity: 0.93, depthWrite: false }),
+      skin: plain({ color: 0x5f6551, roughness: 0.85 }),
+      flesh: plain({ color: 0x5c0807, roughness: 0.45 }),
+      bone: plain({ color: 0xb9ad92, roughness: 0.7 }),
+      hair: plain({ color: 0x2a241e, roughness: 0.9 }),
+      cloth: plain({ color: 0x34332f, roughness: 0.95 }),
       flash: new THREE.MeshBasicMaterial({
         color: 0xffd08a,
         transparent: true,
@@ -45,7 +48,10 @@ export const ZFX = (() => {
     S.g = new THREE.Group();
     S.g.userData.noMerge = true;
     scene.add(S.g);
-    dropIM = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.028, 0), M.blood, ND);
+    // a drop: small and stretched along its flight (the matrix turns its long axis into the velocity)
+    const dg = new THREE.IcosahedronGeometry(0.011, 0);
+    dg.scale(1, 2.6, 1);
+    dropIM = new THREE.InstancedMesh(dg, M.blood, ND);
     dropIM.count = 0;
     dropIM.frustumCulled = false;
     dropIM.castShadow = false;
@@ -124,14 +130,25 @@ export const ZFX = (() => {
   function stain(x, y, r = 0.4, z) {
     if (!S.built) return;
     const fz = z ?? KERN.ground(x, y);
-    const i = S.stains % NS;
-    S.stains++;
-    _e.set(0, Math.random() * Math.PI * 2, 0);
-    _q.setFromEuler(_e);
-    const sx = r * (0.7 + Math.random() * 0.6),
-      sz = r * (0.7 + Math.random() * 0.6);
-    _m.compose(_p.copy(V(x, y, fz + 0.012 + (i % 7) * 0.0015)), _q, _s.set(sx, 1, sz));
-    stainIM.setMatrixAt(i, _m);
+    // a pool and, for the bigger ones, a few splashes around it
+    const n = r > 0.25 ? 3 + Math.floor(Math.random() * 3) : r > 0.12 ? 1 + Math.floor(Math.random() * 2) : 0;
+    for (let j = 0; j <= n; j++) {
+      const i = S.stains % NS;
+      S.stains++;
+      const a = Math.random() * Math.PI * 2,
+        dd = j ? r * (0.7 + Math.random() * 0.8) : 0,
+        rr = j ? r * (0.12 + Math.random() * 0.25) : r * 0.85;
+      _e.set(0, Math.random() * Math.PI * 2, 0);
+      _q.setFromEuler(_e);
+      const sx = rr * (0.7 + Math.random() * 0.6),
+        sz = rr * (0.6 + Math.random() * 0.6);
+      _m.compose(
+        _p.copy(V(x + Math.cos(a) * dd, y + Math.sin(a) * dd, fz + 0.012 + (i % 7) * 0.0015)),
+        _q,
+        _s.set(sx, 1, sz)
+      );
+      stainIM.setMatrixAt(i, _m);
+    }
     stainIM.count = Math.min(NS, S.stains);
     stainIM.instanceMatrix.needsUpdate = true;
     markDirty();
@@ -149,16 +166,24 @@ export const ZFX = (() => {
     body.castShadow = true;
     g.add(body);
     if (kind === 'head') {
-      const hair = new THREE.Mesh(S.GEO.head, M.cloth);
-      hair.scale.set(1.04, 0.62, 1.04);
-      hair.position.y = 0.045;
+      body.scale.set(0.88, 1.12, 0.98);
+      const hair = new THREE.Mesh(S.GEO.head, M.hair);
+      hair.scale.set(0.93, 0.7, 1.03);
+      hair.position.set(0, 0.05, -0.012);
       g.add(hair);
     }
     const cap = new THREE.Mesh(S.GEO.cap, M.flesh);
-    const len = kind === 'leg' ? 0.25 : kind === 'arm' ? 0.2 : 0.1;
+    const len = kind === 'leg' ? 0.25 : kind === 'arm' ? 0.2 : 0.115;
     cap.position.y = -len;
     cap.rotation.x = Math.PI / 2;
     g.add(cap);
+    if (kind !== 'head') {
+      const bo = new THREE.Mesh(S.GEO.cap, M.bone);
+      bo.scale.setScalar(0.32);
+      bo.position.y = -len - 0.004;
+      bo.rotation.x = Math.PI / 2;
+      g.add(bo);
+    }
     if (kind === 'leg' || kind === 'arm') {
       const cl = new THREE.Mesh(geo, M.cloth);
       cl.scale.set(1.12, 0.55, 1.12);
@@ -230,7 +255,11 @@ export const ZFX = (() => {
         }
       }
       for (const d of S.drops) {
-        _m.compose(_p.copy(V(d.x, d.y, d.z)), _q.identity(), _s.setScalar(d.s));
+        _dv.set(d.vx, d.vz, -d.vy);
+        const sp = _dv.length();
+        if (sp > 1e-3) _q.setFromUnitVectors(UP, _dv.multiplyScalar(1 / sp));
+        else _q.identity();
+        _m.compose(_p.copy(V(d.x, d.y, d.z)), _q, _s.set(d.s, d.s * Math.min(1.6, 0.6 + sp * 0.18), d.s));
         dropIM.setMatrixAt(n++, _m);
       }
       dropIM.count = n;

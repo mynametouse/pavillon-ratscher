@@ -5,7 +5,7 @@
 // shared. They move with the player's clip sets (chars/pclips_m.json, pclips_f.json: walk, jog, push, knock, chop, crawl, lie, kneelIdle
 // …) and a zombie posture on top (arms forward, the head hanging to one side, hunched, twitching, a limp). Gore: a limb is taken by
 // scaling its bone to nothing (the mesh closes at the joint), a red stump on the joint, the piece flies (zombie/z_fx.js); without legs
-// they crawl, without a head they fall. Blood on the chest and the chin (small shapes on the bones).
+// they crawl, without a head they fall. Skin, dirt and blood are painted into the person's own textures (zombify).
 import * as THREE from 'three';
 import { clone as skelClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { BASE, cam, COARSE, QS, scene, V } from '../core/head.js';
@@ -33,6 +33,13 @@ export const ZFIG = (() => {
         stoop: p.stoop || 0,
         src: 'dorf',
       });
+    // the player figures (for the other player of zombie/z_netz.js) – never zombies
+    for (const [k, f, c, n, h] of [
+      ['spieler_m', PM.player_m, 'm', 'Falko', 1.8],
+      ['spieler_f', PM.player_f, 'f', 'Sarah', 1.68],
+      ['spieler_c', PM.player_c || PM.player_m, 'm', 'Christoph', 1.78],
+    ])
+      if (f) out.push({ key: k, name: n, file: f, clips: c, h, stoop: 0, src: 'spieler' });
     for (const [k, p] of Object.entries((VLEUTE && VLEUTE.P) || {}))
       out.push({
         key: k,
@@ -46,8 +53,8 @@ export const ZFIG = (() => {
     return out;
   })();
   const byKey = Object.fromEntries(WHO.map(w => [w.key, w]));
-  const avail = k => !QS.get('lowfig') && !!PM.pclips_m && !!CH[(byKey[k] || {}).fig];
-  const people = () => WHO.filter(w => avail(w.key)).map(w => w.key);
+  const avail = k => !QS.get('lowfig') && !!PM.pclips_m && !!((byKey[k] || {}).file || CH[(byKey[k] || {}).fig]);
+  const people = () => WHO.filter(w => w.src !== 'spieler' && avail(w.key)).map(w => w.key);
   function clipSet(k) {
     if (S.clips[k]) return S.clips[k];
     const FL = new THREE.FileLoader();
@@ -57,25 +64,198 @@ export const ZFIG = (() => {
       throw e;
     }));
   }
-  // ---- the turned look: grey-green skin, dull clothes, dark blood ----
-  const TINT = new THREE.Color(0.66, 0.72, 0.6),
-    SKIN = new THREE.Color(0.78, 0.86, 0.72);
+  // ---- the turned look, painted into the person's own textures (once per person, every clone shares it): grey-green mottled skin,
+  //      dull dirty clothes, dark blood where it would be – run down from the mouth over the chest, on the hands, the knees. Where that
+  //      is comes from the bind pose (the vertices of the chin, the chest, the fingers), painted at their texture coordinates; runs follow
+  //      the surface downwards. The painted copy is at most 1024 px (512 on the phone) – less memory than the original. ----
+  const TINT = new THREE.Color(0.66, 0.72, 0.6);
+  const _bp = new THREE.Vector3();
   function zombify(model) {
-    const done = new Set();
+    model.updateMatrixWorld(true);
+    const mats = new Map(); // material → { verts: [x, y, z, u, v, …], mesh }
+    const box = new THREE.Box3();
     model.traverse(x => {
-      if (!x.isMesh) return;
-      for (const m of Array.isArray(x.material) ? x.material : [x.material]) {
-        if (!m || done.has(m)) continue;
-        done.add(m);
-        if (m.color) {
-          m.color.multiply(TINT);
-          if (/head|face|skin|body|hand|arm|leg/i.test(m.name + ' ' + x.name)) m.color.multiply(SKIN);
-        }
-        m.roughness = Math.min(1, (m.roughness || 0.6) + 0.15);
-        m.envMapIntensity = 0.55;
-        m.needsUpdate = true;
+      if (!x.isMesh || !x.geometry || !x.geometry.attributes.position) return;
+      const ua = x.geometry.attributes.uv,
+        n = x.geometry.attributes.position.count,
+        step = Math.max(1, Math.floor(n / 5000));
+      const list = Array.isArray(x.material) ? x.material : [x.material];
+      // (a multi-material mesh: its groups decide which vertex belongs to which material)
+      const groups = x.geometry.groups && x.geometry.groups.length && list.length > 1 ? x.geometry.groups : null;
+      const idx = x.geometry.index;
+      const matOf = new Int8Array(n).fill(groups ? -1 : 0);
+      if (groups)
+        for (const gr of groups)
+          for (let i = gr.start; i < gr.start + gr.count; i++) matOf[idx ? idx.getX(i) : i] = gr.materialIndex;
+      for (let i = 0; i < n; i += step) {
+        if (x.isSkinnedMesh) x.getVertexPosition(i, _bp);
+        else _bp.fromBufferAttribute(x.geometry.attributes.position, i);
+        _bp.applyMatrix4(x.matrixWorld);
+        box.expandByPoint(_bp);
+        const m = list[Math.max(0, matOf[i])];
+        if (!m || !ua) continue;
+        if (!mats.has(m)) mats.set(m, { verts: [] });
+        mats.get(m).verts.push(_bp.x, _bp.y, _bp.z, ua.getX(i), ua.getY(i));
       }
     });
+    const H = Math.max(0.5, box.max.y - box.min.y),
+      y0 = box.min.y,
+      cx = (box.min.x + box.max.x) / 2,
+      cz = (box.min.z + box.max.z) / 2;
+    let maxX = 0;
+    for (const { verts } of mats.values())
+      for (let i = 0; i < verts.length; i += 5) maxX = Math.max(maxX, Math.abs(verts[i] - cx));
+    const MAX = COARSE ? 512 : 1024,
+      painted = new Map();
+    for (const [m, info] of mats) {
+      if (!m.map || !m.map.image || !(m.map.image.width > 8)) {
+        if (m.color) m.color.multiply(TINT);
+        continue;
+      }
+      let t = painted.get(m.map);
+      if (!t) {
+        try {
+          t = paintTex(m.map, info.verts, { H, y0, cx, cz, maxX, MAX });
+        } catch (e) {
+          console.warn('zombie paint', e);
+          t = null;
+        }
+        painted.set(m.map, t || m.map);
+        t = t || m.map;
+      }
+      if (t === m.map && m.color) m.color.multiply(TINT);
+      m.map = t;
+      m.roughness = Math.min(1, (m.roughness || 0.6) + 0.1);
+      m.envMapIntensity = 0.6;
+      m.needsUpdate = true;
+    }
+  }
+  // one texture: the colours turned, then the blood (the vertices of this texture tell where)
+  function paintTex(tex, verts, B) {
+    const img = tex.image,
+      k = Math.min(1, B.MAX / Math.max(img.width, img.height)),
+      W = Math.max(8, Math.round(img.width * k)),
+      Hh = Math.max(8, Math.round(img.height * k));
+    const cv = document.createElement('canvas');
+    cv.width = W;
+    cv.height = Hh;
+    const cx2 = cv.getContext('2d', { willReadFrequently: true });
+    cx2.drawImage(img, 0, 0, W, Hh);
+    // the share of this texture above the shoulders: a head texture (the face fills it) or the body's
+    let hs = 0,
+      nv = 0;
+    for (let i = 0; i < verts.length; i += 5) {
+      nv++;
+      if ((verts[i + 1] - B.y0) / B.H > 0.83) hs++;
+    }
+    const head = nv && hs / nv > 0.7;
+    // colours: warm skin → grey-green, mottled; the rest dull and darker
+    const d = cx2.getImageData(0, 0, W, Hh),
+      p = d.data;
+    for (let i = 0; i < p.length; i += 4) {
+      const r = p[i],
+        g = p[i + 1],
+        b = p[i + 2],
+        l = 0.3 * r + 0.59 * g + 0.11 * b;
+      const skin = r > 55 && r >= g && g >= b * 0.9 && r - b > 18 && r - b < 130 && g > r * 0.48;
+      if (skin) {
+        const n = (((i * 2654435761) >>> 0) % 23) - 11; // a fixed grain: mottled, not noisy over time
+        const k2 = 0.88;
+        p[i] = r + (l * 0.74 + 6 + n - r) * k2;
+        p[i + 1] = g + (l * 0.84 + 12 + n - g) * k2;
+        p[i + 2] = b + (l * 0.66 + 4 + n * 0.6 - b) * k2;
+      } else {
+        const k2 = head ? 0.55 : 0.4;
+        p[i] = (r + (l - r) * k2) * 0.86 + 4;
+        p[i + 1] = (g + (l - g) * k2) * 0.86 + 5;
+        p[i + 2] = (b + (l - b) * k2) * 0.8;
+      }
+    }
+    cx2.putImageData(d, 0, 0);
+    // the blood: regions of the bind pose → their texture coordinates
+    const reg = [];
+    const pick = test => {
+      const out = [];
+      for (let i = 0; i < verts.length; i += 5) {
+        const x = verts[i] - B.cx,
+          h = (verts[i + 1] - B.y0) / B.H,
+          z = verts[i + 2] - B.cz;
+        if (test(x, h, z)) out.push(i);
+      }
+      return out;
+    };
+    const chin = pick((x, h, z) => h > 0.855 && h < 0.905 && Math.abs(x) < 0.035 * B.H && z > 0.02 * B.H),
+      chest = pick((x, h, z) => h > 0.6 && h < 0.79 && Math.abs(x) < 0.11 * B.H && z > 0.015 * B.H),
+      hands = pick(x => Math.abs(x) > 0.86 * B.maxX),
+      knees = pick((x, h, z) => h > 0.25 && h < 0.31 && z > 0.01 * B.H),
+      belly = pick((x, h, z) => h > 0.52 && h < 0.62 && Math.abs(x) < 0.12 * B.H && z > 0.01 * B.H);
+    const rnd = Math.random,
+      any = a => a[Math.floor(rnd() * a.length)];
+    if (chin.length) for (let j = 0; j < 3; j++) reg.push([any(chin), head ? 0.035 : 0.012, 0.95, 0.09]);
+    if (chest.length) for (let j = 0; j < 2 + Math.floor(rnd() * 3); j++) reg.push([any(chest), 0.03, 0.85, 0.16]);
+    if (belly.length && rnd() < 0.6) reg.push([any(belly), 0.026, 0.8, 0.1]);
+    if (hands.length) for (let j = 0; j < 3; j++) reg.push([any(hands), 0.012, 0.9, 0]);
+    if (knees.length && rnd() < 0.7) reg.push([any(knees), 0.02, 0.75, 0.05]);
+    const blot = (i, r, a) => {
+      let u = verts[i + 3],
+        v = verts[i + 4];
+      u -= Math.floor(u);
+      v -= Math.floor(v);
+      const X = u * W,
+        Y = v * Hh,
+        R = r * W;
+      cx2.globalAlpha = a;
+      cx2.beginPath();
+      for (let q = 0; q < 6; q++) {
+        const rr = R * (0.35 + rnd() * 0.65),
+          ox = (rnd() - 0.5) * R * 1.1,
+          oy = (rnd() - 0.5) * R * 1.1;
+        cx2.moveTo(X + ox + rr, Y + oy);
+        cx2.arc(X + ox, Y + oy, rr, 0, 6.2832);
+      }
+      cx2.fill();
+      // spatter around it
+      for (let q = 0; q < 7; q++) {
+        const a2 = rnd() * 6.2832,
+          d2 = R * (1.1 + rnd() * 1.6),
+          rr = R * (0.05 + rnd() * 0.12);
+        cx2.beginPath();
+        cx2.arc(X + Math.cos(a2) * d2, Y + Math.sin(a2) * d2, rr, 0, 6.2832);
+        cx2.fill();
+      }
+    };
+    // a run down the body from (i): the vertices just below it on the surface
+    const run = (i, len, r) => {
+      const x0 = verts[i],
+        y0 = verts[i + 1],
+        z0 = verts[i + 2],
+        wob = (rnd() - 0.5) * 0.012 * B.H;
+      for (let j = 0; j < verts.length; j += 5) {
+        const dy = y0 - verts[j + 1];
+        if (dy < 0.004 * B.H || dy > len * B.H) continue;
+        if (
+          Math.abs(verts[j] - x0 - wob * (dy / (len * B.H))) > 0.012 * B.H ||
+          Math.abs(verts[j + 2] - z0) > 0.05 * B.H
+        )
+          continue;
+        const f = 1 - dy / (len * B.H);
+        if (rnd() < 0.7) blot(j, r * (0.25 + 0.4 * f), 0.75 * f + 0.2);
+      }
+    };
+    for (const [i, r, a, len] of reg) {
+      cx2.globalCompositeOperation = 'multiply';
+      cx2.fillStyle = 'rgb(150,28,22)';
+      blot(i, r, a);
+      if (len) run(i, len, r);
+      cx2.globalCompositeOperation = 'source-over';
+      cx2.fillStyle = 'rgb(62,5,4)';
+      blot(i, r * 0.55, a * 0.55);
+    }
+    cx2.globalAlpha = 1;
+    const t = tex.clone();
+    t.source = new THREE.Source(cv);
+    t.needsUpdate = true;
+    return t;
   }
   let BLOOD = null;
   const bloodMat = () => BLOOD || (BLOOD = plain({ color: 0x3e0606, roughness: 0.3 }));
@@ -88,7 +268,7 @@ export const ZFIG = (() => {
     const w = byKey[key];
     if (!w || !avail(key)) throw new Error('no figure for ' + key);
     S.loading[ck] = (async () => {
-      const [gl, set] = await Promise.all([CHL.loadAsync(U(CH[w.fig])), clipSet(w.clips)]);
+      const [gl, set] = await Promise.all([CHL.loadAsync(U(w.file || CH[w.fig])), clipSet(w.clips)]);
       const model = gl.scene;
       prepModel(model, w.h);
       if (!alive) zombify(model);
@@ -177,36 +357,12 @@ export const ZFIG = (() => {
       W[k] = k === 'idle' ? 1 : 0;
     }
     for (const k of ['push', 'chop', 'jumpLand']) if (A[k]) A[k].setLoop(THREE.LoopRepeat);
-    // blood on the chest and the chin, a smear on a hand – placed in the standing pose, then carried by the bones
+    // (the blood is in the textures – zombify; here only the stumps of cut limbs, carried by the bones)
     g.updateMatrixWorld(true);
     mixer.update(0);
     model.updateMatrixWorld(true);
     const smears = [];
-    const smear = (bone, fwd, up, side, sx, sy, sz) => {
-      if (!bone) return;
-      const m = new THREE.Mesh(SMEAR(), bloodMat());
-      bone.getWorldPosition(_v);
-      g.worldToLocal(_v);
-      _v.z -= fwd; // local −z is forward
-      _v.y += up;
-      _v.x += side;
-      g.localToWorld(_v);
-      m.position.copy(_v);
-      m.scale.set(sx, sy, sz);
-      m.castShadow = false;
-      m.userData.noMerge = true;
-      scene.add(m);
-      m.updateMatrixWorld(true);
-      bone.attach(m);
-      scene.remove(m); // attach moved it; keep only the bone as parent
-      bone.add(m);
-      smears.push(m);
-    };
     const r = Math.random;
-    if (!o.alive) smear(B.Spine2 || B.Spine1, 0.12, -0.05 + r() * 0.1, (r() - 0.5) * 0.12, 0.13, 0.17, 0.03);
-    if (!o.alive) smear(B.Head, 0.1, -0.07, 0.01, 0.05, 0.04, 0.03);
-    if (!o.alive && r() < 0.6) smear(B.RightHand, 0.02, 0, 0, 0.06, 0.05, 0.03);
-    if (!o.alive && r() < 0.4) smear(B.Hips, 0.13, 0.05, (r() - 0.5) * 0.2, 0.12, 0.09, 0.03);
     g.visible = false;
     scene.add(g);
     // the zombie's own manner: how it hangs its head, how fast it twitches, which leg drags
@@ -385,9 +541,7 @@ export const ZFIG = (() => {
     S.live.add(F);
     return F;
   }
-  let _smear = null,
-    _stump = null;
-  const SMEAR = () => _smear || (_smear = new THREE.SphereGeometry(1, 8, 6));
+  let _stump = null;
   const STUMP = () => _stump || (_stump = new THREE.SphereGeometry(0.055, 8, 6));
   // put a figure at (x, y, z) facing hd (compass degrees)
   function place(F, x, y, z, hd) {
