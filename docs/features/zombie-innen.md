@@ -5,21 +5,30 @@ Fotos und was daraus folgt: `docs/plans/zombie_einrichtung.md`.
 
 ## Was es gibt
 
-- **Jedes Wohnhaus mit Haustür** (`ZINNEN.list()`, gut 150 Häuser) bekommt beim Betreten einen Innenraum **in seinem eigenen Grundriss**:
+- **Jedes Wohnhaus mit Haustür** (`ZINNEN.list()`, 230 Häuser) bekommt beim Betreten einen Innenraum **in seinem eigenen Grundriss**:
   das größte Rechteck des Grundrisses an der Haustürseite (der Rest eines L-Grundrisses bleibt massiv), Außenwände 0,4 m stark,
   Geschosse zu 2,75 m wie die Fassade sie malt, **Fenster genau hinter den gemalten** (gleiche Regel wie der Fassaden-Shader:
   Sockel 0,35/0,6 m, Brüstung 0,85 m, Achsen L / nb) mit Laibung, Rahmen, Sprossen, Glas, Fensterbank, Gardinen, Geranien.
 - **Grundriss eines Ernhauses**: Flur (Ern) von der Haustür durchs Haus mit der Treppe, auf der Schornsteinseite Stube (Straßenecke) und
   Küche dahinter – der Kachelofen steht an der Küchenwand –, auf der anderen Seite Kammer und Bad/Vorratskammer/Waschküche;
-  oben Schlafzimmer, Kinderzimmer, Kammer, Bad; **Keller** unter der Küche mit Falltür (Luke) und steiler Treppe.
-- **Drei Zeitschichten** je Haus (aus der Gebäudenummer, immer gleich): „alt“ (Dielen, Tapete/Schablonenmuster, Lambris, Holzdecke,
-  Kachelofen mit Ofenbank, Eckbank, Küchenbüfett, Kohleherd, Spülstein, Federbetten kariert, Wandspruch, röhrender Hirsch, Wanduhr),
-  „DDR“ (Schrankwand mit Vitrine und Fernseher, Sitzgruppe, Perserteppich, Tischdecke, Stehlampe, Stores mit Schals, Linoleum,
-  Anbauküche, Kühlschrank, Kohleofen), „Nachwende“ (Eiche rustikal, Ledercouch, Laminat, Einbauküche).
+  oben Schlafzimmer, Kinderzimmer, Kammer, Bad; die Treppe wiederholt sich in jedem Geschoss; **Keller** unter der Küche mit Falltür
+  (Luke, öffnet vom Absteigenden weg; von unten „Luke aufdrücken“) und steiler Treppe; **Dachboden** unter dem Dach mit Abseiten
+  (Kniestock, wo das Dach unter 1,2 m kommt), Dachuntersicht aus Brettern, Sparren, Kehlbalken, Schornstein mit **Räucherkammer**,
+  Wäscheleine, Truhe, Kiste; Bodentreppe im obersten Flur, die dorthin steigt, wo das Dach hoch ist.
+- **Drei Zeitschichten** je Haus (aus der Gebäudenummer, immer gleich): „alt“ (Dielen, Streifen- oder Schablonentapete, Lambris,
+  Holzdecke, Kachelofen mit Ofenbank, Eckbank, Küchenbüfett/Vertiko mit Röhrenradio, Kohleherd, Spülstein, Federbetten kariert,
+  Waschtisch mit Krug, Wandspruch „Auch in dunkler Nacht Gottes Auge wacht“, röhrender Hirsch, Wand- oder Kuckucksuhr,
+  Wandschoner „Erst besinn’s, dann beginn’s“), „DDR“ (Schrankwand mit Vitrine, RFT-Radio und Fernseher, Sitzgruppe zum Fernseher,
+  Perserteppich, Tischdecke, Häkeldeckchen, Stehlampe, Stores mit Schals, Linoleum, Anbauküche, Kühlschrank, Kohleofen, Bettbrücke,
+  Stockbett, Fliesen hellblau-weiß), „Nachwende“ (Eiche rustikal, Ledercouch, Laminat, Einbauküche).
 - **Benutzbar**: Innentüren als Drehtüren (`DOORS`, Aktionsknopf „Tür öffnen“), Wände und Möbel als Kollision, Böden und Stufen
-  begehbar (Kamera bleibt drinnen), Behälter zum Durchsuchen (Tür/Schublade/Deckel öffnet sich, dann `H.onSearch`), Licht je Raum
-  (Schalter an der Tür, ein geliehenes Punktlicht), Bett, Ofen, Herd, Spüle, Wanne, Tisch, Eckbank, Couch über `H.onUse`.
-- Bewohner (`dorf/dorf_life.js` PIN): ihre Häuser haben feste Zeitschichten und erste persönliche Dinge (Gerhard: Skatkarten, Block, Chronik).
+  begehbar (die Kamera bleibt drinnen), Behälter zum Durchsuchen (Tür/Schublade/Deckel öffnet sich, dann `H.onSearch`; bis zu zehn
+  bewegen sich je Haus, die übrigen werden ohne Bewegung durchsucht), Licht je Raum (Schalter an der Tür, ein geliehenes Punktlicht,
+  die Lampe leuchtet), Bett, Ofen, Herd, Spüle, Wanne, Tisch, Eckbank, Couch über `H.onUse` (sonst: hinlegen/hinsetzen, kurzer Gedanke).
+- **Bewohner** (`dorf/dorf_life.js` PIN) mit festen Zeitschichten und persönlichen Dingen: Gerhard 247 (Bücherregal, Skatkarten und
+  Block), Manfred 219 (Feuerwehrhelm, Feuerlöscher), Wolfgang 220 (Motorsäge und Axt als Spots, Waffenschrank, Geweihe), Uwe 260
+  (Gummistiefel, Bierkasten), Katrin 198 (Verbandskasten), Ingrid 214 (Schreibtisch mit Ordnern), Jens 246 (Werkzeugkiste),
+  Heike 191 (noch ein Regal Eingemachtes, Eierkartons).
 
 ## Benutzen (Schnittstelle in `viz3/src/zombie/z_innen.js`)
 
@@ -27,6 +36,11 @@ Fotos und was daraus folgt: `docs/plans/zombie_einrichtung.md`.
 onSearch, onUse, stats), `ZINNEN.unmount(H)`, `ZINNEN.mounted()`. Zusätzlich: `H.roomAt(x, y, z)`, `H.light(raum, an?)`, `H.doors`,
 `H.hatch`, `H.plan`, `ZINNEN.pick(x, y)`, `ZINNEN.enter(H)` (Spielfigur an `H.entry`, dritte Person). Ereignisse `zinnen:mount`,
 `zinnen:unmount`, `zinnen:search`, `zinnen:use`.
+
+- Behälter-Arten: `buefett`, `schrank`, `schublade`, `kuehlschrank`, `kleiderschrank`, `nachttisch`, `truhe`, `kiste`, `regal`, `werkbank`,
+  `raeucherkammer`, `verbandskasten`, `werkzeugkiste`, `waffenschrank` (bei Wolfgang).
+- Spot-Arten: `bett`, `ofen`, `herd`, `spuele`, `wanne`, `tisch`, `sitz`, `radio`, `tv`, `motorsaege`, `axt` (Wolfgang, Haus 220:
+  `H.spots.filter(s => s.kind === 'motorsaege' || s.kind === 'axt')`, Ids `<art>_<n>` je Haus).
 
 Module: `zombie/z_innen_plan.js` (ZIPLAN, Grundriss), `zombie/z_innen_mob.js` (ZIMOB, Baukasten, Materialien, Texturen),
 `zombie/z_innen_einr.js` (ZIEINR, Möbel), `zombie/z_innen.js` (ZINNEN).
@@ -36,11 +50,16 @@ Module: `zombie/z_innen_plan.js` (ZIPLAN, Grundriss), `zombie/z_innen_mob.js` (Z
 - `?szenario=zombie-innen` (Haus nahe am Anger) oder `?szenario=zombie-innen&haus=<id>`.
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8997 --serve zombie_innen` (Bilder in `out/zombie_innen/`); Optionen
   `zombie_innen:tier=schnell,n=3,only=shots+walk+free`. Läuft auf `feat/zombie-innen` bei jedem Push (`viz3/extra/zombie-innen/tests.txt`).
+- Der Test prüft: Szenario, Häuser der Bewohner, Wolfgangs Waffen-Spots, je Haus Aufbauzeit, Draw-Calls (≤ 60), Dreiecke, keine neuen
+  Shader-Programme, Auf- und Abbau ohne Rest (Geometrien und Texturen zurück), Gang in die Stube, Treppe hinauf, Bodentreppe, durch die
+  Luke in den Keller, Behälter, Licht; Bilder vom Eingang und aus jedem Raum.
 
 ## Für den Lead
 
-- Keine geänderten fremden Dateien. Nichts läuft beim Laden; erst `mount` baut (≈ 70 ms für ein Haus mit Keller auf dem Testrechner).
-- Programme: keine neuen (Materialien der Gartengebäude bzw. deren Zwillinge, die Palette). Licht: ein Punktlicht aus dem Pool
+- Keine geänderten fremden Dateien. Nichts läuft beim Laden; erst `mount` baut (≈ 80–160 ms je Haus in SwiftShader).
+- Programme: keine neuen (Materialien der Gartengebäude bzw. deren Zwillinge mit gleichen Einstellungen, die Palette); tagsüber ein
+  wenig Eigenlicht für Decken und Wände (Emissive-Uniform, kein neues Programm). Licht: ein Punktlicht aus dem Pool
   (`KERN.lights.borrow`, id `zinnen`). Boden im Haus: ein `ground`-Anbieter (Rang 90) gibt im gemounteten Haus eine Tiefe unter dem
-  Keller zurück – nur Böden und Stufen zählen (das Gelände kann den Keller schneiden).
+  Keller zurück – nur Böden und Stufen zählen (das Gelände kann den Keller schneiden); dazu `inside` und `place` (Rang 95, Raumname).
 - Die Haustür von innen ist ein festes Türblatt; Hinausgehen macht `z_haus.js` (Aktion an `H.openings[0]` bzw. `H.exit`).
+- `H.stats.terrain`: wie weit das Gelände im Haus über den Erdgeschossboden reicht (> 0: es würde durch den Boden schauen) – zur Kontrolle.

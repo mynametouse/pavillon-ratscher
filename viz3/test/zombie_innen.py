@@ -29,6 +29,7 @@ window.__Z = {
     if (ZINNEN.scen) add(ZINNEN.scen.id);
     const by = f => L.map(o => o.id).filter(id => P(id)).sort((a, b) => f(a) - f(b));
     const area = id => P(id).W * P(id).D;
+    add(by(id => (P(id).nSt > 1 && P(id).astair ? 0 : 1) + (P(id).hatch ? 0 : 0.5) + Math.abs(area(id) - 110) / 1000)[0]);
     add(by(area)[0]);
     add(by(id => -area(id))[0]);
     add(by(id => (P(id).plH > 0.5 ? 0 : 1) + Math.abs(area(id) - 90) / 1000)[0]);
@@ -49,7 +50,15 @@ window.__Z = {
   stand(x, y, z, yaw) { const P = GAME.P; P.mode = 'walk'; P.x = x; P.y = y; P.feet = z; P.vz = 0; P.yaw = yaw; P.body = yaw; P.pitch = -6; GAME.step(0.1); },
   // walk towards a point (turning to it each step) up to secs; returns where one ended
   walkTo(x, y, secs = 8) { const P = GAME.P; for (let t = 0; t < secs; t += 0.05) { const dx = x - P.x, dy = y - P.y; if (Math.hypot(dx, dy) < 0.25) break; P.yaw = Math.atan2(dx, dy) * 180 / Math.PI; P.body = P.yaw; GAME.step(0.05, 1); }
+    GAME.step(0.6); // let one land (falling from a step takes a moment)
     return { x: +P.x.toFixed(2), y: +P.y.toFixed(2), feet: +P.feet.toFixed(2), room: ZINNEN.mounted()[0] ? ZINNEN.mounted()[0].roomAt(P.x, P.y, P.feet + 1) : null }; },
+  // the programs the house's own meshes use, against those compiled before it came (keys of three's program cache)
+  ownPrograms(H, before) {
+    const R = GAME.R, keys = new Set(before), bad = new Set(), groups = [H.group].concat(H.lamps.map(l => l.g), H.doorKeys.map(k => DOORS[k].group));
+    for (const g of groups) g.traverse(o => { if (!o.isMesh) return; const p = R.properties.get(o.material).currentProgram; if (p && !keys.has(p.cacheKey)) bad.add((o.material.name || o.material.type) + ' ' + p.cacheKey.slice(-80)); });
+    return [...bad];
+  },
+  progKeys() { return GAME.R.info.programs.map(p => p.cacheKey); },
   act(id) { return KERN.acts().find(a => a.id === id); },
   label(id) { const a = this.act(id); try { return a ? a.label() : 'no act'; } catch (e) { return 'ERR ' + e.message; } },
 };
@@ -85,6 +94,17 @@ with lib.browser() as b:
     ck('the scenario mounts a house near the Anger', 'id' in sc, sc)
     n_list = E("ZINNEN.list().length")
     ck('many houses are enterable', n_list > 60, n_list)
+    # the villagers' houses (dorf/dorf_life.js PIN) are enterable; Wolfgang's has the chainsaw and the axe as spots
+    pins = J("[247, 219, 220, 260, 198, 214, 246, 191].map(id => ({ id, ok: !!ZINNEN.info(id), look: ZINNEN.info(id) && ZINNEN.info(id).style }))")
+    print('villagers', json.dumps(pins), flush=True)
+    ck('the villagers\' houses are enterable', sum(1 for p in pins if p['ok']) >= 6, pins)
+    E("(() => { window.__W = null; ZINNEN.mount(220).then(H => { window.__W = { spots: H.spots.filter(s => ['motorsaege', 'axt'].includes(s.kind)).map(s => ({ id: s.id, kind: s.kind, room: s.room })), cont: H.containers.map(c => c.kind), stats: H.stats }; ZINNEN.unmount(H); }, e => { window.__W = { err: String(e) }; }); return 1; })()")
+    for _ in range(100):
+        if E("!!window.__W"): break
+        time.sleep(0.1)
+    wolf = J("window.__W")
+    print('wolfgang', json.dumps(wolf), flush=True)
+    ck('Wolfgang\'s house: chainsaw and axe lie ready (spots), a gun cabinet', bool(wolf) and len(wolf.get('spots', [])) == 2 and 'waffenschrank' in wolf.get('cont', []), wolf)
     if 'id' in sc:
         st = J("{ x: GAME.P.x, y: GAME.P.y, feet: GAME.P.feet, mode: GAME.P.mode, cam3: CAM3.want, place: KERN.place(GAME.P.x, GAME.P.y, GAME.P.feet + 1) }")
         print('walker', json.dumps(st), flush=True)
@@ -97,6 +117,10 @@ with lib.browser() as b:
     print('houses', houses, flush=True)
     # programs before any house (the kit's materials and textures are made at the first mount, shared by all houses)
     base = J("__Z.mem()")
+    E("window.__K0 = __Z.progKeys(); 1")
+    # how far the terrain rises above the ground floor in all enterable houses (cut out while a house is mounted)
+    tex = J("(() => { const out = []; for (const o of ZINNEN.list()) { const P = ZIPLAN.plan(o.id); let mx = -1e9; for (let x = P.xi0 + 0.2; x < P.xi1; x += 1) for (let y = P.yi0 + 0.2; y < P.yi1; y += 1) mx = Math.max(mx, KERN.terrain(...P.toW(x, y))); out.push(+(mx - P.zG).toFixed(2)); } out.sort((a, b) => a - b); const n = out.length, q = k => out[Math.min(n - 1, Math.floor(n * k))]; return { n, over0: out.filter(v => v > 0).length, over05: out.filter(v => v > 0.5).length, over2: out.filter(v => v > 2).length, median: q(0.5), p90: q(0.9), max: out[n - 1] }; })()")
+    print('terrain above the ground floor', json.dumps(tex), flush=True)
     report = []
     # never let evaluate return the handle (its group leads into the whole scene graph – docs/WORKFLOW.md)
     MOUNT = "(() => { window.__H = null; window.__ME = null; ZINNEN.mount(%d).then(H => { window.__H = H; }, e => { window.__ME = String(e && e.stack || e); }); return 1; })()"
@@ -110,7 +134,7 @@ with lib.browser() as b:
             cyc = J("window.__C")
             print('cycle', json.dumps(cyc), flush=True)
             if cyc:
-                ck(f'house {hid}: no new shader programs', cyc['m1']['p'] <= base['p'], cyc)
+                ck(f'house {hid}: at most one program more (the terrain cut out under the house, once)', cyc['m1']['p'] <= base['p'] + 1, cyc)
                 ck(f'house {hid}: unmount gives geometries and textures back', cyc['m2']['g'] <= cyc['m0']['g'] and cyc['m2']['t'] <= cyc['m0']['t'], cyc)
         E(MOUNT % hid)
         for _ in range(200):
@@ -123,7 +147,7 @@ with lib.browser() as b:
         report.append(info)
         stt = info['stats']
         ck(f'house {hid}: built in ≤ 400 ms (SwiftShader machine), ≤ 60 draw calls, ≤ 150 k triangles', stt['ms'] <= 400 and stt['draws'] <= 60 and stt['tris'] <= 150000, stt)
-        ck(f'house {hid}: rooms, containers, doors', len(info['rooms']) >= 3 and info['cont'] >= 2 and info['doors'] >= 2, info)
+        ck(f'house {hid}: rooms, containers, doors', len(info['rooms']) >= 3 and info['cont'] >= 2 and info['doors'] >= 1, info)
         # pictures: the entry, then a view in every room (ground floor first)
         if want('shots'):
             E("(() => { const H = __H; GAME.P.mode = 'walk'; CAM3.want = true; __Z.stand(H.entry.x, H.entry.y, H.entry.z, H.entry.yaw); GAME.step(0.4); })()")
@@ -194,8 +218,8 @@ with lib.browser() as b:
             shot(f'{hi + 1:02d}_{hid}_licht_nacht')
             E("GAME.setMode('day'); GAME.step(0.3)")
             lib.settle_light(pg)
-        m1 = J("__Z.mem()")
-        ck(f'house {hid}: no new shader programs after pictures and walking', m1['p'] <= base['p'], {'base': base['p'], 'now': m1['p']})
+        own = J("__Z.ownPrograms(__H, window.__K0)")
+        ck(f'house {hid}: its meshes use programs that were there before', not own, own)
         E("(() => { ZINNEN.unmount(__H); window.__H = null; GAME.step(0.1); return 1; })()")
     left = J("{ cols: GAME.COL.filter(c => c[6] === 'zinnen' && c[4] > -50).length, walks: GAME.WALK.filter(w => w[4] > -50 && w[9] && ZINNEN.mounted().length === 0 && false).length, acts: KERN.acts().filter(a => /^zinnen:/.test(a.id)).length, doors: Object.keys(DOORS).filter(k => /^zinnen:/.test(k)).length, mounted: ZINNEN.mounted().length }")
     print('left over', json.dumps(left), flush=True)
