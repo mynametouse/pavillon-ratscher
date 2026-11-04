@@ -175,37 +175,44 @@ ROOM = re.compile(r'(stube|küche|kueche|kitchen|kammer|chamber|keller|cellar|of
 NOT = re.compile(r'(außen|aussen|exterior|fassade|facade|luftbild|aerial|karte|map|schild|sign|logo|plan |grundriss|portrait|porträt)', re.I)
 
 TOPICS = {
-    # topic: (categories to walk, searches, how many photos)
-    'stube': (['Category:Thüringer Freilichtmuseum Hohenfelden', 'Category:Thüringer Bauernhäuser Rudolstadt',
-               'Category:Hennebergisches Museum Kloster Veßra', 'Category:Fränkisches Freilandmuseum Fladungen'],
-              ['Bauernstube Thüringen', 'Stube Freilichtmuseum Hohenfelden', 'Bauernstube Freilichtmuseum', 'Wohnstube Bauernhaus Museum',
-               'Stube Eckbank Kachelofen', 'Freilandmuseum Fladungen Stube', 'Kloster Veßra Museum Stube'], 30),
-    'ofen': (['Category:Tiled stoves in Thuringia', 'Category:Tiled stoves in Germany'],
-             ['Kachelofen Bauernstube', 'Kachelofen grün Stube', 'Kachelofen Thüringen', 'Ofenbank Kachelofen', 'Kanonenofen'], 18),
-    'kueche': ([], ['Bauernküche Freilichtmuseum', 'Küche Freilichtmuseum Hohenfelden', 'Küchenbuffet alt', 'Kohleherd Küche',
-                    'alte Küche Museum Thüringen', 'Wohnküche Bauernhaus', 'Küche Freilandmuseum Fladungen', 'DDR Küche'], 24),
+    # topic: (categories to walk, searches, how many photos, what the photo should show – those come first)
+    'hohenfelden': (['Category:Thüringer Freilichtmuseum Hohenfelden'], ['Freilichtmuseum Hohenfelden Stube', 'Freilichtmuseum Hohenfelden Küche',
+                     'Freilichtmuseum Hohenfelden innen'], 30, r'stube|küche|kammer|innen|ofen|bett|interior|room|zimmer|tisch|herd|schrank'),
+    'vessra': (['Category:Hennebergisches Museum Kloster Veßra'], ['Kloster Veßra Museum', 'Hennebergisches Museum innen'], 18,
+               r'museum|innen|ofen|stube|küche|kammer|zimmer|interior|bett|schrank'),
+    'fladungen': (['Category:Fränkisches Freilandmuseum Fladungen'], ['Freilandmuseum Fladungen Stube', 'Freilandmuseum Fladungen Küche'], 18,
+                  r'stube|küche|kammer|innen|ofen|bett|interior|room|zimmer|tisch|herd|schrank'),
+    'stube': ([], ['Bauernstube Thüringen', 'Bauernstube Freilichtmuseum', 'Wohnstube Bauernhaus Museum', 'Stube Eckbank Kachelofen',
+                   'Heimatstube Thüringen', 'Bauernstube Museum Ofen', 'Stube Fachwerkhaus innen'], 24, r'stube|eckbank|ofen|zimmer|innen|interior|room'),
+    'ofen': (['Category:Tiled stoves in Thuringia'], ['Kachelofen Bauernstube', 'Kachelofen grün Stube', 'Kachelofen Thüringen', 'Ofenbank Kachelofen',
+                                                      'Kanonenofen', 'Küchenhexe Herd'], 18, r'kachelofen|ofen|stove|herd'),
+    'kueche': ([], ['Bauernküche Freilichtmuseum', 'Küchenbuffet alt', 'Kohleherd Küche', 'alte Küche Museum Thüringen', 'Wohnküche Bauernhaus',
+                    'DDR Küche', 'DDR-Museum Küche', 'Küche 1960er'], 24, r'küche|kueche|kitchen|herd|buffet|büfett'),
     'ddr': (['Category:Museumswohnung WBS 70', 'Category:Dokumentationszentrum Alltagskultur der DDR'],
-            ['DDR Wohnzimmer Schrankwand', 'Schrankwand DDR', 'Wohnzimmer 1970er DDR Museum', 'DDR Schlafzimmer Museum',
-             'DDR Kinderzimmer Museum', 'DDR Museum Wohnzimmer', 'Wohnzimmer 1980er'], 24),
-    'kammer': ([], ['Schlafkammer Bauernhaus', 'Schlafzimmer Freilichtmuseum', 'Bauernbett Museum', 'Kammer Bauernhaus Museum',
-                    'Schlafstube Bauernhaus'], 12),
-    'keller': (['Category:Home canning'], ['Kohlenkeller', 'Gewölbekeller Bauernhaus', 'Einweckgläser Regal', 'Kartoffelkeller',
-                                           'Keller Einmachgläser', 'Vorratskeller'], 18),
-    'bad': ([], ['Badeofen Kohle', 'Badeofen Museum', 'Badezimmer DDR', 'Waschküche Museum', 'Waschkessel Waschküche'], 12),
-    'flur': ([], ['Hausflur Fachwerkhaus', 'Treppe Fachwerkhaus innen', 'Flur Bauernhaus Museum', 'Holztreppe Bauernhaus',
-                  'Ern Bauernhaus Hausflur'], 12),
-    'boden': (['Category:Attics in Germany'], ['Dachboden Bauernhaus', 'Dachboden Fachwerkhaus', 'Dachstuhl innen Bauernhaus',
-                                                'Heuboden Scheune', 'Räucherkammer Dachboden'], 12),
-    'scheune': ([], ['Scheune innen Thüringen', 'Scheune innen Fachwerk', 'Tenne Scheune innen', 'Holzlege Bauernhof',
-                     'Werkstatt Bauernhof alt', 'Leiterwagen Scheune'], 12),
-    'jaeger': ([], ['Jagdzimmer Geweih', 'Jagdstube', 'Waffenschrank Jagd', 'Geweih Wand Stube', 'Jagdhütte innen'], 12),
-    'sirene': (['Category:E57 sirens'], ['Sirene E57', 'E57 Sirene Dach', 'Motorsirene Dach', 'Sirene Feuerwehr Dach Dorf'], 12),
+            ['DDR Wohnzimmer Schrankwand', 'Schrankwand DDR', 'Wohnzimmer 1970er DDR Museum', 'DDR Schlafzimmer Museum', 'DDR Kinderzimmer Museum',
+             'DDR Museum Wohnzimmer', 'Wohnzimmer 1980er', 'DDR-Museum Pirna Wohnzimmer'], 24, r'wohnzimmer|schrankwand|living|zimmer|schlafzimmer|kinderzimmer'),
+    'kammer': ([], ['Schlafkammer Bauernhaus', 'Schlafzimmer Freilichtmuseum', 'Bauernbett Museum', 'Kammer Bauernhaus Museum', 'Schlafstube Bauernhaus'],
+               12, r'schlaf|bett|bed|kammer'),
+    'keller': (['Category:Home canning'], ['Kohlenkeller', 'Gewölbekeller Bauernhaus', 'Einweckgläser Regal', 'Kartoffelkeller', 'Keller Einmachgläser',
+                                           'Vorratskeller'], 18, r'keller|cellar|gläser|einweck|einmach|kohle|kartoffel|vorrat|jar'),
+    'bad': ([], ['Badeofen Kohle', 'Badeofen Museum', 'Badezimmer DDR', 'Waschküche Museum', 'Waschkessel Waschküche'], 12, r'bad|bath|wasch'),
+    'flur': ([], ['Treppenhaus Fachwerkhaus', 'Flur Freilichtmuseum', 'Diele Bauernhaus', 'Hausflur alt Treppe', 'Holztreppe alt Haus',
+                  'Treppe Bauernhaus Museum'], 12, r'treppe|flur|diele|stair|hall'),
+    'boden': (['Category:Attics in Germany'], ['Dachboden Bauernhaus', 'Dachboden Fachwerkhaus', 'Dachstuhl innen Bauernhaus', 'Heuboden Scheune',
+                                                'Räucherkammer Dachboden'], 12, r'dachboden|attic|dachstuhl|boden|speicher|räucher'),
+    'scheune': ([], ['Scheune innen Thüringen', 'Scheune innen Fachwerk', 'Tenne Scheune innen', 'Holzlege Bauernhof', 'Werkstatt Bauernhof alt',
+                     'Leiterwagen Scheune'], 12, r'innen|interior|tenne|heu|stroh|werkstatt|holzlege'),
+    'jaeger': ([], ['Jagdzimmer Geweih', 'Jagdstube', 'Waffenschrank Jagd', 'Geweih Wand Stube', 'Jagdhütte innen'], 12, r'jagd|geweih|hunting'),
+    'sirene': (['Category:E57 sirens'], ['Sirene E57', 'E57 Sirene Dach', 'Motorsirene Dach', 'Sirene Feuerwehr Dach Dorf'], 12, r'sirene|siren|e57'),
 }
 
 
 def commons():
     print('\n--- Commons')
-    for topic, (cats, qs, lim) in TOPICS.items():
+    only = os.environ.get('THEMEN', '')
+    for topic, (cats, qs, lim, want) in TOPICS.items():
+        if only and topic not in only.split(','):
+            continue
         titles = []
         for c in cats:
             titles += cat_files(c, depth=2, lim=160)
@@ -215,9 +222,14 @@ def commons():
         inf = info(titles)
         recs = [r for r in inf.values() if lic_ok(r['lic']) and r['thumb']]
         txt = lambda r: r['title'] + ' ' + r['desc']
-        recs.sort(key=lambda r: (0 if ROOM.search(txt(r)) and not NOT.search(txt(r)) else 1 if not NOT.search(txt(r)) else 2))
+        W = re.compile(want, re.I)
+        recs.sort(key=lambda r: (0 if W.search(txt(r)) and not NOT.search(txt(r)) else 1 if ROOM.search(txt(r)) and not NOT.search(txt(r)) else 2))
         print(f'  {topic}: {len(titles)} files, {len(recs)} with open licence; first:', [r['title'][5:60] for r in recs[:10]])
         sheets(topic, recs[:lim])
+
+
+WANT_AUDIO = ['E57 Motorsirene Heulton', 'Motorsirene - Feuerwehralarm', 'Civil-defense-siren-waver', 'Sirene und Kirchenglocken Eschelbronn 2018 07 07.ogg',
+              'Pneumatische Sirene - Alarm', 'De-Luftschutzsirene', 'Sirenenalarm.ogg']
 
 
 def audio():
@@ -231,6 +243,16 @@ def audio():
     recs = [{k: r[k] for k in ('title', 'url', 'page', 'lic', 'author', 'date', 'desc', 'mime', 'dur')} for r in inf.values()]
     recs = [r for r in recs if lic_ok(r['lic'])]
     json.dump(recs, open(OUT + '/audio.json', 'w'), ensure_ascii=False, indent=1)
+    # the originals of the few that may be used (public domain, CC0, CC BY-SA – converted and trimmed on the chat machine with ffmpeg)
+    os.makedirs(OUT + '/audio', exist_ok=True)
+    for r in recs:
+        if any(k in r['title'] for k in WANT_AUDIO):
+            fn = OUT + '/audio/' + re.sub(r'[^A-Za-z0-9._-]+', '_', r['title'][5:])
+            try:
+                open(fn, 'wb').write(S.get(r['url'], timeout=120).content)
+                print('  saved', fn, os.path.getsize(fn))
+            except Exception as e:
+                print('  audio download failed', r['title'], e)
     for r in recs:
         print(f"  {r['title'][5:80]:<80} {r['lic']:<14} {r['dur']} s  {r['mime']}")
 
