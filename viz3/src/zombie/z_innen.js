@@ -520,7 +520,7 @@ export const ZINNEN = (() => {
       return c;
     };
     C.part = o => {
-      if (o.container && o.container.parts.length >= 2) o = Object.assign({}, o, { container: null }); // two moving parts at most
+      if (o.container && o.container.parts.length >= 1) o = Object.assign({}, o, { container: null }); // one moving part each (draw calls)
       if (!o.container) {
         // a leaf that never opens: part of the furniture
         const F = o.F,
@@ -638,13 +638,34 @@ export const ZINNEN = (() => {
       pm.finish(g, false);
       H.lamps.push({ room: C.room.id, mat, pos: P.toW(x, y).concat(z), kind });
     };
+    // ---- holes: the main stair's in every upper floor, the attic stair's in the attic floor, the hatch in the ground floor ----
+    const holeOf = st => {
+      const dir = st.y1 >= st.y0 ? 1 : -1,
+        ya = st.y0 + dir * st.holeK * st.tread;
+      return [st.x0, st.x1, Math.min(ya, st.y1), Math.max(ya, st.y1)];
+    };
+    const floorHoles = k => {
+      const out = [];
+      if (P.stair && k >= 1 && k <= P.nSt - 1) out.push(holeOf(P.stair));
+      if (P.astair && k === P.nSt) out.push(holeOf(P.astair));
+      if (P.hatch && k === 0) out.push([P.hatch.x0, P.hatch.x1, P.hatch.y0, P.hatch.y1]);
+      return out;
+    };
+    const ceilHoles = k => {
+      const out = [];
+      if (k < 0) return P.hatch ? [[P.hatch.x0, P.hatch.x1, P.hatch.y0, P.hatch.y1]] : out;
+      if (P.stair && k < P.nSt - 1) out.push(holeOf(P.stair));
+      if (P.astair && k === P.nSt - 1) out.push(holeOf(P.astair));
+      return out;
+    };
     // ---- the rooms: walls, floors, ceilings, openings ----
-    const rooms = P.rooms.filter(r => r.kind !== 'boden'); // the attic: next round
+    const rooms = P.rooms;
     const blocksOf = {};
     for (const r of rooms) {
       C.room = r;
       C.R = ZIPLAN.rng(P.seed + r.fl * 101 + r.x0 * 7 + r.y0 * 13);
-      const mats = (C.mats = roomMats(P, r, M, C.R));
+      const mats = (C.mats = roomMats(P, r, M, C.R)),
+        attic = r.kind === 'boden';
       const sd = roomSides(P, r),
         blocks = [];
       r.outer = {};
@@ -652,8 +673,9 @@ export const ZINNEN = (() => {
         const s = sd[k];
         r.outer[k] = !!s.outer;
         const z0 = r.z0,
-          z1 = r.z1;
-        wallFace(shell, mats.wall, s.A, s.d, s.L, z0, z1, s.n, s.holes);
+          z1 = attic ? r.z0 + 2.3 : r.z1;
+        if (attic) roofWall(shell, mats.wall, s, z0, s.holes);
+        else wallFace(shell, mats.wall, s.A, s.d, s.L, z0, z1, s.n, s.holes);
         if (mats.tiles)
           wallFace(
             shell,
@@ -721,111 +743,238 @@ export const ZINNEN = (() => {
       }
       r.blocks = blocks;
       blocksOf[r.id] = blocks;
-      // floor and ceiling (minus the stair hole and the hatch)
+      // floor and ceiling (minus the stair holes and the hatch); the floor reaches under the partitions and into the door gaps
       const rect = [r.x0, r.x1, r.y0, r.y1],
-        holesF = [],
-        holesC = [];
-      if (P.stair && r.fl === 1)
-        holesF.push([P.stair.x0, P.stair.x1, P.stair.y0 + P.stair.holeK * P.stair.tread, P.stair.y1]);
-      if (P.stair && r.fl === 0 && P.nSt > 1)
-        holesC.push([P.stair.x0, P.stair.x1, P.stair.y0 + P.stair.holeK * P.stair.tread, P.stair.y1]);
-      if (P.hatch && r.fl === 0) holesF.push([P.hatch.x0, P.hatch.x1, P.hatch.y0, P.hatch.y1]);
-      if (P.hatch && r.kind === 'keller') holesC.push([P.hatch.x0, P.hatch.x1, P.hatch.y0, P.hatch.y1]);
-      // the floor reaches under the partitions and into the door gaps (no seams in a doorway)
+        holesF = r.kind === 'keller' ? [] : floorHoles(r.fl),
+        holesC = r.kind === 'keller' ? ceilHoles(-1) : attic ? [] : ceilHoles(r.fl);
       const ext = [
         r.x0 - (r.outer.x0 ? 0 : PW / 2),
         r.x1 + (r.outer.x1 ? 0 : PW / 2),
         r.y0 - (r.outer.y0 ? 0 : PW / 2),
         r.y1 + (r.outer.y1 ? 0 : PW / 2),
       ];
-      for (const q of minusAll(r.kind === 'keller' ? rect : ext, holesF)) hFloor(shell, mats.floor, q, r.z0, true);
-      const cext = [
-        r.x0 - (r.outer.x0 ? P.t : PW / 2),
-        r.x1 + (r.outer.x1 ? P.t : PW / 2),
-        r.y0 - (r.outer.y0 ? P.t : PW / 2),
-        r.y1 + (r.outer.y1 ? P.t : PW / 2),
-      ];
-      for (const q of minusAll(r.kind === 'keller' ? rect : cext, holesC)) hFloor(shell, mats.ceil, q, r.z1, false);
+      for (const q of minusAll(r.kind === 'keller' || attic ? rect : ext, holesF))
+        hFloor(shell, mats.floor, q, r.z0, true);
+      if (attic) roofInside(r);
+      else {
+        const cext = [
+          r.x0 - (r.outer.x0 ? P.t : PW / 2),
+          r.x1 + (r.outer.x1 ? P.t : PW / 2),
+          r.y0 - (r.outer.y0 ? P.t : PW / 2),
+          r.y1 + (r.outer.y1 ? P.t : PW / 2),
+        ];
+        for (const q of minusAll(r.kind === 'keller' ? rect : cext, holesC)) hFloor(shell, mats.ceil, q, r.z1, false);
+      }
       await tick0();
     }
-    // ---- walk surfaces: one slab per storey (minus holes), the cellar floor ----
-    for (let k = 0; k < P.nSt; k++) {
-      const holes = [];
-      if (k === 1 && P.stair)
-        holes.push([P.stair.x0, P.stair.x1, P.stair.y0 + P.stair.holeK * P.stair.tread, P.stair.y1]);
-      if (k === 0 && P.hatch) holes.push([P.hatch.x0, P.hatch.x1, P.hatch.y0, P.hatch.y1]);
-      for (const q of minusAll([P.xi0, P.xi1, P.yi0, P.yi1], holes)) walk(q[0], q[1], q[2], q[3], P.zF[k], 'wood');
+    // a wall under the roof: up from z0 to the roof's underside (sampled along it), holes for the gable windows
+    function roofWall(m, mat, s, z0, holes) {
+      const top = u => {
+        const z = P.under(s.A[0] + s.d[0] * u, s.A[1] + s.d[1] * u);
+        return z === null ? z0 : Math.max(z0, z);
+      };
+      const us = [0, s.L];
+      for (let u = 0.6; u < s.L; u += 0.6) us.push(u);
+      for (const h of holes) us.push(Math.max(0, Math.min(s.L, h.u0)), Math.max(0, Math.min(s.L, h.u1)));
+      const zs = [z0, z0 + 30];
+      for (const h of holes) zs.push(h.z0, h.z1);
+      const U = [...new Set(us.map(v => +v.toFixed(4)))].sort((a, b) => a - b),
+        Z = [...new Set(zs.map(v => +v.toFixed(4)))].sort((a, b) => a - b),
+        Pp = (u, z) => [s.A[0] + s.d[0] * u, s.A[1] + s.d[1] * u, z],
+        nn = [s.n[0], s.n[1], 0];
+      for (let i = 0; i < U.length - 1; i++) {
+        const ua = U[i],
+          ub = U[i + 1],
+          ta = top(ua),
+          tb = top(ub);
+        if (ub - ua < 1e-3) continue;
+        for (let j = 0; j < Z.length - 1; j++) {
+          const za = Z[j],
+            zb = Z[j + 1],
+            ha = Math.min(zb, ta),
+            hb = Math.min(zb, tb);
+          if (ha <= za + 1e-3 && hb <= za + 1e-3) continue;
+          const um = (ua + ub) / 2,
+            zm = (za + Math.min(zb, (ta + tb) / 2)) / 2;
+          if (holes.some(h => um > h.u0 && um < h.u1 && zm > h.z0 && zm < h.z1)) continue;
+          m.quad(mat, Pp(ua, za), Pp(ub, za), Pp(ub, Math.max(za, hb)), Pp(ua, Math.max(za, ha)), nn, [
+            [ua, za],
+            [ub, za],
+            [ub, hb],
+            [ua, ha],
+          ]);
+        }
+      }
     }
+    // the attic's ceiling: the roof's triangles from below (boards), rafters along the slope, collar beams, the chimney
+    function roofInside(r) {
+      for (const t of P.roof.tris) {
+        const q = t.map(p => P.toL(p[0], p[1]).concat(p[2] - 0.22)),
+          e1 = [q[1][0] - q[0][0], q[1][1] - q[0][1], q[1][2] - q[0][2]],
+          e2 = [q[2][0] - q[0][0], q[2][1] - q[0][1], q[2][2] - q[0][2]],
+          nz = e1[0] * e2[1] - e1[1] * e2[0];
+        let n = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], nz];
+        const L = Math.hypot(...n) || 1;
+        n = n.map(v => v / L);
+        if (n[2] > 0) n = n.map(v => -v);
+        const uv = p => [p[0], p[1]];
+        if (nz > 0) shell.tri(M.holzdecke, q[0], q[2], q[1], n, uv(q[0]), uv(q[2]), uv(q[1]));
+        else shell.tri(M.holzdecke, q[0], q[1], q[2], n, uv(q[0]), uv(q[1]), uv(q[2]));
+      }
+      // which way the roof falls: the gradient of its biggest triangle
+      let gx = 0,
+        gy = 0,
+        best = 0;
+      for (const t of P.roof.tris) {
+        const q = t.map(p => P.toL(p[0], p[1]).concat(p[2])),
+          e1 = [q[1][0] - q[0][0], q[1][1] - q[0][1], q[1][2] - q[0][2]],
+          e2 = [q[2][0] - q[0][0], q[2][1] - q[0][1], q[2][2] - q[0][2]],
+          n = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]],
+          a = Math.abs(n[2]);
+        if (a > best && Math.abs(n[2]) > 1e-6) {
+          best = a;
+          gx = -n[0] / n[2];
+          gy = -n[1] / n[2];
+        }
+      }
+      const alongY = Math.abs(gy) >= Math.abs(gx),
+        beam = M.holz,
+        zr = (x, y) => {
+          const z = P.under(x, y);
+          return z === null ? null : z - 0.07;
+        };
+      if (alongY)
+        for (let x = r.x0 + 0.35; x < r.x1 - 0.2; x += 0.9) {
+          let prev = null;
+          for (let y = r.y0 - 0.02; y <= r.y1 + 0.03; y += 0.5) {
+            const yy = Math.min(y, r.y1),
+              z = zr(x, yy);
+            if (z !== null && prev) furn.rod(beam, prev, [x, yy, z], 0.06, 4);
+            prev = z === null ? null : [x, yy, z];
+          }
+          // the collar beam where the roof is high enough
+          let a = null,
+            b = null;
+          for (let y = r.y0; y <= r.y1; y += 0.1) {
+            const z = zr(x, y);
+            if (z !== null && z > r.z0 + 2.15) {
+              if (a === null) a = y;
+              b = y;
+            }
+          }
+          if (a !== null && b - a > 0.6) furn.box(beam, x - 0.05, x + 0.05, a, b, r.z0 + 2.0, r.z0 + 2.14);
+        }
+      else
+        for (let y = r.y0 + 0.35; y < r.y1 - 0.2; y += 0.9) {
+          let prev = null;
+          for (let x = r.x0 - 0.02; x <= r.x1 + 0.03; x += 0.5) {
+            const xx = Math.min(x, r.x1),
+              z = zr(xx, y);
+            if (z !== null && prev) furn.rod(beam, prev, [xx, y, z], 0.06, 4);
+            prev = z === null ? null : [xx, y, z];
+          }
+          let a = null,
+            b = null;
+          for (let x = r.x0; x <= r.x1; x += 0.1) {
+            const z = zr(x, y);
+            if (z !== null && z > r.z0 + 2.15) {
+              if (a === null) a = x;
+              b = x;
+            }
+          }
+          if (a !== null && b - a > 0.6) furn.box(beam, a, b, y - 0.05, y + 0.05, r.z0 + 2.0, r.z0 + 2.14);
+        }
+      // the chimney through the attic, and the smoke chamber beside it (Räucherkammer, Wikipedia)
+      const ch = P.chimL;
+      if (ch && ch[0] > r.x0 + 0.5 && ch[0] < r.x1 - 0.5 && ch[1] > r.y0 + 0.5 && ch[1] < r.y1 - 0.5) {
+        const top = (P.under(ch[0], ch[1]) || r.z0 + 2.5) + 0.25,
+          brick = C.col(0x8a4a34, 0.9);
+        shell.box(brick, ch[0] - 0.26, ch[0] + 0.26, ch[1] - 0.21, ch[1] + 0.21, r.z0, top);
+        col(ch[0] - 0.26, ch[0] + 0.26, ch[1] - 0.21, ch[1] + 0.21, r.z0, r.z0 + 2.5);
+        r.chim = ch;
+      }
+    }
+    // ---- walk surfaces: one slab per storey and the attic floor (minus holes), the cellar floor ----
+    for (let k = 0; k < P.nSt; k++)
+      for (const q of minusAll([P.xi0, P.xi1, P.yi0, P.yi1], floorHoles(k)))
+        walk(q[0], q[1], q[2], q[3], P.zF[k], 'wood');
+    const att = rooms.find(r => r.kind === 'boden');
+    if (att)
+      for (const q of minusAll([att.x0, att.x1, att.y0, att.y1], floorHoles(P.nSt)))
+        walk(q[0], q[1], q[2], q[3], P.zA, 'wood');
     if (P.cellar) walk(P.cellar.x0, P.cellar.x1, P.cellar.y0, P.cellar.y1, P.cellar.z0, 'stone');
-    // ---- the stairs up (in the hall): steps, stringers, a handrail; the opening upstairs gets a railing ----
-    if (P.stair && P.nSt > 1) {
-      const st = P.stair,
-        z0 = P.zF[0],
-        wood = P.look === 'alt' ? M.holz : P.look === 'ddr' ? M.hell : M.eiche;
+    // ---- stairs (in the hall): steps, stringers, a handrail; the opening above gets a railing ----
+    const stairWood = P.look === 'alt' ? M.holz : P.look === 'ddr' ? M.hell : M.eiche;
+    function buildStair(st, z0) {
+      const dir = st.y1 >= st.y0 ? 1 : -1,
+        wood = stairWood,
+        ztop = z0 + st.n * st.rise;
       for (let k = 1; k < st.n; k++) {
-        const ya = st.y0 + (k - 1) * st.tread,
-          yb = ya + st.tread,
+        const ya = st.y0 + dir * (k - 1) * st.tread,
+          yb = st.y0 + dir * k * st.tread,
+          lo = Math.min(ya, yb),
+          hi = Math.max(ya, yb),
           zt = z0 + k * st.rise;
-        furn.box(wood, st.x0, st.x1, ya - 0.02, yb, zt - 0.04, zt);
-        furn.box(wood, st.x0 + 0.03, st.x1 - 0.03, ya - 0.02, ya, zt - st.rise, zt - 0.04);
-        walk(st.x0, st.x1, ya, yb, zt, 'wood');
+        furn.box(wood, st.x0, st.x1, lo - 0.02, hi + 0.02, zt - 0.04, zt);
+        const ry = dir > 0 ? lo : hi;
+        furn.box(wood, st.x0 + 0.03, st.x1 - 0.03, ry - 0.01, ry + 0.01, zt - st.rise, zt - 0.04);
+        walk(st.x0, st.x1, lo, hi, zt, 'wood');
       }
       const open = st.side === 'R' ? st.x0 : st.x1,
-        wall = st.side === 'R' ? st.x1 : st.x0;
-      for (const x of [open, wall]) {
-        const xa = x === open ? (st.side === 'R' ? x - 0.05 : x) : st.side === 'R' ? x - 0.04 : x,
-          yA = st.y0 - 0.25,
-          yB = st.y1;
-        // the stringer: a sloped board under the nosing line
+        oS = st.side === 'R' ? -1 : 1,
+        yA = st.y0 - dir * 0.25,
+        yB = st.y1,
+        zB = z0 + (st.n - 1) * st.rise;
+      // the stringers: sloped boards under the nosing line, on both sides
+      for (const [x, nx] of [
+        [open + oS * 0.0, oS],
+        [st.side === 'R' ? st.x1 - 0.005 : st.x0 + 0.005, -oS],
+      ]) {
+        shell.quad(wood, [x, yA, z0], [x, yB, zB - 0.25], [x, yB, zB + 0.1], [x, yA, z0 + 0.25], [nx, 0, 0]);
         shell.quad(
           wood,
-          [xa, yA, z0],
-          [xa, yB, z0 + (st.n - 1) * st.rise - 0.25],
-          [xa, yB, z0 + (st.n - 1) * st.rise + 0.1],
-          [xa, yA, z0 + 0.25],
-          [x === open ? (st.side === 'R' ? -1 : 1) : st.side === 'R' ? -1 : 1, 0, 0]
-        );
-        shell.quad(
-          wood,
-          [xa + 0.05, yA, z0],
-          [xa + 0.05, yB, z0 + (st.n - 1) * st.rise - 0.25],
-          [xa + 0.05, yB, z0 + (st.n - 1) * st.rise + 0.1],
-          [xa + 0.05, yA, z0 + 0.25],
-          [x === open ? (st.side === 'R' ? 1 : -1) : st.side === 'R' ? 1 : -1, 0, 0]
+          [x - nx * 0.04, yA, z0],
+          [x - nx * 0.04, yB, zB - 0.25],
+          [x - nx * 0.04, yB, zB + 0.1],
+          [x - nx * 0.04, yA, z0 + 0.25],
+          [-nx, 0, 0]
         );
       }
-      const hx = st.side === 'R' ? open - 0.03 : open + 0.03;
-      furn.rod(wood, [hx, st.y0, z0 + 0.95], [hx, st.y1, z0 + (st.n - 1) * st.rise + 0.95], 0.025, 6);
-      for (let k = 1; k < st.n; k += 4)
-        furn.box(
-          wood,
-          hx - 0.02,
-          hx + 0.02,
-          st.y0 + (k - 0.5) * st.tread - 0.02,
-          st.y0 + (k - 0.5) * st.tread + 0.02,
-          z0 + k * st.rise,
-          z0 + k * st.rise + 0.95
-        );
-      // upstairs: the railing round the opening (open side and its front end)
-      const z1 = P.zF[1],
-        yh = st.y0 + st.holeK * st.tread;
-      furn.rod(wood, [hx, yh, z1 + 0.95], [hx, st.y1 - 0.02, z1 + 0.95], 0.025, 6);
-      furn.rod(wood, [st.x0, yh - 0.03, z1 + 0.95], [st.x1, yh - 0.03, z1 + 0.95], 0.025, 6);
-      for (let y = yh; y < st.y1; y += 0.12)
-        furn.box(wood, hx - 0.012, hx + 0.012, y - 0.012, y + 0.012, z1, z1 + 0.95);
-      col(Math.min(hx - 0.04, hx + 0.04), Math.max(hx - 0.04, hx + 0.04), yh - 0.05, st.y1 - 0.3, z1 - 0.05, z1 + 1.0);
-      col(st.x0, st.x1, yh - 0.08, yh, z1 - 0.05, z1 + 1.0);
-      // the slab's edge at the opening
-      shell.quad(M.decke, [st.x0, yh, z1 - SLAB], [st.x1, yh, z1 - SLAB], [st.x1, yh, z1], [st.x0, yh, z1], [0, 1, 0]);
+      const hx = open + oS * 0.03;
+      furn.rod(wood, [hx, st.y0, z0 + 0.95], [hx, st.y1, zB + 0.95], 0.025, 6);
+      for (let k = 1; k < st.n; k += 4) {
+        const yy = st.y0 + dir * (k - 0.5) * st.tread;
+        furn.box(wood, hx - 0.02, hx + 0.02, yy - 0.02, yy + 0.02, z0 + k * st.rise, z0 + k * st.rise + 0.95);
+      }
+      // above: the railing round the opening (its open side and its lower end), the slab's edges
+      const h = holeOf(st),
+        yh = dir > 0 ? h[2] : h[3];
+      furn.rod(wood, [hx, h[2], ztop + 0.95], [hx, h[3], ztop + 0.95], 0.025, 6);
+      furn.rod(wood, [st.x0, yh, ztop + 0.95], [st.x1, yh, ztop + 0.95], 0.025, 6);
+      for (let y = h[2] + 0.06; y < h[3]; y += 0.12)
+        furn.box(wood, hx - 0.012, hx + 0.012, y - 0.012, y + 0.012, ztop, ztop + 0.95);
+      const cl = dir > 0 ? [h[2] - 0.05, h[3] - 0.3] : [h[2] + 0.3, h[3] + 0.05];
+      col(hx - 0.04, hx + 0.04, cl[0], cl[1], ztop - 0.05, ztop + 1.0);
+      col(st.x0, st.x1, yh - 0.04, yh + 0.04, ztop - 0.05, ztop + 1.0);
       shell.quad(
         M.decke,
-        [hx, yh, z1 - SLAB],
-        [hx, st.y1, z1 - SLAB],
-        [hx, st.y1, z1],
-        [hx, yh, z1],
-        [st.side === 'R' ? 1 : -1, 0, 0]
+        [st.x0, yh, ztop - SLAB],
+        [st.x1, yh, ztop - SLAB],
+        [st.x1, yh, ztop],
+        [st.x0, yh, ztop],
+        [0, dir, 0]
+      );
+      shell.quad(
+        M.decke,
+        [hx, h[2], ztop - SLAB],
+        [hx, h[3], ztop - SLAB],
+        [hx, h[3], ztop],
+        [hx, h[2], ztop],
+        [-oS, 0, 0]
       );
     }
+    if (P.stair) for (let k = 0; k < P.nSt - 1; k++) buildStair(P.stair, P.zF[k]);
+    if (P.astair && att) buildStair(P.astair, P.zF[P.nSt - 1]);
     // ---- the cellar: steep steps under the trapdoor in the kitchen ----
     if (P.hatch) {
       const h = P.hatch,
@@ -997,6 +1146,15 @@ export const ZINNEN = (() => {
       if (r.fl === 0 && r.kind === 'flur') r.keep.push([P.front.x - 0.8, P.front.x + 0.8, P.yi0, P.yi0 + 1.4]);
       if (P.stair && r.kind === 'flur')
         r.keep.push([P.stair.x0 - 0.1, P.stair.x1 + 0.1, P.stair.y0 - 1.0, P.stair.y1 + 1.0]);
+      if (P.astair && r.kind === 'flur' && r.fl === P.astair.fl)
+        r.keep.push([
+          P.astair.x0 - 0.1,
+          P.astair.x1 + 0.1,
+          Math.min(P.astair.y0, P.astair.y1) - 1.0,
+          Math.max(P.astair.y0, P.astair.y1) + 1.0,
+        ]);
+      if (P.astair && r.kind === 'boden')
+        r.keep.push((h => [h[0] - 0.2, h[1] + 0.2, h[2] - 0.6, h[3] + 0.6])(holeOf(P.astair)));
       if (P.hatch && r.id === P.hatch.room.id)
         r.keep.push([P.hatch.x0 - 0.25, P.hatch.x1 + 0.25, P.hatch.y0 - 0.8, P.hatch.y1 + 0.1]);
       if (P.hatch && r.kind === 'keller')
@@ -1120,12 +1278,21 @@ export const ZINNEN = (() => {
         b = node(cx, Math.min(h.y1 + 0.5, kel.y1 - 0.3), kel.z0, kel.id);
       edges.push([a, b], [a, centre[h.room.id]], [b, centre[kel.id]]);
     }
+    const flurTop = rooms.find(r => r.kind === 'flur' && r.fl === P.nSt - 1);
+    if (P.astair && att && flurTop) {
+      const st = P.astair,
+        cx = (st.x0 + st.x1) / 2,
+        dir = st.y1 >= st.y0 ? 1 : -1,
+        a = node(cx, st.y0 - dir * 0.4, P.zF[P.nSt - 1], flurTop.id),
+        b = node(cx, st.y1 + dir * 0.4, P.zA, att.id);
+      edges.push([a, b], [a, centre[flurTop.id]], [b, centre[att.id]]);
+    }
     const en = node(P.front.x, P.yi0 + 0.6, P.zG, flur0.id);
     edges.push([en, centre[flur0.id]]);
     H.graph = { nodes, edges, entry: en };
     // inside: the rectangle, from the cellar floor to the top storey's ceiling
     const zLo = P.cellar ? P.cellar.z0 : P.zG,
-      zHi = P.zC[P.nSt - 1];
+      zHi = att ? P.attic.top : P.zC[P.nSt - 1];
     H.inside = (x, y, z) => {
       const [lx, ly] = P.toL(x, y);
       if (lx < P.xi0 - 0.05 || lx > P.xi1 + 0.05 || ly < P.yi0 - 0.05 || ly > P.yi1 + 0.05) return false;
@@ -1279,6 +1446,8 @@ export const ZINNEN = (() => {
     truhe: 'Alte Decken und ein Stapel Briefe.',
     regal: 'Eingewecktes: Kirschen, Gurken, Apfelmus.',
     werkbank: 'Schrauben, Nägel, eine Zange.',
+    kiste: 'Alte Zeitungen und Weihnachtsschmuck aus Lauscha.',
+    raeucherkammer: 'Zwei Hartwürste und ein Schinken – Vorrat für Wochen.',
   };
   const SPOT_LABEL = {
     bett: 'Ins Bett legen',

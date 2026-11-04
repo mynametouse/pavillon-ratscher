@@ -32,6 +32,7 @@ window.__Z = {
     add(by(area)[0]);
     add(by(id => -area(id))[0]);
     add(by(id => (P(id).plH > 0.5 ? 0 : 1) + Math.abs(area(id) - 90) / 1000)[0]);
+    add(by(id => (P(id).nSt > 1 && P(id).astair ? 0 : 1) + (P(id).hatch ? 0 : 0.5) + Math.abs(area(id) - 110) / 1000)[0]);
     const S = VILLAGE.ST; add(L.map(o => o.id).find(id => P(id) && [S.FW, S.FW_UP].includes(VILLAGE.byId.get(id).st.style)));
     for (const lk of ['alt', 'ddr', 'nachwende']) add(L.map(o => o.id).find(id => P(id) && P(id).look === lk && !out.includes(id)));
     add(247);
@@ -157,6 +158,14 @@ with lib.browser() as b:
             if not r.get('none'):
                 ck(f'house {hid}: up the stairs to the upper floor', abs(r['top']['feet'] - r['zTop']) < 0.1, r)
                 shot(f'{hi + 1:02d}_{hid}_gang_oben')
+            r = J("""(() => { const H = __H, P = H.plan, out = {}; if (!P.astair) return { none: true };
+              const st = P.astair, cx = (st.x0 + st.x1) / 2, dir = st.y1 >= st.y0 ? 1 : -1, a = P.toW(cx, st.y0 - dir * 0.7), b = P.toW(cx, st.y1 + dir * 0.7);
+              __Z.stand(a[0], a[1], P.zF[P.nSt - 1], Math.atan2(b[0] - a[0], b[1] - a[1]) * 180 / Math.PI);
+              out.top = __Z.walkTo(b[0], b[1], 14); out.zA = P.zA; return out; })()""")
+            print('walk attic', json.dumps(r), flush=True)
+            if not r.get('none'):
+                ck(f'house {hid}: up the attic stair', abs(r['top']['feet'] - r['zA']) < 0.1, r)
+                shot(f'{hi + 1:02d}_{hid}_gang_boden')
             r = J("""(() => { const H = __H, P = H.plan, out = {}; if (!P.hatch) return { none: true };
               const h = P.hatch, cx = (h.x0 + h.x1) / 2, kr = P.rooms.find(q => q.id === h.room.id), dd = H.doors.find(q => q.room === kr.id);
               __Z.stand(H.entry.x, H.entry.y, H.entry.z, H.entry.yaw);

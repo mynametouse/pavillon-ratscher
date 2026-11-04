@@ -690,12 +690,13 @@ export const ZIMOB = (() => {
     M.glas = MAT.glass;
     M.holz = MAT.oak; // furniture wood (oak photo)
     M.hell = MAT.frame; // light larch
-    M.messing = MAT.brass;
-    M.stahl = MAT.steel;
-    M.zink = MAT.zinc;
-    M.schwarz = MAT.blacksteel;
-    M.porzellan = KM.porcelain;
-    M.emaille = KM.enamel;
+    // metals and porcelain as palette swatches (roughness and metalness are in the palette too): one draw call less each
+    M.messing = col(0xb08d57, 0.35, 1.0);
+    M.stahl = col(0xc4c8cc, 0.28, 1.0);
+    M.zink = col(0x9aa1a4, 0.42, 0.65);
+    M.schwarz = col(0x232220, 0.8, 0.6);
+    M.porzellan = col(0xf2efe6, 0.3, 0);
+    M.emaille = col(0xf4f2ec, 0.2, 0.05);
     M.bounce = [
       [M.decke, 0.16],
       [M.holzdecke, 0.12],

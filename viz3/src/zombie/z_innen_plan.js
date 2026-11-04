@@ -433,13 +433,34 @@ export const ZIPLAN = (() => {
         }
       }
     }
-    // the attic: one room under the roof
+    // the attic: one room under the roof, closed off by knee walls where the roof comes down below 1.2 m (Abseiten)
     let attic = null;
+    const under = (x, y) => {
+      const z = roof.at(...toW(F, x, y));
+      return z === null ? null : z - 0.22;
+    };
     {
-      const mid = roof.at(...toW(F, (xi0 + xi1) / 2, (yi0 + yi1) / 2));
-      if (mid !== null && mid - zA > 1.7) {
-        attic = { z0: zA, top: mid };
-        add({ kind: 'boden', fl: nSt, x0: xi0, x1: xi1, y0: yi0, y1: yi1, z0: zA, z1: mid - 0.25 });
+      const cx = (xi0 + xi1) / 2,
+        cy = (yi0 + yi1) / 2,
+        mid = under(cx, cy);
+      if (mid !== null && mid - zA > 1.9) {
+        // how far in from each edge until the roof is 1.2 m above the attic floor
+        const inset = (px, py, dx, dy, max) => {
+          for (let d = 0; d <= max; d += 0.2) {
+            const z = under(px + dx * d, py + dy * d);
+            if (z !== null && z - zA >= 1.2) return d;
+          }
+          return max;
+        };
+        const dF = inset(cx, yi0, 0, 1, (yi1 - yi0) / 2 - 1.2),
+          dB = inset(cx, yi1, 0, -1, (yi1 - yi0) / 2 - 1.2),
+          dL = inset(xi0, cy, 1, 0, (xi1 - xi0) / 2 - 1.2),
+          dR = inset(xi1, cy, -1, 0, (xi1 - xi0) / 2 - 1.2);
+        const a = { x0: xi0 + dL, x1: xi1 - dR, y0: yi0 + dF, y1: yi1 - dB };
+        if (a.x1 - a.x0 > 2.0 && a.y1 - a.y0 > 2.0) {
+          attic = Object.assign(a, { z0: zA, top: mid, knee: { dF, dB, dL, dR } });
+          add({ kind: 'boden', fl: nSt, x0: a.x0, x1: a.x1, y0: a.y0, y1: a.y1, z0: zA, z1: mid - 0.1 });
+        }
       }
     }
     rooms.forEach((r, i) => {
@@ -487,6 +508,54 @@ export const ZIPLAN = (() => {
         d.z0 = r.z0;
         d.z1 = r.z0 + 2.0;
         doors.push(d);
+      }
+    }
+    // the attic stair: in the top storey's hall, on the wall the main stair leaves free, rising to where the roof is high
+    let astair = null;
+    if (attic) {
+      const k = nSt - 1,
+        n = Math.round(ST / 0.2),
+        rise = ST / n,
+        tread = 0.21,
+        run = (n - 1) * tread,
+        sw = Math.min(0.8, (hx1 - hx0) * 0.45),
+        sideR = stair ? stair.side !== 'R' : !small || small.k === 'R',
+        x0 = sideR ? hx1 - sw : hx0,
+        x1 = sideR ? hx1 : hx0 + sw,
+        wallX = sideR ? hx1 + PW / 2 : hx0 - PW / 2,
+        cx = (x0 + x1) / 2,
+        busy = doors
+          .filter(d => d.fl === k && d.axis === 'y' && Math.abs(d.x - wallX) < 0.1)
+          .map(d => [d.y - d.w / 2 - 0.3, d.y + d.w / 2 + 0.3]);
+      if (k === 0) busy.push([yi0, yi0 + 1.6]); // the way from the front door
+      let best = null;
+      for (const dir of [1, -1])
+        for (let ys = yi0 + 0.4; ys <= yi1 - 0.4; ys += 0.25) {
+          const yt = ys + dir * run,
+            lo = Math.min(ys, yt),
+            hi = Math.max(ys, yt);
+          if (lo < yi0 + 0.25 || hi > yi1 - 0.25) continue;
+          if (busy.some(([a, b]) => lo - 0.6 < b && hi + 0.1 > a)) continue;
+          if (cx < attic.x0 + 0.1 || cx > attic.x1 - 0.1 || yt < attic.y0 + 0.2 || yt > attic.y1 - 0.2) continue;
+          const head = under(cx, yt + dir * 0.4);
+          if (head === null || head - zA < 2.0) continue;
+          if (!best || head > best.head + 0.05) best = { ys, yt, dir, head };
+        }
+      if (best) {
+        const holeK = Math.max(2, Math.ceil((ST - SLAB - 1.9) / rise) - 1);
+        astair = {
+          x0,
+          x1,
+          y0: best.ys,
+          y1: best.yt,
+          dir: best.dir,
+          n,
+          rise,
+          tread,
+          fl: k,
+          holeK,
+          side: sideR ? 'R' : 'L',
+        };
       }
     }
     // windows on the rectangle's edges, per storey
@@ -553,11 +622,13 @@ export const ZIPLAN = (() => {
       doors,
       windows,
       stair,
+      astair,
       hatch,
       cellar,
       attic,
       front,
       roof,
+      under,
       chimL,
       toW: (x, y) => toW(F, x, y),
       toL: (x, y) => toL(F, x, y),

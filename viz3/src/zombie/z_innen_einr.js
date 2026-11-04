@@ -454,6 +454,7 @@ export const ZIEINR = (() => {
         F.box(m, M.glas, a + 0.03, a + mw - 0.03, d - 0.01, d - 0.005, z + 0.75, z + 1.88);
         for (let k = 0; k < 5; k++)
           F.cyl(m, M.glas, a + 0.12 + k * ((mw - 0.24) / 4), 0.25, z + 1.32, z + 1.45, 0.03, 0.035, 8);
+        L.radio(C, F, a + mw / 2, 0.08, z + 1.52);
         for (let k = 0; k < 3; k++)
           F.cyl(
             m,
@@ -851,6 +852,56 @@ export const ZIEINR = (() => {
       );
     C.solid(F.rect(u0, u0 + 1.0, 0, 0.32), z, z + 0.5);
   };
+  // the smoke chamber beside the chimney in the attic (Räucherkammer): a plastered box with a sheet-metal door, sausages and a ham inside
+  L.raeucherkammer = (C, F) => {
+    const m = C.m,
+      z = C.z,
+      w = 0.9,
+      d = 0.75,
+      h = 1.85,
+      wall = C.col(0xb8b0a0, 0.9);
+    F.box(m, wall, 0, w, 0, 0.05, z, z + h);
+    F.box(m, wall, 0, 0.05, 0.05, d, z, z + h);
+    F.box(m, wall, w - 0.05, w, 0.05, d, z, z + h);
+    F.box(m, wall, 0, w, 0, d, z + h, z + h + 0.05);
+    F.box(m, C.col(0x1a1612, 0.9), 0.05, w - 0.05, 0.05, d - 0.03, z + 0.02, z + 0.03);
+    for (let i = 0; i < 5; i++)
+      F.cyl(
+        m,
+        C.col(i === 2 ? 0x7a3a22 : 0x5a2a1a, 0.6),
+        0.18 + i * 0.13,
+        0.35,
+        z + h - 0.75,
+        z + h - 0.12,
+        i === 2 ? 0.08 : 0.035,
+        i === 2 ? 0.06 : 0.035,
+        7
+      );
+    F.rod(m, C.M.schwarz, [0.05, 0.35, z + h - 0.1], [w - 0.05, 0.35, z + h - 0.1], 0.012, 4);
+    const cont = C.container('raeucherkammer', 'Räucherkammer öffnen', F.P(w / 2, d + 0.5, z + 1.1));
+    L.leaf(C, F, 0.06, 1, w - 0.12, d, z + 0.15, z + h - 0.1, C.col(0x3a3a38, 0.5, 0.6), C.M.schwarz, cont);
+    C.solid(F.rect(0, w, 0, d), z, z + h);
+  };
+  // a wooden box (Kiste) with a lid
+  L.kiste = (C, F) => {
+    const m = C.m,
+      z = C.z,
+      u0 = F.u0,
+      w = 0.8,
+      d = 0.55,
+      wood = C.M.hell;
+    for (let k = 0; k < 3; k++) F.box(m, wood, u0, u0 + w, 0, d, z + 0.02 + k * 0.15, z + 0.15 + k * 0.15);
+    const cont = C.container('kiste', 'Kiste öffnen', F.P(u0 + w / 2, d + 0.35, z + 0.45));
+    C.part({
+      kind: 'lid',
+      F,
+      hinge: [u0, 0.0],
+      z: z + 0.47,
+      build: (mm, P) => P.box(mm, wood, 0, w, 0, d, 0, 0.03),
+      container: cont,
+    });
+    C.solid(F.rect(u0, u0 + w, 0, d), z, z + 0.5);
+  };
   // a picture frame on the wall: cell 0 stag, 1 Bible verse, 2 wall cloth, 3 landscape
   L.bild = (C, F, u, z, w, h, cell, frameCol = 0x5a3a22) => {
     const m = C.m;
@@ -879,31 +930,252 @@ export const ZIEINR = (() => {
     C.lamp([x, y, zc - 0.55], kind || 'pendant', 0.24);
   };
   // ---- personal touches of the named villagers (dorf/dorf_text.js) ----
+  // a radio (RFT in the DDR, an older valve set before): a box with a dial and two knobs; a spot 'radio'
+  L.radio = (C, F, u, v, z) => {
+    const m = C.m,
+      old = C.look === 'alt';
+    F.box(m, old ? C.M.holz : C.col(0x3a3430, 0.5), u - 0.22, u + 0.22, v, v + 0.2, z, z + (old ? 0.3 : 0.16));
+    F.box(
+      m,
+      C.col(old ? 0xd8c8a0 : 0x1a1a1a, 0.4),
+      u - 0.18,
+      u + 0.05,
+      v + 0.2,
+      v + 0.205,
+      z + 0.04,
+      z + (old ? 0.24 : 0.12)
+    );
+    for (const k of [0.1, 0.17]) F.cyl(m, C.col(0xc8c0b0, 0.4), u + k, v + 0.21, z + 0.05, z + 0.08, 0.015, 0.015, 6);
+    C.spot('radio', F.P(u, v + 0.9, z - 0.8), F, 'Radio einschalten');
+  };
+  // a cuckoo clock (Kuckucksuhr): a little house of dark wood with a gable, the dial, two pine-cone weights on chains
+  L.kuckucksuhr = (C, F, u, z) => {
+    const m = C.m,
+      dk = C.col(0x3a2414, 0.6);
+    F.box(m, dk, u - 0.15, u + 0.15, 0, 0.13, z - 0.2, z + 0.15);
+    F.box(m, dk, u - 0.19, u + 0.19, 0, 0.16, z + 0.15, z + 0.19);
+    F.cyl(m, C.col(0xf2ecdc, 0.5), u, 0.135, z - 0.08, z - 0.079, 0.07, 0.07, 10);
+    for (const k of [-0.06, 0.06]) {
+      F.box(m, C.M.messing, u + k - 0.003, u + k + 0.003, 0.05, 0.056, z - 0.75, z - 0.2);
+      F.cyl(m, dk, u + k, 0.055, z - 0.95, z - 0.75, 0.03, 0.03, 6);
+    }
+  };
+  // a desk (Schreibtisch) with a drawer and a chair; folders on it at Ingrid's
+  L.schreibtisch = (C, F, folders) => {
+    const m = C.m,
+      z = C.z,
+      u0 = F.u0,
+      w = 1.2,
+      wood = C.look === 'ddr' ? C.M.birke : C.M.holz;
+    F.box(m, wood, u0, u0 + w, 0, 0.65, z + 0.72, z + 0.76);
+    F.box(m, wood, u0, u0 + 0.45, 0.02, 0.63, z, z + 0.72);
+    F.box(m, wood, u0 + w - 0.04, u0 + w, 0.02, 0.63, z, z + 0.72);
+    const cont = C.container('schublade', 'Schreibtisch durchsuchen', F.P(u0 + 0.22, 0.95, z + 0.6));
+    L.drawer(C, F, u0 + 0.02, u0 + 0.43, 0.63, z + 0.5, z + 0.7, wood, C.M.messing, cont);
+    L.chair(C, F, u0 + w * 0.6, 0.95, -Math.PI / 2, wood);
+    if (folders)
+      for (let i = 0; i < 6; i++)
+        F.box(
+          m,
+          C.col([0x2a4a8a, 0x8a2a2a, 0x2a6a3a, 0xc8a030][i % 4], 0.6),
+          u0 + 0.5 + i * 0.09,
+          u0 + 0.57 + i * 0.09,
+          0.05,
+          0.33,
+          z + 0.76,
+          z + 1.08
+        );
+    C.solid(F.rect(u0, u0 + w, 0, 0.65), z, z + 0.76);
+  };
+  // a gun cabinet (Waffenschrank, steel, locked by law – here it opens): the game decides what is inside
+  L.waffenschrank = (C, F) => {
+    const m = C.m,
+      z = C.z,
+      u0 = F.u0,
+      grey = C.col(0x4a5048, 0.5, 0.5);
+    F.box(m, grey, u0, u0 + 0.55, 0, 0.42, z, z + 1.6);
+    const cont = C.container('waffenschrank', 'Waffenschrank öffnen', F.P(u0 + 0.27, 0.75, z + 1.1));
+    L.leaf(C, F, u0 + 0.02, 1, 0.51, 0.42, z + 0.03, z + 1.57, grey, C.M.schwarz, cont);
+    C.solid(F.rect(u0, u0 + 0.55, 0, 0.42), z, z + 1.6);
+  };
+  // a first-aid box on the wall (Verbandskasten: white with a red cross, stube-9 DRK)
+  L.verbandskasten = (C, F, u, z) => {
+    const m = C.m;
+    F.box(m, C.col(0xf2f2ee, 0.4), u - 0.18, u + 0.18, 0, 0.12, z - 0.12, z + 0.12);
+    F.box(m, C.col(0xc81e1e, 0.5), u - 0.08, u + 0.08, 0.12, 0.125, z - 0.025, z + 0.025);
+    F.box(m, C.col(0xc81e1e, 0.5), u - 0.025, u + 0.025, 0.12, 0.125, z - 0.08, z + 0.08);
+    C.container('verbandskasten', 'Verbandskasten öffnen', F.P(u, 0.6, z));
+  };
+  // a chainsaw and an axe lying ready (Wolfgang, the forest worker): spots the game can turn into weapons
+  L.motorsaege = (C, F, u, v) => {
+    const m = C.m,
+      z = C.z,
+      or = C.col(0xe0641e, 0.5),
+      bl = C.col(0x2a2a28, 0.5, 0.3);
+    F.box(m, or, u - 0.18, u + 0.18, v, v + 0.24, z, z + 0.24);
+    F.box(m, bl, u + 0.18, u + 0.62, v + 0.1, v + 0.13, z + 0.06, z + 0.16);
+    F.rod(m, bl, [u - 0.05, v + 0.02, z + 0.24], [u - 0.05, v + 0.22, z + 0.3], 0.015, 5);
+    C.spot('motorsaege', F.P(u, v + 0.7, z), F, 'Motorsäge nehmen');
+  };
+  L.axt = (C, F, u, v) => {
+    const m = C.m,
+      z = C.z;
+    F.rod(m, C.M.hell, [u, v, z + 0.02], [u + 0.75, v + 0.05, z + 0.02], 0.02, 5);
+    F.box(m, C.col(0x5a5c60, 0.4, 0.7), u + 0.68, u + 0.8, v - 0.02, v + 0.12, z, z + 0.04);
+    C.spot('axt', F.P(u + 0.4, v + 0.6, z), F, 'Axt nehmen');
+  };
+  // ---- personal touches of the named villagers (dorf/dorf_text.js), in whichever room they belong to ----
   const PERSONAL = {
-    gerhard: C => {
-      // the chronicle and the Skat evening: a pack of cards and the score pad on the table
+    gerhard: (C, Pl, room) => {
+      if (room.kind !== 'stube') return;
+      // the chronicle and the Skat evening: a pack of cards and the score pad on the table, books
       const t = C.find('tisch');
       if (t) {
         C.m.box(C.col(0x2a3a8a, 0.6), t[0] - 0.05, t[0] + 0.03, t[1] - 0.05, t[1] + 0.07, C.z + 0.77, C.z + 0.8);
         C.m.box(C.col(0xf4f0e0, 0.9), t[0] + 0.12, t[0] + 0.3, t[1] - 0.1, t[1] + 0.12, C.z + 0.77, C.z + 0.775);
         C.m.box(C.col(0x6a2a1a, 0.6), t[0] - 0.35, t[0] - 0.12, t[1] - 0.1, t[1] + 0.2, C.z + 0.77, C.z + 0.82);
       }
+      const F = Pl.any(['x0', 'x1', 'y1', 'y0'], 1.2, 0.35, 2.0, 0.5);
+      if (F) {
+        for (const pu of [F.u0, F.u0 + 1.16]) F.box(C.m, C.M.holz, pu, pu + 0.04, 0, 0.32, C.z, C.z + 2.0);
+        for (const zz of [0.05, 0.45, 0.85, 1.25, 1.65]) {
+          F.box(C.m, C.M.holz, F.u0, F.u0 + 1.2, 0, 0.32, C.z + zz - 0.02, C.z + zz);
+          L.books(C, F, F.u0 + 0.05, F.u0 + 1.15, 0.04, C.z + zz, 0.33);
+        }
+        C.container('regal', 'Bücherregal durchsuchen', F.P(F.u0 + 0.6, 0.7, C.z + 1.0));
+        C.solid(F.rect(F.u0, F.u0 + 1.2, 0, 0.32), C.z, C.z + 2.0);
+      }
     },
-    manfred: C => {
-      const t = C.find('tisch') || C.find('tv');
-      if (t) {
-        C.m.lathe(
-          C.col(0xd8d0b8, 0.3, 0.1),
-          t[0] + 0.25,
-          t[1],
-          [
-            [0.15, C.z + 0.77],
-            [0.15, C.z + 0.85],
-            [0.12, C.z + 0.95],
-            [0.02, C.z + 1.0],
-          ],
-          10
-        );
+    manfred: (C, Pl, room) => {
+      if (room.kind === 'flur') {
+        // the fire helmet on the coat rack, an extinguisher by the door
+        const F = Pl.any(['x0', 'x1'], 0.3, 0.3, 1.0, 0.1);
+        if (F) {
+          F.lathe(
+            C.m,
+            C.col(0xe8e4d8, 0.3, 0.1),
+            F.u0 + 0.15,
+            0.15,
+            [
+              [0.16, C.z + 0.6],
+              [0.16, C.z + 0.7],
+              [0.13, C.z + 0.82],
+              [0.02, C.z + 0.88],
+            ],
+            10
+          );
+          F.box(C.m, C.col(0x5a5a5a, 0.6), F.u0 + 0.02, F.u0 + 0.28, 0.02, 0.28, C.z, C.z + 0.6);
+          F.cyl(C.m, C.col(0xc81e1e, 0.4, 0.2), F.u0 + 0.15, 0.4, C.z, C.z + 0.55, 0.08, 0.08, 10);
+        }
+      }
+    },
+    wolfgang: (C, Pl, room) => {
+      if (room.kind === 'flur') {
+        const F = Pl.any(['y1', 'x0', 'x1'], 0.9, 0.6, 0.4, 0.5);
+        if (F) {
+          L.motorsaege(C, F, F.u0 + 0.25, 0.05);
+          L.axt(C, F, F.u0, 0.45);
+        }
+      }
+      if (room.kind === 'stube' || room.kind === 'kammer' || room.kind === 'schlafzimmer') {
+        if (!C.found.waffenschrank) {
+          const F = Pl.any(['x0', 'x1', 'y1', 'y0'], 0.55, 0.42, 1.6, 0.9);
+          if (F) {
+            L.waffenschrank(C, F);
+            C.found.waffenschrank = true;
+          }
+        }
+        if (room.kind === 'stube') {
+          // antler boards on the wall (jaeger-3)
+          const W = Pl.S.y1;
+          for (let i = 0; i < 3; i++) {
+            const Fw = frame(W.O, W.a, W.n),
+              u = W.L * (0.3 + i * 0.2),
+              z = C.z + 1.9 + (i % 2) * 0.15;
+            Fw.box(C.m, C.col(0x4a2a14, 0.5), u - 0.1, u + 0.1, 0, 0.025, z - 0.12, z + 0.12);
+            for (const sx of [-1, 1])
+              Fw.rod(C.m, C.col(0xd8cbb0, 0.6), [u, 0.03, z + 0.05], [u + sx * 0.14, 0.08, z + 0.28], 0.012, 4);
+          }
+        }
+      }
+    },
+    uwe: (C, Pl, room) => {
+      if (room.kind === 'flur') {
+        const F = Pl.any(['x0', 'x1', 'y1'], 0.35, 0.3, 0.45, 0.05);
+        if (F)
+          for (const k of [0, 0.17])
+            F.box(C.m, C.col(0x2a4a2a, 0.5), F.u0 + k, F.u0 + k + 0.13, 0.02, 0.3, C.z, C.z + 0.42);
+      }
+      if (room.kind === 'kueche') {
+        const F = Pl.any(['x0', 'x1', 'y1', 'y0'], 0.4, 0.3, 0.3, 0.9);
+        if (F) {
+          F.box(C.m, C.col(0x2a6a3a, 0.6), F.u0, F.u0 + 0.4, 0, 0.3, C.z, C.z + 0.28);
+          for (let i = 0; i < 4; i++)
+            for (let j = 0; j < 3; j++)
+              F.cyl(
+                C.m,
+                C.col(0x5a3a1a, 0.15),
+                F.u0 + 0.06 + i * 0.095,
+                0.05 + j * 0.1,
+                C.z + 0.28,
+                C.z + 0.38,
+                0.028,
+                0.028,
+                6
+              );
+        }
+      }
+    },
+    katrin: (C, Pl, room) => {
+      if (room.kind === 'bad' || (room.kind === 'flur' && room.fl === 0)) {
+        if (C.found.verband) return;
+        const W = Pl.S[room.kind === 'bad' ? 'y1' : 'x0'];
+        if (W) {
+          L.verbandskasten(C, frame(W.O, W.a, W.n), W.L * 0.5, C.z + 1.5);
+          C.found.verband = true;
+        }
+      }
+    },
+    ingrid: (C, Pl, room) => {
+      if (room.kind === 'kammer' || room.kind === 'kinderzimmer') {
+        if (C.found.desk) return;
+        const F = Pl.any(['y0', 'x0', 'x1', 'y1'], 1.2, 1.0, 0.8, 0.5);
+        if (F) {
+          L.schreibtisch(C, F, true);
+          C.found.desk = true;
+        }
+      }
+    },
+    jens: (C, Pl, room) => {
+      if (room.kind === 'flur' || room.kind === 'keller') {
+        if (C.found.toolbox) return;
+        const F = Pl.any(['y1', 'x0', 'x1'], 0.55, 0.3, 0.3, 0.6);
+        if (F) {
+          F.box(C.m, C.col(0xb82a1e, 0.4, 0.3), F.u0, F.u0 + 0.55, 0, 0.26, C.z, C.z + 0.24);
+          F.rod(C.m, C.M.schwarz, [F.u0 + 0.15, 0.13, C.z + 0.3], [F.u0 + 0.4, 0.13, C.z + 0.3], 0.012, 4);
+          C.container('werkzeugkiste', 'Werkzeugkiste öffnen', F.P(F.u0 + 0.27, 0.6, C.z + 0.25));
+          C.found.toolbox = true;
+        }
+      }
+    },
+    heike: (C, Pl, room) => {
+      if (room.kind === 'kueche') {
+        const t = C.find('tisch');
+        if (t)
+          for (let i = 0; i < 2; i++)
+            C.m.box(
+              C.col(0xb8a888, 0.9),
+              t[0] - 0.3 + i * 0.32,
+              t[0] - 0.02 + i * 0.32,
+              t[1] - 0.06,
+              t[1] + 0.06,
+              C.z + 0.77,
+              C.z + 0.84
+            );
+      }
+      if (room.kind === 'keller' || room.kind === 'vorrat') {
+        const F = Pl.any(['x0', 'x1', 'y0', 'y1'], 1.2, 0.4, 1.9, 0.5);
+        if (F) L.regal(C, F, 1.2, 'Noch ein Regal mit Eingemachtem');
       }
     },
   };
@@ -920,7 +1192,7 @@ export const ZIEINR = (() => {
       zc = room.z1;
     const kind = room.kind;
     // the ceiling lamp of every room but the hall's own (it has one too) – the light switch is by the door
-    if (kind !== 'boden') L.deckenlampe(C, cx, cy, zc, kind === 'keller' || kind === 'vorrat' ? 'bulb' : 'pendant');
+    L.deckenlampe(C, cx, cy, zc, kind === 'keller' || kind === 'vorrat' || kind === 'boden' ? 'bulb' : 'pendant');
     const outer = ['y0', 'x1', 'y1', 'x0'].filter(s => room.outer && room.outer[s]);
     const inner = ['y0', 'x1', 'y1', 'x0'].filter(s => !(room.outer && room.outer[s]));
     const all = ['y1', 'x0', 'x1', 'y0'];
@@ -960,14 +1232,18 @@ export const ZIEINR = (() => {
           }
         }
         F = Pl.any(inner.concat(outer), 1.3, 0.56, 2.05, 0.5);
-        if (F) L.buefett(C, F, 'Vertiko durchsuchen');
+        if (F) {
+          L.buefett(C, F, 'Vertiko durchsuchen');
+          L.radio(C, F, F.u0 + 0.4, 0.06, C.z + 0.9);
+        }
         F = Pl.any(all, 0.9, 0.5, 0.6, 0.5);
         if (F) L.truhe(C, F);
         const W = Pl.S[inner[0] || 'y1'];
         if (W) {
           const Fp = frame(W.O, W.a, W.n);
           L.bild(C, Fp, W.L * 0.35, C.z + 1.75, 0.6, 0.45, 0, 0x6a4a2a);
-          L.uhr(C, Fp, W.L * 0.7, C.z + 1.85);
+          if (C.R.chance(0.5)) L.uhr(C, Fp, W.L * 0.7, C.z + 1.85);
+          else L.kuckucksuhr(C, Fp, W.L * 0.7, C.z + 1.85);
         }
       } else {
         const ws = inner.find(s => Pl.S[s].L >= 2.8) || inner[0] || 'x1';
@@ -1038,6 +1314,10 @@ export const ZIEINR = (() => {
       }
       F = Pl.any(inner.concat(outer), 1.3, 0.6, 2.05, 0.5);
       if (F) L.kleiderschrank(C, F, F.w);
+      if (kind === 'kinderzimmer') {
+        F = Pl.any(outer.concat(inner), 1.2, 1.0, 0.8, 0.5);
+        if (F) L.schreibtisch(C, F, false);
+      }
       if (kind === 'kammer' && R.chance(0.6)) {
         F = Pl.any(all, 1.0, 0.5, 0.6, 0.5);
         if (F) L.truhe(C, F);
@@ -1082,8 +1362,44 @@ export const ZIEINR = (() => {
         C.z + 0.002,
         C.z + 0.01
       );
+    } else if (kind === 'boden') {
+      // the attic (boden-1/2/8/12): low things along the knee walls, the smoke chamber at the chimney, a line with washing
+      const low = all,
+        tall = outer.length ? outer : all;
+      if (room.chim) {
+        const ch = room.chim,
+          Fr = frame([ch[0] + 0.26, ch[1] - 0.45], [0, 1], [1, 0]);
+        Fr.u0 = 0;
+        L.raeucherkammer(C, Fr);
+      }
+      F = Pl.any(low, 1.0, 0.5, 0.6, 0.3);
+      if (F) L.truhe(C, F, 'Alte Truhe öffnen');
+      F = Pl.any(low, 0.8, 0.6, 0.5, 0.7);
+      if (F) L.kiste(C, F);
+      F = Pl.any(tall, 1.3, 0.6, 2.05, 0.5);
+      if (F && C.R.chance(0.6)) L.kleiderschrank(C, F, F.w);
+      F = Pl.any(low, 0.5, 0.5, 0.95, 0.5);
+      if (F) L.chair(C, F, F.u0 + 0.25, 0.3, Math.PI / 2 + C.R.r(-0.5, 0.5), C.M.holz);
+      // the washing line along the middle
+      const lx = room.x1 - room.x0 > room.y1 - room.y0;
+      const a = lx ? [room.x0 + 0.4, cy + 0.6] : [cx + 0.6, room.y0 + 0.4],
+        b = lx ? [room.x1 - 0.4, cy + 0.6] : [cx + 0.6, room.y1 - 0.4],
+        zl = Math.min(C.z + 1.85, zc - 0.3);
+      C.m.rod(C.col(0xd8d0c0, 0.9), [a[0], a[1], zl], [b[0], b[1], zl], 0.006, 4);
+      const nW = Math.floor(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.7);
+      for (let i = 1; i < nW; i++) {
+        if (C.R() < 0.35) continue;
+        const t = i / nW,
+          p = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t],
+          w = C.R.r(0.35, 0.6),
+          h = C.R.r(0.4, 0.8),
+          d = lx ? [1, 0] : [0, 1],
+          cloth = C.R.pick([M.karo, C.col(0xf4f2ec, 0.95), C.col(0x8aa0c8, 0.95), M.duvet]);
+        C.m.panel(cloth, [p[0], p[1], zl - h / 2], d, lx ? [0, 1, 0] : [1, 0, 0], w, h);
+        C.m.panel(cloth, [p[0], p[1], zl - h / 2], d, lx ? [0, -1, 0] : [-1, 0, 0], w, h);
+      }
     }
-    if (C.owner && PERSONAL[C.owner] && (kind === 'stube' || kind === 'wohnzimmer')) PERSONAL[C.owner](C);
+    if (C.owner && PERSONAL[C.owner]) PERSONAL[C.owner](C, Pl, room);
   }
   return { frame, sides, placer, furnish, L, PERSONAL, ZIPLAN };
 })();
