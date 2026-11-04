@@ -497,6 +497,7 @@ export const ZIEINR = (() => {
     for (const k of [0.15, 0.25])
       F.cyl(m, C.col(0xc8c0b0, 0.4), u + 0.21, v + 0.43, z + k * 1.6, z + k * 1.6 + 0.02, 0.018, 0.018, 6);
     C.spot('tv', F.P(u, v + 1.4, z - 0.76 + 0.0), F, null);
+    if (C.look !== 'nachwende') L.deckchen(C, ...F.P(u, v + 0.21, 0).slice(0, 2), z + 0.481, 0.15);
   };
   // the three-piece suite: couch and two armchairs around a low table on a rug (ddr-4/6/13/21; after 1990 a leather couch)
   L.sitzgruppe = (C, F, room) => {
@@ -511,7 +512,7 @@ export const ZIEINR = (() => {
       w = 2.0;
     // couch with its back to the wall
     F.box(m, fab, u0, u0 + w, 0.0, 0.88, z + 0.12, z + 0.42);
-    F.box(m, fab, u0, u0 + w, 0.0, 0.24, z + 0.42, z + 0.9);
+    F.box(m, fab, u0, u0 + w, 0.0, 0.24, z + 0.42, z + 0.82);
     F.box(m, fab, u0 - 0.02, u0 + 0.16, 0.0, 0.88, z + 0.42, z + 0.62);
     F.box(m, fab, u0 + w - 0.16, u0 + w + 0.02, 0.0, 0.88, z + 0.42, z + 0.62);
     for (let k = 0; k < 3; k++)
@@ -549,7 +550,7 @@ export const ZIEINR = (() => {
       C.solidW([p[0] - 0.42, p[0] + 0.42, p[1] - 0.42, p[1] + 0.42], z, z + 0.6);
     }
     C.seat(F.P(u0 + w / 2, 0.45, z), F, 'Auf die Couch setzen');
-    C.solid(F.rect(u0, u0 + w, 0, 0.88), z, z + 0.9);
+    C.solid(F.rect(u0, u0 + w, 0, 0.88), z, z + 0.82);
     C.solid(F.rect(u0 + 0.35, u0 + w - 0.35, tv0, tv1), z, z + 0.5);
     void room;
   };
@@ -902,6 +903,84 @@ export const ZIEINR = (() => {
     });
     C.solid(F.rect(u0, u0 + w, 0, d), z, z + 0.5);
   };
+  // a crocheted doily (Häkeldeckchen) on a surface at z: a thin white disc with a scalloped edge
+  L.deckchen = (C, x, y, z, r = 0.16) => {
+    const m = C.m,
+      w = C.col(0xf6f2e8, 0.95),
+      n = 14;
+    for (let k = 0; k < n; k++) {
+      const a0 = (k / n) * Math.PI * 2,
+        a1 = ((k + 1) / n) * Math.PI * 2,
+        rr = k % 2 ? r : r * 0.88;
+      m.tri(
+        w,
+        [x, y, z],
+        [x + Math.cos(a0) * rr, y + Math.sin(a0) * rr, z],
+        [x + Math.cos(a1) * rr, y + Math.sin(a1) * rr, z],
+        [0, 0, 1]
+      );
+    }
+  };
+  // the washstand of an old bedroom (Waschtisch, kammer-7): marble top, a bowl and a jug, a towel
+  L.waschtisch = (C, F) => {
+    const m = C.m,
+      z = C.z,
+      u0 = F.u0,
+      wood = C.M.holz;
+    F.box(m, wood, u0, u0 + 0.8, 0, 0.45, z + 0.05, z + 0.76);
+    F.box(m, C.col(0xe8e6e0, 0.25), u0 - 0.01, u0 + 0.81, 0, 0.46, z + 0.76, z + 0.8);
+    F.lathe(
+      m,
+      C.M.porzellan,
+      u0 + 0.3,
+      0.23,
+      [
+        [0.05, z + 0.8],
+        [0.15, z + 0.86],
+        [0.17, z + 0.9],
+        [0.0, z + 0.9],
+      ],
+      12,
+      { caps: false }
+    );
+    F.lathe(
+      m,
+      C.M.porzellan,
+      u0 + 0.62,
+      0.22,
+      [
+        [0.05, z + 0.8],
+        [0.08, z + 0.9],
+        [0.06, z + 1.02],
+        [0.045, z + 1.1],
+      ],
+      10
+    );
+    F.box(m, C.col(0xf2eee4, 0.9), u0 + 0.78, u0 + 0.82, 0.05, 0.4, z + 0.45, z + 0.74);
+    const cont = C.container('schublade', 'Waschtisch durchsuchen', F.P(u0 + 0.4, 0.75, z + 0.6));
+    L.drawer(C, F, u0 + 0.03, u0 + 0.77, 0.45, z + 0.56, z + 0.72, wood, C.M.messing, cont);
+    C.solid(F.rect(u0, u0 + 0.8, 0, 0.46), z, z + 0.9);
+  };
+  // a bunk bed (DDR children's room, ddr-11): two berths, a ladder, checked bedding
+  L.stockbett = (C, F) => {
+    const m = C.m,
+      z = C.z,
+      u0 = F.u0,
+      w = 0.95,
+      wood = C.M.hell,
+      bed = C.R.pick([C.M.karo, C.M.duvet, C.col(0xd8e8c8, 0.9)]);
+    for (const pu of [u0, u0 + w - 0.06])
+      for (const pv of [0, 1.94]) F.box(m, wood, pu, pu + 0.06, pv, pv + 0.06, z, z + 1.7);
+    for (const zz of [0.3, 1.25]) {
+      F.box(m, wood, u0, u0 + w, 0.0, 2.0, z + zz, z + zz + 0.06);
+      F.box(m, C.col(0xe8e2d4, 0.9), u0 + 0.05, u0 + w - 0.05, 0.06, 1.94, z + zz + 0.06, z + zz + 0.2);
+      F.box(m, bed, u0 + 0.06, u0 + w - 0.06, 0.5, 1.92, z + zz + 0.2, z + zz + 0.32);
+    }
+    F.box(m, wood, u0 + w - 0.03, u0 + w, 0.1, 1.9, z + 1.45, z + 1.55);
+    for (let k = 1; k < 5; k++) F.box(m, wood, u0 + w, u0 + w + 0.03, 1.5, 1.85, z + k * 0.3, z + k * 0.3 + 0.03);
+    C.spot('bett', F.P(u0 + w / 2, 1.1, z), F, 'Ins Bett legen', { lie: true, head: F.P(u0 + w / 2, 0.3, z + 0.45) });
+    C.solid(F.rect(u0, u0 + w, 0, 2.0), z, z + 1.7);
+  };
   // a picture frame on the wall: cell 0 stag, 1 Bible verse, 2 wall cloth, 3 landscape
   L.bild = (C, F, u, z, w, h, cell, frameCol = 0x5a3a22) => {
     const m = C.m;
@@ -1070,11 +1149,13 @@ export const ZIEINR = (() => {
       }
     },
     wolfgang: (C, Pl, room) => {
-      if (room.kind === 'flur') {
-        const F = Pl.any(['y1', 'x0', 'x1'], 0.9, 0.6, 0.4, 0.5);
+      // the chainsaw and the axe: in the hall, else in the cellar, the Stube or a Kammer (whichever room has a free wall first)
+      if (!C.found.saege && ['flur', 'keller', 'stube', 'kammer'].includes(room.kind)) {
+        const F = Pl.any(['y1', 'x0', 'x1', 'y0'], 0.9, 0.6, 0.4, 0.5);
         if (F) {
           L.motorsaege(C, F, F.u0 + 0.25, 0.05);
           L.axt(C, F, F.u0, 0.45);
+          C.found.saege = true;
         }
       }
       if (room.kind === 'stube' || room.kind === 'kammer' || room.kind === 'schlafzimmer') {
@@ -1246,11 +1327,32 @@ export const ZIEINR = (() => {
           else L.kuckucksuhr(C, Fp, W.L * 0.7, C.z + 1.85);
         }
       } else {
-        const ws = inner.find(s => Pl.S[s].L >= 2.8) || inner[0] || 'x1';
-        F = Pl.place(ws, Math.min(Pl.S[ws].L - 0.2, look === 'ddr' ? 3.6 : 2.4), 0.5, 2.4, 0.5);
+        // the wall unit on the longest free wall: inner walls first, as wide as it goes (3.6 m in the DDR, 2.4 m later)
+        let ws = inner[0] || 'x1';
+        F = null;
+        const widths = look === 'ddr' ? [3.6, 3.0, 2.4, 1.8] : [2.4, 1.8];
+        for (const wdt of widths) {
+          for (const sd of inner.concat(outer).sort((p, q) => Pl.S[q].L - Pl.S[p].L)) {
+            if (F || Pl.S[sd].L < wdt + 0.2) continue;
+            F = Pl.place(sd, wdt, 0.5, 2.4, 0.5);
+            if (F) ws = sd;
+          }
+          if (F) break;
+        }
         if (F) L.schrankwand(C, F, F.w);
-        const cs = outer.find(s => s !== ws) || outer[0] || 'y0';
-        F = Pl.place(cs, 2.0, 3.0, 0.9, 0.5);
+        // the couch faces the wall unit (its TV) from the opposite wall if it can, else from a window wall
+        const opp = { y0: 'y1', y1: 'y0', x0: 'x1', x1: 'x0' }[ws],
+          cands = [opp].concat(
+            outer.filter(s => s !== ws && s !== opp),
+            inner.filter(s => s !== ws && s !== opp)
+          );
+        F = null;
+        let cs = null;
+        for (const c of cands)
+          if (!F && Pl.S[c] && Pl.S[c].L >= 2.3) {
+            F = Pl.place(c, 2.0, 3.0, 0.8, 0.5);
+            if (F) cs = c;
+          }
         if (F) L.sitzgruppe(C, F, room);
         F = Pl.any(all, 0.4, 0.4, 1.7, 0.95);
         if (F) L.stehlampe(C, F, F.u0 + 0.2, 0.2);
@@ -1294,15 +1396,26 @@ export const ZIEINR = (() => {
         );
         L.chair(C, T, 0.3, -0.35, Math.PI / 2, look === 'alt' ? M.holz : M.hell);
         L.chair(C, T, r[1] - r[0] - 0.3, r[3] - r[2] + 0.35, -Math.PI / 2, look === 'alt' ? M.holz : M.hell);
-        C.spot('tisch', [(r[0] + r[1]) / 2, (r[2] + r[3]) / 2, C.z], T, null);
+        // the place at the table: on the far chair, facing the table (−n)
+        C.spot('tisch', [r[1] - 0.3, r[3] + 0.35, C.z], { n: [0, 1] }, null);
         C.solidW(r, C.z, C.z + 0.76);
       }
       const W = Pl.S[inner[1] || inner[0] || 'y1'];
       if (W && look !== 'nachwende') L.bild(C, frame(W.O, W.a, W.n), W.L * 0.5, C.z + 1.6, 0.55, 0.42, 2, 0xf0ece0);
     } else if (kind === 'kammer' || kind === 'schlafzimmer' || kind === 'kinderzimmer') {
-      const dbl = kind === 'schlafzimmer' && room.x1 - room.x0 > 3.2 && room.y1 - room.y0 > 3.2;
-      F = Pl.any(inner.concat(outer), dbl ? 1.9 : 1.0, 2.0, 1.1, 0.5);
-      if (F) {
+      const dbl = kind === 'schlafzimmer' && room.x1 - room.x0 > 3.2 && room.y1 - room.y0 > 3.2,
+        bunk = kind === 'kinderzimmer' && look !== 'alt' && R.chance(0.7);
+      F = bunk
+        ? Pl.any(inner.concat(outer), 1.0, 2.0, 1.75, 0.2)
+        : Pl.any(inner.concat(outer), dbl ? 1.9 : 1.0, 2.0, 1.1, 0.5);
+      if (F && bunk) L.stockbett(C, F);
+      else if (F) {
+        // the DDR bed bridge: a shelf unit over the head end with a light (ddr-12)
+        if (look === 'ddr' && dbl) {
+          F.box(C.m, M.birke, F.u0 - 0.05, F.u0 + F.w + 0.05, 0, 0.32, C.z + 1.35, C.z + 1.65);
+          for (const pu of [F.u0 - 0.05, F.u0 + F.w]) F.box(C.m, M.birke, pu, pu + 0.05, 0, 0.32, C.z, C.z + 1.35);
+          L.deckchen(C, ...F.P(F.u0 + F.w / 2, 0.16, 0).slice(0, 2), C.z + 1.651, 0.14);
+        }
         L.bett(C, F, F.w);
         const N = Pl.at(F.side, F.u0 + F.w + 0.05, 0.45, 0.4, 0.7);
         if (N) {
@@ -1314,6 +1427,10 @@ export const ZIEINR = (() => {
       }
       F = Pl.any(inner.concat(outer), 1.3, 0.6, 2.05, 0.5);
       if (F) L.kleiderschrank(C, F, F.w);
+      if (look === 'alt' && kind !== 'kinderzimmer') {
+        F = Pl.any(outer.concat(inner), 0.82, 0.46, 0.9, 0.5);
+        if (F) L.waschtisch(C, F);
+      }
       if (kind === 'kinderzimmer') {
         F = Pl.any(outer.concat(inner), 1.2, 1.0, 0.8, 0.5);
         if (F) L.schreibtisch(C, F, false);

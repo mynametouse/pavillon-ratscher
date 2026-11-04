@@ -38,6 +38,7 @@ import { COL, WALK, hingeDoor, flapDoor, DOORS } from '../core/geo.js';
 import { P as WALKER, rebuildGrids } from '../game/walkable.js';
 import { go, setView3 } from '../game/player.js';
 import { PLAY } from '../game/play.js';
+import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
 import { ZIPLAN } from './z_innen_plan.js';
 import { ZIMOB } from './z_innen_mob.js';
@@ -173,10 +174,10 @@ export const ZINNEN = (() => {
     if (k === 'boden') return { wall: M.holzdecke, floor: M.dielen, ceil: M.holzdecke };
     if (k === 'bad')
       return {
-        wall: look === 'alt' ? M.putz : M.fliesen,
+        wall: M.putz,
         floor: M.fliesen,
         ceil: M.decke,
-        tiles: look === 'alt' ? M.fliesenWand : null,
+        tiles: look === 'alt' ? M.fliesenWand : M.fliesen, // tiles to 1.4 m (bad-3: light blue and white in the DDR)
       };
     if (look === 'alt') {
       if (k === 'stube') {
@@ -520,7 +521,9 @@ export const ZINNEN = (() => {
       return c;
     };
     C.part = o => {
-      if (o.container && o.container.parts.length >= 1) o = Object.assign({}, o, { container: null }); // one moving part each (draw calls)
+      // one moving part each and ten in a house at most (draw calls); the others are searched without moving
+      if (o.container && (o.container.parts.length >= 1 || H.parts.length >= 10))
+        o = Object.assign({}, o, { container: null });
       if (!o.container) {
         // a leaf that never opens: part of the furniture
         const F = o.F,
@@ -586,57 +589,48 @@ export const ZINNEN = (() => {
       return sp;
     };
     C.seat = (pos, F, label) => C.spot('sitz', pos, F, label);
+    // a lamp: its shade in the room's furniture (a palette colour), and a glowing copy a hair larger that is only in the scene while the
+    // room's light is on (an unlit lamp costs no draw call of its own)
     C.lamp = (pos, kind, r) => {
-      const mat = ZIMOB.glowMat(kind === 'bulb' ? 0xfff2d6 : C.R.pick([0xf3ead8, 0xe8c890, 0xf0e0c0])),
+      const shadeCol = kind === 'bulb' ? 0xfff2d6 : C.R.pick([0xf3ead8, 0xe8c890, 0xf0e0c0]),
+        mat = ZIMOB.glowMat(shadeCol),
         pm = new ZIMOB.Mesher(pos),
         x = pos[0],
         y = pos[1],
-        z = pos[2];
-      if (kind === 'bulb')
-        pm.lathe(
-          mat,
-          x,
-          y,
-          [
-            [0.0, z - 0.04],
-            [0.035, z - 0.02],
-            [0.03, z + 0.03],
-            [0.012, z + 0.06],
-          ],
-          8,
-          { caps: false }
-        );
-      else if (kind === 'small')
-        pm.lathe(
-          mat,
-          x,
-          y,
-          [
-            [r, z - 0.1],
-            [r * 0.6, z + 0.08],
-          ],
-          10,
-          { caps: false }
-        );
-      else
-        pm.lathe(
-          mat,
-          x,
-          y,
-          [
-            [r, z - 0.06],
-            [r * 0.85, z],
-            [r * 0.35, z + 0.12],
-            [0.03, z + 0.16],
-          ],
-          12,
-          { caps: false }
-        );
+        z = pos[2],
+        prof =
+          kind === 'bulb'
+            ? [
+                [0.0, z - 0.04],
+                [0.035, z - 0.02],
+                [0.03, z + 0.03],
+                [0.012, z + 0.06],
+              ]
+            : kind === 'small'
+              ? [
+                  [r, z - 0.1],
+                  [r * 0.6, z + 0.08],
+                ]
+              : [
+                  [r, z - 0.06],
+                  [r * 0.85, z],
+                  [r * 0.35, z + 0.12],
+                  [0.03, z + 0.16],
+                ],
+        seg = kind === 'bulb' ? 8 : kind === 'small' ? 10 : 12;
+      furn.lathe(C.col(shadeCol, 0.9), x, y, prof, seg, { caps: false });
+      pm.lathe(
+        mat,
+        x,
+        y,
+        prof.map(([pr, pz]) => [pr * 1.03 + 0.002, pz]),
+        seg,
+        { caps: false }
+      );
       const g = new THREE.Group();
       g.position.copy(V(x, y, z));
-      G.add(g);
       pm.finish(g, false);
-      H.lamps.push({ room: C.room.id, mat, pos: P.toW(x, y).concat(z), kind });
+      H.lamps.push({ room: C.room.id, mat, pos: P.toW(x, y).concat(z), kind, g });
     };
     // ---- holes: the main stair's in every upper floor, the attic stair's in the attic floor, the hatch in the ground floor ----
     const holeOf = st => {
@@ -1028,7 +1022,7 @@ export const ZINNEN = (() => {
         );
       const key = 'zinnen:' + id + ':luke',
         lg = new THREE.Group(),
-        lm = new ZIMOB.Mesher([h.x0, h.y0, z0]),
+        lm = new ZIMOB.Mesher([h.x0, h.y1, z0]),
         lid = C.col(0x6a4a30, 0.7);
       lm.box(lid, h.x0, h.x1, h.y0, h.y1, z0 - 0.03, z0 + 0.005);
       for (const yy of [h.y0 + 0.15, h.y1 - 0.2])
@@ -1037,17 +1031,17 @@ export const ZINNEN = (() => {
         M.schwarz,
         (h.x0 + h.x1) / 2 - 0.08,
         (h.x0 + h.x1) / 2 + 0.08,
-        h.y1 - 0.12,
-        h.y1 - 0.06,
+        h.y0 + 0.06,
+        h.y0 + 0.12,
         z0 + 0.005,
         z0 + 0.02
-      );
-      const hw = P.toW(h.x0, h.y0),
+      ); // the grip at the free end
+      const hw = P.toW(h.x0, h.y1), // the hinge at the far end: the lid opens away from the one who goes down
         pw = P.toW((h.x0 + h.x1) / 2, h.y0 - 0.5);
       const inner = new THREE.Group();
       lg.add(inner);
       lm.finish(inner, false);
-      const D = flapDoor(key, lg, { hx: hw[0], hy: hw[1], z: z0, rot: 'x', open: 1.75, pos: pw, label: 'Luke' });
+      const D = flapDoor(key, lg, { hx: hw[0], hy: hw[1], z: z0, rot: 'x', open: -1.75, pos: pw, label: 'Luke' });
       lg.rotation.order = 'YXZ';
       lg.rotation.y = Math.atan2(P.F.s, P.F.c);
       D.ph = null;
@@ -1327,7 +1321,12 @@ export const ZINNEN = (() => {
     H.light = (roomId, on) => {
       const v = on === undefined ? !H.lit[roomId] : !!on;
       H.lit[roomId] = v;
-      for (const l of H.lamps) if (l.room === roomId) l.mat.emissiveIntensity = v ? (l.kind === 'bulb' ? 2.2 : 1.4) : 0;
+      for (const l of H.lamps)
+        if (l.room === roomId) {
+          l.mat.emissiveIntensity = v ? (l.kind === 'bulb' ? 2.2 : 1.4) : 0;
+          if (v) G.add(l.g);
+          else G.remove(l.g);
+        }
       S.lightDirty = true;
       markDirty();
       return v;
@@ -1418,6 +1417,13 @@ export const ZINNEN = (() => {
       cols: H.cols.length,
       walks: H.walks.length,
       mem0,
+      terrain: (() => {
+        // how far the terrain rises above the ground floor inside the house (it would show through the floor) – for the log
+        let mx = -1e9;
+        for (let x = P.xi0 + 0.2; x < P.xi1; x += 1)
+          for (let y = P.yi0 + 0.2; y < P.yi1; y += 1) mx = Math.max(mx, KERN.terrain(...P.toW(x, y)));
+        return +(mx - P.zG).toFixed(2);
+      })(),
     };
     G.traverse(o => {
       if (o.isMesh) {
@@ -1430,6 +1436,7 @@ export const ZINNEN = (() => {
         if (o.isMesh) H.stats.draws++;
       });
     S.built.push(H);
+    terrainHole(H);
     wire();
     rebuildGrids();
     markDirty(true);
@@ -1475,7 +1482,7 @@ export const ZINNEN = (() => {
         x: lie ? hp[0] : sp.pos[0],
         y: lie ? hp[1] : sp.pos[1],
         eye: sp.pos[2] + (lie ? 0.75 : 1.2),
-        yaw: sp.yaw + (lie ? 180 : 180),
+        yaw: sp.kind === 'tisch' ? sp.yaw : sp.yaw + 180, // at the table one faces it; on a bench, a couch or in bed away from the wall
         pitch: lie ? 60 : -5,
         kind: lie ? 'lie' : 'sit',
         leaveLabel: 'Aufstehen',
@@ -1609,11 +1616,16 @@ export const ZINNEN = (() => {
       d.group.traverse(o => o.isMesh && o.geometry.dispose());
       delete DOORS[k];
     }
+    for (const l of H.lamps) H.group.remove(l.g);
     H.group.traverse(o => {
       if (o.isMesh) o.geometry.dispose();
-      if (o.isMesh && H.lamps.some(l => l.mat === o.material)) o.material.dispose();
     });
+    for (const l of H.lamps) {
+      l.g.traverse(o => o.isMesh && o.geometry.dispose());
+      l.mat.dispose();
+    }
     scene.remove(H.group);
+    terrainHole(S.built[S.built.length - 1] || null);
     // the neutralised slots stay in COL and WALK (other modules keep indices into them) and serve the next house
     S.poolCol.push(...H.cols);
     S.poolWalk.push(...H.walks);
@@ -1623,6 +1635,51 @@ export const ZINNEN = (() => {
     KERN.emit('zinnen:unmount', { id: H.id });
   };
   S.mounted = () => S.built.slice();
+  // ---- the terrain under a mounted house: on slopes the terrain (world/ratscher.js, a 10 m grid) runs through the ground floor and the
+  // cellar. While a house is mounted its terrain meshes take a copy of the terrain material that leaves out the house's inner rectangle
+  // (the walls hide the cut). One program more, compiled at the first house (behind the fade in), none outside the houses. ----
+  const HOLE = { r: { value: new THREE.Vector4() }, b: { value: new THREE.Vector4(1, -1, 1, -1) } };
+  let holeMat = null,
+    holeMeshes = null;
+  function terrainHole(H) {
+    const tm = RATSCHER && RATSCHER.terrainMat;
+    if (!tm) return;
+    if (!holeMat) {
+      holeMat = tm.clone();
+      const prev = tm.onBeforeCompile;
+      holeMat.onBeforeCompile = (sh, r) => {
+        prev(sh, r);
+        sh.uniforms.uZHole = HOLE.r;
+        sh.uniforms.uZHoleB = HOLE.b;
+        sh.fragmentShader =
+          'uniform vec4 uZHole, uZHoleB;\n' +
+          sh.fragmentShader.replace(
+            'void main() {',
+            `void main() {
+          { vec2 hd = vGeo - uZHole.xy, hl = vec2( dot( hd, uZHole.zw ), dot( hd, vec2( -uZHole.w, uZHole.z ) ) );
+            if ( hl.x > uZHoleB.x && hl.x < uZHoleB.y && hl.y > uZHoleB.z && hl.y < uZHoleB.w ) discard; }`
+          );
+      };
+      holeMat.customProgramCacheKey = () => 'geoterrain|zinnen-hole';
+    }
+    if (!holeMeshes) {
+      holeMeshes = [];
+      scene.traverse(o => {
+        if (o.isMesh && o.material === tm) holeMeshes.push(o);
+      });
+    }
+    if (H) {
+      const P = H.plan;
+      HOLE.r.value.set(P.F.ox, P.F.oy, P.F.c, P.F.s);
+      HOLE.b.value.set(P.xi0 - 0.03, P.xi1 + 0.03, P.yi0 - 0.03, P.yi1 + 0.03);
+      for (const o of holeMeshes) o.material = holeMat;
+    } else {
+      HOLE.b.value.set(1, -1, 1, -1);
+      for (const o of holeMeshes) o.material = tm;
+    }
+    markDirty();
+  }
+  S.terrainHole = () => (holeMeshes ? holeMeshes.length : 0);
   // ---- the test scenario: ?szenario=zombie-innen (&haus=<id>) goes into a house near the Anger (or the given one), third person ----
   S.enter = H => {
     KERN.spot('zinnen', {
