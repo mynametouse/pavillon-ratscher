@@ -215,6 +215,32 @@ export const ZHAUS = (() => {
       }
       return true;
     }
+    // a chainsaw or an axe lying ready (Wolfgang's hall): the weapon in the hand; a second chainsaw gives its fuel
+    if ((k === 'motorsaege' || k === 'axt') && window.ZWAFFE) {
+      const W2 = window.ZWAFFE,
+        st = Z.house(S.bid);
+      if (st.looted.includes(spot.id)) {
+        PLAY.think('Hier lag sie – jetzt nicht mehr.', 1600);
+        return true;
+      }
+      st.looted.push(spot.id);
+      const T = W2.thing(k);
+      if (PLAY.has(T)) {
+        if (k === 'motorsaege') {
+          Z.add('benzin', 1);
+          PLAY.think('Noch eine Säge – ich nehme den Sprit daraus mit.', 2200);
+        } else PLAY.think('Eine Axt habe ich schon.', 1600);
+      } else {
+        PLAY.give(T);
+        if (k === 'motorsaege') W2.state('motorsaege').fuel = Math.max(W2.state('motorsaege').fuel || 0, 0.4);
+        PLAY.think(
+          k === 'motorsaege' ? 'Wolfgangs Motorsäge – fast voll.' : 'Eine schwere Axt. Die liegt gut in der Hand.',
+          2200
+        );
+      }
+      Z.save();
+      return true;
+    }
     if (k === 'spuele' || k === 'wanne') {
       if (Z.food < 95) {
         Z.food = Math.min(100, Z.food + 3);

@@ -99,6 +99,15 @@ export const ZWAFFE = (() => {
       box(g, 0.025, 0.09, 0.012, M.steel, 0.1, 0.36, 0);
       return g;
     },
+    // the forest worker's axe (Wolfgang's hall, zombie/z_innen_einr.js): a long helve, a heavy head
+    axt: M => {
+      const g = new THREE.Group();
+      cyl(g, 0.019, 0.016, 0.78, M.wood, 0, 0);
+      box(g, 0.17, 0.08, 0.034, M.steel, 0.035, 0.75, 0);
+      box(g, 0.03, 0.13, 0.014, M.steel, 0.125, 0.75, 0);
+      box(g, 0.05, 0.05, 0.04, M.dark, -0.04, 0.75, 0);
+      return g;
+    },
     sense: M => {
       const g = new THREE.Group();
       cyl(g, 0.017, 0.015, 1.5, M.wood, 0, 0);
@@ -149,6 +158,7 @@ export const ZWAFFE = (() => {
     mistgabel: { at: 0.75, len: 1.45 },
     brechstange: { at: 0.6, len: 0.9 },
     beil: { at: 0.25, len: 0.4 },
+    axt: { at: 0.6, len: 0.8 },
     sense: { at: 0.5, len: 1.5 },
     motorsaege: { at: 0.05, len: 0.6 },
     flinte: { at: 0.35, len: 1.1 },
@@ -158,6 +168,7 @@ export const ZWAFFE = (() => {
     mistgabel: { x: 0.3, y: -0.38, z: -0.55, rx: -1.25, rz: 0.05 },
     brechstange: { x: 0.3, y: -0.3, z: -0.52, rx: -0.45, rz: 0.3 },
     beil: { x: 0.28, y: -0.24, z: -0.48, rx: -0.3, rz: 0.3 },
+    axt: { x: 0.3, y: -0.36, z: -0.55, rx: -0.4, rz: 0.25 },
     sense: { x: 0.36, y: -0.6, z: -0.7, rx: -0.35, ry: -0.6, rz: 0.4 },
     motorsaege: { x: 0.26, y: -0.36, z: -0.5, rx: -1.35, ry: 0, rz: 0.05 },
     flinte: { x: 0.2, y: -0.22, z: -0.42, rx: -1.5, rz: 0 },
@@ -209,7 +220,7 @@ export const ZWAFFE = (() => {
   // ---- placing them at the start of the night mode: near the menu spots, on the first free place ----
   function placeAll() {
     for (const p of ZDATA.PLACES) {
-      if (!MODELS[p.id]) continue;
+      if (!MODELS[p.id] || p.id === 'axt') continue; // (at Hubert's woodpile lies the game's own axe, id 'axe'; ours is Wolfgang's)
       const T = thing(p.id);
       if (PLAY.has(T) || T.state === 'world') continue;
       if (Z.weap[p.id] && Z.weap[p.id].cond <= 0) continue;

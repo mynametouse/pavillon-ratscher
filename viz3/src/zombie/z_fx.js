@@ -28,7 +28,7 @@ export const ZFX = (() => {
     S.built = true;
     M = {
       blood: plain({ color: 0x4a0303, roughness: 0.3 }),
-      stain: plain({ color: 0x260202, roughness: 0.32, transparent: true, opacity: 0.93, depthWrite: false }),
+      stain: plain({ color: 0x3a0704, roughness: 0.55, transparent: true, opacity: 0.95, depthWrite: false }),
       skin: plain({ color: 0x5f6551, roughness: 0.85 }),
       flesh: plain({ color: 0x5c0807, roughness: 0.45 }),
       bone: plain({ color: 0xb9ad92, roughness: 0.7 }),
@@ -49,8 +49,8 @@ export const ZFX = (() => {
     S.g.userData.noMerge = true;
     scene.add(S.g);
     // a drop: small and stretched along its flight (the matrix turns its long axis into the velocity)
-    const dg = new THREE.IcosahedronGeometry(0.011, 0);
-    dg.scale(1, 2.6, 1);
+    const dg = new THREE.SphereGeometry(0.009, 6, 4);
+    dg.scale(1, 2.4, 1);
     dropIM = new THREE.InstancedMesh(dg, M.blood, ND);
     dropIM.count = 0;
     dropIM.frustumCulled = false;

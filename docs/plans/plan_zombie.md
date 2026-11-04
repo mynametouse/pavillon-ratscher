@@ -64,6 +64,11 @@ Kleine markierte Haken außerhalb: `dorf/dorf.js` (`DORF.S.hold`: abends und nac
    Waffe, Treffer, Zombie-Zustände 10×/s). Vermittlung: öffentliche Signal-Server (z. B. MQTT/Nostr über Trystero, kein eigener Server) oder
    ein kostenloser Cloudflare Worker – Falko entscheidet. Hinweis: manche Mobilfunknetze brauchen einen TURN-Server.
 
+Stand 5.11. früh: Runden 1–4 gebaut (`feat/zombie`, Häuser von innen vom Hilfs-Agenten `zombie-innen` zusammengeführt). Für Runde 4 erst
+einmal Trystero über öffentliche Nostr-Relais (kein eigener Server, kostenlos) – bewusst als Vorschlag, bis Falko entscheidet; ein
+Cloudflare Worker oder TURN-Server ginge später dazu. Tests: `zombie` (Kampf), `zombie_haus` (Häuser, Barrikaden, Einbruch),
+`zombie_netz` (zu zweit, zwei Fenster), `zombie_look` (Bilder), `zombie_innen` (Einrichtung).
+
 ## Steuerung
 
 Linke Maustaste (Maus gefangen) bzw. Klick, Taste Y oder der rote Knopf (Handy): zuschlagen; gedrückt halten: Motorsäge sägt. R: Flinte
