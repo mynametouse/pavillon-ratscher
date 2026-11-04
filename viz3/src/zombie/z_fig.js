@@ -80,16 +80,18 @@ export const ZFIG = (() => {
   let BLOOD = null;
   const bloodMat = () => BLOOD || (BLOOD = plain({ color: 0x3e0606, roughness: 0.3 }));
   // ---- one person, loaded once ----
-  async function proto(key) {
-    if (S.protos[key]) return S.protos[key];
-    if (S.loading[key]) return S.loading[key];
+  // (alive: the same person not turned – a survivor of zombie/z_bund.js – its own copy with the materials as they are)
+  async function proto(key, alive = false) {
+    const ck = alive ? key + ':alive' : key;
+    if (S.protos[ck]) return S.protos[ck];
+    if (S.loading[ck]) return S.loading[ck];
     const w = byKey[key];
     if (!w || !avail(key)) throw new Error('no figure for ' + key);
-    S.loading[key] = (async () => {
+    S.loading[ck] = (async () => {
       const [gl, set] = await Promise.all([CHL.loadAsync(U(CH[w.fig])), clipSet(w.clips)]);
       const model = gl.scene;
       prepModel(model, w.h);
-      zombify(model);
+      if (!alive) zombify(model);
       const clips = {};
       for (const k of [
         'idle',
@@ -108,6 +110,7 @@ export const ZFIG = (() => {
       const s = model.scale.x;
       const P = {
         key,
+        alive,
         w,
         model,
         clips,
@@ -116,16 +119,16 @@ export const ZFIG = (() => {
         crawlSp: ((set.clips.crawl && set.clips.crawl.speed) || 0.35) * 1,
         s,
       };
-      S.protos[key] = P;
+      S.protos[ck] = P;
       S.loads++;
-      delete S.loading[key];
+      delete S.loading[ck];
       return P;
     })().catch(e => {
-      delete S.loading[key];
+      delete S.loading[ck];
       S.err = key + ': ' + String((e && e.message) || e).slice(0, 120);
       throw e;
     });
-    return S.loading[key];
+    return S.loading[ck];
   }
   const _v = new THREE.Vector3(),
     _v2 = new THREE.Vector3(),
@@ -140,7 +143,7 @@ export const ZFIG = (() => {
   };
   // ---- one zombie figure ----
   async function make(key, o = {}) {
-    const P = await proto(key);
+    const P = await proto(key, !!o.alive);
     const model = skelClone(P.model),
       g = new THREE.Group(),
       inner = new THREE.Group();
@@ -200,10 +203,10 @@ export const ZFIG = (() => {
       smears.push(m);
     };
     const r = Math.random;
-    smear(B.Spine2 || B.Spine1, 0.12, -0.05 + r() * 0.1, (r() - 0.5) * 0.12, 0.13, 0.17, 0.03);
-    smear(B.Head, 0.1, -0.07, 0.01, 0.05, 0.04, 0.03);
-    if (r() < 0.6) smear(B.RightHand, 0.02, 0, 0, 0.06, 0.05, 0.03);
-    if (r() < 0.4) smear(B.Hips, 0.13, 0.05, (r() - 0.5) * 0.2, 0.12, 0.09, 0.03);
+    if (!o.alive) smear(B.Spine2 || B.Spine1, 0.12, -0.05 + r() * 0.1, (r() - 0.5) * 0.12, 0.13, 0.17, 0.03);
+    if (!o.alive) smear(B.Head, 0.1, -0.07, 0.01, 0.05, 0.04, 0.03);
+    if (!o.alive && r() < 0.6) smear(B.RightHand, 0.02, 0, 0, 0.06, 0.05, 0.03);
+    if (!o.alive && r() < 0.4) smear(B.Hips, 0.13, 0.05, (r() - 0.5) * 0.2, 0.12, 0.09, 0.03);
     g.visible = false;
     scene.add(g);
     // the zombie's own manner: how it hangs its head, how fast it twitches, which leg drags
@@ -221,6 +224,7 @@ export const ZFIG = (() => {
     const sv = new Map();
     const F = {
       key,
+      alive: !!o.alive,
       name: P.w.name,
       src: P.w.src,
       g,
@@ -280,7 +284,7 @@ export const ZFIG = (() => {
         mixer.update(acc);
         acc = 0;
         model.updateMatrixWorld(true);
-        if (m === 'dead') return;
+        if (m === 'dead' || F.alive) return;
         model.getWorldQuaternion(_q).invert();
         const Q = _q,
           tw = Math.sin(t * 7.3 * M.twitch) * Math.sin(t * 3.1) * 0.08,

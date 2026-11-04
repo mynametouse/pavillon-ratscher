@@ -292,6 +292,7 @@ export const ZFX = (() => {
     dropIM.count = 0;
     markDirty(true);
   }
+  KERN.tick(tick, 'zombie/fx');
   Object.assign(S, { build, dispose, spray, fountain, stain, gib, flash, tick, clear, mats: () => M });
   return S;
 })();

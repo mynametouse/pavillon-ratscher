@@ -19,6 +19,15 @@ KERN.tick(
         home = m >= 22 * 60 || m < 6 * 60;
       for (const w of [N.NPCS.hubert, N.NPCS.ronald]) {
         if (!w || !w.fig) continue;
+        // feat/zombie: an ally of the zombie night (zombie/z_bund.js) stays out with the player at night
+        if (w.keep && w.keep()) {
+          if (w.away) {
+            w.away = false;
+            w.fig.g.visible = true;
+            markDirty();
+          }
+          continue;
+        }
         const g = w.fig.g,
           d = w.dist(),
           seen = P.mode !== 'walk' || (d < 45 && inView(w.x, w.y, 1.2));

@@ -22,7 +22,7 @@ import { ZFIG } from './z_fig.js';
 import { ZINNEN } from './z_innen.js';
 import { ZHORDE } from './z_horde.js';
 export const ZHAUS = (() => {
-  const S = { H: null, bid: null, busy: false, list: null, boards: new Map(), fade: null, rad: 0 };
+  const S = { H: null, bid: null, busy: false, list: null, boards: new Map(), fade: null, rad: 0, onEnter: [] };
   const hyp = Math.hypot;
   // ---- the doors: from ZINNEN (the interiors), or the village's own (then nothing can be entered yet) ----
   function doors() {
@@ -389,6 +389,12 @@ export const ZHAUS = (() => {
     const st = Z.house(S.bid);
     let n = st.lurk || 0;
     if (!n && Z.night > 0 && Math.random() < 0.18) n = 1;
+    // nobody lurking: now and then somebody alive hides here (zombie/z_bund.js)
+    if (!n && !st.met && Math.random() < 0.22) {
+      st.met = true;
+      for (const f of S.onEnter) f(S.H, S.bid);
+      return;
+    }
     if (!n) return;
     const rooms = (S.H.rooms || []).filter(r => r.poly && r.poly.length >= 3 && r.kind !== 'flur');
     for (let i = 0; i < Math.min(n, 2) && rooms.length; i++) {

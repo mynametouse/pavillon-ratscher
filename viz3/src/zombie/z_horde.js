@@ -28,6 +28,8 @@ export const ZHORDE = (() => {
     grid: null,
     fld: null,
     house: null,
+    pick: null,
+    hitAlly: null,
     fieldT: 0,
     queue: [],
     busy: false,
@@ -283,7 +285,7 @@ export const ZHORDE = (() => {
   function pickKey() {
     const all = ZFIG.people();
     if (!all.length) return null;
-    const loaded = Object.keys(ZFIG.protos);
+    const loaded = Object.keys(ZFIG.protos).filter(k => !k.endsWith(':alive'));
     if (loaded.length >= ZFIG.maxPeople()) return loaded[Math.floor(rnd() * loaded.length)];
     const fresh = all.filter(k => !loaded.includes(k));
     return (fresh.length ? fresh : all)[Math.floor(rnd() * (fresh.length ? fresh : all).length)];
@@ -361,7 +363,7 @@ export const ZHORDE = (() => {
     if (o.kind !== 'blunt' || dmg > 30) ZTON.splat(e.x, e.y, Math.min(1.4, dmg / 40));
     ZFX.spray(e.x, e.y, hz, ux, uy, Math.round(6 + dmg * 0.25), 1.6 + k, 1.2);
     // a limb off: blades, the saw and the shotgun, sometimes; the head only from a hard blow
-    if (e.F && o.gore && rnd() < o.gore * Math.min(1, dmg / 50)) {
+    if (e.F && o.gore && (o.part || rnd() < o.gore * Math.min(1, dmg / 50))) {
       let part = o.part;
       if (!part) {
         const r = rnd();
@@ -562,6 +564,22 @@ export const ZHORDE = (() => {
       }
       return;
     }
+    // held in a pose (tests, a scene): no thinking, no moving
+    if (e.hold) {
+      if (F) {
+        F.mode = e.hold === true ? 'idle' : e.hold;
+        F.speed = e.holdSp || 0;
+        F.g.position.copy(V(e.x, e.y, e.z));
+        F.g.rotation.y = (-e.hd * Math.PI) / 180;
+        F.anim(dt, near);
+      }
+      return;
+    }
+    // an ally nearer than the player is the one it goes for (zombie/z_bund.js)
+    if (S.pick && e.st !== 'hide') {
+      const a = S.pick(e, t);
+      if (a) t = a;
+    }
     if (e.st !== 'hide') think(e, dt, t);
     if (e.st === 'eat') {
       if (F) {
@@ -583,8 +601,12 @@ export const ZHORDE = (() => {
     if (e.wind > 0) {
       e.wind -= dt;
       if (e.wind <= 0 && e.d < D.reach + 0.65 && !t.car) {
-        Z.hurt(e.hit * (e.crawl ? 0.6 : 1), e.name);
-        Z.emit('hit', { id: e.id, x: e.x, y: e.y });
+        if (t.ally) {
+          if (S.hitAlly) S.hitAlly(t.ally, e.hit * (e.crawl ? 0.6 : 1), e);
+        } else {
+          Z.hurt(e.hit * (e.crawl ? 0.6 : 1), e.name);
+          Z.emit('hit', { id: e.id, x: e.x, y: e.y });
+        }
       }
     } else if (!e.crawl || e.d < 1) {
       if (
@@ -603,7 +625,7 @@ export const ZHORDE = (() => {
     let gx = 0,
       gy = 0,
       v = D.walk * e.sp;
-    const hz = e.st === 'chase' && S.house && S.house.inside() ? S.house.redirect(e) : null;
+    const hz = e.st === 'chase' && !t.ally && S.house && S.house.inside() ? S.house.redirect(e) : null;
     if (hz) {
       v = (e.crawl ? 0.45 : D.chase) * e.sp;
       if (hz.d < 1.15) {

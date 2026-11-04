@@ -12,6 +12,7 @@ import { ZDATA } from './z_data.js';
 import { Z } from './z_state.js';
 import { ZTON } from './z_ton.js';
 import { ZWAFFE } from './z_waffe.js';
+import { ZBUND } from './z_bund.js';
 export const ZHUD = (() => {
   const S = { el: null, shown: false, msgT: 0, flash: 0, last: '', acts: {} };
   const CSS = `
@@ -34,6 +35,9 @@ body[data-zombie="1"] #qtrack{display:none!important}
 #zhud .zx{margin-top:5px;display:flex;gap:6px;flex-wrap:wrap}
 #zhud .zx button{font:500 11px/1 var(--f-body,system-ui);color:#f2e9e4;background:rgba(255,255,255,.12);border:0;border-radius:999px;padding:6px 9px;cursor:pointer}
 #zhud .zx button:hover{background:rgba(255,255,255,.22)}
+#zhud .zq{margin-top:6px;display:flex;gap:6px} #zhud .zq[hidden]{display:none}
+#zhud .zq input{flex:1;min-width:0;font:500 12px/1 var(--f-body,system-ui);padding:6px 8px;border-radius:6px;border:0;background:rgba(255,255,255,.9);color:#222}
+#zhud .zq button{font:600 11px/1 var(--f-body,system-ui);border:0;border-radius:999px;padding:6px 10px;background:#ffb3a1;color:#2a0b0b;cursor:pointer}
 #zflash{position:absolute;inset:0;pointer-events:none;z-index:5;opacity:0;background:radial-gradient(ellipse at center,rgba(120,0,0,0) 35%,rgba(150,0,0,.75) 100%);transition:opacity .25s}
 #zmsg{position:absolute;left:50%;top:24%;transform:translateX(-50%);z-index:7;max-width:min(720px,88vw);text-align:center;pointer-events:none;
   color:#fbe7df;font:600 clamp(18px,3.2vw,30px)/1.3 var(--f-display,Georgia,serif);text-shadow:0 2px 14px rgba(0,0,0,.85);letter-spacing:.01em}
@@ -72,6 +76,8 @@ body[data-zombie="1"] #qtrack{display:none!important}
        <div class="zw"><b id="zwn"></b><span id="zwi"></span></div>
        <div class="zs" id="zsup"></div>
        <div class="zk" id="zkills"></div>
+       <div class="zk" id="zclan"></div>
+       <div class="zq" id="zclanq" hidden><input id="zclanin" maxlength="28" placeholder="Name eures Clans"><button data-z="clan">Gründen</button></div>
        <div class="zx"><button data-z="eat">Essen</button><button data-z="drink">Trinken</button><button data-z="heal">Verbinden</button><button data-z="wait">Warten</button><button data-z="end">Beenden</button></div>`
     );
     S.flashEl = div('zflash');
@@ -121,8 +127,20 @@ body[data-zombie="1"] #qtrack{display:none!important}
       if (Z.hp >= 100) return PLAY.think('Mir fehlt nichts.', 1200);
       Z.eat(f);
       PLAY.think(f === 'verband' ? 'Verbunden.' : ZDATA.ITEMS[f].name + '.', 1300);
+    } else if (k === 'clan') {
+      const v = ($('zclanin').value || '').trim() || 'Die Ratscher';
+      Z.clan.name = v.slice(0, 28);
+      Z.save();
+      $('zclanq').hidden = true;
+      PLAY.think('Euer Clan heißt jetzt „' + Z.clan.name + '“.', 2500);
     } else if (S.acts[k]) S.acts[k]();
   }
+  // the first ally: the clan gets a name (zombie/z_bund.js asks)
+  ZBUND.askName = () => {
+    build();
+    $('zclanq').hidden = false;
+    setTimeout(() => $('zclanin').focus(), 50);
+  };
   function show(on) {
     build();
     S.shown = on;
@@ -201,6 +219,12 @@ body[data-zombie="1"] #qtrack{display:none!important}
       .join('  ');
     $('zsup').textContent = sup || 'Rucksack leer';
     $('zkills').textContent = '☠ ' + Z.kills + ' erledigt · Nächte überlebt: ' + Z.survived;
+    const al = ZBUND.list.map(
+      a => a.name + (a.down ? ' (verletzt)' : a.dead ? ' †' : a.mode === 'wachen' ? ' (wacht)' : '')
+    );
+    $('zclan').textContent = al.length
+      ? (Z.clan.name ? 'Clan „' + Z.clan.name + '“: ' : 'Mit dir: ') + al.join(', ')
+      : '';
     S.cross.hidden = !(w.id === 'flinte');
   }
   KERN.tick(tick, 'zombie/hud');

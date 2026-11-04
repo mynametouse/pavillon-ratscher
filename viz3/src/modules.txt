@@ -160,6 +160,7 @@ zombie/z_innen.js           # feat/zombie-innen the village houses from inside: 
 zombie/z_horde.js           # feat/zombie the horde: turning at the siren, roaming, seeing, hearing, hunting, striking, dying, run over (ZHORDE)
 zombie/z_haus.js            # feat/zombie the houses at night: going in and out (fade), searching, barricades, sleeping, the radio; they break in (ZHAUS)
 zombie/z_waffe.js           # feat/zombie weapons and fighting: swing, saw, shoot, condition, fuel, shells (ZWAFFE)
+zombie/z_bund.js            # feat/zombie allies: Hubert and Ronald come along, survivors from the houses, the clan (ZBUND)
 zombie/z_hud.js             # feat/zombie the panel: health, stamina, hunger, weapon, supplies, the clock to the siren; flash, death screen (ZHUD)
 zombie/z_modus.js           # feat/zombie the mode: start, day and night, the siren, death, the end; the scenario and the task (ZOMBIE)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)

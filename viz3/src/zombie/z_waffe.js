@@ -369,8 +369,10 @@ export const ZWAFFE = (() => {
         // the saw stays in them: blood all the time, now and then a limb (the nearest one: arms first, then the head)
         h.e.sawT = (h.e.sawT || 0) + dt;
         let part = null;
-        if (h.e.sawT > 0.45 && Math.random() < dt * 2.2)
+        if (h.e.sawT > 0.3 && Math.random() < dt * 3.5)
           part = !h.e.F || !h.e.F.cuts.armR ? 'armR' : !h.e.F.cuts.armL ? 'armL' : 'kopf';
+        // the saw finishes it: often the head goes with the last of it
+        if (!part && h.e.hp - dmg <= 0 && Math.random() < 0.45) part = 'kopf';
         ZHORDE.damage(h.e, dmg, {
           dx: h.dx,
           dy: h.dy,
