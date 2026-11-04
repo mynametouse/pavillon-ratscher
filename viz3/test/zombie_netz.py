@@ -81,5 +81,9 @@ with lib.browser() as b:
     try:
         A.screenshot(path=os.path.join(OUT, 'host.png')); B.screenshot(path=os.path.join(OUT, 'gast.png'))
     except Exception as e: print('shot', e)
+    terr = A.evaluate("(window.LOADLOG && LOADLOG.errs || []).filter(e => /Takt (zombie|zinnen)/.test(e)).map(e => e.slice(0, 300))")
+    ck('no zombie tick broke (A)', not terr, ' | '.join(terr[:2]))
+    terr = B.evaluate("(window.LOADLOG && LOADLOG.errs || []).filter(e => /Takt (zombie|zinnen)/.test(e)).map(e => e.slice(0, 300))")
+    ck('no zombie tick broke (B)', not terr, ' | '.join(terr[:2]))
     ck.errors(errs)
 ck.done()

@@ -110,5 +110,7 @@ with lib.browser() as b:
     ck('out again: interior away', not st['H'] and st['mounted'] == 0, str(st))
     ck('no new shader programs from the house', m1['p'] <= m0['p'] + 1, f"{m0} -> {m1}")
     pic('06_draussen')
+    terr = pg.evaluate("(window.LOADLOG && LOADLOG.errs || []).filter(e => /Takt (zombie|zinnen)/.test(e)).map(e => e.slice(0, 300))")
+    ck('no zombie tick broke', not terr, ' | '.join(terr[:2]))
     ck.errors(errs)
 ck.done()

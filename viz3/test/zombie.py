@@ -136,5 +136,7 @@ with lib.browser() as b:
     st = J("({ on: ZSTATE.on, hud: !document.getElementById('zhud').hidden, ents: ZSTATE.ents.length, live: ZFIG.live.size, protos: Object.keys(ZFIG.protos).length, w: Object.values(ZWAFFE.things).filter(t => t.state !== 'gone').length })")
     ck('„Beenden“ puts everything back', not st['on'] and not st['hud'] and st['ents'] == 0 and st['live'] == 0 and st['w'] == 0, str(st))
     print('programs', E("GAME.R.info.programs.length"), flush=True)
+    terr = pg.evaluate("(window.LOADLOG && LOADLOG.errs || []).filter(e => /Takt (zombie|zinnen)/.test(e)).map(e => e.slice(0, 300))")
+    ck('no zombie tick broke', not terr, ' | '.join(terr[:2]))
     ck.errors(errs)
 ck.done()

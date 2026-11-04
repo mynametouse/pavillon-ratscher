@@ -98,7 +98,8 @@ export const ZFX = (() => {
   }
   // ---- blood: n drops from (x, y, z) towards the direction (dx, dy) with speed v (a fan), k = how much ----
   function spray(x, y, z, dx = 0, dy = 0, n = 14, v = 2.4, up = 1.6) {
-    if (!S.built) return;
+    if (!S.built || !Number.isFinite(x + y + z)) return;
+    if (!Number.isFinite(dx + dy)) dx = dy = 0;
     const L = Math.hypot(dx, dy) || 1;
     for (let i = 0; i < n; i++) {
       if (S.drops.length >= ND) S.drops.shift();
@@ -128,8 +129,9 @@ export const ZFX = (() => {
   }
   // ---- a stain on the floor at (x, y), radius r (the floor height from the walk surfaces: also indoors) ----
   function stain(x, y, r = 0.4, z) {
-    if (!S.built) return;
-    const fz = z ?? KERN.ground(x, y);
+    if (!S.built || !Number.isFinite(x + y)) return;
+    let fz = z ?? KERN.ground(x, y);
+    if (!Number.isFinite(fz)) fz = KERN.ground(x, y) || 0;
     // a pool and, for the bigger ones, a few splashes around it
     const n = r > 0.25 ? 3 + Math.floor(Math.random() * 3) : r > 0.12 ? 1 + Math.floor(Math.random() * 2) : 0;
     for (let j = 0; j <= n; j++) {
@@ -247,7 +249,10 @@ export const ZFX = (() => {
         d.x += d.vx * dt;
         d.y += d.vy * dt;
         d.z += d.vz * dt;
-        if (d.floor === null) d.floor = floorAt(d.x, d.y, d.z + 0.2);
+        if (d.floor === null) {
+          d.floor = floorAt(d.x, d.y, d.z + 0.2);
+          if (!Number.isFinite(d.floor)) d.floor = d.z - 3; // (no floor found: it falls until its life ends)
+        }
         if (d.z <= d.floor || d.life <= 0) {
           if (Math.random() < 0.3) stain(d.x, d.y, 0.06 + Math.random() * 0.12, d.floor);
           S.drops.splice(i, 1);
