@@ -690,6 +690,9 @@ export const DN = (() => {
   function nowJD() {
     return S.mode === 'night' ? NIGHT_JD : jdOf(CLOCK.t);
   }
+  // feat/wetter: the weather (wetter/wx_sky.js) changes the look of the moment before it is applied – HOOK.look(LOOK, s); a new HOOK.v
+  // applies it at the next tick
+  const HOOK = { look: null, v: 0 };
   function compute() {
     const s = skyAt(nowJD());
     const top = typeof P !== 'undefined' && P.mode === 'top';
@@ -711,6 +714,14 @@ export const DN = (() => {
     s.gi = (L.gi * s.env) / Math.max(1e-3, L.env);
     s.lim = 6.1 - 2.6 * mVis;
     s.starK = top ? 0 : sst(-4.5, -11, s.sunEl);
+    // feat/wetter
+    if (HOOK.look && !top && S.mode === 'auto')
+      try {
+        HOOK.look(LOOK, s);
+      } catch (e) {
+        console.warn('wetter', e);
+        HOOK.look = null;
+      }
     return s;
   }
   // light direction: the sun by day and in the twilight, the moon at night
@@ -745,7 +756,8 @@ export const DN = (() => {
       Math.abs(L.nK - A.nK) > 0.005 ||
       Math.abs(L.gS - A.gS) > Math.max(0.002, A.gS * 0.02) ||
       Math.abs(s.lst - A.lst) > 0.25 ||
-      Math.abs(s.mVis - A.mVis) > 0.01;
+      Math.abs(s.mVis - A.mVis) > 0.01 ||
+      A.hookV !== HOOK.v; // feat/wetter
     if (!moved && !fade) return;
     // MODES.auto holds the values other modules read (exposure, lamps, plan view)
     MA.az = s.sunAz;
@@ -836,6 +848,7 @@ export const DN = (() => {
       gS: L.gS,
       lst: s.lst,
       mVis: s.mVis,
+      hookV: HOOK.v, // feat/wetter
     };
     hudIcon(s);
     // V17g: a new shadow map only when the light has turned by a visible step since the last one was drawn, for whatever reason (0.5°
@@ -1124,6 +1137,9 @@ export const DN = (() => {
     SU,
     lookAt,
     hint: () => S.hint,
+    // feat/wetter: the sky's material (its program gets the clouds before it is compiled) and the hook of the weather
+    skyMat: dnSkyMat,
+    hook: HOOK,
   };
 })();
 LATE.DN = DN;

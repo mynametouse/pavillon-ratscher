@@ -1,0 +1,467 @@
+// ===================== feat/wetter: the weather of the real place (WETTER) – live as the default, switchable to the calendar's =====================
+// Falko, 5.11.2026 23:02 (clicked): „Wetter live als Standard“ – the world shows the weather it has in Ratscher right now; „nach Kalender“
+// keeps the sky as it was (the photographed skies of the day, no rain). 23:17: „Wichtig ist natürlich trotzdem immer der Realismus.“
+// The data: Open-Meteo (wetter/wx_data.js), fetched by the browser for the garden's place, the current values refreshed every 15 minutes
+// while the page is shown, kept for the visit. The game's clock is mostly not „now“ (its own pace, a scene, the time-lapse, sleeping, the
+// zombie night on the 31st of October): then the real weather of the game's date and hour where Open-Meteo has it – the forecast for up
+// to 16 days ahead, the forecast API's memory and the archive for the past –, else the calendar's. The clock window says which („Wetter wie
+// draußen“, „Wetter vom 31.10.“, „Vorhersage für 7.11.“, „Wetter nach Kalender“) and how it is („Leichter Regen · 6 °C · Wind 20 km/h –
+// Open-Meteo“); there one switches (also Menü → Einstellungen), sets the clock to now, or tries a weather (Regen, Schnee, Nebel …).
+// Shown by wetter/wx_sky.js (clouds, light, haze), wetter/wx_fall.js (rain, snow) and wetter/wx_ton.js (rain, roof, wind, thunder), eased
+// over a few seconds; only with the light of the day's course (Menü → Erleben → Tageslauf), not in the plan view. Saved: pav-wetter-v1
+// { v: 1, m: 'live' | 'kalender' }. Tests: navigator.webdriver – no request ever leaves a test browser; WETTER.mock(fn | json | 'fail')
+// answers instead (viz3/test/wetter.py). URL: ?wetter=kalender | live | regen | schnee | nebel | … (a weather to try).
+import { SAVE } from '../core/save.js';
+import { $, OFFLINE, QS } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { markDirty } from '../core/assets.js';
+import { hemi } from '../garden/env.js';
+import { P } from '../game/walkable.js';
+import { PLAY } from '../game/play.js';
+import { audio } from '../audio/audio.js';
+import { CLOCK } from '../time/clock.js';
+import { DN } from '../time/daynight.js';
+import { VEH } from '../vehicles/vehicle.js';
+import { WXDATA } from './wx_data.js';
+import { WXSKY } from './wx_sky.js';
+import { WXFALL } from './wx_fall.js';
+import { WXTON } from './wx_ton.js';
+export const WETTER = (() => {
+  const KEY = 'pav-wetter-v1';
+  const saved = SAVE.get(KEY);
+  const S = {
+    mode: saved && saved.m === 'kalender' ? 'kalender' : 'live',
+    store: { hours: new Map(), current: null },
+    req: new Map(),
+    now: { st: '', at: 0, failT: 0, fails: 0, err: '' },
+    src: 'kalender',
+    label: 'Wetter nach Kalender',
+    why: '',
+    rec: null,
+    w: null,
+    want: null,
+    cur: { cover: 0, rain: 0, snow: 0, vis: 60000, wind: 0, gust: 0, dir: 250 },
+    snapNext: true,
+    preset: null,
+    mock: null,
+    calls: [],
+    flash: { t: 0, next: 8, k: 0, n: 0, base: 0 },
+    acc: 0,
+  };
+  const AUTOMATED = typeof navigator !== 'undefined' && !!navigator.webdriver;
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  // ---- requests: the browser's fetch (15 s at most), a test's answer, or nothing at all in an automated browser ----
+  function get(url) {
+    S.calls.push(url);
+    if (S.calls.length > 40) S.calls.shift();
+    if (S.mock)
+      return Promise.resolve()
+        .then(() => S.mock(url))
+        .then(j => {
+          if (!j) throw new Error('keine Antwort');
+          return j;
+        });
+    if (AUTOMATED || OFFLINE || typeof fetch !== 'function') return Promise.reject(new Error('keine Abfrage (Test)'));
+    const ac = typeof AbortController === 'function' ? new AbortController() : null,
+      tm = ac ? setTimeout(() => ac.abort(), 15000) : 0;
+    return fetch(url, ac ? { signal: ac.signal } : undefined)
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .finally(() => clearTimeout(tm));
+  }
+  // the current values and the hours around now: every 15 minutes while the page is shown; after a failure 2, 4, 8 … up to 30 minutes
+  function fetchNow(force) {
+    const N = S.now,
+      t = Date.now();
+    if (N.st === 'loading' || (typeof document !== 'undefined' && document.hidden && !force)) return;
+    if (!force && N.st === 'ok' && t - N.at < 15 * 60e3) return;
+    if (!force && N.st === 'fail' && t - N.failT < Math.min(30, 2 * 2 ** Math.min(4, N.fails - 1)) * 60e3) return;
+    N.st = 'loading';
+    get(WXDATA.url('now')).then(
+      j => {
+        WXDATA.parse(j, S.store);
+        N.st = 'ok';
+        N.at = Date.now();
+        N.fails = 0;
+        N.err = '';
+        pick(true);
+      },
+      e => {
+        N.st = 'fail';
+        N.failT = Date.now();
+        N.fails++;
+        N.err = String((e && e.message) || e);
+        pick(true);
+      }
+    );
+  }
+  // the hours of another day (the game's): the forecast API, else the archive; 'ok' | 'loading' | 'fail' | 'none' (nobody has it)
+  function need(u) {
+    const plans = WXDATA.plan(u, Date.now() / 1000);
+    for (const p of plans) {
+      const r = S.req.get(p.key);
+      if (r && r.st === 'ok') continue;
+      if (r && r.st === 'loading') return 'loading';
+      if (r && r.st === 'fail' && Date.now() - r.t < 10 * 60e3) continue;
+      S.req.set(p.key, { st: 'loading', t: Date.now() });
+      get(WXDATA.url(p.kind, p.d0, p.d1)).then(
+        j => {
+          WXDATA.parse(j, S.store);
+          S.req.set(p.key, { st: 'ok', t: Date.now() });
+          pick(true);
+        },
+        e => {
+          S.req.set(p.key, { st: 'fail', t: Date.now(), err: String((e && e.message) || e) });
+          pick(true);
+        }
+      );
+      return 'loading';
+    }
+    return plans.length ? 'fail' : 'none';
+  }
+  // ---- the game's moment as a UTC instant (s), the real one, and how to name a day ----
+  const gameU = () => (DN.jdOf(CLOCK.t) - 2440587.5) * 86400;
+  const dm = u => {
+    const d = new Date(u * 1000 + 3600e3);
+    return d.getUTCDate() + '.' + (d.getUTCMonth() + 1) + '.';
+  };
+  // ---- which weather now: a try, the calendar's, the current values, an hour of the game's day ----
+  function pick(fresh) {
+    const was = S.src + S.label;
+    let rec = null,
+      src = 'kalender',
+      label = 'Wetter nach Kalender',
+      why = '';
+    if (S.preset) {
+      rec = WXDATA.PRESETS[S.preset];
+      src = 'probe';
+      label = 'Ausprobiert: ' + (PNAME[S.preset] || S.preset);
+    } else if (S.mode === 'live') {
+      const now = Date.now() / 1000,
+        u = gameU(),
+        near = Math.abs(u - now) < 45 * 60;
+      fetchNow(false);
+      const c = S.store.current;
+      if (near && c && S.now.st !== 'fail' && Date.now() - S.now.at < 25 * 60e3 && Math.abs(c.t - now) < 40 * 60) {
+        rec = c;
+        src = 'jetzt';
+        label = 'Wetter wie draußen';
+      } else {
+        rec = WXDATA.at(S.store, u);
+        if (rec) {
+          src = 'stunde';
+          label = near ? 'Wetter wie draußen' : u < now ? 'Wetter vom ' + dm(u) : 'Vorhersage für ' + dm(u);
+        } else {
+          const st = near && S.now.st === 'loading' ? 'loading' : need(u);
+          why =
+            st === 'loading'
+              ? 'Open-Meteo wird gefragt …'
+              : st === 'none'
+                ? 'für den ' + dm(u) + ' gibt es noch keine Vorhersage'
+                : 'Open-Meteo ist gerade nicht erreichbar';
+          // while the answer is on its way the last weather stays (no flicker to the calendar and back)
+          if (st === 'loading' && S.rec && S.src !== 'kalender' && S.src !== 'probe') {
+            rec = S.rec;
+            src = S.src;
+            label = S.label;
+          }
+        }
+      }
+    }
+    S.rec = rec;
+    S.src = src;
+    S.label = label;
+    S.why = rec ? '' : why;
+    S.w = WXDATA.norm(rec);
+    if (fresh && was !== S.src + S.label && CLOCK.winOpen) CLOCK.redraw && CLOCK.redraw();
+    return S.w;
+  }
+  const PNAME = {
+    klar: 'Sonne',
+    heiter: 'Heiter',
+    wolkig: 'Wolken',
+    bedeckt: 'Bedeckt',
+    niesel: 'Niesel',
+    regen: 'Regen',
+    starkregen: 'Starkregen',
+    schauer: 'Schauer',
+    gewitter: 'Gewitter',
+    schnee: 'Schnee',
+    graupel: 'Graupel',
+    nebel: 'Nebel',
+    sturm: 'Sturm',
+  };
+  // ---- the effects: eased towards the chosen weather (a few seconds; quick in the time-lapse; at once after loading or for a test) ----
+  const ZERO = { cover: 0, rain: 0, snow: 0, vis: 60000, wind: 0, gust: 0, dir: 250 };
+  function ease(dt) {
+    const w = S.w || ZERO,
+      c = S.cur;
+    const k = S.snapNext ? 1 : 1 - Math.exp(-dt / (CLOCK.warp ? 0.7 : 4));
+    S.snapNext = false;
+    c.cover += (w.cover - c.cover) * k;
+    c.rain += (w.rain - c.rain) * k;
+    c.snow += (w.snow - c.snow) * k;
+    // the visibility on a log scale (fog comes and goes evenly)
+    c.vis = Math.exp(Math.log(c.vis) + (Math.log(w.vis) - Math.log(c.vis)) * k);
+    c.wind += (w.wind - c.wind) * k;
+    c.gust += (w.gust - c.gust) * k;
+    const dd = ((((w.dir - c.dir) % 360) + 540) % 360) - 180;
+    c.dir = (c.dir + dd * k + 360) % 360;
+    for (const key of ['rain', 'snow']) if (c[key] < 0.002) c[key] = 0;
+  }
+  const shown = () => DN.active && DN.mode === 'auto' && P.mode !== 'top';
+  function tick(dt) {
+    dt = Math.min(dt, 0.25);
+    // the choice once a second (and at once after a change); the effects every frame
+    if ((S.acc += dt) > 1 || !S.picked) {
+      S.acc = 0;
+      S.picked = true;
+      pick(false);
+    }
+    ease(dt);
+    const on = shown(),
+      c = S.cur,
+      wx = S.w || {},
+      any = c.cover > 0.003 || c.rain > 0 || c.snow > 0 || c.vis < 20000 || c.wind > 3;
+    WXSKY.set({ on: on && any, cover: c.cover, rain: c.rain, snow: c.snow, vis: c.vis, wind: c.wind, dir: c.dir });
+    WXSKY.tick(dt, !window.FREEZE);
+    const inside = !!(audio.inside && audio.inside());
+    const fall = WXFALL.set(
+      {
+        on,
+        rain: c.rain,
+        snow: c.snow,
+        drizzle: !!wx.drizzle,
+        graupel: wx.code === 77,
+        wind: c.wind,
+        gust: c.gust,
+        dir: c.dir,
+        col: WXSKY.U.wxHor.value,
+        hole: VEH && VEH.cur ? 2.4 : 0.35,
+        hide: inside || !on,
+      },
+      dt
+    );
+    if (fall) {
+      WXFALL.tick(dt);
+      markDirty();
+    }
+    WXTON.update(
+      {
+        on: on || (S.src !== 'kalender' && P.mode === 'walk'),
+        rain: c.rain,
+        drizzle: !!wx.drizzle,
+        wind: c.wind,
+        gust: c.gust,
+        gustK: WXFALL.S.gustK,
+        inside,
+      },
+      dt
+    );
+    lightning(dt, on && !!wx.thunder);
+  }
+  KERN.tick(tick, 'wetter');
+  // ---- lightning in a thunderstorm: a flash in the sky and on the land (the sky light for a moment), thunder after it by the distance ----
+  function lightning(dt, storm) {
+    const F = S.flash;
+    if (F.k > 0) {
+      F.k = Math.max(0, F.k - dt * 9);
+      WXSKY.U.wxFlash.value = F.k * F.k * 2.2;
+      hemi.intensity = F.base + F.k * 1.6;
+      markDirty();
+      if (F.k === 0) {
+        WXSKY.U.wxFlash.value = 0;
+        if (DN.hook) DN.hook.v++;
+      }
+    }
+    if (!storm) return;
+    if ((F.next -= dt) > 0) return;
+    F.next = 6 + Math.random() * 26;
+    F.base = F.k > 0 ? F.base : hemi.intensity;
+    F.k = 1;
+    F.n++;
+    WXTON.thunder(600 + Math.random() * 7000);
+  }
+  // ---- the mode (saved), a weather to try (this visit only), tests ----
+  function setMode(m) {
+    if (m !== 'live' && m !== 'kalender') return;
+    S.mode = m;
+    S.preset = null;
+    SAVE.set(KEY, { v: 1, m });
+    pick(true);
+    if (m === 'live') fetchNow(true);
+    ui();
+  }
+  function preset(name) {
+    S.preset = name && WXDATA.PRESETS[name] ? name : null;
+    pick(true);
+    ui();
+  }
+  // ---- the clock window: what it is, where it comes from, the switch, the clock to now, a weather to try ----
+  function line() {
+    const w = S.w;
+    if (!w)
+      return S.mode === 'live' && S.why ? S.why + ' – Himmel nach dem Kalender' : 'Himmel und Licht nach dem Kalender';
+    const day = DN.state ? DN.state.sunEl > -2 : true,
+      parts = [WXDATA.text(S.rec, day) || w.text];
+    if (Number.isFinite(w.temp)) parts.push(Math.round(w.temp) + ' °C');
+    const kmh = Math.round(w.wind * 3.6),
+      gk = Math.round(w.gust * 3.6);
+    parts.push(kmh < 2 ? 'windstill' : 'Wind ' + kmh + ' km/h' + (gk >= kmh + 15 ? ', Böen ' + gk : ''));
+    if (w.vis < 5000)
+      parts.push('Sicht ' + (w.vis < 1000 ? Math.round(w.vis / 10) * 10 + ' m' : (w.vis / 1000).toFixed(1) + ' km'));
+    return parts.filter(Boolean).join(' · ') + (S.src === 'probe' ? '' : ' – Open-Meteo');
+  }
+  const ZON = () => !!(window.ZSTATE && window.ZSTATE.on);
+  function winHTML() {
+    const near = S.src === 'jetzt' || S.label === 'Wetter wie draußen',
+      b = (k, t) => `<button type="button" data-wxp="${k}" aria-pressed="${S.preset === k}">${t}</button>`;
+    return `<h4>Wetter</h4><div class="ckdate wxline"><b>${S.label}</b><span>${line()}</span></div>
+      <div class="mrow"><span>Wetter</span><div class="mseg"><button type="button" data-wx="live" aria-pressed="${S.mode === 'live' && !S.preset}">wie draußen</button><button type="button" data-wx="kalender" aria-pressed="${S.mode === 'kalender' && !S.preset}">nach Kalender</button></div></div>
+      ${S.mode === 'live' && !near && !ZON() ? '<div class="ckw" style="margin-top:8px"><button type="button" data-wxnow>Uhr und Datum auf jetzt</button></div>' : ''}
+      <details class="wxtry"><summary class="mnote">Wetter ausprobieren</summary><div class="ckw" style="margin-top:6px">${Object.keys(
+        PNAME
+      )
+        .map(k => b(k, PNAME[k]))
+        .join('')}</div></details>`;
+  }
+  function winBind(win) {
+    win.querySelectorAll('[data-wx]').forEach(x => x.addEventListener('click', () => setMode(x.dataset.wx)));
+    win.querySelectorAll('[data-wxp]').forEach(x =>
+      x.addEventListener('click', () => {
+        preset(S.preset === x.dataset.wxp ? null : x.dataset.wxp);
+        const d = win.querySelector('details.wxtry');
+        if (d) d.open = true;
+      })
+    );
+    const n = win.querySelector('[data-wxnow]');
+    if (n) n.addEventListener('click', clockToNow);
+    if (S.tryOpen) {
+      const d = win.querySelector('details.wxtry');
+      if (d) d.open = true;
+    }
+    const d = win.querySelector('details.wxtry');
+    if (d) d.addEventListener('toggle', () => (S.tryOpen = d.open));
+  }
+  if (CLOCK.section) CLOCK.section({ html: winHTML, bind: winBind });
+  // the game's date and time as outside in Ratscher (local time, Europe/Berlin), the clock in real time – then the weather is today's
+  function clockToNow() {
+    try {
+      const f = new Intl.DateTimeFormat('de-DE', {
+          timeZone: 'Europe/Berlin',
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hourCycle: 'h23',
+        }),
+        q = Object.fromEntries(f.formatToParts(new Date()).map(p => [p.type, p.value])),
+        d = Math.floor(CLOCK.t / 1440);
+      DN.e0 = Date.UTC(+q.year, +q.month - 1, +q.day) / 864e5 - d;
+      CLOCK.t = d * 1440 + +q.hour * 60 + +q.minute;
+      CLOCK.setRate('real');
+      if (DN.active) DN.update(true);
+      S.snapNext = true;
+      pick(true);
+      PLAY.think('Datum und Uhrzeit wie draußen – die Spielzeit läuft jetzt in Echtzeit.', 3500);
+      ui();
+    } catch (e) {
+      console.warn('wetter: Uhr', e);
+    }
+  }
+  // ---- Menü → Einstellungen → Spiel: one more row „Wetter“ (put in by this module, beside „Spielzeit“) ----
+  function menuRow() {
+    const page = document.querySelector('.mpage[data-page="einstellungen"]');
+    if (!page || $('wxseg')) return;
+    const row = document.createElement('div');
+    row.className = 'mrow';
+    row.innerHTML =
+      '<span>Wetter</span><div class="mseg" id="wxseg"><button type="button" data-wxm="live" title="Wie gerade draußen in Ratscher (Open-Meteo) – bei einer anderen Spielzeit das Wetter dieser Stunde">wie draußen</button><button type="button" data-wxm="kalender" title="Himmel und Licht wie bisher, ohne Niederschlag">nach Kalender</button></div>';
+    const after = $('crateseg') && $('crateseg').closest('.mrow');
+    if (after) after.after(row);
+    else page.appendChild(row);
+    row.querySelectorAll('[data-wxm]').forEach(x => x.addEventListener('click', () => setMode(x.dataset.wxm)));
+  }
+  function ui() {
+    document
+      .querySelectorAll('#wxseg [data-wxm]')
+      .forEach(x => x.setAttribute('aria-pressed', String(x.dataset.wxm === S.mode)));
+    if (CLOCK.winOpen && CLOCK.redraw) CLOCK.redraw();
+  }
+  menuRow();
+  ui();
+  // ?wetter=kalender | live (the mode, saved) or a weather to try
+  {
+    const q = QS.get('wetter');
+    if (q === 'kalender' || q === 'live') setMode(q);
+    else if (q && WXDATA.PRESETS[q]) S.preset = q;
+  }
+  // back in the tab after a while: fresh values
+  if (typeof document !== 'undefined')
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && S.mode === 'live') fetchNow(false);
+    });
+  return {
+    get mode() {
+      return S.mode;
+    },
+    setMode,
+    preset,
+    get label() {
+      return S.label;
+    },
+    line,
+    get src() {
+      return S.src;
+    },
+    // tests: answers instead of Open-Meteo – a function (url) → JSON (or a promise of it), one JSON for every request, 'fail', or null
+    mock(m) {
+      S.mock =
+        m === 'fail' ? () => Promise.reject(new Error('Testfehler')) : typeof m === 'function' ? m : m ? () => m : null;
+      S.store = { hours: new Map(), current: null };
+      S.req.clear();
+      Object.assign(S.now, { st: '', at: 0, failT: 0, fails: 0, err: '' });
+      S.rec = null;
+      S.src = 'kalender';
+      pick(true);
+    },
+    snap() {
+      S.snapNext = true;
+      pick(true);
+      tick(0.016);
+    },
+    refresh: () => fetchNow(true),
+    clockToNow,
+    state: () => ({
+      mode: S.mode,
+      src: S.src,
+      label: S.label,
+      line: line(),
+      why: S.why,
+      preset: S.preset,
+      w: S.w,
+      cur: { ...S.cur },
+      now: { ...S.now },
+      calls: S.calls.slice(),
+      hours: S.store.hours.size,
+      fall: { n: WXFALL.S.n, on: WXFALL.S.on, kR: WXFALL.S.kR, kS: WXFALL.S.kS },
+      sky: { cov: WXSKY.U.wxCov.value, fog: WXSKY.U.wxFog.value, mask: WXSKY.S.mask, patched: WXSKY.patched },
+      ton: WXTON.levels(),
+      fallU: {
+        wind: [WXFALL.U.uWind.value.x, WXFALL.U.uWind.value.y],
+        rain: WXFALL.U.uRain.value.toArray(),
+        snow: WXFALL.U.uSnow.value.toArray(),
+        hole: WXFALL.U.uHole.value,
+      },
+      flash: S.flash.k,
+      flashes: S.flash.n,
+      automated: AUTOMATED,
+    }),
+    data: WXDATA,
+    S,
+  };
+})();
+window.WETTER = WETTER;
