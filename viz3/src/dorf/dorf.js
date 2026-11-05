@@ -683,6 +683,7 @@ export const DORF = (() => {
           console.warn('dorf', e);
         }
       }
+    if (S.hold && S.hold()) return; // feat/zombie: the zombie night (zombie/z_modus.js) keeps the villagers out of evenings and gardens
     const sc = school();
     if (!sc) return;
     const mx = P.mode === 'walk' ? P.x : cam.position.x,
