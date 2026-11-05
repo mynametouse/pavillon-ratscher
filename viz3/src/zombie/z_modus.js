@@ -124,7 +124,7 @@ export const ZOMBIE = (() => {
     ZFX.dispose();
     ZFIG.disposeAll();
     ZHUD.show(false);
-    fog(0, true);
+    fogHook(false);
     DORF.S.hold = null;
     nightStreets(false);
     if (S.prevMode) setMode(S.prevMode);
@@ -245,24 +245,36 @@ export const ZOMBIE = (() => {
     PLAY.think(S.lamp ? 'Taschenlampe an.' : 'Taschenlampe aus.', 900);
   });
   // ---- per frame ----
-  // ---- the night's fog (Silent Hill): the village sinks into the dark beyond 40–80 m; the scene's own fog, only its density ----
-  function fog(dt, off) {
+  // ---- the night's fog (Silent Hill): the village sinks into the dark beyond 40–80 m. The scene's own fog (its program stays), only
+  //      its density – and that the day-and-night light sets anew whenever the sky moves (time/daynight.js); so while the mode is on
+  //      the density reads as the larger of the light's value and ours ----
+  let fogBase = null,
+    fogZ = 0;
+  function fogHook(on) {
     const F = scene.fog;
     if (!F || !F.isFogExp2) return;
-    const want = !off && P.mode !== 'top' ? (Z.phase === 'nacht' ? 0.016 : Z.phase === 'abend' ? 0.0055 : null) : null;
-    if (want != null) {
-      if (!S.fogged) {
-        S.fog0 = F.density;
-        S.fogged = true;
-      }
-      F.density += (want - F.density) * Math.min(1, dt * 0.35);
-    } else if (S.fogged) {
-      F.density += (S.fog0 - F.density) * (off ? 1 : Math.min(1, dt * 0.5));
-      if (off || Math.abs(F.density - S.fog0) < 2e-6) {
-        F.density = S.fog0;
-        S.fogged = false;
-      }
+    if (on && fogBase === null) {
+      fogBase = F.density;
+      Object.defineProperty(F, 'density', {
+        configurable: true,
+        enumerable: true,
+        get: () => Math.max(fogBase, fogZ),
+        set: v => {
+          fogBase = v;
+        },
+      });
+    } else if (!on && fogBase !== null) {
+      const v = fogBase;
+      delete F.density;
+      F.density = v;
+      fogBase = null;
+      fogZ = 0;
     }
+  }
+  function fog(dt) {
+    fogHook(true);
+    const want = P.mode === 'top' ? 0 : Z.phase === 'nacht' ? 0.016 : Z.phase === 'abend' ? 0.0055 : 0;
+    fogZ = P.mode === 'top' ? 0 : fogZ + (want - fogZ) * Math.min(1, dt * 0.35);
   }
   function tick(dt) {
     if (!Z.on) return;
