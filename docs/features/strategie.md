@@ -1,0 +1,159 @@
+# Ratscher von oben – der Aufbau- und Strategie-Modus (feat/strategie)
+
+Falkos Wunsch (5.11.2026, 23:11–23:30, Konzept `docs/plans/plan_strategie.md`): dieselbe Welt von oben, gesteuert wie Die Siedler 3,
+Age of Empires und Warcraft 3, mit einem Hauch Black & White – realistisch in Logik, Zahlen und Abläufen; man soll dabei wirklich etwas lernen.
+Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/plans/auftraege/strategie.md`).
+
+## Was es gibt (Stand: erster Zuwachs)
+
+- **Die Szene** „Ratscher von oben“ (Menü → Erleben → Szenen, `?szenario=strategie`): die Draufsicht (`world/siteplan.js`) wird zum Spielfeld,
+  oben links die Leiste der Vorräte (Euro, Stämme in fm, Bretter in m³, Brennholz in rm, Strom der Powerstation in %, Benzin und Diesel in l –
+  alles aus der Welt gelesen: dieselben Stämme, Bretter und Liter wie zu Fuß), links die fünf Leute mit Stufe, Zustand und Bedürfnissen
+  (Kraft, Essen, Stimmung), rechts die Zeit (Pause, 1×, 5×, 30×, Zeitraffer bis zum Auftrag, zum Wochenende, bis morgen), Kasse, Ebenen und
+  „Zur Welt“. Taste **U** wechselt zwischen oben und der Welt, die Leertaste hält die Zeit an.
+- **Leute:** Falko, Sarah, Christoph (deine Leute, die Spielfiguren) und Hubert, Ronald (die Nachbarn mit eigenem Willen und eigenen Tagen).
+  Jede Person hat Können (Holz, Maschinen, Garten, Bauen, Reden), Lehrgänge, Schutzausrüstung, Erfahrung und Stufen, Fähigkeiten mit
+  Abklingzeit (Falko „Meisterstück“, „Wochenplan“; Sarah „Dorfversammlung“, „Gut verhandelt“; Christoph „Notreparatur“) und ständige Wirkungen.
+- **Wer ist wann da** (Falkos Wahl): deine Leute vom Vorabend freier Tage (19:30) bis zum Nachmittag des letzten (16:00) – Wochenenden,
+  Thüringer Feiertage (Ostern berechnet, Weltkindertag, Reformationstag …), Urlaub (`STRAT.S.plan.urlaub`). Hubert und Ronald helfen werktags
+  und samstags von 7:30 bis 18 Uhr gegen einen Gefallen (♥ in der Liste); sonntags ruhen sie, nachts sind sie daheim.
+- **Steuern:** Maus – Klick wählt, Rahmen wählt mehrere, Rechtsklick schickt hin (Boden) oder gibt einen Auftrag (Ort), Rechts ziehen oder
+  Pfeiltasten verschieben, Mausrad zoomt; Doppelklick auf eine Person: selbst übernehmen. Touch – antippen wählt, mit Auswahl auf den Boden oder
+  einen Ort tippen schickt, ziehen verschiebt, zwei Finger zoomen, „Rahmen“ für eine Rahmenauswahl.
+- **Orte** mit Feld (Vorrat, Aufträge, wer dort ist, was fehlt): Werkstatt, Holzlager, Alte Garage, Garten, die Klinge, Huberts Hof, Ronalds Hof,
+  Bungalow.
+- **Aufträge über die echten Abläufe:** der erste ist „Rasen mähen“ (Benzinmäher aus der Garage, ~1 l/h, 300–500 m²/h je nach Können; der
+  Rasen wird in der Welt wirklich kurz – `garden/grass.js`; laut: nicht sonntags, werktags nur 7–20 Uhr). Ein Auftrag läuft unsichtbar weiter,
+  wenn niemand hinsieht (auch beim Gehen in der Ich-Sicht), und wartet mit Grund (Regel, Feierabend, Wetter, Benzin).
+- **Regeln mit „Warum?“:** jede Absage nennt die Regel, ihren Grund und die Quelle (`STDATA.RULES`): Sonn- und Feiertagsruhe (Thüringer
+  Feiertagsgesetz, 32. BImSchV), Ruhezeit 20–7 Uhr (32. BImSchV § 7), Tageslicht im Wald, Lehrgang und Alleinarbeitsverbot (DGUV Regel 114-018),
+  Forst-PSA (DGUV I 214-046), Gehörschutz und Eichenstaub (TRGS 553), Sturm, nasses Gras, Saftruhe.
+- **Strom:** zwei PV-Module (0,86 kWp, Ertrag nach Monat und Bewölkung, PVGIS Südthüringen) laden die Powerstation (2 kWh); reicht sie nicht,
+  springt das Benzin-Aggregat der Garage an (2,8 kW, 1,1 l/h aus demselben Tank wie zu Fuß).
+- **Euro mit echten Preisen** (`STDATA.PRICES`, jede mit Quelle oder ausgewiesener Annahme; Benzin und Diesel: ADAC Oktober 2026), Startkapital
+  2.500 €, Kasse mit Buchungen.
+- **Dein Stil** (Black & White): ein Wert von −100 (rücksichtslos) bis +100 (vorbildlich), unten links angezeigt.
+- **Wetter:** live über `window.WETTER.at(t)` (feat/wetter), solange es das nicht gibt, aus dem Klima von Meiningen Tag für Tag gewürfelt.
+- **Speichern:** ein Schlüssel `pav-strat-v1` (über `SAVE`, mit Prüfung); ein Neuladen mitten im Auftrag geht weiter, auch von oben.
+
+## Testen
+
+- Ohne Browser: `node --test viz3/test/unit/strategie.test.mjs` (Feiertage, wer wann da ist, Ruhezeiten mit Quellen, PV, Speicher, Stufen,
+  Bedürfnisse, Wege, Preise mit Quellen).
+- Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9002 --serve strategie` (Abschnitte
+  `start,leute,auftrag,regel,reload,welt`); auf GitHub über `viz3/extra/strategie/tests.txt`, Bilder in `out/strategie/`.
+
+## API für Erweiterungen
+
+Stabil ab dem ersten Zuwachs (6.11.2026). Alles über `STRAT` (`viz3/src/strategie/st_modus.js`, `import { STRAT } from '../strategie/st_modus.js'`,
+für Tests auch `window.STRAT`); Daten in `STDATA` (`st_data.js`), reine Logik in `STCORE` (`st_core.js`), die Brücken in die Welt in `STWELT`
+(`st_welt.js`, `STRAT.W`). Neue Module eines Themas kommen in `viz3/src/modules.txt` in einen eigenen Block **unter** `strategie/st_hud.js`
+(z. B. `# feat/dorfprojekte`) und importieren `STRAT`; Ereignisse kommen als `KERN.emit('strategie:<name>', daten)`.
+
+**Grundsatz:** der Modus ist eine Linse auf die eine Welt. Ein Auftrag ändert denselben Zustand wie die Ich-Sicht (über `STRAT.W` bzw. die
+Module der Welt), nie eine Kopie. „Was wäre wenn“-Zukünfte sind später eigene Kopien, nicht dieser Modus.
+
+### Orte
+```js
+STRAT.place.define({
+  id: 'kirche', name: 'Dorfkirche', icon: '⛪', order: 60, r: 8,  // r: Umkreis (m), in dem jemand „dort“ ist
+  pos: () => [x, y],                         // Lage in Grundstücks-Metern (sonst STWELT.placePos(id) bzw. STDATA.PLACES)
+  sub: () => 'Text unter dem Titel',          // optional
+  stock: () => [['Bretter', '1,2 m³'], …],    // Vorrat im Feld
+  info: () => '<h4>…</h4>…',                  // eigenes HTML im Feld (optional)
+  missing: () => ['Es fehlt: …'],             // Engpässe
+  badge: () => '3 Aufträge',                  // kurzer Text an der Karte (Ebene „Wirtschaft“)
+  beds: 2,                                    // Betten für die Nacht (Grenze wie „Supply“: STRAT.beds())
+});
+```
+
+### Vorräte der Leiste
+```js
+STRAT.res.define({ id: 'obst', label: 'Obst', icon: '🍎', unit: 'kg', order: 70, get: () => kg, fmt: v => …, tip: 'Text' | () => 'Text' });
+STRAT.res.val('obst');  // der Wert jetzt
+```
+Vorräte werden aus der Welt **gelesen** (`get`), nicht doppelt gehalten. Was es in der Welt noch nicht gibt, hält das Thema selbst
+(eigener SAVE-Schlüssel oder `STRAT.S.ext[thema]`).
+
+### Aufträge (Jobs)
+```js
+STRAT.job.define({
+  id: 'zaun', label: 'Zaun reparieren', place: 'garten', order: 20,
+  people: [1, 2],                 // wie viele
+  skill: 'bauen', min: 2,         // Können (holz | maschinen | garten | bauen | reden), Mindeststufe 1–5
+  cert: 'motorsaege', certOne: true, // Lehrgang: alle – oder einer im Team (certOne)
+  loud: true, where: 'dorf',      // laut → Ruhezeiten; 'wald' → Tageslicht; saw: true → Sonntagsruhe auch im Wald
+  heavy: 0.5, xp: 1,              // wie sehr es ermüdet (0–1), Erfahrung je Minute
+  watt: 2000,                     // Strom der Maschinen, solange gearbeitet wird (PV → Powerstation → Aggregat)
+  favour: 1,                      // Gefallen, den ein Nachbar dafür kostet
+  text: 'Kurzbeschreibung', learn: 'Was man dabei lernt (echt, mit Zahlen)',
+  dur: (j, cx) => 90,             // Arbeitsminuten bei Tempo 1 (oder eine Zahl)
+  can: cx => null | 'regel_id' | { no: true, text, why, src },  // Bedingungen: Wetter, Material, Jahreszeit …
+  init: (j, cx) => {}, start: (j, cx) => {}, step: (j, cx, minuten, anteil) => {}, finish: (j, cx) => ({ text }), stop: (j, cx) => {},
+  speed: (j, cx) => 1, spot: (j, personId) => [x, y], show: () => true,
+});
+STRAT.job.check('zaun', ['falko'])        // null oder eine Absage { rule, text, why, src }
+STRAT.job.add('zaun', ['falko', 'sarah']) // der Auftrag { id, def, place, who, st: 'go'|'work'|'wait'|'done'|'stop', why, need, done, dur, d }
+STRAT.job.cancel(id); STRAT.job.running(); STRAT.job.of(id); STRAT.job.at(placeId)
+```
+`cx` (Kontext): `{ t, m, day, date, sun, wx, job, who, S, STRAT, W, eff, skill }` – `day` aus `STCORE.day` (Wochentag, Feiertag, frei),
+`sun` = `{ up, down }` in Minuten, `wx` = `{ cloud, rain, wind, storm, src }`, `eff` = Tempo des Teams aus den Bedürfnissen und Stufen,
+`skill` = das beste Können im Team. `step` bekommt die Arbeitsminuten dieses Schritts (Spielzeit × Tempo) und den Anteil 0–1 – dort
+verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hinsieht, und es stimmt auch im Zeitraffer).
+
+### Regeln, Absagen, Lernen
+- `STDATA.RULES[id] = { text, why, src }` – jede Regel sagt in einem deutschen Satz, warum, mit Quelle. `STRAT.refuse(id, wer)` baut die Absage;
+  `can` darf eine Regel-ID oder eine eigene Absage zurückgeben. Das Feld zeigt sie mit „Warum?“.
+- `STCORE.rule(datum, minute, { loud, where, saw, sun })` → Regel-ID oder `null` (Ruhezeiten, Tageslicht).
+
+### Leute, Helden, Bedürfnisse
+- `STRAT.person.define({ id, name, short, col, own, fig, npc, role, skills, certs, gear, presence: t => ({ ok, why }) })` – weitere Leute.
+- `STRAT.S.people[id]` = `{ xp, nd: { energy, food, mood }, certs, cd, buff, job, path, pos }`; `STRAT.level(id)`, `STRAT.skillOf(id, skill)`,
+  `STRAT.present(id, t)`, `STRAT.pos(id, t)`, `STRAT.send(id, [x, y], { place })`, `STRAT.takeOver(id)` (Ich-Sicht).
+- Fähigkeiten: Daten in `STDATA.HEROES[person].abilities` (`{ id, label, cd: Tage, text }`), Wirkung über
+  `STRAT.ability.define({ id, lasts: Tage, run: ({ who, S, STRAT, t }) => ({ ok, text } | { no, text }) })`; `STRAT.ability.buff(person, id)`
+  sagt, ob sie gerade wirkt (z. B. „Meisterstück“ beim nächsten Brett).
+- Bedürfnisse (The Sims): `STCORE.needs`, `STCORE.eff` – Kraft und Essen bestimmen das Tempo, die Stimmung das Wohlwollen. Essen kommt aus dem
+  Vorrat `STRAT.res` `essen` (mit `take(n)`), wenn ein Thema ihn anlegt; Betten über die Orte (`beds`).
+- Gefallen der Nachbarn: `STRAT.favour(id, ±n, wofür)`, Stand in `STRAT.S.favours`.
+
+### Geld, Stil, Wissen
+- `STRAT.book(eur, text, kategorie)` – Buchung (negativ = Ausgabe), Stand `STRAT.S.eur`, Liste `STRAT.S.ledger`; Preise in `STDATA.PRICES`.
+- `STRAT.style(delta, warum)` – Black & White: wie du arbeitest (Ruhezeiten, faire Preise, schonend fällen, helfen); `STRAT.S.style` (−100 … 100).
+- `STRAT.reveal(art, id, daten, wer, { title, source, text })` – Erkunden statt Nebel: was man über einen Ort weiß, weiß man, weil jemand
+  hingegangen ist; beim ersten Mal `KERN.emit('strategie:entdeckt', { kind, id, title, source, text, by })` (Haken für das Entdeckungsbuch).
+  `STRAT.known(art, id)` → `{ t, by, data }` oder `null`.
+- Wissen und Ausbau (Lehrgänge, Maschinen, Stufen): `STDATA.KNOW`; Zeitalter (Bauphasen): `STDATA.AGES` mit `PHASE` aus `game/walkable.js`.
+
+### Ereignisse, Bestellungen, Kapitel, Ebenen
+- `STRAT.event.define({ id, label, chance: cx => p, run: cx => ({ text } | false), why, src })` – einmal je Spieltag gewürfelt (gleicher Tag,
+  gleicher Wurf); `STRAT.fire(id)` löst es aus. Tiere (feat/tiere) melden ihre Schäden so oder über eigene KERN-Ereignisse.
+- `STRAT.order.add({ title, n, minStars, days | due, pay, … })` → `STRAT.S.orders` (`st: 'offen' | 'geliefert' | 'verspätet'`).
+- `STRAT.chapter.define({ id, title, text, order })`, `STRAT.chapter.set(id)`, `STRAT.chapter.cur()`.
+- `STRAT.layer.define({ id, label, text, order, on, draw: (pr, W, H) => '<svg-Text>' })` – eine Ebene der Karte, im HUD schaltbar;
+  `pr(x, y, z)` → `[px, py, tiefe]`. Vorhanden: leute, orte, wege, beduerfnisse, wirtschaft, natur, krisen, verkehr, wetter.
+
+### Zeit und Ereignisse von STRAT
+- `STRAT.setSpeed(0 | 1 | 5 | 30)` (Spielminuten je Sekunde; 1× = die normale Spieluhr), `STRAT.skip(minuten | 'kommen' | 'morgen' | 'auftrag')`
+  (Zeitraffer über `CLOCK.wait`), `STRAT.setDate('2026-11-07', minute)` (Tests, ohne den Sprung zu simulieren). Die Uhr läuft von oben über
+  `CLOCK.drive` (time/clock.js). Die Simulation läuft, wann immer die Spieluhr läuft – auch beim Gehen.
+- KERN-Ereignisse: `strategie:modus` {on}, `strategie:auftrag` {id, def, who, state: neu | begonnen | wartet | fertig | abgebrochen, out, why},
+  `strategie:unterwegs`, `strategie:angekommen`, `strategie:da`, `strategie:buchung`, `strategie:stil`, `strategie:entdeckt`, `strategie:ereignis`,
+  `strategie:bestellung`, `strategie:faehigkeit`, `strategie:stufe`, `strategie:gefallen`, `strategie:tag`, `strategie:kapitel`.
+- Gespeichert: `pav-strat-v1`; ein Thema hält Kleines in `STRAT.S.ext[thema]` (wird mitgespeichert) oder in einem eigenen SAVE-Schlüssel.
+
+## Offen (nächste Zuwächse dieser Nacht)
+
+Holzkette (Förster markiert → fällen → rücken → Holzlager → Blockbandsäge → Trockenstapel → Werkstatt → Bestellung), Strom an den Maschinen,
+Ereignisse (Sturm, Borkenkäfer, Maschinenschaden, Großbestellung), die Bestellung „5 Schneidebretter Eiche“, 3D-Figuren deiner Leute aus der Nähe,
+Telefon.
+
+## Für den Lead
+
+- Gemeinsame Dateien (markiert mit `feat/strategie`): `viz3/src/time/clock.js` – `CLOCK.drive(fn)` (eine andere Ansicht lässt die Uhr laufen;
+  drei Zeilen in `running`/`rate` und ein Eintrag im Rückgabeobjekt).
+- `viz3/src/modules.txt`: Block `# feat/strategie` vor `game/tutorial.js`.
+- Neuer Speicher-Schlüssel `pav-strat-v1` (im Modul über `SAVE.key` angemeldet, Prüfung `v === 1`) – bitte in `docs/ARCHITECTURE.md` §8 eintragen.
+- Neue `window`-Namen: `STRAT`, `STHUD`.
+- Quellen (nur als Text in den Daten, keine fremden Dateien): ADAC Kraftstoffpreise, TFZ Bayern Scheitholzpreise, PVGIS (EU JRC), DGUV, SVLFG,
+  KWF, 32. BImSchV, Thüringer Feiertagsgesetz, TRGS 553 – keine Zeile in `buildlib/credits.py` nötig.

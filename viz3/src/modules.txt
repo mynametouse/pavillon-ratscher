@@ -173,6 +173,13 @@ zombie/z_werk.js            # feat/zombie-werk crafting at a workbench: the pane
 zombie/z_werk_molotow.js    # feat/zombie-werk the molotov: thrown with F, flight, shatter, fire with a borrowed light, burning zombies (ZMOLO)
 zombie/z_ziele.js           # feat/zombie-ziele objectives through the days and nights: tasks with targets, the chain, the marker in the world (ZZIEL)
 zombie/z_ziele_bus.js       # feat/zombie-ziele the end of the third night: the radio, the bus at the old school, the last wave, the ending screen (ZBUS)
+# feat/strategie: „Ratscher von oben“ below this line (after the wood, the workshop, the garage, the neighbours and the plan view it steers; before the frame loop)
+strategie/st_data.js        # feat/strategie people, heroes, places, prices with sources, power, machines, rules with their reasons, knowledge, ages – data (STDATA)
+strategie/st_core.js        # feat/strategie calendar and holidays, who is there when, quiet hours, PV and the power station, levels, needs – pure (STCORE)
+strategie/st_welt.js        # feat/strategie the bridges to the one world: sun, weather, places, the neighbours' walkers, fuel, the lawn, wood (STWELT)
+strategie/st_modus.js       # feat/strategie the mode: state pav-strat-v1, jobs, people, time, money, style, events, the API for extensions (STRAT)
+strategie/st_jobs.js        # feat/strategie places, stocks of the bar, layers, abilities, chapters, the first job: mowing (STJOBS)
+strategie/st_hud.js         # feat/strategie the lens: HUD, overlay over the plan view, selecting, sending, panels, notices with „Warum?“ (STHUD)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue

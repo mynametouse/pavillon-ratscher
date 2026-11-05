@@ -1,0 +1,2 @@
+# feat/strategie: „Ratscher von oben“ – the mode, HUD, people, jobs, the wood chain (one test name per line, as for viz3/test/run.py)
+strategie
