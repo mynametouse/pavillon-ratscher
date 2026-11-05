@@ -30,7 +30,8 @@ Fotos und was daraus folgt: `docs/plans/zombie_einrichtung.md`.
   Couchlehne; Sofakissen mit Knick; an den Wänden 2–4 Dinge je Raum (Bilder, Wandteller, Spiegel, in Küchen ein Kalender, über dem
   Herd der Wandschoner), nie über hohen Möbeln oder Fenstern; Flickenteppiche in alten Häusern; Blumen auf den meisten Fensterbänken
   (Geranie, Grünlilie, in der DDR Kaktus); Gardinen in jedem Raum; Deckenlampen nach Zeit (Glasschale, Kugel- und Tütenlampe,
-  flache Deckenschale; Deckenfluter nach 1990); alte Küchen mit Kohlenkasten, Eimer, Topfleiste, Handtuchhalter; große Räume eine
+  flache Deckenschale; Deckenfluter nach 1990); alte Küchen mit Kohlenkasten, Eimer, Topfleiste, Handtuchhalter; auf den
+  Arbeitsplatten Vorratsdosen, Brotkasten, Wasserkessel bzw. Kaffeemühle; im Bad Vorleger und Handtuch am Halter; große Räume eine
   zweite Gruppe (Nähtisch mit Nähmaschine, Sessel mit Beistelltisch, Kommode). Alles in Palettenfarben bzw. den Raum-Materialien –
   keine Draw-Calls dazu (höchstens 54 in allen 230 Häusern).
 - **Licht bei Tag warm**: die Eigenleuchte der hauseigenen Materialien (Decken, Wände, Böden, Furniere, Teppich, Bilder) ist warm
@@ -98,11 +99,21 @@ Module: `zombie/z_innen_plan.js` (ZIPLAN, Grundriss), `zombie/z_innen_mob.js` (Z
 - `H.stats.terrain`: wie weit das Gelände im Haus über den Erdgeschossboden reicht (> 0: es würde durch den Boden schauen) – zur Kontrolle.
 - `H.openings`: `front: true` tragen die Haustür (immer `openings[0]`, id `haustuer`) und auch die Fenster der Straßenseite.
 
-## Offen (Stand 5.11.2026 früh)
+## Stand und offene Punkte (Abschluss des Hilfs-Agenten, 5.11.2026 ~4 Uhr)
 
-- Alle 230 Häuser: jeder Raum zu Fuß erreichbar, jeder Wegpunkt dort, wo man stehen kann (Durchlauf `sweep`, streng). Wo die
-  Bodentreppe nur neben dem Schornstein Platz fand, fehlt der Schornstein im Dachboden (draußen steht er); ohne Platz für eine
-  Bodentreppe gibt es keinen Dachboden.
+**Stand:** alle 230 Häuser von `ZINNEN.list()` sind begehbar (Jens' Haus 246 gehört nicht dazu, s. u.); in allen ist jeder Raum zu Fuß erreichbar
+und jeder Wegpunkt von `H.graph` steht, wo man stehen kann (Durchlauf `sweep`, streng); höchstens 54 Draw-Calls und < 150 k
+Dreiecke je Haus; Aufbau im Mittel ≈ 0,12 s, höchstens ≈ 0,5 s (SwiftShader-Rechner, das größte Haus); beim Betreten eines Hauses
+kein neues Shader-Programm, wenn `ZINNEN.warm()` zu Beginn der Nacht lief (der Lead ruft es in `ZOMBIE.begin()`). Der Keller ist
+ein gutes Versteck: Regal mit Einweckgläsern, Kartoffelhorde, Kohlenhaufen, Werkbank, eine nackte Glühbirne, Zugang nur durch die
+Luke in der Küche. Lead-Merges: 9d5f2acd, 67ab2d32, d719ad66, fe9164e9 (auf `feat/zombie`).
+
+**Offen:**
 - Jens' Haus (246) ist nicht begehbar: `ZIPLAN.plan(246)` liefert null – der Grundriss (sechs Fassaden, Haustür an einer nur 4,8 m
   langen Seite) ergibt kein Rechteck, das die Tür überspannt und mindestens 4,2 × 4,2 m misst. Seine Werkzeugkiste fehlt damit.
-- `H.route` kennt keine Türen: geschlossene Innentüren muss die Zombie-Logik öffnen oder einschlagen.
+- `H.route` kennt keine Türen: geschlossene Innentüren muss die Zombie-Logik öffnen oder einschlagen (der Lead tut das: Tür auf
+  1,1 m aufbrechen). Die Wegstücke sind Geraden zwischen Wegpunkten; an Möbeln rutscht man entlang.
+- Wo die Bodentreppe nur neben dem Schornstein Platz fand, fehlt der Schornstein im Dachboden (draußen steht er); ohne Platz für
+  eine Bodentreppe gibt es keinen Dachboden (2 Häuser).
+- Nicht gemacht: Bauernhäuser mit Stall- oder Scheunentür hinten (der Grundriss kennt nur die Haustür); ein Gelände-Programm ohne
+  zweite Variante (bewusst: ein `discard` im Gelände selbst kostete auf Apple-GPUs immer).
