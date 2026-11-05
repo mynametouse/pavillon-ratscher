@@ -77,8 +77,8 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
 #stpan .learn{margin-top:6px;font-size:11px;opacity:.8;border-left:2px solid #9fc46a;padding-left:7px}
 #stpan .ab{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:4px 0}
 #stnotes{left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(560px,90vw);display:flex;flex-direction:column;gap:4px;pointer-events:none}
-#stnotes .n{padding:6px 10px;pointer-events:auto;display:flex;gap:8px;align-items:baseline;justify-content:space-between}
-#stnotes .n.no{border-left:3px solid #ff9f6a} #stnotes .n button{flex:none}
+#stnotes .n{padding:6px 10px;pointer-events:none;display:flex;gap:8px;align-items:baseline;justify-content:space-between}
+#stnotes .n.no{border-left:3px solid #ff9f6a} #stnotes .n button{flex:none;pointer-events:auto}
 #stnotes .n .w{display:block;margin-top:3px;font-size:11px;opacity:.9} #stnotes .n .w small{display:block;opacity:.75;margin-top:2px}
 #stcard{left:max(10px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));width:218px;padding:7px 9px}
 #stcard b{display:block;font:600 12px/1.3 var(--f-display,Georgia,serif)} #stcard .o{margin-top:4px;font-size:11px;opacity:.9}
@@ -275,7 +275,18 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
   // wide screens: the people under the resource bar, the panel and the layers under the time box (both grow and wrap)
   function layout() {
     if (innerWidth <= 720) {
+      // phones: the bar at the bottom, the people strip above it, the panel above them (all measured – the bar may wrap)
       for (const e of [H.ppl, H.pan, H.layers]) e.style.top = '';
+      const top = H.res.getBoundingClientRect().top,
+        pb = innerHeight - top + 6;
+      if (top > 0) {
+        H.ppl.style.bottom = Math.round(pb) + 'px';
+        const pt = H.ppl.getBoundingClientRect().top,
+          ab = innerHeight - pt + 6;
+        H.pan.style.bottom = Math.round(ab) + 'px';
+        H.layers.style.bottom = Math.round(ab) + 'px';
+        H.pan.style.maxHeight = Math.max(160, Math.round(pt - 140)) + 'px';
+      }
       return;
     }
     const rt = (H.ppl.offsetParent || document.body).getBoundingClientRect().top,
@@ -367,7 +378,7 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
     el.className = 'n stbox' + (n.kind === 'nein' ? ' no' : '');
     el.innerHTML = `<span>${esc(n.text)}${n.why ? `<span class="w" hidden>${esc(n.why)}${n.src ? `<small>Quelle: ${esc(n.src)}</small>` : ''}</span>` : ''}</span>${n.why ? '<button type="button" class="stb" data-why="1">Warum?</button>' : ''}`;
     H.notes.appendChild(el);
-    while (H.notes.children.length > 4) H.notes.firstChild.remove();
+    while (H.notes.children.length > (innerWidth <= 720 ? 2 : 4)) H.notes.firstChild.remove();
     const life = n.why ? 14000 : 6500;
     setTimeout(() => el.remove(), life);
   }

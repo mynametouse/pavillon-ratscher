@@ -172,10 +172,17 @@ with lib.browser() as b:
         views = [("GAME.P.tx = -2; GAME.P.ty = -8; GAME.P.th = 120", 'garten'),
                  (f"(() => {{ const t = FOREST.byId({tree['id']}); GAME.P.tx = t.x; GAME.P.ty = t.y; GAME.P.th = 60; }})()", 'baum'),
                  ("(() => { const c = STRAT.place.pos('holzlager'); GAME.P.tx = c[0]; GAME.P.ty = c[1]; GAME.P.th = 30; })()", 'lager')]
+        # the same date and hour for every look (the light of the day decides shader variants of the world's own materials)
+        when0 = J("({ e0: DN.e0, t: CLOCK.t })")
         def look_all():
+            now = J("({ e0: DN.e0, t: CLOCK.t })")
+            E(f"DN.e0 = {when0['e0']}; CLOCK.t = {when0['t']}; STRAT.S.t = CLOCK.t")
+            lib.settle_light(pg)
             for js, nm in views:
-                E(js); E("GAME.shot()")
+                E(js); steps(0.5); E("GAME.shot()")
             E("GAME.P.th = 120; GAME.P.tx = -2; GAME.P.ty = -8")
+            E(f"DN.e0 = {now['e0']}; CLOCK.t = {now['t']}; STRAT.S.t = CLOCK.t")
+            lib.settle_light(pg)
         look_all()
         p1 = progs()
         pn1 = pnames()
