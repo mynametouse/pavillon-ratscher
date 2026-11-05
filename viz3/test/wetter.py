@@ -6,11 +6,11 @@
 # rain; no new shader program while the weather changes; no drops indoors (the pavilion) while it rains outside, the roof heard; the switch to
 # the calendar and back (the menu row, saved as pav-wetter-v1); a failing API → the calendar's sky; the zombie night on 31 October: „Wetter vom
 # 31.10.“, its night fog stays (the larger wins), rain falls; a reload keeps the choice. Pictures in out/wetter/ (look at them).
-#   python3 viz3/test/wetter.py 9001 [sections]      sections: start,jetzt,wetter,innen,kalender,fehler,zombie,neu (default all)
+#   python3 viz3/test/wetter.py 9001 [sections]      sections: start,jetzt,wetter,innen,ton,kalender,fehler,zombie,neu (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'start,jetzt,wetter,innen,kalender,fehler,zombie,neu').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'start,jetzt,wetter,innen,ton,kalender,fehler,zombie,neu').split(','))
 ck = lib.Checks('wetter')
 OUT = lib.out('wetter')
 # an Open-Meteo answer with the same weather in every hour of the asked days (and the current values for 'now'), from a record of WXDATA
@@ -121,6 +121,7 @@ with lib.browser() as b:
         s = weather('regen')
         pic('03_regen')
         ck('rain: drops drawn (a good part of them), the deck closed', s['fall']['n'] > 1500 and s['fall']['kR'] > 0.4 and s['sky']['cov'] > 0.95, str(s['fall']))
+        ck('rain: splashes on the ground around the walker', s['fall']['splash'] > 100, str(s['fall']))
         ck('rain: haze over the land from the visibility (6 km)', fog() > 2 * f_clear and fog() > 1e-4, f"fog {fog():.2e} vs {f_clear:.2e}")
         ck('rain: the sound levels (rain outside, no roof outdoors)', s['ton']['rain'] > 0.4 and s['ton']['roof'] == 0, str(s['ton']))
         ck('rain: the ground is wet (darker, glossier: terrain, garden ground, roofs)', s['wet'] > 0.6 and s['boden'] >= 2, f"wet {s['wet']:.2f}, {s['boden']} materials")
@@ -145,6 +146,7 @@ with lib.browser() as b:
         ck('heavy rain: the drops fill the view evenly at every moment (no sheets)', all(min(t) > 0.12 for t in spread), str(spread))
         s = weather('schnee', 2.0)
         pic('07_schnee_nah')
+        ck('snow: no splashes', s['fall']['splash'] == 0, str(s['fall']))
         ck('snow: flakes (the snow share), slow', s['fall']['kS'] > 0.5 and s['fallU']['rain'][3] > 0.95 and s['fallU']['snow'][0] < 1.6, str(s['fall']) + str(s['fallU']))
         ck('snow: 8 cm lying – the ground and the roofs white', s['snowCover'] > 0.9 and s['boden'] >= 2, f"cover {s['snowCover']:.2f}, {s['boden']} materials")
         view('garten', 200, 7)
@@ -164,6 +166,8 @@ with lib.browser() as b:
         ck('thunderstorm: lightning flashes within 30 s, rain driven by the wind', n1 > n0 and w > 4, f"{n1 - n0} flashes, wind on the drops {w:.1f} m/s")
         E("WETTER.S.flash.next = 0")
         steps(0.05)
+        E("WETTER.S.flash.near = 1")
+        steps(0.01)
         ck('a flash lights the sky and the land for a moment (its first stroke)', J("WETTER.state().flash") > 0.3, str(J("WETTER.state().flash")))
         pic('10_blitz')
         steps(1)
@@ -182,7 +186,7 @@ with lib.browser() as b:
         g = J("WETTER.S && window.DN ? DN.SU.wxGlow.value.toArray() : null")
         ck('an overcast night: the stars hidden, the towns\' glow on the deck', J("DN.dbg().stars") < 0.05 and g and g[0] > 0.004, f"stars {J('DN.dbg().stars')} glow {g}")
         midday(12.0)
-    # ---- indoors: no drops, the roof heard ----
+    # ---- indoors: in the pavilion the rain stays beyond its walls (through the windows), in a garden building none falls; the roof heard ----
     if 'innen' in want:
         weather('regen')
         view('bibliothek', None, -4)
@@ -190,11 +194,41 @@ with lib.browser() as b:
         s = st()
         ins = E("GAME.audio && GAME.audio.inside ? GAME.audio.inside() : null")
         pic('12_innen_regen')
-        ck('indoors (the pavilion\'s library) while it rains: no drops drawn', ins and s['fall']['n'] == 0 and not s['fall']['on'], f"inside {ins} fall {s['fall']}")
+        ck('in the pavilion (the library) while it rains: drops only beyond its walls (5.5 m), seen through the windows', ins and s['fall']['on'] and s['fallU']['hole'] >= 5, f"inside {ins} fall {s['fall']} hole {s['fallU']['hole']}")
         ck('indoors: the rain on the roof is heard, the open rain muffled', s['ton']['roof'] > 0.4, str(s['ton']))
+        # a garden building: the first point inside one (KERN.inside of the garden, not the pavilion) – there none is drawn
+        pt = J("""(() => { for (let y = -12; y < 32; y += 0.5) for (let x = -20; x < 24; x += 0.5) { const z = GAME.floorAt(x, y, 1.5);
+          if (window.insideSite && insideSite(x, y, z + 0.1) && !(Math.hypot(x - 2, y - 2) < 8)) return [x, y, z]; } return null; })()""")
+        if pt:
+            E(f"(() => {{ const P = GAME.P; P.x = {pt[0]}; P.y = {pt[1]}; P.feet = {pt[2]}; }})()")
+            steps(0.4)
+            s = st()
+            ck('in a garden building while it rains: no drops drawn', s['fall']['n'] == 0 and not s['fall']['on'], f"at {pt} fall {s['fall']}")
+        else:
+            ck('a garden building to stand in was found', False, 'none on the grid')
         view('garten', 200, 7)
         s = st()
-        ck('outdoors again: the drops are back', s['fall']['n'] > 1500, str(s['fall']))
+        ck('outdoors again: the drops are back', s['fall']['n'] > 1500 and s['fallU']['hole'] < 1, str(s['fall']))
+    # ---- the recordings: each kind loaded and decoded when its weather first comes (rain, downpour, roof, wind, thunder) ----
+    if 'ton' in want:
+        E("GAME.setSound && GAME.setSound(true)")
+        time.sleep(1.5)
+        st0 = E("GAME.audio.state()")
+        weather('regen', 0.5)
+        r1 = []
+        for i in range(20):
+            steps(0.2); time.sleep(0.3)
+            r1 = J("WETTER.state().rec")
+            if 'regen' in r1 and 'dach' in r1: break
+        ck('rain: the rain and roof recordings are loaded and decoded (not the storm\'s)', st0 != 'running' or ('regen' in r1 and 'dach' in r1 and 'wind' not in r1 and 'donner' not in r1), f"audio {st0}, recorded {r1}")
+        weather('gewitter', 0.5)
+        r2 = []
+        for i in range(30):
+            steps(0.2); time.sleep(0.3)
+            r2 = J("WETTER.state().rec")
+            if all(k in r2 for k in ('starkregen', 'wind', 'donner')): break
+        ck('thunderstorm: the downpour, the storm wind and the thunder recordings come too', st0 != 'running' or all(k in r2 for k in ('starkregen', 'wind', 'donner')), f"audio {st0}, recorded {r2}")
+        E("GAME.setSound && GAME.setSound(false)")
     # ---- the switch to the calendar and back, saved ----
     if 'kalender' in want:
         weather('regen')

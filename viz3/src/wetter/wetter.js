@@ -128,9 +128,17 @@ export const WETTER = (() => {
   }
   // ---- the game's moment as a UTC instant (s), the real one, and how to name a day ----
   const gameU = () => (DN.jdOf(CLOCK.t) - 2440587.5) * 86400;
+  // the day as it is in Ratscher (summer time included)
+  let DMF = null;
   const dm = u => {
-    const d = new Date(u * 1000 + 3600e3);
-    return d.getUTCDate() + '.' + (d.getUTCMonth() + 1) + '.';
+    try {
+      DMF = DMF || new Intl.DateTimeFormat('de-DE', { timeZone: 'Europe/Berlin', day: 'numeric', month: 'numeric' });
+      const q = Object.fromEntries(DMF.formatToParts(new Date(u * 1000)).map(p => [p.type, p.value]));
+      return +q.day + '.' + +q.month + '.';
+    } catch (e) {
+      const d = new Date(u * 1000 + 3600e3);
+      return d.getUTCDate() + '.' + (d.getUTCMonth() + 1) + '.';
+    }
   };
   // ---- which weather now: a try, the calendar's, the current values, an hour of the game's day ----
   function pick(fresh) {
@@ -238,6 +246,7 @@ export const WETTER = (() => {
       pick(false);
       S.wetWant = wetness();
       S.snowWant = snowCover();
+      badge();
     }
     ease(dt);
     const on = shown(),
@@ -246,7 +255,9 @@ export const WETTER = (() => {
       any = c.cover > 0.003 || c.rain > 0 || c.snow > 0 || c.vis < 20000 || c.wind > 3;
     WXSKY.set({ on: on && any, cover: c.cover, rain: c.rain, snow: c.snow, vis: c.vis, wind: c.wind, dir: c.dir });
     WXSKY.tick(dt, !window.FREEZE);
-    const inside = !!(audio.inside && audio.inside());
+    const inside = !!(audio.inside && audio.inside()),
+      // inside the pavilion the rain stays beyond its walls – seen through the big windows; in other buildings none is drawn
+      pav = inside && !!(window.inHouseNow && window.inHouseNow());
     const fall = WXFALL.set(
       {
         on,
@@ -259,8 +270,9 @@ export const WETTER = (() => {
         gust: c.gust,
         dir: c.dir,
         col: WXSKY.U.wxHor.value,
-        hole: VEH && VEH.cur ? 2.4 : 0.35,
-        hide: inside || !on,
+        hole: VEH && VEH.cur ? 2.4 : pav ? 5.5 : 0.35,
+        ground: P.mode === 'walk' && !(VEH && VEH.cur) && !inside ? P.feet : null,
+        hide: (inside && !pav) || !on,
       },
       dt
     );
@@ -270,13 +282,14 @@ export const WETTER = (() => {
     }
     WXTON.update(
       {
-        on: on || (S.src !== 'kalender' && P.mode === 'walk'),
+        on,
         rain: c.rain,
         drizzle: !!wx.drizzle,
         wind: c.wind,
         gust: c.gust,
         gustK: WXFALL.S.gustK,
         inside: inside || !!(VEH && VEH.cur),
+        storm: on && !!wx.thunder,
       },
       dt
     );
@@ -324,7 +337,10 @@ export const WETTER = (() => {
     if (storm && (F.next -= dt) <= 0) {
       F.next = 6 + Math.random() * 26;
       const d = 600 + Math.random() * 7000;
-      F.base = F.on ? F.base : hemi.intensity;
+      if (!F.on) {
+        F.base = hemi.intensity;
+        F.envBase = scene.environmentIntensity;
+      }
       F.on = true;
       F.t = -dt;
       F.third = Math.random() < 0.5;
@@ -349,7 +365,9 @@ export const WETTER = (() => {
                     : Math.max(0, 0.45 * (1 - (t - 0.21) / 0.3));
       F.k = k * F.near;
       WXSKY.U.wxFlash.value = F.k * F.k * 2.4;
+      // the flash lights the land from the whole sky: the hemisphere and the image light (the day's light restores both after it)
       hemi.intensity = F.base + F.k * 2.2;
+      scene.environmentIntensity = F.envBase * (1 + 3 * F.k * F.k);
       markDirty();
       if (t > 0.5) {
         F.on = false;
@@ -468,6 +486,49 @@ export const WETTER = (() => {
   }
   menuRow();
   ui();
+  // ---- the clock button: a small sign of the weather beside the time (clouds, rain, snow, fog, thunder; nothing when it is fair) ----
+  const GLYPH = {
+    wolke: '<path d="M7 17.5h10a3.6 3.6 0 0 0 .4-7.2A5.2 5.2 0 0 0 7.4 9.6 4 4 0 0 0 7 17.5z"/>',
+    regen:
+      '<path d="M7 14h10a3.3 3.3 0 0 0 .4-6.6A4.8 4.8 0 0 0 7.4 6.9 3.6 3.6 0 0 0 7 14z"/><path d="M8.5 16.5l-1 3M12.5 16.5l-1 3M16.5 16.5l-1 3"/>',
+    schnee:
+      '<path d="M7 13.5h10a3.3 3.3 0 0 0 .4-6.6A4.8 4.8 0 0 0 7.4 6.4 3.6 3.6 0 0 0 7 13.5z"/><path d="M8 17.5h.01M12 19.5h.01M16 17.5h.01M10 21h.01M14 21h.01"/>',
+    nebel: '<path d="M4 9h16M6 13h12M4 17h16"/>',
+    gewitter:
+      '<path d="M7 13.5h10a3.3 3.3 0 0 0 .4-6.6A4.8 4.8 0 0 0 7.4 6.4 3.6 3.6 0 0 0 7 13.5z"/><path d="M12.5 15l-2 3.5h3l-2 3.5"/>',
+  };
+  const glyphOf = w =>
+    !w
+      ? null
+      : w.thunder
+        ? 'gewitter'
+        : w.snow > 0.05
+          ? 'schnee'
+          : w.rain > 0.05
+            ? 'regen'
+            : w.vis < 1000
+              ? 'nebel'
+              : w.cover > 0.6
+                ? 'wolke'
+                : null;
+  function badge() {
+    const b = $('clockbtn');
+    if (!b) return;
+    let e = b.querySelector('.wxi');
+    const k = shown() ? glyphOf(S.w) : null;
+    if (!e) {
+      e = document.createElement('span');
+      e.className = 'hbi wxi';
+      e.style.display = 'none';
+      b.appendChild(e);
+    }
+    e.title = k ? S.label + ': ' + line() : '';
+    if (e.dataset.k === (k || '')) return;
+    e.dataset.k = k || '';
+    e.style.display = k ? '' : 'none';
+    e.style.color = 'var(--ov-ink)';
+    e.innerHTML = k ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + GLYPH[k] + '</svg>' : '';
+  }
   // ?wetter=kalender | live (the mode, saved) or a weather to try
   {
     const q = QS.get('wetter');
@@ -522,9 +583,10 @@ export const WETTER = (() => {
       now: { ...S.now },
       calls: S.calls.slice(),
       hours: S.store.hours.size,
-      fall: { n: WXFALL.S.n, on: WXFALL.S.on, kR: WXFALL.S.kR, kS: WXFALL.S.kS },
+      fall: { n: WXFALL.S.n, on: WXFALL.S.on, kR: WXFALL.S.kR, kS: WXFALL.S.kS, splash: WXFALL.S.splash },
       sky: { cov: WXSKY.U.wxCov.value, fog: WXSKY.U.wxFog.value, mask: WXSKY.S.mask, patched: WXSKY.patched },
       ton: WXTON.levels(),
+      rec: WXTON.recorded(),
       fallU: {
         wind: [WXFALL.U.uWind.value.x, WXFALL.U.uWind.value.y],
         rain: WXFALL.U.uRain.value.toArray(),

@@ -22,15 +22,22 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Schlieren um die Kamera (Nieselregen fein und langsam, Starkregen dicht und schnell), Schnee als sinkende, pendelnde Flocken, Schneeregen
   gemischt, alles vom Wind und den Böen getragen; ein Netz, beim Laden übersetzt, Dichte über den Zeichenbereich; Flocken höchstens ein
   paar Pixel groß und vor der Linse ausgeblendet; drinnen (Pavillon, Gartengebäude, Häuser der Zombie-Nacht) keine Tropfen, im Fahrzeug
-  keine in der Kabine. Gewitter: Blitze flackern (erster Schlag, Nachschläge, ~0,4 s) am Himmel und auf dem Land, Donner nach der Entfernung.
+  keine in der Kabine; im Pavillon fällt der Regen jenseits seiner Wände weiter (durch die großen Fenster zu sehen), in anderen Gebäuden
+  keiner. Gewitter: Blitze flackern (erster Schlag, Nachschläge, ~0,4 s) am Himmel und auf dem Land, Donner nach der Entfernung; Hagel
+  (Codes 96/99) als kleine, schnelle Körner im Regen. Nachts unter geschlossener Decke ein mattes Orange-Grau der Städte ringsum
+  (Schleusingen, Suhl, Hildburghausen) an der Wolkenunterseite – eine bedeckte Nacht ist nie ganz schwarz. Neben der Uhr oben rechts ein
+  kleines Wetterzeichen (Wolken, Regen, Schnee, Nebel, Gewitter), sein Tooltip nennt die Zeile.
 - **Nasser Boden, Schnee liegt** (`wetter/wx_boden.js`): Regen macht Gelände, Felder, Kacheln, Brücken, den Gartenboden und (etwas) die Dächer
   dunkler und glänzender – und das bleibt Stunden nach dem Regen (aus dem Niederschlag der letzten Stunden der Daten). Liegt Schnee
   (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände, Bäume, Gras bleiben.
   Nur Farbe/Rauheit/Leuchten der Materialien (Uniforms), die Originale kommen genau zurück.
-- **Zu hören** (`wetter/wx_ton.js`): Regen draußen, drinnen und im Auto das Trommeln aufs Dach, Donner – echte Aufnahmen (gemeinfrei,
-  pdsounds.org über Wikimedia Commons; `viz3/extra/wetter/dist/wetter/`, `ton.json`, geschnitten mit `viz3/extra/wetter/quellen/ton.py`);
-  Wind ab frischer Brise mit Böen und bei Sturm ein Pfeifen vorerst im Browser erzeugt. Weitere Aufnahmen holt
-  `.github/workflows/wetter-ton.yml` auf GitHub Actions (Commons begrenzt Abrufe vom Chat-Rechner) als Artefakt `wetter-ton`.
+- **Zu hören** (`wetter/wx_ton.js`): echte Aufnahmen über Wikimedia Commons (`viz3/extra/wetter/dist/wetter/`, `ton.json`, ~1,7 MB,
+  geschnitten mit `viz3/extra/wetter/quellen/ton.py` auf GitHub Actions, `.github/workflows/wetter-ton.yml` – Commons begrenzt Abrufe vom
+  Chat-Rechner): Regen (gemeinfrei), ab 2 mm/h ein deutscher Sommer-Platzregen darüber (CC BY-SA 3.0), drinnen und im Auto Regen aufs
+  Vordach (gemeinfrei), Wind aus einem Sturm von 25 m/s im Kiefernwald (CC BY-SA 4.0) hinter einem Tiefpass, der mit dem Wind aufgeht
+  (Brise: fernes Rauschen, Sturm: volles Tosen), drei Donner (gemeinfrei, CC BY-SA 4.0, CC BY 3.0) nach Entfernung verzögert und gedämpft.
+  Jede Art wird erst geladen, wenn ihr Wetter kommt (kein Speicher für Sturm und Donner an einem ruhigen Tag). Nieselregen und
+  Sturmpfeifen im Browser erzeugt.
 - **Wählen:** Menü → Einstellungen → Spiel → „Wetter: wie draußen | nach Kalender“ (gespeichert in `pav-wetter-v1` `{ v: 1, m }`), dieselbe
   Wahl im Uhrfenster mit der Zeile „Regen · 7 °C · Wind 20 km/h, Böen 38 – Open-Meteo“, dazu „Uhr und Datum auf jetzt“ (Spielzeit wie
   draußen, in Echtzeit) und „Wetter ausprobieren“ (Sonne, Wolken, Regen, Starkregen, Gewitter, Schnee, Nebel, Sturm … – nur für den Besuch).
@@ -46,7 +53,6 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 
 ## Offen
 
-- Wind als echte Aufnahme (Kandidaten in `quellen/ton.py`, Sichtung über den Workflow).
 - Bäume und Gras im Wind wiegen (braucht Eingriffe in deren Shader).
 - Pfützen, Spritzer am Boden; Regen am Fenster und an der Windschutzscheibe.
 - Lichtglocke der Städte unter der Wolkendecke nachts.
