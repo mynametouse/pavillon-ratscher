@@ -138,6 +138,7 @@ export const STJOBS = (() => {
   const MOW_AREA = 400;
   STRAT.job.define({
     id: 'maehen',
+    pose: 'carry',
     label: 'Rasen mähen',
     place: 'garten',
     people: [1, 1],

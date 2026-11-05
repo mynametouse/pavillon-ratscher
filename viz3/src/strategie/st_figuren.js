@@ -96,6 +96,12 @@ export const STFIG = (() => {
       L.y = q[1];
       f.g.position.set(q[0], z, -q[1]);
       f.g.rotation.y = -L.az;
+      // at work: the job's work pose (npc/npc_real.js POSE: saw, chop, carry, place, bench, pick …)
+      const j = p.job ? STRAT.job.of(p.job) : null,
+        J = j && j.st === 'work' ? STRAT.job.get(j.def) : null,
+        k = J && J.pose && !p.path ? J.pose : null;
+      if (k && (!f.pose || f.pose.k !== k)) f.pose = { k, t: 0 };
+      else if (!k && f.pose) f.pose = null;
       const v = p.path ? Math.min(1.5, moved / Math.max(dt, 1e-3)) : 0;
       if (f.anim) f.anim(dt, v > 0.05 ? Math.max(0.9, v) : 0);
       if (!f.g.visible) f.g.visible = true;

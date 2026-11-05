@@ -200,6 +200,7 @@ export const STHOLZ = (() => {
   const winter = mo => mo >= 9 || mo <= 1; // October to February: the sap rest
   STRAT.job.define({
     id: 'faellen',
+    pose: 'saw',
     label: 'Markierten Baum fällen und aufarbeiten',
     place: 'klinge',
     people: [2, 3],
@@ -274,6 +275,7 @@ export const STHOLZ = (() => {
   const PAYLOAD = 5000; // kg on the tandem stake trailer (1650 kg empty, vehicles/trailer.js)
   STRAT.job.define({
     id: 'ruecken',
+    pose: 'carry',
     label: 'Stämme rücken und ins Holzlager fahren',
     place: 'klinge',
     people: [1, 2],
@@ -372,6 +374,7 @@ export const STHOLZ = (() => {
       id,
       label,
       place: 'holzlager',
+      pose: 'saw',
       people: [1, 2],
       skill: 'maschinen',
       min: 2,
@@ -425,6 +428,7 @@ export const STHOLZ = (() => {
   // ---------------- 5 · the drying stack ----------------
   STRAT.job.define({
     id: 'stapeln',
+    pose: 'place',
     label: 'Trockenstapel anlegen (Leisten, Dach)',
     place: 'holzlager',
     people: [1, 3],
@@ -478,6 +482,7 @@ export const STHOLZ = (() => {
   });
   STRAT.job.define({
     id: 'brett',
+    pose: 'bench',
     label: 'Schneidebrett Eiche bauen (Stirnholz)',
     place: 'werkstatt',
     people: [1, 1],

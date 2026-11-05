@@ -265,6 +265,7 @@ export const STEREIG = (() => {
   }
   STRAT.job.define({
     id: 'reparieren',
+    pose: 'bonnet',
     label: 'Maschine reparieren',
     place: 'werkstatt',
     people: [1, 1],
@@ -336,6 +337,7 @@ export const STEREIG = (() => {
   // ---------------- favours: helping the neighbours (they help you in return) ----------------
   STRAT.job.define({
     id: 'hubert_helfen',
+    pose: 'chop',
     label: 'Hubert bei den Trockenhütten helfen',
     place: 'hubert',
     people: [1, 2],
@@ -355,6 +357,7 @@ export const STEREIG = (() => {
   });
   STRAT.job.define({
     id: 'ronald_helfen',
+    pose: 'pick',
     label: 'Ronald beim Heu für die Ziegen helfen',
     place: 'ronald',
     people: [1, 2],

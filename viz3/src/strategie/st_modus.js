@@ -147,6 +147,14 @@ export const STRAT = (() => {
         w.az = Math.atan2(dx, dy);
       }
       if (w.fig && w.fig.anim) w.fig.anim(dt, p.path ? Math.min(2.2, d / Math.max(dt, 1e-3)) : 0);
+      // at work: the job's work pose (npc/npc_real.js POSE)
+      const j = p.job ? job.of(p.job) : null,
+        J = j && j.st === 'work' ? REG.job[j.def] : null,
+        k = J && J.pose && !p.path ? J.pose : null;
+      if (w.fig) {
+        if (k && (!w.fig.pose || w.fig.pose.k !== k)) w.fig.pose = { k, t: 0 };
+        else if (!k && w.fig.pose) w.fig.pose = null;
+      }
       return true;
     });
   }
@@ -156,6 +164,8 @@ export const STRAT = (() => {
       p.goTo = null;
       p.pos = null;
     }
+    const w = WL.npc(id);
+    if (w && w.fig && w.fig.pose) w.fig.pose = null;
     WL.npcFree(id);
   }
   // ---------------- money, style, knowledge, notices ----------------
