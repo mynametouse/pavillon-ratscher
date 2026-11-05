@@ -59,10 +59,12 @@ Bus, letzte Welle, Ende).
 
 ## Testen
 
-- `python3 viz3/test/run.py --port 8998 --serve zombie_ziele` (~7 min hier; Abschnitte `tag1,nacht,reload,tag3,bus,verpasst`, z. B.
-  `zombie_ziele:bus,verpasst`) – Kette, Karte, Ziele, fallende Entfernung, Markierung (da, weg nah/fern/freie Sicht, keine neuen
-  Programme), Sirene, Morgen, Neuladen in Nacht 2, Radio, Bus um 4, letzte Welle, Einsteigen, Ende, Weiterspielen, verpasster Bus.
-  Bilder in `out/zombie_ziele/`.
+- `python3 viz3/test/run.py --port 8998 --serve zombie_ziele` (~10 min hier; Abschnitte `tag1,nacht,reload,tag3,bus,verpasst,zuzweit`,
+  z. B. `zombie_ziele:bus,verpasst`) – Kette, Karte (auch in Handy-Breite), Ziele, fallende Entfernung, Markierung (da, weg nah/fern/freie
+  Sicht, keine neuen Programme), Sirene, Morgen, Neuladen in Nacht 2, Radio, Bus um 4, letzte Welle, Einsteigen, Ende, Weiterspielen,
+  verpasster Bus, zu zweit (ohne zweiten Browser: `ZNETZ` mit einem mitschreibenden Transport, die Nachrichten des anderen als Ereignisse),
+  Neu beginnen. Bilder in `out/zombie_ziele/` (`01_karte`, `01b_karte_handy`, `02_marker_flinte`, `03_marker_haus`, `04_halte_durch`,
+  `05_nacht_marker`, `06_nacht_karte`, `07_radio`, `08_bus_kommt`, `09_bus_steht`, `10_ende`).
 - Zur Laufzeit: `ZZIEL.cur` (die laufende Aufgabe), `TASKS.state('zz-…')`, `ZZIEL.MK.on`, `ZBUS.st`; den Bus sofort: Nacht 3 (`ZSTATE.night = 2`,
   Uhr auf die Sirene), dann `CLOCK.t` auf 4:00.
 
@@ -82,6 +84,7 @@ Bus, letzte Welle, Ende).
 ## Offen
 
 - Der Bus hält Spieler und Zombies nicht auf (man läuft hindurch); er ist ein Modell, kein Fahrzeug.
-- Zu zweit nur über `?lokal=1` gedacht und nicht im Browser getestet (der Test `zombie_netz` ist des Leads); die Nachrichten sind klein.
+- Zu zweit mit zwei echten Browsern nicht getestet (der Test nimmt einen mitschreibenden Transport; `zombie_netz` des Leads prüft die
+  Verbindung); über Trystero gehen die Nachrichten als `ev` mit `k: 'x:bus'`.
 - Die Tage 4 ff. haben nur die Nacht-Aufgaben (und was von früher offen ist); neue Tages-Aufgaben für das Endlos-Spiel wären möglich.
 - Die Hupe und der Diesel sind synthetisch (keine Aufnahme).

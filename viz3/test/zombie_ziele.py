@@ -7,11 +7,13 @@
 # the chain; day 3: „Nachrichten“ first, the radio in a house announces the bus; night 3 at 4:00 the bus comes to the old school (the last
 # wave), „Einsteigen“ → the ending screen, „Weiterspielen“ → the next morning; a second run: the bus leaves without the player („Weg. Dann
 # eben allein.“, the task „Allein weiter“). No new shader program for the marker or the bus, no page errors. Pictures in out/zombie_ziele/.
-#   python3 viz3/test/zombie_ziele.py 8998 [sections]      sections: tag1,nacht,reload,tag3,bus,verpasst (default all)
+# Two players without a second browser: ZNETZ with a recording transport, the other's messages as their events (the host gets in →
+# the guest's bus goes six seconds later; the guest gets in → the host hears it and has him on the bus).
+#   python3 viz3/test/zombie_ziele.py 8998 [sections]      sections: tag1,nacht,reload,tag3,bus,verpasst,zuzweit (default all)
 import sys, os, json, time, math, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'tag1,nacht,reload,tag3,bus,verpasst').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'tag1,nacht,reload,tag3,bus,verpasst,zuzweit').split(','))
 ck = lib.Checks('zombie_ziele')
 OUT = lib.out('zombie_ziele')
 with lib.browser() as b:
@@ -31,6 +33,7 @@ with lib.browser() as b:
             E("GAME.shot()"); pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=120000); print('page shot', name, flush=True)
         except Exception as e: print('note: page shot', name, 'failed:', repr(e)[:160], flush=True)
     progs = lambda: E("GAME.R.info.programs.length")
+    E("(() => { window.__thoughts = []; const t0 = PLAY.think; PLAY.think = (t, ms) => { window.__thoughts.push(String(t)); return t0(t, ms); }; })()")
     # the tracked entry: id, step text, target, distance on the card
     def cur():
         return J("""(() => { const e = KERN.tasks.list().find(e => e.key === QUESTS.track), t = document.getElementById('qtrack'), cs = getComputedStyle(t);
@@ -67,12 +70,30 @@ with lib.browser() as b:
         z, k = rect['zhud'], rect['card']
         ck('the card does not cover the zombie panel', k[0] >= z[2] or k[1] >= z[3], str(rect))
         page_pic('01_karte')
+        # a phone's width: the card under the panel, inside the screen
+        pg.set_viewport_size({'width': 390, 'height': 780})
+        steps(0.6)
+        rect = J("(() => { const a = document.getElementById('zhud').getBoundingClientRect(), b = document.getElementById('qtrack').getBoundingClientRect(); return { zhud: [a.left, a.top, a.right, a.bottom].map(Math.round), card: [b.left, b.top, b.right, b.bottom].map(Math.round), w: innerWidth }; })()")
+        z, k = rect['zhud'], rect['card']
+        ck('on a phone the card stands under the panel, inside the screen', k[1] >= z[3] and k[2] <= rect['w'] and k[3] > k[1], str(rect))
+        page_pic('01b_karte_handy')
+        pg.set_viewport_size({'width': 1100, 'height': 680})
+        steps(0.6)
         ds = walk_to(g[0], g[1], stop=12, n=4)
         ck('walking to the gun: the distance on the card falls', falls(ds), str(ds))
         c = cur()
         ck('the marker is over the target (3.5–150 m)', c['mk'], str(c)[:200])
+        qm = J("GAME.scene.children.filter(o => o.isSprite && o.renderOrder === 999).map(o => o.visible)")
+        ck('… and the task card\'s own diamond (game/quests.js) is not shown for it', not any(qm), str(qm))
+        # the marker's share alone: hidden, a frame; shown, a frame
+        E("document.body.dataset.clean = '1'")
+        steps(0.3)
+        E("GAME.shot()")
+        pa = progs()
+        E("document.body.dataset.clean = ''")
+        steps(0.3)
         pic('02_marker_flinte')
-        ck('no new shader program for the marker', progs() <= p0, f'{p0} -> {progs()}')
+        ck('no new shader program for the marker', progs() <= pa, f'{pa} -> {progs()} (start {p0})')
         # far and in the free view: no marker
         E(f"(() => {{ const P = GAME.P; P.x = {g[0]} + 205; P.y = {g[1]} + 20; P.feet = GAME.floorAt(P.x, P.y, 30); }})()")
         steps(0.4)
@@ -178,7 +199,8 @@ with lib.browser() as b:
         if settle: lib.settle_light(pg)
         steps(1.2)
     def think_text():
-        return E("(() => { const e = document.getElementById('npcsub'); return e && !e.hidden ? e.textContent : ''; })()")
+        # every thought since the last call (others – a villager turning at the siren – may come in between in real time)
+        return E("(() => { const t = (window.__thoughts || []).join(' | '); window.__thoughts = []; return t; })()")
     if 'reload' in want:
         # night 2: the siren of the second day, then the page anew – the chain must go on where it was
         E("ZSTATE.hp = 100; for (const e of ZSTATE.ents) e.hold = 'idle'")
@@ -198,6 +220,7 @@ with lib.browser() as b:
         E("window.FREEZE = true")
         E("document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')")
         steps(2)
+        E("(() => { window.__thoughts = []; const t0 = PLAY.think; PLAY.think = (t, ms) => { window.__thoughts.push(String(t)); return t0(t, ms); }; })()")
         mode = E("GAME.P.mode")
         after = J("({ night: ZSTATE.night, phase: ZSTATE.phase, n2: TASKS.state('zz-nacht2'), ron: TASKS.state('zz-ronald'), flinte: TASKS.state('zz-flinte'), track: QUESTS.track, cur: ZZIEL.cur })")
         print('after the reload: mode', mode, 'menu', E("!!(window.HUD && HUD.open)"), 'clock', E("CLOCK.hm()"), flush=True)
@@ -305,7 +328,7 @@ with lib.browser() as b:
         ck('„Der Bus um vier“ done', J("TASKS.state('zz-bus')")['st'] == 'erledigt', str(J("TASKS.state('zz-bus')")))
         page_pic('10_ende')
         sv = J("ZSTATE.survived")
-        E("document.querySelector('#zende [data-z=\"weiter\"]').click()")
+        E("document.querySelector('#zende [data-z=weiter]').click()")
         steps(1.5)
         st = J("({ shown: !document.getElementById('zende').hidden, phase: ZSTATE.phase, survived: ZSTATE.survived, on: ZSTATE.on, track: QUESTS.track, bus: ZBUS.st })")
         ck('„Weiterspielen“: the next morning, the night counted, the nights go on', not st['shown'] and st['phase'] == 'tag' and st['survived'] == sv + 1 and st['on'] and st['bus'] == 'weg',
@@ -322,6 +345,7 @@ with lib.browser() as b:
             steps(0.5)
             E("ZSTATE.hp = 100")
             if E("ZBUS.st") == 'steht': break
+        think_text()
         E("ZBUS.t = ZBUS.BUS.wait - 0.2")
         steps(0.6)
         tt = think_text()
@@ -332,6 +356,60 @@ with lib.browser() as b:
             steps(0.5)
             if E("ZBUS.st") == 'weg': break
         ck('… and drives off out of sight', E("ZBUS.st") == 'weg' and not E("ZBUS.g.visible"), E("ZBUS.st"))
+    def bus_night3(role):
+        # night 3 afresh, a recording transport for two, the bus at its stop
+        E("ZOMBIE.start()")
+        steps(4.5)
+        E("ZSTATE.night = 2; ZSTATE.survived = 2; ZSTATE.hp = 100")
+        clock_to('siren')
+        E("ZSTATE.hp = 100; for (const e of ZSTATE.ents) e.hold = 'idle'")
+        E(f"""(() => {{ window.__sent = []; ZNETZ.on = true; ZNETZ.role = '{role}'; ZNETZ.T = {{ id: 'me', peers: new Set(['p1']), handlers: {{}},
+          send: (t, d) => window.__sent.push([t, d]), on() {{}}, leave() {{}}, start() {{}} }}; ZNETZ.peers.p1 = {{ id: 'p1', name: 'Sarah', st: null }}; }})()""")
+        clock_to(4 * 60, settle=False)
+        for i in range(90):
+            steps(0.5)
+            E("ZSTATE.hp = 100")
+            if E("ZBUS.st") == 'steht': break
+        return E("ZBUS.st") == 'steht'
+    sent_bus = lambda: J("(window.__sent || []).filter(m => m[0] === 'ev' && m[1] && m[1].k === 'x:bus').map(m => m[1])")
+    if 'zuzweit' in want:
+        ok = bus_night3('gast')
+        # the guest away from the door: the host gets in – the bus goes six seconds later, without him
+        E("(() => { const P = GAME.P, d = ZBUS.doorAt(); P.x = d[0] + 25; P.y = d[1] + 25; P.feet = GAME.floorAt(P.x, P.y, 30); })()")
+        think_text()
+        E("KERN.emit('znetz:bus', { st: 'drin', host: true, from: 'p1' })")
+        steps(0.5)
+        tt = think_text()
+        st1 = E("ZBUS.st")
+        for i in range(20):
+            steps(0.5)
+            if E("ZBUS.st") != 'steht': break
+        st = J("({ bus: ZBUS.st, allein: TASKS.state('zz-allein') })")
+        ck('two players, the guest: the host is in → „Sarah ist im Bus – er fährt gleich ab!“, a few seconds later it goes without him',
+           ok and st1 == 'steht' and 'Sarah ist im Bus' in tt and st['bus'] == 'faehrt' and st['allein'] and not [m for m in sent_bus() if m.get('st') == 'faehrt'],
+           f"{tt[:80]} {st1} {st} sent {sent_bus()}")
+        E("ZNETZ.close()")
+        ok = bus_night3('host')
+        # the host: the guest is in first – the host hears it; at the door he gets in, the guest is on the bus with him
+        think_text()
+        E("KERN.emit('znetz:bus', { st: 'drin', host: false, from: 'p1' })")
+        steps(0.3)
+        tt = think_text()
+        E("(() => { const P = GAME.P, d = ZBUS.doorAt(); P.x = d[0]; P.y = d[1]; P.feet = GAME.floorAt(P.x, P.y, 30); })()")
+        steps(0.3)
+        E("(() => { const a = KERN.acts().find(a => a.id === 'zbus:ein'); if (a) a.run(); })()")
+        for i in range(20):
+            time.sleep(0.4)
+            steps(0.1)
+            if E("!document.getElementById('zende').hidden"): break
+        en = E("document.getElementById('zende').textContent")
+        ck('two players, the host: „Sarah ist im Bus.“, he gets in, she is on the bus with him, his message goes out',
+           ok and 'Sarah ist im Bus.' in tt and 'Sarah' in en and any(m.get('st') == 'drin' and m.get('host') for m in sent_bus()), f"{tt[:60]} | {en[:200]} | {sent_bus()}")
+        E("document.querySelector('#zende [data-z=neu]').click()")
+        steps(4.5)
+        E("ZNETZ.close()")
+        ck('„Neu beginnen“: the 31st of October anew, the chain from the start', J("({ n: ZSTATE.night, t: QUESTS.track, end: document.getElementById('zende').hidden })") == {'n': 0, 't': 'aufgaben:zz-flinte', 'end': True},
+           str(J("({ n: ZSTATE.night, t: QUESTS.track, end: document.getElementById('zende').hidden })")))
     terr = E("(window.LOADLOG && LOADLOG.errs || []).filter(e => /Takt zombie/.test(e)).map(e => e.slice(0, 300))")
     ck('no zombie tick broke', not terr, ' | '.join(terr[:2]))
     ck.errors(errs)

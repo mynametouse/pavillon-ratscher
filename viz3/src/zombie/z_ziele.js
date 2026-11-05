@@ -468,7 +468,7 @@ export const ZZIEL = (() => {
     for (let n = 1; n <= Z.night; n++) {
       const id = nightId(n),
         st = TASKS.state(id);
-      if (st && st.st === 'läuft' && (n < Z.night || !night) && !(NIGHTS.keep && NIGHTS.keep(n))) TASKS.reset(id);
+      if (st && st.st === 'läuft' && (n < Z.night || !night)) TASKS.reset(id);
     }
     if (S.hook && S.hook(day, night)) return; // (the ending: zombie/z_ziele_bus.js steers the chain itself)
     let cur = null;
@@ -523,7 +523,6 @@ export const ZZIEL = (() => {
     if (S.prevTrack && mine(QUESTS.track)) QUESTS.track = S.prevTrack;
     S.prevTrack = null;
     mkHide();
-    document.body.classList.remove('zziel');
   });
   KERN.on('reset', () => resetAll());
   // a step done: at once to the next one (not half a second later)

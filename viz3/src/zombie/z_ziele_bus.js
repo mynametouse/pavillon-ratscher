@@ -640,7 +640,8 @@ export const ZBUS = (() => {
     ZHORDE.clear();
     if (ZOMBIE.morning) ZOMBIE.morning();
     S.aboard = null;
-    setTimeout(
+    clearTimeout(S.backT);
+    S.backT = setTimeout(
       () =>
         PLAY.think(
           'Der Bus hat dich bis zum Morgen nach Schleusingen gebracht. Jetzt bist du wieder in Ratscher – die Nächte gehen weiter.',
@@ -739,12 +740,17 @@ export const ZBUS = (() => {
   ZZIEL.hook = () => !!S.shown;
   KERN.on('zombie:start', d => {
     S.peerIn = null;
+    clearTimeout(S.backT);
     if (d && d.fresh) {
       S.heard = false;
       S.aboard = null;
     } else {
       const r = TASKS.state('zz-radio');
       S.heard = !!(r && r.st === 'erledigt');
+      // a reload after getting in, before „Weiterspielen“: on as if it was tapped (the morning, back in Ratscher)
+      const b = TASKS.state('zz-bus');
+      if (b && b.st === 'erledigt' && Z.night === BUS.night && Z.phase === 'nacht')
+        setTimeout(() => Z.on && Z.phase === 'nacht' && weiter(), 1200);
     }
     hideEnd();
     if (S.st !== 'aus') gone();
