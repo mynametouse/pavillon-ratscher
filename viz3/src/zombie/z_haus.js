@@ -411,6 +411,20 @@ export const ZHAUS = (() => {
       ZTON.snarl(p[0], p[1]);
     },
     inside: () => !!S.H,
+    // inside the mounted house: the next waypoint towards the target (from room to room, up and down the stairs), or null
+    route(e, t) {
+      if (!S.H || e.house !== S.bid || !S.H.route) return null;
+      let w = null;
+      try {
+        w = S.H.route(e.x, e.y, e.z, t.x, t.y, t.z);
+      } catch (err) {
+        return null;
+      }
+      if (!w) return null;
+      const x = w.x ?? w[0],
+        y = w.y ?? w[1];
+      return Number.isFinite(x) && Number.isFinite(y) ? [x, y] : null;
+    },
   };
   // ---- lurkers: by day some of last night's zombies wait inside ----
   function lurkers() {
