@@ -530,6 +530,8 @@ export const ZHORDE = (() => {
     // the host's zombie: the hit goes to the host, here only what one sees and hears
     if (e.net) {
       if (S.netHit) S.netHit(e, dmg, o);
+      // (fire is no blow: no sound of one, no blood)
+      if (o.kind === 'fire') return true;
       const L0 = hyp(o.dx || 0, o.dy || 0) || 1;
       ZTON.hit(e.x, e.y, o.kind, o.w);
       ZFX.spray(e.x, e.y, e.z + 1.2, (o.dx || 0) / L0, (o.dy || 0) / L0, Math.round(6 + dmg * 0.2), 1.6, 1.2);
@@ -550,14 +552,19 @@ export const ZHORDE = (() => {
       ux = (o.dx || 0) / L,
       uy = (o.dy || 0) / L;
     const k = o.knock || 0;
-    e.kv = [ux * k * 4.5, uy * k * 4.5];
-    e.stag = Math.min(0.9, 0.18 + k * 0.18);
-    // a hard blow throws them to the ground for a moment
-    if (k >= 2.2 && !e.crawl && rnd() < 0.3 + (k - 2.2) * 0.25) e.downT = 1.4 + rnd() * 0.8;
-    const hz = e.z + (e.crawl ? 0.3 : 1.2);
-    ZTON.hit(e.x, e.y, o.kind, o.w);
-    if (o.kind !== 'blunt' || dmg > 30) ZTON.splat(e.x, e.y, Math.min(1.4, dmg / 40));
-    ZFX.spray(e.x, e.y, hz, ux, uy, Math.round(6 + dmg * 0.25), 1.6 + k, 1.2);
+    if (o.kind === 'fire') {
+      // fire (zombie/z_werk_molotow.js): no blow – no sound of one, no blood, no knock; now and then it staggers
+      if (rnd() < 0.35) e.stag = Math.max(e.stag || 0, 0.3 + rnd() * 0.25);
+    } else {
+      e.kv = [ux * k * 4.5, uy * k * 4.5];
+      e.stag = Math.min(0.9, 0.18 + k * 0.18);
+      // a hard blow throws them to the ground for a moment
+      if (k >= 2.2 && !e.crawl && rnd() < 0.3 + (k - 2.2) * 0.25) e.downT = 1.4 + rnd() * 0.8;
+      const hz = e.z + (e.crawl ? 0.3 : 1.2);
+      ZTON.hit(e.x, e.y, o.kind, o.w);
+      if (o.kind !== 'blunt' || dmg > 30) ZTON.splat(e.x, e.y, Math.min(1.4, dmg / 40));
+      ZFX.spray(e.x, e.y, hz, ux, uy, Math.round(6 + dmg * 0.25), 1.6 + k, 1.2);
+    }
     // a limb off: blades, the saw and the shotgun, sometimes; the head only from a hard blow
     if (e.F && o.gore && (o.part || rnd() < o.gore * Math.min(1, dmg / 50))) {
       let part = o.part;

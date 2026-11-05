@@ -621,23 +621,14 @@ export const ZMOLO = (() => {
     S.stats.lit++;
     if (!e.dead) ZTON.snarl(e.x, e.y);
   }
-  // fire damage: straight to the zombie's health – zombie/z_horde.js damage plays the sounds and the blood of a blow; the stagger, the
-  // chase and the death are the same (ZHORDE.kill); the other player's zombies (puppets) get it as a hit through ZHORDE.damage
+  // fire damage through zombie/z_horde.js damage with kind 'fire' (no sound of a blow, no blood, no knock there; now and then a
+  // stagger, the chase and the death as for a blow); the other player's zombies (puppets) send it to the host the same way
   function burnHit(e, dmg) {
     if (!e || e.dead || e.kind !== 'zombie' || !(dmg > 0)) return;
     // (his gear: the firefighter takes a third of it)
     if (e.art === 'feuerwehr') dmg *= FIRE.helmK;
-    if (e.net) {
-      ZHORDE.damage(e, dmg, { kind: 'fire', knock: 0, dx: 0, dy: 0, gore: 0, by: 'spieler', w: 'molotow' });
-      return;
-    }
-    e.hp -= dmg;
-    if (Math.random() < 0.35) e.stag = Math.max(e.stag || 0, 0.3 + Math.random() * 0.25);
-    if (e.st !== 'chase' && e.st !== 'dead' && e.st !== 'hide') e.st = 'chase';
-    if (e.hp <= 0) {
-      S.stats.kills++;
-      ZHORDE.kill(e, { kind: 'fire', by: 'spieler', w: 'molotow' });
-    }
+    ZHORDE.damage(e, dmg, { kind: 'fire', knock: 0, dx: 0, dy: 0, gore: 0, by: 'spieler', w: 'molotow' });
+    if (!e.net && e.dead) S.stats.kills++;
   }
   // ---- per frame ----
   function tick(dt) {
