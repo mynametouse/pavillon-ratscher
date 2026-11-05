@@ -489,7 +489,9 @@ export const ZINNEN = (() => {
         H.walks.push(e);
       };
     const shell = new ZIMOB.Mesher(),
-      furn = new ZIMOB.Mesher();
+      furn = new ZIMOB.Mesher(),
+      // moving parts (one draw call each): ten, fewer in big houses with many doors (each door leaf is one too)
+      PARTS_MAX = Math.max(3, Math.min(10, 17 - P.doors.length));
     const house = { frame: (P.b.st && P.b.st.frame) || 0 };
     // the context for the furniture (zombie/z_innen_einr.js)
     const C = {
@@ -527,7 +529,7 @@ export const ZINNEN = (() => {
     };
     C.part = o => {
       // one moving part each and ten in a house at most (draw calls); the others are searched without moving
-      if (o.container && (o.container.parts.length >= 1 || H.parts.length >= 10))
+      if (o.container && (o.container.parts.length >= 1 || H.parts.length >= PARTS_MAX))
         o = Object.assign({}, o, { container: null });
       if (!o.container) {
         // a leaf that never opens: part of the furniture
@@ -942,6 +944,7 @@ export const ZINNEN = (() => {
           [-nx, 0, 0]
         );
       }
+      // (the railing's colliders begin 0.3 m above the floor upstairs: they stop one walking there, not one climbing below them)
       // the handrail and the railing above end at a newel post STAIR_GAP before the top: there one steps off sideways (the walker
       // is 0.42 m wide; the strip behind the last step can be narrow), so nothing is drawn where one walks
       const hx = open + oS * 0.03,
@@ -960,12 +963,12 @@ export const ZINNEN = (() => {
         furn.rod(wood, [hx, rl[0], ztop + 0.95], [hx, rl[1], ztop + 0.95], 0.025, 6);
         for (let y = rl[0] + 0.06; y < rl[1] - 0.05; y += 0.12)
           furn.box(wood, hx - 0.012, hx + 0.012, y - 0.012, y + 0.012, ztop, ztop + 0.95);
-        col(hx - 0.04, hx + 0.04, rl[0] - (dir > 0 ? 0.05 : 0), rl[1] + (dir > 0 ? 0 : 0.05), ztop - 0.05, ztop + 1.0);
+        col(hx - 0.04, hx + 0.04, rl[0] - (dir > 0 ? 0.05 : 0), rl[1] + (dir > 0 ? 0 : 0.05), ztop + 0.3, ztop + 1.0);
       }
       furn.box(wood, hx - 0.04, hx + 0.04, yE - 0.04, yE + 0.04, zE, ztop + 1.02);
       if (!cont) {
         furn.rod(wood, [st.x0, yh, ztop + 0.95], [st.x1, yh, ztop + 0.95], 0.025, 6);
-        col(st.x0, st.x1, yh - 0.04, yh + 0.04, ztop - 0.05, ztop + 1.0);
+        col(st.x0, st.x1, yh - 0.04, yh + 0.04, ztop + 0.3, ztop + 1.0);
       }
       shell.quad(
         M.decke,
@@ -1184,7 +1187,7 @@ export const ZINNEN = (() => {
           passBy(P.astair)
         );
       if (P.astair && r.kind === 'boden')
-        r.keep.push((h => [h[0] - 0.2, h[1] + 0.2, h[2] - 0.6, h[3] + 0.6])(holeOf(P.astair)));
+        r.keep.push((h => [h[0] - 0.8, h[1] + 0.8, h[2] - 0.9, h[3] + 0.9])(holeOf(P.astair)));
       if (P.hatch && r.id === P.hatch.room.id)
         r.keep.push([P.hatch.x0 - 0.25, P.hatch.x1 + 0.25, P.hatch.y0 - 0.8, P.hatch.y1 + 0.1]);
       if (P.hatch && r.kind === 'keller')
@@ -1329,15 +1332,19 @@ export const ZINNEN = (() => {
       const dir = st.y1 >= st.y0 ? 1 : -1,
         cx = (st.x0 + st.x1) / 2,
         pa = [cx, st.y0 - dir * 0.45],
+        pw = [pastX(st), st.y0 - dir * 0.45],
         pb = [pastX(st), st.y1 - dir * 0.2],
         a = node(pa[0], pa[1], za, ra.id),
+        w = node(pw[0], pw[1], za, ra.id),
         t = node(cx, st.y1 - dir * 0.15, zb - st.rise, rb.id),
         b = node(pb[0], pb[1], zb, rb.id);
       nodes[t].step = true;
-      edges.push([a, t], [t, b]);
-      link(a, ra, ...pa);
+      // to the foot of the stair by the way past it (straight from the room's spot one could run into the steps)
+      edges.push([w, a], [a, t], [t, b]);
+      link(w, ra, ...pw);
+      seeds[ra.id].push(pa);
       link(b, rb, ...pb);
-      flights.push({ st, za, zb, ids: [a, t, b] });
+      flights.push({ st, za, zb, ids: [w, a, t, b] });
     };
     const flur0 = rooms.find(r => r.kind === 'flur' && r.fl === 0);
     for (let k = 0; P.stair && k < P.nSt - 1; k++) {
@@ -1478,15 +1485,13 @@ export const ZINNEN = (() => {
         if (n.room === rid && !n.step) out.add(i);
       });
       for (const f of flights) {
-        const st = f.st;
-        if (
-          lx > st.x0 - 0.7 &&
-          lx < st.x1 + 0.7 &&
-          ly > Math.min(st.y0, st.y1) - 0.7 &&
-          ly < Math.max(st.y0, st.y1) + 0.4 &&
-          z > f.za - 0.3 &&
-          z < f.zb + 0.3
-        )
+        const st = f.st,
+          lo = Math.min(st.y0, st.y1),
+          hi = Math.max(st.y0, st.y1);
+        // on the steps (above the floor below, below the floor above): only the flight's own waypoints
+        if (lx > st.x0 - 0.1 && lx < st.x1 + 0.1 && ly > lo - 0.1 && ly < hi + 0.1 && z > f.za + 0.1 && z < f.zb - 0.1)
+          return f.ids.slice();
+        if (lx > st.x0 - 0.7 && lx < st.x1 + 0.7 && ly > lo - 0.7 && ly < hi + 0.4 && z > f.za - 0.3 && z < f.zb + 0.3)
           for (const i of f.ids) out.add(i);
       }
       if (!out.size) nodes.forEach((n, i) => out.add(i));
@@ -1528,18 +1533,14 @@ export const ZINNEN = (() => {
       const t = nearNode(tx, ty, tz, rb);
       if (t < 0) return goal;
       const d = distTo(t);
-      // of the waypoints one can head for now, the one with the shortest way on (there and from there along the graph)
-      let u = -1,
-        bc = Infinity;
-      for (const i of reachable(x, y, z, ra)) {
-        const n = nodes[i],
-          c = Math.hypot(n.x - x, n.y - y) + Math.abs(n.z - z) * 1.5 + d[i];
-        if (c < bc) {
-          bc = c;
-          u = i;
-        }
-      }
-      if (u < 0 || !isFinite(bc)) return goal;
+      // the nearest waypoint one can head for now (of nearly equally near ones the one further on), then along the graph
+      const cand = reachable(x, y, z, ra)
+        .filter(i => isFinite(d[i]))
+        .map(i => [i, Math.hypot(nodes[i].x - x, nodes[i].y - y) + Math.abs(nodes[i].z - z) * 1.5]);
+      if (!cand.length) return goal;
+      const dmin = Math.min(...cand.map(c => c[1]));
+      let u = -1;
+      for (const [i, c] of cand) if (c < dmin + 0.6 && (u < 0 || d[i] < d[u])) u = i;
       // reached it already (closer than 0.45 m): the next one along the way
       for (let k = 0; k <= nodes.length; k++) {
         const n = nodes[u];

@@ -376,20 +376,30 @@ export const ZIPLAN = (() => {
     // rooms per storey
     const rooms = [],
       add = r => (rooms.push(r), r);
+    // the depth bands of a side: one (shallow houses), front and back, or – deep houses (≥ 11.5 m inside) – a third room at the back
+    const deep = depth >= 11.5,
+      bands = (two, a, b) => {
+        if (!split) return [[yi0, yi1]];
+        const cut = deep ? [yi0 + depth * a, yi0 + depth * b] : [yi0 + depth * two];
+        const ys = [yi0].concat(cut, [yi1]);
+        return ys.slice(0, -1).map((y, i) => [i ? y + PW / 2 : y, i < ys.length - 2 ? ys[i + 1] - PW / 2 : ys[i + 1]]);
+      };
     const kindsGF = () => {
       const out = [];
       if (big) {
-        const ys = split ? yi0 + depth * 0.56 : yi1 + PW / 2;
-        out.push({ side: big, kind: 'stube', y0: yi0, y1: ys - PW / 2 });
-        if (split) out.push({ side: big, kind: 'kueche', y0: ys + PW / 2, y1: yi1, kitchenOfStube: true });
+        const B = bands(0.56, 0.42, 0.72);
+        out.push({ side: big, kind: 'stube', y0: B[0][0], y1: B[0][1] });
+        if (B[1]) out.push({ side: big, kind: 'kueche', y0: B[1][0], y1: B[1][1], kitchenOfStube: true });
+        if (B[2]) out.push({ side: big, kind: R.pick(['vorrat', 'kammer', 'waschkueche']), y0: B[2][0], y1: B[2][1] });
       }
       if (small) {
-        const ys = split ? yi0 + depth * 0.5 : yi1 + PW / 2;
+        const B = bands(0.5, 0.38, 0.7);
         const back = old === 'alt' ? R.pick(['vorrat', 'bad', 'waschkueche']) : 'bad';
         if (!split && big) out.push({ side: small, kind: 'kueche', y0: yi0, y1: yi1 });
         else {
-          out.push({ side: small, kind: 'kammer', y0: yi0, y1: ys - PW / 2 });
-          if (split) out.push({ side: small, kind: back, y0: ys + PW / 2, y1: yi1 });
+          out.push({ side: small, kind: 'kammer', y0: B[0][0], y1: B[0][1] });
+          if (B[1]) out.push({ side: small, kind: back, y0: B[1][0], y1: B[1][1] });
+          if (B[2]) out.push({ side: small, kind: back === 'bad' ? 'kammer' : 'bad', y0: B[2][0], y1: B[2][1] });
         }
       }
       return out;
@@ -397,14 +407,16 @@ export const ZIPLAN = (() => {
     const kindsUp = hasBad => {
       const out = [];
       if (big) {
-        const ys = split ? yi0 + depth * 0.56 : yi1 + PW / 2;
-        out.push({ side: big, kind: 'schlafzimmer', y0: yi0, y1: ys - PW / 2 });
-        if (split) out.push({ side: big, kind: R.chance(0.6) ? 'kinderzimmer' : 'kammer', y0: ys + PW / 2, y1: yi1 });
+        const B = bands(0.56, 0.42, 0.72);
+        out.push({ side: big, kind: 'schlafzimmer', y0: B[0][0], y1: B[0][1] });
+        if (B[1]) out.push({ side: big, kind: R.chance(0.6) ? 'kinderzimmer' : 'kammer', y0: B[1][0], y1: B[1][1] });
+        if (B[2]) out.push({ side: big, kind: 'kammer', y0: B[2][0], y1: B[2][1] });
       }
       if (small) {
-        const ys = split ? yi0 + depth * 0.5 : yi1 + PW / 2;
-        out.push({ side: small, kind: split ? 'kammer' : hasBad ? 'kammer' : 'bad', y0: yi0, y1: ys - PW / 2 });
-        if (split) out.push({ side: small, kind: hasBad ? 'kinderzimmer' : 'bad', y0: ys + PW / 2, y1: yi1 });
+        const B = bands(0.5, 0.38, 0.7);
+        out.push({ side: small, kind: split ? 'kammer' : hasBad ? 'kammer' : 'bad', y0: B[0][0], y1: B[0][1] });
+        if (B[1]) out.push({ side: small, kind: hasBad ? 'kinderzimmer' : 'bad', y0: B[1][0], y1: B[1][1] });
+        if (B[2]) out.push({ side: small, kind: 'kinderzimmer', y0: B[2][0], y1: B[2][1] });
       }
       return out;
     };
@@ -531,7 +543,13 @@ export const ZIPLAN = (() => {
       if (!d) {
         // through the room in front of it (a Durchgangszimmer)
         const fr = rooms.find(
-          q => q.fl === r.fl && q.side === r.side && (q.part || 0) === (r.part || 0) && q !== r && q.y1 < r.y0 + 0.01
+          q =>
+            q.fl === r.fl &&
+            q.side === r.side &&
+            (q.part || 0) === (r.part || 0) &&
+            q !== r &&
+            q.y1 < r.y0 + 0.01 &&
+            q.y1 > r.y0 - PW - 0.05
         );
         if (fr) d = { x: (r.x0 + r.x1) / 2, y: r.y0 - PW / 2, axis: 'x', w, room: r.id, from: fr.id, fl: r.fl };
       }
@@ -570,6 +588,11 @@ export const ZIPLAN = (() => {
           ch[0] + 1.01 > x0 - 0.7 &&
           ch[1] - 0.45 < hi + 0.9 &&
           ch[1] + 0.45 > lo - 0.9;
+      // the main stair's opening in this hall (and the way off its top): beside it only if a way of 0.7 m stays between both
+      const mainBy =
+        stair && nSt > 1 && hx1 - hx0 - (stair.x1 - stair.x0) - sw < 0.7
+          ? [stair.y0 + stair.holeK * stair.tread - 0.2, stair.y1 + 0.9]
+          : null;
       let best = null;
       for (const pass of [0, 1]) {
         for (const dir of [1, -1])
@@ -581,6 +604,7 @@ export const ZIPLAN = (() => {
             if (busy.some(([a, b]) => lo - 0.6 < b && hi + 0.1 > a)) continue;
             if (cx < attic.x0 + 0.1 || cx > attic.x1 - 0.1 || yt < attic.y0 + 0.2 || yt > attic.y1 - 0.2) continue;
             if (!pass && clash(lo, hi)) continue;
+            if (mainBy && lo - 0.3 < mainBy[1] && hi + 0.3 > mainBy[0]) continue;
             const head = under(cx, yt + dir * 0.4);
             if (head === null || head - zA < 2.0) continue;
             if (!best || head > best.head + 0.05) best = { ys, yt, dir, head, clash: !!pass && clash(lo, hi) };
@@ -604,6 +628,14 @@ export const ZIPLAN = (() => {
           chimClash: best.clash, // no smoke chamber then (zombie/z_innen_einr.js)
         };
       }
+    }
+    // no way up: no attic either (the top storey gets its ceiling)
+    if (attic && !astair) {
+      rooms.splice(
+        rooms.findIndex(r => r.kind === 'boden'),
+        1
+      );
+      attic = null;
     }
     // windows on the rectangle's edges, per storey
     const windows = [];
