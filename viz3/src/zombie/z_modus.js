@@ -8,6 +8,7 @@
 // out of the houses (zombie/z_horde.js), the streets empty; at 5:30 the long tone of the all-clear, the zombies go back into the houses, the
 // night is survived. Dying: the morning after, in the garden, some supplies lost. The state is kept (zombie/z_state.js, pav-zombie-v1);
 // a reload goes on where one was. „Beenden“ (the panel) leaves the mode and puts everything back.
+import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { P } from '../game/walkable.js';
@@ -123,6 +124,7 @@ export const ZOMBIE = (() => {
     ZFX.dispose();
     ZFIG.disposeAll();
     ZHUD.show(false);
+    fog(0, true);
     DORF.S.hold = null;
     nightStreets(false);
     if (S.prevMode) setMode(S.prevMode);
@@ -243,11 +245,31 @@ export const ZOMBIE = (() => {
     PLAY.think(S.lamp ? 'Taschenlampe an.' : 'Taschenlampe aus.', 900);
   });
   // ---- per frame ----
+  // ---- the night's fog (Silent Hill): the village sinks into the dark beyond 40–80 m; the scene's own fog, only its density ----
+  function fog(dt, off) {
+    const F = scene.fog;
+    if (!F || !F.isFogExp2) return;
+    const want = !off && P.mode !== 'top' ? (Z.phase === 'nacht' ? 0.016 : Z.phase === 'abend' ? 0.0055 : null) : null;
+    if (want != null) {
+      if (!S.fogged) {
+        S.fog0 = F.density;
+        S.fogged = true;
+      }
+      F.density += (want - F.density) * Math.min(1, dt * 0.35);
+    } else if (S.fogged) {
+      F.density += (S.fog0 - F.density) * (off ? 1 : Math.min(1, dt * 0.5));
+      if (off || Math.abs(F.density - S.fog0) < 2e-6) {
+        F.density = S.fog0;
+        S.fogged = false;
+      }
+    }
+  }
   function tick(dt) {
     if (!Z.on) return;
     dt = Math.min(dt, 0.25);
     Z.tick(dt);
     Z.noiseTick(dt);
+    fog(dt);
     const ph = phaseOf(minute());
     if (ph !== Z.phase) {
       const was = Z.phase;
