@@ -42,6 +42,8 @@ with lib.browser() as b:
         lab = E("(() => { const b = document.getElementById('doorbtn'); return b && !b.hidden ? b.textContent : ''; })()")
         ck('at the garden bench the button says „An der Werkbank basteln“', 'Werkbank basteln' in lab, lab)
         pic('01_werkbank')
+        # sound on (the audio context – the recordings load with the panel)
+        E("GAME.setSound(true)")
         # supplies for everything: 5 boards, 3 nails, a bottle, a litre of petrol, two rags
         E("for (const [k, n] of [['brett', 5], ['nagel', 3], ['flasche', 1], ['benzin', 1], ['lappen', 2]]) ZSTATE.add(k, n)")
         sup0 = J("ZSTATE.sup")
@@ -52,6 +54,20 @@ with lib.browser() as b:
         ck('the action opens the panel (garden)', inf['open'] and vis and inf['where'] == 'garten', str(inf))
         ck('the panel lists the nail board and the molotov, both buildable', ['bau', 'nagelbrett', True] in inf['rows'] and ['bau', 'molotow', True] in inf['rows'], str(inf['rows']))
         page_pic('02_panel')
+        # the recordings of the workbench and the molotov (viz3/extra/zombie-werk/dist/zombie/werk/) – when the page has sound at all
+        if E("!!(GAME.audio && GAME.audio.raw && GAME.audio.raw())"):
+            for i in range(20):
+                if J("ZWERK.info().rec") >= 15: break
+                time.sleep(0.5)
+            ck('the 15 recordings of the workbench and the molotov are loaded', J("ZWERK.info().rec") >= 15, str(J("ZWERK.info().rec")))
+        else:
+            print('note: no audio context in this browser – the recordings are not checked', flush=True)
+        # the panel on a phone-sized view (portrait): it fits, the buttons stay big enough to tap
+        pg.set_viewport_size({'width': 390, 'height': 760}); time.sleep(0.5); steps(0.1)
+        box = J("(() => { const r = document.getElementById('zwerk').getBoundingClientRect(), b = document.querySelector('#zwerk .zwr button').getBoundingClientRect(); return [r.left, r.right, r.top, r.bottom, b.width, b.height]; })()")
+        page_pic('02b_panel_handy')
+        ck('on a phone the panel fits the screen, its buttons ≥ 34 px high', box[0] >= 0 and box[1] <= 390 and box[3] <= 760 and box[5] >= 34, str(box))
+        pg.set_viewport_size({'width': 960, 'height': 560}); time.sleep(0.5); steps(0.1)
         # Esc closes it, the action opens it again
         pg.keyboard.press('Escape'); steps(0.1)
         ck('Esc closes the panel', not J("ZWERK.info().open") and not E("HUD.open"))
@@ -167,12 +183,15 @@ with lib.browser() as b:
               P.x = c.pos[0] + (dx / L) * 0.8; P.y = c.pos[1] + (dy / L) * 0.8; P.feet = GAME.floorAt(P.x, P.y, c.pos[2] - 0.4);
               P.yaw = P.body = Math.atan2(c.pos[0] - P.x, c.pos[1] - P.y) * 180 / Math.PI; P.pitch = -20; window.__wb = c.id; })()""")
             steps(0.4)
-            lab1 = E("(() => { const b = document.getElementById('doorbtn'); return b && !b.hidden ? b.textContent : ''; })()")
-            E("KERN.acts().find(a => a.id === 'c:' + __wb).run()")
+            # (the button picks the nearest of the room's actions – a light switch may be nearer; here the bench's own two)
+            act = lambda: J("""(() => { const a = KERN.acts().find(a => a.id === 'zwerk:haus'), c = KERN.acts().find(a => a.id.endsWith(':c:' + __wb));
+              return { lab: a && a.label(), prio: a && a.prio, cprio: c && c.prio, clab: c && c.label() }; })()""")
+            a1 = act()
+            E("KERN.acts().find(a => a.id.endsWith(':c:' + __wb)).run()")
             steps(0.6)
-            lab2 = E("(() => { const b = document.getElementById('doorbtn'); return b && !b.hidden ? b.textContent : ''; })()")
-            ck('in a cellar: first „Werkbank durchsuchen“, then „An der Werkbank basteln“', 'durchsuchen' in lab1 and 'Werkbank basteln' in lab2, f'{lab1!r} → {lab2!r}')
-            E("PLAY.primary()"); steps(0.3)
+            a2 = act()
+            ck('in a cellar: the drawer of the bench first, then „An der Werkbank basteln“ before it', a1['lab'] == 'An der Werkbank basteln' and a1['prio'] < a1['cprio'] and a2['prio'] > a2['cprio'], f'{a1} → {a2}')
+            E("KERN.acts().find(a => a.id === 'zwerk:haus').run()"); steps(0.3)
             inf = J("ZWERK.info()")
             ck('the panel opens at the cellar bench', inf['open'] and inf['where'] == 'haus', str(inf)[:200])
             page_pic('09_keller')
@@ -298,6 +317,7 @@ with lib.browser() as b:
         time.sleep(2); E("window.FREEZE = true"); steps(0.5)
         back = J("({ nb: ZWERK.cond('nagelbrett'), sh: ZWERK.sharp('axt'), mo: ZSTATE.sup.molotow || 0, st: ZWAFFE.things.nagelbrett ? ZWAFFE.things.nagelbrett.state : null })")
         ck('a reload keeps the nail board (on the garden bench), the sharp axe and the molotov', back['nb'] == saved['nb'] and back['sh'] == saved['sh'] and back['mo'] == saved['mo'] and back['st'] == 'world', f'{saved} → {back}')
+        E("GAME.go('werkstatt')"); steps(0.3)
         to_bench()
         pic('08_nach_neuladen')
     terr = E("(window.LOADLOG && LOADLOG.errs || []).filter(e => /Takt (zombie|zinnen)/.test(e)).map(e => e.slice(0, 300))")

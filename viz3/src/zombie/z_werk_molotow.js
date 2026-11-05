@@ -276,29 +276,35 @@ export const ZMOLO = (() => {
   // ---- sounds ----
   const band = (x, y, o) => ZWERK.band(x, y, o),
     tone = (x, y, o) => ZWERK.tone(x, y, o);
+  // the recordings of zombie/z_werk.js (werk.json: 'zuenden' a flare catching, 'glas' a bottle breaking, 'feuer' the petrol's whoosh), else
+  // synthesised
   function sndLight(x, y) {
+    if (ZWERK.rec('zuenden', x, y, { ref: 5 })) return;
     band(x, y, { f: 300, f1: 1800, q: 0.7, vol: 0.22, a: 0.03, d: 0.35, type: 'lowpass', ref: 5 });
   }
   function sndShatter(x, y) {
-    for (let i = 0; i < 6; i++)
-      band(x, y, {
-        f: 3800 + Math.random() * 4200,
-        q: 5,
-        vol: 0.5,
-        a: 0.002,
-        d: 0.05 + Math.random() * 0.08,
-        at: i * 0.025,
-        ref: 14,
-      });
-    for (let i = 0; i < 7; i++)
-      tone(x, y, {
-        f: 2600 + Math.random() * 4800,
-        vol: 0.06,
-        d: 0.15 + Math.random() * 0.35,
-        at: 0.04 + Math.random() * 0.4,
-        ref: 12,
-      });
+    if (!ZWERK.rec('glas', x, y, { ref: 14, wet: 0.25 })) {
+      for (let i = 0; i < 6; i++)
+        band(x, y, {
+          f: 3800 + Math.random() * 4200,
+          q: 5,
+          vol: 0.5,
+          a: 0.002,
+          d: 0.05 + Math.random() * 0.08,
+          at: i * 0.025,
+          ref: 14,
+        });
+      for (let i = 0; i < 7; i++)
+        tone(x, y, {
+          f: 2600 + Math.random() * 4800,
+          vol: 0.06,
+          d: 0.15 + Math.random() * 0.35,
+          at: 0.04 + Math.random() * 0.4,
+          ref: 12,
+        });
+    }
     // the petrol catches: a low whoomp rising
+    if (ZWERK.rec('feuer', x, y, { ref: 20, at: 0.06, wet: 0.35 })) return;
     band(x, y, { f: 140, f1: 2200, q: 0.6, vol: 0.9, a: 0.06, d: 0.75, type: 'lowpass', at: 0.05, ref: 20 });
     band(x, y, { f: 90, f1: 400, q: 0.8, vol: 0.6, a: 0.02, d: 0.5, type: 'lowpass', at: 0.04, ref: 24 });
   }
@@ -395,6 +401,7 @@ export const ZMOLO = (() => {
     }
     build();
     warm();
+    ZWERK.recLoad();
     Z.use('molotow', 1);
     S.cd = THROW.cd;
     const fp = !!(ZFP.shown && ZFP.play);

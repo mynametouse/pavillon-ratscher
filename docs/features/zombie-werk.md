@@ -10,8 +10,10 @@ flicken.“ Auftrag wörtlich: `docs/plans/auftraege/zombie-werk.md`. Code: `viz
   durchsuchen, dann basteln). Knopf „An der Werkbank basteln“ (E) öffnet ein kleines Fenster im Stil des Zombie-Panels: Rezepte mit
   Bedarf und Vorrat, Reparieren der Waffen, die man trägt, Schärfen. Bedienung: Maus/Antippen, ↑↓ und Enter, Esc oder ✕ schließt; wer
   weggeht, schließt es auch.
-- **Arbeit kostet Spielzeit** (Zeitraffer der Uhr, 10–25 min in ~2–3 s) und ist zu hören: Handsäge, Hammer (hören die Zombies wie beim
-  Verbarrikadieren), Wetzstein, Feile, Benzin, Lappen (im Browser erzeugt). Weggehen bricht ab, dann wird nichts verbraucht.
+- **Arbeit kostet Spielzeit** (Zeitraffer der Uhr, 10–25 min in ~2–3 s) und ist zu hören: Handsäge, Hammer auf Holz bzw. Stahl (hören
+  die Zombies wie beim Verbarrikadieren), Wetzstein – echte Aufnahmen (OpenGameArt, CC0 und CC BY 3.0, Nachweise
+  `viz3/extra/zombie-werk/quellen/CREDITS_TON.md`, Zuordnung `dist/zombie/werk.json`, Schnitt `quellen/werkton.py`); Feile, Benzin, Lappen
+  im Browser erzeugt (ebenso alles, solange die Aufnahmen nicht geladen sind). Weggehen bricht ab, dann wird nichts verbraucht.
 - **Nagelbrett** (2 Bretter + 1 Hand voll Nägel, 15 min): neue Nahkampfwaffe `nagelbrett` – stumpf, die Nägel reißen (manchmal ein Glied),
   schnell (31 Schaden, 0,64 s), nutzt sich schnell ab (~30 Treffer). Modell in wahrer Größe (0,86 m, zwei Fichtenbretter, Lappen am
   Griff, neun 90-mm-Nägel und zwei seitliche), in der Ich-Sicht mit beiden Händen wie ein Schläger, schlägt die Diagonale der Axt.
@@ -20,7 +22,7 @@ flicken.“ Auftrag wörtlich: `docs/plans/auftraege/zombie-werk.md`. Code: `viz
   Zombie-Nacht ist F nicht mehr Vollbild; am Handy der Knopf 🔥 über den anderen): in der Ich-Sicht holt die linke Hand die Flasche vom
   Gürtel, der Lappen fängt Feuer (Licht auf den Händen), ausholen neben dem Kopf, Wurf – die rechte Hand behält ihre Waffe. Die Flasche fliegt
   im Bogen (12,5 m/s, taumelnd, der Lappen brennt) und zerspringt am Boden, an einer Wand oder an einem Zombie: Glas klirrt, das Benzin
-  verpufft, ein Feuer von 3 m brennt 8 s. Zombies darin nehmen 16 Schaden/s, fangen Feuer (Flammen an der Figur), torkeln, brennen 6 s
+  verpufft (Aufnahmen: Flasche, Feuerstoß; der Lappen fängt mit einer Fackel-Zündung), ein Feuer von 3 m brennt 8 s. Zombies darin nehmen 16 Schaden/s, fangen Feuer (Flammen an der Figur), torkeln, brennen 6 s
   weiter (9/s) und stecken Nachbarn an; ein Brennender stirbt. Der Feuerwehrmann (`e.art`) brennt nur kurz und nimmt ein Drittel.
   Das Feuer leiht eines der geteilten Lichter (`KERN.lights.borrow`, kein neues Licht; im Garten nur in Bauphase 0 frei, wie bei
   Taschenlampe und Dorffeuer), knistert (Aufnahme des Ofens `amb_stove`) und ist für die Horde laut (`Z.noise` 45 m beim Zerspringen,
@@ -56,8 +58,15 @@ flicken.“ Auftrag wörtlich: `docs/plans/auftraege/zombie-werk.md`. Code: `viz
   `ZWMOD.MODELS/LIE/GRIP/HANDS.nagelbrett`, `ZFP.POSE.nagelbrett`. Neue `window`-Namen `ZWERK`, `ZMOLO`. Ereignisse `zombie:werkbank`, `zombie:werk`, `zombie:molotow`; zwei Lichtwünsche
   `zombie:feuer0/1` (Rang 5, zwischen Taschenlampe 6 und Haus 4).
 - Gespeichert wird nichts Neues außerhalb von `pav-zombie-v1` (`Z.weap[id].sharp`, `Z.sup.molotow`).
+- **Shader-Programme:** Werkbank und Nagelbrett bringen keine neuen (gemessen). Die Flammen sind `plain`-Materialien, nur emissiv, additiv –
+  sie brauchen die durchsichtige Variante des Standard-Programms: eine in der Welt (vorne), eine in der Ebene der Hände (beidseitig, dieselbe
+  wie das Mündungsfeuer der Flinte in `z_fp.js`). Beide werden übersetzt, sobald der erste Molotow im Rucksack liegt (`ZMOLO.warm`: zwei
+  Bilder lang winzig unter der Kamera gezeichnet – `renderer.compile` übersetzte sie für eine andere Tonwertabbildung als die des Composers);
+  beim Werfen, Fliegen, Brennen kommt keins dazu (Test `zombie_werk:molotow`).
+- Neue Dateien: `viz3/extra/zombie-werk/dist/zombie/werk.json` und `werk/*.mp3` (15 Aufnahmen, zusammen ~170 KB), `manifest.json`
+  (`credits_add` für die Quellenliste).
 
 ## Offen
 
-- Echte Aufnahmen für Säge, Hammer, Wetzstein und Glas (heute im Browser erzeugt; der Hammer ist der des Verbarrikadierens).
+- Feile (Motorsäge), Benzin einfüllen und Lappen stopfen sind noch im Browser erzeugt.
 - Der Flug der Flasche beim Mitspieler (nur das Feuer wird übertragen); Feuer, das Barrikaden oder Häuser ansteckt (nein, mit Absicht).

@@ -11,7 +11,7 @@
 // Nothing is built at load time: the models, materials and the panel come on first use; what is registered at load are data entries and
 // the actions (whose labels stay empty while the night mode is off).
 import * as THREE from 'three';
-import { COARSE, stage } from '../core/head.js';
+import { BASE, COARSE, stage } from '../core/head.js';
 import { markDirty, plain } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { BUILD } from '../core/geo.js';
@@ -89,7 +89,7 @@ export const ZWERK = (() => {
       verb: 'Sensenbaum flicken, Blatt dengeln',
       snd: ['hammer', 'stein'],
     },
-    brechstange: { need: {}, min: 10, verb: 'Geraderichten', snd: ['hammer'] },
+    brechstange: { need: {}, min: 10, verb: 'Geraderichten', snd: ['metall'] },
     motorsaege: { need: {}, min: 25, verb: 'Kette spannen und schärfen', snd: ['feile'] },
     flinte: { need: { lappen: 1 }, min: 10, verb: 'Reinigen und ölen', snd: ['lappen'] },
   };
@@ -153,18 +153,21 @@ export const ZWERK = (() => {
       [0.78, 0.026, -0.12, 0],
       [0.83, 0.0, 0.05, 0.3],
     ];
-    const nail = new THREE.CylinderGeometry(0.0007, 0.0019, 0.09, 6),
-      head = new THREE.CylinderGeometry(0.0045, 0.0045, 0.0016, 10);
-    for (const [y, z, by, bz] of NAILS) {
-      K.add(M.worn, nail, 0.012, y, z, 0, by, -Math.PI / 2 + bz);
+    // 120 mm nails (5 mm shank): through both boards, 6 cm of point out of the face – bright steel, a few rusty
+    const nail = new THREE.CylinderGeometry(0.001, 0.0025, 0.115, 6),
+      head = new THREE.CylinderGeometry(0.0055, 0.0055, 0.0018, 10);
+    NAILS.forEach(([y, z, by, bz], i) => {
+      K.add(i % 3 === 2 ? M.rust : M.steel, nail, 0.0245, y, z, 0, by, -Math.PI / 2 + bz);
       K.add(M.worn, head, -0.0325, y, z, 0, 0, -Math.PI / 2);
-    }
-    // two nails driven in from the edge (sticking out sideways)
+    });
+    // four driven in from the edges (sticking out sideways)
     for (const [y, s] of [
-      [0.6, 1],
-      [0.74, -1],
+      [0.55, 1],
+      [0.66, -1],
+      [0.74, 1],
+      [0.81, -1],
     ])
-      K.add(M.rust, nail, -0.005, y, s * 0.07, s > 0 ? Math.PI / 2 : -Math.PI / 2, 0, 0);
+      K.add(M.rust, nail, -0.005, y, s * 0.08, s > 0 ? Math.PI / 2 : -Math.PI / 2, 0, 0);
     K.build(g);
     return g;
   };
@@ -278,6 +281,7 @@ export const ZWERK = (() => {
   background:rgba(18,12,12,.9);color:#f2e9e4;border-radius:9px;padding:10px 12px 10px;font:400 12.5px/1.38 var(--f-body,system-ui);
   backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(0,0,0,.45);user-select:none;pointer-events:auto;-webkit-overflow-scrolling:touch}
 #zwerk[hidden]{display:none!important}
+@media (min-width:900px){#zwerk{left:calc(50% + 80px)}}
 #zwerk .zwh{display:flex;align-items:baseline;gap:8px;font:600 11px/1.3 var(--f-mono,monospace);letter-spacing:.04em;color:#ffb3a1;text-transform:uppercase}
 #zwerk .zwh em{flex:1;font-style:normal;color:#f2e9e4;text-transform:none;letter-spacing:0;font-weight:500;opacity:.85}
 #zwerk .zwx{border:0;background:rgba(255,255,255,.12);color:#f2e9e4;width:30px;height:30px;border-radius:50%;font:600 14px/1 system-ui;cursor:pointer;flex:none}
@@ -424,6 +428,7 @@ export const ZWERK = (() => {
       if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock();
     } catch (e) {}
     KERN.emit('zombie:werkbank', { kind: b.kind });
+    recLoad();
     return true;
   }
   function close() {
@@ -492,7 +497,7 @@ export const ZWERK = (() => {
     p.querySelector('span').textContent =
       (s === 'saege'
         ? 'Sägen'
-        : s === 'hammer'
+        : s === 'hammer' || s === 'metall'
           ? 'Hämmern'
           : s === 'stein'
             ? 'Wetzen'
@@ -615,21 +620,96 @@ export const ZWERK = (() => {
     o.start(t);
     o.stop(t + d + 0.05);
   }
+  // ---- the recordings (viz3/extra/zombie-werk/dist/zombie/werk/, werk.json: kind → files, vol; viz3/extra/zombie-werk/quellen/
+  // CREDITS_TON.md): loaded when first wanted (the audio context exists after the first tap), a variant at random, never the same twice
+  // in a row, a little faster or slower; until they are there – or without them – the synthesised sounds below ----
+  const REC = { map: null, buf: {}, last: {}, loading: null };
+  function recLoad() {
+    if (REC.loading) return REC.loading;
+    const R = audio.raw && audio.raw();
+    if (!R || !R.ctx) return null;
+    REC.loading = fetch(BASE + 'zombie/werk.json')
+      .then(x => (x.ok ? x.json() : null))
+      .then(j => {
+        if (!j || typeof j !== 'object') return false;
+        REC.map = j;
+        const files = [...new Set(Object.values(j).flatMap(v => (v && Array.isArray(v.files) ? v.files : [])))];
+        return Promise.all(
+          files.map(f =>
+            fetch(BASE + 'zombie/' + f)
+              .then(x => (x.ok ? x.arrayBuffer() : Promise.reject(new Error(x.status))))
+              .then(ab => new Promise((res, rej) => R.ctx.decodeAudioData(ab, res, rej)))
+              .then(b => (REC.buf[f] = b))
+              .catch(e => console.warn('werk sound', f, e))
+          )
+        ).then(() => true);
+      })
+      .catch(() => false);
+    return REC.loading;
+  }
+  // one recording of a kind at (x, y): false when there is none (then the caller synthesises)
+  function rec(kind, x, y, o = {}) {
+    if (!REC.loading) recLoad();
+    const m = REC.map && REC.map[kind];
+    if (!m || !Array.isArray(m.files)) return false;
+    const fs = m.files.filter(f => REC.buf[f]);
+    if (!fs.length) return false;
+    const R = audio.raw && audio.raw();
+    if (!R || R.ctx.state !== 'running') return true;
+    let i = Math.floor(Math.random() * fs.length);
+    if (fs.length > 1 && fs[i] === REC.last[kind]) i = (i + 1) % fs.length;
+    REC.last[kind] = fs[i];
+    const ctx = R.ctx,
+      sp = audio.spatial(x, y, o.ref || 8),
+      v = (m.vol ?? 0.8) * (o.vol ?? 1) * sp.vol;
+    if (v < 0.004) return true;
+    const t = ctx.currentTime + 0.01 + (o.at || 0),
+      src = ctx.createBufferSource(),
+      g = ctx.createGain();
+    src.buffer = REC.buf[fs[i]];
+    src.playbackRate.value = o.rate || 0.94 + Math.random() * 0.12;
+    g.gain.value = v;
+    src.connect(g);
+    let out = g;
+    if (ctx.createStereoPanner) {
+      const pn = ctx.createStereoPanner();
+      pn.pan.value = Math.max(-1, Math.min(1, sp.pan));
+      g.connect(pn);
+      out = pn;
+    }
+    out.connect(R.sfx);
+    if (o.wet && R.wet) {
+      const w = ctx.createGain();
+      w.gain.value = o.wet;
+      out.connect(w);
+      w.connect(R.wet);
+    }
+    src.start(t);
+    return true;
+  }
   const SND = {
-    // a push stroke and a shorter pull: the teeth through the board (a trembling band), the zombies hear it a little
+    // a push stroke and a pull: the teeth through the board; the zombies hear it a little
     saege: (x, y) => {
+      Z.noise(x, y, 14, 0.6, 'saege');
+      if (rec('saege', x, y, { ref: 6 })) return 0.86;
       band(x, y, { f: 2600, f1: 3400, q: 1.4, vol: 0.32, a: 0.05, d: 0.3, am: 70 });
       band(x, y, { f: 3200, f1: 2500, q: 1.4, vol: 0.22, a: 0.04, d: 0.22, am: 55, at: 0.38 });
-      Z.noise(x, y, 14, 0.6, 'saege');
       return 0.68;
     },
     hammer: (x, y) => {
-      ZTON.hammer(x, y);
       Z.noise(x, y, 26, 0.6, 'hammer');
+      if (!rec('hammer', x, y, { ref: 9, wet: 0.15 })) ZTON.hammer(x, y);
       return 0.43;
+    },
+    // the crowbar straightened: steel on steel
+    metall: (x, y) => {
+      Z.noise(x, y, 30, 0.6, 'hammer');
+      if (!rec('metall', x, y, { ref: 10, wet: 0.2 })) ZTON.hammer(x, y);
+      return 0.55;
     },
     // the whetstone along the edge: a hiss up and down, the blade rings
     stein: (x, y) => {
+      if (rec('stein', x, y, { ref: 5 })) return 0.7;
       band(x, y, { f: 5200, f1: 7400, q: 3, vol: 0.2, a: 0.06, d: 0.28 });
       tone(x, y, { f: 3150, vol: 0.035, d: 0.5, at: 0.05 });
       band(x, y, { f: 7000, f1: 5000, q: 3, vol: 0.16, a: 0.05, d: 0.24, at: 0.42 });
@@ -738,6 +818,7 @@ export const ZWERK = (() => {
       job: S.job ? { id: S.job.r.id, kind: S.job.r.kind, t: +S.job.t.toFixed(2), secs: +S.job.secs.toFixed(2) } : null,
       bench: benchNear(3) ? benchNear(3).kind : null,
       sharp: Object.fromEntries(BLADES.map(id => [id, sharp(id)])),
+      rec: Object.keys(REC.buf).length,
     };
   }
   Object.assign(S, {
@@ -761,6 +842,8 @@ export const ZWERK = (() => {
     carried,
     band,
     tone,
+    rec,
+    recLoad,
     SND,
   });
   return S;
