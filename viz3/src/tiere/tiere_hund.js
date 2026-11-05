@@ -181,7 +181,7 @@ export const HUND = (() => {
   });
   KERN.tick(update, 'hund');
   // wildlife flees from him (tiere/tiere.js)
-  TIERE.dog = () => (D.model && D.model.g.visible ? [D.x, D.y] : null);
+  TIERE.dog = () => (D.model && D.model.g.visible ? [D.x, D.y, D.mode === 'jagen' || D.mode === 'vertreiben'] : null);
   D.update = update;
   D.save = save;
   D.state = () => ({

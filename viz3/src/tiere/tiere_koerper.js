@@ -38,6 +38,12 @@ export const TKOERPER = (() => {
     pm.userData.noMerge = true;
     pm.name = 'tiere carrier plain';
     scene.add(pm);
+    // and instanced (saplings, tree guards, rooted soil, bore dust: tiere/tiere_einfluss.js)
+    const im = new THREE.InstancedMesh(g, MAT, 1);
+    im.visible = false;
+    im.userData.noMerge = true;
+    im.name = 'tiere carrier instanced';
+    scene.add(im);
   }
   // ---------- colours: sRGB hex → linear, a little mottling so a coat is not one flat colour ----------
   const _c = new THREE.Color();

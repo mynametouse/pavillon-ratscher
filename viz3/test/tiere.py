@@ -3,11 +3,11 @@
 # open land), the groups by the sun and the calendar (roe deer at dusk at the forest edge, wild boar at night on the field, the red kite
 # by day over the meadows), flight from the walker at the real distance (the group goes together), the first sighting as an event for
 # the discovery book, the dog following, sitting, lying. Pictures in out/tiere/ (look at them).
-#   python3 viz3/test/tiere.py 9003 [sections]      sections: bau,welt,flucht,hund (default all)
+#   python3 viz3/test/tiere.py 9003 [sections]      sections: bau,welt,flucht,hund,einfluss (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'bau,welt,flucht,hund').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'bau,welt,flucht,hund,einfluss').split(','))
 ck = lib.Checks('tiere')
 OUT = lib.out('tiere')
 with lib.browser() as b:
@@ -228,5 +228,78 @@ with lib.browser() as b:
         E("(() => { const P = GAME.P, D = HUND; const yaw = Math.atan2(D.x - P.x, D.y - P.y) * 180 / Math.PI; GAME.view(P.x - Math.sin(yaw * Math.PI / 180) * 2.5, P.y - Math.cos(yaw * Math.PI / 180) * 2.5, GAME.floorAt(P.x, P.y, P.feet) + 1.5, yaw, -18, 55); })()")
         E("GAME.step(0.05)")
         pic('30_hund_sitzt')
+    if 'einfluss' in want:
+        # the influence: a planting at the Klinge (half guarded), last summer's beetle spruces, the stork's quiet zone, rooting and the
+        # electric fence, signs found by walking up to them – no new shader program for any of it
+        at(11, 0, date=(11, 6))
+        steps(1.0)
+        st = J("TEINFLUSS.state()")
+        print('influence', st, flush=True)
+        ck('a planting of young trees at the Klinge, half of them in tree guards', st['plot'] and st['plot']['n'] == 40 and st['guarded'] >= 20, str(st))
+        ck('last summer\'s bark beetle spruces are there (red-brown and grey crowns)', sum(st['kaefer'].values()) >= 8, str(st['kaefer']))
+        tinted = E("FOREST.list.filter(t => t.tint).length")
+        ck('… their crowns tinted in the forest (world/forest.js hook)', tinted >= 8, str(tinted))
+        px, py = st['plot']['x'], st['plot']['y']
+        E(f"GAME.view({px} + 6, {py} - 9, ROADS.groundAt({px} + 6, {py} - 9) + 1.6, -15, -12, 55); GAME.step(0.1)")
+        pa = progs()
+        E("GAME.step(0.05)")
+        pic('40_pflanzung_vorher')
+        ck('no new shader program for saplings, guards and signs', progs() <= pa, f'{pa} -> {progs()}')
+        b0 = J("TIERE.baeume().filter(t => t.plot)")
+        # a winter and spring in time-lapse (November to April)
+        E("TIERE.sim(160)")
+        steps(0.3)
+        b1 = J("TIERE.baeume().filter(t => t.plot)")
+        prot1 = [t for t in b1 if t['geschuetzt']]
+        open1 = [t for t in b1 if not t['geschuetzt']]
+        print('browsed: guarded', sum(1 for t in prot1 if t['dmg'] >= 0.4), 'of', len(prot1), '– open', sum(1 for t in open1 if t['dmg'] >= 0.4), 'of', len(open1), flush=True)
+        ck('time-lapse winter: no guarded young tree browsed', all(t['dmg'] == 0 for t in prot1), str([t['dmg'] for t in prot1]))
+        ck('… but many of the unguarded ones (fir and maple first)', sum(1 for t in open1 if t['dmg'] >= 0.4) >= 5, str([(t['art'], t['dmg']) for t in open1]))
+        E("GAME.step(0.05)")
+        pic('41_pflanzung_nach_winter')
+        sch = J("TIERE.schaden({ season: 'winter' })")
+        ck('the damage per season for the strategy mode (TIERE.schaden)', sch['sum'].get('verbiss', 0) >= 5, str(sch['sum']))
+        # the black stork's quiet zone
+        nest = J("TEINFLUSS.state().nest")
+        g = J("TIERE.groups.find(g => g.art === 'schwarzstorch').nest")
+        at(11, 0, date=(5, 10))
+        r1 = J(f"TIERE.ruhe({g[0]} + 60, {g[1]})")
+        r2 = J(f"TIERE.ruhe({g[0]} + 220, {g[1]})")
+        at(11, 0, date=(11, 6))
+        r3 = J(f"TIERE.ruhe({g[0]} + 220, {g[1]})")
+        ck('quiet zone: no felling within 100 m of the stork\'s nest, within 300 m none in the breeding season, free in November',
+           r1 and r1['zone'] == 'horst' and r2 and r2['zone'] == 'brutzeit' and r3 is None, f'{r1} | {r2} | {r3}')
+        if nest:
+            E(f"GAME.view({nest[0]} - 14, {nest[1]} - 10, ROADS.groundAt({nest[0]} - 14, {nest[1]} - 10) + 1.7, 55, 38, 60); GAME.step(0.1)")
+            pic('42_horst')
+        # beetle trees from the field, and the bore dust at the foot of a fresh one
+        kl = J("TIERE.kaefer.list()")
+        red = [k for k in kl if k['stage'] == 2]
+        if red:
+            k = red[0]
+            E(f"GAME.view({k['x']} + 26, {k['y']} + 30, ROADS.groundAt({k['x']} + 26, {k['y']} + 30) + 1.7, {math.degrees(math.atan2(-26, -30))}, 8, 60); GAME.step(0.1)")
+            pic('43_kaeferfichten')
+        # rooting in the garden: an electric fence keeps the sounders out
+        E("TIERE.schutz.add({ id: 'ez', kind: 'elektrozaun', x: -4, y: -10, r: 40 })")
+        at(11, 0, date=(9, 20))
+        w0 = J("TEINFLUSS.E.wuehl.filter(w => Math.hypot(w[0] + 4, w[1] + 10) < 12).length")
+        E("TIERE.sim(60)")
+        w1 = J("TEINFLUSS.E.wuehl.filter(w => Math.hypot(w[0] + 4, w[1] + 10) < 12).length")
+        E("TIERE.schutz.remove('ez')")
+        E("TIERE.sim(60)")
+        w2 = J("TEINFLUSS.E.wuehl.filter(w => Math.hypot(w[0] + 4, w[1] + 10) < 12).length")
+        print('garden rooting', w0, w1, w2, flush=True)
+        ck('with the electric fence no rooting in the garden meadow (autumn)', w1 == w0, f'{w0} -> {w1}')
+        ck('… without it the sounders come (autumn nights)', w2 > w1, f'{w1} -> {w2}')
+        E("GAME.view(-4, -18, ROADS.groundAt(-4, -18) + 1.7, 0, -14, 60); GAME.step(0.1)")
+        pic('44_garten_wuehlstellen')
+        # a sign found: walk to a wallow
+        w = J("(() => { const g = TIERE.groups.find(g => g.art === 'wildschwein'); return [g.home[0] + 18 * Math.cos(g.seed % 7), g.home[1] + 18 * Math.sin(g.seed % 7)]; })()")
+        E(f"GAME.view({w[0]} + 5, {w[1]}, ROADS.groundAt({w[0]} + 5, {w[1]}) + 1.7, -90, -25, 60); GAME.step(0.1)")
+        steps(1.2)
+        ev = J("window.__ev.filter(e => e.kind === 'spur')")
+        ck('a sign found: the wallow (tiere:entdeckt, kind spur, with a source)', any(e['id'] == 'suhle' for e in ev), str(ev)[:300])
+        pic('45_suhle')
+        ck('the strategy mode\'s numbers: counts, nature value', J("Object.keys(TIERE.counts()).length") >= 5 and 0 <= E("TIERE.naturwert()") <= 100, str(J("TIERE.counts()")))
     ck.errors(errs)
 ck.done()
