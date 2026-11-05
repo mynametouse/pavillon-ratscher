@@ -29,7 +29,11 @@
 //   H.roomAt(x, y, z) → the room id there or null   H.light(roomId, on?) → switch a room's light (no argument: toggle), returns the state
 //   H.doors [{ id, key, room, pos: [x, y, z] }]     the inner doors (DOORS keys: open/close with GAME.toggleDoor or setDoorNow)
 //   H.hatch { key, pos } | null                     the cellar trapdoor (a DOORS flap)   H.plan   the floor plan (zombie/z_innen_plan.js)
+//   H.route(x, y, z, tx, ty, tz) → { x, y, z }      where one inside heads next to get to the target (feet z): the target in the same room,
+//                                                    else the next waypoint along H.graph (for the zombies in the house)
 //   ZINNEN.pick(x, y)  → the id of the enterable house nearest to (x, y)
+//   ZINNEN.warm()      makes the one shader program of the terrain cut-out ahead (call it when the zombie night starts): entering a
+//                      house then compiles no program at all
 import * as THREE from 'three';
 import { scene, V, QS } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -438,6 +442,7 @@ export const ZINNEN = (() => {
     if (!VILLAGE.ready) return null;
     const P = ZIPLAN.plan(id);
     if (!P) return null;
+    S.err = null; // the last furnishing error, of this house
     const M = ZIMOB.mats(),
       R = ZIPLAN.rng(P.seed),
       mem0 = window.GAME && GAME.R ? { g: GAME.R.info.memory.geometries, t: GAME.R.info.memory.textures } : null;
@@ -484,7 +489,9 @@ export const ZINNEN = (() => {
         H.walks.push(e);
       };
     const shell = new ZIMOB.Mesher(),
-      furn = new ZIMOB.Mesher();
+      furn = new ZIMOB.Mesher(),
+      // moving parts (one draw call each): ten, fewer in big houses with many doors (each door leaf is one too)
+      PARTS_MAX = Math.max(3, Math.min(10, 17 - P.doors.length));
     const house = { frame: (P.b.st && P.b.st.frame) || 0 };
     // the context for the furniture (zombie/z_innen_einr.js)
     const C = {
@@ -522,7 +529,7 @@ export const ZINNEN = (() => {
     };
     C.part = o => {
       // one moving part each and ten in a house at most (draw calls); the others are searched without moving
-      if (o.container && (o.container.parts.length >= 1 || H.parts.length >= 10))
+      if (o.container && (o.container.parts.length >= 1 || H.parts.length >= PARTS_MAX))
         o = Object.assign({}, o, { container: null });
       if (!o.container) {
         // a leaf that never opens: part of the furniture
@@ -898,8 +905,11 @@ export const ZINNEN = (() => {
         walk(q[0], q[1], q[2], q[3], P.zA, 'wood');
     if (P.cellar) walk(P.cellar.x0, P.cellar.x1, P.cellar.y0, P.cellar.y1, P.cellar.z0, 'stone');
     // ---- stairs (in the hall): steps, stringers, a handrail; the opening above gets a railing ----
-    const stairWood = P.look === 'alt' ? M.holz : P.look === 'ddr' ? M.hell : M.eiche;
-    function buildStair(st, z0) {
+    const stairWood = P.look === 'alt' ? M.holz : P.look === 'ddr' ? M.hell : M.eiche,
+      STAIR_GAP = 0.45,
+      PASS = 0.5;
+    // cont: another flight goes on up from the top (stacked stairs): the opening's lower end then has no rail – that flight runs over it
+    function buildStair(st, z0, cont = false) {
       const dir = st.y1 >= st.y0 ? 1 : -1,
         wood = stairWood,
         ztop = z0 + st.n * st.rise;
@@ -934,22 +944,32 @@ export const ZINNEN = (() => {
           [-nx, 0, 0]
         );
       }
-      const hx = open + oS * 0.03;
-      furn.rod(wood, [hx, st.y0, z0 + 0.95], [hx, st.y1, zB + 0.95], 0.025, 6);
-      for (let k = 1; k < st.n; k += 4) {
+      // (the railing's colliders begin 0.3 m above the floor upstairs: they stop one walking there, not one climbing below them)
+      // the handrail and the railing above end at a newel post STAIR_GAP before the top: there one steps off sideways (the walker
+      // is 0.42 m wide; the strip behind the last step can be narrow), so nothing is drawn where one walks
+      const hx = open + oS * 0.03,
+        yE = st.y1 - dir * STAIR_GAP,
+        zE = zB - (STAIR_GAP / st.tread) * st.rise;
+      furn.rod(wood, [hx, st.y0, z0 + 0.95], [hx, yE, zE + 0.95], 0.025, 6);
+      for (let k = 1; (k - 0.5) * st.tread < (st.n - 1) * st.tread - STAIR_GAP - 0.1; k += 4) {
         const yy = st.y0 + dir * (k - 0.5) * st.tread;
         furn.box(wood, hx - 0.02, hx + 0.02, yy - 0.02, yy + 0.02, z0 + k * st.rise, z0 + k * st.rise + 0.95);
       }
-      // above: the railing round the opening (its open side and its lower end), the slab's edges
+      // above: the railing round the opening (its open side up to the newel and its lower end), the slab's edges
       const h = holeOf(st),
-        yh = dir > 0 ? h[2] : h[3];
-      furn.rod(wood, [hx, h[2], ztop + 0.95], [hx, h[3], ztop + 0.95], 0.025, 6);
-      furn.rod(wood, [st.x0, yh, ztop + 0.95], [st.x1, yh, ztop + 0.95], 0.025, 6);
-      for (let y = h[2] + 0.06; y < h[3]; y += 0.12)
-        furn.box(wood, hx - 0.012, hx + 0.012, y - 0.012, y + 0.012, ztop, ztop + 0.95);
-      const cl = dir > 0 ? [h[2] - 0.05, h[3] - 0.3] : [h[2] + 0.3, h[3] + 0.05];
-      col(hx - 0.04, hx + 0.04, cl[0], cl[1], ztop - 0.05, ztop + 1.0);
-      col(st.x0, st.x1, yh - 0.04, yh + 0.04, ztop - 0.05, ztop + 1.0);
+        yh = dir > 0 ? h[2] : h[3],
+        rl = dir > 0 ? [h[2], yE] : [yE, h[3]];
+      if (rl[1] - rl[0] > 0.2) {
+        furn.rod(wood, [hx, rl[0], ztop + 0.95], [hx, rl[1], ztop + 0.95], 0.025, 6);
+        for (let y = rl[0] + 0.06; y < rl[1] - 0.05; y += 0.12)
+          furn.box(wood, hx - 0.012, hx + 0.012, y - 0.012, y + 0.012, ztop, ztop + 0.95);
+        col(hx - 0.04, hx + 0.04, rl[0] - (dir > 0 ? 0.05 : 0), rl[1] + (dir > 0 ? 0 : 0.05), ztop + 0.3, ztop + 1.0);
+      }
+      furn.box(wood, hx - 0.04, hx + 0.04, yE - 0.04, yE + 0.04, zE, ztop + 1.02);
+      if (!cont) {
+        furn.rod(wood, [st.x0, yh, ztop + 0.95], [st.x1, yh, ztop + 0.95], 0.025, 6);
+        col(st.x0, st.x1, yh - 0.04, yh + 0.04, ztop + 0.3, ztop + 1.0);
+      }
       shell.quad(
         M.decke,
         [st.x0, yh, ztop - SLAB],
@@ -967,7 +987,7 @@ export const ZINNEN = (() => {
         [-oS, 0, 0]
       );
     }
-    if (P.stair) for (let k = 0; k < P.nSt - 1; k++) buildStair(P.stair, P.zF[k]);
+    if (P.stair) for (let k = 0; k < P.nSt - 1; k++) buildStair(P.stair, P.zF[k], k + 1 < P.nSt - 1);
     if (P.astair && att) buildStair(P.astair, P.zF[P.nSt - 1]);
     // ---- the cellar: steep steps under the trapdoor in the kitchen ----
     if (P.hatch) {
@@ -980,15 +1000,20 @@ export const ZINNEN = (() => {
         furn.box(M.hell, h.x0 + 0.05, h.x1 - 0.05, ya, yb + 0.03, zt - 0.04, zt);
         walk(h.x0, h.x1, ya, yb, zt, 'wood');
       }
+      // the two stringers, each a board seen from both sides
       for (const x of [h.x0 + 0.02, h.x1 - 0.06])
-        shell.quad(
-          M.hell,
-          [x, h.y0 - 0.05, z0 - 0.15],
-          [x, h.y1 + 0.05, z0 - h.n * h.rise],
-          [x, h.y1 + 0.05, z0 - h.n * h.rise + 0.25],
-          [x, h.y0 - 0.05, z0 + 0.0],
-          [1, 0, 0]
-        );
+        for (const [xx, nx] of [
+          [x, -1],
+          [x + 0.04, 1],
+        ])
+          shell.quad(
+            M.hell,
+            [xx, h.y0 - 0.05, z0 - 0.15],
+            [xx, h.y1 + 0.05, z0 - h.n * h.rise],
+            [xx, h.y1 + 0.05, z0 - h.n * h.rise + 0.25],
+            [xx, h.y0 - 0.05, z0 + 0.0],
+            [nx, 0, 0]
+          );
       // the hole's edges and the lid (a DOORS flap: closed it is floor, open it stands up)
       for (const [a, b, n] of [
         [
@@ -1123,6 +1148,17 @@ export const ZINNEN = (() => {
     }
     await tick0();
     // ---- furniture ----
+    // the way past a stair (and its opening upstairs) stays free: a strip PASS wide along its open side
+    const passBy = st => {
+      const open = st.side === 'R' ? st.x0 : st.x1,
+        oS = st.side === 'R' ? -1 : 1;
+      return [
+        Math.min(open, open + oS * PASS),
+        Math.max(open, open + oS * PASS),
+        Math.min(st.y0, st.y1) - 0.3,
+        Math.max(st.y0, st.y1) + 0.3,
+      ];
+    };
     for (const r of rooms) {
       C.R = ZIPLAN.rng(P.seed * 3 + r.fl * 31 + Math.round(r.x0 * 10) + Math.round(r.y0 * 100));
       C.room = r;
@@ -1139,20 +1175,42 @@ export const ZINNEN = (() => {
         }
       if (r.fl === 0 && r.kind === 'flur') r.keep.push([P.front.x - 0.8, P.front.x + 0.8, P.yi0, P.yi0 + 1.4]);
       if (P.stair && r.kind === 'flur')
-        r.keep.push([P.stair.x0 - 0.1, P.stair.x1 + 0.1, P.stair.y0 - 1.0, P.stair.y1 + 1.0]);
+        r.keep.push([P.stair.x0 - 0.1, P.stair.x1 + 0.1, P.stair.y0 - 1.0, P.stair.y1 + 1.0], passBy(P.stair));
       if (P.astair && r.kind === 'flur' && r.fl === P.astair.fl)
-        r.keep.push([
-          P.astair.x0 - 0.1,
-          P.astair.x1 + 0.1,
-          Math.min(P.astair.y0, P.astair.y1) - 1.0,
-          Math.max(P.astair.y0, P.astair.y1) + 1.0,
-        ]);
+        r.keep.push(
+          [
+            P.astair.x0 - 0.1,
+            P.astair.x1 + 0.1,
+            Math.min(P.astair.y0, P.astair.y1) - 1.0,
+            Math.max(P.astair.y0, P.astair.y1) + 1.0,
+          ],
+          passBy(P.astair)
+        );
       if (P.astair && r.kind === 'boden')
-        r.keep.push((h => [h[0] - 0.2, h[1] + 0.2, h[2] - 0.6, h[3] + 0.6])(holeOf(P.astair)));
+        r.keep.push((h => [h[0] - 0.8, h[1] + 0.8, h[2] - 0.9, h[3] + 0.9])(holeOf(P.astair)));
       if (P.hatch && r.id === P.hatch.room.id)
         r.keep.push([P.hatch.x0 - 0.25, P.hatch.x1 + 0.25, P.hatch.y0 - 0.8, P.hatch.y1 + 0.1]);
       if (P.hatch && r.kind === 'keller')
         r.keep.push([P.hatch.x0 - 0.1, P.hatch.x1 + 0.1, P.hatch.y0 - 0.3, P.hatch.y1 + 1.2]);
+      // a room one walks through (two doors or more, or a door and the trapdoor): a way 0.9 m wide from door to door stays free
+      if (r.kind !== 'flur') {
+        const ins = [];
+        for (const d of P.doors) {
+          if (d.fl !== r.fl || (d.room !== r.id && d.from !== r.id)) continue;
+          const vert = d.axis === 'y',
+            into = vert ? Math.sign((r.x0 + r.x1) / 2 - d.x) : Math.sign((r.y0 + r.y1) / 2 - d.y);
+          ins.push(vert ? [d.x + into * 0.6, d.y] : [d.x, d.y + into * 0.6]);
+        }
+        if (P.hatch && r.id === P.hatch.room.id) ins.push([(P.hatch.x0 + P.hatch.x1) / 2, P.hatch.y0 - 0.5]);
+        for (let i = 0; i < ins.length; i++)
+          for (let j = i + 1; j < ins.length; j++) {
+            const [p, q] = [ins[i], ins[j]];
+            r.keep.push(
+              [Math.min(p[0], q[0]) - 0.45, Math.max(p[0], q[0]) + 0.45, p[1] - 0.45, p[1] + 0.45],
+              [q[0] - 0.45, q[0] + 0.45, Math.min(p[1], q[1]) - 0.45, Math.max(p[1], q[1]) + 0.45]
+            );
+          }
+      }
       // the tiled stove of the Stube stands at the wall to the kitchen, near the hall
       if (r.kind === 'stube' || r.kind === 'kueche') {
         const k = r.kind === 'stube' ? 'y1' : 'y0',
@@ -1235,15 +1293,23 @@ export const ZINNEN = (() => {
         front: w.edge === 'front',
       });
     });
-    // waypoints: room centres, both sides of every door, the stairs and the hatch
+    // waypoints: both sides of every door, the stairs, the trapdoor, the entry – and in every room one more, the free spot nearest to
+    // its middle that can be reached from where one comes in (furniture, a stair or its opening may stand in the middle)
     const nodes = [],
       edges = [],
       node = (x, y, z, room) => (
         nodes.push(Object.assign({ x: 0, y: 0 }, (([a, b]) => ({ x: a, y: b }))(P.toW(x, y)), { z, room })),
         nodes.length - 1
       ),
-      centre = {};
-    for (const r of rooms) centre[r.id] = node((r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2, r.z0, r.id);
+      centre = {},
+      links = [], // [node, room]: joined to the room's own waypoint below
+      seeds = {}, // room id → where one comes in [x, y] (house frame)
+      link = (n, r, x, y) => {
+        links.push([n, r.id]);
+        (seeds[r.id] = seeds[r.id] || []).push([x, y]);
+      };
+    // x of the way past a stair, between its railing and the furniture beyond the kept strip
+    const pastX = st => (st.side === 'R' ? st.x0 - PASS * 0.57 : st.x1 + PASS * 0.57);
     for (const d of P.doors) {
       const r = rooms.find(q => q.id === d.room);
       if (!r) continue;
@@ -1251,38 +1317,127 @@ export const ZINNEN = (() => {
         into = vert ? Math.sign((r.x0 + r.x1) / 2 - d.x) : Math.sign((r.y0 + r.y1) / 2 - d.y),
         other = d.from ? rooms.find(q => q.id === d.from) : rooms.find(q => q.kind === 'flur' && q.fl === d.fl);
       if (!other) continue;
-      const a = vert ? node(d.x + into * 0.5, d.y, d.z0, r.id) : node(d.x, d.y + into * 0.5, d.z0, r.id),
-        b = vert ? node(d.x - into * 0.5, d.y, d.z0, other.id) : node(d.x, d.y - into * 0.5, d.z0, other.id);
-      edges.push([a, b], [a, centre[r.id]], [b, centre[other.id]]);
+      const pa = vert ? [d.x + into * 0.5, d.y] : [d.x, d.y + into * 0.5],
+        pb = vert ? [d.x - into * 0.5, d.y] : [d.x, d.y - into * 0.5],
+        a = node(pa[0], pa[1], d.z0, r.id),
+        b = node(pb[0], pb[1], d.z0, other.id);
+      edges.push([a, b]);
+      link(a, r, ...pa);
+      link(b, other, ...pb);
     }
-    const flur0 = rooms.find(r => r.kind === 'flur' && r.fl === 0),
-      flur1 = rooms.find(r => r.kind === 'flur' && r.fl === 1);
-    if (P.stair && flur1) {
-      const st = P.stair,
+    // a stair from room ra (floor za) up to room rb (floor zb): in front of the first step, on the last one, and beside it
+    // upstairs, where one steps off through the railing's gap
+    const flights = [];
+    const stairNodes = (st, ra, za, rb, zb) => {
+      const dir = st.y1 >= st.y0 ? 1 : -1,
         cx = (st.x0 + st.x1) / 2,
-        a = node(cx, st.y0 - 0.4, P.zF[0], flur0.id),
-        b = node(cx, st.y1 + 0.4, P.zF[1], flur1.id);
-      edges.push([a, b], [a, centre[flur0.id]], [b, centre[flur1.id]]);
+        pa = [cx, st.y0 - dir * 0.45],
+        pw = [pastX(st), st.y0 - dir * 0.45],
+        pb = [pastX(st), st.y1 - dir * 0.2],
+        a = node(pa[0], pa[1], za, ra.id),
+        w = node(pw[0], pw[1], za, ra.id),
+        t = node(cx, st.y1 - dir * 0.15, zb - st.rise, rb.id),
+        b = node(pb[0], pb[1], zb, rb.id);
+      nodes[t].step = true;
+      // to the foot of the stair by the way past it (straight from the room's spot one could run into the steps)
+      edges.push([w, a], [a, t], [t, b]);
+      link(w, ra, ...pw);
+      seeds[ra.id].push(pa);
+      link(b, rb, ...pb);
+      flights.push({ st, za, zb, ids: [w, a, t, b] });
+    };
+    const flur0 = rooms.find(r => r.kind === 'flur' && r.fl === 0);
+    for (let k = 0; P.stair && k < P.nSt - 1; k++) {
+      const fa = rooms.find(r => r.kind === 'flur' && r.fl === k),
+        fb = rooms.find(r => r.kind === 'flur' && r.fl === k + 1);
+      if (fa && fb) stairNodes(P.stair, fa, P.zF[k], fb, P.zF[k + 1]);
     }
     const kel = rooms.find(r => r.kind === 'keller');
     if (P.hatch && kel) {
       const h = P.hatch,
         cx = (h.x0 + h.x1) / 2,
-        a = node(cx, h.y0 - 0.4, P.zG, h.room.id),
-        b = node(cx, Math.min(h.y1 + 0.5, kel.y1 - 0.3), kel.z0, kel.id);
-      edges.push([a, b], [a, centre[h.room.id]], [b, centre[kel.id]]);
+        pa = [cx, h.y0 - 0.4],
+        pb = [cx, Math.min(h.y1 + 0.5, kel.y1 - 0.3)],
+        a = node(pa[0], pa[1], P.zG, h.room.id),
+        b = node(pb[0], pb[1], kel.z0, kel.id);
+      edges.push([a, b]);
+      link(a, h.room, ...pa);
+      link(b, kel, ...pb);
     }
     const flurTop = rooms.find(r => r.kind === 'flur' && r.fl === P.nSt - 1);
-    if (P.astair && att && flurTop) {
-      const st = P.astair,
-        cx = (st.x0 + st.x1) / 2,
-        dir = st.y1 >= st.y0 ? 1 : -1,
-        a = node(cx, st.y0 - dir * 0.4, P.zF[P.nSt - 1], flurTop.id),
-        b = node(cx, st.y1 + dir * 0.4, P.zA, att.id);
-      edges.push([a, b], [a, centre[flurTop.id]], [b, centre[att.id]]);
-    }
+    if (P.astair && att && flurTop) stairNodes(P.astair, flurTop, P.zF[P.nSt - 1], att, P.zA);
     const en = node(P.front.x, P.yi0 + 0.6, P.zG, flur0.id);
-    edges.push([en, centre[flur0.id]]);
+    link(en, flur0, P.front.x, P.yi0 + 0.6);
+    // can one stand at (x, y) on the floor z: no collider within the walker's radius, a floor there, no step at body height
+    const RW = 0.24,
+      over = (w, x, y) => x >= w[0] && x <= w[1] && y >= w[2] && y <= w[3];
+    for (const r of rooms) {
+      const z = r.z0,
+        cs = H.cols.filter(
+          c =>
+            z + 1.7 > c[4] &&
+            z + 0.25 < c[5] &&
+            c[0] - RW < r.x1 &&
+            c[1] + RW > r.x0 &&
+            c[2] - RW < r.y1 &&
+            c[3] + RW > r.y0
+        ),
+        ws = H.walks.filter(w => w[0] < r.x1 && w[1] > r.x0 && w[2] < r.y1 && w[3] > r.y0),
+        freeAt = (x, y) =>
+          !cs.some(c => x > c[0] - RW && x < c[1] + RW && y > c[2] - RW && y < c[3] + RW) &&
+          ws.some(w => over(w, x, y) && Math.abs(w[4] - z) < 0.05) &&
+          !ws.some(w => over(w, x, y) && w[4] > z + 0.42 && w[4] < z + 1.8);
+      // a 15 cm grid over the room, flooded from where one comes in; the reached cell nearest to the middle
+      const g = 0.15,
+        nx = Math.max(1, Math.floor((r.x1 - r.x0) / g)),
+        ny = Math.max(1, Math.floor((r.y1 - r.y0) / g)),
+        X = i => r.x0 + (i + 0.5) * ((r.x1 - r.x0) / nx),
+        Y = j => r.y0 + (j + 0.5) * ((r.y1 - r.y0) / ny),
+        mx = (r.x0 + r.x1) / 2,
+        my = (r.y0 + r.y1) / 2,
+        seen = new Uint8Array(nx * ny),
+        q = [];
+      for (const [sx, sy] of seeds[r.id] || []) {
+        const i = Math.min(nx - 1, Math.max(0, Math.floor(((sx - r.x0) / (r.x1 - r.x0)) * nx))),
+          j = Math.min(ny - 1, Math.max(0, Math.floor(((sy - r.y0) / (r.y1 - r.y0)) * ny)));
+        if (!seen[j * nx + i]) {
+          seen[j * nx + i] = 1;
+          q.push(j * nx + i);
+        }
+      }
+      let best = null,
+        bd = 1e9;
+      while (q.length) {
+        const k = q.pop(),
+          i = k % nx,
+          j = (k - i) / nx,
+          x = X(i),
+          y = Y(j);
+        if (freeAt(x, y)) {
+          const dd = Math.hypot(x - mx, y - my);
+          if (dd < bd) {
+            bd = dd;
+            best = [x, y];
+          }
+        }
+        for (const [di, dj] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ]) {
+          const ii = i + di,
+            jj = j + dj;
+          if (ii < 0 || jj < 0 || ii >= nx || jj >= ny || seen[jj * nx + ii]) continue;
+          if (!freeAt(X(ii), Y(jj))) continue;
+          seen[jj * nx + ii] = 1;
+          q.push(jj * nx + ii);
+        }
+      }
+      if (!best) best = (seeds[r.id] || [[mx, my]])[0];
+      centre[r.id] = node(best[0], best[1], z, r.id);
+    }
+    for (const [n, rid] of links) if (centre[rid] !== undefined) edges.push([n, centre[rid]]);
     H.graph = { nodes, edges, entry: en };
     // inside: the rectangle, from the cellar floor to the top storey's ceiling
     const zLo = P.cellar ? P.cellar.z0 : P.zG,
@@ -1311,6 +1466,92 @@ export const ZINNEN = (() => {
       return null;
     };
     H.zLo = zLo;
+    // the way through the house for one at (x, y, z) (feet) who wants to get to (tx, ty, tz): the target itself when both are in the same
+    // room (or there is no way), else the next waypoint of the shortest way along H.graph (Dijkstra over the few nodes, kept per target)
+    const adj = nodes.map(() => []),
+      toTarget = new Map();
+    for (const [a, b] of edges) {
+      const p = nodes[a],
+        q = nodes[b],
+        w = Math.hypot(p.x - q.x, p.y - q.y, p.z - q.z);
+      adj[a].push([b, w]);
+      adj[b].push([a, w]);
+    }
+    // the waypoints one can head for straight away: those of one's room (not the one on a top step), on or at a stair all of its own
+    const reachable = (x, y, z, rid) => {
+      const [lx, ly] = P.toL(x, y),
+        out = new Set();
+      nodes.forEach((n, i) => {
+        if (n.room === rid && !n.step) out.add(i);
+      });
+      for (const f of flights) {
+        const st = f.st,
+          lo = Math.min(st.y0, st.y1),
+          hi = Math.max(st.y0, st.y1);
+        // on the steps (above the floor below, below the floor above): only the flight's own waypoints
+        if (lx > st.x0 - 0.1 && lx < st.x1 + 0.1 && ly > lo - 0.1 && ly < hi + 0.1 && z > f.za + 0.1 && z < f.zb - 0.1)
+          return f.ids.slice();
+        if (lx > st.x0 - 0.7 && lx < st.x1 + 0.7 && ly > lo - 0.7 && ly < hi + 0.4 && z > f.za - 0.3 && z < f.zb + 0.3)
+          for (const i of f.ids) out.add(i);
+      }
+      if (!out.size) nodes.forEach((n, i) => out.add(i));
+      return [...out];
+    };
+    const nearNode = (x, y, z, rid) => {
+      let best = -1,
+        bd = 1e9;
+      nodes.forEach((n, i) => {
+        const d = Math.hypot(n.x - x, n.y - y) + Math.abs(n.z - z) * 3 + (rid && n.room !== rid ? 2 : 0);
+        if (d < bd) {
+          bd = d;
+          best = i;
+        }
+      });
+      return best;
+    };
+    const distTo = t => {
+      let d = toTarget.get(t);
+      if (d) return d;
+      d = new Float64Array(nodes.length).fill(Infinity);
+      d[t] = 0;
+      const done = new Uint8Array(nodes.length);
+      for (;;) {
+        let u = -1;
+        for (let i = 0; i < nodes.length; i++) if (!done[i] && d[i] < Infinity && (u < 0 || d[i] < d[u])) u = i;
+        if (u < 0) break;
+        done[u] = 1;
+        for (const [v, w] of adj[u]) if (d[u] + w < d[v]) d[v] = d[u] + w;
+      }
+      toTarget.set(t, d);
+      return d;
+    };
+    H.route = (x, y, z, tx, ty, tz) => {
+      const goal = { x: tx, y: ty, z: tz },
+        ra = H.roomAt(x, y, z + 0.3),
+        rb = H.roomAt(tx, ty, tz + 0.3);
+      if (ra && ra === rb) return goal;
+      const t = nearNode(tx, ty, tz, rb);
+      if (t < 0) return goal;
+      const d = distTo(t);
+      // the nearest waypoint one can head for now (of nearly equally near ones the one further on), then along the graph
+      const cand = reachable(x, y, z, ra)
+        .filter(i => isFinite(d[i]))
+        .map(i => [i, Math.hypot(nodes[i].x - x, nodes[i].y - y) + Math.abs(nodes[i].z - z) * 1.5]);
+      if (!cand.length) return goal;
+      const dmin = Math.min(...cand.map(c => c[1]));
+      let u = -1;
+      for (const [i, c] of cand) if (c < dmin + 0.6 && (u < 0 || d[i] < d[u])) u = i;
+      // reached it already (closer than 0.45 m): the next one along the way
+      for (let k = 0; k <= nodes.length; k++) {
+        const n = nodes[u];
+        if (Math.hypot(n.x - x, n.y - y) > 0.45 || Math.abs(n.z - z) > 0.6) return { x: n.x, y: n.y, z: n.z };
+        let nx = -1;
+        for (const [v] of adj[u]) if (d[v] < d[u] - 1e-9 && (nx < 0 || d[v] < d[nx])) nx = v;
+        if (nx < 0) return goal;
+        u = nx;
+      }
+      return goal;
+    };
     // ---- lights, containers, spots: the action button ----
     function act(a) {
       const full = Object.assign({}, a, { id: 'zinnen:' + id + ':' + a.id });
@@ -1636,14 +1877,15 @@ export const ZINNEN = (() => {
   };
   S.mounted = () => S.built.slice();
   // ---- the terrain under a mounted house: on slopes the terrain (world/ratscher.js, a 10 m grid) runs through the ground floor and the
-  // cellar. While a house is mounted its terrain meshes take a copy of the terrain material that leaves out the house's inner rectangle
-  // (the walls hide the cut). One program more, compiled at the first house (behind the fade in), none outside the houses. ----
+  // cellar. While a house is mounted its terrain meshes take a copy of the terrain material that leaves out the house's rectangle (the
+  // walls hide the cut). One program more – ZINNEN.warm() makes it ahead (at the start of the zombie night), else the first house does
+  // (behind the fade in); the terrain's own program stays without discard (Apple GPUs draw it cheaper). ----
   const HOLE = { r: { value: new THREE.Vector4() }, b: { value: new THREE.Vector4(1, -1, 1, -1) } };
   let holeMat = null,
     holeMeshes = null;
-  function terrainHole(H) {
+  function holeReady() {
     const tm = RATSCHER && RATSCHER.terrainMat;
-    if (!tm) return;
+    if (!tm) return false;
     if (!holeMat) {
       holeMat = tm.clone();
       const prev = tm.onBeforeCompile;
@@ -1668,17 +1910,39 @@ export const ZINNEN = (() => {
         if (o.isMesh && o.material === tm) holeMeshes.push(o);
       });
     }
+    return holeMeshes.length > 0;
+  }
+  function terrainHole(H) {
+    if (!holeReady()) return;
     if (H) {
       const P = H.plan;
       HOLE.r.value.set(P.F.ox, P.F.oy, P.F.c, P.F.s);
-      HOLE.b.value.set(P.xi0 - 0.03, P.xi1 + 0.03, P.yi0 - 0.03, P.yi1 + 0.03);
+      // out to just behind the facade: the terrain must not show in the window reveals either
+      HOLE.b.value.set(P.xi0 - P.t + 0.02, P.xi1 + P.t - 0.02, P.yi0 - P.t + 0.02, P.yi1 + P.t - 0.02);
       for (const o of holeMeshes) o.material = holeMat;
     } else {
       HOLE.b.value.set(1, -1, 1, -1);
-      for (const o of holeMeshes) o.material = tm;
+      for (const o of holeMeshes) o.material = RATSCHER.terrainMat;
     }
     markDirty();
   }
+  // the cut-out's program made ahead: for one drawn frame the terrain wears the copy with an empty rectangle (it cuts nothing), then
+  // its own material again – so the program is compiled in the real render state, and entering a house compiles nothing
+  S.warm = () => {
+    if (!holeReady()) return false;
+    if (S.built.length) return true;
+    HOLE.b.value.set(1, -1, 1, -1);
+    for (const o of holeMeshes) o.material = holeMat;
+    const m0 = holeMeshes[0],
+      prev = m0.onAfterRender;
+    m0.onAfterRender = function (...a) {
+      m0.onAfterRender = prev;
+      if (!S.built.length) for (const o of holeMeshes) o.material = RATSCHER.terrainMat;
+      return prev.apply(this, a);
+    };
+    markDirty();
+    return true;
+  };
   S.terrainHole = () => (holeMeshes ? holeMeshes.length : 0);
   // ---- the test scenario: ?szenario=zombie-innen (&haus=<id>) goes into a house near the Anger (or the given one), third person ----
   S.enter = H => {
