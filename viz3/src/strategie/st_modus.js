@@ -978,6 +978,18 @@ export const STRAT = (() => {
     saveAcc += dt;
     if (acc > 0.5) {
       acc = 0;
+      // feat/tiere: a loud job at work frightens the animals around it (deer and boar flee a chainsaw, a mower, a tractor) – the noise
+      // lasts real seconds there (TIERE.addNoise(x, y, r, s)), so it is renewed twice a second whatever the speed of the clock
+      const TI = window.TIERE;
+      if (TI && typeof TI.addNoise === 'function')
+        for (const j of S.jobs) {
+          const J = j.st === 'work' ? REG.job[j.def] : null;
+          if (!J || !J.loud) continue;
+          const c = spotOf(j, j.who[0]);
+          try {
+            if (c) TI.addNoise(c[0], c[1], J.where === 'wald' ? 250 : 150, 1.5);
+          } catch (e) {}
+        }
       for (const id of Object.keys(S.people)) {
         const p = S.people[id];
         if (isOwn(id)) continue;
@@ -1085,6 +1097,10 @@ export const STRAT = (() => {
   KERN.on('reset', () => {
     if (S.on) stop();
     SAVE.del(KS);
+  });
+  // feat/tiere: what the animals' module discovers is told from above too
+  KERN.on('tiere:entdeckt', d => {
+    if (d && d.title) note('Entdeckt: ' + d.title, { kind: 'entdeckt', src: d.source || null });
   });
   const STRAT = {
     S,

@@ -89,11 +89,12 @@ export const STEBENEN = (() => {
         const a = ((c.hd || 0) * 180) / Math.PI;
         h += `<rect x="${f1(q[0] - 3)}" y="${f1(q[1] - 6)}" width="6" height="12" rx="2" fill="#cfd6de" stroke="#222" stroke-width="1" transform="rotate(${a.toFixed(0)} ${f1(q[0])} ${f1(q[1])})"/>`;
       }
-      // feat/bus: its buses when it is there (window.BUS.list() → [{ x, y, hd }])
+      // feat/bus: its buses when it is there (BUS.state().inst → [{ x, y, line }])
       const B = window.BUS;
-      if (B && typeof B.list === 'function')
+      if (B && (typeof B.list === 'function' || typeof B.state === 'function'))
         try {
-          for (const b of B.list() || []) {
+          const list = typeof B.list === 'function' ? B.list() : B.state().inst;
+          for (const b of list || []) {
             const q = pr(b.x, b.y, 1.5);
             if (q[2] < 1)
               h += `<rect x="${f1(q[0] - 4)}" y="${f1(q[1] - 10)}" width="8" height="20" rx="2" fill="#f2c500" stroke="#222" stroke-width="1"/>`;

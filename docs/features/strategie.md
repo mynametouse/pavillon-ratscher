@@ -51,7 +51,11 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - **Euro mit echten Preisen** (`STDATA.PRICES`, jede mit Quelle oder ausgewiesener Annahme; Benzin und Diesel: ADAC Oktober 2026), Startkapital
   2.500 €, Kasse mit Buchungen.
 - **Dein Stil** (Black & White): ein Wert von −100 (rücksichtslos) bis +100 (vorbildlich), unten links angezeigt.
-- **Wetter:** live über `window.WETTER.at(t)` (feat/wetter), solange es das nicht gibt, aus dem Klima von Meiningen Tag für Tag gewürfelt.
+- **Wetter:** nahe der Spieluhr das, was feat/wetter zeigt (`window.WETTER.state().w`: draußen live, eine Stunde des Spieltags oder ein
+  ausprobiertes – Bewölkung, Regen mm/h, Wind und Böen m/s → km/h, Sturm ab Böen über 17,2 m/s = Bft 8 oder Mittelwind über
+  13,9 m/s = Bft 7); für fernere Zeiten im Zeitraffer und beim Wetter nach Kalender aus dem Klima von Meiningen Tag für Tag gewürfelt.
+- **Tiere** (feat/tiere): laute Arbeiten (Mähen, Motorsäge, Traktor, Bandsäge) machen Lärm, solange sie laufen (`TIERE.addNoise(x, y, r, s)`,
+  Wald 250 m, sonst 150 m, zweimal je Sekunde erneuert) – Rehe und Sauen ziehen weg; `tiere:entdeckt` erscheint als Meldung von oben.
 - **Speichern:** ein Schlüssel `pav-strat-v1` (über `SAVE`, mit Prüfung); ein Neuladen mitten im Auftrag geht weiter, auch von oben.
 
 ## Testen
@@ -160,7 +164,7 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 - `STRAT.layer.define({ id, label, text, order, on, draw: (pr, W, H) => '<svg-Text>' })` – eine Ebene der Karte, im HUD schaltbar (ein zweites
   `define` mit derselben id ergänzt sie); `pr(x, y, dz)` → `[px, py, tiefe]`, dz Meter über dem Boden dort (auch oben in der Klinge).
   Vorhanden: leute, orte, wege, beduerfnisse, wirtschaft, natur (was man vom Wald weiß), krisen, verkehr (Autos von `verkehr/*`, Busse über
-  `window.BUS.list()` von feat/bus), wetter.
+  `window.BUS.state().inst` von feat/bus), wetter.
 
 ### Zeit und Ereignisse von STRAT
 - `STRAT.setSpeed(0 | 1 | 5 | 30)` (Spielminuten je Sekunde; 1× = die normale Spieluhr), `STRAT.skip(minuten | 'kommen' | 'morgen' | 'auftrag')`
@@ -178,7 +182,7 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 
 Arbeitshaltungen der Figuren (sie stehen und gehen, sägen noch nicht sichtbar), Traktor und Anhänger fahren beim Rücken nicht sichtbar mit,
 Trockenschrank/Leimholz aus eigenen Bohlen von oben (`HOLZDRY.simShop` ist da, noch kein Auftrag), Brennholz spalten und verkaufen, das
-Telefon im Detail (Layout da, nicht auf einem echten Gerät geprüft), Tiere über `window.TIERE` (feat/tiere) sobald es sie gibt.
+Telefon im Detail (Layout da, nicht auf einem echten Gerät geprüft); der Hund des Spielers (feat/tiere) als Begleiter von oben (Haken: `STRAT.person.define`, `strategie:stil`).
 
 ## Für den Lead
 

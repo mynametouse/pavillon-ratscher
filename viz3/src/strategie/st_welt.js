@@ -41,23 +41,36 @@ export const STWELT = (() => {
     WET = [0.45, 0.4, 0.42, 0.36, 0.42, 0.45, 0.45, 0.42, 0.38, 0.4, 0.48, 0.5],
     STORM = [0.05, 0.05, 0.04, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01, 0.03, 0.04, 0.05];
   const WXC = {};
-  // the weather at game time t: { cloud 0..1, rain mm/h, wind km/h, storm, src } – the live one of feat/wetter (window.WETTER.at(t)),
-  // else one drawn per day from the climate (the same day always gives the same weather)
+  // the weather at game time t: { cloud 0..1, rain mm/h, wind km/h, storm, src } – near the clock the one feat/wetter shows (window.WETTER:
+  // live, an hour of the game's day, or one tried), else one drawn per day from the climate (the same day always gives the same weather)
   W.force = null; // tests: a fixed weather { cloud, rain, wind, storm, src }
   W.wx = t => {
     if (W.force) return W.force;
+    // feat/wetter: the weather the world shows now (live from Open-Meteo, an hour of the game's day, or one tried) – for a time near the
+    // game clock; for other times (a long time-lapse) and with the calendar's weather the climate below
     const L = window.WETTER;
-    if (L && typeof L.at === 'function')
+    if (
+      L &&
+      typeof L.state === 'function' &&
+      Math.abs(t - CLOCK.t) < 90 &&
+      ['jetzt', 'stunde', 'probe'].includes(L.src)
+    )
       try {
-        const v = L.at(t);
-        if (v && Number.isFinite(v.cloud))
-          return {
-            cloud: v.cloud,
-            rain: v.rain || 0,
-            wind: v.wind || 0,
-            storm: !!v.storm || (v.gust || 0) > 62,
-            src: v.src || 'Wetter wie draußen',
+        const k = Math.floor(CLOCK.t);
+        if (W._wl && W._wl.k === k) return W._wl.v;
+        const st = L.state(),
+          c = st.w || st.cur || {}; // the hour's weather (the shown one eases towards it)
+        if (Number.isFinite(c.cover)) {
+          const v = {
+            cloud: Math.max(0, Math.min(1, c.cover)),
+            rain: c.rain || 0,
+            wind: Math.round((c.wind || 0) * 3.6),
+            storm: (c.gust || 0) > 17.2 || (c.wind || 0) > 13.9,
+            src: L.label || 'Wetter wie draußen',
           };
+          W._wl = { k, v };
+          return v;
+        }
       } catch (e) {}
     const d = Math.floor(t / 1440),
       h = Math.floor(W.minOf(t) / 180);
