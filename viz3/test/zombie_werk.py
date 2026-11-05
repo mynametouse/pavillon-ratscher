@@ -225,7 +225,8 @@ with lib.browser() as b:
         pm0 = progs()
         keys0 = J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])")
         hud = E("document.getElementById('zwk').textContent")
-        ck('the panel names the key: F: Molotow (3)', 'F: Molotow (3)' in hud, hud)
+        nm = E("ZSTATE.sup.molotow || 0")
+        ck('the panel names the key: F: Molotow (n)', f'F: Molotow ({nm})' in hud, hud)
         full0 = E("document.body.dataset.full || ''")
         pg.keyboard.press('f')
         steps(0.5)
@@ -272,6 +273,8 @@ with lib.browser() as b:
         E("ZSTATE.hp = 100; ZMOLO.fire(GAME.P.x, GAME.P.y, GAME.P.feet, false)")
         steps(1.2)
         ck('standing in it hurts', E("ZSTATE.hp") < 92, str(E("ZSTATE.hp")))
+        # (out of it again, or the 8 s would kill)
+        E("(() => { const P = GAME.P, a = P.yaw * Math.PI / 180; P.x -= Math.sin(a) * 3.5; P.y -= Math.cos(a) * 3.5; P.feet = GAME.floorAt(P.x, P.y, P.feet + 0.5); ZSTATE.hp = 100; })()")
         steps(8.0)
         E("""(() => { const P = GAME.P, a = P.yaw * Math.PI / 180, x = P.x + Math.sin(a) * 5, y = P.y + Math.cos(a) * 5,
           e = ZSTATE.ents.find(q => q.id === __zm[1]); if (e && !e.dead) { e.x = x; e.y = y; e.hp = 300; }
@@ -281,6 +284,15 @@ with lib.browser() as b:
         e2 = hp()[1]
         ck('the other player\'s fire shows here (net) and leaves the damage to him', len(inf['fires']) == 1 and inf['fires'][0]['net'] and (e2[1] or e2[0] == 300), f'{inf["fires"]} {e2}')
         steps(8.0)
+        # third person: the bottle in the figure's hand, then thrown
+        E("CAM3.want = true; GAME.P.pitch = 0"); steps(0.5)
+        E("ZMOLO.throwIt()"); steps(0.2)
+        t3 = J("ZMOLO.info().thr")
+        pic('m8_dritte_person_wurf')
+        steps(0.35)
+        ck('third person: the bottle in the figure\'s hand, then it flies', t3 and t3['tb'] and not t3['fp'] and len(J("ZMOLO.info().bottles")) == 1, f'{t3} {J("ZMOLO.info().bottles")}')
+        steps(3.0)
+        E("CAM3.want = false"); steps(8.0)
         E("GAME.shot()")
         pm1 = progs()
         keys1 = J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])")

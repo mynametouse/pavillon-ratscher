@@ -383,6 +383,7 @@ export const ZMOLO = (() => {
     g.hand.updateMatrixWorld(true);
     hp0.set(0.006, RAG, 0).applyMatrix4(g.hand.matrixWorld);
     S.ragAt = hp0;
+    T.seen = true;
     // where the bottle is in the world – the thrown one goes on from there, turned the same way
     g.hand.getWorldPosition(S.handAt);
     g.hand.getWorldQuaternion(S.handQ);
@@ -409,7 +410,7 @@ export const ZMOLO = (() => {
     if (fp) {
       S.thr.clip = clip();
       ZFP.play(S.thr.clip);
-    } else if (CAM3.on && AVATAR.ready) AVATAR.gesture('push', 1.4);
+    } else if (CAM3.on && AVATAR.ready) AVATAR.gesture('chop', 1.3);
     Z.emit('molotow', { left: Z.sup.molotow || 0 });
     return true;
   }
@@ -425,12 +426,18 @@ export const ZMOLO = (() => {
       fz = Math.sin(pitch);
     let x, y, z;
     const q0 = new THREE.Quaternion();
-    if (T.fp && S.ragAt) {
+    if (T.fp && T.seen) {
       // from the hand's bottle (three → site: x, z, −y)
       x = S.handAt.x;
       y = -S.handAt.z;
       z = S.handAt.y;
       q0.copy(S.handQ);
+    } else if (T.tb) {
+      // third person: from the figure's hand
+      x = T.tb.position.x;
+      y = -T.tb.position.z;
+      z = T.tb.position.y;
+      q0.copy(T.tb.quaternion);
     } else {
       x = P.x + Math.sin(yaw) * 0.35 + Math.cos(yaw) * -0.2;
       y = P.y + Math.cos(yaw) * 0.35 - Math.sin(yaw) * -0.2;
@@ -443,7 +450,7 @@ export const ZMOLO = (() => {
       x = P.x;
       y = P.y;
     }
-    const b = flyer();
+    const b = T.tb || flyer();
     b.userData.busy = true;
     b.visible = true;
     b.scale.setScalar(1);
@@ -462,7 +469,7 @@ export const ZMOLO = (() => {
       ph: Math.random() * 6,
     };
     // in third person: the neck forward and up along the throw
-    if (!(T.fp && S.ragAt)) q0.setFromUnitVectors(_up.set(0, 1, 0), _v.set(fx, fz + 0.4, -fy).normalize());
+    if (!(T.fp && T.seen) && !T.tb) q0.setFromUnitVectors(_up.set(0, 1, 0), _v.set(fx, fz + 0.4, -fy).normalize());
     S.bottles.push(B);
     S.stats.thrown++;
     ZTON.swing(P.x, P.y, 'beil');
@@ -670,7 +677,7 @@ export const ZMOLO = (() => {
         }
       }
       // the rag's light on the hands (the overlay's lamp, game/play.js HELD; zombie/z_fp.js sets it before us each frame)
-      if (T.lit && !T.released && T.fp && S.ragAt) {
+      if (T.lit && !T.released && T.fp && T.seen) {
         HELD.lamp = 1.3 + Math.random() * 0.5;
         HELD.lampAt = S.ragAt;
       }
@@ -680,6 +687,22 @@ export const ZMOLO = (() => {
     const now = performance.now() / 1000,
       W = G.world;
     W.list.length = 0;
+    // third person: the bottle in the figure's right hand until it goes (the rag lit), upright, the neck in the fist
+    const F = AVATAR.fig;
+    if (T && !T.fp && !T.released && CAM3.on && F && F.B && F.B.RightHand && F.g && F.g.visible) {
+      const b = T.tb || (T.tb = flyer());
+      b.userData.busy = true;
+      b.visible = true;
+      b.scale.setScalar(1);
+      F.B.RightHand.getWorldPosition(b.position);
+      b.position.y -= NECK - 0.03;
+      b.quaternion.identity();
+      b.updateMatrixWorld(true);
+      if (T.lit) {
+        _v.set(0.006, RAG, 0).applyMatrix4(b.matrixWorld);
+        W.list.push({ x: _v.x, y: _v.y - 0.01, z: _v.z, h: 0.17, w: 0.075, ph: 0.7 });
+      }
+    }
     // the bottles in flight
     for (let i = S.bottles.length - 1; i >= 0; i--) {
       const B = S.bottles[i],
@@ -885,7 +908,7 @@ export const ZMOLO = (() => {
     return {
       built: S.built,
       warmed: S.warmed,
-      thr: S.thr ? { t: +S.thr.t.toFixed(2), lit: S.thr.lit, rel: S.thr.released, fp: S.thr.fp } : null,
+      thr: S.thr ? { t: +S.thr.t.toFixed(2), lit: S.thr.lit, rel: S.thr.released, fp: S.thr.fp, tb: !!S.thr.tb } : null,
       bottles: S.bottles.map(B => [+B.x.toFixed(2), +B.y.toFixed(2), +B.z.toFixed(2)]),
       fires: S.fires.map(f => ({
         x: +f.x.toFixed(2),

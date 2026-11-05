@@ -20,7 +20,8 @@ flicken.“ Auftrag wörtlich: `docs/plans/auftraege/zombie-werk.md`. Code: `viz
   Nach dem Neuladen liegt es auf der Werkbank im Garten (Waffen im Rucksack werden nicht gespeichert, nur ihr Zustand).
 - **Molotow-Cocktail** (1 leere Flasche + 1 Liter Benzin + 1 Lappen, 10 min): kommt in den Rucksack. **Werfen mit F** (in der
   Zombie-Nacht ist F nicht mehr Vollbild; am Handy der Knopf 🔥 über den anderen): in der Ich-Sicht holt die linke Hand die Flasche vom
-  Gürtel, der Lappen fängt Feuer (Licht auf den Händen), ausholen neben dem Kopf, Wurf – die rechte Hand behält ihre Waffe. Die Flasche fliegt
+  Gürtel, der Lappen fängt Feuer (Licht auf den Händen), ausholen neben dem Kopf, Wurf – die rechte Hand behält ihre Waffe; in der
+  Schulterkamera hält die Figur die Flasche in der rechten Hand und wirft sie über den Kopf (Geste `chop`). Die Flasche fliegt
   im Bogen (12,5 m/s, taumelnd, der Lappen brennt) und zerspringt am Boden, an einer Wand oder an einem Zombie: Glas klirrt, das Benzin
   verpufft (Aufnahmen: Flasche, Feuerstoß; der Lappen fängt mit einer Fackel-Zündung), ein Feuer von 3 m brennt 8 s. Zombies darin nehmen 16 Schaden/s, fangen Feuer (Flammen an der Figur), torkeln, brennen 6 s
   weiter (9/s) und stecken Nachbarn an; ein Brennender stirbt. Der Feuerwehrmann (`e.art`) brennt nur kurz und nimmt ein Drittel.
@@ -70,3 +71,11 @@ flicken.“ Auftrag wörtlich: `docs/plans/auftraege/zombie-werk.md`. Code: `viz
 
 - Feile (Motorsäge), Benzin einfüllen und Lappen stopfen sind noch im Browser erzeugt.
 - Der Flug der Flasche beim Mitspieler (nur das Feuer wird übertragen); Feuer, das Barrikaden oder Häuser ansteckt (nein, mit Absicht).
+- Stachelbrett fürs Fenster (eine Barrikade, die verletzt) – bräuchte `zombie/z_haus.js` (Barrikaden) und `z_horde.js` (wer daran hämmert);
+  nicht gebaut.
+- Werfen trifft Zombies auf dem Weg nur über einen Abstand zum Körper (0,42 m) und Wände über die Kollision des Gehenden (Radius ~0,3 m) – eine
+  Flasche zerspringt also eine Handbreit vor der Wand; unter Tischen und Decken wird nicht genau gerechnet.
+- Gast beim Spiel zu zweit: der Feuer-Schaden an den Puppen geht als Treffer über `ZHORDE.damage(…, { kind: 'fire' })` an den Gastgeber – dort
+  klingt er (noch) wie ein Schlag, bis `damage` bei `kind: 'fire'` still bleibt (siehe „Für den Lead“).
+- Werte zum Abstimmen: `ZMOLO.FIRE` (Radius 1,5 m, 8 s, 16/s im Feuer, 6 s Nachbrennen mit 9/s, Funkenflug 16 % je ¼ s, 14/s für den
+  Spieler), `ZMOLO.THROW` (12,5 m/s, +3,2 m/s nach oben), `ZDATA.WEAPONS.nagelbrett`, `ZWERK.RECIPES/FIX/SHARP`.
