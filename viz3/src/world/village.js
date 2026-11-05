@@ -15,6 +15,7 @@ import { RATSCHER } from './ratscher.js';
 import { ROADS } from './roads.js';
 import { KERN } from '../core/kern.js';
 import { DKDATA } from './dorfkern_data.js';
+import { GEBDACH } from '../gebaeude/geb_dach.js'; // feat/welt-gebaeude
 export const VILLAGE = (() => {
   const S = {
     on: false,
@@ -436,7 +437,11 @@ export const VILLAGE = (() => {
         x.drawImage(img, 0, 0, n, n);
         return { d: x.getImageData(0, 0, n, n).data, n, o };
       };
-    const L = [mk(RATSCHER.tex.near, M.tex.near, 1024), mk(RATSCHER.tex.inner, M.tex.inner, 1024)].filter(Boolean);
+    // feat/welt-gebaeude: the ground images are retouched (no roofs in them) – the colours from copies of the originals (gebaeude/geb_dach.js)
+    const L = [
+      mk(GEBDACH.near || RATSCHER.tex.near, M.tex.near, 1024),
+      mk(GEBDACH.inner || RATSCHER.tex.inner, M.tex.inner, 1024),
+    ].filter(Boolean);
     return (x, y) => {
       const E = xf.a * x - xf.b * y + xf.ex,
         N = xf.b * x + xf.a * y + xf.ey;
