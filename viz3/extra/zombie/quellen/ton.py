@@ -50,8 +50,7 @@ SOURCES = {
                     files=[OGA + 'sounds.zip']),
     'ffsl': dict(page='https://opengameart.org/content/the-free-firearm-sound-library', title='The Free Firearm Sound Library (prepared)',
                  author='Free Firearm Sound Library team (freefirearmsfx.com)', lic='CC0', files=[OGA + 'Prepared%20SFX%20Library.7z'],
-                 keep=r'shot ?gun|12 ?g|gauge|870|590|500|mossberg|remington|benelli|stoeger|double|barrel|break|shell|dry|empty|click|cock|'
-                      r'open|close|load|handl|foley'),
+                 keep=r'/(Mossberg|Nova|Model 12|CD)/'),
     'koenig': dict(page='https://opengameart.org/content/shotgun-shoot-reload', title='Shotgun Shoot + Reload', author='Mike Koenig (SoundBible)',
                    lic='CC BY 3.0', files=[OGA + 'mike_koenig-shotgun.7z']),
     'baradari_shots': dict(page='https://opengameart.org/content/chaingun-pistol-rifle-shotgun-shots', title='Chaingun, pistol, rifle, shotgun shots',
@@ -78,11 +77,23 @@ SOURCES = {
                     files=[OGA + 'rpg_sound_pack.zip'], keep=r'battle|npc|swing|hit|slash|blade|sword|squish|ogre|giant|gutt|beast|shade'),
     'melee3': dict(page='https://opengameart.org/content/3-melee-sounds', title='3 Melee sounds', author='remaxim', lic='CC0',
                    files=[OGA + 'melee%20sounds.zip']),
+    'snm_swing': dict(page='https://opengameart.org/content/medieval-sound-effects-weapon-textures', title='Medieval sound effects - Weapon Textures',
+                      author='Ben Jaszczak & Brian Nelson (Still North Media)', lic='CC0',
+                      files=[OGA + 'medieval_sfx_textures_1_of_2.7z', OGA + 'medieval_sfx_textures_2_of_2.7z'], keep=r'swing|crossbow (lever|set|place)'),
+    'vehicle_weapons': dict(page='https://opengameart.org/content/fantasy-weapons-and-apparel-sfx-library', title='Fantasy Weapons and Apparel SFX Library',
+                            author='Vehicle (Jan Schupke)', lic='CC0', files=[OGA + 'weapons-apparel.zip'],
+                            keep=r'sword|knife|seax|swing|swish|swoosh|whoosh|hit|stab|cut|slash'),
     # ---- blows, cuts, splashes, falls
     'kenney_impact': dict(page='https://kenney.nl/assets/impact-sounds', title='Impact Sounds', author='Kenney (kenney.nl)', lic='CC0',
                           files=['scrape:https://kenney.nl/assets/impact-sounds'], keep=r'punch|soft|generic|plank|wood_heavy|plate_heavy'),
     'kenney_rpg': dict(page='https://opengameart.org/content/50-rpg-sound-effects', title='50 RPG sound effects (RPG Audio)', author='Kenney (kenney.nl)',
                        lic='CC0', files=[OGA + 'RPGsounds_Kenney.zip']),
+    'thwack': dict(page='https://opengameart.org/content/thwack-sounds', title='Thwack Sounds', author='Jordan Irwin (AntumDeluge)', lic='CC0',
+                   files=[OGA + 'thwack-1.0.zip']),
+    'dklon_foley': dict(page='https://opengameart.org/content/super-foley-pack', title='Super Foley Pack', author='dklon', lic='CC BY 3.0',
+                        files=[OGA + 'foley_pack.zip'], keep=r'squish|chest|slap|hit|punch|body|leather|spit|wet|splat'),
+    'remaxim_fall': dict(page='https://opengameart.org/content/falling-body', title='Falling body', author='remaxim', lic='CC BY-SA 3.0',
+                         files=[OGA + 'fall.wav']),
     'towel_body': dict(page='https://opengameart.org/content/40-wet-towel-clubpoundhitattack-sounds', title='40 wet towel club/pound/hit/attack sounds',
                        author='qubodup', lic='CC0', files=[OGA + 'wet_towel_on_body.7z']),
     'towel_floor': dict(page='https://opengameart.org/content/12-wet-towel-hittingfallingpunching-floor-sounds',
@@ -118,6 +129,8 @@ SOURCES = {
     # ---- the zombies
     'zombies': dict(page='https://opengameart.org/content/zombies-sound-pack', title='Zombies Sound Pack', author='artisticdude', lic='CC0',
                     files=[OGA + 'zombies.zip']),
+    'scorcher': dict(page='https://opengameart.org/content/scorchers-foley-sounds', title='Scorchers Foley Sounds', author='scorcher24', lic='CC0',
+                     files=[OGA + 'zombie_moaning.wav']),
     'darsycho': dict(page='https://opengameart.org/content/zombie-moans', title='Zombie moans', author='Darsycho', lic='CC0',
                      files=[OGA + 'darsycho__zombie-moans_0.ogg']),
     'emopreben': dict(page='https://opengameart.org/content/zombie-moans-01-by-emopreben', title='Zombie Moans 01', author='EmoPreben', lic='CC0',
@@ -134,7 +147,8 @@ SOURCES = {
 
 # Commons: listed (commons.json); short files whose title fits and whose licence is open are fetched as source 'commons'
 COMMONS_Q = ['shotgun', 'Schrotflinte', 'Flinte Schuss', 'double-barrelled shotgun', 'gunshot', 'Schuss Gewehr', 'punch sound', 'zombie']
-COMMONS_TAKE = re.compile(r'shot ?gun|flinte|schrot|doppell', re.I)
+COMMONS_TAKE = re.compile(r'shot ?gun|flinte|schrot|doppell|gravity sound|punch (raw )?kick|gunshots', re.I)
+COMMONS_NOT = re.compile(r'^File:([A-Z][a-z](-[a-z]{2})?-|LL-|.*(article|pronunciation))', re.I)  # pronunciations and spoken articles
 OK_LIC = re.compile(r'^(cc0|cc[- ]by[- ](sa[- ])?\d(\.\d)?|public domain|pd)', re.I)
 BAD_LIC = re.compile(r'(\bnc\b|\bnd\b|non[- ]?commercial|no[- ]?deriv|fair use|copyrighted)', re.I)
 
@@ -188,12 +202,13 @@ def fetch_source(key, src, dl, work):
         if url.startswith('scrape:'):
             page = url[7:]
             r = http_get(page, 60)
-            hrefs = re.findall(r'href="([^"]+\.zip)"', r.text) if r is not None else []
+            hrefs = re.findall(r'''(?:href|data-href|data-url)=["']([^"']+\.zip)["']''', r.text) if r is not None else []
             if not hrefs:
-                log('   no zip found on', page)
+                log('   no zip found on', page, 'status', None if r is None else r.status_code, 'zip mentions',
+                    re.findall(r'[^"\'\s<>]*\.zip[^"\'\s<>]*', r.text)[:5] if r is not None else None)
                 continue
             url = urllib.parse.urljoin(page, hrefs[0])
-        fn = os.path.join(d, slug(urllib.parse.unquote(url.rsplit('/', 1)[-1])))
+        fn = os.path.join(d, slug(urllib.parse.unquote(url.split('?')[0].rsplit('/', 1)[-1])))
         if not os.path.exists(fn):
             r = http_get(url)
             if r is None:
@@ -250,7 +265,7 @@ def commons_list(out):
     for r in recs:
         log(f"   {r['title'][5:80]:<80} {r['lic']:<16} {r['dur']} s")
     return [r for r in recs if r['url'] and OK_LIC.search(r['lic']) and not BAD_LIC.search(r['lic']) and COMMONS_TAKE.search(r['title'])
-            and (r['dur'] or 0) < 60]
+            and not COMMONS_NOT.search(r['title']) and (r['dur'] or 0) < 60]
 
 
 # ------------------------------------------------------------------------------------------------------------------- survey: measure
@@ -386,7 +401,7 @@ def survey(out):
     dl = os.environ.get('TON_DL') or os.path.join(os.path.dirname(os.path.abspath(out)), 'dl')
     work = os.path.join(os.path.dirname(os.path.abspath(out)), 'work')
     shutil.rmtree(work, ignore_errors=True)
-    for sub in ('raw', 'sheets'):
+    for sub in ('raw', 'sheets', 'texts'):
         shutil.rmtree(os.path.join(out, sub), ignore_errors=True)
         os.makedirs(os.path.join(out, sub), exist_ok=True)
     inv, listing = [], []
@@ -411,6 +426,10 @@ def survey(out):
         keep = re.compile(src['keep'], re.I) if src.get('keep') else None
         files = sorted(os.path.relpath(os.path.join(a, f), x) for a, _, fs in os.walk(x) for f in fs)
         listing += [f'{key}\t{f}' for f in files]
+        for f in files:
+            if re.search(r'\.(txt|csv|md|rtf)$', f, re.I) and os.path.getsize(os.path.join(x, f)) < 300000:
+                os.makedirs(os.path.join(out, 'texts', key), exist_ok=True)
+                shutil.copy(os.path.join(x, f), os.path.join(out, 'texts', key, slug(f)))
         recs = []
         for f in files:
             if not AUDIO.search(f) or '__MACOSX' in f or os.path.basename(f).startswith('._'):
