@@ -89,7 +89,7 @@ export const ZBUND = (() => {
     Z.emit('ally', { who: a.who });
     if (!Z.clan.name && S.askName) S.askName();
   }
-  function joinNpc(w, who) {
+  function joinNpc(w, who, quiet) {
     if (isAlly(w)) return;
     const a = {
       kind: 'ally',
@@ -111,7 +111,7 @@ export const ZBUND = (() => {
     w.prop.visible = true;
     w.ctl = dt => ctl(a, dt);
     join(a);
-    say(a, 'join');
+    if (!quiet) say(a, 'join');
   }
   // ---- a survivor found in a house (zombie/z_haus.js) ----
   async function survivor(key, x, y, z, hd) {
@@ -259,7 +259,7 @@ export const ZBUND = (() => {
     }
     w.fig.mode = 'stand';
     const pos = { x: w.x, y: w.y, z: floorAt(w.x, w.y, P.feet + 1) };
-    const e = foe(w.x, w.y);
+    const e = w.talking ? null : foe(w.x, w.y);
     let tx = w.x,
       ty = w.y,
       v = 0;
@@ -290,6 +290,10 @@ export const ZBUND = (() => {
           if (rnd() < 0.25) say(a, 'fight');
         } else if (ph < 0.3) a.strike = false;
       }
+    } else if (w.talking) {
+      // in a talk he stands and looks at the player (the talk panel of npc/npc.js stays usable – Falko 5.11.)
+      w.fig.pose = null;
+      w.az = Math.atan2(P.x - w.x, P.y - w.y);
     } else {
       w.fig.pose = null;
       if (a.mode === 'folgen') {
@@ -424,9 +428,9 @@ export const ZBUND = (() => {
         if (!Z.on || !w || !w.fig || !w.fig.g.visible || w.drive) return null;
         const a = S.list.find(q => q.npc === w),
           n = who === 'hubert' ? 'Hubert' : 'Ronald';
-        if (!a) return n + ' um Hilfe bitten';
-        if (a.down) return n + ' aufhelfen (Verbandskasten)';
-        return a.mode === 'folgen' ? n + ': Warte hier' : n + ': Komm mit';
+        // asking, following, waiting: in the talk panel („Mit Hubert sprechen“ stays the button – Falko 5.11.); here only helping up
+        if (a && a.down) return n + ' aufhelfen (Verbandskasten)';
+        return null;
       },
       run: () => {
         const w = NPCS[who],
@@ -459,6 +463,88 @@ export const ZBUND = (() => {
       },
     });
   }
+  // ---- in the talk with Hubert or Ronald: the night's questions as topics (game/quests.js topics/ask, ours start with 'q_z') ----
+  const NAME = { hubert: 'Hubert', ronald: 'Ronald' };
+  function zTopics(who) {
+    const w = NPCS[who];
+    if (!Z.on || !w) return [];
+    const a = S.list.find(q => q.npc === w);
+    if (!a)
+      return [
+        {
+          k: 'q_zhilf',
+          label: who === 'ronald' ? 'Kommst du mit? (etwas zu essen geben)' : 'Hilfst du mir gegen die Zombies?',
+        },
+      ];
+    if (a.down) return [{ k: 'q_zauf', label: 'Ich helf dir auf (Verbandskasten)' }];
+    return [
+      a.mode === 'folgen' ? { k: 'q_zwart', label: 'Warte hier' } : { k: 'q_zkomm', label: 'Komm mit' },
+      { k: 'q_zlage', label: 'Wie sieht’s aus?' },
+    ];
+  }
+  function zAsk(who, k) {
+    const w = NPCS[who],
+      a = S.list.find(q => q.npc === w);
+    if (k === 'q_zhilf') {
+      if (who === 'ronald' && !Z.has('konserve') && !Z.has('glas') && !Z.has('brot'))
+        return { text: [line('ronald', 'ask')] };
+      return {
+        text: [line(who, 'join')],
+        after: () => {
+          if (who === 'ronald') Z.use(['konserve', 'glas', 'brot'].find(q => Z.has(q)));
+          joinNpc(w, who, true);
+        },
+        end: true,
+      };
+    }
+    if (!a) return { text: ['Was willst du?'] };
+    if (k === 'q_zauf') {
+      if (!Z.has('verband')) return { text: ['Ohne Verband wird das nichts. Such einen Verbandskasten.'] };
+      return {
+        text: [line(who, 'follow')],
+        after: () => {
+          Z.use('verband');
+          a.down = false;
+          a.hp = a.hp0 * 0.6;
+          w.fig.mode = 'stand';
+        },
+        end: true,
+      };
+    }
+    if (k === 'q_zwart')
+      return {
+        text: [line(who, 'wait')],
+        after: () => {
+          a.mode = 'wachen';
+          a.gx = w.x;
+          a.gy = w.y;
+        },
+        end: true,
+      };
+    if (k === 'q_zkomm') return { text: [line(who, 'follow')], after: () => (a.mode = 'folgen'), end: true };
+    if (k === 'q_zlage') {
+      const n = Z.ents.filter(e => e.kind === 'zombie' && !e.dead && hyp(e.x - w.x, e.y - w.y) < 60).length;
+      const hp = Math.round((100 * a.hp) / a.hp0);
+      return {
+        text: [
+          (hp > 70 ? 'Mir geht’s gut. ' : hp > 35 ? 'Hab ein paar abgekriegt. ' : 'Lange halt ich nicht mehr durch. ') +
+            (n ? 'In der Nähe sind ' + n + ' von denen.' : 'Gerade ist keiner zu sehen.'),
+        ],
+      };
+    }
+    return { text: [''] };
+  }
+  function hookTalk() {
+    const Q = window.QUESTS;
+    if (!Q || Q.zbund) return;
+    Q.zbund = true;
+    const t0 = Q.topics,
+      a0 = Q.ask;
+    Q.topics = who => [...zTopics(who), ...t0.call(Q, who)];
+    Q.ask = (who, k) => (String(k).startsWith('q_z') ? zAsk(who, k) : a0.call(Q, who, k));
+  }
+  KERN.on('zombie:start', hookTalk);
+  if (window.QUESTS) hookTalk();
   // the survivors that follow: wait / come
   KERN.act({
     id: 'zbund:s',
