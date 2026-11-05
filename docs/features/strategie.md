@@ -109,6 +109,9 @@ STRAT.job.define({
   can: cx => null | 'regel_id' | { no: true, text, why, src },  // Bedingungen: Wetter, Material, Jahreszeit …
   init: (j, cx) => {}, start: (j, cx) => {}, step: (j, cx, minuten, anteil) => {}, finish: (j, cx) => ({ text }), stop: (j, cx) => {},
   speed: (j, cx) => 1, spot: (j, personId) => [x, y], show: () => true,
+  pose: 'saw',                    // Arbeitshaltung der Figuren (npc/npc_real.js POSE: saw, chop, carry, place, bench, pick, bonnet)
+  bau: true,                      // ein Bauauftrag (Christophs ständige Wirkung: 15 % schneller)
+  hours: [8 * 60, 19 * 60], anytime: false, // Arbeitszeit deiner Leute (Standard 8–19 Uhr); die Nachbarn haben ihre eigene
 });
 STRAT.job.check('zaun', ['falko'])        // null oder eine Absage { rule, text, why, src }
 STRAT.job.add('zaun', ['falko', 'sarah']) // der Auftrag { id, def, place, who, st: 'go'|'work'|'wait'|'done'|'stop', why, need, done, dur, d }
@@ -137,7 +140,9 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 
 ### Geld, Stil, Wissen
 - `STRAT.book(eur, text, kategorie)` – Buchung (negativ = Ausgabe), Stand `STRAT.S.eur`, Liste `STRAT.S.ledger`; Preise in `STDATA.PRICES`.
-- `STRAT.style(delta, warum)` – Black & White: wie du arbeitest (Ruhezeiten, faire Preise, schonend fällen, helfen); `STRAT.S.style` (−100 … 100).
+- `STRAT.style(delta, warum)` – Black & White: wie du arbeitest (Ruhezeiten, faire Preise, schonend fällen, helfen); `STRAT.S.style` (−100 … 100);
+  `STRAT.styleFx()` → `{ freundlich, natur, ruf }` (je 0–1, 0,5 neutral) für die Module, die es in der Welt zeigen (mehr Vögel, freundlichere
+  Leute, ein grüneres Dorf).
 - `STRAT.reveal(art, id, daten, wer, { title, source, text })` – Erkunden statt Nebel: was man über einen Ort weiß, weiß man, weil jemand
   hingegangen ist; beim ersten Mal `KERN.emit('strategie:entdeckt', { kind, id, title, source, text, by })` (Haken für das Entdeckungsbuch).
   `STRAT.known(art, id)` → `{ t, by, data }` oder `null`.
@@ -147,9 +152,13 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 - `STRAT.event.define({ id, label, chance: cx => p, run: cx => ({ text } | false), why, src })` – einmal je Spieltag gewürfelt (gleicher Tag,
   gleicher Wurf); `STRAT.fire(id)` löst es aus. Tiere (feat/tiere) melden ihre Schäden so oder über eigene KERN-Ereignisse.
 - `STRAT.order.add({ title, n, minStars, days | due, pay, … })` → `STRAT.S.orders` (`st: 'offen' | 'geliefert' | 'verspätet'`).
-- `STRAT.chapter.define({ id, title, text, order })`, `STRAT.chapter.set(id)`, `STRAT.chapter.cur()`.
-- `STRAT.layer.define({ id, label, text, order, on, draw: (pr, W, H) => '<svg-Text>' })` – eine Ebene der Karte, im HUD schaltbar;
-  `pr(x, y, z)` → `[px, py, tiefe]`. Vorhanden: leute, orte, wege, beduerfnisse, wirtschaft, natur, krisen, verkehr, wetter.
+- `STRAT.chapter.define({ id, title, text, order })`, `STRAT.chapter.set(id)`, `STRAT.chapter.cur()`;
+  Ziele: `STRAT.chapter.goal('k3', { id, text, on: 'auftrag', when: d => d.state === 'fertig' && d.def === 'zaun' })` (ein Ereignis des Modus) oder
+  `{ id, text, check: () => bool }` (zweimal je Sekunde gefragt) – sind alle Ziele des aktuellen Kapitels erreicht, kommt das nächste.
+- `STRAT.layer.define({ id, label, text, order, on, draw: (pr, W, H) => '<svg-Text>' })` – eine Ebene der Karte, im HUD schaltbar (ein zweites
+  `define` mit derselben id ergänzt sie); `pr(x, y, dz)` → `[px, py, tiefe]`, dz Meter über dem Boden dort (auch oben in der Klinge).
+  Vorhanden: leute, orte, wege, beduerfnisse, wirtschaft, natur (was man vom Wald weiß), krisen, verkehr (Autos von `verkehr/*`, Busse über
+  `window.BUS.list()` von feat/bus), wetter.
 
 ### Zeit und Ereignisse von STRAT
 - `STRAT.setSpeed(0 | 1 | 5 | 30)` (Spielminuten je Sekunde; 1× = die normale Spieluhr), `STRAT.skip(minuten | 'kommen' | 'morgen' | 'auftrag')`
@@ -159,6 +168,9 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
   `strategie:unterwegs`, `strategie:angekommen`, `strategie:da`, `strategie:buchung`, `strategie:stil`, `strategie:entdeckt`, `strategie:ereignis`,
   `strategie:bestellung`, `strategie:faehigkeit`, `strategie:stufe`, `strategie:gefallen`, `strategie:tag`, `strategie:kapitel`.
 - Gespeichert: `pav-strat-v1`; ein Thema hält Kleines in `STRAT.S.ext[thema]` (wird mitgespeichert) oder in einem eigenen SAVE-Schlüssel.
+- Ereignisse der Aufträge tragen die Spielzeit `t` (im Zeitraffer laufen viele Schritte in einem Bild).
+- Shader: was ein Thema in der Welt neu baut, vorher einmal übersetzen (Beispiel `STWELT.warm()` beim Start des Modus: Stämme, Bretter, ein
+  gefällter Baum – `FELL.warmMats()`, die Stapelleisten); der Test misst Programme vor und nach der ganzen Holzkette bei denselben Ansichten.
 
 ## Offen
 
