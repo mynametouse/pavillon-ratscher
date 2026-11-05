@@ -282,12 +282,12 @@ export const ZNETZ = (() => {
       } else if (d.k === 'welt' && S.role === 'gast') {
         if (d.e0 != null && DN) DN.e0 = d.e0;
         if (Number.isFinite(d.t)) CLOCK.t = d.t;
-        Z.night = d.night || Z.night;
+        if (Number.isFinite(d.night)) Z.night = d.night; // (the host's count of nights – the guest's own siren does not count)
         for (const [bid, bars] of Object.entries(d.houses || {})) Object.assign(Z.house(+bid).bar, bars);
         if (DN && DN.active) DN.update(true);
       } else if (d.k === 'uhr' && S.role === 'gast') {
         if (Number.isFinite(d.t) && Math.abs(d.t - CLOCK.t) > 0.5) CLOCK.t = d.t;
-        if (d.night > Z.night) Z.night = d.night;
+        if (Number.isFinite(d.night)) Z.night = d.night;
       } else if (d.k === 'bar') {
         Z.house(+d.bid).bar[d.op] = +d.hp || 0;
         if (ZHAUS.H && ZHAUS.bid === +d.bid && ZHAUS.refresh) ZHAUS.refresh(d.op);
