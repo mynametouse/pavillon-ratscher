@@ -429,9 +429,13 @@ export const BUS = (() => {
     for (const I of S.inst.slice()) {
       if (I.hold > 0 && !(S.ride && S.ride.I === I && S.ride.busy)) I.hold -= dt;
       if (S.ride && S.ride.I === I) {
-        // the bus one rides: exactly the clock (it runs in real time meanwhile); while the picture fades it waits at the stop
+        // the bus one rides: exactly the clock (it runs in real time meanwhile); while the picture fades it waits at the stop.
+        // Placed by the seat's camera this frame (follow above): not again, so bus and eye stay together
         if (S.ride.busy) S.ride.lag = clk - I.tau;
-        else I.tau = clk - S.ride.lag;
+        else if (I.followed) {
+          I.followed = false;
+          continue;
+        } else I.tau = clk - S.ride.lag;
       } else if (dClk > 2 || CLOCK.warp) {
         // the clock jumped (set, a scene) or races (waiting, sleeping – a time-lapse): the bus to its minute
         I.tau = clk;
@@ -528,6 +532,13 @@ export const BUS = (() => {
       follow: () => {
         const R_ = S.ride;
         if (!R_) return eye(I);
+        // the bus at this very moment: the camera and the bus in the same frame (else the seat lags behind the moving bus by a frame's
+        // way – at 50 km/h the eye sat behind its own backrest)
+        if (!R_.busy) {
+          I.tau = CLOCK.t - R_.lag;
+          place(I, 0);
+          I.followed = true;
+        }
         const d = wrap(I.hd - R_.lastHd);
         P.yaw += (d * 180) / Math.PI;
         R_.lastHd = I.hd;
