@@ -63,7 +63,7 @@ with lib.browser() as b:
     E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 22 * 60; DN && DN.active && DN.update(true); ZOMBIE.torch(true)")
     lib.settle_light(pg)
     E(f"GAME.view({base['x']}, {base['y']}, {base['z']} + 1.62, {base['yaw']}, -4, 60)")
-    steps(1.0)
+    steps(8.0)  # (the night's fog thickens over a few seconds)
     pic('06_nacht_lampe')
     E("ZOMBIE.torch(false)")
     steps(0.5)
