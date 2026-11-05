@@ -16,6 +16,7 @@ ck = lib.Checks('welt_gebaeude')
 OUT = lib.out('welt_gebaeude')
 # known places (model metres): a roof only in the ground image before, a building of the data now – and where to look from
 SPOTS = {}   # the ground views found in the first run, used again in the run without the buildings
+STADT = {}   # the same for Schleusingen
 PLACES = [
     # name, point inside, ground view (x, y, yaw, pitch), top view (x, y, height)
     ('halle', (9.7, -134.2), (-25.0, -108.0, 125, -2), (10, -134, 70)),
@@ -66,18 +67,29 @@ def fetch_tiles(cx, cy, half=650):
                 if r[0] <= x <= r[2] and r[1] <= y <= r[3]:
                     jobs.add(f't/{L}/{x}/{y}.bin')
                     jobs.add(f'i/{L}/{x}/{y}.webp')
+    # the image tiles without the printed roofs (welt-test/v2/, tools/welt-gebaeude/kacheln.py): those of the same area that it lists
+    get('v2/index.json')
+    try:
+        v2 = set(json.load(open(os.path.join(DIST, 'v2', 'index.json')))['tiles'])
+    except Exception:
+        v2 = set()
+    for j in list(jobs):
+        if j.startswith('i/') and j[2:-5] in v2:
+            jobs.add('v2/' + j)
     t0 = time.time()
     with concurrent.futures.ThreadPoolExecutor(8) as ex:
         n = sum(ex.map(get, sorted(jobs)))
-    print(f'welt tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s', flush=True)
+    print(f'welt tiles: {len(jobs)} files ({sum(1 for j in jobs if j.startswith("v2/"))} without roofs), {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s', flush=True)
+    return len(v2)
 
 
+V2N = 0
 if 'zellen' in want:
-    fetch_tiles(*MARKT)
+    V2N = fetch_tiles(*MARKT) or 0
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs, tier='hoch')
-    lib.boot(pg, port, '?gebz')
+    lib.boot(pg, port, '?gebz&welt2')
     E = pg.evaluate
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
     progs = lambda: E("GAME.R.info.programs.length")
@@ -94,7 +106,7 @@ with lib.browser() as b:
       sameMat: GEB.meshes.length > 1 && GEB.meshes[0].material === RATSCHER.bld[0].material && GEB.meshes[1].material === VILLAGE.meshes[0].material })""")
     print('state', json.dumps(st), flush=True)
     ROOFS = J("VILLAGE.bld.map(b => b.roof ? [b.roof.kind, ...b.roof.col.map(v => +v.toFixed(3))] : null)")
-    ground_info = J("({ retouched: GEBDACH.retouched, near: GEOMAN.tex.near.file, inner: GEOMAN.tex.inner.file, dach: !!GEBDACH.near && !!GEBDACH.inner })")
+    ground_info = J("({ retouched: GEBDACH.retouched, near: GEOMAN.tex.near.file, inner: GEOMAN.tex.inner.file, dach: GEBDACH.loaded === 2 })")
     print('ground', json.dumps(ground_info), flush=True)
     if 'load' in want:
         ck('the ground images of Ratscher are the retouched ones, the roof colours come from the originals', ground_info['retouched'] and ground_info['near'].endswith('_r.jpg') and ground_info['inner'].endswith('_r.jpg') and ground_info['dach'], json.dumps(ground_info))
@@ -211,13 +223,24 @@ with lib.browser() as b:
             hideZ(True)
             top(tgt['x'], tgt['y'], 80); E("GAME.shot()")
             if sp: ground(sp[0], sp[1], sp[2], -2); E("GAME.shot()")
-            lib.shot(pg, OUT, 'stadt_boden_vorher') if sp else None
+            lib.shot(pg, OUT, 'stadt_boden_ohne_zellen') if sp else None
             hideZ(False)
             q0 = progs()
-            top(tgt['x'], tgt['y'], 80); pic('stadt_top')
-            if sp: ground(sp[0], sp[1], sp[2], -2); pic('stadt_boden')
+
+            def settle():
+                for _ in range(24):   # the tiles near the camera (levels 11, 12) before the picture
+                    E("GAME.step(0.25)")
+                    if E("WELT.state().loading === 0"): break
+                    time.sleep(0.3)
+            top(tgt['x'], tgt['y'], 80); settle(); pic('stadt_top')
+            if sp: ground(sp[0], sp[1], sp[2], -2); settle(); pic('stadt_boden')
             q1 = progs()
             ck('no new shader programs for the cells', q1 <= q0, f'{q0} -> {q1}')
+            STADT['tgt'], STADT['sp'] = tgt, sp
+        t2 = J("({ state: GEB.T2.state, n: GEB.T2.n, keys: GEB.T2.keys ? GEB.T2.keys.size : 0, err: GEB.T2.err || '' })")
+        print('welt2', json.dumps(t2), flush=True)
+        if V2N:
+            ck('?welt2: the tiles without the printed roofs are taken where there are some (welt-test/v2/)', t2['state'] == 'ready' and t2['n'] > 0, json.dumps(t2))
             # walk at the house from 6 m: its wall stops the walker (KERN.pushOut beyond the square)
             r = J(f"""(() => {{ let b = null; for (const c of GEB.Z.cells.values()) for (const q of (c.data ? c.data.b : [])) if (q.id === {tgt['id']}) b = q;
                 let best = null; for (const f of b.F) {{ const L = Math.hypot(f[2] - f[0], f[3] - f[1]); if (L > 4 && !(f[8] & 1) && (!best || L > best.L)) best = {{ L, nx: (f[3] - f[1]) / L, ny: -(f[2] - f[0]) / L, mx: (f[0] + f[2]) / 2, my: (f[1] + f[3]) / 2 }}; }}
@@ -253,4 +276,26 @@ if 'before' in want:
             if sp:
                 E(f"(() => {{ document.body.dataset.mode = 'walk'; GAME.view({sp[0]}, {sp[1]}, KERN.ground({sp[0]}, {sp[1]}) + 1.6, {sp[2]}, -3, 60); for (let i = 0; i < 4; i++) GAME.step(0.25); }})()")
                 lib.shot(pg, OUT, f'{name}_boden_vorher')
+        if STADT.get('tgt'):
+            # Schleusingen as published: the live tiles (roofs printed), no cells
+            E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden'); document.querySelector('#menu [data-spot=schleusingen]').click()")
+            t0 = time.time()
+            while time.time() - t0 < 200:
+                E("GAME.step(0.5)")
+                if E("SCHL.status().state === 'ready' && WELT.state().loading === 0"): break
+                time.sleep(0.3)
+            tg, sp = STADT['tgt'], STADT['sp']
+            E(f"(() => {{ const P = GAME.P; P.mode = 'top'; P.tx = {tg['x']}; P.ty = {tg['y']}; P.th = 80; document.body.dataset.mode = 'top'; GAME.step(0.05); }})()")
+            for _ in range(20):
+                E("GAME.step(0.25)")
+                if E("WELT.state().loading === 0"): break
+                time.sleep(0.3)
+            lib.shot(pg, OUT, 'stadt_top_vorher')
+            if sp:
+                E(f"(() => {{ document.body.dataset.mode = 'walk'; GAME.view({sp[0]}, {sp[1]}, KERN.ground({sp[0]}, {sp[1]}) + 1.6, {sp[2]}, -2, 60); for (let i = 0; i < 4; i++) GAME.step(0.25); }})()")
+                for _ in range(20):
+                    E("GAME.step(0.25)")
+                    if E("WELT.state().loading === 0"): break
+                    time.sleep(0.3)
+                lib.shot(pg, OUT, 'stadt_boden_vorher')
 ck.done()

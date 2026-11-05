@@ -9,7 +9,7 @@
 // materials – no new shader programs; walls into the collisions of the square (RATSCHER.walls before world/worldcol.js builds its grid).
 // Ratscher's square: dist/gebaeude/ratscher.json, built once after the village (few ms). ?nogeb leaves them out (to compare).
 import * as THREE from 'three';
-import { BASE, scene } from '../core/head.js';
+import { BASE, COARSE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { LM, markDirty, whenLoaded } from '../core/assets.js';
 import { COL } from '../core/geo.js';
@@ -17,6 +17,7 @@ import { rebuildGrids } from '../game/walkable.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
 import { WELT } from '../welt/welt.js';
+import { GEBDACH } from './geb_dach.js';
 export const GEB = (() => {
   const S = { on: false, ready: false, n: 0, bld: [], meshes: [], nSeg: 0, ms: 0, err: '', trees: 0, stats: null };
   if (!window.RATSCHER || !RATSCHER.on || new URLSearchParams(location.search).has('nogeb')) return S;
@@ -776,8 +777,8 @@ export const GEB = (() => {
     n: 0,
   };
   S.Z = Z;
-  const NEAR = 700,
-    FAR = 1050,
+  const NEAR = COARSE ? 500 : 700, // phones: the same buildings, the far cells a little earlier out of memory
+    FAR = COARSE ? 680 : 900,
     ZB = RATSCHER.box;
   // distance from (x, y) to the rectangle of cell (i, j)
   const cellD = (i, j, x, y) =>
@@ -896,8 +897,8 @@ export const GEB = (() => {
       }
     return moved ? true : undefined;
   }
-  // first increment of the night: only with ?gebz (switched on by default once tested with the tiles)
-  const ZON = new URLSearchParams(location.search).has('gebz');
+  // on by default since the cells were tested with the tiles (6.11. night); ?nogebz leaves them out (to compare)
+  const ZON = !new URLSearchParams(location.search).has('nogebz');
   if (ZON) KERN.provide('pushOut', zPush, 15);
   let zAcc = 0,
     zCheck = 0;
@@ -1000,6 +1001,8 @@ export const GEB = (() => {
       });
   }
   whenLoaded(() => {
+    // the village has its roof colours by now: the copies of the original photos are not needed any more (memory on phones)
+    if (VILLAGE.ready) GEBDACH.near = GEBDACH.inner = null;
     if (!data || !RATSCHER.ready) return;
     try {
       buildRatscher();

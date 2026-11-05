@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { BASE } from '../core/head.js';
 import { LM } from '../core/assets.js';
 export const GEBDACH = (() => {
-  const S = { near: null, inner: null, retouched: false };
+  const S = { near: null, inner: null, retouched: false, loaded: 0 };
   const M = window.GEOMAN;
   if (!M || !M.tex) return S;
   const alt = new URLSearchParams(location.search).has('bodenalt');
@@ -24,7 +24,10 @@ export const GEBDACH = (() => {
     if (t.dach)
       new THREE.ImageLoader(LM).load(
         BASE + 'geo/' + t.dach,
-        img => (S[k] = { image: img }),
+        img => {
+          S[k] = { image: img };
+          S.loaded++;
+        },
         undefined,
         () => {}
       );

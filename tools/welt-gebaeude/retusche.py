@@ -2,9 +2,10 @@
 """feat/welt-gebaeude: the roofs printed in Ratscher's ground images go where a building stands in 3D – and the things other features build
 in 3D (masks of feat/welt-dinge: cars, trailers, woodpiles, pools …). This tool owns the ground: run it again after merging those branches.
 
-  python3 tools/welt-gebaeude/retusche.py --ethos ETHOS.jsonl [--src viz3/dist/geo] [--debug DIR]
+  python3 tools/welt-gebaeude/retusche.py [--ethos ETHOS.jsonl] [--src viz3/dist/geo] [--debug DIR]
 
-ETHOS.jsonl: tools/welt-gebaeude/filter_ethos.py (see docs/features/welt-gebaeude.md). The ground images are the published originals
+ETHOS.jsonl: tools/welt-gebaeude/filter_ethos.py (see docs/features/welt-gebaeude.md) – only needed to make tools/welt-gebaeude/
+retusche_etc.json again (the ETHOS footprints of the site and the slivers); without it that file is read. The ground images are the published originals
 (viz3/dist/geo/ortho_near.jpg 4096² over 920 m, ortho_near_lq.jpg 2048², ortho_inner.jpg 2048² over 2.4 km – from the gh-pages asset base;
 not covered by the KTX2 textures of tools/tex). Written to viz3/extra/welt-gebaeude/dist/geo/: ortho_near_r.jpg, ortho_near_r_lq.jpg,
 ortho_inner_r.jpg (the manifest of the extra points geoman.tex at them – remove those lines to switch back), and 1024² copies of the
@@ -48,6 +49,12 @@ def buildings(ethos_path):
         out.append((utm_poly(list(zip(f[0::2], f[1::2]))), float(b['h']), 'neu'))
     site = sbox(*SITE)
     box = W.GEOMAN['roads']['box']
+    keep = os.path.join(W.HERE, 'retusche_etc.json')   # the ETHOS footprints of the site and the slivers – so a re-run needs no ETHOS file
+    if not ethos_path and os.path.exists(keep):
+        for q in json.load(open(keep))['b']:
+            out.append((Polygon(q['p']).buffer(0), float(q['h']), q['s']))
+        return out
+    first = len(out)
     if ethos_path:
         # the hand-modelled site and the slivers/parts not built: every ETHOS footprint of the square that the two lists above miss
         have = STRtree([p for p, _, _ in out])
@@ -67,6 +74,10 @@ def buildings(ethos_path):
                 continue
             if site.contains(Polygon(pm).centroid) or cov > 0.05:
                 out.append((g, float(r['h'] or 3.0), 'site' if site.contains(Polygon(pm).centroid) else 'rest'))
+        json.dump({'note': 'ETHOS.BUILDA footprints (UTM 25832) of the hand-modelled site and the slivers next to OSM buildings: masked too',
+                   'b': [{'p': [[round(x, 2), round(y, 2)] for x, y in g.exterior.coords], 'h': round(h, 2), 's': s_}
+                         for g, h, s_ in out[first:] if g.geom_type == 'Polygon']},
+                  open(keep, 'w'), separators=(',', ':'))
     return out
 
 
@@ -265,16 +276,17 @@ def main():
     ap.add_argument('--ethos', default=None)
     ap.add_argument('--src', default=os.path.join(W.VIZ, 'dist', 'geo'))
     ap.add_argument('--debug', default=None)
+    ap.add_argument('--out', default=OUT)
     a = ap.parse_args()
     from PIL import Image
     Image.MAX_IMAGE_PIXELS = None
-    os.makedirs(OUT, exist_ok=True)
+    os.makedirs(a.out, exist_ok=True)
     T = W.GEOMAN['tex']
     near = Img(os.path.join(a.src, T['near']['file']), T['near'])
     inner = Img(os.path.join(a.src, T['inner']['file']), T['inner'])
     # the originals for the roof colours (world/village.js samples them at 1024²)
     for im, nm in ((near, 'ortho_near_dach.jpg'), (inner, 'ortho_inner_dach.jpg')):
-        Image.fromarray(im.a).resize((1024, 1024), Image.LANCZOS).save(os.path.join(OUT, nm), quality=86)
+        Image.fromarray(im.a).resize((1024, 1024), Image.LANCZOS).save(os.path.join(a.out, nm), quality=86)
     blds = buildings(a.ethos)
     print('buildings', len(blds), {s: sum(1 for b in blds if b[2] == s) for s in ('osm', 'neu', 'site', 'rest')}, flush=True)
     ln, est = leans(near, blds)
@@ -289,15 +301,15 @@ def main():
         m0 = raster(im, polys)
         m = shadows(im.a, m0, im.res)
         res = fill(im.a, m, seed)
-        Image.fromarray(res).save(os.path.join(OUT, outn), quality=88, optimize=True)
+        Image.fromarray(res).save(os.path.join(a.out, outn), quality=88, optimize=True)
         if outn == 'ortho_near_r.jpg':
-            Image.fromarray(res).resize((2048, 2048), Image.LANCZOS).save(os.path.join(OUT, 'ortho_near_r_lq.jpg'), quality=86, optimize=True)
+            Image.fromarray(res).resize((2048, 2048), Image.LANCZOS).save(os.path.join(a.out, 'ortho_near_r_lq.jpg'), quality=86, optimize=True)
         print(outn, 'masked', round(100.0 * (m0 > 0).mean(), 2), '% buildings,', round(100.0 * (m > 0).mean(), 2), '% with their shadows', flush=True)
         if a.debug:
             os.makedirs(a.debug, exist_ok=True)
             Image.fromarray(m).save(os.path.join(a.debug, outn.replace('.jpg', '_mask.png')))
-    for f in sorted(os.listdir(OUT)):
-        print(f, os.path.getsize(os.path.join(OUT, f)), flush=True)
+    for f in sorted(os.listdir(a.out)):
+        print(f, os.path.getsize(os.path.join(a.out, f)), flush=True)
 
 
 if __name__ == '__main__':

@@ -256,9 +256,12 @@ def main():
     ap.add_argument('--out', default=os.path.join(W.VIZ, 'extra', 'welt-gebaeude', 'dist', 'gebaeude'))
     ap.add_argument('--debug', default=None)
     ap.add_argument('--tiles', action='store_true', help='the tiled world beyond the square instead (cells of 400 m, lazy in the app)')
+    ap.add_argument('--heights', action='store_true', help='compare the heights of the 337 OSM buildings with ETHOS (a list for the lead)')
     a = ap.parse_args()
     if a.tiles:
         return main_tiles(a)
+    if a.heights:
+        return heights(a)
     from shapely.geometry import Polygon, box as sbox
     from shapely.strtree import STRtree
     from shapely.ops import unary_union
@@ -288,7 +291,7 @@ def main():
         if ov > 0.02:
             rest = g.difference(unary_union(hits).buffer(0.15, join_style=2))
             pieces = [p for p in (rest.geoms if hasattr(rest, 'geoms') else [rest]) if p.geom_type == 'Polygon']
-            pieces = [p for p in pieces if p.area > 6 and p.buffer(-0.7).area > 0.5]
+            pieces = [p for p in pieces if p.area > 8 and p.buffer(-1.0).area > 1.5]   # no strips of a mismatched outline
             if not pieces:
                 st['sliver'] += 1
                 continue
@@ -346,6 +349,33 @@ def main():
     print(json.dumps(st), os.path.getsize(fn), 'bytes', flush=True)
     if a.debug:
         debug_map(out, osm, a.debug, photo)
+
+
+def heights(a):
+    """the OSM buildings of world/ratscher.js (highest wall top = gable apex, from the surface model) against ETHOS (ground to the highest
+    point, from LoD2): every ETHOS footprint mostly inside an OSM one counts; differences above 2.5 m listed"""
+    from shapely.geometry import Polygon
+    from shapely.strtree import STRtree
+    osm = W.ratscher_osm()
+    ids = list(osm)
+    P = [Polygon(osm[k]['ring']).buffer(0) for k in ids]
+    E = []
+    for r in W.load_ethos(a.ethos):
+        g = Polygon([W.to_model(e, n) for e, n in r['poly'][0][0]]).buffer(0)
+        if not g.is_empty:
+            E.append((r['h'] or 0.0, g))
+    et = STRtree([g for _, g in E])
+    rows = []
+    for k, p in zip(ids, P):
+        hs = [E[i][0] for i in et.query(p) if E[i][1].intersection(p).area > 0.5 * min(E[i][1].area, p.area)]
+        if hs:
+            top = osm[k]['top']
+            rows.append((k, round(p.centroid.x), round(p.centroid.y), round(p.area), round(top, 1), round(max(hs), 1), round(top - max(hs), 1)))
+    d = np.array([r[6] for r in rows])
+    print('matched', len(rows), 'median', np.median(d), 'mean abs', round(float(np.abs(d).mean()), 2))
+    for r in sorted(rows, key=lambda r: -abs(r[6])):
+        if abs(r[6]) > 2.5:
+            print('| %d | %d, %d | %d | %.1f | %.1f | %+.1f |' % r)
 
 
 CELL = 400.0
@@ -427,7 +457,7 @@ def main_tiles(a):
         if ov > 0.02:
             rest = g.difference(unary_union(hits).buffer(0.15, join_style=2))
             pieces = [p for p in (rest.geoms if hasattr(rest, 'geoms') else [rest]) if p.geom_type == 'Polygon']
-            pieces = [p for p in pieces if p.area > 6 and p.buffer(-0.7).area > 0.5]
+            pieces = [p for p in pieces if p.area > 8 and p.buffer(-1.0).area > 1.5]   # no strips of a mismatched outline
             if not pieces:
                 st['sliver'] += 1
                 continue

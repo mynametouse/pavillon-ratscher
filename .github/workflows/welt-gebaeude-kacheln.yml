@@ -13,7 +13,8 @@ on:
         type: boolean
         default: true
   push:
-    branches: ['feat/welt-gebaeude']
+    # also on src: after the Kern-Chat merges a feature's tile masks (viz3/extra/*/maske*_utm.json) the set is made again by itself
+    branches: ['feat/welt-gebaeude', 'src']
     paths: ['tools/welt-gebaeude/kacheln.py', 'tools/welt-gebaeude/retusche.py', '.github/workflows/welt-gebaeude-kacheln.yml',
             'viz3/extra/welt-gebaeude/dist/gebaeude/z/**', 'viz3/extra/*/maske*_utm.json']
 
