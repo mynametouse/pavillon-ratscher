@@ -100,6 +100,7 @@ export const ZHAUS = (() => {
       H.onUse = use;
       put(H.entry);
       boardsAll();
+      hideAll();
       lurkers();
       Z.emit('enter', { id: h.id });
       await fade(false);
@@ -350,6 +351,116 @@ export const ZHAUS = (() => {
       KERN.unact('zhaus:bar:' + id);
     }
     S.boards.clear();
+    hideClear();
+  }
+  // ---- hiding (Falko 5.11., 17:57: „Schleichen“ – offered with „Verstecke im Haus“): at night in a wardrobe or under a bed. In the
+  // wardrobe one sees the room through the gap of its doors, under the bed between the frame and the floor; the walk keys bring one out.
+  // Those outside smell one only from close by, those inside find one only standing right in front of it now and then (zombie/z_horde.js
+  // reads Z.hidden); one that watched him go in knows where he is ----
+  S.hideIds = [];
+  const hunted = () =>
+    Z.ents.some(e => e.kind === 'zombie' && !e.dead && e.st === 'chase' && hyp(e.x - P.x, e.y - P.y) < 30);
+  function hideAll() {
+    const H = S.H;
+    if (!H) return;
+    for (const c of (H.containers || []).filter(q => q.kind === 'kleiderschrank'))
+      hideAct('zhaus:hide:' + c.id, c.pos, 'Im Kleiderschrank verstecken', false, c.id);
+    for (const sp of (H.spots || []).filter(q => q.kind === 'bett'))
+      hideAct('zhaus:hidebed:' + sp.id, sp.pos, 'Unters Bett kriechen', true, null);
+    // (small houses have no bedroom: behind the shelves in the cellar)
+    const cellar = new Set((H.rooms || []).filter(r => r.kind === 'keller').map(r => r.id));
+    for (const c of (H.containers || []).filter(q => q.kind === 'regal' && cellar.has(q.room)))
+      hideAct('zhaus:hidecellar:' + c.id, c.pos, 'Hinter dem Regal verstecken', false, null, true);
+  }
+  function hideAct(id, pos, text, bed, cid, shelf) {
+    S.hideIds.push(id);
+    KERN.act({
+      id,
+      r: 1.5,
+      prio: 0.5,
+      pos: () => pos,
+      label: () => {
+        if (!S.H || !Z.on || Z.hidden || Z.phase !== 'nacht' || PLAY.seated()) return null;
+        // (a wardrobe not searched yet: searching comes first – unless one of them is after him already)
+        if (cid && !(Z.house(S.bid).looted || []).includes(cid) && !hunted()) return null;
+        return text;
+      },
+      run: () => hide(pos, bed, shelf),
+    });
+  }
+  function hide(p, bed, shelf) {
+    // looking out of it: towards where he stood
+    const yaw = (Math.atan2(P.x - p[0], P.y - p[1]) * 180) / Math.PI,
+      now = performance.now();
+    PLAY.sit({
+      kind: 'hide',
+      x: p[0],
+      y: p[1],
+      eye: P.feet + (bed ? 0.22 : shelf ? 1.15 : 1.5), // (from the floor he stands on: the furniture's own point is up in it)
+      yaw,
+      pitch: bed ? 2 : -6,
+      onSit: () => {
+        Z.hidden = { bed, at: [p[0], p[1]], t: now };
+        hideView(bed ? 'bett' : shelf ? 'regal' : 'schrank');
+        // those not watching lose him: they search where they saw him last
+        for (const e of Z.ents)
+          if (e.kind === 'zombie' && !e.dead && e.st === 'chase' && !(e.los && e.d < 12)) {
+            e.st = 'search';
+            e.tx = e.seen ? e.seen.x : e.x;
+            e.ty = e.seen ? e.seen.y : e.y;
+            e.t = 0;
+          }
+        Z.emit('hide', { bed });
+      },
+      onLeave: () => {
+        Z.hidden = null;
+        hideView(null);
+      },
+    });
+    PLAY.think(
+      bed
+        ? 'Unter dem Bett. Ganz still …'
+        : shelf
+          ? 'Hinter dem Regal. Zwischen den Gläsern sehe ich die Kellertreppe.'
+          : 'Im Schrank. Durch den Spalt sehe ich ins Zimmer.',
+      2600
+    );
+  }
+  // the view from inside: dark, the gap of the doors (wardrobe), a strip of floor (bed), the gaps between the shelves (cellar)
+  function hideView(k) {
+    let el = document.getElementById('zhide');
+    if (k === null) {
+      if (el) el.hidden = true;
+      return;
+    }
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'zhide';
+      el.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:4'; // (under the panel and the messages)
+      (stage || document.body).appendChild(el);
+    }
+    el.style.background =
+      k === 'bett'
+        ? 'linear-gradient(180deg,#050403 0 64%,rgba(5,4,3,.55) 72%,rgba(5,4,3,.15) 80% 90%,#050403 97%)'
+        : k === 'regal'
+          ? 'repeating-linear-gradient(180deg,#050403 0 13%,rgba(5,4,3,.25) 16% 22%,#050403 25%)'
+          : 'linear-gradient(90deg,#050403 0 44%,rgba(5,4,3,.5) 47.5%,rgba(5,4,3,.05) 49.5% 50.5%,rgba(5,4,3,.5) 52.5%,#050403 56%)';
+    el.hidden = false;
+  }
+  // found (zombie/z_horde.js): out of it, it is on him
+  ZHORDE.found = e => {
+    if (!Z.hidden) return;
+    PLAY.stand(true);
+    ZTON.snarl(e.x, e.y);
+    ZTON.sting(1);
+    PLAY.think('Er hat mich gefunden!', 1800);
+  };
+  function hideClear() {
+    for (const id of S.hideIds) KERN.unact(id);
+    S.hideIds.length = 0;
+    if (Z.hidden) PLAY.stand(true);
+    Z.hidden = null;
+    hideView(null);
   }
   // a zombie's blow on a barricade (from zombie/z_horde.js); true while it still holds
   function hitBar(op, dmg) {
@@ -416,6 +527,17 @@ export const ZHAUS = (() => {
       ZTON.snarl(p[0], p[1]);
     },
     inside: () => !!S.H,
+    // a room to shamble to inside the house, on its floor (for one that broke in or lurks, wandering)
+    roam(e) {
+      if (!S.H || e.house !== S.bid) return null;
+      const rs = (S.H.rooms || []).filter(r => r.poly && r.poly.length >= 3 && Math.abs((r.z0 ?? e.z) - e.z) < 1.2);
+      if (!rs.length) return null;
+      const r = rs[Math.floor(Math.random() * rs.length)];
+      return [
+        r.poly.reduce((s, q) => s + q[0], 0) / r.poly.length,
+        r.poly.reduce((s, q) => s + q[1], 0) / r.poly.length,
+      ];
+    },
     // the house the player is in (its building id), and whether a point is inside its interior
     bid: () => (S.H ? S.bid : null),
     within: (x, y, z) => !!(S.H && S.H.inside && S.H.inside(x, y, z)),

@@ -36,6 +36,10 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
 - **Schleichen** (V17m): geduckt sehen sie dich halb so weit, kriechend oder liegend 0,3×, still stehend etwas weniger, rennend 1,25× –
   und Rennen hört man (10 m). Im Strahl der Taschenlampe sehen sie dich aus ~26 m, daneben nur den Schein. Im Haus riechen sie dich nachts
   aus 70 m, geduckt im Dunkeln nur aus 22 m. Ein Schlag auf einen, der nichts ahnt (umherschlurfend, fressend, suchend), zählt dreifach.
+  **Verstecke** (`z_haus.js`, nachts): „Im Kleiderschrank verstecken“ (wenn er durchsucht ist oder schon einer hinter dir her ist),
+  „Unters Bett kriechen“, im Keller „Hinter dem Regal verstecken“ – man sieht durch den Türspalt, unter dem Bettrahmen durch oder zwischen
+  den Regalbrettern; die Laufrichtungstasten holen einen heraus. Wer zusah, wie man hineinging, weiß es; die anderen suchen, wo sie einen
+  zuletzt sahen; draußen riechen sie einen nur aus 9 m; einer, der direkt davorsteht, findet einen ab und zu (`Z.hidden`, `ZHORDE.found`).
 - **Waffen** (`z_waffe.js`, Modelle `z_waffe_mod.js`): Spaten (alte Garage), Beil (Holzhaus), Huberts Axt (Hackklotz), Mistgabel
   (Ziegenweide), Brechstange und Motorsäge (Werkstatt), Sense, **Doppelflinte** (seit 5.11. auf Huberts Tisch vor seiner Werkstatt, geladen,
   daneben eine Schachtel mit 12 Schrotpatronen; sonst im Waffenschrank eines Jägers). Zuschlagen: linke Maustaste (Maus gefangen) bzw. Klick,
