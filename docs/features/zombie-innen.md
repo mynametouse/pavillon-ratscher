@@ -33,6 +33,11 @@ Fotos und was daraus folgt: `docs/plans/zombie_einrichtung.md`.
   flache Deckenschale; Deckenfluter nach 1990); alte Küchen mit Kohlenkasten, Eimer, Topfleiste, Handtuchhalter; große Räume eine
   zweite Gruppe (Nähtisch mit Nähmaschine, Sessel mit Beistelltisch, Kommode). Alles in Palettenfarben bzw. den Raum-Materialien –
   keine Draw-Calls dazu (höchstens 54 in allen 230 Häusern).
+- **Licht bei Tag warm**: die Eigenleuchte der hauseigenen Materialien (Decken, Wände, Böden, Furniere, Teppich, Bilder) ist warm
+  getönt (Uniform, kein neues Programm); steht man ohne eingeschaltetes Licht in einem Raum, leiht das Haus bei Tag dasselbe
+  Punktlicht aus dem Pool als warmes Fensterlicht einen Meter vor dem Fenster (Stärke mit dem Tageslicht). **Geräusche**: Behälter
+  klingen beim Öffnen mit den Türgeräuschen des Spiels (`audio.door`: Schublade gleitet, Tür/Deckel klickt), Innentüren und Luke
+  wie bisher über das Türsystem.
 - **Benutzbar**: Innentüren als Drehtüren (`DOORS`, Aktionsknopf „Tür öffnen“), Wände und Möbel als Kollision, Böden und Stufen
   begehbar (die Kamera bleibt drinnen), Behälter zum Durchsuchen (Tür/Schublade/Deckel öffnet sich, dann `H.onSearch`; bis zu zehn
   bewegen sich je Haus, die übrigen werden ohne Bewegung durchsucht), Licht je Raum (Schalter an der Tür, ein geliehenes Punktlicht,

@@ -697,18 +697,24 @@ export const ZIMOB = (() => {
     M.schwarz = col(0x232220, 0.8, 0.6);
     M.porzellan = col(0xf2efe6, 0.3, 0);
     M.emaille = col(0xf4f2ec, 0.2, 0.05);
+    // the house's own materials that throw back the daylight (shared garden materials and the palette stay as they are)
     M.bounce = [
-      [M.decke, 0.16],
-      [M.holzdecke, 0.12],
-      [M.putz, 0.06],
-      [M.fliesenWand, 0.05],
-      [M.dielen, 0.03],
-      ...Object.values(M.tapete).map(m => [m, 0.06]),
-      [M.linoleum, 0.03],
-      [M.laminat, 0.03],
-      [M.platten, 0.03],
-      [M.fliesen, 0.05],
-    ];
+      [M.decke, 0.2],
+      [M.holzdecke, 0.15],
+      [M.putz, 0.1],
+      [M.fliesenWand, 0.07],
+      [M.dielen, 0.06],
+      ...Object.values(M.tapete).map(m => [m, 0.1]),
+      [M.linoleum, 0.06],
+      [M.laminat, 0.06],
+      [M.platten, 0.05],
+      [M.fliesen, 0.06],
+      [M.furnier, 0.05],
+      [M.eiche, 0.05],
+      [M.birke, 0.05],
+      [M.perser, 0.05],
+      [M.bilder, 0.04],
+    ].filter(([m]) => m && m.emissive);
     daylight(1);
     M.ready = true;
     return M;
@@ -717,11 +723,17 @@ export const ZIMOB = (() => {
   const glowMat = (col = 0xf3ead8) =>
     plain({ color: col, emissive: 0xffc27a, emissiveIntensity: 0, roughness: 1, side: THREE.DoubleSide }); // as MAT.paper (lamp shades)
   // the light thrown back inside by day (k = 1 day, 0 night): emissive = colour · factor · k – a uniform, no new program
+  // warm (the sun through the curtains on light walls and wood: the sky's cool grey alone made the rooms look flat by day)
   let dayK = -1;
+  const WARM = new THREE.Color(1.0, 0.8, 0.58);
   function daylight(k) {
     if (!M.bounce || Math.abs(k - dayK) < 0.02) return false;
     dayK = k;
-    for (const [m, f] of M.bounce) m.emissive.copy(m.color).multiplyScalar(f * k);
+    for (const [m, f] of M.bounce)
+      m.emissive
+        .copy(m.color)
+        .multiply(WARM)
+        .multiplyScalar(f * k);
     return true;
   }
   // GPU copies of the shared textures: freed when the last house goes (three uploads them again on use)
