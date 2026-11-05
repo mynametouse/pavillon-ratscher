@@ -20,6 +20,9 @@ body[data-zombie="1"] #qtrack{display:none!important}
 #zhud{position:absolute;top:66px;left:max(12px,env(safe-area-inset-left,0px));z-index:6;width:min(290px,46vw);background:rgba(18,12,12,.62);color:#f2e9e4;
   border-radius:9px;padding:8px 10px 9px;font:400 12px/1.35 var(--f-body,system-ui);backdrop-filter:blur(5px);pointer-events:auto;user-select:none}
 #zhud[hidden],#zmsg[hidden],#zdead[hidden],#ztouch[hidden]{display:none!important}
+#zhud .zt:first-child{cursor:pointer}
+#zhud.zmin .zw,#zhud.zmin .zs,#zhud.zmin .zk,#zhud.zmin .zx,#zhud.zmin .zq,#zhud.zmin .znet{display:none!important}
+#zhud.zmin .zt:first-child span::after{content:' ▸';opacity:.7}
 #zhud .zt{display:flex;justify-content:space-between;gap:8px;font:600 11px/1.3 var(--f-mono,monospace);letter-spacing:.04em;color:#ffb3a1;text-transform:uppercase}
 #zhud .zt em{font-style:normal;color:#f2e9e4;text-transform:none;letter-spacing:0;font-weight:500}
 #zhud .zb{display:grid;grid-template-columns:52px 1fr 30px;align-items:center;gap:6px;margin-top:4px}
@@ -93,7 +96,13 @@ body[data-zombie="1"] #qtrack{display:none!important}
         `<button class="s" data-z="r" aria-label="Nachladen, nachtanken">R</button><button data-z="atk" aria-label="Schlagen">✊</button>`
     );
     S.cross = div('zcross');
+    // on a small touch screen the panel starts folded (title, clock, bars); a tap on the title opens it
+    if (COARSE && Math.min(innerWidth, innerHeight) < 700) S.el.classList.add('zmin');
     S.el.addEventListener('click', e => {
+      if (e.target.closest('.zt:first-child')) {
+        S.el.classList.toggle('zmin');
+        return;
+      }
       const b = e.target.closest('button');
       if (!b) return;
       act(b.dataset.z);
