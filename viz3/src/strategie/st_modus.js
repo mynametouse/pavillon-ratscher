@@ -492,6 +492,12 @@ export const STRAT = (() => {
       );
       return;
     }
+    // hurt (lost days after an accident, strategie/st_ereignis.js): the job waits
+    const hurt = j.who.find(id => (S.people[id].hurt || 0) > t);
+    if (hurt) {
+      setWait(j, 'verletzt', `${PD(hurt).name} ist verletzt – noch ${CLOCK.dur(S.people[hurt].hurt - t)} Pause`);
+      return;
+    }
     // working hours of your people on site (8–19 h; a job may say otherwise: hours [from, to] or anytime) – the neighbours keep theirs
     const mm = WL.minOf(t),
       hrs = J.hours || D.PRESENCE.work;
@@ -715,6 +721,7 @@ export const STRAT = (() => {
         cd: p.cd,
         buff: p.buff,
         away: p.away,
+        hurt: p.hurt || 0,
       };
     SAVE.set(KS, {
       v: 1,
@@ -743,6 +750,7 @@ export const STRAT = (() => {
       diesel: S.diesel,
       mowI: S.mowI,
       essen: S.essen,
+      broken: S.broken || [],
     });
   }
   function load() {
@@ -781,6 +789,7 @@ export const STRAT = (() => {
         if (q.cd && typeof q.cd === 'object') p.cd = q.cd;
         if (q.buff && typeof q.buff === 'object') p.buff = q.buff;
         p.away = !!q.away;
+        p.hurt = num(q.hurt, 0, 1e9, 0);
       }
       S.jobs = Array.isArray(s.jobs) ? s.jobs.filter(j => j && typeof j.id === 'string' && REG.job[j.def]) : [];
       S.nj = num(s.nj, 0, 1e9, S.jobs.length);
@@ -797,6 +806,7 @@ export const STRAT = (() => {
       S.notes = Array.isArray(s.notes) ? s.notes.filter(n => n && typeof n.text === 'string') : [];
       S.ext = s.ext && typeof s.ext === 'object' ? s.ext : {};
       for (const k of ['brennholz', 'diesel', 'mowI', 'essen']) if (Number.isFinite(s[k])) S[k] = s[k];
+      S.broken = Array.isArray(s.broken) ? s.broken.filter(m => typeof m === 'string') : [];
       // a job whose people were sent off before the reload: the neighbours are steered again
       for (const j of S.jobs)
         if (j.st !== 'done' && j.st !== 'stop') for (const id of j.who) if (!isOwn(id)) npcSteer(id);

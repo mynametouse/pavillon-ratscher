@@ -3018,7 +3018,8 @@ export const FELL = (() => {
   S.simFell = (id, o = {}) => {
     if (!S.ready) return null;
     const t = FOREST.byId(id);
-    if (!t || !S.marked.includes(t) || S.job === id) return null;
+    // o.any: a tree the forester did not mark – windthrow or bark beetle, worked up by a forestry contractor (strategie/st_ereignis.js)
+    if (!t || t.gone || (!S.marked.includes(t) && !o.any) || S.job === id) return null;
     let rec = S.trees[id];
     if (rec && rec.st !== 'plan') return null;
     rec = S.trees[id] = rec || rec0(t);

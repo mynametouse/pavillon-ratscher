@@ -180,6 +180,7 @@ strategie/st_welt.js        # feat/strategie the bridges to the one world: sun, 
 strategie/st_modus.js       # feat/strategie the mode: state pav-strat-v1, jobs, people, time, money, style, events, the API for extensions (STRAT)
 strategie/st_jobs.js        # feat/strategie places, stocks of the bar, layers, abilities, chapters, the first job: mowing (STJOBS)
 strategie/st_holz.js        # feat/strategie the wood chain from above: look, fell, skid, saw, stack, dry; oak panels, boards, the order (STHOLZ)
+strategie/st_ereignis.js    # feat/strategie what happens: storm and windthrow, bark beetle, the forestry contractor, breakdowns, a big order, accidents, favours (STEREIG)
 strategie/st_hud.js         # feat/strategie the lens: HUD, overlay over the plan view, selecting, sending, panels, notices with „Warum?“ (STHUD)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything

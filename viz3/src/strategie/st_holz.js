@@ -454,6 +454,7 @@ export const STHOLZ = (() => {
     id: 'leimholz',
     label: 'Leimholz Eiche bestellen (3 Platten)',
     place: 'werkstatt',
+    spot: (j, id) => STRAT.pos(id).slice(0, 2),
     people: [1, 1],
     skill: 'reden',
     min: 1,

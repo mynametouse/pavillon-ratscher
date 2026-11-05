@@ -295,6 +295,11 @@ export const STDATA = (() => {
       why: 'Von 22 bis 6 Uhr schlafen sie – auch Nachbarn haben Feierabend.',
       src: 'Ihre Tage im Spiel (npc/hours.js)',
     },
+    verletzt: {
+      text: 'Verletzt – ein paar Tage Pause.',
+      why: 'Nach einem Arbeitsunfall heilt erst die Verletzung; wer zu früh wieder an die Säge geht, verletzt sich erneut.',
+      src: 'DGUV; SVLFG',
+    },
     weg: {
       text: 'Nicht vor Ort.',
       why: 'Ihr seid nur am Wochenende, an Feiertagen und im Urlaub im Garten.',
