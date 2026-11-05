@@ -120,3 +120,36 @@ def roads_fahrt():
         q = np.array(w[6], float).reshape(-1, 3)[:, :2] / 10
         out.append({'kind': int(w[0]), 'surf': int(w[1]), 'w': w[2] / 10, 'p': q})
     return out
+
+
+def footprints(geb_dir=None):
+    """every building footprint that stands in 3D (shapely polygons, model metres): Ratscher's OSM buildings (world/ratscher.js), the old
+    town of Schleusingen (dist/schleusingen/stadt.json) and the buildings of feat/welt-gebaeude (ETHOS.BUILDA: its ratscher.json and the
+    cells beyond the square, viz3/extra/welt-gebaeude/dist/gebaeude/) – from its folder in this checkout when merged, else from geb_dir
+    (a copy of that folder, e.g. `git show origin/feat/welt-gebaeude:…`)."""
+    from shapely.geometry import Polygon, LineString, MultiPoint
+    from shapely.ops import polygonize, unary_union
+    out = []
+    for bid, segs in buildings().items():
+        polys = list(polygonize([LineString([(a, b), (c, d)]) for a, b, c, d in segs]))
+        out.append(unary_union(polys) if polys else MultiPoint([(s[0], s[1]) for s in segs]).convex_hull)
+    st = os.path.join(REPO, 'viz3/dist/schleusingen/stadt.json')
+    if os.path.exists(st):
+        for b in json.load(open(st))['b']:
+            f = b['f']
+            if len(f) >= 6:
+                out.append(Polygon(list(zip(f[0::2], f[1::2]))).buffer(0))
+    gd = os.path.join(REPO, 'viz3/extra/welt-gebaeude/dist/gebaeude')
+    if not os.path.isdir(gd):
+        gd = geb_dir
+    if gd and os.path.isdir(gd):
+        files = [os.path.join(gd, 'ratscher.json')] + [os.path.join(gd, 'z', f) for f in sorted(os.listdir(os.path.join(gd, 'z')))] \
+            if os.path.isdir(os.path.join(gd, 'z')) else [os.path.join(gd, 'ratscher.json')]
+        for fn in files:
+            if not os.path.exists(fn):
+                continue
+            for b in json.load(open(fn)).get('b', []):
+                f = b['f']
+                if len(f) >= 6:
+                    out.append(Polygon(list(zip(f[0::2], f[1::2]))).buffer(0))
+    return [p for p in out if not p.is_empty]

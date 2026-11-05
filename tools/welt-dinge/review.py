@@ -41,17 +41,21 @@ def merge(files, minp):
     return out
 
 
-def sheets(img, x0, y1, s, cands, outdir, R=7.0, cols=6, rows=5, px=180):
+def sheets(img, x0, y1, s, cands, outdir, R=7.0, cols=6, rows=5, px=180, prefix='blatt', crop=None):
+    """crop(k, r_metres) → a PIL image centred on the candidate (several photos), else one photo img with x0, y1, s"""
     Image.MAX_IMAGE_PIXELS = None
-    im = Image.open(img).convert('RGB')
+    im = Image.open(img).convert('RGB') if img else None
     per = cols * rows
     for b in range(0, len(cands), per):
         sheet = Image.new('RGB', (cols * px, rows * (px + 16)), (20, 20, 20))
         dr = ImageDraw.Draw(sheet)
         for j, k in enumerate(cands[b:b + per]):
-            u, v = (k['x'] - x0) / s, (y1 - k['y']) / s
             r = R / s
-            c = im.crop((int(u - r), int(v - r), int(u + r), int(v + r))).resize((px, px), Image.BICUBIC)
+            if crop:
+                c = crop(k, R).resize((px, px), Image.BICUBIC)
+            else:
+                u, v = (k['x'] - x0) / s, (y1 - k['y']) / s
+                c = im.crop((int(u - r), int(v - r), int(u + r), int(v + r))).resize((px, px), Image.BICUBIC)
             d = ImageDraw.Draw(c)
             sc = px / (2 * r)
             a = math.radians(k['az'])
@@ -63,7 +67,7 @@ def sheets(img, x0, y1, s, cands, outdir, R=7.0, cols=6, rows=5, px=180):
             X, Y = (j % cols) * px, (j // cols) * (px + 16)
             sheet.paste(c, (X, Y + 16))
             dr.text((X + 3, Y + 2), f"{k['id']} {k['c'][:9]} {k['p']:.2f} {k['l']:.1f}x{k['w']:.1f}", fill=(255, 255, 255))
-        sheet.save(os.path.join(outdir, f'blatt_{b // per:02d}.jpg'), quality=88)
+        sheet.save(os.path.join(outdir, f'{prefix}_{b // per:02d}.jpg'), quality=88)
 
 
 if __name__ == '__main__':

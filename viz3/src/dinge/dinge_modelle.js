@@ -25,7 +25,8 @@ export const DMOD = (() => {
     HEAD = L(0.86, 0.87, 0.86),
     TAIL = L(0.55, 0.06, 0.05),
     PLATE = L(0.88, 0.88, 0.84),
-    UNDER = L(0.025, 0.025, 0.025);
+    UNDER = L(0.025, 0.025, 0.025),
+    ARCH = L(0.035, 0.035, 0.038);
   // ---- the material: plain() and the paint rule for instances ----
   const mat = plain({ vertexColors: true, roughness: 0.5, envMapIntensity: 0.9 });
   {
@@ -68,6 +69,7 @@ export const DMOD = (() => {
     }
     k.disc(x + s * 0.004, y, r, s, 0, r, TYRE, n, false);
     k.disc(x + s * 0.008, y, r, s, 0, r * 0.58, RIM, 10, false);
+    k.disc(x + s * 0.001, y, r, s, 0, r + 0.07, ARCH, n, false);
   }
   // ---- cars: outer measures (m) of typical cars of each class; the cabin as a frustum of glass, roof and body painted ----
   // L length, W width (without mirrors), H height, wb wheelbase, r wheel radius, zb sill, zw belt line, fh bonnet length (from the
@@ -166,14 +168,23 @@ export const DMOD = (() => {
         top = [-hw + 0.17, hw - 0.17, yC0 + T.rs, yWs - T.ws];
       prism(k, [-hw + 0.03, hw - 0.03, yC0, yWs], top, T.zw, zr, GLASS, false);
       prism(k, top, [top[0] + 0.03, top[1] - 0.03, top[2] + 0.03, top[3] - 0.04], zr, T.H, PAINT);
-      // pillars: B pillar painted strips on the glass (both sides)
-      const yB = (yC0 + yWs) / 2 + 0.1;
+      // pillars painted on the glass of both sides: A along the windscreen, B in the middle, C (D on estates) at the back – each a strip
+      // on the side face of the cabin (x falls linearly from the belt line to the roof, so the strip lies on that face)
+      const xAt = (s, z) => s * (hw - 0.03 + 0.012 - (0.14 * (z - T.zw)) / (zr - T.zw)),
+        strip = (s, yb0, yb1, yt0, yt1) => {
+          const a = [xAt(s, T.zw), yb0, T.zw],
+            b = [xAt(s, T.zw), yb1, T.zw],
+            c = [xAt(s, zr), yt1, zr],
+            d = [xAt(s, zr), yt0, zr];
+          if (s > 0) k.quad(a, b, c, d, PAINT);
+          else k.quad(b, a, d, c, PAINT);
+        },
+        yB = (yC0 + yWs) / 2 + 0.1;
       for (const s of [-1, 1]) {
-        const xb = s * (hw - 0.03 + 0.01),
-          xt = s * (hw - 0.17 + 0.01);
-        if (s > 0)
-          k.quad([xb, yB - 0.06, T.zw], [xb, yB + 0.06, T.zw], [xt, yB + 0.06, zr], [xt, yB - 0.06, zr], PAINT);
-        else k.quad([xb, yB + 0.06, T.zw], [xb, yB - 0.06, T.zw], [xt, yB - 0.06, zr], [xt, yB + 0.06, zr], PAINT);
+        strip(s, yWs - 0.1, yWs, yWs - T.ws - 0.07, yWs - T.ws);
+        strip(s, yB - 0.06, yB + 0.06, yB - 0.06, yB + 0.06);
+        const cw = t === 'kombi' || t === 'suv' ? 0.2 : 0.42;
+        strip(s, yC0, yC0 + cw, yC0 + T.rs, yC0 + T.rs + cw * 0.7);
       }
     }
     // lamps and plates
@@ -287,22 +298,44 @@ export const DMOD = (() => {
         nz = Math.max(1, Math.round(hh / 0.9));
       for (let z = 0; z < nz; z++) k.box(0, 0, z * 0.9, w - 0.02, l - 0.02, 0.88, 0, z % 2 ? ST2 : ST, z === 0);
     },
-    // a woodpile of split logs: a block of end grain with a little roof of boards or sheet
+    // a stack of sawn timber or split wood: layers of boards (light) with dark gaps between (the stickers), a tarp over the top that hangs
+    // down a little at the sides
     holzstapel(k, { l, w, h }) {
       const hh = h || 1.4,
-        WD = L(0.48, 0.36, 0.24),
-        END = L(0.62, 0.48, 0.32),
-        SH = L(0.3, 0.3, 0.32);
-      k.box(0, 0, 0, w, l, hh, 0, END);
-      // the bark on top and the sides along the pile
-      k.quad(
-        [-w / 2, -l / 2, hh + 0.002],
-        [w / 2, -l / 2, hh + 0.002],
-        [w / 2, l / 2, hh + 0.002],
-        [-w / 2, l / 2, hh + 0.002],
-        WD
-      );
-      k.box(0, 0, hh + 0.05, w + 0.15, l + 0.1, 0.03, 0, SH);
+        WD = L(0.66, 0.52, 0.35),
+        WD2 = L(0.58, 0.45, 0.3),
+        GAP = L(0.27, 0.2, 0.14),
+        TARP = L(0.72, 0.74, 0.76),
+        x0 = -w / 2,
+        x1 = w / 2,
+        y0 = -l / 2,
+        y1 = l / 2,
+        n = Math.max(3, Math.round(hh / 0.16));
+      for (let i = 0; i < n; i++) {
+        const za = (i * hh) / n,
+          zb = ((i + 1) * hh) / n,
+          zg = zb - 0.035,
+          col = i % 2 ? WD : WD2;
+        // the four sides of this layer: wood, then the dark gap above it
+        for (const [z0, z1, c] of [
+          [za, zg, col],
+          [zg, zb, GAP],
+        ]) {
+          k.quad([x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1], c);
+          k.quad([x1, y1, z0], [x0, y1, z0], [x0, y1, z1], [x1, y1, z1], c);
+          k.quad([x0, y1, z0], [x0, y0, z0], [x0, y0, z1], [x0, y1, z1], c);
+          k.quad([x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1], c);
+        }
+      }
+      // the tarp: the top and flaps 0.35 m down each side, a hand's breadth out
+      const e = 0.04,
+        zt = hh + 0.02,
+        zf = hh - 0.35;
+      k.quad([x0 - e, y0 - e, zt], [x1 + e, y0 - e, zt], [x1 + e, y1 + e, zt], [x0 - e, y1 + e, zt], TARP);
+      k.quad([x1 + e, y0 - e, zf], [x1 + e, y1 + e, zf], [x1 + e, y1 + e, zt], [x1 + e, y0 - e, zt], TARP);
+      k.quad([x1 + e, y1 + e, zf], [x0 - e, y1 + e, zf], [x0 - e, y1 + e, zt], [x1 + e, y1 + e, zt], TARP);
+      k.quad([x0 - e, y1 + e, zf], [x0 - e, y0 - e, zf], [x0 - e, y0 - e, zt], [x0 - e, y1 + e, zt], TARP);
+      k.quad([x0 - e, y0 - e, zf], [x1 + e, y0 - e, zf], [x1 + e, y0 - e, zt], [x0 - e, y0 - e, zt], TARP);
     },
     // a pile of logs (round wood) along y
     stammholz(k, { l, w, h }) {
@@ -395,6 +428,43 @@ export const DMOD = (() => {
         const a = (i / 6) * Math.PI * 2;
         k.box(Math.cos(a) * (r - 0.1), Math.sin(a) * (r - 0.1), 0, 0.05, 0.05, 0.88, 0, ST);
       }
+    },
+    // a motorhome (Teilintegrierter on a van chassis): the van's cab in front, the white living box over it, windows, two axles
+    wohnmobil(k, { l, w }) {
+      const L0 = Math.max(6, Math.min(8, l)),
+        hw = Math.min(w, 2.35) / 2,
+        WH = L(0.93, 0.93, 0.91),
+        yF = L0 / 2,
+        yR = -L0 / 2,
+        yC = yF - 1.5;
+      prism(
+        k,
+        [-hw + 0.1, hw - 0.1, yC, yF - 0.05],
+        [-hw + 0.14, hw - 0.14, yC, yF - 0.45],
+        0.45,
+        1.25,
+        WH,
+        true,
+        true
+      );
+      k.quad(
+        [-hw + 0.25, yF - 0.673, 1.95],
+        [hw - 0.25, yF - 0.673, 1.95],
+        [hw - 0.18, yF - 0.498, 1.3],
+        [-hw + 0.18, yF - 0.498, 1.3],
+        GLASS
+      );
+      prism(k, [-hw, hw, yR, yC + 0.2], [-hw + 0.03, hw - 0.03, yR + 0.05, yC + 0.05], 0.45, 2.95, WH, true, true);
+      prism(k, [-hw + 0.1, hw - 0.1, yC, yF - 0.5], [-hw + 0.12, hw - 0.12, yC, yF - 0.7], 1.25, 2.0, WH, false);
+      for (const s of [-1, 1]) {
+        const x = s * (hw + 0.005);
+        for (const yc of [yR + 1.2, yC - 1.4])
+          if (s > 0) k.quad([x, yc - 0.45, 1.5], [x, yc + 0.45, 1.5], [x, yc + 0.45, 2.1], [x, yc - 0.45, 2.1], GLASS);
+          else k.quad([x, yc + 0.45, 1.5], [x, yc - 0.45, 1.5], [x, yc - 0.45, 2.1], [x, yc + 0.45, 2.1], GLASS);
+        wheel(k, s * (hw - 0.02), yF - 0.95, 0.36, 0.22);
+        wheel(k, s * (hw - 0.02), yR + 1.6, 0.36, 0.22);
+      }
+      k.box(0, 0, 0.3, 2 * hw - 0.2, L0 - 0.4, 0.15, 0, DARK);
     },
     // a box lorry: cab in front (y), the box behind, two axles
     lkw(k, { l, w, h, c }) {

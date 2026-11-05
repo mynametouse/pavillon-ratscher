@@ -30,10 +30,7 @@ export const DINGE = (() => {
     held: 0,
     frozen: false,
     // the areas with their data (dist/dinge/<id>.json), loaded when the observer comes within r of the centre
-    areas: [
-      { id: 'ratscher', c: [150, -150], r: 2200, cell: 120 },
-      { id: 'schleusingen', c: [-1000, 1150], r: 1700, cell: 200 },
-    ],
+    areas: [{ id: 'ratscher', c: [150, -150], r: 2200, cell: 120 }],
     err: null,
   };
   if (!DMOD.on || !window.RATSCHER || !RATSCHER.on) return S;
@@ -55,7 +52,8 @@ export const DINGE = (() => {
     [160, 135, 100],
     [210, 160, 30],
   ].map(c => new THREE.Color().setRGB(c[0] / 255, c[1] / 255, c[2] / 255, THREE.SRGBColorSpace));
-  const TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van'],
+  const ROUND = new Set(['tank', 'pool_rund', 'trampolin']),
+    TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van'],
     KINDS = ['hof', 'strasse', 'betrieb', 'stadt'];
   const frac = v => v - Math.floor(v),
     hash = (a, b) => frac(Math.sin(a * 12.9898 + b * 78.233 + 0.5) * 43758.5453);
@@ -387,7 +385,30 @@ export const DINGE = (() => {
             z0: d.z,
             z1: d.z + Math.max(0.3, d.h || 1),
           };
-        if (d.t !== 'pool_eckig') c.extra.push({ box: () => bx, dinge: d });
+        if (ROUND.has(d.t)) {
+          // round things: a ring of thin walls along the rim (a box would stand out at its corners)
+          const r = d.w / 2,
+            n = r > 6 ? 16 : 10;
+          for (let i = 0; i < n; i++) {
+            const a0 = (i / n) * Math.PI * 2,
+              a1 = ((i + 1) / n) * Math.PI * 2,
+              mx = d.x + (Math.sin(a0) + Math.sin(a1)) * r * 0.5,
+              my = d.y + (Math.cos(a0) + Math.cos(a1)) * r * 0.5,
+              ux = Math.sin(a1) - Math.sin(a0),
+              uy = Math.cos(a1) - Math.cos(a0),
+              ul = Math.hypot(ux, uy) || 1,
+              wb = {
+                c: [mx, my],
+                ax: [-uy / ul, ux / ul],
+                ay: [ux / ul, uy / ul],
+                ex: 0.15,
+                ey: (ul * r) / 2 + 0.05,
+                z0: bx.z0,
+                z1: bx.z1,
+              };
+            c.extra.push({ box: () => wb, dinge: d });
+          }
+        } else if (d.t !== 'pool_eckig') c.extra.push({ box: () => bx, dinge: d });
       }
       if (G.length) {
         const g = mergeGeometries(G);

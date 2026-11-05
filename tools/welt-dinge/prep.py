@@ -25,13 +25,14 @@ PAL = [('schwarz', (18, 18, 20)), ('dunkelgrau', (58, 60, 64)), ('silber', (150,
        ('dunkelblau', (25, 38, 72)), ('blau', (52, 92, 160)), ('rot', (150, 22, 20)), ('dunkelgruen', (30, 62, 40)),
        ('beige', (160, 135, 100)), ('gelb', (210, 160, 30))]
 # the hand-modelled grounds (garden, the neighbours, the brook): their own things, nothing from the photo there
-SKIP = [(-50, 42, -52, 48)]
+SKIP = [(-58, 42, -52, 48)]
 # works yards: the agricultural cooperative west of the garden, the yards at the east end of the village
 WORKS = [(-150, -40, -165, -30), (295, 450, -330, -220)]
 HEIGHT = {'auto': 1.5, 'van': 2.3, 'wohnmobil': 3.0, 'lkw': 3.6, 'anhaenger': 1.0, 'wohnwagen': 2.6, 'traktor': 2.8,
           'pool_rund': 1.1, 'pool_eckig': 0.1, 'trampolin': 0.9, 'rundballen': 1.5, 'quaderballen': 1.8, 'holzstapel': 1.6,
           'stammholz': 1.2, 'container': 2.6, 'tank': 3.0}
 HAZE = np.array([55.0, 70.0, 86.0])
+S_DRIVING = []
 SUN = (-0.34, 0.94)  # where the shadows of the photo fall (07.04.2024, late morning): north-north-west, ~1 m per m of height
 
 
@@ -110,10 +111,19 @@ def colour(photo, k):
 
 def main():
     gebiet = sys.argv[1]
-    photo = Photo(sys.argv[2:])
+    photo = Photo([a for a in sys.argv[2:] if not a.startswith('--')][:4])
+    # nothing of ours on a building that stands in 3D (OSM, the old town, welt-gebaeude's ETHOS buildings): a tank or shed that is a
+    # building there, a 'car' that was a roof window
+    from shapely.geometry import Polygon
+    from shapely.strtree import STRtree
+    geb = sys.argv[sys.argv.index('--geb') + 1] if '--geb' in sys.argv else None
+    FP = wdlib.footprints(geb)
+    tree = STRtree(FP)
+    dropped = []
     P = json.load(open(os.path.join(EXTRA, f'pruefung_{gebiet}.json')))
     ways = [w for w in wdlib.roads() + (wdlib.roads_fahrt() if gebiet != 'ratscher' else []) if w['kind'] <= 5]
     autos, dinge, masks = [], [], []
+    S_DRIVING.clear()
     for n, k in enumerate(P['ja'] + P.get('dazu', [])):
         x, y, t = k['x'], k['y'], k['t']
         if in_rect(x, y, SKIP):
@@ -128,13 +138,25 @@ def main():
                 best = (d - w['w'] / 2, d, q, u, w)
         edge, d, q, u, w = best
         h = k.get('h') or HEIGHT.get(t if t in HEIGHT else 'auto', 1.5)
+        hl0, hw0 = k['l'] / 2, k['w'] / 2
+        r0 = (ax[1], -ax[0])
+        box = Polygon([(x + ax[0] * hl0 * i + r0[0] * hw0 * j, y + ax[1] * hl0 * i + r0[1] * hw0 * j) for i, j in ((1, 1), (1, -1), (-1, -1), (-1, 1))])
+        if t in ('tank', 'pool_rund', 'trampolin'):
+            box = box.centroid.buffer(hw0, 16)
+        over = sum(box.intersection(FP[i]).area for i in tree.query(box))
+        if over > 0.25 * box.area:
+            dropped.append((t, round(x, 1), round(y, 1), round(over / box.area, 2)))
+            continue
         # the mask: the box with a margin, stretched towards where its shadow fell
         hl, hw = k['l'] / 2 + 0.35, k['w'] / 2 + 0.35
         r = (ax[1], -ax[0])
         C = [(x + ax[0] * hl * i + r[0] * hw * j, y + ax[1] * hl * i + r[1] * hw * j) for i, j in ((1, 1), (1, -1), (-1, -1), (-1, 1))]
         sh = [(cx + SUN[0] * h, cy + SUN[1] * h) for cx, cy in C]
         masks.append(hull(C + sh))
-        if t in ('auto', 'van', 'wohnmobil'):
+        if t in ('auto', 'van') and edge < -1.0 and w['kind'] <= 2:
+            S_DRIVING.append((x, y))  # in the lane of a main or county road: driving when the photo was taken, no parking place
+            continue
+        if t in ('auto', 'van'):
             kind = 'betrieb' if in_rect(x, y, WORKS) else ('strasse' if edge < 2.5 else 'hof')
             if kind == 'strasse':
                 o = (x - q[0], y - q[1])
@@ -146,7 +168,7 @@ def main():
                 o = (x - q[0], y - q[1])
                 dirv = ax if o[0] * ax[0] + o[1] * ax[1] >= 0 else (-ax[0], -ax[1])
             az = (math.degrees(math.atan2(dirv[0], dirv[1])) + 360) % 360
-            if t == 'van' or t == 'wohnmobil':
+            if t == 'van':
                 ty = 4
             else:
                 L = k['l']
@@ -176,7 +198,8 @@ def main():
     json.dump(U, open(os.path.join(EXTRA, 'maske_dinge_utm.json'), 'w'), separators=(',', ':'))
     from collections import Counter
     print(gebiet, len(autos), 'cars', dict(Counter(TYPES[a[3]] for a in autos)), dict(Counter(['hof', 'strasse', 'betrieb'][a[5]] for a in autos)),
-          dict(Counter(PAL[a[4]][0] for a in autos)), len(dinge), 'things', dict(Counter(d[0] for d in dinge)), len(masks), 'masks')
+          dict(Counter(PAL[a[4]][0] for a in autos)), len(dinge), 'things', dict(Counter(d[0] for d in dinge)), len(masks), 'masks',
+          len(S_DRIVING), 'driving (left out)', len(dropped), 'on buildings (left out):', dropped[:12])
 
 
 def hull(pts):
