@@ -88,9 +88,9 @@ with lib.browser() as b:
         steps(0.17); pic('05_schlag_1')
         steps(0.11); pic('06_schlag_2')
         E("ZWAFFE.release()"); steps(1.0)
-        # a hit on a held zombie in front: damage and wear
+        # a hit on a held zombie in front (aware of us – a blow on one unaware counts three times, zombie/z_horde.js): damage and wear
         E("""(() => { const P = GAME.P, a = P.yaw * Math.PI / 180, e = ZHORDE.ent(ZFIG.people()[0], P.x + Math.sin(a) * 1.0, P.y + Math.cos(a) * 1.0, P.feet, P.yaw + 180);
-          e.hold = 'idle'; e.hp = 500; window.__z1 = e.id; })()""")
+          e.hold = 'idle'; e.st = 'chase'; e.hp = 500; window.__z1 = e.id; })()""")
         steps(0.2)
         h0 = E("ZSTATE.ents.find(e => e.id === __z1).hp")
         c0 = E("ZWAFFE.state('nagelbrett').cond")
@@ -122,7 +122,7 @@ with lib.browser() as b:
         page_pic('07_panel_reparieren')
         E("ZWERK.close()")
         E("""(() => { const P = GAME.P, a = P.yaw * Math.PI / 180, e = ZSTATE.ents.find(q => q.id === __z1);
-          e.x = P.x + Math.sin(a) * 1.1; e.y = P.y + Math.cos(a) * 1.1; e.z = P.feet; e.hp = 500; })()""")
+          e.x = P.x + Math.sin(a) * 1.1; e.y = P.y + Math.cos(a) * 1.1; e.z = P.feet; e.hp = 500; e.st = 'chase'; })()""")
         steps(0.2)
         h0 = E("ZSTATE.ents.find(e => e.id === __z1).hp")
         E("ZSTATE.stam = 100; ZWAFFE.press()"); steps(0.55); E("ZWAFFE.release()"); steps(0.8)
@@ -140,9 +140,50 @@ with lib.browser() as b:
         E("GAME.shot()")
         p1 = progs()
         ck('no new shader programs (the workbench, the nail board)', p1 <= p0, f'{p0} → {p1}')
+        # ---- a cellar bench in a village house: first its drawer is searched, then one crafts there ----
+        cand = J("""(() => { GAME.go('dorf'); const P = GAME.P;
+          return ZHAUS.doors().map(h => ({ id: h.id, d: Math.hypot(h.door.x - P.x, h.door.y - P.y) })).filter(o => o.d > 4)
+            .sort((a, b) => a.d - b.d).slice(0, 40).filter(o => { try { return ZINNEN.info(o.id).cellar; } catch (e) { return false; } })
+            .slice(0, 5).map(o => o.id); })()""")
+        found = None
+        for hid in cand:
+            E(f"(async () => {{ await ZHAUS.enter(ZHAUS.doors().find(h => h.id === {hid})); }})()")
+            for i in range(40):
+                time.sleep(0.4)
+                if E("!!ZHAUS.H && !ZHAUS.busy"): break
+            steps(0.2)
+            if E("!!(ZHAUS.H && ZHAUS.H.containers.some(c => c.kind === 'werkbank'))"):
+                found = hid; break
+            E("(async () => { await ZHAUS.leave(); })()")
+            for i in range(30):
+                time.sleep(0.4)
+                if E("!ZHAUS.H && !ZHAUS.busy"): break
+        if found is None:
+            print('note: no cellar bench in the', len(cand), 'houses tried', cand, flush=True)
+        else:
+            E("""(() => { const H = ZHAUS.H, c = H.containers.find(c => c.kind === 'werkbank'), r = H.rooms.find(q => q.id === c.room) || H.rooms[0],
+              cx = r.poly.reduce((s, q) => s + q[0], 0) / r.poly.length, cy = r.poly.reduce((s, q) => s + q[1], 0) / r.poly.length,
+              dx = cx - c.pos[0], dy = cy - c.pos[1], L = Math.hypot(dx, dy) || 1, P = GAME.P;
+              P.x = c.pos[0] + (dx / L) * 0.8; P.y = c.pos[1] + (dy / L) * 0.8; P.feet = GAME.floorAt(P.x, P.y, c.pos[2] - 0.4);
+              P.yaw = P.body = Math.atan2(c.pos[0] - P.x, c.pos[1] - P.y) * 180 / Math.PI; P.pitch = -20; window.__wb = c.id; })()""")
+            steps(0.4)
+            lab1 = E("(() => { const b = document.getElementById('doorbtn'); return b && !b.hidden ? b.textContent : ''; })()")
+            E("KERN.acts().find(a => a.id === 'c:' + __wb).run()")
+            steps(0.6)
+            lab2 = E("(() => { const b = document.getElementById('doorbtn'); return b && !b.hidden ? b.textContent : ''; })()")
+            ck('in a cellar: first „Werkbank durchsuchen“, then „An der Werkbank basteln“', 'durchsuchen' in lab1 and 'Werkbank basteln' in lab2, f'{lab1!r} → {lab2!r}')
+            E("PLAY.primary()"); steps(0.3)
+            inf = J("ZWERK.info()")
+            ck('the panel opens at the cellar bench', inf['open'] and inf['where'] == 'haus', str(inf)[:200])
+            page_pic('09_keller')
+            E("ZWERK.close()")
+            E("(async () => { await ZHAUS.leave(); })()")
+            for i in range(30):
+                time.sleep(0.4)
+                if E("!ZHAUS.H && !ZHAUS.busy"): break
     if 'molotow' in SECT:
         # ---- the molotov: at the Anger (the shared lights are lent beyond 60 m of the pavilion), at dusk, two held zombies 4.5 m ahead ----
-        E("ZSTATE.add('molotow', 3); CLOCK.focus('zwtest')")
+        E("CLOCK.focus('zwtest')")
         E("(() => { const d = Math.floor(CLOCK.t / 1440); CLOCK.t = d * 1440 + ZOMBIE.times().siren - 12; })()")
         lib.settle_light(pg)
         E("GAME.go('dorf'); CAM3.want = false; PLAY.give(ZWAFFE.thing('beil'))")
@@ -157,9 +198,11 @@ with lib.browser() as b:
             steps(0.2); time.sleep(0.5)
         steps(0.3)
         pic('m0_vorher')
-        # the molotov's things drawn once as specks (zombie/z_werk_molotow.js warm – it runs by itself when the first molotov is in the
-        # backpack; here it is made sure of), then the count
-        E("ZMOLO.warm()"); steps(0.05); E("GAME.shot()"); steps(0.05); E("GAME.shot()"); steps(0.2); E("GAME.shot()")
+        pA = progs()
+        keysA = J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])")
+        # three molotovs in the backpack: their flames and the bottle are drawn once as specks (zombie/z_werk_molotow.js warm – it runs
+        # by itself with the first molotov; the test loop draws only on GAME.shot, so it is re-armed here), then the count
+        E("ZSTATE.add('molotow', 3); ZMOLO.warm(true)"); steps(0.05); E("GAME.shot()"); steps(0.05); E("GAME.shot()"); steps(0.2); E("GAME.shot()")
         pm0 = progs()
         keys0 = J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])")
         hud = E("document.getElementById('zwk').textContent")
@@ -222,19 +265,27 @@ with lib.browser() as b:
         E("GAME.shot()")
         pm1 = progs()
         keys1 = J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])")
-        old_set = set(k for _, k in keys0)
-        diffs = []
-        for n, k in keys1:
-            if k in old_set: continue
-            ks = k.split(','); best = None
-            for n0, k0 in keys0:
-                if n0 != n: continue
-                k0s = k0.split(',')
-                d = [(i, a, b) for i, (a, b) in enumerate(zip(k0s, ks)) if a != b] + ([('len', len(k0s), len(ks))] if len(k0s) != len(ks) else [])
-                if best is None or len(d) < len(best): best = d
-            diffs.append((n, (best or [])[:6]))
-        print('new programs (name, differing key fields old → new):', diffs, flush=True)
-        ck('no new shader programs by the molotov (throw, flight, fire, burning)', pm1 <= pm0, f'{pm0} → {pm1}')
+        def new_progs(before, after):
+            old_set = set(k for _, k in before)
+            out = []
+            for n, k in after:
+                if k in old_set: continue
+                ks = k.split(','); best = None
+                for n0, k0 in before:
+                    if n0 != n: continue
+                    k0s = k0.split(',')
+                    d = [(i, a, b) for i, (a, b) in enumerate(zip(k0s, ks)) if a != b] + ([('len', len(k0s), len(ks))] if len(k0s) != len(ks) else [])
+                    if best is None or len(d) < len(best): best = d
+                out.append((n, (best or [])[:4]))
+            return out
+        import re as _re
+        fig = lambda l: [x for x in l if _re.match(r'^[a-z]+\d+_', x[0] or '')]  # the people's own materials (zombie/z_fig.js): theirs, not ours
+        warmNew, fireNew = new_progs(keysA, keys0), new_progs(keys0, keys1)
+        print('programs the warm-up compiled (name, differing key fields):', warmNew, flush=True)
+        print('programs compiled during the throw and the fire:', fireNew, flush=True)
+        ours = [x for x in fireNew if x not in fig(fireNew)]
+        ck('nothing compiled when throwing, flying, burning (the figures\' own aside)', not ours, f'{pm0} → {pm1}: {ours}')
+        ck('the flames need at most their transparent variants of the plain program (world, overlay), compiled ahead', len([x for x in warmNew if x not in fig(warmNew)]) <= 2, f'{pA} → {pm0}: {warmNew}')
         E("CLOCK.unfocus('zwtest'); for (const id of __zm) { const e = ZSTATE.ents.find(q => q.id === id); if (e) ZHORDE.remove(e); }")
         steps(0.3)
     if 'reload' in SECT:

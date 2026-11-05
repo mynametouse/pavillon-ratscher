@@ -188,10 +188,10 @@ export const ZMOLO = (() => {
       M: {
         glass: plain({ color: 0x2e5a2a, roughness: 0.12, metalness: 0.1 }),
         rag: plain({ color: 0xcfc4a6, roughness: 0.95 }),
-        outer: fl(0xff4a0c, 1.6, 0.5, THREE.FrontSide),
-        inner: fl(0xffa23a, 1.5, 0.55, THREE.FrontSide),
-        hOuter: fl(0xff5a14, 1.6, 0.55, THREE.DoubleSide),
-        hInner: fl(0xffb04a, 1.5, 0.6, THREE.DoubleSide),
+        outer: fl(0xff3c08, 1.15, 0.45, THREE.FrontSide),
+        inner: fl(0xff9a2e, 1.05, 0.5, THREE.FrontSide),
+        hOuter: fl(0xff4608, 2.0, 0.6, THREE.DoubleSide),
+        hInner: fl(0xffa232, 2.0, 0.7, THREE.DoubleSide),
       },
     };
     G.world = field(96, { outer: G.M.outer, inner: G.M.inner });
@@ -209,8 +209,8 @@ export const ZMOLO = (() => {
   }
   // the shaders of the flames and the bottle compiled once, before the first throw: drawn for two frames as specks at the camera, in the
   // world and in the hands' overlay (renderer.compile would build them for another tone mapping and colour space than the composer's)
-  function warm() {
-    if (S.warmed || !Z.on) return;
+  function warm(again) {
+    if ((S.warmed && !again) || !Z.on) return;
     S.warmed = true;
     try {
       build();
@@ -324,6 +324,8 @@ export const ZMOLO = (() => {
   ZFP.reset();
   const hp0 = new THREE.Vector3(),
     _v = new THREE.Vector3();
+  S.handAt = new THREE.Vector3();
+  S.handQ = new THREE.Quaternion();
   function clip() {
     const id = ZWAFFE.cur(),
       fist = id === 'faust',
@@ -375,10 +377,13 @@ export const ZMOLO = (() => {
     g.hand.updateMatrixWorld(true);
     hp0.set(0.006, RAG, 0).applyMatrix4(g.hand.matrixWorld);
     S.ragAt = hp0;
+    // where the bottle is in the world – the thrown one goes on from there, turned the same way
+    g.hand.getWorldPosition(S.handAt);
+    g.hand.getWorldQuaternion(S.handQ);
     g.held.list.length = 0;
     if (T.lit) {
       const k = Math.min(1, (T.t - T.litT) / 0.25);
-      g.held.list.push({ x: hp0.x, y: hp0.y - 0.012, z: hp0.z, h: 0.1, w: 0.05, ph: 1.3, k: 0.4 + 0.6 * k });
+      g.held.list.push({ x: hp0.x, y: hp0.y - 0.015, z: hp0.z, h: 0.14, w: 0.055, ph: 1.3, k: 0.4 + 0.6 * k });
     }
     writeField(g.held, performance.now() / 1000);
   }
@@ -412,11 +417,13 @@ export const ZMOLO = (() => {
       fy = Math.cos(yaw) * Math.cos(pitch),
       fz = Math.sin(pitch);
     let x, y, z;
+    const q0 = new THREE.Quaternion();
     if (T.fp && S.ragAt) {
-      // three → site: (x, z, −y)
-      x = S.ragAt.x;
-      y = -S.ragAt.z;
-      z = S.ragAt.y - 0.1;
+      // from the hand's bottle (three → site: x, z, −y)
+      x = S.handAt.x;
+      y = -S.handAt.z;
+      z = S.handAt.y;
+      q0.copy(S.handQ);
     } else {
       x = P.x + Math.sin(yaw) * 0.35 + Math.cos(yaw) * -0.2;
       y = P.y + Math.cos(yaw) * 0.35 - Math.sin(yaw) * -0.2;
@@ -442,18 +449,30 @@ export const ZMOLO = (() => {
       vy: fy * THROW.v + (P.mvy || 0) * 0.5,
       vz: fz * THROW.v + THROW.up,
       t: 0,
-      spin: [5 + Math.random() * 4, (Math.random() - 0.5) * 6],
+      // the bottle tumbles end over end about its own x, a little about z
+      spin: [-(7 + Math.random() * 4), (Math.random() - 0.5) * 3],
+      q0,
       ph: Math.random() * 6,
     };
+    // in third person: the neck forward and up along the throw
+    if (!(T.fp && S.ragAt)) q0.setFromUnitVectors(_up.set(0, 1, 0), _v.set(fx, fz + 0.4, -fy).normalize());
     S.bottles.push(B);
     S.stats.thrown++;
     ZTON.swing(P.x, P.y, 'beil');
     place(B);
   }
+  const _up = new THREE.Vector3(),
+    _e = new THREE.Euler(),
+    _q2 = new THREE.Quaternion();
   function place(B) {
     const b = B.g;
-    b.position.set(B.x, B.z, -B.y);
-    b.rotation.set(B.t * B.spin[0], B.t * B.spin[1], B.ph);
+    // turned about its middle (0.15 m up the bottle), not about its bottom
+    _q2.setFromEuler(_e.set(B.t * B.spin[0], 0, B.t * B.spin[1]));
+    b.quaternion.copy(B.q0).multiply(_q2);
+    _v.set(0, 0.15, 0)
+      .applyQuaternion(B.q0)
+      .sub(_up.set(0, 0.15, 0).applyQuaternion(b.quaternion));
+    b.position.set(B.x + _v.x, B.z + _v.y, -B.y + _v.z);
     b.updateMatrixWorld(true);
   }
   // ---- the flight: gravity, small steps; the ground, a wall (the walls and boxes the walker collides with), a zombie ----
@@ -539,11 +558,13 @@ export const ZMOLO = (() => {
         });
       }
     };
-    f.tongues.push({ dx: 0, dy: 0, h: 1.45, w: 0.5, ph: Math.random() * 9 });
-    f.tongues.push({ dx: 0.18, dy: -0.12, h: 1.1, w: 0.42, ph: Math.random() * 9 });
-    ring(5, 0.55, 1.0, 0.4);
-    ring(7, 1.05, 0.66, 0.32);
-    ring(7, 1.42, 0.34, 0.27);
+    // a pool of burning petrol: wide tongues that overlap into one sheet, tall in the middle, low and licking at the rim
+    f.tongues.push({ dx: 0, dy: 0, h: 1.8, w: 0.75, ph: Math.random() * 9 });
+    f.tongues.push({ dx: 0.25, dy: -0.15, h: 1.4, w: 0.6, ph: Math.random() * 9 });
+    f.tongues.push({ dx: -0.2, dy: 0.22, h: 1.3, w: 0.6, ph: Math.random() * 9 });
+    ring(6, 0.6, 1.1, 0.6);
+    ring(8, 1.05, 0.75, 0.52);
+    ring(8, 1.4, 0.42, 0.44);
     // which light slot (two borrowers below)
     const used = new Set(S.fires.map(q => q.slot));
     f.slot = [0, 1].find(i => !used.has(i)) ?? 0;
@@ -568,7 +589,9 @@ export const ZMOLO = (() => {
     markDirty();
   }
   // how strong a fire is now: grows in 0.35 s, burns, dies down over the last 1.5 s
-  const strength = f => Math.min(1, f.t / 0.35) * Math.min(1, Math.max(0, (FIRE.life - f.t) / 1.5));
+  // (the petrol's first whoosh: half again as high for a moment)
+  const strength = f =>
+    Math.min(1, f.t / 0.35) * Math.min(1, Math.max(0, (FIRE.life - f.t) / 1.5)) * (1 + 0.5 * Math.exp(-f.t * 1.6));
   // ---- burning zombies ----
   function ignite(e, net) {
     if (!e || e.kind !== 'zombie') return;
