@@ -1245,6 +1245,30 @@ export const ZHORDE = (() => {
     }
     return best;
   }
+  // feat/zombie-ziele: the last wave (the bus at the old school, zombie/z_ziele_bus.js) – n more out of the doors 35–110 m around (x, y),
+  // and every zombie of the night out of doors that is not hunting anybody heads there; returns how many came
+  function wave(x, y, n = 0) {
+    if (S.guest) return 0;
+    const to = e => {
+      e.st = 'search';
+      e.tx = x + (rnd() - 0.5) * 8;
+      e.ty = y + (rnd() - 0.5) * 8;
+      e.t = 0;
+    };
+    for (const e of Z.ents)
+      if (e.kind === 'zombie' && !e.dead && !e.net && !e.house && (e.st === 'wander' || e.st === 'search')) to(e);
+    const spots = n > 0 ? doorSpots({ x, y }) : [];
+    let made = 0;
+    for (let i = 0; i < n && spots.length; i++) {
+      const s = spots[Math.floor(rnd() * spots.length)],
+        key = pickKey();
+      if (!key) break;
+      const e = ent(key, s.x + (rnd() - 0.5), s.y + (rnd() - 0.5), KERN.ground(s.x, s.y), s.hd);
+      to(e);
+      made++;
+    }
+    return made;
+  }
   KERN.tick(tick, 'zombie/horde');
   Object.assign(S, {
     me,
@@ -1269,6 +1293,7 @@ export const ZHORDE = (() => {
     dawn,
     clear,
     nearest,
+    wave, // feat/zombie-ziele
   });
   return S;
 })();

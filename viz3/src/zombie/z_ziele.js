@@ -7,7 +7,7 @@
 //   day 1    Huberts Flinte → Hubert fragen → Vorräte → ein Haus vernageln          (the siren: night 1)
 //   day 2    Ronald hat Hunger → Benzin für die Säge → mehr Vorräte → das Haus dicht   (night 2)
 //   day 3    the radio announces the bus (zombie/z_ziele_bus.js)                       (night 3: the bus at 4:00, the ending)
-// What is left at dusk waits for the next day (the first day is short: four game hours, four minutes at the usual pace); the night has its
+// What is left at dusk waits for the next day (the first day is short: four game hours on „normal“, four minutes at the usual pace); the night has its
 // own task – hold out until the siren, survive until the morning, with a hint where it is safest. Every step is a check of what is real
 // (Z, ZBUND, the houses), so what was done out of order counts at once, and every target follows the world: the gun where it lies,
 // Hubert where he walks, the nearest house not searched yet, inside a house the next cupboard or the next window without boards.
@@ -46,7 +46,6 @@ export const ZZIEL = (() => {
   };
   const hs = id => Z.houses[id] || null; // (read only – Z.house(id) would make an entry)
   const searched = id => !!(hs(id) && hs(id).looted && hs(id).looted.length);
-  const barred = id => (hs(id) && hs(id).bar ? Object.values(hs(id).bar).filter(v => v >= 50).length : 0);
   const doorPt = h => [h.door.x + h.door.nx * 1.4, h.door.y + h.door.ny * 1.4, (h.door.z || 0) + 2.4];
   const owner = id => {
     try {
@@ -444,8 +443,13 @@ export const ZZIEL = (() => {
     return id;
   }
   for (let n = 1; n <= 3; n++) defNight(n);
-  const NIGHTS = { custom: {} }; // night n → id of its own task (z_ziele_bus.js: night 3 is the bus)
-  const nightId = n => NIGHTS.custom[n] || defNight(n);
+  const NIGHTS = { custom: {} }; // night n → the id of its own task, or a function giving it (zombie/z_ziele_bus.js: night 3 is the bus)
+  const nightId = n => {
+    const c = NIGHTS.custom[n];
+    return (typeof c === 'function' ? c() : c) || defNight(n);
+  };
+  // the night tasks whose first step waits for the siren (passed at once when the night has begun): ours, and the bus of night 3
+  const SIREN = id => /^zz-nacht\d+$/.test(id) || (NIGHTS.siren && NIGHTS.siren.includes(id));
   // ---- the chain: which objective runs now, the task card follows it ----
   const mine = k => typeof k === 'string' && /^(aufgaben:)?zz-/.test(k);
   function track(id) {
@@ -476,16 +480,15 @@ export const ZZIEL = (() => {
         st = TASKS.state(id);
       }
       // the siren has sounded: past „hold out until the siren“
-      if (st && st.st === 'läuft' && st.i === 0) TASKS.advance(id);
+      if (st && st.st === 'läuft' && st.i === 0 && SIREN(id)) TASKS.advance(id);
       cur = id;
     } else {
-      for (const o of OBJ) {
-        if (o.day > day) break;
-        const st = TASKS.state(o.id);
-        if (st && st.st === 'erledigt') continue;
-        if (!st) TASKS.start(o.id);
+      // the first objective of the days so far not done yet – one of today marked 'first' before what is left of earlier days
+      const open = OBJ.filter(o => o.day <= day && !(TASKS.state(o.id) && TASKS.state(o.id).st === 'erledigt')),
+        o = open.find(q => q.first && q.day === day) || open[0];
+      if (o) {
+        if (!TASKS.state(o.id)) TASKS.start(o.id);
         cur = o.id;
-        break;
       }
       // all done before dusk: the night's task begins (hold out until the siren)
       if (!cur) {
@@ -508,7 +511,7 @@ export const ZZIEL = (() => {
     if (!mine(QUESTS.track)) S.prevTrack = QUESTS.track;
     if (d && d.fresh) {
       resetAll();
-      S.wait = 2.5; // the intro first
+      S.wait = 4; // the intro first (its big lines, then the banner of the first task)
     } else S.wait = 0.6;
     for (let n = 1; n <= Math.max(3, Z.night + 1); n++) nightId(n);
     S.cur = null;
