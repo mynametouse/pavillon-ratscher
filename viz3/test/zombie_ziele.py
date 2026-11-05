@@ -329,11 +329,12 @@ with lib.browser() as b:
           P.yaw = P.body = Math.atan2(ZBUS.x - P.x, ZBUS.y - P.y) * 180 / Math.PI; P.pitch = 2; for (const e of ZSTATE.ents) e.hold = 'idle'; }})()""")
         steps(0.4)
         pic('09_bus_steht')
-        # (the people's own materials – zombie/z_fig.js, names like f009_opacity – may come with a figure of the last wave seen for the first time:
-        # theirs, not the coach's)
+        # the coach's own materials: each drawn with a program that was there before it came (what else came meanwhile – the people of the last
+        # wave seen for the first time, their blood – is not the coach's)
         newp = [n for n, k in J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])") if k not in K1]
-        ours = [n for n in newp if not re.match(r'^[a-z]+\d+_', n or '')]
-        ck('no new shader program for the coach (plain materials, a borrowed light)', not ours, f'{p1} -> {progs()}: {newp}')
+        busk = J("(() => { const out = []; ZBUS.g.traverse(o => { if (!o.material) return; for (const m of [].concat(o.material)) { const p = GAME.R.properties.get(m).currentProgram; if (p) out.push(p.cacheKey); } }); return out; })()")
+        ours = [k for k in busk if k not in K1]
+        ck('no new shader program for the coach (plain materials, a borrowed light)', busk and not ours, f'{len(busk)} drawn materials of the coach, {len(ours)} with a new program; new in all: {newp}')
         # (after the count: the walk below looks at the coach from its other side)
         # the coach is solid (VEH.extra): walking at its far side from 3.2 m away ends at its side, not inside it
         E("""(() => { const P = GAME.P, fx = Math.sin(ZBUS.hd), fy = Math.cos(ZBUS.hd); P.x = ZBUS.x - fy * 3.2; P.y = ZBUS.y + fx * 3.2;
