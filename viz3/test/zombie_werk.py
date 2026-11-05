@@ -284,7 +284,8 @@ with lib.browser() as b:
         e2 = hp()[1]
         ck('the other player\'s fire shows here (net) and leaves the damage to him', len(inf['fires']) == 1 and inf['fires'][0]['net'] and (e2[1] or e2[0] == 300), f'{inf["fires"]} {e2}')
         steps(8.0)
-        # third person: the bottle in the figure's hand, then thrown
+        # third person: the bottle in the figure's hand, then thrown – with a stand-in for the room of two (zombie/z_netz.js): the fire goes out
+        E("window.__sent = []; ZNETZ.on = true; ZNETZ.T = { peers: new Set(), send: (t, d) => __sent.push([t, d]) }")
         E("CAM3.want = true; GAME.P.pitch = 0"); steps(0.5)
         E("ZMOLO.throwIt()"); steps(0.2)
         t3 = J("ZMOLO.info().thr")
@@ -292,6 +293,9 @@ with lib.browser() as b:
         steps(0.35)
         ck('third person: the bottle in the figure\'s hand, then it flies', t3 and t3['tb'] and not t3['fp'] and len(J("ZMOLO.info().bottles")) == 1, f'{t3} {J("ZMOLO.info().bottles")}')
         steps(3.0)
+        sent = J("__sent.filter(m => m[0] === 'ev' && m[1] && m[1].k === 'feuer')")
+        E("ZNETZ.on = false; ZNETZ.T = null")
+        ck('two players: the fire is sent over the room (event „feuer“ with its place)', len(sent) == 1 and all(k in sent[0][1] for k in ('x', 'y', 'z')), str(sent)[:200])
         E("CAM3.want = false"); steps(8.0)
         E("GAME.shot()")
         pm1 = progs()
