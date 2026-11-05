@@ -36,10 +36,11 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   bei der Figur), das Handgelenk folgt dem Unterarm; die Finger aus den Bewegungsaufnahmen der Figur (Werkzeug halten, Lenkrad greifen),
   Zeigefinger der Flinte am Abzug, eine geballte Faust nur zum Zuschlagen, sonst locker. Eigenes, engeres Bildfeld für Hände und Waffe
   (0,8 des Weltbildes, `HELD.fov` in `game/play.js`) – nichts wird am Rand gestreckt. Je Waffe eine Haltung, gesenkt, wenn nichts droht;
-  Schläge mit Ausholen, Treffer zur Zeit des Datensatzes (`ZDATA.WEAPONS[…].wind`), Durchziehen und Zurück; beim Treffer bremst der Schlag
+  Schläge mit Ausholen, Treffer zur Zeit des Datensatzes (`ZDATA.WEAPONS[…].wind`), Durchziehen und Zurück (Axt, Beil, Brechstange
+  schräg: über die rechte Schulter, von rechts oben herunter, die Klinge trifft in der Bildmitte, weiter nach links unten); beim Treffer bremst der Schlag
   kurz (Hit-Stop) und die Sicht wackelt; Rückstoß mit Mündungsfeuer und Licht auf Händen und Waffe; Gehen als liegende Acht, Drehen zieht
   nach, Rennen senkt, abruptes Stehenbleiben und Landen schwingen nach, Atmen stärker bei wenig Kraft. Tritt mit dem eigenen Bein (die
-  Sohle kommt von unten ins Bild). Nachladen: die Flinte nach links gekippt, Kammern im unteren Drittel, die Läufe fallen, die Hülsen
+  Sohle kommt von unten ins Bild). Die Motorsäge angehoben: beide Hände an den Griffen, Schwert und Kette im Bild. Nachladen: die Flinte nach links gekippt, Kammern im unteren Drittel, die Läufe fallen, die Hülsen
   fliegen, die linke Hand holt zwei Patronen aus der Tasche und drückt sie von links in die Kammern (`ZFP.BRE`), die rechte hält den
   Schaft mit allen Fingern. In der Schulterkamera, im Auto, im Sitzen nichts davon. Ohne Figur (`?nofig`) einfache Arme als Ersatz.
   Feinstellen am Bild zur Laufzeit: `ZFP.POSE` (Waffenhaltungen), `ZFP.FIST`, `ZFP.HPOSE` (Finger), `ZFP.BRE`, `ZFP.KICK`, dann
