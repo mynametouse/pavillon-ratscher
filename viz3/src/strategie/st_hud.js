@@ -19,6 +19,7 @@ import { STDATA } from './st_data.js';
 import { STCORE } from './st_core.js';
 import { STRAT } from './st_modus.js';
 import { STJOBS } from './st_jobs.js';
+import { STAUSBAU } from './st_ausbau.js';
 export const STHUD = (() => {
   const D = STDATA,
     C = STCORE,
@@ -131,7 +132,7 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
           `<button type="button" class="stb" data-sp="${v}" title="${v ? v + '× – ' + (v === 1 ? 'eine Stunde in einer Minute' : v * 1 + ' Spielminuten je Sekunde') : 'Pause (Leertaste)'}">${v ? v + '×' : '⏸'}</button>`
       ).join(
         ''
-      )}</div><div class="sp"><button type="button" class="stb" data-sk="auftrag" title="Zeitraffer, bis der nächste Auftrag fertig ist">⏩ Auftrag</button><button type="button" class="stb" data-sk="kommen" title="Zeitraffer, bis deine Leute wieder im Garten sind">⏩ Wochenende</button><button type="button" class="stb" data-sk="morgen" title="Zeitraffer bis morgen 7 Uhr">⏩ Morgen</button></div><div class="sp"><button type="button" class="stb" data-a="layers" title="Ebenen ein- und ausblenden">Ebenen</button><button type="button" class="stb" data-a="ledger" title="Kasse: Einnahmen und Ausgaben">Kasse</button><button type="button" class="stb acc" data-a="exit" title="Zurück in die Welt (U)">Zur Welt ⤓</button></div>`
+      )}</div><div class="sp"><button type="button" class="stb" data-sk="auftrag" title="Zeitraffer, bis der nächste Auftrag fertig ist">⏩ Auftrag</button><button type="button" class="stb" data-sk="kommen" title="Zeitraffer, bis deine Leute wieder im Garten sind">⏩ Wochenende</button><button type="button" class="stb" data-sk="morgen" title="Zeitraffer bis morgen 7 Uhr">⏩ Morgen</button></div><div class="sp"><button type="button" class="stb" data-a="layers" title="Ebenen ein- und ausblenden">Ebenen</button><button type="button" class="stb" data-a="ledger" title="Kasse: Einnahmen und Ausgaben">Kasse</button><button type="button" class="stb" data-a="wissen" title="Wissen und Ausbau: Lehrgänge, Maschinen, Stufen">Wissen</button><button type="button" class="stb acc" data-a="exit" title="Zurück in die Welt (U)">Zur Welt ⤓</button></div>`
     );
     H.ppl = mk('div', 'stppl', '');
     H.pan = mk('div', 'stpan', 'stbox');
@@ -151,6 +152,7 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
         H.layers.hidden = !H.layers.hidden;
         if (!H.layers.hidden) renderLayers();
       } else if (b.dataset.a === 'ledger') openLedger();
+      else if (b.dataset.a === 'wissen') openKnow();
       b.blur();
     });
     H.ppl.addEventListener('click', e => {
@@ -307,7 +309,9 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
     const ch = STRAT.chapter.cur(),
       o = S.orders.find(x => x.st === 'offen') || null,
       sv = S.style;
-    const h = `${ch ? `<b>${esc(ch.title)}</b>` : ''}${o ? `<div class="o">Bestellung: ${esc(o.title)} · bis ${W.day(o.due).label}${o.got ? ` · ${o.got}/${o.n} geliefert` : ''}</div>` : ''}<div class="st" title="${esc(D.STYLE.text)}">Dein Stil: <u>${C.styleName(sv)}</u> (${sv > 0 ? '+' : ''}${Math.round(sv)})</div>`;
+    const ag = STAUSBAU.age(),
+      gl = STAUSBAU.goals();
+    const h = `${ch ? `<b>${esc(ch.title)}</b>` : ''}${gl.length ? `<div class="o">${gl.map(g => `${g.done ? '☑' : '☐'} ${esc(g.text)}`).join('<br>')}</div>` : ''}${o ? `<div class="o">Bestellung: ${esc(o.title)} · bis ${W.day(o.due).label}${o.got ? ` · ${o.got}/${o.n} geliefert` : ''}</div>` : ''}<div class="st" title="${esc(ag.text)}">Zeitalter: <u>${esc(ag.name)}</u></div><div class="st" title="${esc(D.STYLE.text)}">Dein Stil: <u>${C.styleName(sv)}</u> (${sv > 0 ? '+' : ''}${Math.round(sv)})</div>`;
     if (h !== H.cardH) {
       H.card.innerHTML = h;
       H.cardH = h;
@@ -453,6 +457,23 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
       setPan(h);
     });
   }
+  function openKnow() {
+    openPanel(() => {
+      let h = head('Wissen und Ausbau', 'Lehrgänge, Maschinen, Stufen – was man lernt und was es möglich macht');
+      const KIND = { kurs: 'Lehrgang', maschine: 'Maschine', stufe: 'Stufe' };
+      for (const k of STAUSBAU.tree()) {
+        const act = k.has
+          ? '<b>✓</b>'
+          : k.kind === 'maschine'
+            ? `<button type="button" class="stb" data-buy="${k.id}">${C.eur(k.eur)}</button>`
+            : k.kind === 'kurs'
+              ? `<span class="sub">${k.eur ? C.eur(k.eur) + ' · ' : ''}Auftrag in Schleusingen</span>`
+              : '<span class="sub">Bauphase</span>';
+        h += `<div class="job"><span><b>${esc(k.title)}</b> <small>(${KIND[k.kind] || k.kind})</small></span><span>${act}</span><small>${esc(k.text)}${k.unlocks ? ' → ' + esc(k.unlocks) : ''}</small><span class="learn" style="grid-column:1/3">Quelle: ${esc(k.src)}</span></div>`;
+      }
+      setPan(h);
+    });
+  }
   function renderLayers() {
     H.layers.innerHTML =
       '<b>Ebenen</b>' +
@@ -486,6 +507,12 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
       else if (r && r.text) say(r.text);
       H.panH = '';
     } else if (b.dataset.take) takeOver(b.dataset.take);
+    else if (b.dataset.buy) {
+      const r = STAUSBAU.buy(b.dataset.buy);
+      if (r && r.no) no(r);
+      else if (r && r.text) say(r.text);
+      H.panH = '';
+    }
   }
   // ---------------- the overlay ----------------
   const _p = new THREE.Vector3();

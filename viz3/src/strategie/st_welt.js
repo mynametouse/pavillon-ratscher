@@ -181,6 +181,18 @@ export const STWELT = (() => {
     } catch (e) {}
     return q;
   };
+  // add litres (bought): to the can, the generator or the mower, up to what it holds
+  W.fuelAdd = (what, l) => {
+    const T = what === 'gen' ? GPLAY.GEN : what === 'mower' ? GPLAY.M : GPLAY.C,
+      max = what === 'gen' ? GPLAY.GEN_L : what === 'mower' ? GPLAY.TANK : GPLAY.CAN_L,
+      q = Math.max(0, Math.min(max - T.fuel, l));
+    T.fuel += q;
+    if (T === GPLAY.C) T.refillAt = null;
+    try {
+      GPLAY.save();
+    } catch (e) {}
+    return q;
+  };
   // refill a tank from the can (what was there): litres moved
   W.fuelFill = what => {
     const T = what === 'gen' ? GPLAY.GEN : GPLAY.M,
