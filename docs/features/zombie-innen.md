@@ -25,6 +25,14 @@ Fotos und was daraus folgt: `docs/plans/zombie_einrichtung.md`.
   Wandschoner „Erst besinn’s, dann beginn’s“), „DDR“ (Schrankwand mit Vitrine, RFT-Radio und Fernseher, Sitzgruppe zum Fernseher,
   Perserteppich, Tischdecke, Häkeldeckchen, Stehlampe, Stores mit Schals, Linoleum, Anbauküche, Kühlschrank, Kohleofen, Bettbrücke,
   Stockbett, Fliesen hellblau-weiß), „Nachwende“ (Eiche rustikal, Ledercouch, Laminat, Einbauküche).
+- **Bewohnt** (Durchsicht des Leads 5.11. früh: „zu leer“): auf jeder Ablage Kleinkram – Sammeltassen, Bleikristall, Vase mit
+  Blumen, Leuchter, gerahmte Fotos, Obstschale, Zeitung/Fernsehzeitung; DDR mit Häkeldeckchen darunter, auf dem Fernseher und über der
+  Couchlehne; Sofakissen mit Knick; an den Wänden 2–4 Dinge je Raum (Bilder, Wandteller, Spiegel, in Küchen ein Kalender, über dem
+  Herd der Wandschoner), nie über hohen Möbeln oder Fenstern; Flickenteppiche in alten Häusern; Blumen auf den meisten Fensterbänken
+  (Geranie, Grünlilie, in der DDR Kaktus); Gardinen in jedem Raum; Deckenlampen nach Zeit (Glasschale, Kugel- und Tütenlampe,
+  flache Deckenschale; Deckenfluter nach 1990); alte Küchen mit Kohlenkasten, Eimer, Topfleiste, Handtuchhalter; große Räume eine
+  zweite Gruppe (Nähtisch mit Nähmaschine, Sessel mit Beistelltisch, Kommode). Alles in Palettenfarben bzw. den Raum-Materialien –
+  keine Draw-Calls dazu (höchstens 54 in allen 230 Häusern).
 - **Benutzbar**: Innentüren als Drehtüren (`DOORS`, Aktionsknopf „Tür öffnen“), Wände und Möbel als Kollision, Böden und Stufen
   begehbar (die Kamera bleibt drinnen), Behälter zum Durchsuchen (Tür/Schublade/Deckel öffnet sich, dann `H.onSearch`; bis zu zehn
   bewegen sich je Haus, die übrigen werden ohne Bewegung durchsucht), Licht je Raum (Schalter an der Tür, ein geliehenes Punktlicht,
