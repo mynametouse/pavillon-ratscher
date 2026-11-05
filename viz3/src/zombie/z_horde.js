@@ -1,17 +1,18 @@
 // ===================== feat/zombie: the horde – who turns at the siren, how they roam, see, hear, hunt, strike and die (ZHORDE) =====================
 // Each zombie is an entity in Z.ents (zombie/z_state.js) with its figure (zombie/z_fig.js). At the siren the villagers out of doors turn
 // where they stand (they kneel, convulse and rise), more come out of the houses around the player, out of sight. They shamble about
-// (wander), see the player at night within ~14 m (~24 m where it is lit), hear what is loud (the chainsaw, a shot, an engine, hammering –
+// (wander), see the player at night within ~14 m (by day ~24 m; crouched half, in the flashlight's beam ~26 m), hear what is loud (the chainsaw, a shot, running, an engine, hammering –
 // Z.noise), hunt him (chase: faster, arms up) along a flow field around the houses (a 1.5 m grid of the village: footprints, walls,
 // fences – breadth-first from the player twice a second), strike when close (a wind-up, then the blow), bang on doors and barricades
 // (zombie/z_haus.js asks them), eat the dead. Hits come from zombie/z_waffe.js (damage: knock-back, stagger, a limb off, death); vehicles
 // knock them flying. At dawn they go back into the houses. Far ones are not drawn and move coarsely.
 import * as THREE from 'three';
-import { cam, COARSE, V } from '../core/head.js';
+import { cam, COARSE, V, scene } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { COL } from '../core/geo.js';
-import { collide, floorAt, P, phOk } from '../game/walkable.js';
+import { collide, floorAt, P, phOk, CG, cellItems, toLocal, doorCols } from '../game/walkable.js';
+import { PLAY } from '../game/play.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { WCOL } from '../world/worldcol.js';
 import { VILLAGE } from '../world/village.js';
@@ -43,6 +44,10 @@ export const ZHORDE = (() => {
     made: 0,
     nid: 1,
     hooks: [],
+    flying: [], // helmets knocked off
+    nk: ZDATA.night(1), // the night's numbers (each frame)
+    lowK: 1, // how well the player is seen: his stance and pace (each frame)
+    low: false, // he keeps low, the lamp off
   };
   const rnd = Math.random;
   const hyp = Math.hypot;
@@ -229,10 +234,69 @@ export const ZHORDE = (() => {
     });
     return free;
   }
+  // ---- something solid between two points at body height (the house's inner walls and big furniture, a closed door – COL) ----
+  const inBox = (c, x, y, z0, z1) => {
+    if (!c || c[5] < z0 || c[4] > z1) return false;
+    const lp = c[9] ? toLocal(c, x, y) : [x, y];
+    return lp[0] >= c[0] && lp[0] <= c[1] && lp[1] >= c[2] && lp[1] <= c[3];
+  };
+  function wallBetween(ax, ay, bx, by, feet) {
+    const L = hyp(bx - ax, by - ay),
+      n = Math.ceil(L / 0.12),
+      z0 = feet + 0.5,
+      z1 = feet + 1.5,
+      doors = doorCols();
+    for (let k = 1; k < n; k++) {
+      const u = k / n;
+      // (not the bodies' own room to stand in)
+      if (u * L < 0.25 || (1 - u) * L < 0.25) continue;
+      const x = ax + (bx - ax) * u,
+        y = ay + (by - ay) * u;
+      if (CG) for (const i of cellItems(CG, x, y)) if (phOk(COL[i]) && inBox(COL[i], x, y, z0, z1)) return true;
+      for (const c of doors) if (inBox(c, x, y, z0, z1)) return true;
+    }
+    return false;
+  }
+  // ---- can a blow reach the target? (Falko 5.11., 17:57: „Zombies im Haus … bisher nicht sichtbar und machen dennoch Schaden – wenn
+  // sie reinkommen, müssen Türen oder Fenster zuvor von ihnen aufgebrochen werden“): only one that is drawn, on the same floor, on the same
+  // side of the house's walls (somebody in the house: only one that broke in), with nothing solid between – the walls of the village,
+  // the house's inner walls, a closed door ----
+  function canReach(e, t) {
+    if (!e.F) return false;
+    if (Math.abs((t.z ?? e.z) - e.z) > 1.2) return false;
+    const H = S.house,
+      bid = H && H.inside() ? H.bid() : null,
+      tIn = !!bid && (t.ally || t.remote ? H.within(t.x, t.y, (t.z ?? e.z) + 0.5) : true),
+      eIn = !!bid && e.house === bid;
+    if (tIn !== eIn || (e.house && !eIn)) return false;
+    if (!eIn && !los(e.x, e.y, t.x, t.y)) return false;
+    return !wallBetween(e.x, e.y, t.x, t.y, e.z);
+  }
   // ---- making zombies ----
   // e: { id, key, F, x, y, z, hd, hp, hp0, st, t, tx, ty, seen, cd, wind, stag, kv, crawl, sp, groanT, stuck }
+  // ---- which kind a new one is (ZDATA.KINDS): the night's mix; Manfred, the chief of the fire brigade, always in his helmet ----
+  function kindFor(key) {
+    if (/^Manfred/.test((ZFIG.byKey[key] || {}).name || '')) return 'feuerwehr';
+    const K = ZDATA.night(Math.max(1, Z.night), Z.diff).kinds,
+      M =
+        S.kindsMade && S.kindsMade.n === Z.night
+          ? S.kindsMade
+          : (S.kindsMade = { n: Z.night, feuerwehr: 0, schreier: 0 }),
+      r = rnd();
+    if (M.feuerwehr < K.feuerwehr && r < 0.14) {
+      M.feuerwehr++;
+      return 'feuerwehr';
+    }
+    if (M.schreier < K.schreier && r < 0.28) {
+      M.schreier++;
+      return 'schreier';
+    }
+    return rnd() < K.laeufer ? 'laeufer' : 'normal';
+  }
   function ent(key, x, y, z, hd, o = {}) {
-    const n = ZDATA.night(Math.max(1, Z.night));
+    const n = ZDATA.night(Math.max(1, Z.night), Z.diff),
+      art = ZDATA.KINDS[o.art] ? o.art : kindFor(key),
+      A = ZDATA.KINDS[art];
     const e = {
       kind: 'zombie',
       id: 'z' + S.nid++,
@@ -243,8 +307,11 @@ export const ZHORDE = (() => {
       y,
       z,
       hd,
-      hp: n.hp,
-      hp0: n.hp,
+      hp: n.hp * A.hp,
+      hp0: n.hp * A.hp,
+      art,
+      helm: A.helm || 0, // the firefighter's helmet: what it still takes of the blows to the head
+      run: A.speed / A.walk, // chasing: this much faster than the night's pace (runners)
       st: o.st || 'wander',
       t: 0,
       tx: x,
@@ -256,8 +323,8 @@ export const ZHORDE = (() => {
       kv: [0, 0],
       fly: null,
       crawl: false,
-      sp: n.speed * (0.85 + rnd() * 0.3),
-      hit: n.hit,
+      sp: n.speed * A.walk * (0.85 + rnd() * 0.3),
+      hit: n.hit * A.hit,
       groanT: 2 + rnd() * 8,
       stuck: { t: 0, x, y, side: 0, sideT: 0 },
       dead: false,
@@ -272,6 +339,7 @@ export const ZHORDE = (() => {
         e.F = F;
         F.mode = e.st === 'turn' ? 'turn' : 'idle';
         ZFIG.place(F, e.x, e.y, e.z, e.hd);
+        if (e.helm > 0) helmetOn(e);
         markDirty();
       })
       .catch(err => {
@@ -279,6 +347,102 @@ export const ZHORDE = (() => {
         remove(e);
       });
     return e;
+  }
+  // ---- the firefighter's helmet: one shared model (a shell in day-glow yellow, a silver reflective band, the visor, the neck guard; plain
+  // materials – no new shader program), a copy on the head bone of each firefighter. Its place on the bone (HELM.q, p, s) by eye: the
+  // Rocketbox head bones of all figures are alike ----
+  const HELM = { q: [0.6323, 0.3182, -0.6896, 0.1533], p: [7.056, -6.237, -2.346], s: 100.91, geo: null, mats: null };
+  function helmModel() {
+    if (!HELM.geo) {
+      const shell = new THREE.SphereGeometry(0.128, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.6);
+      shell.scale(1, 0.92, 1.16);
+      const band = new THREE.CylinderGeometry(0.1295, 0.1335, 0.024, 24, 1, true);
+      band.scale(1, 1, 1.16);
+      band.translate(0, 0.022, 0);
+      const comb = new THREE.BoxGeometry(0.018, 0.02, 0.2);
+      comb.translate(0, 0.118, -0.005);
+      // (the figures look along their -z: the visor there, the neck guard behind)
+      const visor = new THREE.SphereGeometry(
+        0.136,
+        18,
+        6,
+        -Math.PI * 0.82,
+        Math.PI * 0.64,
+        Math.PI * 0.3,
+        Math.PI * 0.16
+      );
+      visor.scale(1, 0.92, 1.16);
+      const neck = new THREE.CylinderGeometry(0.118, 0.15, 0.12, 18, 1, true, -Math.PI * 0.38, Math.PI * 0.76);
+      neck.translate(0, -0.035, 0);
+      HELM.geo = { shell, band, comb, visor, neck };
+      HELM.mats = {
+        yel: new THREE.MeshStandardMaterial({ color: 0xc6d11e, roughness: 0.42, metalness: 0.05 }),
+        sil: new THREE.MeshStandardMaterial({ color: 0xdfe3e6, roughness: 0.25, metalness: 0.55 }),
+        dark: new THREE.MeshStandardMaterial({ color: 0x24282c, roughness: 0.55, metalness: 0.1 }),
+      };
+      HELM.mats.neck = HELM.mats.dark;
+    }
+    const g = new THREE.Group(),
+      G = HELM.geo,
+      M = HELM.mats;
+    for (const [geo, m] of [
+      [G.shell, M.yel],
+      [G.band, M.sil],
+      [G.comb, M.yel],
+      [G.visor, M.dark],
+      [G.neck, M.dark],
+    ]) {
+      const o = new THREE.Mesh(geo, m);
+      o.castShadow = true;
+      g.add(o);
+    }
+    g.name = 'helm';
+    return g;
+  }
+  function helmetOn(e) {
+    const b = e.F && e.F.bones && (e.F.bones.Head || e.F.bones.Neck);
+    if (!b || e.F.helm) return;
+    const g = helmModel();
+    g.quaternion.fromArray(HELM.q);
+    g.position.fromArray(HELM.p);
+    g.scale.setScalar(HELM.s);
+    b.add(g);
+    e.F.helm = g;
+  }
+  // a blow to the head of a firefighter: the helmet takes it until it flies off
+  function helmetOff(e, ux, uy) {
+    const g = e.F && e.F.helm;
+    e.helm = 0;
+    if (!g) return;
+    e.F.helm = null;
+    g.getWorldPosition(_v);
+    const q = g.getWorldQuaternion(new THREE.Quaternion());
+    g.parent.remove(g);
+    g.position.copy(_v);
+    g.quaternion.copy(q);
+    g.scale.setScalar(1);
+    scene.add(g);
+    // it flies a little and rolls on the ground; gone after a while
+    const f = { vx: ux * 2.2, vy: uy * 2.2, vz: 2.4, t: 0, z0: floorAt(_v.x, -_v.z, e.z + 0.5) };
+    S.flying.push({ g, f });
+    ZTON.hit(e.x, e.y, 'blunt');
+  }
+  function flyTick(dt) {
+    for (let i = S.flying.length - 1; i >= 0; i--) {
+      const { g, f } = S.flying[i];
+      f.t += dt;
+      if (g.position.y > f.z0 + 0.1 || f.vz > 0) {
+        f.vz -= 9.81 * dt;
+        g.position.x += f.vx * dt;
+        g.position.z -= f.vy * dt;
+        g.position.y = Math.max(f.z0 + 0.1, g.position.y + f.vz * dt);
+        g.rotation.x += dt * 6;
+      }
+      if (f.t > 90) {
+        scene.remove(g);
+        S.flying.splice(i, 1);
+      }
+    }
   }
   function remove(e) {
     const i = Z.ents.indexOf(e);
@@ -370,6 +534,16 @@ export const ZHORDE = (() => {
       ZFX.spray(e.x, e.y, e.z + 1.2, (o.dx || 0) / L0, (o.dy || 0) / L0, Math.round(6 + dmg * 0.2), 1.6, 1.2);
       return true;
     }
+    // a blow it did not see coming (it had not noticed anybody): three times as hard – creeping up pays (Falko 5.11.: „Schleichen“)
+    if (
+      o.by === 'spieler' &&
+      o.w !== 'flinte' &&
+      o.kind !== 'fire' &&
+      (e.st === 'wander' || e.st === 'eat' || e.st === 'search')
+    ) {
+      dmg *= 3;
+      o.sneak = true;
+    }
     e.hp -= dmg;
     const L = hyp(o.dx || 0, o.dy || 0) || 1,
       ux = (o.dx || 0) / L,
@@ -400,6 +574,14 @@ export const ZHORDE = (() => {
                   ? 'beinL'
                   : 'beinR'
                 : null;
+      }
+      // the firefighter's helmet takes a blow to the head (most of it) until it flies off
+      if (part === 'kopf' && e.helm > 0) {
+        e.helm -= dmg;
+        e.hp = Math.min(e.hp0, e.hp + dmg * 0.6);
+        if (e.helm <= 0) helmetOff(e, ux, uy);
+        else ZTON.hit(e.x, e.y, 'blunt');
+        part = null;
       }
       if (part) {
         const drop = e.F.cut(part, ux, uy);
@@ -492,28 +674,63 @@ export const ZHORDE = (() => {
   }
   // ---- per frame ----
   const _v = new THREE.Vector3();
+  // ---- how well the player is seen (Falko 5.11.: „Schleichen“): crouched or crawling much less, standing still a little less, running
+  // more; at night the flashlight's beam gives him away to those it falls on (further than without it), the others see the glow; the
+  // difficulty. Allies, the other player and a car: only the difficulty ----
+  function sightOf(e, t, dx, dy, d) {
+    const base = (Z.phase !== 'nacht' ? D.sight : D.sightDark) * S.nk.sight;
+    if (t.ally || t.remote || t.car) return base;
+    let r = base * S.lowK;
+    if (Z.phase === 'nacht' && Z.lamp && Z.lamp()) {
+      const a = (P.yaw * Math.PI) / 180,
+        c = (-dx * Math.sin(a) - dy * Math.cos(a)) / (d || 1);
+      r = c > 0.82 ? Math.max(r, 26 * S.nk.sight) : r * 1.15;
+    }
+    return r;
+  }
+  // the screamer, having seen him: it stops, screams – and all around know where he is
+  function scream(e, t) {
+    e.screamed = true;
+    e.screamT = 1.9;
+    ZTON.scream(e.x, e.y);
+    if (e.F) e.F.play('push', 0.7);
+    const R = ZDATA.KINDS.schreier.scream,
+      now = performance.now();
+    Z.noise(e.x, e.y, R, 3, 'schrei');
+    for (const q of Z.ents)
+      if (q !== e && q.kind === 'zombie' && !q.dead && !q.house && q.st !== 'hide' && hyp(q.x - e.x, q.y - e.y) < R) {
+        q.st = 'chase';
+        q.seen = { x: t.x, y: t.y, t: now };
+      }
+    if (!S.screamSaid || now - S.screamSaid > 60000) {
+      S.screamSaid = now;
+      PLAY.think('Dieser Schrei … jetzt wissen alle, wo ich bin.', 2600);
+    }
+    Z.emit('scream', { id: e.id, x: e.x, y: e.y });
+  }
   function think(e, dt, t) {
     // seeing and hearing
     const dx = t.x - e.x,
       dy = t.y - e.y,
       d = hyp(dx, dy);
     e.d = d;
-    const lit = Z.lit ? Z.lit(e.x, e.y) : false,
-      sight = lit ? D.sight : D.sightDark;
+    const sight = sightOf(e, t, dx, dy, d);
     if (d < sight && (e.losT = (e.losT || 0) - dt) <= 0) {
       e.losT = 0.25 + rnd() * 0.15;
       e.los = Math.abs((t.z || 0) - e.z) < 2.6 && los(e.x, e.y, t.x, t.y);
     }
     const inHouse = S.house && S.house.inside();
     let see = d < sight && e.los;
-    // the player in a house: those near know it (they smell him) and come to its doors and windows; those inside see him close by
-    if (inHouse && !e.house && d < 70 && Z.phase === 'nacht') see = true;
+    // the player in a house: those near know it (they smell him) and come to its doors and windows – from close by only if he keeps
+    // low in the dark; those inside see him close by
+    if (inHouse && !e.house && d < (S.low ? 22 : 70) && Z.phase === 'nacht') see = true;
     if (e.house && d < 12) see = true;
     if (e.st === 'eat' && !(d < 7 && (e.los || d < 3.5))) see = false;
     if (see) {
       if (e.st !== 'chase' && e.st !== 'attack') {
         e.st = 'chase';
-        ZTON.snarl(e.x, e.y);
+        if (e.art === 'schreier' && !e.screamed && !t.car) scream(e, t);
+        else ZTON.snarl(e.x, e.y);
       }
       e.seen = { x: t.x, y: t.y, t: performance.now() };
     } else if (e.st === 'wander' || e.st === 'search') {
@@ -689,7 +906,7 @@ export const ZHORDE = (() => {
     // the attack: a wind-up, then the blow lands if the player is still within reach
     if (e.wind > 0) {
       e.wind -= dt;
-      if (e.wind <= 0 && e.d < D.reach + 0.65 && !t.car) {
+      if (e.wind <= 0 && e.d < D.reach + 0.65 && !t.car && canReach(e, t)) {
         if (t.remote) {
           if (S.hitRemote) S.hitRemote(t.remote, e.hit * (e.crawl ? 0.6 : 1), e);
         } else if (t.ally) {
@@ -704,7 +921,8 @@ export const ZHORDE = (() => {
         e.st === 'chase' &&
         e.d < D.reach + (t.car ? 1.2 : 0.25) &&
         e.cd <= 0 &&
-        !(t.car && Math.abs(t.car.st.u) > 1.5)
+        !(t.car && Math.abs(t.car.st.u) > 1.5) &&
+        (t.car || canReach(e, t))
       ) {
         e.wind = D.wind;
         e.cd = D.cd * (0.8 + rnd() * 0.4);
@@ -718,7 +936,7 @@ export const ZHORDE = (() => {
       v = D.walk * e.sp;
     const hz = e.st === 'chase' && !t.ally && !t.remote && S.house && S.house.inside() ? S.house.redirect(e) : null;
     if (hz) {
-      v = (e.crawl ? 0.45 : D.chase) * e.sp;
+      v = (e.crawl ? 0.45 : D.chase * e.run) * e.sp;
       if (hz.d < 1.15) {
         v = 0;
         S.house.bang(e, hz.op, dt);
@@ -730,7 +948,7 @@ export const ZHORDE = (() => {
         gy = fl ? fl[1] : hz.y - e.y;
       }
     } else if (e.st === 'chase') {
-      v = (e.crawl ? 0.45 : D.chase) * e.sp;
+      v = (e.crawl ? 0.45 : D.chase * e.run) * e.sp;
       // inside a house: the interior's way from room to room (zombie/z_haus.js → ZINNEN H.route)
       const wp = e.house && !e.los && S.house && S.house.route ? S.house.route(e, t) : null;
       // (the flow field leads to this browser's player – for the other player straight on, sidestepping when stuck)
@@ -774,6 +992,12 @@ export const ZHORDE = (() => {
     }
     if (e.crawl) v = Math.min(v, 0.45);
     if (e.wind > 0 || e.stag > 0) v = 0;
+    if (e.screamT > 0) {
+      e.screamT -= dt;
+      v = 0;
+      gx = t.x - e.x;
+      gy = t.y - e.y;
+    }
     const L = hyp(gx, gy);
     if (L > 1e-3) {
       gx /= L;
@@ -880,6 +1104,22 @@ export const ZHORDE = (() => {
     if (!Z.on) return;
     dt = Math.min(dt, 0.1);
     const t = me();
+    // the night's numbers once per frame; how low the player keeps (stance, pace) – for seeing and hearing him
+    S.nk = ZDATA.night(Math.max(1, Z.night), Z.diff);
+    const st = P.stance,
+      sp = P.speed || 0,
+      inCar = !!(VEH && VEH.cur);
+    S.lowK = inCar
+      ? 1
+      : (st === 'crouch' ? 0.5 : st === 'crawl' || st === 'prone' ? 0.3 : 1) * (sp > 3.2 ? 1.25 : sp < 0.2 ? 0.85 : 1);
+    S.low = !inCar && st !== 'stand' && !(Z.lamp && Z.lamp());
+    // running is heard (footsteps on the street, ~10 m); creeping is not
+    S.stepT = (S.stepT || 0) - dt;
+    if (!inCar && sp > 3.2 && S.stepT <= 0) {
+      S.stepT = 0.4;
+      Z.noise(P.x, P.y, 10, 0.5, 'schritte');
+    }
+    if (S.flying.length) flyTick(dt);
     S.fieldT -= dt;
     if (S.fieldT <= 0 && Z.ents.some(e => e.st === 'chase')) {
       S.fieldT = 0.5;
@@ -917,7 +1157,7 @@ export const ZHORDE = (() => {
     if (Z.phase === 'nacht') {
       S.spawnT -= dt;
       const alive = Z.ents.filter(e => e.kind === 'zombie' && !e.dead).length,
-        want = Math.min(ZDATA.night(Z.night).count, COARSE ? 10 : 24);
+        want = Math.min(ZDATA.night(Z.night, Z.diff).count, COARSE ? 10 : 24);
       if (S.spawnT <= 0 && alive < want && S.budget > 0) {
         S.spawnT = 1.2 + rnd() * 2.5;
         S.budget -= spawnSome(1);
@@ -949,10 +1189,10 @@ export const ZHORDE = (() => {
     return out;
   }
   function night(n) {
-    S.budget = Math.round(ZDATA.night(n).count * 1.6);
+    S.budget = Math.round(ZDATA.night(n, Z.diff).count * 1.6);
     const turned = turnVillagers();
     if (turned.length < 2 && !(VEH && VEH.cur)) turned.push(...turnInSight(2 - turned.length));
-    const first = Math.max(0, Math.min(ZDATA.night(n).count, COARSE ? 6 : 10) - turned.length);
+    const first = Math.max(0, Math.min(ZDATA.night(n, Z.diff).count, COARSE ? 6 : 10) - turned.length);
     S.budget -= spawnSome(first);
     S.spawnT = 6;
     return turned;
@@ -1010,6 +1250,12 @@ export const ZHORDE = (() => {
     me,
     buildGrid,
     blockedAt,
+    canReach,
+    wallBetween,
+    HELM,
+    helmetOn,
+    helmetOff,
+    kindFor,
     field,
     flow,
     los,
