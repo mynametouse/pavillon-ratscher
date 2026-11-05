@@ -80,10 +80,6 @@ SOURCES = {
     'snm_swing': dict(page='https://opengameart.org/content/medieval-sound-effects-weapon-textures', title='Medieval sound effects - Weapon Textures',
                       author='Ben Jaszczak & Brian Nelson (Still North Media)', lic='CC0',
                       files=[OGA + 'medieval_sfx_textures_1_of_2.7z', OGA + 'medieval_sfx_textures_2_of_2.7z'], keep=r'swing|crossbow (lever|set|place)'),
-    'vehicle_weapons': dict(page='https://opengameart.org/content/fantasy-weapons-and-apparel-sfx-library', title='Fantasy Weapons and Apparel SFX Library',
-                            author='Vehicle (Jan Schupke)', lic='CC0', files=[OGA + 'weapons-apparel.zip'],
-                            keep=r'sword|knife|seax|swing|swish|swoosh|whoosh|hit|stab|cut|slash'),
-    # ---- blows, cuts, splashes, falls
     'kenney_impact': dict(page='https://kenney.nl/assets/impact-sounds', title='Impact Sounds', author='Kenney (kenney.nl)', lic='CC0',
                           files=['scrape:https://kenney.nl/assets/impact-sounds'], keep=r'punch|soft|generic|plank|wood_heavy|plate_heavy'),
     'kenney_rpg': dict(page='https://opengameart.org/content/50-rpg-sound-effects', title='50 RPG sound effects (RPG Audio)', author='Kenney (kenney.nl)',
@@ -135,7 +131,7 @@ SOURCES = {
                      files=[OGA + 'darsycho__zombie-moans_0.ogg']),
     'emopreben': dict(page='https://opengameart.org/content/zombie-moans-01-by-emopreben', title='Zombie Moans 01', author='EmoPreben', lic='CC0',
                       files=[OGA + 'zombiemoans_-_wav.zip']),
-    'undead': dict(page='https://opengameart.org/content/undead-moans', title='Undead Moans', author='AntumDeluge', lic='CC0',
+    'undead': dict(page='https://opengameart.org/content/undead-moans', title='Undead Moans', author='Jordan Irwin (AntumDeluge)', lic='CC0',
                    files=[OGA + 'undead-moans.zip']),
     'ianzazz': dict(page='https://opengameart.org/content/zombie-noises-and-moans', title='Zombie noises and moans', author='ianzazz', lic='CC0',
                     files=[OGA + 'zombienoises.zip']),
@@ -366,6 +362,41 @@ def env_img(y, sr, w, h, dur_max=None):
     return img
 
 
+def panel(y, title, sr=SR, W=900, H=170, EH=60):
+    """A detailed picture of one sound: log-frequency spectrogram (60 Hz–16 kHz, 80 dB), dB envelope (-60..0), time grid."""
+    T = max(len(y) / sr, 0.05)
+    nfft = 1024
+    hop = max(1, int(T * sr / W))
+    yy = np.concatenate([y, np.zeros(nfft + W * hop, np.float32)])
+    fr = np.lib.stride_tricks.sliding_window_view(yy, nfft)[::hop][:W]
+    S = np.abs(np.fft.rfft(fr * np.hanning(nfft), axis=1)) + 1e-9
+    f = np.fft.rfftfreq(nfft, 1 / sr)
+    tf = np.geomspace(60, 16000, H)
+    L = 20 * np.log10(np.stack([np.interp(tf, f, s) for s in S], 1))
+    D = np.clip((L - (L.max() - 80)) / 80, 0, 1)
+    img = Image.new('RGB', (W + 50, H + EH + 36), (10, 10, 10))
+    d = ImageDraw.Draw(img)
+    img.paste(Image.fromarray(LUT[(D[::-1] * 255).astype(int)]), (44, 18))
+    f1 = font(11)
+    for fq in (100, 300, 1000, 3000, 10000):
+        yp = 18 + H - int(np.log(fq / 60) / np.log(16000 / 60) * H)
+        d.text((2, yp - 6), str(fq) if fq < 1000 else f'{fq // 1000}k', fill=(200, 200, 200), font=f1)
+    per = max(1, len(y) // W)
+    n = min(W, len(y) // per)
+    e = db(np.abs(y[:n * per]).reshape(n, per).max(1))
+    for x in range(n):
+        h = int(np.clip((e[x] + 60) / 60, 0, 1) * (EH - 4))
+        d.line([(44 + x, 18 + H + EH - h), (44 + x, 18 + H + EH)], fill=(90, 200, 120) if e[x] < -1.5 else (255, 80, 80))
+    step = 0.05 if T <= 0.8 else 0.1 if T <= 2.5 else 0.5
+    for i in range(1, int(T / step) + 1):
+        x = 44 + int(i * step / T * W)
+        d.line([(x, 18 + H), (x, 18 + H + 6)], fill=(255, 255, 255))
+        if i % 2 == 0:
+            d.text((x - 12, 18 + H + EH + 2), f'{i * step:.2f}', fill=(220, 220, 220), font=f1)
+    d.text((44, 2), title, fill=(255, 255, 255), font=font(13))
+    return img
+
+
 def sheet(out, key, recs, cols=3, rows=6):
     f1, f2 = font(13), font(11)
     CW, SH, EH, TH = 330, 110, 26, 34
@@ -459,15 +490,67 @@ def survey(out):
 
 
 # ------------------------------------------------------------------------------------------------------------------- build
-# kind: (vol for kampf.json, [(source, regex on the path inside the archive, options), …]); options:
+# kind: (loudness in dB relative to the shot – gives 'vol' in kampf.json, [(source, regex on the path inside the archive, options), …]);
+# options:
 #   seg   index of the event in the file (inventory 'segs'), or t0/t1 (seconds) for an explicit window
 #   tail  dB below the event's peak where the end is cut (default 40; the shot keeps its tail: 62), max  longest length in s
 #   fo    fade-out in ms (default: 25 % of the length, at most 60 ms), hp/lp  high/low pass in Hz, gain  extra dB, pitch  playback-rate factor
-PICKS = {}
+SWL = dict(hp=250, fi=60, fo=100, head=60, tail=60, lim=6)   # light swish: no wind rumble, explicit window
+SWH = dict(hp=120, fi=60, fo=120, head=60, tail=60, lim=6)   # heavy swing: keep some body
+GUN = dict(tail=62, max=2.4, fo=650)                          # the shot keeps its tail
+CRUNCH = dict(fo=60)                                          # bone crunch layered under a blunt hit
+PICKS = {
+    'swing_light': (-16, [('snm_swing', r'Dagger Swing', dict(SWL, t0=0.95, t1=1.27)),
+                           ('snm_swing', r'Dagger Swing', dict(SWL, t0=2.06, t1=2.40)),
+                           ('snm_swing', r'Seax Swing', dict(SWL, t0=3.93, t1=4.25))]),
+    'swing_heavy': (-13, [('snm_swing', r'Axe Swing', dict(SWH, t0=1.47, t1=1.85)),
+                           ('snm_swing', r'Axe Swing', dict(SWH, t0=3.34, t1=3.72)),
+                           ('snm_swing', r'Spear Swing', dict(SWH, hp=150, t0=1.40, t1=1.78))]),
+    'hit_blunt': (-6, [('thwack', r'PCM/thwack-07', dict(tail=40, lim=4, layers=[('bones_wet', r'Wet Break 9', dict(CRUNCH, t0=0.08, t1=0.32, gain=-10, at=0.004))])),
+                        ('thwack', r'PCM/thwack-08', dict(t1=0.46, tail=40, lim=4, layers=[('bones_deep', r'Deep Break 9', dict(CRUNCH, t0=0.07, t1=0.35, gain=-9, at=0.004))])),
+                        ('towel_body', r'wet_towel_on_body-39', dict(tail=40, lim=4, layers=[('bones_wet', r'Wet Break 2', dict(CRUNCH, t0=0.17, t1=0.42, gain=-10, at=0.004))]))]),
+    'hit_blade': (-6, [('qubo_impact', r'ImpactMeat02\.flac', dict(fo=120, lim=3)),
+                        ('qubo_impact', r'ImpactMeat01\.flac', dict(head=20, fo=120, lim=3)),
+                        ('inu_wet', r'impactsplat03', dict(max=0.45, fo=120, lim=3))]),
+    'stab': (-7, [('lrsf_horror', r'Wav/Stab_Knife_00\.wav', dict(fo=100, lim=4)),
+                   ('lrsf_horror', r'Wav/Stab_Knife_02\.wav', dict(fo=100, lim=4))]),
+    'punch': (-9, [('dklon_foley', r'leather_hits', dict(t0=0.80, t1=1.15, head=25, tail=40, fo=80, lim=6)),
+                     ('dklon_foley', r'leather_hits', dict(t0=3.48, t1=3.85, head=25, tail=40, fo=80, lim=6)),
+                     ('dklon_foley', r'leather_hits', dict(t0=5.23, t1=5.60, head=25, tail=40, fo=80, lim=6))]),
+    'kick': (-7, [('dklon_foley', r'chest_hit', dict(t0=4.55, t1=5.00, head=25, tail=42, fo=120, lim=9)),
+                    ('dklon_foley', r'chest_hit', dict(t0=0.47, t1=0.95, head=25, tail=42, fo=120, lim=9))]),
+    'bone_crack': (-9, [('lrsf_horror', r'Wav/Bonecrack_02\.wav', dict(t0=0.135, fo=80, lim=4)),
+                         ('bones_wet', r'Wet Break 9', dict(t0=0.0, t1=0.42, fo=80, lim=4))]),
+    'splat': (-10, [('dklon_foley', r'squishy_sounds', dict(t0=20.15, t1=20.60, head=25, tail=32, fo=80, lim=3)),
+                     ('dklon_foley', r'squishy_sounds', dict(t0=9.50, t1=9.95, head=25, tail=32, fo=80, lim=3)),
+                     ('inu_wet', r'impactsplat07', dict(fo=100, lim=3))]),
+    'body_fall': (-8, [('remaxim_fall', r'fall\.wav', dict(tail=50, fo=120, lim=4)),
+                        ('dklon_foley', r'body_hit_on_ground', dict(t0=12.85, t1=13.45, tail=50, fo=120, lim=4))]),
+    # near take (the crack) + mid-distance take of the same 12-gauge (boom, echo from buildings, tail), then limited hard as game shots are
+    'shotgun_shot': (0, [('ffsl', r'/H_21P\.wav', dict(GUN, t0=0.42, t1=3.0, target=-10, lim=12,
+                                                         layers=[('ffsl', r'/H_16P\.wav', dict(GUN, t0=0.56, t1=4.0, gain=-2))])),
+                           ('ffsl', r'/O_21P\.wav', dict(GUN, t0=0.38, t1=3.3, target=-10, lim=12,
+                                                         layers=[('ffsl', r'/O_17P\.wav', dict(GUN, t0=0.65, t1=3.6, gain=-2))]))]),
+    'shotgun_dry': (-16, [('gary', r'12ga_dry', dict(t0=4.08, t1=4.75, tail=45, lim=4))]),
+    'shotgun_open': (-13, [('gary', r'12ga_dry', dict(t0=0.44, t1=1.25, tail=45, fo=80, lim=4,
+                                                        layers=[('gary', r'12ga_load_chamber', dict(t0=3.55, t1=4.25, tail=45, at=0.30, gain=-4))]))]),
+    'shotgun_shell': (-15, [('gary', r'12ga_load_chamber', dict(t0=0.57, t1=0.80, tail=45, fo=40, lim=4)),
+                             ('zer0sol', r'Shell in Chamber', dict(t0=0.47, t1=0.67, tail=45, fo=40, lim=4))]),
+    'shotgun_close': (-12, [('gary', r'12ga_dry', dict(t0=2.30, t1=3.00, tail=45, lim=4))]),
+    'zombie_groan': (-9, [('emopreben', r'ZombieMoan1', dict(tail=45, fo=150, lim=3)),
+                           ('emopreben', r'ZombieMoan3', dict(tail=45, fo=150, lim=3)),
+                           ('undead', r'undead-1', dict(tail=45, fo=150, lim=3)),
+                           ('darsycho', r'zombie-moans', dict(t0=0.2, t1=3.25, tail=45, fo=150, lim=3))]),
+    'zombie_attack': (-6, [('arcade_voice', r'zombieYell1\.wav', dict(tail=45, fo=60, lim=3)),
+                             ('arcade_voice', r'zombieYell10\.wav', dict(tail=45, fo=60, lim=3))]),
+    'zombie_die': (-7, [('arcade_voice', r'zombieDeath3\.wav', dict(tail=45, fo=100, lim=3)),
+                         ('arcade_voice', r'zombieDeath2\.wav', dict(tail=45, fo=100, lim=3))]),
+}
 
-TARGET_M = -14.0   # momentary loudness (LUFS, 400 ms) every file is brought to (unless its peak stops it)
-CEIL = -1.3        # sample-peak ceiling before encoding (decoded mp3 then stays at about -1 dBFS)
-KBPS = {'shotgun_shot': '128k', 'zombie_groan': '96k', 'zombie_attack': '96k', 'zombie_die': '96k'}
+TARGET_L = -14.0   # short-term loudness (K-weighted, loudest 100 ms, LUFS) every file is brought to – unless its peak stops it; 'lim' dB
+                   # may be pushed into a lookahead limiter for that (short impacts and the shot have a high crest factor)
+CEIL = -1.5        # sample-peak ceiling before encoding; after decoding the mp3 every file is checked for <= -1 dBFS
+KBPS = {'zombie_groan': '112k', 'zombie_attack': '112k', 'zombie_die': '112k'}  # all others 128 kbit/s
 
 
 def momentary_max(y, sr=SR):
@@ -477,6 +560,33 @@ def momentary_max(y, sr=SR):
                        input=pad.tobytes(), capture_output=True)
     ms = [float(m) for m in re.findall(r'M:\s*(-?[\d.]+)', p.stderr.decode('utf-8', 'replace'))]
     return max(ms) if ms else -70.0
+
+
+def short_max(y, sr=SR, win=0.1):
+    """Loudness of the loudest 100 ms (K-weighting as in EBU R128 via ffmpeg biquads, mean square, LUFS) – for short sounds the
+    400 ms momentary loudness says too little; variants of one kind are matched by this."""
+    p = subprocess.run(['ffmpeg', '-v', 'error', '-f', 'f32le', '-ar', str(sr), '-ac', '1', '-i', '-', '-af',
+                        'highshelf=f=1500:g=4:t=q:w=0.7071,highpass=f=38:t=q:w=0.5', '-f', 'f32le', '-'], input=y.astype(np.float32).tobytes(),
+                       capture_output=True, check=True)
+    k = np.frombuffer(p.stdout, np.float32).astype(np.float64)
+    w = max(1, int(win * sr))
+    if len(k) < w:
+        k = np.concatenate([k, np.zeros(w - len(k))])
+    c = np.cumsum(np.concatenate([[0.0], k ** 2]))
+    return float(10 * np.log10(max(np.max(c[w:] - c[:-w]) / w, 1e-12)) - 0.691)
+
+
+def limit(y, gain_db, ceil_db=None, sr=SR):
+    """Gain, then (if the peak would pass the ceiling) ffmpeg's lookahead limiter: attack 1 ms, release 60 ms, delay compensated."""
+    ceil_db = CEIL if ceil_db is None else ceil_db
+    z = y * 10 ** (gain_db / 20)
+    if float(db(np.max(np.abs(z)))) <= ceil_db:
+        return z.astype(np.float32)
+    p = subprocess.run(['ffmpeg', '-v', 'error', '-f', 'f32le', '-ar', str(sr), '-ac', '1', '-i', '-', '-af',
+                        f'apad=pad_dur=0.05,alimiter=limit={10 ** (ceil_db / 20):.4f}:attack=1:release=60:level=0:latency=1',
+                        '-f', 'f32le', '-'], input=z.astype(np.float32).tobytes(), capture_output=True, check=True)
+    w = np.frombuffer(p.stdout, np.float32)[:len(z)].copy()
+    return np.clip(w, -10 ** (ceil_db / 20), 10 ** (ceil_db / 20))
 
 
 def cut(y, o, segs):
@@ -496,14 +606,15 @@ def cut(y, o, segs):
     n = max(1, len(z) // hop)
     e = db(np.abs(z[:n * hop]).reshape(n, hop).max(1))
     pk = e.max()
-    on = np.nonzero(e > pk - 40)[0]
+    on = np.nonzero(e > pk - o.get('head', 40))[0]
     s0 = max(0, on[0] * hop - int(0.003 * SR))
     tl = np.nonzero(e > pk - o.get('tail', 40))[0]
     s1 = min(len(z), (tl[-1] + 1) * hop + int(0.01 * SR))
     if 'max' in o:
         s1 = min(s1, s0 + int(o['max'] * SR))
     z = z[s0:s1]
-    fi = min(int(0.002 * SR), len(z) // 4) if s0 > 0 or a > 0 else 0
+    fi = int(o['fi'] * SR / 1000) if 'fi' in o else (int(0.002 * SR) if s0 > 0 or a > 0 else 0)
+    fi = min(fi, len(z) // 2)
     if fi:
         z[:fi] *= np.linspace(0, 1, fi)
     fo = int(o['fo'] * SR / 1000) if 'fo' in o else min(int(0.06 * SR), len(z) // 4)
@@ -511,6 +622,22 @@ def cut(y, o, segs):
     if fo:
         z[-fo:] *= np.linspace(1, 0, fo) ** 2
     return z, (a + s0) / SR, (a + s1) / SR
+
+
+def render(out, files, src, pat, o):
+    """One source cut out of its raw file: filters, playback rate, window, trim, fades. Returns (inventory record, samples, t0, t1)."""
+    cand = [r for r in files if r['src'] == src and re.search(pat, r['path'], re.I)]
+    if not cand:
+        raise LookupError(f'nothing matches {src} {pat}')
+    r = cand[0]
+    af = ','.join(f for f in [f"highpass=f={o['hp']},highpass=f={o['hp']}" if 'hp' in o else '', f"lowpass=f={o['lp']}" if 'lp' in o else ''] if f) or None
+    y = ff_decode(os.path.join(out, r['raw']), SR, af)
+    if 'pitch' in o:
+        # playback-rate change (pitch and speed together), as a tape would
+        idx = np.arange(0, len(y) - 1, o['pitch'])
+        y = np.interp(idx, np.arange(len(y)), y).astype(np.float32)
+    z, t0, t1 = cut(y, o, r['segs'] if 'pitch' not in o else segments(y))
+    return r, z, t0, t1
 
 
 def build(out):
@@ -524,98 +651,131 @@ def build(out):
     tmp = os.path.join(out, 'tmp')
     os.makedirs(tmp, exist_ok=True)
     manifest, credits, report = {}, [], []
-    for kind, (vol, picks) in PICKS.items():
+    de = lambda v, f='.2f': format(v, f).replace('.', ',')
+    level = {}
+    for kind, (rel, picks) in PICKS.items():
         made = []
         for n, (src, pat, o) in enumerate(picks, 1):
-            cand = [r for r in files if r['src'] == src and re.search(pat, r['path'], re.I)]
-            if not cand:
-                log(f'!! {kind}_{n}: nothing matches {src} {pat}')
+            try:
+                r, z, t0, t1 = render(out, files, src, pat, o)
+                parts = [(r, o, t0, t1, 0.0)]
+                # layers: other recordings mixed in (offset 'at' s, level 'gain' dB relative to the raw recording)
+                for lsrc, lpat, lo in o.get('layers', []):
+                    lr, lz, lt0, lt1 = render(out, files, lsrc, lpat, lo)
+                    at = int(lo.get('at', 0) * SR)
+                    if at + len(lz) > len(z):
+                        z = np.concatenate([z, np.zeros(at + len(lz) - len(z), np.float32)])
+                    z[at:at + len(lz)] += lz * 10 ** (lo.get('gain', 0) / 20)
+                    parts.append((lr, lo, lt0, lt1, lo.get('gain', 0)))
+            except LookupError as e:
+                log(f'!! {kind}_{n}: {e}')
                 continue
-            r = cand[0]
-            af = ','.join(f for f in [f"highpass=f={o['hp']}" if 'hp' in o else '', f"lowpass=f={o['lp']}" if 'lp' in o else ''] if f) or None
-            y = ff_decode(os.path.join(out, r['raw']), SR, af)
-            if 'pitch' in o:
-                # playback-rate change (pitch and speed together), as a tape would
-                idx = np.arange(0, len(y) - 1, o['pitch'])
-                y = np.interp(idx, np.arange(len(y)), y).astype(np.float32)
-            z, t0, t1 = cut(y, o, r['segs'] if 'pitch' not in o else segments(y))
-            m = momentary_max(z)
-            pk = float(db(np.max(np.abs(z))))
-            made.append({'kind': kind, 'n': n, 'rec': r, 'z': z, 'm': m, 'pk': pk, 't0': t0, 't1': t1, 'o': o})
+            made.append({'kind': kind, 'n': n, 'parts': parts, 'z': z, 'l': short_max(z), 'pk': float(db(np.max(np.abs(z)))), 'o': o})
         if not made:
             continue
-        # each file to TARGET_M unless its peak stops it; then the variants of one kind matched to the quietest
+        # each file to TARGET_L unless its peak stops it (or up to 'lim' dB of limiting), the variants of one kind matched to the quietest,
+        # then the per-file tweak 'gain'
         for d in made:
-            d['g'] = min(TARGET_M - d['m'], CEIL - d['pk']) + d['o'].get('gain', 0)
-        lvl = min(d['m'] + d['g'] for d in made)
+            g1 = min(d['o'].get('target', TARGET_L) - d['l'], CEIL - d['pk'] + d['o'].get('lim', 0))
+            d['z1'] = limit(d['z'], g1)
+            d['g1'], d['l1'] = g1, short_max(d['z1'])
+            d['gr'] = max(0.0, g1 - (CEIL - d['pk']))
+        lvl = min(d['l1'] for d in made)
         names = []
         for d in made:
-            g = min(d['g'], lvl - d['m'] + d['o'].get('gain', 0))
-            g = min(g, CEIL - d['pk'])
-            z = (d['z'] * 10 ** (g / 20)).astype(np.float32)
+            g = lvl - d['l1'] + d['o'].get('gain', 0)
             name = f"kampf/{kind}_{d['n']}.mp3"
             wav = os.path.join(tmp, f"{kind}_{d['n']}.wav")
-            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '1', '-i', '-', '-c:a', 'pcm_s16le', wav],
-                           input=z.tobytes(), check=True)
-            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', wav, '-ac', '1', '-ar', str(SR), '-c:a', 'libmp3lame', '-b:a', KBPS.get(kind, '112k'),
-                            '-map_metadata', '-1', '-id3v2_version', '0', '-write_xing', '1', os.path.join(fin, name)], check=True)
-            yd = ff_decode(os.path.join(fin, name))
-            d.update(gain=round(g, 1), out_peak=round(float(db(np.max(np.abs(yd)))), 2), out_m=round(momentary_max(yd), 1),
+            for attempt in range(4):
+                z = limit(d['z1'], g)
+                subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '1', '-i', '-', '-c:a', 'pcm_s16le', wav],
+                               input=z.tobytes(), check=True)
+                subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', wav, '-ac', '1', '-ar', str(SR), '-c:a', 'libmp3lame', '-b:a', KBPS.get(kind, '128k'),
+                                '-map_metadata', '-1', '-id3v2_version', '0', '-write_xing', '1', os.path.join(fin, name)], check=True)
+                yd = ff_decode(os.path.join(fin, name))
+                over = float(db(np.max(np.abs(yd)))) + 1.0
+                if over <= 0:
+                    break
+                g -= over + 0.1  # the mp3 overshoots the ceiling: a little less and once more
+            g = d['g1'] + g
+            d.update(gain=round(g, 1), out_peak=round(float(db(np.max(np.abs(yd)))), 2), out_m=round(momentary_max(yd), 1), out_l=round(short_max(yd), 1),
                      size=os.path.getsize(os.path.join(fin, name)), dur=round(len(yd) / SR, 3), name=name)
             names.append(name)
-            r, s = d['rec'], sources[d['rec']['src']]
-            de = lambda v, f='.2f': format(v, f).replace('.', ',')
-            ch = [f"Ausschnitt {de(d['t0'])}–{de(d['t1'])} s", 'mono, 44,1 kHz', 'Stille vorn/hinten entfernt, ein- und ausgeblendet']
-            if 'hp' in d['o'] or 'lp' in d['o']:
-                ch.append('gefiltert (' + ', '.join(f"{k.upper()} {v} Hz" for k, v in d['o'].items() if k in ('hp', 'lp')) + ')')
-            if 'pitch' in d['o']:
-                ch.append(f"Tonhöhe/Tempo ×{de(d['o']['pitch'], 'g')}")
-            ch.append(f"Pegel {de(d['gain'], '+.1f')} dB (Spitze {de(d['out_peak'], '.1f')} dBFS)")
-            ch.append(f"MP3 {KBPS.get(kind, '112k').replace('k', ' kbit/s')}")
-            if s['lic'].startswith('CC BY-SA'):
-                ch.append(f"die Datei steht ebenfalls unter {s['lic']}")
-            credits.append(f"| `{name}` | [{s['title']}]({s['page']}) – `{r['path']}` | {s['author']} | [{s['lic']}]({LIC_URL.get(s['lic'], s['page'])}) "
-                           f"| {'; '.join(ch)} |")
-            report.append(f"{name:<32} {d['dur']:6.2f}s  peak {d['out_peak']:6.2f}  M {d['out_m']:6.1f}  {d['size'] // 1024:4d} KB  <- {r['id']} {r['path'][:60]}")
-        manifest[kind] = {'files': names, 'vol': vol}
-        # spectrograms of the finals of this kind (ffmpeg showspectrumpic), one under the other
-        pics = []
-        for d in made:
-            p = os.path.join(tmp, f"{kind}_{d['n']}.png")
-            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', os.path.join(fin, d['name']), '-lavfi',
-                            'showspectrumpic=s=720x180:legend=1:fscale=log:start=40:stop=16000:drange=90:color=intensity', '-frames:v', '1', p], check=True)
-            pics.append((d['name'], Image.open(p).convert('RGB')))
-        W = max(p.width for _, p in pics)
-        im = Image.new('RGB', (W, sum(p.height + 20 for _, p in pics)), (0, 0, 0))
-        dr, yy = ImageDraw.Draw(im), 0
-        for nm, p in pics:
-            dr.text((6, yy + 3), nm, fill=(255, 255, 255), font=font(13))
-            im.paste(p, (0, yy + 20))
-            yy += p.height + 20
+            src_cells, au_cells, lic_cells, ch = [], [], [], []
+            for k, (r, o, t0, t1, lg) in enumerate(d['parts']):
+                s = sources[r['src']]
+                src_cells.append(f"[{s['title']}]({s['page']}) – `{r['path'].rsplit('/', 1)[-1]}`")
+                if s['author'] not in au_cells:
+                    au_cells.append(s['author'])
+                lic = f"[{s['lic']}]({LIC_URL.get(s['lic'], s['page'])})"
+                if lic not in lic_cells:
+                    lic_cells.append(lic)
+                c = f"Ausschnitt {de(t0)}–{de(t1)} s"
+                if 'hp' in o or 'lp' in o:
+                    c += ', gefiltert (' + ', '.join(f"{k2.upper()} {v} Hz" for k2, v in o.items() if k2 in ('hp', 'lp')) + ')'
+                if 'pitch' in o:
+                    c += f", Tonhöhe/Tempo ×{de(o['pitch'], 'g')}"
+                if k:
+                    c = f"dazugemischt ({de(lg, '+.0f')} dB, ab {de(o.get('at', 0), '.2f')} s): " + c
+                ch.append(c)
+            ch += ['mono, 44,1 kHz', 'Stille vorn/hinten entfernt, ein- und ausgeblendet',
+                   f"Pegel {de(d['gain'], '+.1f')} dB" + (f", Spitzen um bis zu {de(d['gr'], '.0f')} dB begrenzt" if d['gr'] >= 0.5 else '')
+                   + f" (Spitze {de(d['out_peak'], '.1f')} dBFS)", f"MP3 {KBPS.get(kind, '128k').replace('k', ' kbit/s')}"]
+            sa = [sources[p[0]['src']]['lic'] for p in d['parts'] if sources[p[0]['src']]['lic'].startswith('CC BY-SA')]
+            if sa:
+                ch.append(f"die Datei steht ebenfalls unter {sa[0]}")
+            credits.append(f"| `{name}` | {' + '.join(src_cells)} | {', '.join(au_cells)} | {', '.join(lic_cells)} | {'; '.join(ch)} |")
+            report.append(f"{name:<32} {d['dur']:6.2f}s  peak {d['out_peak']:6.2f}  L100 {d['out_l']:6.1f}  M {d['out_m']:6.1f}  {d['size'] // 1024:4d} KB  <- "
+                          + ' + '.join(f"{p[0]['id']} {p[0]['path'].rsplit('/', 1)[-1][:40]} {p[2]:.2f}-{p[3]:.2f}" for p in d['parts']))
+        manifest[kind] = {'files': names, 'vol': 1.0}
+        level[kind] = float(np.median([d['out_l'] for d in made]))
+        # pictures of the finals of this kind, one under the other (decoded from the mp3; own renderer – ffmpeg 6.1's showspectrumpic
+        # with a log frequency axis draws a false line near 4–5 kHz)
+        pics = [panel(ff_decode(os.path.join(fin, d['name'])), f"{d['name']}  {d['dur']:.2f} s  Spitze {d['out_peak']:.1f} dBFS  "
+                      f"L100 {d['out_l']:.1f}  M {d['out_m']:.1f}") for d in made]
+        im = Image.new('RGB', (max(p.width for p in pics), sum(p.height for p in pics)), (0, 0, 0))
+        yy = 0
+        for p in pics:
+            im.paste(p, (0, yy))
+            yy += p.height
         im.save(os.path.join(out, 'spec', f'{kind}.png'), optimize=True)
     shutil.rmtree(tmp, ignore_errors=True)
+    # vol: the mix inside the zombie fight – each kind 'rel' dB below the shot (measured: loudest 100 ms), the shot at 1
+    ref = level.get('shotgun_shot', max(level.values()))
+    for kind, (rel, picks) in PICKS.items():
+        if kind in manifest:
+            manifest[kind]['vol'] = round(min(1.0, 10 ** ((ref + rel - level[kind]) / 20)), 2)
+            log(f'vol {kind:<14} {manifest[kind]["vol"]:.2f}  (level {level[kind]:.1f}, {rel:+d} dB from the shot)')
     json.dump(manifest, open(os.path.join(fin, 'kampf.json'), 'w'), ensure_ascii=False, indent=1)
     total = sum(os.path.getsize(os.path.join(fin, 'kampf', f)) for f in os.listdir(os.path.join(fin, 'kampf')))
     open(os.path.join(fin, 'CREDITS_TON.md'), 'w').write(
         '# Kampfgeräusche der Zombie-Nacht – Nachweise\n\n'
         'Echte Aufnahmen mit freier Lizenz (CC0 bevorzugt, sonst CC BY / CC BY-SA / OGA-BY mit Nennung), aufbereitet von '
         '`viz3/extra/zombie/quellen/ton.py` (GitHub Actions, `.github/workflows/zombie-ton.yml`). Liegen in `viz3/extra/zombie/dist/zombie/kampf/`, '
-        'die Zuordnung in `kampf.json`.\n\n'
+        'die Zuordnung in `kampf.json` (`vol`: Lautstärke im Kampf, bezogen auf den Schuss = 1, gemessen am lautesten 100-ms-Stück jeder Art). '
+        'Die Schüsse stammen von Vorderschaftrepetierflinten Kaliber 12 (Charles Daly, Benelli Nova; je eine Aufnahme aus der Nähe und eine aus '
+        'mittlerem Abstand derselben Waffe gemischt) – eine doppelläufige Flinte gleichen Kalibers klingt beim Schuss praktisch gleich; Öffnen, '
+        'Schließen und Abschlagen ohne Patrone von einer Selbstladeflinte Kaliber 12 (Browning).\n\n'
         '| Datei | Quelle (Seite – Datei im Paket) | Urheber | Lizenz | Änderungen |\n|---|---|---|---|---|\n' + '\n'.join(credits) + '\n')
-    by = {}
-    for kind, (vol, picks) in PICKS.items():
+    # one sentence for the credits (manifest credits_add): the CC BY / CC BY-SA works with links, the CC0 ones by name
+    used = {}
+    for kind, (rel, picks) in PICKS.items():
         for src, pat, o in picks:
-            s = sources[src]
-            by.setdefault((s['author'], s['lic']), []).append(s)
-    parts = []
-    for (au, lic), ss in by.items():
-        t = sorted({s['title'] for s in ss})
-        link = ss[0]['page']
-        parts.append(f"„{'“, „'.join(t)}“ von {au} (<a href=\"{link}\" target=\"_blank\" rel=\"noopener\">OpenGameArt</a>, {lic})"
-                     if 'opengameart' in link else f"„{'“, „'.join(t)}“ von {au} ({lic})")
+            for k in [src] + [l[0] for l in o.get('layers', [])]:
+                used[k] = sources[k]
+    link = lambda s: f"<a href=\"{s['page']}\" target=\"_blank\" rel=\"noopener\">{s['title']}</a>"
+    groups = []
+    for lic in ('CC BY 3.0', 'CC BY 4.0', 'CC BY-SA 3.0', 'CC BY-SA 4.0', 'OGA-BY 3.0'):
+        ss = [s for s in used.values() if s['lic'] == lic]
+        if ss:
+            groups.append(f"unter {lic}: " + ', '.join(f"„{link(s)}“ von {s['author']}" for s in ss)
+                          + (f" (die bearbeiteten Dateien ebenfalls unter {lic})" if 'SA' in lic else ''))
+    cc0 = sorted({s['author'] for s in used.values() if s['lic'] == 'CC0'})
+    if cc0:
+        groups.append('gemeinfrei (CC0): ' + ', '.join(cc0))
     open(os.path.join(fin, 'credits_add.txt'), 'w').write(
-        ' Kampfgeräusche (zombie/kampf/): ' + '; '.join(parts) + ' – geschnitten, gefiltert und im Pegel angeglichen; '
-        'Einzelnachweise in viz3/extra/zombie/quellen/CREDITS_TON.md.\n')
+        ' Kampfgeräusche (zombie/kampf/): echte Aufnahmen von OpenGameArt – ' + '; '.join(groups)
+        + ' – geschnitten, gefiltert und im Pegel angeglichen, Einzelnachweise in viz3/extra/zombie/quellen/CREDITS_TON.md.\n')
     rep = '\n'.join(report) + f'\n\ntotal {total / 1024:.0f} KB in {len(report)} files ({len(manifest)} kinds)\n'
     open(os.path.join(out, 'build.txt'), 'w').write(rep)
     log(rep)
