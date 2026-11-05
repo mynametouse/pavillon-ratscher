@@ -10,6 +10,9 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   `?szenario=zombie`. Man steht im Garten, die Waffen liegen herum. Ein neu geladener Stand macht weiter (`pav-zombie-v1`).
 - **Tag und Nacht nach der Sonne** (`ZOMBIE.times()`): 30 min vor der Sirene ein Hinweis, die Sirene 50 min nach Sonnenuntergang (Ende Oktober
   ~17:40), Entwarnung 25 min vor Sonnenaufgang. Ohne Tageslauf feste Zeiten (`ZDATA.TIME`: 20:30, 21:00, 5:30).
+- **Nebel bei Nacht** (Silent Hill): abends leicht, nachts dicht – das Dorf versinkt jenseits von 40–80 m im Dunkel. Es ist der Nebel der
+  Szene (kein neuer Shader), nur seine Dichte; weil der Tageslauf sie bei jeder Himmelsänderung neu setzt, liest sie sich im Modus als das
+  Größere von Tageslauf und Nacht (`z_modus.js` fogHook), beim Beenden wieder wie vorher.
 - **Die Sirene** vom Mast der alten Schule (Gebäude 215): E57-Heulton (Aufnahme, CC BY-SA) mit Echo übers Tal, morgens Dorfsirene mit
   Kirchenglocken (CC0); ohne Dateien synthetisch. Dorfbewohner draußen verwandeln sich an Ort und Stelle (knien, krampfen, stehen auf); ist
   keiner draußen, verwandeln sich zwei in Sichtweite. Mehr kommen aus Haustüren 35–110 m entfernt, lieber hinter dem Spieler.
@@ -24,11 +27,14 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   bzw. Klick, Taste Y, roter Knopf am Handy; gedrückt halten wiederholt. Motorsäge: drücken startet (1,6 s), halten sägt, Benzin 0,5 l, R tankt
   aus dem Rucksack nach. Flinte: zwei Schuss, R lädt nach. Zustand sinkt mit jedem Treffer, bei 0 bricht die Waffe.
 - **Körper** (`z_state.js`): Leben, Kraft (Schläge, Rennen), Hunger (sinkt langsam; leer kostet Leben). Panel: Essen, Trinken, Verbinden,
-  Warten (bis zum Abend), Beenden (zweimal). T: Taschenlampe (ein geliehenes Punktlicht). Tod: der Morgen danach im Garten, ein Drittel der
+  Warten (bis zum Abend), Zu zweit, Beenden (zweimal); am Handy startet es eingeklappt (Titel antippen), rechts Knöpfe für Schlag, R, Tritt
+  und Taschenlampe. T: Taschenlampe (ein geliehenes Punktlicht). Tod: der Morgen danach im Garten, ein Drittel der
   Vorräte weg.
 - **Häuser** (`z_haus.js` auf ZINNEN, `docs/features/zombie-innen.md`; in Wolfgangs Flur liegen Motorsäge und Axt): „Ins Haus gehen“ an der Haustür (Abblende), Durchsuchen (Beute je Behälter einmal, `ZDATA.LOOT`),
   Türen und Fenster verbarrikadieren (2 Bretter, Nägel, 2,6 s hämmern – hörbar), Bett (Zeit vergeht, wenn keiner nah ist), Radio, Ofen.
-  Nachts riechen sie den Spieler im Haus (70 m), kommen an Türen und Fenster, hämmern auf die Bretter und steigen ein. Tagsüber lauern einige
+  Nachts riechen sie den Spieler im Haus (70 m), kommen an Türen und Fenster, hämmern auf die Bretter und steigen ein; drinnen finden sie
+  den Weg von Raum zu Raum (`H.route` der Einrichtung) und drücken geschlossene Innentüren auf. Beim Start des Modus wärmt `ZINNEN.warm()`
+  den einen Shader der Häuser vor – das erste Haus ruckelt nicht. Tagsüber lauern einige
   in den Häusern, in die sie morgens gegangen sind; manchmal versteckt sich dort ein Überlebender.
 - **Zu zweit** (`z_netz.js`, Paket `dist/lazy/raum.js` = Trystero 0.26, MIT): im Panel „Zu zweit“ → „Raum erstellen“ gibt einen Code
   (z. B. `KLOSS7`) und einen Link (`?szenario=zombie&raum=KLOSS7`); der andere öffnet den Link oder tippt den Code bei „Beitreten“. Die Browser
@@ -37,7 +43,7 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   tot). Seine Schläge gehen als Treffer zum Gastgeber, die Zombies jagen den Näheren und schlagen den Gast per Nachricht; neue kommen aus den
   Häusern bei beiden. Laut (Säge, Schuss, Motor, Hämmern) hören die Zombies des Gastgebers auch vom Gast, sein Auto schleudert sie weg, ein
   Treffer zählt für den, der schlug. Jeder sieht den anderen als seine Figur mit Namen, im Auto das Auto; Barrikaden sind gemeinsam; Vorräte,
-  Waffen, Leben hat jeder für sich. `?lokal=1`: zwei Fenster eines Browsers über einen BroadcastChannel (Test `zombie_netz`).
+  Waffen, Leben hat jeder für sich; die Waffe des anderen ist in seiner Hand zu sehen, seine Motorsäge zu hören. `?lokal=1`: zwei Fenster eines Browsers über einen BroadcastChannel (Test `zombie_netz`).
   Grenze: hinter manchen Mobilfunknetzen finden sich zwei Browser ohne Vermittlungsserver (TURN) nicht – dann im WLAN probieren.
 - **Verbündete** (`z_bund.js`): Hubert („um Hilfe bitten“) und Ronald (will erst etwas zu essen) kommen mit, kämpfen, warten auf Zuruf;
   niedergeschlagen sind sie nur verletzt (Verbandskasten hilft auf, morgens wieder auf den Beinen). Überlebende aus Häusern gegen Essen; sterben

@@ -287,14 +287,15 @@ with lib.browser() as b:
                 const cs = [[r.x0, r.y0], [r.x1, r.y0], [r.x1, r.y1], [r.x0, r.y1]].sort((a, b) => Math.hypot(a[0] - dp[0], a[1] - dp[1]) - Math.hypot(b[0] - dp[0], b[1] - dp[1]));
                 for (const [c, v] of r.kind === 'stube' ? [[cs[0], 'a'], [cs[3], 'b']] : [[cs[0], 'a']]) {
                   const m = [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2], e = [c[0] + Math.sign(m[0] - c[0]) * 0.8, c[1] + Math.sign(m[1] - c[1]) * 0.8];
-                  const ew = P.toW(e[0], e[1]), mw = P.toW(m[0], m[1]);
-                  out.push({ id: r.id, kind: r.kind + (v === 'b' ? '_b' : ''), x: ew[0], y: ew[1], z: r.z0 + 1.6, yaw: Math.atan2(mw[0] - ew[0], mw[1] - ew[1]) * 180 / Math.PI }); } }
+                  const ew = P.toW(e[0], e[1]), mw = P.toW(m[0], m[1]), sw = P.toW(c[0] + Math.sign(m[0] - c[0]) * 0.3, c[1] + Math.sign(m[1] - c[1]) * 0.3);
+                  out.push({ id: r.id, kind: r.kind + (v === 'b' ? '_b' : ''), x: ew[0], y: ew[1], z: r.z0 + 1.6, z0: r.z0, sx: sw[0], sy: sw[1], yaw: Math.atan2(mw[0] - ew[0], mw[1] - ew[1]) * 180 / Math.PI }); } }
               return out; })()""")
             for mode in ('day', 'night'):
                 E(f"GAME.setMode('{mode}'); GAME.step(0.2)")
                 lib.settle_light(pg)
                 for r in rooms:
-                    E(f"""(() => {{ if ('{mode}' === 'night') __H.light('{r['id']}', true); CAM3.want = false;
+                    # the walker in the corner behind the camera: the room's light (by day the warm fill from the window) follows him
+                    E(f"""(() => {{ if ('{mode}' === 'night') __H.light('{r['id']}', true); __Z.stand({r['sx']}, {r['sy']}, {r['z0']}, {r['yaw']}); GAME.step(0.2); CAM3.want = false;
                       GAME.view({r['x']}, {r['y']}, {r['z']}, {r['yaw']}, -12, 78); GAME.step(0.05); return 1; }})()""")
                     shot(f"epoche_{look}_{hid}_{r['kind']}_{'tag' if mode == 'day' else 'nacht'}")
                     if mode == 'night': E(f"__H.light('{r['id']}', false); 1")

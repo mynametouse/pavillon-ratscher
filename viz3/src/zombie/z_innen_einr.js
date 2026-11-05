@@ -467,6 +467,9 @@ export const ZIEINR = (() => {
     for (let i = 0; i < n; i++)
       L.leaf(C, F, u0 + i * 0.6 + 0.02, 1, 0.56, 0.33, z + 1.47, z + 2.13, front, M.stahl, i < 2 ? wall : null);
     C.solid(F.rect(u0, u0 + w, 0, 0.6), z, z + 0.9);
+    // the worktop beside the sink (under the wall units: low things only)
+    top(C, F, u0 + 0.05, u0 + 0.6, 0.3, z + 0.9, 'arbeit');
+    if (n > 2) top(C, F, u0 + 1.25, u0 + w - 0.05, 0.3, z + 0.9, 'arbeit');
   };
   // the fridge (DDR „Kristall“ type, small, white; later a tall one)
   L.kuehlschrank = (C, F) => {
@@ -1851,6 +1854,17 @@ export const ZIEINR = (() => {
       );
     }
   };
+  // a triangle turned to face n (the mesher's tri keeps the order it is given)
+  const ftri = (m, mat, a, b, c, n) => {
+    const e1 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+      e2 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]],
+      d =
+        (e1[1] * e2[2] - e1[2] * e2[1]) * n[0] +
+        (e1[2] * e2[0] - e1[0] * e2[2]) * n[1] +
+        (e1[0] * e2[1] - e1[1] * e2[0]) * n[2];
+    if (d >= 0) m.tri(mat, a, b, c, n);
+    else m.tri(mat, a, c, b, n);
+  };
   // on the wall: a plate (Wandteller) – a disc facing the room with a coloured rim
   DK.teller = (C, F, u, z, r) => {
     const m = C.m,
@@ -1861,7 +1875,8 @@ export const ZIEINR = (() => {
     for (let k = 0; k < n; k++) {
       const a0 = (k / n) * Math.PI * 2,
         a1 = ((k + 1) / n) * Math.PI * 2;
-      m.tri(
+      ftri(
+        m,
         w,
         F.P(u, 0.03, z),
         F.P(u + Math.cos(a0) * r * 0.75, 0.03, z + Math.sin(a0) * r * 0.75),
@@ -1870,7 +1885,8 @@ export const ZIEINR = (() => {
       );
       // the painted middle (a flower or a blue Zwiebelmuster ring), so the plate reads on a light wall
       if (k % 2 === 0)
-        m.tri(
+        ftri(
+          m,
           rim,
           F.P(u, 0.032, z),
           F.P(u + Math.cos(a0) * r * 0.4, 0.032, z + Math.sin(a0) * r * 0.4),
@@ -1923,6 +1939,64 @@ export const ZIEINR = (() => {
       F.box(m, C.col(0x8a8a8a, 0.9), u - 0.12, u + 0.12, 0.008, 0.01, z - 0.22 + k * 0.045, z - 0.21 + k * 0.045);
     onWall(C, F, u - 0.16, u + 0.16, z - 0.26, z + 0.21);
   };
+  // kitchen things on the worktop: storage tins (Vorratsdosen), a kettle, a bread bin, a coffee grinder in the old houses
+  DK.dosen = (C, F, u, v, z) => {
+    const c = C.col(C.R.pick([0xe8e0d0, 0xd8402a, 0x3a6aa0, 0xe8c840]), 0.35, 0.3);
+    for (let k = 0; k < 3; k++) {
+      F.cyl(C.m, c, u - 0.1 + k * 0.1, v, z, z + 0.16 - k * 0.02, 0.042, 0.042, 10);
+      F.cyl(
+        C.m,
+        C.col(0xd8d8d0, 0.3, 0.7),
+        u - 0.1 + k * 0.1,
+        v,
+        z + 0.16 - k * 0.02,
+        z + 0.175 - k * 0.02,
+        0.044,
+        0.044,
+        10
+      );
+    }
+    return 0.3;
+  };
+  DK.kessel = (C, F, u, v, z) => {
+    const c = C.col(C.R.pick([0xe8e4dc, 0xc85a30, 0x9aa1a4]), 0.3, 0.4);
+    F.lathe(
+      C.m,
+      c,
+      u,
+      v,
+      [
+        [0.08, z],
+        [0.095, z + 0.08],
+        [0.06, z + 0.17],
+        [0.02, z + 0.19],
+      ],
+      12,
+      { caps: true }
+    );
+    F.rod(C.m, C.col(0x2a2a2a, 0.5), [u - 0.06, v, z + 0.2], [u + 0.06, v, z + 0.2], 0.008, 4);
+    return 0.22;
+  };
+  DK.brot = (C, F, u, v, z) => {
+    F.box(
+      C.m,
+      C.col(C.R.pick([0xe8e0d0, 0x8a6a48, 0xc8402a]), 0.5, 0.2),
+      u - 0.17,
+      u + 0.17,
+      v - 0.12,
+      v + 0.1,
+      z,
+      z + 0.16
+    );
+    F.box(C.m, C.col(0x5a4a3a, 0.6), u - 0.17, u + 0.17, v + 0.1, v + 0.105, z + 0.11, z + 0.13);
+    return 0.36;
+  };
+  DK.muehle = (C, F, u, v, z) => {
+    F.box(C.m, C.M.holz, u - 0.06, u + 0.06, v - 0.06, v + 0.06, z, z + 0.13);
+    F.cyl(C.m, C.M.messing, u, v, z + 0.13, z + 0.17, 0.045, 0.035, 8);
+    F.rod(C.m, C.col(0x2a2a2a, 0.5, 0.6), [u, v, z + 0.17], [u + 0.08, v, z + 0.2], 0.005, 4);
+    return 0.15;
+  };
   // a chest of drawers (Kommode) with a top for the small things
   L.kommode = (C, F) => {
     const body = C.look === 'ddr' ? C.M.furnier : C.look === 'nachwende' ? C.M.eiche : C.M.holz;
@@ -1933,6 +2007,7 @@ export const ZIEINR = (() => {
     }
     C.solid(F.rect(F.u0, F.u0 + 1.0, 0, 0.5), C.z, C.z + 0.86);
     top(C, F, F.u0 + 0.1, F.u0 + 0.9, 0.24, C.z + 0.86, 'schrank');
+    C.container('schublade', 'Kommode durchsuchen', F.P(F.u0 + 0.5, 0.8, C.z + 0.6));
   };
   // a sewing table with its machine (Nähmaschine: black with gold lettering, the wheel at the side) and a chair
   L.naehtisch = (C, F) => {
@@ -1950,6 +2025,7 @@ export const ZIEINR = (() => {
     F.cyl(m, C.col(0x9aa1a4, 0.3, 0.8), u0 + 0.68, 0.24, z + 0.9, z + 0.92, 0.06, 0.06, 10);
     L.chair(C, F, u0 + 0.45, 0.85, -Math.PI / 2, wood);
     C.solid(F.rect(u0, u0 + 0.9, 0, 0.5), z, z + 0.78);
+    C.container('schublade', 'Nähkasten durchsuchen', F.P(u0 + 0.45, 0.85, z + 0.7));
   };
   // an armchair with a side table and (alt, DDR) a lamp on it
   L.sesselecke = (C, F) => {
@@ -2034,6 +2110,41 @@ export const ZIEINR = (() => {
       area = (room.x1 - room.x0) * (room.y1 - room.y0),
       living = ['stube', 'wohnzimmer', 'schlafzimmer', 'kammer', 'kinderzimmer'].includes(kind),
       all = inner.concat(outer);
+    if (kind === 'bad') {
+      // a bath mat and a towel on a rail where the wall is free
+      const r = Pl.floorFree(0.8, 0.5);
+      if (r)
+        C.m.box(
+          C.col(C.R.pick([0x6a8ab0, 0xd8a0a8, 0xe8e0d0, 0x7aa07a]), 0.95),
+          r[0],
+          r[1],
+          r[2],
+          r[3],
+          C.z + 0.002,
+          C.z + 0.012
+        );
+      for (const sd of C.R.shuffle(all.slice())) {
+        const W = Pl.S[sd],
+          Fw = frame(W.O, W.a, W.n),
+          u = [0.3, 0.5, 0.7]
+            .map(f => W.L * f)
+            .find(q => Pl.wallFree(sd, q - 0.35, q + 0.35, C.z + 0.9, C.z + 1.3) && !Pl.tallAt(sd, q - 0.35, q + 0.35));
+        if (u === undefined) continue;
+        Fw.rod(C.m, C.M.stahl || C.M.messing, [u - 0.3, 0.08, C.z + 1.2], [u + 0.3, 0.08, C.z + 1.2], 0.01, 5);
+        Fw.box(
+          C.m,
+          C.col(C.R.pick([0xf4f2ec, 0x6a8ab0, 0xd8a0a8, 0xe8c840]), 0.95),
+          u - 0.22,
+          u + 0.18,
+          0.065,
+          0.095,
+          C.z + 0.75,
+          C.z + 1.21
+        );
+        onWall(C, Fw, u - 0.35, u + 0.35, C.z + 0.75, C.z + 1.25);
+        break;
+      }
+    }
     if (
       kind === 'keller' ||
       kind === 'boden' ||
@@ -2161,24 +2272,36 @@ export const ZIEINR = (() => {
     const R = C.R;
     for (const t of C.tops || []) {
       const list =
-        t.kind === 'tisch'
-          ? ['schale', 'zeitung']
-          : t.kind === 'couchtisch'
-            ? [R.pick(['zeitung', 'schale']), 'kristall']
-            : t.kind === 'oben'
-              ? ['vase', 'kristall']
-              : t.kind === 'beistell'
-                ? [R.pick(['zeitung', 'vase', 'foto'])]
-                : look === 'alt'
-                  ? ['tasse', 'tasse', 'foto', 'leuchter', 'vase']
-                  : look === 'ddr'
-                    ? ['kristall', 'tasse', 'vase', 'foto']
-                    : ['foto', 'vase', 'leuchter'];
+        t.kind === 'arbeit'
+          ? look === 'alt'
+            ? ['muehle', 'dosen', 'brot']
+            : ['kessel', 'dosen', 'brot']
+          : t.kind === 'tisch'
+            ? ['schale', 'zeitung']
+            : t.kind === 'couchtisch'
+              ? [R.pick(['zeitung', 'schale']), 'kristall']
+              : t.kind === 'oben'
+                ? ['vase', 'kristall']
+                : t.kind === 'beistell'
+                  ? [R.pick(['zeitung', 'vase', 'foto'])]
+                  : look === 'alt'
+                    ? ['tasse', 'tasse', 'foto', 'leuchter', 'vase']
+                    : look === 'ddr'
+                      ? ['kristall', 'tasse', 'vase', 'foto']
+                      : ['foto', 'vase', 'leuchter'];
       let u = t.u0;
       let first = true;
       for (const it of R.shuffle(list.slice())) {
         const need =
-          it === 'zeitung' ? 0.34 : it === 'schale' ? 0.3 : it === 'kristall' ? 0.22 : it === 'foto' ? 0.2 : 0.17;
+          it === 'zeitung' || it === 'brot'
+            ? 0.36
+            : it === 'schale' || it === 'dosen'
+              ? 0.32
+              : it === 'kristall' || it === 'kessel'
+                ? 0.22
+                : it === 'foto'
+                  ? 0.2
+                  : 0.17;
         if (u + need > t.u1) continue;
         const c = u + need / 2;
         if (first && look === 'ddr' && t.kind !== 'tisch' && t.kind !== 'oben')
