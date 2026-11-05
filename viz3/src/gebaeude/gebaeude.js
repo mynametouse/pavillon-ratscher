@@ -580,48 +580,80 @@ export const GEB = (() => {
     box(-w / 2, w / 2, -d / 2, d / 2, z0 - 1.4, z1, kk);
     box(-w / 2 - 0.05, w / 2 + 0.05, -d / 2 - 0.05, d / 2 + 0.05, z1, z1 + 0.08, 17);
   }
-  // ---- a set of buildings → meshes per cell (frustum culling), wall segments; the foot on the terrain as drawn (KERN) ----
+  // ---- buildings → meshes per 400 m cell (frustum culling), wall segments; the foot on the terrain as drawn (KERN). Built in pieces of
+  // a few milliseconds per frame (KERN.tick): no hitch at load or when a cell comes in while driving ----
   const CELL = 400;
-  function buildSet(list, id0, ground) {
-    const cells = new Map(),
-      segs = [];
-    list.forEach((b, i) => {
-      const id = id0 + i;
-      let cx = 0,
-        cy = 0,
-        A = 0;
-      const n = b.f.length / 2;
-      for (let k = 0; k < b.f.length; k += 2) {
-        const j = (k + 2) % b.f.length;
-        cx += b.f[k] / n;
-        cy += b.f[k + 1] / n;
-        A += b.f[k] * b.f[j + 1] - b.f[j] * b.f[k + 1];
-      }
-      b.cx = cx;
-      b.cy = cy;
-      b.A = Math.abs(A) / 2;
-      b.id = id;
-      // the foot: the ground along the walls; on a slope the ground floor keeps to the upper side, the walls go down to the lowest point
-      const zs = [];
-      for (const f of b.F) zs.push(ground(f[0], f[1]), ground((f[0] + f[2]) / 2, (f[1] + f[3]) / 2));
-      zs.sort((p, q) => p - q);
-      const zmin = zs.length ? zs[0] : ground(cx, cy),
-        z70 = zs.length ? zs[Math.floor(zs.length * 0.7)] : zmin;
-      b.zmin = zmin;
-      b.z0 = z70 - zmin < 1.0 ? zmin - 0.05 : z70 - 0.4;
-      b.st = styleOf(b, id);
-      const key = Math.floor(cx / CELL) + ',' + Math.floor(cy / CELL);
-      let c = cells.get(key);
-      if (!c) cells.set(key, (c = { WB: wallBuf(), RB: roofBuf(), n: 0 }));
-      try {
-        building(b, id, b.z0, c.WB, c.RB, segs);
-        c.n++;
-      } catch (e) {
-        console.warn('gebaeude', b.id, e);
-      }
-    });
-    return { cells, segs };
+  function prep(b, id) {
+    let cx = 0,
+      cy = 0,
+      A = 0;
+    const n = b.f.length / 2;
+    for (let k = 0; k < b.f.length; k += 2) {
+      const j = (k + 2) % b.f.length;
+      cx += b.f[k] / n;
+      cy += b.f[k + 1] / n;
+      A += b.f[k] * b.f[j + 1] - b.f[j] * b.f[k + 1];
+    }
+    b.cx = cx;
+    b.cy = cy;
+    b.A = Math.abs(A) / 2;
+    b.id = id;
   }
+  // the wall feet of a list (collisions) without building anything
+  function segsOf(list) {
+    const out = [];
+    for (const b of list)
+      for (const f of b.F) if (Math.hypot(f[2] - f[0], f[3] - f[1]) >= 0.05) out.push(f[0], f[1], f[2], f[3]);
+    return out;
+  }
+  function one(J, b, id) {
+    prep(b, id);
+    // the foot: the ground along the walls; on a slope the ground floor keeps to the upper side, the walls go down to the lowest point
+    const zs = [];
+    for (const f of b.F) zs.push(J.ground(f[0], f[1]), J.ground((f[0] + f[2]) / 2, (f[1] + f[3]) / 2));
+    zs.sort((p, q) => p - q);
+    const zmin = zs.length ? zs[0] : J.ground(b.cx, b.cy),
+      z70 = zs.length ? zs[Math.floor(zs.length * 0.7)] : zmin;
+    b.zmin = zmin;
+    b.z0 = z70 - zmin < 1.0 ? zmin - 0.05 : z70 - 0.4;
+    b.st = styleOf(b, id);
+    const key = Math.floor(b.cx / CELL) + ',' + Math.floor(b.cy / CELL);
+    let c = J.cells.get(key);
+    if (!c) J.cells.set(key, (c = { WB: wallBuf(), RB: roofBuf(), n: 0 }));
+    try {
+      building(b, id, b.z0, c.WB, c.RB, J.segs);
+      c.n++;
+    } catch (e) {
+      console.warn('gebaeude', id, e);
+    }
+  }
+  const JOBS = [];
+  S.jobs = () => JOBS.length;
+  function job(list, id0, ground, done) {
+    const J = { list, id0, ground, done, i: 0, cells: new Map(), segs: [], dead: false };
+    JOBS.push(J);
+    return J;
+  }
+  function runJobs() {
+    const t0 = performance.now();
+    while (JOBS.length && performance.now() - t0 < 8) {
+      const J = JOBS[0];
+      if (!J.dead && J.i < J.list.length) {
+        one(J, J.list[J.i], J.id0 + J.i);
+        J.i++;
+        continue;
+      }
+      JOBS.shift();
+      if (J.dead) continue;
+      try {
+        J.done(J.cells, J.segs);
+      } catch (e) {
+        S.err = String(e);
+        console.warn('gebaeude', e);
+      }
+    }
+  }
+  KERN.tick(runJobs, 'gebaeude/bau');
   function add(m, name, out) {
     m.name = 'gebaeude ' + name;
     m.userData.noMerge = true;
@@ -644,20 +676,14 @@ export const GEB = (() => {
       ground = (x, y) => (RATSCHER.hMesh ? RATSCHER.hMesh(x, y) : RATSCHER.hAt(x, y));
     S.bld = data.b;
     S.stats = data.stats || null;
-    const { cells, segs } = buildSet(data.b, ID0, ground);
+    data.b.forEach((b, i) => prep(b, ID0 + i));
     // the village's own materials (world/village.js): same programs, its lamps and windows at night
     const wm = VILLAGE.ready && RATSCHER.bld[0] && RATSCHER.bld[0].material,
       rm = VILLAGE.ready && VILLAGE.meshes[0] && VILLAGE.meshes[0].material;
     if (!wm || !rm) throw new Error('village materials missing');
-    for (const [k, c] of cells) {
-      if (!c.n) continue;
-      add(new THREE.Mesh(c.WB.geo(), wm), 'walls ' + k, S.meshes);
-      add(new THREE.Mesh(c.RB.geo(), rm), 'roofs ' + k, S.meshes);
-    }
-    // hidden with the village in the map view (world/ratscher.js setMap toggles RATSCHER.bld)
-    for (const m of S.meshes) RATSCHER.bld.push(m);
-    // collisions: the wall feet into world/worldcol.js (built after this module), boxes for the garden's walk grid within 95 m
-    const W0 = RATSCHER.walls || new Float32Array(0),
+    // collisions now (world/worldcol.js builds its grid after this module): the wall feet, boxes for the garden's walk grid within 95 m
+    const segs = segsOf(data.b),
+      W0 = RATSCHER.walls || new Float32Array(0),
       W1 = new Float32Array(W0.length + segs.length);
     W1.set(W0);
     W1.set(segs, W0.length);
@@ -666,8 +692,6 @@ export const GEB = (() => {
     let nCol = 0;
     for (const b of data.b) {
       if (Math.hypot(b.cx - 2, b.cy - 2) > 95) continue;
-      const pts = [];
-      for (let k = 0; k < b.f.length; k += 2) pts.push([b.f[k], b.f[k + 1]]);
       const an = ((90 - (b.az || 0)) * Math.PI) / 180,
         c = Math.cos(an),
         s = Math.sin(an);
@@ -675,9 +699,9 @@ export const GEB = (() => {
         x1 = -1e9,
         y0 = 1e9,
         y1 = -1e9;
-      for (const [x, y] of pts) {
-        const lx = (x - b.cx) * c + (y - b.cy) * s,
-          ly = -(x - b.cx) * s + (y - b.cy) * c;
+      for (let k = 0; k < b.f.length; k += 2) {
+        const lx = (b.f[k] - b.cx) * c + (b.f[k + 1] - b.cy) * s,
+          ly = -(b.f[k] - b.cx) * s + (b.f[k + 1] - b.cy) * c;
         x0 = Math.min(x0, lx);
         x1 = Math.max(x1, lx);
         y0 = Math.min(y0, ly);
@@ -690,9 +714,24 @@ export const GEB = (() => {
     // trees of the canopy model that were these buildings' roofs (no OSM footprint to keep them out when the trees were found): hidden
     hideTrees(data.trees || []);
     S.n = data.b.length;
-    S.ms = Math.round(performance.now() - t0);
-    S.ready = true;
-    markDirty(true);
+    S.msPrep = Math.round(performance.now() - t0);
+    // the meshes over the next frames
+    const t1 = performance.now();
+    job(data.b, ID0, ground, cells => {
+      for (const [k, c] of cells) {
+        if (!c.n) continue;
+        add(new THREE.Mesh(c.WB.geo(), wm), 'walls ' + k, S.meshes);
+        add(new THREE.Mesh(c.RB.geo(), rm), 'roofs ' + k, S.meshes);
+      }
+      // hidden with the village in the map view (world/ratscher.js setMap toggles RATSCHER.bld)
+      for (const m of S.meshes) {
+        RATSCHER.bld.push(m);
+        m.visible = !RATSCHER.map;
+      }
+      S.ms = Math.round(performance.now() - t1);
+      S.ready = true;
+      markDirty(true);
+    });
   }
   function hideTrees(list) {
     if (!list.length) return;
@@ -760,27 +799,32 @@ export const GEB = (() => {
     const z = KERN.terrain(x, y);
     return Number.isFinite(z) ? z : RATSCHER.hAt(x, y);
   }
-  function zBuild(c) {
+  function zBuild(c, then) {
     const t0 = performance.now(),
       wm = RATSCHER.bld[0] && RATSCHER.bld[0].material,
       rm = VILLAGE.meshes[0] && VILLAGE.meshes[0].material;
-    zDrop(c, true);
-    const { cells, segs } = buildSet(c.data.b, 10000 + Z.keys.indexOf(c.key) * 400, zGround);
-    for (const [k, sc] of cells) {
-      if (!sc.n) continue;
-      for (const m of [new THREE.Mesh(sc.WB.geo(), wm), new THREE.Mesh(sc.RB.geo(), rm)]) {
-        add(m, 'z ' + c.key + ' ' + k, c.meshes);
-        RATSCHER.bld.push(m);
-        m.visible = !RATSCHER.map;
+    if (c.job) c.job.dead = true;
+    c.job = job(c.data.b, 10000 + Z.keys.indexOf(c.key) * 400, zGround, (cells, segs) => {
+      c.job = null;
+      zDrop(c, true);
+      for (const [k, sc] of cells) {
+        if (!sc.n) continue;
+        for (const m of [new THREE.Mesh(sc.WB.geo(), wm), new THREE.Mesh(sc.RB.geo(), rm)]) {
+          add(m, 'z ' + c.key + ' ' + k, c.meshes);
+          RATSCHER.bld.push(m);
+          m.visible = !RATSCHER.map;
+        }
       }
-    }
-    c.segs = segs;
-    // the ground under a few buildings as it was when built – compared later (the tiles may come in after)
-    c.probe = c.data.b.filter((b, k) => k % 7 === 0).map(b => [b.cx, b.cy, zGround(b.cx, b.cy)]);
-    c.ms = Math.round(performance.now() - t0);
-    Z.built++;
-    zGrid();
-    markDirty(true);
+      c.segs = segs;
+      // the ground under a few buildings as it was when built – compared later (the tiles may come in after)
+      c.probe = c.data.b.filter((b, k) => k % 7 === 0).map(b => [b.cx, b.cy, zGround(b.cx, b.cy)]);
+      c.ms = Math.round(performance.now() - t0);
+      c.state = 'built';
+      Z.built++;
+      zGrid();
+      markDirty(true);
+      if (then) then();
+    });
   }
   function zDrop(c, keepData) {
     for (const m of c.meshes) {
@@ -792,6 +836,11 @@ export const GEB = (() => {
     c.meshes = [];
     c.segs = [];
     if (!keepData) {
+      if (c.job) {
+        c.job.dead = true;
+        Z.busy = false;
+      }
+      c.job = null;
       c.data = null;
       c.state = 'idle';
       Z.freed++;
@@ -866,14 +915,14 @@ export const GEB = (() => {
     // free what is far
     for (const c of Z.cells.values()) {
       const [i, j] = c.ij;
-      if (c.meshes.length && cellD(i, j, x, y) > FAR) zDrop(c);
+      if ((c.meshes.length || c.state === 'building') && cellD(i, j, x, y) > FAR) zDrop(c);
     }
     // the nearest wanted cell not built yet: fetch and build it (one at a time)
     let best = null,
       bd = NEAR;
     for (const key of Z.keys) {
       const c = Z.cells.get(key);
-      if (c && (c.meshes.length || c.state === 'loading' || c.state === 'error')) continue;
+      if (c && (c.meshes.length || c.state !== 'idle')) continue;
       const [i, j] = key.split('_').map(Number),
         d = cellD(i, j, x, y);
       if (d < bd) {
@@ -892,15 +941,15 @@ export const GEB = (() => {
       c.state = 'loading';
       const go = j => {
         c.data = j;
+        c.state = 'building';
         try {
-          zBuild(c);
-          c.state = 'built';
+          zBuild(c, () => (Z.busy = false));
         } catch (e) {
           c.state = 'error';
           Z.err = String(e);
+          Z.busy = false;
           console.warn('gebaeude cell', best, e);
         }
-        Z.busy = false;
       };
       if (c.data) go(c.data);
       else
