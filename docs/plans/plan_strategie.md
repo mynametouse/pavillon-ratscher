@@ -123,3 +123,31 @@ ein freier Modus ohne Ende.
 - Nacht 5./6.11.: Hilfs-Agent `strategie` baut den Kern (Draufsicht als Spielfeld, Personen, Aufträge, Zeit, Vorräte, Euro, Strom, Regeln,
   Ereignisse) und die Holzkette (Auftrag `docs/plans/auftraege/strategie.md`); sobald sein Kern steht, baut ein zweiter Hilfs-Agent darauf
   Dorfprojekte und Ansehen, den Pavillon und den Garten von oben.
+
+## 12 Die Mischung: Warcraft 3, Age of Empires, Siedler 3 und Black & White (Falko, 23:20, und seine Wahl um 23:24)
+
+Falkos Hinweis: eine Mischung aus Warcraft 3, Age of Empires und Siedler 3 – Helden mit bestimmten Fähigkeiten (Falko, Sarah – seine Freundin –,
+Christoph – sein Bruder –, Hubert, Ronald), dazu andere Dorfbewohner, Ziegen und andere Tiere, auch wilde Tiere, die es dort im echten Leben
+wirklich gibt und die Einfluss haben; auch an Black & White 1/2/3 denken.
+
+- **Helden (Warcraft 3):** Stufen durch Erfahrung, aktive Fähigkeiten mit Abklingzeit, ständige Wirkungen auf die Umgebung.
+  - **Falko:** Holz und Werkstatt (Klingenholz), Forst, Planen – z. B. „Meisterstück“ (ein Brett eine Stufe besser).
+  - **Sarah** (Wahl): Dorf und Kontakte, Kreativ (Atelier: Töpfern, Malen), Organisation und Handel – z. B. „Dorfversammlung“ (Helfer gewinnen),
+    bessere Preise, Waren aus dem Atelier für Markt und Feste.
+  - **Christoph** (Wahl): Technik und Maschinen, Bauen und Handwerk – z. B. „Notreparatur“, Maschinen laufen länger, Bauten schneller und solider.
+  - **Hubert:** Traktor, Holz, sein Hof – hilft mit eigenem Willen und eigenen Tagen; **Ronald:** Tiere, Ziegen, Mähen.
+- **Zeitalter (Age of Empires):** die Bauphasen und Ausbaustufen von Garten, Werkstatt und Dorf als Zeitalter mit neuen Möglichkeiten.
+- **Wirtschaft und Wege (Siedler 3):** die echten Ketten (Abschnitt 4) mit Trägern, Wegen, Lagern und Engpässen.
+- **Tiere** (Wahl: alle vier Gruppen), echt für die Gegend um Ratscher und Schleusingen und mit Einfluss:
+  - Nutz- und Haustiere: Ronalds Ziegen (Lotte, Frieda, Bock Egon), Hühner, ein Hund – versorgen, Ertrag, Freude.
+  - Wild der Gegend: Reh, Wildschwein, Fuchs, Dachs, Waschbär (u. a.) – Verbiss an jungen Bäumen, Wühlschäden in Wiese und Garten, Füchse an
+    den Hühnern; Zäune, Schutzhüllen, Wühlmauskörbe nötig; tags versteckt, in der Dämmerung unterwegs.
+  - Schädlinge: Borkenkäfer in den Fichten, Wühlmäuse an den Wurzeln.
+  - Seltene Arten: Rotmilan, Uhu, Schwarzstorch, Wildkatze, Luchs – Naturwert, Ruhezonen (kein Fällen am Horst in der Brutzeit).
+- **Black & White** (Wahl: beides):
+  - **Ein Begleiter-Tier, das von dir lernt** – ein Hund: loben und tadeln formt sein Verhalten, er übernimmt Aufgaben (Ziegen hüten, Wild
+    vertreiben, Dinge finden), hat einen Charakter, ist von oben und in der Ich-Sicht dabei.
+  - **Dein Stil prägt die Welt sichtbar** – fürsorglich oder rücksichtslos (Ruhezeiten, faire Preise, Hecken für Vögel, schonend fällen, helfen):
+    Dorf, Natur und Ansehen verändern sich sichtbar (mehr Vögel, freundlichere Leute, ein grüneres Dorf – oder das Gegenteil), ohne Magie.
+- **Umsetzung:** Helden, Stufen, Fähigkeiten und der Stil gehören zum Kern (Hilfs-Agent `strategie`); die Tiere in der Welt – sichtbar auch in der
+  Ich-Sicht – und der lernende Hund baut der Hilfs-Agent `tiere` (Auftrag `docs/plans/auftraege/tiere.md`) mit einer Schnittstelle für den Strategie-Modus.
