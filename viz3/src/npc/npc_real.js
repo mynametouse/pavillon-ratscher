@@ -10,7 +10,7 @@ import { BASE, cam, HQ0, OFFLINE, QS, R, scene } from '../core/head.js';
 import { canonBone, decodeClip } from '../core/rig.js';
 import { ANISO, FIGSH, gltfDataURIs, markDirty, patchSV, toFloatAttrs, whenLoaded } from '../core/assets.js';
 import { sun, sunDir } from '../garden/env.js';
-import { RENDER } from '../render/render.js';
+import { RENDER, warmUp } from '../render/render.js';
 import { P } from '../game/walkable.js';
 import { BLOBS, GOATS, MOWER, NPCS, TRACTOR } from './npc.js';
 const CHARMAN = window.CHARMAN || null;
@@ -215,6 +215,8 @@ function realPerson(gl, cl, o) {
   inner.add(model); // models face +z; figures walk along local -z
   if (o.prop) propTweak(model, o.prop);
   const s = prepModel(model, o.h);
+  // (its programs now – hair and lashes too – not in the first frame that shows the person: render/render.js warmUp)
+  warmUp(model);
   const B = {};
   model.traverse(x => {
     if (x.isBone) {
