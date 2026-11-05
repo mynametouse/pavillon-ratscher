@@ -1,0 +1,4 @@
+# feat/welt-gebaeude: every building in 3D (gebaeude/gebaeude.js) – counts, no doubles, known places, walking into one, no new programs,
+# the cells beyond the square at Schleusingen; and Schleusingen's own test (the cells are on there now)
+welt_gebaeude
+schleusingen
