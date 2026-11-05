@@ -575,8 +575,10 @@ export const ZHORDE = (() => {
                   : 'beinR'
                 : null;
       }
-      // the firefighter's helmet takes a blow to the head (most of it) until it flies off
-      if (part === 'kopf' && e.helm > 0) {
+      // the firefighter's helmet takes a blow to the head (most of it) until it flies off; one far beyond what it holds takes helmet
+      // and head
+      if (part === 'kopf' && e.helm > 0 && dmg >= e.helm + 60) helmetOff(e, ux, uy);
+      else if (part === 'kopf' && e.helm > 0) {
         e.helm -= dmg;
         e.hp = Math.min(e.hp0, e.hp + dmg * 0.6);
         if (e.helm <= 0) helmetOff(e, ux, uy);
