@@ -141,7 +141,10 @@ with lib.browser() as b:
           e.x = P.x + Math.sin(a) * 1.1; e.y = P.y + Math.cos(a) * 1.1; e.z = P.feet; e.hp = 500; e.st = 'chase'; })()""")
         steps(0.2)
         h0 = E("ZSTATE.ents.find(e => e.id === __z1).hp")
+        # (no limb this time: a head off would end it at once, whatever the edge – zombie/z_horde.js damage)
+        E("window.__gore = ZDATA.WEAPONS.axt.gore; ZDATA.WEAPONS.axt.gore = 0")
         E("ZSTATE.stam = 100; ZWAFFE.press()"); steps(0.55); E("ZWAFFE.release()"); steps(0.8)
+        E("ZDATA.WEAPONS.axt.gore = __gore")
         h1 = E("ZSTATE.ents.find(e => e.id === __z1).hp")
         ck('a sharp axe strikes harder (58 × 1.3 ± 15 %) and one sharp hit is used', 58 * 1.3 * 0.84 < h0 - h1 < 58 * 1.3 * 1.16 and E("ZWERK.sharp('axt')") == 24, f'{h0 - h1:.1f}, left {E("ZWERK.sharp(" + chr(39) + "axt" + chr(39) + ")")}')
         hud = E("document.getElementById('zwi').textContent")
@@ -210,7 +213,7 @@ with lib.browser() as b:
         E("""(() => { const P = GAME.P; P.pitch = -10; const a = P.yaw * Math.PI / 180, fx = Math.sin(a), fy = Math.cos(a), out = [];
           for (const [d, s] of [[4.5, 0], [4.9, 0.9]]) { const x = P.x + fx * d + fy * s, y = P.y + fy * d - fx * s,
             e = ZHORDE.ent(ZFIG.people()[out.length % ZFIG.people().length], x, y, GAME.floorAt(x, y, P.feet + 0.5), P.yaw + 180);
-            e.hold = 'idle'; e.hp = out.length ? 250 : 100; out.push(e.id); }
+            e.hold = 'idle'; e.hp = out.length ? 250 : 100; e.art = 'normal'; out.push(e.id); }
           window.__zm = out; })()""")
         t0 = time.time()
         while time.time() - t0 < 40 and not E("__zm.every(id => { const e = ZSTATE.ents.find(q => q.id === id); return e && e.F; })"):
