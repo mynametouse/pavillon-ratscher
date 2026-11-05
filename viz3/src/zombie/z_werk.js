@@ -281,7 +281,8 @@ export const ZWERK = (() => {
   background:rgba(18,12,12,.9);color:#f2e9e4;border-radius:9px;padding:10px 12px 10px;font:400 12.5px/1.38 var(--f-body,system-ui);
   backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(0,0,0,.45);user-select:none;pointer-events:auto;-webkit-overflow-scrolling:touch}
 #zwerk[hidden]{display:none!important}
-@media (min-width:900px){#zwerk{left:calc(50% + 80px)}}
+/* (wide screens: a little left of the middle – the zombie panel stands on the right, zombie/z_hud.js) */
+@media (min-width:900px){#zwerk{left:calc(50% - 80px)}}
 #zwerk .zwh{display:flex;align-items:baseline;gap:8px;font:600 11px/1.3 var(--f-mono,monospace);letter-spacing:.04em;color:#ffb3a1;text-transform:uppercase}
 #zwerk .zwh em{flex:1;font-style:normal;color:#f2e9e4;text-transform:none;letter-spacing:0;font-weight:500;opacity:.85}
 #zwerk .zwx{border:0;background:rgba(255,255,255,.12);color:#f2e9e4;width:30px;height:30px;border-radius:50%;font:600 14px/1 system-ui;cursor:pointer;flex:none}
