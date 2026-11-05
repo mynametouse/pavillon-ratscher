@@ -20,6 +20,13 @@ export const ZIPLAN = (() => {
     f.r = (a, b) => a + (b - a) * f();
     f.pick = a => a[Math.floor(f() * a.length) % a.length];
     f.chance = p => f() < p;
+    f.shuffle = a => {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(f() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
     return f;
   }
   const hh = n => {
