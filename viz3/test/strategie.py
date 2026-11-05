@@ -165,6 +165,7 @@ with lib.browser() as b:
         ck('Sarah walks to the Klinge, looks and knows: the marked trees', ok and k1 and k1['data']['marked'] >= 5, str(k1)[:300])
         ck('the discovery comes as the event strategie:entdeckt (for the discovery book)', len(ent) >= 1 and ent[0]['kind'] == 'wald' and ent[0].get('source'), str(ent)[:300])
         E("(() => { const c = STRAT.place.pos('klinge'); GAME.P.tx = c[0]; GAME.P.ty = c[1]; GAME.P.th = 260; })()")
+        E("STRAT.setSpeed(0)"); steps(1.5); E("STRAT.setSpeed(30)")
         page_pic('07_klinge_oben')
         E("GAME.P.th = 120; GAME.P.tx = -2; GAME.P.ty = -8")
         tree = J("STHOLZ.marked()[0] ? { id: STHOLZ.marked()[0].id, sp: STHOLZ.marked()[0].sp, h: STHOLZ.marked()[0].h } : null")
@@ -195,6 +196,7 @@ with lib.browser() as b:
         look_all()
         ck('felling made no new shader program (compiled ahead when the mode started)', progs() <= p1, f'{p1} → {progs()} new: {newprogs(pn1)}')
         E(f"(() => {{ const t = FOREST.byId({tree['id']}); GAME.P.tx = t.x; GAME.P.ty = t.y; GAME.P.th = 60; }})()")
+        E("STRAT.setSpeed(0)"); steps(1.5); E("STRAT.setSpeed(30)")  # the forest chooses its near trees for the new view, the tiles come
         lib.shot(pg, OUT, '08_gefaellt_nah')
         E("GAME.P.th = 120; GAME.P.tx = -2; GAME.P.ty = -8")
         led0 = J("STRAT.S.eur")
@@ -212,6 +214,7 @@ with lib.browser() as b:
         ms0 = J("HOLZDRY.stackMC()")
         ck('Sarah and Christoph stack them to dry (werk/holz_dry.js)', ok and ms0 and ms0['n'] >= b1['pile'] and ms0['avg'] > 30, str(ms0))
         E("(() => { const c = STRAT.place.pos('holzlager'); GAME.P.tx = c[0]; GAME.P.ty = c[1]; GAME.P.th = 30; })()")
+        E("STRAT.setSpeed(0)"); steps(1.0); E("STRAT.setSpeed(30)")
         lib.shot(pg, OUT, '09_holzlager')
         E("GAME.P.th = 120; GAME.P.tx = -2; GAME.P.ty = -8")
         E("STRAT.skip(75 * 1440)")

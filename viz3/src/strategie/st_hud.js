@@ -42,6 +42,8 @@ export const STHUD = (() => {
   const de = (v, n = 1) => (+v).toLocaleString('de-DE', { minimumFractionDigits: n, maximumFractionDigits: n });
   const CSS = `
 body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] .ov.where,body[data-strat="1"] #topscale b{display:none!important}
+body[data-strat="1"] #geoattr{left:auto;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(6px + env(safe-area-inset-bottom,0px));max-width:300px;font-size:10px}
+body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(64px + env(safe-area-inset-bottom,0px))}
 #sthud,#stppl,#stpan,#stnotes,#sttime,#stcard{position:absolute;z-index:6;font:400 12px/1.35 var(--f-body,system-ui);color:#f3efe6;user-select:none}
 #sthud[hidden],#stppl[hidden],#stpan[hidden],#stnotes[hidden],#sttime[hidden],#stcard[hidden],#stsvg[hidden]{display:none!important}
 .stbox{background:rgba(24,28,22,.78);border-radius:9px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
@@ -100,6 +102,8 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
   #stppl .p{min-width:132px} #stppl .p .s{max-width:96px}
   #sttime{top:54px} #stpan{top:auto;bottom:calc(196px + env(safe-area-inset-bottom,0px));left:10px;right:10px;width:auto;max-height:42vh}
   #stnotes{bottom:auto;top:96px} #stcard{display:none!important} #stlayers{top:auto;bottom:200px}
+  body[data-strat="1"] #geoattr{left:10px;right:10px;max-width:none;bottom:calc(4px + env(safe-area-inset-bottom,0px))}
+  body[data-strat="1"] #topscale{display:none!important}
 }`;
   // ---------------- building the elements ----------------
   function build() {
@@ -186,7 +190,7 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
     });
     // the plan view's own labels where a place of the mode stands (world/siteplan.js redraws its overlay on every camera move)
     const tsvg = $('topsvg'),
-      DUP = new Set(['Werkstatt', 'Garage', 'Hubert', 'Ronald', 'Bungalow', 'Garten']);
+      DUP = new Set(['Werkstatt', 'Garage', 'Hubert', 'Ronald', 'Bungalow', 'Garten', 'Holzhaus', 'Wohnwagen']);
     if (tsvg && window.MutationObserver)
       new MutationObserver(() => {
         if (!S.on) return;
@@ -275,8 +279,11 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
   // wide screens: the people under the resource bar, the panel and the layers under the time box (both grow and wrap)
   function layout() {
     if (innerWidth <= 720) {
-      // phones: the bar at the bottom, the people strip above it, the panel above them (all measured – the bar may wrap)
+      // phones: the licence line at the very bottom, the bar above it, the people strip above the bar, the panel above them (measured)
       for (const e of [H.ppl, H.pan, H.layers]) e.style.top = '';
+      const ga = $('geoattr'),
+        gr = ga && !ga.hidden && getComputedStyle(ga).display !== 'none' ? ga.getBoundingClientRect() : null;
+      H.res.style.bottom = gr ? Math.round(innerHeight - gr.top + 6) + 'px' : '';
       const top = H.res.getBoundingClientRect().top,
         pb = innerHeight - top + 6;
       if (top > 0) {
@@ -653,9 +660,15 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
         const sp = out.map(v => pr(v[0], v[1], 0.3)).map(v => v[0].toFixed(1) + ',' + v[1].toFixed(1));
         h += `<polyline class="way" stroke="${D.PEOPLE[id].col}" points="${sp.join(' ')}"/>`;
       }
-    // places
+    // places (a label only where it does not run into one drawn before: the selected place first, then by order)
+    const taken = [],
+      free = (x0, y0, x1, y1) => {
+        if (taken.some(r => x0 < r[2] && x1 > r[0] && y0 < r[3] && y1 > r[1])) return false;
+        taken.push([x0, y0, x1, y1]);
+        return true;
+      };
     if (STRAT.layer.on('orte'))
-      for (const Pl of STRAT.place.list()) {
+      for (const Pl of STRAT.place.list().sort((a, b) => (b.id === H.place) - (a.id === H.place))) {
         const c = STRAT.place.pos(Pl.id);
         if (!c) continue;
         const q = pr(c[0], c[1], 1);
@@ -671,12 +684,16 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
             y1 = q[1] - Math.cos(a) * R;
           h += `<circle class="ringbg" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${R}"/><path class="ring" d="M${q[0].toFixed(1)} ${(q[1] - R).toFixed(1)} A${R} ${R} 0 ${k > 0.5 ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}"/>`;
         }
-        h += `<text class="ic" x="${q[0].toFixed(1)}" y="${(q[1] + 4.5).toFixed(1)}" text-anchor="middle">${Pl.icon}</text><text x="${(q[0] + r + 5).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}">${esc(Pl.name)}</text>`;
-        if (STRAT.layer.on('wirtschaft') && Pl.badge) {
-          const b = Pl.badge();
-          if (b)
-            h += `<text class="badge" x="${(q[0] + r + 5).toFixed(1)}" y="${(q[1] + 17).toFixed(1)}">${esc(b)}</text>`;
-        }
+        h += `<text class="ic" x="${q[0].toFixed(1)}" y="${(q[1] + 4.5).toFixed(1)}" text-anchor="middle">${Pl.icon}</text>`;
+        const lw = Pl.name.length * 6.4 + 4;
+        if (free(q[0] - r, q[1] - 9, q[0] + r + 5 + lw, q[1] + 9)) {
+          h += `<text x="${(q[0] + r + 5).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}">${esc(Pl.name)}</text>`;
+          if (STRAT.layer.on('wirtschaft') && Pl.badge) {
+            const b = Pl.badge();
+            if (b && free(q[0] + r + 5, q[1] + 9, q[0] + r + 5 + b.length * 5.6, q[1] + 21))
+              h += `<text class="badge" x="${(q[0] + r + 5).toFixed(1)}" y="${(q[1] + 17).toFixed(1)}">${esc(b)}</text>`;
+          }
+        } else free(q[0] - r, q[1] - r, q[0] + r, q[1] + r);
         h += '</g>';
       }
     // people (symbols; close up the world's figures – the neighbours are their own walkers)
