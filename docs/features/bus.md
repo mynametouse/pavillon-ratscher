@@ -57,8 +57,11 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   „Einsteigen“; im Busfenster Ziel antippen, „Fahrt abkürzen“.
 - Daten neu: `python3 -I viz3/extra/bus/quellen/fahrplan.py --gtfs <latest.zip> [--woche 2026-11-16] [--bild wege.png]` (der Feed:
   `https://download.gtfs.de/germany/free/latest.zip`, ~280 MB; braucht `pyproj`; `--bild` zeichnet die Wege über das Straßennetz).
-- Tests: `node --test viz3/test/unit/bus.test.mjs` (Kalender, Daten, Abfahrten in Ratscher, Fahrt nach Schleusingen im Takt);
-  `python3 viz3/test/bus.py <port> [fahrt,reload,zombie]` (Bilder in `out/bus/`), auf CI über `viz3/extra/bus/tests.txt`.
+- Tests: `node --test viz3/test/unit/bus.test.mjs` (Kalender, Daten, Abfahrten in Ratscher, Fahrt nach Schleusingen im Takt, Zufahrt vom
+  Rand); `python3 viz3/test/bus.py <port> [fahrt,nacht,reload,zombie]` (Bilder in `out/bus/`: `a_fahrplan` Fahrplanfenster am Schild,
+  `b_bus_an_der_haltestelle`, `b2_tuer_offen`, `c_im_bus_panel` Busfenster, `d_aus_dem_bus`, `e_schleusingen_zh` nach „Fahrt abkürzen“,
+  `f_nacht_vorn`, `g_nacht_seite`), auf CI über `viz3/extra/bus/tests.txt`. Der Test holt die Welt-Kacheln entlang des Wegs
+  Ratscher – Schleusingen von der Website nach `viz3/dist/welt-test/` (wie `viz3/test/fahrt.py`).
 - `BUS.state()` (Zahlen), `BUS.plan` (BUSPLAN), `BUS.spawn(trip, tag, minute)`, `BUS.einsteigen()`, `BUS.want(k)`, `BUS.shorten()`.
 
 ## Entscheidungen (nachts, ohne Falko)

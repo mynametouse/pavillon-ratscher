@@ -57,6 +57,8 @@ export const BUSMOD = (() => {
     }),
     disp: new THREE.MeshBasicMaterial({ color: 0xffffff }),
   };
+  // (named, so a test can tell the bus's programs from others: viz3/test/bus.py)
+  for (const [k, m] of Object.entries(M)) if (m !== M.body) m.name = 'bus ' + k;
   {
     // the carriers: one tiny invisible mesh per material, so render/render.js compileShown compiles their programs at load
     const g = new THREE.PlaneGeometry(0.01, 0.01);
@@ -70,6 +72,7 @@ export const BUSMOD = (() => {
     const t = new THREE.CanvasTexture(document.createElement('canvas'));
     const dm = M.disp.clone();
     dm.map = t;
+    dm.name = 'bus display';
     const c = new THREE.Mesh(g, dm);
     c.visible = false;
     c.userData.noMerge = true;

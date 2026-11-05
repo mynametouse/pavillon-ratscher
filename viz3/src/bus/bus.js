@@ -248,6 +248,11 @@ export const BUS = (() => {
         }
         y += 12.5;
       }
+      if (y === 70) {
+        // nothing leaves here in this direction: the buses end here
+        c.font = 'bold 13px Arial, sans-serif';
+        c.fillText('Ausstieg – hier enden die Fahrten', 8, 90);
+      }
       c.fillStyle = '#666';
       c.font = '9px Arial, sans-serif';
       c.fillText('s = an Schultagen · Fahrplan gtfs.de (DELFI e.V.)', 8, h - 7);
@@ -752,8 +757,17 @@ export const BUS = (() => {
     const rows = dep.map(d => {
       const tr = d.trip,
         m = Math.round(d.t - now),
-        isHere = here && here.trip === tr;
-      return `<tr${isHere ? ' class="here"' : ''}><td class="t">${BUSPLAN.hm(d.t)}</td><td class="l">${tr.line}</td><td class="z">${tr.head || tr.nach}</td><td class="m">${isHere ? 'steht da' : m <= 0 ? 'jetzt' : m < 60 ? 'in ' + m + ' min' : ''}</td></tr>`;
+        isHere = here && here.trip === tr,
+        // a bus of this trip on its way here, near: „fährt ein“
+        coming = S.inst.some(
+          I =>
+            I.trip === tr &&
+            I.st === 'fahrt' &&
+            I.Rn.P.st[I.k + 1] &&
+            I.Rn.P.st[I.k + 1].s === e.s &&
+            Math.hypot(I.x - e.x, I.y - e.y) < 400
+        );
+      return `<tr${isHere ? ' class="here"' : ''}><td class="t">${BUSPLAN.hm(d.t)}</td><td class="l">${tr.line}</td><td class="z">${tr.head || tr.nach}</td><td class="m">${isHere ? 'steht da' : coming ? 'fährt ein' : m <= 0 ? 'jetzt' : m < 60 ? 'in ' + m + ' min' : ''}</td></tr>`;
     });
     brd.innerHTML = `<header><span class="h">H</span><div><h3>${stName(e.s)}</h3><span>${day.kind}</span></div><button type="button" class="x" data-k="x" aria-label="Schließen">×</button></header>
       <table>${rows.join('') || '<tr><td>Heute fährt hier nichts mehr.</td></tr>'}</table>
@@ -788,6 +802,15 @@ export const BUS = (() => {
           );
       }
       S.near = e ? e.name : null;
+      // the first time at a stop: what one can do here (once per browser)
+      if (e && !S.hinted && Math.hypot(P.x - e.x, P.y - e.y) < 14 && !Z.on) {
+        S.hinted = true;
+        if (SAVE.once('pav-bus-hint'))
+          PLAY.think(
+            'Neu: Busse nach dem echten Fahrplan – am Schild „Fahrplan“, „Auf den Bus warten“, einsteigen und mitfahren.',
+            6500
+          );
+      }
     }
     if (want !== S.focus) {
       S.focus = want;

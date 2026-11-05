@@ -112,6 +112,14 @@ with lib.browser() as b:
         def new_progs():
             # which programs came since the start (name and the start of the key: material type, defines)
             return J(f"GAME.R.info.programs.filter(p => !{json.dumps(sorted(progs0))}.includes(p.cacheKey)).map(p => p.name + ' ' + String(p.cacheKey).slice(0, 160))")
+        def own_new():
+            # the programs of the bus's own materials (buses, signs, displays, the printed timetables): all there before the bus came
+            # (as zombie_ziele.py for its coach – the people's programs, e.g. a passer-by's hair, are not the bus's)
+            return J(f"""(() => {{ const before = new Set({json.dumps(sorted(progs0))}), out = [], seen = new Set(), R = GAME.R;
+              const roots = BUS.S.inst.map(I => I.B.g).concat([...BUS.S.furn.values()].map(f => f.sign && f.sign.grp).filter(Boolean));
+              for (const g of roots) g.traverse(o => {{ for (const m of [].concat(o.material || [])) {{ if (!m || seen.has(m)) continue; seen.add(m);
+                const pp = R.properties.get(m), cp = pp && pp.currentProgram; if (cp && !before.has(cp.cacheKey)) out.push((m.name || m.type) + ' ' + String(cp.cacheKey).slice(0, 120)); }} }});
+              return out; }})()""")
         # the board
         brd = J("""(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); const a = KERN.acts().find(q => q.id === 'bus:plan:' + e.i);
           const lbl = a ? a.label() : null; BUS.board(e); const el = document.getElementById('busboard');
@@ -155,7 +163,8 @@ with lib.browser() as b:
             E("GAME.go && GAME.go('bus')")
             steps(0.3)
             p1 = E("GAME.R.info.programs.length")
-            ck('no new shader program for the bus, the sign and the display', p1 == p0, f'{p0} → {p1} ' + ' | '.join(new_progs())[:600])
+            mine = own_new()
+            ck('no new shader program for the bus, the sign and the display', not mine, f'{p0} → {p1}; of the bus: ' + (' | '.join(mine)[:400] or 'none') + '; others: ' + ' | '.join(new_progs())[:300])
             # boarding through the action at the front door
             E(f"""(() => {{ const I = BUS.S.inst.find(q => q.key === '{arr['key']}'); const fx = Math.sin(I.hd), fy = Math.cos(I.hd), rx = Math.cos(I.hd), ry = -Math.sin(I.hd);
               GAME.P.x = I.x + fx * 5.05 + rx * 2.2; GAME.P.y = I.y + fy * 5.05 + ry * 2.2; }})()""")
@@ -177,6 +186,15 @@ with lib.browser() as b:
             moved = math.hypot(p_b[0] - p_a[0], p_b[1] - p_a[1])
             ck('the bus drives on its way, the rider with it', mine and mine[0]['st'] == 'fahrt' and moved > 40, f"{moved:.0f} m, {mine[0] if mine else None}")
             pic(pg, 'd_aus_dem_bus')
+            # (what lies low in the picture from the seat: a ray from the camera, local coordinates of the bus)
+            probe = J("""(() => { const I = BUS.S.ride.I, g = I.B.g, c = GAME.cam, T = window.THREE_ || null; const out = { cam: [c.position.x, -c.position.z, c.position.y], bus: [I.x, I.y, I.z, I.hd] };
+              const inv = g.matrixWorld.clone().invert(), p = c.position.clone().applyMatrix4(inv); out.camLocal = [p.x, -p.z, p.y]; return out; })()""")
+            print('probe', probe, flush=True)
+            # (which part is the bar low in the seat's picture: pictures with parts hidden)
+            for part in ('pax', 'doors', 'glass', 'body'):
+                E(f"(() => {{ const B = BUS.S.ride.I.B; const L = B['{part}']; (Array.isArray(L) ? L : [L]).forEach(m => m.visible = false); }})()")
+                pic(pg, 'dx_ohne_' + part)
+                E(f"(() => {{ const B = BUS.S.ride.I.B; const L = B['{part}']; (Array.isArray(L) ? L : [L]).forEach(m => m.visible = true); }})()")
             # the next stop: Krankenhaus, then the Zentralhaltestelle – „Fahrt abkürzen“ to the Zentralhaltestelle
             kz = J("(() => { const I = BUS.S.ride.I; return I.Rn.P.st.findIndex(o => o.s >= 0 && BUS.plan.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle'); })()")
             E(f"BUS.want({kz})")
@@ -193,6 +211,14 @@ with lib.browser() as b:
             dz = min(math.hypot(out['P'][0] - x, out['P'][1] - y) for x, y in zh) if zh else 999
             print('off', out, 'dist to the ZH', round(dz, 1), flush=True)
             ck('„Fahrt abkürzen“: off at Schleusingen, Zentralhaltestelle at 7:50', not out['ride'] and 'Schleusingen, Zentralhaltestelle' in out['ev'] and out['t'] in ('07:50', '07:51') and dz < 25 and not out['focus'], f"{out} {dz:.0f} m")
+            for i in range(60):
+                steps(0.5)
+                time.sleep(0.5)
+                if E("!!(window.SCHL && SCHL.state === 'ready' && (!WELT.state || WELT.state().loading === 0))"): break
+            E("""(() => { const e = BUS.STOPS().filter(q => q.name === 'Schleusingen, Zentralhaltestelle').sort((a, b) => Math.hypot(a.x - GAME.P.x, a.y - GAME.P.y) - Math.hypot(b.x - GAME.P.x, b.y - GAME.P.y))[0];
+              const x = e.x - Math.cos(e.hd) * 6 - Math.sin(e.hd) * 12, y = e.y + Math.sin(e.hd) * 6 - Math.cos(e.hd) * 12;
+              GAME.view(x, y, KERN.ground(x, y) + 1.7, Math.atan2(e.x - x, e.y - y) * 180 / Math.PI, -3, 62); })()""")
+            steps(0.3)
             pic(pg, 'e_schleusingen_zh')
         ck.errors(errs)
         if 'nacht' in want:
@@ -215,10 +241,11 @@ with lib.browser() as b:
                   const x = B.x + fx * 15 + rx * 5, y = B.y + fy * 15 + ry * 5; GAME.view(x, y, KERN.ground(x, y) + 1.7, Math.atan2(B.x - x, B.y - y) * 180 / Math.PI, -2, 60); }})()""")
                 steps(0.2); pic(pg, 'f_nacht_vorn')
                 E(f"""(() => {{ const B = BUS.S.inst.find(q => q.key === '{I['key']}'); const fx = Math.sin(B.hd), fy = Math.cos(B.hd), rx = Math.cos(B.hd), ry = -Math.sin(B.hd);
-                  const x = B.x - fx * 3 + rx * 9, y = B.y - fy * 3 + ry * 9; GAME.view(x, y, KERN.ground(x, y) + 1.6, Math.atan2(B.x - x, B.y - y) * 180 / Math.PI, 0, 62); }})()""")
+                  const x = B.x - fx * 4 - rx * 8, y = B.y - fy * 4 - ry * 8; GAME.view(x, y, KERN.ground(x, y) + 1.6, Math.atan2(B.x - x, B.y - y) * 180 / Math.PI, 0, 62); }})()""")
                 steps(0.2); pic(pg, 'g_nacht_seite')
                 p2 = E("GAME.R.info.programs.length")
-                ck('no new shader program at night either', p2 == p0, f'{p0} → {p2} ' + ' | '.join(new_progs())[:600])
+                mine = own_new()
+                ck('no new shader program at night either', not mine, f'{p0} → {p2}; of the bus: ' + (' | '.join(mine)[:400] or 'none') + '; others: ' + ' | '.join(new_progs())[:300])
             E("GAME.go('bus')")
             steps(0.5)
         if 'reload' in want:
@@ -238,7 +265,7 @@ with lib.browser() as b:
             steps(3.0)
             saved = J("SAVE.get('pav-bus-v1')")
             ck('saved during the ride: the stop (pav-bus-v1)', saved and saved.get('ride') and saved['ride'].get('name'), str(saved))
-            pg.reload(wait_until='domcontentloaded')
+            pg.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded')
             pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000)
             time.sleep(3); pg.evaluate("window.FREEZE = true")
             E, J, steps = helpers(pg)
@@ -262,6 +289,8 @@ with lib.browser() as b:
             steps(0.5, 0.25)
             if E("!!(window.BUS && BUS.S.state === 'ready')"): break
             time.sleep(0.5)
+        # (the night's day is a Sunday by the timetable – Reformationstag: at 14:46 the 205 from Coburg is due at the Schleusebrücke)
+        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 14 * 60 + 44")
         steps(30.0, 0.25)
         st = J("BUS.state()")
         due = E("BUS.S.state === 'ready' ? BUS.plan.active(CLOCK.t, DN.e0, 0, 0).length : -1")
