@@ -81,8 +81,8 @@ Bus, letzte Welle, Ende).
 - `modules.txt`: `zombie/z_ziele.js`, `zombie/z_ziele_bus.js` nach `zombie/z_modus.js`.
 - Neue `window`-Namen: `ZZIEL`, `ZBUS`; neue Ereignisse `zombie:bus`, `zombie:radio`, `zombie:ende`, `znetz:bus`; keine neuen Speicher-Schlüssel
   (nur Aufgaben `zz-…` in `pav-tasks-v1`; die alte `zombie-1` bleibt in alten Spielständen liegen, wird aber nicht mehr gezeigt).
-- Beobachtet: nach dem Neuladen einer laufenden Zombie-Nacht (ohne `?szenario=`) steht die Seite in der Übersicht (`P.mode` 'orbit'),
-  die Uhr läuft erst nach „Losgehen“ – vielleicht soll `begin(false)` in den Gehen-Modus wechseln.
+- Erledigt in V17p (Kern-Chat): nach dem Neuladen einer laufenden Zombie-Nacht geht man gleich weiter, dort wo man draußen zuletzt stand
+  (`Z.pos`), statt in der Übersicht zu stehen; `?szenario=zombie` verschwindet nach dem Start aus der Adresse (Test `zombie_ziele:reload`).
 
 ## Offen
 
