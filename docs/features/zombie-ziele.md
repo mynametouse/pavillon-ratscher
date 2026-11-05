@@ -79,6 +79,8 @@ Bus, letzte Welle, Ende).
 - `zombie/z_hud.js`: nicht geändert; die Karte blendet `z_ziele.js` mit einer eigenen, spezifischeren Regel ein (im Auto und in der freien
   Sicht bleibt sie aus).
 - `modules.txt`: `zombie/z_ziele.js`, `zombie/z_ziele_bus.js` nach `zombie/z_modus.js`.
+- Neue `window`-Namen: `ZZIEL`, `ZBUS`; neue Ereignisse `zombie:bus`, `zombie:radio`, `zombie:ende`, `znetz:bus`; keine neuen Speicher-Schlüssel
+  (nur Aufgaben `zz-…` in `pav-tasks-v1`; die alte `zombie-1` bleibt in alten Spielständen liegen, wird aber nicht mehr gezeigt).
 - Beobachtet: nach dem Neuladen einer laufenden Zombie-Nacht (ohne `?szenario=`) steht die Seite in der Übersicht (`P.mode` 'orbit'),
   die Uhr läuft erst nach „Losgehen“ – vielleicht soll `begin(false)` in den Gehen-Modus wechseln.
 
