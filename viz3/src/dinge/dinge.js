@@ -17,6 +17,8 @@ import { CLOCK } from '../time/clock.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { DCAL } from '../dorf/dorf_cal.js';
 import { DCARS } from '../dorf/dorf_cars.js';
+import { RATSCHER } from '../world/ratscher.js';
+import { WELT } from '../welt/welt.js';
 import { DMOD } from './dinge_modelle.js';
 export const DINGE = (() => {
   const S = {
@@ -33,7 +35,7 @@ export const DINGE = (() => {
     areas: [{ id: 'ratscher', c: [150, -150], r: 2200, cell: 120 }],
     err: null,
   };
-  if (!DMOD.on || !window.RATSCHER || !RATSCHER.on) return S;
+  if (!DMOD.on || !RATSCHER || !RATSCHER.on) return S;
   S.on = true;
   const CELL = 120,
     NEAR = COARSE ? 260 : 380,
@@ -450,6 +452,10 @@ export const DINGE = (() => {
   // ---- the round: cells near the observer built (one per round), far ones freed; built places checked against the clock ----
   let acc = 0,
     rr = 0;
+  const inSquare = (x, y) => {
+    const b = RATSCHER.box;
+    return !b || (x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]);
+  };
   const late = c =>
     c.places.some(p => Math.abs(gz(p.x, p.y) - p.zc) > 0.12) ||
     c.things.some(d => Math.abs(gz(d.x, d.y) - d.zc) > 0.12);
@@ -472,7 +478,8 @@ export const DINGE = (() => {
       bd = 1e9;
     for (const c of S.cells.values()) {
       const d = Math.hypot(c.x - w[0], c.y - w[1]) - c.half;
-      if (!c.built && d < NEAR && d < bd) {
+      // beyond the square the ground comes with the world's tiles: build a cell only when its middle has one
+      if (!c.built && d < NEAR && d < bd && (inSquare(c.x, c.y) || Number.isFinite(WELT.heightAt(c.x, c.y)))) {
         bd = d;
         todo = c;
       } else if (c.built && d > FAR) free(c);
@@ -564,6 +571,8 @@ export const DINGE = (() => {
       things,
       frozen: S.frozen,
       areas: S.areaState(),
+      tris: DMOD.tris,
+      drawn: [...S.cells.values()].reduce((n, c) => n + (c.built ? c.meshes.length : 0), 0),
       reposed: S.reposed || 0,
       err: S.err,
     };

@@ -20,6 +20,7 @@ import wdlib
 
 EXTRA = os.path.join(wdlib.REPO, 'viz3/extra/welt-dinge')
 TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van']
+KINDS = ['hof', 'strasse', 'betrieb', 'stadt']  # as dinge/dinge.js KINDS
 # colours of cars on German roads (KBA stock: grey/silver ~ 35 %, black ~ 25 %, white ~ 15 %, blue ~ 10 %, red ~ 6 %, …) – sRGB
 PAL = [('schwarz', (18, 18, 20)), ('dunkelgrau', (58, 60, 64)), ('silber', (150, 152, 155)), ('weiss', (225, 225, 220)),
        ('dunkelblau', (25, 38, 72)), ('blau', (52, 92, 160)), ('rot', (150, 22, 20)), ('dunkelgruen', (30, 62, 40)),
@@ -64,7 +65,7 @@ class Photo:
             if u < 0 or v < 0:
                 continue
             if f not in self.cache:
-                if len(self.cache) > 3:
+                if len(self.cache) > 8:
                     self.cache.pop(next(iter(self.cache)))
                 self.cache[f] = np.asarray(self.Image.open(f).convert('RGB'))
             im = self.cache[f]
@@ -111,7 +112,11 @@ def colour(photo, k):
 
 def main():
     gebiet = sys.argv[1]
-    photo = Photo([a for a in sys.argv[2:] if not a.startswith('--')][:4])
+    args = sys.argv[2:]
+    if '--geb' in args:
+        i = args.index('--geb')
+        args = args[:i] + args[i + 2:]
+    photo = Photo(args[:4])
     # nothing of ours on a building that stands in 3D (OSM, the old town, welt-gebaeude's ETHOS buildings): a tank or shed that is a
     # building there, a 'car' that was a roof window
     from shapely.geometry import Polygon
@@ -122,6 +127,8 @@ def main():
     dropped = []
     P = json.load(open(os.path.join(EXTRA, f'pruefung_{gebiet}.json')))
     ways = [w for w in wdlib.roads() + (wdlib.roads_fahrt() if gebiet != 'ratscher' else []) if w['kind'] <= 5]
+    for w in ways:
+        w['bb'] = (w['p'][:, 0].min(), w['p'][:, 1].min(), w['p'][:, 0].max(), w['p'][:, 1].max())
     autos, dinge, masks = [], [], []
     S_DRIVING.clear()
     for n, k in enumerate(P['ja'] + P.get('dazu', [])):
@@ -130,12 +137,17 @@ def main():
             continue
         a = math.radians(k['az'])
         ax = (math.sin(a), math.cos(a))
-        # the nearest street, lane or service way
+        # the nearest street, lane or service way (only the ways whose box comes within 80 m)
         best = None
         for w in ways:
+            b = w['bb']
+            if x < b[0] - 80 or x > b[2] + 80 or y < b[1] - 80 or y > b[3] + 80:
+                continue
             d, q, u = wdlib.seg_dist(x, y, w['p'])
             if best is None or d - w['w'] / 2 < best[0]:
                 best = (d - w['w'] / 2, d, q, u, w)
+        if best is None:
+            best = (99.0, 99.0, (x, y), (1.0, 0.0), {'kind': 9, 'w': 0})
         edge, d, q, u, w = best
         h = k.get('h') or HEIGHT.get(t if t in HEIGHT else 'auto', 1.5)
         hl0, hw0 = k['l'] / 2, k['w'] / 2
@@ -157,8 +169,9 @@ def main():
             S_DRIVING.append((x, y))  # in the lane of a main or county road: driving when the photo was taken, no parking place
             continue
         if t in ('auto', 'van'):
-            kind = 'betrieb' if in_rect(x, y, WORKS) else ('strasse' if edge < 2.5 else 'hof')
-            if kind == 'strasse':
+            kerb = 'stadt' if gebiet == 'schleusingen' else 'strasse'
+            kind = 'betrieb' if gebiet == 'ratscher' and in_rect(x, y, WORKS) else (kerb if edge < 2.5 else 'hof')
+            if kind in ('strasse', 'stadt'):
                 o = (x - q[0], y - q[1])
                 cr = u[0] * o[1] - u[1] * o[0]
                 dirv = (u[0], u[1]) if cr < 0 else (-u[0], -u[1])
@@ -171,16 +184,16 @@ def main():
             if t == 'van':
                 ty = 4
             else:
-                L = k['l']
+                L = k['l'] - 0.25  # the detector's boxes take in a rim of shadow: a Golf (4.28 m) reads ~4.5 m
                 hsh = (int(abs(x) * 7.31 + abs(y) * 3.17) % 100) / 100
                 ty = 0 if L < 4.05 else 1 if L < 4.45 else (3 if hsh < 0.3 else 2)
             col = colour(photo, k)
-            autos.append([round(x, 2), round(y, 2), round(az, 1), ty, col, ['hof', 'strasse', 'betrieb'].index(kind)])
+            autos.append([round(x, 2), round(y, 2), round(az, 1), ty, col, KINDS.index(kind)])
         else:
             dinge.append([t, round(x, 2), round(y, 2), round(k['az'], 1), round(k['l'], 2), round(k['w'], 2), round(h, 2)])
     out = {'v': 1, 'gebiet': gebiet,
            'quelle': 'Luftbild DOP 2024 © GDI-Th (dl-de/by-2-0), erkannt mit YOLO11-OBB (DOTAv1) und von Auge geprüft – tools/welt-dinge',
-           'typen': TYPES, 'farben': [p[0] for p in PAL], 'arten': ['hof', 'strasse', 'betrieb'], 'autos': autos, 'dinge': dinge}
+           'typen': TYPES, 'farben': [p[0] for p in PAL], 'arten': KINDS, 'autos': autos, 'dinge': dinge}
     os.makedirs(os.path.join(EXTRA, 'dist/dinge'), exist_ok=True)
     json.dump(out, open(os.path.join(EXTRA, f'dist/dinge/{gebiet}.json'), 'w'), separators=(',', ':'))
     mfile = os.path.join(EXTRA, 'maske_dinge.json')
@@ -197,7 +210,7 @@ def main():
     U['polys'] = [p for g in sorted(U['gebiete']) for p in U['gebiete'][g]]
     json.dump(U, open(os.path.join(EXTRA, 'maske_dinge_utm.json'), 'w'), separators=(',', ':'))
     from collections import Counter
-    print(gebiet, len(autos), 'cars', dict(Counter(TYPES[a[3]] for a in autos)), dict(Counter(['hof', 'strasse', 'betrieb'][a[5]] for a in autos)),
+    print(gebiet, len(autos), 'cars', dict(Counter(TYPES[a[3]] for a in autos)), dict(Counter(KINDS[a[5]] for a in autos)),
           dict(Counter(PAL[a[4]][0] for a in autos)), len(dinge), 'things', dict(Counter(d[0] for d in dinge)), len(masks), 'masks',
           len(S_DRIVING), 'driving (left out)', len(dropped), 'on buildings (left out):', dropped[:12])
 
