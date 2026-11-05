@@ -90,19 +90,44 @@ with lib.browser() as b:
           for (const q of ZSTATE.ents) if (q !== e && !q.house) q.hold = 'idle';
           e.x = mx + o.n[0] * 4; e.y = my + o.n[1] * 4; e.z = GAME.floorAt(e.x, e.y, o.z0 + 0.5); e.st = 'chase'; e.op = null; e.hold = false; e.sp = 1; }})()""")
     hp0 = J(f"ZSTATE.house(ZHAUS.bid).bar['{op['id']}'] || 0") if op else 0
+    # the player right behind the boarded window (Falko 5.11., 17:57: they hurt him from outside, unseen – they must break in first)
+    if op:
+        E(f"""(() => {{ const o = {json.dumps(op)}, P = GAME.P, mx = (o.a[0] + o.b[0]) / 2, my = (o.a[1] + o.b[1]) / 2;
+          P.x = mx - o.n[0] * 0.8; P.y = my - o.n[1] * 0.8; P.feet = GAME.floorAt(P.x, P.y, o.z0 + 0.3); P.yaw = P.body = Math.atan2(o.n[0], o.n[1]) * 180 / Math.PI; }})()""")
+        # one right outside the wall, 1.2 m from him: no blow through it
+        thru = J(f"""(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zid}'), o = {json.dumps(op)}, mx = (o.a[0] + o.b[0]) / 2, my = (o.a[1] + o.b[1]) / 2,
+          x0 = e.x, y0 = e.y, z0 = e.z; e.x = mx + o.n[0] * 0.4; e.y = my + o.n[1] * 0.4; e.z = GAME.floorAt(e.x, e.y, o.z0 + 0.5);
+          const r = {{ reach: ZHORDE.canReach(e, ZHORDE.me()), wall: ZHORDE.wallBetween(e.x, e.y, GAME.P.x, GAME.P.y, GAME.P.feet), d: +Math.hypot(e.x - GAME.P.x, e.y - GAME.P.y).toFixed(2) }};
+          e.x = x0; e.y = y0; e.z = z0; return r; }})()""")
+        ck('a zombie outside the wall cannot strike the player inside (1.2 m apart)', not thru['reach'], str(thru))
+    E("ZSTATE.hp = 100")
     banged = broke = False
+    hurt_out = 0
     for i in range(120):
         steps(0.25)
         st = J(f"""(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zid}'); return {{ hp: ZSTATE.house(ZHAUS.bid).bar['{op['id'] if op else ''}'] || 0, house: e ? e.house : null, st: e ? e.st : null,
-          d: e ? +Math.hypot(e.x - GAME.P.x, e.y - GAME.P.y).toFixed(1) : null }}; }})()""")
+          d: e ? +Math.hypot(e.x - GAME.P.x, e.y - GAME.P.y).toFixed(1) : null, php: ZSTATE.hp }}; }})()""")
         if st['hp'] < hp0: banged = True
         if st['house'] == hid: broke = True; break
+        hurt_out = max(hurt_out, 100 - st['php'])
         if i == 30: pic('04_haemmern')
         if i % 12 == 0: time.sleep(0.2)
     ck('a zombie hammers on the boards (they wear down)', banged, str(st))
+    ck('… while it is outside the player takes no harm (nothing through the wall)', hurt_out == 0, f'hp lost {hurt_out}')
     ck('… and breaks in', broke, str(st))
     steps(0.6)
+    # inside: drawn, on the floor of the room, facing the player – and now it can reach him
+    st = J(f"""(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zid}'); if (!e) return null; const P = GAME.P;
+      P.yaw = P.body = Math.atan2(e.x - P.x, e.y - P.y) * 180 / Math.PI;
+      return {{ drawn: !!(e.F && e.F.g.visible && e.F.g.parent), dz: +(e.z - P.feet).toFixed(2), inside: ZHAUS.H.inside(e.x, e.y, e.z + 0.5), d: +Math.hypot(e.x - P.x, e.y - P.y).toFixed(2) }}; }})()""")
+    ck('the zombie that broke in is drawn, inside, on the floor of the room', bool(st) and st['drawn'] and st['inside'] and abs(st['dz']) < 0.35, str(st))
+    steps(0.3)
     pic('05_drin')
+    hp1 = E("ZSTATE.hp")
+    for i in range(24):
+        steps(0.25)
+        if E("ZSTATE.hp") < hp1: break
+    ck('… and inside it reaches the player', E("ZSTATE.hp") < hp1, str(J("[ZSTATE.hp, ZSTATE.ents.filter(q => q.house).map(q => [q.st, +q.d.toFixed(2)])]")))
     # out: the boards off the front door first
     E("""(() => { const st = ZSTATE.house(ZHAUS.bid), f = ZHAUS.H.openings.find(o => o.front); if (f) st.bar[f.id] = 0; })()""")
     E("ZSTATE.hp = 100; (async () => { await ZHAUS.leave(); })()")

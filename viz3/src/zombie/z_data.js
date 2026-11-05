@@ -270,19 +270,45 @@ export const ZDATA = (() => {
     wind: 0.45,
     bang: 9, // per blow on a barricade
   };
-  const night = n => ({
-    count: Math.min(30, 6 + 4 * n),
-    speed: 1 + Math.min(0.5, 0.07 * (n - 1)),
-    hit: ZOMBIE.hit + 2 * (n - 1),
-    hp: ZOMBIE.hp + 10 * (n - 1),
-    lurkers: Math.min(8, 1 + n),
-  });
+  // ---- how hard (Falko 5.11., 17:57: „Schwierigkeit wählbar“): how many, how tough, how hard they hit, how fast, how far they see,
+  // how long the first day lasts (minutes of daylight before the siren) ----
+  const DIFF = {
+    leicht: { name: 'leicht', count: 0.6, hp: 0.8, hit: 0.6, speed: 0.9, sight: 0.8, day: 360 },
+    normal: { name: 'normal', count: 1, hp: 1, hit: 1, speed: 1, sight: 1, day: 240 },
+    schwer: { name: 'schwer', count: 1.4, hp: 1.25, hit: 1.4, speed: 1.12, sight: 1.15, day: 150 },
+  };
+  const diffOf = k => DIFF[k] || DIFF.normal;
+  // ---- the kinds (Falko 5.11., 17:57: „Neue Zombie-Arten“): from the second night on runners, a firefighter in his helmet (tough,
+  // the helmet takes the blows to the head), a screamer (when it sees you it screams, and all around come); more every night ----
+  const KINDS = {
+    normal: { name: 'Zombie', hp: 1, speed: 1, walk: 1, hit: 1 },
+    laeufer: { name: 'Läufer', hp: 0.75, speed: 1.55, walk: 1.35, hit: 0.9 },
+    feuerwehr: { name: 'Feuerwehrmann', hp: 2.6, speed: 0.85, walk: 0.9, hit: 1.3, helm: 70 },
+    schreier: { name: 'Schreier', hp: 0.7, speed: 1.1, walk: 1.05, hit: 0.8, scream: 60 },
+  };
+  // the first night as it was; then each night: the share of runners, how many firefighters and screamers at most
+  const kindsOf = n =>
+    n <= 1
+      ? { laeufer: 0, feuerwehr: 0, schreier: 0 }
+      : { laeufer: Math.min(0.4, 0.14 + 0.08 * (n - 2)), feuerwehr: Math.min(4, n - 1), schreier: Math.min(3, n - 1) };
+  const night = (n, dk) => {
+    const D = diffOf(dk);
+    return {
+      count: Math.round(Math.min(30, 6 + 4 * n) * D.count),
+      speed: (1 + Math.min(0.5, 0.07 * (n - 1))) * D.speed,
+      hit: (ZOMBIE.hit + 2 * (n - 1)) * D.hit,
+      hp: (ZOMBIE.hp + 10 * (n - 1)) * D.hp,
+      lurkers: Math.min(8, 1 + n),
+      sight: D.sight,
+      kinds: kindsOf(n),
+    };
+  };
   // ---- times of day (game minutes after midnight) ----
   const TIME = { warn: 20 * 60 + 30, siren: 21 * 60, dawn: 5 * 60 + 30, start: 16 * 60 + 30 };
   // ---- texts (German, the player is du) ----
   const T = {
     intro:
-      'Ratscher, 31. Oktober, früher Nachmittag. Seit Tagen ist das Radio voller Rauschen. Wenn es dunkel wird, heult die Sirene auf der alten Schule – such dir vorher etwas, womit du dich wehren kannst (Huberts Doppelflinte mit Schrot liegt auf seinem Tisch vor der Werkstatt, gleich westlich vom Garten; Spaten an der alten Garage, Motorsäge in der Werkstatt), sammle Vorräte in den Häusern und vernagle Fenster. Y oder Klick: zuschlagen, G: Tritt, T: Taschenlampe, R: nachladen.',
+      'Ratscher, 31. Oktober, früher Nachmittag. Seit Tagen ist das Radio voller Rauschen. Wenn es dunkel wird, heult die Sirene auf der alten Schule – such dir vorher etwas, womit du dich wehren kannst (Huberts Doppelflinte mit Schrot liegt auf seinem Tisch vor der Werkstatt, gleich westlich vom Garten; Spaten an der alten Garage, Motorsäge in der Werkstatt), sammle Vorräte in den Häusern und vernagle Fenster. Y oder Klick: zuschlagen, G: Tritt, T: Taschenlampe, R: nachladen, C: ducken – geduckt sehen sie dich schlechter, und wer nichts ahnt, trifft dein Schlag dreifach. Die Schwierigkeit stellst du im Panel ein.',
     warn: 'Die Sonne geht unter. Bald heult die Sirene.',
     siren: 'Die Sirene heult. Irgendetwas stimmt mit den Leuten nicht …',
     turn: name => name + ' krümmt sich – und dreht sich langsam zu dir um.',
@@ -298,6 +324,6 @@ export const ZDATA = (() => {
     reload: 'Nachgeladen.',
     broken: name => name + ' ist kaputt.',
   };
-  return { WEAPONS, PLACES, ITEMS, LOOT, rng, roll, ZOMBIE, night, TIME, T };
+  return { WEAPONS, PLACES, ITEMS, LOOT, rng, roll, ZOMBIE, night, TIME, T, DIFF, diffOf, KINDS, kindsOf };
 })();
 window.ZDATA = ZDATA;

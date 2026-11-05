@@ -30,7 +30,8 @@ veröffentlicht.
   (Hilfs-Agent `zombie-ton`, fertig: 41 Aufnahmen in `viz3/extra/zombie/dist/zombie/kampf/`; Rohmaterial auf dem Kratz-Branch
   `ref/zombie-ton` ~150 MB – nie mergen, nach Falkos Hörprobe löschen), Gespräch mit Verbündeten. Falkos Rückmeldungen wörtlich in
   `docs/plans/plan_zombie.md` (Runde 5). Nachmittags V17j (Motorsäge angehoben), V17k (Axt, Beil, Brechstange
-  schlagen schräg durchs Bild) und V17l (die Waffe bleibt auch in Ruhe im Bild). Offen: Spaten, Mistgabel, Sense am Bild prüfen, Holz- und Metalltexturen der Waffen, Falkos Hörprobe der Aufnahmen (keiner hat sie gehört: nach Paket,
+  schlagen schräg durchs Bild) und V17l (die Waffe bleibt auch in Ruhe im Bild). Abends Runde 6 (`docs/plans/plan_zombie.md`): V17m (kein Schlag
+  durch Wände, Zombie-Arten, Schwierigkeit, Schleichen), dazu die Hilfs-Agenten `zombie-werk` und `zombie-ziele` (Zeilen in `docs/PARALLEL.md`). Offen: Spaten, Mistgabel, Sense am Bild prüfen, Holz- und Metalltexturen der Waffen, Falkos Hörprobe der Aufnahmen (keiner hat sie gehört: nach Paket,
   Dateiname, Pegel und Spektrogramm gewählt). Werkzeug zum Feinstellen: ein Bild-Studio im Browser (`ZFP.POSE`, `ZFP.FIST`, `ZFP.HPOSE`,
   `ZFP.BRE`, `ZFP.KICK` zur Laufzeit ändern, `ZFP.reset()`, `GAME.shot()`).
 - **Garten wie heute, Runde 2 (30.10.2026, Falko 0:12/0:19/0:31):** Feldweg ohne die falsche OSM-Brücke (der Bach folgt dem Weg); Bäume wie

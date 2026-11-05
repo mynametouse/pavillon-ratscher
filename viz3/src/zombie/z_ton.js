@@ -377,6 +377,22 @@ export const ZTON = (() => {
       jit: 11,
       ref: 10,
     });
+  // the screamer: a long, high scream that carries over the village (a recording of an attack, slowed, under a voice of its own)
+  const scream = (x, y) => {
+    sample('zombie_attack', x, y, { ref: 30, wet: 0.5, vol: 1.5, rate: 0.8 });
+    voice(x, y, {
+      vol: 1.25,
+      f0: R(340, 430),
+      f1: R(250, 310),
+      F1: R(900, 1150),
+      F2: R(2100, 2700),
+      dur: R(1.5, 1.9),
+      att: 0.06,
+      breath: 0.7,
+      ref: 30,
+      slide: 0.7,
+    });
+  };
   const attack = (x, y) =>
     voice(x, y, {
       vol: 0.85,
@@ -663,6 +679,7 @@ export const ZTON = (() => {
     update,
     groan: voiced('zombie_groan', groan), // the voices: recordings first
     snarl,
+    scream,
     attack: voiced('zombie_attack', attack),
     die: voiced('zombie_die', die),
     hit,
