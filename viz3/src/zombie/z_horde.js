@@ -32,6 +32,7 @@ export const ZHORDE = (() => {
     pick: null,
     hitAlly: null,
     hitRemote: null,
+    found: null, // the hidden player found (zombie/z_haus.js)
     netHit: null,
     netKill: null,
     spawnAt: null,
@@ -725,8 +726,17 @@ export const ZHORDE = (() => {
     let see = d < sight && e.los;
     // the player in a house: those near know it (they smell him) and come to its doors and windows – from close by only if he keeps
     // low in the dark; those inside see him close by
-    if (inHouse && !e.house && d < (S.low ? 22 : 70) && Z.phase === 'nacht') see = true;
+    if (inHouse && !e.house && d < (Z.hidden ? 9 : S.low ? 22 : 70) && Z.phase === 'nacht') see = true;
     if (e.house && d < 12) see = true;
+    // hidden in a wardrobe or under a bed (zombie/z_haus.js): not seen (outside they still smell him from close by) – one standing right
+    // in front of it finds him now and then
+    if (Z.hidden && !t.ally && !t.remote && see && (e.house || e.los)) {
+      see = false;
+      if (e.house && d < 1.2 && rnd() < dt * 0.4 && S.found) {
+        S.found(e);
+        see = true;
+      }
+    }
     if (e.st === 'eat' && !(d < 7 && (e.los || d < 3.5))) see = false;
     if (see) {
       if (e.st !== 'chase' && e.st !== 'attack') {
@@ -967,8 +977,10 @@ export const ZHORDE = (() => {
       }
       if (e.d < D.reach * 0.85) v = 0;
     } else if (e.st === 'search' || e.st === 'hide') {
-      gx = e.tx - e.x;
-      gy = e.ty - e.y;
+      // (inside a house along the rooms' way)
+      const wp = e.house && S.house && S.house.route ? S.house.route(e, { x: e.tx, y: e.ty, z: e.z }) : null;
+      gx = (wp ? wp[0] : e.tx) - e.x;
+      gy = (wp ? wp[1] : e.ty) - e.y;
       v = (e.st === 'hide' ? 1.0 : D.walk * 1.3) * e.sp;
       if (e.st === 'hide' && hyp(gx, gy) < 1.2) {
         remove(e);
@@ -978,18 +990,26 @@ export const ZHORDE = (() => {
       // wandering: now and then a new aim a few metres away, often towards the player's side of the village
       if (e.t > 6 + rnd() * 6 || hyp(e.tx - e.x, e.ty - e.y) < 1) {
         e.t = 0;
-        const a = rnd() * Math.PI * 2,
-          r = 4 + rnd() * 10,
-          bias = e.d < 120 ? 0.35 : 0.7;
-        e.tx = e.x + Math.cos(a) * r + (t.x - e.x) * bias * 0.15;
-        e.ty = e.y + Math.sin(a) * r + (t.y - e.y) * bias * 0.15;
-        if (blockedAt(e.tx, e.ty)) {
-          e.tx = e.x;
-          e.ty = e.y;
+        // inside a house: from room to room of its floor (zombie/z_haus.js); outside a few metres, towards the player's side
+        const rp = e.house && S.house && S.house.roam ? S.house.roam(e) : null;
+        if (rp) {
+          e.tx = rp[0];
+          e.ty = rp[1];
+        } else {
+          const a = rnd() * Math.PI * 2,
+            r = 4 + rnd() * 10,
+            bias = e.d < 120 ? 0.35 : 0.7;
+          e.tx = e.x + Math.cos(a) * r + (t.x - e.x) * bias * 0.15;
+          e.ty = e.y + Math.sin(a) * r + (t.y - e.y) * bias * 0.15;
+          if (blockedAt(e.tx, e.ty)) {
+            e.tx = e.x;
+            e.ty = e.y;
+          }
         }
       }
-      gx = e.tx - e.x;
-      gy = e.ty - e.y;
+      const wp = e.house && S.house && S.house.route ? S.house.route(e, { x: e.tx, y: e.ty, z: e.z }) : null;
+      gx = (wp ? wp[0] : e.tx) - e.x;
+      gy = (wp ? wp[1] : e.ty) - e.y;
       if (rnd() < dt * 0.3) v = 0; // standing a moment, swaying
     }
     if (e.crawl) v = Math.min(v, 0.45);

@@ -128,6 +128,52 @@ with lib.browser() as b:
         steps(0.25)
         if E("ZSTATE.hp") < hp1: break
     ck('… and inside it reaches the player', E("ZSTATE.hp") < hp1, str(J("[ZSTATE.hp, ZSTATE.ents.filter(q => q.house).map(q => [q.st, +q.d.toFixed(2)])]")))
+    # ---- hiding (Falko 5.11., 17:57: „Schleichen“ – „Verstecke im Haus“): under a bed or in a searched wardrobe ----
+    E("ZHORDE.clear(); ZSTATE.hp = 100")
+    hs = J("""(() => { const H = ZHAUS.H, b = (H.spots || []).find(s => s.kind === 'bett'), k = (H.containers || []).find(c => c.kind === 'kleiderschrank');
+      const cel = new Set(H.rooms.filter(r => r.kind === 'keller').map(r => r.id)), g = (H.containers || []).find(c => c.kind === 'regal' && cel.has(c.room));
+      const t = b ? { id: 'zhaus:hidebed:' + b.id, pos: b.pos } : k ? { id: 'zhaus:hide:' + k.id, pos: k.pos, cid: k.id } : g ? { id: 'zhaus:hidecellar:' + g.id, pos: g.pos } : null;
+      if (!t) return null; if (t.cid) ZSTATE.house(ZHAUS.bid).looted.push(t.cid);
+      const P = GAME.P, r = H.rooms.find(q => H.roomAt && H.roomAt(t.pos[0], t.pos[1], t.pos[2] + 0.3) === q.id), c = r ? [r.poly.reduce((s, q) => s + q[0], 0) / r.poly.length, r.poly.reduce((s, q) => s + q[1], 0) / r.poly.length] : [P.x, P.y],
+        dx = c[0] - t.pos[0], dy = c[1] - t.pos[1], L = Math.hypot(dx, dy) || 1;
+      P.x = t.pos[0] + dx / L * 0.9; P.y = t.pos[1] + dy / L * 0.9; P.feet = GAME.floorAt(P.x, P.y, t.pos[2] + 0.3); P.yaw = P.body = Math.atan2(-dx, -dy) * 180 / Math.PI;
+      return t; })()""")
+    if hs:
+        steps(0.3)
+        lab = E(f"(() => {{ const a = KERN.acts().find(a => a.id === '{hs['id']}'); return a ? a.label() : null; }})()")
+        ck('at night: „Unters Bett kriechen“ / „Im Kleiderschrank verstecken“ / „Hinter dem Regal verstecken“', bool(lab) and ('Bett' in lab or 'Kleiderschrank' in lab or 'Regal' in lab), str(lab) + ' ' + hs['id'])
+        E(f"KERN.acts().find(a => a.id === '{hs['id']}').run()")
+        steps(0.8)
+        st = J("({ hidden: !!ZSTATE.hidden, view: !!document.getElementById('zhide') && !document.getElementById('zhide').hidden, seated: PLAY.seated() })")
+        ck('hidden: the view from inside, seated there', st['hidden'] and st['view'] and st['seated'], str(st))
+        pic('07_versteckt')
+        try: pg.screenshot(path=os.path.join(OUT, '07_versteckt_hud.png'))
+        except Exception as e: print('screenshot failed', e)
+        # one in the house 4 m away does not find him; one right in front of where he went in finds him after a while
+        zf = E("""(() => { const P = GAME.P, a = (P.yaw + 180) * Math.PI / 180, x = P.x + Math.sin(a) * 3.5, y = P.y + Math.cos(a) * 3.5;
+          const e = ZHORDE.ent(ZFIG.people()[0], x, y, P.feet, 0, { st: 'wander', house: ZHAUS.bid, art: 'normal' }); return e.id; })()""")
+        for i in range(30):
+            steps(0.2)
+            if E(f"(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zf}'); return !!(e && e.F); }})()"): break
+            time.sleep(0.2)
+        E(f"(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zf}'); e.st = 'wander'; e.tx = e.x; e.ty = e.y; }})()")
+        steps(3)
+        far = J(f"(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zf}'); return [e.st, !!ZSTATE.hidden, +e.d.toFixed(1)]; }})()")
+        ck('… one in the room 3.5 m away does not notice him', far[0] != 'chase' and far[1], str(far))
+        # (right in front of the hiding place: from where he went in, a step further into the room)
+        E(f"""(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zf}'), P = GAME.P, a = (P.yaw + 180) * Math.PI / 180;
+          e.x = P.x + Math.sin(a) * 0.65; e.y = P.y + Math.cos(a) * 0.65; e.z = P.feet; e.hold = 'idle'; }})()""")
+        # (it stays right there – busy with something on the floor – and looks round now and then)
+        E(f"(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zf}'); e.hold = false; e.st = 'eat'; }})()")
+        found = False
+        for i in range(60):
+            steps(0.25)
+            if not E("!!ZSTATE.hidden"): found = True; break
+        st = J(f"(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zf}'); return {{ st: e.st, d: +e.d.toFixed(2), seated: PLAY.seated(), view: !document.getElementById('zhide').hidden }}; }})()")
+        ck('… one right in front of it finds him: out, it is on him', found and st['st'] == 'chase' and not st['seated'] and not st['view'], str(st))
+        E("ZHORDE.clear()")
+    else:
+        ck('a bed, a wardrobe or a cellar shelf to hide behind', False, 'none in this house')
     # out: the boards off the front door first
     E("""(() => { const st = ZSTATE.house(ZHAUS.bid), f = ZHAUS.H.openings.find(o => o.front); if (f) st.bar[f.id] = 0; })()""")
     E("ZSTATE.hp = 100; (async () => { await ZHAUS.leave(); })()")
