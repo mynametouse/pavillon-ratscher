@@ -20,6 +20,7 @@ import { DCARS } from '../dorf/dorf_cars.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { WELT } from '../welt/welt.js';
 import { DMOD } from './dinge_modelle.js';
+import { DZEIT } from './dinge_zeit.js';
 export const DINGE = (() => {
   const S = {
     on: false,
@@ -57,139 +58,10 @@ export const DINGE = (() => {
   const ROUND = new Set(['tank', 'pool_rund', 'trampolin']),
     TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van'],
     KINDS = ['hof', 'strasse', 'betrieb', 'stadt'];
-  const frac = v => v - Math.floor(v),
-    hash = (a, b) => frac(Math.sin(a * 12.9898 + b * 78.233 + 0.5) * 43758.5453);
-  // ---- occupancy: the share of the places of a kind with a car, over the hours of a workday, a Saturday, a Sunday ----
-  // [hour, share] keyframes, linear between (a village in Thuringia: most commute by car, out 6–8 h, back 15:30–18:30)
-  const CURVES = {
-    hof: {
-      werktag: [
-        [0, 0.95],
-        [5.5, 0.95],
-        [6.5, 0.8],
-        [8, 0.52],
-        [12, 0.5],
-        [13, 0.55],
-        [15, 0.55],
-        [17, 0.78],
-        [18.5, 0.9],
-        [20, 0.86],
-        [22, 0.93],
-        [24, 0.95],
-      ],
-      samstag: [
-        [0, 0.93],
-        [8, 0.92],
-        [9.5, 0.68],
-        [12, 0.66],
-        [14, 0.78],
-        [17, 0.75],
-        [19, 0.78],
-        [22, 0.9],
-        [24, 0.93],
-      ],
-      sonntag: [
-        [0, 0.92],
-        [9, 0.92],
-        [11, 0.82],
-        [14, 0.68],
-        [17, 0.72],
-        [19, 0.88],
-        [24, 0.93],
-      ],
-    },
-    strasse: {
-      werktag: [
-        [0, 0.88],
-        [6, 0.86],
-        [8, 0.48],
-        [16, 0.45],
-        [18.5, 0.78],
-        [24, 0.88],
-      ],
-      samstag: [
-        [0, 0.86],
-        [9, 0.8],
-        [11, 0.6],
-        [16, 0.7],
-        [20, 0.8],
-        [24, 0.86],
-      ],
-      sonntag: [
-        [0, 0.86],
-        [12, 0.8],
-        [14, 0.9],
-        [18, 0.85],
-        [24, 0.86],
-      ],
-    },
-    // the kerbs of a town (Schleusingen): residents at night, visitors and shoppers by day – hardly ever empty
-    stadt: {
-      werktag: [
-        [0, 0.86],
-        [6, 0.84],
-        [8, 0.68],
-        [10, 0.78],
-        [17, 0.8],
-        [19, 0.84],
-        [24, 0.86],
-      ],
-      samstag: [
-        [0, 0.86],
-        [8, 0.8],
-        [10, 0.85],
-        [16, 0.8],
-        [24, 0.86],
-      ],
-      sonntag: [
-        [0, 0.86],
-        [24, 0.86],
-      ],
-    },
-    betrieb: {
-      werktag: [
-        [0, 0.15],
-        [5.5, 0.15],
-        [7, 0.92],
-        [15.5, 0.9],
-        [17.5, 0.25],
-        [24, 0.15],
-      ],
-      samstag: [
-        [0, 0.15],
-        [7, 0.15],
-        [8, 0.4],
-        [12, 0.4],
-        [13, 0.15],
-        [24, 0.15],
-      ],
-      sonntag: [
-        [0, 0.12],
-        [24, 0.12],
-      ],
-    },
-  };
-  function curve(K, h) {
-    for (let i = 1; i < K.length; i++)
-      if (h <= K[i][0]) {
-        const [h0, v0] = K[i - 1],
-          [h1, v1] = K[i];
-        return v0 + ((v1 - v0) * (h - h0)) / Math.max(1e-6, h1 - h0);
-      }
-    return K[K.length - 1][1];
-  }
-  const dayType = wd => (wd === 0 ? 'sonntag' : wd === 6 ? 'samstag' : 'werktag');
-  S.share = (kind, t = CLOCK.t) => {
-    const wd = DCAL && DCAL.wd ? DCAL.wd(t) : 1,
-      m = ((t % 1440) + 1440) % 1440;
-    return curve(CURVES[kind][dayType(wd)], m / 60);
-  };
-  // a place has a car at game time t: its habit (fixed: the same drives empty every morning) and the day's chance, against the share
-  function want(p, t = CLOCK.t) {
-    const day = Math.floor(t / 1440),
-      r = 0.65 * p.habit + 0.35 * hash(p.i + 17, day);
-    return r < S.share(p.kind, t);
-  }
+  // ---- occupancy (dinge/dinge_zeit.js): the share of a kind at the hour of the weekday, a place's habit and the day's chance ----
+  const wdOf = t => (DCAL && DCAL.wd ? DCAL.wd(t) : 1);
+  S.share = (kind, t = CLOCK.t) => DZEIT.share(kind, t, wdOf(t));
+  const want = (p, t = CLOCK.t) => DZEIT.want(p.i, p.habit, p.kind, t, wdOf(t));
   S.want = (i, t) => want(S.places[i], t);
   // ---- seen: in the camera's view and not far, or right behind one ----
   const _fr = new THREE.Frustum(),
@@ -246,7 +118,7 @@ export const DINGE = (() => {
             type: TYPES[ty] || 'kompakt',
             col: PAL[col] || PAL[1],
             kind: KINDS[kind] || 'hof',
-            habit: hash(i + 1, 3.7),
+            habit: DZEIT.hash(i + 1, 3.7),
             on: false,
             cell: null,
             z: 0,

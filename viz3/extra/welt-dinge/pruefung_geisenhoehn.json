@@ -1,0 +1,161 @@
+{
+"quelle": "DOP 2024 (GDI-Th), YOLO11-OBB (DOTAv1), Regeln aus tools/welt-dinge/decide.py; Stichprobe und Zweifelsf\u00e4lle von Auge",
+"ja": [
+{
+"t": "auto",
+"x": -899.58,
+"y": -335.36,
+"az": 93.4,
+"l": 4.45,
+"w": 2.33,
+"p": 0.498,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -917.23,
+"y": -368.25,
+"az": 93.1,
+"l": 4.42,
+"w": 2.46,
+"p": 0.45,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -916.45,
+"y": -363.74,
+"az": 92.2,
+"l": 4.53,
+"w": 2.24,
+"p": 0.334,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -928.95,
+"y": -426.53,
+"az": 112.9,
+"l": 5.17,
+"w": 2.55,
+"p": 0.487,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -926.48,
+"y": -430.86,
+"az": 115.1,
+"l": 5.14,
+"w": 2.58,
+"p": 0.315,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -918.33,
+"y": -448.74,
+"az": 6.6,
+"l": 4.13,
+"w": 2.15,
+"p": 0.457,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -825.05,
+"y": -451.32,
+"az": 56.7,
+"l": 4.14,
+"w": 2.05,
+"p": 0.336,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -902.61,
+"y": -531.36,
+"az": 13.8,
+"l": 4.94,
+"w": 2.23,
+"p": 0.579,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -831.08,
+"y": -514.99,
+"az": 86.8,
+"l": 4.21,
+"w": 2.13,
+"p": 0.171,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -876.15,
+"y": -553.68,
+"az": 177.6,
+"l": 3.58,
+"w": 1.86,
+"p": 0.431,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -928.3,
+"y": -595.15,
+"az": 129.5,
+"l": 3.82,
+"w": 1.85,
+"p": 0.37,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -914.61,
+"y": -584.74,
+"az": 42.1,
+"l": 4.38,
+"w": 1.97,
+"p": 0.469,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -909.65,
+"y": -594.6,
+"az": 149.5,
+"l": 4.42,
+"w": 1.94,
+"p": 0.216,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -964.99,
+"y": -659.93,
+"az": 138.7,
+"l": 4.22,
+"w": 2.26,
+"p": 0.324,
+"c": "small vehicle",
+"regel": true
+}
+],
+"nein": [],
+"dazu": []
+}

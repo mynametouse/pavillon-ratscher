@@ -61,7 +61,18 @@ des Luftbilds als **Stellplätze, belebt nach Tageszeit**; (23:17) „Wichtig is
 
 ## Stand und offen
 
-- Siehe den Abschnitt „Stand“ in der letzten Fassung dieses Dokuments (wird in der Nacht fortgeschrieben).
+Stand 6.11.2026 ~0:30 (wird bis ~6:30 fortgeschrieben):
+
+| Gebiet | Autos (Plätze) | Dinge | geprüft |
+|---|---|---|---|
+| Ratscher (Dorf, Agrargenossenschaft, Holzlagerplatz, Gewerbe am Ostende) | 40 (Hof 31, Straße 7, Betrieb 2) | 16: Pool rund/eckig, Wohnmobil, Lkw, Wohnwagen, 3 Stammholz, 5 Holzstapel, Anhänger, 2 Güllebehälter | jeder Kandidat von Auge (fünf Durchgänge) |
+| Schleusingen (Altstadt und Stadt bis 1,4 × 1,45 km) | 840 (Hof 624, Stadtrand 216) | 6 Lkw | Regeln, Stichprobe 30 (28 Autos), 237 Zweifelsfälle von Auge |
+
+- Offen: Geisenhöhn und der Campingplatz an der Talsperre (im Quadrat; erkannt, Daten folgen), die Straßen nach Schleusingen und
+  Veßra, Kloster Veßra. Supermarkt-Parkplätze sind im Foto (Sonntag) leer – dort gibt es keine Plätze (OSM `amenity=parking` war von
+  hier nicht erreichbar; ließe sich auf GitHub Actions holen). Fahrende Autos des Verkehrs parken nicht auf freien Plätzen (eigenes
+  System in `verkehr/`, nicht billig).
+- Die Masken nimmt die Boden-Retusche von `welt-gebaeude` (`retusche.py`); bis dahin zeigt das Bodenbild die flachen Autos noch.
 
 ## Für den Lead
 
