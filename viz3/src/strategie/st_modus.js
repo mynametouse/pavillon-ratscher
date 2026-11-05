@@ -76,7 +76,9 @@ export const STRAT = (() => {
   for (const id of Object.keys(D.PEOPLE)) S.people[id] = person0(id);
   const PD = id => D.PEOPLE[id] || {};
   const isOwn = id => !!PD(id).own;
-  const now = () => CLOCK.t;
+  // the game time: while the simulation catches up (a time-lapse: many steps in one frame) the time of the step it is at
+  let simT = null;
+  const now = () => (simT != null ? simT : CLOCK.t);
   // home spots on site: your people by the bungalow, the neighbours in their yards
   const HOME = { falko: [7.2, 12.4], sarah: [11.2, 12.6], christoph: [9.4, 9.6] };
   const ARRIVE = [3.6, 19.0]; // the car under the carport
@@ -426,11 +428,16 @@ export const STRAT = (() => {
       return;
     }
     let n = 0;
-    while (t < t1 - 1e-6 && n < 30000) {
-      const dt = Math.min(10, t1 - t);
-      stepAt(t, dt);
-      t += dt;
-      n++;
+    try {
+      while (t < t1 - 1e-6 && n < 30000) {
+        const dt = Math.min(10, t1 - t);
+        simT = t;
+        stepAt(t, dt);
+        t += dt;
+        n++;
+      }
+    } finally {
+      simT = null;
     }
     S.t = t1;
   }
@@ -496,6 +503,8 @@ export const STRAT = (() => {
     const away = j.who.find(id => !present(id, t).ok);
     if (away) {
       const pr = present(away, t);
+      // after work the helpers go home (and come back in the morning: the job sends them again)
+      for (const id of j.who) goHome(id, j);
       setWait(
         j,
         pr.why === 'feierabend' ? null : pr.why,
@@ -513,6 +522,7 @@ export const STRAT = (() => {
     const mm = WL.minOf(t),
       hrs = J.hours || D.PRESENCE.work;
     if (!J.anytime && j.who.some(isOwn) && (mm < hrs[0] || mm >= hrs[1])) {
+      for (const id of j.who) goHome(id, j);
       setWait(
         j,
         null,
@@ -595,6 +605,17 @@ export const STRAT = (() => {
       wert: S.style,
       name: C.styleName(S.style),
     };
+  }
+  // a person at a job that waits for the next working day: home for the evening (your people to the bungalow, a neighbour to his yard)
+  function goHome(id, j) {
+    const p = S.people[id];
+    if (!p || p.path || p.at !== j.id) return;
+    const h = isOwn(id) ? HOME[id] : D.PLACES[id] && D.PLACES[id].pos;
+    if (!h) return;
+    const q = pos(id);
+    if (Math.hypot(q[0] - h[0], q[1] - h[1]) < 4) return;
+    send(id, h);
+    p.at = null;
   }
   function setWait(j, rule, text) {
     if (j.st !== 'wait' || j.why !== rule || j.need !== text) {
