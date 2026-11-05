@@ -25,6 +25,14 @@ veröffentlicht.
   `Object.assign(S, { fn })`-Falle. Zu zweit über das echte Internet am 5.11. mit zwei Tabs in Falkos Chrome
   geprüft (verbunden). Offen: ohne TURN klappt es in manchen Mobilfunknetzen nicht; Falkos Entscheidung zur Vermittlung; Einrichtung
   dichter und wohnlicher (Agent `zombie-innen` arbeitet daran, Rückmeldung zu seinen Epochen-Bildern gegeben).
+  **Runde 5 (5.11. vormittags, V17i):** Ich-Sicht mit den Armen der eigenen Figur (`zombie/z_fp.js`; Haken `H.fp`, `H.post`, `H.fov`,
+  `H.lamp` in `game/play.js`), Waffenmodelle neu (`zombie/z_waffe_mod.js`), Doppelflinte auf Huberts Tisch, echte Kampfgeräusche
+  (Hilfs-Agent `zombie-ton`, fertig: 41 Aufnahmen in `viz3/extra/zombie/dist/zombie/kampf/`; Rohmaterial auf dem Kratz-Branch
+  `ref/zombie-ton` ~150 MB – nie mergen, nach Falkos Hörprobe löschen), Gespräch mit Verbündeten. Falkos Rückmeldungen wörtlich in
+  `docs/plans/plan_zombie.md` (Runde 5). Offen: Finger und Haltungen am Bild weiter feinstellen (lange Werkzeuge schwingen bei engem
+  Bildfeld teils aus dem Bild), Holz- und Metalltexturen der Waffen, Falkos Hörprobe der Aufnahmen (keiner hat sie gehört: nach Paket,
+  Dateiname, Pegel und Spektrogramm gewählt). Werkzeug zum Feinstellen: ein Bild-Studio im Browser (`ZFP.POSE`, `ZFP.FIST`, `ZFP.HPOSE`,
+  `ZFP.BRE`, `ZFP.KICK` zur Laufzeit ändern, `ZFP.reset()`, `GAME.shot()`).
 - **Garten wie heute, Runde 2 (30.10.2026, Falko 0:12/0:19/0:31):** Feldweg ohne die falsche OSM-Brücke (der Bach folgt dem Weg); Bäume wie
   auf den Fotos (die Erle hinter dem Waschhaus, hinten großer Kirschbaum, zweiter Kirschbaum am Westrand – beide nur Bauphase 0 –, Apfelbaum;
   `site.js` Bäume tragen jetzt die Art [4] und die letzte Bauphase [5], `garden/trees.js`); Waschhaus mit bemalter Front (2,4 m breit);

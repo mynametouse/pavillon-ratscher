@@ -418,7 +418,16 @@ export const ZBUND = (() => {
     KERN.act({
       id: 'zbund:' + who,
       r: 3.4,
-      prio: 0.55,
+      // looking at him the talk wins over a bench or a door close by (an ally is always near; Falko: the talk was not offered)
+      get prio() {
+        const w = NPCS[who];
+        if (!w) return 0.55;
+        const a = (P.yaw * Math.PI) / 180,
+          dx = w.x - P.x,
+          dy = w.y - P.y,
+          d = Math.hypot(dx, dy) || 1;
+        return (dx * Math.sin(a) + dy * Math.cos(a)) / d > 0.85 ? 2.5 : 0.55;
+      },
       pos: () => {
         const w = NPCS[who];
         return w && w.fig && w.fig.g.visible ? [w.x, w.y, P.feet + 1.4] : null;

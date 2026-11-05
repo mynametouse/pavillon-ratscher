@@ -296,13 +296,13 @@ export const ZFP = (() => {
     flinte: {
       R: { p: [0.13, -0.17, -0.21], y: [-0.04, 0.035, -1], x: [1, 0.04, 0] },
       low: { p: [0.12, -0.2, -0.14], y: [-0.25, -0.45, -0.85], x: [0.95, -0.1, -0.2] },
-      open: { p: [0.08, -0.1, -0.32], y: [-0.1, -0.45, -0.9], x: [1, 0, -0.1] },
+      open: { p: [0.07, -0.16, -0.36], y: [-0.35, 0.18, -0.92], x: [0.935, 0, -0.356] },
       close: { p: [0.1, -0.13, -0.24], y: [-0.06, 0.12, -1], x: [1, 0.05, 0] },
     },
     motorsaege: {
       R: { p: [0.18, -0.3, -0.45], y: [-0.3, 0.15, -0.94], x: [0.95, 0, -0.3] },
       low: { p: [0.18, -0.45, -0.26], y: [-0.1, -0.3, -1], x: [1, 0, 0] },
-      pull: { p: [0.2, -0.4, -0.3], y: [-0.35, 0.0, -1], x: [1, 0, -0.35] },
+      pull: { p: [0.17, -0.3, -0.42], y: [-0.4, 0.1, -0.9], x: [0.9, 0, -0.4] },
     },
     spaten: {
       R: { p: [0.2, -0.33, -0.18], y: [0.22, -0.3, 0.93], x: [1, 0, 0.25] },
@@ -1065,9 +1065,12 @@ export const ZFP = (() => {
         placeBodyArm(fb, sd, hP[sd], hQ[sd], b.rig.matrixWorld, camQ, use[sd] && at > 0.5);
         // the fingers: round the handle (the gun: the index finger at the trigger, the left hand under the fore-end), a fist, at ease
         const g = use[sd] && HANDS[id] && HANDS[id][sd];
+        // (while reloading the right hand holds the stock's wrist with all fingers, the index finger off the trigger)
         const pose =
           at > 0.5 && g
-            ? g.pose || 'grip'
+            ? g.pose === 'trigger' && clip && clip.c.kind === 'reload'
+              ? 'grip'
+              : g.pose || 'grip'
             : fist || !clip || !clip.c[sd]
               ? S.alert > 0.4 || (clip && clip.c.kind === 'punch')
                 ? 'fist'
@@ -1095,6 +1098,9 @@ export const ZFP = (() => {
     kickPose(b, fb);
   }
   // a free hand: the fist's guard (raised by alertness), the punch, the left beside a one-handed weapon, the reload's pocket and breech
+  // (BRE: the left hand at the chambers – o: its place in the barrels' frame from the hinge pin, x right, y along the barrels, z up;
+  // y, z: its index side and the way to its wrist, camera space)
+  const BRE = { o: [-0.065, -0.085, 0.02], y: [0.9, 0.35, -0.25], z: [-0.55, -0.55, 0.65] };
   const _fp = { P: V(), Q: new THREE.Quaternion() },
     _fq = new THREE.Quaternion(),
     _fv = V();
@@ -1105,17 +1111,17 @@ export const ZFP = (() => {
       if (!obj) return namedPose(sd, 'Lpocket', out);
       if (name === 'breech' || name === 'breech2') {
         // behind the chamber mouths of the opened gun (the barrels turned about the hinge by the break): the thumb pushes the shells
-        const th = -0.6 * S.brk,
+        const B = BRE,
+          th = -0.6 * S.brk,
           c = Math.cos(th),
           sn = Math.sin(th),
-          ly = -0.07 - 0.085,
-          lz = 0.022 + 0.01;
+          [lx, ly, lz] = B.o;
         _fv
-          .set(-0.02, 0.455 + ly * c - lz * sn, -0.022 + ly * sn + lz * c)
+          .set(lx, 0.455 + ly * c - lz * sn, -0.022 + ly * sn + lz * c)
           .applyQuaternion(wQ)
           .add(_a);
         out.P.copy(_fv);
-        handQ(_u.set(0.9, 0.35, -0.25), _v.set(-0.55, -0.55, 0.65), out.Q);
+        handQ(_u.set(...B.y), _v.set(...B.z), out.Q);
         return out;
       }
       const lp = name === 'grip' ? [-0.15, 0.26, 0.1] : [-0.36, 0.2, 0.32];
@@ -1318,8 +1324,8 @@ export const ZFP = (() => {
   const KICK = [
     [0, 0.12, -0.95, -0.15, 0, 0, -1, 0, 1, 0.1],
     [0.1, 0.1, -0.62, -0.38, 0, 0.3, -0.95, 0, 0.6, 0.8],
-    [0.2, 0.06, -0.33, -0.78, 0, 0.95, -0.3, 0, -0.3, 0.95],
-    [0.3, 0.07, -0.5, -0.6, 0, 0.6, -0.8, 0, 0.2, 0.98],
+    [0.2, 0.05, -0.26, -0.62, 0, 0.85, -0.5, 0, -0.45, 0.9],
+    [0.3, 0.06, -0.42, -0.52, 0, 0.6, -0.8, 0, 0.1, 0.99],
     [0.55, 0.12, -0.95, -0.2, 0, 0, -1, 0, 1, 0.1],
   ];
   const kv = new Array(9),
@@ -1601,7 +1607,7 @@ export const ZFP = (() => {
         : null,
     };
   }
-  Object.assign(S, { post, info, muzzle, build, reset, POSE, FIST, KICK, HPOSE, swingClip, HELD, body: () => FB });
+  Object.assign(S, { post, info, muzzle, build, reset, POSE, FIST, KICK, HPOSE, BRE, swingClip, HELD, body: () => FB });
   return S;
 })();
 window.ZFP = ZFP;
