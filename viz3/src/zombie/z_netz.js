@@ -304,6 +304,9 @@ export const ZNETZ = (() => {
       } else if (d.k === 'laut') {
         if (S.role === 'host') rawNoise(+d.x, +d.y, +d.r || 30, 1, d.what || '');
         if (d.what === 'schuss') ZTON.shot(+d.x, +d.y);
+      } else if (typeof d.k === 'string' && d.k.startsWith('x:')) {
+        // feat/zombie-ziele: other modules' messages (ZNETZ.tell) as the event 'znetz:<name>' (zombie/z_ziele_bus.js: the bus)
+        KERN.emit('znetz:' + d.k.slice(2, 24), Object.assign({}, d, { from }));
       } else {
         // feat/zombie-werk: everything not handled above goes out as an event (zombie/z_werk_molotow.js: 'feuer', a molotov's fire)
         KERN.emit('znetz:ev', { d, from });
@@ -647,7 +650,11 @@ export const ZNETZ = (() => {
     );
   KERN.on('zombie:stop', () => close());
   hookHorde();
-  Object.assign(S, { open, close, transport, snapshot, puppets, ui, clean, newCode });
+  // feat/zombie-ziele: a message of another module to the other player – there the event 'znetz:<name>' with the data
+  const tell = (name, data) => {
+    if (S.on && S.T && S.T.peers.size) S.T.send('ev', Object.assign({}, data || {}, { k: 'x:' + name }));
+  };
+  Object.assign(S, { open, close, transport, snapshot, puppets, ui, clean, newCode, tell });
   return S;
 })();
 window.ZNETZ = ZNETZ;

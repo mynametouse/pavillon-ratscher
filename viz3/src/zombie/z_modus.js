@@ -18,7 +18,6 @@ import { keys } from '../game/input.js';
 import { MODE, setMode } from '../render/modes.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
-import { TASKS } from '../core/tasks.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { DORF } from '../dorf/dorf.js';
 import { DPEOPLE } from '../dorf/dorf_people.js';
@@ -329,22 +328,7 @@ export const ZOMBIE = (() => {
     ask: 'stellt Kalender und Spieluhr auf den Nachmittag des 31. Oktober – wenn es dunkel ist, heult die Sirene',
     run: start,
   });
-  // ---- the journal: what the first night asks of you ----
-  TASKS.define({
-    id: 'zombie-1',
-    title: 'Die erste Nacht',
-    who: 'Zombie-Nacht',
-    start: { on: 'zombie:start' },
-    steps: [
-      {
-        text: 'Such dir eine Waffe – einen Spaten an der alten Garage, eine Axt bei Hubert, eine Motorsäge in der Werkstatt …',
-        on: 'zombie:weapon',
-      },
-      { text: 'Halte durch, bis die Sirene heult – kurz nach Einbruch der Dunkelheit.', on: 'zombie:siren' },
-      { text: 'Überlebe die Nacht bis zum Morgengrauen.', on: 'zombie:survived' },
-    ],
-    done: 'Du hast die erste Nacht überlebt. Sie kommen wieder – sammle Vorräte, verbarrikadiere ein Haus.',
-  });
+  // feat/zombie-ziele: the tasks of the days and nights (the journal, the task card, the marker) are in zombie/z_ziele.js
   // a reload during the night mode: it goes on
   whenLoaded(() =>
     setTimeout(() => {

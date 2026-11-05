@@ -1783,8 +1783,8 @@ export const QUESTS = (() => {
             : '');
       }
     }
-    // marker over the goal
-    if (tp && dist > 3.5 && show) {
+    // marker over the goal (feat/zombie-ziele: a target that draws its own marker says so – target.ownMark, zombie/z_ziele.js)
+    if (tp && dist > 3.5 && show && !(e.target && e.target.ownMark)) {
       const z = (e.z || 0) + 2.1 + Math.sin(performance.now() / 400) * 0.06;
       MARK.position.copy(V(tp[0], tp[1], z));
       const s = THREE.MathUtils.clamp(dist * 0.03, 0.22, 1.1);
