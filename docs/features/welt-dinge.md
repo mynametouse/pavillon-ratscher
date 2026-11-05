@@ -76,8 +76,10 @@ Stand 6.11.2026 ~0:30 (wird bis ~6:30 fortgeschrieben):
 | Schleusingen (Altstadt und Stadt bis 1,4 × 1,45 km) | 840 (Hof 624, Stadtrand 216) | 6 Lkw | Regeln, Stichprobe 30 (28 Autos), 237 Zweifelsfälle von Auge |
 | Geisenhöhn (Dorf im Westen des Quadrats) | 15 (Hof 12, Straße 3) | Holzplatz: Stammholz, Bretterstapel, kleiner Traktor | drei Durchgänge, Regeln, alle 14 der Stichprobe Autos; Holzplatz von Auge |
 | Campingplatz Talsperre Ratscher | 3 | – (Wohnwagen und Hütten sind dort Gebäude für `welt-gebaeude`) | Regeln |
+| Zollbrück (an der Strecke nach Veßra) | 1 | – | Regeln |
+| Kloster Veßra (Dorf, Kloster, Baumschule; Zone, 9 km westlich) | 94 (Hof 75, Straße 19) | 1 Lkw | Regeln, Stichprobe 30 (alle Autos); der Parkplatz der Baumschule bleibt frei (dort parkt Falkos Auto nach der Fahrt) |
 
-- Offen: die Straßen nach Schleusingen und Veßra (außerhalb der Orte kaum geparkte Autos), Kloster Veßra (erkannt, Daten folgen). Supermarkt-Parkplätze sind im Foto (Sonntag) leer – dort gibt es keine Plätze (OSM `amenity=parking` war von
+- Offen: die Straßen nach Schleusingen und Veßra (außerhalb der Orte kaum geparkte Autos). Supermarkt-Parkplätze sind im Foto (Sonntag) leer – dort gibt es keine Plätze (OSM `amenity=parking` war von
   hier nicht erreichbar; ließe sich auf GitHub Actions holen). Fahrende Autos des Verkehrs parken nicht auf freien Plätzen (eigenes
   System in `verkehr/`, nicht billig).
 - Die Masken nimmt die Boden-Retusche von `welt-gebaeude` (`retusche.py`); bis dahin zeigt das Bodenbild die flachen Autos noch.

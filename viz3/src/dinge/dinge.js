@@ -38,6 +38,8 @@ export const DINGE = (() => {
       { id: 'schleusingen', c: [-1000, 1150], r: 1300, cell: 200 },
       { id: 'geisenhoehn', c: [-860, -520], r: 900, cell: 120 },
       { id: 'talsperre', c: [1270, -700], r: 700, cell: 120 },
+      { id: 'vessra', c: [-8850, -150], r: 1100, cell: 150 },
+      { id: 'zollbrueck', c: [-5430, -990], r: 700, cell: 120 },
     ],
     err: null,
   };
@@ -60,7 +62,7 @@ export const DINGE = (() => {
     [160, 135, 100],
     [210, 160, 30],
   ].map(c => new THREE.Color().setRGB(c[0] / 255, c[1] / 255, c[2] / 255, THREE.SRGBColorSpace));
-  const ROUND = new Set(['tank', 'pool_rund', 'trampolin']),
+  const ROUND = new Set(['tank', 'pool_rund', 'trampolin']), // an oval pool takes its box
     TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van'],
     // the kinds of places in the data (tools/welt-dinge/prep.py KINDS, same order); the last ones are car parks of OSM
     KINDS = [

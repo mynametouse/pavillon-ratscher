@@ -32,7 +32,7 @@ AVOID = {'vessra': [(-8867.2, -172.3, 15)]}
 # works yards: the agricultural cooperative west of the garden, the yards at the east end of the village
 WORKS = [(-150, -40, -165, -30), (295, 450, -330, -220)]
 HEIGHT = {'auto': 1.5, 'van': 2.3, 'wohnmobil': 3.0, 'lkw': 3.6, 'anhaenger': 1.0, 'wohnwagen': 2.6, 'traktor': 2.8,
-          'pool_rund': 1.1, 'pool_eckig': 0.1, 'trampolin': 0.9, 'rundballen': 1.5, 'quaderballen': 1.8, 'holzstapel': 1.6,
+          'pool_rund': 1.1, 'pool_oval': 1.1, 'pool_eckig': 0.1, 'trampolin': 0.9, 'rundballen': 1.5, 'quaderballen': 1.8, 'holzstapel': 1.6,
           'stammholz': 1.2, 'container': 2.6, 'tank': 3.0}
 HAZE = np.array([55.0, 70.0, 86.0])
 # shares of body types and colours for slots without a car of the photo (KBA stock, rounded), cumulative
@@ -204,7 +204,7 @@ def main():
     pf = os.path.join(EXTRA, f'plaetze_{gebiet}.json')
     if os.path.exists(pf):
         for q in json.load(open(pf))['plaetze']:
-            if in_rect(q['x'], q['y'], SKIP):
+            if in_rect(q['x'], q['y'], SKIP) or any(math.hypot(q['x'] - a, q['y'] - b) < r for a, b, r in AVOID.get(gebiet, [])):
                 continue
             hv = (math.sin(q['x'] * 12.9898 + q['y'] * 78.233) * 43758.5453) % 1.0
             hc = (math.sin(q['x'] * 39.3468 + q['y'] * 11.135) * 24634.6345) % 1.0

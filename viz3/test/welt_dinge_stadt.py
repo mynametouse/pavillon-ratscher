@@ -117,6 +117,14 @@ with lib.browser() as b:
     E(f"GAME.orbit(160, 35, 140, [{MARKT[0]}, {MARKT[1]}, KERN.ground({MARKT[0]}, {MARKT[1]}) + 2])")
     E("GAME.shot()")
     pic('03_markt_umgebung')
+    # car parks of OSM (empty in the photo of a Sunday morning): a shop's fills on Saturday morning, empty on Sunday
+    kinds = J("DINGE.state().kinds")
+    print('kinds', kinds, flush=True)
+    if kinds.get('laden', 0) >= 5:
+        sat = J("(() => { for (let d = 0; d < 14; d++) if (DCAL.wd(d * 1440 + 600) === 6) return d; return 5; })()")
+        r = J(f"""(() => {{ const L = DINGE.places.map((p, i) => i).filter(i => DINGE.places[i].kind === 'laden');
+            const n = t => L.filter(i => DINGE.want(i, t)).length; return {{ all: L.length, sa10: n({sat} * 1440 + 600), so10: n({sat + 1} * 1440 + 600) }}; }})()""")
+        ck('a shop\'s car park: full on Saturday at 10:00, empty on Sunday', r['sa10'] > 0.7 * r['all'] and r['so10'] < 0.15 * r['all'], str(r))
     newp = [[nm, k[-60:]] for nm, k in J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])") if k not in K0]
     ck('no new shader programs of the things', not [x for x in newp if 'dinge' in x[1]], f'new: {newp}')
     ck('no error in the round', not J("DINGE.err"), str(J("DINGE.err")))

@@ -187,6 +187,27 @@ export const DMOD = (() => {
         strip(s, yC0, yC0 + cw, yC0 + T.rs, yC0 + T.rs + cw * 0.7);
       }
     }
+    // door seams, handles and the sill on both sides (dark, a hair outside the body): the doors read from the side
+    {
+      const yB = t === 'van' ? yWs - 1.0 : (yR + T.rr + yWs) / 2 + 0.1,
+        seams = t === 'van' ? [yWs - 0.05, yB] : t === 'klein' ? [yWs - 0.05, yB] : [yWs - 0.05, yB, yR + T.rr + 0.25],
+        SEAM = L(0.12, 0.12, 0.13);
+      for (const s of [-1, 1]) {
+        const x = s * (hw + 0.004);
+        for (const y of seams) {
+          const z0 = T.zb + 0.1,
+            z1 = T.zw - 0.02;
+          if (s > 0) k.quad([x, y - 0.012, z0], [x, y + 0.012, z0], [x, y + 0.012, z1], [x, y - 0.012, z1], SEAM);
+          else k.quad([x, y + 0.012, z0], [x, y - 0.012, z0], [x, y - 0.012, z1], [x, y + 0.012, z1], SEAM);
+        }
+        for (const y of seams.slice(1)) k.box(s * (hw + 0.012), y + 0.22, T.zw - 0.14, 0.02, 0.16, 0.035, 0, DARK);
+        // the sill between the wheels
+        const y0 = -T.wb / 2 + T.r + 0.08,
+          y1 = T.wb / 2 - T.r - 0.08;
+        if (s > 0) k.quad([x, y0, T.zb], [x, y1, T.zb], [x, y1, T.zb + 0.07], [x, y0, T.zb + 0.07], SEAM);
+        else k.quad([x, y1, T.zb], [x, y0, T.zb], [x, y0, T.zb + 0.07], [x, y1, T.zb + 0.07], SEAM);
+      }
+    }
     // lamps and plates
     for (const s of [-1, 1]) {
       k.box(s * (hw - 0.22), yF - 0.02, T.zw - 0.2, 0.3, 0.05, 0.12, 0, HEAD);
@@ -549,12 +570,15 @@ export const DMOD = (() => {
   // at (x, y, z) – the merged mesh of an area takes many of them (BufferGeometryUtils.mergeGeometries)
   const _m = new THREE.Matrix4();
   S.thingGeo = (d, z) => {
-    const f = THINGS[d.t];
+    // an oval pool: the round one stretched along its length (y of the thing = −z of the scene)
+    const oval = d.t === 'pool_oval',
+      f = THINGS[oval ? 'pool_rund' : d.t];
     if (!f) return null;
     const k = VPROPS.kit();
     f(k, d);
     if (k.empty()) return null;
     const g = k.geo();
+    if (oval) g.scale(1, 1, d.l / Math.max(0.5, d.w));
     _m.makeRotationY((-(d.az || 0) * Math.PI) / 180).setPosition(d.x, z, -d.y);
     g.applyMatrix4(_m);
     return g;
