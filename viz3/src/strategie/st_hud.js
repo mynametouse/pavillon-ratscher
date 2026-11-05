@@ -182,6 +182,17 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
     });
     H.pan.addEventListener('click', panelClick);
     H.notes.addEventListener('click', e => {
+      const a = e.target.closest('button[data-act]');
+      if (a) {
+        const n = a.closest('.n'),
+          A = n && n._acts && n._acts[+a.dataset.act];
+        if (A) {
+          const r = A.fn();
+          n.querySelectorAll('button[data-act]').forEach(x => x.remove());
+          if (typeof r === 'string') n.firstChild.textContent = r;
+        }
+        return;
+      }
       const b = e.target.closest('button[data-why]');
       if (!b) return;
       const n = b.closest('.n'),
@@ -379,14 +390,16 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
     }
   }
   // ---------------- notices ----------------
-  function note(n) {
+  // a notice; acts: buttons [{ label, fn }] (fn may return a text that replaces the notice's, e.g. the dog's answer to praise)
+  function note(n, acts) {
     build();
     const el = document.createElement('div');
     el.className = 'n stbox' + (n.kind === 'nein' ? ' no' : '');
-    el.innerHTML = `<span>${esc(n.text)}${n.why ? `<span class="w" hidden>${esc(n.why)}${n.src ? `<small>Quelle: ${esc(n.src)}</small>` : ''}</span>` : ''}</span>${n.why ? '<button type="button" class="stb" data-why="1">Warum?</button>' : ''}`;
+    el.innerHTML = `<span>${esc(n.text)}${n.why ? `<span class="w" hidden>${esc(n.why)}${n.src ? `<small>Quelle: ${esc(n.src)}</small>` : ''}</span>` : ''}</span>${n.why ? '<button type="button" class="stb" data-why="1">Warum?</button>' : ''}${(acts || []).map((A, i) => `<button type="button" class="stb" data-act="${i}">${esc(A.label)}</button>`).join('')}`;
+    if (acts && acts.length) el._acts = acts;
     H.notes.appendChild(el);
     while (H.notes.children.length > (innerWidth <= 720 ? 2 : 4)) H.notes.firstChild.remove();
-    const life = n.why ? 14000 : 6500;
+    const life = n.why || (acts && acts.length) ? 14000 : 6500;
     setTimeout(() => el.remove(), life);
   }
   const say = text => note({ text, kind: 'info' });
@@ -740,6 +753,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
     const r = cv.getBoundingClientRect();
     return [e.clientX - r.left, e.clientY - r.top];
   };
+  let pickD = 0; // the screen distance of the last pick
   function pickPerson(sx, sy, rad = 16) {
     let best = null,
       bd = rad;
@@ -754,6 +768,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         best = id;
       }
     }
+    pickD = bd;
     return best;
   }
   function pickPlace(sx, sy, rad = 20) {
@@ -769,6 +784,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         best = Pl.id;
       }
     }
+    pickD = bd;
     return best;
   }
   const _rc = new THREE.Raycaster(),
@@ -824,8 +840,13 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
   }
   // a tap or click: a person (select; with shift: add), a place (its panel), else nothing (touch with a selection: the command)
   function tap(e, gp) {
-    const [sx, sy] = rel(e),
-      id = pickPerson(sx, sy);
+    const [sx, sy] = rel(e);
+    let id = pickPerson(sx, sy);
+    const dP = pickD,
+      pl = pickPlace(sx, sy),
+      dL = pickD;
+    // a place's symbol nearer than a person's: the place (with Sarah selected, a tap on the garden where she stands gives her its job)
+    if (id && pl && dL < dP && H.sel.length && !(H.sel.length === 1 && H.sel[0] === id && dP < 7)) id = null;
     if (id) {
       if (e.shiftKey || e.ctrlKey || e.metaKey)
         select(H.sel.includes(id) ? H.sel.filter(x => x !== id) : H.sel.concat(id));
@@ -833,7 +854,6 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       openPerson(id);
       return true;
     }
-    const pl = pickPlace(sx, sy);
     if (pl) {
       if (e.pointerType !== 'mouse' && H.sel.length) return command(e, gp);
       openPlace(pl);
@@ -966,6 +986,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
     intro,
     openPlace,
     openPerson,
+    closePanel,
     select,
     draw,
     H,

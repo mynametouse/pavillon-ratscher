@@ -63,7 +63,8 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - Ohne Browser: `node --test viz3/test/unit/strategie.test.mjs` (Feiertage, wer wann da ist, Ruhezeiten mit Quellen, PV, Speicher, Stufen,
   Bedürfnisse, Wege, Preise mit Quellen).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9002 --serve strategie` (Abschnitte
-  `start,leute,auftrag,regel,reload,welt`); auf GitHub über `viz3/extra/strategie/tests.txt`, Bilder in `out/strategie/`.
+  `start,leute,auftrag,regel,holz,strom,ereignis,reload,welt` – `holz` ist die ganze Kette bis zur Lieferung) und `strategie_telefon`
+  (iPhone-Größe mit Touch: HUD ohne Überdeckung, antippen, ziehen); auf GitHub über `viz3/extra/strategie/tests.txt`, Bilder in `out/strategie/`.
 
 ## API für Erweiterungen
 
@@ -130,6 +131,8 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 - `STDATA.RULES[id] = { text, why, src }` – jede Regel sagt in einem deutschen Satz, warum, mit Quelle. `STRAT.refuse(id, wer)` baut die Absage;
   `can` darf eine Regel-ID oder eine eigene Absage zurückgeben. Das Feld zeigt sie mit „Warum?“.
 - `STCORE.rule(datum, minute, { loud, where, saw, sun })` → Regel-ID oder `null` (Ruhezeiten, Tageslicht).
+- `STRAT.note(text, { kind, why, src, acts })` – eine Meldung von oben; mit `why`/`src` bekommt sie „Warum?“, mit
+  `acts: [{ label, fn }]` Knöpfe (gibt `fn` einen Text zurück, ersetzt er die Meldung – so antwortet der Hund auf „Loben“/„Tadeln“).
 
 ### Leute, Helden, Bedürfnisse
 - `STRAT.person.define({ id, name, short, col, own, fig, npc, role, skills, certs, gear, presence: t => ({ ok, why }) })` – weitere Leute.
@@ -176,13 +179,16 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 - Gespeichert: `pav-strat-v1`; ein Thema hält Kleines in `STRAT.S.ext[thema]` (wird mitgespeichert) oder in einem eigenen SAVE-Schlüssel.
 - Ereignisse der Aufträge tragen die Spielzeit `t` (im Zeitraffer laufen viele Schritte in einem Bild).
 - Shader: was ein Thema in der Welt neu baut, vorher einmal übersetzen (Beispiel `STWELT.warm()` beim Start des Modus: Stämme, Bretter, ein
-  gefällter Baum – `FELL.warmMats()`, die Stapelleisten); der Test misst Programme vor und nach der ganzen Holzkette bei denselben Ansichten.
+  gefällter Baum – `FELL.warmMats()`, die Stapelleisten); der Test prüft die Programme der eigenen Dinge (Stämme, Werkstatt und Lager mit
+  Brettern, Stapel und Regal, der gefällte Baum) vor und nach der ganzen Holzkette bei denselben Ansichten – Figuren zählen nicht mit (ihre
+  Programme wärmt `npc/npc_real.js` selbst vor).
 
 ## Offen
 
-Arbeitshaltungen der Figuren (sie stehen und gehen, sägen noch nicht sichtbar), Traktor und Anhänger fahren beim Rücken nicht sichtbar mit,
-Trockenschrank/Leimholz aus eigenen Bohlen von oben (`HOLZDRY.simShop` ist da, noch kein Auftrag), Brennholz spalten und verkaufen, das
-Telefon im Detail (Layout da, nicht auf einem echten Gerät geprüft); der Hund des Spielers (feat/tiere) als Begleiter von oben (Haken: `STRAT.person.define`, `strategie:stil`).
+Traktor und Anhänger fahren beim Rücken nicht sichtbar mit (der Stamm springt am Ende ins Lager), Trockenschrank/Leimholz aus eigenen Bohlen
+von oben (`HOLZDRY.simShop` ist da, noch kein Auftrag), Brennholz spalten und verkaufen, das Telefon im Detail (Layout und Touch getestet, nicht
+auf einem echten Gerät). Der Hund (feat/tiere): von oben als Zeichen auf der Karte, seine Taten als Meldung mit „Loben“/„Tadeln“ – mehr
+(schicken, hüten als Auftrag) kann darauf aufbauen.
 
 ## Für den Lead
 
@@ -198,6 +204,6 @@ Telefon im Detail (Layout da, nicht auf einem echten Gerät geprüft); der Hund 
   - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
 - `viz3/src/modules.txt`: Block `# feat/strategie` vor `game/tutorial.js`.
 - Neuer Speicher-Schlüssel `pav-strat-v1` (im Modul über `SAVE.key` angemeldet, Prüfung `v === 1`) – bitte in `docs/ARCHITECTURE.md` §8 eintragen.
-- Neue `window`-Namen: `STRAT`, `STHUD`.
+- Neue `window`-Namen: `STRAT`, `STHUD`, `STHOLZ`, `STEREIG`, `STAUSBAU`, `STFIG` (alle mit `ST`-Vorsilbe, für Tests und Erweiterungen).
 - Quellen (nur als Text in den Daten, keine fremden Dateien): ADAC Kraftstoffpreise, TFZ Bayern Scheitholzpreise, PVGIS (EU JRC), DGUV, SVLFG,
   KWF, 32. BImSchV, Thüringer Feiertagsgesetz, TRGS 553 – keine Zeile in `buildlib/credits.py` nötig.

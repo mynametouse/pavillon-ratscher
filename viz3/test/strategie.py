@@ -39,6 +39,23 @@ with lib.browser() as b:
     def newprogs(before):
         now = pnames()
         return [n for n in now if n not in before][:20]
+    # the programs of the chain's own things (the logs' instanced meshes, the workshop and the yard – boards, the drying stack, the board on
+    # the shelf –, and what came onto the scene since the mark: the felled tree; no figures – a person's first look compiles her own, the
+    # lead warms those centrally): each must have been there before
+    def mark():
+        E("window.__st_roots = GAME.scene.children.map(o => o.uuid)")
+        return set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
+    OWN = """(() => { const R = GAME.R, out = [], seen = new Set();
+      const addO = (o, what) => o && o.traverse(m => { if (!m.material || m.isSkinnedMesh) return; for (const M of [].concat(m.material)) { if (seen.has(M)) continue; seen.add(M);
+        const p = R.properties.get(M).currentProgram; if (p) out.push([what + ' ' + (M.name || M.type), p.cacheKey]); } });
+      for (const sp of new Set(HOLZ.logs.map(l => l.sp))) { const G = HOLZ.species && HOLZ.species(sp); if (G) { addO(G.mS, 'Stamm'); addO(G.mC, 'Stamm'); } }
+      const Bw = window.BUILD && BUILD.werkstatt; if (Bw && Bw.root) addO(Bw.root, 'Werkstatt');
+      const base = new Set(window.__st_roots || []);
+      for (const o of GAME.scene.children) if (!base.has(o.uuid)) { let sk = false; o.traverse(m => { if (m.isSkinnedMesh) sk = true; }); if (!sk) addO(o, 'neu ' + (o.name || o.type)); }
+      return out; })()"""
+    def own_new(K):
+        own = J(OWN)
+        return own, sorted(set(n for n, k in own if k not in K))
     steps(1.0)
     E("GAME.shot()")
     p0 = progs()
@@ -187,6 +204,7 @@ with lib.browser() as b:
         look_all()
         p1 = progs()
         pn1 = pnames()
+        K1 = mark()
         f = job('faellen', ['hubert', 'falko'])
         ck('Hubert (with the course) and Falko get the felling job', f and f.get('id'), str(f))
         ok = until(done(f['id']), 200)
@@ -194,7 +212,8 @@ with lib.browser() as b:
         ck('the tree is felled and worked up in the world (world/fell.js record done, gone from the standing forest)', ok and ft['rec'] == 'done' and ft['gone'], str(ft)[:300])
         ck('its measured logs lie in the forest as HOLZ logs (the same as by hand)', len(ft['logs']) >= 2 and all(l['st'] == 'ground' for l in ft['logs']), str(ft['logs'])[:300])
         look_all()
-        ck('felling made no new shader program (compiled ahead when the mode started)', progs() <= p1, f'{p1} → {progs()} new: {newprogs(pn1)}')
+        own, ours = own_new(K1)
+        ck('felling made no new shader program for its own things (compiled ahead when the mode started)', own and not ours, f'{len(own)} drawn materials, new: {ours}; new in all: {newprogs(pn1)}')
         E(f"(() => {{ const t = FOREST.byId({tree['id']}); GAME.P.tx = t.x; GAME.P.ty = t.y; GAME.P.th = 60; }})()")
         E("STRAT.setSpeed(0)"); steps(1.5); E("STRAT.setSpeed(30)")  # the forest chooses its near trees for the new view, the tiles come
         lib.shot(pg, OUT, '08_gefaellt_nah')
@@ -265,7 +284,8 @@ with lib.browser() as b:
         e3 = J("STRAT.S.eur")
         ck('Sarah delivers: the order is done, Euro booked, the boards left the shelf', o2 and o2['st'] == 'geliefert' and e3 > e2 + 5 * 150, f"{o2 and o2['st']} {e2} → {e3} {dl}")
         look_all()
-        ck('the whole wood chain made no new shader program (logs, boards, stack, the board on the shelf)', progs() <= p1, f'{p1} → {progs()} new: {newprogs(pn1)}')
+        own, ours = own_new(K1)
+        ck('the whole wood chain made no new shader program for its own things (logs, boards, stack, the board on the shelf, the felled tree)', own and not ours, f'{len(own)} drawn materials, new: {ours}; new in all ({p1} → {progs()}): {newprogs(pn1)}')
         led = J("STRAT.S.ledger.slice(-12).map(e => e.text + ' ' + e.eur)")
         print('ledger', led, flush=True)
         page_pic('10_werkstatt')

@@ -4,6 +4,7 @@
 // marked trees, windthrow and beetle trees only after someone looked (exploration).
 import { FELL } from '../world/fell.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
+import { KERN } from '../core/kern.js';
 import { P } from '../game/walkable.js';
 import { STRAT } from './st_modus.js';
 import { STHOLZ } from './st_holz.js';
@@ -103,5 +104,45 @@ export const STEBENEN = (() => {
       return h;
     },
   });
-  return {};
+  // ---- the dog (feat/tiere, window.HUND): his symbol among the people; what he does of his own accord comes as a notice with „Loben“ and
+  // „Tadeln“ – Black & White: praise and scolding shape what he does more often (tiere/tiere_hund.js, HUND.lob(±1) answers in a sentence) ----
+  const DOG = {
+    hueten: 'die Ziegen zusammengetrieben',
+    vertreiben: 'das Wild aus dem Garten getrieben',
+    jagen: 'dem Wild weit hinterhergejagt',
+    suchen: 'eine Spur gefunden',
+    bellen: 'einen Nachbarn angebellt',
+    ruhig: 'bei den Leuten ruhig geblieben',
+    kommen: 'auf den Pfiff gekommen',
+  };
+  STRAT.layer.define({
+    id: 'leute',
+    draw: (pr, W, H) => {
+      const D = window.HUND;
+      if (!D || D.on === false || !Number.isFinite(D.x) || P.th > 900) return '';
+      const q = pr(D.x, D.y, 0.6);
+      if (q[2] >= 1 || q[0] < -20 || q[1] < -20 || q[0] > W + 20 || q[1] > H + 20) return '';
+      const r = P.th < 120 ? 5.5 : 4,
+        name = String(D.name || 'Hund');
+      return `<g class="dog"><circle cx="${f1(q[0])}" cy="${f1(q[1])}" r="${r}" fill="#2b2420" stroke="#e3b04b" stroke-width="2"><title>${name}</title></circle>${P.th < 260 ? `<text x="${f1(q[0] + r + 3)}" y="${f1(q[1] + 3.5)}" style="fill:#f3e2b8;font:600 10.5px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px">${name}</text>` : ''}</g>`;
+    },
+  });
+  let dogT = -1e9;
+  const dogLast = {};
+  KERN.on('hund:tat', d => {
+    const D = window.HUND,
+      now = performance.now() / 1000;
+    if (!STRAT.on || !D || !d || !DOG[d.tat] || typeof D.lob !== 'function') return;
+    if (now - dogT < 12 || now - (dogLast[d.tat] || -1e9) < 60) return;
+    dogT = dogLast[d.tat] = now;
+    const name = D.name || 'Der Hund';
+    STRAT.note(name + ' hat ' + DOG[d.tat] + '.', {
+      kind: 'hund',
+      acts: [
+        { label: 'Loben', fn: () => D.lob(1) },
+        { label: 'Tadeln', fn: () => D.lob(-1) },
+      ],
+    });
+  });
+  return { DOG };
 })();

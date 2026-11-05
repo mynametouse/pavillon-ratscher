@@ -205,7 +205,7 @@ export const STRAT = (() => {
     const n = { t: Math.round(now()), text, kind: o.kind || 'info', why: o.why || null, src: o.src || null };
     S.notes.push(n);
     if (S.notes.length > 60) S.notes.shift();
-    if (STRAT.ui && STRAT.ui.note) STRAT.ui.note(n);
+    if (STRAT.ui && STRAT.ui.note) STRAT.ui.note(n, o.acts);
     return n;
   }
   // a refusal: the rule, why it exists, its source (Falko 23:28: „Warum?“ on every refusal)
