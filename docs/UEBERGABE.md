@@ -34,8 +34,9 @@ veröffentlicht.
   durch Wände, Zombie-Arten, Schwierigkeit, Schleichen), V17n (Verstecke), V17o (Basteln an der Werkbank, Molotow mit `F` – Hilfs-Agent
   `zombie-werk`, `docs/features/zombie-werk.md`; Ziele mit Wegweiser, Radio, Bus um 4 Uhr der dritten Nacht, Abschluss – Hilfs-Agent `zombie-ziele`,
   `docs/features/zombie-ziele.md`; beide fertig und gemergt), V17p (Neu laden macht weiter: `?szenario=zombie` verschwindet nach dem Start aus der
-  Adresse, man steht wieder, wo man draußen zuletzt war – `Z.pos`). Offen aus den Agenten: Stachelbrett fürs Fenster, der Bus ist nicht fest
-  (man läuft durch), ab Tag 4 nur Nacht-Aufgaben, Horn/Diesel/Feile synthetisch, zu zweit nie mit zwei echten Rechnern geprüft. Offen: Spaten, Mistgabel, Sense am Bild prüfen, Holz- und Metalltexturen der Waffen, Falkos Hörprobe der Aufnahmen (keiner hat sie gehört: nach Paket,
+  Adresse, man steht wieder, wo man draußen zuletzt war – `Z.pos`; der Bus ist fest), V17q (Falko 21:48: das Zombie-Panel lag links über den
+  Gesprächsoptionen und dem Mikrofon – jetzt rechts, die Aufgabenkarte oben links, während Gesprächen keine Kampfknöpfe; Zombies laufen nicht durch
+  den Bus). Offen aus den Agenten: Stachelbrett fürs Fenster, ab Tag 4 nur Nacht-Aufgaben, Horn/Diesel/Feile synthetisch, zu zweit nie mit zwei echten Rechnern geprüft. Offen: Spaten, Mistgabel, Sense am Bild prüfen, Holz- und Metalltexturen der Waffen, Falkos Hörprobe der Aufnahmen (keiner hat sie gehört: nach Paket,
   Dateiname, Pegel und Spektrogramm gewählt). Werkzeug zum Feinstellen: ein Bild-Studio im Browser (`ZFP.POSE`, `ZFP.FIST`, `ZFP.HPOSE`,
   `ZFP.BRE`, `ZFP.KICK` zur Laufzeit ändern, `ZFP.reset()`, `GAME.shot()`).
 - **Garten wie heute, Runde 2 (30.10.2026, Falko 0:12/0:19/0:31):** Feldweg ohne die falsche OSM-Brücke (der Bach folgt dem Weg); Bäume wie
