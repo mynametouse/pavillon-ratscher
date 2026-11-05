@@ -415,7 +415,7 @@ export const TKOERPER = (() => {
       });
       loft(B, st, {
         part: kind === 'hind' ? 'hleg' : 'fleg',
-        sides: 9,
+        sides: 10,
         sub: 1,
         ref: 'z',
         coat,
@@ -433,8 +433,15 @@ export const TKOERPER = (() => {
       const sx = s === 'L' ? 1 : -1,
         b = V3(sx * E.x, E.p[1], E.p[0]),
         d = V3(sx * E.out, E.up, E.back).normalize();
+      const tip = E.tip ? V3(0, -0.6, 0.8).normalize() : null;
       const st = [0, 0.25, 0.6, 1].map((t, i) => ({
-        p: b.clone().addScaledVector(d, E.len * t),
+        p:
+          tip && t > 0.6
+            ? b
+                .clone()
+                .addScaledVector(d, E.len * 0.6)
+                .addScaledVector(tip, E.len * (t - 0.6))
+            : b.clone().addScaledVector(d, E.len * t),
         rx: E.wid * [0.45, 0.62, 0.5, 0.08][i],
         ry: E.wid * 0.12,
         w: [W(sk, 'ear' + s)],
@@ -946,15 +953,15 @@ export const TKOERPER = (() => {
       [0.44, 0.8, 0.33, 0.135],
     ],
     neck: [
-      [0.34, 0.62, 0.145, 0.2, 2.4],
-      [0.44, 0.62, 0.14, 0.19, 2.4],
-      [0.53, 0.59, 0.125, 0.165, 2.3],
-      [0.61, 0.54, 0.1, 0.135, 2.2],
-      [0.69, 0.48, 0.077, 0.1],
-      [0.77, 0.42, 0.058, 0.07],
-      [0.84, 0.365, 0.047, 0.052],
-      [0.88, 0.338, 0.045, 0.046],
-      [0.892, 0.332, 0.043, 0.043],
+      [0.34, 0.62, 0.15, 0.21, 2.4],
+      [0.44, 0.63, 0.15, 0.205, 2.4],
+      [0.53, 0.61, 0.14, 0.19, 2.3],
+      [0.6, 0.57, 0.115, 0.155, 2.2],
+      [0.67, 0.51, 0.088, 0.115, 2.1],
+      [0.74, 0.445, 0.066, 0.08],
+      [0.8, 0.39, 0.052, 0.058],
+      [0.835, 0.365, 0.05, 0.05],
+      [0.845, 0.36, 0.048, 0.047],
     ],
     neckMid: 1,
     headAt: 2,
@@ -975,8 +982,8 @@ export const TKOERPER = (() => {
       [0.29, 0.03],
     ],
     frontR: [0.11, 0.085, 0.042, 0.024, 0.018, 0.02],
-    ear: { p: [0.56, 0.72], x: 0.065, out: 0.5, up: 0.85, back: -0.3, len: 0.13, wid: 0.075 },
-    eye: { p: [0.64, 0.585], x: 0.078, r: 0.009 },
+    ear: { p: [0.55, 0.75], x: 0.07, out: 0.55, up: 0.8, back: -0.35, len: 0.13, wid: 0.08 },
+    eye: { p: [0.625, 0.6], x: 0.085, r: 0.009 },
     tail: {
       p: [
         [-0.51, 0.6],
@@ -1026,7 +1033,7 @@ export const TKOERPER = (() => {
         if (Math.cos(q.th) > -0.4) c = mix(c, lin(0xb89a6c), sst(0.82, 0.95, a) * 0.85);
       }
       if (q.part === 'neck') {
-        if (q.z > 0.87) c = lin(0x2e2826);
+        if (q.z > 0.83) c = lin(0x2e2826);
         else if (q.z > 0.6 && Math.cos(q.th) < 0.2) c = mix(c, lin(young ? 0x7a5e44 : 0x5c544c), 0.45);
       }
       if (q.part === 'ear') c = lin(young ? 0x4a3626 : 0x221d1a);
@@ -1055,9 +1062,9 @@ export const TKOERPER = (() => {
       [0.39, 0.53, 0.35, 0.085],
     ],
     neck: [
-      [0.27, 0.5, 0.09, 0.115],
-      [0.36, 0.58, 0.085, 0.1],
-      [0.42, 0.65, 0.074, 0.084],
+      [0.27, 0.5, 0.1, 0.125],
+      [0.36, 0.58, 0.098, 0.112],
+      [0.42, 0.65, 0.082, 0.09],
       [0.46, 0.7, 0.068, 0.075],
       [0.49, 0.725, 0.073, 0.076],
       [0.55, 0.72, 0.068, 0.066],
@@ -1084,7 +1091,7 @@ export const TKOERPER = (() => {
       [0.24, 0.03],
     ],
     frontR: [0.075, 0.06, 0.036, 0.024, 0.021, 0.025],
-    ear: { p: [0.5, 0.755], x: 0.045, out: 0.35, up: 0.9, back: -0.15, len: 0.1, wid: 0.075 },
+    ear: { p: [0.5, 0.755], x: 0.045, out: 0.35, up: 0.9, back: -0.15, len: 0.105, wid: 0.075, tip: true },
     eye: { p: [0.565, 0.733], x: 0.036, r: 0.01, col: 0x2a1a0c },
     tail: {
       p: [
@@ -1093,7 +1100,7 @@ export const TKOERPER = (() => {
         [-0.45, 0.34],
         [-0.44, 0.24],
       ],
-      r: [0.04, 0.05, 0.045, 0.016],
+      r: [0.045, 0.062, 0.058, 0.022],
     },
     gait: { f0: 1.7, trot: 1.3, gallop: 4.2 },
     lieDrop: 0.3,
@@ -1112,7 +1119,9 @@ export const TKOERPER = (() => {
         if (q.z > 0.66) c = mix(c, lin(0x141210), sst(0.665, 0.685, q.z));
         if (q.z < 0.45 && Math.cos(q.th) < -0.4) c = mix(c, tan, 0.55);
       }
-      if (q.part === 'trunk' && Math.cos(q.th) < -0.6 && q.z > 0.15) c = mix(c, tan, 0.45);
+      if (q.part === 'trunk' && Math.cos(q.th) < -0.75 && q.z > 0.2) c = mix(c, tan, 0.35);
+      // the long-stock coat: strands a little lighter and darker
+      c = mix(c, lin(0x3a342e), hash(q.x * 9, q.y * 9, q.z * 9) * 0.35);
       if (q.part === 'hleg' || q.part === 'fleg') c = mix(c, tan, sst(0.45, 0.65, q.u));
       if (q.part === 'tail') c = mix(c, tan, Math.cos(q.th) < -0.3 ? 0.4 : 0);
       if (q.part === 'ear') c = mix(lin(0x1a1817), lin(0x3a2a1e), q.th > Math.PI ? 0.3 : 0);

@@ -176,6 +176,7 @@ zombie/z_ziele_bus.js       # feat/zombie-ziele the end of the third night: the 
 # feat/tiere: the animals of the region and the dog below this line (after the forest, the vehicles, the neighbours and their goats; before the frame loop)
 tiere/tiere_arten.js        # feat/tiere the animals around Ratscher: species, profiles with sources, flight distances, signs – data (TARTEN)
 tiere/tiere_koerper.js      # feat/tiere the bodies: procedural, true to size, skinned, the coat in vertex colours, gaits and poses (TKOERPER)
+tiere/tiere_ton.js          # feat/tiere the animals' voices: free recordings, positional, loaded on first need; the dog's whistle (TTON)
 tiere/tiere.js              # feat/tiere the animals in the world: habitat from the crowns, groups by day and season, flight, discovery (TIERE)
 tiere/tiere_einfluss.js     # feat/tiere what they do: browsing, rooting, the bark beetle, voles; protection, quiet zones, signs, the API (TEINFLUSS)
 tiere/tiere_hund.js         # feat/tiere the companion dog Hasso: follows, is called and sent, learns from praise and scolding (HUND)

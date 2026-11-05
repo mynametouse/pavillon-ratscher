@@ -3,11 +3,11 @@
 # open land), the groups by the sun and the calendar (roe deer at dusk at the forest edge, wild boar at night on the field, the red kite
 # by day over the meadows), flight from the walker at the real distance (the group goes together), the first sighting as an event for
 # the discovery book, the dog following, sitting, lying. Pictures in out/tiere/ (look at them).
-#   python3 viz3/test/tiere.py 9003 [sections]      sections: bau,welt,flucht,hund,einfluss (default all)
+#   python3 viz3/test/tiere.py 9003 [sections]      sections: bau,welt,flucht,hund,einfluss,lernen,andere (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'bau,welt,flucht,hund,einfluss').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'bau,welt,flucht,hund,einfluss,lernen,andere').split(','))
 ck = lib.Checks('tiere')
 OUT = lib.out('tiere')
 with lib.browser() as b:
@@ -202,7 +202,9 @@ with lib.browser() as b:
         q1 = J(f"TIERE.list().filter(a => a.g === '{r['id']}')")
         ck('the whole group goes, fast (bounding)', len(q1) >= 1 and all(a['mode'] == 'flee' for a in q1) and max(a['v'] for a in q1) > 6, str(q1))
         ev = J("window.__ev.filter(e => e.ev === 'flucht')")
-        ck('an event tiere:flucht for the strategy mode', any(e.get('art') == 'reh' for e in ev), str(ev)[:200])
+        hist = J("KERN.events().filter(e => /^tiere/.test(e.name)).map(e => ({ name: e.name, art: e.data && e.data.art }))")
+        print('events', hist, flush=True)
+        ck('an event tiere:flucht for the strategy mode', any(e.get('art') == 'reh' for e in ev) or any(h['name'] == 'tiere:flucht' and h['art'] == 'reh' for h in hist), str(ev)[:200])
         steps(8)
         pl = J(f"TIERE.plan(TIERE.groups.find(g => g.id === '{r['id']}'))")
         ck('startled, the group keeps to cover for a while', pl['where'] == 'cover', str(pl))
@@ -301,5 +303,88 @@ with lib.browser() as b:
         ck('a sign found: the wallow (tiere:entdeckt, kind spur, with a source)', any(e['id'] == 'suhle' for e in ev), str(ev)[:300])
         pic('45_suhle')
         ck('the strategy mode\'s numbers: counts, nature value', J("Object.keys(TIERE.counts()).length") >= 5 and 0 <= E("TIERE.naturwert()") <= 100, str(J("TIERE.counts()")))
+    if 'lernen' in want:
+        # the dog learns: what he did last is what praise and scolding are about; commands; the panel; kept after a reload
+        at(10, 30, date=(11, 6))
+        E("HUND.on = true; GAME.view(-150, -400, ROADS.groundAt(-150, -400) + 1.65, 40, -4, 60); GAME.step(0.1)")
+        steps(1.5)
+        l0 = J("HUND.state()")
+        E("HUND.act('vertreiben'); HUND.lob(1)")
+        l1 = J("HUND.state()")
+        ck('praised after driving game off: he tends to do it more', l1['learn']['vertreiben'] > l0['learn']['vertreiben'], f"{l0['learn']['vertreiben']} -> {l1['learn']['vertreiben']}")
+        E("HUND.act('jagen'); HUND.lob(-1)")
+        l2 = J("HUND.state()")
+        ck('scolded after chasing game far: he tends to do it less', l2['learn']['jagen'] < l1['learn']['jagen'], f"{l1['learn']['jagen']} -> {l2['learn']['jagen']}")
+        E("HUND.act('bellen'); HUND.lob(-1)")
+        l3 = J("HUND.state()")
+        ck('scolded for barking at a neighbour: he becomes calmer with people', l3['learn']['ruhe'] > l2['learn']['ruhe'], f"{l2['learn']['ruhe']} -> {l3['learn']['ruhe']}")
+        ck('praise strengthens the bond', l1['bindung'] > l0['bindung'], f"{l0['bindung']} -> {l1['bindung']}")
+        # the keys: + praises (what he did last)
+        E("HUND.act('suchen'); window.dispatchEvent(new KeyboardEvent('keydown', { key: '+' }))")
+        l4 = J("HUND.state()")
+        ck('the key + praises (finding things: more searching)', l4['learn']['suchen'] > l3['learn']['suchen'], f"{l3['learn']['suchen']} -> {l4['learn']['suchen']}")
+        vis = E("!!document.getElementById('hund-panel') && !document.getElementById('hund-panel').hidden")
+        ck('the dog\'s buttons are there when he is near (call, send, praise, scold)', vis, str(vis))
+        # sent: to a point 25 m ahead – he runs there and searches
+        E("HUND.schicken()")
+        m1 = J("HUND.state()")
+        steps(5)
+        m2 = J("HUND.state()")
+        ck('sent (U) he runs ahead to where you look', m1['mode'] == 'gehen' and (m2['dist'] > 8 or m2['mode'] in ('suchen', 'follow')), f"{m1['mode']} -> {m2['mode']} {m2['dist']}")
+        E("HUND.rufen()")
+        steps(6)
+        m3 = J("HUND.state()")
+        ck('called (P) he comes back to heel', m3['mode'] == 'follow' and m3['dist'] < 6, str(m3))
+        # of his own accord: game near the walker in the open – with the urge to chase high he goes after it, the deer flee
+        r = J("(() => { const g = TIERE.nearest('reh', -150, -400); return { id: g.id, feed: g.feed }; })()")
+        E("HUND.learn.jagen = 1; HUND.learn.vertreiben = 1; HUND.char.eifer = 1")
+        at(16, 50, date=(11, 6))
+        E(f"TIERE.reset(); GAME.view({r['feed'][0]} + 95, {r['feed'][1]}, ROADS.groundAt({r['feed'][0]} + 95, {r['feed'][1]}) + 1.65, -90, -2, 60); GAME.step(0.1)")
+        steps(1.0)
+        E(f"(() => {{ const P = GAME.P; HUND.x = P.x - 1; HUND.y = P.y; HUND.mode = 'follow'; HUND.task = null; }})()")
+        E(f"(() => {{ const a = TIERE.live.find(a => a.g.id === '{r['id']}'); if (a) {{ HUND.x = a.x + 60; HUND.y = a.y; }} }})()")
+        chased = None
+        for i in range(12):
+            E("HUND.decide()")
+            steps(0.5)
+            st = J("HUND.state()")
+            if st['mode'] in ('jagen', 'vertreiben'):
+                chased = st['mode']
+                break
+        ck('of his own accord he goes after game (a tendency learned), the deer flee', chased is not None and any(a['mode'] == 'flee' for a in J("TIERE.list().filter(a => a.art === 'reh')")) , f'{chased}')
+        E("GAME.step(0.05)")
+        pic('50_hund_jagt')
+        steps(16)
+        st = J("HUND.state()")
+        ck('… and remembers what he did (for praise or scolding)', st['recent'] in ('jagen', 'vertreiben'), str(st))
+        E("HUND.lob(-1)")
+        want_l = J("HUND.state().learn")
+        print('learned', want_l, flush=True)
+        # kept after a reload
+        pg.reload(wait_until='domcontentloaded')
+        pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000)
+        time.sleep(2)
+        E("window.FREEZE = true")
+        got = J("HUND.state().learn")
+        print('after reload', got, flush=True)
+        ck('what he learned is kept after a reload (pav-hund-v1)', all(abs(got[k] - want_l[k]) < 0.002 for k in want_l), f'{want_l} / {got}')
+        seen = J("Object.keys((SAVE.get('pav-tiere-v1') || {}).seen || {})")
+        ck('the species seen are kept too (pav-tiere-v1)', 'reh' in seen, str(seen))
+    if 'andere' in want:
+        # the rest of the game unharmed: Schleusingen, then the zombie night (the dog's buttons out of the way, no page errors)
+        E("GAME.go && GAME.go('schleusingen')")
+        steps(3)
+        sl = J("TIERE.state()")
+        ck('Schleusingen: the animals keep to their numbers (few near, none in the town square)', sl['live'] <= 26, str(sl['liveByArt']))
+        pic('60_schleusingen')
+        sc = J("KERN.scenarios().map(s => s.name || s.id || s)")
+        print('scenarios', str(sc)[:300], flush=True)
+        try:
+            E("(() => { const s = KERN.scenarios().find(s => (s.name || s.id) === 'zombie'); if (s && s.run) s.run(); })()")
+            steps(6)
+            z = J("({ on: !!(window.ZSTATE && ZSTATE.on), panel: !!document.getElementById('hund-panel') && !document.getElementById('hund-panel').hidden })")
+            ck('the zombie night starts with the animals in the world, the dog\'s buttons hidden there', z['on'] and not z['panel'], str(z))
+        except Exception as e:
+            ck('the zombie night starts with the animals in the world', False, repr(e)[:200])
     ck.errors(errs)
 ck.done()

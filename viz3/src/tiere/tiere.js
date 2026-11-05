@@ -26,6 +26,7 @@ import { RENDER } from '../render/render.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { TARTEN } from './tiere_arten.js';
 import { TKOERPER } from './tiere_koerper.js';
+import { TTON } from './tiere_ton.js';
 export const TIERE = (() => {
   const LSK = 'pav-tiere-v1';
   const S = {
@@ -843,6 +844,37 @@ export const TIERE = (() => {
     });
   }
   const GRAZE = { reh: 1, rothirsch: 1, hase: 0.7, fuchs: 0.55, waschbaer: 0.6, marder: 0.6 };
+  // ---------- voices: the roe buck barks at what it cannot make out, the sounder grunts, the fox barks in the winter nights, the birds
+  // call (when their recordings are there) ----------
+  function voice(a, dt, d) {
+    if (d > 420) return;
+    a.sndT = (a.sndT ?? 2 + Math.random() * 6) - dt;
+    if (a.sndT > 0) return;
+    const m = cal().m;
+    let k = null,
+      next = 8 + Math.random() * 10;
+    if (a.art === 'reh' && (a.alert > 0.5 || (a.mode === 'flee' && a.fleeT > 3.5)) && a.i === 0) {
+      k = 'reh';
+      next = 4 + Math.random() * 5;
+    } else if (a.art === 'wildschwein' && a.mode !== 'lie' && d < 90) {
+      k = 'sau';
+      next = 2 + Math.random() * 5;
+    } else if (a.art === 'fuchs' && sunEl() < -6 && (m <= 1 || m === 11) && a.mode !== 'flee') {
+      k = Math.random() < 0.3 ? 'fuchsschrei' : 'fuchs';
+      next = 15 + Math.random() * 25;
+    } else if ((a.art === 'rotmilan' || a.art === 'bussard') && Math.random() < 0.5)
+      k = a.art === 'rotmilan' ? 'milan' : 'bussard';
+    else if (a.art === 'kolkrabe') k = 'rabe';
+    else if (a.art === 'uhu' && a.g.state && a.g.state.calls) {
+      k = 'uhu';
+      next = 10 + Math.random() * 12;
+    } else if (a.art === 'rothirsch' && a.g.state && a.g.state.rut && a.A.variant && a.A.variant.antler) {
+      k = 'hirsch';
+      next = 12 + Math.random() * 20;
+    }
+    a.sndT = next;
+    if (k) TTON.play(k, a.x, a.y, { n: k === 'sau' ? 1 + (Math.random() < 0.4 ? 1 : 0) : k === 'reh' ? 2 : 1 });
+  }
   // ---------- discovery: a species seen for the first time ----------
   function discover(kind, id, title, src) {
     const book = kind === 'art' ? S.seen : S.found;
@@ -918,6 +950,7 @@ export const TIERE = (() => {
       show(a, far ? dt * 4 : dt, far);
       if ((v > 0.05 || a.alert > 0.05) && d < 220 && inView(a.x, a.y, a.z + 0.5)) moved = true;
       if (S.frame % 8 === a.i % 8) lookFor(a);
+      voice(a, dt, d);
     }
     if (moved) {
       const now = performance.now() / 1000;
