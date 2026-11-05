@@ -182,6 +182,7 @@ strategie/st_jobs.js        # feat/strategie places, stocks of the bar, layers, 
 strategie/st_holz.js        # feat/strategie the wood chain from above: look, fell, skid, saw, stack, dry; oak panels, boards, the order (STHOLZ)
 strategie/st_ereignis.js    # feat/strategie what happens: storm and windthrow, bark beetle, the forestry contractor, breakdowns, a big order, accidents, favours (STEREIG)
 strategie/st_ausbau.js      # feat/strategie food and beds, knowledge and upgrades, ages, chapters with goals (STAUSBAU)
+strategie/st_figuren.js     # feat/strategie your people as Rocketbox figures in the world: close up from above and near the walker (STFIG)
 strategie/st_hud.js         # feat/strategie the lens: HUD, overlay over the plan view, selecting, sending, panels, notices with „Warum?“ (STHUD)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
