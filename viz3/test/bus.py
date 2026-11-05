@@ -155,6 +155,12 @@ with lib.browser() as b:
               const x = I.x + fx * 16 + rx * 6, y = I.y + fy * 16 + ry * 6, yaw = Math.atan2(I.x - x, I.y - y) * 180 / Math.PI;
               GAME.view(x, y, KERN.ground(x, y) + 1.7, yaw, -3, 60); }})()""")
             steps(0.2); pic(pg, 'b_bus_an_der_haltestelle')
+            # what a bus costs: draw calls of this picture with and without it
+            dc = J(f"""(() => {{ const I = BUS.S.inst.find(q => q.key === '{arr['key']}'), R = GAME.R, f0 = R.renderBufferDirect; let n = 0, tri = 0;
+              R.renderBufferDirect = function (cam, scene, geo, mat, obj, grp) {{ n++; return f0.apply(this, arguments); }};
+              try {{ GAME.shot(); const a = n; n = 0; I.B.g.visible = false; GAME.shot(); const b = n; I.B.g.visible = true; return {{ calls: a - b, with: a, without: b }}; }}
+              finally {{ R.renderBufferDirect = f0; }} }})()""")
+            ck('a bus costs few draw calls (≤ 16)', 0 < dc['calls'] <= 16, str(dc))
             E(f"""(() => {{ const I = BUS.S.inst.find(q => q.key === '{arr['key']}');
               const fx = Math.sin(I.hd), fy = Math.cos(I.hd), rx = Math.cos(I.hd), ry = -Math.sin(I.hd);
               const x = I.x + fx * 9 + rx * 4.5, y = I.y + fy * 9 + ry * 4.5, yaw = Math.atan2(I.x + fx * 2 - x, I.y + fy * 2 - y) * 180 / Math.PI;
@@ -177,6 +183,12 @@ with lib.browser() as b:
             print('ride', r, flush=True)
             ck('riding: seated, the panel with the next stops, the clock in real time', r['ride'] and r['panel'] and r['seat'] and r['focus'] and any('Zentralhaltestelle' in x for x in r['rows']), str(r)[:300])
             page_pic(pg, 'c_im_bus_panel')
+            # the same on a phone (the panel at the bottom, above the buttons)
+            pg.set_viewport_size({'width': 390, 'height': 844})
+            steps(0.3)
+            page_pic(pg, 'c2_im_bus_telefon')
+            pg.set_viewport_size({'width': 1100, 'height': 680})
+            steps(0.3)
             # it drives off: the rider goes with it
             p_a = J("[GAME.P.x, GAME.P.y]")
             steps(25.0)

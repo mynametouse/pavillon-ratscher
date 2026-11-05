@@ -56,7 +56,36 @@ export const BUSMOD = (() => {
       emissiveIntensity: 0,
     }),
     disp: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+    // the soft shadow under the bus (it casts none into the sun's map – a moving caster would ask for a new map each frame, as the cars
+    // of the traffic do not either): a dark gradient on the road
+    shade: new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    }),
   };
+  {
+    const cv = document.createElement('canvas');
+    cv.width = 64;
+    cv.height = 128;
+    const c = cv.getContext('2d'),
+      img = c.createImageData(64, 128);
+    for (let j = 0; j < 128; j++)
+      for (let i = 0; i < 64; i++) {
+        // a rounded rectangle, soft at the edges
+        const u = Math.abs(i - 31.5) / 32,
+          v = Math.abs(j - 63.5) / 64,
+          d = Math.max(0, Math.max((u - 0.62) / 0.38, (v - 0.86) / 0.14)),
+          a = Math.max(0, 1 - d) ** 1.6;
+        img.data[(j * 64 + i) * 4 + 3] = Math.round(a * 255);
+      }
+    c.putImageData(img, 0, 0);
+    M.shade.alphaMap = new THREE.CanvasTexture(cv);
+  }
   // (named, so a test can tell the bus's programs from others: viz3/test/bus.py)
   for (const [k, m] of Object.entries(M)) if (m !== M.body) m.name = 'bus ' + k;
   {
@@ -288,6 +317,7 @@ export const BUSMOD = (() => {
       cabin: kC.geo(),
       leaf: kD.geo(),
       wheel: gW,
+      shade: new THREE.PlaneGeometry(W + 0.9, L + 1.2).rotateX(-Math.PI / 2).translate(0, 0.04, 0),
     };
     // the displays: front (above the windscreen), right side (behind the front door), back (the line)
     const pl = (w, h, x, y, z, ry, u0, u1) => {
@@ -341,12 +371,14 @@ export const BUSMOD = (() => {
     const g0 = geos(),
       g = new THREE.Group();
     g.name = 'bus';
-    const body = own(new THREE.Mesh(g0.body, M.body), true),
+    const body = own(new THREE.Mesh(g0.body, M.body)),
       glass = own(new THREE.Mesh(g0.glass, M.glass)),
       head = own(new THREE.Mesh(g0.head, M.head)),
       tail = own(new THREE.Mesh(g0.tail, M.tail)),
-      cabin = own(new THREE.Mesh(g0.cabin, M.cabin));
+      cabin = own(new THREE.Mesh(g0.cabin, M.cabin)),
+      shade = own(new THREE.Mesh(g0.shade, M.shade));
     glass.renderOrder = 2;
+    shade.renderOrder = 1;
     // the display: its own canvas
     const cv = document.createElement('canvas');
     cv.width = 512;
@@ -396,7 +428,7 @@ export const BUSMOD = (() => {
       kP.box(x, y + 0.12, FL + 0.42, 0.34, 0.36, 0.12, 0, col(0x25272a));
     }
     const pax = own(new THREE.Mesh(kP.empty() ? new THREE.BufferGeometry() : kP.geo(), M.body));
-    g.add(body, glass, head, tail, cabin, disp, wF, wR, pax, ...doors);
+    g.add(shade, body, glass, head, tail, cabin, disp, wF, wR, pax, ...doors);
     g.visible = false;
     scene.add(g);
     S.built++;

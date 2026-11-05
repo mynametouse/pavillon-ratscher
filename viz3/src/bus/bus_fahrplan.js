@@ -205,8 +205,9 @@ export const BUSPLAN = (() => {
     const out = [];
     for (let di = Math.floor(T / 1440) - 1; di <= Math.floor(T / 1440); di++) {
       for (const t of tripsOn(e0 + di)) {
-        const a = di * 1440 + t.t0,
-          b = a + t.a[t.a.length - 1];
+        // from its first point in the world (the edge, before its first stop, when it comes from beyond) to its last
+        const a = di * 1440 + t.t0 + Math.min(0, t.a[0]),
+          b = di * 1440 + t.t0 + t.a[t.a.length - 1];
         if (T >= a - lead && T <= b + tail) out.push({ trip: t, di, t0: a, t1: b });
       }
     }
@@ -217,7 +218,7 @@ export const BUSPLAN = (() => {
     const P = S.pats[trip.pat],
       T0 = di * 1440 + trip.t0,
       n = P.st.length;
-    if (T <= T0) return P.s[0];
+    if (T <= T0 + trip.a[0]) return P.s[0];
     for (let k = 0; k < n - 1; k++) {
       const d = T0 + trip.d[k],
         a = T0 + trip.a[k + 1];

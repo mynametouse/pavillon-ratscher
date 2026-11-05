@@ -20,7 +20,7 @@
 // - The zombie night (zombie/z_state.js Z.on) has its own bus: no regular buses then.
 // Events: 'bus:ein' { line, ziel, halt }, 'bus:aus' { line, halt }, 'bus:warten' { halt, min }, 'bus:ankunft' { line, halt }.
 import * as THREE from 'three';
-import { $, BASE, COARSE, stage, V } from '../core/head.js';
+import { $, BASE, cam, COARSE, stage, V } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
@@ -340,7 +340,18 @@ export const BUS = (() => {
     return Number.isFinite(z) ? z : (zPrev ?? 0);
   }
   const _f = {},
-    _r = {};
+    _r = {},
+    _cd = new THREE.Vector3();
+  function seen(x, y) {
+    const dx = x - cam.position.x,
+      dy = y + cam.position.z,
+      d = Math.hypot(dx, dy);
+    if (d < 40 || S.ride) return true;
+    if (d > DRAW + 60) return false;
+    cam.getWorldDirection(_cd);
+    const l = Math.hypot(_cd.x, _cd.z) || 1;
+    return (dx * _cd.x - dy * _cd.z) / (l * d) > 0.35;
+  }
   // the bus at its minute: on its lane with the front door at the stop, both axles on the lane, pitched with the road
   function place(I, dt) {
     BUSPLAN.at(I.Rn, I.tau, _o);
@@ -388,7 +399,8 @@ export const BUS = (() => {
     const o0 = I.B.open;
     I.B.setOpen(open);
     if ((o0 < 0.05 && I.B.open >= 0.05) || (o0 > 0.95 && I.B.open <= 0.95)) doorSound(I, I.B.open > o0);
-    if (moved || o0 !== I.B.open) markDirty();
+    // a new picture only for a bus one may see (near, or ahead of the camera) – as the cars of the traffic (V17g)
+    if ((moved || o0 !== I.B.open) && seen(cx, cy)) markDirty();
     return I;
   }
   // trips at their end (not drawn again while the timetable still counts them on the road)

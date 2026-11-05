@@ -103,3 +103,16 @@ test('a bus from beyond the world comes from its edge and is at its first stop o
   B.at(R, R.A[0] + 0.01, o);
   assert.equal(o.st, 'fahrt', 'from the edge it drives (no halt there)');
 });
+
+test('a trip counts as on the road from the edge of the world on', () => {
+  const e0 = B.eOf(2026, 6, 1),
+    d = B.departures(st('Ratscher, Schleusebrücke'), 2 * 1440 + 7 * 60 + 40, e0, 30).find(
+      q => q.trip.line === '205' && q.trip.vor
+    );
+  const T = d.di * 1440 + d.trip.t0 + d.trip.a[0] + 0.2;
+  assert.ok(d.trip.a[0] < 0, 'it comes from the edge');
+  assert.ok(
+    B.active(T, e0).some(a => a.trip === d.trip),
+    'on the road between the edge and its first stop'
+  );
+});
