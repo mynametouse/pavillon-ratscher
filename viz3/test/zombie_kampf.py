@@ -64,9 +64,18 @@ with lib.browser() as b:
     E("CAM3.want = false; GAME.go('garten'); GAME.P.pitch = -4")
     steps(0.3)
     meshes = {}
+    calm = {}
     for wid in ['faust', 'flinte', 'motorsaege', 'axt', 'beil', 'spaten', 'mistgabel', 'brechstange', 'sense']:
         if wid == 'faust': E("PLAY.select(-1)")
         else: E(f"PLAY.give(ZWAFFE.thing('{wid}'))")
+        if wid != 'faust':
+            # by day, nothing near, no blow for a while: the weapon still in view (Falko 5.11., 16:56: „nur wenn ich schieße, ist die Waffe
+            # zu sehen, obwohl ich sie eigentlich in der Hand habe“)
+            E("ZFP.lastAtk = -100")
+            steps(3.5)
+            E("GAME.shot()")
+            calm[wid] = J("[ZFP.info().alert, ZFP.info().view]")
+            if wid == 'flinte': pic('r_flinte_ruhig')
         E("ZFP.lastAtk = ZFP.time")
         steps(0.6)
         E("ZFP.lastAtk = ZFP.time")
@@ -85,6 +94,10 @@ with lib.browser() as b:
             E("ZWAFFE.release()")
             steps(1.2)
         ck(f'first person: {wid} in the hands (the figure\'s own arms drawn)', inf['shown'] and inf['rig'] and inf['body'] and inf['id'] == wid, str(inf))
+    print('calm: alert and the weapon\'s middle in the view (-1..1)', calm, flush=True)
+    # (the scythe's long snath has its middle below the view while its blade shows at the top right: only its calm counts there)
+    off = [w for w, (al, v) in calm.items() if al > 0.1 or not v or (w != 'sense' and (abs(v[0]) > 1.05 or v[1] < -1.1))]
+    ck('calm by day every weapon stays in view (not only after a blow)', not off and len(calm) == 8, str(calm))
     # the kick
     E("PLAY.give(ZWAFFE.thing('beil')); ZSTATE.stam = 100; ZWAFFE.kick()")
     steps(0.2)

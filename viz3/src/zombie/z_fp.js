@@ -37,6 +37,7 @@ export const ZFP = (() => {
     id: null,
     time: 0,
     alert: 0,
+    lowK: 0.12, // how far calm lowers a weapon towards its 'low' pose (by eye: every weapon stays in view)
     drawK: 0,
     clipA: null, // the running animation { c, t }
     fistSide: 0,
@@ -976,9 +977,11 @@ export const ZFP = (() => {
     ];
     use.R = use.L = false;
     if (R0 && obj) {
-      // the weapon: ready, lowered by calm, the clip, the sway, the recoil, the saw's shake
+      // the weapon: ready, lowered a little by calm (only part of the way to 'low': what is in the hand stays in view – Falko 5.11.:
+      // „Es macht natürlich Sinn, dass die Waffe, wenn ich sie in der Hand habe, auch zu sehen ist“), the clip, the sway, the recoil,
+      // the saw's shake
       const low = POSE[id] && POSE[id].low ? rel(id, POSE[id].low) : ZERO,
-        k = 1 - S.alert;
+        k = (1 - S.alert) * S.lowK;
       for (let j = 0; j < 6; j++) wOff[j] = low[j] * k + sw[j];
       if (clip && clip.c.w) {
         curve(clip.c.w, ct, 6, tmp);
@@ -1608,7 +1611,18 @@ export const ZFP = (() => {
       hands: B
         ? [B.R.hand.position.toArray().map(v => +v.toFixed(3)), B.L.hand.position.toArray().map(v => +v.toFixed(3))]
         : null,
+      view: inView(),
     };
+  }
+  // where the weapon's middle is in the hands' view: [x, y] from -1 to 1 (screen edges), null if nothing is held
+  function inView() {
+    const o = HELD.obj;
+    if (!o || !o.visible || !S.shown) return null;
+    const c = new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3());
+    c.sub(cam.position).applyQuaternion(cam.quaternion.clone().invert());
+    if (c.z >= 0) return [0, -9];
+    const t = Math.tan(((HELD.fov || cam.fov) * Math.PI) / 360);
+    return [+(c.x / (-c.z * t * cam.aspect)).toFixed(2), +(c.y / (-c.z * t)).toFixed(2)];
   }
   Object.assign(S, { post, info, muzzle, build, reset, POSE, FIST, KICK, HPOSE, BRE, swingClip, HELD, body: () => FB });
   return S;

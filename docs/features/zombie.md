@@ -35,7 +35,7 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   und Bilder geteilt) mit ausgeblendetem Kopf, die Augen in der Kamera. Arme per Zwei-Knochen-Löser an die Griffe (Ellbogen-Scharnier wie
   bei der Figur), das Handgelenk folgt dem Unterarm; die Finger aus den Bewegungsaufnahmen der Figur (Werkzeug halten, Lenkrad greifen),
   Zeigefinger der Flinte am Abzug, eine geballte Faust nur zum Zuschlagen, sonst locker. Eigenes, engeres Bildfeld für Hände und Waffe
-  (0,8 des Weltbildes, `HELD.fov` in `game/play.js`) – nichts wird am Rand gestreckt. Je Waffe eine Haltung, gesenkt, wenn nichts droht;
+  (0,8 des Weltbildes, `HELD.fov` in `game/play.js`) – nichts wird am Rand gestreckt. Je Waffe eine Haltung, ein wenig gesenkt, wenn nichts droht (`ZFP.lowK`, sie bleibt im Bild – V17l);
   Schläge mit Ausholen, Treffer zur Zeit des Datensatzes (`ZDATA.WEAPONS[…].wind`), Durchziehen und Zurück (Axt, Beil, Brechstange
   schräg: über die rechte Schulter, von rechts oben herunter, die Klinge trifft in der Bildmitte, weiter nach links unten); beim Treffer bremst der Schlag
   kurz (Hit-Stop) und die Sicht wackelt; Rückstoß mit Mündungsfeuer und Licht auf Händen und Waffe; Gehen als liegende Acht, Drehen zieht
