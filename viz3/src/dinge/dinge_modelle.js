@@ -504,12 +504,23 @@ export const DMOD = (() => {
         [-hw + 0.1, yF + 0.005, 2.65],
         GLASS
       );
-      k.box(0, (yC + yR) / 2 - 0.05, 1.0, 2 * hw, yC - yR - 0.2, hh - 1.0, 0, BOX, true);
+      k.box(
+        0,
+        (yC - (l > 11 ? 0.6 : 0) + yR) / 2 - 0.05,
+        1.0,
+        2 * hw,
+        yC - (l > 11 ? 0.6 : 0) - yR - 0.2,
+        hh - 1.0,
+        0,
+        BOX,
+        true
+      );
       k.box(0, 0, 0.5, 1.0, l - 0.6, 0.35, 0, DARK);
-      for (const s of [-1, 1]) {
-        wheel(k, s * (hw - 0.05), yF - 1.4, 0.5, 0.3, 14);
-        wheel(k, s * (hw - 0.05), yR + 2.0, 0.5, 0.3, 14);
-      }
+      // a semi-trailer (over 11 m): three axles under the back of the box, the tractor's two; a rigid lorry: two
+      const semi = l > 11,
+        ax = semi ? [yF - 1.4, yF - 4.4, yR + 1.4, yR + 2.75, yR + 4.1] : [yF - 1.4, yR + 2.0];
+      for (const s of [-1, 1]) for (const y of ax) wheel(k, s * (hw - 0.05), y, 0.5, 0.3, 14);
+      if (semi) k.box(0, yC - 0.35, 1.25, 2 * hw - 0.3, 0.5, 0.2, 0, DARK); // the coupling, the gap between cab and box
     },
     // a round concrete tank of a farm (slurry, digestate): the wall, a flat concrete cover, a rim; w = diameter
     tank(k, { w, h }) {

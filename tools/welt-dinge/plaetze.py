@@ -118,7 +118,7 @@ def main():
                     az = (math.degrees(math.atan2(dv[0], dv[1])) + 360) % 360
                     slots.append({'x': round(x, 2), 'y': round(y, 2), 'az': round(az, 1), 'art': art, 'osm': lot['id']})
                 uc += 2.5
-            vc += 5.0 if k % 2 == 0 else 6.0  # row, aisle, row, (back to back) …
+            vc += 11.0 if k % 2 == 0 else 5.0  # a row, the aisle (6 m), the row across it; the next row back to back …
             k += 1
         made = len(slots) - n0
         if made > 150:
