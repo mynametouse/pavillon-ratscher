@@ -69,6 +69,7 @@ export const BUS = (() => {
     near: null,
     stats: { spawned: 0, dropped: 0, rides: 0, arrivals: 0, waits: 0, built: 0 },
   };
+  const OBS = [];
   const DRAW = COARSE ? 420 : 620,
     MAXI = COARSE ? 2 : 3,
     FURN = 240,
@@ -146,8 +147,10 @@ export const BUS = (() => {
   const stName = s => (s >= 0 && BUSPLAN.S.stations[s] ? BUSPLAN.S.stations[s].n : 'Rand der Karte');
   // a call (trip, k) on this kerb: the bus's heading there along the stop's direction
   const _h = {};
+  // (and from this platform: the Zentralhaltestelle in Schleusingen has five, each line its own)
   function sameWay(e, d) {
     const P_ = BUSPLAN.S.pats[d.trip.pat];
+    if (P_.st[d.k].q !== e.q) return false;
     BUSPLAN.centreAt(P_, P_.s[d.k], _h);
     return Math.cos(_h.hd - e.hd) > 0.3;
   }
@@ -161,8 +164,8 @@ export const BUS = (() => {
         if (!e.shelter) {
           const z = KERN.ground(e.x, e.y);
           if (!Number.isFinite(z)) continue;
-          // the sign faces the oncoming bus (its face across the road's direction)
-          sign = BUSMOD.sign(e.x, e.y, z, (e.az + 180) % 360, e.name);
+          // the sign faces the oncoming bus (its face across the road's direction); in its case the timetable of this kerb
+          sign = BUSMOD.sign(e.x, e.y, z, (e.az + 180) % 360, e.name, aushang(e));
         }
         const id = 'bus:plan:' + e.i;
         KERN.act({
@@ -180,7 +183,7 @@ export const BUS = (() => {
         // the ground there came later (tiles beyond the square): the sign onto it
         f.sign.dispose();
         f.z = KERN.ground(e.x, e.y);
-        f.sign = BUSMOD.sign(e.x, e.y, f.z, (e.az + 180) % 360, e.name);
+        f.sign = BUSMOD.sign(e.x, e.y, f.z, (e.az + 180) % 360, e.name, aushang(e));
         markDirty(true);
       } else if (f && d > FURN + 140) {
         if (f.sign) f.sign.dispose();
@@ -189,6 +192,66 @@ export const BUS = (() => {
         markDirty(true);
       }
     }
+  }
+  // the printed timetable in the case of a sign: the departures of this kerb by hour, Monday–Friday, Saturday, Sunday and holidays
+  function aushang(e) {
+    return (c, w, h) => {
+      const cols = [
+          [0, 'Montag – Freitag', 1],
+          [1, 'Samstag', 1 << 5],
+          [2, 'Sonn- u. Feiertag', 1 << 6],
+        ],
+        mins = cols.map(() => new Map()),
+        heads = new Map();
+      for (const [ti, k] of BUSPLAN.S.byStation[e.s] || []) {
+        const t = BUSPLAN.S.trips[ti],
+          P_ = BUSPLAN.S.pats[t.pat];
+        if (k === P_.last && !t.weiter) continue;
+        if (!sameWay(e, { trip: t, k })) continue;
+        const m = Math.round(t.t0 + t.d[k]) % 1440;
+        heads.set(t.head || t.nach, (heads.get(t.head || t.nach) || 0) + 1);
+        for (const [ci, , bit] of cols) {
+          if (ci === 0 ? !(t.days & 0b11111) : !(t.days & bit)) continue;
+          const hh = Math.floor(m / 60),
+            L = mins[ci].get(hh) || [];
+          const mm = String(m % 60).padStart(2, '0') + (t.school ? 's' : '');
+          if (!L.includes(mm)) L.push(mm);
+          mins[ci].set(hh, L);
+        }
+      }
+      c.fillStyle = '#fbfbf8';
+      c.fillRect(0, 0, w, h);
+      c.fillStyle = '#0f7a3c';
+      c.fillRect(0, 0, w, 30);
+      c.fillStyle = '#fff';
+      c.font = 'bold 15px Arial, sans-serif';
+      c.textBaseline = 'middle';
+      c.fillText(BUSPLAN.S.stations[e.s].n.slice(0, 30), 8, 15);
+      c.fillStyle = '#222';
+      c.font = '11px Arial, sans-serif';
+      const dirs = [...heads.entries()].sort((a, b) => b[1] - a[1]).map(q => q[0]);
+      c.fillText('Richtung ' + dirs.slice(0, 2).join(' / ').slice(0, 40), 8, 41);
+      const x0 = [8, 112, 184],
+        cw = [100, 68, 68];
+      c.font = 'bold 10px Arial, sans-serif';
+      cols.forEach(([ci, lbl]) => c.fillText(lbl.slice(0, ci ? 11 : 18), x0[ci], 57));
+      c.font = '10px Arial, sans-serif';
+      let y = 70;
+      for (let hh = 4; hh <= 23 && y < h - 14; hh++) {
+        if (!cols.some(([ci]) => mins[ci].has(hh))) continue;
+        c.fillStyle = hh % 2 ? '#f0f0ec' : '#fbfbf8';
+        c.fillRect(0, y - 6, w, 12.5);
+        c.fillStyle = '#222';
+        for (const [ci] of cols) {
+          const L = (mins[ci].get(hh) || []).sort();
+          c.fillText(String(hh).padStart(2, ' ') + '  ' + L.join(' '), x0[ci], y, cw[ci]);
+        }
+        y += 12.5;
+      }
+      c.fillStyle = '#666';
+      c.font = '9px Arial, sans-serif';
+      c.fillText('s = an Schultagen · Fahrplan gtfs.de (DELFI e.V.)', 8, h - 7);
+    };
   }
   // the stop the player stands at (≤ r m from its sign)
   function stopAt(x, y, r = 40) {
@@ -603,6 +666,13 @@ export const BUS = (() => {
       lag = R_.lag,
       next = I.st === 'halt' ? I.k : I.k + 1,
       rows = [];
+    // the next stop one can get off at (not the one it stands at now)
+    let nextReal = null;
+    for (let k = I.k + 1; k <= Rn.P.last; k++)
+      if (Rn.P.st[k].s >= 0) {
+        nextReal = k;
+        break;
+      }
     for (let k = Math.max(next, R_.from + 1); k <= Rn.P.last; k++) {
       const s = Rn.P.st[k].s,
         want = R_.want === k;
@@ -614,7 +684,7 @@ export const BUS = (() => {
     const op = (BUSPLAN.S.lines[tr.line] || {}).op || '';
     pan.innerHTML = `<header><b class="ln">${tr.line}</b><div><h3>${tr.head || tr.nach}</h3><span>${op}${tr.weiter ? ' · fährt weiter nach ' + tr.nach : ''}</span></div></header>
       <ol>${rows.join('')}</ol>
-      <div class="row">${I.st === 'halt' && I.k !== R_.from ? '<button type="button" data-k="aus">Aussteigen</button>' : ''}<button type="button" data-k="kurz">Fahrt abkürzen</button></div>
+      <div class="row">${I.st === 'halt' && I.k !== R_.from ? '<button type="button" data-k="aus">Aussteigen</button>' : nextReal !== null && R_.want !== nextReal ? '<button type="button" data-halt="' + nextReal + '">Aussteigen an der nächsten Haltestelle</button>' : ''}<button type="button" data-k="kurz">Fahrt abkürzen</button></div>
       <p class="mnote">Haltestelle antippen: dort aussteigen. Fahrplan: gtfs.de (DELFI e.V.)</p>`;
     pan.hidden = false;
   }
@@ -949,6 +1019,18 @@ export const BUS = (() => {
     S,
     STOPS: () => STOPS,
     plan: BUSPLAN,
+    // for the traffic (verkehr/verkehr_auto.js, verkehr/verkehr.js): each drawn bus as four circles along it
+    obstacles: () => {
+      OBS.length = 0;
+      for (const I of S.inst) {
+        if (!I.B.g.visible) continue;
+        const fx = Math.sin(I.hd),
+          fy = Math.cos(I.hd);
+        for (const t of [-4.5, -1.5, 1.5, 4.5])
+          OBS.push({ x: I.x + fx * t, y: I.y + fy * t, r: 1.3, kind: 'veh', moving: I.v > 0.5, bus: true });
+      }
+      return OBS;
+    },
     // the bus standing nearest to the player with open doors (tests: what „Einsteigen“ does)
     einsteigen: () => {
       const I = S.inst

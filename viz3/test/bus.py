@@ -8,10 +8,59 @@
 # Zentralhaltestelle: the clock jumps, the walker stands at the kerb there); a reload during a ride puts one at the stop; no new shader
 # program for bus, sign and display; no page errors; in the zombie night no regular buses. Pictures in out/bus/.
 #   python3 viz3/test/bus.py 8999 [sections]      sections: fahrt,reload,zombie (default all)
-import sys, os, json, time, math
+import sys, os, json, time, math, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'fahrt,reload,zombie').split(','))
+
+# the world tiles along the ways of the buses Ratscher → Schleusingen beyond the square (as viz3/test/fahrt.py: from the published site
+# into viz3/dist/welt-test/, levels 10–12 around the way) – so the ride out of the square has its ground
+SITE = os.environ.get('WELT_SITE', 'https://mynametouse.github.io/pavillon-ratscher/welt-test/')
+DIST = os.path.join(lib.ROOT, 'viz3', 'dist', 'welt-test')
+G = json.load(open(os.path.join(lib.ROOT, 'viz3', 'manifests.json')))['geoman']
+XF, TI = G['xf'], G['terrain']['inner']
+RB = (TI['x0'], TI['y0'], TI['x0'] + (TI['n'] - 1) * TI['step'], TI['y0'] + (TI['n'] - 1) * TI['step'])
+
+def fetch_tiles():
+    try:
+        F = json.load(open(os.path.join(lib.ROOT, 'viz3', 'extra', 'bus', 'dist', 'bus', 'fahrplan.json')))
+    except Exception as e:
+        print('note: no timetable for the tiles', e, flush=True); return
+    names = [s['n'] for s in F['stations']]
+    pts = []
+    for p in F['pats']:
+        st = [names[s] if s >= 0 else '' for s, q in p['st']]
+        if 'Ratscher, Schleusebrücke' in st and 'Schleusingen, Zentralhaltestelle' in st:
+            pts += [(p['p'][2 * k] / 10, p['p'][2 * k + 1] / 10) for k in range(0, len(p['p']) // 2, 3)]
+    os.makedirs(DIST, exist_ok=True)
+    def get(rel):
+        q = os.path.join(DIST, rel)
+        if os.path.exists(q) and os.path.getsize(q) > 0: return 0
+        os.makedirs(os.path.dirname(q), exist_ok=True)
+        try:
+            with urllib.request.urlopen(SITE + rel, timeout=60) as r: b = r.read()
+        except Exception: return 0
+        open(q, 'wb').write(b); return len(b)
+    get('meta.json')
+    try: m = json.load(open(os.path.join(DIST, 'meta.json')))
+    except Exception as e:
+        print('note: no tile meta', e, flush=True); return
+    jobs = set()
+    for L, pad in ((10, 900), (11, 500), (12, 270)):
+        sz = 409600 / (1 << L)
+        r = m['tiling']['levels'].get(str(L), {}).get('rect')
+        if not r: continue
+        for x, y in pts:
+            if RB[0] + 400 < x < RB[2] - 400 and RB[1] + 400 < y < RB[3] - 400: continue
+            E, N = XF['a'] * x - XF['b'] * y + XF['ex'], XF['b'] * x + XF['a'] * y + XF['ey']
+            for tx in range(int((E - pad - 420700) // sz), int((E + pad - 420700) // sz) + 1):
+                for ty in range(int((N - pad - 5390800) // sz), int((N + pad - 5390800) // sz) + 1):
+                    if r[0] <= tx <= r[2] and r[1] <= ty <= r[3]:
+                        jobs.add(f't/{L}/{tx}/{ty}.bin'); jobs.add(f'i/{L}/{tx}/{ty}.webp')
+    t0 = time.time()
+    with concurrent.futures.ThreadPoolExecutor(12) as ex: n = sum(ex.map(get, sorted(jobs)))
+    print(f'welt tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s', flush=True)
+
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'fahrt,nacht,reload,zombie').split(','))
 ck = lib.Checks('bus')
 OUT = lib.out('bus')
 
@@ -32,9 +81,11 @@ def page_pic(pg, name):
         pg.evaluate("GAME.shot()"); pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=120000); print('page shot', name, flush=True)
     except Exception as e: print('note: page shot', name, 'failed:', repr(e)[:160], flush=True)
 
+if 'fahrt' in want:
+    fetch_tiles()
 with lib.browser() as b:
     errs = []
-    if 'fahrt' in want or 'reload' in want:
+    if 'fahrt' in want or 'reload' in want or 'nacht' in want:
         pg = lib.page(b, 1100, 680, errs)
         lib.boot(pg, port, '?szenario=bus')
         E, J, steps = helpers(pg)
@@ -57,6 +108,10 @@ with lib.browser() as b:
         ck('the stop sign stands there (built near the walker)', st['furn'] >= 1, f"furniture {st['furn']}")
         E("GAME.shot()"); steps(0.3)
         p0 = E("GAME.R.info.programs.length")
+        progs0 = set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
+        def new_progs():
+            # which programs came since the start (name and the start of the key: material type, defines)
+            return J(f"GAME.R.info.programs.filter(p => !{json.dumps(sorted(progs0))}.includes(p.cacheKey)).map(p => p.name + ' ' + String(p.cacheKey).slice(0, 160))")
         # the board
         brd = J("""(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); const a = KERN.acts().find(q => q.id === 'bus:plan:' + e.i);
           const lbl = a ? a.label() : null; BUS.board(e); const el = document.getElementById('busboard');
@@ -92,10 +147,15 @@ with lib.browser() as b:
               const x = I.x + fx * 16 + rx * 6, y = I.y + fy * 16 + ry * 6, yaw = Math.atan2(I.x - x, I.y - y) * 180 / Math.PI;
               GAME.view(x, y, KERN.ground(x, y) + 1.7, yaw, -3, 60); }})()""")
             steps(0.2); pic(pg, 'b_bus_an_der_haltestelle')
+            E(f"""(() => {{ const I = BUS.S.inst.find(q => q.key === '{arr['key']}');
+              const fx = Math.sin(I.hd), fy = Math.cos(I.hd), rx = Math.cos(I.hd), ry = -Math.sin(I.hd);
+              const x = I.x + fx * 9 + rx * 4.5, y = I.y + fy * 9 + ry * 4.5, yaw = Math.atan2(I.x + fx * 2 - x, I.y + fy * 2 - y) * 180 / Math.PI;
+              GAME.view(x, y, KERN.ground(x, y) + 1.6, yaw, -6, 62); }})()""")
+            steps(0.2); pic(pg, 'b2_tuer_offen')
             E("GAME.go && GAME.go('bus')")
             steps(0.3)
             p1 = E("GAME.R.info.programs.length")
-            ck('no new shader program for the bus, the sign and the display', p1 == p0, f'{p0} → {p1}')
+            ck('no new shader program for the bus, the sign and the display', p1 == p0, f'{p0} → {p1} ' + ' | '.join(new_progs())[:600])
             # boarding through the action at the front door
             E(f"""(() => {{ const I = BUS.S.inst.find(q => q.key === '{arr['key']}'); const fx = Math.sin(I.hd), fy = Math.cos(I.hd), rx = Math.cos(I.hd), ry = -Math.sin(I.hd);
               GAME.P.x = I.x + fx * 5.05 + rx * 2.2; GAME.P.y = I.y + fy * 5.05 + ry * 2.2; }})()""")
@@ -118,7 +178,7 @@ with lib.browser() as b:
             ck('the bus drives on its way, the rider with it', mine and mine[0]['st'] == 'fahrt' and moved > 40, f"{moved:.0f} m, {mine[0] if mine else None}")
             pic(pg, 'd_aus_dem_bus')
             # the next stop: Krankenhaus, then the Zentralhaltestelle – „Fahrt abkürzen“ to the Zentralhaltestelle
-            kz = J("(() => { const I = BUS.S.ride.I; return I.Rn.P.st.findIndex(o => BUS.plan.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle'); })()")
+            kz = J("(() => { const I = BUS.S.ride.I; return I.Rn.P.st.findIndex(o => o.s >= 0 && BUS.plan.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle'); })()")
             E(f"BUS.want({kz})")
             E("BUS.shorten()")
             for i in range(60):
@@ -134,6 +194,32 @@ with lib.browser() as b:
             ck('„Fahrt abkürzen“: off at Schleusingen, Zentralhaltestelle at 7:50', not out['ride'] and 'Schleusingen, Zentralhaltestelle' in out['ev'] and out['t'] in ('07:50', '07:51') and dz < 25 and not out['focus'], f"{out} {dz:.0f} m")
             pic(pg, 'e_schleusingen_zh')
         ck.errors(errs)
+        if 'nacht' in want:
+            # at night: the 205 from Coburg at 22:57 at the Schleusebrücke – lamps, the lit display and inside
+            E("GAME.go('bus')")
+            steps(0.5)
+            E("(() => { const d = Math.floor(CLOCK.t / 1440); CLOCK.t = d * 1440 + 22 * 60 + 54; })()")
+            steps(1.0)
+            lib.settle_light(pg)
+            I = None
+            for i in range(240):
+                steps(1.0)
+                st = J("BUS.state()")
+                here = [q for q in st['inst'] if q['halt'] == 'Ratscher, Schleusebrücke' and q['st'] == 'halt' and q['open'] > 0.8]
+                if here:
+                    I = here[0]; break
+            ck('at night the bus comes too (22:57), its lamps on', I is not None and E("BUSMOD.M.head.emissiveIntensity > 1"), f"{E('CLOCK.hm()')} {I}")
+            if I:
+                E(f"""(() => {{ const B = BUS.S.inst.find(q => q.key === '{I['key']}'); const fx = Math.sin(B.hd), fy = Math.cos(B.hd), rx = Math.cos(B.hd), ry = -Math.sin(B.hd);
+                  const x = B.x + fx * 15 + rx * 5, y = B.y + fy * 15 + ry * 5; GAME.view(x, y, KERN.ground(x, y) + 1.7, Math.atan2(B.x - x, B.y - y) * 180 / Math.PI, -2, 60); }})()""")
+                steps(0.2); pic(pg, 'f_nacht_vorn')
+                E(f"""(() => {{ const B = BUS.S.inst.find(q => q.key === '{I['key']}'); const fx = Math.sin(B.hd), fy = Math.cos(B.hd), rx = Math.cos(B.hd), ry = -Math.sin(B.hd);
+                  const x = B.x - fx * 3 + rx * 9, y = B.y - fy * 3 + ry * 9; GAME.view(x, y, KERN.ground(x, y) + 1.6, Math.atan2(B.x - x, B.y - y) * 180 / Math.PI, 0, 62); }})()""")
+                steps(0.2); pic(pg, 'g_nacht_seite')
+                p2 = E("GAME.R.info.programs.length")
+                ck('no new shader program at night either', p2 == p0, f'{p0} → {p2} ' + ' | '.join(new_progs())[:600])
+            E("GAME.go('bus')")
+            steps(0.5)
         if 'reload' in want:
             # a ride, then a reload: one stands at the stop one boarded at
             E("GAME.go('bus')")

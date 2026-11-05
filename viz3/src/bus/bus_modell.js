@@ -380,7 +380,8 @@ export const BUSMOD = (() => {
     let r = seed * 9301 + 49297;
     const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
     const tops = [0x7a2b2b, 0x2f4f2f, 0x4a4a6a, 0x8c6d3f, 0x5b5b5b, 0x2d2d2d, 0x9a8a70, 0x3e5a7a];
-    const seats = S.seats.slice();
+    // (the seat one takes – right, behind the middle door, bus/bus.js SEAT – and the one beside it stay free)
+    const seats = S.seats.filter(([x, y]) => !(Math.abs(y + 1.25) < 0.1 && x > 0));
     const nP = 2 + Math.floor(rnd() * 5);
     S.lastSeats = [];
     for (let i = 0; i < nP && seats.length; i++) {
@@ -445,7 +446,8 @@ export const BUSMOD = (() => {
     M.cabin.emissiveIntensity = night ? 1.1 : 0;
   }
   // ---- the stop sign: pole, H disc, name plate, timetable case (site frame: at x, y, the sign's face towards azimuth az) ----
-  function sign(x, y, z, az, name) {
+  // draw(ctx, w, h): the printed timetable in the case (bus/bus.js paints the departures of this kerb)
+  function sign(x, y, z, az, name, draw) {
     const k = VPROPS.kit(),
       a = ((90 - az) * Math.PI) / 180,
       fx = Math.cos(a),
@@ -479,6 +481,25 @@ export const BUSMOD = (() => {
     const grp = new THREE.Group();
     const m = own(new THREE.Mesh(k.geo(), M.body), true);
     grp.add(m);
+    // the printed timetable behind the glass of the case
+    let tt = null;
+    if (draw) {
+      const cv2 = document.createElement('canvas');
+      cv2.width = 256;
+      cv2.height = 320;
+      draw(cv2.getContext('2d'), 256, 320);
+      const t2 = new THREE.CanvasTexture(cv2);
+      t2.colorSpace = THREE.SRGBColorSpace;
+      t2.anisotropy = 4;
+      const m2 = M.dispMap.clone();
+      m2.map = t2;
+      const g2 = new THREE.PlaneGeometry(0.37, 0.462);
+      const pm = own(new THREE.Mesh(g2, m2));
+      pm.position.set(x + fx * 0.106, z + 1.43, -(y + fy * 0.106));
+      pm.lookAt(x + fx * 2, z + 1.43, -(y + fy * 2));
+      grp.add(pm);
+      tt = { t2, m2, g2 };
+    }
     // the name plate: a canvas
     const cv = document.createElement('canvas');
     cv.width = 512;
@@ -516,6 +537,11 @@ export const BUSMOD = (() => {
         pg.dispose();
         tex.dispose();
         dm.dispose();
+        if (tt) {
+          tt.t2.dispose();
+          tt.m2.dispose();
+          tt.g2.dispose();
+        }
       },
     };
   }

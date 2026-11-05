@@ -385,6 +385,9 @@ export const VERKEHR = (() => {
           O.push({ x: s.x + Math.sin(s.psi) * o, y: s.y + Math.cos(s.psi) * o, r: b.hw, car: true });
         }
       }
+    // feat/bus: the buses of the timetable (bus/bus.js)
+    if (window.BUS && window.BUS.obstacles)
+      for (const o of window.BUS.obstacles()) O.push({ x: o.x, y: o.y, r: o.r, car: true });
     if (window.DCARS)
       for (const c of Object.values(window.DCARS.cars || {})) {
         if (!c.g.visible || !c.at) continue;
