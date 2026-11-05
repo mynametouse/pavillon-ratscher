@@ -1,0 +1,62 @@
+vol swing_light    0.18  (level -18.4, -16 dB from the shot)
+vol swing_heavy    0.34  (level -21.2, -13 dB from the shot)
+vol hit_blunt      0.41  (level -15.8, -6 dB from the shot)
+vol hit_blade      0.39  (level -15.3, -6 dB from the shot)
+vol stab           0.48  (level -18.2, -7 dB from the shot)
+vol punch          0.44  (level -19.3, -9 dB from the shot)
+vol kick           0.87  (level -23.3, -7 dB from the shot)
+vol bone_crack     0.78  (level -24.3, -9 dB from the shot)
+vol splat          0.66  (level -23.9, -10 dB from the shot)
+vol body_fall      0.30  (level -14.9, -8 dB from the shot)
+vol shotgun_shot   1.00  (level -17.5, +0 dB from the shot)
+vol shotgun_dry    0.13  (level -15.7, -16 dB from the shot)
+vol shotgun_open   0.19  (level -16.0, -13 dB from the shot)
+vol shotgun_shell  0.22  (level -19.2, -15 dB from the shot)
+vol shotgun_close  0.18  (level -14.4, -12 dB from the shot)
+vol zombie_groan   0.25  (level -14.5, -9 dB from the shot)
+vol zombie_attack  0.44  (level -16.4, -6 dB from the shot)
+vol zombie_die     0.33  (level -14.8, -7 dB from the shot)
+kampf/swing_light_1.mp3            0.32s  peak  -1.51  L100  -18.4  M  -24.3     6 KB  <- snm_swing#6 Dagger Swing.wav 0.95-1.27
+kampf/swing_light_2.mp3            0.34s  peak  -5.15  L100  -18.4  M  -24.4     6 KB  <- snm_swing#6 Dagger Swing.wav 2.06-2.40
+kampf/swing_light_3.mp3            0.32s  peak  -4.21  L100  -18.5  M  -24.3     6 KB  <- snm_swing#8 Seax Swing.wav 3.93-4.25
+kampf/swing_heavy_1.mp3            0.38s  peak  -1.87  L100  -21.2  M  -27.1     6 KB  <- snm_swing#5 Axe Swing.wav 1.47-1.85
+kampf/swing_heavy_2.mp3            0.38s  peak  -8.36  L100  -21.2  M  -27.1     6 KB  <- snm_swing#5 Axe Swing.wav 3.34-3.72
+kampf/swing_heavy_3.mp3            0.38s  peak  -9.22  L100  -21.3  M  -27.0     6 KB  <- snm_swing#9 Spear Swing.wav 1.40-1.78
+kampf/hit_blunt_1.mp3              0.41s  peak  -1.94  L100  -15.8  M  -20.8     7 KB  <- thwack#7 thwack-07.wav 0.00-0.41 + bones_wet#10 Wet Break 9.wav 0.08-0.32
+kampf/hit_blunt_2.mp3              0.53s  peak  -2.95  L100  -15.8  M  -21.1     9 KB  <- thwack#8 thwack-08.wav 0.00-0.52 + bones_deep#10 Deep Break 9.wav 0.07-0.35
+kampf/hit_blunt_3.mp3              0.48s  peak  -1.98  L100  -15.8  M  -20.1     8 KB  <- towel_body#39 wet_towel_on_body-39.flac 0.00-0.48 + bones_wet#3 Wet Break 2.wav 0.17-0.42
+kampf/hit_blade_1.mp3              0.45s  peak  -2.57  L100  -15.3  M  -19.9     8 KB  <- qubo_impact#3 qubodupImpactMeat02.flac 0.00-0.45
+kampf/hit_blade_2.mp3              0.44s  peak  -1.85  L100  -15.3  M  -20.0     7 KB  <- qubo_impact#1 qubodupImpactMeat01.flac 0.01-0.45
+kampf/hit_blade_3.mp3              0.45s  peak  -6.83  L100  -15.3  M  -19.9     8 KB  <- inu_wet#3 impactsplat03.mp3.flac 0.11-0.56
+kampf/stab_1.mp3                   0.27s  peak  -2.52  L100  -18.2  M  -23.9     5 KB  <- lrsf_horror#59 Stab_Knife_00.wav 0.00-0.27
+kampf/stab_2.mp3                   0.41s  peak  -1.68  L100  -18.2  M  -23.0     7 KB  <- lrsf_horror#61 Stab_Knife_02.wav 0.00-0.41
+kampf/punch_1.mp3                  0.20s  peak  -4.19  L100  -19.2  M  -25.2     4 KB  <- dklon_foley#5 leather_hits.wav 0.83-1.03
+kampf/punch_2.mp3                  0.23s  peak  -1.85  L100  -19.3  M  -25.2     4 KB  <- dklon_foley#5 leather_hits.wav 3.52-3.74
+kampf/punch_3.mp3                  0.23s  peak  -1.88  L100  -19.3  M  -25.2     4 KB  <- dklon_foley#5 leather_hits.wav 5.27-5.51
+kampf/kick_1.mp3                   0.23s  peak  -1.78  L100  -23.3  M  -29.2     4 KB  <- dklon_foley#2 chest_hit.wav 4.62-4.85
+kampf/kick_2.mp3                   0.41s  peak  -4.15  L100  -23.3  M  -29.2     7 KB  <- dklon_foley#2 chest_hit.wav 0.54-0.95
+kampf/bone_crack_1.mp3             0.16s  peak  -1.68  L100  -24.3  M  -30.3     3 KB  <- lrsf_horror#50 Bonecrack_02.wav 0.13-0.29
+kampf/bone_crack_2.mp3             0.40s  peak -10.14  L100  -24.3  M  -28.0     7 KB  <- bones_wet#10 Wet Break 9.wav 0.02-0.42
+kampf/splat_1.mp3                  0.20s  peak  -7.56  L100  -23.9  M  -29.9     4 KB  <- dklon_foley#8 squishy_sounds.wav 20.19-20.39
+kampf/splat_2.mp3                  0.23s  peak  -1.88  L100  -23.9  M  -29.9     4 KB  <- dklon_foley#8 squishy_sounds.wav 9.56-9.80
+kampf/splat_3.mp3                  0.40s  peak -11.20  L100  -23.9  M  -27.1     7 KB  <- inu_wet#7 impactsplat07.mp3.flac 0.04-0.45
+kampf/body_fall_1.mp3              0.61s  peak  -2.33  L100  -14.9  M  -20.3    10 KB  <- remaxim_fall#1 fall.wav 0.00-0.61
+kampf/body_fall_2.mp3              0.53s  peak  -1.93  L100  -14.9  M  -20.9     9 KB  <- dklon_foley#1 body_hit_on_ground.wav 12.89-13.42
+kampf/shotgun_shot_1.mp3           2.40s  peak  -3.54  L100  -17.5  M  -19.7    38 KB  <- ffsl#2 H_21P.wav 0.46-1.62 + ffsl#1 H_16P.wav 0.56-2.96
+kampf/shotgun_shot_2.mp3           2.38s  peak  -1.67  L100  -17.5  M  -20.1    38 KB  <- ffsl#8 O_21P.wav 0.42-1.89 + ffsl#7 O_17P.wav 0.69-3.07
+kampf/shotgun_dry_1.mp3            0.19s  peak  -1.43  L100  -15.7  M  -21.6     4 KB  <- gary#1 12ga_dry.wav 4.13-4.32
+kampf/shotgun_open_1.mp3           0.74s  peak  -1.14  L100  -16.0  M  -21.7    12 KB  <- gary#1 12ga_dry.wav 0.48-0.87 + gary#2 12ga_load_chamber.wav 3.58-4.02
+kampf/shotgun_shell_1.mp3          0.19s  peak  -1.90  L100  -19.2  M  -25.1     4 KB  <- gary#2 12ga_load_chamber.wav 0.61-0.80
+kampf/shotgun_shell_2.mp3          0.17s  peak  -3.80  L100  -19.3  M  -25.2     3 KB  <- zer0sol#5 Shell in Chamber.mp3 0.50-0.67
+kampf/shotgun_close_1.mp3          0.63s  peak  -4.68  L100  -14.4  M  -20.3    10 KB  <- gary#1 12ga_dry.wav 2.35-2.98
+kampf/zombie_groan_1.mp3           2.13s  peak  -4.65  L100  -14.5  M  -17.1    29 KB  <- emopreben#2 ZombieMoans - Track 5 - ZombieMoan1.wav 0.00-2.13
+kampf/zombie_groan_2.mp3           1.50s  peak  -4.82  L100  -14.5  M  -17.7    21 KB  <- emopreben#4 ZombieMoans - Track 7 - ZombieMoan3.wav 0.00-1.50
+kampf/zombie_groan_3.mp3           1.61s  peak  -2.57  L100  -14.5  M  -16.7    22 KB  <- lrsf_horror#66 Zombie_04.wav 0.00-1.61
+kampf/zombie_groan_4.mp3           3.04s  peak  -2.00  L100  -14.5  M  -15.3    42 KB  <- darsycho#1 darsycho__zombie-moans_0.ogg 0.20-3.24
+kampf/zombie_attack_1.mp3          0.34s  peak  -3.49  L100  -16.5  M  -21.5     5 KB  <- arcade_voice#13 zombieYell1.wav 0.00-0.34
+kampf/zombie_attack_2.mp3          0.37s  peak  -1.80  L100  -16.4  M  -21.8     6 KB  <- arcade_voice#14 zombieYell10.wav 0.01-0.38
+kampf/zombie_die_1.mp3             0.68s  peak  -2.05  L100  -14.8  M  -17.3    10 KB  <- arcade_voice#11 zombieDeath3.wav 0.00-0.68
+kampf/zombie_die_2.mp3             0.54s  peak  -1.70  L100  -14.8  M  -17.8     8 KB  <- arcade_voice#10 zombieDeath2.wav 0.00-0.54
+
+total 432 KB in 41 files (18 kinds)
+
