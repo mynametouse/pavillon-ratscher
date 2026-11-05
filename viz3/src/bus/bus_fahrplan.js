@@ -122,8 +122,11 @@ export const BUSPLAN = (() => {
         Z[k] = p.z[k] === -9999 ? NaN : p.z[k] / 10;
         Vl[k] = p.v[k] || 13.9;
       }
+      // stops: a station's platform, or the edge of the world (s = -1: where a bus comes from or goes to beyond it – no halt there)
       const P = { i, n, X, Y, Z, Vl, st: p.st.map(([s, q]) => ({ s, q })), s: p.s.slice(), L: p.L, R: null };
-      P.st.forEach((o, k) => S.stations[o.s] && S.stations[o.s].pats.push([i, k]));
+      P.first = P.st.findIndex(o => o.s >= 0);
+      P.last = P.st.length - 1 - [...P.st].reverse().findIndex(o => o.s >= 0);
+      P.st.forEach((o, k) => o.s >= 0 && S.stations[o.s] && S.stations[o.s].pats.push([i, k]));
       return P;
     });
     S.trips = j.trips.map((t, i) => ({
@@ -144,7 +147,7 @@ export const BUSPLAN = (() => {
     S.byStation = S.stations.map(() => []);
     for (const t of S.trips) {
       const P = S.pats[t.pat];
-      if (P) P.st.forEach((o, k) => S.byStation[o.s] && S.byStation[o.s].push([t.i, k]));
+      if (P) P.st.forEach((o, k) => o.s >= 0 && S.byStation[o.s] && S.byStation[o.s].push([t.i, k]));
     }
     S.runs = new Map();
     S.state = 'ready';
@@ -173,7 +176,7 @@ export const BUSPLAN = (() => {
         if (!on.has(ti)) continue;
         const t = S.trips[ti],
           P = S.pats[t.pat];
-        if (k === P.st.length - 1 && !t.weiter) continue;
+        if (k === P.last && !t.weiter) continue;
         const at = di * 1440 + t.t0 + t.d[k];
         if (at >= T - back) out.push({ t: at, trip: t, k, di });
       }
@@ -370,14 +373,21 @@ export const BUSPLAN = (() => {
       A = new Float64Array(n),
       D = new Float64Array(n),
       legs = [];
-    A[0] = T0 + trip.a[0];
-    D[0] = Math.max(T0 + trip.d[0], A[0]);
+    // at its first stop it stands a little before its minute (doors open); from the edge of the world it drives on at once
+    A[0] = T0 + trip.a[0] - (P.st[0].s >= 0 ? BUS.dwell : 0);
+    D[0] = Math.max(T0 + trip.d[0], A[0] + (P.st[0].s >= 0 ? BUS.dwell : 0));
     for (let k = 0; k < n - 1; k++) {
       const want = (T0 + trip.a[k + 1] - D[k]) * 60,
         L = leg(R, R.st[k], R.st[k + 1], want);
       legs.push(L);
       A[k + 1] = D[k] + L.T / 60;
-      D[k + 1] = k + 1 === n - 1 ? A[k + 1] + BUS.dwell : Math.max(T0 + trip.d[k + 1], A[k + 1] + BUS.dwell);
+      // at the edge of the world no halt; at the last stop it stands a little; else at least BUS.dwell and until its minute
+      D[k + 1] =
+        P.st[k + 1].s < 0
+          ? A[k + 1]
+          : k + 1 === n - 1
+            ? A[k + 1] + BUS.dwell
+            : Math.max(T0 + trip.d[k + 1], A[k + 1] + BUS.dwell);
     }
     return { trip, di, P, R, A, D, legs, n, key: trip.i + ':' + di };
   }

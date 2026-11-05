@@ -36,6 +36,7 @@ FERIEN = [
     ('2026-07-04', '2026-08-14'), ('2026-10-12', '2026-10-24'), ('2026-12-23', '2027-01-02'), ('2027-02-01', '2027-02-06'),
     ('2027-03-22', '2027-04-03'), ('2027-05-07', '2027-05-07'), ('2027-07-10', '2027-08-20'),
 ]
+PLACE = {'Ratscher, Schulbushaltestelle': (248.8, -100.8)}
 SCHOOL = re.compile(r'Schule|GHS|Schulcampus|Schulbus|Gymnasium|Wallrabs', re.I)
 # road classes (GEOMAN.roads.kinds): 0 motorway 1 main 2 county 3 street 4 lane 5 service
 COST = {0: 6.0, 1: 1.0, 2: 1.05, 3: 1.2, 4: 1.7, 5: 3.0}
@@ -232,6 +233,35 @@ class Net:
                         best = (pen, d, u, v, t, px, py, side)
         return None if best is None else best[1:]
 
+    def tree(self, A, maxlen=8000.0):
+        """from a snap A: the quickest way (by cost) to every vertex within maxlen m: (real length, previous vertex) per vertex"""
+        _, ua, va, ta, ax, ay, _ = A
+        la = self.adj[ua][va][0]
+        ka = self.adj[ua][va][1]
+        dist, real, prev = {}, {}, {}
+        hp = []
+        for v0, d0 in ((ua, ta * la), (va, (1 - ta) * la)):
+            dist[v0] = d0 * COST.get(ka, 3.0)
+            real[v0] = d0
+            prev[v0] = None
+            heapq.heappush(hp, (dist[v0], v0))
+        done = set()
+        while hp:
+            d, u = heapq.heappop(hp)
+            if u in done:
+                continue
+            done.add(u)
+            if real[u] > maxlen:
+                continue
+            for v, (l, kind, wi) in self.adj.get(u, {}).items():
+                nd = d + l * COST.get(kind, 3.0)
+                if nd < dist.get(v, math.inf):
+                    dist[v] = nd
+                    real[v] = real[u] + l
+                    prev[v] = u
+                    heapq.heappush(hp, (nd, v))
+        return real, prev
+
     def route(self, A, B):
         """quickest way from snap A to snap B: the polyline [(x, y, vid or None)] and its length"""
         _, ua, va, ta, ax, ay, _ = A
@@ -315,6 +345,7 @@ def main():
     # stops on the roads of the world
     stops = {}
     names = {}
+    allxy = {}
     for s in rd(zf, 'stops.txt'):
         try:
             lat, lon = float(s['stop_lat']), float(s['stop_lon'])
@@ -324,6 +355,10 @@ def main():
         if not (50.3 < lat < 50.7 and 10.3 < lon < 11.1) or s['location_type'] == '1':
             continue
         x, y = model_of(lat, lon, tr)
+        # the world knows some stops better than the feed: the school bus stop's shelter as Falko filmed it (world/dorfkern_data.js)
+        if s['stop_name'] in PLACE and math.hypot(x - PLACE[s['stop_name']][0], y - PLACE[s['stop_name']][1]) < 40:
+            x, y = PLACE[s['stop_name']]
+        allxy[s['stop_id']] = (x, y)
         if not (X0 < x < X1 and Y0 < y < Y1):
             continue
         sn = net.snap(x, y)
@@ -379,6 +414,40 @@ def main():
             legs[k] = net.route(stops[sa]['sn'], stops[sb]['sn'])
         return legs[k]
 
+    # where the roads of the world end (the edge of the data): dead ends of main and county roads (and streets beyond the square)
+    ends = []
+    for v, nb in net.adj.items():
+        if len(nb) == 1:
+            kind = next(iter(nb.values()))[1]
+            x, y = net.X[v], net.Y[v]
+            inside = BOX[0] + 40 < x < BOX[2] - 40 and BOX[1] + 40 < y < BOX[3] - 40
+            if kind <= 2 or (kind == 3 and not inside):
+                ends.append(v)
+    trees = {}
+
+    def approach(sid, far):
+        """the way from a stop to the edge of the world towards a place beyond it: (vertex list from the stop to the edge, its length)"""
+        if sid not in trees:
+            trees[sid] = net.tree(stops[sid]['sn'])
+        real, prev = trees[sid]
+        sx, sy = stops[sid]['x'], stops[sid]['y']
+        tot = math.hypot(far[0] - sx, far[1] - sy)
+        best = None
+        for v in ends:
+            if v not in real:
+                continue
+            rest = math.hypot(net.X[v] - far[0], net.Y[v] - far[1])
+            c = real[v] + 1.25 * rest
+            if c <= 1.4 * tot + 600 and rest < tot and real[v] > 150 and (best is None or c < best[0]):
+                best = (c, v)
+        if not best:
+            return None, 0.0
+        chain, v = [], best[1]
+        while v is not None:
+            chain.append(v)
+            v = prev[v]
+        return chain, real[best[1]]
+
     patterns, pat_of = [], {}
     out_trips = []
     lines = {}
@@ -420,13 +489,47 @@ def main():
         if len(best_run) < 2:
             skipped['short'] += 1
             continue
-        key = tuple(q[1] for q in best_run)
+        i0, i1 = best_run[0][0], best_run[-1][0]
+        # coming from beyond the world: from its edge (the road towards the stop before), going on: to the edge
+        vin = vout = None
+        tin = tout = 0.0
+        if i0 > 0 and rows[i0 - 1][1] in allxy:
+            ch, Lin = approach(best_run[0][1], allxy[rows[i0 - 1][1]])
+            if ch:
+                far = allxy[rows[i0 - 1][1]]
+                Lr = Lin + 1.25 * math.hypot(net.X[ch[-1]] - far[0], net.Y[ch[-1]] - far[1])
+                dt = minutes(best_run[0][2]) - minutes(rows[i0 - 1][3])
+                if dt > 0:
+                    # at least the time a bus needs for it (≈ 47 km/h with starting and stopping), so it is not late at the first stop
+                    vin, tin = ch, max(dt * Lin / Lr, Lin / 13.0 / 60 + 0.3)
+        if i1 + 1 < len(rows) and rows[i1 + 1][1] in allxy:
+            ch, Lout = approach(best_run[-1][1], allxy[rows[i1 + 1][1]])
+            if ch:
+                far = allxy[rows[i1 + 1][1]]
+                Lr = Lout + 1.25 * math.hypot(net.X[ch[-1]] - far[0], net.Y[ch[-1]] - far[1])
+                dt = minutes(rows[i1 + 1][2]) - minutes(best_run[-1][3])
+                if dt > 0:
+                    vout, tout = ch, max(dt * Lout / Lr, Lout / 13.0 / 60 + 0.3)
+        key = (vin[-1] if vin else None,) + tuple(q[1] for q in best_run) + (vout[-1] if vout else None,)
         if key not in pat_of:
             pts, ss = [], []
-            for k in range(len(key)):
-                if k == 0:
-                    pts.append((stops[key[0]]['sn'][4], stops[key[0]]['sn'][5], None))
-                    ss.append(0.0)
+            if vin:
+                # from the edge (the chain runs edge → stop)
+                for v in vin:
+                    pts.append((net.X[v], net.Y[v], v))
+                pts[0] = (pts[0][0], pts[0][1], None)
+                ss.append(0.0)
+            for k in range(1, len(key) - 1):
+                sid = key[k]
+                if k == 1:
+                    q = stops[sid]['sn']
+                    s0 = 0.0
+                    if pts:
+                        for j in range(1, len(pts)):
+                            s0 += math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1])
+                        s0 += math.hypot(q[4] - pts[-1][0], q[5] - pts[-1][1])
+                    pts.append((q[4], q[5], None))
+                    ss.append(s0)
                     continue
                 lp, L = leg(key[k - 1], key[k])
                 s0 = ss[-1]
@@ -435,26 +538,41 @@ def main():
                     acc += math.hypot(lp[j][0] - lp[j - 1][0], lp[j][1] - lp[j - 1][1])
                     pts.append(lp[j])
                 ss.append(s0 + acc)
+            if vout:
+                s0 = ss[-1]
+                acc = 0.0
+                for v in reversed(vout):
+                    acc += math.hypot(net.X[v] - pts[-1][0], net.Y[v] - pts[-1][1])
+                    pts.append((net.X[v], net.Y[v], v))
+                pts[-1] = (pts[-1][0], pts[-1][1], None)
+                ss.append(s0 + acc)
             pat_of[key] = len(patterns)
-            patterns.append(dict(stops=list(key), pts=pts, s=ss))
+            patterns.append(dict(stops=([None] if vin else []) + list(key[1:-1]) + ([None] if vout else []), pts=pts, s=ss))
         first, last = rows[0], rows[-1]
-        i0, i1 = best_run[0][0], best_run[-1][0]
         line = ro['route_short_name'] or ro['route_long_name']
         ag = agency.get(ro['agency_id'], {}).get('agency_name', '')
         lines.setdefault(line, dict(op=ag, n=0))
         lines[line]['n'] += 1
         dep0 = minutes(best_run[0][3])
+        A_ = [round(minutes(q[2]) - dep0, 2) for q in best_run]
+        D_ = [round(minutes(q[3]) - dep0, 2) for q in best_run]
+        if vin:
+            A_ = [round(-tin - (minutes(best_run[0][3]) - minutes(best_run[0][2])), 2)] + A_
+            D_ = [A_[0]] + D_
+        if vout:
+            A_ = A_ + [round(D_[-1] + tout, 2)]
+            D_ = D_ + [A_[-1]]
         out_trips.append(dict(
             line=line, pat=pat_of[key], days=mask,
             head=t.get('trip_headsign') or names.get(last[1], ''),
             von=names.get(first[1], ''), nach=names.get(last[1], ''),
             vor=names.get(rows[i0 - 1][1], '') if i0 > 0 else '', weiter=names.get(rows[i1 + 1][1], '') if i1 + 1 < len(rows) else '',
             school=bool(SCHOOL.search(names.get(first[1], '')) or SCHOOL.search(names.get(last[1], ''))),
-            t0=dep0, a=[round(minutes(q[2]) - dep0, 2) for q in best_run], d=[round(minutes(q[3]) - dep0, 2) for q in best_run],
+            t0=dep0, a=A_, d=D_,
         ))
     print('trips', len(out_trips), 'patterns', len(patterns), 'skipped', skipped, file=sys.stderr)
     # stations: the stops used, grouped by name; platforms with the road point, its direction and the side of the GTFS point
-    used = sorted({s for p in patterns for s in p['stops']})
+    used = sorted({s for p in patterns for s in p['stops'] if s is not None})
     st_idx, stations, plat = {}, [], {}
     for sid in used:
         s = stops[sid]
@@ -538,7 +656,7 @@ def main():
                     r_ = next((zz[j] for j in range(i + 1, len(zz)) if zz[j] is not None), None)
                     zz[i] = l if r_ is None else r_ if l is None else round((l + r_) / 2)
         out_pat.append(dict(
-            st=[list(plat[s]) for s in p['stops']], s=[round(v, 1) for v in uniq[:len(p['stops'])]],
+            st=[list(plat[s]) if s is not None else [-1, -1] for s in p['stops']], s=[round(v, 1) for v in uniq[:len(p['stops'])]],
             p=xy, v=vl, z=[-9999 if v is None else v for v in zz], L=round(S[-1], 1)))
     # trips per line, sorted by time
     out_trips.sort(key=lambda t: (t['line'], t['t0']))

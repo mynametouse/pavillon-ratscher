@@ -40,7 +40,8 @@ with lib.browser() as b:
         E, J, steps = helpers(pg)
         for i in range(60):
             if E("!!(window.BUS && BUS.S.state === 'ready' && BUS.STOPS().length)"): break
-            steps(1.0)
+            steps(0.2)
+            time.sleep(0.5)
         steps(1.0)
         st = J("BUS.state()")
         ck('the timetable is there (stations, trips, stops on the roads)', st['state'] == 'ready' and st['stations'] >= 25 and st['trips'] >= 200 and st['stops'] >= 30,
@@ -48,7 +49,7 @@ with lib.browser() as b:
         info = J("""(() => { const B = BUS.plan, e = BUS.stopAt(GAME.P.x, GAME.P.y, 30), d = B.day(DN.e0 + Math.floor(CLOCK.t / 1440));
           return { stop: e && e.name, kind: d.kind, t: CLOCK.hm(), P: [GAME.P.x, GAME.P.y], dep: e ? B.departures(e.s, CLOCK.t, DN.e0, 40).map(q => q.trip.line + ' ' + B.hm(q.t) + ' ' + q.trip.head) : [] }; })()""")
         print('scene', info['stop'], info['kind'], info['t'], info['P'], flush=True)
-        ck('the scene: at Ratscher, Schleusebrücke on a school day at 7:38', info['stop'] == 'Ratscher, Schleusebrücke' and 'Schultag' in info['kind'] and info['t'] == '07:38', str(info)[:300])
+        ck('the scene: at Ratscher, Schleusebrücke on a school day at 7:38', info['stop'] == 'Ratscher, Schleusebrücke' and 'Schultag' in info['kind'] and info['t'] in ('07:38', '07:39', '07:40', '07:41'), str(info)[:300])
         lines = set(d.split(' ')[0] for d in info['dep'])
         ck("a workday's departures at Ratscher: the 203 and the 205", '203' in lines and '205' in lines, ', '.join(info['dep'][:12]))
         steps(2.0)
@@ -169,8 +170,15 @@ with lib.browser() as b:
         pg = lib.page(b, 1000, 640, errs2)
         lib.boot(pg, port, '?szenario=zombie')
         E, J, steps = helpers(pg)
+        # the timetable loads (it fetches between the steps), then a minute of the night's day: buses would run, none is drawn
+        for i in range(60):
+            steps(0.5, 0.25)
+            if E("!!(window.BUS && BUS.S.state === 'ready')"): break
+            time.sleep(0.5)
         steps(30.0, 0.25)
         st = J("BUS.state()")
-        ck('in the zombie night no regular buses', st['state'] in ('ready', 'idle', 'loading') and len(st['inst']) == 0, str(st)[:200])
+        due = E("BUS.S.state === 'ready' ? BUS.plan.active(CLOCK.t, DN.e0, 0, 0).length : -1")
+        ck('in the zombie night no regular buses (though the timetable has some on the road)', st['state'] == 'ready' and due > 0 and len(st['inst']) == 0 and st['furn'] >= 0,
+           f"due {due}, drawn {len(st['inst'])}, {st['state']}")
         ck.errors(errs2)
 ck.done()

@@ -43,7 +43,9 @@ test('a workday at Ratscher: the 203 and 205 to Schleusingen, the morning school
   const toZH = dep.filter(
     d =>
       d.trip.pat !== undefined &&
-      B.S.pats[d.trip.pat].st.some((o, k) => k > d.k && B.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle')
+      B.S.pats[d.trip.pat].st.some(
+        (o, k) => k > d.k && o.s >= 0 && B.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle'
+      )
   );
   assert.ok(toZH.length >= 8, 'buses on to the Zentralhaltestelle: ' + toZH.length);
   const sch = B.departures(st('Ratscher, Schulbushaltestelle'), T, e0, 10);
@@ -62,11 +64,13 @@ test('a run Ratscher → Schleusingen keeps to the timetable at a bus pace', () 
   const e0 = B.eOf(2026, 6, 1),
     T = 2 * 1440 + 7 * 60;
   const d = B.departures(st('Ratscher, Schleusebrücke'), T, e0, 30).find(q =>
-    B.S.pats[q.trip.pat].st.some((o, k) => k > q.k && B.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle')
+    B.S.pats[q.trip.pat].st.some(
+      (o, k) => k > q.k && o.s >= 0 && B.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle'
+    )
   );
   assert.ok(d, 'a bus to the Zentralhaltestelle');
   const R = B.run(d.trip, d.di),
-    kz = R.P.st.findIndex(o => B.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle');
+    kz = R.P.st.findIndex(o => o.s >= 0 && B.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle');
   const late = R.A[kz] - (d.di * 1440 + d.trip.t0 + d.trip.a[kz]);
   assert.ok(late < 3, 'at most 3 minutes late at the Zentralhaltestelle: ' + late.toFixed(2));
   // along the way: speeds of a bus, standing at the stops
@@ -82,4 +86,20 @@ test('a run Ratscher → Schleusingen keeps to the timetable at a bus pace', () 
   assert.ok(vmax > 12 && vmax < 23, 'top speed ' + vmax.toFixed(1) + ' m/s');
   B.at(R, R.A[kz] + 0.05, o);
   assert.equal(o.st, 'halt', 'standing at the Zentralhaltestelle');
+});
+
+test('a bus from beyond the world comes from its edge and is at its first stop on time', () => {
+  // the 205 from Coburg enters at the edge south-east of Ratscher and is at the Schleusebrücke at its minute
+  const e0 = B.eOf(2026, 6, 1),
+    T = 2 * 1440 + 7 * 60 + 40;
+  const d = B.departures(st('Ratscher, Schleusebrücke'), T, e0, 30).find(q => q.trip.line === '205' && q.trip.vor);
+  assert.ok(d, 'a 205 coming from beyond');
+  const R = B.run(d.trip, d.di);
+  assert.equal(R.P.st[0].s, -1, 'its way begins at the edge of the world');
+  assert.ok(R.P.s[d.k] > 500, 'some way before the stop: ' + R.P.s[d.k].toFixed(0) + ' m');
+  const sched = d.di * 1440 + d.trip.t0 + d.trip.a[d.k];
+  assert.ok(R.A[d.k] - sched < 0.6, 'at the stop at its minute (late ' + (R.A[d.k] - sched).toFixed(2) + ' min)');
+  const o = {};
+  B.at(R, R.A[0] + 0.01, o);
+  assert.equal(o.st, 'fahrt', 'from the edge it drives (no halt there)');
 });

@@ -109,6 +109,7 @@ export const BUS = (() => {
     const o = {};
     for (const P_ of BUSPLAN.S.pats) {
       P_.st.forEach(({ s, q }, k) => {
+        if (s < 0) return;
         BUSPLAN.centreAt(P_, P_.s[k], o);
         const key = s + ':' + q + ':' + Math.round((((o.hd * 180) / Math.PI + 360) % 360) / 90);
         if (seen.has(key)) return;
@@ -142,7 +143,7 @@ export const BUS = (() => {
       });
     }
   }
-  const stName = s => BUSPLAN.S.stations[s].n;
+  const stName = s => (s >= 0 && BUSPLAN.S.stations[s] ? BUSPLAN.S.stations[s].n : 'Rand der Karte');
   // a call (trip, k) on this kerb: the bus's heading there along the stop's direction
   const _h = {};
   function sameWay(e, d) {
@@ -307,7 +308,7 @@ export const BUS = (() => {
     I.B.wF.rotation.x = I.B.wR.rotation.x = -I.dist / D.RW;
     // doors: open while it stands at a stop (a second after arriving, closed 2 s before leaving), held while one gets on or off
     let open = 0;
-    if (I.st === 'halt' || I.st === 'ende') {
+    if ((I.st === 'halt' || I.st === 'ende') && I.Rn.P.st[I.k].s >= 0) {
       const A = I.Rn.A[I.k],
         Dd = I.Rn.D[I.k],
         since = (I.tau - A) * 60,
@@ -332,7 +333,7 @@ export const BUS = (() => {
       const P_ = BUSPLAN.S.pats[a.trip.pat],
         T0 = a.di * 1440 + a.trip.t0;
       // before its first stop in the world: only a trip that starts there stands ready (3 min before)
-      if (T() < T0 + a.trip.a[0] && a.trip.vor) continue;
+      if (T() < T0 + a.trip.a[0] - BUSPLAN.BUS.dwell - 0.05 && a.trip.vor) continue;
       const s = BUSPLAN.roughS(a.trip, a.di, T());
       BUSPLAN.centreAt(P_, s, _c);
       const d = Math.hypot(_c.x - ox, _c.y - oy);
@@ -366,7 +367,9 @@ export const BUS = (() => {
       place(I, dt);
       const d = Math.hypot(I.x - ox, I.y - oy);
       I.endT = I.st === 'ende' ? I.endT + dt : 0;
-      if (!(S.ride && S.ride.I === I) && (d > DRAW + 160 || (I.st === 'ende' && (I.endT > 40 || d > 200)))) drop(I);
+      const edge = I.st === 'ende' && I.Rn.P.st[I.k].s < 0;
+      if (!(S.ride && S.ride.I === I) && (edge || d > DRAW + 160 || (I.st === 'ende' && (I.endT > 40 || d > 200))))
+        drop(I);
     }
   }
   // the buses are solid for the walker and for vehicles (vehicles/vehicle.js VEH.extra: an oriented box each)
@@ -394,7 +397,7 @@ export const BUS = (() => {
   function acts() {
     for (const I of S.inst) {
       const id = 'bus:ein:' + I.key,
-        can = !S.ride && !Z.on && I.st === 'halt' && I.B.open > 0.6 && I.k < I.Rn.n - 1;
+        can = !S.ride && !Z.on && I.st === 'halt' && I.B.open > 0.6 && I.k < I.Rn.P.last && I.Rn.P.st[I.k].s >= 0;
       if (can && !I.act) {
         I.act = true;
         KERN.act({
@@ -494,7 +497,7 @@ export const BUS = (() => {
         save();
         panel();
       }
-      const last = I.k >= I.Rn.n - 1;
+      const last = I.k >= I.Rn.P.last;
       if ((R_.want !== null && I.k >= R_.want && I.k !== R_.from) || last) {
         if (I.B.open > 0.9) {
           if (last && I.trip.weiter)
@@ -507,6 +510,30 @@ export const BUS = (() => {
       panel();
     }
   }
+  // ---------------- the ground ahead of the bus one rides: the tiles beyond the square (welt/welt.js) load around a point ahead ----------------
+  const _ah = {};
+  FAHRT.focusBus = () => {
+    const R_ = S.ride;
+    if (!R_ || !(R_.I.v > 1.5)) return null;
+    BUSPLAN.at(R_.I.Rn, R_.I.tau, _o);
+    lanePt(R_.I.Rn.R, _o.s + Math.min(130, 20 + R_.I.v * 5), _ah);
+    return [_ah.x, _ah.y];
+  };
+  let weltNeed = false;
+  function groundAhead() {
+    let want = false;
+    const R_ = S.ride;
+    if (R_) {
+      const I = R_.I;
+      BUSPLAN.at(I.Rn, I.tau, _o);
+      lanePt(I.Rn.R, _o.s + 350, _ah);
+      want = !insideRB(I.x, I.y) || !insideRB(_ah.x, _ah.y);
+    }
+    if (want !== weltNeed) {
+      weltNeed = want;
+      WELT.need('bus', want);
+    }
+  }
   // ---------------- „Fahrt abkürzen“: fade, the clock jumps to the arrival, the ground there loads ----------------
   let fadeEl = null;
   const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -514,7 +541,7 @@ export const BUS = (() => {
     const R_ = S.ride;
     if (!R_ || R_.busy) return;
     const I = R_.I,
-      k = R_.want !== null ? R_.want : Math.min(I.Rn.n - 1, I.st === 'halt' ? I.k + 1 : I.k + 1);
+      k = R_.want !== null ? R_.want : Math.min(I.Rn.P.last, I.k + 1);
     R_.want = k;
     R_.busy = true;
     if (!fadeEl) {
@@ -576,9 +603,10 @@ export const BUS = (() => {
       lag = R_.lag,
       next = I.st === 'halt' ? I.k : I.k + 1,
       rows = [];
-    for (let k = Math.max(next, R_.from + 1); k < Rn.n; k++) {
+    for (let k = Math.max(next, R_.from + 1); k <= Rn.P.last; k++) {
       const s = Rn.P.st[k].s,
         want = R_.want === k;
+      if (s < 0) continue;
       rows.push(
         `<li class="${want ? 'want' : ''}${k === next ? ' next' : ''}"><button type="button" data-halt="${k}"><span class="t">${BUSPLAN.hm(Rn.A[k] + lag)}</span><span class="n">${BUSPLAN.S.stations[s].n}</span>${want ? '<em>Halt</em>' : ''}</button></li>`
       );
@@ -800,7 +828,7 @@ export const BUS = (() => {
     let v = { v: 1, ride: null };
     if (R_) {
       const I = R_.I,
-        st = I.Rn.P.st[Math.max(0, Math.min(I.Rn.n - 1, R_.k))],
+        st = I.Rn.P.st[Math.max(I.Rn.P.first, Math.min(I.Rn.P.last, R_.k))],
         e = STOPS.find(q => q.s === st.s) || BUSPLAN.S.stations[st.s];
       v.ride = { x: +e.x.toFixed(1), y: +e.y.toFixed(1), name: stName(st.s), line: I.trip.line };
     }
@@ -897,6 +925,7 @@ export const BUS = (() => {
       furniture(ox, oy);
       if (S.auto) choose(ox, oy);
       focusTick(ox, oy);
+      groundAhead();
       if (brdStop && brd && !brd.hidden) {
         if (Math.hypot(P.x - brdStop.x, P.y - brdStop.y) > 12) closeBoard();
         else renderBoard();
