@@ -604,6 +604,9 @@ export const ZIPLAN = (() => {
               lo = Math.min(ys, yt),
               hi = Math.max(ys, yt);
             if (lo < yi0 + 0.25 || hi > yi1 - 0.25) continue;
+            // room in front of the first step to step on
+            const foot = ys - dir * 0.65;
+            if (foot < yi0 + 0.1 || foot > yi1 - 0.1) continue;
             if (busy.some(([a, b]) => lo - 0.6 < b && hi + 0.1 > a)) continue;
             if (cx < attic.x0 + 0.1 || cx > attic.x1 - 0.1 || yt < attic.y0 + 0.2 || yt > attic.y1 - 0.2) continue;
             if (!pass && clash(lo, hi)) continue;

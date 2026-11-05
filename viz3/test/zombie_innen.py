@@ -286,7 +286,7 @@ with lib.browser() as b:
               for (const r of list) { const d = H.doors.find(q => q.room === r.id), dp = d ? P.toL(d.pos[0], d.pos[1]) : [(r.x0 + r.x1) / 2, r.y0];
                 const cs = [[r.x0, r.y0], [r.x1, r.y0], [r.x1, r.y1], [r.x0, r.y1]].sort((a, b) => Math.hypot(a[0] - dp[0], a[1] - dp[1]) - Math.hypot(b[0] - dp[0], b[1] - dp[1]));
                 for (const [c, v] of r.kind === 'stube' ? [[cs[0], 'a'], [cs[3], 'b']] : [[cs[0], 'a']]) {
-                  const m = [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2], e = [c[0] + Math.sign(m[0] - c[0]) * 0.35, c[1] + Math.sign(m[1] - c[1]) * 0.35];
+                  const m = [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2], e = [c[0] + Math.sign(m[0] - c[0]) * 0.8, c[1] + Math.sign(m[1] - c[1]) * 0.8];
                   const ew = P.toW(e[0], e[1]), mw = P.toW(m[0], m[1]);
                   out.push({ id: r.id, kind: r.kind + (v === 'b' ? '_b' : ''), x: ew[0], y: ew[1], z: r.z0 + 1.6, yaw: Math.atan2(mw[0] - ew[0], mw[1] - ew[1]) * 180 / Math.PI }); } }
               return out; })()""")
@@ -330,9 +330,7 @@ with lib.browser() as b:
           return JSON.stringify({ ids: ids.length, n, msAvg: Math.round(ms / Math.max(1, n)), msMax: Math.round(mx), drawsMax: dr, rooms, bad }); })()"""))
         print('sweep', round(time.time() - t1), 's', json.dumps({k: sw[k] for k in ('ids', 'n', 'msAvg', 'msMax', 'drawsMax', 'rooms')}), 'bad', len(sw['bad']), flush=True)
         for b in sw['bad'][:30]: print('  sweep', json.dumps(b), flush=True)
-        # (a few houses with a room the 10 cm flood does not reach are listed – open; the budget and errors are hard)
-        hard = [b['id'] for b in sw['bad'] if b.get('err') or b['stats']['draws'] > 60 or b['stats']['tris'] > 150000]
-        ck('all houses mount (≤ 60 draw calls, ≤ 150 k triangles), every room on foot and the waypoints in at least 95 %', sw['n'] == sw['ids'] and not hard and len(sw['bad']) <= sw['ids'] * 0.05, {'n': sw['n'], 'hard': hard, 'bad': [b['id'] for b in sw['bad']]})
+        ck('all houses mount (≤ 60 draw calls, ≤ 150 k triangles), every room on foot, waypoints where one can stand', sw['n'] == sw['ids'] and not sw['bad'], {'n': sw['n'], 'bad': [b['id'] for b in sw['bad']]})
     left = J("{ cols: GAME.COL.filter(c => c[6] === 'zinnen' && c[4] > -50).length, walks: GAME.WALK.filter(w => w[4] > -50 && w[9] && ZINNEN.mounted().length === 0 && false).length, acts: KERN.acts().filter(a => /^zinnen:/.test(a.id)).length, doors: Object.keys(DOORS).filter(k => /^zinnen:/.test(k)).length, mounted: ZINNEN.mounted().length }")
     print('left over', json.dumps(left), flush=True)
     ck('nothing of the houses left after unmount', left['cols'] == 0 and left['acts'] == 0 and left['doors'] == 0 and left['mounted'] == 0, left)

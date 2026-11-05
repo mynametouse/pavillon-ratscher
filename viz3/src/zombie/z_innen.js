@@ -886,7 +886,8 @@ export const ZINNEN = (() => {
           if (a !== null && b - a > 0.6) furn.box(beam, a, b, y - 0.05, y + 0.05, r.z0 + 2.0, r.z0 + 2.14);
         }
       // the chimney through the attic, and the smoke chamber beside it (Räucherkammer, Wikipedia)
-      const ch = P.chimL;
+      // (not where the attic stair had to come up beside it – the chimney stands on the roof outside all the same)
+      const ch = P.astair && P.astair.chimClash ? null : P.chimL;
       if (ch && ch[0] > r.x0 + 0.5 && ch[0] < r.x1 - 0.5 && ch[1] > r.y0 + 0.5 && ch[1] < r.y1 - 0.5) {
         const top = (P.under(ch[0], ch[1]) || r.z0 + 2.5) + 0.25,
           brick = C.col(0x8a4a34, 0.9);
@@ -1357,7 +1358,11 @@ export const ZINNEN = (() => {
       const h = P.hatch,
         cx = (h.x0 + h.x1) / 2,
         pa = [cx, h.y0 - 0.4],
-        pb = [cx, Math.min(h.y1 + 0.5, kel.y1 - 0.3)],
+        // below: in front of the last step, or beside it where the stair comes down close to the wall
+        pb =
+          h.y1 + 0.5 <= kel.y1 - 0.3
+            ? [cx, h.y1 + 0.5]
+            : [h.x1 + 0.45 < kel.x1 - 0.3 ? h.x1 + 0.45 : h.x0 - 0.45, h.y1 - 0.3],
         a = node(pa[0], pa[1], P.zG, h.room.id),
         b = node(pb[0], pb[1], kel.z0, kel.id);
       edges.push([a, b]);
@@ -1368,7 +1373,8 @@ export const ZINNEN = (() => {
     if (P.astair && att && flurTop) stairNodes(P.astair, flurTop, P.zF[P.nSt - 1], att, P.zA);
     const en = node(P.front.x, P.yi0 + 0.6, P.zG, flur0.id);
     link(en, flur0, P.front.x, P.yi0 + 0.6);
-    // can one stand at (x, y) on the floor z: no collider within the walker's radius, a floor there, no step at body height
+    // can one stand at (x, y) on the floor z: no collider within the walker's radius, a floor there, no step over it (a waypoint stands
+    // on the plain floor, not on the lowest step of a stair)
     const RW = 0.24,
       over = (w, x, y) => x >= w[0] && x <= w[1] && y >= w[2] && y <= w[3];
     for (const r of rooms) {
@@ -1386,7 +1392,7 @@ export const ZINNEN = (() => {
         freeAt = (x, y) =>
           !cs.some(c => x > c[0] - RW && x < c[1] + RW && y > c[2] - RW && y < c[3] + RW) &&
           ws.some(w => over(w, x, y) && Math.abs(w[4] - z) < 0.05) &&
-          !ws.some(w => over(w, x, y) && w[4] > z + 0.42 && w[4] < z + 1.8);
+          !ws.some(w => over(w, x, y) && w[4] > z + 0.05 && w[4] < z + 1.8);
       // a 15 cm grid over the room, flooded from where one comes in; the reached cell nearest to the middle
       const g = 0.15,
         nx = Math.max(1, Math.floor((r.x1 - r.x0) / g)),

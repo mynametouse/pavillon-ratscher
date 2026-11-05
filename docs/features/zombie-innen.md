@@ -87,8 +87,9 @@ Module: `zombie/z_innen_plan.js` (ZIPLAN, Grundriss), `zombie/z_innen_mob.js` (Z
 
 ## Offen (Stand 5.11.2026 früh)
 
-- In 8 von 230 Häusern erreicht der 10-cm-Rastertest einen Raum oder Wegpunkt nicht (11, 106, 220, 222, 248, 267, 279, 300 – meist
-  der Dachboden oder ein Wegpunkt dicht an Möbeln). Der Test listet sie (≤ 5 % erlaubt).
+- Alle 230 Häuser: jeder Raum zu Fuß erreichbar, jeder Wegpunkt dort, wo man stehen kann (Durchlauf `sweep`, streng). Wo die
+  Bodentreppe nur neben dem Schornstein Platz fand, fehlt der Schornstein im Dachboden (draußen steht er); ohne Platz für eine
+  Bodentreppe gibt es keinen Dachboden.
 - Jens' Haus (246) ist nicht begehbar: `ZIPLAN.plan(246)` liefert null – der Grundriss (sechs Fassaden, Haustür an einer nur 4,8 m
   langen Seite) ergibt kein Rechteck, das die Tür überspannt und mindestens 4,2 × 4,2 m misst. Seine Werkzeugkiste fehlt damit.
 - `H.route` kennt keine Türen: geschlossene Innentüren muss die Zombie-Logik öffnen oder einschlagen.
