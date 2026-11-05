@@ -536,10 +536,14 @@ export const ZZIEL = (() => {
   KERN.on('task:done', d => {
     if (d && mine(d.id) && Z.on) setTimeout(sync, 0);
   });
-  // ---- the task card while the mode runs: beside the zombie panel (wide screens) or under it ----
+  // ---- the task card while the mode runs: on wide screens in its own place at the top left (the zombie panel is on the right – zombie/z_hud.js;
+  //      a talk panel lies over the card, as everywhere in the game); on narrow ones beside or under the zombie panel ----
   const CSS = `
-body[data-zombie="1"]:not([data-drive]):not([data-clean="1"]) #qtrack:not([hidden]){display:grid!important;top:var(--zz-top,66px)!important;
+body[data-zombie="1"]:not([data-drive]):not([data-clean="1"]) #qtrack:not([hidden]){display:grid!important}
+@media (max-width:720px){
+body[data-zombie="1"]:not([data-drive]):not([data-clean="1"]) #qtrack:not([hidden]){top:var(--zz-top,66px)!important;
   left:var(--zz-left,12px)!important;max-width:var(--zz-w,min(330px,40vw))!important;z-index:6}
+}
 `;
   let styled = false;
   function placeCard() {
@@ -551,7 +555,7 @@ body[data-zombie="1"]:not([data-drive]):not([data-clean="1"]) #qtrack:not([hidde
     }
     const zh = $('zhud'),
       host = $('p-3d') || stage;
-    if (!zh || zh.hidden || !host) return;
+    if (!zh || zh.hidden || !host || innerWidth > 720) return;
     const r = zh.getBoundingClientRect(),
       h = host.getBoundingClientRect(),
       wide = h.width - (r.right - h.left) >= 260;

@@ -55,6 +55,16 @@ body[data-zombie="1"] #qtrack{display:none!important}
 #ztouch button.s{width:46px;height:46px;font-size:16px;background:rgba(30,24,22,.7)}
 #zcross{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;z-index:5;pointer-events:none;border:2px solid rgba(255,230,220,.8);border-radius:50%}
 #zcross[hidden]{display:none}
+/* wide screens: the panel on the right (Falko 5.11. 21:48 – on the left it lay over the talk panel, its topics and its microphone);
+   on touch screens left of the column of buttons; the notes (toasts) under it */
+@media (min-width:721px){#zhud{left:auto;right:max(12px,env(safe-area-inset-right,0px))}}
+@media (min-width:721px) and (min-height:501px){body[data-zombie="1"] .toast{top:var(--zh-bottom,60px)}}
+@media (min-width:721px) and (pointer:coarse){#zhud{right:calc(max(14px,env(safe-area-inset-right,0px)) + 76px)}}
+@media (orientation:landscape) and (max-height:500px){#zhud{top:48px}}
+/* while one talks (the neighbours', the villagers' talk panel): no fighting buttons and no big message over its topics */
+body:has(#npcpanel:not([hidden])) :is(#ztouch,#zmsg),body:has(#dorfpanel:not([hidden])) :is(#ztouch,#zmsg){display:none!important}
+@media (max-width:720px){body[data-zombie="1"]:has(#npcpanel:not([hidden])) :is(#zhud,#qtrack),
+body[data-zombie="1"]:has(#dorfpanel:not([hidden])) :is(#zhud,#qtrack){display:none!important}}
 `;
   function build() {
     if (S.el) return;
@@ -219,6 +229,12 @@ body[data-zombie="1"] #qtrack{display:none!important}
     S.acc = (S.acc || 0) + dt;
     if (S.acc < 0.2) return;
     S.acc = 0;
+    // (where the panel ends: the notes go under it on wide screens – CSS above)
+    const zb = Math.round(S.el.offsetTop + S.el.offsetHeight + 8);
+    if (zb !== S.zb && zb > 8) {
+      S.zb = zb;
+      document.body.style.setProperty('--zh-bottom', zb + 'px');
+    }
     $('zhp').style.width = pct(Z.hp) + '%';
     $('zst').style.width = pct(Z.stam) + '%';
     $('zfd').style.width = pct(Z.food) + '%';

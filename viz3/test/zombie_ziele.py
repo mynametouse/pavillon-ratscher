@@ -70,8 +70,17 @@ with lib.browser() as b:
         ck('its target is the gun on Hubert\'s table (own marker, none of the task card\'s)', c['tp'] and math.hypot(c['tp'][0] - g[0], c['tp'][1] - g[1]) < 0.3 and c['own'], f"{c['tp']} gun {g}")
         rect = J("(() => { const a = document.getElementById('zhud').getBoundingClientRect(), b = document.getElementById('qtrack').getBoundingClientRect(); return { zhud: [a.left, a.top, a.right, a.bottom].map(Math.round), card: [b.left, b.top, b.right, b.bottom].map(Math.round) }; })()")
         z, k = rect['zhud'], rect['card']
-        ck('the card does not cover the zombie panel', k[0] >= z[2] or k[1] >= z[3], str(rect))
+        apart = lambda a, b: a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1]
+        ck('the card does not cover the zombie panel (the panel on the right of a wide screen)', apart(k, z) and z[0] > 550, str(rect))
         page_pic('01_karte')
+        # a talk (Falko 5.11. 21:48: the zombie panel lay over the talk's topics): the two apart, the card under the talk panel
+        talk = "(() => { const R = id => { const e = document.getElementById(id), r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom].map(Math.round); }, p = document.getElementById('npcpanel'); return { zhud: R('zhud'), npc: R('npcpanel'), card: R('qtrack'), open: !p.hidden, zi: [+getComputedStyle(document.getElementById('qtrack')).zIndex || 0, +getComputedStyle(p).zIndex || 0], w: innerWidth }; })()"
+        E("window.__pp = [GAME.P.x, GAME.P.y, GAME.P.feet, GAME.P.yaw]; (() => { const w = NPC.NPCS.hubert, P = GAME.P; P.x = w.x + 1.6; P.y = w.y; P.feet = GAME.floorAt(P.x, P.y, w.z || P.feet); P.yaw = P.body = Math.atan2(w.x - P.x, w.y - P.y) * 180 / Math.PI; })()")
+        steps(0.3); E("NPC.NPCUI.start(NPC.NPCS.hubert)"); time.sleep(0.6); steps(0.2)
+        rr = J(talk)
+        ck('a talk on a wide screen: the zombie panel apart from the talk panel, the card under it', rr['open'] and apart(rr['zhud'], rr['npc']) and (apart(rr['card'], rr['npc']) or rr['zi'][0] < rr['zi'][1]), str(rr))
+        page_pic('01c_gespraech')
+        E("NPC.NPCUI.end(false); (() => { const P = GAME.P, a = window.__pp; P.x = a[0]; P.y = a[1]; P.feet = a[2]; P.yaw = P.body = a[3]; })()"); steps(0.2)
         # a phone's width: the card under the panel, inside the screen
         pg.set_viewport_size({'width': 390, 'height': 780})
         steps(0.6)
@@ -79,6 +88,11 @@ with lib.browser() as b:
         z, k = rect['zhud'], rect['card']
         ck('on a phone the card stands under the panel, inside the screen', k[1] >= z[3] and k[2] <= rect['w'] and k[3] > k[1], str(rect))
         page_pic('01b_karte_handy')
+        E("window.__pp = [GAME.P.x, GAME.P.y, GAME.P.feet, GAME.P.yaw]; (() => { const w = NPC.NPCS.hubert, P = GAME.P; P.x = w.x + 1.6; P.y = w.y; P.feet = GAME.floorAt(P.x, P.y, w.z || P.feet); P.yaw = P.body = Math.atan2(w.x - P.x, w.y - P.y) * 180 / Math.PI; })()")
+        steps(0.3); E("NPC.NPCUI.start(NPC.NPCS.hubert)"); time.sleep(0.6); steps(0.2)
+        rr = J(talk)
+        ck('a talk on a phone: zombie panel and card out of the talk panel\'s way', rr['open'] and apart(rr['zhud'], rr['npc']) and apart(rr['card'], rr['npc']), str(rr))
+        E("NPC.NPCUI.end(false); (() => { const P = GAME.P, a = window.__pp; P.x = a[0]; P.y = a[1]; P.feet = a[2]; P.yaw = P.body = a[3]; })()"); steps(0.2)
         pg.set_viewport_size({'width': 1100, 'height': 680})
         steps(0.6)
         ds = walk_to(g[0], g[1], stop=12, n=4)
@@ -310,6 +324,17 @@ with lib.browser() as b:
         ck('the last wave: more of them, all heading to the bus', (st['wave'] or 0) > 0 and st['search'] >= 1, str(st))
         c = cur()
         ck('the task: „Der Bus ist da – steig ein …“, target its door', 'steig ein' in (c['text'] or '') and c['tp'] and math.hypot(c['tp'][0] - st['door'][0], c['tp'][1] - st['door'][1]) < 1, str(c)[:300])
+        # a picture: the coach at the stop at night, from the shelter's side
+        E(f"""(() => {{ const P = GAME.P, d = ZBUS.doorAt(); P.x = d[0] + Math.cos(ZBUS.hd) * 9 - Math.sin(ZBUS.hd) * 5; P.y = d[1] - Math.sin(ZBUS.hd) * 9 - Math.cos(ZBUS.hd) * 5; P.feet = GAME.floorAt(P.x, P.y, 30);
+          P.yaw = P.body = Math.atan2(ZBUS.x - P.x, ZBUS.y - P.y) * 180 / Math.PI; P.pitch = 2; for (const e of ZSTATE.ents) e.hold = 'idle'; }})()""")
+        steps(0.4)
+        pic('09_bus_steht')
+        # (the people's own materials – zombie/z_fig.js, names like f009_opacity – may come with a figure of the last wave seen for the first time:
+        # theirs, not the coach's)
+        newp = [n for n, k in J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])") if k not in K1]
+        ours = [n for n in newp if not re.match(r'^[a-z]+\d+_', n or '')]
+        ck('no new shader program for the coach (plain materials, a borrowed light)', not ours, f'{p1} -> {progs()}: {newp}')
+        # (after the count: the walk below looks at the coach from its other side)
         # the coach is solid (VEH.extra): walking at its far side from 3.2 m away ends at its side, not inside it
         E("""(() => { const P = GAME.P, fx = Math.sin(ZBUS.hd), fy = Math.cos(ZBUS.hd); P.x = ZBUS.x - fy * 3.2; P.y = ZBUS.y + fx * 3.2;
           P.feet = GAME.floorAt(P.x, P.y, 30); P.yaw = P.body = Math.atan2(ZBUS.x - P.x, ZBUS.y - P.y) * 180 / Math.PI; P.pitch = 0; })()""")
@@ -322,16 +347,6 @@ with lib.browser() as b:
         if zin is not None:
             zd = J("(() => { const e = ZSTATE.ents.find(q => q.id === " + json.dumps(zin) + "), fx = Math.sin(ZBUS.hd), fy = Math.cos(ZBUS.hd), dx = e.x - ZBUS.x, dy = e.y - ZBUS.y; return [dx * fy - dy * fx, dx * fx + dy * fy]; })()")
             ck('a zombie in the coach is put out at its side or end', abs(zd[0]) >= 1.6 or abs(zd[1]) >= 6.3, str([round(q, 2) for q in zd]))
-        # a picture: the coach at the stop at night, from the shelter's side
-        E(f"""(() => {{ const P = GAME.P, d = ZBUS.doorAt(); P.x = d[0] + Math.cos(ZBUS.hd) * 9 - Math.sin(ZBUS.hd) * 5; P.y = d[1] - Math.sin(ZBUS.hd) * 9 - Math.cos(ZBUS.hd) * 5; P.feet = GAME.floorAt(P.x, P.y, 30);
-          P.yaw = P.body = Math.atan2(ZBUS.x - P.x, ZBUS.y - P.y) * 180 / Math.PI; P.pitch = 2; for (const e of ZSTATE.ents) e.hold = 'idle'; }})()""")
-        steps(0.4)
-        pic('09_bus_steht')
-        # (the people's own materials – zombie/z_fig.js, names like f009_opacity – may come with a figure of the last wave seen for the first time:
-        # theirs, not the coach's)
-        newp = [n for n, k in J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])") if k not in K1]
-        ours = [n for n in newp if not re.match(r'^[a-z]+\d+_', n or '')]
-        ck('no new shader program for the coach (plain materials, a borrowed light)', not ours, f'{p1} -> {progs()}: {newp}')
         # in: the action button at the door
         E("(() => { const P = GAME.P, d = ZBUS.doorAt(); P.x = d[0]; P.y = d[1]; P.feet = GAME.floorAt(P.x, P.y, 30); })()")
         steps(0.4)

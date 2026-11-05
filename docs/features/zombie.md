@@ -87,6 +87,9 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   Treffer zählt für den, der schlug. Jeder sieht den anderen als seine Figur mit Namen, im Auto das Auto; Barrikaden sind gemeinsam; Vorräte,
   Waffen, Leben hat jeder für sich; die Waffe des anderen ist in seiner Hand zu sehen, seine Motorsäge zu hören. `?lokal=1`: zwei Fenster eines Browsers über einen BroadcastChannel (Test `zombie_netz`).
   Grenze: hinter manchen Mobilfunknetzen finden sich zwei Browser ohne Vermittlungsserver (TURN) nicht – dann im WLAN probieren.
+- **Anordnung** (V17q, Falko 5.11. 21:48): auf breiten Bildschirmen steht das Zombie-Panel rechts (Touch: links neben der Spalte der Kampfknöpfe), damit
+  links Gespräche (Themen, Mikrofon), Ort und Aufgabenkarte frei sind; Hinweise (`.toast`) rücken unter das Panel (`--zh-bottom`); während eines
+  Gesprächs verschwinden Kampfknöpfe und große Meldung, auf schmalen Bildschirmen auch Panel und Karte (CSS `:has()` in `z_hud.js`).
 - **Verbündete** (`z_bund.js`): Hubert und Ronald (will erst etwas zu essen) kommen mit, kämpfen, warten auf Zuruf – alles im Gespräch
   („Mit Hubert sprechen“ bleibt der Knopf, auch wenn er folgt; Themen „Hilfst du mir gegen die Zombies?“, „Komm mit“, „Warte hier“, „Wie
   sieht's aus?“);

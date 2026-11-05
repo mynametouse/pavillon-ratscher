@@ -23,7 +23,9 @@ Bus, letzte Welle, Ende).
     vier Minuten); eine Aufgabe des Tages mit Vorrang (das Radio) kommt vor dem Rest.
 - Jeder Schritt prüft, was wirklich ist (`Z`, `ZBUND`, die Häuser) – was man schon vorher erledigt hat, zählt sofort; jedes Ziel folgt der
   Welt (ein durchsuchtes Haus ist kein Ziel mehr, Hubert wird verfolgt, wo er geht).
-- **Die Karte** steht im Modus neben dem Zombie-Panel (schmale Bildschirme: darunter), nicht im Auto, nicht in der freien Sicht.
+- **Die Karte** steht im Modus an ihrem gewohnten Platz oben links (seit V17q ist das Zombie-Panel auf breiten Bildschirmen rechts; ein Gespräch
+  liegt über der Karte wie sonst im Spiel), auf schmalen Bildschirmen neben oder unter dem Panel (während eines Gesprächs ausgeblendet); nicht im
+  Auto, nicht in der freien Sicht.
 - **Die Markierung in der Welt**: ein hellgelber Ring mit pulsierendem Punkt über dem Ziel der verfolgten Aufgabe, wenn es 3,5–150 m
   entfernt ist; immer obenauf, in der Ferne kleiner, nachts gedämpft (gegen die hohe Belichtung), in der freien Sicht („Sicht“) weg.
   Zwei Sprites mit dem Programm der Aufgaben-Markierung des Spiels; das Programm entsteht einmal beim Start des Modus (kein neues
