@@ -31,6 +31,9 @@ with lib.browser() as b:
     ck('things besides cars (pool, lorry …)', sum(st['things'].values()) >= 1, str(st['things']))
     E("GAME.shot()")
     p0 = progs()
+    K0 = set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
+    ck('the two programs of the things were made at the start (warm meshes)', J("GAME.R.info.programs.filter(p => /\\|dinge$/.test(p.cacheKey)).length") == 2,
+       str(J("GAME.R.info.programs.filter(p => /dinge/.test(p.cacheKey)).length")))
     # a workday: the first Tuesday of the calendar, 3:00 and 10:00
     day = J("(() => { for (let d = 0; d < 14; d++) if (DCAL.wd(d * 1440 + 600) === 2) return d; return 1; })()")
     t3, t10 = day * 1440 + 180, day * 1440 + 600
@@ -70,11 +73,22 @@ with lib.browser() as b:
     steps(4)
     n19 = J("DINGE.places.filter(p => p.im && p.on && !p.hide).length")
     ck('19:00: most are back', n19 > n10, f'{n19} at 19:00, {n10} at 10:00')
-    E(f"CLOCK.t = {day * 1440 + 12 * 60 + 30}")
+    # Sunday late morning, as when the photo was flown (07.04.2024): most cars at home – from above over the Anger, then from the street
+    sun = J("(() => { for (let d = 0; d < 14; d++) if (DCAL.wd(d * 1440 + 600) === 0) return d; return 0; })()")
+    E(f"CLOCK.t = {sun * 1440 + 11 * 60}")
     lib.settle_light(pg)
-    E("GAME.view(185, -175, KERN.ground(185, -175) + 75, 20, -45, 60)")
+    E("GAME.view(240, -110, KERN.ground(240, -110) + 1.7, 270, -6, 62)")
     steps(4)
-    pic('03_von_oben')
+    nsun = J("DINGE.places.filter(p => p.im && p.on && !p.hide).length")
+    ck('Sunday 11:00 (the time of the photo): most places taken', nsun >= 0.7 * len(on3), f'{nsun} of {len(on3)}')
+    E("GAME.orbit(200, 55, 70, [228, -108, KERN.ground(228, -108)])")
+    E("GAME.shot()")
+    pic('03_von_oben_sonntag')
+    E("GAME.CAM3.on = false")
+    E("GAME.view(252, -97, KERN.ground(252, -97) + 1.7, 255, -5, 62)")
+    steps(0.5)
+    pic('05_strasse_sonntag')
+    E("GAME.CAM3.on = true")
     # a known place from the ground: the white van east of the Anger (photo 236.9 / −103.8)
     k = J("(() => { let b = -1, bd = 1e9; DINGE.places.forEach((p, i) => { const d = Math.hypot(p.x - 236.9, p.y + 103.8); if (d < bd) { bd = d; b = i; } }); return { i: b, d: bd, p: DINGE.info(b) }; })()")
     ck('the white van east of the Anger is a place (a van, at the kerb or the yard)', k['d'] < 1.5 and k['p']['type'] == 'van', str(k))
@@ -97,7 +111,9 @@ with lib.browser() as b:
         ck('walking into a parked car stops at its side', False, 'no parked car built')
     E("GAME.shot()")
     p1 = progs()
-    ck('no new shader programs (cars and things drawn with the warm programs)', p1 == p0, f'{p0} → {p1}')
+    newp = [[n, k[-60:]] for n, k in J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])") if k not in K0]
+    mine = [x for x in newp if 'dinge' in x[1]]
+    ck('no new shader programs of the things (cars and things drawn with the warm programs)', not mine, f'{p0} → {p1}, new: {newp}')
     # the zombie night: the parked cars stay as they are
     E("KERN.emit('zombie:start', {})")
     E(f"CLOCK.t = {day * 1440 + 9 * 60}")

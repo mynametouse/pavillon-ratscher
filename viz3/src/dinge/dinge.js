@@ -40,7 +40,7 @@ export const DINGE = (() => {
     SEE = 320; // beyond this a change goes unseen even in view
   // colours of the data (sRGB, tools/welt-dinge/prep.py PAL) → linear for the instance colour
   const PAL = [
-    [18, 18, 20],
+    [26, 26, 28],
     [58, 60, 64],
     [150, 152, 155],
     [225, 225, 220],
@@ -445,6 +445,20 @@ export const DINGE = (() => {
         console.warn('welt-dinge', e);
       })
   );
+  // ---- the traffic (verkehr/verkehr_auto.js): the cars standing in the built cells as obstacles, three circles along each ----
+  S.obstacles = OB => {
+    if (!S.ready) return;
+    for (const c of S.cells.values()) {
+      if (!c.built) continue;
+      for (const p of c.places) {
+        if (!p.on || p.hide || !p.box) continue;
+        const f = p.box.ay,
+          o = p.box.ey - p.box.ex;
+        for (const t of [-1, 0, 1])
+          OB.push({ x: p.x + f[0] * o * t, y: p.y + f[1] * o * t, r: p.box.ex, kind: 'dcar', moving: false });
+      }
+    }
+  };
   // ---- tests: numbers only ----
   S.state = () => {
     const by = {},

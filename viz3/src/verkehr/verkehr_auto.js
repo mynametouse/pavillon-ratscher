@@ -19,6 +19,8 @@ import { DN } from '../time/daynight.js';
 import { VPROPS } from '../world/village_props.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { DCARS } from '../dorf/dorf_cars.js';
+// feat/welt-dinge: the parked cars of the aerial photo stand in the way like the villagers' cars
+import { DINGE } from '../dinge/dinge.js';
 import { NPCS, TRACTOR } from '../npc/npc.js';
 import { VNETZ } from './verkehr_netz.js';
 import { VFIG } from './verkehr_fig.js';
@@ -460,6 +462,8 @@ export const VAUTO = (() => {
         for (const t of [-1.3, 0, 1.3])
           OB.push({ x: d.at[0] + Math.sin(h) * t, y: d.at[1] + Math.cos(h) * t, r: 0.9, kind: 'dcar', moving });
       }
+    // feat/welt-dinge: the parked cars of the aerial photo in the cells near the observer (dinge/dinge.js)
+    if (DINGE && DINGE.obstacles) DINGE.obstacles(OB);
     return OB;
   }
   const OWN = [];
