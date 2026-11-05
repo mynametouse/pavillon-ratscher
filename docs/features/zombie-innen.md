@@ -14,7 +14,10 @@ Fotos und was daraus folgt: `docs/plans/zombie_einrichtung.md`.
   oben Schlafzimmer, Kinderzimmer, Kammer, Bad; die Treppe wiederholt sich in jedem Geschoss; **Keller** unter der Küche mit Falltür
   (Luke, öffnet vom Absteigenden weg; von unten „Luke aufdrücken“) und steiler Treppe; **Dachboden** unter dem Dach mit Abseiten
   (Kniestock, wo das Dach unter 1,2 m kommt), Dachuntersicht aus Brettern, Sparren, Kehlbalken, Schornstein mit **Räucherkammer**,
-  Wäscheleine, Truhe, Kiste; Bodentreppe im obersten Flur, die dorthin steigt, wo das Dach hoch ist.
+  Wäscheleine, Truhe, Kiste; Bodentreppe im obersten Flur, die dorthin steigt, wo das Dach hoch ist. Oben endet das Geländer an
+  einem Pfosten 45 cm vor der letzten Stufe – dort tritt man seitlich ab; neben jeder Treppe bleibt ein Streifen von 50 cm frei von
+  Möbeln (der Weg vorbei). **Lange Häuser** (eine Flurseite breiter als 6,6 m) bekommen nebeneinander mehrere Räume: der erste vom
+  Flur aus, jeder weitere durch den davor (Kammer vorn, Vorratskammer/Waschküche/Kammer hinten, oben Kammern und Kinderzimmer).
 - **Drei Zeitschichten** je Haus (aus der Gebäudenummer, immer gleich): „alt“ (Dielen, Streifen- oder Schablonentapete, Lambris,
   Holzdecke, Kachelofen mit Ofenbank, Eckbank, Küchenbüfett/Vertiko mit Röhrenradio, Kohleherd, Spülstein, Federbetten kariert,
   Waschtisch mit Krug, Wandspruch „Auch in dunkler Nacht Gottes Auge wacht“, röhrender Hirsch, Wand- oder Kuckucksuhr,
@@ -52,13 +55,20 @@ Module: `zombie/z_innen_plan.js` (ZIPLAN, Grundriss), `zombie/z_innen_mob.js` (Z
   `zombie_innen:tier=schnell,n=3,only=shots+walk+free`. Läuft auf `feat/zombie-innen` bei jedem Push (`viz3/extra/zombie-innen/tests.txt`).
 - Der Test prüft: Szenario, Häuser der Bewohner, Wolfgangs Waffen-Spots, je Haus Aufbauzeit, Draw-Calls (≤ 60), Dreiecke, keine neuen
   Shader-Programme, Auf- und Abbau ohne Rest (Geometrien und Texturen zurück), Gang in die Stube, Treppe hinauf, Bodentreppe, durch die
-  Luke in den Keller, Behälter, Licht; Bilder vom Eingang und aus jedem Raum.
+  Luke in den Keller, Behälter, Licht; Bilder vom Eingang und aus jedem Raum. Dazu `__Z.reach(H)`: ein 10-cm-Raster im Haus mit dem
+  Radius der Spielfigur, Stufen bis 0,42 m, ohne Stürze – jeder Raum muss vom Eingang zu Fuß erreichbar sein, jeder Wegpunkt von
+  `H.graph` dort stehen, wo man stehen kann, und der Graph jeden Raum erreichen. **Durchlauf `sweep`**: alle 230 Häuser einmal auf-
+  und abbauen (Fehler, Draw-Calls, Dreiecke, Erreichbarkeit; ≈ 2 min, lokal mit `only=…` abwählbar).
 
 ## Für den Lead
 
 - Keine geänderten fremden Dateien. Nichts läuft beim Laden; erst `mount` baut (≈ 80–160 ms je Haus in SwiftShader).
-- Programme: keine neuen (Materialien der Gartengebäude bzw. deren Zwillinge mit gleichen Einstellungen, die Palette); tagsüber ein
-  wenig Eigenlicht für Decken und Wände (Emissive-Uniform, kein neues Programm). Licht: ein Punktlicht aus dem Pool
+- Programme: im Haus keine neuen (Materialien der Gartengebäude bzw. deren Zwillinge mit gleichen Einstellungen, die Palette); tagsüber
+  ein wenig Eigenlicht für Decken und Wände (Emissive-Uniform, kein neues Programm). **Eine Ausnahme, mit Grund:** am Hang läuft das
+  Gelände (10-m-Raster) durch Erdgeschoss und Keller (153 von 230 Häusern, bis 12 m). Solange ein Haus gemountet ist, tragen die
+  Geländenetze deshalb einen Zwilling von `RATSCHER.terrainMat`, der das Innenrechteck des Hauses ausspart (`discard`, Programmschlüssel
+  `geoterrain|zinnen-hole`, einmal beim ersten Haus kompiliert – hinter der Überblendung); beim Unmount kommt das alte Material zurück.
+  Licht: ein Punktlicht aus dem Pool
   (`KERN.lights.borrow`, id `zinnen`). Boden im Haus: ein `ground`-Anbieter (Rang 90) gibt im gemounteten Haus eine Tiefe unter dem
   Keller zurück – nur Böden und Stufen zählen (das Gelände kann den Keller schneiden); dazu `inside` und `place` (Rang 95, Raumname).
 - Die Haustür von innen ist ein festes Türblatt; Hinausgehen macht `z_haus.js` (Aktion an `H.openings[0]` bzw. `H.exit`).

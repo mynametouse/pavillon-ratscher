@@ -11,6 +11,7 @@ export const ZIPLAN = (() => {
   const ST = 2.75, // storey height (the facade shader: stH)
     SLAB = 0.22, // floor thickness (joists and boards)
     PW = 0.12, // partition thickness
+    SIDE_MAX = 6.6, // a side of the hall wider than this gets more rooms beside each other
     G = 0.25; // raster of the largest-rectangle search
   // a small deterministic random generator per seed (garden/garten_kit.js rng: the same stream, no global state)
   function rng(seed = 1) {
@@ -321,6 +322,28 @@ export const ZIPLAN = (() => {
       } else s.sc = sc;
     }
     const small = sides.find(s => s !== big) || null;
+    // a wide side (long houses, up to 26 m) gets rooms beside each other, outwards from the hall: the first is entered from the
+    // hall, each further one through the one before it (Durchgangszimmer)
+    for (const s of sides) {
+      const n = s.w > SIDE_MAX ? Math.ceil((s.w + PW) / 5.2) : 1,
+        pw = (s.w - (n - 1) * PW) / n;
+      s.parts = [];
+      for (let i = 0; i < n; i++) {
+        const a = s.k === 'L' ? s.x1 - i * (pw + PW) - pw : s.x0 + i * (pw + PW);
+        s.parts.push({ x0: a, x1: a + pw, i });
+      }
+    }
+    // what the further rooms of a wide side are: a Kammer at the front, behind it a pantry, a wash house or another Kammer
+    const extraKind = (fl, front) =>
+      fl === 0
+        ? front
+          ? 'kammer'
+          : R.pick(old === 'alt' ? ['vorrat', 'waschkueche', 'kammer'] : ['vorrat', 'kammer'])
+        : front
+          ? 'kammer'
+          : R.chance(0.5)
+            ? 'kinderzimmer'
+            : 'kammer';
     const depth = yi1 - yi0,
       split = depth >= 6.0;
     // the stairs: along the hall wall of the small side (or the free wall), rising to the back
@@ -398,17 +421,19 @@ export const ZIPLAN = (() => {
       for (const q of list) if (q.kind === 'bad') hasBad = true;
       add({ kind: 'flur', fl: k, x0: hx0, x1: hx1, y0: yi0, y1: yi1, z0: zF[k], z1: zC[k] });
       for (const q of list)
-        add({
-          kind: q.kind,
-          fl: k,
-          x0: q.side.x0,
-          x1: q.side.x1,
-          y0: q.y0,
-          y1: q.y1,
-          z0: zF[k],
-          z1: zC[k],
-          side: q.side.k,
-        });
+        for (const pt of q.side.parts)
+          add({
+            kind: pt.i === 0 ? q.kind : extraKind(k, q.y0 < yi0 + 0.5),
+            fl: k,
+            x0: pt.x0,
+            x1: pt.x1,
+            y0: q.y0,
+            y1: q.y1,
+            z0: zF[k],
+            z1: zC[k],
+            side: q.side.k,
+            part: pt.i,
+          });
     }
     // the cellar under the kitchen (or the Stube), reached by a trapdoor with a steep stair
     let cellar = null,
@@ -474,7 +499,7 @@ export const ZIPLAN = (() => {
       const wx = r.side === 'L' ? r.x1 + PW / 2 : r.x0 - PW / 2;
       let lo = r.y0 + 0.2,
         hi = r.y1 - 0.2;
-      const st = stair && stair.side === r.side ? stair : null,
+      const st = stair && stair.side === r.side && !r.part ? stair : null,
         free = [];
       if (st) {
         const s0 = r.fl === 0 ? st.y0 - 0.05 : st.y0 - 0.25,
@@ -482,7 +507,11 @@ export const ZIPLAN = (() => {
         if (s0 - lo >= 0.95) free.push([lo, Math.min(hi, s0)]);
         if (hi - s1 >= 0.95) free.push([Math.max(lo, s1), hi]);
       } else free.push([lo, hi]);
-      const w = 0.86;
+      const w = 0.86,
+        // a further room of a wide side: its door leads into the room before it (same storey, same depth band)
+        prev = r.part
+          ? rooms.find(q => q.fl === r.fl && q.side === r.side && q.part === r.part - 1 && Math.abs(q.y0 - r.y0) < 0.01)
+          : null;
       let d = null;
       for (const [a, z] of free) {
         if (z - a < w + 0.1) continue;
@@ -496,11 +525,14 @@ export const ZIPLAN = (() => {
           room: r.id,
           fl: r.fl,
         };
+        if (prev) d.from = prev.id;
         break;
       }
       if (!d) {
         // through the room in front of it (a Durchgangszimmer)
-        const fr = rooms.find(q => q.fl === r.fl && q.side === r.side && q !== r && q.y1 < r.y0 + 0.01);
+        const fr = rooms.find(
+          q => q.fl === r.fl && q.side === r.side && (q.part || 0) === (r.part || 0) && q !== r && q.y1 < r.y0 + 0.01
+        );
         if (fr) d = { x: (r.x0 + r.x1) / 2, y: r.y0 - PW / 2, axis: 'x', w, room: r.id, from: fr.id, fl: r.fl };
       }
       if (d) {
@@ -528,19 +560,33 @@ export const ZIPLAN = (() => {
           .filter(d => d.fl === k && d.axis === 'y' && Math.abs(d.x - wallX) < 0.1)
           .map(d => [d.y - d.w / 2 - 0.3, d.y + d.w / 2 + 0.3]);
       if (k === 0) busy.push([yi0, yi0 + 1.6]); // the way from the front door
+      // the chimney in the attic and the smoke chamber beside it (zombie/z_innen.js, z_innen_einr.js) must not stand where one arrives
+      const ch = chimL,
+        chimIn =
+          ch && ch[0] > attic.x0 + 0.5 && ch[0] < attic.x1 - 0.5 && ch[1] > attic.y0 + 0.5 && ch[1] < attic.y1 - 0.5,
+        clash = (lo, hi) =>
+          chimIn &&
+          ch[0] - 0.26 < x1 + 0.7 &&
+          ch[0] + 1.01 > x0 - 0.7 &&
+          ch[1] - 0.45 < hi + 0.9 &&
+          ch[1] + 0.45 > lo - 0.9;
       let best = null;
-      for (const dir of [1, -1])
-        for (let ys = yi0 + 0.4; ys <= yi1 - 0.4; ys += 0.25) {
-          const yt = ys + dir * run,
-            lo = Math.min(ys, yt),
-            hi = Math.max(ys, yt);
-          if (lo < yi0 + 0.25 || hi > yi1 - 0.25) continue;
-          if (busy.some(([a, b]) => lo - 0.6 < b && hi + 0.1 > a)) continue;
-          if (cx < attic.x0 + 0.1 || cx > attic.x1 - 0.1 || yt < attic.y0 + 0.2 || yt > attic.y1 - 0.2) continue;
-          const head = under(cx, yt + dir * 0.4);
-          if (head === null || head - zA < 2.0) continue;
-          if (!best || head > best.head + 0.05) best = { ys, yt, dir, head };
-        }
+      for (const pass of [0, 1]) {
+        for (const dir of [1, -1])
+          for (let ys = yi0 + 0.4; ys <= yi1 - 0.4; ys += 0.25) {
+            const yt = ys + dir * run,
+              lo = Math.min(ys, yt),
+              hi = Math.max(ys, yt);
+            if (lo < yi0 + 0.25 || hi > yi1 - 0.25) continue;
+            if (busy.some(([a, b]) => lo - 0.6 < b && hi + 0.1 > a)) continue;
+            if (cx < attic.x0 + 0.1 || cx > attic.x1 - 0.1 || yt < attic.y0 + 0.2 || yt > attic.y1 - 0.2) continue;
+            if (!pass && clash(lo, hi)) continue;
+            const head = under(cx, yt + dir * 0.4);
+            if (head === null || head - zA < 2.0) continue;
+            if (!best || head > best.head + 0.05) best = { ys, yt, dir, head, clash: !!pass && clash(lo, hi) };
+          }
+        if (best) break;
+      }
       if (best) {
         const holeK = Math.max(2, Math.ceil((ST - SLAB - 1.9) / rise) - 1);
         astair = {
@@ -555,6 +601,7 @@ export const ZIPLAN = (() => {
           fl: k,
           holeK,
           side: sideR ? 'R' : 'L',
+          chimClash: best.clash, // no smoke chamber then (zombie/z_innen_einr.js)
         };
       }
     }

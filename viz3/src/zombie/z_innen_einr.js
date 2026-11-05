@@ -105,10 +105,29 @@ export const ZIEINR = (() => {
     function mid(w, d) {
       const cx = (room.x0 + room.x1) / 2,
         cy = (room.y0 + room.y1) / 2;
-      const r = [cx - w / 2, cx + w / 2, cy - d / 2, cy + d / 2];
-      if (hit(r, used)) return null;
-      used.push(r);
-      return r;
+      // the middle, else a little aside (the ways from door to door stay free: room.keep)
+      for (const [ox, oy] of [
+        [0, 0],
+        [0.4, 0],
+        [-0.4, 0],
+        [0, 0.4],
+        [0, -0.4],
+        [0.8, 0],
+        [-0.8, 0],
+        [0, 0.8],
+        [0, -0.8],
+        [0.6, 0.6],
+        [-0.6, 0.6],
+        [0.6, -0.6],
+        [-0.6, -0.6],
+      ]) {
+        const r = [cx + ox - w / 2, cx + ox + w / 2, cy + oy - d / 2, cy + oy + d / 2];
+        if (r[0] < room.x0 + 0.5 || r[1] > room.x1 - 0.5 || r[2] < room.y0 + 0.5 || r[3] > room.y1 - 0.5) continue;
+        if (hit(r, used) || hit(r, room.keep || [])) continue;
+        used.push(r);
+        return r;
+      }
+      return null;
     }
     // is a stretch of a wall free of doors and windows between heights z0 and z1 (things hung on the wall above the furniture)
     function wallFree(side, u0, u1, z0, z1) {
@@ -1422,7 +1441,9 @@ export const ZIEINR = (() => {
         F = Pl.any(all, 0.58, 0.62, 1.5, 0.95);
         if (F) L.kuehlschrank(C, F);
       }
-      const r = Pl.mid(1.1, 0.75);
+      // the table with a chair on each long side (the room's middle or aside, off the ways between the doors)
+      const rc = Pl.mid(1.1, 1.85),
+        r = rc && [rc[0], rc[1], rc[2] + 0.55, rc[3] - 0.55];
       if (r) {
         const T = frame([r[0], r[2]], [1, 0], [0, 1]);
         L.table(
@@ -1543,7 +1564,7 @@ export const ZIEINR = (() => {
       // the attic (boden-1/2/8/12): low things along the knee walls, the smoke chamber at the chimney, a line with washing
       const low = all,
         tall = outer.length ? outer : all;
-      if (room.chim) {
+      if (room.chim && !(C.P.astair && C.P.astair.chimClash)) {
         const ch = room.chim,
           Fr = frame([ch[0] + 0.26, ch[1] - 0.45], [0, 1], [1, 0]);
         Fr.u0 = 0;

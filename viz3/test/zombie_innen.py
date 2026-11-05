@@ -3,7 +3,7 @@
 # room, walks from the entry into the Stube, up the stairs and down into the cellar, opens a door, searches a container, switches a light;
 # shader programs must not grow, draw calls / triangles / mount time per house in the log, unmount frees geometries and textures.
 # Pictures into out/zombie_innen/.
-#   python3 viz3/test/zombie_innen.py PORT [tier=schnell,n=6,only=walk+shots+free,haus=<id>]
+#   python3 viz3/test/zombie_innen.py PORT [tier=schnell,n=6,only=walk+shots+free+sweep,haus=<id>]
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]
@@ -59,6 +59,36 @@ window.__Z = {
     return [...bad];
   },
   progKeys() { return GAME.R.info.programs.map(p => p.cacheKey); },
+  // on foot from the entry (a 10 cm grid in the house frame, the walker's radius, steps up to STEP, no falls; inner doors count as open,
+  // the trapdoor must be open): the rooms one does not reach, the waypoints where one cannot stand or that one does not reach
+  reach(H) {
+    const P = H.plan, cs = 0.1, R = 0.19, D = window.DOORS, cols = H.cols.filter(c => c[4] > -50);
+    const walks = H.walks.filter(w => w[4] > -50 && !(w[8] && D[w[8]] && D[w[8]].t > 0.5));
+    const x0 = P.xi0 - 0.05, y0 = P.yi0 - 0.05, nx = Math.ceil((P.xi1 - P.xi0 + 0.1) / cs), ny = Math.ceil((P.yi1 - P.yi0 + 0.1) / cs);
+    const cw = [], cc = [], X = k => x0 + ((k % nx) + 0.5) * cs, Y = k => y0 + (Math.floor(k / nx) + 0.5) * cs;
+    for (let k = 0; k < nx * ny; k++) { const x = X(k), y = Y(k);
+      cw.push(walks.filter(w => x >= w[0] - 0.02 && x <= w[1] + 0.02 && y >= w[2] - 0.02 && y <= w[3] + 0.02).map(w => w[4]));
+      cc.push(cols.filter(c => x > c[0] - R && x < c[1] + R && y > c[2] - R && y < c[3] + R)); }
+    const floor = (k, feet) => { let b = null; for (const z of cw[k]) if (z <= feet + 0.42 && (b === null || z > b)) b = z; return b; };
+    const ok = (k, z) => !cc[k].some(c => z + 1.75 > c[4] && z + 0.25 < c[5]) && !cw[k].some(s => s > z + 0.42 && s < z + 1.8);
+    const cell = (x, y) => { const i = Math.floor((x - x0) / cs), j = Math.floor((y - y0) / cs); return i < 0 || j < 0 || i >= nx || j >= ny ? -1 : j * nx + i; };
+    const [ex, ey] = P.toL(H.entry.x, H.entry.y), k0 = cell(ex, ey), z0 = k0 < 0 ? null : floor(k0, H.entry.z);
+    if (z0 === null) return { err: 'no floor at the entry' };
+    const seen = new Set([k0 + ':' + Math.round(z0 * 50)]), q = [[k0, z0]], at = [];
+    while (q.length) { const [k, z] = q.pop(); at.push([k, z]); const i = k % nx, j = Math.floor(k / nx);
+      for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= nx || jj >= ny) continue;
+        const kk = jj * nx + ii, zz = floor(kk, z); if (zz === null || zz < z - 0.45 || !ok(kk, zz)) continue;
+        const key = kk + ':' + Math.round(zz * 50); if (seen.has(key)) continue; seen.add(key); q.push([kk, zz]); } }
+    const unreached = P.rooms.filter(r => !at.some(([k, z]) => { const x = X(k), y = Y(k); return x > r.x0 && x < r.x1 && y > r.y0 && y < r.y1 && Math.abs(z - r.z0) < 0.06; })).map(r => r.id);
+    const badNodes = [];
+    H.graph.nodes.forEach((n, i) => { const [lx, ly] = P.toL(n.x, n.y), k = cell(lx, ly);
+      const near = k >= 0 && at.some(([kk, z]) => Math.abs(X(kk) - lx) < 0.16 && Math.abs(Y(kk) - ly) < 0.16 && Math.abs(z - n.z) < 0.06);
+      if (!near) badNodes.push({ i, room: n.room, at: [+lx.toFixed(2), +ly.toFixed(2), +n.z.toFixed(2)] }); });
+    const adj = H.graph.nodes.map(() => []); for (const [a, b] of H.graph.edges) { adj[a].push(b); adj[b].push(a); }
+    const gs = new Set([H.graph.entry]), gq = [H.graph.entry]; while (gq.length) { const a = gq.pop(); for (const b of adj[a]) if (!gs.has(b)) { gs.add(b); gq.push(b); } }
+    const offGraph = H.rooms.filter(r => !H.graph.nodes.some((n, i) => n.room === r.id && gs.has(i))).map(r => r.id);
+    return { cells: at.length, unreached, badNodes, offGraph };
+  },
   act(id) { return KERN.acts().find(a => a.id === id); },
   label(id) { const a = this.act(id); try { return a ? a.label() : 'no act'; } catch (e) { return 'ERR ' + e.message; } },
 };
@@ -134,7 +164,8 @@ with lib.browser() as b:
             cyc = J("window.__C")
             print('cycle', json.dumps(cyc), flush=True)
             if cyc:
-                ck(f'house {hid}: at most one program more (the terrain cut out under the house, once)', cyc['m1']['p'] <= base['p'] + 1, cyc)
+                # other systems (streamed tiles) make and drop programs meanwhile: compare within the cycle (exactly: ownPrograms below)
+                ck(f'house {hid}: at most one program more (the terrain cut out under the house, once)', cyc['m1']['p'] <= cyc['m0']['p'] + 1, cyc)
                 ck(f'house {hid}: unmount gives geometries and textures back', cyc['m2']['g'] <= cyc['m0']['g'] and cyc['m2']['t'] <= cyc['m0']['t'], cyc)
         E(MOUNT % hid)
         for _ in range(200):
@@ -148,6 +179,11 @@ with lib.browser() as b:
         stt = info['stats']
         ck(f'house {hid}: built in ≤ 400 ms (SwiftShader machine), ≤ 60 draw calls, ≤ 150 k triangles', stt['ms'] <= 400 and stt['draws'] <= 60 and stt['tris'] <= 150000, stt)
         ck(f'house {hid}: rooms, containers, doors', len(info['rooms']) >= 3 and info['cont'] >= 2 and info['doors'] >= 1, info)
+        # every room on foot from the front door (trapdoor open), every waypoint of the zombies where one can stand, the graph connected
+        rc = J("(() => { const H = __H; if (H.hatch) GAME.setDoorNow(H.hatch.key, true); const r = __Z.reach(H); if (H.hatch) GAME.setDoorNow(H.hatch.key, false); return r; })()")
+        print('reach', json.dumps(rc), flush=True)
+        ck(f'house {hid}: every room can be reached on foot from the entry', not rc.get('err') and not rc['unreached'], rc)
+        ck(f'house {hid}: the waypoints stand where one can stand, the graph reaches every room', not rc.get('err') and not rc['badNodes'] and not rc['offGraph'], rc)
         # pictures: the entry, then a view in every room (ground floor first)
         if want('shots'):
             E("(() => { const H = __H; GAME.P.mode = 'walk'; CAM3.want = true; __Z.stand(H.entry.x, H.entry.y, H.entry.z, H.entry.yaw); GAME.step(0.4); })()")
@@ -175,9 +211,9 @@ with lib.browser() as b:
             ck(f'house {hid}: walked from the entry into the Stube', r.get('inStube', {}).get('room') == r.get('stube'), r)
             shot(f'{hi + 1:02d}_{hid}_gang_stube')
             r = J("""(() => { const H = __H, P = H.plan, out = {}; if (!P.stair || P.nSt < 2) return { none: true };
-              const st = P.stair, cx = (st.x0 + st.x1) / 2, a = P.toW(cx, st.y0 - 0.6), b = P.toW(cx, st.y1 + 0.6);
+              const st = P.stair, cx = (st.x0 + st.x1) / 2, a = P.toW(cx, st.y0 - 0.6), b = P.toW(cx, st.y1 - 0.15), c = P.toW(st.side === 'R' ? st.x0 - 0.3 : st.x1 + 0.3, st.y1 - 0.2);
               __Z.stand(H.entry.x, H.entry.y, H.entry.z, H.entry.yaw);
-              out.foot = __Z.walkTo(a[0], a[1], 10); out.top = __Z.walkTo(b[0], b[1], 14); out.zTop = P.zF[1]; return out; })()""")
+              out.foot = __Z.walkTo(a[0], a[1], 10); out.step = __Z.walkTo(b[0], b[1], 14); out.top = __Z.walkTo(c[0], c[1], 4); out.zTop = P.zF[1]; return out; })()""")
             print('walk stairs', json.dumps(r), flush=True)
             if not r.get('none'):
                 ck(f'house {hid}: up the stairs to the upper floor', abs(r['top']['feet'] - r['zTop']) < 0.1, r)
@@ -190,6 +226,17 @@ with lib.browser() as b:
             if not r.get('none'):
                 ck(f'house {hid}: up the attic stair', abs(r['top']['feet'] - r['zA']) < 0.1, r)
                 shot(f'{hi + 1:02d}_{hid}_gang_boden')
+            # the way the zombies inside would take (H.route, inner doors open): from the entry to the attic (else the last room upstairs)
+            r = J("""(() => { const H = __H, P = H.plan, W = GAME.P, out = { steps: [] };
+              const goal = H.rooms.find(r => r.kind === 'boden') || H.rooms.filter(r => r.kind !== 'keller').slice(-1)[0];
+              const c = [0, 1].map(i => goal.poly.reduce((s, p) => s + p[i], 0) / 4); out.goal = goal.id;
+              for (const k of H.doorKeys) GAME.setDoorNow(k, true);
+              __Z.stand(H.entry.x, H.entry.y, H.entry.z, H.entry.yaw);
+              for (let i = 0; i < 30; i++) { const w = H.route(W.x, W.y, W.feet, c[0], c[1], goal.z0); const e = __Z.walkTo(w.x, w.y, 6); out.steps.push(e.room);
+                if (e.room === goal.id) break; }
+              out.at = H.roomAt(W.x, W.y, W.feet + 0.3); for (const k of H.doorKeys) GAME.setDoorNow(k, false); return out; })()""")
+            print('route', json.dumps(r), flush=True)
+            ck(f'house {hid}: along H.route from the entry to {r["goal"]}', r['at'] == r['goal'], r)
             r = J("""(() => { const H = __H, P = H.plan, out = {}; if (!P.hatch) return { none: true };
               const h = P.hatch, cx = (h.x0 + h.x1) / 2, kr = P.rooms.find(q => q.id === h.room.id), dd = H.doors.find(q => q.room === kr.id);
               __Z.stand(H.entry.x, H.entry.y, H.entry.z, H.entry.yaw);
@@ -221,6 +268,20 @@ with lib.browser() as b:
         own = J("__Z.ownPrograms(__H, window.__K0)")
         ck(f'house {hid}: its meshes use programs that were there before', not own, own)
         E("(() => { ZINNEN.unmount(__H); window.__H = null; GAME.step(0.1); return 1; })()")
+    # all enterable houses once: each mounts without error within the budget, every room on foot, the waypoints (≈ 2 min)
+    if want('sweep'):
+        t1 = time.time()
+        sw = json.loads(E("""(async () => { const bad = [], ids = ZINNEN.list().map(o => o.id); let n = 0, ms = 0, mx = 0, dr = 0, rooms = 0;
+          for (const id of ids) { let H = null; try { H = await ZINNEN.mount(id); } catch (e) { bad.push({ id, err: String(e).slice(0, 200) }); continue; }
+            if (!H) { bad.push({ id, err: 'no handle' }); continue; } n++; ms += H.stats.ms; mx = Math.max(mx, H.stats.ms); dr = Math.max(dr, H.stats.draws); rooms += H.rooms.length;
+            if (H.hatch) GAME.setDoorNow(H.hatch.key, true); const r = __Z.reach(H); if (H.hatch) GAME.setDoorNow(H.hatch.key, false);
+            if (r.err || r.unreached.length || r.badNodes.length || r.offGraph.length || H.stats.draws > 60 || H.stats.tris > 150000 || ZINNEN.err)
+              bad.push({ id, stats: { draws: H.stats.draws, tris: H.stats.tris }, err: ZINNEN.err || r.err || null, unreached: r.unreached, badNodes: r.badNodes.slice(0, 4), offGraph: r.offGraph });
+            ZINNEN.unmount(H); }
+          return JSON.stringify({ ids: ids.length, n, msAvg: Math.round(ms / Math.max(1, n)), msMax: Math.round(mx), drawsMax: dr, rooms, bad }); })()"""))
+        print('sweep', round(time.time() - t1), 's', json.dumps({k: sw[k] for k in ('ids', 'n', 'msAvg', 'msMax', 'drawsMax', 'rooms')}), 'bad', len(sw['bad']), flush=True)
+        for b in sw['bad'][:30]: print('  sweep', json.dumps(b), flush=True)
+        ck('all houses mount (≤ 60 draw calls, ≤ 150 k triangles), every room on foot, waypoints where one can stand', sw['n'] == sw['ids'] and not sw['bad'], {'n': sw['n'], 'bad': [b['id'] for b in sw['bad']]})
     left = J("{ cols: GAME.COL.filter(c => c[6] === 'zinnen' && c[4] > -50).length, walks: GAME.WALK.filter(w => w[4] > -50 && w[9] && ZINNEN.mounted().length === 0 && false).length, acts: KERN.acts().filter(a => /^zinnen:/.test(a.id)).length, doors: Object.keys(DOORS).filter(k => /^zinnen:/.test(k)).length, mounted: ZINNEN.mounted().length }")
     print('left over', json.dumps(left), flush=True)
     ck('nothing of the houses left after unmount', left['cols'] == 0 and left['acts'] == 0 and left['doors'] == 0 and left['mounted'] == 0, left)
