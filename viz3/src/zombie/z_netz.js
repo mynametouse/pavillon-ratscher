@@ -201,6 +201,9 @@ export const ZNETZ = (() => {
         cuts,
         e.wind > 0 ? 1 : 0,
         e.house || 0,
+        // (its kind and whether the firefighter still wears his helmet – V17m)
+        e.art && e.art !== 'normal' ? e.art : 0,
+        e.helm > 0 ? 1 : 0,
       ]);
     }
     return out;
@@ -209,11 +212,11 @@ export const ZNETZ = (() => {
   function puppets(list) {
     const seen = new Set();
     for (const r of list) {
-      const [id, key, x, y, z, hd, mode, sp, hp, cuts, wind, house] = r;
+      const [id, key, x, y, z, hd, mode, sp, hp, cuts, wind, house, art, helm] = r;
       seen.add(id);
       let e = Z.ents.find(q => q.id === id);
       if (!e) {
-        e = ZHORDE.ent(key, x, y, z, hd, { net: true, st: mode === 'turn' ? 'turn' : 'wander' });
+        e = ZHORDE.ent(key, x, y, z, hd, { net: true, st: mode === 'turn' ? 'turn' : 'wander', art: art || 'normal' });
         e.id = id;
         e.net = true;
         e.cutBits = 0;
@@ -227,6 +230,8 @@ export const ZNETZ = (() => {
       e.hp = hp;
       e.house = house || null;
       e.netT = performance.now();
+      // the host's firefighter lost his helmet: here too
+      if (helm === 0 && e.helm > 0) ZHORDE.helmetOff(e, 0, 0);
       if (wind && !e.netWind && e.F) {
         e.F.play(Math.random() < 0.5 ? 'push' : 'chop', 0.85);
         ZTON.attack(x, y);
