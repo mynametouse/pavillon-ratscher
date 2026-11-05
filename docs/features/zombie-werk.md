@@ -39,8 +39,17 @@ flicken.“ Auftrag wörtlich: `docs/plans/auftraege/zombie-werk.md`. Code: `viz
 
 ## Testen
 
-- `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8997 --serve zombie_werk` (Abschnitte `zombie_werk:bank,molotow,reload`),
-  bei GitHub über `viz3/extra/zombie-werk/tests.txt`. Bilder in `out/zombie_werk/`.
+- `bash tools/browser_lock.sh python3 viz3/test/run.py --port 8997 --serve zombie_werk` (Abschnitte `zombie_werk:bank,molotow,reload`,
+  ~5 min), bei GitHub über `viz3/extra/zombie-werk/tests.txt`. Bilder in `out/zombie_werk/`.
+  - `bank`: Knopf an der Werkbank im Garten, Fenster (Esc, Handy-Größe), Aufnahmen geladen, Nagelbrett und Molotow bauen (Vorrat weg,
+    Ergebnis in Hand/Rucksack, Spielzeit vergangen), Nagelbrett in der Ich-Sicht (Bilder, Schlag, Schaden ~31, Verschleiß 2–5), Flicken,
+    Schärfen (×1,3 für 25 Treffer, ein Treffer verbraucht), Anzeige „scharf“, Gedanke bei Verschleiß, keine neuen Programme, Kellerwerkbank
+    in einem Dorfhaus (erst die Schublade, dann basteln).
+  - `molotow`: F (kein Vollbild), linke Hand mit brennender Flasche, Flug, Zerspringen an zwei gehaltenen Zombies, Feuer mit geliehenem Licht,
+    beide brennen, Schaden über Zeit, einer stirbt, Licht zurück, Nachbrennen, Feuer verletzt den Spieler, Feuer des Mitspielers (Ereignis)
+    und das eigene geht hinaus, Wurf in der Schulterkamera, Programme: beim Werfen und Brennen keins, vorab zwei (siehe oben).
+  - `reload`: nach dem Neuladen Nagelbrett auf der Werkbank, scharfe Axt, Molotows.
+- CI `feat.yml`: grün ab Lauf 42090967556 (44/44, mit `feat/zombie` 00e4a83e zusammengeführt).
 - Zur Laufzeit: `ZWERK.info()`, `ZWERK.openAt(ZWERK.gardenBench())`, `ZWERK.start(ZWERK.rows[i])`, `ZWERK.sharp('axt')`.
 
 ## Für den Lead (Eingriffe in gemeinsame Dateien, alle mit `// feat/zombie-werk` markiert)
