@@ -1,0 +1,2 @@
+# feat/zombie-ziele: objectives with way markers, the ending (one test name per line, as for viz3/test/run.py)
+zombie_ziele
