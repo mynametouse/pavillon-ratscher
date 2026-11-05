@@ -44,6 +44,8 @@ with lib.browser() as b:
     st = J("({ H: !!ZHAUS.H, bid: ZHAUS.bid, inside: ZHAUS.H ? ZHAUS.H.inside(GAME.P.x, GAME.P.y, GAME.P.feet + 1) : false, rooms: ZHAUS.H ? ZHAUS.H.rooms.length : 0, cont: ZHAUS.H ? ZHAUS.H.containers.length : 0, ops: ZHAUS.H ? ZHAUS.H.openings.length : 0 })")
     ck('in the house (interior mounted, the player inside)', st['H'] and st['inside'] and st['rooms'] >= 3, str(st))
     pic('02_drinnen')
+    mi = mem()
+    ck('no new shader programs from the house (mounted, drawn)', mi['p'] <= m0['p'], f"{m0} -> {mi}")
     # search a container
     sr = J("""(() => { const H = ZHAUS.H, c = H.containers[0]; if (!c) return null; const before = JSON.stringify(ZSTATE.sup); const r1 = ZHAUS.search(c), r2 = ZHAUS.search(c);
       return { kind: c.kind, t1: r1.text, t2: r2.text, before, after: JSON.stringify(ZSTATE.sup), looted: ZSTATE.house(ZHAUS.bid).looted.length }; })()""")
@@ -111,7 +113,7 @@ with lib.browser() as b:
     m1 = mem()
     st = J("({ H: !!ZHAUS.H, mounted: ZINNEN.mounted().length, out: !document.getElementById('zdead') || document.getElementById('zdead').hidden })")
     ck('out again: interior away', not st['H'] and st['mounted'] == 0, str(st))
-    ck('no new shader programs from the house', m1['p'] <= m0['p'] + 1, f"{m0} -> {m1}")
+    print('memory before, inside, after', m0, mi, m1, flush=True)  # (the night's zombies and blood add their own)
     pic('06_draussen')
     terr = pg.evaluate("(window.LOADLOG && LOADLOG.errs || []).filter(e => /Takt (zombie|zinnen)/.test(e)).map(e => e.slice(0, 300))")
     ck('no zombie tick broke', not terr, ' | '.join(terr[:2]))

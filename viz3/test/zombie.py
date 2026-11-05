@@ -75,7 +75,7 @@ with lib.browser() as b:
     # the chainsaw: fuel, start, cut
     E("ZSTATE.hp = 100; PLAY.give(ZWAFFE.things.motorsaege); ZWAFFE.state('motorsaege').fuel = 0.5")
     E("""(() => { const e = ZSTATE.ents.find(q => q.F && !q.dead) || ZHORDE.ent(ZFIG.people()[0], GAME.P.x + 1, GAME.P.y + 1, GAME.P.feet, 0);
-      window.__saw = e.id; })()""")
+      e.hp = 400; window.__saw = e.id; })()""")  # (tough enough that the saw works a while – it cuts by chance)
     t0 = time.time()
     while time.time() - t0 < 30 and not E("!!(ZSTATE.ents.find(e => e.id === __saw) || {}).F"):
         steps(0.3); time.sleep(0.5)
