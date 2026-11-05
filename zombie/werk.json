@@ -1,0 +1,52 @@
+{
+ "saege": {
+  "files": [
+   "werk/saege_1.mp3",
+   "werk/saege_2.mp3",
+   "werk/saege_3.mp3"
+  ],
+  "vol": 0.55
+ },
+ "hammer": {
+  "files": [
+   "werk/hammer_1.mp3",
+   "werk/hammer_2.mp3"
+  ],
+  "vol": 0.85
+ },
+ "metall": {
+  "files": [
+   "werk/metall_1.mp3",
+   "werk/metall_2.mp3"
+  ],
+  "vol": 0.6
+ },
+ "stein": {
+  "files": [
+   "werk/stein_1.mp3",
+   "werk/stein_2.mp3"
+  ],
+  "vol": 0.45
+ },
+ "glas": {
+  "files": [
+   "werk/glas_1.mp3",
+   "werk/glas_2.mp3"
+  ],
+  "vol": 1.0
+ },
+ "feuer": {
+  "files": [
+   "werk/feuer_1.mp3",
+   "werk/feuer_2.mp3",
+   "werk/feuer_3.mp3"
+  ],
+  "vol": 1.0
+ },
+ "zuenden": {
+  "files": [
+   "werk/zuenden_1.mp3"
+  ],
+  "vol": 0.35
+ }
+}
