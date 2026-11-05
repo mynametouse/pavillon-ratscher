@@ -22,8 +22,16 @@ UA = 'pavillon-ratscher-wetter/1.0 (https://github.com/mynametouse/pavillon-rats
 # kind: (Commons file, start s, end s, loop crossfade s or None for a one-shot, high-pass Hz, target RMS dBFS, volume in ton.json)
 PICKS = {
     'regen': [('Rain_(1).ogg', 14.0, 35.5, 1.5, 180, -21, 1.0)],
+    # heavy rain: a German summer downpour (the drops on a hard surface ring at 0.7–1.5 kHz), the gusts on the microphone filtered out
+    'starkregen': [('Heavy_Rain_in_Summer.ogg', 0.5, 22.2, 1.5, 220, -20, 1.0)],
     'dach': [('Rain_on_a_veranda_and_t.ogg', 0.3, 13.0, 1.0, 60, -21, 1.0)],
-    'donner': [('Thunder_and_rain_on_a_v.ogg', 3.9, 27.0, None, 25, -19, 1.0)],
+    # wind: a storm of 25 m/s in a Swedish pine forest – the roar with its own gusts (quieter winds: the same through a low-pass)
+    'wind': [('Wind_in_Swedish_pine_forest_at_25_mps.ogg', 4.5, 60.0, 2.5, 60, -21, 1.0)],
+    'donner': [
+        ('Thunder_and_rain_on_a_v.ogg', 3.9, 27.0, None, 25, -19, 1.0),
+        ('Booming_Thunder_2023-10-09_2-07-34_am.ogg', 10.2, 35.0, None, 25, -18, 1.0),
+        ('Rhumphries_-_rbh-thunder-storm.ogg', 3.8, 16.5, None, 25, -18, 1.0),
+    ],
 }
 
 

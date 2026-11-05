@@ -75,7 +75,7 @@ export const WXFALL = (() => {
         p = o + mod(p - o, uBox);
         vec3 e = abs(p - c0) / (0.5 * uBox);
         float dc = length(p - uCam);
-        float a = (1.0 - smoothstep(0.7, 1.0, max(e.x, max(e.y, e.z)))) * smoothstep(uHole, uHole + (snow > 0.5 ? 1.5 : 1.2), dc);
+        float a = (1.0 - smoothstep(0.7, 1.0, max(e.x, max(e.y, e.z)))) * smoothstep(uHole, uHole + (snow > 0.5 ? 1.5 : 0.6), dc);
         vec4 vp = viewMatrix * vec4(p, 1.0);
         float px = max(-vp.z, 0.05) * uPx;
         vec3 q;
@@ -88,8 +88,9 @@ export const WXFALL = (() => {
           vec3 vv = mat3(viewMatrix) * vel; float L = length(vv);
           vec3 ax = L > 1e-4 ? vv / L : vec3(0.0, -1.0, 0.0), sd = cross(ax, normalize(vp.xyz)); float sl = length(sd);
           sd = sl > 1e-4 ? sd / sl : vec3(1.0, 0.0, 0.0);
+          // far streaks thinner than a pixel are drawn one pixel wide and fainter, but never vanish (the rain's depth)
           float w = max(uRain.z, px * 1.0);
-          a *= min(1.0, uRain.z / w * 1.6);
+          a *= clamp(uRain.z / w * 2.5, 0.4, 1.0);
           q = vp.xyz - ax * (L * uRain.y) * aC.y + sd * w * aC.x;
         }
         vC = aC; vA = a; vS = snow;
@@ -150,12 +151,12 @@ export const WXFALL = (() => {
     if (!mesh.visible) return false;
     U.uRain.value.set(
       p.drizzle ? 3 : clamp(5 + 1.2 * Math.log2(1 + rain), 5, 9),
-      0.022,
+      0.026,
       p.drizzle ? 0.004 : 0.008,
       kS / Math.max(1e-3, kR + kS)
     );
     U.uSnow.value.set(p.graupel ? 2.4 : 1.0, snow > 1.5 ? 0.022 : 0.016, 0.3, 0);
-    U.uAR.value = p.drizzle ? 0.24 : 0.38;
+    U.uAR.value = p.drizzle ? 0.26 : 0.42;
     // gusts: the wind swings between its mean and the gust speed (slow random), near the ground ~0.8 of the 10-m wind
     S.gustT -= dt;
     if (S.gustT <= 0) {
