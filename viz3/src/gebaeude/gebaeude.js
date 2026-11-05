@@ -12,8 +12,6 @@ import * as THREE from 'three';
 import { BASE, COARSE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { LM, markDirty, whenLoaded } from '../core/assets.js';
-import { COL } from '../core/geo.js';
-import { rebuildGrids } from '../game/walkable.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
 import { WELT } from '../welt/welt.js';
@@ -683,7 +681,7 @@ export const GEB = (() => {
     const wm = VILLAGE.ready && RATSCHER.bld[0] && RATSCHER.bld[0].material,
       rm = VILLAGE.ready && VILLAGE.meshes[0] && VILLAGE.meshes[0].material;
     if (!wm || !rm) throw new Error('village materials missing');
-    // collisions now (world/worldcol.js builds its grid after this module): the wall feet, boxes for the garden's walk grid within 95 m
+    // collisions now (world/worldcol.js builds its grid after this module): the wall feet
     const segs = segsOf(data.b),
       W0 = RATSCHER.walls || new Float32Array(0),
       W1 = new Float32Array(W0.length + segs.length);
@@ -691,28 +689,8 @@ export const GEB = (() => {
     W1.set(segs, W0.length);
     RATSCHER.walls = W1;
     S.nSeg = segs.length / 4;
-    let nCol = 0;
-    for (const b of data.b) {
-      if (Math.hypot(b.cx - 2, b.cy - 2) > 95) continue;
-      const an = ((90 - (b.az || 0)) * Math.PI) / 180,
-        c = Math.cos(an),
-        s = Math.sin(an);
-      let x0 = 1e9,
-        x1 = -1e9,
-        y0 = 1e9,
-        y1 = -1e9;
-      for (let k = 0; k < b.f.length; k += 2) {
-        const lx = (b.f[k] - b.cx) * c + (b.f[k + 1] - b.cy) * s,
-          ly = -(b.f[k] - b.cx) * s + (b.f[k + 1] - b.cy) * c;
-        x0 = Math.min(x0, lx);
-        x1 = Math.max(x1, lx);
-        y0 = Math.min(y0, ly);
-        y1 = Math.max(y1, ly);
-      }
-      COL.push([x0, x1, y0, y1, -2, Math.max(4, b.h + 1), 'house', null, null, { cx: b.cx, cy: b.cy, c, s }]);
-      nCol++;
-    }
-    if (nCol) rebuildGrids();
+    // (no boxes for the garden's walk grid: no new building reaches into it – x −50…50, y −55…55 – the walker meets them through
+    // KERN.pushOut like the village's)
     // trees of the canopy model that were these buildings' roofs (no OSM footprint to keep them out when the trees were found): hidden
     hideTrees(data.trees || []);
     S.n = data.b.length;

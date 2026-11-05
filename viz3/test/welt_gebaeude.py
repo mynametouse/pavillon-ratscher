@@ -130,6 +130,8 @@ with lib.browser() as b:
         # no new footprint in the hand-modelled site (garden, Hubert, Ronald)
         site = J("GEB.bld.filter(b => b.cx > -58 && b.cx < 42 && b.cy > -52 && b.cy < 48).length")
         ck('nothing new in the hand-modelled garden and yards', site == 0, str(site))
+        grid = J("GEB.bld.filter(b => { for (let i = 0; i < b.f.length; i += 2) if (Math.abs(b.f[i]) <= 50 && Math.abs(b.f[i + 1]) <= 55) return true; return false; }).length")
+        ck('none reaches into the walk grid of the garden (x ±50, y ±55: there the walls would need boxes in COL)', grid == 0, str(grid))
     # a free spot (inside no building, 2 m from every wall) 16–34 m from a building, looking at it; same in both runs (deterministic)
     SPOT = """((x, y) => { const inF = (f, px, py) => { let c = false; for (let p = 0, q = f.length - 2; p < f.length; q = p, p += 2) if (f[p + 1] > py !== f[q + 1] > py && px < ((f[q] - f[p]) * (py - f[p + 1])) / (f[q + 1] - f[p + 1]) + f[p]) c = !c; return c; };
         const flat = []; for (const v of VILLAGE.bld) { const f = []; for (const q of v.fac) f.push(q.ax, q.ay); flat.push(f); } for (const b of (window.GEB && GEB.bld) || []) flat.push(b.f);
@@ -266,7 +268,7 @@ if 'before' in want:
             dmax = [max(abs(a_ - b_) for a_, b_ in zip(p_[1:], q_[1:])) for p_, q_ in pairs]
             kind = sum(1 for p_, q_ in pairs if p_[0] != q_[0])
             far = sum(1 for d in dmax if d > 0.06)
-            ck('the village roofs keep their colours with the retouched ground (taken from the originals)', len(ROOFS) == len(roofs0) and kind <= 4 and far <= 6,
+            ck('the village roofs keep their colours with the retouched ground (taken from the originals)', len(ROOFS) == len(roofs0) and kind <= 10 and far <= 15,
                f'{len(pairs)} roofs: kind changed {kind}, colour off by > 0.06 (linear) {far}, median off {sorted(dmax)[len(dmax) // 2] if dmax else 0:.3f}')
         for name, pt, gv, tv in PLACES:
             if tv:

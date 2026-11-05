@@ -186,9 +186,16 @@ def raster(img, polys):
     return m
 
 
-def shadows(a, mask, res, reach=10.0, k=0.62):
+# where the buildings' shadows fall in the photo (flight 07.04.2024, late morning): north-north-west, about 1 m per metre of height
+# (measured by feat/welt-dinge on the same photo; the houses' shadows on the streets north of them)
+SHADOW = (-0.383, 0.924)
+USE_SHADOW_ZONE = False
+
+
+def shadows(a, mask, res, reach=10.0, k=0.62, zone=None, kz=0.8):
     """the buildings' shadows in the photo (the 3D buildings cast their own now, after the sun of the game): pixels darker than k × the
-    ground around, connected to a building's mask, up to `reach` metres from it – grown into step by step"""
+    ground around, connected to a building's mask, up to `reach` metres from it – grown into step by step; and inside `zone` (where a
+    building's shadow can fall: its footprint swept along SHADOW × its height) every pixel darker than kz × the ground around"""
     import cv2
     L = cv2.GaussianBlur(cv2.cvtColor(a, cv2.COLOR_RGB2GRAY).astype(np.float32), (0, 0), 1.0)
     n, B = a.shape[0], 128
@@ -204,6 +211,10 @@ def shadows(a, mask, res, reach=10.0, k=0.62):
     dark = (L < k * reff).astype(np.uint8) * 255
     m = mask.copy()
     k3 = np.ones((3, 3), np.uint8)
+    if zone is not None:
+        dz = ((L < kz * reff) & (zone > 0)).astype(np.uint8) * 255
+        dz = cv2.morphologyEx(dz, cv2.MORPH_OPEN, k3)   # no single dark pixels
+        m = m | cv2.dilate(dz, k3)
     for _ in range(max(1, int(reach / res))):
         m2 = cv2.dilate(m, k3) & (dark | m)
         if np.array_equal(m2, m):
@@ -290,16 +301,27 @@ def main():
     blds = buildings(a.ethos)
     print('buildings', len(blds), {s: sum(1 for b in blds if b[2] == s) for s in ('osm', 'neu', 'site', 'rest')}, flush=True)
     ln, est = leans(near, blds)
+    own = {i: (dx, dy) for i, dx, dy, c in est if c > 2.0}
+    from shapely.ops import unary_union
     polys = []
-    for (p, h, src), (dx, dy) in zip(blds, ln):
-        grow = 0.75 if src != 'rest' else 0.4
-        polys.append(sweep(p.buffer(grow, join_style=2), dx, dy))
+    for i, ((p, h, src), (dx, dy)) in enumerate(zip(blds, ln)):
+        # the roof's overhang and a margin growing with the height; swept along the local lean and, where it was measured, its own
+        grow = (0.6 + 0.05 * min(h, 20)) if src != 'rest' else 0.4
+        pg = p.buffer(grow, join_style=2)
+        m = sweep(pg, dx, dy)
+        if i in own:
+            m = unary_union([m, sweep(pg, *own[i])])
+        polys.append(m)
+    # where their shadows fall (not for the slivers: their buildings are the OSM ones)
+    zones = [sweep(p, SHADOW[0] * h * 1.15, SHADOW[1] * h * 1.15) for p, h, src in blds if src != 'rest']
     feat = masks_of_features()
     for p, pad, src in feat:
         polys.append(p.buffer(pad))
     for im, outn, seed in ((near, 'ortho_near_r.jpg', 1), (inner, 'ortho_inner_r.jpg', 2)):
         m0 = raster(im, polys)
-        m = shadows(im.a, m0, im.res)
+        # the shadows of the houses in the photo stay: the village's buildings cast none of their own (castShadow off in world/ratscher.js,
+        # world/village.js) – the photo's shadows ground them (set USE_SHADOW_ZONE to take them out where they fall, SHADOW)
+        m = shadows(im.a, m0, im.res, zone=raster(im, zones) if USE_SHADOW_ZONE else None)
         res = fill(im.a, m, seed)
         Image.fromarray(res).save(os.path.join(a.out, outn), quality=88, optimize=True)
         if outn == 'ortho_near_r.jpg':

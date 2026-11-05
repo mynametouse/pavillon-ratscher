@@ -12,8 +12,8 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   flach geneigt), Dachfarbe aus dem Luftbild 2024. Aussehen wie das Dorf: dieselben Fassaden- und Dach-Shader von `world/village.js`
   (Schuppen aus Brettern, Garagen verputzt oder Ziegel mit hellem Tor, Scheunen mit Bretterwand auf Sockel, Hallen aus Blech, Häuser im
   Dorfstil, Schornsteine) – keine neuen Shader-Programme.
-- **Fest:** ihre Wände stehen in den Kollisionen des Quadrats (`RATSCHER.walls` → `WCOL`, Fußgänger und Fahrzeuge), in Gartennähe
-  zusätzlich als Kasten im Lauf-Raster.
+- **Fest:** ihre Wände stehen in den Kollisionen des Quadrats (`RATSCHER.walls` → `WCOL`, Fußgänger über `KERN.pushOut`, Fahrzeuge); keins
+  reicht in das Lauf-Raster des Gartens (x −50…50, y −55…55 – der Test prüft das).
 - **Keine Doppelten:** ein ETHOS-Gebäude, das zu mehr als der Hälfte unter einem OSM-Gebäude liegt, ist schon da; ragt ein Teil heraus
   (z. B. ein angebauter Schuppen), wird nur der Teil gebaut – nicht aber schmale Streifen, die nur aus einem etwas anderen Umriss kommen
   (der Rest muss mindestens 2 m breit und 8 m² groß sein). Im handmodellierten Garten mit Huberts und Ronalds Höfen (x −58…42,
@@ -33,7 +33,11 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   (`ortho_near` 4096² über 920 m, `ortho_near_lq`, `ortho_inner` 2048² über 2,4 km) jedes Dach, wo ein Gebäude in 3D steht – die 337 OSM-
   Gebäude, die neuen, die handmodellierten im Garten und auf den Höfen –, samt Dachüberstand und der Neigung des Luftbilds (kein echtes
   Orthofoto: ein Dach liegt um Höhe × Abstand / Flughöhe vom Bildmittelpunkt weg versetzt; je Gebäude am Bild gemessen, mit den Nachbarn
-  geglättet) und füllt die Stelle mit dem hellen Boden der Umgebung (Push-Pull-Füllung, Korn der Umgebung, weicher Rand). Neue Dateien
+  geglättet, dazu ein mit der Höhe wachsender Rand) und füllt die Stelle mit dem hellen Boden der Umgebung (Push-Pull-Füllung, Korn der
+  Umgebung, weicher Rand). Die **Schatten der Häuser im Luftbild bleiben**: die Häuser des Dorfs werfen keine eigenen (`castShadow` aus in
+  `world/ratscher.js`/`village.js`, die neuen ebenso) – ohne die Schatten des Fotos stünden sie wie aufgesetzt. Wer sie doch entfernen will:
+  `USE_SHADOW_ZONE = True` in `retusche.py` (wo ein Schatten beim Flug am 07.04.2024 hinfiel – Nordnordwest, etwa 1 m je Meter Höhe –,
+  wird das Dunkle mit gefüllt; ausprobiert, sieht aus der Luft sauberer aus). Neue Dateien
   `ortho_near_r.jpg`, `ortho_near_r_lq.jpg`, `ortho_inner_r.jpg`; die Originale bleiben, `?bodenalt` zeigt sie (Schalter in
   `gebaeude/geb_dach.js`, vor `world/ratscher.js`). Die Dachfarben des Dorfs (`world/village.js` nahm sie aus dem Bodenbild) kommen jetzt
   aus 1024²-Kopien der Originale (`ortho_near_dach.jpg`, `ortho_inner_dach.jpg`). Das Bodenbild ist dasselbe Luftbild wie der DOP 2024
@@ -108,7 +112,6 @@ den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. 
 
 ## Offen
 
-- Schatten der Häuser im Luftbild bleiben (die 3D-Häuser werfen ihre eigenen) – nur angrenzende sehr dunkle Flächen werden mit entfernt.
 - Gebäude abseits der befahrenen Straßen jenseits des Quadrats (nur Schleusingen, Veßra und 260 m beiderseits der Straßen von
   `welt/fahrt.js` sind dabei); Suhl (noch nicht in der App).
 - Zäune, Hecken und Holzstapel von `world/village_near.js` kennen die neuen Gebäude nicht (`freeAt` prüft nur `VILLAGE.bld`) – ein Stapel
@@ -117,7 +120,7 @@ den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. 
   „nicht verfügbar“).
 - Carports (offen, Pfosten) sind von Schuppen nicht zu unterscheiden (ETHOS hat keine Gebäudefunktion; das LoD2 hat sie) – sie stehen als
   kleine geschlossene Bauten.
-- Die Schatten der Häuser im Luftbild der Kacheln bleiben.
+- Die Schatten der Häuser im Luftbild bleiben (Ratscher und Kacheln; siehe oben) – richtig wäre, wenn alle Häuser eigene Schatten würfen.
 
 ## Für den Lead
 
