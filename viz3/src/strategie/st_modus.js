@@ -248,7 +248,7 @@ export const STRAT = (() => {
         .filter(j => j.place === pid && (!j.show || j.show()))
         .sort(ORD),
     // what stops a job before it starts (or while it runs): null, or a refusal { rule, text, why, src }
-    check(def, who, t = now()) {
+    check(def, who, t = now(), jb = null) {
       const J = typeof def === 'string' ? REG.job[def] : def;
       if (!J) return { no: true, text: 'Unbekannter Auftrag' };
       const n = who.length;
@@ -264,6 +264,15 @@ export const STRAT = (() => {
           return { no: true, text: `${pd.name} kann das noch nicht (${D.SKILL[J.skill]} ${J.min} nötig).` };
         void p;
       }
+      // a neighbour who has helped a lot wants something back first (favours: STRAT.favour)
+      for (const id of who)
+        if (!isOwn(id) && (S.favours[id] ?? 0) <= -3)
+          return {
+            no: true,
+            text: `${PD(id).name} hat schon viel geholfen – erst etwas für ihn tun.`,
+            why: 'Nachbarschaftshilfe auf dem Dorf lebt vom Geben und Nehmen: Holz, Diesel, ein Brett, eine helfende Hand.',
+            src: 'Ihre Gefallen (♥ in der Liste)',
+          };
       // a course: everyone needs it, or one of the team (certOne: the one who fells; the second person helps and watches)
       if (J.cert) {
         const has = who.filter(w => S.people[w].certs.includes(J.cert));
@@ -275,7 +284,7 @@ export const STRAT = (() => {
       const r = C.rule(WL.dateOf(t), m, { loud: !!J.loud, where: J.where, saw: !!J.saw, sun: WL.sun(t) });
       if (r) return refuse(r);
       if (J.can) {
-        const q = J.can({ t, day, m, who, wx: WL.wx(t), S, STRAT });
+        const q = J.can({ t, day, m, date: WL.dateOf(t), who, wx: WL.wx(t), S, STRAT, job: jb });
         if (q) return typeof q === 'string' ? refuse(q) : q;
       }
       return null;
@@ -298,6 +307,7 @@ export const STRAT = (() => {
         t1: null,
         d: {},
       };
+      if (J.init) J.init(j, ctxOf(now(), j));
       j.dur = typeof J.dur === 'function' ? J.dur(j, ctxOf(now(), j)) : J.dur || 60;
       S.jobs.push(j);
       for (const id of who) {
@@ -310,7 +320,6 @@ export const STRAT = (() => {
         send(id, spotOf(j, id), { place: j.place });
         if (!isOwn(id)) favour(id, -(J.favour ?? 1), J.label);
       }
-      if (J.init) J.init(j, ctxOf(now(), j));
       emit('auftrag', { id: j.id, def, who, place: j.place, state: 'neu' });
       note(`${who.map(w => PD(w).name).join(' und ')}: ${J.label}`, { kind: 'auftrag' });
       dirty();
@@ -483,6 +492,17 @@ export const STRAT = (() => {
       );
       return;
     }
+    // working hours of your people on site (8–19 h; a job may say otherwise: hours [from, to] or anytime) – the neighbours keep theirs
+    const mm = WL.minOf(t),
+      hrs = J.hours || D.PRESENCE.work;
+    if (!J.anytime && j.who.some(isOwn) && (mm < hrs[0] || mm >= hrs[1])) {
+      setWait(
+        j,
+        null,
+        `Feierabend – gearbeitet wird von ${Math.floor(hrs[0] / 60)} bis ${Math.floor(hrs[1] / 60)} Uhr`
+      );
+      return;
+    }
     const playing = j.who.find(id => WL.playing(id) && P.mode === 'walk' && !S.on);
     if (playing) {
       setWait(j, null, `${PD(playing).name} spielst du gerade selbst`);
@@ -514,7 +534,7 @@ export const STRAT = (() => {
       }
       return;
     }
-    const q = job.check(J, j.who, t);
+    const q = job.check(J, j.who, t, j);
     if (q) {
       setWait(j, q.rule || null, q.text);
       return;
@@ -969,6 +989,7 @@ export const STRAT = (() => {
       }
     }
     if (DN.active) DN.update(true);
+    if (STRAT.ui) STRAT.ui.refresh();
     dirty();
     return WL.day(CLOCK.t, S.plan);
   }

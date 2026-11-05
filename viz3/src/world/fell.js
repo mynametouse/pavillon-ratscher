@@ -3010,6 +3010,95 @@ export const FELL = (() => {
       markDirty(true);
     }
   };
+  // feat/strategie: the strategy mode („Ratscher von oben“, strategie/st_holz.js) has a marked tree felled and worked up by the people it
+  // sends – the same record, the same lying stem and the same measured logs as by hand (HOLZ adopts them), done the professional way:
+  // the notch 1/4 Ø at 50°, sapwood cuts, the bore cut with hinge and holding band, the wedge, two calls; delimbed, butt trimmed, the top
+  // at 14 cm, bucked into 4,10 m (a 2,60 m rest) for the band sawmill, measured after Huber. o.q (0–1): how well (their skill) – it decides
+  // how straight it falls; o.who: who did it (the forest book). Returns { id, n, logs, vol, stars } or null (not marked, in work by hand).
+  S.simFell = (id, o = {}) => {
+    if (!S.ready) return null;
+    const t = FOREST.byId(id);
+    if (!t || !S.marked.includes(t) || S.job === id) return null;
+    let rec = S.trees[id];
+    if (rec && rec.st !== 'plan') return null;
+    rec = S.trees[id] = rec || rec0(t);
+    const q = clamp(o.q ?? 0.9, 0, 1);
+    rec.cut = { sole: true, roof: true, splint: true, back: true, wedge: true, band: true };
+    rec.q = { chord: 0.8 + 0.2 * q };
+    rec.calls = 2;
+    if (o.who) rec.who = o.who;
+    const out = outcome(rec);
+    rec.out = out;
+    rec.pose = { dev: out.dev, th: landing(t, rec.az, out.dev), dx: out.slide ? -0.6 : 0.35, dy: -rec.p.hS * 0.85 };
+    const G = geomOf(t, rec.p);
+    rec.delimb = delimbSecs(rec).n;
+    rec.trim = rec.p.hS + G.d * G.tA + 0.06;
+    rec.top = zopfY(t);
+    const L = rec.top - rec.trim,
+      Ls = [];
+    let rest = L;
+    while (rest >= 4.1 - 1e-6) {
+      Ls.push(4.1);
+      rest -= 4.1;
+    }
+    if (rest >= 2.6) Ls.push(2.6);
+    rec.plan = Ls;
+    rec.cuts = [];
+    let y = rec.trim;
+    for (const l of Ls) {
+      y += l;
+      if (y < rec.top - 0.05) rec.cuts.push(+y.toFixed(3));
+    }
+    rec.cutDone = rec.cuts.length;
+    rec.st = 'measure';
+    rec.t0 = CLOCK.t;
+    restore(rec);
+    const cuts = [rec.trim, ...rec.cuts, rec.top],
+      ids = [];
+    for (let i = 0; i < cuts.length - 1; i++) {
+      const y0 = cuts[i],
+        y1 = cuts[i + 1],
+        Lg = y1 - y0,
+        dm = Math.floor(2 * FOREST.trunkR(t, (y0 + y1) / 2) * 100),
+        vol = (Math.PI / 4) * (dm / 100) ** 2 * Lg;
+      const qq = i === 0 && out.split ? 'C' : i === 0 ? 'A' : dm >= 25 ? 'B' : 'C';
+      const lid = 'L' + ++S.n;
+      ids.push(lid);
+      S.logs.push({
+        id: lid,
+        tid: t.id,
+        sp: t.sp,
+        i,
+        y0,
+        y1,
+        L: +Lg.toFixed(2),
+        d0: Math.round(2 * FOREST.trunkR(t, y0) * 100),
+        d1: Math.round(2 * FOREST.trunkR(t, y1) * 100),
+        dm,
+        vol: +vol.toFixed(3),
+        q: qq,
+        where: 'wald',
+        at: logWorld(rec, y0, y1),
+      });
+    }
+    rec.st = 'done';
+    rec.t1 = CLOCK.t;
+    stars(rec);
+    buildMarks();
+    changed();
+    KERN.emit('fell', { id: t.id, by: 'strategie' });
+    const V0 = S.logs.filter(l => l.tid === t.id).reduce((s2, l) => s2 + l.vol, 0);
+    return {
+      id: t.id,
+      sp: t.sp,
+      h: t.h,
+      n: ids.length,
+      logs: ids,
+      vol: +V0.toFixed(3),
+      stars: rec.stars,
+      dev: out.dev,
+    };
+  };
   // V16h: a felled stem near (x, y) that is not worked up yet – no logs for the fork or the winch until it is measured: what is left to do
   const TODO = {
     down: 'entasten, ablängen, vermessen',

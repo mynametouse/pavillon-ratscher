@@ -40,7 +40,9 @@ export const STWELT = (() => {
   const WXC = {};
   // the weather at game time t: { cloud 0..1, rain mm/h, wind km/h, storm, src } – the live one of feat/wetter (window.WETTER.at(t)),
   // else one drawn per day from the climate (the same day always gives the same weather)
+  W.force = null; // tests: a fixed weather { cloud, rain, wind, storm, src }
   W.wx = t => {
+    if (W.force) return W.force;
     const L = window.WETTER;
     if (L && typeof L.at === 'function')
       try {

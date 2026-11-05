@@ -6,11 +6,11 @@
 # advances and changes the world (the lawn is short in garden/grass.js, petrol left the mower's tank), a quiet-hours refusal on a Sunday
 # with its reason and source („Warum?“), Euro booked, the state after a reload, the normal walk afterwards; no new shader program, no
 # page error. Pictures in out/strategie/ (from above, close up).
-#   python3 viz3/test/strategie.py 9002 [sections]     sections: start,leute,auftrag,regel,reload,welt (default all)
+#   python3 viz3/test/strategie.py 9002 [sections]     sections: start,leute,auftrag,regel,holz,reload,welt (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'start,leute,auftrag,regel,reload,welt').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'start,leute,auftrag,regel,holz,reload,welt').split(','))
 ck = lib.Checks('strategie')
 OUT = lib.out('strategie')
 with lib.browser() as b:
@@ -29,7 +29,8 @@ with lib.browser() as b:
     steps(1.0)
     E("GAME.shot()")
     p0 = progs()
-    # a Saturday morning in November: your people are in the garden, the neighbours too
+    # a Saturday morning in November: your people are in the garden, the neighbours too; dry weather (the live or the climate's could rain)
+    E("STRAT.W.force = { cloud: 0.3, rain: 0, wind: 12, storm: false, src: 'Test' }")
     day = J("STRAT.setDate('2026-11-07', 9 * 60 + 30)")
     steps(0.5)
     if 'start' in want:
@@ -40,7 +41,8 @@ with lib.browser() as b:
         ck('time controls and the overlay are there, the building toolbar of the plan view is hidden', st['time'] and st['svg'] > 3 and st['sitebar'] == 'none', str(st))
         txt = E("document.getElementById('sthud').textContent")
         ck('Euro with the start capital and the units fm, m³, rm, %, l', '2.500,00 €' in txt and 'fm' in txt and 'rm' in txt and ' l' in txt, txt[:200])
-        ck('the calendar says Saturday', day['wd'] == 6 and 'Sa' in E("document.getElementById('stdate').textContent"), str(day))
+        E("STHUD.refresh()")
+        ck('the calendar says Saturday', day['wd'] == 6 and 'Sa' in E("document.getElementById('stdate').textContent"), str(day) + ' ' + E("document.getElementById('stdate').textContent"))
         page_pic('01_von_oben')
     if 'leute' in want:
         pres = J("Object.fromEntries(Object.keys(STRAT.S.people).map(id => [id, STRAT.present(id).ok]))")
@@ -89,11 +91,13 @@ with lib.browser() as b:
         pg.mouse.click(g[0], g[1], button='right')
         steps(0.1)
         jb = J("STRAT.S.jobs.filter(j => j.def === 'maehen').map(j => ({ id: j.id, who: j.who, st: j.st, dur: Math.round(j.dur) }))")
-        ck('a right click on the garden gives Sarah the job „Rasen mähen“', len(jb) == 1 and jb[0]['who'] == ['sarah'], str(jb))
+        ck('a right click on the garden gives Sarah the job „Rasen mähen“', len(jb) == 1 and jb[0]['who'] == ['sarah'], str(jb) + ' ' + str(J("STRAT.S.notes.slice(-3).map(n => n.text)")))
+        if not jb:
+            E("STRAT.job.add('maehen', ['sarah'], { place: 'garten' })")
         E("STRAT.setSpeed(30)")
         for i in range(40):
             steps(2)
-            s = J("(() => { const j = STRAT.S.jobs.find(j => j.def === 'maehen'); return { st: j.st, k: j.done / j.dur, need: j.need }; })()")
+            s = J("(() => { const j = STRAT.S.jobs.find(j => j.def === 'maehen'); return j ? { st: j.st, k: j.done / j.dur, need: j.need } : { st: 'none' }; })()")
             if s['st'] == 'done': break
         after = J("({ m2: STRAT.W.mownArea(CLOCK.t), fuel: STRAT.W.fuel(), t: CLOCK.t, xp: STRAT.S.people.sarah.xp, nd: STRAT.S.people.sarah.nd })")
         ck('the clock runs from above (30×) and the job is done', s['st'] == 'done' and after['t'] > before['t'] + 30, f"{s} t {before['t']} → {after['t']}")
@@ -126,6 +130,102 @@ with lib.browser() as b:
         led = J("({ eur: STRAT.S.eur, last: STRAT.S.ledger.slice(-1)[0] })")
         ck('Euro booked in the ledger', abs(led['eur'] - 2487.5) < 0.01 and led['last']['text'] == 'Test: Kettenöl', str(led))
         page_pic('05_warum')
+    if 'holz' in want:
+        # the wood chain end to end in time-lapse: look → fell → skid → saw → stack → dry; oak panels → boards → the order
+        E("STRAT.setSpeed(30)")
+        E("STRAT.W.force = { cloud: 0.2, rain: 0, wind: 10, storm: false, src: 'Test' }")
+        J("STRAT.setDate('2026-11-14', 8 * 60 + 30)")
+        run = lambda js: J(js)
+        def until(cond, secs=120, dt=0.25):
+            for i in range(int(secs / 5)):
+                steps(5, dt)
+                if E(cond): return True
+            return E(cond)
+        def job(defn, who):
+            r = J(f"(() => {{ const j = STRAT.job.add('{defn}', {json.dumps(who)}); return j && j.id ? {{ id: j.id, dur: Math.round(j.dur) }} : j; }})()")
+            return r
+        def done(jid):
+            return f"(() => {{ const j = STRAT.job.of('{jid}'); return !j || j.st === 'done'; }})()"
+        k0 = J("STRAT.known('wald', 'klinge')")
+        ck('the Klinge is unknown until someone looks (exploration instead of a fog of war)', k0 is None and 'unbekannt' in E("JSON.stringify(STRAT.place.get('klinge').stock())"), str(k0))
+        q = J("STRAT.job.check('faellen', ['falko', 'sarah'])")
+        ck('felling without the course is refused – with its reason and source (DGUV, SVLFG)', q and q.get('rule') in ('lehrgang',) or (q and 'nachsehen' in q.get('text', '')), str(q))
+        q1 = J("STRAT.job.check('faellen', ['hubert'])")
+        ck('… and never alone in the forest (two people)', q1 and q1.get('rule') == 'allein', str(q1))
+        E("window.__ent = []; KERN.on('strategie:entdeckt', d => window.__ent.push(d))")
+        w = job('waldbegang', ['sarah'])
+        ok = until(done(w['id']), 160)
+        k1 = J("STRAT.known('wald', 'klinge')")
+        ent = J("window.__ent")
+        ck('Sarah walks to the Klinge, looks and knows: the marked trees', ok and k1 and k1['data']['marked'] >= 5, str(k1)[:300])
+        ck('the discovery comes as the event strategie:entdeckt (for the discovery book)', len(ent) >= 1 and ent[0]['kind'] == 'wald' and ent[0].get('source'), str(ent)[:300])
+        lib.shot(pg, OUT, '07_klinge_oben')
+        tree = J("STHOLZ.marked()[0] ? { id: STHOLZ.marked()[0].id, sp: STHOLZ.marked()[0].sp, h: STHOLZ.marked()[0].h } : null")
+        p1 = progs()
+        f = job('faellen', ['hubert', 'falko'])
+        ck('Hubert (with the course) and Falko get the felling job', f and f.get('id'), str(f))
+        ok = until(done(f['id']), 200)
+        ft = J(f"({{ rec: FELL.trees[{tree['id']}] ? FELL.trees[{tree['id']}].st : null, gone: FOREST.byId({tree['id']}).gone, logs: HOLZ.logs.filter(l => l.tid === {tree['id']}).map(l => ({{ id: l.id, st: l.st, vol: l.vol, L: l.L }})), fell: FELL.logs.filter(l => l.tid === {tree['id']}).length }})")
+        ck('the tree is felled and worked up in the world (world/fell.js record done, gone from the standing forest)', ok and ft['rec'] == 'done' and ft['gone'], str(ft)[:300])
+        ck('its measured logs lie in the forest as HOLZ logs (the same as by hand)', len(ft['logs']) >= 2 and all(l['st'] == 'ground' for l in ft['logs']), str(ft['logs'])[:300])
+        ck('felling made no new shader program (the forest\'s own materials)', progs() <= p1 + 2, f'{p1} → {progs()}')
+        E(f"(() => {{ const t = FOREST.byId({tree['id']}); GAME.P.tx = t.x; GAME.P.ty = t.y; GAME.P.th = 40; }})()")
+        lib.shot(pg, OUT, '08_gefaellt_nah')
+        E("GAME.P.th = 120; GAME.P.tx = -2; GAME.P.ty = -8")
+        led0 = J("STRAT.S.eur")
+        r = job('ruecken', ['hubert'])
+        ok = until(done(r['id']), 200)
+        yd = J("({ yard: STHOLZ.logsYard().length, forest: STHOLZ.logsForest().length, diesel: STRAT.S.diesel })")
+        ck('Hubert skids the logs with tractor and winch home to the log yard', ok and yd['yard'] >= 2, str(yd))
+        b0 = J("HOLZSAW.boards.length")
+        sw = job('saegen52', ['christoph'])
+        ok = until(done(sw['id']), 200)
+        b1 = J("({ n: HOLZSAW.boards.length, pile: STHOLZ.boardsPile().length, yard: STHOLZ.logsYard().length, fire: HOLZSAW.fire })")
+        ck('Christoph saws them on the band sawmill into planks (werk/holz_saw.js boards, slabs as firewood)', ok and b1['n'] > b0 + 4 and b1['yard'] == 0, f'{b0} → {b1}')
+        st = job('stapeln', ['sarah', 'christoph'])
+        ok = until(done(st['id']), 120)
+        ms0 = J("HOLZDRY.stackMC()")
+        ck('Sarah and Christoph stack them to dry (werk/holz_dry.js)', ok and ms0 and ms0['n'] >= b1['pile'] and ms0['avg'] > 30, str(ms0))
+        lib.shot(pg, OUT, '09_holzlager')
+        E("STRAT.skip(75 * 1440)")
+        until("!CLOCK.warp", 60, 0.25)
+        ms1 = J("HOLZDRY.stackMC()")
+        ck('two and a half months later the stack is drier (the climate of Meiningen)', ms1 and ms1['avg'] < ms0['avg'] - 10, f"{ms0['avg']:.0f} → {ms1['avg']:.0f} %")
+        # the workshop: oak panels, five boards, the order
+        J("STRAT.setDate('2026-11-21', 8 * 60 + 30)")
+        o = J("STRAT.S.orders.find(o => o.key === 'bretter5')")
+        ck('the first order is there: 5 Schneidebretter Eiche, at least 3 stars, with a date', o and o['n'] == 5 and o['minStars'] == 3 and o['due'] > 0, str(o)[:200])
+        ph = J("STHOLZ.panelHalves()")
+        e0 = J("STRAT.S.eur")
+        lz = job('leimholz', ['sarah'])
+        ok = until(done(lz['id']), 60)
+        e1 = J("STRAT.S.eur")
+        ck('Sarah orders oak panels: Euro booked with real prices (3 × 64 € + delivery)', ok and abs((e0 - e1) - (3 * 64 + 25)) < 0.02, f'{e0} → {e1}')
+        E("STRAT.skip('morgen')")
+        until("!CLOCK.warp", 30, 0.25)
+        steps(8)
+        ph2 = J("STHOLZ.panelHalves()")
+        ck('the delivery comes at 9:00 – the panels lie in the workshop (werk/werk.js rack)', ph2 >= ph + 6, f'{ph} → {ph2} halves')
+        E("STRAT.ability.use('falko', 'meisterstueck')")
+        made = []
+        for i in range(5):
+            bj = job('brett', ['falko'])
+            if not bj or not bj.get('id'):
+                print('note: board job', bj); break
+            until(done(bj['id']), 160)
+            made.append(J("STHOLZ.shelf().slice(-1)[0] ? STHOLZ.shelf().slice(-1)[0].stars : null"))
+        sh = J("STHOLZ.shelf().map(w => ({ id: w.id, stars: w.stars, by: w.by }))")
+        ck('Falko builds five boards; they lie on the shelf with his stars (the first a master piece)', len(sh) >= 5 and all(w['by'] == 'Falko' for w in sh[-5:]), str(sh)[:300])
+        pw = J("({ gen: STRAT.W.fuel().gen, soc: STRAT.S.power.soc })")
+        e2 = J("STRAT.S.eur")
+        dl = job('liefern', ['sarah'])
+        if dl and dl.get('id'): until(done(dl['id']), 80)
+        o2 = J("STRAT.S.orders.find(o => o.key === 'bretter5')")
+        e3 = J("STRAT.S.eur")
+        ck('Sarah delivers: the order is done, Euro booked, the boards left the shelf', o2 and o2['st'] == 'geliefert' and e3 > e2 + 5 * 150, f"{o2 and o2['st']} {e2} → {e3} {dl}")
+        led = J("STRAT.S.ledger.slice(-12).map(e => e.text + ' ' + e.eur)")
+        print('ledger', led, flush=True)
+        page_pic('10_werkstatt')
     if 'reload' in want:
         J("STRAT.setDate('2026-11-07', 10 * 60)")
         E("STHUD.select(['ronald'])")
@@ -134,6 +234,7 @@ with lib.browser() as b:
         steps(4)
         mid = J(f"(() => {{ const j = STRAT.job.of('{jr}'); return j ? {{ st: j.st, done: j.done, dur: j.dur }} : null; }})()")
         ck('no new shader programs before the reload', progs() <= p0, f'{p0} → {progs()}')
+        eur_before = J("STRAT.S.eur")
         E("STRAT.save(); CLOCK.save()")
         time.sleep(0.5)
         pg.reload(wait_until='domcontentloaded', timeout=300000)
@@ -146,7 +247,7 @@ with lib.browser() as b:
         st = J(f"(() => {{ const j = STRAT.job.of('{jr}'); return {{ on: STRAT.on, mode: GAME.P.mode, job: j ? {{ st: j.st, done: j.done }} : null, eur: STRAT.S.eur }}; }})()")
         ck('after a reload the mode goes on from above', st['on'] and st['mode'] == 'top', str(st))
         ck('… and Ronald\'s job is still there with its progress', mid and st['job'] and st['job']['done'] >= mid['done'] - 0.01, f'{mid} → {st}')
-        ck('… and the ledger kept its Euro', abs(st['eur'] - 2487.5) < 0.01 or 'regel' not in want, str(st['eur']))
+        ck('… and the ledger kept its Euro', abs(st['eur'] - eur_before) < 0.01, f"{eur_before} → {st['eur']}")
     if 'welt' in want:
         E("STRAT.stop()")
         steps(0.5)

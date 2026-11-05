@@ -26,7 +26,8 @@ import { HOLZ } from './holz.js';
 import { HOLZSAW } from './holz_saw.js';
 import { KERN } from '../core/kern.js';
 import { SAW_PH } from '../garden/workshop.js';
-const HOLZDRY = (() => {
+// feat/strategie: exported (strategie/st_holz.js stacks and reads the drying from above)
+export const HOLZDRY = (() => {
   const de = (v, d = 1) => Number(v).toFixed(d).replace('.', ','),
     think = (t, ms) => PLAY.think(t, ms);
   // climate: Meiningen (DWD 3231, 450 m) 1991–2020 – monthly mean temperature (°C) and equilibrium moisture (%) outdoors under a roof
@@ -1053,6 +1054,55 @@ const HOLZDRY = (() => {
       }
     }
   }, 'werk/holz_dry');
+  // feat/strategie: the strategy mode stacks all boards of the blocks at once, as by hand: a foundation (45 cm, stickers every 50 cm,
+  // a 2 cm gap, the ends sealed – unless o says otherwise), layer after layer, then the roof with weight. Returns the number of boards.
+  S.simStack = (o = {}) => {
+    if (!S.stack)
+      S.stack = {
+        found: o.found ?? 0.45,
+        sp: o.sp ?? 0.5,
+        gap: o.gap ?? true,
+        seal: o.seal ?? true,
+        layers: [],
+        roof: false,
+        weight: false,
+        L: 4.1,
+        t0: CLOCK.t,
+      };
+    const st = S.stack;
+    if (st.roof) {
+      st.roof = false;
+      st.weight = false;
+    }
+    let n = 0;
+    for (let k = 0; k < 60; k++) {
+      const nl = nextLayer();
+      if (!nl) break;
+      const li = st.layers.length;
+      for (const it of nl.items) {
+        it.b.st = 'stack';
+        it.b.layer = li;
+        it.b.sa = +it.a.toFixed(3);
+        it.b.ts = CLOCK.t;
+        n++;
+      }
+      st.layers.push({ t: nl.t, boards: nl.items.map(i => i.b.id) });
+      st.L = Math.max(st.L || 0, ...nl.items.map(i => i.b.L));
+    }
+    st.roof = true;
+    st.weight = true;
+    if (SAW()) SAW().rebuildPiles();
+    rebuild();
+    save();
+    return n;
+  };
+  S.simShop = () => {
+    const k = B().filter(b => b.st === 'kiln');
+    if (!k.length) return 0;
+    toShop();
+    shedRebuild();
+    return k.length;
+  };
   Object.assign(S, { clim, doyOf, advance, stackMC, forecast, rebuild, layOne, nextLayer, rateOf, stepDay });
   return S;
 })();
