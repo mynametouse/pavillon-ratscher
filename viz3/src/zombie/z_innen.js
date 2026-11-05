@@ -47,6 +47,7 @@ import { VILLAGE } from '../world/village.js';
 import { ZIPLAN } from './z_innen_plan.js';
 import { ZIMOB } from './z_innen_mob.js';
 import { ZIEINR } from './z_innen_einr.js';
+import { audio } from '../audio/audio.js';
 export const ZINNEN = (() => {
   const S = { ready: false, built: [], wired: false, poolCol: [], poolWalk: [] };
   const PW = ZIPLAN.PW,
@@ -1636,6 +1637,13 @@ export const ZINNEN = (() => {
         run: () => {
           c.want = c.want > 0.5 ? 0 : 1;
           S.anim = true;
+          // a sound from the game's own (synthesized or sampled) door sounds: a drawer slides, a door or a lid clicks
+          try {
+            const pk = c.parts[0] && c.parts[0].kind;
+            if (audio && audio.door) audio.door(pk === 'drawer' ? 'og' : 'eg', c.want > 0.5);
+          } catch (e) {
+            void e;
+          }
           if (c.want > 0.5) {
             let res = null;
             try {
@@ -1815,17 +1823,51 @@ export const ZINNEN = (() => {
       n: 1,
       prio: 4,
       want: () =>
-        S.built.some(H => Object.values(H.lit).some(Boolean) && H.inside(WALKER.x, WALKER.y, WALKER.feet + 1)),
+        S.built.some(
+          H => (Object.values(H.lit).some(Boolean) || dayNow() > 0.05) && H.inside(WALKER.x, WALKER.y, WALKER.feet + 1)
+        ),
       on: ls => place(ls, true),
       tick: ls => place(ls, false),
       off: () => markDirty(),
     });
   }
   let lastRoom = null;
+  const dayNow = () => 1 - Math.min(1, Math.max(0, VILLAGE.night()));
+  // by day, with no lamp lit: a soft warm light a metre in from the room's window (or under its ceiling)
+  function dayFill(H, rid) {
+    const P = H.plan,
+      r = rid && P.rooms.find(q => q.id === rid);
+    if (!r) return null;
+    let best = null,
+      bd = 1e9;
+    const mid = [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2];
+    for (const w of P.windows) {
+      if (w.fl !== r.fl) continue;
+      const c = (w.a + w.b) / 2,
+        p =
+          w.edge === 'front'
+            ? [c, P.yi0 + 1.0]
+            : w.edge === 'back'
+              ? [c, P.yi1 - 1.0]
+              : w.edge === 'left'
+                ? [P.xi0 + 1.0, c]
+                : [P.xi1 - 1.0, c];
+      if (p[0] < r.x0 || p[0] > r.x1 || p[1] < r.y0 || p[1] > r.y1) continue;
+      const d = Math.hypot(p[0] - mid[0], p[1] - mid[1]);
+      if (d < bd) {
+        bd = d;
+        best = P.toW(p[0], p[1]).concat((w.z0 + w.z1) / 2);
+      }
+    }
+    return best || P.toW(mid[0], mid[1]).concat(r.z1 - 0.4);
+  }
   function place(ls, force) {
     const l = ls && ls[0];
     if (!l) return;
-    let best = null;
+    let best = null,
+      fill = null,
+      fillKey = null;
+    const k = dayNow();
     for (const H of S.built) {
       if (!H.inside(WALKER.x, WALKER.y, WALKER.feet + 1)) continue;
       const here = H.roomAt(WALKER.x, WALKER.y, WALKER.feet + 1);
@@ -1837,8 +1879,12 @@ export const ZINNEN = (() => {
             Math.hypot(a.pos[0] - WALKER.x, a.pos[1] - WALKER.y) - Math.hypot(b.pos[0] - WALKER.x, b.pos[1] - WALKER.y)
         )[0] ||
         null;
+      if (!best && k > 0.05) {
+        fill = dayFill(H, here);
+        fillKey = 'day:' + here + ':' + Math.round(k * 10);
+      }
     }
-    const key = best ? best.room + best.pos.join(',') : null;
+    const key = best ? best.room + best.pos.join(',') : fillKey;
     if (!force && key === lastRoom && !S.lightDirty) return;
     lastRoom = key;
     S.lightDirty = false;
@@ -1848,6 +1894,12 @@ export const ZINNEN = (() => {
       l.distance = 7.5;
       l.decay = 2;
       l.intensity = best.kind === 'bulb' ? 5 : 7;
+    } else if (fill) {
+      l.position.copy(V(fill[0], fill[1], fill[2]));
+      l.color.set(0xffe2b4);
+      l.distance = 8;
+      l.decay = 2;
+      l.intensity = 3.2 * k;
     } else l.intensity = 0;
     markDirty();
   }

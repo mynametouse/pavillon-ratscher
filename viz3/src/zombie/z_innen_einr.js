@@ -1851,6 +1851,17 @@ export const ZIEINR = (() => {
       );
     }
   };
+  // a triangle turned to face n (the mesher's tri keeps the order it is given)
+  const ftri = (m, mat, a, b, c, n) => {
+    const e1 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+      e2 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]],
+      d =
+        (e1[1] * e2[2] - e1[2] * e2[1]) * n[0] +
+        (e1[2] * e2[0] - e1[0] * e2[2]) * n[1] +
+        (e1[0] * e2[1] - e1[1] * e2[0]) * n[2];
+    if (d >= 0) m.tri(mat, a, b, c, n);
+    else m.tri(mat, a, c, b, n);
+  };
   // on the wall: a plate (Wandteller) – a disc facing the room with a coloured rim
   DK.teller = (C, F, u, z, r) => {
     const m = C.m,
@@ -1861,7 +1872,8 @@ export const ZIEINR = (() => {
     for (let k = 0; k < n; k++) {
       const a0 = (k / n) * Math.PI * 2,
         a1 = ((k + 1) / n) * Math.PI * 2;
-      m.tri(
+      ftri(
+        m,
         w,
         F.P(u, 0.03, z),
         F.P(u + Math.cos(a0) * r * 0.75, 0.03, z + Math.sin(a0) * r * 0.75),
@@ -1870,7 +1882,8 @@ export const ZIEINR = (() => {
       );
       // the painted middle (a flower or a blue Zwiebelmuster ring), so the plate reads on a light wall
       if (k % 2 === 0)
-        m.tri(
+        ftri(
+          m,
           rim,
           F.P(u, 0.032, z),
           F.P(u + Math.cos(a0) * r * 0.4, 0.032, z + Math.sin(a0) * r * 0.4),
@@ -1933,6 +1946,7 @@ export const ZIEINR = (() => {
     }
     C.solid(F.rect(F.u0, F.u0 + 1.0, 0, 0.5), C.z, C.z + 0.86);
     top(C, F, F.u0 + 0.1, F.u0 + 0.9, 0.24, C.z + 0.86, 'schrank');
+    C.container('schublade', 'Kommode durchsuchen', F.P(F.u0 + 0.5, 0.8, C.z + 0.6));
   };
   // a sewing table with its machine (Nähmaschine: black with gold lettering, the wheel at the side) and a chair
   L.naehtisch = (C, F) => {
@@ -1950,6 +1964,7 @@ export const ZIEINR = (() => {
     F.cyl(m, C.col(0x9aa1a4, 0.3, 0.8), u0 + 0.68, 0.24, z + 0.9, z + 0.92, 0.06, 0.06, 10);
     L.chair(C, F, u0 + 0.45, 0.85, -Math.PI / 2, wood);
     C.solid(F.rect(u0, u0 + 0.9, 0, 0.5), z, z + 0.78);
+    C.container('schublade', 'Nähkasten durchsuchen', F.P(u0 + 0.45, 0.85, z + 0.7));
   };
   // an armchair with a side table and (alt, DDR) a lamp on it
   L.sesselecke = (C, F) => {
