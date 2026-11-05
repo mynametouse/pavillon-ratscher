@@ -279,6 +279,7 @@ with lib.browser() as b:
         E("if (!ZBUS.heard) ZBUS.announce('radio')")
         steps(0.6)
         p1 = progs()
+        K1 = set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
         clock_to('siren')
         c = cur()
         ck('night 3: „Der Bus um vier“ – to the old school', c['key'] == 'aufgaben:zz-bus' and 'Schule' in (c['text'] or '') and c['tp'] is not None, str(c)[:300])
@@ -309,12 +310,22 @@ with lib.browser() as b:
         ck('the last wave: more of them, all heading to the bus', (st['wave'] or 0) > 0 and st['search'] >= 1, str(st))
         c = cur()
         ck('the task: „Der Bus ist da – steig ein …“, target its door', 'steig ein' in (c['text'] or '') and c['tp'] and math.hypot(c['tp'][0] - st['door'][0], c['tp'][1] - st['door'][1]) < 1, str(c)[:300])
+        # the coach is solid (VEH.extra): walking at its far side from 3.2 m away ends at its side, not inside it
+        E("""(() => { const P = GAME.P, fx = Math.sin(ZBUS.hd), fy = Math.cos(ZBUS.hd); P.x = ZBUS.x - fy * 3.2; P.y = ZBUS.y + fx * 3.2;
+          P.feet = GAME.floorAt(P.x, P.y, 30); P.yaw = P.body = Math.atan2(ZBUS.x - P.x, ZBUS.y - P.y) * 180 / Math.PI; P.pitch = 0; })()""")
+        E("GAME.step(1.5, 1)"); steps(0.1)
+        dd = J("(() => { const fx = Math.sin(ZBUS.hd), fy = Math.cos(ZBUS.hd); return Math.abs((GAME.P.x - ZBUS.x) * fy - (GAME.P.y - ZBUS.y) * fx); })()")
+        ck('the coach is solid: one walks up to its side, not into it', 1.3 < dd < 2.4, f'{dd:.2f} m from its middle line (from 3.2 m)')
         # a picture: the coach at the stop at night, from the shelter's side
         E(f"""(() => {{ const P = GAME.P, d = ZBUS.doorAt(); P.x = d[0] + Math.cos(ZBUS.hd) * 9 - Math.sin(ZBUS.hd) * 5; P.y = d[1] - Math.sin(ZBUS.hd) * 9 - Math.cos(ZBUS.hd) * 5; P.feet = GAME.floorAt(P.x, P.y, 30);
           P.yaw = P.body = Math.atan2(ZBUS.x - P.x, ZBUS.y - P.y) * 180 / Math.PI; P.pitch = 2; for (const e of ZSTATE.ents) e.hold = 'idle'; }})()""")
         steps(0.4)
         pic('09_bus_steht')
-        ck('no new shader program for the coach (plain materials, a borrowed light)', progs() <= p1, f'{p1} -> {progs()}')
+        # (the people's own materials – zombie/z_fig.js, names like f009_opacity – may come with a figure of the last wave seen for the first time:
+        # theirs, not the coach's)
+        newp = [n for n, k in J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])") if k not in K1]
+        ours = [n for n in newp if not re.match(r'^[a-z]+\d+_', n or '')]
+        ck('no new shader program for the coach (plain materials, a borrowed light)', not ours, f'{p1} -> {progs()}: {newp}')
         # in: the action button at the door
         E("(() => { const P = GAME.P, d = ZBUS.doorAt(); P.x = d[0]; P.y = d[1]; P.feet = GAME.floorAt(P.x, P.y, 30); })()")
         steps(0.4)

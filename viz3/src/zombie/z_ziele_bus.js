@@ -20,6 +20,7 @@ import { DN } from '../time/daynight.js';
 import { ROADS } from '../world/roads.js';
 import { DKDATA } from '../world/dorfkern_data.js';
 import { VNETZ } from '../verkehr/verkehr_netz.js';
+import { VEH } from '../vehicles/vehicle.js';
 import { audio } from '../audio/audio.js';
 import { ZDATA } from './z_data.js';
 import { Z } from './z_state.js';
@@ -237,6 +238,18 @@ export const ZBUS = (() => {
       fy = Math.cos(S.hd);
     return [S.x + fx * 5.15 + fy * 1.9, S.y + fy * 5.15 - fx * 1.9, S.z];
   };
+  // the coach is solid for the walker and for cars while it is out (vehicles/vehicle.js VEH.extra – an oriented box; the door's spot
+  // 0.6 m beside it stays free)
+  VEH.extra.push({
+    zbus: true,
+    box: () => {
+      if (!S.g || !S.g.visible || S.st === 'aus' || S.st === 'weg' || !Number.isFinite(S.x) || !Number.isFinite(S.hd))
+        return null;
+      const fx = Math.sin(S.hd),
+        fy = Math.cos(S.hd);
+      return { c: [S.x, S.y], ax: [fy, -fx], ay: [fx, fy], ex: 1.3, ey: 6, z0: S.z, z1: S.z + 3.3 };
+    },
+  });
   // ---- sounds: the diesel while it runs, the horn ----
   const raw = () => {
     const r = audio.raw && audio.raw();

@@ -86,7 +86,7 @@ Bus, letzte Welle, Ende).
 
 ## Offen
 
-- Der Bus hält Spieler und Zombies nicht auf (man läuft hindurch); er ist ein Modell, kein Fahrzeug.
+- Der Bus ist seit V17p fest für den Spieler und für Autos (ein Kasten in `VEH.extra`, Test `zombie_ziele:bus`); Zombies laufen noch hindurch.
 - Zu zweit mit zwei echten Browsern nicht getestet (der Test nimmt einen mitschreibenden Transport; `zombie_netz` des Leads prüft die
   Verbindung); über Trystero gehen die Nachrichten als `ev` mit `k: 'x:bus'`.
 - Die Tage 4 ff. haben nur die Nacht-Aufgaben (und was von früher offen ist); neue Tages-Aufgaben für das Endlos-Spiel wären möglich.
