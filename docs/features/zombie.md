@@ -92,12 +92,22 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   sieht's aus?“);
   niedergeschlagen sind sie nur verletzt (Verbandskasten hilft auf, morgens wieder auf den Beinen). Überlebende aus Häusern gegen Essen; sterben
   sie, stehen sie als Zombies wieder auf. Der erste Verbündete gründet den Clan (Name im Panel).
+- **Basteln und Reparieren** (V17o, Falko 5.11. 17:57; Hilfs-Agent `zombie-werk`, `docs/features/zombie-werk.md`): an der Werkbank im
+  Garten, in der Garage und in den Kellern der Häuser – Nagelbrett (2 Bretter + Nägel), Molotow (Flasche + Benzin + Lappen; werfen mit `F`,
+  ~3 m Feuer, 8 s, Zombies brennen, das Feuer leuchtet und ist laut), abgenutzte Waffen flicken, Klingen schärfen (+30 % für 25 Schläge);
+  Bauen kostet Spielzeit. Der Zustand der Waffe steht im Panel.
+- **Ziele mit Wegweiser und ein Ende** (V17o, Falko 5.11. 17:57; Hilfs-Agent `zombie-ziele`, `docs/features/zombie-ziele.md`): eine Kette
+  von Aufgaben durch Tage und Nächte (Huberts Flinte, Hubert fragen, Vorräte, ein Haus vernageln; Tag 2 Ronald Essen bringen, Benzin …) mit
+  Pfeil und Entfernung auf der Aufgabenkarte und einem hellgelben Ring über dem Ziel (bis 150 m). Tag 3: das Radio kündigt den Bus an – um
+  4 Uhr der dritten Nacht hält er an der alten Schule, die letzte Welle kommt, „Einsteigen“ zeigt den Abschluss (Nächte, Zombies,
+  Mitgenommene, Tode; „Weiterspielen“ oder „Neu beginnen“). Verpasst: „Weg. Dann eben allein.“, die Nächte gehen weiter.
 
 ## Testen
 
 - `python3 viz3/test/run.py --port 8996 --serve zombie` (Logik, ~5 min), `zombie_arten` (Arten, Schwierigkeit, Schleichen, Schreier;
   Bilder), `zombie_haus` (auch: kein Schlag durch die Wand, der Eingebrochene ist sichtbar drinnen), `zombie_kampf` (Gespräch mit Hubert als Verbündetem, Flinte auf
   seinem Tisch, Ich-Sicht jeder Waffe mit den Armen der Figur, Schwünge, Tritt, Schuss und Nachladen; Bilder), `zombie_look` (Bilder aus der Nähe, Gore, Nacht mit Lampe) und
+  `zombie_werk` (Werkbank, Molotow, Neu laden; ~6 min), `zombie_ziele` (Kette, Wegweiser, Radio, Bus, Ende, zu zweit; ~5 min),
   `zombie_netz` (zu zweit: zwei Seiten eines Browsers, `?lokal=1`; mit `zombie_netz:netz` über das Internet – nicht im Chat-Rechner, und der
   Testserver erlaubt mit `connect-src 'self'` keine Relais).
 - Spielzustand ansehen: `ZSTATE` (Stand), `ZHORDE`, `ZWAFFE.info()`, `ZOMBIE.times()`; Zombies anhalten: `e.hold = 'idle' | 'walk' | …`.

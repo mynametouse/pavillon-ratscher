@@ -61,9 +61,9 @@ flicken.“ Auftrag wörtlich: `docs/plans/auftraege/zombie-werk.md`. Code: `viz
   vier markierte Stellen.
 - `zombie/z_netz.js`: im Ereignis-Empfang `else KERN.emit('znetz:ev', { d, from })` für unbekannte Arten – drei Zeilen.
 - `modules.txt`: `zombie/z_werk.js` und `zombie/z_werk_molotow.js` nach `zombie/z_modus.js`.
-- Feuer-Schaden geht für eigene Zombies direkt an `e.hp` (Taumeln, Jagen, `ZHORDE.kill` wie in `damage`), weil `ZHORDE.damage` die
-  Geräusche und das Blut eines Schlags spielt; nur die Puppen des Gasts gehen über `ZHORDE.damage(…, { kind: 'fire' })`. Wenn `damage`
-  bei `kind: 'fire'` still bleibt (kein `ZTON.hit`/`splat`, kein `ZFX.spray`), kann `burnHit` ganz darauf umgestellt werden (eine Zeile).
+- Feuer-Schaden: `burnHit` geht über `ZHORDE.damage(e, dmg, { kind: 'fire', … })`; dort ist Feuer seit V17o kein Schlag mehr (kein
+  `ZTON.hit`/`splat`, kein `ZFX.spray`, kein Wegstoßen, ab und zu ein Taumeln) – auch die Treffer des Gasts an den Puppen klingen beim
+  Gastgeber nicht mehr wie Schläge (Kern-Chat, 5.11. abends).
 - Neu in den gemeinsamen Tabellen (aus `z_werk.js` beim Laden): `ZDATA.ITEMS.molotow`, `ZDATA.WEAPONS.nagelbrett`,
   `ZWMOD.MODELS/LIE/GRIP/HANDS.nagelbrett`, `ZFP.POSE.nagelbrett`. Neue `window`-Namen `ZWERK`, `ZMOLO`. Ereignisse `zombie:werkbank`, `zombie:werk`, `zombie:molotow`; zwei Lichtwünsche
   `zombie:feuer0/1` (Rang 5, zwischen Taschenlampe 6 und Haus 4).
@@ -84,7 +84,5 @@ flicken.“ Auftrag wörtlich: `docs/plans/auftraege/zombie-werk.md`. Code: `viz
   nicht gebaut.
 - Werfen trifft Zombies auf dem Weg nur über einen Abstand zum Körper (0,42 m) und Wände über die Kollision des Gehenden (Radius ~0,3 m) – eine
   Flasche zerspringt also eine Handbreit vor der Wand; unter Tischen und Decken wird nicht genau gerechnet.
-- Gast beim Spiel zu zweit: der Feuer-Schaden an den Puppen geht als Treffer über `ZHORDE.damage(…, { kind: 'fire' })` an den Gastgeber – dort
-  klingt er (noch) wie ein Schlag, bis `damage` bei `kind: 'fire'` still bleibt (siehe „Für den Lead“).
 - Werte zum Abstimmen: `ZMOLO.FIRE` (Radius 1,5 m, 8 s, 16/s im Feuer, 6 s Nachbrennen mit 9/s, Funkenflug 16 % je ¼ s, 14/s für den
   Spieler), `ZMOLO.THROW` (12,5 m/s, +3,2 m/s nach oben), `ZDATA.WEAPONS.nagelbrett`, `ZWERK.RECIPES/FIX/SHARP`.
