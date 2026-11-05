@@ -133,7 +133,7 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
           `<button type="button" class="stb" data-sp="${v}" title="${v ? v + '× – ' + (v === 1 ? 'eine Stunde in einer Minute' : v * 1 + ' Spielminuten je Sekunde') : 'Pause (Leertaste)'}">${v ? v + '×' : '⏸'}</button>`
       ).join(
         ''
-      )}</div><div class="sp"><button type="button" class="stb" data-sk="auftrag" title="Zeitraffer, bis der nächste Auftrag fertig ist">⏩ Auftrag</button><button type="button" class="stb" data-sk="kommen" title="Zeitraffer, bis deine Leute wieder im Garten sind">⏩ Wochenende</button><button type="button" class="stb" data-sk="morgen" title="Zeitraffer bis morgen 7 Uhr">⏩ Morgen</button></div><div class="sp"><button type="button" class="stb" data-a="layers" title="Ebenen ein- und ausblenden">Ebenen</button><button type="button" class="stb" data-a="ledger" title="Kasse: Einnahmen und Ausgaben">Kasse</button><button type="button" class="stb" data-a="wissen" title="Wissen und Ausbau: Lehrgänge, Maschinen, Stufen">Wissen</button><button type="button" class="stb acc" data-a="exit" title="Zurück in die Welt (U)">Zur Welt ⤓</button></div>`
+      )}</div><div class="sp"><button type="button" class="stb" data-sk="auftrag" title="Zeitraffer, bis der nächste Auftrag fertig ist">⏩ Auftrag</button><button type="button" class="stb" data-sk="kommen" title="Zeitraffer, bis deine Leute wieder im Garten sind">⏩ Wochenende</button><button type="button" class="stb" data-sk="morgen" title="Zeitraffer bis morgen 7 Uhr">⏩ Morgen</button></div><div class="sp"><button type="button" class="stb" data-a="layers" title="Ebenen ein- und ausblenden">Ebenen</button><button type="button" class="stb" data-a="ledger" title="Kasse: Einnahmen und Ausgaben">Kasse</button><button type="button" class="stb" data-a="wissen" title="Wissen und Ausbau: Lehrgänge, Maschinen, Stufen">Wissen</button><button type="button" class="stb" data-a="kal" title="Kalender: wer wann da ist, Feiertage, Termine, Urlaub">Kalender</button><button type="button" class="stb acc" data-a="exit" title="Zurück in die Welt (U)">Zur Welt ⤓</button></div>`
     );
     H.ppl = mk('div', 'stppl', '');
     H.pan = mk('div', 'stpan', 'stbox');
@@ -154,6 +154,7 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
         if (!H.layers.hidden) renderLayers();
       } else if (b.dataset.a === 'ledger') openLedger();
       else if (b.dataset.a === 'wissen') openKnow();
+      else if (b.dataset.a === 'kal') openCal();
       b.blur();
     });
     H.ppl.addEventListener('click', e => {
@@ -191,6 +192,22 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
         if (!S.on) return;
         for (const t of tsvg.querySelectorAll('text')) if (DUP.has(t.textContent)) t.style.display = 'none';
       }).observe(tsvg, { childList: true });
+    const tr = $('hudtr');
+    if (tr) {
+      const up = document.createElement('button');
+      up.type = 'button';
+      up.className = 'hb';
+      up.id = 'stup';
+      up.hidden = true;
+      up.title = 'Ratscher von oben (U)';
+      up.innerHTML = '<span class="hbt">⬆ Von oben</span>';
+      up.addEventListener('click', () => {
+        up.blur();
+        STRAT.start({ keepView: true });
+      });
+      tr.insertBefore(up, tr.firstChild);
+      H.up = up;
+    }
     H.layers.addEventListener('change', e => {
       const i = e.target.closest('input[data-l]');
       if (i) STRAT.layer.set(i.dataset.l, i.checked);
@@ -456,6 +473,7 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
             `<li><span>${n}</span><b>${'●'.repeat(Math.floor(STRAT.skillOf(id, k)))}${STRAT.skillOf(id, k) % 1 >= 0.5 ? '◐' : ''}</b></li>`
         )
         .join('')}</ul>`;
+      h += `<h4>Schutzausrüstung</h4><div class="sub">${esc((d.gear || []).map(g => ({ forst: 'Forst (Helm, Schnittschutz)', werkstatt: 'Werkstatt (Gehörschutz, Brille, FFP2)' })[g] || g).join(', ') || 'keine eigene')}${d.own ? ' · die Forstkiste am Traktor für den, der fällt' : ''}</div>`;
       h += `<h4>Lehrgänge</h4><div class="sub">${p.certs.length ? p.certs.map(c => esc((D.KNOW[c] || { title: c }).title)).join(', ') : 'noch keine'}</div>`;
       h += `<h4>Bedürfnisse</h4><ul><li><span>Kraft</span><b>${Math.round(p.nd.energy)}</b></li><li><span>Essen</span><b>${Math.round(p.nd.food)}</b></li><li><span>Stimmung</span><b>${Math.round(p.nd.mood)}</b></li><li><span>Arbeitstempo</span><b>${Math.round(C.eff(p.nd) * 100)} %</b></li></ul>`;
       if (Hd) {
@@ -500,6 +518,27 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
       setPan(h);
     });
   }
+  // the calendar: the next two weeks – who is there, holidays, the neighbours, orders due; a holiday week to plan
+  function openCal() {
+    openPanel(() => {
+      let h = head('Kalender', 'Wer wann da ist – Wochenenden, Feiertage, Urlaub; die Nachbarn werktags und samstags');
+      const t0 = Math.floor(CLOCK.t / 1440) * 1440;
+      h += '<ul>';
+      for (let k = 0; k < 14; k++) {
+        const t = t0 + k * 1440,
+          d = W.day(t, S.plan),
+          own = C.ownPresent(W.dateOf(t), 12 * 60, S.plan) || C.ownPresent(W.dateOf(t), 21 * 60, S.plan),
+          nb = C.npcPresent(W.dateOf(t), 12 * 60).ok,
+          due = S.orders.filter(o => o.st !== 'geliefert' && Math.floor(o.due / 1440) * 1440 === t);
+        h += `<li><span>${esc(d.label)}${d.hol ? ' · <b>' + esc(d.hol) + '</b>' : ''}${d.vac ? ' · Urlaub' : ''}${due.length ? ' · ⚑ ' + esc(due.map(o => o.title).join(', ')) : ''}</span><b title="deine Leute · die Nachbarn">${own ? '● ihr' : '–'} · ${nb ? 'H R' : '–'}</b></li>`;
+      }
+      h += '</ul>';
+      const U = (S.plan.urlaub || []).map(r => `${r.from} bis ${r.to}`);
+      h += `<h4>Urlaub</h4><div class="sub">${U.length ? esc(U.join(' · ')) : 'keiner geplant'}</div><p><button type="button" class="stb" data-vac="next">Nächste Woche Urlaub</button> <button type="button" class="stb" data-vac="clear">Urlaub löschen</button></p>`;
+      h += `<div class="learn">Thüringer Feiertage: Neujahr, Karfreitag, Ostermontag, 1. Mai, Christi Himmelfahrt, Pfingstmontag, Weltkindertag (20.9., seit 2019 nur in Thüringen), Tag der Deutschen Einheit, Reformationstag, 1. und 2. Weihnachtstag.</div>`;
+      setPan(h);
+    });
+  }
   function renderLayers() {
     H.layers.innerHTML =
       '<b>Ebenen</b>' +
@@ -533,7 +572,18 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
       else if (r && r.text) say(r.text);
       H.panH = '';
     } else if (b.dataset.take) takeOver(b.dataset.take);
-    else if (b.dataset.buy) {
+    else if (b.dataset.vac) {
+      if (b.dataset.vac === 'clear') S.plan.urlaub = [];
+      else {
+        // Monday to Friday of next week
+        const d = W.dateOf(CLOCK.t),
+          wd = d.getUTCDay(),
+          mon = C.addDays(d, (8 - wd) % 7 || 7);
+        S.plan.urlaub = (S.plan.urlaub || []).concat({ from: C.iso(mon), to: C.iso(C.addDays(mon, 4)) });
+      }
+      STRAT.save();
+      H.panH = '';
+    } else if (b.dataset.buy) {
       const r = STAUSBAU.buy(b.dataset.buy);
       if (r && r.no) no(r);
       else if (r && r.text) say(r.text);
@@ -577,12 +627,12 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
     if (STRAT.layer.on('wege'))
       for (const id of Object.keys(S.people)) {
         const p = S.people[id];
-        if (!p.path) continue;
-        const q = STRAT.pos(id),
-          pts = p.path.pts;
-        let L = C.pathLen(pts),
-          d = (CLOCK.t - p.path.t0) * p.path.v;
-        void L;
+        if (!p.path || (STRAT.isOwn(id) && !STRAT.present(id).ok)) continue;
+        const path = p.path,
+          q = STRAT.pos(id),
+          pts = path.pts,
+          d = (CLOCK.t - path.t0) * path.v;
+        if (!p.path) continue; // arrived just now
         const out = [[q[0], q[1]]];
         let s = 0;
         for (let i = 1; i < pts.length; i++) {
@@ -869,6 +919,16 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
     texts();
     if (H.layers && !H.layers.hidden) renderLayers();
   }
+  // the button „Von oben“ while walking, once the mode was used (twice a second)
+  let upAcc = 0;
+  KERN.tick(dt => {
+    if ((upAcc += dt) < 0.5) return;
+    upAcc = 0;
+    if (!H.built && S.used) build();
+    if (!H.up) return;
+    const want = !!S.used && !S.on && P.mode === 'walk';
+    if (H.up.hidden === want) H.up.hidden = !want;
+  }, 'strategie/hud');
   // a refusal coming from elsewhere (the API: STRAT.note with kind 'nein')
   const UI = {
     show,

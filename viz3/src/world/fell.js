@@ -3010,6 +3010,24 @@ export const FELL = (() => {
       markDirty(true);
     }
   };
+  // feat/strategie: the materials a felled tree brings (per species: the stem's bark and cards, the foot with its cuts, the end grain), for
+  // compiling them ahead when the strategy mode starts (strategie/st_welt.js W.warm) – no new shader program when the first tree falls
+  S.warmMats = () => {
+    const out = [];
+    for (const sp of ['spruce', 'larch', 'pine']) {
+      const t = (FOREST.list || []).find(x => x.sp === sp && x.core) || (FOREST.list || []).find(x => x.sp === sp);
+      if (!t) continue;
+      const U = {
+        uC0: { value: new THREE.Vector4() },
+        uC1: { value: new THREE.Vector4(0, 0, 0, KERF) },
+        uC2: { value: new THREE.Vector4(-9, 0, 0, 0) },
+        uC3: { value: new THREE.Vector4(0, 0, 0, 99) },
+      };
+      const M = FOREST.soloMats(sp, { uCut: { value: -10 }, uDelimb: { value: -1 } });
+      out.push(M.bark, M.cards, footMat(t, 2, U), endGrain(sp));
+    }
+    return out;
+  };
   // feat/strategie: the strategy mode („Ratscher von oben“, strategie/st_holz.js) has a marked tree felled and worked up by the people it
   // sends – the same record, the same lying stem and the same measured logs as by hand (HOLZ adopts them), done the professional way:
   // the notch 1/4 Ø at 50°, sapwood cuts, the bore cut with hinge and holding band, the wedge, two calls; delimbed, butt trimmed, the top

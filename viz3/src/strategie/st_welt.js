@@ -4,7 +4,10 @@
 // where the places are (the buildings as they stand now), the neighbours' walkers (npc/*), the player and the figure (game/*), the fuel
 // in the cans and tanks (garden/garage_play.js), the lawn (garden/grass.js), the wood (world/fell.js, werk/holz*.js) and the workshop
 // (werk/werk.js). Where a system had no way for it, it got a small one marked „feat/strategie“ (listed in docs/features/strategie.md).
+import * as THREE from 'three';
+import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
+import { markDirty } from '../core/assets.js';
 import { BUILD } from '../core/geo.js';
 import { S0 } from '../garden/env.js';
 import { GRASS, inPoly } from '../garden/grass.js';
@@ -263,6 +266,82 @@ export const STWELT = (() => {
     return m2;
   };
   W.mownArea = t => GRASS.cutArea(t);
+  // ---------------- compiling ahead (no new shader program while playing): the wood's materials made once when the mode starts ----------------
+  // the logs (werk/holz.js: instanced, own shader parts, their shadow material) and a sawn board (werk/holz_saw.js) are drawn hidden for
+  // one frame – under the ground, without size – then put back; the first felled tree or sawn log later needs no new program
+  let warmed = false;
+  W.warm = () => {
+    if (warmed) return false;
+    warmed = true;
+    const undo = [];
+    try {
+      for (const sp of ['spruce', 'larch', 'pine']) {
+        const G = HOLZ.species && HOLZ.species(sp);
+        if (!G || G.mS.count) continue;
+        G.mS.count = G.mC.count = 1;
+        undo.push(() => {
+          if (!G.list.length) G.mS.count = G.mC.count = 0;
+        });
+      }
+      // the materials of a felled tree and of the drying stack's stickers (world/fell.js, werk/holz_dry.js): small boxes under the ground
+      const mats = [];
+      try {
+        if (window.FELL && FELL.warmMats) mats.push(...FELL.warmMats());
+      } catch (e) {
+        console.warn('strategie warm fell', e);
+      }
+      const HD = window.HOLZDRY;
+      if (HD && !HD.stickM) HD.stickM = new THREE.MeshStandardMaterial({ color: 0xc8b48c, roughness: 0.9 });
+      if (HD) mats.push(HD.stickM);
+      const HS = window.HOLZSAW;
+      if (HS && HS.mergeSet) {
+        const g = new THREE.Group(),
+          m = new THREE.Matrix4().makeTranslation(0, -60, 0);
+        scene.add(g);
+        const set = HS.mergeSet(
+          ['spruce', 'larch'].map(sp => ({ b: { sp, zb: -0.03, zt: 0.0, r0: 0.16, r1: 0.13, L: 0.6 }, m })),
+          g,
+          null
+        );
+        const box = new THREE.BoxGeometry(0.05, 0.05, 0.05);
+        for (const M of mats) {
+          const me = new THREE.Mesh(box, M);
+          me.position.set(0, -60, 0);
+          if (M.isMaterial && M.side !== undefined) me.castShadow = true;
+          g.add(me);
+        }
+        undo.push(() => box.dispose());
+        let first = null;
+        g.traverse(o => {
+          if (o.isMesh) {
+            o.frustumCulled = false;
+            first = first || o;
+          }
+        });
+        undo.push(() => {
+          scene.remove(g);
+          set.traverse(o => {
+            if (o.isMesh) o.geometry.dispose();
+          });
+        });
+        // put everything back once the frame with them is drawn (its shadow map first, then the picture)
+        if (first)
+          first.onAfterRender = () => {
+            first.onAfterRender = () => {};
+            setTimeout(() => {
+              for (const f of undo) f();
+              W.warmed = true;
+              markDirty(true);
+            }, 0);
+          };
+      }
+    } catch (e) {
+      console.warn('strategie warm', e);
+      for (const f of undo) f();
+    }
+    markDirty(true);
+    return true;
+  };
   W.CLOCK = CLOCK;
   return W;
 })();

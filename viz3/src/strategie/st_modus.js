@@ -860,6 +860,7 @@ export const STRAT = (() => {
       if (me && !S.people[me].job && present(me).ok) S.people[me].pos = [P.x, P.y];
     }
     document.body.dataset.strat = '1';
+    WL.warm();
     go('draufsicht');
     if (!o.keepView) {
       P.tx = VIEW.tx;
@@ -1090,7 +1091,7 @@ export const STRAT = (() => {
     },
     layer: {
       define(L) {
-        REG.layer[L.id] = Object.assign({ order: 50, on: true }, L);
+        REG.layer[L.id] = Object.assign({ order: 50, on: true }, REG.layer[L.id], L);
         if (!(L.id in S.layers)) S.layers[L.id] = REG.layer[L.id].on;
         return REG.layer[L.id];
       },
