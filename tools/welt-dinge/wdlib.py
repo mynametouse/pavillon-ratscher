@@ -110,3 +110,13 @@ def seg_dist(px, py, p):
     i = int(dist.argmin())
     u = d[i] / max(1e-9, math.sqrt(L2[i]))
     return float(dist[i]), q[i], u
+
+
+def roads_fahrt():
+    """the OSM ways beyond the square (welt/fahrt.js data, viz3/extra/fahrt/dist/fahrt/strassen.json: model decimetres) in the same form"""
+    j = json.load(open(os.path.join(REPO, 'viz3/extra/fahrt/dist/fahrt/strassen.json')))
+    out = []
+    for w in j['ways']:
+        q = np.array(w[6], float).reshape(-1, 3)[:, :2] / 10
+        out.append({'kind': int(w[0]), 'surf': int(w[1]), 'w': w[2] / 10, 'p': q})
+    return out

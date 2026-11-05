@@ -29,7 +29,11 @@ export const DINGE = (() => {
     changes: 0,
     held: 0,
     frozen: false,
-    areas: ['ratscher'],
+    // the areas with their data (dist/dinge/<id>.json), loaded when the observer comes within r of the centre
+    areas: [
+      { id: 'ratscher', c: [150, -150], r: 2200, cell: 120 },
+      { id: 'schleusingen', c: [-1000, 1150], r: 1700, cell: 200 },
+    ],
     err: null,
   };
   if (!DMOD.on || !window.RATSCHER || !RATSCHER.on) return S;
@@ -52,7 +56,7 @@ export const DINGE = (() => {
     [210, 160, 30],
   ].map(c => new THREE.Color().setRGB(c[0] / 255, c[1] / 255, c[2] / 255, THREE.SRGBColorSpace));
   const TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van'],
-    KINDS = ['hof', 'strasse', 'betrieb'];
+    KINDS = ['hof', 'strasse', 'betrieb', 'stadt'];
   const frac = v => v - Math.floor(v),
     hash = (a, b) => frac(Math.sin(a * 12.9898 + b * 78.233 + 0.5) * 43758.5453);
   // ---- occupancy: the share of the places of a kind with a car, over the hours of a workday, a Saturday, a Sunday ----
@@ -116,6 +120,29 @@ export const DINGE = (() => {
         [12, 0.8],
         [14, 0.9],
         [18, 0.85],
+        [24, 0.86],
+      ],
+    },
+    // the kerbs of a town (Schleusingen): residents at night, visitors and shoppers by day – hardly ever empty
+    stadt: {
+      werktag: [
+        [0, 0.86],
+        [6, 0.84],
+        [8, 0.68],
+        [10, 0.78],
+        [17, 0.8],
+        [19, 0.84],
+        [24, 0.86],
+      ],
+      samstag: [
+        [0, 0.86],
+        [8, 0.8],
+        [10, 0.85],
+        [16, 0.8],
+        [24, 0.86],
+      ],
+      sonntag: [
+        [0, 0.86],
         [24, 0.86],
       ],
     },
@@ -197,11 +224,16 @@ export const DINGE = (() => {
     return false;
   }
   // ---- data ----
-  function load(area) {
+  function load(A) {
+    const area = A.id;
+    A.st = 'lädt';
     return fetch(BASE + 'dinge/' + area + '.json')
       .then(r => (r.ok ? r.json() : null))
       .then(j => {
+        A.st = j ? 'da' : 'fehlt';
         if (!j) return;
+        const i0 = S.places.length,
+          k0 = S.things.length;
         for (const a of j.autos || []) {
           const [x, y, az, ty, col, kind] = a,
             i = S.places.length;
@@ -224,20 +256,36 @@ export const DINGE = (() => {
           const [t, x, y, az, l, w, h] = d;
           S.things.push({ i: S.things.length, area, t, x, y, az, l, w, h, cell: null });
         }
+        index(i0, k0, A);
+      })
+      .catch(e => {
+        A.st = 'fehler';
+        S.err = String(e);
       });
   }
-  function cellOf(x, y) {
-    const cx = Math.floor(x / CELL),
-      cy = Math.floor(y / CELL),
-      k = cx + ',' + cy;
+  // cells per area (a town's are bigger: fewer draw calls for its many cars)
+  function cellOf(x, y, A) {
+    const CS = (A && A.cell) || CELL,
+      cx = Math.floor(x / CS),
+      cy = Math.floor(y / CS),
+      k = (A ? A.id : '') + ':' + cx + ',' + cy;
     let c = S.cells.get(k);
     if (!c)
-      S.cells.set(k, (c = { k, x: (cx + 0.5) * CELL, y: (cy + 0.5) * CELL, places: [], things: [], built: false }));
+      S.cells.set(
+        k,
+        (c = { k, x: (cx + 0.5) * CS, y: (cy + 0.5) * CS, half: CS * 0.71, places: [], things: [], built: false })
+      );
     return c;
   }
-  function index() {
-    for (const p of S.places) (p.cell = cellOf(p.x, p.y)).places.push(p);
-    for (const d of S.things) (d.cell = cellOf(d.x, d.y)).things.push(d);
+  function index(i0, k0, A) {
+    for (let i = i0; i < S.places.length; i++) {
+      const p = S.places[i];
+      (p.cell = cellOf(p.x, p.y, A)).places.push(p);
+    }
+    for (let k = k0; k < S.things.length; k++) {
+      const d = S.things[k];
+      (d.cell = cellOf(d.x, d.y, A)).things.push(d);
+    }
   }
   // ---- building a cell ----
   const _m = new THREE.Matrix4(),
@@ -263,6 +311,7 @@ export const DINGE = (() => {
       zL = gz(p.x - r[0] * ht, p.y - r[1] * ht),
       zRi = gz(p.x + r[0] * ht, p.y + r[1] * ht);
     p.z = (zF + zR + zL + zRi) / 4;
+    p.zc = gz(p.x, p.y);
     const pitch = THREE.MathUtils.clamp(Math.atan2(zF - zR, T.wb), -0.25, 0.25),
       roll = THREE.MathUtils.clamp(Math.atan2(zRi - zL, 2 * ht), -0.2, 0.2);
     _e.set(pitch, -a, -roll, 'YXZ');
@@ -284,15 +333,18 @@ export const DINGE = (() => {
     p.im.setMatrixAt(p.ii, _m);
     p.im.instanceMatrix.needsUpdate = true;
   }
-  function build(c) {
+  function build(c, keep) {
     const t = CLOCK.t,
       byType = {};
     c.meshes = [];
     c.extra = [];
+    c.zT = 0;
     for (const p of c.places) {
       poseOf(p);
-      p.on = want(p, t);
-      p.hide = taken(p);
+      if (!keep) {
+        p.on = want(p, t);
+        p.hide = taken(p);
+      }
       (byType[p.type] = byType[p.type] || []).push(p);
     }
     for (const ty in byType) {
@@ -321,6 +373,7 @@ export const DINGE = (() => {
       const G = [];
       for (const d of c.things) {
         d.z = gz(d.x, d.y);
+        d.zc = d.z;
         const g = DMOD.thingGeo(d, d.z);
         if (g) G.push(g);
         const a = (d.az * Math.PI) / 180,
@@ -376,13 +429,28 @@ export const DINGE = (() => {
   // ---- the round: cells near the observer built (one per round), far ones freed; built places checked against the clock ----
   let acc = 0,
     rr = 0;
-  function round() {
+  const late = c =>
+    c.places.some(p => Math.abs(gz(p.x, p.y) - p.zc) > 0.12) ||
+    c.things.some(d => Math.abs(gz(d.x, d.y) - d.zc) > 0.12);
+  function round(dt = 0.25) {
     const w = KERN.where();
     if (!w) return;
+    for (const A of S.areas) if (!A.st && Math.hypot(A.c[0] - w[0], A.c[1] - w[1]) < A.r) load(A);
+    // the ground under a built cell nearby may have come later (the town's tiles): set it down again, every few seconds one cell
+    for (const c of S.cells.values())
+      if (c.built && (c.zT += dt) > 4 && Math.hypot(c.x - w[0], c.y - w[1]) < 260) {
+        c.zT = 0;
+        if (late(c)) {
+          free(c);
+          build(c, true);
+          S.reposed = (S.reposed || 0) + 1;
+        }
+        break;
+      }
     let todo = null,
       bd = 1e9;
     for (const c of S.cells.values()) {
-      const d = Math.hypot(c.x - w[0], c.y - w[1]) - CELL * 0.71;
+      const d = Math.hypot(c.x - w[0], c.y - w[1]) - c.half;
       if (!c.built && d < NEAR && d < bd) {
         bd = d;
         todo = c;
@@ -434,17 +502,7 @@ export const DINGE = (() => {
   // the zombie night: the cars stay where they are
   KERN.on('zombie:start', () => (S.frozen = true));
   KERN.on('zombie:stop', () => (S.frozen = false));
-  whenLoaded(() =>
-    Promise.all(S.areas.map(load))
-      .then(() => {
-        index();
-        S.ready = true;
-      })
-      .catch(e => {
-        S.err = String(e);
-        console.warn('welt-dinge', e);
-      })
-  );
+  whenLoaded(() => (S.ready = true));
   // ---- the traffic (verkehr/verkehr_auto.js): the cars standing in the built cells as obstacles, three circles along each ----
   S.obstacles = OB => {
     if (!S.ready) return;
@@ -484,6 +542,8 @@ export const DINGE = (() => {
       held: S.held,
       things,
       frozen: S.frozen,
+      areas: S.areaState(),
+      reposed: S.reposed || 0,
       err: S.err,
     };
   };
@@ -497,6 +557,7 @@ export const DINGE = (() => {
   S.settle = () => {
     for (let k = 0; k < 60; k++) round();
   };
+  S.areaState = () => Object.fromEntries(S.areas.map(A => [A.id, A.st || null]));
   return S;
 })();
 window.DINGE = DINGE;

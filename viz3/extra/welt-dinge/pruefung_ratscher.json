@@ -1,5 +1,5 @@
 {
- "quelle": "DOP 2024 (GDI-Th), YOLO11-OBB (DOTAv1) in drei Durchg\u00e4ngen, Kandidaten von Auge gepr\u00fcft (Bl\u00e4tter 0\u20132, 5.11.2026 ~0:10)",
+ "quelle": "DOP 2024 (GDI-Th), YOLO11-OBB (DOTAv1) in drei Durchg\u00e4ngen, Kandidaten von Auge gepr\u00fcft (Bl\u00e4tter 0\u20132, 5.11.2026 ~0:10); Runde 2 (5.11. ~1:20): zwei weitere Durchg\u00e4nge mit niedriger Schwelle, Bl\u00e4tter von Auge gepr\u00fcft, Holzlager und Einzelnes von Auge",
  "ja": [
   {
    "t": "anhaenger",
@@ -410,6 +410,72 @@
    "w": 3.49,
    "p": 0.263,
    "c": "large vehicle"
+  },
+  {
+   "t": "auto",
+   "x": 100.8,
+   "y": -92.44,
+   "az": 127.2,
+   "l": 5.0,
+   "w": 2.44,
+   "p": 0.067,
+   "c": "small vehicle",
+   "runde": 2
+  },
+  {
+   "t": "auto",
+   "x": 106.63,
+   "y": -96.8,
+   "az": 55.6,
+   "l": 4.31,
+   "w": 1.86,
+   "p": 0.065,
+   "c": "small vehicle",
+   "runde": 2
+  },
+  {
+   "t": "auto",
+   "x": 339.16,
+   "y": -102.98,
+   "az": 0.6,
+   "l": 3.12,
+   "w": 1.57,
+   "p": 0.012,
+   "c": "small vehicle",
+   "runde": 2
+  },
+  {
+   "t": "pool_eckig",
+   "x": 301.04,
+   "y": -169.48,
+   "az": 13.6,
+   "l": 8.99,
+   "w": 5.77,
+   "p": 0.017,
+   "c": "swimming pool",
+   "runde": 2
+  },
+  {
+   "t": "auto",
+   "x": 182.52,
+   "y": -223.29,
+   "az": 19.7,
+   "l": 3.99,
+   "w": 2.02,
+   "p": 0.042,
+   "c": "small vehicle",
+   "runde": 2
+  },
+  {
+   "t": "wohnwagen",
+   "x": 290.2,
+   "y": -221.75,
+   "az": 105.0,
+   "l": 7.02,
+   "w": 2.13,
+   "p": 0.167,
+   "c": "ship",
+   "runde": 2
   }
  ],
  "nein": [
@@ -657,6 +723,518 @@
    315.88,
    -386.99,
    "ship"
+  ],
+  [
+   256.86,
+   21.44,
+   "ship"
+  ],
+  [
+   79.37,
+   -10.99,
+   "large vehicle"
+  ],
+  [
+   -132.22,
+   -21.93,
+   "storage tank"
+  ],
+  [
+   -67.88,
+   -30.28,
+   "storage tank"
+  ],
+  [
+   -8.31,
+   -52.71,
+   "storage tank"
+  ],
+  [
+   178.16,
+   -56.2,
+   "storage tank"
+  ],
+  [
+   178.92,
+   -52.08,
+   "storage tank"
+  ],
+  [
+   180.83,
+   -53.03,
+   "storage tank"
+  ],
+  [
+   183.47,
+   -45.78,
+   "storage tank"
+  ],
+  [
+   195.19,
+   -41.16,
+   "ship"
+  ],
+  [
+   258.33,
+   -57.35,
+   "ship"
+  ],
+  [
+   296.19,
+   -59.83,
+   "storage tank"
+  ],
+  [
+   298.09,
+   -45.66,
+   "storage tank"
+  ],
+  [
+   299.35,
+   -53.9,
+   "storage tank"
+  ],
+  [
+   317.1,
+   -47.15,
+   "storage tank"
+  ],
+  [
+   352.5,
+   -53.54,
+   "storage tank"
+  ],
+  [
+   153.85,
+   -89.68,
+   "small vehicle"
+  ],
+  [
+   164.98,
+   -79.67,
+   "large vehicle"
+  ],
+  [
+   171.4,
+   -62.45,
+   "ship"
+  ],
+  [
+   172.85,
+   -82.16,
+   "small vehicle"
+  ],
+  [
+   213.1,
+   -62.3,
+   "harbor"
+  ],
+  [
+   227.39,
+   -64.64,
+   "large vehicle"
+  ],
+  [
+   243.1,
+   -74.54,
+   "small vehicle"
+  ],
+  [
+   269.18,
+   -84.06,
+   "small vehicle"
+  ],
+  [
+   301.46,
+   -61.73,
+   "ship"
+  ],
+  [
+   426.38,
+   -91.26,
+   "harbor"
+  ],
+  [
+   433.76,
+   -92.33,
+   "ship"
+  ],
+  [
+   443.3,
+   -94.37,
+   "harbor"
+  ],
+  [
+   448.3,
+   -93.62,
+   "harbor"
+  ],
+  [
+   63.72,
+   -117.26,
+   "plane"
+  ],
+  [
+   83.26,
+   -106.67,
+   "small vehicle"
+  ],
+  [
+   118.94,
+   -131.79,
+   "small vehicle"
+  ],
+  [
+   272.63,
+   -107.67,
+   "small vehicle"
+  ],
+  [
+   428.09,
+   -135.83,
+   "storage tank"
+  ],
+  [
+   48.8,
+   -157.66,
+   "ship"
+  ],
+  [
+   49.22,
+   -154.86,
+   "ship"
+  ],
+  [
+   124.33,
+   -169.2,
+   "large vehicle"
+  ],
+  [
+   157.62,
+   -172.37,
+   "small vehicle"
+  ],
+  [
+   187.78,
+   -140.93,
+   "small vehicle"
+  ],
+  [
+   238.08,
+   -162.89,
+   "plane"
+  ],
+  [
+   239.63,
+   -145.82,
+   "plane"
+  ],
+  [
+   275.62,
+   -140.5,
+   "plane"
+  ],
+  [
+   338.77,
+   -176.98,
+   "storage tank"
+  ],
+  [
+   363.17,
+   -169.84,
+   "large vehicle"
+  ],
+  [
+   387.27,
+   -148.67,
+   "ship"
+  ],
+  [
+   431.75,
+   -143.7,
+   "storage tank"
+  ],
+  [
+   125.45,
+   -181.71,
+   "storage tank"
+  ],
+  [
+   156.51,
+   -193.1,
+   "storage tank"
+  ],
+  [
+   163.47,
+   -195.27,
+   "storage tank"
+  ],
+  [
+   164.34,
+   -212.1,
+   "storage tank"
+  ],
+  [
+   193.02,
+   -184.77,
+   "storage tank"
+  ],
+  [
+   197.29,
+   -210.23,
+   "large vehicle"
+  ],
+  [
+   198.78,
+   -211.61,
+   "large vehicle"
+  ],
+  [
+   210.83,
+   -217.65,
+   "large vehicle"
+  ],
+  [
+   237.51,
+   -212.91,
+   "storage tank"
+  ],
+  [
+   251.53,
+   -218.22,
+   "storage tank"
+  ],
+  [
+   252.86,
+   -215.48,
+   "storage tank"
+  ],
+  [
+   286.39,
+   -219.51,
+   "ship"
+  ],
+  [
+   158.66,
+   -231.38,
+   "storage tank"
+  ],
+  [
+   161.61,
+   -232.58,
+   "storage tank"
+  ],
+  [
+   162.92,
+   -234.19,
+   "storage tank"
+  ],
+  [
+   177.85,
+   -236.38,
+   "large vehicle"
+  ],
+  [
+   183.13,
+   -237.44,
+   "large vehicle"
+  ],
+  [
+   183.96,
+   -235.71,
+   "large vehicle"
+  ],
+  [
+   189.74,
+   -240.22,
+   "storage tank"
+  ],
+  [
+   195.01,
+   -228.67,
+   "storage tank"
+  ],
+  [
+   250.47,
+   -221.0,
+   "storage tank"
+  ],
+  [
+   287.08,
+   -224.25,
+   "ship"
+  ],
+  [
+   288.85,
+   -223.85,
+   "ship"
+  ],
+  [
+   290.24,
+   -223.18,
+   "ship"
+  ],
+  [
+   398.38,
+   -222.89,
+   "storage tank"
+  ],
+  [
+   272.31,
+   -265.41,
+   "ship"
+  ],
+  [
+   -174.11,
+   -415.97,
+   "harbor"
+  ],
+  [
+   -168.48,
+   -458.97,
+   "harbor"
   ]
+ ],
+ "dazu": [
+  {
+   "t": "stammholz",
+   "x": 119.5,
+   "y": -192.5,
+   "az": 135,
+   "l": 9.0,
+   "w": 6.0,
+   "h": 1.4,
+   "quelle": "Auge"
+  },
+  {
+   "t": "stammholz",
+   "x": 115.7,
+   "y": -199.5,
+   "az": 100,
+   "l": 11.0,
+   "w": 4.5,
+   "h": 1.2,
+   "quelle": "Auge"
+  },
+  {
+   "t": "holzstapel",
+   "x": 88.2,
+   "y": -203.2,
+   "az": 8,
+   "l": 7.5,
+   "w": 6.5,
+   "h": 1.5,
+   "quelle": "Auge"
+  },
+  {
+   "t": "holzstapel",
+   "x": 91.5,
+   "y": -182.5,
+   "az": 8,
+   "l": 20.0,
+   "w": 5.5,
+   "h": 2.0,
+   "quelle": "Auge"
+  },
+  {
+   "t": "holzstapel",
+   "x": 102.5,
+   "y": -180.5,
+   "az": 98,
+   "l": 13.0,
+   "w": 7.0,
+   "h": 1.8,
+   "quelle": "Auge"
+  },
+  {
+   "t": "holzstapel",
+   "x": 123.7,
+   "y": -182.8,
+   "az": 98,
+   "l": 11.0,
+   "w": 9.0,
+   "h": 1.8,
+   "quelle": "Auge"
+  },
+  {
+   "t": "holzstapel",
+   "x": 98.0,
+   "y": -197.2,
+   "az": 8,
+   "l": 7.5,
+   "w": 7.0,
+   "h": 2.2,
+   "quelle": "Auge"
+  },
+  {
+   "t": "stammholz",
+   "x": -174.11,
+   "y": -415.97,
+   "az": 20.7,
+   "l": 8.0,
+   "w": 3.0,
+   "h": 1.2,
+   "quelle": "Detektor (harbor) + Auge"
+  },
+  {
+   "t": "anhaenger",
+   "x": 79.9,
+   "y": -16.5,
+   "az": 2,
+   "l": 3.0,
+   "w": 1.6,
+   "h": 1.0,
+   "quelle": "Auge"
+  },
+  {
+   "t": "tank",
+   "x": -127.8,
+   "y": -47.8,
+   "az": 0,
+   "l": 25.6,
+   "w": 25.6,
+   "h": 3.0,
+   "quelle": "Detektor (storage tank 0.90) + Auge: G\u00fcllebeh\u00e4lter der Agrargenossenschaft"
+  },
+  {
+   "t": "tank",
+   "x": -119.2,
+   "y": -26.1,
+   "az": 0,
+   "l": 16.0,
+   "w": 16.0,
+   "h": 3.0,
+   "quelle": "Detektor (storage tank 0.93) + Auge"
+  },
+  {
+   "t": "tank",
+   "x": -103.3,
+   "y": -21.7,
+   "az": 0,
+   "l": 14.5,
+   "w": 14.5,
+   "h": 3.0,
+   "quelle": "Auge"
+  },
+  {
+   "t": "tank",
+   "x": -83.9,
+   "y": -25.0,
+   "az": 0,
+   "l": 15.5,
+   "w": 15.5,
+   "h": 3.0,
+   "quelle": "Auge"
+  },
+  {
+   "t": "tank",
+   "x": -68.3,
+   "y": -28.3,
+   "az": 0,
+   "l": 14.0,
+   "w": 14.0,
+   "h": 3.0,
+   "quelle": "Auge"
+  }
  ]
 }

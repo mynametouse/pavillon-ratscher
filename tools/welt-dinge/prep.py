@@ -4,6 +4,9 @@
 ground retouch of welt-gebaeude → viz3/extra/welt-dinge/maske_dinge.json (model metres, Ratscher).
 
   python3 tools/welt-dinge/prep.py ratscher IMG.jpg x0 y1 s       # the photo on model axes (wdlib.fetch) for the colours
+  python3 tools/welt-dinge/prep.py schleusingen DIR                # a folder of blocks b_<x0>_<y1>.jpg (0.1 m/px, as fetched by area.py)
+
+The masks also go to maske_dinge_utm.json (UTM 25832, every area) for the tiles of the world beyond the square.
 
 Cars: body type from the measured length (klein < 4.05 m ≤ kompakt < 4.45 m ≤ kombi/SUV; vans from the checked type), colour from the
 photo (median of the middle of the box) to the nearest of the common German car colours, the place kind from the roads (at the kerb of a
@@ -27,7 +30,7 @@ SKIP = [(-50, 42, -52, 48)]
 WORKS = [(-150, -40, -165, -30), (295, 450, -330, -220)]
 HEIGHT = {'auto': 1.5, 'van': 2.3, 'wohnmobil': 3.0, 'lkw': 3.6, 'anhaenger': 1.0, 'wohnwagen': 2.6, 'traktor': 2.8,
           'pool_rund': 1.1, 'pool_eckig': 0.1, 'trampolin': 0.9, 'rundballen': 1.5, 'quaderballen': 1.8, 'holzstapel': 1.6,
-          'stammholz': 1.2, 'container': 2.6}
+          'stammholz': 1.2, 'container': 2.6, 'tank': 3.0}
 HAZE = np.array([55.0, 70.0, 86.0])
 SUN = (-0.34, 0.94)  # where the shadows of the photo fall (07.04.2024, late morning): north-north-west, ~1 m per m of height
 
@@ -36,7 +39,40 @@ def in_rect(x, y, R):
     return any(a <= x <= b and c <= y <= d for a, b, c, d in R)
 
 
-def colour(img, x0, y1, s, k):
+class Photo:
+    """the photo on model axes: one image (x0, y1, s) or a folder of blocks b_<x0>_<y1>.jpg at 0.1 m/px"""
+
+    def __init__(self, a):
+        from PIL import Image
+        Image.MAX_IMAGE_PIXELS = None
+        self.Image, self.cache = Image, {}
+        if len(a) == 1:
+            self.blocks = []
+            for f in os.listdir(a[0]):
+                if f.startswith('b_') and f.endswith('.jpg'):
+                    x, y = f[2:-4].split('_')
+                    self.blocks.append((float(x), float(y), os.path.join(a[0], f)))
+            self.s = 0.1
+        else:
+            self.blocks = [(float(a[1]), float(a[2]), a[0])]
+            self.s = float(a[3])
+
+    def at(self, x, y):
+        for x0, y1, f in self.blocks:
+            u, v = int((x - x0) / self.s), int((y1 - y) / self.s)
+            if u < 0 or v < 0:
+                continue
+            if f not in self.cache:
+                if len(self.cache) > 3:
+                    self.cache.pop(next(iter(self.cache)))
+                self.cache[f] = np.asarray(self.Image.open(f).convert('RGB'))
+            im = self.cache[f]
+            if v < im.shape[0] and u < im.shape[1]:
+                return im[v, u]
+        return None
+
+
+def colour(photo, k):
     """median colour of the middle of the box (half its length, half its width) → palette index"""
     a = math.radians(k['az'])
     f = (math.sin(a), math.cos(a))
@@ -46,9 +82,9 @@ def colour(img, x0, y1, s, k):
         for j in np.linspace(-0.22, 0.22, 5):
             x = k['x'] + f[0] * i * k['l'] + r[0] * j * k['w']
             y = k['y'] + f[1] * i * k['l'] + r[1] * j * k['w']
-            u, v = int((x - x0) / s), int((y1 - y) / s)
-            if 0 <= v < img.shape[0] and 0 <= u < img.shape[1]:
-                pts.append(img[v, u])
+            c = photo.at(x, y)
+            if c is not None:
+                pts.append(c)
     if not pts:
         return 1
     m = np.median(np.array(pts, float), 0)
@@ -73,12 +109,10 @@ def colour(img, x0, y1, s, k):
 
 
 def main():
-    gebiet, img, x0, y1, s = sys.argv[1], sys.argv[2], float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])
-    from PIL import Image
-    Image.MAX_IMAGE_PIXELS = None
-    im = np.asarray(Image.open(img).convert('RGB'))
+    gebiet = sys.argv[1]
+    photo = Photo(sys.argv[2:])
     P = json.load(open(os.path.join(EXTRA, f'pruefung_{gebiet}.json')))
-    ways = [w for w in wdlib.roads() if w['kind'] <= 5]
+    ways = [w for w in wdlib.roads() + (wdlib.roads_fahrt() if gebiet != 'ratscher' else []) if w['kind'] <= 5]
     autos, dinge, masks = [], [], []
     for n, k in enumerate(P['ja'] + P.get('dazu', [])):
         x, y, t = k['x'], k['y'], k['t']
@@ -93,7 +127,7 @@ def main():
             if best is None or d - w['w'] / 2 < best[0]:
                 best = (d - w['w'] / 2, d, q, u, w)
         edge, d, q, u, w = best
-        h = HEIGHT.get(t if t in HEIGHT else 'auto', 1.5)
+        h = k.get('h') or HEIGHT.get(t if t in HEIGHT else 'auto', 1.5)
         # the mask: the box with a margin, stretched towards where its shadow fell
         hl, hw = k['l'] / 2 + 0.35, k['w'] / 2 + 0.35
         r = (ax[1], -ax[0])
@@ -101,7 +135,7 @@ def main():
         sh = [(cx + SUN[0] * h, cy + SUN[1] * h) for cx, cy in C]
         masks.append(hull(C + sh))
         if t in ('auto', 'van', 'wohnmobil'):
-            kind = 'betrieb' if in_rect(x, y, WORKS) else ('strasse' if edge < 1.2 else 'hof')
+            kind = 'betrieb' if in_rect(x, y, WORKS) else ('strasse' if edge < 2.5 else 'hof')
             if kind == 'strasse':
                 o = (x - q[0], y - q[1])
                 cr = u[0] * o[1] - u[1] * o[0]
@@ -118,7 +152,7 @@ def main():
                 L = k['l']
                 hsh = (int(abs(x) * 7.31 + abs(y) * 3.17) % 100) / 100
                 ty = 0 if L < 4.05 else 1 if L < 4.45 else (3 if hsh < 0.3 else 2)
-            col = colour(im, x0, y1, s, k)
+            col = colour(photo, k)
             autos.append([round(x, 2), round(y, 2), round(az, 1), ty, col, ['hof', 'strasse', 'betrieb'].index(kind)])
         else:
             dinge.append([t, round(x, 2), round(y, 2), round(k['az'], 1), round(k['l'], 2), round(k['w'], 2), round(h, 2)])
@@ -136,6 +170,10 @@ def main():
     M['hinweis'] = ('Modellmeter (x Ost, y Nord) für Ratscher; je Fahrzeug/Ding die Box mit 0,35 m Rand, zur Schattenseite (NNW, ~1 m je m Höhe '
                     'beim Flug 07.04.2024) gestreckt. Alle erkannten – auch Stellplätze, die gerade leer sind.')
     json.dump(M, open(mfile, 'w'), separators=(',', ':'))
+    U = {'src': 'welt-dinge', 'crs': 'EPSG:25832', 'pad': 0.35, 'hinweis': M['hinweis'].replace('Modellmeter (x Ost, y Nord) für Ratscher', 'UTM 32N (EPSG:25832, E/N in m)'),
+         'gebiete': {g: [[[round(c, 2) for c in wdlib.to_utm(a, b)] for a, b in p] for p in L] for g, L in M['gebiete'].items()}}
+    U['polys'] = [p for g in sorted(U['gebiete']) for p in U['gebiete'][g]]
+    json.dump(U, open(os.path.join(EXTRA, 'maske_dinge_utm.json'), 'w'), separators=(',', ':'))
     from collections import Counter
     print(gebiet, len(autos), 'cars', dict(Counter(TYPES[a[3]] for a in autos)), dict(Counter(['hof', 'strasse', 'betrieb'][a[5]] for a in autos)),
           dict(Counter(PAL[a[4]][0] for a in autos)), len(dinge), 'things', dict(Counter(d[0] for d in dinge)), len(masks), 'masks')

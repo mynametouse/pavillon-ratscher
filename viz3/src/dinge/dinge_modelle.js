@@ -420,6 +420,38 @@ export const DMOD = (() => {
         wheel(k, s * (hw - 0.05), yR + 2.0, 0.5, 0.3, 14);
       }
     },
+    // a round concrete tank of a farm (slurry, digestate): the wall, a flat concrete cover, a rim; w = diameter
+    tank(k, { w, h }) {
+      const r = w / 2,
+        hh = h || 3,
+        WALL = L(0.62, 0.62, 0.6),
+        TOP = L(0.56, 0.57, 0.56),
+        n = Math.max(24, Math.min(48, Math.round(w * 1.6)));
+      k.cyl(0, 0, 0, hh, r, r, n, WALL, false);
+      k.lathe(
+        0,
+        0,
+        hh,
+        [
+          [r + 0.12, 0],
+          [r + 0.12, 0.2],
+          [r - 0.1, 0.2],
+        ],
+        n,
+        WALL
+      );
+      k.lathe(
+        0,
+        0,
+        hh + 0.12,
+        [
+          [r - 0.1, 0],
+          [0, 0.25],
+        ],
+        n,
+        TOP
+      );
+    },
     // a shipping or building container (20 ft), corrugated sides as stripes of two shades
     container(k, { l, w, h, c }) {
       const col = c || L(0.28, 0.4, 0.52),
