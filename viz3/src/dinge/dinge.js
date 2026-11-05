@@ -33,7 +33,12 @@ export const DINGE = (() => {
     held: 0,
     frozen: false,
     // the areas with their data (dist/dinge/<id>.json), loaded when the observer comes within r of the centre
-    areas: [{ id: 'ratscher', c: [150, -150], r: 2200, cell: 120 }],
+    areas: [
+      { id: 'ratscher', c: [150, -150], r: 2200, cell: 120 },
+      { id: 'schleusingen', c: [-1000, 1150], r: 1300, cell: 200 },
+      { id: 'geisenhoehn', c: [-860, -520], r: 900, cell: 120 },
+      { id: 'talsperre', c: [1270, -700], r: 700, cell: 120 },
+    ],
     err: null,
   };
   if (!DMOD.on || !RATSCHER || !RATSCHER.on) return S;

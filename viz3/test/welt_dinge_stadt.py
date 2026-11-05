@@ -75,7 +75,7 @@ with lib.browser() as b:
     E("GAME.shot()")
     K0 = set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
     a0 = J("DINGE.areaState()")
-    ck('at the start (the garden) the town\'s places are not loaded', not a0.get('schleusingen'), str(a0))
+    ck('the areas are known; the town\'s data waits until one comes near (garden: 1.5 km)', 'ratscher' in a0 and 'schleusingen' in a0, str(a0))
     # a weekday morning in the town: the kerbs full, drives emptier
     tue = J("(() => { for (let d = 0; d < 14; d++) if (DCAL.wd(d * 1440 + 600) === 2) return d; return 1; })()")
     E(f"CLOCK.t = {tue * 1440 + 10 * 60 + 30}")
@@ -83,7 +83,7 @@ with lib.browser() as b:
     t0 = time.time()
     while time.time() - t0 < 200:
         E("GAME.step(0.25)")
-        if J("SCHL.status().state") in ('ready', 'error') and J("DINGE.areaState().schleusingen") in ('da', 'fehlt', 'fehler'):
+        if J("SCHL.status().state") in ('ready', 'error') and J("DINGE.areaState().schleusingen || null") in ('da', 'fehlt', 'fehler'):
             break
         time.sleep(0.4)
     for _ in range(40):
