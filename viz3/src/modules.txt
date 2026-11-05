@@ -70,6 +70,8 @@ game/play.js                # action button, things in the hand, inventory core,
 game/home.js                # light switches, stove fire, sitting and lying (TICKS starts here)
 audio/music.js              # 
 game/quests.js              # tasks with the neighbours, journal, tracker (QUESTS)
+# feat/welt-gebaeude: Ratscher's ground without the printed roofs – the switch and the roof colours (before world/ratscher.js reads the names)
+gebaeude/geb_dach.js        # feat/welt-gebaeude the retouched ground images of Ratscher, ?bodenalt for the originals, the originals' roof colours for the village (GEBDACH)
 world/ratscher.js           # real surroundings from geodata: terrain, orthophotos, buildings, trees (RATSCHER)
 world/roads.js              # V16b roads and paths from OSM: road map for the ground shaders, surface under the wheels, bridges (ROADS)
 world/forest.js             # V16c the forest at the Klinge: stand, procedural spruce/larch/pine in three levels of detail, forest floor, cover (FOREST)
@@ -86,7 +88,9 @@ welt/schleusingen.js        # Schleusingen after photos: the old town walkable, 
 # feat/vessra: Kloster Veßra below this line (the monastery, the village, the tree nursery)
 welt/vessra.js              # Kloster Veßra: the monastery ruin and its grounds, the village, the tree nursery Baumschule Kammbach – walkable (VESSRA)
 # feat/suhl: Suhl below this line, in this order: welt/suhl.js (the town), welt/suhl_innen.js (buildings to enter), welt/suhl_leute.js (the people)
-world/worldcol.js           # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
+# feat/welt-gebaeude: every building in 3D below this line (after the village and the zones, before world/worldcol.js: its collisions)
+gebaeude/gebaeude.js        # feat/welt-gebaeude the buildings the app lacked, from ETHOS.BUILDA: footprint, height, estimated roof, village shaders (GEB)
+world/worldcol.js          # V16b collisions with the real surroundings: walls, trunks, bridge railings (WCOL)
 world/treehit.js            # small trees give way to vehicles: saplings bend, small trees tip over with the root plate, thick ones stop (TREEHIT)
 game/hud.js                 # HUD, menu, inventory window, pointer lock (HUD)
 game/avatar.js              # the player figure (AVATAR)
@@ -177,6 +181,13 @@ zombie/z_werk.js            # feat/zombie-werk crafting at a workbench: the pane
 zombie/z_werk_molotow.js    # feat/zombie-werk the molotov: thrown with F, flight, shatter, fire with a borrowed light, burning zombies (ZMOLO)
 zombie/z_ziele.js           # feat/zombie-ziele objectives through the days and nights: tasks with targets, the chain, the marker in the world (ZZIEL)
 zombie/z_ziele_bus.js       # feat/zombie-ziele the end of the third night: the radio, the bus at the old school, the last wave, the ending screen (ZBUS)
+# feat/wetter: the weather of the real place below this line (Open-Meteo; after the day's light, the vehicles, the sound and the zombie night)
+wetter/wx_data.js           # feat/wetter the weather as data: Open-Meteo requests and records, the game's hour, the codes in German, presets – pure (WXDATA)
+wetter/wx_sky.js            # feat/wetter clouds in the sky's own program, the light through them, haze from the visibility, cloud shadows (WXSKY)
+wetter/wx_fall.js           # feat/wetter rain, drizzle, sleet and snow around the camera: one mesh, compiled at load (WXFALL)
+wetter/wx_ton.js            # feat/wetter the sound of the weather: rain outside and on the roof, wind, thunder (WXTON)
+wetter/wx_boden.js          # feat/wetter wet ground and roofs: darker and glossier while it rains and for hours after (WXBODEN)
+wetter/wetter.js            # feat/wetter live as the default, switchable to the calendar's: the game's moment, easing, clock window, menu (WETTER)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
