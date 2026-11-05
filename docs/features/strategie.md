@@ -137,6 +137,8 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 - Bedürfnisse (The Sims): `STCORE.needs`, `STCORE.eff` – Kraft und Essen bestimmen das Tempo, die Stimmung das Wohlwollen. Essen kommt aus dem
   Vorrat `STRAT.res` `essen` (mit `take(n)`), wenn ein Thema ihn anlegt; Betten über die Orte (`beds`).
 - Gefallen der Nachbarn: `STRAT.favour(id, ±n, wofür)`, Stand in `STRAT.S.favours`.
+- Freier Wille (The Sims): `STRAT.will((personId, cx) => ({ def, who, place }) | null)` – einmal je Spielstunde für jede freie Person vor Ort gefragt;
+  der erste Vorschlag, der geht, wird ein Auftrag.
 
 ### Geld, Stil, Wissen
 - `STRAT.book(eur, text, kategorie)` – Buchung (negativ = Ausgabe), Stand `STRAT.S.eur`, Liste `STRAT.S.ledger`; Preise in `STDATA.PRICES`.

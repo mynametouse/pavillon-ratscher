@@ -132,6 +132,30 @@ export const STJOBS = (() => {
   // ---------------- chapter 1 ----------------
   STRAT.chapter.define(Object.assign({ order: 1 }, D.CHAPTERS[0]));
   STRAT.chapter.define(Object.assign({ order: 2 }, D.CHAPTERS[1]));
+  // ---------------- the old garage: fuel, the mower, the power (two PV modules on its roof, the power station) ----------------
+  STRAT.place.define({
+    id: 'garage',
+    stock: () => {
+      const f = W.fuel(),
+        kwp = D.POWER.kwp * (S.known['ausbau:pv2'] ? 2 : 1);
+      return [
+        ['Benzinkanister', de(f.can, 1) + ' von ' + f.canMax + ' l'],
+        ['Rasenmäher (Tank)', de(f.mower, 2) + ' von ' + f.mowerMax + ' l'],
+        ['Aggregat (Tank)', de(f.gen, 1) + ' von ' + f.genMax + ' l'],
+        ['PV-Module auf dem Dach', de(kwp, 2) + ' kWp · jetzt ' + (S.power.pv || 0) + ' W'],
+        ['Powerstation', de(S.power.soc, 2) + ' von ' + de(S.power.cap || D.POWER.kwh, 1) + ' kWh'],
+        ['Diesel (Kanister)', de(S.diesel, 0) + ' l'],
+      ];
+    },
+    badge: () => (S.power.gen ? 'Aggregat läuft' : (S.power.pv || 0) > 20 ? 'PV ' + S.power.pv + ' W' : ''),
+    missing: () => {
+      const f = W.fuel(),
+        m = [];
+      if (f.can < 1) m.push('Benzin (Einkaufen in Schleusingen)');
+      if (S.diesel < 5) m.push('Diesel für den Traktor');
+      return m;
+    },
+  });
   // ---------------- the first job: mowing the lawn with the petrol mower from the garage ----------------
   // ~0,46 m cut, walking pace with turns and the grass box: 300–500 m² an hour by skill; 1 l petrol an hour (garden/garage_play.js BURN);
   // loud: a lawn mower is in the annex of the 32. BImSchV – not on Sundays and holidays, on workdays only 7–20 h

@@ -82,7 +82,8 @@ export const STRAT = (() => {
   // home spots on site: your people by the bungalow, the neighbours in their yards
   const HOME = { falko: [7.2, 12.4], sarah: [11.2, 12.6], christoph: [9.4, 9.6] };
   const ARRIVE = [3.6, 19.0]; // the car under the carport
-  const PRES = {};
+  const PRES = {},
+    WILL = [];
   function present(id, t = now()) {
     const p = S.people[id];
     if (!p) return { ok: false, why: 'weg' };
@@ -477,6 +478,24 @@ export const STRAT = (() => {
       // meals on site: breakfast, lunch, supper (food from the stores – STRAT.res 'essen' when content defines it)
       if (!away && isOwn(id) && p.nd.food < 35 && !night) eat(id);
     }
+    // free will (The Sims): once a game hour, people on site without a job may choose one themselves (STRAT.will handlers)
+    if (WILL.length && Math.floor((t + dt) / 60) !== Math.floor(t / 60))
+      for (const id of Object.keys(S.people)) {
+        const p = S.people[id];
+        if (p.job || p.path || !present(id, t).ok) continue;
+        for (const fn of WILL) {
+          let w = null;
+          try {
+            w = fn(id, ctxOf(t, null));
+          } catch (e) {
+            console.warn('strategie will', e);
+          }
+          if (w && w.def) {
+            const r = job.add(w.def, w.who || [id], { place: w.place });
+            if (r && !r.no) break;
+          }
+        }
+      }
     // power: PV into the station, the load of the running machines
     powerStep(t, dt);
     // jobs
@@ -1150,6 +1169,8 @@ export const STRAT = (() => {
     },
     favour,
     styleFx,
+    // free will: fn(personId, cx) → { def, who?, place? } or null, asked once a game hour for each idle person on site
+    will: fn => WILL.push(fn),
     teamEff,
     setDate,
     level: id => C.level(S.people[id] ? S.people[id].xp : 0),
