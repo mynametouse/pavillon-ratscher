@@ -18,16 +18,26 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   31.10., Weihnachten) fahren wie Sonntag. **Schulferien Thüringens** (2025/26–2027) stehen in den Daten; der Feed kennt keine Schultage –
   deshalb fallen in den Ferien die Fahrten aus, die an einer Schule beginnen oder enden (Schätzung, steht so im Fahrplanfenster nicht).
 - **Haltestellen**: im Umkreis von 240 m ein Haltestellenschild (grünes H auf gelbem Grund, Name, Fahrplankasten) an der Bordsteinkante jeder
-  Fahrtrichtung; an der Schulbushaltestelle an der alten Schule steht das Wartehäuschen mit Schild schon (`world/village_props.js`).
+  Fahrtrichtung und jedes Steigs (die Zentralhaltestelle in Schleusingen hat fünf); im Kasten hängt der **echte Aushangfahrplan** dieser
+  Richtung (Stunden mit Minuten für Montag–Freitag, Samstag, Sonn- und Feiertag, „s“ = an Schultagen). An der Schulbushaltestelle an der
+  alten Schule steht das Wartehäuschen mit Schild schon (`world/village_props.js`); der Bus hält dort mit der Tür am Häuschen (die Lage aus
+  Falkos Video, `world/dorfkern_data.js`, statt der 17 m daneben im Feed).
 - **Fahrplan am Schild** („Fahrplan: …“): die nächsten Abfahrten dieser Richtung (Zeit, Linie, Ziel, „in 3 min“, „steht da“), der Tag
   („Mittwoch, Schultag“), **„Auf den Bus warten“** (die Uhr springt wie beim Schlafen bis eine Minute vor den Bus).
+- **Zufahrt vom Rand**: eine Fahrt, die von außerhalb der Welt kommt (z. B. die 205 aus Coburg über Wiedersbach), fährt vom Rand des
+  Straßennetzes der Welt (dort, wo die Straße zur vorigen Haltestelle hinausführt) zu ihrer ersten Haltestelle – mit der Zeit, die ein Bus
+  dafür braucht –, und eine, die weiterfährt, bis zum Rand; kein Bus taucht an einer Haltestelle auf (Ausnahme: Hinternah, Neuhof,
+  Neuendambach liegen selbst am Rand der Karte).
 - **Busse**: jede Fahrt ist ihr Fahrplan; nahe am Beobachter (620 m, Telefon 420 m, höchstens 3 bzw. 2 Busse) bekommt sie ein Modell und
   fährt ihren Weg mit Anfahren, Bremsen und Kurventempo eines Busses in den Minuten des Fahrplans (zu früh: wartet an der Haltestelle), hält an
   jeder Haltestelle mit der Vordertür am Schild, Türen auf und zu (Zischen). **Wer an einer Haltestelle steht, wenn ein Bus fällig ist, und
   wer mitfährt, hat die Uhr in Echtzeit** (`CLOCK.focus('bus')`) – so kommt der Bus zu seiner Minute und fährt so schnell wie ein Bus. Ein Bus
   anderswo fährt in Echtzeit von dort, wo ihn sein Fahrplan hinstellte (er bleibt hinter der schnellen Spieluhr zurück).
+- **Verkehr**: Autos des Verkehrs (`verkehr/*`) warten hinter einem Bus an der Haltestelle und fahren dann vorbei, Fußgänger gehen um ihn
+  herum; für die Spielfigur und Fahrzeuge ist er fest (`VEH.extra`).
 - **Einsteigen** an der Vordertür (Aktionsknopf), Platz rechts hinter der Mitteltür (Ich-Sicht), Fenster mit Linie, Ziel, den nächsten
-  Haltestellen und Zeiten; eine Haltestelle antippen = dort aussteigen (Halt-Glocke); **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur
+  Haltestellen und Zeiten; „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle antippen = dort aussteigen (Halt-Glocke);
+  **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur
   Ankunft, das Gelände dort lädt vorher); **„Aussteigen“**, wenn der Bus steht. Am Ende seines Wegs in der Welt steigt man aus („Weiter fährt
   der Bus über die Karte hinaus – nach …“). Gespeichert während der Fahrt (`pav-bus-v1`): die Haltestelle, an der man einstieg oder zuletzt
   hielt – Neu laden stellt einen dorthin.
@@ -63,15 +73,17 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 
 ## Offen
 
-- Busse, die von außerhalb der Welt kommen, tauchen an ihrer ersten Haltestelle in der Welt auf (z. B. die 205 aus Coburg an der
-  Schleusebrücke) – Zufahrt vom Rand der Welt folgt.
-- Fahrgäste steigen nicht sichtbar ein und aus; Autos des Verkehrs warten nicht auf den Bus.
+- Fahrgäste steigen nicht sichtbar ein und aus (im Bus sitzen ein paar).
+- Der Bus selbst wartet nicht auf Autos vor ihm (er fährt nach seinem Fahrplan).
 - Aufnahmen statt synthetischer Töne.
 
 ## Für den Lead
 
 - Gemeinsame Dateien: `viz3/src/modules.txt` (Block `# feat/bus` nach `zombie/z_ziele_bus.js`), `viz3/shell/parts.txt` (eine Zeile
-  `css/bus.css` nach `css/verkehr.css`), neue Datei `viz3/shell/css/bus.css`. Der Speicherschlüssel `pav-bus-v1` ist in `bus/bus.js` mit
+  `css/bus.css` nach `css/verkehr.css`), neue Datei `viz3/shell/css/bus.css`; markiert `// feat/bus`: `welt/fahrt.js` (eine Zeile:
+  `WELT.focus` auch ein Punkt vor dem Bus, in dem man sitzt – `FAHRT.focusBus`), `time/clock.js` (die Echtzeit-Uhr für den Bus heißt
+  „Echtzeit – Bus“ statt „Leim offen“, Warten ist dann erlaubt), `verkehr/verkehr_auto.js` und `verkehr/verkehr.js` (je eine Zeile: die Busse
+  als Hindernisse, über `window.BUS.obstacles`, weil `bus/bus.js` später lädt). Der Speicherschlüssel `pav-bus-v1` ist in `bus/bus.js` mit
   `SAVE.key` angemeldet (Prüfung, Standard) – keine Zeile in `core/save.js`.
 - Quellen: `credits_add` in `viz3/extra/bus/manifest.json` (gtfs.de/DELFI CC BY 4.0, OSM ODbL, Schulferien).
 - Neue `window`-Namen: `BUS`, `BUSMOD`. Ereignisse `bus:bereit`, `bus:warten`, `bus:ein`, `bus:aus`.

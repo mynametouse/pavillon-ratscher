@@ -323,9 +323,10 @@ export const BUS = (() => {
     }
     return out;
   }
-  // the ground under a point of the lane: the road profile beyond the square (welt/fahrt.js carves the tiles to it), else KERN
+  // the ground under a point of the lane: where the ground is drawn (the square, loaded tiles beyond it) the ground one sees (KERN);
+  // beyond the square before its tiles are there the road's profile (welt/fahrt.js carves the tiles to it)
   function zAt(R, s, x, y, zPrev) {
-    if (!insideRB(x, y)) {
+    if (!insideRB(x, y) && !(WELT.covers && WELT.covers(x, y))) {
       const i = Math.max(0, Math.min(R.n - 1, Math.round(s)));
       const zp = R.Zp[i];
       if (Number.isFinite(zp)) return zp;
@@ -385,6 +386,12 @@ export const BUS = (() => {
     if (moved || o0 !== I.B.open) markDirty();
     return I;
   }
+  // trips at their end (not drawn again while the timetable still counts them on the road)
+  const GONE = new Set();
+  function gone(k) {
+    GONE.add(k);
+    if (GONE.size > 60) GONE.delete(GONE.values().next().value);
+  }
   // which trips to draw: those whose timetable puts them near the observer (nearest first), as many as there are models
   function choose(ox, oy) {
     if (CLOCK.warp) return;
@@ -392,7 +399,7 @@ export const BUS = (() => {
     const cand = [];
     for (const a of act) {
       const key = a.trip.i + ':' + a.di;
-      if (S.inst.some(I => I.key === key)) continue;
+      if (GONE.has(key) || S.inst.some(I => I.key === key)) continue;
       const P_ = BUSPLAN.S.pats[a.trip.pat],
         T0 = a.di * 1440 + a.trip.t0;
       // before its first stop in the world: only a trip that starts there stands ready (3 min before)
@@ -415,13 +422,13 @@ export const BUS = (() => {
       dClk = S.lastClk === undefined ? 0 : clk - S.lastClk;
     S.lastClk = clk;
     for (const I of S.inst.slice()) {
-      if (I.hold > 0) I.hold -= dt;
+      if (I.hold > 0 && !(S.ride && S.ride.I === I && S.ride.busy)) I.hold -= dt;
       if (S.ride && S.ride.I === I) {
         // the bus one rides: exactly the clock (it runs in real time meanwhile); while the picture fades it waits at the stop
         if (S.ride.busy) S.ride.lag = clk - I.tau;
         else I.tau = clk - S.ride.lag;
-      } else if (dClk > 2) {
-        // the clock jumped (set, a scene): the bus to its minute
+      } else if (dClk > 2 || CLOCK.warp) {
+        // the clock jumped (set, a scene) or races (waiting, sleeping – a time-lapse): the bus to its minute
         I.tau = clk;
       } else if (!(I.hold > 0 && I.st === 'halt')) {
         // a bus elsewhere: real time (it stands while the clock stands), never ahead of the clock; held while one gets on or off
@@ -430,9 +437,13 @@ export const BUS = (() => {
       place(I, dt);
       const d = Math.hypot(I.x - ox, I.y - oy);
       I.endT = I.st === 'ende' ? I.endT + dt : 0;
-      const edge = I.st === 'ende' && I.Rn.P.st[I.k].s < 0;
-      if (!(S.ride && S.ride.I === I) && (edge || d > DRAW + 160 || (I.st === 'ende' && (I.endT > 40 || d > 200))))
+      const edge = I.st === 'ende' && I.Rn.P.st[I.k].s < 0,
+        over = edge || (I.st === 'ende' && (I.endT > 40 || d > 200));
+      if (!(S.ride && S.ride.I === I) && (over || d > DRAW + 160)) {
+        // a trip at its end is not drawn again
+        if (over) gone(I.key);
         drop(I);
+      }
     }
   }
   // the buses are solid for the walker and for vehicles (vehicles/vehicle.js VEH.extra: an oriented box each)
@@ -571,6 +582,17 @@ export const BUS = (() => {
     } else if (I.st === 'fahrt' && R_.shownK !== I.k) {
       R_.shownK = I.k;
       panel();
+      // off from a stop: the display and the gong – „Nächster Halt: …“
+      let nx = -1;
+      for (let k = I.k + 1; k <= I.Rn.P.last; k++)
+        if (I.Rn.P.st[k].s >= 0) {
+          nx = k;
+          break;
+        }
+      if (nx >= 0) {
+        gong();
+        PLAY.think('Nächster Halt: ' + stName(I.Rn.P.st[nx].s) + (R_.want === nx ? ' – Wagen hält' : ''), 3600);
+      }
     }
   }
   // ---------------- the ground ahead of the bus one rides: the tiles beyond the square (welt/welt.js) load around a point ahead ----------------
@@ -616,6 +638,8 @@ export const BUS = (() => {
     await wait(450);
     const tau = I.Rn.A[k] + 0.02,
       dT = tau - I.tau;
+    // arrived: the doors are open when the picture comes back (one gets off at once)
+    I.hold = 4;
     if (dT > 0) {
       CLOCK.t = CLOCK.t + dT;
       I.tau = tau;
@@ -682,7 +706,8 @@ export const BUS = (() => {
       );
     }
     const op = (BUSPLAN.S.lines[tr.line] || {}).op || '';
-    pan.innerHTML = `<header><b class="ln">${tr.line}</b><div><h3>${tr.head || tr.nach}</h3><span>${op}${tr.weiter ? ' · fährt weiter nach ' + tr.nach : ''}</span></div></header>
+    const halts = R_.want !== null && R_.want === nextReal && I.st === 'fahrt';
+    pan.innerHTML = `<header><b class="ln">${tr.line}</b><div><h3>${tr.head || tr.nach}</h3><span>${op}${tr.weiter ? ' · fährt weiter nach ' + tr.nach : ''}</span></div>${halts ? '<b class="halt">Wagen hält</b>' : ''}</header>
       <ol>${rows.join('')}</ol>
       <div class="row">${I.st === 'halt' && I.k !== R_.from ? '<button type="button" data-k="aus">Aussteigen</button>' : nextReal !== null && R_.want !== nextReal ? '<button type="button" data-halt="' + nextReal + '">Aussteigen an der nächsten Haltestelle</button>' : ''}<button type="button" data-k="kurz">Fahrt abkürzen</button></div>
       <p class="mnote">Haltestelle antippen: dort aussteigen. Fahrplan: gtfs.de (DELFI e.V.)</p>`;
@@ -744,10 +769,7 @@ export const BUS = (() => {
     const m = c.t - now - 1.0;
     S.stats.waits++;
     KERN.emit('bus:warten', { halt: stName(e.s), min: Math.round(m) });
-    CLOCK.wait(m, 'Warten auf den Bus', () => {
-      S.lastClk = T();
-      renderBoard();
-    });
+    CLOCK.wait(m, 'Warten auf den Bus', () => renderBoard());
   }
   // ---------------- the clock in real time: waiting at a stop when a bus is due, riding ----------------
   function focusTick(ox, oy) {
@@ -842,6 +864,28 @@ export const BUS = (() => {
   }
   function doorSound(I, opening) {
     hiss(I.x, I.y, opening ? 0.55 : 0.4, opening ? 2600 : 1800);
+  }
+  // the announcement gong (two soft tones, down)
+  function gong() {
+    const r = raw();
+    if (!r) return;
+    const t = r.ctx.currentTime;
+    for (const [f, dt] of [
+      [659, 0],
+      [523, 0.45],
+    ]) {
+      const o = r.ctx.createOscillator(),
+        g = r.ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + dt);
+      g.gain.exponentialRampToValueAtTime(0.12, t + dt + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 1.1);
+      o.connect(g);
+      g.connect(r.sfx);
+      o.start(t + dt);
+      o.stop(t + dt + 1.2);
+    }
   }
   function bell() {
     const r = raw();

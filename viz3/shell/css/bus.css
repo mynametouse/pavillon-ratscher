@@ -28,3 +28,4 @@
 #busfade{position:absolute;inset:0;z-index:6;background:#000;opacity:0;pointer-events:none;transition:opacity .4s}
 #busfade.on{opacity:1}
 @media (max-width:720px){ #busboard,#buspanel{top:auto;bottom:calc(166px + env(safe-area-inset-bottom,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto;max-height:52vh;overflow:auto} }
+#buspanel .halt{flex:none;padding:5px 8px;border-radius:5px;background:#c8102e;color:#fff;font:700 12px/1 var(--f-body);letter-spacing:.02em}

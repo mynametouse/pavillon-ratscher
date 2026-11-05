@@ -180,9 +180,10 @@ with lib.browser() as b:
             # the next stop: Krankenhaus, then the Zentralhaltestelle – „Fahrt abkürzen“ to the Zentralhaltestelle
             kz = J("(() => { const I = BUS.S.ride.I; return I.Rn.P.st.findIndex(o => o.s >= 0 && BUS.plan.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle'); })()")
             E(f"BUS.want({kz})")
-            E("BUS.shorten()")
-            for i in range(60):
-                steps(0.5)
+            E("void BUS.shorten()")  # (async: it waits for the ground, which the steps below bring)
+            for i in range(80):
+                steps(0.3)
+                time.sleep(0.3)
                 if E("!BUS.S.ride || !BUS.S.ride.busy"): break
             for i in range(30):
                 steps(0.5)
