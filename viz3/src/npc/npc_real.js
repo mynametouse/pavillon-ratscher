@@ -81,6 +81,9 @@ export function prepModel(model, h, o = {}) {
       x.boundingSphere.radius *= 1.6;
     }
   });
+  // its programs right after the builder's own changes to the materials (a microtask, before any frame) – hair and lashes too – not
+  // in the first frame that shows the person (render/render.js warmUp)
+  queueMicrotask(() => warmUp(model));
   return s;
 }
 const camNear = (g, d) => {
@@ -215,8 +218,6 @@ function realPerson(gl, cl, o) {
   inner.add(model); // models face +z; figures walk along local -z
   if (o.prop) propTweak(model, o.prop);
   const s = prepModel(model, o.h);
-  // (its programs now – hair and lashes too – not in the first frame that shows the person: render/render.js warmUp)
-  warmUp(model);
   const B = {};
   model.traverse(x => {
     if (x.isBone) {
