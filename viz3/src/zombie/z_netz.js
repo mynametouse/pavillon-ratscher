@@ -455,7 +455,7 @@ export const ZNETZ = (() => {
     _m.makeBasis(_x, _y, _z);
     p.wObj.quaternion.setFromRotationMatrix(_m);
     const G = ZWAFFE.GRIP[w];
-    p.wObj.position.copy(_a).addScaledVector(_y, -(G ? G.at : 0.3));
+    p.wObj.position.copy(_a).addScaledVector(_y, -(G ? G.at * (G.len || 1) : 0.3)); // (at: the share of the length, as in game/avatar.js)
   }
   // ---- the other one's chainsaw: the same three loops as one's own (zombie/z_waffe.js), at his place ----
   const SAWL = [

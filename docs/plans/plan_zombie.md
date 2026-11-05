@@ -69,7 +69,32 @@ einmal Trystero über öffentliche Nostr-Relais (kein eigener Server, kostenlos)
 Cloudflare Worker oder TURN-Server ginge später dazu. Tests: `zombie` (Kampf), `zombie_haus` (Häuser, Barrikaden, Einbruch),
 `zombie_netz` (zu zweit, zwei Fenster), `zombie_look` (Bilder), `zombie_innen` (Einrichtung).
 
+## Runde 5 (5.11.2026 vormittags) – Falkos Wünsche wörtlich
+
+- 9:06: „Ok, achte darauf dass das neue nicht die das gesprächsmenü überdeckt - ich möchte auch wenn mir Hubert und Ronald folgen bzw. im
+  Team sind noch ihnen reden können. (Die Option wird gerade nicht angezeigt). Die First Person Ansicht muss samt des Tragens der Waffe,
+  aber auch beim Kämpfen realistischer aussehen. Die Geräusche beim Kämpfen, zum Beispiel beim Waffe schwingen, schießen oder benutzen,
+  sollten realistischer sein. Auch das Schlagen und Treten realistischer sein und auch realistischer klingen nach Möglichkeit. Bei Hubert
+  sollte eine doppelläufige Schrotflinte samt Munition liegen, damit man erstmal starten kann. Das wäre mir noch wichtig für den weiteren
+  Verlauf. Und ich muss natürlich auch schießen können.“
+- 9:10: „Sorge dafür dass das Spiel realistischer wird und entferne bug aber sorge auch dafür dass es weiterhin flüssig läuft.“
+- 10:47: „Die Hände sehen allerdings noch sehr Puppen- und Pinocchio-artig aus … wenn sie denn benutzt werden und in Aktion treten,
+  genauso wie die Waffen bzw. Gegenstände, die in der Hand sind, möglichst realitätsnah aussehen. In der First-Person-Variante. Überleg
+  mal, wie du das angehen kannst, sodass es flüssig läuft im Spiel, aber eben auch wirklich sehr echt aussieht.“
+- 11:48: „… sehen die hände jetzt realistischer aus (von Struktur her) aber wirken sehr unrealistisch verstellt und verkrampft, insbes. die
+  Finger. Schau dir an passenden Gaming-Beispielen wie 7 Days to Die und anderen relevanten Games an, wie die Hände und Waffen etc. aussehen
+  sollten und wie sie im Bild in First Person aussehen sollten – auch bei Bewegung.“
+
+Umgesetzt (`z_fp.js`, `z_waffe_mod.js`, `z_ton.js`, `z_bund.js`, Haken in `game/play.js`; Stand in `docs/features/zombie.md`): Gespräch
+bleibt der Knopf, die Nacht-Fragen sind Themen; Doppelflinte mit Patronen auf Huberts Tisch; Waffenmodelle in wahrer Größe; Ich-Sicht mit
+den Armen der eigenen Figur (Löser für Ellbogen, Finger aus den Bewegungsaufnahmen der Figur, Handgelenk folgt dem Unterarm, eigenes
+engeres Bildfeld wie in Ego-Spielen üblich, Haltungen nach dem Vorbild 7 Days to Die: Einhandwaffe rechts unten, Kopf zur Mitte, linke
+Hand außer Bild); Schwünge mit Ausholen/Treffer/Durchziehen, Hit-Stop, Rückstoß, Nachladen mit Kipplauf und Hülsen, Seilzug der Säge,
+Gehen/Drehen/Rennen/Stehenbleiben/Landen; echte Kampfgeräusche (Hilfs-Agent `zombie-ton`); ferne Zombies seltener animiert.
+Offen: Finger und Haltungen weiter am Bild nachstellen (Schläge der langen Werkzeuge gehen bei engerem Bildfeld teils aus dem Bild),
+Texturen für Holz und Metall der Waffen.
+
 ## Steuerung
 
-Linke Maustaste (Maus gefangen) bzw. Klick, Taste Y oder der rote Knopf (Handy): zuschlagen; gedrückt halten: Motorsäge sägt. R: Flinte
-nachladen, Motorsäge nachtanken. Panel: Essen, Trinken, Verbinden, Warten (bis zum Abend), Beenden (zweimal tippen).
+Linke Maustaste (Maus gefangen) bzw. Klick, Taste Y oder der rote Knopf (Handy): zuschlagen bzw. schießen; gedrückt halten: Motorsäge
+sägt. G: treten. R: Flinte nachladen, Motorsäge nachtanken. T: Taschenlampe. Panel: Essen, Trinken, Verbinden, Warten (bis zum Abend), Beenden (zweimal tippen).

@@ -4,10 +4,12 @@
 // id 'axe'). With nothing in the hand the fists. Attack: the left mouse button (with the mouse caught) or a click, the key Y, on touch
 // screens the red button; the chainsaw cuts while held (it starts first, it drinks petrol, it is loud), the shotgun fires two shells, then
 // R reloads (R also refuels the saw). A swing costs stamina; a blow throws them back, blades and the saw take limbs, the shotgun at close
-// range too. Hits go to zombie/z_horde.js ZHORDE.damage.
+// range too. Hits go to zombie/z_horde.js ZHORDE.damage. The models are in zombie/z_waffe_mod.js; what one sees of a swing, a shot, a
+// reload is zombie/z_fp.js (it hears the events 'swing', 'treffer', 'schuss', 'reload', 'sawpull'). The Doppelflinte lies on Hubert's
+// table with a box of shells (Falko 5.11.2026: „Bei Hubert sollte eine doppelläufige Schrotflinte samt Munition liegen“).
 import * as THREE from 'three';
-import { cam, COARSE, R as REN } from '../core/head.js';
-import { markDirty, plain } from '../core/assets.js';
+import { R as REN } from '../core/head.js';
+import { markDirty } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { blocked, floorAt, P } from '../game/walkable.js';
 import { CAM3 } from '../game/player.js';
@@ -21,6 +23,7 @@ import { Z } from './z_state.js';
 import { ZTON } from './z_ton.js';
 import { ZFX } from './z_fx.js';
 import { ZHORDE } from './z_horde.js';
+import { ZWMOD } from './z_waffe_mod.js';
 export const ZWAFFE = (() => {
   const W = ZDATA.WEAPONS;
   const S = {
@@ -33,145 +36,20 @@ export const ZWAFFE = (() => {
     relT: 0,
     shake: 0,
   };
-  // ---- models: the handle along +y from 0 (the lower end) to len; the head at the top ----
-  let MT = null;
-  const mats = () =>
-    MT ||
-    (MT = {
-      wood: plain({ color: 0x8a6a45, roughness: 0.75 }),
-      dark: plain({ color: 0x4d3b2a, roughness: 0.7 }),
-      steel: plain({ color: 0x8e9396, roughness: 0.35, metalness: 0.8 }),
-      rust: plain({ color: 0x6d4a35, roughness: 0.8, metalness: 0.3 }),
-      black: plain({ color: 0x1c1c1c, roughness: 0.55 }),
-      orange: plain({ color: 0xd8641c, roughness: 0.45 }),
-      grey: plain({ color: 0x5b5f61, roughness: 0.5 }),
-      walnut: plain({ color: 0x5a3820, roughness: 0.45 }),
-      blued: plain({ color: 0x23272b, roughness: 0.3, metalness: 0.7 }),
-    });
-  const cyl = (g, r0, r1, len, m, x = 0, y = 0, z = 0, rx = 0, rz = 0, seg = 8) => {
-    const me = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, len, seg), m);
-    me.position.set(x, y + len / 2, z);
-    if (rx || rz) {
-      me.rotation.set(rx, 0, rz);
-      me.position.set(x, y, z);
-    }
-    me.castShadow = true;
-    g.add(me);
-    return me;
-  };
-  const box = (g, w, h, d, m, x, y, z, rx = 0, ry = 0, rz = 0) => {
-    const me = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
-    me.position.set(x, y, z);
-    me.rotation.set(rx, ry, rz);
-    me.castShadow = true;
-    g.add(me);
-    return me;
-  };
-  const MODELS = {
-    spaten: M => {
-      const g = new THREE.Group();
-      cyl(g, 0.019, 0.017, 0.82, M.wood, 0, 0.26);
-      box(g, 0.13, 0.03, 0.03, M.dark, 0, 1.1, 0); // the D-grip
-      box(g, 0.025, 0.1, 0.025, M.dark, -0.055, 1.05, 0);
-      box(g, 0.025, 0.1, 0.025, M.dark, 0.055, 1.05, 0);
-      box(g, 0.18, 0.27, 0.008, M.steel, 0, 0.13, 0);
-      box(g, 0.05, 0.07, 0.03, M.rust, 0, 0.27, 0);
-      return g;
-    },
-    mistgabel: M => {
-      const g = new THREE.Group();
-      cyl(g, 0.017, 0.016, 1.15, M.wood, 0, 0.3);
-      box(g, 0.2, 0.025, 0.025, M.rust, 0, 0.31, 0);
-      for (const x of [-0.09, -0.03, 0.03, 0.09]) cyl(g, 0.006, 0.004, 0.3, M.rust, x, 0.0);
-      return g;
-    },
-    brechstange: M => {
-      const g = new THREE.Group();
-      cyl(g, 0.014, 0.014, 0.82, M.blued, 0, 0.08);
-      const h = cyl(g, 0.014, 0.014, 0.12, M.blued, 0.04, 0.05, 0, 0, 1.0);
-      h.position.set(0.045, 0.06, 0);
-      return g;
-    },
-    beil: M => {
-      const g = new THREE.Group();
-      cyl(g, 0.016, 0.014, 0.38, M.wood, 0, 0);
-      box(g, 0.13, 0.06, 0.028, M.steel, 0.03, 0.36, 0);
-      box(g, 0.025, 0.09, 0.012, M.steel, 0.1, 0.36, 0);
-      return g;
-    },
-    // the forest worker's axe (Wolfgang's hall, zombie/z_innen_einr.js): a long helve, a heavy head
-    axt: M => {
-      const g = new THREE.Group();
-      cyl(g, 0.019, 0.016, 0.78, M.wood, 0, 0);
-      box(g, 0.17, 0.08, 0.034, M.steel, 0.035, 0.75, 0);
-      box(g, 0.03, 0.13, 0.014, M.steel, 0.125, 0.75, 0);
-      box(g, 0.05, 0.05, 0.04, M.dark, -0.04, 0.75, 0);
-      return g;
-    },
-    sense: M => {
-      const g = new THREE.Group();
-      cyl(g, 0.017, 0.015, 1.5, M.wood, 0, 0);
-      for (const y of [0.55, 1.05]) box(g, 0.14, 0.025, 0.025, M.dark, 0.07, y, 0);
-      // the blade: a curve of steel at the top, at right angles to the snath
-      for (let i = 0; i < 7; i++) {
-        const a = (i / 6) * 0.9;
-        box(
-          g,
-          0.12,
-          0.012,
-          0.06 - i * 0.006,
-          M.steel,
-          -0.06 - Math.sin(a) * 0.5,
-          1.5 - (1 - Math.cos(a)) * 0.25,
-          0,
-          0,
-          0,
-          a * 0.6
-        );
-      }
-      return g;
-    },
-    motorsaege: M => {
-      const g = new THREE.Group();
-      box(g, 0.16, 0.3, 0.18, M.grey, 0, 0.22, 0);
-      box(g, 0.15, 0.22, 0.05, M.orange, 0, 0.26, 0.09);
-      box(g, 0.035, 0.18, 0.035, M.black, 0, 0.02, 0); // rear handle
-      box(g, 0.2, 0.03, 0.03, M.black, 0, 0.32, -0.05); // front handle bar
-      box(g, 0.012, 0.44, 0.06, M.steel, 0, 0.58, 0.06); // the bar
-      const ch = box(g, 0.016, 0.46, 0.072, M.black, 0, 0.58, 0.06);
-      ch.name = 'chain';
-      return g;
-    },
-    flinte: M => {
-      const g = new THREE.Group();
-      box(g, 0.04, 0.32, 0.075, M.walnut, 0, 0.16, -0.01, 0.12); // the stock
-      box(g, 0.045, 0.12, 0.05, M.blued, 0, 0.37, 0); // the action
-      cyl(g, 0.011, 0.011, 0.68, M.blued, 0.012, 0.42);
-      cyl(g, 0.011, 0.011, 0.68, M.blued, -0.012, 0.42);
-      box(g, 0.035, 0.24, 0.03, M.walnut, 0, 0.54, -0.025); // the fore-end
-      return g;
-    },
-  };
-  // one thing per weapon (the axe is Hubert's: game/quests.js)
-  const GRIP = {
-    spaten: { at: 0.85, len: 1.15 },
-    mistgabel: { at: 0.75, len: 1.45 },
-    brechstange: { at: 0.6, len: 0.9 },
-    beil: { at: 0.25, len: 0.4 },
-    axt: { at: 0.6, len: 0.8 },
-    sense: { at: 0.5, len: 1.5 },
-    motorsaege: { at: 0.05, len: 0.6 },
-    flinte: { at: 0.35, len: 1.1 },
-  };
+  // ---- the models (zombie/z_waffe_mod.js) ----
+  const MODELS = ZWMOD.MODELS,
+    GRIP = ZWMOD.GRIP,
+    mats = ZWMOD.mats;
+  // where the thing sits in the view when zombie/z_fp.js does not pose it (sitting, a moment of fading)
   const VM = {
-    spaten: { x: 0.32, y: -0.42, z: -0.62, rx: -0.5, rz: 0.15 },
-    mistgabel: { x: 0.3, y: -0.38, z: -0.55, rx: -1.25, rz: 0.05 },
-    brechstange: { x: 0.3, y: -0.3, z: -0.52, rx: -0.45, rz: 0.3 },
-    beil: { x: 0.28, y: -0.24, z: -0.48, rx: -0.3, rz: 0.3 },
-    axt: { x: 0.3, y: -0.36, z: -0.55, rx: -0.4, rz: 0.25 },
+    spaten: { x: 0.3, y: -0.5, z: -0.5, rx: -0.4, rz: 0.2 },
+    mistgabel: { x: 0.3, y: -0.5, z: -0.45, rx: -0.5, rz: 0.1 },
+    brechstange: { x: 0.28, y: -0.36, z: -0.48, rx: -0.3, rz: 0.3 },
+    beil: { x: 0.28, y: -0.3, z: -0.46, rx: -0.3, rz: 0.3 },
+    axt: { x: 0.3, y: -0.42, z: -0.52, rx: -0.3, rz: 0.3 },
     sense: { x: 0.36, y: -0.6, z: -0.7, rx: -0.35, ry: -0.6, rz: 0.4 },
-    motorsaege: { x: 0.26, y: -0.36, z: -0.5, rx: -1.35, ry: 0, rz: 0.05 },
-    flinte: { x: 0.2, y: -0.22, z: -0.42, rx: -1.5, rz: 0 },
+    motorsaege: { x: 0.2, y: -0.4, z: -0.35, rx: -1.45, ry: 0, rz: 0.05 },
+    flinte: { x: 0.12, y: -0.16, z: -0.28, rx: -1.56, rz: 0 },
   };
   function thing(id) {
     if (S.things[id]) return S.things[id];
@@ -180,8 +58,9 @@ export const ZWAFFE = (() => {
       world = new THREE.Group(),
       held = new THREE.Group(),
       w = mk(M);
-    w.rotation.z = Math.PI / 2; // lying on its side
-    w.position.y = 0.03;
+    const lie = ZWMOD.LIE[id] || {};
+    w.rotation.set(lie.rx || 0, lie.ry || 0, lie.rz || 0); // lying on the ground
+    w.position.y = lie.lift ?? 0.03;
     world.add(w);
     held.add(mk(M));
     const T = PLAY.thing({
@@ -198,6 +77,15 @@ export const ZWAFFE = (() => {
       desc: W[id].desc,
       onTake: () => {
         Z.weap[id] = Z.weap[id] || { cond: 100, fuel: id === 'motorsaege' ? 0.35 : 0, ammo: id === 'flinte' ? 2 : 0 };
+        // Hubert's gun: the box of shells beside it goes into the backpack (once)
+        if (T.box && T.box.visible) {
+          T.box.visible = false;
+          if (!Z.weap[id].box) {
+            Z.weap[id].box = true;
+            Z.add('schrot', 12);
+            PLAY.think('Huberts Doppelflinte, geladen – und eine Schachtel Schrot: 12 Patronen.', 3500);
+          }
+        }
         Z.save();
         Z.emit('weapon', { id });
       },
@@ -224,6 +112,22 @@ export const ZWAFFE = (() => {
       const T = thing(p.id);
       if (PLAY.has(T) || T.state === 'world') continue;
       if (Z.weap[p.id] && Z.weap[p.id].cond <= 0) continue;
+      // on Hubert's table in front of his workshop (garden/hof_hubert.js HOF.table, top 0.76 m), with the box of shells
+      if (p.at === 'hoftisch' && window.HOF && HOF.table) {
+        const [tx, ty] = HOF.table;
+        T.place(tx + 0.06, ty - 0.08, 0.762, 0.12);
+        if (!T.box) {
+          T.box = ZWMOD.shellBox(mats());
+          T.box.position.set(0.12, 0, -0.24);
+          T.box.rotation.y = 0.5;
+          T.box.traverse(o => {
+            if (o.isMesh) o.castShadow = o.receiveShadow = true;
+          });
+          T.world.add(T.box);
+        }
+        T.box.visible = !(Z.weap[p.id] && Z.weap[p.id].box);
+        continue;
+      }
       const s = KERN.spot(p.spot);
       if (!s || !s.pos) continue;
       let x = s.pos[0] + p.off[0],
@@ -267,19 +171,10 @@ export const ZWAFFE = (() => {
       return false;
     }
     S.cd = w.cd;
-    S.sw = { id, t: 0, wind: w.wind || 0.3, done: false };
-    Z.emit('swing', { id });
-    ZTON.swing(P.x, P.y);
-    // the figure (third person) and the thing in the hand (first person)
+    S.sw = { id, t: 0, wind: w.wind || 0.3, done: false, whoosh: false };
+    // the arms in first person (zombie/z_fp.js) swing with it; the whoosh comes with the strike, not with the wind-up (tick)
+    Z.emit('swing', { id, wind: S.sw.wind, cd: w.cd });
     if (CAM3.on && AVATAR.ready) AVATAR.gesture(w.gest || 'chop', w.gest === 'push' ? 1.6 : 1.35);
-    if (HELD.obj && !HELD.away)
-      HELD.play(w.cd * 0.85, k => {
-        const s = k < 0.35 ? k / 0.35 : 1 - (k - 0.35) / 0.65,
-          e = Math.sin(Math.min(1, k / 0.35) * Math.PI * 0.5);
-        return w.gest === 'push'
-          ? { dz: -0.28 * s, dy: 0.02 * s }
-          : { rx: -1.1 * s + 0.4 * e * (k < 0.35 ? 0 : 1), dy: 0.12 * s, dx: -0.08 * s };
-      });
     return true;
   }
   function land(id) {
@@ -295,11 +190,15 @@ export const ZWAFFE = (() => {
         kind: w.kind,
         gore: w.gore || 0,
         by: 'spieler',
+        w: id,
       });
       n++;
     }
     if (n && id !== 'faust' && id !== 'tritt') wear(id, w.wear || 0.5);
-    if (n) S.shake = 0.06;
+    if (n) {
+      S.shake = 0.06;
+      Z.emit('treffer', { id, n });
+    }
     return n;
   }
   function wear(id, k) {
@@ -329,6 +228,7 @@ export const ZWAFFE = (() => {
       return;
     }
     s.start = 1.6;
+    Z.emit('sawpull', { dur: 1.6 });
     if (audio.has('csaw_start')) audio.at('csaw_start', P.x, P.y, { vol: 1.1, ref: 9 });
   }
   function sawOn() {
@@ -393,6 +293,7 @@ export const ZWAFFE = (() => {
           gore: part ? 1 : 0,
           part,
           by: 'spieler',
+          w: 'motorsaege',
         });
         if (Math.random() < dt * 8) ZFX.spray(h.e.x, h.e.y, h.e.z + 1.1, -h.dx, -h.dy, 6, 2.6, 1.4);
       }
@@ -428,11 +329,13 @@ export const ZWAFFE = (() => {
       fy = Math.cos(yaw),
       ez = P.feet + (P.eyeH || 1.6) - 0.15;
     ZTON.shot(P.x, P.y);
-    Z.emit('schuss', { x: P.x, y: P.y });
-    ZFX.flash(P.x + fx * 0.9, P.y + fy * 0.9, ez + Math.sin(pitch) * 0.9 - 0.1);
+    // the flash at the muzzle (where zombie/z_fp.js holds it), the kick of the view there too; here the climb that stays
+    // (in first person the flash is drawn at the muzzle in the hands' own view, zombie/z_fp.js; the world's flash would sit elsewhere)
+    if (!(window.ZFP && window.ZFP.shown)) ZFX.flash(P.x + fx * 0.9, P.y + fy * 0.9, ez + Math.sin(pitch) * 0.9 - 0.1);
+    Z.emit('schuss', { x: P.x, y: P.y, left: st.ammo });
     Z.noise(P.x, P.y, w.loud, 2, 'schuss');
     S.shake = 0.18;
-    P.pitch = Math.min(72, P.pitch + 3.5);
+    P.pitch = Math.min(72, P.pitch + 1.2);
     // the pellets: each a ray in a cone; the nearest zombie each ray passes close to takes it
     const hitsBy = new Map();
     for (let i = 0; i < w.pellets; i++) {
@@ -480,9 +383,9 @@ export const ZWAFFE = (() => {
         gore: h.d < 7 ? 1 : 0.4,
         part: h.head >= 3 && h.d < 9 ? 'kopf' : null,
         by: 'spieler',
+        w: 'flinte',
       });
     }
-    if (HELD.obj && !HELD.away) HELD.play(0.25, k => ({ rx: 0.35 * (1 - k), dz: 0.08 * (1 - k) }));
     return true;
   }
   // R: reload the shotgun, or refuel the saw
@@ -495,16 +398,22 @@ export const ZWAFFE = (() => {
         PLAY.think(ZDATA.T.noShells, 1500);
         return;
       }
-      S.relT = W.flinte.reload;
-      ZTON.click(P.x, P.y);
-      setTimeout(() => ZTON.click(P.x, P.y), 700);
+      const dur = W.flinte.reload,
+        k = dur / 2.3;
+      S.relT = dur;
+      // break open, the empties out, two new ones in, snap shut (zombie/z_fp.js shows the hands doing it)
+      Z.emit('reload', { dur, spent: W.flinte.shots - st.ammo, left: st.ammo });
+      const at = (t, f) => setTimeout(f, t * k * 1000);
+      at(0.2, () => ZTON.gunOpen(P.x, P.y));
+      at(1.18, () => ZTON.shellIn(P.x, P.y));
+      if (W.flinte.shots - st.ammo > 1) at(1.33, () => ZTON.shellIn(P.x, P.y));
+      at(1.8, () => ZTON.gunClose(P.x, P.y));
       setTimeout(() => {
         const n = Math.min(W.flinte.shots - st.ammo, Z.sup.schrot || 0);
         if (n > 0 && Z.use('schrot', n)) st.ammo += n;
-        ZTON.click(P.x, P.y);
         PLAY.think(ZDATA.T.reload, 900);
         Z.save();
-      }, W.flinte.reload * 1000);
+      }, dur * 1000);
     } else if (id === 'motorsaege') {
       const st = state('motorsaege');
       if (st.fuel > W.motorsaege.tank - 0.05) return PLAY.think('Der Tank ist voll.', 1200);
@@ -594,6 +503,10 @@ export const ZWAFFE = (() => {
     const sw = S.sw;
     if (sw) {
       sw.t += dt;
+      if (!sw.whoosh && sw.t >= sw.wind - ZTON.whooshLead(sw.id)) {
+        sw.whoosh = true;
+        ZTON.swing(P.x, P.y, sw.id);
+      }
       if (!sw.done && sw.t >= sw.wind) {
         sw.done = true;
         land(sw.id);

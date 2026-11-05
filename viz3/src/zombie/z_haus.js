@@ -161,11 +161,16 @@ export const ZHAUS = (() => {
       const it = ZDATA.ITEMS[k];
       parts.push(n + ' ' + (n === 1 ? it.name : it.pl));
     }
-    // the hunter's gun cabinet: the shotgun
-    if (c.kind === 'waffenschrank' && window.ZWAFFE && !Z.weap.flinte) {
+    // the hunter's gun cabinet: the shotgun (unless it still lies on Hubert's table – there is one gun)
+    if (
+      c.kind === 'waffenschrank' &&
+      window.ZWAFFE &&
+      !Z.weap.flinte &&
+      window.ZWAFFE.thing('flinte').state !== 'world'
+    ) {
       const T = window.ZWAFFE.thing('flinte');
       PLAY.give(T);
-      parts.unshift('die Bockflinte');
+      parts.unshift('die Doppelflinte');
     }
     Z.save();
     ZTON.click(P.x, P.y);

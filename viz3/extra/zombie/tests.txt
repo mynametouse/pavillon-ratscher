@@ -1,3 +1,4 @@
 zombie
 zombie_haus
 zombie_netz
+zombie_kampf

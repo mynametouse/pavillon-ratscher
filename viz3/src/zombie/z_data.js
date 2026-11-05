@@ -134,7 +134,7 @@ export const ZDATA = (() => {
       desc: 'Zweitakter, 0,5 l Tank (Gemisch 1:50). Laut – das hören sie weit.',
     },
     flinte: {
-      name: 'Bockflinte',
+      name: 'Doppelflinte',
       dmg: 26,
       pellets: 9,
       spread: 5.5,
@@ -157,6 +157,8 @@ export const ZDATA = (() => {
     { id: 'mistgabel', spot: 'ziegen', off: [-1.2, 0.9], why: 'an der Ziegenweide' },
     { id: 'brechstange', spot: 'werkstatt', off: [0.9, 1.1], why: 'in der Werkstatt' },
     { id: 'motorsaege', spot: 'werkstatt', off: [-0.8, 1.4], why: 'in der Werkstatt, mit einem Kanister Gemisch' },
+    // Falko 5.11.2026: „Bei Hubert sollte eine doppelläufige Schrotflinte samt Munition liegen, damit man erstmal starten kann“
+    { id: 'flinte', at: 'hoftisch', why: 'auf Huberts Tisch vor der Werkstatt, mit einer Schachtel Schrot' },
   ];
   // ---- supplies: counted in the backpack (not things in the hand) ----
   const ITEMS = {

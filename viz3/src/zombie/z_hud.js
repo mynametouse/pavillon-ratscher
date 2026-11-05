@@ -33,6 +33,7 @@ body[data-zombie="1"] #qtrack{display:none!important}
 #zhud .hp i{background:linear-gradient(90deg,#8e0f0f,#e0392b)} #zhud .st i{background:linear-gradient(90deg,#7c6a12,#e6c84a)} #zhud .fd i{background:linear-gradient(90deg,#6b3d10,#e48b2c)}
 #zhud .zw{margin-top:6px;padding-top:5px;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;gap:6px}
 #zhud .zw b{font-weight:600} #zhud .zw span{opacity:.85;font:500 11px/1.3 var(--f-mono,monospace)}
+#zhud .zwk{margin-top:2px;opacity:.7;font:500 10.5px/1.35 var(--f-body,system-ui)}
 #zhud .zs{margin-top:4px;font-size:12.5px;letter-spacing:.02em;word-spacing:2px}
 #zhud .zk{margin-top:3px;font:500 10.5px/1.2 var(--f-mono,monospace);opacity:.75}
 #zhud .zx{margin-top:5px;display:flex;gap:6px;flex-wrap:wrap}
@@ -77,6 +78,7 @@ body[data-zombie="1"] #qtrack{display:none!important}
        <div class="zb st"><span>Kraft</span><b><i id="zst"></i></b><em id="zstn"></em></div>
        <div class="zb fd"><span>Hunger</span><b><i id="zfd"></i></b><em id="zfdn"></em></div>
        <div class="zw"><b id="zwn"></b><span id="zwi"></span></div>
+       <div class="zwk" id="zwk"></div>
        <div class="zs" id="zsup"></div>
        <div class="zk" id="zkills"></div>
        <div class="zk" id="zclan"></div>
@@ -224,7 +226,16 @@ body[data-zombie="1"] #qtrack{display:none!important}
           ? (w.reload ? 'lädt … ' : '') + w.ammo + ' / 2 · Patronen ' + (Z.sup.schrot || 0)
           : w.cond !== null
             ? 'Zustand ' + w.cond + ' %'
-            : 'Y / Klick: zuschlagen';
+            : '';
+    // how to fight with it (Falko 5.11.: „Wie kann ich schlagen oder kämpfen?“ – „ich muss natürlich auch schießen können“)
+    const atk = COARSE ? '✊' : 'Klick/Y',
+      kick = COARSE ? '🦶 treten' : 'G: treten';
+    $('zwk').textContent =
+      w.id === 'flinte'
+        ? atk + ': schießen · R: nachladen · ' + kick
+        : w.id === 'motorsaege'
+          ? atk + ' halten: sägen · R: tanken'
+          : atk + ': zuschlagen · ' + kick;
     const sup = Object.entries(Z.sup)
       .filter(([, n]) => n > 0)
       .map(([k, n]) => (ZDATA.ITEMS[k] ? ZDATA.ITEMS[k].icon + ' ' + n : ''))
@@ -238,6 +249,11 @@ body[data-zombie="1"] #qtrack{display:none!important}
       ? (Z.clan.name ? 'Clan „' + Z.clan.name + '“: ' : 'Mit dir: ') + al.join(', ')
       : '';
     S.cross.hidden = !(w.id === 'flinte');
+    if (COARSE) {
+      const ab = S.touch.querySelector('[data-z="atk"]'),
+        ic = w.id === 'flinte' ? '💥' : w.id === 'motorsaege' ? '⚙' : '✊';
+      if (ab.textContent !== ic) ab.textContent = ic;
+    }
   }
   KERN.tick(tick, 'zombie/hud');
   Object.assign(S, { build, show, say, hurt, died, act });

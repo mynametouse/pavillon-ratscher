@@ -2,9 +2,13 @@
 // The siren: real recordings from Wikimedia Commons (dist/zombie/: the civil-defence howl of an E57 motor siren – „-stk“, CC BY-SA 4.0 – for
 // the evening, a village siren with church bells – „Nicor“, CC0 – for the morning), loaded only when the zombie night starts, played from the
 // siren mast on the school's ridge (world/village_props.js) with distance and a long echo over the valley; without the files a synthesised
-// motor siren (rotor spinning up, two tones a minor third apart, falling when switched off). Everything else is synthesised: the groans
-// and snarls of the zombies (a rough vocal source through two formant filters), blows, cuts, splashes, the shotgun, a heartbeat at low health.
-// All through the game's audio graph (audio/audio.js: the effects bus, the reverb send, the player's volumes).
+// motor siren (rotor spinning up, two tones a minor third apart, falling when switched off). The fight (Falko 5.11.2026: „Die Geräusche
+// beim Kämpfen … sollten realistischer sein“): recordings with free licences in dist/zombie/kampf/ (kampf.json: kind → files, volume;
+// viz3/extra/zombie/quellen/CREDITS_TON.md), a variant at random, a little faster or slower each time, never the same twice in a row;
+// whatever has no recording is synthesised: the groans and snarls of the zombies (a rough vocal source through two formant filters),
+// whooshes (light and heavy, timed to the strike), punches, kicks, blows, cuts, splashes, the shotgun's report with the valley's echo, its
+// lever, shells and snap, a body falling, a heartbeat at low health. All through the game's audio graph (audio/audio.js: the effects bus,
+// the reverb send, the player's volumes).
 import { BASE } from '../core/head.js';
 import { audio } from '../audio/audio.js';
 import { VPROPS } from '../world/village_props.js';
@@ -21,6 +25,7 @@ export const ZTON = (() => {
     if (S.loading) return S.loading;
     const r = audio.raw && audio.raw();
     if (!r || !r.ctx) return Promise.resolve(false);
+    loadKampf(r);
     S.loading = Promise.all(
       Object.entries(FILES).map(([k, f]) =>
         fetch(BASE + f)
@@ -32,6 +37,50 @@ export const ZTON = (() => {
     ).then(() => true);
     return S.loading;
   }
+  // ---- the fight's recordings: kampf.json { kind: { files: [...], vol } }, decoded once ----
+  const KAMPF = { map: null, buf: {}, last: {} };
+  function loadKampf(r) {
+    if (KAMPF.loading) return KAMPF.loading;
+    KAMPF.loading = fetch(BASE + 'zombie/kampf.json')
+      .then(x => (x.ok ? x.json() : null))
+      .then(j => {
+        if (!j) return false;
+        KAMPF.map = j;
+        const files = [...new Set(Object.values(j).flatMap(v => v.files || []))];
+        return Promise.all(
+          files.map(f =>
+            fetch(BASE + 'zombie/' + f)
+              .then(x => (x.ok ? x.arrayBuffer() : Promise.reject(new Error(x.status))))
+              .then(ab => new Promise((res, rej) => r.ctx.decodeAudioData(ab, res, rej)))
+              .then(b => (KAMPF.buf[f] = b))
+              .catch(e => console.warn('zombie sound', f, e))
+          )
+        ).then(() => true);
+      })
+      .catch(() => false);
+    return KAMPF.loading;
+  }
+  // one of the recordings of a kind at (x, y): false when there is none (then the caller synthesises)
+  function sample(kind, x, y, o = {}) {
+    const m = KAMPF.map && KAMPF.map[kind];
+    if (!m || !m.files) return false;
+    const fs = m.files.filter(f => KAMPF.buf[f]);
+    if (!fs.length) return false;
+    const r = raw();
+    if (!r) return true;
+    let i = Math.floor(Math.random() * fs.length);
+    if (fs.length > 1 && fs[i] === KAMPF.last[kind]) i = (i + 1) % fs.length;
+    KAMPF.last[kind] = fs[i];
+    const c = chain(r, x, y, (m.vol ?? 0.8) * (o.vol ?? 1), o.ref || 10, o.wet ?? 0.2);
+    if (c.sp.vol * (m.vol ?? 0.8) < 0.005) return true;
+    const src = r.ctx.createBufferSource();
+    src.buffer = KAMPF.buf[fs[i]];
+    src.playbackRate.value = o.rate || 0.93 + Math.random() * 0.14;
+    src.connect(c.in);
+    src.start(r.ctx.currentTime + (o.delay || 0));
+    return true;
+  }
+  const hasSample = k => !!(KAMPF.map && KAMPF.map[k] && KAMPF.map[k].files.some(f => KAMPF.buf[f]));
   // where the siren stands: the mast on the old school (building 215), else the Anger
   function sirenAt() {
     const sc = VPROPS && VPROPS.school;
@@ -397,19 +446,114 @@ export const ZTON = (() => {
       o.stop(t + 0.25);
     }
   }
-  const hit = (x, y, kind) => {
-    if (kind === 'blade') {
+  // a blow lands: by the weapon (w) a recording – the fist, the boot, blunt, blade, the fork's stab; else by the kind of harm, synthesised
+  const HITK = {
+    faust: 'punch',
+    tritt: 'kick',
+    spaten: 'hit_blunt',
+    brechstange: 'hit_blunt',
+    axt: 'hit_blade',
+    beil: 'hit_blade',
+    sense: 'hit_blade',
+    mistgabel: 'stab',
+    flinte: 'splat',
+  };
+  const hit = (x, y, kind, w) => {
+    const k =
+      HITK[w] || (kind === 'blade' ? 'hit_blade' : kind === 'pierce' ? 'stab' : kind === 'saw' ? null : 'hit_blunt');
+    if (k && sample(k, x, y, { ref: 9 })) {
+      if ((w === 'spaten' || w === 'brechstange' || w === 'tritt') && Math.random() < 0.35)
+        sample('bone_crack', x, y, { ref: 8 });
+      return;
+    }
+    if (w === 'faust') {
+      // a smack: a short bright slap on a low thump
+      burst(x, y, { f: 1900, q: 1.2, vol: 0.45, d: 0.035, a: 0.001, ref: 8, wet: 0.1 });
+      burst(x, y, { f: 180, q: 0.8, type: 'lowpass', vol: 0.7, d: 0.11, thump: 95, ref: 8 });
+    } else if (w === 'tritt') {
+      burst(x, y, { f: 140, q: 0.7, type: 'lowpass', vol: 0.95, d: 0.18, thump: 68, ref: 9 });
+      burst(x, y, { f: 900, q: 0.9, vol: 0.25, d: 0.08, a: 0.004, ref: 8 });
+    } else if (kind === 'blade') {
       burst(x, y, { f: 3200, f1: 900, q: 0.8, type: 'bandpass', vol: 0.55, d: 0.14 });
       burst(x, y, { f: 520, q: 1.4, vol: 0.6, d: 0.2, a: 0.01, thump: 110 });
     } else if (kind === 'pierce') burst(x, y, { f: 700, f1: 300, q: 1.6, vol: 0.6, d: 0.18, thump: 90 });
     else burst(x, y, { f: 260, q: 0.9, type: 'lowpass', vol: 0.85, d: 0.16, thump: 75 });
   };
   const splat = (x, y, k = 1) => {
+    if (sample('splat', x, y, { vol: Math.min(1.2, 0.6 + 0.4 * k), ref: 8 })) return;
     burst(x, y, { f: 600, f1: 220, q: 0.9, vol: 0.5 * k, d: 0.28, a: 0.006 });
     burst(x, y, { f: 1800, q: 2.5, vol: 0.18 * k, d: 0.09 });
   };
-  const crack = (x, y) => burst(x, y, { f: 2400, f1: 1200, q: 3, vol: 0.55, d: 0.07, thump: 160 });
-  const swing = (x, y) => burst(x, y, { f: 900, f1: 2400, q: 1.2, vol: 0.18, d: 0.2, a: 0.08, ref: 4, wet: 0 });
+  const crack = (x, y) => {
+    if (sample('bone_crack', x, y, { ref: 9 })) return;
+    burst(x, y, { f: 2400, f1: 1200, q: 3, vol: 0.55, d: 0.07, thump: 160 });
+  };
+  // the whoosh of a swing: heavy tools low and long, the fist and the hatchet short and high; it starts this much before the blow lands
+  const HEAVY = { spaten: 1, axt: 1, sense: 1, mistgabel: 0.7, brechstange: 0.8, tritt: 0.6 };
+  const whooshLead = id => (HEAVY[id] ? 0.17 : 0.1);
+  function swing(x, y, id) {
+    const h = HEAVY[id] || 0;
+    if (sample(h >= 0.7 ? 'swing_heavy' : 'swing_light', x, y, { ref: 4, wet: 0.05, vol: id === 'faust' ? 0.6 : 1 }))
+      return;
+    const r = raw();
+    if (!r) return;
+    // a band of noise sweeping up and down again (the air past the blade), louder in the middle
+    const c = chain(r, x, y, (0.16 + 0.14 * h) * (id === 'faust' ? 0.7 : 1), 4, 0),
+      t = r.ctx.currentTime + 0.005,
+      d = 0.13 + 0.17 * h,
+      nz = r.ctx.createBufferSource(),
+      bp = r.ctx.createBiquadFilter(),
+      g = r.ctx.createGain();
+    nz.buffer = noiseBuf(r);
+    bp.type = 'bandpass';
+    bp.Q.value = 1.6;
+    const f0 = 380 + (1 - h) * 500,
+      f1 = 1500 + (1 - h) * 1700;
+    bp.frequency.setValueAtTime(f0, t);
+    bp.frequency.exponentialRampToValueAtTime(f1, t + d * 0.55);
+    bp.frequency.exponentialRampToValueAtTime(f0 * 0.8, t + d);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(1, t + d * 0.5);
+    g.gain.exponentialRampToValueAtTime(0.001, t + d);
+    nz.connect(bp);
+    bp.connect(g);
+    g.connect(c.in);
+    nz.start(t, Math.random());
+    nz.stop(t + d + 0.05);
+  }
+  // the Doppelflinte's lever and hinge, the shells, the snap shut
+  const gunOpen = (x, y) => {
+    if (sample('shotgun_open', x, y, { ref: 5, wet: 0.05 })) return;
+    burst(x, y, { f: 3800, q: 6, vol: 0.4, d: 0.03, ref: 5, wet: 0 });
+    setTimeout(() => burst(x, y, { f: 1300, q: 3, vol: 0.45, d: 0.07, thump: 240, ref: 5, wet: 0 }), 90);
+  };
+  const shellIn = (x, y) => {
+    if (sample('shotgun_shell', x, y, { ref: 5, wet: 0.05 })) return;
+    burst(x, y, { f: 2200, f1: 900, q: 2, vol: 0.25, d: 0.08, a: 0.01, ref: 5, wet: 0 });
+    setTimeout(() => burst(x, y, { f: 3000, q: 5, vol: 0.3, d: 0.025, ref: 5, wet: 0 }), 70);
+  };
+  const gunClose = (x, y) => {
+    if (sample('shotgun_close', x, y, { ref: 6, wet: 0.08 })) return;
+    burst(x, y, { f: 2600, q: 4, vol: 0.6, d: 0.045, thump: 300, ref: 6, wet: 0.05 });
+  };
+  const shellDrop = (x, y) => {
+    for (const [dt, f] of [
+      [0, 2900],
+      [110, 3600],
+      [190, 2500],
+    ])
+      setTimeout(() => burst(x, y, { f, q: 9, vol: 0.18, d: 0.05, ref: 4, wet: 0 }), dt);
+  };
+  const dry = (x, y) => {
+    if (sample('shotgun_dry', x, y, { ref: 5, wet: 0 })) return;
+    burst(x, y, { f: 3500, q: 5, vol: 0.35, d: 0.03, ref: 5, wet: 0 });
+  };
+  // a body hits the ground
+  const fall = (x, y) => {
+    if (sample('body_fall', x, y, { ref: 9 })) return;
+    burst(x, y, { f: 120, q: 0.7, type: 'lowpass', vol: 0.8, d: 0.28, thump: 55, ref: 9 });
+    setTimeout(() => burst(x, y, { f: 700, q: 0.8, vol: 0.18, d: 0.15, a: 0.01, ref: 8 }), 60);
+  };
   const bang = (x, y) => {
     burst(x, y, { f: 180, q: 0.8, type: 'lowpass', vol: 1.0, d: 0.3, thump: 62, ref: 18, wet: 0.45 });
     burst(x, y, { f: 1100, q: 2, vol: 0.35, d: 0.12, ref: 14 });
@@ -421,6 +565,17 @@ export const ZTON = (() => {
   };
   const hammer = (x, y) => burst(x, y, { f: 2600, q: 6, vol: 0.5, d: 0.06, thump: 220, ref: 14 });
   function shot(x, y) {
+    if (sample('shotgun_shot', x, y, { ref: 60, wet: 0.6, rate: 0.97 + Math.random() * 0.06 })) {
+      const r = raw();
+      if (r)
+        setTimeout(
+          () => burst(x, y, { f: 900, f1: 200, q: 0.6, type: 'lowpass', vol: 0.28, d: 1.1, a: 0.05, ref: 120, wet: 1 }),
+          420
+        );
+      return;
+    }
+    // the crack (a very short bright burst) on the boom
+    burst(x, y, { f: 5000, q: 0.4, type: 'highpass', vol: 0.9, d: 0.018, a: 0.0005, ref: 60, wet: 0.3 });
     burst(x, y, {
       f: 4000,
       f1: 300,
@@ -441,6 +596,11 @@ export const ZTON = (() => {
       ); // the valley answers
   }
   const click = (x, y) => burst(x, y, { f: 3500, q: 5, vol: 0.35, d: 0.03, ref: 5, wet: 0 });
+  // the zombies' voices from recordings when there are some (zombie_groan, zombie_attack, zombie_die), else synthesised
+  const voiced = (k, f) => (x, y, a) => {
+    if (sample(k, x, y, { ref: 9, wet: 0.3, vol: k === 'zombie_groan' ? Math.min(1, 0.7 * (a || 1)) : 1 })) return;
+    f(x, y, a);
+  };
   // the heartbeat at low health (k 0…1: how bad), as a short double thump
   function heartbeat(k) {
     const r = raw();
@@ -501,10 +661,10 @@ export const ZTON = (() => {
     sirenOn,
     sirenAt,
     update,
-    groan,
+    groan: voiced('zombie_groan', groan), // the voices: recordings first
     snarl,
-    attack,
-    die,
+    attack: voiced('zombie_attack', attack),
+    die: voiced('zombie_die', die),
     hit,
     splat,
     crack,
@@ -516,8 +676,19 @@ export const ZTON = (() => {
     click,
     heartbeat,
     sting,
+    whooshLead,
+    gunOpen,
+    shellIn,
+    gunClose,
+    shellDrop,
+    dry,
+    fall,
+    sample,
+    hasSample,
+    kampf: KAMPF,
     heart: 0,
   });
+
   return S;
 })();
 window.ZTON = ZTON;

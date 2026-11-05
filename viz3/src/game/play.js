@@ -26,7 +26,24 @@ export const HELD = (() => {
   sc.add(sunL, sunL.target);
   const lampL = new THREE.PointLight(0xffc98a, 0, 4, 2);
   sc.add(lampL);
-  const H = { scene: sc, root, obj: null, vm: null, anim: null, sway: 0, away: false, kind: null }; // away: the thing is in the figure's hand (third person)
+  // the overlay's own camera when H.fov is set: a narrower field of view than the world's, so hands and tools are not stretched at the
+  // edges of a wide view (feat/zombie, zombie/z_fp.js: first-person arms)
+  const vcam = new THREE.PerspectiveCamera(56, 1, 0.03, 80);
+  const H = {
+    scene: sc,
+    root,
+    obj: null,
+    vm: null,
+    anim: null,
+    sway: 0,
+    away: false,
+    kind: null,
+    fp: false,
+    post: null,
+    fov: 0,
+    lamp: 0,
+    lampAt: null,
+  }; // away: the thing is in the figure's hand (third person)
   const mk = () => ({
     enabled: true,
     needsSwap: false,
@@ -35,12 +52,24 @@ export const HELD = (() => {
     setSize() {},
     dispose() {},
     render(r, wb, rb) {
-      if (!H.obj || H.away) return;
+      if ((!H.obj && !H.fp) || H.away) return; // H.fp: arms in first person with nothing in the hand (feat/zombie, zombie/z_fp.js)
       const ac = r.autoClear;
       r.autoClear = false;
       r.setRenderTarget(this.renderToScreen ? null : rb);
       r.clearDepth();
-      r.render(sc, cam);
+      let c = cam;
+      if (H.fov) {
+        vcam.position.copy(cam.position);
+        vcam.quaternion.copy(cam.quaternion);
+        if (vcam.fov !== H.fov || vcam.aspect !== cam.aspect) {
+          vcam.fov = H.fov;
+          vcam.aspect = cam.aspect;
+          vcam.updateProjectionMatrix();
+        }
+        vcam.updateMatrixWorld();
+        c = vcam;
+      }
+      r.render(sc, c);
       r.autoClear = ac;
     },
   });
@@ -96,7 +125,13 @@ export const HELD = (() => {
     return true;
   };
   H.place = () => {
-    if (!H.obj || H.away) return;
+    if ((!H.obj && !H.fp) || H.away) return;
+    if (H.obj) placeObj();
+    // feat/zombie: the first-person arms (zombie/z_fp.js) may pose the thing themselves and put the hands on it
+    if (H.post) H.post();
+    light(H.obj ? H.obj.position : cam.position);
+  };
+  function placeObj() {
     const v = H.vm || {};
     let dx = 0,
       dy = 0,
@@ -123,20 +158,29 @@ export const HELD = (() => {
     _q.setFromEuler(_e);
     H.obj.quaternion.copy(cam.quaternion).multiply(_q);
     H.obj.scale.setScalar(v.s || 1);
-    // light: the scene's sky light and environment; direct sun only outdoors; a warm lamp near the camera when a room light is on
+  }
+  // light: the scene's sky light and environment; direct sun only outdoors; a warm lamp near the camera when a room light is on
+  // (H.lamp: a brighter moment from outside – the muzzle flash of zombie/z_fp.js)
+  function light(at) {
     const ins = houseAt(P.x, P.y, P.feet) || KERN.inside(P.x, P.y, P.feet);
     sunL.color.copy(sun.color);
     sunL.intensity = ins ? 0 : sun.intensity * 0.9;
-    sunL.position.copy(sunDir).multiplyScalar(10).add(H.obj.position);
-    sunL.target.position.copy(H.obj.position);
+    sunL.position.copy(sunDir).multiplyScalar(10).add(at);
+    sunL.target.position.copy(at);
     sunL.target.updateMatrixWorld();
     sc.environment = scene.environment;
     sc.environmentIntensity = scene.environmentIntensity * (ins ? 0.55 : 1);
     sc.environmentRotation.copy(scene.environmentRotation);
-    lampL.position.copy(cam.position);
-    lampL.position.y += 0.6;
-    lampL.intensity = ins && window.LIGHTSTATE && LATE.LIGHTSTATE.lampNear(P.x, P.y, P.feet) ? 1.6 : 0;
-  };
+    if (H.lamp && H.lampAt) lampL.position.copy(H.lampAt);
+    else {
+      lampL.position.copy(cam.position);
+      lampL.position.y += 0.6;
+    }
+    lampL.intensity = Math.max(
+      ins && window.LIGHTSTATE && LATE.LIGHTSTATE.lampNear(P.x, P.y, P.feet) ? 1.6 : 0,
+      H.lamp || 0
+    );
+  }
   return H;
 })();
 window.PREFRAME = () => HELD.place();

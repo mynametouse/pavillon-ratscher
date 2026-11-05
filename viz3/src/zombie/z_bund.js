@@ -417,33 +417,28 @@ export const ZBUND = (() => {
   for (const who of ['hubert', 'ronald']) {
     KERN.act({
       id: 'zbund:' + who,
-      r: 2.6,
-      prio: 0.15,
+      r: 3.4,
+      prio: 0.55,
       pos: () => {
         const w = NPCS[who];
         return w && w.fig && w.fig.g.visible ? [w.x, w.y, P.feet + 1.4] : null;
       },
+      // an ally is close to the player most of the time – among benches, doors and things the talk with him must not get lost (Falko
+      // 5.11.: „ich möchte auch wenn mir Hubert und Ronald folgen bzw. im Team sind noch ihnen reden können“); not yet with us: the
+      // game's own button (game/play.js „Mit … sprechen“) – the questions of the night are topics of the talk
       label: () => {
         const w = NPCS[who];
-        if (!Z.on || !w || !w.fig || !w.fig.g.visible || w.drive) return null;
+        if (!Z.on || !w || !w.fig || !w.fig.g.visible || w.drive || NPCUI.cur()) return null;
         const a = S.list.find(q => q.npc === w),
           n = who === 'hubert' ? 'Hubert' : 'Ronald';
-        // asking, following, waiting: in the talk panel („Mit Hubert sprechen“ stays the button – Falko 5.11.); here only helping up
-        if (a && a.down) return n + ' aufhelfen (Verbandskasten)';
-        return null;
+        if (!a) return null;
+        if (a.down) return n + ' aufhelfen (Verbandskasten)';
+        return 'Mit ' + n + ' sprechen';
       },
       run: () => {
         const w = NPCS[who],
           a = S.list.find(q => q.npc === w);
-        if (!a) {
-          if (who === 'ronald' && !Z.has('konserve') && !Z.has('glas') && !Z.has('brot')) {
-            NPCUI.sub(w, line('ronald', 'ask'));
-            return;
-          }
-          if (who === 'ronald') Z.use(['konserve', 'glas', 'brot'].find(k => Z.has(k)));
-          joinNpc(w, who);
-          return;
-        }
+        if (!a) return;
         if (a.down) {
           if (!Z.use('verband')) return PLAY.think('Ich brauche einen Verbandskasten.', 1800);
           a.down = false;
@@ -451,20 +446,11 @@ export const ZBUND = (() => {
           w.fig.mode = 'stand';
           return say(a, 'follow');
         }
-        if (a.mode === 'folgen') {
-          a.mode = 'wachen';
-          a.gx = w.x;
-          a.gy = w.y;
-          say(a, 'wait');
-        } else {
-          a.mode = 'folgen';
-          say(a, 'follow');
-        }
+        NPCUI.start(w);
       },
     });
   }
   // ---- in the talk with Hubert or Ronald: the night's questions as topics (game/quests.js topics/ask, ours start with 'q_z') ----
-  const NAME = { hubert: 'Hubert', ronald: 'Ronald' };
   function zTopics(who) {
     const w = NPCS[who];
     if (!Z.on || !w) return [];

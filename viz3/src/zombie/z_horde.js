@@ -366,7 +366,7 @@ export const ZHORDE = (() => {
     if (e.net) {
       if (S.netHit) S.netHit(e, dmg, o);
       const L0 = hyp(o.dx || 0, o.dy || 0) || 1;
-      ZTON.hit(e.x, e.y, o.kind);
+      ZTON.hit(e.x, e.y, o.kind, o.w);
       ZFX.spray(e.x, e.y, e.z + 1.2, (o.dx || 0) / L0, (o.dy || 0) / L0, Math.round(6 + dmg * 0.2), 1.6, 1.2);
       return true;
     }
@@ -380,7 +380,7 @@ export const ZHORDE = (() => {
     // a hard blow throws them to the ground for a moment
     if (k >= 2.2 && !e.crawl && rnd() < 0.3 + (k - 2.2) * 0.25) e.downT = 1.4 + rnd() * 0.8;
     const hz = e.z + (e.crawl ? 0.3 : 1.2);
-    ZTON.hit(e.x, e.y, o.kind);
+    ZTON.hit(e.x, e.y, o.kind, o.w);
     if (o.kind !== 'blunt' || dmg > 30) ZTON.splat(e.x, e.y, Math.min(1.4, dmg / 40));
     ZFX.spray(e.x, e.y, hz, ux, uy, Math.round(6 + dmg * 0.25), 1.6 + k, 1.2);
     // a limb off: blades, the saw and the shotgun, sometimes; the head only from a hard blow
@@ -432,6 +432,12 @@ export const ZHORDE = (() => {
     else Z.kills++;
     Z.save();
     ZTON.die(e.x, e.y);
+    // the body on the ground a moment later (unless it flies – the car's own sounds then)
+    if (!e.fly) {
+      const x = e.x,
+        y = e.y;
+      setTimeout(() => ZTON.fall(x, y), 600 + Math.random() * 250);
+    }
     if (e.F) e.F.mode = 'dead';
     setTimeout(() => ZFX.stain(e.x, e.y, 0.75 + rnd() * 0.4, e.z), 600);
     Z.emit('kill', { id: e.id, key: e.key, by: o.by || null, how: o.kind || null });
@@ -894,9 +900,15 @@ export const ZHORDE = (() => {
         markDirty();
       }
     }
+    // their bones: the near ones every frame, beyond 22 m every second frame, beyond 45 m every third – the skipped time adds up, the
+    // next step plays it all (Falko 5.11.: „sorge auch dafür, dass es weiterhin flüssig läuft“)
+    S.frame = (S.frame || 0) + 1;
+    let idx = 0;
     for (const e of Z.ents.slice()) {
       if (e.kind !== 'zombie') continue;
-      const near = !!(e.F && e.F.g.visible && e.d2 < 70 * 70);
+      idx++;
+      const k = e.d2 < 22 * 22 ? 1 : e.d2 < 45 * 45 ? 2 : 3,
+        near = !!(e.F && e.F.g.visible && e.d2 < 70 * 70) && (k === 1 || (S.frame + idx) % k === 0);
       step(e, dt, t, near);
     }
     separate();

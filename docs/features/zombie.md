@@ -22,10 +22,29 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   Texturkoordinaten. Arme vor, Kopf schief, Hinken, Zucken. Sehen ~14 m (hell/Taschenlampe 24 m), hören Motorsäge (70 m), Schuss (220 m), Motor,
   Hämmern; jagen über ein Flussfeld (1,5-m-Raster: Grundrisse, Wände, Gartenhindernisse; Breitensuche vom Spieler ±75 m, 2×/s); Schlag nach
   0,45 s Ausholen (12 Schaden, +2 je Nacht). Ohne Beine kriechen sie, ohne Kopf fallen sie. Autos schleudern sie weg (Schaden ~5·v^1,65).
-- **Waffen** (`z_waffe.js`): Spaten (alte Garage), Beil (Holzhaus), Huberts Axt (Hackklotz), Mistgabel (Ziegenweide), Brechstange und
-  Motorsäge (Werkstatt), Sense, Bockflinte (Waffenschrank im Haus eines Jägers – mit den Häusern). Zuschlagen: linke Maustaste (Maus gefangen)
-  bzw. Klick, Taste Y, roter Knopf am Handy; gedrückt halten wiederholt. Motorsäge: drücken startet (1,6 s), halten sägt, Benzin 0,5 l, R tankt
-  aus dem Rucksack nach. Flinte: zwei Schuss, R lädt nach. Zustand sinkt mit jedem Treffer, bei 0 bricht die Waffe.
+- **Waffen** (`z_waffe.js`, Modelle `z_waffe_mod.js`): Spaten (alte Garage), Beil (Holzhaus), Huberts Axt (Hackklotz), Mistgabel
+  (Ziegenweide), Brechstange und Motorsäge (Werkstatt), Sense, **Doppelflinte** (seit 5.11. auf Huberts Tisch vor seiner Werkstatt, geladen,
+  daneben eine Schachtel mit 12 Schrotpatronen; sonst im Waffenschrank eines Jägers). Zuschlagen: linke Maustaste (Maus gefangen) bzw. Klick,
+  Taste Y, roter Knopf am Handy; gedrückt halten wiederholt; G tritt. Motorsäge: drücken startet (1,6 s, Seilzug), halten sägt, Benzin 0,5 l,
+  R tankt aus dem Rucksack nach. Flinte: zwei Schuss, R lädt nach (Kipplauf auf, Hülsen fliegen, zwei Patronen rein, zu). Was welche Taste
+  tut, steht im Panel unter der Waffe. Zustand sinkt mit jedem Treffer, bei 0 bricht die Waffe. Die Modelle in wahrer Größe: die Flinte mit
+  Englischschaft, Basküle, Abzugsbügel, zwei Läufen mit Schiene und Vorderschaft (die Läufe kippen um den Scharnierstift), die Säge mit
+  Haube, Starter, Bügelgriff, Kettenbremse, Schwert und Kette, Axt und Beil mit keilförmigem Kopf, Spaten mit gewölbtem Blatt und D-Griff.
+- **Ich-Sicht** (`z_fp.js`, Falko 5.11. 9:06/10:47/11:48): man sieht die eigenen Arme – eine Kopie der gewählten Spielfigur (dieselbe
+  fotorealistische Rocketbox-Figur wie in der Schulterkamera: Falkos kariertes Hemd, Sarahs Lederjacke, Christophs nackte Unterarme; Form
+  und Bilder geteilt) mit ausgeblendetem Kopf, die Augen in der Kamera. Arme per Zwei-Knochen-Löser an die Griffe (Ellbogen-Scharnier wie
+  bei der Figur), das Handgelenk folgt dem Unterarm; die Finger aus den Bewegungsaufnahmen der Figur (Werkzeug halten, Lenkrad greifen),
+  Zeigefinger der Flinte am Abzug, eine geballte Faust nur zum Zuschlagen, sonst locker. Eigenes, engeres Bildfeld für Hände und Waffe
+  (0,8 des Weltbildes, `HELD.fov` in `game/play.js`) – nichts wird am Rand gestreckt. Je Waffe eine Haltung, gesenkt, wenn nichts droht;
+  Schläge mit Ausholen, Treffer zur Zeit des Datensatzes (`ZDATA.WEAPONS[…].wind`), Durchziehen und Zurück; beim Treffer bremst der Schlag
+  kurz (Hit-Stop) und die Sicht wackelt; Rückstoß mit Mündungsfeuer und Licht auf Händen und Waffe; Gehen als liegende Acht, Drehen zieht
+  nach, Rennen senkt, abruptes Stehenbleiben und Landen schwingen nach, Atmen stärker bei wenig Kraft. Tritt mit dem eigenen Bein (Jeans,
+  Schuh). In der Schulterkamera, im Auto, im Sitzen nichts davon. Ohne Figur (`?nofig`) einfache Arme als Ersatz.
+- **Geräusche** (`z_ton.js`): Kampf aus 41 echten Aufnahmen (`dist/zombie/kampf/`, `kampf.json`; Hilfs-Agent `zombie-ton`, Nachweise
+  `viz3/extra/zombie/quellen/CREDITS_TON.md` – OpenGameArt, CC0/CC BY 3.0/CC BY-SA 3.0): Schwung leicht/schwer (kommt mit dem Zuschlagen,
+  nicht beim Ausholen), Faust, Tritt, stumpfer Treffer, Klinge, Stich, Knochen, Blut, Körper fällt, Schuss (12er, draußen mit Nachhall),
+  Klicken leer, Kipplauf auf/zu, Patrone rein; Stöhnen, Angriff, Sterben der Zombies. Jede Variante zufällig, etwas schneller oder langsamer,
+  nie zweimal dieselbe. Ohne Dateien synthetisch wie vorher.
 - **Körper** (`z_state.js`): Leben, Kraft (Schläge, Rennen), Hunger (sinkt langsam; leer kostet Leben). Panel: Essen, Trinken, Verbinden,
   Warten (bis zum Abend), Zu zweit, Beenden (zweimal); am Handy startet es eingeklappt (Titel antippen), rechts Knöpfe für Schlag, R, Tritt
   und Taschenlampe. T: Taschenlampe (ein geliehenes Punktlicht). Tod: der Morgen danach im Garten, ein Drittel der
@@ -45,13 +64,16 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
   Treffer zählt für den, der schlug. Jeder sieht den anderen als seine Figur mit Namen, im Auto das Auto; Barrikaden sind gemeinsam; Vorräte,
   Waffen, Leben hat jeder für sich; die Waffe des anderen ist in seiner Hand zu sehen, seine Motorsäge zu hören. `?lokal=1`: zwei Fenster eines Browsers über einen BroadcastChannel (Test `zombie_netz`).
   Grenze: hinter manchen Mobilfunknetzen finden sich zwei Browser ohne Vermittlungsserver (TURN) nicht – dann im WLAN probieren.
-- **Verbündete** (`z_bund.js`): Hubert („um Hilfe bitten“) und Ronald (will erst etwas zu essen) kommen mit, kämpfen, warten auf Zuruf;
+- **Verbündete** (`z_bund.js`): Hubert und Ronald (will erst etwas zu essen) kommen mit, kämpfen, warten auf Zuruf – alles im Gespräch
+  („Mit Hubert sprechen“ bleibt der Knopf, auch wenn er folgt; Themen „Hilfst du mir gegen die Zombies?“, „Komm mit“, „Warte hier“, „Wie
+  sieht's aus?“);
   niedergeschlagen sind sie nur verletzt (Verbandskasten hilft auf, morgens wieder auf den Beinen). Überlebende aus Häusern gegen Essen; sterben
   sie, stehen sie als Zombies wieder auf. Der erste Verbündete gründet den Clan (Name im Panel).
 
 ## Testen
 
-- `python3 viz3/test/run.py --port 8996 --serve zombie` (Logik, ~5 min), `zombie_look` (Bilder aus der Nähe, Gore, Nacht mit Lampe) und
+- `python3 viz3/test/run.py --port 8996 --serve zombie` (Logik, ~5 min), `zombie_kampf` (Gespräch mit Hubert als Verbündetem, Flinte auf
+  seinem Tisch, Ich-Sicht jeder Waffe mit den Armen der Figur, Schwünge, Tritt, Schuss und Nachladen; Bilder), `zombie_look` (Bilder aus der Nähe, Gore, Nacht mit Lampe) und
   `zombie_netz` (zu zweit: zwei Seiten eines Browsers, `?lokal=1`; mit `zombie_netz:netz` über das Internet – nicht im Chat-Rechner, und der
   Testserver erlaubt mit `connect-src 'self'` keine Relais).
 - Spielzustand ansehen: `ZSTATE` (Stand), `ZHORDE`, `ZWAFFE.info()`, `ZOMBIE.times()`; Zombies anhalten: `e.hold = 'idle' | 'walk' | …`.
@@ -61,7 +83,12 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
 
 - Haken außerhalb des Ordners: `dorf/dorf.js` (`DORF.S.hold` – abends und nachts keine Dorfbewohner), `npc/hours.js` (`w.keep` – Verbündete
   bleiben nachts draußen), `core/save.js` (`pav-zombie-v1`).
-- Neue `window`-Namen: `ZDATA`, `ZSTATE`, `ZTON`, `ZFX`, `ZFIG`, `ZINNEN`, `ZHORDE`, `ZHAUS`, `ZWAFFE`, `ZBUND`, `ZHUD`, `ZNETZ`, `ZOMBIE`.
+- Neue `window`-Namen: `ZDATA`, `ZSTATE`, `ZTON`, `ZFX`, `ZFIG`, `ZINNEN`, `ZHORDE`, `ZHAUS`, `ZWMOD`, `ZWAFFE`, `ZFP`, `ZBUND`, `ZHUD`,
+  `ZNETZ`, `ZOMBIE`.
+- Haken in `game/play.js` (HELD, markiert „feat/zombie“): `H.fp` (die Ebene zeichnet auch ohne Ding in der Hand), `H.post` (nach dem
+  Platzieren: die Arme legen das Ding selbst und setzen die Hände daran), `H.fov` (eigenes Bildfeld der Ebene), `H.lamp`/`H.lampAt` (Licht
+  des Mündungsfeuers auf Hand und Waffe).
 - Neues Fremdpaket: `trystero` (npm, MIT) nur im eigenen Lazy-Paket `src/lazy/raum.js`; geladen erst, wenn jemand einen Raum öffnet.
-- Ereignisse: `zombie:start|stop|phase|siren|night|survived|hurt|dead|kill|hit|loot|eat|weapon|enter|leave|barricade|ally`.
+- Ereignisse: `zombie:start|stop|phase|siren|night|survived|hurt|dead|kill|hit|loot|eat|weapon|enter|leave|barricade|ally|swing|treffer|schuss|reload|sawpull`.
+- Ferne Zombies werden seltener animiert (über 22 m jedes zweite, über 45 m jedes dritte Bild; die Zeit summiert sich auf).
 - Nichts läuft und nichts wird gebaut, bevor die Szene startet (Takte prüfen `Z.on`); Materialien von `plain` (keine eigenen Shader).
