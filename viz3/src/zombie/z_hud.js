@@ -83,6 +83,7 @@ body[data-zombie="1"] #qtrack{display:none!important}
        <div class="zk" id="zkills"></div>
        <div class="zk" id="zclan"></div>
        <div class="zq" id="zclanq" hidden><input id="zclanin" maxlength="28" placeholder="Name eures Clans"><button data-z="clan">Gründen</button></div>
+       <div class="zx"><button data-z="diff" id="zdiffb"></button></div>
        <div class="zx"><button data-z="eat">Essen</button><button data-z="drink">Trinken</button><button data-z="heal">Verbinden</button><button data-z="wait">Warten</button><button data-z="netz">Zu zweit</button><button data-z="end">Beenden</button></div>`
     );
     S.flashEl = div('zflash');
@@ -141,6 +142,20 @@ body[data-zombie="1"] #qtrack{display:none!important}
       if (Z.hp >= 100) return PLAY.think('Mir fehlt nichts.', 1200);
       Z.eat(f);
       PLAY.think(f === 'verband' ? 'Verbunden.' : ZDATA.ITEMS[f].name + '.', 1300);
+    } else if (k === 'diff') {
+      // how hard: leicht → normal → schwer (Falko 5.11.: „Schwierigkeit wählbar“) – the zombies of the next spawns and nights
+      const ks = Object.keys(ZDATA.DIFF);
+      Z.diff = ks[(ks.indexOf(Z.diff) + 1) % ks.length];
+      Z.save(true);
+      diffLabel();
+      PLAY.think(
+        Z.diff === 'leicht'
+          ? 'Leicht: weniger Zombies, sie halten weniger aus und treffen schwächer.'
+          : Z.diff === 'schwer'
+            ? 'Schwer: mehr Zombies, zäher, schneller, sie sehen weiter und treffen härter.'
+            : 'Normal.',
+        2600
+      );
     } else if (k === 'clan') {
       const v = ($('zclanin').value || '').trim() || 'Die Ratscher';
       Z.clan.name = v.slice(0, 28);
@@ -155,8 +170,13 @@ body[data-zombie="1"] #qtrack{display:none!important}
     $('zclanq').hidden = false;
     setTimeout(() => $('zclanin').focus(), 50);
   };
+  const diffLabel = () => {
+    const b = $('zdiffb');
+    if (b) b.textContent = 'Schwierigkeit: ' + ZDATA.diffOf(Z.diff).name;
+  };
   function show(on) {
     build();
+    diffLabel();
     S.shown = on;
     document.body.dataset.zombie = on ? '1' : '';
     S.el.hidden = !on;

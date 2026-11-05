@@ -26,6 +26,7 @@ export const Z = (() => {
     houses: {}, // building id → { bar: { opening id: hp }, looted: [container ids], lurk: n }
     clan: { name: '', members: [] },
     t0: 0, // the game minute the night mode began
+    diff: 'normal', // how hard: leicht, normal, schwer (ZDATA.DIFF)
   });
   const S = Object.assign(fresh(), { phase: 'aus', ents: [], dirty: false, saveT: 0, noises: [] });
   // what is saved (the entities are not: the night begins anew from the siren)
@@ -46,6 +47,7 @@ export const Z = (() => {
     'houses',
     'clan',
     't0',
+    'diff',
   ];
   function load() {
     const v = SAVE.get(KEY);
@@ -53,6 +55,7 @@ export const Z = (() => {
     const f = fresh();
     for (const k of SAVED) S[k] = v[k] !== undefined && typeof v[k] === typeof f[k] ? v[k] : f[k];
     for (const k of ['hp', 'stam', 'food']) if (!Number.isFinite(S[k])) S[k] = f[k];
+    if (!ZDATA.DIFF[S.diff]) S.diff = f.diff;
     if (!S.sup || typeof S.sup !== 'object') S.sup = {};
     for (const k of Object.keys(S.sup)) if (!ZDATA.ITEMS[k] || !(S.sup[k] > 0)) delete S.sup[k];
     return true;
@@ -66,7 +69,9 @@ export const Z = (() => {
     SAVE.set(KEY, o);
   }
   function reset() {
-    Object.assign(S, fresh(), { phase: 'aus', ents: [], noises: [] });
+    // (how hard one plays stays: it is a choice, not a state of the night)
+    const diff = S.diff;
+    Object.assign(S, fresh(), { phase: 'aus', ents: [], noises: [], diff: ZDATA.DIFF[diff] ? diff : 'normal' });
     SAVE.set(KEY, null);
   }
   const emit = (n, d) => KERN.emit('zombie:' + n, d);

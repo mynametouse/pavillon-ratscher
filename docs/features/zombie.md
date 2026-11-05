@@ -19,9 +19,23 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
 - **Zombies** (`z_fig.js`, `z_horde.js`): die Rocketbox-Figuren der Dorfbewohner (`dorf_*`) und Fremden (`vk_*`); das Aussehen ist in ihre
   eigenen Texturen gemalt (einmal je Person, höchstens 1024 px, am Handy 512): Haut grau-grün und fleckig, Kleider stumpf und schmutzig, Blut
   am Kinn, als Läufe über die Brust, an Händen und Knien – wo das ist, sagen die Eckpunkte in der Grundhaltung (Kinn, Brust, Finger) und ihre
-  Texturkoordinaten. Arme vor, Kopf schief, Hinken, Zucken. Sehen ~14 m (hell/Taschenlampe 24 m), hören Motorsäge (70 m), Schuss (220 m), Motor,
-  Hämmern; jagen über ein Flussfeld (1,5-m-Raster: Grundrisse, Wände, Gartenhindernisse; Breitensuche vom Spieler ±75 m, 2×/s); Schlag nach
-  0,45 s Ausholen (12 Schaden, +2 je Nacht). Ohne Beine kriechen sie, ohne Kopf fallen sie. Autos schleudern sie weg (Schaden ~5·v^1,65).
+  Texturkoordinaten. Arme vor, Kopf schief, Hinken, Zucken. Sehen nachts ~14 m (bei Tag 24 m), hören Motorsäge (70 m), Schuss (220 m),
+  Rennen (10 m), Motor, Hämmern; jagen über ein Flussfeld (1,5-m-Raster: Grundrisse, Wände, Gartenhindernisse; Breitensuche vom Spieler
+  ±75 m, 2×/s); Schlag nach 0,45 s Ausholen (12 Schaden, +2 je Nacht) – nur wenn er trifft (`ZHORDE.canReach`, V17m): die Figur ist
+  geladen, gleiches Stockwerk, dieselbe Seite der Hauswand (ist der Spieler im Haus, nur einer, der eingebrochen ist), nichts Festes
+  dazwischen (Wände der Häuser, Innenwände und große Möbel, geschlossene Türen – `ZHORDE.wallBetween`). Ohne Beine kriechen sie, ohne Kopf
+  fallen sie. Autos schleudern sie weg (Schaden ~5·v^1,65).
+- **Arten** (V17m, Falko 5.11. 17:57, `ZDATA.KINDS`, `kindsOf(n)`): die erste Nacht wie bisher; ab der zweiten **Läufer** (jagen ~1,55× so
+  schnell, halten weniger aus; Anteil 14 %, je Nacht +8 %, höchstens 40 %), **Feuerwehrmann** (2,6× so zäh, langsamer, schlägt härter; ein
+  tagesleuchtgelber Helm auf dem Kopfknochen nimmt Schläge auf den Kopf, bis er wegfliegt – Manfred, der Wehrführer, trägt ihn immer),
+  **Schreier** (sieht er dich, bleibt er stehen und schreit: alle im Umkreis von 60 m wissen, wo du bist). Je Nacht höchstens Nacht−1
+  Feuerwehrleute (bis 4) und Schreier (bis 3).
+- **Schwierigkeit** (V17m, `ZDATA.DIFF`, `Z.diff`, gespeichert; Knopf im Panel, `?stufe=leicht|normal|schwer`): leicht 0,6× so viele,
+  0,8× so zäh, 0,6× Schaden, 0,9× Tempo, sehen 0,8× so weit, sechs Stunden Tag vor der ersten Sirene; schwer 1,4× / 1,25× / 1,4× / 1,12× /
+  1,15×, zweieinhalb Stunden.
+- **Schleichen** (V17m): geduckt sehen sie dich halb so weit, kriechend oder liegend 0,3×, still stehend etwas weniger, rennend 1,25× –
+  und Rennen hört man (10 m). Im Strahl der Taschenlampe sehen sie dich aus ~26 m, daneben nur den Schein. Im Haus riechen sie dich nachts
+  aus 70 m, geduckt im Dunkeln nur aus 22 m. Ein Schlag auf einen, der nichts ahnt (umherschlurfend, fressend, suchend), zählt dreifach.
 - **Waffen** (`z_waffe.js`, Modelle `z_waffe_mod.js`): Spaten (alte Garage), Beil (Holzhaus), Huberts Axt (Hackklotz), Mistgabel
   (Ziegenweide), Brechstange und Motorsäge (Werkstatt), Sense, **Doppelflinte** (seit 5.11. auf Huberts Tisch vor seiner Werkstatt, geladen,
   daneben eine Schachtel mit 12 Schrotpatronen; sonst im Waffenschrank eines Jägers). Zuschlagen: linke Maustaste (Maus gefangen) bzw. Klick,
@@ -77,7 +91,8 @@ Auftrag `docs/plans/auftraege/zombie-innen.md`).
 
 ## Testen
 
-- `python3 viz3/test/run.py --port 8996 --serve zombie` (Logik, ~5 min), `zombie_kampf` (Gespräch mit Hubert als Verbündetem, Flinte auf
+- `python3 viz3/test/run.py --port 8996 --serve zombie` (Logik, ~5 min), `zombie_arten` (Arten, Schwierigkeit, Schleichen, Schreier;
+  Bilder), `zombie_haus` (auch: kein Schlag durch die Wand, der Eingebrochene ist sichtbar drinnen), `zombie_kampf` (Gespräch mit Hubert als Verbündetem, Flinte auf
   seinem Tisch, Ich-Sicht jeder Waffe mit den Armen der Figur, Schwünge, Tritt, Schuss und Nachladen; Bilder), `zombie_look` (Bilder aus der Nähe, Gore, Nacht mit Lampe) und
   `zombie_netz` (zu zweit: zwei Seiten eines Browsers, `?lokal=1`; mit `zombie_netz:netz` über das Internet – nicht im Chat-Rechner, und der
   Testserver erlaubt mit `connect-src 'self'` keine Relais).

@@ -94,6 +94,21 @@ Gehen/Drehen/Rennen/Stehenbleiben/Landen; echte Kampfgeräusche (Hilfs-Agent `zo
 Offen: Finger und Haltungen weiter am Bild nachstellen (Schläge der langen Werkzeuge gehen bei engerem Bildfeld teils aus dem Bild),
 Texturen für Holz und Metall der Waffen.
 
+## Runde 6 (5.11.2026 nachmittags und abends) – Falkos Wünsche wörtlich
+
+- 16:52: „Ich finde die Waffe bei Hubert nicht“ (17:42: „Das mit dem Finden der Doppelflinte hat sich erledigt“) – der Einführungstext
+  sagt jetzt, wo sie liegt; Wegweiser baut `zombie-ziele`.
+- 16:56: „Die Waffe soll auch zu sehen sein, wenn ich sie gerade nicht benutzt habe. Gerade ist es so, dass nur wenn ich schieße, die Waffe
+  zu sehen ist, obwohl ich sie eigentlich in der Hand habe. Beim Beil war das jetzt auch so. … Es macht natürlich Sinn, dass die Waffe,
+  wenn ich sie in der Hand habe, auch zu sehen ist. … Ansonsten überleg mal, was es noch für Verbesserungen vom Gameplay her geben könnte.“
+  → V17l (in Ruhe nur leicht gesenkt).
+- 17:57, Auswahl aus den Vorschlägen: Kampf – „Schleichen“, „Basteln und Reparieren“ und dazu: „Zombies im Haus sichtbar machen, da sie
+  bisher nicht im Haus sichtbar sind und dennoch Schaden machen – wenn sie reinkommen, müssen Türen oder Fenster zuvor von ihnen
+  aufgebrochen werden“; Spielablauf – „Ziele mit Wegweiser“, „Steigende Nächte mit Ende“, „Neue Zombie-Arten“, „Schwierigkeit wählbar“.
+  „Ok weiter geht’s!“
+  → V17m (Haus, Arten, Schwierigkeit, Schleichen; dieser Chat), Hilfs-Agenten `zombie-werk` (Basteln und Reparieren) und `zombie-ziele`
+  (Ziele mit Wegweiser, Evakuierung in der 3. Nacht als Ende) – Aufträge in `docs/plans/auftraege/`.
+
 ## Steuerung
 
 Linke Maustaste (Maus gefangen) bzw. Klick, Taste Y oder der rote Knopf (Handy): zuschlagen bzw. schießen; gedrückt halten: Motorsäge

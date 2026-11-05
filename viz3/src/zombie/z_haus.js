@@ -416,6 +416,9 @@ export const ZHAUS = (() => {
       ZTON.snarl(p[0], p[1]);
     },
     inside: () => !!S.H,
+    // the house the player is in (its building id), and whether a point is inside its interior
+    bid: () => (S.H ? S.bid : null),
+    within: (x, y, z) => !!(S.H && S.H.inside && S.H.inside(x, y, z)),
     // inside the mounted house: the next waypoint towards the target (from room to room, up and down the stairs), or null
     route(e, t) {
       if (!S.H || e.house !== S.bid || !S.H.route) return null;

@@ -82,6 +82,7 @@ export const ZOMBIE = (() => {
       ZHORDE.night(Math.max(1, Z.night));
     }
     Z.lit = () => Z.phase !== 'nacht' || S.lamp;
+    Z.lamp = () => !!S.lamp;
     Z.save(true);
     Z.emit('start', { fresh: !!fresh });
     markDirty(true);
@@ -104,7 +105,13 @@ export const ZOMBIE = (() => {
       DN.e0 = Date.UTC(y, 9, 31) / 864e5 - d;
     } catch (e) {}
     S.tday = null;
-    CLOCK.t = d * 1440 + times().start;
+    // how hard (?stufe=leicht|normal|schwer, else the last choice): the first day's light before the siren with it
+    try {
+      const q = new URLSearchParams(location.search).get('stufe');
+      if (q && ZDATA.DIFF[q]) Z.diff = q;
+    } catch (e) {}
+    const T0 = times();
+    CLOCK.t = d * 1440 + Math.max(6 * 60, T0.siren - ZDATA.diffOf(Z.diff).day);
     if (DN && DN.active) DN.update(true);
     go('garten');
     P.yaw = P.body = 200;
