@@ -9,6 +9,7 @@
 import * as THREE from 'three';
 import { $, cam, COARSE, stage, V } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
+import { KERN } from '../core/kern.js';
 import { P } from '../game/walkable.js';
 import { applyCam } from '../game/camera.js';
 import { cv } from '../game/input.js';
@@ -44,7 +45,7 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
 #sthud,#stppl,#stpan,#stnotes,#sttime,#stcard{position:absolute;z-index:6;font:400 12px/1.35 var(--f-body,system-ui);color:#f3efe6;user-select:none}
 #sthud[hidden],#stppl[hidden],#stpan[hidden],#stnotes[hidden],#sttime[hidden],#stcard[hidden],#stsvg[hidden]{display:none!important}
 .stbox{background:rgba(24,28,22,.78);border-radius:9px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
-#sthud{top:10px;left:max(10px,env(safe-area-inset-left,0px));display:flex;flex-wrap:wrap;gap:4px;max-width:min(660px,calc(100vw - 230px))}
+#sthud{top:10px;left:max(10px,env(safe-area-inset-left,0px));display:flex;flex-wrap:wrap;gap:4px;max-width:calc(100vw - 250px)}
 #sthud .r{display:flex;align-items:center;gap:5px;padding:5px 9px;cursor:default}
 #sthud .r b{font:600 12.5px/1 var(--f-mono,monospace);letter-spacing:.01em}
 #sthud .r i{font-style:normal;opacity:.85}
@@ -182,6 +183,14 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
         w = n.querySelector('.w');
       if (w) w.hidden = !w.hidden;
     });
+    // the plan view's own labels where a place of the mode stands (world/siteplan.js redraws its overlay on every camera move)
+    const tsvg = $('topsvg'),
+      DUP = new Set(['Werkstatt', 'Garage', 'Hubert', 'Ronald', 'Bungalow', 'Garten']);
+    if (tsvg && window.MutationObserver)
+      new MutationObserver(() => {
+        if (!S.on) return;
+        for (const t of tsvg.querySelectorAll('text')) if (DUP.has(t.textContent)) t.style.display = 'none';
+      }).observe(tsvg, { childList: true });
     H.layers.addEventListener('change', e => {
       const i = e.target.closest('input[data-l]');
       if (i) STRAT.layer.set(i.dataset.l, i.checked);
@@ -244,6 +253,23 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
     people();
     card();
     if (H.panel) H.panel();
+    layout();
+  }
+  // wide screens: the people under the resource bar, the panel and the layers under the time box (both grow and wrap)
+  function layout() {
+    if (innerWidth <= 720) {
+      for (const e of [H.ppl, H.pan, H.layers]) e.style.top = '';
+      return;
+    }
+    const rt = (H.ppl.offsetParent || document.body).getBoundingClientRect().top,
+      b = H.res.getBoundingClientRect().bottom - rt + 6,
+      t = H.time.getBoundingClientRect().bottom - rt + 8;
+    if (b > 20) H.ppl.style.top = Math.round(b) + 'px';
+    if (t > 20) {
+      H.pan.style.top = Math.round(t) + 'px';
+      H.layers.style.top = Math.round(t) + 'px';
+      H.pan.style.maxHeight = `calc(100% - ${Math.round(t) + 70}px)`;
+    }
   }
   const wxText = wx =>
     (wx.storm
@@ -516,8 +542,21 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
   }
   // ---------------- the overlay ----------------
   const _p = new THREE.Vector3();
-  function pr(x, y, z = 0) {
-    _p.copy(V(x, y, z)).project(cam);
+  // the ground's height (cached on a 2 m grid – the terrain does not move): symbols sit on the ground also up in the Klinge
+  const GZ = new Map();
+  function gz(x, y) {
+    const k = Math.round(x / 2) * 100003 + Math.round(y / 2);
+    let v = GZ.get(k);
+    if (v === undefined) {
+      v = KERN.ground(x, y) || 0;
+      if (GZ.size > 40000) GZ.clear();
+      GZ.set(k, v);
+    }
+    return v;
+  }
+  // world point (x, y) dz metres above the ground → screen [px, py, depth]
+  function pr(x, y, dz = 0) {
+    _p.copy(V(x, y, gz(x, y) + dz)).project(cam);
     return [((_p.x + 1) / 2) * stage.clientWidth, ((1 - _p.y) / 2) * stage.clientHeight, _p.z];
   }
   const onScreen = (q, m = 40) =>
@@ -606,11 +645,6 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
         }
         h += '</g>';
       }
-    // the weather where one looks
-    if (STRAT.layer.on('wetter')) {
-      const wx = W.wx(CLOCK.t);
-      h += `<text class="wx" x="${(Wd / 2).toFixed(0)}" y="${(Ht - 8).toFixed(0)}" text-anchor="middle">${esc(wxText(wx))} · ${esc(wx.src)}</text>`;
-    }
     if (H.frame) {
       const f = H.frame,
         x = Math.min(f.x0, f.x1),
@@ -670,6 +704,10 @@ body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] 
       new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, (-(e.clientY - r.top) / r.height) * 2 + 1),
       cam
     );
+    // the plane at the ground under the view's middle, then once more at the ground where the ray hit (hills: the Klinge)
+    _pl.constant = -gz(P.tx, P.ty);
+    if (!_rc.ray.intersectPlane(_pl, _v)) return null;
+    _pl.constant = -gz(_v.x, -_v.z);
     return _rc.ray.intersectPlane(_pl, _v) ? [_v.x, -_v.z] : null;
   }
   // a command: right click (mouse) or a tap on the ground with people selected (touch) – a place gets a job, the ground a walk

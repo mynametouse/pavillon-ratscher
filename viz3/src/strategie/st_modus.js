@@ -78,7 +78,7 @@ export const STRAT = (() => {
   const isOwn = id => !!PD(id).own;
   const now = () => CLOCK.t;
   // home spots on site: your people by the bungalow, the neighbours in their yards
-  const HOME = { falko: [8.6, 12.6], sarah: [10.4, 12.2], christoph: [9.4, 11.2] };
+  const HOME = { falko: [7.2, 12.4], sarah: [11.2, 12.6], christoph: [9.4, 9.6] };
   const ARRIVE = [3.6, 19.0]; // the car under the carport
   const PRES = {};
   function present(id, t = now()) {
@@ -617,17 +617,25 @@ export const STRAT = (() => {
     S.power.load = Math.round(load);
     S.power.short = Math.round(b.short);
     S.power.cap = cap;
-    // not enough: the generator starts for the machines (petrol from its tank, refilled from the can)
-    if (b.short > 1) {
+    // the station runs empty while machines draw: the petrol generator starts, carries the machines and charges the station (its AC input
+    // ~1,5 kW) up to 80 %, then stops – petrol from its tank, refilled from the red can (garden/garage_play.js, the same litres as on foot)
+    const P0 = S.power;
+    if (!P0.gen && b.short > 1 && load > 0) P0.gen = true;
+    if (P0.gen) {
       const need = (D.POWER.genL * dt) / 60;
       let got = WL.fuelUse('gen', need);
       if (got < need - 1e-6 && WL.fuelFill('gen') > 0) got += WL.fuelUse('gen', need - got);
-      S.power.gen = got >= need - 1e-6;
-      if (!S.power.gen) S.power.none = true;
-    } else {
-      S.power.gen = false;
-      S.power.none = false;
-    }
+      if (got < need - 1e-6) {
+        P0.gen = false;
+        P0.none = load > 0;
+      } else {
+        P0.none = false;
+        P0.genL = (P0.genL || 0) + got;
+        const chg = Math.max(0, Math.min(1500, D.POWER.genW - load));
+        P0.soc = Math.min(cap, P0.soc + ((chg + Math.min(load, b.short)) / 1000) * (dt / 60) * 0.92);
+        if (P0.soc >= 0.8 * cap || load <= 0) P0.gen = false;
+      }
+    } else P0.none = b.short > 1 && load > 0 && WL.fuel().gen + WL.fuel().can < 0.05;
   }
   // ---------------- each new game day: events, abilities, orders ----------------
   function newDay(t) {

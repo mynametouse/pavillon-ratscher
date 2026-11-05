@@ -486,7 +486,7 @@ export const STHOLZ = (() => {
     loud: true,
     heavy: 0.5,
     xp: 1.5,
-    watt: 1700,
+    watt: 450, // on average over the job: the table saw (2 kW) and the drum sander (1,5 kW) run only now and then
     order: 20,
     text: 'Ablängen, Kanteln sägen, verleimen, hobeln, in Scheiben schneiden, gewendet verleimen, schleifen bis K240, zweimal ölen, Brandzeichen.',
     learn:

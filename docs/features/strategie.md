@@ -4,7 +4,7 @@ Falkos Wunsch (5.11.2026, 23:11–23:30, Konzept `docs/plans/plan_strategie.md`)
 Age of Empires und Warcraft 3, mit einem Hauch Black & White – realistisch in Logik, Zahlen und Abläufen; man soll dabei wirklich etwas lernen.
 Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/plans/auftraege/strategie.md`).
 
-## Was es gibt (Stand: erster Zuwachs)
+## Was es gibt (Stand: 6.11.2026, Nacht)
 
 - **Die Szene** „Ratscher von oben“ (Menü → Erleben → Szenen, `?szenario=strategie`): die Draufsicht (`world/siteplan.js`) wird zum Spielfeld,
   oben links die Leiste der Vorräte (Euro, Stämme in fm, Bretter in m³, Brennholz in rm, Strom der Powerstation in %, Benzin und Diesel in l –
@@ -25,6 +25,24 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - **Aufträge über die echten Abläufe:** der erste ist „Rasen mähen“ (Benzinmäher aus der Garage, ~1 l/h, 300–500 m²/h je nach Können; der
   Rasen wird in der Welt wirklich kurz – `garden/grass.js`; laut: nicht sonntags, werktags nur 7–20 Uhr). Ein Auftrag läuft unsichtbar weiter,
   wenn niemand hinsieht (auch beim Gehen in der Ich-Sicht), und wartet mit Grund (Regel, Feierabend, Wetter, Benzin).
+- **Die Holzkette** (`strategie/st_holz.js`): Waldbegang (erst wer hinsieht, weiß, was markiert ist – Erkunden statt Nebel) → markierten
+  Baum fällen und aufarbeiten (Lehrgang, zu zweit, Tageslicht, kein Sturm; `FELL.simFell`: derselbe Datensatz, derselbe liegende Stamm, dieselben
+  vermessenen Abschnitte wie von Hand – der Baum fehlt danach auch in der Ich-Sicht) → rücken mit Traktor und Seilwinde, Rungenanhänger
+  (5 t), ins Holzlager → Blockbandsäge (Benzinmotor, 1,4 l/h; Bretter 30 mm oder Bohlen 52 mm, `HOLZSAW.simSaw`) → Trockenstapel
+  (`HOLZDRY.simStack`, das Feuchtemodell nach dem Klima von Meiningen) → Werkstatt. **Entschieden:** die Klinge gibt Fichte, Lärche, Kiefer –
+  Bauholz für den Pavillon, Bretter, Brennholz; Klingenholz-Bretter sind Hartholz: Leimholz Eiche wird gekauft (eine Platte = zwei Bretter,
+  wie im Werkstatt-Spiel), bis ein Laubbaum da ist.
+- **Die Bestellung** „5 Schneidebretter Eiche“ (mindestens 3 Sterne, 21 Tage): Leimholz bestellen (Lieferung 9 Uhr), Bretter bauen
+  (`WERK.simBoard`: das Brett liegt im Regal der Werkstatt mit den Sternen dessen, der es gebaut hat; Falkos „Meisterstück“ +1 Stern; müde →
+  schlechtere Fugen), ausliefern (`WERK.handOut`, Euro, Stil +2 bei Pünktlichkeit). Ein in der Ich-Sicht selbst gebautes Brett zählt mit seinen Sternen.
+- **Ereignisse** (`strategie/st_ereignis.js`): Sturm mit Windwurf (erst beim Waldbegang bekannt; Forstunternehmer beauftragen, 32 €/fm),
+  Borkenkäfer in den Fichten (sechs Wochen Zeit, sonst fliegen sie aus und befallen mehr – Stil −6), Maschinenschaden (Sägeband, Zündkerze,
+  Seil – reparieren oder Christophs „Notreparatur“), Großbestellung mit knappem Termin, Unfälle bei müder Arbeit (Ausfalltage, kein Blut;
+  Erste-Hilfe-Kurs halbiert sie), Gefallen bei Hubert und Ronald zurückgeben.
+- **Essen und Betten** (wie „Supply“): Bungalow (2), Wohnwagen (1), Atelier-Klappsofa (1); Mahlzeiten aus dem Vorrat (Einkaufen in Schleusingen:
+  Lebensmittel, Benzin, Diesel). **Wissen und Ausbau:** Lehrgänge, PV-Module, zweite Powerstation, die Halle; **Zeitalter** nach der Bauphase;
+  **Kapitel** mit Zielen, die sich selbst abhaken.
+- **Figuren:** deine Leute als Rocketbox-Figuren aus der Nähe (von oben eingezoomt und in der Ich-Sicht bis 60 m), nicht am Telefon.
 - **Regeln mit „Warum?“:** jede Absage nennt die Regel, ihren Grund und die Quelle (`STDATA.RULES`): Sonn- und Feiertagsruhe (Thüringer
   Feiertagsgesetz, 32. BImSchV), Ruhezeit 20–7 Uhr (32. BImSchV § 7), Tageslicht im Wald, Lehrgang und Alleinarbeitsverbot (DGUV Regel 114-018),
   Forst-PSA (DGUV I 214-046), Gehörschutz und Eichenstaub (TRGS 553), Sturm, nasses Gras, Saftruhe.
@@ -142,16 +160,24 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
   `strategie:bestellung`, `strategie:faehigkeit`, `strategie:stufe`, `strategie:gefallen`, `strategie:tag`, `strategie:kapitel`.
 - Gespeichert: `pav-strat-v1`; ein Thema hält Kleines in `STRAT.S.ext[thema]` (wird mitgespeichert) oder in einem eigenen SAVE-Schlüssel.
 
-## Offen (nächste Zuwächse dieser Nacht)
+## Offen
 
-Holzkette (Förster markiert → fällen → rücken → Holzlager → Blockbandsäge → Trockenstapel → Werkstatt → Bestellung), Strom an den Maschinen,
-Ereignisse (Sturm, Borkenkäfer, Maschinenschaden, Großbestellung), die Bestellung „5 Schneidebretter Eiche“, 3D-Figuren deiner Leute aus der Nähe,
-Telefon.
+Arbeitshaltungen der Figuren (sie stehen und gehen, sägen noch nicht sichtbar), Traktor und Anhänger fahren beim Rücken nicht sichtbar mit,
+Trockenschrank/Leimholz aus eigenen Bohlen von oben (`HOLZDRY.simShop` ist da, noch kein Auftrag), Brennholz spalten und verkaufen, das
+Telefon im Detail (Layout da, nicht auf einem echten Gerät geprüft), Tiere über `window.TIERE` (feat/tiere) sobald es sie gibt.
 
 ## Für den Lead
 
-- Gemeinsame Dateien (markiert mit `feat/strategie`): `viz3/src/time/clock.js` – `CLOCK.drive(fn)` (eine andere Ansicht lässt die Uhr laufen;
-  drei Zeilen in `running`/`rate` und ein Eintrag im Rückgabeobjekt).
+- Gemeinsame Dateien (jede Stelle markiert mit `feat/strategie`):
+  - `viz3/src/time/clock.js` – `CLOCK.drive(fn)`: eine andere Ansicht lässt die Uhr laufen (in `running`/`rate`, ein Eintrag im Rückgabeobjekt).
+  - `viz3/src/game/camera.js` – die Draufsicht steht über dem Boden unter ihrer Mitte (`KERN.ground`), nicht über der Höhe des Gartens; im
+    Garten (modellierte Fläche auf 0) unverändert, an der Klinge saß die Kamera beim Hineinzoomen sonst in den Kronen.
+  - `viz3/src/world/fell.js` – `FELL.simFell(id, { q, who, any })`: ein markierter Baum (any: auch Sturm-/Käferholz) gefällt und aufgearbeitet
+    wie von Hand, mit Datensatz, liegendem Stamm, vermessenen Abschnitten.
+  - `viz3/src/werk/holz_saw.js` – `HOLZSAW.simSaw(logId, dicke)`: ein Stamm ganz eingeschnitten (dieselben Bretter, Schwarten als Brennholz).
+  - `viz3/src/werk/holz_dry.js` – `HOLZDRY` jetzt `export`iert; `HOLZDRY.simStack(o)` (alle Bretter der Blöcke in den Stapel, Dach),
+    `HOLZDRY.simShop()`.
+  - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
 - `viz3/src/modules.txt`: Block `# feat/strategie` vor `game/tutorial.js`.
 - Neuer Speicher-Schlüssel `pav-strat-v1` (im Modul über `SAVE.key` angemeldet, Prüfung `v === 1`) – bitte in `docs/ARCHITECTURE.md` §8 eintragen.
 - Neue `window`-Namen: `STRAT`, `STHUD`.
