@@ -287,7 +287,8 @@ export const ZZIEL = (() => {
         return (
           'Für zwei Nächte reicht es nicht: such ' +
           (need || 'weiter') +
-          '. Verbandskästen liegen oft in Autos und Schränken.'
+          '.' +
+          (v ? ' Einen Verbandskasten findest du am ehesten in Schränken.' : '')
         );
       },
       target: () =>
