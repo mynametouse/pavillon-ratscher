@@ -3,7 +3,7 @@
 # room, walks from the entry into the Stube, up the stairs and down into the cellar, opens a door, searches a container, switches a light;
 # shader programs must not grow, draw calls / triangles / mount time per house in the log, unmount frees geometries and textures.
 # Pictures into out/zombie_innen/.
-#   python3 viz3/test/zombie_innen.py PORT [tier=schnell,n=6,only=walk+shots+free+sweep,haus=<id>]
+#   python3 viz3/test/zombie_innen.py PORT [tier=schnell,n=6,only=walk+shots+free+progs+sweep,haus=<id>]
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]
@@ -267,6 +267,22 @@ with lib.browser() as b:
             lib.settle_light(pg)
         own = J("__Z.ownPrograms(__H, window.__K0)")
         ck(f'house {hid}: its meshes use programs that were there before', not own, own)
+        E("(() => { ZINNEN.unmount(__H); window.__H = null; GAME.step(0.1); return 1; })()")
+    # as in the zombie night (viz3/test/zombie_haus.py on feat/zombie): in the village with no house mounted, drawn; then a house entered
+    # and drawn – no program may come that was not there (the shared materials are given back when the last house goes)
+    if want('progs'):
+        E("(() => { GAME.go('dorf'); GAME.setMode('day'); for (let i = 0; i < 10; i++) GAME.step(0.05); ZINNEN.warm(); GAME.shot(); GAME.shot(); return 1; })()")
+        k0 = J("__Z.progKeys()")
+        hid0 = houses[0]
+        E(MOUNT % hid0)
+        for _ in range(200):
+            if E("!!(window.__H || window.__ME)"): break
+            time.sleep(0.1)
+        E("(() => { ZINNEN.enter(__H); for (let i = 0; i < 6; i++) GAME.step(0.05); GAME.shot(); return 1; })()")
+        k1 = J("__Z.progKeys()")
+        new = [k for k in k1 if k not in set(k0)]
+        print('programs in the village', len(k0), '→ in the house', len(k1), 'new:', [k[-120:] for k in new], flush=True)
+        ck('entering a house in the village adds no shader program (ZINNEN.warm() made the terrain cut-out ahead)', not new, [k[-160:] for k in new])
         E("(() => { ZINNEN.unmount(__H); window.__H = null; GAME.step(0.1); return 1; })()")
     # all enterable houses once: each mounts without error within the budget, every room on foot, the waypoints (≈ 2 min)
     if want('sweep'):

@@ -32,6 +32,8 @@
 //   H.route(x, y, z, tx, ty, tz) → { x, y, z }      where one inside heads next to get to the target (feet z): the target in the same room,
 //                                                    else the next waypoint along H.graph (for the zombies in the house)
 //   ZINNEN.pick(x, y)  → the id of the enterable house nearest to (x, y)
+//   ZINNEN.warm()      makes the one shader program of the terrain cut-out ahead (call it when the zombie night starts): entering a
+//                      house then compiles no program at all
 import * as THREE from 'three';
 import { scene, V, QS } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -1874,14 +1876,15 @@ export const ZINNEN = (() => {
   };
   S.mounted = () => S.built.slice();
   // ---- the terrain under a mounted house: on slopes the terrain (world/ratscher.js, a 10 m grid) runs through the ground floor and the
-  // cellar. While a house is mounted its terrain meshes take a copy of the terrain material that leaves out the house's inner rectangle
-  // (the walls hide the cut). One program more, compiled at the first house (behind the fade in), none outside the houses. ----
+  // cellar. While a house is mounted its terrain meshes take a copy of the terrain material that leaves out the house's rectangle (the
+  // walls hide the cut). One program more – ZINNEN.warm() makes it ahead (at the start of the zombie night), else the first house does
+  // (behind the fade in); the terrain's own program stays without discard (Apple GPUs draw it cheaper). ----
   const HOLE = { r: { value: new THREE.Vector4() }, b: { value: new THREE.Vector4(1, -1, 1, -1) } };
   let holeMat = null,
     holeMeshes = null;
-  function terrainHole(H) {
+  function holeReady() {
     const tm = RATSCHER && RATSCHER.terrainMat;
-    if (!tm) return;
+    if (!tm) return false;
     if (!holeMat) {
       holeMat = tm.clone();
       const prev = tm.onBeforeCompile;
@@ -1906,6 +1909,10 @@ export const ZINNEN = (() => {
         if (o.isMesh && o.material === tm) holeMeshes.push(o);
       });
     }
+    return holeMeshes.length > 0;
+  }
+  function terrainHole(H) {
+    if (!holeReady()) return;
     if (H) {
       const P = H.plan;
       HOLE.r.value.set(P.F.ox, P.F.oy, P.F.c, P.F.s);
@@ -1914,10 +1921,27 @@ export const ZINNEN = (() => {
       for (const o of holeMeshes) o.material = holeMat;
     } else {
       HOLE.b.value.set(1, -1, 1, -1);
-      for (const o of holeMeshes) o.material = tm;
+      for (const o of holeMeshes) o.material = RATSCHER.terrainMat;
     }
     markDirty();
   }
+  // the cut-out's program made ahead: for one drawn frame the terrain wears the copy with an empty rectangle (it cuts nothing), then
+  // its own material again – so the program is compiled in the real render state, and entering a house compiles nothing
+  S.warm = () => {
+    if (!holeReady()) return false;
+    if (S.built.length) return true;
+    HOLE.b.value.set(1, -1, 1, -1);
+    for (const o of holeMeshes) o.material = holeMat;
+    const m0 = holeMeshes[0],
+      prev = m0.onAfterRender;
+    m0.onAfterRender = function (...a) {
+      m0.onAfterRender = prev;
+      if (!S.built.length) for (const o of holeMeshes) o.material = RATSCHER.terrainMat;
+      return prev.apply(this, a);
+    };
+    markDirty();
+    return true;
+  };
   S.terrainHole = () => (holeMeshes ? holeMeshes.length : 0);
   // ---- the test scenario: ?szenario=zombie-innen (&haus=<id>) goes into a house near the Anger (or the given one), third person ----
   S.enter = H => {
