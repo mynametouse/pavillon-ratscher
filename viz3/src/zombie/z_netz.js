@@ -11,7 +11,7 @@
 // see each other as their own figure with a name over it, in a car the car. Barricades are shared. Each keeps his own supplies, weapons
 // and health; dying in two does not stop the clock.
 import * as THREE from 'three';
-import { $, cam, QS, stage, V } from '../core/head.js';
+import { $, cam, QS, scene, stage, V } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { floorAt, P } from '../game/walkable.js';
@@ -137,6 +137,7 @@ export const ZNETZ = (() => {
     if (!p) return;
     if (p.F) p.F.dispose();
     if (p.lab) p.lab.remove();
+    if (p.wObj) scene.remove(p.wObj);
     if (p.carId && VEH && VEH.by[p.carId]) delete VEH.by[p.carId].netU;
     delete S.peers[id];
     status(S.role === 'host' ? 'Raum ' + S.code + ' – wartet auf Mitspieler' : 'Verbindung getrennt');
@@ -416,6 +417,42 @@ export const ZNETZ = (() => {
     lastLoud[k] = now;
     S.T.send('ev', { k: 'laut', x: +(+x).toFixed(1), y: +(+y).toFixed(1), r: Math.round(r), what: what || '' });
   };
+  // ---- the other player's weapon in his right hand: the handle along the forearm, the grip in the hand (as npc/life.js holdProp) ----
+  const _a = new THREE.Vector3(),
+    _d = new THREE.Vector3(),
+    _f = new THREE.Vector3(),
+    _x = new THREE.Vector3(),
+    _y = new THREE.Vector3(),
+    _z = new THREE.Vector3(),
+    _m = new THREE.Matrix4();
+  function held(p, w, yaw) {
+    if (p.w !== w) {
+      if (p.wObj) scene.remove(p.wObj);
+      p.wObj = null;
+      p.w = w;
+      const mk = ZWAFFE.MODELS[w];
+      if (mk) {
+        p.wObj = mk(ZWAFFE.mats());
+        p.wObj.userData.noMerge = true;
+        scene.add(p.wObj);
+      }
+    }
+    const B = p.F && p.F.bones;
+    if (!p.wObj || !B || !B.RightHand || !B.RightForeArm) return;
+    B.RightHand.getWorldPosition(_a);
+    B.RightForeArm.getWorldPosition(_d);
+    _y.subVectors(_a, _d).normalize();
+    const az = (yaw * Math.PI) / 180;
+    _f.set(Math.sin(az), 0, -Math.cos(az));
+    _z.copy(_f).addScaledVector(_y, -_f.dot(_y));
+    if (_z.lengthSq() < 1e-4) _z.set(0, 1, 0);
+    _z.normalize();
+    _x.crossVectors(_y, _z);
+    _m.makeBasis(_x, _y, _z);
+    p.wObj.quaternion.setFromRotationMatrix(_m);
+    const G = ZWAFFE.GRIP[w];
+    p.wObj.position.copy(_a).addScaledVector(_y, -(G ? G.at : 0.3));
+  }
   // ---- per frame: send, show the other, move the puppets ----
   const _v = new THREE.Vector3();
   function tick(dt) {
@@ -483,6 +520,7 @@ export const ZNETZ = (() => {
         }
         if (p.swingT > 0) p.swingT -= dt;
         F.anim(dt, true);
+        held(p, s.w, s.yaw);
         const h = F.head();
         _v.copy(V(h[0], h[1], h[2] + 0.35)).project(cam);
         const r = stage.getBoundingClientRect();
@@ -492,6 +530,7 @@ export const ZNETZ = (() => {
           p.lab.style.top = ((1 - _v.y) / 2) * r.height + 'px';
         } else p.lab.style.display = 'none';
       } else if (p.lab) p.lab.style.display = 'none';
+      if (p.wObj) p.wObj.visible = show;
       markDirty();
     }
   }

@@ -65,6 +65,8 @@ with lib.browser() as b:
     stepB(0.7); B.evaluate("ZWAFFE.release()"); time.sleep(0.5); stepA(0.3)
     hp1 = A.evaluate(f"(ZSTATE.ents.find(e => e.id === '{zid}') || {{ hp: -1 }}).hp")
     ck('the guest\'s blow reaches the host\'s zombie', hp1 < hp0, f"{hp0} -> {hp1}")
+    sp = JA("(() => { const p = Object.values(ZNETZ.peers)[0]; return p ? { w: p.w || null, obj: !!p.wObj, vis: !!(p.wObj && p.wObj.visible), fig: !!p.F } : null; })()")
+    ck('the host sees the spade in the guest\'s hand', sp and sp['w'] == 'spaten' and sp['obj'], str(sp))
     # the host's zombie strikes the guest
     hb0 = B.evaluate("ZSTATE.hp")
     A.evaluate(f"(() => {{ const e = ZSTATE.ents.find(q => q.id === '{zid}'); if (e) {{ e.hold = false; e.st = 'chase'; e.cd = 0; }} }})()")
