@@ -80,6 +80,9 @@ export const TIERE = (() => {
   }
   S.cal = cal;
   const season = m => (m === 11 || m <= 1 ? 'winter' : m <= 4 ? 'spring' : m <= 7 ? 'summer' : 'autumn');
+  // deer wear the grey-brown winter coat from the autumn moult (late September, October) to the spring moult (May)
+  const coatWinter = (m, doy) => doy < 140 || doy > 272;
+  S.coatWinter = coatWinter;
   // ---------- a seeded random ----------
   function rng(seed) {
     let s = seed >>> 0 || 1;
@@ -284,7 +287,104 @@ export const TIERE = (() => {
       if (G.at(p[0], p[1]) !== 3 || !kites.every(k => Math.hypot(k.home[0] - p[0], k.home[1] - p[1]) > 700)) continue;
       kites.push({ id: 'milan' + kites.length, art: 'rotmilan', home: p, feed: p, seed: Math.floor(R() * 1e6) });
     }
-    groups.push(...roe, ...boar, ...kites);
+    const more = [];
+    const id = (art, n) => art + n;
+    // a place: edge cells (den, sett, perch) or open/settled cells, apart from the others of the species
+    const pick = (list, art, n, apart, mk) => {
+      const got = [];
+      for (const c of shuffle(list.slice())) {
+        if (got.length >= n) break;
+        const [x, y] = cellXY(G, c);
+        if (!got.every(g => Math.hypot(g.home[0] - x, g.home[1] - y) > apart)) continue;
+        const g = mk(x, y, c);
+        if (!g) continue;
+        g.id = id(art, got.length);
+        g.art = art;
+        g.seed = Math.floor(R() * 1e6);
+        got.push(g);
+      }
+      more.push(...got);
+      return got;
+    };
+    const open = [],
+      settled = [];
+    for (let c = 0; c < G.cls.length; c++) {
+      if (G.cls[c] === 3) open.push(c);
+      else if (G.cls[c] === 4) settled.push(c);
+    }
+    // foxes: a den at the forest edge, mousing on the meadows in front of it
+    pick(edges, 'fuchs', 6, 350, (x, y, c) => {
+      const od = openDir(G, c),
+        f = od && openAt(x, y, od, 60, 200);
+      return f ? { home: [x - od[0] * 10, y - od[1] * 10], feed: f } : null;
+    });
+    // hares: a form in the open fields, away from the forest
+    pick(open, 'hase', 10, 150, (x, y) => {
+      if (onRoad(x, y, 5)) return null;
+      for (let a = 0; a < 8; a++) if (G.at(x + Math.cos(a) * 80, y + Math.sin(a) * 80) !== 3) return null;
+      return { home: [x, y], feed: [x + 12, y - 8] };
+    });
+    // badgers: a sett in the edge of the wood, foraging on the meadows nearby
+    pick(edges, 'dachs', 2, 600, (x, y, c) => {
+      const od = openDir(G, c),
+        f = od && openAt(x, y, od, 40, 120);
+      return f ? { home: [x - od[0] * 25, y - od[1] * 25], feed: f } : null;
+    });
+    // raccoons and martens: in the village (barns, bins, attics) at night
+    pick(settled, 'waschbaer', 3, 220, (x, y) =>
+      Math.hypot(x, y) < 70 ? null : { home: [x, y], feed: [x + 15, y + 10] }
+    );
+    pick(settled, 'marder', 3, 200, (x, y) =>
+      Math.hypot(x, y) < 70 ? null : { home: [x, y], feed: [x - 12, y + 14] }
+    );
+    // a wildcat: far from the houses, at the edge of a large wood
+    pick(edges, 'wildkatze', 1, 0, (x, y, c) => {
+      const od = openDir(G, c),
+        f = od && openAt(x, y, od, 20, 70);
+      if (!f) return null;
+      for (const s of settled.slice(0, 4000)) {
+        const [sx, sy] = cellXY(G, s);
+        if (Math.hypot(sx - x, sy - y) < 450) return null;
+      }
+      return { home: [x - od[0] * 30, y - od[1] * 30], feed: f };
+    });
+    // red deer: one group passing through from the large woods, out on the far fields at night
+    pick(deep, 'rothirsch', 1, 0, (x, y) => {
+      let best = null;
+      for (let a = 0; a < 16 && !best; a++)
+        for (let r = 100; r < 500; r += 25) {
+          const px = x + Math.cos(a) * r,
+            py = y + Math.sin(a) * r;
+          if (G.at(px, py) === 3 && !onRoad(px, py, 6)) {
+            best = [px + Math.cos(a) * 60, py + Math.sin(a) * 60];
+            break;
+          }
+        }
+      return best ? { home: [x, y], feed: best } : null;
+    });
+    // buzzards: three pairs over the fields; ravens: a pair over the woods; the black stork: a nest deep in the Klinge, soaring by day
+    pick(edges, 'bussard', 3, 600, (x, y, c) => {
+      const od = openDir(G, c);
+      return od ? { home: [x + od[0] * 90, y + od[1] * 90], feed: [x + od[0] * 90, y + od[1] * 90] } : null;
+    });
+    pick(deep, 'kolkrabe', 1, 0, (x, y) => ({ home: [x, y], feed: [x, y] }));
+    {
+      // the nest: an old tree deep in the stand at the Klinge, ~260 m from the family forest (its quiet zone reaches it in spring)
+      const nest = [-262, -772];
+      more.push({ id: 'storch0', art: 'schwarzstorch', home: nest, feed: nest, seed: 4242, nest });
+    }
+    // the eagle owl: on a spruce top at the edge below the Untere Klinge at dusk
+    {
+      const J = [-606, -598];
+      let top = null;
+      for (const t of RATSCHER.forestCHM || []) {
+        const d = Math.hypot(t[0] - J[0] - 40, t[1] - J[1] - 10);
+        if (t[2] > 14 && (!top || d < top.d)) top = { d, p: [t[0], t[1], t[2]] };
+      }
+      const p = top ? top.p : [J[0] + 40, J[1] + 10, 18];
+      more.push({ id: 'uhu0', art: 'uhu', home: [p[0], p[1]], feed: [p[0], p[1]], perchH: p[2] - 0.6, seed: 777 });
+    }
+    groups.push(...roe, ...boar, ...kites, ...more);
     for (const g of groups) {
       g.live = [];
       g.scared = -1e9;
@@ -305,6 +405,7 @@ export const TIERE = (() => {
     const scared = CLOCK.t - g.scared < 90;
     if (g.art === 'reh') {
       const winter = se === 'winter';
+      const coatW = coatWinter(m, cal().doy);
       const n = winter ? 3 + Math.floor(r * 5) : 1 + Math.floor(r * 2.6);
       // in winter some groups merge: only every second one is out, the others join it
       if (winter && g.seed % 2) return { where: null, n: 0 };
@@ -313,27 +414,83 @@ export const TIERE = (() => {
       // fawns from late May: the doe with one or two kids (the kids hidden in the grass by day)
       const kids = !winter && doy > 150 && doy < 300 && r > 0.35 ? 1 + (r > 0.75 ? 1 : 0) : 0;
       const buck = (g.seed % 3 === 0 && !winter) || (winter && r > 0.7);
-      return { where: out ? 'out' : 'cover', n, kids: out ? kids : 0, buck, winter };
+      return { where: out ? 'out' : 'cover', n, kids: out ? kids : 0, buck, winter, coatW };
     }
     if (g.art === 'wildschwein') {
       const n = g.keiler ? 1 : 4 + Math.floor(r * 6);
-      // piglets from March to August (striped)
-      const young = !g.keiler && doy > 70 && doy < 250 ? Math.floor(n * 0.6) : 0;
+      // the young of the year: born March to May (here ~1 April), striped for their first three to four months, then brown;
+      // they grow from a third of their mother's length to three quarters by winter (next spring they are Überläufer)
+      const age = (doy - 92 + 365) % 365;
+      const young = g.keiler ? 0 : Math.floor(n * 0.6);
       const out = !scared && el < -7;
-      return { where: out ? 'out' : 'cover', n, young };
+      return {
+        where: out ? 'out' : 'cover',
+        n,
+        young,
+        stripes: age < 115,
+        youngSc: 0.34 + 0.44 * Math.min(1, age / 270),
+      };
     }
     if (g.art === 'rotmilan') {
       const here = (m >= 2 && m <= 9) || r < 0.15;
       return { where: here && el > 4 ? 'sky' : null, n: here ? (r > 0.5 ? 2 : 1) : 0 };
     }
+    const dusk = el < 3,
+      night = el < -6;
+    if (g.art === 'fuchs') {
+      // dusk and night; in winter (and with young to feed in May/June) also by day now and then
+      const out = !scared && (dusk || (se === 'winter' && r < 0.35) || (m >= 4 && m <= 5 && r < 0.25));
+      return { where: out ? 'out' : 'cover', n: 1 };
+    }
+    if (g.art === 'hase') {
+      // in its form by day (it sits tight until one nearly steps on it), out at dusk and night; in March the boxing
+      return { where: !scared && dusk ? 'out' : 'cover', n: m === 2 && r > 0.5 ? 2 : 1 };
+    }
+    if (g.art === 'dachs') {
+      // only at night; in the cold of winter it stays in the sett on most nights
+      const cold = se === 'winter' && r < 0.7;
+      return { where: !scared && night && !cold ? 'out' : null, n: 1 + (m >= 4 && m <= 7 && r > 0.6 ? 1 : 0) };
+    }
+    if (g.art === 'waschbaer' || g.art === 'marder') {
+      const lazy = se === 'winter' && r < 0.5;
+      return { where: !scared && night && !lazy ? 'out' : null, n: g.art === 'waschbaer' && r > 0.6 ? 2 : 1 };
+    }
+    if (g.art === 'wildkatze') return { where: !scared && dusk && r < 0.3 ? 'out' : null, n: 1 };
+    if (g.art === 'rothirsch') {
+      // a group of hinds with calves on a quarter of the nights; in the rut (mid September to mid October) a stag with them
+      const rut = doy > 255 && doy < 290;
+      const here = r < 0.25 || (rut && r < 0.5);
+      return {
+        where: here && !scared && night ? 'out' : null,
+        n: here ? 3 + Math.floor(r * 4) : 0,
+        stag: rut || r < 0.08,
+        rut,
+      };
+    }
+    if (g.art === 'bussard') return { where: el > 3 ? 'sky' : null, n: r > 0.4 ? 2 : 1 };
+    if (g.art === 'kolkrabe') return { where: el > 2 ? 'sky' : null, n: 2 };
+    if (g.art === 'schwarzstorch') {
+      const here = doy > 75 && doy < 250;
+      return { where: here && el > 8 && h01(g.seed, Math.floor(CLOCK.t / 90)) < 0.35 ? 'sky' : null, n: 1 };
+    }
+    if (g.art === 'uhu')
+      return { where: el < 1 && el > -14 ? 'perch' : null, n: 1, calls: m <= 2 || m === 9 || m === 10 };
     return { where: null, n: 0 };
   }
   S.plan = plan;
   // ---------- individuals ----------
   const SP = {
-    reh: { walk: 1.1, run: 11.5, graze: 0.62 },
-    wildschwein: { walk: 0.9, run: 7.5, graze: 0.75 },
+    reh: { walk: 1.1, run: 11.5 },
+    wildschwein: { walk: 0.9, run: 7.5 },
+    rothirsch: { walk: 1.4, run: 11 },
+    fuchs: { walk: 1.7, run: 9 },
+    hase: { walk: 0.8, run: 12 },
+    dachs: { walk: 0.8, run: 4 },
+    waschbaer: { walk: 0.9, run: 4.5 },
+    marder: { walk: 1.3, run: 6 },
+    wildkatze: { walk: 1.0, run: 8 },
   };
+  const BIRD = { rotmilan: 1, bussard: 1, kolkrabe: 1, schwarzstorch: 1, uhu: 1 };
   function spawn(g, i, pl) {
     const art = g.art,
       R = rng(g.seed + i * 977);
@@ -341,21 +498,39 @@ export const TIERE = (() => {
       variant = {};
     if (art === 'reh') {
       const isKid = i >= pl.n;
-      variant = { winter: !!pl.winter };
-      if (!isKid && i === 0 && pl.buck && cal().m >= 3 && cal().m <= 10) variant.antler = true;
+      variant = { winter: !!pl.coatW };
+      // a buck's antlers: cast in October to December, regrown in velvet over the winter, cleaned (gefegt) in April/May
+      const doy = cal().doy;
+      if (!isKid && i === 0 && pl.buck && doy > 32 && doy < 300) variant.antler = doy < 115 ? 'bast' : true;
       kind = 'reh';
-      if (isKid) variant.kid = true;
+      if (isKid) {
+        variant.kid = true;
+        // fawns keep their white spots until late summer
+        if (doy < 245) variant.spots = true;
+      }
     } else if (art === 'wildschwein') {
       kind = 'sau';
-      variant = { young: i >= pl.n - (pl.young || 0) };
-    } else if (art === 'rotmilan') kind = 'milan';
-    const vkey = { winter: variant.winter, antler: variant.antler, young: variant.young };
+      const y = i >= pl.n - (pl.young || 0);
+      variant = { young: y, stripes: y && pl.stripes };
+    } else if (art === 'rothirsch') {
+      kind = 'hirsch';
+      variant = { winter: coatWinter(cal().m, cal().doy) };
+      if (i === 0 && pl.stag) variant.antler = true;
+      if (i >= 2 && !variant.antler) variant.kid = true;
+    } else kind = TARTEN.A[art].model;
+    const vkey = {
+      winter: variant.winter,
+      antler: variant.antler,
+      young: variant.young,
+      stripes: variant.stripes,
+      spots: variant.spots,
+    };
     for (const k of Object.keys(vkey)) if (!vkey[k]) delete vkey[k];
     const A = TKOERPER.make(kind, vkey);
     // size: kids and piglets smaller, a little individual spread
     let sc = 0.92 + R() * 0.16;
-    if (variant.kid) sc *= 0.55;
-    if (variant.young) sc *= 0.42 + R() * 0.12;
+    if (variant.kid) sc *= art === 'rothirsch' ? 0.72 : 0.55;
+    if (variant.young) sc *= (pl.youngSc || 0.5) * (0.92 + R() * 0.16);
     if (g.keiler) sc *= 1.18;
     A.g.scale.setScalar(sc);
     scene.add(A.g);
@@ -377,7 +552,7 @@ export const TIERE = (() => {
       off: [(R() - 0.5) * 2, (R() - 0.5) * 2],
       alert: 0,
       fleeT: 0,
-      bird: art === 'rotmilan',
+      bird: !!BIRD[art],
       seen: false,
       kid: !!variant.kid || !!variant.young,
     };
@@ -401,14 +576,29 @@ export const TIERE = (() => {
       spread = where === 'out' ? (a.art === 'wildschwein' ? 9 : 14) : 6;
     return [base[0] + a.off[0] * spread, base[1] + a.off[1] * spread];
   }
+  // circles of the birds: radius, height above the ground, airspeed (m/s), share of the time flapping
+  const FLY = {
+    rotmilan: { r: [55, 125], alt: [45, 85], v: 8.5, flap: 0.1 },
+    bussard: { r: [40, 85], alt: [25, 60], v: 7.5, flap: 0.15 },
+    kolkrabe: { r: [140, 240], alt: [60, 110], v: 11, flap: 0.55 },
+    schwarzstorch: { r: [110, 190], alt: [80, 150], v: 9.5, flap: 0.12 },
+  };
   function place(a, pl, jump) {
     if (a.bird) {
-      const g = a.g;
-      a.cr = 55 + h01(g.seed, a.i) * 70;
+      if (!jump) return;
+      const g = a.g,
+        F = FLY[a.art] || FLY.rotmilan;
+      a.cr = F.r[0] + h01(g.seed, a.i) * (F.r[1] - F.r[0]);
       a.ca = h01(a.i, g.seed) * Math.PI * 2;
-      a.alt = 45 + h01(g.seed + 7, a.i) * 40;
+      a.alt = F.alt[0] + h01(g.seed + 7, a.i) * (F.alt[1] - F.alt[0]);
+      a.fly = F;
       a.x = g.home[0] + Math.cos(a.ca) * a.cr;
       a.y = g.home[1] + Math.sin(a.ca) * a.cr;
+      if (a.art === 'uhu') {
+        a.x = g.home[0];
+        a.y = g.home[1];
+        a.az = 20;
+      }
       return;
     }
     const p = spot(a, pl.where);
@@ -435,9 +625,11 @@ export const TIERE = (() => {
     const now = performance.now() / 1000;
     S.noise = S.noise.filter(n => n.until > now);
     for (const n of S.noise) out.push({ x: n.x, y: n.y, kind: 'noise', r: n.r });
+    // the dog: at heel he is part of the walker (a little more noticeable); running free or chasing he counts on his own
     if (S.dog) {
       const d = S.dog();
-      if (d) out.push({ x: d[0], y: d[1], kind: 'dog' });
+      if (d && (Math.hypot(d[0] - P.x, d[1] - P.y) > 7 || d[2])) out.push({ x: d[0], y: d[1], kind: 'dog' });
+      else if (d && out[0] && out[0].kind === 'walker') out[0].speed = Math.max(out[0].speed, 0.3) * 1.15;
     }
     return out;
   }
@@ -460,6 +652,8 @@ export const TIERE = (() => {
       if (!f) continue;
       // a walker who runs is noticed sooner, one standing still later; at night they let one come closer
       if (t.kind === 'walker') f *= (t.speed > 3.5 ? 1.25 : t.speed < 0.3 ? 0.7 : 1) * (sunEl() < -6 ? 0.75 : 1);
+      // lying in cover they trust it: the hare in its form sits tight until one nearly steps on it
+      if (a.mode === 'lie') f *= a.art === 'hase' ? 0.3 : 0.6;
       const k = d / f;
       if (!worst || k < worst.k) worst = { k, d, t };
     }
@@ -569,9 +763,16 @@ export const TIERE = (() => {
   }
   // the kite: circles in the thermals, a few wingbeats now and then, banks, twists its tail
   function stepBird(a, dt, pl) {
-    const g = a.g,
-      v = 8.5;
+    const g = a.g;
     a.t += dt;
+    if (a.art === 'uhu') {
+      // perched: turns its head slowly, now and then a long look the other way
+      a.v = 0;
+      a.look = Math.sin(a.t * 0.23) * 0.9 + (Math.sin(a.t * 0.07) > 0.8 ? 0.6 : 0);
+      return 0;
+    }
+    const F = a.fly || FLY.rotmilan,
+      v = F.v;
     a.ca += (v / a.cr) * dt * (a.i % 2 ? -1 : 1);
     // the circle drifts slowly with the wind
     const cx = g.home[0] + Math.sin(a.t * 0.013 + a.i) * 60,
@@ -582,7 +783,7 @@ export const TIERE = (() => {
     const tx = -Math.sin(a.ca) * (a.i % 2 ? -1 : 1),
       ty = Math.cos(a.ca) * (a.i % 2 ? -1 : 1);
     a.az = (Math.atan2(tx, ty) * 180) / Math.PI;
-    a.flap = a.t % 23 < 2.2 ? 1 : 0;
+    a.flap = a.t % 23 < 23 * F.flap ? 1 : 0;
     a.bank = (a.i % 2 ? -1 : 1) * Math.atan((v * v) / (9.81 * a.cr)) * 1.4;
     a.twist = Math.sin(a.t * 0.9 + a.i) * 0.6;
     a.v = v;
@@ -593,6 +794,13 @@ export const TIERE = (() => {
     const A = a.A;
     if (a.bird) {
       const gz = KERN.ground(a.x, a.y);
+      if (a.art === 'uhu') {
+        a.z = gz + (a.g.perchH || 16);
+        A.g.position.set(a.x, a.z, -a.y);
+        A.g.rotation.set(0, Math.PI - (a.az * Math.PI) / 180, 0);
+        A.anim(dt, 0, { perch: true, look: a.look });
+        return;
+      }
       a.z = gz + a.alt;
       A.g.position.set(a.x, a.z, -a.y);
       A.g.rotation.set(0, Math.PI - (a.az * Math.PI) / 180, 0);
@@ -620,16 +828,21 @@ export const TIERE = (() => {
       const az = (Math.atan2(a.lookAt.x - a.x, a.lookAt.y - a.y) * 180) / Math.PI;
       look = Math.max(-1.2, Math.min(1.2, (((((az - a.az + 540) % 360) - 180) * Math.PI) / 180) * -0.9));
     }
-    const grazing = a.mode === 'graze' && a.alert < 0.3;
+    const grazing = a.mode === 'graze' && a.alert < 0.3,
+      art = a.art;
+    // what grazing looks like: deer and hares crop grass, boar and badger root, the fox listens for mice, raccoon and marten sniff,
+    // the wildcat sits and watches
     A.anim(dt, a.v, {
-      graze: grazing && a.art === 'reh' ? 1 : 0,
-      dig: grazing && a.art === 'wildschwein' ? 1 : 0,
-      alert: a.alert,
+      graze: grazing ? GRAZE[art] || 0 : 0,
+      dig: grazing && (art === 'wildschwein' || art === 'dachs') ? 1 : 0,
+      sit: grazing && art === 'wildkatze' ? 1 : 0,
+      alert: Math.max(a.alert, grazing && art === 'wildkatze' ? 0.4 : 0),
       lie: a.mode === 'lie' ? 1 : 0,
       flee: a.mode === 'flee' ? 1 : 0,
       look,
     });
   }
+  const GRAZE = { reh: 1, rothirsch: 1, hase: 0.7, fuchs: 0.55, waschbaer: 0.6, marder: 0.6 };
   // ---------- discovery: a species seen for the first time ----------
   function discover(kind, id, title, src) {
     const book = kind === 'art' ? S.seen : S.found;
@@ -750,6 +963,11 @@ export const TIERE = (() => {
       if (!b || d < b.d) b = { d, g };
     }
     return b && b.g;
+  };
+  // tests: every animal gone, no group startled (then the next update makes them anew)
+  S.reset = () => {
+    for (const a of S.live.slice()) drop(a);
+    for (const g of S.groups) g.scared = -1e9;
   };
   S.update = update;
   S.save = save;

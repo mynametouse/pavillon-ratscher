@@ -39,45 +39,53 @@ with lib.browser() as b:
         E(f"GAME.view({x0}, {y0}, ROADS.groundAt({x0}, {y0}) + 1.5, 225, -6, 50); GAME.step(0.1)")
         E("GAME.shot()")
         pa = progs()
-        sheet = [('reh', {}, 0), ('reh', {'antler': True}, 1), ('reh', {}, 2, 0.55), ('sau', {}, 3), ('sau', {'young': True}, 4, 0.4), ('hund', {}, 5)]
+        # (name, kind, variant, scale, close-up distance, eye height): November coats, the summer ones for comparison
+        SHEET = [('reh_ricke_winter', 'reh', {'winter': True}, 1, 2.6, 0.75), ('reh_bock_sommer', 'reh', {'antler': True}, 1, 2.6, 0.8),
+                 ('reh_kitz_sommer', 'reh', {'spots': True}, 0.55, 1.8, 0.5), ('sau', 'sau', {}, 1, 3.4, 0.7),
+                 ('frischling_november', 'sau', {'young': True}, 0.68, 2.6, 0.55), ('frischling_juni', 'sau', {'young': True, 'stripes': True}, 0.4, 1.6, 0.4),
+                 ('hund', 'hund', {}, 1, 2.6, 0.7), ('fuchs', 'fuchs', {}, 1, 1.8, 0.45), ('hase', 'hase', {}, 1, 1.4, 0.35),
+                 ('dachs', 'dachs', {}, 1, 1.8, 0.4), ('waschbaer', 'waschbaer', {}, 1, 1.6, 0.4), ('marder', 'marder', {}, 1, 1.3, 0.3),
+                 ('wildkatze', 'katze', {}, 1, 1.6, 0.45), ('hirsch_alttier', 'hirsch', {'winter': True}, 1, 4.2, 1.2),
+                 ('hirsch_brunft', 'hirsch', {'winter': True, 'antler': True}, 1.05, 4.8, 1.35)]
         E("window.__sheet = []")
-        for row in sheet:
-            kind, var, k = row[0], row[1], row[2]
-            sc = row[3] if len(row) > 3 else 1
-            # along a line across the view, 9 m ahead
+        for k, (n, kind, var, sc, dd, eh) in enumerate(SHEET):
+            # in two rows across the view, 9 and 14 m ahead
             E(f"""(() => {{ const A = TKOERPER.make('{kind}', {json.dumps(var)}); A.g.scale.setScalar({sc}); GAME.scene.add(A.g);
               const yaw = 225 * Math.PI / 180, fx = Math.sin(yaw), fy = Math.cos(yaw), rx = Math.cos(yaw), ry = -Math.sin(yaw);
-              const s = {k} - 2.5, x = {x0} + fx * 9 + rx * s * 1.5, y = {y0} + fy * 9 + ry * s * 1.5;
+              const row = {k} < 8 ? 0 : 1, s = ({k} % 8) - 3.5, d = 9 + row * 5, x = {x0} + fx * d + rx * s * 1.6, y = {y0} + fy * d + ry * s * 1.6;
               A.g.position.set(x, ROADS.groundAt(x, y), -y); A.g.rotation.y = Math.PI - (yaw + Math.PI / 2);
               A.anim(0.05, 0, {{}}); window.__sheet.push(A); }})()""")
         E("GAME.setView3(false, true); GAME.step(0.05)")
         pic('01_tafel_mittag')
         pb = progs()
         ck('the bodies: no new shader program (one shared material, made at load)', pb <= pa, f'{pa} -> {pb} (load {p0})')
-        tri = J("window.__sheet.map(A => ({ k: A.kind, tri: A.mesh.geometry.index.count / 3, bones: A.mesh.skeleton.bones.length, h: +(new THREE.Box3().setFromObject(A.g).getSize(new THREE.Vector3()).y).toFixed(2) }))")
+        tri = J("window.__sheet.map(A => ({ k: A.kind, tri: A.mesh.geometry.index.count / 3, bones: A.mesh.skeleton.bones.length, h: +(new THREE.Box3().setFromObject(A.g).getSize(new THREE.Vector3()).y).toFixed(2), l: +(new THREE.Box3().setFromObject(A.g).getSize(new THREE.Vector3()).length()).toFixed(2) }))")
         print('models', tri, flush=True)
-        ck('true to size: roe deer about 1.0–1.3 m high to the ears, the boar 0.8–1.0 m, the dog 0.75–0.95 m',
-           1.0 < tri[0]['h'] < 1.35 and 0.75 < tri[3]['h'] < 1.05 and 0.7 < tri[5]['h'] < 0.98, str([(t['k'], t['h']) for t in tri]))
+        H = {t['k']: t['h'] for t in tri}
+        ck('true to size: roe deer 1.0–1.3 m to the ears, boar 0.8–1.0 m, dog 0.75–0.95 m, fox 0.45–0.65 m, red deer 1.7–2.1 m',
+           1.0 < tri[0]['h'] < 1.35 and 0.75 < tri[3]['h'] < 1.05 and 0.7 < tri[6]['h'] < 0.98 and 0.42 < tri[7]['h'] < 0.68 and 1.65 < tri[13]['h'] < 2.15,
+           str([(t['k'], t['h']) for t in tri]))
         ck('cheap: each animal one mesh of fewer than 4000 triangles', all(t['tri'] < 4000 for t in tri), str([t['tri'] for t in tri]))
-        # close-ups from the side, standing; then walking, trotting, bounding, grazing, lying, sitting
-        names = ['reh_ricke', 'reh_bock', 'reh_kitz', 'sau', 'frischling', 'hund']
-        dist = [3.0, 3.0, 2.2, 3.6, 1.7, 2.8]
-        def closeups(tag):
-            for i, n in enumerate(names):
+        def closeups(tag, only=None):
+            for i, (n, kind, var, sc, dd, eh) in enumerate(SHEET):
+                if only and n not in only: continue
                 E(f"""(() => {{ const A = window.__sheet[{i}], yaw = 225 * Math.PI / 180, fx = Math.sin(yaw), fy = Math.cos(yaw);
-                  const x = A.g.position.x, y = -A.g.position.z, cx = x - fx * {dist[i]}, cy = y - fy * {dist[i]};
+                  const x = A.g.position.x, y = -A.g.position.z, cx = x - fx * {dd}, cy = y - fy * {dd};
                   window.__sheet.forEach((B, j) => B.g.visible = j === {i});
-                  GAME.view(cx, cy, ROADS.groundAt(cx, cy) + {0.55 if i in (2, 4) else 0.75}, 225, -4, 42); }})()""")
+                  GAME.view(cx, cy, ROADS.groundAt(cx, cy) + {eh}, 225, -4, 42); }})()""")
                 E("GAME.step(0.02)")
-                pic(f'02_{tag}_{i}_{n}')
+                pic(f'02_{tag}_{i:02d}_{n}')
             E("window.__sheet.forEach(B => B.g.visible = true)")
         closeups('stand')
-        E("""(() => { const P = [[0.8, {}], [2.4, {}], [9, { flee: 1 }], [0, { dig: 1 }], [0, { lie: 1 }], [0, { sit: 1, wag: 1 }]];
+        # movement: walking, trotting, bounding, rooting, lying, sitting …
+        E("""(() => { const P = [[0.8, {}], [2.4, {}], [9, { flee: 1 }], [0, { dig: 1 }], [0, { lie: 1 }], [1.0, {}], [0, { sit: 1, wag: 1 }],
+            [2.5, {}], [6, { flee: 1 }], [0, { dig: 1 }], [1, {}], [5, {}], [0, { sit: 1, alert: 0.4 }], [1.4, {}], [0, { alert: 1, look: 0.7 }]];
           window.__sheet.forEach((A, i) => { const q = P[i]; for (let k = 0; k < 40; k++) A.anim(0.033, q[0], q[1]); }); })()""")
-        closeups('pose')
-        E("""(() => { const P = [[0, { graze: 1 }], [0, { alert: 1, look: 0.8 }], [0, { lie: 1 }], [3, {}], [1.2, {}], [5, {}]];
+        closeups('pose', ['reh_ricke_winter', 'reh_bock_sommer', 'reh_kitz_sommer', 'sau', 'hund', 'fuchs', 'hase', 'wildkatze', 'hirsch_brunft'])
+        E("""(() => { const P = [[0, { graze: 1 }], [0, { alert: 1, look: 0.8 }], [0, { lie: 1 }], [3, {}], [1.2, {}], [0, { lie: 1 }], [5, {}],
+            [0, { graze: 0.55 }], [0, { graze: 0.7 }], [0, { lie: 1 }], [0, {}], [0, {}], [0, {}], [0, { graze: 1 }], [0, {}]];
           window.__sheet.forEach((A, i) => { const q = P[i]; for (let k = 0; k < 60; k++) A.anim(0.033, q[0], q[1]); }); })()""")
-        closeups('pose2')
+        closeups('pose2', ['reh_ricke_winter', 'reh_bock_sommer', 'reh_kitz_sommer', 'sau', 'hund', 'fuchs', 'hase', 'hirsch_alttier'])
         # the kite from below and the side, close
         E(f"""(() => {{ const A = TKOERPER.make('milan', {{}}); GAME.scene.add(A.g); const x = {x0} - 4, y = {y0} - 4;
           A.g.position.set(x, ROADS.groundAt(x, y) + 3.2, -y); A.g.rotation.y = 0.6; A.anim(0.05, 8, {{ flap: 0, bank: 0.2, twist: 0.3 }}); window.__kite = A; }})()""")
@@ -160,6 +168,7 @@ with lib.browser() as b:
     if 'flucht' in want:
         # walk at the roe deer: they look up, then the group bounds away towards cover, and stays there a while
         at(16, 50, date=(11, 5))
+        E("TIERE.reset(); HUND.on = false; if (HUND.model) HUND.model.g.visible = false")
         r = J("(() => { const g = TIERE.nearest('reh', -560, -560); return { id: g.id, home: g.home, feed: g.feed }; })()")
         fx, fy = r['feed']
         hx, hy = r['home']
@@ -199,6 +208,7 @@ with lib.browser() as b:
         ck('startled, the group keeps to cover for a while', pl['where'] == 'cover', str(pl))
     if 'hund' in want:
         at(10, 0, date=(11, 6))
+        E("HUND.on = true")
         # on the open field by the L 1625, walking north-east
         E("GAME.view(-150, -400, ROADS.groundAt(-150, -400) + 1.65, 40, -4, 60); GAME.step(0.1)")
         E("(() => { const P = GAME.P; P.body = P.yaw = 40; HUND.x = P.x + 1; HUND.y = P.y - 6; })()")
@@ -211,7 +221,7 @@ with lib.browser() as b:
         d1 = J("HUND.state()")
         print('dog', d0, d1, flush=True)
         ck('the dog follows the walker (stays within 5 m)', d1['visible'] and d1['dist'] < 5.0, str(d1))
-        steps(4)
+        steps(7)
         d2 = J("HUND.state()")
         ck('standing still he sits beside you (after a few seconds)', d2['still'] > 2.5 and d2['dist'] < 4.5, str(d2))
         # a picture from behind the walker towards the dog

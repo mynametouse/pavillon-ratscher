@@ -107,8 +107,9 @@ export const HUND = (() => {
       tx = s[0];
       ty = s[1];
       // close to the walker: no hurry; far behind: trot, gallop
-      want = dS < 0.6 ? 0 : dS < 3 ? 1.1 + dS * 0.3 : dS < 10 ? 3 + dS * 0.25 : Math.min(8.5, 4 + dS * 0.2);
-      if (P.speed > 0.3) want = Math.max(want, Math.min(P.speed * 1.05, 6) * (dS > 0.8 ? 1 : 0.6));
+      // the walker's pace plus a catch-up for the gap (no hurry close by, a gallop far behind)
+      want = dS < 0.6 && P.speed < 0.3 ? 0 : Math.min(9, (P.speed || 0) + 1.3 * Math.max(0, dS - 0.4));
+      if (dS > 12) want = Math.max(want, 7);
       if (dP < 1.0) want = 0;
     } else if (D.mode === 'home') {
       tx = D.home[0];

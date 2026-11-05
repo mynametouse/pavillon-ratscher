@@ -327,7 +327,7 @@ export const TKOERPER = (() => {
         w: wTrunk(z),
         u: (z - T[0][0]) / (T[T.length - 1][0] - T[0][0]),
       })),
-      { part: 'trunk', sides: 16, sub: 2, coat, cap0: 0.03, cap1: 0.03 }
+      { part: 'trunk', sides: Pn.sides || 16, sub: 2, coat, cap0: 0.03, cap1: 0.03 }
     );
     // neck and head: one loft from inside the chest to the nose
     const N = Pn.neck,
@@ -453,6 +453,7 @@ export const TKOERPER = (() => {
       ball(B, V3(s * Pn.eye.x, Pn.eye.p[1], Pn.eye.p[0]), Pn.eye.r, lin(Pn.eye.col || 0x140f0c), [W(sk, 'head')]);
     // antlers (bucks, stags) and the like: tubes on the head
     if (Pn.antler && variant && variant.antler) Pn.antler(B, sk, W, loft, V3, coat, variant);
+    if (Pn.extra) Pn.extra(B, sk, W, loft, V3, coat, variant);
     return { geo: B.geo(), sk };
   }
   // ---------- the birds: body, wings in two parts with fingers, tail ----------
@@ -775,8 +776,10 @@ export const TKOERPER = (() => {
   }
   // ---------- the plans ----------
   // coat helpers: countershading (lighter below), a darker back line
+  // countershading, fine mottling and a slow variation along the body (no coat is one colour)
   const shade = (c, q, back = 0.04, mott = 0.06) => {
-    const v = 1 - Math.cos(q.th) * back + (hash(q.x, q.y, q.z) - 0.5) * mott;
+    const slow = Math.sin(q.z * 9.1 + Math.cos(q.th) * 1.7) * 0.5 + Math.sin(q.z * 23.3 + q.th * 2.1) * 0.25;
+    const v = 1 - Math.cos(q.th) * back + (hash(q.x, q.y, q.z) - 0.5) * mott + slow * 0.07;
     return [c[0] * v, c[1] * v, c[2] * v];
   };
   // 1 on the belly (th = π), 0 on the back
@@ -787,55 +790,58 @@ export const TKOERPER = (() => {
   // summer, grey-brown in winter (May and September–October the change); bucks with antlers (three tines a side) from spring to autumn
   PLANS.reh = {
     k: 1,
+    e: 2,
+    sides: 18,
     trunk: [
-      [-0.45, 0.71, 0.63, 0.04],
-      [-0.41, 0.76, 0.49, 0.095],
-      [-0.29, 0.79, 0.44, 0.125],
-      [-0.12, 0.765, 0.43, 0.125],
-      [0.05, 0.74, 0.39, 0.13],
-      [0.22, 0.745, 0.36, 0.12],
-      [0.34, 0.74, 0.38, 0.1],
-      [0.42, 0.68, 0.45, 0.07],
+      [-0.43, 0.7, 0.62, 0.035],
+      [-0.4, 0.745, 0.52, 0.08],
+      [-0.3, 0.765, 0.47, 0.102],
+      [-0.15, 0.745, 0.47, 0.105],
+      [0.02, 0.725, 0.43, 0.11],
+      [0.18, 0.725, 0.4, 0.106],
+      [0.3, 0.715, 0.41, 0.092],
+      [0.38, 0.66, 0.46, 0.066],
     ],
     neck: [
-      [0.34, 0.6, 0.07, 0.1],
-      [0.43, 0.72, 0.062, 0.085],
-      [0.5, 0.85, 0.052, 0.068],
-      [0.55, 0.95, 0.046, 0.058],
-      [0.58, 1.0, 0.05, 0.062],
-      [0.635, 0.995, 0.052, 0.06],
-      [0.7, 0.965, 0.038, 0.045],
-      [0.76, 0.935, 0.026, 0.032],
-      [0.79, 0.92, 0.02, 0.025],
+      [0.3, 0.6, 0.06, 0.085],
+      [0.38, 0.69, 0.05, 0.07],
+      [0.44, 0.79, 0.042, 0.058],
+      [0.49, 0.88, 0.038, 0.05],
+      [0.53, 0.95, 0.04, 0.05],
+      [0.575, 0.985, 0.045, 0.05],
+      [0.63, 0.975, 0.041, 0.045],
+      [0.685, 0.945, 0.029, 0.034],
+      [0.73, 0.92, 0.02, 0.026],
+      [0.748, 0.91, 0.015, 0.02],
     ],
     neckMid: 2,
     headAt: 4,
-    hx: 0.075,
-    fx: 0.07,
+    hx: 0.068,
+    fx: 0.062,
     hind: [
-      [-0.27, 0.62],
-      [-0.17, 0.41],
-      [-0.33, 0.23],
-      [-0.3, 0.035],
+      [-0.28, 0.63],
+      [-0.19, 0.45],
+      [-0.33, 0.27],
+      [-0.305, 0.03],
     ],
-    hindR: [0.11, 0.085, 0.045, 0.026, 0.018, 0.017],
+    hindR: [0.085, 0.068, 0.038, 0.017, 0.011, 0.012],
     front: [
-      [0.3, 0.54],
-      [0.25, 0.36],
-      [0.27, 0.19],
-      [0.275, 0.035],
+      [0.29, 0.55],
+      [0.25, 0.42],
+      [0.265, 0.21],
+      [0.27, 0.03],
     ],
-    frontR: [0.08, 0.06, 0.035, 0.022, 0.016, 0.016],
-    ear: { p: [0.585, 1.035], x: 0.035, out: 0.55, up: 0.75, back: -0.35, len: 0.13, wid: 0.065 },
-    eye: { p: [0.655, 1.0], x: 0.044, r: 0.011 },
+    frontR: [0.062, 0.048, 0.028, 0.015, 0.01, 0.011],
+    ear: { p: [0.56, 1.02], x: 0.03, out: 0.5, up: 0.8, back: -0.4, len: 0.125, wid: 0.06 },
+    eye: { p: [0.625, 0.99], x: 0.04, r: 0.0105 },
     tail: {
       p: [
-        [-0.44, 0.69],
-        [-0.47, 0.66],
-        [-0.485, 0.63],
-        [-0.49, 0.61],
+        [-0.42, 0.69],
+        [-0.45, 0.665],
+        [-0.465, 0.64],
+        [-0.47, 0.625],
       ],
-      r: [0.022, 0.02, 0.014, 0.006],
+      r: [0.02, 0.018, 0.012, 0.005],
     },
     gait: { f0: 1.35, trot: 1.7, gallop: 4 },
     bounds: true,
@@ -883,25 +889,30 @@ export const TKOERPER = (() => {
     },
     coat(q, v) {
       const winter = !!v.winter;
-      const top = lin(winter ? 0x6a5c4f : 0x8a4f2b),
-        side = lin(winter ? 0x786a5b : 0x99603a),
-        belly = lin(winter ? 0xaea392 : 0xb98f68);
-      if (q.part === 'antler') return lin(q.u > 0.85 ? 0xd8ccb4 : 0x5e4a36);
+      const top = lin(winter ? 0x564c43 : 0x6e4129),
+        side = lin(winter ? 0x655a4e : 0x7d4c30),
+        belly = lin(winter ? 0x958b7e : 0x9c8064);
+      if (q.part === 'antler') return v.antler === 'bast' ? lin(0x6a5a4a) : lin(q.u > 0.85 ? 0xd8ccb4 : 0x5e4a36);
       let c = mix(side, top, sst(0.3, 0.9, Math.cos(q.th)));
       c = mix(c, belly, below(q) * 0.8);
+      // the fawn's white spots in rows along the back and flanks
+      if (v.spots && q.part === 'trunk' && Math.cos(q.th) > -0.3 && q.z > -0.35 && q.z < 0.32) {
+        const sp = Math.sin(q.z * 70 + Math.floor(q.th * 4) * 1.3) * Math.sin(q.th * 9);
+        if (sp > 0.55) c = mix(c, lin(0xe8dcc8), 0.8);
+      }
       if (q.part === 'trunk') {
         // the rump patch: white around the tail, the shape a heart/kidney on the back of the thighs
-        const r = Math.hypot(q.x / 0.1, (q.y - 0.6) / 0.14);
-        if (q.z < -0.33 && r < 1.15)
+        const r = Math.hypot(q.x / 0.085, (q.y - 0.62) / 0.13);
+        if (q.z < -0.34 && r < 1.15)
           c = mix(c, lin(winter ? 0xf2efe8 : 0xe8dcc6), sst(1.15, 0.7, r) * (winter ? 1 : 0.75));
       }
       if (q.part === 'tail') c = lin(winter ? 0xefeae0 : 0xe0d2b8);
       if (q.part === 'neck') {
         // the muzzle: black nose, the white chin; in winter a pale throat patch
-        if (q.z > 0.74) c = mix(c, lin(0x16110e), sst(0.755, 0.78, q.z));
-        if (q.z > 0.69 && Math.cos(q.th) < -0.2) c = mix(c, lin(0xeee8dc), 0.85);
-        if (winter && q.z > 0.4 && q.z < 0.52 && Math.cos(q.th) < 0.3) c = mix(c, lin(0xe6e0d4), 0.6);
-        if (q.z > 0.6 && q.z < 0.7 && Math.cos(q.th) > 0.5) c = mix(c, lin(0x5a4636), 0.3);
+        if (q.z > 0.715) c = mix(c, lin(0x16110e), sst(0.715, 0.735, q.z));
+        if (q.z > 0.66 && q.z < 0.72 && Math.cos(q.th) < -0.2) c = mix(c, lin(0xe6e0d4), 0.85);
+        if (winter && q.z > 0.36 && q.z < 0.46 && Math.cos(q.th) < 0.3) c = mix(c, lin(0xd8d2c6), 0.55);
+        if (q.z > 0.56 && q.z < 0.68 && Math.cos(q.th) > 0.4) c = mix(c, lin(0x463a30), 0.35);
       }
       if (q.part === 'ear') c = mix(lin(winter ? 0x6a5d50 : 0x8a5530), lin(0x2a221c), sst(0.7, 1, q.u));
       if (q.part === 'hleg' || q.part === 'fleg') {
@@ -916,116 +927,142 @@ export const TKOERPER = (() => {
   // head without much neck, small erect ears, a straight tail with a tassel; grey-brown to black; piglets striped until late summer
   PLANS.sau = {
     k: 1.2,
-    e: 2.6,
+    e: 2.5,
+    sides: 18,
     trunk: [
-      [-0.56, 0.6, 0.48, 0.055],
-      [-0.51, 0.69, 0.35, 0.15],
-      [-0.36, 0.73, 0.3, 0.19],
-      [-0.15, 0.77, 0.28, 0.205],
-      [0.06, 0.81, 0.27, 0.21],
-      [0.25, 0.86, 0.29, 0.2],
-      [0.4, 0.84, 0.31, 0.18],
-      [0.5, 0.76, 0.34, 0.16],
+      [-0.52, 0.6, 0.46, 0.05],
+      [-0.48, 0.67, 0.36, 0.115],
+      [-0.35, 0.7, 0.32, 0.145],
+      [-0.15, 0.74, 0.3, 0.155],
+      [0.05, 0.78, 0.28, 0.16],
+      [0.22, 0.83, 0.28, 0.16],
+      [0.34, 0.86, 0.3, 0.155],
+      [0.44, 0.8, 0.33, 0.135],
     ],
     neck: [
-      [0.36, 0.6, 0.17, 0.22, 2.4],
-      [0.47, 0.6, 0.17, 0.2, 2.4],
-      [0.57, 0.57, 0.15, 0.17, 2.3],
-      [0.66, 0.53, 0.125, 0.14],
-      [0.73, 0.48, 0.1, 0.11],
-      [0.8, 0.42, 0.075, 0.08],
-      [0.87, 0.37, 0.058, 0.058],
-      [0.92, 0.34, 0.05, 0.048],
-      [0.935, 0.335, 0.047, 0.045],
+      [0.34, 0.62, 0.145, 0.2, 2.4],
+      [0.44, 0.62, 0.14, 0.19, 2.4],
+      [0.53, 0.59, 0.125, 0.165, 2.3],
+      [0.61, 0.54, 0.1, 0.135, 2.2],
+      [0.69, 0.48, 0.077, 0.1],
+      [0.77, 0.42, 0.058, 0.07],
+      [0.84, 0.365, 0.047, 0.052],
+      [0.88, 0.338, 0.045, 0.046],
+      [0.892, 0.332, 0.043, 0.043],
     ],
     neckMid: 1,
-    headAt: 3,
+    headAt: 2,
     noseCap: 0.004,
-    hx: 0.11,
-    fx: 0.11,
+    hx: 0.095,
+    fx: 0.095,
     hind: [
-      [-0.33, 0.5],
-      [-0.23, 0.31],
-      [-0.37, 0.16],
-      [-0.34, 0.03],
+      [-0.33, 0.48],
+      [-0.24, 0.3],
+      [-0.36, 0.16],
+      [-0.33, 0.03],
     ],
-    hindR: [0.16, 0.12, 0.06, 0.04, 0.03, 0.028],
+    hindR: [0.13, 0.11, 0.05, 0.028, 0.02, 0.022],
     front: [
-      [0.3, 0.53],
-      [0.25, 0.32],
-      [0.27, 0.15],
-      [0.28, 0.03],
+      [0.3, 0.5],
+      [0.26, 0.3],
+      [0.28, 0.13],
+      [0.29, 0.03],
     ],
-    frontR: [0.13, 0.1, 0.055, 0.035, 0.028, 0.027],
-    ear: { p: [0.6, 0.7], x: 0.085, out: 0.6, up: 0.75, back: -0.3, len: 0.12, wid: 0.075 },
-    eye: { p: [0.705, 0.57], x: 0.085, r: 0.011 },
+    frontR: [0.11, 0.085, 0.042, 0.024, 0.018, 0.02],
+    ear: { p: [0.56, 0.72], x: 0.065, out: 0.5, up: 0.85, back: -0.3, len: 0.13, wid: 0.075 },
+    eye: { p: [0.64, 0.585], x: 0.078, r: 0.009 },
     tail: {
       p: [
-        [-0.55, 0.6],
-        [-0.58, 0.52],
-        [-0.59, 0.44],
-        [-0.59, 0.38],
+        [-0.51, 0.6],
+        [-0.54, 0.52],
+        [-0.555, 0.44],
+        [-0.56, 0.38],
       ],
-      r: [0.022, 0.014, 0.012, 0.028],
+      r: [0.02, 0.012, 0.01, 0.024],
     },
     gait: { f0: 1.6, trot: 1.1, gallop: 3.5 },
-    lieDrop: 0.4,
+    lieDrop: 0.36,
     tailFlee: 1.3,
     tailHang: 0.2,
     neckPose: { graze: [0.45, 0.35], alert: [-0.18, -0.12], lie: [0.15, 0.1], dig: [0.55, 0.4] },
+    // the bristle mane along the spine, from the neck to the middle of the back
+    extra(B, sk, W, loft, V3, coat) {
+      const pts = [
+        [0.5, 0.74, 'chest'],
+        [0.4, 0.88, 'chest'],
+        [0.28, 0.885, 'chest'],
+        [0.12, 0.85, 'root'],
+        [-0.05, 0.8, 'root'],
+        [-0.2, 0.755, 'hips'],
+      ];
+      loft(
+        B,
+        pts.map(([z, y, bn], i) => ({
+          p: V3(0, y, z),
+          rx: 0.016,
+          ry: [0.03, 0.05, 0.05, 0.04, 0.03, 0.012][i],
+          w: [W(sk, bn)],
+          u: i / (pts.length - 1),
+        })),
+        { part: 'mane', sides: 6, sub: 2, coat, cap0: 0.01, cap1: 0.01 }
+      );
+    },
     coat(q, v) {
+      // grey-brown to black-brown, every bristle a little different; the young brown, striped only in their first summer
       const young = !!v.young;
-      let c = lin(young ? 0x7a5a3c : 0x4a3e34);
-      const dark = lin(young ? 0x5c412a : 0x2c2520);
-      c = mix(c, dark, sst(0.2, 0.9, Math.cos(q.th)) * 0.7);
-      if (q.part === 'trunk' && !young && Math.cos(q.th) > 0.85 && q.z > -0.2) c = mix(c, lin(0x221d19), 0.7);
-      if (young && (q.part === 'trunk' || (q.part === 'neck' && q.z < 0.6))) {
-        // the stripes of the piglets: pale bands along the body
+      let c = lin(young ? 0x5e4430 : 0x433a33);
+      const dark = lin(young ? 0x3e2c1e : 0x231e1a);
+      c = mix(c, dark, sst(0.1, 0.9, Math.cos(q.th)) * 0.75);
+      c = mix(c, lin(young ? 0x8a6a4c : 0x6e645a), hash(q.x * 7, q.y * 7, q.z * 7) * 0.35);
+      if (q.part === 'mane') c = lin(0x16130f);
+      if (v.stripes && (q.part === 'trunk' || (q.part === 'neck' && q.z < 0.6))) {
         const a = Math.abs(Math.sin(q.th * 3.5));
-        if (Math.cos(q.th) > -0.4) c = mix(c, lin(0xc8a878), sst(0.82, 0.95, a) * 0.85);
+        if (Math.cos(q.th) > -0.4) c = mix(c, lin(0xb89a6c), sst(0.82, 0.95, a) * 0.85);
       }
       if (q.part === 'neck') {
-        if (q.z > 0.9) c = lin(0x3a302c);
-        if (q.z > 0.6 && q.z < 0.85 && Math.cos(q.th) < 0) c = mix(c, lin(young ? 0x8a6a4a : 0x5d5048), 0.5);
+        if (q.z > 0.87) c = lin(0x2e2826);
+        else if (q.z > 0.6 && Math.cos(q.th) < 0.2) c = mix(c, lin(young ? 0x7a5e44 : 0x5c544c), 0.45);
       }
-      if (q.part === 'ear') c = lin(young ? 0x5c4430 : 0x2c2621);
-      if (q.part === 'tail') c = lin(0x221d1a);
+      if (q.part === 'ear') c = lin(young ? 0x4a3626 : 0x221d1a);
+      if (q.part === 'tail') c = lin(0x1e1a17);
       if (q.part === 'hleg' || q.part === 'fleg') {
-        c = mix(c, lin(0x221c18), sst(0.35, 0.65, q.u));
-        if (q.u > 0.9) c = lin(0x16120f);
+        c = mix(c, lin(0x1c1815), sst(0.3, 0.6, q.u));
+        if (q.u > 0.9) c = lin(0x141110);
       }
-      return shade(c, q, 0.05, 0.1);
+      return shade(c, q, 0.05, 0.16);
     },
   };
   // the companion dog: an Altdeutscher Hütehund of the type Gelbbacke (central German type: 55–60 cm, black with tan on the cheeks,
   // above the eyes, the muzzle and the legs; erect triangular ears; the tail hanging low, bushy) – a herding dog for goats and sheep
   PLANS.hund = {
     k: 1,
+    e: 2.1,
+    sides: 16,
     trunk: [
-      [-0.36, 0.55, 0.47, 0.05],
-      [-0.32, 0.58, 0.4, 0.1],
-      [-0.2, 0.585, 0.37, 0.115],
-      [-0.03, 0.575, 0.36, 0.115],
-      [0.12, 0.58, 0.31, 0.125],
-      [0.25, 0.595, 0.29, 0.12],
-      [0.33, 0.58, 0.31, 0.1],
-      [0.39, 0.53, 0.35, 0.075],
+      [-0.36, 0.55, 0.46, 0.05],
+      [-0.32, 0.585, 0.39, 0.105],
+      [-0.2, 0.59, 0.37, 0.125],
+      [-0.03, 0.58, 0.36, 0.125],
+      [0.12, 0.585, 0.3, 0.135],
+      [0.25, 0.6, 0.28, 0.13],
+      [0.33, 0.585, 0.3, 0.11],
+      [0.39, 0.53, 0.35, 0.085],
     ],
     neck: [
-      [0.28, 0.5, 0.075, 0.1],
-      [0.37, 0.6, 0.07, 0.085],
-      [0.43, 0.69, 0.062, 0.072],
-      [0.46, 0.745, 0.064, 0.072],
-      [0.49, 0.77, 0.072, 0.075],
-      [0.55, 0.765, 0.068, 0.065],
-      [0.6, 0.735, 0.042, 0.04],
-      [0.655, 0.715, 0.032, 0.03],
-      [0.685, 0.705, 0.026, 0.024],
+      [0.27, 0.5, 0.09, 0.115],
+      [0.36, 0.58, 0.085, 0.1],
+      [0.42, 0.65, 0.074, 0.084],
+      [0.46, 0.7, 0.068, 0.075],
+      [0.49, 0.725, 0.073, 0.076],
+      [0.55, 0.72, 0.068, 0.066],
+      [0.6, 0.69, 0.042, 0.04],
+      [0.655, 0.67, 0.032, 0.03],
+      [0.685, 0.66, 0.026, 0.024],
     ],
     neckMid: 2,
     headAt: 4,
-    hx: 0.065,
-    fx: 0.065,
+    hx: 0.07,
+    fx: 0.066,
     paw: true,
     hind: [
       [-0.25, 0.5],
@@ -1033,16 +1070,16 @@ export const TKOERPER = (() => {
       [-0.3, 0.17],
       [-0.27, 0.03],
     ],
-    hindR: [0.095, 0.075, 0.04, 0.026, 0.022, 0.025],
+    hindR: [0.1, 0.08, 0.045, 0.026, 0.022, 0.026],
     front: [
       [0.24, 0.46],
       [0.21, 0.3],
       [0.235, 0.12],
       [0.24, 0.03],
     ],
-    frontR: [0.07, 0.055, 0.032, 0.023, 0.021, 0.025],
-    ear: { p: [0.5, 0.8], x: 0.045, out: 0.35, up: 0.9, back: -0.15, len: 0.1, wid: 0.075 },
-    eye: { p: [0.565, 0.778], x: 0.036, r: 0.01, col: 0x2a1a0c },
+    frontR: [0.075, 0.06, 0.036, 0.024, 0.021, 0.025],
+    ear: { p: [0.5, 0.755], x: 0.045, out: 0.35, up: 0.9, back: -0.15, len: 0.1, wid: 0.075 },
+    eye: { p: [0.565, 0.733], x: 0.036, r: 0.01, col: 0x2a1a0c },
     tail: {
       p: [
         [-0.35, 0.54],
@@ -1050,7 +1087,7 @@ export const TKOERPER = (() => {
         [-0.45, 0.34],
         [-0.44, 0.24],
       ],
-      r: [0.035, 0.042, 0.036, 0.012],
+      r: [0.04, 0.05, 0.045, 0.016],
     },
     gait: { f0: 1.7, trot: 1.3, gallop: 4.2 },
     lieDrop: 0.3,
@@ -1065,7 +1102,7 @@ export const TKOERPER = (() => {
       if (q.part === 'neck') {
         // the yellow cheeks, the spots above the eyes, the tan muzzle
         if (q.z > 0.53 && Math.cos(q.th) < 0.55) c = mix(c, tan, sst(0.53, 0.58, q.z));
-        if (Math.abs(q.z - 0.545) < 0.018 && Math.cos(q.th) > 0.55 && Math.abs(q.x) > 0.012) c = tan;
+        if (Math.abs(q.z - 0.548) < 0.016 && Math.cos(q.th) > 0.55 && Math.abs(q.x) > 0.012) c = tan;
         if (q.z > 0.66) c = mix(c, lin(0x141210), sst(0.665, 0.685, q.z));
         if (q.z < 0.45 && Math.cos(q.th) < -0.4) c = mix(c, tan, 0.55);
       }
@@ -1136,6 +1173,432 @@ export const TKOERPER = (() => {
       return lin(0x8c4826);
     },
   };
+  // ---------- more species from the plans above, scaled (length sz, height sy, width sx) and with their own features ----------
+  function scaled(base, sx, sy, sz, o = {}) {
+    const P = Object.assign({}, base);
+    P.trunk = base.trunk.map(([z, t, b, w, e]) => [z * sz, t * sy, b * sy, w * sx, e]);
+    P.neck = base.neck.map(([z, y, rx, ry, e]) => [z * sz, y * sy, rx * sx, ry * sy, e]);
+    P.hind = base.hind.map(([z, y]) => [z * sz, y * sy]);
+    P.front = base.front.map(([z, y]) => [z * sz, y * sy]);
+    P.hindR = base.hindR.map(r => r * sx);
+    P.frontR = base.frontR.map(r => r * sx);
+    P.ear = Object.assign({}, base.ear, {
+      p: [base.ear.p[0] * sz, base.ear.p[1] * sy],
+      x: base.ear.x * sx,
+      len: base.ear.len * sy,
+      wid: base.ear.wid * sx,
+    });
+    P.eye = Object.assign({}, base.eye, {
+      p: [base.eye.p[0] * sz, base.eye.p[1] * sy],
+      x: base.eye.x * sx,
+      r: base.eye.r * sx,
+    });
+    P.tail = {
+      p: base.tail.p.map(([z, y]) => [z * sz, y * sy]),
+      r: base.tail.r.map(r => r * sx),
+      flat: base.tail.flat,
+    };
+    P.hx = base.hx * sx;
+    P.fx = base.fx * sx;
+    P.lieDrop = base.lieDrop * sy;
+    P.k = (base.k || 1) * sz;
+    P.gait = Object.assign({}, base.gait, { f0: base.gait.f0 / Math.sqrt(sy) });
+    delete P.antler;
+    return Object.assign(P, o);
+  }
+  // red fox (Vulpes vulpes): 35–40 cm at the shoulder, slim, the long pointed snout, big pointed ears black at the back, black stockings,
+  // the bushy tail (Lunte) with the white tip
+  PLANS.fuchs = scaled(PLANS.hund, 0.62, 0.66, 0.68, {
+    ear: { p: [0.34, 0.545], x: 0.03, out: 0.3, up: 0.95, back: -0.05, len: 0.085, wid: 0.065 },
+    tail: {
+      p: [
+        [-0.24, 0.35],
+        [-0.36, 0.27],
+        [-0.47, 0.19],
+        [-0.6, 0.13],
+      ],
+      r: [0.03, 0.06, 0.065, 0.03],
+    },
+    tailHang: 0.12,
+    coat(q) {
+      const red = lin(0xb85a24),
+        white = lin(0xece6dc),
+        black = lin(0x1e1916);
+      let c = mix(red, lin(0x9c4a1e), sst(0.4, 0.95, Math.cos(q.th)) * 0.5);
+      if (q.part === 'neck') {
+        if (q.z > 0.3 && Math.cos(q.th) < -0.2) c = mix(c, white, 0.9);
+        if (q.z < 0.3 && Math.cos(q.th) < -0.35) c = mix(c, white, 0.8);
+        if (q.z > 0.455) c = lin(0x16110f);
+      }
+      if (q.part === 'trunk' && Math.cos(q.th) < -0.5) c = mix(c, lin(0xd8cfc2), 0.6);
+      if (q.part === 'hleg' || q.part === 'fleg') c = mix(c, black, sst(0.35, 0.55, q.u));
+      if (q.part === 'ear') c = q.th > Math.PI ? black : mix(black, red, 0.3);
+      if (q.part === 'tail') c = q.u > 0.82 ? white : mix(c, lin(0x6a4a30), sst(0.5, 0.8, q.u) * 0.4);
+      return shade(c, q, 0.04, 0.08);
+    },
+  });
+  // brown hare (Lepus europaeus): low and arched, very long hind legs folded under, ears 12 cm with black tips, the tail black above,
+  // white below; it hops
+  PLANS.hase = scaled(PLANS.hund, 0.62, 0.5, 0.62, {
+    hind: [
+      [-0.16, 0.27],
+      [-0.07, 0.18],
+      [-0.2, 0.07],
+      [-0.06, 0.02],
+    ],
+    hindR: [0.07, 0.06, 0.028, 0.02, 0.016, 0.018],
+    front: [
+      [0.15, 0.22],
+      [0.13, 0.14],
+      [0.15, 0.06],
+      [0.16, 0.02],
+    ],
+    frontR: [0.03, 0.025, 0.015, 0.012, 0.011, 0.012],
+    ear: { p: [0.3, 0.4], x: 0.022, out: 0.15, up: 0.85, back: -0.45, len: 0.13, wid: 0.038 },
+    tail: {
+      p: [
+        [-0.22, 0.27],
+        [-0.25, 0.29],
+        [-0.265, 0.3],
+        [-0.27, 0.3],
+      ],
+      r: [0.03, 0.035, 0.025, 0.01],
+    },
+    bounds: true,
+    gait: { f0: 2.4, trot: 0.9, gallop: 2.2 },
+    sitTilt: 0.35,
+    coat(q) {
+      let c = mix(lin(0x8a6a48), lin(0x6a5038), sst(0.3, 0.9, Math.cos(q.th)));
+      // the grizzled look: dark tips
+      c = mix(c, lin(0x3a2e24), hash(q.x * 3, q.y * 3, q.z * 3) * 0.25);
+      if (q.part === 'trunk' && Math.cos(q.th) < -0.4) c = mix(c, lin(0xe8e2d8), 0.85);
+      if (q.part === 'neck' && q.z > 0.3 && Math.cos(q.th) < 0) c = mix(c, lin(0xd8cbb4), 0.6);
+      if (q.part === 'ear') c = q.u > 0.82 ? lin(0x141210) : lin(0x8c7458);
+      if (q.part === 'tail') c = Math.cos(q.th) > 0.2 ? lin(0x1a1614) : lin(0xf0ece4);
+      return shade(c, q, 0.04, 0.05);
+    },
+  });
+  // badger (Meles meles): low, wide, short legs, the white face with two black stripes over the eyes, grey silver back, black legs
+  PLANS.dachs = scaled(PLANS.hund, 1.35, 0.5, 0.88, {
+    ear: { p: [0.4, 0.37], x: 0.04, out: 0.8, up: 0.5, back: -0.2, len: 0.03, wid: 0.035 },
+    tail: {
+      p: [
+        [-0.31, 0.27],
+        [-0.36, 0.25],
+        [-0.39, 0.23],
+        [-0.4, 0.22],
+      ],
+      r: [0.04, 0.035, 0.025, 0.01],
+    },
+    gait: { f0: 2.3, trot: 1.0, gallop: 3.0 },
+    e: 2.6,
+    coat(q) {
+      let c = mix(lin(0x9a948a), lin(0x6e6a64), sst(0.2, 0.9, Math.cos(q.th)) * 0.4);
+      c = mix(c, lin(0xd0ccc4), hash(q.x * 5, q.y * 5, q.z * 5) * 0.25);
+      if (q.part === 'trunk' && Math.cos(q.th) < -0.3) c = lin(0x1c1a18);
+      if (q.part === 'hleg' || q.part === 'fleg') c = lin(0x1a1816);
+      if (q.part === 'neck') {
+        if (q.z > 0.36) {
+          // the stripes: black bands from the nose over the eyes to the ears, white between and beside them
+          const s = Math.abs(q.x) / 0.05;
+          c = s > 0.35 && s < 1.0 && Math.cos(q.th) > -0.3 ? lin(0x151312) : lin(0xeeeae2);
+          if (Math.cos(q.th) < -0.4) c = lin(0x1c1a18);
+        } else if (Math.cos(q.th) < -0.2) c = lin(0x1c1a18);
+      }
+      if (q.part === 'ear') c = lin(0xeeeae2);
+      return shade(c, q, 0.03, 0.06);
+    },
+  });
+  // raccoon (Procyon lotor): arched back, the black mask, the pale muzzle, the ringed tail, grey-brown
+  PLANS.waschbaer = scaled(PLANS.hund, 1.0, 0.55, 0.7, {
+    ear: { p: [0.36, 0.44], x: 0.035, out: 0.5, up: 0.8, back: -0.2, len: 0.045, wid: 0.045 },
+    tail: {
+      p: [
+        [-0.24, 0.3],
+        [-0.31, 0.24],
+        [-0.36, 0.17],
+        [-0.4, 0.12],
+      ],
+      r: [0.04, 0.045, 0.04, 0.02],
+    },
+    gait: { f0: 2.0, trot: 1.1, gallop: 3.2 },
+    coat(q) {
+      let c = mix(lin(0x8a8278), lin(0x5a544e), sst(0.3, 0.9, Math.cos(q.th)) * 0.6);
+      c = mix(c, lin(0x2a2622), hash(q.x * 4, q.y * 4, q.z * 4) * 0.3);
+      if (q.part === 'neck' && q.z > 0.34) {
+        // the mask around the eyes, white above and around the muzzle
+        const zz = q.z;
+        if (zz < 0.385 && Math.cos(q.th) > -0.4) c = lin(0x141210);
+        if (zz >= 0.385) c = lin(0xd8d2c8);
+        if (zz > 0.44) c = lin(0x1a1614);
+      }
+      if (q.part === 'tail') c = Math.floor(q.u * 9) % 2 ? lin(0x1c1814) : lin(0x9a9086);
+      if (q.part === 'hleg' || q.part === 'fleg') c = mix(c, lin(0x2a2624), sst(0.5, 0.8, q.u));
+      if (q.part === 'ear') c = lin(0xc8c2b8);
+      return shade(c, q, 0.03, 0.05);
+    },
+  });
+  // stone marten (Martes foina): long and low, short legs, the bushy tail, chocolate brown with the forked white bib
+  PLANS.marder = scaled(PLANS.hund, 0.5, 0.3, 0.6, {
+    ear: { p: [0.3, 0.255], x: 0.022, out: 0.5, up: 0.85, back: -0.1, len: 0.025, wid: 0.03 },
+    tail: {
+      p: [
+        [-0.21, 0.16],
+        [-0.32, 0.13],
+        [-0.42, 0.1],
+        [-0.48, 0.08],
+      ],
+      r: [0.025, 0.035, 0.035, 0.015],
+    },
+    bounds: true,
+    gait: { f0: 2.6, trot: 0.8, gallop: 2.0 },
+    coat(q) {
+      let c = mix(lin(0x5a4230), lin(0x3e2c20), sst(0.3, 0.9, Math.cos(q.th)) * 0.6);
+      if (q.part === 'neck' && q.z < 0.3 && Math.cos(q.th) < -0.25) c = lin(0xeee8de);
+      if (q.part === 'trunk' && q.z > 0.13 && Math.cos(q.th) < -0.7 && Math.abs(q.x) > 0.01) c = lin(0xeee8de);
+      if (q.part === 'hleg' || q.part === 'fleg' || q.part === 'tail') c = mix(c, lin(0x2a1e16), 0.5);
+      if (q.part === 'ear') c = lin(0xd8cfc0);
+      return shade(c, q, 0.03, 0.05);
+    },
+  });
+  // European wildcat (Felis silvestris): a strong tabby, the round head with a short muzzle, the thick blunt tail with black rings
+  // and a black tip, the pink nose; faint stripes, no stripes on the back of the tail's root
+  PLANS.katze = scaled(PLANS.hund, 0.78, 0.62, 0.66, {
+    neck: [
+      [0.17, 0.31, 0.05, 0.065],
+      [0.24, 0.37, 0.048, 0.056],
+      [0.28, 0.43, 0.046, 0.05],
+      [0.3, 0.46, 0.05, 0.052],
+      [0.32, 0.475, 0.058, 0.058],
+      [0.36, 0.47, 0.054, 0.05],
+      [0.385, 0.455, 0.03, 0.028],
+      [0.4, 0.45, 0.02, 0.018],
+      [0.405, 0.448, 0.014, 0.013],
+    ],
+    ear: { p: [0.32, 0.51], x: 0.035, out: 0.5, up: 0.85, back: -0.1, len: 0.05, wid: 0.045 },
+    eye: { p: [0.365, 0.488], x: 0.026, r: 0.009, col: 0x6a6a20 },
+    tail: {
+      p: [
+        [-0.24, 0.35],
+        [-0.34, 0.27],
+        [-0.42, 0.2],
+        [-0.5, 0.15],
+      ],
+      r: [0.032, 0.036, 0.036, 0.032],
+    },
+    tailHang: 0.2,
+    noseCap: 0.008,
+    coat(q) {
+      let c = mix(lin(0x8a7c64), lin(0x6c604e), sst(0.3, 0.9, Math.cos(q.th)) * 0.5);
+      // faint tabby stripes across the flanks
+      if (q.part === 'trunk' && Math.cos(q.th) > -0.4)
+        c = mix(c, lin(0x3a3228), sst(0.75, 0.95, Math.abs(Math.sin(q.z * 55))) * 0.45);
+      if (q.part === 'trunk' && Math.cos(q.th) > 0.9) c = mix(c, lin(0x2a241e), 0.6);
+      if (q.part === 'tail') c = q.u > 0.85 ? lin(0x141210) : Math.floor(q.u * 7) % 2 && q.u > 0.35 ? lin(0x1e1a16) : c;
+      if (q.part === 'neck' && q.z > 0.4) c = lin(0xc89a8a);
+      if (q.part === 'neck' && q.z > 0.3 && Math.cos(q.th) < -0.3) c = mix(c, lin(0xe2d8c6), 0.6);
+      return shade(c, q, 0.03, 0.06);
+    },
+  });
+  // red deer (Cervus elaphus): hind 1.2 m, stag 1.3 m at the shoulder; reddish brown in summer, grey-brown in winter, a pale yellowish
+  // rump patch with a short dark-topped tail; the stag with his mane in autumn and the antlers (tines: brow, bez, trez, the crown)
+  PLANS.hirsch = scaled(PLANS.reh, 1.7, 1.62, 1.55, {
+    antler(B, sk, W, loft, V3, coat) {
+      const w = [W(sk, 'head')];
+      const tube = (pts, r0, r1) =>
+        loft(
+          B,
+          pts.map((p, i) => ({
+            p,
+            rx: r0 + ((r1 - r0) * i) / (pts.length - 1),
+            ry: r0 + ((r1 - r0) * i) / (pts.length - 1),
+            w,
+            u: i / (pts.length - 1),
+          })),
+          { part: 'antler', sides: 6, sub: 1, coat, cap0: false, cap1: 0.006 }
+        );
+      for (const s of [1, -1]) {
+        const b = [s * 0.06, 1.66, 0.92];
+        // the beam: up, back and out, then forward at the top
+        const beam = [
+          V3(b[0], b[1], b[2]),
+          V3(s * 0.12, 1.86, 0.84),
+          V3(s * 0.2, 2.06, 0.74),
+          V3(s * 0.24, 2.26, 0.7),
+          V3(s * 0.22, 2.42, 0.74),
+        ];
+        tube(beam, 0.03, 0.012);
+        // brow and bez tines forward over the face, the trez, the crown at the top
+        tube([V3(s * 0.08, 1.72, 0.9), V3(s * 0.1, 1.76, 1.04), V3(s * 0.1, 1.8, 1.12)], 0.016, 0.006);
+        tube([V3(s * 0.11, 1.82, 0.86), V3(s * 0.13, 1.86, 0.98), V3(s * 0.13, 1.9, 1.04)], 0.014, 0.005);
+        tube([V3(s * 0.2, 2.06, 0.75), V3(s * 0.23, 2.12, 0.86), V3(s * 0.24, 2.16, 0.92)], 0.012, 0.005);
+        tube([V3(s * 0.235, 2.3, 0.71), V3(s * 0.27, 2.4, 0.66), V3(s * 0.28, 2.46, 0.64)], 0.01, 0.004);
+        tube([V3(s * 0.23, 2.36, 0.73), V3(s * 0.2, 2.46, 0.8), V3(s * 0.19, 2.52, 0.82)], 0.01, 0.004);
+      }
+    },
+    coat(q, v) {
+      const winter = !!v.winter;
+      let c = mix(lin(winter ? 0x6e604e : 0x8c5232), lin(winter ? 0x584c40 : 0x6c3e24), sst(0.3, 0.9, Math.cos(q.th)));
+      c = mix(c, lin(winter ? 0x9a8c78 : 0xa8784e), below(q) * 0.6);
+      if (q.part === 'antler') return lin(q.u > 0.85 ? 0xe0d6c0 : 0x4e3e2e);
+      if (q.part === 'trunk' && q.z < -0.5 && Math.hypot(q.x / 0.16, (q.y - 1.0) / 0.2) < 1)
+        c = mix(c, lin(0xd8c49a), 0.85);
+      if (q.part === 'tail') c = Math.cos(q.th) > 0 ? lin(0x3a2e24) : lin(0xd8c49a);
+      if (q.part === 'neck' && v.antler && q.z < 0.85) c = mix(c, lin(0x3a2c22), 0.6);
+      if (q.part === 'neck' && q.z > 1.18) c = mix(c, lin(0x1a1512), sst(1.19, 1.23, q.z));
+      if (q.part === 'ear') c = mix(c, lin(0x2a221c), sst(0.7, 1, q.u));
+      if (q.part === 'hleg' || q.part === 'fleg') {
+        c = mix(c, lin(winter ? 0x5a4c3e : 0x6e4428), sst(0.3, 0.6, q.u));
+        if (q.u > 0.92) c = lin(0x1d1915);
+      }
+      return shade(c, q, 0.04, 0.06);
+    },
+  });
+  // common buzzard (Buteo buteo): 50–57 cm, wingspan 1.2 m, broad wings, the rounded tail; brown with a pale band across the breast,
+  // dark wrist patches below
+  PLANS.bussard = Object.assign({}, PLANS.milan, {
+    wing: {
+      span: 0.6,
+      thick: 0.016,
+      fingers: 5,
+      fingerLen: 0.11,
+      rows: [
+        [0.04, 0.1, -0.15, 'arm'],
+        [0.18, 0.11, -0.16, 'arm'],
+        [0.3, 0.1, -0.14, 'mid'],
+        [0.42, 0.07, -0.1, 'hand'],
+        [0.5, 0.04, -0.06, 'hand'],
+      ],
+    },
+    wrist: 0.3,
+    tailFan: { z0: -0.13, z1: -0.33, w0: 0.08, w1: 0.2, fork: -0.03 },
+    eye: { p: [0.24, 0.035], x: 0.026, r: 0.006, col: 0x5a3a1c },
+    coat(q) {
+      if (q.part === 'body') {
+        let c = lin(0x5a4230);
+        if (Math.cos(q.th) < 0 && q.u > 0.35 && q.u < 0.6) c = mix(c, lin(0xe2d8c4), 0.75);
+        if (q.u > 0.95) c = lin(0x2a2420);
+        return shade(c, q, 0.02, 0.1);
+      }
+      if (q.part === 'tail') return q.up ? lin(0x6a5240) : lin(0xc8bca8);
+      const s = q.span;
+      if (q.up) return s > 0.75 ? lin(0x2a201a) : lin(0x5c4434);
+      if (s > 0.42 && s < 0.6 && q.t < 0.4) return lin(0x2e241e);
+      if (s > 0.8) return lin(0x3a2e26);
+      return q.t > 0.55 ? lin(0xb8ae9e) : lin(0x8a7460);
+    },
+  });
+  // raven (Corvus corax): all black, glossy, the wedge-shaped tail, the heavy bill
+  PLANS.rabe = Object.assign({}, PLANS.milan, {
+    wing: Object.assign({}, PLANS.bussard.wing, { span: 0.6, fingers: 5 }),
+    wrist: 0.3,
+    tailFan: { z0: -0.13, z1: -0.34, w0: 0.06, w1: 0.13, fork: -0.07 },
+    eye: { p: [0.24, 0.035], x: 0.026, r: 0.005, col: 0x0c0a0a },
+    coat: q => (q.part === 'body' ? shade(lin(0x16161a), q, 0.02, 0.05) : q.up ? lin(0x1a1a20) : lin(0x121214)),
+  });
+  // black stork (Ciconia nigra): black with a white belly, the red bill and legs; flies with the neck stretched out and the legs behind
+  PLANS.storch = Object.assign({}, PLANS.milan, {
+    headY: 0.02,
+    headZ: 0.42,
+    body: [
+      [-0.16, 0.0, 0.04, 0.035],
+      [-0.08, 0.0, 0.075, 0.07],
+      [0.04, 0.005, 0.08, 0.075],
+      [0.16, 0.01, 0.05, 0.05],
+      [0.3, 0.015, 0.025, 0.028],
+      [0.42, 0.02, 0.026, 0.03],
+      [0.46, 0.02, 0.014, 0.016],
+      [0.6, 0.005, 0.006, 0.008],
+    ],
+    eye: { p: [0.44, 0.035], x: 0.02, r: 0.005, col: 0x1a1210 },
+    wing: {
+      span: 0.95,
+      thick: 0.02,
+      fingers: 6,
+      fingerLen: 0.16,
+      rows: [
+        [0.04, 0.12, -0.18, 'arm'],
+        [0.28, 0.13, -0.18, 'arm'],
+        [0.5, 0.11, -0.15, 'mid'],
+        [0.66, 0.07, -0.1, 'hand'],
+        [0.78, 0.03, -0.06, 'hand'],
+      ],
+    },
+    wrist: 0.5,
+    tailFan: { z0: -0.14, z1: -0.32, w0: 0.08, w1: 0.16, fork: -0.02 },
+    flapHz: 1.8,
+    legs(B, sk, W, loft, V3, coat) {
+      for (const s of [1, -1])
+        loft(
+          B,
+          [V3(s * 0.03, -0.02, -0.08), V3(s * 0.03, -0.02, -0.32), V3(s * 0.025, -0.015, -0.55)].map((p, i) => ({
+            p,
+            rx: [0.012, 0.008, 0.006][i],
+            ry: [0.012, 0.008, 0.006][i],
+            w: [W(sk, 'root')],
+            u: i / 2,
+          })),
+          { part: 'leg', sides: 5, sub: 1, coat, cap0: false, cap1: 0.004 }
+        );
+    },
+    coat(q) {
+      if (q.part === 'leg') return lin(0xb02a20);
+      if (q.part === 'body') {
+        if (q.u > 0.8) return lin(0xc0302a);
+        if (Math.cos(q.th) < -0.2 && q.u < 0.55) return lin(0xece8e2);
+        return shade(lin(0x18181c), q, 0.02, 0.05);
+      }
+      if (q.part === 'tail') return lin(0x16161a);
+      return q.up ? lin(0x1c1c22) : q.span < 0.12 && q.t < 0.5 ? lin(0xe8e4de) : lin(0x141418);
+    },
+  });
+  // eagle owl (Bubo bubo): up to 75 cm, the ear tufts, orange eyes, mottled tawny with dark streaks; seen perched
+  PLANS.uhu = Object.assign({}, PLANS.bussard, {
+    body: [
+      [-0.2, 0.0, 0.05, 0.045],
+      [-0.12, 0.0, 0.11, 0.1],
+      [0.0, 0.01, 0.13, 0.12],
+      [0.12, 0.02, 0.11, 0.1],
+      [0.2, 0.03, 0.1, 0.095],
+      [0.26, 0.03, 0.095, 0.09],
+      [0.3, 0.025, 0.05, 0.05],
+      [0.315, 0.02, 0.02, 0.02],
+    ],
+    headZ: 0.18,
+    eye: { p: [0.29, 0.06], x: 0.04, r: 0.016, col: 0xe07a10 },
+    perchUp: 1.3,
+    perchY: 0.3,
+    legs(B, sk, W, loft, V3, coat) {
+      // the ear tufts
+      for (const s of [1, -1])
+        loft(
+          B,
+          [V3(s * 0.05, 0.1, 0.27), V3(s * 0.07, 0.15, 0.25), V3(s * 0.08, 0.19, 0.22)].map((p, i) => ({
+            p,
+            rx: [0.018, 0.012, 0.004][i],
+            ry: [0.008, 0.006, 0.003][i],
+            w: [W(sk, 'head')],
+            u: i / 2,
+          })),
+          { part: 'tuft', sides: 5, sub: 1, coat, cap0: false, cap1: 0.003 }
+        );
+    },
+    coat(q) {
+      if (q.part === 'tuft') return lin(0x2a1e14);
+      if (q.part === 'body') {
+        let c = lin(0x9a7448);
+        if (Math.cos(q.th) < 0) c = mix(c, lin(0xc8a46e), 0.5);
+        c = mix(
+          c,
+          lin(0x2e2014),
+          sst(0.7, 0.9, hash(Math.round(q.x * 40), Math.round(q.y * 40), Math.round(q.z * 12))) * 0.7
+        );
+        if (q.u > 0.78 && Math.cos(q.th) < -0.2) c = lin(0xe6dccb);
+        return c;
+      }
+      return q.up ? mix(lin(0x7a5a38), lin(0x2e2218), sst(0.5, 0.8, hash(q.x * 9, q.z * 9, 1))) : lin(0xb89a70);
+    },
+  });
   S.PLANS = PLANS;
   S.make = make;
   S.lin = lin;
