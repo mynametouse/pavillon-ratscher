@@ -724,7 +724,31 @@ export const ZBUS = (() => {
       // out of sight: 200 m on (the fog of the night), the end of the way, or a minute
       if (S.s >= S.line.L - 0.5 || S.s - S.sStop > 200 || S.t > 60) gone();
     }
+    if (S.st === 'kommt' || S.st === 'steht' || S.st === 'faehrt') pushOut();
     engineTick();
+  }
+  // zombies and allies go round the coach, not through it: whoever stands in its box (and 0.35 m round it) is put out at the nearer side
+  // or end (the walker and cars: VEH.extra above; the other player's zombies come from his world)
+  function pushOut() {
+    if (!Number.isFinite(S.x) || !Number.isFinite(S.hd)) return;
+    const fx = Math.sin(S.hd),
+      fy = Math.cos(S.hd),
+      ex = 1.3 + 0.35,
+      ey = 6 + 0.35;
+    for (const e of Z.ents) {
+      if (e.dead || e.net || e.house || !Number.isFinite(e.x)) continue;
+      const dx = e.x - S.x,
+        dy = e.y - S.y;
+      if (dx * dx + dy * dy > 64) continue;
+      // (across and along the coach)
+      let lx = dx * fy - dy * fx,
+        ly = dx * fx + dy * fy;
+      if (Math.abs(lx) >= ex || Math.abs(ly) >= ey) continue;
+      if (ex - Math.abs(lx) < ey - Math.abs(ly)) lx = Math.sign(lx || 1) * ex;
+      else ly = Math.sign(ly || 1) * ey;
+      e.x = S.x + lx * fy + ly * fx;
+      e.y = S.y - lx * fx + ly * fy;
+    }
   }
   KERN.tick(tick, 'zombie/bus');
   // ---- two players (zombie/z_netz.js): the host's bus decides – it leaves when its time is up or he is in (a few seconds more for the

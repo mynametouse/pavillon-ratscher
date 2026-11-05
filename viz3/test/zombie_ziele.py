@@ -316,6 +316,12 @@ with lib.browser() as b:
         E("GAME.step(1.5, 1)"); steps(0.1)
         dd = J("(() => { const fx = Math.sin(ZBUS.hd), fy = Math.cos(ZBUS.hd); return Math.abs((GAME.P.x - ZBUS.x) * fy - (GAME.P.y - ZBUS.y) * fx); })()")
         ck('the coach is solid: one walks up to its side, not into it', 1.3 < dd < 2.4, f'{dd:.2f} m from its middle line (from 3.2 m)')
+        # (and a zombie in its middle is put out at a side or an end)
+        zin = J("(() => { const e = ZSTATE.ents.find(q => q.kind === 'zombie' && !q.dead && !q.net && !q.house); if (!e) return null; e.hold = 'idle'; e.x = ZBUS.x + 0.2; e.y = ZBUS.y + 0.1; return e.id; })()")
+        steps(0.2)
+        if zin is not None:
+            zd = J("(() => { const e = ZSTATE.ents.find(q => q.id === " + json.dumps(zin) + "), fx = Math.sin(ZBUS.hd), fy = Math.cos(ZBUS.hd), dx = e.x - ZBUS.x, dy = e.y - ZBUS.y; return [dx * fy - dy * fx, dx * fx + dy * fy]; })()")
+            ck('a zombie in the coach is put out at its side or end', abs(zd[0]) >= 1.6 or abs(zd[1]) >= 6.3, str([round(q, 2) for q in zd]))
         # a picture: the coach at the stop at night, from the shelter's side
         E(f"""(() => {{ const P = GAME.P, d = ZBUS.doorAt(); P.x = d[0] + Math.cos(ZBUS.hd) * 9 - Math.sin(ZBUS.hd) * 5; P.y = d[1] - Math.sin(ZBUS.hd) * 9 - Math.cos(ZBUS.hd) * 5; P.feet = GAME.floorAt(P.x, P.y, 30);
           P.yaw = P.body = Math.atan2(ZBUS.x - P.x, ZBUS.y - P.y) * 180 / Math.PI; P.pitch = 2; for (const e of ZSTATE.ents) e.hold = 'idle'; }})()""")
