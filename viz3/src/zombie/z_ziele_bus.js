@@ -404,7 +404,7 @@ export const ZBUS = (() => {
     const p = stopPt();
     return hyp(p[0] - P.x, p[1] - P.y) < 22;
   };
-  TASKS.define({
+  ZZIEL.define({
     id: 'zz-bus',
     title: 'Der Bus um vier',
     who: 'Zombie-Nacht · Nacht ' + BUS.night,
@@ -446,7 +446,7 @@ export const ZBUS = (() => {
     ],
     done: 'Mit dem Bus raus aus Ratscher.',
   });
-  TASKS.define({
+  ZZIEL.define({
     id: 'zz-allein',
     title: 'Allein weiter',
     who: 'Zombie-Nacht · Nacht ' + BUS.night,

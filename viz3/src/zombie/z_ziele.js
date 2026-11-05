@@ -330,6 +330,12 @@ export const ZZIEL = (() => {
     BYID[o.id] = o;
     defObj(o);
   }
+  // our tasks: defined in TASKS, their steps' targets kept here (the marker asks them without building the whole journal)
+  const TG = {};
+  function define(def) {
+    TG[def.id] = def.steps.map(st => st.target || null);
+    return TASKS.define(def);
+  }
   // a target function that draws its own marker (game/quests.js then draws none – target.ownMark)
   const own = f => {
     const g = () => {
@@ -343,7 +349,7 @@ export const ZZIEL = (() => {
     return g;
   };
   function defObj(o) {
-    TASKS.define({
+    define({
       id: o.id,
       title: o.title,
       who: WHO + ' · Tag ' + o.day,
@@ -415,8 +421,8 @@ export const ZZIEL = (() => {
   };
   function defNight(n) {
     const id = 'zz-nacht' + n;
-    if (TASKS.list().includes(id)) return id;
-    TASKS.define({
+    if (TG[id]) return id;
+    define({
       id,
       title: nightTitle(n),
       who: WHO + ' · Nacht ' + n,
@@ -680,11 +686,13 @@ body[data-zombie="1"]:not([data-drive]):not([data-clean="1"]) #qtrack:not([hidde
   }
   // the tracked target, if it is one of ours: [x, y, z] or null
   function trackedTarget() {
-    if (!mine(QUESTS.track)) return null;
-    const e = S.entry;
-    if (!e || e.status === 'erledigt' || !e.target) return null;
+    const k = QUESTS.track;
+    if (!mine(k)) return null;
+    const id = k.replace(/^aufgaben:/, ''),
+      st = TASKS.state(id),
+      f = st && st.st === 'läuft' && TG[id] ? TG[id][st.i] : null;
     try {
-      return e.target();
+      return f ? f() : null;
     } catch (err) {
       return null;
     }
@@ -745,12 +753,11 @@ body[data-zombie="1"]:not([data-drive]):not([data-clean="1"]) #qtrack:not([hidde
       S.acc = 0;
       sync();
     }
-    // the tracked entry of ours (four times a second; the target itself every frame)
+    // the card's place beside the panel (four times a second)
     S.cardAcc += dt;
     if (S.cardAcc >= 0.25) {
       S.cardAcc = 0;
       placeCard();
-      S.entry = mine(QUESTS.track) ? KERN.tasks.list().find(e => e.key === QUESTS.track) || null : null;
     }
     mkTick(dt);
   }, 'zombie/ziele');
@@ -758,6 +765,8 @@ body[data-zombie="1"]:not([data-drive]):not([data-clean="1"]) #qtrack:not([hidde
     OBJ,
     BYID,
     NIGHTS,
+    TG,
+    define,
     add,
     sync,
     resetAll,

@@ -49,6 +49,7 @@ Bus, letzte Welle, Ende).
 ## Schnittstelle
 
 - `ZZIEL.add({ id, day, first, title, text(), target(), done(), fin })` – eine Aufgabe eines Tages anhängen (so kommt das Radio dazu).
+- `ZZIEL.define(def)` – wie `TASKS.define`, merkt sich die Ziele der Schritte für die Markierung (die Bus-Aufgaben kommen so dazu).
 - `ZZIEL.NIGHTS.custom[n]` – eigene Aufgabe für Nacht n (Id oder Funktion), `ZZIEL.NIGHTS.siren` – deren erster Schritt wartet auf die Sirene.
 - `ZZIEL.hook = () => bool` – solange wahr, startet die Kette nichts Neues (der Endbildschirm).
 - `ZZIEL.own(fn)` – eine Zielfunktion mit eigener Markierung; `ZZIEL.safeHouse()`, `nearHouse()`, `searchTarget()`, `barTarget()`, `nightTarget()`.
