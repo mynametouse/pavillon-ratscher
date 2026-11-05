@@ -642,6 +642,8 @@ export const ZWAFFE = (() => {
     sawOff,
     can,
     MODELS,
+    GRIP,
+    mats,
   });
   return S;
 })();

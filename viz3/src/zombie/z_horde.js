@@ -725,9 +725,14 @@ export const ZHORDE = (() => {
       }
     } else if (e.st === 'chase') {
       v = (e.crawl ? 0.45 : D.chase) * e.sp;
+      // inside a house: the interior's way from room to room (zombie/z_haus.js → ZINNEN H.route)
+      const wp = e.house && !e.los && S.house && S.house.route ? S.house.route(e, t) : null;
       // (the flow field leads to this browser's player – for the other player straight on, sidestepping when stuck)
-      const fl = !e.los && e.d > 2 && !e.house && !t.remote ? flow(e.x, e.y) : null;
-      if (fl) {
+      const fl = !wp && !e.los && e.d > 2 && !e.house && !t.remote ? flow(e.x, e.y) : null;
+      if (wp) {
+        gx = wp[0] - e.x;
+        gy = wp[1] - e.y;
+      } else if (fl) {
         gx = fl[0];
         gy = fl[1];
       } else {

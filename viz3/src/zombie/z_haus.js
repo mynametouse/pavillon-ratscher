@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import { scene, stage, V } from '../core/head.js';
 import { markDirty, plain } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
-import { floorAt, P } from '../game/walkable.js';
+import { DOOR, floorAt, P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
@@ -411,6 +411,28 @@ export const ZHAUS = (() => {
       ZTON.snarl(p[0], p[1]);
     },
     inside: () => !!S.H,
+    // inside the mounted house: the next waypoint towards the target (from room to room, up and down the stairs), or null
+    route(e, t) {
+      if (!S.H || e.house !== S.bid || !S.H.route) return null;
+      // a closed inner door in its way: it bursts it open
+      for (const d of S.H.doors || []) {
+        const D = DOOR[d.key];
+        if (D && D.target < 0.5 && hyp(d.pos[0] - e.x, d.pos[1] - e.y) < 1.1 && Math.abs((d.pos[2] || 0) - e.z) < 1.2) {
+          D.target = 1;
+          ZTON.bang(d.pos[0], d.pos[1]);
+        }
+      }
+      let w = null;
+      try {
+        w = S.H.route(e.x, e.y, e.z, t.x, t.y, t.z);
+      } catch (err) {
+        return null;
+      }
+      if (!w) return null;
+      const x = w.x ?? w[0],
+        y = w.y ?? w[1];
+      return Number.isFinite(x) && Number.isFinite(y) ? [x, y] : null;
+    },
   };
   // ---- lurkers: by day some of last night's zombies wait inside ----
   function lurkers() {

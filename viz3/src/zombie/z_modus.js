@@ -27,6 +27,7 @@ import { Z } from './z_state.js';
 import { ZTON } from './z_ton.js';
 import { ZFX } from './z_fx.js';
 import { ZFIG } from './z_fig.js';
+import { ZINNEN } from './z_innen.js';
 import { ZHORDE } from './z_horde.js';
 import { ZWAFFE } from './z_waffe.js';
 import { ZHUD } from './z_hud.js';
@@ -69,6 +70,8 @@ export const ZOMBIE = (() => {
     ZHUD.show(true);
     ZWAFFE.placeAll();
     ZTON.load();
+    // the houses' shaders compiled now, not at the first door (zombie/z_innen.js; one frame)
+    if (ZINNEN.warm) setTimeout(() => Z.on && ZINNEN.warm(), 1200);
     // the villagers keep away from evenings and gardens at night; the streets empty
     DORF.S.hold = () => Z.on && (Z.phase === 'nacht' || Z.phase === 'morgen');
     Z.phase = phaseOf(minute());

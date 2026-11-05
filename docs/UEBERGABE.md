@@ -16,6 +16,13 @@ veröffentlicht.
 
 ## Stand
 
+- **Zombie-Nacht (4./5.11.2026, Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, Falko 4.11. 22:59):** eigener Modus (Menü → Erleben → Szenen →
+  „Zombie-Nacht“, `?szenario=zombie`), alles in `viz3/src/zombie/` (Wunsch und Plan `docs/plans/plan_zombie.md`, Stand
+  `docs/features/zombie.md`); Häuser von innen vom Hilfs-Agenten `zombie-innen` (`feat/zombie-innen`, `docs/features/zombie-innen.md`);
+  zu zweit über Trystero/Nostr (`src/lazy/raum.js`, kein eigener Server). In `src` seit 5.11. ~1:30 (Vorschau), **live erst nach Falkos
+  Blick**. Tests: `zombie`, `zombie_haus`, `zombie_netz`, `zombie_look`, `zombie_innen`; Unit-Test `zombie.test.mjs` gegen die
+  `Object.assign(S, { fn })`-Falle. Offen: ein gemountetes Haus bringt zwei neue Shader-Programme (Agent sucht), das echte Internet-Spiel
+  zu zweit ist ungetestet (ohne TURN klappt es in manchen Mobilfunknetzen nicht), Falkos Entscheidung zur Vermittlung.
 - **Garten wie heute, Runde 2 (30.10.2026, Falko 0:12/0:19/0:31):** Feldweg ohne die falsche OSM-Brücke (der Bach folgt dem Weg); Bäume wie
   auf den Fotos (die Erle hinter dem Waschhaus, hinten großer Kirschbaum, zweiter Kirschbaum am Westrand – beide nur Bauphase 0 –, Apfelbaum;
   `site.js` Bäume tragen jetzt die Art [4] und die letzte Bauphase [5], `garden/trees.js`); Waschhaus mit bemalter Front (2,4 m breit);
