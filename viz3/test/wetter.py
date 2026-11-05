@@ -133,6 +133,16 @@ with lib.browser() as b:
         m2 = J(UNI)
         ck('heavy rain: the drops\' mesh drawn, its uniforms finite (before and after the picture)', m['vis'] and m['fin'] and m2['vis'] and m2['fin'] and m['n'] > 3000, json.dumps(m2)[:400])
         ck('heavy rain: all drops, faster', s['fall']['kR'] >= 0.95 and s['fallU']['rain'][0] > 8, str(s['fall']) + str(s['fallU']['rain']))
+        # the drops alone on black, at several moments: they must fill the view evenly (they once gathered in sheets – their speed came
+        # from the same random number as their height)
+        spread = J("""(() => { const F = WETTER.fall, m = F.mesh, r2 = new THREE.WebGLRenderer({ preserveDrawingBuffer: true }), sc = new THREE.Scene();
+          r2.setSize(240, 150, false); const cam = GAME.cam, q = m.clone(); q.onBeforeRender = m.onBeforeRender; sc.add(q); const out = [];
+          for (const t of [3.0, 4.248, 17.5, 61.0, 133.3]) { F.U.uT.value = t; r2.render(sc, cam); const gl = r2.getContext(), px = new Uint8Array(240 * 150 * 4);
+            gl.readPixels(0, 0, 240, 150, gl.RGBA, gl.UNSIGNED_BYTE, px); const th = [0, 0, 0];
+            for (let y = 0; y < 150; y++) for (let x = 0; x < 240; x++) { const i = (y * 240 + x) * 4; if (px[i] + px[i + 1] + px[i + 2] > 60) th[Math.min(2, Math.floor(y / 50))]++; }
+            const n = th[0] + th[1] + th[2]; out.push(n ? th.map(v => +(v / n).toFixed(2)) : [0, 0, 0]); }
+          r2.dispose(); return out; })()""")
+        ck('heavy rain: the drops fill the view evenly at every moment (no sheets)', all(min(t) > 0.12 for t in spread), str(spread))
         s = weather('schnee', 2.0)
         pic('07_schnee_nah')
         ck('snow: flakes (the snow share), slow', s['fall']['kS'] > 0.5 and s['fallU']['rain'][3] > 0.95 and s['fallU']['snow'][0] < 1.6, str(s['fall']) + str(s['fallU']))
@@ -164,6 +174,13 @@ with lib.browser() as b:
         view('garten', 250, 5)
         weather('regen')
         pic('11_abendregen')
+        # an overcast night: no stars, no moon, the underside of the deck faintly lit by the towns around
+        midday(22.5)
+        view('garten', 200, 12)
+        s = weather('bedeckt')
+        pic('11b_nacht_bedeckt')
+        g = J("WETTER.S && window.DN ? DN.SU.wxGlow.value.toArray() : null")
+        ck('an overcast night: the stars hidden, the towns\' glow on the deck', J("DN.dbg().stars") < 0.05 and g and g[0] > 0.004, f"stars {J('DN.dbg().stars')} glow {g}")
         midday(12.0)
     # ---- indoors: no drops, the roof heard ----
     if 'innen' in want:

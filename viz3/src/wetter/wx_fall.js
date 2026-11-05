@@ -66,7 +66,9 @@ export const WXFALL = (() => {
       varying vec2 vC; varying float vA, vS;
       void main(){
         float snow = step(fract(aSeed.w * 7.31), uRain.w - 0.0001);
-        float fall = snow > 0.5 ? uSnow.x * (0.75 + 0.5 * aSeed.y) : uRain.x * (0.82 + 0.36 * aSeed.y);
+        // each drop's own speed from a number of its own: taken from its height's, the drops gathered in sheets as time went on
+        float rv = fract(aSeed.w * 31.73 + aSeed.x * 7.13);
+        float fall = snow > 0.5 ? uSnow.x * (0.75 + 0.5 * rv) : uRain.x * (0.82 + 0.36 * rv);
         vec3 vel = vec3(uWind.x, -fall, uWind.y);
         vec3 p = aSeed.xyz * uBox + vel * uT;
         if (snow > 0.5) { float ph = aSeed.x * 37.0 + aSeed.z * 23.0;
@@ -139,7 +141,7 @@ export const WXFALL = (() => {
     const rain = p.on ? p.rain : 0,
       snow = p.on ? p.snow : 0;
     const kR = rain > 0.03 ? (p.drizzle ? 0.55 : clamp(0.12 + 0.3 * Math.log2(1 + rain), 0.1, 1)) : 0,
-      kS = snow > 0.02 ? clamp(0.15 + 0.35 * Math.log2(1 + 3 * snow), 0.12, 1) : 0;
+      kS = p.hail ? 0.35 * kR : snow > 0.02 ? clamp(0.15 + 0.35 * Math.log2(1 + 3 * snow), 0.12, 1) : 0;
     S.kR = kR;
     S.kS = kS;
     const k = Math.max(kR, kS),
@@ -155,7 +157,13 @@ export const WXFALL = (() => {
       p.drizzle ? 0.004 : 0.008,
       kS / Math.max(1e-3, kR + kS)
     );
-    U.uSnow.value.set(p.graupel ? 2.4 : 1.0, snow > 1.5 ? 0.022 : 0.016, 0.3, 0);
+    // snow sinks at about 1 m/s; graupel falls faster; hail is small, fast and hard (it does not sway)
+    U.uSnow.value.set(
+      p.hail ? 9 : p.graupel ? 2.4 : 1.0,
+      p.hail ? 0.009 : snow > 1.5 ? 0.022 : 0.016,
+      p.hail ? 0.0 : 0.3,
+      0
+    );
     U.uAR.value = p.drizzle ? 0.26 : 0.42;
     // gusts: the wind swings between its mean and the gust speed (slow random), near the ground ~0.8 of the 10-m wind
     S.gustT -= dt;

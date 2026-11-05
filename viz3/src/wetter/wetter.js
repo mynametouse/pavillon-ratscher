@@ -254,6 +254,7 @@ export const WETTER = (() => {
         snow: c.snow,
         drizzle: !!wx.drizzle,
         graupel: wx.code === 77,
+        hail: !!wx.hail,
         wind: c.wind,
         gust: c.gust,
         dir: c.dir,
@@ -538,6 +539,7 @@ export const WETTER = (() => {
       automated: AUTOMATED,
     }),
     data: WXDATA,
+    fall: WXFALL,
     S,
   };
 })();
