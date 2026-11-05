@@ -1,0 +1,118 @@
+# feat/welt-gebaeude: die Luftbild-Kacheln der Welt (welt-test/, zonen/vessra/) ohne die abgebildeten Dächer der Gebäude, die in 3D stehen
+# (Schleusingens Altstadt, Kloster Veßra, die Zellen von gebaeude/gebaeude.js) – ein NEUER Satz nur mit den retuschierten Bildkacheln unter
+# gh-pages/welt-test/v2/ (i/{L}/{x}/{y}.webp + index.json). Die veröffentlichten Kacheln bleiben unberührt; die App nimmt den neuen Satz
+# nur mit dem Schalter (?welt2, oder GEB.TILES2 in viz3/src/gebaeude/gebaeude.js, wenn der Kern-Chat ihn umlegt).
+#   Ergebnis: https://mynametouse.github.io/pavillon-ratscher/welt-test/v2/index.json
+name: Welt-Kacheln ohne gedruckte Dächer (welt-gebaeude)
+
+on:
+  workflow_dispatch:
+    inputs:
+      veroeffentlichen:
+        description: 'nach gh-pages/welt-test/v2/ veröffentlichen'
+        type: boolean
+        default: true
+  push:
+    branches: ['feat/welt-gebaeude']
+    paths: ['tools/welt-gebaeude/kacheln.py', 'tools/welt-gebaeude/retusche.py', '.github/workflows/welt-gebaeude-kacheln.yml',
+            'viz3/extra/welt-gebaeude/dist/gebaeude/z/**', 'viz3/extra/*/maske*_utm.json']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Kacheln retuschieren
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    concurrency:
+      group: welt-gebaeude-kacheln
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet numpy shapely pillow opencv-python-headless
+      - name: Kacheln holen und retuschieren (Stufen 10–12)
+        run: |
+          set -o pipefail
+          python -u tools/welt-gebaeude/kacheln.py --out site/v2 --debug diag 2>&1 | tee kacheln.log
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          { echo "### Welt-Kacheln ohne gedruckte Dächer"; echo '```'; tail -6 kacheln.log 2>/dev/null; echo '```'; du -sh site/v2 2>/dev/null; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Kacheln für die Veröffentlichung
+        uses: actions/upload-artifact@v4
+        with:
+          name: welt-gebaeude-v2
+          path: site/v2
+          retention-days: 3
+          compression-level: 0
+      - name: Beispiele (vorher | nachher)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: welt-gebaeude-v2-pruefung
+          path: |
+            kacheln.log
+            diag/
+          if-no-files-found: ignore
+
+  deploy:
+    name: Nach gh-pages/welt-test/v2/
+    needs: build
+    if: github.event_name == 'push' || inputs.veroeffentlichen
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: welt-gebaeude-v2
+          path: new/v2
+      - name: Größe prüfen (Grenze 300 MB)
+        run: |
+          MB=$(du -sm new/v2 | cut -f1); echo "v2: $MB MB"
+          [ "$MB" -lt 300 ] || { echo "zu groß für gh-pages"; exit 1; }
+          [ -f new/v2/index.json ] || { echo "keine index.json"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: welt-test/v2
+      - name: Nur welt-test/v2/ ersetzen, committen, pushen (bei Wettlauf neu aufsetzen)
+        working-directory: pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          apply() { rm -rf welt-test/v2 && mkdir -p welt-test && cp -r ../new/v2 welt-test/v2 && git add -A welt-test/v2; }
+          apply
+          if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+          # only this folder may change on gh-pages
+          if git diff --cached --name-only | grep -v '^welt-test/v2/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
+          MSG="Welt-Kacheln ohne gedruckte Dächer: welt-test/v2 aus ${GITHUB_SHA::7} (${GITHUB_REF_NAME})
+
+          Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_01Mmpsvp11QsXpPSQRRbZ4Jv"
+          git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+          for i in 1 2 3 4 5; do
+            if git push -q origin HEAD:gh-pages; then echo "gepusht"; break; fi
+            echo "Push abgelehnt (Versuch $i) – neu holen und den eigenen Commit darauf setzen"
+            git fetch -q --depth 1 --filter=blob:none origin gh-pages
+            if ! git rebase -q --onto FETCH_HEAD HEAD~1; then
+              git rebase --abort || true
+              git reset -q --hard FETCH_HEAD
+              apply
+              git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+            fi
+            [ "$i" = 5 ] && exit 1
+            sleep $((i * 7))
+          done
+          git log --oneline -2
+          echo "### Veröffentlicht: welt-test/v2/ ($(du -sh welt-test/v2 | cut -f1))" >> "$GITHUB_STEP_SUMMARY"

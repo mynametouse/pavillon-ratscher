@@ -210,7 +210,10 @@ def pushpull(img, w):
     while min(I[-1].shape[:2]) > 8:
         I.append(cv2.resize(I[-1], (I[-1].shape[1] // 2, I[-1].shape[0] // 2), interpolation=cv2.INTER_AREA))
         Wt.append(cv2.resize(Wt[-1], (Wt[-1].shape[1] // 2, Wt[-1].shape[0] // 2), interpolation=cv2.INTER_AREA))
-    cur = I[-1] / np.maximum(Wt[-1], 1e-6)[:, :, None]
+    # the coarsest level: where nothing valid lies under a cell, the mean of all that is valid (else those cells would come out black)
+    tot = Wt[-1].sum()
+    mean = I[-1].reshape(-1, 3).sum(0) / tot if tot > 1e-6 else np.array([128.0, 128.0, 128.0], np.float32)
+    cur = np.where((Wt[-1] > 1e-3)[:, :, None], I[-1] / np.maximum(Wt[-1], 1e-6)[:, :, None], mean[None, None, :])
     for l in range(len(I) - 2, -1, -1):
         up = cv2.resize(cur, (I[l].shape[1], I[l].shape[0]), interpolation=cv2.INTER_LINEAR)
         ww = np.clip(Wt[l] * 4.0, 0, 1)[:, :, None]

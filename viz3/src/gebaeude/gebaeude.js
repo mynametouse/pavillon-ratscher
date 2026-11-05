@@ -16,6 +16,7 @@ import { COL } from '../core/geo.js';
 import { rebuildGrids } from '../game/walkable.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
+import { WELT } from '../welt/welt.js';
 export const GEB = (() => {
   const S = { on: false, ready: false, n: 0, bld: [], meshes: [], nSeg: 0, ms: 0, err: '', trees: 0, stats: null };
   if (!window.RATSCHER || !RATSCHER.on || new URLSearchParams(location.search).has('nogeb')) return S;
@@ -975,6 +976,29 @@ export const GEB = (() => {
     }
   }
   if (ZON) KERN.tick(zTick, 'gebaeude/zellen');
+  // ---- the world's image tiles without the printed roofs (tools/welt-gebaeude/kacheln.py → gh-pages welt-test/v2/, a set of its own
+  // with only the retouched tiles): welt/welt.js takes a tile's image from there when its key is listed. Off until tested (?welt2) ----
+  S.TILES2 = false;
+  const T2 = { on: S.TILES2 || new URLSearchParams(location.search).has('welt2'), keys: null, state: 'idle', n: 0 };
+  S.T2 = T2;
+  if (T2.on && WELT.on) {
+    T2.state = 'loading';
+    fetch(WELT.base + 'v2/index.json')
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('v2/index.json ' + r.status))))
+      .then(j => {
+        T2.keys = new Set(j.tiles || []);
+        T2.state = 'ready';
+        WELT.imgBase = t => {
+          if (!T2.keys.has(t.k)) return t.base;
+          T2.n++;
+          return WELT.base + 'v2/';
+        };
+      })
+      .catch(e => {
+        T2.state = 'error';
+        T2.err = String(e);
+      });
+  }
   whenLoaded(() => {
     if (!data || !RATSCHER.ready) return;
     try {
