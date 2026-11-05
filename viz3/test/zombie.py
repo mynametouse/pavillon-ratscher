@@ -23,7 +23,7 @@ with lib.browser() as b:
             print('shot failed', name, e)
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
     st = J("({ on: ZSTATE.on, phase: ZSTATE.phase, hud: !document.getElementById('zhud').hidden, hm: CLOCK.hm(), date: DN.dateShort ? DN.dateShort() : '', T: ZOMBIE.times(), m: Math.floor(CLOCK.t) % 1440, w: Object.fromEntries(Object.entries(ZWAFFE.things).map(([k, t]) => [k, t.state])), tasks: KERN.tasks.list().filter(t => t.key.includes('zombie')).map(t => t.status) })")
-    ck('the scene starts the zombie night (mode on, panel, 31 October, 2.5 h before the siren)', st['on'] and st['hud'] and '31.10' in st['date'] and abs(st['m'] - st['T']['start']) < 3 and 16 * 60 < st['T']['siren'] + 30 < 19 * 60, str(st))
+    ck('the scene starts the zombie night (mode on, panel, 31 October, 4 h before the siren)', st['on'] and st['hud'] and '31.10' in st['date'] and abs(st['m'] - st['T']['start']) < 3 and 16 * 60 < st['T']['siren'] + 30 < 19 * 60, str(st))
     ck('weapons lie in the garden', sum(1 for v in st['w'].values() if v == 'world') >= 4, str(st['w']))
     steps(0.5)
     pic('01_start')

@@ -46,7 +46,7 @@ export const ZOMBIE = (() => {
       if (r && r.down != null && r.up != null) {
         const siren = Math.round(Math.min(22 * 60 + 30, Math.max(17 * 60, r.down + 50))),
           dawn = Math.round(Math.min(7 * 60 + 30, Math.max(4 * 60, r.up - 25)));
-        t = { warn: siren - 30, siren, dawn, start: siren - 150 };
+        t = { warn: siren - 30, siren, dawn, start: siren - 240 }; // (four hours of day to get ready – four minutes at the usual pace)
       }
     } catch (e) {}
     S.tday = d;

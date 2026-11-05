@@ -280,7 +280,7 @@ export const ZDATA = (() => {
   // ---- texts (German, the player is du) ----
   const T = {
     intro:
-      'Ratscher, 31. Oktober, später Nachmittag. Seit Tagen ist das Radio voller Rauschen. Wenn es dunkel wird, heult die Sirene auf der alten Schule – such dir vorher etwas, womit du dich wehren kannst (Spaten an der alten Garage, Motorsäge in der Werkstatt). Y oder Klick: zuschlagen, G: Tritt, T: Taschenlampe, R: nachladen.',
+      'Ratscher, 31. Oktober, früher Nachmittag. Seit Tagen ist das Radio voller Rauschen. Wenn es dunkel wird, heult die Sirene auf der alten Schule – such dir vorher etwas, womit du dich wehren kannst (Spaten an der alten Garage, Motorsäge in der Werkstatt), sammle Vorräte in den Häusern und vernagle Fenster. Y oder Klick: zuschlagen, G: Tritt, T: Taschenlampe, R: nachladen.',
     warn: 'Die Sonne geht unter. Bald heult die Sirene.',
     siren: 'Die Sirene heult. Irgendetwas stimmt mit den Leuten nicht …',
     turn: name => name + ' krümmt sich – und dreht sich langsam zu dir um.',
