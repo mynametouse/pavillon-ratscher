@@ -47,6 +47,10 @@ def buildings(ethos_path):
     for b in gj['b']:
         f = b['f']
         out.append((utm_poly(list(zip(f[0::2], f[1::2]))), float(b['h']), 'neu'))
+    # ETHOS buildings not built because a hand-modelled thing stands there (world/dorfkern_data.js): their printed roofs go as well
+    for b in gj.get('mask', []):
+        f = b['f']
+        out.append((utm_poly(list(zip(f[0::2], f[1::2]))), float(b['h']), 'keep'))
     site = sbox(*SITE)
     box = W.GEOMAN['roads']['box']
     keep = os.path.join(W.HERE, 'retusche_etc.json')   # the ETHOS footprints of the site and the slivers – so a re-run needs no ETHOS file
@@ -301,7 +305,7 @@ def main():
     for im, nm in ((near, 'ortho_near_dach.jpg'), (inner, 'ortho_inner_dach.jpg')):
         Image.fromarray(im.a).resize((1024, 1024), Image.LANCZOS).save(os.path.join(a.out, nm), quality=86)
     blds = buildings(a.ethos)
-    print('buildings', len(blds), {s: sum(1 for b in blds if b[2] == s) for s in ('osm', 'neu', 'site', 'rest')}, flush=True)
+    print('buildings', len(blds), {s: sum(1 for b in blds if b[2] == s) for s in ('osm', 'neu', 'keep', 'site', 'rest')}, flush=True)
     ln, est = leans(near, blds)
     own = {i: (dx, dy) for i, dx, dy, c in est if c > 2.0}
     from shapely.ops import unary_union
