@@ -539,7 +539,7 @@ PICKS = {
     'shotgun_close': (-12, [('gary', r'12ga_dry', dict(t0=2.30, t1=3.00, tail=45, lim=4))]),
     'zombie_groan': (-9, [('emopreben', r'ZombieMoan1', dict(tail=45, fo=150, lim=3)),
                            ('emopreben', r'ZombieMoan3', dict(tail=45, fo=150, lim=3)),
-                           ('undead', r'undead-1', dict(tail=45, fo=150, lim=3)),
+                           ('lrsf_horror', r'Wav/Zombie_04\.wav', dict(tail=45, fo=150, lim=3)),
                            ('darsycho', r'zombie-moans', dict(t0=0.2, t1=3.25, tail=45, fo=150, lim=3))]),
     'zombie_attack': (-6, [('arcade_voice', r'zombieYell1\.wav', dict(tail=45, fo=60, lim=3)),
                              ('arcade_voice', r'zombieYell10\.wav', dict(tail=45, fo=60, lim=3))]),
