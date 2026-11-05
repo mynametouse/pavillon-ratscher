@@ -1,0 +1,71 @@
+# Zombie night, combat sounds (feat/zombie-ton): real recordings with open licences (OpenGameArt, Kenney, Wikimedia Commons) – the chat
+# machine reaches none of these sites. viz3/extra/zombie/quellen/ton.py downloads and unpacks the packs (archives kept in the Actions cache),
+# keeps the candidates as mono FLAC, measures them and draws spectrogram sheets (survey – only when the sources changed), then cuts, levels
+# and encodes the picks (build). Everything goes to the scratch branch ref/zombie-ton (one commit, replaced on every run, never merged);
+# the chat copies the finals (final/) into viz3/extra/zombie/dist/zombie/ by hand.
+name: Zombie – Kampfgeräusche
+
+on:
+  push:
+    branches: ['feat/zombie-ton']
+    paths: ['viz3/extra/zombie/quellen/ton.py', '.github/workflows/zombie-ton.yml']
+
+concurrency:
+  group: zombie-ton
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  sounds:
+    name: Aufnahmen holen, schneiden, prüfen
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends ffmpeg p7zip-full fonts-dejavu-core >/dev/null
+          pip install --quiet numpy pillow requests
+          ffmpeg -version | head -1
+          echo "KEY=$(python viz3/extra/zombie/quellen/ton.py key)" >> "$GITHUB_ENV"
+      - name: Bisheriger Stand von ref/zombie-ton
+        run: |
+          mkdir -p "$RUNNER_TEMP/ref"
+          if git ls-remote --exit-code origin refs/heads/ref/zombie-ton >/dev/null; then
+            git clone -q --depth 1 --branch ref/zombie-ton "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" "$RUNNER_TEMP/old"
+            cp -r "$RUNNER_TEMP/old/." "$RUNNER_TEMP/ref/" && rm -rf "$RUNNER_TEMP/ref/.git"
+          fi
+          if [ "$(cat "$RUNNER_TEMP/ref/sources.sha" 2>/dev/null)" = "$KEY" ]; then echo "SURVEY=0" >> "$GITHUB_ENV"; else echo "SURVEY=1" >> "$GITHUB_ENV"; fi
+      - uses: actions/cache@v4
+        if: env.SURVEY == '1'
+        with:
+          path: ${{ runner.temp }}/dl
+          key: zombie-ton-dl-${{ env.KEY }}
+          restore-keys: zombie-ton-dl-
+      - name: Quellen holen und sichten
+        if: env.SURVEY == '1'
+        env:
+          TON_DL: ${{ runner.temp }}/dl
+        run: python -u viz3/extra/zombie/quellen/ton.py survey "$RUNNER_TEMP/ref" 2>&1 | tee "$RUNNER_TEMP/survey.log"
+      - name: Auswahl schneiden und kodieren
+        run: python -u viz3/extra/zombie/quellen/ton.py build "$RUNNER_TEMP/ref" 2>&1 | tee "$RUNNER_TEMP/build.log"
+      - name: Auf ref/zombie-ton legen
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP"
+          [ -f survey.log ] && cp survey.log ref/survey.log
+          [ -f build.log ] && cp build.log ref/build.log
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir push && cd push && git init -q -b ref/zombie-ton
+          cp -r "$RUNNER_TEMP/ref/." .
+          git add -A
+          git commit -q -m "Zombie combat sounds: survey/build from ${GITHUB_SHA::7} (scratch, not for merging)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:refs/heads/ref/zombie-ton
+          du -sh . ; ls sheets 2>/dev/null | wc -l ; cat build.txt 2>/dev/null | tail -3

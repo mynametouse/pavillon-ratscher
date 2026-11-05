@@ -1,0 +1,133 @@
+{
+ "swing_light": {
+  "files": [
+   "kampf/swing_light_1.mp3",
+   "kampf/swing_light_2.mp3",
+   "kampf/swing_light_3.mp3"
+  ],
+  "vol": 0.18
+ },
+ "swing_heavy": {
+  "files": [
+   "kampf/swing_heavy_1.mp3",
+   "kampf/swing_heavy_2.mp3",
+   "kampf/swing_heavy_3.mp3"
+  ],
+  "vol": 0.34
+ },
+ "hit_blunt": {
+  "files": [
+   "kampf/hit_blunt_1.mp3",
+   "kampf/hit_blunt_2.mp3",
+   "kampf/hit_blunt_3.mp3"
+  ],
+  "vol": 0.41
+ },
+ "hit_blade": {
+  "files": [
+   "kampf/hit_blade_1.mp3",
+   "kampf/hit_blade_2.mp3",
+   "kampf/hit_blade_3.mp3"
+  ],
+  "vol": 0.39
+ },
+ "stab": {
+  "files": [
+   "kampf/stab_1.mp3",
+   "kampf/stab_2.mp3"
+  ],
+  "vol": 0.48
+ },
+ "punch": {
+  "files": [
+   "kampf/punch_1.mp3",
+   "kampf/punch_2.mp3",
+   "kampf/punch_3.mp3"
+  ],
+  "vol": 0.44
+ },
+ "kick": {
+  "files": [
+   "kampf/kick_1.mp3",
+   "kampf/kick_2.mp3"
+  ],
+  "vol": 0.87
+ },
+ "bone_crack": {
+  "files": [
+   "kampf/bone_crack_1.mp3",
+   "kampf/bone_crack_2.mp3"
+  ],
+  "vol": 0.78
+ },
+ "splat": {
+  "files": [
+   "kampf/splat_1.mp3",
+   "kampf/splat_2.mp3",
+   "kampf/splat_3.mp3"
+  ],
+  "vol": 0.66
+ },
+ "body_fall": {
+  "files": [
+   "kampf/body_fall_1.mp3",
+   "kampf/body_fall_2.mp3"
+  ],
+  "vol": 0.3
+ },
+ "shotgun_shot": {
+  "files": [
+   "kampf/shotgun_shot_1.mp3",
+   "kampf/shotgun_shot_2.mp3"
+  ],
+  "vol": 1.0
+ },
+ "shotgun_dry": {
+  "files": [
+   "kampf/shotgun_dry_1.mp3"
+  ],
+  "vol": 0.13
+ },
+ "shotgun_open": {
+  "files": [
+   "kampf/shotgun_open_1.mp3"
+  ],
+  "vol": 0.19
+ },
+ "shotgun_shell": {
+  "files": [
+   "kampf/shotgun_shell_1.mp3",
+   "kampf/shotgun_shell_2.mp3"
+  ],
+  "vol": 0.22
+ },
+ "shotgun_close": {
+  "files": [
+   "kampf/shotgun_close_1.mp3"
+  ],
+  "vol": 0.18
+ },
+ "zombie_groan": {
+  "files": [
+   "kampf/zombie_groan_1.mp3",
+   "kampf/zombie_groan_2.mp3",
+   "kampf/zombie_groan_3.mp3",
+   "kampf/zombie_groan_4.mp3"
+  ],
+  "vol": 0.25
+ },
+ "zombie_attack": {
+  "files": [
+   "kampf/zombie_attack_1.mp3",
+   "kampf/zombie_attack_2.mp3"
+  ],
+  "vol": 0.44
+ },
+ "zombie_die": {
+  "files": [
+   "kampf/zombie_die_1.mp3",
+   "kampf/zombie_die_2.mp3"
+  ],
+  "vol": 0.33
+ }
+}
