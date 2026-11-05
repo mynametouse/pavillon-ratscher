@@ -65,6 +65,7 @@ def survey(dl, out):
 
 
 def fetch(name, dl):
+    os.makedirs(dl, exist_ok=True)
     path = os.path.join(dl, name.replace(',', '').replace('(', '').replace(')', ''))
     if os.path.exists(path) and os.path.getsize(path) > 20000:
         return path
@@ -72,7 +73,7 @@ def fetch(name, dl):
     url = f'https://upload.wikimedia.org/wikipedia/commons/{h[0]}/{h[:2]}/{urllib.parse.quote(name)}'
     for i in range(4):
         r = subprocess.run(['curl', '-s', '-m', '90', '-A', UA, '-o', path, '-w', '%{http_code}', url], capture_output=True, text=True)
-        if r.stdout == '200' and os.path.getsize(path) > 20000:
+        if r.stdout == '200' and os.path.exists(path) and os.path.getsize(path) > 20000:
             return path
         time.sleep(20 * (i + 1))
     raise SystemExit(f'cannot download {name} ({r.stdout})')
