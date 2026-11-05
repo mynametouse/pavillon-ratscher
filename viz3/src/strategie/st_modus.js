@@ -266,7 +266,7 @@ export const STRAT = (() => {
       }
       // a neighbour who has helped a lot wants something back first (favours: STRAT.favour)
       for (const id of who)
-        if (!isOwn(id) && (S.favours[id] ?? 0) <= -3)
+        if (!isOwn(id) && (S.favours[id] ?? 0) <= -3 - Math.max(0, S.style) / 25)
           return {
             no: true,
             text: `${PD(id).name} hat schon viel geholfen – erst etwas für ihn tun.`,
@@ -318,7 +318,8 @@ export const STRAT = (() => {
         }
         p.job = j.id;
         send(id, spotOf(j, id), { place: j.place });
-        if (!isOwn(id)) favour(id, -(J.favour ?? 1), J.label);
+        // Sarah's passive: on site, a favour costs half (she knows how to ask, and she gives back)
+        if (!isOwn(id)) favour(id, -(J.favour ?? 1) * (present('sarah').ok ? 0.5 : 1), J.label);
       }
       emit('auftrag', { id: j.id, def, who, place: j.place, state: 'neu' });
       note(`${who.map(w => PD(w).name).join(' und ')}: ${J.label}`, { kind: 'auftrag' });
@@ -558,13 +559,32 @@ export const STRAT = (() => {
       }
     }
     const cx = ctxOf(t, j),
-      e = cx.eff * (J.speed ? J.speed(j, cx) : 1),
+      e = cx.eff * (J.speed ? J.speed(j, cx) : 1) * passive(j, J),
       w = dt * e;
     const before = j.done;
     j.done = Math.min(j.dur, j.done + w);
     for (const id of j.who) S.people[id].xp += dt * (J.xp || 1);
     if (J.step) J.step(j, cx, j.done - before, j.done / Math.max(1, j.dur));
     if (j.done >= j.dur - 1e-6) finish(j, t + dt);
+  }
+  // the heroes' passive effects and lasting abilities on a job's pace (Warcraft 3: auras – here real: planning, care, know-how)
+  function passive(j, J) {
+    let k = 1;
+    if (Object.keys(S.people).some(id => buff(id, 'planen')) && j.who.some(isOwn)) k *= 1.1;
+    if (J.bau && j.who.includes('christoph')) k *= 1.15;
+    return k;
+  }
+  // Black & White: what your style does to the world – friendliness of the village, nature, reputation (0..1 each; 0.5 neutral). For the
+  // modules that show it (more birds, friendlier people, a greener village): STRAT.styleFx()
+  function styleFx() {
+    const v = S.style / 100;
+    return {
+      freundlich: 0.5 + v * 0.5,
+      natur: 0.5 + v * 0.4,
+      ruf: 0.5 + v * 0.5,
+      wert: S.style,
+      name: C.styleName(S.style),
+    };
   }
   function setWait(j, rule, text) {
     if (j.st !== 'wait' || j.why !== rule || j.need !== text) {
@@ -1097,6 +1117,7 @@ export const STRAT = (() => {
       },
     },
     favour,
+    styleFx,
     teamEff,
     setDate,
     level: id => C.level(S.people[id] ? S.people[id].xp : 0),
