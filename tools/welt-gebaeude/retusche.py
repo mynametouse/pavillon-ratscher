@@ -85,6 +85,8 @@ def masks_of_features():
     """viz3/extra/*/maske*.json (model metres): [(UTM polygon, pad)]"""
     res = []
     for fn in sorted(glob.glob(os.path.join(W.VIZ, 'extra', '*', 'maske*.json'))):
+        if fn.endswith('_utm.json'):
+            continue   # the tiles' masks (UTM), for kacheln.py
         try:
             m = json.load(open(fn))
         except Exception as e:
