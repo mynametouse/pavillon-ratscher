@@ -226,6 +226,20 @@ window.SAVE = SAVE;
     null,
     v => v === null || (obj(v) && v.v === 1)
   ); // feat/zombie (zombie/z_state.js)
+  K(
+    'pav-tiere-v1',
+    'Tiere: gesehene Arten, gefundene Spuren, Schäden und Schutz',
+    'json',
+    null,
+    v => v === null || (obj(v) && v.v === 1)
+  ); // feat/tiere (tiere/tiere.js)
+  K(
+    'pav-hund-v1',
+    'Der Hund: Name, was er gelernt hat, sein Charakter',
+    'json',
+    null,
+    v => v === null || (obj(v) && v.v === 1)
+  ); // feat/tiere (tiere/tiere_hund.js)
   for (const h of [
     'pav-v14',
     'pav-v15',
