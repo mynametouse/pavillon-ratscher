@@ -160,27 +160,47 @@ export const STAUSBAU = (() => {
       },
     ],
   };
-  for (const [ch, list] of Object.entries(GOALS))
-    for (const g of list)
+  // a goal of a chapter (the API: STRAT.chapter.goal): done when its KERN event of the mode comes and when(data) holds, or when check()
+  // holds (asked twice a second); all done → the next chapter
+  function goal(ch, g) {
+    const list = (GOALS[ch] = GOALS[ch] || []);
+    if (!list.includes(g)) list.push(g);
+    const hit = () => {
+      const k = ch + ':' + g.id;
+      if (S.goals[k]) return;
+      S.goals[k] = Math.round(STRAT.S.t || 0);
+      STRAT.note('Ziel erreicht: ' + g.text, { kind: 'ziel' });
+      STRAT.emit('ziel', { chapter: ch, id: g.id });
+      if (ch === S.chapter && GOALS[ch].every(x => S.goals[ch + ':' + x.id])) {
+        const nx = STRAT.chapter.list().find(c => c.order > (STRAT.chapter.cur() || {}).order);
+        if (nx) {
+          STRAT.chapter.set(nx.id);
+          STRAT.note(nx.title + ' – ' + nx.text, { kind: 'ziel' });
+        }
+      }
+    };
+    if (g.on)
       KERN.on('strategie:' + g.on, d => {
         try {
-          if (!g.when(d || {})) return;
-        } catch (e) {
-          return;
-        }
-        const k = ch + ':' + g.id;
-        if (S.goals[k]) return;
-        S.goals[k] = Math.round(STRAT.S.t || 0);
-        STRAT.note('Ziel erreicht: ' + g.text, { kind: 'ziel' });
-        STRAT.emit('ziel', { chapter: ch, id: g.id });
-        if (ch === S.chapter && list.every(x => S.goals[ch + ':' + x.id])) {
-          const nx = STRAT.chapter.list().find(c => c.order > (STRAT.chapter.cur() || {}).order);
-          if (nx) {
-            STRAT.chapter.set(nx.id);
-            STRAT.note(nx.title + ' – ' + nx.text, { kind: 'ziel' });
-          }
-        }
+          if (!g.when || g.when(d || {})) hit();
+        } catch (e) {}
       });
+    if (g.check) CHECKS.push([ch, g, hit]);
+    return g;
+  }
+  const CHECKS = [];
+  let acc = 0;
+  KERN.tick(dt => {
+    if ((acc += dt) < 0.5 || !CHECKS.length) return;
+    acc = 0;
+    for (const [ch, g, hit] of CHECKS)
+      if (!S.goals[ch + ':' + g.id])
+        try {
+          if (g.check()) hit();
+        } catch (e) {}
+  }, 'strategie/ziele');
+  for (const [ch, list] of Object.entries(GOALS)) for (const g of list.slice()) goal(ch, g);
+  STRAT.chapter.goal = (ch, g) => goal(ch, g);
   const goals = (ch = S.chapter) =>
     (GOALS[ch] || []).map(g => ({ id: g.id, text: g.text, done: !!S.goals[ch + ':' + g.id] }));
   void STHOLZ;

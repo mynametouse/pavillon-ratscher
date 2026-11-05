@@ -98,9 +98,9 @@ export const STEREIG = (() => {
   STRAT.event.define({
     id: 'kaefer2',
     label: 'Die Käfer fliegen aus',
-    chance: () => {
+    chance: cx => {
       const k = ext('kaefer');
-      return k && !k.done && STRAT.S.t > k.due ? 1 : 0;
+      return k && !k.done && cx.t > k.due ? 1 : 0;
     },
     run: cx => {
       const k = ext('kaefer'),
@@ -173,7 +173,7 @@ export const STEREIG = (() => {
   STRAT.event.define({
     id: 'termin',
     label: 'Der Forstunternehmer war da',
-    chance: () => (ext('termin') && STRAT.S.t >= ext('termin').t ? 1 : 0),
+    chance: cx => (ext('termin') && cx.t >= ext('termin').t ? 1 : 0),
     run: () => {
       const st = ext('sturm'),
         k = ext('kaefer'),
@@ -323,7 +323,7 @@ export const STEREIG = (() => {
       if (r < 0.25) {
         const eh = p.certs.includes('ersthilfe') || Object.values(S.people).some(q => q.certs.includes('ersthilfe'));
         const days = eh ? 2 : 4;
-        p.hurt = Math.round(STRAT.S.t + days * 1440);
+        p.hurt = Math.round((d.t ?? STRAT.S.t) + days * 1440);
         STRAT.note(`${D.PEOPLE[id].name} hat sich bei „${J.label}“ verletzt – ${days} Tage Pause.`, {
           kind: 'ereignis',
           why: 'Müde macht man Fehler: die meisten Unfälle bei der Holzarbeit passieren am Ende eines langen Tages. Pausen, genug Schlaf und Essen halten wach.',

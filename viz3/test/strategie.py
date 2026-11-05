@@ -6,11 +6,11 @@
 # advances and changes the world (the lawn is short in garden/grass.js, petrol left the mower's tank), a quiet-hours refusal on a Sunday
 # with its reason and source („Warum?“), Euro booked, the state after a reload, the normal walk afterwards; no new shader program, no
 # page error. Pictures in out/strategie/ (from above, close up).
-#   python3 viz3/test/strategie.py 9002 [sections]     sections: start,leute,auftrag,regel,holz,reload,welt (default all)
+#   python3 viz3/test/strategie.py 9002 [sections]     sections: start,leute,auftrag,regel,holz,strom,ereignis,reload,welt (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'start,leute,auftrag,regel,holz,reload,welt').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'start,leute,auftrag,regel,holz,strom,ereignis,reload,welt').split(','))
 ck = lib.Checks('strategie')
 OUT = lib.out('strategie')
 with lib.browser() as b:
@@ -25,6 +25,15 @@ with lib.browser() as b:
         try:
             E("GAME.shot(); STHUD.draw()"); pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=120000); print('page shot', name, flush=True)
         except Exception as e: print('note: page shot', name, 'failed:', repr(e)[:160], flush=True)
+    def until(cond, secs=120, dt=0.25):
+        for i in range(int(secs / 5)):
+            steps(5, dt)
+            if E(cond): return True
+        return E(cond)
+    def job(defn, who):
+        return J(f"(() => {{ const j = STRAT.job.add('{defn}', {json.dumps(who)}); return j && j.id ? {{ id: j.id, dur: Math.round(j.dur) }} : j; }})()")
+    def done(jid):
+        return f"(() => {{ const j = STRAT.job.of('{jid}'); return !j || j.st === 'done'; }})()"
     progs = lambda: E("GAME.R.info.programs.length")
     pnames = lambda: J("GAME.R.info.programs.map(p => p.name + ' ' + String(p.cacheKey).length)")
     def newprogs(before):
@@ -140,17 +149,6 @@ with lib.browser() as b:
         E("STRAT.setSpeed(30)")
         E("STRAT.W.force = { cloud: 0.2, rain: 0, wind: 10, storm: false, src: 'Test' }")
         J("STRAT.setDate('2026-11-14', 8 * 60 + 30)")
-        run = lambda js: J(js)
-        def until(cond, secs=120, dt=0.25):
-            for i in range(int(secs / 5)):
-                steps(5, dt)
-                if E(cond): return True
-            return E(cond)
-        def job(defn, who):
-            r = J(f"(() => {{ const j = STRAT.job.add('{defn}', {json.dumps(who)}); return j && j.id ? {{ id: j.id, dur: Math.round(j.dur) }} : j; }})()")
-            return r
-        def done(jid):
-            return f"(() => {{ const j = STRAT.job.of('{jid}'); return !j || j.st === 'done'; }})()"
         k0 = J("STRAT.known('wald', 'klinge')")
         ck('the Klinge is unknown until someone looks (exploration instead of a fog of war)', k0 is None and 'unbekannt' in E("JSON.stringify(STRAT.place.get('klinge').stock())"), str(k0))
         q = J("STRAT.job.check('faellen', ['falko', 'christoph'])")
@@ -261,6 +259,47 @@ with lib.browser() as b:
         led = J("STRAT.S.ledger.slice(-12).map(e => e.text + ' ' + e.eur)")
         print('ledger', led, flush=True)
         page_pic('10_werkstatt')
+    if 'strom' in want:
+        # power: a clear June noon against an overcast November noon (two PV modules, 0,86 kWp)
+        E("STRAT.W.force = { cloud: 0.05, rain: 0, wind: 8, storm: false, src: 'Test' }")
+        J("STRAT.setDate('2027-06-19', 13 * 60 + 15)")
+        steps(0.5)
+        jun = J("({ pv: STRAT.S.power.pv, day: STRAT.C.pvDayKWh(5, 0.05) })")
+        E("STRAT.W.force = { cloud: 0.95, rain: 0.5, wind: 20, storm: false, src: 'Test' }")
+        J("STRAT.setDate('2026-11-28', 12 * 60 + 15)")
+        steps(0.5)
+        nov = J("({ pv: STRAT.S.power.pv, day: STRAT.C.pvDayKWh(10, 0.95) })")
+        ck('PV: a clear June noon gives far more than an overcast November noon', jun['pv'] > 450 and nov['pv'] < 90 and jun['day'] > 8 * nov['day'], f'{jun} {nov}')
+        E("STRAT.W.force = { cloud: 0.2, rain: 0, wind: 10, storm: false, src: 'Test' }")
+    if 'ereignis' in want:
+        # a storm throws spruces in the Klinge – unknown until someone looks; the forestry contractor; a breakdown and its repair
+        J("STRAT.setDate('2026-12-05', 8 * 60 + 30)")
+        steps(0.3)
+        E("STRAT.fire('sturm')")
+        st = J("STRAT.S.ext.sturm")
+        ck('a storm: spruces thrown in the Klinge, but nobody knows yet', st and len(st['ids']) >= 1 and not st['known'], str(st))
+        w = job('waldbegang', ['christoph'])
+        until(done(w['id']), 160)
+        kn = J("({ k: STRAT.known('wald', 'sturmholz'), st: STRAT.S.ext.sturm.known, jobs: STRAT.job.at('klinge').map(J => J.id) })")
+        ck('Christoph looks: the windthrow is known, the contractor can be hired', kn['k'] and kn['st'] and 'unternehmer' in kn['jobs'], str(kn))
+        e0 = J("STRAT.S.eur")
+        u = job('unternehmer', ['sarah'])
+        until(done(u['id']), 60)
+        tm = J("STRAT.S.ext.termin")
+        ck('Sarah hires a forestry contractor – he comes in a few days', tm and tm['t'] > J("CLOCK.t"), str(tm))
+        E("STRAT.skip(6 * 1440)")
+        until("!CLOCK.warp", 40, 0.25)
+        steps(2)
+        tr = J("STRAT.S.ext.sturm.ids.map(id => FELL.trees[id] ? FELL.trees[id].st : null)")
+        e1 = J("STRAT.S.eur")
+        ck('the contractor felled the thrown trees (world/fell.js), Euro booked per cubic metre', all(x == 'done' for x in tr) and e1 < e0 - 5, f'{tr} {e0} → {e1}')
+        E("STRAT.S.broken.push('Blockbandsäge')")
+        q = J("STRAT.job.check('saegen30', ['christoph'])")
+        ck('a broken band saw: sawing refused with the reason (Betriebssicherheitsverordnung)', q and 'kaputt' in q.get('text', '') and q.get('src'), str(q))
+        J("STRAT.setDate('2026-12-12', 9 * 60)")
+        rp = job('reparieren', ['christoph'])
+        until(done(rp['id']), 60)
+        ck('Christoph repairs it', 'Blockbandsäge' not in J("STRAT.S.broken"), str(J("STRAT.S.broken")))
     if 'reload' in want:
         J("STRAT.setDate('2026-11-07', 10 * 60)")
         E("STHUD.select(['ronald'])")

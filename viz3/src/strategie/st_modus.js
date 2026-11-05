@@ -565,7 +565,7 @@ export const STRAT = (() => {
         const cx = ctxOf(t, j);
         if (J.start) J.start(j, cx);
         if (J.look) J.look(j, cx);
-        emit('auftrag', { id: j.id, def: j.def, who: j.who, state: 'begonnen' });
+        emit('auftrag', { id: j.id, def: j.def, who: j.who, state: 'begonnen', t });
       }
     }
     const cx = ctxOf(t, j),
@@ -627,7 +627,7 @@ export const STRAT = (() => {
       if (isOwn(id) && !p.path) send(id, HOME[id] || ARRIVE);
     }
     note(`Fertig: ${J.label}${out && out.text ? ' – ' + out.text : ''}`, { kind: 'fertig' });
-    emit('auftrag', { id: j.id, def: j.def, who: j.who, state: 'fertig', out });
+    emit('auftrag', { id: j.id, def: j.def, who: j.who, state: 'fertig', out, t: j.t1 });
     dirty();
   }
   // ---------------- power: the station takes the PV, the machines draw; the generator when it is empty ----------------

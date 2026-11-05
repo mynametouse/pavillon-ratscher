@@ -118,15 +118,17 @@ export const STCORE = (() => {
   }
   const why = id => D.RULES[id] || { text: id, why: '', src: '' };
   // ---- power ----
-  // PV power (W) at minute m of a day of month mo with cloud cover c (0 clear … 1 overcast), sun = { up, down }
+  // PV power (W) at minute m of a day of month mo with cloud cover c (0 clear … 1 overcast), sun = { up, down }: a sin² bell between sunrise
+  // and sunset (low sun in the morning and evening gives little), its area the day's yield
   function pvW(mo, m, sun, c, kwp = D.POWER.kwp) {
     if (!sun || !(sun.down > sun.up)) return 0;
     const L = sun.down - sun.up;
     if (m <= sun.up || m >= sun.down) return 0;
     const f = 1.45 - 1.2 * Math.max(0, Math.min(1, c)),
       eDay = kwp * D.POWER.pvDay[mo] * f * 1000; // Wh
-    const pmax = (eDay * Math.PI * 60) / (2 * L);
-    return Math.max(0, pmax * Math.sin((Math.PI * (m - sun.up)) / L));
+    const pmax = (2 * eDay * 60) / L,
+      sn = Math.sin((Math.PI * (m - sun.up)) / L);
+    return Math.max(0, pmax * sn * sn);
   }
   // the day's yield (kWh) – for the HUD and the tests
   const pvDayKWh = (mo, c, kwp = D.POWER.kwp) => kwp * D.POWER.pvDay[mo] * (1.45 - 1.2 * Math.max(0, Math.min(1, c)));
