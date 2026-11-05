@@ -60,7 +60,9 @@ Module: `zombie/z_innen_plan.js` (ZIPLAN, Grundriss), `zombie/z_innen_mob.js` (Z
   `zombie_innen:tier=schnell,n=3,only=shots+walk+free`. Läuft auf `feat/zombie-innen` bei jedem Push (`viz3/extra/zombie-innen/tests.txt`).
 - Der Test prüft: Szenario, Häuser der Bewohner, Wolfgangs Waffen-Spots, je Haus Aufbauzeit, Draw-Calls (≤ 60), Dreiecke, keine neuen
   Shader-Programme, Auf- und Abbau ohne Rest (Geometrien und Texturen zurück), Gang in die Stube, Treppe hinauf, Bodentreppe, durch die
-  Luke in den Keller, Behälter, Licht; Bilder vom Eingang und aus jedem Raum. Dazu `__Z.reach(H)`: ein 10-cm-Raster im Haus mit dem
+  Luke in den Keller, Behälter, Licht; Bilder vom Eingang und aus jedem Raum; **Abschnitt `epochen`**: je Zeitschicht ein Haus
+  (alt: Gerhard 247, DDR: Manfred 219, Nachwende: Uwe 260 bzw. das erste passende) – Stube (zwei Blickrichtungen), Küche, Schlafraum,
+  bei Tag und nachts mit Raumlicht (`out/zombie_innen/epoche_<zeit>_<haus>_<raum>_<tag|nacht>.jpg`). Dazu `__Z.reach(H)`: ein 10-cm-Raster im Haus mit dem
   Radius der Spielfigur, Stufen bis 0,42 m, ohne Stürze – jeder Raum muss vom Eingang zu Fuß erreichbar sein, jeder Wegpunkt von
   `H.graph` dort stehen, wo man stehen kann, und der Graph jeden Raum erreichen. **Durchlauf `sweep`**: alle 230 Häuser einmal auf-
   und abbauen (Fehler, Draw-Calls, Dreiecke, Erreichbarkeit; ≈ 2 min, lokal mit `only=…` abwählbar).
@@ -81,3 +83,12 @@ Module: `zombie/z_innen_plan.js` (ZIPLAN, Grundriss), `zombie/z_innen_mob.js` (Z
   Keller zurück – nur Böden und Stufen zählen (das Gelände kann den Keller schneiden); dazu `inside` und `place` (Rang 95, Raumname).
 - Die Haustür von innen ist ein festes Türblatt; Hinausgehen macht `z_haus.js` (Aktion an `H.openings[0]` bzw. `H.exit`).
 - `H.stats.terrain`: wie weit das Gelände im Haus über den Erdgeschossboden reicht (> 0: es würde durch den Boden schauen) – zur Kontrolle.
+- `H.openings`: `front: true` tragen die Haustür (immer `openings[0]`, id `haustuer`) und auch die Fenster der Straßenseite.
+
+## Offen (Stand 5.11.2026 früh)
+
+- In 8 von 230 Häusern erreicht der 10-cm-Rastertest einen Raum oder Wegpunkt nicht (11, 106, 220, 222, 248, 267, 279, 300 – meist
+  der Dachboden oder ein Wegpunkt dicht an Möbeln). Der Test listet sie (≤ 5 % erlaubt).
+- Jens' Haus (246) ist nicht begehbar: `ZIPLAN.plan(246)` liefert null – der Grundriss (sechs Fassaden, Haustür an einer nur 4,8 m
+  langen Seite) ergibt kein Rechteck, das die Tür überspannt und mindestens 4,2 × 4,2 m misst. Seine Werkzeugkiste fehlt damit.
+- `H.route` kennt keine Türen: geschlossene Innentüren muss die Zombie-Logik öffnen oder einschlagen.

@@ -514,16 +514,19 @@ export const ZIPLAN = (() => {
       const st = stair && stair.side === r.side && !r.part ? stair : null,
         free = [];
       if (st) {
-        const s0 = r.fl === 0 ? st.y0 - 0.05 : st.y0 - 0.25,
+        // the wall beside the stair stays closed; on the top storey only beside its opening (no flight goes on up there)
+        const top = r.fl > 0 && r.fl === nSt - 1,
+          s0 = r.fl === 0 ? st.y0 - 0.05 : top ? st.y0 + st.holeK * st.tread - 0.05 : st.y0 - 0.25,
           s1 = st.y1 + 0.15;
-        if (s0 - lo >= 0.95) free.push([lo, Math.min(hi, s0)]);
-        if (hi - s1 >= 0.95) free.push([Math.max(lo, s1), hi]);
+        if (s0 - lo >= 0.82) free.push([lo, Math.min(hi, s0)]);
+        if (hi - s1 >= 0.82) free.push([Math.max(lo, s1), hi]);
       } else free.push([lo, hi]);
-      const w = 0.86,
-        // a further room of a wide side: its door leads into the room before it (same storey, same depth band)
-        prev = r.part
-          ? rooms.find(q => q.fl === r.fl && q.side === r.side && q.part === r.part - 1 && Math.abs(q.y0 - r.y0) < 0.01)
-          : null;
+      // a further room of a wide side: its door leads into the room before it (same storey, same depth band)
+      const prev = r.part
+        ? rooms.find(q => q.fl === r.fl && q.side === r.side && q.part === r.part - 1 && Math.abs(q.y0 - r.y0) < 0.01)
+        : null;
+      // the usual door, else a narrow one (small houses: the stair leaves little wall)
+      const w = free.some(([a, z]) => z - a >= 0.96) ? 0.86 : 0.72;
       let d = null;
       for (const [a, z] of free) {
         if (z - a < w + 0.1) continue;
