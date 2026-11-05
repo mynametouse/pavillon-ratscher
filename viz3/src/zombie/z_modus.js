@@ -109,6 +109,16 @@ export const ZOMBIE = (() => {
       const q = new URLSearchParams(location.search).get('stufe');
       if (q && ZDATA.DIFF[q]) Z.diff = q;
     } catch (e) {}
+    // started by the link (?szenario=zombie): the address without it, so that a reload goes on with this night instead of starting
+    // it afresh (Safari on the phone reloads a tab now and then); the other parameters (a room's code) stay
+    try {
+      const u = new URL(location.href);
+      if (u.searchParams.get('szenario') === 'zombie') {
+        u.searchParams.delete('szenario');
+        u.searchParams.delete('stufe');
+        history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+      }
+    } catch (e) {}
     const T0 = times();
     CLOCK.t = d * 1440 + Math.max(6 * 60, T0.siren - ZDATA.diffOf(Z.diff).day);
     if (DN && DN.active) DN.update(true);
@@ -306,6 +316,19 @@ export const ZOMBIE = (() => {
         PLAY.think(Z.food <= 0 ? TX.starving : TX.hungry, 3000);
       }
     }
+    // where one stands outdoors, every few seconds: a reload goes on there (resume below)
+    if ((S.posT = (S.posT || 0) + dt) > 4) {
+      S.posT = 0;
+      const inside = ZHORDE.house && ZHORDE.house.bid && ZHORDE.house.bid() != null;
+      if (Z.hp > 0 && P.mode === 'walk' && !(VEH && VEH.cur) && !PLAY.seated() && !inside) {
+        const r = q => Math.round(q * 100) / 100,
+          a = [r(P.x), r(P.y), r(P.feet), Math.round(P.yaw)];
+        if (a.some((q, i) => q !== Z.pos[i])) {
+          Z.pos = a;
+          Z.save();
+        }
+      }
+    }
     // the engine of a car is heard
     const v = VEH && VEH.cur;
     if (v && Math.abs(v.st.u) > 0.5) Z.noise(v.st.x, v.st.y, 35 + Math.abs(v.st.u) * 3, 0.4, 'motor');
@@ -334,7 +357,26 @@ export const ZOMBIE = (() => {
     setTimeout(() => {
       try {
         // (already started – ?szenario=zombie, a link to a room – the scene's fresh start stands)
-        if (!Z.on && Z.load() && Z.on) begin(false);
+        if (!Z.on && Z.load() && Z.on) {
+          begin(false);
+          // still looking at the model from outside (the start view): back where one stood outdoors, else in the garden – the clock
+          // runs only while one walks
+          if (P.mode !== 'walk') {
+            const a = Z.pos;
+            if (a.length === 4) {
+              KERN.spot('zombie-weiter', {
+                mode: 'walk',
+                pos: [a[0], a[1]],
+                z: a[2],
+                yaw: a[3],
+                pitch: -4,
+                label: 'Zombie-Nacht',
+              });
+              go('zombie-weiter');
+            } else go('garten');
+            PLAY.think('Weiter geht’s – die Zombie-Nacht läuft noch.', 3500);
+          }
+        }
       } catch (e) {
         console.warn('zombie resume', e);
       }

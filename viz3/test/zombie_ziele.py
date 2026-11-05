@@ -58,6 +58,8 @@ with lib.browser() as b:
     steps(0.2)
     st = J("({ warm: ZZIEL.MK.warm, mode: ZSTATE.on, old: TASKS.list().includes('zombie-1'), flinte: TASKS.state('zz-flinte') })")
     ck('the zombie night runs, the old task zombie-1 is gone (moved to zombie/z_ziele.js)', st['mode'] and not st['old'], str(st))
+    ck('the link\'s ?szenario=zombie is gone from the address (a reload goes on with the night instead of starting it afresh)',
+       'szenario' not in E("location.search"), E("location.href"))
     ck('the marker\'s program was made when the mode started', st['warm'], str(st))
     p0 = progs()
     if 'tag1' in want:
@@ -224,7 +226,8 @@ with lib.browser() as b:
         mode = E("GAME.P.mode")
         after = J("({ night: ZSTATE.night, phase: ZSTATE.phase, n2: TASKS.state('zz-nacht2'), ron: TASKS.state('zz-ronald'), flinte: TASKS.state('zz-flinte'), track: QUESTS.track, cur: ZZIEL.cur })")
         print('after the reload: mode', mode, 'menu', E("!!(window.HUD && HUD.open)"), 'clock', E("CLOCK.hm()"), flush=True)
-        # (the page comes back in the view it had – the overview; the walk from the garden on, as one would click „Losgehen“)
+        # (the saved night puts one back where one stood outdoors, walking – not in the overview: zombie/z_modus.js)
+        ck('after the reload one walks again where one stood (not the overview)', mode == 'walk' and len(J("ZSTATE.pos")) == 4, f'{mode} {J("ZSTATE.pos")}')
         if mode != 'walk': E("GAME.go('garten')")
         steps(0.5)
         ck('after a reload in night 2 the chain goes on (night 2 at „Überlebe …“, tracked; day 1 and 2 as they were)',

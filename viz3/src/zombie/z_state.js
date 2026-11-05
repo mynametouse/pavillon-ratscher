@@ -27,6 +27,7 @@ export const Z = (() => {
     clan: { name: '', members: [] },
     t0: 0, // the game minute the night mode began
     diff: 'normal', // how hard: leicht, normal, schwer (ZDATA.DIFF)
+    pos: [], // where the player last stood outdoors: x, y, feet, yaw (a reload goes on there – zombie/z_modus.js)
   });
   const S = Object.assign(fresh(), { phase: 'aus', ents: [], dirty: false, saveT: 0, noises: [] });
   // what is saved (the entities are not: the night begins anew from the siren)
@@ -48,6 +49,7 @@ export const Z = (() => {
     'clan',
     't0',
     'diff',
+    'pos',
   ];
   function load() {
     const v = SAVE.get(KEY);
@@ -56,6 +58,8 @@ export const Z = (() => {
     for (const k of SAVED) S[k] = v[k] !== undefined && typeof v[k] === typeof f[k] ? v[k] : f[k];
     for (const k of ['hp', 'stam', 'food']) if (!Number.isFinite(S[k])) S[k] = f[k];
     if (!ZDATA.DIFF[S.diff]) S.diff = f.diff;
+    if (!Array.isArray(S.pos) || S.pos.length !== 4 || !S.pos.every(q => Number.isFinite(q) && Math.abs(q) < 1e5))
+      S.pos = [];
     if (!S.sup || typeof S.sup !== 'object') S.sup = {};
     for (const k of Object.keys(S.sup)) if (!ZDATA.ITEMS[k] || !(S.sup[k] > 0)) delete S.sup[k];
     return true;
