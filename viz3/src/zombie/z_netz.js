@@ -299,6 +299,9 @@ export const ZNETZ = (() => {
       } else if (d.k === 'laut') {
         if (S.role === 'host') rawNoise(+d.x, +d.y, +d.r || 30, 1, d.what || '');
         if (d.what === 'schuss') ZTON.shot(+d.x, +d.y);
+      } else {
+        // feat/zombie-werk: what this module does not know goes out as an event (zombie/z_werk_molotow.js: 'feuer', a molotov's fire)
+        KERN.emit('znetz:ev', { d, from });
       }
     });
     T.onJoin = id => {

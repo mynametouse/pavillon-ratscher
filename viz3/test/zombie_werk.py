@@ -137,8 +137,106 @@ with lib.browser() as b:
         ck('nearly worn out: a short thought', 'Werkbank' in th, th)
         E("ZWAFFE.state('nagelbrett').cond = 80; ZHORDE.remove(ZSTATE.ents.find(e => e.id === __z1))")
         steps(0.3)
-    p1 = progs()
-    ck('no new shader programs (crafting, the nail board)', p1 <= p0, f'{p0} → {p1}')
+        E("GAME.shot()")
+        p1 = progs()
+        ck('no new shader programs (the workbench, the nail board)', p1 <= p0, f'{p0} → {p1}')
+    if 'molotow' in SECT:
+        # ---- the molotov: at the Anger (the shared lights are lent beyond 60 m of the pavilion), at dusk, two held zombies 4.5 m ahead ----
+        E("ZSTATE.add('molotow', 3); CLOCK.focus('zwtest')")
+        E("(() => { const d = Math.floor(CLOCK.t / 1440); CLOCK.t = d * 1440 + ZOMBIE.times().siren - 12; })()")
+        lib.settle_light(pg)
+        E("GAME.go('dorf'); CAM3.want = false; PLAY.give(ZWAFFE.thing('beil'))")
+        steps(0.6)
+        E("""(() => { const P = GAME.P; P.pitch = -10; const a = P.yaw * Math.PI / 180, fx = Math.sin(a), fy = Math.cos(a), out = [];
+          for (const [d, s] of [[4.5, 0], [4.9, 0.9]]) { const x = P.x + fx * d + fy * s, y = P.y + fy * d - fx * s,
+            e = ZHORDE.ent(ZFIG.people()[out.length % ZFIG.people().length], x, y, GAME.floorAt(x, y, P.feet + 0.5), P.yaw + 180);
+            e.hold = 'idle'; e.hp = out.length ? 250 : 100; out.push(e.id); }
+          window.__zm = out; })()""")
+        t0 = time.time()
+        while time.time() - t0 < 40 and not E("__zm.every(id => { const e = ZSTATE.ents.find(q => q.id === id); return e && e.F; })"):
+            steps(0.2); time.sleep(0.5)
+        steps(0.3)
+        pic('m0_vorher')
+        # the molotov's things drawn once as specks (zombie/z_werk_molotow.js warm – it runs by itself when the first molotov is in the
+        # backpack; here it is made sure of), then the count
+        E("ZMOLO.warm()"); steps(0.05); E("GAME.shot()"); steps(0.05); E("GAME.shot()"); steps(0.2); E("GAME.shot()")
+        pm0 = progs()
+        keys0 = J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])")
+        hud = E("document.getElementById('zwk').textContent")
+        ck('the panel names the key: F: Molotow (3)', 'F: Molotow (3)' in hud, hud)
+        full0 = E("document.body.dataset.full || ''")
+        pg.keyboard.press('f')
+        steps(0.5)
+        inf = J("ZMOLO.info()")
+        ck('F throws: the left hand takes the bottle, the rag burns (first person)', inf['thr'] and inf['thr']['fp'] and inf['thr']['lit'] and J("ZFP.info().clip") == 'throw', str(inf['thr']))
+        ck('… and F does not toggle full screen in the zombie night', (E("document.body.dataset.full || ''")) == full0)
+        pic('m1_hand')
+        steps(0.25); pic('m2_ausholen')
+        steps(0.12)
+        inf = J("ZMOLO.info()")
+        ck('the bottle flies', len(inf['bottles']) == 1, str(inf['bottles']))
+        pic('m3_wurf')
+        hp = lambda: J("__zm.map(id => { const e = ZSTATE.ents.find(q => q.id === id); return e ? [Math.round(e.hp), e.dead] : null; })")
+        for i in range(30):
+            steps(0.05)
+            if J("ZMOLO.info().fires.length"): break
+        inf = J("ZMOLO.info()")
+        ck('it shatters among the zombies: a fire', len(inf['fires']) == 1 and not inf['bottles'], str(inf))
+        steps(0.5)
+        inf = J("ZMOLO.info()")
+        ck('both zombies catch fire', set(inf['burning']) >= set(J("__zm")), str(inf['burning']))
+        ck('the fire borrowed a light (no new light)', any(l['has'] == 1 for l in inf['lights']), str(inf['lights']))
+        E("GAME.P.pitch = -6")
+        pic('m4_feuer')
+        h1 = hp()
+        steps(1.5)
+        h2 = hp()
+        ck('damage over time', h2[0][0] < h1[0][0] and h2[1][0] < h1[1][0], f'{h1} → {h2}')
+        pic('m5_brennen')
+        k0 = E("ZSTATE.kills")
+        for i in range(20):
+            steps(0.5)
+            if hp()[0][1]: break
+        st = hp()
+        ck('a burning zombie dies (a kill)', st[0][1] and E("ZSTATE.kills") > k0, f'{st} kills {E("ZSTATE.kills")}')
+        pic('m6_tot')
+        # third person: the fire from a step back
+        E("CAM3.want = true"); steps(0.4); pic('m7_dritte_person'); E("CAM3.want = false"); steps(0.3)
+        steps(8.0)
+        inf = J("ZMOLO.info()")
+        ck('after ~8 s the fire is out and the light went back', not inf['fires'] and all(l['has'] == 0 for l in inf['lights']), str(inf))
+        ck('the tougher one burned on after the fire (more harm)', hp()[1][0] < h2[1][0] - 40 or hp()[1][1], str(hp()))
+        # the player standing in a fire is hurt; a fire from the other player (zombie/z_netz.js event) appears and does not hurt zombies
+        E("ZSTATE.hp = 100; ZMOLO.fire(GAME.P.x, GAME.P.y, GAME.P.feet, false)")
+        steps(1.2)
+        ck('standing in it hurts', E("ZSTATE.hp") < 92, str(E("ZSTATE.hp")))
+        steps(8.0)
+        E("""(() => { const P = GAME.P, a = P.yaw * Math.PI / 180, x = P.x + Math.sin(a) * 5, y = P.y + Math.cos(a) * 5,
+          e = ZSTATE.ents.find(q => q.id === __zm[1]); if (e && !e.dead) { e.x = x; e.y = y; e.hp = 300; }
+          KERN.emit('znetz:ev', { d: { k: 'feuer', x, y, z: GAME.floorAt(x, y, P.feet + 0.5) }, from: 'p2' }); })()""")
+        steps(1.0)
+        inf = J("ZMOLO.info()")
+        e2 = hp()[1]
+        ck('the other player\'s fire shows here (net) and leaves the damage to him', len(inf['fires']) == 1 and inf['fires'][0]['net'] and (e2[1] or e2[0] == 300), f'{inf["fires"]} {e2}')
+        steps(8.0)
+        E("GAME.shot()")
+        pm1 = progs()
+        keys1 = J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])")
+        old_set = set(k for _, k in keys0)
+        diffs = []
+        for n, k in keys1:
+            if k in old_set: continue
+            ks = k.split(','); best = None
+            for n0, k0 in keys0:
+                if n0 != n: continue
+                k0s = k0.split(',')
+                d = [(i, a, b) for i, (a, b) in enumerate(zip(k0s, ks)) if a != b] + ([('len', len(k0s), len(ks))] if len(k0s) != len(ks) else [])
+                if best is None or len(d) < len(best): best = d
+            diffs.append((n, (best or [])[:6]))
+        print('new programs (name, differing key fields old → new):', diffs, flush=True)
+        ck('no new shader programs by the molotov (throw, flight, fire, burning)', pm1 <= pm0, f'{pm0} → {pm1}')
+        E("CLOCK.unfocus('zwtest'); for (const id of __zm) { const e = ZSTATE.ents.find(q => q.id === id); if (e) ZHORDE.remove(e); }")
+        steps(0.3)
     if 'reload' in SECT:
         E("ZSTATE.save(true)")
         saved = J("({ nb: ZWAFFE.state('nagelbrett').cond, sh: ZWERK.sharp('axt'), mo: ZSTATE.sup.molotow || 0 })")

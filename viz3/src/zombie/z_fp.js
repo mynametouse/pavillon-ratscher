@@ -1072,12 +1072,13 @@ export const ZFP = (() => {
         // the fingers: round the handle (the gun: the index finger at the trigger, the left hand under the fore-end), a fist, at ease
         const g = use[sd] && HANDS[id] && HANDS[id][sd];
         // (while reloading the right hand holds the stock's wrist with all fingers, the index finger off the trigger)
+        // feat/zombie-werk: a free fist with a clip's hand track (c.free) holds what the clip gives it
         const pose =
           at > 0.5 && g
             ? g.pose === 'trigger' && clip && clip.c.kind === 'reload'
               ? 'grip'
               : g.pose || 'grip'
-            : fist || !clip || !clip.c[sd]
+            : (fist && !(clip && clip.c.free)) || !clip || !clip.c[sd]
               ? S.alert > 0.4 || (clip && clip.c.kind === 'punch')
                 ? 'fist'
                 : 'relax'
@@ -1100,6 +1101,8 @@ export const ZFP = (() => {
     }
     if (id === 'motorsaege' && obj) sawParts(obj);
     else b.cord.visible = false;
+    // feat/zombie-werk: a thing in a hand during a clip (zombie/z_werk_molotow.js: the bottle), placed from the hands' frames
+    if (clip && clip.c.prop) clip.c.prop(hP, hQ, ct, b.rig);
     // the boot of the kick: the figure's own leg, else the boot
     kickPose(b, fb);
   }
@@ -1145,7 +1148,8 @@ export const ZFP = (() => {
     _fb = { P: V(), Q: new THREE.Quaternion() };
   function fistPose(sd, fist, clip, ct, sq) {
     const out = _fp;
-    if (clip && clip.c[sd] && !fist) {
+    // feat/zombie-werk: a clip's hand track moves a free fist too when the clip says so (c.free: the molotov's throw)
+    if (clip && clip.c[sd] && (!fist || clip.c.free)) {
       const tr = handTrack(clip.c[sd], ct);
       if (tr && tr.pa) {
         namedPose(sd, tr.pa, _fa);
@@ -1587,6 +1591,11 @@ export const ZFP = (() => {
     S.kickA = null;
     setCam(0, 0);
   });
+  // feat/zombie-werk: a clip of another module (zombie/z_werk_molotow.js: the throw) – the same format as swingClip, reloadClip
+  function play(c) {
+    S.clipA = { c, t: 0 };
+    S.lastAtk = S.time;
+  }
   // tests and the picture tool: the state in numbers
   function info() {
     return {
@@ -1624,7 +1633,22 @@ export const ZFP = (() => {
     const t = Math.tan(((HELD.fov || cam.fov) * Math.PI) / 360);
     return [+(c.x / (-c.z * t * cam.aspect)).toFixed(2), +(c.y / (-c.z * t)).toFixed(2)];
   }
-  Object.assign(S, { post, info, muzzle, build, reset, POSE, FIST, KICK, HPOSE, BRE, swingClip, HELD, body: () => FB });
+  Object.assign(S, {
+    post,
+    info,
+    muzzle,
+    build,
+    reset,
+    play,
+    POSE,
+    FIST,
+    KICK,
+    HPOSE,
+    BRE,
+    swingClip,
+    HELD,
+    body: () => FB,
+  });
   return S;
 })();
 window.ZFP = ZFP;
