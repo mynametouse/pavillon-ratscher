@@ -109,8 +109,17 @@ ein freier Modus ohne Ende.
   jede Tätigkeit hat Dauer, Bedarf und Ergebnis und läuft unsichtbar im Zeitraffer oder sichtbar mit Bewegung, wenn man hinsieht; ein gemeinsamer
   Spielstand über die bestehenden Speicher (Holz, Werkstatt, Wald, Garten, Aufgaben, Ansehen) plus Vorräte, Personen, Bestellungen, Geld.
 
-## 10 Offene Fragen an Falko
+## 10 Falkos Entscheidungen (5.11.2026, 23:14, angeklickt)
 
-- Geld realistisch in Euro (mit echten Preisen) oder abstrakt?
-- Zuerst gemeinsam (zu zweit ein Dorf) oder zuerst Dorf gegen Dorf im Wettbewerb?
-- Name des Modus – Vorschlag „Ratscher von oben“.
+- **Erste spielbare Version:** Holzkette bis zur Bestellung, Dorfprojekte und Ansehen, Pavillon bauen, Garten von oben – alle vier.
+- **Mechaniken von Anfang an:** wer ist wann da, Strom aus PV und Aggregat, echte Regeln und Sicherheit, Ereignisse – alle vier.
+- **Geld:** Euro mit echten Preisen.
+- **Später:** zu zweit ein Dorf, Dorfwettbewerb und Region, Was-wäre-wenn-Zeitraffer (Jahre vorausspielen, Zukünfte vergleichen),
+  Zombie-Nacht von oben – alle vier.
+- Arbeitstitel „Ratscher von oben“ (kein Widerspruch).
+
+## 11 Umsetzung
+
+- Nacht 5./6.11.: Hilfs-Agent `strategie` baut den Kern (Draufsicht als Spielfeld, Personen, Aufträge, Zeit, Vorräte, Euro, Strom, Regeln,
+  Ereignisse) und die Holzkette (Auftrag `docs/plans/auftraege/strategie.md`); sobald sein Kern steht, baut ein zweiter Hilfs-Agent darauf
+  Dorfprojekte und Ansehen, den Pavillon und den Garten von oben.
