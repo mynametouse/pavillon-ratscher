@@ -62,11 +62,25 @@ export const DINGE = (() => {
   ].map(c => new THREE.Color().setRGB(c[0] / 255, c[1] / 255, c[2] / 255, THREE.SRGBColorSpace));
   const ROUND = new Set(['tank', 'pool_rund', 'trampolin']),
     TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van'],
-    KINDS = ['hof', 'strasse', 'betrieb', 'stadt'];
+    // the kinds of places in the data (tools/welt-dinge/prep.py KINDS, same order); the last ones are car parks of OSM
+    KINDS = [
+      'hof',
+      'strasse',
+      'betrieb',
+      'stadt',
+      'laden',
+      'kirche',
+      'schule',
+      'dienst',
+      'gaststaette',
+      'sport',
+      'friedhof',
+      'allgemein',
+    ];
   // ---- occupancy (dinge/dinge_zeit.js): the share of a kind at the hour of the weekday, a place's habit and the day's chance ----
   const wdOf = t => (DCAL && DCAL.wd ? DCAL.wd(t) : 1);
   S.share = (kind, t = CLOCK.t) => DZEIT.share(kind, t, wdOf(t));
-  const want = (p, t = CLOCK.t) => DZEIT.want(p.i, p.habit, p.kind, t, wdOf(t));
+  const want = (p, t = CLOCK.t) => DZEIT.want(p.seed, p.habit, p.kind, t, wdOf(t));
   S.want = (i, t) => want(S.places[i], t);
   // ---- seen: in the camera's view and not far, or right behind one ----
   const _fr = new THREE.Frustum(),
@@ -113,7 +127,9 @@ export const DINGE = (() => {
           k0 = S.things.length;
         for (const a of j.autos || []) {
           const [x, y, az, ty, col, kind] = a,
-            i = S.places.length;
+            i = S.places.length,
+            // a seed from the place itself (not the load order of the areas): the same habits in every session
+            seed = (((Math.round(x * 10) * 7919 + Math.round(y * 10) * 104729) % 99991) + 99991) % 99991;
           S.places.push({
             i,
             area,
@@ -123,15 +139,17 @@ export const DINGE = (() => {
             type: TYPES[ty] || 'kompakt',
             col: PAL[col] || PAL[1],
             kind: KINDS[kind] || 'hof',
-            habit: DZEIT.hash(i + 1, 3.7),
+            seed,
+            habit: DZEIT.hash(seed + 1, 3.7),
             on: false,
             cell: null,
             z: 0,
           });
         }
         for (const d of j.dinge || []) {
-          const [t, x, y, az, l, w, h] = d;
-          S.things.push({ i: S.things.length, area, t, x, y, az, l, w, h, cell: null });
+          const [t, x, y, az, l, w, h, rgb] = d,
+            c = Array.isArray(rgb) && rgb.length === 3 ? DMOD.L(rgb[0], rgb[1], rgb[2]) : undefined;
+          S.things.push({ i: S.things.length, area, t, x, y, az, l, w, h, c, cell: null });
         }
         index(i0, k0, A);
       })

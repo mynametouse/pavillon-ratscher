@@ -197,7 +197,12 @@
 "l": 3.6,
 "w": 1.8,
 "h": 2.3,
-"quelle": "Auge: kleiner roter Traktor"
+"quelle": "Auge: kleiner roter Traktor",
+"farbe": [
+0.62,
+0.12,
+0.09
+]
 }
 ]
 }

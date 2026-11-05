@@ -97,6 +97,8 @@ with lib.browser() as b:
     steps(6)
     n = J("({ all: DINGE.places.filter(p => p.area === 'schleusingen').length, built: DINGE.places.filter(p => p.area === 'schleusingen' && p.im).length, on: DINGE.places.filter(p => p.area === 'schleusingen' && p.im && p.on && !p.hide).length })")
     ck('the town has many parking places, those near the Markt built', n['all'] >= 150 and n['built'] >= 40, json.dumps(n))
+    st2 = J("DINGE.state()")
+    ck('few draw calls: one mesh per body type and cell (≤ 120 in the town)', st2['drawn'] <= 120, f"{st2['drawn']} meshes, {st2['built']} cells, triangles per car {st2['tris']}")
     # on the ground: each built car's height against the ground under it now
     g = J("DINGE.places.filter(p => p.area === 'schleusingen' && p.im).map(p => +(p.zc - KERN.ground(p.x, p.y)).toFixed(2))")
     bad = [d for d in g if abs(d) > 0.25]

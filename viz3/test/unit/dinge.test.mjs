@@ -70,3 +70,14 @@ test('the same places tend to leave every morning, yet not all days alike', () =
   assert.ok(same > N * 0.5, `${same} places the same on five Mondays`);
   assert.ok(differ > N * 0.1, `${differ} places differ between Mondays`);
 });
+
+test('car parks of OSM fill by what they belong to: shops on Saturday morning, the church on Sunday morning, schools on schooldays', () => {
+  assert.ok(DZEIT.share('laden', H(10), SA) > 0.8);
+  assert.ok(DZEIT.share('laden', H(10), SO) < 0.1);
+  assert.ok(DZEIT.share('laden', H(3), MO) < 0.1);
+  assert.ok(DZEIT.share('kirche', H(10.5), SO) > 0.6);
+  assert.ok(DZEIT.share('kirche', H(10.5), MO) < 0.1);
+  assert.ok(DZEIT.share('schule', H(9), MO) > 0.6);
+  assert.ok(DZEIT.share('schule', H(9), SA) < 0.1);
+  assert.ok(DZEIT.share('gaststaette', H(20), SA) > DZEIT.share('gaststaette', H(16), SA));
+});

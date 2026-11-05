@@ -20,19 +20,24 @@ import wdlib
 
 EXTRA = os.path.join(wdlib.REPO, 'viz3/extra/welt-dinge')
 TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van']
-KINDS = ['hof', 'strasse', 'betrieb', 'stadt']  # as dinge/dinge.js KINDS
+KINDS = ['hof', 'strasse', 'betrieb', 'stadt', 'laden', 'kirche', 'schule', 'dienst', 'gaststaette', 'sport', 'friedhof', 'allgemein']  # as dinge/dinge.js KINDS
 # colours of cars on German roads (KBA stock: grey/silver ~ 35 %, black ~ 25 %, white ~ 15 %, blue ~ 10 %, red ~ 6 %, …) – sRGB
 PAL = [('schwarz', (18, 18, 20)), ('dunkelgrau', (58, 60, 64)), ('silber', (150, 152, 155)), ('weiss', (225, 225, 220)),
        ('dunkelblau', (25, 38, 72)), ('blau', (52, 92, 160)), ('rot', (150, 22, 20)), ('dunkelgruen', (30, 62, 40)),
        ('beige', (160, 135, 100)), ('gelb', (210, 160, 30))]
 # the hand-modelled grounds (garden, the neighbours, the brook): their own things, nothing from the photo there
 SKIP = [(-58, 42, -52, 48)]
+# places other features keep free: the nursery's parking at Kloster Veßra, where the player's car is parked (welt/fahrt.js, park.baumschule)
+AVOID = {'vessra': [(-8867.2, -172.3, 15)]}
 # works yards: the agricultural cooperative west of the garden, the yards at the east end of the village
 WORKS = [(-150, -40, -165, -30), (295, 450, -330, -220)]
 HEIGHT = {'auto': 1.5, 'van': 2.3, 'wohnmobil': 3.0, 'lkw': 3.6, 'anhaenger': 1.0, 'wohnwagen': 2.6, 'traktor': 2.8,
           'pool_rund': 1.1, 'pool_eckig': 0.1, 'trampolin': 0.9, 'rundballen': 1.5, 'quaderballen': 1.8, 'holzstapel': 1.6,
           'stammholz': 1.2, 'container': 2.6, 'tank': 3.0}
 HAZE = np.array([55.0, 70.0, 86.0])
+# shares of body types and colours for slots without a car of the photo (KBA stock, rounded), cumulative
+TYPE_CUM = list(np.cumsum([0.22, 0.34, 0.27, 0.12, 0.05]))[:-1] + [1.0]
+COL_CUM = list(np.cumsum([0.25, 0.15, 0.17, 0.22, 0.05, 0.06, 0.06, 0.015, 0.015, 0.01]))[:-1] + [1.0]
 S_DRIVING = []
 SUN = (-0.34, 0.94)  # where the shadows of the photo fall (07.04.2024, late morning): north-north-west, ~1 m per m of height
 
@@ -133,7 +138,7 @@ def main():
     S_DRIVING.clear()
     for n, k in enumerate(P['ja'] + P.get('dazu', [])):
         x, y, t = k['x'], k['y'], k['t']
-        if in_rect(x, y, SKIP):
+        if in_rect(x, y, SKIP) or any(math.hypot(x - a, y - b) < r for a, b, r in AVOID.get(gebiet, [])):
             continue
         a = math.radians(k['az'])
         ax = (math.sin(a), math.cos(a))
@@ -190,7 +195,22 @@ def main():
             col = colour(photo, k)
             autos.append([round(x, 2), round(y, 2), round(az, 1), ty, col, KINDS.index(kind)])
         else:
-            dinge.append([t, round(x, 2), round(y, 2), round(k['az'], 1), round(k['l'], 2), round(k['w'], 2), round(h, 2)])
+            e = [t, round(x, 2), round(y, 2), round(k['az'], 1), round(k['l'], 2), round(k['w'], 2), round(h, 2)]
+            if k.get('farbe'):
+                e.append([round(v, 3) for v in k['farbe']])  # sRGB 0…1 of the thing's own colour (a red tractor)
+            dinge.append(e)
+    # car parks of OSM (tools/welt-dinge/plaetze.py): empty in the photo, they fill by the time of what they belong to – a body type and a
+    # colour as common on German roads, chosen by the place
+    pf = os.path.join(EXTRA, f'plaetze_{gebiet}.json')
+    if os.path.exists(pf):
+        for q in json.load(open(pf))['plaetze']:
+            if in_rect(q['x'], q['y'], SKIP):
+                continue
+            hv = (math.sin(q['x'] * 12.9898 + q['y'] * 78.233) * 43758.5453) % 1.0
+            hc = (math.sin(q['x'] * 39.3468 + q['y'] * 11.135) * 24634.6345) % 1.0
+            ty = next(i for i, c in enumerate(TYPE_CUM) if hv <= c)
+            col = next(i for i, c in enumerate(COL_CUM) if hc <= c)
+            autos.append([q['x'], q['y'], q['az'], ty, col, KINDS.index(q['art'])])
     out = {'v': 1, 'gebiet': gebiet,
            'quelle': 'Luftbild DOP 2024 © GDI-Th (dl-de/by-2-0), erkannt mit YOLO11-OBB (DOTAv1) und von Auge geprüft – tools/welt-dinge',
            'typen': TYPES, 'farben': [p[0] for p in PAL], 'arten': KINDS, 'autos': autos, 'dinge': dinge}
