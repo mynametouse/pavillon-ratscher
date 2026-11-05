@@ -49,7 +49,7 @@ flicken.“ Auftrag wörtlich: `docs/plans/auftraege/zombie-werk.md`. Code: `viz
     beide brennen, Schaden über Zeit, einer stirbt, Licht zurück, Nachbrennen, Feuer verletzt den Spieler, Feuer des Mitspielers (Ereignis)
     und das eigene geht hinaus, Wurf in der Schulterkamera, Programme: beim Werfen und Brennen keins, vorab zwei (siehe oben).
   - `reload`: nach dem Neuladen Nagelbrett auf der Werkbank, scharfe Axt, Molotows.
-- CI `feat.yml`: grün ab Lauf 42090967556 (44/44, mit `feat/zombie` 00e4a83e zusammengeführt).
+- CI `feat.yml`: grün, zuletzt Lauf 42094739553 auf 317c0d45 (smoke, `zombie_werk` 45/45; mit `feat/zombie` 00e4a83e zusammengeführt).
 - Zur Laufzeit: `ZWERK.info()`, `ZWERK.openAt(ZWERK.gardenBench())`, `ZWERK.start(ZWERK.rows[i])`, `ZWERK.sharp('axt')`.
 
 ## Für den Lead (Eingriffe in gemeinsame Dateien, alle mit `// feat/zombie-werk` markiert)
