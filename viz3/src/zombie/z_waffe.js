@@ -180,10 +180,12 @@ export const ZWAFFE = (() => {
   function land(id) {
     const w = W[id];
     const hits = targets(w.reach, w.arc);
+    // feat/zombie-werk: a sharpened blade strikes harder (zombie/z_werk.js gives S.dmgK)
+    const k = S.dmgK ? S.dmgK(id) : 1;
     let n = 0;
     for (const h of hits) {
       if (id !== 'sense' && n >= (id === 'spaten' ? 2 : 1)) break;
-      ZHORDE.damage(h.e, w.dmg * (0.85 + Math.random() * 0.3), {
+      ZHORDE.damage(h.e, w.dmg * k * (0.85 + Math.random() * 0.3), {
         dx: h.dx,
         dy: h.dy,
         knock: w.knock,

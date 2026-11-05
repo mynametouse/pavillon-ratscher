@@ -218,24 +218,26 @@ body[data-zombie="1"] #qtrack{display:none!important}
       toDawn = (T.dawn - m + 1440) % 1440;
     $('znext').textContent = night ? 'Morgen in ' + mm(toDawn) : 'Sirene in ' + mm(toSiren);
     const w = ZWAFFE.info();
+    // feat/zombie-werk: what zombie/z_werk.js adds – the condition of saw and gun, a sharpened edge, the molotov's key
+    const wm = S.wmore ? S.wmore(w) : null;
     $('zwn').textContent = w.name;
     $('zwi').textContent =
-      w.id === 'motorsaege'
+      (w.id === 'motorsaege'
         ? (w.run ? 'läuft · ' : '') + 'Tank ' + Math.round((w.fuel / w.tank) * 100) + ' %'
         : w.id === 'flinte'
           ? (w.reload ? 'lädt … ' : '') + w.ammo + ' / 2 · Patronen ' + (Z.sup.schrot || 0)
           : w.cond !== null
             ? 'Zustand ' + w.cond + ' %'
-            : '';
+            : '') + (wm ? wm.info : '');
     // how to fight with it (Falko 5.11.: „Wie kann ich schlagen oder kämpfen?“ – „ich muss natürlich auch schießen können“)
     const atk = COARSE ? '✊' : 'Klick/Y',
       kick = COARSE ? '🦶 treten' : 'G: treten';
     $('zwk').textContent =
-      w.id === 'flinte'
+      (w.id === 'flinte'
         ? atk + ': schießen · R: nachladen · ' + kick
         : w.id === 'motorsaege'
           ? atk + ' halten: sägen · R: tanken'
-          : atk + ': zuschlagen · ' + kick;
+          : atk + ': zuschlagen · ' + kick) + (wm ? wm.keys : '');
     const sup = Object.entries(Z.sup)
       .filter(([, n]) => n > 0)
       .map(([k, n]) => (ZDATA.ITEMS[k] ? ZDATA.ITEMS[k].icon + ' ' + n : ''))
