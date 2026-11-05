@@ -8,6 +8,7 @@
 // out of the houses (zombie/z_horde.js), the streets empty; at 5:30 the long tone of the all-clear, the zombies go back into the houses, the
 // night is survived. Dying: the morning after, in the garden, some supplies lost. The state is kept (zombie/z_state.js, pav-zombie-v1);
 // a reload goes on where one was. „Beenden“ (the panel) leaves the mode and puts everything back.
+import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { P } from '../game/walkable.js';
@@ -123,6 +124,7 @@ export const ZOMBIE = (() => {
     ZFX.dispose();
     ZFIG.disposeAll();
     ZHUD.show(false);
+    fogHook(false);
     DORF.S.hold = null;
     nightStreets(false);
     if (S.prevMode) setMode(S.prevMode);
@@ -243,11 +245,43 @@ export const ZOMBIE = (() => {
     PLAY.think(S.lamp ? 'Taschenlampe an.' : 'Taschenlampe aus.', 900);
   });
   // ---- per frame ----
+  // ---- the night's fog (Silent Hill): the village sinks into the dark beyond 40–80 m. The scene's own fog (its program stays), only
+  //      its density – and that the day-and-night light sets anew whenever the sky moves (time/daynight.js); so while the mode is on
+  //      the density reads as the larger of the light's value and ours ----
+  let fogBase = null,
+    fogZ = 0;
+  function fogHook(on) {
+    const F = scene.fog;
+    if (!F || !F.isFogExp2) return;
+    if (on && fogBase === null) {
+      fogBase = F.density;
+      Object.defineProperty(F, 'density', {
+        configurable: true,
+        enumerable: true,
+        get: () => Math.max(fogBase, fogZ),
+        set: v => {
+          fogBase = v;
+        },
+      });
+    } else if (!on && fogBase !== null) {
+      const v = fogBase;
+      delete F.density;
+      F.density = v;
+      fogBase = null;
+      fogZ = 0;
+    }
+  }
+  function fog(dt) {
+    fogHook(true);
+    const want = P.mode === 'top' ? 0 : Z.phase === 'nacht' ? 0.016 : Z.phase === 'abend' ? 0.0055 : 0;
+    fogZ = P.mode === 'top' ? 0 : fogZ + (want - fogZ) * Math.min(1, dt * 0.35);
+  }
   function tick(dt) {
     if (!Z.on) return;
     dt = Math.min(dt, 0.25);
     Z.tick(dt);
     Z.noiseTick(dt);
+    fog(dt);
     const ph = phaseOf(minute());
     if (ph !== Z.phase) {
       const was = Z.phase;

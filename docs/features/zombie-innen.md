@@ -25,6 +25,14 @@ Fotos und was daraus folgt: `docs/plans/zombie_einrichtung.md`.
   Wandschoner „Erst besinn’s, dann beginn’s“), „DDR“ (Schrankwand mit Vitrine, RFT-Radio und Fernseher, Sitzgruppe zum Fernseher,
   Perserteppich, Tischdecke, Häkeldeckchen, Stehlampe, Stores mit Schals, Linoleum, Anbauküche, Kühlschrank, Kohleofen, Bettbrücke,
   Stockbett, Fliesen hellblau-weiß), „Nachwende“ (Eiche rustikal, Ledercouch, Laminat, Einbauküche).
+- **Bewohnt** (Durchsicht des Leads 5.11. früh: „zu leer“): auf jeder Ablage Kleinkram – Sammeltassen, Bleikristall, Vase mit
+  Blumen, Leuchter, gerahmte Fotos, Obstschale, Zeitung/Fernsehzeitung; DDR mit Häkeldeckchen darunter, auf dem Fernseher und über der
+  Couchlehne; Sofakissen mit Knick; an den Wänden 2–4 Dinge je Raum (Bilder, Wandteller, Spiegel, in Küchen ein Kalender, über dem
+  Herd der Wandschoner), nie über hohen Möbeln oder Fenstern; Flickenteppiche in alten Häusern; Blumen auf den meisten Fensterbänken
+  (Geranie, Grünlilie, in der DDR Kaktus); Gardinen in jedem Raum; Deckenlampen nach Zeit (Glasschale, Kugel- und Tütenlampe,
+  flache Deckenschale; Deckenfluter nach 1990); alte Küchen mit Kohlenkasten, Eimer, Topfleiste, Handtuchhalter; große Räume eine
+  zweite Gruppe (Nähtisch mit Nähmaschine, Sessel mit Beistelltisch, Kommode). Alles in Palettenfarben bzw. den Raum-Materialien –
+  keine Draw-Calls dazu (höchstens 54 in allen 230 Häusern).
 - **Benutzbar**: Innentüren als Drehtüren (`DOORS`, Aktionsknopf „Tür öffnen“), Wände und Möbel als Kollision, Böden und Stufen
   begehbar (die Kamera bleibt drinnen), Behälter zum Durchsuchen (Tür/Schublade/Deckel öffnet sich, dann `H.onSearch`; bis zu zehn
   bewegen sich je Haus, die übrigen werden ohne Bewegung durchsucht), Licht je Raum (Schalter an der Tür, ein geliehenes Punktlicht,
@@ -60,7 +68,9 @@ Module: `zombie/z_innen_plan.js` (ZIPLAN, Grundriss), `zombie/z_innen_mob.js` (Z
   `zombie_innen:tier=schnell,n=3,only=shots+walk+free`. Läuft auf `feat/zombie-innen` bei jedem Push (`viz3/extra/zombie-innen/tests.txt`).
 - Der Test prüft: Szenario, Häuser der Bewohner, Wolfgangs Waffen-Spots, je Haus Aufbauzeit, Draw-Calls (≤ 60), Dreiecke, keine neuen
   Shader-Programme, Auf- und Abbau ohne Rest (Geometrien und Texturen zurück), Gang in die Stube, Treppe hinauf, Bodentreppe, durch die
-  Luke in den Keller, Behälter, Licht; Bilder vom Eingang und aus jedem Raum. Dazu `__Z.reach(H)`: ein 10-cm-Raster im Haus mit dem
+  Luke in den Keller, Behälter, Licht; Bilder vom Eingang und aus jedem Raum; **Abschnitt `epochen`**: je Zeitschicht ein Haus
+  (alt: Gerhard 247, DDR: Manfred 219, Nachwende: Uwe 260 bzw. das erste passende) – Stube (zwei Blickrichtungen), Küche, Schlafraum,
+  bei Tag und nachts mit Raumlicht (`out/zombie_innen/epoche_<zeit>_<haus>_<raum>_<tag|nacht>.jpg`). Dazu `__Z.reach(H)`: ein 10-cm-Raster im Haus mit dem
   Radius der Spielfigur, Stufen bis 0,42 m, ohne Stürze – jeder Raum muss vom Eingang zu Fuß erreichbar sein, jeder Wegpunkt von
   `H.graph` dort stehen, wo man stehen kann, und der Graph jeden Raum erreichen. **Durchlauf `sweep`**: alle 230 Häuser einmal auf-
   und abbauen (Fehler, Draw-Calls, Dreiecke, Erreichbarkeit; ≈ 2 min, lokal mit `only=…` abwählbar).
@@ -81,3 +91,13 @@ Module: `zombie/z_innen_plan.js` (ZIPLAN, Grundriss), `zombie/z_innen_mob.js` (Z
   Keller zurück – nur Böden und Stufen zählen (das Gelände kann den Keller schneiden); dazu `inside` und `place` (Rang 95, Raumname).
 - Die Haustür von innen ist ein festes Türblatt; Hinausgehen macht `z_haus.js` (Aktion an `H.openings[0]` bzw. `H.exit`).
 - `H.stats.terrain`: wie weit das Gelände im Haus über den Erdgeschossboden reicht (> 0: es würde durch den Boden schauen) – zur Kontrolle.
+- `H.openings`: `front: true` tragen die Haustür (immer `openings[0]`, id `haustuer`) und auch die Fenster der Straßenseite.
+
+## Offen (Stand 5.11.2026 früh)
+
+- Alle 230 Häuser: jeder Raum zu Fuß erreichbar, jeder Wegpunkt dort, wo man stehen kann (Durchlauf `sweep`, streng). Wo die
+  Bodentreppe nur neben dem Schornstein Platz fand, fehlt der Schornstein im Dachboden (draußen steht er); ohne Platz für eine
+  Bodentreppe gibt es keinen Dachboden.
+- Jens' Haus (246) ist nicht begehbar: `ZIPLAN.plan(246)` liefert null – der Grundriss (sechs Fassaden, Haustür an einer nur 4,8 m
+  langen Seite) ergibt kein Rechteck, das die Tür überspannt und mindestens 4,2 × 4,2 m misst. Seine Werkzeugkiste fehlt damit.
+- `H.route` kennt keine Türen: geschlossene Innentüren muss die Zombie-Logik öffnen oder einschlagen.

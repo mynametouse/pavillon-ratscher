@@ -314,34 +314,15 @@ export const ZINNEN = (() => {
       h.z0 - 0.04,
       h.z0
     );
-    // a flower pot on some sills (geraniums)
-    if (C.R() < 0.35 && h.z0 - C.room.z0 < 1.2) {
-      const pp = P(h.u0 + w * C.R.r(0.25, 0.75), 0, -0.04);
-      C.furn.cyl(C.col(0xb4653f, 0.88), pp[0], pp[1], h.z0, h.z0 + 0.13, 0.06, 0.08, 8);
-      C.furn.lathe(
-        C.col(0x4f7d3a, 0.85),
-        pp[0],
-        pp[1],
-        [
-          [0.09, h.z0 + 0.12],
-          [0.13, h.z0 + 0.2],
-          [0.0, h.z0 + 0.28],
-        ],
-        7,
-        { caps: false }
-      );
-      C.furn.lathe(
-        C.col(0xc8352b, 0.6),
-        pp[0],
-        pp[1],
-        [
-          [0.04, h.z0 + 0.26],
-          [0.06, h.z0 + 0.3],
-          [0.0, h.z0 + 0.33],
-        ],
-        6,
-        { caps: false }
-      );
+    // flower pots on the sills: geraniums, a spider plant, in the DDR a cactus – on most sills of the rooms one lives in
+    const lived = ['stube', 'kueche', 'schlafzimmer', 'kammer', 'kinderzimmer', 'wohnzimmer'].includes(C.room.kind);
+    if (C.R() < (lived ? 0.8 : 0.3) && h.z0 - C.room.z0 < 1.2) {
+      const kinds = C.look === 'ddr' ? ['geranie', 'kaktus', 'gruenlilie'] : ['geranie', 'geranie', 'gruenlilie'],
+        nP = w > 0.9 && lived ? 2 : 1;
+      for (let k = 0; k < nP; k++) {
+        const pp = P(h.u0 + w * (nP > 1 ? 0.25 + k * 0.5 : C.R.r(0.3, 0.7)), 0, -0.04);
+        ZIEINR.DK.pflanze(C, pp[0], pp[1], h.z0, C.R.pick(kinds));
+      }
     }
     // curtains: net curtains (Stores) over the window in the DDR and later looks, a checked half curtain in old kitchens
     const kind = C.room.kind,
@@ -349,12 +330,15 @@ export const ZINNEN = (() => {
     if (kind === 'keller' || kind === 'boden' || kind === 'flur') return;
     const cz1 = h.z1 + 0.12,
       cz0 = look === 'alt' && kind === 'kueche' ? h.z0 + 0.05 : h.z0 - 0.02;
-    if (look !== 'alt' || kind === 'stube' || kind === 'kueche' || C.R() < 0.4) {
+    if (kind !== 'bad' || C.R() < 0.5) {
       const mat = look === 'alt' && kind === 'kueche' ? M.gingham : M.stores,
         top = look === 'alt' && kind === 'kueche' ? h.z0 + (h.z1 - h.z0) * 0.55 : cz1;
       folds(C.furn, mat, P, h.u0 - 0.1, h.u1 + 0.1, -0.06, cz0, top, s.n);
-      if (look === 'ddr' && kind !== 'kueche' && kind !== 'bad') {
-        const side = C.col(C.R.pick([0xa8562a, 0x7a3a28, 0x6a7a4a, 0xc89a4a]), 0.95);
+      if ((look === 'ddr' || (look === 'nachwende' && C.R() < 0.5)) && kind !== 'kueche' && kind !== 'bad') {
+        const side = C.col(
+          C.R.pick(look === 'ddr' ? [0xa8562a, 0x7a3a28, 0x6a7a4a, 0xc89a4a] : [0x8a7a6a, 0x5a6a7a, 0xb8a888]),
+          0.95
+        );
         folds(C.furn, side, P, h.u0 - 0.45, h.u0 - 0.05, -0.1, h.z0 - 0.3, cz1, s.n, 3);
         folds(C.furn, side, P, h.u1 + 0.05, h.u1 + 0.45, -0.1, h.z0 - 0.3, cz1, s.n, 3);
       }
@@ -599,7 +583,12 @@ export const ZINNEN = (() => {
     // a lamp: its shade in the room's furniture (a palette colour), and a glowing copy a hair larger that is only in the scene while the
     // room's light is on (an unlit lamp costs no draw call of its own)
     C.lamp = (pos, kind, r) => {
-      const shadeCol = kind === 'bulb' ? 0xfff2d6 : C.R.pick([0xf3ead8, 0xe8c890, 0xf0e0c0]),
+      const shadeCol =
+          kind === 'bulb' || kind === 'kugel' || kind === 'schale' || kind === 'fluter'
+            ? 0xfff2d6
+            : kind === 'tuete'
+              ? C.R.pick([0xe8742a, 0xd8b030, 0xc83a2a, 0xf0e0c0])
+              : C.R.pick([0xf3ead8, 0xe8c890, 0xf0e0c0]),
         mat = ZIMOB.glowMat(shadeCol),
         pm = new ZIMOB.Mesher(pos),
         x = pos[0],
@@ -618,12 +607,38 @@ export const ZINNEN = (() => {
                   [r, z - 0.1],
                   [r * 0.6, z + 0.08],
                 ]
-              : [
-                  [r, z - 0.06],
-                  [r * 0.85, z],
-                  [r * 0.35, z + 0.12],
-                  [0.03, z + 0.16],
-                ],
+              : kind === 'schale'
+                ? [
+                    [0.0, z - 0.1],
+                    [r * 0.75, z - 0.07],
+                    [r, z],
+                  ]
+                : kind === 'kugel'
+                  ? [
+                      [0.0, z - 0.2],
+                      [r * 0.7, z - 0.17],
+                      [r, z - 0.1],
+                      [r * 0.7, z - 0.03],
+                      [0.035, z],
+                    ]
+                  : kind === 'tuete'
+                    ? [
+                        [r, z - 0.24],
+                        [r * 0.55, z - 0.08],
+                        [0.025, z + 0.02],
+                      ]
+                    : kind === 'fluter'
+                      ? [
+                          [r, z - 0.03],
+                          [r * 0.95, z + 0.01],
+                          [0.03, z + 0.02],
+                        ]
+                      : [
+                          [r, z - 0.06],
+                          [r * 0.85, z],
+                          [r * 0.35, z + 0.12],
+                          [0.03, z + 0.16],
+                        ],
         seg = kind === 'bulb' ? 8 : kind === 'small' ? 10 : 12;
       furn.lathe(C.col(shadeCol, 0.9), x, y, prof, seg, { caps: false });
       pm.lathe(
@@ -886,7 +901,8 @@ export const ZINNEN = (() => {
           if (a !== null && b - a > 0.6) furn.box(beam, a, b, y - 0.05, y + 0.05, r.z0 + 2.0, r.z0 + 2.14);
         }
       // the chimney through the attic, and the smoke chamber beside it (Räucherkammer, Wikipedia)
-      const ch = P.chimL;
+      // (not where the attic stair had to come up beside it – the chimney stands on the roof outside all the same)
+      const ch = P.astair && P.astair.chimClash ? null : P.chimL;
       if (ch && ch[0] > r.x0 + 0.5 && ch[0] < r.x1 - 0.5 && ch[1] > r.y0 + 0.5 && ch[1] < r.y1 - 0.5) {
         const top = (P.under(ch[0], ch[1]) || r.z0 + 2.5) + 0.25,
           brick = C.col(0x8a4a34, 0.9);
@@ -1357,7 +1373,11 @@ export const ZINNEN = (() => {
       const h = P.hatch,
         cx = (h.x0 + h.x1) / 2,
         pa = [cx, h.y0 - 0.4],
-        pb = [cx, Math.min(h.y1 + 0.5, kel.y1 - 0.3)],
+        // below: in front of the last step, or beside it where the stair comes down close to the wall
+        pb =
+          h.y1 + 0.5 <= kel.y1 - 0.3
+            ? [cx, h.y1 + 0.5]
+            : [h.x1 + 0.45 < kel.x1 - 0.3 ? h.x1 + 0.45 : h.x0 - 0.45, h.y1 - 0.3],
         a = node(pa[0], pa[1], P.zG, h.room.id),
         b = node(pb[0], pb[1], kel.z0, kel.id);
       edges.push([a, b]);
@@ -1368,7 +1388,8 @@ export const ZINNEN = (() => {
     if (P.astair && att && flurTop) stairNodes(P.astair, flurTop, P.zF[P.nSt - 1], att, P.zA);
     const en = node(P.front.x, P.yi0 + 0.6, P.zG, flur0.id);
     link(en, flur0, P.front.x, P.yi0 + 0.6);
-    // can one stand at (x, y) on the floor z: no collider within the walker's radius, a floor there, no step at body height
+    // can one stand at (x, y) on the floor z: no collider within the walker's radius, a floor there, no step over it (a waypoint stands
+    // on the plain floor, not on the lowest step of a stair)
     const RW = 0.24,
       over = (w, x, y) => x >= w[0] && x <= w[1] && y >= w[2] && y <= w[3];
     for (const r of rooms) {
@@ -1386,7 +1407,7 @@ export const ZINNEN = (() => {
         freeAt = (x, y) =>
           !cs.some(c => x > c[0] - RW && x < c[1] + RW && y > c[2] - RW && y < c[3] + RW) &&
           ws.some(w => over(w, x, y) && Math.abs(w[4] - z) < 0.05) &&
-          !ws.some(w => over(w, x, y) && w[4] > z + 0.42 && w[4] < z + 1.8);
+          !ws.some(w => over(w, x, y) && w[4] > z + 0.05 && w[4] < z + 1.8);
       // a 15 cm grid over the room, flooded from where one comes in; the reached cell nearest to the middle
       const g = 0.15,
         nx = Math.max(1, Math.floor((r.x1 - r.x0) / g)),

@@ -3,7 +3,7 @@
 # room, walks from the entry into the Stube, up the stairs and down into the cellar, opens a door, searches a container, switches a light;
 # shader programs must not grow, draw calls / triangles / mount time per house in the log, unmount frees geometries and textures.
 # Pictures into out/zombie_innen/.
-#   python3 viz3/test/zombie_innen.py PORT [tier=schnell,n=6,only=walk+shots+free+progs+sweep,haus=<id>]
+#   python3 viz3/test/zombie_innen.py PORT [tier=schnell,n=6,only=walk+shots+free+epochen+progs+sweep,haus=<id>]
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]
@@ -268,6 +268,39 @@ with lib.browser() as b:
         own = J("__Z.ownPrograms(__H, window.__K0)")
         ck(f'house {hid}: its meshes use programs that were there before', not own, own)
         E("(() => { ZINNEN.unmount(__H); window.__H = null; GAME.step(0.1); return 1; })()")
+    # the three eras in pictures (for the look after the photos): Stube, Küche and a bedroom of a house of each era, by day and at night
+    # with the room's light – from the corner by the door, eye height, towards the room's middle
+    if want('epochen'):
+        for look, prefer in (('alt', 247), ('ddr', 219), ('nachwende', 260)):
+            hid = J(f"""(() => {{ const ok = id => {{ const P = ZIPLAN.plan(id); return P && P.look === '{look}' && P.rooms.some(r => r.kind === 'stube') && P.rooms.some(r => r.kind === 'kueche'); }};
+              return ok({prefer}) ? {prefer} : (ZINNEN.list().map(o => o.id).find(ok) || null); }})()""")
+            if not hid:
+                ck(f'a house of the era {look}', False, 'none'); continue
+            E(MOUNT % hid)
+            for _ in range(200):
+                if E("!!(window.__H || window.__ME)"): break
+                time.sleep(0.1)
+            rooms = J("""(() => { const H = __H, P = H.plan, pick = k => P.rooms.find(r => r.kind === k);
+              const list = [pick('stube'), pick('kueche'), pick('schlafzimmer') || pick('kammer') || pick('kinderzimmer')].filter(Boolean);
+              const out = [];
+              for (const r of list) { const d = H.doors.find(q => q.room === r.id), dp = d ? P.toL(d.pos[0], d.pos[1]) : [(r.x0 + r.x1) / 2, r.y0];
+                const cs = [[r.x0, r.y0], [r.x1, r.y0], [r.x1, r.y1], [r.x0, r.y1]].sort((a, b) => Math.hypot(a[0] - dp[0], a[1] - dp[1]) - Math.hypot(b[0] - dp[0], b[1] - dp[1]));
+                for (const [c, v] of r.kind === 'stube' ? [[cs[0], 'a'], [cs[3], 'b']] : [[cs[0], 'a']]) {
+                  const m = [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2], e = [c[0] + Math.sign(m[0] - c[0]) * 0.8, c[1] + Math.sign(m[1] - c[1]) * 0.8];
+                  const ew = P.toW(e[0], e[1]), mw = P.toW(m[0], m[1]);
+                  out.push({ id: r.id, kind: r.kind + (v === 'b' ? '_b' : ''), x: ew[0], y: ew[1], z: r.z0 + 1.6, yaw: Math.atan2(mw[0] - ew[0], mw[1] - ew[1]) * 180 / Math.PI }); } }
+              return out; })()""")
+            for mode in ('day', 'night'):
+                E(f"GAME.setMode('{mode}'); GAME.step(0.2)")
+                lib.settle_light(pg)
+                for r in rooms:
+                    E(f"""(() => {{ if ('{mode}' === 'night') __H.light('{r['id']}', true); CAM3.want = false;
+                      GAME.view({r['x']}, {r['y']}, {r['z']}, {r['yaw']}, -12, 78); GAME.step(0.05); return 1; }})()""")
+                    shot(f"epoche_{look}_{hid}_{r['kind']}_{'tag' if mode == 'day' else 'nacht'}")
+                    if mode == 'night': E(f"__H.light('{r['id']}', false); 1")
+            E("GAME.setMode('day'); GAME.step(0.2); ZINNEN.unmount(__H); window.__H = null; GAME.step(0.1); 1")
+            lib.settle_light(pg)
+            ck(f'pictures of the era {look} (house {hid}: ' + ', '.join(r['kind'] for r in rooms) + ')', len(rooms) >= 2, rooms)
     # as in the zombie night (viz3/test/zombie_haus.py on feat/zombie): in the village with no house mounted, drawn; then a house entered
     # and drawn – no program may come that was not there (the shared materials are given back when the last house goes)
     if want('progs'):
@@ -297,9 +330,7 @@ with lib.browser() as b:
           return JSON.stringify({ ids: ids.length, n, msAvg: Math.round(ms / Math.max(1, n)), msMax: Math.round(mx), drawsMax: dr, rooms, bad }); })()"""))
         print('sweep', round(time.time() - t1), 's', json.dumps({k: sw[k] for k in ('ids', 'n', 'msAvg', 'msMax', 'drawsMax', 'rooms')}), 'bad', len(sw['bad']), flush=True)
         for b in sw['bad'][:30]: print('  sweep', json.dumps(b), flush=True)
-        # (a few houses with a room the 10 cm flood does not reach are listed – open; the budget and errors are hard)
-        hard = [b['id'] for b in sw['bad'] if b.get('err') or b['stats']['draws'] > 60 or b['stats']['tris'] > 150000]
-        ck('all houses mount (≤ 60 draw calls, ≤ 150 k triangles), every room on foot and the waypoints in at least 95 %', sw['n'] == sw['ids'] and not hard and len(sw['bad']) <= sw['ids'] * 0.05, {'n': sw['n'], 'hard': hard, 'bad': [b['id'] for b in sw['bad']]})
+        ck('all houses mount (≤ 60 draw calls, ≤ 150 k triangles), every room on foot, waypoints where one can stand', sw['n'] == sw['ids'] and not sw['bad'], {'n': sw['n'], 'bad': [b['id'] for b in sw['bad']]})
     left = J("{ cols: GAME.COL.filter(c => c[6] === 'zinnen' && c[4] > -50).length, walks: GAME.WALK.filter(w => w[4] > -50 && w[9] && ZINNEN.mounted().length === 0 && false).length, acts: KERN.acts().filter(a => /^zinnen:/.test(a.id)).length, doors: Object.keys(DOORS).filter(k => /^zinnen:/.test(k)).length, mounted: ZINNEN.mounted().length }")
     print('left over', json.dumps(left), flush=True)
     ck('nothing of the houses left after unmount', left['cols'] == 0 and left['acts'] == 0 and left['doors'] == 0 and left['mounted'] == 0, left)
