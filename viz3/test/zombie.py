@@ -107,14 +107,18 @@ with lib.browser() as b:
     # a car runs one over
     ok_car = E("!!(window.VEH && VEH.by && VEH.by.car)")
     if ok_car:
-        E("""(() => { const e = ZSTATE.ents.find(q => q.F && !q.dead) || ZHORDE.ent(ZFIG.people()[0], GAME.P.x, GAME.P.y, GAME.P.feet, 0);
-          window.__run = e.id; const x = e.x - 18, y = e.y; VEH.place('car', x, y, Math.PI / 2); VEH.enter('car'); e.st = 'wander'; e.sp = 0.001; })()""")
+        # on the open street at the Anger: the zombie 6 m ahead of the player, the car 16 m behind it on the same line
+        E("""(() => { GAME.go('dorf'); const P = GAME.P, a = P.yaw * Math.PI / 180, fx = Math.sin(a), fy = Math.cos(a);
+          const e = ZSTATE.ents.find(q => q.F && !q.dead && !q.house) || ZHORDE.ent(ZFIG.people()[0], P.x, P.y, P.feet, 0);
+          e.x = P.x + fx * 6; e.y = P.y + fy * 6; e.z = GAME.floorAt(e.x, e.y, P.feet + 0.5); e.st = 'wander'; e.sp = 0.001; e.hold = 'idle';
+          window.__run = e.id; VEH.place('car', e.x - fx * 16, e.y - fy * 16, a); VEH.enter('car'); })()""")
         steps(0.5)
         E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
         hit = False
         for i in range(30):
             steps(0.25)
-            E("(() => { const e = ZSTATE.ents.find(q => q.id === __run); const v = VEH.cur; if (e && v && !e.fly && !e.dead) { e.y = v.st.y; } })()")
+            E("""(() => { const e = ZSTATE.ents.find(q => q.id === __run), v = VEH.cur; if (!e || !v || e.fly || e.dead) return;
+              const f = VEH.fwd(v.st.psi), al = (e.x - v.st.x) * f[0] + (e.y - v.st.y) * f[1]; e.x = v.st.x + f[0] * al; e.y = v.st.y + f[1] * al; })()""")
             if E("ZSTATE.runover") > 0: hit = True; break
         E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: false })"); steps(1.0); E("VEH.auto = null")
         ck('a car runs one over (it flies)', hit, J("({ runover: ZSTATE.runover, u: VEH.cur ? VEH.cur.st.u : null })"))

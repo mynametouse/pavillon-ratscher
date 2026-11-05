@@ -66,6 +66,8 @@ with lib.browser() as b:
           P.x = mx - o.n[0] * 1.6; P.y = my - o.n[1] * 1.6; P.feet = GAME.floorAt(P.x, P.y, o.z0 + 0.3); P.yaw = P.body = Math.atan2(o.n[0], o.n[1]) * 180 / Math.PI; }})()""")
         steps(0.4)
         pic('03_brettern')
+    # the other ground-floor openings boarded as well (else it takes the easiest way in – an open window next to it)
+    E("""(() => { const st = ZSTATE.house(ZHAUS.bid); for (const o of ZHAUS.H.openings) if (!o.floor) st.bar[o.id] = 100; ZHAUS.boardsAll(); })()""")
     # night: a zombie outside the boarded window – it smells the player, hammers, breaks in
     E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + ZOMBIE.times().siren - 0.5")
     lib.settle_light(pg)
@@ -99,7 +101,8 @@ with lib.browser() as b:
     ck('… and breaks in', broke, str(st))
     steps(0.6)
     pic('05_drin')
-    # out (the window was the way in; the front door is free)
+    # out: the boards off the front door first
+    E("""(() => { const st = ZSTATE.house(ZHAUS.bid), f = ZHAUS.H.openings.find(o => o.front); if (f) st.bar[f.id] = 0; })()""")
     E("ZSTATE.hp = 100; (async () => { await ZHAUS.leave(); })()")
     for i in range(40):
         time.sleep(0.5)
