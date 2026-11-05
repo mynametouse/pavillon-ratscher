@@ -12,10 +12,10 @@
 // { v: 1, m: 'live' | 'kalender' }. Tests: navigator.webdriver – no request ever leaves a test browser; WETTER.mock(fn | json | 'fail')
 // answers instead (viz3/test/wetter.py). URL: ?wetter=kalender | live | regen | schnee | nebel | … (a weather to try).
 import { SAVE } from '../core/save.js';
-import { $, OFFLINE, QS } from '../core/head.js';
+import { $, OFFLINE, QS, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
-import { hemi } from '../garden/env.js';
+import { hemi, sun } from '../garden/env.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { audio } from '../audio/audio.js';
@@ -26,6 +26,7 @@ import { WXDATA } from './wx_data.js';
 import { WXSKY } from './wx_sky.js';
 import { WXFALL } from './wx_fall.js';
 import { WXTON } from './wx_ton.js';
+import { WXBODEN } from './wx_boden.js';
 export const WETTER = (() => {
   const KEY = 'pav-wetter-v1';
   const saved = SAVE.get(KEY);
@@ -47,6 +48,10 @@ export const WETTER = (() => {
     calls: [],
     flash: { t: 0, next: 8, k: 0, n: 0, base: 0 },
     acc: 0,
+    wet: 0,
+    wetWant: 0,
+    snowC: 0,
+    snowWant: 0,
   };
   const AUTOMATED = typeof navigator !== 'undefined' && !!navigator.webdriver;
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -214,11 +219,14 @@ export const WETTER = (() => {
   const shown = () => DN.active && DN.mode === 'auto' && P.mode !== 'top';
   function tick(dt) {
     dt = Math.min(dt, 0.25);
+    const snap = S.snapNext;
     // the choice once a second (and at once after a change); the effects every frame
-    if ((S.acc += dt) > 1 || !S.picked) {
+    if ((S.acc += dt) > 1 || !S.picked || snap) {
       S.acc = 0;
       S.picked = true;
       pick(false);
+      S.wetWant = wetness();
+      S.snowWant = snowCover();
     }
     ease(dt);
     const on = shown(),
@@ -260,9 +268,43 @@ export const WETTER = (() => {
       },
       dt
     );
+    // wet ground: eased over a few seconds (an hour of game time passes in a minute: the data's own slope is gentle enough)
+    const kk = snap ? 1 : 1 - Math.exp(-dt / 6);
+    S.wet += ((on ? S.wetWant : 0) - S.wet) * kk;
+    if (S.wet < 0.005) S.wet = 0;
+    S.snowC += ((on ? S.snowWant : 0) - S.snowC) * kk;
+    if (S.snowC < 0.005) S.snowC = 0;
+    // the white of lying snow follows the light that falls on it (sky, sun, image light)
+    const light = clamp(0.5 * scene.environmentIntensity + 0.1 * sun.intensity + 0.6 * hemi.intensity, 0, 1.6);
+    WXBODEN.set(S.wet, dt, S.snowC, light);
     lightning(dt, on && !!wx.thunder);
   }
   KERN.tick(tick, 'wetter');
+  // ---- snow lying: the data's snow depth (a few centimetres cover the ground; the current values lack it – then the hour's) ----
+  function snowCover() {
+    const w = S.w;
+    if (!w || S.src === 'kalender') return 0;
+    let d = w.depth;
+    if (!(d > 0) && S.src === 'jetzt') {
+      const r = WXDATA.at(S.store, gameU());
+      d = r && r.SD;
+    }
+    return clamp((d || 0) / 0.04, 0, 1);
+  }
+  // ---- how wet the ground is: the rain now and in the last hours (fading with an e-time of about 1.6 h; snow only when it melts) ----
+  function wetness() {
+    const w = S.w;
+    if (!w || S.src === 'kalender') return 0;
+    let r = w.rain + (Number.isFinite(w.temp) && w.temp > 0.5 ? w.snow * 0.7 : 0);
+    if (S.src !== 'probe') {
+      const u = gameU();
+      for (let k = 1; k <= 5; k++) {
+        const rec = WXDATA.at(S.store, u - k * 3600);
+        if (rec && (rec.T === undefined || rec.T > 0.5)) r += (rec.P ?? 0) * Math.exp(-k / 1.6);
+      }
+    }
+    return clamp(r / 0.8, 0, 1);
+  }
   // ---- lightning in a thunderstorm: a flash in the sky and on the land (the sky light for a moment), thunder after it by the distance ----
   function lightning(dt, storm) {
     const F = S.flash;
@@ -457,6 +499,9 @@ export const WETTER = (() => {
         hole: WXFALL.U.uHole.value,
       },
       flash: S.flash.k,
+      wet: S.wet,
+      snowCover: S.snowC,
+      boden: WXBODEN.count(),
       flashes: S.flash.n,
       automated: AUTOMATED,
     }),

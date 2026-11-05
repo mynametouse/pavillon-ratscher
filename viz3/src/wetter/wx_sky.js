@@ -119,6 +119,7 @@ export const WXSKY = (() => {
     }
     const c = W.cover,
       wet = clamp((W.rain + 2.5 * W.snow) / 5, 0, 1),
+      dark = clamp(W.rain / 5, 0, 1),
       day = 1 - (s.night || 0),
       closed = sst(0.7, 1, c),
       block = Math.max(S.mask, closed);
@@ -126,16 +127,16 @@ export const WXSKY = (() => {
     const fogV = W.vis < 20000 ? (1.732 / W.vis) * sst(20000, 9000, W.vis) : 0;
     L.fogD = Math.max(L.fogD, fogV);
     const fogK = sst(2500, 250, W.vis);
-    // the horizon (and the haze over the land) turns grey under clouds, darker in rain
+    // the horizon (and the haze over the land) turns grey under clouds, darker in rain (snow clouds stay light)
     const g = lum(L.fog);
-    _g.setRGB(g * 0.98, g, g * 1.05).multiplyScalar(1 - 0.32 * wet);
+    _g.setRGB(g * 0.98, g, g * 1.05).multiplyScalar(1 - 0.32 * dark);
     L.fog.lerp(_g, clamp(c * 0.85 + fogK, 0, 1));
     U.wxHor.value.copy(L.fog);
     // the clouds' own colour: the grey of the horizon, a little brighter (seen from below the deck is lit from above)
     U.wxCol.value.copy(L.fog).multiplyScalar(1.12);
     U.wxSun.value.copy(L.sunC).multiplyScalar(Math.min(2.5, L.sun * 0.5) * day);
     U.wxCov.value = c;
-    U.wxDark.value = wet;
+    U.wxDark.value = dark;
     U.wxFog.value = fogK;
     // the direct sun through the clouds (a cloud over the sun, or the closed deck), less in rain and fog
     L.sun *= (1 - 0.93 * block) * (1 - 0.45 * wet) * (1 - 0.85 * fogK);

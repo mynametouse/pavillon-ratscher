@@ -46,6 +46,11 @@ with lib.browser() as b:
     st = lambda: J("WETTER.state()")
     dn = lambda: J("DN.dbg()")
     fog = lambda: E("GAME.scene.fog.density")
+    # the drops' mesh as it is drawn: visible, its draw range, every uniform finite
+    UNI = """(() => { const m = GAME.scene.getObjectByName('wetter:niederschlag'), U = m.material.uniforms, o = {};
+      for (const [k, u] of Object.entries(U)) { const v = u.value; o[k] = typeof v === 'number' ? v : v && v.toArray ? v.toArray().map(x => +x.toFixed(4)) : v; }
+      const fin = Object.values(o).flat().every(x => typeof x !== 'number' || Number.isFinite(x));
+      return { vis: m.visible, n: m.geometry.drawRange.count / 6, fin, u: o }; })()"""
     def weather(name, secs=1.0):
         E(f"WETTER.mock(__wxAnswer(WETTER.data.PRESETS['{name}']))")
         time.sleep(0.2)
@@ -92,6 +97,7 @@ with lib.browser() as b:
     if 'wetter' in want:
         midday(12.0)
         s = weather('klar')
+        ck('clear and dry: the ground as it was', s['wet'] == 0, str(s['wet']))
         # both views once under a clear sky first: what they show compiles there (not counted as the weather's)
         view('garten', 160, -2)
         pic('01b_klar_nah')
@@ -111,18 +117,25 @@ with lib.browser() as b:
         ck('rain: drops drawn (a good part of them), the deck closed', s['fall']['n'] > 1500 and s['fall']['kR'] > 0.4 and s['sky']['cov'] > 0.95, str(s['fall']))
         ck('rain: haze over the land from the visibility (6 km)', fog() > 2 * f_clear and fog() > 1e-4, f"fog {fog():.2e} vs {f_clear:.2e}")
         ck('rain: the sound levels (rain outside, no roof outdoors)', s['ton']['rain'] > 0.4 and s['ton']['roof'] == 0, str(s['ton']))
+        ck('rain: the ground is wet (darker, glossier: terrain, garden ground, roofs)', s['wet'] > 0.6 and s['boden'] >= 2, f"wet {s['wet']:.2f}, {s['boden']} materials")
         view('garten', 160, -2)
         pic('04_regen_nah')
         s = weather('starkregen')
+        m = J(UNI)
+        print('mesh (heavy rain)', json.dumps(m), flush=True)
         pic('05_starkregen')
+        m2 = J(UNI)
+        ck('heavy rain: the drops\' mesh drawn, its uniforms finite (before and after the picture)', m['vis'] and m['fin'] and m2['vis'] and m2['fin'] and m['n'] > 3000, json.dumps(m2)[:400])
         ck('heavy rain: all drops, faster', s['fall']['kR'] >= 0.95 and s['fallU']['rain'][0] > 8, str(s['fall']) + str(s['fallU']['rain']))
         s = weather('schnee', 2.0)
         pic('07_schnee_nah')
         ck('snow: flakes (the snow share), slow', s['fall']['kS'] > 0.5 and s['fallU']['rain'][3] > 0.95 and s['fallU']['snow'][0] < 1.6, str(s['fall']) + str(s['fallU']))
+        ck('snow: 8 cm lying – the ground and the roofs white', s['snowCover'] > 0.9 and s['boden'] >= 2, f"cover {s['snowCover']:.2f}, {s['boden']} materials")
         view('garten', 200, 7)
         pic('06_schnee')
         s = weather('nebel')
         pic('08_nebel')
+        ck('fog: no snow lying any more (the data says none)', s['snowCover'] == 0, str(s['snowCover']))
         ck('fog: dense haze (visibility 160 m) and the sky in it', fog() > 5e-3 and s['sky']['fog'] > 0.9, f"fog {fog():.2e} sky {s['sky']['fog']:.2f}")
         s = weather('sturm')
         ck('storm: wind 62 km/h, gusts 98 – the wind level of the sound', s['cur']['wind'] > 15 and s['ton']['wind'] > 0.7, f"wind {s['cur']['wind']:.1f} m/s, ton {s['ton']}")
@@ -138,6 +151,8 @@ with lib.browser() as b:
         pic('10_blitz')
         steps(1)
         ck('no new shader program while the weather changed (clear → overcast → rain → snow → fog → storm → thunderstorm)', progs() == p0, f"{p0} → {progs()}")
+        ok, r = lib.check_gl(pg, 16)
+        ck('every shader program links and stays within 16 textures (the sky with its clouds, the drops)', ok, json.dumps({k: r[k] for k in ('programs', 'maxFrag', 'maxVert', 'broken')})[:300] + json.dumps(r['bad'])[:200])
         midday(17.2)
         view('garten', 250, 5)
         weather('regen')

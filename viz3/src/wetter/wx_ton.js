@@ -67,6 +67,11 @@ export const WXTON = (() => {
     const s = ctx.createBufferSource();
     s.buffer = buf;
     s.loop = true;
+    // inside the buffer by a hair: an MP3 may carry the encoder's silence at both ends (the loops are cross-faded noise – no seam)
+    if (buf.duration > 1) {
+      s.loopStart = 0.03;
+      s.loopEnd = buf.duration - 0.03;
+    }
     let node = s;
     for (const f of chain) {
       node.connect(f);
@@ -76,7 +81,7 @@ export const WXTON = (() => {
     g.gain.value = 0;
     node.connect(g);
     g.connect(dest);
-    s.start(ctx.currentTime + 0.05, Math.random() * buf.duration * 0.9);
+    s.start(ctx.currentTime + 0.05, 0.03 + Math.random() * buf.duration * 0.85);
     return { s, g };
   }
   const filt = (ctx, type, f, q = 0.7) => {

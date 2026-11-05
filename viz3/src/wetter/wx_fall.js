@@ -9,8 +9,8 @@
 import * as THREE from 'three';
 import { COARSE, scene } from '../core/head.js';
 export const WXFALL = (() => {
-  const N = COARSE ? 2600 : 6400,
-    BOX = COARSE ? new THREE.Vector3(26, 18, 26) : new THREE.Vector3(34, 22, 34);
+  const N = COARSE ? 3200 : 9000,
+    BOX = COARSE ? new THREE.Vector3(22, 15, 22) : new THREE.Vector3(30, 19, 30);
   const g = new THREE.BufferGeometry(),
     pos = new Float32Array(N * 4 * 3),
     seed = new Float32Array(N * 4 * 4),
@@ -74,20 +74,22 @@ export const WXFALL = (() => {
         vec3 c0 = uCam + uOff, o = c0 - 0.5 * uBox;
         p = o + mod(p - o, uBox);
         vec3 e = abs(p - c0) / (0.5 * uBox);
-        float a = (1.0 - smoothstep(0.7, 1.0, max(e.x, max(e.y, e.z)))) * smoothstep(uHole, uHole + 0.8, length(p - uCam));
+        float dc = length(p - uCam);
+        float a = (1.0 - smoothstep(0.7, 1.0, max(e.x, max(e.y, e.z)))) * smoothstep(uHole, uHole + (snow > 0.5 ? 1.5 : 1.2), dc);
         vec4 vp = viewMatrix * vec4(p, 1.0);
         float px = max(-vp.z, 0.05) * uPx;
         vec3 q;
         if (snow > 0.5) {
-          float sz = uSnow.y * (0.7 + 0.6 * aSeed.x), w = max(sz, px * 1.2);
+          // a flake is never more than a few pixels across (one right at the lens is a blur nobody notices) and at least one
+          float sz = uSnow.y * (0.7 + 0.6 * aSeed.x), w = clamp(sz, px * 1.2, px * 5.0);
           a *= min(1.0, sz / w * 1.6);
           q = vp.xyz + vec3(aC.x * w, (aC.y * 2.0 - 1.0) * w, 0.0);
         } else {
           vec3 vv = mat3(viewMatrix) * vel; float L = length(vv);
           vec3 ax = L > 1e-4 ? vv / L : vec3(0.0, -1.0, 0.0), sd = cross(ax, normalize(vp.xyz)); float sl = length(sd);
           sd = sl > 1e-4 ? sd / sl : vec3(1.0, 0.0, 0.0);
-          float w = max(uRain.z, px * 0.9);
-          a *= min(1.0, uRain.z / w * 1.5);
+          float w = max(uRain.z, px * 1.0);
+          a *= min(1.0, uRain.z / w * 1.6);
           q = vp.xyz - ax * (L * uRain.y) * aC.y + sd * w * aC.x;
         }
         vC = aC; vA = a; vS = snow;
@@ -97,7 +99,7 @@ export const WXFALL = (() => {
     fragmentShader: `uniform vec3 uColR, uColS; uniform float uAR, uAS; varying vec2 vC; varying float vA, vS;
       void main(){
         float a; vec3 col;
-        if (vS > 0.5) { vec2 q = vec2(vC.x, vC.y * 2.0 - 1.0); a = uAS * (1.0 - smoothstep(0.2, 1.0, dot(q, q))); col = uColS; }
+        if (vS > 0.5) { vec2 q = vec2(vC.x, vC.y * 2.0 - 1.0); a = uAS * (1.0 - smoothstep(0.0, 1.0, dot(q, q))); col = uColS; }
         else { a = uAR * (1.0 - abs(vC.x)) * (1.0 - 0.75 * vC.y); col = uColR; }
         a *= vA;
         if (a < 0.004) discard;
@@ -148,12 +150,12 @@ export const WXFALL = (() => {
     if (!mesh.visible) return false;
     U.uRain.value.set(
       p.drizzle ? 3 : clamp(5 + 1.2 * Math.log2(1 + rain), 5, 9),
-      0.03,
-      p.drizzle ? 0.005 : 0.009,
+      0.022,
+      p.drizzle ? 0.004 : 0.008,
       kS / Math.max(1e-3, kR + kS)
     );
-    U.uSnow.value.set(p.graupel ? 2.4 : 1.0, snow > 1.5 ? 0.034 : 0.024, 0.3, 0);
-    U.uAR.value = p.drizzle ? 0.2 : 0.3;
+    U.uSnow.value.set(p.graupel ? 2.4 : 1.0, snow > 1.5 ? 0.022 : 0.016, 0.3, 0);
+    U.uAR.value = p.drizzle ? 0.24 : 0.38;
     // gusts: the wind swings between its mean and the gust speed (slow random), near the ground ~0.8 of the 10-m wind
     S.gustT -= dt;
     if (S.gustT <= 0) {
