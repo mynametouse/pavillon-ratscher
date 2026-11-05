@@ -132,6 +132,10 @@ with lib.browser() as b:
         ck('nothing new in the hand-modelled garden and yards', site == 0, str(site))
         grid = J("GEB.bld.filter(b => { for (let i = 0; i < b.f.length; i += 2) if (Math.abs(b.f[i]) <= 50 && Math.abs(b.f[i + 1]) <= 55) return true; return false; }).length")
         ck('none reaches into the walk grid of the garden (x ±50, y ±55: there the walls would need boxes in COL)', grid == 0, str(grid))
+        # the fences, hedges, bins and woodpiles of world/village_near.js ask GEB.footFree: blocked inside and at the walls, free elsewhere
+        ff = J("""(() => { let n = 0, inside = 0, wall = 0; for (const b of GEB.bld) { n++; if (!GEB.footFree(b.cx, b.cy, 0.2)) inside++; if (!GEB.footFree(b.f[0] + 0.1, b.f[1], 0.6)) wall++; }
+          return { n, inside, wall, garden: GEB.footFree(0, 0, 0.6) }; })()""")
+        ck('fences and woodpiles of the village keep off the new buildings (GEB.footFree for world/village_near.js)', ff['inside'] >= 0.9 * ff['n'] and ff['wall'] == ff['n'] and ff['garden'], json.dumps(ff))
     # a free spot (inside no building, 2 m from every wall) 16–34 m from a building, looking at it; same in both runs (deterministic)
     SPOT = """((x, y) => { const inF = (f, px, py) => { let c = false; for (let p = 0, q = f.length - 2; p < f.length; q = p, p += 2) if (f[p + 1] > py !== f[q + 1] > py && px < ((f[q] - f[p]) * (py - f[p + 1])) / (f[q + 1] - f[p + 1]) + f[p]) c = !c; return c; };
         const flat = []; for (const v of VILLAGE.bld) { const f = []; for (const q of v.fac) f.push(q.ax, q.ay); flat.push(f); } for (const b of (window.GEB && GEB.bld) || []) flat.push(b.f);
@@ -230,9 +234,9 @@ with lib.browser() as b:
             q0 = progs()
 
             def settle():
-                for _ in range(24):   # the tiles near the camera (levels 11, 12) before the picture
+                for i in range(40):   # the tiles near the camera (levels 11, 12) before the picture (asked for a moment after the move)
                     E("GAME.step(0.25)")
-                    if E("WELT.state().loading === 0"): break
+                    if i >= 8 and E("WELT.state().loading === 0"): break
                     time.sleep(0.3)
             top(tgt['x'], tgt['y'], 80); settle(); pic('stadt_top')
             if sp: ground(sp[0], sp[1], sp[2], -2); settle(); pic('stadt_boden')
@@ -288,9 +292,9 @@ if 'before' in want:
                 time.sleep(0.3)
             tg, sp = STADT['tgt'], STADT['sp']
             E(f"(() => {{ const P = GAME.P; P.mode = 'top'; P.tx = {tg['x']}; P.ty = {tg['y']}; P.th = 80; document.body.dataset.mode = 'top'; GAME.step(0.05); }})()")
-            for _ in range(20):
+            for i in range(40):   # the tiles under the new view are asked for a moment later: wait at least 2 s, then until all are in
                 E("GAME.step(0.25)")
-                if E("WELT.state().loading === 0"): break
+                if i >= 8 and E("WELT.state().loading === 0"): break
                 time.sleep(0.3)
             lib.shot(pg, OUT, 'stadt_top_vorher')
             if sp:

@@ -9,11 +9,14 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   ETHOS.BUILDA (Forschungszentrum Jülich, Grundriss und Höhe jedes Gebäudes in Deutschland, für Thüringen aus dem LoD2 des Landes; ODbL 1.0):
   44 Häuser, 34 Scheunen und Hallen, 221 Schuppen und Garagen, 3 runde Behälter (Gülle/Silage), 6 Türme/Silos. Echte Lage, echte Höhe
   (Boden bis höchster Punkt), Dachform geschätzt (Satteldach längs, große Häuser teils Walmdach, Schuppen Pultdach, Garagen flach, Hallen
-  flach geneigt), Dachfarbe aus dem Luftbild 2024. Aussehen wie das Dorf: dieselben Fassaden- und Dach-Shader von `world/village.js`
+  flach geneigt; bei fast quadratischen Häusern und Scheunen die Firstrichtung aus dem Luftbild – die beiden Dachseiten sind von der Sonne
+  verschieden hell, die Trennlinie ist der First: in Ratscher 9, jenseits 770 Gebäude), Dachfarbe aus dem Luftbild 2024. Aussehen wie das
+  Dorf: dieselben Fassaden- und Dach-Shader von `world/village.js`
   (Schuppen aus Brettern, Garagen verputzt oder Ziegel mit hellem Tor, Scheunen mit Bretterwand auf Sockel, Hallen aus Blech, Häuser im
   Dorfstil, Schornsteine) – keine neuen Shader-Programme.
 - **Fest:** ihre Wände stehen in den Kollisionen des Quadrats (`RATSCHER.walls` → `WCOL`, Fußgänger über `KERN.pushOut`, Fahrzeuge); keins
-  reicht in das Lauf-Raster des Gartens (x −50…50, y −55…55 – der Test prüft das).
+  reicht in das Lauf-Raster des Gartens (x −50…50, y −55…55 – der Test prüft das). Zäune, Hecken, Tonnen und Holzstapel, die
+  `world/village_near.js` um die Häuser des Dorfs stellt, halten Abstand zu ihnen (`GEB.footFree`).
 - **Keine Doppelten:** ein ETHOS-Gebäude, das zu mehr als der Hälfte unter einem OSM-Gebäude liegt, ist schon da; ragt ein Teil heraus
   (z. B. ein angebauter Schuppen), wird nur der Teil gebaut – nicht aber schmale Streifen, die nur aus einem etwas anderen Umriss kommen
   (der Rest muss mindestens 2 m breit und 8 m² groß sein). Im handmodellierten Garten mit Huberts und Ronalds Höfen (x −58…42,
@@ -69,8 +72,9 @@ python3 tools/welt-gebaeude/lod2.py                                             
 
 Je Gebäude (Format wie `schleusingen/stadt.json`): Grundriss `f`, Art `k` (0 Haus, 1 Scheune/Halle, 2 Schuppen/Garage, 4 Behälter,
 5 Turm), Traufe `e`, Höhe `h`, Fassaden `F`, Dachflächen `rv`/`rt`, Dachart `rk` und -farbe `rc`; die **Schätzung, die LoD2 später
-ersetzt**: Dachform `r` (0 flach, 1 Pult, 2 Sattel, 3 Walm), Firstrichtung `az`, Neigung `p`, und die ETHOS-Kennung `id` (= Gebäude-ID
-des Thüringer LoD2, z. B. `DETHL51P000004BA`).
+ersetzt**: Dachform `r` (0 flach, 1 Pult, 2 Sattel, 3 Walm), Firstrichtung `az` (Grad von Nord; `rq: "foto"`, wenn sie aus dem Luftbild
+gelesen ist, sonst längs der langen Seite), Neigung `p`, und die ETHOS-Kennung `id` (= Gebäude-ID des Thüringer LoD2, z. B.
+`DETHL51P000004BA`).
 
 ### Masken anderer Features (Retusche)
 
@@ -114,8 +118,6 @@ den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. 
 
 - Gebäude abseits der befahrenen Straßen jenseits des Quadrats (nur Schleusingen, Veßra und 260 m beiderseits der Straßen von
   `welt/fahrt.js` sind dabei); Suhl (noch nicht in der App).
-- Zäune, Hecken und Holzstapel von `world/village_near.js` kennen die neuen Gebäude nicht (`freeAt` prüft nur `VILLAGE.bld`) – ein Stapel
-  könnte an einen neuen Schuppen stoßen.
 - Echte Dachformen aus dem LoD2 des Landes, sobald der Download-Dienst wieder geht (`tools/welt-gebaeude/lod2.py` prüft das; 6.11. 0:05:
   „nicht verfügbar“).
 - Carports (offen, Pfosten) sind von Schuppen nicht zu unterscheiden (ETHOS hat keine Gebäudefunktion; das LoD2 hat sie) – sie stehen als
@@ -129,6 +131,8 @@ den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. 
   dem Dorf – seine Materialien –, vor `worldcol.js` – seine Kollisionen).
 - `viz3/src/world/village.js` (markiert `// feat/welt-gebaeude`): ein Import und in `photoSampler` die Dachfarben aus `GEBDACH.near/inner`
   (Kopien der Originale) statt aus dem retuschierten Bodenbild.
+- `viz3/src/world/village_near.js` (markiert `// feat/welt-gebaeude`): `freeAt` fragt zuerst `GEB.footFree` (über `window.GEB`, kein
+  Import) – Zäune, Hecken, Tonnen und Holzstapel nicht durch die neuen Schuppen und Garagen.
 - `geoman.tex.near/inner` werden im Manifest der Extra auf die retuschierten Bilder gesetzt (`file`, `lq`; `orig`, `origLq`, `dach` neu).
 - `viz3/src/welt/welt.js` (markiert `// feat/welt-gebaeude`): beim Laden einer Kachel die Bild-Adresse über `S.imgBase(t)`, wenn gesetzt
   (`gebaeude/gebaeude.js` setzt es nur mit dem Schalter `?welt2` / `GEB.TILES2`).

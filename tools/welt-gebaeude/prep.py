@@ -96,7 +96,43 @@ def roof_colour(poly, photo, seed):
     return np.mean(mid, axis=0)
 
 
-def classify(poly, h, sid):
+def ridge_from_photo(poly, ux, ctr, photo):
+    """which way the ridge of a gable runs, from the photo: the two slopes of a gable are lit differently by the sun, so the line that
+    splits the roof into its brightest and its darkest half is the ridge. Returns the direction (unit vector) or None when the photo
+    does not tell (both splits alike – the sun along the ridge, a flat-looking roof, panels)"""
+    if photo is None:
+        return None
+    from shapely.geometry import Point
+    inner = poly.buffer(-0.5)
+    if inner.is_empty:
+        return None
+    x0, y0, x1, y1 = inner.bounds
+    pts, lum = [], []
+    for x in np.arange(x0, x1, 0.5):
+        for y in np.arange(y0, y1, 0.5):
+            if inner.contains(Point(x, y)):
+                c = photo.at(x, y)
+                if c is not None:
+                    pts.append((x - ctr[0], y - ctr[1]))
+                    lum.append(float(c @ np.array([0.3, 0.55, 0.15])))
+    if len(pts) < 40:
+        return None
+    P, L = np.array(pts), np.array(lum)
+    best = []
+    for ax in (ux, np.array([-ux[1], ux[0]])):
+        nrm = np.array([-ax[1], ax[0]])
+        d = P @ nrm
+        a, b = L[d > 0.4], L[d < -0.4]
+        if len(a) < 12 or len(b) < 12:
+            return None
+        best.append((abs(float(np.median(a) - np.median(b))), ax))
+    (d1, a1), (d2, a2) = best
+    if d2 > 1.5 * d1 and d2 > 0.035:
+        return a2
+    return None
+
+
+def classify(poly, h, sid, photo=None):
     """kind, roof form, pitch, eave and ridge (above the foot) from footprint and height – the estimate LoD2 replaces later"""
     A = poly.area
     per = poly.length
@@ -132,6 +168,12 @@ def classify(poly, h, sid):
             form, pitch = (0, 0.0) if (rect > 0.9 and 14 <= A <= 120 and k1 < 0.6) else (1, 9.0)
         else:
             form, pitch = 2, 32.0
+    # a squarish house or barn: the photo may tell that the ridge runs across the longer side
+    c_ = None
+    if kind in (0, 1) and form in (2, 3) and Lr / max(Wd, 0.1) < 1.35:
+        r_ = ridge_from_photo(poly, ux, ctr, photo)
+        if r_ is not None:
+            ux, Wd, Lr, c_ = r_, Lr, Wd, 'photo'
     emin = {0: 3.4, 1: 2.8, 2: 2.1, 4: h, 5: h}[kind]
     if form == 0:
         eave, rise = h, 0.0
@@ -144,14 +186,14 @@ def classify(poly, h, sid):
         if rise < 0.35:
             form, eave, rise = 0, h, 0.0
         pitch = math.degrees(math.atan2(rise, span)) if form else 0.0
-    return dict(kind=kind, form=form, pitch=pitch, eave=eave, h=h, rise=rise, ux=ux, Wd=Wd, Lr=Lr, ctr=ctr, A=A, circ=circ, rect=rect)
+    return dict(kind=kind, form=form, pitch=pitch, eave=eave, h=h, rise=rise, ux=ux, Wd=Wd, Lr=Lr, ctr=ctr, A=A, circ=circ, rect=rect, ridge=c_)
 
 
 def make(poly, h, sid, ctx):
     """one building in the stadt.json layout (see the module doc)"""
     from shapely.geometry import Point, Polygon
     from shapely.geometry.polygon import orient
-    c = classify(poly, h, sid)
+    c = classify(poly, h, sid, ctx.get('photo'))
     ux, ctr = c['ux'], c['ctr']
     uy = np.array([-ux[1], ux[0]])
     eave, rise, form, Wd = c['eave'], c['rise'], c['form'], c['Wd']
@@ -227,6 +269,8 @@ def make(poly, h, sid, ctx):
     az = (math.degrees(math.atan2(ux[0], ux[1])) + 360) % 180
     b = {'k': kind, 'f': [r2(v) for xy in ring for v in xy], 'e': r2(eave), 'h': r2(c['h']), 'rk': rk, 'rc': [r2(v) for v in col],
          'F': fac, 'rv': V, 'rt': T, 'r': form, 'az': round(az, 1), 'p': round(c['pitch'], 1), 'id': sid}
+    if c.get('ridge'):
+        b['rq'] = 'foto'   # the ridge's direction read from the photo (else along the longer side)
     if form == 0:
         b['fl'] = 1
     return b
