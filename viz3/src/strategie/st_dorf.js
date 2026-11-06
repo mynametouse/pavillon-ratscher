@@ -1332,6 +1332,26 @@ export const STDORF = (() => {
         const col = l ? '#9fe070' : 'rgba(240,235,210,.55)';
         h += `<polygon points="${pts.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ')}" fill="${l ? 'rgba(140,210,90,.16)' : 'none'}" stroke="${col}" stroke-width="${l ? 2 : 1.2}"${l && l.st === 'pacht' ? ' stroke-dasharray="7 4"' : !l ? ' stroke-dasharray="3 4"' : ''}><title>${esc(Ld.name + (l ? (l.st === 'eigen' ? ' – gehört dir' : ' – gepachtet') : ''))}</title></polygon>`;
       }
+      // the young trees of the orchard (strategie/st_dorf_welt.js), the meeting place, the fibre cabinet: small marks where they stand
+      const Wd = window.STDWELT ? window.STDWELT.state() : null;
+      if (Wd && Wd.at) {
+        for (const q0 of Array.isArray(Wd.at.streuobst) ? Wd.at.streuobst : []) {
+          const q = pr(q0[0], q0[1], 1);
+          if (q[2] < 1)
+            h += `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3.2" fill="#7fc95a" stroke="rgba(0,0,0,.6)" stroke-width="0.8"><title>Hochstamm</title></circle>`;
+        }
+        for (const [k, sym, tt] of [
+          ['treffpunkt', '⌂', 'Treffpunkt am Anger'],
+          ['glasfaser', '▮', 'Netzverteiler Glasfaser'],
+          ['kirmesfest', '⛺', 'Kirmes'],
+        ]) {
+          const a = Wd.at[k];
+          if (!a || Array.isArray(a[0])) continue;
+          const q = pr(a[0], a[1], 1.5);
+          if (q[2] < 1)
+            h += `<text x="${q[0].toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="middle" style="fill:#fff;font:700 12px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px"><title>${tt}</title>${sym}</text>`;
+        }
+      }
       const H = AMT.homes ? AMT.homes() : null;
       if (!H) return h;
       const COL = { gut: '#8fd16a', mittel: '#e8c26a', schlecht: '#e0705a' };

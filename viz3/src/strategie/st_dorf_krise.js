@@ -76,6 +76,8 @@ export const STDKRISE = (() => {
   };
   STRAT.onLoad.push(() => {
     S.ext.krise = sanitize(S.ext.krise);
+    const c = S.ext.krise.cur;
+    if (c && K[c.id]) STRAT.place.define({ id: 'einsatz', name: K[c.id].title, icon: K[c.id].icon });
   });
   const cur = () => st().cur;
   const active = () => !!(cur() && cur().done == null);
@@ -162,6 +164,7 @@ export const STDKRISE = (() => {
   function alarm(c) {
     const Kd = K[c.id],
       arrive = Math.round(c.t0 + FW.alarm + FW.drive);
+    STRAT.place.define({ id: 'einsatz', name: Kd.title, icon: Kd.icon });
     STRAT.note(
       `Einsatz! ${Kd.title}. ${Kd.text} Die Feuerwehr Ratscher rückt aus (${c.crew} Leute${c.crew <= FW.crewDay ? ' – werktags tagsüber sind die meisten in der Stadt' : ''}), an der Einsatzstelle um ${hm(arrive)} Uhr.`,
       {
@@ -373,7 +376,7 @@ export const STDKRISE = (() => {
         const k = progress(c, t),
           R = 20,
           a = k * Math.PI * 2;
-        h += `<g class="ek"><circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${R}" fill="rgba(216,50,42,.22)" stroke="#d8322a" stroke-width="2.5"/><path d="M${q[0].toFixed(1)} ${(q[1] - R - 5).toFixed(1)} A${R + 5} ${R + 5} 0 ${k > 0.5 ? 1 : 0} 1 ${(q[0] + Math.sin(a) * (R + 5)).toFixed(1)} ${(q[1] - Math.cos(a) * (R + 5)).toFixed(1)}" fill="none" stroke="#ffd34d" stroke-width="3"/><text x="${q[0].toFixed(1)}" y="${(q[1] + 5).toFixed(1)}" text-anchor="middle" style="fill:#fff;font:700 15px system-ui">${Kd.icon}</text><text x="${(q[0] + R + 8).toFixed(1)}" y="${(q[1] - 4).toFixed(1)}" style="fill:#ffd9d4;font:600 11px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.75);stroke-width:3px">${esc(Kd.title)}</text><text x="${(q[0] + R + 8).toFixed(1)}" y="${(q[1] + 10).toFixed(1)}" style="fill:#fff;font:600 10.5px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.75);stroke-width:3px">${t < c.limit ? 'noch ' + esc(CLOCK.dur(c.limit - t)) : 'Schaden!'} · ${Math.round(k * 100)} %</text></g>`;
+        h += `<g class="ek"><circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${R}" fill="rgba(216,50,42,.22)" stroke="#d8322a" stroke-width="2.5"/><path d="M${q[0].toFixed(1)} ${(q[1] - R - 5).toFixed(1)} A${R + 5} ${R + 5} 0 ${k > 0.5 ? 1 : 0} 1 ${(q[0] + Math.sin(a) * (R + 5)).toFixed(1)} ${(q[1] - Math.cos(a) * (R + 5)).toFixed(1)}" fill="none" stroke="#ffd34d" stroke-width="3"/><text x="${q[0].toFixed(1)}" y="${(q[1] + 5).toFixed(1)}" text-anchor="middle" style="fill:#fff;font:700 15px system-ui">${Kd.icon}</text><text x="${q[0].toFixed(1)}" y="${(q[1] + R + 14).toFixed(1)}" text-anchor="middle" style="fill:#fff;font:600 10.5px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.75);stroke-width:3px">${t < c.limit ? 'noch ' + esc(CLOCK.dur(c.limit - t)) : 'Schaden!'} · ${Math.round(k * 100)} %</text></g>`;
         // the fire engine from the fire station (the old school) to the site
         const sc = STRAT.place.pos('schule'),
           a0 = c.t0 + FW.alarm,

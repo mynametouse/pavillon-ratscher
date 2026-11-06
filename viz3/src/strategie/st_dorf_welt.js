@@ -116,7 +116,7 @@ export const STDWELT = (() => {
   // ---- the meeting place at the Anger: 4 × 3 m under a gable roof, pavement, table and benches, bike rack, charging post ----
   function treffpunkt() {
     const c0 = D.PLACES.anger.pos,
-      p = freeAt(c0[0] + 9, c0[1] - 8, 3.2, 2.5, 34);
+      p = freeAt(c0[0] + 17, c0[1] - 15, 3.2, 2.5, 34);
     if (!p) return null;
     const [x, y] = p,
       z = gz(x, y),
@@ -362,7 +362,7 @@ export const STDWELT = (() => {
     GREEN = C(0.2, 0.42, 0.18);
   function kirmes() {
     const c0 = D.PLACES.anger.pos,
-      p = freeAt(c0[0] - 8, c0[1] - 12, 4.2, 1.8, 36);
+      p = freeAt(c0[0] - 15, c0[1] - 17, 4.2, 1.8, 36);
     if (!p) return null;
     const [x, y] = p,
       z = gz(x, y),
