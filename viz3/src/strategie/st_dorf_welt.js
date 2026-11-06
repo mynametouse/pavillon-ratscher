@@ -54,6 +54,29 @@ export const STDWELT = (() => {
       B = ring(b, r * 0.6);
     for (let k = 0; k < 4; k++) K.quad(A[k], A[(k + 1) % 4], B[(k + 1) % 4], B[k], col);
   }
+  // a cone from the base centre a (radius r) to the tip b, on any axis, its section squashed in height (a crown lying on the ground),
+  // with a cap at the base – same winding as stick()
+  function cone(K, a, b, r, col, seg = 7, squash = 1) {
+    const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+      L = Math.hypot(...d) || 1,
+      u = d.map(v => v / L);
+    let p = Math.abs(u[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
+    const x = [u[1] * p[2] - u[2] * p[1], u[2] * p[0] - u[0] * p[2], u[0] * p[1] - u[1] * p[0]],
+      lx = Math.hypot(...x) || 1;
+    p = x.map(v => v / lx);
+    const q = [u[1] * p[2] - u[2] * p[1], u[2] * p[0] - u[0] * p[2], u[0] * p[1] - u[1] * p[0]];
+    const R = [];
+    for (let k = 0; k < seg; k++) {
+      const an = (k / seg) * Math.PI * 2,
+        o = [0, 1, 2].map(i => (p[i] * Math.cos(an) + q[i] * Math.sin(an)) * r);
+      o[2] *= squash;
+      R.push([a[0] + o[0], a[1] + o[1], a[2] + o[2]]);
+    }
+    for (let k = 0; k < seg; k++) {
+      K.tri(R[k], R[(k + 1) % seg], b, col);
+      K.tri(R[(k + 1) % seg], R[k], a, col);
+    }
+  }
   // free ground: off the road by at least `off` metres and clear of walls; searched on rings around (x, y)
   function freeAt(x, y, rad, off = 2.5, rMax = 30) {
     for (let r = 0; r <= rMax; r += 1)
@@ -227,12 +250,27 @@ export const STDWELT = (() => {
             C(0.3, 0.24, 0.17),
             10
           );
-          for (let k = 0; k < 5; k++) {
-            const f = 0.45 + k * 0.12,
-              px = A[0] + (B[0] - A[0]) * f,
+          // the crown: a spruce's cone lying on its side, pressed flat on the ground – three tiers of branches from the middle of the stem
+          // to the top (the lower third of a forest spruce is bare)
+          const at = f => {
+            const px = A[0] + (B[0] - A[0]) * f,
               py = A[1] + (B[1] - A[1]) * f;
-            K.ball(px, py, gz(px, py) + 0.7, 1.3 - k * 0.15, SPRUCE, 7);
-          }
+            return [px, py, gz(px, py) + 0.55];
+          };
+          for (const [f0, f1, r, sh] of [
+            [0.36, 0.8, 2.2, 1],
+            [0.56, 0.93, 1.6, 0.85],
+            [0.76, 1.05, 0.95, 0.7],
+          ])
+            cone(
+              K,
+              at(f0),
+              at(f1),
+              r,
+              SPRUCE.map(v => v * sh),
+              8,
+              0.7
+            );
         } else {
           // cut to length at the side of the track (Hubert takes them as firewood), the brushwood in a heap
           const sx = x - Math.cos(across) * (6 + i * 0.7),

@@ -201,8 +201,9 @@ with lib.browser() as b:
         steps(1.5)
         p = J("STDORF.state().proj.kirmes")
         ck('the Kirmes: the Ortsteilrat is for it, but the Ortsteil\'s money is not enough this year – postponed to January', p['st'] == 'vertagt' and b0 < 450 and 'Geld' in p['step'], f"budget {b0} · {p}")
-        # January: new money, the project again – decided, the band and the permit, the Kirmes weekend with tent and Kirmesbaum
-        E("STRAT.setDate('2027-01-16', 10 * 60)")
+        # the next summer (new money since January): the project again – decided, the band and the permit, the Kirmes weekend in its season
+        # (September) with tent and Kirmesbaum
+        E("STRAT.setDate('2027-08-21', 10 * 60)")
         steps(0.5)
         r = J("STDORF.retry('kirmes')")
         for k in range(4):
@@ -214,9 +215,10 @@ with lib.browser() as b:
         p = J("STDORF.state().proj.kirmes")
         kd = J("AMT.ST.kd")
         kday = J(f"STRAT.W.day({kd} + 600)") if kd is not None else {}
-        ck('in January (new money) it passes: 450 € from the Ortsteil, the permit, the date of the Kirmes set – a Saturday in the Kirmes season (September/October, not a tent in the snow)', p['st'] == 'fertig' and kd is not None and kday.get('wd') == 6 and kday.get('month') in (8, 9) and abs(J("STDORF.state().budget") - 150) < 0.01, f"{p} kd {kd} {kday.get('label')} budget {J('STDORF.state().budget')}")
-        # to the Kirmes Saturday afternoon (a jump: months of time-lapse would bring storms and dry spells into this section)
-        if kday.get('iso'): E(f"STRAT.setDate('{kday['iso']}', 15 * 60)")
+        ck('the next year (new money) it passes: 450 € from the Ortsteil, the permit, the date of the Kirmes set – a Saturday in the Kirmes season (September/October, not a tent in the snow)', p['st'] == 'fertig' and kd is not None and kday.get('wd') == 6 and kday.get('month') in (8, 9) and abs(J("STDORF.state().budget") - 150) < 0.01, f"{p} kd {kd} {kday.get('label')} budget {J('STDORF.state().budget')}")
+        # to the Kirmes Saturday afternoon (time-lapse: STRAT.setDate only renames the days, the clock's minutes stay)
+        E(f"CLOCK.wait(Math.max(5, {kd} + 15 * 60 - CLOCK.t), 'Test')")
+        until("!CLOCK.warp", 60)
         steps(2.5)
         w = J("STDWELT.state()")
         ck('the Kirmes weekend: the tent and the Kirmesbaum stand at the Anger', 'kirmesfest' in w['items'], str(w))
