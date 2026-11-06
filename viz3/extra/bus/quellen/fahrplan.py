@@ -4,6 +4,8 @@
     python3 -I viz3/extra/bus/quellen/fahrplan.py --gtfs <latest.zip> [--woche 2026-11-16] [--bild <png>]
         -> viz3/extra/bus/dist/bus/fahrplan.json
 
+Bays: platforms the feed puts on one point (Schleusingen, Zentralhaltestelle: five) get their positions from OpenStreetMap (the platform
+with local_ref = the feed's platform_code; API 0.6, a small box around the stop, cached with --cache).
 Source: the free Germany feed of gtfs.de (https://download.gtfs.de/germany/free/latest.zip, ~280 MB, streamed: stop_times.txt is
 2.2 GB unpacked and is read row by row), data provided by DELFI e.V. (feed_info.txt); gtfs.de publishes it under CC BY 4.0. Kept is
 only what touches the world: the stops that lie on a road of the world (the 2.4 km square around the garden: world/roads.js, the roads
@@ -314,6 +316,36 @@ class Net:
         return pts, L
 
 
+# ---------------- OpenStreetMap: the bays of a stop ----------------
+def osm_platforms(lat, lon, cache=None, r=0.0025):
+    """the platforms (highway=bus_stop / public_transport=platform) with a local_ref (or ref) around a point: [(lat, lon, ref)]"""
+    import urllib.request
+    import xml.etree.ElementTree as ET
+    bb = f'{lon - r * 1.6:.5f},{lat - r:.5f},{lon + r * 1.6:.5f},{lat + r:.5f}'
+    fn = os.path.join(cache, 'osm_' + bb.replace(',', '_') + '.xml') if cache else None
+    if fn and os.path.exists(fn):
+        raw = open(fn, 'rb').read()
+    else:
+        req = urllib.request.Request('https://api.openstreetmap.org/api/0.6/map?bbox=' + bb,
+                                     headers={'User-Agent': 'PavillonRatscher-Bus/0.1 (+https://github.com/mynametouse/pavillon-ratscher)'})
+        try:
+            with urllib.request.urlopen(req, timeout=90) as f:
+                raw = f.read()
+        except Exception as e:
+            print('osm', bb, e, file=sys.stderr)
+            return []
+        if fn:
+            os.makedirs(cache, exist_ok=True)
+            open(fn, 'wb').write(raw)
+    out = []
+    for n in ET.fromstring(raw).iter('node'):
+        t = {x.get('k'): x.get('v') for x in n.iter('tag')}
+        ref = t.get('local_ref') or t.get('ref')
+        if ref and (t.get('highway') == 'bus_stop' or t.get('public_transport') == 'platform'):
+            out.append((float(n.get('lat')), float(n.get('lon')), ref))
+    return out
+
+
 # ---------------- the feed ----------------
 def rd(zf, name):
     with zf.open(name) as f:
@@ -330,6 +362,7 @@ def main():
     ap.add_argument('--gtfs', required=True)
     ap.add_argument('--woche', default='2026-11-16', help='Monday of the reference week')
     ap.add_argument('--bild', default=None, help='a picture of the ways over the roads (check)')
+    ap.add_argument('--cache', default=None, help='a folder for the OpenStreetMap answers (the bays of stops)')
     a = ap.parse_args()
     from pyproj import Transformer
     tr = Transformer.from_crs('EPSG:4326', 'EPSG:25832', always_xy=True)
@@ -345,15 +378,40 @@ def main():
     # stops on the roads of the world
     stops = {}
     names = {}
+    parent = {}
     allxy = {}
-    for s in rd(zf, 'stops.txt'):
+    rows_ = list(rd(zf, 'stops.txt'))
+    # platforms the feed puts on one point (the five of the Zentralhaltestelle in Schleusingen): their bays from OpenStreetMap
+    # (public_transport=platform with local_ref = the feed's platform_code, within 250 m)
+    groups = {}
+    for s in rows_:
+        if s['location_type'] != '1' and s['parent_station'] and s.get('platform_code'):
+            groups.setdefault((s['parent_station'], s['stop_lat'], s['stop_lon']), []).append(s)
+    bay = {}
+    for (par, la, lo), L in groups.items():
+        try:
+            lat, lon = float(la), float(lo)
+        except ValueError:
+            continue
+        if len(L) < 2 or not (50.3 < lat < 50.7 and 10.3 < lon < 11.1):
+            continue
+        for (blat, blon, ref) in osm_platforms(lat, lon, a.cache):
+            for s in L:
+                if s['platform_code'] == ref:
+                    bay[s['stop_id']] = (blat, blon)
+    print('platforms placed on their OSM bays', len(bay), file=sys.stderr)
+    for s in rows_:
         try:
             lat, lon = float(s['stop_lat']), float(s['stop_lon'])
         except ValueError:
             continue
         names[s['stop_id']] = s['stop_name']
+        if s['parent_station']:
+            parent[s['stop_id']] = s['parent_station']
         if not (50.3 < lat < 50.7 and 10.3 < lon < 11.1) or s['location_type'] == '1':
             continue
+        if s['stop_id'] in bay:
+            lat, lon = bay[s['stop_id']]
         x, y = model_of(lat, lon, tr)
         # the world knows some stops better than the feed: the school bus stop's shelter as Falko filmed it (world/dorfkern_data.js)
         if s['stop_name'] in PLACE and math.hypot(x - PLACE[s['stop_name']][0], y - PLACE[s['stop_name']][1]) < 40:
@@ -404,6 +462,15 @@ def main():
             return False
         c = cal.get(sid)
         return bool(c and c['start_date'] <= ds <= c['end_date'] and c[WK[d.weekday()]] == '1')
+
+    # a stop's station name (the platforms' own names are short forms or misspelt: 'Schleusingen, ZH', 'Themar, Bahnof')
+    # – the station's name when it is the platform's in full (same town, longer); 'Dingsleben, Dingsleben' → 'Dingsleben'
+    def sname(sid):
+        a, b = names.get(sid, ''), names.get(parent.get(sid, ''), '')
+        n = b if b and len(b) > len(a) and b.split(',')[0].split(' ')[0] == a.split(',')[0].split(' ')[0] else a or b
+        n = re.sub(r'\s+(Steig|Bussteig|Bstg\.?)\s*\w+$', '', n)
+        p_ = [x.strip() for x in n.split(',')]
+        return p_[0] if len(p_) == 2 and p_[0] == p_[1] else n
 
     # cut each trip to its run in the world: consecutive stops on the roads whose legs the timetable can drive
     legs = {}
@@ -564,9 +631,9 @@ def main():
             D_ = D_ + [A_[-1]]
         out_trips.append(dict(
             line=line, pat=pat_of[key], days=mask,
-            head=t.get('trip_headsign') or names.get(last[1], ''),
-            von=names.get(first[1], ''), nach=names.get(last[1], ''),
-            vor=names.get(rows[i0 - 1][1], '') if i0 > 0 else '', weiter=names.get(rows[i1 + 1][1], '') if i1 + 1 < len(rows) else '',
+            head=t.get('trip_headsign') or sname(last[1]),
+            von=sname(first[1]), nach=sname(last[1]),
+            vor=sname(rows[i0 - 1][1]) if i0 > 0 else '', weiter=sname(rows[i1 + 1][1]) if i1 + 1 < len(rows) else '',
             school=bool(SCHOOL.search(names.get(first[1], '')) or SCHOOL.search(names.get(last[1], ''))),
             t0=dep0, a=A_, d=D_,
         ))

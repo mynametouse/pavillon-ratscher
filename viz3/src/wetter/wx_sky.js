@@ -28,11 +28,19 @@ export const WXSKY = (() => {
     wxCol: { value: new THREE.Color(0.6, 0.6, 0.62) },
     wxHor: { value: new THREE.Color(0.6, 0.6, 0.62) },
     wxSun: { value: new THREE.Color(1, 0.95, 0.85) },
+    // the low sun lighting the clouds from below (sunset, sunrise)
+    wxLow: { value: new THREE.Color(0, 0, 0) },
+    // a bolt of lightning: x its azimuth (rad, three.js x/z), y strength, z a seed for its zigzag, w width (rad)
+    wxBolt: { value: new THREE.Vector4(0, 0, 0, 0.0025) },
     wxGlow: { value: new THREE.Color(0, 0, 0) },
+    // where the towns lie (three.js x, z of the horizontal direction): Schleusingen (4.7 km) and Suhl (16.6 km) at 338°,
+    // Hildburghausen (6.1 km) at 216° from Ratscher
+    wxTown: { value: new THREE.Vector4(-0.36, -0.93, -0.59, 0.81) },
     wxT: { value: new THREE.Vector2(0, 0) },
   };
   // ---- the cloud layer in the sky's program: the same noise as wxMask below ----
-  const GLSL = `uniform float wxCov, wxDark, wxFog, wxFlash; uniform vec3 wxCol, wxHor, wxSun, wxGlow; uniform vec2 wxT;
+  // the deck as a function of the direction: shared by the sky and the stars
+  const DECK = `uniform float wxCov; uniform vec2 wxT;
      float wxH(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
      float wxN(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
        return mix(mix(wxH(i), wxH(i + vec2(1.0, 0.0)), u.x), mix(wxH(i + vec2(0.0, 1.0)), wxH(i + vec2(1.0, 1.0)), u.x), u.y); }
@@ -43,16 +51,29 @@ export const WXSKY = (() => {
        float far = smoothstep(0.02, 0.16, up); m = mix(wxCov, m, far);
        m = mix(m, 1.0, smoothstep(0.78, 1.0, wxCov));
        return vec2(m, clamp((n - th) / 0.3, 0.0, 1.0)); }
+     `;
+  const GLSL =
+    DECK +
+    `uniform float wxDark, wxFog, wxFlash; uniform vec3 wxCol, wxHor, wxSun, wxGlow, wxLow; uniform vec4 wxTown, wxBolt;
      vec3 wxSky(vec3 c, vec3 d, vec3 sd){ if (wxCov < 0.002 && wxFog < 0.002 && wxFlash < 0.002) return c;
        float up = max(d.y, 0.0); vec2 k = wxDeck(d);
        float closed = smoothstep(0.78, 1.0, wxCov), s = max(dot(d, sd), 0.0);
        // broken clouds: thin edges bright, cores grey; a closed deck: soft structure, brighter towards the zenith; darker when it rains
        float shade = mix(1.12 - 0.42 * k.y, 0.92 + 0.12 * (1.0 - k.y), closed) * (0.8 + 0.42 * up) * (1.0 - 0.38 * wxDark);
        vec3 cc = wxCol * shade + wxSun * pow(s, 10.0) * (1.0 - k.y) * (1.0 - closed) * 0.9;
-       cc += wxGlow * (0.35 + 0.65 * (1.0 - up) * (1.0 - up));
+       // sunset and sunrise: the low sun lights the undersides warm across much of the sky, most towards itself, the thin parts most
+       cc += wxLow * (0.3 + 0.7 * pow(s, 3.0)) * (1.0 - 0.5 * k.y) * (1.0 - 0.75 * closed) * (0.6 + 0.4 * (1.0 - up));
+       vec2 hz = normalize(d.xz + vec2(1e-5)); float tw = 0.35 + 0.65 * pow(max(dot(hz, wxTown.xy), 0.0), 2.0) + 0.5 * pow(max(dot(hz, wxTown.zw), 0.0), 2.0);
+       cc += wxGlow * tw * (0.15 + 0.85 * (1.0 - up) * (1.0 - up));
        cc = mix(wxHor, cc, smoothstep(-0.02, 0.1, d.y));
        c = mix(c, cc, k.x);
        c += vec3(0.82, 0.86, 1.0) * wxFlash * (0.45 + 0.55 * k.x);
+       // the bolt: from the cloud base down to the land, its course zigzagging with the height; a faint glow around it
+       if (wxBolt.y > 0.0) { float el = asin(clamp(d.y, -1.0, 1.0));
+         if (el > -0.01 && el < 0.42) { float t = el / 0.42;
+           float off = (wxN(vec2(t * 9.0, wxBolt.z)) - 0.5) * 0.07 + (wxN(vec2(t * 37.0, wxBolt.z + 7.0)) - 0.5) * 0.018;
+           float da = atan(d.x, -d.z) - (wxBolt.x + off); da = mod(da + 3.14159265, 6.28318531) - 3.14159265;
+           c += vec3(0.86, 0.9, 1.0) * wxBolt.y * (8.0 * exp(-da * da / (wxBolt.w * wxBolt.w)) + 0.35 * exp(-da * da / 0.0012)); } }
        return mix(c, wxHor, wxFog); }
      `;
   const M = DN.skyMat;
@@ -63,6 +84,16 @@ export const WXSKY = (() => {
       .replace('gl_FragColor = vec4(c, 1.0);', 'c = wxSky(c, d, normalize(sunD)); gl_FragColor = vec4(c, 1.0);');
   }
   const patched = !!(M && M.fragmentShader.includes('wxSky(c, d'));
+  // the stars are points of their own, drawn over the sky: behind a cloud a star goes out (the same deck, looked up per star in its
+  // vertex shader – compiled at load with the stars, no program at night)
+  const SM = DN.STARS && DN.STARS.pts && DN.STARS.pts.material;
+  if (SM && SM.vertexShader && !SM.vertexShader.includes('wxDeck')) {
+    Object.assign(SM.uniforms, { wxCov: U.wxCov, wxT: U.wxT });
+    SM.vertexShader = SM.vertexShader
+      .replace('void main(){', DECK + 'void main(){')
+      .replace('vC = aCol *', 'if (wxCov > 0.002) vA *= 1.0 - wxDeck(wd).x; vC = aCol *');
+  }
+  const starsPatched = !!(SM && SM.vertexShader.includes('vA *= 1.0 - wxDeck(wd).x'));
   // ---- the same noise on the CPU: is there a cloud in front of the sun right now? ----
   function h12(x, y) {
     let a = fr(x * 0.1031),
@@ -137,6 +168,9 @@ export const WXSKY = (() => {
     // the clouds' own colour: the grey of the horizon, a little brighter (seen from below the deck is lit from above)
     U.wxCol.value.copy(L.fog).multiplyScalar(1.12);
     U.wxSun.value.copy(L.sunC).multiplyScalar(Math.min(2.5, L.sun * 0.5) * day);
+    // the low sun under the clouds (from 14° down to just below the horizon): warm undersides, as bright as the sky there
+    const low = sst(-4.5, 0.5, s.sunEl) * sst(14, 3, s.sunEl);
+    U.wxLow.value.copy(L.sunC).multiplyScalar(low * 0.75 * g);
     U.wxCov.value = c;
     U.wxDark.value = dark;
     U.wxFog.value = fogK;
@@ -157,16 +191,17 @@ export const WXSKY = (() => {
     // night: the lights of the towns around (Schleusingen, Suhl, Hildburghausen) light the underside of a deck dull orange-grey, the
     // haze over the land a little too – an overcast night is never quite black
     const glow = (s.night || 0) * clamp(c * 1.2 - 0.2, 0, 1) * (1 - 0.5 * fogK);
-    U.wxGlow.value.setRGB(0.011, 0.0075, 0.0048).multiplyScalar(glow);
-    L.fog.r += 0.006 * glow;
-    L.fog.g += 0.0042 * glow;
-    L.fog.b += 0.0028 * glow;
+    U.wxGlow.value.setRGB(0.0065, 0.0045, 0.0029).multiplyScalar(glow);
+    L.fog.r += 0.0035 * glow;
+    L.fog.g += 0.0025 * glow;
+    L.fog.b += 0.0016 * glow;
     U.wxHor.value.copy(L.fog);
-    // night: no stars and no moonlight through a closed deck or fog
+    // night: under broken clouds each star goes out behind a cloud (its own shader); a closed deck or fog hides them all, and the
+    // moonlight on the land fades with the cover
     const hide = clamp(sst(0.3, 0.9, c) + fogK, 0, 1);
-    s.starK *= 1 - hide;
-    s.moonI *= 1 - 0.85 * hide;
-    s.lim -= 1.5 * c;
+    s.starK *= 1 - clamp((starsPatched ? sst(0.75, 0.97, c) : hide) + fogK, 0, 1);
+    s.moonI *= (1 - 0.85 * hide) * (s.sunEl > -3 ? 1 : 1 - 0.85 * S.mask);
+    s.lim -= 1.0 * c;
   }
   if (DN.hook) DN.hook.look = look;
   // ---- per frame (wetter/wetter.js): the clouds drift with the wind, the sun's cloud is looked up a few times a second ----
@@ -195,12 +230,13 @@ export const WXSKY = (() => {
     if ((S.maskT += dt) < 0.25) return;
     S.maskT = 0;
     const st = DN.state,
-      sd = DN.SU && DN.SU.sunD ? DN.SU.sunD.value : null;
+      sd = DN.SU && DN.SU.sunD ? DN.SU.sunD.value : null,
+      md = DN.SU && DN.SU.moonDir ? DN.SU.moonDir.value : null;
+    // the light of the moment – the sun by day and in the twilight, the moon at night – and a little around its disc: a cloud edge
+    // dims it before it covers the centre
+    const L = st && st.sunEl > -3 ? sd : st && st.moonEl > 0 ? md : null;
     let m = 0;
-    if (st && sd && st.sunEl > -2) {
-      // the sun's disc and a little around it: a cloud edge dims it before it covers the centre
-      m = Math.max(deck(sd.x, Math.max(sd.y, 0.02), sd.z), 0.7 * deck(sd.x + 0.02, Math.max(sd.y, 0.02), sd.z + 0.02));
-    }
+    if (L) m = Math.max(deck(L.x, Math.max(L.y, 0.02), L.z), 0.7 * deck(L.x + 0.02, Math.max(L.y, 0.02), L.z + 0.02));
     m = Math.round(m * 20) / 20;
     if (m !== S.mask) {
       S.mask = m;
@@ -231,5 +267,5 @@ export const WXSKY = (() => {
       bump();
     }
   }
-  return { W, U, S, set, tick, look, deck, sunMask: () => S.mask, patched };
+  return { W, U, S, set, tick, look, deck, sunMask: () => S.mask, patched, starsPatched };
 })();

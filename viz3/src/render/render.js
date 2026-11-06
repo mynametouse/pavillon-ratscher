@@ -418,6 +418,9 @@ async function uploadTextures(say, seenOnly) {
 // A figure or thing that comes later (the village's people, the traffic, the passengers, the zombie night): its programs made when it is
 // built – in the render-target variant the composer uses, as compileShown does at load – not in the first frame that shows it (the
 // people's hair and lashes, „f0xx_opacity“, cost a hitch there and a new program in several tests, 6.11.2026). Cheap when the programs exist.
+// compile(), not compileAsync(): the async one polls every material's program in its own setTimeout, and a material disposed meanwhile (a
+// figure switched or unloaded) throws there – „reading 'isReady'“, a page error nobody can catch (feat/strategie's test, 6.11. ~2:00).
+// compile() starts the same compiles; where the driver compiles in parallel (KHR_parallel_shader_compile) it finishes them in the background.
 let warmRT = null;
 export function warmUp(obj) {
   if (!obj) return;
@@ -426,8 +429,7 @@ export function warmUp(obj) {
     const prev = R.getRenderTarget();
     R.setRenderTarget(warmRT);
     try {
-      if (R.compileAsync) R.compileAsync(obj, cam, scene).catch(() => {});
-      else R.compile(obj, cam, scene);
+      R.compile(obj, cam, scene);
     } finally {
       R.setRenderTarget(prev);
     }

@@ -106,66 +106,69 @@ export const WXTON = (() => {
       whistle: loop(ctx, nb, r.amb, [filt(ctx, 'bandpass', 880, 9)]),
     };
     S.built = true;
-    load(r);
   }
   // ---- recordings (optional): ton.json { regen: { file, vol }, dach: …, wind: …, donner: { files: [...], vol } } ----
-  function load(r) {
-    if (S.loading) return S.loading;
-    S.loading = fetch(BASE + 'wetter/ton.json')
-      .then(x => (x.ok ? x.json() : null))
-      .then(j => {
-        if (!j) return false;
-        S.man = j;
-        const jobs = [];
-        for (const [k, v] of Object.entries(j)) {
-          for (const f of v.files || (v.file ? [v.file] : [])) {
-            jobs.push(
-              fetch(BASE + 'wetter/' + f)
-                .then(x => (x.ok ? x.arrayBuffer() : Promise.reject(new Error(x.status))))
-                .then(ab => new Promise((res, rej) => r.ctx.decodeAudioData(ab, res, rej)))
-                .then(b => (S.rec[k] || (S.rec[k] = [])).push(b))
-                .catch(e => console.warn('wetter sound', f, e))
-            );
-          }
-        }
-        return Promise.all(jobs).then(() => useRecordings(r));
-      })
-      .catch(() => false);
-    return S.loading;
+  // ---- recordings (optional, each kind fetched and decoded only when its weather first comes – a storm's wind or thunder is no
+  //      memory spent on a calm day): ton.json { regen: { files, vol }, starkregen, dach, wind, donner } ----
+  function manifest() {
+    if (!S.manP)
+      S.manP = fetch(BASE + 'wetter/ton.json')
+        .then(x => (x.ok ? x.json() : null))
+        .then(j => (S.man = j))
+        .catch(() => null);
+    return S.manP;
+  }
+  function want(r, kind) {
+    S.want = S.want || {};
+    if (S.want[kind]) return;
+    S.want[kind] = manifest().then(j => {
+      const v = j && j[kind];
+      if (!v) return false;
+      return Promise.all(
+        (v.files || (v.file ? [v.file] : [])).map(f =>
+          fetch(BASE + 'wetter/' + f)
+            .then(x => (x.ok ? x.arrayBuffer() : Promise.reject(new Error(x.status))))
+            .then(ab => new Promise((res, rej) => r.ctx.decodeAudioData(ab, res, rej)))
+            .then(b => (S.rec[kind] || (S.rec[kind] = [])).push(b))
+            .catch(e => console.warn('wetter sound', f, e))
+        )
+      ).then(() => use(r, kind));
+    });
   }
   // a recorded loop replaces the made one of its kind (hiss and patter: rain; roof; wind)
-  function useRecordings(r) {
-    const N = S.N;
-    if (!N) return;
-    const swap = (name, kind, dest, chain = []) => {
-      const b = S.rec[kind] && S.rec[kind][0];
-      if (!b) return;
+  function use(r, kind) {
+    const N = S.N,
+      b = S.rec[kind] && S.rec[kind][0];
+    if (!N || !b) return false;
+    const swap = (name, dest, chain = []) => {
       const old = N[name];
-      try {
-        old.s.stop();
-      } catch (e) {}
-      old.g.disconnect();
+      if (old) {
+        try {
+          old.s.stop();
+        } catch (e) {}
+        old.g.disconnect();
+      }
       N[name] = loop(N.ctx, b, dest, chain);
       N[name].rec = true;
     };
-    if (S.rec.regen) {
-      swap('hiss', 'regen', r.amb);
-      try {
-        N.patter.s.stop();
-      } catch (e) {}
-      N.patter.g.disconnect();
-      N.patter = null;
-    }
-    // a downpour of its own, faded in over the steady rain as it gets heavier
-    if (S.rec.starkregen && S.rec.starkregen[0]) {
-      N.heavy = loop(N.ctx, S.rec.starkregen[0], r.amb, []);
+    if (kind === 'regen') {
+      swap('hiss', r.amb);
+      if (N.patter) {
+        try {
+          N.patter.s.stop();
+        } catch (e) {}
+        N.patter.g.disconnect();
+        N.patter = null;
+      }
+    } else if (kind === 'starkregen') {
+      // a downpour of its own, faded in over the steady rain as it gets heavier
+      N.heavy = loop(N.ctx, b, r.amb, []);
       N.heavy.rec = true;
-    }
-    swap('roof', 'dach', r.sfx);
-    // the recorded storm through a low-pass that opens with the wind: a breeze is its distant murmur, a gale the full roar
-    if (S.rec.wind) {
+    } else if (kind === 'dach') swap('roof', r.sfx);
+    else if (kind === 'wind') {
+      // the recorded storm through a low-pass that opens with the wind: a breeze is its distant murmur, a gale the full roar
       const f = filt(N.ctx, 'lowpass', 600, 0.5);
-      swap('wind', 'wind', r.amb, [f]);
+      swap('wind', r.amb, [f]);
       N.windF = f;
     }
     return true;
@@ -190,6 +193,13 @@ export const WXTON = (() => {
       if (lr <= 0 && lw <= 0.05) return;
       build(r);
     }
+    if (lr > 0) {
+      want(r, 'regen');
+      want(r, 'dach');
+      if (rain > 1.5) want(r, 'starkregen');
+    }
+    if (lw > 0.15) want(r, 'wind');
+    if (p.storm) want(r, 'donner');
     const N = S.N,
       t = N.ctx.currentTime,
       out = p.inside ? 0.5 : 1;
