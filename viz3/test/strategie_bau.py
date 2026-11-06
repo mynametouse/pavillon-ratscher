@@ -18,6 +18,8 @@ QUERY = '?szenario=strategie&bauphase=0'
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1200, 760, errs)
+    # a feature's error in a tick or an event is caught by KERN and only warned once – shown here with its place
+    pg.on('console', lambda m: print('WARN', m.text[:400], flush=True) if m.type == 'warning' and ('KERN' in m.text or 'strategie' in m.text) else None)
     lib.boot(pg, port, QUERY)
     E = pg.evaluate
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
@@ -39,9 +41,18 @@ with lib.browser() as b:
     def jstate(jid):
         return J(f"(() => {{ const j = STRAT.job.of('{jid}'); return j ? {{ st: j.st, k: +(j.done / j.dur).toFixed(3), need: j.need, why: j.why }} : null; }})()")
     def skip(days):
+        # paused while the time-lapse runs, then stepped in small steps: no overshoot at 30× after the warp ends
+        sp = J("STRAT.S.speed")
+        E("STRAT.setSpeed(0)")
         E(f"STRAT.skip({max(1, int(days * 1440))})")
-        until("!CLOCK.warp", 90, 0.25)
-        steps(1)
+        for i in range(600):
+            steps(0.5, 0.25)
+            if not E("!!CLOCK.warp"): break
+        steps(0.25)
+        E(f"STRAT.setSpeed({sp})")
+    # errors the game caught in a tick or an event handler of the mode (KERN logs them once into LOADLOG)
+    def tick_errors():
+        return J("(window.LOADLOG && LOADLOG.errs || []).filter(e => /strategie|STBAU|STGARTEN|st_bau|st_garten/.test(e)).slice(-5)")
     # forward in game time (a time-lapse: everything in between happens) to the next moment at weekday wd (0 Sunday … 6 Saturday, or
     # 'werktag') and minute m, not before game time `after` – STRAT.setDate only moves the calendar, the game's own times stay
     E("""window.__nextAt = (wd, m, after) => { let t = Math.floor(after / 1440) * 1440 + m; if (t < after) t += 1440;
@@ -153,6 +164,12 @@ with lib.browser() as b:
         steps(3)
         page_pic('02_phase1_laeuft')
         until(done(j1['id']), 300)
+        if not E(done(j1['id'])):
+            # a phase may need a second Saturday (Hubert only helps on Saturdays when your people are there)
+            print('phase 1 not done on its first Saturday:', jstate(j1['id']), tick_errors(), flush=True)
+            goto(6, 7 * 60 + 50, after=J("CLOCK.t + 60"))
+            until(done(j1['id']), 300)
+        print('tick errors so far:', tick_errors(), flush=True)
         w1 = J("({ ph: window.PHASE, built: STBAU.built(), gar: GARAGE.at(window.PHASE).id, fav: STRAT.S.favours.hubert, next: STBAU.next() })")
         ck('phase 1 done: the world\'s phase advanced – the garage stands at the south end', w1['ph'] == 1 and w1['built'] == 1 and w1['gar'] == 'sued', str(w1) + ' ' + str(jstate(j1['id'])))
         ck('… Hubert helped for a favour', w1['fav'] < fav0, f"{fav0} → {w1['fav']}")
@@ -274,5 +291,7 @@ with lib.browser() as b:
         ck('after a reload (with ?bauphase=0): the project and the world are in the same phase again, the cash kept', after['ph'] == before['ph'] and after['world'] == before['ph'] and abs(after['eur'] - before['eur']) < 0.01 and after['gen'], f'{before} → {after}')
         ck('… the planted trees and the fruit in the stock are still there', after['trees'] == before['trees'] and abs(after['obst'] - before['obst']) < 0.05, f'{before} → {after}')
     ck('no new shader programs', progs() <= p0 + 0, f'{p0} → {progs()}')
+    te = tick_errors()
+    ck('no error caught in a tick or an event of the mode', not te, ' | '.join(e[:240] for e in te))
     ck.errors(errs)
     ck.done()
