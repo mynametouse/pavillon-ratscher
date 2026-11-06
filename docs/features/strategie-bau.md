@@ -48,6 +48,8 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
   der Trockenstapel in der Welt wird kleiner. Der ganze Pavillon (A) braucht rund 15 m³ Kantholz und 6 m³ Bretter; Eiche gibt die Klinge nicht.
 - **Bauschild:** mit der Genehmigung steht am Gartentor (Nordwestecke, zum Feldweg) ein Schild „Baustelle – Gartenpavillon“ mit Bauherr,
   Entwurf und Statik, Bauleitung, Rohbau, Datum der Genehmigung und der Bauphase (§ 11 Abs. 3 ThürBO) – in beiden Linsen, bis Phase 30.
+- **Lieferung auf dem Bauplatz:** ist das Material der nächsten Phase da, liegt westlich der Platte eine Palette mit Holz unter Folie
+  (Größe nach dem Wert der Lieferung), bis die Phase gebaut ist – von oben und in der Ich-Sicht.
 - **Was wäre, wenn:** das Feld schätzt, wann der Pavillon fertig wäre (Wochenenden zu dritt, die Sparrate, Lieferzeiten, ein Drittel der
   Wochenenden ohne Wetter für außen) und ob Geld oder Zeit bremst; dazu der **Geldplan** (was noch offen ist, wie weit die Kasse reicht, wie
   viele Monate Sparrate der Rest braucht) und die Dauer der nächsten Phase in Arbeitstagen.
@@ -77,7 +79,9 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
 ## Testen
 - Ohne Browser: `node --test viz3/test/unit/strategie_bau.test.mjs` (Personenstunden, eigenes Holz je Position, Kosten mit Umsatzsteuer,
   Wetterfenster, Platte, Klima, Quellen).
-- Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9005 --serve strategie_bau` (Abschnitte `bau,garten,welt,reload`);
+- Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9005 --serve strategie_bau` (Abschnitte `bau,holz,garten,welt,reload`:
+  Vorbereitung bis zur Genehmigung, Phasen 1 und 2 mit Wetterfenstern, eigenes Holz bis Phase 3, der Garten von der Pflanzung bis zur Ernte,
+  Hühner, Bauschild und Ich-Sicht, Neuladen);
   auf GitHub über `viz3/extra/strategie-bau/tests.txt` (dazu der Test des Kerns `strategie`), Bilder in `out/strategie_bau/`.
 
 ## API (window.STBAU, window.STGARTEN)

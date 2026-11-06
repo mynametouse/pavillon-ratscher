@@ -202,20 +202,32 @@ with lib.browser() as b:
         # 52-mm planks, stacked (the core's chain, called directly here); the months of drying stood in for by the test (moisture 16 %)
         tid = J("(FELL.marked || []).find(t => !t.gone) ? FELL.marked.find(t => !t.gone).id : null")
         r = J(f"(() => {{ const r = FELL.simFell({json.dumps(tid)}, {{ q: 0.9, who: 'Test' }}); return r ? {{ n: r.n, vol: r.vol }} : null; }})()") if tid is not None else None
+        steps(1)
+        nf = J("STHOLZ.logsForest().length")
         E("STHOLZ.toYard(STHOLZ.logsForest().map(l => l.id))")
-        nb = J("STHOLZ.logsYard().filter(l => l.L <= 4.6).map(l => HOLZSAW.simSaw(l.id, 0.052)).filter(Boolean).reduce((s, x) => s + x.boards, 0)")
+        steps(1)
+        ny = J("STHOLZ.logsYard().length")
+        nb = 0
+        for lid in J("STHOLZ.logsYard().filter(l => l.L <= 4.6).map(l => l.id)"):
+            q = J(f"(() => {{ const r = HOLZSAW.simSaw({json.dumps(lid)}, 0.052); return r ? r.boards : 0; }})()")
+            nb += q or 0
+            steps(0.5)
         ns = J("HOLZDRY.simStack()")
         E("for (const b of HOLZSAW.boards) if (b.st === 'stack') b.mc = 16")
         steps(0.5)
-        print('felled', r, 'planks', nb, 'stacked', ns, flush=True)
+        print('felled', r, 'logs in the forest', nf, 'in the yard', ny, 'planks', nb, 'stacked', ns, flush=True)
         js = job('bau_sortieren', ['falko'])
-        until(done(js['id']), 120)
+        if not (js and js.get('id')):
+            ck('own planks graded by a sorter (DIN 4074-1)', False, str(js))
+            js = None
+        else:
+            until(done(js['id']), 120)
         gr = J("({ kvh: STBAU.st().kvh, used: HOLZSAW.boards.filter(b => b.bau === 'S10').length, left: HOLZSAW.boards.filter(b => b.st === 'stack').length })")
-        ck('own planks graded by a sorter (DIN 4074-1, S10 ≙ C24): structural timber in stock, the graded planks gone from the drying stack', gr['kvh'] > 0.16 and gr['used'] >= 1, f'{gr} {jstate(js["id"])}')
+        if js: ck('own planks graded by a sorter (DIN 4074-1, S10 ≙ C24): structural timber in stock, the graded planks gone from the drying stack', gr['kvh'] > 0.16 and gr['used'] >= 1, f'{gr} {jstate(js["id"])}')
         E("STBAU.st().mat[STBAU.next()] = 'eigen'")
         e5 = J("STRAT.S.eur")
         jm3 = job('bau_bestellen', ['falko'])
-        until(done(jm3['id']), 60)
+        if jm3 and jm3.get('id'): until(done(jm3['id']), 60)
         o3 = J("STBAU.st().order[3]")
         ck('phase 3 with own larch: the rest bought (anchors, angles, EPDM strips), cheaper than all bought', o3 and o3['eigen'] and e5 - J("STRAT.S.eur") < J("STBAU.costOf(3, 'kauf').eur"), f'{o3} {e5} → {J("STRAT.S.eur")}')
         at = goto(6, 9 * 60, after=J("CLOCK.t + 1440"))
@@ -223,9 +235,10 @@ with lib.browser() as b:
         E("STRAT.W.force = { cloud: 0.3, rain: 0, wind: 10, storm: false, temp: 8, src: 'Test' }")
         k0 = J("STBAU.st().kvh")
         j3 = job('bau3', ['falko', 'christoph'])
-        until(done(j3['id']), 200)
+        if not (j3 and j3.get('id')): print('phase 3 refused:', j3, flush=True)
+        else: until(done(j3['id']), 200)
         w3 = J("({ ph: window.PHASE, kvh: STBAU.st().kvh })")
-        ck('phase 3 built with own timber: the sill plates came out of the stock, the world is in phase 3', w3['ph'] == 3 and w3['kvh'] < k0 - 0.1, f'{w3} (vorher {k0}) {jstate(j3["id"])}')
+        ck('phase 3 built with own timber: the sill plates came out of the stock, the world is in phase 3', w3['ph'] == 3 and w3['kvh'] < k0 - 0.1, f'{w3} (vorher {k0}) {j3}')
     if 'garten' in want:
         # a Saturday in March 2027 (planting season October–April): the planner's data, a suggestion, buying, planting, protecting
         E("STRAT.W.force = { cloud: 0.3, rain: 0, wind: 8, storm: false, temp: 9, src: 'Test' }")
