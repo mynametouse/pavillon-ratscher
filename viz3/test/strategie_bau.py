@@ -7,11 +7,11 @@
 # end in both lenses), Euro booked; phase 2 refused in the rain and the cold, done when dry and warm; a tree planted, watered, protected,
 # growing, harvested from above (the garden planner's state, the stock „Obst“); the result in the first-person world; everything after a
 # reload; no new shader program; no page error. Pictures in out/strategie_bau/ (from above, close up, first person).
-#   python3 viz3/test/strategie_bau.py 9005 [sections]     sections: bau,garten,welt,reload (default all)
+#   python3 viz3/test/strategie_bau.py 9005 [sections]     sections: bau,holz,garten,welt,reload (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'bau,garten,welt,reload').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'bau,holz,garten,welt,reload').split(','))
 ck = lib.Checks('strategie_bau')
 OUT = lib.out('strategie_bau')
 QUERY = '?szenario=strategie&bauphase=0'
@@ -197,10 +197,39 @@ with lib.browser() as b:
         E("STHUD.openPlace('bauplatz')")
         steps(0.6)
         page_pic('04_bauplatz_phase3')
+    if 'holz' in want and 'bau' in want:
+        # own timber for phase 3 (sill plates 6/14 larch – structural, so graded): a marked tree felled and worked up, skidded, sawn into
+        # 52-mm planks, stacked (the core's chain, called directly here); the months of drying stood in for by the test (moisture 16 %)
+        tid = J("(FELL.marked || []).find(t => !t.gone) ? FELL.marked.find(t => !t.gone).id : null")
+        r = J(f"(() => {{ const r = FELL.simFell({json.dumps(tid)}, {{ q: 0.9, who: 'Test' }}); return r ? {{ n: r.n, vol: r.vol }} : null; }})()") if tid is not None else None
+        E("STHOLZ.toYard(STHOLZ.logsForest().map(l => l.id))")
+        nb = J("STHOLZ.logsYard().filter(l => l.L <= 4.6).map(l => HOLZSAW.simSaw(l.id, 0.052)).filter(Boolean).reduce((s, x) => s + x.boards, 0)")
+        ns = J("HOLZDRY.simStack()")
+        E("for (const b of HOLZSAW.boards) if (b.st === 'stack') b.mc = 16")
+        steps(0.5)
+        print('felled', r, 'planks', nb, 'stacked', ns, flush=True)
+        js = job('bau_sortieren', ['falko'])
+        until(done(js['id']), 120)
+        gr = J("({ kvh: STBAU.st().kvh, used: HOLZSAW.boards.filter(b => b.bau === 'S10').length, left: HOLZSAW.boards.filter(b => b.st === 'stack').length })")
+        ck('own planks graded by a sorter (DIN 4074-1, S10 ≙ C24): structural timber in stock, the graded planks gone from the drying stack', gr['kvh'] > 0.16 and gr['used'] >= 1, f'{gr} {jstate(js["id"])}')
+        E("STBAU.st().mat[STBAU.next()] = 'eigen'")
+        e5 = J("STRAT.S.eur")
+        jm3 = job('bau_bestellen', ['falko'])
+        until(done(jm3['id']), 60)
+        o3 = J("STBAU.st().order[3]")
+        ck('phase 3 with own larch: the rest bought (anchors, angles, EPDM strips), cheaper than all bought', o3 and o3['eigen'] and e5 - J("STRAT.S.eur") < J("STBAU.costOf(3, 'kauf').eur"), f'{o3} {e5} → {J("STRAT.S.eur")}')
+        at = goto(6, 9 * 60, after=J("CLOCK.t + 1440"))
+        print('Samstag für Phase 3', at, flush=True)
+        E("STRAT.W.force = { cloud: 0.3, rain: 0, wind: 10, storm: false, temp: 8, src: 'Test' }")
+        k0 = J("STBAU.st().kvh")
+        j3 = job('bau3', ['falko', 'christoph'])
+        until(done(j3['id']), 200)
+        w3 = J("({ ph: window.PHASE, kvh: STBAU.st().kvh })")
+        ck('phase 3 built with own timber: the sill plates came out of the stock, the world is in phase 3', w3['ph'] == 3 and w3['kvh'] < k0 - 0.1, f'{w3} (vorher {k0}) {jstate(j3["id"])}')
     if 'garten' in want:
         # a Saturday in March 2027 (planting season October–April): the planner's data, a suggestion, buying, planting, protecting
         E("STRAT.W.force = { cloud: 0.3, rain: 0, wind: 8, storm: false, temp: 9, src: 'Test' }")
-        J("STRAT.setDate('2027-03-20', 9 * 60)")
+        J("STRAT.setDate('2027-03-27', 9 * 60)")
         E("GPLAN.loadData()")
         ok = until("GPLAN.ready", 60)
         steps(0.5)
@@ -216,7 +245,7 @@ with lib.browser() as b:
         until(done(jk['id']), 200)
         kb = J("GPLAN.state.kuebel.map(c => c.loc)")
         ck('bought at the Baumschule Kammbach (Euro), delivered to the gate the next morning', e0 - J("STRAT.S.eur") > 100 and kb.count('liefer') >= 2, f'{kb} {e0} → {J("STRAT.S.eur")}')
-        J("STRAT.setDate('2027-03-21', 8 * 60)")
+        J("STRAT.setDate('2027-03-28', 8 * 60)")
         steps(3)
         kb = J("GPLAN.state.kuebel.map(c => c.loc)")
         ck('… Sunday morning the trees stand at the garden gate (the planner\'s containers)', kb.count('tor') >= 2, str(kb))
