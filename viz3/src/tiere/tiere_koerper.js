@@ -175,7 +175,14 @@ export const TKOERPER = (() => {
         // superellipse: e = 2 an ellipse, larger squarer (the boar's flanks)
         const px = rx * Math.sign(sn) * Math.pow(Math.abs(sn), 2 / e),
           py = ry * Math.sign(cs) * Math.pow(Math.abs(cs), 2 / e) + dy * (cs < 0 ? -cs : 0) * ry;
-        const p = R.p.clone().addScaledVector(side, px).addScaledVector(up, py);
+        // a coat with some length: the outline a little ragged (o.fur: how much, as a share of the radius; o.furU(u) along the part)
+        const fu = o.fur
+          ? o.fur * (o.furU ? o.furU(u) : 1) * (hash(ri * 1.37 + 0.5, s * 2.11 + 0.3, o.fur * 7 + 1) - 0.35)
+          : 0;
+        const p = R.p
+          .clone()
+          .addScaledVector(side, px * (1 + fu))
+          .addScaledVector(up, py * (1 + fu * (cs > 0 ? 1 : 0.6)));
         const c = coat({
           part: o.part,
           u,
@@ -335,7 +342,7 @@ export const TKOERPER = (() => {
         w: wTrunk(z),
         u: (z - T[0][0]) / (T[T.length - 1][0] - T[0][0]),
       })),
-      { part: 'trunk', sides: Pn.sides || 16, sub: 2, coat, cap0: 0.03, cap1: 0.03 }
+      { part: 'trunk', sides: Pn.sides || 16, sub: 2, coat, cap0: 0.03, cap1: 0.03, fur: Pn.fur || 0 }
     );
     // neck and head: one loft from inside the chest to the nose
     const N = Pn.neck,
@@ -362,7 +369,17 @@ export const TKOERPER = (() => {
                     : [W(sk, 'head')],
         u: i / (N.length - 1),
       })),
-      { part: 'neck', sides: 12, sub: 2, coat, cap0: false, cap1: Pn.noseCap || 0.012 }
+      {
+        part: 'neck',
+        sides: 12,
+        sub: 2,
+        coat,
+        cap0: false,
+        cap1: Pn.noseCap || 0.012,
+        fur: Pn.fur || 0,
+        // the ruff long, the face short-haired
+        furU: u => 1 - sst(0.45, 0.65, u),
+      }
     );
     // legs
     const leg = (kind, s) => {
@@ -423,6 +440,9 @@ export const TKOERPER = (() => {
         coat,
         cap0: false,
         cap1: 0.006,
+        // feathering on the upper legs only
+        fur: (Pn.fur || 0) * 0.8,
+        furU: u => 1 - sst(0.3, 0.55, u),
       });
     };
     for (const s of ['L', 'R']) {
@@ -461,7 +481,7 @@ export const TKOERPER = (() => {
         w: [W(sk, 'tail' + Math.min(3, i + 1))],
         u: i / (tp.p.length - 1),
       }));
-      loft(B, st, { part: 'tail', sides: 8, sub: 2, coat, cap0: false, cap1: 0.01 });
+      loft(B, st, { part: 'tail', sides: 8, sub: 2, coat, cap0: false, cap1: 0.01, fur: (Pn.fur || 0) * 1.6 });
     }
     // eyes
     for (const s of [1, -1])
@@ -1247,6 +1267,7 @@ export const TKOERPER = (() => {
   PLANS.sau = {
     k: 1.2,
     e: 2.5,
+    fur: 0.09,
     sides: 18,
     trunk: [
       [-0.52, 0.6, 0.46, 0.05],
@@ -1438,6 +1459,7 @@ export const TKOERPER = (() => {
   };
   // the dog itself: fuller – the long-stock coat, a ruff round the neck, the head carried forward and a little low, a bushy tail
   PLANS.hund = Object.assign({}, QBASE, {
+    fur: 0.16,
     trunk: [
       [-0.37, 0.55, 0.45, 0.05],
       [-0.33, 0.59, 0.37, 0.12],
@@ -1621,6 +1643,7 @@ export const TKOERPER = (() => {
   // brown hare (Lepus europaeus): low and arched, very long hind legs folded under, ears 12 cm with black tips, the tail black above,
   // white below; it hops
   PLANS.hase = scaled(QBASE, 0.62, 0.5, 0.62, {
+    fur: 0.04,
     hind: [
       [-0.16, 0.27],
       [-0.07, 0.18],
@@ -1661,6 +1684,7 @@ export const TKOERPER = (() => {
   });
   // badger (Meles meles): low, wide, short legs, the white face with two black stripes over the eyes, grey silver back, black legs
   PLANS.dachs = scaled(QBASE, 1.35, 0.5, 0.88, {
+    fur: 0.07,
     ear: { p: [0.4, 0.37], x: 0.04, out: 0.8, up: 0.5, back: -0.2, len: 0.03, wid: 0.035 },
     tail: {
       p: [
@@ -1692,6 +1716,7 @@ export const TKOERPER = (() => {
   });
   // raccoon (Procyon lotor): arched back, the black mask, the pale muzzle, the ringed tail, grey-brown
   PLANS.waschbaer = scaled(QBASE, 1.0, 0.55, 0.7, {
+    fur: 0.09,
     ear: { p: [0.36, 0.44], x: 0.035, out: 0.5, up: 0.8, back: -0.2, len: 0.045, wid: 0.045 },
     tail: {
       p: [
@@ -1721,6 +1746,7 @@ export const TKOERPER = (() => {
   });
   // stone marten (Martes foina): long and low, short legs, the bushy tail, chocolate brown with the forked white bib
   PLANS.marder = scaled(QBASE, 0.5, 0.3, 0.6, {
+    fur: 0.05,
     ear: { p: [0.3, 0.255], x: 0.022, out: 0.5, up: 0.85, back: -0.1, len: 0.025, wid: 0.03 },
     tail: {
       p: [
@@ -1745,6 +1771,7 @@ export const TKOERPER = (() => {
   // European wildcat (Felis silvestris): a strong tabby, the round head with a short muzzle, the thick blunt tail with black rings
   // and a black tip, the pink nose; faint stripes, no stripes on the back of the tail's root
   PLANS.katze = scaled(QBASE, 0.78, 0.62, 0.66, {
+    fur: 0.07,
     neck: [
       [0.17, 0.31, 0.05, 0.065],
       [0.24, 0.37, 0.048, 0.056],

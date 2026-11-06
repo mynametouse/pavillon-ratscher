@@ -84,10 +84,14 @@ with lib.browser() as b:
         def closeups(tag, only=None):
             for i, (n, kind, var, sc, dd, eh) in enumerate(SHEET):
                 if only and n not in only: continue
+                # standing eye height (the walk physics keeps the feet on the ground), looking down at the animal, a lens to frame it
+                D = max(2.6, dd * 1.9)
+                pit = -math.degrees(math.atan2(1.62 - eh, D))
+                fov = max(16, min(48, math.degrees(2 * math.atan2(dd * 0.55, D))))
                 E(f"""(() => {{ const A = window.__sheet[{i}], yaw = 225 * Math.PI / 180, fx = Math.sin(yaw), fy = Math.cos(yaw);
-                  const x = A.g.position.x, y = -A.g.position.z, cx = x - fx * {dd}, cy = y - fy * {dd};
+                  const x = A.g.position.x, y = -A.g.position.z, cx = x - fx * {D}, cy = y - fy * {D};
                   window.__sheet.forEach((B, j) => B.g.visible = j === {i});
-                  __view(cx, cy, ROADS.groundAt(cx, cy) + {eh}, 225, -4, 42); }})()""")
+                  __view(cx, cy, ROADS.groundAt(cx, cy) + 1.62, 225, {pit}, {fov}); }})()""")
                 E("GAME.step(0.02)")
                 pic(f'02_{tag}_{i:02d}_{n}')
             E("window.__sheet.forEach(B => B.g.visible = true)")
