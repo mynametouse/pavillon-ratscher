@@ -515,32 +515,37 @@ export const BUSMOD = (() => {
         doors.push(m);
       }
     }
-    // a few passengers sitting (one mesh), different for each bus
-    const kP = VPROPS.kit();
+    // the passengers sitting (one mesh), different for each bus: the seats in an order of its own, each with its person; who gets on
+    // takes the next seat, who gets off leaves the last taken (B.setPax below)
     let r = seed * 9301 + 49297;
     const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
     const tops = [0x7a2b2b, 0x2f4f2f, 0x4a4a6a, 0x8c6d3f, 0x5b5b5b, 0x2d2d2d, 0x9a8a70, 0x3e5a7a],
       legs = [0x34465e, 0x1f2024, 0x8f8068, 0x50545a, 0x2c3a52],
       hairs = [0x2e2219, 0x1c1a18, 0xa9844c, 0x8f8c86, 0x5e3720, 0xc8c3ba];
-    // (the seat one takes – right at the window, bus/bus.js SEAT – stays free)
-    const seats = S.seats.filter(([x, y]) => !(Math.abs(y + 2.05) < 0.1 && x > 0));
-    const nP = 2 + Math.floor(rnd() * 5);
-    S.lastSeats = [];
-    for (let i = 0; i < nP && seats.length; i++) {
-      const [x, y] = seats.splice(Math.floor(rnd() * seats.length), 1)[0];
-      if (y > 0.6 && y < 2.6 && x > 0) continue;
-      const c = col(tops[Math.floor(rnd() * tops.length)]);
-      sitter(
-        kP,
+    // (the seat one takes – right at the window, bus/bus.js SEAT – stays free, and the seats beside the middle door)
+    const free = S.seats.filter(([x, y]) => !(Math.abs(y + 2.05) < 0.1 && x > 0) && !(y > 0.6 && y < 2.6 && x > 0)),
+      order = [];
+    while (free.length) {
+      const [x, y] = free.splice(Math.floor(rnd() * free.length), 1)[0];
+      order.push({
         x,
         y,
-        c,
-        col(legs[Math.floor(rnd() * legs.length)]),
-        col(rnd() < 0.5 ? 0xd7a98a : 0xc69373),
-        col(hairs[Math.floor(rnd() * hairs.length)])
-      );
+        top: col(tops[Math.floor(rnd() * tops.length)]),
+        legs: col(legs[Math.floor(rnd() * legs.length)]),
+        skin: col(rnd() < 0.5 ? 0xd7a98a : 0xc69373),
+        hair: col(hairs[Math.floor(rnd() * hairs.length)]),
+      });
     }
-    const pax = own(new THREE.Mesh(kP.empty() ? new THREE.BufferGeometry() : kP.geo(), M.body));
+    const paxGeo = n => {
+      const kP = VPROPS.kit();
+      for (let i = 0; i < n && i < order.length; i++) {
+        const o = order[i];
+        sitter(kP, o.x, o.y, o.top, o.legs, o.skin, o.hair);
+      }
+      return kP.empty() ? new THREE.BufferGeometry() : kP.geo();
+    };
+    const nP0 = 2 + Math.floor(rnd() * 5);
+    const pax = own(new THREE.Mesh(paxGeo(nP0), M.body));
     // inside, under the ceiling behind the driver: the passengers' display („Nächster Halt: …“), facing back into the bus
     const cvI = document.createElement('canvas');
     cvI.width = 512;
@@ -558,7 +563,33 @@ export const BUSMOD = (() => {
     g.visible = false;
     scene.add(g);
     S.built++;
-    const B = { g, body, glass, disp, tex, cv, wF, wR, doors, pax, dm, open: 0, text: '', inner, innerText: '' };
+    const B = {
+      g,
+      body,
+      glass,
+      disp,
+      tex,
+      cv,
+      wF,
+      wR,
+      doors,
+      pax,
+      dm,
+      open: 0,
+      text: '',
+      inner,
+      innerText: '',
+      paxN: nP0,
+    };
+    // how many sit in it (who gets on or off: bus/bus_leute.js)
+    B.setPax = n => {
+      n = Math.max(0, Math.min(order.length, Math.round(n)));
+      if (n === B.paxN) return;
+      B.paxN = n;
+      const old = pax.geometry;
+      pax.geometry = paxGeo(n);
+      old.dispose();
+    };
     // the display inside: a line of amber LED text (long names shrink to fit)
     // (halt: the red „Wagen hält“ at the right end – after a stop request)
     B.next = (text, halt) => {

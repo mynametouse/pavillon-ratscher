@@ -371,6 +371,8 @@ export const BUS = (() => {
     const tr = a.trip;
     I.B.sign(tr.line, tr.head || tr.nach);
     I.B.next(tr.line + '  ' + (tr.head || tr.nach));
+    // who sits in it: coming from beyond the world or met on its way a few; before its first stop here nobody yet
+    if (I.B.setPax) I.B.setPax(!tr.vor && I.tau < Rn.D[Rn.P.first] ? 0 : 1 + ((tr.i * 7 + a.di * 3) % 5));
     I.B.g.visible = true;
     S.inst.push(I);
     S.stats.spawned++;
@@ -718,7 +720,7 @@ export const BUS = (() => {
   // after a moment without looking around it swings back behind the bus – as the vehicles' chase camera (vehicles/vehicle.js). It follows
   // the view of the figure (CAM3.want: the key V, the button „Figur/Augen“, „Von außen“ in the panel) – the same on foot, in the car and
   // in the bus; the seat with the own eyes. ----
-  const OUTV = { L: 17, up: 1.6, piv: 2.0, pitch: -10 };
+  const OUTV = { L: 16, up: 1.0, piv: 2.0, pitch: -7 };
   function outEye(I) {
     const y = (P.yaw * Math.PI) / 180,
       p = (P.pitch * Math.PI) / 180,

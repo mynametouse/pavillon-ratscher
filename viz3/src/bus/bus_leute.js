@@ -221,6 +221,8 @@ export const BUSLEUTE = (() => {
       wait: j * 1.4,
       dir: I.hd + (back < 0 ? Math.PI : 0),
     });
+    // (up from a seat)
+    if (I.B.setPax) I.B.setPax(I.B.paxN - 1);
     return true;
   }
   // the bus a waiting person waits for, standing at the stop with its doors open
@@ -297,8 +299,9 @@ export const BUSLEUTE = (() => {
         I.hold = Math.max(I.hold || 0, 1.2);
         const [dx, dy] = BUS.doorPt(I, 0.15);
         if (toward(q, dt, dx, dy, q.walk * 1.15)) {
-          // in: through the door, out of sight
+          // in: through the door, out of sight – on a seat inside (bus/bus_modell.js)
           remove(q, 'ein');
+          if (I.B.setPax) I.B.setPax(I.B.paxN + 1);
           KERN.emit('bus:fahrgast', { who: q.key, was: 'ein', line: I.trip.line });
         }
       } else if (q.st === 'aus') {
