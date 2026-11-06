@@ -199,6 +199,28 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         w = n.querySelector('.w');
       if (w) w.hidden = !w.hidden;
     });
+    // the game's own toast (audio/audio.js toast: hints, „Neu: …“, the graphics notice) while the mode is on: shown as one of the mode's
+    // notices, not behind the time box at the top right (Lead, 6.11. 3:10)
+    const tst = $('toast');
+    if (tst && window.MutationObserver)
+      new MutationObserver(() => {
+        if (!S.on || tst.hidden) return;
+        const txt = (tst.textContent || '').trim();
+        tst.hidden = true;
+        if (txt && txt !== H.lastToast) {
+          H.lastToast = txt;
+          note({ text: txt, kind: 'info' });
+          setTimeout(() => {
+            if (H.lastToast === txt) H.lastToast = '';
+          }, 4000);
+        }
+      }).observe(tst, {
+        attributes: true,
+        attributeFilter: ['hidden'],
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
     // the plan view's own labels where a place of the mode stands (world/siteplan.js redraws its overlay on every camera move)
     const tsvg = $('topsvg');
     if (tsvg && window.MutationObserver)
@@ -319,9 +341,16 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
           room = pt - tb - 12;
         H.pan.style.maxHeight = (room >= 220 ? Math.round(room) : Math.max(160, Math.round(pt - 70))) + 'px';
         H.layers.style.maxHeight = H.pan.style.maxHeight;
+        // the notices just above the people strip (the time box stays free); while a panel lies there, they wait out of sight
+        H.notes.style.top = 'auto';
+        H.notes.style.bottom = Math.round(ab) + 'px';
+        H.notes.style.visibility = H.pan.hidden && H.layers.hidden ? '' : 'hidden';
       }
       return;
     }
+    H.notes.style.top = '';
+    H.notes.style.bottom = '';
+    H.notes.style.visibility = '';
     const rt = (H.ppl.offsetParent || document.body).getBoundingClientRect().top,
       b = H.res.getBoundingClientRect().bottom - rt + 6,
       t = H.time.getBoundingClientRect().bottom - rt + 8;
@@ -416,7 +445,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
     if (acts && acts.length) el._acts = acts;
     H.notes.appendChild(el);
     while (H.notes.children.length > (innerWidth <= 720 ? 2 : 4)) H.notes.firstChild.remove();
-    const life = n.why || (acts && acts.length) ? 14000 : 6500;
+    const life = (n.why || (acts && acts.length) ? 14000 : 6500) * (innerWidth <= 720 ? 0.6 : 1);
     setTimeout(() => el.remove(), life);
   }
   const say = text => note({ text, kind: 'info' });
@@ -553,6 +582,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
           holz: 'Holz und Säge',
           sprit: 'Benzin und Diesel',
           essen: 'Essen',
+          heizen: 'Heizen',
           wissen: 'Lehrgänge',
           ausbau: 'Ausbau und Ausrüstung',
           auto: 'Fahrten',

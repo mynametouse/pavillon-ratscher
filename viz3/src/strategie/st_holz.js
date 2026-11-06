@@ -28,6 +28,25 @@ export const STHOLZ = (() => {
   const de = (v, n = 1) => (+v).toLocaleString('de-DE', { minimumFractionDigits: n, maximumFractionDigits: n });
   const SPN = { spruce: 'Fichte', larch: 'Lärche', pine: 'Kiefer' };
   const names = who => who.map(id => D.PEOPLE[id].name).join(' und ');
+  // feat/tiere: the black stork's quiet zone (TIERE.ruhe: within 100 m of the nest never, up to 300 m from 1 March to 15 September no felling
+  // and no skidding) – a refusal with its reason, or null
+  function quietZone(x, y, what) {
+    const T = window.TIERE;
+    if (!T || typeof T.ruhe !== 'function' || !Number.isFinite(x)) return null;
+    let z = null;
+    try {
+      z = T.ruhe(x, y);
+    } catch (e) {
+      return null;
+    }
+    if (!z) return null;
+    return {
+      no: true,
+      text: `Ruhezone ${z.art === 'schwarzstorch' ? 'Schwarzstorch' : z.art} (${z.d} m vom Horst): hier jetzt kein ${what}${z.bis ? ' bis zum ' + z.bis : ''}.`,
+      why: z.why || '',
+      src: 'Bundesnaturschutzgesetz § 44 (Störungsverbot); Horstschutz Schwarzstorch (LfU Rheinland-Pfalz 2018) – tiere/tiere_einfluss.js',
+    };
+  }
   // ---------------- where the wood is ----------------
   const yard = () => (HOLZ.YARD0 ? [HOLZ.YARD0.x, HOLZ.YARD0.y] : STRAT.place.pos('holzlager'));
   const inGarden = l => Math.hypot((l.p0[0] + l.p1[0]) / 2, (l.p0[1] + l.p1[1]) / 2) < 120;
@@ -221,7 +240,21 @@ export const STHOLZ = (() => {
         vol += 0.45 * (Math.PI / 4) * d * d * t.h;
         sp[t.sp] = (sp[t.sp] || 0) + 1;
       }
-      const ka = S.ext.kaefer ? 'Bohrmehl an ' + S.ext.kaefer.n + ' Fichten – schnell raus damit' : 'keine Spuren';
+      // feat/tiere: their model of the beetle when it runs (TIERE.kaefer.list: stage 1 bore dust, 2 flown, 3 dead), else the core's own
+      const TK =
+          window.TIERE && window.TIERE.kaefer && typeof window.TIERE.kaefer.list === 'function'
+            ? window.TIERE.kaefer.list()
+            : null,
+        k1 = TK ? TK.filter(k => k.stage === 1).length : 0,
+        k2 = TK ? TK.filter(k => k.stage >= 2).length : 0;
+      const ka = TK
+        ? k1 || k2
+          ? (k1 ? 'Bohrmehl an ' + k1 + ' Fichten – schnell raus damit' : '') +
+            (k2 ? (k1 ? '; ' : '') + k2 + ' Käferfichten schon rotbraun oder grau' : '')
+          : 'keine Spuren'
+        : S.ext.kaefer
+          ? 'Bohrmehl an ' + S.ext.kaefer.n + ' Fichten – schnell raus damit'
+          : 'keine Spuren';
       const data = { marked: all.length, standing: M.length, vol: +vol.toFixed(1), sp, kaefer: ka };
       STRAT.reveal('wald', 'klinge', data, j.who[0], {
         title: 'Die Klinge: ' + M.length + ' markierte Bäume',
@@ -277,6 +310,11 @@ export const STHOLZ = (() => {
           why: '',
           src: '',
         };
+      const tr = cx.job && cx.job.d.tree != null ? FOREST.byId(cx.job.d.tree) : marked()[0];
+      if (tr && !(cx.job && cx.job.started)) {
+        const z = quietZone(tr.x, tr.y, 'Holzeinschlag');
+        if (z) return z;
+      }
       return null;
     },
     init: j => {
@@ -337,6 +375,11 @@ export const STHOLZ = (() => {
       if (cx.wx.storm) return 'sturm';
       if (!logsForest().length && !(cx.job && cx.job.d.ids && cx.job.d.ids.length))
         return { no: true, text: 'Im Wald liegen keine Stämme.', why: '', src: '' };
+      const lg = (cx.job && cx.job.d.ids ? cx.job.d.ids.map(id => HOLZ.by[id]) : logsForest()).find(l => l && l.p0);
+      if (lg && !(cx.job && cx.job.started)) {
+        const z = quietZone(lg.p0[0], lg.p0[1], 'Rücken');
+        if (z) return z;
+      }
       if (S.diesel < 3)
         return {
           no: true,

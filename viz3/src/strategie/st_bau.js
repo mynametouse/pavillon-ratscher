@@ -12,7 +12,7 @@ import { scene, V, VARIANT } from '../core/head.js';
 import { markDirty, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { canvasTex, redraw } from '../garden/garten_kit.js';
-import { PHASE, setPhase } from '../game/walkable.js';
+import { P as VIEWP, PHASE, setPhase } from '../game/walkable.js';
 import { PHASES } from '../pavilion/phases.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
@@ -238,6 +238,11 @@ export const STBAU = (() => {
   }
   let acc = 0;
   KERN.tick(dt => {
+    // the waits (a decision of the authority, a delivery) in every frame: a time-lapse may end right after their moment, and what came
+    // is there as soon as the clock stops (src's Prüfpaket 42152070883 had looked half a second too early)
+    const b = S.ext.bau;
+    if (b && Array.isArray(b.waits) && b.waits.length)
+      for (const w of b.waits.slice()) if (w && Number.isFinite(w.t) && w.t <= now()) resolve(w);
     if ((acc += dt) < 0.5) return;
     acc = 0;
     applySaved();
@@ -246,9 +251,6 @@ export const STBAU = (() => {
       signSync();
       pileSync();
     }
-    const b = S.ext.bau;
-    if (!b || !Array.isArray(b.waits) || !b.waits.length) return;
-    for (const w of st().waits.slice()) if (w.t <= now()) resolve(w);
   }, 'strategie/bau');
   // ---------------- the world's phase: set by a finished phase, kept after a reload ----------------
   // once per page load, as soon as the model stands (boot/boot.js has set its start phase) and the saved state is in (or 30 s later: none)
@@ -286,7 +288,8 @@ export const STBAU = (() => {
   // the building code wants it at the site, readable from the street: the project, the designer, the site manager, the builders of the
   // carcass. Its materials are the kit's (a canvas picture like the garden's pictures, oak posts): no new shader program.
   const SIGN = { g: null, key: '' };
-  const SIGN_AT = { x: -5.6, y: 34.6, az: 139 };
+  // just inside the north-west corner by the gate, facing the field track (site direction north-west; rotation about the up axis)
+  const SIGN_AT = { x: -7.0, y: 36.2, az: -143 };
   function signDraw(q, w, h) {
     const b = st(),
       d = b.gen ? W.day(b.gen.t).label.replace(/^\w+ /, '') : '';
@@ -1115,7 +1118,8 @@ export const STBAU = (() => {
       skill: 'bauen',
       min: meta(n).min,
       heavy: meta(n).heavy,
-      loud: !!meta(n).loud,
+      // outside, building is publicly noticeable work – not on Sundays and holidays, not at night (inside work only if loud)
+      loud: !!meta(n).loud || !meta(n).inside,
       where: 'dorf',
       xp: 1.5,
       bau: true,
@@ -1219,7 +1223,8 @@ export const STBAU = (() => {
     order: 9,
     draw: pr => {
       const n = next();
-      if (n > LAST()) return '';
+      // only close up (from about 80 m of view height): further out the place's badge says it
+      if (n > LAST() || VIEWP.th > 80) return '';
       const q = pr(2.0, 2.0, 0.2),
         p = phaseOf(n);
       if (!(q[2] < 1)) return '';

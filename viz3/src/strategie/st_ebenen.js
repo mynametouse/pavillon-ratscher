@@ -34,6 +34,25 @@ export const STEBENEN = (() => {
         const q = pr(t.x, t.y, 0.3);
         if (on(q)) h += dot(q, r * 0.8, 'nat', '#7a5230', 'gefällt');
       }
+      // feat/tiere: the spruces their beetle model attacks (bore dust, flown, dead) – known once someone walked the forest
+      const TK = window.TIERE && TIERE.kaefer && typeof TIERE.kaefer.list === 'function' ? TIERE.kaefer.list() : null;
+      if (TK)
+        for (const kt of TK) {
+          if (!Number.isFinite(kt.x) || kt.stage < 1) continue;
+          const q = pr(kt.x, kt.y, 0.5);
+          if (on(q))
+            h += dot(
+              q,
+              r + 0.6,
+              'nat',
+              kt.stage === 1 ? '#e0312b' : kt.stage === 2 ? '#8b3a1c' : '#8c8c8c',
+              kt.stage === 1
+                ? `Borkenkäfer: Bohrmehl – noch ${kt.ausflugIn} Tage bis zum Ausflug`
+                : kt.stage === 2
+                  ? 'Käferfichte, rotbraun'
+                  : 'Käferfichte, tot'
+            );
+        }
       const st = S.ext.sturm,
         k = S.ext.kaefer;
       for (const [E, col, txt] of [
@@ -62,6 +81,10 @@ export const STEBENEN = (() => {
         k = S.ext.kaefer;
       if (st && st.known && !st.done) L.push(['klinge', 'Sturmholz liegt']);
       if (k && k.known && !k.done) L.push(['klinge', 'Borkenkäfer!']);
+      // feat/tiere: their beetle trees with bore dust, once the forest was walked
+      const TK = window.TIERE && TIERE.kaefer && typeof TIERE.kaefer.list === 'function' ? TIERE.kaefer.list() : null;
+      if (TK && STRAT.known('wald', 'klinge') && TK.some(kt => kt.stage === 1))
+        L.push(['klinge', 'Borkenkäfer: ' + TK.filter(kt => kt.stage === 1).length + ' Fichten mit Bohrmehl']);
       if (S.power && S.power.none) L.push(['werkstatt', 'kein Strom']);
       if (S.essen != null && S.essen < 3) L.push(['bungalow', 'kein Essen mehr']);
       let h = '',

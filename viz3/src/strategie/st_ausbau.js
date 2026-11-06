@@ -89,6 +89,117 @@ export const STAUSBAU = (() => {
       return { text: `24 Mahlzeiten, ${de(lp, 1)} l Benzin, ${de(ld, 0)} l Diesel` };
     },
   });
+  // ---------------- heating: the bungalow's cast-iron stove (garden/bungalow.js) on cold evenings when your people stay the night ----------------
+  // A night costs about 0,0012 rm per kelvin below 20 °C (assumption: the bungalow, ~25 m², thinly insulated, loses ~100 W/K; heated in the
+  // evening and the morning – about 12 hours a day – that is 1,2 kWh/K; a rm of air-dry spruce holds ~1450 kWh, ~1000 kWh of it heat in a
+  // simple stove); above 14 °C in the evening nobody lights it. Dry wood only (1. BImSchV: below 25 % moisture): your own stacked firewood
+  // once it is dry, then the bought store at the bungalow (S.ext.heiz.ofen, rm; 1 rm at the start – an assumption: the stack against the
+  // annex's back wall in garden/bungalow.js holds a little under half of it). Without: a cold night (mood −12) and a notice with
+  // „Brennholz bestellen“.
+  const HZ = () => {
+    const h = S.ext.heiz;
+    if (h && typeof h === 'object' && Number.isFinite(h.ofen) && h.ofen >= 0) return h;
+    return (S.ext.heiz = { ofen: 1, season: null, kalt: null });
+  };
+  const HEAT_K = 0.0012,
+    HEAT_MAX = 14;
+  {
+    const need = T => (T >= HEAT_MAX ? 0 : +(HEAT_K * (20 - T)).toFixed(3));
+    HZ();
+    // what the stove has: the store at the bungalow, your own dry firewood, for how many nights at 2 °C in the evening
+    STRAT.place.define({
+      id: 'bungalow',
+      stock: () => {
+        const dry = STHOLZ.firewood.dry();
+        return [
+          ['Brennholz am Bungalow (gekauft, trocken)', de(HZ().ofen, 2) + ' rm'],
+          ['Eigenes trockenes Brennholz (Holzlager)', de(dry, 1) + ' rm'],
+          ['Reicht für kalte Nächte (2 °C)', 'etwa ' + Math.floor((HZ().ofen + dry) / need(2))],
+        ];
+      },
+    });
+    STRAT.job.define({
+      id: 'brennholz_kaufen',
+      label: 'Brennholz bestellen (1 rm Fichte, ofenfertig, frei Haus)',
+      place: 'bungalow',
+      people: [1, 1],
+      skill: 'reden',
+      min: 1,
+      heavy: 0.3,
+      order: 8,
+      text: 'Beim Brennholzhändler anrufen; er kippt einen Raummeter vors Tor, ihr setzt ihn am Anbau des Bungalows unter Dach auf.',
+      learn: `Ofenfertig (33 cm, unter 20 % Feuchte) kostet ein Raummeter Fichte frei Haus gut ${D.PRICES.brennholz_fi.eur} € (TFZ Bayern, Juli 2026), Buche rund 145 €. Eigenes Holz ist billiger, braucht aber ein Jahr unter Dach.`,
+      can: () =>
+        HZ().ofen > 2
+          ? {
+              no: true,
+              text: `Am Bungalow liegen schon ${de(HZ().ofen, 1)} rm – mehr passt dort nicht trocken unter Dach.`,
+              why: 'Brennholz muss luftig und unter Dach lagern, sonst zieht es wieder Feuchte.',
+              src: '',
+            }
+          : null,
+      dur: 45,
+      finish: () => {
+        HZ().ofen = +(HZ().ofen + 1).toFixed(3);
+        STRAT.book(-D.PRICES.brennholz_fi.eur, 'Brennholz gekauft: 1 rm Fichte, ofenfertig', 'heizen');
+        return { text: `1 rm Brennholz am Bungalow aufgesetzt – jetzt ${de(HZ().ofen, 1)} rm` };
+      },
+    });
+    KERN.on('strategie:tag', d => {
+      if (!d || !Number.isFinite(d.t)) return;
+      const ev = Math.floor(d.t / 1440) * 1440 - 120, // 22:00 the evening before
+        who = Object.keys(S.people).filter(id => STRAT.isOwn(id) && STRAT.present(id, ev).ok);
+      if (!who.length) return;
+      const T = W.temp(ev),
+        n = need(T);
+      if (!n) return;
+      const H = HZ(),
+        recent = Number.isFinite(H.kalt) && ev - H.kalt >= 0 && ev - H.kalt < 3 * 1440; // a notice at most every three days
+      let got = STHOLZ.firewood.take(n, { dryOnly: true });
+      const fromStore = Math.min(H.ofen, n - got);
+      H.ofen = +(H.ofen - fromStore).toFixed(3);
+      got += fromStore;
+      const dt = W.dateOf(ev),
+        season = dt.getUTCMonth() >= 6 ? dt.getUTCFullYear() : dt.getUTCFullYear() - 1,
+        why =
+          'Ein Kanonenofen im dünnwandigen Bungalow braucht für einen Abend und den Morgen bei 0 °C draußen etwa 8 kg Fichte (0,024 rm). Nur trockenes Holz (unter 25 % Feuchte) darf in den Ofen – nasses rußt, qualmt und bringt kaum Wärme.',
+        src =
+          '1. BImSchV § 3 (Brennstoffe: naturbelassenes, trockenes Holz); Heizwert Fichte lufttrocken etwa 1450 kWh/rm (TFZ)',
+        act = [
+          {
+            label: 'Brennholz bestellen',
+            fn: () => STRAT.job.add('brennholz_kaufen', [who[0]], { place: 'bungalow' }),
+          },
+        ];
+      if (got < n * 0.6) {
+        for (const id of who) S.people[id].nd.mood = Math.max(0, S.people[id].nd.mood - 12);
+        if (!recent) {
+          H.kalt = ev;
+          STRAT.note(
+            `Kalte Nacht im Bungalow (${Math.round(T)} °C draußen): kein trockenes Brennholz mehr für den Ofen – die Laune leidet.`,
+            { kind: 'leute', why, src, acts: act }
+          );
+        }
+      } else if (H.season !== season) {
+        H.season = season;
+        STRAT.note(
+          `Der erste kalte Abend (${Math.round(T)} °C): im Bungalow brennt der Kanonenofen – ${de(got, 2)} rm Brennholz für die Nacht.`,
+          { kind: 'leute', why, src }
+        );
+      } else if (H.ofen < n * 3 && STHOLZ.firewood.dry() < n && !recent) {
+        H.kalt = ev;
+        STRAT.note(
+          `Das Ofenholz im Bungalow reicht nur noch für ${Math.max(0, Math.floor(H.ofen / n))} kalte Nächte.`,
+          {
+            kind: 'leute',
+            why,
+            src,
+            acts: act,
+          }
+        );
+      }
+    });
+  }
   // ---------------- knowledge and upgrades (the tech tree) ----------------
   // a course is a job (strategie/st_holz.js kurs_ms); machines are bought (Euro) and change the world's numbers (PV, storage)
   const has = k => {

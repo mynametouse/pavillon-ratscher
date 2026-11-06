@@ -1,6 +1,7 @@
 # feat/strategie: what one sees from above at the Klinge (the strategy view, P.th 120 over the meadow by the forest) – which objects stand
 # well above the ground there (rays over a grid of the view; reported by name and material), a picture, no page errors. Written to find the
-# dark leaf-like things over the meadow (6.11.2026) and to keep them away once they are.
+# dark leaf-like things over the meadow (6.11.2026): the far trees' crossed upright cards (world/ratscher.js) seen from the top – hidden in
+# the plan view since (the photo shows those crowns), back in the first-person world; the forest's far cards draw their level plane there.
 #   python3 viz3/test/strategie_oben.py 9002
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -19,7 +20,10 @@ with lib.browser() as b:
     E("(() => { const c = STRAT.place.pos('klinge'); GAME.P.tx = c[0] + 40; GAME.P.ty = c[1] + 30; GAME.P.th = 120; })()")
     for i in range(12): E("GAME.step(0.25)")
     E("GAME.shot(); STHUD.draw()")
-    pg.screenshot(path=os.path.join(OUT, 'oben_klinge.png'), timeout=120000)
+    try:
+        lib.shot(pg, OUT, 'oben_klinge')  # the canvas alone (a page screenshot of this view can take minutes on software graphics)
+    except Exception as e:
+        print('note: picture failed', repr(e)[:160], flush=True)
     res = J("""(() => {
       const THREE = window.THREE, cam = GAME.cam, scene = GAME.scene, out = {}, rc = new THREE.Raycaster(), v = new THREE.Vector2();
       const chainOf = o => { const n = []; for (let p = o, k = 0; p && k < 5; p = p.parent, k++) n.push(p.name || p.type); return n.join(' < '); };
@@ -42,5 +46,26 @@ with lib.browser() as b:
     print('rays', res['rays'], 'hits more than 2.5 m above the ground', res['high'], 'camera', res['cam'], flush=True)
     for k, e in res['out']: print('  ', e['n'], k, e, flush=True)
     ck('the view from above at the Klinge was looked at (objects above the ground reported)', res['rays'] > 0, f"{res['high']} of {res['rays']} rays")
+    cards = "(() => { const T = (window.RATSCHER && RATSCHER.ready && RATSCHER.trees) || []; return { n: T.length, shown: T.filter(m => m.visible).length }; })()"
+    top = J(cards)
+    ck('from above no far tree card stands over the meadows (the crossed cards read as dark leaves; the photo shows the crowns)', top['shown'] == 0, str(top))
+    E("STRAT.stop()")
+    for i in range(4): E("GAME.step(0.25)")
+    walk = J(cards)
+    ck('… back in the first-person world the far trees are there again', J("GAME.P.mode") == 'walk' and (top['n'] == 0 or walk['shown'] == walk['n']), str(walk))
+    # the plain Draufsicht (without the mode) over the same meadow: no far cards there either – one picture without them (as now) and one
+    # with them (as before), to see that the aerial photo shows those crowns
+    E("GAME.go('draufsicht')")
+    E("(() => { const c = STRAT.place.pos('klinge'); GAME.P.tx = c[0] + 40; GAME.P.ty = c[1] + 30; GAME.P.th = 120; })()")
+    for i in range(6): E("GAME.step(0.25)")
+    pl = J(cards)
+    ck('the plain Draufsicht (without the mode): no far tree cards either', J("GAME.P.mode") == 'top' and not J("STRAT.on") and pl['shown'] == 0, str(pl))
+    try:
+        lib.shot(pg, OUT, 'draufsicht_klinge_ohne')
+        E("RATSCHER.trees.forEach(m => (m.visible = true))")
+        lib.shot(pg, OUT, 'draufsicht_klinge_karten')
+        E("RATSCHER.topMode(true)")
+    except Exception as e:
+        print('note: picture failed', repr(e)[:160], flush=True)
     ck.errors(errs)
     ck.done()

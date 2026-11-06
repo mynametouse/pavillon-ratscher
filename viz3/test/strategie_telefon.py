@@ -58,7 +58,11 @@ with lib.browser() as b:
       return { garten: s.slice(0, 2).map(Math.round), sarah: q.slice(0, 2).map(Math.round), sel: STRAT.S.sel, jobs: STRAT.job.at('garten').map(J => [J.id, STRAT.job.check(J, ['sarah']) && STRAT.job.check(J, ['sarah']).rule]),
         mode: GAME.P.mode, notes: STRAT.S.notes.slice(-3).map(n => n.text) }; })()""")
     ck('a tap on the garden (its symbol, where Sarah stands) with Sarah selected gives her the garden\'s job', jb == [['sarah']], str(jb) + ' ' + str(dbg) + f' tap at {g}')
-    E("GAME.shot(); STHUD.refresh(); STHUD.draw()")
+    E("STRAT.note('Eine Meldung zum Messen')"); E("GAME.shot(); STHUD.refresh(); STHUD.draw()")
+    R3 = J("""(() => { const R = e => { if (!e || e.hidden || getComputedStyle(e).display === 'none' || getComputedStyle(e).visibility === 'hidden') return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom].map(Math.round); };
+      const ns = [...document.querySelectorAll('#stnotes .n')].map(R).filter(Boolean);
+      return { notes: ns, time: R(document.getElementById('sttime')), ppl: R(document.getElementById('stppl')) }; })()""")
+    ck('the notices sit above the people strip, never over the time box', R3['notes'] and all(apart(n, R3['time']) and apart(n, R3['ppl']) for n in R3['notes']), str(R3))
     pg.screenshot(path=os.path.join(OUT, 'telefon_2.png'), timeout=120000)
     # drag pans the view (touch) – on the map, not on a panel (the place's panel closed with its ✕ first)
     E("STHUD.closePanel()")
