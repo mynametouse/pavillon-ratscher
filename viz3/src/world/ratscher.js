@@ -905,6 +905,9 @@ export const RATSCHER = (() => {
     GU.uGCurve.value = GEOGU.uGeoCurve.value = on ? 0 : S.curve; // the plan view shows the photo as it is
     GU.uGGain.value = on ? (S.map ? 1 : 0.9) : 0.86;
     GEOGU.uGeoGain.value = GU.uGGain.value;
+    // feat/strategie: from straight above the far trees' crossed upright cards read as dark leaves over the meadows (at the Klinge); the photo
+    // under them shows those crowns where they stand – hidden in the plan view, as with the map; the first-person world unchanged
+    for (const m of S.trees) m.visible = !on && !S.map;
     markDirty(true);
   };
   S.village = () => {

@@ -47,6 +47,14 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - **Brennholz:** die Schwarten der Bandsäge (je ~0,04 rm) am Sägebock auf 33 cm sägen, spalten, aufsetzen (0,45–0,85 rm/h je Person nach
   Können, Motorsäge mit Sonderkraftstoff gebucht); trocken nach einem Jahr unter Dach (1. BImSchV: unter 25 % Feuchte). Verkauf an Ronald
   nebenan mit der Schubkarre: trocken 110 €/rm (TFZ Bayern), frisch 80 €/rm (Annahme) – Warten lohnt sich.
+- **Heizen:** an kalten Abenden (unter 14 °C um 22 Uhr), wenn eure Leute im Garten übernachten, brennt der Kanonenofen des Bungalows
+  (`garden/bungalow.js`) – etwa 0,0012 rm je Kelvin unter 20 °C und Nacht (bei −2 °C 0,026 rm, gut 8 kg Fichte; Annahme: ~25 m², dünn
+  gedämmt, ~100 W/K, abends und morgens geheizt; Heizwert Fichte lufttrocken ~1450 kWh/rm, im einfachen Ofen ~70 %). Nur trockenes Holz
+  (1. BImSchV): erst das eigene, sobald es ein Jahr lag, dann der gekaufte Vorrat am Bungalow (zu Beginn 1 rm – Annahme; der Stapel an der Rückwand des Anbaus
+  in der Welt ist knapp die Hälfte). Ohne Holz eine kalte
+  Nacht (Laune −12) und eine Meldung mit „Brennholz bestellen“ (1 rm Fichte ofenfertig frei Haus, 110 €, in der Kasse unter „Heizen“). Die
+  Temperatur: `STRAT.W.temp(t)` – nahe der Spieluhr die von feat/wetter, sonst das Klima von Meiningen (mit den Wetterfenstern des Pavillons
+  von feat/strategie-bau abgestimmt: deren `STBAU.tempOf` zuerst).
 - **Schutzausrüstung:** jede Person hat ihre eigene (Werkstatt: Gehörschutz, Brille, FFP2; Hubert auch Forst); in der Forstkiste am Traktor
   liegt eine Forst-Ausrüstung (wie in der Welt). Fällen braucht zwei (Säge und Helfer im Gefahrenbereich), eine zweite kauft man im
   Fachhandel (390 €, Auftrag in Schleusingen).
@@ -84,8 +92,9 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - Ohne Browser: `node --test viz3/test/unit/strategie.test.mjs` (Feiertage, wer wann da ist, Ruhezeiten mit Quellen, PV, Speicher, Stufen,
   Bedürfnisse, Wege, Preise mit Quellen).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9002 --serve strategie` (Abschnitte
-  `start,leute,auftrag,regel,holz,strom,ereignis,reload,welt` – `holz` ist die ganze Kette bis zur Lieferung) und `strategie_telefon`
-  (iPhone-Größe mit Touch: HUD ohne Überdeckung, antippen, ziehen); auf GitHub über `viz3/extra/strategie/tests.txt`, Bilder in `out/strategie/`.
+  `start,leute,auftrag,regel,holz,strom,ereignis,heizen,reload,welt` – `holz` ist die ganze Kette bis zur Lieferung) und `strategie_telefon`
+  (iPhone-Größe mit Touch: HUD ohne Überdeckung, antippen, ziehen) und `strategie_oben` (die Klinge von oben: was über dem Boden steht,
+  keine fernen Baumkarten über den Wiesen, in der Welt wieder da); auf GitHub über `viz3/extra/strategie/tests.txt`, Bilder in `out/strategie/`.
 
 ## API für Erweiterungen
 
@@ -231,14 +240,17 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
   Ebenen, Forstunternehmer).
 - 6.11. 2:20 – Brennholz für andere Themen (der Holzofen des Pavillons im Winter): `STHOLZ.firewood.stacked()`, `.dry(t)`,
   `.take(rm, { dryOnly })` → genommene rm, trockenes zuerst (1. BImSchV: nur trockenes Holz in den Ofen).
+- 6.11. 4:00 – `STRAT.W.temp(t)` (°C; eine Temperatur für den Modus, mit `STBAU.tempOf` abgestimmt); `STRAT.S.ext.heiz = { ofen, season, kalt }`
+  (gekaufter Vorrat am Bungalow in rm); Auftrag `brennholz_kaufen` (Ort Bungalow); Kassen-Art `heizen`. Der Ofen nimmt eigenes
+  Brennholz über `STHOLZ.firewood.take(rm, { dryOnly: true })` – wer den Pavillon-Ofen baut, kann denselben Weg gehen.
 - 6.11. 2:15 – `layer.define({ under: true })`; `STRAT.W.wx(t).dir` (Windrichtung, aus der er kommt); Knöpfe mit `data-skip="<Minuten>"` in
   einem Feld (`info()` eines Ortes) laufen im Zeitraffer.
 
 ## Offen
 
 - Der Traktor der Welt (`vehicles/tractor.js`) bleibt beim Rücken von oben an der Klinge stehen – das Gespann fährt nur auf der Karte, die
-  Stämme liegen am Ende im Lager. Ein Brennholzstapel ist in der Welt noch nicht zu sehen (nur als Vorrat); geheizt wird noch nicht
-  (Holzverbrauch im Winter, wenn jemand im Bungalow schläft).
+  Stämme liegen am Ende im Lager. Ein Brennholzstapel ist in der Welt noch nicht zu sehen (nur als Vorrat; auch die Schwarten der
+  Bandsäge zählt die Welt nur); geheizt wird nur der Bungalow (der Ofen des Pavillons kommt mit seiner Bauphase).
 - Das Telefon: Layout, Antippen, Ziehen im Test (iPhone-Größe), noch nicht auf einem echten Gerät; die Zeitbox ist dort groß (drei Reihen).
 - Der Hund (feat/tiere): von oben als Zeichen auf der Karte, seine Taten als Meldung mit „Loben“/„Tadeln“ – mehr (schicken, hüten als
   Auftrag) kann darauf aufbauen. Die Bestellung Lärche wird im Test begonnen (ein Brett), nicht ganz geliefert.
@@ -256,9 +268,13 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
     `HOLZDRY.simKiln()` (lufttrockene Bretter in den Trockenschrank bzw. heute unter das Pultdach, wie von Hand), `HOLZDRY.kilnMC()`,
     `HOLZDRY.kilnTarget()`, `HOLZDRY.simTake(n, o)` (trockene Bretter oben vom Stapel nehmen, für Bauholz), `HOLZDRY.simShop()`.
   - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak, sp })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
-  - `viz3/src/world/forest.js` – von oben (Draufsicht, `P.mode === 'top'`) zeichnen die Fernkarten nur ihre waagrechte Kronenebene; die
-    zwei stehenden Ebenen sahen von oben wie dunkle, schwebende Blätter über der Wiese an der Klinge aus (dasselbe Material, eine zweite
-    Geometrie je Zelle; in der Ich-Sicht unverändert).
+  - `viz3/src/world/forest.js` – von oben (Draufsicht, `P.mode === 'top'`) zeichnen die Fernkarten des Waldes nur ihre waagrechte
+    Kronenebene; die zwei stehenden Ebenen sahen von oben wie dunkle Kreuze am Waldrand aus (dasselbe Material, eine zweite Geometrie je
+    Zelle; in der Ich-Sicht unverändert).
+  - `viz3/src/world/ratscher.js` – in `topMode` (Draufsicht an/aus) eine Zeile: die gekreuzten Karten der fernen Bäume (aus dem
+    Kronenhöhenmodell, außerhalb des Waldes) sind in der Draufsicht aus, wie schon bei der Karte – sie waren die „dunklen Blätter“ über der
+    Wiese an der Klinge; das Luftbild darunter zeigt diese Kronen ohnehin. In der Ich-Sicht unverändert (Test `strategie_oben` prüft beides).
+    Das gilt auch für die gewöhnliche Draufsicht ohne den Modus (dieselbe Kamera).
   - `viz3/src/render/render.js` – der warmUp-Fix des Leads (91be8c98) als Cherry-Pick (1b246322), bis er über src kommt.
 - `viz3/src/modules.txt`: Block `# feat/strategie` nach `# feat/bus`, vor `game/tutorial.js`.
 - Das normale Spiel bleibt unberührt, bis jemand den Modus einmal startet (`STRAT.S.used`): vorher keine Simulation, keine Figuren, keine
