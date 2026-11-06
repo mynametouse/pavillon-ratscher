@@ -396,11 +396,11 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
   }
   function card() {
     const ch = STRAT.chapter.cur(),
-      o = S.orders.find(x => x.st === 'offen') || null,
+      os = S.orders.filter(x => x.st === 'offen' || x.st === 'verspätet').slice(0, 3),
       sv = S.style;
     const ag = STAUSBAU.age(),
       gl = STAUSBAU.goals();
-    const h = `${ch ? `<b>${esc(ch.title)}</b>` : ''}${gl.length ? `<div class="o">${gl.map(g => `${g.done ? '☑' : '☐'} ${esc(g.text)}`).join('<br>')}</div>` : ''}${o ? `<div class="o">Bestellung: ${esc(o.title)} · bis ${W.day(o.due).label}${o.got ? ` · ${o.got}/${o.n} geliefert` : ''}</div>` : ''}<div class="st" title="${esc(ag.text)}">Zeitalter: <u>${esc(ag.name)}</u></div><div class="st" title="${esc(D.STYLE.text)}">Dein Stil: <u>${C.styleName(sv)}</u> (${sv > 0 ? '+' : ''}${Math.round(sv)})</div>`;
+    const h = `${ch ? `<b>${esc(ch.title)}</b>` : ''}${gl.length ? `<div class="o">${gl.map(g => `${g.done ? '☑' : '☐'} ${esc(g.text)}`).join('<br>')}</div>` : ''}${os.map(o => `<div class="o">Bestellung: ${esc(o.title)} · ${o.st === 'verspätet' ? '<b>zu spät</b>, war ' : ''}bis ${W.day(o.due).label}${o.got ? ` · ${o.got}/${o.n} geliefert` : ''}</div>`).join('')}<div class="st" title="${esc(ag.text)}">Zeitalter: <u>${esc(ag.name)}</u></div><div class="st" title="${esc(D.STYLE.text)}">Dein Stil: <u>${C.styleName(sv)}</u> (${sv > 0 ? '+' : ''}${Math.round(sv)})</div>`;
     if (h !== H.cardH) {
       H.card.innerHTML = h;
       H.cardH = h;
@@ -589,6 +589,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       h += '</ul>';
       const U = (S.plan.urlaub || []).map(r => `${r.from} bis ${r.to}`);
       h += `<h4>Urlaub</h4><div class="sub">${U.length ? esc(U.join(' · ')) : 'keiner geplant'}</div><p><button type="button" class="stb" data-vac="next">Nächste Woche Urlaub</button> <button type="button" class="stb" data-vac="clear">Urlaub löschen</button></p>`;
+      h += `<h4>Zeitraffer</h4><div class="sub">Holz trocknet über Monate – alles läuft weiter: Aufträge, wer kommt und geht, was passiert.</div><p><button type="button" class="stb" data-skip="${7 * 1440}">⏩ 1 Woche</button> <button type="button" class="stb" data-skip="${28 * 1440}">⏩ 4 Wochen</button> <button type="button" class="stb" data-skip="${91 * 1440}">⏩ 3 Monate</button></p>`;
       h += `<div class="learn">Thüringer Feiertage: Neujahr, Karfreitag, Ostermontag, 1. Mai, Christi Himmelfahrt, Pfingstmontag, Weltkindertag (20.9., seit 2019 nur in Thüringen), Tag der Deutschen Einheit, Reformationstag, 1. und 2. Weihnachtstag.</div>`;
       setPan(h);
     });
@@ -641,6 +642,11 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       const r = STAUSBAU.buy(b.dataset.buy);
       if (r && r.no) no(r);
       else if (r && r.text) say(r.text);
+      H.panH = '';
+    } else if (b.dataset.skip) {
+      // a long wait in time-lapse (drying takes months): everything runs on meanwhile – jobs, people coming and going, events
+      const m = +b.dataset.skip;
+      if (m > 0) STRAT.skip(m);
       H.panH = '';
     }
   }
@@ -781,13 +787,12 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         const q = pr(q0[0], q0[1], 1.8);
         if (!onScreen(q)) continue;
         // on a vehicle's seat (a job's ride – the tractor of the skidding run): the symbol small beside the vehicle the layer draws
-        const pj = S.people[id].job ? STRAT.job.of(S.people[id].job) : null,
-          PJ = pj && pj.st === 'work' ? STRAT.job.get(pj.def) : null;
-        if (PJ && PJ.ride && PJ.ride(pj, id)) {
+        const rides = riding(id);
+        if (rides) {
           q[0] += 14;
           q[1] -= 14;
         }
-        const r = mpp < 0.06 ? 7 : PJ && PJ.ride && PJ.ride(pj, id) ? 7 : 10,
+        const r = mpp < 0.06 || rides ? 7 : 10,
           on = H.sel.includes(id);
         h += `<g class="pp${on ? ' on' : ''}"><circle class="b" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${r}" fill="${d.col}"/><text x="${q[0].toFixed(1)}" y="${q[1].toFixed(1)}">${d.short}</text><text class="lv" x="${(q[0] + r).toFixed(1)}" y="${(q[1] - r).toFixed(1)}">${STRAT.level(id)}</text>`;
         if (STRAT.layer.on('beduerfnisse')) {
@@ -811,11 +816,26 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         y = Math.min(f.y0, f.y1);
       h += `<rect class="frame" x="${x}" y="${y}" width="${Math.abs(f.x1 - f.x0)}" height="${Math.abs(f.y1 - f.y0)}"/>`;
     }
-    for (const L of STRAT.layer.list()) if (L.draw && STRAT.layer.on(L.id)) h += L.draw(pr, Wd, Ht) || '';
+    // the layers of the API: on top – or beneath everything drawn above when a layer says so (under: the weather's veil)
+    let under = '';
+    for (const L of STRAT.layer.list())
+      if (L.draw && STRAT.layer.on(L.id)) {
+        const o = L.draw(pr, Wd, Ht) || '';
+        if (L.under) under += o;
+        else h += o;
+      }
+    h = under + h;
     if (h !== H.svgH) {
       H.svg.innerHTML = h;
       H.svgH = h;
     }
+  }
+  // on a vehicle's seat right now (a job's ride: the tractor of the skidding run)
+  function riding(id) {
+    const p = S.people[id],
+      j = p && p.job ? STRAT.job.of(p.job) : null,
+      J = j && j.st === 'work' ? STRAT.job.get(j.def) : null;
+    return !!(J && J.ride && J.ride(j, id));
   }
   // ---------------- picking ----------------
   const rel = e => {
@@ -830,8 +850,12 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       if (STRAT.isOwn(id) && !STRAT.present(id).ok) continue;
       const q0 = STRAT.pos(id);
       if (!q0) continue;
-      const q = pr(q0[0], q0[1], 1.8),
-        d = Math.hypot(q[0] - sx, q[1] - sy);
+      const q = pr(q0[0], q0[1], 1.8);
+      if (riding(id)) {
+        q[0] += 14;
+        q[1] -= 14;
+      }
+      const d = Math.hypot(q[0] - sx, q[1] - sy);
       if (d < bd) {
         bd = d;
         best = id;

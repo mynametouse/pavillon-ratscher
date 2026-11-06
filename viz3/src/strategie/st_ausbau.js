@@ -138,7 +138,12 @@ export const STAUSBAU = (() => {
         on: 'auftrag',
         when: d => d.state === 'fertig' && d.def === 'waldbegang',
       },
-      { id: 'liefern', text: '5 Schneidebretter Eiche liefern', on: 'bestellung', when: d => d.state === 'geliefert' },
+      {
+        id: 'liefern',
+        text: '5 Schneidebretter Eiche liefern',
+        on: 'bestellung',
+        when: d => d.state === 'geliefert' && (STRAT.S.orders.find(o => o.id === d.id) || {}).key === D.ORDER0.id,
+      },
     ],
     k2: [
       {

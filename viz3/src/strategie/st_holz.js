@@ -51,6 +51,17 @@ export const STHOLZ = (() => {
     ((WERK.SHELF && WERK.SHELF.items) || []).filter(
       w => w.done && w.where === 'shelf' && (w.stars || 0) >= min && (sp ? w.sp === sp : !w.sp)
     );
+  // days until the stack is air-dry (≤ 20 %): the drying model's forecast, worked out once a game day
+  let dryK = '',
+    dryD = 0;
+  const dryIn = ms => {
+    const k = Math.floor(CLOCK.t / 1440) + ':' + ms.n;
+    if (k !== dryK) {
+      dryK = k;
+      dryD = HOLZDRY.forecast ? HOLZDRY.forecast(20) : 0;
+    }
+    return dryD;
+  };
   // ---------------- the stocks of the places ----------------
   STRAT.place.define({
     id: 'klinge',
@@ -95,7 +106,7 @@ export const STHOLZ = (() => {
       out.push(['Bretter im Block (frisch)', String(pile.length)]);
       out.push(['Bretter im Trockenstapel', String(st.length)]);
       if (ms) {
-        const d = ms.avg > 20 && HOLZDRY.forecast ? HOLZDRY.forecast(20) : 0;
+        const d = ms.avg > 20 ? dryIn(ms) : 0;
         out.push([
           'Holzfeuchte im Stapel',
           de(ms.avg, 0) +
@@ -111,6 +122,14 @@ export const STHOLZ = (() => {
           de(l.rm, 1) + ' rm · ' + (lotDry(l, t) ? 'trocken' : 'trocken ab ' + W.day(l.t0 + DRY_DAYS * 1440).label),
         ]);
       return out;
+    },
+    // a long wait made short: until the stack is air-dry (the forecast of the drying model)
+    info: () => {
+      const ms = HOLZDRY.stackMC ? HOLZDRY.stackMC() : null,
+        d = ms && ms.avg > 20 ? dryIn(ms) : 0;
+      return d > 0
+        ? `<p><button type="button" class="stb" data-skip="${d * 1440}">⏩ bis lufttrocken (≈ ${d} Tage)</button></p>`
+        : '';
     },
     badge: () => {
       const L = logsYard(),
@@ -138,7 +157,22 @@ export const STHOLZ = (() => {
         ],
         ['Aggregat (Benzin)', de(f.gen, 1) + ' von ' + f.genMax + ' l'],
         ['Powerstation', de(S.power.soc, 2) + ' kWh · PV ' + (S.power.pv || 0) + ' W'],
-      ];
+      ].concat(
+        (() => {
+          const k = HOLZDRY.kilnMC ? HOLZDRY.kilnMC() : null;
+          return k
+            ? [[k.shed ? 'Bretter unter dem Pultdach' : 'Bretter im Trockenschrank', k.n + ' · ' + de(k.mc, 1) + ' %']]
+            : [];
+        })(),
+        shelf(0, 'larch').length ? [['Schneidebretter Lärche im Regal', String(shelf(0, 'larch').length)]] : []
+      );
+    },
+    // drying on takes weeks: a week in time-lapse while boards are in the cabinet (or under the roof) and not yet dry enough
+    info: () => {
+      const k = HOLZDRY.kilnMC ? HOLZDRY.kilnMC() : null;
+      return k && k.mc > HOLZDRY.kilnTarget()
+        ? `<p><button type="button" class="stb" data-skip="${7 * 1440}">⏩ 1 Woche nachtrocknen</button></p>`
+        : '';
     },
     badge: () => {
       const n = shelf().length;
@@ -812,7 +846,9 @@ export const STHOLZ = (() => {
       return { text: `${de(rm, 1)} rm Brennholz bei Ronald aufgesetzt – ${Math.round(eur)} €` };
     },
   });
-  const openOrders = () => S.orders.filter(x => x.st === 'offen' || x.st === 'verspätet');
+  // open orders of boards (an order of another kind – kind: 'brennholz', 'gemuese' … – is delivered by its theme's own job)
+  const openOrders = () =>
+    S.orders.filter(x => (x.st === 'offen' || x.st === 'verspätet') && (!x.kind || x.kind === 'brett'));
   const ready = o => shelf(o.minStars || 0, o.wood || null).length >= o.n - (o.got || 0);
   // ---------------- 8 · own wood for the workshop: the air-dry planks dried on (the cabinet in the hall; today under the lean-to), glued ----
   const SPD = { larch: 'Lärche', spruce: 'Fichte', pine: 'Kiefer' };

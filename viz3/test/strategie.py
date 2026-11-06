@@ -47,7 +47,9 @@ with lib.browser() as b:
         return set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
     OWN = """(() => { const R = GAME.R, out = [], seen = new Set();
       const addO = (o, what) => o && o.traverse(m => { if (!m.material || m.isSkinnedMesh) return; for (const M of [].concat(m.material)) { if (seen.has(M)) continue; seen.add(M);
-        const p = R.properties.get(M).currentProgram; if (p) out.push([what + ' ' + (M.name || M.type), p.cacheKey]); } });
+        const p = R.properties.get(M).currentProgram; if (!p) continue;
+        const chain = []; for (let q = m, k = 0; q && k < 4; q = q.parent, k++) chain.push(q.name || q.type);
+        out.push([what + ' ' + (M.name || M.type) + ' {' + chain.join('<') + (M.map ? ' map' : '') + (M.color ? ' #' + M.color.getHexString() : '') + (M.vertexColors ? ' vc' : '') + (M.transparent ? ' tr' : '') + (M.alphaTest ? ' at' : '') + '}', p.cacheKey]); } });
       for (const sp of new Set(HOLZ.logs.map(l => l.sp))) { const G = HOLZ.species && HOLZ.species(sp); if (G) { addO(G.mS, 'Stamm'); addO(G.mC, 'Stamm'); } }
       const Bw = window.BUILD && BUILD.werkstatt; if (Bw && Bw.root) addO(Bw.root, 'Werkstatt');
       const base = new Set(window.__st_roots || []);
@@ -75,6 +77,7 @@ with lib.browser() as b:
         E("STHUD.refresh()")
         ck('the calendar says Saturday', day['wd'] == 6 and 'Sa' in E("document.getElementById('stdate').textContent"), str(day) + ' ' + E("document.getElementById('stdate').textContent"))
         page_pic('01_von_oben')
+    print('page errors before leute:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'leute' in want:
         pres = J("Object.fromEntries(Object.keys(STRAT.S.people).map(id => [id, STRAT.present(id).ok]))")
         ck('Saturday 9:30: all five are there', all(pres.values()), str(pres))
@@ -114,6 +117,7 @@ with lib.browser() as b:
         cpos = J("STRAT.pos('christoph')")
         ck('… and he walks there in game time', math.hypot(cpos[0] + 2, cpos[1] - 4) < 2.5, str(cpos))
         page_pic('02_auswahl')
+    print('page errors before auftrag:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'auftrag' in want:
         E("STHUD.select(['sarah'])")
         before = J("({ m2: STRAT.W.mownArea(CLOCK.t), fuel: STRAT.W.fuel(), t: CLOCK.t })")
@@ -140,6 +144,7 @@ with lib.browser() as b:
         E("GAME.P.th = 34; GAME.P.tx = STRAT.place.pos('garten')[0]; GAME.P.ty = STRAT.place.pos('garten')[1]")
         lib.shot(pg, OUT, '04_gemaeht_nah')
         E("GAME.P.th = 120; GAME.P.tx = -2; GAME.P.ty = -8")
+    print('page errors before regel:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'regel' in want:
         J("STRAT.setDate('2026-11-08', 11 * 60)")
         steps(0.3)
@@ -161,6 +166,7 @@ with lib.browser() as b:
         led = J("({ eur: STRAT.S.eur, last: STRAT.S.ledger.slice(-1)[0] })")
         ck('Euro booked in the ledger', abs(led['eur'] - 2487.5) < 0.01 and led['last']['text'] == 'Test: Kettenöl', str(led))
         page_pic('05_warum')
+    print('page errors before holz:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'holz' in want:
         # the wood chain end to end in time-lapse: look → fell → skid → saw → stack → dry; oak panels → boards → the order
         E("STRAT.setSpeed(30)")
@@ -265,6 +271,18 @@ with lib.browser() as b:
         # are dried on (today, without the hall, under the lean-to's roof; with the hall in the cabinet) and glued to panels of own wood
         q0 = J("STRAT.job.check('nachtrocknen', ['christoph'])")
         ck('drying on is refused while the stack is not air-dry – with the reason (checks above ~20 %)', q0 and 'lufttrocken' in q0.get('text', '') and q0.get('why'), str(q0)[:300])
+        # the log yard's panel offers the time-lapse until air-dry (the drying model's forecast) – a click on it
+        E("STHUD.openPlace('holzlager')"); steps(0.5)
+        bt = J("(() => { const b = document.querySelector('#stpan button[data-skip]'); return b ? { t: b.textContent, m: +b.dataset.skip } : null; })()")
+        if bt:
+            E("document.querySelector('#stpan button[data-skip]').click()")
+            until("!CLOCK.warp", 120, 0.25)
+        msb = J("HOLZDRY.stackMC()")
+        ck('the log yard\'s panel offers „bis lufttrocken“ – one click and the stack is air-dry when the forecast said', bt and 'lufttrocken' in bt['t'] and msb and msb['avg'] <= 21, f"{bt} → {msb and round(msb['avg'], 1)} %")
+        # one dry plank taken off the top of the stack for building (the API for strategie-bau's timber)
+        tk = J("HOLZDRY.simTake(1, { maxMC: 21 })")
+        mst = J("HOLZDRY.stackMC()")
+        ck('a dry plank can be taken off the stack for building (HOLZDRY.simTake: from the top, ≤ 21 %)', len(tk) == 1 and tk[0]['mc'] <= 21 and mst and mst['n'] == msb['n'] - 1, f'{tk} {msb and msb["n"]} → {mst and mst["n"]}')
         for i in range(10):
             ms = J("HOLZDRY.stackMC()")
             if ms and ms['avg'] <= 20.5: break
@@ -353,6 +371,7 @@ with lib.browser() as b:
         led = J("STRAT.S.ledger.slice(-12).map(e => e.text + ' ' + e.eur)")
         print('ledger', led, flush=True)
         page_pic('10_werkstatt')
+    print('page errors before strom:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'strom' in want:
         # power: a clear June noon against an overcast November noon (two PV modules, 0,86 kWp)
         E("STRAT.W.force = { cloud: 0.05, rain: 0, wind: 8, storm: false, src: 'Test' }")
@@ -364,7 +383,15 @@ with lib.browser() as b:
         steps(0.5)
         nov = J("({ pv: STRAT.S.power.pv, day: STRAT.C.pvDayKWh(10, 0.95) })")
         ck('PV: a clear June noon gives far more than an overcast November noon', jun['pv'] > 450 and nov['pv'] < 90 and jun['day'] > 8 * nov['day'], f'{jun} {nov}')
+        # the weather layer: the overcast, rainy November noon over the map (veil, rain, the wind's arrow from the west)
+        E("STRAT.W.force = { cloud: 0.95, rain: 2.5, wind: 38, storm: false, dir: 270, src: 'Test' }; GAME.P.tx = -2; GAME.P.ty = -8; GAME.P.th = 120")
+        steps(0.3)
+        E("STHUD.draw()")
+        wl = J("(() => { const s = document.getElementById('stsvg'); return { rain: !!s.querySelector('pattern#strain'), wind: (s.querySelector('g.wind text') || {}).textContent || null }; })()")
+        ck('the weather layer shows it over the map: a veil, rain, the wind\'s arrow with its speed', wl['rain'] and wl['wind'] and '38 km/h' in wl['wind'], str(wl))
+        page_pic('11_wetter')
         E("STRAT.W.force = { cloud: 0.2, rain: 0, wind: 10, storm: false, src: 'Test' }")
+    print('page errors before ereignis:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'ereignis' in want:
         # a storm throws spruces in the Klinge – unknown until someone looks; the forestry contractor; a breakdown and its repair
         J("STRAT.setDate('2026-12-05', 8 * 60 + 30)")
@@ -394,6 +421,7 @@ with lib.browser() as b:
         rp = job('reparieren', ['christoph'])
         until(done(rp['id']), 60)
         ck('Christoph repairs it', 'Blockbandsäge' not in J("STRAT.S.broken"), str(J("STRAT.S.broken")))
+    print('page errors before reload:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'reload' in want:
         J("STRAT.setDate('2026-11-07', 10 * 60)")
         E("STHUD.select(['ronald'])")
@@ -416,6 +444,7 @@ with lib.browser() as b:
         ck('after a reload the mode goes on from above', st['on'] and st['mode'] == 'top', str(st))
         ck('… and Ronald\'s job is still there with its progress', mid and st['job'] and st['job']['done'] >= mid['done'] - 0.01, f'{mid} → {st}')
         ck('… and the ledger kept its Euro', abs(st['eur'] - eur_before) < 0.01, f"{eur_before} → {st['eur']}")
+    print('page errors before welt:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'welt' in want:
         # a double click on Sarah's symbol: you walk as Sarah where she stands; U brings you back up
         E("STHUD.select([])")

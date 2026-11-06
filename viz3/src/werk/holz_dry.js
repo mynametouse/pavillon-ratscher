@@ -1137,6 +1137,44 @@ export const HOLZDRY = (() => {
     markDirty(true);
     return { n: sb.length, mc: m, shed, days: shed ? shedDays() : kilnDays() };
   };
+  // feat/strategie: boards taken off the stack for building (strategie-bau: timber for the pavilion) – from the top layer down, as one
+  // unstacks, those with at most o.maxMC % (default 20: structural timber) and at least o.minT m thick; they leave the stack (st 'used'), an
+  // emptied top layer goes, the stack is drawn anew. Returns what was taken: [{ id, sp, t, L, w, mc, blue, crack, warp }].
+  S.simTake = (n, o = {}) => {
+    advance();
+    const st = S.stack;
+    if (!st || !st.layers.length || !(n > 0)) return [];
+    const maxMC = o.maxMC ?? 20,
+      minT = o.minT ?? 0,
+      out = [];
+    for (let li = st.layers.length - 1; li >= 0 && out.length < n; li--) {
+      const ly = st.layers[li];
+      for (const id of ly.boards.slice()) {
+        if (out.length >= n) break;
+        const b = B().find(x => x.id === id);
+        if (!b || b.st !== 'stack' || b.mc > maxMC || b.t < minT) continue;
+        b.st = 'used';
+        ly.boards = ly.boards.filter(x => x !== id);
+        out.push(b);
+      }
+    }
+    while (st.layers.length && !st.layers[st.layers.length - 1].boards.length) st.layers.pop();
+    if (!st.layers.length) st.roof = st.weight = false;
+    rebuild();
+    save();
+    markDirty(true);
+    return out.map(b => ({
+      id: b.id,
+      sp: b.sp,
+      t: b.t,
+      L: b.L,
+      w: +((b.wS + b.wW) / 2).toFixed(3),
+      mc: +b.mc.toFixed(1),
+      blue: !!b.blue,
+      crack: !!b.crack,
+      warp: !!b.warp,
+    }));
+  };
   // feat/strategie: the target of what lies in the cabinet / under the roof (Leimholz needs 8–12 %)
   S.kilnTarget = () => (S.kiln && S.kiln.shed ? 12 : 10.5);
   S.kilnMC = () => {
