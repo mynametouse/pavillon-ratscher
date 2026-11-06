@@ -157,12 +157,12 @@ export const STEREIG = (() => {
     show: () => {
       const st = ext('sturm'),
         k = ext('kaefer');
-      return !!((st && st.known && !st.done) || (k && k.known && !k.done));
+      return !!((st && st.known && !st.done) || (k && k.known && !k.done) || tiereKaefer().length);
     },
     can: () => {
       const st = ext('sturm'),
         k = ext('kaefer');
-      if (!((st && st.known && !st.done) || (k && k.known && !k.done)))
+      if (!((st && st.known && !st.done) || (k && k.known && !k.done) || tiereKaefer().length))
         return { no: true, text: 'Es ist kein Sturm- oder Käferholz bekannt.', why: '', src: '' };
       return null;
     },
@@ -172,6 +172,19 @@ export const STEREIG = (() => {
       return { text: `der Unternehmer kommt in ${days} Tagen` };
     },
   });
+  // feat/tiere: the spruces with bore dust (stage 1) of the animals' beetle model, once someone walked the forest – their ids
+  const tiereKaefer = () => {
+    const T = window.TIERE;
+    if (!T || !T.kaefer || typeof T.kaefer.list !== 'function' || !STRAT.known('wald', 'klinge')) return [];
+    try {
+      return T.kaefer
+        .list()
+        .filter(k => k.stage === 1)
+        .map(k => k.id);
+    } catch (e) {
+      return [];
+    }
+  };
   STRAT.event.define({
     id: 'termin',
     label: 'Der Forstunternehmer war da',
@@ -182,6 +195,9 @@ export const STEREIG = (() => {
         ids = [];
       if (st && st.known && !st.done) ids.push(...st.ids);
       if (k && k.known && !k.done) ids.push(...k.ids);
+      // feat/tiere: their beetle spruces with bore dust, known from the forest walk – out before the brood flies (KERN 'fell' stops it there)
+      const tk = tiereKaefer();
+      for (const id of tk) if (!ids.includes(id)) ids.push(id);
       let vol = 0,
         n = 0;
       for (const id of ids) {
@@ -192,8 +208,8 @@ export const STEREIG = (() => {
         }
       }
       if (st && st.known) st.done = true;
-      if (k && k.known) {
-        k.done = true;
+      if ((k && k.known) || tk.length) {
+        if (k && k.known) k.done = true;
         STRAT.style(3, 'Käferbäume rechtzeitig aus dem Wald');
       }
       delete S.ext.termin;
