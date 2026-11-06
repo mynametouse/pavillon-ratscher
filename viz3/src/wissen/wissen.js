@@ -205,6 +205,16 @@ export const WISSEN = (() => {
     });
     ($('p-3d') || document.body).appendChild(el);
     NQ.el = el;
+    // the menu opens over a notice that is showing: the notice steps back and comes again when the menu closes
+    const m = $('menu');
+    if (m && typeof MutationObserver !== 'undefined')
+      new MutationObserver(() => {
+        if (!m.hidden && !el.hidden && el.dataset.id && REG.has(el.dataset.id)) {
+          el.hidden = true;
+          clearTimeout(el._t);
+          NQ.wait = [REG.get(el.dataset.id)].concat(NQ.wait || []).slice(0, 12);
+        }
+      }).observe(m, { attributes: true, attributeFilter: ['hidden'] });
     return el;
   }
   // ---- „Warum?“ ----

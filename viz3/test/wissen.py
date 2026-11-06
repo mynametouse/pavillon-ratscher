@@ -70,6 +70,12 @@ def run():
             no = J("(() => { const n = document.getElementById('winote'); return n ? { vis: !n.hidden, txt: n.textContent } : null; })()")
             ck('feat/tiere: a species seen → its entry (tier:rotmilan), with a soft notice', J("WISSEN.has('tier:rotmilan')") and no and no['vis'] and 'Rotmilan' in no['txt'], str(no))
             page_pic('01_hinweis')
+            # the menu opens over the notice: it steps back, and comes again when the menu closes
+            E("HUD.setMenu(true)"); time.sleep(0.3)
+            hid = J("document.getElementById('winote').hidden")
+            E("HUD.setMenu(false)"); time.sleep(0.2); steps(1.7); time.sleep(0.3)
+            back = J("(() => { const n = document.getElementById('winote'); return !n.hidden && n.textContent.includes('Rotmilan'); })()")
+            ck('the notice is not over the open menu – it comes again when the menu closes', hid is True and back is True, str({'hidden_in_menu': hid, 'back': back}))
             E("KERN.emit('tiere:entdeckt', { kind: 'art', id: 'luchs', title: 'Luchs', source: ['Luchs (Wikipedia)', 'https://de.wikipedia.org/wiki/Luchs'] })")
             g = J("(() => { const e = WISSEN.get('tier:luchs'); return e ? { ch: e.ch, title: e.title, src: e.src } : null; })()")
             ck('a species the book has no entry for becomes one (Natur, with the source of the event)', g and g['ch'] == 'natur' and g['src'] and 'wikipedia' in (g['src'][0][1] or ''), str(g))
