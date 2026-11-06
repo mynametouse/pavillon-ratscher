@@ -2,85 +2,143 @@
 
 Falko, 5.11.2026 23:20/23:24: die Tiere, die es um Ratscher wirklich gibt, in der Welt (auch in der Ich-Sicht) und mit Einfluss; ein
 Begleiter-Tier, das von dir lernt (Black & White). 23:28: viel über die Natur lernen und entdecken. Auftrag: `docs/plans/auftraege/tiere.md`.
+Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKOERPER), `tiere_ton.js` (TTON), `tiere.js` (TIERE),
+`tiere_einfluss.js` (TEINFLUSS), `tiere_hund.js` (HUND).
 
 ## Was es gibt
 
-- **Körper ohne fremde Modelle** (`tiere/tiere_koerper.js`, `TKOERPER`): frei lizenzierte Tiermodelle sind entweder nicht animiert, nur
-  nach Anmeldung zu haben (Sketchfab u. a.) oder Spielzeug-Klötzchen. Deshalb werden die Körper aus Maßen gebaut – Rumpf (Rücken- und
+- **Körper ohne fremde Modelle** (`TKOERPER`): Die frei lizenzierten Tiermodelle, die ohne Anmeldung zu haben sind, sind entweder
+  Spielzeug-Klötzchen oder liegen nur als Blender/FBX vor (siehe „Offen“). Deshalb werden die Körper aus Maßen gebaut – Rumpf (Rücken- und
   Bauchlinie, Breite), Hals mit Kopf, Beine mit den echten Gelenken (Hüfte, Knie, Sprunggelenk; Schulter, Ellbogen, Vorderfußwurzel), Ohren,
-  Schwanz, Geweih – als Ringe entlang einer Linie, in wahrer Größe, mit Knochen (ein SkinnedMesh, **ein Draw-Call je Tier**, ~1800 Dreiecke).
-  Das Fell steckt in den Vertexfarben: heller Bauch, beim Reh der weiße Spiegel und die schwarze Nase, Sommer- und Winterfell, gestreifte
-  Frischlinge, beim Rotmilan der rostrote Gabelschwanz und die weißen Felder unter den Flügeln, beim Hund die gelben Backen. **Ein Material
-  für alle Tiere**, beim Laden mit einem unsichtbaren Träger übersetzt – kein neues Shader-Programm, wenn Tiere erscheinen.
-  Bewegung: Schritt (Viertakt), Trab (diagonal), Galopp, Sprünge (das flüchtende Reh), Äsen, Sichern (Kopf hoch, Ohren nach vorn),
-  Liegen, Sitzen, Wühlen; Vögel schlagen und gleiten, der Milan dreht den Schwanz.
-- **Wo** (`tiere/tiere.js`, `TIERE`): eine Lebensraum-Karte in 20-m-Zellen über das 2,4-km-Quadrat aus den echten Baumkronen
-  (`RATSCHER.treeXY`, Bestand an der Klinge) und den Gebäuden: Wald, Waldrand, offenes Land, Siedlung. Darauf Gruppen mit Einstand
-  (Deckung) und Äsungsplatz, fest aus einem Startwert (jeder Besuch dieselbe Welt): Rehe an den Waldrändern (28 Gruppen, mindestens 170 m
-  auseinander), Wildschwein-Rotten tief in den großen Wäldern mit Feld oder Wiese in Reichweite (mit einem einzelnen Keiler), zwei
-  Rotmilan-Paare über dem offenen Land.
-- **Wann:** nach Sonnenstand und Kalender. Rehe treten in der Dämmerung aus und bleiben nachts auf den Feldern, im Winter in Sprüngen
-  (3–8) und dann auch tags draußen, ab Ende Mai Ricken mit Kitzen; Böcke mit Gehörn von März bis Oktober. Wildschweine nur nachts, von März
-  bis August mit gestreiften Frischlingen. Der Rotmilan tags von März bis Oktober (selten im Winter). Eine aufgeschreckte Gruppe bleibt
-  anderthalb Spielstunden in der Deckung.
+  Schwanz, Geweih, Mähne – als Ringe entlang einer Linie, in wahrer Größe, mit Knochen: **ein SkinnedMesh und ein Draw-Call je Tier**,
+  1800–2300 Dreiecke. Das Fell steckt in den Vertexfarben: heller Bauch, dunklerer Rücken, Unterschiede entlang des Körpers, beim Reh der
+  weiße Spiegel und die schwarze Nase, Sommer- und Winterfell, gefleckte Kitze, beim Wildschwein Borsten und Mähne, gestreifte Frischlinge
+  nur im ersten Sommer, beim Rotmilan der rostrote Gabelschwanz, beim Hund die gelben Backen. **Ein Material für alle Tiere**, beim Laden mit
+  unsichtbaren Trägern übersetzt (skinned, einfach, instanziert) – kein neues Shader-Programm, wenn Tiere erscheinen.
+  Bewegung: Schritt (Viertakt), Trab, Galopp, Sprünge (das flüchtende Reh), Äsen, Sichern (Kopf hoch), Liegen, Sitzen, Wühlen; Vögel
+  schlagen und gleiten, legen sich in die Kurve, der Milan dreht den Schwanz; der Uhu sitzt und dreht den Kopf.
+- **Der Fuchs ist ein echtes Modell:** „Fox“ aus den glTF Sample Assets der Khronos Group (Modell PixelMannen CC0, Rigging und Animation
+  tomkranis CC BY 4.0, glTF @AsoboStudio/@scurest CC BY 4.0) mit seinen eigenen Bewegungen (Umschauen, Gehen, Laufen, nach Tempo
+  überblendet), in wahrer Größe (Ohrspitzen 55 cm, Nase bis Schwanzspitze 1,08 m); die Textur wird beim Laden in die Ecken gebacken und
+  auf ein echtes Fuchsrot getönt – so zeichnet auch er mit dem einen Material, ohne neues Shader-Programm. Geladen erst, wenn ein Fuchs
+  in die Nähe kommt (`tiere/fuchs.glb`, 160 KB); bis dahin oder falls es scheitert der gebaute Fuchs.
+- **Arten im Spiel:** Reh (Ricke, Bock mit Gehörn – im November abgeworfen, im Winter Bast –, Kitz), Wildschwein (Bache, Keiler,
+  Frischlinge), Rothirsch (Alttier, Kalb, Hirsch in der Brunft), Fuchs, Feldhase, Dachs, Waschbär, Steinmarder, Wildkatze, Rotmilan,
+  Mäusebussard, Kolkrabe, Schwarzstorch, Uhu; dazu der Hund. Borkenkäfer und Schermaus über ihre Spuren und Schäden.
+- **Wo** (`TIERE`): eine Lebensraum-Karte in 20-m-Zellen über das 2,4-km-Quadrat aus den echten Baumkronen (`RATSCHER.treeXY`, Bestand an
+  der Klinge) und den Gebäuden: Wald, Waldrand, offenes Land, Siedlung. Darauf Gruppen mit Einstand und Äsungsplatz, fest aus einem
+  Startwert (jeder Besuch dieselbe Welt): 28 Reh-Gruppen an den Waldrändern, Rotten tief in den Wäldern (ein Keiler allein), Füchse am
+  Waldrand, Hasen mitten in den Feldern, zwei Dachsbaue, Waschbären und Marder im Dorf, eine Wildkatze weit weg von den Häusern, eine
+  Rotwild-Gruppe auf der Durchreise, Milane und Bussarde über dem offenen Land, Kolkraben über dem Wald, der Schwarzstorch mit seinem Horst
+  tief in der Klinge, der Uhu auf einer Fichte am Waldrand unter der Unteren Klinge.
+- **Wann:** nach Sonnenstand und Kalender. Rehe in der Dämmerung und nachts draußen, im Winter in Sprüngen auch tags; Winterfell von
+  Oktober bis Mai. Wildschweine nur nachts. Fuchs abends (im Winter auch tags), Hase in der Sasse bis man fast auf ihn tritt, Dachs,
+  Waschbär, Marder nachts (im kalten Winter oft nicht), Wildkatze selten in der Dämmerung, Rotwild in einem Viertel der Nächte (in der
+  Brunft öfter). Milan von März bis Oktober, Bussard das ganze Jahr, Schwarzstorch von Ende März bis Anfang September, Uhu in der Dämmerung.
 - **Wie:** nur wenige Tiere nahe beim Betrachter sind echte Modelle (Telefon 14, sonst 26); ferne Gruppen sind nur Zahlen. Sie äsen,
-  ziehen ein paar Schritte, sichern, fliehen vor dem Spaziergänger, einem fahrenden Auto, Lärm und dem Hund in ihrer echten Fluchtdistanz
-  (Reh ~110 m, nachts weniger, ein Rennender fällt früher auf; Wildschwein ~70 m) – die ganze Gruppe, zur Deckung hin, das Reh in Sprüngen
-  mit gespreiztem Spiegel. Wer tags in den Wald geht, scheucht ruhende Rehe aus dem Bett. Der Milan kreist in 40–90 m Höhe, schlägt ab
-  und zu mit den Flügeln, legt sich in die Kurve.
-- **Entdecken:** wer eine Art zum ersten Mal sieht (im Bild, nah genug), bekommt einen Gedanken („Ein Reh! Es äst am Waldrand.“) und das
-  Ereignis `tiere:entdeckt` für das Entdeckerbuch; gespeichert in `pav-tiere-v1`. Steckbriefe mit Quellen für 20 Arten in
-  `tiere/tiere_arten.js` (`TARTEN`).
-- **Der Hund** (`tiere/tiere_hund.js`, `HUND`): Hasso, ein Altdeutscher Hütehund vom Schlag Gelbbacke (mitteldeutscher Typ, 55–60 cm,
-  schwarz mit gelben Abzeichen an Backen, Fang und Läufen, Stehohren) – passt zu einem Garten mit Ziegen und Wald. Er folgt dir links
-  hinter dir, geht, trabt oder galoppiert, um mitzuhalten, schaut zu dir, setzt sich nach ein paar Sekunden, legt sich nach einer halben
-  Minute, wedelt; fährt im Auto mit und springt mit dir heraus; kommt mit, wenn du an einen anderen Ort springst. Das Wild hält Abstand.
+  wühlen, lauschen (Fuchs), ziehen weiter, sichern, fliehen in ihrer Fluchtdistanz vor dem Spaziergänger (Reh ~110 m, nachts weniger,
+  ein Rennender fällt früher auf, ruhend in der Deckung später), vor einem fahrenden Auto, vor Lärm und vor dem frei laufenden Hund – die
+  ganze Gruppe, zur Deckung hin; aufgeschreckt bleiben sie eine Weile in der Deckung. Stimmen: der Rehbock schreckt, die Rotte grunzt, der
+  Fuchs bellt und schreit in den Winternächten, Hasso bellt.
+- **Einfluss** (`TEINFLUSS`, Tag für Tag nach dem Spielkalender, auch im Zeitraffer): Rehe verbeißen junge Bäume (Winter und Frühjahr
+  am meisten; Tanne, Ahorn, Eiche lieber als Buche, Lärche, Fichte; nach der Zahl der Rehe im Umkreis von 400 m) – an einer **Pflanzung von
+  40 jungen Bäumen am Rand des Familienwalds**, die Hälfte in Wuchshüllen, an Falkos Bäumchen im Garten und an den gepflanzten Bäumen des
+  Gartenplaners. Wildschweine brechen in Herbst- und Frühjahrsnächten die Gartenwiese um (Elektrozaun hilft). **Borkenkäfer** in den Fichten
+  der Klinge: die Käferbäume vom letzten Sommer stehen da (rotbraune und graue Kronen), neue Befälle in der warmen Jahreszeit mit Bohrmehl am
+  Stammfuß, nach sechs Wochen fliegt die Brut in die Nachbarn; ein gefällter Käferbaum (`fell`) stoppt sie. Wühlmäuse machen Hügel und
+  fressen Wurzeln junger Obstbäume ohne Korb. Der Fuchs holt Hühner, wenn der Stall nachts offen ist (Hühner über die API).
+  **Ruhezone Schwarzstorch:** im Umkreis von 100 m nie fällen, bis 300 m vom 1. März bis 15. September kein Holzeinschlag und kein Rücken
+  (Fachempfehlung LfU Rheinland-Pfalz 2018); der Horst steht ~260 m vom Familienwald.
+- **Entdecken:** eine Art zum ersten Mal gesehen (im Bild, nah genug) oder eine Spur gefunden (hingehen und hinschauen: Suhle, Wühlstelle,
+  verbissener Trieb, Fegestelle, Bohrmehl, Käferfichte, Wühlmaushügel, Horst) → ein Gedanke mit einem Satz zum Lernen und das Ereignis
+  `tiere:entdeckt` für das Entdeckerbuch, gespeichert in `pav-tiere-v1`. Steckbriefe mit Quellen für 20 Arten in `TARTEN.A`.
+- **Der Hund** (`HUND`): Hasso, ein Altdeutscher Hütehund vom Schlag Gelbbacke (mitteldeutscher Typ, 55–60 cm, schwarzes Stockhaar mit gelben
+  Abzeichen, Kippohren) – passt zu einem Garten mit Ziegen und Wald. Er folgt dir links hinter dir, geht, trabt oder galoppiert, schaut sich um,
+  setzt sich, legt sich, wedelt; fährt im Auto mit; kommt mit, wenn du an einen anderen Ort springst. **Er lernt wie die Kreatur in Black &
+  White:** von sich aus treibt er Ronalds Ziegen an die Heuraufe, vertreibt Wild aus dem Garten, jagt ihm draußen hinterher, findet Spuren für
+  dich (und zeigt sie dir), bellt einen Nachbarn an oder bleibt ruhig. **Loben (+) und Tadeln (−)** gilt dem, was er zuletzt getan hat
+  (eine Viertelminute): die Neigung dazu steigt oder sinkt ein Stück, Lob stärkt die Bindung. **Rufen (P)** – von einer Jagd kommt er nur, wenn
+  die Bindung stark und der Jagdtrieb schwach ist; **Schicken (U)** dahin, wo du hinschaust – Wild: er vertreibt es, Ziegen: er hütet sie,
+  sonst sucht er Spuren. Vier Knöpfe am Bildschirm (für das Telefon), wenn er in der Nähe ist. Gespeichert in `pav-hund-v1`.
 
-## Die Arten (Steckbrief mit Quelle je Art in `TARTEN.A`)
+## Die Arten und Quellen (Steckbrief je Art in `TARTEN.A`, im Spiel mit Quelle)
 
-| Gruppe | Arten (Modell im Spiel) | Quellen |
+| Gruppe | Arten | Quellen |
 |---|---|---|
-| Wild | Reh (ja), Wildschwein (ja), Rothirsch, Rotfuchs, Dachs, Feldhase, Waschbär, Steinmarder, Mäusebussard, Kolkrabe | Wikipedia-Artikel je Art; Thüringer Landtag zu Rotwildgebieten und zum Feldhasen |
-| Selten | Rotmilan (ja), Uhu, Schwarzstorch, Schwarzspecht, Wildkatze, Luchs | Wikipedia; BUND Thüringen (Wildkatze); Berliner Zeitung 7.5.2026 und Landtag (Luchs im Thüringer Wald); LfU Rheinland-Pfalz, Fachempfehlungen Horstschutz Schwarzstorch 2018 |
-| Schädlinge | Buchdrucker (Borkenkäfer), Schermaus | Wikipedia; waldwissen.net (Befallssuche) |
-| Nutz- und Haustiere | Ronalds Ziegen (`npc/npc.js`, unverändert), der Hund (ja) | Wikipedia; zooplus (Gelbbacke) |
+| Wild | Reh, Wildschwein, Rothirsch, Rotfuchs, Dachs, Feldhase, Waschbär, Steinmarder, Mäusebussard, Kolkrabe | Wikipedia-Artikel je Art; Thüringer Landtag: Rotwildgebiete (Drucksache Teil III), Feldhase und Rebhuhn seit 2020 |
+| Selten | Rotmilan, Uhu, Schwarzstorch, Schwarzspecht, Wildkatze, Luchs | Wikipedia; BUND Thüringen, Wildkatzen-Magazin; Berliner Zeitung 7.5.2026 (Luchsin Vreni bei Ilmenau, ausgewildert 2024) und Thüringer Landtag „Projektbündnis Luchs Thüringen“; LfU Rheinland-Pfalz, Fachempfehlungen Horstschutz Schwarzstorch (2018) |
+| Schädlinge | Buchdrucker (Borkenkäfer), Schermaus | Wikipedia; waldwissen.net „Befallssuche beim Borkenkäfer“ |
+| Nutz- und Haustiere | Ronalds Ziegen (`npc/npc.js`, unverändert), der Hund | Wikipedia (Hausziege, Altdeutsche Hütehunde); zooplus Magazin „Gelbbacke“ |
+
+Tierstimmen: Wikimedia Commons – „Male roe deer growl“ (1bumer, CC BY-SA 4.0), „Mudchute pig 1/2“ (Secretlondon, CC BY-SA 3.0), „Bellender
+Fuchs“ (Jugrü, CC BY-SA 3.0), „FuchsSchreit“ (Livlandfahrer, CC BY-SA 4.0), „Barking of a dog“ (Amada44, CC BY-SA 3.0); gekürzt, gefiltert,
+normalisiert, unter derselben Lizenz (`viz3/extra/tiere/dist/tiere/`, Nachweis in `viz3/extra/tiere/manifest.json`).
 
 ## Ausprobieren
 
-- Abends (Dämmerung) an den Waldrand der Klinge gehen, z. B. vom Feld an der L 1625 (`GAME.view(-150, -400, …)`): Rehe auf den Wiesen vor
-  dem Wald; langsam hingehen – sie sichern, dann springen sie ab. Nachts Wildschweine auf den Feldern am Wald. Mittags im September über
-  den Wiesen nach oben schauen: Rotmilane.
-- Konsole: `TIERE.state()`, `TIERE.list()`, `TIERE.groupList()`, `TIERE.plan(gruppe)`, `HUND.state()`.
+- Abends an den Waldrand der Klinge, z. B. vom Feld an der L 1625 (Konsole `GAME.view(-150, -400, …)`): Rehe vor dem Wald; langsam
+  hingehen – sie sichern und schrecken, dann springen sie ab. Nachts Wildschweine auf den Feldern. Mittags im Sommer nach oben schauen: Milane.
+- Mit Hasso: P rufen, U schicken, + loben, − tadeln (oder die vier Knöpfe rechts).
+- Konsole: `TIERE.state()`, `TIERE.list()`, `TIERE.groupList()`, `TEINFLUSS.state()`, `TIERE.baeume()`, `TIERE.kaefer.list()`, `HUND.state()`.
 
 ## Testen
 
-`python3 viz3/test/run.py --port 9003 --serve tiere` (über `tools/browser_lock.sh`), Abschnitte `bau,welt,flucht,hund`; Bilder in
-`out/tiere/`. Prüft: Modelle in wahrer Größe ohne neue Shader-Programme, Lebensraum-Karte, Rehe in der Dämmerung, Wildschweine nachts,
-Milan mittags, Flucht in Fluchtdistanz (erst sichern, dann die ganze Gruppe), Ereignisse `tiere:entdeckt`/`tiere:flucht`, der Hund folgt
-und setzt sich. Auf GitHub über `viz3/extra/tiere/tests.txt`.
+`bash tools/browser_lock.sh python3 viz3/test/run.py --port 9003 --serve tiere` (Abschnitte `bau,welt,flucht,hund,einfluss,lernen,andere`,
+einzeln `tiere:bau,welt`); Bilder in `out/tiere/`. Auf GitHub über `viz3/extra/tiere/tests.txt` bei jedem Push auf `feat/tiere`. Prüft:
+alle Arten in wahrer Größe ohne neue Shader-Programme, Lebensraum-Karte, Rehe in der Dämmerung, Wildschweine nachts, Milan mittags, Flucht
+in Fluchtdistanz (erst sichern, dann die ganze Gruppe), Ereignisse, Hund folgt und setzt sich, Verbiss im Zeitraffer (geschützt nein,
+ungeschützt ja), Käferfichten, Ruhezone, Elektrozaun, Spur gefunden, Lernen (Lob/Tadel ändern Neigungen, gespeichert nach Neuladen),
+Schleusingen und Zombie-Nacht unbeschadet.
 
-## API für Erweiterungen (Strategie-Modus „Ratscher von oben“)
+## API für Erweiterungen (Strategie-Modus „Ratscher von oben“, Entdeckerbuch)
 
-Stand Inkrement 1 (wird erweitert):
+Ereignisse (`KERN.on`):
 
-- Ereignisse über `KERN.on`: `tiere:entdeckt` `{ kind: 'art' | 'spur', id, title, source }` (einmal je Art/Spur), `tiere:gesehen`
-  `{ art, x, y, d }`, `tiere:flucht` `{ art, gruppe, x, y, vor: 'walker' | 'car' | 'noise' | 'dog' }`.
-- `TIERE.groupList()` – alle Gruppen mit Einstand, Äsungsplatz, Plan (`where: 'cover' | 'out' | 'sky' | null`, Anzahl, Kitze/Frischlinge).
-- `TIERE.plan(gruppe)` – wo eine Gruppe jetzt ist (nach Sonne, Kalender, Störung). `TIERE.nearest(art, x, y)`.
-- `TIERE.addNoise(x, y, r, s)` – Lärm (Motorsäge, Mäher, Traktor) für s Sekunden: Tiere im Umkreis r fliehen.
-- `TARTEN.A[id]` – Steckbrief, Fluchtdistanzen, Gruppengrößen; `TARTEN.SPUREN` – Spuren mit Text; `TARTEN.sourceOf(id)`.
-- `TKOERPER.make(kind, variant)` – ein Tier als Modell (`reh`, `sau`, `hund`, `milan`; Varianten `winter`, `antler`, `young`), `A.anim(dt, v, pose)`.
+| Ereignis | Daten |
+|---|---|
+| `tiere:entdeckt` | `{ kind: 'art' \| 'spur', id, title, source }` – einmal je Art bzw. Spurenart (Entdeckerbuch) |
+| `tiere:gesehen` | `{ art, x, y, d }` – ein Tier im Bild |
+| `tiere:flucht` | `{ art, gruppe, x, y, vor: 'walker' \| 'car' \| 'noise' \| 'dog' }` |
+| `tiere:schaden` | `{ art, kind: 'verbiss' \| 'fegen' \| 'wuehlen' \| 'kaefer' \| 'ausflug' \| 'wurzel' \| 'huhn' \| 'tonne' \| 'raus', id, x, y, day }` |
+| `tiere:schutz` | ein neuer Schutz `{ id, kind, x, y, r, t }` |
+| `hund:tat` | `{ tat: 'hueten' \| 'vertreiben' \| 'jagen' \| 'suchen' \| 'bellen' \| 'ruhig' \| 'kommen', x, y }` |
+| `hund:befehl` | `{ befehl: 'rufen' \| 'schicken', folgt?, x?, y? }` |
+| `hund:gelernt` | `{ tat, lob, learn }` |
+
+Abfragen und Befehle:
+
+- `TIERE.counts({ rect | circle })` – Tiere je Art jetzt (Gruppen mit ihrer Größe nach Jahreszeit); ohne Fläche das ganze Quadrat.
+- `TIERE.groupList()`, `TIERE.plan(gruppe)` (`where: 'cover' | 'out' | 'sky' | 'perch' | null`, Anzahl, Kitze/Frischlinge, Brunft …),
+  `TIERE.nearest(art, x, y)`.
+- `TIERE.schaden({ rect | circle, season })` → `{ n, sum: { verbiss, wuehlen, … }, events }` – Schäden je Fläche und Jahreszeit.
+- `TIERE.baeume()` – junge Bäume mit Schaden (0 heil … 1 verloren) und Schutz.
+- `TIERE.schutz.add({ kind: 'huelle' | 'zaun' | 'elektrozaun' | 'korb', x, y, r, id })`, `.remove(id)`, `.list()`, `.at(x, y, 'reh' | 'sau' | 'maus')`.
+- `TIERE.kaefer.list()` (Stufe 1 Bohrmehl, 2 Brut ausgeflogen/rotbraun, 3 tot/grau; `ausflugIn` Tage), `.raus(id)` (aus dem Wald), `.befall(id)`.
+- `TIERE.ruhe(x, y)` → `null` oder `{ art: 'schwarzstorch', zone: 'horst' | 'brutzeit', d, why, bis }` – vor dem Fällen und Rücken fragen.
+- `TIERE.naturwert()` → 0–100 (seltene Arten, Käfer, Verbiss); `TIERE.huehner({ x, y, n, zu })`; `TIERE.sim(tage)` (Zeitraffer).
+- `TIERE.addNoise(x, y, r, s)` – Lärm (Motorsäge, Mäher, Traktor): Tiere im Umkreis fliehen.
+- `HUND.rufen()`, `HUND.schicken(x, y)`, `HUND.lob(+1 | -1)`, `HUND.state()` (Neigungen `learn`, `bindung`, `recent`), für Klicks von oben.
+- Daten: `TARTEN.A[id]` (Steckbrief, Fluchtdistanzen, Gruppengrößen, Quellen), `TARTEN.SPUREN`, `TARTEN.sourceOf(id)`;
+  Modelle: `TKOERPER.make(kind, variant)` (`reh`, `sau`, `hirsch`, `fuchs`, `hase`, `dachs`, `waschbaer`, `marder`, `katze`, `hund`,
+  `milan`, `bussard`, `rabe`, `storch`, `uhu`; Varianten `winter`, `antler`, `young`, `stripes`, `spots`), `A.anim(dt, v, pose)`.
 
 ## Offen
 
-- Weitere Arten als Modelle (Fuchs, Dachs, Hase, Waschbär, Marder, Rothirsch, Bussard, Rabe, Schwarzstorch, Uhu, Wildkatze), Hühner bei Ronald.
-- Töne (Rehbock schreckt, Rotte grunzt, Milan, Bussard, Uhu, Hirschbrunft) mit freien Aufnahmen (Wikimedia Commons).
-- Einfluss: Verbiss, Wühlschäden, Borkenkäfer in den Fichten der Klinge, Wühlmäuse, Schutz (Wuchshülle, Zaun, Elektrozaun, Wühlmauskorb),
-  Ruhezonen am Horst; Spuren in der Welt.
-- Der Hund lernt (loben/tadeln, Aufträge), Knöpfe am Telefon.
+- **Echtere Modelle für Reh, Rothirsch, Hase, Huhn:** auf OpenGameArt liegen von CDmir unter CC0 „Deer Female“, „Old Deer Male“, „Rabbit“
+  und „Chicken (animated)“ – realistisch texturiert, mit Knochen und Bewegungen (gesehen: Vorschaubild der Ricke), aber nur als `.blend` bzw.
+  FBX in 7z. Zum Umwandeln braucht es Blender oder FBX2glTF; ein fremdes Programm herunterzuladen und auszuführen war mir hier nicht erlaubt.
+  Einmal in Blender als glTF/GLB exportiert (mit Bewegungen), gehen sie wie der Fuchs über `PLANS.<art>.gltf` in `tiere/tiere_koerper.js`
+  (Datei, Maßstab, Namen der Bewegungen, Farbtönung) – die Textur wird beim Laden in die Ecken gebacken. Für Wildschwein und Hund fand ich
+  nichts Freies ohne Anmeldung, das besser ist als die gebauten Körper; die sind nach den Hinweisen des Leads verbessert (Fell nach Datum,
+  schlanke Läufe und Hals beim Reh, keilförmiger Kopf und Borstenkamm beim Wildschwein, voller Hund mit Halskrause).
+- Stimmen von Milan, Bussard, Uhu, Kolkrabe, Rothirsch (Wikimedia Commons antwortete nachts mit 429) – `tiere/ton.json` ergänzen.
+- Hühner bei Ronald als Modell (heute nur über die API); der Hund in der Zombie-Nacht (bellt Zombies an).
 
 ## Für den Lead
 
-- `viz3/src/modules.txt`: Block `# feat/tiere` nach dem Zombie-Block, vor `game/tutorial.js` (vier Module).
+- `viz3/src/modules.txt`: Block `# feat/tiere` nach dem Zombie-Block, vor `game/tutorial.js` (sechs Module).
 - `viz3/src/core/save.js`: zwei Zeilen `pav-tiere-v1`, `pav-hund-v1` (markiert `// feat/tiere`); bitte in ARCHITECTURE.md §8 eintragen.
-- Neue `window`-Namen: `TARTEN`, `TKOERPER`, `TIERE`, `HUND`.
+- `viz3/src/world/forest.js`: markiert `// feat/tiere` – `FOREST.tint(t, rgb)` (Kronenfarbe eines Baums: Käferfichten) und die Farbe in
+  `relod`/Fernkarten (Rinde bleibt).
+- Quellen: `viz3/extra/tiere/manifest.json` (`credits_add`).
+- Neue `window`-Namen: `TARTEN`, `TKOERPER`, `TTON`, `TIERE`, `TEINFLUSS`, `HUND`. Tasten: P (Hund rufen), U (schicken), + / − (loben/tadeln).

@@ -905,6 +905,20 @@ export const TIERE = (() => {
     wildschwein: () => 'Wildschweine – eine Rotte. Lieber Abstand halten.',
     rotmilan: () =>
       'Ein Rotmilan – der gegabelte rote Schwanz. Mehr als die Hälfte aller Rotmilane brütet in Deutschland.',
+    rothirsch: () =>
+      'Rotwild! In Thüringen lebt es nur in ausgewiesenen Rotwildgebieten – dieses ist auf der Durchreise.',
+    fuchs: () => 'Ein Fuchs auf Mäusejagd: er hört die Mäuse unter dem Gras und springt von oben auf sie.',
+    hase: () => 'Ein Feldhase. Tags liegt er flach in seiner Sasse und springt erst auf, wenn man fast auf ihn tritt.',
+    dachs: () => 'Ein Dachs! Er gräbt nachts nach Regenwürmern – die kleinen Trichter in der Wiese sind von ihm.',
+    waschbaer: () => 'Ein Waschbär – eigentlich aus Nordamerika. Er plündert Mülltonnen, Obst und Vogelnester.',
+    marder: () =>
+      'Ein Steinmarder: er wohnt in Scheunen und Dachböden und beißt im Frühjahr gern Kabel im Motorraum an.',
+    wildkatze: () =>
+      'Eine Wildkatze! Der buschige Schwanz mit der stumpfen schwarzen Spitze verrät sie – sehr selten zu sehen.',
+    bussard: () => 'Ein Mäusebussard – er fängt Tausende Wühlmäuse im Jahr.',
+    kolkrabe: () => 'Kolkraben – die größten Rabenvögel; ein Paar bleibt ein Leben lang zusammen.',
+    schwarzstorch: () => 'Ein Schwarzstorch! Er brütet versteckt in ruhigen alten Wäldern – an seinem Horst gilt Ruhe.',
+    uhu: () => 'Ein Uhu – die größte Eule. Im Spätwinter ruft er in der Dämmerung sein tiefes „buho“.',
   };
   // ---------- the frame ----------
   let ready = false;
@@ -929,7 +943,9 @@ export const TIERE = (() => {
         // in cover by day only when one comes into the wood close by (then they jump up and flee)
         const coverNear = pl.where === 'cover' && d < 90;
         const want = pl.where && (pl.where !== 'cover' || coverNear) && d < r ? pl.n + (pl.kids || 0) : 0;
-        if (want > g.live.length && S.live.length < S.max)
+        // a kind with a real model waits for it (loaded on first need, a moment)
+        const mk = TARTEN.A[g.art] && TARTEN.A[g.art].model;
+        if (want > g.live.length && S.live.length < S.max && (!mk || TKOERPER.ready(mk)))
           for (let i = g.live.length; i < want && S.live.length < S.max; i++) spawn(g, i, pl);
         else if ((want === 0 && g.live.length) || d > S.dropR * (g.art === 'rotmilan' ? 1.6 : 1)) {
           // gone: those out of sight go at once, those fleeing finish their run

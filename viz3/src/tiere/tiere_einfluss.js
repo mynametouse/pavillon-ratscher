@@ -125,15 +125,15 @@ export const TEINFLUSS = (() => {
   function makePlot() {
     const G = TIERE.grid;
     if (!G) return null;
-    // the open land in front of the family forest's edge, off the roads
+    // the open land in front of the family forest's edge, off the roads: the nearest free cell to the forest's north side
     let best = null;
-    for (let a = 0; a < 24; a++)
-      for (let r = 20; r < 160; r += 10) {
-        const x = -470 + Math.cos(a) * r,
-          y = -520 + Math.sin(a) * r;
-        if (G.at(x, y) !== 3 || G.at(x + 16, y) !== 3 || G.at(x, y + 10) !== 3) continue;
-        if (ROADS.edge && ROADS.edge(x, y) > -8) continue;
-        const d = Math.hypot(x + 470, y - -560);
+    for (let gy = -340; gy <= 240; gy += 10)
+      for (let gx = -300; gx <= 300; gx += 10) {
+        const x = -470 + gx,
+          y = -540 + gy;
+        if (G.at(x, y) !== 3 || G.at(x + 16, y) !== 3 || G.at(x, y + 10) !== 3 || G.at(x + 16, y + 10) !== 3) continue;
+        if (ROADS.edge && (ROADS.edge(x, y) > -5 || ROADS.edge(x + 14, y + 8) > -5)) continue;
+        const d = Math.hypot(gx, gy);
         if (!best || d < best.d) best = { d, x, y };
       }
     if (!best) return null;
@@ -208,12 +208,13 @@ export const TEINFLUSS = (() => {
     }
     return Math.min(2.5, p);
   }
+  // a sounder roams several kilometres a night: every one within 2 km counts, the nearer the more
   function sauDruck(x, y) {
     let p = 0;
     for (const g of TIERE.groups) {
       if (g.art !== 'wildschwein') continue;
       const d = Math.hypot(g.home[0] - x, g.home[1] - y);
-      if (d < 900) p += 1 - d / 900;
+      if (d < 2000) p += 0.25 + 0.75 * (1 - d / 2000);
     }
     return Math.min(2, p);
   }
@@ -290,7 +291,7 @@ export const TEINFLUSS = (() => {
   // ---------- one day ----------
   function log(e) {
     E.log.push(e);
-    if (E.log.length > 300) E.log.splice(0, E.log.length - 300);
+    if (E.log.length > 2000) E.log.splice(0, E.log.length - 2000);
     KERN.emit('tiere:schaden', e);
   }
   function simDay(day) {
@@ -318,12 +319,16 @@ export const TEINFLUSS = (() => {
     // rooting: a sounder in the garden meadow on autumn and spring nights, unless an electric fence is round it
     const rootSeason = (doy > 240 && doy < 335) || (doy > 60 && doy < 120);
     if (rootSeason) {
-      const press = sauDruck(-4, -10);
-      if (press > 0 && !prot(-4, -10, 'sau') && rnd(day, 'w') < 0.06 * press) {
+      // once they have found grubs in the lawn they come back several nights running (an episode of 2–5 nights)
+      const press = sauDruck(-4, -10),
+        fenced = !!prot(-4, -10, 'sau');
+      if (!(E.sauBis >= day) && press > 0 && rnd(day, 'w') < 0.02 * press)
+        E.sauBis = day + 1 + Math.floor(rnd(day, 'wn') * 4);
+      if (E.sauBis >= day && !fenced) {
         const a = rnd(day, 'wa') * 6.283,
           r = rnd(day, 'wr') * 8;
         E.wuehl.push([-4 + Math.cos(a) * r, -10 + Math.sin(a) * r, 0.9 + rnd(day, 'ws') * 1.4, day]);
-        log({ art: 'wildschwein', kind: 'wuehlen', x: -4, y: -10, day });
+        log({ art: 'wildschwein', kind: 'wuehlen', x: -4, y: -10, day, garten: true });
         E.dirty = true;
       }
       // and at the edges of the fields by the forest (their feeding places)
@@ -477,6 +482,87 @@ export const TEINFLUSS = (() => {
     g.computeVertexNormals();
     return g;
   }
+  // a hoof print: the two halves of a cloven hoof, pressed into soft ground (5 cm for a roe deer; scaled up for a boar)
+  function geoPrint() {
+    const pos = [],
+      col = [],
+      idx = [],
+      c = lin(0x2a2018);
+    for (const sx of [-1, 1]) {
+      const b = pos.length / 3;
+      pos.push(sx * 0.008, 0.003, 0);
+      col.push(...c);
+      for (let i = 0; i <= 8; i++) {
+        const a = (i / 8) * Math.PI;
+        pos.push(sx * (0.008 + Math.sin(a) * 0.011), 0.003, Math.cos(a) * 0.026);
+        col.push(...c);
+      }
+      for (let i = 0; i < 8; i++) idx.push(b, b + 1 + i + (sx > 0 ? 1 : 0), b + 1 + i + (sx > 0 ? 0 : 1));
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    return g;
+  }
+  // where the prints are: a few steps through each roe group's and sounder's feeding place
+  function prints() {
+    const out = [];
+    for (const g of TIERE.groups) {
+      if (g.art !== 'reh' && g.art !== 'wildschwein') continue;
+      const a = (g.seed % 628) / 100,
+        dx = Math.cos(a),
+        dy = Math.sin(a);
+      for (let k = 0; k < 7; k++) {
+        const s = (k - 3) * (g.art === 'reh' ? 0.55 : 0.45),
+          side = (k % 2 ? 1 : -1) * 0.07;
+        out.push({
+          art: g.art,
+          x: g.feed[0] + dx * s - dy * side,
+          y: g.feed[1] + dy * s + dx * side,
+          rot: Math.PI / 2 - a,
+        });
+      }
+    }
+    return out;
+  }
+  // rooted soil: lumpy turned-over sods – dark earth with clods of grass upside down, ragged at the edge
+  function geoWuehl() {
+    const pos = [],
+      col = [],
+      idx = [],
+      N = 22,
+      RR = [0, 0.3, 0.6, 0.85, 1.05],
+      soil = lin(0x34271c),
+      soil2 = lin(0x463526),
+      sod = lin(0x4a5230),
+      edge = lin(0x3e4a2a);
+    for (let ri = 0; ri < RR.length; ri++)
+      for (let k = 0; k < (ri ? N : 1); k++) {
+        const q = (k / N) * 6.283,
+          h = rnd(ri, 'h' + k),
+          rr = RR[ri] * (1 + (ri === RR.length - 1 ? 0.25 : 0.12) * Math.sin(q * 5 + ri * 1.7)),
+          z = ri === RR.length - 1 ? 0 : 0.02 + h * (ri ? 0.11 : 0.06);
+        pos.push(Math.cos(q) * rr, z, Math.sin(q) * rr);
+        col.push(...(ri === RR.length - 1 ? edge : h > 0.72 ? sod : h > 0.4 ? soil2 : soil));
+      }
+    for (let k = 0; k < N; k++) idx.push(0, 1 + ((k + 1) % N), 1 + k);
+    for (let ri = 1; ri < RR.length - 1; ri++)
+      for (let k = 0; k < N; k++) {
+        const a = 1 + (ri - 1) * N + k,
+          b = 1 + (ri - 1) * N + ((k + 1) % N),
+          c = 1 + ri * N + k,
+          d = 1 + ri * N + ((k + 1) % N);
+        idx.push(a, b, c, b, d, c);
+      }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    return g;
+  }
   // a tree guard (Wuchshülle): a translucent-looking green tube, 1.2 m
   function geoGuard() {
     const g = new THREE.CylinderGeometry(0.065, 0.07, 1.2, 10, 1, true);
@@ -513,6 +599,21 @@ export const TEINFLUSS = (() => {
     _s.set(s, sy || s, s);
     m.setMatrixAt(i, _m.compose(_p, _q, _s));
   }
+  // lying on the ground: tilted to the slope under it (rooted soil, hills, prints on a field that is not flat)
+  const _n = new THREE.Vector3(),
+    _up = new THREE.Vector3(0, 1, 0),
+    _qt = new THREE.Quaternion();
+  function putOn(m, i, x, y, s, rot, lift = 0.005) {
+    const r = Math.max(0.5, s),
+      zx = ground(x + r, y) - ground(x - r, y),
+      zy = ground(x, y + r) - ground(x, y - r);
+    _n.set(-zx / (2 * r), 1, zy / (2 * r)).normalize();
+    _qt.setFromUnitVectors(_up, _n);
+    _q.setFromEuler(_e.set(0, rot || 0, 0)).premultiply(_qt);
+    _p.set(x, ground(x, y) + lift, -y);
+    _s.set(s, 1, s);
+    m.setMatrixAt(i, _m.compose(_p, _q, _s));
+  }
   let autumnNow = null;
   function draw() {
     E.dirty = false;
@@ -546,8 +647,8 @@ export const TEINFLUSS = (() => {
     mg.count = Math.min(128, guards.length);
     mg.instanceMatrix.needsUpdate = true;
     // rooted soil: dark clods; vole hills: small round brown hills
-    const mw = im('wuehl', () => geoMound(0.09, lin(0x3a2c20), lin(0x52402e)), 128);
-    E.wuehl.slice(-128).forEach((w, i) => put(mw, i, w[0], w[1], ground(w[0], w[1]) + 0.005, w[2], 1, w[3]));
+    const mw = im('wuehl', geoWuehl, 128);
+    E.wuehl.slice(-128).forEach((w, i) => putOn(mw, i, w[0], w[1], w[2], w[3]));
     mw.count = Math.min(128, E.wuehl.length);
     mw.instanceMatrix.needsUpdate = true;
     const mm = im('maus', () => geoMound(0.07, lin(0x4a3a2a), lin(0x5a4834), 10), 80);
@@ -565,20 +666,83 @@ export const TEINFLUSS = (() => {
     }
     mb.count = nb;
     mb.instanceMatrix.needsUpdate = true;
-    // wallows by the sounders' homes: a muddy hollow, dark and wet
-    const ms = im('suhle', () => geoMound(0.015, lin(0x241e1a), lin(0x3a3026), 16), 8);
-    const boar = TIERE.groups.filter(g => g.art === 'wildschwein');
-    boar.forEach((g, i) => {
-      const w = wallowOf(g);
-      put(ms, i, w[0], w[1], ground(w[0], w[1]) + 0.03, 1.6, 1, i);
-    });
-    ms.count = boar.length;
-    ms.instanceMatrix.needsUpdate = true;
+    // wallows by the sounders' homes: a muddy hollow in a flat wet spot, draped on the ground
+    for (const g of TIERE.groups) if (g.art === 'wildschwein' && !g.wallow) g.wallow = wallowMesh(g);
+    // hoof prints in the soft ground of the feeding places
+    const PR = prints(),
+      mp = im('tritt', geoPrint, 400);
+    PR.slice(0, 400).forEach((p, i) =>
+      put(mp, i, p.x, p.y, ground(p.x, p.y) + 0.004, p.art === 'reh' ? 1 : 1.9, 1, p.rot)
+    );
+    mp.count = Math.min(400, PR.length);
+    mp.instanceMatrix.needsUpdate = true;
     nest();
     signs();
     markDirty();
   }
-  const wallowOf = g => [g.home[0] + 18 * Math.cos(g.seed % 7), g.home[1] + 18 * Math.sin(g.seed % 7)];
+  // the wallow's place: the flattest, lowest spot within 30 m of the sounder's home (wallows lie in wet hollows)
+  function wallowOf(g) {
+    if (g.wallowAt) return g.wallowAt;
+    let best = null;
+    for (let a = 0; a < 12; a++)
+      for (const r of [6, 14, 22, 30]) {
+        const x = g.home[0] + Math.cos(a * 0.5236 + r) * r,
+          y = g.home[1] + Math.sin(a * 0.5236 + r) * r,
+          z = ground(x, y);
+        let lo = z,
+          hi = z;
+        for (let k = 0; k < 6; k++) {
+          const q = (k / 6) * 6.283,
+            zz = ground(x + Math.cos(q) * 2, y + Math.sin(q) * 2);
+          lo = Math.min(lo, zz);
+          hi = Math.max(hi, zz);
+        }
+        const score = hi - lo + (z - ground(g.home[0], g.home[1])) * 0.05;
+        if (!best || score < best.score) best = { score, x, y };
+      }
+    return (g.wallowAt = [best.x, best.y]);
+  }
+  // a wallow as its own small mesh: rings round the middle, each point on the ground, the mud wet and dark in the middle
+  function wallowMesh(g) {
+    const [cx, cy] = wallowOf(g),
+      pos = [],
+      col = [],
+      idx = [],
+      N = 18,
+      RINGS = [0, 0.5, 0.95, 1.35, 1.6],
+      wet = lin(0x1c1814),
+      mud = lin(0x30281f),
+      dry = lin(0x46392b);
+    for (let ri = 0; ri < RINGS.length; ri++)
+      for (let k = 0; k < (ri ? N : 1); k++) {
+        const q = (k / N) * 6.283,
+          rr = RINGS[ri] * (1 + 0.18 * Math.sin(q * 3 + g.seed)),
+          x = cx + Math.cos(q) * rr,
+          y = cy + Math.sin(q) * rr;
+        pos.push(x, ground(x, y) + (ri === RINGS.length - 1 ? 0.004 : 0.012), -y);
+        col.push(...(ri < 2 ? wet : ri < 3 ? mud : dry));
+      }
+    for (let k = 0; k < N; k++) idx.push(0, 1 + ((k + 1) % N), 1 + k);
+    for (let ri = 1; ri < RINGS.length - 1; ri++)
+      for (let k = 0; k < N; k++) {
+        const a = 1 + (ri - 1) * N + k,
+          b = 1 + (ri - 1) * N + ((k + 1) % N),
+          c = 1 + ri * N + k,
+          d = 1 + ri * N + ((k + 1) % N);
+        idx.push(a, b, c, b, d, c);
+      }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, TKOERPER.mat);
+    m.userData.noMerge = true;
+    m.receiveShadow = true;
+    m.name = 'tiere suhle';
+    scene.add(m);
+    return m;
+  }
   // the black stork's nest: a platform of sticks on an old tree near the nest place, ~18 m up
   let nestMesh = null;
   function nest() {
@@ -625,6 +789,9 @@ export const TEINFLUSS = (() => {
           z: st === 1 ? 0.3 : t.h * 0.7,
         });
     }
+    for (const g of TIERE.groups)
+      if (g.art === 'reh' || g.art === 'wildschwein')
+        S.push({ kind: g.art === 'reh' ? 'trittsiegel_reh' : 'trittsiegel_sau', x: g.feed[0], y: g.feed[1], r: 4 });
     if (E.nestAt)
       S.push({
         kind: 'horst',
@@ -843,9 +1010,30 @@ export const TEINFLUSS = (() => {
     E.ready = true;
   });
   KERN.tick(update, 'tiere-einfluss');
+  // the mower started (garden/garage_play.js): noise for the animals near, and in May and June the fawns in the high grass
+  KERN.on('garage:start', () => {
+    TIERE.addNoise(P.x, P.y, 90, 20);
+    const d = dateOf(today());
+    if (d.doy > 125 && d.doy < 182 && E.kitz !== d.y) {
+      E.kitz = d.y;
+      if (PLAY.think)
+        PLAY.think(
+          'Mai und Juni: Ricken legen ihre Kitze ins hohe Gras, die Kitze drücken sich und fliehen nicht. Vor dem Mähen großer Wiesen absuchen – mit Hund, Drohne oder Scheuchen am Vorabend.',
+          9000
+        );
+      KERN.emit('tiere:hinweis', {
+        id: 'kitzrettung',
+        title: 'Kitzrettung vor dem Mähen',
+        source: TARTEN.sourceOf('reh'),
+      });
+    }
+  });
   // a tree felled at the Klinge: a beetle tree out of the forest stops its brood
   KERN.on('fell', e => {
     if (e && E.kaefer[e.id]) API.kaefer.raus(e.id);
+    // the chainsaw and the falling tree: game within a few hundred metres goes
+    const t = e && FOREST.byId && FOREST.byId(+e.id);
+    if (t) TIERE.addNoise(t.x, t.y, 220, 40);
   });
   KERN.on('reset', () => {
     E.prot = [];

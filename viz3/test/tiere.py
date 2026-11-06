@@ -27,6 +27,8 @@ with lib.browser() as b:
         E(f"(() => {{ const d = Math.floor(CLOCK.t / 1440); DN.e0 = Date.UTC(2026, {date[0] - 1}, {date[1]}) / 864e5 - d; CLOCK.t = d * 1440 + {hh * 60 + mm}; DN.update(true); }})()")
         lib.settle_light(pg)
     E("window.__ev = []; KERN.on('tiere:entdeckt', e => window.__ev.push(e)); KERN.on('tiere:flucht', e => window.__ev.push(Object.assign({ ev: 'flucht' }, e)))")
+    # pictures in the first-person view (the walker's own eyes)
+    E("GAME.setView3(false, true)")
     st = J("TIERE.state()")
     ck('the animals are there (TIERE, HUND, the body builder)', E("!!(window.TIERE && window.HUND && window.TKOERPER)"), str(st))
     p0 = progs()
@@ -47,6 +49,11 @@ with lib.browser() as b:
                  ('dachs', 'dachs', {}, 1, 1.8, 0.4), ('waschbaer', 'waschbaer', {}, 1, 1.6, 0.4), ('marder', 'marder', {}, 1, 1.3, 0.3),
                  ('wildkatze', 'katze', {}, 1, 1.6, 0.45), ('hirsch_alttier', 'hirsch', {'winter': True}, 1, 4.2, 1.2),
                  ('hirsch_brunft', 'hirsch', {'winter': True, 'antler': True}, 1.05, 4.8, 1.35)]
+        # the fox is a real model (glTF, loaded on first need): wait for it
+        E("TKOERPER.ready('fuchs')")
+        for i in range(60):
+            if E("TKOERPER.ready('fuchs')"): break
+            time.sleep(0.5)
         E("window.__sheet = []")
         for k, (n, kind, var, sc, dd, eh) in enumerate(SHEET):
             # in two rows across the view, 9 and 14 m ahead
@@ -59,13 +66,15 @@ with lib.browser() as b:
         pic('01_tafel_mittag')
         pb = progs()
         ck('the bodies: no new shader program (one shared material, made at load)', pb <= pa, f'{pa} -> {pb} (load {p0})')
-        tri = J("window.__sheet.map(A => ({ k: A.kind, tri: A.mesh.geometry.index.count / 3, bones: A.mesh.skeleton.bones.length, h: +(new THREE.Box3().setFromObject(A.g).getSize(new THREE.Vector3()).y).toFixed(2), l: +(new THREE.Box3().setFromObject(A.g).getSize(new THREE.Vector3()).length()).toFixed(2) }))")
+        tri = J("window.__sheet.map(A => ({ k: A.kind, tri: (A.mesh.geometry.index ? A.mesh.geometry.index.count : A.mesh.geometry.attributes.position.count) / 3, bones: A.mesh.skeleton.bones.length, h: +(new THREE.Box3().setFromObject(A.g).getSize(new THREE.Vector3()).y).toFixed(2), l: +(new THREE.Box3().setFromObject(A.g).getSize(new THREE.Vector3()).length()).toFixed(2) }))")
         print('models', tri, flush=True)
         H = {t['k']: t['h'] for t in tri}
         ck('true to size: roe deer 1.0–1.3 m to the ears, boar 0.8–1.0 m, dog 0.75–0.95 m, fox 0.45–0.65 m, red deer 1.7–2.1 m',
            1.0 < tri[0]['h'] < 1.35 and 0.75 < tri[3]['h'] < 1.05 and 0.7 < tri[6]['h'] < 0.98 and 0.42 < tri[7]['h'] < 0.68 and 1.65 < tri[13]['h'] < 2.15,
            str([(t['k'], t['h']) for t in tri]))
         ck('cheap: each animal one mesh of fewer than 4000 triangles', all(t['tri'] < 4000 for t in tri), str([t['tri'] for t in tri]))
+        fx = J("(() => { const A = window.__sheet[7]; return { gltf: !!A.gltf, mat: A.mesh && A.mesh.material === TKOERPER.mat, col: !!(A.mesh && A.mesh.geometry.attributes.color) }; })()")
+        ck('the fox is the real model (Khronos glTF), drawn with the shared material (colours baked from its texture)', fx['gltf'] and fx['mat'] and fx['col'], str(fx))
         def closeups(tag, only=None):
             for i, (n, kind, var, sc, dd, eh) in enumerate(SHEET):
                 if only and n not in only: continue
@@ -118,7 +127,7 @@ with lib.browser() as b:
         yaw = math.degrees(math.atan2(fx - vx, fy - vy))
         E(f"GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw}, -2, 45); GAME.step(0.1)")
         steps(1.2)
-        lv = J("TIERE.list().filter(a => a.art === 'reh')")
+        lv = J(f"TIERE.list().filter(a => a.g === '{r['id']}')")
         print('roe live', lv[:6], flush=True)
         ck('… and real near the walker: roe deer at their feeding place in front of the edge', len(lv) >= 1, str(len(lv)))
         pa = progs()
@@ -132,6 +141,17 @@ with lib.browser() as b:
             yaw2 = math.degrees(math.atan2(a['x'] - vx, a['y'] - vy))
             E(f"GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw2}, -1, 9); GAME.step(0.05)")
             pic('11_dammerung_reh_tele')
+            # can the walker see it? the ground along the line of sight (eye to the animal's back)
+            los = J(f"""(() => {{ const ax = {a['x']}, ay = {a['y']}, az = {a['z']} + 0.7, ex = {vx}, ey = {vy}, ez = ROADS.groundAt(ex, ey) + 1.65;
+              let worst = -1e9; for (let i = 1; i < 100; i++) {{ const t = i / 100, x = ex + (ax - ex) * t, y = ey + (ay - ey) * t, z = ez + (az - ez) * t;
+              worst = Math.max(worst, KERN.ground(x, y) - z); }} return {{ worst: +worst.toFixed(2), az: +az.toFixed(2), mesh: RATSCHER.hMesh ? +RATSCHER.hMesh(ax, ay).toFixed(2) : null, kern: +KERN.ground(ax, ay).toFixed(2) }}; }})()""")
+            print('line of sight to the roe deer (ground above the line, m)', los, flush=True)
+            # sneaking up: from 35 m, the group frozen for the picture
+            E("TIERE.on = false")
+            cx, cy = a['x'] + (vx - a['x']) / 140 * 35, a['y'] + (vy - a['y']) / 140 * 35
+            E(f"GAME.view({cx}, {cy}, ROADS.groundAt({cx}, {cy}) + 1.65, {yaw2}, -2, 30); GAME.step(0.05)")
+            pic('11b_dammerung_rehe_35m')
+            E("TIERE.on = true")
         # night on the field: a sounder out
         at(23, 30, date=(11, 5))
         s = J("(() => { const g = TIERE.groups.filter(g => g.art === 'wildschwein')[0]; return { id: g.id, home: g.home, feed: g.feed, plan: TIERE.plan(g) }; })()")
@@ -241,7 +261,7 @@ with lib.browser() as b:
         ck('last summer\'s bark beetle spruces are there (red-brown and grey crowns)', sum(st['kaefer'].values()) >= 8, str(st['kaefer']))
         tinted = E("FOREST.list.filter(t => t.tint).length")
         ck('… their crowns tinted in the forest (world/forest.js hook)', tinted >= 8, str(tinted))
-        px, py = st['plot']['x'], st['plot']['y']
+        px, py = (st['plot']['x'], st['plot']['y']) if st['plot'] else (-470, -500)
         E(f"GAME.view({px} + 6, {py} - 9, ROADS.groundAt({px} + 6, {py} - 9) + 1.6, -15, -12, 55); GAME.step(0.1)")
         pa = progs()
         E("GAME.step(0.05)")
@@ -281,18 +301,20 @@ with lib.browser() as b:
             k = red[0]
             E(f"GAME.view({k['x']} + 26, {k['y']} + 30, ROADS.groundAt({k['x']} + 26, {k['y']} + 30) + 1.7, {math.degrees(math.atan2(-26, -30))}, 8, 60); GAME.step(0.1)")
             pic('43_kaeferfichten')
-        # rooting in the garden: an electric fence keeps the sounders out
+        # rooting in the garden: an electric fence keeps the sounders out (counted from the damage log: nights in the garden)
+        garden_n = "TIERE.schaden({ circle: [-4, -10, 12] }).sum.wuehlen || 0"
         E("TIERE.schutz.add({ id: 'ez', kind: 'elektrozaun', x: -4, y: -10, r: 40 })")
-        at(11, 0, date=(9, 20))
-        w0 = J("TEINFLUSS.E.wuehl.filter(w => Math.hypot(w[0] + 4, w[1] + 10) < 12).length")
-        E("TIERE.sim(60)")
-        w1 = J("TEINFLUSS.E.wuehl.filter(w => Math.hypot(w[0] + 4, w[1] + 10) < 12).length")
+        at(11, 0, date=(9, 1))
+        w0 = J(garden_n)
+        E("TIERE.sim(90)")
+        w1 = J(garden_n)
         E("TIERE.schutz.remove('ez')")
-        E("TIERE.sim(60)")
-        w2 = J("TEINFLUSS.E.wuehl.filter(w => Math.hypot(w[0] + 4, w[1] + 10) < 12).length")
-        print('garden rooting', w0, w1, w2, flush=True)
-        ck('with the electric fence no rooting in the garden meadow (autumn)', w1 == w0, f'{w0} -> {w1}')
-        ck('… without it the sounders come (autumn nights)', w2 > w1, f'{w1} -> {w2}')
+        at(11, 0, date=(9, 1))
+        E("TIERE.sim(90)")
+        w2 = J(garden_n)
+        print('garden rooting nights', w0, w1, w2, flush=True)
+        ck('with the electric fence no rooting in the garden meadow (an autumn)', w1 == w0, f'{w0} -> {w1}')
+        ck('… without it the sounders come (autumn nights, several running)', w2 > w1, f'{w1} -> {w2}')
         E("GAME.view(-4, -18, ROADS.groundAt(-4, -18) + 1.7, 0, -14, 60); GAME.step(0.1)")
         pic('44_garten_wuehlstellen')
         # a sign found: walk to a wallow

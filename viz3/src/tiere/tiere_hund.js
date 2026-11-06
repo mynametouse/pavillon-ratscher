@@ -246,7 +246,9 @@ export const HUND = (() => {
     const A = model();
     A.g.visible = true;
     // a jump to another place (menu, scene) or getting out of the car: he comes along
-    if (D.mode !== 'home' && (D.rideOn || (lastP && Math.hypot(P.x - lastP[0], P.y - lastP[1]) > 40))) {
+    // (also the first time one walks, and whenever he is left far behind while following)
+    const far = Math.hypot(P.x - D.x, P.y - D.y) > 60 && (D.mode === 'follow' || D.mode === 'ride');
+    if (D.mode !== 'home' && (D.rideOn || !lastP || far || Math.hypot(P.x - lastP[0], P.y - lastP[1]) > 40)) {
       const s = slot();
       D.x = s[0];
       D.y = s[1];
@@ -256,6 +258,20 @@ export const HUND = (() => {
       D.task = null;
     }
     lastP = [P.x, P.y];
+    // the zombie night: he stays at heel and barks at what comes near (zombie/z_state.js entities)
+    if (window.ZSTATE && ZSTATE.on && D.mode !== 'follow') {
+      D.mode = 'follow';
+      D.task = null;
+    }
+    if (window.ZSTATE && ZSTATE.on && Array.isArray(ZSTATE.ents) && D.t - (D.zT || 0) > 1.4) {
+      D.zT = D.t;
+      for (const e of ZSTATE.ents)
+        if (e && !e.dead && Math.hypot(e.x - D.x, e.y - D.y) < 25) {
+          bark(2);
+          D.zAlert = D.t;
+          break;
+        }
+    }
     let tx = D.x,
       ty = D.y,
       want = 0;
@@ -271,7 +287,7 @@ export const HUND = (() => {
       if (dS > 12) want = Math.max(want, 7);
       if (dP < 1.0) want = 0;
       D.decideT += dt;
-      if (D.decideT > 2.5) {
+      if (D.decideT > 2.5 && !(window.ZSTATE && ZSTATE.on)) {
         D.decideT = 0;
         decide();
       }
@@ -427,7 +443,7 @@ export const HUND = (() => {
       wag: D.wag,
       look,
       graze: D.mode === 'suchen' && D.v > 0.2 ? 0.7 : 0,
-      alert: D.v < 0.05 && !lie ? 0.4 : D.mode === 'bellen' ? 1 : 0,
+      alert: D.mode === 'bellen' || D.t - (D.zAlert || -9) < 2 ? 1 : D.v < 0.05 && !lie ? 0.4 : 0,
       flee: moodNow < 0 ? 0.8 : 0,
     });
     if ((D.v > 0.05 || D.wag > 0.3) && dP < 60 && inView(D.x, D.y, D.z + 0.4)) {
@@ -455,7 +471,8 @@ export const HUND = (() => {
         'background:rgba(20,22,18,.62);color:#fff;font:600 13px system-ui,sans-serif;padding:4px 10px;cursor:pointer}' +
         '#hund-panel button:active{background:rgba(80,90,60,.8)}#hund-st{max-width:260px;background:rgba(20,22,18,.55);color:#f2efe6;' +
         'padding:4px 8px;border-radius:8px;text-align:right}#hund-st:empty{display:none}' +
-        'body[data-clean="1"] #hund-panel{display:none}';
+        'body[data-clean="1"] #hund-panel{display:none}' +
+        '@media (pointer:coarse){#hund-panel{bottom:calc(232px + env(safe-area-inset-bottom,0px));right:max(10px,env(safe-area-inset-right,0px))}}';
       document.head.appendChild(st);
       pEl = document.createElement('div');
       pEl.id = 'hund-panel';

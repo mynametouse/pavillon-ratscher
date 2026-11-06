@@ -9,8 +9,10 @@
 // Movement is procedural: walk (lateral sequence), trot (diagonals), gallop, bound; standing, grazing, alert with the head up, lying,
 // sitting; birds flap and glide. Model frame: x left/right, y up, z forward (the nose); the group turns with rotation.y = π − azimuth.
 import * as THREE from 'three';
-import { scene } from '../core/head.js';
+import { clone as skelClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { BASE, scene } from '../core/head.js';
 import { plain } from '../core/assets.js';
+import { CHL } from '../npc/npc_real.js';
 export const TKOERPER = (() => {
   const S = { built: {}, n: 0 };
   // one material for every animal; the carriers below make its programs (skinned, and plain for the blob-free extras) at load
@@ -607,9 +609,169 @@ export const TKOERPER = (() => {
     return { geo: B.geo(), sk };
   }
   // ---------- an individual: its own bones on the shared geometry ----------
+  // ---------- real models from glTF where a free one is good (the fox: Khronos sample model, CC0/CC BY 4.0) ----------
+  // Loaded on first need; the texture is baked into per-face vertex colours (sampled at each face's middle, toned to the real coat),
+  // normals smoothed by position – so it draws with the one shared material (no new shader program); its own animations (standing and
+  // looking round, walking, running) through a mixer, blended by speed. Until it is there (or if it fails) the built body stands in.
+  const GL = {};
+  function gltfLoad(kind) {
+    const P = PLANS[kind],
+      G = P && P.gltf;
+    if (!G) return null;
+    if (GL[kind]) return GL[kind];
+    const st = (GL[kind] = { ready: false, failed: false, src: null, clips: {} });
+    st.promise = CHL.loadAsync(BASE + G.file)
+      .then(gl => {
+        let sm = null;
+        gl.scene.traverse(o => {
+          if (o.isSkinnedMesh && !sm) sm = o;
+        });
+        if (!sm) throw new Error('no skinned mesh');
+        const geo0 = sm.geometry.index ? sm.geometry.toNonIndexed() : sm.geometry,
+          pos = geo0.attributes.position,
+          uv = geo0.attributes.uv,
+          n = pos.count;
+        // the texture's pixels (a small copy is enough: the coat is painted in flat areas)
+        const img = sm.material.map && sm.material.map.image,
+          W = 256,
+          cv = document.createElement('canvas');
+        cv.width = cv.height = W;
+        const cx = cv.getContext('2d', { willReadFrequently: true });
+        if (img) cx.drawImage(img, 0, 0, W, W);
+        const px = cx.getImageData(0, 0, W, W).data,
+          col = new Float32Array(n * 3),
+          c = new THREE.Color();
+        for (let f = 0; f < n; f += 3) {
+          let u = 0,
+            v = 0;
+          for (let k = 0; k < 3; k++) {
+            u += uv.getX(f + k) / 3;
+            v += uv.getY(f + k) / 3;
+          }
+          const i =
+            (Math.min(W - 1, Math.max(0, Math.floor(v * W))) * W + Math.min(W - 1, Math.max(0, Math.floor(u * W)))) * 4;
+          c.setRGB(px[i] / 255, px[i + 1] / 255, px[i + 2] / 255, THREE.SRGBColorSpace);
+          G.tone(c, hash(f, 1, 2));
+          for (let k = 0; k < 3; k++) col.set([c.r, c.g, c.b], (f + k) * 3);
+        }
+        geo0.setAttribute('color', new THREE.BufferAttribute(col, 3));
+        // smooth normals: every face's normal added to all corners at the same place
+        const acc = new Map(),
+          key = i =>
+            Math.round(pos.getX(i) * 100) + ',' + Math.round(pos.getY(i) * 100) + ',' + Math.round(pos.getZ(i) * 100),
+          a = new THREE.Vector3(),
+          b = new THREE.Vector3(),
+          d = new THREE.Vector3();
+        for (let f = 0; f < n; f += 3) {
+          a.fromBufferAttribute(pos, f);
+          b.fromBufferAttribute(pos, f + 1).sub(a);
+          d.fromBufferAttribute(pos, f + 2).sub(a);
+          const fn = b.cross(d);
+          for (let k = 0; k < 3; k++) {
+            const kk = key(f + k),
+              s0 = acc.get(kk);
+            if (s0) s0.add(fn);
+            else acc.set(kk, fn.clone());
+          }
+        }
+        const nor = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) {
+          const v3 = acc.get(key(i)).clone().normalize();
+          nor.set([v3.x, v3.y, v3.z], i * 3);
+        }
+        geo0.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+        geo0.deleteAttribute('uv');
+        geo0.computeBoundingSphere();
+        if (sm.material.map) sm.material.map.dispose();
+        sm.material.dispose();
+        sm.geometry = geo0;
+        sm.material = MAT;
+        for (const cl of gl.animations) st.clips[cl.name] = cl;
+        st.src = gl.scene;
+        st.ready = true;
+        return true;
+      })
+      .catch(e => {
+        console.warn('tiere model', kind, e);
+        st.failed = true;
+        return false;
+      });
+    return st;
+  }
+  // true when the kind can be made now (a glTF kind once it has loaded or failed – then the built body); starts the loading
+  S.ready = kind => {
+    const st = gltfLoad(kind);
+    return !st || st.ready || st.failed;
+  };
+  function makeGltf(kind, P, st) {
+    const G = P.gltf,
+      root = skelClone(st.src),
+      inner = new THREE.Group();
+    let mesh = null;
+    root.traverse(o => {
+      if (o.isSkinnedMesh) {
+        mesh = o;
+        o.frustumCulled = false;
+        o.castShadow = false;
+        o.receiveShadow = true;
+        o.userData.noMerge = true;
+        o.userData.shared = true;
+      }
+    });
+    inner.scale.setScalar(G.scale);
+    inner.add(root);
+    const g = new THREE.Group();
+    g.add(inner);
+    g.name = 'tier ' + kind;
+    S.n++;
+    const mixer = new THREE.AnimationMixer(root),
+      act = {};
+    for (const [k, name] of Object.entries(G.clips)) {
+      const cl = st.clips[name];
+      if (!cl) continue;
+      const a = mixer.clipAction(cl);
+      a.play();
+      a.setEffectiveWeight(k === 'still' ? 1 : 0);
+      a.time = Math.random() * cl.duration;
+      act[k] = a;
+    }
+    const w = { still: 1, walk: 0, run: 0 };
+    const A = {
+      kind,
+      variant: {},
+      g,
+      mesh,
+      b: {},
+      gltf: true,
+      pose: {},
+      dispose() {
+        g.removeFromParent();
+        mixer.stopAllAction();
+        mixer.uncacheRoot(root);
+        if (mesh && mesh.skeleton) mesh.skeleton.dispose();
+      },
+      anim(dt, sp) {
+        // which cycle by speed, crossfaded; the cycles run at the speed the animal goes
+        const tgt = sp < 0.08 ? 'still' : sp < G.runFrom ? 'walk' : 'run';
+        const k = 1 - Math.exp(-dt * 6);
+        for (const n of Object.keys(w)) {
+          w[n] += ((n === tgt ? 1 : 0) - w[n]) * k;
+          if (act[n]) act[n].setEffectiveWeight(w[n]);
+        }
+        if (act.walk) act.walk.timeScale = THREE.MathUtils.clamp(sp / G.walkV, 0.5, 2);
+        if (act.run) act.run.timeScale = THREE.MathUtils.clamp(sp / G.runV, 0.7, 2.2);
+        mixer.update(dt);
+      },
+    };
+    return A;
+  }
   function make(kind, variant = {}) {
     const P = PLANS[kind];
     if (!P) throw new Error('no plan for ' + kind);
+    if (P.gltf && !variant.built) {
+      const st = gltfLoad(kind);
+      if (st && st.ready) return makeGltf(kind, P, st);
+    }
     const key = kind + ':' + JSON.stringify(variant);
     if (!S.built[key]) S.built[key] = P.bird ? bird(P, variant) : quadruped(P, variant);
     const { geo, sk } = S.built[key];
@@ -1047,7 +1209,8 @@ export const TKOERPER = (() => {
   };
   // the companion dog: an Altdeutscher Hütehund of the type Gelbbacke (central German type: 55–60 cm, black with tan on the cheeks,
   // above the eyes, the muzzle and the legs; erect triangular ears; the tail hanging low, bushy) – a herding dog for goats and sheep
-  PLANS.hund = {
+  // the base of the smaller four-legged plans (scaled() below): a slim dog's proportions
+  const QBASE = {
     k: 1,
     e: 2.1,
     sides: 16,
@@ -1128,6 +1291,43 @@ export const TKOERPER = (() => {
       return shade(c, q, 0.05, 0.05);
     },
   };
+  // the dog itself: fuller – the long-stock coat, a ruff round the neck, the head carried forward and a little low, a bushy tail
+  PLANS.hund = Object.assign({}, QBASE, {
+    trunk: [
+      [-0.37, 0.55, 0.45, 0.05],
+      [-0.33, 0.59, 0.37, 0.12],
+      [-0.2, 0.6, 0.34, 0.14],
+      [-0.03, 0.59, 0.32, 0.14],
+      [0.12, 0.6, 0.27, 0.15],
+      [0.25, 0.61, 0.26, 0.145],
+      [0.33, 0.6, 0.29, 0.125],
+      [0.4, 0.54, 0.34, 0.095],
+    ],
+    neck: [
+      [0.27, 0.48, 0.115, 0.14],
+      [0.37, 0.56, 0.11, 0.125],
+      [0.43, 0.62, 0.09, 0.1],
+      [0.47, 0.655, 0.074, 0.08],
+      [0.505, 0.675, 0.076, 0.078],
+      [0.56, 0.665, 0.07, 0.068],
+      [0.61, 0.64, 0.044, 0.042],
+      [0.66, 0.62, 0.033, 0.031],
+      [0.69, 0.61, 0.026, 0.024],
+    ],
+    hindR: [0.12, 0.09, 0.05, 0.028, 0.022, 0.026],
+    frontR: [0.085, 0.068, 0.04, 0.025, 0.021, 0.025],
+    ear: { p: [0.5, 0.735], x: 0.045, out: 0.35, up: 0.9, back: -0.15, len: 0.105, wid: 0.075, tip: true },
+    eye: { p: [0.56, 0.69], x: 0.036, r: 0.01, col: 0x2a1a0c },
+    tail: {
+      p: [
+        [-0.36, 0.54],
+        [-0.43, 0.44],
+        [-0.46, 0.33],
+        [-0.44, 0.23],
+      ],
+      r: [0.05, 0.075, 0.07, 0.03],
+    },
+  });
   // the red kite (Milvus milvus): 61–72 cm long, wingspan 1.75 m, the deeply forked rufous tail, pale grey head, white patches under the
   // hand, black wing tips; soars over fields and meadows with few wingbeats, twisting its tail to steer. Germany holds more than half of
   // the world's red kites
@@ -1223,7 +1423,25 @@ export const TKOERPER = (() => {
   }
   // red fox (Vulpes vulpes): 35–40 cm at the shoulder, slim, the long pointed snout, big pointed ears black at the back, black stockings,
   // the bushy tail (Lunte) with the white tip
-  PLANS.fuchs = scaled(PLANS.hund, 0.62, 0.66, 0.68, {
+  PLANS.fuchs = scaled(QBASE, 0.62, 0.66, 0.68, {
+    // the real model: ear tips 0.55 m, nose to the tip of the tail 1.08 m (the sample is ~1.43 times life size in cm)
+    gltf: {
+      file: 'tiere/fuchs.glb',
+      scale: 0.007,
+      clips: { still: 'Survey', walk: 'Walk', run: 'Run' },
+      walkV: 0.85,
+      runV: 4.2,
+      runFrom: 2.2,
+      // the sample's bright orange toned to a real fox: red-brown, less saturated; white a little grey; the stockings near black
+      tone(c, r) {
+        const l = c.r * 0.3 + c.g * 0.6 + c.b * 0.1;
+        if (l > 0.7) c.setRGB(0.72, 0.69, 0.64);
+        else if (l < 0.08) c.setRGB(0.028, 0.02, 0.016);
+        else if (c.r > c.b * 3) c.setRGB(0.4, 0.11, 0.025);
+        else c.multiplyScalar(0.7);
+        c.multiplyScalar(0.9 + r * 0.2);
+      },
+    },
     ear: { p: [0.34, 0.545], x: 0.03, out: 0.3, up: 0.95, back: -0.05, len: 0.085, wid: 0.065 },
     tail: {
       p: [
@@ -1254,7 +1472,7 @@ export const TKOERPER = (() => {
   });
   // brown hare (Lepus europaeus): low and arched, very long hind legs folded under, ears 12 cm with black tips, the tail black above,
   // white below; it hops
-  PLANS.hase = scaled(PLANS.hund, 0.62, 0.5, 0.62, {
+  PLANS.hase = scaled(QBASE, 0.62, 0.5, 0.62, {
     hind: [
       [-0.16, 0.27],
       [-0.07, 0.18],
@@ -1294,7 +1512,7 @@ export const TKOERPER = (() => {
     },
   });
   // badger (Meles meles): low, wide, short legs, the white face with two black stripes over the eyes, grey silver back, black legs
-  PLANS.dachs = scaled(PLANS.hund, 1.35, 0.5, 0.88, {
+  PLANS.dachs = scaled(QBASE, 1.35, 0.5, 0.88, {
     ear: { p: [0.4, 0.37], x: 0.04, out: 0.8, up: 0.5, back: -0.2, len: 0.03, wid: 0.035 },
     tail: {
       p: [
@@ -1325,7 +1543,7 @@ export const TKOERPER = (() => {
     },
   });
   // raccoon (Procyon lotor): arched back, the black mask, the pale muzzle, the ringed tail, grey-brown
-  PLANS.waschbaer = scaled(PLANS.hund, 1.0, 0.55, 0.7, {
+  PLANS.waschbaer = scaled(QBASE, 1.0, 0.55, 0.7, {
     ear: { p: [0.36, 0.44], x: 0.035, out: 0.5, up: 0.8, back: -0.2, len: 0.045, wid: 0.045 },
     tail: {
       p: [
@@ -1354,7 +1572,7 @@ export const TKOERPER = (() => {
     },
   });
   // stone marten (Martes foina): long and low, short legs, the bushy tail, chocolate brown with the forked white bib
-  PLANS.marder = scaled(PLANS.hund, 0.5, 0.3, 0.6, {
+  PLANS.marder = scaled(QBASE, 0.5, 0.3, 0.6, {
     ear: { p: [0.3, 0.255], x: 0.022, out: 0.5, up: 0.85, back: -0.1, len: 0.025, wid: 0.03 },
     tail: {
       p: [
@@ -1378,7 +1596,7 @@ export const TKOERPER = (() => {
   });
   // European wildcat (Felis silvestris): a strong tabby, the round head with a short muzzle, the thick blunt tail with black rings
   // and a black tip, the pink nose; faint stripes, no stripes on the back of the tail's root
-  PLANS.katze = scaled(PLANS.hund, 0.78, 0.62, 0.66, {
+  PLANS.katze = scaled(QBASE, 0.78, 0.62, 0.66, {
     neck: [
       [0.17, 0.31, 0.05, 0.065],
       [0.24, 0.37, 0.048, 0.056],
