@@ -44,6 +44,7 @@ export const STHOLZ = (() => {
   const panels = (oak = true) =>
     ((WERK.RACK && WERK.RACK.items) || []).filter(w => w.st === 'panel' && (!oak || !w.sp));
   const panelHalves = () => panels(true).reduce((n, w) => n + (w.L >= 900 ? 2 : w.L >= 480 ? 1 : 0), 0);
+  const ownPanels = () => panels(false).filter(w => w.sp); // Leimholz of own wood (larch, spruce from the Klinge)
   const shelf = (min = 0) =>
     ((WERK.SHELF && WERK.SHELF.items) || []).filter(
       w => w.done && w.where === 'shelf' && (w.stars || 0) >= min && !w.sp
@@ -788,6 +789,90 @@ export const STHOLZ = (() => {
       return { text: `${de(rm, 1)} rm Brennholz bei Ronald aufgesetzt – ${Math.round(eur)} €` };
     },
   });
+  // ---------------- 8 · own wood for the workshop: the air-dry planks dried on (the cabinet in the hall; today under the lean-to), glued ----
+  const SPD = { larch: 'Lärche', spruce: 'Fichte', pine: 'Kiefer' };
+  STRAT.job.define({
+    id: 'nachtrocknen',
+    pose: 'carry',
+    label: 'Lufttrockene Bohlen ablängen und nachtrocknen',
+    place: 'werkstatt',
+    people: [1, 2],
+    heavy: 0.4,
+    order: 45,
+    text: 'Die lufttrockenen Bohlen aus dem Stapel auf 1 m ablängen und auf Leisten nachtrocknen – im Trockenschrank der Halle (Ziel 9 %) oder, solange es die Halle nicht gibt, unter dem Pultdach (im Sommer 11–12 %).',
+    learn:
+      'Möbel und Schneidebretter brauchen 8–12 % Holzfeuchte – so viel, wie Holz in einer geheizten Wohnung annimmt. Draußen unter Dach kommt es bei uns nur auf 13 % im Sommer und 21 % im Winter.',
+    can: () => {
+      const k = HOLZDRY.kilnMC && HOLZDRY.kilnMC();
+      if (k) return { no: true, text: `Es trocknen schon ${k.n} Bretter nach (${de(k.mc, 1)} %).`, why: '', src: '' };
+      const ms = HOLZDRY.stackMC && HOLZDRY.stackMC();
+      if (!ms || !ms.n) return { no: true, text: 'Im Stapel liegen keine Bretter.', why: '', src: '' };
+      if (ms.avg > 21)
+        return {
+          no: true,
+          text: `Erst lufttrocken: im Stapel noch ${de(ms.avg, 0)} % im Mittel.`,
+          why: 'Über etwa 20 % reißen Bretter beim Nachtrocknen – das Feuchtegefälle zwischen Kern und Oberfläche ist zu groß. Im Stapel trocknen sie über den Sommer; dicke Bohlen brauchen deutlich länger als dünne Bretter.',
+          src: 'Holzfachkunde; Trocknungsmodell werk/holz_dry.js nach dem Klima von Meiningen (DWD 1991–2020)',
+        };
+      return null;
+    },
+    dur: 90,
+    finish: () => {
+      const r = HOLZDRY.simKiln();
+      if (!r || r.no) return { text: (r && r.text) || 'Nichts eingelagert' };
+      return {
+        text: `${r.n} Bretter (${de(r.mc, 0)} %) ${r.shed ? 'unter dem Pultdach' : 'im Trockenschrank'} – ${r.days > 0 ? `${r.shed ? 12 : 9} % in etwa ${r.days} Tagen` : 'unter 12 % erst im Sommer'}`,
+      };
+    },
+  });
+  STRAT.job.define({
+    id: 'leimholz_eigen',
+    pose: 'bench',
+    label: 'Leimholz aus eigenen Bohlen (besäumen, schleifen, verleimen)',
+    place: 'werkstatt',
+    people: [1, 2],
+    skill: 'holz',
+    min: 2,
+    loud: true,
+    watt: 1700, // the table saw and the drum sander in turn
+    heavy: 0.5,
+    order: 46,
+    text: 'Die nachgetrockneten Bohlen an der Tischkreissäge besäumen, am Trommelschleifer plan schleifen und mit Zwingen zu Platten 40 × 400 × 1000 mm verleimen – das Holz der Klinge für Stirnholzbretter.',
+    learn:
+      'Aus Bohlen ab 35 mm werden Leimholzplatten; dünnere Bretter bleiben auf Vorrat. Verleimt man zu feuchtes Holz, schwindet es danach in der Wohnung weiter – die Fugen reißen.',
+    can: () => {
+      const k = HOLZDRY.kilnMC && HOLZDRY.kilnMC();
+      if (!k)
+        return {
+          no: true,
+          text: 'Nichts nachgetrocknet – erst die lufttrockenen Bohlen nachtrocknen.',
+          why: '',
+          src: '',
+        };
+      const tg = HOLZDRY.kilnTarget();
+      if (k.mc > tg)
+        return {
+          no: true,
+          text: `Noch ${de(k.mc, 1)} % – zum Verleimen höchstens ${de(tg, 0)} %.`,
+          why: 'Möbel- und Schneidebrettholz hat 8–12 % Holzfeuchte; feuchter verleimt reißen die Fugen, wenn es in der Wohnung nachtrocknet.',
+          src: 'Holzfachkunde (Holzfeuchte für Möbel und Innenausbau)',
+        };
+      return null;
+    },
+    dur: 4 * 60,
+    finish: () => {
+      const n0 = ownPanels().length,
+        k = HOLZDRY.kilnMC(),
+        n = HOLZDRY.simShop(),
+        got = ownPanels().length - n0,
+        sp = got ? SPD[ownPanels().slice(-1)[0].sp] || '' : '';
+      return {
+        text: got
+          ? `${got} Leimholzplatte${got > 1 ? 'n' : ''} ${sp} aus eigenem Holz (${de(k ? k.mc : 0, 1)} %) liegen im Werkstattregal`
+          : `${n} Bretter auf Vorrat in der Werkstatt – für Leimholz braucht es Bohlen ab 35 mm`,
+      };
+    },
+  });
   // ---------------- the first order (brief: „5 Schneidebretter Eiche“ with a date and minimum stars) ----------------
   STRAT.onLoad.push(() => {
     if (!S.orders.some(o => o.key === D.ORDER0.id))
@@ -805,6 +890,18 @@ export const STHOLZ = (() => {
   void BUILD;
   void CLOCK;
   void STJOBS;
-  return { marked, logsForest, logsYard, boardsPile, boardsStack, panels, panelHalves, shelf, toYard, PAYLOAD };
+  return {
+    marked,
+    logsForest,
+    logsYard,
+    boardsPile,
+    boardsStack,
+    panels,
+    panelHalves,
+    ownPanels,
+    shelf,
+    toYard,
+    PAYLOAD,
+  };
 })();
 window.STHOLZ = STHOLZ;

@@ -261,6 +261,29 @@ with lib.browser() as b:
         until("!CLOCK.warp", 60, 0.25)
         ms1 = J("HOLZDRY.stackMC()")
         ck('two and a half months later the stack is drier (the climate of Meiningen)', ms1 and ms1['avg'] < ms0['avg'] - 10, f"{ms0['avg']:.0f} → {ms1['avg']:.0f} %")
+        # own wood for the workshop: not yet (still too wet to dry on – and why); through spring and summer the stack becomes air-dry, the planks
+        # are dried on (today, without the hall, under the lean-to's roof; with the hall in the cabinet) and glued to panels of own wood
+        q0 = J("STRAT.job.check('nachtrocknen', ['christoph'])")
+        ck('drying on is refused while the stack is not air-dry – with the reason (checks above ~20 %)', q0 and 'lufttrocken' in q0.get('text', '') and q0.get('why'), str(q0)[:300])
+        for i in range(10):
+            ms = J("HOLZDRY.stackMC()")
+            if ms and ms['avg'] <= 20.5: break
+            E("STRAT.skip(30 * 1440)"); until("!CLOCK.warp", 60, 0.25)
+        ms2 = J("HOLZDRY.stackMC()")
+        E("STRAT.S.plan.urlaub = [{ from: STRAT.W.day(CLOCK.t).iso, to: STRAT.W.day(CLOCK.t + 400 * 1440).iso }]")  # on site every day
+        nt = job('nachtrocknen', ['christoph'])
+        ok = nt and nt.get('id') and until(done(nt['id']), 160)
+        km = J("HOLZDRY.kilnMC()")
+        ck('air-dry by summer, the planks go to dry on (under the lean-to\'s roof today; the cabinet comes with the hall)', ok and km and km['n'] > 4, f"stack {ms2 and round(ms2['avg'], 1)} % → {km} {nt} {J('STRAT.S.notes.slice(-2).map(n => n.text)')}")
+        for i in range(24):
+            km = J("HOLZDRY.kilnMC()")
+            if km and km['mc'] <= J("HOLZDRY.kilnTarget()"): break
+            E("STRAT.skip(15 * 1440)"); until("!CLOCK.warp", 40, 0.25)
+        op0 = J("STHOLZ.ownPanels().length")
+        lo = job('leimholz_eigen', ['falko'])
+        ok = lo and lo.get('id') and until(done(lo['id']), 200)
+        op1 = J("STHOLZ.ownPanels().map(w => w.sp + ' ' + w.mc)")
+        ck('Falko glues panels of own wood from the Klinge (table saw, drum sander, clamps) – Leimholz in the workshop rack', ok and len(op1) > op0, f'{km} → {op0} → {op1} {lo} {J("STRAT.S.notes.slice(-2).map(n => n.text)")}')
         # the workshop: oak panels, five boards, the order
         J("STRAT.setDate('2026-11-21', 8 * 60 + 30)")
         o = J("STRAT.S.orders.find(o => o.key === 'bretter5')")

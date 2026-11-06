@@ -1103,6 +1103,47 @@ export const HOLZDRY = (() => {
     shedRebuild();
     return k.length;
   };
+  // feat/strategie: the air-dry boards of the stack (≤ 21 % on average) into the drying cabinet with its program started (in the hall) –
+  // or today, without a cabinet, on stickers under the lean-to's roof – as by hand. Returns { n, mc, shed, days } (days to the target:
+  // 9 % in the cabinet, 12 % under the roof, -1 if not within a year), the state when boards are already in, or { no, mc, text, why }.
+  S.simKiln = () => {
+    advance();
+    const k = inKiln(),
+      shed = today();
+    if (k.length) return { n: k.length, mc: avgOf(k), shed: !!(S.kiln && S.kiln.shed), on: !!(S.kiln && S.kiln.on) };
+    const sb = B().filter(b => b.st === 'stack');
+    if (!sb.length) return { no: true, text: 'Im Stapel liegen keine Bretter.' };
+    const m = avgOf(sb);
+    if (m > 21)
+      return {
+        no: true,
+        mc: m,
+        text: `Erst lufttrocken: im Mittel ${de(m)} %.`,
+        why: 'Über etwa 20 % Holzfeuchte reißen die Bretter beim Nachtrocknen (zu großes Feuchtegefälle zwischen Kern und Oberfläche) – sie trocknen erst im Stapel weiter.',
+      };
+    for (const b of sb) {
+      b.st = 'kiln';
+      b.Lw = Math.max(0, b.L - 2 * (b.endck || 0));
+    }
+    if (S.stack) {
+      S.stack.layers = [];
+      S.stack.roof = false;
+    }
+    S.kiln = shed ? { on: false, shed: true, t0: CLOCK.t } : { on: true, t0: CLOCK.t, t1: CLOCK.t };
+    if (!shed && S.led) S.led.emissiveIntensity = 1.5;
+    rebuild();
+    if (shed) shedRebuild();
+    save();
+    markDirty(true);
+    return { n: sb.length, mc: m, shed, days: shed ? shedDays() : kilnDays() };
+  };
+  // feat/strategie: the target of what lies in the cabinet / under the roof (Leimholz needs 8–12 %)
+  S.kilnTarget = () => (S.kiln && S.kiln.shed ? 12 : 10.5);
+  S.kilnMC = () => {
+    advance();
+    const k = inKiln();
+    return k.length ? { n: k.length, mc: avgOf(k), shed: !!(S.kiln && S.kiln.shed) } : null;
+  };
   Object.assign(S, { clim, doyOf, advance, stackMC, forecast, rebuild, layOne, nextLayer, rateOf, stepDay });
   return S;
 })();
