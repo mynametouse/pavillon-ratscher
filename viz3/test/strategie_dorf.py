@@ -76,6 +76,10 @@ with lib.browser() as b:
         rc.set(o, d.normalize()); rc.far = L; const h = rc.intersectObjects(ms, false)[0];
         res.push([a, h ? h.distance / L : 1]); }
       res.sort((p, q) => q[1] - p[1]); return res[0]; })()"""
+    # the direction of the track to the Klinge at (KX, KY): the camera stands on the track, a little back towards the garden
+    TRACK_AZ = """(() => { const R = ROADS.routes && ROADS.routes.klinge; if (!R || R.length < 2) return null; let bi = 1, bd = 1e9;
+      for (let i = 1; i < R.length; i++) { const d = Math.hypot((R[i][0] + R[i - 1][0]) / 2 - KX, (R[i][1] + R[i - 1][1]) / 2 - KY); if (d < bd) { bd = d; bi = i; } }
+      return Math.atan2(R[bi - 1][0] - R[bi][0], R[bi - 1][1] - R[bi][1]) * 180 / Math.PI; })()"""
     def back_top():
         # GAME.view walks: back to the plan view of the mode (the clock runs at the mode's pace only from above)
         E("(() => { if (GAME.CAM3) GAME.CAM3.want = true; GAME.go('draufsicht'); for (let i = 0; i < 4; i++) GAME.step(0.1); })()")
@@ -359,7 +363,9 @@ with lib.browser() as b:
             E("STHUD.openPlace('einsatz')")
             steps(1.0)
             page_pic('09_einsatz_baum_oben')
-            look_at(pos[0], pos[1], 15, 9, 150, -28)
+            # at eye height on the track, a little back towards the garden: the spruces across the way under the forest's roof
+            taz = J(TRACK_AZ.replace('KX', str(pos[0])).replace('KY', str(pos[1])))
+            look_at(pos[0], pos[1], 13, 1.8, taz if taz is not None else 150, -4)
             lib.shot(pg, OUT, '10_einsatz_baum_welt')
             back_top()
         E("STRAT.setSpeed(30)")
@@ -372,7 +378,7 @@ with lib.browser() as b:
         w = J("STDWELT.state()")
         ck('afterwards the logs lie cut at the side of the track', w['krise'] == 'baum:ok', str(w))
         if pos:
-            look_at(pos[0], pos[1], 15, 9, 150, -28)
+            look_at(pos[0], pos[1], 13, 1.8, taz if taz is not None else 150, -4)
             lib.shot(pg, OUT, '11_einsatz_baum_geraeumt')
             back_top()
         # a Tuesday morning: a cloudburst, the brook rises at the culvert – only three of the fire brigade are in the village, nobody helps
