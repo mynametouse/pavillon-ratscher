@@ -273,6 +273,10 @@ with lib.browser() as b:
             until("!CLOCK.warp", 120, 0.25)
         msb = J("HOLZDRY.stackMC()")
         ck('the log yard\'s panel offers „bis lufttrocken“ – one click and the stack is air-dry when the forecast said', bt and 'lufttrocken' in bt['t'] and msb and msb['avg'] <= 21, f"{bt} → {msb and round(msb['avg'], 1)} %")
+        # one dry plank taken off the top of the stack for building (the API for strategie-bau's timber)
+        tk = J("HOLZDRY.simTake(1, { maxMC: 21 })")
+        mst = J("HOLZDRY.stackMC()")
+        ck('a dry plank can be taken off the stack for building (HOLZDRY.simTake: from the top, ≤ 21 %)', len(tk) == 1 and tk[0]['mc'] <= 21 and mst and mst['n'] == msb['n'] - 1, f'{tk} {msb and msb["n"]} → {mst and mst["n"]}')
         for i in range(10):
             ms = J("HOLZDRY.stackMC()")
             if ms and ms['avg'] <= 20.5: break

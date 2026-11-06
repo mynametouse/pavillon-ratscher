@@ -218,7 +218,9 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
 - 6.11. 2:00 – Aufträge `nachtrocknen`, `leimholz_eigen`, `brett_eigen`; Bestellungen können `wood: 'larch'` tragen (geliefert werden
   Bretter dieser Holzart; ohne `wood` Eiche), `STHOLZ.shelf(minSterne, holzart)`, `STHOLZ.ownPanels()`; `WERK.simBoard({ sp })`; für Bauholz (strategie-bau): die Bretter mit Feuchte stehen in
   `HOLZSAW.boards` (`{ id, sp, t, L, wS, wW, mc, st: 'pile' | 'stack' | 'kiln' | 'shop' | 'used', blue, crack, warp }`), der Stapel in
-  `HOLZDRY.stackMC()` (`{ n, avg, min, max }`) – Konstruktionsholz braucht ≤ 20 % (DIN 4074) und eine Sortierung.
+  `HOLZDRY.stackMC()` (`{ n, avg, min, max }`) – Konstruktionsholz braucht ≤ 20 % (DIN 4074) und eine Sortierung;
+  `HOLZDRY.simTake(n, { maxMC: 20, minT })` nimmt n Bretter oben vom Stapel (wie beim Abstapeln, nur trockene) und gibt sie zurück
+  (`[{ id, sp, t, L, w, mc, blue, crack, warp }]`) – sie sind dann in der Welt weg (`st: 'used'`).
 - 6.11. 2:15 – `layer.define({ under: true })`; `STRAT.W.wx(t).dir` (Windrichtung, aus der er kommt); Knöpfe mit `data-skip="<Minuten>"` in
   einem Feld (`info()` eines Ortes) laufen im Zeitraffer.
 
@@ -241,7 +243,7 @@ auf einem echten Gerät). Der Hund (feat/tiere): von oben als Zeichen auf der Ka
   - `viz3/src/werk/holz_saw.js` – `HOLZSAW.simSaw(logId, dicke)`: ein Stamm ganz eingeschnitten (dieselben Bretter, Schwarten als Brennholz).
   - `viz3/src/werk/holz_dry.js` – `HOLZDRY` jetzt `export`iert; `HOLZDRY.simStack(o)` (alle Bretter der Blöcke in den Stapel, Dach),
     `HOLZDRY.simKiln()` (lufttrockene Bretter in den Trockenschrank bzw. heute unter das Pultdach, wie von Hand), `HOLZDRY.kilnMC()`,
-    `HOLZDRY.kilnTarget()`, `HOLZDRY.simShop()`.
+    `HOLZDRY.kilnTarget()`, `HOLZDRY.simTake(n, o)` (trockene Bretter oben vom Stapel nehmen, für Bauholz), `HOLZDRY.simShop()`.
   - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak, sp })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
 - `viz3/src/modules.txt`: Block `# feat/strategie` nach `# feat/bus`, vor `game/tutorial.js`.
 - Das normale Spiel bleibt unberührt, bis jemand den Modus einmal startet (`STRAT.S.used`): vorher keine Simulation, keine Figuren, keine
