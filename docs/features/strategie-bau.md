@@ -66,7 +66,11 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
   *Ernten* (ins Erntebuch des Planers und in den Vorrat **Obst** der Leiste – auch was zu Fuß gepflückt wird, über `gplan:geerntet`);
   Äpfel halten im Keller Monate, Kirschen Tage; *Verschenken* an Hubert und Ronald (Gefallen, Stil) und *Verkaufen* auf dem Markt in
   Schleusingen (Annahme 2,80 €/kg, Standgebühr); *Einkochen* im Bungalow (Obst → Mahlzeiten im Vorrat „Essen“ des Kerns, ein Jahr haltbar).
-  Ronald kennt die alten Sorten: mit ihm gehen Schnitt und Ernte 25 % schneller. Der Vorschlag hält 4 m zur Grenze (Gesetz: 2 m für
+  Ronald kennt die alten Sorten: mit ihm gehen Schnitt und Ernte 25 % schneller. **Hühner halten** (mit feat/tiere: `TIERE.huehner`): Stall
+  und fünf Junghennen auf der Wiese (Annahmen: Stall 450 €, Henne 18 €), Ronald versorgt sie unter der Woche (ein Gefallen), eine
+  automatische Klappe (120 €) hält nachts den Fuchs fern, *Eier einsammeln* → Mahlzeiten; der Fuchs an einem offenen Stall wird von oben
+  gemeldet; Meldung der Geflügelhaltung beim Veterinäramt und der Tierseuchenkasse steht im „Warum?“. Verbissschäden kommen mit feat/tiere
+  aus dessen Modell (`TIERE.baeume`), ohne es aus einem kleinen eigenen. Der Vorschlag hält 4 m zur Grenze (Gesetz: 2 m für
   Kernobst auf starker Unterlage, § 44 Nr. 2 Buchst. b ThürNRG – die Krone soll nicht überhängen). Ebene „Garten“: 🌳 gepflanzt, 💧 durstig,
   🍎 reif, ! ohne Verbissschutz, ✂ verbissen, 📦 am Gartentor. Jeder Auftrag sagt, warum, mit Quelle.
 
