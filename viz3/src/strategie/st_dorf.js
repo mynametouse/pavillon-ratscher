@@ -880,8 +880,13 @@ export const STDORF = (() => {
       });
     });
   // what a step costs from your purse
-  const payParts = (id, s) => (s.pay === 'land' ? dealCost(id).parts : [[P0(id).cost || 0, P0(id).title]]);
-  const payOf = (id, s) => payParts(id, s).reduce((a, r) => a + r[0], 0);
+  // (function declarations: the jobs above use them already while they are defined)
+  function payParts(id, s) {
+    return s.pay === 'land' ? dealCost(id).parts : [[P0(id).cost || 0, P0(id).title]];
+  }
+  function payOf(id, s) {
+    return payParts(id, s).reduce((a, r) => a + r[0], 0);
+  }
   // a deal refused: the project stops with the reason (try again later with more trust or a fair price)
   function reject(id, q, t) {
     const p = pst(id);
