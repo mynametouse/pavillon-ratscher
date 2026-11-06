@@ -860,8 +860,8 @@ export const WDATA = (() => {
         wiki('Deutschlandticket'),
         ['gtfs.de – Fahrplandaten für Deutschland (Daten DELFI e.V., CC BY 4.0)', 'https://gtfs.de/'],
       ],
-      find: { ev: [['bus:fahrplan'], ['bus:ein']] },
-      hint: 'An einer Haltestelle den Fahrplan lesen oder einsteigen.',
+      find: { ev: [['bus:fahrplan'], ['bus:ein']], place: ['^Haltestelle'] },
+      hint: 'An einer Haltestelle warten, den Fahrplan lesen oder einsteigen.',
     },
     // ======================= Orte =======================
     {
