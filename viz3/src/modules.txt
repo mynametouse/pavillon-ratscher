@@ -187,6 +187,12 @@ wetter/wx_fall.js           # feat/wetter rain, drizzle, sleet and snow around t
 wetter/wx_ton.js            # feat/wetter the sound of the weather: rain outside and on the roof, wind, thunder (WXTON)
 wetter/wx_boden.js          # feat/wetter wet ground and roofs: darker and glossier while it rains and for hours after (WXBODEN)
 wetter/wetter.js            # feat/wetter live as the default, switchable to the calendar's: the game's moment, easing, clock window, menu (WETTER)
+# feat/wissen: discovering and learning across every mode below this line (after everything it listens to; before the tutorial and the loop)
+wissen/wissen_data.js       # feat/wissen the discovery book's entries with real sources, the „Warum?“ reasons, teachers, boards – data (WDATA)
+wissen/wissen.js            # feat/wissen the Entdeckerbuch (N): chapters, found by places, events and doing; „Warum?“; pav-wissen-v1 (WISSEN)
+wissen/wissen_lehrer.js     # feat/wissen people as teachers: Gerhard, Wolfgang, Ingrid, Hubert, Ronald – a topic opens an entry (WLEHRER)
+wissen/wissen_orte.js       # feat/wissen information boards at the real places: old school, Dorflinde, brook, Klinge, dam (WORTE)
+wissen/wissen_daten.js      # feat/wissen data views on the plan view: noise, traffic, sun hours, nature value, mood – SVG, a legend (WDATEN)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
