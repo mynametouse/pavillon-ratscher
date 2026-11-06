@@ -114,9 +114,9 @@ südlich vom Garten, runder Behälter, Schuppen im Dorf, Anger von oben) haben e
 (`?nogeb&bodenalt`) und nachher –, in die Halle laufen hält an der Wand, keine neuen Shader-Programme; Schleusingen: die Zellen um den Markt
 kommen, keine doppelt zur Altstadt, ein Haus vom Boden und von oben (vorher: die veröffentlichten Kacheln ohne Zellen), seine Wand hält
 den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; an der Strecke: Rappelsdorf (auf dem Weg nach Kloster Veßra) hat seine
-Gebäude; keine Seitenfehler. Dazu ohne Browser: keine Zelle in Kirchenruine,
-Klosterbezirk, Baumschule, an Burg oder Rathaus, keine mehr als 0,3 m in einer gezeichneten Fahrbahn. Bei den Shader-Programmen zählen die der Dorf-Materialien (Schlüssel `v16e-…`) – was
-andere Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als Hinweis im Protokoll. Bilder in `out/welt_gebaeude/`.
+Gebäude; keine Seitenfehler. Dazu ohne Browser: keine Zelle in Kirchenruine, Klosterbezirk, Baumschule, an Burg oder Rathaus, keine mehr
+als 0,3 m in einer gezeichneten Fahrbahn. Bei den Shader-Programmen zählen die der Dorf-Materialien (Schlüssel `v16e-…`) – was andere
+Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als Hinweis im Protokoll. Bilder in `out/welt_gebaeude/`.
 
 ### Bilder (`out/welt_gebaeude/`, bei GitHub im Artefakt `out` des Laufs)
 
@@ -135,8 +135,8 @@ andere Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als
 
 - Gebäude weiter als 600 m von den befahrenen Straßen jenseits des Quadrats (dabei sind Schleusingen, Veßra und 600 m beiderseits der
   Straßen von `welt/fahrt.js`; Breite: `CORRIDOR` in `tools/welt-gebaeude/prep.py`); Suhl (noch nicht in der App).
-- Echte Dachformen aus dem LoD2 des Landes, sobald der Download-Dienst wieder geht (`tools/welt-gebaeude/lod2.py` prüft das; 6.11. 0:05:
-  „nicht verfügbar“).
+- Echte Dachformen aus dem LoD2 des Landes, sobald der Download-Dienst wieder geht (`tools/welt-gebaeude/lod2.py` prüft das; 6.11. 0:05
+  und 2:00: „nicht verfügbar“).
 - Carports (offen, Pfosten) sind von Schuppen nicht zu unterscheiden (ETHOS hat keine Gebäudefunktion; das LoD2 hat sie) – sie stehen als
   kleine geschlossene Bauten.
 - Die Schatten der Häuser im Luftbild bleiben (Ratscher und Kacheln; siehe oben) – richtig wäre, wenn alle Häuser eigene Schatten würfen.
