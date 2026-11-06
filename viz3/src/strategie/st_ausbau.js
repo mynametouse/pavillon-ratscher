@@ -104,7 +104,8 @@ export const STAUSBAU = (() => {
   const HEAT_K = 0.0012,
     HEAT_MAX = 14;
   {
-    const need = T => (T >= HEAT_MAX ? 0 : +(HEAT_K * (20 - T)).toFixed(3));
+    const need = T => (T >= HEAT_MAX ? 0 : +(HEAT_K * (20 - T)).toFixed(3)),
+      deg = T => String(Math.round(T)).replace('-', '−'); // a typographic minus
     HZ();
     // what the stove has: the store at the bungalow, your own dry firewood, for how many nights at 2 °C in the evening
     STRAT.place.define({
@@ -176,14 +177,14 @@ export const STAUSBAU = (() => {
         if (!recent) {
           H.kalt = ev;
           STRAT.note(
-            `Kalte Nacht im Bungalow (${Math.round(T)} °C draußen): kein trockenes Brennholz mehr für den Ofen – die Laune leidet.`,
+            `Kalte Nacht im Bungalow (${deg(T)} °C draußen): kein trockenes Brennholz mehr für den Ofen – die Laune leidet.`,
             { kind: 'leute', why, src, acts: act }
           );
         }
       } else if (H.season !== season) {
         H.season = season;
         STRAT.note(
-          `Der erste kalte Abend (${Math.round(T)} °C): im Bungalow brennt der Kanonenofen – ${de(got, 2)} rm Brennholz für die Nacht.`,
+          `Der erste kalte Abend (${deg(T)} °C): im Bungalow brennt der Kanonenofen – ${de(got, 2)} rm Brennholz für die Nacht.`,
           { kind: 'leute', why, src }
         );
       } else if (H.ofen < n * 3 && STHOLZ.firewood.dry() < n && !recent) {

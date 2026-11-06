@@ -889,6 +889,53 @@ export const STHOLZ = (() => {
       return { text: `${de(rm, 1)} rm Brennholz bei Ronald aufgesetzt – ${Math.round(eur)} €` };
     },
   });
+  // ---------------- 7b · the storm's and the beetle's wood to the sawmill: what the forestry contractor laid at the track ----------------
+  // A calamity leaves more logs at the forest road than a family saws, dries and uses: the sawmill's lorry fetches them and pays per cubic
+  // metre (the logs are gone from the world – a sold log counts as used up, like a sawn one); the family's own marked trees stay for the saw
+  const calam = l => {
+    const r = FELL.trees && FELL.trees[l.tid];
+    return !!(r && r.who === 'Forstunternehmer');
+  };
+  STRAT.job.define({
+    id: 'stammholz_verkaufen',
+    label: 'Sturm- und Käferholz ans Sägewerk verkaufen',
+    place: 'klinge',
+    people: [1, 1],
+    skill: 'reden',
+    min: 1,
+    heavy: 0.1,
+    order: 12,
+    text: 'Die Stämme des Forstunternehmers am Waldweg vermessen (Holzliste) und dem Sägewerk anbieten; der Kranwagen holt sie ab, bezahlt wird nach Festmetern.',
+    learn: `Frisches Fichten-Stammholz B/C bringt frei Waldstraße um ${PR.rundholz_fi.eur} €/fm, Sturm- und Käferholz mit Abschlag um ${PR.rundholz_kaefer.eur} €/fm (Annahmen 2026). Der Unternehmer kostet um 32 €/fm – Kalamitätsholz deckt seine Kosten, aber der Wald ist weg.`,
+    show: () => logsForest().some(calam),
+    can: () =>
+      logsForest().some(calam)
+        ? null
+        : {
+            no: true,
+            text: 'Am Waldweg liegt kein Sturm- oder Käferholz.',
+            why: 'Verkauft wird, was der Forstunternehmer aus dem Wald geholt hat; die Stämme eurer eigenen Fällung bleiben für die Säge.',
+            src: '',
+          },
+    dur: 60,
+    finish: () => {
+      let vol = 0,
+        n = 0;
+      for (const l of logsForest()) {
+        if (!calam(l)) continue;
+        l.st = 'sawn'; // fetched by the lorry: gone from the forest road (kept so after a reload, like a sawn log)
+        l.hide = true;
+        l.sold = true;
+        vol += l.vol || 0;
+        n++;
+      }
+      HOLZ.redraw();
+      HOLZ.save();
+      const eur = vol * PR.rundholz_kaefer.eur;
+      STRAT.book(eur, `Sturm- und Käferholz ans Sägewerk: ${n} Stämme, ${de(vol, 1)} fm`, 'verkauf');
+      return { text: `${n} Stämme (${de(vol, 1)} fm) vom Waldweg abgeholt – ${Math.round(eur)} €` };
+    },
+  });
   // open orders of boards (an order of another kind – kind: 'brennholz', 'gemuese' … – is delivered by its theme's own job)
   const openOrders = () =>
     S.orders.filter(x => (x.st === 'offen' || x.st === 'verspätet') && (!x.kind || x.kind === 'brett'));

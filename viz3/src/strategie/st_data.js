@@ -199,6 +199,12 @@ export const STDATA = (() => {
       label: 'Fichte Stammholz B/C ab Waldweg (zum Vergleich)',
       src: 'Annahme: Rundholzpreise 2026 für Fichte B/C um 90–100 €/fm',
     },
+    rundholz_kaefer: {
+      eur: 60,
+      unit: 'fm',
+      label: 'Fichte Sturm- und Käferholz frei Waldstraße (das Sägewerk holt ab)',
+      src: 'Annahme: Kalamitätsholz 2026 mit Abschlag zum Frischholz (B/C um 90–100 €/fm), etwa 50–70 €/fm',
+    },
     psa_forst: {
       eur: 390,
       unit: 'Satz',

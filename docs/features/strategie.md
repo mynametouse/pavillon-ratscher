@@ -47,6 +47,10 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - **Brennholz:** die Schwarten der Bandsäge (je ~0,04 rm) am Sägebock auf 33 cm sägen, spalten, aufsetzen (0,45–0,85 rm/h je Person nach
   Können, Motorsäge mit Sonderkraftstoff gebucht); trocken nach einem Jahr unter Dach (1. BImSchV: unter 25 % Feuchte). Verkauf an Ronald
   nebenan mit der Schubkarre: trocken 110 €/rm (TFZ Bayern), frisch 80 €/rm (Annahme) – Warten lohnt sich.
+- **Kalamitätsholz verkaufen:** was der Forstunternehmer nach Sturm oder Käfer an den Waldweg gelegt hat, holt auf den Auftrag
+  „Sturm- und Käferholz ans Sägewerk verkaufen“ der Kranwagen des Sägewerks (60 €/fm frei Waldstraße – Annahme; frisches Stammholz B/C um
+  95 €/fm, der Unternehmer kostet 32 €/fm); die Stämme sind dann aus der Welt, die der eigenen Fällung bleiben für die Säge. Ohne das
+  rutschte die Kasse nach einem Käferjahr (im Test 150 Bäume, 181 fm) tief ins Minus.
 - **Heizen:** an kalten Abenden (unter 14 °C um 22 Uhr), wenn eure Leute im Garten übernachten, brennt der Kanonenofen des Bungalows
   (`garden/bungalow.js`) – etwa 0,0012 rm je Kelvin unter 20 °C und Nacht (bei −2 °C 0,026 rm, gut 8 kg Fichte; Annahme: ~25 m², dünn
   gedämmt, ~100 W/K, abends und morgens geheizt; Heizwert Fichte lufttrocken ~1450 kWh/rm, im einfachen Ofen ~70 %). Nur trockenes Holz
@@ -240,6 +244,9 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
   Ebenen, Forstunternehmer).
 - 6.11. 2:20 – Brennholz für andere Themen (der Holzofen des Pavillons im Winter): `STHOLZ.firewood.stacked()`, `.dry(t)`,
   `.take(rm, { dryOnly })` → genommene rm, trockenes zuerst (1. BImSchV: nur trockenes Holz in den Ofen).
+- 6.11. 5:00 – Auftrag `stammholz_verkaufen` (Klinge; nur Stämme von Bäumen, die `FELL.trees[tid].who === 'Forstunternehmer'` gefällt
+  hat – verkaufte Stämme stehen in `HOLZ.logs` mit `st: 'sawn'`, `sold: true`); Preis `STDATA.PRICES.rundholz_kaefer`. Ortsbeschriftungen
+  weichen allen Ortszeichen aus (rechts, links, sonst darunter).
 - 6.11. 4:00 – `STRAT.W.temp(t)` (°C; eine Temperatur für den Modus, mit `STBAU.tempOf` abgestimmt); `STRAT.S.ext.heiz = { ofen, season, kalt }`
   (gekaufter Vorrat am Bungalow in rm); Auftrag `brennholz_kaufen` (Ort Bungalow); Kassen-Art `heizen`. Der Ofen nimmt eigenes
   Brennholz über `STHOLZ.firewood.take(rm, { dryOnly: true })` – wer den Pavillon-Ofen baut, kann denselben Weg gehen.
@@ -251,9 +258,14 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
 - Der Traktor der Welt (`vehicles/tractor.js`) bleibt beim Rücken von oben an der Klinge stehen – das Gespann fährt nur auf der Karte, die
   Stämme liegen am Ende im Lager. Ein Brennholzstapel ist in der Welt noch nicht zu sehen (nur als Vorrat; auch die Schwarten der
   Bandsäge zählt die Welt nur); geheizt wird nur der Bungalow (der Ofen des Pavillons kommt mit seiner Bauphase).
-- Das Telefon: Layout, Antippen, Ziehen im Test (iPhone-Größe), noch nicht auf einem echten Gerät; die Zeitbox ist dort groß (drei Reihen).
+- Das Telefon: Layout, Antippen, Ziehen im Test (iPhone-Größe), noch nicht auf einem echten Gerät; die Zeitbox ist dort groß (drei Reihen);
+  im dichten Garten fällt mancher Ortsname weg (dann nur das Zeichen, der Name im Tooltip und im Feld).
 - Der Hund (feat/tiere): von oben als Zeichen auf der Karte, seine Taten als Meldung mit „Loben“/„Tadeln“ – mehr (schicken, hüten als
-  Auftrag) kann darauf aufbauen. Die Bestellung Lärche wird im Test begonnen (ein Brett), nicht ganz geliefert.
+  Auftrag) kann darauf aufbauen. Laute Aufträge melden sich mit `TIERE.addNoise`; `TIERE.fluchtDistanz(art, ax, ay, wx, wy, stance)`
+  (feat/tiere, der echte Wind trägt die Witterung) ist der Haken für eine von oben geplante Pirsch oder Wildbeobachtung.
+- Wege: `STRAT.W.path` kennt nur die eine Route Garten ↔ Klinge; Fahrten nach Schleusingen, Kammbach oder zum Bauamt laufen auf der Karte
+  darüber (feat/strategie-bau merkt es an). Das Straßennetz (`verkehr/verkehr_netz.js` VNETZ, `ROADS.ways`) wäre der nächste Schritt.
+- Die Bestellung Lärche wird im Test begonnen (ein Brett), nicht ganz geliefert.
 
 ## Für den Lead
 
@@ -275,7 +287,7 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
     Kronenhöhenmodell, außerhalb des Waldes) sind in der Draufsicht aus, wie schon bei der Karte – sie waren die „dunklen Blätter“ über der
     Wiese an der Klinge; das Luftbild darunter zeigt diese Kronen ohnehin. In der Ich-Sicht unverändert (Test `strategie_oben` prüft beides).
     Das gilt auch für die gewöhnliche Draufsicht ohne den Modus (dieselbe Kamera).
-  - `viz3/src/render/render.js` – der warmUp-Fix des Leads (91be8c98) als Cherry-Pick (1b246322), bis er über src kommt.
+  - `viz3/src/render/render.js` – nur der warmUp-Fix des Leads (91be8c98, als Cherry-Pick 1b246322) – inzwischen auch über src da.
 - `viz3/src/modules.txt`: Block `# feat/strategie` nach `# feat/bus`, vor `game/tutorial.js`.
 - Das normale Spiel bleibt unberührt, bis jemand den Modus einmal startet (`STRAT.S.used`): vorher keine Simulation, keine Figuren, keine
   Meldungen; danach läuft die Simulation mit der Spieluhr auch beim Gehen (eine Linse auf dieselbe Welt), beginnend mit dem ersten Start.
