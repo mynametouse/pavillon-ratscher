@@ -31,10 +31,10 @@ AREAS = {
     'gerhardtsgereuth': (50.46751, 10.74273, 50.47286, 10.75309),
     'gottfriedsberg': (50.48214, 10.75422, 50.48739, 10.76292),
     'stkilian': (50.52114, 10.75541, 50.53114, 10.76991),
-    # the settlements of the tiled world that have no place node in the drive's data (welt/fahrt.js): their names come with 'orte'
-    'nordost': (50.51145, 10.78058, 50.52680, 10.80466),
-    'suedost': (50.47331, 10.78949, 50.47875, 10.80276),
-    'ost': (50.48607, 10.78819, 50.49471, 10.80173),
+    # the settlements of the tiled world that have no place node in the drive's data (welt/fahrt.js) – named by the extract's 'orte'
+    'hinternah': (50.51145, 10.78058, 50.52680, 10.80466),
+    'wiedersbach': (50.47331, 10.78949, 50.47875, 10.80276),
+    'heckengereuth': (50.48607, 10.78819, 50.49471, 10.80173),
 }
 OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter',
             'https://overpass.private.coffee/api/interpreter']

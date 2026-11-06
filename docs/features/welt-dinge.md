@@ -116,10 +116,14 @@ Stand 6.11.2026 ~0:30 (wird bis ~6:30 fortgeschrieben):
 - `viz3/src/modules.txt`: Block `# feat/welt-dinge` vor `# feat/verkehr` (zwei Module, Ordner `viz3/src/dinge/`).
 - `viz3/src/verkehr/verkehr_auto.js`: ein Import und zwei Zeilen in `obstacles()`, markiert `// feat/welt-dinge` (der Verkehr sieht die
   geparkten Autos).
-- Neuer Workflow `.github/workflows/welt-dinge-osm.yml` (nur `feat/welt-dinge`, nur wenn `tools/welt-dinge/osm_parkplaetze.py` sich
-  ändert; liest Overpass, legt das Artefakt `osm-parkplaetze` ab, schreibt nichts ins Repo).
-- Tests: `welt_dinge` (Ratscher) und `welt_dinge_stadt` (Schleusingen mit den Kacheln der Website) in `viz3/extra/welt-dinge/tests.txt`;
-  Einheitentest `viz3/test/unit/dinge.test.mjs`.
+- Neuer Workflow `.github/workflows/welt-dinge-osm.yml` (nur `feat/welt-dinge`, nur wenn `tools/welt-dinge/osm_parkplaetze.py` oder er
+  selbst sich ändert; Tagesauszug Thüringen von Geofabrik, mit osmium auf die Gebiete geschnitten, Overpass nur als Ersatz; legt das
+  Artefakt `osm-parkplaetze` ab, schreibt nichts ins Repo).
+- Tests in `viz3/extra/welt-dinge/tests.txt`: `welt_dinge` (Ratscher) und `welt_dinge_stadt` (Schleusingen mit den Kacheln der Website),
+  dazu auf Wunsch des Leads die Tests der Orte, die frei bleiben müssen (`schleusingen`, `vessra`, `dorfkern`), und der Fahrspuren
+  (`fahrt`, `verkehr`); Einheitentest `viz3/test/unit/dinge.test.mjs`.
+- Ein drittes Warm-Programm (`|dinge-schatten`, die weichen Schatten), beim Start übersetzt; ein Draw-Call Schatten je Zelle.
+- Zur Laufzeit liest `dinge.js` nur `window.SCHL.bld` und `window.VILLAGE.bld` (Türen) – keine Änderung an diesen Modulen.
 - Quellen: `credits_add` in `viz3/extra/welt-dinge/manifest.json` (DOP 2024 © GDI-Th dl-de/by-2-0, YOLO11-OBB, OSM).
 - Retusche: `tools/welt-gebaeude/retusche.py` liest `viz3/extra/*/maske*.json` als Modellmeter – das Muster trifft auch
   `maske_dinge_utm.json` (UTM, für `kacheln.py`); diese Vielecke landen dort zweimal umgerechnet weit außerhalb der Bilder (harmlos, aber
