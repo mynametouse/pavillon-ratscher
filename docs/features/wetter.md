@@ -27,7 +27,7 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   keine in der Kabine; im Pavillon fällt der Regen jenseits seiner Wände weiter (durch die großen Fenster zu sehen), in anderen Gebäuden
   keiner; Spritzer am Boden rund um die Spielfigur (kurze weiße Flecken, wo Tropfen aufschlagen, auf einer schrägen Ebene aus dem
   Gelände). **Kein Regen unter Dächern:** solange es regnet, wird die Szene von oben in eine kleine Tiefenkarte gezeichnet (64 × 64 über
-  32 m, am Telefon 48; neu nach 3 m Weg, höchstens zweimal je Sekunde, nicht in einer Kabine) – unter dem Carport, Vordächern, dem
+  32 m, am Telefon 48; neu nach 3 m Weg oder 5 s, höchstens zweimal je Sekunde, nicht in einer Kabine) – unter dem Carport, Vordächern, dem
   Obergeschoss des Pavillons oder einer dichten Krone fällt kein Tropfen und spritzt nichts. Die Programme der Szene (beim Laden
   übersetzt), kein Licht. Gewitter: Blitze flackern (erster
   Schlag, Nachschläge, ~0,4 s) am Himmel und auf dem Land, nahe Einschläge (bis ~3,5 km) mit sichtbarem, zackigem Blitzkanal in ihrer
@@ -91,7 +91,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - Pfützen; Regen am Fenster und an der Windschutzscheibe; nasse Straßen spiegeln kaum (der Geländeshader dämpft Spiegelungen auf 35 %).
 - Ein wolkenloser Tag zeigt die wenigen Kumuli des Tagesfotos („Sonnig“ bei 2 % Bewölkung) – ganz klar ginge nur mit einem klaren
   Himmelsfoto oder einem an die Fotos angepassten Verlauf.
-- Die Dächerkarte wird nur nach Bewegung neu gezeichnet: ein weggefahrenes Auto bleibt dort „Dach“, bis man 3 m weiter ist.
+- Die Dächerkarte wird nach 3 m Bewegung neu gezeichnet, sonst alle 5 s: ein Bus, der gerade vorbeifuhr, bleibt bis dahin „Dach“
+  (fahrende Fahrzeuge könnten beim Zeichnen ausgeblendet werden, wenn sie markiert wären).
 
 ## Für den Lead
 
