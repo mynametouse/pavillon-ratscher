@@ -24,11 +24,12 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
     Werkstatt-Spiels (`WERK.W.list`: leimen, Stirnholz, ölen), Blockbandsäge und Trockenstapel, Wahl und Amt (`AMT.ST.phase`), der Gartenplaner
     offen, eine Bauphase des Pavillons.
 - **Menschen als Lehrer** (`viz3/src/wissen/wissen_lehrer.js`): ein Thema im Gespräch öffnet einen Eintrag – **Gerhard** (Lehrer i. R.,
-  Dorfchronist): Henneberger, Kloster Veßra, Reformation, DDR, alte Handwerke (Glas in Lauscha, Köhlerei, Schiefer, Fachwerk – je Satz eins);
+  Dorfchronist): Henneberger, Kloster Veßra, Reformation, DDR, die Wende, alte Handwerke (Glas in Lauscha, Köhlerei, Schiefer, Fachwerk – je Satz eins);
   **Wolfgang** (Waldarbeiter, „der Förster“ des Dorfs – einen Förster als Figur gibt es nicht): Borkenkäfer, Waldumbau, richtig fällen;
   **Ingrid** (Ortsteilbürgermeisterin): Ortsteilrat, wer was entscheidet, LEADER, Bauen im Außenbereich; **Hubert**: Holz trocknen, Saftruhe,
-  Festmeter; **Ronald**: Rotmilan, Rehe, Ziegen, die Erle. Die eigenen Themen der Dorfbewohner zählen auch (Gerhard „Die alte Schule“,
-  Manfred „Die Feuerwehr“, Uwe „Die Talsperre“ …). Sie sagen den Satz in ihren Worten (Hubert und Ronald mit ihrer Stimme), dann ist er im Buch.
+  Festmeter; **Ronald**: Rotmilan, Rehe, Ziegen, die Erle, die zehn Jahreszeiten der Natur. Die eigenen Themen der Dorfbewohner zählen auch (Gerhard „Die alte Schule“,
+  Manfred „Die Feuerwehr“, Uwe „Die Talsperre“ …). Sie sagen den Satz in ihren Worten (Hubert und Ronald mit ihrer Stimme), dann ist er im Buch –
+  beim ersten Mal öffnet sich das Buch neben dem Gespräch auf dem Eintrag (am Handy statt dessen der Hinweis mit „Lesen“).
 - **„Warum?“** an Regeln: `WISSEN.why(id)` → ein Satz mit Quelle (32. BImSchV, BNatSchG, ThürNRG, WHG, BauGB, DGUV …); dieselben IDs wie die
   Regeln des Strategie-Modus (`STDATA.RULES`), unbekannte IDs fallen auf dessen Text zurück. Ein Gedanke der Spielfigur, der eine Regel nennt
   (z. B. „Sonn- und Feiertagsruhe“ beim Mäher), bekommt ein kleines **„?“** daneben; angetippt erscheinen Grund und Quelle, die Regel gilt als

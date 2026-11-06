@@ -100,11 +100,13 @@ def run():
             ck('he tells it in his words', 'Henneberg' in say, say[:120])
             ck('…and the entry „Die Grafen von Henneberg“ opens, found in the talk with Gerhard',
                J("WISSEN.has('g_henneberg')") and 'Gerhard' in (J("WISSEN.state().how['g_henneberg']") or ''), J("WISSEN.state().how['g_henneberg']"))
+            bk = J("WISSEN.state()")
+            ck('the book opens beside the talk on what he told (a wide screen)', bk['open'] and bk['view'] == 'g_henneberg', str({k: bk[k] for k in ('open', 'view')}))
             E("[...document.querySelectorAll('#dorfpanel .topics button')].find(b => b.textContent.includes('Handwerke')).click()")
             E("[...document.querySelectorAll('#dorfpanel .topics button')].find(b => b.textContent.includes('Handwerke')).click()")
             ck('a topic with one craft per line teaches them in turn (glass, then charcoal)', J("WISSEN.has('h_glas') && WISSEN.has('h_koehler') && !WISSEN.has('h_schiefer')"))
             page_pic('02_gerhard')
-            E("DORF.UI.close()")
+            E("DORF.UI.close()"); E("WISSEN.close()")
             # Hubert in his own panel (npc/npc.js extension topics)
             E("(() => { const w = NPC.NPCS.hubert, P = GAME.P; P.mode = 'walk'; P.x = w.x + 1.6; P.y = w.y; P.feet = GAME.floorAt(P.x, P.y, (w.z || 0) + 1.5); P.yaw = P.body = Math.atan2(w.x - P.x, w.y - P.y) * 180 / Math.PI; })()")
             steps(0.3)
@@ -122,7 +124,7 @@ def run():
                 time.sleep(0.5)
             sub = E("document.getElementById('npcsub').textContent")
             ck('he says it (subtitle), then „Holz trocknen“ is found in the talk with Hubert', ok and 'Hubert' in (J("WISSEN.state().how['h_trocknen']") or ''), sub[:120])
-            E("NPC.NPCUI.end(false)")
+            E("NPC.NPCUI.end(false)"); E("WISSEN.close()")
 
         if 'warum' in want:
             w = J("WISSEN.why('ruhe_sonntag')")

@@ -6,6 +6,7 @@
 // which was asked – their own topics that teach something count too (gerhard: schule, linde …). Hubert and Ronald: an extension of their
 // talk panel (npc/npc.js NPCUI.extend: topics(w) / ask(w, k), marked hooks there) – they say the line in their voice, then it opens.
 import { KERN } from '../core/kern.js';
+import { COARSE } from '../core/head.js';
 import { DTEXT } from '../dorf/dorf_text.js';
 import { NPCUI } from '../npc/npc.js';
 import { WDATA } from './wissen_data.js';
@@ -30,10 +31,18 @@ export const WLEHRER = (() => {
     return E;
   }
   const nameOf = who => (DTEXT.P && DTEXT.P[who] && DTEXT.P[who].name) || (D.ROLE[who] || who).split(',')[0];
+  // what a teacher taught is found; the first time, the book opens beside the talk on what was told (on a phone the notice offers it –
+  // the panels would cover each other there)
+  function teach(ids, who) {
+    let first = null;
+    for (const id of ids) if (WISSEN.found(id, 'gespraech:' + who) && !first) first = id;
+    if (first && !COARSE) WISSEN.open(first);
+    return first;
+  }
   KERN.on('dorf:thema', d => {
     if (!d || !d.who || !d.id) return;
     const t = VIL[d.who + ':' + d.id];
-    if (t) for (const id of pick(t, d.n || 1)) WISSEN.found(id, 'gespraech:' + nameOf(d.who));
+    if (t) teach(pick(t, d.n || 1), nameOf(d.who));
     else WISSEN.talk(d.who, d.id, nameOf(d.who));
   });
   // Hubert and Ronald: topics 'x_wi_<id>' in their panel; the line said is the next of the topic's lines
@@ -51,12 +60,10 @@ export const WLEHRER = (() => {
         n = (N[key] = (N[key] || 0) + 1);
       return {
         text: [t.lines[(n - 1) % t.lines.length]],
-        after: () => {
-          for (const id of pick(t, n)) WISSEN.found(id, 'gespraech:' + (w.name === 'hubert' ? 'Hubert' : 'Ronald'));
-        },
+        after: () => teach(pick(t, n), w.name === 'hubert' ? 'Hubert' : 'Ronald'),
       };
     },
   });
-  return { VIL, pick };
+  return { VIL, pick, teach };
 })();
 window.WLEHRER = WLEHRER;
