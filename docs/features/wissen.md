@@ -42,7 +42,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   verstanden (Kapitel „Regeln“). Ebenso die Warnungen des Gartenplaners, die auf einem Gesetz beruhen (Grenzabstand nach ThürNRG, am Bach
   der Gewässerrandstreifen nach § 38 WHG) – `WISSEN.chips(root)`.
 - **Orte der Geschichte – Infotafeln** (`viz3/src/wissen/wissen_orte.js`): kleine Tafeln mit Dach auf zwei Pfosten an der alten Schule, unter der
-  Dorflinde, am Platz am Bach, an der Forstkiste der Unteren Klinge und auf dem Damm der Talsperre Ratscher (Lage nach Structurae,
+  Dorflinde (an der Schule: an der Wand mit der Tür, ≥ 2 m von der Tür und vom Weg zur Schulbushaltestelle, frei vom Biertisch des
+  Dorfabends), am Platz am Bach, an der Forstkiste der Unteren Klinge und auf dem Damm der Talsperre Ratscher (Lage nach Structurae,
   50° 29′ 31,5″ N, 10° 46′ 54,7″ E → UTM → Grundstück über `GEOMAN.xf`); „Tafel lesen“ öffnet das Buch beim Eintrag. Ein Mesh im Material der
   Dorf-Requisiten (`VPROPS.mat.paint`) – kein neues Shader-Programm, kein Licht. Dazu je eine Tafel an **Schloss Bertholdsburg** (auf der Seite
   zum Markt) und an der **Henneberger Kapelle in Kloster Veßra** (zum Klostertor hin): gebaut, sobald die Zone der Stadt steht, und mit ihr
@@ -103,6 +104,10 @@ WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners 
   Quadrat nicht – dort hat `game/walkable.js` eigene Kollisionen. Die Tafeln in Schleusingen und Veßra sind bei GitHub nicht prüfbar (dort
   fehlen die Kacheln der Städte) – Abschnitt `stadt` lokal.
 - Die Hauptsatzung von Schleusingen war nicht online zu finden: dass Ratscher eine Ortsteilverfassung hat, ist eine Annahme (wie in „Wahl und Amt“).
+- Talsperre Ratscher: im Buch die Angaben nach „Talsperren in Thüringen“ (Thüringer Talsperrenverwaltung 1993, über die Wikipedia):
+  Schotterdamm mit Asphaltbeton-Außendichtung, 15,2 m über der Gründung, 13,5 m über Tal, 630 m lang; Structurae nennt 16 m und eine
+  Betondichtung (dort nur für Bauzeit und Lage benutzt). Das Hochwasser im Dezember 2023 nach der Antwort der Landesregierung
+  (Landtag, Drs. 7/9624).
 - Der Tag der Eingemeindung 1994 ist in den Quellen uneinheitlich (22. Februar in den Wikipedia-Artikeln „Schleusingen“ und „Heckengereuth“,
   8. März in „Ratscher (Schleusingen)“ und „Gethles“) – im Buch steht nur „seit 1994“. Dorflinde 1888 und Schule 1828: Wikipedia „Ratscher
   (Schleusingen)“; dass dort freitags Skat gespielt wird, ist das Dorfleben des Spiels und so gekennzeichnet.

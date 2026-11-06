@@ -103,7 +103,14 @@ test('boards at the real places point at entries; the dam lies south-east of the
 test('facts that must stay right (checked 6.11.2026 with the sources named)', () => {
   const t = id => D.E.find(e => e.id === id);
   assert.match(t('g_talsperre').text, /1975 bis 1983/);
-  assert.match(t('g_talsperre').text, /16 m hoch und 630 m lang/);
+  // the dam: Wikipedia after „Talsperren in Thüringen“ (1993) – gravel with an asphalt-concrete facing, 15.2 m above the foundation,
+  // 13.5 m above the valley, 630 m; Structurae's 16 m and „concrete face“ are not used; the Dec. 2023 flood: Landtag Drs. 7/9624
+  assert.match(t('g_talsperre').text, /630 m lang und gut 15 m hoch \(über dem Tal 13,5 m\)/);
+  assert.match(t('g_talsperre').text, /Asphaltbeton/);
+  assert.match(t('g_talsperre').here, /900\.000 m³/);
+  // Lehesten: slate from the end of the 15th century until 1999; the spruce bark beetle 4.2–5.5 mm (German Wikipedia)
+  assert.match(t('h_schiefer').text, /Ende des 15\. Jahrhunderts gebrochen – bis 1999/);
+  assert.match(t('n_kaefer').text, /gut 4 bis 5,5 mm/);
   assert.match(t('g_burg').text, /1226–1232/);
   assert.match(t('g_vessra').here, /seit 1990/);
   // 1994: the day differs between the sources (22.2. Wikipedia „Schleusingen“, 8.3. „Ratscher (Schleusingen)“) – the year only
