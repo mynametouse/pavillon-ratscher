@@ -281,7 +281,7 @@ with lib.browser() as b:
         ck('in the first-person world the same phase stands (the slab sealed, the garage gone from it)', not w['on'] and w['mode'] == 'walk' and w['ph'] == E("STBAU.built()"), str(w))
         lib.shot(pg, OUT, '05_ich_sicht')
         # through one's own eyes (the figure would stand in front of the sign)
-        E("window.CAM3 && (CAM3.want = false); GAME.P.x = -2.6; GAME.P.y = 38.0; GAME.P.yaw = 221; GAME.P.pitch = -8")
+        E("window.CAM3 && (CAM3.want = false); GAME.P.x = -8.3; GAME.P.y = 38.8; GAME.P.yaw = 153; GAME.P.pitch = -6")
         E("GAME.P.feet = KERN.ground(GAME.P.x, GAME.P.y, 0.5)")
         steps(0.5)
         lib.shot(pg, OUT, '05b_bauschild')

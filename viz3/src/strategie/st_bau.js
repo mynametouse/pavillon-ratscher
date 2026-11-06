@@ -286,7 +286,8 @@ export const STBAU = (() => {
   // the building code wants it at the site, readable from the street: the project, the designer, the site manager, the builders of the
   // carcass. Its materials are the kit's (a canvas picture like the garden's pictures, oak posts): no new shader program.
   const SIGN = { g: null, key: '' };
-  const SIGN_AT = { x: -5.6, y: 34.6, az: 139 };
+  // just inside the north-west corner by the gate, facing the field track (site direction north-west; rotation about the up axis)
+  const SIGN_AT = { x: -7.0, y: 36.2, az: -143 };
   function signDraw(q, w, h) {
     const b = st(),
       d = b.gen ? W.day(b.gen.t).label.replace(/^\w+ /, '') : '';
