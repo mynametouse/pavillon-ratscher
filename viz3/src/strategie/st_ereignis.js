@@ -68,8 +68,10 @@ export const STEREIG = (() => {
       let p = 0.004;
       if (ext('sturm') && !ext('sturm').done) p *= 4; // breeding material lies about
       if (cx.wx.cloud < 0.35) p *= 1.6; // warm and dry
-      // feat/tiere: its model of the beetle when it is there (TIERE.kaefer(cx) → probability per day)
+      // feat/tiere: when its model of the beetle runs (TIERE.kaefer.list – the spruces it attacks, day by day), the core draws none of
+      // its own; the forest walk reports theirs, and a tree felled from above (KERN 'fell') is out of the forest for it
       const T = window.TIERE;
+      if (T && T.kaefer && typeof T.kaefer.list === 'function') return 0;
       if (T && typeof T.kaefer === 'function')
         try {
           return T.kaefer(cx);
