@@ -112,6 +112,8 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   noch nicht darin (das Ortsvorsteher-Spiel hat dafür eigene Szenen – zusammenführen wäre der nächste Schritt).
 - Glasfaser: in der Welt steht nur der Netzverteiler am Anger, nicht die Hausanschlüsse; der geförderte Ausbau (Gigabit-Förderung) ist nur
   erklärt, nicht spielbar. LED: das Licht der Leuchten in der Welt bleibt gleich (nur die Karte markiert sie als LED).
+- Wie oft es brennt oder der Bach steigt, ist eine Annahme des Spiels: Bodenfeuer an der Klinge nach mindestens neun trockenen von zehn
+  Tagen (April–September, höchstens alle 40 Tage – in einem trockenen Sommer etwa einmal), Starkregen am Bach nur alle paar Jahre.
 - Krisen: das Feuerwehrauto und die Einsatzkräfte gibt es nur auf der Karte (kein Fahrzeugmodell, keine Figuren); der Waldbrand verbrennt
   keine Bäume des Walds (nur die Brandfläche am Boden); Sandsäcke nur nach gelungenem Einsatz, kein Wasser im Garten bei Schaden.
 - Treffpunkt, Obstbäume, Kirmeszelt und Spuren der Einsätze haben keine Kollision (man kann hindurchgehen).
