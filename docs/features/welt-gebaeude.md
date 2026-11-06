@@ -10,7 +10,7 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   44 Häuser, 34 Scheunen und Hallen, 220 Schuppen und Garagen, 3 runde Behälter (Gülle/Silage), 6 Türme/Silos. Echte Lage, echte Höhe
   (Boden bis höchster Punkt), Dachform geschätzt (Satteldach längs, große Häuser teils Walmdach, Schuppen Pultdach, Garagen flach, Hallen
   flach geneigt; bei fast quadratischen Häusern und Scheunen die Firstrichtung aus dem Luftbild – die beiden Dachseiten sind von der Sonne
-  verschieden hell, die Trennlinie ist der First: in Ratscher 9, jenseits 770 Gebäude), Dachfarbe aus dem Luftbild 2024. Aussehen wie das
+  verschieden hell, die Trennlinie ist der First: in Ratscher 9, jenseits 798 Gebäude), Dachfarbe aus dem Luftbild 2024. Aussehen wie das
   Dorf: dieselben Fassaden- und Dach-Shader von `world/village.js`
   (Schuppen aus Brettern, Garagen verputzt oder Ziegel mit hellem Tor, Scheunen mit Bretterwand auf Sockel, Hallen aus Blech, Häuser im
   Dorfstil, Schornsteine) – keine neuen Shader-Programme.
@@ -27,9 +27,10 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   ausgeblendet.
 - `?nogeb` lässt die neuen Gebäude weg (Vergleich). Gebaut wird nach dem Laden in Stücken von wenigen Millisekunden je Bild
   (`KERN.tick` „gebaeude/bau“), die Kollisionen stehen schon beim Laden.
-- **Jenseits des Quadrats (Kachelwelt):** 11 346 Gebäude in 179 Zellen à 400 m (`gebaeude/z/<i>_<j>.json`, Index `z/index.json`):
+- **Jenseits des Quadrats (Kachelwelt):** 13 025 Gebäude in 217 Zellen à 400 m (9,5 MB; `gebaeude/z/<i>_<j>.json`, Index `z/index.json`):
   Schleusingen um die Altstadt herum (1,7 km um den Markt, ohne die 789 Häuser von `welt/schleusingen.js`), die Straßen, die man fährt
-  (`welt/fahrt.js`, 260 m beiderseits: Richtung Schleusingen und Kloster Veßra mit den Dörfern unterwegs), Kloster Veßra (950 m, ohne die
+  (`welt/fahrt.js`, 600 m beiderseits: Richtung Schleusingen und Kloster Veßra mit den Dörfern unterwegs samt ihren Seitenstraßen),
+  Kloster Veßra (950 m, ohne die
   156 Häuser von `welt/vessra.js`). Eine Zelle wird geholt und gebaut, wenn man ihr näher als 700 m kommt, und jenseits von 900 m
   freigegeben; ihr Fuß auf dem Gelände, wie es dort gezeichnet ist (die Kacheln von `welt/welt.js`, sonst das grobe Gelände – kommt eine
   Kachel später, wird die Zelle neu gesetzt). Fest über `KERN.pushOut` (Rang 15, antwortet nur, wenn es verschoben hat – Schleusingen und
@@ -129,8 +130,8 @@ andere Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als
 
 ## Offen
 
-- Gebäude abseits der befahrenen Straßen jenseits des Quadrats (nur Schleusingen, Veßra und 260 m beiderseits der Straßen von
-  `welt/fahrt.js` sind dabei); Suhl (noch nicht in der App).
+- Gebäude weiter als 600 m von den befahrenen Straßen jenseits des Quadrats (dabei sind Schleusingen, Veßra und 600 m beiderseits der
+  Straßen von `welt/fahrt.js`; Breite: `CORRIDOR` in `tools/welt-gebaeude/prep.py`); Suhl (noch nicht in der App).
 - Echte Dachformen aus dem LoD2 des Landes, sobald der Download-Dienst wieder geht (`tools/welt-gebaeude/lod2.py` prüft das; 6.11. 0:05:
   „nicht verfügbar“).
 - Carports (offen, Pfosten) sind von Schuppen nicht zu unterscheiden (ETHOS hat keine Gebäudefunktion; das LoD2 hat sie) – sie stehen als

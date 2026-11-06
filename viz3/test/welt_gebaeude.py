@@ -174,6 +174,20 @@ def roads_data():
 V2N = 0
 if 'zellen' in want:
     V2N = fetch_tiles(*MARKT) or 0
+
+def settle_tiles(E, n_min=10, n_max=80):
+    """the tiles near the camera before a picture: they are asked for a moment after a move – at least n_min steps, then until nothing
+    loads and no new request came for four steps in a row (both runs alike, so before and after compare)"""
+    last, calm = -1, 0
+    for i in range(n_max):
+        E("GAME.step(0.25)")
+        s_ = json.loads(E("JSON.stringify(WELT.state())"))
+        calm = calm + 1 if (s_['loading'] == 0 and s_['req'] == last) else 0
+        last = s_['req']
+        if i >= n_min and calm >= 4:
+            break
+        time.sleep(0.3)
+
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs, tier='hoch')
@@ -334,13 +348,8 @@ with lib.browser() as b:
             hideZ(False)
             q0, kq0 = progs(), pkeys()
 
-            def settle():
-                for i in range(40):   # the tiles near the camera (levels 11, 12) before the picture (asked for a moment after the move)
-                    E("GAME.step(0.25)")
-                    if i >= 8 and E("WELT.state().loading === 0"): break
-                    time.sleep(0.3)
-            top(tgt['x'], tgt['y'], 80); settle(); pic('stadt_top')
-            if sp: ground(sp[0], sp[1], sp[2], -2); settle(); pic('stadt_boden')
+            top(tgt['x'], tgt['y'], 80); settle_tiles(E); pic('stadt_top')
+            if sp: ground(sp[0], sp[1], sp[2], -2); settle_tiles(E); pic('stadt_boden')
             q1 = progs()
             prog_check('no new shader programs for the cells', kq0, pkeys(), q0, q1)
             STADT['tgt'], STADT['sp'] = tgt, sp
@@ -393,16 +402,10 @@ if 'before' in want:
                 time.sleep(0.3)
             tg, sp = STADT['tgt'], STADT['sp']
             E(f"(() => {{ const P = GAME.P; P.mode = 'top'; P.tx = {tg['x']}; P.ty = {tg['y']}; P.th = 80; document.body.dataset.mode = 'top'; GAME.step(0.05); }})()")
-            for i in range(40):   # the tiles under the new view are asked for a moment later: wait at least 2 s, then until all are in
-                E("GAME.step(0.25)")
-                if i >= 8 and E("WELT.state().loading === 0"): break
-                time.sleep(0.3)
+            settle_tiles(E)
             lib.shot(pg, OUT, 'stadt_top_vorher')
             if sp:
                 E(f"(() => {{ document.body.dataset.mode = 'walk'; GAME.view({sp[0]}, {sp[1]}, KERN.ground({sp[0]}, {sp[1]}) + 1.6, {sp[2]}, -2, 60); for (let i = 0; i < 4; i++) GAME.step(0.25); }})()")
-                for _ in range(20):
-                    E("GAME.step(0.25)")
-                    if E("WELT.state().loading === 0"): break
-                    time.sleep(0.3)
+                settle_tiles(E)
                 lib.shot(pg, OUT, 'stadt_boden_vorher')
 ck.done()

@@ -437,6 +437,7 @@ def heights(a):
 
 CELL = 400.0
 MARKT = (-1084.7, 1241.9)
+CORRIDOR = 600.0   # metres either side of the roads one drives (welt/fahrt.js): the villages on the way with their side streets
 
 
 def zone_footprints():
@@ -605,7 +606,7 @@ def main_tiles(a):
     from shapely.strtree import STRtree
     from shapely.ops import unary_union
     roads = roads_fahrt()
-    region = unary_union([ls.buffer(260, resolution=4) for ls, _, k in roads if k <= 6] +
+    region = unary_union([ls.buffer(CORRIDOR, resolution=4) for ls, _, k in roads if k <= 6] +
                          [Point(*MARKT).buffer(1700), Point(*W.to_model(616500.0, 5594650.0)).buffer(950)])
     print('region km²', round(region.area / 1e6, 1), flush=True)
     ZP = zone_footprints()
