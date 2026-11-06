@@ -146,7 +146,30 @@ export const WDATEN = (() => {
           );
       }
     }
-    for (const m of machines()) {
+    // where loud machines stand, also while they are off (grey): the workshop with its band saw, the garage with the mower and the generator,
+    // the forest kit with the chainsaw
+    const run = machines();
+    try {
+      const st = [];
+      const sw = KERN.spot('werkstatt');
+      if (sw && sw.pos) st.push([sw.pos[0], sw.pos[1], 'Werkstatt: Sägen · ~95 dB(A) in 1 m']);
+      const G = window.GPLAY;
+      if (G && G.M && Number.isFinite(G.M.x)) st.push([G.M.x, G.M.y, 'Rasenmäher (Benzin) · ~92 dB(A) in 1 m']);
+      const F = window.FELL;
+      if (F && F.kitPos) {
+        const k = F.kitPos();
+        if (k) st.push([k[0], k[1], 'Forstkiste: Motorsäge · ~105 dB(A) in 1 m']);
+      }
+      for (const [x, y, t] of st) {
+        if (run.some(m => Math.hypot(m.x - x, m.y - y) < 15)) continue;
+        const q = pr(x, y, 0.5);
+        if (!onScr(q, W, H) || pxPerM(pr, x, y) < 0.35) continue;
+        h +=
+          `<circle cx="${f1(q[0])}" cy="${f1(q[1])}" r="5" style="fill:#9a9a90;stroke:#222;stroke-width:1"/>` +
+          label([q[0] + 8, q[1] + 4], t, '#e2e2da', 10.5);
+      }
+    } catch (e) {}
+    for (const m of run) {
       const q = pr(m.x, m.y, 0.5);
       if (!onScr(q, W, H, 400)) continue;
       const k = pxPerM(pr, m.x, m.y);
@@ -524,7 +547,7 @@ export const WDATEN = (() => {
         const q = quiet();
         return (
           `<p class="wd-q${q.loud ? '' : ' no'}">${esc(q.text)} ${WISSEN.whyHTML(q.id)}</p>` +
-          '<div class="wd-k"><i style="background:rgba(232,87,42,.55)"></i>über 55 dB(A) <i style="background:rgba(242,201,76,.4)"></i>über 45 dB(A)</div>' +
+          '<div class="wd-k"><i style="background:rgba(232,87,42,.55)"></i>über 55 dB(A) <i style="background:rgba(242,201,76,.4)"></i>über 45 dB(A) <i style="background:#9a9a90"></i>Maschine aus</div>' +
           '<small>Näherung nach Straßenklasse (OpenStreetMap) und typischem Schallpegel der Maschinen – keine Messung. Eine amtliche Lärmkarte gibt es nur für Straßen mit mehr als 3 Mio. Fahrzeugen im Jahr.</small>'
         );
       },
