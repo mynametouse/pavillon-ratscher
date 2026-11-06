@@ -50,7 +50,8 @@ export const WLEHRER = (() => {
   NPCUI.extend({
     topics(w) {
       const list = w && D.TEACH[w.name];
-      return list ? list.map(t => ({ k: 'x_wi_' + t.id, label: t.label })) : [];
+      // a topic may need a feature in the build (need: 'HUND' – the dog of feat/tiere)
+      return list ? list.filter(t => !t.need || window[t.need]).map(t => ({ k: 'x_wi_' + t.id, label: t.label })) : [];
     },
     ask(w, k) {
       if (!w || typeof k !== 'string' || !k.startsWith('x_wi_')) return null;

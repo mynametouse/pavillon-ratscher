@@ -13,6 +13,7 @@ import { STREAM } from '../garden/stream_geo.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VPROPS } from '../world/village_props.js';
 import { FELL } from '../world/fell.js';
+import { DKDATA } from '../world/dorfkern_data.js';
 import { WDATA } from './wissen_data.js';
 import { WISSEN } from './wissen.js';
 export const WORTE = (() => {
@@ -39,36 +40,74 @@ export const WORTE = (() => {
       d = xf.a * xf.a + xf.b * xf.b;
     return [(xf.a * dE + xf.b * dN) / d, (-xf.b * dE + xf.a * dN) / d];
   }
+  // the board at the old school: along the wall with the door (world/village.js building 215, the facade dorf/dorf_school.js opens), out of
+  // the ways people walk – ≥ 2 m from the door, ≥ 2 m from the way from the door to the school bus stop (its shelter, where the bus and the
+  // zombie night's evacuation bus stop: world/dorfkern_data.js open.shelter), clear of the beer table the village evening sets out beside
+  // the door (dorf_school.js: 4.2 m along the wall, 2 m out) – as close to the wall as that allows, at the end away from the bus stop
+  const dSeg = (p, a, b) => {
+    const dx = b[0] - a[0],
+      dy = b[1] - a[1],
+      L2 = dx * dx + dy * dy || 1,
+      t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2));
+    return Math.hypot(p[0] - a[0] - dx * t, p[1] - a[1] - dy * t);
+  };
+  function schoolSpot() {
+    const V = window.VILLAGE,
+      b = V && V.byId && V.byId.get(215),
+      f = b && b.fac && b.fac.find(q => q.door);
+    if (!f || !(f.L > 4)) return null;
+    // the room's frame of dorf_school.js: x along the wall from the end where the inside lies to the left, y into the house
+    let ox = f.ax,
+      oy = f.ay,
+      c = f.dx,
+      sn = f.dy,
+      du = f.door.u;
+    if (-sn * -f.nx + c * -f.ny < 0) {
+      ox = f.bx;
+      oy = f.by;
+      c = -c;
+      sn = -sn;
+      du = f.L - du;
+    }
+    const toW = (x, y) => [ox + x * c - y * sn, oy + x * sn + y * c],
+      dw = f.door.w || 1.1,
+      door = toW(du, 0),
+      out = toW(du, -8),
+      SH = (DKDATA && DKDATA.open && DKDATA.open.shelter && DKDATA.open.shelter.c) || [248.8, -100.8];
+    let best = null;
+    for (let x = 0.9; x <= f.L - 0.9; x += 0.25)
+      for (const y of [-1.6, -2.0, -2.5]) {
+        const posts = [toW(x - 0.56, y), toW(x + 0.56, y)],
+          m = {
+            door: Math.min(...posts.map(q => Math.hypot(q[0] - door[0], q[1] - door[1]))) - dw / 2,
+            walk: Math.min(...posts.map(q => dSeg(q, door, SH))),
+            axis: Math.min(...posts.map(q => dSeg(q, door, out))),
+            shelter: Math.min(...posts.map(q => Math.hypot(q[0] - SH[0], q[1] - SH[1]))),
+            table: Math.min(
+              ...[x - 0.56, x + 0.56].map(px => Math.max(Math.abs(px - (du + 4.2)) - 1.1, Math.abs(y + 2.0) - 0.8))
+            ),
+          };
+        if (m.door < 2 || m.walk < 2 || m.axis < 1.8 || m.shelter < 6 || m.table < 0.9) continue;
+        // never against a wall, a trunk or a post of the village
+        const c0 = toW(x, y),
+          q = [c0[0], c0[1]];
+        try {
+          if (KERN.pushOut(q, 0.7) && Math.hypot(q[0] - c0[0], q[1] - c0[1]) > 0.05) continue;
+        } catch (e) {}
+        const sc = m.walk + 0.5 * Math.min(m.door, 6) + y * 1.5; // away from the walk to the bus, near the wall
+        if (!best || sc > best.sc) best = { sc, c: c0, m };
+      }
+    if (!best) return null;
+    S.schoolCheck = best.m;
+    // the face looks out of the house (−y of the frame)
+    const n = [sn, -c];
+    return [best.c[0], best.c[1], n[0], n[1]];
+  }
   // where each board stands: [x, y, nx, ny] – n is the way its face looks (the reader stands in front of it)
   function where(at) {
     if (at === 'school') {
-      // beside the door of the facade that looks to the Anger (world/village.js: facades with outward normals, the school = building 215)
-      const V = window.VILLAGE,
-        b = V && V.byId && V.byId.get(215),
-        A0 = VPROPS.ANGER || [222, -108];
-      if (b && b.fac && b.fac.length) {
-        let best = null,
-          bs = -9;
-        for (const f of b.fac) {
-          if (!(f.L > 3)) continue;
-          const mx = (f.ax + f.bx) / 2,
-            my = (f.ay + f.by) / 2,
-            to = norm(A0[0] - mx, A0[1] - my),
-            sc = f.nx * to[0] + f.ny * to[1] + (f.door ? 0.35 : 0);
-          if (sc > bs) {
-            bs = sc;
-            best = f;
-          }
-        }
-        if (best) {
-          const f = best,
-            u = f.door ? f.door.u : f.L / 2,
-            off = u + 2.8 <= f.L - 0.5 ? 2.8 : -2.8,
-            px = f.ax + f.dx * (u + off),
-            py = f.ay + f.dy * (u + off);
-          return [px + f.nx * 3.4, py + f.ny * 3.4, f.nx, f.ny];
-        }
-      }
+      const r = schoolSpot();
+      if (r) return r;
       const s = VPROPS.school;
       if (!s) return null;
       const f = [Math.cos(s.rot), Math.sin(s.rot)],
@@ -291,6 +330,36 @@ export const WORTE = (() => {
       }
     }
   }
+  // the two posts of every board stop a walker outside the modelled garden square (there the walls and trunks come through
+  // KERN.pushOut too; inside it game/walkable.js has its own colliders – the board at the brook stays walk-through)
+  KERN.provide(
+    'pushOut',
+    (p, r) => {
+      let hit = false;
+      for (const B of S.boards) {
+        const dx0 = p[0] - B.x,
+          dy0 = p[1] - B.y;
+        if (dx0 * dx0 + dy0 * dy0 > 4) continue;
+        const u = [-B.n[1], B.n[0]];
+        for (const sgn of [-0.56, 0.56]) {
+          const qx = B.x + u[0] * sgn,
+            qy = B.y + u[1] * sgn,
+            ex = p[0] - qx,
+            ey = p[1] - qy,
+            rr = r + 0.07,
+            d = Math.hypot(ex, ey);
+          if (d < rr && d > 1e-6) {
+            p[0] = qx + (ex / d) * rr;
+            p[1] = qy + (ey / d) * rr;
+            hit = true;
+          }
+        }
+      }
+      // undefined passes the question on (walls, trunks, the towns' own providers)
+      return hit ? true : undefined;
+    },
+    20
+  );
   let tacc = 0;
   KERN.tick(dt => {
     tacc += dt;

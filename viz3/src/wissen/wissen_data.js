@@ -76,7 +76,18 @@ export const WDATA = (() => {
     ],
     vessra: ['Vessra Abbey (englische Wikipedia)', 'https://en.wikipedia.org/wiki/Vessra_Abbey'],
     ratscher: wiki('Ratscher (Schleusingen)', 'Ratscher_(Schleusingen)'),
-    damS: ['Structurae: Talsperre Ratscher (Bauzeit, Bauart, Maße)', 'https://structurae.net/structures/ratscher-dam'],
+    damS: [
+      'Structurae: Talsperre Ratscher (Bauzeit, Lage des Damms)',
+      'https://structurae.net/structures/ratscher-dam',
+    ],
+    damW: [
+      'Talsperre Ratscher (Wikipedia; Daten nach „Talsperren in Thüringen“, Thüringer Talsperrenverwaltung 1993)',
+      'https://de.wikipedia.org/wiki/Talsperre_Ratscher',
+    ],
+    damLT: [
+      'Thüringer Landtag, Drucksache 7/9624 (28.2.2024): Talsperren Schönbrunn und Ratscher beim Hochwasser im Dezember 2023',
+      'https://parldok.thueringer-landtag.de/ParlDok/dokument/96219/management_der_talsperren_schoenbrunn_und_ratscher_waehrend_der_hochwasserlage_in_suedthueringen_landkreis_hildburghausen_im_dezember_2023.pdf',
+    ],
     damL: ['seen.de: Talsperre Ratscher (Erholung seit 1987, Wasserstände)', 'https://www.seen.de/talsperre-ratscher/'],
     koehler: [
       'waldwissen.net: Meilerplatten – Spuren der Köhlerei im Wald',
@@ -149,7 +160,7 @@ export const WDATA = (() => {
       text: 'Wildschweine leben in Rotten aus Bachen und ihren gestreiften Frischlingen; die Keiler meist allein. Sie sind nachts unterwegs und durchwühlen den Boden nach Wurzeln, Engerlingen, Eicheln und Bucheckern.',
       here: 'Eine Rotte kann eine Wiese in einer Nacht umpflügen – Gärten schützt ein fester Zaun oder ein Elektrozaun. Im Wald lockert ihr Wühlen dagegen den Boden.',
       src: [wiki('Wildschwein')],
-      find: { ev: [['tiere:entdeckt', d => d && d.id === 'wildschwein']] },
+      find: { ev: [['tiere:entdeckt', d => d && d.id === 'wildschwein']], talk: ['ronald:wildschwein'] },
       hint: 'Nachts auf den Feldern am Wald.',
     },
     {
@@ -157,7 +168,7 @@ export const WDATA = (() => {
       ch: 'natur',
       icon: '🪲',
       title: 'Der Buchdrucker – ein Borkenkäfer',
-      text: 'Ein 4–5 mm kleiner Käfer, der sich unter die Rinde von Fichten bohrt. Seine Larven fressen Gänge in die Schicht unter der Rinde, die Wasser und Zucker leitet – der Baum stirbt in wenigen Wochen. In warmen Sommern schafft der Käfer zwei, manchmal drei Generationen.',
+      text: 'Ein gut 4 bis 5,5 mm kleiner Käfer, der sich unter die Rinde von Fichten bohrt. Seine Larven fressen Gänge in die Schicht unter der Rinde, die Wasser und Zucker leitet – der Baum stirbt in wenigen Wochen. In warmen Sommern schafft der Käfer zwei, manchmal drei Generationen.',
       here: 'Nach den Dürrejahren seit 2018 hatten die geschwächten Fichten kaum Harz zur Abwehr; im Thüringer Wald starben große Flächen ab. Wer befallene Bäume erkennt – braunes Bohrmehl am Stammfuß und in Rindenschuppen, Harztropfen – und sie aus dem Wald holt, bevor die Jungkäfer ausfliegen, schützt die Nachbarbäume.',
       src: [Q.kaefer, wiki('Buchdrucker (Käfer)', 'Buchdrucker_(Käfer)'), Q.thforst],
       find: {
@@ -251,7 +262,7 @@ export const WDATA = (() => {
       ch: 'natur',
       icon: '🗓️',
       title: 'Die zehn Jahreszeiten der Natur',
-      text: 'Phänologen zählen zehn Jahreszeiten und erkennen sie an Zeigerpflanzen: Vorfrühling, wenn die Hasel blüht; Erstfrühling mit der Forsythie; Vollfrühling mit der Apfelblüte; Frühsommer mit dem Holunder; Hochsommer mit der Lindenblüte. Es folgen Spät- und Frühherbst mit reifen Früchten, der Vollherbst, der Spätherbst mit dem Laubfall und der Winter mit der Vegetationsruhe.',
+      text: 'Phänologen zählen zehn Jahreszeiten und erkennen sie an Zeigerpflanzen: Vorfrühling, wenn die Hasel blüht; Erstfrühling mit der Forsythie; Vollfrühling mit der Apfelblüte; Frühsommer mit dem Holunder; Hochsommer mit der Lindenblüte. Es folgen Spätsommer und Frühherbst mit reifen Früchten, der Vollherbst, der Spätherbst mit dem Laubfall und der Winter mit der Vegetationsruhe.',
       here: 'Wenn die Dorflinde am Anger blüht, ist Hochsommer. Mit dem wärmeren Klima beginnt der Vorfrühling in Deutschland heute früher als vor einigen Jahrzehnten – das zeigen die Beobachtungen des Deutschen Wetterdienstes.',
       src: [wiki('Phänologie'), ['Deutscher Wetterdienst – Phänologie (die phänologische Uhr)', 'https://www.dwd.de/']],
       find: { talk: ['ronald:jahreszeiten'], look: ['jahr:wechsel'] },
@@ -321,7 +332,7 @@ export const WDATA = (() => {
       text: 'Ein Hund lernt aus den Folgen seines Tuns: Was sich für ihn lohnt – Lob, Futter, Spiel –, zeigt er öfter, was unangenehm endet, seltener. Das heißt operante Konditionierung. Lob wirkt am besten sofort, solange der Hund noch weiß, wofür es ist.',
       here: 'Hasso ist ein Altdeutscher Hütehund. Diese Hunde arbeiten seit Jahrhunderten bei den Schäfern in Mitteldeutschland und wollen beschäftigt sein.',
       src: [wiki('Operante Konditionierung'), wiki('Altdeutsche Hütehunde', 'Altdeutsche_Hütehunde')],
-      find: { ev: [['hund:gelernt']] },
+      find: { ev: [['hund:gelernt']], talk: ['ronald:hund'] },
       hint: 'Den Hund loben oder tadeln.',
     },
     {
@@ -329,9 +340,15 @@ export const WDATA = (() => {
       ch: 'natur',
       icon: '🐔',
       title: 'Hühner und das Licht',
-      text: 'Hühner legen am meisten, wenn die Tage lang sind: Die Legeleistung hängt von der Tageslänge ab, für volle Leistung brauchen sie rund 14 Stunden Licht. Im Winter legen sie deshalb weniger – das ist ganz normal.',
-      here: 'Heike hat acht Hühner und einen Hahn; am Gartentor steht ihre Kasse des Vertrauens. Bleibt die Klappe des Stalls nachts offen, holt sich der Fuchs ein Huhn.',
-      src: [wiki('Haushuhn')],
+      text: 'Hühner legen am meisten, wenn die Tage lang sind: Die Legeleistung hängt von der Tageslänge ab, für volle Leistung brauchen sie 14 bis 16 Stunden Licht am Tag. Im Winter legen sie deshalb weniger – das ist ganz normal.',
+      here: 'Im Spiel hat Heike acht Hühner und einen Hahn; am Gartentor steht ihre Kasse des Vertrauens. Bleibt die Klappe des Stalls nachts offen, holt sich der Fuchs ein Huhn.',
+      src: [
+        wiki('Haushuhn'),
+        [
+          'K-State Research and Extension: Why Does Egg Production Lower in Winter?',
+          'https://douglas.ksu.edu/agriculture/agent-articles/winter_egg_production.html',
+        ],
+      ],
       find: { talk: ['heike:huehner'] },
       hint: 'Frag Heike nach ihren Hühnern.',
     },
@@ -380,7 +397,7 @@ export const WDATA = (() => {
       icon: '❄️',
       title: 'Fällen im Winter',
       text: 'Gefällt wird am besten in der Saftruhe, etwa von Oktober bis Februar: Der Baum führt wenig Saft, das Holz reißt und verfärbt sich weniger, die Rinde sitzt fest.',
-      here: 'Im Winter brütet im Wald auch kein Vogel. Fällt man im Sommer, muss das Holz schnell aus dem Wald und auf den Stapel – sonst kommen Pilze und Käfer.',
+      here: 'Im Winter brütet im Wald auch kaum ein Vogel. Fällt man im Sommer, muss das Holz schnell aus dem Wald und auf den Stapel – sonst kommen Pilze und Käfer.',
       src: [wiki('Holzfeuchte'), Q.bnatschg39],
       find: { ev: [['fell']], talk: ['hubert:saftruhe'] },
       hint: 'Frag Hubert, wann man Bäume fällt.',
@@ -536,7 +553,7 @@ export const WDATA = (() => {
       icon: '🍂',
       title: 'Mulchen',
       text: 'Eine dünne Schicht aus Rasenschnitt, Laub oder Stroh zwischen den Reihen hält den Boden feucht, schützt ihn vor Hitze und Starkregen und hält das Unkraut klein. Zu dick aufgetragen, fault frischer Rasenschnitt.',
-      here: 'Heike mulcht ihre Beete mit Rasenschnitt und spart sich so manches Gießen. Gegossen wird abends oder ganz früh – dann verdunstet weniger.',
+      here: 'Im Spiel mulcht Heike ihre Beete mit Rasenschnitt und spart sich so manches Gießen. Gegossen wird abends oder ganz früh – dann verdunstet weniger.',
       src: [wiki('Mulchen')],
       find: { talk: ['heike:garten'], ev: [['gplan:gemulcht']] },
       hint: 'Heike weiß, wie man Gießen spart.',
@@ -603,9 +620,9 @@ export const WDATA = (() => {
       ch: 'handwerk',
       icon: '🪨',
       title: 'Schiefer',
-      text: 'Schiefer ist ein Gestein, das sich in dünne Platten spalten lässt. Im Thüringer Schiefergebirge, etwa in Lehesten, wurde er seit dem 14. Jahrhundert gebrochen – bis zum Ende des 20. Jahrhunderts.',
+      text: 'Schiefer ist ein Gestein, das sich in dünne Platten spalten lässt. Im Thüringer Schiefergebirge, etwa in Lehesten, wurde er seit dem Ende des 15. Jahrhunderts gebrochen – bis 1999.',
       here: 'Mit Schiefer deckt man Dächer und verkleidet Wetterseiten: Die Schuppen halten Regen und Wind ab. An den Giebeln der alten Schule und vieler Häuser in Ratscher sieht man ihn.',
-      src: [Q.schiefer, wiki('Schiefer')],
+      src: [wiki('Lehesten (Thüringer Wald)', 'Lehesten_(Thüringer_Wald)'), Q.schiefer, wiki('Schiefer')],
       find: { talk: ['gerhard:handwerk'] },
       hint: 'Gerhard erzählt von den alten Handwerken.',
     },
@@ -703,9 +720,9 @@ export const WDATA = (() => {
       ch: 'geschichte',
       icon: '🌊',
       title: 'Die Talsperre Ratscher',
-      text: 'Von 1975 bis 1983 gebaut, zum Schutz vor Hochwasser: ein Steinschüttdamm mit Betondichtung, 16 m hoch und 630 m lang. Bei Hochwasser hält das Becken bis zu 5,64 Millionen Kubikmeter Wasser zurück.',
-      here: 'Seit 1987 dient sie auch der Erholung – Baden, Angeln, Zelten. Im Winter wird der Wasserspiegel von 392,9 auf 385,5 m über dem Meer abgesenkt; dann ist mehr Raum für Schmelz- und Hochwasser.',
-      src: [Q.damS, Q.damL],
+      text: 'Von 1975 bis 1983 gebaut, zum Schutz vor Hochwasser – ein Hochwasserrückhaltebecken. Der Damm ist aus Schotter geschüttet und auf der Wasserseite mit Asphaltbeton abgedichtet, 630 m lang und gut 15 m hoch (über dem Tal 13,5 m). Das Becken fasst bis zu 5,64 Millionen Kubikmeter.',
+      here: 'Beim Hochwasser zu Weihnachten 2023 hielt es vom 23. auf den 24. Dezember rund 900.000 m³ Wasser zurück, damit die Schleuse weiter unten weniger anstieg; betrieben wird es von der Thüringer Fernwasserversorgung. Seit 1987 ist der „Bergsee Ratscher“ auch zum Baden und Zelten da; im Winter wird der Wasserspiegel von 392,9 auf 385,5 m über dem Meer abgesenkt.',
+      src: [Q.damW, Q.damLT, Q.damS, Q.damL],
       find: { talk: ['ingrid:talsperre', 'uwe:talsperre'], place: ['Talsperre'] },
       hint: 'Südöstlich des Dorfs – oder Uwe und Ingrid fragen.',
     },
@@ -753,7 +770,7 @@ export const WDATA = (() => {
       icon: '🗝️',
       title: 'Der Ortsteilbürgermeister',
       text: 'Ein Ehrenamt: Er leitet den Ortsteilrat und darf an Sitzungen des Stadtrats und seiner Ausschüsse, die den Ortsteil betreffen, beratend teilnehmen und Anträge stellen – mitstimmen darf er dort nicht.',
-      here: 'Gewählt wird er von den Bürgern des Ortsteils für die Amtszeit des Stadtrats. Ingrid hatte das Amt elf Jahre.',
+      here: 'Gewählt wird er von den Bürgern des Ortsteils für die Amtszeit des Stadtrats. Im Spiel hatte Ingrid das Amt elf Jahre.',
       src: [Q.thuerko, Q.amt],
       find: { look: ['amt:amt'], talk: ['ingrid:ortsteil'] },
       hint: 'Selbst für das Amt kandidieren.',
@@ -764,9 +781,14 @@ export const WDATA = (() => {
       icon: '🪑',
       title: 'Der Ortsteilrat',
       text: 'Er berät alles, was den Ortsteil betrifft, und macht der Stadt Vorschläge, die sie behandeln muss. Vor wichtigen Entscheidungen – etwa zum Haushalt oder zu Bebauungsplänen – muss die Stadt ihn anhören.',
-      here: 'Über ein kleines eigenes Budget für Vereine, Kultur, Brauchtum wie die Kirmes und die Ortsfeuerwehr entscheidet der Ortsteilrat selbst. Für eine Bank reicht es – für einen neuen Weg nie.',
+      here: 'Über ein kleines eigenes Budget für Vereine, Kultur, Brauchtum wie die Kirmes und die Ortsfeuerwehr entscheidet der Ortsteilrat selbst. Für eine Bank reicht es – für einen neuen Weg meist nicht.',
       src: [Q.thuerko, Q.amt],
-      find: { look: ['amt:amt'], talk: ['ingrid:ortsteilrat'] },
+      // also a village project voted on in the strategy mode (feat/strategie-dorf)
+      find: {
+        look: ['amt:amt'],
+        talk: ['ingrid:ortsteilrat'],
+        ev: [['strategie:dorfprojekt', d => d && (d.state === 'beschlossen' || d.state === 'abgelehnt')]],
+      },
       hint: 'Im Amt den Ortsteilrat einberufen – oder Ingrid fragen.',
     },
     {
@@ -777,7 +799,8 @@ export const WDATA = (() => {
       text: 'Im Rathaus in Schleusingen beschließt der Stadtrat den Haushalt, Satzungen und Bebauungspläne; der hauptamtliche Bürgermeister leitet die Verwaltung und setzt die Beschlüsse um.',
       here: 'Der Stadtrat wird für fünf Jahre gewählt, der Bürgermeister in Thüringen für sechs. Wer nicht im Rat sitzt, kann in vielen Städten in einer Einwohnerfragestunde Fragen stellen – oder den Ortsteilrat bitten, einen Antrag einzubringen.',
       src: [Q.thuerko, Q.thuerkwg],
-      find: { place: ['Rathaus'] },
+      // also a village project the council of the ortsteil passes on to the town (feat/strategie-dorf)
+      find: { place: ['Rathaus'], ev: [['strategie:dorfprojekt', d => d && d.state === 'stadt']] },
       hint: 'Ins Rathaus Schleusingen.',
     },
     {
@@ -808,8 +831,8 @@ export const WDATA = (() => {
       icon: '🚒',
       title: 'Die Freiwillige Feuerwehr',
       text: 'Für den Brandschutz ist in Thüringen die Gemeinde zuständig. Auf dem Land löschen Freiwillige Feuerwehren: Ehrenamtliche, die bei Alarm alles stehen und liegen lassen – die Sirene und der Melder rufen sie.',
-      here: 'In Ratscher ist die alte Schule das Vereinshaus der Feuerwehr; Manfred ist Wehrführer, Jens Gruppenführer. Geübt wird regelmäßig, an der Talsperre auch das Ansaugen aus offenem Wasser.',
-      src: [Q.thuerbkg, wiki('Freiwillige Feuerwehr', 'Freiwillige_Feuerwehr')],
+      here: 'In Ratscher ist die alte Schule das Vereinshaus des Feuerwehrvereins; im Spiel ist Manfred Wehrführer und Jens Gruppenführer. Geübt wird regelmäßig – etwa, Löschwasser aus einem Teich oder Bach anzusaugen, wo kein Hydrant ist.',
+      src: [Q.thuerbkg, wiki('Freiwillige Feuerwehr', 'Freiwillige_Feuerwehr'), Q.ratscher],
       find: { talk: ['manfred:wehr', 'jens:wehr'] },
       hint: 'Manfred erzählt von der Feuerwehr.',
     },
@@ -819,7 +842,7 @@ export const WDATA = (() => {
       icon: '🤝',
       title: 'Ehrenamt und Dorfgemeinschaft',
       text: 'Auf dem Dorf trägt das Ehrenamt vieles: Feuerwehr und Verein, der Skat- und Rommé-Abend, das Feuer am Acker, die Kirmes – das Fest der Kirchweihe. Wer mitmacht, gehört dazu.',
-      here: 'Wenn einer ein Dach deckt, stehen samstags fünf Leute auf dem Gerüst – so sagt es Ingrid. Freitags erfährt man in der alten Schule in zwei Stunden, was die Woche über passiert ist.',
+      here: 'Wenn einer ein Dach deckt, stehen samstags fünf Leute auf dem Gerüst – so sagt es Ingrid. Im Spiel erfährt man freitags in der alten Schule in zwei Stunden, was die Woche über passiert ist.',
       src: [wiki('Ehrenamt'), wiki('Kirmes')],
       find: { talk: ['katrin:dorf', 'ingrid:dorf'] },
       hint: 'Freitagabend in der alten Schule.',
@@ -851,10 +874,14 @@ export const WDATA = (() => {
       ch: 'politik',
       icon: '🇪🇺',
       title: 'LEADER – Geld für Ideen vom Land',
-      text: 'LEADER ist ein Förderprogramm der EU für ländliche Räume. In jeder Region entscheidet eine lokale Aktionsgruppe aus Bürgern, Vereinen, Unternehmen und Gemeinden, welche Projekte Geld bekommen.',
+      text: 'LEADER ist ein Förderprogramm der EU für ländliche Räume. In jeder LEADER-Region entscheidet eine lokale Aktionsgruppe aus Bürgern, Vereinen, Unternehmen und Gemeinden, welche Projekte Geld bekommen.',
       here: 'Ein Dorfladen, ein Radweg nach Schleusingen, ein Treffpunkt in der alten Schule – solche Ideen kommen aus dem Dorf, das Geld aus Brüssel, Berlin und Erfurt.',
       src: [wiki('LEADER')],
-      find: { talk: ['ingrid:leader'] },
+      // also the strategy mode's village projects (feat/strategie-dorf: chosen by the action group, the grant)
+      find: {
+        talk: ['ingrid:leader'],
+        ev: [['strategie:dorfprojekt', d => d && (d.state === 'ausgewaehlt' || d.state === 'bewilligt')]],
+      },
       hint: 'Frag Ingrid, woher Geld für Dorfprojekte kommt.',
     },
     {
@@ -867,6 +894,26 @@ export const WDATA = (() => {
       src: [wiki('Mitfahrbank'), wiki('Öffentlicher Personennahverkehr', 'Öffentlicher_Personennahverkehr')],
       find: { ev: [['verkehr:mitfahrt'], ['verkehr:angehalten']], talk: ['jens:auto'] },
       hint: 'Ein Auto anhalten und mitfahren.',
+    },
+    {
+      id: 'p_sirene',
+      ch: 'politik',
+      icon: '📢',
+      title: 'Sirenen und Warnung',
+      text: 'Sirenen erreichen viele Menschen auf einmal, auch nachts und ohne Handy. Ein einminütiger, auf- und abschwellender Heulton heißt Warnung: Radio einschalten und auf Durchsagen achten. Ein einminütiger Dauerton heißt Entwarnung. Dazu warnen Apps wie NINA.',
+      here: 'Auf dem First der alten Schule in Ratscher steht die Sirene des Dorfs. Geprobt wird bundesweit am Warntag, seit 2020 jedes Jahr am zweiten Donnerstag im September: um 11 Uhr die Warnung, um 11:45 Uhr die Entwarnung.',
+      src: [
+        [
+          'BBK: Bundesweiter Warntag – Sirenensignale (Faltblatt, 2020)',
+          'https://www.im.nrw/system/files/media/document/file/flyerwarntag2020.pdf',
+        ],
+        wiki(
+          'Warnung der Bevölkerung in der Bundesrepublik Deutschland',
+          'Warnung_der_Bevölkerung_in_der_Bundesrepublik_Deutschland'
+        ),
+      ],
+      find: { ev: [['zombie:siren']] },
+      hint: 'Wenn die Sirene auf der alten Schule heult.',
     },
     {
       id: 'p_bus',
@@ -1061,7 +1108,7 @@ export const WDATA = (() => {
     },
     saftruhe: {
       title: 'Fällen in der Saftruhe',
-      text: 'Im Winter ruht der Saftstrom: Das Holz reißt und verfärbt sich weniger, die Rinde sitzt fest – und im Wald brütet kein Vogel.',
+      text: 'Im Winter ruht der Saftstrom: Das Holz reißt und verfärbt sich weniger, die Rinde sitzt fest – und im Wald brütet kaum ein Vogel.',
       src: [wiki('Holzfeuchte'), Q.bnatschg39],
     },
     psa_forst: {
@@ -1147,7 +1194,13 @@ export const WDATA = (() => {
     tempo30: {
       title: 'Wer bestimmt Tempo 30?',
       text: 'Auf einer Durchgangsstraße entscheidet die Straßenverkehrsbehörde im Landratsamt – die Stadt und der Ortsteil können es nur beantragen.',
-      src: [Q.amt],
+      src: [
+        [
+          '§ 45 Straßenverkehrs-Ordnung (StVO) – Verkehrszeichen und Verkehrseinrichtungen',
+          'https://www.gesetze-im-internet.de/stvo_2013/__45.html',
+        ],
+        Q.amt,
+      ],
     },
     ortsteilgeld: {
       title: 'Das Geld des Ortsteils',
@@ -1362,6 +1415,23 @@ export const WDATA = (() => {
           'Eine Schwarzerle. Die steht gern mit den Füßen im Wasser und düngt sich selbst – an den Wurzeln hat sie kleine Knollen mit Bakterien.',
         ],
         entry: 'n_erle',
+      },
+      {
+        id: 'wildschwein',
+        label: 'Wer hat die Wiese umgegraben?',
+        lines: [
+          'Die Wildschweine, die Rotte war wieder da. Die drehen nachts die Wiese um, auf der Suche nach Engerlingen und Wurzeln. Gegen die hilft nur ein fester Zaun – oder Strom drauf.',
+        ],
+        entry: 'tier:wildschwein',
+      },
+      {
+        id: 'hund',
+        need: 'HUND',
+        label: 'Was ist Hasso für ein Hund?',
+        lines: [
+          'Ein Altdeutscher Hütehund, eine Gelbbacke – so einen hatten die Schäfer hier immer. Der will arbeiten. Und lob ihn sofort, wenn er was richtig macht, nicht erst später – sonst weiß er nicht, wofür.',
+        ],
+        entry: 'n_hund',
       },
     ],
   };

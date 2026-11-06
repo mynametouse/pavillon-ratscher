@@ -167,13 +167,20 @@ def run():
             ck('feat/wetter: rain → „Regen am Gebirge“ (Steigungsregen), found by the weather', J("WISSEN.has('n_regen')"), str(J("WISSEN.state().how['n_regen'] || null")))
             E("WETTER.preset('sturm')"); steps(1.7)
             ck('…a storm → „Sturm und Windwurf“; a clear sky finds nothing', J("WISSEN.has('n_sturm') && !WISSEN.has('n_schnee') && !WISSEN.has('n_gewitter')"))
-            E("WETTER.preset(null)")
+            # a clear sky for the pictures that follow (a weather to try, this visit only)
+            E("WETTER.preset('klar')")
 
         if 'tafel' in want:
             tb = J("WORTE.S.boards.map(b => ({ id: b.id, x: +b.x.toFixed(1), y: +b.y.toFixed(1), z: +b.z.toFixed(2) }))")
             ck('information boards at the real places (school, Dorflinde, brook, Klinge, dam)', len(tb) >= 4 and all(abs(b['z']) < 1000 for b in tb), str(tb))
             ck('their mesh is the village props\' material (no light, no new material)', J("!!WORTE.S.mesh && WORTE.S.mesh.material === VPROPS.mat.paint"))
+            po = J("(() => { const B = WORTE.S.boards.find(b => b.id === 'schule'); if (!B) return null; const u = [-B.n[1], B.n[0]], q = [B.x + u[0] * 0.56, B.y + u[1] * 0.56], p = [q[0] + 0.05, q[1] + 0.02]; KERN.pushOut(p, 0.3); return +Math.hypot(p[0] - q[0], p[1] - q[1]).toFixed(3); })()")
+            ck('a walker does not pass through a board\'s post (KERN.pushOut)', po is not None and po >= 0.36, str(po))
             sch = next((b for b in tb if b['id'] == 'schule'), None)
+            sc = J("WORTE.S.schoolCheck || null")
+            shd = J("(() => { const b = WORTE.S.boards.find(q => q.id === 'schule'), c = (window.DKDATA && DKDATA.open && DKDATA.open.shelter && DKDATA.open.shelter.c) || [248.8, -100.8]; return b ? +Math.hypot(b.x - c[0], b.y - c[1]).toFixed(1) : null; })()")
+            ck('the board at the old school stands out of the ways: ≥ 2 m from the door and from the way to the school bus stop, away from its shelter (bus bay, evacuation bus), clear of the evening\'s beer table',
+               sc is not None and sc['door'] >= 2 and sc['walk'] >= 2 and sc['shelter'] >= 6 and sc['table'] >= 0.9 and (shd or 0) >= 6, str({'check': sc, 'shelter_m': shd}))
             if sch:
                 # the boards draw without a new shader program: the view with them hidden, then shown
                 E(f"(() => {{ const b = WORTE.S.boards.find(q => q.id === 'schule'); GAME.view(b.x + b.n[0] * 4.2, b.y + b.n[1] * 4.2, b.z + 1.65, Math.atan2(-b.n[0], -b.n[1]) * 180 / Math.PI, -6); }})()")
@@ -222,6 +229,10 @@ def run():
             pd0 = E("GAME.R.info.programs.length")
             pn = J("(() => { const el = document.getElementById('widaten'); return el ? { vis: !el.hidden, chips: [...el.querySelectorAll('[data-wd]')].map(b => b.textContent) } : null; })()")
             ck('plan view: the panel „Daten-Ansichten“ with six views', pn and pn['vis'] and len(pn['chips']) == 6, str(pn))
+            E("document.querySelector('#widaten [data-wdmin]').click()")
+            fo = J("document.querySelectorAll('#widaten [data-wd]').length")
+            E("document.querySelector('#widaten [data-wdmin]').click()")
+            ck('its title folds it to one line and opens it again', fo == 0 and J("document.querySelectorAll('#widaten [data-wd]').length") == 6, str(fo))
             nsvg0 = E("document.getElementById('topsvg').querySelectorAll('polygon').length")
             E("document.querySelector('#widaten [data-wd=\"w_sonne\"]').click()"); steps(0.6)
             ws = J("WDATEN.state()")

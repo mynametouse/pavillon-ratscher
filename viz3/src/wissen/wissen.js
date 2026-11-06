@@ -12,7 +12,7 @@
 // Events: 'wissen:neu' { id, ch, how }, 'wissen:warum' { id }, 'wissen:offen' { on }.
 import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
-import { $, BASE } from '../core/head.js';
+import { $, BASE, COARSE } from '../core/head.js';
 import { P, PHASE } from '../game/walkable.js';
 import { HUD } from '../game/hud.js';
 import { CLOCK } from '../time/clock.js';
@@ -163,7 +163,12 @@ export const WISSEN = (() => {
     const el = NQ.el || mkNotice();
     el.querySelector('.ic').textContent = first.icon || '📖';
     el.querySelector('.tx').innerHTML =
-      'Neu im Entdeckerbuch: <b>' + esc(first.title) + '</b>' + (more ? ' <small>+' + more + '</small>' : '');
+      'Neu im Entdeckerbuch: <b>' +
+      esc(first.title) +
+      '</b>' +
+      (more ? ' <small>+' + more + '</small>' : '') +
+      // the first few times on a keyboard: where the book is (key N)
+      (!COARSE && Object.keys(S.f).length <= 3 ? ' <small>· Taste N</small>' : '');
     el.dataset.id = first.id;
     el.hidden = false;
     // on a phone the data views' panel (wissen_daten.js) fills the lower half of the plan view: the notice goes above it
@@ -383,6 +388,9 @@ export const WISSEN = (() => {
   const CSS = `
 #wibook{position:absolute;z-index:8;top:60px;right:max(12px,env(safe-area-inset-right,0px));width:min(470px,calc(100% - 24px));max-height:calc(100% - 110px);display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.32);font:400 13.5px/1.5 var(--f-body)}
 #wibook[hidden]{display:none}
+#wibookbtn em{font-style:normal}
+#wibookbtn .ws{display:none}
+@media (max-width:560px){#menu .mlist.wi3{grid-template-columns:repeat(3,minmax(0,1fr))} #menu .mlist.wi3>.tog{flex-wrap:wrap;row-gap:2px;padding:9px 8px;align-content:center} #menu .mlist.wi3>.tog>span{flex-basis:100%} #wibookbtn .wl,#wibookbtn>span{display:none} #wibookbtn .ws{display:inline}}
 #wibook header{display:flex;align-items:flex-start;gap:10px;padding:12px 14px 6px}
 #wibook header h3{margin:0;font:700 17px/1.2 var(--f-display)}
 #wibook header small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
@@ -457,12 +465,14 @@ body[data-top="1"] #winote{top:178px}
       b.className = 'tog';
       b.id = 'wibookbtn';
       b.title = 'Was du über Natur, Handwerk, Geschichte und Politik schon herausgefunden hast (Taste N)';
-      b.innerHTML = 'Entdeckerbuch<span>N</span>';
+      // on a phone the three entries share one row (the start page must fit without scrolling – viz3/test/menu.py): „Buch“, no key
+      b.innerHTML = '<em class="wl">Entdeckerbuch</em><em class="ws">Buch</em><span>N</span>';
       b.addEventListener('click', () => {
         if (HUD && HUD.setMenu) HUD.setMenu(false);
         open();
       });
       ml.appendChild(b);
+      ml.classList.add('wi3');
       U.mbtn = b;
     }
     watchThoughts();
@@ -789,6 +799,8 @@ body[data-top="1"] #winote{top:178px}
     'garage:start': 'den Mäher gestartet',
     'einrichtung:schale': 'eine Schale gedreht',
     'hund:befehl': 'den Hund gerufen',
+    'zombie:siren': 'die Sirene gehört',
+    'strategie:dorfprojekt': 'ein Dorfprojekt im Strategie-Modus',
     'bus:fahrplan': 'den Fahrplan an der Haltestelle gelesen',
     'bus:ein': 'in den Bus gestiegen',
     'hund:gelernt': 'den Hund gelobt oder getadelt',
@@ -852,18 +864,20 @@ body[data-top="1"] #winote{top:178px}
     const ch =
       d.kind === 'wald'
         ? 'natur'
-        : d.kind === 'ausbau' || d.kind === 'wissen'
+        : d.kind === 'ausbau' || d.kind === 'wissen' || d.kind === 'bau'
           ? 'handwerk'
-          : d.kind === 'ort'
-            ? 'orte'
-            : 'natur';
+          : d.kind === 'kontakt'
+            ? 'politik'
+            : d.kind === 'ort'
+              ? 'orte'
+              : 'natur';
     dyn(
       id,
       {
         ch,
         title: d.title || d.id,
         text: d.text || '',
-        icon: d.kind === 'wald' ? '🌲' : '🔎',
+        icon: d.kind === 'wald' ? '🌲' : d.kind === 'bau' ? '🧱' : d.kind === 'kontakt' ? '🤝' : '🔎',
         src: d.source ? [Array.isArray(d.source) ? d.source : [String(d.source), null]] : [],
       },
       'erkundet:' + (d.title || d.id) + (d.by ? ' (' + d.by + ')' : '')

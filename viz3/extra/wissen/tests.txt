@@ -1,2 +1,4 @@
 # feat/wissen: the discovery book, „Warum?“, teachers, boards (one test name per line, as for viz3/test/run.py)
 wissen
+# the menu's start page on a phone: the book's entry must not make it scroll (round B, 6.11.2026)
+menu
