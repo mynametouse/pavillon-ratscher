@@ -53,5 +53,19 @@ with lib.browser() as b:
     for i in range(4): E("GAME.step(0.25)")
     walk = J(cards)
     ck('… back in the first-person world the far trees are there again', J("GAME.P.mode") == 'walk' and (top['n'] == 0 or walk['shown'] == walk['n']), str(walk))
+    # the plain Draufsicht (without the mode) over the same meadow: no far cards there either – one picture without them (as now) and one
+    # with them (as before), to see that the aerial photo shows those crowns
+    E("GAME.go('draufsicht')")
+    E("(() => { const c = STRAT.place.pos('klinge'); GAME.P.tx = c[0] + 40; GAME.P.ty = c[1] + 30; GAME.P.th = 120; })()")
+    for i in range(6): E("GAME.step(0.25)")
+    pl = J(cards)
+    ck('the plain Draufsicht (without the mode): no far tree cards either', J("GAME.P.mode") == 'top' and not J("STRAT.on") and pl['shown'] == 0, str(pl))
+    try:
+        lib.shot(pg, OUT, 'draufsicht_klinge_ohne')
+        E("RATSCHER.trees.forEach(m => (m.visible = true))")
+        lib.shot(pg, OUT, 'draufsicht_klinge_karten')
+        E("RATSCHER.topMode(true)")
+    except Exception as e:
+        print('note: picture failed', repr(e)[:160], flush=True)
     ck.errors(errs)
     ck.done()

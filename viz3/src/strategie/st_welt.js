@@ -100,10 +100,23 @@ export const STWELT = (() => {
   };
   // the air temperature (°C) at game time t: near the clock the one feat/wetter shows, else the climate – the month's mean (DWD Meiningen
   // 1991–2020, about), a day drawn warmer or colder (±4 °C, the same day always the same) and the day's swing (coldest before dawn, warmest
-  // mid-afternoon, ±3,5 °C); W.force.temp in tests
+  // mid-afternoon, ±3,5 °C); W.force.temp in tests. One temperature for the whole mode: when the pavilion's weather windows are there
+  // (feat/strategie-bau, STBAU.tempOf – the same sources, its own daily swing by month) theirs is asked first
   const TMEAN = [-0.3, 0.6, 3.9, 8.3, 12.4, 15.7, 17.6, 17.1, 12.9, 8.5, 3.9, 0.9];
+  let inTemp = false;
   W.temp = t => {
     if (W.force && Number.isFinite(W.force.temp)) return W.force.temp;
+    const B = window.STBAU;
+    if (!inTemp && B && typeof B.tempOf === 'function') {
+      inTemp = true; // should theirs ever ask this one, no loop
+      try {
+        const v = B.tempOf(t);
+        if (Number.isFinite(v)) return +v.toFixed(1);
+      } catch (e) {
+      } finally {
+        inTemp = false;
+      }
+    }
     const L = window.WETTER;
     if (
       L &&

@@ -47,6 +47,13 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - **Brennholz:** die Schwarten der Bandsäge (je ~0,04 rm) am Sägebock auf 33 cm sägen, spalten, aufsetzen (0,45–0,85 rm/h je Person nach
   Können, Motorsäge mit Sonderkraftstoff gebucht); trocken nach einem Jahr unter Dach (1. BImSchV: unter 25 % Feuchte). Verkauf an Ronald
   nebenan mit der Schubkarre: trocken 110 €/rm (TFZ Bayern), frisch 80 €/rm (Annahme) – Warten lohnt sich.
+- **Heizen:** an kalten Abenden (unter 14 °C um 22 Uhr), wenn eure Leute im Garten übernachten, brennt der Kanonenofen des Bungalows
+  (`garden/bungalow.js`) – etwa 0,0012 rm je Kelvin unter 20 °C und Nacht (bei −2 °C 0,026 rm, gut 8 kg Fichte; Annahme: ~25 m², dünn
+  gedämmt, ~100 W/K, abends und morgens geheizt; Heizwert Fichte lufttrocken ~1450 kWh/rm, im einfachen Ofen ~70 %). Nur trockenes Holz
+  (1. BImSchV): erst das eigene, sobald es ein Jahr lag, dann der gekaufte Vorrat unter dem Vordach (zu Beginn 1 rm). Ohne Holz eine kalte
+  Nacht (Laune −12) und eine Meldung mit „Brennholz bestellen“ (1 rm Fichte ofenfertig frei Haus, 110 €, in der Kasse unter „Heizen“). Die
+  Temperatur: `STRAT.W.temp(t)` – nahe der Spieluhr die von feat/wetter, sonst das Klima von Meiningen (mit den Wetterfenstern des Pavillons
+  von feat/strategie-bau abgestimmt: deren `STBAU.tempOf` zuerst).
 - **Schutzausrüstung:** jede Person hat ihre eigene (Werkstatt: Gehörschutz, Brille, FFP2; Hubert auch Forst); in der Forstkiste am Traktor
   liegt eine Forst-Ausrüstung (wie in der Welt). Fällen braucht zwei (Säge und Helfer im Gefahrenbereich), eine zweite kauft man im
   Fachhandel (390 €, Auftrag in Schleusingen).
@@ -232,14 +239,17 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
   Ebenen, Forstunternehmer).
 - 6.11. 2:20 – Brennholz für andere Themen (der Holzofen des Pavillons im Winter): `STHOLZ.firewood.stacked()`, `.dry(t)`,
   `.take(rm, { dryOnly })` → genommene rm, trockenes zuerst (1. BImSchV: nur trockenes Holz in den Ofen).
+- 6.11. 4:00 – `STRAT.W.temp(t)` (°C; eine Temperatur für den Modus, mit `STBAU.tempOf` abgestimmt); `STRAT.S.ext.heiz = { ofen, season, kalt }`
+  (gekaufter Vorrat unter dem Vordach in rm); Auftrag `brennholz_kaufen` (Ort Bungalow); Kassen-Art `heizen`. Der Ofen nimmt eigenes
+  Brennholz über `STHOLZ.firewood.take(rm, { dryOnly: true })` – wer den Pavillon-Ofen baut, kann denselben Weg gehen.
 - 6.11. 2:15 – `layer.define({ under: true })`; `STRAT.W.wx(t).dir` (Windrichtung, aus der er kommt); Knöpfe mit `data-skip="<Minuten>"` in
   einem Feld (`info()` eines Ortes) laufen im Zeitraffer.
 
 ## Offen
 
 - Der Traktor der Welt (`vehicles/tractor.js`) bleibt beim Rücken von oben an der Klinge stehen – das Gespann fährt nur auf der Karte, die
-  Stämme liegen am Ende im Lager. Ein Brennholzstapel ist in der Welt noch nicht zu sehen (nur als Vorrat); geheizt wird noch nicht
-  (Holzverbrauch im Winter, wenn jemand im Bungalow schläft).
+  Stämme liegen am Ende im Lager. Ein Brennholzstapel ist in der Welt noch nicht zu sehen (nur als Vorrat; auch die Schwarten der
+  Bandsäge zählt die Welt nur); geheizt wird nur der Bungalow (der Ofen des Pavillons kommt mit seiner Bauphase).
 - Das Telefon: Layout, Antippen, Ziehen im Test (iPhone-Größe), noch nicht auf einem echten Gerät; die Zeitbox ist dort groß (drei Reihen).
 - Der Hund (feat/tiere): von oben als Zeichen auf der Karte, seine Taten als Meldung mit „Loben“/„Tadeln“ – mehr (schicken, hüten als
   Auftrag) kann darauf aufbauen. Die Bestellung Lärche wird im Test begonnen (ein Brett), nicht ganz geliefert.

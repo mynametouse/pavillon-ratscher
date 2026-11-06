@@ -161,7 +161,7 @@ export const STAUSBAU = (() => {
       const dt = W.dateOf(ev),
         season = dt.getUTCMonth() >= 6 ? dt.getUTCFullYear() : dt.getUTCFullYear() - 1,
         why =
-          'Ein Kanonenofen im dünnwandigen Bungalow braucht an einem Abend bei 0 °C draußen gut 10 kg Fichte (0,02 rm). Nur trockenes Holz (unter 25 % Feuchte) darf in den Ofen – nasses rußt, qualmt und bringt kaum Wärme.',
+          'Ein Kanonenofen im dünnwandigen Bungalow braucht für einen Abend und den Morgen bei 0 °C draußen etwa 8 kg Fichte (0,024 rm). Nur trockenes Holz (unter 25 % Feuchte) darf in den Ofen – nasses rußt, qualmt und bringt kaum Wärme.',
         src =
           '1. BImSchV § 3 (Brennstoffe: naturbelassenes, trockenes Holz); Heizwert Fichte lufttrocken etwa 1450 kWh/rm (TFZ)',
         act = [
