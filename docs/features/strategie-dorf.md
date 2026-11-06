@@ -135,7 +135,7 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   verhindert das für seine Arten mit eigenen Regeln; `strategie-bau` meldet `kind: 'bau'` (die Bodenplatte), das landet noch in „Natur“.
   Vorschlag: `bau` → handwerk, `kontakt`/`dorf` → politik, `geschichte` → geschichte in `wissen/wissen.js`. Zustand im Kern-Speicher: `STRAT.S.ext.dorf` und `STRAT.S.ext.krise`
   (geprüft beim Laden).
-- Zusammengeführt: `origin/src` nach Runde B (24be07de) und `origin/feat/strategie` bis e6b692b0 – Konflikte nur in `modules.txt`
+- Zusammengeführt: `origin/src` nach Runde B (24be07de) und `origin/feat/strategie` bis 22b1bdca – Konflikte nur in `modules.txt`
   (Reihenfolge: Kern, `strategie-bau`, `strategie-dorf`, `wissen`).
 - Neue KERN-Ereignisse: `strategie:dorfprojekt` {id, state: begonnen | beschlossen | stadt | vertagt | abgelehnt | fertig, t},
   `strategie:dorfbuchung` {eur, text, saldo} (Geld des Ortsteils – absichtlich nicht `strategie:buchung`, das ist deine Kasse),
