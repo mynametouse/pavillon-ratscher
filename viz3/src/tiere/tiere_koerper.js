@@ -381,6 +381,14 @@ export const TKOERPER = (() => {
         furU: u => 1 - sst(0.45, 0.65, u),
       }
     );
+    // the back line (the trunk's top) at a point along the body
+    const backAt = z => {
+      const T = Pn.trunk;
+      if (z <= T[0][0]) return T[0][1];
+      for (let i = 0; i < T.length - 1; i++)
+        if (z <= T[i + 1][0]) return T[i][1] + ((T[i + 1][1] - T[i][1]) * (z - T[i][0])) / (T[i + 1][0] - T[i][0]);
+      return T[T.length - 1][1];
+    };
     // legs
     const leg = (kind, s) => {
       const J = kind === 'hind' ? Pn.hind : Pn.front,
@@ -389,11 +397,20 @@ export const TKOERPER = (() => {
         names = kind === 'hind' ? ['hips', 'thigh', 'shank', 'meta'] : ['chest', 'arm', 'fore', 'cannon'];
       const bn = i => (i === 0 ? names[0] : names[i] + s);
       const st = [];
-      // above the top joint a ring inside the body (the haunch, the shoulder blade)
+      // above the top joint a ring inside the body (the haunch, the shoulder blade) – kept below the back line, or its open edge
+      // stands out of the back like a flap (the fur outline adds up to a tenth)
+      const z0 = J[0][0] + (kind === 'hind' ? 0.02 : -0.02),
+        lim = backAt(z0) - 0.03;
+      let cy = J[0][1] + R[0] * 0.9,
+        ry0 = R[0] * 1.15;
+      if (cy + ry0 * (1 + (Pn.fur || 0) * 0.7) > lim) {
+        ry0 = Math.max(R[0] * 0.6, ry0 - (cy + ry0 * (1 + (Pn.fur || 0) * 0.7) - lim) * 0.5);
+        cy = lim - ry0 * (1 + (Pn.fur || 0) * 0.7);
+      }
       st.push({
-        p: V3(x * 0.7, J[0][1] + R[0] * 0.9, J[0][0] + (kind === 'hind' ? 0.02 : -0.02)),
+        p: V3(x * 0.7, cy, z0),
         rx: R[0] * 0.9,
-        ry: R[0] * 1.15,
+        ry: ry0,
         w: [W(sk, bn(0))],
         u: 0,
       });
@@ -1326,8 +1343,10 @@ export const TKOERPER = (() => {
     tailHang: 0.2,
     neckPose: { graze: [0.45, 0.35], alert: [-0.18, -0.12], lie: [0.15, 0.1], dig: [0.55, 0.4] },
     // the bristle mane along the spine, from the neck to the middle of the back
-    extra(B, sk, W, loft, V3, coat) {
-      // a low ridge of coarse bristles, not a fin: sunk into the back, a little higher over the withers
+    extra(B, sk, W, loft, V3, coat, variant) {
+      // a low ridge of coarse bristles, not a fin: sunk into the back, a little higher over the withers; the young of the year have
+      // hardly any (their ridge grows in the second year)
+      const yk = variant && variant.young ? 0.45 : 1;
       // the front of the ridge rides on the neck bones, so it bends down with the head when the boar roots (no horn sticking out)
       const pts = [
         [0.5, 0.72, [W(sk, 'neck1', 0.3), W(sk, 'neck2', 0.7)]],
@@ -1341,8 +1360,8 @@ export const TKOERPER = (() => {
         B,
         pts.map(([z, y, w], i) => ({
           p: V3(0, y, z),
-          rx: [0.03, 0.04, 0.042, 0.036, 0.03, 0.02][i],
-          ry: [0.02, 0.034, 0.034, 0.026, 0.02, 0.01][i],
+          rx: [0.03, 0.04, 0.042, 0.036, 0.03, 0.02][i] * (0.4 + 0.6 * yk),
+          ry: [0.02, 0.034, 0.034, 0.026, 0.02, 0.01][i] * yk,
           w,
           u: i / (pts.length - 1),
         })),
@@ -1356,7 +1375,7 @@ export const TKOERPER = (() => {
       const dark = lin(young ? 0x3e2c1e : 0x231e1a);
       c = mix(c, dark, sst(0.1, 0.9, Math.cos(q.th)) * 0.75);
       c = mix(c, lin(young ? 0x8a6a4c : 0x6e645a), hash(q.x * 7, q.y * 7, q.z * 7) * 0.35);
-      if (q.part === 'mane') c = lin(0x16130f);
+      if (q.part === 'mane') c = young ? mix(c, dark, 0.6) : lin(0x16130f);
       if (v.stripes && (q.part === 'trunk' || (q.part === 'neck' && q.z < 0.6))) {
         const a = Math.abs(Math.sin(q.th * 3.5));
         if (Math.cos(q.th) > -0.4) c = mix(c, lin(0xb89a6c), sst(0.82, 0.95, a) * 0.85);
@@ -1493,7 +1512,7 @@ export const TKOERPER = (() => {
         [-0.46, 0.33],
         [-0.44, 0.23],
       ],
-      r: [0.05, 0.075, 0.07, 0.03],
+      r: [0.045, 0.06, 0.056, 0.026],
     },
   });
   // the red kite (Milvus milvus): 61–72 cm long, wingspan 1.75 m, the deeply forked rufous tail, pale grey head, white patches under the
@@ -1699,8 +1718,9 @@ export const TKOERPER = (() => {
     gait: { f0: 2.3, trot: 1.0, gallop: 3.0 },
     e: 2.6,
     coat(q) {
-      let c = mix(lin(0x9a948a), lin(0x6e6a64), sst(0.2, 0.9, Math.cos(q.th)) * 0.4);
-      c = mix(c, lin(0xd0ccc4), hash(q.x * 5, q.y * 5, q.z * 5) * 0.25);
+      // grizzled grey (each guard hair pale with a dark band): darker along the back, the flanks lighter, belly and legs black
+      let c = mix(lin(0x8a867e), lin(0x625e58), sst(0.2, 0.9, Math.cos(q.th)) * 0.5);
+      c = mix(c, lin(0xaca89f), hash(q.x * 5, q.y * 5, q.z * 5) * 0.2);
       if (q.part === 'trunk' && Math.cos(q.th) < -0.3) c = lin(0x1c1a18);
       if (q.part === 'hleg' || q.part === 'fleg') c = lin(0x1a1816);
       if (q.part === 'neck') {
@@ -1715,6 +1735,13 @@ export const TKOERPER = (() => {
       return shade(c, q, 0.03, 0.06);
     },
   });
+  // the badger's wedge: broad over the hips, narrower towards the shoulders and the small head
+  (Pd => {
+    const T = Pd.trunk,
+      z0 = T[0][0],
+      z1 = T[T.length - 1][0];
+    Pd.trunk = T.map(([z, t, b, w, e]) => [z, t, b, w * (1.12 - (0.3 * (z - z0)) / (z1 - z0)), e]);
+  })(PLANS.dachs);
   // raccoon (Procyon lotor): arched back, the black mask, the pale muzzle, the ringed tail, grey-brown
   PLANS.waschbaer = scaled(QBASE, 1.0, 0.55, 0.7, {
     fur: 0.09,

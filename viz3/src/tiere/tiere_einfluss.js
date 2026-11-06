@@ -692,9 +692,25 @@ export const TEINFLUSS = (() => {
     _s = new THREE.Vector3(),
     _p = new THREE.Vector3(),
     _e = new THREE.Euler();
+  // the signs on the ground (wallow, rooted soil, vole hills, bore dust, prints): the animals' material with little sky light – the
+  // terrain is darkened under the crowns, and dark wet mud would otherwise shine like a grey plate. A clone with the same shader patch
+  // (onBeforeCompile), so the same program cache key: no new shader program
+  let GMAT = null;
+  function gmat() {
+    if (GMAT) return GMAT;
+    const M0 = TKOERPER.mat;
+    GMAT = M0.clone();
+    GMAT.onBeforeCompile = M0.onBeforeCompile;
+    if (M0.customProgramCacheKey !== THREE.Material.prototype.customProgramCacheKey)
+      GMAT.customProgramCacheKey = M0.customProgramCacheKey;
+    GMAT.envMapIntensity = 0.22;
+    GMAT.roughness = 1;
+    return GMAT;
+  }
+  const FLAT = { wuehl: 1, maus: 1, bohrmehl: 1, tritt: 1 };
   function im(key, mk, max) {
     if (IM[key]) return IM[key];
-    const m = new THREE.InstancedMesh(mk(), TKOERPER.mat, max);
+    const m = new THREE.InstancedMesh(mk(), FLAT[key] ? gmat() : TKOERPER.mat, max);
     m.count = 0;
     m.frustumCulled = false;
     m.castShadow = false;
@@ -831,9 +847,9 @@ export const TEINFLUSS = (() => {
       idx = [],
       N = 18,
       RINGS = [0, 0.5, 0.95, 1.35, 1.6],
-      wet = lin(0x1c1814),
-      mud = lin(0x30281f),
-      dry = lin(0x46392b);
+      wet = lin(0x2a241e),
+      mud = lin(0x3c3226),
+      dry = lin(0x54452f);
     for (let ri = 0; ri < RINGS.length; ri++)
       for (let k = 0; k < (ri ? N : 1); k++) {
         const q = (k / N) * 6.283,
@@ -858,7 +874,7 @@ export const TEINFLUSS = (() => {
     geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
     geo.setIndex(idx);
     geo.computeVertexNormals();
-    const m = new THREE.Mesh(geo, TKOERPER.mat);
+    const m = new THREE.Mesh(geo, gmat());
     m.userData.noMerge = true;
     m.receiveShadow = true;
     m.name = 'tiere suhle';
