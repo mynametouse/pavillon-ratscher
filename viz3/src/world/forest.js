@@ -1020,6 +1020,9 @@ export const FOREST = (() => {
         kk[i] = t.m;
         t.fi = [im, i];
         im.setColorAt(i, colT.setRGB(1, 1, 1).multiplyScalar(0.88 + (t.id % 7) * 0.035));
+        // feat/tiere: the far card of a tinted crown
+        if (t.tint)
+          im.setColorAt(i, colT.setRGB(t.tint[0], t.tint[1], t.tint[2]).multiplyScalar(0.88 + (t.id % 7) * 0.035));
       });
       im.castShadow = false;
       im.receiveShadow = false;
@@ -1167,8 +1170,10 @@ export const FOREST = (() => {
         else t.s0 = [GEN, k]; // its slots in this choice (S.retilt)
         const g = 0.86 + (t.id % 9) * 0.03;
         colT.setRGB(g, g, g);
-        I.c.setColorAt(k, colT);
         I.b.setColorAt(k, colT);
+        // feat/tiere: a crown tinted by the bark beetle (t.tint, set through S.tint) – the bark keeps its colour
+        if (t.tint) colT.setRGB(g * t.tint[0], g * t.tint[1], g * t.tint[2]);
+        I.c.setColorAt(k, colT);
       }
       for (const im of [I.b, I.c]) {
         im.count = n;
@@ -1333,6 +1338,19 @@ export const FOREST = (() => {
     );
     if (sp === 'larch') seasonal(cards, false);
     return { bark, cards, depth: S._mk.depth, barkMap: B };
+  };
+  // feat/tiere: tint a tree's crown ([r, g, b] multiplied into the needles, null for none) – the bark beetle's red-brown and grey crowns
+  // (tiere/tiere_einfluss.js); the near and middle sets take it at the next choice, the far card at once
+  S.tint = (t, rgb) => {
+    if (!t) return;
+    t.tint = rgb || null;
+    if (t.fi) {
+      const [im, i] = t.fi,
+        k = 0.88 + (t.id % 7) * 0.035;
+      im.setColorAt(i, rgb ? colT.setRGB(rgb[0] * k, rgb[1] * k, rgb[2] * k) : colT.setRGB(k, k, k));
+      if (im.instanceColor) im.instanceColor.needsUpdate = true;
+    }
+    last.tier = '';
   };
   // take a tree out of the stand: near/middle sets, its far card, its trunk for collisions, its crown from the light and litter maps
   S.hide = t => {

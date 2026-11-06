@@ -1381,7 +1381,9 @@ export const VERKEHR = (() => {
     fahrTick(dt, o);
     // figures nobody needs any more: freed after a while (memory on the phone)
     for (const k of Object.keys(VFIG.figs)) {
-      const used = S.peds.some(d => d.key === k) || (S.lent && S.lent.who === k && S.lent.driver);
+      // feat/bus: or a passenger at a bus stop (bus/bus_leute.js marks them busy 'bus')
+      const used =
+        S.peds.some(d => d.key === k) || (S.lent && S.lent.who === k && S.lent.driver) || S.busy[k] === 'bus';
       if (used) S.idle[k] = 0;
       else if ((S.idle[k] = (S.idle[k] || 0) + dt) > 15) {
         VFIG.drop(k);

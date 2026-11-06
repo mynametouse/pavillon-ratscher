@@ -1,0 +1,131 @@
+{
+"quelle": "DOP 2024 (GDI-Th), YOLO11-OBB (DOTAv1), Regeln aus tools/welt-dinge/decide.py; Stichprobe und Zweifelsf\u00e4lle von Auge",
+"ja": [
+{
+"t": "auto",
+"x": -2658.24,
+"y": 3537.53,
+"az": 42.2,
+"l": 5.12,
+"w": 2.9,
+"p": 0.653,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -2627.98,
+"y": 3522.54,
+"az": 140.2,
+"l": 5.4,
+"w": 2.9,
+"p": 0.652,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -2614.5,
+"y": 3486.18,
+"az": 45.9,
+"l": 4.31,
+"w": 2.3,
+"p": 0.414,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -2568.77,
+"y": 3455.27,
+"az": 132.2,
+"l": 5.12,
+"w": 2.62,
+"p": 0.471,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -2524.63,
+"y": 3394.57,
+"az": 112.0,
+"l": 4.99,
+"w": 2.48,
+"p": 0.816,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -2518.38,
+"y": 3384.49,
+"az": 3.0,
+"l": 4.61,
+"w": 2.74,
+"p": 0.846,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -2536.11,
+"y": 3302.98,
+"az": 11.0,
+"l": 5.11,
+"w": 2.64,
+"p": 0.176,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -2510.37,
+"y": 3164.36,
+"az": 135.5,
+"l": 3.9,
+"w": 2.01,
+"p": 0.587,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -2478.62,
+"y": 3157.36,
+"az": 125.7,
+"l": 4.26,
+"w": 2.11,
+"p": 0.776,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "anhaenger",
+"x": -2451.54,
+"y": 3165.31,
+"az": 45.1,
+"l": 5.0,
+"w": 1.72,
+"p": 0.215,
+"c": "large vehicle"
+},
+{
+"t": "auto",
+"x": -2655.71,
+"y": 3535.67,
+"az": 51.3,
+"l": 3.26,
+"w": 2.08,
+"p": 0.203,
+"c": "small vehicle"
+}
+],
+"nein": [
+[
+-2577.66,
+3439.97
+]
+],
+"dazu": []
+}

@@ -6,3 +6,5 @@ schleusingen
 # welt/vessra.js models itself – the Kern-Chat, 6.11. ~1:00)
 vessra
 vessra_szenario
+# the drive Ratscher → Markt Schleusingen and to the Baumschule with all the cells along the road (the Kern-Chat, 6.11. ~2:00): no wall in a lane
+fahrt

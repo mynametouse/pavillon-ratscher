@@ -2,12 +2,14 @@
 # rate-limited there. viz3/extra/wetter/quellen/ton.py: 'survey' downloads every candidate, reads its licence lines, measures it and draws a
 # spectrogram; then the picks are cut, levelled and encoded. Everything comes back as the artifact 'wetter-ton' (gh run download); the
 # finals are copied into viz3/extra/wetter/dist/wetter/ by hand. Nothing is pushed from here.
+# A second job reads the real Open-Meteo answers through the module's own parser (viz3/extra/wetter/quellen/echt.mjs) – the chat machine
+# gets HTTP 429 there and the browser tests see mocked answers only.
 name: Wetter – Geräusche
 
 on:
   push:
     branches: ['feat/wetter']
-    paths: ['viz3/extra/wetter/quellen/**', '.github/workflows/wetter-ton.yml']
+    paths: ['viz3/extra/wetter/quellen/**', 'viz3/src/wetter/wx_data.js', '.github/workflows/wetter-ton.yml']
 
 concurrency:
   group: wetter-ton
@@ -42,4 +44,23 @@ jobs:
         with:
           name: wetter-ton
           path: out/
+          retention-days: 5
+  daten:
+    name: Echte Wetterdaten lesen (Open-Meteo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Abfragen und lesen
+        run: node viz3/extra/wetter/quellen/echt.mjs out/echt 2>&1 | tee out-echt.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wetter-echt
+          path: |
+            out/echt/
+            out-echt.log
           retention-days: 5

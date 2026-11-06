@@ -1,0 +1,303 @@
+{
+"quelle": "DOP 2024 (GDI-Th), YOLO11-OBB (DOTAv1), Regeln aus tools/welt-dinge/decide.py; Stichprobe und Zweifelsf\u00e4lle von Auge",
+"ja": [
+{
+"t": "auto",
+"x": -917.6,
+"y": -1518.02,
+"az": 96.8,
+"l": 4.72,
+"w": 2.38,
+"p": 0.413,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -917.5,
+"y": -1520.9,
+"az": 92.4,
+"l": 4.3,
+"w": 2.17,
+"p": 0.365,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -902.01,
+"y": -1512.91,
+"az": 19.5,
+"l": 4.46,
+"w": 2.33,
+"p": 0.438,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -843.02,
+"y": -1517.39,
+"az": 6.5,
+"l": 3.75,
+"w": 1.83,
+"p": 0.224,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -839.52,
+"y": -1517.77,
+"az": 2.4,
+"l": 4.13,
+"w": 2.03,
+"p": 0.377,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -836.96,
+"y": -1536.33,
+"az": 173.8,
+"l": 4.78,
+"w": 2.18,
+"p": 0.703,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -836.08,
+"y": -1532.28,
+"az": 98.7,
+"l": 3.75,
+"w": 2.42,
+"p": 0.386,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -832.39,
+"y": -1533.2,
+"az": 3.1,
+"l": 3.82,
+"w": 2.15,
+"p": 0.384,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -760.97,
+"y": -1522.02,
+"az": 88.7,
+"l": 4.35,
+"w": 2.21,
+"p": 0.561,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -753.38,
+"y": -1513.01,
+"az": 176.4,
+"l": 4.59,
+"w": 2.21,
+"p": 0.678,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -750.41,
+"y": -1512.74,
+"az": 176.9,
+"l": 6.52,
+"w": 3.12,
+"p": 0.611,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -839.55,
+"y": -1578.66,
+"az": 1.1,
+"l": 4.93,
+"w": 2.37,
+"p": 0.765,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -775.23,
+"y": -1547.38,
+"az": 3.7,
+"l": 4.86,
+"w": 2.27,
+"p": 0.583,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -766.64,
+"y": -1554.16,
+"az": 91.9,
+"l": 4.51,
+"w": 2.0,
+"p": 0.389,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -754.26,
+"y": -1557.73,
+"az": 92.4,
+"l": 5.06,
+"w": 2.57,
+"p": 0.556,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -910.05,
+"y": -1582.64,
+"az": 93.4,
+"l": 4.06,
+"w": 1.96,
+"p": 0.42,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -891.64,
+"y": -1595.84,
+"az": 99.1,
+"l": 4.28,
+"w": 2.19,
+"p": 0.749,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -831.8,
+"y": -1586.91,
+"az": 84.6,
+"l": 4.23,
+"w": 2.24,
+"p": 0.728,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -815.38,
+"y": -1603.49,
+"az": 93.1,
+"l": 4.24,
+"w": 1.97,
+"p": 0.623,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -780.48,
+"y": -1616.27,
+"az": 0.7,
+"l": 4.61,
+"w": 2.35,
+"p": 0.817,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -776.92,
+"y": -1616.22,
+"az": 1.1,
+"l": 4.17,
+"w": 2.09,
+"p": 0.792,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -742.15,
+"y": -1588.52,
+"az": 93.2,
+"l": 4.18,
+"w": 2.04,
+"p": 0.662,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -728.98,
+"y": -1584.5,
+"az": 4.3,
+"l": 3.8,
+"w": 1.81,
+"p": 0.596,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -685.23,
+"y": -1592.93,
+"az": 77.0,
+"l": 4.36,
+"w": 2.61,
+"p": 0.247,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -840.69,
+"y": -1626.68,
+"az": 88.9,
+"l": 3.79,
+"w": 1.97,
+"p": 0.517,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -728.23,
+"y": -1624.29,
+"az": 14.8,
+"l": 4.77,
+"w": 2.15,
+"p": 0.646,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "pool_oval",
+"x": -839.38,
+"y": -1678.87,
+"az": 120.8,
+"l": 5.53,
+"w": 3.18,
+"p": 0.417,
+"c": "swimming pool"
+}
+],
+"nein": [],
+"dazu": []
+}

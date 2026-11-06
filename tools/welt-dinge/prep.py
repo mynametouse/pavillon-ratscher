@@ -35,10 +35,18 @@ HEIGHT = {'auto': 1.5, 'van': 2.3, 'wohnmobil': 3.0, 'lkw': 3.6, 'anhaenger': 1.
           'pool_rund': 1.1, 'pool_oval': 1.1, 'pool_eckig': 0.1, 'trampolin': 0.9, 'rundballen': 1.5, 'quaderballen': 1.8, 'holzstapel': 1.6,
           'stammholz': 1.2, 'container': 2.6, 'tank': 3.0}
 HAZE = np.array([55.0, 70.0, 86.0])
+# the dark and bright points (0.5 / 99.5 %) of Ratscher's photo, where HAZE and the colour thresholds were set by eye: every other photo is
+# mapped onto them first (other flight days are darker or clearer – St. Kilian's darks read 27, Ratscher's 50: without it half its cars
+# came out black)
+REF_LO, REF_HI = np.array([50.0, 66.0, 76.0]), np.array([219.0, 219.0, 215.0])
 # shares of body types and colours for slots without a car of the photo (KBA stock, rounded), cumulative
 TYPE_CUM = list(np.cumsum([0.22, 0.34, 0.27, 0.12, 0.05]))[:-1] + [1.0]
 COL_CUM = list(np.cumsum([0.25, 0.15, 0.17, 0.22, 0.05, 0.06, 0.06, 0.015, 0.015, 0.01]))[:-1] + [1.0]
 S_DRIVING = []
+VEHICLES = {'auto', 'van', 'lkw', 'wohnmobil', 'wohnwagen', 'anhaenger', 'traktor', 'container'}
+BR = []  # the brightness of each car's colour as measured (colour()), for the shares below
+# the grey scale of the cars on German roads (KBA stock, of the cars without a colour: black, dark grey, silver, white)
+GREY_CUM = [0.32, 0.51, 0.73, 1.0]
 SUN = (-0.34, 0.94)  # where the shadows of the photo fall (07.04.2024, late morning): north-north-west, ~1 m per m of height
 
 
@@ -63,6 +71,21 @@ class Photo:
         else:
             self.blocks = [(float(a[1]), float(a[2]), a[0])]
             self.s = float(a[3])
+        self.levels()
+
+    def levels(self):
+        S = []
+        for _, _, f in self.blocks:
+            im = np.asarray(self.Image.open(f).convert('RGB'))[::8, ::8].reshape(-1, 3)
+            S.append(im[im.astype(int).sum(1) > 30])
+        S = np.concatenate(S) if S else np.zeros((0, 3))
+        if len(S) < 1000:
+            self.lo, self.hi = REF_LO, REF_HI
+        else:
+            self.lo, self.hi = np.percentile(S, 0.5, 0), np.percentile(S, 99.5, 0)
+
+    def norm(self, c):
+        return REF_LO + (np.asarray(c, float) - self.lo) * (REF_HI - REF_LO) / np.maximum(self.hi - self.lo, 40)
 
     def at(self, x, y):
         for x0, y1, f in self.blocks:
@@ -93,8 +116,10 @@ def colour(photo, k):
             if c is not None:
                 pts.append(c)
     if not pts:
+        BR.append(None)
         return 1
-    m = np.median(np.array(pts, float), 0)
+    m = photo.norm(np.median(np.array(pts, float), 0))
+    BR.append(float(np.clip((m - HAZE) / (1 - HAZE / 255), 0, 255).mean()))
     # the haze of the photo lifts the darks towards blue (a black car's roof reads (75, 95, 110)): take it off before naming the colour
     m = np.clip((m - HAZE) / (1 - HAZE / 255), 0, 255)
     br = m.mean()
@@ -130,11 +155,48 @@ def main():
     FP = wdlib.footprints(geb)
     tree = STRtree(FP)
     dropped = []
+    # what the places model themselves and the bus stops (wdlib.keepout): nothing of ours there – the photo's car still goes from the
+    # ground (its mask stays)
+    KO = wdlib.keepout(gebiet)
+    KT = STRtree([g for g, _ in KO]) if KO else None
+    kept = []
+
+    def kept_out(g):
+        if KT is None:
+            return None
+        for i in KT.query(g):
+            if g.intersects(KO[i][0]):
+                return KO[i][1]
+        return None
     P = json.load(open(os.path.join(EXTRA, f'pruefung_{gebiet}.json')))
     ways = [w for w in wdlib.roads() + (wdlib.roads_fahrt() if gebiet != 'ratscher' else []) if w['kind'] <= 5]
     for w in ways:
         w['bb'] = (w['p'][:, 0].min(), w['p'][:, 1].min(), w['p'][:, 0].max(), w['p'][:, 1].max())
-    autos, dinge, masks = [], [], []
+    # the lanes stay free (the lead, 6.11. ~2:00: the drive test's car rammed a 'stadt' car 1.5 m from the centreline on the way to the
+    # Markt): a parked vehicle's box with the mask's 0.35 m margin keeps 1.75 m from the centreline of a narrow way (w < 6 m: one free
+    # lane of 3.5 m) and w/2 − 0.5 m from a wider one (half on the kerb at most) – for every drivable way (motorway … service) of
+    # world/roads.js, welt/fahrt.js and the town's streets. A car in the middle of the street in the photo was driving, or the OSM line is
+    # off: no place there (its mask stays).
+    from shapely.geometry import LineString
+    lanes = [(LineString(w['p']), w['w']) for w in ways if len(w['p']) >= 2]
+    st = os.path.join(wdlib.REPO, 'viz3/dist/schleusingen/stadt.json')
+    if gebiet != 'ratscher' and os.path.exists(st):
+        for q in json.load(open(st)).get('st', []):
+            if q.get('k', 9) <= 5 and len(q['p']) >= 4:
+                lanes.append((LineString(list(zip(q['p'][0::2], q['p'][1::2]))), 5.0))
+    LT = STRtree([l for l, _ in lanes]) if lanes else None
+    inlane = []
+
+    def in_lane(g):
+        if LT is None:
+            return False
+        e = g.buffer(0.35, join_style=2)
+        for i in LT.query(e.buffer(8.0)):
+            L, w = lanes[i]
+            if L.distance(e) < (1.75 if w < 6 else w / 2 - 0.5):
+                return True
+        return False
+    autos, dinge, masks, brs = [], [], [], []
     S_DRIVING.clear()
     for n, k in enumerate(P['ja'] + P.get('dazu', [])):
         x, y, t = k['x'], k['y'], k['t']
@@ -170,11 +232,18 @@ def main():
         C = [(x + ax[0] * hl * i + r[0] * hw * j, y + ax[1] * hl * i + r[1] * hw * j) for i, j in ((1, 1), (1, -1), (-1, -1), (-1, 1))]
         sh = [(cx + SUN[0] * h, cy + SUN[1] * h) for cx, cy in C]
         masks.append(hull(C + sh))
+        ko = kept_out(box)
+        if ko:
+            kept.append((t, round(x, 1), round(y, 1), ko))
+            continue
+        if t in VEHICLES and in_lane(box):
+            inlane.append((t, round(x, 1), round(y, 1)))
+            continue
         if t in ('auto', 'van') and edge < -1.0 and w['kind'] <= 2:
             S_DRIVING.append((x, y))  # in the lane of a main or county road: driving when the photo was taken, no parking place
             continue
         if t in ('auto', 'van'):
-            kerb = 'stadt' if gebiet == 'schleusingen' else 'strasse'
+            kerb = 'stadt' if gebiet in ('schleusingen', 'themar') else 'strasse'
             kind = 'betrieb' if gebiet == 'ratscher' and in_rect(x, y, WORKS) else (kerb if edge < 2.5 else 'hof')
             if kind in ('strasse', 'stadt'):
                 o = (x - q[0], y - q[1])
@@ -194,6 +263,7 @@ def main():
                 ty = 0 if L < 4.05 else 1 if L < 4.45 else (3 if hsh < 0.3 else 2)
             col = colour(photo, k)
             autos.append([round(x, 2), round(y, 2), round(az, 1), ty, col, KINDS.index(kind)])
+            brs.append(BR[-1])
         else:
             e = [t, round(x, 2), round(y, 2), round(k['az'], 1), round(k['l'], 2), round(k['w'], 2), round(h, 2)]
             if k.get('farbe'):
@@ -201,10 +271,29 @@ def main():
             dinge.append(e)
     # car parks of OSM (tools/welt-dinge/plaetze.py): empty in the photo, they fill by the time of what they belong to – a body type and a
     # colour as common on German roads, chosen by the place
+    # the grey scale by rank: the light of a flight day (a low sun, haze, shade) shifts every car's measured brightness alike, so the
+    # thresholds alone gave St. Kilian 45 % black and Kloster Veßra 47 % white; with 20 or more cars the darkest third of the uncoloured
+    # ones are black, the next dark grey, then silver, the lightest white, as on German roads – the order of the cars kept. Ratscher's
+    # 40 were looked at one by one and keep theirs.
+    grey = [i for i, a in enumerate(autos) if a[4] <= 3 and brs[i] is not None]
+    if gebiet != 'ratscher' and len(grey) >= 20:
+        grey.sort(key=lambda i: brs[i])
+        for r, i in enumerate(grey):
+            q = (r + 0.5) / len(grey)
+            autos[i][4] = next(c for c, lim in enumerate(GREY_CUM) if q <= lim)
     pf = os.path.join(EXTRA, f'plaetze_{gebiet}.json')
     if os.path.exists(pf):
         for q in json.load(open(pf))['plaetze']:
             if in_rect(q['x'], q['y'], SKIP) or any(math.hypot(q['x'] - a, q['y'] - b) < r for a, b, r in AVOID.get(gebiet, [])):
+                continue
+            from shapely.geometry import Point
+            if kept_out(Point(q['x'], q['y']).buffer(2.4)):
+                continue
+            a = math.radians(q['az'])
+            fq, rq = (math.sin(a), math.cos(a)), (math.cos(a), -math.sin(a))
+            if in_lane(Polygon([(q['x'] + fq[0] * 2.3 * i + rq[0] * 0.95 * j, q['y'] + fq[1] * 2.3 * i + rq[1] * 0.95 * j)
+                                for i, j in ((1, 1), (1, -1), (-1, -1), (-1, 1))])):
+                inlane.append(('slot', q['x'], q['y']))
                 continue
             hv = (math.sin(q['x'] * 12.9898 + q['y'] * 78.233) * 43758.5453) % 1.0
             hc = (math.sin(q['x'] * 39.3468 + q['y'] * 11.135) * 24634.6345) % 1.0
@@ -233,6 +322,8 @@ def main():
     print(gebiet, len(autos), 'cars', dict(Counter(TYPES[a[3]] for a in autos)), dict(Counter(KINDS[a[5]] for a in autos)),
           dict(Counter(PAL[a[4]][0] for a in autos)), len(dinge), 'things', dict(Counter(d[0] for d in dinge)), len(masks), 'masks',
           len(S_DRIVING), 'driving (left out)', len(dropped), 'on buildings (left out):', dropped[:12])
+    print('  kept out (modelled places, bus stops):', len(kept), kept[:12])
+    print('  in a lane (left out):', len(inlane), inlane[:12])
 
 
 def hull(pts):

@@ -157,12 +157,18 @@ with lib.browser() as b:
     for hi, hid in enumerate(houses):
         # a pure cycle first: mount, draw, unmount, draw – the geometries and textures must come back to the count before
         if want('free'):
-            E("(() => { window.__C = null; const m0 = __Z.mem(); ZINNEN.mount(%d).then(H => { GAME.shot(); const m1 = __Z.mem(); ZINNEN.unmount(H); GAME.shot(); window.__C = { m0, m1, m2: __Z.mem(), ms: H.stats.ms }; }); return 1; })()" % hid)
-            for _ in range(200):
-                if E("!!window.__C"): break
-                time.sleep(0.1)
-            cyc = J("window.__C")
-            print('cycle', json.dumps(cyc), flush=True)
+            # the world streams meanwhile (tiles, the 3D buildings' and the parked cars' cells, buses): a cell finished during the
+            # mount adds its geometry to the count – so a cycle that ends above its start is run once more; a leak of the house
+            # repeats in the second cycle, a streamed cell does not (zombie_innen in Prüfpaket 42135983055: house 188, +1 geometry)
+            for rep in range(2):
+                E("(() => { window.__C = null; const m0 = __Z.mem(); ZINNEN.mount(%d).then(H => { GAME.shot(); const m1 = __Z.mem(); ZINNEN.unmount(H); GAME.shot(); window.__C = { m0, m1, m2: __Z.mem(), ms: H.stats.ms }; }); return 1; })()" % hid)
+                for _ in range(200):
+                    if E("!!window.__C"): break
+                    time.sleep(0.1)
+                cyc = J("window.__C")
+                print('cycle', rep, json.dumps(cyc), flush=True)
+                if not cyc or (cyc['m2']['g'] <= cyc['m0']['g'] and cyc['m2']['t'] <= cyc['m0']['t'] and cyc['m1']['p'] <= cyc['m0']['p'] + 1):
+                    break
             if cyc:
                 # other systems (streamed tiles) make and drop programs meanwhile: compare within the cycle (exactly: ownPrograms below)
                 ck(f'house {hid}: at most one program more (the terrain cut out under the house, once)', cyc['m1']['p'] <= cyc['m0']['p'] + 1, cyc)
