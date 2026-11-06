@@ -1,6 +1,5 @@
-# feat/strategie: „Ratscher von oben“ – the mode, HUD, people, jobs, the wood chain; on a phone; the view from above at the Klinge; the
-# pavilion and the garden built on the core (feat/strategie-bau, in src) unharmed (one test name per line, as for viz3/test/run.py)
+# feat/strategie: „Ratscher von oben“ – the mode, HUD, people, jobs, the wood chain; on a phone; the view from above at the Klinge
+# (one test name per line, as for viz3/test/run.py; strategie_bau runs from viz3/extra/strategie-bau/tests.txt)
 strategie
 strategie_telefon
 strategie_oben
-strategie_bau

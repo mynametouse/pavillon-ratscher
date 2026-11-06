@@ -1030,8 +1030,9 @@ export const FOREST = (() => {
       im.computeBoundingSphere();
       scene.add(im);
       S.far = (S.far || []).concat(im);
-      // feat/strategie: from straight above (the plan view, „Ratscher von oben“) the two upright planes read as dark leaves floating over
-      // the meadow – there only the level plane (the crown from above) is drawn: the same material, a geometry with that plane alone
+      // feat/strategie: from straight above (the plan view, „Ratscher von oben“) the two upright planes read as dark crosses along the
+      // forest's edge – there only the level plane (the crown from above) is drawn: the same material, a geometry with that plane alone
+      // (the far trees outside the forest: world/ratscher.js topMode)
       const tg = new THREE.BufferGeometry();
       for (const k of ['position', 'normal', 'uv', 'aH']) {
         const A = g.getAttribute(k);

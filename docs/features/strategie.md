@@ -50,7 +50,8 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - **Heizen:** an kalten Abenden (unter 14 °C um 22 Uhr), wenn eure Leute im Garten übernachten, brennt der Kanonenofen des Bungalows
   (`garden/bungalow.js`) – etwa 0,0012 rm je Kelvin unter 20 °C und Nacht (bei −2 °C 0,026 rm, gut 8 kg Fichte; Annahme: ~25 m², dünn
   gedämmt, ~100 W/K, abends und morgens geheizt; Heizwert Fichte lufttrocken ~1450 kWh/rm, im einfachen Ofen ~70 %). Nur trockenes Holz
-  (1. BImSchV): erst das eigene, sobald es ein Jahr lag, dann der gekaufte Vorrat unter dem Vordach (zu Beginn 1 rm). Ohne Holz eine kalte
+  (1. BImSchV): erst das eigene, sobald es ein Jahr lag, dann der gekaufte Vorrat am Bungalow (zu Beginn 1 rm – Annahme; der Stapel an der Rückwand des Anbaus
+  in der Welt ist knapp die Hälfte). Ohne Holz eine kalte
   Nacht (Laune −12) und eine Meldung mit „Brennholz bestellen“ (1 rm Fichte ofenfertig frei Haus, 110 €, in der Kasse unter „Heizen“). Die
   Temperatur: `STRAT.W.temp(t)` – nahe der Spieluhr die von feat/wetter, sonst das Klima von Meiningen (mit den Wetterfenstern des Pavillons
   von feat/strategie-bau abgestimmt: deren `STBAU.tempOf` zuerst).
@@ -91,7 +92,7 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - Ohne Browser: `node --test viz3/test/unit/strategie.test.mjs` (Feiertage, wer wann da ist, Ruhezeiten mit Quellen, PV, Speicher, Stufen,
   Bedürfnisse, Wege, Preise mit Quellen).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9002 --serve strategie` (Abschnitte
-  `start,leute,auftrag,regel,holz,strom,ereignis,reload,welt` – `holz` ist die ganze Kette bis zur Lieferung) und `strategie_telefon`
+  `start,leute,auftrag,regel,holz,strom,ereignis,heizen,reload,welt` – `holz` ist die ganze Kette bis zur Lieferung) und `strategie_telefon`
   (iPhone-Größe mit Touch: HUD ohne Überdeckung, antippen, ziehen) und `strategie_oben` (die Klinge von oben: was über dem Boden steht,
   keine fernen Baumkarten über den Wiesen, in der Welt wieder da); auf GitHub über `viz3/extra/strategie/tests.txt`, Bilder in `out/strategie/`.
 
@@ -240,7 +241,7 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
 - 6.11. 2:20 – Brennholz für andere Themen (der Holzofen des Pavillons im Winter): `STHOLZ.firewood.stacked()`, `.dry(t)`,
   `.take(rm, { dryOnly })` → genommene rm, trockenes zuerst (1. BImSchV: nur trockenes Holz in den Ofen).
 - 6.11. 4:00 – `STRAT.W.temp(t)` (°C; eine Temperatur für den Modus, mit `STBAU.tempOf` abgestimmt); `STRAT.S.ext.heiz = { ofen, season, kalt }`
-  (gekaufter Vorrat unter dem Vordach in rm); Auftrag `brennholz_kaufen` (Ort Bungalow); Kassen-Art `heizen`. Der Ofen nimmt eigenes
+  (gekaufter Vorrat am Bungalow in rm); Auftrag `brennholz_kaufen` (Ort Bungalow); Kassen-Art `heizen`. Der Ofen nimmt eigenes
   Brennholz über `STHOLZ.firewood.take(rm, { dryOnly: true })` – wer den Pavillon-Ofen baut, kann denselben Weg gehen.
 - 6.11. 2:15 – `layer.define({ under: true })`; `STRAT.W.wx(t).dir` (Windrichtung, aus der er kommt); Knöpfe mit `data-skip="<Minuten>"` in
   einem Feld (`info()` eines Ortes) laufen im Zeitraffer.
