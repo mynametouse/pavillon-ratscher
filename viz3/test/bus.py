@@ -206,6 +206,8 @@ with lib.browser() as b:
         lp = J("BUSLEUTE.state()")
         ck('the waiting people get in at the front door', lp['stats']['ein'] >= 2 and not [q for q in lp['pax'] if q['st'] == 'steigt'], str(lp))
         if arr:
+            # (the test's pictures take their time: the driver waits a little longer – boarding sets its own short wait)
+            E(f"(() => {{ const I = BUS.S.inst.find(q => q.key === '{arr['key']}'); if (I) I.hold = Math.max(I.hold, 40); }})()")
             d = J(f"(() => {{ const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); return Math.hypot({arr['x']} - e.x, {arr['y']} - e.y); }})()")
             ck('the bus stands beside the sign (its middle within 9 m of the stop)', d < 9, f'{d:.1f} m')
             # a picture from the kerb, looking along the bus

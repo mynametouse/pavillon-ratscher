@@ -576,6 +576,12 @@ export const BUS = (() => {
     S.lastClk = clk;
     for (const I of S.inst.slice()) {
       if (I.hold > 0 && !(S.ride && S.ride.I === I && S.ride.busy)) I.hold -= dt;
+      // someone at the open front door (the walker, not riding): the driver waits for him – not for ever (20 s)
+      if (I.st === 'halt' && I.B.open > 0.6 && !S.ride && P.mode === 'walk' && !PLAY.seated() && !VEH.cur) {
+        const dp = doorPt(I, 0.6);
+        if (Math.hypot(P.x - dp[0], P.y - dp[1]) < 3.2 && (I.doorT = (I.doorT || 0) + dt) < 20)
+          I.hold = Math.max(I.hold, 1.2);
+      } else if (I.st !== 'halt') I.doorT = 0;
       if (Math.hypot(I.x - ox, I.y - oy) < 300) freeAhead(I, dt);
       else I.r = 1;
       if (S.ride && S.ride.I === I) {

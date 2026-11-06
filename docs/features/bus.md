@@ -36,7 +36,7 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 - **Busse**: jede Fahrt ist ihr Fahrplan; nahe am Beobachter (620 m, Telefon 420 m, höchstens 3 bzw. 2 Busse – ein viel näherer nimmt einem
   fernen, den man nicht sieht, das Modell) bekommt sie ein Modell und fährt ihren Weg mit Anfahren, Bremsen und Kurventempo eines Busses in den
   Minuten des Fahrplans (zu früh: wartet an der Haltestelle), hält an jeder Haltestelle mit der Vordertür am Schild, Türen auf und zu
-  (Zischen). **Wer an einer Haltestelle steht, wenn ein Bus fällig ist, und wer mitfährt, hat die Uhr in Echtzeit** (`CLOCK.focus('bus')`,
+  (Zischen); steht man an der offenen Vordertür, wartet der Fahrer. **Wer an einer Haltestelle steht, wenn ein Bus fällig ist, und wer mitfährt, hat die Uhr in Echtzeit** (`CLOCK.focus('bus')`,
   Uhrfenster: „Echtzeit – Bus“) – so kommt der Bus zu seiner Minute und fährt so schnell wie ein Bus. Ein Bus anderswo fährt in Echtzeit; fällt
   er hinter die schnelle Spieluhr zurück (eine Stunde je Minute), holt er auf, wo man nicht hinsieht – einer, dem man zusieht, fährt weiter
   wie ein Bus fährt.
@@ -116,6 +116,11 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 
 ## Offen
 
+- Bedarfshalt: der Bus hält an jeder Haltestelle seines Fahrplans, auch wenn niemand wartet oder aussteigen will – echte Busse fahren auf
+  dem Land dann vorbei. Dafür müsste der Lauf eines Busses (`BUSPLAN.run`) während der Fahrt ab der Stelle, an der er gerade ist, neu
+  gerechnet werden (Haltewunsch, jemand kommt an die Haltestelle).
+- Auf dem Telefon liegen die Knöpfe des Hundes (`tiere/tiere_hund.js`, `#hund-panel`) während der Busfahrt über dem Busfenster – Vorschlag
+  an `tiere`: ausblenden, solange man mitfährt (`PLAY.seat.kind === 'ride'`).
 - Aufnahmen statt synthetischer Töne; eine Haltestellenansage mit Stimme (nur Text und Gong).
 - Steige anderer Haltestellen aus OSM (nur, wo der Feed mehrere auf einen Punkt legt – heute nur die Zentralhaltestelle).
 - Die Dorfbewohner (`dorf/`) als Fahrgäste.
