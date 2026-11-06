@@ -94,8 +94,8 @@ export const STBAUDATA = (() => {
       label: 'Bauholz sortieren (DIN 4074-1)',
       text: 'Ein Holzsortierer prüft die trockenen Bohlen und Kanthölzer Stück für Stück: Äste, Faserneigung, Risse, Krümmung – tragfähig ist S10.',
       learn:
-        'Tragendes Nadelholz muss nach DIN 4074-1 sortiert sein; S10 entspricht der Festigkeitsklasse C24. Sortiert wird trocken (unter 20 % Holzfeuchte). Bläue mindert die Festigkeit nicht – Risse, Verdrehung und große Äste schon.',
-      src: 'DIN 4074-1 (Sortierung nach der Tragfähigkeit); DIN EN 1912 (S10 ≙ C24)',
+        'Tragendes Nadelholz muss nach DIN 4074-1 sortiert sein; S10 entspricht der Festigkeitsklasse C24. Sortiert wird trocken (unter 20 % Holzfeuchte). Bläue mindert die Festigkeit nicht – Risse, Verdrehung und große Äste schon. Aus einem Festmeter Rundholz werden etwa 0,6 m³ Schnittholz.',
+      src: 'DIN 4074-1 (Sortierung nach der Tragfähigkeit); DIN EN 1912 (S10 ≙ C24); Sägewerkspraxis (Schnittholzausbeute 55–65 %)',
       hours: 6,
       people: [1, 2],
       fee: 240,

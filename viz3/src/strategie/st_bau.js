@@ -375,6 +375,24 @@ export const STBAU = (() => {
     markDirty(true);
     return got;
   }
+  // the whole pavilion in own timber: structural timber, boards and the round wood it takes (sawn yield about 60 %)
+  const YIELD = 0.6;
+  let woodK = '',
+    woodT = '';
+  function woodAll() {
+    const k = VARIANT + PHASES.length;
+    if (k === woodK) return woodT;
+    let kant = 0,
+      brett = 0;
+    for (let n = 1; n <= LAST(); n++) {
+      const c = costOf(n, 'eigen');
+      kant += c.kant;
+      brett += c.brett;
+    }
+    woodK = k;
+    woodT = `${de(kant, 1)} m³ Kantholz, ${de(brett, 1)} m³ Bretter ≈ ${Math.round((kant + brett) / YIELD)} fm Rundholz`;
+    return woodT;
+  }
   // ---------------- places ----------------
   STRAT.place.define({
     id: 'bauplatz',
@@ -396,6 +414,7 @@ export const STBAU = (() => {
         ['Eigenes Bauholz sortiert (S10)', de(b.kvh, 2) + ' m³'],
         ['Trockene Bohlen im Stapel (unsortiert)', dk.length + ' · ' + de(sumVol(dk), 2) + ' m³'],
         ['Trockene Bretter im Stapel', db.length + ' · ' + de(sumVol(db), 2) + ' m³'],
+        ['Ganzer Pavillon aus eigenem Holz', woodAll()],
       ];
     },
     info: () => panelHTML(),
@@ -560,7 +579,7 @@ export const STBAU = (() => {
     h += `<h4>Nächste Bauphase ${n}: ${esc(p.name)}</h4><div class="sub">${esc(p.short)} · Aufwand ${esc(p.days)} zu zweit (${Math.round(B.personHours(p.days))} Personenstunden) · ${M.crew[0]}–${M.crew[1]} Leute, Bauen ab ${M.min}${M.hubert === 'need' ? ' · Hubert mit dem Traktor' : M.hubert === 'help' ? ' · Hubert hilft gern' : ''}</div>`;
     h += `<ul><li><span>Material gekauft</span><b>${eur(k.eur)}</b></li>`;
     if (kind)
-      h += `<li><span>${kind === 'holz' ? 'mit eigenem Holz' : 'im Eigenbau'}${kind === 'holz' && (e.kant || e.brett) ? ` (${e.kant ? de(e.kant, 2) + ' m³ Kantholz S10' : ''}${e.kant && e.brett ? ', ' : ''}${e.brett ? de(e.brett, 2) + ' m³ Bretter' : ''})` : ''}</span><b>${eur(e.eur)}</b></li>`;
+      h += `<li><span>${kind === 'holz' ? 'mit eigenem Holz' : 'im Eigenbau'}${kind === 'holz' && (e.kant || e.brett) ? ` (${e.kant ? de(e.kant, 2) + ' m³ Kantholz S10' : ''}${e.kant && e.brett ? ', ' : ''}${e.brett ? de(e.brett, 2) + ' m³ Bretter' : ''} ≈ ${de((e.kant + e.brett) / YIELD, 1)} fm Rundholz)` : ''}</span><b>${eur(e.eur)}</b></li>`;
     h += '</ul>';
     if (kind && !o)
       h += `<p><button type="button" class="stb"${mat === 'kauf' ? ' aria-pressed="true"' : ''} data-sb="mat:kauf">Kaufen</button> <button type="button" class="stb"${mat === 'eigen' ? ' aria-pressed="true"' : ''} data-sb="mat:eigen">${kind === 'holz' ? 'Eigenes Holz' : 'Eigenbau'}</button></p>`;

@@ -688,6 +688,39 @@ export const STGARTEN = (() => {
       return { text: `${de(kg, 1)} kg verkauft, ${STRAT.C.eur(eur)}` };
     },
   });
+  // ---------------- a layer: the young trees from above – thirsty, ripe, unprotected, browsed ----------------
+  STRAT.layer.define({
+    id: 'garten',
+    label: 'Garten',
+    text: 'Die Bäume des Gartenplaners: durstig, reif, ohne Schutz, verbissen',
+    order: 10,
+    draw: pr => {
+      if (!ready()) return '';
+      let h = '';
+      const gd = gday(),
+        g = st();
+      for (const x of all().slice(0, 40)) {
+        const q = pr(x.it.x, x.it.y, 1.2);
+        if (!(q[2] < 1)) continue;
+        let t;
+        if (x.it.st !== 'gepflanzt') t = arrived(x.it) ? '📦' : '◌';
+        else {
+          const c = M.careOf(x.it, x.p, gd);
+          t = c.includes('ernten')
+            ? '🍎'
+            : c.includes('giessen')
+              ? '💧'
+              : g.dmg[keyOf(x.it)]
+                ? '✂'
+                : isTree(x.p) && young(x) && !guarded(x)
+                  ? '!'
+                  : '🌳';
+        }
+        h += `<text class="wx" x="${q[0].toFixed(1)}" y="${q[1].toFixed(1)}" text-anchor="middle">${t}</text>`;
+      }
+      return h;
+    },
+  });
   // the data load when the mode starts (the planner fetches its files on first need – never at the game's start)
   KERN.on('strategie:modus', e => {
     if (e && e.on && (GPLAN.state.items.length || STRAT.place.get('obstgarten'))) ensureData();

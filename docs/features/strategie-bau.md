@@ -46,6 +46,11 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
   (< 20 %) und nach DIN 4074-1 sortiert sein (Auftrag „Bauholz sortieren“ im Holzlager: ein Sortierer, S10 ≙ C24, Bläue zählt nicht, Risse
   und Verdrehung schon); Bretter (Schalung, Fassade, Lattung) kommen trocken aus dem Stapel. Beim Beginn der Phase wird das Holz entnommen –
   der Trockenstapel in der Welt wird kleiner. Der ganze Pavillon (A) braucht rund 15 m³ Kantholz und 6 m³ Bretter; Eiche gibt die Klinge nicht.
+- **Bauschild:** mit der Genehmigung steht am Gartentor (Nordwestecke, zum Feldweg) ein Schild „Baustelle – Gartenpavillon“ mit Bauherr,
+  Entwurf und Statik, Bauleitung, Rohbau, Datum der Genehmigung und der Bauphase (§ 11 Abs. 3 ThürBO) – in beiden Linsen, bis Phase 30.
+- **Was wäre, wenn:** das Feld schätzt, wann der Pavillon fertig wäre (Wochenenden zu dritt, die Sparrate, Lieferzeiten, ein Drittel der
+  Wochenenden ohne Wetter für außen) und ob Geld oder Zeit bremst; dazu der **Geldplan** (was noch offen ist, wie weit die Kasse reicht, wie
+  viele Monate Sparrate der Rest braucht) und die Dauer der nächsten Phase in Arbeitstagen.
 - **Zeitalter:** zu den drei des Kerns kommen „Das Ständerwerk steht“ (5), „Das Obergeschoss“ (11), „Unter Dach“ (16), „Die schwarze Hülle“ (21),
   „Innenausbau“ (26), „Der Pavillon steht“ (30). Ebene „Bauen“ auf der Karte: nächste Phase und was ihr fehlt.
 
@@ -60,7 +65,10 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
   kleines eigenes Modell: ungeschützte junge Bäume werden im Winter und Frühjahr verbissen – weniger Ernte); *Schneiden* im Spätwinter;
   *Ernten* (ins Erntebuch des Planers und in den Vorrat **Obst** der Leiste – auch was zu Fuß gepflückt wird, über `gplan:geerntet`);
   Äpfel halten im Keller Monate, Kirschen Tage; *Verschenken* an Hubert und Ronald (Gefallen, Stil) und *Verkaufen* auf dem Markt in
-  Schleusingen (Annahme 2,80 €/kg, Standgebühr). Jeder Auftrag sagt, warum, mit Quelle.
+  Schleusingen (Annahme 2,80 €/kg, Standgebühr); *Einkochen* im Bungalow (Obst → Mahlzeiten im Vorrat „Essen“ des Kerns, ein Jahr haltbar).
+  Ronald kennt die alten Sorten: mit ihm gehen Schnitt und Ernte 25 % schneller. Der Vorschlag hält 4 m zur Grenze (Gesetz: 2 m für
+  Kernobst auf starker Unterlage, § 44 Nr. 2 Buchst. b ThürNRG – die Krone soll nicht überhängen). Ebene „Garten“: 🌳 gepflanzt, 💧 durstig,
+  🍎 reif, ! ohne Verbissschutz, ✂ verbissen, 📦 am Gartentor. Jeder Auftrag sagt, warum, mit Quelle.
 
 ## Testen
 - Ohne Browser: `node --test viz3/test/unit/strategie_bau.test.mjs` (Personenstunden, eigenes Holz je Position, Kosten mit Umsatzsteuer,
