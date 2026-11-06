@@ -29,6 +29,22 @@ MOCK = r"""window.__wxAnswer = rec => url => {
   (window.__wxUrls = window.__wxUrls || []).push(url);
   return out;
 };"""
+# the roofs' depth map read back (a float target through a small pass of its own – a program for the test only, so after the count):
+# the height of the topmost surface at a few garden points, with the ground there
+ROOFPROBE = r"""(() => { const F = WETTER.fall, U = F.U, R = GAME.R; F.roofs(true);
+  const C = U.uRoofC.value.clone(), N = U.uRoofN.value, n = 64;
+  const rt = new THREE.WebGLRenderTarget(n, n, { type: THREE.FloatType }), sc = new THREE.Scene(), cm = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const m = new THREE.ShaderMaterial({ uniforms: { t: { value: U.uRoof.value } }, depthTest: false, depthWrite: false,
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: 'uniform sampler2D t; varying vec2 vUv; void main(){ gl_FragColor = vec4(texture2D(t, vUv).r, 0.0, 0.0, 1.0); }' });
+  const q = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m); q.frustumCulled = false; sc.add(q);
+  const prev = R.getRenderTarget(); R.setRenderTarget(rt); R.render(sc, cm); const px = new Float32Array(n * n * 4); R.readRenderTargetPixels(rt, 0, 0, n, n, px); R.setRenderTarget(prev);
+  const H = (sx, sy) => { const u = (sx - C.x) / 32 + 0.5, v = (C.y + sy) / 32 + 0.5; if (u <= 0 || u >= 1 || v <= 0 || v >= 1) return null;
+    const d = px[(Math.floor(v * n) * n + Math.floor(u * n)) * 4]; return d > 0.9999 ? null : +(C.z - (N.x + d * (N.y - N.x))).toFixed(2); };
+  const out = { C: C.toArray().map(v => +v.toFixed(2)) };
+  for (const [k, x, y] of [['carport', -1.76, 14.43], ['open1', 3.6, 11.0], ['open2', 6.0, 12.5], ['open3', 1.5, 10.0], ['open4', 4.5, 18.0]])
+    out[k] = { top: H(x, y), ground: +GAME.floorAt(x, y, 0.5).toFixed(2) };
+  rt.dispose(); m.dispose(); q.geometry.dispose(); return out; })()"""
 with lib.browser() as b:
     errs, reqs = [], []
     pg = lib.page(b, 1100, 680, errs)
@@ -75,6 +91,11 @@ with lib.browser() as b:
         ck('the default is „wie draußen“ (live)', s0['mode'] == 'live', s0['mode'])
         ck('without an answer: the calendar\'s sky, said so', s0['src'] == 'kalender' and 'Kalender' in s0['line'], s0['line'])
         ck('no request to Open-Meteo from the test browser', not reqs, str(reqs[:3]))
+        pa = progs()
+        E("WETTER.fall.roofs(true)")
+        pb = progs()
+        ck('the roofs\' map (the scene from above into a small target) draws with the programs of the load – none new', pb == pa and J("WETTER.fall.S.roofs") >= 1, f"{pa} → {pb}")
+        E("WETTER.fall.U.uRoofC.value.w = 0")
         ck('the menu has the row „Wetter: wie draußen | nach Kalender“',
            E("!!document.querySelector('#wxseg [data-wxm=\"live\"]') && !!document.querySelector('#wxseg [data-wxm=\"kalender\"]')"), '')
     # ---- „wie draußen“: the clock to now, the current values ----
@@ -178,6 +199,19 @@ with lib.browser() as b:
         ck('no new shader program while the weather changed (clear → overcast → rain → snow → fog → storm → thunderstorm)', progs() == p0, f"{p0} → {progs()}")
         ok, r = lib.check_gl(pg, 16)
         ck('every shader program links and stays within 16 textures (the sky with its clouds, the drops)', ok, json.dumps({k: r[k] for k in ('programs', 'maxFrag', 'maxVert', 'broken')})[:300] + json.dumps(r['bad'])[:200])
+        # roofs over the rain: the scene from above as a depth map – no drop under the carport's roof, the open garden rained on
+        view('garten', 200, 7)
+        s = weather('regen')
+        ck('rain in the garden: the roofs\' map is drawn', s['fall']['roofMap'] and s['fall']['roofs'] >= 1, str(s['fall']))
+        rp = J(ROOFPROBE)
+        print('roofs', json.dumps(rp), flush=True)
+        cp = rp['carport']
+        opens = [k for k in ('open1', 'open2', 'open3', 'open4') if rp[k]['top'] is not None and abs(rp[k]['top'] - rp[k]['ground']) < 0.6]
+        ck('roofs\' map: the carport\'s roof 1.8–4.5 m over its floor, open garden open (≥ 2 of 4 points)', cp['top'] is not None and 1.8 < cp['top'] - cp['ground'] < 4.5 and len(opens) >= 2, json.dumps(rp))
+        E("GAME.go('wohnwagen')")
+        steps(0.6)
+        pic('04b_carport_regen')
+        view('garten', 200, 7)
         midday(16.45)
         view('garten', 245, 8)
         weather('wolkig')

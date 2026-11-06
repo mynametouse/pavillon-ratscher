@@ -7,7 +7,7 @@
 // phones. Hidden indoors (wetter/wetter.js asks audio.inside: the pavilion, the garden buildings, the houses of the zombie night) and in the
 // plan view; in a vehicle no drop comes nearer than 2.4 m (the cabin).
 import * as THREE from 'three';
-import { COARSE, scene } from '../core/head.js';
+import { cam, COARSE, R, scene } from '../core/head.js';
 export const WXFALL = (() => {
   const N = COARSE ? 3200 : 9000,
     BOX = COARSE ? new THREE.Vector3(22, 15, 22) : new THREE.Vector3(30, 19, 30);
@@ -63,7 +63,19 @@ export const WXFALL = (() => {
     uSplash: { value: new THREE.Vector4(0, 7, 0, 2.2) },
     // the ground around the walker as a sloped plane: x, y where it is measured (site coordinates), z, w its slope east and north
     uSlope: { value: new THREE.Vector4(0, 0, 0, 0) },
+    // roofs over the rain (below): the depth of the scene seen from above, where it was taken (x, z), the eye's height there, and 1
+    // when there is a map; near and far of its camera
+    uRoof: { value: null },
+    uRoofC: { value: new THREE.Vector4(0, 0, 0, 0) },
+    uRoofN: { value: new THREE.Vector2(0.5, 140) },
   };
+  // the roofs' map: RS m across, RN texels (0.5–0.7 m each)
+  const RS = 32,
+    RN = COARSE ? 48 : 64;
+  const roofRT = new THREE.WebGLRenderTarget(RN, RN, { depthBuffer: true, stencilBuffer: false });
+  roofRT.texture.generateMipmaps = false;
+  roofRT.depthTexture = new THREE.DepthTexture(RN, RN);
+  U.uRoof.value = roofRT.depthTexture;
   const mat = new THREE.ShaderMaterial({
     uniforms: U,
     transparent: true,
@@ -72,7 +84,11 @@ export const WXFALL = (() => {
     fog: false,
     side: THREE.DoubleSide,
     vertexShader: `attribute vec4 aSeed; attribute vec2 aC; attribute float aK;
-      uniform vec3 uCam, uBox, uOff; uniform float uT, uHole, uPx; uniform vec2 uWind; uniform vec4 uRain, uSnow, uSplash, uSlope;
+      uniform vec3 uCam, uBox, uOff; uniform float uT, uHole, uPx; uniform vec2 uWind; uniform vec4 uRain, uSnow, uSplash, uSlope, uRoofC; uniform vec2 uRoofN; uniform sampler2D uRoof;
+      // under a roof (or a dense crown): the topmost surface above the point lies more than 8 cm above it
+      float roofed(vec3 p){ if (uRoofC.w < 0.5) return 0.0; vec2 uv = vec2((p.x - uRoofC.x) / ${RS.toFixed(1)} + 0.5, (uRoofC.y - p.z) / ${RS.toFixed(1)} + 0.5);
+        if (uv.x <= 0.0 || uv.x >= 1.0 || uv.y <= 0.0 || uv.y >= 1.0) return 0.0; float d = texture2D(uRoof, uv).r; if (d > 0.9999) return 0.0;
+        float top = uRoofC.z - (uRoofN.x + d * (uRoofN.y - uRoofN.x)); return step(p.y + 0.08, top); }
       varying vec2 vC; varying float vA, vS;
       void main(){
         if (aK > 0.5) {
@@ -86,6 +102,7 @@ export const WXFALL = (() => {
           float px = max(-sp.z, 0.05) * uPx, sz = max(0.018 + 0.045 * smoothstep(0.0, 0.12, ph), px * 1.2);
           vC = aC; vS = 2.0;
           vA = uSplash.x * smoothstep(0.0, 0.02, ph) * (1.0 - smoothstep(0.03, 0.12, ph)) * (1.0 - smoothstep(uSplash.y * 0.6, uSplash.y, rr));
+          vA *= 1.0 - roofed(vec3(wp.x, gy + 0.015, wp.y));
           gl_Position = projectionMatrix * vec4(sp.xyz + vec3(aC.x * sz, (aC.y * 2.0 - 1.0) * sz * 0.55, 0.0), 1.0);
           if (vA < 0.002) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
           return;
@@ -103,6 +120,7 @@ export const WXFALL = (() => {
         vec3 e = abs(p - c0) / (0.5 * uBox);
         float dc = length(p - uCam);
         float a = (1.0 - smoothstep(0.7, 1.0, max(e.x, max(e.y, e.z)))) * smoothstep(uHole, uHole + (snow > 0.5 ? 1.5 : 0.6), dc);
+        a *= 1.0 - roofed(p);
         vec4 vp = viewMatrix * vec4(p, 1.0);
         float px = max(-vp.z, 0.05) * uPx;
         vec3 q;
@@ -208,6 +226,8 @@ export const WXFALL = (() => {
       a = (p.dir * Math.PI) / 180;
     U.uWind.value.set(-Math.sin(a) * v, Math.cos(a) * v);
     U.uHole.value = p.hole || 0.35;
+    // in a cabin (driving, riding) no roofs' map: the cabin keeps the drops away, and the map would be redrawn every few metres
+    S.noRoof = !!p.cab;
     const c = p.col;
     if (c) {
       U.uColR.value.setRGB(c.r * 1.35 + 0.01, c.g * 1.35 + 0.01, c.b * 1.35 + 0.012);
@@ -219,6 +239,47 @@ export const WXFALL = (() => {
   function tick(dt) {
     S.t = (S.t + dt) % 600;
     U.uT.value = S.t;
+    if (S.on && !S.noRoof) roofs();
+    else if (S.noRoof) U.uRoofC.value.w = 0;
   }
-  return { set, tick, mesh, U, S, N, M };
+  // ---- roofs over the rain: while it rains, the scene is drawn from straight above into a small depth map around the drops' box
+  //      (again when the eye has moved 3 m); a drop or a splash below the topmost surface there is not drawn – no rain under the
+  //      carport, a porch, the pavilion's upper floor or a dense crown. The scene's own programs (the render-target variant compiled at
+  //      load), no new light; the drops themselves are not in it ----
+  const topCam = new THREE.OrthographicCamera(-RS / 2, RS / 2, RS / 2, -RS / 2, U.uRoofN.value.x, U.uRoofN.value.y);
+  topCam.up.set(0, 0, -1);
+  const _d = new THREE.Vector3();
+  function roofs(force) {
+    cam.getWorldDirection(_d);
+    _d.y = 0;
+    if (_d.lengthSq() > 1e-6) _d.normalize();
+    const cx = cam.position.x + _d.x * BOX.x * 0.22,
+      cz = cam.position.z + _d.z * BOX.z * 0.22;
+    if (!force && U.uRoofC.value.w > 0.5 && Math.hypot(cx - U.uRoofC.value.x, cz - U.uRoofC.value.y) < 3) return false;
+    // at most twice a second (a fast camera: the map lags a little)
+    const now = performance.now();
+    if (!force && now - (S.roofT || 0) < 500) return false;
+    S.roofT = now;
+    const top = cam.position.y + 60;
+    topCam.position.set(cx, top, cz);
+    topCam.lookAt(cx, top - 1, cz);
+    topCam.updateMatrixWorld();
+    const prev = R.getRenderTarget(),
+      vis = mesh.visible;
+    mesh.visible = false;
+    try {
+      R.setRenderTarget(roofRT);
+      R.render(scene, topCam);
+      U.uRoofC.value.set(cx, cz, top, 1);
+      S.roofs = (S.roofs || 0) + 1;
+    } catch (e) {
+      console.warn('wetter: roofs', e);
+      U.uRoofC.value.w = 0;
+    } finally {
+      R.setRenderTarget(prev);
+      mesh.visible = vis;
+    }
+    return true;
+  }
+  return { set, tick, mesh, U, S, N, M, roofs };
 })();
