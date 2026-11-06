@@ -282,7 +282,7 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
     Kronenhöhenmodell, außerhalb des Waldes) sind in der Draufsicht aus, wie schon bei der Karte – sie waren die „dunklen Blätter“ über der
     Wiese an der Klinge; das Luftbild darunter zeigt diese Kronen ohnehin. In der Ich-Sicht unverändert (Test `strategie_oben` prüft beides).
     Das gilt auch für die gewöhnliche Draufsicht ohne den Modus (dieselbe Kamera).
-  - `viz3/src/render/render.js` – der warmUp-Fix des Leads (91be8c98) als Cherry-Pick (1b246322), bis er über src kommt.
+  - `viz3/src/render/render.js` – nur der warmUp-Fix des Leads (91be8c98, als Cherry-Pick 1b246322) – inzwischen auch über src da.
 - `viz3/src/modules.txt`: Block `# feat/strategie` nach `# feat/bus`, vor `game/tutorial.js`.
 - Das normale Spiel bleibt unberührt, bis jemand den Modus einmal startet (`STRAT.S.used`): vorher keine Simulation, keine Figuren, keine
   Meldungen; danach läuft die Simulation mit der Spieluhr auch beim Gehen (eine Linse auf dieselbe Welt), beginnend mit dem ersten Start.
