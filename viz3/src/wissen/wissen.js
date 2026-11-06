@@ -357,7 +357,7 @@ export const WISSEN = (() => {
     TH.check = check;
   }
   // ---- the book ----
-  const U = { open: false, el: null, view: null, ui: false };
+  const U = { open: false, el: null, view: null, ui: false, q: '' };
   const CSS = `
 #wibook{position:absolute;z-index:8;top:60px;right:max(12px,env(safe-area-inset-right,0px));width:min(470px,calc(100% - 24px));max-height:calc(100% - 110px);display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.32);font:400 13.5px/1.5 var(--f-body)}
 #wibook[hidden]{display:none}
@@ -367,6 +367,8 @@ export const WISSEN = (() => {
 #wibook header .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font:400 24px/1 var(--f-body);cursor:pointer;padding:2px 6px}
 #wibook .wi-bar{height:6px;border-radius:3px;background:var(--plate);overflow:hidden;margin:4px 0 0}
 #wibook .wi-bar i{display:block;height:100%;background:var(--larch)}
+#wibook .wi-find{display:block;width:100%;box-sizing:border-box;margin:8px 0 0;padding:6px 12px;border:1px solid var(--plate);border-radius:999px;background:var(--paper);color:var(--ink);font:400 13px/1.3 var(--f-body)}
+#wibook .wi-find:focus{outline:2px solid var(--larch);outline-offset:1px}
 #wibook nav{display:flex;flex-wrap:wrap;gap:4px;padding:6px 12px 8px;border-bottom:1px solid var(--line)}
 #wibook nav button{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;font:500 12.5px/1 var(--f-body);padding:7px 10px;cursor:pointer;white-space:nowrap}
 #wibook nav button[aria-selected=true]{background:var(--plate);border-color:var(--larch);font-weight:700}
@@ -450,15 +452,22 @@ body[data-top="1"] #winote{top:178px}
     el.hidden = true;
     el.setAttribute('aria-label', 'Entdeckerbuch');
     el.innerHTML =
-      '<header><div style="flex:1;min-width:0"><h3>Entdeckerbuch</h3><small class="wi-sum"></small><div class="wi-bar"><i></i></div></div><button type="button" class="x" aria-label="Schließen">×</button></header><nav role="tablist" aria-label="Kapitel"></nav><div class="wi-body"></div>';
+      '<header><div style="flex:1;min-width:0"><h3>Entdeckerbuch</h3><small class="wi-sum"></small><div class="wi-bar"><i></i></div><input type="search" class="wi-find" placeholder="Im Buch suchen …" aria-label="Im Entdeckerbuch suchen" enterkeyhint="search"></div><button type="button" class="x" aria-label="Schließen">×</button></header><nav role="tablist" aria-label="Kapitel"></nav><div class="wi-body"></div>';
     ($('p-3d') || document.body).appendChild(el);
     el.querySelector('.x').addEventListener('click', () => close());
+    const fi = el.querySelector('.wi-find');
+    fi.addEventListener('input', () => {
+      U.q = fi.value.trim();
+      U.view = null;
+      render();
+    });
     el.addEventListener('click', e => {
       const t = e.target.closest('[data-wtab],[data-went],[data-wback]');
       if (!t) return;
       if (t.dataset.wtab) {
         S.tab = t.dataset.wtab;
         U.view = null;
+        U.q = fi.value = '';
       } else if (t.dataset.went) {
         if (!has(t.dataset.went)) return;
         U.view = t.dataset.went;
@@ -512,6 +521,7 @@ body[data-top="1"] #winote{top:178px}
       .join('');
     const body = el.querySelector('.wi-body');
     if (U.view && REG.has(U.view)) body.innerHTML = entryHTML(REG.get(U.view));
+    else if (U.q) body.innerHTML = searchHTML(U.q);
     else if (S.tab === 'regeln') body.innerHTML = rulesHTML();
     else body.innerHTML = listHTML(S.tab);
     if (U.view && !S.r[U.view]) {
@@ -624,6 +634,45 @@ body[data-top="1"] #winote{top:178px}
     if (f && f[1]) h += `<p class="how">${esc(howText(f[1]))}</p>`;
     return h + '</div>';
   }
+  // the book's search: found entries (title, text, „hier“) and understood rules; not yet found ones only as a number – no spoilers
+  const fold = t =>
+    String(t || '')
+      .toLowerCase()
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .replace(/ß/g, 'ss');
+  function searchHTML(q) {
+    const words = fold(q).split(/\s+/).filter(Boolean),
+      hit = txt => {
+        const f = fold(txt);
+        return words.every(w => f.includes(w));
+      };
+    let h = '<ul class="wi-list">',
+      n = 0,
+      hidden = 0;
+    for (const id of ORDER) {
+      const e = REG.get(id);
+      if (!hit(e.title + ' ' + e.text + ' ' + (e.here || ''))) continue;
+      if (!S.f[id]) {
+        hidden++;
+        continue;
+      }
+      n++;
+      const C = D.CH.find(c => c.id === e.ch) || D.CH[0];
+      h += `<li><button type="button" data-went="${esc(id)}"><span class="ic">${esc(e.icon)}</span><span><b>${esc(e.title)}</b><small>${esc(C.label)} · ${esc(short(e.text))}</small></span></button></li>`;
+    }
+    h += '</ul>';
+    let r = '';
+    for (const [id, w] of Object.entries(D.WHY))
+      if (S.w[id] && hit(w.title + ' ' + w.text)) {
+        n++;
+        r += `<div class="wi-rule">${whyHTML(id)}<span><b>${esc(w.title)}</b><br><small>${esc(w.text)}</small></span></div>`;
+      }
+    const lead = n ? `${n} Treffer für „${esc(q)}“` : `Nichts Entdecktes zu „${esc(q)}“.`;
+    const more = hidden ? ` · ${hidden} weitere${hidden === 1 ? 'r Eintrag' : ' Einträge'} noch nicht entdeckt` : '';
+    return `<p class="wi-lead">${lead}${more}</p>` + h + r;
+  }
   function rulesHTML() {
     let h =
       '<p class="wi-lead">Regeln des Spiels mit ihrem echten Grund. Ein kleines „?“ an einer Absage erklärt sie – hier stehen alle; verstanden ist, was du schon einmal geöffnet hast.</p>';
@@ -636,6 +685,12 @@ body[data-top="1"] #winote{top:178px}
   }
   function open(what) {
     if (!U.el) mkBook();
+    if (what) {
+      // opened on something (a teacher, a board, a notice): a search from before is over
+      U.q = '';
+      const fi = U.el.querySelector('.wi-find');
+      if (fi) fi.value = '';
+    }
     if (what && REG.has(what)) {
       S.tab = REG.get(what).ch;
       U.view = has(what) ? what : null;

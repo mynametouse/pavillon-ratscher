@@ -75,6 +75,15 @@ def run():
             ck('a species the book has no entry for becomes one (Natur, with the source of the event)', g and g['ch'] == 'natur' and g['src'] and 'wikipedia' in (g['src'][0][1] or ''), str(g))
             E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'kaefer', title: 'Borkenkäfer an der Klinge', source: 'ThüringenForst', text: 'Käferbäume', by: 'falko' })")
             ck('feat/strategie: exploring the beetle trees → the beetle entry (no second, generated one)', J("WISSEN.has('n_kaefer') && !WISSEN.get('st:wald:kaefer')"))
+            # the book's search: what was discovered, not what is still hidden
+            E("WISSEN.open('natur')"); time.sleep(0.2)
+            pg.fill('#wibook .wi-find', 'milan'); time.sleep(0.2)
+            sr = J("(() => { const b = document.querySelector('#wibook .wi-body'); const l = b.querySelector('.wi-lead'); return { lead: l ? l.textContent : '', items: [...b.querySelectorAll('[data-went]')].map(x => x.dataset.went) }; })()")
+            ck('the book\'s search finds what was discovered („milan“ → Rotmilan)', 'tier:rotmilan' in sr['items'] and 'Treffer' in sr['lead'], str(sr))
+            pg.fill('#wibook .wi-find', 'Talsperre'); time.sleep(0.2)
+            sr2 = J("(() => { const b = document.querySelector('#wibook .wi-body'); return { lead: b.querySelector('.wi-lead').textContent, items: [...b.querySelectorAll('[data-went]')].map(x => x.dataset.went) }; })()")
+            ck('…and of what is still hidden only how much (no titles)', 'g_talsperre' not in sr2['items'] and 'noch nicht entdeckt' in sr2['lead'], str(sr2))
+            pg.fill('#wibook .wi-find', ''); E("WISSEN.close()")
             if E("!!window.HUND"):
                 E("KERN.emit('hund:gelernt', { tat: 'sitz', lob: true, learn: {} })")
                 ck('feat/tiere: the dog praised → „Wie ein Hund lernt“ (operant conditioning)', J("WISSEN.has('n_hund')"))

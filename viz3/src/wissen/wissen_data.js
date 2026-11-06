@@ -1073,7 +1073,7 @@ export const WDATA = (() => {
     psa_werk: {
       title: 'Gehörschutz und Staubmaske',
       text: 'Ab 85 dB(A) ist Gehörschutz Pflicht; Eichen- und Buchenholzstaub gilt als krebserzeugend – an Säge und Schleifer gehören Absaugung und eine FFP2-Maske dazu.',
-      src: [Q.laerm, Q.trgs553],
+      src: [Q.laerm, Q.trgs553, wiki('Hartholzstaub')],
     },
     handschuhe: {
       title: 'Keine Handschuhe an drehenden Werkzeugen',
