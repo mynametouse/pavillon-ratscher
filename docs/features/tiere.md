@@ -16,6 +16,12 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   nur im ersten Sommer, beim Rotmilan der rostrote Gabelschwanz, beim Hund die gelben Backen. **Ein Material für alle Tiere**, beim Laden mit
   unsichtbaren Trägern übersetzt (skinned, einfach, instanziert) – kein neues Shader-Programm, wenn Tiere erscheinen.
   Fell mit Länge (Hund, Wildschwein, Dachs, Waschbär, Wildkatze): der Umriss leicht zottig statt glatt, am Hund eine Halskrause.
+  **Reh und Wildschwein nach echten Maßen** (die am häufigsten zu sehen sind): die Ricke mit tiefer Brust (ein Drittel der Schulterhöhe),
+  dem Hals dick am Ansatz und schräg nach vorn getragen (45–50°), kurzem Kopf mit großen Lauschern, bemuskelter Keule und Unterarm, dünnen
+  Läufen und dem nach hinten gewinkelten Sprunggelenk; beim Äsen geht der Äser bis ins Gras. Die Bache als schwerer Keil: der Rücken fällt
+  von den hohen Schultern zur Kruppe, der Querschnitt läuft oben zum Borstenkamm schmal zu (von vorn schmal, nicht rund), kurzer dicker
+  Hals, langer Kopf bis zur Rüsselscheibe, kurze kräftige Läufe; Frischlinge ohne den schwarzen Kamm. Bilder in 7 m Abstand mittags und
+  in der Novemberdämmerung: `out/tiere/05_7m_*`.
   Bewegung: Schritt (Viertakt), Trab, Galopp, Sprünge (das flüchtende Reh), Äsen, Sichern (Kopf hoch), Liegen, Sitzen, Wühlen; Vögel
   schlagen und gleiten, legen sich in die Kurve, der Milan dreht den Schwanz; der Uhu sitzt und dreht den Kopf.
 - **Der Fuchs ist ein echtes Modell:** „Fox“ aus den glTF Sample Assets der Khronos Group (Modell PixelMannen CC0, Rigging und Animation
@@ -30,7 +36,8 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   Mäusebussard, Kolkrabe, Schwarzstorch, Uhu; dazu der Hund. Borkenkäfer und Schermaus über ihre Spuren und Schäden.
 - **Wo** (`TIERE`): eine Lebensraum-Karte in 20-m-Zellen über das 2,4-km-Quadrat aus den echten Baumkronen (`RATSCHER.treeXY`, Bestand an
   der Klinge) und den Gebäuden: Wald, Waldrand, offenes Land, Siedlung. Darauf Gruppen mit Einstand und Äsungsplatz, fest aus einem
-  Startwert (jeder Besuch dieselbe Welt): 28 Reh-Gruppen an den Waldrändern, Rotten tief in den Wäldern (ein Keiler allein), Füchse am
+  Startwert (jeder Besuch dieselbe Welt – solange die Daten der Welt dieselben sind; ändern sich Kronen oder Gebäude, verschieben sich die
+  Gruppen): 28 Reh-Gruppen an den Waldrändern, Rotten tief in den Wäldern (ein Keiler allein), Füchse am
   Waldrand, Hasen mitten in den Feldern, zwei Dachsbaue, Waschbären und Marder im Dorf, eine Wildkatze weit weg von den Häusern, eine
   Rotwild-Gruppe auf der Durchreise, Milane und Bussarde über dem offenen Land, Kolkraben über dem Wald, der Schwarzstorch mit seinem Horst
   tief in der Klinge, der Uhu auf einer Fichte am Waldrand unter der Unteren Klinge.
@@ -38,7 +45,7 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   Oktober bis Mai. Wildschweine nur nachts. Fuchs abends (im Winter auch tags), Hase in der Sasse bis man fast auf ihn tritt, Dachs,
   Waschbär, Marder nachts (im kalten Winter oft nicht), Wildkatze selten in der Dämmerung, Rotwild in einem Viertel der Nächte (in der
   Brunft öfter). Milan von März bis Oktober, Bussard das ganze Jahr, Schwarzstorch von Ende März bis Anfang September, Uhu in der Dämmerung.
-- **Wie:** nur wenige Tiere nahe beim Betrachter sind echte Modelle (Telefon 14, sonst 26); ferne Gruppen sind nur Zahlen. Sie äsen,
+- **Wie:** nur wenige Tiere nahe beim Betrachter sind echte Modelle (Telefon 14, sonst 26 – die nächsten Gruppen zuerst); ferne Gruppen sind nur Zahlen. Sie äsen,
   wühlen, lauschen (Fuchs), ziehen weiter, sichern, fliehen in ihrer Fluchtdistanz vor dem Spaziergänger (Reh ~110 m, nachts weniger,
   ein Rennender fällt früher auf, ruhend in der Deckung später), vor einem fahrenden Auto, vor Lärm und vor dem frei laufenden Hund – die
   ganze Gruppe, zur Deckung hin; aufgeschreckt bleiben sie eine Weile in der Deckung. Stimmen: der Rehbock schreckt, die Rotte grunzt, der
@@ -63,7 +70,8 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   dich (und zeigt sie dir), bellt einen Nachbarn an oder bleibt ruhig. **Loben (+) und Tadeln (−)** gilt dem, was er zuletzt getan hat
   (eine Viertelminute): die Neigung dazu steigt oder sinkt ein Stück, Lob stärkt die Bindung. **Rufen (P)** – von einer Jagd kommt er nur, wenn
   die Bindung stark und der Jagdtrieb schwach ist; **Schicken (Umschalt+P)** dahin, wo du hinschaust – Wild: er vertreibt es, Ziegen: er hütet sie,
-  sonst sucht er Spuren. Vier Knöpfe am Bildschirm (für das Telefon), wenn er in der Nähe ist. Gespeichert in `pav-hund-v1`.
+  sonst sucht er Spuren. Vier Knöpfe am Bildschirm (für das Telefon), wenn er näher als 30 m ist – sie weichen anderen Fenstern an ihrer
+  Stelle (Entdeckerbuch, Gespräch, Menü, Telefon) und fehlen beim Mitfahren (Bus, Trampen, Traktor), in der Zombie-Nacht und in der Ansicht von oben. Gespeichert in `pav-hund-v1`.
 
 - **Hühner, wenn jemand sie hält** (`tiere/tiere_huehner.js`, `THUEHNER`): heute hält in der Spiegelwelt niemand Hühner – deshalb stehen
   keine da. `TIERE.huehner({ x, y, n, zu })` (z. B. der Strategie-Modus: „Hühner halten“ als Zukunft zum Ausprobieren) stellt einen kleinen
@@ -146,7 +154,12 @@ Abfragen und Befehle:
   Einmal in Blender als glTF/GLB exportiert (mit Bewegungen), gehen sie wie der Fuchs über `PLANS.<art>.gltf` in `tiere/tiere_koerper.js`
   (Datei, Maßstab, Namen der Bewegungen, Farbtönung) – die Textur wird beim Laden in die Ecken gebacken. Für Wildschwein und Hund fand ich
   nichts Freies ohne Anmeldung, das besser ist als die gebauten Körper; die sind nach den Hinweisen des Leads verbessert (Fell nach Datum,
-  schlanke Läufe und Hals beim Reh, keilförmiger Kopf und Borstenkamm beim Wildschwein, voller Hund mit Halskrause).
+  Reh und Wildschwein nach echten Maßen, voller Hund mit Halskrause). Ehrlich: aus der Nähe (unter ~10 m) bleiben die gebauten Körper
+  glatte, einfache Formen ohne Fellstruktur – aus 40–150 m, wo man Wild wirklich sieht, lesen sie sich als Reh, Sau, Hirsch.
+- Hase, Dachs, Waschbär, Marder, Wildkatze sind noch grobe Abwandlungen eines Hundekörpers (Dachs breiter und grau, Hase mit gewölbtem
+  Rücken) – eine Runde wie bei Reh und Sau (Maße, Fotos, Bilder in 7 m) steht für sie aus.
+- Äsen: der Äser geht bis etwa 12 cm über den Boden (Hals steil, Kopf fast senkrecht); ganz hinunter bräuchte es eine leichte Beugung der
+  Vorderläufe – im Gras fällt es nicht auf.
 - Stimmen fehlen noch für Schwarzspecht, Wildkatze, Dachs und Waschbär (frei lizenzierte Aufnahmen suchen, z. B. xeno-canto mit CC BY-SA;
   `tiere/ton.json` ergänzen) – Milan, Bussard, Kolkrabe und Rothirsch kamen in der Nacht von xeno-canto dazu.
 - Wer in Ratscher wirklich Hühner hält, weiß ich nicht – deshalb stehen keine in der Welt, bis jemand (Strategie-Modus, Falko) sie hinstellt.
@@ -158,4 +171,9 @@ Abfragen und Befehle:
 - `viz3/src/world/forest.js`: markiert `// feat/tiere` – `FOREST.tint(t, rgb)` (Kronenfarbe eines Baums: Käferfichten) und die Farbe in
   `relod`/Fernkarten (Rinde bleibt).
 - Quellen: `viz3/extra/tiere/manifest.json` (`credits_add`).
+- Gelesen (nicht verändert): `PLAY.seat` (Mitfahren), `ZSTATE.on`, `P.mode`, `VEH.cur`, `R.domElement` (ob ein anderes Fenster auf den
+  Hund-Knöpfen liegt), `GPLAN.state`/`GPLAN.M.plantSteps` (gepflanzte Bäume, Wühlmauskorb), `RATSCHER`, `FOREST`, `ROADS`, Ronalds Ziegen
+  (`GOATS`, `GOATLURE`, `PAD`).
+- Die Lage der Gruppen folgt den Daten der Welt (Kronen, Gebäude): ändert eine andere Arbeit diese Daten, verschieben sich Rehe und Rotten
+  – Tests sollten Gruppen nach Eigenschaften wählen (draußen, mindestens zwei Tiere), nicht nach festen Koordinaten.
 - Neue `window`-Namen: `TARTEN`, `TKOERPER`, `TTON`, `TIERE`, `TEINFLUSS`, `THUEHNER`, `HUND`. Tasten: P (Hund rufen), Umschalt+P (schicken; nicht mehr U – das schaltet im Strategie-Modus zwischen oben und der Welt), + / − (loben/tadeln).

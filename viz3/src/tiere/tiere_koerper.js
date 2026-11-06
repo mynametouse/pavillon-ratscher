@@ -164,6 +164,7 @@ export const TKOERPER = (() => {
         ry = a.ry + (b.ry - a.ry) * tt,
         e = (a.e || 2) + ((b.e || 2) - (a.e || 2)) * tt,
         dy = (a.dy || 0) + ((b.dy || 0) - (a.dy || 0)) * tt,
+        tp = (a.tp || 0) + ((b.tp || 0) - (a.tp || 0)) * tt,
         u =
           (a.u ?? R.i / (st.length - 1)) + ((b.u ?? (R.i + 1) / (st.length - 1)) - (a.u ?? R.i / (st.length - 1))) * t,
         w = blendW(a.w, b.w, tt);
@@ -173,7 +174,8 @@ export const TKOERPER = (() => {
           sn = Math.sin(th),
           cs = Math.cos(th);
         // superellipse: e = 2 an ellipse, larger squarer (the boar's flanks)
-        const px = rx * Math.sign(sn) * Math.pow(Math.abs(sn), 2 / e),
+        // tp pinches the upper half towards a ridge (the wild boar's high narrow back above deep flanks)
+        const px = rx * Math.sign(sn) * Math.pow(Math.abs(sn), 2 / e) * (1 - tp * (cs > 0 ? cs * cs : 0)),
           py = ry * Math.sign(cs) * Math.pow(Math.abs(cs), 2 / e) + dy * (cs < 0 ? -cs : 0) * ry;
         // a coat with some length: the outline a little ragged (o.fur: how much, as a share of the radius; o.furU(u) along the part)
         const fu = o.fur
@@ -339,6 +341,7 @@ export const TKOERPER = (() => {
         ry: (top - bot) / 2,
         e: e || Pn.e || 2.2,
         dy: dy || 0,
+        tp: Pn.tp || 0,
         w: wTrunk(z),
         u: (z - T[0][0]) / (T[T.length - 1][0] - T[0][0]),
       })),
@@ -1088,7 +1091,8 @@ export const TKOERPER = (() => {
       n2 = ps.graze * NP.graze[1] + ps.alert * NP.alert[1] + lie * NP.lie[1] + ps.dig * NP.dig[1] - sit * 0.4;
     b.neck1.rotation.x = n1 + sit * 0.35;
     b.neck2.rotation.x = n2 * 0.6;
-    b.head.rotation.x = n2 * 0.4 + (ps.graze ? Math.sin(A.t * 5) * 0.03 * ps.graze : 0);
+    // (a third number in graze: the head's own turn while grazing – the roe deer's nose goes down to the grass, not back)
+    b.head.rotation.x = n2 * 0.4 + ps.graze * (NP.graze[2] || 0) + (ps.graze ? Math.sin(A.t * 5) * 0.03 * ps.graze : 0);
     b.neck2.rotation.y = ps.look * 0.5;
     b.head.rotation.y = ps.look * 0.5;
     // ears: forward when alert, flat back when fleeing, flicking now and then
@@ -1148,48 +1152,53 @@ export const TKOERPER = (() => {
     k: 1,
     e: 2,
     sides: 18,
+    // (proportions after photos and measurements: the chest deep – a third of the shoulder height –, the belly line rising to the
+    // flank, the rump a little higher than the withers)
     trunk: [
       [-0.43, 0.7, 0.62, 0.035],
-      [-0.4, 0.745, 0.52, 0.08],
-      [-0.3, 0.765, 0.47, 0.102],
-      [-0.15, 0.745, 0.47, 0.105],
-      [0.02, 0.725, 0.43, 0.11],
-      [0.18, 0.725, 0.4, 0.106],
-      [0.3, 0.715, 0.41, 0.092],
-      [0.38, 0.66, 0.46, 0.066],
+      [-0.4, 0.745, 0.52, 0.082],
+      [-0.3, 0.765, 0.47, 0.105],
+      [-0.15, 0.748, 0.46, 0.108],
+      [0.02, 0.732, 0.42, 0.115],
+      [0.18, 0.73, 0.385, 0.112],
+      [0.3, 0.72, 0.395, 0.096],
+      [0.38, 0.665, 0.45, 0.07],
     ],
+    // the neck from deep in the chest, thick at its root, carried forward at about 45–50°; a short wedge of a head held a little down
     neck: [
-      [0.3, 0.6, 0.06, 0.085],
-      [0.38, 0.69, 0.05, 0.07],
-      [0.44, 0.79, 0.042, 0.058],
-      [0.49, 0.88, 0.038, 0.05],
-      [0.53, 0.95, 0.04, 0.05],
-      [0.575, 0.985, 0.045, 0.05],
-      [0.63, 0.975, 0.041, 0.045],
-      [0.685, 0.945, 0.029, 0.034],
-      [0.73, 0.92, 0.02, 0.026],
-      [0.748, 0.91, 0.015, 0.02],
+      [0.28, 0.6, 0.075, 0.115],
+      [0.37, 0.685, 0.062, 0.09],
+      [0.44, 0.76, 0.054, 0.072],
+      [0.5, 0.83, 0.05, 0.062],
+      [0.545, 0.885, 0.048, 0.058],
+      [0.59, 0.92, 0.05, 0.056],
+      [0.64, 0.915, 0.044, 0.048],
+      [0.69, 0.895, 0.032, 0.036],
+      [0.73, 0.875, 0.022, 0.027],
+      [0.748, 0.867, 0.016, 0.02],
     ],
     neckMid: 2,
     headAt: 4,
     hx: 0.068,
     fx: 0.062,
+    // the hind leg: a heavy thigh to the stifle, the gaskin back and down to the hock (angled back), the thin cannon straight down
     hind: [
-      [-0.28, 0.63],
-      [-0.19, 0.45],
-      [-0.33, 0.27],
-      [-0.305, 0.03],
+      [-0.27, 0.62],
+      [-0.17, 0.43],
+      [-0.32, 0.29],
+      [-0.3, 0.03],
     ],
-    hindR: [0.085, 0.068, 0.038, 0.017, 0.011, 0.012],
+    hindR: [0.1, 0.085, 0.048, 0.022, 0.012, 0.013],
+    // the foreleg: the muscled forearm under the shoulder, thin below the knee
     front: [
       [0.29, 0.55],
-      [0.25, 0.42],
-      [0.265, 0.21],
+      [0.245, 0.42],
+      [0.265, 0.215],
       [0.27, 0.03],
     ],
-    frontR: [0.062, 0.048, 0.028, 0.015, 0.01, 0.011],
-    ear: { p: [0.56, 1.02], x: 0.03, out: 0.5, up: 0.8, back: -0.4, len: 0.125, wid: 0.06 },
-    eye: { p: [0.625, 0.99], x: 0.04, r: 0.0105 },
+    frontR: [0.075, 0.06, 0.036, 0.017, 0.011, 0.012],
+    ear: { p: [0.57, 0.96], x: 0.03, out: 0.5, up: 0.8, back: -0.4, len: 0.13, wid: 0.062 },
+    eye: { p: [0.625, 0.933], x: 0.042, r: 0.0105 },
     tail: {
       p: [
         [-0.42, 0.69],
@@ -1203,9 +1212,12 @@ export const TKOERPER = (() => {
     bounds: true,
     lieDrop: 0.36,
     tailFlee: 0.8,
-    neckPose: { graze: [1.05, 0.55], alert: [-0.3, -0.12], lie: [0.35, 0.1], dig: [0.6, 0.45] },
-    antler(B, sk, W, loft, V3, coat, v) {
-      // a six-pointer: beam up and a little back, a front tine low, a back tine near the top; pearled and brown
+    // grazing: the neck goes steeply down from the chest, the head nearly upright, the muzzle in the grass
+    neckPose: { graze: [1.45, 0.7, -0.5], alert: [-0.3, -0.12], lie: [0.35, 0.1], dig: [0.6, 0.45] },
+    antler(B, sk, W, loft, V0, coat, v) {
+      // a six-pointer: beam up and a little back, a front tine low, a back tine near the top; pearled and brown (placed on the skull:
+      // the coordinates below were set for a head 6 cm higher and 1 cm further back)
+      const V3 = (x, y, z) => V0(x, y - 0.06, z + 0.01);
       for (const s of [1, -1]) {
         const b0 = V3(s * 0.025, 1.045, 0.6),
           w = [W(sk, 'head')];
@@ -1285,28 +1297,35 @@ export const TKOERPER = (() => {
   PLANS.sau = {
     k: 1.2,
     e: 2.5,
-    fur: 0.09,
-    sides: 18,
+    // the cross-section: deep flanks narrowing to the high back (a sow is narrow seen from the front, not round)
+    tp: 0.32,
+    // (a short coat outline only: the ragged fur shows as facets in the shading at 7 m)
+    fur: 0.045,
+    sides: 20,
+    // the wedge: the back falls from the high shoulders to the rump, the rear narrow and tucked up over the hams, the front broad and
+    // deep; the legs show a third of the height below the chest
     trunk: [
-      [-0.52, 0.6, 0.46, 0.05],
-      [-0.48, 0.67, 0.36, 0.115],
-      [-0.35, 0.7, 0.32, 0.145],
-      [-0.15, 0.74, 0.3, 0.155],
-      [0.05, 0.78, 0.28, 0.16],
-      [0.22, 0.83, 0.28, 0.16],
-      [0.34, 0.86, 0.3, 0.155],
-      [0.44, 0.8, 0.33, 0.135],
+      [-0.52, 0.62, 0.5, 0.05],
+      [-0.48, 0.675, 0.41, 0.105],
+      [-0.35, 0.71, 0.36, 0.13],
+      [-0.15, 0.755, 0.32, 0.148],
+      [0.05, 0.8, 0.31, 0.158],
+      [0.22, 0.86, 0.315, 0.166],
+      [0.34, 0.885, 0.33, 0.162],
+      [0.44, 0.815, 0.36, 0.14],
     ],
+    // the short thick neck merged into the shoulders; the head a long wedge, a third of the length, from the high forehead with the
+    // jowls down to the snout disc
     neck: [
-      [0.34, 0.62, 0.15, 0.21, 2.4],
-      [0.44, 0.63, 0.15, 0.205, 2.4],
-      [0.53, 0.61, 0.14, 0.19, 2.3],
-      [0.6, 0.57, 0.115, 0.155, 2.2],
-      [0.67, 0.51, 0.088, 0.115, 2.1],
-      [0.74, 0.445, 0.066, 0.08],
-      [0.8, 0.39, 0.052, 0.058],
-      [0.835, 0.365, 0.05, 0.05],
-      [0.845, 0.36, 0.048, 0.047],
+      [0.34, 0.63, 0.15, 0.21, 2.4],
+      [0.44, 0.64, 0.15, 0.205, 2.4],
+      [0.53, 0.615, 0.145, 0.2, 2.3],
+      [0.62, 0.56, 0.115, 0.16, 2.2],
+      [0.71, 0.495, 0.088, 0.118, 2.1],
+      [0.79, 0.435, 0.066, 0.083],
+      [0.86, 0.39, 0.054, 0.062],
+      [0.91, 0.365, 0.05, 0.053],
+      [0.93, 0.358, 0.05, 0.05],
     ],
     neckMid: 1,
     headAt: 2,
@@ -1314,21 +1333,22 @@ export const TKOERPER = (() => {
     hx: 0.095,
     fx: 0.095,
     hind: [
-      [-0.33, 0.48],
-      [-0.24, 0.3],
-      [-0.36, 0.16],
+      [-0.33, 0.5],
+      [-0.24, 0.32],
+      [-0.36, 0.17],
       [-0.33, 0.03],
     ],
-    hindR: [0.13, 0.11, 0.05, 0.028, 0.02, 0.022],
+    hindR: [0.14, 0.12, 0.075, 0.045, 0.033, 0.035],
     front: [
-      [0.3, 0.5],
-      [0.26, 0.3],
-      [0.28, 0.13],
+      [0.3, 0.52],
+      [0.26, 0.32],
+      [0.28, 0.14],
       [0.29, 0.03],
     ],
-    frontR: [0.11, 0.085, 0.042, 0.024, 0.018, 0.02],
-    ear: { p: [0.55, 0.75], x: 0.07, out: 0.55, up: 0.8, back: -0.35, len: 0.13, wid: 0.08 },
-    eye: { p: [0.625, 0.6], x: 0.085, r: 0.009 },
+    frontR: [0.12, 0.1, 0.07, 0.042, 0.032, 0.034],
+    // small pointed ears, upright, a little out
+    ear: { p: [0.55, 0.78], x: 0.07, out: 0.45, up: 0.85, back: -0.3, len: 0.11, wid: 0.062 },
+    eye: { p: [0.64, 0.6], x: 0.1, r: 0.009 },
     tail: {
       p: [
         [-0.51, 0.6],
@@ -1350,19 +1370,19 @@ export const TKOERPER = (() => {
       const yk = variant && variant.young ? 0.45 : 1;
       // the front of the ridge rides on the neck bones, so it bends down with the head when the boar roots (no horn sticking out)
       const pts = [
-        [0.5, 0.72, [W(sk, 'neck1', 0.3), W(sk, 'neck2', 0.7)]],
-        [0.4, 0.855, [W(sk, 'chest', 0.3), W(sk, 'neck1', 0.7)]],
-        [0.28, 0.87, [W(sk, 'chest')]],
-        [0.12, 0.835, [W(sk, 'root')]],
-        [-0.05, 0.79, [W(sk, 'root')]],
-        [-0.2, 0.745, [W(sk, 'hips')]],
+        [0.5, 0.74, [W(sk, 'neck1', 0.3), W(sk, 'neck2', 0.7)]],
+        [0.4, 0.875, [W(sk, 'chest', 0.3), W(sk, 'neck1', 0.7)]],
+        [0.28, 0.89, [W(sk, 'chest')]],
+        [0.12, 0.85, [W(sk, 'root')]],
+        [-0.05, 0.8, [W(sk, 'root')]],
+        [-0.2, 0.755, [W(sk, 'hips')]],
       ];
       loft(
         B,
         pts.map(([z, y, w], i) => ({
           p: V3(0, y, z),
-          rx: [0.03, 0.04, 0.042, 0.036, 0.03, 0.02][i] * (0.4 + 0.6 * yk),
-          ry: [0.02, 0.034, 0.034, 0.026, 0.02, 0.01][i] * yk,
+          rx: [0.03, 0.042, 0.045, 0.036, 0.03, 0.02][i] * (0.4 + 0.6 * yk),
+          ry: [0.02, 0.046, 0.05, 0.034, 0.022, 0.01][i] * yk,
           w,
           u: i / (pts.length - 1),
         })),
@@ -1491,10 +1511,11 @@ export const TKOERPER = (() => {
       [0.33, 0.6, 0.29, 0.125],
       [0.4, 0.54, 0.34, 0.095],
     ],
+    // the ruff: longer hair round the neck and chest (the old German herding dogs' coat)
     neck: [
-      [0.27, 0.48, 0.115, 0.14],
-      [0.37, 0.56, 0.11, 0.125],
-      [0.43, 0.62, 0.09, 0.1],
+      [0.27, 0.48, 0.125, 0.15],
+      [0.37, 0.56, 0.118, 0.135],
+      [0.43, 0.62, 0.095, 0.106],
       [0.47, 0.655, 0.074, 0.08],
       [0.505, 0.675, 0.076, 0.078],
       [0.56, 0.665, 0.07, 0.068],
@@ -1506,14 +1527,16 @@ export const TKOERPER = (() => {
     frontR: [0.085, 0.068, 0.04, 0.025, 0.021, 0.025],
     ear: { p: [0.5, 0.735], x: 0.045, out: 0.35, up: 0.9, back: -0.15, len: 0.105, wid: 0.075, tip: true },
     eye: { p: [0.56, 0.69], x: 0.036, r: 0.01, col: 0x2a1a0c },
+    // the tail long and bushy, hanging to the hock with a slight hook at the end
     tail: {
       p: [
         [-0.36, 0.54],
-        [-0.43, 0.44],
-        [-0.46, 0.33],
-        [-0.44, 0.23],
+        [-0.43, 0.45],
+        [-0.47, 0.34],
+        [-0.48, 0.24],
+        [-0.46, 0.17],
       ],
-      r: [0.045, 0.06, 0.056, 0.026],
+      r: [0.04, 0.055, 0.056, 0.044, 0.02],
     },
   });
   // the red kite (Milvus milvus): 61–72 cm long, wingspan 1.75 m, the deeply forked rufous tail, pale grey head, white patches under the
@@ -1665,6 +1688,17 @@ export const TKOERPER = (() => {
   // white below; it hops
   PLANS.hase = scaled(QBASE, 0.62, 0.5, 0.62, {
     fur: 0.04,
+    // the arched back of a hare: the rump high and round over the long hind legs, the shoulders low, compact
+    trunk: [
+      [-0.23, 0.27, 0.2, 0.03],
+      [-0.21, 0.31, 0.15, 0.06],
+      [-0.15, 0.335, 0.13, 0.074],
+      [-0.06, 0.33, 0.13, 0.074],
+      [0.03, 0.31, 0.135, 0.069],
+      [0.11, 0.29, 0.14, 0.064],
+      [0.17, 0.275, 0.15, 0.055],
+      [0.22, 0.255, 0.17, 0.04],
+    ],
     hind: [
       [-0.16, 0.27],
       [-0.07, 0.18],
@@ -1679,7 +1713,20 @@ export const TKOERPER = (() => {
       [0.16, 0.02],
     ],
     frontR: [0.03, 0.025, 0.015, 0.012, 0.011, 0.012],
-    ear: { p: [0.3, 0.4], x: 0.022, out: 0.15, up: 0.85, back: -0.45, len: 0.13, wid: 0.038 },
+    // hardly any neck; a short round head with a blunt muzzle and big eyes high on the sides
+    neck: [
+      [0.15, 0.24, 0.06, 0.07],
+      [0.2, 0.28, 0.058, 0.062],
+      [0.24, 0.31, 0.052, 0.052],
+      [0.27, 0.335, 0.048, 0.046],
+      [0.29, 0.35, 0.046, 0.044],
+      [0.32, 0.355, 0.045, 0.042],
+      [0.355, 0.345, 0.037, 0.034],
+      [0.385, 0.333, 0.028, 0.026],
+      [0.4, 0.327, 0.02, 0.019],
+    ],
+    eye: { p: [0.335, 0.362], x: 0.036, r: 0.008, col: 0x3a2410 },
+    ear: { p: [0.305, 0.39], x: 0.022, out: 0.15, up: 0.85, back: -0.45, len: 0.13, wid: 0.038 },
     tail: {
       p: [
         [-0.22, 0.27],
@@ -1840,7 +1887,9 @@ export const TKOERPER = (() => {
   // red deer (Cervus elaphus): hind 1.2 m, stag 1.3 m at the shoulder; reddish brown in summer, grey-brown in winter, a pale yellowish
   // rump patch with a short dark-topped tail; the stag with his mane in autumn and the antlers (tines: brow, bez, trez, the crown)
   PLANS.hirsch = scaled(PLANS.reh, 1.7, 1.62, 1.55, {
-    antler(B, sk, W, loft, V3, coat) {
+    antler(B, sk, W, loft, V0, coat) {
+      // (the coordinates were set for the roe head 6 cm higher and 1 cm further back, scaled)
+      const V3 = (x, y, z) => V0(x, y - 0.06 * 1.62, z + 0.01 * 1.55);
       const w = [W(sk, 'head')];
       const tube = (pts, r0, r1) =>
         loft(

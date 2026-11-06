@@ -475,8 +475,8 @@ export const TEINFLUSS = (() => {
       H = browsed ? 0.62 : 0.95;
     if (kind === 'tanne') {
       // silver fir: whorls of five flat, dark glossy branches, lighter new tips; the leader on top with its bud whorl
-      const g = lin(0x1d3622),
-        g2 = lin(0x2b4a2c),
+      const g = lin(0x182c1c),
+        g2 = lin(0x223c26),
         tiers = browsed
           ? [
               [0.14, 0.27, 6],
@@ -492,19 +492,21 @@ export const TEINFLUSS = (() => {
               [0.85, 0.09, 4],
             ];
       cone(0, 0.014, H, 0.005, stem, 5);
+      // each branch a narrow flat spray, seven to a whorl (the outline of a young fir is fine, not leafy)
       tiers.forEach(([y, L, n], k) => {
-        for (let i = 0; i < n; i++)
+        const m = n + 2;
+        for (let i = 0; i < m; i++)
           frond(
             0,
             y,
             0,
-            (i / n) * 6.283 + k * 0.7,
+            (i / m) * 6.283 + k * 0.7,
             L * (0.85 + (0.3 * ((i * 7 + k * 3) % 5)) / 4),
-            0.055,
-            0.05,
+            0.032,
+            0.035,
             g,
             g2,
-            0.02
+            0.015
           );
       });
       if (!browsed) cone(0.86, 0.012, 1.04, 0.003, g2, 5);

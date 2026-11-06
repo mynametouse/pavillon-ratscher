@@ -105,6 +105,25 @@ with lib.browser() as b:
             [0, { graze: 0.55 }], [0, { graze: 0.7 }], [0, { lie: 1 }], [0, {}], [0, {}], [0, {}], [0, { graze: 1 }], [0, {}]];
           window.__sheet.forEach((A, i) => { const q = P[i] || [0, { graze: 1 }]; for (let k = 0; k < 60; k++) A.anim(0.033, q[0], q[1]); }); })()""")
         closeups('pose2', ['reh_ricke_winter', 'reh_bock_sommer', 'reh_kitz_sommer', 'sau', 'hund', 'fuchs', 'hase', 'hirsch_alttier'])
+        # the two that are seen most, roe deer and wild boar, from the side at 7 m (where one gets when sneaking up): noon and November dusk
+        E("window.__sheet.forEach(A => { for (let k = 0; k < 40; k++) A.anim(0.033, 0, {}); })")
+        def side(tag, names, D=7.0):
+            for i, (n, kind, var, sc, dd, eh) in enumerate(SHEET):
+                if n not in names: continue
+                pit = -math.degrees(math.atan2(1.62 - eh, D))
+                fov = max(14, min(40, math.degrees(2 * math.atan2(dd * 0.62, D))))
+                E(f"""(() => {{ const A = window.__sheet[{i}], yaw = 225 * Math.PI / 180, fx = Math.sin(yaw), fy = Math.cos(yaw);
+                  const x = A.g.position.x, y = -A.g.position.z, cx = x - fx * {D}, cy = y - fy * {D};
+                  window.__sheet.forEach((B, j) => B.g.visible = j === {i});
+                  __view(cx, cy, ROADS.groundAt(cx, cy) + 1.62, 225, {pit}, {fov}); }})()""")
+                E("GAME.step(0.02)")
+                pic(f'05_{tag}_{n}')
+            E("window.__sheet.forEach(B => B.g.visible = true)")
+        ZWEI = ['reh_ricke_winter', 'reh_bock_sommer', 'sau', 'frischling_november', 'hirsch_alttier']
+        side('7m_mittag', ZWEI)
+        at(16, 55, date=(11, 5))
+        side('7m_daemmerung', ZWEI)
+        at(12, 0, date=(7, 10))
         # the kite from below and the side, close
         E(f"""(() => {{ const A = TKOERPER.make('milan', {{}}); GAME.scene.add(A.g); const x = {x0} - 4, y = {y0} - 4;
           A.g.position.set(x, ROADS.groundAt(x, y) + 3.2, -y); A.g.rotation.y = 0.6; A.anim(0.05, 8, {{ flap: 0, bank: 0.2, twist: 0.3 }}); window.__kite = A; }})()""")
@@ -240,9 +259,18 @@ with lib.browser() as b:
         print('alert at', alert_at, 'flee at', flee_at, f'(samples {alert_n} / {flee_n})', flush=True)
         ck('they look up first (alert before the flight)', alert_n is not None and (flee_n is None or alert_n < flee_n), f'{alert_at} / {flee_at}')
         ck('they flee at a roe deer\'s flight distance (70–130 m from a walker at dusk)', flee_at is not None and 60 <= flee_at <= 130, str(flee_at))
+        # look at the fleeing group through a long lens (from where the walker stands)
+        AIM = f"""(() => {{ const q = TIERE.list().filter(a => a.g === '{r['id']}'); if (!q.length) return 0; const P = GAME.P;
+          const mx = q.reduce((s, a) => s + a.x, 0) / q.length, my = q.reduce((s, a) => s + a.y, 0) / q.length, mz = q.reduce((s, a) => s + a.z, 0) / q.length;
+          const d = Math.hypot(mx - P.x, my - P.y), z0 = ROADS.groundAt(P.x, P.y) + 1.62;
+          __view(P.x, P.y, z0, Math.atan2(mx - P.x, my - P.y) * 180 / Math.PI, Math.atan2(mz + 0.5 - z0, d) * 180 / Math.PI, Math.max(8, Math.min(30, 2 * Math.atan2(9, d) * 180 / Math.PI)));
+          return 1; }})()"""
+        E(AIM)
         E("GAME.step(0.05)")
         pic('20_flucht_rehe')
         steps(1.2)
+        E(AIM)
+        E("GAME.step(0.02)")
         pic('21_flucht_rehe_spiegel')
         q1 = J(f"TIERE.list().filter(a => a.g === '{r['id']}')")
         ck('the whole group goes, fast (bounding)', len(q1) >= 1 and all(a['mode'] == 'flee' for a in q1) and max(a['v'] for a in q1) > 6, str(q1))
@@ -380,7 +408,8 @@ with lib.browser() as b:
         ck('… and without chickens no coop', not E("!!THUEHNER.coop"), '')
         # a sign found: walk to a wallow
         w = J("TIERE.groups.find(g => g.art === 'wildschwein').wallowAt")
-        E(f"__view({w[0]} + 5, {w[1]}, ROADS.groundAt({w[0]} + 5, {w[1]}) + 1.7, -90, -25, 60); GAME.step(0.1)")
+        # (from 8 m and not too steeply down: the walker's own legs are in the first-person view now)
+        E(f"__view({w[0]} + 8, {w[1]}, ROADS.groundAt({w[0]} + 8, {w[1]}) + 1.7, -90, -11, 50); GAME.step(0.1)")
         steps(1.2)
         ev = J("window.__ev.filter(e => e.kind === 'spur')")
         ck('a sign found: the wallow (tiere:entdeckt, kind spur, with a source)', any(e['id'] == 'suhle' for e in ev), str(ev)[:300])
@@ -408,6 +437,18 @@ with lib.browser() as b:
         ck('the key + praises (finding things: more searching)', l4['learn']['suchen'] > l3['learn']['suchen'], f"{l3['learn']['suchen']} -> {l4['learn']['suchen']}")
         vis = E("!!document.getElementById('hund-panel') && !document.getElementById('hund-panel').hidden")
         ck('the dog\'s buttons are there when he is near (call, send, praise, scold)', vis, str(vis))
+        # another panel opened on the right (the book, a talk, the phone): the buttons make way, and come back when it closes
+        E("(() => { const d = document.createElement('div'); d.id = '__probe'; d.style.cssText = 'position:fixed;right:0;bottom:0;width:420px;height:70%;z-index:8;background:#ddd'; document.body.appendChild(d); })()")
+        for i in range(8):
+            E("GAME.step(0.05)")
+            time.sleep(0.1)
+        cov = E("document.getElementById('hund-panel').hidden")
+        E("document.getElementById('__probe').remove()")
+        for i in range(8):
+            E("GAME.step(0.05)")
+            time.sleep(0.1)
+        back = E("!document.getElementById('hund-panel').hidden")
+        ck('… they make way for a panel on the right (the book, a talk) and come back after', cov and back, f'{cov} / {back}')
         # sent: to a point 25 m ahead – he runs there and searches
         E("HUND.schicken()")
         m1 = J("HUND.state()")

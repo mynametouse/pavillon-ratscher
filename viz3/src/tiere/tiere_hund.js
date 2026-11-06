@@ -6,7 +6,7 @@
 // driving game out of the garden, chasing game far into the fields, finding a sign for you, barking at a neighbour or staying calm) is
 // what your praise (+) or scolding (−) is about – the tendency to do it again rises or falls, a little each time, and his bond with you
 // grows with praise. Called with P (whistle), sent with Shift+P to where you look. Character and what he learned: pav-hund-v1.
-import { $, scene } from '../core/head.js';
+import { $, R, scene } from '../core/head.js';
 import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
@@ -230,8 +230,8 @@ export const HUND = (() => {
     if (!D.on || !ready) return;
     dt = Math.min(dt, 0.1);
     D.t += dt;
-    const car = VEH && VEH.cur;
-    // in a vehicle he rides along (out of sight) and jumps out with you
+    const car = (VEH && VEH.cur) || riding();
+    // in a vehicle he rides along (out of sight) and jumps out with you – also on the bus, hitchhiking, on the tractor (a seat to ride)
     if (car) {
       if (D.mode !== 'home') D.rideOn = true;
       if (D.model) D.model.g.visible = false;
@@ -453,11 +453,43 @@ export const HUND = (() => {
         markDirty();
       }
     }
-    panel(dP < 40 && !(window.ZSTATE && ZSTATE.on));
+    panel(dP < 30 && !(window.ZSTATE && ZSTATE.on));
   }
-  // ---------- the buttons (keys P, U, +, −; on a phone these four) ----------
+  // riding along somewhere (the bus, a lift, the tractor): game/play.js PLAY.seat
+  function riding() {
+    return !!(PLAY.seat && PLAY.seat.kind === 'ride');
+  }
+  // ---------- the buttons (keys P, Shift+P, +, −; on a phone these four) – not while riding, in the zombie night or in the view from
+  // above (the strategy mode), where other buttons sit on the right ----------
   let pEl = null;
+  // another panel where the buttons sit (the menu, a book, a talk, the phone)? Then they make way: at a few points of their place the
+  // first thing (under the buttons themselves) must be the 3D view
+  let pRect = null,
+    coverT = 0,
+    coverV = false;
+  function covered() {
+    const now = performance.now();
+    if (now - coverT < 400) return coverV;
+    coverT = now;
+    coverV = false;
+    const r = pRect,
+      cv = R.domElement;
+    if (!r || !document.elementsFromPoint) return false;
+    for (const [x, y] of [
+      [r.left + 8, r.top + 8],
+      [r.right - 8, r.top + 8],
+      [r.left + 8, r.bottom - 8],
+      [r.right - 8, r.bottom - 8],
+    ])
+      for (const el of document.elementsFromPoint(x, y)) {
+        if (pEl.contains(el)) continue;
+        if (el === cv || el.contains(cv) || el === document.body || el === document.documentElement) break;
+        return (coverV = true);
+      }
+    return false;
+  }
   function panel(show) {
+    if (show && pEl && covered()) show = false;
     if (!show) {
       if (pEl) pEl.hidden = true;
       return;
@@ -492,10 +524,12 @@ export const HUND = (() => {
       document.body.appendChild(pEl);
     }
     pEl.hidden = false;
+    const r = pEl.getBoundingClientRect();
+    if (r.width > 0) pRect = r;
   }
   window.addEventListener('keydown', e => {
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
-    if (!D.on || P.mode !== 'walk' || (VEH && VEH.cur) || !D.model || !D.model.g.visible) return;
+    if (!D.on || P.mode !== 'walk' || (VEH && VEH.cur) || riding() || !D.model || !D.model.g.visible) return;
     if (window.ZSTATE && ZSTATE.on) return;
     const k = e.key;
     // P whistles him back, Shift+P sends him where you look (U belongs to the strategy view: game/st_modus.js)
