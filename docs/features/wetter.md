@@ -25,7 +25,11 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   gemischt, alles vom Wind und den Böen getragen; ein Netz, beim Laden übersetzt, Dichte über den Zeichenbereich; Flocken höchstens ein
   paar Pixel groß und vor der Linse ausgeblendet; drinnen (Pavillon, Gartengebäude, Häuser der Zombie-Nacht) keine Tropfen, im Fahrzeug
   keine in der Kabine; im Pavillon fällt der Regen jenseits seiner Wände weiter (durch die großen Fenster zu sehen), in anderen Gebäuden
-  keiner; Spritzer am Boden rund um die Spielfigur (kurze weiße Flecken, wo Tropfen aufschlagen). Gewitter: Blitze flackern (erster
+  keiner; Spritzer am Boden rund um die Spielfigur (kurze weiße Flecken, wo Tropfen aufschlagen, auf einer schrägen Ebene aus dem
+  Gelände). **Kein Regen unter Dächern:** solange es regnet, wird die Szene von oben in eine kleine Tiefenkarte gezeichnet (64 × 64 über
+  32 m, am Telefon 48; neu nach 3 m Weg, höchstens zweimal je Sekunde, nicht in einer Kabine) – unter dem Carport, Vordächern, dem
+  Obergeschoss des Pavillons oder einer dichten Krone fällt kein Tropfen und spritzt nichts. Die Programme der Szene (beim Laden
+  übersetzt), kein Licht. Gewitter: Blitze flackern (erster
   Schlag, Nachschläge, ~0,4 s) am Himmel und auf dem Land, nahe Einschläge (bis ~3,5 km) mit sichtbarem, zackigem Blitzkanal in ihrer
   Richtung, Donner nach der Entfernung; Hagel
   (Codes 96/99) als kleine, schnelle Körner im Regen. Nachts unter geschlossener Decke ein mattes Orange-Grau der Städte ringsum

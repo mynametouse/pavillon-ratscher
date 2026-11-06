@@ -27,6 +27,7 @@ import { WXSKY } from './wx_sky.js';
 import { WXFALL } from './wx_fall.js';
 import { WXTON } from './wx_ton.js';
 import { WXBODEN } from './wx_boden.js';
+import { WXWIND } from './wx_wind.js';
 export const WETTER = (() => {
   const KEY = 'pav-wetter-v1';
   const saved = SAVE.get(KEY);
@@ -265,6 +266,9 @@ export const WETTER = (() => {
       any = c.cover > 0.003 || c.rain > 0 || c.snow > 0 || c.vis < 20000 || c.wind > 3;
     WXSKY.set({ on: on && any, cover: c.cover, rain: c.rain, snow: c.snow, vis: c.vis, wind: c.wind, dir: c.dir });
     WXSKY.tick(dt, !window.FREEZE);
+    // the trees in the wind (the gusts' swing of the drops: one wind for both)
+    WXWIND.set(on, c.wind, c.gust, c.dir, WXFALL.S.gustK);
+    WXWIND.tick(dt, !window.FREEZE);
     const inside = !!(audio.inside && audio.inside()),
       // inside the pavilion the rain stays beyond its walls – seen through the big windows; in other buildings none is drawn
       pav = inside && !!(window.inHouseNow && window.inHouseNow()),
@@ -747,6 +751,7 @@ export const WETTER = (() => {
       snowCover: S.snowC,
       frost: S.frostC,
       boden: WXBODEN.count(),
+      trees: { n: WXWIND.count(), a: WXWIND.S.a, sway: WXWIND.U.wxSw.value.slice() },
       flashes: S.flash.n,
       automated: AUTOMATED,
     }),
