@@ -28,7 +28,7 @@ test('every entry: unique id, a chapter, title, text, a way to be found and a so
     assert.ok(Array.isArray(e.src) && e.src.length > 0, e.id + ': a source');
     for (const s of e.src) {
       assert.ok(Array.isArray(s) && typeof s[0] === 'string' && s[0].length > 3, e.id + ': source title');
-      assert.ok(s[1] === null || /^https:\/\//.test(s[1]), e.id + ': source link ' + s[1]);
+      assert.ok(s[1] === null || /^https:\/\/\S+$/.test(s[1]), e.id + ': source link (https, no spaces) ' + s[1]);
     }
     for (const p of f.place || []) assert.doesNotThrow(() => new RegExp(p, 'i'), e.id + ': place pattern ' + p);
     for (const m of e.more || []) assert.ok(D.ids.has(m), e.id + ': more → ' + m);
