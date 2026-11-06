@@ -498,11 +498,58 @@ body[data-top="1"] #winote{top:178px}
     if (f.place && f.place.length) return 'Irgendwo in der Gegend zu finden.';
     return 'Wird beim Tun entdeckt.';
   }
+  // an animal's profile from feat/tiere (TARTEN: size, when, food, signs, protection) and its sources beside the book's own
+  function profileHTML(e) {
+    const T = window.TARTEN;
+    if (!T || !T.A || typeof e.id !== 'string' || !e.id.startsWith('tier:')) return '';
+    const A = T.A[e.id.slice(5)];
+    if (!A || !A.profile) return '';
+    const p = A.profile,
+      rows = [
+        ['Größe', A.size],
+        ['Wann', p.wann],
+        ['Nahrung', p.nahrung],
+        ['Spuren', p.spuren],
+        ['Schutz', p.schutz],
+      ].filter(r => r[1]);
+    if (!rows.length) return '';
+    let h = '<h5>Steckbrief' + (A.latin ? ' · <i>' + esc(A.latin) + '</i>' : '') + '</h5>';
+    for (const [k, v] of rows) h += `<p><b>${esc(k)}:</b> ${esc(v)}</p>`;
+    const have = new Set((e.src || []).map(s => s[1]));
+    const more = (A.sources || []).filter(s => s && s[1] && !have.has(s[1]));
+    if (more.length) e.src = (e.src || []).concat(more.map(s => [s[0], s[1]]));
+    return h;
+  }
+  // every species feat/tiere knows becomes an entry to discover (once its data is there – it loads after the book)
+  let tierDone = false;
+  function tierEntries() {
+    const T = window.TARTEN;
+    if (tierDone || !T || !T.A) return;
+    tierDone = true;
+    // the book tells these already in its own entries (the goats as landscape keepers, the beetle and the forest conversion)
+    const SKIP = { ziege: 'n_ziegen', borkenkaefer: 'n_kaefer' };
+    for (const [id, A] of Object.entries(T.A)) {
+      const key = 'tier:' + id;
+      if (SKIP[id] || (REG.has(key) && !REG.get(key).dyn)) continue;
+      const p = A.profile || {};
+      add({
+        id: key,
+        ch: 'natur',
+        icon: A.group === 'selten' ? '✨' : A.group === 'schaedling' ? '🪲' : A.group === 'nutz' ? '🐐' : '🐾',
+        title: A.name || id,
+        text: [p.wo, p.rolle].filter(Boolean).join('\n'),
+        src: (A.sources || []).map(s => [s[0], s[1]]),
+        find: { ev: [['tiere:entdeckt', d => d && d.id === id]] },
+        hint: p.wann ? 'Wann: ' + String(p.wann).split('.')[0] + '.' : 'Draußen in der Gegend unterwegs sein.',
+      });
+    }
+  }
   function entryHTML(e) {
     const C = D.CH.find(c => c.id === e.ch) || D.CH[0];
     let h = `<button type="button" class="wi-back" data-wback>‹ ${esc(C.label)}</button><div class="wi-e"><h4><span aria-hidden="true">${esc(e.icon)}</span>${esc(e.title)}</h4>`;
     for (const para of String(e.text || '').split('\n')) if (para) h += `<p>${esc(para)}</p>`;
     if (e.here) h += `<h5>${e.ch === 'orte' ? 'Gut zu wissen' : 'Hier bei Ratscher'}</h5><p>${esc(e.here)}</p>`;
+    h += profileHTML(e);
     const more = (e.more || []).filter(id => REG.has(id));
     if (more.length)
       h +=
@@ -845,6 +892,7 @@ body[data-top="1"] #winote{top:178px}
     lookAll();
     if (TH.check && TH.el && !TH.el.hidden) TH.check();
     stratBtn();
+    tierEntries();
   }, 'wissen/wissen');
   // ---- the strategy mode's bar (feat/strategie): a button „Entdeckerbuch“ beside its own „Wissen“ (the tech tree) ----
   function stratBtn() {

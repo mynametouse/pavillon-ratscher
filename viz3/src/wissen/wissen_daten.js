@@ -605,7 +605,7 @@ export const WDATEN = (() => {
       icon: '🚗',
       title: 'Straßen und ihre Klassen',
       text: 'Bundesstraßen, Landesstraßen und Kreisstraßen gehören dem Bund, dem Land oder dem Landkreis – sie bauen und unterhalten sie. Gemeindestraßen und Feldwege sind Sache der Stadt.',
-      here: 'Durch das Tal führt die Landesstraße L 1625 nach Schleusingen und Kloster Veßra. Wer auf ihr Tempo 30 will, fragt nicht die Stadt, sondern die Straßenverkehrsbehörde im Landratsamt.',
+      here: 'Am Dorf vorbei führt die Landesstraße L 1625 – auf ihr fährt man nach Kloster Veßra. Wer auf einer solchen Straße Tempo 30 will, fragt nicht die Stadt, sondern die Straßenverkehrsbehörde im Landratsamt.',
       src: [
         ['Straßenklasse (Wikipedia)', 'https://de.wikipedia.org/wiki/Straßenklasse'],
         ['Im Spiel: „Wahl und Amt“ – wer entscheidet was', 'https://landesrecht.thueringen.de/'],

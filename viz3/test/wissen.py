@@ -7,11 +7,11 @@
 # the zombie night starts with the book there; the strategy mode (when the build has it) gets the button in its bar. No page errors.
 # Pictures in out/wissen/ (look at them).
 # Data views on the plan view (Sonne, Lärm, Naturwert, Stimmung, Verkehr): on and off, legends, SVG only.
-#   python3 viz3/test/wissen.py 9006 [sections]   sections: buch,ereignis,ort,lehrer,warum,tafel,daten,reload,zombie,strategie (default all)
+#   python3 viz3/test/wissen.py 9006 [sections]   sections: buch,ereignis,ort,lehrer,warum,tafel,daten,reload,telefon,zombie,strategie (default all)
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'buch,ereignis,ort,lehrer,warum,tafel,daten,reload,zombie,strategie').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'buch,ereignis,ort,lehrer,warum,tafel,daten,reload,telefon,zombie,strategie').split(','))
 ck = lib.Checks('wissen')
 OUT = lib.out('wissen')
 NOBLUR = "document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')"
@@ -244,6 +244,32 @@ def run():
                 ck('…and the understood rule', 'ruhe_sonntag' in f2['why'])
             ck.errors(errs)
         pg.close()
+
+        if 'telefon' in want:
+            # iPhone size with touch (Falko plays on an iPhone): the book and the data panel fit the screen
+            errs4 = []
+            pg4 = lib.page(b, 390, 780, errs4, is_mobile=True, has_touch=True, device_scale_factor=2)
+            lib.boot(pg4, port)
+            E4 = pg4.evaluate
+            E4(NOBLUR)
+            E4("KERN.emit('tiere:entdeckt', { kind: 'art', id: 'rotmilan', title: 'Rotmilan' })")
+            E4("WISSEN.open('tier:rotmilan')")
+            r = json.loads(E4("JSON.stringify((() => { const el = document.getElementById('wibook'), r = el.getBoundingClientRect(), b = el.querySelector('.wi-body'); return { l: r.left, r: r.right, t: r.top, b: r.bottom, W: innerWidth, H: innerHeight, over: b.scrollWidth > b.clientWidth + 1 }; })())"))
+            ck('phone: the book fits the screen (no sideways scrolling)', r['l'] >= 0 and r['r'] <= r['W'] and r['b'] <= r['H'] and not r['over'], str(r))
+            try:
+                E4("GAME.shot()"); pg4.screenshot(path=os.path.join(OUT, '12_telefon_buch.png'), timeout=120000)
+            except Exception as e:
+                print('note: phone shot failed', repr(e)[:120])
+            E4("WISSEN.close(); GAME.go('draufsicht')"); E4("for (let i = 0; i < 20; i++) GAME.step(0.05)")
+            E4("WDATEN.set('w_natur', true)"); E4("for (let i = 0; i < 12; i++) GAME.step(0.05)")
+            d = json.loads(E4("JSON.stringify((() => { const el = document.getElementById('widaten'), r = el.getBoundingClientRect(); return { vis: !el.hidden, l: r.left, r: r.right, t: r.top, b: r.bottom, W: innerWidth, H: innerHeight }; })())"))
+            ck('phone: the data panel is shown and fits', d['vis'] and d['l'] >= 0 and d['r'] <= d['W'] and d['t'] >= 0 and d['b'] <= d['H'], str(d))
+            try:
+                E4("GAME.shot()"); pg4.screenshot(path=os.path.join(OUT, '13_telefon_daten.png'), timeout=120000)
+            except Exception as e:
+                print('note: phone shot failed', repr(e)[:120])
+            ck.errors(errs4)
+            pg4.close()
 
         if 'zombie' in want:
             errs3 = []
