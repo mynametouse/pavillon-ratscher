@@ -619,7 +619,7 @@ export const TIERE = (() => {
   function threats() {
     const out = [];
     const v = VEH && VEH.cur;
-    if (P.mode === 'walk' && !v) out.push({ x: P.x, y: P.y, kind: 'walker', speed: P.speed || 0 });
+    if (P.mode === 'walk' && !v) out.push({ x: P.x, y: P.y, kind: 'walker', speed: P.speed || 0, stance: P.stance });
     if (v && v.st && Number.isFinite(v.st.x)) {
       const sp = Math.hypot(v.st.u || 0, v.st.v || 0);
       out.push({ x: v.st.x, y: v.st.y, kind: 'car', speed: sp });
@@ -636,6 +636,21 @@ export const TIERE = (() => {
     }
     return out;
   }
+  // the wind carries the walker's scent: downwind of him the animals smell him from much further, upwind they only see and hear him
+  // (the stalker's rule: against the wind) – feat/wetter's wind (WETTER.S.cur: m/s, ° from where it blows); calm without it
+  function scent(ax, ay, tx, ty) {
+    const W = S.wind || (window.WETTER && WETTER.S && WETTER.S.cur); // S.wind: a fixed wind for tests ({ wind, dir })
+    if (!W || !(W.wind > 0.3) || !Number.isFinite(W.dir)) return 1;
+    const to = ((W.dir + 180) * Math.PI) / 180,
+      dx = ax - tx,
+      dy = ay - ty,
+      d = Math.hypot(dx, dy) || 1,
+      al = (dx * Math.sin(to) + dy * Math.cos(to)) / d,
+      k = Math.min(1, W.wind / 3);
+    return al > 0 ? 1 + 0.6 * al * k : 1 + 0.2 * al * k;
+  }
+  // ducked, crawling or lying the walker is seen later (game/walkable.js STANCES)
+  const STANCE = { stand: 1, crouch: 0.72, crawl: 0.5, prone: 0.45 };
   // how close is too close for this animal: distance to flee, distance to look up
   function danger(a, T) {
     const F = TARTEN.A[a.art].flee || {};
@@ -654,7 +669,13 @@ export const TIERE = (() => {
               : t.r || F.noise;
       if (!f) continue;
       // a walker who runs is noticed sooner, one standing still later; at night they let one come closer
-      if (t.kind === 'walker') f *= (t.speed > 3.5 ? 1.25 : t.speed < 0.3 ? 0.7 : 1) * (sunEl() < -6 ? 0.75 : 1);
+      if (t.kind === 'walker')
+        f *=
+          (t.speed > 3.5 ? 1.25 : t.speed < 0.3 ? 0.7 : 1) *
+          (sunEl() < -6 ? 0.75 : 1) *
+          (STANCE[t.stance] || 1) *
+          scent(a.x, a.y, t.x, t.y);
+      else if (t.kind === 'dog') f *= scent(a.x, a.y, t.x, t.y);
       // lying in cover they trust it: the hare in its form sits tight until one nearly steps on it
       if (a.mode === 'lie') f *= a.art === 'hase' ? 0.3 : 0.6;
       const k = d / f;
@@ -1092,6 +1113,12 @@ export const TIERE = (() => {
     saveT += dt;
   }
   // ---------- for tests and the strategy mode ----------
+  // how far a walker at (wx, wy) may come towards an animal of this kind at (ax, ay) before it flees: walking, by day, in the
+  // stance given, with the wind as it is now
+  S.fluchtDistanz = (art, ax, ay, wx, wy, stance = 'stand') => {
+    const F = (TARTEN.A[art] && TARTEN.A[art].flee) || {};
+    return Math.round((F.walker || 0) * (STANCE[stance] || 1) * scent(ax, ay, wx, wy));
+  };
   S.state = () => ({
     groups: S.groups.length,
     byArt: S.groups.reduce((m, g) => ((m[g.art] = (m[g.art] || 0) + 1), m), {}),

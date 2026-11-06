@@ -32,6 +32,8 @@ with lib.browser() as b:
     E("GAME.setView3(false, true)")
     VIEWFN = "window.__view = (x, y, z, yaw, pitch, fov) => { window.FOVX = fov || 70; GAME.view(x, y, z, yaw, pitch, fov); }; 0"
     E(VIEWFN)
+    # still air for the scenes (the weather of the day would move the flight distances with the wind; the wind gets its own check)
+    E("TIERE.wind = { wind: 0, dir: 0 }")
     st = J("TIERE.state()")
     ck('the animals are there (TIERE, HUND, the body builder)', E("!!(window.TIERE && window.HUND && window.TKOERPER)"), str(st))
     p0 = progs()
@@ -218,6 +220,13 @@ with lib.browser() as b:
         # walk at the roe deer: they look up, then the group bounds away towards cover, and stays there a while
         at(16, 50, date=(11, 5))
         E("TIERE.reset(); HUND.on = false; if (HUND.model) HUND.model.g.visible = false")
+        # the wind: downwind of the walker the deer smell him from further, upwind less; ducked he is seen later
+        E("TIERE.wind = { wind: 4, dir: 270 }")
+        wd = J("({ down: TIERE.fluchtDistanz('reh', 100, 0, 0, 0), up: TIERE.fluchtDistanz('reh', -100, 0, 0, 0), side: TIERE.fluchtDistanz('reh', 0, 100, 0, 0), duck: TIERE.fluchtDistanz('reh', 0, 100, 0, 0, 'crouch') })")
+        print('flight distance with a west wind of 4 m/s', wd, flush=True)
+        ck('wind: downwind the roe deer smell the walker from further than upwind; ducked he gets closer', wd['down'] > wd['side'] > wd['up'] and wd['duck'] < wd['side'], str(wd))
+        # (the approach below in still air, so the flight distance is the roe deer's own)
+        E("TIERE.wind = { wind: 0, dir: 0 }")
         # a roe group out at its feeding place with at least two deer, the nearest to the Klinge's fields (the layout of the groups follows
         # the world's data – crowns, walls – so it shifts when those change; the nearest group alone may be a single deer in cover)
         r = J("""(() => { const P0 = [-560, -560], d = g => Math.hypot(g.feed[0] - P0[0], g.feed[1] - P0[1]);
