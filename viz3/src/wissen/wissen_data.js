@@ -485,9 +485,16 @@ export const WDATA = (() => {
       ch: 'handwerk',
       icon: '🎄',
       title: 'Glasbläser in Lauscha',
-      text: 'Im Thüringer Wald gab es Quarzsand, Holz für die Öfen und Wasser – gute Bedingungen für Glashütten. In Lauscha gründeten Hans Greiner und Christoph Müller 1597 eine Glashütte; später wurden dort vor der Lampe Glasaugen, Glasperlen und der berühmte gläserne Christbaumschmuck geblasen.',
+      text: 'Im Thüringer Wald gab es Quarzsand, Holz für die Öfen und Wasser – gute Bedingungen für Glashütten. In Lauscha gründeten Hans Greiner und Christoph Müller 1597 eine Glashütte; später wurden dort vor der Lampe Glasaugen, Glasperlen und – seit 1847 – der berühmte gläserne Christbaumschmuck geblasen.',
       here: 'Glashütten verbrauchten riesige Mengen Holz und Holzkohle – auch deshalb sahen die Wälder des Thüringer Walds vor 200 Jahren ganz anders aus als heute.',
-      src: [wiki('Lauscha'), wiki('Christbaumkugel')],
+      src: [
+        wiki('Lauscha'),
+        wiki('Christbaumkugel'),
+        [
+          'Homes & Antiques: Discover Lauscha, the birthplace of glass baubles',
+          'https://homesandantiques.com/antiques/collecting-guides-antiques/discover-the-town-that-invented-baubles',
+        ],
+      ],
       find: { talk: ['gerhard:handwerk'] },
       hint: 'Gerhard erzählt von den alten Handwerken.',
     },
