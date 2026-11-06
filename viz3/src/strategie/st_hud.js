@@ -67,7 +67,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
 #stppl .p .nd{grid-column:2;display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:2px}
 #stppl .p .nd i{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden} #stppl .p .nd i u{display:block;height:100%}
 #stppl .tools{display:flex;gap:4px;flex-wrap:wrap}
-#stpan{top:132px;right:max(10px,env(safe-area-inset-right,0px));width:min(320px,44vw);max-height:calc(100% - 200px);overflow:auto;padding:9px 11px 11px}
+#stpan{top:132px;right:max(10px,env(safe-area-inset-right,0px));width:min(320px,44vw);max-height:calc(100% - 200px);overflow:auto;padding:9px 11px 11px;background:rgba(24,28,22,.9)}
 #stpan h3{margin:0 0 2px;font:600 14px/1.25 var(--f-display,Georgia,serif);display:flex;justify-content:space-between;gap:8px}
 #stpan h3 button{background:none;border:0;color:inherit;font-size:16px;cursor:pointer;padding:0 2px}
 #stpan h4{margin:9px 0 3px;font:600 10.5px/1.2 var(--f-mono,monospace);letter-spacing:.06em;text-transform:uppercase;color:#cfe3a8}
@@ -200,8 +200,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       if (w) w.hidden = !w.hidden;
     });
     // the plan view's own labels where a place of the mode stands (world/siteplan.js redraws its overlay on every camera move)
-    const tsvg = $('topsvg'),
-      DUP = new Set(['Werkstatt', 'Garage', 'Hubert', 'Ronald', 'Bungalow', 'Garten', 'Holzhaus', 'Wohnwagen']);
+    const tsvg = $('topsvg');
     if (tsvg && window.MutationObserver)
       new MutationObserver(() => {
         if (!S.on) return;
@@ -229,6 +228,8 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
     });
   }
   // ---------------- show / hide ----------------
+  // the plan view's labels of what a place of the mode already names (hidden while the mode is on)
+  const DUP = new Set(['Werkstatt', 'Garage', 'Hubert', 'Ronald', 'Bungalow', 'Garten', 'Holzhaus', 'Wohnwagen']);
   function show(on) {
     build();
     for (const e of [H.res, H.time, H.ppl, H.notes, H.card, H.svg]) e.hidden = !on;
@@ -236,6 +237,14 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       H.pan.hidden = true;
       H.layers.hidden = true;
       H.svg.innerHTML = '';
+      H.svgH = '';
+      // the plan view's labels as the plan view has them
+      const tsv = $('topsvg');
+      if (tsv)
+        for (const t of tsv.querySelectorAll('text')) {
+          t.style.visibility = '';
+          if (DUP.has(t.textContent)) t.style.display = '';
+        }
     } else {
       refresh();
       draw();
@@ -276,7 +285,9 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
     const t = CLOCK.t,
       dy = W.day(t, S.plan),
       wx = W.wx(t);
-    const dtxt = `${dy.label} ${CLOCK.hm()}<small>${dy.hol ? esc(dy.hol) + ' · ' : ''}${wxText(wx)}</small>`;
+    const sn = W.sun(t),
+      mm = W.minOf(t),
+      dtxt = `${dy.label} ${CLOCK.hm()}<small>${dy.hol ? esc(dy.hol) + ' · ' : ''}${wxText(wx, !sn || (mm > sn.up && mm < sn.down))}</small>`;
     const de0 = $('stdate');
     if (de0 && de0.innerHTML !== dtxt) de0.innerHTML = dtxt;
     H.time
@@ -303,7 +314,11 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
           ab = innerHeight - pt + 6;
         H.pan.style.bottom = Math.round(ab) + 'px';
         H.layers.style.bottom = Math.round(ab) + 'px';
-        H.pan.style.maxHeight = Math.max(160, Math.round(pt - 140)) + 'px';
+        // between the time box and the people strip (the time stays readable); where that is too little, over the time box
+        const tb = H.time.hidden ? 0 : H.time.getBoundingClientRect().bottom,
+          room = pt - tb - 12;
+        H.pan.style.maxHeight = (room >= 220 ? Math.round(room) : Math.max(160, Math.round(pt - 70))) + 'px';
+        H.layers.style.maxHeight = H.pan.style.maxHeight;
       }
       return;
     }
@@ -317,7 +332,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       H.pan.style.maxHeight = `calc(100% - ${Math.round(t) + 70}px)`;
     }
   }
-  const wxText = wx =>
+  const wxText = (wx, day = true) =>
     (wx.storm
       ? 'Sturm'
       : wx.rain > 0.2
@@ -326,7 +341,9 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
           ? 'bedeckt'
           : wx.cloud > 0.4
             ? 'wolkig'
-            : 'sonnig') +
+            : day
+              ? 'sonnig'
+              : 'klar') +
     ' · Wind ' +
     Math.round(wx.wind) +
     ' km/h';
@@ -681,11 +698,43 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       }
     // places (a label only where it does not run into one drawn before: the selected place first, then by order)
     const taken = [],
+      hits = (x0, y0, x1, y1) => taken.some(r => x0 < r[2] && x1 > r[0] && y0 < r[3] && y1 > r[1]),
       free = (x0, y0, x1, y1) => {
-        if (taken.some(r => x0 < r[2] && x1 > r[0] && y0 < r[3] && y1 > r[1])) return false;
+        if (hits(x0, y0, x1, y1)) return false;
         taken.push([x0, y0, x1, y1]);
         return true;
       };
+    // the plan view's own labels (buildings: Carport, Pavillon, …): one under a place's symbol of ours steps aside (hidden while it is), the
+    // others are there already – our labels keep off them
+    const tsv = $('topsvg');
+    if (tsv) {
+      const on = STRAT.layer.on('orte'),
+        cr = cv.getBoundingClientRect(),
+        sym = [];
+      if (on)
+        for (const Pl of STRAT.place.list()) {
+          const c = STRAT.place.pos(Pl.id),
+            q = c ? pr(c[0], c[1], 1) : null;
+          if (q && onScreen(q)) sym.push([q[0] - 14, q[1] - 14, q[0] + 14, q[1] + 14]);
+        }
+      for (const t of tsv.querySelectorAll('text')) {
+        if (t.style.display === 'none') continue;
+        const b = t.getBoundingClientRect(),
+          R = [b.left - cr.left - 2, b.top - cr.top - 1, b.right - cr.left + 2, b.bottom - cr.top + 1];
+        const under = on && b.width > 0 && sym.some(r => R[0] < r[2] && R[2] > r[0] && R[1] < r[3] && R[3] > r[1]);
+        if (under !== (t.style.visibility === 'hidden')) t.style.visibility = under ? 'hidden' : '';
+        if (
+          on &&
+          !under &&
+          b.width > 0 &&
+          b.right > cr.left &&
+          b.left < cr.right &&
+          b.bottom > cr.top &&
+          b.top < cr.bottom
+        )
+          taken.push(R);
+      }
+    }
     if (STRAT.layer.on('orte'))
       for (const Pl of STRAT.place.list().sort((a, b) => (b.id === H.place) - (a.id === H.place))) {
         const c = STRAT.place.pos(Pl.id);
@@ -705,14 +754,21 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         }
         h += `<text class="ic" x="${q[0].toFixed(1)}" y="${(q[1] + 4.5).toFixed(1)}" text-anchor="middle">${Pl.icon}</text>`;
         const lw = Pl.name.length * 6.4 + 4;
-        if (free(q[0] - r, q[1] - 9, q[0] + r + 5 + lw, q[1] + 9)) {
-          h += `<text x="${(q[0] + r + 5).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}">${esc(Pl.name)}</text>`;
+        // the label right of the symbol, else left of it; neither free: only the symbol (its name in the tooltip and the panel)
+        const right = !hits(q[0] - r, q[1] - 9, q[0] + r + 5 + lw, q[1] + 9),
+          left = !right && !hits(q[0] - r - 5 - lw, q[1] - 9, q[0] + r, q[1] + 9);
+        if (right || left) {
+          const x = right ? q[0] + r + 5 : q[0] - r - 5;
+          free(right ? q[0] - r : q[0] - r - 5 - lw, q[1] - 9, right ? q[0] + r + 5 + lw : q[0] + r, q[1] + 9);
+          h += `<text x="${x.toFixed(1)}" y="${(q[1] + 4).toFixed(1)}"${right ? '' : ' text-anchor="end"'}>${esc(Pl.name)}</text>`;
           if (STRAT.layer.on('wirtschaft') && Pl.badge) {
-            const b = Pl.badge();
-            if (b && free(q[0] + r + 5, q[1] + 9, q[0] + r + 5 + b.length * 5.6, q[1] + 21))
-              h += `<text class="badge" x="${(q[0] + r + 5).toFixed(1)}" y="${(q[1] + 17).toFixed(1)}">${esc(b)}</text>`;
+            const b = Pl.badge(),
+              bw = b ? b.length * 5.6 : 0;
+            if (b && free(right ? x : x - bw, q[1] + 9, right ? x + bw : x, q[1] + 21))
+              h += `<text class="badge" x="${x.toFixed(1)}" y="${(q[1] + 17).toFixed(1)}"${right ? '' : ' text-anchor="end"'}>${esc(b)}</text>`;
           }
         } else free(q[0] - r, q[1] - r, q[0] + r, q[1] + r);
+        h += `<title>${esc(Pl.name)}</title>`;
         h += '</g>';
       }
     // people (symbols; close up the world's figures – the neighbours are their own walkers)
@@ -724,7 +780,14 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         if (!q0) continue;
         const q = pr(q0[0], q0[1], 1.8);
         if (!onScreen(q)) continue;
-        const r = mpp < 0.06 ? 7 : 10,
+        // on a vehicle's seat (a job's ride – the tractor of the skidding run): the symbol small beside the vehicle the layer draws
+        const pj = S.people[id].job ? STRAT.job.of(S.people[id].job) : null,
+          PJ = pj && pj.st === 'work' ? STRAT.job.get(pj.def) : null;
+        if (PJ && PJ.ride && PJ.ride(pj, id)) {
+          q[0] += 14;
+          q[1] -= 14;
+        }
+        const r = mpp < 0.06 ? 7 : PJ && PJ.ride && PJ.ride(pj, id) ? 7 : 10,
           on = H.sel.includes(id);
         h += `<g class="pp${on ? ' on' : ''}"><circle class="b" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${r}" fill="${d.col}"/><text x="${q[0].toFixed(1)}" y="${q[1].toFixed(1)}">${d.short}</text><text class="lv" x="${(q[0] + r).toFixed(1)}" y="${(q[1] - r).toFixed(1)}">${STRAT.level(id)}</text>`;
         if (STRAT.layer.on('beduerfnisse')) {

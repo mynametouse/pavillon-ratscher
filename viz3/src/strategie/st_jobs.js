@@ -52,7 +52,8 @@ export const STJOBS = (() => {
     unit: 'rm',
     order: 30,
     // the slabs of the band sawmill (two per log, about 0,04 rm each as split pieces) and what was split and stacked
-    get: () => S.brennholz + Math.max(0, (HOLZSAW.fire || 0) - ((S.ext.brennholz && S.ext.brennholz.used) || 0)) * 0.04,
+    get: () =>
+      S.brennholz + Math.max(0, (HOLZSAW.fire || 0) - (+(S.ext.brennholz && S.ext.brennholz.used) || 0)) * 0.04,
     fmt: v => de(v, 1) + ' rm',
     tip: 'Raummeter: ein Kubikmeter geschichtetes Holz mit Luft dazwischen – 1 rm ≈ 0,7 fm. Aufgesetzt und Schwarten, die noch auf das Aufarbeiten warten',
   });

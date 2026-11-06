@@ -284,6 +284,15 @@ with lib.browser() as b:
         ok = lo and lo.get('id') and until(done(lo['id']), 200)
         op1 = J("STHOLZ.ownPanels().map(w => w.sp + ' ' + w.mc)")
         ck('Falko glues panels of own wood from the Klinge (table saw, drum sander, clamps) – Leimholz in the workshop rack', ok and len(op1) > op0, f'{km} → {op0} → {op1} {lo} {J("STRAT.S.notes.slice(-2).map(n => n.text)")}')
+        if op1 and all(w.startswith('larch') for w in op1):
+            o3 = J("STRAT.S.orders.find(o => o.key === 'laerche3')")
+            ck('the first Leimholz of own larch brings its order: 3 Schneidebretter Lärche aus der Klinge', o3 and o3['n'] == 3 and o3['wood'] == 'larch', str(o3)[:200])
+            bl = job('brett_eigen', ['falko'])
+            ok = bl and bl.get('id') and until(done(bl['id']), 200)
+            lb = J("STHOLZ.shelf(0, 'larch').map(w => ({ id: w.id, stars: w.stars, sp: w.sp, notes: w.notes }))")
+            ck('Falko builds the first board of own larch – on the shelf as larch, apart from the oak ones', ok and len(lb) == 1 and J("STHOLZ.shelf(0).length") == 0, f'{lb} {bl}')
+        else:
+            print('note: the own panels are not larch', op1, flush=True)
         # the workshop: oak panels, five boards, the order
         J("STRAT.setDate('2026-11-21', 8 * 60 + 30)")
         o = J("STRAT.S.orders.find(o => o.key === 'bretter5')")
@@ -339,8 +348,8 @@ with lib.browser() as b:
         ck('Christoph makes firewood of the slabs (cut to 33 cm, split, stacked – rm with the day it will be dry)', ok and fb1['stacked'] > 0.15 and fb1['lots'] and len(fb1['lots']) == 1 and abs(fb1['rm'] - fb0['rm']) < 0.05, f'{fb0} → {fb1} {bh}')
         bv = job('brennholz_verkaufen', ['sarah'])
         ok = bv and bv.get('id') and until(done(bv['id']), 160)
-        fb2 = J("({ stacked: +STRAT.S.brennholz.toFixed(2), eur: Math.round(STRAT.S.eur), last: STRAT.S.ledger.slice(-1)[0] })")
-        ck('Sarah sells it fresh to Ronald next door (80 €/rm; dry after a year it would bring 110 €)', ok and fb2['stacked'] < 0.01 and fb2['eur'] - fb1['eur'] > 70 * fb1['stacked'] - 1, f'{fb1} → {fb2}')
+        fb2 = J("({ stacked: +STRAT.S.brennholz.toFixed(2), eur: Math.round(STRAT.S.eur), sale: STRAT.S.ledger.filter(e => /^Brennholz an Ronald/.test(e.text)).slice(-1)[0] })")
+        ck('Sarah sells it fresh to Ronald next door (80 €/rm; dry after a year it would bring 110 €)', ok and fb2['stacked'] < 0.01 and fb2['sale'] and abs(fb2['sale']['eur'] - 80 * fb1['stacked']) <= 0.09 * 80 * fb1['stacked'] + 0.01, f'{fb1} → {fb2}')
         led = J("STRAT.S.ledger.slice(-12).map(e => e.text + ' ' + e.eur)")
         print('ledger', led, flush=True)
         page_pic('10_werkstatt')

@@ -39,7 +39,9 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - **Eigenes Holz in der Werkstatt:** lufttrocken (im Mittel ≤ 21 %, sonst Absage mit Grund: Risse durch das Feuchtegefälle) werden die
   Bohlen auf 1 m abgelängt und nachgetrocknet – heute, ohne die Halle, unter dem Pultdach (im Sommer 11–12 %, im Winter nicht unter 18 %),
   mit der Halle im Trockenschrank (9 %); bei höchstens 12 % (Schrank 10,5 %) werden sie zu Leimholz verleimt (`HOLZDRY.simKiln`,
-  `HOLZDRY.simShop` → `WERK.addOwn`: Platten Lärche oder Fichte aus der Klinge im Werkstattregal, Bohlen ab 35 mm).
+  `HOLZDRY.simShop` → `WERK.addOwn`: Platten Lärche oder Fichte aus der Klinge im Werkstattregal, Bohlen ab 35 mm). Die erste Platte
+  Lärche bringt die zweite Bestellung „3 Schneidebretter Lärche aus der Klinge“ (ein Hofladen in Schleusingen, 119 € das Stück –
+  Annahme); Bretter daraus baut der Auftrag „Schneidebrett Lärche“ (Fichte lehnt er mit Grund ab: zu weich, Rohdichte ~450 kg/m³).
 - **Brennholz:** die Schwarten der Bandsäge (je ~0,04 rm) am Sägebock auf 33 cm sägen, spalten, aufsetzen (0,45–0,85 rm/h je Person nach
   Können, Motorsäge mit Sonderkraftstoff gebucht); trocken nach einem Jahr unter Dach (1. BImSchV: unter 25 % Feuchte). Verkauf an Ronald
   nebenan mit der Schubkarre: trocken 110 €/rm (TFZ Bayern), frisch 80 €/rm (Annahme) – Warten lohnt sich.
@@ -207,7 +209,8 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
 - 6.11. 1:50 – Auftragsfelder `psa`, `move`, `ride`; `STRAT.gearOf(id)`, `STRAT.S.people[id].gear` (gespeichert); Aufträge `psa_kaufen`,
   `brennholz`, `brennholz_verkaufen`; Vorrat `brennholz` zählt aufgesetztes Holz und noch nicht aufgearbeitete Schwarten
   (`STRAT.S.ext.brennholz = { used, lots: [{ rm, t0 }] }`).
-- 6.11. 2:00 – Aufträge `nachtrocknen`, `leimholz_eigen`; `STHOLZ.ownPanels()`; für Bauholz (strategie-bau): die Bretter mit Feuchte stehen in
+- 6.11. 2:00 – Aufträge `nachtrocknen`, `leimholz_eigen`, `brett_eigen`; Bestellungen können `wood: 'larch'` tragen (geliefert werden
+  Bretter dieser Holzart; ohne `wood` Eiche), `STHOLZ.shelf(minSterne, holzart)`, `STHOLZ.ownPanels()`; `WERK.simBoard({ sp })`; für Bauholz (strategie-bau): die Bretter mit Feuchte stehen in
   `HOLZSAW.boards` (`{ id, sp, t, L, wS, wW, mc, st: 'pile' | 'stack' | 'kiln' | 'shop' | 'used', blue, crack, warp }`), der Stapel in
   `HOLZDRY.stackMC()` (`{ n, avg, min, max }`) – Konstruktionsholz braucht ≤ 20 % (DIN 4074) und eine Sortierung.
 
@@ -231,8 +234,10 @@ auf einem echten Gerät). Der Hund (feat/tiere): von oben als Zeichen auf der Ka
   - `viz3/src/werk/holz_dry.js` – `HOLZDRY` jetzt `export`iert; `HOLZDRY.simStack(o)` (alle Bretter der Blöcke in den Stapel, Dach),
     `HOLZDRY.simKiln()` (lufttrockene Bretter in den Trockenschrank bzw. heute unter das Pultdach, wie von Hand), `HOLZDRY.kilnMC()`,
     `HOLZDRY.kilnTarget()`, `HOLZDRY.simShop()`.
-  - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
-- `viz3/src/modules.txt`: Block `# feat/strategie` vor `game/tutorial.js`.
+  - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak, sp })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
+- `viz3/src/modules.txt`: Block `# feat/strategie` nach `# feat/bus`, vor `game/tutorial.js`.
+- Das normale Spiel bleibt unberührt, bis jemand den Modus einmal startet (`STRAT.S.used`): vorher keine Simulation, keine Figuren, keine
+  Meldungen; danach läuft die Simulation mit der Spieluhr auch beim Gehen (eine Linse auf dieselbe Welt), beginnend mit dem ersten Start.
 - Neuer Speicher-Schlüssel `pav-strat-v1` (im Modul über `SAVE.key` angemeldet, Prüfung `v === 1`) – bitte in `docs/ARCHITECTURE.md` §8 eintragen.
 - Neue `window`-Namen: `STRAT`, `STHUD`, `STHOLZ`, `STEREIG`, `STAUSBAU`, `STFIG` (alle mit `ST`-Vorsilbe, für Tests und Erweiterungen).
 - Quellen (nur als Text in den Daten, keine fremden Dateien): ADAC Kraftstoffpreise, TFZ Bayern Scheitholzpreise, PVGIS (EU JRC), DGUV, SVLFG,
