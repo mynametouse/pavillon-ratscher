@@ -415,7 +415,7 @@ export const HUD = (() => {
   function viewChanged() {
     const ready = !!(window.AVATAR && LATE.AVATAR.ready);
     camb.hidden = !ready;
-    const on = CAM3.on || (CAM3.want && ready && P.mode !== 'walk');
+    const on = CAM3.on || (CAM3.want && ready && P.mode !== 'walk') || !!(PLAY.seat && PLAY.seat.view3); // feat/bus: a seat with its own outside view (the bus ride)
     camb.setAttribute('aria-pressed', on ? 'true' : 'false');
     camb.querySelector('.hbt').textContent = on ? 'Figur' : 'Augen';
     document.body.dataset.view = CAM3.on ? '3' : '1';

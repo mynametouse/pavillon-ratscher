@@ -230,7 +230,8 @@ with lib.browser() as b:
             p1 = E("GAME.R.info.programs.length")
             mine = own_new()
             ck('no new shader program for the bus, the sign and the display', not mine, f'{p0} → {p1}; of the bus: ' + (' | '.join(mine)[:400] or 'none') + '; others: ' + ' | '.join(new_progs())[:300])
-            # boarding through the action at the front door
+            # boarding through the action at the front door (with the own eyes: the seat; the view of the figure is the view from outside)
+            E("setView3(false)")
             E(f"""(() => {{ const I = BUS.S.inst.find(q => q.key === '{arr['key']}'); const fx = Math.sin(I.hd), fy = Math.cos(I.hd), rx = Math.cos(I.hd), ry = -Math.sin(I.hd);
               GAME.P.x = I.x + fx * 5.05 + rx * 2.2; GAME.P.y = I.y + fy * 5.05 + ry * 2.2; }})()""")
             steps(0.3)
@@ -263,6 +264,23 @@ with lib.browser() as b:
               const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert()); return [p.x, -p.z, p.y]; })()""")
             ck('the eye stays at the seat while the bus drives', abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 2.17) < 0.15 and abs(probe[2] - 1.61) < 0.1,
                'local ' + ', '.join(f'{v:.2f}' for v in probe))
+            # the view of the figure (the key V, „Von außen“ in the panel – CAM3.want, as on foot and in the car): from behind and above the
+            # bus, it swings back behind it; the own eyes again: the seat
+            E("setView3(true)")
+            steps(2.5)
+            po = J("""(() => { const I = BUS.S.ride.I, g = I.B.g, c = GAME.cam; g.updateMatrixWorld(true);
+              const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert());
+              return { p: [p.x, -p.z, p.y], hud: (document.querySelector('#camtog .hbt') || {}).textContent || null, btn: [...document.querySelectorAll('#buspanel .row button')].map(b => b.textContent), out: BUS.state().ride.out }; })()""")
+            pl = po['p']
+            ck('the view of the figure: the camera behind and above the bus while it drives', po['out'] and pl[1] < -9 and abs(pl[0]) < 6 and 3 < pl[2] < 11 and 'Vom Sitz aus' in po['btn'] and po['hud'] == 'Figur',
+               'local ' + ', '.join(f'{v:.1f}' for v in pl) + f" hud {po['hud']} {po['btn']}")
+            pic(pg, 'c3_von_aussen')
+            E("setView3(false)")
+            steps(1.2)
+            probe = J("""(() => { const I = BUS.S.ride.I, g = I.B.g, c = GAME.cam; g.updateMatrixWorld(true);
+              const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert()); return [p.x, -p.z, p.y, BUS.state().ride.out]; })()""")
+            ck('the own eyes: back on the seat', not probe[3] and abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 2.17) < 0.15 and abs(probe[2] - 1.61) < 0.1,
+               'local ' + ', '.join(f'{v:.2f}' for v in probe[:3]))
             # „Fahrt abkürzen“ to the Krankenhaus (the clock jumps), from there on in real time across the edge of the square to the
             # Zentralhaltestelle (the ground there streams in as for a car: welt/welt.js tiles, welt/fahrt.js roads), out there by itself
             kk, kz = J("""(() => { const I = BUS.S.ride.I, f = n => I.Rn.P.st.findIndex(o => o.s >= 0 && BUS.plan.S.stations[o.s].n === n);
@@ -347,7 +365,10 @@ with lib.browser() as b:
             steps(0.5)
         if 'schule' in want:
             # the school bus stop at the old school (its shelter, world/village_props.js): the 214 at 7:40 on a school day stops with its
-            # front door at the shelter; the board there lists the buses of both directions
+            # front door at the shelter; the board there lists the buses of both directions (from the bus spot in Ratscher: the run before
+            # may have ended in Schleusingen)
+            E("GAME.go('bus')")
+            steps(0.5)
             E("""(() => { const d0 = Math.floor(CLOCK.t / 1440) + 1; let d = d0; for (let i = 0; i < 14; i++, d++) { const q = BUS.plan.day(DN.e0 + d); if (q.wd < 5 && !q.hol && !q.ferien) break; }
               CLOCK.t = d * 1440 + 7 * 60 + 37; const e = BUS.STOPS().find(q => q.shelter);
               // (behind the shelter, away from the road: not in the bus's way)
@@ -358,6 +379,7 @@ with lib.browser() as b:
             for i in range(240):
                 steps(1.0)
                 st = J("BUS.state()")
+                if i == 1: print('school stop', E('CLOCK.hm()'), st['focus'], st['near'], [q['line'] + ' ' + q['st'] for q in st['inst']], flush=True)
                 here = [q for q in st['inst'] if q['halt'] == 'Ratscher, Schulbushaltestelle' and q['st'] == 'halt' and q['open'] > 0.8]
                 if here:
                     sb = here[0]; break

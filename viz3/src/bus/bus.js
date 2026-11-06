@@ -26,12 +26,13 @@ import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
 import { TASKS } from '../core/tasks.js';
 import { floorAt, P } from '../game/walkable.js';
-import { go } from '../game/player.js';
+import { CAM3, go, setView3 } from '../game/player.js';
 import { PLAY } from '../game/play.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { DKDATA } from '../world/dorfkern_data.js';
+import { WCOL } from '../world/worldcol.js';
 import { WELT } from '../welt/welt.js';
 import { FAHRT } from '../welt/fahrt.js';
 import { VNETZ } from '../verkehr/verkehr_netz.js';
@@ -657,21 +658,96 @@ export const BUS = (() => {
     while (a < -Math.PI) a += 2 * Math.PI;
     return a;
   };
+  // ---- the view from outside during a ride: behind and above the bus, looking where the rider looks (the mouse turns around the bus);
+  // after a moment without looking around it swings back behind the bus – as the vehicles' chase camera (vehicles/vehicle.js). It follows
+  // the view of the figure (CAM3.want: the key V, the button „Figur/Augen“, „Von außen“ in the panel) – the same on foot, in the car and
+  // in the bus; the seat with the own eyes. ----
+  const OUTV = { L: 17, up: 1.6, piv: 2.0, pitch: -10 };
+  function outEye(I) {
+    const y = (P.yaw * Math.PI) / 180,
+      p = (P.pitch * Math.PI) / 180,
+      fx = Math.sin(y) * Math.cos(p),
+      fy = Math.cos(y) * Math.cos(p),
+      fz = Math.sin(p),
+      px = I.x,
+      py = I.y,
+      pz = I.z + OUTV.piv;
+    let L = OUTV.L;
+    // out of the walls of the world's houses (world/worldcol.js)
+    WCOL.each(
+      Math.min(px, px - fx * L) - 1,
+      Math.min(py, py - fy * L) - 1,
+      Math.max(px, px - fx * L) + 1,
+      Math.max(py, py - fy * L) + 1,
+      (i, Q) => {
+        const ax = Q[i * 4],
+          ay = Q[i * 4 + 1],
+          bx = Q[i * 4 + 2],
+          by = Q[i * 4 + 3],
+          ex = -fx * L,
+          ey = -fy * L,
+          den = ex * (by - ay) - ey * (bx - ax);
+        if (Math.abs(den) < 1e-9) return;
+        const t = ((ax - px) * (by - ay) - (ay - py) * (bx - ax)) / den,
+          u = ((ax - px) * ey - (ay - py) * ex) / den;
+        if (t > 0 && t < 1 && u >= 0 && u <= 1) L = Math.min(L, Math.max(7, t * L - 0.4));
+      }
+    );
+    const cx = px - fx * L,
+      cy = py - fy * L;
+    let cz = pz - fz * L + OUTV.up * (L / OUTV.L);
+    const gz = KERN.ground(cx, cy, cz) + 1.2;
+    if (cz < gz) cz = gz;
+    return { x: cx, y: cy, z: cz };
+  }
+  function rideView(out) {
+    const R_ = S.ride;
+    if (!R_ || R_.out === !!out) return;
+    R_.out = !!out;
+    R_.lookT = -9;
+    if (!out && Math.abs(P.pitch + 1) > 20) P.pitch = -1;
+    viewLabel();
+    panel();
+  }
+  function viewLabel() {
+    if (window.HUD && window.HUD.viewChanged) window.HUD.viewChanged();
+    if (S.ride && S.ride.out) document.body.dataset.view = '3';
+  }
   function enter(I) {
     if (S.ride || PLAY.seated() || VEH.cur || I.st !== 'halt') return false;
     closeBoard();
-    S.ride = { I, from: I.k, want: null, lag: CLOCK.t - I.tau, lastHd: I.hd, k: I.k };
+    S.ride = {
+      I,
+      from: I.k,
+      want: null,
+      lag: CLOCK.t - I.tau,
+      lastHd: I.hd,
+      k: I.k,
+      out: CAM3.want,
+      vk: CAM3.want ? 1 : 0,
+      lookT: -9,
+    };
+    let lastE = null;
     I.hold = 2.5;
     PLAY.sit({
       kind: 'ride',
       fp: true,
+      get view3() {
+        return !!(S.ride && S.ride.out);
+      },
       get lock() {
         return !S.ride || S.ride.I.st === 'fahrt';
       },
       lockMsg: 'Während der Fahrt bleibst du sitzen – „Halt“ im Bus-Fenster.',
       follow: () => {
         const R_ = S.ride;
-        if (!R_) return eye(I);
+        // (getting off: from where the camera was – the seat or outside)
+        if (!R_) return lastE || eye(I);
+        const tm = performance.now() / 1000,
+          dt = Math.min(0.1, Math.max(0, tm - (R_.ft ?? tm)));
+        R_.ft = tm;
+        // the mouse or a finger turned the view since the last frame
+        if (R_.ly !== undefined && (Math.abs(P.yaw - R_.ly) > 0.01 || Math.abs(P.pitch - R_.lp) > 0.01)) R_.lookT = tm;
         // the bus at this very moment: the camera and the bus in the same frame (else the seat lags behind the moving bus by a frame's
         // way – at 50 km/h the eye sat behind its own backrest)
         if (!R_.busy && !(I.hold > 0 && I.st === 'halt')) {
@@ -682,10 +758,29 @@ export const BUS = (() => {
         const d = wrap(I.hd - R_.lastHd);
         P.yaw += (d * 180) / Math.PI;
         R_.lastHd = I.hd;
-        return eye(I);
+        // the view of the figure (key V, the view buttons): outside; the own eyes: the seat
+        if (CAM3.want !== R_.out) rideView(CAM3.want);
+        R_.vk = Math.min(1, Math.max(0, R_.vk + ((R_.out ? 1 : -1) * dt) / 0.6));
+        let e = eye(I);
+        if (R_.vk > 0) {
+          if (R_.out && tm - (R_.lookT ?? -9) > 1.5) {
+            let a = (I.hd * 180) / Math.PI - P.yaw;
+            while (a > 180) a -= 360;
+            while (a < -180) a += 360;
+            P.yaw += a * Math.min(1, dt * (1.2 + I.v * 0.1));
+            P.pitch += (OUTV.pitch - P.pitch) * Math.min(1, dt * 2);
+          }
+          const o = outEye(I),
+            k = R_.vk * R_.vk * (3 - 2 * R_.vk);
+          e = { x: e.x + (o.x - e.x) * k, y: e.y + (o.y - e.y) * k, z: e.z + (o.z - e.z) * k };
+        }
+        R_.ly = P.yaw;
+        R_.lp = P.pitch;
+        lastE = e;
+        return e;
       },
       yaw: (I.hd * 180) / Math.PI,
-      pitch: -1,
+      pitch: S.ride.out ? OUTV.pitch : -1,
       get back() {
         const p = doorPt(I, 1.0);
         return [p[0], p[1], I.z];
@@ -695,6 +790,8 @@ export const BUS = (() => {
     });
     CLOCK.focus('bus');
     S.stats.rides++;
+    // the view button: „Figur“ outside, „Augen“ on the seat
+    viewLabel();
     save();
     panel();
     // (does it go on to Schleusingen: a later stop there – the task „Mit dem Bus nach Schleusingen“)
@@ -716,6 +813,7 @@ export const BUS = (() => {
     const halt = stName(I.Rn.P.st[I.k].s);
     KERN.emit('bus:aus', { line: I.trip.line, halt, x: P.x, y: P.y });
     PLAY.think(halt + '.', 2400);
+    viewLabel();
     save();
   }
   // during a ride: arrived at the wanted stop → out; at the end of its way in the world → out
@@ -837,6 +935,7 @@ export const BUS = (() => {
           bell();
           panel();
         } else if (b.dataset.k === 'kurz') shorten();
+        else if (b.dataset.k === 'blick') setView3(!CAM3.want);
         else if (b.dataset.k === 'aus') {
           if (R2.I.st === 'halt' && R2.I.B.open > 0.5) PLAY.stand(true);
           else PLAY.think('Erst an der nächsten Haltestelle.');
@@ -869,7 +968,7 @@ export const BUS = (() => {
     const halts = R_.want !== null && R_.want === nextReal && I.st === 'fahrt';
     pan.innerHTML = `<header><b class="ln">${tr.line}</b><div><h3>${tr.head || tr.nach}</h3><span>${op}${tr.weiter ? ' · fährt weiter nach ' + tr.nach : ''}</span></div>${halts ? '<b class="halt">Wagen hält</b>' : ''}</header>
       <ol>${rows.join('')}</ol>
-      <div class="row">${I.st === 'halt' && I.k !== R_.from ? '<button type="button" data-k="aus">Aussteigen</button>' : nextReal !== null && R_.want !== nextReal ? '<button type="button" data-halt="' + nextReal + '">Aussteigen an der nächsten Haltestelle</button>' : ''}<button type="button" data-k="kurz">Fahrt abkürzen</button></div>
+      <div class="row">${I.st === 'halt' && I.k !== R_.from ? '<button type="button" data-k="aus">Aussteigen</button>' : nextReal !== null && R_.want !== nextReal ? '<button type="button" data-halt="' + nextReal + '">Aussteigen an der nächsten Haltestelle</button>' : ''}<button type="button" data-k="kurz">Fahrt abkürzen</button><button type="button" data-k="blick">${R_.out ? 'Vom Sitz aus' : 'Von außen'}</button></div>
       <p class="mnote">Haltestelle antippen: dort aussteigen. Fahrplan: gtfs.de (DELFI e.V.)</p>`;
     pan.hidden = false;
   }
@@ -1009,7 +1108,7 @@ export const BUS = (() => {
       g.connect(r.sfx);
       eng = { os, lp, g, ctx: r.ctx };
     }
-    const inside = S.ride && S.ride.I === I,
+    const inside = S.ride && S.ride.I === I && !S.ride.out,
       sp = inside ? { vol: 0.55, lp: 900 } : audio.spatial ? audio.spatial(I.x, I.y, 14) : { vol: 0.3, lp: 1200 },
       k = 0.62 + Math.min(1, (I.v * (I.r ?? 1)) / 14) * 0.7;
     const t = eng.ctx.currentTime;
@@ -1021,7 +1120,7 @@ export const BUS = (() => {
   function hiss(x, y, len, f) {
     const r = raw();
     if (!r) return;
-    const inside = S.ride && Math.hypot(S.ride.I.x - x, S.ride.I.y - y) < 8;
+    const inside = S.ride && !S.ride.out && Math.hypot(S.ride.I.x - x, S.ride.I.y - y) < 8;
     const sp = inside ? { vol: 0.6, lp: 6000 } : audio.spatial ? audio.spatial(x, y, 10) : { vol: 0.3, lp: 4000 };
     if (sp.vol < 0.01) return;
     const n = Math.floor(r.ctx.sampleRate * len),
@@ -1351,6 +1450,8 @@ export const BUS = (() => {
     drop,
     enter,
     leave: () => leaveRide(true),
+    // the ride's view (as the key V): true from outside behind the bus, false the seat
+    view: out => setView3(!!out),
     shorten,
     board,
     closeBoard,
@@ -1386,6 +1487,7 @@ export const BUS = (() => {
             from: S.ride.from,
             st: S.ride.I.st,
             lag: +S.ride.lag.toFixed(3),
+            out: !!S.ride.out,
           }
         : null,
       focus: S.focus,

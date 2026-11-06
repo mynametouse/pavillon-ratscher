@@ -55,7 +55,9 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 - **Einsteigen** an der Vordertür (Aktionsknopf), Platz rechts am Fenster hinter der Mitteltür (Ich-Sicht), Fenster mit Linie, Ziel, den
   nächsten Haltestellen und Zeiten; „Nächster Halt: …“ mit Gong beim Abfahren und auf der Anzeige unter der Decke hinter dem Fahrer; „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle
   antippen = dort aussteigen (Halt-Glocke, „Wagen hält“); **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur Ankunft, das Gelände dort lädt
-  vorher, die Türen sind offen); **„Aussteigen“**, wenn der Bus steht. Der Bus fährt seinen echten Weg auch über das 2,4-km-Quadrat hinaus –
+  vorher, die Türen sind offen); **„Aussteigen“**, wenn der Bus steht. **„Von außen“** (oder die Ansichtstaste V, der Knopf „Figur/Augen“):
+  der Blick von hinten oben auf den fahrenden Bus – mit der Maus um ihn herum, nach einem Moment schwenkt er wieder hinter ihn (wie die
+  Verfolgerkamera der Fahrzeuge, nicht durch Hauswände); „Vom Sitz aus“ zurück. Nach dem Aussteigen ist die Ansicht beim Gehen wie vorher. Der Bus fährt seinen echten Weg auch über das 2,4-km-Quadrat hinaus –
   die Kacheln laden vor ihm wie vor einem Auto (`welt/welt.js`, `welt/fahrt.js` schneidet die Straßen ein). Am Ende seines Wegs in der Welt
   steigt man aus („Weiter fährt der Bus über die Karte hinaus – nach …“). Gespeichert während der Fahrt (`pav-bus-v1`): die Haltestelle, an der
   man einstieg oder zuletzt hielt – Neu laden stellt einen dorthin.
@@ -84,7 +86,7 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 - Tests: `node --test viz3/test/unit/bus.test.mjs` (Kalender, Daten, Abfahrten in Ratscher, Fahrt nach Schleusingen im Takt, Zufahrt vom
   Rand, die Steige der Zentralhaltestelle, Stationsnamen); `python3 viz3/test/bus.py <port> [fahrt,nacht,schule,reload,zombie]` (Bilder in
   `out/bus/`: `a_fahrplan` Fahrplanfenster am Schild, `a2_aushang` Aushangfahrplan, `a3_leute_warten`, `b_bus_an_der_haltestelle`,
-  `b0_leute_steigen_ein`, `b2_tuer_offen`, `c_im_bus_panel` Busfenster, `c2_im_bus_telefon`, `d_aus_dem_bus`, `h_vorn_ausserhalb` und
+  `b0_leute_steigen_ein`, `b2_tuer_offen`, `c_im_bus_panel` Busfenster, `c2_im_bus_telefon`, `d_aus_dem_bus`, `c3_von_aussen`, `h_vorn_ausserhalb` und
   `h2_fenster_ausserhalb` aus dem Bus jenseits des Quadrats, `e_schleusingen_zh`, `f_nacht_vorn`, `g_nacht_seite`, `i_schulbus_haeuschen`),
   auf CI über `viz3/extra/bus/tests.txt`. Die Fahrt im Test: der Bus hält vor der Spielfigur in seiner Spur und hupt; zwei Leute warten und
   steigen ein; in Ratscher einsteigen, „Fahrt abkürzen“ bis zum Krankenhaus, von dort in Echtzeit über den Rand des Quadrats zur
@@ -92,6 +94,7 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   hinten mit aus). Der Test holt die Welt-Kacheln entlang des Wegs Ratscher – Schleusingen von der Website nach `viz3/dist/welt-test/` (wie
   `viz3/test/fahrt.py`).
 - `BUS.state()` (Zahlen), `BUS.plan` (BUSPLAN), `BUS.spawn(trip, tag, minute)`, `BUS.einsteigen()`, `BUS.want(k)`, `BUS.shorten(k?)`,
+  `BUS.view(außen)`,
   `BUSLEUTE.state()`, `BUSLEUTE.force = { ein, aus, line }` (Tests).
 
 ## Entscheidungen (nachts, ohne Falko)
@@ -120,7 +123,8 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   `FAHRT.focusBus`), `time/clock.js` (die Echtzeit-Uhr für den Bus heißt „Echtzeit – Bus“ statt „Leim offen“, Warten ist dann erlaubt),
   `verkehr/verkehr_auto.js` und `verkehr/verkehr.js` (je eine Zeile: die Busse als Hindernisse, über `window.BUS.obstacles`, weil `bus/bus.js`
   später lädt); `verkehr/verkehr.js` eine zweite Zeile: die Figur eines Fahrgasts (`S.busy[k] === 'bus'`) wird nicht freigegeben, solange er
-  an der Haltestelle wartet. `bus/bus_leute.js` schreibt in `VERKEHR.S.busy`/`VERKEHR.S.recent` (die Rollenliste des Verkehrs), statt eine
+  an der Haltestelle wartet. `game/hud.js` (eine Zeile in `viewChanged`: ein Sitz mit eigener Außenansicht – `PLAY.seat.view3`, die Busfahrt
+  „Von außen“ – zeigt am Knopf „Figur“ statt „Augen“). `bus/bus_leute.js` schreibt in `VERKEHR.S.busy`/`VERKEHR.S.recent` (die Rollenliste des Verkehrs), statt eine
   eigene zu führen. Der Speicherschlüssel `pav-bus-v1` ist in `bus/bus.js` mit `SAVE.key` angemeldet (Prüfung, Standard) – keine Zeile in
   `core/save.js`; dazu `SAVE.once('pav-bus-hint')` (Hinweis einmal).
 - Quellen: `credits_add` in `viz3/extra/bus/manifest.json` (gtfs.de/DELFI CC BY 4.0, OSM ODbL für Wege und Steige, Schulferien).
