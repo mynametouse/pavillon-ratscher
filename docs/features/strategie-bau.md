@@ -50,11 +50,21 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
   Entwurf und Statik, Bauleitung, Rohbau, Datum der Genehmigung und der Bauphase (§ 11 Abs. 3 ThürBO) – in beiden Linsen, bis Phase 30.
 - **Lieferung auf dem Bauplatz:** ist das Material der nächsten Phase da, liegt westlich der Platte eine Palette mit Holz unter Folie
   (Größe nach dem Wert der Lieferung), bis die Phase gebaut ist – von oben und in der Ich-Sicht.
-- **Was wäre, wenn:** das Feld schätzt, wann der Pavillon fertig wäre (Wochenenden zu dritt, die Sparrate, Lieferzeiten, ein Drittel der
-  Wochenenden ohne Wetter für außen) und ob Geld oder Zeit bremst; dazu der **Geldplan** (was noch offen ist, wie weit die Kasse reicht, wie
+- **Was wäre, wenn:** das Feld schätzt, wann der Pavillon fertig wäre (Wochenenden zu dritt – außen nur der Samstag, innen anderthalb Tage –,
+  die Sparrate, Lieferzeiten, ein Drittel der Wochenenden ohne Wetter für außen) und ob Geld oder Zeit bremst; dazu der **Geldplan** (was noch offen ist, wie weit die Kasse reicht, wie
   viele Monate Sparrate der Rest braucht) und die Dauer der nächsten Phase in Arbeitstagen.
 - **Zeitalter:** zu den drei des Kerns kommen „Das Ständerwerk steht“ (5), „Das Obergeschoss“ (11), „Unter Dach“ (16), „Die schwarze Hülle“ (21),
-  „Innenausbau“ (26), „Der Pavillon steht“ (30). Ebene „Bauen“ auf der Karte: nächste Phase und was ihr fehlt.
+  „Innenausbau“ (26), „Der Pavillon steht“ (30). Ebene „Bauen“ auf der Karte (aus der Nähe): nächste Phase und was ihr fehlt.
+- **Ruhe:** Bauen draußen ist öffentlich bemerkbare Arbeit – wie die lauten Aufträge des Kerns nicht sonn- und feiertags und nicht von
+  20 bis 7 Uhr (innen nur, wenn es laut ist); so scheuchen auch die Tiere von feat/tiere vor der Baustelle.
+- **Im Entdeckerbuch (feat/wissen):** die Gründe der Bauschritte sind Regeln des Buchs mit dem genauen Paragraphen und Link –
+  „Baugenehmigung im Außenbereich“ (§ 63 Abs. 1 Nr. 1 Buchst. a und b ThürBO, § 35 Abs. 1–3 BauGB), „Erst fragen: der Vorbescheid“,
+  „Die Statik in Gebäudeklasse 1“ (§ 2 Abs. 3 Satz 1 Nr. 1, § 72), „Das vereinfachte Verfahren“ (§§ 65, 67, 78), „Den Baubeginn anzeigen“,
+  „Das Bauschild“ (§ 11 Abs. 3), „Die notwendige Treppe“ (§ 37 Abs. 1 und Abs. 2 Satz 2), „Tragendes Holz trocken sortieren“ (DIN 4074-1,
+  DIN EN 1912); tippt man im Strategie-Modus auf „Warum?“, gilt die Regel im Buch als verstanden und bekommt „Quellen ›“. Dazu Einträge,
+  die man durch Tun findet: „Die Bauordnung: vom Vorbescheid zum Bauschild“ (Politik & Soziales, mit dem Vorbescheid), „Bauholz sortieren“
+  (Handwerk), „Äpfel brauchen einen Partner“ (Natur, wenn ‚Rebella‘ und ‚Rewena‘ stehen), „Einkochen“ (Handwerk), „Obst verkaufen“
+  (Politik & Soziales: Direktvermarktung, geeichte Waage). Die Verbissschutz-Notizen sind die Regel „Schutz für junge Bäume“ des Buchs.
 
 ### Der Garten von oben (`strategie/st_garten.js`)
 - **Orte:** „Obstgarten (Gartenplaner)“ (Mitte der geplanten Pflanzen) mit Liste: geplant, gekauft (unterwegs / am Gartentor), gepflanzt mit
@@ -78,10 +88,13 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
 
 ## Testen
 - Ohne Browser: `node --test viz3/test/unit/strategie_bau.test.mjs` (Personenstunden, eigenes Holz je Position, Kosten mit Umsatzsteuer,
-  Wetterfenster, Platte, Klima, Quellen).
+  Wetterfenster, Platte, Klima, Quellen; die Regeln des Buchs mit Paragraph, Absatz, Nummer und Link, keine alte Nummerierung von 2014).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9005 --serve strategie_bau` (Abschnitte `bau,holz,garten,welt,reload`:
   Vorbereitung bis zur Genehmigung, Phasen 1 und 2 mit Wetterfenstern, eigenes Holz bis Phase 3, der Garten von der Pflanzung bis zur Ernte,
-  Hühner, Bauschild und Ich-Sicht, Neuladen);
+  Hühner, Bauschild und Ich-Sicht, das Entdeckerbuch, Neuladen). Warteschritte (Bescheide, Lieferungen) werden in jedem Bild aufgelöst –
+  nach einem Zeitraffer sind sie sofort da (Prüfpaket 42152070883 hatte eine halbe Sekunde zu früh nachgesehen); der Test lässt nach
+  jedem Zeitraffer eine Sekunde mit stehender Uhr laufen. Neue Shader-Programme der eigenen Baumarten des Gartenplaners zählt dessen Test
+  (hier nur ein Hinweis);
   auf GitHub über `viz3/extra/strategie-bau/tests.txt` (dazu der Test des Kerns `strategie`), Bilder in `out/strategie_bau/`.
 
 ## API (window.STBAU, window.STGARTEN)
@@ -90,6 +103,7 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
   `tempOf(t)` (feat/wetter nahe der Uhr, sonst das Klima von Meiningen), `forcePlatte = { thick, rebar, apron, flat }` (Tests).
 - KERN-Ereignis `strategie:bau` `{ what: 'start' | 'platte' | 'vorbescheid' | 'statik' | 'genehmigung' | 'streifen' | 'phase', ph }`,
   `strategie:obst` `{ id, kg }`.
+- `STBAU.book()` (meldet die Regeln und Einträge beim Buch an, sobald es da ist), `STBAU.learnt(id, 'tun:…')` (ein Eintrag gefunden).
 - `STGARTEN.planted()`, `planned()`, `toBuy()`, `obstKg()`, `takeObst(kg)`, `guarded(x)`.
 - Für `strategie-dorf` (Ansehen): Obst verschenken ruft `STRAT.favour` und `STRAT.style`; ein Ansehen-API des Dorfs kann sich an
   `strategie:obst` und den Auftrag `g_schenken` hängen.
@@ -97,8 +111,8 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
 ## Offen
 - Die Wege zum Bauamt und zur Baumschule laufen in `STRAT.W.path` über die Klinge (der Kern kennt nur diese eine Route) – nur die
   gezeichnete Linie und die Fahrzeit sind davon betroffen.
-- Kein eigener Säge-Auftrag für Kanthölzer 6/14 (die 52-mm-Bohlen des Kerns zählen als Kantholz); Material liegt nicht sichtbar als Stapel
-  auf dem Bauplatz; der Variantenwechsel A/B wird von oben nicht angeboten (Menü der Welt).
+- Kein eigener Säge-Auftrag für Kanthölzer 6/14 (die 52-mm-Bohlen des Kerns zählen als Kantholz); der Variantenwechsel A/B wird von oben
+  nicht angeboten (Menü der Welt).
 - Die Ergebnisse von Bauamt und Statik sind im Spiel angenommen (im Text so gesagt) – die echte Frage bleibt beim Bauamt.
 
 ## Für den Lead
@@ -110,6 +124,13 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
   `game/walkable.js`, der Garten über `GPLAN`/`GPGAME` (öffentliche API), das Holz über `HOLZSAW.boards`/`HOLZDRY.rebuild`.
 - Gespeichert in `pav-strat-v1` unter `ext.bau` und `ext.garten` (geprüft bei jedem Lesen) – kein neuer Schlüssel.
 - Neue `window`-Namen: `STBAU`, `STGARTEN`.
-- Quellen nur als Text in den Daten (BauGB, ThürBO, Musterbauordnung, DIN 1054, DIN 4074-1, DIN EN 1912, DIN 18065, DIN 18516-1, DIN EN ISO 9972,
+- Das Entdeckerbuch lädt nach diesem Thema: `STBAU.book()` trägt zur Laufzeit acht Regeln in `WISSEN.data.WHY` und `STRAT.D.RULES` ein
+  (nur neue Schlüssel; `RULES.verbiss` mit dem Satz unserer Verbiss-Notizen, falls der Kern keine hat) und fünf Einträge über `WISSEN.add`.
+  Grenze: Das Buch prüft „verstanden“ beim Laden gegen seine eigene Liste, bevor unsere Regeln da sind – nach dem Neuladen gelten unsere
+  Regeln wieder als nicht verstanden (gefundene Einträge bleiben). Abhilfe in `wissen/wissen.js`: unbekannte Schlüssel in `S.w` behalten
+  oder ein `WISSEN.addWhy(id, def)`, das den gespeicherten Stand nachliest.
+- Links der ThürBO: das amtliche Portal landesrecht.thueringen.de hat keine Direktlinks auf Paragraphen; die Paragraphen verlinken auf
+  gesetze.co (§ 63), haufe.de (§ 65), die Landtags-Drucksache 7/9641 (§ 37, Entwurf) und umwelt-online.de (Text der ThürBO 2024).
+- Quellen als Text in den Daten und als Links in den Regeln und Einträgen des Buchs (BauGB, ThürBO, Musterbauordnung, DIN 1054, DIN 4074-1, DIN EN 1912, DIN 18065, DIN 18516-1, DIN EN ISO 9972,
   DIN EN 206/1045-3, EN 300, VdS 2008, DGUV Information 201-011, Flachdachrichtlinie, DWD-Klima, Merkblatt Baurecht der Stadt Erfurt,
   Pflanzen-Datenbank des Gartenplaners) – keine Zeile in `buildlib/credits.py` nötig.

@@ -89,3 +89,24 @@ test('the garden’s prices and sentences name their source or say „Annahme“
   assert.deepEqual(B.GARDEN.pair, ['apfel-rebella', 'apfel-rewena']);
   for (const [k, P] of Object.entries(B.PREP)) assert.ok(P.label && P.learn && P.src, k);
 });
+
+test('the book’s rules name the exact paragraph with a link; its entries have a chapter, a text, a source and a hint', () => {
+  const W = B.BOOK.why;
+  for (const [id, w] of Object.entries(W)) {
+    assert.ok(w.title && w.text.length > 30 && w.src.length >= 1, id);
+    for (const q of w.src) assert.ok(typeof q[0] === 'string' && (q[1] === null || /^https:\/\/\S+$/.test(q[1])), id + ': ' + q);
+  }
+  // the building law: paragraph, Absatz and Nummer in the source, each with a link
+  const src = id => W[id].src.map(q => q[0] + ' ' + q[1]).join(' | ');
+  assert.match(src('bau_genehmigung'), /§ 63 Abs\. 1 Nr\. 1 Buchst\. a und b ThürBO.* https:\/\//);
+  assert.match(src('bau_genehmigung'), /§ 35 Abs\. 1–3 Baugesetzbuch.* https:\/\/www\.gesetze-im-internet\.de\/bbaug\/__35\.html/);
+  assert.match(src('bau_treppe'), /§ 37 Abs\. 1 und Abs\. 2 Satz 2 ThürBO/);
+  assert.match(src('bau_statik'), /§ 2 Abs\. 3 Satz 1 Nr\. 1 ThürBO/);
+  assert.match(src('bau_antrag'), /§ 65 ThürBO/);
+  // no old numbering of the Bauordnung of 2014 (§ 60 procedure-free, § 34 stairs as the current paragraph)
+  for (const id of Object.keys(W)) assert.doesNotMatch(src(id), /§ 60 ThürBO|^§ 34 ThürBO/, id);
+  for (const e of B.BOOK.entries) {
+    assert.ok(['natur', 'handwerk', 'geschichte', 'politik', 'orte'].includes(e.ch), e.id);
+    assert.ok(e.title && e.text.length > 40 && e.here && e.hint && e.src.length >= 1, e.id);
+  }
+});

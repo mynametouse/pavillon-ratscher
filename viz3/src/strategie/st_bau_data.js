@@ -643,6 +643,144 @@ export const STBAUDATA = (() => {
     browse: [0.012, 0.003],
     browseSrc: 'Annahme des Spiels ohne das Tier-Modul (feat/tiere): Rehe ziehen vom Waldrand bis in die Gärten',
   };
+  // ---- the discovery book (feat/wissen, WISSEN): the reasons of the building steps as its rules – the exact paragraph and a link – and
+  // entries one finds by doing. Registered at run time by st_bau.js (the book loads after this theme). The official text of the
+  // Thüringer Bauordnung is in the state's portal (no deep links there); the paragraph links go to its text as published elsewhere ----
+  const BO24 = 'https://umwelt-online.de/recht/bau/laender/th/bo24.htm';
+  const QB = {
+    thuerbo: [
+      'Thüringer Bauordnung (ThürBO) vom 2. Juli 2024 (GVBl. S. 298), geändert 2026 (GVBl. S. 150) – amtlich im Landesrecht Thüringen',
+      'https://landesrecht.thueringen.de/',
+    ],
+    bo63: [
+      '§ 63 Abs. 1 Nr. 1 Buchst. a und b ThürBO – verfahrensfrei: Gebäude bis 10 m², Garagen bis 50 m² – je „außer im Außenbereich“',
+      'https://gesetze.co/TH/Th%C3%BCrBO/63',
+    ],
+    bo65: [
+      '§ 65 ThürBO – vereinfachtes Baugenehmigungsverfahren (Gebäudeklassen 1 bis 3)',
+      'https://www.haufe.de/id/norm/bauordnung-thueringen-65-vereinfachtes-baugenehmigungsverfahren-HI16460203_p65.html',
+    ],
+    bo37: [
+      '§ 37 Abs. 1 und Abs. 2 Satz 2 ThürBO – notwendige Treppen; Leitern nur zu Dachräumen ohne Aufenthaltsraum (Wortlaut nach dem Gesetzentwurf, Landtags-Drucksache 7/9641)',
+      'https://beteiligtentransparenzdokumentation.thueringer-landtag.de/fileadmin/Redaktion/Beteiligtentransparenzdokumentation/Dokumente/7-9641/1_Drs/DRS709641_01.pdf',
+    ],
+    bo2: ['§ 2 Abs. 3 Satz 1 Nr. 1 ThürBO – Gebäudeklasse 1', BO24],
+    bo72: ['§ 72 ThürBO – bautechnische Nachweise (Standsicherheit)', BO24],
+    bo67: ['§ 67 ThürBO – Bauvorlageberechtigung', BO24],
+    bo78: ['§ 78 ThürBO – Baubeginn (die Anzeige eine Woche vorher wie § 72 Abs. 8 der Musterbauordnung)', BO24],
+    bo11: ['§ 11 Abs. 3 ThürBO – Baustellenschild', BO24],
+    mbo: [
+      'Musterbauordnung (MBO) der Bauministerkonferenz – Einstellung der Arbeiten, Beseitigung, Bußgeld (§§ 79, 80, 84)',
+      'https://www.is-argebau.de/',
+    ],
+    baugb35: [
+      '§ 35 Abs. 1–3 Baugesetzbuch – Bauen im Außenbereich',
+      'https://www.gesetze-im-internet.de/bbaug/__35.html',
+    ],
+    din4074: [
+      'DIN 4074-1 – Sortierung von Holz nach der Tragfähigkeit, Nadelschnittholz (Norm, nicht frei zugänglich)',
+      null,
+    ],
+    en1912: ['DIN EN 1912 – Festigkeitsklassen: Zuordnung der visuellen Sortierklassen (S10 ≙ C24)', null],
+    wikiHolz: ['Bauholz (Wikipedia)', 'https://de.wikipedia.org/wiki/Bauholz'],
+    wikiApfel: ['Kulturapfel (Wikipedia)', 'https://de.wikipedia.org/wiki/Kulturapfel'],
+    wikiEinkochen: ['Einkochen (Wikipedia)', 'https://de.wikipedia.org/wiki/Einkochen'],
+    messeg: ['Mess- und Eichgesetz (MessEG)', 'https://www.gesetze-im-internet.de/messeg/'],
+  };
+  const BOOK = {
+    // rules: the same sentences the refusals and notes of this theme give as their „Warum?“ (the book finds a rule by that text)
+    why: {
+      bau_genehmigung: {
+        title: 'Baugenehmigung im Außenbereich',
+        text: 'Im Außenbereich ist selbst eine versetzte Garage nicht verfahrensfrei; Bauen ohne Genehmigung ist eine Ordnungswidrigkeit, das Bauamt kann den Bau stilllegen und den Rückbau verlangen.',
+        src: [QB.bo63, QB.baugb35, QB.mbo, QB.thuerbo],
+      },
+      bau_vorbescheid: {
+        title: 'Erst fragen: der Vorbescheid',
+        text: PREP.voranfrage.learn,
+        src: [QB.baugb35, QB.bo63, QB.thuerbo],
+      },
+      bau_statik: {
+        title: 'Die Statik in Gebäudeklasse 1',
+        text: PREP.statik.learn,
+        src: [QB.bo2, QB.bo72, QB.thuerbo],
+      },
+      bau_antrag: {
+        title: 'Das vereinfachte Verfahren',
+        text: PREP.antrag.learn,
+        src: [QB.bo65, QB.bo67, QB.bo78, QB.thuerbo],
+      },
+      bau_baubeginn: {
+        title: 'Den Baubeginn anzeigen',
+        text: 'Den Baubeginn muss man der Bauaufsicht eine Woche vorher anzeigen.',
+        src: [QB.bo78, QB.thuerbo],
+      },
+      bau_schild: {
+        title: 'Das Bauschild',
+        text: 'Das Bauschild nennt Bauvorhaben, Entwurfsverfasser, Bauleiter und Rohbauunternehmer und muss von der Straße aus lesbar sein.',
+        src: [QB.bo11, QB.thuerbo],
+      },
+      bau_treppe: { title: 'Die notwendige Treppe', text: PH[22].learnB, src: [QB.bo37, QB.thuerbo] },
+      bau_holz: {
+        title: 'Tragendes Holz trocken sortieren',
+        text: 'Sortiert und eingebaut wird tragendes Holz trocken: nasses Holz schwindet im Bau, die Verbindungen lockern sich, im Lehmputz entstehen Risse.',
+        src: [QB.din4074, QB.en1912, QB.wikiHolz],
+      },
+    },
+    // entries: found by doing in this theme (WISSEN.found from st_bau.js and st_garten.js)
+    entries: [
+      {
+        id: 'p_bauordnung',
+        ch: 'politik',
+        icon: '📜',
+        title: 'Die Bauordnung: vom Vorbescheid zum Bauschild',
+        text: 'Was man wo bauen darf, regelt das Baugesetzbuch des Bundes (das Planungsrecht); wie gebaut wird – Standsicherheit, Brandschutz, Treppen, Abstände –, die Bauordnung des Landes. Kleine Vorhaben sind verfahrensfrei, die meisten anderen gehen ins vereinfachte Verfahren: Das Bauamt prüft vor allem das Planungsrecht, für den Rest steht der Bauherr selbst ein.',
+        here: 'Der Pavillon steht im Außenbereich bei Ratscher. Darum zuerst ein Vorbescheid beim Landratsamt Hildburghausen, dann die Statik, dann der Bauantrag mit den Bauvorlagen einer bauvorlageberechtigten Person; vor dem Baubeginn die Anzeige und das Bauschild. Gebühren und Wartezeiten im Spiel sind Annahmen, die Bescheide gedacht.',
+        src: [QB.bo63, QB.bo65, QB.baugb35, QB.thuerbo],
+        hint: 'Im Strategie-Modus beim Bauamt eine Bauvoranfrage stellen.',
+      },
+      {
+        id: 'h_sortieren',
+        ch: 'handwerk',
+        icon: '🪵',
+        title: 'Bauholz sortieren',
+        text: 'Ob ein Balken trägt, sieht man ihm an: Äste, Faserneigung, Risse, Jahrringbreite und Baumkante entscheiden über die Sortierklasse S7, S10 oder S13. S10 entspricht der Festigkeitsklasse C24, mit der Tragwerksplaner meist rechnen. Sortiert wird trocken – höchstens 20 % Holzfeuchte.',
+        here: 'Das eigene Holz aus der Klinge: gefällt, auf der Blockbandsäge zu Bohlen gesägt, im Stapel getrocknet und dann Stück für Stück angesehen – was S10 nicht schafft, wird Latte, Brett oder Brennholz.',
+        src: [QB.din4074, QB.en1912, QB.wikiHolz],
+        hint: 'Getrocknete eigene Bohlen für den Pavillon sortieren.',
+      },
+      {
+        id: 'n_bestaeubung',
+        ch: 'natur',
+        icon: '🐝',
+        title: 'Äpfel brauchen einen Partner',
+        text: GARDEN.learn.paar,
+        here: 'Im Obstgarten stehen ‚Rebella‘ und ‚Rewena‘ nebeneinander – beide aus Dresden-Pillnitz, beide zur selben Zeit in Blüte.',
+        src: [['Pflanzen-Datenbank des Gartenplaners (Befruchtung)', null], QB.wikiApfel],
+        hint: 'Im Obstgarten zwei Apfelsorten pflanzen, die sich befruchten.',
+      },
+      {
+        id: 'h_einkochen',
+        ch: 'handwerk',
+        icon: '🫙',
+        title: 'Einkochen',
+        text: GARDEN.learn.einkochen,
+        here: 'Was die Bäume im Herbst auf einmal tragen, reicht so über den Winter – als Mahlzeiten im Vorrat der Leute.',
+        src: [QB.wikiEinkochen],
+        hint: 'Obst aus dem Garten einkochen.',
+      },
+      {
+        id: 'p_markt',
+        ch: 'politik',
+        icon: '⚖️',
+        title: 'Obst verkaufen',
+        text: GARDEN.learn.verkaufen,
+        here: 'Auf dem Wochenmarkt in Schleusingen: ein Stand für ein paar Euro, Äpfel aus dem eigenen Garten, die Waage geeicht. Preis und Standgebühr sind Annahmen.',
+        src: [QB.messeg],
+        hint: 'Obst auf dem Markt in Schleusingen verkaufen.',
+      },
+    ],
+  };
   return {
     VAT,
     LAW,
@@ -666,5 +804,6 @@ export const STBAUDATA = (() => {
     TEMP_SRC,
     tempAt,
     GARDEN,
+    BOOK,
   };
 })();

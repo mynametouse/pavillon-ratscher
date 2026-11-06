@@ -480,6 +480,9 @@ export const STGARTEN = (() => {
       let n = 0;
       while (stepOne(j) && n < 40) n++;
       const L = (j.d.list || []).map(i => GPLAN.state.items[i]).filter(it => it && it.st === 'gepflanzt');
+      // the book (feat/wissen): an apple and its pollinator both in the ground
+      if (G.pair.every(id => GPLAN.state.items.some(it => it && it.id === id && it.st === 'gepflanzt')))
+        STBAU.learnt('n_bestaeubung', 'tun:zwei Apfelsorten gepflanzt, die sich befruchten');
       return { text: L.length + ' gepflanzt: ' + L.map(it => nameOf(GPLAN.data.db.byId.get(it.id))).join(', ') };
     },
   });
@@ -677,6 +680,7 @@ export const STGARTEN = (() => {
         n = Math.round(kg * 2);
       S.essen = (S.essen || 0) + n;
       STRAT.book(-Math.round(kg) * 0.6, 'Gläser, Deckel, Zucker', 'garten');
+      STBAU.learnt('h_einkochen', 'tun:Obst aus dem Garten eingekocht');
       return { text: `${de(kg, 1)} kg eingekocht – ${n} Mahlzeiten im Vorrat` };
     },
   });
@@ -708,6 +712,7 @@ export const STGARTEN = (() => {
       g.sold = +(g.sold + kg).toFixed(1);
       g.eur = +(g.eur + eur).toFixed(2);
       STRAT.book(eur, `Markt Schleusingen: ${de(kg, 1)} kg Obst (Standgebühr abgezogen)`, 'verkauf');
+      STBAU.learnt('p_markt', 'tun:Obst auf dem Markt verkauft');
       return { text: `${de(kg, 1)} kg verkauft, ${STRAT.C.eur(eur)}` };
     },
   });

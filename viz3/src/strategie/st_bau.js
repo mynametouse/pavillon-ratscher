@@ -205,6 +205,7 @@ export const STBAU = (() => {
         { kind: 'bau', why: P.learn, src: P.src }
       );
       STRAT.emit('bau', { what: 'vorbescheid' });
+      learnt('p_bauordnung', 'tun:den Vorbescheid des Bauamts bekommen');
     } else if (w.k === 'statik') {
       b.statik = { t: w.t };
       const P = B.PREP.statik,
@@ -221,9 +222,7 @@ export const STBAU = (() => {
         `Baugenehmigung erteilt (im Spiel angenommen). Baubeginn angezeigt – ab ${W.day(b.gen.start).label} darf gebaut werden. Am Gartentor steht jetzt das Bauschild.`,
         {
           kind: 'bau',
-          why:
-            P.learn +
-            ' Das Bauschild nennt Bauvorhaben, Entwurfsverfasser, Bauleiter und Rohbauunternehmer und muss von der Straße aus lesbar sein.',
+          why: P.learn + ' ' + B.BOOK.why.bau_schild.text,
           src: P.src + '; § 11 Abs. 3 ThürBO (Baustellenschild)',
         }
       );
@@ -237,6 +236,33 @@ export const STBAU = (() => {
     STRAT.save();
   }
   let acc = 0;
+  // ---------------- the discovery book (feat/wissen, WISSEN – it loads after this theme): our reasons as its rules with the exact
+  // paragraph and a link, our entries found by doing. The strategy's own „Warum?“ finds a rule by its sentence (STRAT.D.RULES), the book
+  // shows a rule of its own list (WISSEN.data.WHY) with linked sources – both get ours, nothing of theirs is replaced ----------------
+  let booked = false;
+  function book() {
+    const WI = window.WISSEN;
+    if (booked || !WI || typeof WI.add !== 'function' || !WI.data || !WI.data.WHY) return booked;
+    booked = true;
+    const RS = D.RULES || {},
+      WHY = WI.data.WHY;
+    for (const [id, w] of Object.entries(B.BOOK.why)) {
+      if (!WHY[id]) WHY[id] = { title: w.title, text: w.text, src: w.src.map(q => [q[0], q[1]]) };
+      if (!RS[id]) RS[id] = { text: w.text, why: w.text, src: w.src.map(q => q[0]).join('; ') };
+    }
+    for (const e of B.BOOK.entries) if (!WI.get(e.id)) WI.add(e);
+    // the garden's protection against deer is the book's rule „verbiss“: the same sentence as our notes give
+    const G = B.GARDEN.learn;
+    if (!RS.verbiss && WHY.verbiss) RS.verbiss = { text: G.schutz, why: G.schutz, src: G.schutzSrc };
+    return true;
+  }
+  // an entry of the book found by doing (how: 'tun:…'); without the book nothing happens
+  function learnt(id, how) {
+    try {
+      if (book()) return window.WISSEN.found(id, how);
+    } catch (e) {}
+    return false;
+  }
   KERN.tick(dt => {
     // the waits (a decision of the authority, a delivery) in every frame: a time-lapse may end right after their moment, and what came
     // is there as soon as the clock stops (src's Prüfpaket 42152070883 had looked half a second too early)
@@ -245,6 +271,7 @@ export const STBAU = (() => {
       for (const w of b.waits.slice()) if (w && Number.isFinite(w.t) && w.t <= now()) resolve(w);
     if ((acc += dt) < 0.5) return;
     acc = 0;
+    book();
     applySaved();
     bindPanel();
     if (window.PAV_LOADED) {
@@ -305,7 +332,7 @@ export const STBAU = (() => {
     q.fillText('BAUSTELLE', 24, 52);
     q.fillStyle = '#1b1b1b';
     q.font = 'bold 30px sans-serif';
-    q.fillText('Gartenpavillon (Holzrahmenbau)', 24, 112);
+    q.fillText('Gartenpavillon (Holzrahmenbau)', 24, 112, w - 48);
     q.font = '24px sans-serif';
     const L = [
       'Bauherr: Falko',
@@ -315,7 +342,8 @@ export const STBAU = (() => {
       'Baugenehmigung vom ' + d + ' · Gebäudeklasse 1',
       'Bauphase ' + built() + ' von ' + LAST(),
     ];
-    L.forEach((t, i) => q.fillText(t, 24, 152 + i * 32));
+    // a long line is squeezed to the board's width rather than cut off at its edge
+    L.forEach((t, i) => q.fillText(t, 24, 152 + i * 32, w - 48));
   }
   function signSync() {
     const b = S.ext.bau,
@@ -554,9 +582,10 @@ export const STBAU = (() => {
       const lead = b.order[k] ? Math.max(0, b.order[k].due - t) : leadOf(k, matOf(k) === 'eigen') * 1440;
       addMonths(t + lead);
       t += lead;
-      // the work: person-hours of three people, a weekend gives about 1,5 days of 8 h, outside on two of three
+      // the work: person-hours of three people; a weekend gives about 1,5 days of 8 h inside, outside only the Saturday (no building
+      // one notices outside on a Sunday) and that on two of three weekends (the weather)
       const wd = B.crewMinutes(B.personHours(phaseOf(k).days), 3) / 60 / 8,
-        weekends = Math.ceil(wd / 1.5 / (M.inside ? 1 : 0.67) - 1e-6),
+        weekends = Math.ceil(wd / (M.inside ? 1.5 : 0.67) - 1e-6),
         dt = weekends * 7 * 1440 + (k === 27 ? (M.dry || 14) * 1440 : 0);
       addMonths(t + dt);
       work += dt;
@@ -996,7 +1025,7 @@ export const STBAU = (() => {
           text: wet
             ? `${wet} Bohlen liegen im Stapel, aber noch nicht unter 20 % Holzfeuchte.`
             : 'Keine trockenen Bohlen im Stapel – erst sägen (52 mm) und trocknen.',
-          why: 'Sortiert und eingebaut wird tragendes Holz trocken: nasses Holz schwindet im Bau, die Verbindungen lockern sich, im Lehmputz entstehen Risse.',
+          why: B.BOOK.why.bau_holz.text,
           src: P.sortieren.src,
         };
       }
@@ -1026,6 +1055,7 @@ export const STBAU = (() => {
         HOLZDRY.rebuild();
         HOLZ.save();
       } catch (e) {}
+      if (ok) learnt('h_sortieren', 'tun:eigenes Bauholz nach DIN 4074 sortiert');
       markDirty(true);
       return {
         text: `${ok} von ${L.length} Bohlen sind S10 (C24): ${de(m3, 2)} m³ Bauholz${blue ? ` – ${blue} davon mit Bläue, die zählt nicht` : ''}`,
@@ -1041,7 +1071,7 @@ export const STBAU = (() => {
       return {
         no: true,
         text: 'Ohne Baugenehmigung wird nicht gebaut.',
-        why: 'Im Außenbereich ist selbst eine versetzte Garage nicht verfahrensfrei; Bauen ohne Genehmigung ist eine Ordnungswidrigkeit, das Bauamt kann den Bau stilllegen und den Rückbau verlangen.',
+        why: B.BOOK.why.bau_genehmigung.text,
         src:
           '§ 63 Abs. 1 Nr. 1 Buchst. a und b ThürBO (verfahrensfrei nur „außer im Außenbereich“); Einstellung, Beseitigung, Bußgeld nach der Bauordnung (wie §§ 79, 80, 84 MBO); ' +
           B.LAW.thuerbo,
@@ -1051,7 +1081,7 @@ export const STBAU = (() => {
       return {
         no: true,
         text: 'Baubeginn erst ab ' + W.day(b.gen.start).label + '.',
-        why: 'Den Baubeginn muss man der Bauaufsicht eine Woche vorher anzeigen.',
+        why: B.BOOK.why.bau_baubeginn.text,
         src: B.PREP.antrag.src,
       };
     if (n >= 2 && b.platte && !B.slabOk(b.platte) && !b.streifen)
@@ -1253,6 +1283,8 @@ export const STBAU = (() => {
     useBoards,
     orderTarget,
     forecast,
+    book,
+    learnt,
     sign: () => SIGN.g,
     pile: () => PILE.g,
     set forcePlatte(v) {
