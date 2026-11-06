@@ -52,6 +52,8 @@ export const WETTER = (() => {
     wetWant: 0,
     snowC: 0,
     snowWant: 0,
+    frostC: 0,
+    frostWant: 0,
   };
   const AUTOMATED = typeof navigator !== 'undefined' && !!navigator.webdriver;
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -250,6 +252,7 @@ export const WETTER = (() => {
       pick(false);
       S.wetWant = wetness();
       S.snowWant = snowCover();
+      S.frostWant = frost();
     }
     ease(dt);
     if (due) {
@@ -311,9 +314,11 @@ export const WETTER = (() => {
     if (S.wet < 0.005) S.wet = 0;
     S.snowC += ((on ? S.snowWant : 0) - S.snowC) * kk;
     if (S.snowC < 0.005) S.snowC = 0;
+    S.frostC += ((on ? S.frostWant : 0) - S.frostC) * kk;
+    if (S.frostC < 0.005) S.frostC = 0;
     // the white of lying snow follows the light that falls on it (sky, sun, image light)
     const light = clamp(0.5 * scene.environmentIntensity + 0.1 * sun.intensity + 0.6 * hemi.intensity, 0, 1.6);
-    WXBODEN.set(S.wet, dt, S.snowC, light);
+    WXBODEN.set(S.wet, dt, S.snowC, light, S.frostC);
     lightning(dt, on && !!wx.thunder);
   }
   KERN.tick(tick, 'wetter');
@@ -370,7 +375,7 @@ export const WETTER = (() => {
       const r = WXDATA.at(S.store, gameU());
       d = r && r.SD;
     }
-    return Math.max(clamp((d || 0) / 0.04, 0, 1), frost());
+    return clamp((d || 0) / 0.04, 0, 1);
   }
   // ---- hoarfrost: after a clear, calm, cold and humid night (any of the last eight hours) the ground and the roofs turn white-grey –
   //      the ground cools below the air, so it forms at up to ~+2 °C in the air; it melts once the sun climbs (and when it is mild) ----
@@ -394,7 +399,7 @@ export const WETTER = (() => {
     }
     const sunEl = DN.state ? DN.state.sunEl : 0,
       T = S.w && Number.isFinite(S.w.temp) ? S.w.temp : 0;
-    return 0.32 * f * (1 - sstp(8, 22, sunEl)) * (1 - sstp(3, 6, T));
+    return f * (1 - sstp(8, 22, sunEl)) * (1 - sstp(3, 6, T));
   }
   // ---- how wet the ground is: the rain now and in the last hours (fading with an e-time of about 1.6 h; snow only when it melts) ----
   function wetness() {
@@ -450,13 +455,13 @@ export const WETTER = (() => {
                     ? 0.6
                     : Math.max(0, 0.45 * (1 - (t - 0.21) / 0.3));
       F.k = k * F.near;
-      // by day a flash barely brightens the scene (the daylight is far stronger), at night it lights everything for a moment
-      const nt = DN.state && Number.isFinite(DN.state.night) ? DN.state.night : 0,
-        f = 0.12 + 0.88 * nt;
-      WXSKY.U.wxFlash.value = F.k * F.k * 2.4 * f;
+      // by day a flash barely brightens the scene (the daylight is far stronger); at night the clouds glow and the land is lit for a
+      // moment, bluish and dim – the bolt stays the brightest thing (the eye is open wide at night: the exposure is high)
+      const nt = DN.state && Number.isFinite(DN.state.night) ? DN.state.night : 0;
+      WXSKY.U.wxFlash.value = F.k * F.k * (0.25 + 0.3 * nt);
       // the flash lights the land from the whole sky: the hemisphere and the image light (the day's light restores both after it)
-      hemi.intensity = F.base + F.k * 2.2 * f;
-      scene.environmentIntensity = F.envBase * (1 + 3 * F.k * F.k * f);
+      hemi.intensity = F.base + F.k * (0.1 + 0.3 * nt);
+      scene.environmentIntensity = F.envBase * (1 + F.k * F.k * (0.3 + 3 * nt));
       WXSKY.U.wxBolt.value.set(F.az, F.bolt && k > 0.5 ? F.k : 0, F.seed, 0.0025);
       markDirty();
       if (t > 0.5) {
@@ -721,7 +726,7 @@ export const WETTER = (() => {
       skyFlash: WXSKY.U.wxFlash.value,
       wet: S.wet,
       snowCover: S.snowC,
-      frost: frost(),
+      frost: S.frostC,
       boden: WXBODEN.count(),
       flashes: S.flash.n,
       automated: AUTOMATED,

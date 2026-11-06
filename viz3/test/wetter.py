@@ -203,17 +203,17 @@ with lib.browser() as b:
         steps(0.02, 0.02)
         pic('11d_nacht_blitz')
         sf = J("WETTER.state().skyFlash")
-        ck('a flash at night lights the sky far more than by day (the daylight is far stronger)', sf > 4 * sky_flash_day > 0, f"night {sf:.2f} day {sky_flash_day:.2f}")
+        ck('a flash at night lights the sky more than by day (the daylight is far stronger)', sf > 1.8 * sky_flash_day > 0, f"night {sf:.2f} day {sky_flash_day:.2f}")
         steps(1)
         # hoarfrost: a clear, calm, cold and humid morning – the ground and the roofs white-grey; gone by noon in the sun
         midday(7.75)
         view('garten', 160, -2)
         s = weather('reif')
         pic('11c_reif_morgen')
-        ck('hoarfrost on a clear cold calm morning: the ground and the roofs white-grey', 0.2 < s['snowCover'] < 0.4 and s['fall']['n'] == 0, f"cover {s['snowCover']:.2f} frost {s['frost']:.2f}")
+        ck('hoarfrost on a clear cold calm morning: grass, roofs and ground frosted (no snow lying)', s['frost'] > 0.8 and s['snowCover'] == 0 and s['fall']['n'] == 0, f"frost {s['frost']:.2f} cover {s['snowCover']:.2f}")
         midday(12.0)
         s = weather('reif')
-        ck('… and gone by noon in the sun', s['snowCover'] < 0.05, f"cover {s['snowCover']:.3f}")
+        ck('… and gone by noon in the sun', s['frost'] < 0.05, f"frost {s['frost']:.3f}")
     # ---- indoors: in the pavilion the rain stays beyond its walls (through the windows), in a garden building none falls; the roof heard ----
     if 'innen' in want:
         weather('regen')
