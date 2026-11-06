@@ -151,3 +151,37 @@ wirklich gibt und die Einfluss haben; auch an Black & White 1/2/3 denken.
     Dorf, Natur und Ansehen verändern sich sichtbar (mehr Vögel, freundlichere Leute, ein grüneres Dorf – oder das Gegenteil), ohne Magie.
 - **Umsetzung:** Helden, Stufen, Fähigkeiten und der Stil gehören zum Kern (Hilfs-Agent `strategie`); die Tiere in der Welt – sichtbar auch in der
   Ich-Sicht – und der lernende Hund baut der Hilfs-Agent `tiere` (Auftrag `docs/plans/auftraege/tiere.md`) mit einer Schnittstelle für den Strategie-Modus.
+
+## 13 Lernen und Entdecken als Leitlinie (Falko, 23:28) – und der Rest der Mischung
+
+Falko (Antwort statt Auswahl, wörtlich): „Ach ja, und wichtig ist mir wirklich, dass man hier viel über die Natur lernt und alternative Zukünfte,
+ähm, um sich Vorstellungen machen zu können, wie die Welt auch in Zukunft aussehen kann und sich verschiedene Szenarien vorstellen kann, aber
+auch wirklich etwas lernt über die Welt, über die Natur, über verschiedene Handwerke, über die Menschen, über die Politik letztendlich sogar,
+über Soziales, über die Geschichte. Ähm, Viel zu entdecken soll es geben und viel zu lernen.“ Zu SimCity/Siedler, den Sims und dem
+Zusammenspiel der Modi zunächst keine Wahl; um 23:30 alle Fragen noch einmal angeklickt: **aus C&C 3 / StarCraft alle vier** (Erkunden statt
+Nebel, Wissens- und Technologiebaum, Krisen-Einsätze, Schlafplätze als Helfer-Grenze), **aus SimCity / Siedler 3 alle vier** (Daten-Ansichten,
+Dorfhaushalt und Infrastruktur, Träger und Wege, Land pachten oder kaufen), **aus den Sims alle vier** (Bedürfnisse der Helden, Beziehungen und
+Geschichten, Haus-Ansicht mit Einrichten, freier Wille der Leute), **Modi: Linsen, Schichten, Welten**, **Lernen zuerst: Natur, Handwerk,
+Geschichte, Politik und Soziales – alle vier**, **andere Zeiten: Was-wäre-wenn-Zukünfte und Zeitreise in die Vergangenheit – beides**.
+
+- **Entdecken und Lernen** in jeder Linse und jedem Modus: ein **Entdeckerbuch** (Arten gesehen, Pflanzen bestimmt, Handwerke gelernt,
+  Orte der Geschichte gefunden, Regeln verstanden – jeweils mit echter Quelle), Erklärungen „Warum?“ an jeder Regel (Sonntagsruhe, Grenzabstand,
+  Saftruhe, Schutzausrüstung), Menschen als Lehrer (der Förster für den Wald, Gerhard – Lehrer i. R. und Dorfchronist – für die Geschichte, Ingrid
+  für Gemeinde und Politik, Hubert und Ronald für Handwerk und Tiere), Orte der Geschichte (Bertholdsburg der Grafen von Henneberg, Kloster
+  Veßra, die alte Schule von 1828, die Dorflinde von 1888, die Talsperre), Handwerke der Gegend (Holz, Forst, Garten, Töpfern; später
+  Glasbläserei, Köhlerei, Schiefer, Fachwerk).
+- **Zukünfte (Was-wäre-wenn):** Kopien der Spiegelwelt zum Ausprobieren und Vergleichen – Waldumbau nach dem Borkenkäfer, Klimawandel im
+  Garten, der Pavillon gebaut oder nicht, das Dorf mit Glasfaser und Bürgerbus.
+- **Später denkbar: Zeitreise** – die Spiegelwelt in früheren Zeiten (1900, 1950, 1989; alte Karten und Fotos) als eigene Welt.
+- **Aus C&C 3 / StarCraft:** Erkunden statt Nebel (Waldzustand, Käfernester, Holzvorrat, Kontakte erst sichtbar, wenn jemand nachsieht – passt zu
+  „viel zu entdecken“), ein Wissens- und Technologiebaum (Lehrgänge, Maschinen, Ausbaustufen), Krisen-Einsätze (Sturm, Hochwasser, Waldbrand mit der
+  Feuerwehr), Schlafplätze und Essen als Grenze für Helfer, Steuergruppen und Minikarte mit Alarmen, Missionen mit Briefing durch Menschen des Dorfs.
+- **Aus SimCity / Siedler 3:** Daten-Ansichten aus den echten Daten (Lärm, Verkehr, Sonnenstunden, Naturwert, Stimmung) – Lernen durch Sehen;
+  Dorfhaushalt und Infrastruktur (Politik erleben); Träger und Wege; Land pachten oder kaufen statt erobern.
+- **Aus den Sims:** Bedürfnisse der Helden, Beziehungen und Geschichten im Dorf, die Haus-Ansicht mit Einrichten (die Häuser haben schon
+  Einrichtungen in drei Zeitschichten – Geschichte zum Anfassen), freier Wille der Leute.
+- **Zusammenspiel der Modi:** eine Spiegelwelt mit umschaltbaren **Linsen** (Ich-Sicht, von oben, Haus-Ansicht, Planer) und zuschaltbaren
+  **Schichten** (Bedürfnisse, Wirtschaft, Natur, Krisen, Verkehr, Live-Wetter); Fiktion (Zombie-Nacht), Zukünfte und Zeitreise als **getrennte
+  Welten** mit eigenem Spielstand, damit die Spiegelwelt sauber bleibt.
+- **Umsetzung:** in der Nacht 5./6.11. in einer zweiten Welle (~2 Uhr) zwei weitere Hilfs-Agenten: Dorfprojekte, Pavillon und Garten von oben auf dem
+  Kern von `strategie`, und „Entdecken und Lernen“ (Entdeckerbuch, Erklärungen, Orte der Geschichte) über alle Themen.
