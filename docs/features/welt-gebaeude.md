@@ -112,7 +112,8 @@ retuschiert, Dachfarben des Dorfs unverändert (gegen `?bodenalt`), Anzahl je Ar
 südlich vom Garten, runder Behälter, Schuppen im Dorf, Anger von oben) haben ein Gebäude – Bilder von oben und vom Boden, vorher
 (`?nogeb&bodenalt`) und nachher –, in die Halle laufen hält an der Wand, keine neuen Shader-Programme; Schleusingen: die Zellen um den Markt
 kommen, keine doppelt zur Altstadt, ein Haus vom Boden und von oben (vorher: die veröffentlichten Kacheln ohne Zellen), seine Wand hält
-den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. Dazu ohne Browser: keine Zelle in Kirchenruine,
+den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; an der Strecke: Rappelsdorf (auf dem Weg nach Kloster Veßra) hat seine
+Gebäude; keine Seitenfehler. Dazu ohne Browser: keine Zelle in Kirchenruine,
 Klosterbezirk, Baumschule, an Burg oder Rathaus, keine mehr als 0,3 m in einer gezeichneten Fahrbahn. Bei den Shader-Programmen zählen die der Dorf-Materialien (Schlüssel `v16e-…`) – was
 andere Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als Hinweis im Protokoll. Bilder in `out/welt_gebaeude/`.
 
@@ -127,6 +128,7 @@ andere Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als
 | `anger_top*.jpg` | der Anger von oben: zwischen den Häusern keine gedruckten Dächer mehr |
 | `halle_wand.jpg` | in die Halle gelaufen: die Wand hält auf |
 | `stadt_top*.jpg`, `stadt_boden_vorher.jpg` / `stadt_boden.jpg` | Schleusingen außerhalb der Altstadt (ein Haus der Zellen, ~440 m vom Markt): vorher Wiese mit Dach im Luftbild, jetzt das Haus |
+| `strecke_top*.jpg`, `strecke_boden_vorher.jpg` / `strecke_boden.jpg` | Rappelsdorf auf dem Weg nach Kloster Veßra: die Hauptstraße nach Westen, vorher die Dächer flach im Luftbild, jetzt die Häuser, Scheunen und Schuppen der Zellen |
 
 ## Offen
 
