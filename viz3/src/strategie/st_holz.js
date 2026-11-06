@@ -846,7 +846,9 @@ export const STHOLZ = (() => {
       return { text: `${de(rm, 1)} rm Brennholz bei Ronald aufgesetzt – ${Math.round(eur)} €` };
     },
   });
-  const openOrders = () => S.orders.filter(x => x.st === 'offen' || x.st === 'verspätet');
+  // open orders of boards (an order of another kind – kind: 'brennholz', 'gemuese' … – is delivered by its theme's own job)
+  const openOrders = () =>
+    S.orders.filter(x => (x.st === 'offen' || x.st === 'verspätet') && (!x.kind || x.kind === 'brett'));
   const ready = o => shelf(o.minStars || 0, o.wood || null).length >= o.n - (o.got || 0);
   // ---------------- 8 · own wood for the workshop: the air-dry planks dried on (the cabinet in the hall; today under the lean-to), glued ----
   const SPD = { larch: 'Lärche', spruce: 'Fichte', pine: 'Kiefer' };

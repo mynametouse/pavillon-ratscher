@@ -180,7 +180,10 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 ### Ereignisse, Bestellungen, Kapitel, Ebenen
 - `STRAT.event.define({ id, label, chance: cx => p, run: cx => ({ text } | false), why, src })` – einmal je Spieltag gewürfelt (gleicher Tag,
   gleicher Wurf); `STRAT.fire(id)` löst es aus. Tiere (feat/tiere) melden ihre Schäden so oder über eigene KERN-Ereignisse.
-- `STRAT.order.add({ title, n, minStars, days | due, pay, … })` → `STRAT.S.orders` (`st: 'offen' | 'geliefert' | 'verspätet'`).
+- `STRAT.order.add({ title, n, minStars, days | due, price, wood, kind, … })` → `STRAT.S.orders` (`st: 'offen' | 'geliefert' | 'verspätet'`);
+  Schneidebretter (ohne `kind` oder `kind: 'brett'`, Holzart `wood`, ohne: Eiche) liefert der Auftrag `liefern`, Bestellungen anderer Art
+  (`kind: 'brennholz'`, `'gemuese'` …) ein eigener Auftrag des Themas, der `o.got`/`o.st = 'geliefert'` setzt und
+  `strategie:bestellung` {id, state: 'geliefert'} meldet.
 - `STRAT.chapter.define({ id, title, text, order })`, `STRAT.chapter.set(id)`, `STRAT.chapter.cur()`;
   Ziele: `STRAT.chapter.goal('k3', { id, text, on: 'auftrag', when: d => d.state === 'fertig' && d.def === 'zaun' })` (ein Ereignis des Modus) oder
   `{ id, text, check: () => bool }` (zweimal je Sekunde gefragt) – sind alle Ziele des aktuellen Kapitels erreicht, kommt das nächste.
