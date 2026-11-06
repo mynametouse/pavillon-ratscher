@@ -891,8 +891,15 @@ body[data-top="1"] #winote{top:178px}
     }
     lookAll();
     if (TH.check && TH.el && !TH.el.hidden) TH.check();
-    stratBtn();
-    tierEntries();
+    for (const f of [stratBtn, tierEntries])
+      try {
+        f();
+      } catch (e) {
+        if (!S.err) {
+          S.err = String((e && e.message) || e);
+          console.warn('wissen', e);
+        }
+      }
   }, 'wissen/wissen');
   // ---- the strategy mode's bar (feat/strategie): a button „Entdeckerbuch“ beside its own „Wissen“ (the tech tree) ----
   function stratBtn() {
