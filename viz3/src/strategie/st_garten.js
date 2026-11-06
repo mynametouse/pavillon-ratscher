@@ -864,6 +864,8 @@ export const STGARTEN = (() => {
     ensureData,
     priceOf,
     stepOne,
+    dmgOf,
+    coop,
   };
   void D;
   void CLOCK;
