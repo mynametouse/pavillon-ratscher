@@ -47,6 +47,9 @@ export const WETTER = (() => {
     // showers as cells passing (see showers()): x the way the air has gone (cell lengths), t the game time (s) of the last step,
     // ph 0 between the cells – 1 under one (-1: no showers), near the strongest cell close by, bow the wish for a rainbow, force (tests)
     sh: { x: Math.random() * 50, t: null, ph: -1, near: 0, bow: 0, force: null },
+    // the clear sky (a gradient instead of the photographs' clouds when the data says clear) is off for now: it reads as a pale haze
+    // rather than a clear blue day (pictures 6.11.) – on with ?klar to try it; tests switch it with WETTER.S.noClear
+    noClear: !QS.has('klar'),
     preset: null,
     mock: null,
     calls: [],
