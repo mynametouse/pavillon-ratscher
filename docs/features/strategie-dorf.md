@@ -91,7 +91,17 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
 
 ## Offen
 
-Siehe unten, wird in der Nacht fortgeschrieben.
+- Die Sitzungen von Ortsteilrat und Stadtrat laufen von selbst (mit Ergebnis, Abstimmung und Grund als Meldung); in der Ich-Sicht sitzt man
+  noch nicht darin (das Ortsvorsteher-Spiel hat dafür eigene Szenen – zusammenführen wäre der nächste Schritt).
+- Glasfaser: in der Welt steht nur der Netzverteiler am Anger, nicht die Hausanschlüsse; der geförderte Ausbau (Gigabit-Förderung) ist nur
+  erklärt, nicht spielbar. LED für alle Straßenlampen des Dorfs (Kommunalrichtlinie) ist nur Lernstoff an der einen neuen Laterne.
+- Krisen: das Feuerwehrauto und die Einsatzkräfte gibt es nur auf der Karte (kein Fahrzeugmodell, keine Figuren); der Waldbrand verbrennt
+  keine Bäume des Walds (nur die Brandfläche am Boden); Sandsäcke nur nach gelungenem Einsatz, kein Wasser im Garten bei Schaden.
+- Treffpunkt, Obstbäume, Kirmeszelt und Spuren der Einsätze haben keine Kollision (man kann hindurchgehen).
+- Die Flächen sind Rechtecke des Spiels an plausiblen Stellen (offene Wiese, Acker, Wald nach dem Luftbild 2024), keine echten Flurstücke.
+- Fördersatz (65 %) und Punkte der LEADER-Auswahl, Grünland- und Waldpreise, Quote der Glasfaser, Kosten der Projekte sind ausgewiesene
+  Annahmen; die Regeln (ThürKO, BGB, LPachtVG, Grunderwerbsteuer, Kommunalrichtlinie, Einsatzgrundzeit, BNatSchG) mit Quelle.
+- Später nach dem Konzept: Dorfwettbewerb „Unser Dorf hat Zukunft“, Region (Radweg, Bürgerbus, Energiegenossenschaft).
 
 ## Für den Lead
 

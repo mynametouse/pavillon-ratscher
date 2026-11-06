@@ -689,7 +689,7 @@ export const STDDATA = (() => {
       eff: { gerhard: 5, ingrid: 1 },
       text: 'Auf dem Dachboden der alten Schule alte Kisten sichten: Zeugnisse, Fotos, ein Schulbuch von 1910 – für die Dorfchronik.',
       learn:
-        'Bis in die 1960er lernten in Dorfschulen oft alle Jahrgänge in einem Raum; der Lehrer wohnte im Haus. Ratscher gehörte erst zum Kreis Hildburghausen, seit 1994 zur Stadt Schleusingen.',
+        'Bis in die 1960er lernten in Dorfschulen oft alle Jahrgänge in einem Raum; der Lehrer wohnte im Haus. Ratscher war bis 1994 eine eigene Gemeinde im Kreis Hildburghausen; seitdem ist es ein Ortsteil der Stadt Schleusingen.',
       find: 'geschichte',
     },
     ingrid: {

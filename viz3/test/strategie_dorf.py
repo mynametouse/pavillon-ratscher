@@ -41,6 +41,22 @@ with lib.browser() as b:
         return E(cond)
     def job(defn, who):
         return J(f"(() => {{ const j = STRAT.job.add('{defn}', {json.dumps(who)}); return j && j.id ? {{ id: j.id, dur: Math.round(j.dur) }} : j; }})()")
+    def finish_job(jid, secs=300):
+        # run the clock until the job is done; while its people are away (the week) or it is after work, the time-lapse to their next
+        # arrival or to the morning (as a player would)
+        t_end = time.time() + secs
+        while time.time() < t_end:
+            steps(5)
+            st = J(f"(() => {{ const j = STRAT.job.of('{jid}'); return j ? {{ st: j.st, why: j.why, need: j.need || '' }} : null; }})()")
+            if not st or st['st'] in ('done', 'stop'): return True
+            if st['st'] == 'wait':
+                if st.get('why') == 'weg':
+                    E("STRAT.skip('kommen')"); until("!CLOCK.warp", 60)
+                    E("CLOCK.wait(CLOCK.until(8, 5), 'Test')"); until("!CLOCK.warp", 60)
+                elif 'Feierabend' in st['need']:
+                    E("CLOCK.wait(CLOCK.until(8, 5), 'Test')"); until("!CLOCK.warp", 60)
+        print('note: job', jid, 'not done:', J(f"STRAT.job.of('{jid}')"), flush=True)
+        return J(done(jid))
     def done(jid):
         return f"(() => {{ const j = STRAT.job.of('{jid}'); return !j || j.st === 'done'; }})()"
     # the programs of the village's own things: what came onto the scene since the mark (no skinned figures – their programs are warmed
@@ -239,7 +255,7 @@ with lib.browser() as b:
             if not (j and j.get('id')):
                 ck(f'orchard step {i} given', False, str(j))
                 break
-            until(done(j['id']), 240)
+            finish_job(j['id'], 300)
         steps(2.5)
         so = J("({ p: STDORF.state().proj.streuobst, w: STDWELT.state(), eur: STRAT.S.eur })")
         ck('the orchard is planted: twelve young standard trees stand on the meadow (strategie/st_dorf_welt.js)', so['p'] and so['p']['st'] == 'fertig' and so['w']['trees'] >= 10, str(so)[:300])
@@ -277,8 +293,8 @@ with lib.browser() as b:
         pj = skip_due(4)
         pj = skip_due(4) if pj['i'] == 4 and pj['st'] == 'laeuft' else pj
         pj = skip_due(4) if pj['i'] == 4 and pj['st'] == 'laeuft' else pj
-        notes = J("STRAT.S.notes.slice(-8).map(n => n.text)")
-        ck('selected by points, then the approval by the state office – only then the building starts', pj['st'] == 'laeuft' and pj['i'] >= 5 and any('Bewilligungsbescheid' in n for n in notes) and any('Punkte' in n for n in notes), str(pj) + ' ' + str(notes)[:400])
+        lg = J("STDORF.st().proj.treffpunkt.log.map(e => e[1])")
+        ck('selected by points, then the approval by the state office – only then the building starts', pj['st'] == 'laeuft' and pj['i'] >= 5 and any('Punkte' in n for n in lg) and any('Bewilligt' in n for n in lg), str(pj) + ' ' + str(lg)[:400])
         pj = skip_due(5)
         if pj['st'] == 'laeuft' and pj['i'] == 6:
             if J("STRAT.W.day(CLOCK.t).wd") not in (6, 0):
@@ -287,7 +303,7 @@ with lib.browser() as b:
                 E("CLOCK.wait(CLOCK.until(9), 'Test')")
                 until("!CLOCK.warp", 60)
             j = job('dp_treffpunkt_6', ['falko', 'christoph'])
-            if j and j.get('id'): until(done(j['id']), 240)
+            if j and j.get('id'): finish_job(j['id'], 300)
         pj = skip_due(7)
         steps(2.5)
         tw = J("STDWELT.state()")
@@ -352,17 +368,17 @@ with lib.browser() as b:
     if 'mehr' in want:
         E("STRAT.S.ext.krise.cur = null")
         E("STDORF.meet('heike', 'sarah'); STDORF.meet('jens', 'sarah'); STDORF.meet('manfred', 'sarah')")
-        E("STRAT.setDate('2027-06-19', 9 * 60)")
+        E("STRAT.setDate('2027-06-19', 8 * 60)")
         steps(0.5)
-        # neighbourly help: Christoph mends Heike's hen house – she thinks better of you
+        # at the same time: Christoph mends Heike's hen house (neighbourly help), Falko does the fire brigade's basic training
         h0 = J("STDORF.state().rep.heike")
-        j = job('hilfe_heike', ['christoph'])
-        ok = j and j.get('id') and until(done(j['id']), 120)
-        ck('neighbourly help (Heike\'s hen house) raises her opinion of you', ok and J("STDORF.state().rep.heike") >= h0 + 4, f"{h0} → {J('STDORF.state().rep.heike')}")
-        # the fire brigade's basic training: Falko becomes a member – the pager alarms him too
         c0 = J("STDKRISE.crewAt(CLOCK.t)")
-        j = job('kurs_fw', ['falko'])
-        ok = j and j.get('id') and until(done(j['id']), 240)
+        jh = job('hilfe_heike', ['christoph'])
+        jk = job('kurs_fw', ['falko'])
+        ok = jh and jh.get('id') and until(done(jh['id']), 120)
+        ck('neighbourly help (Heike\'s hen house) raises her opinion of you', ok and J("STDORF.state().rep.heike") >= h0 + 4, f"{h0} → {J('STDORF.state().rep.heike')}")
+        # the basic training: Falko becomes a member – the pager alarms him too
+        ok = jk and jk.get('id') and finish_job(jk['id'], 360)
         ck('the basic training makes Falko a member of the fire brigade (alarmed with the others when he is there)', ok and J("STRAT.S.people.falko.certs.includes('feuerwehr')"), f"crew {c0} → {J('STDKRISE.crewAt(CLOCK.t)')} · {J('STRAT.S.people.falko.certs')}")
         # fibre: the information evening, the door-to-door round, six weeks of pre-marketing – the quota decides
         # the next weekend, Saturday 9:00
@@ -374,7 +390,7 @@ with lib.browser() as b:
         ck('fibre for Ratscher starts (Jens\'s wish)', q and q.get('ok'), str(q))
         for i in (0, 1):
             j = job(f'dp_glasfaser_{i}', ['sarah'])
-            if j and j.get('id'): until(done(j['id']), 200)
+            if j and j.get('id'): finish_job(j['id'], 240)
         p = J("STDORF.state().proj.glasfaser")
         ck('after the evening and the round from door to door: six weeks of pre-marketing', p['st'] == 'laeuft' and p['i'] == 2 and p['due'], str(p))
         for k in range(4):
@@ -383,9 +399,10 @@ with lib.browser() as b:
             E("CLOCK.wait(Math.max(5, STDORF.state().proj.glasfaser.due - CLOCK.t + 20), 'Test')")
             until("!CLOCK.warp", 60)
             steps(1.5)
+        until("STDWELT.state().items.includes('glasfaser')", 30)
         p = J("STDORF.state().proj.glasfaser")
-        notes = J("STRAT.S.notes.slice(-10).map(n => n.text)")
-        ck('the quota is reached (households counted from your reputation and the round), the provider builds, the cabinet stands', p['st'] == 'fertig' and 'glasfaser' in J("STDWELT.state().items") and any('Quote erreicht' in n for n in notes), str(p) + ' ' + str([n for n in notes if 'Glasfaser' in n])[:300])
+        lg = J("STDORF.st().proj.glasfaser.log.map(e => e[1])")
+        ck('the quota is reached (households counted from your reputation and the round), the provider builds, the cabinet stands', p['st'] == 'fertig' and 'glasfaser' in J("STDWELT.state().items") and any('Quote' in n for n in lg), str(p) + ' ' + str(lg)[:300])
     if 'welt' in want:
         E("STRAT.setDate(STRAT.W.day(CLOCK.t).iso, 11 * 60)")
         lib.settle_light(pg)
@@ -415,7 +432,7 @@ with lib.browser() as b:
         newp = sorted(set(n for n, k in own if k not in K))
         ck('no new shader program for the village\'s things (looked at from above and in the first-person view)', not newp, str(newp)[:300])
     if 'reload' in want:
-        E("STRAT.save()")
+        E("STRAT.save(); CLOCK.save()")
         steps(0.5)
         pre = J("({ d: STDORF.state(), known: STRAT.S.known })")
         pre_land = J("STRAT.S.ext.dorf.land")

@@ -517,7 +517,8 @@ export const STDWELT = (() => {
   // meshes under the ground for one frame, with the same shadow flags as the real ones
   let warmed = false;
   function warm() {
-    if (warmed || !ready()) return false;
+    // only the kit is needed for the tiny meshes (not the roads and walls): warm at the very start of the mode, before anyone counts
+    if (warmed || !(VPROPS && VPROPS.kit)) return false;
     warmed = true;
     const g = new THREE.Group(),
       cv = document.createElement('canvas');
