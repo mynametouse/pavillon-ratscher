@@ -5,7 +5,7 @@
 // (src: [title, url]) and how it is found (find: places by name, events of the other features, talk topics, states the book looks at).
 // Facts were checked on the night of 5./6.11.2026 (sources named with each entry); where the game assumes something, the text says so.
 export const WDATA = (() => {
-  const W = t => 'https://de.wikipedia.org/wiki/' + t;
+  const W = t => 'https://de.wikipedia.org/wiki/' + String(t).replace(/ /g, '_');
   const wiki = (t, page) => [t + ' (Wikipedia)', W(page || t)];
   // ---- sources used more than once ----
   const Q = {
