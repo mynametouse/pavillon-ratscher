@@ -106,7 +106,9 @@ test('facts that must stay right (checked 6.11.2026 with the sources named)', ()
   assert.match(t('g_talsperre').text, /16 m hoch und 630 m lang/);
   assert.match(t('g_burg').text, /1226–1232/);
   assert.match(t('g_vessra').here, /seit 1990/);
-  assert.match(t('p_ortsteil').text, /22\. Februar 1994/);
+  // 1994: the day differs between the sources (22.2. Wikipedia „Schleusingen“, 8.3. „Ratscher (Schleusingen)“) – the year only
+  assert.match(t('p_ortsteil').text, /seit 1994/);
+  assert.match(t('g_linde').text, /1888/);
   assert.match(t('tier:rotmilan').here, /14\.000 bis 16\.000/);
   // Beaufort: a storm from force 9 (a mean wind of 75 km/h, WetterOnline); thunder: 3 s per km
   assert.match(t('n_sturm').text, /Windstärke 9/);

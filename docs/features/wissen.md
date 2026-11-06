@@ -95,7 +95,9 @@ WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.why
 - Die Tafeln haben keine Kollision (man läuft durch die Pfosten). Die Tafeln in Schleusingen und Veßra sind bei GitHub nicht prüfbar (dort fehlen
   die Kacheln der Städte) – Abschnitt `stadt` lokal.
 - Die Hauptsatzung von Schleusingen war nicht online zu finden: dass Ratscher eine Ortsteilverfassung hat, ist eine Annahme (wie in „Wahl und Amt“).
-- Das Gründungsjahr der Dorflinde (1888) stammt aus dem Dorfleben des Spiels; eine unabhängige Quelle fehlt noch.
+- Der Tag der Eingemeindung 1994 ist in den Quellen uneinheitlich (22. Februar in den Wikipedia-Artikeln „Schleusingen“ und „Heckengereuth“,
+  8. März in „Ratscher (Schleusingen)“ und „Gethles“) – im Buch steht nur „seit 1994“. Dorflinde 1888 und Schule 1828: Wikipedia „Ratscher
+  (Schleusingen)“; dass dort freitags Skat gespielt wird, ist das Dorfleben des Spiels und so gekennzeichnet.
 
 ## Für den Lead
 

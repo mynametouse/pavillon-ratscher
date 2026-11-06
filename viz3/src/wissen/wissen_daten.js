@@ -738,6 +738,7 @@ export const WDATEN = (() => {
 #widaten .wd-c button{border:1px solid rgba(255,255,255,.28);background:transparent;color:#f3efe6;border-radius:999px;font:500 12px/1 var(--f-body);padding:6px 9px;cursor:pointer}
 #widaten .wd-c button[aria-pressed=true]{background:#f3e2b8;color:#2b2420;border-color:#f3e2b8;font-weight:700}
 #widaten .wd-l{margin-top:8px;border-top:1px solid rgba(255,255,255,.16);padding-top:6px}
+#widaten .wd-l:first-child{margin-top:0;border-top:0;padding-top:0}
 #widaten .wd-l h6{margin:4px 0 2px;font:700 12px/1.2 var(--f-body)}
 #widaten .wd-l p{margin:3px 0}
 #widaten .wd-l small{display:block;opacity:.72;font-size:11px;line-height:1.35;margin-top:2px}
