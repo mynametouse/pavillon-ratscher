@@ -130,7 +130,10 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
 - `amt/amt.js` hat kein exportiertes `save`: das Modul schreibt den Zustand des Ortsvorsteher-Spiels genauso wie es selbst
   (`SAVE.set('pav-amt-v1', AMT.ST)`, danach `AMT.renderBook()`). Schöner wäre `save` in der Rückgabe von `AMT` (eine Zeile).
 - Neue `window`-Namen: `STDORF`, `STDKRISE`, `STDWELT`, `STDWISSEN` (Tests). `st_dorf_wissen.js` lädt vor `wissen/*` und trägt seine
-  Einträge über `window.WISSEN` ein, sobald alle Module geladen sind (und noch einmal beim Start des Modus) – ohne das Buch tut es nichts. Zustand im Kern-Speicher: `STRAT.S.ext.dorf` und `STRAT.S.ext.krise`
+  Einträge über `window.WISSEN` ein, sobald alle Module geladen sind (und noch einmal beim Start des Modus) – ohne das Buch tut es nichts.
+- Für `wissen`: `strategie:entdeckt` mit einer unbekannten Art (`kind`) wird im Buch ein allgemeiner Eintrag im Kapitel **Natur** – das Dorf
+  verhindert das für seine Arten mit eigenen Regeln; `strategie-bau` meldet `kind: 'bau'` (die Bodenplatte), das landet noch in „Natur“.
+  Vorschlag: `bau` → handwerk, `kontakt`/`dorf` → politik, `geschichte` → geschichte in `wissen/wissen.js`. Zustand im Kern-Speicher: `STRAT.S.ext.dorf` und `STRAT.S.ext.krise`
   (geprüft beim Laden).
 - Zusammengeführt: `origin/src` nach Runde B (24be07de) und `origin/feat/strategie` bis e6b692b0 – Konflikte nur in `modules.txt`
   (Reihenfolge: Kern, `strategie-bau`, `strategie-dorf`, `wissen`).
