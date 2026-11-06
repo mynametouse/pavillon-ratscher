@@ -163,8 +163,9 @@ Abfragen und Befehle:
   nichts Freies ohne Anmeldung, das besser ist als die gebauten Körper; die sind nach den Hinweisen des Leads verbessert (Fell nach Datum,
   Reh und Wildschwein nach echten Maßen, voller Hund mit Halskrause). Ehrlich: aus der Nähe (unter ~10 m) bleiben die gebauten Körper
   glatte, einfache Formen ohne Fellstruktur – aus 40–150 m, wo man Wild wirklich sieht, lesen sie sich als Reh, Sau, Hirsch.
-- Hase, Dachs, Waschbär, Marder, Wildkatze sind noch grobe Abwandlungen eines Hundekörpers (Dachs breiter und grau, Hase mit gewölbtem
-  Rücken) – eine Runde wie bei Reh und Sau (Maße, Fotos, Bilder in 7 m) steht für sie aus.
+- Hase, Dachs, Waschbär, Marder, Wildkatze bauen auf einem Hundekörper auf; in der Nacht bekamen sie eigene Rückenlinien und Köpfe
+  (Hase gewölbt mit rundem Kopf, Dachs breit mit spitzem Kopf tief in Rückenhöhe, Waschbär mit Buckel und Maske, Wildkatze mit kurzem Hals)
+  – eine Runde wie bei Reh und Sau (Maße und Fotos, Bilder in 7 m) steht für sie aus; sie sind nachtaktiv und selten nah zu sehen.
 - Äsen: der Äser geht bis etwa 12 cm über den Boden (Hals steil, Kopf fast senkrecht); ganz hinunter bräuchte es eine leichte Beugung der
   Vorderläufe – im Gras fällt es nicht auf.
 - Stimmen fehlen noch für Schwarzspecht, Wildkatze, Dachs und Waschbär (frei lizenzierte Aufnahmen suchen, z. B. xeno-canto mit CC BY-SA;
