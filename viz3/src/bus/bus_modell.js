@@ -279,6 +279,9 @@ export const BUSMOD = (() => {
     ])
       pole(x, y);
     for (const sx of [-1, 1]) bx(kB, sx * 0.3 - 0.015, -5.0, 2.0, sx * 0.3 + 0.015, 3.9, 2.03, YEL);
+    // the housing of the passengers' display under the ceiling, behind the driver (the display itself: build() below)
+    bx(kB, -0.5, 3.955, 2.51, 0.5, 4.03, 2.69, BLACK);
+    bx(kB, -0.03, 3.97, 2.69, 0.03, 4.0, 2.86, GREY);
     // the driver's place: cab wall, seat, wheel, dashboard and the driver
     bx(kB, -HW + 0.06, 4.15, FL, -0.25, 4.2, 1.45, INNER);
     seat(-0.75, 4.75, DARK);
@@ -368,6 +371,9 @@ export const BUSMOD = (() => {
     m.computeBoundingSphere();
     return m;
   }
+  // the inner display's plane (shared): 0.9 × 0.12 m, facing back (+z in three, towards the rear)
+  let IG = null;
+  const innerGeo = () => IG || (IG = new THREE.PlaneGeometry(0.9, 0.12));
   // ---- a bus: its group, the moving parts, its display ----
   const own = (m, shadow) => {
     m.userData.noMerge = true;
@@ -436,11 +442,40 @@ export const BUSMOD = (() => {
       kP.box(x, y + 0.12, FL + 0.42, 0.34, 0.36, 0.12, 0, col(0x25272a));
     }
     const pax = own(new THREE.Mesh(kP.empty() ? new THREE.BufferGeometry() : kP.geo(), M.body));
-    g.add(shade, body, glass, head, tail, cabin, disp, wF, wR, pax, ...doors);
+    // inside, under the ceiling behind the driver: the passengers' display („Nächster Halt: …“), facing back into the bus
+    const cvI = document.createElement('canvas');
+    cvI.width = 512;
+    cvI.height = 64;
+    const texI = new THREE.CanvasTexture(cvI);
+    texI.colorSpace = THREE.SRGBColorSpace;
+    texI.anisotropy = 4;
+    const dmI = M.dispMap.clone();
+    dmI.map = texI;
+    dmI.name = 'bus display inside';
+    const inner = own(new THREE.Mesh(innerGeo(), dmI));
+    inner.position.set(0, 2.6, -3.95);
+    g.add(shade, body, glass, head, tail, cabin, disp, inner, wF, wR, pax, ...doors);
     g.visible = false;
     scene.add(g);
     S.built++;
-    const B = { g, body, glass, disp, tex, cv, wF, wR, doors, pax, dm, open: 0, text: '' };
+    const B = { g, body, glass, disp, tex, cv, wF, wR, doors, pax, dm, open: 0, text: '', inner, innerText: '' };
+    // the display inside: a line of amber LED text (long names shrink to fit)
+    B.next = text => {
+      if (B.innerText === text) return;
+      B.innerText = text;
+      const c = cvI.getContext('2d');
+      c.fillStyle = '#050505';
+      c.fillRect(0, 0, 512, 64);
+      c.fillStyle = '#ffb12a';
+      c.textBaseline = 'middle';
+      c.textAlign = 'center';
+      let fs = 34;
+      c.font = 'bold ' + fs + 'px Arial, Helvetica, sans-serif';
+      while (c.measureText(text).width > 490 && fs > 16)
+        c.font = 'bold ' + (fs -= 2) + 'px Arial, Helvetica, sans-serif';
+      c.fillText(text, 256, 34);
+      texI.needsUpdate = true;
+    };
     B.sign = (line, dest) => {
       const t = line + '|' + dest;
       if (B.text === t) return;
@@ -480,6 +515,8 @@ export const BUSMOD = (() => {
       scene.remove(g);
       tex.dispose();
       dm.dispose();
+      texI.dispose();
+      dmI.dispose();
       if (pax.geometry) pax.geometry.dispose();
     };
     return B;

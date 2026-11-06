@@ -25,7 +25,7 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   Fahrtrichtung und jedes Steigs; im Kasten hängt der **echte Aushangfahrplan** dieser Richtung (Stunden mit Minuten für Montag–Freitag,
   Samstag, Sonn- und Feiertag, „s“ = an Schultagen; an einer Endhaltestelle „Ausstieg“). An der Schulbushaltestelle an der alten Schule steht
   das Wartehäuschen mit Schild schon (`world/village_props.js`): der Bus hält mit der Tür am Häuschen (Lage aus Falkos Video,
-  `world/dorfkern_data.js`, statt der 17 m daneben im Feed), ein Fahrplan dort für beide Richtungen.
+  `world/dorfkern_data.js`, statt der 17 m daneben im Feed), ein Fahrplan dort für beide Richtungen, der Aushang an der Rückwand.
 - An einer Haltestelle heißt der Ort „Haltestelle …“ (Ortsanzeige); beim ersten Mal an einem Schild ein Hinweis, was man dort tun kann.
 - **Fahrplan am Schild** („Fahrplan: …“): die nächsten Abfahrten dieser Richtung (Zeit, Linie, Ziel, „in 3 min“, „fährt ein“, „steht da“),
   der Tag („Mittwoch, Schultag“), **„Auf den Bus warten“** (die Uhr springt wie beim Schlafen bis eine Minute vor den Bus).
@@ -53,7 +53,7 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   gerade unterwegs sein). Wer neben einem wartet, sagt etwas („Na, auch auf den Bus?“). Ihre Figuren sind für den Verkehr belegt
   (`VERKEHR.S.busy[k] = 'bus'`), damit niemand doppelt läuft.
 - **Einsteigen** an der Vordertür (Aktionsknopf), Platz rechts am Fenster hinter der Mitteltür (Ich-Sicht), Fenster mit Linie, Ziel, den
-  nächsten Haltestellen und Zeiten; „Nächster Halt: …“ mit Gong beim Abfahren; „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle
+  nächsten Haltestellen und Zeiten; „Nächster Halt: …“ mit Gong beim Abfahren und auf der Anzeige unter der Decke hinter dem Fahrer; „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle
   antippen = dort aussteigen (Halt-Glocke, „Wagen hält“); **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur Ankunft, das Gelände dort lädt
   vorher, die Türen sind offen); **„Aussteigen“**, wenn der Bus steht. Der Bus fährt seinen echten Weg auch über das 2,4-km-Quadrat hinaus –
   die Kacheln laden vor ihm wie vor einem Auto (`welt/welt.js`, `welt/fahrt.js` schneidet die Straßen ein). Am Ende seines Wegs in der Welt

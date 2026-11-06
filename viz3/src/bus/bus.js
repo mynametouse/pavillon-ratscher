@@ -340,6 +340,7 @@ export const BUS = (() => {
     };
     const tr = a.trip;
     I.B.sign(tr.line, tr.head || tr.nach);
+    I.B.next(tr.line + '  ' + (tr.head || tr.nach));
     I.B.g.visible = true;
     S.inst.push(I);
     S.stats.spawned++;
@@ -749,6 +750,7 @@ export const BUS = (() => {
       if (nx >= 0) {
         gong();
         PLAY.think('Nächster Halt: ' + stName(I.Rn.P.st[nx].s) + (R_.want === nx ? ' – Wagen hält' : ''), 3600);
+        I.B.next('Nächster Halt: ' + stName(I.Rn.P.st[nx].s));
       }
     }
   }
