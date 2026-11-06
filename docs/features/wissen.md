@@ -41,9 +41,9 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   (z. B. „Sonn- und Feiertagsruhe“ beim Mäher), bekommt ein kleines **„?“** daneben; angetippt erscheinen Grund und Quelle, die Regel gilt als
   verstanden (Kapitel „Regeln“). Ebenso die Warnungen des Gartenplaners, die auf einem Gesetz beruhen (Grenzabstand nach ThürNRG, am Bach
   der Gewässerrandstreifen nach § 38 WHG) – `WISSEN.chips(root)`.
-- **Orte der Geschichte – Infotafeln** (`viz3/src/wissen/wissen_orte.js`): kleine Tafeln mit Dach auf zwei Pfosten an der alten Schule, unter der
-  Dorflinde (an der Schule: an der Wand mit der Tür, ≥ 2 m von der Tür und vom Weg zur Schulbushaltestelle, frei vom Biertisch des
-  Dorfabends), am Platz am Bach, an der Forstkiste der Unteren Klinge und auf dem Damm der Talsperre Ratscher (Lage nach Structurae,
+- **Orte der Geschichte – Infotafeln** (`viz3/src/wissen/wissen_orte.js`): kleine Tafeln mit Dach auf zwei Pfosten an der alten Schule (an der
+  Wand mit der Tür, ≥ 2 m von der Tür und vom Weg zur Schulbushaltestelle, frei vom Biertisch des Dorfabends), unter der Dorflinde, am
+  Platz am Bach, an der Forstkiste der Unteren Klinge und auf dem Damm der Talsperre Ratscher (Lage nach Structurae,
   50° 29′ 31,5″ N, 10° 46′ 54,7″ E → UTM → Grundstück über `GEOMAN.xf`); „Tafel lesen“ öffnet das Buch beim Eintrag. Ein Mesh im Material der
   Dorf-Requisiten (`VPROPS.mat.paint`) – kein neues Shader-Programm, kein Licht. Dazu je eine Tafel an **Schloss Bertholdsburg** (auf der Seite
   zum Markt) und an der **Henneberger Kapelle in Kloster Veßra** (zum Klostertor hin): gebaut, sobald die Zone der Stadt steht, und mit ihr
