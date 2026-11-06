@@ -327,17 +327,18 @@ export const BUSPLAN = (() => {
     return [_c.x, _c.y];
   };
   // ---------------- a trip's run through the minutes ----------------
-  // one leg (stop k → k+1) on the lane R: speeds per metre (curves, limit, starting and stopping), capped so it takes `T` seconds when the
-  // timetable gives more time than needed; → { s0, s1, t: cumulative seconds per metre, T (seconds it takes) }
-  function leg(R, s0, s1, T) {
+  // one leg (stop k → k+1) on the lane R: speeds per metre (curves, limit, starting at v0 and ending at v1 – 0 where it stands, the
+  // road's speed where it drives through a stop), capped so it takes `T` seconds when the timetable gives more time than needed;
+  // → { s0, s1, t: cumulative seconds per metre, v, T (seconds it takes), c (the cap) }
+  function leg(R, s0, s1, T, v0 = 0, v1 = 0) {
     const i0 = Math.max(0, Math.round(s0)),
       i1 = Math.min(R.n - 1, Math.max(i0 + 1, Math.round(s1))),
       m = i1 - i0,
       v = new Float32Array(m + 1);
     for (let j = 0; j <= m; j++) v[j] = R.cap[i0 + j];
-    v[0] = 0;
+    v[0] = Math.min(v[0], v0);
     for (let j = 1; j <= m; j++) v[j] = Math.min(v[j], Math.sqrt(v[j - 1] * v[j - 1] + 2 * BUS.acc));
-    v[m] = 0;
+    v[m] = Math.min(v[m], v1);
     for (let j = m - 1; j >= 0; j--) v[j] = Math.min(v[j], Math.sqrt(v[j + 1] * v[j + 1] + 2 * BUS.brk));
     const time = c => {
       let t = 0;
@@ -363,34 +364,80 @@ export const BUSPLAN = (() => {
     const tt = new Float32Array(m + 1);
     for (let j = 1; j <= m; j++) tt[j] = tt[j - 1] + 2 / Math.max(0.3, Math.min(v[j - 1], c) + Math.min(v[j], c));
     for (let j = 0; j <= m; j++) v[j] = Math.min(v[j], c);
-    return { s0: i0, s1: i1, t: tt, v, T: tt[m] };
+    return { s0: i0, s1: i1, t: tt, v, T: tt[m], c };
   }
-  // the run of a trip on service day di: arrival and departure (absolute minutes) at each stop and the legs between, built once
-  function run(trip, di) {
+  // the run of a trip on service day di: arrival and departure (absolute minutes) at each stop and the legs between, built once.
+  // pass(k): true for a stop between its first and last one where nobody gets on or off – a request stop it drives through at the
+  // road's speed (serve() below: it stops there after all when someone asks in time)
+  function run(trip, di, pass) {
     const P = S.pats[trip.pat],
       R = lane(P),
       n = P.st.length,
       T0 = di * 1440 + trip.t0,
       A = new Float64Array(n),
       D = new Float64Array(n),
-      legs = [];
+      legs = [],
+      pz = new Uint8Array(n);
+    if (pass) for (let k = P.first + 1; k < P.last; k++) if (P.st[k].s >= 0 && pass(k)) pz[k] = 1;
     // at its first stop it stands a little before its minute (doors open); from the edge of the world it drives on at once
     A[0] = T0 + trip.a[0] - (P.st[0].s >= 0 ? BUS.dwell : 0);
     D[0] = Math.max(T0 + trip.d[0], A[0] + (P.st[0].s >= 0 ? BUS.dwell : 0));
-    for (let k = 0; k < n - 1; k++) {
+    const Rn = { trip, di, P, R, A, D, legs, n, pass: pz, key: trip.i + ':' + di };
+    plan(Rn, 0);
+    return Rn;
+  }
+  const vAt = (R, s) => R.cap[Math.max(0, Math.min(R.n - 1, Math.round(s)))];
+  // the legs from stop k0 on (its departure D[k0] stays): at the edge of the world no halt; at the last stop it stands a little; at a
+  // stop it drives through no halt; else at least BUS.dwell and until its minute
+  function plan(Rn, k0) {
+    const { trip, P, R, A, D, legs, n, pass } = Rn,
+      T0 = Rn.di * 1440 + trip.t0;
+    legs.length = k0;
+    for (let k = k0; k < n - 1; k++) {
       const want = (T0 + trip.a[k + 1] - D[k]) * 60,
-        L = leg(R, R.st[k], R.st[k + 1], want);
+        L = leg(R, R.st[k], R.st[k + 1], want, pass[k] ? vAt(R, R.st[k]) : 0, pass[k + 1] ? vAt(R, R.st[k + 1]) : 0);
       legs.push(L);
       A[k + 1] = D[k] + L.T / 60;
-      // at the edge of the world no halt; at the last stop it stands a little; else at least BUS.dwell and until its minute
       D[k + 1] =
-        P.st[k + 1].s < 0
+        P.st[k + 1].s < 0 || pass[k + 1]
           ? A[k + 1]
           : k + 1 === n - 1
             ? A[k + 1] + BUS.dwell
             : Math.max(T0 + trip.d[k + 1], A[k + 1] + BUS.dwell);
     }
-    return { trip, di, P, R, A, D, legs, n, key: trip.i + ':' + di };
+  }
+  // a stop it was to drive through is wanted after all (a stop request inside, someone at the stop): from minute T on it stops there.
+  // Before the leg to it: planned anew from the stop before; on that leg: from where it is, braking to the stop (the way driven so far
+  // stays as it was – no jump); false when it is too late (past it, or too fast to stop there with a bus's braking)
+  function serve(Rn, k, T) {
+    if (!Rn.pass || !Rn.pass[k]) return true;
+    const { A, D, legs, trip, n } = Rn;
+    if (T >= A[k]) return false;
+    if (T < D[k - 1]) {
+      Rn.pass[k] = 0;
+      plan(Rn, k - 1);
+      return true;
+    }
+    const L = legs[k - 1],
+      sec = (T - D[k - 1]) * 60,
+      m = L.t.length - 1;
+    let j = 0;
+    while (j < m && L.t[j + 1] <= sec) j++;
+    const j1 = j + 1;
+    if (j1 >= m) return false;
+    const v = Float32Array.from(L.v),
+      t = Float32Array.from(L.t);
+    v[m] = 0;
+    for (let i = m - 1; i >= j1; i--) v[i] = Math.min(v[i], Math.sqrt(v[i + 1] * v[i + 1] + 2 * BUS.brk));
+    if (v[j1] < L.v[j1] - 0.05) return false;
+    for (let i = j1 + 1; i <= m; i++) t[i] = t[i - 1] + 2 / Math.max(0.3, v[i - 1] + v[i]);
+    legs[k - 1] = { s0: L.s0, s1: L.s1, t, v, T: t[m], c: L.c };
+    Rn.pass[k] = 0;
+    A[k] = D[k - 1] + t[m] / 60;
+    const T0 = Rn.di * 1440 + trip.t0;
+    D[k] = k === n - 1 ? A[k] + BUS.dwell : Math.max(T0 + trip.d[k], A[k] + BUS.dwell);
+    plan(Rn, k);
+    return true;
   }
   // where a run is at minute T: { st: 'vor' | 'halt' | 'fahrt' | 'ende', k (the stop it stands at or left last), s, v (m/s) }
   function at(Rn, T, out = {}) {
@@ -452,6 +499,7 @@ export const BUSPLAN = (() => {
     lane,
     leg,
     run,
+    serve,
     at,
     hm,
     get ready() {

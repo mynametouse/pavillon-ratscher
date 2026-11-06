@@ -106,6 +106,12 @@ with lib.browser() as b:
         steps(2.0)
         st = J("BUS.state()")
         ck('the stop sign stands there (built near the walker)', st['furn'] >= 1, f"furniture {st['furn']}")
+        # the shelter OpenStreetMap knows at the Schleusebrücke (the kerb toward Schleusingen), solid for the walker; no second sign of the
+        # feed's „Ratscher“ beside it (merged)
+        sh = J("""(() => { const f = [...BUS.S.furn.entries()].map(([i, f]) => [BUS.STOPS()[i], f]);
+          return { shel: f.filter(([e, q]) => q.shel).map(([e]) => e.name), near: BUS.STOPS().filter(e => Math.hypot(e.x - 245, e.y - 10) < 40).map(e => e.name),
+                   walls: VEH.extra.filter(x => x.bus && x.box() && x.box().ey < 1).length }; })()""")
+        ck('the shelter from OpenStreetMap at the Schleusebrücke, one stop name there', sh['shel'] == ['Ratscher, Schleusebrücke'] and set(sh['near']) == {'Ratscher, Schleusebrücke'} and sh['walls'] >= 3, str(sh))
         E("GAME.shot()"); steps(0.3)
         p0 = E("GAME.R.info.programs.length")
         progs0 = set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
@@ -131,7 +137,7 @@ with lib.browser() as b:
         page_pic(pg, 'a_fahrplan')
         # the board on a phone (at the bottom, above the buttons)
         pg.set_viewport_size({'width': 390, 'height': 844})
-        steps(0.2)
+        time.sleep(0.6); steps(0.2)
         page_pic(pg, 'a1_fahrplan_telefon')
         pg.set_viewport_size({'width': 1100, 'height': 680})
         steps(0.2)
@@ -206,6 +212,8 @@ with lib.browser() as b:
         lp = J("BUSLEUTE.state()")
         ck('the waiting people get in at the front door', lp['stats']['ein'] >= 2 and not [q for q in lp['pax'] if q['st'] == 'steigt'], str(lp))
         if arr:
+            # (the test's pictures take their time: the driver waits a little longer – boarding sets its own short wait)
+            E(f"(() => {{ const I = BUS.S.inst.find(q => q.key === '{arr['key']}'); if (I) I.hold = Math.max(I.hold, 40); }})()")
             d = J(f"(() => {{ const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); return Math.hypot({arr['x']} - e.x, {arr['y']} - e.y); }})()")
             ck('the bus stands beside the sign (its middle within 9 m of the stop)', d < 9, f'{d:.1f} m')
             # a picture from the kerb, looking along the bus
@@ -230,7 +238,8 @@ with lib.browser() as b:
             p1 = E("GAME.R.info.programs.length")
             mine = own_new()
             ck('no new shader program for the bus, the sign and the display', not mine, f'{p0} → {p1}; of the bus: ' + (' | '.join(mine)[:400] or 'none') + '; others: ' + ' | '.join(new_progs())[:300])
-            # boarding through the action at the front door
+            # boarding through the action at the front door (with the own eyes: the seat; the view of the figure is the view from outside)
+            E("setView3(false)")
             E(f"""(() => {{ const I = BUS.S.inst.find(q => q.key === '{arr['key']}'); const fx = Math.sin(I.hd), fy = Math.cos(I.hd), rx = Math.cos(I.hd), ry = -Math.sin(I.hd);
               GAME.P.x = I.x + fx * 5.05 + rx * 2.2; GAME.P.y = I.y + fy * 5.05 + ry * 2.2; }})()""")
             steps(0.3)
@@ -244,18 +253,29 @@ with lib.browser() as b:
             page_pic(pg, 'c_im_bus_panel')
             # the same on a phone (the panel at the bottom, above the buttons)
             pg.set_viewport_size({'width': 390, 'height': 844})
-            steps(0.3)
+            time.sleep(0.6); steps(0.3)
             page_pic(pg, 'c2_im_bus_telefon')
             pg.set_viewport_size({'width': 1100, 'height': 680})
             steps(0.3)
-            # it drives off: the rider goes with it
+            # it drives off: the rider goes with it (the left indicator while it leaves the stop)
             p_a = J("[GAME.P.x, GAME.P.y]")
-            steps(25.0)
+            bl, after = [], 0
+            for i in range(45):
+                steps(1.0)
+                bl.append(J("[BUS.S.ride.I.st, BUS.S.ride.I.blinkSide || 0]"))
+                if bl[-1][0] == 'fahrt': after += 1
+                if after >= 5: break
+            steps(12.0)
             p_b = J("[GAME.P.x, GAME.P.y]")
+            ck('the left indicator when it leaves the stop', any(b[1] == -1 for b in bl) and not any(b[1] == 1 for b in bl[:6]), str(bl))
             st = J("BUS.state()")
             mine = [q for q in st['inst'] if q['key'] == arr['key']]
             moved = math.hypot(p_b[0] - p_a[0], p_b[1] - p_a[1])
             ck('the bus drives on its way, the rider with it', mine and mine[0]['st'] == 'fahrt' and moved > 40, f"{moved:.0f} m, {mine[0] if mine else None}")
+            # someone else gets off at the Krankenhaus (BUSLEUTE.force: one at each stop of the 205): a few seconds after the start the stop
+            # request – the bell, „Wagen hält“ red on the display under the ceiling and in the panel
+            sr = J("({ disp: BUS.S.ride.I.B.innerText, badge: !!document.querySelector('#buspanel .halt'), npc: BUS.S.ride.npc })")
+            ck('someone else wants to get off at the next stop: „Wagen hält“ on the display and in the panel', sr['disp'].endswith('|h') and sr['badge'] and 'Krankenhaus' in sr['disp'], str(sr))
             pic(pg, 'd_aus_dem_bus')
             # the eye at the seat (right, behind the middle door: local x 0.98, y -2.17, 1.61 m up) also while it drives – bus and
             # camera placed in the same frame (the eye once lagged a frame's way behind and looked over its own backrest)
@@ -263,6 +283,23 @@ with lib.browser() as b:
               const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert()); return [p.x, -p.z, p.y]; })()""")
             ck('the eye stays at the seat while the bus drives', abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 2.17) < 0.15 and abs(probe[2] - 1.61) < 0.1,
                'local ' + ', '.join(f'{v:.2f}' for v in probe))
+            # the view of the figure (the key V, „Von außen“ in the panel – CAM3.want, as on foot and in the car): from behind and above the
+            # bus, it swings back behind it; the own eyes again: the seat
+            E("setView3(true)")
+            steps(2.5)
+            po = J("""(() => { GAME.shot(); const I = BUS.S.ride.I, g = I.B.g, c = GAME.cam; g.updateMatrixWorld(true);
+              const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert());
+              return { p: [p.x, -p.z, p.y], hud: (document.querySelector('#camtog .hbt') || {}).textContent || null, btn: [...document.querySelectorAll('#buspanel .row button')].map(b => b.textContent), out: BUS.state().ride.out }; })()""")
+            pl = po['p']
+            ck('the view of the figure: the camera behind and above the bus while it drives', po['out'] and pl[1] < -9 and abs(pl[0]) < 6 and 3 < pl[2] < 11 and 'Vom Sitz aus' in po['btn'] and po['hud'] == 'Figur',
+               'local ' + ', '.join(f'{v:.1f}' for v in pl) + f" hud {po['hud']} {po['btn']}")
+            pic(pg, 'c3_von_aussen')
+            E("setView3(false)")
+            steps(1.2)
+            probe = J("""(() => { GAME.shot(); const I = BUS.S.ride.I, g = I.B.g, c = GAME.cam; g.updateMatrixWorld(true);
+              const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert()); return [p.x, -p.z, p.y, BUS.state().ride.out]; })()""")
+            ck('the own eyes: back on the seat', not probe[3] and abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 2.17) < 0.15 and abs(probe[2] - 1.61) < 0.1,
+               'local ' + ', '.join(f'{v:.2f}' for v in probe[:3]))
             # „Fahrt abkürzen“ to the Krankenhaus (the clock jumps), from there on in real time across the edge of the square to the
             # Zentralhaltestelle (the ground there streams in as for a car: welt/welt.js tiles, welt/fahrt.js roads), out there by itself
             kk, kz = J("""(() => { const I = BUS.S.ride.I, f = n => I.Rn.P.st.findIndex(o => o.s >= 0 && BUS.plan.S.stations[o.s].n === n);
@@ -282,7 +319,7 @@ with lib.browser() as b:
                 steps(1.0)
                 time.sleep(0.15)
                 q = J("""(() => { const R = BUS.S.ride; if (!R) return null; const I = R.I, g = KERN.ground(I.x, I.y, I.z + 0.5);
-                  return { x: I.x, y: I.y, z: I.z, g, cov: !!(WELT.covers && WELT.covers(I.x, I.y)), st: I.st, k: I.k, v: I.v, hd: I.hd, tiles: WELT.state ? WELT.state().tiles : 0 }; })()""")
+                  return { x: I.x, y: I.y, z: I.z, g, cov: !!(WELT.covers && WELT.covers(I.x, I.y)), st: I.st, k: I.k, v: I.v, hd: I.hd, b: I.blinkSide || 0, tiles: WELT.state ? WELT.state().tiles : 0 }; })()""")
                 if not q: break
                 out_sq = not (box[0] < q['x'] < box[2] and box[1] < q['y'] < box[3])
                 if out_sq: samp.append(q)
@@ -293,6 +330,7 @@ with lib.browser() as b:
                     E(f"GAME.P.yaw = {q['hd']} * 180 / Math.PI + 80; GAME.P.pitch = -8")
                     steps(0.05); pic(pg, 'h2_fenster_ausserhalb')
                     E(f"GAME.P.yaw = {q['hd']} * 180 / Math.PI")
+            ck('the right indicator before the Zentralhaltestelle', any(q['b'] == 1 and q['st'] == 'fahrt' for q in samp), str([(q['st'], q['b']) for q in samp[-12:]]))
             dz = [abs(q['z'] - q['g']) for q in samp if q['cov'] and q['g'] is not None]
             ck('the bus drives out of the square on its way, on the ground there (tiles streamed)', len(samp) >= 5 and dz and max(dz) < 0.45 and max(q['tiles'] for q in samp) > 0,
                f"{len(samp)} samples outside, ground difference max {max(dz) if dz else None}, tiles {max([q['tiles'] for q in samp] or [0])}")
@@ -347,7 +385,10 @@ with lib.browser() as b:
             steps(0.5)
         if 'schule' in want:
             # the school bus stop at the old school (its shelter, world/village_props.js): the 214 at 7:40 on a school day stops with its
-            # front door at the shelter; the board there lists the buses of both directions
+            # front door at the shelter; the board there lists the buses of both directions (from the bus spot in Ratscher: the run before
+            # may have ended in Schleusingen)
+            E("GAME.go('bus')")
+            steps(0.5)
             E("""(() => { const d0 = Math.floor(CLOCK.t / 1440) + 1; let d = d0; for (let i = 0; i < 14; i++, d++) { const q = BUS.plan.day(DN.e0 + d); if (q.wd < 5 && !q.hol && !q.ferien) break; }
               CLOCK.t = d * 1440 + 7 * 60 + 37; const e = BUS.STOPS().find(q => q.shelter);
               // (behind the shelter, away from the road: not in the bus's way)
@@ -358,6 +399,7 @@ with lib.browser() as b:
             for i in range(240):
                 steps(1.0)
                 st = J("BUS.state()")
+                if i == 1: print('school stop', E('CLOCK.hm()'), st['focus'], st['near'], [q['line'] + ' ' + q['st'] for q in st['inst']], flush=True)
                 here = [q for q in st['inst'] if q['halt'] == 'Ratscher, Schulbushaltestelle' and q['st'] == 'halt' and q['open'] > 0.8]
                 if here:
                     sb = here[0]; break

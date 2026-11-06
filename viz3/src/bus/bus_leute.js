@@ -221,6 +221,8 @@ export const BUSLEUTE = (() => {
       wait: j * 1.4,
       dir: I.hd + (back < 0 ? Math.PI : 0),
     });
+    // (up from a seat)
+    if (I.B.setPax) I.B.setPax(I.B.paxN - 1);
     return true;
   }
   // the bus a waiting person waits for, standing at the stop with its doors open
@@ -297,8 +299,9 @@ export const BUSLEUTE = (() => {
         I.hold = Math.max(I.hold || 0, 1.2);
         const [dx, dy] = BUS.doorPt(I, 0.15);
         if (toward(q, dt, dx, dy, q.walk * 1.15)) {
-          // in: through the door, out of sight
+          // in: through the door, out of sight – on a seat inside (bus/bus_modell.js)
           remove(q, 'ein');
+          if (I.B.setPax) I.B.setPax(I.B.paxN + 1);
           KERN.emit('bus:fahrgast', { who: q.key, was: 'ein', line: I.trip.line });
         }
       } else if (q.st === 'aus') {
@@ -357,6 +360,26 @@ export const BUSLEUTE = (() => {
   return {
     S,
     clear,
+    // how many will get off this bus at its stop k (arriving at minute t): the count the stop itself takes – for the stop request
+    // beforehand in the bus one rides (bus/bus.js)
+    ausAt: (I, k, t) => {
+      const st = I.Rn.P.st[k];
+      if (Z.on || !st || st.s < 0 || !townOf(BUSPLAN.S.stations[st.s].n)) return 0;
+      const hour = (((t % 1440) + 1440) % 1440) / 60;
+      return count(hash(I.trip.i, k, 2), hour, 'aus', I.trip.line);
+    },
+    // how many get on or off this trip at its stop k (arriving at minute t) – the request stops of bus/bus.js: the same counts as
+    // above, also where none of the people live (invisible ones there)
+    serveAt: (trip, di, k, t) => {
+      const hour = (((t % 1440) + 1440) % 1440) / 60;
+      return count(hash(trip.i, di, k, 1), hour, 'ein', trip.line) + count(hash(trip.i, k, 2), hour, 'aus', trip.line);
+    },
+    // someone of the people waits (or walks to the stop) for this bus at its stop k
+    waitsFor: (I, k) =>
+      S.pax.some(
+        q =>
+          (q.st === 'wartet' || q.st === 'kommt') && q.c && q.c.trip.i === I.trip.i && q.c.k === k && q.c.di === I.Rn.di
+      ),
     // tests: forget who was planned for which bus
     reset: () => {
       clear();

@@ -26,12 +26,13 @@ import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
 import { TASKS } from '../core/tasks.js';
 import { floorAt, P } from '../game/walkable.js';
-import { go } from '../game/player.js';
+import { CAM3, go, setView3 } from '../game/player.js';
 import { PLAY } from '../game/play.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { DKDATA } from '../world/dorfkern_data.js';
+import { WCOL } from '../world/worldcol.js';
 import { WELT } from '../welt/welt.js';
 import { FAHRT } from '../welt/fahrt.js';
 import { VNETZ } from '../verkehr/verkehr_netz.js';
@@ -93,6 +94,7 @@ export const BUS = (() => {
       .then(j => {
         BUSPLAN.parse(j);
         stopsOf();
+        osmShelters();
         S.state = 'ready';
         KERN.emit('bus:bereit', { stations: BUSPLAN.S.stations.length, trips: BUSPLAN.S.trips.length });
       })
@@ -175,6 +177,56 @@ export const BUS = (() => {
     return Math.cos(_h.hd - e.hd) > 0.3;
   }
   // ---------------- the furniture near the observer: signs, the board's action ----------------
+  // shelters OpenStreetMap knows at the stops of the world (highway=bus_stop with shelter=yes, © OpenStreetMap contributors, ODbL;
+  // asked 6.11.2026, the points in the world's metres): each beside the sign nearest to its point (25 m) where the world has none
+  const OSM_SHELTERS = [
+    [244.5, 14.2], // Ratscher, Schleusebrücke
+    [-1335.5, 1242.9], // Schleusingen, Zentralhaltestelle (two bays)
+    [-1367.9, 1206.8],
+    [-737.4, 1404.6], // Schleusingen, Felsenkeller (OSM: Ilmenauer Straße)
+    [-811.8, 2253.9], // Schleusingen, Einkaufszentrum (OSM: Mega Center)
+    [-1902.8, 445.2], // Schleusingen, Hildburghäuser Straße
+    [-2155.4, 450.0], // Schleusingen, Themarer Straße
+    [-2436.6, 3147.5], // Fischbach, Ort
+    [-1023.5, -1950.2], // Abzweig Gottfriedsberg
+    [-1835.4, -3139.8], // Gerhardtsgereuth
+    [-7952.6, -1713.6], // Ehrenberg
+    [-8807.7, -258.4], // Kloster Veßra, Ort
+  ];
+  function osmShelters() {
+    for (const [ox, oy] of OSM_SHELTERS) {
+      let best = null,
+        bd = 25;
+      for (const e of STOPS) {
+        const d = Math.hypot(e.x - ox, e.y - oy);
+        if (!e.shelter && d < bd) {
+          best = e;
+          bd = d;
+        }
+      }
+      if (best) best.osm = true;
+    }
+  }
+  const shelterOf = e => !!e.osm;
+  // its walls, solid for the walker and vehicles (vehicles/vehicle.js VEH.extra), while one is built
+  const SHW = [];
+  for (let i = 0; i < 9; i++) VEH.extra.push({ bus: true, box: () => SHW[i] || null });
+  function shelterWalls() {
+    SHW.length = 0;
+    for (const f of S.furn.values()) if (f.shel) SHW.push(...f.shel.walls);
+  }
+  // a shelter from OSM: its front at the kerb line half a metre behind the sign, along the road toward the middle of the bus
+  function buildShel(e) {
+    if (!shelterOf(e)) return null;
+    const fx = Math.sin(e.hd),
+      fy = Math.cos(e.hd),
+      rx = Math.cos(e.hd),
+      ry = -Math.sin(e.hd),
+      sx = e.x - fx * 2.3 + rx * 0.6,
+      sy = e.y - fy * 2.3 + ry * 0.6,
+      sz = KERN.ground(sx, sy);
+    return Number.isFinite(sz) ? BUSMOD.shelter(sx, sy, sz, e.hd) : null;
+  }
   function furniture(ox, oy) {
     for (const e of STOPS) {
       const d = Math.hypot(e.x - ox, e.y - oy),
@@ -204,7 +256,9 @@ export const BUS = (() => {
           label: () => (S.ride || Z.on ? null : 'Fahrplan: ' + BUSPLAN.S.stations[e.s].short),
           run: () => board(e),
         });
-        S.furn.set(e.i, { sign, id, z: e.shelter ? 0 : KERN.ground(e.x, e.y) });
+        const shel = buildShel(e);
+        S.furn.set(e.i, { sign, shel, id, z: e.shelter ? 0 : KERN.ground(e.x, e.y) });
+        if (shel) shelterWalls();
         S.stats.built++;
         markDirty(true);
       } else if (f && f.sign && d < FURN && Math.abs(KERN.ground(e.x, e.y) - f.z) > 0.15) {
@@ -212,11 +266,16 @@ export const BUS = (() => {
         f.sign.dispose();
         f.z = KERN.ground(e.x, e.y);
         f.sign = BUSMOD.sign(e.x, e.y, f.z, (e.az + 180) % 360, e.name, aushang(e));
+        if (f.shel) f.shel.dispose();
+        f.shel = buildShel(e);
+        shelterWalls();
         markDirty(true);
       } else if (f && d > FURN + 140) {
         if (f.sign) f.sign.dispose();
+        if (f.shel) f.shel.dispose();
         KERN.unact(f.id);
         S.furn.delete(e.i);
+        if (f.shel) shelterWalls();
         markDirty(true);
       }
     }
@@ -317,8 +376,37 @@ export const BUS = (() => {
   }
   const _o = {},
     _c = {};
+  // request stops: between its first and last stop a bus stops where someone gets on or off (the people of bus/bus_leute.js, the same
+  // counts – elsewhere invisible ones), where the walker waits, where the rider wants; a school bus at every stop. Else it drives through.
+  function passFn(trip, di) {
+    const T0 = di * 1440 + trip.t0;
+    return k => {
+      if (trip.school) return false;
+      const L = window.BUSLEUTE;
+      if (L && L.serveAt && L.serveAt(trip, di, k, T0 + trip.a[k]) > 0) return false;
+      return !walkerAt(trip, k);
+    };
+  }
+  // the walker stands at this stop of the trip (its kerb, 25 m)
+  function walkerAt(trip, k) {
+    if (P.mode !== 'walk' || PLAY.seated() || VEH.cur) return false;
+    const st = BUSPLAN.S.pats[trip.pat].st[k];
+    if (!st || st.s < 0) return false;
+    const e = stopAt(P.x, P.y, 25);
+    return !!e && e.s === st.s && sameWay(e, { trip, k });
+  }
+  // a bus coming: its next stops are served when the walker or someone of the people waits there (in time – BUSPLAN.serve)
+  function standBy() {
+    for (const I of S.inst) {
+      if (I.st === 'ende') continue;
+      const pz = I.Rn.pass;
+      for (let k = I.k + 1; k <= Math.min(I.Rn.P.last - 1, I.k + 2); k++)
+        if (pz[k] && (walkerAt(I.trip, k) || (window.BUSLEUTE && BUSLEUTE.waitsFor && BUSLEUTE.waitsFor(I, k))))
+          BUSPLAN.serve(I.Rn, k, I.tau);
+    }
+  }
   function spawn(a, tau) {
-    const Rn = BUSPLAN.run(a.trip, a.di);
+    const Rn = BUSPLAN.run(a.trip, a.di, passFn(a.trip, a.di));
     const I = {
       Rn,
       key: Rn.key,
@@ -341,6 +429,8 @@ export const BUS = (() => {
     const tr = a.trip;
     I.B.sign(tr.line, tr.head || tr.nach);
     I.B.next(tr.line + '  ' + (tr.head || tr.nach));
+    // who sits in it: coming from beyond the world or met on its way a few; before its first stop here nobody yet
+    if (I.B.setPax) I.B.setPax(!tr.vor && I.tau < Rn.D[Rn.P.first] ? 0 : 1 + ((tr.i * 7 + a.di * 3) % 5));
     I.B.g.visible = true;
     S.inst.push(I);
     S.stats.spawned++;
@@ -439,6 +529,27 @@ export const BUS = (() => {
     const o0 = I.B.open;
     I.B.setOpen(open);
     if ((o0 < 0.05 && I.B.open >= 0.05) || (o0 > 0.95 && I.B.open <= 0.95)) doorSound(I, I.B.open > o0);
+    // the indicators: right in the last metres before a stop, left when it leaves one (doors shut, the last seconds and the first metres)
+    const Pst = I.Rn.P.st;
+    let side = 0;
+    if (I.st === 'fahrt') {
+      const pz = I.Rn.pass;
+      if (Pst[I.k + 1] && Pst[I.k + 1].s >= 0 && !pz[I.k + 1] && R.st[I.k + 1] - _o.s < 45) side = 1;
+      else if (Pst[I.k].s >= 0 && !pz[I.k] && _o.s - R.st[I.k] < 16) side = -1;
+    } else if (
+      I.st === 'halt' &&
+      Pst[I.k].s >= 0 &&
+      open <= 0 &&
+      I.Rn.D[I.k] - I.tau < 0.08 &&
+      I.tau > I.Rn.A[I.k] + 0.05
+    )
+      side = -1;
+    I.blinkSide = side;
+    const lit = side !== 0 && performance.now() % 760 < 400;
+    if (I.B.blink(side, lit)) {
+      if (seen(cx, cy)) markDirty();
+      if (S.ride && S.ride.I === I && !S.ride.out) relay(lit);
+    }
     // a new picture only for a bus one may see (near, or ahead of the camera) – as the cars of the traffic (V17g)
     if ((moved || o0 !== I.B.open) && seen(cx, cy)) markDirty();
     return I;
@@ -555,6 +666,12 @@ export const BUS = (() => {
     S.lastClk = clk;
     for (const I of S.inst.slice()) {
       if (I.hold > 0 && !(S.ride && S.ride.I === I && S.ride.busy)) I.hold -= dt;
+      // someone at the open front door (the walker, not riding): the driver waits for him – not for ever (20 s)
+      if (I.st === 'halt' && I.B.open > 0.6 && !S.ride && P.mode === 'walk' && !PLAY.seated() && !VEH.cur) {
+        const dp = doorPt(I, 0.6);
+        if (Math.hypot(P.x - dp[0], P.y - dp[1]) < 3.2 && (I.doorT = (I.doorT || 0) + dt) < 20)
+          I.hold = Math.max(I.hold, 1.2);
+      } else if (I.st !== 'halt') I.doorT = 0;
       if (Math.hypot(I.x - ox, I.y - oy) < 300) freeAhead(I, dt);
       else I.r = 1;
       if (S.ride && S.ride.I === I) {
@@ -657,21 +774,98 @@ export const BUS = (() => {
     while (a < -Math.PI) a += 2 * Math.PI;
     return a;
   };
+  // ---- the view from outside during a ride: behind and above the bus, looking where the rider looks (the mouse turns around the bus);
+  // after a moment without looking around it swings back behind the bus – as the vehicles' chase camera (vehicles/vehicle.js). It follows
+  // the view of the figure (CAM3.want: the key V, the button „Figur/Augen“, „Von außen“ in the panel) – the same on foot, in the car and
+  // in the bus; the seat with the own eyes. ----
+  const OUTV = { L: 16, up: 1.0, piv: 2.0, pitch: -7 };
+  function outEye(I) {
+    const y = (P.yaw * Math.PI) / 180,
+      p = (P.pitch * Math.PI) / 180,
+      fx = Math.sin(y) * Math.cos(p),
+      fy = Math.cos(y) * Math.cos(p),
+      fz = Math.sin(p),
+      px = I.x,
+      py = I.y,
+      pz = I.z + OUTV.piv;
+    let L = OUTV.L;
+    // out of the walls of the world's houses (world/worldcol.js)
+    WCOL.each(
+      Math.min(px, px - fx * L) - 1,
+      Math.min(py, py - fy * L) - 1,
+      Math.max(px, px - fx * L) + 1,
+      Math.max(py, py - fy * L) + 1,
+      (i, Q) => {
+        const ax = Q[i * 4],
+          ay = Q[i * 4 + 1],
+          bx = Q[i * 4 + 2],
+          by = Q[i * 4 + 3],
+          ex = -fx * L,
+          ey = -fy * L,
+          den = ex * (by - ay) - ey * (bx - ax);
+        if (Math.abs(den) < 1e-9) return;
+        const t = ((ax - px) * (by - ay) - (ay - py) * (bx - ax)) / den,
+          u = ((ax - px) * ey - (ay - py) * ex) / den;
+        if (t > 0 && t < 1 && u >= 0 && u <= 1) L = Math.min(L, Math.max(7, t * L - 0.4));
+      }
+    );
+    const cx = px - fx * L,
+      cy = py - fy * L;
+    let cz = pz - fz * L + OUTV.up * (L / OUTV.L);
+    const gz = KERN.ground(cx, cy, cz) + 1.2;
+    if (cz < gz) cz = gz;
+    return { x: cx, y: cy, z: cz };
+  }
+  function rideView(out) {
+    const R_ = S.ride;
+    if (!R_ || R_.out === !!out) return;
+    R_.out = !!out;
+    R_.lookT = -9;
+    if (!out && Math.abs(P.pitch + 1) > 20) P.pitch = -1;
+    viewLabel();
+    panel();
+  }
+  function viewLabel() {
+    if (window.HUD && window.HUD.viewChanged) window.HUD.viewChanged();
+    if (S.ride && S.ride.out) document.body.dataset.view = '3';
+  }
   function enter(I) {
     if (S.ride || PLAY.seated() || VEH.cur || I.st !== 'halt') return false;
     closeBoard();
-    S.ride = { I, from: I.k, want: null, lag: CLOCK.t - I.tau, lastHd: I.hd, k: I.k };
+    S.ride = {
+      I,
+      from: I.k,
+      want: null,
+      lag: CLOCK.t - I.tau,
+      lastHd: I.hd,
+      k: I.k,
+      out: CAM3.want,
+      vk: CAM3.want ? 1 : 0,
+      lookT: -9,
+    };
+    let lastE = null;
     I.hold = 2.5;
     PLAY.sit({
       kind: 'ride',
       fp: true,
+      get view3() {
+        return !!(S.ride && S.ride.out);
+      },
       get lock() {
         return !S.ride || S.ride.I.st === 'fahrt';
       },
       lockMsg: 'Während der Fahrt bleibst du sitzen – „Halt“ im Bus-Fenster.',
       follow: () => {
         const R_ = S.ride;
-        if (!R_) return eye(I);
+        // (getting off: from where the camera was – the seat or outside)
+        if (!R_) return lastE || eye(I);
+        // (the time of the game: the clock runs in real time during a ride – and so do the tests' steps)
+        const ct = CLOCK.t,
+          dt = Math.min(0.1, Math.max(0, (ct - (R_.ct ?? ct)) * 60));
+        R_.ct = ct;
+        const tm = (R_.gt = (R_.gt || 0) + dt);
+        // the mouse or a finger turned the view since the last frame
+        if (R_.ly !== undefined && (Math.abs(P.yaw - R_.ly) > 0.01 || Math.abs(P.pitch - R_.lp) > 0.01)) R_.lookT = tm;
         // the bus at this very moment: the camera and the bus in the same frame (else the seat lags behind the moving bus by a frame's
         // way – at 50 km/h the eye sat behind its own backrest)
         if (!R_.busy && !(I.hold > 0 && I.st === 'halt')) {
@@ -682,10 +876,29 @@ export const BUS = (() => {
         const d = wrap(I.hd - R_.lastHd);
         P.yaw += (d * 180) / Math.PI;
         R_.lastHd = I.hd;
-        return eye(I);
+        // the view of the figure (key V, the view buttons): outside; the own eyes: the seat
+        if (CAM3.want !== R_.out) rideView(CAM3.want);
+        R_.vk = Math.min(1, Math.max(0, R_.vk + ((R_.out ? 1 : -1) * dt) / 0.6));
+        let e = eye(I);
+        if (R_.vk > 0) {
+          if (R_.out && tm - (R_.lookT ?? -9) > 1.5) {
+            let a = (I.hd * 180) / Math.PI - P.yaw;
+            while (a > 180) a -= 360;
+            while (a < -180) a += 360;
+            P.yaw += a * Math.min(1, dt * (1.2 + I.v * 0.1));
+            P.pitch += (OUTV.pitch - P.pitch) * Math.min(1, dt * 2);
+          }
+          const o = outEye(I),
+            k = R_.vk * R_.vk * (3 - 2 * R_.vk);
+          e = { x: e.x + (o.x - e.x) * k, y: e.y + (o.y - e.y) * k, z: e.z + (o.z - e.z) * k };
+        }
+        R_.ly = P.yaw;
+        R_.lp = P.pitch;
+        lastE = e;
+        return e;
       },
       yaw: (I.hd * 180) / Math.PI,
-      pitch: -1,
+      pitch: S.ride.out ? OUTV.pitch : -1,
       get back() {
         const p = doorPt(I, 1.0);
         return [p[0], p[1], I.z];
@@ -695,12 +908,26 @@ export const BUS = (() => {
     });
     CLOCK.focus('bus');
     S.stats.rides++;
+    // the view button: „Figur“ outside, „Augen“ on the seat
+    viewLabel();
     save();
     panel();
     // (does it go on to Schleusingen: a later stop there – the task „Mit dem Bus nach Schleusingen“)
     const schl = I.Rn.P.st.some((o, k) => k > I.k && o.s >= 0 && /^Schleusingen/.test(stName(o.s)));
     KERN.emit('bus:ein', { line: I.trip.line, ziel: I.trip.head, halt: stName(I.Rn.P.st[I.k].s), schl });
-    PLAY.think('Du steigst in den ' + I.trip.line + 'er nach ' + (I.trip.head || I.trip.nach) + '.', 2600);
+    // the driver greets as one greets here by the time of day
+    const hr = (((CLOCK.t % 1440) + 1440) % 1440) / 60,
+      greet = hr < 10.5 ? 'Morgen!' : hr < 17.5 ? 'Tag!' : '’n Abend!';
+    PLAY.think(
+      '„' +
+        greet +
+        '“ – der Fahrer nickt. Du steigst in den ' +
+        I.trip.line +
+        'er nach ' +
+        (I.trip.head || I.trip.nach) +
+        '.',
+      3200
+    );
     return true;
   }
   // out: at a stop (stood up or arrived where one wanted)
@@ -716,6 +943,7 @@ export const BUS = (() => {
     const halt = stName(I.Rn.P.st[I.k].s);
     KERN.emit('bus:aus', { line: I.trip.line, halt, x: P.x, y: P.y });
     PLAY.think(halt + '.', 2400);
+    viewLabel();
     save();
   }
   // during a ride: arrived at the wanted stop → out; at the end of its way in the world → out
@@ -724,12 +952,14 @@ export const BUS = (() => {
     if (!R_) return;
     const I = R_.I;
     if (I.st === 'halt' || I.st === 'ende') {
+      const last = I.k >= I.Rn.P.last;
       if (R_.k !== I.k) {
         R_.k = I.k;
         save();
         panel();
+        // the end of the line: the display says so
+        if (last && !I.trip.weiter) I.B.next('Endhaltestelle – bitte alle aussteigen');
       }
-      const last = I.k >= I.Rn.P.last;
       if ((R_.want !== null && I.k >= R_.want && I.k !== R_.from) || last) {
         if (I.B.open > 0.9) {
           if (last && I.trip.weiter)
@@ -741,18 +971,43 @@ export const BUS = (() => {
       R_.shownK = I.k;
       panel();
       // off from a stop: the display and the gong – „Nächster Halt: …“
-      let nx = -1;
-      for (let k = I.k + 1; k <= I.Rn.P.last; k++)
-        if (I.Rn.P.st[k].s >= 0) {
-          nx = k;
-          break;
-        }
+      const nx = nextStop(I);
       if (nx >= 0) {
         gong();
         PLAY.think('Nächster Halt: ' + stName(I.Rn.P.st[nx].s) + (R_.want === nx ? ' – Wagen hält' : ''), 3600);
-        I.B.next('Nächster Halt: ' + stName(I.Rn.P.st[nx].s));
+        // someone else gets off there (bus/bus_leute.js – the same count as at the stop): a few seconds on, the stop request
+        const n =
+          nx < I.Rn.P.last && window.BUSLEUTE && BUSLEUTE.ausAt ? BUSLEUTE.ausAt(I, nx, I.Rn.A[nx] + R_.lag) : 0;
+        R_.npc = n > 0 ? { k: nx, at: CLOCK.t + (4 + ((I.trip.i * 7 + nx * 13) % 9)) / 60, rung: false } : null;
+        display(I, R_);
       }
+    } else if (I.st === 'fahrt' && R_.npc && !R_.npc.rung && CLOCK.t >= R_.npc.at && nextStop(I) === R_.npc.k) {
+      R_.npc.rung = true;
+      if (R_.want !== R_.npc.k) bell();
+      display(I, R_);
+      panel();
     }
+  }
+  // the rider wants out at stop k: the bus stops there (a request stop it would drive through: if still in time, else the next one)
+  function wantStop(R_, k) {
+    const I = R_.I;
+    let kk = k;
+    while (kk < I.Rn.P.last && !(I.Rn.P.st[kk].s >= 0 && BUSPLAN.serve(I.Rn, kk, I.tau))) kk++;
+    if (kk !== k)
+      PLAY.think('Zu spät für ' + stName(I.Rn.P.st[k].s) + ' – der Bus hält an der nächsten Haltestelle.', 3200);
+    R_.want = kk;
+  }
+  // the next stop one can get off at (not the one it stands at), -1 at the end
+  function nextStop(I) {
+    for (let k = I.k + 1; k <= I.Rn.P.last; k++) if (I.Rn.P.st[k].s >= 0) return k;
+    return -1;
+  }
+  // does the bus stop at the next stop: the rider's or someone else's stop request
+  const halts = (R_, nx) => nx >= 0 && (R_.want === nx || !!(R_.npc && R_.npc.rung && R_.npc.k === nx));
+  // the display under the ceiling: „Nächster Halt: …“, red „Wagen hält“ after a stop request
+  function display(I, R_) {
+    const nx = nextStop(I);
+    if (nx >= 0) I.B.next('Nächster Halt: ' + stName(I.Rn.P.st[nx].s), halts(R_, nx));
   }
   // ---------------- the ground ahead of the bus one rides: the tiles beyond the square (welt/welt.js) load around a point ahead ----------------
   const _ah = {};
@@ -785,8 +1040,10 @@ export const BUS = (() => {
   async function shorten(toK) {
     const R_ = S.ride;
     if (!R_ || R_.busy) return;
-    const I = R_.I,
-      k = Number.isInteger(toK) && toK > I.k ? toK : R_.want !== null ? R_.want : Math.min(I.Rn.P.last, I.k + 1);
+    const I = R_.I;
+    let k = Number.isInteger(toK) && toK > I.k ? toK : R_.want !== null ? R_.want : Math.min(I.Rn.P.last, I.k + 1);
+    // a request stop it would drive through: it stops there now (or at the next one it still can)
+    while (k < I.Rn.P.last && !(I.Rn.P.st[k].s >= 0 && BUSPLAN.serve(I.Rn, k, I.tau))) k++;
     if (R_.want === null) R_.want = k;
     R_.busy = true;
     if (!fadeEl) {
@@ -833,10 +1090,12 @@ export const BUS = (() => {
         if (!b || !S.ride) return;
         const R2 = S.ride;
         if (b.dataset.halt !== undefined) {
-          R2.want = +b.dataset.halt;
+          wantStop(R2, +b.dataset.halt);
           bell();
+          display(R2.I, R2);
           panel();
         } else if (b.dataset.k === 'kurz') shorten();
+        else if (b.dataset.k === 'blick') setView3(!CAM3.want);
         else if (b.dataset.k === 'aus') {
           if (R2.I.st === 'halt' && R2.I.B.open > 0.5) PLAY.stand(true);
           else PLAY.think('Erst an der nächsten Haltestelle.');
@@ -866,10 +1125,10 @@ export const BUS = (() => {
       );
     }
     const op = (BUSPLAN.S.lines[tr.line] || {}).op || '';
-    const halts = R_.want !== null && R_.want === nextReal && I.st === 'fahrt';
-    pan.innerHTML = `<header><b class="ln">${tr.line}</b><div><h3>${tr.head || tr.nach}</h3><span>${op}${tr.weiter ? ' · fährt weiter nach ' + tr.nach : ''}</span></div>${halts ? '<b class="halt">Wagen hält</b>' : ''}</header>
+    const halt = I.st === 'fahrt' && nextReal !== null && halts(R_, nextReal);
+    pan.innerHTML = `<header><b class="ln">${tr.line}</b><div><h3>${tr.head || tr.nach}</h3><span>${op}${tr.weiter ? ' · fährt weiter nach ' + tr.nach : ''}</span></div>${halt ? '<b class="halt">Wagen hält</b>' : ''}</header>
       <ol>${rows.join('')}</ol>
-      <div class="row">${I.st === 'halt' && I.k !== R_.from ? '<button type="button" data-k="aus">Aussteigen</button>' : nextReal !== null && R_.want !== nextReal ? '<button type="button" data-halt="' + nextReal + '">Aussteigen an der nächsten Haltestelle</button>' : ''}<button type="button" data-k="kurz">Fahrt abkürzen</button></div>
+      <div class="row">${I.st === 'halt' && I.k !== R_.from ? '<button type="button" data-k="aus">Aussteigen</button>' : nextReal !== null && R_.want !== nextReal ? '<button type="button" data-halt="' + nextReal + '">Aussteigen an der nächsten Haltestelle</button>' : ''}<button type="button" data-k="kurz">Fahrt abkürzen</button><button type="button" data-k="blick">${R_.out ? 'Vom Sitz aus' : 'Von außen'}</button></div>
       <p class="mnote">Haltestelle antippen: dort aussteigen. Fahrplan: gtfs.de (DELFI e.V.)</p>`;
     pan.hidden = false;
   }
@@ -1009,7 +1268,7 @@ export const BUS = (() => {
       g.connect(r.sfx);
       eng = { os, lp, g, ctx: r.ctx };
     }
-    const inside = S.ride && S.ride.I === I,
+    const inside = S.ride && S.ride.I === I && !S.ride.out,
       sp = inside ? { vol: 0.55, lp: 900 } : audio.spatial ? audio.spatial(I.x, I.y, 14) : { vol: 0.3, lp: 1200 },
       k = 0.62 + Math.min(1, (I.v * (I.r ?? 1)) / 14) * 0.7;
     const t = eng.ctx.currentTime;
@@ -1021,7 +1280,7 @@ export const BUS = (() => {
   function hiss(x, y, len, f) {
     const r = raw();
     if (!r) return;
-    const inside = S.ride && Math.hypot(S.ride.I.x - x, S.ride.I.y - y) < 8;
+    const inside = S.ride && !S.ride.out && Math.hypot(S.ride.I.x - x, S.ride.I.y - y) < 8;
     const sp = inside ? { vol: 0.6, lp: 6000 } : audio.spatial ? audio.spatial(x, y, 10) : { vol: 0.3, lp: 4000 };
     if (sp.vol < 0.01) return;
     const n = Math.floor(r.ctx.sampleRate * len),
@@ -1113,6 +1372,30 @@ export const BUS = (() => {
       o.start(t + dt);
       o.stop(t + dt + 0.65);
     }
+  }
+  // the indicator's relay in the bus one rides: tick (on), tock (off)
+  let clickBuf = null;
+  function relay(on) {
+    const r = raw();
+    if (!r) return;
+    if (!clickBuf) {
+      const n = Math.floor(r.ctx.sampleRate * 0.012);
+      clickBuf = r.ctx.createBuffer(1, n, r.ctx.sampleRate);
+      const d = clickBuf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 6);
+    }
+    const src = r.ctx.createBufferSource(),
+      bp = r.ctx.createBiquadFilter(),
+      g = r.ctx.createGain();
+    src.buffer = clickBuf;
+    bp.type = 'bandpass';
+    bp.frequency.value = on ? 2300 : 1500;
+    bp.Q.value = 2.5;
+    g.gain.value = 0.16;
+    src.connect(bp);
+    bp.connect(g);
+    g.connect(r.sfx);
+    src.start();
   }
   // ---------------- night: lamps, one borrowed light ahead of the nearest bus ----------------
   const dark = () =>
@@ -1289,6 +1572,7 @@ export const BUS = (() => {
       furniture(ox, oy);
       if (S.auto) choose(ox, oy);
       focusTick(ox, oy);
+      standBy();
       groundAhead();
       if (brdStop && brd && !brd.hidden) {
         if (Math.hypot(P.x - brdStop.x, P.y - brdStop.y) > 12) closeBoard();
@@ -1339,7 +1623,8 @@ export const BUS = (() => {
     },
     want: k => {
       if (S.ride) {
-        S.ride.want = k;
+        wantStop(S.ride, k);
+        display(S.ride.I, S.ride);
         panel();
       }
     },
@@ -1351,6 +1636,8 @@ export const BUS = (() => {
     drop,
     enter,
     leave: () => leaveRide(true),
+    // the ride's view (as the key V): true from outside behind the bus, false the seat
+    view: out => setView3(!!out),
     shorten,
     board,
     closeBoard,
@@ -1375,6 +1662,7 @@ export const BUS = (() => {
         z: +I.z.toFixed(2),
         v: +I.v.toFixed(2),
         open: +I.B.open.toFixed(2),
+        blink: I.blinkSide || 0,
         tau: +I.tau.toFixed(3),
         halt: stName(I.Rn.P.st[Math.max(0, I.k)].s),
       })),
@@ -1386,6 +1674,7 @@ export const BUS = (() => {
             from: S.ride.from,
             st: S.ride.I.st,
             lag: +S.ride.lag.toFixed(3),
+            out: !!S.ride.out,
           }
         : null,
       focus: S.focus,

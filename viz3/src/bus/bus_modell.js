@@ -25,6 +25,48 @@ export const BUSMOD = (() => {
     DOOR_F = [4.45, 5.65],
     DOOR_M = [-0.2, 1.0];
   const col = h => VFIG.col(h);
+  // a person sitting on a seat at (x, y) facing +y (one merged kit, no mesh of its own): thighs on the cushion, the lower legs down to
+  // the floor, shoes; the torso against the backrest, narrower at the waist; upper arms at the sides, forearms on the lap (drive: forward
+  // to the steering wheel); neck, head, the hair as a cap from the hairline and down at the back – seen from the seat behind it reads as
+  // a person, not as a box with a ball
+  function sitter(k, x, y, top, legs, skin, hair, drive = false) {
+    const z0 = FL + 0.5,
+      SHOE = col(0x1b1b1c);
+    for (const sx of [-1, 1]) {
+      k.box(x + sx * 0.085, y + 0.11, z0 - 0.02, 0.15, 0.42, 0.15, 0, legs);
+      k.box(x + sx * 0.085, y + 0.3, FL + 0.07, 0.12, 0.12, z0 - FL + 0.04, 0, legs);
+      k.box(x + sx * 0.085, y + 0.35, FL, 0.11, 0.25, 0.08, 0, SHOE);
+    }
+    k.box(x, y - 0.1, z0 + 0.1, 0.32, 0.22, 0.25, 0, top);
+    k.box(x, y - 0.12, z0 + 0.33, 0.4, 0.24, 0.27, 0, top);
+    for (const sx of [-1, 1]) {
+      k.box(x + sx * 0.225, y - 0.1, z0 + 0.3, 0.08, 0.1, 0.28, 0, top);
+      if (drive) {
+        k.box(x + sx * 0.2, y + 0.2, z0 + 0.32, 0.08, 0.5, 0.08, 0, top);
+        k.box(x + sx * 0.2, y + 0.5, z0 + 0.31, 0.07, 0.1, 0.09, 0, skin);
+      } else {
+        k.box(x + sx * 0.19, y + 0.03, z0 + 0.21, 0.08, 0.28, 0.08, 0, top);
+        k.box(x + sx * 0.17, y + 0.21, z0 + 0.2, 0.07, 0.09, 0.05, 0, skin);
+      }
+    }
+    k.cyl(x, y - 0.11, z0 + 0.6, z0 + 0.69, 0.05, 0.05, 6, skin);
+    k.ball(x, y - 0.1, z0 + 0.79, 0.1, skin, 8);
+    k.lathe(
+      x,
+      y - 0.112,
+      z0 + 0.79,
+      [
+        [0.106, 0.01],
+        [0.1, 0.05],
+        [0.08, 0.085],
+        [0.045, 0.104],
+        [0, 0.113],
+      ],
+      8,
+      hair
+    );
+    k.box(x, y - 0.19, z0 + 0.69, 0.17, 0.05, 0.12, 0, hair);
+  }
   // ---- materials: made now (they are compiled while the loading screen is up), used later ----
   const M = {
     body: VFIG.mat(),
@@ -48,6 +90,13 @@ export const BUSMOD = (() => {
       roughness: 0.25,
       emissive: 0xff1a0c,
       emissiveIntensity: 0,
+    }),
+    // the indicators (shown while they blink: one mesh per side) – the same kind as the tail lamps, so no program of its own
+    blink: new THREE.MeshStandardMaterial({
+      color: 0x8a5200,
+      roughness: 0.25,
+      emissive: 0xff9214,
+      emissiveIntensity: 2.4,
     }),
     cabin: new THREE.MeshStandardMaterial({
       color: 0xf4f1e8,
@@ -122,7 +171,9 @@ export const BUSMOD = (() => {
       kH = VPROPS.kit(),
       kT = VPROPS.kit(),
       kC = VPROPS.kit(),
-      kD = VPROPS.kit();
+      kD = VPROPS.kit(),
+      kIL = VPROPS.kit(),
+      kIR = VPROPS.kit();
     const WHITE = col(0xeceeed),
       GREY = col(0x8d9396),
       DARK = col(0x202326),
@@ -134,7 +185,8 @@ export const BUSMOD = (() => {
       SEAT2 = col(0x3d4f86),
       YEL = col(0xf2c400),
       SKIN = col(0xd7a98a),
-      SHIRT = col(0x2b3f63);
+      SHIRT = col(0x2b3f63),
+      STOPB = col(0xc8102e);
     // a box between two corners (x0, y0, z0) – (x1, y1, z1)
     const bx = (k, x0, y0, z0, x1, y1, z1, c, bottom) =>
       k.box((x0 + x1) / 2, (y0 + y1) / 2, z0, Math.abs(x1 - x0), Math.abs(y1 - y0), z1 - z0, 0, c, bottom);
@@ -218,6 +270,13 @@ export const BUSMOD = (() => {
       bx(kH, sx * (HW - 0.3) - 0.2, YF - 0.02, 0.64, sx * (HW - 0.3) + 0.2, YF + 0.015, 0.8, WHITE);
       bx(kB, sx * (HW - 0.3) - 0.2, YF - 0.02, 0.81, sx * (HW - 0.3) + 0.2, YF + 0.012, 0.86, col(0xd98a1c));
       bx(kT, sx * (HW - 0.02) - 0.05, -L / 2 - 0.02, 0.65, sx * (HW - 0.02) + 0.05, -L / 2 + 0.02, 1.55, WHITE);
+      // the indicators that blink: over the amber glass at the front, at the rear corner above the tail lamp, a repeater on the side
+      // behind the front wheel (sx -1 left, 1 right)
+      const kI = sx < 0 ? kIL : kIR,
+        xo = sx * (HW - 0.3);
+      bx(kI, xo - 0.2, YF + 0.011, 0.81, xo + 0.2, YF + 0.016, 0.86, WHITE);
+      bx(kI, sx * (HW - 0.02) - 0.05, -L / 2 - 0.025, 1.58, sx * (HW - 0.02) + 0.05, -L / 2 + 0.015, 1.74, WHITE);
+      bx(kI, sx * (HW + 0.004), YF - 3.05, 0.62, sx * (HW + 0.012), YF - 2.95, 0.68, WHITE);
       // the mirrors on their arms
       bx(kB, sx * HW, YF - 0.25, 2.45, sx * (HW + 0.32), YF - 0.2, 2.5, BLACK);
       bx(kB, sx * (HW + 0.25), YF - 0.28, 1.95, sx * (HW + 0.33), YF - 0.14, 2.45, BLACK);
@@ -245,10 +304,34 @@ export const BUSMOD = (() => {
     for (const sx of [-1, 1])
       bx(kB, sx * HW - 0.1, -L / 2, ZW0 + 0.4, sx * HW + (sx > 0 ? 0 : 0.1), -L / 2 + 0.1, 2.45, WHITE);
     // inside: seats two plus two (the space at the middle door free for prams and wheelchairs, on the left side), poles, the driver
-    const seat = (x, y, c, fwd = 1) => {
-      bx(kB, x - 0.22, y - 0.22, FL + 0.42, x + 0.22, y + 0.22, FL + 0.5, c);
-      bx(kB, x - 0.22, y - 0.27 * fwd - 0.04, FL + 0.5, x + 0.22, y - 0.27 * fwd + 0.04, FL + 1.04, c);
-      bx(kB, x - 0.03, y - 0.03, FL, x + 0.03, y + 0.03, FL + 0.42, GREY);
+    // a plate across x0..x1 from its lower edge (y0, z0) to its upper edge (y1, z1), t thick behind it (toward -y): a backrest leaning back
+    const slab = (k, x0, x1, y0, z0, y1, z1, t, c) => {
+      const l = Math.hypot(y1 - y0, z1 - z0),
+        ny = -(z1 - z0) / l,
+        nz = (y1 - y0) / l,
+        C = (ix, iy, iz) => [ix ? x1 : x0, (iz ? y1 : y0) + (iy ? 0 : ny * t), (iz ? z1 : z0) + (iy ? 0 : nz * t)];
+      k.quad(C(1, 0, 0), C(1, 1, 0), C(1, 1, 1), C(1, 0, 1), c);
+      k.quad(C(1, 1, 0), C(0, 1, 0), C(0, 1, 1), C(1, 1, 1), c);
+      k.quad(C(0, 1, 0), C(0, 0, 0), C(0, 0, 1), C(0, 1, 1), c);
+      k.quad(C(0, 0, 0), C(1, 0, 0), C(1, 0, 1), C(0, 0, 1), c);
+      k.quad(C(0, 0, 1), C(1, 0, 1), C(1, 1, 1), C(0, 1, 1), c);
+    };
+    // a seat: the cushion, the backrest leaning back 12° with its padding in the seat's fabric and a dark shell behind, on the aisle side
+    // a grab handle on top (aisle: -1 left, 1 right of the seat, 0 none), one leg
+    const seat = (x, y, c, aisle = 0) => {
+      bx(kB, x - 0.215, y - 0.2, FL + 0.41, x + 0.215, y + 0.22, FL + 0.5, c);
+      const yb = y - 0.2,
+        zb = FL + 0.46,
+        h = 0.61,
+        yt = yb - Math.sin(0.21) * h,
+        zt = zb + Math.cos(0.21) * h;
+      slab(kB, x - 0.215, x + 0.215, yb, zb, yt, zt, 0.055, c);
+      slab(kB, x - 0.205, x + 0.205, yb - 0.056, zb - 0.01, yt - 0.056, zt - 0.03, 0.025, DARK);
+      if (aisle) {
+        const hx = x + aisle * 0.16;
+        bx(kB, hx - 0.05, yt - 0.06, zt - 0.01, hx + 0.05, yt - 0.02, zt + 0.045, GREY);
+      }
+      bx(kB, x - 0.03, y - 0.03, FL, x + 0.03, y + 0.03, FL + 0.41, GREY);
     };
     S.seats = [];
     const rows = [2.35, 1.55, -1.25, -2.05, -2.85, -3.65, -4.45];
@@ -257,7 +340,7 @@ export const BUSMOD = (() => {
         if (y > 1 && y < 2 && x < 0) continue;
         if (y < 0 && y > -1.5 && x < 0) continue;
         const c = (Math.round(y * 3 + x * 7) & 1) === 0 ? SEAT : SEAT2;
-        seat(x, y, c);
+        seat(x, y, c, Math.abs(x) < 0.7 ? -Math.sign(x) : 0);
         S.seats.push([x, y]);
       }
     // the last row across
@@ -266,7 +349,12 @@ export const BUSMOD = (() => {
       S.seats.push([x, -5.3]);
     }
     bx(kB, -HW + 0.08, -5.75, FL, HW - 0.08, -5.0, FL + 0.38, INNER);
-    const pole = (x, y) => kB.cyl(x, y, FL, 2.86, 0.02, 0.02, 6, YEL);
+    // the poles, each with a red stop button at hand height (toward the seats)
+    const pole = (x, y) => {
+      kB.cyl(x, y, FL, 2.86, 0.02, 0.02, 6, YEL);
+      const sx = x > 0 ? 1 : -1;
+      bx(kB, x + sx * 0.012, y - 0.028, FL + 1.02, x + sx * 0.042, y + 0.028, FL + 1.1, STOPB);
+    };
     for (const [x, y] of [
       [0.75, DOOR_F[0] - 0.05],
       [0.75, DOOR_M[0] - 0.08],
@@ -287,8 +375,7 @@ export const BUSMOD = (() => {
     seat(-0.75, 4.75, DARK);
     bx(kB, -HW + 0.08, 5.45, FL, 0.3, 5.85, 1.05, DARK);
     kB.disc(-0.75, 5.3, 1.25, 0, 1, 0.22, BLACK, 14);
-    bx(kB, -0.92, 4.6, FL + 0.5, -0.58, 4.85, FL + 1.05, SHIRT);
-    kB.ball(-0.75, 4.78, FL + 1.22, 0.11, SKIN, 8);
+    sitter(kB, -0.75, 4.75, SHIRT, col(0x2b2d33), SKIN, col(0x3b2f26), true);
     // the passengers' places (a few sit there per bus: one more mesh each, see passengers below)
     // the door leaves (glass with a dark frame): front door two leaves, middle door two leaves – each its own mesh to slide
     const leaf = (k, y0, y1) => {
@@ -325,6 +412,8 @@ export const BUSMOD = (() => {
       glass: kG.geo(),
       head: kH.geo(),
       tail: kT.geo(),
+      blinkL: kIL.geo(),
+      blinkR: kIR.geo(),
       cabin: kC.geo(),
       leaf: kD.geo(),
       wheel: gW,
@@ -389,6 +478,8 @@ export const BUSMOD = (() => {
       glass = own(new THREE.Mesh(g0.glass, M.glass)),
       head = own(new THREE.Mesh(g0.head, M.head)),
       tail = own(new THREE.Mesh(g0.tail, M.tail)),
+      blinkL = own(new THREE.Mesh(g0.blinkL, M.blink)),
+      blinkR = own(new THREE.Mesh(g0.blinkR, M.blink)),
       cabin = own(new THREE.Mesh(g0.cabin, M.cabin)),
       shade = own(new THREE.Mesh(g0.shade, M.shade));
     glass.renderOrder = 2;
@@ -424,24 +515,37 @@ export const BUSMOD = (() => {
         doors.push(m);
       }
     }
-    // a few passengers sitting (one mesh), different for each bus
-    const kP = VPROPS.kit();
+    // the passengers sitting (one mesh), different for each bus: the seats in an order of its own, each with its person; who gets on
+    // takes the next seat, who gets off leaves the last taken (B.setPax below)
     let r = seed * 9301 + 49297;
     const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
-    const tops = [0x7a2b2b, 0x2f4f2f, 0x4a4a6a, 0x8c6d3f, 0x5b5b5b, 0x2d2d2d, 0x9a8a70, 0x3e5a7a];
-    // (the seat one takes – right at the window, bus/bus.js SEAT – stays free)
-    const seats = S.seats.filter(([x, y]) => !(Math.abs(y + 2.05) < 0.1 && x > 0));
-    const nP = 2 + Math.floor(rnd() * 5);
-    S.lastSeats = [];
-    for (let i = 0; i < nP && seats.length; i++) {
-      const [x, y] = seats.splice(Math.floor(rnd() * seats.length), 1)[0];
-      if (y > 0.6 && y < 2.6 && x > 0) continue;
-      const c = col(tops[Math.floor(rnd() * tops.length)]);
-      kP.box(x, y - 0.05, FL + 0.5, 0.36, 0.24, 0.55, 0, c);
-      kP.ball(x, y - 0.04, FL + 1.18, 0.105, col(rnd() < 0.5 ? 0xd7a98a : 0xc69373), 8);
-      kP.box(x, y + 0.12, FL + 0.42, 0.34, 0.36, 0.12, 0, col(0x25272a));
+    const tops = [0x7a2b2b, 0x2f4f2f, 0x4a4a6a, 0x8c6d3f, 0x5b5b5b, 0x2d2d2d, 0x9a8a70, 0x3e5a7a],
+      legs = [0x34465e, 0x1f2024, 0x8f8068, 0x50545a, 0x2c3a52],
+      hairs = [0x2e2219, 0x1c1a18, 0xa9844c, 0x8f8c86, 0x5e3720, 0xc8c3ba];
+    // (the seat one takes – right at the window, bus/bus.js SEAT – stays free, and the seats beside the middle door)
+    const free = S.seats.filter(([x, y]) => !(Math.abs(y + 2.05) < 0.1 && x > 0) && !(y > 0.6 && y < 2.6 && x > 0)),
+      order = [];
+    while (free.length) {
+      const [x, y] = free.splice(Math.floor(rnd() * free.length), 1)[0];
+      order.push({
+        x,
+        y,
+        top: col(tops[Math.floor(rnd() * tops.length)]),
+        legs: col(legs[Math.floor(rnd() * legs.length)]),
+        skin: col(rnd() < 0.5 ? 0xd7a98a : 0xc69373),
+        hair: col(hairs[Math.floor(rnd() * hairs.length)]),
+      });
     }
-    const pax = own(new THREE.Mesh(kP.empty() ? new THREE.BufferGeometry() : kP.geo(), M.body));
+    const paxGeo = n => {
+      const kP = VPROPS.kit();
+      for (let i = 0; i < n && i < order.length; i++) {
+        const o = order[i];
+        sitter(kP, o.x, o.y, o.top, o.legs, o.skin, o.hair);
+      }
+      return kP.empty() ? new THREE.BufferGeometry() : kP.geo();
+    };
+    const nP0 = 2 + Math.floor(rnd() * 5);
+    const pax = own(new THREE.Mesh(paxGeo(nP0), M.body));
     // inside, under the ceiling behind the driver: the passengers' display („Nächster Halt: …“), facing back into the bus
     const cvI = document.createElement('canvas');
     cvI.width = 512;
@@ -454,26 +558,63 @@ export const BUSMOD = (() => {
     dmI.name = 'bus display inside';
     const inner = own(new THREE.Mesh(innerGeo(), dmI));
     inner.position.set(0, 2.6, -3.95);
-    g.add(shade, body, glass, head, tail, cabin, disp, inner, wF, wR, pax, ...doors);
+    blinkL.visible = blinkR.visible = false;
+    g.add(shade, body, glass, head, tail, cabin, disp, inner, wF, wR, pax, blinkL, blinkR, ...doors);
     g.visible = false;
     scene.add(g);
     S.built++;
-    const B = { g, body, glass, disp, tex, cv, wF, wR, doors, pax, dm, open: 0, text: '', inner, innerText: '' };
+    const B = {
+      g,
+      body,
+      glass,
+      disp,
+      tex,
+      cv,
+      wF,
+      wR,
+      doors,
+      pax,
+      dm,
+      open: 0,
+      text: '',
+      inner,
+      innerText: '',
+      paxN: nP0,
+    };
+    // how many sit in it (who gets on or off: bus/bus_leute.js)
+    B.setPax = n => {
+      n = Math.max(0, Math.min(order.length, Math.round(n)));
+      if (n === B.paxN) return;
+      B.paxN = n;
+      const old = pax.geometry;
+      pax.geometry = paxGeo(n);
+      old.dispose();
+    };
     // the display inside: a line of amber LED text (long names shrink to fit)
-    B.next = text => {
-      if (B.innerText === text) return;
-      B.innerText = text;
-      const c = cvI.getContext('2d');
+    // (halt: the red „Wagen hält“ at the right end – after a stop request)
+    B.next = (text, halt) => {
+      const key = text + (halt ? '|h' : '');
+      if (B.innerText === key) return;
+      B.innerText = key;
+      const c = cvI.getContext('2d'),
+        w = halt ? 372 : 512;
       c.fillStyle = '#050505';
       c.fillRect(0, 0, 512, 64);
-      c.fillStyle = '#ffb12a';
       c.textBaseline = 'middle';
       c.textAlign = 'center';
+      if (halt) {
+        c.fillStyle = '#d0141e';
+        c.fillRect(378, 8, 128, 48);
+        c.fillStyle = '#fff';
+        c.font = 'bold 22px Arial, Helvetica, sans-serif';
+        c.fillText('Wagen hält', 442, 33);
+      }
+      c.fillStyle = '#ffb12a';
       let fs = 34;
       c.font = 'bold ' + fs + 'px Arial, Helvetica, sans-serif';
-      while (c.measureText(text).width > 490 && fs > 16)
+      while (c.measureText(text).width > w - 22 && fs > 14)
         c.font = 'bold ' + (fs -= 2) + 'px Arial, Helvetica, sans-serif';
-      c.fillText(text, 256, 34);
+      c.fillText(text, w / 2, 34);
       texI.needsUpdate = true;
     };
     B.sign = (line, dest) => {
@@ -498,6 +639,15 @@ export const BUSMOD = (() => {
       c.fillStyle = '#1a1206';
       c.fillRect(126, 6, 3, 52);
       tex.needsUpdate = true;
+    };
+    // the indicators: side -1 left, 1 right, 0 none; lit: the phase of the blinking
+    B.blink = (side, lit) => {
+      const l = side < 0 && lit,
+        r = side > 0 && lit;
+      if (blinkL.visible === l && blinkR.visible === r) return false;
+      blinkL.visible = l;
+      blinkR.visible = r;
+      return true;
     };
     // the doors: 0 shut … 1 open (out by 6 cm, then sideways by the leaf's width)
     B.setOpen = k => {
@@ -656,6 +806,70 @@ export const BUSMOD = (() => {
       },
     };
   }
-  return { S, M, build, lamps, sign, poster, geos, DIM: { L, W, H, FL, AF, AR, RW, DOOR_F, DOOR_M } };
+  // a bus shelter where OpenStreetMap has one (shelter=yes) and the world none: a plain one of steel and glass (no picture of the real
+  // one), 3.0 × 1.45 m, 2.35 m high, open to the road, a bench at its back. (x, y) the point at the kerb where its front begins, hd the
+  // way the buses go (its back away from the road, to their right); the frame, roof and bench one mesh, the glass another
+  function shelter(x, y, z, hd) {
+    const kF = VPROPS.kit(),
+      kGl = VPROPS.kit(),
+      fx = Math.sin(hd),
+      fy = Math.cos(hd),
+      rx = Math.cos(hd),
+      ry = -Math.sin(hd),
+      rot = Math.PI / 2 - hd,
+      FR = col(0x3b3f43),
+      ROOF = col(0x55595d),
+      WOOD = col(0x8a6a4a);
+    // a box in the shelter's frame: u along the road, v away from it, w up
+    const ob = (k, u0, u1, v0, v1, w0, w1, c) =>
+      k.box(
+        x + (fx * (u0 + u1)) / 2 + (rx * (v0 + v1)) / 2,
+        y + (fy * (u0 + u1)) / 2 + (ry * (v0 + v1)) / 2,
+        z + w0,
+        u1 - u0,
+        v1 - v0,
+        w1 - w0,
+        rot,
+        c
+      );
+    const U = 1.5,
+      V = 1.45,
+      Hh = 2.35;
+    for (const u of [-U, U]) for (const v of [0, V]) ob(kF, u - 0.04, u + 0.04, v - 0.04, v + 0.04, 0, Hh, FR);
+    ob(kF, -U - 0.12, U + 0.12, -0.18, V + 0.08, Hh, Hh + 0.09, ROOF);
+    // the rails of the glass
+    ob(kF, -U, U, V - 0.03, V + 0.03, 0.08, 0.13, FR);
+    ob(kF, -U, U, V - 0.03, V + 0.03, Hh - 0.12, Hh - 0.06, FR);
+    for (const u of [-U, U]) {
+      ob(kF, u - 0.03, u + 0.03, 0.3, V, 0.08, 0.13, FR);
+      ob(kF, u - 0.03, u + 0.03, 0.3, V, Hh - 0.12, Hh - 0.06, FR);
+    }
+    // the bench and its legs
+    ob(kF, -1.0, 1.0, V - 0.46, V - 0.1, 0.42, 0.47, WOOD);
+    for (const u of [-0.85, 0.85]) ob(kF, u - 0.03, u + 0.03, V - 0.4, V - 0.16, 0, 0.42, FR);
+    // the glass: the back, the two sides (open at the front 0.3 m)
+    ob(kGl, -U + 0.04, U - 0.04, V - 0.01, V + 0.01, 0.13, Hh - 0.12, col(0xffffff));
+    for (const u of [-U, U]) ob(kGl, u - 0.01, u + 0.01, 0.3, V - 0.04, 0.13, Hh - 0.12, col(0xffffff));
+    const mF = own(new THREE.Mesh(kF.geo(), M.body), true),
+      mG = own(new THREE.Mesh(kGl.geo(), M.glass));
+    mG.renderOrder = 2;
+    scene.add(mF, mG);
+    // its walls for the walker and vehicles: [centre, half sizes along the road and away from it, the road's direction]
+    const at = (u, v) => [x + fx * u + rx * v, y + fy * u + ry * v];
+    const walls = [
+      { c: at(0, V), eu: U, ev: 0.05 },
+      { c: at(-U, (0.3 + V) / 2), eu: 0.05, ev: (V - 0.3) / 2 },
+      { c: at(U, (0.3 + V) / 2), eu: 0.05, ev: (V - 0.3) / 2 },
+    ].map(w => ({ c: w.c, ax: [fx, fy], ay: [rx, ry], ex: w.eu, ey: w.ev, z0: z, z1: z + Hh }));
+    return {
+      walls,
+      dispose: () => {
+        scene.remove(mF, mG);
+        mF.geometry.dispose();
+        mG.geometry.dispose();
+      },
+    };
+  }
+  return { S, M, build, lamps, sign, poster, shelter, geos, DIM: { L, W, H, FL, AF, AR, RW, DOOR_F, DOOR_M } };
 })();
 window.BUSMOD = BUSMOD;

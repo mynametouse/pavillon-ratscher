@@ -26,6 +26,15 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   Samstag, Sonn- und Feiertag, „s“ = an Schultagen; an einer Endhaltestelle „Ausstieg“). An der Schulbushaltestelle an der alten Schule steht
   das Wartehäuschen mit Schild schon (`world/village_props.js`): der Bus hält mit der Tür am Häuschen (Lage aus Falkos Video,
   `world/dorfkern_data.js`, statt der 17 m daneben im Feed), ein Fahrplan dort für beide Richtungen, der Aushang an der Rückwand.
+- **Ratscher, Schleusebrücke**: der Feed führt dieselbe Haltestelle für die eine 700 je Richtung noch einmal als „Ratscher“ (9 bzw. 28 m
+  daneben – zwei Schilder fast nebeneinander); OpenStreetMap kennt dort eine Haltestelle mit Wartehäuschen (Knoten bei 50,49938 N
+  10,77264 O): zusammengelegt (`ALIAS` in `viz3/extra/bus/quellen/fahrplan.py`, auch für den nächsten Lauf; die Haltepunkte der beiden Wege
+  dorthin verschoben).
+- **Wartehäuschen** aus OpenStreetMap (`shelter=yes`, abgefragt 6.11.2026): an der Schleusebrücke (Richtung Schleusingen), an zwei Steigen
+  der Zentralhaltestelle, Felsenkeller, Einkaufszentrum, Hildburghäuser und Themarer Straße in Schleusingen, Fischbach Ort, Abzweig
+  Gottfriedsberg, Gerhardtsgereuth, Ehrenberg und Kloster Veßra Ort – je hinter dem Schild, das dem OSM-Punkt am nächsten steht (25 m).
+  Wie sie wirklich aussehen, ist nicht bekannt: ein schlichtes aus Stahl und Glas mit Bank, 3,0 × 1,45 m; für Spielfigur und Fahrzeuge fest
+  (`BUSMOD.shelter`, zwei Draw-Calls je Häuschen in der Nähe).
 - An einer Haltestelle heißt der Ort „Haltestelle …“ (Ortsanzeige); beim ersten Mal an einem Schild ein Hinweis, was man dort tun kann.
 - **Fahrplan am Schild** („Fahrplan: …“): die nächsten Abfahrten dieser Richtung (Zeit, Linie, Ziel, „in 3 min“, „fährt ein“, „steht da“),
   der Tag („Mittwoch, Schultag“), **„Auf den Bus warten“** (die Uhr springt wie beim Schlafen bis eine Minute vor den Bus).
@@ -36,10 +45,15 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 - **Busse**: jede Fahrt ist ihr Fahrplan; nahe am Beobachter (620 m, Telefon 420 m, höchstens 3 bzw. 2 Busse – ein viel näherer nimmt einem
   fernen, den man nicht sieht, das Modell) bekommt sie ein Modell und fährt ihren Weg mit Anfahren, Bremsen und Kurventempo eines Busses in den
   Minuten des Fahrplans (zu früh: wartet an der Haltestelle), hält an jeder Haltestelle mit der Vordertür am Schild, Türen auf und zu
-  (Zischen). **Wer an einer Haltestelle steht, wenn ein Bus fällig ist, und wer mitfährt, hat die Uhr in Echtzeit** (`CLOCK.focus('bus')`,
+  (Zischen); steht man an der offenen Vordertür, wartet der Fahrer. **Wer an einer Haltestelle steht, wenn ein Bus fällig ist, und wer mitfährt, hat die Uhr in Echtzeit** (`CLOCK.focus('bus')`,
   Uhrfenster: „Echtzeit – Bus“) – so kommt der Bus zu seiner Minute und fährt so schnell wie ein Bus. Ein Bus anderswo fährt in Echtzeit; fällt
   er hinter die schnelle Spieluhr zurück (eine Stunde je Minute), holt er auf, wo man nicht hinsieht – einer, dem man zusieht, fährt weiter
   wie ein Bus fährt.
+- **Bedarfshalt**: zwischen seiner ersten und letzten Haltestelle hält ein Bus nur, wo jemand ein- oder aussteigt (die Leute des Verkehrs,
+  dieselbe Zahl wie beim Halten – in anderen Orten unsichtbare), wo die Spielfigur wartet (25 m, ihre Richtung), wo man aussteigen will;
+  ein Schulbus überall. Sonst fährt er mit dem Tempo der Straße durch (kein Blinker, keine Türen). Kommt jemand später an die Haltestelle
+  oder drückt man im Bus „Halt“, hält er doch – wenn er noch bremsen kann (`BUSPLAN.serve`: der Lauf wird ab der Stelle, an der er ist,
+  neu gerechnet, ohne Sprung); sonst „Zu spät … – der Bus hält an der nächsten Haltestelle“.
 - **Was im Weg steht**: der Bus bremst und hält vor dem, was in seiner Spur steht – die Spielfigur, ihr Auto, ein Auto des Verkehrs, ein
   Bus vor ihm an der Haltestelle – und hupt die Spielfigur an; danach ist er eben ein paar Sekunden (oder Minuten) verspätet. Einem Auto, das
   ihm 20 s lang Spur gegen Spur gegenübersteht, weicht er nicht länger aus (keine Verklemmung).
@@ -50,26 +64,35 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   aus der er kommt; steht er mit offenen Türen, steigen sie vorn ein (der Bus wartet auf sie, ein Bus, in dem man sitzt, fährt ein paar
   Sekunden später ab); hält ein Bus in der Nähe, steigen 0–2 hinten aus und gehen am Rand davon. Wie viele: aus Fahrt, Tag und Haltestelle
   (derselbe Bus bringt dieselben Leute), nachts und früh weniger; wer kommt, wird bis zur Abfahrt weiter gesucht (Leute des Verkehrs können
-  gerade unterwegs sein). Wer neben einem wartet, sagt etwas („Na, auch auf den Bus?“). Ihre Figuren sind für den Verkehr belegt
+  gerade unterwegs sein). Wer einsteigt, sitzt danach im Bus, wer aussteigt, steht von einem Platz auf; ein Bus, der in der Welt
+  beginnt, ist vor seiner ersten Haltestelle leer. Wer neben einem wartet, sagt etwas („Na, auch auf den Bus?“). Ihre Figuren sind für den Verkehr belegt
   (`VERKEHR.S.busy[k] = 'bus'`), damit niemand doppelt läuft.
-- **Einsteigen** an der Vordertür (Aktionsknopf), Platz rechts am Fenster hinter der Mitteltür (Ich-Sicht), Fenster mit Linie, Ziel, den
-  nächsten Haltestellen und Zeiten; „Nächster Halt: …“ mit Gong beim Abfahren und auf der Anzeige unter der Decke hinter dem Fahrer; „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle
-  antippen = dort aussteigen (Halt-Glocke, „Wagen hält“); **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur Ankunft, das Gelände dort lädt
-  vorher, die Türen sind offen); **„Aussteigen“**, wenn der Bus steht. Der Bus fährt seinen echten Weg auch über das 2,4-km-Quadrat hinaus –
+- **Einsteigen** an der Vordertür (Aktionsknopf; der Fahrer grüßt nach der Tageszeit: „Morgen!“, „Tag!“, „’n Abend!“), Platz rechts am Fenster hinter der Mitteltür (Ich-Sicht), Fenster mit Linie, Ziel, den
+  nächsten Haltestellen und Zeiten; „Nächster Halt: …“ mit Gong beim Abfahren und auf der Anzeige unter der Decke hinter dem Fahrer (an der
+  Endhaltestelle „Endhaltestelle – bitte alle aussteigen“); „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle
+  antippen = dort aussteigen (Halt-Glocke, „Wagen hält“ rot auf der Anzeige und im Fenster); will an der nächsten Haltestelle jemand anderes
+  aussteigen (dieselbe Zahl wie dort beim Halten), drückt er ein paar Sekunden nach der Abfahrt den Haltewunsch; **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur Ankunft, das Gelände dort lädt
+  vorher, die Türen sind offen); **„Aussteigen“**, wenn der Bus steht. **„Von außen“** (oder die Ansichtstaste V, der Knopf „Figur/Augen“):
+  der Blick von hinten oben auf den fahrenden Bus – mit der Maus um ihn herum, nach einem Moment schwenkt er wieder hinter ihn (wie die
+  Verfolgerkamera der Fahrzeuge, nicht durch Hauswände); „Vom Sitz aus“ zurück. Nach dem Aussteigen ist die Ansicht beim Gehen wie vorher. Der Bus fährt seinen echten Weg auch über das 2,4-km-Quadrat hinaus –
   die Kacheln laden vor ihm wie vor einem Auto (`welt/welt.js`, `welt/fahrt.js` schneidet die Straßen ein). Am Ende seines Wegs in der Welt
   steigt man aus („Weiter fährt der Bus über die Karte hinaus – nach …“). Gespeichert während der Fahrt (`pav-bus-v1`): die Haltestelle, an der
   man einstieg oder zuletzt hielt – Neu laden stellt einen dorthin.
 - **Aufgabe „Mit dem Bus nach Schleusingen“** (Tagebuch J, `TASKS`, Spielstand `pav-tasks-v1`): beginnt an einer Haltestelle in Ratscher (oder
   mit der Szene) – Fahrplan anschauen, in einen Bus nach Schleusingen steigen (203 oder 205), in Schleusingen aussteigen.
 - **Das Modell**: 12-m-Niederflur-Überlandbus ohne Marke (12,0 × 2,55 × 3,1 m, Radstand 5,95 m), Vorder- und Mitteltür als Schwenkschiebetüren,
-  2+2-Sitze, gelbe Haltestangen, Fahrerplatz mit Fahrer, Klimaanlage auf dem Dach, getönte Scheiben zum Durchsehen, Scheinwerfer in den
-  Ecken, LED-Zielanzeige vorn, an der Seite und hinten mit Linie und Ziel, ein paar Fahrgäste. Nachts Scheinwerfer, Rücklichter, beleuchteter
+  2+2-Sitze (Polster im Stoff, Lehne 12° geneigt mit dunkler Schale, Haltegriff an den Gangplätzen), gelbe Haltestangen mit roten
+  Haltewunschtastern, Fahrerplatz mit Fahrer, Klimaanlage auf dem Dach, getönte Scheiben zum Durchsehen, Scheinwerfer in den Ecken, LED-Zielanzeige
+  vorn, an der Seite und hinten mit Linie und Ziel, ein paar sitzende Fahrgäste und der Fahrer (Beine, Arme, Kopf mit Haaren – aus
+  einfachen Körpern, alle in einem Netz). **Blinker**: rechts auf den letzten 45 m vor einer Haltestelle, links in
+  den letzten Sekunden vor der Abfahrt und auf den ersten Metern (im Bus das Klicken des Relais); eigenes Material derselben Art wie die
+  Rücklichter (kein neues Programm), nur beim Blinken ein Draw-Call mehr. Nachts Scheinwerfer, Rücklichter, beleuchteter
   Innenraum; ein geliehenes Licht vor dem nächsten Bus (`KERN.lights.borrow`, kein neues Licht). Gebaut beim ersten Bus; Material des Verkehrs
   (Vertexfarben), Glas, Lampen und Anzeige mit eigenem Material, die schon beim Laden übersetzt werden (unsichtbare Träger) – keine neuen
   Shader-Programme. Kein Schatten in der Sonnenkarte (ein fahrender Schattenwerfer verlangte jedes Bild eine neue Karte, die Autos des
   Verkehrs werfen auch keinen), dafür ein weicher Schatten auf der Straße unter ihm; neue Bilder fordert ein Bus nur an, wenn man ihn sehen
   kann. 14 Draw-Calls je Bus (gemessen).
-- **Ton** (synthetisch): Diesel des nächsten Busses (Drehzahl nach dem Tempo), Türen, Gong, Haltewunsch-Glocke, Hupe.
+- **Ton** (synthetisch): Diesel des nächsten Busses (Drehzahl nach dem Tempo), Türen, Gong, Haltewunsch-Glocke, Hupe, Blinkerrelais.
 - **Zombie-Nacht**: keine Linienbusse (sie hat ihren eigenen Bus), keine Fahrgäste.
 - Szene **„Mit dem Bus nach Schleusingen“** (`?szenario=bus`, Menü → Erleben → Szenen): nächster Schultag 7:38 an der Haltestelle Ratscher,
   Schleusebrücke (Richtung Schleusingen); um 7:46 kommt die 205 zur Zentralhaltestelle.
@@ -82,9 +105,9 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   (der Feed: `https://download.gtfs.de/germany/free/latest.zip`, ~280 MB, gestreamt; braucht `pyproj`; die Steige aus der OSM-API werden in
   `--cache` aufgehoben; `--bild` zeichnet die Wege über das Straßennetz).
 - Tests: `node --test viz3/test/unit/bus.test.mjs` (Kalender, Daten, Abfahrten in Ratscher, Fahrt nach Schleusingen im Takt, Zufahrt vom
-  Rand, die Steige der Zentralhaltestelle, Stationsnamen); `python3 viz3/test/bus.py <port> [fahrt,nacht,schule,reload,zombie]` (Bilder in
+  Rand, die Steige der Zentralhaltestelle, Stationsnamen, Bedarfshalt: durchfahren, rechtzeitig gewünscht halten, ohne Sprung); `python3 viz3/test/bus.py <port> [fahrt,nacht,schule,reload,zombie]` (Bilder in
   `out/bus/`: `a_fahrplan` Fahrplanfenster am Schild, `a2_aushang` Aushangfahrplan, `a3_leute_warten`, `b_bus_an_der_haltestelle`,
-  `b0_leute_steigen_ein`, `b2_tuer_offen`, `c_im_bus_panel` Busfenster, `c2_im_bus_telefon`, `d_aus_dem_bus`, `h_vorn_ausserhalb` und
+  `b0_leute_steigen_ein`, `b2_tuer_offen`, `c_im_bus_panel` Busfenster, `c2_im_bus_telefon`, `d_aus_dem_bus`, `c3_von_aussen`, `h_vorn_ausserhalb` und
   `h2_fenster_ausserhalb` aus dem Bus jenseits des Quadrats, `e_schleusingen_zh`, `f_nacht_vorn`, `g_nacht_seite`, `i_schulbus_haeuschen`),
   auf CI über `viz3/extra/bus/tests.txt`. Die Fahrt im Test: der Bus hält vor der Spielfigur in seiner Spur und hupt; zwei Leute warten und
   steigen ein; in Ratscher einsteigen, „Fahrt abkürzen“ bis zum Krankenhaus, von dort in Echtzeit über den Rand des Quadrats zur
@@ -92,6 +115,7 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   hinten mit aus). Der Test holt die Welt-Kacheln entlang des Wegs Ratscher – Schleusingen von der Website nach `viz3/dist/welt-test/` (wie
   `viz3/test/fahrt.py`).
 - `BUS.state()` (Zahlen), `BUS.plan` (BUSPLAN), `BUS.spawn(trip, tag, minute)`, `BUS.einsteigen()`, `BUS.want(k)`, `BUS.shorten(k?)`,
+  `BUS.view(außen)`,
   `BUSLEUTE.state()`, `BUSLEUTE.force = { ein, aus, line }` (Tests).
 
 ## Entscheidungen (nachts, ohne Falko)
@@ -108,6 +132,8 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 
 ## Offen
 
+- Auf dem Telefon liegen die Knöpfe des Hundes (`tiere/tiere_hund.js`, `#hund-panel`) während der Busfahrt über dem Busfenster – Vorschlag
+  an `tiere`: ausblenden, solange man mitfährt (`PLAY.seat.kind === 'ride'`).
 - Aufnahmen statt synthetischer Töne; eine Haltestellenansage mit Stimme (nur Text und Gong).
 - Steige anderer Haltestellen aus OSM (nur, wo der Feed mehrere auf einen Punkt legt – heute nur die Zentralhaltestelle).
 - Die Dorfbewohner (`dorf/`) als Fahrgäste.
@@ -120,7 +146,8 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   `FAHRT.focusBus`), `time/clock.js` (die Echtzeit-Uhr für den Bus heißt „Echtzeit – Bus“ statt „Leim offen“, Warten ist dann erlaubt),
   `verkehr/verkehr_auto.js` und `verkehr/verkehr.js` (je eine Zeile: die Busse als Hindernisse, über `window.BUS.obstacles`, weil `bus/bus.js`
   später lädt); `verkehr/verkehr.js` eine zweite Zeile: die Figur eines Fahrgasts (`S.busy[k] === 'bus'`) wird nicht freigegeben, solange er
-  an der Haltestelle wartet. `bus/bus_leute.js` schreibt in `VERKEHR.S.busy`/`VERKEHR.S.recent` (die Rollenliste des Verkehrs), statt eine
+  an der Haltestelle wartet. `game/hud.js` (eine Zeile in `viewChanged`: ein Sitz mit eigener Außenansicht – `PLAY.seat.view3`, die Busfahrt
+  „Von außen“ – zeigt am Knopf „Figur“ statt „Augen“). `bus/bus_leute.js` schreibt in `VERKEHR.S.busy`/`VERKEHR.S.recent` (die Rollenliste des Verkehrs), statt eine
   eigene zu führen. Der Speicherschlüssel `pav-bus-v1` ist in `bus/bus.js` mit `SAVE.key` angemeldet (Prüfung, Standard) – keine Zeile in
   `core/save.js`; dazu `SAVE.once('pav-bus-hint')` (Hinweis einmal).
 - Quellen: `credits_add` in `viz3/extra/bus/manifest.json` (gtfs.de/DELFI CC BY 4.0, OSM ODbL für Wege und Steige, Schulferien).
