@@ -583,7 +583,16 @@ export const AMT = (() => {
   function begin(quiet) {
     if (ST.phase !== 'none' && ST.phase !== 'lost' && ST.phase !== 'missed') return;
     const again = ST.phase !== 'none';
+    // feat/strategie-dorf: what was done in the village before the letter (from above: opinions, built things, concerns, the Ortsteil's
+    // money – strategie/st_dorf.js changes this state) stays; the opinions keep their change on top of the world's bonus
+    const was = ST;
     if (!again) ST = M.fresh(bonus());
+    if (!again && was && was.log && was.log.length) {
+      for (const k of D.KEYS)
+        if (Number.isFinite(was.rep[k])) ST.rep[k] = M.clamp(ST.rep[k] + was.rep[k] - D.P[k].rep0, 0, 100);
+      for (const f of ['built', 'anl', 'log', 'pos']) ST[f] = was[f];
+      for (const f of ['budget', 'byear', 'kd']) ST[f] = was[f];
+    }
     ST.phase = 'asked';
     ST.t0 = now();
     ST.letter = false;
