@@ -44,7 +44,6 @@ export const STDWISSEN = (() => {
         ['§ 17 Thüringer Waldgesetz (Vorkaufsrecht)', 'https://faolex.fao.org/docs/pdf/ger075400original.pdf'],
       ],
       hint: 'Von oben ein Stück Land pachten oder kaufen.',
-      find: { ev: [['strategie:dorfprojekt', d => !!d && d.state === 'fertig' && /^(pacht|kauf)_/.test(d.id || '')]] },
     },
     {
       id: 'stdorf:streuobst',
@@ -57,7 +56,6 @@ export const STDWISSEN = (() => {
         ['§ 30 Abs. 2 Nr. 7 Bundesnaturschutzgesetz', 'https://www.gesetze-im-internet.de/bnatschg_2009/__30.html'],
       ],
       hint: 'Von oben eine Streuobstwiese pflanzen.',
-      find: { ev: [['strategie:dorfprojekt', d => !!d && d.id === 'streuobst' && d.state === 'fertig']] },
     },
     {
       id: 'stdorf:foerder',
@@ -75,9 +73,6 @@ export const STDWISSEN = (() => {
         ['Kommunalrichtlinie der Nationalen Klimaschutzinitiative 2022–2027', null],
       ],
       hint: 'Von oben ein Projekt mit Fördergeld durch den Stadtrat bringen.',
-      find: {
-        ev: [['strategie:dorfprojekt', d => !!d && (d.id === 'treffpunkt' || d.id === 'led') && d.state === 'stadt']],
-      },
     },
     {
       id: 'stdorf:einsatz',
@@ -91,7 +86,6 @@ export const STDWISSEN = (() => {
         ['Feuerwehr-Dienstvorschrift FwDV 3 (Einheiten im Lösch- und Hilfeleistungseinsatz)', null],
       ],
       hint: 'Von oben bei einem Einsatz der Feuerwehr dabei sein.',
-      find: { ev: [['strategie:krise', d => !!d && d.state === 'alarm']] },
     },
   ];
   let done = false;
@@ -127,14 +121,22 @@ export const STDWISSEN = (() => {
     if (!d) return;
     if (d.state === 'beschlossen') find('p_ortsteilrat', 'tun:ein Projekt durch den Ortsteilrat gebracht');
     if (d.state === 'stadt') find('p_stadtrat', 'tun:ein Projekt durch den Stadtrat gebracht');
+    if (d.state === 'stadt' && (d.id === 'treffpunkt' || d.id === 'led'))
+      find('stdorf:foerder', 'tun:den Eigenanteil der Stadt für einen Förderantrag beschlossen');
     if (d.state === 'stadt' && d.id === 'treffpunkt') find('p_leader', 'tun:einen LEADER-Antrag vorbereitet');
     if (d.state !== 'fertig') return;
+    if (/^(pacht|kauf)_/.test(d.id || ''))
+      find('stdorf:land', 'tun:' + (d.id.startsWith('pacht') ? 'Land gepachtet' : 'Land gekauft'));
     if (d.id === 'mitfahrbank') find('p_mitfahren', 'tun:die Mitfahrbank aufgestellt');
     if (d.id === 'bushaus') find('p_bus', 'tun:das Bushäuschen gerichtet');
-    if (d.id === 'streuobst') find('h_pflanzen', 'tun:Hochstämme gepflanzt');
+    if (d.id === 'streuobst') {
+      find('stdorf:streuobst', 'tun:eine Streuobstwiese gepflanzt');
+      find('h_pflanzen', 'tun:Hochstämme gepflanzt');
+    }
   });
   KERN.on('strategie:krise', d => {
     if (!d || d.state !== 'alarm') return;
+    find('stdorf:einsatz', 'gesehen:den Alarm der Feuerwehr Ratscher');
     find('p_feuerwehr', 'gesehen:einen Einsatz der Feuerwehr Ratscher');
     if (d.id === 'baum') find('n_sturm', 'gesehen:Sturmholz über dem Weg zur Klinge');
   });
