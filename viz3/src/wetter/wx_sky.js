@@ -200,7 +200,7 @@ export const WXSKY = (() => {
     // moonlight on the land fades with the cover
     const hide = clamp(sst(0.3, 0.9, c) + fogK, 0, 1);
     s.starK *= 1 - clamp((starsPatched ? sst(0.75, 0.97, c) : hide) + fogK, 0, 1);
-    s.moonI *= 1 - 0.85 * hide;
+    s.moonI *= (1 - 0.85 * hide) * (s.sunEl > -3 ? 1 : 1 - 0.85 * S.mask);
     s.lim -= 1.0 * c;
   }
   if (DN.hook) DN.hook.look = look;
@@ -230,12 +230,13 @@ export const WXSKY = (() => {
     if ((S.maskT += dt) < 0.25) return;
     S.maskT = 0;
     const st = DN.state,
-      sd = DN.SU && DN.SU.sunD ? DN.SU.sunD.value : null;
+      sd = DN.SU && DN.SU.sunD ? DN.SU.sunD.value : null,
+      md = DN.SU && DN.SU.moonDir ? DN.SU.moonDir.value : null;
+    // the light of the moment – the sun by day and in the twilight, the moon at night – and a little around its disc: a cloud edge
+    // dims it before it covers the centre
+    const L = st && st.sunEl > -3 ? sd : st && st.moonEl > 0 ? md : null;
     let m = 0;
-    if (st && sd && st.sunEl > -2) {
-      // the sun's disc and a little around it: a cloud edge dims it before it covers the centre
-      m = Math.max(deck(sd.x, Math.max(sd.y, 0.02), sd.z), 0.7 * deck(sd.x + 0.02, Math.max(sd.y, 0.02), sd.z + 0.02));
-    }
+    if (L) m = Math.max(deck(L.x, Math.max(L.y, 0.02), L.z), 0.7 * deck(L.x + 0.02, Math.max(L.y, 0.02), L.z + 0.02));
     m = Math.round(m * 20) / 20;
     if (m !== S.mask) {
       S.mask = m;

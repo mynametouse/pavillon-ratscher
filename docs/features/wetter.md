@@ -16,7 +16,9 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   zwischen den Stunden gleitend. Ohne Daten (offline, Fehler, mehr als 16 Tage voraus): der Himmel nach dem Kalender, und das Fenster sagt warum.
 - **Zu sehen** (`wetter/wx_sky.js`, `wetter/wx_fall.js`): Wolkendecke im Himmelsprogramm des Tageslaufs (kein neues Shader-Programm) –
   aufgelockert nach Bewölkungsgrad, ziehend mit dem Wind, bedeckt als geschlossene graue Decke (zum Zenit heller), dunkler bei Regen, im Nebel
-  verschwindet der Himmel; bei tiefer Sonne (Abend, Morgen) leuchten die Wolken von unten warm, zur Sonne hin am stärksten. Das Licht folgt: Sonne gedämpft (zieht eine Wolke vor die Sonne, wird es in dem Moment dunkler), mehr diffuses
+  verschwindet der Himmel; bei tiefer Sonne (Abend, Morgen) leuchten die Wolken von unten warm, zur Sonne hin am stärksten. Nachts
+  leuchten die Sterne zwischen aufgelockerten Wolken und gehen hinter ihnen aus (je Stern dieselbe Wolkendecke im Sternen-Shader, beim
+  Laden übersetzt); Mond und Milchstraße verdeckt die Decke ohnehin. Das Licht folgt: Sonne gedämpft (zieht eine Wolke vor die Sonne, wird es in dem Moment dunkler), mehr diffuses
   Himmelslicht, das Auge passt sich an, grauer Dunst nach der Sicht (der größere Wert gewinnt; der Nebel der Zombie-Nacht bleibt darüber),
   keine Sterne und kein Mondlicht unter geschlossener Decke, Wolkenschatten auf dem fernen Land nur bei aufgelockerter Bewölkung. Regen als
   Schlieren um die Kamera (Nieselregen fein und langsam, Starkregen dicht und schnell), Schnee als sinkende, pendelnde Flocken, Schneeregen
@@ -33,9 +35,10 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   dunkler und glänzender – und das bleibt Stunden nach dem Regen (aus dem Niederschlag der letzten Stunden der Daten). Liegt Schnee
   (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände, Bäume, Gras bleiben.
   Nur Farbe/Rauheit/Leuchten der Materialien (Uniforms), die Originale kommen genau zurück. Die neuen 3D-Gebäude (`gebaeude/`) nutzen das
-  Dachmaterial des Dorfs und werden mit nass und weiß. **Reif:** nach einer klaren, windstillen, kalten, feuchten Stunde der letzten acht
-  (Luft bis ~+2 °C – der Boden ist kälter) liegen Boden und Dächer weißgrau; er taut, wenn die Sonne steigt (ab ~8°, bis ~22° weg) oder
-  wenn es mild wird.
+  Dachmaterial des Dorfs und werden mit nass und weiß; die Grasbüschel des Rasens werden nass etwas dunkler und unter Schnee weiß.
+  **Reif:** nach einer klaren, windstillen, kalten, feuchten Stunde der letzten acht (Luft bis ~+2 °C – der Boden ist kälter): die
+  Grasbüschel am stärksten bereift, Dächer deutlich, Boden und Land wenig, Straßen kaum, ein Hauch Blau im Weiß; er taut, wenn die Sonne
+  steigt (ab ~8°, bis ~22° weg) oder wenn es mild wird.
 - **Zu hören** (`wetter/wx_ton.js`): echte Aufnahmen über Wikimedia Commons (`viz3/extra/wetter/dist/wetter/`, `ton.json`, ~1,7 MB,
   geschnitten mit `viz3/extra/wetter/quellen/ton.py` auf GitHub Actions, `.github/workflows/wetter-ton.yml` – Commons begrenzt Abrufe vom
   Chat-Rechner): Regen (gemeinfrei), ab 2 mm/h ein deutscher Sommer-Platzregen darüber (CC BY-SA 3.0), drinnen und im Auto Regen aufs
@@ -59,7 +62,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   start,jetzt,wetter,innen,kalender,fehler,zombie,neu`), Bilder in `out/wetter/`. Auf GitHub über `viz3/extra/wetter/tests.txt`.
 - Ein Testbrowser fragt Open-Meteo nie (`navigator.webdriver`); `WETTER.mock(fn | json | 'fail')` antwortet statt dessen in der Form von
   Open-Meteo. `WETTER.state()` zeigt Quelle, Werte, Tropfen, Spritzer, Himmel, Tonpegel, geladene Aufnahmen.
-- Echte Antworten von Open-Meteo (der Chat-Rechner bekommt HTTP 429) liest der Job „Echte Wetterdaten lesen“ in
+- Echte Antworten von Open-Meteo (der Chat-Rechner bekommt HTTP 429; geprüft 6.11. ~2:00: alle vier Arten gelesen, jede Antwort mit
+  `access-control-allow-origin: *` – der Browser auf der veröffentlichten Seite darf sie lesen) liest der Job „Echte Wetterdaten lesen“ in
   `.github/workflows/wetter-ton.yml` mit dem Parser des Moduls (`viz3/extra/wetter/quellen/echt.mjs`): jetzt, ein Tag vor 5 Tagen, eine
   Vorhersage in 10 Tagen, das Archiv für den 1.6.2026; Artefakt `wetter-echt` mit den Rohantworten.
 
@@ -67,7 +71,9 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 
 - **Spielzeit und „wie draußen“:** Steht die Spieluhr nicht auf jetzt (Standard für Neue: Tag 1 = 1.6.2026, 7:30), zeigt „wie draußen“ das
   echte Wetter dieser Spielstunde (Archiv), z. B. „Wetter vom 1.6.“. Wie gerade draußen erst mit „Uhr und Datum auf jetzt“ (Uhrfenster;
-  der erste Hinweis sagt es). Vorschlag für Falko: die Spielzeit beim Start auf jetzt stellen, wenn „wie draußen“ gewählt ist (oder eine
+  der erste Hinweis sagt es, ebenso ein Hinweis, wenn man „wie draußen“ von Hand wählt, während die Uhr woanders steht). Bei der
+  üblichen Spielzeit „1 Std = 1 Min“ läuft das Spiel dem echten Wetter davon – nach einer Minute ist es die Vorhersage der nächsten
+  Stunde; „Uhr und Datum auf jetzt“ stellt deshalb auch auf Echtzeit. Vorschlag für Falko: die Spielzeit beim Start auf jetzt stellen, wenn „wie draußen“ gewählt ist (oder eine
   Einstellung „Spielzeit: wie draußen“) – das betrifft das ganze Spiel, deshalb nicht hier entschieden.
 - Bäume und Gras wiegen nicht im Wind: die Gartenbäume tauschen ez-trees Blattmaterial gegen ein eigenes (`garden/trees.js`, `patchSV`)
   ohne Wiegen; das ginge nur über die Blatt-Shader dort (gemeinsame Datei).
