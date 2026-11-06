@@ -132,8 +132,9 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 
 ## Offen
 
-- Auf dem Telefon liegen die Knöpfe des Hundes (`tiere/tiere_hund.js`, `#hund-panel`) während der Busfahrt über dem Busfenster – Vorschlag
-  an `tiere`: ausblenden, solange man mitfährt (`PLAY.seat.kind === 'ride'`).
+- Auf dem Telefon lagen die Knöpfe des Hundes (`tiere/tiere_hund.js`, `#hund-panel`) über dem Busfenster: solange sie zu sehen sind, rücken
+  Fahrplan und Busfenster darüber (`shell/css/bus.css`, `:has()`); schöner wäre, sie während der Fahrt auszublenden – Vorschlag an `tiere`:
+  ausblenden, solange man mitfährt (`PLAY.seat.kind === 'ride'`).
 - Aufnahmen statt synthetischer Töne; eine Haltestellenansage mit Stimme (nur Text und Gong).
 - Steige anderer Haltestellen aus OSM (nur, wo der Feed mehrere auf einen Punkt legt – heute nur die Zentralhaltestelle).
 - Die Dorfbewohner (`dorf/`) als Fahrgäste.

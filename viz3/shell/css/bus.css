@@ -29,3 +29,5 @@
 #busfade.on{opacity:1}
 @media (max-width:720px){ #busboard,#buspanel{top:auto;bottom:calc(166px + env(safe-area-inset-bottom,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto;max-height:52vh;overflow:auto} }
 #buspanel .halt{flex:none;padding:5px 8px;border-radius:5px;background:#c8102e;color:#fff;font:700 12px/1 var(--f-body);letter-spacing:.02em}
+/* on a phone the dog's buttons (tiere/tiere_hund.js, #hund-panel: bottom 120px) would cover the board and the ride panel: above them while shown */
+@media (max-width:720px){ body:has(#hund-panel:not([hidden])) #busboard,body:has(#hund-panel:not([hidden])) #buspanel{bottom:calc(244px + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 450px)} }
