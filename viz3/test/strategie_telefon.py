@@ -41,7 +41,10 @@ with lib.browser() as b:
     pg.touchscreen.tap(g[0], g[1])
     steps(0.2)
     jb = J("STRAT.S.jobs.filter(j => j.def === 'maehen').map(j => j.who)")
-    ck('a tap on the garden (its symbol, where Sarah stands) with Sarah selected gives her the garden\'s job', jb == [['sarah']], str(jb) + ' ' + str(J("STRAT.S.notes.slice(-2).map(n => n.text)")))
+    dbg = J("""(() => { const c = STRAT.place.pos('garten'), s = STHUD.pr(c[0], c[1], 1), p = STRAT.pos('sarah'), q = STHUD.pr(p[0], p[1], 1.8);
+      return { garten: s.slice(0, 2).map(Math.round), sarah: q.slice(0, 2).map(Math.round), sel: STRAT.S.sel, jobs: STRAT.job.at('garten').map(J => [J.id, STRAT.job.check(J, ['sarah']) && STRAT.job.check(J, ['sarah']).rule]),
+        mode: GAME.P.mode, notes: STRAT.S.notes.slice(-3).map(n => n.text) }; })()""")
+    ck('a tap on the garden (its symbol, where Sarah stands) with Sarah selected gives her the garden\'s job', jb == [['sarah']], str(jb) + ' ' + str(dbg) + f' tap at {g}')
     E("GAME.shot(); STHUD.refresh(); STHUD.draw()")
     pg.screenshot(path=os.path.join(OUT, 'telefon_2.png'), timeout=120000)
     # drag pans the view (touch) – on the map, not on a panel (the place's panel closed with its ✕ first)

@@ -504,7 +504,13 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
             `<li><span>${n}</span><b>${'●'.repeat(Math.floor(STRAT.skillOf(id, k)))}${STRAT.skillOf(id, k) % 1 >= 0.5 ? '◐' : ''}</b></li>`
         )
         .join('')}</ul>`;
-      h += `<h4>Schutzausrüstung</h4><div class="sub">${esc((d.gear || []).map(g => ({ forst: 'Forst (Helm, Schnittschutz)', werkstatt: 'Werkstatt (Gehörschutz, Brille, FFP2)' })[g] || g).join(', ') || 'keine eigene')}${d.own ? ' · die Forstkiste am Traktor für den, der fällt' : ''}</div>`;
+      h += `<h4>Schutzausrüstung</h4><div class="sub">${esc(
+        STRAT.gearOf(id)
+          .map(
+            g => ({ forst: 'Forst (Helm, Schnittschutz)', werkstatt: 'Werkstatt (Gehörschutz, Brille, FFP2)' })[g] || g
+          )
+          .join(', ') || 'keine eigene'
+      )}${d.own ? ' · die Forstkiste am Traktor für den, der fällt' : ''}</div>`;
       h += `<h4>Lehrgänge</h4><div class="sub">${p.certs.length ? p.certs.map(c => esc((D.KNOW[c] || { title: c }).title)).join(', ') : 'noch keine'}</div>`;
       h += `<h4>Bedürfnisse</h4><ul><li><span>Kraft</span><b>${Math.round(p.nd.energy)}</b></li><li><span>Essen</span><b>${Math.round(p.nd.food)}</b></li><li><span>Stimmung</span><b>${Math.round(p.nd.mood)}</b></li><li><span>Arbeitstempo</span><b>${Math.round(C.eff(p.nd) * 100)} %</b></li></ul>`;
       if (Hd) {
@@ -845,8 +851,9 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
     const dP = pickD,
       pl = pickPlace(sx, sy),
       dL = pickD;
-    // a place's symbol nearer than a person's: the place (with Sarah selected, a tap on the garden where she stands gives her its job)
-    if (id && pl && dL < dP && H.sel.length && !(H.sel.length === 1 && H.sel[0] === id && dP < 7)) id = null;
+    // with someone selected, a place's symbol nearer than a person's is the place (a tap on the garden where Sarah stands gives her its job;
+    // her own symbol, tapped nearer than the place's, opens her panel)
+    if (id && pl && dL <= dP && H.sel.length) id = null;
     if (id) {
       if (e.shiftKey || e.ctrlKey || e.metaKey)
         select(H.sel.includes(id) ? H.sel.filter(x => x !== id) : H.sel.concat(id));
