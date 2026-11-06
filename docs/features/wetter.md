@@ -25,7 +25,11 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   gemischt, alles vom Wind und den Böen getragen; ein Netz, beim Laden übersetzt, Dichte über den Zeichenbereich; Flocken höchstens ein
   paar Pixel groß und vor der Linse ausgeblendet; drinnen (Pavillon, Gartengebäude, Häuser der Zombie-Nacht) keine Tropfen, im Fahrzeug
   keine in der Kabine; im Pavillon fällt der Regen jenseits seiner Wände weiter (durch die großen Fenster zu sehen), in anderen Gebäuden
-  keiner; Spritzer am Boden rund um die Spielfigur (kurze weiße Flecken, wo Tropfen aufschlagen). Gewitter: Blitze flackern (erster
+  keiner; Spritzer am Boden rund um die Spielfigur (kurze weiße Flecken, wo Tropfen aufschlagen, auf einer schrägen Ebene aus dem
+  Gelände). **Kein Regen unter Dächern:** solange es regnet, wird die Szene von oben in eine kleine Tiefenkarte gezeichnet (64 × 64 über
+  32 m, am Telefon 48; neu nach 3 m Weg, höchstens zweimal je Sekunde, nicht in einer Kabine) – unter dem Carport, Vordächern, dem
+  Obergeschoss des Pavillons oder einer dichten Krone fällt kein Tropfen und spritzt nichts. Die Programme der Szene (beim Laden
+  übersetzt), kein Licht. Gewitter: Blitze flackern (erster
   Schlag, Nachschläge, ~0,4 s) am Himmel und auf dem Land, nahe Einschläge (bis ~3,5 km) mit sichtbarem, zackigem Blitzkanal in ihrer
   Richtung, Donner nach der Entfernung; Hagel
   (Codes 96/99) als kleine, schnelle Körner im Regen. Nachts unter geschlossener Decke ein mattes Orange-Grau der Städte ringsum
@@ -47,6 +51,10 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Jede Art wird erst geladen, wenn ihr Wetter kommt (kein Speicher für Sturm und Donner an einem ruhigen Tag). Nieselregen und
   Sturmpfeifen im Browser erzeugt. Die Atmosphäre des Spiels hört mit: Vögel verstummen bei Regen, Gewitter, Nebel und Sturm, der leise
   Wind der Atmosphäre folgt dem echten Wind (eine windstille Nacht ist still).
+- **Bäume im Wind** (`wetter/wx_wind.js`): die Gartenbäume und Hecken (`garden/trees.js`, instanzierte Kronen) neigen sich vom Wind weg
+  und wiegen zurück (langsames Schwingen, schnelles Blattzittern), oben mehr als unten, mit dem Quadrat der Windstärke, Böen stärker, jeder
+  Baum in eigenem Takt – ein paar Zeilen im Blatt-Shader, beim Laden eingesetzt (eigener Cache-Schlüssel `|wxsway`, kein Programm
+  später), zur Laufzeit nur Uniforms; bei Windstille bewegt sich nichts und es wird nichts dafür gezeichnet.
 - **Die nächsten Stunden:** im Uhrfenster unter der Zeile alle zwei Stunden ab der Spielzeit („16 Uhr Regen · 7 °C“), so weit die Daten reichen.
 - **Mitfahren und fahren:** im Auto (fahren, mitfahren) und im Bus keine Tropfen in der Kabine (Bus: 7 m, er ist lang), der Regen trommelt
   aufs Dach, keine Spritzer.
@@ -75,8 +83,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   üblichen Spielzeit „1 Std = 1 Min“ läuft das Spiel dem echten Wetter davon – nach einer Minute ist es die Vorhersage der nächsten
   Stunde; „Uhr und Datum auf jetzt“ stellt deshalb auch auf Echtzeit. Vorschlag für Falko: die Spielzeit beim Start auf jetzt stellen, wenn „wie draußen“ gewählt ist (oder eine
   Einstellung „Spielzeit: wie draußen“) – das betrifft das ganze Spiel, deshalb nicht hier entschieden.
-- Bäume und Gras wiegen nicht im Wind: die Gartenbäume tauschen ez-trees Blattmaterial gegen ein eigenes (`garden/trees.js`, `patchSV`)
-  ohne Wiegen; das ginge nur über die Blatt-Shader dort (gemeinsame Datei).
+- Gras, die Dorflinde, die Bäume des Gartenplaners und der Wald an der Klinge wiegen nicht (nur die instanzierten Gartenbäume, s. o.);
+  die Schatten der Kronen bleiben still.
 - Pfützen, Spritzer am Boden; Regen am Fenster und an der Windschutzscheibe.
 - Lichtglocke der Städte unter der Wolkendecke nachts.
 

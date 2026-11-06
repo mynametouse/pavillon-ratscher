@@ -187,6 +187,7 @@ wetter/wx_sky.js            # feat/wetter clouds in the sky's own program, the l
 wetter/wx_fall.js           # feat/wetter rain, drizzle, sleet and snow around the camera: one mesh, compiled at load (WXFALL)
 wetter/wx_ton.js            # feat/wetter the sound of the weather: rain outside and on the roof, wind, thunder (WXTON)
 wetter/wx_boden.js          # feat/wetter wet ground and roofs: darker and glossier while it rains and for hours after (WXBODEN)
+wetter/wx_wind.js           # feat/wetter the garden's trees sway with the real wind: a few lines in their leaf shader at load (WXWIND)
 wetter/wetter.js            # feat/wetter live as the default, switchable to the calendar's: the game's moment, easing, clock window, menu (WETTER)
 # feat/bus: the real buses after the timetable below this line (after the traffic and the zombie night it asks; before the frame loop)
 bus/bus_fahrplan.js         # feat/bus the real timetable (gtfs.de, DELFI e.V.): service days, departures, a trip's run through the minutes – pure (BUSPLAN)
