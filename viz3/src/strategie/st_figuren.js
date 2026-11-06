@@ -71,7 +71,10 @@ export const STFIG = (() => {
       if (!STRAT.isOwn(id)) continue;
       const fig = STDATA.PEOPLE[id].fig;
       const me = AVATAR.kind === fig && !top; // the one you are playing is the player figure
-      const ok = near && !me && STRAT.present(id).ok;
+      const jr = STRAT.S.people[id].job ? STRAT.job.of(STRAT.S.people[id].job) : null,
+        Jr = jr && jr.st === 'work' ? STRAT.job.get(jr.def) : null,
+        ride = !!(Jr && Jr.ride && Jr.ride(jr, id)); // on the tractor's seat
+      const ok = near && !me && !ride && STRAT.present(id).ok;
       const q = ok ? STRAT.pos(id) : null,
         inR = q && Math.hypot(q[0] - cx, q[1] - cy) < R;
       const f = F.figs[id];

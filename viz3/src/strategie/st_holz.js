@@ -208,6 +208,7 @@ export const STHOLZ = (() => {
     min: 2,
     cert: 'motorsaege',
     certOne: true,
+    psa: 2, // the one at the saw and the one beside him in the danger zone
     loud: true,
     saw: true,
     where: 'wald',
@@ -302,6 +303,11 @@ export const STHOLZ = (() => {
         };
       return null;
     },
+    // the run: winch and load at the forest track (to 55 % of the work), the field track home with the load (to 85 %), unload at the yard –
+    // the driver's symbol (and the tractor with its trailer on the map) goes along the route while it happens
+    move: true,
+    spot: j => rueckSpot(j),
+    ride: j => rueckPhase(j) === 1,
     init: j => {
       const L = logsForest().sort((a, b) => b.vol - a.vol),
         ids = [];
@@ -336,6 +342,37 @@ export const STHOLZ = (() => {
       };
     },
   });
+  // where the skidding run is: 0 at the logs in the forest (winch, load), 1 on the field track, 2 at the yard (unload)
+  const rueckPhase = j => {
+    const k = j.done / Math.max(1, j.dur);
+    return k < 0.55 ? 0 : k < 0.85 ? 1 : 2;
+  };
+  const RR = new Map(); // the route of a run (job id → { pts, L })
+  function rueckSpot(j) {
+    const ph = rueckPhase(j),
+      a = STRAT.place.pos('klinge'),
+      b = STRAT.place.pos('holzlager');
+    if (!a || !b) return null;
+    if (ph === 2) return [b[0] + 3, b[1] - 2];
+    if (ph === 0) {
+      // beside the logs of this load (the forest track below them), else the Klinge
+      const L = (j.d.ids || []).map(id => HOLZ.by[id]).filter(l => l && l.st === 'ground' && l.p0 && l.p1);
+      if (!L.length) return a;
+      const x = L.reduce((s, l) => s + (l.p0[0] + l.p1[0]) / 2, 0) / L.length,
+        y = L.reduce((s, l) => s + (l.p0[1] + l.p1[1]) / 2, 0) / L.length;
+      return [x + 2.5, y + 2.5];
+    }
+    let R = RR.get(j.id);
+    if (!R) {
+      const pts = W.path(a, b);
+      R = { pts, L: C.pathLen(pts) };
+      RR.set(j.id, R);
+      if (RR.size > 8) RR.delete(RR.keys().next().value);
+    }
+    const k = (j.done / Math.max(1, j.dur) - 0.55) / 0.3,
+      q = C.pathAt(R.pts, Math.max(0, Math.min(1, k)) * R.L);
+    return [q[0], q[1], q[2]];
+  }
   // the logs unloaded beside the log yard as off the trailer: side by side, lying north–south like on the mill (werk/holz.js)
   function toYard(ids) {
     const Y = HOLZ.YARD0 || { x: -1.5, y: -24.6, az: 0 },
@@ -616,6 +653,139 @@ export const STHOLZ = (() => {
         text: 'jetzt darf ' + names(j.who) + ' fällen',
       });
       return { text: names(j.who) + ' darf jetzt fällen' };
+    },
+  });
+  // ---------------- 6 · a forest gear set of one's own (the Forstkiste at the tractor holds one) ----------------
+  STRAT.job.define({
+    id: 'psa_kaufen',
+    label: 'Forst-Schutzausrüstung kaufen',
+    place: 'schleusingen',
+    people: [1, 2],
+    heavy: 0.1,
+    order: 12,
+    text: `Im Agrar- und Forstfachhandel anprobieren und kaufen: Helm mit Visier und Gehörschutz, Schnittschutzhose, Schnittschutzstiefel, Handschuhe – ${PR.psa_forst.eur} € je Person.`,
+    learn:
+      'Schnittschutzhosen gibt es in Klassen nach der Kettengeschwindigkeit (Klasse 1 bis 20 m/s reicht für die meisten Sägen). Ist die Einlage einmal angeschnitten, wird die Hose ersetzt – die Fasern sind herausgezogen.',
+    can: cx => {
+      const have = cx.who.filter(id => STRAT.gearOf(id).includes('forst'));
+      if (have.length) return { no: true, text: `${names(have)} hat schon eine eigene.`, why: '', src: '' };
+      if (S.eur < cx.who.length * PR.psa_forst.eur)
+        return { no: true, text: 'Nicht genug Geld in der Kasse.', why: '', src: '' };
+      return null;
+    },
+    dur: 75,
+    finish: j => {
+      for (const id of j.who)
+        if (!STRAT.gearOf(id).includes('forst')) S.people[id].gear = STRAT.gearOf(id).concat('forst');
+      STRAT.book(-j.who.length * PR.psa_forst.eur, 'Forst-Schutzausrüstung · ' + names(j.who), 'ausbau');
+      return { text: names(j.who) + ' hat jetzt eine eigene Forst-Schutzausrüstung' };
+    },
+  });
+  // ---------------- 7 · firewood: the slabs of the band sawmill cut to 33 cm, split, stacked under a roof; sold fresh or after a year ----
+  const SLAB_RM = 0.04, // a slab of a 4 m log, split and stacked (rm = 1 m³ stacked with air, ≈ 0,7 fm)
+    DRY_DAYS = 365; // spruce, 33 cm split, under a roof: one year, one summer, to below 20 % (1. BImSchV: below 25 %)
+  const FB = () => S.ext.brennholz || (S.ext.brennholz = { used: 0, lots: [] }); // used: slabs worked up; lots: [{ rm, t0 }] stacked
+  const slabs = () => Math.max(0, (HOLZSAW.fire || 0) - FB().used);
+  const lotDry = (l, t) => t - l.t0 >= DRY_DAYS * 1440;
+  STRAT.job.define({
+    id: 'brennholz',
+    pose: 'chop',
+    label: 'Brennholz machen (Schwarten sägen, spalten, aufsetzen)',
+    place: 'holzlager',
+    people: [1, 2],
+    skill: 'holz',
+    min: 1,
+    psa: 1,
+    loud: true,
+    heavy: 0.7,
+    order: 40,
+    text: 'Die Schwarten der Blockbandsäge am Sägebock auf 33 cm sägen, mit der Axt spalten, unter Dach luftig aufsetzen.',
+    learn:
+      'Ein Raummeter (rm) ist ein Kubikmeter geschichtetes Holz mit Luft, etwa 0,7 Festmeter. Fichte braucht unter Dach ein Jahr, bis sie unter 20 % Feuchte hat – erst trocken darf Holz in den Ofen (1. BImSchV: unter 25 %).',
+    can: cx => {
+      if (slabs() < 3 && !(cx.job && cx.job.d.n))
+        return {
+          no: true,
+          text: 'Keine Schwarten zum Aufarbeiten – erst Stämme sägen.',
+          why: 'Brennholz entsteht hier aus dem, was beim Sägen abfällt: den Schwarten mit der Rinde.',
+          src: '',
+        };
+      return null;
+    },
+    init: j => {
+      j.d.n = Math.min(120, slabs());
+      j.d.rm = +(j.d.n * SLAB_RM).toFixed(2);
+    },
+    // per person 0,45–0,85 rm an hour by skill (slabs need little splitting); two work together at 1,8 times one
+    dur: (j, cx) => (j.d.rm * 60) / ((0.35 + 0.1 * Math.min(5, cx.skill)) * (j.who.length > 1 ? 1.8 : 1)),
+    finish: (j, cx) => {
+      FB().used += j.d.n;
+      FB().lots.push({ rm: j.d.rm, t0: Math.round(cx.t) });
+      S.brennholz += j.d.rm;
+      const h = j.dur / 60 / 3; // a third of the time at the saw
+      STRAT.book(
+        -h * (D.MACHINES.kettensaege.lph * PR.alkylat.eur + D.MACHINES.kettensaege.oil * PR.kettenoel.eur),
+        'Motorsäge: Sonderkraftstoff, Kettenöl (Brennholz)',
+        'holz'
+      );
+      return {
+        text: `${de(j.d.rm, 1)} rm Brennholz aus ${j.d.n} Schwarten aufgesetzt – trocken ab ${W.day(cx.t + DRY_DAYS * 1440).label} ${W.dateOf(cx.t + DRY_DAYS * 1440).getUTCFullYear()}`,
+      };
+    },
+  });
+  STRAT.job.define({
+    id: 'brennholz_verkaufen',
+    label: 'Brennholz an Ronald verkaufen',
+    place: 'ronald',
+    people: [1, 2],
+    skill: 'reden',
+    min: 1,
+    heavy: 0.4,
+    order: 30,
+    text: 'Bis zu 3 rm mit der Schubkarre nach nebenan fahren und bei Ronald aufsetzen; trockenes zuerst.',
+    learn: `Trocken und ofenfertig bringt ein Raummeter Fichte gut ${PR.brennholz_fi.eur} € (TFZ), frisch nur rund ${PR.brennholz_frisch.eur} € – wer ein Jahr warten kann, verdient ein Drittel mehr.`,
+    can: () =>
+      S.brennholz < 0.5
+        ? { no: true, text: 'Kein Brennholz aufgesetzt.', why: 'Erst Brennholz machen (Holzlager).', src: '' }
+        : null,
+    init: (j, cx) => {
+      // dry lots first, then the freshest last
+      const lots = FB()
+        .lots.slice()
+        .sort((a, b) => a.t0 - b.t0);
+      let left = Math.min(3, S.brennholz),
+        dry = 0,
+        fresh = 0;
+      for (const l of lots) {
+        if (left <= 0) break;
+        const k = Math.min(l.rm, left);
+        if (lotDry(l, cx.t)) dry += k;
+        else fresh += k;
+        left -= k;
+      }
+      j.d.dry = +dry.toFixed(2);
+      j.d.fresh = +fresh.toFixed(2);
+    },
+    dur: j => (j.d.dry + j.d.fresh) * 30, // a wheelbarrow holds about 0,1 rm: three minutes a load, there and back, stacking
+    finish: j => {
+      let take = j.d.dry + j.d.fresh;
+      const L = FB().lots.sort((a, b) => a.t0 - b.t0);
+      while (take > 1e-6 && L.length) {
+        const k = Math.min(L[0].rm, take);
+        L[0].rm = +(L[0].rm - k).toFixed(3);
+        take -= k;
+        if (L[0].rm <= 1e-3) L.shift();
+      }
+      const rm = j.d.dry + j.d.fresh;
+      S.brennholz = Math.max(0, S.brennholz - rm);
+      const deal = j.who.some(id => STRAT.ability.buff(id, 'handel')) ? 1.08 : 1,
+        eur = (j.d.dry * PR.brennholz_fi.eur + j.d.fresh * PR.brennholz_frisch.eur) * deal;
+      STRAT.book(
+        eur,
+        `Brennholz an Ronald: ${de(rm, 1)} rm${j.d.dry ? ` (${de(j.d.dry, 1)} trocken)` : ' frisch'}`,
+        'holz'
+      );
+      return { text: `${de(rm, 1)} rm Brennholz bei Ronald aufgesetzt – ${Math.round(eur)} €` };
     },
   });
   // ---------------- the first order (brief: „5 Schneidebretter Eiche“ with a date and minimum stars) ----------------

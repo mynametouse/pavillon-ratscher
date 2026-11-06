@@ -104,6 +104,41 @@ export const STEBENEN = (() => {
       return h;
     },
   });
+  // ---- carriers on the ways (Settlers): a tractor with its loaded trailer on the field track while a skidding run is under way ----
+  const TRK = new Map(); // job id → the last point and heading on the screen
+  STRAT.layer.define({
+    id: 'wege',
+    draw: (pr, W, H) => {
+      let h = '';
+      for (const j of S.jobs) {
+        const J = j.st === 'work' ? STRAT.job.get(j.def) : null;
+        if (!J || !J.ride || !J.ride(j, j.who[0])) continue;
+        const a = STRAT.pos(j.who[0]),
+          b0 = STRAT.place.pos('klinge'),
+          q = pr(a[0], a[1], 1.5);
+        if (q[2] >= 1 || q[0] < -30 || q[1] < -30 || q[0] > W + 30 || q[1] > H + 30) continue;
+        // the heading on the screen: towards the yard along the way (a point a little ahead)
+        let L = TRK.get(j.id);
+        if (!L) TRK.set(j.id, (L = { x: b0 ? b0[0] : a[0], y: b0 ? b0[1] : a[1], ang: 0 }));
+        const p0 = pr(L.x, L.y, 1.5);
+        let ang = Math.atan2(q[1] - p0[1], q[0] - p0[0]);
+        if (Math.hypot(q[0] - p0[0], q[1] - p0[1]) < 0.5) ang = L.ang;
+        if (Math.hypot(a[0] - L.x, a[1] - L.y) > 4) {
+          L.x = a[0];
+          L.y = a[1];
+        }
+        L.ang = ang;
+        const deg = ((ang * 180) / Math.PI).toFixed(0),
+          fmv = (j.d.ids || []).reduce((s2, id) => {
+            const l = window.HOLZ && HOLZ.by[id];
+            return s2 + (l ? l.vol || 0 : 0);
+          }, 0);
+        h += `<g class="trk" transform="translate(${f1(q[0])} ${f1(q[1])}) rotate(${deg})"><rect x="-22" y="-4" width="13" height="8" rx="1.5" fill="#8a6a44" stroke="#222" stroke-width="1"/><line x1="-9" y1="0" x2="-5" y2="0" stroke="#222" stroke-width="1.5"/><rect x="-5" y="-5" width="11" height="10" rx="2" fill="#2f7a3a" stroke="#222" stroke-width="1"/><rect x="2" y="-3.5" width="5" height="7" rx="1" fill="#cfe0d2" stroke="#222" stroke-width=".8"/></g>`;
+        h += `<text x="${f1(q[0] + 12)}" y="${f1(q[1] - 10)}" style="fill:#f3e2b8;font:600 10.5px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px">Traktor · ${fmv.toLocaleString('de-DE', { maximumFractionDigits: 1 })} fm</text>`;
+      }
+      return h;
+    },
+  });
   // ---- the dog (feat/tiere, window.HUND): his symbol among the people; what he does of his own accord comes as a notice with „Loben“ and
   // „Tadeln“ – Black & White: praise and scolding shape what he does more often (tiere/tiere_hund.js, HUND.lob(±1) answers in a sentence) ----
   const DOG = {
