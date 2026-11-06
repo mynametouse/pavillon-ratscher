@@ -117,8 +117,8 @@ def keepout_data():
         if b.get('lm') in ('burg', 'rathaus'):
             zones.append(('Schleusingen: ' + b['lm'], b['f'], 5.0))
     bad, n = [], 0
-    for fn in sorted(glob.glob(os.path.join(D, 'gebaeude', 'z', '*_*.json'))):
-        for b in json.load(open(fn))['b']:
+    for key in json.load(open(os.path.join(D, 'gebaeude', 'z', 'index.json')))['cells']:   # the cells the app may fetch
+        for b in json.load(open(os.path.join(D, 'gebaeude', 'z', key + '.json')))['b']:
             n += 1
             f = b['f']
             pts = [(f[i], f[i + 1]) for i in range(0, len(f), 2)]
@@ -128,6 +128,47 @@ def keepout_data():
                     bad.append([name, b.get('id'), round(pts[-1][0], 1), round(pts[-1][1], 1)])
                     break
     return n, len(zones), bad
+
+
+def roads_data():
+    """the cells' buildings against the drawn roads one drives (welt/fahrt.js motorway … lane with their widths, no bridges or tunnels;
+    Schleusingen's main streets): no corner or wall middle more than 0.3 m inside a drawn surface (prep.py cuts them back)"""
+    D = os.path.join(lib.ROOT, 'viz3', 'dist')
+    G, segs = 40.0, {}
+    def add(ax, ay, bx, by, hw):
+        for i in range(int(math.floor((min(ax, bx) - hw) / G)), int(math.floor((max(ax, bx) + hw) / G)) + 1):
+            for j in range(int(math.floor((min(ay, by) - hw) / G)), int(math.floor((max(ay, by) + hw) / G)) + 1):
+                segs.setdefault((i, j), []).append((ax, ay, bx, by, hw))
+    for w in json.load(open(os.path.join(D, 'fahrt', 'strassen.json')))['ways']:
+        if w[0] > 4 or w[3] & 3:
+            continue
+        q = w[6]
+        xy = [(q[i] / 10.0, q[i + 1] / 10.0) for i in range(0, len(q) - 2, 3)]
+        for a, b in zip(xy, xy[1:]):
+            add(a[0], a[1], b[0], b[1], w[2] / 20.0)
+    WS = {1: 8.0, 2: 7.0, 3: 5.6}
+    for st in json.load(open(os.path.join(D, 'schleusingen', 'stadt.json')))['st']:
+        if st.get('k') in WS:
+            q = st['p']
+            for k in range(0, len(q) - 2, 2):
+                add(q[k], q[k + 1], q[k + 2], q[k + 3], WS[st['k']] / 2)
+    bad, n = [], 0
+    for key in json.load(open(os.path.join(D, 'gebaeude', 'z', 'index.json')))['cells']:
+        for b in json.load(open(os.path.join(D, 'gebaeude', 'z', key + '.json')))['b']:
+            n += 1
+            f = b['f']
+            pts = [(f[i], f[i + 1]) for i in range(0, len(f), 2)]
+            pts += [((p[0] + q[0]) / 2, (p[1] + q[1]) / 2) for p, q in zip(pts, pts[1:] + pts[:1])]
+            worst = 0.0
+            for x, y in pts:
+                for ax, ay, bx, by, hw in segs.get((int(math.floor(x / G)), int(math.floor(y / G))), ()):
+                    dx, dy = bx - ax, by - ay
+                    L2 = dx * dx + dy * dy
+                    t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / L2)) if L2 > 0 else 0.0
+                    worst = max(worst, hw - math.hypot(x - ax - dx * t, y - ay - dy * t))
+            if worst > 0.3:
+                bad.append([b.get('id'), round(worst, 2), round(sum(p[0] for p in pts) / len(pts), 1), round(sum(p[1] for p in pts) / len(pts), 1)])
+    return n, bad
 
 
 V2N = 0
@@ -192,6 +233,8 @@ with lib.browser() as b:
         ff = J("""(() => { let n = 0, inside = 0, wall = 0; for (const b of GEB.bld) { n++; if (!GEB.footFree(b.cx, b.cy, 0.2)) inside++; if (!GEB.footFree(b.f[0] + 0.1, b.f[1], 0.6)) wall++; }
           return { n, inside, wall, garden: GEB.footFree(0, 0, 0.6) }; })()""")
         ck('fences and woodpiles of the village keep off the new buildings (GEB.footFree for world/village_near.js)', ff['inside'] >= 0.9 * ff['n'] and ff['wall'] == ff['n'] and ff['garden'], json.dumps(ff))
+        rn, rbad = roads_data()
+        ck('no building of the cells stands in a drawn road one drives (cut back to its edge)', rn > 10000 and len(rbad) <= 5, f'{rn} buildings, {len(rbad)} reach in: ' + json.dumps(rbad[:6]))
         kn, kz, kbad = keepout_data()
         ck('none of the cells in what Kloster Veßra and Schleusingen model themselves (church ruin, precinct, nursery, castle, Rathaus)', kn > 10000 and kz >= 5 and not kbad, f'{kn} buildings, {kz} areas, ' + json.dumps(kbad[:6], ensure_ascii=False))
     # a free spot (inside no building, 2 m from every wall) 16–34 m from a building, looking at it; same in both runs (deterministic)

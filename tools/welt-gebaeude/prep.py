@@ -574,6 +574,30 @@ def roads_fahrt():
     return out
 
 
+def road_surfaces():
+    """the drawn surfaces of the roads one drives beyond the square, as shapely polygons with a name: welt/fahrt.js (motorway … lane, its own
+    widths; no bridges or tunnels) and Schleusingen's main streets (welt/schleusingen.js widths)"""
+    from shapely.geometry import LineString
+    out = []
+    d = json.load(open(W.dist_file('fahrt/strassen.json')))
+    for w in d['ways']:
+        k, w10, fl, pts = w[0], w[2], w[3], w[6]
+        if k > 4 or fl & 3:
+            continue
+        xy = [(pts[i] / 10.0, pts[i + 1] / 10.0) for i in range(0, len(pts) - 2, 3)]
+        if len(xy) >= 2:
+            out.append((LineString(xy).buffer(w10 / 20.0, resolution=4), 'fahrt'))
+    try:
+        WS = {1: 8.0, 2: 7.0, 3: 5.6}
+        for s_ in json.load(open(W.dist_file('schleusingen/stadt.json')))['st']:
+            p = s_['p']
+            if s_.get('k') in WS and len(p) >= 4:
+                out.append((LineString(list(zip(p[0::2], p[1::2]))).buffer(WS[s_['k']] / 2, resolution=4), 'schleusingen'))
+    except Exception as e:
+        print('no streets of Schleusingen', e)
+    return out
+
+
 def main_tiles(a):
     """the buildings beyond Ratscher's square along the roads one drives (welt/fahrt.js), in Schleusingen around the old town and at Kloster
     Veßra: cells of 400 m (model metres) the app builds when the player comes near"""
@@ -630,6 +654,28 @@ def main_tiles(a):
         else:
             st['new'] += 1
             keep.append((r, g, r['id']))
+    # the drawn roads one drives: where a house stands right at the street, the road data are often a little wider or a metre off – a wall in
+    # the drawn surface would stop a car in its lane. Such a building is cut back to the road's edge; one that would lose more than a
+    # quarter (a road drawn through it) is left out
+    surf = road_surfaces()
+    stree = STRtree([s for s, _ in surf])
+    st['road_cut'], st['road_out'] = 0, 0
+    k2 = []
+    for r, g, sid in keep:
+        hit = [surf[i][0] for i in stree.query(g) if g.intersects(surf[i][0])]
+        U = unary_union(hit) if hit else None
+        if U is None or g.intersection(U).area < 0.2:
+            k2.append((r, g, sid))
+            continue
+        rest = g.difference(U)
+        pieces = sorted([p for p in (rest.geoms if hasattr(rest, 'geoms') else [rest]) if p.geom_type == 'Polygon'], key=lambda p: -p.area)
+        if pieces and pieces[0].area >= 0.75 * g.area and pieces[0].area > 8 and pieces[0].buffer(-1.0).area > 1.5:
+            st['road_cut'] += 1
+            k2.append((r, pieces[0], sid))
+        else:
+            st['road_out'] += 1
+    keep = k2
+    print('roads: cut back', st['road_cut'], 'left out', st['road_out'], flush=True)
     polys = []
     for r, g, sid in keep:
         c = clean(g)

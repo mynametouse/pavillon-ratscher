@@ -27,7 +27,7 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   ausgeblendet.
 - `?nogeb` lässt die neuen Gebäude weg (Vergleich). Gebaut wird nach dem Laden in Stücken von wenigen Millisekunden je Bild
   (`KERN.tick` „gebaeude/bau“), die Kollisionen stehen schon beim Laden.
-- **Jenseits des Quadrats (Kachelwelt):** 11 360 Gebäude in 179 Zellen à 400 m (`gebaeude/z/<i>_<j>.json`, Index `z/index.json`):
+- **Jenseits des Quadrats (Kachelwelt):** 11 346 Gebäude in 179 Zellen à 400 m (`gebaeude/z/<i>_<j>.json`, Index `z/index.json`):
   Schleusingen um die Altstadt herum (1,7 km um den Markt, ohne die 789 Häuser von `welt/schleusingen.js`), die Straßen, die man fährt
   (`welt/fahrt.js`, 260 m beiderseits: Richtung Schleusingen und Kloster Veßra mit den Dörfern unterwegs), Kloster Veßra (950 m, ohne die
   156 Häuser von `welt/vessra.js`). Eine Zelle wird geholt und gebaut, wenn man ihr näher als 700 m kommt, und jenseits von 900 m
@@ -39,6 +39,10 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   15 m Rand), der Baumschule Kammbach (8 m), an Mauern, Toren, Zäunen, Teichen, Friedhof und Gärten; in Schleusingen
   (`welt/schleusingen.js`) nicht an der Bertholdsburg (20 m: Terrassen, Rundtürme), am Rathaus, an St. Johannis und am Heckenturm (8 m),
   am Markt, an Brunnen, Bänken und Laternen – 120 ETHOS-Gebäude dort weggelassen (die meisten waren ohnehin dieselben wie die der Orte).
+  **Nicht in der gezeichneten Fahrbahn:** wo ein Haus direkt an der Straße steht, sind die Straßendaten (`welt/fahrt.js` mit ihren
+  Breiten, Schleusingens Hauptstraßen) oft etwas breiter oder um einen Meter versetzt – eine Wand in der Fahrbahn hielte ein Auto in seiner
+  Spur auf. Solche Gebäude sind bis an den Fahrbahnrand gekürzt (142, meist um 0,5–2 m), weggelassen, wo sie mehr als ein Viertel
+  verlören, weil eine Straße durch sie gezeichnet ist (15; Brücken und Tunnel zählen nicht).
 - **Bodenbild ohne gedruckte Dächer (Ratscher):** `tools/welt-gebaeude/retusche.py` nimmt aus den Bodenbildern des Quadrats
   (`ortho_near` 4096² über 920 m, `ortho_near_lq`, `ortho_inner` 2048² über 2,4 km) jedes Dach, wo ein Gebäude in 3D steht – die 337 OSM-
   Gebäude, die neuen, die handmodellierten im Garten und auf den Höfen –, samt Dachüberstand und der Neigung des Luftbilds (kein echtes
@@ -108,7 +112,7 @@ südlich vom Garten, runder Behälter, Schuppen im Dorf, Anger von oben) haben e
 (`?nogeb&bodenalt`) und nachher –, in die Halle laufen hält an der Wand, keine neuen Shader-Programme; Schleusingen: die Zellen um den Markt
 kommen, keine doppelt zur Altstadt, ein Haus vom Boden und von oben (vorher: die veröffentlichten Kacheln ohne Zellen), seine Wand hält
 den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. Dazu ohne Browser: keine Zelle in Kirchenruine,
-Klosterbezirk, Baumschule, an Burg oder Rathaus. Bei den Shader-Programmen zählen die der Dorf-Materialien (Schlüssel `v16e-…`) – was
+Klosterbezirk, Baumschule, an Burg oder Rathaus, keine mehr als 0,3 m in einer gezeichneten Fahrbahn. Bei den Shader-Programmen zählen die der Dorf-Materialien (Schlüssel `v16e-…`) – was
 andere Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als Hinweis im Protokoll. Bilder in `out/welt_gebaeude/`.
 
 ### Bilder (`out/welt_gebaeude/`, bei GitHub im Artefakt `out` des Laufs)
