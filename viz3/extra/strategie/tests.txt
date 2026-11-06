@@ -2,9 +2,8 @@
 strategie
 strategie_telefon
 # before the core goes into src (round B, 6.11. ~3:45): the tests of the shared files it touches – fell.js, holz_saw.js, holz_dry.js,
-# werk.js, the garage's petrol, the saved state (taken out again after that run)
+# werk.js, the saved state (taken out again after that run)
 savefuzz
 v16c:tractor,night,phone,fell
 v16d:fork,saw,stack
 werkstatt_heute
-garage
