@@ -967,6 +967,8 @@ body[data-top="1"] #winote{top:178px}
     'gplan:offen': 'den Garten geplant',
     'jahr:wechsel': 'einen Monat im Spiel erlebt',
     'bau:pv': 'die Solarmodule am Pavillon angesehen',
+    'bau:yakisugi': 'die Fassade des Pavillons angesehen',
+    'bau:lehmputz': 'den Lehmputz im Pavillon angesehen',
     'wetter:regen': 'Regen erlebt',
     'wetter:schnee': 'Schnee erlebt',
     'wetter:gewitter': 'ein Gewitter erlebt',
@@ -1046,8 +1048,11 @@ body[data-top="1"] #winote{top:178px}
     else if (PHASE !== PH0) {
       look('bau:phase');
       // the phase that puts the solar modules on the pavilion (pavilion/phases.js „Geländer, Windschutz, PV“)
-      const PS = window.PHASES;
-      if (PS && PS[PHASE] && /\bPV\b/.test(PS[PHASE].name || '')) look('bau:pv');
+      const PS = window.PHASES,
+        nm = (PS && PS[PHASE] && PS[PHASE].name) || '';
+      if (/\bPV\b/.test(nm)) look('bau:pv');
+      if (/Yakisugi/.test(nm)) look('bau:yakisugi');
+      if (/Lehmputz/.test(nm)) look('bau:lehmputz');
     }
   }
   let PH0 = null,
