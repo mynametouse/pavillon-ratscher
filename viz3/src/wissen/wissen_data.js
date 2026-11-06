@@ -262,7 +262,7 @@ export const WDATA = (() => {
       ch: 'natur',
       icon: '🗓️',
       title: 'Die zehn Jahreszeiten der Natur',
-      text: 'Phänologen zählen zehn Jahreszeiten und erkennen sie an Zeigerpflanzen: Vorfrühling, wenn die Hasel blüht; Erstfrühling mit der Forsythie; Vollfrühling mit der Apfelblüte; Frühsommer mit dem Holunder; Hochsommer mit der Lindenblüte. Es folgen Spät- und Frühherbst mit reifen Früchten, der Vollherbst, der Spätherbst mit dem Laubfall und der Winter mit der Vegetationsruhe.',
+      text: 'Phänologen zählen zehn Jahreszeiten und erkennen sie an Zeigerpflanzen: Vorfrühling, wenn die Hasel blüht; Erstfrühling mit der Forsythie; Vollfrühling mit der Apfelblüte; Frühsommer mit dem Holunder; Hochsommer mit der Lindenblüte. Es folgen Spätsommer und Frühherbst mit reifen Früchten, der Vollherbst, der Spätherbst mit dem Laubfall und der Winter mit der Vegetationsruhe.',
       here: 'Wenn die Dorflinde am Anger blüht, ist Hochsommer. Mit dem wärmeren Klima beginnt der Vorfrühling in Deutschland heute früher als vor einigen Jahrzehnten – das zeigen die Beobachtungen des Deutschen Wetterdienstes.',
       src: [wiki('Phänologie'), ['Deutscher Wetterdienst – Phänologie (die phänologische Uhr)', 'https://www.dwd.de/']],
       find: { talk: ['ronald:jahreszeiten'], look: ['jahr:wechsel'] },
