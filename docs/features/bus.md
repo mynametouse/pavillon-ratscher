@@ -26,6 +26,11 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   Samstag, Sonn- und Feiertag, „s“ = an Schultagen; an einer Endhaltestelle „Ausstieg“). An der Schulbushaltestelle an der alten Schule steht
   das Wartehäuschen mit Schild schon (`world/village_props.js`): der Bus hält mit der Tür am Häuschen (Lage aus Falkos Video,
   `world/dorfkern_data.js`, statt der 17 m daneben im Feed), ein Fahrplan dort für beide Richtungen, der Aushang an der Rückwand.
+- **Ratscher, Schleusebrücke**: der Feed führt dieselbe Haltestelle für die eine 700 je Richtung noch einmal als „Ratscher“ (9 bzw. 28 m
+  daneben – zwei Schilder fast nebeneinander); OpenStreetMap kennt dort eine Haltestelle mit Wartehäuschen (Knoten bei 50,49938 N
+  10,77264 O): zusammengelegt (`ALIAS` in `viz3/extra/bus/quellen/fahrplan.py`, auch für den nächsten Lauf; die Haltepunkte der beiden Wege
+  dorthin verschoben), und an der Bordsteinkante in Richtung Schleusingen steht ein Wartehäuschen (wie es wirklich aussieht, ist nicht
+  bekannt: ein schlichtes aus Stahl und Glas mit Bank, 3,0 × 1,45 m; für Spielfigur und Fahrzeuge fest).
 - An einer Haltestelle heißt der Ort „Haltestelle …“ (Ortsanzeige); beim ersten Mal an einem Schild ein Hinweis, was man dort tun kann.
 - **Fahrplan am Schild** („Fahrplan: …“): die nächsten Abfahrten dieser Richtung (Zeit, Linie, Ziel, „in 3 min“, „fährt ein“, „steht da“),
   der Tag („Mittwoch, Schultag“), **„Auf den Bus warten“** (die Uhr springt wie beim Schlafen bis eine Minute vor den Bus).

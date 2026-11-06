@@ -806,6 +806,70 @@ export const BUSMOD = (() => {
       },
     };
   }
-  return { S, M, build, lamps, sign, poster, geos, DIM: { L, W, H, FL, AF, AR, RW, DOOR_F, DOOR_M } };
+  // a bus shelter where OpenStreetMap has one (shelter=yes) and the world none: a plain one of steel and glass (no picture of the real
+  // one), 3.0 × 1.45 m, 2.35 m high, open to the road, a bench at its back. (x, y) the point at the kerb where its front begins, hd the
+  // way the buses go (its back away from the road, to their right); the frame, roof and bench one mesh, the glass another
+  function shelter(x, y, z, hd) {
+    const kF = VPROPS.kit(),
+      kGl = VPROPS.kit(),
+      fx = Math.sin(hd),
+      fy = Math.cos(hd),
+      rx = Math.cos(hd),
+      ry = -Math.sin(hd),
+      rot = Math.PI / 2 - hd,
+      FR = col(0x3b3f43),
+      ROOF = col(0x55595d),
+      WOOD = col(0x8a6a4a);
+    // a box in the shelter's frame: u along the road, v away from it, w up
+    const ob = (k, u0, u1, v0, v1, w0, w1, c) =>
+      k.box(
+        x + (fx * (u0 + u1)) / 2 + (rx * (v0 + v1)) / 2,
+        y + (fy * (u0 + u1)) / 2 + (ry * (v0 + v1)) / 2,
+        z + w0,
+        u1 - u0,
+        v1 - v0,
+        w1 - w0,
+        rot,
+        c
+      );
+    const U = 1.5,
+      V = 1.45,
+      Hh = 2.35;
+    for (const u of [-U, U]) for (const v of [0, V]) ob(kF, u - 0.04, u + 0.04, v - 0.04, v + 0.04, 0, Hh, FR);
+    ob(kF, -U - 0.12, U + 0.12, -0.18, V + 0.08, Hh, Hh + 0.09, ROOF);
+    // the rails of the glass
+    ob(kF, -U, U, V - 0.03, V + 0.03, 0.08, 0.13, FR);
+    ob(kF, -U, U, V - 0.03, V + 0.03, Hh - 0.12, Hh - 0.06, FR);
+    for (const u of [-U, U]) {
+      ob(kF, u - 0.03, u + 0.03, 0.3, V, 0.08, 0.13, FR);
+      ob(kF, u - 0.03, u + 0.03, 0.3, V, Hh - 0.12, Hh - 0.06, FR);
+    }
+    // the bench and its legs
+    ob(kF, -1.0, 1.0, V - 0.46, V - 0.1, 0.42, 0.47, WOOD);
+    for (const u of [-0.85, 0.85]) ob(kF, u - 0.03, u + 0.03, V - 0.4, V - 0.16, 0, 0.42, FR);
+    // the glass: the back, the two sides (open at the front 0.3 m)
+    ob(kGl, -U + 0.04, U - 0.04, V - 0.01, V + 0.01, 0.13, Hh - 0.12, col(0xffffff));
+    for (const u of [-U, U]) ob(kGl, u - 0.01, u + 0.01, 0.3, V - 0.04, 0.13, Hh - 0.12, col(0xffffff));
+    const mF = own(new THREE.Mesh(kF.geo(), M.body), true),
+      mG = own(new THREE.Mesh(kGl.geo(), M.glass));
+    mG.renderOrder = 2;
+    scene.add(mF, mG);
+    // its walls for the walker and vehicles: [centre, half sizes along the road and away from it, the road's direction]
+    const at = (u, v) => [x + fx * u + rx * v, y + fy * u + ry * v];
+    const walls = [
+      { c: at(0, V), eu: U, ev: 0.05 },
+      { c: at(-U, (0.3 + V) / 2), eu: 0.05, ev: (V - 0.3) / 2 },
+      { c: at(U, (0.3 + V) / 2), eu: 0.05, ev: (V - 0.3) / 2 },
+    ].map(w => ({ c: w.c, ax: [fx, fy], ay: [rx, ry], ex: w.eu, ey: w.ev, z0: z, z1: z + Hh }));
+    return {
+      walls,
+      dispose: () => {
+        scene.remove(mF, mG);
+        mF.geometry.dispose();
+        mG.geometry.dispose();
+      },
+    };
+  }
+  return { S, M, build, lamps, sign, poster, shelter, geos, DIM: { L, W, H, FL, AF, AR, RW, DOOR_F, DOOR_M } };
 })();
 window.BUSMOD = BUSMOD;

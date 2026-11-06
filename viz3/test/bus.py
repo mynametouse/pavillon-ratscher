@@ -106,6 +106,12 @@ with lib.browser() as b:
         steps(2.0)
         st = J("BUS.state()")
         ck('the stop sign stands there (built near the walker)', st['furn'] >= 1, f"furniture {st['furn']}")
+        # the shelter OpenStreetMap knows at the Schleusebrücke (the kerb toward Schleusingen), solid for the walker; no second sign of the
+        # feed's „Ratscher“ beside it (merged)
+        sh = J("""(() => { const f = [...BUS.S.furn.entries()].map(([i, f]) => [BUS.STOPS()[i], f]);
+          return { shel: f.filter(([e, q]) => q.shel).map(([e]) => e.name), near: BUS.STOPS().filter(e => Math.hypot(e.x - 245, e.y - 10) < 40).map(e => e.name),
+                   walls: VEH.extra.filter(x => x.bus && x.box() && x.box().ey < 1).length }; })()""")
+        ck('the shelter from OpenStreetMap at the Schleusebrücke, one stop name there', sh['shel'] == ['Ratscher, Schleusebrücke'] and set(sh['near']) == {'Ratscher, Schleusebrücke'} and sh['walls'] >= 3, str(sh))
         E("GAME.shot()"); steps(0.3)
         p0 = E("GAME.R.info.programs.length")
         progs0 = set(J("GAME.R.info.programs.map(p => p.cacheKey)"))

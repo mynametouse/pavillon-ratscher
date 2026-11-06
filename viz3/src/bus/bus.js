@@ -176,6 +176,17 @@ export const BUS = (() => {
     return Math.cos(_h.hd - e.hd) > 0.3;
   }
   // ---------------- the furniture near the observer: signs, the board's action ----------------
+  // shelters OpenStreetMap knows at stops where the world has none (shelter=yes; ODbL): beside the sign of the kerb nearest to the point
+  const OSM_SHELTERS = [{ name: 'Ratscher, Schleusebrücke', x: 244.5, y: 14.2 }];
+  const shelterOf = e =>
+    !e.shelter && OSM_SHELTERS.some(o => o.name === e.name && Math.hypot(o.x - e.x, o.y - e.y) < 5);
+  // its walls, solid for the walker and vehicles (vehicles/vehicle.js VEH.extra), while one is built
+  const SHW = [];
+  for (let i = 0; i < 6; i++) VEH.extra.push({ bus: true, box: () => SHW[i] || null });
+  function shelterWalls() {
+    SHW.length = 0;
+    for (const f of S.furn.values()) if (f.shel) SHW.push(...f.shel.walls);
+  }
   function furniture(ox, oy) {
     for (const e of STOPS) {
       const d = Math.hypot(e.x - ox, e.y - oy),
@@ -205,7 +216,20 @@ export const BUS = (() => {
           label: () => (S.ride || Z.on ? null : 'Fahrplan: ' + BUSPLAN.S.stations[e.s].short),
           run: () => board(e),
         });
-        S.furn.set(e.i, { sign, id, z: e.shelter ? 0 : KERN.ground(e.x, e.y) });
+        // a shelter from OSM: its front at the kerb line half a metre behind the sign, along the road toward the middle of the bus
+        let shel = null;
+        if (shelterOf(e)) {
+          const fx = Math.sin(e.hd),
+            fy = Math.cos(e.hd),
+            rx = Math.cos(e.hd),
+            ry = -Math.sin(e.hd),
+            sx = e.x - fx * 2.3 + rx * 0.6,
+            sy = e.y - fy * 2.3 + ry * 0.6,
+            sz = KERN.ground(sx, sy);
+          if (Number.isFinite(sz)) shel = BUSMOD.shelter(sx, sy, sz, e.hd);
+        }
+        S.furn.set(e.i, { sign, shel, id, z: e.shelter ? 0 : KERN.ground(e.x, e.y) });
+        if (shel) shelterWalls();
         S.stats.built++;
         markDirty(true);
       } else if (f && f.sign && d < FURN && Math.abs(KERN.ground(e.x, e.y) - f.z) > 0.15) {
@@ -216,8 +240,10 @@ export const BUS = (() => {
         markDirty(true);
       } else if (f && d > FURN + 140) {
         if (f.sign) f.sign.dispose();
+        if (f.shel) f.shel.dispose();
         KERN.unact(f.id);
         S.furn.delete(e.i);
+        if (f.shel) shelterWalls();
         markDirty(true);
       }
     }

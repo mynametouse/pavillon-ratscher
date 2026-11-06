@@ -357,7 +357,70 @@ def minutes(hms):
     return h * 60 + m + s / 60
 
 
+# stops the feed keeps under two names a few metres apart where OpenStreetMap knows one (Ratscher: „Ratscher“, 9 and 28 m from „Ratscher,
+# Schleusebrücke“, used by the one 700 each way – one stop with a shelter in OSM, node at 50.49938 N 10.77264 E, 6.11.2026): each
+# platform of the first becomes the nearest one of the second within 40 m (the stop points of the ways moved to it), else one of its own
+# (the signs stand on the right of the way a bus goes, whatever side the feed's point lies on)
+ALIAS = {'Ratscher': 'Ratscher, Schleusebrücke'}
+
+
+def merge_alias(out, alias=ALIAS):
+    names = [st['n'] for st in out['stations']]
+    for a_, b_ in alias.items():
+        if a_ not in names or b_ not in names:
+            continue
+        ia, ib = names.index(a_), names.index(b_)
+        A, B = out['stations'][ia], out['stations'][ib]
+        qmap, moved = {}, set()
+        for qa, pa in enumerate(A['pl']):
+            best, bd = None, 40.0
+            for qb, pb in enumerate(B['pl']):
+                d = math.hypot(pa[0] - pb[0], pa[1] - pb[1]) / 10
+                if d < bd:
+                    best, bd = qb, d
+            if best is None:
+                B['pl'].append(list(pa))
+                best = len(B['pl']) - 1
+            else:
+                moved.add(qa)
+            qmap[qa] = best
+        for P in out['pats']:
+            pts = [(P['p'][2 * i] / 10, P['p'][2 * i + 1] / 10) for i in range(len(P['p']) // 2)]
+            cum = [0.0]
+            for i in range(1, len(pts)):
+                cum.append(cum[-1] + math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]))
+            for k, (s_, q) in enumerate(P['st']):
+                if s_ != ia:
+                    continue
+                P['st'][k] = [ib, qmap[q]]
+                if q in moved and len(pts) > 1:
+                    # the stop point on this way: where the platform it now uses lies beside it (within 40 m of the old one)
+                    pb = B['pl'][qmap[q]]
+                    px, py, s0 = pb[0] / 10, pb[1] / 10, P['s'][k]
+                    best = (1e9, s0)
+                    for i in range(1, len(pts)):
+                        (x0, y0), (x1, y1) = pts[i - 1], pts[i]
+                        L = math.hypot(x1 - x0, y1 - y0)
+                        if L < 1e-6:
+                            continue
+                        t = max(0.0, min(1.0, ((px - x0) * (x1 - x0) + (py - y0) * (y1 - y0)) / (L * L)))
+                        d = math.hypot(x0 + (x1 - x0) * t - px, y0 + (y1 - y0) * t - py)
+                        sv = cum[i - 1] + L * t
+                        if abs(sv - s0) < 40 and d < best[0]:
+                            best = (d, sv)
+                    P['s'][k] = round(best[1], 1)
+        A['pl_an'] = b_
+    return out
+
+
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == '--zusammen':
+        # only the merge of ALIAS on a timetable written before (python3 -I fahrplan.py --zusammen <fahrplan.json>)
+        out = merge_alias(json.load(open(sys.argv[2])))
+        with open(sys.argv[2], 'w') as f:
+            json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
+        print('merged', list(ALIAS.items()), file=sys.stderr)
+        return
     ap = argparse.ArgumentParser()
     ap.add_argument('--gtfs', required=True)
     ap.add_argument('--woche', default='2026-11-16', help='Monday of the reference week')
@@ -747,6 +810,7 @@ def main():
              '(min after the first departure, per stop of the pattern), school trip, from, to (whole trip), stop before the world, stop after it]; '
              'pats: st [[station, platform]], s (m along the way), p (dm x, y), v (m/s per point), z (dm, profile beyond the square, -9999: ask the ground)',
     )
+    merge_alias(out)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
