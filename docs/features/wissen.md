@@ -48,7 +48,7 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   zum Markt) und an der **Henneberger Kapelle in Kloster Veßra** (zum Klostertor hin): gebaut, sobald die Zone der Stadt steht, und mit ihr
   wieder freigegeben.
 - **Daten-Ansichten** (`viz3/src/wissen/wissen_daten.js`, „Lernen durch Sehen“ wie in SimCity): auf der Draufsicht (Hingehen → Draufsicht) ein
-  kleines Feld links unten mit sechs Schaltern und der Legende – **Orte der Geschichte** (die Infotafeln, gelesene gefüllt, und die Orte in
+  kleines Feld links unten (über Maßstab und Quellenzeile; sein Titel klappt es auf eine Zeile zusammen) mit sechs Schaltern und der Legende – **Orte der Geschichte** (die Infotafeln, gelesene gefüllt, und die Orte in
   Schleusingen und Veßra), **Lärm** (Straßen nach ihrer OSM-Klasse mit Bändern über 55 und 45 dB(A),
   Maschinen, solange sie laufen: Mäher, Motorsäge, Blockbandsäge, die lauten Aufträge des Strategie-Modus; dazu die Ruhezeiten des Spieltags
   mit „?“), **Verkehr** (Straßen nach Klasse, die fahrenden Autos des Verkehrs, die Autos der Dorfbewohner, die Busse;
@@ -57,11 +57,13 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   einmal je Tag gerechnet), **Naturwert** (Wald an der Klinge, Hecken um den Garten, Bach mit 5-m-Uferstreifen, alte Bäume, Dorflinde; gesehene Tiere, Käferbäume
   und die Ruhezone am Schwarzstorch-Horst, sobald man von ihnen weiß – feat/tiere), **Stimmung** (Meinung der Leute von dir, 0–100, an ihrer
   Haustür – „Wahl und Amt“; im Strategie-Modus dazu der Stil). Nur SVG über der Draufsicht: kein Shader-Programm, kein Mesh. Im Strategie-Modus
-  sind es Ebenen seines Felds „Ebenen“ (`STRAT.layer.define`, anfangs aus); die Legende erscheint, sobald eine an ist. Wer eine Ansicht
+  sind es Ebenen seines Felds „Ebenen“ (`STRAT.layer.define`, anfangs aus); die Legende erscheint, sobald eine an ist – rechts unter seiner
+  Uhr und seinen Feldern, frei von Leuten und Kapitelkarte links. Wer eine Ansicht
   einschaltet, findet ihren Eintrag (Lärm und Ruhe, Straßen und ihre Klassen, Sonne und Schatten, Was Natur wertvoll macht, Ansehen im Dorf).
   Feiertage (Ostern nach Gauß, Thüringer Feiertage), Ruhezeiten und der Abfall des Schalls mit dem Abstand sind reine Helfer in
   `wissen_data.js` (Einheitentests).
-- **Hinweis**: „Neu im Entdeckerbuch: …“ oben in der Mitte mit „Lesen“ (im Strategie-Modus als dessen Meldung, `STRAT.note`).
+- **Hinweis**: „Neu im Entdeckerbuch: …“ oben in der Mitte mit „Lesen“ (im Strategie-Modus als dessen Meldung, `STRAT.note`; am Handy ein
+  Balken über der Mitte, bei offenen Daten-Ansichten über deren Feld).
 - **Gespeichert**: `pav-wissen-v1` (über `SAVE`, mit Prüfung) – gefunden (Spielminute, wie), verstandene Regeln, gelesene Einträge und die
   aus Ereignissen erzeugten Einträge (feat/tiere meldet eine Art nur einmal).
 

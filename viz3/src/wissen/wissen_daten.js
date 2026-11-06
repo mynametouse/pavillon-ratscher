@@ -760,7 +760,10 @@ export const WDATEN = (() => {
   const CSS = `
 #widaten{position:absolute;z-index:7;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(118px + env(safe-area-inset-bottom,0px));width:min(320px,calc(100% - 24px));max-height:calc(100% - 300px);overflow:auto;background:rgba(24,23,20,.86);color:#f3efe6;border-radius:10px;padding:8px 10px;font:400 12.5px/1.4 var(--f-body);box-shadow:0 6px 22px rgba(0,0,0,.35)}
 #widaten[hidden]{display:none}
-#widaten b.t{display:block;font:700 13px/1.2 var(--f-display);margin-bottom:6px}
+#widaten .t{display:flex;align-items:center;gap:6px;width:100%;background:none;border:0;padding:0;margin:0 0 6px;color:inherit;cursor:pointer;text-align:left;font:700 13px/1.2 var(--f-display)}
+#widaten .t span{opacity:.7;font-size:11px}
+#widaten .t small{margin-left:auto;font-weight:400}
+#widaten .t:only-child{margin-bottom:0}
 #widaten .wd-c{display:flex;flex-wrap:wrap;gap:5px}
 #widaten .wd-c button{border:1px solid rgba(255,255,255,.28);background:transparent;color:#f3efe6;border-radius:999px;font:500 12px/1 var(--f-body);padding:6px 9px;cursor:pointer}
 #widaten .wd-c button[aria-pressed=true]{background:#f3e2b8;color:#2b2420;border-color:#f3e2b8;font-weight:700}
@@ -787,6 +790,12 @@ export const WDATEN = (() => {
     el.setAttribute('aria-label', 'Daten-Ansichten');
     ($('p-3d') || document.body).appendChild(el);
     el.addEventListener('click', e => {
+      // the title folds the panel to one line (on a phone it covers much of the map); the views stay drawn
+      if (e.target.closest('[data-wdmin]')) {
+        S.min = !S.min;
+        render();
+        return;
+      }
       const b = e.target.closest('[data-wd]');
       if (b) set(b.dataset.wd, !isOn(b.dataset.wd));
     });
@@ -798,9 +807,13 @@ export const WDATEN = (() => {
     const strat = stratOn();
     const act = LAYERS.filter(L => isOn(L.id));
     let h = '';
+    if (!strat && S.min) {
+      S.el.innerHTML = `<button type="button" class="t" data-wdmin aria-expanded="false">Daten-Ansichten<span aria-hidden="true">▸</span>${act.length ? `<small>${act.map(L => L.icon).join(' ')}</small>` : ''}</button>`;
+      return;
+    }
     if (!strat)
       h +=
-        '<b class="t">Daten-Ansichten</b><div class="wd-c">' +
+        '<button type="button" class="t" data-wdmin aria-expanded="true">Daten-Ansichten<span aria-hidden="true">▾</span></button><div class="wd-c">' +
         LAYERS.map(
           L =>
             `<button type="button" data-wd="${L.id}" aria-pressed="${!!S.on[L.id]}" title="${esc(L.text)}">${L.icon} ${esc(L.label)}</button>`
