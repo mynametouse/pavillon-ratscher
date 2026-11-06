@@ -9,6 +9,7 @@
 //   WISSEN.found(id, how) → true when it is new · WISSEN.has(id) · WISSEN.open(id | chapter) · WISSEN.close() · WISSEN.progress()
 //   WISSEN.why(id) → { id, title, text, src } | null · WISSEN.explain(id, anchorEl) shows it · WISSEN.whyHTML(id) a small „?“ for any panel
 //   WISSEN.chips(root): warnings of the garden planner's kind (ul.gp-warns / ul.gp-w) that rest on a law get their „?“
+//   WISSEN.addWhy({ id, title, text, src }) a feature's own reason (also after the saved state was read: understood stays understood)
 // Events: 'wissen:neu' { id, ch, how }, 'wissen:warum' { id }, 'wissen:offen' { on }.
 import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
@@ -76,7 +77,11 @@ export const WISSEN = (() => {
     for (const [id, v] of Object.entries(s.f || {}))
       if (typeof id === 'string' && id.length < 80 && Array.isArray(v) && Number.isFinite(+v[0]))
         S.f[id] = [+v[0], typeof v[1] === 'string' ? v[1].slice(0, 120) : ''];
-    if (obj(s.w)) for (const k of Object.keys(s.w)) if (D.WHY[k]) S.w[k] = 1;
+    // understood rules – also those another feature adds only later (WISSEN.addWhy, e.g. the building law of feat/strategie-bau):
+    // kept by id, counted once the rule exists
+    if (obj(s.w))
+      for (const k of Object.keys(s.w).slice(0, 300))
+        if (typeof k === 'string' && k.length > 0 && k.length < 80) S.w[k] = 1;
     if (obj(s.r)) for (const k of Object.keys(s.r)) if (typeof k === 'string' && k.length < 80) S.r[k] = 1;
     if (obj(s.d))
       for (const [id, d] of Object.entries(s.d))
@@ -256,6 +261,17 @@ export const WISSEN = (() => {
     }
     if (w && !w.querySelector('[data-wiwhy]') && D.WHY[id])
       w.insertAdjacentHTML('beforeend', ' ' + whyHTML(id, 'Quellen ›'));
+  }
+  // a reason another feature brings ({ id, title, text, src: [[title, url]] }); a rule understood before a reload counts again at once
+  function addWhy(def) {
+    if (!def || typeof def.id !== 'string' || !def.id || def.id.length >= 80 || !def.title || !def.text) return null;
+    const src = (Array.isArray(def.src) ? def.src : def.src ? [def.src] : [])
+      .filter(Boolean)
+      .slice(0, 4)
+      .map(q => (Array.isArray(q) ? [String(q[0] || ''), q[1] ? String(q[1]) : null] : [String(q), null]));
+    D.WHY[def.id] = { title: String(def.title), text: String(def.text), src };
+    if (U.open) render();
+    return D.WHY[def.id];
   }
   const whyHTML = (id, label) =>
     why(id)
@@ -541,7 +557,7 @@ body[data-top="1"] #winote{top:178px}
   function progress() {
     const out = { all: count(null) };
     for (const c of CHS) out[c] = count(c);
-    out.regeln = [Object.keys(S.w).length, Object.keys(D.WHY).length];
+    out.regeln = [Object.keys(S.w).filter(k => D.WHY[k]).length, Object.keys(D.WHY).length];
     return out;
   }
   function howText(h) {
@@ -1145,6 +1161,7 @@ body[data-top="1"] #winote{top:178px}
     has,
     why,
     whyHTML,
+    addWhy,
     // the garden planner's warnings in root get their „?“ (done by itself on #gplan; for tests and other lists of the same kind)
     chips: root => gpChips(root),
     explain,

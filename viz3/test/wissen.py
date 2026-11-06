@@ -318,6 +318,10 @@ def run():
                     E("(() => { const bs = [...document.querySelectorAll('button[data-why]')]; const b = bs[bs.length - 1]; if (b) b.click(); })()"); time.sleep(0.3)
                     sw = J("(() => { const bs = [...document.querySelectorAll('button[data-why]')]; const n = bs.length ? bs[bs.length - 1].closest('.n') : null; return { why: WISSEN.state().why, q: !!(n && n.querySelector('[data-wiwhy=\"saftruhe\"]')) }; })()")
                     ck('the strategy mode\'s own „Warum?“ (Saftruhe): understood in the book too, with „Quellen ›“', 'saftruhe' in sw['why'] and sw['q'], str(sw))
+        # a rule another feature adds at run time (as feat/strategie-bau does with the building law): understood before the reload
+        LATE = "{ id: 'test_spaeteregel', title: 'Eine späte Regel', text: 'Kommt erst nach dem Laden dazu.', src: [['Test', null]] }"
+        E(f"WISSEN.addWhy({LATE}); WISSEN.explain('test_spaeteregel')"); time.sleep(0.2)
+        E("(() => { const x = document.querySelector('#wiwhy .x'); if (x) x.click(); })()")
         found_before = J("WISSEN.state().found")
         E("WISSEN.saveNow()")
         ck.errors(errs)
@@ -332,6 +336,8 @@ def run():
                 ck('…also the generated entry (tier:luchs) with its title', J("(() => { const e = WISSEN.get('tier:luchs'); return !!e && e.title === 'Luchs' && WISSEN.has('tier:luchs'); })()"))
             if 'warum' in want:
                 ck('…and the understood rule', 'ruhe_sonntag' in f2['why'])
+            late = J("(() => { const kept = WISSEN.state().why.includes('test_spaeteregel'), before = WISSEN.progress().regeln[0]; WISSEN.addWhy(" + LATE + "); return { kept, before, after: WISSEN.progress().regeln[0] }; })()")
+            ck('…and a rule another feature adds only after loading (WISSEN.addWhy) counts as understood again', late['kept'] and late['after'] == late['before'] + 1, str(late))
             ck.errors(errs)
         pg.close()
 

@@ -84,7 +84,11 @@ WISSEN.has(id); WISSEN.open(id | 'natur' | … | 'regeln'); WISSEN.close(); WISS
 WISSEN.why('ruhe_sonntag')   // { id, title, text, src: [[titel, url]] } | null
 WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.whyHTML(id) → '<button data-wiwhy=…>?</button>' für jedes Panel
 WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners (ul.gp-warns, ul.gp-w), die auf einem Gesetz beruhen, bekommen ihr „?“
+WISSEN.addWhy({ id, title, text, src })  // ein Grund eines anderen Features (auch nach dem Laden: schon Verstandenes bleibt verstanden)
 ```
+
+- Verstandene Regeln werden mit ihrer ID gespeichert, auch wenn ein Feature die Regel erst später hinzufügt (feat/strategie-bau: Baurecht);
+  gezählt wird, sobald es sie gibt.
 
 - Kapitel: `natur`, `handwerk`, `geschichte`, `politik`, `orte`. Das „wie gefunden“ (`how`) beginnt mit `ort:`, `gespraech:`, `tafel:`, `tun:`,
   `gesehen:` oder `erkundet:` – das Buch macht daraus einen Satz.
