@@ -190,6 +190,8 @@ export const DORF = (() => {
       say.textContent = lines[(n - 1) % lines.length];
       talkFig(k, say.textContent);
       voice(k, say.textContent);
+      // feat/wissen: which topic was asked (wissen/wissen_lehrer.js opens the entry it teaches)
+      KERN.emit('dorf:thema', { who: k, id, n });
       if (k === 'uwe' && id === 'trinken' && DSCHOOL.drink && !DSCHOOL.drink.visible) {
         DSCHOOL.drink.visible = true; // the glass stands on the counter
         markDirty();
