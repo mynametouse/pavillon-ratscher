@@ -40,6 +40,11 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   Uhrfenster: „Echtzeit – Bus“) – so kommt der Bus zu seiner Minute und fährt so schnell wie ein Bus. Ein Bus anderswo fährt in Echtzeit; fällt
   er hinter die schnelle Spieluhr zurück (eine Stunde je Minute), holt er auf, wo man nicht hinsieht – einer, dem man zusieht, fährt weiter
   wie ein Bus fährt.
+- **Bedarfshalt**: zwischen seiner ersten und letzten Haltestelle hält ein Bus nur, wo jemand ein- oder aussteigt (die Leute des Verkehrs,
+  dieselbe Zahl wie beim Halten – in anderen Orten unsichtbare), wo die Spielfigur wartet (25 m, ihre Richtung), wo man aussteigen will;
+  ein Schulbus überall. Sonst fährt er mit dem Tempo der Straße durch (kein Blinker, keine Türen). Kommt jemand später an die Haltestelle
+  oder drückt man im Bus „Halt“, hält er doch – wenn er noch bremsen kann (`BUSPLAN.serve`: der Lauf wird ab der Stelle, an der er ist,
+  neu gerechnet, ohne Sprung); sonst „Zu spät … – der Bus hält an der nächsten Haltestelle“.
 - **Was im Weg steht**: der Bus bremst und hält vor dem, was in seiner Spur steht – die Spielfigur, ihr Auto, ein Auto des Verkehrs, ein
   Bus vor ihm an der Haltestelle – und hupt die Spielfigur an; danach ist er eben ein paar Sekunden (oder Minuten) verspätet. Einem Auto, das
   ihm 20 s lang Spur gegen Spur gegenübersteht, weicht er nicht länger aus (keine Verklemmung).
@@ -89,7 +94,7 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   (der Feed: `https://download.gtfs.de/germany/free/latest.zip`, ~280 MB, gestreamt; braucht `pyproj`; die Steige aus der OSM-API werden in
   `--cache` aufgehoben; `--bild` zeichnet die Wege über das Straßennetz).
 - Tests: `node --test viz3/test/unit/bus.test.mjs` (Kalender, Daten, Abfahrten in Ratscher, Fahrt nach Schleusingen im Takt, Zufahrt vom
-  Rand, die Steige der Zentralhaltestelle, Stationsnamen); `python3 viz3/test/bus.py <port> [fahrt,nacht,schule,reload,zombie]` (Bilder in
+  Rand, die Steige der Zentralhaltestelle, Stationsnamen, Bedarfshalt: durchfahren, rechtzeitig gewünscht halten, ohne Sprung); `python3 viz3/test/bus.py <port> [fahrt,nacht,schule,reload,zombie]` (Bilder in
   `out/bus/`: `a_fahrplan` Fahrplanfenster am Schild, `a2_aushang` Aushangfahrplan, `a3_leute_warten`, `b_bus_an_der_haltestelle`,
   `b0_leute_steigen_ein`, `b2_tuer_offen`, `c_im_bus_panel` Busfenster, `c2_im_bus_telefon`, `d_aus_dem_bus`, `c3_von_aussen`, `h_vorn_ausserhalb` und
   `h2_fenster_ausserhalb` aus dem Bus jenseits des Quadrats, `e_schleusingen_zh`, `f_nacht_vorn`, `g_nacht_seite`, `i_schulbus_haeuschen`),
@@ -116,9 +121,6 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 
 ## Offen
 
-- Bedarfshalt: der Bus hält an jeder Haltestelle seines Fahrplans, auch wenn niemand wartet oder aussteigen will – echte Busse fahren auf
-  dem Land dann vorbei. Dafür müsste der Lauf eines Busses (`BUSPLAN.run`) während der Fahrt ab der Stelle, an der er gerade ist, neu
-  gerechnet werden (Haltewunsch, jemand kommt an die Haltestelle).
 - Auf dem Telefon liegen die Knöpfe des Hundes (`tiere/tiere_hund.js`, `#hund-panel`) während der Busfahrt über dem Busfenster – Vorschlag
   an `tiere`: ausblenden, solange man mitfährt (`PLAY.seat.kind === 'ride'`).
 - Aufnahmen statt synthetischer Töne; eine Haltestellenansage mit Stimme (nur Text und Gong).

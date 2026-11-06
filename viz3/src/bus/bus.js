@@ -318,8 +318,37 @@ export const BUS = (() => {
   }
   const _o = {},
     _c = {};
+  // request stops: between its first and last stop a bus stops where someone gets on or off (the people of bus/bus_leute.js, the same
+  // counts – elsewhere invisible ones), where the walker waits, where the rider wants; a school bus at every stop. Else it drives through.
+  function passFn(trip, di) {
+    const T0 = di * 1440 + trip.t0;
+    return k => {
+      if (trip.school) return false;
+      const L = window.BUSLEUTE;
+      if (L && L.serveAt && L.serveAt(trip, di, k, T0 + trip.a[k]) > 0) return false;
+      return !walkerAt(trip, k);
+    };
+  }
+  // the walker stands at this stop of the trip (its kerb, 25 m)
+  function walkerAt(trip, k) {
+    if (P.mode !== 'walk' || PLAY.seated() || VEH.cur) return false;
+    const st = BUSPLAN.S.pats[trip.pat].st[k];
+    if (!st || st.s < 0) return false;
+    const e = stopAt(P.x, P.y, 25);
+    return !!e && e.s === st.s && sameWay(e, { trip, k });
+  }
+  // a bus coming: its next stops are served when the walker or someone of the people waits there (in time – BUSPLAN.serve)
+  function standBy() {
+    for (const I of S.inst) {
+      if (I.st === 'ende') continue;
+      const pz = I.Rn.pass;
+      for (let k = I.k + 1; k <= Math.min(I.Rn.P.last - 1, I.k + 2); k++)
+        if (pz[k] && (walkerAt(I.trip, k) || (window.BUSLEUTE && BUSLEUTE.waitsFor && BUSLEUTE.waitsFor(I, k))))
+          BUSPLAN.serve(I.Rn, k, I.tau);
+    }
+  }
   function spawn(a, tau) {
-    const Rn = BUSPLAN.run(a.trip, a.di);
+    const Rn = BUSPLAN.run(a.trip, a.di, passFn(a.trip, a.di));
     const I = {
       Rn,
       key: Rn.key,
@@ -444,8 +473,9 @@ export const BUS = (() => {
     const Pst = I.Rn.P.st;
     let side = 0;
     if (I.st === 'fahrt') {
-      if (Pst[I.k + 1] && Pst[I.k + 1].s >= 0 && R.st[I.k + 1] - _o.s < 45) side = 1;
-      else if (Pst[I.k].s >= 0 && _o.s - R.st[I.k] < 16) side = -1;
+      const pz = I.Rn.pass;
+      if (Pst[I.k + 1] && Pst[I.k + 1].s >= 0 && !pz[I.k + 1] && R.st[I.k + 1] - _o.s < 45) side = 1;
+      else if (Pst[I.k].s >= 0 && !pz[I.k] && _o.s - R.st[I.k] < 16) side = -1;
     } else if (
       I.st === 'halt' &&
       Pst[I.k].s >= 0 &&
@@ -896,6 +926,15 @@ export const BUS = (() => {
       panel();
     }
   }
+  // the rider wants out at stop k: the bus stops there (a request stop it would drive through: if still in time, else the next one)
+  function wantStop(R_, k) {
+    const I = R_.I;
+    let kk = k;
+    while (kk < I.Rn.P.last && !(I.Rn.P.st[kk].s >= 0 && BUSPLAN.serve(I.Rn, kk, I.tau))) kk++;
+    if (kk !== k)
+      PLAY.think('Zu spät für ' + stName(I.Rn.P.st[k].s) + ' – der Bus hält an der nächsten Haltestelle.', 3200);
+    R_.want = kk;
+  }
   // the next stop one can get off at (not the one it stands at), -1 at the end
   function nextStop(I) {
     for (let k = I.k + 1; k <= I.Rn.P.last; k++) if (I.Rn.P.st[k].s >= 0) return k;
@@ -939,8 +978,10 @@ export const BUS = (() => {
   async function shorten(toK) {
     const R_ = S.ride;
     if (!R_ || R_.busy) return;
-    const I = R_.I,
-      k = Number.isInteger(toK) && toK > I.k ? toK : R_.want !== null ? R_.want : Math.min(I.Rn.P.last, I.k + 1);
+    const I = R_.I;
+    let k = Number.isInteger(toK) && toK > I.k ? toK : R_.want !== null ? R_.want : Math.min(I.Rn.P.last, I.k + 1);
+    // a request stop it would drive through: it stops there now (or at the next one it still can)
+    while (k < I.Rn.P.last && !(I.Rn.P.st[k].s >= 0 && BUSPLAN.serve(I.Rn, k, I.tau))) k++;
     if (R_.want === null) R_.want = k;
     R_.busy = true;
     if (!fadeEl) {
@@ -987,7 +1028,7 @@ export const BUS = (() => {
         if (!b || !S.ride) return;
         const R2 = S.ride;
         if (b.dataset.halt !== undefined) {
-          R2.want = +b.dataset.halt;
+          wantStop(R2, +b.dataset.halt);
           bell();
           display(R2.I, R2);
           panel();
@@ -1469,6 +1510,7 @@ export const BUS = (() => {
       furniture(ox, oy);
       if (S.auto) choose(ox, oy);
       focusTick(ox, oy);
+      standBy();
       groundAhead();
       if (brdStop && brd && !brd.hidden) {
         if (Math.hypot(P.x - brdStop.x, P.y - brdStop.y) > 12) closeBoard();
@@ -1519,7 +1561,7 @@ export const BUS = (() => {
     },
     want: k => {
       if (S.ride) {
-        S.ride.want = k;
+        wantStop(S.ride, k);
         display(S.ride.I, S.ride);
         panel();
       }

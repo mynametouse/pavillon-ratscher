@@ -365,6 +365,18 @@ export const BUSLEUTE = (() => {
       const hour = (((t % 1440) + 1440) % 1440) / 60;
       return count(hash(I.trip.i, k, 2), hour, 'aus', I.trip.line);
     },
+    // how many get on or off this trip at its stop k (arriving at minute t) – the request stops of bus/bus.js: the same counts as
+    // above, also where none of the people live (invisible ones there)
+    serveAt: (trip, di, k, t) => {
+      const hour = (((t % 1440) + 1440) % 1440) / 60;
+      return count(hash(trip.i, di, k, 1), hour, 'ein', trip.line) + count(hash(trip.i, k, 2), hour, 'aus', trip.line);
+    },
+    // someone of the people waits (or walks to the stop) for this bus at its stop k
+    waitsFor: (I, k) =>
+      S.pax.some(
+        q =>
+          (q.st === 'wartet' || q.st === 'kommt') && q.c && q.c.trip.i === I.trip.i && q.c.k === k && q.c.di === I.Rn.di
+      ),
     // tests: forget who was planned for which bus
     reset: () => {
       clear();

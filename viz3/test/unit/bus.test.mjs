@@ -130,3 +130,56 @@ test('destinations carry the station names (not the short platform names of the 
   assert.ok(heads.has('Schleusingen, Zentralhaltestelle'), 'Schleusingen, Zentralhaltestelle');
   assert.ok(!heads.has('Schleusingen, ZH') && !heads.has('Themar, Bahnof'), [...heads].join(' | '));
 });
+
+test('request stops: a bus drives through a stop nobody wants, stops there when asked in time, never jumps', () => {
+  const e0 = B.eOf(2026, 6, 1),
+    T = 2 * 1440 + 7 * 60;
+  const d = B.departures(st('Ratscher, Schleusebrücke'), T, e0, 30).find(q =>
+    B.S.pats[q.trip.pat].st.some(
+      (o, k) => k > q.k && o.s >= 0 && B.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle'
+    )
+  );
+  const P = B.S.pats[d.trip.pat],
+    kk = P.st.findIndex(o => o.s >= 0 && B.S.stations[o.s].n === 'Schleusingen, Krankenhaus');
+  assert.ok(kk > P.first && kk < P.last, 'the Krankenhaus lies between its first and last stop');
+  const pass = k => k === kk,
+    R = B.run(d.trip, d.di, pass),
+    R0 = B.run(d.trip, d.di),
+    o = {};
+  assert.equal(R.pass[kk], 1, 'planned to drive through');
+  // through it: never standing there, still moving at the stop
+  for (let t = R.D[kk - 1]; t < R.A[kk + 1]; t += 0.01) {
+    B.at(R, t, o);
+    assert.ok(!(o.st === 'halt' && o.k === kk), 'no halt at the Krankenhaus');
+  }
+  B.at(R, R.A[kk], o);
+  assert.ok(o.v > 3, 'through the stop at ' + o.v.toFixed(1) + ' m/s');
+  assert.ok(R.A[kk + 1] <= R0.A[kk + 1] + 1e-6, 'not later at the next stop');
+  // asked before the leg: it stops
+  const R1 = B.run(d.trip, d.di, pass);
+  assert.ok(B.serve(R1, kk, R1.D[kk - 1] - 0.1), 'served when asked at the stop before');
+  B.at(R1, R1.A[kk] + 0.05, o);
+  assert.equal(o.st, 'halt', 'standing at the Krankenhaus');
+  assert.equal(o.k, kk);
+  // asked on the leg, early: from where it is, without a jump; then standing there
+  const R2 = B.run(d.trip, d.di, pass),
+    tm = R2.D[kk - 1] + (R2.A[kk] - R2.D[kk - 1]) * 0.3;
+  B.at(R2, tm, o);
+  const s1 = o.s;
+  assert.ok(B.serve(R2, kk, tm), 'served when asked on the way');
+  B.at(R2, tm, o);
+  assert.ok(Math.abs(o.s - s1) < 1.01, 'no jump: ' + s1.toFixed(2) + ' → ' + o.s.toFixed(2));
+  let sPrev = o.s;
+  for (let t = tm; t < R2.A[kk]; t += 0.005) {
+    B.at(R2, t, o);
+    assert.ok(o.s >= sPrev - 1e-3, 'forward only');
+    sPrev = o.s;
+  }
+  B.at(R2, R2.A[kk] + 0.05, o);
+  assert.equal(o.st, 'halt', 'standing at the Krankenhaus after a request on the way');
+  // asked right before the stop at speed: too late
+  const R3 = B.run(d.trip, d.di, pass);
+  let tl = R3.A[kk] - 0.002;
+  B.at(R3, tl, o);
+  if (o.v > 4) assert.ok(!B.serve(R3, kk, tl), 'too late to stop');
+});

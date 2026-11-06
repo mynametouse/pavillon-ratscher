@@ -253,11 +253,13 @@ with lib.browser() as b:
             steps(0.3)
             # it drives off: the rider goes with it (the left indicator while it leaves the stop)
             p_a = J("[GAME.P.x, GAME.P.y]")
-            bl = []
-            for i in range(12):
+            bl, after = [], 0
+            for i in range(45):
                 steps(1.0)
                 bl.append(J("[BUS.S.ride.I.st, BUS.S.ride.I.blinkSide || 0]"))
-            steps(13.0)
+                if bl[-1][0] == 'fahrt': after += 1
+                if after >= 5: break
+            steps(12.0)
             p_b = J("[GAME.P.x, GAME.P.y]")
             ck('the left indicator when it leaves the stop', any(b[1] == -1 for b in bl) and not any(b[1] == 1 for b in bl[:6]), str(bl))
             st = J("BUS.state()")
