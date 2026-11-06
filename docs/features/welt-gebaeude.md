@@ -129,6 +129,11 @@ Gebäude; keine Seitenfehler. Dazu ohne Browser: keine Zelle in Kirchenruine, Kl
 als 0,3 m in einer gezeichneten Fahrbahn. Bei den Shader-Programmen zählen die der Dorf-Materialien (Schlüssel `v16e-…`) – was andere
 Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als Hinweis im Protokoll. Bilder in `out/welt_gebaeude/`.
 
+`python3 viz3/test/welt_gebaeude_kacheln.py 8997`: die Kacheln ohne gedruckte Dächer an fünf Stellen an den Strecken (Schleusingen-West,
+L 3004 vor dem Markt, Rappelsdorf, Zollbrück, Einfahrt Kloster Veßra), vom Boden und aus 60 m, ohne (`?welt1`) und mit dem Satz –
+Bilder `out/welt_gebaeude_kacheln/<ort>_{ohne,mit}_{boden,top}.jpg`, nebeneinander `<ort>_{boden,top}_vergleich.jpg`; gleiche Kacheln,
+keine zusätzlichen Fehler, der Satz wird genommen.
+
 ### Bilder (`out/welt_gebaeude/`, bei GitHub im Artefakt `out` des Laufs)
 
 | Bild | zeigt |
