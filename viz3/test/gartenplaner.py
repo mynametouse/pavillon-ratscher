@@ -62,7 +62,8 @@ with lib.browser() as b:
         G['p0'] = st['programs']; G['mem0'] = st['mem']
         ck('start: no request for the planner’s data', not reqs, str(reqs))
         ck('start: no panel, no 3D plants, no collisions, data not loaded', not st['panel'] and not st['g3'] and st['gcol'] == 0 and st['data'] == 'none', json.dumps(st))
-        ck('menu entry „Garten planen“, one plan view hook, the start situation „gartenplaner“', st['btn'] and st['hooks'] == 1 and E("!!KERN.scenario('gartenplaner')"), json.dumps(st))
+        # the plan view has more hooks since V17t (the Entdeckerbuch's data views, the strategy mode's lens) – the planner's is among them
+        ck('menu entry „Garten planen“, a plan view hook, the start situation „gartenplaner“', st['btn'] and st['hooks'] >= 1 and E("!!KERN.scenario('gartenplaner')"), json.dumps(st))
     section('start', start)
     # ---- open from the menu: plan view, test data ----
     def open_():
