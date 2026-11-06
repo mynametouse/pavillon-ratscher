@@ -511,8 +511,9 @@ with lib.browser() as b:
             at(11, 0, date=(11, 6))
             E(f"__view({g0['x']} + 8, {g0['y']}, ROADS.groundAt({g0['x']} + 8, {g0['y']}) + 1.65, -90, -8, 60); GAME.step(0.1)")
             steps(2.0)
-            zg = J("window.__ev.filter(e => e.id === 'ziege')")
-            ck('Ronald\'s goats seen: tiere:entdeckt „ziege“ for the discovery book', len(zg) >= 1, str(zg)[:200])
+            # (the page was reloaded in 'lernen': the book's record, not this page's event list; once found it stays found)
+            seen = J("TIERE.state().seen")
+            ck('Ronald\'s goats seen: in the discovery book (tiere:entdeckt „ziege“)', 'ziege' in seen, str(seen))
         else:
             print('note: no goats in this world (npc/npc.js GOATS empty)', flush=True)
         # the rest of the game unharmed: Schleusingen, then the zombie night (the dog's buttons out of the way, no page errors)
