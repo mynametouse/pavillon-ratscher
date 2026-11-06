@@ -47,7 +47,8 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   Brunft öfter). Milan von März bis Oktober, Bussard das ganze Jahr, Schwarzstorch von Ende März bis Anfang September, Uhu in der Dämmerung.
 - **Wie:** nur wenige Tiere nahe beim Betrachter sind echte Modelle (Telefon 14, sonst 26 – die nächsten Gruppen zuerst); ferne Gruppen sind nur Zahlen. Sie äsen,
   wühlen, lauschen (Fuchs), ziehen weiter, sichern, fliehen in ihrer Fluchtdistanz vor dem Spaziergänger (Reh ~110 m, nachts weniger,
-  ein Rennender fällt früher auf, ruhend in der Deckung später), vor einem fahrenden Auto, vor Lärm und vor dem frei laufenden Hund – die
+  ein Rennender fällt früher auf, ruhend in der Deckung später; **mit dem Wind** – das Wetter von feat/wetter – riechen sie ihn unter
+  dem Wind bis 1,6-mal so weit, gegen den Wind pirscht man näher heran; geduckt, kriechend oder liegend wird man später bemerkt), vor einem fahrenden Auto, vor Lärm und vor dem frei laufenden Hund – die
   ganze Gruppe, zur Deckung hin; aufgeschreckt bleiben sie eine Weile in der Deckung. Stimmen: der Rehbock schreckt, die Rotte grunzt, der
   Fuchs bellt und schreit in den Winternächten, der Uhu ruft, der Bussard miaut „hiääh“, der Milan pfeift (März bis Oktober), der Kolkrabe
   ruft „krok“, der Hirsch röhrt in der Brunft (Mitte September bis Mitte Oktober), Hasso bellt.
@@ -141,6 +142,8 @@ Abfragen und Befehle:
 - `TIERE.huehner({ x, y, n, zu })` – Stall und Schar hinstellen (oder verschieben), `TIERE.huehner(null)` – keine Hühner; der Stand
   (`n`, `zu`, `eier`) in `TEINFLUSS.E.huehner`, gespeichert in `pav-tiere-v1`.
 - `TIERE.addNoise(x, y, r, s)` – Lärm (Motorsäge, Mäher, Traktor): Tiere im Umkreis fliehen.
+- `TIERE.fluchtDistanz(art, ax, ay, wx, wy, haltung)` – wie nah ein Spaziergänger bei (wx, wy) an ein Tier bei (ax, ay) herankommt
+  (Wind wie gerade, Haltung `stand` | `crouch` | `crawl` | `prone`) – für eine Pirsch von oben; `TIERE.wind = { wind, dir }` hält den Wind fest (Tests).
 - `HUND.rufen()`, `HUND.schicken(x, y)`, `HUND.lob(+1 | -1)`, `HUND.state()` (Neigungen `learn`, `bindung`, `recent`), für Klicks von oben.
 - Daten: `TARTEN.A[id]` (Steckbrief, Fluchtdistanzen, Gruppengrößen, Quellen), `TARTEN.SPUREN`, `TARTEN.sourceOf(id)`;
   Modelle: `TKOERPER.make(kind, variant)` (`reh`, `sau`, `hirsch`, `fuchs`, `hase`, `dachs`, `waschbaer`, `marder`, `katze`, `hund`,
