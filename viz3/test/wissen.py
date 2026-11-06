@@ -91,6 +91,14 @@ def run():
             if E("!!window.BUS"):
                 E("KERN.emit('bus:fahrplan', { halt: 'Ratscher' })")
                 ck('feat/bus: the timetable at a stop read → „Der Bus auf dem Land“ (ThürÖPNVG)', J("WISSEN.has('p_bus')"))
+            # the pavilion's build phases teach their crafts (pavilion/phases.js names): the facade, the clay plaster
+            ph = J("(() => { const P = GAME.PHASES; return { y: P.findIndex(p => /Yakisugi/.test(p.name)), l: P.findIndex(p => /Lehmputz/.test(p.name)), n: P.length }; })()")
+            if ph['y'] >= 0 and ph['l'] >= 0:
+                steps(1.7)
+                E(f"GAME.setPhase({ph['y']})"); steps(1.7)
+                E(f"GAME.setPhase({ph['l']})"); steps(1.7)
+                ck('the build phases teach: the facade → „Yakisugi“, the clay plaster → „Lehmputz“', J("WISSEN.has('h_yakisugi') && WISSEN.has('h_lehmputz')"), str(ph))
+                E(f"GAME.setPhase({ph['n'] - 1})"); steps(0.3)
             E("KERN.emit('einrichtung:schale', { n: 1 })")
             ck('doing: a bowl thrown in the atelier → „Töpfern“', J("WISSEN.has('h_toepfern')"), str(J("WISSEN.state().how['h_toepfern']")))
 
