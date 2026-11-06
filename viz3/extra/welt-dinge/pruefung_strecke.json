@@ -1,0 +1,38 @@
+{
+"quelle": "DOP 2024 (GDI-Th), YOLO11-OBB (DOTAv1), Regeln aus tools/welt-dinge/decide.py; Stichprobe und Zweifelsf\u00e4lle von Auge",
+"ja": [
+{
+"t": "auto",
+"x": -899.4,
+"y": -335.38,
+"az": 93.6,
+"l": 4.53,
+"w": 2.48,
+"p": 0.217,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "lkw",
+"x": -5339.74,
+"y": -925.23,
+"az": 147.0,
+"l": 16.5,
+"w": 3.42,
+"p": 0.562,
+"c": "large vehicle"
+},
+{
+"t": "lkw",
+"x": -5336.46,
+"y": -923.84,
+"az": 146.3,
+"l": 15.7,
+"w": 3.05,
+"p": 0.218,
+"c": "large vehicle"
+}
+],
+"nein": [],
+"dazu": []
+}

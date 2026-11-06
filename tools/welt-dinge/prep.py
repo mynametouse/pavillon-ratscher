@@ -88,9 +88,12 @@ class Photo:
         return REF_LO + (np.asarray(c, float) - self.lo) * (REF_HI - REF_LO) / np.maximum(self.hi - self.lo, 40)
 
     def at(self, x, y):
+        if not hasattr(self, 'size'):
+            self.size = {f: self.Image.open(f).size for _, _, f in self.blocks}  # from the header, nothing decoded
         for x0, y1, f in self.blocks:
             u, v = int((x - x0) / self.s), int((y1 - y) / self.s)
-            if u < 0 or v < 0:
+            # only the block that holds the point is opened (it used to open every block up and left of it: 45 decodes a car in town)
+            if u < 0 or v < 0 or u >= self.size[f][0] or v >= self.size[f][1]:
                 continue
             if f not in self.cache:
                 if len(self.cache) > 8:
@@ -198,7 +201,8 @@ def main():
         return False
     autos, dinge, masks, brs = [], [], [], []
     S_DRIVING.clear()
-    for n, k in enumerate(P['ja'] + P.get('dazu', [])):
+    # block by block (the photo's blocks are 350 m; a town's 45 do not fit in the cache at once)
+    for n, k in enumerate(sorted(P['ja'] + P.get('dazu', []), key=lambda q: (int(q['x'] // 350), int(q['y'] // 350), q['x'], q['y']))):
         x, y, t = k['x'], k['y'], k['t']
         if in_rect(x, y, SKIP) or any(math.hypot(x - a, y - b) < r for a, b, r in AVOID.get(gebiet, [])):
             continue

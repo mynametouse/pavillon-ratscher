@@ -50,6 +50,9 @@ def main():
     eye = [k for k in old.get('ja', []) if not k.get('regel')]
     ja = [k for k in ja if not any(math.hypot(k['x'] - a[0], k['y'] - a[1]) < 1.5 for a in nein)
           and not any(math.hypot(k['x'] - e['x'], k['y'] - e['y']) < 1.5 for e in eye)]
+    # the doubtful ones decided by eye already (an earlier round) need no second look
+    zweifel = [k for k in zweifel if not any(math.hypot(k['x'] - a[0], k['y'] - a[1]) < 1.5 for a in nein)
+               and not any(math.hypot(k['x'] - e['x'], k['y'] - e['y']) < 1.5 for e in eye)]
     out = {'quelle': f'DOP 2024 (GDI-Th), YOLO11-OBB (DOTAv1), Regeln aus tools/welt-dinge/decide.py; Stichprobe und Zweifelsfälle von Auge',
            'ja': ja + eye, 'nein': nein, 'dazu': old.get('dazu', [])}
     json.dump(out, open(p, 'w'), indent=0)

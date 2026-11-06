@@ -36,7 +36,18 @@ export const DINGE = (() => {
     // the areas with their data (dist/dinge/<id>.json), loaded when the observer comes within r of the centre
     areas: [
       { id: 'ratscher', c: [150, -150], r: 2200, cell: 120 },
-      { id: 'schleusingen', c: [-1000, 1150], r: 1300, cell: 200 },
+      // the town; its outer parts (west, north, east) load the same data from near them
+      {
+        id: 'schleusingen',
+        c: [-1000, 1150],
+        r: 1300,
+        cell: 200,
+        t: [
+          [-2350, 700, 1000],
+          [-1050, 2250, 900],
+          [0, 1600, 900],
+        ],
+      },
       { id: 'geisenhoehn', c: [-860, -520], r: 900, cell: 120 },
       { id: 'talsperre', c: [1270, -700], r: 700, cell: 120 },
       { id: 'vessra', c: [-8850, -150], r: 1100, cell: 150 },
@@ -54,6 +65,11 @@ export const DINGE = (() => {
       { id: 'themar', c: [-10485, 1265], r: 1670, cell: 200 },
       { id: 'siegritz', c: [-7640, -2941], r: 1110, cell: 120 },
       { id: 'neuhof', c: [-6552, 2033], r: 1020, cell: 120 },
+      { id: 'hinternah', c: [1750, 2100], r: 1650, cell: 150 },
+      { id: 'wiedersbach', c: [1750, -2625], r: 1000, cell: 120 },
+      { id: 'heckengereuth', c: [1750, -1050], r: 1100, cell: 120 },
+      // along the drives to the Markt and to Kloster Veßra beyond the villages (few parked; the masks take the cars that were driving)
+      { id: 'strecke', c: [-3100, -630], r: 2600, cell: 150 },
     ],
     err: null,
   };
@@ -489,7 +505,14 @@ export const DINGE = (() => {
     const w = KERN.where();
     if (!w) return;
     shadowSun();
-    for (const A of S.areas) if (!A.st && Math.hypot(A.c[0] - w[0], A.c[1] - w[1]) < A.r) load(A);
+    // an area loads when one comes within r of its middle, or within the radius of one of its further points t (a town's outer parts)
+    for (const A of S.areas)
+      if (
+        !A.st &&
+        (Math.hypot(A.c[0] - w[0], A.c[1] - w[1]) < A.r ||
+          (A.t && A.t.some(q => Math.hypot(q[0] - w[0], q[1] - w[1]) < q[2])))
+      )
+        load(A);
     // the ground under a built cell nearby may have come later (the town's tiles): set it down again, every few seconds one cell
     for (const c of S.cells.values())
       if (c.built && (c.zT += dt) > 4 && Math.hypot(c.x - w[0], c.y - w[1]) < 260) {

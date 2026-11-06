@@ -83,6 +83,11 @@ def main():
         if not art:
             near = sorted(((p.distance(poly), a, n) for p, a, n in pois if p.distance(poly) < 80), key=lambda v: v[0])
             art, why = (near[0][1], near[0][2]) if near else ('allgemein', '')
+            # a big car park by a lake, a pool or a pitch is theirs, not the kiosk's next to it (Bergsee Ratscher: 1.3 ha)
+            if poly.area > 3000 and art in ('gaststaette', 'allgemein'):
+                sp = sorted((p.distance(poly), n) for p, a, n in pois if a == 'sport' and p.distance(poly) < 250)
+                if sp:
+                    art, why = 'sport', sp[0][1]
         else:
             why = t.get('name', '')
         # rows along the long side of the smallest rectangle round the lot
