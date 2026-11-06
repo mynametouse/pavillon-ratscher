@@ -9,8 +9,9 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
 - **Das Entdeckerbuch** (Menü → Startseite → „Entdeckerbuch“, Taste **N**, im Strategie-Modus ein Knopf „📖 Buch“ in seiner Leiste):
   Kapitel **Natur, Handwerk, Geschichte, Politik & Soziales, Orte** und dazu **Regeln** (die „Warum?“-Gründe). Jeder Eintrag: was es ist,
   warum es hier bei Ratscher zählt, ein Symbol, die echten Quellen als Links, wie er gefunden wurde. Noch nicht Gefundenes steht grau mit
-  einem Tipp. Fortschritt je Kapitel und gesamt. 66 Einträge und 26 Regeln (`viz3/src/wissen/wissen_data.js`, dazu die Einträge der
-  Daten-Ansichten in `wissen_daten.js`), dazu Einträge, die aus Ereignissen entstehen (Tiere, Erkundetes, Pflanzen).
+  einem Tipp. Fortschritt je Kapitel und gesamt. 70 Einträge und 27 Regeln (`viz3/src/wissen/wissen_data.js`, dazu die Einträge der
+  Daten-Ansichten in `wissen_daten.js`), dazu Einträge, die aus Ereignissen entstehen (Erkundetes, gepflanzte Arten) – und mit feat/tiere jede
+  Art seiner Steckbriefe (`TARTEN`) als Eintrag zum Entdecken, mit Steckbrief und Quellen.
 - **Gefunden durch Tun und Sehen** (`viz3/src/wissen/wissen.js`):
   - **Orte** (Ereignis `place`): Anger, Dorflinde, alte Schule, Bach, Klinge, Schleusingen (Markt, Bertholdsburg, St. Johannis, Rathaus),
     Kloster Veßra (Klosterkirche, Henneberger Kapelle), Baumschule, Ziegenweide …
@@ -41,7 +42,7 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   Maschinen, solange sie laufen: Mäher, Motorsäge, Blockbandsäge, die lauten Aufträge des Strategie-Modus; dazu die Ruhezeiten des Spieltags
   mit „?“), **Verkehr** (Straßen nach Klasse, die fahrenden Autos des Verkehrs, die Autos der Dorfbewohner, die Busse), **Sonne**
   (Sonnenstunden des Spieltags auf einem 3-m-Raster über dem Garten – Sonnenstand und Schatten von Gebäuden und Kronen wie im Gartenplaner,
-  einmal je Tag gerechnet), **Naturwert** (Wald an der Klinge, Bach mit 5-m-Uferstreifen, alte Bäume, Dorflinde; gesehene Tiere, Käferbäume
+  einmal je Tag gerechnet), **Naturwert** (Wald an der Klinge, Hecken um den Garten, Bach mit 5-m-Uferstreifen, alte Bäume, Dorflinde; gesehene Tiere, Käferbäume
   und die Ruhezone am Schwarzstorch-Horst, sobald man von ihnen weiß – feat/tiere), **Stimmung** (Meinung der Leute von dir, 0–100, an ihrer
   Haustür – „Wahl und Amt“; im Strategie-Modus dazu der Stil). Nur SVG über der Draufsicht: kein Shader-Programm, kein Mesh. Im Strategie-Modus
   sind es Ebenen seines Felds „Ebenen“ (`STRAT.layer.define`, anfangs aus); die Legende erscheint, sobald eine an ist. Wer eine Ansicht

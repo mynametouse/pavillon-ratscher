@@ -531,7 +531,7 @@ export const WDATA = (() => {
       icon: '🛡️',
       title: 'Die Grafen von Henneberg',
       text: 'Ein fränkisch-thüringisches Grafengeschlecht, benannt nach der Burg Henneberg bei Meiningen. 1274 teilte sich die Grafschaft in drei Linien; Schleusingen mit der Bertholdsburg wurde Sitz der Linie Henneberg-Schleusingen.',
-      here: 'Der letzte Graf, Georg Ernst, führte die Reformation ein. Mit seinem Tod 1583 endete die Linie; das Land ging an die sächsischen Herzöge der Ernestiner und Albertiner. Begraben ließen sich die Henneberger lange im Kloster Veßra.',
+      here: 'Der letzte Graf, Georg Ernst, führte die Reformation ein. Mit seinem Tod 1583 endete die Linie; das Land ging an die sächsischen Herzöge der Ernestiner und Albertiner. Ihr Hauskloster war das Kloster Veßra, 1131 gegründet.',
       src: [Q.schl, Q.burg, wiki('Henneberg (Adelsgeschlecht)', 'Henneberg_(Adelsgeschlecht)')],
       find: { talk: ['gerhard:henneberg'], place: ['Henneberger Kapelle'] },
       hint: 'Gerhard kennt die Geschichte der Gegend.',
@@ -627,6 +627,17 @@ export const WDATA = (() => {
       ],
       find: { talk: ['gerhard:ddr'], ev: [['zinnen:mount']] },
       hint: 'Gerhard erinnert sich an die DDR.',
+    },
+    {
+      id: 'g_wende',
+      ch: 'geschichte',
+      icon: '🕊️',
+      title: 'Nach der Wende: Land, Kreis, Stadt',
+      text: 'Mit der friedlichen Revolution 1989 und der Einheit 1990 endete der Bezirk Suhl: Am 14. Oktober 1990 wurde das Land Thüringen wiedergegründet. 1994 ordnete Thüringen seine Kreise und Gemeinden neu.',
+      here: 'Seit dem 22. Februar 1994 gehört Ratscher zur Stadt Schleusingen im Landkreis Hildburghausen. In der alten Schule saß einmal die Gemeindeverwaltung des Dorfs – geblieben ist der Ortsteil mit seinem Ortsteilrat.',
+      src: [wiki('Thüringen'), wiki('Landkreis Hildburghausen'), Q.schl, Q.ratscher],
+      find: { talk: ['gerhard:wende'] },
+      hint: 'Gerhard hat die Wende erlebt.',
     },
     // ======================= Politik & Soziales =======================
     {
@@ -1054,7 +1065,7 @@ export const WDATA = (() => {
         label: 'Erzähl von den Hennebergern',
         lines: [
           'Die Henneberger! Grafen aus Franken, ihre Stammburg stand bei Meiningen. 1274 teilten sie sich in drei Linien, und Schleusingen mit der Bertholdsburg wurde Sitz einer davon.',
-          'Georg Ernst war der letzte. Als er 1583 starb, ging das Land an die Sachsen. Ihre Gräber liegen im Kloster Veßra – da solltest du mal hinfahren.',
+          'Georg Ernst war der letzte. Als er 1583 starb, ging das Land an die Sachsen. Ihr Hauskloster war Veßra – da solltest du mal hinfahren.',
         ],
         entry: 'g_henneberg',
       },
@@ -1083,6 +1094,14 @@ export const WDATA = (() => {
           'Die Talsperre wurde damals gebaut, 1975 bis 1983. Und in vielen Stuben stehen bis heute die Schrankwände von damals.',
         ],
         entry: 'g_ddr',
+      },
+      {
+        id: 'wende',
+        label: 'Wie war die Wende hier?',
+        lines: [
+          'Erst kam 1990 das Land Thüringen wieder, mit Erfurt als Hauptstadt. Und 1994 wurden die Gemeinden zusammengelegt – seitdem sind wir ein Ortsteil von Schleusingen. Eine eigene Gemeindeverwaltung in der alten Schule gibt es seitdem nicht mehr.',
+        ],
+        entry: 'g_wende',
       },
       {
         id: 'handwerk',

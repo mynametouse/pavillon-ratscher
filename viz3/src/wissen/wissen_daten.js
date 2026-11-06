@@ -405,6 +405,27 @@ export const WDATEN = (() => {
             ) + line(pts, 'stroke:#4fb3d9;stroke-width:2px');
       }
     } catch (e) {}
+    // the hedge belts round the garden (garden/trees.js after Falko's photos: dense on the north by the field path, the south end and the
+    // south-west corner; sparse on the east fence) – hazel, field maple, elder: food and shelter for birds and insects
+    try {
+      const site = GPLAN && GPLAN.site ? GPLAN.site() : null,
+        Bd = site && site.boundary;
+      if (Bd)
+        for (let i = 0; i + 1 < Bd.length; i++) {
+          const [x0, y0] = Bd[i],
+            [x1, y1] = Bd[i + 1],
+            mx = (x0 + x1) / 2,
+            my = (y0 + y1) / 2,
+            dense = my > 18 || my < -36 || (mx < -4 && my < -18),
+            sparse = !dense && mx > 10 && my > -36 && my <= 18;
+          if (!dense && !sparse) continue;
+          const a = pr(x0, y0, 0.5),
+            b = pr(x1, y1, 0.5);
+          if (!onScr(a, W, H) && !onScr(b, W, H)) continue;
+          const k = pxPerM(pr, mx, my);
+          h += `<line x1="${f1(a[0])}" y1="${f1(a[1])}" x2="${f1(b[0])}" y2="${f1(b[1])}" style="stroke:#7cc56a;stroke-opacity:${dense ? 0.85 : 0.5};stroke-width:${f1(Math.max(3, 2.2 * k))}px;stroke-linecap:round${dense ? '' : ';stroke-dasharray:4 6'}"/>`;
+        }
+    } catch (e) {}
     // old trees of the garden and the Dorflinde
     try {
       const site = GPLAN && GPLAN.site ? GPLAN.site() : null;
@@ -536,7 +557,7 @@ export const WDATEN = (() => {
       id: 'w_natur',
       icon: '🌿',
       label: 'Naturwert',
-      text: 'Wald, Bach mit Uferstreifen, alte Bäume, gesehene Tiere, Ruhezonen',
+      text: 'Wald, Hecken, Bach mit Uferstreifen, alte Bäume, gesehene Tiere, Ruhezonen',
       draw: drawNatur,
       entry: 'n_naturwert',
       legend: () => {
@@ -547,7 +568,7 @@ export const WDATEN = (() => {
             nw = `<p>Naturwert der Gegend (seltene Arten, Ruhezonen, Gesundheit des Walds): <b>${TE.naturwert()}</b> von 100.</p>`;
         } catch (e) {}
         return (
-          '<div class="wd-k"><i style="background:rgba(63,143,58,.6)"></i>Wald <i style="background:#4fb3d9"></i>Bach mit 5 m Uferstreifen <i style="background:#2f7d32"></i>alte Bäume <i style="background:#e0312b"></i>Käferbäume</div>' +
+          '<div class="wd-k"><i style="background:rgba(63,143,58,.6)"></i>Wald <i style="background:#7cc56a"></i>Hecken (Hasel, Feldahorn, Holunder) <i style="background:#4fb3d9"></i>Bach mit 5 m Uferstreifen <i style="background:#2f7d32"></i>alte Bäume <i style="background:#e0312b"></i>Käferbäume</div>' +
           nw +
           '<small>Tiere erscheinen, sobald du sie gesehen hast; Käferbäume und die Ruhezone am Horst, wenn du von ihnen weißt.</small>'
         );
@@ -678,7 +699,7 @@ export const WDATEN = (() => {
     },
   });
   const CSS = `
-#widaten{position:absolute;z-index:7;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(64px + env(safe-area-inset-bottom,0px));width:min(320px,calc(100% - 24px));max-height:calc(100% - 200px);overflow:auto;background:rgba(24,23,20,.86);color:#f3efe6;border-radius:10px;padding:8px 10px;font:400 12.5px/1.4 var(--f-body);box-shadow:0 6px 22px rgba(0,0,0,.35)}
+#widaten{position:absolute;z-index:7;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(118px + env(safe-area-inset-bottom,0px));width:min(320px,calc(100% - 24px));max-height:calc(100% - 300px);overflow:auto;background:rgba(24,23,20,.86);color:#f3efe6;border-radius:10px;padding:8px 10px;font:400 12.5px/1.4 var(--f-body);box-shadow:0 6px 22px rgba(0,0,0,.35)}
 #widaten[hidden]{display:none}
 #widaten b.t{display:block;font:700 13px/1.2 var(--f-display);margin-bottom:6px}
 #widaten .wd-c{display:flex;flex-wrap:wrap;gap:5px}
