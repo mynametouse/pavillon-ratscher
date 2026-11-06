@@ -19,7 +19,10 @@ with lib.browser() as b:
     E("(() => { const c = STRAT.place.pos('klinge'); GAME.P.tx = c[0] + 40; GAME.P.ty = c[1] + 30; GAME.P.th = 120; })()")
     for i in range(12): E("GAME.step(0.25)")
     E("GAME.shot(); STHUD.draw()")
-    pg.screenshot(path=os.path.join(OUT, 'oben_klinge.png'), timeout=120000)
+    try:
+        lib.shot(pg, OUT, 'oben_klinge')  # the canvas alone (a page screenshot of this view can take minutes on software graphics)
+    except Exception as e:
+        print('note: picture failed', repr(e)[:160], flush=True)
     res = J("""(() => {
       const THREE = window.THREE, cam = GAME.cam, scene = GAME.scene, out = {}, rc = new THREE.Raycaster(), v = new THREE.Vector2();
       const chainOf = o => { const n = []; for (let p = o, k = 0; p && k < 5; p = p.parent, k++) n.push(p.name || p.type); return n.join(' < '); };
