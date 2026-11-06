@@ -125,6 +125,17 @@ test('facts that must stay right (checked 6.11.2026 with the sources named)', ()
   assert.match(t('h_pv').text, /rund 70 %/);
 });
 
+test('the build phases of the pavilion teach their crafts (PV, Yakisugi, clay plaster: pavilion/phases.js names)', () => {
+  for (const [id, k] of [
+    ['h_pv', 'bau:pv'],
+    ['h_yakisugi', 'bau:yakisugi'],
+    ['h_lehmputz', 'bau:lehmputz'],
+  ]) {
+    const e = D.E.find(x => x.id === id);
+    assert.ok(e && e.ch === 'handwerk' && e.find.look.includes(k), id);
+  }
+});
+
 test('the weather finds its entries (feat/wetter: rain, snow, thunder, storm)', () => {
   for (const [id, k] of [
     ['n_regen', 'wetter:regen'],

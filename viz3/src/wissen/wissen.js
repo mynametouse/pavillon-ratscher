@@ -139,6 +139,10 @@ export const WISSEN = (() => {
     clearTimeout(NQ.t);
     NQ.t = setTimeout(flushNotice, 400);
   }
+  const menuOpen = () => {
+    const m = $('menu');
+    return !!(m && !m.hidden);
+  };
   function flushNotice() {
     const L = NQ.list.splice(0);
     if (!L.length) return;
@@ -158,6 +162,11 @@ export const WISSEN = (() => {
     // the open book shows what is new itself
     if (U.open) {
       if (NQ.el) NQ.el.hidden = true;
+      return;
+    }
+    // not over the open menu (or another sheet): kept until it closes (the book's tick looks again)
+    if (menuOpen()) {
+      NQ.wait = L.concat(NQ.wait || []).slice(0, 12);
       return;
     }
     const el = NQ.el || mkNotice();
@@ -967,6 +976,8 @@ body[data-top="1"] #winote{top:178px}
     'gplan:offen': 'den Garten geplant',
     'jahr:wechsel': 'einen Monat im Spiel erlebt',
     'bau:pv': 'die Solarmodule am Pavillon angesehen',
+    'bau:yakisugi': 'die Fassade des Pavillons angesehen',
+    'bau:lehmputz': 'den Lehmputz im Pavillon angesehen',
     'wetter:regen': 'Regen erlebt',
     'wetter:schnee': 'Schnee erlebt',
     'wetter:gewitter': 'ein Gewitter erlebt',
@@ -1046,8 +1057,11 @@ body[data-top="1"] #winote{top:178px}
     else if (PHASE !== PH0) {
       look('bau:phase');
       // the phase that puts the solar modules on the pavilion (pavilion/phases.js „Geländer, Windschutz, PV“)
-      const PS = window.PHASES;
-      if (PS && PS[PHASE] && /\bPV\b/.test(PS[PHASE].name || '')) look('bau:pv');
+      const PS = window.PHASES,
+        nm = (PS && PS[PHASE] && PS[PHASE].name) || '';
+      if (/\bPV\b/.test(nm)) look('bau:pv');
+      if (/Yakisugi/.test(nm)) look('bau:yakisugi');
+      if (/Lehmputz/.test(nm)) look('bau:lehmputz');
     }
   }
   let PH0 = null,
@@ -1064,6 +1078,11 @@ body[data-top="1"] #winote{top:178px}
       if (w && P.mode === 'walk') onPlace(KERN.place(w[0], w[1], P.feet));
     }
     lookAll();
+    // a notice that waited for the menu to close
+    if (NQ.wait && NQ.wait.length && !menuOpen()) {
+      NQ.list.push(...NQ.wait.splice(0));
+      flushNotice();
+    }
     if (TH.check && TH.el && !TH.el.hidden) TH.check();
     if (!GP.obs) watchPlanner();
     for (const f of [stratBtn, tierEntries])
