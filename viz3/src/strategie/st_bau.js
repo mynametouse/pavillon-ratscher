@@ -242,7 +242,10 @@ export const STBAU = (() => {
     acc = 0;
     applySaved();
     bindPanel();
-    if (window.PAV_LOADED) signSync();
+    if (window.PAV_LOADED) {
+      signSync();
+      pileSync();
+    }
     const b = S.ext.bau;
     if (!b || !Array.isArray(b.waits) || !b.waits.length) return;
     for (const w of st().waits.slice()) if (w.t <= now()) resolve(w);
@@ -351,6 +354,45 @@ export const STBAU = (() => {
       redraw(SIGN.tex, signDraw);
     }
     SIGN.g.visible = true;
+    markDirty(true);
+  }
+  // ---------------- the delivered material on the site: a pallet with timber and boards west of the slab, until its phase is built ----------------
+  // (both lenses show what has come; the size follows the delivery's worth; materials of the kit and the shared oak: no new program)
+  const PILE = { g: null, key: '' };
+  function pileSync() {
+    const b = S.ext.bau,
+      n = b && Number.isInteger(b.ph) ? b.ph + 1 : null,
+      o = n != null && b.order ? b.order[n] : null,
+      on = !!(o && o.due <= now() && PHASE === b.ph && n <= LAST());
+    if (!on) {
+      if (PILE.g) PILE.g.visible = false;
+      return;
+    }
+    if (!PILE.g) {
+      const g = new THREE.Group();
+      g.name = 'strategie-bau Lieferung';
+      const pal = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.14, 0.8), MAT.oak),
+        wood = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1, 0.7), MAT.oak),
+        foil = new THREE.Mesh(new THREE.BoxGeometry(1.14, 0.04, 0.74), plain({ color: 0x3d4a3a, roughness: 0.6 }));
+      pal.position.y = 0.07;
+      g.add(pal, wood, foil);
+      PILE.wood = wood;
+      PILE.foil = foil;
+      scene.add(g);
+      PILE.g = g;
+    }
+    const key = n + ':' + o.eur;
+    if (key !== PILE.key) {
+      PILE.key = key;
+      const h = Math.max(0.2, Math.min(1.3, 0.2 + o.eur / 5000)),
+        z0 = KERN.ground(-2.3, 0.6) || 0;
+      PILE.wood.scale.y = h;
+      PILE.wood.position.y = 0.14 + h / 2;
+      PILE.foil.position.y = 0.14 + h + 0.02;
+      PILE.g.position.copy(V(-2.3, 0.6, z0));
+      PILE.g.rotation.y = 0.12;
+    }
+    PILE.g.visible = true;
     markDirty(true);
   }
   // ---------------- own timber: dry planks graded (DIN 4074), dry boards from the stack ----------------
@@ -1207,6 +1249,7 @@ export const STBAU = (() => {
     orderTarget,
     forecast,
     sign: () => SIGN.g,
+    pile: () => PILE.g,
     set forcePlatte(v) {
       forcePlatte = v;
     },

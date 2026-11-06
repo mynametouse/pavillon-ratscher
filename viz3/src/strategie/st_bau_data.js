@@ -105,7 +105,7 @@ export const STBAUDATA = (() => {
       label: 'Gerüst stellen (Miete)',
       text: 'Ein Fassadengerüst rund um das Haus für Obergeschoss, Dach und Fassade – gemietet mit Auf- und Abbau.',
       learn:
-        'Ab etwa 2 m Absturzhöhe braucht man bei der Arbeit an Wänden und Dach eine Absturzsicherung; ein Gerüst ist die sicherste. Die Miete läuft weiter, auch an Wochen, in denen niemand baut.',
+        'Auf Baustellen gilt ab 2 m Absturzhöhe eine Absturzsicherung als nötig – für Obergeschoss, Dach und Fassade ist ein Gerüst die sicherste. Die Miete läuft weiter, auch an Wochen, in denen niemand baut.',
       src: 'DGUV Information 201-011 (Gerüste); Annahme: Gerüstmiete 2026',
       hours: 4,
       people: [1, 2],
