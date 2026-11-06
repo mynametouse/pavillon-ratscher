@@ -46,8 +46,12 @@ export const CLOCK = (() => {
     if (d) return d + (d === 1 ? ' Tag' : ' Tage') + (h ? ' ' + h + ' h' : '');
     return h + ' h' + (m ? ' ' + m + ' min' : '');
   }
-  const running = () => typeof P !== 'undefined' && P.mode === 'walk' && !(window.HUD && HUD.open);
-  const rate = () => (S.warp ? S.warp.r : S.focus.size ? 1 / 60 : RATES[S.rate].r);
+  // feat/strategie: another view may run the clock – the strategy mode from above (strategie/st_modus.js): CLOCK.drive(fn), fn() gives
+  // game minutes per real second (> 0: the clock runs at that pace although nobody walks; the menu still stops it), else 0
+  let drive = null;
+  const driven = () => (drive ? +drive() || 0 : 0);
+  const running = () => !(window.HUD && HUD.open) && (driven() > 0 || (typeof P !== 'undefined' && P.mode === 'walk'));
+  const rate = () => (S.warp ? S.warp.r : driven() > 0 ? driven() : S.focus.size ? 1 / 60 : RATES[S.rate].r);
   const fns = [];
   function tick(dt) {
     if (!running()) return;
@@ -258,6 +262,8 @@ export const CLOCK = (() => {
     ui,
     until,
     setWin,
+    // feat/strategie: see drive above
+    drive: f => (drive = typeof f === 'function' ? f : null),
     get winOpen() {
       return !!(win && !win.hidden);
     },

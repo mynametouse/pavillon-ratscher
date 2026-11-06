@@ -790,6 +790,18 @@ export const NPCUI = (() => {
   // extensions of the talk (npc/ki.js, the free conversation): { start(w), asked(w, label, texts), end(w), free(w) → true while it leads }
   const EXT = [];
   const free = w => EXT.some(x => x.free && x.free(w));
+  // feat/wissen: the answer of an extension's own topic, or null (then the recorded line of the topic)
+  const extAsk = (w, k) => {
+    for (const x of EXT)
+      if (x.ask)
+        try {
+          const r = x.ask(w, k);
+          if (r) return r;
+        } catch (e) {
+          console.warn('NPCUI ask', e);
+        }
+    return null;
+  };
   const tell = (f, ...a) => {
     for (const x of EXT)
       try {
@@ -840,7 +852,17 @@ export const NPCUI = (() => {
     // the recorded small talk gives way to the free conversation (npc/ki.js); the tasks stay as buttons
     const topics = free(cur) ? [] : Object.entries((VM.topics && VM.topics[cur.name]) || {}),
       qt = window.QUESTS ? LATE.QUESTS.topics(cur.name) : [];
-    for (const [k, label, quest] of [...qt.map(q => [q.k, q.label, true]), ...topics]) {
+    // feat/wissen: topics of extensions ({ topics(w) → [{ k, label }], ask(w, k) → { text, after } }, wissen/wissen_lehrer.js)
+    const xt = [];
+    if (!free(cur))
+      for (const x of EXT)
+        if (x.topics)
+          try {
+            for (const t of x.topics(cur) || []) xt.push([t.k, t.label, false]);
+          } catch (e) {
+            console.warn('NPCUI topics', e);
+          }
+    for (const [k, label, quest] of [...qt.map(q => [q.k, q.label, true]), ...topics, ...xt]) {
       const b = document.createElement('button');
       b.type = 'button';
       b.textContent = label;
@@ -863,7 +885,8 @@ export const NPCUI = (() => {
       quest = k.startsWith('q_');
     if (!quest) w.talks++;
     tp.querySelectorAll('button').forEach(b => (b.disabled = true));
-    const qa = quest && window.QUESTS ? LATE.QUESTS.ask(w.name, k) : null;
+    // feat/wissen: an extension's own topic answers with its text (wissen/wissen_lehrer.js)
+    const qa = quest && window.QUESTS ? LATE.QUESTS.ask(w.name, k) : extAsk(w, k);
     const label = (tp.querySelector(`button[data-k="${k}"]`) || {}).textContent || k;
     if (qa && qa.before) qa.before();
     const said = qa && qa.text ? [].concat(qa.text) : [VTXT[w.name + '_t_' + k] || ''];

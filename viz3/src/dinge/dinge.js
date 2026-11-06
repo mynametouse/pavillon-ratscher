@@ -48,6 +48,12 @@ export const DINGE = (() => {
       { id: 'gerhardtsgereuth', c: [-1648, -3088], r: 1020, cell: 120 },
       { id: 'fischbach', c: [-2555, 3323], r: 1070, cell: 120 },
       { id: 'neuendambach', c: [-3428, -2918], r: 980, cell: 120 },
+      { id: 'gethles', c: [-4781, 1763], r: 1190, cell: 120 },
+      { id: 'ehrenberg', c: [-7846, -1590], r: 1070, cell: 120 },
+      { id: 'grimmelshausen', c: [-9330, -1453], r: 1040, cell: 120 },
+      { id: 'themar', c: [-10485, 1265], r: 1670, cell: 200 },
+      { id: 'siegritz', c: [-7640, -2941], r: 1110, cell: 120 },
+      { id: 'neuhof', c: [-6552, 2033], r: 1020, cell: 120 },
     ],
     err: null,
   };

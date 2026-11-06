@@ -800,7 +800,8 @@ const PH_B = {
     ],
     check: [
       '13 Steigungen à 20,5 cm, Auftritt im Grundriss 10,5 cm, Stufen 16 cm tief: steiler als eine Treppe, bequemer als eine Leiter. Man steigt vorwärts hinauf und mit beiden Händen am Handlauf vorwärts oder rückwärts hinab. Kopfhöhe ab der zweiten Stufe ≥ 2,0 m.',
-      'Baurecht: Nach der Thüringer Bauordnung (§ 34) muss ein Obergeschoss mit Aufenthaltsraum in der Regel über eine notwendige Treppe erreichbar sein; Leitern sind dort nur als Zugang zu Dachräumen ohne Aufenthaltsraum vorgesehen. Ob und wie das für dieses Gartenhaus gilt, später mit dem Bauamt klären.',
+      // feat/strategie-bau: the Thüringer Bauordnung of 2 July 2024 has the staircases in § 37 (the old one of 2014 in § 34)
+      'Baurecht: Nach der Thüringer Bauordnung (§ 37, bis 2024 § 34) muss ein Obergeschoss mit Aufenthaltsraum in der Regel über eine notwendige Treppe erreichbar sein; Leitern sind dort nur als Zugang zu Dachräumen ohne Aufenthaltsraum vorgesehen. Ob und wie das für dieses Gartenhaus gilt, später mit dem Bauamt klären.',
     ],
     items: [
       ['Wangen Eiche 45 × 200 mm, 3,0 m', 'Stück', 2, 'Stk', 120, 30],

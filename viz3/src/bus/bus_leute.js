@@ -8,7 +8,7 @@
 // (VERKEHR.S.busy[key] = 'bus') while they are passengers, so nobody walks twice; a word to the player when he waits beside them.
 // Tests: BUSLEUTE.force = { ein, aus } (the counts for the next calls), BUSLEUTE.state().
 import * as THREE from 'three';
-import { cam } from '../core/head.js';
+import { cam, COARSE } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { P } from '../game/walkable.js';
@@ -64,9 +64,9 @@ export const BUSLEUTE = (() => {
     if (S.force) return S.force.line && S.force.line !== line ? 0 : (S.force[kind] ?? 0);
     const night = hour < 5.5 || hour > 21.5,
       peak = (hour > 6.3 && hour < 8.3) || (hour > 12 && hour < 14.5) || (hour > 15.5 && hour < 17.5);
-    if (night) return h < 0.85 ? 0 : 1;
-    if (peak) return h < 0.3 ? 0 : h < 0.75 ? 1 : 2;
-    return h < 0.5 ? 0 : h < 0.88 ? 1 : 2;
+    // (on a phone at most one: each person is a figure of its own in memory)
+    const n = night ? (h < 0.85 ? 0 : 1) : peak ? (h < 0.3 ? 0 : h < 0.75 ? 1 : 2) : h < 0.5 ? 0 : h < 0.88 ? 1 : 2;
+    return COARSE ? Math.min(1, n) : n;
   }
   // the place of a stop for the people: Ratscher → dorf, Schleusingen → stadt (others: nobody of them)
   const townOf = n => (/^Ratscher/.test(n) ? 'dorf' : /^Schleusingen/.test(n) ? 'stadt' : null);
