@@ -6,7 +6,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
 
 ## Was es gibt
 
-- **Das Entdeckerbuch** (Menü → Startseite → „Entdeckerbuch“, Taste **N**, im Strategie-Modus ein Knopf „📖 Buch“ in seiner Leiste):
+- **Das Entdeckerbuch** (Menü → Startseite → „Entdeckerbuch“ – am Handy „Buch“, mit Aufgaben und Inventar in einer Reihe, damit die
+  Startseite ohne Scrollen passt –, Taste **N**, im Strategie-Modus ein Knopf „📖 Buch“ in seiner Leiste):
   Kapitel **Natur, Handwerk, Geschichte, Politik & Soziales, Orte** und dazu **Regeln** (die „Warum?“-Gründe). Jeder Eintrag: was es ist,
   warum es hier bei Ratscher zählt, ein Symbol, die echten Quellen als Links, wie er gefunden wurde. Noch nicht Gefundenes steht grau mit
   einem Tipp. Fortschritt je Kapitel und gesamt; eine **Suche** im Buch (findet Entdecktes und verstandene Regeln, Unentdecktes nur als Zahl). 79 Einträge und 28 Regeln (74 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
@@ -93,7 +94,7 @@ WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners 
 - Ohne Browser: `node --test viz3/test/unit/wissen.test.mjs` (jeder Eintrag mit Kapitel, Text, Fundweg und Quelle; jede Regel mit Satz und
   Quelle; Lehrer-Themen zeigen auf vorhandene Einträge; Tafeln; die Talsperre liegt im Quadrat; Fakten, die stimmen müssen; Gedanken der
   Spielfigur → Regel; Thüringer Feiertage 2026 und Ruhezeiten; Schallabfall; die Wetter-Einträge).
-- Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9006 --serve wissen` (Abschnitte `buch,ereignis,ort,lehrer,warum,
+- Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9006 --serve wissen menu` (`menu`: die Startseite am Handy) (Abschnitte `buch,ereignis,ort,lehrer,warum,
   wetter,tafel,daten,reload,telefon,zombie,strategie`; dazu `stadt` – die Tafel an der Bertholdsburg, braucht die Kacheln der Stadt); auf GitHub über `viz3/extra/wissen/tests.txt`, Bilder in `out/wissen/`.
 
 ## Offen
