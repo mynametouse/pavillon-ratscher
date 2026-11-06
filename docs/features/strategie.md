@@ -10,7 +10,8 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
   oben links die Leiste der Vorräte (Euro, Stämme in fm, Bretter in m³, Brennholz in rm, Strom der Powerstation in %, Benzin und Diesel in l –
   alles aus der Welt gelesen: dieselben Stämme, Bretter und Liter wie zu Fuß), links die fünf Leute mit Stufe, Zustand und Bedürfnissen
   (Kraft, Essen, Stimmung), rechts die Zeit (Pause, 1×, 5×, 30×, Zeitraffer bis zum Auftrag, zum Wochenende, bis morgen), Kasse, Ebenen und
-  „Zur Welt“. Taste **U** wechselt zwischen oben und der Welt, die Leertaste hält die Zeit an.
+  „Zur Welt“. Für die langen Wartezeiten des Holzes: im Kalender ⏩ 1 Woche, 4 Wochen, 3 Monate; im Holzlager „bis lufttrocken (≈ n Tage)“
+  nach der Vorhersage des Trocknungsmodells; in der Werkstatt „1 Woche nachtrocknen“ – alles läuft im Zeitraffer weiter. Taste **U** wechselt zwischen oben und der Welt, die Leertaste hält die Zeit an.
 - **Leute:** Falko, Sarah, Christoph (deine Leute, die Spielfiguren) und Hubert, Ronald (die Nachbarn mit eigenem Willen und eigenen Tagen).
   Jede Person hat Können (Holz, Maschinen, Garten, Bauen, Reden), Lehrgänge, Schutzausrüstung, Erfahrung und Stufen, Fähigkeiten mit
   Abklingzeit (Falko „Meisterstück“, „Wochenplan“; Sarah „Dorfversammlung“, „Gut verhandelt“; Christoph „Notreparatur“) und ständige Wirkungen.
