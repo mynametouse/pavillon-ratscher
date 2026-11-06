@@ -1681,6 +1681,17 @@ export const TKOERPER = (() => {
   // white below; it hops
   PLANS.hase = scaled(QBASE, 0.62, 0.5, 0.62, {
     fur: 0.04,
+    // the arched back of a hare: the rump high and round over the long hind legs, the shoulders low, compact
+    trunk: [
+      [-0.23, 0.27, 0.2, 0.03],
+      [-0.21, 0.31, 0.15, 0.06],
+      [-0.15, 0.335, 0.13, 0.074],
+      [-0.06, 0.33, 0.13, 0.074],
+      [0.03, 0.31, 0.135, 0.069],
+      [0.11, 0.29, 0.14, 0.064],
+      [0.17, 0.275, 0.15, 0.055],
+      [0.22, 0.255, 0.17, 0.04],
+    ],
     hind: [
       [-0.16, 0.27],
       [-0.07, 0.18],
