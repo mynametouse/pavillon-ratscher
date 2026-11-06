@@ -699,7 +699,7 @@ export const WDATEN = (() => {
       icon: '☀️',
       title: 'Sonne und Schatten im Garten',
       text: 'Wie viel Sonne ein Fleck Erde bekommt, hängt vom Tag im Jahr (Sonnenhöhe und Tageslänge) und von allem ab, was Schatten wirft. Im Dezember steht die Sonne über Ratscher mittags nur gut 16° hoch, im Juni über 62°.',
-      here: 'Obstbäume und Gemüse brauchen mindestens sechs Sonnenstunden; im Schatten der Erle und der Gebäude wachsen besser Farne, Waldmeister oder Johannisbeeren. Der Gartenplaner rechnet dasselbe für jede Pflanze.',
+      here: 'Als Faustregel wollen Obstbäume und die meisten Gemüse sechs Stunden Sonne und mehr; im Schatten der Erle und der Gebäude wachsen besser Farne, Waldmeister oder Johannisbeeren. Der Gartenplaner rechnet dasselbe für jede Pflanze.',
       src: [
         ['Sonnenstand (Wikipedia)', 'https://de.wikipedia.org/wiki/Sonnenstand'],
         ['NOAA Solar Calculator (Formeln für den Sonnenstand)', 'https://gml.noaa.gov/grad/solcalc/'],
