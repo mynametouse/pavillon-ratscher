@@ -372,6 +372,13 @@ with lib.browser() as b:
         steps(0.5)
         nov = J("({ pv: STRAT.S.power.pv, day: STRAT.C.pvDayKWh(10, 0.95) })")
         ck('PV: a clear June noon gives far more than an overcast November noon', jun['pv'] > 450 and nov['pv'] < 90 and jun['day'] > 8 * nov['day'], f'{jun} {nov}')
+        # the weather layer: the overcast, rainy November noon over the map (veil, rain, the wind's arrow from the west)
+        E("STRAT.W.force = { cloud: 0.95, rain: 2.5, wind: 38, storm: false, dir: 270, src: 'Test' }; GAME.P.tx = -2; GAME.P.ty = -8; GAME.P.th = 120")
+        steps(0.3)
+        E("STHUD.draw()")
+        wl = J("(() => { const s = document.getElementById('stsvg'); return { rain: !!s.querySelector('pattern#strain'), wind: (s.querySelector('g.wind text') || {}).textContent || null }; })()")
+        ck('the weather layer shows it over the map: a veil, rain, the wind\'s arrow with its speed', wl['rain'] and wl['wind'] and '38 km/h' in wl['wind'], str(wl))
+        page_pic('11_wetter')
         E("STRAT.W.force = { cloud: 0.2, rain: 0, wind: 10, storm: false, src: 'Test' }")
     if 'ereignis' in want:
         # a storm throws spruces in the Klinge – unknown until someone looks; the forestry contractor; a breakdown and its repair
