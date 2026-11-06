@@ -2,8 +2,8 @@
 // Small boards on two posts with a little roof (one merged mesh in the village props' own material – no new shader program, no light),
 // built once the village stands: at the old school of 1828, under the Dorflinde of 1888, at the slab terrace by the brook, at the forest
 // kit of the Untere Klinge and on the dam of the Talsperre Ratscher (its position from Structurae, UTM → site with GEOMAN.xf). „Tafel lesen“
-// (action button) opens the book on the board's entry and finds what it tells (WDATA.BOARDS). Boards in the towns' zones (Schleusingen,
-// Veßra) need no mesh: their places find the entries when one walks there.
+// (action button) opens the book on the board's entry and finds what it tells (WDATA.BOARDS). In the towns' zones a board each at the
+// Bertholdsburg (Schleusingen) and the Henneberger Kapelle (Kloster Veßra): made when the zone stands, freed with it (TOWN).
 import * as THREE from 'three';
 import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
