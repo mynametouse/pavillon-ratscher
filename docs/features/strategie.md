@@ -250,6 +250,10 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
     `HOLZDRY.simKiln()` (lufttrockene Bretter in den Trockenschrank bzw. heute unter das Pultdach, wie von Hand), `HOLZDRY.kilnMC()`,
     `HOLZDRY.kilnTarget()`, `HOLZDRY.simTake(n, o)` (trockene Bretter oben vom Stapel nehmen, für Bauholz), `HOLZDRY.simShop()`.
   - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak, sp })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
+  - `viz3/src/world/forest.js` – von oben (Draufsicht, `P.mode === 'top'`) zeichnen die Fernkarten nur ihre waagrechte Kronenebene; die
+    zwei stehenden Ebenen sahen von oben wie dunkle, schwebende Blätter über der Wiese an der Klinge aus (dasselbe Material, eine zweite
+    Geometrie je Zelle; in der Ich-Sicht unverändert).
+  - `viz3/src/render/render.js` – der warmUp-Fix des Leads (91be8c98) als Cherry-Pick (1b246322), bis er über src kommt.
 - `viz3/src/modules.txt`: Block `# feat/strategie` nach `# feat/bus`, vor `game/tutorial.js`.
 - Das normale Spiel bleibt unberührt, bis jemand den Modus einmal startet (`STRAT.S.used`): vorher keine Simulation, keine Figuren, keine
   Meldungen; danach läuft die Simulation mit der Spieluhr auch beim Gehen (eine Linse auf dieselbe Welt), beginnend mit dem ersten Start.
