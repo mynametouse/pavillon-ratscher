@@ -64,7 +64,7 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   Richtung, aus der er kommt; steht er mit offenen Türen, steigen sie vorn ein (der Bus wartet auf sie, ein Bus, in dem man sitzt, fährt ein
   paar Sekunden später ab); hält ein Bus in der Nähe, steigen 0–2 hinten aus und gehen am Rand davon. Wie viele: aus Fahrt, Tag und
   Haltestelle (derselbe Bus bringt dieselben Leute), nachts und früh weniger; wer kommt, wird bis zur Abfahrt weiter gesucht (Leute des
-  Verkehrs können gerade unterwegs sein). Wer einsteigt, sitzt danach im Bus, wer aussteigt, steht von einem Platz auf; ein Bus, der in der
+  Verkehrs können gerade unterwegs sein). Wer einsteigt, sitzt danach im Bus, wer aussteigt, steht von einem Platz auf; an der Endhaltestelle steigen alle aus (bis zu drei sichtbar); ein Bus, der in der
   Welt beginnt, ist vor seiner ersten Haltestelle leer. Wer neben einem wartet, sagt etwas („Na, auch auf den Bus?“). Ihre Figuren sind für
   den Verkehr belegt (`VERKEHR.S.busy[k] = 'bus'`), damit niemand doppelt läuft.
 - **Einsteigen** an der Vordertür (Aktionsknopf; der Fahrer grüßt nach der Tageszeit: „Morgen!“, „Tag!“, „’n Abend!“), Platz rechts am
