@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Car parks of OpenStreetMap as parking places that fill by the time (feat/welt-dinge): the photo of 07.04.2024 was flown on a Sunday
 morning, so a supermarket's car park is empty there and gives no places of its own. Each public car park (amenity=parking, not private,
-not underground or a multi-storey) is filled with slots – rows of 2.5 m along its long side, 5 m deep, a 6 m aisle between the rows –
+not underground or a multi-storey) is filled with slots – rows of 2.5 m along its long side, 5 m deep, a 6 m aisle between the rows;
+a strip along a street (parking=street_side/lane or narrower than 4.6 m) one line of cars parked parallel, 6 m apart –
 and gets the kind of what it belongs to (the nearest shop, church, school, doctor, inn, sports ground, cemetery within 80 m, or its own
-name), whose curve says when it fills (dinge/dinge_zeit.js). Slots on buildings, on the roads' carriageway or within 2.5 m of a car of
-the photo (that one is a place already) are left out.
+name; a lot for employees is a works yard), whose curve says when it fills (dinge/dinge_zeit.js); no more slots than its capacity.
+Slots on buildings, on the roads' carriageway or within 2.5 m of a car of the photo (that one is a place already) are left out.
 
   python3 tools/welt-dinge/plaetze.py OSM.json GEBIET [--geb DIR]     # OSM.json from tools/welt-dinge/osm_parkplaetze.py (GitHub Actions)
 
@@ -23,6 +24,8 @@ GAST = {'restaurant', 'pub', 'cafe', 'fast_food'}
 def art_of(k, name=''):
     n = (name or '').lower()
     key, _, val = k.partition('=')
+    if val == 'marketplace':
+        return 'stadt'  # the town's square: kerb parking of the town, not a supermarket's
     if key == 'shop' or 'markt' in n or 'netto' in n or 'rewe' in n or 'lidl' in n or 'aldi' in n or 'penny' in n:
         return 'laden'
     if val == 'place_of_worship' or 'kirche' in n:
@@ -74,7 +77,9 @@ def main():
         poly = Polygon([model(a, b) for a, b in lot['ring']]).buffer(0)
         if poly.area < 60:
             continue
-        art = art_of('', t.get('name', ''))
+        art = 'betrieb' if t.get('access') == 'employees' else art_of('', t.get('name', ''))
+        if not art and 'parkplatz' in t.get('name', '').lower():
+            art = 'allgemein'  # a named public car park (am Schützenplatz …): everybody's, not the nearest shop's
         if not art:
             near = sorted(((p.distance(poly), a, n) for p, a, n in pois if p.distance(poly) < 80), key=lambda v: v[0])
             art, why = (near[0][1], near[0][2]) if near else ('allgemein', '')
@@ -93,42 +98,70 @@ def main():
         pv = [px * v[0] + py * v[1] for px, py in poly.exterior.coords]
         u0, u1, v0, v1 = min(pu), max(pu), min(pv), max(pv)
         n0 = len(slots)
-        k = 0
-        vc = v0 + 2.6
-        while vc <= v1 - 2.4:
-            face = 1 if k % 2 == 0 else -1  # the cars face the aisle between their row and the next
-            uc = u0 + 1.3
-            while uc <= u1 - 1.3:
-                x, y = u[0] * uc + v[0] * vc, u[1] * uc + v[1] * vc
-                fp = affinity.rotate(box(-0.95, -2.3, 0.95, 2.3), math.degrees(math.atan2(v[1], v[0])) - 90, origin=(0, 0))
-                fp = affinity.translate(fp, x, y)
-                ok = poly.contains(fp) and not any(FP[i].intersects(fp) for i in tree.query(fp)) \
-                    and not any(math.hypot(x - a, y - b) < 2.5 for a, b in cars)
-                if ok:
-                    for w in ways:
-                        bb = w['bb']
-                        if x < bb[0] - 20 or x > bb[2] + 20 or y < bb[1] - 20 or y > bb[3] + 20:
-                            continue
-                        d, q, _ = wdlib.seg_dist(x, y, w['p'])
-                        if d < w['w'] / 2 + 0.5:
-                            ok = False
-                            break
-                if ok:
-                    dv = (v[0] * face, v[1] * face)
-                    az = (math.degrees(math.atan2(dv[0], dv[1])) + 360) % 360
-                    slots.append({'x': round(x, 2), 'y': round(y, 2), 'az': round(az, 1), 'art': art, 'osm': lot['id']})
-                uc += 2.5
-            vc += 11.0 if k % 2 == 0 else 5.0  # a row, the aisle (6 m), the row across it; the next row back to back …
-            k += 1
+
+        def slot(uc, vc, along):
+            # a car at (uc, vc) of the lot's frame, its length along u (parallel to a kerb) or along v (rows); free of buildings, roads
+            # and of the photo's cars
+            x, y = u[0] * uc + v[0] * vc, u[1] * uc + v[1] * vc
+            ax = u if along else v
+            fp = affinity.rotate(box(-0.95, -2.3, 0.95, 2.3), math.degrees(math.atan2(ax[1], ax[0])) - 90, origin=(0, 0))
+            fp = affinity.translate(fp, x, y)
+            if not (area.contains(fp) and not any(FP[i].intersects(fp) for i in tree.query(fp))
+                    and not any(math.hypot(x - a, y - b) < 2.5 for a, b in cars)):
+                return None
+            for w in ways:
+                bb = w['bb']
+                if x < bb[0] - 20 or x > bb[2] + 20 or y < bb[1] - 20 or y > bb[3] + 20:
+                    continue
+                d, q, _ = wdlib.seg_dist(x, y, w['p'])
+                if d < w['w'] / 2 + 0.5:
+                    return None
+            return x, y
+
+        if t.get('parking') in ('street_side', 'lane', 'on_kerb', 'half_on_kerb') or v1 - v0 < 4.6:
+            # a strip along the street: one line of cars parked parallel, 6 m apart (the strip as drawn may be a little narrow)
+            area = poly.buffer(0.45)
+            vc, uc = (v0 + v1) / 2, u0 + 3.0
+            while uc <= u1 - 2.9:
+                q = slot(uc, vc, True)
+                if q:
+                    az = (math.degrees(math.atan2(u[0], u[1])) + 360) % 360
+                    slots.append({'x': round(q[0], 2), 'y': round(q[1], 2), 'az': round(az, 1), 'art': art, 'osm': lot['id']})
+                uc += 6.0
+        else:
+            area = poly
+            k = 0
+            vc = v0 + 2.6
+            while vc <= v1 - 2.4:
+                face = 1 if k % 2 == 0 else -1  # the cars face the aisle between their row and the next
+                uc = u0 + 1.3
+                while uc <= u1 - 1.3:
+                    q = slot(uc, vc, False)
+                    if q:
+                        dv = (v[0] * face, v[1] * face)
+                        az = (math.degrees(math.atan2(dv[0], dv[1])) + 360) % 360
+                        slots.append({'x': round(q[0], 2), 'y': round(q[1], 2), 'az': round(az, 1), 'art': art, 'osm': lot['id']})
+                    uc += 2.5
+                vc += 11.0 if k % 2 == 0 else 5.0  # a row, the aisle (6 m), the row across it; the next row back to back …
+                k += 1
         made = len(slots) - n0
-        if made > 150:
-            keep = slots[n0:][:: math.ceil(made / 150)]
+        # no more than the lot holds (OSM capacity, else 150): every k-th slot, spread over the lot
+        try:
+            cap = min(150, int(t.get('capacity', '150')))
+        except ValueError:
+            cap = 150
+        if made > cap:
+            keep = [slots[n0 + round(i * made / cap)] for i in range(cap)]
             slots[n0:] = keep
             made = len(keep)
         lots.append({'osm': lot['id'], 'art': art, 'wegen': why, 'name': t.get('name', ''), 'flaeche': round(poly.area), 'plaetze': made})
     out = {'quelle': '© OpenStreetMap-Mitwirkende (ODbL 1.0): amenity=parking und die Orte daneben; Reihen von tools/welt-dinge/plaetze.py',
            'plaetze': slots, 'parkplaetze': lots}
-    json.dump(out, open(os.path.join(EXTRA, f'plaetze_{gebiet}.json'), 'w'), ensure_ascii=False, indent=0)
+    # compact, one slot or car park per line
+    rows = lambda L: ',\n'.join(json.dumps(q, ensure_ascii=False, separators=(',', ':')) for q in L)
+    with open(os.path.join(EXTRA, f'plaetze_{gebiet}.json'), 'w') as f:
+        f.write('{"quelle":' + json.dumps(out['quelle'], ensure_ascii=False) + ',\n"plaetze":[\n' + rows(slots) + '\n],\n"parkplaetze":[\n'
+                + rows(lots) + '\n]}\n')
     from collections import Counter
     print(gebiet, len(lots), 'car parks', len(slots), 'slots', dict(Counter(s['art'] for s in slots)))
     for l in lots:

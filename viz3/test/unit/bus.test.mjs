@@ -116,3 +116,17 @@ test('a trip counts as on the road from the edge of the world on', () => {
     'on the road between the edge and its first stop'
   );
 });
+
+test('the five bays of the Zentralhaltestelle stand apart (OpenStreetMap), not on the one point of the feed', () => {
+  const zh = B.S.stations[st('Schleusingen, Zentralhaltestelle')];
+  assert.equal(zh.pl.length, 5, 'five platforms');
+  for (let i = 0; i < 5; i++)
+    for (let j = i + 1; j < 5; j++)
+      assert.ok(Math.hypot(zh.pl[i].x - zh.pl[j].x, zh.pl[i].y - zh.pl[j].y) > 8, 'bays ' + i + ' and ' + j + ' apart');
+});
+
+test('destinations carry the station names (not the short platform names of the feed)', () => {
+  const heads = new Set(B.S.trips.map(t => t.head));
+  assert.ok(heads.has('Schleusingen, Zentralhaltestelle'), 'Schleusingen, Zentralhaltestelle');
+  assert.ok(!heads.has('Schleusingen, ZH') && !heads.has('Themar, Bahnof'), [...heads].join(' | '));
+});

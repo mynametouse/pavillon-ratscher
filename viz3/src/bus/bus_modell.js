@@ -81,7 +81,11 @@ export const BUSMOD = (() => {
           v = Math.abs(j - 63.5) / 64,
           d = Math.max(0, Math.max((u - 0.62) / 0.38, (v - 0.86) / 0.14)),
           a = Math.max(0, 1 - d) ** 1.6;
-        img.data[(j * 64 + i) * 4 + 3] = Math.round(a * 255);
+        // (three reads an alphaMap from the green channel, not from alpha)
+        const o = (j * 64 + i) * 4,
+          g = Math.round(a * 255);
+        img.data[o] = img.data[o + 1] = img.data[o + 2] = g;
+        img.data[o + 3] = 255;
       }
     c.putImageData(img, 0, 0);
     M.shade.alphaMap = new THREE.CanvasTexture(cv);
@@ -196,7 +200,9 @@ export const BUSMOD = (() => {
     // roof, air conditioning, ceiling with the light strips
     bx(kB, -HW + 0.12, -L / 2, H - 0.06, HW - 0.12, L / 2 - 0.05, H, WHITE);
     bx(kB, -0.85, -1.6, H, 0.85, 1.8, H + 0.26, col(0xd8dbdc));
-    bx(kB, -HW + 0.06, -L / 2 + 0.1, 2.86, HW - 0.06, L / 2 - 0.2, 2.9, INNER, true);
+    // (the ceiling in the cabin's material: by day it takes a little of the light that comes through the windows – lit only by the sky
+    // from below it read dark brown from the seat)
+    bx(kC, -HW + 0.06, -L / 2 + 0.1, 2.86, HW - 0.06, L / 2 - 0.2, 2.9, col(0xe4e2dc), true);
     for (const sx of [-1, 1])
       bx(kC, sx * 0.62 - 0.08, -L / 2 + 0.6, 2.84, sx * 0.62 + 0.08, L / 2 - 1.2, 2.86, INNER, true);
     // floor and the dark underbody
@@ -417,8 +423,8 @@ export const BUSMOD = (() => {
     let r = seed * 9301 + 49297;
     const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
     const tops = [0x7a2b2b, 0x2f4f2f, 0x4a4a6a, 0x8c6d3f, 0x5b5b5b, 0x2d2d2d, 0x9a8a70, 0x3e5a7a];
-    // (the seat one takes – right, behind the middle door, bus/bus.js SEAT – and the one beside it stay free)
-    const seats = S.seats.filter(([x, y]) => !(Math.abs(y + 1.25) < 0.1 && x > 0));
+    // (the seat one takes – right at the window, bus/bus.js SEAT – stays free)
+    const seats = S.seats.filter(([x, y]) => !(Math.abs(y + 2.05) < 0.1 && x > 0));
     const nP = 2 + Math.floor(rnd() * 5);
     S.lastSeats = [];
     for (let i = 0; i < nP && seats.length; i++) {
@@ -448,7 +454,9 @@ export const BUSMOD = (() => {
       c.textAlign = 'center';
       c.fillText(line, 64, 34);
       c.font = 'bold 40px Arial, Helvetica, sans-serif';
+      // too long for the display: the town alone („Schleusingen, Zentralhaltestelle“ → „Schleusingen“), then shortened
       let d = dest;
+      if (c.measureText(d).width > 370 && d.includes(',')) d = d.split(',')[0];
       while (c.measureText(d).width > 370 && d.length > 4) d = d.slice(0, -2) + '…';
       c.textAlign = 'left';
       c.fillText(d, 136, 35);
@@ -480,7 +488,7 @@ export const BUSMOD = (() => {
   function lamps(night) {
     M.head.emissiveIntensity = night ? 2.4 : 0.15;
     M.tail.emissiveIntensity = night ? 1.4 : 0.25;
-    M.cabin.emissiveIntensity = night ? 1.1 : 0;
+    M.cabin.emissiveIntensity = night ? 1.1 : 0.22;
   }
   // ---- the stop sign: pole, H disc, name plate, timetable case (site frame: at x, y, the sign's face towards azimuth az) ----
   // draw(ctx, w, h): the printed timetable in the case (bus/bus.js paints the departures of this kerb)

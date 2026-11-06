@@ -1,0 +1,19 @@
+{"quelle":"© OpenStreetMap-Mitwirkende (ODbL 1.0): amenity=parking und die Orte daneben; Reihen von tools/welt-dinge/plaetze.py",
+"plaetze":[
+{"x":-684.67,"y":2689.58,"az":125.1,"art":"allgemein","osm":"way/573890640"},
+{"x":-667.05,"y":2695.54,"az":305.1,"art":"allgemein","osm":"way/573890640"},
+{"x":-668.49,"y":2693.49,"az":305.1,"art":"allgemein","osm":"way/573890640"},
+{"x":-669.92,"y":2691.44,"az":305.1,"art":"allgemein","osm":"way/573890640"},
+{"x":-674.23,"y":2685.31,"az":305.1,"art":"allgemein","osm":"way/573890640"},
+{"x":-675.67,"y":2683.26,"az":305.1,"art":"allgemein","osm":"way/573890640"},
+{"x":-600.29,"y":3186.61,"az":90.7,"art":"allgemein","osm":"way/1020953824"},
+{"x":-600.38,"y":3179.11,"az":90.7,"art":"allgemein","osm":"way/1020953824"},
+{"x":-463.32,"y":3327.98,"az":144.1,"art":"friedhof","osm":"way/1510897756"},
+{"x":-479.53,"y":3316.26,"az":144.1,"art":"friedhof","osm":"way/1510897756"},
+{"x":-481.55,"y":3314.79,"az":144.1,"art":"friedhof","osm":"way/1510897756"}
+],
+"parkplaetze":[
+{"osm":"way/573890640","art":"allgemein","wegen":"","name":"","flaeche":259,"plaetze":6},
+{"osm":"way/1020953824","art":"allgemein","wegen":"","name":"","flaeche":115,"plaetze":2},
+{"osm":"way/1510897756","art":"friedhof","wegen":"landuse=cemetery","name":"","flaeche":396,"plaetze":3}
+]}

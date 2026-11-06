@@ -16,6 +16,21 @@ veröffentlicht.
 
 ## Stand
 
+- **Nacht 5./6.11.2026: Spiegelwelt realer und „Ratscher von oben“** (Falko 5.11. 22:52–23:30, schlief ab ~23:30: „die Nacht durcharbeiten
+  bis zur Integration“; alle Entscheidungen zum Anklicken in `docs/plans/plan_strategie.md`, Abschnitte 1–13). Neun Hilfs-Agenten, Aufträge
+  wörtlich in `docs/plans/auftraege/` (gemeinsam: `nacht-6-11-gemeinsam.md`), Belegung in `docs/PARALLEL.md`: erste Welle `welt-gebaeude`,
+  `welt-dinge`, `bus`, `wetter`, `strategie`, `tiere`; zweite Welle (ab ~1:25, auf dem Kern `feat/strategie`) `strategie-dorf`,
+  `strategie-bau`, `wissen`. Integration auf `wip/nacht-6-11` bzw. `wip/runde-a` (wip/** startet keine Prüfung). **V17r** (5d1bd5ae: Gebäude,
+  Autos, Wetter, Busse) lief durchs Prüfpaket 42135983055 (63/68), blieb aber offline: ein geparktes Auto in der Fahrspur stoppte die Fahrt zum
+  Markt, ein anderes stand vor der Rathaustür. **Runde A** (~2:45, V17s): die Korrekturen, Tiere, neuere Wetter-, Bus- und Gebäudestände,
+  `warmUp` synchron (`render/render.js`), `zombie_innen` misst den Speicher robust. **Runde B** (~4:00): der Strategie-Kern; die zweite Welle
+  danach. Zweimal startete der Container neu (~1:05, ~1:54): die Agenten mit `SendMessage` an ihre IDs fortgesetzt (welt-gebaeude
+  a0c3cd77d9fed8857, welt-dinge a1673762df5280ac7, bus a48d9d8a1d0e75cdb, wetter a0e018f08fa486f25, strategie a97d8b4471be7ebb9, tiere
+  a7eb59a054df2db36, strategie-dorf ac373c6c4904726eb, strategie-bau aa1de241016f82abb, wissen ac9f96081b467a85a – nur im selben Chat),
+  Worktrees `/home/claude/wt-<thema>` blieben. Nach dem Bodenbild-Merge immer
+  `python3 tools/welt-gebaeude/retusche.py` (liest alle `viz3/extra/*/maske*.json`). Offen nach der Nacht: Was-wäre-wenn-Zukünfte und
+  Zeitreise, Sims-Linse, `S.TILES2 = true` in `gebaeude/gebaeude.js` nach Prüfung von `?welt2`, LoD2-Dächer, wenn der Landesdienst wieder
+  läuft (`tools/welt-gebaeude/lod2.py`), `kern/nacht-test` löschen.
 - **Zombie-Nacht (4./5.11.2026, Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, Falko 4.11. 22:59):** eigener Modus (Menü → Erleben → Szenen →
   „Zombie-Nacht“, `?szenario=zombie`), alles in `viz3/src/zombie/` (Wunsch und Plan `docs/plans/plan_zombie.md`, Stand
   `docs/features/zombie.md`); Häuser von innen vom Hilfs-Agenten `zombie-innen` (`feat/zombie-innen`, `docs/features/zombie-innen.md`);
