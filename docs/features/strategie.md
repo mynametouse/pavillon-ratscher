@@ -11,7 +11,8 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
   alles aus der Welt gelesen: dieselben Stämme, Bretter und Liter wie zu Fuß), links die fünf Leute mit Stufe, Zustand und Bedürfnissen
   (Kraft, Essen, Stimmung), rechts die Zeit (Pause, 1×, 5×, 30×, Zeitraffer bis zum Auftrag, zum Wochenende, bis morgen), Kasse, Ebenen und
   „Zur Welt“. Für die langen Wartezeiten des Holzes: im Kalender ⏩ 1 Woche, 4 Wochen, 3 Monate; im Holzlager „bis lufttrocken (≈ n Tage)“
-  nach der Vorhersage des Trocknungsmodells; in der Werkstatt „1 Woche nachtrocknen“ – alles läuft im Zeitraffer weiter. Taste **U** wechselt zwischen oben und der Welt, die Leertaste hält die Zeit an.
+  nach der Vorhersage des Trocknungsmodells; in der Werkstatt „1 Woche nachtrocknen“ – alles läuft im Zeitraffer weiter. Taste **U**
+  wechselt zwischen oben und der Welt, die Leertaste hält die Zeit an.
 - **Leute:** Falko, Sarah, Christoph (deine Leute, die Spielfiguren) und Hubert, Ronald (die Nachbarn mit eigenem Willen und eigenen Tagen).
   Jede Person hat Können (Holz, Maschinen, Garten, Bauen, Reden), Lehrgänge, Schutzausrüstung, Erfahrung und Stufen, Fähigkeiten mit
   Abklingzeit (Falko „Meisterstück“, „Wochenplan“; Sarah „Dorfversammlung“, „Gut verhandelt“; Christoph „Notreparatur“) und ständige Wirkungen.
@@ -33,7 +34,7 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
   Blockbandsäge (Benzinmotor, 1,4 l/h; Bretter 30 mm oder Bohlen 52 mm, `HOLZSAW.simSaw`) → Trockenstapel
   (`HOLZDRY.simStack`, das Feuchtemodell nach dem Klima von Meiningen) → Werkstatt. **Entschieden:** die Klinge gibt Fichte, Lärche, Kiefer –
   Bauholz für den Pavillon, Bretter, Brennholz; Klingenholz-Bretter sind Hartholz: Leimholz Eiche wird gekauft (eine Platte = zwei Bretter,
-  wie im Werkstatt-Spiel), bis ein Laubbaum da ist.
+  wie im Werkstatt-Spiel), bis ein Laubbaum da ist – aus eigener Lärche (dem härtesten heimischen Nadelholz) gibt es eine kleine eigene Reihe.
 - **Die Bestellung** „5 Schneidebretter Eiche“ (mindestens 3 Sterne, 21 Tage): Leimholz bestellen (Lieferung 9 Uhr), Bretter bauen
   (`WERK.simBoard`: das Brett liegt im Regal der Werkstatt mit den Sternen dessen, der es gebaut hat; Falkos „Meisterstück“ +1 Stern; müde →
   schlechtere Fugen), ausliefern (`WERK.handOut`, Euro, Stil +2 bei Pünktlichkeit). Ein in der Ich-Sicht selbst gebautes Brett zählt mit seinen Sternen.
