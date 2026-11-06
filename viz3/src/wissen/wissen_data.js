@@ -625,7 +625,7 @@ export const WDATA = (() => {
       ch: 'geschichte',
       icon: '⛪',
       title: 'Kloster Veßra',
-      text: 'Um 1131 stifteten Graf Gotebold II. von Henneberg und seine Frau Liutgard ein Kloster der Prämonstratenser; 1138 wurde die Kirche geweiht. Es war das Hauskloster der Henneberger.',
+      text: 'Um 1131 stifteten Graf Godebold II. von Henneberg und seine Frau Liutgard ein Kloster der Prämonstratenser; 1138 wurde die Kirche geweiht. Es war das Hauskloster der Henneberger.',
       here: '1543, in der Reformation, wurde es zum Gut, 1939 brannte die Kirche aus. In der DDR wirtschaftete hier ab 1953 eine LPG, ab 1975 zog das Agrarhistorische Museum ein; seit 1990 ist es das Hennebergische Museum – mit alten Bauernhäusern aus der Gegend, die hierher versetzt wurden.',
       src: [Q.vessra, wiki('Kloster Veßra', 'Kloster_Veßra')],
       find: { place: ['Kloster Veßra'], talk: ['gerhard:vessra'] },
@@ -1169,7 +1169,7 @@ export const WDATA = (() => {
         id: 'vessra',
         label: 'Was war Kloster Veßra?',
         lines: [
-          'Um 1131 haben Graf Gotebold und seine Frau Liutgard das Kloster gestiftet, für die Prämonstratenser. In der Reformation wurde es ein Gut, 1939 brannte die Kirche aus.',
+          'Um 1131 haben Graf Godebold und seine Frau Liutgard das Kloster gestiftet, für die Prämonstratenser. In der Reformation wurde es ein Gut, 1939 brannte die Kirche aus.',
           'Zu DDR-Zeiten war da eine LPG drin, später das Landwirtschaftsmuseum. Heute stehen dort alte Bauernhäuser aus der ganzen Gegend.',
         ],
         entry: 'g_vessra',
