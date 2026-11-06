@@ -68,7 +68,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   Feiertage (Ostern nach Gauß, Thüringer Feiertage), Ruhezeiten und der Abfall des Schalls mit dem Abstand sind reine Helfer in
   `wissen_data.js` (Einheitentests).
 - **Hinweis**: „Neu im Entdeckerbuch: …“ oben in der Mitte mit „Lesen“ (im Strategie-Modus als dessen Meldung, `STRAT.note`; am Handy ein
-  Balken über der Mitte, bei offenen Daten-Ansichten über deren Feld).
+  Balken über der Mitte, bei offenen Daten-Ansichten über deren Feld; die ersten Male mit „· Taste N“). Nie über dem offenen Menü: Er wartet,
+  bis es zu ist, und tritt zurück, wenn es sich über ihm öffnet.
 - **Gespeichert**: `pav-wissen-v1` (über `SAVE`, mit Prüfung) – gefunden (Spielminute, wie), verstandene Regeln, gelesene Einträge und die
   aus Ereignissen erzeugten Einträge (feat/tiere meldet eine Art nur einmal).
 
