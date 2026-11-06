@@ -783,7 +783,12 @@ export const WDATA = (() => {
       text: 'Er berät alles, was den Ortsteil betrifft, und macht der Stadt Vorschläge, die sie behandeln muss. Vor wichtigen Entscheidungen – etwa zum Haushalt oder zu Bebauungsplänen – muss die Stadt ihn anhören.',
       here: 'Über ein kleines eigenes Budget für Vereine, Kultur, Brauchtum wie die Kirmes und die Ortsfeuerwehr entscheidet der Ortsteilrat selbst. Für eine Bank reicht es – für einen neuen Weg nie.',
       src: [Q.thuerko, Q.amt],
-      find: { look: ['amt:amt'], talk: ['ingrid:ortsteilrat'] },
+      // also a village project voted on in the strategy mode (feat/strategie-dorf)
+      find: {
+        look: ['amt:amt'],
+        talk: ['ingrid:ortsteilrat'],
+        ev: [['strategie:dorfprojekt', d => d && (d.state === 'beschlossen' || d.state === 'abgelehnt')]],
+      },
       hint: 'Im Amt den Ortsteilrat einberufen – oder Ingrid fragen.',
     },
     {
@@ -794,7 +799,8 @@ export const WDATA = (() => {
       text: 'Im Rathaus in Schleusingen beschließt der Stadtrat den Haushalt, Satzungen und Bebauungspläne; der hauptamtliche Bürgermeister leitet die Verwaltung und setzt die Beschlüsse um.',
       here: 'Der Stadtrat wird für fünf Jahre gewählt, der Bürgermeister in Thüringen für sechs. Wer nicht im Rat sitzt, kann in vielen Städten in einer Einwohnerfragestunde Fragen stellen – oder den Ortsteilrat bitten, einen Antrag einzubringen.',
       src: [Q.thuerko, Q.thuerkwg],
-      find: { place: ['Rathaus'] },
+      // also a village project the council of the ortsteil passes on to the town (feat/strategie-dorf)
+      find: { place: ['Rathaus'], ev: [['strategie:dorfprojekt', d => d && d.state === 'stadt']] },
       hint: 'Ins Rathaus Schleusingen.',
     },
     {
@@ -871,7 +877,11 @@ export const WDATA = (() => {
       text: 'LEADER ist ein Förderprogramm der EU für ländliche Räume. In jeder Region entscheidet eine lokale Aktionsgruppe aus Bürgern, Vereinen, Unternehmen und Gemeinden, welche Projekte Geld bekommen.',
       here: 'Ein Dorfladen, ein Radweg nach Schleusingen, ein Treffpunkt in der alten Schule – solche Ideen kommen aus dem Dorf, das Geld aus Brüssel, Berlin und Erfurt.',
       src: [wiki('LEADER')],
-      find: { talk: ['ingrid:leader'] },
+      // also the strategy mode's village projects (feat/strategie-dorf: chosen by the action group, the grant)
+      find: {
+        talk: ['ingrid:leader'],
+        ev: [['strategie:dorfprojekt', d => d && (d.state === 'ausgewaehlt' || d.state === 'bewilligt')]],
+      },
       hint: 'Frag Ingrid, woher Geld für Dorfprojekte kommt.',
     },
     {

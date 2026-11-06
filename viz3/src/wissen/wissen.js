@@ -800,6 +800,7 @@ body[data-top="1"] #winote{top:178px}
     'einrichtung:schale': 'eine Schale gedreht',
     'hund:befehl': 'den Hund gerufen',
     'zombie:siren': 'die Sirene gehört',
+    'strategie:dorfprojekt': 'ein Dorfprojekt im Strategie-Modus',
     'bus:fahrplan': 'den Fahrplan an der Haltestelle gelesen',
     'bus:ein': 'in den Bus gestiegen',
     'hund:gelernt': 'den Hund gelobt oder getadelt',
@@ -865,16 +866,18 @@ body[data-top="1"] #winote{top:178px}
         ? 'natur'
         : d.kind === 'ausbau' || d.kind === 'wissen' || d.kind === 'bau'
           ? 'handwerk'
-          : d.kind === 'ort'
-            ? 'orte'
-            : 'natur';
+          : d.kind === 'kontakt'
+            ? 'politik'
+            : d.kind === 'ort'
+              ? 'orte'
+              : 'natur';
     dyn(
       id,
       {
         ch,
         title: d.title || d.id,
         text: d.text || '',
-        icon: d.kind === 'wald' ? '🌲' : d.kind === 'bau' ? '🧱' : '🔎',
+        icon: d.kind === 'wald' ? '🌲' : d.kind === 'bau' ? '🧱' : d.kind === 'kontakt' ? '🤝' : '🔎',
         src: d.source ? [Array.isArray(d.source) ? d.source : [String(d.source), null]] : [],
       },
       'erkundet:' + (d.title || d.id) + (d.by ? ' (' + d.by + ')' : '')

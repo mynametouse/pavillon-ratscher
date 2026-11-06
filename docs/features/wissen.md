@@ -18,7 +18,9 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
     Kloster Veßra (Klosterkirche, Henneberger Kapelle), Baumschule, Ziegenweide …
   - **Ereignisse der anderen**: `tiere:entdeckt` (feat/tiere – eine bekannte Art öffnet ihren Eintrag, eine unbekannte wird ein neuer Eintrag
     mit dem Steckbrief aus `TARTEN` und dessen Quellen), `strategie:entdeckt` (feat/strategie – Erkunden statt Nebel; Käferbäume, Sturmholz, der Waldbegang in der Klinge und der
-    Motorsägen-Lehrgang öffnen die passenden Einträge, anderes wird ein eigener Eintrag), `hund:befehl` (den Hund rufen → sein
+    Motorsägen-Lehrgang öffnen die passenden Einträge, Leute, die man kennenlernt, landen unter Politik & Soziales, anderes wird ein eigener
+    Eintrag), `strategie:dorfprojekt` (feat/strategie-dorf: Beschluss oder Ablehnung im Ortsteilrat → „Der Ortsteilrat“, an die Stadt →
+    „Stadtrat und Bürgermeister“, von der Aktionsgruppe ausgewählt oder bewilligt → „LEADER“), `hund:befehl` (den Hund rufen → sein
     Steckbrief) und `hund:gelernt` (loben oder tadeln → „Wie ein Hund lernt“), `bus:fahrplan` und `bus:ein` (feat/bus → „Der Bus auf dem
     Land“: wer den Busverkehr bestellt, § 3 ThürÖPNVG), `einrichtung:schale|brand|glasur`
     (Töpfern im Atelier), `einrichtung:bild` (Malen), `gplan:gepflanzt|geschnitten|gemulcht`, `garage:gemaeht`, `fell`, `verkehr:mitfahrt`,
