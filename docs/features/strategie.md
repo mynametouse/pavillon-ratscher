@@ -85,7 +85,8 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
   Bedürfnisse, Wege, Preise mit Quellen).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9002 --serve strategie` (Abschnitte
   `start,leute,auftrag,regel,holz,strom,ereignis,reload,welt` – `holz` ist die ganze Kette bis zur Lieferung) und `strategie_telefon`
-  (iPhone-Größe mit Touch: HUD ohne Überdeckung, antippen, ziehen); auf GitHub über `viz3/extra/strategie/tests.txt`, Bilder in `out/strategie/`.
+  (iPhone-Größe mit Touch: HUD ohne Überdeckung, antippen, ziehen) und `strategie_oben` (die Klinge von oben: was über dem Boden steht,
+  keine fernen Baumkarten über den Wiesen, in der Welt wieder da); auf GitHub über `viz3/extra/strategie/tests.txt`, Bilder in `out/strategie/`.
 
 ## API für Erweiterungen
 
@@ -256,9 +257,13 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
     `HOLZDRY.simKiln()` (lufttrockene Bretter in den Trockenschrank bzw. heute unter das Pultdach, wie von Hand), `HOLZDRY.kilnMC()`,
     `HOLZDRY.kilnTarget()`, `HOLZDRY.simTake(n, o)` (trockene Bretter oben vom Stapel nehmen, für Bauholz), `HOLZDRY.simShop()`.
   - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak, sp })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
-  - `viz3/src/world/forest.js` – von oben (Draufsicht, `P.mode === 'top'`) zeichnen die Fernkarten nur ihre waagrechte Kronenebene; die
-    zwei stehenden Ebenen sahen von oben wie dunkle, schwebende Blätter über der Wiese an der Klinge aus (dasselbe Material, eine zweite
-    Geometrie je Zelle; in der Ich-Sicht unverändert).
+  - `viz3/src/world/forest.js` – von oben (Draufsicht, `P.mode === 'top'`) zeichnen die Fernkarten des Waldes nur ihre waagrechte
+    Kronenebene; die zwei stehenden Ebenen sahen von oben wie dunkle Kreuze am Waldrand aus (dasselbe Material, eine zweite Geometrie je
+    Zelle; in der Ich-Sicht unverändert).
+  - `viz3/src/world/ratscher.js` – in `topMode` (Draufsicht an/aus) eine Zeile: die gekreuzten Karten der fernen Bäume (aus dem
+    Kronenhöhenmodell, außerhalb des Waldes) sind in der Draufsicht aus, wie schon bei der Karte – sie waren die „dunklen Blätter“ über der
+    Wiese an der Klinge; das Luftbild darunter zeigt diese Kronen ohnehin. In der Ich-Sicht unverändert (Test `strategie_oben` prüft beides).
+    Das gilt auch für die gewöhnliche Draufsicht ohne den Modus (dieselbe Kamera).
   - `viz3/src/render/render.js` – der warmUp-Fix des Leads (91be8c98) als Cherry-Pick (1b246322), bis er über src kommt.
 - `viz3/src/modules.txt`: Block `# feat/strategie` nach `# feat/bus`, vor `game/tutorial.js`.
 - Das normale Spiel bleibt unberührt, bis jemand den Modus einmal startet (`STRAT.S.used`): vorher keine Simulation, keine Figuren, keine
