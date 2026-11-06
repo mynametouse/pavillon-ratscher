@@ -223,6 +223,8 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
   `HOLZDRY.stackMC()` (`{ n, avg, min, max }`) – Konstruktionsholz braucht ≤ 20 % (DIN 4074) und eine Sortierung;
   `HOLZDRY.simTake(n, { maxMC: 20, minT })` nimmt n Bretter oben vom Stapel (wie beim Abstapeln, nur trockene) und gibt sie zurück
   (`[{ id, sp, t, L, w, mc, blue, crack, warp }]`) – sie sind dann in der Welt weg (`st: 'used'`).
+- 6.11. 2:20 – Brennholz für andere Themen (der Holzofen des Pavillons im Winter): `STHOLZ.firewood.stacked()`, `.dry(t)`,
+  `.take(rm, { dryOnly })` → genommene rm, trockenes zuerst (1. BImSchV: nur trockenes Holz in den Ofen).
 - 6.11. 2:15 – `layer.define({ under: true })`; `STRAT.W.wx(t).dir` (Windrichtung, aus der er kommt); Knöpfe mit `data-skip="<Minuten>"` in
   einem Feld (`info()` eines Ortes) laufen im Zeitraffer.
 
