@@ -582,9 +582,10 @@ export const STBAU = (() => {
       const lead = b.order[k] ? Math.max(0, b.order[k].due - t) : leadOf(k, matOf(k) === 'eigen') * 1440;
       addMonths(t + lead);
       t += lead;
-      // the work: person-hours of three people, a weekend gives about 1,5 days of 8 h, outside on two of three
+      // the work: person-hours of three people; a weekend gives about 1,5 days of 8 h inside, outside only the Saturday (no building
+      // one notices outside on a Sunday) and that on two of three weekends (the weather)
       const wd = B.crewMinutes(B.personHours(phaseOf(k).days), 3) / 60 / 8,
-        weekends = Math.ceil(wd / 1.5 / (M.inside ? 1 : 0.67) - 1e-6),
+        weekends = Math.ceil(wd / (M.inside ? 1.5 : 0.67) - 1e-6),
         dt = weekends * 7 * 1440 + (k === 27 ? (M.dry || 14) * 1440 : 0);
       addMonths(t + dt);
       work += dt;

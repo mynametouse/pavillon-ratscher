@@ -50,8 +50,8 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
   Entwurf und Statik, Bauleitung, Rohbau, Datum der Genehmigung und der Bauphase (§ 11 Abs. 3 ThürBO) – in beiden Linsen, bis Phase 30.
 - **Lieferung auf dem Bauplatz:** ist das Material der nächsten Phase da, liegt westlich der Platte eine Palette mit Holz unter Folie
   (Größe nach dem Wert der Lieferung), bis die Phase gebaut ist – von oben und in der Ich-Sicht.
-- **Was wäre, wenn:** das Feld schätzt, wann der Pavillon fertig wäre (Wochenenden zu dritt, die Sparrate, Lieferzeiten, ein Drittel der
-  Wochenenden ohne Wetter für außen) und ob Geld oder Zeit bremst; dazu der **Geldplan** (was noch offen ist, wie weit die Kasse reicht, wie
+- **Was wäre, wenn:** das Feld schätzt, wann der Pavillon fertig wäre (Wochenenden zu dritt – außen nur der Samstag, innen anderthalb Tage –,
+  die Sparrate, Lieferzeiten, ein Drittel der Wochenenden ohne Wetter für außen) und ob Geld oder Zeit bremst; dazu der **Geldplan** (was noch offen ist, wie weit die Kasse reicht, wie
   viele Monate Sparrate der Rest braucht) und die Dauer der nächsten Phase in Arbeitstagen.
 - **Zeitalter:** zu den drei des Kerns kommen „Das Ständerwerk steht“ (5), „Das Obergeschoss“ (11), „Unter Dach“ (16), „Die schwarze Hülle“ (21),
   „Innenausbau“ (26), „Der Pavillon steht“ (30). Ebene „Bauen“ auf der Karte (aus der Nähe): nächste Phase und was ihr fehlt.
