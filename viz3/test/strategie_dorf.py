@@ -66,12 +66,12 @@ with lib.browser() as b:
         a = math.radians(az_off); cx = x + math.sin(a) * d; cy = y + math.cos(a) * d
         yaw = math.degrees(math.atan2(x - cx, y - cy))
         E(f"(() => {{ if (GAME.CAM3) GAME.CAM3.want = false; const z = KERN.terrain({cx}, {cy}); GAME.view({cx}, {cy}, z + {h}, {yaw}, {pitch}, {fov}); for (let i = 0; i < 6; i++) GAME.step(0.1); }})()")
-    # the direction from which the camera sees the point (KX, KY) 2.5 m above the ground freely from 19 m (three.js: x, height, −y);
+    # the direction from which the camera sees the point (KX, KY) 2.5 m above the ground freely from 16 m (three.js: x, height, −y);
     # returns [azimuth, free fraction of the ray] of the best of twelve directions
     CLEAR_AZ = """(() => { const x = KX, y = KY, rc = new THREE.Raycaster(), ms = [], res = [];
       GAME.scene.traverse(o => { if (o.isMesh && o.visible && !/^strategie-dorf:/.test(o.name || '')) ms.push(o); });
       const t = new THREE.Vector3(x, KERN.terrain(x, y) + 2.5, -y);
-      for (let a = 0; a < 360; a += 30) { const r = a * Math.PI / 180, cx = x + Math.sin(r) * 19, cy = y + Math.cos(r) * 19;
+      for (let a = 0; a < 360; a += 30) { const r = a * Math.PI / 180, cx = x + Math.sin(r) * 16, cy = y + Math.cos(r) * 16;
         const o = new THREE.Vector3(cx, KERN.terrain(cx, cy) + 2.3, -cy), d = t.clone().sub(o), L = d.length();
         rc.set(o, d.normalize()); rc.far = L; const h = rc.intersectObjects(ms, false)[0];
         res.push([a, h ? h.distance / L : 1]); }
@@ -231,7 +231,7 @@ with lib.browser() as b:
             # and the Linde stand around the Anger)
             az = J(CLEAR_AZ.replace('KX', str(kf[0])).replace('KY', str(kf[1])))
             print('  Kirmes view from', az, flush=True)
-            look_at(kf[0], kf[1], 19, 2.3, (az or [45])[0], 8)
+            look_at(kf[0], kf[1], 16, 2.3, (az or [45])[0], 8)
             lib.shot(pg, OUT, '03b_kirmes_welt')
             back_top()
     if 'land' in want:

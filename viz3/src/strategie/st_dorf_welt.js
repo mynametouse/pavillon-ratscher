@@ -10,6 +10,7 @@ import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { VPROPS } from '../world/village_props.js';
+import { DKDATA } from '../world/dorfkern_data.js';
 import { ROADS } from '../world/roads.js';
 import { WCOL } from '../world/worldcol.js';
 import { CLOCK } from '../time/clock.js';
@@ -398,23 +399,31 @@ export const STDWELT = (() => {
     RED = C(0.66, 0.12, 0.1),
     PEELED = C(0.78, 0.66, 0.5),
     GREEN = C(0.2, 0.42, 0.18);
+  // the public green of the Anger between its two trimmed hedges (world/dorfkern_data.js, from Falko's video: the playground's roundabout
+  // and the logs at its west end): the tent on its east part, the Kirmesbaum by the Linde's side – not in somebody's yard
+  const ON_GREEN = DKDATA && DKDATA.open && !DKDATA.off ? { tent: [240.3, -113.4], baum: [227.5, -112.6] } : null;
   function kirmes() {
     const c0 = D.PLACES.anger.pos,
-      p = freeAt(c0[0] - 15, c0[1] - 17, 4.2, 1.8, 36);
+      p = ON_GREEN ? ON_GREEN.tent : freeAt(c0[0] - 15, c0[1] - 17, 4.2, 1.8, 36);
     if (!p) return null;
+    // 8 × 4.5 m on the green (the drawing below is for 9.2 × 5.2 m: its footprint scaled)
+    const sc = ON_GREEN ? 0.87 : 1;
     const [x, y] = p,
       z = gz(x, y),
       e = ROADS.edge,
-      rot = Math.atan2(e(x, y + 0.8) - e(x, y - 0.8), e(x + 0.8, y) - e(x - 0.8, y)) + Math.PI / 2,
-      c = Math.cos(rot),
-      s = Math.sin(rot),
+      // on the green along its hedges (their line 234.2, −108.3 → 246.1, −110.1), open to the street; elsewhere along the nearest road
+      rot = ON_GREEN
+        ? Math.atan2(-1.8, 11.9) + Math.PI
+        : Math.atan2(e(x, y + 0.8) - e(x, y - 0.8), e(x + 0.8, y) - e(x - 0.8, y)) + Math.PI / 2,
+      c = Math.cos(rot) * sc,
+      s = Math.sin(rot) * sc,
       L = (u, v) => [x + u * c - v * s, y + u * s + v * c],
       P3 = (u, v, h) => {
         const q = L(u, v);
         return [q[0], q[1], z + h];
       };
     const K = VPROPS.kit();
-    // the tent: 9 × 5 m, poles, a white roof with a red edge, closed back and sides to half height
+    // the tent: 9 × 5 m (8 × 4.5 on the green), poles, a white roof with a red edge, closed back and sides to half height
     for (const u of [-4.5, -1.5, 1.5, 4.5])
       for (const v of [-2.5, 2.5]) {
         const q = L(u, v);
@@ -426,16 +435,16 @@ export const STDWELT = (() => {
     K.quad(P3(4.6, 0, 3.4), P3(-4.6, 0, 3.4), P3(-4.6, 2.6, 2.2), P3(4.6, 2.6, 2.2), C(0.75, 0.75, 0.72));
     for (const v of [-2.6, 2.6]) {
       const q = L(0, v);
-      K.box(q[0], q[1], z + 1.95, 9.2, 0.04, 0.25, rot, RED);
+      K.box(q[0], q[1], z + 1.95, 9.2 * sc, 0.04, 0.25, rot, RED);
     }
     for (const u of [-4.6, 4.6]) {
       K.tri(P3(u, -2.6, 2.2), P3(u, 2.6, 2.2), P3(u, 0, 3.4), WHITE);
       K.tri(P3(u, 2.6, 2.2), P3(u, -2.6, 2.2), P3(u, 0, 3.4), WHITE);
       const q = L(u, 0);
-      K.box(q[0], q[1], z, 0.04, 5.2, 2.2, rot, WHITE);
+      K.box(q[0], q[1], z, 0.04, 5.2 * sc, 2.2, rot, WHITE);
     }
     const bk = L(0, 2.55);
-    K.box(bk[0], bk[1], z, 9.1, 0.04, 1.2, rot, WHITE);
+    K.box(bk[0], bk[1], z, 9.1 * sc, 0.04, 1.2, rot, WHITE);
     // beer tables with benches inside
     for (const u of [-2.8, 0, 2.8]) {
       const t = L(u, 0.3);
@@ -447,7 +456,7 @@ export const STDWELT = (() => {
       }
     }
     // the Kirmesbaum: 16 m, peeled, a green crown, the wreath at two thirds with ribbons
-    const tb = freeAt(c0[0] + 3, c0[1] + 3, 0.6, 1.5, 20) || L(7, -4),
+    const tb = (ON_GREEN && ON_GREEN.baum) || freeAt(c0[0] + 3, c0[1] + 3, 0.6, 1.5, 20) || L(7, -4),
       tz = gz(tb[0], tb[1]);
     K.cyl(tb[0], tb[1], tz - 0.3, tz + 16, 0.16, 0.06, 8, PEELED);
     K.ball(tb[0], tb[1], tz + 16.8, 1.1, GREEN, 8);
