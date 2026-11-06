@@ -321,6 +321,15 @@ with lib.browser() as b:
         warmNew, fireNew = new_progs(keysA, keys0), new_progs(keys0, keys1)
         print('programs the warm-up compiled (name, differing key fields):', warmNew, flush=True)
         print('programs compiled during the throw and the fire:', fireNew, flush=True)
+        # who draws with them (6.11.: an unnamed material with a map appeared in round A's Prüfpaket – name the culprit next time)
+        newKeys = [k for _, k in keys1 if k not in set(k0 for _, k0 in keys0)]
+        if newKeys:
+            who = J("""(() => { const NEW = %s, out = []; GAME.scene.traverse(o => { for (const m of [].concat(o.material || [])) {
+              const pp = GAME.R.properties.get(m), p = pp && pp.currentProgram; if (!p || !NEW.includes(p.cacheKey)) continue;
+              const path = []; for (let q = o; q && path.length < 5; q = q.parent) path.push(q.name || q.type);
+              const img = m.map && m.map.image; out.push({ path: path.join(' < '), type: m.type, mat: m.name, map: img ? (img.src || img.constructor.name) + ' ' + (img.width || '') + 'x' + (img.height || '') : null, ud: Object.keys(o.userData || {}).slice(0, 6) }); } });
+              return out.slice(0, 12); })()""" % json.dumps(newKeys))
+            print('drawn with the new programs:', json.dumps(who, ensure_ascii=False)[:2000], flush=True)
         ours = [x for x in fireNew if x not in fig(fireNew)]
         ck('nothing compiled when throwing, flying, burning (the figures\' own aside)', not ours, f'{pm0} → {pm1}: {ours}')
         ck('the flames need at most their transparent variants of the plain program (world, overlay), compiled ahead', len([x for x in warmNew if x not in fig(warmNew)]) <= 2, f'{pA} → {pm0}: {warmNew}')
