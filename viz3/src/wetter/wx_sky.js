@@ -73,7 +73,8 @@ export const WXSKY = (() => {
        if (wxClr > 0.002) { float u0 = max(d.y, 0.0), s0 = max(dot(d, sd), 0.0);
          vec3 cl = mix(wxCH, wxCZ, pow(u0, 0.5)) + wxCG * (0.35 * pow(s0, 6.0) + 0.6 * pow(s0, 48.0) + 18.0 * pow(s0, 1800.0));
          c = mix(c, cl, wxClr * smoothstep(-0.04, 0.03, d.y)); }
-       float up = max(d.y, 0.0); vec2 k = wxDeck(d);
+       // (no wisps of the noise in a sky of no cover at all)
+       float up = max(d.y, 0.0); vec2 k = wxDeck(d); k.x *= smoothstep(0.0, 0.03, wxCov);
        float closed = smoothstep(0.78, 1.0, wxCov), s = max(dot(d, sd), 0.0);
        // broken clouds: thin edges bright, cores grey; a closed deck: soft structure, brighter towards the zenith; darker when it rains
        float shade = mix(1.12 - 0.42 * k.y, 0.92 + 0.12 * (1.0 - k.y), closed) * (0.8 + 0.42 * up) * (1.0 - 0.38 * wxDark);
@@ -280,6 +281,8 @@ export const WXSKY = (() => {
     const L = st && st.sunEl > -3 ? sd : st && st.moonEl > 0 ? md : null;
     let m = 0;
     if (L) m = Math.max(deck(L.x, Math.max(L.y, 0.02), L.z), 0.7 * deck(L.x + 0.02, Math.max(L.y, 0.02), L.z + 0.02));
+    // as the sky draws it: no cloud at no cover
+    m *= sst(0, 0.03, W.cover);
     m = Math.round(m * 20) / 20;
     if (m !== S.mask) {
       S.mask = m;
