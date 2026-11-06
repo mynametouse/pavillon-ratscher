@@ -323,7 +323,7 @@ export const WETTER = (() => {
       any = c.cover > 0.003 || c.rain > 0 || c.snow > 0 || c.vis < 20000 || c.wind > 3;
     const sk = OPT.sky;
     // a clear sky from the data (not the calendar's): the photographs' clouds give way (none left at ~5 % cover, all back from ~35 %)
-    sk.clear = S.w && S.src !== 'kalender' ? 1 - sstp(0.05, 0.35, c.cover) : 0;
+    sk.clear = S.w && S.src !== 'kalender' && !S.noClear ? 1 - sstp(0.05, 0.35, c.cover) : 0;
     sk.on = on && (any || sk.clear > 0);
     sk.cover = c.cover;
     sk.rain = c.rain;

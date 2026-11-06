@@ -2,3 +2,5 @@
 wetter
 # the garden planner at the nursery: its own plant kinds share the garden leaves programs (the leaf patch via TREEHOOK)
 gartenplaner_kammbach
+# pictures of the clear sky before/after (noon, morning ~12°, golden hour; garden and Anger)
+wetter:himmel

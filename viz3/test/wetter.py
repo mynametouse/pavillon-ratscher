@@ -283,6 +283,37 @@ with lib.browser() as b:
         midday(12.0)
         s = weather('reif')
         ck('… and gone by noon in the sun', s['frost'] < 0.05, f"frost {s['frost']:.3f}")
+    # ---- the clear sky judged by pictures (only when asked: wetter.py <port> himmel): the same moment before (the photographs as they
+    #      are, WETTER.S.noClear) and after (the clear gradient) – noon, a morning sun at ~12°, the golden hour; the garden and the Anger,
+    #      towards the sun and away; today's date (a cloudless November day as in Ratscher on 6.11.2026) ----
+    if 'himmel' in want:
+        E("WETTER.clockToNow(); CLOCK.setRate('min')")
+        E("WETTER.mock(__wxAnswer(Object.assign({}, WETTER.data.PRESETS.klar, { C: 0, V: 38000, T: 8, H: 60, W: 6, G: 12 })))")
+        time.sleep(0.2); E("WETTER.snap()"); steps(0.5)
+        el_at = lambda h: J(f"(() => {{ CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + {round(h * 60)}; DN.update(true); return DN.state.sunEl; }})()")
+        hours = [('mittag', 12.0)]
+        hm = next((h / 4 for h in range(16, 48) if el_at(h / 4) >= 12), None)
+        if hm: hours.append(('morgen12', hm))
+        hg = next((h / 4 for h in range(56, 90) if el_at(h / 4) <= 5), None)
+        if hg: hours.append(('gold5', hg))
+        print('hours', hours, flush=True)
+        seen = set()
+        for tag, h in hours:
+            midday(h)
+            az, el = J("DN.state.sunAz"), J("DN.state.sunEl")
+            for spot, yaw, side in (('garten', az, 'sonne'), ('garten', az + 180, 'gegen'), ('dorf', az, 'sonne'), ('dorf', az + 180, 'gegen')):
+                view(spot, round(yaw % 360), 9)
+                if spot not in seen:
+                    seen.add(spot)
+                    # the first time there: the near detail of the place builds
+                    E("for (let i = 0; i < 30; i++) GAME.step(0.4)")
+                for nc, name in ((True, 'vorher'), (False, 'nachher')):
+                    E(f"WETTER.S.noClear = {'true' if nc else 'false'}; WETTER.snap()"); steps(0.4); E("DN.update(true)"); steps(0.3)
+                    pic(f'h_{tag}_{spot}_{side}_{name}')
+            s = st()
+            print(f'sky {tag} {h} h: sun {el:.1f}° az {az:.0f}°', s['sky'], flush=True)
+            ck(f'the clear sky ({tag}, sun {el:.0f}°): drawn by day above ~10°, the photographs below', (s['sky']['clear'] > 0.9) == (el > 10.5) or 3 < el < 10.5, str(s['sky']))
+        E("WETTER.S.noClear = false")
     # ---- indoors: in the pavilion the rain stays beyond its walls (through the windows), in a garden building none falls; the roof heard ----
     if 'innen' in want:
         weather('regen')
