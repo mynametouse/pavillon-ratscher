@@ -13,7 +13,7 @@ import json, sys, time, urllib.parse, urllib.request
 
 AREAS = {
     'ratscher': (50.49482, 10.76539, 50.49993, 10.77694),
-    'schleusingen': (50.50197, 10.74346, 50.51587, 10.76457),
+    'schleusingen': (50.49684, 10.72576, 50.52261, 10.77567),  # the town with its outer parts (round 3)
     'geisenhoehn': (50.49086, 10.75362, 50.49655, 10.76050),
     'talsperre': (50.49186, 10.78387, 50.49477, 10.78938),
     'vessra': (50.48815, 10.63301, 50.49882, 10.65245),
@@ -31,6 +31,10 @@ AREAS = {
     'gerhardtsgereuth': (50.46751, 10.74273, 50.47286, 10.75309),
     'gottfriedsberg': (50.48214, 10.75422, 50.48739, 10.76292),
     'stkilian': (50.52114, 10.75541, 50.53114, 10.76991),
+    # the settlements of the tiled world that have no place node in the drive's data (welt/fahrt.js): their names come with 'orte'
+    'nordost': (50.51145, 10.78058, 50.52680, 10.80466),
+    'suedost': (50.47331, 10.78949, 50.47875, 10.80276),
+    'ost': (50.48607, 10.78819, 50.49471, 10.80173),
 }
 OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter',
             'https://overpass.private.coffee/api/interpreter']
@@ -88,6 +92,9 @@ def poi_key(t):
     return None
 
 
+PLACES = []  # the named places of the extract (place=town/village/hamlet/suburb …): what the areas are called
+
+
 def from_extract(path):
     """The same result from a regional extract (osmium export -f geojsonseq -a type,id): closed ways and multipolygons come as polygons
     (a closed way may come twice, as a line and as a polygon – the polygon wins), nodes as points."""
@@ -100,6 +107,10 @@ def from_extract(path):
             ft = json.loads(line)
             p = ft.get('properties') or {}
             t = {k: v for k, v in p.items() if not k.startswith('@')}
+            if t.get('place') in ('town', 'village', 'hamlet', 'suburb', 'isolated_dwelling', 'locality') and t.get('name'):
+                g = ft.get('geometry') or {}
+                if g.get('type') == 'Point':
+                    PLACES.append({'name': t['name'], 'place': t['place'], 'c': [g['coordinates'][1], g['coordinates'][0]]})
             if t.get('amenity') != 'parking' and not poi_key(t):
                 continue
             g = ft.get('geometry') or {}
@@ -139,7 +150,7 @@ def from_extract(path):
 def main():
     if '--geojsonseq' in sys.argv:
         src = sys.argv[sys.argv.index('--geojsonseq') + 1]
-        out = {'quelle': '© OpenStreetMap-Mitwirkende, ODbL 1.0 (Geofabrik-Auszug Thüringen)', 'areas': from_extract(src)}
+        out = {'quelle': '© OpenStreetMap-Mitwirkende, ODbL 1.0 (Geofabrik-Auszug Thüringen)', 'areas': from_extract(src), 'orte': PLACES}
         json.dump(out, open(sys.argv[1], 'w'), ensure_ascii=False, indent=0)
         return
     out = {'quelle': '© OpenStreetMap-Mitwirkende, ODbL 1.0 (Overpass API)', 'areas': {}}
