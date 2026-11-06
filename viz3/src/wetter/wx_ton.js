@@ -137,7 +137,7 @@ export const WXTON = (() => {
   function useRecordings(r) {
     const N = S.N;
     if (!N) return;
-    const swap = (name, kind, dest) => {
+    const swap = (name, kind, dest, chain = []) => {
       const b = S.rec[kind] && S.rec[kind][0];
       if (!b) return;
       const old = N[name];
@@ -145,7 +145,7 @@ export const WXTON = (() => {
         old.s.stop();
       } catch (e) {}
       old.g.disconnect();
-      N[name] = loop(N.ctx, b, dest, []);
+      N[name] = loop(N.ctx, b, dest, chain);
       N[name].rec = true;
     };
     if (S.rec.regen) {
@@ -156,8 +156,18 @@ export const WXTON = (() => {
       N.patter.g.disconnect();
       N.patter = null;
     }
+    // a downpour of its own, faded in over the steady rain as it gets heavier
+    if (S.rec.starkregen && S.rec.starkregen[0]) {
+      N.heavy = loop(N.ctx, S.rec.starkregen[0], r.amb, []);
+      N.heavy.rec = true;
+    }
     swap('roof', 'dach', r.sfx);
-    swap('wind', 'wind', r.amb);
+    // the recorded storm through a low-pass that opens with the wind: a breeze is its distant murmur, a gale the full roar
+    if (S.rec.wind) {
+      const f = filt(N.ctx, 'lowpass', 600, 0.5);
+      swap('wind', 'wind', r.amb, [f]);
+      N.windF = f;
+    }
     return true;
   }
   const vol = k => (S.man && S.man[k] && S.man[k].vol) || 1;
@@ -183,7 +193,11 @@ export const WXTON = (() => {
     const N = S.N,
       t = N.ctx.currentTime,
       out = p.inside ? 0.5 : 1;
-    if (N.hiss) N.hiss.g.gain.setTargetAtTime(lr * out * (N.hiss.rec ? 0.9 * vol('regen') : 0.16), t, 0.6);
+    // a downpour (from ~2 mm/h, full at 8) takes over from the steady rain
+    const hv = N.heavy ? Math.max(0, Math.min(1, (rain - 2) / 6)) : 0;
+    if (N.hiss)
+      N.hiss.g.gain.setTargetAtTime(lr * out * (1 - 0.6 * hv) * (N.hiss.rec ? 0.9 * vol('regen') : 0.16), t, 0.6);
+    if (N.heavy) N.heavy.g.gain.setTargetAtTime(lr * out * hv * 0.95 * vol('starkregen'), t, 0.8);
     if (N.patter) N.patter.g.gain.setTargetAtTime(lr * out * 0.42, t, 0.6);
     if (N.roof) N.roof.g.gain.setTargetAtTime(S.lv.roof * (N.roof.rec ? 0.8 * vol('dach') : 0.5), t, 0.5);
     if (N.wind)
@@ -192,7 +206,12 @@ export const WXTON = (() => {
         t,
         0.8
       );
-    if (N.windF) N.windF.frequency.setTargetAtTime(320 + 900 * clamp(lw, 0, 1), t, 0.6);
+    if (N.windF)
+      N.windF.frequency.setTargetAtTime(
+        N.wind && N.wind.rec ? 350 + 5000 * Math.pow(clamp(lw, 0, 1), 1.6) : 320 + 900 * clamp(lw, 0, 1),
+        t,
+        0.6
+      );
     if (N.whistle) N.whistle.g.gain.setTargetAtTime(clamp(lw - 0.75, 0, 1) * 0.05, t, 1.2);
   }
   // ---- thunder after a flash: crack and rumble, later and duller the farther (d m) ----

@@ -5,35 +5,49 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
 
 ## Was es gibt
 
-- **Gebäude aus Daten (Ratschers Quadrat):** `viz3/src/gebaeude/gebaeude.js` (`GEB`) baut die **308 Gebäude, die OSM fehlten**, aus
+- **Gebäude aus Daten (Ratschers Quadrat):** `viz3/src/gebaeude/gebaeude.js` (`GEB`) baut die **307 Gebäude, die OSM fehlten**, aus
   ETHOS.BUILDA (Forschungszentrum Jülich, Grundriss und Höhe jedes Gebäudes in Deutschland, für Thüringen aus dem LoD2 des Landes; ODbL 1.0):
-  44 Häuser, 34 Scheunen und Hallen, 221 Schuppen und Garagen, 3 runde Behälter (Gülle/Silage), 6 Türme/Silos. Echte Lage, echte Höhe
+  44 Häuser, 34 Scheunen und Hallen, 220 Schuppen und Garagen, 3 runde Behälter (Gülle/Silage), 6 Türme/Silos. Echte Lage, echte Höhe
   (Boden bis höchster Punkt), Dachform geschätzt (Satteldach längs, große Häuser teils Walmdach, Schuppen Pultdach, Garagen flach, Hallen
-  flach geneigt), Dachfarbe aus dem Luftbild 2024. Aussehen wie das Dorf: dieselben Fassaden- und Dach-Shader von `world/village.js`
+  flach geneigt; bei fast quadratischen Häusern und Scheunen die Firstrichtung aus dem Luftbild – die beiden Dachseiten sind von der Sonne
+  verschieden hell, die Trennlinie ist der First: in Ratscher 9, jenseits 770 Gebäude), Dachfarbe aus dem Luftbild 2024. Aussehen wie das
+  Dorf: dieselben Fassaden- und Dach-Shader von `world/village.js`
   (Schuppen aus Brettern, Garagen verputzt oder Ziegel mit hellem Tor, Scheunen mit Bretterwand auf Sockel, Hallen aus Blech, Häuser im
   Dorfstil, Schornsteine) – keine neuen Shader-Programme.
-- **Fest:** ihre Wände stehen in den Kollisionen des Quadrats (`RATSCHER.walls` → `WCOL`, Fußgänger und Fahrzeuge), in Gartennähe
-  zusätzlich als Kasten im Lauf-Raster.
+- **Fest:** ihre Wände stehen in den Kollisionen des Quadrats (`RATSCHER.walls` → `WCOL`, Fußgänger über `KERN.pushOut`, Fahrzeuge); keins
+  reicht in das Lauf-Raster des Gartens (x −50…50, y −55…55 – der Test prüft das). Zäune, Hecken, Tonnen und Holzstapel, die
+  `world/village_near.js` um die Häuser des Dorfs stellt, halten Abstand zu ihnen (`GEB.footFree`).
 - **Keine Doppelten:** ein ETHOS-Gebäude, das zu mehr als der Hälfte unter einem OSM-Gebäude liegt, ist schon da; ragt ein Teil heraus
   (z. B. ein angebauter Schuppen), wird nur der Teil gebaut – nicht aber schmale Streifen, die nur aus einem etwas anderen Umriss kommen
   (der Rest muss mindestens 2 m breit und 8 m² groß sein). Im handmodellierten Garten mit Huberts und Ronalds Höfen (x −58…42,
-  y −52…48) nichts Neues.
+  y −52…48) nichts Neues, ebenso wenig an dem, was der Dorfkern nach Falkos Video selbst hinstellt (`world/dorfkern_data.js`: Brunnen,
+  Wartehäuschen, der weiße Kasten, Bänke, Linden, Hecken, Masten …) – dort bleibt nur das gedruckte Dach aus dem Bodenbild weg
+  (`ratscher.json` `mask`).
 - **Bäume, die Dächer waren:** 40 „Bäume“ des Kronenmodells standen auf diesen Dächern (gefunden, wo OSM keinen Grundriss hatte) –
   ausgeblendet.
 - `?nogeb` lässt die neuen Gebäude weg (Vergleich). Gebaut wird nach dem Laden in Stücken von wenigen Millisekunden je Bild
   (`KERN.tick` „gebaeude/bau“), die Kollisionen stehen schon beim Laden.
-- **Jenseits des Quadrats (Kachelwelt):** 11 386 Gebäude in 180 Zellen à 400 m (`gebaeude/z/<i>_<j>.json`, Index `z/index.json`):
+- **Jenseits des Quadrats (Kachelwelt):** 11 360 Gebäude in 179 Zellen à 400 m (`gebaeude/z/<i>_<j>.json`, Index `z/index.json`):
   Schleusingen um die Altstadt herum (1,7 km um den Markt, ohne die 789 Häuser von `welt/schleusingen.js`), die Straßen, die man fährt
   (`welt/fahrt.js`, 260 m beiderseits: Richtung Schleusingen und Kloster Veßra mit den Dörfern unterwegs), Kloster Veßra (950 m, ohne die
   156 Häuser von `welt/vessra.js`). Eine Zelle wird geholt und gebaut, wenn man ihr näher als 700 m kommt, und jenseits von 900 m
   freigegeben; ihr Fuß auf dem Gelände, wie es dort gezeichnet ist (die Kacheln von `welt/welt.js`, sonst das grobe Gelände – kommt eine
   Kachel später, wird die Zelle neu gesetzt). Fest über `KERN.pushOut` (Rang 15, antwortet nur, wenn es verschoben hat – Schleusingen und
   Veßra werden danach gefragt; Fahrzeuge draußen über `VEH.hitsOut`). `?nogebz` lässt sie weg.
+  **Nichts in dem, was die Orte selbst modellieren** (`keepout` in `tools/welt-gebaeude/prep.py`): in Kloster Veßra
+  (`welt/vessra.js`) weder in der Kirchenruine mit Türmen und Westportal (8 m Rand) noch im ganzen Klosterbezirk (die Fläche des Museums,
+  15 m Rand), der Baumschule Kammbach (8 m), an Mauern, Toren, Zäunen, Teichen, Friedhof und Gärten; in Schleusingen
+  (`welt/schleusingen.js`) nicht an der Bertholdsburg (20 m: Terrassen, Rundtürme), am Rathaus, an St. Johannis und am Heckenturm (8 m),
+  am Markt, an Brunnen, Bänken und Laternen – 120 ETHOS-Gebäude dort weggelassen (die meisten waren ohnehin dieselben wie die der Orte).
 - **Bodenbild ohne gedruckte Dächer (Ratscher):** `tools/welt-gebaeude/retusche.py` nimmt aus den Bodenbildern des Quadrats
   (`ortho_near` 4096² über 920 m, `ortho_near_lq`, `ortho_inner` 2048² über 2,4 km) jedes Dach, wo ein Gebäude in 3D steht – die 337 OSM-
   Gebäude, die neuen, die handmodellierten im Garten und auf den Höfen –, samt Dachüberstand und der Neigung des Luftbilds (kein echtes
   Orthofoto: ein Dach liegt um Höhe × Abstand / Flughöhe vom Bildmittelpunkt weg versetzt; je Gebäude am Bild gemessen, mit den Nachbarn
-  geglättet) und füllt die Stelle mit dem hellen Boden der Umgebung (Push-Pull-Füllung, Korn der Umgebung, weicher Rand). Neue Dateien
+  geglättet, dazu ein mit der Höhe wachsender Rand) und füllt die Stelle mit dem hellen Boden der Umgebung (Push-Pull-Füllung, Korn der
+  Umgebung, weicher Rand). Die **Schatten der Häuser im Luftbild bleiben**: die Häuser des Dorfs werfen keine eigenen (`castShadow` aus in
+  `world/ratscher.js`/`village.js`, die neuen ebenso) – ohne die Schatten des Fotos stünden sie wie aufgesetzt. Wer sie doch entfernen will:
+  `USE_SHADOW_ZONE = True` in `retusche.py` (wo ein Schatten beim Flug am 07.04.2024 hinfiel – Nordnordwest, etwa 1 m je Meter Höhe –,
+  wird das Dunkle mit gefüllt; ausprobiert, sieht aus der Luft sauberer aus). Neue Dateien
   `ortho_near_r.jpg`, `ortho_near_r_lq.jpg`, `ortho_inner_r.jpg`; die Originale bleiben, `?bodenalt` zeigt sie (Schalter in
   `gebaeude/geb_dach.js`, vor `world/ratscher.js`). Die Dachfarben des Dorfs (`world/village.js` nahm sie aus dem Bodenbild) kommen jetzt
   aus 1024²-Kopien der Originale (`ortho_near_dach.jpg`, `ortho_inner_dach.jpg`). Das Bodenbild ist dasselbe Luftbild wie der DOP 2024
@@ -65,8 +79,9 @@ python3 tools/welt-gebaeude/lod2.py                                             
 
 Je Gebäude (Format wie `schleusingen/stadt.json`): Grundriss `f`, Art `k` (0 Haus, 1 Scheune/Halle, 2 Schuppen/Garage, 4 Behälter,
 5 Turm), Traufe `e`, Höhe `h`, Fassaden `F`, Dachflächen `rv`/`rt`, Dachart `rk` und -farbe `rc`; die **Schätzung, die LoD2 später
-ersetzt**: Dachform `r` (0 flach, 1 Pult, 2 Sattel, 3 Walm), Firstrichtung `az`, Neigung `p`, und die ETHOS-Kennung `id` (= Gebäude-ID
-des Thüringer LoD2, z. B. `DETHL51P000004BA`).
+ersetzt**: Dachform `r` (0 flach, 1 Pult, 2 Sattel, 3 Walm), Firstrichtung `az` (Grad von Nord; `rq: "foto"`, wenn sie aus dem Luftbild
+gelesen ist, sonst längs der langen Seite), Neigung `p`, und die ETHOS-Kennung `id` (= Gebäude-ID des Thüringer LoD2, z. B.
+`DETHL51P000004BA`).
 
 ### Masken anderer Features (Retusche)
 
@@ -92,7 +107,9 @@ retuschiert, Dachfarben des Dorfs unverändert (gegen `?bodenalt`), Anzahl je Ar
 südlich vom Garten, runder Behälter, Schuppen im Dorf, Anger von oben) haben ein Gebäude – Bilder von oben und vom Boden, vorher
 (`?nogeb&bodenalt`) und nachher –, in die Halle laufen hält an der Wand, keine neuen Shader-Programme; Schleusingen: die Zellen um den Markt
 kommen, keine doppelt zur Altstadt, ein Haus vom Boden und von oben (vorher: die veröffentlichten Kacheln ohne Zellen), seine Wand hält
-den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. Bilder in `out/welt_gebaeude/`.
+den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. Dazu ohne Browser: keine Zelle in Kirchenruine,
+Klosterbezirk, Baumschule, an Burg oder Rathaus. Bei den Shader-Programmen zählen die der Dorf-Materialien (Schlüssel `v16e-…`) – was
+andere Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als Hinweis im Protokoll. Bilder in `out/welt_gebaeude/`.
 
 ### Bilder (`out/welt_gebaeude/`, bei GitHub im Artefakt `out` des Laufs)
 
@@ -108,16 +125,13 @@ den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. 
 
 ## Offen
 
-- Schatten der Häuser im Luftbild bleiben (die 3D-Häuser werfen ihre eigenen) – nur angrenzende sehr dunkle Flächen werden mit entfernt.
 - Gebäude abseits der befahrenen Straßen jenseits des Quadrats (nur Schleusingen, Veßra und 260 m beiderseits der Straßen von
   `welt/fahrt.js` sind dabei); Suhl (noch nicht in der App).
-- Zäune, Hecken und Holzstapel von `world/village_near.js` kennen die neuen Gebäude nicht (`freeAt` prüft nur `VILLAGE.bld`) – ein Stapel
-  könnte an einen neuen Schuppen stoßen.
 - Echte Dachformen aus dem LoD2 des Landes, sobald der Download-Dienst wieder geht (`tools/welt-gebaeude/lod2.py` prüft das; 6.11. 0:05:
   „nicht verfügbar“).
 - Carports (offen, Pfosten) sind von Schuppen nicht zu unterscheiden (ETHOS hat keine Gebäudefunktion; das LoD2 hat sie) – sie stehen als
   kleine geschlossene Bauten.
-- Die Schatten der Häuser im Luftbild der Kacheln bleiben.
+- Die Schatten der Häuser im Luftbild bleiben (Ratscher und Kacheln; siehe oben) – richtig wäre, wenn alle Häuser eigene Schatten würfen.
 
 ## Für den Lead
 
@@ -126,6 +140,8 @@ den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. 
   dem Dorf – seine Materialien –, vor `worldcol.js` – seine Kollisionen).
 - `viz3/src/world/village.js` (markiert `// feat/welt-gebaeude`): ein Import und in `photoSampler` die Dachfarben aus `GEBDACH.near/inner`
   (Kopien der Originale) statt aus dem retuschierten Bodenbild.
+- `viz3/src/world/village_near.js` (markiert `// feat/welt-gebaeude`): `freeAt` fragt zuerst `GEB.footFree` (über `window.GEB`, kein
+  Import) – Zäune, Hecken, Tonnen und Holzstapel nicht durch die neuen Schuppen und Garagen.
 - `geoman.tex.near/inner` werden im Manifest der Extra auf die retuschierten Bilder gesetzt (`file`, `lq`; `orig`, `origLq`, `dach` neu).
 - `viz3/src/welt/welt.js` (markiert `// feat/welt-gebaeude`): beim Laden einer Kachel die Bild-Adresse über `S.imgBase(t)`, wenn gesetzt
   (`gebaeude/gebaeude.js` setzt es nur mit dem Schalter `?welt2` / `GEB.TILES2`).
@@ -134,6 +150,11 @@ den Fußgänger auf, mit `?welt2` die Kacheln ohne Dächer; keine Seitenfehler. 
   `S.TILES2 = false;` → `S.TILES2 = true;` – sonst nichts (die App holt dann `welt-test/v2/index.json` und nimmt für die dort genannten
   Kacheln das Bild aus `v2/`, Gelände und alle anderen Kacheln wie bisher). Zurück: wieder `false`.
 - Quellen: `credits_add` in `viz3/extra/welt-gebaeude/manifest.json` (ETHOS.BUILDA ODbL 1.0, LoD2 und DOP 2024 © GDI-Th dl-de/by-2-0).
+- Der „weiße Kasten“ des Dorfkerns (`world/dorfkern_data.js` `whitebox`, x 265,2, y −87,6, 6,0 × 2,4 × 2,0 m) ist das weiße Flachdach-
+  Gebäude, das ETHOS als `DETHL57P0001tBDK` führt – laut Luftbild und LoD2 steht es knapp 4 m weiter nördlich (Mitte 264,9, −83,9),
+  5,3 × 5,4 m, 2,4 m hoch.
+  Nicht doppelt gebaut (der Kasten bleibt, wie er ist); wer ihn an den echten Platz rücken will: Grundriss in `ratscher.json` unter `mask`.
+- `viz3/extra/welt-gebaeude/tests.txt`: auch `vessra` und `vessra_szenario` (die Zellen um Kloster Veßra dürfen nichts davon stören).
 - **Höhen der 337 OSM-Gebäude im Vergleich mit ETHOS/LoD2** (`world/ratscher.js`, höchste Wandoberkante = Giebelspitze vs. ETHOS-Höhe
   Boden–First; 310 zugeordnet, Median −0,3 m, mittlere Abweichung 1,1 m; 39 mit mehr als 2,5 m). Zu niedrig sind vor allem Scheunen und
   Häuser im Ortskern (bis 6 m – wie `dorfkern` schon fand: das Oberflächenmodell setzte Traufen zu tief). Die größten (Gebäudenummer =
