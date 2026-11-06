@@ -247,7 +247,7 @@ export const BUSMOD = (() => {
     // inside: seats two plus two (the space at the middle door free for prams and wheelchairs, on the left side), poles, the driver
     const seat = (x, y, c, fwd = 1) => {
       bx(kB, x - 0.22, y - 0.22, FL + 0.42, x + 0.22, y + 0.22, FL + 0.5, c);
-      bx(kB, x - 0.22, y - 0.27 * fwd - 0.04, FL + 0.5, x + 0.22, y - 0.27 * fwd + 0.04, FL + 1.12, c);
+      bx(kB, x - 0.22, y - 0.27 * fwd - 0.04, FL + 0.5, x + 0.22, y - 0.27 * fwd + 0.04, FL + 1.04, c);
       bx(kB, x - 0.03, y - 0.03, FL, x + 0.03, y + 0.03, FL + 0.42, GREY);
     };
     S.seats = [];
@@ -590,6 +590,35 @@ export const BUSMOD = (() => {
       },
     };
   }
-  return { S, M, build, lamps, sign, geos, DIM: { L, W, H, FL, AF, AR, RW, DOOR_F, DOOR_M } };
+  // a printed timetable on a wall (the shelter at the old school): a framed sheet at (x, y, z), its face towards azimuth az
+  function poster(x, y, z, az, draw) {
+    const a = ((90 - az) * Math.PI) / 180,
+      fx = Math.cos(a),
+      fy = Math.sin(a),
+      cv = document.createElement('canvas');
+    cv.width = 256;
+    cv.height = 320;
+    draw(cv.getContext('2d'), 256, 320);
+    const t = new THREE.CanvasTexture(cv);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+    const m = M.dispMap.clone();
+    m.map = t;
+    const g = new THREE.PlaneGeometry(0.42, 0.525),
+      p = own(new THREE.Mesh(g, m));
+    p.position.set(x, z, -y);
+    p.lookAt(x + fx * 2, z, -(y + fy * 2));
+    scene.add(p);
+    return {
+      grp: p,
+      dispose: () => {
+        scene.remove(p);
+        g.dispose();
+        t.dispose();
+        m.dispose();
+      },
+    };
+  }
+  return { S, M, build, lamps, sign, poster, geos, DIM: { L, W, H, FL, AF, AR, RW, DOOR_F, DOOR_M } };
 })();
 window.BUSMOD = BUSMOD;

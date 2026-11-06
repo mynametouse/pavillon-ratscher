@@ -38,7 +38,8 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   Minuten des Fahrplans (zu früh: wartet an der Haltestelle), hält an jeder Haltestelle mit der Vordertür am Schild, Türen auf und zu
   (Zischen). **Wer an einer Haltestelle steht, wenn ein Bus fällig ist, und wer mitfährt, hat die Uhr in Echtzeit** (`CLOCK.focus('bus')`,
   Uhrfenster: „Echtzeit – Bus“) – so kommt der Bus zu seiner Minute und fährt so schnell wie ein Bus. Ein Bus anderswo fährt in Echtzeit; fällt
-  er hinter die schnelle Spieluhr zurück (eine Stunde je Minute), holt er auf, wo man nicht hinsieht (oder wenn er > 10 min zurück ist).
+  er hinter die schnelle Spieluhr zurück (eine Stunde je Minute), holt er auf, wo man nicht hinsieht – einer, dem man zusieht, fährt weiter
+  wie ein Bus fährt.
 - **Was im Weg steht**: der Bus bremst und hält vor dem, was in seiner Spur steht – die Spielfigur, ihr Auto, ein Auto des Verkehrs, ein
   Bus vor ihm an der Haltestelle – und hupt die Spielfigur an; danach ist er eben ein paar Sekunden (oder Minuten) verspätet. Einem Auto, das
   ihm 20 s lang Spur gegen Spur gegenübersteht, weicht er nicht länger aus (keine Verklemmung).

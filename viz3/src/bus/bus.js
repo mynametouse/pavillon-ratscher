@@ -186,6 +186,14 @@ export const BUS = (() => {
           if (!Number.isFinite(z)) continue;
           // the sign faces the oncoming bus (its face across the road's direction); in its case the timetable of this kerb
           sign = BUSMOD.sign(e.x, e.y, z, (e.az + 180) % 360, e.name, aushang(e));
+        } else {
+          // the shelter at the old school: the printed timetable on the inside of its back wall, facing the road
+          const sh = SHELTER(),
+            ab = (((sh.az + 180) % 360) * Math.PI) / 180,
+            px = sh.c[0] + Math.sin(ab) * 0.64,
+            py = sh.c[1] + Math.cos(ab) * 0.64,
+            z = KERN.ground(sh.c[0], sh.c[1]);
+          if (Number.isFinite(z)) sign = BUSMOD.poster(px, py, z + 1.45, sh.az, aushang(e));
         }
         const id = 'bus:plan:' + e.i;
         KERN.act({
@@ -562,9 +570,9 @@ export const BUS = (() => {
       } else if (dClk > 2 || CLOCK.warp) {
         // the clock jumped (set, a scene) or races (waiting, sleeping – a time-lapse): the bus to its minute
         I.tau = clk;
-      } else if (clk - I.tau > 1.5 && (!seen(I.x, I.y) || clk - I.tau > 10) && !(I.r < 0.5)) {
+      } else if (clk - I.tau > 1.5 && !seen(I.x, I.y) && !(I.r < 0.5)) {
         // the clock races (one hour a minute, nobody waiting at a stop) and the bus fell behind its minutes: where one does not look
-        // (or when it is far behind) it catches up at once – the timetable stays the truth (not while something holds it up)
+        // it catches up at once – the timetable stays the truth; one that is watched drives on as a bus drives (not while held up)
         I.tau = clk;
       } else if (!(I.hold > 0 && I.st === 'halt')) {
         // a bus elsewhere: real time (it stands while the clock stands), never ahead of the clock; held while one gets on or off
@@ -639,7 +647,9 @@ export const BUS = (() => {
       fy = Math.cos(I.hd),
       rx = Math.cos(I.hd),
       ry = -Math.sin(I.hd);
-    return { x: I.x + rx * SEAT[0] + fx * SEAT[1], y: I.y + ry * SEAT[0] + fy * SEAT[1], z: I.z + D.FL + 1.2 };
+    // (the eyes of someone sitting: a little in front of the backrest, 1.25 m over the floor – just over the seat in front)
+    const ey = SEAT[1] - 0.12;
+    return { x: I.x + rx * SEAT[0] + fx * ey, y: I.y + ry * SEAT[0] + fy * ey, z: I.z + D.FL + 1.25 };
   }
   const wrap = a => {
     while (a > Math.PI) a -= 2 * Math.PI;
@@ -674,7 +684,7 @@ export const BUS = (() => {
         return eye(I);
       },
       yaw: (I.hd * 180) / Math.PI,
-      pitch: -4,
+      pitch: -1,
       get back() {
         const p = doorPt(I, 1.0);
         return [p[0], p[1], I.z];

@@ -257,11 +257,11 @@ with lib.browser() as b:
             moved = math.hypot(p_b[0] - p_a[0], p_b[1] - p_a[1])
             ck('the bus drives on its way, the rider with it', mine and mine[0]['st'] == 'fahrt' and moved > 40, f"{moved:.0f} m, {mine[0] if mine else None}")
             pic(pg, 'd_aus_dem_bus')
-            # the eye at the seat (right, behind the middle door: local x 0.98, y -2.05, 1.56 m up) also while it drives – bus and
+            # the eye at the seat (right, behind the middle door: local x 0.98, y -2.17, 1.61 m up) also while it drives – bus and
             # camera placed in the same frame (the eye once lagged a frame's way behind and looked over its own backrest)
             probe = J("""(() => { const I = BUS.S.ride.I, g = I.B.g, c = GAME.cam; g.updateMatrixWorld(true);
               const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert()); return [p.x, -p.z, p.y]; })()""")
-            ck('the eye stays at the seat while the bus drives', abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 2.05) < 0.15 and abs(probe[2] - 1.56) < 0.1,
+            ck('the eye stays at the seat while the bus drives', abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 2.17) < 0.15 and abs(probe[2] - 1.61) < 0.1,
                'local ' + ', '.join(f'{v:.2f}' for v in probe))
             # „Fahrt abkürzen“ to the Krankenhaus (the clock jumps), from there on in real time across the edge of the square to the
             # Zentralhaltestelle (the ground there streams in as for a car: welt/welt.js tiles, welt/fahrt.js roads), out there by itself
@@ -362,7 +362,8 @@ with lib.browser() as b:
                 if here:
                     sb = here[0]; break
             dsh = J(f"(() => {{ const e = BUS.STOPS().find(q => q.shelter), I = BUS.S.inst.find(q => q.key === '{sb['key'] if sb else ''}'); if (!I) return null; const p = BUS.doorPt(I, 0.6); return Math.hypot(p[0] - e.x, p[1] - e.y); }})()")
-            ck('the school bus (214, 7:40) stops with its front door at the shelter of the old school', sb is not None and sb['line'] == '214' and dsh is not None and dsh < 7, f"{E('CLOCK.hm()')} {sb} door–shelter {dsh}")
+            ck('the school bus (214, 7:40) stops with its front door at the shelter of the old school', sb is not None and sb['line'] == '214' and dsh is not None and dsh < 7,
+               f"{E('CLOCK.hm()')} {sb} door–shelter {dsh}" + ('' if sb else ' | ' + str(J("(() => { const s = BUS.state(); return { focus: s.focus, near: s.near, inst: s.inst.map(q => q.line + ' ' + q.st + ' ' + q.halt), P: [GAME.P.x, GAME.P.y], mode: GAME.P.mode }; })()"))))
             if sb:
                 E(f"""(() => {{ window.CAM3 && (CAM3.want = false); const I = BUS.S.inst.find(q => q.key === '{sb['key']}'), fx = Math.sin(I.hd), fy = Math.cos(I.hd), rx = Math.cos(I.hd), ry = -Math.sin(I.hd);
                   const x = I.x + fx * 14 + rx * 7, y = I.y + fy * 14 + ry * 7; GAME.view(x, y, KERN.ground(x, y) + 1.7, Math.atan2(I.x + fx * 3 - x, I.y + fy * 3 - y) * 180 / Math.PI, -4, 60); }})()""")
