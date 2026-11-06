@@ -3,7 +3,7 @@
 Falko, 5.11.2026 23:20/23:24: die Tiere, die es um Ratscher wirklich gibt, in der Welt (auch in der Ich-Sicht) und mit Einfluss; ein
 Begleiter-Tier, das von dir lernt (Black & White). 23:28: viel über die Natur lernen und entdecken. Auftrag: `docs/plans/auftraege/tiere.md`.
 Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKOERPER), `tiere_ton.js` (TTON), `tiere.js` (TIERE),
-`tiere_einfluss.js` (TEINFLUSS), `tiere_hund.js` (HUND).
+`tiere_einfluss.js` (TEINFLUSS), `tiere_huehner.js` (THUEHNER), `tiere_hund.js` (HUND).
 
 ## Was es gibt
 
@@ -61,6 +61,15 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   die Bindung stark und der Jagdtrieb schwach ist; **Schicken (U)** dahin, wo du hinschaust – Wild: er vertreibt es, Ziegen: er hütet sie,
   sonst sucht er Spuren. Vier Knöpfe am Bildschirm (für das Telefon), wenn er in der Nähe ist. Gespeichert in `pav-hund-v1`.
 
+- **Hühner, wenn jemand sie hält** (`tiere/tiere_huehner.js`, `THUEHNER`): heute hält in der Spiegelwelt niemand Hühner – deshalb stehen
+  keine da. `TIERE.huehner({ x, y, n, zu })` (z. B. der Strategie-Modus: „Hühner halten“ als Zukunft zum Ausprobieren) stellt einen kleinen
+  Holzstall auf Beinen mit Rampe und Klappe hin (Front nach Süden) und eine Schar Hühner (braun, jede vierte weiß), die tags scharren und picken
+  und in der Dämmerung über die Rampe hineingehen. Eier: im langen Tageslicht fast täglich eines je Henne, im Winter wenig. Aktionsknopf am
+  Stall: „Hühnerklappe öffnen/schließen“, „Eier einsammeln (n)“ (Ereignisse `tiere:klappe`, `tiere:eier`). Bleibt die Klappe nachts offen,
+  holt der Fuchs ab und zu eine Henne (`tiere:schaden` kind `huhn`).
+- **Schatten:** die nahen Tiere (bis 70 m, höchstens 12, am Telefon 6) bekommen einen weichen Kontaktschatten – das Material der Nachbarn
+  (`npc/npc.js`, geklont, also kein neues Programm), von der Sonne weg gestreckt, an den Hang gelegt, in der Dämmerung schwächer.
+
 ## Die Arten und Quellen (Steckbrief je Art in `TARTEN.A`, im Spiel mit Quelle)
 
 | Gruppe | Arten | Quellen |
@@ -96,7 +105,8 @@ Ereignisse (`KERN.on`):
 
 | Ereignis | Daten |
 |---|---|
-| `tiere:entdeckt` | `{ kind: 'art' \| 'spur', id, title, source }` – einmal je Art bzw. Spurenart (Entdeckerbuch) |
+| `tiere:entdeckt` | `{ kind: 'art' \| 'spur', id, title, source, latin, art, text, profile: { wo, wann, nahrung, spuren, rolle, schutz }, group, day }` – einmal je Art bzw. Spurenart (Entdeckerbuch: alles, was es zeigen muss) |
+| `tiere:hinweis` | `{ id: 'kitzrettung', title, source }` – Wissen zur rechten Zeit (Mähen im Mai/Juni) |
 | `tiere:gesehen` | `{ art, x, y, d }` – ein Tier im Bild |
 | `tiere:flucht` | `{ art, gruppe, x, y, vor: 'walker' \| 'car' \| 'noise' \| 'dog' }` |
 | `tiere:schaden` | `{ art, kind: 'verbiss' \| 'fegen' \| 'wuehlen' \| 'kaefer' \| 'ausflug' \| 'wurzel' \| 'huhn' \| 'tonne' \| 'raus', id, x, y, day }` |
@@ -115,7 +125,9 @@ Abfragen und Befehle:
 - `TIERE.schutz.add({ kind: 'huelle' | 'zaun' | 'elektrozaun' | 'korb', x, y, r, id })`, `.remove(id)`, `.list()`, `.at(x, y, 'reh' | 'sau' | 'maus')`.
 - `TIERE.kaefer.list()` (Stufe 1 Bohrmehl, 2 Brut ausgeflogen/rotbraun, 3 tot/grau; `ausflugIn` Tage), `.raus(id)` (aus dem Wald), `.befall(id)`.
 - `TIERE.ruhe(x, y)` → `null` oder `{ art: 'schwarzstorch', zone: 'horst' | 'brutzeit', d, why, bis }` – vor dem Fällen und Rücken fragen.
-- `TIERE.naturwert()` → 0–100 (seltene Arten, Käfer, Verbiss); `TIERE.huehner({ x, y, n, zu })`; `TIERE.sim(tage)` (Zeitraffer).
+- `TIERE.naturwert()` → 0–100 (seltene Arten, Käfer, Verbiss); `TIERE.sim(tage)` (Zeitraffer).
+- `TIERE.huehner({ x, y, n, zu })` – Stall und Schar hinstellen (oder verschieben), `TIERE.huehner(null)` – keine Hühner; der Stand
+  (`n`, `zu`, `eier`) in `TEINFLUSS.E.huehner`, gespeichert in `pav-tiere-v1`.
 - `TIERE.addNoise(x, y, r, s)` – Lärm (Motorsäge, Mäher, Traktor): Tiere im Umkreis fliehen.
 - `HUND.rufen()`, `HUND.schicken(x, y)`, `HUND.lob(+1 | -1)`, `HUND.state()` (Neigungen `learn`, `bindung`, `recent`), für Klicks von oben.
 - Daten: `TARTEN.A[id]` (Steckbrief, Fluchtdistanzen, Gruppengrößen, Quellen), `TARTEN.SPUREN`, `TARTEN.sourceOf(id)`;
@@ -132,13 +144,13 @@ Abfragen und Befehle:
   nichts Freies ohne Anmeldung, das besser ist als die gebauten Körper; die sind nach den Hinweisen des Leads verbessert (Fell nach Datum,
   schlanke Läufe und Hals beim Reh, keilförmiger Kopf und Borstenkamm beim Wildschwein, voller Hund mit Halskrause).
 - Stimmen von Milan, Bussard, Uhu, Kolkrabe, Rothirsch (Wikimedia Commons antwortete nachts mit 429) – `tiere/ton.json` ergänzen.
-- Hühner bei Ronald als Modell (heute nur über die API); der Hund in der Zombie-Nacht (bellt Zombies an).
+- Wer in Ratscher wirklich Hühner hält, weiß ich nicht – deshalb stehen keine in der Welt, bis jemand (Strategie-Modus, Falko) sie hinstellt.
 
 ## Für den Lead
 
-- `viz3/src/modules.txt`: Block `# feat/tiere` nach dem Zombie-Block, vor `game/tutorial.js` (sechs Module).
+- `viz3/src/modules.txt`: Block `# feat/tiere` nach dem Zombie-Block, vor `game/tutorial.js` (sieben Module).
 - `viz3/src/core/save.js`: zwei Zeilen `pav-tiere-v1`, `pav-hund-v1` (markiert `// feat/tiere`); bitte in ARCHITECTURE.md §8 eintragen.
 - `viz3/src/world/forest.js`: markiert `// feat/tiere` – `FOREST.tint(t, rgb)` (Kronenfarbe eines Baums: Käferfichten) und die Farbe in
   `relod`/Fernkarten (Rinde bleibt).
 - Quellen: `viz3/extra/tiere/manifest.json` (`credits_add`).
-- Neue `window`-Namen: `TARTEN`, `TKOERPER`, `TTON`, `TIERE`, `TEINFLUSS`, `HUND`. Tasten: P (Hund rufen), U (schicken), + / − (loben/tadeln).
+- Neue `window`-Namen: `TARTEN`, `TKOERPER`, `TTON`, `TIERE`, `TEINFLUSS`, `THUEHNER`, `HUND`. Tasten: P (Hund rufen), U (schicken), + / − (loben/tadeln).

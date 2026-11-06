@@ -92,7 +92,13 @@ export const TEINFLUSS = (() => {
         if (Array.isArray(a) && a.length === 2 && a.every(num) && Object.keys(E.kaefer).length < 600) E.kaefer[k] = a;
     if (v.dmg && typeof v.dmg === 'object') E.dmg0 = v.dmg;
     if (v.huehner && typeof v.huehner === 'object' && num(v.huehner.x) && num(v.huehner.y))
-      E.huehner = { x: v.huehner.x, y: v.huehner.y, n: num(v.huehner.n) ? v.huehner.n : 6, zu: !!v.huehner.zu };
+      E.huehner = {
+        x: v.huehner.x,
+        y: v.huehner.y,
+        n: num(v.huehner.n) ? Math.max(0, Math.min(40, v.huehner.n)) : 6,
+        zu: !!v.huehner.zu,
+        eier: num(v.huehner.eier) ? Math.max(0, Math.min(60, v.huehner.eier)) : 0,
+      };
   }
   function save() {
     const dmg = {};
@@ -132,7 +138,14 @@ export const TEINFLUSS = (() => {
         const x = -470 + gx,
           y = -540 + gy;
         if (G.at(x, y) !== 3 || G.at(x + 16, y) !== 3 || G.at(x, y + 10) !== 3 || G.at(x + 16, y + 10) !== 3) continue;
-        if (ROADS.edge && (ROADS.edge(x, y) > -5 || ROADS.edge(x + 14, y + 8) > -5)) continue;
+        // (ROADS.edge keeps distances only up to 4 m from a road; then check a ring of points 8 m out)
+        if (
+          ROADS.edge &&
+          [0, 1, 2, 3, 4, 5, 6, 7].some(
+            k => ROADS.edge(x + 7 + Math.cos(k * 0.785) * 12, y + 4 + Math.sin(k * 0.785) * 12) > -3.8
+          )
+        )
+          continue;
         const d = Math.hypot(gx, gy);
         if (!best || d < best.d) best = { d, x, y };
       }
@@ -172,14 +185,21 @@ export const TEINFLUSS = (() => {
             let t = E.gp && E.gp[id];
             if (!t) {
               E.gp = E.gp || {};
+              // the plant's data (gplan): a fruit tree or not, and whether its planting put a vole basket round the roots
+              const pd = GPLAN.data && GPLAN.data.db && GPLAN.data.db.byId ? GPLAN.data.db.byId.get(it.id) : null,
+                steps = pd && GPLAN.M && GPLAN.M.plantSteps ? GPLAN.M.plantSteps(pd) : [];
               t = E.gp[id] = {
                 id,
                 x: it.x,
                 y: it.y,
-                sp: /apfel|birne|kirsch|pflaume|quitte|obst/i.test(it.id) ? 'obst' : 'ahorn',
+                sp:
+                  (pd && /obst/i.test(String(pd.kategorie || pd.typ || pd.gruppe || ''))) ||
+                  /apfel|birne|kirsch|pflaume|quitte|obst/i.test(it.id)
+                    ? 'obst'
+                    : 'ahorn',
                 dmg: 0,
                 gplan: true,
-                korb: true,
+                korb: steps.includes('korb'),
               };
               if (E.dmg0 && num(E.dmg0[id])) t.dmg = E.dmg0[id];
             }
@@ -362,6 +382,11 @@ export const TEINFLUSS = (() => {
     }
     E.maus = E.maus.filter(m => day - m[2] < 120).slice(-80);
     beetleDay(day, d);
+    // eggs: a hen lays almost daily in the long days, little in the short ones (laying follows the daylight)
+    if (E.huehner && E.huehner.n > 0) {
+      const lay = doy > 60 && doy < 240 ? 0.75 : doy < 300 ? 0.45 : 0.12;
+      E.huehner.eier = Math.min(60, (E.huehner.eier || 0) + E.huehner.n * lay);
+    }
     // the fox at the chickens (when there are chickens and their door stays open at night)
     if (E.huehner && !E.huehner.zu && E.huehner.n > 0 && rnd(day, 'fuchs') < 0.08) {
       E.huehner.n--;
@@ -818,7 +843,8 @@ export const TEINFLUSS = (() => {
   // ---------- the frame ----------
   function update(dt) {
     if (!E.ready) return;
-    if (!E.plot && TIERE.grid) {
+    if (!E.plot && !E.plotTried && TIERE.grid) {
+      E.plotTried = true;
       E.plot = makePlot();
       if (E.plot && E.dmg0) for (const t of E.plot.trees) if (num(E.dmg0[t.id])) t.dmg = E.dmg0[t.id];
       // the planting: the western half guarded with tubes when it was planted (spring 2026)
@@ -973,10 +999,12 @@ export const TEINFLUSS = (() => {
     // chickens (for the strategy mode): where the coop is, how many, the door shut at night or not
     huehner(o) {
       if (o === null) E.huehner = null;
-      else if (o && num(o.x) && num(o.y)) E.huehner = { x: o.x, y: o.y, n: num(o.n) ? o.n : 6, zu: !!o.zu };
+      else if (o && num(o.x) && num(o.y))
+        E.huehner = { x: o.x, y: o.y, n: num(o.n) ? o.n : 6, zu: !!o.zu, eier: E.huehner ? E.huehner.eier || 0 : 0 };
       save();
       return E.huehner;
     },
+    save,
     // simulate n days at once (the time-lapse does this by itself through the clock)
     sim(n) {
       const d0 = today();

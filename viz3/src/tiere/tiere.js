@@ -21,7 +21,8 @@ import { DN } from '../time/daynight.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { ROADS } from '../world/roads.js';
 import { FOREST } from '../world/forest.js';
-import { inView } from '../npc/npc.js';
+import { sun, sunDir } from '../garden/env.js';
+import { BLOBS, inView } from '../npc/npc.js';
 import { RENDER } from '../render/render.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { TARTEN } from './tiere_arten.js';
@@ -195,7 +196,8 @@ export const TIERE = (() => {
     return l > 0.5 ? [dx / l, dy / l] : null;
   }
   const cellXY = (G, c) => [G.x0 + ((c % G.nx) + 0.5) * C, G.y0 + (Math.floor(c / G.nx) + 0.5) * C];
-  const onRoad = (x, y, m = 1.5) => !!(ROADS.edge && ROADS.edge(x, y) > -m);
+  // (ROADS.edge keeps distances only up to 4 m from a road: further away it says -4)
+  const onRoad = (x, y, m = 1.5) => !!(ROADS.edge && ROADS.edge(x, y) > -Math.min(m, 3.8));
   // ---------- the groups: home in cover, a place to feed ----------
   function makeGroups() {
     const G = S.grid || buildGrid(),
@@ -875,13 +877,95 @@ export const TIERE = (() => {
     a.sndT = next;
     if (k) TTON.play(k, a.x, a.y, { n: k === 'sau' ? 1 + (Math.random() < 0.4 ? 1 : 0) : k === 'reh' ? 2 : 1 });
   }
+  // ---------- soft contact shadows under the near animals: the neighbours' blob material (npc/npc.js), cloned – the same shader program
+  // (made at load), so no new one; stretched away from the sun, tilted to the slope, fading at dusk ----------
+  const SH = { pool: [], mat: null };
+  const _up = new THREE.Vector3(0, 1, 0),
+    _nrm = new THREE.Vector3(),
+    _qa = new THREE.Quaternion(),
+    _qb = new THREE.Quaternion();
+  function shadows() {
+    if (!SH.mat) {
+      const b = BLOBS.find(q => q.m && q.m.material);
+      if (!b) return;
+      SH.mat = b.m.material.clone();
+    }
+    const el = Math.asin(THREE.MathUtils.clamp(sunDir.y, 0.03, 1)),
+      cot = Math.min(2.5, Math.cos(el) / Math.sin(el)),
+      hl = Math.hypot(sunDir.x, sunDir.z) || 1,
+      ux = -sunDir.x / hl,
+      uz = -sunDir.z / hl,
+      th = Math.atan2(-ux, -uz);
+    SH.mat.uniforms.s.value = THREE.MathUtils.clamp(sun.intensity / 3.6, 0.15, 1) * 0.85;
+    // the nearest animals on the ground within 70 m
+    const ox = cam0.x,
+      oy = cam0.y;
+    const near = S.live
+      .filter(a => !a.bird && a.A.g.visible)
+      .map(a => [Math.hypot(a.x - ox, a.y - oy), a])
+      .filter(q => q[0] < 70)
+      .sort((p, q) => p[0] - q[0])
+      .slice(0, COARSE ? 6 : 12);
+    while (SH.pool.length < near.length) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), SH.mat);
+      m.renderOrder = 1;
+      m.userData.noMerge = true;
+      m.frustumCulled = false;
+      m.name = 'tiere schatten';
+      scene.add(m);
+      SH.pool.push(m);
+    }
+    SH.pool.forEach((m, i) => {
+      const q = near[i];
+      m.visible = !!q;
+      if (!q) return;
+      const a = q[1],
+        len = (a.A.len || 1) * a.sc,
+        wid = (a.A.wid || 0.35) * a.sc,
+        hgt = (a.A.hgt || 0.6) * a.sc,
+        lie = a.mode === 'lie' ? 0.4 : 1,
+        L = hgt * cot * lie;
+      // the ground's slope under it
+      const zx = KERN.ground(a.x + 0.6, a.y) - KERN.ground(a.x - 0.6, a.y),
+        zy = KERN.ground(a.x, a.y + 0.6) - KERN.ground(a.x, a.y - 0.6);
+      _nrm.set(-zx / 1.2, 1, zy / 1.2).normalize();
+      _qa.setFromUnitVectors(_up, _nrm);
+      _qb.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, th + Math.PI, 'XYZ'));
+      // along the body for a low sun from the side the shadow is the body's length; the blob is the larger of both
+      const r = (a.az * Math.PI) / 180,
+        along = Math.abs(Math.sin(r) * ux - Math.cos(r) * uz);
+      m.quaternion.copy(_qa).multiply(_qb);
+      m.position.set(a.x + ux * L * 0.45, a.z + 0.04, -a.y + uz * L * 0.45);
+      m.scale.set(
+        Math.max(wid * 1.6, len * (1 - along) * 0.9 + wid * along),
+        len * along * 0.9 + wid * (1 - along) + L * 0.9,
+        1
+      );
+    });
+  }
+  const cam0 = { x: 0, y: 0 };
   // ---------- discovery: a species seen for the first time ----------
+  // the event carries what the discovery book shows: for a species its profile (where, when, food, signs, role, protection), for a
+  // sign its text and the species it belongs to, and the sources
   function discover(kind, id, title, src) {
     const book = kind === 'art' ? S.seen : S.found;
     if (book[id] !== undefined) return false;
     book[id] = CLOCK.day ? CLOCK.day() : 1;
     save();
-    KERN.emit('tiere:entdeckt', { kind, id, title, source: src });
+    const sp = kind === 'art' ? TARTEN.A[id] : TARTEN.SPUREN[id],
+      art = kind === 'art' ? sp : sp && TARTEN.A[sp.art];
+    KERN.emit('tiere:entdeckt', {
+      kind,
+      id,
+      title,
+      source: src,
+      latin: art ? art.latin : undefined,
+      art: kind === 'spur' && sp ? sp.art : id,
+      text: kind === 'spur' && sp ? sp.text : art && art.profile ? art.profile.rolle : undefined,
+      profile: art ? art.profile : undefined,
+      group: art ? art.group : undefined,
+      day: book[id],
+    });
     return true;
   }
   S.discover = discover;
@@ -968,6 +1052,9 @@ export const TIERE = (() => {
       if (S.frame % 8 === a.i % 8) lookFor(a);
       voice(a, dt, d);
     }
+    cam0.x = ox;
+    cam0.y = oy;
+    if (S.frame % 2 === 0 || moved) shadows();
     if (moved) {
       const now = performance.now() / 1000;
       if (now - S.drawT > (RENDER.hq ? 1 / 40 : 1 / 20)) {

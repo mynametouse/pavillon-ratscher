@@ -608,6 +608,123 @@ export const TKOERPER = (() => {
     if (Pn.legs) Pn.legs(B, sk, W, loft, V3, coat);
     return { geo: B.geo(), sk };
   }
+  // ---------- a hen: body with the tail raised, neck and head with comb and wattles, two legs with toes ----------
+  function biped(Pn, variant) {
+    const sk = skel([
+      ['root', null, [0, Pn.hip, 0]],
+      ['neck', 'root', [0, Pn.hip + 0.1, 0.1]],
+      ['head', 'neck', [0, Pn.hip + 0.21, 0.135]],
+      ['tail', 'root', [0, Pn.hip + 0.04, -0.12]],
+      ['legL', 'root', [0.04, Pn.hip - 0.02, 0.0]],
+      ['legR', 'root', [-0.04, Pn.hip - 0.02, 0.0]],
+    ]);
+    const B = Builder(),
+      coat = q => Pn.coat(q, variant || {}),
+      y0 = Pn.hip;
+    loft(
+      B,
+      [
+        [-0.16, 0.07, 0.018, 0.02, 'tail'],
+        [-0.12, 0.05, 0.05, 0.06, 'tail'],
+        [-0.06, 0.03, 0.085, 0.085, 'root'],
+        [0.02, 0.03, 0.09, 0.09, 'root'],
+        [0.08, 0.05, 0.075, 0.075, 'root'],
+        [0.11, 0.08, 0.04, 0.045, 'neck'],
+      ].map(([z, y, rx, ry, bn], i) => ({ p: V3(0, y0 + y, z), rx, ry, w: [W(sk, bn)], u: i / 5 })),
+      { part: 'body', sides: 12, sub: 2, coat, cap0: 0.01, cap1: false }
+    );
+    loft(
+      B,
+      [
+        [0.1, 0.07, 0.042, 0.045, 'neck'],
+        [0.12, 0.14, 0.032, 0.034, 'neck'],
+        [0.135, 0.2, 0.03, 0.032, 'head'],
+        [0.16, 0.215, 0.026, 0.026, 'head'],
+        [0.18, 0.21, 0.012, 0.01, 'head'],
+        [0.192, 0.205, 0.004, 0.004, 'head'],
+      ].map(([z, y, rx, ry, bn], i) => ({ p: V3(0, y0 + y, z), rx, ry, w: [W(sk, bn)], u: i / 5 })),
+      { part: 'neck', sides: 10, sub: 2, coat, cap0: false, cap1: 0.003 }
+    );
+    // the comb along the top of the head, the wattles below the beak
+    loft(
+      B,
+      [
+        [0.125, 0.235, 0.004, 0.012],
+        [0.145, 0.25, 0.005, 0.02],
+        [0.165, 0.24, 0.004, 0.014],
+      ].map(([z, y, rx, ry], i) => ({ p: V3(0, y0 + y, z), rx, ry, w: [W(sk, 'head')], u: i / 2 })),
+      { part: 'comb', sides: 6, sub: 1, coat, cap0: 0.004, cap1: 0.004 }
+    );
+    for (const sx of [1, -1]) {
+      ball(B, V3(sx * 0.006, y0 + 0.19, 0.172), 0.008, coat({ part: 'comb', u: 0, th: 0, x: 0, y: 0, z: 0 }), [
+        W(sk, 'head'),
+      ]);
+      ball(B, V3(sx * 0.02, y0 + 0.218, 0.158), 0.004, lin(0x2a1a0a), [W(sk, 'head')]);
+    }
+    // legs: thigh in the body, the bare shank, three toes forward and one back
+    for (const [sx, bn] of [
+      [1, 'legL'],
+      [-1, 'legR'],
+    ]) {
+      const x = sx * 0.04;
+      loft(
+        B,
+        [
+          [0.0, y0 - 0.0, 0.03],
+          [0.0, y0 - 0.06, 0.022],
+          [0.0, y0 - 0.1, 0.008],
+          [0.0, 0.012, 0.007],
+        ].map(([z, y, r], i) => ({ p: V3(x, y, z), rx: r, ry: r, w: [W(sk, bn)], u: i / 3 })),
+        {
+          part: 'leg',
+          sides: 6,
+          sub: 1,
+          ref: 'z',
+          coat: q => coat(Object.assign(q, { part: q.u > 0.3 ? 'shank' : 'body' })),
+          cap0: false,
+          cap1: 0.003,
+        }
+      );
+      for (const [dx, dz] of [
+        [0, 0.05],
+        [0.025, 0.04],
+        [-0.025, 0.04],
+        [0, -0.03],
+      ])
+        loft(
+          B,
+          [V3(x, 0.01, 0), V3(x + dx, 0.006, dz)].map((p, i) => ({ p, rx: 0.004, ry: 0.003, w: [W(sk, bn)], u: i })),
+          {
+            part: 'shank',
+            sides: 4,
+            sub: 1,
+            coat: q => coat(Object.assign(q, { part: 'shank' })),
+            cap0: false,
+            cap1: 0.002,
+          }
+        );
+    }
+    return { geo: B.geo(), sk };
+  }
+  // the hen's movement: alternating steps, the head held still and jerked forward (the bob), pecking the ground, roosting
+  function animBiped(A, P, dt, sp, o) {
+    const b = A.b,
+      R = A.rest;
+    A.t += dt;
+    const moving = Math.min(1, sp / 0.25);
+    A.ph = (A.ph + dt * (2.2 + sp * 4)) % 1;
+    const sw = Math.sin(2 * Math.PI * A.ph) * 0.5 * moving;
+    b.legL.rotation.x = sw;
+    b.legR.rotation.x = -sw;
+    b.root.position.y =
+      R.root.y + Math.abs(Math.sin(2 * Math.PI * A.ph)) * 0.01 * moving - (o.lie ? Math.min(0.1, P.hip - 0.06) : 0);
+    // the head bob: forward and back with each step; pecking: down to the ground in quick jabs
+    const peck = o.graze ? Math.max(0, Math.sin(A.t * 7 + A.wag)) : 0;
+    b.neck.rotation.x = (o.graze ? 1.2 : 0) * (0.6 + 0.4 * peck) + Math.sin(4 * Math.PI * A.ph) * 0.12 * moving;
+    b.head.rotation.x = o.graze ? 0.3 : 0;
+    b.head.rotation.y = (o.look || 0) * 0.8 + (o.graze ? 0 : Math.sin(A.t * 1.3 + A.wag) * 0.4);
+    b.tail.rotation.x = -0.15 + Math.sin(A.t * 0.8) * 0.05;
+  }
   // ---------- an individual: its own bones on the shared geometry ----------
   // ---------- real models from glTF where a free one is good (the fox: Khronos sample model, CC0/CC BY 4.0) ----------
   // Loaded on first need; the texture is baked into per-face vertex colours (sampled at each face's middle, toned to the real coat),
@@ -638,8 +755,13 @@ export const TKOERPER = (() => {
         cv.width = cv.height = W;
         const cx = cv.getContext('2d', { willReadFrequently: true });
         if (img) cx.drawImage(img, 0, 0, W, W);
-        const px = cx.getImageData(0, 0, W, W).data,
-          col = new Float32Array(n * 3),
+        const px = cx.getImageData(0, 0, W, W).data;
+        S.diag = {
+          img: img ? img.constructor.name + ' ' + img.width + 'x' + img.height : null,
+          px0: [px[0], px[1], px[2]],
+          mid: [px[(128 * W + 128) * 4], px[(128 * W + 128) * 4 + 1], px[(128 * W + 128) * 4 + 2]],
+        };
+        const col = new Float32Array(n * 3),
           c = new THREE.Color();
         for (let f = 0; f < n; f += 3) {
           let u = 0,
@@ -744,6 +866,9 @@ export const TKOERPER = (() => {
       b: {},
       gltf: true,
       pose: {},
+      len: G.len || 0.7,
+      wid: G.wid || 0.2,
+      hgt: G.hgt || 0.4,
       dispose() {
         g.removeFromParent();
         mixer.stopAllAction();
@@ -773,7 +898,7 @@ export const TKOERPER = (() => {
       if (st && st.ready) return makeGltf(kind, P, st);
     }
     const key = kind + ':' + JSON.stringify(variant);
-    if (!S.built[key]) S.built[key] = P.bird ? bird(P, variant) : quadruped(P, variant);
+    if (!S.built[key]) S.built[key] = P.biped ? biped(P, variant) : P.bird ? bird(P, variant) : quadruped(P, variant);
     const { geo, sk } = S.built[key];
     const bones = sk.list.map(() => new THREE.Bone()),
       by = {};
@@ -816,7 +941,19 @@ export const TKOERPER = (() => {
         mesh.skeleton.dispose();
       },
     };
-    A.anim = (dt, speed, o) => (P.bird ? animBird(A, P, dt, speed, o || {}) : animQuad(A, P, dt, speed, o || {}));
+    // the body's size (its shadow): from the trunk of the plan
+    if (P.trunk) {
+      const T = P.trunk;
+      A.len = T[T.length - 1][0] - T[0][0];
+      A.wid = 2 * Math.max(...T.map(t => t[3]));
+      A.hgt = Math.max(...T.map(t => t[1]));
+    }
+    A.anim = (dt, speed, o) =>
+      P.biped
+        ? animBiped(A, P, dt, speed, o || {})
+        : P.bird
+          ? animBird(A, P, dt, speed, o || {})
+          : animQuad(A, P, dt, speed, o || {});
     return A;
   }
   // ---------- movement: gaits for four legs ----------
@@ -1162,20 +1299,21 @@ export const TKOERPER = (() => {
     neckPose: { graze: [0.45, 0.35], alert: [-0.18, -0.12], lie: [0.15, 0.1], dig: [0.55, 0.4] },
     // the bristle mane along the spine, from the neck to the middle of the back
     extra(B, sk, W, loft, V3, coat) {
+      // a low ridge of coarse bristles, not a fin: sunk into the back, a little higher over the withers
       const pts = [
-        [0.5, 0.74, 'chest'],
-        [0.4, 0.88, 'chest'],
-        [0.28, 0.885, 'chest'],
-        [0.12, 0.85, 'root'],
-        [-0.05, 0.8, 'root'],
-        [-0.2, 0.755, 'hips'],
+        [0.5, 0.72, 'chest'],
+        [0.4, 0.855, 'chest'],
+        [0.28, 0.87, 'chest'],
+        [0.12, 0.835, 'root'],
+        [-0.05, 0.79, 'root'],
+        [-0.2, 0.745, 'hips'],
       ];
       loft(
         B,
         pts.map(([z, y, bn], i) => ({
           p: V3(0, y, z),
-          rx: 0.016,
-          ry: [0.03, 0.05, 0.05, 0.04, 0.03, 0.012][i],
+          rx: [0.03, 0.04, 0.042, 0.036, 0.03, 0.02][i],
+          ry: [0.02, 0.034, 0.034, 0.026, 0.02, 0.01][i],
           w: [W(sk, bn)],
           u: i / (pts.length - 1),
         })),
@@ -1432,6 +1570,9 @@ export const TKOERPER = (() => {
       walkV: 0.85,
       runV: 4.2,
       runFrom: 2.2,
+      len: 0.68,
+      wid: 0.17,
+      hgt: 0.4,
       // the sample's bright orange toned to a real fox: red-brown, less saturated; white a little grey; the stockings near black
       tone(c, r) {
         const l = c.r * 0.3 + c.g * 0.6 + c.b * 0.1;
@@ -1832,6 +1973,21 @@ export const TKOERPER = (() => {
       return q.up ? mix(lin(0x7a5a38), lin(0x2e2218), sst(0.5, 0.8, hash(q.x * 9, q.z * 9, 1))) : lin(0xb89a70);
     },
   });
+  // a laying hen (about 2 kg, 45 cm tall): brown with a lighter breast, red comb and wattles, yellow legs
+  PLANS.huhn = {
+    biped: true,
+    hip: 0.17,
+    coat(q, v) {
+      if (q.part === 'comb') return lin(0xb0221a);
+      if (q.part === 'shank') return lin(0xc8a040);
+      if (q.part === 'neck' && q.u > 0.92) return lin(0xd8b880);
+      const white = !!v.weiss;
+      let c = white ? lin(0xe8e2d6) : lin(0x8a4a22);
+      if (!white && q.part === 'neck') c = mix(c, lin(0xb06a2c), 0.6);
+      if (!white && q.part === 'body' && q.u < 0.25) c = lin(0x2a1e18);
+      return shade(c, q, 0.03, 0.08);
+    },
+  };
   S.PLANS = PLANS;
   S.make = make;
   S.lin = lin;

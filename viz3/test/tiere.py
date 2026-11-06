@@ -3,11 +3,11 @@
 # open land), the groups by the sun and the calendar (roe deer at dusk at the forest edge, wild boar at night on the field, the red kite
 # by day over the meadows), flight from the walker at the real distance (the group goes together), the first sighting as an event for
 # the discovery book, the dog following, sitting, lying. Pictures in out/tiere/ (look at them).
-#   python3 viz3/test/tiere.py 9003 [sections]      sections: bau,welt,flucht,hund,einfluss,lernen,andere (default all)
+#   python3 viz3/test/tiere.py 9003 [sections]      sections: bau,welt,flucht,hund,einfluss,lernen,andere,telefon (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'bau,welt,flucht,hund,einfluss,lernen,andere').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'bau,welt,flucht,hund,einfluss,lernen,andere,telefon').split(','))
 ck = lib.Checks('tiere')
 OUT = lib.out('tiere')
 with lib.browser() as b:
@@ -26,9 +26,12 @@ with lib.browser() as b:
     def at(hh, mm=0, date=(11, 5)):
         E(f"(() => {{ const d = Math.floor(CLOCK.t / 1440); DN.e0 = Date.UTC(2026, {date[0] - 1}, {date[1]}) / 864e5 - d; CLOCK.t = d * 1440 + {hh * 60 + mm}; DN.update(true); }})()")
         lib.settle_light(pg)
-    E("window.__ev = []; KERN.on('tiere:entdeckt', e => window.__ev.push(e)); KERN.on('tiere:flucht', e => window.__ev.push(Object.assign({ ev: 'flucht' }, e)))")
-    # pictures in the first-person view (the walker's own eyes)
+    # (ends with 0: an expression that evaluates to a function is invoked by Playwright – here KERN.on's unsubscribe)
+    E("window.__ev = []; KERN.on('tiere:entdeckt', e => window.__ev.push(e)); KERN.on('tiere:flucht', e => window.__ev.push(Object.assign({ ev: 'flucht' }, e))); 0")
+    # pictures in the first-person view (the walker's own eyes); the walk camera takes its field of view from window.FOVX
     E("GAME.setView3(false, true)")
+    VIEWFN = "window.__view = (x, y, z, yaw, pitch, fov) => { window.FOVX = fov || 70; GAME.view(x, y, z, yaw, pitch, fov); }; 0"
+    E(VIEWFN)
     st = J("TIERE.state()")
     ck('the animals are there (TIERE, HUND, the body builder)', E("!!(window.TIERE && window.HUND && window.TKOERPER)"), str(st))
     p0 = progs()
@@ -38,7 +41,7 @@ with lib.browser() as b:
         E("TIERE.on = false; HUND.on = false")
         at(12, 0, date=(7, 10))
         x0, y0 = -150, -400
-        E(f"GAME.view({x0}, {y0}, ROADS.groundAt({x0}, {y0}) + 1.5, 225, -6, 50); GAME.step(0.1)")
+        E(f"__view({x0}, {y0}, ROADS.groundAt({x0}, {y0}) + 1.5, 225, -6, 50); GAME.step(0.1)")
         E("GAME.shot()")
         pa = progs()
         # (name, kind, variant, scale, close-up distance, eye height): November coats, the summer ones for comparison
@@ -48,7 +51,7 @@ with lib.browser() as b:
                  ('hund', 'hund', {}, 1, 2.6, 0.7), ('fuchs', 'fuchs', {}, 1, 1.8, 0.45), ('hase', 'hase', {}, 1, 1.4, 0.35),
                  ('dachs', 'dachs', {}, 1, 1.8, 0.4), ('waschbaer', 'waschbaer', {}, 1, 1.6, 0.4), ('marder', 'marder', {}, 1, 1.3, 0.3),
                  ('wildkatze', 'katze', {}, 1, 1.6, 0.45), ('hirsch_alttier', 'hirsch', {'winter': True}, 1, 4.2, 1.2),
-                 ('hirsch_brunft', 'hirsch', {'winter': True, 'antler': True}, 1.05, 4.8, 1.35)]
+                 ('hirsch_brunft', 'hirsch', {'winter': True, 'antler': True}, 1.05, 4.8, 1.35), ('huhn', 'huhn', {}, 1, 1.0, 0.3)]
         # the fox is a real model (glTF, loaded on first need): wait for it
         E("TKOERPER.ready('fuchs')")
         for i in range(60):
@@ -73,15 +76,18 @@ with lib.browser() as b:
            1.0 < tri[0]['h'] < 1.35 and 0.75 < tri[3]['h'] < 1.05 and 0.7 < tri[6]['h'] < 0.98 and 0.42 < tri[7]['h'] < 0.68 and 1.65 < tri[13]['h'] < 2.15,
            str([(t['k'], t['h']) for t in tri]))
         ck('cheap: each animal one mesh of fewer than 4000 triangles', all(t['tri'] < 4000 for t in tri), str([t['tri'] for t in tri]))
-        fx = J("(() => { const A = window.__sheet[7]; return { gltf: !!A.gltf, mat: A.mesh && A.mesh.material === TKOERPER.mat, col: !!(A.mesh && A.mesh.geometry.attributes.color) }; })()")
-        ck('the fox is the real model (Khronos glTF), drawn with the shared material (colours baked from its texture)', fx['gltf'] and fx['mat'] and fx['col'], str(fx))
+        fx = J("""(() => { const A = window.__sheet[7], c = A.mesh && A.mesh.geometry.attributes.color; let r = 0, g = 0, b = 0;
+          if (c) for (let i = 0; i < c.count; i++) { r += c.getX(i) / c.count; g += c.getY(i) / c.count; b += c.getZ(i) / c.count; }
+          return { gltf: !!A.gltf, mat: A.mesh && A.mesh.material === TKOERPER.mat, col: !!c, mean: [r, g, b].map(v => +v.toFixed(3)), diag: TKOERPER.diag || null }; })()""")
+        print('fox colours', fx, flush=True)
+        ck('the fox is the real model (Khronos glTF), drawn with the shared material (colours baked from its texture)', fx['gltf'] and fx['mat'] and fx['col'] and fx['mean'][0] > 0.12, str(fx))
         def closeups(tag, only=None):
             for i, (n, kind, var, sc, dd, eh) in enumerate(SHEET):
                 if only and n not in only: continue
                 E(f"""(() => {{ const A = window.__sheet[{i}], yaw = 225 * Math.PI / 180, fx = Math.sin(yaw), fy = Math.cos(yaw);
                   const x = A.g.position.x, y = -A.g.position.z, cx = x - fx * {dd}, cy = y - fy * {dd};
                   window.__sheet.forEach((B, j) => B.g.visible = j === {i});
-                  GAME.view(cx, cy, ROADS.groundAt(cx, cy) + {eh}, 225, -4, 42); }})()""")
+                  __view(cx, cy, ROADS.groundAt(cx, cy) + {eh}, 225, -4, 42); }})()""")
                 E("GAME.step(0.02)")
                 pic(f'02_{tag}_{i:02d}_{n}')
             E("window.__sheet.forEach(B => B.g.visible = true)")
@@ -89,19 +95,19 @@ with lib.browser() as b:
         # movement: walking, trotting, bounding, rooting, lying, sitting …
         E("""(() => { const P = [[0.8, {}], [2.4, {}], [9, { flee: 1 }], [0, { dig: 1 }], [0, { lie: 1 }], [1.0, {}], [0, { sit: 1, wag: 1 }],
             [2.5, {}], [6, { flee: 1 }], [0, { dig: 1 }], [1, {}], [5, {}], [0, { sit: 1, alert: 0.4 }], [1.4, {}], [0, { alert: 1, look: 0.7 }]];
-          window.__sheet.forEach((A, i) => { const q = P[i]; for (let k = 0; k < 40; k++) A.anim(0.033, q[0], q[1]); }); })()""")
+          window.__sheet.forEach((A, i) => { const q = P[i] || [0, { graze: 1 }]; for (let k = 0; k < 40; k++) A.anim(0.033, q[0], q[1]); }); })()""")
         closeups('pose', ['reh_ricke_winter', 'reh_bock_sommer', 'reh_kitz_sommer', 'sau', 'hund', 'fuchs', 'hase', 'wildkatze', 'hirsch_brunft'])
         E("""(() => { const P = [[0, { graze: 1 }], [0, { alert: 1, look: 0.8 }], [0, { lie: 1 }], [3, {}], [1.2, {}], [0, { lie: 1 }], [5, {}],
             [0, { graze: 0.55 }], [0, { graze: 0.7 }], [0, { lie: 1 }], [0, {}], [0, {}], [0, {}], [0, { graze: 1 }], [0, {}]];
-          window.__sheet.forEach((A, i) => { const q = P[i]; for (let k = 0; k < 60; k++) A.anim(0.033, q[0], q[1]); }); })()""")
+          window.__sheet.forEach((A, i) => { const q = P[i] || [0, { graze: 1 }]; for (let k = 0; k < 60; k++) A.anim(0.033, q[0], q[1]); }); })()""")
         closeups('pose2', ['reh_ricke_winter', 'reh_bock_sommer', 'reh_kitz_sommer', 'sau', 'hund', 'fuchs', 'hase', 'hirsch_alttier'])
         # the kite from below and the side, close
         E(f"""(() => {{ const A = TKOERPER.make('milan', {{}}); GAME.scene.add(A.g); const x = {x0} - 4, y = {y0} - 4;
           A.g.position.set(x, ROADS.groundAt(x, y) + 3.2, -y); A.g.rotation.y = 0.6; A.anim(0.05, 8, {{ flap: 0, bank: 0.2, twist: 0.3 }}); window.__kite = A; }})()""")
-        E(f"GAME.view({x0}, {y0}, ROADS.groundAt({x0}, {y0}) + 1.6, 225, 24, 50); GAME.step(0.05)")
+        E(f"__view({x0}, {y0}, ROADS.groundAt({x0}, {y0}) + 1.6, 225, 24, 50); GAME.step(0.05)")
         pic('03_milan_nah')
         E(f"""(() => {{ const A = window.__kite, x = {x0} - 4, y = {y0} - 4; A.g.rotation.y = 2.3; A.anim(0.05, 8, {{ flap: 0, bank: 0, twist: 0.2 }});
-          GAME.view(x + 0.3, y + 0.3, ROADS.groundAt(x, y) + 1.0, 225, 62, 60); }})()""")
+          __view(x + 0.3, y + 0.3, ROADS.groundAt(x, y) + 1.0, 225, 62, 60); }})()""")
         E("GAME.step(0.02)")
         pic('04_milan_unten')
         E("window.__sheet.forEach(A => A.dispose()); window.__kite.dispose(); TIERE.on = true; HUND.on = true")
@@ -125,7 +131,7 @@ with lib.browser() as b:
         L = math.hypot(dx, dy) or 1
         vx, vy = fx + dx / L * 140, fy + dy / L * 140
         yaw = math.degrees(math.atan2(fx - vx, fy - vy))
-        E(f"GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw}, -2, 45); GAME.step(0.1)")
+        E(f"__view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw}, -2, 45); GAME.step(0.1)")
         steps(1.2)
         lv = J(f"TIERE.list().filter(a => a.g === '{r['id']}')")
         print('roe live', lv[:6], flush=True)
@@ -139,7 +145,7 @@ with lib.browser() as b:
         if lv:
             a = lv[0]
             yaw2 = math.degrees(math.atan2(a['x'] - vx, a['y'] - vy))
-            E(f"GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw2}, -1, 9); GAME.step(0.05)")
+            E(f"__view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw2}, -1, 9); GAME.step(0.05)")
             pic('11_dammerung_reh_tele')
             # can the walker see it? the ground along the line of sight (eye to the animal's back)
             los = J(f"""(() => {{ const ax = {a['x']}, ay = {a['y']}, az = {a['z']} + 0.7, ex = {vx}, ey = {vy}, ez = ROADS.groundAt(ex, ey) + 1.65;
@@ -149,7 +155,7 @@ with lib.browser() as b:
             # sneaking up: from 35 m, the group frozen for the picture
             E("TIERE.on = false")
             cx, cy = a['x'] + (vx - a['x']) / 140 * 35, a['y'] + (vy - a['y']) / 140 * 35
-            E(f"GAME.view({cx}, {cy}, ROADS.groundAt({cx}, {cy}) + 1.65, {yaw2}, -2, 30); GAME.step(0.05)")
+            E(f"__view({cx}, {cy}, ROADS.groundAt({cx}, {cy}) + 1.65, {yaw2}, -2, 30); GAME.step(0.05)")
             pic('11b_dammerung_rehe_35m')
             E("TIERE.on = true")
         # night on the field: a sounder out
@@ -163,7 +169,7 @@ with lib.browser() as b:
         L = math.hypot(dx, dy) or 1
         vx, vy = fx + dx / L * 60, fy + dy / L * 60
         yaw = math.degrees(math.atan2(fx - vx, fy - vy))
-        E(f"GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw}, -3, 40); GAME.step(0.1)")
+        E(f"__view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw}, -3, 40); GAME.step(0.1)")
         steps(1.2)
         lb = J("TIERE.list().filter(a => a.art === 'wildschwein')")
         ck('… real near the walker: a sounder rooting on the field', len(lb) >= 4, str(len(lb)))
@@ -174,7 +180,7 @@ with lib.browser() as b:
         print('kite', k, flush=True)
         ck('by day in September the red kite is aloft', k['plan']['where'] == 'sky', str(k['plan']))
         kx, ky = k['home']
-        E(f"GAME.view({kx} + 30, {ky} - 120, ROADS.groundAt({kx} + 30, {ky} - 120) + 1.65, 0, 22, 60); GAME.step(0.1)")
+        E(f"__view({kx} + 30, {ky} - 120, ROADS.groundAt({kx} + 30, {ky} - 120) + 1.65, 0, 22, 60); GAME.step(0.1)")
         steps(1.5)
         lk = J("TIERE.list().filter(a => a.art === 'rotmilan')")
         ck('… circling over the open land, 40–90 m up', len(lk) >= 1 and all(30 < a['z'] - E(f"ROADS.groundAt({a['x']}, {a['y']})") < 100 for a in lk), str(lk))
@@ -183,7 +189,7 @@ with lib.browser() as b:
             yaw3 = math.degrees(math.atan2(a['x'] - (kx + 30), a['y'] - (ky - 120)))
             gz = E(f"ROADS.groundAt({kx} + 30, {ky} - 120)")
             pit = math.degrees(math.atan2(a['z'] - gz - 1.65, math.hypot(a['x'] - kx - 30, a['y'] - ky + 120)))
-            E(f"GAME.view({kx} + 30, {ky} - 120, {gz} + 1.65, {yaw3}, {pit}, 14); GAME.step(0.05)")
+            E(f"__view({kx} + 30, {ky} - 120, {gz} + 1.65, {yaw3}, {pit}, 14); GAME.step(0.05)")
             pic('13_mittag_milan')
     if 'flucht' in want:
         # walk at the roe deer: they look up, then the group bounds away towards cover, and stays there a while
@@ -196,7 +202,7 @@ with lib.browser() as b:
         L = math.hypot(dx, dy) or 1
         vx, vy = fx + dx / L * 160, fy + dy / L * 160
         yaw = math.degrees(math.atan2(fx - vx, fy - vy))
-        E(f"GAME.view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw}, -2, 45); GAME.step(0.1)")
+        E(f"__view({vx}, {vy}, ROADS.groundAt({vx}, {vy}) + 1.65, {yaw}, -2, 45); GAME.step(0.1)")
         steps(1.0)
         n0 = J(f"TIERE.list().filter(a => a.g === '{r['id']}')")
         ck('the group is there, not fleeing yet', len(n0) >= 1 and not any(a['mode'] == 'flee' for a in n0), str(n0))
@@ -232,7 +238,7 @@ with lib.browser() as b:
         at(10, 0, date=(11, 6))
         E("HUND.on = true")
         # on the open field by the L 1625, walking north-east
-        E("GAME.view(-150, -400, ROADS.groundAt(-150, -400) + 1.65, 40, -4, 60); GAME.step(0.1)")
+        E("__view(-150, -400, ROADS.groundAt(-150, -400) + 1.65, 40, -4, 60); GAME.step(0.1)")
         E("(() => { const P = GAME.P; P.body = P.yaw = 40; HUND.x = P.x + 1; HUND.y = P.y - 6; })()")
         steps(0.2)
         d0 = J("HUND.state()")
@@ -247,7 +253,7 @@ with lib.browser() as b:
         d2 = J("HUND.state()")
         ck('standing still he sits beside you (after a few seconds)', d2['still'] > 2.5 and d2['dist'] < 4.5, str(d2))
         # a picture from behind the walker towards the dog
-        E("(() => { const P = GAME.P, D = HUND; const yaw = Math.atan2(D.x - P.x, D.y - P.y) * 180 / Math.PI; GAME.view(P.x - Math.sin(yaw * Math.PI / 180) * 2.5, P.y - Math.cos(yaw * Math.PI / 180) * 2.5, GAME.floorAt(P.x, P.y, P.feet) + 1.5, yaw, -18, 55); })()")
+        E("(() => { const P = GAME.P, D = HUND; const yaw = Math.atan2(D.x - P.x, D.y - P.y) * 180 / Math.PI; __view(P.x - Math.sin(yaw * Math.PI / 180) * 2.5, P.y - Math.cos(yaw * Math.PI / 180) * 2.5, GAME.floorAt(P.x, P.y, P.feet) + 1.5, yaw, -18, 55); })()")
         E("GAME.step(0.05)")
         pic('30_hund_sitzt')
     if 'einfluss' in want:
@@ -262,7 +268,7 @@ with lib.browser() as b:
         tinted = E("FOREST.list.filter(t => t.tint).length")
         ck('… their crowns tinted in the forest (world/forest.js hook)', tinted >= 8, str(tinted))
         px, py = (st['plot']['x'], st['plot']['y']) if st['plot'] else (-470, -500)
-        E(f"GAME.view({px} + 6, {py} - 9, ROADS.groundAt({px} + 6, {py} - 9) + 1.6, -15, -12, 55); GAME.step(0.1)")
+        E(f"__view({px} + 6, {py} - 9, ROADS.groundAt({px} + 6, {py} - 9) + 1.6, -15, -12, 55); GAME.step(0.1)")
         pa = progs()
         E("GAME.step(0.05)")
         pic('40_pflanzung_vorher')
@@ -292,15 +298,28 @@ with lib.browser() as b:
         ck('quiet zone: no felling within 100 m of the stork\'s nest, within 300 m none in the breeding season, free in November',
            r1 and r1['zone'] == 'horst' and r2 and r2['zone'] == 'brutzeit' and r3 is None, f'{r1} | {r2} | {r3}')
         if nest:
-            E(f"GAME.view({nest[0]} - 14, {nest[1]} - 10, ROADS.groundAt({nest[0]} - 14, {nest[1]} - 10) + 1.7, 55, 38, 60); GAME.step(0.1)")
+            E(f"__view({nest[0]} - 14, {nest[1]} - 10, ROADS.groundAt({nest[0]} - 14, {nest[1]} - 10) + 1.7, 55, 38, 60); GAME.step(0.1)")
             pic('42_horst')
         # beetle trees from the field, and the bore dust at the foot of a fresh one
         kl = J("TIERE.kaefer.list()")
         red = [k for k in kl if k['stage'] == 2]
         if red:
             k = red[0]
-            E(f"GAME.view({k['x']} + 26, {k['y']} + 30, ROADS.groundAt({k['x']} + 26, {k['y']} + 30) + 1.7, {math.degrees(math.atan2(-26, -30))}, 8, 60); GAME.step(0.1)")
+            E(f"__view({k['x']} + 26, {k['y']} + 30, ROADS.groundAt({k['x']} + 26, {k['y']} + 30) + 1.7, {math.degrees(math.atan2(-26, -30))}, 8, 60); GAME.step(0.1)")
             pic('43_kaeferfichten')
+        # the bark beetle through a summer (time-lapse May to August): new attacks, the brood flies out into the neighbours after
+        # ~6 weeks; a beetle tree taken out of the forest is gone from the list
+        at(11, 0, date=(5, 1))
+        k0 = J("TIERE.schaden().sum")
+        E("TIERE.sim(110)")
+        k1 = J("TIERE.schaden().sum")
+        print('beetle summer', k0, k1, flush=True)
+        ck('a summer in time-lapse: new beetle attacks and broods flying out', (k1.get('kaefer', 0) > k0.get('kaefer', 0)) and (k1.get('ausflug', 0) > k0.get('ausflug', 0)), f'{k0} -> {k1}')
+        kl = J("TIERE.kaefer.list()")
+        fresh = [k for k in kl if k['stage'] < 3]
+        if fresh:
+            E(f"TIERE.kaefer.raus({fresh[0]['id']})")
+            ck('a beetle tree out of the forest (felled and taken out) is off the list, its crown untinted', not any(k['id'] == fresh[0]['id'] for k in J("TIERE.kaefer.list()")) and not E(f"!!FOREST.byId({fresh[0]['id']}).tint"), str(fresh[0]))
         # rooting in the garden: an electric fence keeps the sounders out (counted from the damage log: nights in the garden)
         garden_n = "TIERE.schaden({ circle: [-4, -10, 12] }).sum.wuehlen || 0"
         E("TIERE.schutz.add({ id: 'ez', kind: 'elektrozaun', x: -4, y: -10, r: 40 })")
@@ -315,11 +334,31 @@ with lib.browser() as b:
         print('garden rooting nights', w0, w1, w2, flush=True)
         ck('with the electric fence no rooting in the garden meadow (an autumn)', w1 == w0, f'{w0} -> {w1}')
         ck('… without it the sounders come (autumn nights, several running)', w2 > w1, f'{w1} -> {w2}')
-        E("GAME.view(-4, -18, ROADS.groundAt(-4, -18) + 1.7, 0, -14, 60); GAME.step(0.1)")
+        E("__view(-4, -18, ROADS.groundAt(-4, -18) + 1.7, 0, -14, 60); GAME.step(0.1)")
         pic('44_garten_wuehlstellen')
+        # chickens where someone decides to keep them (the strategy mode): coop and flock in the garden, eggs, the fox and the open hatch
+        E("TIERE.huehner({ x: 14, y: -20, n: 6, zu: true })")
+        at(10, 0, date=(5, 10))
+        steps(1.6)
+        hh = J("({ coop: !!THUEHNER.coop, hens: THUEHNER.hens.length, c: TEINFLUSS.E.huehner })")
+        ck('chickens: a coop and six hens where the strategy mode puts them', hh['coop'] and hh['hens'] == 6, str(hh))
+        E("__view(9.0, -26.5, ROADS.groundAt(9.0, -26.5) + 1.65, 40, -16, 60); GAME.step(0.1)")
+        steps(0.6)
+        pic('46_huehner')
+        e0 = J("TEINFLUSS.E.huehner.eier")
+        E("TIERE.sim(10)")
+        e1 = J("TEINFLUSS.E.huehner")
+        ck('in May six hens lay four to five eggs a day', e1['eier'] - e0 >= 30, f"{e0} -> {e1}")
+        E("TIERE.huehner({ x: 14, y: -20, n: 6, zu: false })")
+        E("TIERE.sim(60)")
+        e2 = J("TEINFLUSS.E.huehner")
+        ck('the hatch left open at night: the fox takes hens', e2['n'] < 6, str(e2))
+        E("TIERE.huehner(null)")
+        steps(1.2)
+        ck('… and without chickens no coop', not E("!!THUEHNER.coop"), '')
         # a sign found: walk to a wallow
-        w = J("(() => { const g = TIERE.groups.find(g => g.art === 'wildschwein'); return [g.home[0] + 18 * Math.cos(g.seed % 7), g.home[1] + 18 * Math.sin(g.seed % 7)]; })()")
-        E(f"GAME.view({w[0]} + 5, {w[1]}, ROADS.groundAt({w[0]} + 5, {w[1]}) + 1.7, -90, -25, 60); GAME.step(0.1)")
+        w = J("TIERE.groups.find(g => g.art === 'wildschwein').wallowAt")
+        E(f"__view({w[0]} + 5, {w[1]}, ROADS.groundAt({w[0]} + 5, {w[1]}) + 1.7, -90, -25, 60); GAME.step(0.1)")
         steps(1.2)
         ev = J("window.__ev.filter(e => e.kind === 'spur')")
         ck('a sign found: the wallow (tiere:entdeckt, kind spur, with a source)', any(e['id'] == 'suhle' for e in ev), str(ev)[:300])
@@ -328,7 +367,7 @@ with lib.browser() as b:
     if 'lernen' in want:
         # the dog learns: what he did last is what praise and scolding are about; commands; the panel; kept after a reload
         at(10, 30, date=(11, 6))
-        E("HUND.on = true; GAME.view(-150, -400, ROADS.groundAt(-150, -400) + 1.65, 40, -4, 60); GAME.step(0.1)")
+        E("HUND.on = true; __view(-150, -400, ROADS.groundAt(-150, -400) + 1.65, 40, -4, 60); GAME.step(0.1)")
         steps(1.5)
         l0 = J("HUND.state()")
         E("HUND.act('vertreiben'); HUND.lob(1)")
@@ -361,7 +400,7 @@ with lib.browser() as b:
         r = J("(() => { const g = TIERE.nearest('reh', -150, -400); return { id: g.id, feed: g.feed }; })()")
         E("HUND.learn.jagen = 1; HUND.learn.vertreiben = 1; HUND.char.eifer = 1")
         at(16, 50, date=(11, 6))
-        E(f"TIERE.reset(); GAME.view({r['feed'][0]} + 95, {r['feed'][1]}, ROADS.groundAt({r['feed'][0]} + 95, {r['feed'][1]}) + 1.65, -90, -2, 60); GAME.step(0.1)")
+        E(f"TIERE.reset(); __view({r['feed'][0]} + 95, {r['feed'][1]}, ROADS.groundAt({r['feed'][0]} + 95, {r['feed'][1]}) + 1.65, -90, -2, 60); GAME.step(0.1)")
         steps(1.0)
         E(f"(() => {{ const P = GAME.P; HUND.x = P.x - 1; HUND.y = P.y; HUND.mode = 'follow'; HUND.task = null; }})()")
         E(f"(() => {{ const a = TIERE.live.find(a => a.g.id === '{r['id']}'); if (a) {{ HUND.x = a.x + 60; HUND.y = a.y; }} }})()")
@@ -387,6 +426,7 @@ with lib.browser() as b:
         pg.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000)
         time.sleep(2)
         E("window.FREEZE = true")
+        E(VIEWFN)
         got = J("HUND.state().learn")
         print('after reload', got, flush=True)
         ck('what he learned is kept after a reload (pav-hund-v1)', all(abs(got[k] - want_l[k]) < 0.002 for k in want_l), f'{want_l} / {got}')
@@ -409,4 +449,25 @@ with lib.browser() as b:
         except Exception as e:
             ck('the zombie night starts with the animals in the world', False, repr(e)[:200])
     ck.errors(errs)
+    if 'telefon' in want:
+        # a phone (Falko's iPhone): fewer animals, the dog's buttons inside the screen and clear of the joystick and the jump buttons
+        pg.close()
+        errs2 = []
+        pp = lib.page(b, 390, 844, errs2, 'schnell', is_mobile=True, has_touch=True, device_scale_factor=2)
+        lib.boot(pp, port)
+        E2 = pp.evaluate
+        E2(VIEWFN)
+        E2("GAME.setView3(false, true); (() => { const d = Math.floor(CLOCK.t / 1440); DN.e0 = Date.UTC(2026, 10, 5) / 864e5 - d; CLOCK.t = d * 1440 + 16 * 60 + 50; DN.update(true); })()")
+        E2("__view(-150, -400, ROADS.groundAt(-150, -400) + 1.65, 40, -4, 60); GAME.step(0.1)")
+        for i in range(40): E2("GAME.step(0.05)")
+        ph = json.loads(E2("""JSON.stringify((() => { const R = id => { const e = document.getElementById(id); if (!e || e.hidden) return null; const r = e.getBoundingClientRect();
+          return r.width ? [r.left, r.top, r.right, r.bottom].map(Math.round) : null; }; return { coarse: TIERE.max, live: TIERE.live.length, dog: R('hund-panel'), moves: R('moves'), joy: R('joy'), w: innerWidth, h: innerHeight }; })())"""))
+        print('phone', ph, flush=True)
+        ck('phone: at most 14 animals as models (instead of 26)', ph['coarse'] == 14 and ph['live'] <= 14, str(ph))
+        apart = lambda a, c: (not a or not c) or a[2] <= c[0] or c[2] <= a[0] or a[3] <= c[1] or c[3] <= a[1]
+        ck('phone: the dog\'s buttons inside the screen, clear of the joystick and the jump buttons', ph['dog'] and ph['dog'][0] >= 0 and ph['dog'][2] <= ph['w'] and ph['dog'][3] <= ph['h'] and apart(ph['dog'], ph['moves']) and apart(ph['dog'], ph['joy']), str(ph))
+        try:
+            E2("GAME.shot()"); pp.screenshot(path=os.path.join(OUT, '70_telefon.png'), timeout=120000)
+        except Exception as e: print('note: phone picture', repr(e)[:120])
+        ck.errors(errs2)
 ck.done()

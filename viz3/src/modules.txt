@@ -179,6 +179,7 @@ tiere/tiere_koerper.js      # feat/tiere the bodies: procedural, true to size, s
 tiere/tiere_ton.js          # feat/tiere the animals' voices: free recordings, positional, loaded on first need; the dog's whistle (TTON)
 tiere/tiere.js              # feat/tiere the animals in the world: habitat from the crowns, groups by day and season, flight, discovery (TIERE)
 tiere/tiere_einfluss.js     # feat/tiere what they do: browsing, rooting, the bark beetle, voles; protection, quiet zones, signs, the API (TEINFLUSS)
+tiere/tiere_huehner.js      # feat/tiere chickens where someone keeps them (the strategy mode): a coop, the flock by day, in at dusk, eggs (THUEHNER)
 tiere/tiere_hund.js         # feat/tiere the companion dog Hasso: follows, is called and sent, learns from praise and scolding (HUND)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
