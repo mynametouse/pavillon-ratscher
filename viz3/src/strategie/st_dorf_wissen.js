@@ -51,7 +51,7 @@ export const STDWISSEN = (() => {
       icon: '🍏',
       title: 'Die Streuobstwiese',
       text: 'Hochstämmige Obstbäume, locker über eine Wiese verstreut, die gemäht oder beweidet wird: Streuobstwiesen gehören zu den artenreichsten Lebensräumen Mitteleuropas. In den Höhlen alter Bäume brüten Gartenrotschwanz und Steinkauz, im Gras und in den Blüten leben Wildbienen und Schmetterlinge. Seit 2022 sind Streuobstwiesen bundesweit als Biotop geschützt. Alte Sorten wie Kaiser Wilhelm, Schöner von Boskoop oder die Hauszwetschge sind robust und kommen mit wenig Spritzmittel aus.',
-      here: 'Auf der Hangwiese bei Ratscher: zwölf junge Hochstämme aus der Baumschule Kammbach, gepflanzt zwischen Oktober und März, mit Pfahl auf der Wetterseite, Wühlmauskorb und Drahthose gegen Rehe. Bis sie richtig tragen, vergehen fünf bis zehn Jahre.',
+      here: 'Auf der Hangwiese bei Ratscher: zwölf junge Hochstämme aus der Baumschule Kammbach, gepflanzt zwischen Oktober und März, mit Pfahl auf der Wetterseite, Wühlmauskorb und Drahthose gegen Rehe. Erste Äpfel gibt es nach fünf bis acht Jahren, volle Ernten erst nach zehn bis fünfzehn.',
       src: [
         ['§ 30 Abs. 2 Nr. 7 Bundesnaturschutzgesetz', 'https://www.gesetze-im-internet.de/bnatschg_2009/__30.html'],
       ],
