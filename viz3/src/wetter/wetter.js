@@ -218,6 +218,7 @@ export const WETTER = (() => {
     graupel: 'Graupel',
     nebel: 'Nebel',
     sturm: 'Sturm',
+    reif: 'Reif',
   };
   // ---- the effects: eased towards the chosen weather (a few seconds; quick in the time-lapse; at once after loading or for a test) ----
   const ZERO = { cover: 0, rain: 0, snow: 0, vis: 60000, wind: 0, gust: 0, dir: 250 };
@@ -242,15 +243,19 @@ export const WETTER = (() => {
     dt = Math.min(dt, 0.25);
     const snap = S.snapNext;
     // the choice once a second (and at once after a change); the effects every frame
-    if ((S.acc += dt) > 1 || !S.picked || snap) {
+    const due = (S.acc += dt) > 1 || !S.picked || snap;
+    if (due) {
       S.acc = 0;
       S.picked = true;
       pick(false);
       S.wetWant = wetness();
       S.snowWant = snowCover();
-      badge();
     }
     ease(dt);
+    if (due) {
+      badge();
+      ambience();
+    }
     const on = shown(),
       c = S.cur,
       wx = S.w || {},
@@ -312,6 +317,25 @@ export const WETTER = (() => {
     lightning(dt, on && !!wx.thunder);
   }
   KERN.tick(tick, 'wetter');
+  // ---- the surroundings' own sounds (audio/audio.js): birds fall silent in the rain, in a thunderstorm, in fog and a gale; the light
+  //      wind of the ambience follows the real wind (a calm night is still, a breeze is heard; the storm has its own recording) ----
+  function ambience() {
+    const w = shown() ? S.w : null;
+    if (!audio.weather) return;
+    if (!w) {
+      S.amb = { birds: 1, wind: 1 };
+      return audio.weather(S.amb);
+    }
+    const c = S.cur,
+      birds =
+        (w.thunder ? 0 : 1) *
+        (1 - 0.95 * clamp(c.rain / 1.5, 0, 1)) *
+        (1 - 0.6 * clamp(c.snow / 0.5, 0, 1)) *
+        (c.vis < 1000 ? 0.6 : 1) *
+        (1 - 0.6 * clamp((c.wind - 8) / 6, 0, 1));
+    S.amb = { birds, wind: 0.3 + 0.7 * clamp(c.wind / 5, 0, 1) };
+    audio.weather(S.amb);
+  }
   // ---- snow lying: the data's snow depth (a few centimetres cover the ground; the current values lack it – then the hour's) ----
   function snowCover() {
     const w = S.w;
@@ -321,7 +345,31 @@ export const WETTER = (() => {
       const r = WXDATA.at(S.store, gameU());
       d = r && r.SD;
     }
-    return clamp((d || 0) / 0.04, 0, 1);
+    return Math.max(clamp((d || 0) / 0.04, 0, 1), frost());
+  }
+  // ---- hoarfrost: after a clear, calm, cold and humid night (any of the last eight hours) the ground and the roofs turn white-grey –
+  //      the ground cools below the air, so it forms at up to ~+2 °C in the air; it melts once the sun climbs (and when it is mild) ----
+  const sstp = (a, b, x) => {
+    const t = clamp((x - a) / (b - a), 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+  const frostOf = r =>
+    !r || !Number.isFinite(r.T)
+      ? 0
+      : sstp(3, -1, r.T) *
+        (1 - sstp(0.3, 0.7, (r.C ?? 50) / 100)) *
+        (1 - sstp(2, 5, (r.W ?? 10) / 3.6)) *
+        sstp(70, 90, r.H ?? 85) *
+        (1 - sstp(0.05, 0.4, (r.P ?? 0) + (r.R ?? 0)));
+  function frost() {
+    let f = frostOf(S.rec);
+    if (S.src !== 'probe') {
+      const u = gameU();
+      for (let k = 1; k <= 8; k++) f = Math.max(f, frostOf(WXDATA.at(S.store, u - k * 3600)) * (1 - k / 12));
+    }
+    const sunEl = DN.state ? DN.state.sunEl : 0,
+      T = S.w && Number.isFinite(S.w.temp) ? S.w.temp : 0;
+    return 0.32 * f * (1 - sstp(8, 22, sunEl)) * (1 - sstp(3, 6, T));
   }
   // ---- how wet the ground is: the rain now and in the last hours (fading with an e-time of about 1.6 h; snow only when it melts) ----
   function wetness() {
@@ -377,10 +425,13 @@ export const WETTER = (() => {
                     ? 0.6
                     : Math.max(0, 0.45 * (1 - (t - 0.21) / 0.3));
       F.k = k * F.near;
-      WXSKY.U.wxFlash.value = F.k * F.k * 2.4;
+      // by day a flash barely brightens the scene (the daylight is far stronger), at night it lights everything for a moment
+      const nt = DN.state && Number.isFinite(DN.state.night) ? DN.state.night : 0,
+        f = 0.12 + 0.88 * nt;
+      WXSKY.U.wxFlash.value = F.k * F.k * 2.4 * f;
       // the flash lights the land from the whole sky: the hemisphere and the image light (the day's light restores both after it)
-      hemi.intensity = F.base + F.k * 2.2;
-      scene.environmentIntensity = F.envBase * (1 + 3 * F.k * F.k);
+      hemi.intensity = F.base + F.k * 2.2 * f;
+      scene.environmentIntensity = F.envBase * (1 + 3 * F.k * F.k * f);
       WXSKY.U.wxBolt.value.set(F.az, F.bolt && k > 0.5 ? F.k : 0, F.seed, 0.0025);
       markDirty();
       if (t > 0.5) {
@@ -628,6 +679,7 @@ export const WETTER = (() => {
       sky: { cov: WXSKY.U.wxCov.value, fog: WXSKY.U.wxFog.value, mask: WXSKY.S.mask, patched: WXSKY.patched },
       ton: WXTON.levels(),
       rec: WXTON.recorded(),
+      amb: S.amb || null,
       fallU: {
         wind: [WXFALL.U.uWind.value.x, WXFALL.U.uWind.value.y],
         rain: WXFALL.U.uRain.value.toArray(),
@@ -635,8 +687,10 @@ export const WETTER = (() => {
         hole: WXFALL.U.uHole.value,
       },
       flash: S.flash.k,
+      skyFlash: WXSKY.U.wxFlash.value,
       wet: S.wet,
       snowCover: S.snowC,
+      frost: frost(),
       boden: WXBODEN.count(),
       flashes: S.flash.n,
       automated: AUTOMATED,

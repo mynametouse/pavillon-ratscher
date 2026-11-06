@@ -32,14 +32,18 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - **Nasser Boden, Schnee liegt** (`wetter/wx_boden.js`): Regen macht Gelände, Felder, Kacheln, Brücken, den Gartenboden und (etwas) die Dächer
   dunkler und glänzender – und das bleibt Stunden nach dem Regen (aus dem Niederschlag der letzten Stunden der Daten). Liegt Schnee
   (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände, Bäume, Gras bleiben.
-  Nur Farbe/Rauheit/Leuchten der Materialien (Uniforms), die Originale kommen genau zurück.
+  Nur Farbe/Rauheit/Leuchten der Materialien (Uniforms), die Originale kommen genau zurück. Die neuen 3D-Gebäude (`gebaeude/`) nutzen das
+  Dachmaterial des Dorfs und werden mit nass und weiß. **Reif:** nach einer klaren, windstillen, kalten, feuchten Stunde der letzten acht
+  (Luft bis ~+2 °C – der Boden ist kälter) liegen Boden und Dächer weißgrau; er taut, wenn die Sonne steigt (ab ~8°, bis ~22° weg) oder
+  wenn es mild wird.
 - **Zu hören** (`wetter/wx_ton.js`): echte Aufnahmen über Wikimedia Commons (`viz3/extra/wetter/dist/wetter/`, `ton.json`, ~1,7 MB,
   geschnitten mit `viz3/extra/wetter/quellen/ton.py` auf GitHub Actions, `.github/workflows/wetter-ton.yml` – Commons begrenzt Abrufe vom
   Chat-Rechner): Regen (gemeinfrei), ab 2 mm/h ein deutscher Sommer-Platzregen darüber (CC BY-SA 3.0), drinnen und im Auto Regen aufs
   Vordach (gemeinfrei), Wind aus einem Sturm von 25 m/s im Kiefernwald (CC BY-SA 4.0) hinter einem Tiefpass, der mit dem Wind aufgeht
   (Brise: fernes Rauschen, Sturm: volles Tosen), drei Donner (gemeinfrei, CC BY-SA 4.0, CC BY 3.0) nach Entfernung verzögert und gedämpft.
   Jede Art wird erst geladen, wenn ihr Wetter kommt (kein Speicher für Sturm und Donner an einem ruhigen Tag). Nieselregen und
-  Sturmpfeifen im Browser erzeugt.
+  Sturmpfeifen im Browser erzeugt. Die Atmosphäre des Spiels hört mit: Vögel verstummen bei Regen, Gewitter, Nebel und Sturm, der leise
+  Wind der Atmosphäre folgt dem echten Wind (eine windstille Nacht ist still).
 - **Die nächsten Stunden:** im Uhrfenster unter der Zeile alle zwei Stunden ab der Spielzeit („16 Uhr Regen · 7 °C“), so weit die Daten reichen.
 - **Mitfahren und fahren:** im Auto (fahren, mitfahren) und im Bus keine Tropfen in der Kabine (Bus: 7 m, er ist lang), der Regen trommelt
   aufs Dach, keine Spritzer.
@@ -67,7 +71,6 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Einstellung „Spielzeit: wie draußen“) – das betrifft das ganze Spiel, deshalb nicht hier entschieden.
 - Bäume und Gras wiegen nicht im Wind: die Gartenbäume tauschen ez-trees Blattmaterial gegen ein eigenes (`garden/trees.js`, `patchSV`)
   ohne Wiegen; das ginge nur über die Blatt-Shader dort (gemeinsame Datei).
-- Vögel singen auch im Regen; die Atmosphäre von `audio/audio.js` kennt das Wetter nicht (ein Haken dort: Vögel × (1 − Regen)).
 - Pfützen, Spritzer am Boden; Regen am Fenster und an der Windschutzscheibe.
 - Lichtglocke der Städte unter der Wolkendecke nachts.
 
@@ -79,6 +82,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
     im Rückgabeobjekt `skyMat: dnSkyMat` und `hook: HOOK`.
   - `viz3/src/time/clock.js`: `CLOCK.section({ html, bind })` – weitere Abschnitte im Uhrfenster nach dem Datum; `CLOCK.redraw()`.
   - `viz3/src/core/save.js`: ein Schlüssel `pav-wetter-v1`.
+  - `viz3/src/audio/audio.js`: `wxBirds`, `wxWind` (Standard 1) und `audio.weather({ birds, wind })` – Vögel (Schleife und Einzelrufe) und
+    der leise Wind (Aufnahme und erzeugter) werden damit multipliziert; fünf markierte Stellen.
   - `viz3/src/modules.txt`: Block `# feat/wetter` vor `game/tutorial.js`.
 - Die Menüzeile „Wetter“ setzt `wetter/wetter.js` selbst unter „Spielzeit“ ein (keine Änderung an `shell/menu.html`); das Wetterzeichen
   hängt es als `span.wxi` an `#clockbtn` (die Uhr und DN schreiben nur `.hbt` und das erste `.hbi`).
