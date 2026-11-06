@@ -254,6 +254,7 @@ export const WXDATA = (() => {
     schnee: { WC: 73, C: 100, P: 1.1, SN: 1.6, V: 1400, W: 11, G: 22, D: 60, T: -2, SD: 0.08 },
     graupel: { WC: 77, C: 100, P: 0.8, SN: 0.6, R: 0.4, V: 3000, W: 16, G: 30, D: 300, T: 1 },
     sturm: { WC: 3, C: 92, V: 18000, W: 62, G: 98, D: 255, T: 8 },
+    reif: { WC: 0, C: 3, V: 14000, W: 4, G: 7, D: 100, T: -3, H: 94 },
     gewitter: { WC: 95, C: 100, P: 9, R: 3, SH: 6, V: 3000, W: 30, G: 72, D: 245, T: 18 },
   };
   return { LAT, LON, VAR, url, plan, parse, at, text, norm, PRESETS, CODE, ymdOf };

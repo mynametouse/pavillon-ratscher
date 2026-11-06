@@ -28,11 +28,18 @@ export const WXSKY = (() => {
     wxCol: { value: new THREE.Color(0.6, 0.6, 0.62) },
     wxHor: { value: new THREE.Color(0.6, 0.6, 0.62) },
     wxSun: { value: new THREE.Color(1, 0.95, 0.85) },
+    // the low sun lighting the clouds from below (sunset, sunrise)
+    wxLow: { value: new THREE.Color(0, 0, 0) },
+    // a bolt of lightning: x its azimuth (rad, three.js x/z), y strength, z a seed for its zigzag, w width (rad)
+    wxBolt: { value: new THREE.Vector4(0, 0, 0, 0.0025) },
     wxGlow: { value: new THREE.Color(0, 0, 0) },
+    // where the towns lie (three.js x, z of the horizontal direction): Schleusingen (4.7 km) and Suhl (16.6 km) at 338°,
+    // Hildburghausen (6.1 km) at 216° from Ratscher
+    wxTown: { value: new THREE.Vector4(-0.36, -0.93, -0.59, 0.81) },
     wxT: { value: new THREE.Vector2(0, 0) },
   };
   // ---- the cloud layer in the sky's program: the same noise as wxMask below ----
-  const GLSL = `uniform float wxCov, wxDark, wxFog, wxFlash; uniform vec3 wxCol, wxHor, wxSun, wxGlow; uniform vec2 wxT;
+  const GLSL = `uniform float wxCov, wxDark, wxFog, wxFlash; uniform vec3 wxCol, wxHor, wxSun, wxGlow, wxLow; uniform vec2 wxT; uniform vec4 wxTown, wxBolt;
      float wxH(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
      float wxN(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
        return mix(mix(wxH(i), wxH(i + vec2(1.0, 0.0)), u.x), mix(wxH(i + vec2(0.0, 1.0)), wxH(i + vec2(1.0, 1.0)), u.x), u.y); }
@@ -49,10 +56,19 @@ export const WXSKY = (() => {
        // broken clouds: thin edges bright, cores grey; a closed deck: soft structure, brighter towards the zenith; darker when it rains
        float shade = mix(1.12 - 0.42 * k.y, 0.92 + 0.12 * (1.0 - k.y), closed) * (0.8 + 0.42 * up) * (1.0 - 0.38 * wxDark);
        vec3 cc = wxCol * shade + wxSun * pow(s, 10.0) * (1.0 - k.y) * (1.0 - closed) * 0.9;
-       cc += wxGlow * (0.35 + 0.65 * (1.0 - up) * (1.0 - up));
+       // sunset and sunrise: the low sun lights the undersides warm across much of the sky, most towards itself, the thin parts most
+       cc += wxLow * (0.3 + 0.7 * pow(s, 3.0)) * (1.0 - 0.5 * k.y) * (1.0 - 0.75 * closed) * (0.6 + 0.4 * (1.0 - up));
+       vec2 hz = normalize(d.xz + vec2(1e-5)); float tw = 0.35 + 0.65 * pow(max(dot(hz, wxTown.xy), 0.0), 2.0) + 0.5 * pow(max(dot(hz, wxTown.zw), 0.0), 2.0);
+       cc += wxGlow * tw * (0.15 + 0.85 * (1.0 - up) * (1.0 - up));
        cc = mix(wxHor, cc, smoothstep(-0.02, 0.1, d.y));
        c = mix(c, cc, k.x);
        c += vec3(0.82, 0.86, 1.0) * wxFlash * (0.45 + 0.55 * k.x);
+       // the bolt: from the cloud base down to the land, its course zigzagging with the height; a faint glow around it
+       if (wxBolt.y > 0.0) { float el = asin(clamp(d.y, -1.0, 1.0));
+         if (el > -0.01 && el < 0.42) { float t = el / 0.42;
+           float off = (wxN(vec2(t * 9.0, wxBolt.z)) - 0.5) * 0.07 + (wxN(vec2(t * 37.0, wxBolt.z + 7.0)) - 0.5) * 0.018;
+           float da = atan(d.x, -d.z) - (wxBolt.x + off); da = mod(da + 3.14159265, 6.28318531) - 3.14159265;
+           c += vec3(0.86, 0.9, 1.0) * wxBolt.y * (8.0 * exp(-da * da / (wxBolt.w * wxBolt.w)) + 0.35 * exp(-da * da / 0.0012)); } }
        return mix(c, wxHor, wxFog); }
      `;
   const M = DN.skyMat;
@@ -137,6 +153,9 @@ export const WXSKY = (() => {
     // the clouds' own colour: the grey of the horizon, a little brighter (seen from below the deck is lit from above)
     U.wxCol.value.copy(L.fog).multiplyScalar(1.12);
     U.wxSun.value.copy(L.sunC).multiplyScalar(Math.min(2.5, L.sun * 0.5) * day);
+    // the low sun under the clouds (from 14° down to just below the horizon): warm undersides, as bright as the sky there
+    const low = sst(-4.5, 0.5, s.sunEl) * sst(14, 3, s.sunEl);
+    U.wxLow.value.copy(L.sunC).multiplyScalar(low * 0.75 * g);
     U.wxCov.value = c;
     U.wxDark.value = dark;
     U.wxFog.value = fogK;
@@ -157,10 +176,10 @@ export const WXSKY = (() => {
     // night: the lights of the towns around (Schleusingen, Suhl, Hildburghausen) light the underside of a deck dull orange-grey, the
     // haze over the land a little too – an overcast night is never quite black
     const glow = (s.night || 0) * clamp(c * 1.2 - 0.2, 0, 1) * (1 - 0.5 * fogK);
-    U.wxGlow.value.setRGB(0.011, 0.0075, 0.0048).multiplyScalar(glow);
-    L.fog.r += 0.006 * glow;
-    L.fog.g += 0.0042 * glow;
-    L.fog.b += 0.0028 * glow;
+    U.wxGlow.value.setRGB(0.0065, 0.0045, 0.0029).multiplyScalar(glow);
+    L.fog.r += 0.0035 * glow;
+    L.fog.g += 0.0025 * glow;
+    L.fog.b += 0.0016 * glow;
     U.wxHor.value.copy(L.fog);
     // night: no stars and no moonlight through a closed deck or fog
     const hide = clamp(sst(0.3, 0.9, c) + fogK, 0, 1);

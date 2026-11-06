@@ -479,10 +479,14 @@ export const audio = (() => {
     const t = ctx.currentTime,
       g = Math.random(),
       d = 2.5 + Math.random() * 5;
-    windG.gain.setTargetAtTime((0.08 + g * 0.24) * windMul, t, d * 0.35);
+    windG.gain.setTargetAtTime((0.08 + g * 0.24) * windMul * wxWind, t, d * 0.35); // feat/wetter: × wxWind
     windF.frequency.setTargetAtTime(380 + g * 520, t, d * 0.4);
     later(gusts, d * 1000);
   }
+  // feat/wetter: the weather's say on the surroundings (wetter/wetter.js, audio.weather) – birds fall silent in the rain, the light
+  // wind loop follows the real wind; 1 and 1 without weather
+  let wxBirds = 1,
+    wxWind = 1;
   let windMul = 1,
     stoveVol = 0,
     forest = 0;
@@ -491,7 +495,8 @@ export const audio = (() => {
     const bird = () => {
       if (!ctx) return;
       const dusk = tod === 'dusk';
-      if (on && vis) {
+      // feat/wetter: fewer birds in the rain
+      if (on && vis && Math.random() < wxBirds) {
         const kinds = ['bird_blackbird', 'bird_greattit', 'bird_chaffinch', 'bird_robin'].filter(has);
         const pan = Math.random() * 1.6 - 0.8,
           v = (dusk ? 0.35 : 0.6) * (0.4 + Math.random() * 0.6);
@@ -744,9 +749,10 @@ export const audio = (() => {
     amb.gain.setTargetAtTime(inside ? 0.55 : 1, t, 0.25);
     wetBus.gain.setTargetAtTime(inside ? 0.22 : 0.0, t, 0.2);
     const day = tod !== 'dusk';
-    if (loops.amb_birds_day) loops.amb_birds_day.g.gain.setTargetAtTime(day ? (tod === 'day' ? 0.75 : 0.6) : 0, t, 1.5);
+    if (loops.amb_birds_day)
+      loops.amb_birds_day.g.gain.setTargetAtTime(day ? (tod === 'day' ? 0.75 : 0.6) * wxBirds : 0, t, 1.5); // feat/wetter: × wxBirds
     if (loops.amb_dusk) loops.amb_dusk.g.gain.setTargetAtTime(day ? 0 : 0.8, t, 1.5);
-    if (loops.amb_wind) loops.amb_wind.g.gain.setTargetAtTime(0.35 * windMul, t, 1.0);
+    if (loops.amb_wind) loops.amb_wind.g.gain.setTargetAtTime(0.35 * windMul * wxWind, t, 1.0); // feat/wetter: × wxWind
     const ds = Math.hypot(P.x - G.STV[0], P.y - G.STV[1]);
     const inEG = P.mode === 'walk' && P.feet < G.zU - 0.4 && inside;
     const fire = window.STOVE ? LATE.STOVE.level() : tod !== 'day' ? 1 : 0; // V14: the fire burns once it has been lit (game/quests.js)
@@ -812,6 +818,11 @@ export const audio = (() => {
     step,
     door,
     update,
+    // feat/wetter: { birds: 0–1, wind: 0–1.5 } from the weather (wetter/wetter.js)
+    weather(o) {
+      if (o && Number.isFinite(o.birds)) wxBirds = Math.max(0, Math.min(1, o.birds));
+      if (o && Number.isFinite(o.wind)) wxWind = Math.max(0, Math.min(1.5, o.wind));
+    },
     setTime(m) {
       tod = m;
     },
