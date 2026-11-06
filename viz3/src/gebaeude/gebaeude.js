@@ -696,8 +696,11 @@ export const GEB = (() => {
     return J;
   }
   function runJobs() {
-    const t0 = performance.now();
-    while (JOBS.length && performance.now() - t0 < 8) {
+    if (!JOBS.length) return;
+    // the ground first: while the world's tiles load (a car at the edge of the square waits for them), 2 ms of building per frame
+    const t0 = performance.now(),
+      budget = WELT.state && WELT.state().loading > 0 ? 2 : 8;
+    while (JOBS.length && performance.now() - t0 < budget) {
       const J = JOBS[0];
       if (!J.dead && J.i < J.list.length) {
         try {

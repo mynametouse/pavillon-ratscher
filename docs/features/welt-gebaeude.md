@@ -33,8 +33,8 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   Schleusingen um die Altstadt herum (1,7 km um den Markt, ohne die 789 Häuser von `welt/schleusingen.js`), die Straßen, die man fährt
   (`welt/fahrt.js`, 600 m beiderseits: Richtung Schleusingen und Kloster Veßra mit den Dörfern unterwegs samt ihren Seitenstraßen),
   Kloster Veßra (950 m, ohne die 156 Häuser von `welt/vessra.js`). Eine Zelle wird geholt und gebaut, wenn man ihr näher als 700 m kommt
-  (Telefone 500 m), und jenseits von 900 m (680 m)
-  freigegeben; ihr Fuß auf dem Gelände, wie es dort gezeichnet ist (die Kacheln von `welt/welt.js`, sonst das grobe Gelände – kommt eine
+  (Telefone 500 m), und jenseits von 900 m (680 m) freigegeben; gebaut in Stücken von 8 ms je Bild, solange Kacheln der Welt laden nur
+  2 ms (der Boden zuerst – ein Auto am Rand des Quadrats wartet auf ihn); ihr Fuß auf dem Gelände, wie es dort gezeichnet ist (die Kacheln von `welt/welt.js`, sonst das grobe Gelände – kommt eine
   Kachel später, wird die Zelle neu gesetzt). Fest über `KERN.pushOut` (Rang 15, antwortet nur, wenn es verschoben hat – Schleusingen und
   Veßra werden danach gefragt; Fahrzeuge draußen über `VEH.hitsOut`). `?nogebz` lässt sie weg.
   **Nichts in dem, was die Orte selbst modellieren** (`keepout()` in `tools/welt-gebaeude/wglib.py` – auch für andere Features:
