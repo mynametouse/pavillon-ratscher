@@ -154,7 +154,12 @@ Abfragen und Befehle:
   Einmal in Blender als glTF/GLB exportiert (mit Bewegungen), gehen sie wie der Fuchs über `PLANS.<art>.gltf` in `tiere/tiere_koerper.js`
   (Datei, Maßstab, Namen der Bewegungen, Farbtönung) – die Textur wird beim Laden in die Ecken gebacken. Für Wildschwein und Hund fand ich
   nichts Freies ohne Anmeldung, das besser ist als die gebauten Körper; die sind nach den Hinweisen des Leads verbessert (Fell nach Datum,
-  schlanke Läufe und Hals beim Reh, keilförmiger Kopf und Borstenkamm beim Wildschwein, voller Hund mit Halskrause).
+  Reh und Wildschwein nach echten Maßen, voller Hund mit Halskrause). Ehrlich: aus der Nähe (unter ~10 m) bleiben die gebauten Körper
+  glatte, einfache Formen ohne Fellstruktur – aus 40–150 m, wo man Wild wirklich sieht, lesen sie sich als Reh, Sau, Hirsch.
+- Hase, Dachs, Waschbär, Marder, Wildkatze sind noch grobe Abwandlungen eines Hundekörpers (Dachs breiter und grau, Hase mit gewölbtem
+  Rücken) – eine Runde wie bei Reh und Sau (Maße, Fotos, Bilder in 7 m) steht für sie aus.
+- Äsen: der Äser geht bis etwa 12 cm über den Boden (Hals steil, Kopf fast senkrecht); ganz hinunter bräuchte es eine leichte Beugung der
+  Vorderläufe – im Gras fällt es nicht auf.
 - Stimmen fehlen noch für Schwarzspecht, Wildkatze, Dachs und Waschbär (frei lizenzierte Aufnahmen suchen, z. B. xeno-canto mit CC BY-SA;
   `tiere/ton.json` ergänzen) – Milan, Bussard, Kolkrabe und Rothirsch kamen in der Nacht von xeno-canto dazu.
 - Wer in Ratscher wirklich Hühner hält, weiß ich nicht – deshalb stehen keine in der Welt, bis jemand (Strategie-Modus, Falko) sie hinstellt.
@@ -166,4 +171,9 @@ Abfragen und Befehle:
 - `viz3/src/world/forest.js`: markiert `// feat/tiere` – `FOREST.tint(t, rgb)` (Kronenfarbe eines Baums: Käferfichten) und die Farbe in
   `relod`/Fernkarten (Rinde bleibt).
 - Quellen: `viz3/extra/tiere/manifest.json` (`credits_add`).
+- Gelesen (nicht verändert): `PLAY.seat` (Mitfahren), `ZSTATE.on`, `P.mode`, `VEH.cur`, `R.domElement` (ob ein anderes Fenster auf den
+  Hund-Knöpfen liegt), `GPLAN.state`/`GPLAN.M.plantSteps` (gepflanzte Bäume, Wühlmauskorb), `RATSCHER`, `FOREST`, `ROADS`, Ronalds Ziegen
+  (`GOATS`, `GOATLURE`, `PAD`).
+- Die Lage der Gruppen folgt den Daten der Welt (Kronen, Gebäude): ändert eine andere Arbeit diese Daten, verschieben sich Rehe und Rotten
+  – Tests sollten Gruppen nach Eigenschaften wählen (draußen, mindestens zwei Tiere), nicht nach festen Koordinaten.
 - Neue `window`-Namen: `TARTEN`, `TKOERPER`, `TTON`, `TIERE`, `TEINFLUSS`, `THUEHNER`, `HUND`. Tasten: P (Hund rufen), Umschalt+P (schicken; nicht mehr U – das schaltet im Strategie-Modus zwischen oben und der Welt), + / − (loben/tadeln).
