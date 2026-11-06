@@ -227,11 +227,12 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
 
 ## Offen
 
-Der Traktor der Welt (`vehicles/tractor.js`) bleibt beim Rücken von oben an der Klinge stehen – das Gespann fährt nur auf der Karte, die
-Stämme liegen am Ende im Lager; Trockenschrank/Leimholz aus eigenen Bohlen
-von oben (`HOLZDRY.simShop` ist da, noch kein Auftrag), Brennholz spalten und verkaufen, das Telefon im Detail (Layout und Touch getestet, nicht
-auf einem echten Gerät). Der Hund (feat/tiere): von oben als Zeichen auf der Karte, seine Taten als Meldung mit „Loben“/„Tadeln“ – mehr
-(schicken, hüten als Auftrag) kann darauf aufbauen.
+- Der Traktor der Welt (`vehicles/tractor.js`) bleibt beim Rücken von oben an der Klinge stehen – das Gespann fährt nur auf der Karte, die
+  Stämme liegen am Ende im Lager. Ein Brennholzstapel ist in der Welt noch nicht zu sehen (nur als Vorrat); geheizt wird noch nicht
+  (Holzverbrauch im Winter, wenn jemand im Bungalow schläft).
+- Das Telefon: Layout, Antippen, Ziehen im Test (iPhone-Größe), noch nicht auf einem echten Gerät; die Zeitbox ist dort groß (drei Reihen).
+- Der Hund (feat/tiere): von oben als Zeichen auf der Karte, seine Taten als Meldung mit „Loben“/„Tadeln“ – mehr (schicken, hüten als
+  Auftrag) kann darauf aufbauen. Die Bestellung Lärche wird im Test begonnen (ein Brett), nicht ganz geliefert.
 
 ## Für den Lead
 
