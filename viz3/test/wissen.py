@@ -80,6 +80,7 @@ def run():
             pg.fill('#wibook .wi-find', 'milan'); time.sleep(0.2)
             sr = J("(() => { const b = document.querySelector('#wibook .wi-body'); const l = b.querySelector('.wi-lead'); return { lead: l ? l.textContent : '', items: [...b.querySelectorAll('[data-went]')].map(x => x.dataset.went) }; })()")
             ck('the book\'s search finds what was discovered („milan“ → Rotmilan)', 'tier:rotmilan' in sr['items'] and 'Treffer' in sr['lead'], str(sr))
+            page_pic('01b_suche')
             pg.fill('#wibook .wi-find', 'Talsperre'); time.sleep(0.2)
             sr2 = J("(() => { const b = document.querySelector('#wibook .wi-body'); return { lead: b.querySelector('.wi-lead').textContent, items: [...b.querySelectorAll('[data-went]')].map(x => x.dataset.went) }; })()")
             ck('…and of what is still hidden only how much (no titles)', 'g_talsperre' not in sr2['items'] and 'noch nicht entdeckt' in sr2['lead'], str(sr2))
