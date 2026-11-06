@@ -328,6 +328,8 @@ export const WETTER = (() => {
     // the white of lying snow follows the light that falls on it (sky, sun, image light)
     const light = clamp(0.5 * scene.environmentIntensity + 0.1 * sun.intensity + 0.6 * hemi.intensity, 0, 1.6);
     WXBODEN.set(S.wet, dt, S.snowC, light, S.frostC);
+    // snow on the crowns as on the ground (a little less: some falls through), rime thinner
+    WXWIND.white(Math.max(0.85 * S.snowC, 0.45 * S.frostC));
     lightning(dt, on && !!wx.thunder);
   }
   KERN.tick(tick, 'wetter');
@@ -762,6 +764,8 @@ export const WETTER = (() => {
         sway: WXWIND.U.wxSw.value.slice(),
         grass: WXWIND.S.grass,
         bend: WXWIND.UG.wxGr.value.slice(),
+        white: WXWIND.U.wxLW.value,
+        whiteP: WXWIND.S.white,
       },
       flashes: S.flash.n,
       automated: AUTOMATED,

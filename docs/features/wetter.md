@@ -37,12 +37,12 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   kleines Wetterzeichen (Wolken, Regen, Schnee, Nebel, Gewitter), sein Tooltip nennt die Zeile.
 - **Nasser Boden, Schnee liegt** (`wetter/wx_boden.js`): Regen macht Gelände, Felder, Kacheln, Brücken, den Gartenboden und (etwas) die Dächer
   dunkler und glänzender – und das bleibt Stunden nach dem Regen (aus dem Niederschlag der letzten Stunden der Daten). Liegt Schnee
-  (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände und Bäume bleiben.
+  (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände bleiben, die Kronen der Gartenbäume werden oben weiß (s. u.).
   Nur Farbe/Rauheit/Leuchten der Materialien (Uniforms), die Originale kommen genau zurück. Die neuen 3D-Gebäude (`gebaeude/`) nutzen das
   Dachmaterial des Dorfs und werden mit nass und weiß; die Grasbüschel des Rasens werden nass etwas dunkler und unter Schnee weiß.
   **Reif:** nach einer klaren, windstillen, kalten, feuchten Stunde der letzten acht (Luft bis ~+2 °C – der Boden ist kälter): die
   Grasbüschel am stärksten bereift, Dächer deutlich, Boden und Land wenig, Straßen kaum, ein Hauch Blau im Weiß; er taut, wenn die Sonne
-  steigt (ab ~8°, bis ~22° weg) oder wenn es mild wird.
+  steigt (ab ~8°, bis ~22° weg) oder wenn es mild wird. Auch die Kronen tragen ihn, dünner als Schnee.
 - **Zu hören** (`wetter/wx_ton.js`): echte Aufnahmen über Wikimedia Commons (`viz3/extra/wetter/dist/wetter/`, `ton.json`, ~1,7 MB,
   geschnitten mit `viz3/extra/wetter/quellen/ton.py` auf GitHub Actions, `.github/workflows/wetter-ton.yml` – Commons begrenzt Abrufe vom
   Chat-Rechner): Regen (gemeinfrei), ab 2 mm/h ein deutscher Sommer-Platzregen darüber (CC BY-SA 3.0), drinnen und im Auto Regen aufs
@@ -57,7 +57,10 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   später), zur Laufzeit nur Uniforms; bei Windstille bewegt sich nichts und es wird nichts dafür gezeichnet. Ebenso **der Rasen und die
   Wiesenblumen** (`garden/grass.js` reicht ihre Materialien gleich nach dem Anlegen herüber, `|wxgrass`): die Spitzen biegen sich vom
   Wind weg, in Wellen, die mit den Böen über den Rasen laufen, dazu ein schnelles Zittern; die Biegung ist ein Anteil der Halmhöhe
-  (gemähter Rasen bewegt sich weniger), schon bei leichtem Wind (ab ~6 km/h) ein wenig.
+  (gemähter Rasen bewegt sich weniger), schon bei leichtem Wind (ab ~6 km/h) ein wenig. **Schnee und Raureif auf den Kronen:** derselbe
+  Blatt-Shader macht die Blätter weiß, die zum Himmel zeigen (die Normalen der Karten zeigen aus der Krone heraus: oben weiß, unten grün),
+  fleckig von Stelle zu Stelle, beleuchtet wie das Laub – bei liegendem Schnee kräftig, bei Reif dünn. Die fernen Baumbilder (Impostoren)
+  und die Bäume der Welt bleiben grün.
 - **Die nächsten Stunden:** im Uhrfenster unter der Zeile alle zwei Stunden ab der Spielzeit („16 Uhr Regen · 7 °C“), so weit die Daten reichen.
 - **Mitfahren und fahren:** im Auto (fahren, mitfahren) und im Bus keine Tropfen in der Kabine (Bus: 7 m, er ist lang), der Regen trommelt
   aufs Dach, keine Spritzer.
