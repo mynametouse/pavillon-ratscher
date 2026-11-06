@@ -169,11 +169,23 @@ export const STDATA = (() => {
       label: 'Schneidebrett Eiche, Stirnholz, ca. 40 × 30 × 4 cm, handgemacht',
       src: 'Annahme: übliche Preise handgemachter Stirnholzbretter 2026 (120–250 €)',
     },
+    brett_laerche: {
+      eur: 119,
+      unit: 'Stück',
+      label: 'Schneidebrett Lärche, Stirnholz, aus eigenem Wald',
+      src: 'Annahme: unter Eiche (Nadelholz, weicher), die Herkunft aus der Klinge als Geschichte',
+    },
     brennholz_fi: {
       eur: 110,
       unit: 'rm',
       label: 'Brennholz Fichte, 33 cm, ofenfertig',
       src: 'TFZ Bayern, Erhebung Juli 2026: 109,83 €/rm (Buche 144,66 €/rm), frei Haus',
+    },
+    brennholz_frisch: {
+      eur: 80,
+      unit: 'rm',
+      label: 'Brennholz Fichte, 33 cm gespalten, frisch (zum Selbsttrocknen)',
+      src: 'Annahme: zwischen frischem Meterholz ab Hof (~75 €/rm) und ofenfertigem (TFZ Bayern Juli 2026: 109,83 €/rm)',
     },
     brennholz_m: {
       eur: 75,
@@ -186,6 +198,13 @@ export const STDATA = (() => {
       unit: 'fm',
       label: 'Fichte Stammholz B/C ab Waldweg (zum Vergleich)',
       src: 'Annahme: Rundholzpreise 2026 für Fichte B/C um 90–100 €/fm',
+    },
+    psa_forst: {
+      eur: 390,
+      unit: 'Satz',
+      label:
+        'Forst-Schutzausrüstung: Helm mit Visier und Gehörschutz, Schnittschutzhose Klasse 1, Schnittschutzstiefel, Handschuhe',
+      src: 'Annahme nach Fachhandelspreisen 2026: Helmkombination ~70 €, Schnittschutzhose ~150 €, Stiefel ~150 €, Handschuhe ~20 €',
     },
     kurs_ms: {
       eur: 290,
@@ -261,8 +280,8 @@ export const STDATA = (() => {
       src: 'DGUV Regel 114-018, Alleinarbeitsverbot bei Fällarbeiten',
     },
     psa_forst: {
-      text: 'Ohne Forst-Schutzausrüstung kein Fällen.',
-      why: 'Helm mit Gesichts- und Gehörschutz, Schnittschutzhose, Schnittschutzstiefel und Handschuhe sind Pflicht – die Schnittschutzeinlage stoppt die Kette in Sekundenbruchteilen.',
+      text: 'Es fehlt eine Forst-Schutzausrüstung – in der Forstkiste am Traktor liegt nur eine.',
+      why: 'Wer mit der Motorsäge arbeitet oder beim Fällen im Gefahrenbereich steht, trägt Helm mit Visier und Gehörschutz, Schnittschutzhose, Schnittschutzstiefel und Handschuhe – die Fasern der Schnittschutzeinlage blockieren die Kette in Sekundenbruchteilen. Eine zweite Ausrüstung gibt es im Fachhandel (Auftrag in Schleusingen).',
       src: 'DGUV Information 214-046; SVLFG',
     },
     psa_werk: {

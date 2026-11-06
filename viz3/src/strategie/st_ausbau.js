@@ -53,6 +53,13 @@ export const STAUSBAU = (() => {
       return true;
     },
   });
+  // whoever of your people arrives for the weekend brings food for it when the stores are low (bought on the way: six meals each)
+  KERN.on('strategie:da', d => {
+    if (!d || !STRAT.isOwn(d.who) || S.essen >= 6) return;
+    S.essen += 6;
+    STRAT.book(-6 * MEAL, `Essen fürs Wochenende, auf der Anfahrt gekauft (${D.PEOPLE[d.who].name})`, 'essen');
+    STRAT.note(`${D.PEOPLE[d.who].name} bringt Essen fürs Wochenende mit (6 Mahlzeiten).`, { kind: 'leute' });
+  });
   STRAT.job.define({
     id: 'einkaufen',
     label: 'Einkaufen in Schleusingen (Essen, Benzin, Diesel)',
@@ -157,6 +164,12 @@ export const STAUSBAU = (() => {
         text: 'Bretter sägen und zum Trocknen stapeln',
         on: 'auftrag',
         when: d => d.state === 'fertig' && d.def === 'stapeln',
+      },
+      {
+        id: 'leimholz',
+        text: 'Leimholz aus eigenem Holz (lufttrocken, nachgetrocknet, verleimt)',
+        on: 'auftrag',
+        when: d => d.state === 'fertig' && d.def === 'leimholz_eigen',
       },
     ],
   };

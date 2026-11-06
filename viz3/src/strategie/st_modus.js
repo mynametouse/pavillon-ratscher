@@ -68,6 +68,7 @@ export const STRAT = (() => {
       xp: 0,
       nd: { energy: 85, food: 80, mood: 70 },
       certs: (d.certs || []).slice(),
+      gear: (d.gear || []).slice(),
       cd: {},
       buff: {},
       away: false,
@@ -76,6 +77,8 @@ export const STRAT = (() => {
   for (const id of Object.keys(D.PEOPLE)) S.people[id] = person0(id);
   const PD = id => D.PEOPLE[id] || {};
   const isOwn = id => !!PD(id).own;
+  // personal protective gear: 'werkstatt' (ear muffs, glasses, FFP2), 'forst' (helmet with visor and ear muffs, chainsaw trousers and boots)
+  const gearOf = id => (S.people[id] && S.people[id].gear) || PD(id).gear || [];
   // the game time: while the simulation catches up (a time-lapse: many steps in one frame) the time of the step it is at
   let simT = null;
   const now = () => (simT != null ? simT : CLOCK.t);
@@ -105,6 +108,16 @@ export const STRAT = (() => {
       } else {
         const q = C.pathAt(p.path.pts, d);
         return [q[0], q[1], q[2]];
+      }
+    }
+    // a job that moves its people while they work (J.move – a tractor on the field track): where the job has them now
+    if (p.job && p.at === p.job) {
+      const j = job.of(p.job),
+        J = j && j.st === 'work' ? REG.job[j.def] : null;
+      if (J && J.move) {
+        const c = spotOf(j, id);
+        p.pos = [c[0], c[1]];
+        return p.pos;
       }
     }
     if (!isOwn(id) && !p.job && !p.goTo) {
@@ -150,10 +163,16 @@ export const STRAT = (() => {
         w.az = Math.atan2(dx, dy);
       }
       if (w.fig && w.fig.anim) w.fig.anim(dt, p.path ? Math.min(2.2, d / Math.max(dt, 1e-3)) : 0);
-      // at work: the job's work pose (npc/npc_real.js POSE)
+      // at work: the job's work pose (npc/npc_real.js POSE); on the tractor's seat (J.ride) not to be seen walking
       const j = p.job ? job.of(p.job) : null,
         J = j && j.st === 'work' ? REG.job[j.def] : null,
-        k = J && J.pose && !p.path ? J.pose : null;
+        ride = !!(J && J.ride && J.ride(j, id)),
+        k = J && J.pose && !p.path && !ride ? J.pose : null;
+      if (w.fig && w.fig.g && (ride || w.stRide)) {
+        if (ride) w.fig.g.visible = false;
+        else if (w.stRide) w.fig.g.visible = true;
+        w.stRide = ride;
+      }
       if (w.fig) {
         if (k && (!w.fig.pose || w.fig.pose.k !== k)) w.fig.pose = { k, t: 0 };
         else if (!k && w.fig.pose) w.fig.pose = null;
@@ -291,6 +310,13 @@ export const STRAT = (() => {
         const has = who.filter(w => S.people[w].certs.includes(J.cert));
         if (J.certOne ? !has.length : has.length < who.length)
           return refuse('lehrgang', PD(who.find(w => !S.people[w].certs.includes(J.cert))).name);
+      }
+      // forest gear (DGUV Information 214-046): J.psa people of the team need a full set – their own, or the one in the Forstkiste at the
+      // tractor (world/fell.js: one set and the saw)
+      if (J.psa) {
+        const need = Math.min(J.psa, n),
+          own = who.filter(w => gearOf(w).includes('forst')).length;
+        if (own + 1 < need) return refuse('psa_forst', PD(who.filter(w => !gearOf(w).includes('forst'))[1]).name);
       }
       const day = WL.day(t, S.plan),
         m = WL.minOf(t);
@@ -796,6 +822,7 @@ export const STRAT = (() => {
         xp: Math.round(p.xp),
         nd: { energy: Math.round(p.nd.energy), food: Math.round(p.nd.food), mood: Math.round(p.nd.mood) },
         certs: p.certs,
+        gear: p.gear,
         cd: p.cd,
         buff: p.buff,
         away: p.away,
@@ -864,6 +891,7 @@ export const STRAT = (() => {
             mood: num(q.nd.mood, 0, 100, 70),
           };
         if (Array.isArray(q.certs)) p.certs = q.certs.filter(c => typeof c === 'string');
+        if (Array.isArray(q.gear)) p.gear = q.gear.filter(c => typeof c === 'string');
         if (q.cd && typeof q.cd === 'object') p.cd = q.cd;
         if (q.buff && typeof q.buff === 'object') p.buff = q.buff;
         p.away = !!q.away;
@@ -902,7 +930,12 @@ export const STRAT = (() => {
     if (S.on) return;
     ensure();
     S.on = true;
-    if (S.t == null) S.t = now();
+    // the first time: the simulation begins now (before, the normal game never ran it – no catching up on what came before)
+    if (S.t == null || !S.used) {
+      S.t = now();
+      lastDay = Math.floor(S.t / 1440);
+    }
+    S.used = true;
     // who you are now stands where you stand (the figure of the first-person game)
     const me = Object.keys(D.PEOPLE).find(id => WL.playing(id));
     if (P.mode === 'walk') {
@@ -970,7 +1003,8 @@ export const STRAT = (() => {
   // ---------------- per frame: the simulation follows the clock; the lens draws ----------------
   let acc = 0;
   KERN.tick(dt => {
-    if (S.t == null) return;
+    // only once the mode was used (the normal game is not touched by it before: no simulation, no notices, no figures)
+    if (S.t == null || !S.used) return;
     const t = now();
     if (t !== S.t) sim(t);
     if (S.on && STRAT.ui) STRAT.ui.tick(dt);
@@ -1045,8 +1079,7 @@ export const STRAT = (() => {
     label: 'Ratscher von oben',
     order: 4,
     run: () => {
-      S.used = true;
-      start();
+      start(); // (marks the mode used – the first time the simulation begins now)
       if (STRAT.ui && STRAT.ui.intro) STRAT.ui.intro();
     },
   });
@@ -1191,6 +1224,7 @@ export const STRAT = (() => {
     setDate,
     level: id => C.level(S.people[id] ? S.people[id].xp : 0),
     skillOf: (id, sk) => (PD(id).skills[sk] || 0) + skillUp(id, sk),
+    gearOf,
     onLoad: [],
     // people beyond the five (whom one invites, villagers who help): { id, name, short, col, own, fig, npc, role, skills, certs, gear,
     // presence(t) → { ok, why } } – data in STDATA.PEOPLE, state in S.people

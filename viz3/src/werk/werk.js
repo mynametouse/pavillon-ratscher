@@ -4021,12 +4021,13 @@ export const WERK = (() => {
     faceTextures,
     // feat/strategie: a board made by someone the strategy mode sent (strategie/st_holz.js): from half a glued panel of the rack (a whole one
     // is cut to 500 mm first – the other half stays, as by hand), the steps of the game done by that person; it lies on the shelf with
-    // their stars and notes. o: { stars, who, notes, oak } (oak: only oak panels). Returns the board or null (no panel).
+    // their stars and notes. o: { stars, who, notes, oak, sp } (oak: only oak panels; sp: only panels of own wood of that species, e.g.
+    // 'larch'). Returns the board or null (no panel).
     simBoard(o = {}) {
       let i = -1;
       for (let k = RACK.items.length - 1; k >= 0; k--) {
         const w = RACK.items[k];
-        if (w.st !== 'panel' || w.L < 480 || (o.oak && w.sp)) continue;
+        if (w.st !== 'panel' || w.L < 480 || (o.oak && w.sp) || (o.sp && w.sp !== o.sp)) continue;
         if (i < 0 || (w.L < 900 && RACK.items[i].L >= 900)) i = k;
       }
       if (i < 0) return null;

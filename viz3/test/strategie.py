@@ -172,6 +172,8 @@ with lib.browser() as b:
         ck('felling without the course is refused – with its reason and source (DGUV, SVLFG)', q and (q.get('rule') == 'lehrgang' or 'nachsehen' in q.get('text', '')), str(q))
         q1 = J("STRAT.job.check('faellen', ['hubert'])")
         ck('… and never alone in the forest (two people)', q1 and q1.get('rule') == 'allein', str(q1))
+        q2 = J("(() => { const c = STRAT.S.people.christoph.certs; c.push('motorsaege'); const r = STRAT.job.check('faellen', ['christoph', 'falko']); c.pop(); return r; })()")
+        ck('… and only with forest gear for both in the danger zone (the Forstkiste at the tractor holds one set; DGUV I 214-046)', q2 and q2.get('rule') == 'psa_forst' and q2.get('src'), str(q2))
         E("window.__ent = []; KERN.on('strategie:entdeckt', d => window.__ent.push(d))")
         w = job('waldbegang', ['sarah'])
         ok = until(done(w['id']), 160)
@@ -220,6 +222,25 @@ with lib.browser() as b:
         E("GAME.P.th = 120; GAME.P.tx = -2; GAME.P.ty = -8")
         led0 = J("STRAT.S.eur")
         r = job('ruecken', ['hubert'])
+        # on the way home: the tractor with its load on the field track (the driver's symbol goes along the route, the tractor on the map)
+        E("STRAT.setSpeed(5)")
+        on_way = None
+        for i in range(160):
+            steps(1)
+            st = J(f"""(() => {{ const j = STRAT.job.of('{r['id']}'); if (!j) return null; const k = j.done / Math.max(1, j.dur), p = STRAT.pos('hubert'),
+              a = STRAT.place.pos('klinge'), b = STRAT.place.pos('holzlager'); return {{ st: j.st, k: +k.toFixed(3), p: p.slice(0, 2).map(v => +v.toFixed(1)),
+              da: Math.round(Math.hypot(p[0] - a[0], p[1] - a[1])), db: Math.round(Math.hypot(p[0] - b[0], p[1] - b[1])) }}; }})()""")
+            if not st or st['st'] == 'done': break
+            if st['st'] == 'work' and 0.6 < st['k'] < 0.8:
+                on_way = st
+                break
+        ck('on the way home the tractor with the load is on the field track (the driver goes along the route between the Klinge and the yard)', on_way and on_way['da'] > 60 and on_way['db'] > 60, str(on_way or st))
+        if on_way:
+            E(f"GAME.P.tx = {on_way['p'][0]}; GAME.P.ty = {on_way['p'][1]}; GAME.P.th = 220")
+            E("STRAT.setSpeed(0)"); steps(1.0)
+            page_pic('085_traktor')
+            E("GAME.P.th = 120; GAME.P.tx = -2; GAME.P.ty = -8")
+        E("STRAT.setSpeed(30)")
         ok = until(done(r['id']), 200)
         yd = J("({ yard: STHOLZ.logsYard().length, forest: STHOLZ.logsForest().length, diesel: STRAT.S.diesel })")
         ck('Hubert skids the logs with tractor and winch home to the log yard', ok and yd['yard'] >= 2, str(yd))
@@ -240,6 +261,38 @@ with lib.browser() as b:
         until("!CLOCK.warp", 60, 0.25)
         ms1 = J("HOLZDRY.stackMC()")
         ck('two and a half months later the stack is drier (the climate of Meiningen)', ms1 and ms1['avg'] < ms0['avg'] - 10, f"{ms0['avg']:.0f} → {ms1['avg']:.0f} %")
+        # own wood for the workshop: not yet (still too wet to dry on – and why); through spring and summer the stack becomes air-dry, the planks
+        # are dried on (today, without the hall, under the lean-to's roof; with the hall in the cabinet) and glued to panels of own wood
+        q0 = J("STRAT.job.check('nachtrocknen', ['christoph'])")
+        ck('drying on is refused while the stack is not air-dry – with the reason (checks above ~20 %)', q0 and 'lufttrocken' in q0.get('text', '') and q0.get('why'), str(q0)[:300])
+        for i in range(10):
+            ms = J("HOLZDRY.stackMC()")
+            if ms and ms['avg'] <= 20.5: break
+            E("STRAT.skip(30 * 1440)"); until("!CLOCK.warp", 60, 0.25)
+        ms2 = J("HOLZDRY.stackMC()")
+        E("STRAT.S.plan.urlaub = [{ from: STRAT.W.day(CLOCK.t).iso, to: STRAT.W.day(CLOCK.t + 400 * 1440).iso }]")  # on site every day
+        nt = job('nachtrocknen', ['christoph'])
+        ok = nt and nt.get('id') and until(done(nt['id']), 160)
+        km = J("HOLZDRY.kilnMC()")
+        ck('air-dry by summer, the planks go to dry on (under the lean-to\'s roof today; the cabinet comes with the hall)', ok and km and km['n'] > 4, f"stack {ms2 and round(ms2['avg'], 1)} % → {km} {nt} {J('STRAT.S.notes.slice(-2).map(n => n.text)')}")
+        for i in range(24):
+            km = J("HOLZDRY.kilnMC()")
+            if km and km['mc'] <= J("HOLZDRY.kilnTarget()"): break
+            E("STRAT.skip(15 * 1440)"); until("!CLOCK.warp", 40, 0.25)
+        op0 = J("STHOLZ.ownPanels().length")
+        lo = job('leimholz_eigen', ['falko'])
+        ok = lo and lo.get('id') and until(done(lo['id']), 200)
+        op1 = J("STHOLZ.ownPanels().map(w => w.sp + ' ' + w.mc)")
+        ck('Falko glues panels of own wood from the Klinge (table saw, drum sander, clamps) – Leimholz in the workshop rack', ok and len(op1) > op0, f'{km} → {op0} → {op1} {lo} {J("STRAT.S.notes.slice(-2).map(n => n.text)")}')
+        if op1 and all(w.startswith('larch') for w in op1):
+            o3 = J("STRAT.S.orders.find(o => o.key === 'laerche3')")
+            ck('the first Leimholz of own larch brings its order: 3 Schneidebretter Lärche aus der Klinge', o3 and o3['n'] == 3 and o3['wood'] == 'larch', str(o3)[:200])
+            bl = job('brett_eigen', ['falko'])
+            ok = bl and bl.get('id') and until(done(bl['id']), 200)
+            lb = J("STHOLZ.shelf(0, 'larch').map(w => ({ id: w.id, stars: w.stars, sp: w.sp, notes: w.notes }))")
+            ck('Falko builds the first board of own larch – on the shelf as larch, apart from the oak ones', ok and len(lb) == 1 and J("STHOLZ.shelf(0).length") == 0, f'{lb} {bl}')
+        else:
+            print('note: the own panels are not larch', op1, flush=True)
         # the workshop: oak panels, five boards, the order
         J("STRAT.setDate('2026-11-21', 8 * 60 + 30)")
         o = J("STRAT.S.orders.find(o => o.key === 'bretter5')")
@@ -286,6 +339,17 @@ with lib.browser() as b:
         look_all()
         own, ours = own_new(K1)
         ck('the whole wood chain made no new shader program for its own things (logs, boards, stack, the board on the shelf, the felled tree)', own and not ours, f'{len(own)} drawn materials, new: {ours}; new in all ({p1} → {progs()}): {newprogs(pn1)}')
+        # firewood from the slabs (still in the holiday weeks – Christoph is there every day): he cuts, splits and stacks them; Sarah sells them
+        # fresh to Ronald next door
+        fb0 = J("({ rm: +STRAT.res.val('brennholz').toFixed(2), eur: Math.round(STRAT.S.eur), slabs: HOLZSAW.fire })")
+        bh = job('brennholz', ['christoph'])
+        ok = bh and bh.get('id') and until(done(bh['id']), 220)
+        fb1 = J("({ rm: +STRAT.res.val('brennholz').toFixed(2), stacked: +STRAT.S.brennholz.toFixed(2), lots: STRAT.S.ext.brennholz && STRAT.S.ext.brennholz.lots, eur: Math.round(STRAT.S.eur) })")
+        ck('Christoph makes firewood of the slabs (cut to 33 cm, split, stacked – rm with the day it will be dry)', ok and fb1['stacked'] > 0.15 and fb1['lots'] and len(fb1['lots']) == 1 and abs(fb1['rm'] - fb0['rm']) < 0.05, f'{fb0} → {fb1} {bh}')
+        bv = job('brennholz_verkaufen', ['sarah'])
+        ok = bv and bv.get('id') and until(done(bv['id']), 160)
+        fb2 = J("({ stacked: +STRAT.S.brennholz.toFixed(2), eur: Math.round(STRAT.S.eur), sale: STRAT.S.ledger.filter(e => /^Brennholz an Ronald/.test(e.text)).slice(-1)[0] })")
+        ck('Sarah sells it fresh to Ronald next door (80 €/rm; dry after a year it would bring 110 €)', ok and fb2['stacked'] < 0.01 and fb2['sale'] and abs(fb2['sale']['eur'] - 80 * fb1['stacked']) <= 0.09 * 80 * fb1['stacked'] + 0.01, f'{fb1} → {fb2}')
         led = J("STRAT.S.ledger.slice(-12).map(e => e.text + ' ' + e.eur)")
         print('ledger', led, flush=True)
         page_pic('10_werkstatt')

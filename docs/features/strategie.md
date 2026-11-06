@@ -26,15 +26,28 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
   Rasen wird in der Welt wirklich kurz – `garden/grass.js`; laut: nicht sonntags, werktags nur 7–20 Uhr). Ein Auftrag läuft unsichtbar weiter,
   wenn niemand hinsieht (auch beim Gehen in der Ich-Sicht), und wartet mit Grund (Regel, Feierabend, Wetter, Benzin).
 - **Die Holzkette** (`strategie/st_holz.js`): Waldbegang (erst wer hinsieht, weiß, was markiert ist – Erkunden statt Nebel) → markierten
-  Baum fällen und aufarbeiten (Lehrgang, zu zweit, Tageslicht, kein Sturm; `FELL.simFell`: derselbe Datensatz, derselbe liegende Stamm, dieselben
-  vermessenen Abschnitte wie von Hand – der Baum fehlt danach auch in der Ich-Sicht) → rücken mit Traktor und Seilwinde, Rungenanhänger
-  (5 t), ins Holzlager → Blockbandsäge (Benzinmotor, 1,4 l/h; Bretter 30 mm oder Bohlen 52 mm, `HOLZSAW.simSaw`) → Trockenstapel
+  Baum fällen und aufarbeiten (Lehrgang, zu zweit, beide mit Forst-Schutzausrüstung, Tageslicht, kein Sturm; `FELL.simFell`: derselbe
+  Datensatz, derselbe liegende Stamm, dieselben vermessenen Abschnitte wie von Hand – der Baum fehlt danach auch in der Ich-Sicht) → rücken mit
+  Traktor und Seilwinde, Rungenanhänger (5 t), über den Feldweg ins Holzlager (von oben fährt das Gespann mit der Ladung den Weg entlang) →
+  Blockbandsäge (Benzinmotor, 1,4 l/h; Bretter 30 mm oder Bohlen 52 mm, `HOLZSAW.simSaw`) → Trockenstapel
   (`HOLZDRY.simStack`, das Feuchtemodell nach dem Klima von Meiningen) → Werkstatt. **Entschieden:** die Klinge gibt Fichte, Lärche, Kiefer –
   Bauholz für den Pavillon, Bretter, Brennholz; Klingenholz-Bretter sind Hartholz: Leimholz Eiche wird gekauft (eine Platte = zwei Bretter,
   wie im Werkstatt-Spiel), bis ein Laubbaum da ist.
 - **Die Bestellung** „5 Schneidebretter Eiche“ (mindestens 3 Sterne, 21 Tage): Leimholz bestellen (Lieferung 9 Uhr), Bretter bauen
   (`WERK.simBoard`: das Brett liegt im Regal der Werkstatt mit den Sternen dessen, der es gebaut hat; Falkos „Meisterstück“ +1 Stern; müde →
   schlechtere Fugen), ausliefern (`WERK.handOut`, Euro, Stil +2 bei Pünktlichkeit). Ein in der Ich-Sicht selbst gebautes Brett zählt mit seinen Sternen.
+- **Eigenes Holz in der Werkstatt:** lufttrocken (im Mittel ≤ 21 %, sonst Absage mit Grund: Risse durch das Feuchtegefälle) werden die
+  Bohlen auf 1 m abgelängt und nachgetrocknet – heute, ohne die Halle, unter dem Pultdach (im Sommer 11–12 %, im Winter nicht unter 18 %),
+  mit der Halle im Trockenschrank (9 %); bei höchstens 12 % (Schrank 10,5 %) werden sie zu Leimholz verleimt (`HOLZDRY.simKiln`,
+  `HOLZDRY.simShop` → `WERK.addOwn`: Platten Lärche oder Fichte aus der Klinge im Werkstattregal, Bohlen ab 35 mm). Die erste Platte
+  Lärche bringt die zweite Bestellung „3 Schneidebretter Lärche aus der Klinge“ (ein Hofladen in Schleusingen, 119 € das Stück –
+  Annahme); Bretter daraus baut der Auftrag „Schneidebrett Lärche“ (Fichte lehnt er mit Grund ab: zu weich, Rohdichte ~450 kg/m³).
+- **Brennholz:** die Schwarten der Bandsäge (je ~0,04 rm) am Sägebock auf 33 cm sägen, spalten, aufsetzen (0,45–0,85 rm/h je Person nach
+  Können, Motorsäge mit Sonderkraftstoff gebucht); trocken nach einem Jahr unter Dach (1. BImSchV: unter 25 % Feuchte). Verkauf an Ronald
+  nebenan mit der Schubkarre: trocken 110 €/rm (TFZ Bayern), frisch 80 €/rm (Annahme) – Warten lohnt sich.
+- **Schutzausrüstung:** jede Person hat ihre eigene (Werkstatt: Gehörschutz, Brille, FFP2; Hubert auch Forst); in der Forstkiste am Traktor
+  liegt eine Forst-Ausrüstung (wie in der Welt). Fällen braucht zwei (Säge und Helfer im Gefahrenbereich), eine zweite kauft man im
+  Fachhandel (390 €, Auftrag in Schleusingen).
 - **Ereignisse** (`strategie/st_ereignis.js`): Sturm mit Windwurf (erst beim Waldbegang bekannt; Forstunternehmer beauftragen, 32 €/fm),
   Borkenkäfer in den Fichten (sechs Wochen Zeit, sonst fliegen sie aus und befallen mehr – Stil −6), Maschinenschaden (Sägeband, Zündkerze,
   Seil – reparieren oder Christophs „Notreparatur“), Großbestellung mit knappem Termin, Unfälle bei müder Arbeit (Ausfalltage, kein Blut;
@@ -45,7 +58,8 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
 - **Figuren:** deine Leute als Rocketbox-Figuren aus der Nähe (von oben eingezoomt und in der Ich-Sicht bis 60 m), nicht am Telefon.
 - **Regeln mit „Warum?“:** jede Absage nennt die Regel, ihren Grund und die Quelle (`STDATA.RULES`): Sonn- und Feiertagsruhe (Thüringer
   Feiertagsgesetz, 32. BImSchV), Ruhezeit 20–7 Uhr (32. BImSchV § 7), Tageslicht im Wald, Lehrgang und Alleinarbeitsverbot (DGUV Regel 114-018),
-  Forst-PSA (DGUV I 214-046), Gehörschutz und Eichenstaub (TRGS 553), Sturm, nasses Gras, Saftruhe.
+  Forst-Schutzausrüstung für jeden an der Säge und im Gefahrenbereich (DGUV I 214-046), Gehörschutz und Eichenstaub (TRGS 553), Sturm,
+  nasses Gras, Saftruhe.
 - **Strom:** zwei PV-Module (0,86 kWp, Ertrag nach Monat und Bewölkung, PVGIS Südthüringen) laden die Powerstation (2 kWh); reicht sie nicht,
   springt das Benzin-Aggregat der Garage an (2,8 kW, 1,1 l/h aus demselben Tank wie zu Fuß).
 - **Euro mit echten Preisen** (`STDATA.PRICES`, jede mit Quelle oder ausgewiesener Annahme; Benzin und Diesel: ADAC Oktober 2026), Startkapital
@@ -105,6 +119,7 @@ STRAT.job.define({
   people: [1, 2],                 // wie viele
   skill: 'bauen', min: 2,         // Können (holz | maschinen | garten | bauen | reden), Mindeststufe 1–5
   cert: 'motorsaege', certOne: true, // Lehrgang: alle – oder einer im Team (certOne)
+  psa: 2,                         // so viele im Team brauchen eine Forst-Schutzausrüstung (eigene oder die eine aus der Forstkiste)
   loud: true, where: 'dorf',      // laut → Ruhezeiten; 'wald' → Tageslicht; saw: true → Sonntagsruhe auch im Wald
   heavy: 0.5, xp: 1,              // wie sehr es ermüdet (0–1), Erfahrung je Minute
   watt: 2000,                     // Strom der Maschinen, solange gearbeitet wird (PV → Powerstation → Aggregat)
@@ -115,6 +130,8 @@ STRAT.job.define({
   init: (j, cx) => {}, start: (j, cx) => {}, step: (j, cx, minuten, anteil) => {}, finish: (j, cx) => ({ text }), stop: (j, cx) => {},
   speed: (j, cx) => 1, spot: (j, personId) => [x, y], show: () => true,
   pose: 'saw',                    // Arbeitshaltung der Figuren (npc/npc_real.js POSE: saw, chop, carry, place, bench, pick, bonnet)
+  move: true, ride: (j, id) => bool, // die Leute sind beim Arbeiten dort, wo spot(j, id) sie gerade hat (z. B. auf dem Feldweg);
+                                  // ride: sie sitzen auf einem Fahrzeug (Figur nicht zu sehen, auf der Karte das Gespann der Ebene „Wege“)
   bau: true,                      // ein Bauauftrag (Christophs ständige Wirkung: 15 % schneller)
   hours: [8 * 60, 19 * 60], anytime: false, // Arbeitszeit deiner Leute (Standard 8–19 Uhr); die Nachbarn haben ihre eigene
 });
@@ -144,6 +161,8 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 - Bedürfnisse (The Sims): `STCORE.needs`, `STCORE.eff` – Kraft und Essen bestimmen das Tempo, die Stimmung das Wohlwollen. Essen kommt aus dem
   Vorrat `STRAT.res` `essen` (mit `take(n)`), wenn ein Thema ihn anlegt; Betten über die Orte (`beds`).
 - Gefallen der Nachbarn: `STRAT.favour(id, ±n, wofür)`, Stand in `STRAT.S.favours`.
+- Schutzausrüstung: `STRAT.gearOf(id)` → z. B. `['werkstatt', 'forst']` (gespeichert in `STRAT.S.people[id].gear`; ein Thema darf etwas
+  hinzufügen, wenn ein Auftrag es kauft).
 - Freier Wille (The Sims): `STRAT.will((personId, cx) => ({ def, who, place }) | null)` – einmal je Spielstunde für jede freie Person vor Ort gefragt;
   der erste Vorschlag, der geht, wird ein Auftrag.
 
@@ -183,9 +202,22 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
   Brettern, Stapel und Regal, der gefällte Baum) vor und nach der ganzen Holzkette bei denselben Ansichten – Figuren zählen nicht mit (ihre
   Programme wärmt `npc/npc_real.js` selbst vor).
 
+### Änderungen der API seit dem ersten Zuwachs (für strategie-dorf, strategie-bau)
+Nur Ergänzungen, nichts umbenannt oder entfernt:
+- 6.11. 1:20 – `STRAT.note(text, { acts: [{ label, fn }] })` (Knöpfe an einer Meldung); `layer.define` mit vorhandener id ergänzt deren
+  `draw` (so zeichnen der Hund in „Leute“ und das Gespann in „Wege“).
+- 6.11. 1:50 – Auftragsfelder `psa`, `move`, `ride`; `STRAT.gearOf(id)`, `STRAT.S.people[id].gear` (gespeichert); Aufträge `psa_kaufen`,
+  `brennholz`, `brennholz_verkaufen`; Vorrat `brennholz` zählt aufgesetztes Holz und noch nicht aufgearbeitete Schwarten
+  (`STRAT.S.ext.brennholz = { used, lots: [{ rm, t0 }] }`).
+- 6.11. 2:00 – Aufträge `nachtrocknen`, `leimholz_eigen`, `brett_eigen`; Bestellungen können `wood: 'larch'` tragen (geliefert werden
+  Bretter dieser Holzart; ohne `wood` Eiche), `STHOLZ.shelf(minSterne, holzart)`, `STHOLZ.ownPanels()`; `WERK.simBoard({ sp })`; für Bauholz (strategie-bau): die Bretter mit Feuchte stehen in
+  `HOLZSAW.boards` (`{ id, sp, t, L, wS, wW, mc, st: 'pile' | 'stack' | 'kiln' | 'shop' | 'used', blue, crack, warp }`), der Stapel in
+  `HOLZDRY.stackMC()` (`{ n, avg, min, max }`) – Konstruktionsholz braucht ≤ 20 % (DIN 4074) und eine Sortierung.
+
 ## Offen
 
-Traktor und Anhänger fahren beim Rücken nicht sichtbar mit (der Stamm springt am Ende ins Lager), Trockenschrank/Leimholz aus eigenen Bohlen
+Der Traktor der Welt (`vehicles/tractor.js`) bleibt beim Rücken von oben an der Klinge stehen – das Gespann fährt nur auf der Karte, die
+Stämme liegen am Ende im Lager; Trockenschrank/Leimholz aus eigenen Bohlen
 von oben (`HOLZDRY.simShop` ist da, noch kein Auftrag), Brennholz spalten und verkaufen, das Telefon im Detail (Layout und Touch getestet, nicht
 auf einem echten Gerät). Der Hund (feat/tiere): von oben als Zeichen auf der Karte, seine Taten als Meldung mit „Loben“/„Tadeln“ – mehr
 (schicken, hüten als Auftrag) kann darauf aufbauen.
@@ -200,9 +232,12 @@ auf einem echten Gerät). Der Hund (feat/tiere): von oben als Zeichen auf der Ka
     wie von Hand, mit Datensatz, liegendem Stamm, vermessenen Abschnitten.
   - `viz3/src/werk/holz_saw.js` – `HOLZSAW.simSaw(logId, dicke)`: ein Stamm ganz eingeschnitten (dieselben Bretter, Schwarten als Brennholz).
   - `viz3/src/werk/holz_dry.js` – `HOLZDRY` jetzt `export`iert; `HOLZDRY.simStack(o)` (alle Bretter der Blöcke in den Stapel, Dach),
-    `HOLZDRY.simShop()`.
-  - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
-- `viz3/src/modules.txt`: Block `# feat/strategie` vor `game/tutorial.js`.
+    `HOLZDRY.simKiln()` (lufttrockene Bretter in den Trockenschrank bzw. heute unter das Pultdach, wie von Hand), `HOLZDRY.kilnMC()`,
+    `HOLZDRY.kilnTarget()`, `HOLZDRY.simShop()`.
+  - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak, sp })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
+- `viz3/src/modules.txt`: Block `# feat/strategie` nach `# feat/bus`, vor `game/tutorial.js`.
+- Das normale Spiel bleibt unberührt, bis jemand den Modus einmal startet (`STRAT.S.used`): vorher keine Simulation, keine Figuren, keine
+  Meldungen; danach läuft die Simulation mit der Spieluhr auch beim Gehen (eine Linse auf dieselbe Welt), beginnend mit dem ersten Start.
 - Neuer Speicher-Schlüssel `pav-strat-v1` (im Modul über `SAVE.key` angemeldet, Prüfung `v === 1`) – bitte in `docs/ARCHITECTURE.md` §8 eintragen.
 - Neue `window`-Namen: `STRAT`, `STHUD`, `STHOLZ`, `STEREIG`, `STAUSBAU`, `STFIG` (alle mit `ST`-Vorsilbe, für Tests und Erweiterungen).
 - Quellen (nur als Text in den Daten, keine fremden Dateien): ADAC Kraftstoffpreise, TFZ Bayern Scheitholzpreise, PVGIS (EU JRC), DGUV, SVLFG,
