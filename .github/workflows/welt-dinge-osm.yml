@@ -1,6 +1,7 @@
 # feat/welt-dinge: the car parks of OpenStreetMap (amenity=parking) and what they belong to (supermarket, church, school …) for the
-# areas of the parked cars – Overpass is not reachable from the chat machine. Runs when the script changes; the result is the artifact
-# 'osm-parkplaetze' (gh run download <id> -n osm-parkplaetze), nothing is pushed or published.
+# areas of the parked cars – neither Geofabrik nor Overpass is reachable from the chat machine. Runs when the script changes; the result is
+# the artifact 'osm-parkplaetze' (gh run download <id> -n osm-parkplaetze), nothing is pushed or published. First from Geofabrik's daily
+# extract of Thuringia (cut to the areas with osmium), the Overpass API only if that fails.
 name: Welt-Dinge – OSM-Parkplätze
 
 on:
@@ -17,15 +18,28 @@ permissions:
 
 jobs:
   osm:
-    name: Overpass
+    name: OSM-Auszug
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Parkplätze und Orte holen
+      - name: Auszug Thüringen (Geofabrik), auf die Gebiete geschnitten
+        id: auszug
+        continue-on-error: true
+        timeout-minutes: 12
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
+          curl -sSfL --retry 3 -o "$RUNNER_TEMP/th.osm.pbf" https://download.geofabrik.de/europe/germany/thueringen-latest.osm.pbf
+          osmium fileinfo "$RUNNER_TEMP/th.osm.pbf" | grep -E "timestamp|Bounding" | head -4
+          osmium extract -b 10.60,50.46,10.80,50.535 -s smart "$RUNNER_TEMP/th.osm.pbf" -o "$RUNNER_TEMP/gebiet.osm.pbf"
+          osmium export "$RUNNER_TEMP/gebiet.osm.pbf" -f geojsonseq -a type,id -o "$RUNNER_TEMP/gebiet.geojsonseq"
+          python -u tools/welt-dinge/osm_parkplaetze.py "$RUNNER_TEMP/osm_parkplaetze.json" --geojsonseq "$RUNNER_TEMP/gebiet.geojsonseq"
+      - name: Ersatz – Overpass API
+        if: steps.auszug.outcome != 'success'
+        timeout-minutes: 15
         run: python -u tools/welt-dinge/osm_parkplaetze.py "$RUNNER_TEMP/osm_parkplaetze.json"
       - uses: actions/upload-artifact@v4
         with:
