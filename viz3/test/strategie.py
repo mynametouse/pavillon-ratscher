@@ -213,6 +213,11 @@ with lib.browser() as b:
         p1 = progs()
         pn1 = pnames()
         K1 = mark()
+        # the black stork's quiet zone of the animals' module (feat/tiere) is asked before felling – here with a zone made up for the check
+        qz = J("""(() => { const T = window.TIERE; if (!T || typeof T.ruhe !== 'function') return 'keine Tiere';
+          const r0 = T.ruhe; T.ruhe = () => ({ art: 'schwarzstorch', zone: 'brutzeit', d: 180, why: 'Brutzeit des Schwarzstorchs: bis 300 m vom Horst kein Holzeinschlag.', bis: '15. September' });
+          try { return STRAT.job.check('faellen', ['hubert', 'falko']); } finally { T.ruhe = r0; } })()""")
+        ck('… and not in the black stork\'s quiet zone (TIERE.ruhe, asked before felling – with its reason)', qz == 'keine Tiere' or (qz and 'Ruhezone' in qz.get('text', '') and qz.get('why')), str(qz)[:300])
         f = job('faellen', ['hubert', 'falko'])
         ck('Hubert (with the course) and Falko get the felling job', f and f.get('id'), str(f))
         ok = until(done(f['id']), 200)
