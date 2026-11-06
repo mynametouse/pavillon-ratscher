@@ -440,6 +440,26 @@ export const BUS = (() => {
     const o0 = I.B.open;
     I.B.setOpen(open);
     if ((o0 < 0.05 && I.B.open >= 0.05) || (o0 > 0.95 && I.B.open <= 0.95)) doorSound(I, I.B.open > o0);
+    // the indicators: right in the last metres before a stop, left when it leaves one (doors shut, the last seconds and the first metres)
+    const Pst = I.Rn.P.st;
+    let side = 0;
+    if (I.st === 'fahrt') {
+      if (Pst[I.k + 1] && Pst[I.k + 1].s >= 0 && R.st[I.k + 1] - _o.s < 45) side = 1;
+      else if (Pst[I.k].s >= 0 && _o.s - R.st[I.k] < 16) side = -1;
+    } else if (
+      I.st === 'halt' &&
+      Pst[I.k].s >= 0 &&
+      open <= 0 &&
+      I.Rn.D[I.k] - I.tau < 0.08 &&
+      I.tau > I.Rn.A[I.k] + 0.05
+    )
+      side = -1;
+    I.blinkSide = side;
+    const lit = side !== 0 && performance.now() % 760 < 400;
+    if (I.B.blink(side, lit)) {
+      if (seen(cx, cy)) markDirty();
+      if (S.ride && S.ride.I === I && !S.ride.out) relay(lit);
+    }
     // a new picture only for a bus one may see (near, or ahead of the camera) – as the cars of the traffic (V17g)
     if ((moved || o0 !== I.B.open) && seen(cx, cy)) markDirty();
     return I;
@@ -743,9 +763,11 @@ export const BUS = (() => {
         const R_ = S.ride;
         // (getting off: from where the camera was – the seat or outside)
         if (!R_) return lastE || eye(I);
-        const tm = performance.now() / 1000,
-          dt = Math.min(0.1, Math.max(0, tm - (R_.ft ?? tm)));
-        R_.ft = tm;
+        // (the time of the game: the clock runs in real time during a ride – and so do the tests' steps)
+        const ct = CLOCK.t,
+          dt = Math.min(0.1, Math.max(0, (ct - (R_.ct ?? ct)) * 60));
+        R_.ct = ct;
+        const tm = (R_.gt = (R_.gt || 0) + dt);
         // the mouse or a finger turned the view since the last frame
         if (R_.ly !== undefined && (Math.abs(P.yaw - R_.ly) > 0.01 || Math.abs(P.pitch - R_.lp) > 0.01)) R_.lookT = tm;
         // the bus at this very moment: the camera and the bus in the same frame (else the seat lags behind the moving bus by a frame's
@@ -797,7 +819,19 @@ export const BUS = (() => {
     // (does it go on to Schleusingen: a later stop there – the task „Mit dem Bus nach Schleusingen“)
     const schl = I.Rn.P.st.some((o, k) => k > I.k && o.s >= 0 && /^Schleusingen/.test(stName(o.s)));
     KERN.emit('bus:ein', { line: I.trip.line, ziel: I.trip.head, halt: stName(I.Rn.P.st[I.k].s), schl });
-    PLAY.think('Du steigst in den ' + I.trip.line + 'er nach ' + (I.trip.head || I.trip.nach) + '.', 2600);
+    // the driver greets as one greets here by the time of day
+    const hr = (((CLOCK.t % 1440) + 1440) % 1440) / 60,
+      greet = hr < 10.5 ? 'Morgen!' : hr < 17.5 ? 'Tag!' : '’n Abend!';
+    PLAY.think(
+      '„' +
+        greet +
+        '“ – der Fahrer nickt. Du steigst in den ' +
+        I.trip.line +
+        'er nach ' +
+        (I.trip.head || I.trip.nach) +
+        '.',
+      3200
+    );
     return true;
   }
   // out: at a stop (stood up or arrived where one wanted)
@@ -839,18 +873,34 @@ export const BUS = (() => {
       R_.shownK = I.k;
       panel();
       // off from a stop: the display and the gong – „Nächster Halt: …“
-      let nx = -1;
-      for (let k = I.k + 1; k <= I.Rn.P.last; k++)
-        if (I.Rn.P.st[k].s >= 0) {
-          nx = k;
-          break;
-        }
+      const nx = nextStop(I);
       if (nx >= 0) {
         gong();
         PLAY.think('Nächster Halt: ' + stName(I.Rn.P.st[nx].s) + (R_.want === nx ? ' – Wagen hält' : ''), 3600);
-        I.B.next('Nächster Halt: ' + stName(I.Rn.P.st[nx].s));
+        // someone else gets off there (bus/bus_leute.js – the same count as at the stop): a few seconds on, the stop request
+        const n =
+          nx < I.Rn.P.last && window.BUSLEUTE && BUSLEUTE.ausAt ? BUSLEUTE.ausAt(I, nx, I.Rn.A[nx] + R_.lag) : 0;
+        R_.npc = n > 0 ? { k: nx, at: CLOCK.t + (4 + ((I.trip.i * 7 + nx * 13) % 9)) / 60, rung: false } : null;
+        display(I, R_);
       }
+    } else if (I.st === 'fahrt' && R_.npc && !R_.npc.rung && CLOCK.t >= R_.npc.at && nextStop(I) === R_.npc.k) {
+      R_.npc.rung = true;
+      if (R_.want !== R_.npc.k) bell();
+      display(I, R_);
+      panel();
     }
+  }
+  // the next stop one can get off at (not the one it stands at), -1 at the end
+  function nextStop(I) {
+    for (let k = I.k + 1; k <= I.Rn.P.last; k++) if (I.Rn.P.st[k].s >= 0) return k;
+    return -1;
+  }
+  // does the bus stop at the next stop: the rider's or someone else's stop request
+  const halts = (R_, nx) => nx >= 0 && (R_.want === nx || !!(R_.npc && R_.npc.rung && R_.npc.k === nx));
+  // the display under the ceiling: „Nächster Halt: …“, red „Wagen hält“ after a stop request
+  function display(I, R_) {
+    const nx = nextStop(I);
+    if (nx >= 0) I.B.next('Nächster Halt: ' + stName(I.Rn.P.st[nx].s), halts(R_, nx));
   }
   // ---------------- the ground ahead of the bus one rides: the tiles beyond the square (welt/welt.js) load around a point ahead ----------------
   const _ah = {};
@@ -933,6 +983,7 @@ export const BUS = (() => {
         if (b.dataset.halt !== undefined) {
           R2.want = +b.dataset.halt;
           bell();
+          display(R2.I, R2);
           panel();
         } else if (b.dataset.k === 'kurz') shorten();
         else if (b.dataset.k === 'blick') setView3(!CAM3.want);
@@ -965,8 +1016,8 @@ export const BUS = (() => {
       );
     }
     const op = (BUSPLAN.S.lines[tr.line] || {}).op || '';
-    const halts = R_.want !== null && R_.want === nextReal && I.st === 'fahrt';
-    pan.innerHTML = `<header><b class="ln">${tr.line}</b><div><h3>${tr.head || tr.nach}</h3><span>${op}${tr.weiter ? ' · fährt weiter nach ' + tr.nach : ''}</span></div>${halts ? '<b class="halt">Wagen hält</b>' : ''}</header>
+    const halt = I.st === 'fahrt' && nextReal !== null && halts(R_, nextReal);
+    pan.innerHTML = `<header><b class="ln">${tr.line}</b><div><h3>${tr.head || tr.nach}</h3><span>${op}${tr.weiter ? ' · fährt weiter nach ' + tr.nach : ''}</span></div>${halt ? '<b class="halt">Wagen hält</b>' : ''}</header>
       <ol>${rows.join('')}</ol>
       <div class="row">${I.st === 'halt' && I.k !== R_.from ? '<button type="button" data-k="aus">Aussteigen</button>' : nextReal !== null && R_.want !== nextReal ? '<button type="button" data-halt="' + nextReal + '">Aussteigen an der nächsten Haltestelle</button>' : ''}<button type="button" data-k="kurz">Fahrt abkürzen</button><button type="button" data-k="blick">${R_.out ? 'Vom Sitz aus' : 'Von außen'}</button></div>
       <p class="mnote">Haltestelle antippen: dort aussteigen. Fahrplan: gtfs.de (DELFI e.V.)</p>`;
@@ -1213,6 +1264,30 @@ export const BUS = (() => {
       o.stop(t + dt + 0.65);
     }
   }
+  // the indicator's relay in the bus one rides: tick (on), tock (off)
+  let clickBuf = null;
+  function relay(on) {
+    const r = raw();
+    if (!r) return;
+    if (!clickBuf) {
+      const n = Math.floor(r.ctx.sampleRate * 0.012);
+      clickBuf = r.ctx.createBuffer(1, n, r.ctx.sampleRate);
+      const d = clickBuf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 6);
+    }
+    const src = r.ctx.createBufferSource(),
+      bp = r.ctx.createBiquadFilter(),
+      g = r.ctx.createGain();
+    src.buffer = clickBuf;
+    bp.type = 'bandpass';
+    bp.frequency.value = on ? 2300 : 1500;
+    bp.Q.value = 2.5;
+    g.gain.value = 0.16;
+    src.connect(bp);
+    bp.connect(g);
+    g.connect(r.sfx);
+    src.start();
+  }
   // ---------------- night: lamps, one borrowed light ahead of the nearest bus ----------------
   const dark = () =>
     window.DN && DN.active
@@ -1439,6 +1514,7 @@ export const BUS = (() => {
     want: k => {
       if (S.ride) {
         S.ride.want = k;
+        display(S.ride.I, S.ride);
         panel();
       }
     },
@@ -1476,6 +1552,7 @@ export const BUS = (() => {
         z: +I.z.toFixed(2),
         v: +I.v.toFixed(2),
         open: +I.B.open.toFixed(2),
+        blink: I.blinkSide || 0,
         tau: +I.tau.toFixed(3),
         halt: stName(I.Rn.P.st[Math.max(0, I.k)].s),
       })),

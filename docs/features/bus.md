@@ -52,9 +52,10 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   (derselbe Bus bringt dieselben Leute), nachts und früh weniger; wer kommt, wird bis zur Abfahrt weiter gesucht (Leute des Verkehrs können
   gerade unterwegs sein). Wer neben einem wartet, sagt etwas („Na, auch auf den Bus?“). Ihre Figuren sind für den Verkehr belegt
   (`VERKEHR.S.busy[k] = 'bus'`), damit niemand doppelt läuft.
-- **Einsteigen** an der Vordertür (Aktionsknopf), Platz rechts am Fenster hinter der Mitteltür (Ich-Sicht), Fenster mit Linie, Ziel, den
+- **Einsteigen** an der Vordertür (Aktionsknopf; der Fahrer grüßt nach der Tageszeit: „Morgen!“, „Tag!“, „’n Abend!“), Platz rechts am Fenster hinter der Mitteltür (Ich-Sicht), Fenster mit Linie, Ziel, den
   nächsten Haltestellen und Zeiten; „Nächster Halt: …“ mit Gong beim Abfahren und auf der Anzeige unter der Decke hinter dem Fahrer; „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle
-  antippen = dort aussteigen (Halt-Glocke, „Wagen hält“); **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur Ankunft, das Gelände dort lädt
+  antippen = dort aussteigen (Halt-Glocke, „Wagen hält“ rot auf der Anzeige und im Fenster); will an der nächsten Haltestelle jemand anderes
+  aussteigen (dieselbe Zahl wie dort beim Halten), drückt er ein paar Sekunden nach der Abfahrt den Haltewunsch; **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur Ankunft, das Gelände dort lädt
   vorher, die Türen sind offen); **„Aussteigen“**, wenn der Bus steht. **„Von außen“** (oder die Ansichtstaste V, der Knopf „Figur/Augen“):
   der Blick von hinten oben auf den fahrenden Bus – mit der Maus um ihn herum, nach einem Moment schwenkt er wieder hinter ihn (wie die
   Verfolgerkamera der Fahrzeuge, nicht durch Hauswände); „Vom Sitz aus“ zurück. Nach dem Aussteigen ist die Ansicht beim Gehen wie vorher. Der Bus fährt seinen echten Weg auch über das 2,4-km-Quadrat hinaus –
@@ -64,14 +65,18 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 - **Aufgabe „Mit dem Bus nach Schleusingen“** (Tagebuch J, `TASKS`, Spielstand `pav-tasks-v1`): beginnt an einer Haltestelle in Ratscher (oder
   mit der Szene) – Fahrplan anschauen, in einen Bus nach Schleusingen steigen (203 oder 205), in Schleusingen aussteigen.
 - **Das Modell**: 12-m-Niederflur-Überlandbus ohne Marke (12,0 × 2,55 × 3,1 m, Radstand 5,95 m), Vorder- und Mitteltür als Schwenkschiebetüren,
-  2+2-Sitze, gelbe Haltestangen, Fahrerplatz mit Fahrer, Klimaanlage auf dem Dach, getönte Scheiben zum Durchsehen, Scheinwerfer in den
-  Ecken, LED-Zielanzeige vorn, an der Seite und hinten mit Linie und Ziel, ein paar Fahrgäste. Nachts Scheinwerfer, Rücklichter, beleuchteter
+  2+2-Sitze (Polster im Stoff, Lehne 12° geneigt mit dunkler Schale, Haltegriff an den Gangplätzen), gelbe Haltestangen mit roten
+  Haltewunschtastern, Fahrerplatz mit Fahrer, Klimaanlage auf dem Dach, getönte Scheiben zum Durchsehen, Scheinwerfer in den Ecken, LED-Zielanzeige
+  vorn, an der Seite und hinten mit Linie und Ziel, ein paar sitzende Fahrgäste und der Fahrer (Beine, Arme, Kopf mit Haaren – aus
+  einfachen Körpern, alle in einem Netz). **Blinker**: rechts auf den letzten 45 m vor einer Haltestelle, links in
+  den letzten Sekunden vor der Abfahrt und auf den ersten Metern (im Bus das Klicken des Relais); eigenes Material derselben Art wie die
+  Rücklichter (kein neues Programm), nur beim Blinken ein Draw-Call mehr. Nachts Scheinwerfer, Rücklichter, beleuchteter
   Innenraum; ein geliehenes Licht vor dem nächsten Bus (`KERN.lights.borrow`, kein neues Licht). Gebaut beim ersten Bus; Material des Verkehrs
   (Vertexfarben), Glas, Lampen und Anzeige mit eigenem Material, die schon beim Laden übersetzt werden (unsichtbare Träger) – keine neuen
   Shader-Programme. Kein Schatten in der Sonnenkarte (ein fahrender Schattenwerfer verlangte jedes Bild eine neue Karte, die Autos des
   Verkehrs werfen auch keinen), dafür ein weicher Schatten auf der Straße unter ihm; neue Bilder fordert ein Bus nur an, wenn man ihn sehen
   kann. 14 Draw-Calls je Bus (gemessen).
-- **Ton** (synthetisch): Diesel des nächsten Busses (Drehzahl nach dem Tempo), Türen, Gong, Haltewunsch-Glocke, Hupe.
+- **Ton** (synthetisch): Diesel des nächsten Busses (Drehzahl nach dem Tempo), Türen, Gong, Haltewunsch-Glocke, Hupe, Blinkerrelais.
 - **Zombie-Nacht**: keine Linienbusse (sie hat ihren eigenen Bus), keine Fahrgäste.
 - Szene **„Mit dem Bus nach Schleusingen“** (`?szenario=bus`, Menü → Erleben → Szenen): nächster Schultag 7:38 an der Haltestelle Ratscher,
   Schleusebrücke (Richtung Schleusingen); um 7:46 kommt die 205 zur Zentralhaltestelle.

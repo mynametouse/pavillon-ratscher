@@ -357,6 +357,14 @@ export const BUSLEUTE = (() => {
   return {
     S,
     clear,
+    // how many will get off this bus at its stop k (arriving at minute t): the count the stop itself takes – for the stop request
+    // beforehand in the bus one rides (bus/bus.js)
+    ausAt: (I, k, t) => {
+      const st = I.Rn.P.st[k];
+      if (Z.on || !st || st.s < 0 || !townOf(BUSPLAN.S.stations[st.s].n)) return 0;
+      const hour = (((t % 1440) + 1440) % 1440) / 60;
+      return count(hash(I.trip.i, k, 2), hour, 'aus', I.trip.line);
+    },
     // tests: forget who was planned for which bus
     reset: () => {
       clear();
