@@ -203,7 +203,10 @@ with lib.browser() as b:
         pic('10_blitz')
         steps(1)
         # showers: cells pass – under one it pours and the sky closes; between them dry, broken clouds and the sun, a rainbow opposite it
-        midday(18.0)
+        # (an hour with the sun 12–32° high, whatever the game's date: the afternoon in November, the evening in June)
+        for h in (14.0, 18.0, 15.0, 17.5, 10.0, 9.0):
+            midday(h)
+            if 12 < J("DN.state.sunEl") < 32: break
         weather('schauer')
         E("WETTER.shower(1); WETTER.snap()"); steps(1, 0.1)
         s = st()
