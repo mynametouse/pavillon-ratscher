@@ -129,6 +129,12 @@ with lib.browser() as b:
            f"{brd['lbl']} | " + ' / '.join(brd['rows'][:5]))
         ck('the board shows the 205 to Schleusingen at 7:46', any('7:46' in r and '205' in r for r in brd['rows']), ' / '.join(brd['rows'][:5]))
         page_pic(pg, 'a_fahrplan')
+        # the board on a phone (at the bottom, above the buttons)
+        pg.set_viewport_size({'width': 390, 'height': 844})
+        steps(0.2)
+        page_pic(pg, 'a1_fahrplan_telefon')
+        pg.set_viewport_size({'width': 1100, 'height': 680})
+        steps(0.2)
         # the printed timetable in the sign's case, close (first person for the picture)
         E("""(() => { window.CAM3 && (CAM3.want = false); const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30), a = ((e.az + 180) * Math.PI) / 180, fx = Math.sin(a), fy = Math.cos(a);
           const x = e.x + fx * 1.25, y = e.y + fy * 1.25; GAME.view(x, y, KERN.ground(e.x, e.y) + 1.45, Math.atan2(e.x - x, e.y - y) * 180 / Math.PI, -2, 50); })()""")
