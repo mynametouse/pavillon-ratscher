@@ -193,10 +193,12 @@ export const WETTER = (() => {
       S.told = true;
       if (SAVE.once('pav-wetter-neu'))
         toast(
-          'Neu: Das Wetter ist wie in Ratscher – ' +
-            (src === 'jetzt' ? 'gerade draußen' : 'zur Spielzeit') +
-            ' (Open-Meteo). Umstellen an der Uhr oben rechts oder unter Menü → Einstellungen.',
-          8000
+          src === 'jetzt' || label === 'Wetter wie draußen'
+            ? 'Neu: Das Wetter ist wie gerade draußen in Ratscher (Open-Meteo). Umstellen an der Uhr oben rechts oder unter Menü → Einstellungen.'
+            : 'Neu: Das Wetter ist das echte von Ratscher – für die Spielzeit, ' +
+                label.replace(/^Wetter vom |^Vorhersage für /, 'den ') +
+                ' (Open-Meteo). Wie gerade draußen: an der Uhr oben rechts „Uhr und Datum auf jetzt“.',
+          9000
         );
     }
     if (fresh && was !== S.src + S.label && CLOCK.winOpen) CLOCK.redraw && CLOCK.redraw();
@@ -257,7 +259,12 @@ export const WETTER = (() => {
     WXSKY.tick(dt, !window.FREEZE);
     const inside = !!(audio.inside && audio.inside()),
       // inside the pavilion the rain stays beyond its walls – seen through the big windows; in other buildings none is drawn
-      pav = inside && !!(window.inHouseNow && window.inHouseNow());
+      pav = inside && !!(window.inHouseNow && window.inHouseNow()),
+      // in a cabin: driving, riding along in a car, riding a bus (feat/bus seats one with kind 'ride'; its body is long – no drop
+      // within 7 m of the eye, the rain beyond is seen through the windows)
+      seat = PLAY.seat,
+      bus = !!(window.BUS && window.BUS.S && window.BUS.S.ride),
+      cab = !!(VEH && VEH.cur) || !!(seat && (seat.kind === 'ride' || seat.drive));
     const fall = WXFALL.set(
       {
         on,
@@ -270,8 +277,8 @@ export const WETTER = (() => {
         gust: c.gust,
         dir: c.dir,
         col: WXSKY.U.wxHor.value,
-        hole: VEH && VEH.cur ? 2.4 : pav ? 5.5 : 0.35,
-        ground: P.mode === 'walk' && !(VEH && VEH.cur) && !inside ? P.feet : null,
+        hole: bus ? 7 : cab ? 2.4 : pav ? 5.5 : 0.35,
+        ground: P.mode === 'walk' && !cab && !inside ? P.feet : null,
         hide: (inside && !pav) || !on,
       },
       dt
@@ -288,7 +295,7 @@ export const WETTER = (() => {
         wind: c.wind,
         gust: c.gust,
         gustK: WXFALL.S.gustK,
-        inside: inside || !!(VEH && VEH.cur),
+        inside: inside || cab,
         storm: on && !!wx.thunder,
       },
       dt
@@ -419,7 +426,7 @@ export const WETTER = (() => {
   function winHTML() {
     const near = S.src === 'jetzt' || S.label === 'Wetter wie draußen',
       b = (k, t) => `<button type="button" data-wxp="${k}" aria-pressed="${S.preset === k}">${t}</button>`;
-    return `<h4>Wetter</h4><div class="ckdate wxline"><b>${S.label}</b><span>${line()}</span></div>
+    return `<h4>Wetter</h4><div class="ckdate wxline"><b>${S.label}</b><span>${line()}</span></div>${coming()}
       <div class="mrow"><span>Wetter</span><div class="mseg"><button type="button" data-wx="live" aria-pressed="${S.mode === 'live' && !S.preset}">wie draußen</button><button type="button" data-wx="kalender" aria-pressed="${S.mode === 'kalender' && !S.preset}">nach Kalender</button></div></div>
       ${S.mode === 'live' && !near && !ZON() ? '<div class="ckw" style="margin-top:8px"><button type="button" data-wxnow>Uhr und Datum auf jetzt</button></div>' : ''}
       <details class="wxtry"><summary class="mnote">Wetter ausprobieren</summary><div class="ckw" style="margin-top:6px">${Object.keys(
@@ -427,6 +434,27 @@ export const WETTER = (() => {
       )
         .map(k => b(k, PNAME[k]))
         .join('')}</div></details>`;
+  }
+  // the coming hours at the game's time (every two hours, as far as the data reaches): „16 Uhr Regen 7 °C“
+  function coming() {
+    if (S.preset || S.mode !== 'live' || !S.w) return '';
+    const t0 = Math.ceil((CLOCK.t + 1) / 60) * 60,
+      out = [];
+    for (let k = 0; k < 4; k++) {
+      const t = t0 + k * 120,
+        u = (DN.jdOf(t) - 2440587.5) * 86400,
+        rec = WXDATA.at(S.store, u);
+      if (!rec) break;
+      let day = true;
+      try {
+        day = DN.sky(DN.jdOf(t)).sunEl > -2;
+      } catch (e) {}
+      const T = Number.isFinite(rec.T) ? Math.round(rec.T) + ' °C' : '';
+      out.push(
+        `<li><b>${CLOCK.hm(t).slice(0, 2).replace(/^0/, '')} Uhr</b><span>${WXDATA.text(rec, day)}${T ? ' · ' + T : ''}</span></li>`
+      );
+    }
+    return out.length > 1 ? '<ul class="ckj wxnext">' + out.join('') + '</ul>' : '';
   }
   function winBind(win) {
     win.querySelectorAll('[data-wx]').forEach(x => x.addEventListener('click', () => setMode(x.dataset.wx)));

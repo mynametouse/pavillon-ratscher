@@ -89,6 +89,8 @@ with lib.browser() as b:
         time.sleep(0.5)
         txt = E("document.getElementById('clockwin').innerText")
         ck('the clock window says it: „Wetter wie draußen“ and the line', 'Wetter wie draußen' in txt and 'Regen · 7 °C' in txt and 'nach Kalender' in txt, txt[txt.find('Wetter'):][:160].replace('\n', ' | '))
+        nx = J("[...document.querySelectorAll('#clockwin .wxnext li')].map(li => li.textContent)")
+        ck('the clock window lists the coming hours („… Uhr Regen · 7 °C“)', len(nx) >= 3 and all('Uhr' in x and '°C' in x for x in nx), str(nx))
         try: E("GAME.shot()"); pg.screenshot(path=os.path.join(OUT, '00_uhrfenster.png'), timeout=120000)
         except Exception as e: print('note: page shot failed', e)
         E("CLOCK.setWin(false)")
@@ -165,7 +167,7 @@ with lib.browser() as b:
         w = math.hypot(*J("WETTER.state().fallU.wind"))
         ck('thunderstorm: lightning flashes within 30 s, rain driven by the wind', n1 > n0 and w > 4, f"{n1 - n0} flashes, wind on the drops {w:.1f} m/s")
         # a near strike (900 m) with its bolt in view: one small step starts it, the first stroke is at full strength
-        E("WETTER.strike({ d: 900, az: 218 })")
+        E("WETTER.strike({ d: 900, az: 176 })")
         steps(0.02, 0.02)
         ck('a flash lights the sky and the land for a moment (its first stroke)', J("WETTER.state().flash") > 0.3, str(J("WETTER.state().flash")))
         pic('10_blitz')
@@ -212,6 +214,14 @@ with lib.browser() as b:
         view('garten', 200, 7)
         s = st()
         ck('outdoors again: the drops are back', s['fall']['n'] > 1500 and s['fallU']['hole'] < 1, str(s['fall']))
+        # riding along (a car, the bus: PLAY.sit with kind 'ride'): no drop in the cabin, the rain drums on its roof, no splashes
+        E("(() => { const P = GAME.P; PLAY.sit({ kind: 'ride', fp: true, follow: () => ({ x: P.x, y: P.y, z: P.feet + 1.3 }), yaw: 200, pitch: -2 }); })()")
+        steps(0.5)
+        s = st()
+        ck('riding along in the rain: drops only outside the cabin (2.4 m), the roof heard, no splashes',
+           s['fall']['on'] and abs(s['fallU']['hole'] - 2.4) < 0.01 and s['ton']['roof'] > 0.4 and s['fall']['splash'] == 0, f"fall {s['fall']} hole {s['fallU']['hole']} ton {s['ton']}")
+        E("PLAY.stand(true)")
+        steps(0.5)
     # ---- the recordings: each kind loaded and decoded when its weather first comes (rain, downpour, roof, wind, thunder) ----
     if 'ton' in want:
         E("GAME.setSound && GAME.setSound(true)")

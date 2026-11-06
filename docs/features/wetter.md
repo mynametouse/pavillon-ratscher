@@ -40,6 +40,9 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   (Brise: fernes Rauschen, Sturm: volles Tosen), drei Donner (gemeinfrei, CC BY-SA 4.0, CC BY 3.0) nach Entfernung verzögert und gedämpft.
   Jede Art wird erst geladen, wenn ihr Wetter kommt (kein Speicher für Sturm und Donner an einem ruhigen Tag). Nieselregen und
   Sturmpfeifen im Browser erzeugt.
+- **Die nächsten Stunden:** im Uhrfenster unter der Zeile alle zwei Stunden ab der Spielzeit („16 Uhr Regen · 7 °C“), so weit die Daten reichen.
+- **Mitfahren und fahren:** im Auto (fahren, mitfahren) und im Bus keine Tropfen in der Kabine (Bus: 7 m, er ist lang), der Regen trommelt
+  aufs Dach, keine Spritzer.
 - **Wählen:** Menü → Einstellungen → Spiel → „Wetter: wie draußen | nach Kalender“ (gespeichert in `pav-wetter-v1` `{ v: 1, m }`), dieselbe
   Wahl im Uhrfenster mit der Zeile „Regen · 7 °C · Wind 20 km/h, Böen 38 – Open-Meteo“, dazu „Uhr und Datum auf jetzt“ (Spielzeit wie
   draußen, in Echtzeit) und „Wetter ausprobieren“ (Sonne, Wolken, Regen, Starkregen, Gewitter, Schnee, Nebel, Sturm … – nur für den Besuch).
@@ -58,7 +61,13 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 
 ## Offen
 
-- Bäume und Gras im Wind wiegen (braucht Eingriffe in deren Shader).
+- **Spielzeit und „wie draußen“:** Steht die Spieluhr nicht auf jetzt (Standard für Neue: Tag 1 = 1.6.2026, 7:30), zeigt „wie draußen“ das
+  echte Wetter dieser Spielstunde (Archiv), z. B. „Wetter vom 1.6.“. Wie gerade draußen erst mit „Uhr und Datum auf jetzt“ (Uhrfenster;
+  der erste Hinweis sagt es). Vorschlag für Falko: die Spielzeit beim Start auf jetzt stellen, wenn „wie draußen“ gewählt ist (oder eine
+  Einstellung „Spielzeit: wie draußen“) – das betrifft das ganze Spiel, deshalb nicht hier entschieden.
+- Bäume und Gras wiegen nicht im Wind: die Gartenbäume tauschen ez-trees Blattmaterial gegen ein eigenes (`garden/trees.js`, `patchSV`)
+  ohne Wiegen; das ginge nur über die Blatt-Shader dort (gemeinsame Datei).
+- Vögel singen auch im Regen; die Atmosphäre von `audio/audio.js` kennt das Wetter nicht (ein Haken dort: Vögel × (1 − Regen)).
 - Pfützen, Spritzer am Boden; Regen am Fenster und an der Windschutzscheibe.
 - Lichtglocke der Städte unter der Wolkendecke nachts.
 
