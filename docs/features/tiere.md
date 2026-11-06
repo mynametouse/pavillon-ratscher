@@ -19,9 +19,11 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   schlagen und gleiten, legen sich in die Kurve, der Milan dreht den Schwanz; der Uhu sitzt und dreht den Kopf.
 - **Der Fuchs ist ein echtes Modell:** „Fox“ aus den glTF Sample Assets der Khronos Group (Modell PixelMannen CC0, Rigging und Animation
   tomkranis CC BY 4.0, glTF @AsoboStudio/@scurest CC BY 4.0) mit seinen eigenen Bewegungen (Umschauen, Gehen, Laufen, nach Tempo
-  überblendet), in wahrer Größe (Ohrspitzen 55 cm, Nase bis Schwanzspitze 1,08 m); die Textur wird beim Laden in die Ecken gebacken und
-  auf ein echtes Fuchsrot getönt – so zeichnet auch er mit dem einen Material, ohne neues Shader-Programm. Geladen erst, wenn ein Fuchs
-  in die Nähe kommt (`tiere/fuchs.glb`, 160 KB); bis dahin oder falls es scheitert der gebaute Fuchs.
+  überblendet), in wahrer Größe (Ohrspitzen 55 cm, Nase bis Schwanzspitze 1,08 m); die Textur ist in die Ecken gebacken und auf ein echtes
+  Fuchsrot getönt (`viz3/extra/tiere/quellen/bake_fox.py`, ohne fremde Programme: PNG mit zlib gelesen, Farben je Fläche, weiche Normalen,
+  Textur entfernt) – so zeichnet auch er mit dem einen Material, ohne neues Shader-Programm. Geladen erst, wenn ein Fuchs in die Nähe kommt
+  (`tiere/fuchs.glb`, 174 KB); bis dahin oder falls es scheitert der gebaute Fuchs. Andere glTF-Tiere ohne gebackene Farben backt
+  `tiere_koerper.js` beim Laden selbst (Textur über eine Canvas).
 - **Arten im Spiel:** Reh (Ricke, Bock mit Gehörn – im November abgeworfen, im Winter Bast –, Kitz), Wildschwein (Bache, Keiler,
   Frischlinge), Rothirsch (Alttier, Kalb, Hirsch in der Brunft), Fuchs, Feldhase, Dachs, Waschbär, Steinmarder, Wildkatze, Rotmilan,
   Mäusebussard, Kolkrabe, Schwarzstorch, Uhu; dazu der Hund. Borkenkäfer und Schermaus über ihre Spuren und Schäden.

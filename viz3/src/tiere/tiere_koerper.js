@@ -730,6 +730,68 @@ export const TKOERPER = (() => {
   // Loaded on first need; the texture is baked into per-face vertex colours (sampled at each face's middle, toned to the real coat),
   // normals smoothed by position – so it draws with the one shared material (no new shader program); its own animations (standing and
   // looking round, walking, running) through a mixer, blended by speed. Until it is there (or if it fails) the built body stands in.
+  // the texture sampled at each face's middle into vertex colours (toned by the plan), smooth normals by position
+  function bakeHere(sm, G) {
+    const geo0 = sm.geometry.index ? sm.geometry.toNonIndexed() : sm.geometry,
+      pos = geo0.attributes.position,
+      uv = geo0.attributes.uv,
+      n = pos.count;
+    // the texture's pixels (a small copy is enough: the coat is painted in flat areas)
+    const img = sm.material.map && sm.material.map.image,
+      W = 256,
+      cv = document.createElement('canvas');
+    cv.width = cv.height = W;
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    if (img) cx.drawImage(img, 0, 0, W, W);
+    const px = cx.getImageData(0, 0, W, W).data;
+    S.diag = {
+      img: img ? img.constructor.name + ' ' + img.width + 'x' + img.height : null,
+      px0: [px[0], px[1], px[2]],
+      mid: [px[(128 * W + 128) * 4], px[(128 * W + 128) * 4 + 1], px[(128 * W + 128) * 4 + 2]],
+    };
+    const col = new Float32Array(n * 3),
+      c = new THREE.Color();
+    for (let f = 0; f < n; f += 3) {
+      let u = 0,
+        v = 0;
+      for (let k = 0; k < 3; k++) {
+        u += uv.getX(f + k) / 3;
+        v += uv.getY(f + k) / 3;
+      }
+      const i =
+        (Math.min(W - 1, Math.max(0, Math.floor(v * W))) * W + Math.min(W - 1, Math.max(0, Math.floor(u * W)))) * 4;
+      c.setRGB(px[i] / 255, px[i + 1] / 255, px[i + 2] / 255, THREE.SRGBColorSpace);
+      G.tone(c, hash(f, 1, 2));
+      for (let k = 0; k < 3; k++) col.set([c.r, c.g, c.b], (f + k) * 3);
+    }
+    geo0.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    // smooth normals: every face's normal added to all corners at the same place
+    const acc = new Map(),
+      key = i =>
+        Math.round(pos.getX(i) * 100) + ',' + Math.round(pos.getY(i) * 100) + ',' + Math.round(pos.getZ(i) * 100),
+      a = new THREE.Vector3(),
+      b = new THREE.Vector3(),
+      d = new THREE.Vector3();
+    for (let f = 0; f < n; f += 3) {
+      a.fromBufferAttribute(pos, f);
+      b.fromBufferAttribute(pos, f + 1).sub(a);
+      d.fromBufferAttribute(pos, f + 2).sub(a);
+      const fn = b.cross(d);
+      for (let k = 0; k < 3; k++) {
+        const kk = key(f + k),
+          s0 = acc.get(kk);
+        if (s0) s0.add(fn);
+        else acc.set(kk, fn.clone());
+      }
+    }
+    const nor = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const v3 = acc.get(key(i)).clone().normalize();
+      nor.set([v3.x, v3.y, v3.z], i * 3);
+    }
+    geo0.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+    sm.geometry = geo0;
+  }
   const GL = {};
   function gltfLoad(kind) {
     const P = PLANS[kind],
@@ -744,64 +806,9 @@ export const TKOERPER = (() => {
           if (o.isSkinnedMesh && !sm) sm = o;
         });
         if (!sm) throw new Error('no skinned mesh');
-        const geo0 = sm.geometry.index ? sm.geometry.toNonIndexed() : sm.geometry,
-          pos = geo0.attributes.position,
-          uv = geo0.attributes.uv,
-          n = pos.count;
-        // the texture's pixels (a small copy is enough: the coat is painted in flat areas)
-        const img = sm.material.map && sm.material.map.image,
-          W = 256,
-          cv = document.createElement('canvas');
-        cv.width = cv.height = W;
-        const cx = cv.getContext('2d', { willReadFrequently: true });
-        if (img) cx.drawImage(img, 0, 0, W, W);
-        const px = cx.getImageData(0, 0, W, W).data;
-        S.diag = {
-          img: img ? img.constructor.name + ' ' + img.width + 'x' + img.height : null,
-          px0: [px[0], px[1], px[2]],
-          mid: [px[(128 * W + 128) * 4], px[(128 * W + 128) * 4 + 1], px[(128 * W + 128) * 4 + 2]],
-        };
-        const col = new Float32Array(n * 3),
-          c = new THREE.Color();
-        for (let f = 0; f < n; f += 3) {
-          let u = 0,
-            v = 0;
-          for (let k = 0; k < 3; k++) {
-            u += uv.getX(f + k) / 3;
-            v += uv.getY(f + k) / 3;
-          }
-          const i =
-            (Math.min(W - 1, Math.max(0, Math.floor(v * W))) * W + Math.min(W - 1, Math.max(0, Math.floor(u * W)))) * 4;
-          c.setRGB(px[i] / 255, px[i + 1] / 255, px[i + 2] / 255, THREE.SRGBColorSpace);
-          G.tone(c, hash(f, 1, 2));
-          for (let k = 0; k < 3; k++) col.set([c.r, c.g, c.b], (f + k) * 3);
-        }
-        geo0.setAttribute('color', new THREE.BufferAttribute(col, 3));
-        // smooth normals: every face's normal added to all corners at the same place
-        const acc = new Map(),
-          key = i =>
-            Math.round(pos.getX(i) * 100) + ',' + Math.round(pos.getY(i) * 100) + ',' + Math.round(pos.getZ(i) * 100),
-          a = new THREE.Vector3(),
-          b = new THREE.Vector3(),
-          d = new THREE.Vector3();
-        for (let f = 0; f < n; f += 3) {
-          a.fromBufferAttribute(pos, f);
-          b.fromBufferAttribute(pos, f + 1).sub(a);
-          d.fromBufferAttribute(pos, f + 2).sub(a);
-          const fn = b.cross(d);
-          for (let k = 0; k < 3; k++) {
-            const kk = key(f + k),
-              s0 = acc.get(kk);
-            if (s0) s0.add(fn);
-            else acc.set(kk, fn.clone());
-          }
-        }
-        const nor = new Float32Array(n * 3);
-        for (let i = 0; i < n; i++) {
-          const v3 = acc.get(key(i)).clone().normalize();
-          nor.set([v3.x, v3.y, v3.z], i * 3);
-        }
-        geo0.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+        // baked already (viz3/extra/tiere/quellen/bake_fox.py: colours and normals in the file, no texture) – else bake it here
+        if (!sm.geometry.attributes.color) bakeHere(sm, G);
+        const geo0 = sm.geometry;
         geo0.deleteAttribute('uv');
         geo0.computeBoundingSphere();
         if (sm.material.map) sm.material.map.dispose();
