@@ -258,9 +258,14 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
 - Der Traktor der Welt (`vehicles/tractor.js`) bleibt beim Rücken von oben an der Klinge stehen – das Gespann fährt nur auf der Karte, die
   Stämme liegen am Ende im Lager. Ein Brennholzstapel ist in der Welt noch nicht zu sehen (nur als Vorrat; auch die Schwarten der
   Bandsäge zählt die Welt nur); geheizt wird nur der Bungalow (der Ofen des Pavillons kommt mit seiner Bauphase).
-- Das Telefon: Layout, Antippen, Ziehen im Test (iPhone-Größe), noch nicht auf einem echten Gerät; die Zeitbox ist dort groß (drei Reihen).
+- Das Telefon: Layout, Antippen, Ziehen im Test (iPhone-Größe), noch nicht auf einem echten Gerät; die Zeitbox ist dort groß (drei Reihen);
+  im dichten Garten fällt mancher Ortsname weg (dann nur das Zeichen, der Name im Tooltip und im Feld).
 - Der Hund (feat/tiere): von oben als Zeichen auf der Karte, seine Taten als Meldung mit „Loben“/„Tadeln“ – mehr (schicken, hüten als
-  Auftrag) kann darauf aufbauen. Die Bestellung Lärche wird im Test begonnen (ein Brett), nicht ganz geliefert.
+  Auftrag) kann darauf aufbauen. Laute Aufträge melden sich mit `TIERE.addNoise`; `TIERE.fluchtDistanz(art, ax, ay, wx, wy, stance)`
+  (feat/tiere, der echte Wind trägt die Witterung) ist der Haken für eine von oben geplante Pirsch oder Wildbeobachtung.
+- Wege: `STRAT.W.path` kennt nur die eine Route Garten ↔ Klinge; Fahrten nach Schleusingen, Kammbach oder zum Bauamt laufen auf der Karte
+  darüber (feat/strategie-bau merkt es an). Das Straßennetz (`verkehr/verkehr_netz.js` VNETZ, `ROADS.ways`) wäre der nächste Schritt.
+- Die Bestellung Lärche wird im Test begonnen (ein Brett), nicht ganz geliefert.
 
 ## Für den Lead
 
