@@ -78,6 +78,9 @@ def run():
             if E("!!window.HUND"):
                 E("KERN.emit('hund:gelernt', { tat: 'sitz', lob: true, learn: {} })")
                 ck('feat/tiere: the dog praised → „Wie ein Hund lernt“ (operant conditioning)', J("WISSEN.has('n_hund')"))
+            if E("!!window.BUS"):
+                E("KERN.emit('bus:fahrplan', { halt: 'Ratscher' })")
+                ck('feat/bus: the timetable at a stop read → „Der Bus auf dem Land“ (ThürÖPNVG)', J("WISSEN.has('p_bus')"))
             E("KERN.emit('einrichtung:schale', { n: 1 })")
             ck('doing: a bowl thrown in the atelier → „Töpfern“', J("WISSEN.has('h_toepfern')"), str(J("WISSEN.state().how['h_toepfern']")))
 

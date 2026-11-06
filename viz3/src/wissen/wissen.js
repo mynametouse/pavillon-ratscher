@@ -712,6 +712,8 @@ body[data-top="1"] #winote{top:178px}
     'garage:start': 'den Mäher gestartet',
     'einrichtung:schale': 'eine Schale gedreht',
     'hund:befehl': 'den Hund gerufen',
+    'bus:fahrplan': 'den Fahrplan an der Haltestelle gelesen',
+    'bus:ein': 'in den Bus gestiegen',
     'hund:gelernt': 'den Hund gelobt oder getadelt',
     'einrichtung:brand': 'im Brennofen gebrannt',
     'einrichtung:glasur': 'glasiert',

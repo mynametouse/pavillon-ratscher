@@ -845,6 +845,24 @@ export const WDATA = (() => {
       find: { ev: [['verkehr:mitfahrt'], ['verkehr:angehalten']], talk: ['jens:auto'] },
       hint: 'Ein Auto anhalten und mitfahren.',
     },
+    {
+      id: 'p_bus',
+      ch: 'politik',
+      icon: '🚌',
+      title: 'Der Bus auf dem Land',
+      text: 'Wer auf dem Dorf kein Auto hat – Kinder, viele Ältere –, braucht den Bus. In Thüringen sorgen die Landkreise und kreisfreien Städte für den Busverkehr (§ 3 ThürÖPNVG): Sie legen fest, welche Linien wie oft fahren, und geben Geld dazu, denn Fahrkarten allein tragen den Bus auf dem Land nicht. Die Fahrten zur Schule sind ein großer Teil davon.',
+      here: 'In Ratscher halten werktags die 203 (Suhl – Schleusingen – Masserberg) und die 205 (Schleusingen – Eisfeld – Coburg), morgens die Schulbusse an der alten Schule. Die Fahrpläne im Spiel sind die echten. Mit dem Deutschlandticket fährt man seit Mai 2023 im ganzen Nahverkehr Deutschlands.',
+      src: [
+        [
+          'Thüringer Gesetz über den öffentlichen Personennahverkehr (ThürÖPNVG) vom 22. Juni 2005, § 3',
+          'https://umwelt-online.de/recht/gefahr.gut/laender/th/oepnv.htm',
+        ],
+        wiki('Deutschlandticket'),
+        ['gtfs.de – Fahrplandaten für Deutschland (Daten DELFI e.V., CC BY 4.0)', 'https://gtfs.de/'],
+      ],
+      find: { ev: [['bus:fahrplan'], ['bus:ein']] },
+      hint: 'An einer Haltestelle den Fahrplan lesen oder einsteigen.',
+    },
     // ======================= Orte =======================
     {
       id: 'o_garten',
