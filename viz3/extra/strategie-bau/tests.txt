@@ -1,3 +1,4 @@
-# feat/strategie-bau: „Ratscher von oben“ – the pavilion phase by phase and the garden from above; the core's test unharmed (one test name per line, as for viz3/test/run.py)
+# feat/strategie-bau: „Ratscher von oben“ – the pavilion phase by phase and the garden from above; the core's tests unharmed (one test name per line, as for viz3/test/run.py)
 strategie_bau
 strategie
+strategie_telefon
