@@ -897,12 +897,41 @@ export const STRAT = (() => {
         p.away = !!q.away;
         p.hurt = num(q.hurt, 0, 1e9, 0);
       }
-      S.jobs = Array.isArray(s.jobs) ? s.jobs.filter(j => j && typeof j.id === 'string' && REG.job[j.def]) : [];
+      S.jobs = Array.isArray(s.jobs)
+        ? s.jobs.filter(
+            j =>
+              j &&
+              typeof j.id === 'string' &&
+              REG.job[j.def] &&
+              Array.isArray(j.who) &&
+              j.who.length &&
+              j.who.every(id => S.people[id]) &&
+              Number.isFinite(j.done) &&
+              Number.isFinite(j.dur) &&
+              j.d &&
+              typeof j.d === 'object'
+          )
+        : [];
       S.nj = num(s.nj, 0, 1e9, S.jobs.length);
-      S.orders = Array.isArray(s.orders) ? s.orders.filter(o => o && typeof o.id === 'string') : [];
+      S.orders = Array.isArray(s.orders)
+        ? s.orders.filter(
+            o =>
+              o &&
+              typeof o.id === 'string' &&
+              typeof o.title === 'string' &&
+              Number.isFinite(o.due) &&
+              Number.isFinite(o.n) &&
+              typeof o.st === 'string'
+          )
+        : [];
       S.happened = Array.isArray(s.happened) ? s.happened : [];
       S.known = s.known && typeof s.known === 'object' ? s.known : {};
-      S.plan = s.plan && Array.isArray(s.plan.urlaub) ? s.plan : { urlaub: [] };
+      S.plan = {
+        urlaub:
+          s.plan && Array.isArray(s.plan.urlaub)
+            ? s.plan.urlaub.filter(r => r && typeof r.from === 'string' && typeof r.to === 'string')
+            : [],
+      };
       S.power.soc = num(s.power && s.power.soc, 0, 8, 1.4);
       if (s.favours && typeof s.favours === 'object')
         for (const k of Object.keys(S.favours)) S.favours[k] = num(s.favours[k], -5, 10, 2);
@@ -910,7 +939,14 @@ export const STRAT = (() => {
       S.goals = s.goals && typeof s.goals === 'object' ? s.goals : {};
       S.layers = s.layers && typeof s.layers === 'object' ? s.layers : {};
       S.notes = Array.isArray(s.notes) ? s.notes.filter(n => n && typeof n.text === 'string') : [];
-      S.ext = s.ext && typeof s.ext === 'object' ? s.ext : {};
+      S.ext = s.ext && typeof s.ext === 'object' && !Array.isArray(s.ext) ? s.ext : {};
+      // the core's own entries in it, checked (a theme checks its own)
+      for (const k of ['sturm', 'kaefer']) {
+        const E = S.ext[k];
+        if (E && (typeof E !== 'object' || !Array.isArray(E.ids) || !E.ids.every(Number.isFinite))) delete S.ext[k];
+      }
+      if (S.ext.termin && !(typeof S.ext.termin === 'object' && Number.isFinite(S.ext.termin.t))) delete S.ext.termin;
+      if (S.ext.parts != null && !Number.isFinite(S.ext.parts)) S.ext.parts = 0;
       for (const k of ['brennholz', 'diesel', 'mowI', 'essen']) if (Number.isFinite(s[k])) S[k] = s[k];
       S.broken = Array.isArray(s.broken) ? s.broken.filter(m => typeof m === 'string') : [];
       // a job whose people were sent off before the reload: the neighbours are steered again
