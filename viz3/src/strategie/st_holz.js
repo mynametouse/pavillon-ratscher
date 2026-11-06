@@ -6,6 +6,7 @@
 // pavilion, boards, firewood; Klingenholz boards are hardwood: oak glued panels bought (Euro) until a hardwood tree is there. Every job
 // changes the world through the systems of the first-person game (FELL.simFell, HOLZ, HOLZSAW.simSaw, HOLZDRY.simStack, WERK.simBoard)
 // – a tree felled from above is gone in the forest, its logs lie where it fell, the boards lie in the yard, the board on the shelf.
+import { KERN } from '../core/kern.js';
 import { BUILD } from '../core/geo.js';
 import { CLOCK } from '../time/clock.js';
 import { FOREST } from '../world/forest.js';
@@ -44,10 +45,23 @@ export const STHOLZ = (() => {
   const panels = (oak = true) =>
     ((WERK.RACK && WERK.RACK.items) || []).filter(w => w.st === 'panel' && (!oak || !w.sp));
   const panelHalves = () => panels(true).reduce((n, w) => n + (w.L >= 900 ? 2 : w.L >= 480 ? 1 : 0), 0);
-  const shelf = (min = 0) =>
+  const ownPanels = () => panels(false).filter(w => w.sp); // Leimholz of own wood (larch, spruce from the Klinge)
+  // finished boards on the shelf with at least min stars: of oak (sp null – bought panels) or of own wood of one species ('larch')
+  const shelf = (min = 0, sp = null) =>
     ((WERK.SHELF && WERK.SHELF.items) || []).filter(
-      w => w.done && w.where === 'shelf' && (w.stars || 0) >= min && !w.sp
+      w => w.done && w.where === 'shelf' && (w.stars || 0) >= min && (sp ? w.sp === sp : !w.sp)
     );
+  // days until the stack is air-dry (≤ 20 %): the drying model's forecast, worked out once a game day
+  let dryK = '',
+    dryD = 0;
+  const dryIn = ms => {
+    const k = Math.floor(CLOCK.t / 1440) + ':' + ms.n;
+    if (k !== dryK) {
+      dryK = k;
+      dryD = HOLZDRY.forecast ? HOLZDRY.forecast(20) : 0;
+    }
+    return dryD;
+  };
   // ---------------- the stocks of the places ----------------
   STRAT.place.define({
     id: 'klinge',
@@ -92,7 +106,7 @@ export const STHOLZ = (() => {
       out.push(['Bretter im Block (frisch)', String(pile.length)]);
       out.push(['Bretter im Trockenstapel', String(st.length)]);
       if (ms) {
-        const d = ms.avg > 20 && HOLZDRY.forecast ? HOLZDRY.forecast(20) : 0;
+        const d = ms.avg > 20 ? dryIn(ms) : 0;
         out.push([
           'Holzfeuchte im Stapel',
           de(ms.avg, 0) +
@@ -100,8 +114,22 @@ export const STHOLZ = (() => {
             (ms.avg > 20 ? (d > 0 ? ' – lufttrocken in ≈ ' + d + ' Tagen' : '') : ' – lufttrocken'),
         ]);
       }
-      out.push(['Schwarten (Brennholz)', String(HOLZSAW.fire || 0)]);
+      out.push(['Schwarten zum Aufarbeiten', String(slabs())]);
+      const t = S.t ?? CLOCK.t;
+      for (const l of FB().lots.slice(-3))
+        out.push([
+          'Brennholz aufgesetzt',
+          de(l.rm, 1) + ' rm · ' + (lotDry(l, t) ? 'trocken' : 'trocken ab ' + W.day(l.t0 + DRY_DAYS * 1440).label),
+        ]);
       return out;
+    },
+    // a long wait made short: until the stack is air-dry (the forecast of the drying model)
+    info: () => {
+      const ms = HOLZDRY.stackMC ? HOLZDRY.stackMC() : null,
+        d = ms && ms.avg > 20 ? dryIn(ms) : 0;
+      return d > 0
+        ? `<p><button type="button" class="stb" data-skip="${d * 1440}">⏩ bis lufttrocken (≈ ${d} Tage)</button></p>`
+        : '';
     },
     badge: () => {
       const L = logsYard(),
@@ -129,7 +157,22 @@ export const STHOLZ = (() => {
         ],
         ['Aggregat (Benzin)', de(f.gen, 1) + ' von ' + f.genMax + ' l'],
         ['Powerstation', de(S.power.soc, 2) + ' kWh · PV ' + (S.power.pv || 0) + ' W'],
-      ];
+      ].concat(
+        (() => {
+          const k = HOLZDRY.kilnMC ? HOLZDRY.kilnMC() : null;
+          return k
+            ? [[k.shed ? 'Bretter unter dem Pultdach' : 'Bretter im Trockenschrank', k.n + ' · ' + de(k.mc, 1) + ' %']]
+            : [];
+        })(),
+        shelf(0, 'larch').length ? [['Schneidebretter Lärche im Regal', String(shelf(0, 'larch').length)]] : []
+      );
+    },
+    // drying on takes weeks: a week in time-lapse while boards are in the cabinet (or under the roof) and not yet dry enough
+    info: () => {
+      const k = HOLZDRY.kilnMC ? HOLZDRY.kilnMC() : null;
+      return k && k.mc > HOLZDRY.kilnTarget()
+        ? `<p><button type="button" class="stb" data-skip="${7 * 1440}">⏩ 1 Woche nachtrocknen</button></p>`
+        : '';
     },
     badge: () => {
       const n = shelf().length;
@@ -584,23 +627,25 @@ export const STHOLZ = (() => {
     learn: 'Ein Auto braucht auf der Landstraße 6–7 l auf 100 km; nach Suhl und zurück sind es gut 40 km.',
     dur: 80,
     can: () => {
-      const o = S.orders.find(x => x.st === 'offen' || x.st === 'verspätet');
-      if (!o) return { no: true, text: 'Gerade ist keine Bestellung offen.', why: '', src: '' };
-      const ok = shelf(o.minStars || 0).length;
-      if (ok < o.n - (o.got || 0))
+      const os = openOrders();
+      if (!os.length) return { no: true, text: 'Gerade ist keine Bestellung offen.', why: '', src: '' };
+      if (!os.some(ready)) {
+        const o = os[0],
+          ok = shelf(o.minStars || 0, o.wood || null).length;
         return {
           no: true,
-          text: `${ok} von ${o.n - (o.got || 0)} Brettern mit mindestens ${o.minStars} Sternen sind fertig.`,
+          text: `${o.title}: ${ok} von ${o.n - (o.got || 0)} Brettern mit mindestens ${o.minStars} Sternen sind fertig.`,
           why: 'Die Kundin will die Qualität, die vereinbart ist – ein Brett unter den Sternen geht zurück.',
           src: '',
         };
+      }
       return null;
     },
     finish: (j, cx) => {
-      const o = S.orders.find(x => x.st === 'offen' || x.st === 'verspätet');
+      const o = openOrders().find(ready) || openOrders()[0];
       if (!o) return { text: 'keine Bestellung mehr offen' };
       const need = o.n - (o.got || 0),
-        boards = shelf(o.minStars || 0)
+        boards = shelf(o.minStars || 0, o.wood || null)
           .sort((a, b) => (a.stars || 0) - (b.stars || 0))
           .slice(0, need);
       const n = WERK.handOut(boards.map(w => w.id));
@@ -684,7 +729,15 @@ export const STHOLZ = (() => {
   // ---------------- 7 · firewood: the slabs of the band sawmill cut to 33 cm, split, stacked under a roof; sold fresh or after a year ----
   const SLAB_RM = 0.04, // a slab of a 4 m log, split and stacked (rm = 1 m³ stacked with air, ≈ 0,7 fm)
     DRY_DAYS = 365; // spruce, 33 cm split, under a roof: one year, one summer, to below 20 % (1. BImSchV: below 25 %)
-  const FB = () => S.ext.brennholz || (S.ext.brennholz = { used: 0, lots: [] }); // used: slabs worked up; lots: [{ rm, t0 }] stacked
+  // used: slabs worked up; lots: [{ rm, t0 }] stacked (checked – it comes from a saved state)
+  const FB = () => {
+    const b = S.ext.brennholz;
+    if (b && typeof b === 'object' && Number.isFinite(b.used) && Array.isArray(b.lots)) return b;
+    return (S.ext.brennholz = {
+      used: b && Number.isFinite(b.used) ? b.used : 0,
+      lots: b && Array.isArray(b.lots) ? b.lots.filter(l => l && Number.isFinite(l.rm) && Number.isFinite(l.t0)) : [],
+    });
+  };
   const slabs = () => Math.max(0, (HOLZSAW.fire || 0) - FB().used);
   const lotDry = (l, t) => t - l.t0 >= DRY_DAYS * 1440;
   STRAT.job.define({
@@ -744,9 +797,14 @@ export const STHOLZ = (() => {
     order: 30,
     text: 'Bis zu 3 rm mit der Schubkarre nach nebenan fahren und bei Ronald aufsetzen; trockenes zuerst.',
     learn: `Trocken und ofenfertig bringt ein Raummeter Fichte gut ${PR.brennholz_fi.eur} € (TFZ), frisch nur rund ${PR.brennholz_frisch.eur} € – wer ein Jahr warten kann, verdient ein Drittel mehr.`,
-    can: () =>
-      S.brennholz < 0.5
-        ? { no: true, text: 'Kein Brennholz aufgesetzt.', why: 'Erst Brennholz machen (Holzlager).', src: '' }
+    can: cx =>
+      S.brennholz < 0.2 && !(cx.job && cx.job.d && cx.job.d.fresh + cx.job.d.dry > 0)
+        ? {
+            no: true,
+            text: 'Zu wenig Brennholz aufgesetzt – unter 0,2 rm (zwei, drei Schubkarren) lohnt kein Verkauf.',
+            why: 'Erst Brennholz machen (Holzlager): die Schwarten der Bandsäge.',
+            src: '',
+          }
         : null,
     init: (j, cx) => {
       // dry lots first, then the freshest last
@@ -788,6 +846,177 @@ export const STHOLZ = (() => {
       return { text: `${de(rm, 1)} rm Brennholz bei Ronald aufgesetzt – ${Math.round(eur)} €` };
     },
   });
+  // open orders of boards (an order of another kind – kind: 'brennholz', 'gemuese' … – is delivered by its theme's own job)
+  const openOrders = () =>
+    S.orders.filter(x => (x.st === 'offen' || x.st === 'verspätet') && (!x.kind || x.kind === 'brett'));
+  const ready = o => shelf(o.minStars || 0, o.wood || null).length >= o.n - (o.got || 0);
+  // ---------------- 8 · own wood for the workshop: the air-dry planks dried on (the cabinet in the hall; today under the lean-to), glued ----
+  const SPD = { larch: 'Lärche', spruce: 'Fichte', pine: 'Kiefer' };
+  STRAT.job.define({
+    id: 'nachtrocknen',
+    pose: 'carry',
+    label: 'Lufttrockene Bohlen ablängen und nachtrocknen',
+    place: 'werkstatt',
+    people: [1, 2],
+    heavy: 0.4,
+    order: 45,
+    text: 'Die lufttrockenen Bohlen aus dem Stapel auf 1 m ablängen und auf Leisten nachtrocknen – im Trockenschrank der Halle (Ziel 9 %) oder, solange es die Halle nicht gibt, unter dem Pultdach (im Sommer 11–12 %).',
+    learn:
+      'Möbel und Schneidebretter brauchen 8–12 % Holzfeuchte – so viel, wie Holz in einer geheizten Wohnung annimmt. Draußen unter Dach kommt es bei uns nur auf 13 % im Sommer und 21 % im Winter.',
+    can: () => {
+      const k = HOLZDRY.kilnMC && HOLZDRY.kilnMC();
+      if (k) return { no: true, text: `Es trocknen schon ${k.n} Bretter nach (${de(k.mc, 1)} %).`, why: '', src: '' };
+      if (HOLZDRY.advance) HOLZDRY.advance(); // the boards brought up to the clock (lazily, in days)
+      const ms = HOLZDRY.stackMC && HOLZDRY.stackMC();
+      if (!ms || !ms.n) return { no: true, text: 'Im Stapel liegen keine Bretter.', why: '', src: '' };
+      if (ms.avg > 21)
+        return {
+          no: true,
+          text: `Erst lufttrocken: im Stapel noch ${de(ms.avg, 0)} % im Mittel.`,
+          why: 'Über etwa 20 % reißen Bretter beim Nachtrocknen – das Feuchtegefälle zwischen Kern und Oberfläche ist zu groß. Im Stapel trocknen sie über den Sommer; dicke Bohlen brauchen deutlich länger als dünne Bretter.',
+          src: 'Holzfachkunde; Trocknungsmodell werk/holz_dry.js nach dem Klima von Meiningen (DWD 1991–2020)',
+        };
+      return null;
+    },
+    dur: 90,
+    finish: () => {
+      const r = HOLZDRY.simKiln();
+      if (!r || r.no) return { text: (r && r.text) || 'Nichts eingelagert' };
+      return {
+        text: `${r.n} Bretter (${de(r.mc, 0)} %) ${r.shed ? 'unter dem Pultdach' : 'im Trockenschrank'} – ${r.days > 0 ? `${r.shed ? 12 : 9} % in etwa ${r.days} Tagen` : 'unter 12 % erst im Sommer'}`,
+      };
+    },
+  });
+  STRAT.job.define({
+    id: 'leimholz_eigen',
+    pose: 'bench',
+    label: 'Leimholz aus eigenen Bohlen (besäumen, schleifen, verleimen)',
+    place: 'werkstatt',
+    people: [1, 2],
+    skill: 'holz',
+    min: 2,
+    loud: true,
+    watt: 1700, // the table saw and the drum sander in turn
+    heavy: 0.5,
+    order: 46,
+    text: 'Die nachgetrockneten Bohlen an der Tischkreissäge besäumen, am Trommelschleifer plan schleifen und mit Zwingen zu Platten 40 × 400 × 1000 mm verleimen – das Holz der Klinge für Stirnholzbretter.',
+    learn:
+      'Aus Bohlen ab 35 mm werden Leimholzplatten; dünnere Bretter bleiben auf Vorrat. Verleimt man zu feuchtes Holz, schwindet es danach in der Wohnung weiter – die Fugen reißen.',
+    can: () => {
+      const k = HOLZDRY.kilnMC && HOLZDRY.kilnMC();
+      if (!k)
+        return {
+          no: true,
+          text: 'Nichts nachgetrocknet – erst die lufttrockenen Bohlen nachtrocknen.',
+          why: '',
+          src: '',
+        };
+      const tg = HOLZDRY.kilnTarget();
+      if (k.mc > tg)
+        return {
+          no: true,
+          text: `Noch ${de(k.mc, 1)} % – zum Verleimen höchstens ${de(tg, 0)} %.`,
+          why: 'Möbel- und Schneidebrettholz hat 8–12 % Holzfeuchte; feuchter verleimt reißen die Fugen, wenn es in der Wohnung nachtrocknet.',
+          src: 'Holzfachkunde (Holzfeuchte für Möbel und Innenausbau)',
+        };
+      return null;
+    },
+    dur: 4 * 60,
+    finish: () => {
+      const n0 = ownPanels().length,
+        k = HOLZDRY.kilnMC(),
+        n = HOLZDRY.simShop(),
+        got = ownPanels().length - n0,
+        sp = got ? SPD[ownPanels().slice(-1)[0].sp] || '' : '';
+      return {
+        text: got
+          ? `${got} Leimholzplatte${got > 1 ? 'n' : ''} ${sp} aus eigenem Holz (${de(k ? k.mc : 0, 1)} %) liegen im Werkstattregal`
+          : `${n} Bretter auf Vorrat in der Werkstatt – für Leimholz braucht es Bohlen ab 35 mm`,
+      };
+    },
+  });
+  // ---------------- 9 · boards of own larch – and the order for them once there is Leimholz of it ----------------
+  const ownLarch = () => ownPanels().filter(w => w.sp === 'larch' && w.L >= 480);
+  STRAT.job.define({
+    id: 'brett_eigen',
+    pose: 'bench',
+    label: 'Schneidebrett Lärche aus der Klinge bauen',
+    place: 'werkstatt',
+    people: [1, 1],
+    skill: 'holz',
+    min: 2,
+    loud: true,
+    heavy: 0.5,
+    xp: 1.5,
+    watt: 450,
+    order: 21,
+    text: 'Wie bei Eiche, aus dem eigenen Leimholz: Lärche aus der Klinge – rötliches Kernholz, kräftige Jahrringe, etwas Harz.',
+    learn:
+      'Lärche ist das härteste heimische Nadelholz (Rohdichte um 590 kg/m³) und taugt für Schneidebretter; Fichte (um 450 kg/m³) ist zu weich – das Messer schneidet Kerben, in denen sich Keime halten.',
+    show: () => ownPanels().length > 0,
+    dur: (j, cx) => {
+      const m = j.who.some(id => STRAT.ability.buff(id, 'meisterstueck')) ? 1.3 : 1;
+      return ((300 * 3) / Math.max(1.5, cx.skill)) * m;
+    },
+    can: cx => {
+      if (!ownLarch().length && !(cx.job && cx.job.d.started))
+        return ownPanels().length
+          ? {
+              no: true,
+              text: 'Das eigene Leimholz ist Fichte – zu weich für ein Schneidebrett.',
+              why: 'Fichte hat eine Rohdichte um 450 kg/m³: das Messer schneidet Kerben, in denen sich Keime halten. Fichte ist Bau- und Regalholz.',
+              src: 'Holzkunde: Rohdichten bei 12–15 % Holzfeuchte (Fichte ~450, Lärche ~590, Eiche ~690 kg/m³)',
+            }
+          : {
+              no: true,
+              text: 'Kein Leimholz aus eigenem Holz im Regal – erst Bohlen nachtrocknen und verleimen.',
+              why: '',
+              src: '',
+            };
+      if (S.power.none)
+        return {
+          no: true,
+          text: 'Kein Strom: Powerstation leer und kein Benzin im Aggregat.',
+          why: 'Die Tischkreissäge zieht 2 kW – mehr als PV allein liefert.',
+          src: '',
+        };
+      return null;
+    },
+    start: j => {
+      j.d.started = true;
+    },
+    finish: (j, cx) => {
+      const id = j.who[0],
+        sk = STRAT.skillOf(id, 'holz') * 0.6 + STRAT.skillOf(id, 'maschinen') * 0.4,
+        r = C.rng(((cx.t | 0) * 7 + id.length * 131) | 0)(),
+        m = STRAT.ability.buff(id, 'meisterstueck'),
+        st = C.stars(sk, cx.eff, r, m ? 1 : 0);
+      if (m) S.people[id].buff.meisterstueck = 0;
+      const notes = ['Lärche aus der Klinge'];
+      if (cx.eff < 0.7) notes.push('müde gearbeitet: Fugen nicht ganz sauber');
+      const wp = WERK.simBoard({ stars: st, who: D.PEOPLE[id].name, notes, sp: 'larch' });
+      if (!wp) return { text: 'kein Leimholz Lärche mehr da' };
+      return {
+        text: `${'★'.repeat(st)}${'☆'.repeat(5 - st)} Lärche von ${D.PEOPLE[id].name}${m ? ' (Meisterstück)' : ''}`,
+      };
+    },
+  });
+  // the first Leimholz of own larch brings the order for it (the story of the workshop: boards from the wood of the Klinge)
+  KERN.on('strategie:auftrag', d => {
+    if (!d || d.state !== 'fertig' || d.def !== 'leimholz_eigen') return;
+    if (!ownLarch().length || S.orders.some(o => o.key === 'laerche3')) return;
+    STRAT.order.add({
+      key: 'laerche3',
+      title: '3 Schneidebretter Lärche aus der Klinge',
+      who: 'ein Hofladen in Schleusingen',
+      n: 3,
+      minStars: 3,
+      days: 28,
+      wood: 'larch',
+      price: PR.brett_laerche.eur,
+      text: 'Drei Stirnholzbretter aus Lärche vom eigenen Wald – mit der Geschichte, woher das Holz kommt.',
+    });
+  });
   // ---------------- the first order (brief: „5 Schneidebretter Eiche“ with a date and minimum stars) ----------------
   STRAT.onLoad.push(() => {
     if (!S.orders.some(o => o.key === D.ORDER0.id))
@@ -805,6 +1034,42 @@ export const STHOLZ = (() => {
   void BUILD;
   void CLOCK;
   void STJOBS;
-  return { marked, logsForest, logsYard, boardsPile, boardsStack, panels, panelHalves, shelf, toYard, PAYLOAD };
+  // firewood for other themes (strategie-bau: the pavilion's wood stove in winter): how much is stacked, how much of it is dry, and taking it –
+  // dry first; o.dryOnly (the 1. BImSchV: only dry wood in the stove) takes nothing wet. Returns the rm taken.
+  const firewood = {
+    stacked: () => FB().lots.reduce((n, l) => n + l.rm, 0),
+    dry: (t = S.t ?? CLOCK.t) => FB().lots.reduce((n, l) => n + (lotDry(l, t) ? l.rm : 0), 0),
+    take(rm, o = {}) {
+      const t = S.t ?? CLOCK.t;
+      let left = Math.max(0, +rm || 0),
+        got = 0;
+      const L = FB().lots.sort((a, b) => a.t0 - b.t0);
+      for (const l of L) {
+        if (left <= 1e-6) break;
+        if (o.dryOnly && !lotDry(l, t)) continue;
+        const k = Math.min(l.rm, left);
+        l.rm = +(l.rm - k).toFixed(3);
+        left -= k;
+        got += k;
+      }
+      FB().lots = L.filter(l => l.rm > 1e-3);
+      S.brennholz = Math.max(0, S.brennholz - got);
+      return +got.toFixed(3);
+    },
+  };
+  return {
+    marked,
+    logsForest,
+    logsYard,
+    boardsPile,
+    boardsStack,
+    panels,
+    panelHalves,
+    ownPanels,
+    shelf,
+    toYard,
+    firewood,
+    PAYLOAD,
+  };
 })();
 window.STHOLZ = STHOLZ;

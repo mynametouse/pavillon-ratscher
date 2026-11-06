@@ -169,6 +169,12 @@ export const STDATA = (() => {
       label: 'Schneidebrett Eiche, Stirnholz, ca. 40 × 30 × 4 cm, handgemacht',
       src: 'Annahme: übliche Preise handgemachter Stirnholzbretter 2026 (120–250 €)',
     },
+    brett_laerche: {
+      eur: 119,
+      unit: 'Stück',
+      label: 'Schneidebrett Lärche, Stirnholz, aus eigenem Wald',
+      src: 'Annahme: unter Eiche (Nadelholz, weicher), die Herkunft aus der Klinge als Geschichte',
+    },
     brennholz_fi: {
       eur: 110,
       unit: 'rm',

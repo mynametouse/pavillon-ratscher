@@ -930,7 +930,12 @@ export const STRAT = (() => {
     if (S.on) return;
     ensure();
     S.on = true;
-    if (S.t == null) S.t = now();
+    // the first time: the simulation begins now (before, the normal game never ran it – no catching up on what came before)
+    if (S.t == null || !S.used) {
+      S.t = now();
+      lastDay = Math.floor(S.t / 1440);
+    }
+    S.used = true;
     // who you are now stands where you stand (the figure of the first-person game)
     const me = Object.keys(D.PEOPLE).find(id => WL.playing(id));
     if (P.mode === 'walk') {
@@ -998,7 +1003,8 @@ export const STRAT = (() => {
   // ---------------- per frame: the simulation follows the clock; the lens draws ----------------
   let acc = 0;
   KERN.tick(dt => {
-    if (S.t == null) return;
+    // only once the mode was used (the normal game is not touched by it before: no simulation, no notices, no figures)
+    if (S.t == null || !S.used) return;
     const t = now();
     if (t !== S.t) sim(t);
     if (S.on && STRAT.ui) STRAT.ui.tick(dt);
@@ -1073,8 +1079,7 @@ export const STRAT = (() => {
     label: 'Ratscher von oben',
     order: 4,
     run: () => {
-      S.used = true;
-      start();
+      start(); // (marks the mode used – the first time the simulation begins now)
       if (STRAT.ui && STRAT.ui.intro) STRAT.ui.intro();
     },
   });

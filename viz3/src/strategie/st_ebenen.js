@@ -97,10 +97,36 @@ export const STEBENEN = (() => {
           const list = typeof B.list === 'function' ? B.list() : B.state().inst;
           for (const b of list || []) {
             const q = pr(b.x, b.y, 1.5);
-            if (q[2] < 1)
-              h += `<rect x="${f1(q[0] - 4)}" y="${f1(q[1] - 10)}" width="8" height="20" rx="2" fill="#f2c500" stroke="#222" stroke-width="1"/>`;
+            if (q[2] >= 1 || q[0] < -20 || q[1] < -20 || q[0] > W + 20 || q[1] > H + 20) continue;
+            h += `<rect x="${f1(q[0] - 4)}" y="${f1(q[1] - 10)}" width="8" height="20" rx="2" fill="#f2c500" stroke="#222" stroke-width="1"><title>${('Bus ' + (b.line || '') + (b.head ? ' → ' + b.head : '')).replace(/[<&]/g, '')}</title></rect>`;
+            if (P.th < 700 && b.line)
+              h += `<text x="${f1(q[0] + 7)}" y="${f1(q[1] + 3)}" style="fill:#fff3b0;font:600 10px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px">${String(b.line).replace(/[<&]/g, '')}</text>`;
           }
         } catch (e) {}
+      return h;
+    },
+  });
+  // ---- the weather as it is (feat/wetter live, else the climate): a veil for the clouds, rain over the map, the wind's arrow ----
+  STRAT.layer.define({
+    id: 'wetter',
+    under: true, // beneath the symbols and labels
+    draw: (pr, W, H) => {
+      const wx = STRAT.W.wx(STRAT.W.CLOCK.t);
+      if (!wx) return '';
+      let h = '';
+      if (wx.cloud > 0.5)
+        h += `<rect x="0" y="0" width="${W}" height="${H}" fill="rgb(70,80,92)" fill-opacity="${((wx.cloud - 0.5) * 0.36).toFixed(2)}"/>`;
+      if (wx.rain > 0.2)
+        h += `<defs><pattern id="strain" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(${Math.min(35, wx.wind / 2).toFixed(0)})"><line x1="3" y1="0" x2="3" y2="${Math.min(12, 4 + wx.rain * 2).toFixed(0)}" stroke="rgb(205,220,240)" stroke-opacity=".45" stroke-width="1"/></pattern></defs><rect x="0" y="0" width="${W}" height="${H}" fill="url(#strain)"/>`;
+      // the wind: an arrow where it blows to (the plan view has north up), its speed beside it
+      const a = (((wx.dir ?? 250) + 180) % 360) * (Math.PI / 180),
+        narrow = W <= 720, // phones: left, between the time box and the people strip; else bottom right above the scale
+        cx = narrow ? 34 : W - 46,
+        cy = narrow ? Math.round(H * 0.42) : H - 135,
+        L = 13,
+        dx = Math.sin(a) * L,
+        dy = -Math.cos(a) * L;
+      h += `<g class="wind"><circle cx="${cx}" cy="${cy}" r="19" fill="rgba(24,28,22,.7)"/><line x1="${f1(cx - dx)}" y1="${f1(cy - dy)}" x2="${f1(cx + dx)}" y2="${f1(cy + dy)}" stroke="#e8f0ff" stroke-width="2"/><circle cx="${f1(cx + dx)}" cy="${f1(cy + dy)}" r="3" fill="#e8f0ff"/><text x="${cx}" y="${cy + 33}" text-anchor="middle" style="fill:#e8f0ff;font:600 10px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px">${Math.round(wx.wind)} km/h${wx.storm ? ' · Sturm' : ''}</text></g>`;
       return h;
     },
   });
@@ -133,8 +159,8 @@ export const STEBENEN = (() => {
             const l = window.HOLZ && HOLZ.by[id];
             return s2 + (l ? l.vol || 0 : 0);
           }, 0);
-        h += `<g class="trk" transform="translate(${f1(q[0])} ${f1(q[1])}) rotate(${deg})"><rect x="-22" y="-4" width="13" height="8" rx="1.5" fill="#8a6a44" stroke="#222" stroke-width="1"/><line x1="-9" y1="0" x2="-5" y2="0" stroke="#222" stroke-width="1.5"/><rect x="-5" y="-5" width="11" height="10" rx="2" fill="#2f7a3a" stroke="#222" stroke-width="1"/><rect x="2" y="-3.5" width="5" height="7" rx="1" fill="#cfe0d2" stroke="#222" stroke-width=".8"/></g>`;
-        h += `<text x="${f1(q[0] + 12)}" y="${f1(q[1] - 10)}" style="fill:#f3e2b8;font:600 10.5px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px">Traktor · ${fmv.toLocaleString('de-DE', { maximumFractionDigits: 1 })} fm</text>`;
+        h += `<g class="trk" transform="translate(${f1(q[0])} ${f1(q[1])}) rotate(${deg}) scale(1.5)"><rect x="-22" y="-4" width="13" height="8" rx="1.5" fill="#8a6a44" stroke="#222" stroke-width="1"/><line x1="-9" y1="0" x2="-5" y2="0" stroke="#222" stroke-width="1.5"/><rect x="-5" y="-5" width="11" height="10" rx="2" fill="#2f7a3a" stroke="#222" stroke-width="1"/><rect x="2" y="-3.5" width="5" height="7" rx="1" fill="#cfe0d2" stroke="#222" stroke-width=".8"/></g>`;
+        h += `<text x="${f1(q[0] + 24)}" y="${f1(q[1] - 10)}" style="fill:#f3e2b8;font:600 10.5px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px">Traktor · ${fmv.toLocaleString('de-DE', { maximumFractionDigits: 1 })} fm</text>`;
       }
       return h;
     },

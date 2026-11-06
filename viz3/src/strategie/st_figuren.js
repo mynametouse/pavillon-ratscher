@@ -60,7 +60,7 @@ export const STFIG = (() => {
   // per frame: who is to be seen where (from above when zoomed in; on foot within 60 m of the walker)
   const last = {};
   function tick(dt) {
-    if (!avail()) return;
+    if (!avail() || !STRAT.S.used) return;
     const top = STRAT.on && P.mode === 'top',
       near = top ? P.th < 90 : P.mode === 'walk';
     if (!near && !Object.values(F.figs).some(f => f.g.visible)) return;

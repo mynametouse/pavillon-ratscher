@@ -1,0 +1,34 @@
+{
+ "regen": {
+  "files": [
+   "regen_1.mp3"
+  ],
+  "vol": 1.0
+ },
+ "starkregen": {
+  "files": [
+   "starkregen_1.mp3"
+  ],
+  "vol": 1.0
+ },
+ "dach": {
+  "files": [
+   "dach_1.mp3"
+  ],
+  "vol": 1.0
+ },
+ "wind": {
+  "files": [
+   "wind_1.mp3"
+  ],
+  "vol": 1.0
+ },
+ "donner": {
+  "files": [
+   "donner_1.mp3",
+   "donner_2.mp3",
+   "donner_3.mp3"
+  ],
+  "vol": 1.0
+ }
+}

@@ -1,0 +1,9 @@
+{
+  "credits_add": "<li>Gebäude, die OpenStreetMap fehlen (Grundriss und Höhe): ETHOS.BUILDA – Building Footprint and Height Dataset Germany, Forschungszentrum Jülich (Zenodo 10.5281/zenodo.11845992), Open Database License (ODbL 1.0); für Thüringen aus den 3D-Gebäudemodellen LoD2 © GDI-Th (dl-de/by-2-0). Dachformen geschätzt, Dachfarben aus dem Luftbild DOP 2024 © GDI-Th (dl-de/by-2-0). Bodenbild von Ratscher ohne die abgebildeten Dächer (retuschiert aus dem DOP © GDI-Th).</li>",
+  "geoman": {
+    "tex": {
+      "near": { "file": "ortho_near_r.jpg", "lq": "ortho_near_r_lq.jpg", "orig": "ortho_near.jpg", "origLq": "ortho_near_lq.jpg", "dach": "ortho_near_dach.jpg" },
+      "inner": { "file": "ortho_inner_r.jpg", "orig": "ortho_inner.jpg", "dach": "ortho_inner_dach.jpg" }
+    }
+  }
+}

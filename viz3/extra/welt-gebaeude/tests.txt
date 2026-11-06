@@ -1,0 +1,8 @@
+# feat/welt-gebaeude: every building in 3D (gebaeude/gebaeude.js) – counts, no doubles, known places, walking into one, no new programs,
+# the cells beyond the square at Schleusingen; and Schleusingen's own test (the cells are on there now)
+welt_gebaeude
+schleusingen
+# Kloster Veßra with the cells around it: through the west portal into the ruin, the gate church, the nursery (no ETHOS building in what
+# welt/vessra.js models itself – the Kern-Chat, 6.11. ~1:00)
+vessra
+vessra_szenario

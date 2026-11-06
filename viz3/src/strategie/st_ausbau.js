@@ -53,6 +53,15 @@ export const STAUSBAU = (() => {
       return true;
     },
   });
+  // whoever of your people arrives for the weekend brings food for it from home when the stores are low (six meals each – the household's,
+  // not the garden's money); a holiday week or more people need shopping (the job below, booked)
+  KERN.on('strategie:da', d => {
+    if (!d || !STRAT.isOwn(d.who) || S.essen >= 6) return;
+    S.essen += 6;
+    STRAT.note(`${D.PEOPLE[d.who].name} bringt Essen fürs Wochenende von zu Hause mit (6 Mahlzeiten).`, {
+      kind: 'leute',
+    });
+  });
   STRAT.job.define({
     id: 'einkaufen',
     label: 'Einkaufen in Schleusingen (Essen, Benzin, Diesel)',
@@ -131,7 +140,12 @@ export const STAUSBAU = (() => {
         on: 'auftrag',
         when: d => d.state === 'fertig' && d.def === 'waldbegang',
       },
-      { id: 'liefern', text: '5 Schneidebretter Eiche liefern', on: 'bestellung', when: d => d.state === 'geliefert' },
+      {
+        id: 'liefern',
+        text: '5 Schneidebretter Eiche liefern',
+        on: 'bestellung',
+        when: d => d.state === 'geliefert' && (STRAT.S.orders.find(o => o.id === d.id) || {}).key === D.ORDER0.id,
+      },
     ],
     k2: [
       {
@@ -157,6 +171,12 @@ export const STAUSBAU = (() => {
         text: 'Bretter sägen und zum Trocknen stapeln',
         on: 'auftrag',
         when: d => d.state === 'fertig' && d.def === 'stapeln',
+      },
+      {
+        id: 'leimholz',
+        text: 'Leimholz aus eigenem Holz (lufttrocken, nachgetrocknet, verleimt)',
+        on: 'auftrag',
+        when: d => d.state === 'fertig' && d.def === 'leimholz_eigen',
       },
     ],
   };
