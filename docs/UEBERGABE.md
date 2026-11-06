@@ -16,6 +16,16 @@ veröffentlicht.
 
 ## Stand
 
+- **Stand 6.11.2026 ~5:25 (Falko: „keine weiteren Credits … Arbeit stoppen, wir arbeiten später weiter“):** live **V17t** (24be07de,
+  Prüfpaket 42152070883: 77 grün, 6 bekannte Themen rot – alle in Runde C behoben). `src` = **Runde C / V17u-Kandidat** (wip/runde-c,
+  ungetestet beim Push; Prüfpaket läuft danach auf GitHub – grün → Vorschau, dann `git push origin <sha>:refs/heads/live` nach Falkos OK;
+  das Liveschalten verlangt seit ~4:35 eine Freigabe). In Runde C: welt-dinge 6c8241ef (Schluss), bus 26977265 (Schluss), wetter 3e03541a
+  (Schluss, klarer Himmel aus, `?klar`), strategie 22b1bdca (Schluss), strategie-bau 487f083d (Schluss), tiere 37d91cd6, wissen 3533bb21,
+  strategie-dorf 5ab9c3b9, welt-gebaeude e7427e26. **Nicht in Runde C, auf ihren Zweigen:** welt-gebaeude b7ededcd (die retuschierten
+  Kacheln als Standard, `S.TILES2 = true`, Bilder geprüft: besser – CI lief noch), strategie-dorf 648fe6fc ff. (CI lief), tiere/wissen
+  lokale Arbeit (ungepusht: tiere junge Bäume, wissen `WISSEN.addWhy` – Bauregeln nach dem Neuladen wieder „verstanden“). Alle Agenten um
+  ~5:25 gestoppt (Schlussberichte von bus, welt-dinge, strategie-bau liegen vor; die übrigen ohne). Offen: klarer Himmel physikalisch,
+  Umgebungslicht passend zum Wetter, Dachformen LoD2, Was-wäre-wenn-Zukünfte, Zeitreise, Sims-Linse.
 - **Nacht 5./6.11.2026: Spiegelwelt realer und „Ratscher von oben“** (Falko 5.11. 22:52–23:30, schlief ab ~23:30: „die Nacht durcharbeiten
   bis zur Integration“; alle Entscheidungen zum Anklicken in `docs/plans/plan_strategie.md`, Abschnitte 1–13). Neun Hilfs-Agenten, Aufträge
   wörtlich in `docs/plans/auftraege/` (gemeinsam: `nacht-6-11-gemeinsam.md`), Belegung in `docs/PARALLEL.md`: erste Welle `welt-gebaeude`,
