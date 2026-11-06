@@ -9,7 +9,9 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   ETHOS.BUILDA (Forschungszentrum Jülich, Grundriss und Höhe jedes Gebäudes in Deutschland, für Thüringen aus dem LoD2 des Landes; ODbL 1.0):
   44 Häuser, 34 Scheunen und Hallen, 220 Schuppen und Garagen, 3 runde Behälter (Gülle/Silage), 6 Türme/Silos. Echte Lage, echte Höhe
   (Boden bis höchster Punkt), Dachform geschätzt (Satteldach längs, große Häuser teils Walmdach, Schuppen Pultdach, Garagen flach, Hallen
-  flach geneigt; bei fast quadratischen Häusern und Scheunen die Firstrichtung aus dem Luftbild – die beiden Dachseiten sind von der Sonne
+  flach geneigt; Gebäude mit mehreren Geschossen – Wohnblöcke, Schulen, Stadthäuser, ab 10 m Höhe und höchstens 18 m tief – als
+  verputzte Häuser mit Fenstern je Geschoss, flach gedeckt, wo das Luftbild ein ebenes Dach ohne Ziegel zeigt, sonst mit Satteldach;
+  bei fast quadratischen Häusern und Scheunen die Firstrichtung aus dem Luftbild – die beiden Dachseiten sind von der Sonne
   verschieden hell, die Trennlinie ist der First: in Ratscher 9, jenseits 798 Gebäude), Dachfarbe aus dem Luftbild 2024. Aussehen wie das
   Dorf: dieselben Fassaden- und Dach-Shader von `world/village.js`
   (Schuppen aus Brettern, Garagen verputzt oder Ziegel mit hellem Tor, Scheunen mit Bretterwand auf Sockel, Hallen aus Blech, Häuser im
@@ -130,6 +132,7 @@ Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als Hinwei
 | `halle_wand.jpg` | in die Halle gelaufen: die Wand hält auf |
 | `stadt_top*.jpg`, `stadt_boden_vorher.jpg` / `stadt_boden.jpg` | Schleusingen außerhalb der Altstadt (ein Haus der Zellen, ~440 m vom Markt): vorher Wiese mit Dach im Luftbild, jetzt das Haus |
 | `strecke_top*.jpg`, `strecke_boden_vorher.jpg` / `strecke_boden.jpg` | Rappelsdorf auf dem Weg nach Kloster Veßra: die Hauptstraße nach Westen, vorher die Dächer flach im Luftbild, jetzt die Häuser, Scheunen und Schuppen der Zellen |
+| `bloecke_top*.jpg`, `bloecke_boden*.jpg` | Schleusingen West: die Wohnblöcke mit Geschossen und Fenstern, flaches Dach (aus dem Luftbild erkannt) |
 
 ## Offen
 

@@ -96,10 +96,8 @@ def roof_colour(poly, photo, seed):
     return np.mean(mid, axis=0)
 
 
-def ridge_from_photo(poly, ux, ctr, photo):
-    """which way the ridge of a gable runs, from the photo: the two slopes of a gable are lit differently by the sun, so the line that
-    splits the roof into its brightest and its darkest half is the ridge. Returns the direction (unit vector) or None when the photo
-    does not tell (both splits alike – the sun along the ridge, a flat-looking roof, panels)"""
+def roof_samples(poly, ctr, photo, step=0.5):
+    """the photo inside the footprint (0.5 m in from its edge): points relative to ctr and their colours, or None"""
     if photo is None:
         return None
     from shapely.geometry import Point
@@ -107,29 +105,62 @@ def ridge_from_photo(poly, ux, ctr, photo):
     if inner.is_empty:
         return None
     x0, y0, x1, y1 = inner.bounds
-    pts, lum = [], []
-    for x in np.arange(x0, x1, 0.5):
-        for y in np.arange(y0, y1, 0.5):
+    if (x1 - x0) * (y1 - y0) > 40000:
+        step = 1.0
+    pts, col = [], []
+    for x in np.arange(x0, x1, step):
+        for y in np.arange(y0, y1, step):
             if inner.contains(Point(x, y)):
                 c = photo.at(x, y)
                 if c is not None:
                     pts.append((x - ctr[0], y - ctr[1]))
-                    lum.append(float(c @ np.array([0.3, 0.55, 0.15])))
+                    col.append(c)
     if len(pts) < 40:
         return None
-    P, L = np.array(pts), np.array(lum)
-    best = []
+    return np.array(pts), np.array(col)
+
+
+def halves(P, L, ux):
+    """the difference of the median brightness of the two halves split along ux and across it: [(d, axis), (d, axis)] or None"""
+    out = []
     for ax in (ux, np.array([-ux[1], ux[0]])):
         nrm = np.array([-ax[1], ax[0]])
         d = P @ nrm
         a, b = L[d > 0.4], L[d < -0.4]
         if len(a) < 12 or len(b) < 12:
             return None
-        best.append((abs(float(np.median(a) - np.median(b))), ax))
+        out.append((abs(float(np.median(a) - np.median(b))), ax))
+    return out
+
+
+def ridge_from_photo(poly, ux, ctr, photo, smp=None):
+    """which way the ridge of a gable runs, from the photo: the two slopes of a gable are lit differently by the sun, so the line that
+    splits the roof into its brightest and its darkest half is the ridge. Returns the direction (unit vector) or None when the photo
+    does not tell (both splits alike – the sun along the ridge, a flat-looking roof, panels)"""
+    smp = smp or roof_samples(poly, ctr, photo)
+    if smp is None:
+        return None
+    P, C = smp
+    best = halves(P, C @ np.array([0.3, 0.55, 0.15]), ux)
+    if best is None:
+        return None
     (d1, a1), (d2, a2) = best
     if d2 > 1.5 * d1 and d2 > 0.035:
         return a2
     return None
+
+
+def roof_flat(poly, ux, ctr, photo, smp=None):
+    """is the roof flat, from the photo: both halves alike (no slope lit differently by the sun) and no red tiles. None without photo"""
+    smp = smp or roof_samples(poly, ctr, photo)
+    if smp is None:
+        return None
+    P, C = smp
+    best = halves(P, C @ np.array([0.3, 0.55, 0.15]), ux)
+    if best is None:
+        return None
+    red = float(np.mean(C[:, 0] - np.maximum(C[:, 1], C[:, 2]) > 0.05))   # tiles (the 2024 photo is a little blue: no ratio test)
+    return max(best[0][0], best[1][0]) < 0.03 and red < 0.25
 
 
 def classify(poly, h, sid, photo=None):
@@ -150,10 +181,18 @@ def classify(poly, h, sid, photo=None):
     if h is None or not (h > 0.5):
         h = 3.0 if A < 40 else 6.0 if A < 300 else 8.0
     h = min(float(h), 40.0)
+    ms = h >= 10.0 and 6.5 <= Wd <= 18.0 and A >= 120   # tall enough for several storeys, not too deep
+    fl = roof_flat(poly, ux, ctr, photo) if ms else None
     if circ > 0.86 and nv >= 10:
         kind, form, pitch = 4, 0, 0.0   # a round tank (slurry, silage): flat top
     elif h > 12 and h > 2.2 * math.sqrt(A):
         kind, form, pitch = 5, 0, 0.0   # a tower, a silo, a chimney: slender and tall, flat top
+    elif ms and (h >= 12.5 or (Lr / max(Wd, 0.1) >= 2.5 and Wd <= 14.0 and A >= 150 and fl is True)):
+        # a building of several storeys – flats (the blocks of Schleusingen and Themar), a school, offices: plastered with windows on
+        # every storey; flat when the photo shows an even roof without tiles, else a gable (an old town house); without a photo the long
+        # ones flat
+        kind = 0
+        form, pitch = (0, 0.0) if (fl if fl is not None else Lr / max(Wd, 0.1) >= 2.5) else (2, 30.0)
     elif A >= 350:
         kind, form, pitch = 1, (2 if Wd < 45 else 0), 14.0   # a hall: low gable, very wide ones flat
     elif A >= 35 and h >= 4.5:
