@@ -18,6 +18,7 @@ import { GPLAN } from '../gplan/gplan.js';
 import { GPSUN } from '../gplan/gplan_sun.js';
 import { AMT } from '../amt/amt.js';
 import { WISSEN } from './wissen.js';
+import { WORTE } from './wissen_orte.js';
 export const WDATEN = (() => {
   const S = { on: {}, strat: false, sun: null, sunKey: '', el: null, shown: false };
   const f1 = v => v.toFixed(1);
@@ -502,8 +503,52 @@ export const WDATEN = (() => {
     } catch (e) {}
     return h;
   }
+  // ---- places of history: the information boards (read: filled, not yet: a ring) and the towns' places ----
+  function drawOrte(pr, W, H) {
+    let h = '';
+    const mark = (x, y, title, done) => {
+      const q = pr(x, y, 1.5);
+      if (!onScr(q, W, H)) return;
+      h +=
+        `<circle cx="${f1(q[0])}" cy="${f1(q[1])}" r="8" style="fill:${done ? '#f3e2b8' : 'rgba(30,26,20,.55)'};stroke:#f3e2b8;stroke-width:2"/>` +
+        `<text x="${f1(q[0])}" y="${f1(q[1] + 4)}" text-anchor="middle" style="font:700 10px system-ui;fill:${done ? '#2b2420' : '#f3e2b8'}">i</text>` +
+        label([q[0] + 11, q[1] + 4], title, done ? '#f3e2b8' : '#fff');
+    };
+    const seen = new Set();
+    for (const B of (WORTE && WORTE.S && WORTE.S.boards) || []) {
+      const d = B.def || {};
+      seen.add(B.id);
+      mark(B.x, B.y, d.title || B.id, WISSEN.has(d.entry));
+    }
+    // the towns' boards stand only while their zone is built – their places are marked anyway
+    for (const [id, spot, title, entry] of [
+      ['burg', 'schleusingen', 'Schleusingen: Bertholdsburg', 'g_burg'],
+      ['kloster', 'vessra', 'Kloster Veßra', 'g_vessra'],
+    ]) {
+      if (seen.has(id)) continue;
+      const sp = KERN.spot(spot);
+      if (sp && sp.pos) mark(sp.pos[0], sp.pos[1], title, WISSEN.has(entry));
+    }
+    return h;
+  }
   // ---- the layers ----
   const LAYERS = [
+    {
+      id: 'w_orte',
+      icon: '📖',
+      label: 'Orte der Geschichte',
+      text: 'Die Infotafeln und die Orte, über die das Entdeckerbuch etwas weiß',
+      draw: drawOrte,
+      entry: null,
+      legend: () => {
+        const p = WISSEN.progress();
+        return (
+          '<div class="wd-k"><i style="background:#f3e2b8"></i>Tafel gelesen <i style="background:rgba(30,26,20,.55);border:1px solid #f3e2b8"></i>noch nicht gelesen</div>' +
+          `<p>Im Entdeckerbuch: <b>${p.all[0]}</b> von ${p.all[1]} Einträgen, Geschichte ${p.geschichte[0]} von ${p.geschichte[1]}.</p>` +
+          '<small>„Tafel lesen“ vor Ort öffnet das Buch beim Eintrag.</small>'
+        );
+      },
+    },
     {
       id: 'w_laerm',
       icon: '🔊',

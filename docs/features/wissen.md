@@ -41,7 +41,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   zum Markt) und an der **Henneberger Kapelle in Kloster Veßra** (zum Klostertor hin): gebaut, sobald die Zone der Stadt steht, und mit ihr
   wieder freigegeben.
 - **Daten-Ansichten** (`viz3/src/wissen/wissen_daten.js`, „Lernen durch Sehen“ wie in SimCity): auf der Draufsicht (Hingehen → Draufsicht) ein
-  kleines Feld links unten mit fünf Schaltern und der Legende – **Lärm** (Straßen nach ihrer OSM-Klasse mit Bändern über 55 und 45 dB(A),
+  kleines Feld links unten mit sechs Schaltern und der Legende – **Orte der Geschichte** (die Infotafeln, gelesene gefüllt, und die Orte in
+  Schleusingen und Veßra), **Lärm** (Straßen nach ihrer OSM-Klasse mit Bändern über 55 und 45 dB(A),
   Maschinen, solange sie laufen: Mäher, Motorsäge, Blockbandsäge, die lauten Aufträge des Strategie-Modus; dazu die Ruhezeiten des Spieltags
   mit „?“), **Verkehr** (Straßen nach Klasse, die fahrenden Autos des Verkehrs, die Autos der Dorfbewohner, die Busse), **Sonne**
   (Sonnenstunden des Spieltags auf einem 3-m-Raster über dem Garten – Sonnenstand und Schatten von Gebäuden und Kronen wie im Gartenplaner,
