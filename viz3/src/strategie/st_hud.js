@@ -816,8 +816,9 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
     const [sx, sy] = rel(e),
       pl = pickPlace(sx, sy);
     if (pl) {
-      openPlace(pl);
       const jobs = STRAT.job.at(pl).filter(J => !STRAT.job.check(J, H.sel));
+      // on a phone the panel would cover the map: a single job given is told by its notice (a tap on the place opens the panel)
+      if (!(e.pointerType !== 'mouse' && innerWidth <= 720 && jobs.length === 1)) openPlace(pl);
       if (jobs.length === 1) {
         const r = STRAT.job.add(jobs[0].id, H.sel, { place: pl });
         if (r && r.no) no(r);
