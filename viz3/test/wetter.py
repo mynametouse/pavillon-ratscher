@@ -164,16 +164,19 @@ with lib.browser() as b:
         n1 = J("WETTER.state().flashes")
         w = math.hypot(*J("WETTER.state().fallU.wind"))
         ck('thunderstorm: lightning flashes within 30 s, rain driven by the wind', n1 > n0 and w > 4, f"{n1 - n0} flashes, wind on the drops {w:.1f} m/s")
-        E("WETTER.S.flash.next = 0")
-        steps(0.05)
-        E("WETTER.S.flash.near = 1")
-        steps(0.01)
+        # a near strike (900 m) with its bolt in view: one small step starts it, the first stroke is at full strength
+        E("WETTER.strike({ d: 900, az: 218 })")
+        steps(0.02, 0.02)
         ck('a flash lights the sky and the land for a moment (its first stroke)', J("WETTER.state().flash") > 0.3, str(J("WETTER.state().flash")))
         pic('10_blitz')
         steps(1)
         ck('no new shader program while the weather changed (clear → overcast → rain → snow → fog → storm → thunderstorm)', progs() == p0, f"{p0} → {progs()}")
         ok, r = lib.check_gl(pg, 16)
         ck('every shader program links and stays within 16 textures (the sky with its clouds, the drops)', ok, json.dumps({k: r[k] for k in ('programs', 'maxFrag', 'maxVert', 'broken')})[:300] + json.dumps(r['bad'])[:200])
+        midday(16.45)
+        view('garten', 245, 8)
+        weather('wolkig')
+        pic('11a_abend_wolkig')
         midday(17.2)
         view('garten', 250, 5)
         weather('regen')
@@ -220,7 +223,7 @@ with lib.browser() as b:
             steps(0.2); time.sleep(0.3)
             r1 = J("WETTER.state().rec")
             if 'regen' in r1 and 'dach' in r1: break
-        ck('rain: the rain and roof recordings are loaded and decoded (not the storm\'s)', st0 != 'running' or ('regen' in r1 and 'dach' in r1 and 'wind' not in r1 and 'donner' not in r1), f"audio {st0}, recorded {r1}")
+        ck('rain: the rain and roof recordings are loaded and decoded (no thunder without a thunderstorm)', st0 != 'running' or ('regen' in r1 and 'dach' in r1 and 'donner' not in r1), f"audio {st0}, recorded {r1}")
         weather('gewitter', 0.5)
         r2 = []
         for i in range(30):

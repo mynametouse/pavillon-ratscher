@@ -336,7 +336,9 @@ export const WETTER = (() => {
     const F = S.flash;
     if (storm && (F.next -= dt) <= 0) {
       F.next = 6 + Math.random() * 26;
-      const d = 600 + Math.random() * 7000;
+      const force = F.force;
+      F.force = null;
+      const d = force && force.d > 0 ? force.d : 600 + Math.random() * 7000;
       if (!F.on) {
         F.base = hemi.intensity;
         F.envBase = scene.environmentIntensity;
@@ -345,6 +347,10 @@ export const WETTER = (() => {
       F.t = -dt;
       F.third = Math.random() < 0.5;
       F.near = Math.max(0.35, Math.min(1, 2500 / d));
+      // a strike within ~3.5 km shows its bolt (farther ones light the clouds from inside)
+      F.bolt = d < 3500;
+      F.az = force && Number.isFinite(force.az) ? (force.az * Math.PI) / 180 : Math.random() * Math.PI * 2;
+      F.seed = Math.random() * 100;
       F.n++;
       WXTON.thunder(d);
     }
@@ -368,11 +374,13 @@ export const WETTER = (() => {
       // the flash lights the land from the whole sky: the hemisphere and the image light (the day's light restores both after it)
       hemi.intensity = F.base + F.k * 2.2;
       scene.environmentIntensity = F.envBase * (1 + 3 * F.k * F.k);
+      WXSKY.U.wxBolt.value.set(F.az, F.bolt && k > 0.5 ? F.k : 0, F.seed, 0.0025);
       markDirty();
       if (t > 0.5) {
         F.on = false;
         F.k = 0;
         WXSKY.U.wxFlash.value = 0;
+        WXSKY.U.wxBolt.value.y = 0;
         if (DN.hook) DN.hook.v++;
       }
     }
@@ -570,6 +578,11 @@ export const WETTER = (() => {
       tick(0.016);
     },
     refresh: () => fetchNow(true),
+    // tests: the next tick of a thunderstorm strikes at d m, its bolt towards az° (compass bearing, as P.yaw)
+    strike(o = {}) {
+      S.flash.force = { d: +o.d || 0, az: +o.az };
+      S.flash.next = 0;
+    },
     clockToNow,
     state: () => ({
       mode: S.mode,
