@@ -32,7 +32,7 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   Dorfchronist): Henneberger, Kloster Veßra, Reformation, DDR, die Wende, alte Handwerke (Glas in Lauscha, Köhlerei, Schiefer, Fachwerk – je Satz eins);
   **Wolfgang** (Waldarbeiter, „der Förster“ des Dorfs – einen Förster als Figur gibt es nicht): Borkenkäfer, Waldumbau, richtig fällen;
   **Ingrid** (Ortsteilbürgermeisterin): Ortsteilrat, wer was entscheidet, LEADER, Bauen im Außenbereich; **Hubert**: Holz trocknen, Saftruhe,
-  Festmeter; **Ronald**: Rotmilan, Rehe, Ziegen, die Erle, die zehn Jahreszeiten der Natur. Die eigenen Themen der Dorfbewohner zählen auch (Gerhard „Die alte Schule“,
+  Festmeter; **Ronald**: Rotmilan, Rehe, Ziegen, die Erle, die zehn Jahreszeiten der Natur, Wildschweine und – wenn es ihn gibt (feat/tiere) – der Hütehund Hasso. Die eigenen Themen der Dorfbewohner zählen auch (Gerhard „Die alte Schule“,
   Manfred „Die Feuerwehr“, Uwe „Die Talsperre“ …). Sie sagen den Satz in ihren Worten (Hubert und Ronald mit ihrer Stimme), dann ist er im Buch –
   beim ersten Mal öffnet sich das Buch neben dem Gespräch auf dem Eintrag (am Handy statt dessen der Hinweis mit „Lesen“).
 - **„Warum?“** an Regeln: `WISSEN.why(id)` → ein Satz mit Quelle (32. BImSchV, BNatSchG, ThürNRG, WHG, BauGB, DGUV …); dieselben IDs wie die

@@ -149,7 +149,7 @@ export const WDATA = (() => {
       text: 'Wildschweine leben in Rotten aus Bachen und ihren gestreiften Frischlingen; die Keiler meist allein. Sie sind nachts unterwegs und durchwühlen den Boden nach Wurzeln, Engerlingen, Eicheln und Bucheckern.',
       here: 'Eine Rotte kann eine Wiese in einer Nacht umpflügen – Gärten schützt ein fester Zaun oder ein Elektrozaun. Im Wald lockert ihr Wühlen dagegen den Boden.',
       src: [wiki('Wildschwein')],
-      find: { ev: [['tiere:entdeckt', d => d && d.id === 'wildschwein']] },
+      find: { ev: [['tiere:entdeckt', d => d && d.id === 'wildschwein']], talk: ['ronald:wildschwein'] },
       hint: 'Nachts auf den Feldern am Wald.',
     },
     {
@@ -321,7 +321,7 @@ export const WDATA = (() => {
       text: 'Ein Hund lernt aus den Folgen seines Tuns: Was sich für ihn lohnt – Lob, Futter, Spiel –, zeigt er öfter, was unangenehm endet, seltener. Das heißt operante Konditionierung. Lob wirkt am besten sofort, solange der Hund noch weiß, wofür es ist.',
       here: 'Hasso ist ein Altdeutscher Hütehund. Diese Hunde arbeiten seit Jahrhunderten bei den Schäfern in Mitteldeutschland und wollen beschäftigt sein.',
       src: [wiki('Operante Konditionierung'), wiki('Altdeutsche Hütehunde', 'Altdeutsche_Hütehunde')],
-      find: { ev: [['hund:gelernt']] },
+      find: { ev: [['hund:gelernt']], talk: ['ronald:hund'] },
       hint: 'Den Hund loben oder tadeln.',
     },
     {
@@ -1362,6 +1362,23 @@ export const WDATA = (() => {
           'Eine Schwarzerle. Die steht gern mit den Füßen im Wasser und düngt sich selbst – an den Wurzeln hat sie kleine Knollen mit Bakterien.',
         ],
         entry: 'n_erle',
+      },
+      {
+        id: 'wildschwein',
+        label: 'Wer hat die Wiese umgegraben?',
+        lines: [
+          'Die Wildschweine, die Rotte war wieder da. Die drehen nachts die Wiese um, auf der Suche nach Engerlingen und Wurzeln. Gegen die hilft nur ein fester Zaun – oder Strom drauf.',
+        ],
+        entry: 'tier:wildschwein',
+      },
+      {
+        id: 'hund',
+        need: 'HUND',
+        label: 'Was ist Hasso für ein Hund?',
+        lines: [
+          'Ein Altdeutscher Hütehund, eine Gelbbacke – so einen hatten die Schäfer hier immer. Der will arbeiten. Und lob ihn sofort, wenn er was richtig macht, nicht erst später – sonst weiß er nicht, wofür.',
+        ],
+        entry: 'n_hund',
       },
     ],
   };
