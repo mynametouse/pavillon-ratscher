@@ -18,7 +18,7 @@ import { markDirty } from '../core/assets.js';
 import { hemi, sun } from '../garden/env.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
-import { audio } from '../audio/audio.js';
+import { audio, toast } from '../audio/audio.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
 import { VEH } from '../vehicles/vehicle.js';
@@ -46,7 +46,7 @@ export const WETTER = (() => {
     preset: null,
     mock: null,
     calls: [],
-    flash: { t: 0, next: 8, k: 0, n: 0, base: 0 },
+    flash: { t: 0, next: 8, k: 0, n: 0, base: 0, on: false, near: 1, third: false },
     acc: 0,
     wet: 0,
     wetWant: 0,
@@ -180,6 +180,17 @@ export const WETTER = (() => {
     S.label = label;
     S.why = rec ? '' : why;
     S.w = WXDATA.norm(rec);
+    // the first real weather of this browser: one short word on where it comes from and where to switch it
+    if (S.w && (src === 'jetzt' || src === 'stunde') && !S.told && P.mode === 'walk') {
+      S.told = true;
+      if (SAVE.once('pav-wetter-neu'))
+        toast(
+          'Neu: Das Wetter ist wie in Ratscher – ' +
+            (src === 'jetzt' ? 'gerade draußen' : 'zur Spielzeit') +
+            ' (Open-Meteo). Umstellen an der Uhr oben rechts oder unter Menü → Einstellungen.',
+          8000
+        );
+    }
     if (fresh && was !== S.src + S.label && CLOCK.winOpen) CLOCK.redraw && CLOCK.redraw();
     return S.w;
   }
@@ -243,6 +254,7 @@ export const WETTER = (() => {
         snow: c.snow,
         drizzle: !!wx.drizzle,
         graupel: wx.code === 77,
+        hail: !!wx.hail,
         wind: c.wind,
         gust: c.gust,
         dir: c.dir,
@@ -264,7 +276,7 @@ export const WETTER = (() => {
         wind: c.wind,
         gust: c.gust,
         gustK: WXFALL.S.gustK,
-        inside,
+        inside: inside || !!(VEH && VEH.cur),
       },
       dt
     );
@@ -306,25 +318,46 @@ export const WETTER = (() => {
     return clamp(r / 0.8, 0, 1);
   }
   // ---- lightning in a thunderstorm: a flash in the sky and on the land (the sky light for a moment), thunder after it by the distance ----
+  // a flash flickers: a first stroke, a dimmer pause, one or two return strokes, then it fades (some 0.4 s); near ones are brighter
   function lightning(dt, storm) {
     const F = S.flash;
-    if (F.k > 0) {
-      F.k = Math.max(0, F.k - dt * 9);
-      WXSKY.U.wxFlash.value = F.k * F.k * 2.2;
-      hemi.intensity = F.base + F.k * 1.6;
+    if (storm && (F.next -= dt) <= 0) {
+      F.next = 6 + Math.random() * 26;
+      const d = 600 + Math.random() * 7000;
+      F.base = F.on ? F.base : hemi.intensity;
+      F.on = true;
+      F.t = -dt;
+      F.third = Math.random() < 0.5;
+      F.near = Math.max(0.35, Math.min(1, 2500 / d));
+      F.n++;
+      WXTON.thunder(d);
+    }
+    if (F.on) {
+      F.t += dt;
+      const t = F.t,
+        k =
+          t < 0.07
+            ? 1
+            : t < 0.11
+              ? 0.25
+              : t < 0.17
+                ? 0.85
+                : t < 0.21
+                  ? 0.3
+                  : t < 0.26 && F.third
+                    ? 0.6
+                    : Math.max(0, 0.45 * (1 - (t - 0.21) / 0.3));
+      F.k = k * F.near;
+      WXSKY.U.wxFlash.value = F.k * F.k * 2.4;
+      hemi.intensity = F.base + F.k * 2.2;
       markDirty();
-      if (F.k === 0) {
+      if (t > 0.5) {
+        F.on = false;
+        F.k = 0;
         WXSKY.U.wxFlash.value = 0;
         if (DN.hook) DN.hook.v++;
       }
     }
-    if (!storm) return;
-    if ((F.next -= dt) > 0) return;
-    F.next = 6 + Math.random() * 26;
-    F.base = F.k > 0 ? F.base : hemi.intensity;
-    F.k = 1;
-    F.n++;
-    WXTON.thunder(600 + Math.random() * 7000);
   }
   // ---- the mode (saved), a weather to try (this visit only), tests ----
   function setMode(m) {
@@ -506,6 +539,7 @@ export const WETTER = (() => {
       automated: AUTOMATED,
     }),
     data: WXDATA,
+    fall: WXFALL,
     S,
   };
 })();

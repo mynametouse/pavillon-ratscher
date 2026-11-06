@@ -107,6 +107,12 @@ with lib.browser() as b:
         d_clear = dn()
         f_clear = fog()
         ck('clear: no cloud deck, nothing falls', s['sky']['cov'] < 0.05 and s['fall']['n'] == 0, str(s['sky']) + str(s['fall']))
+        s = weather('heiter')
+        pic('01c_heiter')
+        ck('fair: a few clouds, the sun still out (unless a cloud covers it)', 0.2 < s['sky']['cov'] < 0.4, str(s['sky']))
+        s = weather('wolkig')
+        pic('01d_wolkig')
+        ck('cloudy: broken clouds drifting, cloud shadows possible, nothing falls', 0.5 < s['sky']['cov'] < 0.75 and s['fall']['n'] == 0, str(s['sky']))
         s = weather('bedeckt')
         d = dn()
         pic('02_bedeckt')
@@ -127,6 +133,16 @@ with lib.browser() as b:
         m2 = J(UNI)
         ck('heavy rain: the drops\' mesh drawn, its uniforms finite (before and after the picture)', m['vis'] and m['fin'] and m2['vis'] and m2['fin'] and m['n'] > 3000, json.dumps(m2)[:400])
         ck('heavy rain: all drops, faster', s['fall']['kR'] >= 0.95 and s['fallU']['rain'][0] > 8, str(s['fall']) + str(s['fallU']['rain']))
+        # the drops alone on black, at several moments: they must fill the view evenly (they once gathered in sheets – their speed came
+        # from the same random number as their height)
+        spread = J("""(() => { const F = WETTER.fall, m = F.mesh, r2 = new THREE.WebGLRenderer({ preserveDrawingBuffer: true }), sc = new THREE.Scene();
+          r2.setSize(240, 150, false); const cam = GAME.cam, q = m.clone(); q.onBeforeRender = m.onBeforeRender; sc.add(q); const out = [];
+          for (const t of [3.0, 4.248, 17.5, 61.0, 133.3]) { F.U.uT.value = t; r2.render(sc, cam); const gl = r2.getContext(), px = new Uint8Array(240 * 150 * 4);
+            gl.readPixels(0, 0, 240, 150, gl.RGBA, gl.UNSIGNED_BYTE, px); const th = [0, 0, 0];
+            for (let y = 0; y < 150; y++) for (let x = 0; x < 240; x++) { const i = (y * 240 + x) * 4; if (px[i] + px[i + 1] + px[i + 2] > 60) th[Math.min(2, Math.floor(y / 50))]++; }
+            const n = th[0] + th[1] + th[2]; out.push(n ? th.map(v => +(v / n).toFixed(2)) : [0, 0, 0]); }
+          r2.dispose(); return out; })()""")
+        ck('heavy rain: the drops fill the view evenly at every moment (no sheets)', all(min(t) > 0.12 for t in spread), str(spread))
         s = weather('schnee', 2.0)
         pic('07_schnee_nah')
         ck('snow: flakes (the snow share), slow', s['fall']['kS'] > 0.5 and s['fallU']['rain'][3] > 0.95 and s['fallU']['snow'][0] < 1.6, str(s['fall']) + str(s['fallU']))
@@ -147,7 +163,8 @@ with lib.browser() as b:
         w = math.hypot(*J("WETTER.state().fallU.wind"))
         ck('thunderstorm: lightning flashes within 30 s, rain driven by the wind', n1 > n0 and w > 4, f"{n1 - n0} flashes, wind on the drops {w:.1f} m/s")
         E("WETTER.S.flash.next = 0")
-        steps(0.1)
+        steps(0.05)
+        ck('a flash lights the sky and the land for a moment (its first stroke)', J("WETTER.state().flash") > 0.3, str(J("WETTER.state().flash")))
         pic('10_blitz')
         steps(1)
         ck('no new shader program while the weather changed (clear → overcast → rain → snow → fog → storm → thunderstorm)', progs() == p0, f"{p0} → {progs()}")
@@ -157,6 +174,13 @@ with lib.browser() as b:
         view('garten', 250, 5)
         weather('regen')
         pic('11_abendregen')
+        # an overcast night: no stars, no moon, the underside of the deck faintly lit by the towns around
+        midday(22.5)
+        view('garten', 200, 12)
+        s = weather('bedeckt')
+        pic('11b_nacht_bedeckt')
+        g = J("WETTER.S && window.DN ? DN.SU.wxGlow.value.toArray() : null")
+        ck('an overcast night: the stars hidden, the towns\' glow on the deck', J("DN.dbg().stars") < 0.05 and g and g[0] > 0.004, f"stars {J('DN.dbg().stars')} glow {g}")
         midday(12.0)
     # ---- indoors: no drops, the roof heard ----
     if 'innen' in want:

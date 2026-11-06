@@ -75,7 +75,7 @@ with lib.browser() as b:
     E("GAME.shot()")
     K0 = set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
     a0 = J("DINGE.areaState()")
-    ck('at the start (the garden) the town\'s places are not loaded', not a0.get('schleusingen'), str(a0))
+    ck('the areas are known; the town\'s data waits until one comes near (garden: 1.5 km)', 'ratscher' in a0 and 'schleusingen' in a0, str(a0))
     # a weekday morning in the town: the kerbs full, drives emptier
     tue = J("(() => { for (let d = 0; d < 14; d++) if (DCAL.wd(d * 1440 + 600) === 2) return d; return 1; })()")
     E(f"CLOCK.t = {tue * 1440 + 10 * 60 + 30}")
@@ -83,7 +83,7 @@ with lib.browser() as b:
     t0 = time.time()
     while time.time() - t0 < 200:
         E("GAME.step(0.25)")
-        if J("SCHL.status().state") in ('ready', 'error') and J("DINGE.areaState().schleusingen") in ('da', 'fehlt', 'fehler'):
+        if J("SCHL.status().state") in ('ready', 'error') and J("DINGE.areaState().schleusingen || null") in ('da', 'fehlt', 'fehler'):
             break
         time.sleep(0.4)
     for _ in range(40):
@@ -97,6 +97,8 @@ with lib.browser() as b:
     steps(6)
     n = J("({ all: DINGE.places.filter(p => p.area === 'schleusingen').length, built: DINGE.places.filter(p => p.area === 'schleusingen' && p.im).length, on: DINGE.places.filter(p => p.area === 'schleusingen' && p.im && p.on && !p.hide).length })")
     ck('the town has many parking places, those near the Markt built', n['all'] >= 150 and n['built'] >= 40, json.dumps(n))
+    st2 = J("DINGE.state()")
+    ck('few draw calls: one mesh per body type and cell (≤ 120 in the town)', st2['drawn'] <= 120, f"{st2['drawn']} meshes, {st2['built']} cells, triangles per car {st2['tris']}")
     # on the ground: each built car's height against the ground under it now
     g = J("DINGE.places.filter(p => p.area === 'schleusingen' && p.im).map(p => +(p.zc - KERN.ground(p.x, p.y)).toFixed(2))")
     bad = [d for d in g if abs(d) > 0.25]
@@ -115,6 +117,14 @@ with lib.browser() as b:
     E(f"GAME.orbit(160, 35, 140, [{MARKT[0]}, {MARKT[1]}, KERN.ground({MARKT[0]}, {MARKT[1]}) + 2])")
     E("GAME.shot()")
     pic('03_markt_umgebung')
+    # car parks of OSM (empty in the photo of a Sunday morning): a shop's fills on Saturday morning, empty on Sunday
+    kinds = J("DINGE.state().kinds")
+    print('kinds', kinds, flush=True)
+    if kinds.get('laden', 0) >= 5:
+        sat = J("(() => { for (let d = 0; d < 14; d++) if (DCAL.wd(d * 1440 + 600) === 6) return d; return 5; })()")
+        r = J(f"""(() => {{ const L = DINGE.places.map((p, i) => i).filter(i => DINGE.places[i].kind === 'laden');
+            const n = t => L.filter(i => DINGE.want(i, t)).length; return {{ all: L.length, sa10: n({sat} * 1440 + 600), so10: n({sat + 1} * 1440 + 600) }}; }})()""")
+        ck('a shop\'s car park: full on Saturday at 10:00, empty on Sunday', r['sa10'] > 0.7 * r['all'] and r['so10'] < 0.15 * r['all'], str(r))
     newp = [[nm, k[-60:]] for nm, k in J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])") if k not in K0]
     ck('no new shader programs of the things', not [x for x in newp if 'dinge' in x[1]], f'new: {newp}')
     ck('no error in the round', not J("DINGE.err"), str(J("DINGE.err")))

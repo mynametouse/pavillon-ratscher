@@ -30,6 +30,13 @@ des Luftbilds als **Stellplätze, belebt nach Tageszeit**; (23:17) „Wichtig is
   Sicht oder weiter als 320 m; im Blickfeld oder näher als 14 m bleibt es, `DINGE.held` zählt das). Das Auto behält Bauart (aus der
   gemessenen Länge: Kleinwagen < 4,05 m, Kompakt < 4,45 m, Kombi oder SUV, Transporter) und Farbe aus dem Foto (Dunst abgezogen, dann die
   nächste der üblichen Farben). Autos, die im Foto mitten auf einer Haupt- oder Kreisstraße fuhren, werden keine Plätze.
+- **Parkplätze aus OSM** (`tools/welt-dinge/osm_parkplaetze.py` auf GitHub Actions, Workflow `welt-dinge-osm.yml`, Artefakt
+  `osm-parkplaetze`; `plaetze.py` macht daraus Stellplätze): das Foto ist von einem Sonntagvormittag – der Supermarkt-Parkplatz ist leer
+  und gäbe keine Plätze. Jeder öffentliche Parkplatz (`amenity=parking`, nicht privat, nicht Tiefgarage/Parkhaus) wird mit Reihen
+  gefüllt (2,5 m breit, 5 m tief, 6 m Gasse) und bekommt die Art dessen, wozu er gehört (nächster Laden, Kirche, Schule, Arzt/Amt,
+  Gaststätte, Sportplatz, Friedhof binnen 80 m oder sein Name): `laden` (Mo–Sa Öffnungszeiten, Samstagvormittag voll, sonntags leer),
+  `kirche` (Sonntagsgottesdienst), `schule`, `dienst`, `gaststaette`, `sport`, `friedhof`, `allgemein`. Bauart und Farbe zufällig nach
+  dem Bestand auf deutschen Straßen, je Platz fest.
 - **Modelle** (`viz3/src/dinge/dinge_modelle.js`, `DMOD`): Kleinwagen, Kompakt, Kombi, SUV, Transporter ohne Marke in echten Außenmaßen
   (Karosserie, Glas, A-/B-/C-Säulen, Radläufe, Lampen, Schilder ohne Nummer); Dinge: Pool rund/eckig, Anhänger, Wohnwagen, Wohnmobil,
   Traktor, Lkw, Rund-/Quaderballen, Holzstapel (abgedeckt), Stammholz, Güllebehälter, Trampolin, Container. Ein Material (`plain()`),
@@ -61,11 +68,36 @@ des Luftbilds als **Stellplätze, belebt nach Tageszeit**; (23:17) „Wichtig is
 
 ## Stand und offen
 
-- Siehe den Abschnitt „Stand“ in der letzten Fassung dieses Dokuments (wird in der Nacht fortgeschrieben).
+Stand 6.11.2026 ~0:30 (wird bis ~6:30 fortgeschrieben):
+
+| Gebiet | Autos (Plätze) | Dinge | geprüft |
+|---|---|---|---|
+| Ratscher (Dorf, Agrargenossenschaft, Holzlagerplatz, Gewerbe am Ostende) | 40 (Hof 31, Straße 7, Betrieb 2) | 16: Pool rund/eckig, Wohnmobil, Lkw, Wohnwagen, 3 Stammholz, 5 Holzstapel, Anhänger, 2 Güllebehälter | jeder Kandidat von Auge (fünf Durchgänge) |
+| Schleusingen (Altstadt und Stadt bis 1,4 × 1,45 km) | 840 (Hof 624, Stadtrand 216) | 6 Lkw | Regeln, Stichprobe 30 (28 Autos), 237 Zweifelsfälle von Auge |
+| Geisenhöhn (Dorf im Westen des Quadrats) | 15 (Hof 12, Straße 3) | Holzplatz: Stammholz, Bretterstapel, kleiner Traktor | drei Durchgänge, Regeln, alle 14 der Stichprobe Autos; Holzplatz von Auge |
+| Campingplatz Talsperre Ratscher | 3 | – (Wohnwagen und Hütten sind dort Gebäude für `welt-gebaeude`) | Regeln |
+| Zollbrück (an der Strecke nach Veßra) | 1 | – | Regeln |
+| Kloster Veßra (Dorf, Kloster, Baumschule; Zone, 9 km westlich) | 94 (Hof 75, Straße 19) | 1 Lkw | Regeln, Stichprobe 30 (alle Autos); der Parkplatz der Baumschule bleibt frei (dort parkt Falkos Auto nach der Fahrt) |
+
+- Offen: die Straßen nach Schleusingen und Veßra (außerhalb der Orte kaum geparkte Autos). Supermarkt-Parkplätze sind im Foto (Sonntag) leer – dort gibt es keine Plätze (OSM `amenity=parking` war von
+  hier nicht erreichbar; ließe sich auf GitHub Actions holen). Fahrende Autos des Verkehrs parken nicht auf freien Plätzen (eigenes
+  System in `verkehr/`, nicht billig).
+- Die Masken nimmt die Boden-Retusche von `welt-gebaeude` (`retusche.py`); bis dahin zeigt das Bodenbild die flachen Autos noch.
 
 ## Für den Lead
 
 - `viz3/src/modules.txt`: Block `# feat/welt-dinge` vor `# feat/verkehr` (zwei Module, Ordner `viz3/src/dinge/`).
 - `viz3/src/verkehr/verkehr_auto.js`: ein Import und zwei Zeilen in `obstacles()`, markiert `// feat/welt-dinge` (der Verkehr sieht die
   geparkten Autos).
+- Neuer Workflow `.github/workflows/welt-dinge-osm.yml` (nur `feat/welt-dinge`, nur wenn `tools/welt-dinge/osm_parkplaetze.py` sich
+  ändert; liest Overpass, legt das Artefakt `osm-parkplaetze` ab, schreibt nichts ins Repo).
+- Tests: `welt_dinge` (Ratscher) und `welt_dinge_stadt` (Schleusingen mit den Kacheln der Website) in `viz3/extra/welt-dinge/tests.txt`;
+  Einheitentest `viz3/test/unit/dinge.test.mjs`.
 - Quellen: `credits_add` in `viz3/extra/welt-dinge/manifest.json` (DOP 2024 © GDI-Th dl-de/by-2-0, YOLO11-OBB, OSM).
+- Retusche: `tools/welt-gebaeude/retusche.py` liest `viz3/extra/*/maske*.json` als Modellmeter – das Muster trifft auch
+  `maske_dinge_utm.json` (UTM, für `kacheln.py`); diese Vielecke landen dort zweimal umgerechnet weit außerhalb der Bilder (harmlos, aber
+  besser `*_utm.json` dort auslassen). Nach dem Zusammenführen beider Zweige die Retusche einmal neu rechnen (Befehl in
+  `docs/features/welt-gebaeude.md`).
+- `prep.py --geb`: die Grundrisse von `welt-gebaeude` kamen in dieser Nacht aus `origin/feat/welt-gebaeude` (Kopie im Arbeitsordner); nach
+  dem Zusammenführen liest `prep.py` sie aus dem eigenen Checkout. Die OSM-Häuser der Zone Kloster Veßra (Daten nur auf der Website)
+  sind nicht in der Prüfung – dort könnte ein Auto auf einem Dach stehen, das der Detektor für eines hielt (Stichprobe: keins).

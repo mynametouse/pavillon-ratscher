@@ -28,10 +28,11 @@ export const WXSKY = (() => {
     wxCol: { value: new THREE.Color(0.6, 0.6, 0.62) },
     wxHor: { value: new THREE.Color(0.6, 0.6, 0.62) },
     wxSun: { value: new THREE.Color(1, 0.95, 0.85) },
+    wxGlow: { value: new THREE.Color(0, 0, 0) },
     wxT: { value: new THREE.Vector2(0, 0) },
   };
   // ---- the cloud layer in the sky's program: the same noise as wxMask below ----
-  const GLSL = `uniform float wxCov, wxDark, wxFog, wxFlash; uniform vec3 wxCol, wxHor, wxSun; uniform vec2 wxT;
+  const GLSL = `uniform float wxCov, wxDark, wxFog, wxFlash; uniform vec3 wxCol, wxHor, wxSun, wxGlow; uniform vec2 wxT;
      float wxH(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
      float wxN(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
        return mix(mix(wxH(i), wxH(i + vec2(1.0, 0.0)), u.x), mix(wxH(i + vec2(0.0, 1.0)), wxH(i + vec2(1.0, 1.0)), u.x), u.y); }
@@ -48,6 +49,7 @@ export const WXSKY = (() => {
        // broken clouds: thin edges bright, cores grey; a closed deck: soft structure, brighter towards the zenith; darker when it rains
        float shade = mix(1.12 - 0.42 * k.y, 0.92 + 0.12 * (1.0 - k.y), closed) * (0.8 + 0.42 * up) * (1.0 - 0.38 * wxDark);
        vec3 cc = wxCol * shade + wxSun * pow(s, 10.0) * (1.0 - k.y) * (1.0 - closed) * 0.9;
+       cc += wxGlow * (0.35 + 0.65 * (1.0 - up) * (1.0 - up));
        cc = mix(wxHor, cc, smoothstep(-0.02, 0.1, d.y));
        c = mix(c, cc, k.x);
        c += vec3(0.82, 0.86, 1.0) * wxFlash * (0.45 + 0.55 * k.x);
@@ -152,6 +154,14 @@ export const WXSKY = (() => {
     L.glowK *= 1 - 0.85 * c;
     L.cc.lerp(U.wxCol.value, c);
     L.cs.lerp(_g, c);
+    // night: the lights of the towns around (Schleusingen, Suhl, Hildburghausen) light the underside of a deck dull orange-grey, the
+    // haze over the land a little too – an overcast night is never quite black
+    const glow = (s.night || 0) * clamp(c * 1.2 - 0.2, 0, 1) * (1 - 0.5 * fogK);
+    U.wxGlow.value.setRGB(0.011, 0.0075, 0.0048).multiplyScalar(glow);
+    L.fog.r += 0.006 * glow;
+    L.fog.g += 0.0042 * glow;
+    L.fog.b += 0.0028 * glow;
+    U.wxHor.value.copy(L.fog);
     // night: no stars and no moonlight through a closed deck or fog
     const hide = clamp(sst(0.3, 0.9, c) + fogK, 0, 1);
     s.starK *= 1 - hide;
