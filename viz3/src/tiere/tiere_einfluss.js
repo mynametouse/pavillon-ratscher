@@ -492,22 +492,32 @@ export const TEINFLUSS = (() => {
               [0.85, 0.09, 4],
             ];
       cone(0, 0.014, H, 0.005, stem, 5);
-      // each branch a narrow flat spray, seven to a whorl (the outline of a young fir is fine, not leafy)
+      // each branch a flat feathered spray, nearly level: the main shoot and two pairs of side shoots (a young fir in tiers, not a
+      // rosette of leaves)
       tiers.forEach(([y, L, n], k) => {
-        const m = n + 2;
-        for (let i = 0; i < m; i++)
-          frond(
-            0,
-            y,
-            0,
-            (i / m) * 6.283 + k * 0.7,
-            L * (0.85 + (0.3 * ((i * 7 + k * 3) % 5)) / 4),
-            0.032,
-            0.035,
-            g,
-            g2,
-            0.015
-          );
+        const m = n + 1;
+        for (let i = 0; i < m; i++) {
+          const a = (i / m) * 6.283 + k * 0.7,
+            Li = L * (0.85 + (0.3 * ((i * 7 + k * 3) % 5)) / 4);
+          frond(0, y, 0, a, Li, 0.026, 0.02, g, g2, 0.01);
+          for (const [t, sd] of [
+            [0.35, 0.65],
+            [0.35, -0.65],
+            [0.62, 0.6],
+            [0.62, -0.6],
+          ])
+            frond(
+              Math.cos(a) * Li * t,
+              y + 0.01 - 0.02 * t * t,
+              Math.sin(a) * Li * t,
+              a + sd,
+              Li * (0.42 - t * 0.25),
+              0.02,
+              0.012,
+              g,
+              g2
+            );
+        }
       });
       if (!browsed) cone(0.86, 0.012, 1.04, 0.003, g2, 5);
       else cone(0.56, 0.008, 0.66, 0.006, lin(0x6a5038), 4); // the bitten leader, a dry stub
