@@ -124,6 +124,7 @@ with lib.browser() as b:
         ck('clear: the birds sing, a light breeze in the ambience', s['amb'] and s['amb']['birds'] > 0.99 and 0.3 < s['amb']['wind'] < 0.9, str(s['amb']))
         ck('clear: the crowns barely move (a light breeze)', s['trees']['sway'][0] < 0.06, str(s['trees']))
         ck('clear: no white on the crowns', s['trees']['white'] == 0, str(s['trees']))
+        ck('clear (2 %): the photographs\' clouds give way to the day\'s gradient and the sun\'s glow', s['sky']['clear'] > 0.9, str(s['sky']))
         ck('clear: the lawn hardly bends (a breeze of 7–14 km/h: a few per cent of the blades\' height)', s['trees']['bend'][0] < 0.08, str(s['trees']))
         # both views once under a clear sky first: what they show compiles there (not counted as the weather's)
         view('garten', 160, -2)

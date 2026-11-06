@@ -39,6 +39,11 @@ export const WXSKY = (() => {
     wxT: { value: new THREE.Vector2(0, 0) },
     // a rainbow opposite the sun (0 none – ~0.35 vivid)
     wxBow: { value: 0 },
+    // a clear sky (0 the photographs as they are – 1 their clouds gone): the day's gradient (zenith, horizon) and the sun's glow
+    wxClr: { value: 0 },
+    wxCZ: { value: new THREE.Color() },
+    wxCH: { value: new THREE.Color() },
+    wxCG: { value: new THREE.Color() },
   };
   // ---- the cloud layer in the sky's program: the same noise as wxMask below ----
   // the deck as a function of the direction: shared by the sky and the stars
@@ -56,11 +61,18 @@ export const WXSKY = (() => {
      `;
   const GLSL =
     DECK +
-    `uniform float wxDark, wxFog, wxFlash, wxBow; uniform vec3 wxCol, wxHor, wxSun, wxGlow, wxLow; uniform vec4 wxTown, wxBolt;
+    `uniform float wxDark, wxFog, wxFlash, wxBow, wxClr; uniform vec3 wxCol, wxHor, wxSun, wxGlow, wxLow, wxCZ, wxCH, wxCG;
+     uniform vec4 wxTown, wxBolt;
      // the colours across a rainbow's band: t 0 its inner edge (violet) – 1 its outer edge (red), soft at both edges
      vec3 wxBowC(float t){ float h = 0.76 * (1.0 - t);
        return clamp(abs(fract(vec3(h) + vec3(1.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0) * sin(3.14159 * t); }
-     vec3 wxSky(vec3 c, vec3 d, vec3 sd){ if (wxCov < 0.002 && wxFog < 0.002 && wxFlash < 0.002 && wxBow < 0.002) return c;
+     vec3 wxSky(vec3 c, vec3 d, vec3 sd){
+       if (wxCov < 0.002 && wxFog < 0.002 && wxFlash < 0.002 && wxBow < 0.002 && wxClr < 0.002) return c;
+       // a clear sky: the photographs' own clouds give way to the day's gradient – the zenith blue, the horizon pale – and the sun's
+       // glow around it (the deck below brings clouds back as the cover grows)
+       if (wxClr > 0.002) { float u0 = max(d.y, 0.0), s0 = max(dot(d, sd), 0.0);
+         vec3 cl = mix(wxCH, wxCZ, pow(u0, 0.5)) + wxCG * (0.35 * pow(s0, 6.0) + 0.6 * pow(s0, 48.0) + 18.0 * pow(s0, 1800.0));
+         c = mix(c, cl, wxClr * smoothstep(-0.04, 0.03, d.y)); }
        float up = max(d.y, 0.0); vec2 k = wxDeck(d);
        float closed = smoothstep(0.78, 1.0, wxCov), s = max(dot(d, sd), 0.0);
        // broken clouds: thin edges bright, cores grey; a closed deck: soft structure, brighter towards the zenith; darker when it rains
@@ -154,14 +166,27 @@ export const WXSKY = (() => {
     return m + (1 - m) * sst(0.78, 1, cov);
   }
   const S = { mask: 0, maskT: 0, v: 0, sig: '', patched };
-  const _g = new THREE.Color();
+  const _g = new THREE.Color(),
+    // a clear zenith a touch deeper blue than the painted sky's
+    ZDEEP = new THREE.Color(0.75, 0.85, 1);
   const lum = c => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
   // ---- the light of the moment under this weather (DN.hook.look: LOOK and the sky state s, before they are applied) ----
   function look(L, s) {
     if (!W.on) {
       U.wxCov.value = 0;
       U.wxFog.value = 0;
+      U.wxClr.value = 0;
       return;
+    }
+    // a clear sky (from the data, not the calendar's): the photographs' clouds give way while the photographed sky shows (by day and in
+    // the twilight; at night it is the night's own gradient). The gradient is the day's (DN's anchors, matched to the photographs'
+    // measured zenith and horizon), the zenith a touch deeper; the glow in the colour of the sun
+    const clr = (W.clear || 0) * clamp(L.gS, 0, 1) * (1 - clamp(L.nK || 0, 0, 1));
+    U.wxClr.value = clr;
+    if (clr > 0) {
+      U.wxCZ.value.copy(L.zen).multiply(ZDEEP);
+      U.wxCH.value.copy(L.hor);
+      U.wxCG.value.copy(L.sunC).multiplyScalar(s.sunEl > -2 ? 1 : 0);
     }
     const c = W.cover,
       wet = clamp((W.rain + 2.5 * W.snow) / 5, 0, 1),
@@ -279,6 +304,7 @@ export const WXSKY = (() => {
       Math.round(p.rain * 20),
       Math.round(p.snow * 40),
       Math.round(Math.log(Math.max(30, p.vis)) * 40),
+      Math.round((p.clear || 0) * 20),
     ].join();
     W.on = !!p.on;
     W.cover = p.cover;
@@ -288,6 +314,7 @@ export const WXSKY = (() => {
     W.wind = p.wind;
     W.dir = p.dir;
     W.bow = p.bow || 0;
+    W.clear = p.clear || 0;
     if (sig !== S.sig) {
       S.sig = sig;
       bump();
