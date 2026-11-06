@@ -1328,21 +1328,22 @@ export const TKOERPER = (() => {
     // the bristle mane along the spine, from the neck to the middle of the back
     extra(B, sk, W, loft, V3, coat) {
       // a low ridge of coarse bristles, not a fin: sunk into the back, a little higher over the withers
+      // the front of the ridge rides on the neck bones, so it bends down with the head when the boar roots (no horn sticking out)
       const pts = [
-        [0.5, 0.72, 'chest'],
-        [0.4, 0.855, 'chest'],
-        [0.28, 0.87, 'chest'],
-        [0.12, 0.835, 'root'],
-        [-0.05, 0.79, 'root'],
-        [-0.2, 0.745, 'hips'],
+        [0.5, 0.72, [W(sk, 'neck1', 0.3), W(sk, 'neck2', 0.7)]],
+        [0.4, 0.855, [W(sk, 'chest', 0.3), W(sk, 'neck1', 0.7)]],
+        [0.28, 0.87, [W(sk, 'chest')]],
+        [0.12, 0.835, [W(sk, 'root')]],
+        [-0.05, 0.79, [W(sk, 'root')]],
+        [-0.2, 0.745, [W(sk, 'hips')]],
       ];
       loft(
         B,
-        pts.map(([z, y, bn], i) => ({
+        pts.map(([z, y, w], i) => ({
           p: V3(0, y, z),
           rx: [0.03, 0.04, 0.042, 0.036, 0.03, 0.02][i],
           ry: [0.02, 0.034, 0.034, 0.026, 0.02, 0.01][i],
-          w: [W(sk, bn)],
+          w,
           u: i / (pts.length - 1),
         })),
         { part: 'mane', sides: 6, sub: 2, coat, cap0: 0.01, cap1: 0.01 }

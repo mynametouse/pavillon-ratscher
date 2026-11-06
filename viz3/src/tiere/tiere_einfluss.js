@@ -411,7 +411,17 @@ export const TEINFLUSS = (() => {
   }
   // ---------- drawing: saplings (fir and broadleaf, whole and browsed), tree guards, rooted soil, vole hills, bore dust, the nest ----------
   const lin = TKOERPER.lin;
-  function geoSapling(kind, browsed, autumn) {
+  // the leaves by kind and day of the year: g green, a autumn colour, w withered but held (young beech and oak keep their dry leaves
+  // through the winter), b bare (maple, larch)
+  function leafState(kind, doy) {
+    if (kind === 'tanne') return 'g';
+    if (kind === 'ahorn') return doy >= 120 && doy < 280 ? 'g' : doy >= 280 && doy < 305 ? 'a' : 'b';
+    if (kind === 'laerche') return doy >= 110 && doy < 285 ? 'g' : doy >= 285 && doy < 318 ? 'a' : 'b';
+    return doy >= 125 && doy < 285 ? 'g' : doy >= 285 && doy < 320 ? 'a' : 'w';
+  }
+  // young trees about 1 m: the fir in whorls of flat branches with a leader, the larch slim and soft, beech/oak and maple with twigs and
+  // leaf clusters; browsed: the leader or top bitten off, the tips short and bushy
+  function geoSapling(kind, browsed, st) {
     const pos = [],
       col = [],
       idx = [];
@@ -421,13 +431,13 @@ export const TEINFLUSS = (() => {
       return pos.length / 3 - 1;
     };
     // a cone (n sides) from (x, y0) radius r0 to y1 radius r1, colour c
-    const cone = (y0, r0, y1, r1, c, n = 6, ox = 0, oz = 0) => {
+    const cone = (y0, r0, y1, r1, c, n = 6, ox = 0, oz = 0, tx = 0, tz = 0) => {
       const b = [],
         t = [];
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2;
         b.push(add([ox + Math.cos(a) * r0, y0, oz + Math.sin(a) * r0], c));
-        t.push(add([ox + Math.cos(a) * r1, y1, oz + Math.sin(a) * r1], c));
+        t.push(add([ox + tx + Math.cos(a) * r1, y1, oz + tz + Math.sin(a) * r1], c));
       }
       for (let i = 0; i < n; i++) {
         const j = (i + 1) % n;
@@ -436,42 +446,119 @@ export const TEINFLUSS = (() => {
       const cb = add([ox, y0, oz], c);
       for (let i = 0; i < n; i++) idx.push(cb, b[(i + 1) % n], b[i]);
     };
-    const stem = lin(0x5a4a3a);
-    const H = browsed ? 0.62 : 0.95;
-    cone(0, 0.012, H, 0.004, stem, 5);
-    if (kind === 'tanne') {
-      // a young fir: tiers of dark green whorls; browsed: the leader gone, the tiers bushy and flat
-      const g = lin(0x24402a),
-        g2 = lin(0x2e4e30);
-      const tiers = browsed
-        ? [
-            [0.18, 0.3],
-            [0.38, 0.27],
-            [0.55, 0.24],
-          ]
-        : [
-            [0.18, 0.26],
-            [0.42, 0.21],
-            [0.64, 0.16],
-            [0.82, 0.1],
-          ];
-      for (const [y, r] of tiers) cone(y - 0.06, r, y + 0.12, 0.02, y > 0.5 ? g2 : g, 7);
-      if (!browsed) cone(0.86, 0.025, 1.02, 0.002, g2, 5);
-    } else {
-      // a young broadleaf: a few side shoots with leaves – brown and dry in autumn and winter (young oaks and beeches keep them),
-      // green in summer; browsed: the top bitten off, short bushy side shoots
-      const leaf = autumn ? lin(kind === 'ahorn' ? 0x8a6a3a : 0x7a5a34) : lin(0x4a6a2a),
-        leaf2 = autumn ? lin(0x6a4c2c) : lin(0x3e5c24);
-      const n = browsed ? 7 : 6;
-      for (let i = 0; i < n; i++) {
-        const y = 0.2 + (i / n) * (H - 0.25),
-          a = i * 2.4,
-          L = browsed ? 0.18 : 0.22 - i * 0.02;
-        const ox = Math.cos(a) * L * 0.6,
-          oz = Math.sin(a) * L * 0.6;
-        cone(y, 0.06, y + 0.1, 0.05, i % 2 ? leaf : leaf2, 5, ox, oz);
+    // a flat branch or leaf cluster from (ox, y, oz) outwards at angle a: a shallow roof (seen from above), drooping to the tip
+    const frond = (ox, y, oz, a, L, w, droop, c0, c1, rise = 0) => {
+      const dx = Math.cos(a),
+        dz = Math.sin(a),
+        sx = -dz,
+        sz = dx,
+        R = [],
+        Lf = [],
+        Rt = [];
+      for (let i = 0; i <= 3; i++) {
+        const t = i / 3,
+          px = ox + dx * L * t,
+          pz = oz + dz * L * t,
+          py = y + rise * t - droop * t * t,
+          hw = w * (i === 3 ? 0.2 : i === 0 ? 0.55 : 1 - t * 0.35),
+          c = i < 2 ? c0 : c1;
+        R.push(add([px, py + hw * 0.3, pz], c));
+        Lf.push(add([px + sx * hw, py - hw * 0.12, pz + sz * hw], c));
+        Rt.push(add([px - sx * hw, py - hw * 0.12, pz - sz * hw], c));
       }
-      if (!browsed) cone(H - 0.08, 0.05, H + 0.06, 0.02, leaf2, 5);
+      for (let i = 0; i < 3; i++) {
+        idx.push(R[i], Lf[i], R[i + 1], R[i + 1], Lf[i], Lf[i + 1]);
+        idx.push(R[i], R[i + 1], Rt[i], Rt[i], R[i + 1], Rt[i + 1]);
+      }
+    };
+    const stem = lin(0x4e4034),
+      H = browsed ? 0.62 : 0.95;
+    if (kind === 'tanne') {
+      // silver fir: whorls of five flat, dark glossy branches, lighter new tips; the leader on top with its bud whorl
+      const g = lin(0x1d3622),
+        g2 = lin(0x2b4a2c),
+        tiers = browsed
+          ? [
+              [0.14, 0.27, 6],
+              [0.3, 0.26, 6],
+              [0.45, 0.23, 7],
+              [0.56, 0.17, 7],
+            ]
+          : [
+              [0.16, 0.3, 5],
+              [0.36, 0.26, 5],
+              [0.55, 0.21, 5],
+              [0.72, 0.15, 5],
+              [0.85, 0.09, 4],
+            ];
+      cone(0, 0.014, H, 0.005, stem, 5);
+      tiers.forEach(([y, L, n], k) => {
+        for (let i = 0; i < n; i++)
+          frond(
+            0,
+            y,
+            0,
+            (i / n) * 6.283 + k * 0.7,
+            L * (0.85 + (0.3 * ((i * 7 + k * 3) % 5)) / 4),
+            0.055,
+            0.05,
+            g,
+            g2,
+            0.02
+          );
+      });
+      if (!browsed) cone(0.86, 0.012, 1.04, 0.003, g2, 5);
+      else cone(0.56, 0.008, 0.66, 0.006, lin(0x6a5038), 4); // the bitten leader, a dry stub
+    } else if (kind === 'laerche') {
+      // larch: slim, the side twigs short and level all round the stem; soft light needles in tufts, golden in autumn, bare in winter
+      cone(0, 0.012, H, 0.003, lin(0x5a4636), 5);
+      const nd = st === 'g' ? lin(0x5c7c34) : st === 'a' ? lin(0x9c7a2c) : null,
+        nd2 = st === 'g' ? lin(0x6e8c3c) : st === 'a' ? lin(0xb08c3a) : null,
+        tw = lin(0x6a5848),
+        n = browsed ? 7 : 9;
+      for (let i = 0; i < n; i++) {
+        const y = 0.16 + (i / n) * (H - 0.22),
+          a = i * 2.4,
+          L = (browsed ? 0.2 : 0.24) * (1 - (i / n) * 0.6);
+        cone(y, 0.005, y + 0.03, 0.002, tw, 3, 0, 0, Math.cos(a) * L, Math.sin(a) * L);
+        if (nd) frond(0, y, 0, a, L, 0.04, 0.02, nd, nd2, 0.02);
+      }
+    } else {
+      // beech, oak, maple: an upright stem with alternate twigs, a few leaf clusters on each; the dry leaves of beech and oak stay
+      // pale brown over the winter, the maple stands bare
+      cone(0, 0.012, H, 0.004, stem, 5);
+      const maple = kind === 'ahorn',
+        leaf =
+          st === 'g'
+            ? lin(maple ? 0x46662a : 0x3e5c24)
+            : st === 'a'
+              ? lin(maple ? 0x9a7428 : 0x7c5230)
+              : st === 'w'
+                ? lin(0x8a6c4c)
+                : null,
+        leaf2 =
+          st === 'g'
+            ? lin(maple ? 0x527230 : 0x4a6a2a)
+            : st === 'a'
+              ? lin(maple ? 0xa8822e : 0x8a5c34)
+              : st === 'w'
+                ? lin(0x7a5e42)
+                : null,
+        tw = lin(0x5c4c3e),
+        n = browsed ? 8 : 6;
+      for (let i = 0; i < n; i++) {
+        const y = 0.2 + (i / n) * (H - 0.26),
+          a = i * 2.4 + (browsed ? 0.4 : 0),
+          L = browsed ? 0.14 + 0.05 * (i % 2) : 0.24 - i * 0.025,
+          ex = Math.cos(a) * L,
+          ez = Math.sin(a) * L;
+        cone(y, 0.005, y + L * 0.5, 0.002, tw, 3, 0, 0, ex, ez);
+        if (leaf) {
+          frond(ex * 0.45, y + L * 0.22, ez * 0.45, a + 0.6, 0.09, 0.035, 0.02, leaf, leaf2);
+          frond(ex, y + L * 0.5, ez, a - 0.4, 0.1, 0.04, 0.025, leaf2, leaf);
+        }
+      }
+      if (!browsed && leaf) frond(0, H, 0, 0.8, 0.08, 0.035, 0.0, leaf2, leaf, 0.03);
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -639,12 +726,13 @@ export const TEINFLUSS = (() => {
     _s.set(s, 1, s);
     m.setMatrixAt(i, _m.compose(_p, _q, _s));
   }
-  let autumnNow = null;
+  let leavesNow = null;
   function draw() {
     E.dirty = false;
     const d = dateOf(today()),
-      autumn = d.doy > 280 || d.doy < 120;
-    if (autumn !== autumnNow) {
+      KINDS = ['tanne', 'laerche', 'buche', 'ahorn'],
+      leaves = KINDS.map(k => leafState(k, d.doy)).join('');
+    if (leaves !== leavesNow) {
       for (const k of Object.keys(IM))
         if (/^bau/.test(k)) {
           scene.remove(IM[k]);
@@ -652,20 +740,28 @@ export const TEINFLUSS = (() => {
           IM[k].dispose();
           delete IM[k];
         }
-      autumnNow = autumn;
+      leavesNow = leaves;
     }
-    // saplings by kind and state, guards round the protected ones
-    const T = targets().filter(t => t.plot);
-    const sets = { tanne0: [], tanne1: [], laub0: [], laub1: [] };
-    for (const t of T) sets[(t.sp === 'tanne' ? 'tanne' : 'laub') + (t.dmg >= 0.4 ? 1 : 0)].push(t);
+    // saplings by kind and state (oak drawn like beech), guards round the protected ones; the planting lies in one place, so its
+    // meshes get a bounding sphere and are culled out of view
+    const T = targets().filter(t => t.plot),
+      sets = {};
+    for (const t of T) {
+      const k = (KINDS.includes(t.sp) ? t.sp : 'buche') + (t.dmg >= 0.4 ? 1 : 0);
+      (sets[k] = sets[k] || []).push(t);
+    }
     for (const [k, list] of Object.entries(sets)) {
-      const m = im('bau' + k, () => geoSapling(k.startsWith('tanne') ? 'tanne' : 'laub', k.endsWith('1'), autumn), 64);
+      const kind = k.slice(0, -1),
+        m = im('bau' + k, () => geoSapling(kind, k.endsWith('1'), leafState(kind, d.doy)), 64);
       list.forEach((t, i) =>
         put(m, i, t.x, t.y, ground(t.x, t.y), 0.9 + rnd(1, t.id) * 0.3, null, rnd(2, t.id) * 6.28)
       );
       m.count = list.length;
       m.instanceMatrix.needsUpdate = true;
+      m.computeBoundingSphere();
+      m.frustumCulled = true;
     }
+    for (const k of Object.keys(IM)) if (/^bau/.test(k) && !sets[k.slice(3)]) IM[k].count = 0;
     const guards = E.prot.filter(p => p.kind === 'huelle');
     const mg = im('huelle', geoGuard, 128);
     guards.slice(0, 128).forEach((p, i) => put(mg, i, p.x, p.y, ground(p.x, p.y) - 0.02, 1, 1, 0));

@@ -289,6 +289,9 @@ with lib.browser() as b:
         ck('… but many of the unguarded ones (fir and maple first)', sum(1 for t in open1 if t['dmg'] >= 0.4) >= 5, str([(t['art'], t['dmg']) for t in open1]))
         E("GAME.step(0.05)")
         pic('41_pflanzung_nach_winter')
+        # close by the unguarded half: browsed firs without their leader, beeches holding dry leaves, bare maples and larches
+        E(f"__view({px} + 11, {py} - 2.6, ROADS.groundAt({px} + 11, {py} - 2.6) + 1.6, -25, -22, 50); GAME.step(0.1)")
+        pic('41b_pflanzung_nah')
         sch = J("TIERE.schaden({ season: 'winter' })")
         ck('the damage per season for the strategy mode (TIERE.schaden)', sch['sum'].get('verbiss', 0) >= 5, str(sch['sum']))
         # the black stork's quiet zone
