@@ -30,12 +30,13 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
 - **Jenseits des Quadrats (Kachelwelt):** 13 025 Gebäude in 217 Zellen à 400 m (9,5 MB; `gebaeude/z/<i>_<j>.json`, Index `z/index.json`):
   Schleusingen um die Altstadt herum (1,7 km um den Markt, ohne die 789 Häuser von `welt/schleusingen.js`), die Straßen, die man fährt
   (`welt/fahrt.js`, 600 m beiderseits: Richtung Schleusingen und Kloster Veßra mit den Dörfern unterwegs samt ihren Seitenstraßen),
-  Kloster Veßra (950 m, ohne die
-  156 Häuser von `welt/vessra.js`). Eine Zelle wird geholt und gebaut, wenn man ihr näher als 700 m kommt, und jenseits von 900 m
+  Kloster Veßra (950 m, ohne die 156 Häuser von `welt/vessra.js`). Eine Zelle wird geholt und gebaut, wenn man ihr näher als 700 m kommt
+  (Telefone 500 m), und jenseits von 900 m (680 m)
   freigegeben; ihr Fuß auf dem Gelände, wie es dort gezeichnet ist (die Kacheln von `welt/welt.js`, sonst das grobe Gelände – kommt eine
   Kachel später, wird die Zelle neu gesetzt). Fest über `KERN.pushOut` (Rang 15, antwortet nur, wenn es verschoben hat – Schleusingen und
   Veßra werden danach gefragt; Fahrzeuge draußen über `VEH.hitsOut`). `?nogebz` lässt sie weg.
-  **Nichts in dem, was die Orte selbst modellieren** (`keepout` in `tools/welt-gebaeude/prep.py`): in Kloster Veßra
+  **Nichts in dem, was die Orte selbst modellieren** (`keepout()` in `tools/welt-gebaeude/wglib.py` – auch für andere Features:
+  `wglib.keepout('zonen')` bzw. `('ratscher')` gibt die Flächen in Modellmetern): in Kloster Veßra
   (`welt/vessra.js`) weder in der Kirchenruine mit Türmen und Westportal (8 m Rand) noch im ganzen Klosterbezirk (die Fläche des Museums,
   15 m Rand), der Baumschule Kammbach (8 m), an Mauern, Toren, Zäunen, Teichen, Friedhof und Gärten; in Schleusingen
   (`welt/schleusingen.js`) nicht an der Bertholdsburg (20 m: Terrassen, Rundtürme), am Rathaus, an St. Johannis und am Heckenturm (8 m),
@@ -63,7 +64,7 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   `gh-pages/tex2/`) enthalten nur `tex/<name>_col|nrm|orm` und glTF-Bilder – keine Bodenbilder (geprüft), dort gibt es nichts nachzuziehen.
 
 - **Kacheln ohne gedruckte Dächer (Kachelwelt):** `tools/welt-gebaeude/kacheln.py` retuschiert die Luftbild-Kacheln (Stufen 10–12) unter
-  jedem Gebäude, das jenseits des Quadrats in 3D steht (Schleusingens Altstadt, Kloster Veßra, die Zellen): **882 Kacheln, 28 MB, als neuer
+  jedem Gebäude, das jenseits des Quadrats in 3D steht (Schleusingens Altstadt, Kloster Veßra, die Zellen): **950 Kacheln, 35 MB, als neuer
   Satz unter `gh-pages/welt-test/v2/`** (nur die retuschierten `i/{L}/{x}/{y}.webp` + `index.json`; die veröffentlichten Kacheln bleiben
   unberührt). Gebaut und veröffentlicht vom Workflow `.github/workflows/welt-gebaeude-kacheln.yml` (bei jedem Push auf
   `feat/welt-gebaeude`, der das Werkzeug, die Zellen oder Masken ändert; schreibt nur `welt-test/v2/`). Die App nimmt sie **nur mit dem
