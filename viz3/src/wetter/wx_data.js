@@ -230,6 +230,8 @@ export const WXDATA = (() => {
       snow,
       drizzle: drizzle && rain < 1.2,
       thunder,
+      // showers of rain or snow: cells that pass (wetter/wetter.js lets them come and go)
+      showers: (c >= 80 && c <= 82) || c === 85 || c === 86,
       hail: c === 96 || c === 99,
       fog: fogCode || vis < 1000,
       vis: clamp(vis, 30, 60000),

@@ -62,6 +62,9 @@ const TREE_KINDS = [
   { key: 'bushB', preset: 'Bush 2', seed: 77, tint: 0xd3d49a },
 ];
 const leafDepthMats = {};
+// feat/wetter: each leaf material built here is handed to TREEHOOK.leaf right after it is made, before anything draws it (the weather's
+// sway and snow – wetter/wx_wind.js; the garden planner's own kinds then share the garden's programs)
+export const TREEHOOK = { leaf: null };
 export function buildTreeKind(k) {
   const t = new Tree();
   t.loadPreset(k.preset);
@@ -114,6 +117,7 @@ export function buildTreeKind(k) {
     })
   );
   leaf.userData.leaf = true;
+  if (TREEHOOK.leaf) TREEHOOK.leaf(leaf); // feat/wetter
   if (!leafDepthMats[k.preset])
     leafDepthMats[k.preset] = new THREE.MeshDepthMaterial({
       depthPacking: THREE.RGBADepthPacking,

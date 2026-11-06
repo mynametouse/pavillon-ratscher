@@ -37,6 +37,8 @@ export const WXSKY = (() => {
     // Hildburghausen (6.1 km) at 216° from Ratscher
     wxTown: { value: new THREE.Vector4(-0.36, -0.93, -0.59, 0.81) },
     wxT: { value: new THREE.Vector2(0, 0) },
+    // a rainbow opposite the sun (0 none – ~0.35 vivid)
+    wxBow: { value: 0 },
   };
   // ---- the cloud layer in the sky's program: the same noise as wxMask below ----
   // the deck as a function of the direction: shared by the sky and the stars
@@ -54,8 +56,11 @@ export const WXSKY = (() => {
      `;
   const GLSL =
     DECK +
-    `uniform float wxDark, wxFog, wxFlash; uniform vec3 wxCol, wxHor, wxSun, wxGlow, wxLow; uniform vec4 wxTown, wxBolt;
-     vec3 wxSky(vec3 c, vec3 d, vec3 sd){ if (wxCov < 0.002 && wxFog < 0.002 && wxFlash < 0.002) return c;
+    `uniform float wxDark, wxFog, wxFlash, wxBow; uniform vec3 wxCol, wxHor, wxSun, wxGlow, wxLow; uniform vec4 wxTown, wxBolt;
+     // the colours across a rainbow's band: t 0 its inner edge (violet) – 1 its outer edge (red), soft at both edges
+     vec3 wxBowC(float t){ float h = 0.76 * (1.0 - t);
+       return clamp(abs(fract(vec3(h) + vec3(1.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0) * sin(3.14159 * t); }
+     vec3 wxSky(vec3 c, vec3 d, vec3 sd){ if (wxCov < 0.002 && wxFog < 0.002 && wxFlash < 0.002 && wxBow < 0.002) return c;
        float up = max(d.y, 0.0); vec2 k = wxDeck(d);
        float closed = smoothstep(0.78, 1.0, wxCov), s = max(dot(d, sd), 0.0);
        // broken clouds: thin edges bright, cores grey; a closed deck: soft structure, brighter towards the zenith; darker when it rains
@@ -74,6 +79,14 @@ export const WXSKY = (() => {
            float off = (wxN(vec2(t * 9.0, wxBolt.z)) - 0.5) * 0.07 + (wxN(vec2(t * 37.0, wxBolt.z + 7.0)) - 0.5) * 0.018;
            float da = atan(d.x, -d.z) - (wxBolt.x + off); da = mod(da + 3.14159265, 6.28318531) - 3.14159265;
            c += vec3(0.86, 0.9, 1.0) * wxBolt.y * (8.0 * exp(-da * da / (wxBolt.w * wxBolt.w)) + 0.35 * exp(-da * da / 0.0012)); } }
+       // the rainbow around the point opposite the sun: the primary at 40.4–42.6° (violet inside, red outside), the secondary at
+       // 50.4–53.8° (the colours reversed, fainter), the sky just inside the primary a little brighter; as bright as the light now
+       if (wxBow > 0.002) { float a = degrees(acos(clamp(dot(d, -sd), -1.0, 1.0)));
+         float t1 = (a - 40.4) / 2.2, t2 = (53.8 - a) / 3.4; vec3 b = vec3(0.0);
+         if (t1 > 0.0 && t1 < 1.0) b += wxBowC(t1);
+         if (t2 > 0.0 && t2 < 1.0) b += 0.42 * wxBowC(t2);
+         b += vec3(0.05) * smoothstep(25.0, 40.4, a) * step(a, 40.4);
+         c += b * wxBow * 1.2 * dot(wxCol, vec3(0.3, 0.59, 0.11)) * smoothstep(-0.005, 0.03, d.y); }
        return mix(c, wxHor, wxFog); }
      `;
   const M = DN.skyMat;
@@ -212,6 +225,10 @@ export const WXSKY = (() => {
         S.mask = 0;
         bump();
       }
+      if (U.wxBow.value) {
+        U.wxBow.value = 0;
+        markDirty();
+      }
       return;
     }
     // the deck at about 1.5 km drifts with ~2.5 × the wind at the ground (at least a slow drift); it moves towards where the wind blows
@@ -242,6 +259,14 @@ export const WXSKY = (() => {
       S.mask = m;
       bump();
     }
+    // a rainbow: wished for by the showers (wetter/wetter.js), seen while no cloud stands in front of the sun and the sun is between
+    // ~1° and 42° high (higher, the bow lies below the horizon)
+    const el = st ? st.sunEl : -90,
+      bow = Math.round(0.35 * (W.bow || 0) * (1 - S.mask) * sst(0.5, 4, el) * (1 - sst(36, 42, el)) * 100) / 100;
+    if (bow !== U.wxBow.value) {
+      U.wxBow.value = bow;
+      markDirty();
+    }
   }
   function bump() {
     if (DN.hook) DN.hook.v++;
@@ -262,6 +287,7 @@ export const WXSKY = (() => {
     W.vis = p.vis;
     W.wind = p.wind;
     W.dir = p.dir;
+    W.bow = p.bow || 0;
     if (sig !== S.sig) {
       S.sig = sig;
       bump();

@@ -44,6 +44,9 @@ export const WETTER = (() => {
     want: null,
     cur: { cover: 0, rain: 0, snow: 0, vis: 60000, wind: 0, gust: 0, dir: 250 },
     snapNext: true,
+    // showers as cells passing (see showers()): x the way the air has gone (cell lengths), t the game time (s) of the last step,
+    // ph 0 between the cells – 1 under one (-1: no showers), near the strongest cell close by, bow the wish for a rainbow, force (tests)
+    sh: { x: Math.random() * 50, t: null, ph: -1, near: 0, bow: 0, force: null },
     preset: null,
     mock: null,
     calls: [],
@@ -57,7 +60,11 @@ export const WETTER = (() => {
     frostWant: 0,
   };
   const AUTOMATED = typeof navigator !== 'undefined' && !!navigator.webdriver;
-  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x)),
+    sstp = (a, b, x) => {
+      const t = clamp((x - a) / (b - a), 0, 1);
+      return t * t * (3 - 2 * t);
+    };
   // ---- requests: the browser's fetch (15 s at most), a test's answer, or nothing at all in an automated browser ----
   function get(url) {
     S.calls.push(url);
@@ -225,14 +232,61 @@ export const WETTER = (() => {
   };
   // ---- the effects: eased towards the chosen weather (a few seconds; quick in the time-lapse; at once after loading or for a test) ----
   const ZERO = { cover: 0, rain: 0, snow: 0, vis: 60000, wind: 0, gust: 0, dir: 250 };
+  // ---- showers: an hour of showers is not an hour of even rain – cells some 6 km long pass with the wind at the cloud base (about twice
+  //      the ground's): under one a dark sky and rain for some minutes (a third of the time or so), between them broken clouds and sun.
+  //      Counted in game time (the time-lapse shows them faster); after or before a shower, with the sun out: a rainbow opposite it ----
+  const n1 = x => {
+    const i = Math.floor(x),
+      f = x - i,
+      u = f * f * (3 - 2 * f),
+      h = j => {
+        const v = Math.sin(j * 127.1 + 311.7) * 43758.5453;
+        return v - Math.floor(v);
+      };
+    return h(i) + (h(i + 1) - h(i)) * u;
+  };
+  const cellAt = x => sstp(0.52, 0.66, 0.65 * n1(x) + 0.35 * n1(x * 2.3 + 17.1));
+  function showers() {
+    const H = S.sh,
+      w = S.w,
+      t = CLOCK.t * 60;
+    // a jump of the clock (set to now, slept): on from there
+    if (H.t === null || Math.abs(t - H.t) > 3 * 3600) H.t = t;
+    const dtg = Math.abs(t - H.t);
+    H.t = t;
+    if (!w || !w.showers) {
+      H.ph = -1;
+      H.near = 0;
+      H.bow = 0;
+      return;
+    }
+    H.x += (dtg * Math.max(4, 2 * w.wind)) / 6000;
+    H.ph = H.force !== null ? H.force : cellAt(H.x);
+    H.near = H.force !== null ? 1 : Math.max(H.ph, cellAt(H.x - 0.5), cellAt(H.x + 0.5));
+    // a rainbow: rain (not snow) close by, none here
+    H.bow = w.rain > 0.05 && w.snow < 0.3 * w.rain ? clamp(H.near - H.ph, 0, 1) * (1 - sstp(0.1, 0.3, H.ph)) : 0;
+  }
   function ease(dt) {
     const w = S.w || ZERO,
       c = S.cur;
     const k = S.snapNext ? 1 : 1 - Math.exp(-dt / (CLOCK.warp ? 0.7 : 4));
     S.snapNext = false;
-    c.cover += (w.cover - c.cover) * k;
-    c.rain += (w.rain - c.rain) * k;
-    c.snow += (w.snow - c.snow) * k;
+    let cov = w.cover,
+      rain = w.rain,
+      snow = w.snow;
+    // showers: under a cell it pours (the hour's amount falls in about a third of it) and the sky closes; between the cells it is
+    // dry, the clouds broken
+    const ph = S.sh.ph;
+    if (ph >= 0) {
+      const f = Math.min(3, ph / 0.38),
+        clr = clamp(w.cover - 0.35, 0.35, 0.7);
+      rain *= f;
+      snow *= f;
+      cov = clr + (0.97 - clr) * ph;
+    }
+    c.cover += (cov - c.cover) * k;
+    c.rain += (rain - c.rain) * k;
+    c.snow += (snow - c.snow) * k;
     // the visibility on a log scale (fog comes and goes evenly)
     c.vis = Math.exp(Math.log(c.vis) + (Math.log(w.vis) - Math.log(c.vis)) * k);
     c.wind += (w.wind - c.wind) * k;
@@ -257,6 +311,7 @@ export const WETTER = (() => {
       S.snowWant = snowCover();
       S.frostWant = frost();
     }
+    showers();
     ease(dt);
     if (due) {
       badge();
@@ -274,6 +329,7 @@ export const WETTER = (() => {
     sk.vis = c.vis;
     sk.wind = c.wind;
     sk.dir = c.dir;
+    sk.bow = on ? S.sh.bow : 0;
     WXSKY.set(sk);
     WXSKY.tick(dt, !window.FREEZE);
     // the trees in the wind (the gusts' swing of the drops: one wind for both)
@@ -328,6 +384,8 @@ export const WETTER = (() => {
     // the white of lying snow follows the light that falls on it (sky, sun, image light)
     const light = clamp(0.5 * scene.environmentIntensity + 0.1 * sun.intensity + 0.6 * hemi.intensity, 0, 1.6);
     WXBODEN.set(S.wet, dt, S.snowC, light, S.frostC);
+    // snow on the crowns as on the ground (a little less: some falls through), rime thinner
+    WXWIND.white(Math.max(0.85 * S.snowC, 0.45 * S.frostC));
     lightning(dt, on && !!wx.thunder);
   }
   KERN.tick(tick, 'wetter');
@@ -388,10 +446,6 @@ export const WETTER = (() => {
   }
   // ---- hoarfrost: after a clear, calm, cold and humid night (any of the last eight hours) the ground and the roofs turn white-grey –
   //      the ground cools below the air, so it forms at up to ~+2 °C in the air; it melts once the sun climbs (and when it is mild) ----
-  const sstp = (a, b, x) => {
-    const t = clamp((x - a) / (b - a), 0, 1);
-    return t * t * (3 - 2 * t);
-  };
   const frostOf = r =>
     !r || !Number.isFinite(r.T)
       ? 0
@@ -707,6 +761,10 @@ export const WETTER = (() => {
       tick(0.016);
     },
     refresh: () => fetchNow(true),
+    // tests: showers – the place in the series forced (0 between the cells with one close by, 1 under one), null: as it comes
+    shower(v) {
+      S.sh.force = v === null || v === undefined ? null : clamp(+v, 0, 1);
+    },
     // tests: the next tick of a thunderstorm strikes at d m, its bolt towards az° (compass bearing, as P.yaw)
     strike(o = {}) {
       S.flash.force = { d: +o.d || 0, az: +o.az };
@@ -762,8 +820,11 @@ export const WETTER = (() => {
         sway: WXWIND.U.wxSw.value.slice(),
         grass: WXWIND.S.grass,
         bend: WXWIND.UG.wxGr.value.slice(),
+        white: WXWIND.U.wxLW.value,
+        whiteP: WXWIND.S.white,
       },
       flashes: S.flash.n,
+      shower: { ph: S.sh.ph, near: S.sh.near, bow: S.sh.bow, u: WXSKY.U.wxBow.value },
       automated: AUTOMATED,
     }),
     data: WXDATA,

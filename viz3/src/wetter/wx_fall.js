@@ -257,10 +257,13 @@ export const WXFALL = (() => {
     if (_d.lengthSq() > 1e-6) _d.normalize();
     const cx = cam.position.x + _d.x * BOX.x * 0.22,
       cz = cam.position.z + _d.z * BOX.z * 0.22;
-    if (!force && U.uRoofC.value.w > 0.5 && Math.hypot(cx - U.uRoofC.value.x, cz - U.uRoofC.value.y) < 3) return false;
+    const now = performance.now(),
+      age = now - (S.roofT || 0);
+    // less than 3 m from where it was drawn: the map stays – drawn anew only every few seconds (a bus or a car that drove off)
+    if (!force && U.uRoofC.value.w > 0.5 && Math.hypot(cx - U.uRoofC.value.x, cz - U.uRoofC.value.y) < 3 && age < 5000)
+      return false;
     // at most twice a second (a fast camera: the map lags a little)
-    const now = performance.now();
-    if (!force && now - (S.roofT || 0) < 500) return false;
+    if (!force && age < 500) return false;
     S.roofT = now;
     const top = cam.position.y + 60;
     topCam.position.set(cx, top, cz);

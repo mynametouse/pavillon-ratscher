@@ -2,18 +2,34 @@
 // The garden's trees and hedges (garden/trees.js: ez-tree kinds, crowns as instanced leaf cards) sway with the real wind: their leaf
 // material gets a few lines in its vertex shader at load – before the GPU preparation compiles it, so no program later – that lean
 // the crown away from the wind and let it sway back and forth (slower big motion, a faster flutter of the leaves), more the higher a
-// card sits above the trunk's foot and with the square of the wind speed, gusts stronger; each tree in its own phase. Only the
-// instanced crowns (the garden, the ring around it); the Dorflinde and the planner's trees stay still. The crowns' shadows keep their
+// card sits above the trunk's foot and with the square of the wind speed, gusts stronger; each tree in its own phase. Only instanced
+// crowns move (the garden, the ring around it, the garden planner's plants – their kinds are built later and handed over by
+// garden/trees.js as they are made); the Dorflinde (one mesh) stays still but takes the snow. The crowns' shadows keep their
 // place (the shadow map is drawn rarely and from the still crowns). The lawn and the meadow flowers (garden/grass.js hands each of their
 // materials over right after making it, before anything draws it): their tips bend away from the wind in waves that run over the lawn
 // with the gusts, plus a quick flicker; the bend is a share of each blade's height (a mown lawn moves less). Calm air: nothing moves,
-// nothing is drawn for it.
+// nothing is drawn for it. Snow and hoarfrost on the crowns: the same leaf patch whitens the leaves that face the sky (snow lying on
+// top of the crowns and the hedges, rime on a frosty morning), patchy from card to card; lit as the leaves are.
 import { markDirty } from '../core/assets.js';
 import { GRASS } from '../garden/grass.js';
-import { TREES } from '../garden/trees.js';
+import { TREEHOOK, TREES } from '../garden/trees.js';
 export const WXWIND = (() => {
-  // x amplitude (m of lean at 12 m above the foot), y flutter (m), z time (s), w the share of the lean that stays (0–1)
-  const U = { wxSw: { value: [0, 0, 0, 0.5] }, wxSwD: { value: [1, 0] } };
+  // x amplitude (m of lean at 12 m above the foot), y flutter (m), z time (s), w the share of the lean that stays (0–1); wxLW the
+  // white of snow or rime on the leaves (0–1)
+  const U = { wxSw: { value: [0, 0, 0, 0.5] }, wxSwD: { value: [1, 0] }, wxLW: { value: 0 } };
+  // after the normal is known, before the light uses the colour: the leaves facing up turn white, patchy by place – the crown's own
+  // normal (garden/trees.js gives the cards normals out from the crown), not the one turned towards the eye on a card's back
+  const GLSL_WHITE = `#include <emissivemap_fragment>
+  if ( wxLW > 0.002 ) {
+#ifndef FLAT_SHADED
+    vec3 wxN = inverseTransformDirection( normalize( vNormal ), viewMatrix );
+#else
+    vec3 wxN = inverseTransformDirection( normal, viewMatrix );
+#endif
+    float wxU = smoothstep( -0.15, 0.65, wxN.y );
+    float wxR = fract( sin( dot( floor( vSVW.xz * 7.0 + vSVW.yy * 4.0 ), vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+    diffuseColor.rgb = mix( diffuseColor.rgb, vec3( 0.82, 0.86, 0.92 ), clamp( wxLW * wxU * ( 0.65 + 0.5 * wxR ), 0.0, 0.95 ) );
+  }`;
   // the lawn: x the bend (share of the height), y the flicker (share of the height); the time is wxSw.z
   const UG = { wxGr: { value: [0, 0] } };
   // three takes arrays for vec4/vec2 uniforms; kept as plain arrays so nothing allocates per frame
@@ -55,10 +71,13 @@ gl_Position = projectionMatrix * mvPosition;`;
 #endif
 mvPosition = modelViewMatrix * mvPosition;
 gl_Position = projectionMatrix * mvPosition;`;
-  const S = { n: 0, a: 0, g: 0, grass: 0, drawT: 0 };
-  for (const K of Object.values(TREES)) {
-    const m = K && K.leaf;
-    if (!m || m.userData.wxSway) continue;
+  const S = { n: 0, a: 0, g: 0, grass: 0, white: 0, drawT: 0 };
+  // the materials patched (not a flag in userData: a clone copies userData, not the patch)
+  const DONE = new WeakSet();
+  // a leaf material of garden/trees.js, before its first compile: the sway and the white
+  function leaf(m) {
+    if (!m || DONE.has(m)) return;
+    DONE.add(m);
     const prev = m.onBeforeCompile,
       key = m.customProgramCacheKey;
     m.onBeforeCompile = (sh, r) => {
@@ -68,15 +87,29 @@ gl_Position = projectionMatrix * mvPosition;`;
       sh.uniforms.wxSwD = U.wxSwD;
       sh.vertexShader =
         'uniform vec4 wxSw; uniform vec2 wxSwD;\n' + sh.vertexShader.replace('#include <project_vertex>', GLSL);
+      // the white needs the world position patchSV passes on (vSVW); without it the leaves only sway
+      if (
+        sh.fragmentShader.includes('varying vec3 vSVW;') &&
+        sh.fragmentShader.includes('#include <emissivemap_fragment>')
+      ) {
+        sh.uniforms.wxLW = U.wxLW;
+        sh.fragmentShader =
+          'uniform float wxLW;\n' + sh.fragmentShader.replace('#include <emissivemap_fragment>', GLSL_WHITE);
+        S.white++;
+      }
     };
     // its own programs (another material with the same key would otherwise share a program without the sway)
     m.customProgramCacheKey = () => (key ? key.call(m) : '') + '|wxsway';
-    m.userData.wxSway = true;
     S.n++;
   }
+  for (const K of Object.values(TREES)) leaf(K && K.leaf);
+  // kinds built later – the garden planner's own (fruit tree, bushes, perennials), the Dorflinde – are handed over as they are made:
+  // the same patch, so they draw with the garden's programs (none new when the planner's plants appear)
+  TREEHOOK.leaf = leaf;
   // a lawn or flower material from garden/grass.js, before its first compile (its own programs, as above)
   GRASS.wxSway = m => {
-    if (!m || m.userData.wxSway) return;
+    if (!m || DONE.has(m)) return;
+    DONE.add(m);
     const prev = m.onBeforeCompile,
       key = m.customProgramCacheKey;
     m.onBeforeCompile = (sh, r) => {
@@ -90,7 +123,6 @@ gl_Position = projectionMatrix * mvPosition;`;
         sh.vertexShader.replace('#include <project_vertex>', GLSL_GRASS);
     };
     m.customProgramCacheKey = () => (key ? key.call(m) : '') + '|wxgrass';
-    m.userData.wxSway = true;
     S.grass++;
   };
   // the wind to show: v the 10-m wind (m/s), gust (m/s), dir (° from where it blows), k the gusts' swing now (0–1); on: shown at all
@@ -119,5 +151,12 @@ gl_Position = projectionMatrix * mvPosition;`;
       markDirty();
     }
   }
-  return { U, UG, S, set, tick, count: () => S.n };
+  // snow or rime on the crowns (0–1); a visible step draws a picture
+  function white(v) {
+    v = v < 0.01 ? 0 : Math.min(1, v);
+    if (Math.abs(v - U.wxLW.value) < 0.01 && !(v === 0 && U.wxLW.value > 0)) return;
+    U.wxLW.value = v;
+    markDirty();
+  }
+  return { U, UG, S, set, tick, white, count: () => S.n };
 })();
