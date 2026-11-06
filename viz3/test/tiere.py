@@ -199,7 +199,13 @@ with lib.browser() as b:
         # walk at the roe deer: they look up, then the group bounds away towards cover, and stays there a while
         at(16, 50, date=(11, 5))
         E("TIERE.reset(); HUND.on = false; if (HUND.model) HUND.model.g.visible = false")
-        r = J("(() => { const g = TIERE.nearest('reh', -560, -560); return { id: g.id, home: g.home, feed: g.feed }; })()")
+        # a roe group out at its feeding place with at least two deer, the nearest to the Klinge's fields (the layout of the groups follows
+        # the world's data – crowns, walls – so it shifts when those change; the nearest group alone may be a single deer in cover)
+        r = J("""(() => { const P0 = [-560, -560], d = g => Math.hypot(g.feed[0] - P0[0], g.feed[1] - P0[1]);
+          const gs = TIERE.groups.filter(g => g.art === 'reh').filter(g => { const p = TIERE.plan(g); return p.where === 'out' && p.n >= 2; });
+          gs.sort((a, b) => d(a) - d(b));
+          const g = gs[0] || TIERE.nearest('reh', P0[0], P0[1]); return { id: g.id, home: g.home, feed: g.feed, plan: TIERE.plan(g) }; })()""")
+        print('roe group for the approach', r, flush=True)
         fx, fy = r['feed']
         hx, hy = r['home']
         dx, dy = fx - hx, fy - hy
@@ -210,20 +216,29 @@ with lib.browser() as b:
         steps(1.0)
         n0 = J(f"TIERE.list().filter(a => a.g === '{r['id']}')")
         ck('the group is there, not fleeing yet', len(n0) >= 1 and not any(a['mode'] == 'flee' for a in n0), str(n0))
-        # walk towards them in steps of 10 m and note when they look up and when they go
+        # walk towards them in steps of 10 m, looked at every 0.1 s, and note when they look up and when they go. The walker keeps a
+        # steady pace (the frame loop smooths P.speed from the keys' movement – without keys it would sink to a standing walker, whom
+        # roe deer let come closer, and the next 10 m step would then be noticed at once)
         alert_at = flee_at = None
+        alert_n = flee_n = None
+        n = 0
         for i in range(14):
             d = 160 - (i + 1) * 10
             px, py = fx + dx / L * d, fy + dy / L * d
             E(f"(() => {{ const P = GAME.P; P.x = {px}; P.y = {py}; P.feet = GAME.floorAt(P.x, P.y, P.feet + 2); P.speed = 1.3; }})()")
-            steps(0.6)
-            q = J(f"TIERE.list().filter(a => a.g === '{r['id']}')")
-            if alert_at is None and any(a['alert'] > 0.3 for a in q): alert_at = d
-            if flee_at is None and any(a['mode'] == 'flee' for a in q):
-                flee_at = d
-                break
-        print('alert at', alert_at, 'flee at', flee_at, flush=True)
-        ck('they look up first (alert before the flight)', alert_at is not None and (flee_at is None or alert_at > flee_at), f'{alert_at} / {flee_at}')
+            line = []
+            for k in range(6):
+                E("(() => { for (let i = 0; i < 2; i++) { GAME.P.speed = 1.3; GAME.step(0.05); } })()")
+                n += 1
+                q = J(f"TIERE.list().filter(a => a.g === '{r['id']}')")
+                if alert_n is None and any(a['alert'] > 0.3 for a in q): alert_n, alert_at = n, d
+                if flee_n is None and any(a['mode'] == 'flee' for a in q): flee_n, flee_at = n, d
+                if k == 5 or flee_n == n:
+                    line = [(round(math.hypot(a['x'] - px, a['y'] - py)), a['mode'], a['alert']) for a in q]
+            print(f'  walker {d} m from the feeding place: deer (distance, mode, alert)', line, flush=True)
+            if flee_n is not None: break
+        print('alert at', alert_at, 'flee at', flee_at, f'(samples {alert_n} / {flee_n})', flush=True)
+        ck('they look up first (alert before the flight)', alert_n is not None and (flee_n is None or alert_n < flee_n), f'{alert_at} / {flee_at}')
         ck('they flee at a roe deer\'s flight distance (70–130 m from a walker at dusk)', flee_at is not None and 60 <= flee_at <= 130, str(flee_at))
         E("GAME.step(0.05)")
         pic('20_flucht_rehe')
@@ -289,6 +304,9 @@ with lib.browser() as b:
         ck('… but many of the unguarded ones (fir and maple first)', sum(1 for t in open1 if t['dmg'] >= 0.4) >= 5, str([(t['art'], t['dmg']) for t in open1]))
         E("GAME.step(0.05)")
         pic('41_pflanzung_nach_winter')
+        # close by the unguarded half: browsed firs without their leader, beeches holding dry leaves, bare maples and larches
+        E(f"__view({px} + 11, {py} - 2.6, ROADS.groundAt({px} + 11, {py} - 2.6) + 1.6, -25, -22, 50); GAME.step(0.1)")
+        pic('41b_pflanzung_nah')
         sch = J("TIERE.schaden({ season: 'winter' })")
         ck('the damage per season for the strategy mode (TIERE.schaden)', sch['sum'].get('verbiss', 0) >= 5, str(sch['sum']))
         # the black stork's quiet zone

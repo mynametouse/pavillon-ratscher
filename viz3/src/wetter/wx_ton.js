@@ -200,6 +200,9 @@ export const WXTON = (() => {
     }
     if (lw > 0.15) want(r, 'wind');
     if (p.storm) want(r, 'donner');
+    // the levels move slowly (time constants of half a second and more): ten updates a second are plenty – fewer automation events
+    if ((S.updT = (S.updT || 0) + dt) < 0.1) return;
+    S.updT = 0;
     const N = S.N,
       t = N.ctx.currentTime,
       out = p.inside ? 0.5 : 1;

@@ -1030,6 +1030,17 @@ export const FOREST = (() => {
       im.computeBoundingSphere();
       scene.add(im);
       S.far = (S.far || []).concat(im);
+      // feat/strategie: from straight above (the plan view, „Ratscher von oben“) the two upright planes read as dark leaves floating over
+      // the meadow – there only the level plane (the crown from above) is drawn: the same material, a geometry with that plane alone
+      const tg = new THREE.BufferGeometry();
+      for (const k of ['position', 'normal', 'uv', 'aH']) {
+        const A = g.getAttribute(k);
+        tg.setAttribute(k, new THREE.BufferAttribute(A.array.slice(8 * A.itemSize, 12 * A.itemSize), A.itemSize));
+      }
+      tg.setIndex([0, 2, 1, 2, 3, 1]);
+      tg.setAttribute('aKind', g.getAttribute('aKind'));
+      im.userData.sideG = g;
+      im.userData.topG = tg;
     }
     // ground cover near the camera: ferns, stumps, lying deadwood
     cover(P0);
@@ -1201,6 +1212,13 @@ export const FOREST = (() => {
   KERN.tick(dt => {
     if (!S.ready) return;
     if (typeof sunC !== 'undefined') CU.uSunBox.value.set(sunC[0], sunC[1], sunHalf, 0.8);
+    // feat/strategie: the far cards' level plane alone while one looks from above (see topG above)
+    const top = P.mode === 'top';
+    if (top !== !!S.farTop) {
+      S.farTop = top;
+      for (const im of S.far || []) if (im.userData.topG) im.geometry = top ? im.userData.topG : im.userData.sideG;
+      markDirty(true);
+    }
     relod(false);
     if (A2 && !A2.good && texReady()) {
       A2 = atlas(A2.models, A2.mats, A2.rt);

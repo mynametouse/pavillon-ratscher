@@ -693,6 +693,43 @@ export const HOLZSAW = (() => {
   }
   S.pileBoards = () => S.boards.filter(b => b.st === 'pile');
   S.rebuildPiles = rebuildPiles;
+  // feat/strategie: the strategy mode (strategie/st_holz.js) saws a whole log at once – the same plan, cuts and boards as by hand (slab off
+  // the top, board after board down to 3 cm above the bunks, the bottom slab; slabs are firewood), without the walking and the clock's
+  // minutes (the job's duration is the strategy mode's). t: thickness (m). Returns { boards, t, vol } or null (a log on the mill by hand).
+  S.simSaw = (id, t = 0.03) => {
+    const l = HOLZ.by && HOLZ.by[id];
+    if (!l || l.st === 'sawn' || l.st === 'fork' || l.st === 'trailer') return null;
+    if (S.log && S.log !== l.id) return null;
+    if (l.L > 4.6) return null;
+    seat(l);
+    hideDeco();
+    const p = planCuts(l, t),
+      pcs = pieces(l, p);
+    let nb = 0,
+      vol = 0;
+    for (let i = 0; i < p.cuts.length; i++) {
+      const pc = pcs[i];
+      if (pc.kind === 'slab') S.fire += 1;
+      else {
+        addBoard(l, pc, i);
+        const b = S.boards[S.boards.length - 1];
+        vol += (b.t * (b.wS + b.wW) * b.L) / 2;
+        nb++;
+      }
+    }
+    S.fire += 1;
+    l.st = 'sawn';
+    l.hide = false;
+    S.log = null;
+    S.clamp = false;
+    S.plan = null;
+    S.cut = 0;
+    remain();
+    HOLZ.redraw();
+    rebuildPiles();
+    save();
+    return { boards: nb, t, vol: +vol.toFixed(3), sp: l.sp, L: l.L };
+  };
   // ---------------- the acts at the mill ----------------
   function opAt() {
     if (WORKS.covered && WORKS.covered('saw')) return null; // today under its tarpaulin: take it off first (werk/werk.js)
