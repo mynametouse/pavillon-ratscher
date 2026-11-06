@@ -21,6 +21,10 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Laden übersetzt); Mond und Milchstraße verdeckt die Decke ohnehin. Das Licht folgt: Sonne gedämpft (zieht eine Wolke vor die Sonne, wird es in dem Moment dunkler), mehr diffuses
   Himmelslicht, das Auge passt sich an, grauer Dunst nach der Sicht (der größere Wert gewinnt; der Nebel der Zombie-Nacht bleibt darüber),
   keine Sterne und kein Mondlicht unter geschlossener Decke, Wolkenschatten auf dem fernen Land nur bei aufgelockerter Bewölkung.
+  **Klarer Himmel** (aus den Daten, nicht nach Kalender): die Fotos des Tageslaufs haben ihre eigenen Wolken – bei wenig Bewölkung
+  (ab ~35 % abwärts, unter ~5 % ganz) weichen sie dem Verlauf des Tages (Zenit und Horizont aus den Ankern von DN, die zu den gemessenen
+  Farben der Fotos passen, der Zenit etwas tiefer blau) mit dem Schein um die Sonne in ihrer Farbe; tagsüber und in der Dämmerung, nachts
+  bleibt der Nachthimmel; dann auch keine Wolkenschatten auf dem Land. So zeigt ein wolkenloser Tag wie der 6.11. einen wolkenlosen Himmel.
   **Schauer** (Wettercodes 80–82, 85, 86) sind keine Stunde gleichmäßigen Regens: Zellen von ~6 km ziehen mit dem Wind in Wolkenhöhe
   vorbei (in Spielzeit gezählt) – unter einer schüttet es (die Stundenmenge in etwa einem Drittel der Zeit) und der Himmel schließt sich,
   dazwischen ist es trocken, aufgelockert, die Sonne kommt heraus. Kurz vor oder nach einem Regenschauer mit Sonne (zwischen ~1° und
@@ -101,8 +105,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - Die Dorflinde (ein Netz, nicht instanziert; sie bekommt aber Schnee und Reif), die Felder und der Wald an der Klinge wiegen nicht (nur
   die instanzierten Kronen – Garten, Ring, die Pflanzen des Gartenplaners – und der Rasen, s. o.); die Schatten der Kronen bleiben still.
 - Pfützen; Regen am Fenster und an der Windschutzscheibe; nasse Straßen spiegeln kaum (der Geländeshader dämpft Spiegelungen auf 35 %).
-- Ein wolkenloser Tag zeigt die wenigen Kumuli des Tagesfotos („Sonnig“ bei 2 % Bewölkung) – ganz klar ginge nur mit einem klaren
-  Himmelsfoto oder einem an die Fotos angepassten Verlauf.
+- Der klare Himmel ist ein Verlauf (Zenit, Horizont, Sonnenschein) statt eines Fotos: ohne die feinen Schleier und das Korn eines echten
+  Himmels; ein klares Himmelsfoto je Tageszeit wäre noch echter (Poly Haven hat welche).
 - Die Dächerkarte wird nach 3 m Bewegung neu gezeichnet, sonst alle 5 s: ein Bus, der gerade vorbeifuhr, bleibt bis dahin „Dach“
   (fahrende Fahrzeuge könnten beim Zeichnen ausgeblendet werden, wenn sie markiert wären).
 
