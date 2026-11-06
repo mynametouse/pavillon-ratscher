@@ -7,11 +7,12 @@
 # Beyond the square (zellen): Orte → Schleusingen – the cells of 400 m around the Markt come in (Schleusingen beyond its old town), none
 # doubles a house of the old town, pictures from the street and from above, a wall stops the walker, no new programs.
 # The world tiles for that come from the published site (welt-test/, as viz3/test/schleusingen.py does).
-#   python3 viz3/test/welt_gebaeude.py 8997 [sections]      sections: load,places,walk,zellen,before (default all)
+# Along the road (strecke): Rappelsdorf on the way to Kloster Veßra, the cells around its main street – from the street and from above.
+#   python3 viz3/test/welt_gebaeude.py 8997 [sections]      sections: load,places,walk,zellen,strecke,before (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'load,places,walk,zellen,before').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'load,places,walk,zellen,strecke,before').split(','))
 ck = lib.Checks('welt_gebaeude')
 OUT = lib.out('welt_gebaeude')
 # known places (model metres): a roof only in the ground image before, a building of the data now – and where to look from
@@ -28,6 +29,7 @@ SITE = os.environ.get('WELT_SITE', 'https://mynametouse.github.io/pavillon-ratsc
 DIST = os.path.join(lib.ROOT, 'viz3', 'dist', 'welt-test')
 XF = json.load(open(os.path.join(lib.ROOT, 'viz3', 'manifests.json')))['geoman']['xf']
 MARKT = (-1084.7, 1241.9)
+STRECKE = (-3206.0, -54.0, 264)   # Rappelsdorf on the way to Kloster Veßra: the main street, looking west (x, y, yaw)
 
 
 def fetch_tiles(cx, cy, half=650):
@@ -117,8 +119,8 @@ def keepout_data():
         if b.get('lm') in ('burg', 'rathaus'):
             zones.append(('Schleusingen: ' + b['lm'], b['f'], 5.0))
     bad, n = [], 0
-    for fn in sorted(glob.glob(os.path.join(D, 'gebaeude', 'z', '*_*.json'))):
-        for b in json.load(open(fn))['b']:
+    for key in json.load(open(os.path.join(D, 'gebaeude', 'z', 'index.json')))['cells']:   # the cells the app may fetch
+        for b in json.load(open(os.path.join(D, 'gebaeude', 'z', key + '.json')))['b']:
             n += 1
             f = b['f']
             pts = [(f[i], f[i + 1]) for i in range(0, len(f), 2)]
@@ -130,9 +132,66 @@ def keepout_data():
     return n, len(zones), bad
 
 
+def roads_data():
+    """the cells' buildings against the drawn roads one drives (welt/fahrt.js motorway … lane with their widths, no bridges or tunnels;
+    Schleusingen's main streets): no corner or wall middle more than 0.3 m inside a drawn surface (prep.py cuts them back)"""
+    D = os.path.join(lib.ROOT, 'viz3', 'dist')
+    G, segs = 40.0, {}
+    def add(ax, ay, bx, by, hw):
+        for i in range(int(math.floor((min(ax, bx) - hw) / G)), int(math.floor((max(ax, bx) + hw) / G)) + 1):
+            for j in range(int(math.floor((min(ay, by) - hw) / G)), int(math.floor((max(ay, by) + hw) / G)) + 1):
+                segs.setdefault((i, j), []).append((ax, ay, bx, by, hw))
+    for w in json.load(open(os.path.join(D, 'fahrt', 'strassen.json')))['ways']:
+        if w[0] > 4 or w[3] & 3:
+            continue
+        q = w[6]
+        xy = [(q[i] / 10.0, q[i + 1] / 10.0) for i in range(0, len(q) - 2, 3)]
+        for a, b in zip(xy, xy[1:]):
+            add(a[0], a[1], b[0], b[1], w[2] / 20.0)
+    WS = {1: 8.0, 2: 7.0, 3: 5.6}
+    for st in json.load(open(os.path.join(D, 'schleusingen', 'stadt.json')))['st']:
+        if st.get('k') in WS:
+            q = st['p']
+            for k in range(0, len(q) - 2, 2):
+                add(q[k], q[k + 1], q[k + 2], q[k + 3], WS[st['k']] / 2)
+    bad, n = [], 0
+    for key in json.load(open(os.path.join(D, 'gebaeude', 'z', 'index.json')))['cells']:
+        for b in json.load(open(os.path.join(D, 'gebaeude', 'z', key + '.json')))['b']:
+            n += 1
+            f = b['f']
+            pts = [(f[i], f[i + 1]) for i in range(0, len(f), 2)]
+            pts += [((p[0] + q[0]) / 2, (p[1] + q[1]) / 2) for p, q in zip(pts, pts[1:] + pts[:1])]
+            worst = 0.0
+            for x, y in pts:
+                for ax, ay, bx, by, hw in segs.get((int(math.floor(x / G)), int(math.floor(y / G))), ()):
+                    dx, dy = bx - ax, by - ay
+                    L2 = dx * dx + dy * dy
+                    t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / L2)) if L2 > 0 else 0.0
+                    worst = max(worst, hw - math.hypot(x - ax - dx * t, y - ay - dy * t))
+            if worst > 0.3:
+                bad.append([b.get('id'), round(worst, 2), round(sum(p[0] for p in pts) / len(pts), 1), round(sum(p[1] for p in pts) / len(pts), 1)])
+    return n, bad
+
+
 V2N = 0
 if 'zellen' in want:
     V2N = fetch_tiles(*MARKT) or 0
+if 'strecke' in want:
+    fetch_tiles(STRECKE[0], STRECKE[1], 450)
+
+def settle_tiles(E, n_min=10, n_max=80):
+    """the tiles near the camera before a picture: they are asked for a moment after a move – at least n_min steps, then until nothing
+    loads and no new request came for four steps in a row (both runs alike, so before and after compare)"""
+    last, calm = -1, 0
+    for i in range(n_max):
+        E("GAME.step(0.25)")
+        s_ = json.loads(E("JSON.stringify(WELT.state())"))
+        calm = calm + 1 if (s_['loading'] == 0 and s_['req'] == last) else 0
+        last = s_['req']
+        if i >= n_min and calm >= 4:
+            break
+        time.sleep(0.3)
+
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs, tier='hoch')
@@ -192,6 +251,8 @@ with lib.browser() as b:
         ff = J("""(() => { let n = 0, inside = 0, wall = 0; for (const b of GEB.bld) { n++; if (!GEB.footFree(b.cx, b.cy, 0.2)) inside++; if (!GEB.footFree(b.f[0] + 0.1, b.f[1], 0.6)) wall++; }
           return { n, inside, wall, garden: GEB.footFree(0, 0, 0.6) }; })()""")
         ck('fences and woodpiles of the village keep off the new buildings (GEB.footFree for world/village_near.js)', ff['inside'] >= 0.9 * ff['n'] and ff['wall'] == ff['n'] and ff['garden'], json.dumps(ff))
+        rn, rbad = roads_data()
+        ck('no building of the cells stands in a drawn road one drives (cut back to its edge)', rn > 10000 and len(rbad) <= 5, f'{rn} buildings, {len(rbad)} reach in: ' + json.dumps(rbad[:6]))
         kn, kz, kbad = keepout_data()
         ck('none of the cells in what Kloster Veßra and Schleusingen model themselves (church ruin, precinct, nursery, castle, Rathaus)', kn > 10000 and kz >= 5 and not kbad, f'{kn} buildings, {kz} areas, ' + json.dumps(kbad[:6], ensure_ascii=False))
     # a free spot (inside no building, 2 m from every wall) 16–34 m from a building, looking at it; same in both runs (deterministic)
@@ -291,13 +352,8 @@ with lib.browser() as b:
             hideZ(False)
             q0, kq0 = progs(), pkeys()
 
-            def settle():
-                for i in range(40):   # the tiles near the camera (levels 11, 12) before the picture (asked for a moment after the move)
-                    E("GAME.step(0.25)")
-                    if i >= 8 and E("WELT.state().loading === 0"): break
-                    time.sleep(0.3)
-            top(tgt['x'], tgt['y'], 80); settle(); pic('stadt_top')
-            if sp: ground(sp[0], sp[1], sp[2], -2); settle(); pic('stadt_boden')
+            top(tgt['x'], tgt['y'], 80); settle_tiles(E); pic('stadt_top')
+            if sp: ground(sp[0], sp[1], sp[2], -2); settle_tiles(E); pic('stadt_boden')
             q1 = progs()
             prog_check('no new shader programs for the cells', kq0, pkeys(), q0, q1)
             STADT['tgt'], STADT['sp'] = tgt, sp
@@ -312,6 +368,28 @@ with lib.browser() as b:
                 GAME.view(sx, sy, KERN.ground(sx, sy) + 1.6, yaw, 0, 60); GAME.P.body = yaw; for (let i = 0; i < 160; i++) GAME.step(0.025, 1);
                 const d = (GAME.P.x - best.mx) * best.nx + (GAME.P.y - best.my) * best.ny; return {{ d: +d.toFixed(2), moved: +Math.hypot(GAME.P.x - sx, GAME.P.y - sy).toFixed(2), free: KERN.free(sx, sy) }}; }})()""")
             ck('beyond the square a wall of the cells stops the walker', r is not None and r['moved'] > 2 and r['d'] > 0.1, json.dumps(r))
+    if 'strecke' in want:
+        # Rappelsdorf on the way to Kloster Veßra: the cells around its main street come in (tiles of the world, the buildings of the data)
+        sx, sy, syaw = STRECKE
+        E("document.body.dataset.mode = 'walk'")
+        ground(sx, sy, syaw, -3)
+        t0 = time.time()
+        zn = {}
+        while time.time() - t0 < 200:
+            E("GAME.step(0.5)")
+            zn = J(f"""(() => {{ let cells = 0, near = 0, houses = 0; for (const c of GEB.Z.cells.values()) {{ if (!c.meshes.length) continue; cells++;
+                for (const b of c.data.b) if (b.cx !== undefined && Math.hypot(b.cx - {sx}, b.cy - {sy}) < 60) {{ near++; if (b.k === 0) houses++; }} }}
+                return {{ z: GEB.Z.state, jobs: GEB.jobs(), busy: GEB.Z.busy, w: WELT.state().loading, tiles: WELT.state().tiles, cells, near, houses }}; }})()""")
+            if zn['z'] == 'ready' and zn['near'] > 0 and not zn['jobs'] and not zn['busy'] and zn['w'] == 0:
+                break
+            time.sleep(0.3)
+        for _ in range(12):   # cells set down again when the tiles under them came in
+            E("GAME.step(0.5)"); time.sleep(0.1)
+        print('strecke', json.dumps(zn), round(time.time() - t0), 's', flush=True)
+        ck('along the road: Rappelsdorf on the way to Kloster Veßra has its buildings in 3D (cells around the main street)', zn.get('near', 0) >= 10 and zn.get('houses', 0) >= 3, json.dumps(zn))
+        ground(sx, sy, syaw, -3); settle_tiles(E); pic('strecke_boden')
+        top(sx - 30, sy, 90); settle_tiles(E); pic('strecke_top')
+        E("document.body.dataset.mode = 'walk'")
     ck.errors(errs)
 if 'before' in want:
     # the same pictures without the new buildings (?nogeb) – for the before/after comparison
@@ -350,16 +428,24 @@ if 'before' in want:
                 time.sleep(0.3)
             tg, sp = STADT['tgt'], STADT['sp']
             E(f"(() => {{ const P = GAME.P; P.mode = 'top'; P.tx = {tg['x']}; P.ty = {tg['y']}; P.th = 80; document.body.dataset.mode = 'top'; GAME.step(0.05); }})()")
-            for i in range(40):   # the tiles under the new view are asked for a moment later: wait at least 2 s, then until all are in
-                E("GAME.step(0.25)")
-                if i >= 8 and E("WELT.state().loading === 0"): break
-                time.sleep(0.3)
+            settle_tiles(E)
             lib.shot(pg, OUT, 'stadt_top_vorher')
             if sp:
                 E(f"(() => {{ document.body.dataset.mode = 'walk'; GAME.view({sp[0]}, {sp[1]}, KERN.ground({sp[0]}, {sp[1]}) + 1.6, {sp[2]}, -2, 60); for (let i = 0; i < 4; i++) GAME.step(0.25); }})()")
-                for _ in range(20):
-                    E("GAME.step(0.25)")
-                    if E("WELT.state().loading === 0"): break
-                    time.sleep(0.3)
+                settle_tiles(E)
                 lib.shot(pg, OUT, 'stadt_boden_vorher')
+        if 'strecke' in want:
+            sx, sy, syaw = STRECKE
+            E(f"(() => {{ document.body.dataset.mode = 'walk'; GAME.view({sx}, {sy}, KERN.ground({sx}, {sy}) + 1.6, {syaw}, -3, 60); for (let i = 0; i < 4; i++) GAME.step(0.25); }})()")
+            t0 = time.time()
+            while time.time() - t0 < 120:
+                E("GAME.step(0.5)")
+                if E("WELT.state().tiles > 0 && WELT.state().loading === 0"): break
+                time.sleep(0.3)
+            E(f"(() => {{ GAME.view({sx}, {sy}, KERN.ground({sx}, {sy}) + 1.6, {syaw}, -3, 60); for (let i = 0; i < 4; i++) GAME.step(0.25); }})()")
+            settle_tiles(E)
+            lib.shot(pg, OUT, 'strecke_boden_vorher')
+            E(f"(() => {{ const P = GAME.P; P.mode = 'top'; P.tx = {sx - 30}; P.ty = {sy}; P.th = 90; document.body.dataset.mode = 'top'; GAME.step(0.05); }})()")
+            settle_tiles(E)
+            lib.shot(pg, OUT, 'strecke_top_vorher')
 ck.done()
