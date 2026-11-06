@@ -265,6 +265,14 @@ with lib.browser() as b:
         # are dried on (today, without the hall, under the lean-to's roof; with the hall in the cabinet) and glued to panels of own wood
         q0 = J("STRAT.job.check('nachtrocknen', ['christoph'])")
         ck('drying on is refused while the stack is not air-dry – with the reason (checks above ~20 %)', q0 and 'lufttrocken' in q0.get('text', '') and q0.get('why'), str(q0)[:300])
+        # the log yard's panel offers the time-lapse until air-dry (the drying model's forecast) – a click on it
+        E("STHUD.openPlace('holzlager')"); steps(0.5)
+        bt = J("(() => { const b = document.querySelector('#stpan button[data-skip]'); return b ? { t: b.textContent, m: +b.dataset.skip } : null; })()")
+        if bt:
+            E("document.querySelector('#stpan button[data-skip]').click()")
+            until("!CLOCK.warp", 120, 0.25)
+        msb = J("HOLZDRY.stackMC()")
+        ck('the log yard\'s panel offers „bis lufttrocken“ – one click and the stack is air-dry when the forecast said', bt and 'lufttrocken' in bt['t'] and msb and msb['avg'] <= 21, f"{bt} → {msb and round(msb['avg'], 1)} %")
         for i in range(10):
             ms = J("HOLZDRY.stackMC()")
             if ms and ms['avg'] <= 20.5: break
