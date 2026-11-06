@@ -40,7 +40,7 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   darunter; Grünland am Hang (0,90 €/m², 120 €/ha Pacht) und Wald mit Bestand (1,30 €/m²) als ausgewiesene Annahmen. Auf der Karte: die
   Flächen gestrichelt, gepachtet grün gestrichelt, eigene grün.
 - **Streuobstwiese** auf der gepachteten (oder gekauften) Hangwiese: Sorten mit Gerhard und Heike wählen, zwölf Hochstämme in der Baumschule
-  bei Kloster Veßra holen (864 €), pflanzen – nur in der Pflanzzeit (Mitte Oktober bis Ende März, Regel mit „Warum?“). Danach stehen
+  Kammbach bei Kloster Veßra holen (864 €; derselbe Ort wie beim Garten von `strategie-bau`, `kammbach`), pflanzen – nur in der Pflanzzeit (Mitte Oktober bis Ende März, Regel mit „Warum?“). Danach stehen
   **zwölf junge Bäume in der Welt** (`strategie/st_dorf_welt.js`): Pfahl auf der Wetterseite, Drahthose gegen Rehe, von Mai bis Oktober mit
   Laub. Lernen: § 30 BNatSchG (Streuobstwiesen geschützt seit 2022), Abstände, alte Sorten.
 - **Förderantrag (LEADER):** „Treffpunkt am Anger“ (24.000 €; Ingrids zweiter Wunsch) – Beratung beim Regionalmanagement, drei Angebote,

@@ -824,13 +824,17 @@ export const STDORF = (() => {
     return { ok: true };
   }
   // ---------------- the jobs of the projects' steps (offered at their place while the step is due) ----------------
+  // the garden from above (strategie/st_garten.js, feat/strategie-bau) has the nursery at Kammbach already, on the same spot: the orchard's
+  // trees are bought there too – one place on the map, not two markers on top of each other
+  const NURSERY = STRAT.place.get && STRAT.place.get('kammbach') ? 'kammbach' : 'baumschule';
+  const plc = pl => (pl === 'baumschule' ? NURSERY : pl);
   for (const [id, Pj] of Object.entries(D.PROJ))
     Pj.steps.forEach((s, i) => {
       if (s.k !== 'job' && s.k !== 'deal') return;
       STRAT.job.define({
         id: `dp_${id}_${i}`,
         label: s.label,
-        place: s.place || Pj.place,
+        place: plc(s.place || Pj.place),
         order: 30 + i,
         people: s.people || [1, 2],
         skill: s.skill || 'reden',
@@ -1281,16 +1285,17 @@ export const STDORF = (() => {
         ? '+' + (haOf('pacht') + haOf('eigen')).toLocaleString('de-DE', { maximumFractionDigits: 2 }) + ' ha'
         : '',
   });
-  STRAT.place.define({
-    id: 'baumschule',
-    name: D.PLACES.baumschule.name,
-    icon: D.PLACES.baumschule.icon,
-    order: D.PLACES.baumschule.order,
-    r: D.PLACES.baumschule.r,
-    pos: POS.baumschule,
-    sub: () => 'Obstbäume, Hecken, Wildgehölze – Hochstämme alter Sorten',
-    info: () => projAt('baumschule').map(projHtml).join(''),
-  });
+  if (NURSERY === 'baumschule')
+    STRAT.place.define({
+      id: 'baumschule',
+      name: D.PLACES.baumschule.name,
+      icon: D.PLACES.baumschule.icon,
+      order: D.PLACES.baumschule.order,
+      r: D.PLACES.baumschule.r,
+      pos: POS.baumschule,
+      sub: () => 'Obstbäume, Hecken, Wildgehölze – Hochstämme alter Sorten',
+      info: () => projAt('baumschule').map(projHtml).join(''),
+    });
   // the rent is due at Martini (11 November), as it has been for centuries
   KERN.on('strategie:tag', d => {
     try {

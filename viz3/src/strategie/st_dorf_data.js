@@ -12,7 +12,7 @@ export const STDDATA = (() => {
     haltestelle: { name: 'Bushaltestelle Ratscher', icon: '⊓', pos: [250.6, -99.6], r: 8, order: 102 },
     rathaus: { name: 'Rathaus Schleusingen', icon: '⚖', pos: [-1060, 1250], r: 30, order: 103 },
     flur: { name: 'Flur: Land pachten oder kaufen', icon: '▦', pos: [130, -5], r: 30, order: 104 },
-    baumschule: { name: 'Baumschule bei Kloster Veßra', icon: '♠', pos: [-4060, 2400], r: 30, order: 105 },
+    baumschule: { name: 'Baumschule Kammbach (Kloster Veßra)', icon: '♠', pos: [-4060, 2400], r: 30, order: 105 },
   };
   // ---- the villagers as one gets to know them (exploration: known only after someone talked to them) ----
   // need: the project they bring; knows: who they know (who knows whom); help: what they can do for a project; tip: what one learns
@@ -461,7 +461,7 @@ export const STDDATA = (() => {
           min: 1,
           dur: 90,
           pay: 'proj',
-          text: 'Mit Auto und Anhänger in die Baumschule bei Kloster Veßra: zwölf Bäume, Pfähle, Kokosstrick, Wühlmauskörbe, Drahthosen.',
+          text: 'Mit Auto und Anhänger in die Baumschule Kammbach bei Kloster Veßra: zwölf Bäume, Pfähle, Kokosstrick, Wühlmauskörbe, Drahthosen.',
         },
         {
           k: 'job',
