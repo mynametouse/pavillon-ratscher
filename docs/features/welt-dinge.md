@@ -9,8 +9,10 @@ des Luftbilds als **Stellplätze, belebt nach Tageszeit**; (23:17) „Wichtig is
 ## Was es gibt
 
 - **Gebiete** (je eine Datei `dist/dinge/<gebiet>.json`, geladen, wenn man näher als r an die Mitte kommt): `ratscher` (das Dorf, die
-  Agrargenossenschaft mit zwei Güllebehältern, die ETHOS nicht kennt, der Holzlagerplatz), `schleusingen` (die Stadt), `geisenhoehn` (das Dorf im Westen des Quadrats), `talsperre`
-  (Campingplatz an der Talsperre Ratscher) – siehe „Stand“ unten, was davon schon Daten hat.
+  Agrargenossenschaft mit zwei Güllebehältern, die ETHOS nicht kennt, der Holzlagerplatz), `schleusingen` (die Stadt), `geisenhoehn` (das
+  Dorf im Westen des Quadrats), `talsperre` (Campingplatz an der Talsperre Ratscher), `vessra` (Kloster Veßra mit Baumschule),
+  `zollbrueck` und die Dörfer der Kachelwelt dahinter (`gottfriedsberg`, `rappelsdorf` …; ihr bebauter Bereich aus den Gebäuden von
+  `welt-gebaeude` + 50 m) – siehe „Stand“ unten.
 - **Erkennung** (`tools/welt-dinge/`): das Luftbild Thüringen 2024 (DOP 20 cm, Flug 07.04.2024 – dasselbe Bild wie das Bodenbild des
   Spiels `ortho_near.jpg`) auf Modellachsen über den WMS der GDI-Th (`wdlib.fetch`), darauf ein vortrainierter Luftbild-Detektor
   (Ultralytics YOLO11-OBB auf DOTA v1: „small/large vehicle“, „swimming pool“, „storage tank“ …; `detect.py`). Ratscher: fünf Durchgänge
@@ -30,22 +32,39 @@ des Luftbilds als **Stellplätze, belebt nach Tageszeit**; (23:17) „Wichtig is
   Sicht oder weiter als 320 m; im Blickfeld oder näher als 14 m bleibt es, `DINGE.held` zählt das). Das Auto behält Bauart (aus der
   gemessenen Länge: Kleinwagen < 4,05 m, Kompakt < 4,45 m, Kombi oder SUV, Transporter) und Farbe aus dem Foto (Dunst abgezogen, dann die
   nächste der üblichen Farben). Autos, die im Foto mitten auf einer Haupt- oder Kreisstraße fuhren, werden keine Plätze.
-- **Parkplätze aus OSM** (`tools/welt-dinge/osm_parkplaetze.py` auf GitHub Actions, Workflow `welt-dinge-osm.yml`, Artefakt
-  `osm-parkplaetze`; `plaetze.py` macht daraus Stellplätze): das Foto ist von einem Sonntagvormittag – der Supermarkt-Parkplatz ist leer
-  und gäbe keine Plätze. Jeder öffentliche Parkplatz (`amenity=parking`, nicht privat, nicht Tiefgarage/Parkhaus) wird mit Reihen
-  gefüllt (2,5 m breit, 5 m tief, 6 m Gasse) und bekommt die Art dessen, wozu er gehört (nächster Laden, Kirche, Schule, Arzt/Amt,
-  Gaststätte, Sportplatz, Friedhof binnen 80 m oder sein Name): `laden` (Mo–Sa Öffnungszeiten, Samstagvormittag voll, sonntags leer),
-  `kirche` (Sonntagsgottesdienst), `schule`, `dienst`, `gaststaette`, `sport`, `friedhof`, `allgemein`. Bauart und Farbe zufällig nach
-  dem Bestand auf deutschen Straßen, je Platz fest.
+- **Parkplätze aus OSM** (`tools/welt-dinge/osm_parkplaetze.py` auf GitHub Actions, Workflow `welt-dinge-osm.yml`: der Tagesauszug
+  Thüringen von Geofabrik, mit osmium auf die Gebiete geschnitten – Overpass nur als Ersatz, beides ist von hier nicht erreichbar;
+  Artefakt `osm-parkplaetze`; `plaetze.py` macht daraus Stellplätze, abgelegt in `viz3/extra/welt-dinge/plaetze_<gebiet>.json`): das Foto
+  ist von einem Sonntagvormittag – der Supermarkt-Parkplatz ist leer und gäbe keine Plätze. Jeder öffentliche Parkplatz
+  (`amenity=parking`, nicht privat, nicht Tiefgarage/Parkhaus) wird mit Reihen gefüllt (2,5 m breit, 5 m tief, 6 m Gasse), ein Streifen
+  am Straßenrand (`parking=street_side/lane` oder schmaler als 4,6 m) mit einer Reihe Längsparker im Abstand von 6 m; nie mehr Plätze als
+  `capacity`. Er bekommt die Art dessen, wozu er gehört (nächster Laden, Kirche, Schule, Arzt/Amt, Gaststätte, Sportplatz, Friedhof binnen
+  80 m oder sein Name; „Parkplatz …“ ist `allgemein`, `access=employees` ein Betriebshof, der Markt Stadtrand): `laden` (Mo–Sa
+  Öffnungszeiten, Samstagvormittag voll, sonntags leer), `kirche` (Sonntagsgottesdienst), `schule`, `dienst`, `gaststaette`, `sport`,
+  `friedhof`, `allgemein`. Bauart und Farbe zufällig nach dem Bestand auf deutschen Straßen, je Platz fest.
 - **Modelle** (`viz3/src/dinge/dinge_modelle.js`, `DMOD`): Kleinwagen, Kompakt, Kombi, SUV, Transporter ohne Marke in echten Außenmaßen
   (Karosserie, Glas, A-/B-/C-Säulen, Radläufe, Lampen, Schilder ohne Nummer); Dinge: Pool rund/eckig, Anhänger, Wohnwagen, Wohnmobil,
   Traktor, Lkw, Rund-/Quaderballen, Holzstapel (abgedeckt), Stammholz, Güllebehälter, Trampolin, Container. Ein Material (`plain()`),
-  Lackfarbe als Instanzfarbe nur auf reinweißen Ecken; die zwei Programme werden beim Laden mit der Szene übersetzt (Warm-Meshes) –
-  danach kommt keins dazu.
+  Lackfarbe als Instanzfarbe nur auf reinweißen Ecken. **Weiche Schatten** unter jedem Auto und Ding (ein instanziertes Viereck je Zelle
+  wie die Klecks-Schatten der Figuren in `npc/npc.js`): unter dem Wagen dunkel, zur Schattenseite um Höhe × Kotangens der Sonnenhöhe
+  gezogen, nachts nur das Dunkel darunter – sonst schweben die Autos außerhalb der Schattenbox (±16 m um den Gehenden). Die drei Programme
+  (Autos, Dinge, Schatten) werden beim Laden mit der Szene übersetzt (Warm-Meshes) – danach kommt keins dazu.
 - Je Zelle (Dorf 120 m, Stadt 200 m) gebaut, wenn man näher als 380 m kommt (Telefon 260 m), frei ab +160 m; Autos instanziert (ein
-  Draw-Call je Bauart und Zelle), Dinge zusammengefasst; kommt der Boden später (Kacheln der Stadt), wird die Zelle neu aufgesetzt.
+  Draw-Call je Bauart und Zelle), Dinge zusammengefasst, ein Draw-Call Schatten je Zelle; kommt der Boden später (Kacheln der Stadt),
+  wird die Zelle neu aufgesetzt.
   Fest für Gehende und Fahrzeuge (`VEH.extra`), der Verkehr (`verkehr/verkehr_auto.js`) hält vor ihnen und fährt herum. In der
   Zombie-Nacht bleiben sie, wie sie sind. Steht ein Dorfauto (`dorf/dorf_cars.js`) auf demselben Platz, bleibt unseres weg.
+
+- **Freihalten** (der Lead, 6.11. ~1:45: ein Auto stand 2,5 m vor der Rathaustür in Schleusingen und versperrte den Weg hinein): was die
+  Orte selbst modellieren, bleibt frei – mit den Zonen von `welt-gebaeude` (`tools/welt-gebaeude/prep.py keepout()`, übernommen in
+  `tools/welt-dinge/wdlib.py keepout()`): Rathaus und St. Johannis 8 m, Bertholdsburg 20 m, Heckenturm 6 m, der Markt 3 m, Brunnen 4 m,
+  Bänke 1,5 m, Laternen 0,6 m; in Kloster Veßra Kirchenruine, Türme und Portal 8 m, der Klosterbezirk (Museum) 15 m, die Baumschule 8 m,
+  Mauern, Tore, Zäune (der Besucherparkplatz nicht – dort gehören die Autos hin); in Ratscher die Dinge des Dorfkerns
+  (`world/dorfkern_data.js`). Dazu jede **Bushaltestelle** (`bus/fahrplan.json`, `feat/bus`): 15 m vor und nach dem Halt kein Parken
+  (StVO § 12), Fahrbahn und beide Ränder. Was dort im Foto stand, wird kein Platz (seine Maske bleibt, der Boden wird trotzdem
+  retuschiert). Zur Laufzeit (`dinge.js`): **2 m vor jeder Tür** der Häuser der Stadt (`SCHL.bld[].doorFac`) und des Dorfs
+  (`VILLAGE.bld[].fac[].door`) bleibt frei – geprüft, wenn eine Zelle gebaut wird, und wieder bei ihrer regelmäßigen Prüfung (die Häuser
+  der Stadt können nach der Zelle kommen). Die ETHOS-Häuser von `gebaeude/gebaeude.js` geben ihre Türen nicht heraus – dort nicht.
 
 ## Masken für die Boden-Retusche (`welt-gebaeude`)
 

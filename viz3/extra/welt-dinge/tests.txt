@@ -1,2 +1,9 @@
 welt_dinge
 welt_dinge_stadt
+# the places the parked cars must leave free (the lead, 6.11. ~1:45): the Rathaus door, the monastery, the centre of Ratscher
+schleusingen
+vessra
+dorfkern
+# the lanes (the lead, 6.11. ~2:00): the drive to the Markt and the traffic past the parked cars
+fahrt
+verkehr

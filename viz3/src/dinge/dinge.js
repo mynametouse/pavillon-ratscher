@@ -19,6 +19,7 @@ import { DCAL } from '../dorf/dorf_cal.js';
 import { DCARS } from '../dorf/dorf_cars.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { WELT } from '../welt/welt.js';
+import { sun, sunDir } from '../garden/env.js';
 import { DMOD } from './dinge_modelle.js';
 import { DZEIT } from './dinge_zeit.js';
 export const DINGE = (() => {
@@ -40,6 +41,13 @@ export const DINGE = (() => {
       { id: 'talsperre', c: [1270, -700], r: 700, cell: 120 },
       { id: 'vessra', c: [-8850, -150], r: 1100, cell: 150 },
       { id: 'zollbrueck', c: [-5430, -990], r: 700, cell: 120 },
+      // the villages of the tiled world beyond them (feat/welt-dinge round 3: their built-up area, detector and a sample by eye)
+      { id: 'gottfriedsberg', c: [-821, -1532], r: 980, cell: 120 },
+      { id: 'rappelsdorf', c: [-3252, 109], r: 1290, cell: 120 },
+      { id: 'stkilian', c: [-298, 2976], r: 1290, cell: 120 },
+      { id: 'gerhardtsgereuth', c: [-1648, -3088], r: 1020, cell: 120 },
+      { id: 'fischbach', c: [-2555, 3323], r: 1070, cell: 120 },
+      { id: 'neuendambach', c: [-3428, -2918], r: 980, cell: 120 },
     ],
     err: null,
   };
@@ -116,6 +124,49 @@ export const DINGE = (() => {
     }
     return false;
   }
+  // ---- doors (the lead, 6.11. ~1:45: a car 2.5 m in front of Schleusingen's Rathaus door blocked the way in): 2 m in front of every
+  // door one can find stay free – the town's houses (welt/schleusingen.js, SCHL.bld[].doorFac) and Ratscher's (world/village.js,
+  // VILLAGE.bld[].fac[].door). A place or thing there is never shown; checked when its cell is built and again with the cell's periodic
+  // check (the town's houses may come after the cell). The places the towns model themselves and the bus stops are left out of the data
+  // already (tools/welt-dinge/wdlib.py keepout()). ----
+  let DOORS = [],
+    doorsKey = '';
+  function doors() {
+    const sb = window.SCHL && SCHL.bld,
+      vb = window.VILLAGE && VILLAGE.bld,
+      key = (sb ? sb.length : 0) + ':' + (vb ? vb.length : 0);
+    if (key === doorsKey) return DOORS;
+    doorsKey = key;
+    DOORS = [];
+    const add = (ax, ay, dx, dy, u, w) => DOORS.push([ax + dx * u, ay + dy * u, w / 2 + 2]);
+    if (sb)
+      for (const b of sb) {
+        const d = b.doorFac;
+        if (d && d.w > 0) add(d.ax, d.ay, d.dx, d.dy, d.u, d.w);
+      }
+    if (vb)
+      for (const b of vb)
+        for (const f of b.fac || []) if (f.door && f.door.w > 0) add(f.ax, f.ay, f.dx, f.dy, f.door.u, f.door.w);
+    return DOORS;
+  }
+  // a box { c, ax, ay, ex, ey } (model metres) nearer than 2 m (plus half the door's width) to a door
+  function atDoor(bx) {
+    for (const [x, y, r] of doors()) {
+      const dx = x - bx.c[0],
+        dy = y - bx.c[1];
+      if (Math.abs(dx) > r + 12 || Math.abs(dy) > r + 12) continue;
+      const u = Math.abs(dx * bx.ax[0] + dy * bx.ax[1]) - bx.ex,
+        v = Math.abs(dx * bx.ay[0] + dy * bx.ay[1]) - bx.ey;
+      if (Math.hypot(Math.max(u, 0), Math.max(v, 0)) < r) return true;
+    }
+    return false;
+  }
+  const thingBox = d => {
+    const a = ((d.az || 0) * Math.PI) / 180,
+      f = [Math.sin(a), Math.cos(a)];
+    return { c: [d.x, d.y], ax: [f[1], -f[0]], ay: f, ex: d.w / 2, ey: d.l / 2 };
+  };
+  S.doors = () => doors().length;
   // ---- data ----
   function load(A) {
     const area = A.id;
@@ -190,7 +241,11 @@ export const DINGE = (() => {
     _e = new THREE.Euler(0, 0, 0, 'YXZ'),
     _p = new THREE.Vector3(),
     ONE = new THREE.Vector3(1, 1, 1),
-    ZERO = new THREE.Vector3(0, 0, 0);
+    ZERO = new THREE.Vector3(0, 0, 0),
+    _sc = new THREE.Vector3(),
+    _qy = new THREE.Quaternion(),
+    // things without a soft shadow: flat or round (a pool, a tank, a trampoline – a square blob would show)
+    NOSH = new Set(['tank', 'pool_rund', 'pool_eckig', 'pool_oval', 'trampolin']);
   const gz = (x, y) => {
     const z = KERN.ground(x, y);
     return Number.isFinite(z) ? z : 0;
@@ -224,20 +279,52 @@ export const DINGE = (() => {
     };
   }
   function setInst(p) {
-    const show = p.on && !p.hide;
+    const show = p.on && !p.hide && !p.door;
     _p.set(p.x, p.z, -p.y);
     _m.compose(_p, p.q, show ? ONE : ZERO);
     p.im.setMatrixAt(p.ii, _m);
     p.im.instanceMatrix.needsUpdate = true;
+    if (p.sh) {
+      // its soft shadow on the ground (DMOD.shMat): the body's width, height and length
+      const T = DMOD.CARS[p.type];
+      if (show) _sc.set(T.W, T.H, T.L);
+      else _sc.set(0, 0, 0);
+      _m.compose(_p, p.q, _sc);
+      p.sh.setMatrixAt(p.si, _m);
+      p.sh.instanceMatrix.needsUpdate = true;
+    }
   }
+  // the shadows' sun: its direction on the ground and the length per metre of height (none at night: then only the dark under the body)
+  function shadowSun() {
+    const sd = sunDir,
+      el = Math.asin(THREE.MathUtils.clamp(sd.y, 0.03, 1)),
+      day = THREE.MathUtils.clamp(sun.intensity / 3.6, 0, 1) * THREE.MathUtils.smoothstep(sd.y, 0, 0.12),
+      cot = Math.min(2.5, Math.cos(el) / Math.sin(el)),
+      hl = Math.hypot(sd.x, sd.z) || 1;
+    DMOD.shU.uSun.value.set(-sd.x / hl, cot * day, -sd.z / hl);
+    DMOD.shU.uS.value = 0.32 + 0.3 * day;
+  }
+  S.shadowSun = shadowSun;
   function build(c, keep) {
     const t = CLOCK.t,
       byType = {};
     c.meshes = [];
     c.extra = [];
     c.zT = 0;
+    for (const d of c.things) d.door = atDoor(thingBox(d));
+    // one instanced mesh of soft shadows for the cell: its cars (each shown with its car), then its things
+    const shT = c.things.filter(d => !NOSH.has(d.t) && !d.door),
+      sh =
+        c.places.length + shT.length
+          ? new THREE.InstancedMesh(DMOD.shGeo, DMOD.shMat, c.places.length + shT.length)
+          : null;
+    c.places.forEach((p, j) => {
+      p.sh = sh;
+      p.si = j;
+    });
     for (const p of c.places) {
       poseOf(p);
+      p.door = atDoor(p.box);
       if (!keep) {
         p.on = want(p, t);
         p.hide = taken(p);
@@ -262,13 +349,14 @@ export const DINGE = (() => {
       scene.add(im);
       c.meshes.push(im);
       for (const p of L) {
-        const x = { box: () => (p.on && !p.hide ? p.box : null), dinge: p };
+        const x = { box: () => (p.on && !p.hide && !p.door ? p.box : null), dinge: p };
         c.extra.push(x);
       }
     }
     if (c.things.length) {
       const G = [];
       for (const d of c.things) {
+        if (d.door) continue;
         d.z = gz(d.x, d.y);
         d.zc = d.z;
         const g = DMOD.thingGeo(d, d.z);
@@ -309,6 +397,29 @@ export const DINGE = (() => {
           }
         } else if (d.t !== 'pool_eckig') c.extra.push({ box: () => bx, dinge: d });
       }
+      shT.forEach((d, j) => {
+        // turned like the thing, tilted with the ground under its ends and sides (else a long woodpile's shadow hangs in the air)
+        const a = ((d.az || 0) * Math.PI) / 180,
+          f = [Math.sin(a), Math.cos(a)],
+          hl = d.l / 2,
+          hw = d.w / 2,
+          pitch = THREE.MathUtils.clamp(
+            Math.atan2(gz(d.x + f[0] * hl, d.y + f[1] * hl) - gz(d.x - f[0] * hl, d.y - f[1] * hl), 2 * hl),
+            -0.3,
+            0.3
+          ),
+          roll = THREE.MathUtils.clamp(
+            Math.atan2(gz(d.x + f[1] * hw, d.y - f[0] * hw) - gz(d.x - f[1] * hw, d.y + f[0] * hw), 2 * hw),
+            -0.3,
+            0.3
+          );
+        _e.set(pitch, -a, -roll, 'YXZ');
+        _qy.setFromEuler(_e);
+        _sc.set(d.w, Math.max(0.3, d.h || 1), d.l);
+        _p.set(d.x, d.z, -d.y);
+        _m.compose(_p, _qy, _sc);
+        sh.setMatrixAt(c.places.length + j, _m);
+      });
       if (G.length) {
         const g = mergeGeometries(G);
         for (const q of G) q.dispose();
@@ -323,6 +434,18 @@ export const DINGE = (() => {
           c.meshes.push(me);
         }
       }
+    }
+    if (sh) {
+      // the bounds of every instance, shown or not, and the quad's margin and the sun's stretch beyond them
+      sh.computeBoundingSphere();
+      sh.boundingSphere.radius += 14;
+      sh.renderOrder = 1;
+      sh.castShadow = false;
+      sh.receiveShadow = false;
+      sh.userData.noMerge = true;
+      sh.name = 'welt-dinge schatten ' + c.k;
+      scene.add(sh);
+      c.meshes.push(sh);
     }
     for (const x of c.extra) VEH.extra.push(x);
     c.built = true;
@@ -339,7 +462,7 @@ export const DINGE = (() => {
       const i = VEH.extra.indexOf(x);
       if (i >= 0) VEH.extra.splice(i, 1);
     }
-    for (const p of c.places) p.im = null;
+    for (const p of c.places) p.im = p.sh = null;
     c.meshes = [];
     c.extra = [];
     c.built = false;
@@ -354,11 +477,12 @@ export const DINGE = (() => {
     return !b || (x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]);
   };
   const late = c =>
-    c.places.some(p => Math.abs(gz(p.x, p.y) - p.zc) > 0.12) ||
-    c.things.some(d => Math.abs(gz(d.x, d.y) - d.zc) > 0.12);
+    c.places.some(p => Math.abs(gz(p.x, p.y) - p.zc) > 0.12 || (p.box && atDoor(p.box) !== !!p.door)) ||
+    c.things.some(d => (!d.door && Math.abs(gz(d.x, d.y) - d.zc) > 0.12) || atDoor(thingBox(d)) !== !!d.door);
   function round(dt = 0.25) {
     const w = KERN.where();
     if (!w) return;
+    shadowSun();
     for (const A of S.areas) if (!A.st && Math.hypot(A.c[0] - w[0], A.c[1] - w[1]) < A.r) load(A);
     // the ground under a built cell nearby may have come later (the town's tiles): set it down again, every few seconds one cell
     for (const c of S.cells.values())
@@ -434,7 +558,7 @@ export const DINGE = (() => {
     for (const c of S.cells.values()) {
       if (!c.built) continue;
       for (const p of c.places) {
-        if (!p.on || p.hide || !p.box) continue;
+        if (!p.on || p.hide || p.door || !p.box) continue;
         const f = p.box.ay,
           o = p.box.ey - p.box.ex;
         for (const t of [-1, 0, 1])
@@ -448,7 +572,7 @@ export const DINGE = (() => {
       on = {};
     for (const p of S.places) {
       by[p.type] = (by[p.type] || 0) + 1;
-      if (p.im && p.on && !p.hide) on[p.kind] = (on[p.kind] || 0) + 1;
+      if (p.im && p.on && !p.hide && !p.door) on[p.kind] = (on[p.kind] || 0) + 1;
     }
     const kinds = {};
     for (const p of S.places) kinds[p.kind] = (kinds[p.kind] || 0) + 1;
@@ -471,6 +595,8 @@ export const DINGE = (() => {
       tris: DMOD.tris,
       drawn: [...S.cells.values()].reduce((n, c) => n + (c.built ? c.meshes.length : 0), 0),
       reposed: S.reposed || 0,
+      doors: DOORS.length,
+      atDoors: S.places.filter(p => p.im && p.door).length + S.things.filter(d => d.door).length,
       err: S.err,
     };
   };

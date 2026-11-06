@@ -91,6 +91,13 @@ die vorhandenen Bilder bleiben auf der Website (`img/`, `pano/`, `tour.mp4` lieg
   Autos von V16w lief dabei hier der Renderer in die Speichergrenze (Absturz, der Test hängt) und bei GitHub v16b/v16d in die 60-min-Grenze.
   Immer Wahrheitswerte, Zahlen oder `JSON.stringify(...)` zurückgeben: `E("!!VEH.cur")`. Der Speicher des Chat-Rechners (alle Sitzungen
   zusammen) ist auf ~5,8 GB begrenzt; eine Seite in SwiftShader braucht 3–4 GB.
+- **`evaluate` mit `KERN.on(…)` am Ende** (Hilfs-Agent `tiere`, 6.11.2026): `KERN.on` gibt die Abmeldefunktion zurück – Playwright ruft eine
+  zurückgegebene Funktion auf, der Hörer ist sofort wieder weg. Solche Ausdrücke mit `; 0` beenden.
+- **`ROADS.edge` endet bei −4 m** (ebenda): der Abstand zum Straßenrand ist nach außen auf −4 m begrenzt – eine Prüfung „mehr als 5 m von der
+  Straße“ wird nie wahr; dafür den Abstand zur Mittellinie selbst rechnen.
+- **Keine `compileAsync` für Dinge, die wieder verschwinden können** (6.11.2026): three prüft danach alle 10 ms in einem eigenen `setTimeout`, ob die
+  Programme fertig sind, und wirft dort („reading 'isReady'“, ein Seitenfehler, den niemand fangen kann), wenn ein Material inzwischen entsorgt
+  wurde. Vorab übersetzen mit `warmUp(obj)` aus `render/render.js` (synchron, in der Variante des Composers).
 - **Windows misst anders** (V16b3): Chrome übersetzt dort jeden Shader über Direct3D (0,3–1,4 s je Programm ohne Grafikkarte), SwiftShader hier nicht. Wer viele neue Materialien/Shader bringt, prüft das Laden vor dem Veröffentlichen zusätzlich im Chrome des Owners (Claude in Chrome, Testseite mit `window.ASSET_BASE` auf die Website, siehe Branch `test/softgl`): Zeitstrahl der Ladeanzeige und Lücken > 1,5 s mitschreiben.
 
 ## 4 Veröffentlichen (seit Umbau Phase 0: Vorschau zuerst)
