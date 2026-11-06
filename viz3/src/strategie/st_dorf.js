@@ -16,6 +16,8 @@ import { AMTDATA } from '../amt/amt_data.js';
 import { AMTWORLD } from '../amt/amt_world.js';
 import { DCAL } from '../dorf/dorf_cal.js';
 import { DTEXT } from '../dorf/dorf_text.js';
+import { GPLAY } from '../garden/garage_play.js';
+import { PLAY } from '../game/play.js';
 import { STDATA } from './st_data.js';
 import { STCORE } from './st_core.js';
 import { STRAT } from './st_modus.js';
@@ -45,7 +47,7 @@ export const STDORF = (() => {
   const own = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
   const fin = (v, d) => (Number.isFinite(v) ? v : d);
   function fresh() {
-    return { v: 1, proj: {}, hh: [], city: { year: null, spent: 0 }, talked: {}, land: {}, built: {} };
+    return { v: 1, proj: {}, hh: [], city: { year: null, spent: 0 }, talked: {}, land: {}, built: {}, hilfe: {} };
   }
   function sanitize(s) {
     const o = fresh();
@@ -65,6 +67,7 @@ export const STDORF = (() => {
           offer: p.offer === 'knapp' ? 'knapp' : 'fair',
           fs: ['einreichen', 'auswahl', 'bewilligung'].includes(p.fs) ? p.fs : null,
           pts: Number.isFinite(p.pts) ? p.pts : null,
+          door: Number.isFinite(p.door) ? Math.max(0, Math.min(0.5, p.door)) : 0,
           why: typeof p.why === 'string' ? p.why.slice(0, 400) : '',
           log: Array.isArray(p.log)
             ? p.log
@@ -92,11 +95,13 @@ export const STDORF = (() => {
           o.land[k] = { st: v.st, t: fin(v.t, 0), eur: Math.max(0, Math.min(1e6, fin(v.eur, 0))) };
     if (s.built && typeof s.built === 'object')
       for (const [k, v] of Object.entries(s.built)) if (/^[a-z]{2,16}$/.test(k) && Number.isFinite(v)) o.built[k] = v;
+    if (s.hilfe && typeof s.hilfe === 'object')
+      for (const [k, v] of Object.entries(s.hilfe)) if (own(D.HILFE, k) && Number.isFinite(v)) o.hilfe[k] = v;
     return o;
   }
   const st = () => {
     const x = S.ext.dorf;
-    if (!x || x.v !== 1 || !x.proj || !Array.isArray(x.hh) || !x.city || !x.talked || !x.land || !x.built)
+    if (!x || x.v !== 1 || !x.proj || !Array.isArray(x.hh) || !x.city || !x.talked || !x.land || !x.built || !x.hilfe)
       S.ext.dorf = sanitize(x);
     return S.ext.dorf;
   };
@@ -429,7 +434,8 @@ export const STDORF = (() => {
         `${P0(id).title}: die Projektskizze geht bis zum Stichtag ${W.day(p.due).label} an die ${F.title.split(' – ')[1] || F.title}.`,
         { kind: 'ereignis', why: F.learn, src: F.src }
       );
-    } else if (s.k === 'bauhof') p.due = workDays(t, s.days || 3);
+    } else if (s.k === 'quote') p.due = Math.round(t + (s.days || 42) * 1440);
+    else if (s.k === 'bauhof') p.due = workDays(t, s.days || 3);
     else if (s.k === 'warten') p.due = Math.round(t + (s.days || 1) * 1440);
     p.t = Math.round(t);
   }
@@ -740,6 +746,43 @@ export const STDORF = (() => {
     }
     STRAT.save();
   }
+  // fibre: how many households sign before the deadline – those who would anyway, the information evening, the door-to-door round (the
+  // better the talker, the more), and everyone who thinks well of you tells the neighbours
+  function quota(id) {
+    const Pj = P0(id),
+      p = pst(id),
+      fr = ORDER.filter(k => knownP(k) && avail(k));
+    const q =
+      0.18 +
+      0.08 +
+      ((p && p.door) || 0) +
+      fr.reduce((a, k) => a + (rep(k) >= 55 ? 0.025 : rep(k) >= 45 ? 0.01 : -0.01), 0);
+    const n = Math.round(Math.max(0, Math.min(0.85, q)) * Pj.hh);
+    return { n, share: n / Pj.hh };
+  }
+  function quoteDecide(id, t) {
+    const Pj = P0(id),
+      p = pst(id),
+      Q = quota(id);
+    const txt = `${Q.n} von ${Pj.hh} Haushalten (${Math.round(Q.share * 100)} %, nötig ${Math.round(Pj.quota * 100)} %)`;
+    if (Q.share < Pj.quota) {
+      p.st = 'vertagt';
+      p.due = null;
+      p.t = Math.round(t);
+      p.why = `Quote verfehlt: ${txt}. Der Anbieter baut nicht – mehr Leute überzeugen und neu starten, oder auf den geförderten Ausbau hoffen.`;
+      log(id, p.why, t);
+      STRAT.note(`${Pj.title}: ${p.why}`, { kind: 'nein', why: Pj.learn, src: Pj.src });
+      STRAT.emit('dorfprojekt', { id, state: 'vertagt', t });
+      STRAT.save();
+      return;
+    }
+    STRAT.note(`${Pj.title}: Quote erreicht – ${txt}. Der Anbieter baut.`, {
+      kind: 'fertig',
+      why: Pj.learn,
+      src: Pj.src,
+    });
+    next(id, t, 'Quote: ' + txt);
+  }
   // a postponed project goes back to the step it stopped at (a new year's money, a cost estimate)
   function retry(id) {
     const p = pst(id);
@@ -751,6 +794,12 @@ export const STDORF = (() => {
       p.i = Math.max(
         0,
         Pj.steps.findIndex(s => s.k === 'rat')
+      );
+    // a fibre round that missed its quota: from the door-to-door round again
+    if (Pj.steps[p.i] && Pj.steps[p.i].k === 'quote')
+      p.i = Math.max(
+        0,
+        Pj.steps.findIndex(s => s.door)
       );
     p.st = 'laeuft';
     p.why = '';
@@ -798,6 +847,7 @@ export const STDORF = (() => {
           }
           return null;
         },
+        anytime: !!s.anytime,
         pose: s.skill === 'bauen' ? 'place' : null,
         bau: s.skill === 'bauen',
         finish: (j, cx) => {
@@ -808,6 +858,7 @@ export const STDORF = (() => {
             if (!knownP(k)) meet(k, j.who[0], t);
           }
           if (s.prep) pst(id).prep = true;
+          if (s.door) pst(id).door = 0.06 + 0.02 * Math.max(...j.who.map(w => STRAT.skillOf(w, 'reden')));
           // the owner's and the neighbours' word on a land deal
           if (s.k === 'deal') {
             const q = consent(id);
@@ -844,6 +895,88 @@ export const STDORF = (() => {
     STRAT.emit('dorfprojekt', { id, state: 'abgelehnt', t });
     STRAT.save();
   }
+  // ---------------- neighbourly help (once properly, then again every two weeks for a little) ----------------
+  for (const [k, Hh] of Object.entries(D.HILFE))
+    STRAT.job.define({
+      id: 'hilfe_' + k,
+      label: Hh.label,
+      place: Hh.place,
+      order: 20,
+      people: [1, 2],
+      skill: Hh.skill,
+      min: 1,
+      heavy: 0.35,
+      xp: 1,
+      where: 'dorf',
+      text: Hh.text,
+      learn: Hh.learn,
+      dur: Hh.dur,
+      show: () => knownP(k) && avail(k) && !(st().hilfe[k] != null && now() - st().hilfe[k] < 14 * 1440),
+      can: () =>
+        st().hilfe[k] != null && now() - st().hilfe[k] < 14 * 1440
+          ? { no: true, text: `${nameOf(k)} braucht gerade keine Hilfe.` }
+          : null,
+      finish: (j, cx) => {
+        const first = st().hilfe[k] == null;
+        st().hilfe[k] = Math.round(cx.t);
+        if (first) E(Hh.eff, 'Geholfen: ' + Hh.label);
+        else L(k, 2, 'Wieder geholfen: ' + Hh.label);
+        if (first) styleSelf(1, 'Nachbarschaftshilfe: ' + Hh.label);
+        if (Hh.find)
+          STRAT.reveal('geschichte', 'alte_schule', {}, j.who[0], {
+            title: 'Dachboden der alten Schule',
+            source: 'Dorfchronik (Gerhard)',
+            text: 'ein Schulbuch von 1910, Zeugnisse, ein Foto der letzten Schulklasse',
+          });
+        amtSave();
+        STRAT.save();
+        return { text: `${nameOf(k)} freut sich${first ? '' : ' wieder'}` };
+      },
+    });
+  // the fire brigade's basic training: your people become members – alarmed with the others, better at a mission
+  if (!STDATA.KNOW.feuerwehr)
+    STDATA.KNOW.feuerwehr = {
+      kind: 'kurs',
+      title: D.KURS_FW.title,
+      days: D.KURS_FW.days,
+      text: D.KURS_FW.text,
+      src: D.KURS_FW.src,
+      unlocks: 'mit der Feuerwehr ausrücken, im Einsatz mehr ausrichten',
+    };
+  STRAT.job.define({
+    id: 'kurs_fw',
+    label: D.KURS_FW.title,
+    place: 'schule',
+    order: 15,
+    people: [1, 2],
+    heavy: 0.4,
+    xp: 1.2,
+    text: 'Bei der Kreisausbildung, Manfred bildet mit aus – danach gehörst du zur Feuerwehr Ratscher.',
+    learn: D.KURS_FW.text,
+    dur: D.KURS_FW.days * 8 * 60,
+    show: () => knownP('manfred'),
+    can: cx => {
+      const have = cx.who.filter(id => S.people[id].certs.includes('feuerwehr'));
+      if (have.length) return { no: true, text: `${names(have.map(pname))} ist schon bei der Feuerwehr.` };
+      if (cx.who.some(id => !STRAT.isOwn(id)))
+        return { no: true, text: 'Hubert und Ronald sind alte Hasen – das ist für euch.' };
+      return null;
+    },
+    finish: (j, cx) => {
+      for (const id of j.who) if (!S.people[id].certs.includes('feuerwehr')) S.people[id].certs.push('feuerwehr');
+      STRAT.reveal('ausbau', 'feuerwehr', { who: j.who }, j.who[0], {
+        title: 'Grundausbildung bestanden',
+        source: D.KURS_FW.src,
+        text: names(j.who.map(pname)) + ' gehört jetzt zur Freiwilligen Feuerwehr Ratscher',
+      });
+      L('manfred', 6, 'Neue Leute für die Feuerwehr');
+      L('jens', 3, 'Neue Leute für die Feuerwehr');
+      styleSelf(2, 'Bei der Feuerwehr eingetreten');
+      amtSave();
+      void cx;
+      return { text: names(j.who.map(pname)) + ' gehört jetzt zur Feuerwehr' };
+    },
+  });
   // ---------------- exploration jobs: listen in the village, read the notice board ----------------
   STRAT.job.define({
     id: 'dorf_reden',
@@ -949,6 +1082,7 @@ export const STDORF = (() => {
       return `nächster Schritt: ${s.label} – Leute hinschicken (${STDATA.SKILL[s.skill || 'reden']} ${s.min || 1}, ${(s.people || [1, 2]).join('–')} Personen)`;
     if (s.k === 'rat') return `Ortsteilrat${when}`;
     if (s.k === 'stadt') return `Stadtrat in Schleusingen${when}`;
+    if (s.k === 'quote') return `${s.text} Bisher etwa ${quota(id).n} von ${Pj.hh} Haushalten${when}`;
     if (s.k === 'foerder')
       return (
         ({
@@ -1005,7 +1139,10 @@ export const STDORF = (() => {
     h += '<ul>';
     for (const k of known) {
       const r = Math.round(rep(k));
-      h += `<li title="${esc(D.PEOPLE[k].tip)}"><span>${esc(nameOf(k))} <small>${esc(DTEXT.P && DTEXT.P[k] ? DTEXT.P[k].role : '')}</small></span><b class="dm ${moodCls(r)}">${esc(M.mood(r))} ${r}</b></li>`;
+      // who knows whom (exploration: where to go next) and what they would like
+      const kn = D.PEOPLE[k].knows.filter(x => x !== k),
+        wish = [D.PEOPLE[k].need, D.PEOPLE[k].need2].filter(x => D.PROJ[x]).map(x => D.PROJ[x].title);
+      h += `<li title="${esc(D.PEOPLE[k].tip)}"><span>${esc(nameOf(k))} <small>${esc(DTEXT.P && DTEXT.P[k] ? DTEXT.P[k].role : '')}${wish.length ? ' · wünscht sich: ' + esc(wish.join(', ')) : ''} · kennt ${esc(names(kn))}</small></span><b class="dm ${moodCls(r)}">${esc(M.mood(r))} ${r}</b></li>`;
     }
     h += '</ul>';
     const rest = ks.length - known.length;
@@ -1244,12 +1381,42 @@ export const STDORF = (() => {
     for (const p of ORDER) if (knownP(p) && avail(p)) L(p, dd, 'Im Dorf spricht sich herum: ' + d.why);
     amtSave();
   });
+  // ---------------- quiet hours kept or not (also on foot): the petrol mower in the garden on a Sunday, a holiday or after 20 h is heard
+  // next door – Hubert, Ronald and Heike think less of you, and so does your style (once a day; the rule's reason in the notice) ----------------
+  let noisyDay = null;
+  function quiet(t) {
+    if (!GPLAY || !GPLAY.M || !GPLAY.M.run) return;
+    const dy = W.day(t),
+      m = W.minOf(t),
+      rule = dy.rest ? 'ruhe_sonntag' : m < 7 * 60 || m >= 20 * 60 ? 'ruhe_nacht' : null;
+    if (!rule || noisyDay === dayOf(t)) return;
+    noisyDay = dayOf(t);
+    for (const k of ['hubert', 'ronald', 'heike']) if (avail(k)) L(k, -2, 'Rasenmähen in der Ruhezeit');
+    amtSave();
+    styleSelf(-2, 'Rasenmähen in der Ruhezeit');
+    const R = STDATA.RULES[rule];
+    STRAT.note('Ronald ruft über den Zaun: „' + (dy.rest ? 'Heute ist Ruhe!' : 'Um die Zeit?') + '“ – ' + R.text, {
+      kind: 'nein',
+      why: R.why,
+      src: R.src,
+    });
+    try {
+      if (!S.on && PLAY && PLAY.think)
+        PLAY.think(
+          'Ronald ruft über den Zaun: „' +
+            (dy.rest ? 'Heute ist Ruhe, Nachbar!' : 'Um die Zeit? Die Leute schlafen!') +
+            '“',
+          5200
+        );
+    } catch (e) {}
+  }
   // ---------------- the councils' dates come (also in a time-lapse and while one walks) ----------------
   let acc = 0;
   KERN.tick(dt => {
     if ((acc += dt) < 0.5 || S.t == null) return;
     acc = 0;
     const t = now();
+    quiet(t);
     for (const id of Object.keys(st().proj)) {
       const p = pst(id),
         s = step(id);
@@ -1259,6 +1426,7 @@ export const STDORF = (() => {
         if (s.k === 'rat') ratDecide(id, due);
         else if (s.k === 'stadt') stadtDecide(id, due);
         else if (s.k === 'foerder') foerderStep(id, due);
+        else if (s.k === 'quote') quoteDecide(id, due);
         else next(id, due, s.text || s.k);
       } catch (e) {
         console.warn('strategie-dorf', id, e);

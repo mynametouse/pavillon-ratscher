@@ -9,6 +9,7 @@
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { CLOCK } from '../time/clock.js';
+import { P } from '../game/walkable.js';
 import { ROADS } from '../world/roads.js';
 import { STREAM } from '../garden/stream_geo.js';
 import { AMT } from '../amt/amt.js';
@@ -120,7 +121,11 @@ export const STDKRISE = (() => {
     const dy = W.day(t),
       m = W.minOf(t),
       work = dy.wd >= 1 && dy.wd <= 5 && !dy.hol && m >= 6 * 60 && m < 17 * 60 + 30;
-    return work ? FW.crewDay : FW.crew;
+    // your people who did the basic training are members: the pager alarms them too when they are in Ratscher
+    const own = Object.keys(S.people).filter(
+      id => STRAT.isOwn(id) && S.people[id].certs.includes('feuerwehr') && STRAT.present(id, t).ok
+    ).length;
+    return (work ? FW.crewDay : FW.crew) + own;
   }
   // ---------------- a crisis begins: the alarm ----------------
   function start(id, o = {}) {
@@ -163,7 +168,10 @@ export const STDKRISE = (() => {
         kind: 'ereignis',
         why: FW.learn,
         src: FW.src,
-        acts: [{ label: 'Leute hinschicken', fn: () => dispatch() }],
+        acts: [
+          { label: 'Leute hinschicken', fn: () => dispatch() },
+          { label: 'Hinsehen', fn: () => look() },
+        ],
       }
     );
     STRAT.emit('krise', { id: c.id, state: 'alarm', t: c.t0 });
@@ -172,6 +180,19 @@ export const STDKRISE = (() => {
     const m = ((Math.floor(t) % 1440) + 1440) % 1440;
     return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
   };
+  // from above: the camera over the site, its panel open
+  function look() {
+    const c = cur();
+    if (!c || !c.pos) return 'Kein Einsatz.';
+    if (S.on && P.mode === 'top') {
+      P.tx = c.pos[0];
+      P.ty = c.pos[1];
+      P.th = Math.min(P.th, 110);
+      if (STRAT.ui && STRAT.ui.openPlace) STRAT.ui.openPlace('einsatz');
+      markDirty(true);
+    }
+    return K[c.id].title + ': ' + K[c.id].phases[0][1];
+  }
   // send whoever can help: your people on site first (up to two), by day the neighbours
   function dispatch(who) {
     const c = cur();
@@ -223,8 +244,9 @@ export const STDKRISE = (() => {
       // your helpers: their minutes of work (each person), better with the skill the situation needs
       const Kd = K[c.id],
         sk = Math.max(...j.who.map(id => STRAT.skillOf(id, Kd.skill))),
-        n = j.who.length;
-      c.own += dw * n * (0.7 + 0.1 * sk);
+        n = j.who.length,
+        fw = j.who.filter(id => S.people[id].certs.includes('feuerwehr')).length;
+      c.own += dw * (n + 0.3 * fw) * (0.7 + 0.1 * sk);
       for (const id of j.who) if (!c.helped.includes(id)) c.helped.push(id);
     },
     finish: () => ({ text: 'Einsatz beendet' }),
@@ -233,8 +255,12 @@ export const STDKRISE = (() => {
     const arrive = c.t0 + FW.alarm + FW.drive;
     // the fire brigade's minutes since it arrived (the crew together), the neighbouring town's after a while for a forest fire
     const fwMin = Math.max(0, Math.min(t, c.done != null ? c.done : t) - arrive);
-    const extra = c.id === 'waldbrand' ? Math.max(0, Math.min(t, c.done != null ? c.done : t) - (c.t0 + 30)) * 5 : 0;
-    c.fw = fwMin * c.crew + extra;
+    const extra = c.id === 'waldbrand' ? Math.max(0, Math.min(t, c.done != null ? c.done : t) - (c.t0 + 20)) * 5 : 0;
+    // (the tank fire engine from Schleusingen: further vehicles within 20 minutes of the alarm, § 3 (4) ThürFwOrgVO)
+    // the fire-fighting rucksacks the Ortsteil paid for (strategie/st_dorf.js, project „Feuerwehr“): a quicker first attack on a ground fire
+    const kit =
+      c.id === 'waldbrand' && S.ext.dorf && S.ext.dorf.built && S.ext.dorf.built.loeschrucksack != null ? 1.3 : 1;
+    c.fw = fwMin * c.crew * kit + extra;
     return Math.min(1, (c.fw + c.own) / c.need);
   }
   // each half second: the work, the time limit, the end – also in a time-lapse (the dates are game minutes)
@@ -281,9 +307,12 @@ export const STDKRISE = (() => {
     const over = rate > 0 ? Math.max(0, (c.fw + c.own - c.need) / rate) : 0;
     c.done = Math.round(Math.max(c.t0, t - over));
     c.ok = c.done <= c.limit;
-    if (c.ok && c.late) {
-      c.late = false;
+    // a long time-lapse may bring the end before the tick saw the limit pass: the damage still happened
+    if (!c.ok && !c.late) {
+      c.late = true;
+      damage(c, t);
     }
+    if (c.ok) c.late = false;
     c.until = Math.round(c.done + (c.id === 'waldbrand' ? 30 : 7) * 1440);
     for (const j of STRAT.job.running()) if (j.def === 'einsatz') j.done = j.dur;
     const helped = c.helped.length > 0,
@@ -448,6 +477,6 @@ export const STDKRISE = (() => {
         }
       : null;
   };
-  return { start, dispatch, state, crewAt, posOf, st };
+  return { start, dispatch, look, state, crewAt, posOf, st };
 })();
 window.STDKRISE = STDKRISE;

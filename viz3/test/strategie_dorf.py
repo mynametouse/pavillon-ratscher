@@ -5,11 +5,11 @@
 # people set the bench up), the villagers' opinions changing in AMT.ST.rep (one copy), the booking in the Ortsteil's ledger, the bench
 # standing in the first-person world (amt/amt_world.js), the saved state after a reload, no new shader program for the village's things,
 # no page error, the core's HUD unharmed. Pictures in out/strategie_dorf/.
-#   python3 viz3/test/strategie_dorf.py 9004 [sections]     sections: reden,projekt,land,obst,foerder,welt,reload (default all)
+#   python3 viz3/test/strategie_dorf.py 9004 [sections]     sections: reden,projekt,kirmes,land,obst,foerder,krise,mehr,welt,reload (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'reden,projekt,land,obst,foerder,welt,reload').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'reden,projekt,kirmes,land,obst,foerder,krise,mehr,welt,reload').split(','))
 ck = lib.Checks('strategie_dorf')
 OUT = lib.out('strategie_dorf')
 with lib.browser() as b:
@@ -138,6 +138,46 @@ with lib.browser() as b:
             E("STHUD.openPlace('haltestelle')")
             steps(0.3)
             page_pic('02_mitfahrbank_oben')
+    if 'kirmes' in want:
+        # the Kirmes costs 450 € – after the Mitfahrbank (380 €) the Ortsteil has 220 € left this year: the Ortsteilrat is for it, the money is not
+        E("STDORF.meet('manfred', 'sarah')")
+        if J("STRAT.W.day(CLOCK.t).wd") not in (6,):
+            E("STRAT.setDate('2026-11-14', 10 * 60)")
+        steps(0.5)
+        b0 = J("STDORF.state().budget")
+        q = J("STDORF.start('kirmes')")
+        j = job('dp_kirmes_0', ['sarah'])
+        ok = j and j.get('id') and until(done(j['id']), 150)
+        E("CLOCK.wait(Math.max(5, STDORF.state().proj.kirmes.due - CLOCK.t + 20), 'Test')")
+        until("!CLOCK.warp", 60)
+        steps(1.5)
+        p = J("STDORF.state().proj.kirmes")
+        ck('the Kirmes: the Ortsteilrat is for it, but the Ortsteil\'s money is not enough this year – postponed to January', p['st'] == 'vertagt' and b0 < 450 and 'Geld' in p['step'], f"budget {b0} · {p}")
+        # January: new money, the project again – decided, the band and the permit, the Kirmes weekend with tent and Kirmesbaum
+        E("STRAT.setDate('2027-01-16', 10 * 60)")
+        steps(0.5)
+        r = J("STDORF.retry('kirmes')")
+        for k in range(4):
+            p = J("STDORF.state().proj.kirmes")
+            if p['st'] != 'laeuft' or p['due'] is None: break
+            E("CLOCK.wait(Math.max(5, STDORF.state().proj.kirmes.due - CLOCK.t + 20), 'Test')")
+            until("!CLOCK.warp", 60)
+            steps(1.5)
+        p = J("STDORF.state().proj.kirmes")
+        kd = J("AMT.ST.kd")
+        ck('in January (new money) it passes: 450 € from the Ortsteil, the permit, the date of the Kirmes set (a Saturday)', p['st'] == 'fertig' and kd is not None and J(f"STRAT.W.day({kd} + 600).wd") == 6 and abs(J("STDORF.state().budget") - 150) < 0.01, f"{p} kd {kd} budget {J('STDORF.state().budget')}")
+        E(f"CLOCK.wait(Math.max(5, {kd} + 15 * 60 - CLOCK.t), 'Test')")
+        until("!CLOCK.warp", 60)
+        steps(2.5)
+        w = J("STDWELT.state()")
+        ck('the Kirmes weekend: the tent and the Kirmesbaum stand at the Anger', 'kirmesfest' in w['items'], str(w))
+        kf = w['at'].get('kirmesfest')
+        if kf:
+            E(f"GAME.P.tx = {kf[0]}; GAME.P.ty = {kf[1]}; GAME.P.th = 60")
+            steps(0.6)
+            page_pic('03a_kirmes_oben')
+            look_at(kf[0], kf[1], 18, 2.2, 160, -2)
+            lib.shot(pg, OUT, '03b_kirmes_welt')
     if 'land' in want:
         # Uwe owns the meadows (one learns it by talking: here the same call the job makes), Heike is the meadow's neighbour
         E("STDORF.meet('uwe', 'sarah'); STDORF.meet('heike', 'sarah')")
@@ -242,6 +282,93 @@ with lib.browser() as b:
             E(f"GAME.P.tx = {tp[0]}; GAME.P.ty = {tp[1]}; GAME.P.th = 45")
             steps(0.6)
             page_pic('05_treffpunkt_oben')
+    if 'krise' in want:
+        # a Saturday: the storm threw two spruces across the track to the Klinge – the alarm, most of the fire brigade comes
+        E("STRAT.setDate('2027-06-12', 10 * 60)")
+        E("STRAT.S.ext.krise.cur = null")
+        steps(0.5)
+        E("STRAT.setSpeed(1)")
+        r0 = J("STDORF.state().rep")
+        sty0 = J("STRAT.S.style")
+        k = J("(() => { const r = STDKRISE.start('baum', { sev: 2 }); return r && r.ok ? { ok: true } : r; })()")
+        ks = J("STDKRISE.state()")
+        ck('a storm throws spruces across the track: the alarm – on a Saturday most of the fire brigade comes (7)', k and k.get('ok') and ks and ks['crew'] == 7, f"{k} {ks}")
+        notes = J("STRAT.S.notes.slice(-3).map(n => n.text)")
+        ck('the alarm notice says what happens (siren, pager, the fire station) and offers to send people', any('Einsatz!' in n for n in notes), str(notes)[:300])
+        msg = J("STDKRISE.dispatch(['falko', 'christoph'])")
+        ck('Falko and Christoph drive to the site and report to the incident commander', 'Einsatzstelle' in msg and len(J("STRAT.job.running().filter(j => j.def === 'einsatz')")) == 1, msg)
+        steps(2.5)
+        w = J("STDWELT.state()")
+        ck('the spruces lie across the track in the world (strategie/st_dorf_welt.js)', w['krise'] == 'baum:an' and 'krise' in w['items'], str(w))
+        pos = J("STDKRISE.state().pos")
+        if pos:
+            E(f"GAME.P.tx = {pos[0]}; GAME.P.ty = {pos[1]}; GAME.P.th = 70")
+            E("STHUD.openPlace('einsatz')")
+            steps(1.0)
+            page_pic('09_einsatz_baum_oben')
+            look_at(pos[0], pos[1], 16, 3.5, 150, -10)
+            lib.shot(pg, OUT, '10_einsatz_baum_welt')
+        E("STRAT.setSpeed(30)")
+        ok = until("!STDKRISE.state() || !STDKRISE.state().active", 200)
+        ks = J("STDKRISE.state()")
+        ck('the fire brigade and your helpers clear the track in time', ok and ks and ks['ok'] is True and ks['own'] > 0, str(ks))
+        r1 = J("STDORF.state().rep")
+        ck('helping at the mission: Manfred and Hubert think better of you, your style grows', r1['manfred'] > r0['manfred'] and r1.get('hubert', 0) >= r0.get('hubert', 0) and J("STRAT.S.style") > sty0, f"manfred {r0['manfred']} → {r1['manfred']}, style {sty0} → {J('STRAT.S.style')}")
+        steps(2.5)
+        w = J("STDWELT.state()")
+        ck('afterwards the logs lie cut at the side of the track', w['krise'] == 'baum:ok', str(w))
+        if pos:
+            look_at(pos[0], pos[1], 16, 3.5, 150, -10)
+            lib.shot(pg, OUT, '11_einsatz_baum_geraeumt')
+        # a Tuesday morning: a cloudburst, the brook rises at the culvert – only three of the fire brigade are in the village, nobody helps
+        E("STRAT.S.ext.krise.cur = null")
+        E("STRAT.setDate('2027-06-15', 10 * 60)")
+        steps(0.5)
+        eur0 = J("STRAT.S.eur")
+        k = J("(() => { const r = STDKRISE.start('hochwasser', { sev: 2 }); return r && r.ok ? { ok: true } : r; })()")
+        ks = J("STDKRISE.state()")
+        ck('a cloudburst on a working day: only three of the fire brigade come (the others work in town)', k and k.get('ok') and ks['crew'] == 3, str(ks))
+        ok = until("!STDKRISE.state() || !STDKRISE.state().active", 200)
+        ks = J("STDKRISE.state()")
+        led = J("STRAT.S.ledger.slice(-3).map(e => [e.eur, e.text])")
+        ck('alone they are too late: the water gets into the garden, drying and clearing up cost money', ok and ks and ks['ok'] is False and any('Schaden' in e[1] and e[0] < 0 for e in led), f"{ks} {led}")
+    if 'mehr' in want:
+        E("STRAT.S.ext.krise.cur = null")
+        E("STDORF.meet('heike', 'sarah'); STDORF.meet('jens', 'sarah'); STDORF.meet('manfred', 'sarah')")
+        E("STRAT.setDate('2027-06-19', 9 * 60)")
+        steps(0.5)
+        # neighbourly help: Christoph mends Heike's hen house – she thinks better of you
+        h0 = J("STDORF.state().rep.heike")
+        j = job('hilfe_heike', ['christoph'])
+        ok = j and j.get('id') and until(done(j['id']), 120)
+        ck('neighbourly help (Heike\'s hen house) raises her opinion of you', ok and J("STDORF.state().rep.heike") >= h0 + 4, f"{h0} → {J('STDORF.state().rep.heike')}")
+        # the fire brigade's basic training: Falko becomes a member – the pager alarms him too
+        c0 = J("STDKRISE.crewAt(CLOCK.t)")
+        j = job('kurs_fw', ['falko'])
+        ok = j and j.get('id') and until(done(j['id']), 240)
+        ck('the basic training makes Falko a member of the fire brigade (alarmed with the others when he is there)', ok and J("STRAT.S.people.falko.certs.includes('feuerwehr')"), f"crew {c0} → {J('STDKRISE.crewAt(CLOCK.t)')} · {J('STRAT.S.people.falko.certs')}")
+        # fibre: the information evening, the door-to-door round, six weeks of pre-marketing – the quota decides
+        # the next weekend, Saturday 9:00
+        E("STRAT.skip('kommen')")
+        until("!CLOCK.warp", 60)
+        E("CLOCK.wait(CLOCK.until(9), 'Test')")
+        until("!CLOCK.warp", 60)
+        q = J("STDORF.start('glasfaser')")
+        ck('fibre for Ratscher starts (Jens\'s wish)', q and q.get('ok'), str(q))
+        for i in (0, 1):
+            j = job(f'dp_glasfaser_{i}', ['sarah'])
+            if j and j.get('id'): until(done(j['id']), 200)
+        p = J("STDORF.state().proj.glasfaser")
+        ck('after the evening and the round from door to door: six weeks of pre-marketing', p['st'] == 'laeuft' and p['i'] == 2 and p['due'], str(p))
+        for k in range(4):
+            p = J("STDORF.state().proj.glasfaser")
+            if p['st'] != 'laeuft' or p['due'] is None: break
+            E("CLOCK.wait(Math.max(5, STDORF.state().proj.glasfaser.due - CLOCK.t + 20), 'Test')")
+            until("!CLOCK.warp", 60)
+            steps(1.5)
+        p = J("STDORF.state().proj.glasfaser")
+        notes = J("STRAT.S.notes.slice(-10).map(n => n.text)")
+        ck('the quota is reached (households counted from your reputation and the round), the provider builds, the cabinet stands', p['st'] == 'fertig' and 'glasfaser' in J("STDWELT.state().items") and any('Quote erreicht' in n for n in notes), str(p) + ' ' + str([n for n in notes if 'Glasfaser' in n])[:300])
     if 'welt' in want:
         E("STRAT.setDate(STRAT.W.day(CLOCK.t).iso, 11 * 60)")
         lib.settle_light(pg)

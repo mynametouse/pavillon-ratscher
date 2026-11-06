@@ -307,7 +307,7 @@ export const STDDATA = (() => {
       place: 'flur',
       text: 'Die Wiese am Hang kaufen: ein Notarvertrag, die Genehmigung der Behörde, das Grundbuch – dann gehört sie dir.',
       learn:
-        'Grundstückskaufverträge brauchen den Notar. In Thüringen kostet die Grunderwerbsteuer seit 1.1.2024 5 % des Preises (vorher 6,5 %); Notar und Grundbuch etwa 2 %. Land- und forstwirtschaftliche Flächen über der Freigrenze des Landes braucht eine Genehmigung nach dem Grundstückverkehrsgesetz – Landwirte können vorgehen.',
+        'Grundstückskaufverträge brauchen den Notar. In Thüringen kostet die Grunderwerbsteuer seit 1.1.2024 5 % des Preises (vorher 6,5 %); Notar und Grundbuch etwa 2 %. Der Kauf land- und forstwirtschaftlicher Flächen über der Freigrenze des Landes braucht eine Genehmigung nach dem Grundstückverkehrsgesetz – und ein Siedlungsunternehmen kann für Landwirte vorkaufen.',
       src: '§ 311b BGB; Grunderwerbsteuer Thüringen 5 % seit 1.1.2024 (finanz.de); Grundstückverkehrsgesetz; Kaufwerte: Thüringen Ackerland 2024 im Mittel 14.900 €/ha (Destatis via top agrar), Südthüringen deutlich darunter (Suhl 2020: 5.358 €/ha, TLS) – Grünland am Hang Annahme 0,90 €/m²',
       steps: [
         {
@@ -549,6 +549,177 @@ export const STDDATA = (() => {
       ],
     },
   };
+  // ---- more of the village's needs: the fire brigade, the track, fibre (each known after talking to the one who needs it) ----
+  Object.assign(PROJ, {
+    feuerwehr: {
+      title: 'Feuerwehr: Ausrüstung für Waldbrände',
+      from: 'manfred',
+      by: 'ortsteil',
+      cost: 480,
+      build: 'loeschrucksack',
+      place: 'schule',
+      fans: { manfred: 6, jens: 4, wolfgang: 2 },
+      text: 'Vier Löschrucksäcke (je 20 l) und Feuerpatschen für die Feuerwehr Ratscher – damit sie ein Bodenfeuer angreifen kann, bevor das Tanklöschfahrzeug aus Schleusingen da ist.',
+      learn:
+        'Den Brandschutz trägt die Gemeinde (ThürBKG); der Ortsteilrat darf seine Ortsfeuerwehr aus dem eigenen Geld unterstützen. Beim Vegetationsbrand zählen die ersten Minuten: mit Löschrucksack und Feuerpatsche hält man ein Bodenfeuer an der Kante auf.',
+      src: '§ 45 Abs. 6 ThürKO (Unterstützung der Ortsfeuerwehr); ThürBKG; Kosten Annahme (Löschrucksack um 90 €, Feuerpatsche um 30 €)',
+      steps: [
+        {
+          k: 'job',
+          label: 'Mit Manfred den Bedarf aufnehmen',
+          place: 'schule',
+          people: [1, 2],
+          skill: 'reden',
+          min: 1,
+          dur: 60,
+          help: ['manfred'],
+          text: 'Im Gerätehaus: was ist da, was fehlt, was sagt der Kreisbrandinspektor.',
+          learn:
+            'Die Ausrüstung einer Feuerwehr richtet sich nach der Gefährdung im Ort – an der Klinge mit viel Fichte ist es der Vegetationsbrand.',
+        },
+        { k: 'rat' },
+        { k: 'warten', days: 7, text: 'Bestellt beim Feuerwehrausstatter, Lieferung ins Gerätehaus.' },
+      ],
+    },
+    feldweg: {
+      title: 'Feldweg: Schotter in die Löcher',
+      from: 'wolfgang',
+      by: 'stadt',
+      cost: 650,
+      need: 50,
+      build: 'schotter',
+      place: 'flur',
+      fans: { hubert: 5, wolfgang: 4, uwe: 3, ronald: 2 },
+      text: 'Den Ausbau des Feldwegs zur Klinge (18.000 €) schiebt die Stadt vor sich her. Bis dahin: der Bauhof liefert Schotter, das Dorf füllt die Löcher an einem Samstag.',
+      learn:
+        'Feldwege gehören meist der Gemeinde; ein Ausbau ist teuer, ein Arbeitseinsatz mit Schotter vom Bauhof hält den Weg ein paar Jahre befahrbar. Schotter 0/32 verdichtet sich gut – mit Gefälle zur Seite, damit das Wasser abläuft.',
+      src: 'Kommunale Praxis; Schotter 0/32 um 25 €/t, 20 t mit Anfahrt (Annahme)',
+      steps: [
+        {
+          k: 'job',
+          label: 'Die Löcher mit Wolfgang aufnehmen',
+          place: 'flur',
+          people: [1, 2],
+          skill: 'bauen',
+          min: 1,
+          dur: 60,
+          help: ['wolfgang'],
+          prep: true,
+          text: 'Den Weg abgehen, die schlimmsten Stellen zählen, Fotos für den Bauhof.',
+        },
+        { k: 'rat' },
+        { k: 'stadt' },
+        { k: 'bauhof', days: 4, text: 'Der Bauhof kippt 20 t Schotter am Wegrand ab.' },
+        {
+          k: 'job',
+          label: 'Arbeitseinsatz: Schotter einbauen',
+          place: 'flur',
+          people: [2, 3],
+          skill: 'bauen',
+          min: 1,
+          dur: 300,
+          heavy: 0.8,
+          help: ['hubert', 'uwe', 'wolfgang'],
+          text: 'Mit Schaufel, Schubkarre und Uwes Traktor die Löcher füllen, mit der Rüttelplatte verdichten.',
+        },
+      ],
+    },
+    glasfaser: {
+      title: 'Glasfaser für Ratscher',
+      from: 'jens',
+      by: 'privat',
+      cost: 0,
+      build: 'glasfaser',
+      place: 'schule',
+      quota: 0.4,
+      hh: 55,
+      fans: { jens: 5, katrin: 4, heike: 2, ingrid: 2 },
+      text: 'Ein Anbieter baut Glasfaser bis ins Haus – wenn sich genug Haushalte vorher verpflichten (Nachfragebündelung). Sonst bleibt Ratscher beim langsamen Kupferkabel.',
+      learn:
+        'Beim eigenwirtschaftlichen Ausbau rechnet der Anbieter: Tiefbau auf dem Land kostet viel je Meter, also baut er nur, wenn genug Haushalte vorab einen Vertrag schließen – meist 33–40 %. Wo das nie reicht, kann gefördert ausgebaut werden (Gigabit-Förderung des Bundes mit dem Land).',
+      src: 'Nachfragebündelung der Glasfaseranbieter (Quote hier Annahme 40 %); Gigabit-Richtlinie des Bundes; Ratscher rund 120 Einwohner, 55 Haushalte (Annahme)',
+      steps: [
+        {
+          k: 'job',
+          label: 'Infoabend in der alten Schule',
+          place: 'schule',
+          people: [1, 2],
+          skill: 'reden',
+          min: 2,
+          dur: 120,
+          help: ['jens'],
+          anytime: true,
+          text: 'Mit Jens und dem Anbieter: was Glasfaser bringt, was es kostet, warum die Quote zählt.',
+          learn: 'Wer selbst erklärt, statt Prospekte zu verteilen, überzeugt: Nachbarn fragen Nachbarn.',
+        },
+        {
+          k: 'job',
+          label: 'Von Tür zu Tür',
+          place: 'anger',
+          people: [1, 2],
+          skill: 'reden',
+          min: 2,
+          dur: 240,
+          heavy: 0.4,
+          text: 'Klingeln, erklären, Fragen beantworten – vor allem bei den Älteren, die kein Internet zu brauchen glauben.',
+          door: true,
+        },
+        { k: 'quote', days: 42, text: 'Vorvermarktung: Haushalte unterschreiben bis zum Stichtag.' },
+        { k: 'bauhof', days: 20, text: 'Die Tiefbaufirma legt Leerrohre, der Netzverteiler kommt an den Anger.' },
+      ],
+    },
+  });
+  // ---- neighbourly help: small things one does for people (their opinion grows; Falko's „your style shapes the world“) ----
+  const HILFE = {
+    heike: {
+      label: 'Heike beim Hühnerstall helfen',
+      place: 'anger',
+      skill: 'bauen',
+      dur: 120,
+      eff: { heike: 5, katrin: 1 },
+      text: 'Das Dach des Hühnerstalls flicken, bevor der Winter kommt – Heike gibt Eier mit.',
+      learn:
+        'Hühner brauchen einen trockenen, zugfreien Stall und einen fuchssicheren Auslauf; der Fuchs gräbt unter Zäunen durch.',
+    },
+    gerhard: {
+      label: 'Gerhard beim Schulboden helfen',
+      place: 'schule',
+      skill: 'reden',
+      dur: 120,
+      eff: { gerhard: 5, ingrid: 1 },
+      text: 'Auf dem Dachboden der alten Schule alte Kisten sichten: Zeugnisse, Fotos, ein Schulbuch von 1910 – für die Dorfchronik.',
+      learn:
+        'Bis in die 1960er lernten in Dorfschulen oft alle Jahrgänge in einem Raum; der Lehrer wohnte im Haus. Ratscher gehörte erst zum Kreis Hildburghausen, seit 1994 zur Stadt Schleusingen.',
+      find: 'geschichte',
+    },
+    ingrid: {
+      label: 'Ingrid zum Arzt fahren',
+      place: 'anger',
+      skill: 'reden',
+      dur: 100,
+      eff: { ingrid: 5, gerhard: 1 },
+      text: 'Ingrids Auto ist in der Werkstatt – jemand fährt sie zur Praxis nach Schleusingen und wartet.',
+      learn:
+        'Auf dem Land ist ohne Auto vieles weit: die Arztpraxis, der Supermarkt, die Apotheke. Mitfahrbank, Bürgerbus und Nachbarschaftshilfe füllen die Lücken.',
+    },
+    wolfgang: {
+      label: 'Wolfgang beim Holzspalten helfen',
+      place: 'anger',
+      skill: 'holz',
+      dur: 150,
+      eff: { wolfgang: 5, manfred: 1 },
+      text: 'Wolfgangs Winterholz spalten und aufsetzen – er erzählt dabei vom Wald an der Klinge.',
+      learn:
+        'Brennholz trocknet am besten gespalten, luftig gestapelt, mit Dach und offener Seite zum Wind – unter 20 % Feuchte brennt es sauber.',
+    },
+  };
+  // ---- the fire brigade's basic training for your people (they become members and help better at a mission) ----
+  const KURS_FW = {
+    title: 'Grundausbildung Feuerwehr (Truppmann)',
+    days: 2,
+    text: 'Knoten und Stiche, Schläuche kuppeln, Leitern, Atemschutz kennenlernen, Erste Hilfe, Funk – Truppmann Teil 1 bei der Kreisausbildung (wirklich rund 70 Stunden an Abenden und Wochenenden; im Spiel zwei Lehrgangstage).',
+    src: 'Feuerwehr-Dienstvorschrift FwDV 2 (Ausbildung der Freiwilligen Feuerwehren); Thüringer Feuerwehrschule',
+  };
   // ---- land: the plots one can lease or buy (positions on the open ground between garden and village from the orthophoto 2024 –
   // rectangles of the game, no real parcels; owners from the village) ----
   const LAND = {
@@ -674,12 +845,12 @@ export const STDDATA = (() => {
   // need: person-minutes of work; limit: minutes from the alarm until the damage happens; crew: members who come by day on a working day
   // (the commuters are away – „Tagesalarmsicherheit“) and otherwise; skill: what your helpers need most
   const FW = {
-    alarm: 6,
-    drive: 8,
-    hilfsfrist: 14,
+    alarm: 5,
+    drive: 5,
+    hilfsfrist: 10,
     crewDay: 3,
     crew: 7,
-    src: 'Thüringer Brand- und Katastrophenschutzgesetz (ThürBKG): Brandschutz und Allgemeine Hilfe sind Aufgaben der Gemeinde; Feuerwehr-Dienstvorschrift FwDV 3 (Einheiten im Lösch- und Hilfeleistungseinsatz); Hilfsfrist in Thüringen 14 Minuten (Thüringer Feuerwehr-Organisationsverordnung)',
+    src: 'Thüringer Brand- und Katastrophenschutzgesetz (ThürBKG): Brandschutz und Allgemeine Hilfe sind Aufgaben der Gemeinde; Feuerwehr-Dienstvorschrift FwDV 3 (Einheiten im Lösch- und Hilfeleistungseinsatz); Einsatzgrundzeit in Thüringen: wirksame Hilfe in der Regel binnen zehn Minuten nach der Alarmierung (§ 1 Abs. 1 Thüringer Feuerwehr-Organisationsverordnung)',
     learn:
       'Notruf 112 → die Leitstelle alarmiert über Funkmeldeempfänger und die Sirene auf der alten Schule → wer im Dorf ist, fährt zum Gerätehaus und rückt mit dem Tragkraftspritzenfahrzeug aus. Unter der Woche sind tagsüber die meisten zur Arbeit in der Stadt – dann kommen nur zwei, drei, und die Feuerwehr aus Schleusingen wird nachalarmiert.',
   };
@@ -687,8 +858,8 @@ export const STDDATA = (() => {
     baum: {
       title: 'Sturm: Bäume auf dem Weg',
       icon: '⚠',
-      need: 210,
-      limit: 140,
+      need: 420,
+      limit: 120,
       skill: 'holz',
       text: 'Zwei Fichten sind über den Weg zwischen Dorf und Klinge gestürzt. Morgen früh muss der Weg frei sein – für Hubert, den Förster und notfalls den Rettungswagen.',
       phases: [
@@ -709,8 +880,8 @@ export const STDDATA = (() => {
     hochwasser: {
       title: 'Starkregen: der Bach steigt',
       icon: '≋',
-      need: 260,
-      limit: 110,
+      need: 360,
+      limit: 100,
       skill: 'bauen',
       text: 'Nach dem Starkregen steigt der Bach am Garten. Treibgut verstopft den Durchlass unter dem Tor – das Wasser drückt auf den Feldweg und in die Gärten.',
       phases: [
@@ -733,7 +904,7 @@ export const STDDATA = (() => {
     waldbrand: {
       title: 'Rauch über der Klinge',
       icon: '♨',
-      need: 320,
+      need: 480,
       limit: 95,
       skill: 'holz',
       text: 'Nach Wochen ohne Regen steigt am Rand der Klinge Rauch auf: ein Bodenfeuer im trockenen Gras und Reisig, das auf den Wald übergreifen kann.',
@@ -759,5 +930,5 @@ export const STDDATA = (() => {
     title: 'Kapitel 5 · Das Dorf',
     text: 'Mit den Leuten reden, ihre Anliegen kennen, Projekte durch Ortsteilrat und Stadtrat bringen – das Dorf verändert sich sichtbar.',
   };
-  return { PLACES, PEOPLE, PROJ, LAND, KAUF, FOERDER, FW, KRISEN, CITY, RAT, STADT, RULES, CHAPTER };
+  return { PLACES, PEOPLE, PROJ, HILFE, KURS_FW, LAND, KAUF, FOERDER, FW, KRISEN, CITY, RAT, STADT, RULES, CHAPTER };
 })();

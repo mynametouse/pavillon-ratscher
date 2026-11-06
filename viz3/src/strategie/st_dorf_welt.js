@@ -13,6 +13,7 @@ import { VPROPS } from '../world/village_props.js';
 import { ROADS } from '../world/roads.js';
 import { WCOL } from '../world/worldcol.js';
 import { CLOCK } from '../time/clock.js';
+import { AMT } from '../amt/amt.js';
 import { STRAT } from './st_modus.js';
 import { STDDATA } from './st_dorf_data.js';
 export const STDWELT = (() => {
@@ -189,7 +190,265 @@ export const STDWELT = (() => {
     scene.add(m);
     return { g: m, at: [+x.toFixed(1), +y.toFixed(1)] };
   }
-  const BUILD = { streuobst: orchard, treffpunkt };
+  // ---- a crisis mission's traces (strategie/st_dorf_krise.js, STRAT.S.ext.krise): the spruces across the track and later their logs at
+  // the side; the sandbag wall at the culvert; smoke over the Klinge's edge and afterwards the burnt patch ----
+  const SPRUCE = C(0.17, 0.27, 0.16),
+    SAND = C(0.62, 0.53, 0.38),
+    SMOKE = C(0.42, 0.42, 0.42),
+    ASH = C(0.09, 0.08, 0.07);
+  function krise(c) {
+    const [x, y] = c.pos,
+      z = gz(x, y),
+      K = VPROPS.kit(),
+      e = ROADS.edge,
+      gx = e(x + 0.8, y) - e(x - 0.8, y),
+      gy = e(x, y + 0.8) - e(x, y - 0.8),
+      across = Math.atan2(gy, gx) || 0;
+    const done = c.done != null;
+    if (c.id === 'baum') {
+      const n = Math.max(1, Math.min(3, c.sev || 2));
+      for (let i = 0; i < n; i++) {
+        const a = across + (i - (n - 1) / 2) * 0.45,
+          ox = x + Math.cos(a + Math.PI / 2) * (i - (n - 1) / 2) * 3.2,
+          oy = y + Math.sin(a + Math.PI / 2) * (i - (n - 1) / 2) * 3.2,
+          L = 15 + i * 2;
+        if (!done) {
+          // the stem lies across the track, the root plate up at one end, the crown on the other side
+          const A = [ox - Math.cos(a) * L * 0.35, oy - Math.sin(a) * L * 0.35],
+            B = [ox + Math.cos(a) * L * 0.65, oy + Math.sin(a) * L * 0.65];
+          stick(K, [A[0], A[1], gz(A[0], A[1]) + 0.35], [B[0], B[1], gz(B[0], B[1]) + 0.25], 0.2, BARK);
+          K.disc(
+            A[0] - Math.cos(a) * 0.2,
+            A[1] - Math.sin(a) * 0.2,
+            gz(A[0], A[1]) + 0.9,
+            Math.cos(a),
+            Math.sin(a),
+            1.1,
+            C(0.3, 0.24, 0.17),
+            10
+          );
+          for (let k = 0; k < 5; k++) {
+            const f = 0.45 + k * 0.12,
+              px = A[0] + (B[0] - A[0]) * f,
+              py = A[1] + (B[1] - A[1]) * f;
+            K.ball(px, py, gz(px, py) + 0.7, 1.3 - k * 0.15, SPRUCE, 7);
+          }
+        } else {
+          // cut to length at the side of the track (Hubert takes them as firewood), the brushwood in a heap
+          const sx = x - Math.cos(across) * (6 + i * 0.7),
+            sy = y - Math.sin(across) * (6 + i * 0.7),
+            al = across + Math.PI / 2;
+          for (let k = 0; k < 3; k++) {
+            const px = sx + Math.cos(al) * (k * 2.8 - 2.8),
+              py = sy + Math.sin(al) * (k * 2.8 - 2.8),
+              pz = gz(px, py) + 0.22;
+            stick(
+              K,
+              [px - Math.cos(al) * 1.25, py - Math.sin(al) * 1.25, pz],
+              [px + Math.cos(al) * 1.25, py + Math.sin(al) * 1.25, pz],
+              0.2,
+              BARK
+            );
+          }
+          K.ball(sx - Math.cos(across) * 2.2, sy - Math.sin(across) * 2.2, gz(sx, sy) + 0.3, 1.0, SPRUCE, 6);
+        }
+      }
+    } else if (c.id === 'hochwasser') {
+      if (!done || !c.ok) return null;
+      // a wall of sandbags along the garden side of the brook at the culvert: two layers, bags laid like bricks
+      const al = across + Math.PI / 2,
+        bx = x - Math.cos(across) * 1.6,
+        by = y - Math.sin(across) * 1.6;
+      for (let r = 0; r < 2; r++)
+        for (let k = -6; k <= 6; k++) {
+          const u = (k + (r ? 0.5 : 0)) * 0.56,
+            px = bx + Math.cos(al) * u,
+            py = by + Math.sin(al) * u;
+          K.box(px, py, gz(px, py) + r * 0.13, 0.54, 0.34, 0.13, al, SAND);
+        }
+    } else if (c.id === 'waldbrand') {
+      if (!done) for (let k = 0; k < 6; k++) K.ball(x + k * 0.9, y + k * 0.5, z + 2 + k * 2.4, 1.6 + k * 0.5, SMOKE, 8);
+      else
+        for (let k = 0; k < 9; k++) {
+          const a = k * 0.7,
+            r = 3 + (k % 3) * 3,
+            px = x + Math.cos(a) * r,
+            py = y + Math.sin(a) * r;
+          K.box(px, py, gz(px, py) - 0.02, 5 - (k % 3), 4 - (k % 2), 0.08, a, ASH);
+        }
+    }
+    if (K.empty()) return null;
+    const m = new THREE.Mesh(K.geo(), mat());
+    m.name = 'strategie-dorf:krise-' + c.id;
+    m.userData.noMerge = true;
+    m.castShadow = true;
+    m.receiveShadow = true;
+    scene.add(m);
+    return { g: m, at: [+x.toFixed(1), +y.toFixed(1)] };
+  }
+  // ---- the track to the Klinge after the work day: fresh gravel in the holes (lighter patches along the way) ----
+  const GRAVEL = C(0.66, 0.64, 0.6),
+    CAB = C(0.55, 0.57, 0.56);
+  function schotter() {
+    const R = ROADS.routes && ROADS.routes.klinge;
+    if (!R || R.length < 3) return null;
+    const seg = [];
+    let L = 0;
+    for (let i = 1; i < R.length; i++) {
+      const d = Math.hypot(R[i][0] - R[i - 1][0], R[i][1] - R[i - 1][1]);
+      seg.push(d);
+      L += d;
+    }
+    const at = a => {
+      for (let i = 1; i < R.length; i++) {
+        if (a <= seg[i - 1]) {
+          const k = a / seg[i - 1];
+          return [
+            R[i - 1][0] + (R[i][0] - R[i - 1][0]) * k,
+            R[i - 1][1] + (R[i][1] - R[i - 1][1]) * k,
+            Math.atan2(R[i][1] - R[i - 1][1], R[i][0] - R[i - 1][0]),
+          ];
+        }
+        a -= seg[i - 1];
+      }
+      return null;
+    };
+    const K = VPROPS.kit(),
+      pts = [];
+    for (let k = 0; k < 10; k++) {
+      const q = at(L * (0.2 + k * 0.05) + ((k * 37) % 7));
+      if (!q) continue;
+      const off = ((k % 3) - 1) * 0.6;
+      const x = q[0] - Math.sin(q[2]) * off,
+        y = q[1] + Math.cos(q[2]) * off;
+      K.box(x, y, gz(x, y) + 0.02, 2.0 + (k % 2) * 0.8, 1.5, 0.06, q[2], GRAVEL);
+      pts.push([+x.toFixed(1), +y.toFixed(1)]);
+    }
+    if (K.empty()) return null;
+    const m = new THREE.Mesh(K.geo(), mat());
+    m.name = 'strategie-dorf:schotter';
+    m.userData.noMerge = true;
+    m.receiveShadow = true;
+    scene.add(m);
+    return { g: m, at: pts[0], n: pts.length };
+  }
+  // ---- fibre: the grey street cabinet (network distribution point) at the Anger ----
+  function glasfaser() {
+    const c0 = D.PLACES.anger.pos,
+      p = freeAt(c0[0] - 10, c0[1] + 7, 0.6, 0.8, 24);
+    if (!p) return null;
+    const [x, y] = p,
+      z = gz(x, y),
+      e = ROADS.edge,
+      rot = Math.atan2(e(x, y + 0.8) - e(x, y - 0.8), e(x + 0.8, y) - e(x - 0.8, y)) + Math.PI / 2;
+    const K = VPROPS.kit();
+    K.box(x, y, z - 0.1, 0.95, 0.38, 1.35, rot, CAB);
+    K.box(x, y, z + 1.25, 1.0, 0.42, 0.06, rot, C(0.42, 0.44, 0.43));
+    K.box(x + Math.cos(rot) * 0.2, y + Math.sin(rot) * 0.2, z + 0.75, 0.12, 0.4, 0.05, rot, C(0.3, 0.31, 0.3));
+    const m = new THREE.Mesh(K.geo(), mat());
+    m.name = 'strategie-dorf:glasfaser';
+    m.userData.noMerge = true;
+    m.castShadow = true;
+    m.receiveShadow = true;
+    scene.add(m);
+    return { g: m, at: [+x.toFixed(1), +y.toFixed(1)] };
+  }
+  // ---- the Kirmes weekend (the Ortsvorsteher system's date AMT.ST.kd, paid by the Ortsteilrat – strategie/st_dorf.js „Kirmes“): the
+  // festival tent at the Anger with beer tables, and the Kirmesbaum – a peeled spruce with a green crown and a wreath with ribbons, set
+  // up by the young people on the Friday, as in Thuringian villages ----
+  const WHITE = C(0.9, 0.9, 0.88),
+    RED = C(0.66, 0.12, 0.1),
+    PEELED = C(0.78, 0.66, 0.5),
+    GREEN = C(0.2, 0.42, 0.18);
+  function kirmes() {
+    const c0 = D.PLACES.anger.pos,
+      p = freeAt(c0[0] - 8, c0[1] - 12, 4.2, 1.8, 36);
+    if (!p) return null;
+    const [x, y] = p,
+      z = gz(x, y),
+      e = ROADS.edge,
+      rot = Math.atan2(e(x, y + 0.8) - e(x, y - 0.8), e(x + 0.8, y) - e(x - 0.8, y)) + Math.PI / 2,
+      c = Math.cos(rot),
+      s = Math.sin(rot),
+      L = (u, v) => [x + u * c - v * s, y + u * s + v * c],
+      P3 = (u, v, h) => {
+        const q = L(u, v);
+        return [q[0], q[1], z + h];
+      };
+    const K = VPROPS.kit();
+    // the tent: 9 × 5 m, poles, a white roof with a red edge, closed back and sides to half height
+    for (const u of [-4.5, -1.5, 1.5, 4.5])
+      for (const v of [-2.5, 2.5]) {
+        const q = L(u, v);
+        K.box(q[0], q[1], z, 0.08, 0.08, 2.2, rot, WHITE);
+      }
+    K.quad(P3(-4.6, -2.6, 2.2), P3(4.6, -2.6, 2.2), P3(4.6, 0, 3.4), P3(-4.6, 0, 3.4), WHITE);
+    K.quad(P3(4.6, 2.6, 2.2), P3(-4.6, 2.6, 2.2), P3(-4.6, 0, 3.4), P3(4.6, 0, 3.4), WHITE);
+    K.quad(P3(-4.6, 0, 3.4), P3(4.6, 0, 3.4), P3(4.6, -2.6, 2.2), P3(-4.6, -2.6, 2.2), C(0.75, 0.75, 0.72));
+    K.quad(P3(4.6, 0, 3.4), P3(-4.6, 0, 3.4), P3(-4.6, 2.6, 2.2), P3(4.6, 2.6, 2.2), C(0.75, 0.75, 0.72));
+    for (const v of [-2.6, 2.6]) {
+      const q = L(0, v);
+      K.box(q[0], q[1], z + 1.95, 9.2, 0.04, 0.25, rot, RED);
+    }
+    for (const u of [-4.6, 4.6]) {
+      K.tri(P3(u, -2.6, 2.2), P3(u, 2.6, 2.2), P3(u, 0, 3.4), WHITE);
+      K.tri(P3(u, 2.6, 2.2), P3(u, -2.6, 2.2), P3(u, 0, 3.4), WHITE);
+      const q = L(u, 0);
+      K.box(q[0], q[1], z, 0.04, 5.2, 2.2, rot, WHITE);
+    }
+    const bk = L(0, 2.55);
+    K.box(bk[0], bk[1], z, 9.1, 0.04, 1.2, rot, WHITE);
+    // beer tables with benches inside
+    for (const u of [-2.8, 0, 2.8]) {
+      const t = L(u, 0.3);
+      K.box(t[0], t[1], z + 0.74, 0.6, 2.2, 0.04, rot, C(0.55, 0.4, 0.25));
+      K.box(t[0], t[1], z, 0.5, 0.06, 0.74, rot, IRON);
+      for (const du of [-0.55, 0.55]) {
+        const b = L(u + du, 0.3);
+        K.box(b[0], b[1], z + 0.44, 0.25, 2.2, 0.04, rot, C(0.55, 0.4, 0.25));
+      }
+    }
+    // the Kirmesbaum: 16 m, peeled, a green crown, the wreath at two thirds with ribbons
+    const tb = freeAt(c0[0] + 3, c0[1] + 3, 0.6, 1.5, 20) || L(7, -4),
+      tz = gz(tb[0], tb[1]);
+    K.cyl(tb[0], tb[1], tz - 0.3, tz + 16, 0.16, 0.06, 8, PEELED);
+    K.ball(tb[0], tb[1], tz + 16.8, 1.1, GREEN, 8);
+    K.lathe(
+      tb[0],
+      tb[1],
+      tz + 10.3,
+      [
+        [0.5, 0],
+        [0.75, 0.3],
+        [0.5, 0.6],
+      ],
+      12,
+      GREEN
+    );
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2;
+      stick(
+        K,
+        [tb[0] + Math.cos(a) * 0.62, tb[1] + Math.sin(a) * 0.62, tz + 10.4],
+        [tb[0] + Math.cos(a) * 0.75, tb[1] + Math.sin(a) * 0.75, tz + 8.6],
+        0.03,
+        k % 2 ? RED : WHITE
+      );
+    }
+    const m = new THREE.Mesh(K.geo(), mat());
+    m.name = 'strategie-dorf:kirmes';
+    m.userData.noMerge = true;
+    m.castShadow = true;
+    m.receiveShadow = true;
+    scene.add(m);
+    return { g: m, at: [+x.toFixed(1), +y.toFixed(1)], baum: [+tb[0].toFixed(1), +tb[1].toFixed(1)] };
+  }
+  // the weekend of the Kirmes: from Friday noon (the tree goes up) to Monday noon
+  const kirmesOn = t => {
+    const kd = AMT.ST && AMT.ST.kd;
+    return Number.isFinite(kd) && t >= kd - 12 * 60 && t < kd + 2 * 1440 + 12 * 60;
+  };
+  const BUILD = { streuobst: orchard, treffpunkt, schotter, glasfaser };
   function drop(id) {
     const it = S.items[id];
     if (!it) return;
@@ -203,11 +462,34 @@ export const STDWELT = (() => {
   // build what is done, drop what is no longer (a reset), the orchard's leaves by the season
   function refresh() {
     const B = (STRAT.S.ext.dorf && STRAT.S.ext.dorf.built) || {};
-    for (const id of Object.keys(S.items)) if (B[id] == null) drop(id);
+    for (const id of Object.keys(S.items)) if (id !== 'krise' && id !== 'kirmesfest' && B[id] == null) drop(id);
+    if (S.items.kirmesfest && !kirmesOn(CLOCK.t)) drop('kirmesfest');
+    // the crisis: rebuilt whenever its look changes (lying – cleared; smoke – ashes), dropped when it is history
+    const kc = STRAT.S.ext.krise && STRAT.S.ext.krise.cur,
+      kk = kc && !kc.wait && kc.pos ? kc.id + ':' + (kc.done == null ? 'an' : kc.ok ? 'ok' : 'spaet') : null;
+    if (S.items.krise && S.items.krise.key !== kk) drop('krise');
     if (!ready()) return;
+    if (kk && !S.items.krise)
+      try {
+        const n = krise(kc);
+        S.items.krise = Object.assign(n || { g: null }, { key: kk });
+        markDirty(true);
+      } catch (e) {
+        console.warn('strategie-dorf krise', e);
+        S.items.krise = { g: null, key: kk, err: String(e) };
+      }
     const t = CLOCK.t;
+    if (kirmesOn(t) && !S.items.kirmesfest)
+      try {
+        const n = kirmes();
+        S.items.kirmesfest = n || { g: null };
+        markDirty(true);
+      } catch (e) {
+        console.warn('strategie-dorf kirmes', e);
+        S.items.kirmesfest = { g: null, err: String(e) };
+      }
     for (const [id, when] of Object.entries(B)) {
-      if (!BUILD[id] || t < when) continue;
+      if (!BUILD[id] || t < when || id === 'krise') continue;
       const it = S.items[id];
       if (it && !(id === 'streuobst' && it.leaves !== leafy())) continue;
       if (it) drop(id);
@@ -293,7 +575,8 @@ export const STDWELT = (() => {
     if (d && d.on) warm();
   });
   const state = () => ({
-    items: Object.keys(S.items),
+    items: Object.keys(S.items).filter(k => S.items[k].g),
+    krise: S.items.krise ? S.items.krise.key : null,
     at: Object.fromEntries(Object.entries(S.items).map(([k, it]) => [k, it.at || null])),
     trees: S.items.streuobst ? S.items.streuobst.n : 0,
   });

@@ -1,3 +1,5 @@
-# feat/strategie-dorf: the village in „Ratscher von oben“ – projects, reputation, budget, councils, exploration; and the core's own test (its quick sections) unharmed
+# feat/strategie-dorf: the village in „Ratscher von oben“ – projects, reputation, budget, councils, land, funding, crises, exploration; and the
+# core's own tests unharmed (its quick sections, and the phone layout with the village's box in the bar)
 strategie_dorf
 strategie:start,leute,auftrag,regel,reload
+strategie_telefon
