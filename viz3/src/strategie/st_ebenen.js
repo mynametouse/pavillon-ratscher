@@ -117,7 +117,7 @@ export const STEBENEN = (() => {
       if (wx.cloud > 0.5)
         h += `<rect x="0" y="0" width="${W}" height="${H}" fill="rgb(70,80,92)" fill-opacity="${((wx.cloud - 0.5) * 0.36).toFixed(2)}"/>`;
       if (wx.rain > 0.2)
-        h += `<defs><pattern id="strain" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(${Math.min(35, wx.wind / 2).toFixed(0)})"><line x1="3" y1="0" x2="3" y2="${Math.min(12, 4 + wx.rain * 2).toFixed(0)}" stroke="rgb(205,220,240)" stroke-opacity=".45" stroke-width="1"/></pattern></defs><rect x="0" y="0" width="${W}" height="${H}" fill="url(#strain)"/>`;
+        h += `<defs><pattern id="strain" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(${Math.min(35, wx.wind / 2).toFixed(0)})"><line x1="3" y1="0" x2="3" y2="${Math.min(12, 4 + wx.rain * 2).toFixed(0)}" stroke="rgb(205,220,240)" stroke-opacity=".3" stroke-width="1"/></pattern></defs><rect x="0" y="0" width="${W}" height="${H}" fill="url(#strain)"/>`;
       // the wind: an arrow where it blows to (the plan view has north up), its speed beside it
       const a = (((wx.dir ?? 250) + 180) % 360) * (Math.PI / 180),
         narrow = W <= 720, // phones: left, between the time box and the people strip; else bottom right above the scale
