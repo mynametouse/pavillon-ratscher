@@ -396,11 +396,11 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
   }
   function card() {
     const ch = STRAT.chapter.cur(),
-      o = S.orders.find(x => x.st === 'offen') || null,
+      os = S.orders.filter(x => x.st === 'offen' || x.st === 'verspätet').slice(0, 3),
       sv = S.style;
     const ag = STAUSBAU.age(),
       gl = STAUSBAU.goals();
-    const h = `${ch ? `<b>${esc(ch.title)}</b>` : ''}${gl.length ? `<div class="o">${gl.map(g => `${g.done ? '☑' : '☐'} ${esc(g.text)}`).join('<br>')}</div>` : ''}${o ? `<div class="o">Bestellung: ${esc(o.title)} · bis ${W.day(o.due).label}${o.got ? ` · ${o.got}/${o.n} geliefert` : ''}</div>` : ''}<div class="st" title="${esc(ag.text)}">Zeitalter: <u>${esc(ag.name)}</u></div><div class="st" title="${esc(D.STYLE.text)}">Dein Stil: <u>${C.styleName(sv)}</u> (${sv > 0 ? '+' : ''}${Math.round(sv)})</div>`;
+    const h = `${ch ? `<b>${esc(ch.title)}</b>` : ''}${gl.length ? `<div class="o">${gl.map(g => `${g.done ? '☑' : '☐'} ${esc(g.text)}`).join('<br>')}</div>` : ''}${os.map(o => `<div class="o">Bestellung: ${esc(o.title)} · ${o.st === 'verspätet' ? '<b>zu spät</b>, war ' : ''}bis ${W.day(o.due).label}${o.got ? ` · ${o.got}/${o.n} geliefert` : ''}</div>`).join('')}<div class="st" title="${esc(ag.text)}">Zeitalter: <u>${esc(ag.name)}</u></div><div class="st" title="${esc(D.STYLE.text)}">Dein Stil: <u>${C.styleName(sv)}</u> (${sv > 0 ? '+' : ''}${Math.round(sv)})</div>`;
     if (h !== H.cardH) {
       H.card.innerHTML = h;
       H.cardH = h;
