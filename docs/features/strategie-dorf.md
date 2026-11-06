@@ -77,7 +77,7 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   legt Leerrohre, ein grauer Netzverteiler steht am Anger. Verfehlt: neu anfangen oder auf den geförderten Ausbau hoffen.
 - **Straßenbeleuchtung auf LED** (Katrins zweiter Wunsch, Stadtrat, 9.100 €): Leuchten zählen und den Verbrauch schätzen (die Zahlen für die
   Einsparprognose), Ortsteilrat, Stadtrat trägt 60 %, **Kommunalrichtlinie** 40 % (adaptiv geregelt; 25 % bei Zeit-/Präsenzschaltung) – ohne
-  Stichtag, Antrag beim Projektträger ZUG, Zuwendungsbescheid nach etwa zweieinhalb Monaten, erst dann tauscht die Elektrofirma die Köpfe.
+  Stichtag, Antrag beim Projektträger ZUG, Zuwendungsbescheid nach etwa vier Monaten, erst dann tauscht die Elektrofirma die Köpfe.
   Lernen: 70–125 W alt gegen 15–25 W LED, rund 3.000 kWh und 900 € im Jahr, höchstens 3000 K wegen der Insekten. Auf der Karte: die
   Leuchten des Dorfs als LED markiert (das Licht in der Welt bleibt, wie es ist – die Leuchten des Dorfs sind schon warmweiß gezeichnet).
 - **Die Kirmes in der Welt:** am Kirmes-Wochenende (`AMT.ST.kd`, das Datum des Ortsvorsteher-Spiels) stehen von Freitagmittag bis

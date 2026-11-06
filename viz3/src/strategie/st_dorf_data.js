@@ -827,8 +827,8 @@ export const STDDATA = (() => {
       title: 'Kommunalrichtlinie – Projektträger Zukunft – Umwelt – Gesellschaft (ZUG)',
       rate: 0.4,
       calls: null,
-      approve: 75,
-      src: 'Kommunalrichtlinie 2022–2027 der Nationalen Klimaschutzinitiative (Fördersatz 40 % bei adaptiver Regelung; finanzschwache Kommunen mehr); Bearbeitungszeit hier Annahme',
+      approve: 130,
+      src: 'Kommunalrichtlinie 2022–2027 der Nationalen Klimaschutzinitiative (Fördersatz 40 % bei adaptiver Regelung, 25 % bei Zeit- oder Präsenzschaltung; finanzschwache Kommunen mehr); Anträge ganzjährig, Bescheid etwa vier bis fünf Monate nach dem Antrag (Förderübersicht zur Kommunalrichtlinie, Stand 28.7.2022)',
       learn:
         'Bei der Kommunalrichtlinie stellt die Stadt den Antrag beim Projektträger, jederzeit im Jahr. Vor dem Zuwendungsbescheid darf kein Auftrag vergeben werden; ausgezahlt wird nach dem Verwendungsnachweis.',
       rule: 'Bundeshaushaltsordnung § 44 mit Verwaltungsvorschriften (Förderung nur für Vorhaben, die noch nicht begonnen haben)',
