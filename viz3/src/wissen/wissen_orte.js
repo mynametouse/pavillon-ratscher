@@ -291,6 +291,36 @@ export const WORTE = (() => {
       }
     }
   }
+  // the two posts of every board stop a walker outside the modelled garden square (there the walls and trunks come through
+  // KERN.pushOut too; inside it game/walkable.js has its own colliders – the board at the brook stays walk-through)
+  KERN.provide(
+    'pushOut',
+    (p, r) => {
+      let hit = false;
+      for (const B of S.boards) {
+        const dx0 = p[0] - B.x,
+          dy0 = p[1] - B.y;
+        if (dx0 * dx0 + dy0 * dy0 > 4) continue;
+        const u = [-B.n[1], B.n[0]];
+        for (const sgn of [-0.56, 0.56]) {
+          const qx = B.x + u[0] * sgn,
+            qy = B.y + u[1] * sgn,
+            ex = p[0] - qx,
+            ey = p[1] - qy,
+            rr = r + 0.07,
+            d = Math.hypot(ex, ey);
+          if (d < rr && d > 1e-6) {
+            p[0] = qx + (ex / d) * rr;
+            p[1] = qy + (ey / d) * rr;
+            hit = true;
+          }
+        }
+      }
+      // undefined passes the question on (walls, trunks, the towns' own providers)
+      return hit ? true : undefined;
+    },
+    20
+  );
   let tacc = 0;
   KERN.tick(dt => {
     tacc += dt;

@@ -97,8 +97,9 @@ WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners 
 
 - Lärm und Verkehr sind Näherungen (Straßenklasse, typische Schallpegel); Zählwerte für die Straßen um Ratscher lagen nicht vor – echt
   gezählt sind nur die Busse (Fahrplan).
-- Die Tafeln haben keine Kollision (man läuft durch die Pfosten). Die Tafeln in Schleusingen und Veßra sind bei GitHub nicht prüfbar (dort fehlen
-  die Kacheln der Städte) – Abschnitt `stadt` lokal.
+- Die Pfosten der Tafeln halten einen auf (ein `KERN.pushOut`-Anbieter, Vorrang 20, außerhalb des Garten-Quadrats); die Tafel am Bach im
+  Quadrat nicht – dort hat `game/walkable.js` eigene Kollisionen. Die Tafeln in Schleusingen und Veßra sind bei GitHub nicht prüfbar (dort
+  fehlen die Kacheln der Städte) – Abschnitt `stadt` lokal.
 - Die Hauptsatzung von Schleusingen war nicht online zu finden: dass Ratscher eine Ortsteilverfassung hat, ist eine Annahme (wie in „Wahl und Amt“).
 - Der Tag der Eingemeindung 1994 ist in den Quellen uneinheitlich (22. Februar in den Wikipedia-Artikeln „Schleusingen“ und „Heckengereuth“,
   8. März in „Ratscher (Schleusingen)“ und „Gethles“) – im Buch steht nur „seit 1994“. Dorflinde 1888 und Schule 1828: Wikipedia „Ratscher

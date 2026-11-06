@@ -173,6 +173,8 @@ def run():
             tb = J("WORTE.S.boards.map(b => ({ id: b.id, x: +b.x.toFixed(1), y: +b.y.toFixed(1), z: +b.z.toFixed(2) }))")
             ck('information boards at the real places (school, Dorflinde, brook, Klinge, dam)', len(tb) >= 4 and all(abs(b['z']) < 1000 for b in tb), str(tb))
             ck('their mesh is the village props\' material (no light, no new material)', J("!!WORTE.S.mesh && WORTE.S.mesh.material === VPROPS.mat.paint"))
+            po = J("(() => { const B = WORTE.S.boards.find(b => b.id === 'schule'); if (!B) return null; const u = [-B.n[1], B.n[0]], q = [B.x + u[0] * 0.56, B.y + u[1] * 0.56], p = [q[0] + 0.05, q[1] + 0.02]; KERN.pushOut(p, 0.3); return +Math.hypot(p[0] - q[0], p[1] - q[1]).toFixed(3); })()")
+            ck('a walker does not pass through a board\'s post (KERN.pushOut)', po is not None and po >= 0.36, str(po))
             sch = next((b for b in tb if b['id'] == 'schule'), None)
             if sch:
                 # the boards draw without a new shader program: the view with them hidden, then shown
