@@ -162,7 +162,8 @@ andere Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als
   Gebäude, das ETHOS als `DETHL57P0001tBDK` führt – laut Luftbild und LoD2 steht es knapp 4 m weiter nördlich (Mitte 264,9, −83,9),
   5,3 × 5,4 m, 2,4 m hoch.
   Nicht doppelt gebaut (der Kasten bleibt, wie er ist); wer ihn an den echten Platz rücken will: Grundriss in `ratscher.json` unter `mask`.
-- `viz3/extra/welt-gebaeude/tests.txt`: auch `vessra` und `vessra_szenario` (die Zellen um Kloster Veßra dürfen nichts davon stören).
+- `viz3/extra/welt-gebaeude/tests.txt`: auch `vessra` und `vessra_szenario` (die Zellen um Kloster Veßra dürfen nichts davon stören) und
+  `fahrt` (die Fahrt Ratscher → Markt Schleusingen und zur Baumschule mit allen Zellen an der Strecke).
 - **Höhen der 337 OSM-Gebäude im Vergleich mit ETHOS/LoD2** (`world/ratscher.js`, höchste Wandoberkante = Giebelspitze vs. ETHOS-Höhe
   Boden–First; 310 zugeordnet, Median −0,3 m, mittlere Abweichung 1,1 m; 39 mit mehr als 2,5 m). Zu niedrig sind vor allem Scheunen und
   Häuser im Ortskern (bis 6 m – wie `dorfkern` schon fand: das Oberflächenmodell setzte Traufen zu tief). Die größten (Gebäudenummer =
