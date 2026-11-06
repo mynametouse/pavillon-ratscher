@@ -145,6 +145,9 @@ export const CLOCK = (() => {
     btn.classList.toggle('warp', !!S.warp);
     if (win && !win.hidden) renderWin(true);
   }
+  // feat/bus: the clock in real time for a bus (waiting at its stop, riding – bus/bus.js) is no glue: one may wait
+  const onlyBus = () => S.focus.size > 0 && [...S.focus].every(k => k === 'bus');
+  const focusLabel = () => (onlyBus() ? 'Echtzeit – Bus' : 'Echtzeit – Leim offen');
   let winAcc = 0;
   function renderWin(soft) {
     if (!win || win.hidden) return;
@@ -160,7 +163,7 @@ export const CLOCK = (() => {
       } catch (e) {}
     }
     win.innerHTML = `<h3>Spielzeit<button type="button" class="x" aria-label="Schließen">×</button></h3>
-      <div class="cknow"><b>Tag ${day()}</b><span>${hm()} Uhr</span>${S.focus.size ? '<em>Echtzeit – Leim offen</em>' : S.warp ? '<em>' + (S.warp.label === 'Schlafen' ? 'Schlafen …' : 'Zeitraffer …') + '</em>' : ''}</div>${window.DN ? LATE.DN.winHTML() : ''}${extraHTML()}
+      <div class="cknow"><b>Tag ${day()}</b><span>${hm()} Uhr</span>${S.focus.size ? '<em>' + focusLabel() + '</em>' : S.warp ? '<em>' + (S.warp.label === 'Schlafen' ? 'Schlafen …' : 'Zeitraffer …') + '</em>' : ''}</div>${window.DN ? LATE.DN.winHTML() : ''}${extraHTML()}
       <div class="mrow"><span>Tempo</span><div class="mseg">${Object.entries(RATES)
         .map(([k, r]) => `<button type="button" data-rate="${k}" aria-pressed="${S.rate === k}">${r.n}</button>`)
         .join('')}</div></div>
@@ -188,7 +191,7 @@ export const CLOCK = (() => {
       b.addEventListener('click', () => {
         const w = b.dataset.wait;
         if (w === 'stop') cancel();
-        else if (S.focus.size) PLAY.think('Nicht jetzt – der Leim ist offen.');
+        else if (S.focus.size && !onlyBus()) PLAY.think('Nicht jetzt – der Leim ist offen.');
         else wait(w === 'morgen' ? until(7) : +w, 'Warten');
         renderWin();
       })
