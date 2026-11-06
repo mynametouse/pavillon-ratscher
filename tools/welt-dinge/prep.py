@@ -43,6 +43,7 @@ REF_LO, REF_HI = np.array([50.0, 66.0, 76.0]), np.array([219.0, 219.0, 215.0])
 TYPE_CUM = list(np.cumsum([0.22, 0.34, 0.27, 0.12, 0.05]))[:-1] + [1.0]
 COL_CUM = list(np.cumsum([0.25, 0.15, 0.17, 0.22, 0.05, 0.06, 0.06, 0.015, 0.015, 0.01]))[:-1] + [1.0]
 S_DRIVING = []
+VEHICLES = {'auto', 'van', 'lkw', 'wohnmobil', 'wohnwagen', 'anhaenger', 'traktor', 'container'}
 BR = []  # the brightness of each car's colour as measured (colour()), for the shares below
 # the grey scale of the cars on German roads (KBA stock, of the cars without a colour: black, dark grey, silver, white)
 GREY_CUM = [0.32, 0.51, 0.73, 1.0]
@@ -171,6 +172,30 @@ def main():
     ways = [w for w in wdlib.roads() + (wdlib.roads_fahrt() if gebiet != 'ratscher' else []) if w['kind'] <= 5]
     for w in ways:
         w['bb'] = (w['p'][:, 0].min(), w['p'][:, 1].min(), w['p'][:, 0].max(), w['p'][:, 1].max())
+    # the lanes stay free (the lead, 6.11. ~2:00: the drive test's car rammed a 'stadt' car 1.5 m from the centreline on the way to the
+    # Markt): a parked vehicle's box with the mask's 0.35 m margin keeps 1.75 m from the centreline of a narrow way (w < 6 m: one free
+    # lane of 3.5 m) and w/2 − 0.5 m from a wider one (half on the kerb at most) – for every drivable way (motorway … service) of
+    # world/roads.js, welt/fahrt.js and the town's streets. A car in the middle of the street in the photo was driving, or the OSM line is
+    # off: no place there (its mask stays).
+    from shapely.geometry import LineString
+    lanes = [(LineString(w['p']), w['w']) for w in ways if len(w['p']) >= 2]
+    st = os.path.join(wdlib.REPO, 'viz3/dist/schleusingen/stadt.json')
+    if gebiet != 'ratscher' and os.path.exists(st):
+        for q in json.load(open(st)).get('st', []):
+            if q.get('k', 9) <= 5 and len(q['p']) >= 4:
+                lanes.append((LineString(list(zip(q['p'][0::2], q['p'][1::2]))), 5.0))
+    LT = STRtree([l for l, _ in lanes]) if lanes else None
+    inlane = []
+
+    def in_lane(g):
+        if LT is None:
+            return False
+        e = g.buffer(0.35, join_style=2)
+        for i in LT.query(e.buffer(8.0)):
+            L, w = lanes[i]
+            if L.distance(e) < (1.75 if w < 6 else w / 2 - 0.5):
+                return True
+        return False
     autos, dinge, masks, brs = [], [], [], []
     S_DRIVING.clear()
     for n, k in enumerate(P['ja'] + P.get('dazu', [])):
@@ -211,11 +236,14 @@ def main():
         if ko:
             kept.append((t, round(x, 1), round(y, 1), ko))
             continue
+        if t in VEHICLES and in_lane(box):
+            inlane.append((t, round(x, 1), round(y, 1)))
+            continue
         if t in ('auto', 'van') and edge < -1.0 and w['kind'] <= 2:
             S_DRIVING.append((x, y))  # in the lane of a main or county road: driving when the photo was taken, no parking place
             continue
         if t in ('auto', 'van'):
-            kerb = 'stadt' if gebiet == 'schleusingen' else 'strasse'
+            kerb = 'stadt' if gebiet in ('schleusingen', 'themar') else 'strasse'
             kind = 'betrieb' if gebiet == 'ratscher' and in_rect(x, y, WORKS) else (kerb if edge < 2.5 else 'hof')
             if kind in ('strasse', 'stadt'):
                 o = (x - q[0], y - q[1])
@@ -261,6 +289,12 @@ def main():
             from shapely.geometry import Point
             if kept_out(Point(q['x'], q['y']).buffer(2.4)):
                 continue
+            a = math.radians(q['az'])
+            fq, rq = (math.sin(a), math.cos(a)), (math.cos(a), -math.sin(a))
+            if in_lane(Polygon([(q['x'] + fq[0] * 2.3 * i + rq[0] * 0.95 * j, q['y'] + fq[1] * 2.3 * i + rq[1] * 0.95 * j)
+                                for i, j in ((1, 1), (1, -1), (-1, -1), (-1, 1))])):
+                inlane.append(('slot', q['x'], q['y']))
+                continue
             hv = (math.sin(q['x'] * 12.9898 + q['y'] * 78.233) * 43758.5453) % 1.0
             hc = (math.sin(q['x'] * 39.3468 + q['y'] * 11.135) * 24634.6345) % 1.0
             ty = next(i for i, c in enumerate(TYPE_CUM) if hv <= c)
@@ -289,6 +323,7 @@ def main():
           dict(Counter(PAL[a[4]][0] for a in autos)), len(dinge), 'things', dict(Counter(d[0] for d in dinge)), len(masks), 'masks',
           len(S_DRIVING), 'driving (left out)', len(dropped), 'on buildings (left out):', dropped[:12])
     print('  kept out (modelled places, bus stops):', len(kept), kept[:12])
+    print('  in a lane (left out):', len(inlane), inlane[:12])
 
 
 def hull(pts):

@@ -55,6 +55,17 @@ des Luftbilds als **Stellplätze, belebt nach Tageszeit**; (23:17) „Wichtig is
   Fest für Gehende und Fahrzeuge (`VEH.extra`), der Verkehr (`verkehr/verkehr_auto.js`) hält vor ihnen und fährt herum. In der
   Zombie-Nacht bleiben sie, wie sie sind. Steht ein Dorfauto (`dorf/dorf_cars.js`) auf demselben Platz, bleibt unseres weg.
 
+- **Freihalten** (der Lead, 6.11. ~1:45: ein Auto stand 2,5 m vor der Rathaustür in Schleusingen und versperrte den Weg hinein): was die
+  Orte selbst modellieren, bleibt frei – mit den Zonen von `welt-gebaeude` (`tools/welt-gebaeude/prep.py keepout()`, übernommen in
+  `tools/welt-dinge/wdlib.py keepout()`): Rathaus und St. Johannis 8 m, Bertholdsburg 20 m, Heckenturm 6 m, der Markt 3 m, Brunnen 4 m,
+  Bänke 1,5 m, Laternen 0,6 m; in Kloster Veßra Kirchenruine, Türme und Portal 8 m, der Klosterbezirk (Museum) 15 m, die Baumschule 8 m,
+  Mauern, Tore, Zäune (der Besucherparkplatz nicht – dort gehören die Autos hin); in Ratscher die Dinge des Dorfkerns
+  (`world/dorfkern_data.js`). Dazu jede **Bushaltestelle** (`bus/fahrplan.json`, `feat/bus`): 15 m vor und nach dem Halt kein Parken
+  (StVO § 12), Fahrbahn und beide Ränder. Was dort im Foto stand, wird kein Platz (seine Maske bleibt, der Boden wird trotzdem
+  retuschiert). Zur Laufzeit (`dinge.js`): **2 m vor jeder Tür** der Häuser der Stadt (`SCHL.bld[].doorFac`) und des Dorfs
+  (`VILLAGE.bld[].fac[].door`) bleibt frei – geprüft, wenn eine Zelle gebaut wird, und wieder bei ihrer regelmäßigen Prüfung (die Häuser
+  der Stadt können nach der Zelle kommen). Die ETHOS-Häuser von `gebaeude/gebaeude.js` geben ihre Türen nicht heraus – dort nicht.
+
 ## Masken für die Boden-Retusche (`welt-gebaeude`)
 
 - `viz3/extra/welt-dinge/maske_dinge.json`: `{ "src": "welt-dinge", "polys": [[[x, y], …], …], "pad": 0.35, "gebiete": { … } }` in

@@ -45,6 +45,9 @@ export const DINGE = (() => {
       { id: 'gottfriedsberg', c: [-821, -1532], r: 980, cell: 120 },
       { id: 'rappelsdorf', c: [-3252, 109], r: 1290, cell: 120 },
       { id: 'stkilian', c: [-298, 2976], r: 1290, cell: 120 },
+      { id: 'gerhardtsgereuth', c: [-1648, -3088], r: 1020, cell: 120 },
+      { id: 'fischbach', c: [-2555, 3323], r: 1070, cell: 120 },
+      { id: 'neuendambach', c: [-3428, -2918], r: 980, cell: 120 },
     ],
     err: null,
   };
