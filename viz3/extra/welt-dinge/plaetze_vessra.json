@@ -1,0 +1,21 @@
+{"quelle":"© OpenStreetMap-Mitwirkende (ODbL 1.0): amenity=parking und die Orte daneben; Reihen von tools/welt-dinge/plaetze.py",
+"plaetze":[
+{"x":-8641.55,"y":-247.7,"az":259.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8642.0,"y":-245.24,"az":259.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8642.46,"y":-242.78,"az":259.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8646.41,"y":-281.66,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8646.87,"y":-279.2,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8647.78,"y":-274.29,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8648.24,"y":-271.83,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8648.7,"y":-269.37,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8649.16,"y":-266.91,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8650.53,"y":-259.54,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8650.99,"y":-257.08,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8651.44,"y":-254.63,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8652.36,"y":-249.71,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8652.82,"y":-247.25,"az":79.4,"art":"allgemein","osm":"way/87821339"},
+{"x":-8653.28,"y":-244.79,"az":79.4,"art":"allgemein","osm":"way/87821339"}
+],
+"parkplaetze":[
+{"osm":"way/87821339","art":"allgemein","wegen":"Besucherparkplatz Kloster Vessra","name":"Besucherparkplatz Kloster Vessra","flaeche":837,"plaetze":15}
+]}
