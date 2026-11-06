@@ -1117,6 +1117,9 @@ export const STDORF = (() => {
         act = `<button type="button" class="stb${q ? '' : ' acc'}" data-dorf="start:${id}"${q ? ' disabled' : ''}>Angehen</button>`;
       else act = `<button type="button" class="stb" data-dorf="retry:${id}">Neu einbringen</button>`;
     } else if (p.st === 'fertig') act = '<b>✓</b>';
+    // a date ahead (a council, the building yard, a funding call): the time-lapse to it (the core's data-skip buttons)
+    else if (p.due != null && p.due > now() + 1)
+      act = `<button type="button" class="stb" data-skip="${Math.ceil(p.due - now() + 5)}" title="Zeitraffer bis zum Termin">⏩ ${esc(CLOCK.dur(p.due - now() + 5))}</button>`;
     const k = p ? p.i / Math.max(1, Pj.steps.length) : 0;
     const who =
       { ortsteil: 'Ortsteilrat (eigenes Geld)', stadt: 'Stadtrat Schleusingen', privat: 'du selbst' }[Pj.by] || '';
@@ -1467,6 +1470,32 @@ export const STDORF = (() => {
   KERN.on('reset', () => {
     S.ext.dorf = fresh();
   });
+  // the first time from above, as long as one knows nobody in the village yet: where the village is and how to begin
+  let hinted = false;
+  KERN.on('strategie:modus', d => {
+    if (!d || !d.on || hinted || ORDER.some(knownP)) return;
+    hinted = true;
+    setTimeout(
+      () =>
+        STRAT.note(
+          'Das Dorf liegt östlich vom Garten: am Anger mit der Linde hört man, was die Leute brauchen – schick jemanden zum Herumhören (Sarah redet am besten).',
+          { kind: 'info', acts: [{ label: 'Zum Anger', fn: () => toAnger() }] }
+        ),
+      2500
+    );
+  });
+  function toAnger() {
+    const P = window.GAME && GAME.P;
+    if (P && STRAT.on) {
+      const c = D.PLACES.anger.pos;
+      P.tx = c[0];
+      P.ty = c[1];
+      P.th = Math.min(Math.max(P.th, 140), 220);
+      if (STRAT.ui && STRAT.ui.openPlace) STRAT.ui.openPlace('anger');
+      markDirty(true);
+    }
+    return 'Der Anger: Ansehen, Projekte, wer wen kennt.';
+  }
   // state for tests and the lead (window.STDORF)
   const state = () => ({
     known: ORDER.filter(knownP),

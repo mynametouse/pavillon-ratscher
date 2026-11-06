@@ -21,8 +21,18 @@ with lib.browser() as b:
     steps = lambda secs, dt=0.25: E(f"for (let i = 0; i < {max(1, int(secs / dt))}; i++) GAME.step({dt})")
     E("document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')")
     def page_pic(name):
+        # the whole page (HUD, overlay, panel); Playwright waits for web fonts – on CI that can hang, then the DevTools capture without waiting
         try:
-            E("GAME.shot(); STHUD.draw()"); pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=25000); print('page shot', name, flush=True)
+            E("STHUD.refresh(); GAME.shot(); STHUD.draw()")
+            try:
+                pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=8000)
+            except Exception:
+                import base64
+                cdp = pg.context.new_cdp_session(pg)
+                data = cdp.send('Page.captureScreenshot', {'format': 'png'})['data']
+                open(os.path.join(OUT, name + '.png'), 'wb').write(base64.b64decode(data))
+                cdp.detach()
+            print('page shot', name, flush=True)
         except Exception as e: print('note: page shot', name, 'failed:', repr(e)[:160], flush=True)
     def until(cond, secs=120, dt=0.25):
         for i in range(int(secs / 5)):
@@ -39,7 +49,10 @@ with lib.browser() as b:
         # a camera d metres from (x, y), from the azimuth az_off, looking at it (as viz3/test/amt.py does)
         a = math.radians(az_off); cx = x + math.sin(a) * d; cy = y + math.cos(a) * d
         yaw = math.degrees(math.atan2(x - cx, y - cy))
-        E(f"(() => {{ const z = KERN.terrain({cx}, {cy}); GAME.view({cx}, {cy}, z + {h}, {yaw}, {pitch}, {fov}); for (let i = 0; i < 6; i++) GAME.step(0.1); }})()")
+        E(f"(() => {{ if (GAME.CAM3) GAME.CAM3.on = false; const z = KERN.terrain({cx}, {cy}); GAME.view({cx}, {cy}, z + {h}, {yaw}, {pitch}, {fov}); for (let i = 0; i < 6; i++) GAME.step(0.1); }})()")
+    def back_top():
+        # GAME.view walks: back to the plan view of the mode (the clock runs at the mode's pace only from above)
+        E("(() => { if (GAME.CAM3) GAME.CAM3.on = true; GAME.go('draufsicht'); for (let i = 0; i < 4; i++) GAME.step(0.1); })()")
     def mark():
         E("window.__sd_roots = GAME.scene.children.map(o => o.uuid)")
         return set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
@@ -176,8 +189,10 @@ with lib.browser() as b:
             E(f"GAME.P.tx = {kf[0]}; GAME.P.ty = {kf[1]}; GAME.P.th = 60")
             steps(0.6)
             page_pic('03a_kirmes_oben')
-            look_at(kf[0], kf[1], 18, 2.2, 160, -2)
+            az = math.degrees(math.atan2(222 - kf[0], -108 - kf[1]))
+            look_at(kf[0], kf[1], 24, 7, az, -12)
             lib.shot(pg, OUT, '03b_kirmes_welt')
+            back_top()
     if 'land' in want:
         # Uwe owns the meadows (one learns it by talking: here the same call the job makes), Heike is the meadow's neighbour
         E("STDORF.meet('uwe', 'sarah'); STDORF.meet('heike', 'sarah')")
@@ -306,8 +321,9 @@ with lib.browser() as b:
             E("STHUD.openPlace('einsatz')")
             steps(1.0)
             page_pic('09_einsatz_baum_oben')
-            look_at(pos[0], pos[1], 16, 3.5, 150, -10)
+            look_at(pos[0], pos[1], 16, 4, 150, -12)
             lib.shot(pg, OUT, '10_einsatz_baum_welt')
+            back_top()
         E("STRAT.setSpeed(30)")
         ok = until("!STDKRISE.state() || !STDKRISE.state().active", 200)
         ks = J("STDKRISE.state()")
@@ -318,8 +334,9 @@ with lib.browser() as b:
         w = J("STDWELT.state()")
         ck('afterwards the logs lie cut at the side of the track', w['krise'] == 'baum:ok', str(w))
         if pos:
-            look_at(pos[0], pos[1], 16, 3.5, 150, -10)
+            look_at(pos[0], pos[1], 16, 4, 150, -12)
             lib.shot(pg, OUT, '11_einsatz_baum_geraeumt')
+            back_top()
         # a Tuesday morning: a cloudburst, the brook rises at the culvert – only three of the fire brigade are in the village, nobody helps
         E("STRAT.S.ext.krise.cur = null")
         E("STRAT.setDate('2027-06-15', 10 * 60)")

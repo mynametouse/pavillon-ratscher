@@ -60,14 +60,33 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   (beim Hochwasser 650 € für Trocknen und Aufräumen). Geholfen: Meinungen (Manfred, Jens, Wolfgang, Hubert …) und Stil steigen. In der Welt:
   die Fichten quer über dem Weg, danach die Stämme am Rand; der Sandsackwall am Durchlass; Rauch, danach die Brandfläche – je ein paar Tage.
   Sicherheit mit Quelle (verspanntes Holz, 15 cm strömendes Wasser, Bodenfeuer nie von vorn).
+- **Was die Feuerwehr braucht:** Projekt „Feuerwehr: Ausrüstung für Waldbrände“ (Ortsteilrat, 480 €: vier Löschrucksäcke, Feuerpatschen –
+  beim Waldbrand greift die Wehr dann schneller an) und der Auftrag **Grundausbildung Feuerwehr (Truppmann)** für deine Leute (im Spiel zwei
+  Lehrgangstage; wirklich rund 70 Stunden): danach sind sie Mitglieder – der Melder alarmiert sie mit, wenn sie in Ratscher sind, und im
+  Einsatz richten sie mehr aus. Manfred und Jens freut es.
+- **Nachbarschaftshilfe** (sobald man die Leute kennt): Heikes Hühnerstall flicken, Gerhard auf dem Dachboden der alten Schule helfen (eine
+  Entdeckung zur Geschichte), Ingrid zum Arzt fahren, Wolfgangs Holz spalten – je mit einer Lehre; beim ersten Mal +5 und Stil +1, danach
+  alle zwei Wochen wieder (+2).
+- **Feldweg: Schotter in die Löcher** (Wolfgangs zweite Sorge): Ortsteilrat empfiehlt, Stadtrat bezahlt 20 t Schotter (650 €), der Bauhof
+  kippt ihn ab, das Dorf baut ihn an einem Samstag ein (Hubert, Uwe, Wolfgang). Danach liegen helle Schotterflecken auf dem Weg zur Klinge.
+- **Glasfaser für Ratscher** (Jens): Infoabend in der alten Schule, von Tür zu Tür (wer gut redet, holt mehr Unterschriften), sechs Wochen
+  Vorvermarktung – die **Quote** (40 % von 55 Haushalten, Annahme) hängt am Ansehen bei den Leuten, die du kennst. Erreicht: die Tiefbaufirma
+  legt Leerrohre, ein grauer Netzverteiler steht am Anger. Verfehlt: neu anfangen oder auf den geförderten Ausbau hoffen.
+- **Die Kirmes in der Welt:** am Kirmes-Wochenende (Datum aus dem Ortsvorsteher-Spiel, `AMT.ST.kd`) stehen von Freitagmittag bis
+  Montagmittag ein Festzelt mit Bierbänken und der **Kirmesbaum** (geschälte Fichte, grüne Krone, Kranz mit Bändern) am Anger.
+- **Ruhezeiten halten (auch zu Fuß):** wer in der Ich-Sicht sonntags, feiertags oder nach 20 Uhr den Benzinmäher laufen lässt, hört Ronald
+  über den Zaun rufen – Hubert, Ronald und Heike denken schlechter von dir, dein Stil sinkt (einmal am Tag, mit der Regel und ihrem Grund).
 - **Ebene „Dorf“:** die Häuser der Leute mit ihrer Meinung von dir (grün, gelb, rot; Unbekannte grau mit „?“) und die Flächen; **Ebene
-  „Einsätze“**.
+  „Einsätze“**. Im Feld des Angers bei jeder Person: was sie sich wünscht und wen sie kennt (wohin man als Nächstes geht).
 - **Kapitel 5 · Das Dorf** mit vier Zielen (fünf Leute kennen, ein Projekt durch den Ortsteilrat, ein Projekt fertig, bei einem Einsatz helfen).
 
 ## Testen
 
+- Ohne Browser: `node --test viz3/test/unit/strategie_dorf.test.mjs` (jeder Projektschritt machbar, jede Regel und jedes Projekt mit Grund
+  und Quelle, Flächen und Preise, die LEADER-Schritte in ihrer Reihenfolge, die Krisen-Zahlen: werktags allein zu spät, mit zwei Helfern
+  rechtzeitig).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9004 --serve strategie_dorf` (Abschnitte
-  `reden,projekt,land,obst,foerder,krise,welt,reload`);
+  `reden,projekt,kirmes,land,obst,foerder,krise,mehr,welt,reload`);
   auf GitHub über `viz3/extra/strategie-dorf/tests.txt` (dazu die schnellen Abschnitte des Kern-Tests `strategie`), Bilder in `out/strategie_dorf/`.
 
 ## Offen

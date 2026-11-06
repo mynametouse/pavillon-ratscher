@@ -87,7 +87,7 @@ export const STDKRISE = (() => {
       if (id === 'baum') {
         const R = ROADS.routes && ROADS.routes.klinge;
         if (R && R.length > 4) {
-          // a stretch of the field track between the village and the forest: 40 % along the route from the garden
+          // where the field track reaches the forest of the Klinge (spruces along it): 72 % along the route from the garden
           let L = 0;
           const seg = [];
           for (let i = 1; i < R.length; i++) {
@@ -95,7 +95,7 @@ export const STDKRISE = (() => {
             seg.push(d);
             L += d;
           }
-          let a = L * 0.4;
+          let a = L * 0.72;
           for (let i = 1; i < R.length; i++) {
             if (a <= seg[i - 1]) {
               const k = a / seg[i - 1];
@@ -231,6 +231,7 @@ export const STDKRISE = (() => {
     xp: 1.5,
     where: 'dorf',
     anytime: true,
+    favour: 0,
     text: 'Unter der Leitung des Einsatzleiters: absichern, tragen, räumen, Sandsäcke füllen, Wasser schleppen – nur was man darf und kann.',
     learn:
       'Helfer an einer Einsatzstelle melden sich beim Einsatzleiter und arbeiten nur in seinem Auftrag – wer auf eigene Faust losläuft, gefährdet sich und die Einsatzkräfte.',
@@ -406,9 +407,10 @@ export const STDKRISE = (() => {
     why: 'Starkregen kann kleine Bäche in Minuten anschwellen lassen; gefährlich wird es, wo Treibgut einen Durchlass verstopft.',
     src: 'Deutscher Wetterdienst, Unwetterwarnungen Starkregen; BBK Ratgeber Hochwasser',
     chance: cx => {
-      if (active() || now() - (st().last.hochwasser || -1e9) < 20 * 1440) return 0;
+      // a brook that reaches the gardens is rare – a few times in a decade, mostly in summer thunderstorms
+      if (active() || now() - (st().last.hochwasser || -1e9) < 120 * 1440) return 0;
       const mo = cx.date.getUTCMonth();
-      return cx.wx.rain >= 2.5 ? (mo >= 4 && mo <= 7 ? 0.2 : 0.08) : 0;
+      return cx.wx.rain >= 2.5 ? (mo >= 4 && mo <= 7 ? 0.035 : 0.012) : 0;
     },
     run: cx => {
       const r = start('hochwasser', { t: cx.t + 15 * 60, sev: 2 });
