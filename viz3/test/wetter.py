@@ -309,7 +309,7 @@ with lib.browser() as b:
         steps(0.5)
         s = st()
         sv = E("localStorage.getItem('pav-wetter-v1')")
-        ck('„nach Kalender“ in the menu: the calendar\'s sky, nothing falls', s['mode'] == 'kalender' and s['src'] == 'kalender' and s['fall']['n'] == 0 and s['sky']['cov'] < 0.01, f"{s['mode']} {s['src']} {s['fall']} {s['sky']}")
+        ck('„nach Kalender“ in the menu: the calendar\'s sky, nothing falls, the ground dry (no frost, no snow)', s['mode'] == 'kalender' and s['src'] == 'kalender' and s['fall']['n'] == 0 and s['sky']['cov'] < 0.01 and s['wet'] == 0 and s['frost'] == 0 and s['snowCover'] == 0, f"{s['mode']} {s['src']} {s['fall']} {s['sky']} wet {s['wet']} frost {s['frost']} snow {s['snowCover']}")
         ck('saved through SAVE (pav-wetter-v1)', sv and json.loads(sv).get('m') == 'kalender', str(sv))
         ck('the menu row shows it', E("document.querySelector('#wxseg [data-wxm=\"kalender\"]').getAttribute('aria-pressed')") == 'true', '')
         pic('13_kalender')

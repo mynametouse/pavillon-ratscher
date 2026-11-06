@@ -242,6 +242,8 @@ export const WETTER = (() => {
     for (const key of ['rain', 'snow']) if (c[key] < 0.002) c[key] = 0;
   }
   const shown = () => DN.active && DN.mode === 'auto' && P.mode !== 'top';
+  // what the effects get each frame: the same objects, filled anew (nothing allocated per frame)
+  const OPT = { sky: {}, fall: {}, ton: {} };
   function tick(dt) {
     dt = Math.min(dt, 0.25);
     const snap = S.snapNext;
@@ -264,7 +266,15 @@ export const WETTER = (() => {
       c = S.cur,
       wx = S.w || {},
       any = c.cover > 0.003 || c.rain > 0 || c.snow > 0 || c.vis < 20000 || c.wind > 3;
-    WXSKY.set({ on: on && any, cover: c.cover, rain: c.rain, snow: c.snow, vis: c.vis, wind: c.wind, dir: c.dir });
+    const sk = OPT.sky;
+    sk.on = on && any;
+    sk.cover = c.cover;
+    sk.rain = c.rain;
+    sk.snow = c.snow;
+    sk.vis = c.vis;
+    sk.wind = c.wind;
+    sk.dir = c.dir;
+    WXSKY.set(sk);
     WXSKY.tick(dt, !window.FREEZE);
     // the trees in the wind (the gusts' swing of the drops: one wind for both)
     WXWIND.set(on, c.wind, c.gust, c.dir, WXFALL.S.gustK);
@@ -277,42 +287,36 @@ export const WETTER = (() => {
       seat = PLAY.seat,
       bus = !!(window.BUS && window.BUS.S && window.BUS.S.ride),
       cab = !!(VEH && VEH.cur) || !!(seat && (seat.kind === 'ride' || seat.drive));
-    const fall = WXFALL.set(
-      {
-        on,
-        rain: c.rain,
-        snow: c.snow,
-        drizzle: !!wx.drizzle,
-        graupel: wx.code === 77,
-        hail: !!wx.hail,
-        wind: c.wind,
-        gust: c.gust,
-        dir: c.dir,
-        col: WXSKY.U.wxHor.value,
-        hole: bus ? 7 : cab ? 2.4 : pav ? 5.5 : 0.35,
-        cab,
-        ground: P.mode === 'walk' && !cab && !inside ? groundPlane() : null,
-        hide: (inside && !pav) || !on,
-      },
-      dt
-    );
+    const fo = OPT.fall;
+    fo.on = on;
+    fo.rain = c.rain;
+    fo.snow = c.snow;
+    fo.drizzle = !!wx.drizzle;
+    fo.graupel = wx.code === 77;
+    fo.hail = !!wx.hail;
+    fo.wind = c.wind;
+    fo.gust = c.gust;
+    fo.dir = c.dir;
+    fo.col = WXSKY.U.wxHor.value;
+    fo.hole = bus ? 7 : cab ? 2.4 : pav ? 5.5 : 0.35;
+    fo.cab = cab;
+    fo.ground = P.mode === 'walk' && !cab && !inside ? groundPlane() : null;
+    fo.hide = (inside && !pav) || !on;
+    const fall = WXFALL.set(fo, dt);
     if (fall) {
       WXFALL.tick(dt);
       markDirty();
     }
-    WXTON.update(
-      {
-        on,
-        rain: c.rain,
-        drizzle: !!wx.drizzle,
-        wind: c.wind,
-        gust: c.gust,
-        gustK: WXFALL.S.gustK,
-        inside: inside || cab,
-        storm: on && !!wx.thunder,
-      },
-      dt
-    );
+    const to = OPT.ton;
+    to.on = on;
+    to.rain = c.rain;
+    to.drizzle = !!wx.drizzle;
+    to.wind = c.wind;
+    to.gust = c.gust;
+    to.gustK = WXFALL.S.gustK;
+    to.inside = inside || cab;
+    to.storm = on && !!wx.thunder;
+    WXTON.update(to, dt);
     // wet ground: eased over a few seconds (an hour of game time passes in a minute: the data's own slope is gentle enough)
     const kk = snap ? 1 : 1 - Math.exp(-dt / 6);
     S.wet += ((on ? S.wetWant : 0) - S.wet) * kk;
@@ -397,6 +401,7 @@ export const WETTER = (() => {
         sstp(70, 90, r.H ?? 85) *
         (1 - sstp(0.05, 0.4, (r.P ?? 0) + (r.R ?? 0)));
   function frost() {
+    if (!S.w || S.src === 'kalender') return 0;
     let f = frostOf(S.rec);
     if (S.src !== 'probe') {
       const u = gameU();
