@@ -589,6 +589,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       h += '</ul>';
       const U = (S.plan.urlaub || []).map(r => `${r.from} bis ${r.to}`);
       h += `<h4>Urlaub</h4><div class="sub">${U.length ? esc(U.join(' · ')) : 'keiner geplant'}</div><p><button type="button" class="stb" data-vac="next">Nächste Woche Urlaub</button> <button type="button" class="stb" data-vac="clear">Urlaub löschen</button></p>`;
+      h += `<h4>Zeitraffer</h4><div class="sub">Holz trocknet über Monate – alles läuft weiter: Aufträge, wer kommt und geht, was passiert.</div><p><button type="button" class="stb" data-skip="${7 * 1440}">⏩ 1 Woche</button> <button type="button" class="stb" data-skip="${28 * 1440}">⏩ 4 Wochen</button> <button type="button" class="stb" data-skip="${91 * 1440}">⏩ 3 Monate</button></p>`;
       h += `<div class="learn">Thüringer Feiertage: Neujahr, Karfreitag, Ostermontag, 1. Mai, Christi Himmelfahrt, Pfingstmontag, Weltkindertag (20.9., seit 2019 nur in Thüringen), Tag der Deutschen Einheit, Reformationstag, 1. und 2. Weihnachtstag.</div>`;
       setPan(h);
     });
@@ -641,6 +642,11 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       const r = STAUSBAU.buy(b.dataset.buy);
       if (r && r.no) no(r);
       else if (r && r.text) say(r.text);
+      H.panH = '';
+    } else if (b.dataset.skip) {
+      // a long wait in time-lapse (drying takes months): everything runs on meanwhile – jobs, people coming and going, events
+      const m = +b.dataset.skip;
+      if (m > 0) STRAT.skip(m);
       H.panH = '';
     }
   }
