@@ -8,6 +8,7 @@
 // plan view; in a vehicle no drop comes nearer than 2.4 m (the cabin).
 import * as THREE from 'three';
 import { cam, COARSE, R, scene } from '../core/head.js';
+import { LOAD } from '../core/assets.js';
 export const WXFALL = (() => {
   const N = COARSE ? 3200 : 9000,
     BOX = COARSE ? new THREE.Vector3(22, 15, 22) : new THREE.Vector3(30, 19, 30);
@@ -239,7 +240,8 @@ export const WXFALL = (() => {
   function tick(dt) {
     S.t = (S.t + dt) % 600;
     U.uT.value = S.t;
-    if (S.on && !S.noRoof) roofs();
+    // (not while the loading screen is up: nothing may draw then – programs may still be compiling, V16b3)
+    if (S.on && !S.noRoof && LOAD.ready) roofs();
     else if (S.noRoof) U.uRoofC.value.w = 0;
   }
   // ---- roofs over the rain: while it rains, the scene is drawn from straight above into a small depth map around the drops' box

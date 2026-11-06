@@ -33,8 +33,11 @@ export function applyCam() {
     cam.far = Math.max(FAR0(), h * 1.6);
     cam.updateProjectionMatrix();
     cam.up.set(0, 0, -1);
-    cam.position.copy(V(P.tx, P.ty, h));
-    cam.lookAt(V(P.tx, P.ty, 0));
+    // feat/strategie: over the Klinge (or the valley) the camera stands above the ground there, not above the garden's level – zoomed in
+    // it sat in the forest's crowns (the garden is the modelled flat site at 0: unchanged there)
+    const gz = window.RATSCHER && LATE.RATSCHER.ready ? KERN.ground(P.tx, P.ty) || 0 : 0;
+    cam.position.copy(V(P.tx, P.ty, h + gz));
+    cam.lookAt(V(P.tx, P.ty, gz));
     if (window.SITEPLAN) LATE.SITEPLAN.onCam();
     return;
   }

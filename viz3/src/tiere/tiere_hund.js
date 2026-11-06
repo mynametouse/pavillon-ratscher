@@ -5,7 +5,7 @@
 // Like the creature in Black & White he does things of his own accord and learns from you: what he did last (herding Ronald's goats,
 // driving game out of the garden, chasing game far into the fields, finding a sign for you, barking at a neighbour or staying calm) is
 // what your praise (+) or scolding (−) is about – the tendency to do it again rises or falls, a little each time, and his bond with you
-// grows with praise. Called with P (whistle), sent with U to where you look. Character and what he learned: pav-hund-v1.
+// grows with praise. Called with P (whistle), sent with Shift+P to where you look. Character and what he learned: pav-hund-v1.
 import { $, scene } from '../core/head.js';
 import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
@@ -478,7 +478,7 @@ export const HUND = (() => {
       pEl.id = 'hund-panel';
       pEl.innerHTML =
         '<div id="hund-st"></div><div class="hb"><button data-h="rufen" title="Rufen (P)">Rufen</button>' +
-        '<button data-h="schicken" title="Schicken (U): dahin, wo du hinschaust">Schicken</button></div>' +
+        '<button data-h="schicken" title="Schicken (Umschalt+P): dahin, wo du hinschaust">Schicken</button></div>' +
         '<div class="hb"><button data-h="lob" title="Loben (+)">Loben</button><button data-h="tadel" title="Tadeln (−)">Tadeln</button></div>';
       pEl.addEventListener('click', e => {
         const b = e.target.closest('button');
@@ -498,8 +498,8 @@ export const HUND = (() => {
     if (!D.on || P.mode !== 'walk' || (VEH && VEH.cur) || !D.model || !D.model.g.visible) return;
     if (window.ZSTATE && ZSTATE.on) return;
     const k = e.key;
-    if (k === 'p' || k === 'P') cmdRufen();
-    else if (k === 'u' || k === 'U') cmdSchicken();
+    // P whistles him back, Shift+P sends him where you look (U belongs to the strategy view: game/st_modus.js)
+    if (k === 'p' || k === 'P') e.shiftKey ? cmdSchicken() : cmdRufen();
     else if (k === '+' || e.code === 'NumpadAdd') lob(1);
     else if (k === '-' || e.code === 'NumpadSubtract') lob(-1);
   });

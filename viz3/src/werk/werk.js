@@ -4019,6 +4019,76 @@ export const WERK = (() => {
     WT,
     wpMesh,
     faceTextures,
+    // feat/strategie: a board made by someone the strategy mode sent (strategie/st_holz.js): from half a glued panel of the rack (a whole one
+    // is cut to 500 mm first – the other half stays, as by hand), the steps of the game done by that person; it lies on the shelf with
+    // their stars and notes. o: { stars, who, notes, oak, sp } (oak: only oak panels; sp: only panels of own wood of that species, e.g.
+    // 'larch'). Returns the board or null (no panel).
+    simBoard(o = {}) {
+      let i = -1;
+      for (let k = RACK.items.length - 1; k >= 0; k--) {
+        const w = RACK.items[k];
+        if (w.st !== 'panel' || w.L < 480 || (o.oak && w.sp) || (o.sp && w.sp !== o.sp)) continue;
+        if (i < 0 || (w.L < 900 && RACK.items[i].L >= 900)) i = k;
+      }
+      if (i < 0) return null;
+      const pan = RACK.items[i];
+      if (pan.L >= 900) pan.L = 500;
+      else {
+        RACK.items.splice(i, 1);
+        pan.where = 'gone';
+      }
+      const wp = newWP('done', {
+        sp: pan.sp,
+        own: pan.own,
+        mc: pan.mc,
+        L: 500,
+        Z: 45,
+        Zcur: 40,
+        H: 40,
+        strips: Array.from({ length: 8 }, (_, k) => ({ v0: k * 48.2, fa: false, fb: false })),
+        slices: Array.from({ length: 9 }, (_, k) => ({ flip: k % 2 === 1 })),
+        trim: true,
+        cham: true,
+        grit: 240,
+        raised: true,
+        oil: { n: 2, t: now() - 600, wiped: true, rag: false },
+        brand: 1,
+        done: true,
+        notes: (o.notes || []).slice(),
+        by: o.who || null,
+      });
+      wp.bn = W.boards = (W.boards || 0) + 1;
+      wp.stars = Math.max(1, Math.min(5, Math.round(o.stars || 3)));
+      shelfPut(wp);
+      W.quality.push({ n: wp.n, stars: wp.stars, t: now(), by: o.who || null });
+      renderRack();
+      changed();
+      return wp;
+    },
+    // feat/strategie: finished boards handed over to a customer (an order of the strategy mode): they leave the shelf
+    handOut(ids) {
+      let n = 0;
+      for (const id of ids) {
+        const wp = W.list.find(w => w.id === id && w.done && w.where === 'shelf');
+        if (!wp) continue;
+        const k = SHELF.items.indexOf(wp);
+        if (k >= 0) SHELF.items.splice(k, 1);
+        wp.where = 'kunde';
+        n++;
+      }
+      if (n) {
+        renderRack();
+        changed();
+      }
+      return n;
+    },
+    // feat/strategie: an order of glued panels as at the rack (delivered at 9:00 of the next morning)
+    orderPanels(n) {
+      if (W.order) W.order.n += n;
+      else W.order = { t: now() + CLOCK.until(9), n };
+      save();
+      return W.order;
+    },
     // V16d: panels glued from one's own dried planks (werk/holz_dry.js) go into the rack like the bought ones
     addOwn(n, sp, mc) {
       for (let i = 0; i < n; i++) {
