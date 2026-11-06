@@ -309,8 +309,9 @@ export const WDATA = (() => {
         ['WetterOnline – Wetterlexikon: Sturm', 'https://www.wetteronline.de/wetterlexikon/sturm'],
         Q.dguvWald,
       ],
-      find: { look: ['wetter:sturm'] },
-      hint: 'Wenn draußen ein Sturm weht.',
+      // also the strategy mode's windthrow after a storm (strategie/st_ereignis.js: reveal 'wald', 'sturmholz')
+      find: { look: ['wetter:sturm'], ev: [['strategie:entdeckt', d => d && d.id === 'sturmholz']] },
+      hint: 'Wenn draußen ein Sturm weht – oder nach dem Sturm im Wald.',
     },
     {
       id: 'n_hund',
@@ -354,7 +355,12 @@ export const WDATA = (() => {
       text: 'Zuerst der Fallkerb – Sohle und Dach, etwa ein Fünftel bis ein Drittel des Durchmessers tief –, er zeigt die Fallrichtung. Dann von der anderen Seite der Fällschnitt: Dabei bleibt die Bruchleiste stehen, etwa ein Zehntel des Durchmessers breit. Sie wirkt wie ein Scharnier und führt den Baum bis zum Boden.',
       here: 'Neigt sich der Baum nicht von selbst, hilft ein Keil. Vor dem Fallen ruft man laut „Achtung, Baum fällt!“ und geht auf der Rückweiche schräg nach hinten weg – nie direkt hinter den Stamm.',
       src: [Q.dguvWald, Q.dguvRegel],
-      find: { look: ['fell:fallkerb'], talk: ['wolfgang:faellen'] },
+      // also the strategy mode's chainsaw course (strategie/st_holz.js: reveal 'wissen', 'motorsaege')
+      find: {
+        look: ['fell:fallkerb'],
+        talk: ['wolfgang:faellen'],
+        ev: [['strategie:entdeckt', d => d && d.id === 'motorsaege']],
+      },
       hint: 'An der Klinge einen markierten Baum fällen.',
     },
     {
@@ -894,7 +900,8 @@ export const WDATA = (() => {
       text: 'In Süddeutschland und Thüringen heißt ein enges, steiles Tal, das ein Bach eingeschnitten hat, „Klinge“. An der Unteren Klinge liegt der Familienwald: Fichten, Lärchen und Kiefern, gut 800 m südwestlich vom Garten.',
       here: 'Im Frühjahr läuft das Wasser die Klinge herunter. Wer dort Wald hat, braucht Geduld und gute Stiefel – sagt Wolfgang.',
       src: [['Wiktionary: Klinge (Bedeutung „enge Schlucht“)', 'https://de.wiktionary.org/wiki/Klinge'], Q.osm],
-      find: { place: ['Klinge'], talk: ['wolfgang:klinge'] },
+      // also the strategy mode's walk through the forest (strategie/st_holz.js: reveal 'wald', 'klinge')
+      find: { place: ['Klinge'], talk: ['wolfgang:klinge'], ev: [['strategie:entdeckt', d => d && d.id === 'klinge']] },
       more: ['n_fichte', 'n_laerche', 'n_kaefer', 'n_waldumbau', 'h_faellen'],
     },
     {

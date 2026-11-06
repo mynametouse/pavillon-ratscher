@@ -281,8 +281,10 @@ def run():
                 ck('…its legend stands clear of the mode\'s people, chapter card, clock and panel', not any(ov.values()), str(ov))
                 page_pic('08b_strategie_sonne')
                 E("STRAT.layer.set('w_sonne', false)")
-                E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'sturmholz', title: 'Sturmholz an der Klinge', source: 'ThüringenForst', text: 'Windwurf nach dem Sturm', by: 'falko' })")
-                ck('an exploration of the strategy mode the book has no entry for becomes one (Natur)', J("(() => { const e = WISSEN.get('st:wald:sturmholz'); return !!e && e.ch === 'natur' && WISSEN.has(e.id); })()"))
+                E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'sturmholz', title: 'Sturmholz: 3 Fichten geworfen', source: 'Waldbegang nach dem Sturm', text: 'Bäume unter Spannung', by: 'falko' })")
+                ck('the windthrow found from above opens „Sturm und Windwurf“ (no generated entry)', J("WISSEN.has('n_sturm') && !WISSEN.get('st:wald:sturmholz')"))
+                E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'quellmulde', title: 'Eine Quellmulde am Hang', source: 'Waldbegang', text: 'nasser Boden, Binsen', by: 'falko' })")
+                ck('an exploration of the strategy mode the book has no entry for becomes one (Natur)', J("(() => { const e = WISSEN.get('st:wald:quellmulde'); return !!e && e.ch === 'natur' && WISSEN.has(e.id); })()"))
                 # its own „Warum?“ on a refusal: the rule counts as understood in the book, the reason gets the book's linked sources
                 if J("!!(STRAT.D && STRAT.D.RULES && STRAT.D.RULES.saftruhe && STRAT.note)"):
                     E("(() => { const R = STRAT.D.RULES.saftruhe; STRAT.note(R.text, { kind: 'nein', why: R.why, src: R.src }); })()"); time.sleep(0.2)

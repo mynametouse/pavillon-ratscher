@@ -16,7 +16,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   - **Orte** (Ereignis `place`): Anger, Dorflinde, alte Schule, Bach, Klinge, Schleusingen (Markt, Bertholdsburg, St. Johannis, Rathaus),
     Kloster Veßra (Klosterkirche, Henneberger Kapelle), Baumschule, Ziegenweide …
   - **Ereignisse der anderen**: `tiere:entdeckt` (feat/tiere – eine bekannte Art öffnet ihren Eintrag, eine unbekannte wird ein neuer Eintrag
-    mit dem Steckbrief aus `TARTEN` und dessen Quellen), `strategie:entdeckt` (feat/strategie – Erkunden statt Nebel), `hund:befehl` (den Hund rufen → sein
+    mit dem Steckbrief aus `TARTEN` und dessen Quellen), `strategie:entdeckt` (feat/strategie – Erkunden statt Nebel; Käferbäume, Sturmholz, der Waldbegang in der Klinge und der
+    Motorsägen-Lehrgang öffnen die passenden Einträge, anderes wird ein eigener Eintrag), `hund:befehl` (den Hund rufen → sein
     Steckbrief) und `hund:gelernt` (loben oder tadeln → „Wie ein Hund lernt“), `bus:fahrplan` und `bus:ein` (feat/bus → „Der Bus auf dem
     Land“: wer den Busverkehr bestellt, § 3 ThürÖPNVG), `einrichtung:schale|brand|glasur`
     (Töpfern im Atelier), `einrichtung:bild` (Malen), `gplan:gepflanzt|geschnitten|gemulcht`, `garage:gemaeht`, `fell`, `verkehr:mitfahrt`,
