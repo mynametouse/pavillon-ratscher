@@ -37,7 +37,7 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   kleines Wetterzeichen (Wolken, Regen, Schnee, Nebel, Gewitter), sein Tooltip nennt die Zeile.
 - **Nasser Boden, Schnee liegt** (`wetter/wx_boden.js`): Regen macht Gelände, Felder, Kacheln, Brücken, den Gartenboden und (etwas) die Dächer
   dunkler und glänzender – und das bleibt Stunden nach dem Regen (aus dem Niederschlag der letzten Stunden der Daten). Liegt Schnee
-  (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände, Bäume, Gras bleiben.
+  (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände und Bäume bleiben.
   Nur Farbe/Rauheit/Leuchten der Materialien (Uniforms), die Originale kommen genau zurück. Die neuen 3D-Gebäude (`gebaeude/`) nutzen das
   Dachmaterial des Dorfs und werden mit nass und weiß; die Grasbüschel des Rasens werden nass etwas dunkler und unter Schnee weiß.
   **Reif:** nach einer klaren, windstillen, kalten, feuchten Stunde der letzten acht (Luft bis ~+2 °C – der Boden ist kälter): die
@@ -67,7 +67,7 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 ## Testen
 
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9001 --serve wetter` (Abschnitte: `python3 viz3/test/wetter.py 9001
-  start,jetzt,wetter,innen,kalender,fehler,zombie,neu`), Bilder in `out/wetter/`. Auf GitHub über `viz3/extra/wetter/tests.txt`.
+  start,jetzt,wetter,innen,ton,kalender,fehler,zombie,neu`), Bilder in `out/wetter/`. Auf GitHub über `viz3/extra/wetter/tests.txt`.
 - Ein Testbrowser fragt Open-Meteo nie (`navigator.webdriver`); `WETTER.mock(fn | json | 'fail')` antwortet statt dessen in der Form von
   Open-Meteo. `WETTER.state()` zeigt Quelle, Werte, Tropfen, Spritzer, Himmel, Tonpegel, geladene Aufnahmen.
 - Echte Antworten von Open-Meteo (der Chat-Rechner bekommt HTTP 429; geprüft 6.11. ~2:00: alle vier Arten gelesen, jede Antwort mit
@@ -85,8 +85,10 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Einstellung „Spielzeit: wie draußen“) – das betrifft das ganze Spiel, deshalb nicht hier entschieden.
 - Gras, die Dorflinde, die Bäume des Gartenplaners und der Wald an der Klinge wiegen nicht (nur die instanzierten Gartenbäume, s. o.);
   die Schatten der Kronen bleiben still.
-- Pfützen, Spritzer am Boden; Regen am Fenster und an der Windschutzscheibe.
-- Lichtglocke der Städte unter der Wolkendecke nachts.
+- Pfützen; Regen am Fenster und an der Windschutzscheibe; nasse Straßen spiegeln kaum (der Geländeshader dämpft Spiegelungen auf 35 %).
+- Ein wolkenloser Tag zeigt die wenigen Kumuli des Tagesfotos („Sonnig“ bei 2 % Bewölkung) – ganz klar ginge nur mit einem klaren
+  Himmelsfoto oder einem an die Fotos angepassten Verlauf.
+- Die Dächerkarte wird nur nach Bewegung neu gezeichnet: ein weggefahrenes Auto bleibt dort „Dach“, bis man 3 m weiter ist.
 
 ## Für den Lead
 
@@ -102,13 +104,16 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - Die Menüzeile „Wetter“ setzt `wetter/wetter.js` selbst unter „Spielzeit“ ein (keine Änderung an `shell/menu.html`); das Wetterzeichen
   hängt es als `span.wxi` an `#clockbtn` (die Uhr und DN schreiben nur `.hbt` und das erste `.hbi`).
 - Für ARCHITECTURE.md: neuer `window`-Name `WETTER` (`wetter/wetter.js`; Test-API `mock`, `snap`, `state`, `preset`, `setMode`,
-  `clockToNow`, `fall`), Schlüssel `pav-wetter-v1` `{ v: 1, m: 'live' | 'kalender' }`, Hinweis `pav-wetter-neu` (SAVE.once); Module
-  `wetter/wx_data.js` (WXDATA, rein), `wx_sky.js` (WXSKY), `wx_fall.js` (WXFALL), `wx_ton.js` (WXTON), `wx_boden.js` (WXBODEN), `wetter.js`.
+  `clockToNow`, `strike`, `fall`, `data`), Schlüssel `pav-wetter-v1` `{ v: 1, m: 'live' | 'kalender' }`, Hinweis `pav-wetter-neu`
+  (SAVE.once); Module `wetter/wx_data.js` (WXDATA, rein), `wx_sky.js` (WXSKY), `wx_fall.js` (WXFALL), `wx_ton.js` (WXTON), `wx_boden.js`
+  (WXBODEN), `wx_wind.js` (WXWIND), `wetter.js`. Fremde Materialien, die das Wetter zur Laufzeit (Uniforms) oder beim Laden (Shader)
+  ändert: der Himmel und die Sterne von `time/daynight.js` (Shader, beim Laden), die Blätter von `garden/trees.js` (Shader, beim Laden),
+  Gelände/Felder/Kacheln/Brücken/Gartenboden/Rasenbüschel/Dächer (Farbe, Rauheit, Leuchten).
 - CSP: Die veröffentlichte Seite (GitHub Pages) setzt keine Content-Security-Policy (kein Meta-Tag in `shell/head.html`, Pages sendet keinen
   Header) – `api.open-meteo.com` und `archive-api.open-meteo.com` sind erreichbar. Nur der Testserver (`tools/csp/cspserve.py`) erlaubt
   `connect-src 'self'`; so soll es bleiben (Tests fragen nie). Käme je eine CSP dazu: `connect-src 'self' https://api.open-meteo.com
   https://archive-api.open-meteo.com`.
 - Quellen: `credits_add` in `viz3/extra/wetter/manifest.json` (Open-Meteo, CC BY 4.0; ERA5/Copernicus; die Aufnahmen).
-- Neuer Workflow `.github/workflows/wetter-ton.yml` (nur bei Änderungen an `viz3/extra/wetter/quellen/**` auf `feat/wetter`, lädt nur ein
-  Artefakt hoch, schiebt nichts). Ein „Neu“-Hinweis `SAVE.once('pav-wetter-neu')` beim ersten echten Wetter.
+- Neuer Workflow `.github/workflows/wetter-ton.yml` (nur bei Änderungen an `viz3/extra/wetter/quellen/**` oder `wx_data.js` auf
+  `feat/wetter`; zwei Jobs: Aufnahmen sichten/schneiden, echte Antworten lesen; lädt nur Artefakte hoch, schiebt nichts). Ein „Neu“-Hinweis `SAVE.once('pav-wetter-neu')` beim ersten echten Wetter.
 - Lehre für alle: das Scratch-Verzeichnis teilen sich Lead und Hilfs-Agenten (gleiche Sitzung) – eigene Unterordner mit Präfix nehmen.
