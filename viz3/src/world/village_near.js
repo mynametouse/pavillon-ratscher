@@ -112,6 +112,8 @@ export const VNEAR = (() => {
   const onWall = (b, f, u, off, v) => [f.ax + f.dx * u + f.nx * off, f.ay + f.dy * u + f.ny * off, b.foot + v];
   // is (x, y) free of every building (margin m) – fences and piles stop there
   function freeAt(x, y, m, skip) {
+    // feat/welt-gebaeude: the buildings of gebaeude/gebaeude.js (sheds, garages, barns OSM lacked) count as well
+    if (window.GEB && GEB.footFree && !GEB.footFree(x, y, m)) return false;
     for (const b of VILLAGE.bld) {
       if (b === skip || x < b.bb[0] - m || x > b.bb[2] + m || y < b.bb[1] - m || y > b.bb[3] + m) continue;
       let c = false;

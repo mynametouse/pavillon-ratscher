@@ -158,7 +158,11 @@ Falko (Antwort statt Auswahl, wörtlich): „Ach ja, und wichtig ist mir wirklic
 ähm, um sich Vorstellungen machen zu können, wie die Welt auch in Zukunft aussehen kann und sich verschiedene Szenarien vorstellen kann, aber
 auch wirklich etwas lernt über die Welt, über die Natur, über verschiedene Handwerke, über die Menschen, über die Politik letztendlich sogar,
 über Soziales, über die Geschichte. Ähm, Viel zu entdecken soll es geben und viel zu lernen.“ Zu SimCity/Siedler, den Sims und dem
-Zusammenspiel der Modi: keine Vorliebe – der Kern-Chat entscheidet (die Empfehlungen unten).
+Zusammenspiel der Modi zunächst keine Wahl; um 23:30 alle Fragen noch einmal angeklickt: **aus C&C 3 / StarCraft alle vier** (Erkunden statt
+Nebel, Wissens- und Technologiebaum, Krisen-Einsätze, Schlafplätze als Helfer-Grenze), **aus SimCity / Siedler 3 alle vier** (Daten-Ansichten,
+Dorfhaushalt und Infrastruktur, Träger und Wege, Land pachten oder kaufen), **aus den Sims alle vier** (Bedürfnisse der Helden, Beziehungen und
+Geschichten, Haus-Ansicht mit Einrichten, freier Wille der Leute), **Modi: Linsen, Schichten, Welten**, **Lernen zuerst: Natur, Handwerk,
+Geschichte, Politik und Soziales – alle vier**, **andere Zeiten: Was-wäre-wenn-Zukünfte und Zeitreise in die Vergangenheit – beides**.
 
 - **Entdecken und Lernen** in jeder Linse und jedem Modus: ein **Entdeckerbuch** (Arten gesehen, Pflanzen bestimmt, Handwerke gelernt,
   Orte der Geschichte gefunden, Regeln verstanden – jeweils mit echter Quelle), Erklärungen „Warum?“ an jeder Regel (Sonntagsruhe, Grenzabstand,

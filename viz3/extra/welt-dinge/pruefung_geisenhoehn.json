@@ -1,0 +1,208 @@
+{
+"quelle": "DOP 2024 (GDI-Th), YOLO11-OBB (DOTAv1), Regeln aus tools/welt-dinge/decide.py; Stichprobe und Zweifelsf\u00e4lle von Auge",
+"ja": [
+{
+"t": "auto",
+"x": -899.58,
+"y": -335.36,
+"az": 93.4,
+"l": 4.45,
+"w": 2.33,
+"p": 0.498,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -917.14,
+"y": -368.3,
+"az": 93.5,
+"l": 4.29,
+"w": 2.39,
+"p": 0.532,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -916.34,
+"y": -363.8,
+"az": 94.0,
+"l": 4.64,
+"w": 2.43,
+"p": 0.466,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -929.04,
+"y": -426.59,
+"az": 112.2,
+"l": 4.76,
+"w": 2.32,
+"p": 0.612,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -926.49,
+"y": -430.9,
+"az": 114.5,
+"l": 4.92,
+"w": 2.42,
+"p": 0.324,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -918.33,
+"y": -448.74,
+"az": 6.6,
+"l": 4.13,
+"w": 2.15,
+"p": 0.457,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -825.05,
+"y": -451.32,
+"az": 56.7,
+"l": 4.14,
+"w": 2.05,
+"p": 0.336,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -902.61,
+"y": -531.36,
+"az": 13.8,
+"l": 4.94,
+"w": 2.23,
+"p": 0.579,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -830.87,
+"y": -514.82,
+"az": 84.3,
+"l": 3.93,
+"w": 2.2,
+"p": 0.341,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -876.15,
+"y": -553.68,
+"az": 177.6,
+"l": 3.58,
+"w": 1.86,
+"p": 0.431,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -928.3,
+"y": -595.15,
+"az": 129.5,
+"l": 3.82,
+"w": 1.85,
+"p": 0.37,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -914.61,
+"y": -584.74,
+"az": 42.1,
+"l": 4.38,
+"w": 1.97,
+"p": 0.469,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -909.65,
+"y": -594.6,
+"az": 149.5,
+"l": 4.42,
+"w": 1.94,
+"p": 0.216,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -903.48,
+"y": -611.62,
+"az": 141.6,
+"l": 5.45,
+"w": 2.88,
+"p": 0.381,
+"c": "small vehicle",
+"regel": true
+},
+{
+"t": "auto",
+"x": -964.99,
+"y": -659.93,
+"az": 138.7,
+"l": 4.22,
+"w": 2.26,
+"p": 0.324,
+"c": "small vehicle",
+"regel": true
+}
+],
+"nein": [],
+"dazu": [
+{
+"t": "stammholz",
+"x": -972.5,
+"y": -417.5,
+"az": 5,
+"l": 11.0,
+"w": 6.0,
+"h": 1.4,
+"quelle": "Auge: Holzplatz im Westen des Dorfs"
+},
+{
+"t": "holzstapel",
+"x": -966.9,
+"y": -425.0,
+"az": 8,
+"l": 16.0,
+"w": 4.5,
+"h": 1.6,
+"quelle": "Auge"
+},
+{
+"t": "traktor",
+"x": -955.0,
+"y": -414.8,
+"az": 20,
+"l": 3.6,
+"w": 1.8,
+"h": 2.3,
+"quelle": "Auge: kleiner roter Traktor",
+"farbe": [
+0.62,
+0.12,
+0.09
+]
+}
+]
+}

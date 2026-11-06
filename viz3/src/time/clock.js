@@ -113,6 +113,18 @@ export const CLOCK = (() => {
   // ---- HUD: the clock button and its window ----
   const btn = $('clockbtn'),
     win = $('clockwin');
+  // feat/wetter: more sections of the window after the date (wetter/wetter.js: the weather) – CLOCK.section({ html: () => text, bind: win => … })
+  const extra = [];
+  const extraHTML = () =>
+    extra
+      .map(x => {
+        try {
+          return x.html() || '';
+        } catch (e) {
+          return '';
+        }
+      })
+      .join('');
   function ui() {
     if (!btn) return;
     const txt =
@@ -133,6 +145,9 @@ export const CLOCK = (() => {
     btn.classList.toggle('warp', !!S.warp);
     if (win && !win.hidden) renderWin(true);
   }
+  // feat/bus: the clock in real time for a bus (waiting at its stop, riding – bus/bus.js) is no glue: one may wait
+  const onlyBus = () => S.focus.size > 0 && [...S.focus].every(k => k === 'bus');
+  const focusLabel = () => (onlyBus() ? 'Echtzeit – Bus' : 'Echtzeit – Leim offen');
   let winAcc = 0;
   function renderWin(soft) {
     if (!win || win.hidden) return;
@@ -148,7 +163,7 @@ export const CLOCK = (() => {
       } catch (e) {}
     }
     win.innerHTML = `<h3>Spielzeit<button type="button" class="x" aria-label="Schließen">×</button></h3>
-      <div class="cknow"><b>Tag ${day()}</b><span>${hm()} Uhr</span>${S.focus.size ? '<em>Echtzeit – Leim offen</em>' : S.warp ? '<em>' + (S.warp.label === 'Schlafen' ? 'Schlafen …' : 'Zeitraffer …') + '</em>' : ''}</div>${window.DN ? LATE.DN.winHTML() : ''}
+      <div class="cknow"><b>Tag ${day()}</b><span>${hm()} Uhr</span>${S.focus.size ? '<em>' + focusLabel() + '</em>' : S.warp ? '<em>' + (S.warp.label === 'Schlafen' ? 'Schlafen …' : 'Zeitraffer …') + '</em>' : ''}</div>${window.DN ? LATE.DN.winHTML() : ''}${extraHTML()}
       <div class="mrow"><span>Tempo</span><div class="mseg">${Object.entries(RATES)
         .map(([k, r]) => `<button type="button" data-rate="${k}" aria-pressed="${S.rate === k}">${r.n}</button>`)
         .join('')}</div></div>
@@ -165,12 +180,18 @@ export const CLOCK = (() => {
       <p class="mnote">Leim, Öl und Räuchern brauchen Spielzeit. Beim Verleimen läuft die Uhr in Echtzeit – die offene Zeit des Leims ist echt. Sonne, Mond und Sterne stehen, wo sie über Ratscher zu dieser Stunde wirklich stehen. Nachts: auf das Tagesbett legen und bis zum Morgen schlafen.</p>`;
     win.querySelector('.x').addEventListener('click', () => setWin(false));
     if (window.DN) LATE.DN.winBind(win);
+    for (const x of extra)
+      try {
+        if (x.bind) x.bind(win);
+      } catch (e) {
+        console.warn('clock section', e);
+      }
     win.querySelectorAll('[data-rate]').forEach(b => b.addEventListener('click', () => setRate(b.dataset.rate)));
     win.querySelectorAll('[data-wait]').forEach(b =>
       b.addEventListener('click', () => {
         const w = b.dataset.wait;
         if (w === 'stop') cancel();
-        else if (S.focus.size) PLAY.think('Nicht jetzt – der Leim ist offen.');
+        else if (S.focus.size && !onlyBus()) PLAY.think('Nicht jetzt – der Leim ist offen.');
         else wait(w === 'morgen' ? until(7) : +w, 'Warten');
         renderWin();
       })
@@ -240,6 +261,9 @@ export const CLOCK = (() => {
     get winOpen() {
       return !!(win && !win.hidden);
     },
+    // feat/wetter
+    section: x => extra.push(x),
+    redraw: () => renderWin(),
   };
 })();
 LATE.CLOCK = CLOCK;

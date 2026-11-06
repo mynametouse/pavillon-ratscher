@@ -445,9 +445,11 @@ export const WELT = (() => {
       t.st = 'load';
       busy++;
       S.n.req++;
-      const tp = terrain(t.base + `t/${t.L}/${t.x}/${t.y}.bin`),
+      // feat/welt-gebaeude: the image tiles without the printed roofs (welt-test/v2/) where gebaeude/gebaeude.js sets S.imgBase
+      const ib = S.imgBase ? S.imgBase(t) : t.base,
+        tp = terrain(t.base + `t/${t.L}/${t.x}/${t.y}.bin`),
         ip = new Promise((res, rej) =>
-          new THREE.TextureLoader().load(t.base + `i/${t.L}/${t.x}/${t.y}.webp`, res, undefined, rej)
+          new THREE.TextureLoader().load(ib + `i/${t.L}/${t.x}/${t.y}.webp`, res, undefined, rej)
         );
       Promise.all([tp, ip])
         .then(([tr, tex]) => {

@@ -1,0 +1,2 @@
+# feat/wetter: the weather of Ratscher (Open-Meteo, mocked – no request from tests), one test name per line as for viz3/test/run.py
+wetter

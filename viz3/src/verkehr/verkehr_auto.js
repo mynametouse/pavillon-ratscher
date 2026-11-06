@@ -19,6 +19,8 @@ import { DN } from '../time/daynight.js';
 import { VPROPS } from '../world/village_props.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { DCARS } from '../dorf/dorf_cars.js';
+// feat/welt-dinge: the parked cars of the aerial photo stand in the way like the villagers' cars
+import { DINGE } from '../dinge/dinge.js';
 import { NPCS, TRACTOR } from '../npc/npc.js';
 import { VNETZ } from './verkehr_netz.js';
 import { VFIG } from './verkehr_fig.js';
@@ -452,6 +454,8 @@ export const VAUTO = (() => {
     }
     for (const w of [NPCS.hubert, NPCS.ronald])
       if (w && w.fig && w.fig.g.visible && !w.drive) OB.push({ x: w.x, y: w.y, r: 0.32, kind: 'ped' });
+    // feat/bus: the buses of the timetable (bus/bus.js loads later: through window) – behind one at a stop the cars wait, then go round
+    if (window.BUS && window.BUS.obstacles) for (const o of window.BUS.obstacles()) OB.push(o);
     if (DCARS && DCARS.cars)
       for (const d of Object.values(DCARS.cars)) {
         if (!d.g || !d.g.visible || !d.at) continue;
@@ -460,6 +464,8 @@ export const VAUTO = (() => {
         for (const t of [-1.3, 0, 1.3])
           OB.push({ x: d.at[0] + Math.sin(h) * t, y: d.at[1] + Math.cos(h) * t, r: 0.9, kind: 'dcar', moving });
       }
+    // feat/welt-dinge: the parked cars of the aerial photo in the cells near the observer (dinge/dinge.js)
+    if (DINGE && DINGE.obstacles) DINGE.obstacles(OB);
     return OB;
   }
   const OWN = [];

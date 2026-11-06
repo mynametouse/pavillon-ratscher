@@ -385,6 +385,9 @@ export const VERKEHR = (() => {
           O.push({ x: s.x + Math.sin(s.psi) * o, y: s.y + Math.cos(s.psi) * o, r: b.hw, car: true });
         }
       }
+    // feat/bus: the buses of the timetable (bus/bus.js)
+    if (window.BUS && window.BUS.obstacles)
+      for (const o of window.BUS.obstacles()) O.push({ x: o.x, y: o.y, r: o.r, car: true });
     if (window.DCARS)
       for (const c of Object.values(window.DCARS.cars || {})) {
         if (!c.g.visible || !c.at) continue;
@@ -1378,7 +1381,9 @@ export const VERKEHR = (() => {
     fahrTick(dt, o);
     // figures nobody needs any more: freed after a while (memory on the phone)
     for (const k of Object.keys(VFIG.figs)) {
-      const used = S.peds.some(d => d.key === k) || (S.lent && S.lent.who === k && S.lent.driver);
+      // feat/bus: or a passenger at a bus stop (bus/bus_leute.js marks them busy 'bus')
+      const used =
+        S.peds.some(d => d.key === k) || (S.lent && S.lent.who === k && S.lent.driver) || S.busy[k] === 'bus';
       if (used) S.idle[k] = 0;
       else if ((S.idle[k] = (S.idle[k] || 0) + dt) > 15) {
         VFIG.drop(k);
