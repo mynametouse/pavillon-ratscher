@@ -852,7 +852,7 @@ body[data-top="1"] #winote{top:178px}
     const ch =
       d.kind === 'wald'
         ? 'natur'
-        : d.kind === 'ausbau' || d.kind === 'wissen'
+        : d.kind === 'ausbau' || d.kind === 'wissen' || d.kind === 'bau'
           ? 'handwerk'
           : d.kind === 'ort'
             ? 'orte'
@@ -863,7 +863,7 @@ body[data-top="1"] #winote{top:178px}
         ch,
         title: d.title || d.id,
         text: d.text || '',
-        icon: d.kind === 'wald' ? '🌲' : '🔎',
+        icon: d.kind === 'wald' ? '🌲' : d.kind === 'bau' ? '🧱' : '🔎',
         src: d.source ? [Array.isArray(d.source) ? d.source : [String(d.source), null]] : [],
       },
       'erkundet:' + (d.title || d.id) + (d.by ? ' (' + d.by + ')' : '')
