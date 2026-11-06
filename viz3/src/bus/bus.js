@@ -894,12 +894,14 @@ export const BUS = (() => {
     if (!R_) return;
     const I = R_.I;
     if (I.st === 'halt' || I.st === 'ende') {
+      const last = I.k >= I.Rn.P.last;
       if (R_.k !== I.k) {
         R_.k = I.k;
         save();
         panel();
+        // the end of the line: the display says so
+        if (last && !I.trip.weiter) I.B.next('Endhaltestelle – bitte alle aussteigen');
       }
-      const last = I.k >= I.Rn.P.last;
       if ((R_.want !== null && I.k >= R_.want && I.k !== R_.from) || last) {
         if (I.B.open > 0.9) {
           if (last && I.trip.weiter)

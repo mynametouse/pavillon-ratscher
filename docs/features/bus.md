@@ -59,7 +59,8 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   beginnt, ist vor seiner ersten Haltestelle leer. Wer neben einem wartet, sagt etwas („Na, auch auf den Bus?“). Ihre Figuren sind für den Verkehr belegt
   (`VERKEHR.S.busy[k] = 'bus'`), damit niemand doppelt läuft.
 - **Einsteigen** an der Vordertür (Aktionsknopf; der Fahrer grüßt nach der Tageszeit: „Morgen!“, „Tag!“, „’n Abend!“), Platz rechts am Fenster hinter der Mitteltür (Ich-Sicht), Fenster mit Linie, Ziel, den
-  nächsten Haltestellen und Zeiten; „Nächster Halt: …“ mit Gong beim Abfahren und auf der Anzeige unter der Decke hinter dem Fahrer; „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle
+  nächsten Haltestellen und Zeiten; „Nächster Halt: …“ mit Gong beim Abfahren und auf der Anzeige unter der Decke hinter dem Fahrer (an der
+  Endhaltestelle „Endhaltestelle – bitte alle aussteigen“); „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle
   antippen = dort aussteigen (Halt-Glocke, „Wagen hält“ rot auf der Anzeige und im Fenster); will an der nächsten Haltestelle jemand anderes
   aussteigen (dieselbe Zahl wie dort beim Halten), drückt er ein paar Sekunden nach der Abfahrt den Haltewunsch; **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur Ankunft, das Gelände dort lädt
   vorher, die Türen sind offen); **„Aussteigen“**, wenn der Bus steht. **„Von außen“** (oder die Ansichtstaste V, der Knopf „Figur/Augen“):
