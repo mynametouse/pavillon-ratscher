@@ -1108,7 +1108,7 @@ export const WDATA = (() => {
     },
     saftruhe: {
       title: 'Fällen in der Saftruhe',
-      text: 'Im Winter ruht der Saftstrom: Das Holz reißt und verfärbt sich weniger, die Rinde sitzt fest – und im Wald brütet kein Vogel.',
+      text: 'Im Winter ruht der Saftstrom: Das Holz reißt und verfärbt sich weniger, die Rinde sitzt fest – und im Wald brütet kaum ein Vogel.',
       src: [wiki('Holzfeuchte'), Q.bnatschg39],
     },
     psa_forst: {
@@ -1194,7 +1194,13 @@ export const WDATA = (() => {
     tempo30: {
       title: 'Wer bestimmt Tempo 30?',
       text: 'Auf einer Durchgangsstraße entscheidet die Straßenverkehrsbehörde im Landratsamt – die Stadt und der Ortsteil können es nur beantragen.',
-      src: [Q.amt],
+      src: [
+        [
+          '§ 45 Straßenverkehrs-Ordnung (StVO) – Verkehrszeichen und Verkehrseinrichtungen',
+          'https://www.gesetze-im-internet.de/stvo_2013/__45.html',
+        ],
+        Q.amt,
+      ],
     },
     ortsteilgeld: {
       title: 'Das Geld des Ortsteils',
