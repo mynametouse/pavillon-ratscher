@@ -497,6 +497,7 @@ function buildGrass() {
     });
     mat0.userData.leak = true;
     const mat = patchSV(mat0);
+    if (GRASS.wxSway) GRASS.wxSway(mat); // feat/wetter: the lawn bends in the wind (wetter/wx_wind.js), before anything draws it
     const m4 = new THREE.Matrix4(),
       q = new THREE.Quaternion(),
       up = new THREE.Vector3(0, 1, 0);
@@ -598,6 +599,7 @@ function buildGrass() {
         });
         mat0.userData.leak = true;
         const mat = patchSV(mat0);
+        if (GRASS.wxSway) GRASS.wxSway(mat); // feat/wetter: the flowers bend in the wind too
         if (mat.map) mat.map.colorSpace = THREE.SRGBColorSpace;
         const m4 = new THREE.Matrix4(),
           q = new THREE.Quaternion(),

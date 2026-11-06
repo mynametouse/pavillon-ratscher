@@ -54,7 +54,10 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - **Bäume im Wind** (`wetter/wx_wind.js`): die Gartenbäume und Hecken (`garden/trees.js`, instanzierte Kronen) neigen sich vom Wind weg
   und wiegen zurück (langsames Schwingen, schnelles Blattzittern), oben mehr als unten, mit dem Quadrat der Windstärke, Böen stärker, jeder
   Baum in eigenem Takt – ein paar Zeilen im Blatt-Shader, beim Laden eingesetzt (eigener Cache-Schlüssel `|wxsway`, kein Programm
-  später), zur Laufzeit nur Uniforms; bei Windstille bewegt sich nichts und es wird nichts dafür gezeichnet.
+  später), zur Laufzeit nur Uniforms; bei Windstille bewegt sich nichts und es wird nichts dafür gezeichnet. Ebenso **der Rasen und die
+  Wiesenblumen** (`garden/grass.js` reicht ihre Materialien gleich nach dem Anlegen herüber, `|wxgrass`): die Spitzen biegen sich vom
+  Wind weg, in Wellen, die mit den Böen über den Rasen laufen, dazu ein schnelles Zittern; die Biegung ist ein Anteil der Halmhöhe
+  (gemähter Rasen bewegt sich weniger), schon bei leichtem Wind (ab ~6 km/h) ein wenig.
 - **Die nächsten Stunden:** im Uhrfenster unter der Zeile alle zwei Stunden ab der Spielzeit („16 Uhr Regen · 7 °C“), so weit die Daten reichen.
 - **Mitfahren und fahren:** im Auto (fahren, mitfahren) und im Bus keine Tropfen in der Kabine (Bus: 7 m, er ist lang), der Regen trommelt
   aufs Dach, keine Spritzer.
@@ -83,8 +86,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   üblichen Spielzeit „1 Std = 1 Min“ läuft das Spiel dem echten Wetter davon – nach einer Minute ist es die Vorhersage der nächsten
   Stunde; „Uhr und Datum auf jetzt“ stellt deshalb auch auf Echtzeit. Vorschlag für Falko: die Spielzeit beim Start auf jetzt stellen, wenn „wie draußen“ gewählt ist (oder eine
   Einstellung „Spielzeit: wie draußen“) – das betrifft das ganze Spiel, deshalb nicht hier entschieden.
-- Gras, die Dorflinde, die Bäume des Gartenplaners und der Wald an der Klinge wiegen nicht (nur die instanzierten Gartenbäume, s. o.);
-  die Schatten der Kronen bleiben still.
+- Die Dorflinde, die Bäume des Gartenplaners, die Felder und der Wald an der Klinge wiegen nicht (nur die instanzierten Gartenbäume und
+  der Rasen, s. o.); die Schatten der Kronen bleiben still.
 - Pfützen; Regen am Fenster und an der Windschutzscheibe; nasse Straßen spiegeln kaum (der Geländeshader dämpft Spiegelungen auf 35 %).
 - Ein wolkenloser Tag zeigt die wenigen Kumuli des Tagesfotos („Sonnig“ bei 2 % Bewölkung) – ganz klar ginge nur mit einem klaren
   Himmelsfoto oder einem an die Fotos angepassten Verlauf.
@@ -101,14 +104,16 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   - `viz3/src/audio/audio.js`: `wxBirds`, `wxWind` (Standard 1) und `audio.weather({ birds, wind })` – Vögel (Schleife und Einzelrufe) und
     der leise Wind (Aufnahme und erzeugter) werden damit multipliziert; fünf markierte Stellen.
   - `viz3/src/modules.txt`: Block `# feat/wetter` vor `game/tutorial.js`.
+  - `viz3/src/garden/grass.js`: zwei Zeilen `if (GRASS.wxSway) GRASS.wxSway(mat);` gleich nach `patchSV` (Rasen, Wiesenblumen) – das Wetter
+    setzt `GRASS.wxSway` beim Laden und patcht damit die Materialien, bevor sie übersetzt werden.
 - Die Menüzeile „Wetter“ setzt `wetter/wetter.js` selbst unter „Spielzeit“ ein (keine Änderung an `shell/menu.html`); das Wetterzeichen
   hängt es als `span.wxi` an `#clockbtn` (die Uhr und DN schreiben nur `.hbt` und das erste `.hbi`).
 - Für ARCHITECTURE.md: neuer `window`-Name `WETTER` (`wetter/wetter.js`; Test-API `mock`, `snap`, `state`, `preset`, `setMode`,
   `clockToNow`, `strike`, `fall`, `data`), Schlüssel `pav-wetter-v1` `{ v: 1, m: 'live' | 'kalender' }`, Hinweis `pav-wetter-neu`
   (SAVE.once); Module `wetter/wx_data.js` (WXDATA, rein), `wx_sky.js` (WXSKY), `wx_fall.js` (WXFALL), `wx_ton.js` (WXTON), `wx_boden.js`
   (WXBODEN), `wx_wind.js` (WXWIND), `wetter.js`. Fremde Materialien, die das Wetter zur Laufzeit (Uniforms) oder beim Laden (Shader)
-  ändert: der Himmel und die Sterne von `time/daynight.js` (Shader, beim Laden), die Blätter von `garden/trees.js` (Shader, beim Laden),
-  Gelände/Felder/Kacheln/Brücken/Gartenboden/Rasenbüschel/Dächer (Farbe, Rauheit, Leuchten).
+  ändert: der Himmel und die Sterne von `time/daynight.js` (Shader, beim Laden), die Blätter von `garden/trees.js` und Rasen/Blumen von
+  `garden/grass.js` (Shader, beim Laden), Gelände/Felder/Kacheln/Brücken/Gartenboden/Rasenbüschel/Dächer (Farbe, Rauheit, Leuchten).
 - CSP: Die veröffentlichte Seite (GitHub Pages) setzt keine Content-Security-Policy (kein Meta-Tag in `shell/head.html`, Pages sendet keinen
   Header) – `api.open-meteo.com` und `archive-api.open-meteo.com` sind erreichbar. Nur der Testserver (`tools/csp/cspserve.py`) erlaubt
   `connect-src 'self'`; so soll es bleiben (Tests fragen nie). Käme je eine CSP dazu: `connect-src 'self' https://api.open-meteo.com
