@@ -25,7 +25,11 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   gemischt, alles vom Wind und den Böen getragen; ein Netz, beim Laden übersetzt, Dichte über den Zeichenbereich; Flocken höchstens ein
   paar Pixel groß und vor der Linse ausgeblendet; drinnen (Pavillon, Gartengebäude, Häuser der Zombie-Nacht) keine Tropfen, im Fahrzeug
   keine in der Kabine; im Pavillon fällt der Regen jenseits seiner Wände weiter (durch die großen Fenster zu sehen), in anderen Gebäuden
-  keiner; Spritzer am Boden rund um die Spielfigur (kurze weiße Flecken, wo Tropfen aufschlagen). Gewitter: Blitze flackern (erster
+  keiner; Spritzer am Boden rund um die Spielfigur (kurze weiße Flecken, wo Tropfen aufschlagen, auf einer schrägen Ebene aus dem
+  Gelände). **Kein Regen unter Dächern:** solange es regnet, wird die Szene von oben in eine kleine Tiefenkarte gezeichnet (64 × 64 über
+  32 m, am Telefon 48; neu nach 3 m Weg, höchstens zweimal je Sekunde, nicht in einer Kabine) – unter dem Carport, Vordächern, dem
+  Obergeschoss des Pavillons oder einer dichten Krone fällt kein Tropfen und spritzt nichts. Die Programme der Szene (beim Laden
+  übersetzt), kein Licht. Gewitter: Blitze flackern (erster
   Schlag, Nachschläge, ~0,4 s) am Himmel und auf dem Land, nahe Einschläge (bis ~3,5 km) mit sichtbarem, zackigem Blitzkanal in ihrer
   Richtung, Donner nach der Entfernung; Hagel
   (Codes 96/99) als kleine, schnelle Körner im Regen. Nachts unter geschlossener Decke ein mattes Orange-Grau der Städte ringsum
@@ -33,7 +37,7 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   kleines Wetterzeichen (Wolken, Regen, Schnee, Nebel, Gewitter), sein Tooltip nennt die Zeile.
 - **Nasser Boden, Schnee liegt** (`wetter/wx_boden.js`): Regen macht Gelände, Felder, Kacheln, Brücken, den Gartenboden und (etwas) die Dächer
   dunkler und glänzender – und das bleibt Stunden nach dem Regen (aus dem Niederschlag der letzten Stunden der Daten). Liegt Schnee
-  (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände, Bäume, Gras bleiben.
+  (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände und Bäume bleiben.
   Nur Farbe/Rauheit/Leuchten der Materialien (Uniforms), die Originale kommen genau zurück. Die neuen 3D-Gebäude (`gebaeude/`) nutzen das
   Dachmaterial des Dorfs und werden mit nass und weiß; die Grasbüschel des Rasens werden nass etwas dunkler und unter Schnee weiß.
   **Reif:** nach einer klaren, windstillen, kalten, feuchten Stunde der letzten acht (Luft bis ~+2 °C – der Boden ist kälter): die
@@ -47,6 +51,13 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Jede Art wird erst geladen, wenn ihr Wetter kommt (kein Speicher für Sturm und Donner an einem ruhigen Tag). Nieselregen und
   Sturmpfeifen im Browser erzeugt. Die Atmosphäre des Spiels hört mit: Vögel verstummen bei Regen, Gewitter, Nebel und Sturm, der leise
   Wind der Atmosphäre folgt dem echten Wind (eine windstille Nacht ist still).
+- **Bäume im Wind** (`wetter/wx_wind.js`): die Gartenbäume und Hecken (`garden/trees.js`, instanzierte Kronen) neigen sich vom Wind weg
+  und wiegen zurück (langsames Schwingen, schnelles Blattzittern), oben mehr als unten, mit dem Quadrat der Windstärke, Böen stärker, jeder
+  Baum in eigenem Takt – ein paar Zeilen im Blatt-Shader, beim Laden eingesetzt (eigener Cache-Schlüssel `|wxsway`, kein Programm
+  später), zur Laufzeit nur Uniforms; bei Windstille bewegt sich nichts und es wird nichts dafür gezeichnet. Ebenso **der Rasen und die
+  Wiesenblumen** (`garden/grass.js` reicht ihre Materialien gleich nach dem Anlegen herüber, `|wxgrass`): die Spitzen biegen sich vom
+  Wind weg, in Wellen, die mit den Böen über den Rasen laufen, dazu ein schnelles Zittern; die Biegung ist ein Anteil der Halmhöhe
+  (gemähter Rasen bewegt sich weniger), schon bei leichtem Wind (ab ~6 km/h) ein wenig.
 - **Die nächsten Stunden:** im Uhrfenster unter der Zeile alle zwei Stunden ab der Spielzeit („16 Uhr Regen · 7 °C“), so weit die Daten reichen.
 - **Mitfahren und fahren:** im Auto (fahren, mitfahren) und im Bus keine Tropfen in der Kabine (Bus: 7 m, er ist lang), der Regen trommelt
   aufs Dach, keine Spritzer.
@@ -59,7 +70,7 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 ## Testen
 
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9001 --serve wetter` (Abschnitte: `python3 viz3/test/wetter.py 9001
-  start,jetzt,wetter,innen,kalender,fehler,zombie,neu`), Bilder in `out/wetter/`. Auf GitHub über `viz3/extra/wetter/tests.txt`.
+  start,jetzt,wetter,innen,ton,kalender,fehler,zombie,neu`), Bilder in `out/wetter/`. Auf GitHub über `viz3/extra/wetter/tests.txt`.
 - Ein Testbrowser fragt Open-Meteo nie (`navigator.webdriver`); `WETTER.mock(fn | json | 'fail')` antwortet statt dessen in der Form von
   Open-Meteo. `WETTER.state()` zeigt Quelle, Werte, Tropfen, Spritzer, Himmel, Tonpegel, geladene Aufnahmen.
 - Echte Antworten von Open-Meteo (der Chat-Rechner bekommt HTTP 429; geprüft 6.11. ~2:00: alle vier Arten gelesen, jede Antwort mit
@@ -75,10 +86,12 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   üblichen Spielzeit „1 Std = 1 Min“ läuft das Spiel dem echten Wetter davon – nach einer Minute ist es die Vorhersage der nächsten
   Stunde; „Uhr und Datum auf jetzt“ stellt deshalb auch auf Echtzeit. Vorschlag für Falko: die Spielzeit beim Start auf jetzt stellen, wenn „wie draußen“ gewählt ist (oder eine
   Einstellung „Spielzeit: wie draußen“) – das betrifft das ganze Spiel, deshalb nicht hier entschieden.
-- Bäume und Gras wiegen nicht im Wind: die Gartenbäume tauschen ez-trees Blattmaterial gegen ein eigenes (`garden/trees.js`, `patchSV`)
-  ohne Wiegen; das ginge nur über die Blatt-Shader dort (gemeinsame Datei).
-- Pfützen, Spritzer am Boden; Regen am Fenster und an der Windschutzscheibe.
-- Lichtglocke der Städte unter der Wolkendecke nachts.
+- Die Dorflinde, die Bäume des Gartenplaners, die Felder und der Wald an der Klinge wiegen nicht (nur die instanzierten Gartenbäume und
+  der Rasen, s. o.); die Schatten der Kronen bleiben still.
+- Pfützen; Regen am Fenster und an der Windschutzscheibe; nasse Straßen spiegeln kaum (der Geländeshader dämpft Spiegelungen auf 35 %).
+- Ein wolkenloser Tag zeigt die wenigen Kumuli des Tagesfotos („Sonnig“ bei 2 % Bewölkung) – ganz klar ginge nur mit einem klaren
+  Himmelsfoto oder einem an die Fotos angepassten Verlauf.
+- Die Dächerkarte wird nur nach Bewegung neu gezeichnet: ein weggefahrenes Auto bleibt dort „Dach“, bis man 3 m weiter ist.
 
 ## Für den Lead
 
@@ -91,16 +104,21 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   - `viz3/src/audio/audio.js`: `wxBirds`, `wxWind` (Standard 1) und `audio.weather({ birds, wind })` – Vögel (Schleife und Einzelrufe) und
     der leise Wind (Aufnahme und erzeugter) werden damit multipliziert; fünf markierte Stellen.
   - `viz3/src/modules.txt`: Block `# feat/wetter` vor `game/tutorial.js`.
+  - `viz3/src/garden/grass.js`: zwei Zeilen `if (GRASS.wxSway) GRASS.wxSway(mat);` gleich nach `patchSV` (Rasen, Wiesenblumen) – das Wetter
+    setzt `GRASS.wxSway` beim Laden und patcht damit die Materialien, bevor sie übersetzt werden.
 - Die Menüzeile „Wetter“ setzt `wetter/wetter.js` selbst unter „Spielzeit“ ein (keine Änderung an `shell/menu.html`); das Wetterzeichen
   hängt es als `span.wxi` an `#clockbtn` (die Uhr und DN schreiben nur `.hbt` und das erste `.hbi`).
 - Für ARCHITECTURE.md: neuer `window`-Name `WETTER` (`wetter/wetter.js`; Test-API `mock`, `snap`, `state`, `preset`, `setMode`,
-  `clockToNow`, `fall`), Schlüssel `pav-wetter-v1` `{ v: 1, m: 'live' | 'kalender' }`, Hinweis `pav-wetter-neu` (SAVE.once); Module
-  `wetter/wx_data.js` (WXDATA, rein), `wx_sky.js` (WXSKY), `wx_fall.js` (WXFALL), `wx_ton.js` (WXTON), `wx_boden.js` (WXBODEN), `wetter.js`.
+  `clockToNow`, `strike`, `fall`, `data`), Schlüssel `pav-wetter-v1` `{ v: 1, m: 'live' | 'kalender' }`, Hinweis `pav-wetter-neu`
+  (SAVE.once); Module `wetter/wx_data.js` (WXDATA, rein), `wx_sky.js` (WXSKY), `wx_fall.js` (WXFALL), `wx_ton.js` (WXTON), `wx_boden.js`
+  (WXBODEN), `wx_wind.js` (WXWIND), `wetter.js`. Fremde Materialien, die das Wetter zur Laufzeit (Uniforms) oder beim Laden (Shader)
+  ändert: der Himmel und die Sterne von `time/daynight.js` (Shader, beim Laden), die Blätter von `garden/trees.js` und Rasen/Blumen von
+  `garden/grass.js` (Shader, beim Laden), Gelände/Felder/Kacheln/Brücken/Gartenboden/Rasenbüschel/Dächer (Farbe, Rauheit, Leuchten).
 - CSP: Die veröffentlichte Seite (GitHub Pages) setzt keine Content-Security-Policy (kein Meta-Tag in `shell/head.html`, Pages sendet keinen
   Header) – `api.open-meteo.com` und `archive-api.open-meteo.com` sind erreichbar. Nur der Testserver (`tools/csp/cspserve.py`) erlaubt
   `connect-src 'self'`; so soll es bleiben (Tests fragen nie). Käme je eine CSP dazu: `connect-src 'self' https://api.open-meteo.com
   https://archive-api.open-meteo.com`.
 - Quellen: `credits_add` in `viz3/extra/wetter/manifest.json` (Open-Meteo, CC BY 4.0; ERA5/Copernicus; die Aufnahmen).
-- Neuer Workflow `.github/workflows/wetter-ton.yml` (nur bei Änderungen an `viz3/extra/wetter/quellen/**` auf `feat/wetter`, lädt nur ein
-  Artefakt hoch, schiebt nichts). Ein „Neu“-Hinweis `SAVE.once('pav-wetter-neu')` beim ersten echten Wetter.
+- Neuer Workflow `.github/workflows/wetter-ton.yml` (nur bei Änderungen an `viz3/extra/wetter/quellen/**` oder `wx_data.js` auf
+  `feat/wetter`; zwei Jobs: Aufnahmen sichten/schneiden, echte Antworten lesen; lädt nur Artefakte hoch, schiebt nichts). Ein „Neu“-Hinweis `SAVE.once('pav-wetter-neu')` beim ersten echten Wetter.
 - Lehre für alle: das Scratch-Verzeichnis teilen sich Lead und Hilfs-Agenten (gleiche Sitzung) – eigene Unterordner mit Präfix nehmen.

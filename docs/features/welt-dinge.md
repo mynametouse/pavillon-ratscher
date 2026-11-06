@@ -66,6 +66,14 @@ des Luftbilds als **Stellplätze, belebt nach Tageszeit**; (23:17) „Wichtig is
   (`VILLAGE.bld[].fac[].door`) bleibt frei – geprüft, wenn eine Zelle gebaut wird, und wieder bei ihrer regelmäßigen Prüfung (die Häuser
   der Stadt können nach der Zelle kommen). Die ETHOS-Häuser von `gebaeude/gebaeude.js` geben ihre Türen nicht heraus – dort nicht.
 
+- **Fahrspuren frei** (der Lead, 6.11. ~2:00: das Testauto der Fahrt zum Markt rammte ein geparktes Auto 1,5 m neben der Mittellinie):
+  die Box eines abgestellten Fahrzeugs mit dem Rand der Maske (0,35 m) bleibt 1,75 m von der Mittellinie eines schmalen Wegs (w < 6 m:
+  eine freie Spur von 3,5 m) und w/2 − 0,5 m von einem breiteren (höchstens halb auf dem Bordstein) – für jeden befahrbaren Weg
+  (Autobahn … Zufahrt) aus `world/roads.js`, `welt/fahrt.js` und den Straßen der Stadt (`stadt.json`, 5 m). Wer im Foto mitten auf der
+  Straße stand, fuhr gerade – oder die OSM-Linie liegt daneben: dort kein Platz (die Maske bleibt). In Schleusingen fallen so 316 weg
+  (Stadtrand 219 → 80); breitere gemessene Straßen brächten nach dieser Regel keine zurück (sie wird bei w ≥ 6 strenger), und der
+  Verkehr fährt auf den OSM-Linien (Arten 1–5, mit Zufahrten).
+
 ## Masken für die Boden-Retusche (`welt-gebaeude`)
 
 - `viz3/extra/welt-dinge/maske_dinge.json`: `{ "src": "welt-dinge", "polys": [[[x, y], …], …], "pad": 0.35, "gebiete": { … } }` in
