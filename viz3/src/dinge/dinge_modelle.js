@@ -45,36 +45,61 @@ export const DMOD = (() => {
     mat.customProgramCacheKey = () => key + '|dinge';
   }
   S.mat = mat;
-  // ---- soft shadows on the ground (one instanced quad per car or thing, like the figures' blobs of npc/npc.js): the quad lies under the
-  // body (the instance's scale: width, height, length) and its corners away from the sun are drawn out by the height times uSun.y
-  // (uSun.xz: the shadow's direction on the ground); uS: strength. Without them the cars beyond the sun's shadow box seem to float. ----
+  // ---- soft shadows on the ground (one instanced quad per car or thing, like the figures' blobs of npc/npc.js). The instance holds the
+  // body: its axes scaled by width, height and length, set on the ground. The quad reaches 0.5 m beyond the body and, on the side away
+  // from the sun, as far as the shadow (height × uSun.y along uSun.xz, the shadow's direction on the ground). The fragment: dark under the
+  // body (the contact – it stays under the wheels on the sun's side too), and the body's footprint swept along the shadow's direction,
+  // softer the farther; uS: strength. Without them the cars beyond the sun's shadow box (±16 m) seem to float. ----
   const shU = { uSun: { value: new THREE.Vector3(0, 0, 0) }, uS: { value: 0.4 } };
   S.shU = shU;
   S.shMat = new THREE.ShaderMaterial({
     uniforms: shU,
     vertexShader: `uniform vec3 uSun;
-varying vec2 vUv;
+varying vec2 vW;
+varying vec2 vC;
+varying vec4 vAx;
+varying vec3 vH;
 void main() {
-  vUv = uv;
   mat4 m = modelMatrix;
 #ifdef USE_INSTANCING
   m = m * instanceMatrix;
 #endif
-  float h = length(m[1].xyz);
-  vec4 c = m * vec4(0.0, 0.0, 0.0, 1.0);
-  vec4 w = m * vec4(position.x, 0.0, position.z, 1.0);
+  float W = length(m[0].xyz), H = length(m[1].xyz), L = length(m[2].xyz);
+  vec3 ax = m[0].xyz / max(W, 1e-4), az = m[2].xyz / max(L, 1e-4);
+  vec3 c = (m * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  vec3 w = c + ax * (position.x * (W + 1.0)) + az * (position.z * (L + 1.0));
   vec2 o = w.xz - c.xz;
-  float s = smoothstep(-0.35, 0.35, dot(o / max(length(o), 1e-4), uSun.xz));
-  w.xz += uSun.xz * (uSun.y * h * s);
+  float s = smoothstep(-0.35, 0.35, dot(o / max(length(o), 1e-4), uSun.xz)) * step(1e-3, W);
+  float Ls = uSun.y * H;
+  w.xz += uSun.xz * ((1.25 * Ls + 0.4) * s);
   w.y += 0.05;
-  gl_Position = projectionMatrix * viewMatrix * w;
+  vW = w.xz;
+  vC = c.xz;
+  vAx = vec4(ax.xz / max(length(ax.xz), 1e-4), az.xz / max(length(az.xz), 1e-4));
+  vH = vec3(0.5 * W, 0.5 * L, Ls);
+  gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0);
 }`,
-    fragmentShader: `uniform float uS;
-varying vec2 vUv;
+    fragmentShader: `uniform vec3 uSun;
+uniform float uS;
+varying vec2 vW;
+varying vec2 vC;
+varying vec4 vAx;
+varying vec3 vH;
+float box(vec2 p, vec2 h, float soft) {
+  vec2 d = abs(p) - h;
+  float e = length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+  return 1.0 - smoothstep(-0.12, soft, e);
+}
 void main() {
-  vec2 q = abs(vUv - 0.5) * 2.0;
-  float d = pow(pow(q.x, 4.0) + pow(q.y, 4.0), 0.25);
-  gl_FragColor = vec4(0.0, 0.0, 0.0, uS * (1.0 - smoothstep(0.45, 1.0, d)));
+  vec2 p = vW - vC;
+  vec2 lp = vec2(dot(p, vAx.xy), dot(p, vAx.zw));
+  vec2 sd = vec2(dot(uSun.xz, vAx.xy), dot(uSun.xz, vAx.zw));
+  float a = box(lp, vH.xy, 0.3);
+  for (int i = 1; i <= 4; i++) {
+    float t = vH.z * float(i) * 0.25;
+    a = max(a, box(lp - sd * t, vH.xy * 0.92, 0.3 + 0.22 * t) * (1.0 - 0.12 * float(i)));
+  }
+  gl_FragColor = vec4(0.0, 0.0, 0.0, uS * a);
 }`,
     transparent: true,
     depthWrite: false,

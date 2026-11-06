@@ -41,6 +41,10 @@ export const DINGE = (() => {
       { id: 'talsperre', c: [1270, -700], r: 700, cell: 120 },
       { id: 'vessra', c: [-8850, -150], r: 1100, cell: 150 },
       { id: 'zollbrueck', c: [-5430, -990], r: 700, cell: 120 },
+      // the villages of the tiled world beyond them (feat/welt-dinge round 3: their built-up area, detector and a sample by eye)
+      { id: 'gottfriedsberg', c: [-821, -1532], r: 980, cell: 120 },
+      { id: 'rappelsdorf', c: [-3252, 109], r: 1290, cell: 120 },
+      { id: 'stkilian', c: [-298, 2976], r: 1290, cell: 120 },
     ],
     err: null,
   };
@@ -235,9 +239,9 @@ export const DINGE = (() => {
     p.im.setMatrixAt(p.ii, _m);
     p.im.instanceMatrix.needsUpdate = true;
     if (p.sh) {
-      // its soft shadow on the ground (DMOD.shMat): width and length a little beyond the body, the height for the sun's stretch
+      // its soft shadow on the ground (DMOD.shMat): the body's width, height and length
       const T = DMOD.CARS[p.type];
-      if (show) _sc.set(T.W + 0.6, T.H, T.L + 0.7);
+      if (show) _sc.set(T.W, T.H, T.L);
       else _sc.set(0, 0, 0);
       _m.compose(_p, p.q, _sc);
       p.sh.setMatrixAt(p.si, _m);
@@ -362,7 +366,7 @@ export const DINGE = (() => {
           );
         _e.set(pitch, -a, -roll, 'YXZ');
         _qy.setFromEuler(_e);
-        _sc.set(d.w + 0.3, Math.max(0.3, d.h || 1), d.l + 0.3);
+        _sc.set(d.w, Math.max(0.3, d.h || 1), d.l);
         _p.set(d.x, d.z, -d.y);
         _m.compose(_p, _qy, _sc);
         sh.setMatrixAt(c.places.length + j, _m);
@@ -383,9 +387,9 @@ export const DINGE = (() => {
       }
     }
     if (sh) {
-      // the bounds of every instance, shown or not, and the sun's stretch beyond them
+      // the bounds of every instance, shown or not, and the quad's margin and the sun's stretch beyond them
       sh.computeBoundingSphere();
-      sh.boundingSphere.radius += 12;
+      sh.boundingSphere.radius += 14;
       sh.renderOrder = 1;
       sh.castShadow = false;
       sh.receiveShadow = false;
