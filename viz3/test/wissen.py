@@ -171,6 +171,23 @@ def run():
                 lib.shot(pg, OUT, '07_tafel_talsperre')
             E("WISSEN.close()")
 
+        if 'stadt' in want:
+            # the board at the Bertholdsburg, made with the zone of Schleusingen (needs its tiles: locally, not in the branch CI)
+            E("GAME.go('schleusingen')")
+            ok = False
+            for i in range(90):
+                steps(0.5)
+                if E("window.SCHL && SCHL.state === 'ready' && WORTE.S.boards.some(b => b.id === 'burg')"): ok = True; break
+                time.sleep(0.5)
+            ck('Schleusingen: a board at the Bertholdsburg once the town stands', ok, str(J("({ st: window.SCHL && SCHL.state, b: WORTE.S.boards.map(b => b.id) })")))
+            if ok:
+                E("(() => { const b = WORTE.S.boards.find(q => q.id === 'burg'); GAME.view(b.x + b.n[0] * 5, b.y + b.n[1] * 5, b.z + 1.7, Math.atan2(-b.n[0], -b.n[1]) * 180 / Math.PI, -6); })()")
+                lib.shot(pg, OUT, '14_tafel_burg')
+                E("WORTE.read('burg')")
+                ck('…reading it opens „Schloss Bertholdsburg“', J("WISSEN.state().view") == 'g_burg')
+                E("WISSEN.close()")
+            E("GAME.go('garten')"); steps(2)
+
         if 'daten' in want:
             E("GAME.go('draufsicht')"); steps(1.0)
             # the plan view compiles its own programs when it is first shown – counted after it stands

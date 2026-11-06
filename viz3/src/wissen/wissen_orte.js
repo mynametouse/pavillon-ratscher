@@ -181,13 +181,130 @@ export const WORTE = (() => {
   }
   // reading a board: its entries are found, the book opens on the first
   function read(id) {
-    const b = D.BOARDS.find(q => q.id === id);
+    const b = D.BOARDS.find(q => q.id === id) || TOWN.find(q => q.id === id);
     if (!b) return false;
     for (const e of [b.entry, ...(b.also || [])]) WISSEN.found(e, 'tafel:' + b.title);
     WISSEN.open(b.entry);
     KERN.emit('wissen:tafel', { id });
     return true;
   }
+  // ---- boards in the towns' zones (welt/schleusingen.js, welt/vessra.js): made when the zone stands, dropped with it ----
+  const TOWN = [
+    {
+      id: 'burg',
+      title: 'Schloss Bertholdsburg',
+      entry: 'g_burg',
+      also: ['g_henneberg'],
+      Z: () => window.SCHL,
+      lm: ['burg'],
+      to: () => {
+        const sp = KERN.spot('schleusingen');
+        return sp && sp.pos ? sp.pos : [-1100.5, 1214.5];
+      },
+    },
+    {
+      id: 'kloster',
+      title: 'Kloster Veßra',
+      entry: 'g_vessra',
+      also: ['o_vessra', 'g_henneberg'],
+      Z: () => window.VESSRA,
+      lm: ['henneberg', 'hchor', 'torkirche'],
+      to: () => {
+        const V = window.VESSRA,
+          sp = KERN.spot('vessra');
+        return (V && V.START) || (sp && sp.pos) || null;
+      },
+    },
+  ];
+  const inFlat = (f, x, y) => {
+    let c = false;
+    for (let i = 0, j = f.length - 2; i < f.length; j = i, i += 2)
+      if (f[i + 1] > y !== f[j + 1] > y && x < ((f[j] - f[i]) * (y - f[i + 1])) / (f[j + 1] - f[i + 1]) + f[i]) c = !c;
+    return c;
+  };
+  const areaFlat = f => {
+    let a = 0;
+    for (let i = 0, j = f.length - 2; i < f.length; j = i, i += 2) a += f[j] * f[i + 1] - f[i] * f[j + 1];
+    return Math.abs(a) / 2;
+  };
+  function townSpot(T) {
+    const Z = T.Z();
+    if (!Z || Z.state !== 'ready' || !Z.bld) return null;
+    const bs = Z.bld.filter(b => T.lm.includes(b.lm) && b.f && b.f.length >= 6);
+    if (!bs.length) return null;
+    const b = bs.sort((p, q) => areaFlat(q.f) - areaFlat(p.f))[0],
+      to = T.to();
+    if (!to) return null;
+    const d = norm(to[0] - b.cx, to[1] - b.cy);
+    let t = 0;
+    while (t < 150 && inFlat(b.f, b.cx + d[0] * t, b.cy + d[1] * t)) t += 1;
+    const p = [b.cx + d[0] * (t + 5), b.cy + d[1] * (t + 5)];
+    try {
+      KERN.pushOut(p, 0.9);
+    } catch (e) {}
+    return [p[0], p[1], d[0], d[1]];
+  }
+  const TS = {};
+  function townTick() {
+    if (!VPROPS.mat || !VPROPS.mat.paint || !VPROPS.kit) return;
+    for (const T of TOWN) {
+      const Z = T.Z(),
+        ready = !!(Z && Z.state === 'ready'),
+        st = TS[T.id];
+      if (ready && !st) {
+        const w = townSpot(T);
+        if (!w || !w.every(Number.isFinite)) continue;
+        const K = VPROPS.kit();
+        boardGeo(K, w[0], w[1], w[2], w[3]);
+        const me = new THREE.Mesh(K.geo(), VPROPS.mat.paint);
+        me.userData.noMerge = true;
+        me.castShadow = me.receiveShadow = false;
+        me.name = 'wissen-tafel-' + T.id;
+        scene.add(me);
+        const B = {
+          id: T.id,
+          x: w[0],
+          y: w[1],
+          z: KERN.ground(w[0], w[1]),
+          n: [w[2], w[3]],
+          def: T,
+          mesh: me,
+          town: true,
+        };
+        TS[T.id] = B;
+        S.boards.push(B);
+        KERN.act({
+          id: 'wi:tafel:' + T.id,
+          r: 2.4,
+          prio: 0.02,
+          label: () => (P.mode === 'walk' ? 'Tafel lesen: ' + T.title : null),
+          pos: () => [B.x + B.n[0] * 0.6, B.y + B.n[1] * 0.6, B.z + 1.3],
+          run: () => read(T.id),
+        });
+        markDirty();
+      } else if (!ready && st) {
+        scene.remove(st.mesh);
+        st.mesh.geometry.dispose();
+        KERN.unact('wi:tafel:' + T.id);
+        S.boards.splice(S.boards.indexOf(st), 1);
+        delete TS[T.id];
+      }
+    }
+  }
+  let tacc = 0;
+  KERN.tick(dt => {
+    tacc += dt;
+    if (tacc < 2) return;
+    tacc = 0;
+    try {
+      townTick();
+    } catch (e) {
+      if (!S.townErr) {
+        S.townErr = String((e && e.message) || e);
+        console.warn('wissen: Tafeln in der Stadt', e);
+      }
+    }
+  }, 'wissen/orte');
   whenLoaded(() => {
     try {
       if (!build()) KERN.until(() => VPROPS.ready, 120).then(build, () => {});
@@ -196,6 +313,6 @@ export const WORTE = (() => {
       console.warn('wissen: Tafeln', e);
     }
   });
-  return { S, read, build, where, siteOfUTM };
+  return { S, read, build, where, siteOfUTM, TOWN, townSpot };
 })();
 window.WORTE = WORTE;

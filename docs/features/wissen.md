@@ -37,7 +37,9 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
 - **Orte der Geschichte – Infotafeln** (`viz3/src/wissen/wissen_orte.js`): kleine Tafeln mit Dach auf zwei Pfosten an der alten Schule, unter der
   Dorflinde, am Platz am Bach, an der Forstkiste der Unteren Klinge und auf dem Damm der Talsperre Ratscher (Lage nach Structurae,
   50° 29′ 31,5″ N, 10° 46′ 54,7″ E → UTM → Grundstück über `GEOMAN.xf`); „Tafel lesen“ öffnet das Buch beim Eintrag. Ein Mesh im Material der
-  Dorf-Requisiten (`VPROPS.mat.paint`) – kein neues Shader-Programm, kein Licht.
+  Dorf-Requisiten (`VPROPS.mat.paint`) – kein neues Shader-Programm, kein Licht. Dazu je eine Tafel an **Schloss Bertholdsburg** (auf der Seite
+  zum Markt) und an der **Henneberger Kapelle in Kloster Veßra** (zum Klostertor hin): gebaut, sobald die Zone der Stadt steht, und mit ihr
+  wieder freigegeben.
 - **Daten-Ansichten** (`viz3/src/wissen/wissen_daten.js`, „Lernen durch Sehen“ wie in SimCity): auf der Draufsicht (Hingehen → Draufsicht) ein
   kleines Feld links unten mit fünf Schaltern und der Legende – **Lärm** (Straßen nach ihrer OSM-Klasse mit Bändern über 55 und 45 dB(A),
   Maschinen, solange sie laufen: Mäher, Motorsäge, Blockbandsäge, die lauten Aufträge des Strategie-Modus; dazu die Ruhezeiten des Spieltags
@@ -76,7 +78,7 @@ WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.why
 - Ohne Browser: `node --test viz3/test/unit/wissen.test.mjs` (jeder Eintrag mit Kapitel, Text, Fundweg und Quelle; jede Regel mit Satz und
   Quelle; Lehrer-Themen zeigen auf vorhandene Einträge; Tafeln; die Talsperre liegt im Quadrat; Fakten, die stimmen müssen).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9006 --serve wissen` (Abschnitte `buch,ereignis,ort,lehrer,warum,
-  tafel,daten,reload,zombie,strategie`); auf GitHub über `viz3/extra/wissen/tests.txt`, Bilder in `out/wissen/`.
+  tafel,daten,reload,telefon,zombie,strategie`; dazu `stadt` – die Tafel an der Bertholdsburg, braucht die Kacheln der Stadt); auf GitHub über `viz3/extra/wissen/tests.txt`, Bilder in `out/wissen/`.
 
 ## Offen
 
