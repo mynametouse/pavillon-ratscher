@@ -952,6 +952,7 @@ body[data-top="1"] #winote{top:178px}
     'amt:amt': 'im Amt',
     'gplan:offen': 'den Garten geplant',
     'jahr:wechsel': 'einen Monat im Spiel erlebt',
+    'bau:pv': 'die Solarmodule am Pavillon angesehen',
     'wetter:regen': 'Regen erlebt',
     'wetter:schnee': 'Schnee erlebt',
     'wetter:gewitter': 'ein Gewitter erlebt',
@@ -1028,7 +1029,12 @@ body[data-top="1"] #winote{top:178px}
     } catch (e) {}
     // a construction phase of the pavilion looked at: the phase changed after the start (the start may be in any phase)
     if (PH0 === null) PH0 = PHASE;
-    else if (PHASE !== PH0) look('bau:phase');
+    else if (PHASE !== PH0) {
+      look('bau:phase');
+      // the phase that puts the solar modules on the pavilion (pavilion/phases.js „Geländer, Windschutz, PV“)
+      const PS = window.PHASES;
+      if (PS && PS[PHASE] && /\bPV\b/.test(PS[PHASE].name || '')) look('bau:pv');
+    }
   }
   let PH0 = null,
     MO0 = null;

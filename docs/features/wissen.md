@@ -9,7 +9,7 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
 - **Das Entdeckerbuch** (Menü → Startseite → „Entdeckerbuch“, Taste **N**, im Strategie-Modus ein Knopf „📖 Buch“ in seiner Leiste):
   Kapitel **Natur, Handwerk, Geschichte, Politik & Soziales, Orte** und dazu **Regeln** (die „Warum?“-Gründe). Jeder Eintrag: was es ist,
   warum es hier bei Ratscher zählt, ein Symbol, die echten Quellen als Links, wie er gefunden wurde. Noch nicht Gefundenes steht grau mit
-  einem Tipp. Fortschritt je Kapitel und gesamt; eine **Suche** im Buch (findet Entdecktes und verstandene Regeln, Unentdecktes nur als Zahl). 77 Einträge und 28 Regeln (72 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
+  einem Tipp. Fortschritt je Kapitel und gesamt; eine **Suche** im Buch (findet Entdecktes und verstandene Regeln, Unentdecktes nur als Zahl). 78 Einträge und 28 Regeln (73 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
   Daten-Ansichten in `wissen_daten.js`), dazu Einträge, die aus Ereignissen entstehen (Erkundetes, gepflanzte Arten) – und mit feat/tiere jede
   Art seiner Steckbriefe (`TARTEN`) als Eintrag zum Entdecken, mit Steckbrief und Quellen.
 - **Gefunden durch Tun und Sehen** (`viz3/src/wissen/wissen.js`):
@@ -25,7 +25,7 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
     seiner Pflanzendatenbank (`gartenplaner/pflanzen.json`).
   - **Zustände, auf die das Buch alle 1,5 s schaut**: Fällschritte (`FELL.trees`: Fallkerb, entasten, ablängen, vermessen), Werkstücke des
     Werkstatt-Spiels (`WERK.W.list`: leimen, Stirnholz, ölen), Blockbandsäge und Trockenstapel, Wahl und Amt (`AMT.ST.phase`), der Gartenplaner
-    offen, eine Bauphase des Pavillons, ein Monat im Spiel – und das **Wetter** (feat/wetter, `WETTER.S.w`): Regen → Steigungsregen am
+    offen, eine Bauphase des Pavillons (die Phase mit den Solarmodulen → „Strom von der Sonne“, Erträge nach PVGIS), ein Monat im Spiel – und das **Wetter** (feat/wetter, `WETTER.S.w`): Regen → Steigungsregen am
     Gebirge, Schnee → Schnee und Raureif, Gewitter → Blitz und Donner (3 s je km), Sturm (Böen ab 75 km/h oder Wind ab Stärke 8) → Sturm und
     Windwurf. Mit „wie draußen“ kommt das live von Open-Meteo.
 - **Menschen als Lehrer** (`viz3/src/wissen/wissen_lehrer.js`): ein Thema im Gespräch öffnet einen Eintrag – **Gerhard** (Lehrer i. R.,

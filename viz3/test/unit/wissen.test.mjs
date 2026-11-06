@@ -113,6 +113,9 @@ test('facts that must stay right (checked 6.11.2026 with the sources named)', ()
   // Beaufort: a storm from force 9 (a mean wind of 75 km/h, WetterOnline); thunder: 3 s per km
   assert.match(t('n_sturm').text, /Windstärke 9/);
   assert.match(t('n_gewitter').text, /geteilt durch drei/);
+  // PVGIS (SARAH2) for 50.492 N 10.781 E, 1 kWp, 30° south, 14 % losses: 999.6 kWh a year; vertical 693 kWh (≈ 70 %)
+  assert.match(t('h_pv').text, /rund 1000 kWh im Jahr/);
+  assert.match(t('h_pv').text, /rund 70 %/);
 });
 
 test('the weather finds its entries (feat/wetter: rain, snow, thunder, storm)', () => {

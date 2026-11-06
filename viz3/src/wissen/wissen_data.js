@@ -478,6 +478,23 @@ export const WDATA = (() => {
       hint: 'Ein fertiges Brett ölen.',
     },
     {
+      id: 'h_pv',
+      ch: 'handwerk',
+      icon: '☀️',
+      title: 'Strom von der Sonne',
+      text: 'Ein Solarmodul macht aus Sonnenlicht Strom. Ein Kilowatt Modulleistung (kWp), um 30° nach Süden geneigt, bringt bei Ratscher rund 1000 kWh im Jahr – im Juni und Juli gut 4 kWh am Tag, im Dezember keine 0,8. Senkrechte Module wie die Brüstung des Pavillons bringen übers Jahr rund 70 % davon – im Sommer nur die Hälfte, im Winter sogar etwas mehr, weil die Sonne dann tief steht.',
+      here: 'Im Spiel laden Module auf dem Dach der alten Garage eine Powerstation – eine kleine Inselanlage ohne Netz; was sie im Winter nicht schafft, macht das Benzin-Aggregat.',
+      src: [
+        [
+          'PVGIS (Gemeinsame Forschungsstelle der EU): Ertrag bei Ratscher, 1 kWp nach Süden, 30° und senkrecht, 14 % Verluste',
+          'https://re.jrc.ec.europa.eu/pvg_tools/de/',
+        ],
+        wiki('Photovoltaik'),
+      ],
+      find: { look: ['bau:pv'], ev: [['strategie:entdeckt', d => d && (d.id === 'pv2' || d.id === 'speicher2')]] },
+      hint: 'Beim Bau des Pavillons die Phase mit den Solarmodulen ansehen.',
+    },
+    {
       id: 'h_toepfern',
       ch: 'handwerk',
       icon: '🏺',
