@@ -185,6 +185,9 @@ strategie/st_ausbau.js      # feat/strategie food and beds, knowledge and upgrad
 strategie/st_figuren.js     # feat/strategie your people as Rocketbox figures in the world: close up from above and near the walker (STFIG)
 strategie/st_ebenen.js      # feat/strategie the layers one can switch: nature as far as it is known, crises at their places, traffic (STEBENEN)
 strategie/st_hud.js         # feat/strategie the lens: HUD, overlay over the plan view, selecting, sending, panels, notices with „Warum?“ (STHUD)
+# feat/strategie-dorf: the village in „Ratscher von oben“ below this line (on the core's API and the Ortsvorsteher system amt/*)
+strategie/st_dorf_data.js   # feat/strategie-dorf the village's places, people as one gets to know them, projects with real steps, rules with sources – data (STDDATA)
+strategie/st_dorf.js        # feat/strategie-dorf projects and reputation (AMT.ST.rep), the Ortsteil's budget, Ortsteilrat and town council, exploration (STDORF)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
