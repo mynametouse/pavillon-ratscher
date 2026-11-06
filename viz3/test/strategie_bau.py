@@ -48,7 +48,8 @@ with lib.browser() as b:
         for i in range(600):
             steps(0.5, 0.25)
             if not E("!!CLOCK.warp"): break
-        steps(0.25)
+        # a second of frames with the clock standing (speed 0): the modules' throttled ticks see the new moment
+        steps(1.0)
         E(f"STRAT.setSpeed({sp})")
     # errors the game caught in a tick or an event handler of the mode (KERN logs them once into LOADLOG)
     def tick_errors():
@@ -130,7 +131,7 @@ with lib.browser() as b:
         fee = e2 - J("STRAT.S.eur")
         ck('the application for the permit (plans by an engineer, the fee about 0,5 % of the costs)', J("!!STBAU.waiting('gen')") and fee > 1000, f'{fee:.0f} € · {jstate(ja["id"])}')
         skip(57)
-        gen = J("STBAU.st().gen")
+        gen = J("STBAU.st().gen || null")
         ck('the permit comes – building may start a week after the notice', gen and gen['start'] > gen['t'], str(gen))
         steps(1)
         sg = J("(() => { const g = STBAU.sign(); return g ? { vis: g.visible, x: g.position.x, z: g.position.z } : null; })()")
@@ -298,7 +299,12 @@ with lib.browser() as b:
         steps(1)
         lib.shot(pg, OUT, '07_obstgarten_oben')
         own, nw = own_new(K0)
-        ck('no new shader program for our things (the pavilion in every phase, the planner\'s trees and pots)', not nw and len(own) > 5, f'{len(own)} own materials, new: {nw[:8]}')
+        # the garden planner's own tree kinds (gplan_3d.js builds them when first needed) are the planner's: its tests (gartenplaner,
+        # gartenplaner_kammbach) check their programs – here only a note, so this test guards what this theme makes
+        gp = [n for n in nw if n.startswith('neu gplan')]
+        mine = [n for n in nw if not n.startswith('neu gplan')]
+        if gp: print('NOTE the garden planner compiled a new program for its trees:', gp[:4], '– see its own tests', flush=True)
+        ck('no new shader program for our things (the pavilion in every phase, the sign, the delivery stack; the planner\'s trees noted)', not mine and len(own) > 5, f'{len(own)} own materials, new: {mine[:8]}, planner: {gp[:4]}')
         # chickens (feat/tiere's TIERE.huehner): the coop and five hens from above, eggs into the meals
         if J("!!(window.TIERE && TIERE.huehner)"):
             jh = job('g_huehner', ['sarah', 'falko'])

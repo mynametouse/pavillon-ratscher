@@ -238,6 +238,11 @@ export const STBAU = (() => {
   }
   let acc = 0;
   KERN.tick(dt => {
+    // the waits (a decision of the authority, a delivery) in every frame: a time-lapse may end right after their moment, and what came
+    // is there as soon as the clock stops (src's Prüfpaket 42152070883 had looked half a second too early)
+    const b = S.ext.bau;
+    if (b && Array.isArray(b.waits) && b.waits.length)
+      for (const w of b.waits.slice()) if (w && Number.isFinite(w.t) && w.t <= now()) resolve(w);
     if ((acc += dt) < 0.5) return;
     acc = 0;
     applySaved();
@@ -246,9 +251,6 @@ export const STBAU = (() => {
       signSync();
       pileSync();
     }
-    const b = S.ext.bau;
-    if (!b || !Array.isArray(b.waits) || !b.waits.length) return;
-    for (const w of st().waits.slice()) if (w.t <= now()) resolve(w);
   }, 'strategie/bau');
   // ---------------- the world's phase: set by a finished phase, kept after a reload ----------------
   // once per page load, as soon as the model stands (boot/boot.js has set its start phase) and the saved state is in (or 30 s later: none)
