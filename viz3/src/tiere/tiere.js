@@ -22,7 +22,7 @@ import { RATSCHER } from '../world/ratscher.js';
 import { ROADS } from '../world/roads.js';
 import { FOREST } from '../world/forest.js';
 import { sun, sunDir } from '../garden/env.js';
-import { BLOBS, inView } from '../npc/npc.js';
+import { BLOBS, GOATS, inView } from '../npc/npc.js';
 import { RENDER } from '../render/render.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { TARTEN } from './tiere_arten.js';
@@ -1071,6 +1071,14 @@ export const TIERE = (() => {
       if (S.frame % 8 === a.i % 8) lookFor(a);
       voice(a, dt, d);
     }
+    // Ronald's goats (npc/npc.js, read only): the discovery book learns of them when one is near and in sight
+    if (S.frame % 30 === 0 && S.seen.ziege === undefined && P.mode === 'walk' && GOATS && GOATS.length)
+      for (const g of GOATS)
+        if (Math.hypot(g.x - P.x, g.y - P.y) < 25 && inView(g.x, g.y, KERN.ground(g.x, g.y) + 0.5)) {
+          if (discover('art', 'ziege', TARTEN.A.ziege.name, TARTEN.sourceOf('ziege')))
+            PLAY.think && PLAY.think('Ronalds Ziegen – Hasso darf sie hüten, wenn er es gelernt hat.', 4200);
+          break;
+        }
     cam0.x = ox;
     cam0.y = oy;
     if (S.frame % 2 === 0 || moved) shadows();
