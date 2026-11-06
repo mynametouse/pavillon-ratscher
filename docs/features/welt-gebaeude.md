@@ -7,7 +7,7 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
 
 - **Gebäude aus Daten (Ratschers Quadrat):** `viz3/src/gebaeude/gebaeude.js` (`GEB`) baut die **307 Gebäude, die OSM fehlten**, aus
   ETHOS.BUILDA (Forschungszentrum Jülich, Grundriss und Höhe jedes Gebäudes in Deutschland, für Thüringen aus dem LoD2 des Landes; ODbL 1.0):
-  44 Häuser, 34 Scheunen und Hallen, 220 Schuppen und Garagen, 3 runde Behälter (Gülle/Silage), 6 Türme/Silos. Echte Lage, echte Höhe
+  45 Häuser, 33 Scheunen und Hallen, 220 Schuppen und Garagen, 3 runde Behälter (Gülle/Silage), 6 Türme/Silos. Echte Lage, echte Höhe
   (Boden bis höchster Punkt), Dachform geschätzt (Satteldach längs, große Häuser teils Walmdach, Schuppen Pultdach, Garagen flach, Hallen
   flach geneigt; Gebäude mit mehreren Geschossen – Wohnblöcke, Schulen, Stadthäuser, ab 10 m Höhe und höchstens 18 m tief – als
   verputzte Häuser mit Fenstern je Geschoss, flach gedeckt, wo das Luftbild ein ebenes Dach ohne Ziegel zeigt, sonst mit Satteldach;
