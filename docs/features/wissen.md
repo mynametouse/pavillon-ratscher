@@ -9,7 +9,7 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
 - **Das Entdeckerbuch** (Menü → Startseite → „Entdeckerbuch“, Taste **N**, im Strategie-Modus ein Knopf „📖 Buch“ in seiner Leiste):
   Kapitel **Natur, Handwerk, Geschichte, Politik & Soziales, Orte** und dazu **Regeln** (die „Warum?“-Gründe). Jeder Eintrag: was es ist,
   warum es hier bei Ratscher zählt, ein Symbol, die echten Quellen als Links, wie er gefunden wurde. Noch nicht Gefundenes steht grau mit
-  einem Tipp. Fortschritt je Kapitel und gesamt. 75 Einträge und 27 Regeln (70 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
+  einem Tipp. Fortschritt je Kapitel und gesamt. 75 Einträge und 28 Regeln (70 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
   Daten-Ansichten in `wissen_daten.js`), dazu Einträge, die aus Ereignissen entstehen (Erkundetes, gepflanzte Arten) – und mit feat/tiere jede
   Art seiner Steckbriefe (`TARTEN`) als Eintrag zum Entdecken, mit Steckbrief und Quellen.
 - **Gefunden durch Tun und Sehen** (`viz3/src/wissen/wissen.js`):
@@ -33,7 +33,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   Manfred „Die Feuerwehr“, Uwe „Die Talsperre“ …). Sie sagen den Satz in ihren Worten (Hubert und Ronald mit ihrer Stimme), dann ist er im Buch –
   beim ersten Mal öffnet sich das Buch neben dem Gespräch auf dem Eintrag (am Handy statt dessen der Hinweis mit „Lesen“).
 - **„Warum?“** an Regeln: `WISSEN.why(id)` → ein Satz mit Quelle (32. BImSchV, BNatSchG, ThürNRG, WHG, BauGB, DGUV …); dieselben IDs wie die
-  Regeln des Strategie-Modus (`STDATA.RULES`), unbekannte IDs fallen auf dessen Text zurück. Ein Gedanke der Spielfigur, der eine Regel nennt
+  Regeln des Strategie-Modus (`STRAT.D.RULES`), unbekannte IDs fallen auf dessen Text zurück. Tippt man im Strategie-Modus auf dessen eigenes
+  „Warum?“, gilt die Regel auch im Buch als verstanden, und der Grund bekommt „Quellen ›“ mit den verlinkten Quellen des Buchs. Ein Gedanke der Spielfigur, der eine Regel nennt
   (z. B. „Sonn- und Feiertagsruhe“ beim Mäher), bekommt ein kleines **„?“** daneben; angetippt erscheinen Grund und Quelle, die Regel gilt als
   verstanden (Kapitel „Regeln“).
 - **Orte der Geschichte – Infotafeln** (`viz3/src/wissen/wissen_orte.js`): kleine Tafeln mit Dach auf zwei Pfosten an der alten Schule, unter der

@@ -256,10 +256,18 @@ def run():
                 E("STRAT.layer.set('w_sonne', true)"); steps(1.0)
                 sv = J("(() => { const L = document.getElementById('widaten'); return { leg: L ? !L.hidden && L.textContent.includes('Horizont') : false, n: [...document.querySelectorAll('svg polygon')].filter(p => (p.getAttribute('style') || '').includes('fill:rgb')).length }; })()")
                 ck('…„Sonne“ on from above: drawn on its map, with the legend', sv['leg'] and sv['n'] > 50, str(sv))
+                ov = J("(() => { const a = document.getElementById('widaten').getBoundingClientRect(); const hit = id => { const e = document.getElementById(id); if (!e || !e.offsetParent) return false; const b = e.getBoundingClientRect(); return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom; }; return { card: hit('stcard'), ppl: hit('stppl'), time: hit('sttime'), pan: hit('stpan') }; })()")
+                ck('…its legend stands clear of the mode\'s people, chapter card, clock and panel', not any(ov.values()), str(ov))
                 page_pic('08b_strategie_sonne')
                 E("STRAT.layer.set('w_sonne', false)")
                 E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'sturmholz', title: 'Sturmholz an der Klinge', source: 'ThüringenForst', text: 'Windwurf nach dem Sturm', by: 'falko' })")
                 ck('an exploration of the strategy mode the book has no entry for becomes one (Natur)', J("(() => { const e = WISSEN.get('st:wald:sturmholz'); return !!e && e.ch === 'natur' && WISSEN.has(e.id); })()"))
+                # its own „Warum?“ on a refusal: the rule counts as understood in the book, the reason gets the book's linked sources
+                if J("!!(STRAT.D && STRAT.D.RULES && STRAT.D.RULES.saftruhe && STRAT.note)"):
+                    E("(() => { const R = STRAT.D.RULES.saftruhe; STRAT.note(R.text, { kind: 'nein', why: R.why, src: R.src }); })()"); time.sleep(0.2)
+                    E("(() => { const bs = [...document.querySelectorAll('button[data-why]')]; const b = bs[bs.length - 1]; if (b) b.click(); })()"); time.sleep(0.3)
+                    sw = J("(() => { const bs = [...document.querySelectorAll('button[data-why]')]; const n = bs.length ? bs[bs.length - 1].closest('.n') : null; return { why: WISSEN.state().why, q: !!(n && n.querySelector('[data-wiwhy=\"saftruhe\"]')) }; })()")
+                    ck('the strategy mode\'s own „Warum?“ (Saftruhe): understood in the book too, with „Quellen ›“', 'saftruhe' in sw['why'] and sw['q'], str(sw))
         found_before = J("WISSEN.state().found")
         E("WISSEN.saveNow()")
         ck.errors(errs)

@@ -1036,6 +1036,11 @@ export const WDATA = (() => {
       text: 'Bei starkem Wind brechen Äste und kippen angeschobene Bäume – die Waldarbeit ruht, bis der Sturm vorbei ist.',
       src: [Q.dguvWald],
     },
+    nass_maehen: {
+      title: 'Nasses Gras mäht man nicht',
+      text: 'Nasses Gras wird eher gerissen als geschnitten, klumpt und verstopft das Mähwerk; auf nassem Hang rutscht man leicht aus, und bei Elektromähern kommt die Gefahr eines Stromschlags dazu.',
+      src: [['Plantura – Nassen Rasen mähen?', 'https://www.plantura.garden/rasen/pflege/nassen-rasen-maehen']],
+    },
     psa_werk: {
       title: 'Gehörschutz und Staubmaske',
       text: 'Ab 85 dB(A) ist Gehörschutz Pflicht; Eichen- und Buchenholzstaub gilt als krebserzeugend – an Säge und Schleifer gehören Absaugung und eine FFP2-Maske dazu.',

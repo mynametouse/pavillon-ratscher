@@ -165,6 +165,14 @@ export const WISSEN = (() => {
       'Neu im Entdeckerbuch: <b>' + esc(first.title) + '</b>' + (more ? ' <small>+' + more + '</small>' : '');
     el.dataset.id = first.id;
     el.hidden = false;
+    // on a phone the data views' panel (wissen_daten.js) fills the lower half of the plan view: the notice goes above it
+    el.style.bottom = '';
+    const dp = $('widaten');
+    if (dp && !dp.hidden && innerWidth <= 560 && el.offsetParent) {
+      const hb = el.offsetParent.getBoundingClientRect().bottom,
+        top = dp.getBoundingClientRect().top;
+      el.style.bottom = Math.round(hb - top + 8) + 'px';
+    }
     clearTimeout(el._t);
     el._t = setTimeout(() => (el.hidden = true), 7000);
   }
@@ -188,10 +196,41 @@ export const WISSEN = (() => {
   function why(id) {
     const w = D.WHY[id];
     if (w) return { id, title: w.title, text: w.text, src: w.src.map(s => [s[0], s[1]]) };
-    // the strategy mode's own rules (strategie/st_data.js RULES) when it is there and the book does not know the id
-    const R = window.STDATA && window.STDATA.RULES && window.STDATA.RULES[id];
+    // the strategy mode's own rules (strategie/st_data.js RULES, reached as STRAT.D) when the book does not know the id
+    const RS = stRules(),
+      R = RS && RS[id];
     if (R) return { id, title: R.text || id, text: R.why || R.text || '', src: R.src ? [[String(R.src), null]] : [] };
     return null;
+  }
+  function stRules() {
+    const ST = window.STRAT;
+    return (ST && ST.D && ST.D.RULES) || (window.STDATA && window.STDATA.RULES) || null;
+  }
+  // the strategy mode's own „Warum?“ (a refusal's note, a job that waits): the rule counts as understood here too, and its reason
+  // gets the book's „?“ with the linked sources. The note carries the reason's text, not the rule's id – found again by that text.
+  function stWhy(btn) {
+    const RS = stRules();
+    if (!RS) return;
+    const n = btn.closest('.n') || btn.closest('.job') || btn.parentElement,
+      w = n && n.querySelector('.w'),
+      txt = ((w && w.firstChild && w.firstChild.textContent) || (n && n.textContent) || '').trim();
+    if (!txt) return;
+    let id = null;
+    for (const k in RS) {
+      const R = RS[k];
+      if ((R.why && txt.indexOf(R.why) >= 0) || (R.text && txt.indexOf(R.text) >= 0)) {
+        id = k;
+        break;
+      }
+    }
+    if (!id) return;
+    if (!S.w[id]) {
+      S.w[id] = 1;
+      save();
+      KERN.emit('wissen:warum', { id });
+    }
+    if (w && !w.querySelector('[data-wiwhy]') && D.WHY[id])
+      w.insertAdjacentHTML('beforeend', ' ' + whyHTML(id, 'Quellen ›'));
   }
   const whyHTML = (id, label) =>
     why(id)
@@ -252,7 +291,18 @@ export const WISSEN = (() => {
       'click',
       e => {
         const b = e.target && e.target.closest && e.target.closest('[data-wiwhy]');
-        if (!b) return;
+        if (!b) {
+          // the strategy mode's „Warum?“ on a note: its own handler shows the reason, the book follows right after
+          const sw =
+            window.STRAT && window.STRAT.on && e.target && e.target.closest && e.target.closest('button[data-why]');
+          if (sw)
+            setTimeout(() => {
+              try {
+                stWhy(sw);
+              } catch (er) {}
+            }, 0);
+          return;
+        }
         e.preventDefault();
         e.stopPropagation();
         explain(b.dataset.wiwhy, b);
@@ -366,7 +416,7 @@ body[data-top="1"] #winote{top:178px}
 #winote b{font-weight:700}
 #winote small{opacity:.8}
 #winote button{border:0;border-radius:999px;background:#f3e2b8;color:#2b2420;font:700 12.5px/1 var(--f-body);padding:8px 12px;cursor:pointer;flex:none}
-@media (max-width:560px){#wibook{top:56px;right:8px;left:8px;width:auto;max-height:calc(100% - 140px)} #winote{top:auto;bottom:calc(320px + env(safe-area-inset-bottom,0px))}}
+@media (max-width:560px){#wibook{top:56px;right:8px;left:8px;width:auto;max-height:calc(100% - 140px)} #winote{top:auto;bottom:calc(320px + env(safe-area-inset-bottom,0px));left:8px;right:8px;transform:none;max-width:none;border-radius:16px}}
 `;
   // at load: the style, the menu entry, the „?“ beside thoughts (the book itself is made on first use)
   function initUI() {

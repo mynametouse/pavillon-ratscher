@@ -826,6 +826,39 @@ export const WDATEN = (() => {
       })
     );
   }
+  // the panel stands above the plan view's scale bar and credit line (shell/panel_3d.html #topscale, #geoattr), bottom left as well
+  function lift() {
+    const el = S.el,
+      host = el && el.offsetParent;
+    if (!host) return;
+    const hr = host.getBoundingClientRect(),
+      st = {};
+    if (stratOn()) {
+      // the strategy mode's HUD (feat/strategie st_hud.js) fills the left column (people, the chapter card): the legend goes to the
+      // right, under whatever stands there (the clock, a selection's panel, the layers)
+      let y = 0;
+      for (const id of ['sttime', 'stpan', 'stlayers']) {
+        const e = document.getElementById(id);
+        if (!e || e.hidden || !e.offsetParent) continue;
+        const r = e.getBoundingClientRect();
+        if (r.width > 0 && r.left > hr.left + hr.width / 2) y = Math.max(y, r.bottom - hr.top);
+      }
+      Object.assign(st, { left: 'auto', right: '10px', bottom: 'auto', top: Math.round(y + 8) + 'px' });
+      st.maxHeight = Math.max(120, Math.round(hr.height - y - 100)) + 'px';
+    } else {
+      const right = el.getBoundingClientRect().right;
+      let top = Infinity;
+      for (const id of ['topscale', 'geoattr']) {
+        const e = document.getElementById(id);
+        if (!e || e.hidden || !e.offsetParent) continue;
+        const r = e.getBoundingClientRect();
+        if (r.left < right && r.height > 0) top = Math.min(top, r.top);
+      }
+      Object.assign(st, { left: '', right: '', top: '', maxHeight: '' });
+      st.bottom = top < Infinity ? Math.max(118, Math.round(hr.bottom - top + 8)) + 'px' : '';
+    }
+    for (const k in st) if (el.style[k] !== st[k]) el.style[k] = st[k];
+  }
   // shown with the plan view (and in the strategy mode while one of the views is on); the legend follows the clock and the cars
   let acc = 0,
     last = '';
@@ -842,6 +875,7 @@ export const WDATEN = (() => {
     if (S.el && S.el.hidden === show) S.el.hidden = !show;
     S.shown = show;
     if (!show) return;
+    lift();
     const key =
       LAYERS.map(L => +isOn(L.id)).join('') +
       '|' +
