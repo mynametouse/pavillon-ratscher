@@ -93,8 +93,9 @@ export const STAUSBAU = (() => {
   // A night costs about 0,0012 rm per kelvin below 20 °C (assumption: the bungalow, ~25 m², thinly insulated, loses ~100 W/K; heated in the
   // evening and the morning – about 12 hours a day – that is 1,2 kWh/K; a rm of air-dry spruce holds ~1450 kWh, ~1000 kWh of it heat in a
   // simple stove); above 14 °C in the evening nobody lights it. Dry wood only (1. BImSchV: below 25 % moisture): your own stacked firewood
-  // once it is dry, then the bought store under the bungalow's eaves (S.ext.heiz.ofen, rm – a rest of last winter at the start). Without:
-  // a cold night (mood −12) and a notice with „Brennholz bestellen“.
+  // once it is dry, then the bought store at the bungalow (S.ext.heiz.ofen, rm; 1 rm at the start – an assumption: the stack against the
+  // annex's back wall in garden/bungalow.js holds a little under half of it). Without: a cold night (mood −12) and a notice with
+  // „Brennholz bestellen“.
   const HZ = () => {
     const h = S.ext.heiz;
     if (h && typeof h === 'object' && Number.isFinite(h.ofen) && h.ofen >= 0) return h;
@@ -105,13 +106,13 @@ export const STAUSBAU = (() => {
   {
     const need = T => (T >= HEAT_MAX ? 0 : +(HEAT_K * (20 - T)).toFixed(3));
     HZ();
-    // what the stove has: the store under the eaves, your own dry firewood, for how many nights at 2 °C in the evening
+    // what the stove has: the store at the bungalow, your own dry firewood, for how many nights at 2 °C in the evening
     STRAT.place.define({
       id: 'bungalow',
       stock: () => {
         const dry = STHOLZ.firewood.dry();
         return [
-          ['Brennholz unter dem Vordach (gekauft, trocken)', de(HZ().ofen, 2) + ' rm'],
+          ['Brennholz am Bungalow (gekauft, trocken)', de(HZ().ofen, 2) + ' rm'],
           ['Eigenes trockenes Brennholz (Holzlager)', de(dry, 1) + ' rm'],
           ['Reicht für kalte Nächte (2 °C)', 'etwa ' + Math.floor((HZ().ofen + dry) / need(2))],
         ];
@@ -126,13 +127,13 @@ export const STAUSBAU = (() => {
       min: 1,
       heavy: 0.3,
       order: 8,
-      text: 'Beim Brennholzhändler anrufen; er kippt einen Raummeter vors Tor, ihr setzt ihn unter dem Vordach des Bungalows auf.',
+      text: 'Beim Brennholzhändler anrufen; er kippt einen Raummeter vors Tor, ihr setzt ihn am Anbau des Bungalows unter Dach auf.',
       learn: `Ofenfertig (33 cm, unter 20 % Feuchte) kostet ein Raummeter Fichte frei Haus gut ${D.PRICES.brennholz_fi.eur} € (TFZ Bayern, Juli 2026), Buche rund 145 €. Eigenes Holz ist billiger, braucht aber ein Jahr unter Dach.`,
       can: () =>
         HZ().ofen > 2
           ? {
               no: true,
-              text: `Unter dem Vordach liegen schon ${de(HZ().ofen, 1)} rm – mehr passt dort nicht trocken hin.`,
+              text: `Am Bungalow liegen schon ${de(HZ().ofen, 1)} rm – mehr passt dort nicht trocken unter Dach.`,
               why: 'Brennholz muss luftig und unter Dach lagern, sonst zieht es wieder Feuchte.',
               src: '',
             }
@@ -141,7 +142,7 @@ export const STAUSBAU = (() => {
       finish: () => {
         HZ().ofen = +(HZ().ofen + 1).toFixed(3);
         STRAT.book(-D.PRICES.brennholz_fi.eur, 'Brennholz gekauft: 1 rm Fichte, ofenfertig', 'heizen');
-        return { text: `1 rm Brennholz unter dem Vordach aufgesetzt – jetzt ${de(HZ().ofen, 1)} rm` };
+        return { text: `1 rm Brennholz am Bungalow aufgesetzt – jetzt ${de(HZ().ofen, 1)} rm` };
       },
     });
     KERN.on('strategie:tag', d => {
