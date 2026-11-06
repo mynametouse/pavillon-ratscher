@@ -12,8 +12,6 @@ import * as THREE from 'three';
 import { BASE, COARSE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { LM, markDirty, whenLoaded } from '../core/assets.js';
-import { COL } from '../core/geo.js';
-import { rebuildGrids } from '../game/walkable.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
 import { WELT } from '../welt/welt.js';
@@ -608,6 +606,57 @@ export const GEB = (() => {
       for (const f of b.F) if (Math.hypot(f[2] - f[0], f[3] - f[1]) >= 0.05) out.push(f[0], f[1], f[2], f[3]);
     return out;
   }
+  // the fences, hedges, bins and woodpiles world/village_near.js puts around the village's houses keep off these buildings as well:
+  // its freeAt asks GEB.footFree (a grid of 16 m over the footprints of the square, margin up to 1 m)
+  const FG = new Map(),
+    FGS = 16;
+  function footIndex(list) {
+    for (const b of list) {
+      const f = b.f;
+      let x0 = 1e9,
+        y0 = 1e9,
+        x1 = -1e9,
+        y1 = -1e9;
+      for (let k = 0; k < f.length; k += 2) {
+        x0 = Math.min(x0, f[k]);
+        x1 = Math.max(x1, f[k]);
+        y0 = Math.min(y0, f[k + 1]);
+        y1 = Math.max(y1, f[k + 1]);
+      }
+      b.bb = [x0, y0, x1, y1];
+      for (let i = Math.floor((x0 - 1) / FGS); i <= Math.floor((x1 + 1) / FGS); i++)
+        for (let j = Math.floor((y0 - 1) / FGS); j <= Math.floor((y1 + 1) / FGS); j++) {
+          const k = i + ',' + j;
+          if (!FG.has(k)) FG.set(k, []);
+          FG.get(k).push(b);
+        }
+    }
+  }
+  S.footFree = (x, y, m) => {
+    const L = FG.get(Math.floor(x / FGS) + ',' + Math.floor(y / FGS));
+    if (!L) return true;
+    m = Math.min(m, 1);
+    for (const b of L) {
+      const bb = b.bb,
+        f = b.f,
+        n = f.length;
+      if (x < bb[0] - m || x > bb[2] + m || y < bb[1] - m || y > bb[3] + m) continue;
+      let c = false;
+      for (let k = 0; k < n; k += 2) {
+        const j = (k + 2) % n,
+          ax = f[k],
+          ay = f[k + 1],
+          dx = f[j] - ax,
+          dy = f[j + 1] - ay,
+          L2 = dx * dx + dy * dy,
+          t = L2 > 0 ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2)) : 0;
+        if (ay > y !== f[j + 1] > y && x < (dx * (y - ay)) / dy + ax) c = !c;
+        if (Math.hypot(x - ax - dx * t, y - ay - dy * t) < m) return false;
+      }
+      if (c) return false;
+    }
+    return true;
+  };
   function one(J, b, id) {
     prep(b, id);
     // the foot: the ground along the walls; on a slope the ground floor keeps to the upper side, the walls go down to the lowest point
@@ -641,7 +690,11 @@ export const GEB = (() => {
     while (JOBS.length && performance.now() - t0 < 8) {
       const J = JOBS[0];
       if (!J.dead && J.i < J.list.length) {
-        one(J, J.list[J.i], J.id0 + J.i);
+        try {
+          one(J, J.list[J.i], J.id0 + J.i);
+        } catch (e) {
+          console.warn('gebaeude', J.id0 + J.i, e); // a broken record is skipped, the job goes on
+        }
         J.i++;
         continue;
       }
@@ -679,11 +732,12 @@ export const GEB = (() => {
     S.bld = data.b;
     S.stats = data.stats || null;
     data.b.forEach((b, i) => prep(b, ID0 + i));
+    footIndex(data.b);
     // the village's own materials (world/village.js): same programs, its lamps and windows at night
     const wm = VILLAGE.ready && RATSCHER.bld[0] && RATSCHER.bld[0].material,
       rm = VILLAGE.ready && VILLAGE.meshes[0] && VILLAGE.meshes[0].material;
     if (!wm || !rm) throw new Error('village materials missing');
-    // collisions now (world/worldcol.js builds its grid after this module): the wall feet, boxes for the garden's walk grid within 95 m
+    // collisions now (world/worldcol.js builds its grid after this module): the wall feet
     const segs = segsOf(data.b),
       W0 = RATSCHER.walls || new Float32Array(0),
       W1 = new Float32Array(W0.length + segs.length);
@@ -691,28 +745,8 @@ export const GEB = (() => {
     W1.set(segs, W0.length);
     RATSCHER.walls = W1;
     S.nSeg = segs.length / 4;
-    let nCol = 0;
-    for (const b of data.b) {
-      if (Math.hypot(b.cx - 2, b.cy - 2) > 95) continue;
-      const an = ((90 - (b.az || 0)) * Math.PI) / 180,
-        c = Math.cos(an),
-        s = Math.sin(an);
-      let x0 = 1e9,
-        x1 = -1e9,
-        y0 = 1e9,
-        y1 = -1e9;
-      for (let k = 0; k < b.f.length; k += 2) {
-        const lx = (b.f[k] - b.cx) * c + (b.f[k + 1] - b.cy) * s,
-          ly = -(b.f[k] - b.cx) * s + (b.f[k + 1] - b.cy) * c;
-        x0 = Math.min(x0, lx);
-        x1 = Math.max(x1, lx);
-        y0 = Math.min(y0, ly);
-        y1 = Math.max(y1, ly);
-      }
-      COL.push([x0, x1, y0, y1, -2, Math.max(4, b.h + 1), 'house', null, null, { cx: b.cx, cy: b.cy, c, s }]);
-      nCol++;
-    }
-    if (nCol) rebuildGrids();
+    // (no boxes for the garden's walk grid: no new building reaches into it – x −50…50, y −55…55 – the walker meets them through
+    // KERN.pushOut like the village's)
     // trees of the canopy model that were these buildings' roofs (no OSM footprint to keep them out when the trees were found): hidden
     hideTrees(data.trees || []);
     S.n = data.b.length;
