@@ -125,6 +125,11 @@ with lib.browser() as b:
         ck('clear: the crowns barely move (a light breeze)', s['trees']['sway'][0] < 0.06, str(s['trees']))
         ck('clear: no white on the crowns', s['trees']['white'] == 0, str(s['trees']))
         ck('clear (2 %): the photographs\' clouds give way to the day\'s gradient and the sun\'s glow', s['sky']['clear'] > 0.9, str(s['sky']))
+        # no cloud at all (0 %, as in Ratscher on 6.11.2026): no wisp of the cloud noise, the sun undimmed
+        E("WETTER.mock(__wxAnswer(Object.assign({}, WETTER.data.PRESETS.klar, { C: 0 })))"); time.sleep(0.2); E("WETTER.snap()"); steps(1.0); E("DN.update(true)"); steps(0.3)
+        s0c = st()
+        ck('cloudless (0 %): a clear sky, the sun undimmed by any cloud', s0c['sky']['clear'] > 0.9 and s0c['sky']['mask'] == 0 and s0c['sky']['cov'] < 0.003, str(s0c['sky']))
+        s = weather('klar')
         ck('clear: the lawn hardly bends (a breeze of 7–14 km/h: a few per cent of the blades\' height)', s['trees']['bend'][0] < 0.08, str(s['trees']))
         # both views once under a clear sky first: what they show compiles there (not counted as the weather's)
         view('garten', 160, -2)
