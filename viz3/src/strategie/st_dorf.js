@@ -504,15 +504,25 @@ export const STDORF = (() => {
       AMTWORLD.refresh(s, now());
     } catch (e) {}
     styleSelf(3, 'Dorfprojekt fertig: ' + Pj.title);
-    STRAT.note(`Fertig im Dorf: ${Pj.title}${Pj.build ? ' – es steht jetzt in der Welt' : ''}.`, { kind: 'fertig' });
+    STRAT.note(
+      Pj.build === 'kirmes'
+        ? `Fertig im Dorf: ${Pj.title} – gefeiert wird zur Kirmeszeit im Herbst, am ${W.day(s.kd + 600).label}: Festzelt und Kirmesbaum am Anger.`
+        : `Fertig im Dorf: ${Pj.title}${Pj.build ? ' – es steht jetzt in der Welt' : ''}.`,
+      { kind: 'fertig' }
+    );
     STRAT.emit('dorfprojekt', { id, state: 'fertig', t });
     markDirty(true);
     STRAT.save();
   }
-  // the Kirmes: the first Saturday at least ten days on (time for tent, band, cakes – as amt/amt.js kirmesDate)
+  // the Kirmes: the Kirchweih after the harvest, in a tent at the Anger – in Thuringia's villages mostly in autumn (for Ratscher an
+  // assumption: September or October, as the project's text says); the first Saturday of that season at least ten days on (time for tent,
+  // band and cakes, as amt/amt.js kirmesDate) – not a tent in the snow in February
   function kirmesDate(t) {
     let d = dayOf(t) + 10;
-    while (DCAL.wd(d * 1440 + 600) !== 6) d++;
+    for (let i = 0; i < 400; i++, d++) {
+      const dy = W.day(d * 1440 + 600);
+      if (dy.wd === 6 && (dy.month === 8 || dy.month === 9)) break;
+    }
     AST().kd = d * 1440;
     try {
       AMTWORLD.T.kirmes = DCAL.dateOf(AST().kd + 600);

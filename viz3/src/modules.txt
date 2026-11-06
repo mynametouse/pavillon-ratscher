@@ -223,6 +223,7 @@ strategie/st_dorf_data.js   # feat/strategie-dorf the village's places, people a
 strategie/st_dorf.js        # feat/strategie-dorf projects and reputation (AMT.ST.rep), the Ortsteil's budget, Ortsteilrat and town council, exploration (STDORF)
 strategie/st_dorf_krise.js  # feat/strategie-dorf crisis missions with the volunteer fire brigade: storm, cloudburst, forest fire; alarm, crew, helpers, time (STDKRISE)
 strategie/st_dorf_welt.js   # feat/strategie-dorf the village's own things in the world: the meadow orchard, the meeting place at the Anger (STDWELT)
+strategie/st_dorf_wissen.js # feat/strategie-dorf what one learns in the village goes into the Entdeckerbuch (feat/wissen's API, once it is there) (STDWISSEN)
 # feat/wissen: discovering and learning across every mode below this line (after everything it listens to; before the tutorial and the loop)
 wissen/wissen_data.js       # feat/wissen the discovery book's entries with real sources, the „Warum?“ reasons, teachers, boards – data (WDATA)
 wissen/wissen.js            # feat/wissen the Entdeckerbuch (N): chapters, found by places, events and doing; „Warum?“; pav-wissen-v1 (WISSEN)

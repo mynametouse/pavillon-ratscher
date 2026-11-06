@@ -80,12 +80,21 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   Stichtag, Antrag beim Projektträger ZUG, Zuwendungsbescheid nach etwa zweieinhalb Monaten, erst dann tauscht die Elektrofirma die Köpfe.
   Lernen: 70–125 W alt gegen 15–25 W LED, rund 3.000 kWh und 900 € im Jahr, höchstens 3000 K wegen der Insekten. Auf der Karte: die
   Leuchten des Dorfs als LED markiert (das Licht in der Welt bleibt, wie es ist – die Leuchten des Dorfs sind schon warmweiß gezeichnet).
-- **Die Kirmes in der Welt:** am Kirmes-Wochenende (Datum aus dem Ortsvorsteher-Spiel, `AMT.ST.kd`) stehen von Freitagmittag bis
-  Montagmittag ein Festzelt mit Bierbänken und der **Kirmesbaum** (geschälte Fichte, grüne Krone, Kranz mit Bändern) am Anger.
+- **Die Kirmes in der Welt:** am Kirmes-Wochenende (`AMT.ST.kd`, das Datum des Ortsvorsteher-Spiels) stehen von Freitagmittag bis
+  Montagmittag ein Festzelt mit Bierbänken und der **Kirmesbaum** (geschälte Fichte, grüne Krone, Kranz mit Bändern) am Anger. Von oben
+  beschlossen, liegt der Termin in der **Kirmeszeit im Herbst** (Kirchweih nach der Ernte; für Ratscher Annahme: der erste Samstag im
+  September oder Oktober, mindestens zehn Tage nach dem Beschluss) – kein Festzelt im Schnee. `amt/amt.js` setzt ihn bei eigenen
+  Beschlüssen noch zehn Tage später, ganz gleich in welchem Monat (nicht geändert).
 - **Ruhezeiten halten (auch zu Fuß):** wer in der Ich-Sicht sonntags, feiertags oder nach 20 Uhr den Benzinmäher laufen lässt, hört Ronald
   über den Zaun rufen – Hubert, Ronald und Heike denken schlechter von dir, dein Stil sinkt (einmal am Tag, mit der Regel und ihrem Grund).
 - **Ebene „Dorf“:** die Häuser der Leute mit ihrer Meinung von dir (grün, gelb, rot; Unbekannte grau mit „?“) und die Flächen; **Ebene
   „Einsätze“**. Im Feld des Angers bei jeder Person: was sie sich wünscht und wen sie kennt (wohin man als Nächstes geht).
+- **Im Entdeckerbuch** (feat/wissen, über seine API – `strategie/st_dorf_wissen.js`): fünf eigene Einträge – „Vom Wunsch zum Dorfprojekt“
+  (beim ersten Gespräch im Dorf), „Land pachten oder kaufen“, „Die Streuobstwiese“, „Fördergeld: Eigenanteil, Frist, Bescheid“, „Ein
+  Einsatz: vom Alarm bis zur Freigabe“ – und die Einträge des Buchs, wenn man die Sache tut: Ehrenamt und Dorfgemeinschaft, die alte
+  Schule (Dachboden), die Freiwillige Feuerwehr (Grundausbildung, Alarm), der Ortsteilrat (Aushang, Beschluss), Stadtrat, LEADER,
+  Mitfahren auf dem Land, der Bus, einen Baum pflanzen, Sturm und Windwurf. Die Bekanntschaften im Dorf landen so nicht mehr als
+  allgemeine Einträge im Kapitel „Natur“.
 - **Kapitel 5 · Das Dorf** mit vier Zielen (fünf Leute kennen, ein Projekt durch den Ortsteilrat, ein Projekt fertig, bei einem Einsatz helfen).
 
 ## Testen
@@ -113,14 +122,15 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
 
 ## Für den Lead
 
-- Gemeinsame Dateien: `viz3/src/modules.txt` (Block `# feat/strategie-dorf` direkt unter `strategie/st_hud.js`) und **ein markierter Haken in
+- Gemeinsame Dateien: `viz3/src/modules.txt` (Block `# feat/strategie-dorf` nach dem Block von `strategie-bau`, vor `wissen`) und **ein markierter Haken in
   `viz3/src/amt/amt.js` `begin()`**: Bisher ersetzte der Brief von Ingrid (beim ersten Gehen ab Spieltag 2) den ganzen Zustand des
   Ortsvorsteher-Spiels durch einen frischen – was das Dorf von oben schon getan hatte (Meinungen, gebaute Dinge, Anliegen, Geld des Ortsteils)
   war danach weg (CI-Lauf 42137549204: die Mitfahrbank stand nach dem Neuladen nicht mehr). Jetzt bleiben `built`, `anl`, `log`, `pos`,
   `budget`, `byear`, `kd`, und die Meinungen behalten ihre Änderung über dem Bonus der Welt.
 - `amt/amt.js` hat kein exportiertes `save`: das Modul schreibt den Zustand des Ortsvorsteher-Spiels genauso wie es selbst
   (`SAVE.set('pav-amt-v1', AMT.ST)`, danach `AMT.renderBook()`). Schöner wäre `save` in der Rückgabe von `AMT` (eine Zeile).
-- Neue `window`-Namen: `STDORF`, `STDKRISE`, `STDWELT` (Tests). Zustand im Kern-Speicher: `STRAT.S.ext.dorf` und `STRAT.S.ext.krise`
+- Neue `window`-Namen: `STDORF`, `STDKRISE`, `STDWELT`, `STDWISSEN` (Tests). `st_dorf_wissen.js` lädt vor `wissen/*` und trägt seine
+  Einträge über `window.WISSEN` ein, sobald alle Module geladen sind (und noch einmal beim Start des Modus) – ohne das Buch tut es nichts. Zustand im Kern-Speicher: `STRAT.S.ext.dorf` und `STRAT.S.ext.krise`
   (geprüft beim Laden).
 - Zusammengeführt: `origin/src` nach Runde B (24be07de) und `origin/feat/strategie` bis e6b692b0 – Konflikte nur in `modules.txt`
   (Reihenfolge: Kern, `strategie-bau`, `strategie-dorf`, `wissen`).
