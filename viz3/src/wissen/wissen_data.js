@@ -397,7 +397,7 @@ export const WDATA = (() => {
       icon: '❄️',
       title: 'Fällen im Winter',
       text: 'Gefällt wird am besten in der Saftruhe, etwa von Oktober bis Februar: Der Baum führt wenig Saft, das Holz reißt und verfärbt sich weniger, die Rinde sitzt fest.',
-      here: 'Im Winter brütet im Wald auch kein Vogel. Fällt man im Sommer, muss das Holz schnell aus dem Wald und auf den Stapel – sonst kommen Pilze und Käfer.',
+      here: 'Im Winter brütet im Wald auch kaum ein Vogel. Fällt man im Sommer, muss das Holz schnell aus dem Wald und auf den Stapel – sonst kommen Pilze und Käfer.',
       src: [wiki('Holzfeuchte'), Q.bnatschg39],
       find: { ev: [['fell']], talk: ['hubert:saftruhe'] },
       hint: 'Frag Hubert, wann man Bäume fällt.',
@@ -781,7 +781,7 @@ export const WDATA = (() => {
       icon: '🪑',
       title: 'Der Ortsteilrat',
       text: 'Er berät alles, was den Ortsteil betrifft, und macht der Stadt Vorschläge, die sie behandeln muss. Vor wichtigen Entscheidungen – etwa zum Haushalt oder zu Bebauungsplänen – muss die Stadt ihn anhören.',
-      here: 'Über ein kleines eigenes Budget für Vereine, Kultur, Brauchtum wie die Kirmes und die Ortsfeuerwehr entscheidet der Ortsteilrat selbst. Für eine Bank reicht es – für einen neuen Weg nie.',
+      here: 'Über ein kleines eigenes Budget für Vereine, Kultur, Brauchtum wie die Kirmes und die Ortsfeuerwehr entscheidet der Ortsteilrat selbst. Für eine Bank reicht es – für einen neuen Weg meist nicht.',
       src: [Q.thuerko, Q.amt],
       // also a village project voted on in the strategy mode (feat/strategie-dorf)
       find: {
@@ -874,7 +874,7 @@ export const WDATA = (() => {
       ch: 'politik',
       icon: '🇪🇺',
       title: 'LEADER – Geld für Ideen vom Land',
-      text: 'LEADER ist ein Förderprogramm der EU für ländliche Räume. In jeder Region entscheidet eine lokale Aktionsgruppe aus Bürgern, Vereinen, Unternehmen und Gemeinden, welche Projekte Geld bekommen.',
+      text: 'LEADER ist ein Förderprogramm der EU für ländliche Räume. In jeder LEADER-Region entscheidet eine lokale Aktionsgruppe aus Bürgern, Vereinen, Unternehmen und Gemeinden, welche Projekte Geld bekommen.',
       here: 'Ein Dorfladen, ein Radweg nach Schleusingen, ein Treffpunkt in der alten Schule – solche Ideen kommen aus dem Dorf, das Geld aus Brüssel, Berlin und Erfurt.',
       src: [wiki('LEADER')],
       // also the strategy mode's village projects (feat/strategie-dorf: chosen by the action group, the grant)
@@ -900,7 +900,7 @@ export const WDATA = (() => {
       ch: 'politik',
       icon: '📢',
       title: 'Sirenen und Warnung',
-      text: 'Sirenen erreichen alle, auch nachts und ohne Handy. Ein einminütiger, auf- und abschwellender Heulton heißt Warnung: Radio einschalten und auf Durchsagen achten. Ein einminütiger Dauerton heißt Entwarnung. Dazu warnen Apps wie NINA.',
+      text: 'Sirenen erreichen viele Menschen auf einmal, auch nachts und ohne Handy. Ein einminütiger, auf- und abschwellender Heulton heißt Warnung: Radio einschalten und auf Durchsagen achten. Ein einminütiger Dauerton heißt Entwarnung. Dazu warnen Apps wie NINA.',
       here: 'Auf dem First der alten Schule in Ratscher steht die Sirene des Dorfs. Geprobt wird bundesweit am Warntag, seit 2020 jedes Jahr am zweiten Donnerstag im September: um 11 Uhr die Warnung, um 11:45 Uhr die Entwarnung.',
       src: [
         [
