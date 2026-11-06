@@ -123,6 +123,11 @@ with lib.browser() as b:
         skip(43)
         pre = J("({ vb: !!STBAU.st().vb, statik: !!STBAU.st().statik, notes: STRAT.S.notes.slice(-6).map(n => n.text.slice(0, 60)) })")
         ck('six weeks later (time-lapse): the preliminary decision and the statics are there', pre['vb'] and pre['statik'], str(pre))
+        # the discovery book (feat/wissen): the Vorbescheid finds „Die Bauordnung“; the permit's reason is a rule of the book with § 63 and its link
+        if J("!!window.WISSEN"):
+            bk = J("({ has: WISSEN.has('p_bauordnung'), w: WISSEN.why('bau_genehmigung'), rule: !!(STRAT.D.RULES && STRAT.D.RULES.bau_genehmigung), n: Object.keys(WISSEN.data.WHY).length })")
+            okw = bk['w'] and any('§ 63 Abs. 1 Nr. 1' in q[0] and (q[1] or '').startswith('https://') for q in bk['w']['src'])
+            ck('the book: the Vorbescheid finds „Die Bauordnung“; „Warum?“ of the permit = a rule of the book (§ 63 Abs. 1 Nr. 1 Buchst. a/b ThürBO with link)', bk['has'] and okw and bk['rule'], str(bk)[:400])
         at = goto('werktag', 8 * 60 + 15, holiday=True)
         print('Bauantrag am', at, flush=True)
         e2 = J("STRAT.S.eur")
@@ -267,6 +272,8 @@ with lib.browser() as b:
         until(done(jp['id']), 200)
         pl = J("GPLAN.state.items.filter(i => i.st === 'gepflanzt').map(i => ({ id: i.id, pd: i.pd }))")
         ck('Sarah and Falko plant them step by step (hole, vole basket, stake, tree, tying, watering in)', len(pl) >= 2, str(pl) + ' ' + str(jstate(jp['id'])))
+        if J("!!window.WISSEN"):
+            ck('… the apple and its pollinator in the ground: the book has „Äpfel brauchen einen Partner“', J("WISSEN.has('n_bestaeubung')"), str(J("WISSEN.state().how")) [:300])
         js = job('g_schutz', ['falko'])
         until(done(js['id']), 100)
         gs = J("STGARTEN.planted().map(x => STGARTEN.guarded(x))")
