@@ -154,6 +154,19 @@ def main():
     FP = wdlib.footprints(geb)
     tree = STRtree(FP)
     dropped = []
+    # what the places model themselves and the bus stops (wdlib.keepout): nothing of ours there – the photo's car still goes from the
+    # ground (its mask stays)
+    KO = wdlib.keepout(gebiet)
+    KT = STRtree([g for g, _ in KO]) if KO else None
+    kept = []
+
+    def kept_out(g):
+        if KT is None:
+            return None
+        for i in KT.query(g):
+            if g.intersects(KO[i][0]):
+                return KO[i][1]
+        return None
     P = json.load(open(os.path.join(EXTRA, f'pruefung_{gebiet}.json')))
     ways = [w for w in wdlib.roads() + (wdlib.roads_fahrt() if gebiet != 'ratscher' else []) if w['kind'] <= 5]
     for w in ways:
@@ -194,6 +207,10 @@ def main():
         C = [(x + ax[0] * hl * i + r[0] * hw * j, y + ax[1] * hl * i + r[1] * hw * j) for i, j in ((1, 1), (1, -1), (-1, -1), (-1, 1))]
         sh = [(cx + SUN[0] * h, cy + SUN[1] * h) for cx, cy in C]
         masks.append(hull(C + sh))
+        ko = kept_out(box)
+        if ko:
+            kept.append((t, round(x, 1), round(y, 1), ko))
+            continue
         if t in ('auto', 'van') and edge < -1.0 and w['kind'] <= 2:
             S_DRIVING.append((x, y))  # in the lane of a main or county road: driving when the photo was taken, no parking place
             continue
@@ -241,6 +258,9 @@ def main():
         for q in json.load(open(pf))['plaetze']:
             if in_rect(q['x'], q['y'], SKIP) or any(math.hypot(q['x'] - a, q['y'] - b) < r for a, b, r in AVOID.get(gebiet, [])):
                 continue
+            from shapely.geometry import Point
+            if kept_out(Point(q['x'], q['y']).buffer(2.4)):
+                continue
             hv = (math.sin(q['x'] * 12.9898 + q['y'] * 78.233) * 43758.5453) % 1.0
             hc = (math.sin(q['x'] * 39.3468 + q['y'] * 11.135) * 24634.6345) % 1.0
             ty = next(i for i, c in enumerate(TYPE_CUM) if hv <= c)
@@ -268,6 +288,7 @@ def main():
     print(gebiet, len(autos), 'cars', dict(Counter(TYPES[a[3]] for a in autos)), dict(Counter(KINDS[a[5]] for a in autos)),
           dict(Counter(PAL[a[4]][0] for a in autos)), len(dinge), 'things', dict(Counter(d[0] for d in dinge)), len(masks), 'masks',
           len(S_DRIVING), 'driving (left out)', len(dropped), 'on buildings (left out):', dropped[:12])
+    print('  kept out (modelled places, bus stops):', len(kept), kept[:12])
 
 
 def hull(pts):

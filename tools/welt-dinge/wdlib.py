@@ -153,3 +153,113 @@ def footprints(geb_dir=None):
                 if len(f) >= 6:
                     out.append(Polygon(list(zip(f[0::2], f[1::2]))).buffer(0))
     return [p for p in out if not p.is_empty]
+
+
+def dist_file(rel):
+    """a file of the built app: a feature's extra first (viz3/extra/*/dist/<rel>), else viz3/dist/<rel>"""
+    import glob
+    for fx in sorted(glob.glob(os.path.join(REPO, 'viz3', 'extra', '*', 'dist', rel))):
+        return fx
+    return os.path.join(REPO, 'viz3', 'dist', rel)
+
+
+def keepout(gebiet):
+    """where nothing of ours may stand (model metres; a list of (shapely geometry, name)) – the lead, 6.11. ~1:45: a parked car 2.5 m in
+    front of Schleusingen's Rathaus door blocked the way in. What the places model themselves, with the margins of feat/welt-gebaeude
+    (tools/welt-gebaeude/prep.py keepout()): Kloster Veßra (welt/vessra.js, vessra/ort.json) – church ruin, towers and portal 8 m, the
+    monastery precinct (the museum's area) 15 m, the nursery 8 m, its other areas 2 m (not the visitor car park), walls 1.5 m, gates 3 m,
+    fences and hedges 0.5 m;
+    Schleusingen (welt/schleusingen.js, schleusingen/stadt.json) – the Bertholdsburg 20 m, Rathaus, St. Johannis 8 m, Heckenturm 6 m, the
+    Markt 3 m, fountains 4 m, benches 1.5 m, lamps 0.6 m; Ratscher – the centre as Falko filmed it (world/dorfkern_data.js: well, bus
+    shelter, white box, benches, bins, limes, poles, lamps, hedges, fences, paving). And everywhere the bus stops (feat/bus,
+    bus/fahrplan.json): no parking 15 m before and after the stop (StVO § 12), the road and both kerbs (5.5 m round the stop's line)."""
+    from shapely.geometry import Polygon, LineString, Point
+    P = lambda f, m: Polygon(list(zip(f[0::2], f[1::2]))).buffer(0).buffer(m)
+    L = lambda f, m: LineString(list(zip(f[0::2], f[1::2]))).buffer(m)
+    out = []
+    if gebiet == 'vessra':
+        try:
+            v = json.load(open(dist_file('vessra/ort.json')))
+            K = v.get('kirche') or {}
+            if K.get('area'):
+                out.append((P(K['area'], 8.0), 'Veßra: Klosterkirche'))
+            for t in K.get('towers') or []:
+                out.append((P(t, 8.0), 'Veßra: Türme'))
+            if K.get('portal'):
+                out.append((Point(*K['portal']).buffer(8.0), 'Veßra: Westportal'))
+            for a in v.get('areas', []):
+                m = {'museum': 15.0, 'nursery': 8.0}.get(a['k'], 2.0)
+                if a['k'] == 'parking':
+                    continue  # the visitor car park is where the cars belong (welt-gebaeude keeps its buildings off it)
+                if len(a['p']) >= 6:
+                    out.append((P(a['p'], m), 'Veßra: %s %s' % (a['k'], a.get('n') or '')))
+            for w in v.get('walls', []):
+                out.append((L(w['p'], 1.5), 'Veßra: Mauer'))
+            for g in v.get('gates', []):
+                out.append((Point(g[0], g[1]).buffer(3.0), 'Veßra: Tor'))
+            for w in v.get('fences', []) + v.get('hedges', []):
+                if len(w['p']) >= 4:
+                    out.append((L(w['p'], 0.5), 'Veßra: Zaun/Hecke'))
+        except Exception as e:
+            print('no keep-out of Veßra', e, flush=True)
+    if gebiet == 'schleusingen':
+        try:
+            s = json.load(open(dist_file('schleusingen/stadt.json')))
+            for b in s['b']:
+                m = {'burg': 20.0, 'rathaus': 8.0, 'kirche': 8.0, 'turm': 6.0}.get(b.get('lm'))
+                if m:
+                    out.append((P(b['f'], m), 'Schleusingen: ' + b['lm']))
+            if len(s.get('marktplatz') or []) >= 6:
+                out.append((P(s['marktplatz'], 3.0), 'Schleusingen: Markt'))
+            for q in s.get('fountains', []):
+                out.append((Point(q[0], q[1]).buffer(4.0), 'Schleusingen: Brunnen'))
+            for q in s.get('benches', []):
+                out.append((Point(q[0], q[1]).buffer(1.5), 'Schleusingen: Bank'))
+            for q in s.get('lamps', []):
+                out.append((Point(q[0], q[1]).buffer(0.6), 'Schleusingen: Laterne'))
+        except Exception as e:
+            print('no keep-out of Schleusingen', e, flush=True)
+    if gebiet == 'ratscher':
+        import subprocess
+        try:
+            js = os.path.join(REPO, 'viz3', 'src', 'world', 'dorfkern_data.js')
+            o = json.loads(subprocess.run(['node', '--no-warnings', '--input-type=module', '-e',
+                                           "globalThis.window = {}; const m = await import(%s); console.log(JSON.stringify(m.DKDATA.open))"
+                                           % json.dumps('file://' + js)], capture_output=True, text=True, check=True).stdout)
+            pt = lambda q, m, n: out.append((Point(q[0], q[1]).buffer(m), 'Dorfkern: ' + n))
+            if o.get('well'):
+                pt(o['well']['c'], max(o['well'].get('size') or [4.0]) / 2 + 0.5, 'Brunnen')
+            if o.get('shelter'):
+                pt(o['shelter']['c'], 2.5, 'Wartehäuschen')
+            wb = o.get('whitebox')
+            if wb:
+                x, y, az, l_, d_ = wb[:5]
+                ux, uy = math.sin(math.radians(az)), math.cos(math.radians(az))
+                out.append((Polygon([(x + ux * s_ * l_ / 2 - uy * t_ * d_ / 2, y + uy * s_ * l_ / 2 + ux * t_ * d_ / 2)
+                                     for s_, t_ in ((-1, -1), (1, -1), (1, 1), (-1, 1))]).buffer(0.5), 'Dorfkern: weißer Kasten'))
+            for k_, m in (('benches', 1.2), ('bins', 0.6), ('poles', 0.6), ('lamps', 0.6), ('roundabout', 1.5), ('logs', 2.5)):
+                for q in o.get(k_) or []:
+                    pt(q, m, k_)
+            for q in o.get('limes') or []:
+                pt(q['at'], 1.0, 'Linde')
+            for k_ in ('linde', 'vending', 'signpost', 'planter'):
+                if o.get(k_):
+                    pt(o[k_], 1.2, k_)
+            for k_ in ('hedges', 'fences'):
+                for q in o.get(k_) or []:
+                    out.append((LineString(q['p']).buffer(0.6), 'Dorfkern: ' + k_))
+            for q in o.get('paving') or []:
+                out.append((Polygon(q['p']).buffer(0.3), 'Dorfkern: Pflaster'))
+        except Exception as e:
+            print('no keep-out of the Dorfkern', e, flush=True)
+    try:
+        bp = json.load(open(dist_file('bus/fahrplan.json')))
+        for st in bp['stations']:
+            for p in st.get('pl') or []:
+                x, y, az = p[0] / 10, p[1] / 10, math.radians(p[2])
+                ux, uy = math.sin(az), math.cos(az)
+                out.append((LineString([(x - ux * 15, y - uy * 15), (x + ux * 15, y + uy * 15)]).buffer(5.5),
+                            'Haltestelle ' + st.get('n', '')))
+    except Exception as e:
+        print('no bus stops', e, flush=True)
+    return out

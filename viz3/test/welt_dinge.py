@@ -37,7 +37,7 @@ with lib.browser() as b:
     # a workday: the first Tuesday of the calendar, 3:00 and 10:00
     day = J("(() => { for (let d = 0; d < 14; d++) if (DCAL.wd(d * 1440 + 600) === 2) return d; return 1; })()")
     t3, t10 = day * 1440 + 180, day * 1440 + 600
-    # at the Anger, looking east along the street with the white van and the blue car (photo: 236.9 / −103.8)
+    # at the Anger, looking east along the street towards the school bus stop
     E(f"CLOCK.t = {t3}")
     E("GAME.view(205, -101, KERN.ground(205, -101) + 1.7, 95, -4, 62)")
     E("DINGE.settle()"); steps(1)
@@ -92,9 +92,14 @@ with lib.browser() as b:
     orbit('07_guellebehaelter', -100, -38, 115, 18, 75)
     E("GAME.view(205, -101, KERN.ground(205, -101) + 1.7, 95, -4, 62)")
     steps(0.3)
-    # a known place from the ground: the white van east of the Anger (photo 236.9 / −103.8)
-    k = J("(() => { let b = -1, bd = 1e9; DINGE.places.forEach((p, i) => { const d = Math.hypot(p.x - 236.9, p.y + 103.8); if (d < bd) { bd = d; b = i; } }); return { i: b, d: bd, p: DINGE.info(b) }; })()")
-    ck('the white van east of the Anger is a place (a van, at the kerb or the yard)', k['d'] < 1.5 and k['p']['type'] == 'van', str(k))
+    # a known place: the white van at the kerb south of the Anger (photo 192.5 / −132.2); the white van of the photo at the school bus
+    # stop east of the Anger (236.9 / −103.8) is no place – the bus stops there (no parking 15 m before and after the sign)
+    k = J("(() => { let b = -1, bd = 1e9; DINGE.places.forEach((p, i) => { const d = Math.hypot(p.x - 192.5, p.y + 132.2); if (d < bd) { bd = d; b = i; } }); return { i: b, d: bd, p: DINGE.info(b) }; })()")
+    ck('the white van south of the Anger is a place (a van at the kerb)', k['d'] < 1.5 and k['p']['type'] == 'van', str(k))
+    dv = J("({ doors: DINGE.state().doors, atDoors: DINGE.state().atDoors })")
+    ck('the village\'s doors are known (2 m in front of each kept free)', dv['doors'] > 50, str(dv))
+    kb = J("Math.min(...DINGE.places.map(p => Math.hypot(p.x - 236.9, p.y + 103.8)))")
+    ck('the school bus stop is kept free (no place within 5 m of the van the photo shows there)', kb > 5, f'nearest place {kb:.1f} m')
     # walking into a parked car: find one that stands, come from its side
     E("for (const p of DINGE.places) if (p.im && !p.on) {}")
     tgt = J("(() => { const L = DINGE.places.filter(p => p.im && p.on && !p.hide); const p = L[0]; return p ? { i: p.i, x: p.x, y: p.y, az: p.az, w: p.box.ex } : null; })()")

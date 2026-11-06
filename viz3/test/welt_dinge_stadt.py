@@ -103,6 +103,9 @@ with lib.browser() as b:
     g = J("DINGE.places.filter(p => p.area === 'schleusingen' && p.im).map(p => +(p.zc - KERN.ground(p.x, p.y)).toFixed(2))")
     bad = [d for d in g if abs(d) > 0.25]
     ck('the cars stand on the ground of the tiles', len(g) > 0 and len(bad) <= 0.03 * len(g), f'{len(bad)} of {len(g)} off by > 0.25 m: {bad[:8]}; set down again: {J("DINGE.state().reposed")}')
+    # the doors (the lead, 6.11. ~1:45): nothing parked in front of the Rathaus door or within 2 m of any door of the town's houses
+    dr = J("(() => { const L = DINGE.places.filter(p => p.area === 'schleusingen' && p.im && p.on && !p.hide && !p.door); return { n: L.length, rathaus: Math.min(...L.map(p => Math.hypot(p.x + 1129.3, p.y - 1199.3))), town: SCHL.bld.filter(b => b.doorFac).length, doors: DINGE.state().doors, atDoors: DINGE.state().atDoors }; })()")
+    ck('the Rathaus door is free (no parked car within 6 m) and the town\'s doors are known', dr['rathaus'] > 6 and dr['town'] > 200 and dr['doors'] >= dr['town'], str(dr))
     # the street with the most cars within 300 m of the Markt: from above and from the ground
     best = J(f"""(() => {{ const L = DINGE.places.filter(p => p.area === 'schleusingen' && p.im && Math.hypot(p.x - ({MARKT[0]}), p.y - {MARKT[1]}) < 300);
         let b = null, bn = -1; for (const p of L) {{ const n = L.filter(q => Math.hypot(q.x - p.x, q.y - p.y) < 25).length; if (n > bn) {{ bn = n; b = p; }} }}
