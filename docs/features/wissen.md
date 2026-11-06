@@ -112,8 +112,13 @@ WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners 
 - Gemeinsame Dateien (markiert `feat/wissen`):
   - `viz3/src/dorf/dorf.js` – eine Zeile in `ask()`: `KERN.emit('dorf:thema', { who: k, id, n })`.
   - `viz3/src/npc/npc.js` – `NPCUI.extend` kennt `topics(w)` und `ask(w, k)` (Themen von Erweiterungen in `renderTopics`, Antwort in `ask`).
-  - `viz3/src/modules.txt` – Block `# feat/wissen` nach dem Bus-Block, vor `game/tutorial.js` (fünf Module); die Blöcke von feat/strategie und
-    feat/tiere dürfen davor oder danach stehen (das Buch fragt `window.STRAT`, `TARTEN`, `TIERE`, `TEINFLUSS` erst zur Laufzeit).
+  - `viz3/src/modules.txt` – Block `# feat/wissen` nach den Blöcken von feat/bus und feat/tiere, vor `game/tutorial.js` (fünf Module); der
+    Block von feat/strategie darf davor oder danach stehen (das Buch fragt `window.STRAT`, `TARTEN`, `TIERE`, `TEINFLUSS`, `HUND`, `BUS`,
+    `WETTER` erst zur Laufzeit).
+- Ohne Eingriff in fremde Dateien: ein `KERN.pushOut`-Anbieter (Vorrang 20, nur die Pfosten der Tafeln), ein `MutationObserver` auf `#npcsub`
+  (das „?“ neben Gedanken) und auf `#gplan` (das „?“ an Warnungen des Gartenplaners), ein Klick-Lauscher in der Capture-Phase für
+  `[data-wiwhy]` und das „Warum?“ des Strategie-Modus. Gelesene Ereignisse: `tiere:entdeckt`, `strategie:entdeckt`, `hund:befehl`,
+  `hund:gelernt`, `bus:fahrplan`, `bus:ein`, `einrichtung:*`, `gplan:*`, `garage:*`, `fell`, `act`, `verkehr:*`, `zinnen:mount`, `place`.
 - Neuer Speicher-Schlüssel `pav-wissen-v1` (im Modul über `SAVE.key` angemeldet, Prüfung `v === 1` und `f` ein Objekt) – bitte in
   `docs/ARCHITECTURE.md` §8 eintragen. Neue `window`-Namen: `WISSEN`, `WLEHRER`, `WORTE`, `WDATEN`.
 - Quellen: als Text und Links in den Einträgen; eine Sammelzeile über `credits_add` in `viz3/extra/wissen/manifest.json`.
