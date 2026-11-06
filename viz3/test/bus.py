@@ -138,7 +138,7 @@ with lib.browser() as b:
         steps(0.3)
         E("(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); BUS.board(e); })()")
         # waiting: the clock jumps to a minute before the bus (two people come to wait for it, one gets off: BUSLEUTE.force)
-        E("BUSLEUTE.force = { ein: 2, aus: 1 }")
+        E("BUSLEUTE.force = { ein: 2, aus: 1, line: '205' }")
         E("document.querySelector('#busboard [data-k=warten]').click()")
         for i in range(40):
             steps(0.5)
@@ -158,6 +158,26 @@ with lib.browser() as b:
         pic(pg, 'a3_leute_warten')
         E("window.CAM3 && (CAM3.want = true); GAME.go('bus')")
         steps(0.1)
+        # someone in its lane: the walker on the road 60 m before the stop – the bus brakes, stands before him, sounds its horn; he steps
+        # back to the stop, it comes on (a little late)
+        for i in range(40):
+            if J("BUS.state().inst.some(q => q.line === '205' && q.halt !== 'Rand der Karte')") or J("BUS.state().inst.some(q => q.line === '205')"): break
+            steps(0.5)
+        lane = J("""(() => { const I = BUS.S.inst.find(q => q.trip.line === '205'); if (!I) return null; const R = I.Rn.R, k = I.Rn.P.st.findIndex(o => o.s >= 0 && BUS.plan.S.stations[o.s].n === 'Ratscher, Schleusebrücke');
+          const a = BUS.plan.lane(I.Rn.P), o = {}; const s = R.st[k] - 60; const X = R.X, Y = R.Y, i = Math.max(0, Math.min(R.n - 1, Math.round(s)));
+          return { x: X[i], y: Y[i], hd: Math.atan2(X[Math.min(R.n - 1, i + 1)] - X[i], Y[Math.min(R.n - 1, i + 1)] - Y[i]) }; })()""")
+        if lane:
+            E(f"GAME.P.x = {lane['x']}; GAME.P.y = {lane['y']}; GAME.P.feet = KERN.ground({lane['x']}, {lane['y']}); GAME.P.yaw = GAME.P.body = {lane['hd']} * 180 / Math.PI + 180")
+            stood = None
+            for i in range(120):
+                steps(0.5)
+                q = J(f"""(() => {{ const I = BUS.S.inst.find(q => q.trip.line === '205'); if (!I) return null; const fx = Math.sin(I.hd), fy = Math.cos(I.hd);
+                  const front = [I.x + fx * 6, I.y + fy * 6]; return {{ d: Math.hypot(front[0] - GAME.P.x, front[1] - GAME.P.y), v: I.v * (I.r ?? 1), r: I.r, st: I.st, honks: BUS.S.stats.honks || 0 }}; }})()""")
+                if q and q['d'] < 25 and q['v'] < 0.05 and q['honks'] >= 1:
+                    stood = q; break
+            ck('someone in its lane: the bus stands before him and sounds its horn', stood is not None and stood['d'] > 1.5, str(stood))
+            E("(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 200); GAME.go('bus'); })()")
+            steps(0.5)
         # the bus comes at its minute and stops at the sign
         arr = None
         for i in range(90):
@@ -167,7 +187,7 @@ with lib.browser() as b:
             if here and here[0]['open'] > 0.8:
                 arr = here[0]; break
         t_arr = E("CLOCK.hm()")
-        ck('the 205 comes at its minute (7:46) and stands at the stop with open doors', arr is not None and t_arr in ('07:46', '07:47'), f"{t_arr} {arr}")
+        ck('the 205 comes (7:46, a little late after waiting for the walker) and stands at the stop with open doors', arr is not None and t_arr in ('07:46', '07:47', '07:48'), f"{t_arr} {arr}")
         # the two get in at the front door (the bus waits for them)
         for i in range(12):
             steps(0.5)
@@ -233,22 +253,44 @@ with lib.browser() as b:
               const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert()); return [p.x, -p.z, p.y]; })()""")
             ck('the eye stays at the seat while the bus drives', abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 1.25) < 0.15 and abs(probe[2] - 1.56) < 0.1,
                'local ' + ', '.join(f'{v:.2f}' for v in probe))
-            # the next stop: Krankenhaus, then the Zentralhaltestelle – „Fahrt abkürzen“ to the Zentralhaltestelle
-            kz = J("(() => { const I = BUS.S.ride.I; return I.Rn.P.st.findIndex(o => o.s >= 0 && BUS.plan.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle'); })()")
+            # „Fahrt abkürzen“ to the Krankenhaus (the clock jumps), from there on in real time across the edge of the square to the
+            # Zentralhaltestelle (the ground there streams in as for a car: welt/welt.js tiles, welt/fahrt.js roads), out there by itself
+            kk, kz = J("""(() => { const I = BUS.S.ride.I, f = n => I.Rn.P.st.findIndex(o => o.s >= 0 && BUS.plan.S.stations[o.s].n === n);
+              return [f('Schleusingen, Krankenhaus'), f('Schleusingen, Zentralhaltestelle')]; })()""")
             E(f"BUS.want({kz})")
-            E("void BUS.shorten()")  # (async: it waits for the ground, which the steps below bring)
+            E(f"void BUS.shorten({kk})")  # (async: it waits for the ground, which the steps below bring)
             for i in range(80):
                 steps(0.3)
                 time.sleep(0.3)
                 if E("!BUS.S.ride || !BUS.S.ride.busy"): break
-            for i in range(30):
-                steps(0.5)
-                if E("!BUS.S.ride"): break
+            at_k = J("BUS.state().ride")
+            ck('„Fahrt abkürzen“ to the Krankenhaus: the clock jumps, the bus stands there, one rides on', at_k and at_k['k'] == kk and at_k['st'] == 'halt', f"{at_k} {E('CLOCK.hm()')}")
+            # on in real time: samples of the bus's height against the ground beyond the square
+            box = J("RATSCHER.box")
+            samp, shot_done = [], False
+            for i in range(300):
+                steps(1.0)
+                time.sleep(0.15)
+                q = J("""(() => { const R = BUS.S.ride; if (!R) return null; const I = R.I, g = KERN.ground(I.x, I.y, I.z + 0.5);
+                  return { x: I.x, y: I.y, z: I.z, g, cov: !!(WELT.covers && WELT.covers(I.x, I.y)), st: I.st, k: I.k, v: I.v, hd: I.hd, tiles: WELT.state ? WELT.state().tiles : 0 }; })()""")
+                if not q: break
+                out_sq = not (box[0] < q['x'] < box[2] and box[1] < q['y'] < box[3])
+                if out_sq: samp.append(q)
+                if out_sq and not shot_done and q['st'] == 'fahrt' and len(samp) > 8:
+                    shot_done = True
+                    E(f"GAME.P.yaw = {q['hd']} * 180 / Math.PI; GAME.P.pitch = -6")
+                    steps(0.05); pic(pg, 'h_vorn_ausserhalb')
+                    E(f"GAME.P.yaw = {q['hd']} * 180 / Math.PI + 80; GAME.P.pitch = -8")
+                    steps(0.05); pic(pg, 'h2_fenster_ausserhalb')
+                    E(f"GAME.P.yaw = {q['hd']} * 180 / Math.PI")
+            dz = [abs(q['z'] - q['g']) for q in samp if q['cov'] and q['g'] is not None]
+            ck('the bus drives out of the square on its way, on the ground there (tiles streamed)', len(samp) >= 5 and dz and max(dz) < 0.45 and max(q['tiles'] for q in samp) > 0,
+               f"{len(samp)} samples outside, ground difference max {max(dz) if dz else None}, tiles {max([q['tiles'] for q in samp] or [0])}")
             out = J("({ ride: !!BUS.S.ride, P: [GAME.P.x, GAME.P.y], t: CLOCK.hm(), ev: window.__ev.filter(e => e[0] === 'bus:aus').map(e => e[1].halt), focus: CLOCK.focused })")
             zh = J("(() => { const s = BUS.STOPS().filter(q => q.name === 'Schleusingen, Zentralhaltestelle'); return s.map(q => [q.x, q.y]); })()")
             dz = min(math.hypot(out['P'][0] - x, out['P'][1] - y) for x, y in zh) if zh else 999
             print('off', out, 'dist to the ZH', round(dz, 1), flush=True)
-            ck('„Fahrt abkürzen“: off at Schleusingen, Zentralhaltestelle at 7:50', not out['ride'] and 'Schleusingen, Zentralhaltestelle' in out['ev'] and out['t'] in ('07:50', '07:51') and dz < 25 and not out['focus'], f"{out} {dz:.0f} m")
+            ck('off at Schleusingen, Zentralhaltestelle at its minute (7:50)', not out['ride'] and 'Schleusingen, Zentralhaltestelle' in out['ev'] and out['t'] in ('07:50', '07:51', '07:52') and dz < 25 and not out['focus'], f"{out} {dz:.0f} m")
             for i in range(60):
                 steps(0.5)
                 time.sleep(0.5)

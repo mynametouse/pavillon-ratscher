@@ -54,8 +54,9 @@ export const BUSLEUTE = (() => {
     return ((h >>> 0) % 10007) / 10007;
   };
   // how many: by the hour (few at night and before six), the hash of the call
-  function count(h, hour, kind) {
-    if (S.force && S.force[kind] !== undefined) return S.force[kind];
+  // (tests: S.force = { ein, aus, line } – these counts, for that line only; nobody for the others meanwhile)
+  function count(h, hour, kind, line) {
+    if (S.force) return S.force.line && S.force.line !== line ? 0 : (S.force[kind] ?? 0);
     const night = hour < 5.5 || hour > 21.5,
       peak = (hour > 6.3 && hour < 8.3) || (hour > 12 && hour < 14.5) || (hour > 15.5 && hour < 17.5);
     if (night) return h < 0.85 ? 0 : 1;
@@ -140,7 +141,7 @@ export const BUSLEUTE = (() => {
         const Pt = BUSPLAN.S.pats[c.trip.pat];
         if (!BUS.sameWay(e, c) || (c.k === Pt.last && !c.trip.weiter)) continue;
         if (done('ein:' + c.trip.i + ':' + c.di + ':' + c.k + ':' + e.i, now)) continue;
-        const n = count(hash(c.trip.i, c.di, c.k, 1), hour, 'ein');
+        const n = count(hash(c.trip.i, c.di, c.k, 1), hour, 'ein', c.trip.line);
         for (let j = 0; j < n; j++) wait(e, c, town, j, now);
       }
     }
@@ -152,7 +153,7 @@ export const BUSLEUTE = (() => {
       if (done('aus:' + I.key + ':' + I.k, now)) continue;
       const town = townOf(BUSPLAN.S.stations[st.s].n);
       if (!town) continue;
-      const n = count(hash(I.trip.i, I.k, 2), hour, 'aus');
+      const n = count(hash(I.trip.i, I.k, 2), hour, 'aus', I.trip.line);
       for (let j = 0; j < n; j++) alight(I, town, j);
     }
   }

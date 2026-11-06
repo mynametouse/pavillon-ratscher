@@ -6,12 +6,13 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 
 ## Was es gibt
 
-- **Echter Fahrplan** (`viz3/extra/bus/dist/bus/fahrplan.json`, 280 KB): aus dem freien Deutschland-Feed von gtfs.de (Daten DELFI e.V.,
+- **Echter Fahrplan** (`viz3/extra/bus/dist/bus/fahrplan.json`, 340 KB): aus dem freien Deutschland-Feed von gtfs.de (Daten DELFI e.V.,
   CC BY 4.0, Stand 31.10.2026, gültig November 2026) alles, was die Welt berührt: 33 Haltestellen auf ihren Straßen (Ratscher,
   Schleusebrücke · Ratscher · Ratscher, Schulbushaltestelle · Ratscher, Stausee · Schleusingen mit Zentralhaltestelle, Krankenhaus,
   Gerhardt-Hauptmann-Schule, Felsenkeller, Einkaufszentrum … · Geisenhöhn, Rappelsdorf, Kloster Veßra, Themar, Binnenfischerei …),
   294 Fahrten der Linien 200–205, 207, 214, 222–225, 268 (Werrabus) und 700 (OVG Sonneberg), je Fahrt der Abschnitt in der Welt mit allen
-  Minuten. In Ratscher halten werktags die 203 (Suhl – Schleusingen – Ratscher – Hinternah – Masserberg) und die 205 (Schleusingen –
+  Minuten. Ziele und Haltestellen mit dem Namen der Station („Schleusingen, Zentralhaltestelle“ statt der Steig-Kurzform „Schleusingen, ZH“,
+  „Themar, Bahnhof“ statt „Themar, Bahnof“); auf der Zielanzeige, wenn zu lang, nur der Ort. In Ratscher halten werktags die 203 (Suhl – Schleusingen – Ratscher – Hinternah – Masserberg) und die 205 (Schleusingen –
   Ratscher – Eisfeld – Coburg), dazu Schulbusse (268 um 7:02, 214 um 7:40 an der Schulbushaltestelle) und die 700 nach Sonneberg.
 - **Welcher Tag gilt**: Kalender des Spiels (`DN.e0` + Spieltag). Wochentag aus einer Bezugswoche des Feeds (16.–22.11.2026);
   Thüringer Feiertage (Neujahr, Karfreitag, Ostermontag, 1. Mai, Himmelfahrt, Pfingstmontag, Weltkindertag 20.9., 3.10., Reformationstag
@@ -36,6 +37,12 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   anderswo fährt in Echtzeit von dort, wo ihn sein Fahrplan hinstellte (er bleibt hinter der schnellen Spieluhr zurück).
 - **Verkehr**: Autos des Verkehrs (`verkehr/*`) warten hinter einem Bus an der Haltestelle und fahren dann vorbei, Fußgänger gehen um ihn
   herum; für die Spielfigur und Fahrzeuge ist er fest (`VEH.extra`).
+- **Fahrgäste** (`bus/bus_leute.js`, `BUSLEUTE`): die Leute des Verkehrs aus Ratscher und Schleusingen fahren auch Bus – ein paar Minuten vor
+  einem Bus kommen 0–2 am Straßenrand zur Haltestelle (nach einem Zeitraffer stehen sie schon da) und warten neben dem Schild in die Richtung,
+  aus der er kommt; steht er mit offenen Türen, steigen sie vorn ein (der Bus wartet auf sie, ein Bus, in dem man sitzt, fährt ein paar
+  Sekunden später ab); hält ein Bus in der Nähe, steigen 0–2 hinten aus und gehen am Rand davon. Wer und wie viele: aus Fahrt, Tag und
+  Haltestelle (derselbe Bus bringt dieselben Leute), nachts und früh weniger. Wer neben einem wartet, sagt etwas („Na, auch auf den Bus?“).
+  Ihre Figuren sind für den Verkehr belegt (`VERKEHR.S.busy[k] = 'bus'`), damit niemand doppelt läuft.
 - **Einsteigen** an der Vordertür (Aktionsknopf), Platz rechts hinter der Mitteltür (Ich-Sicht), Fenster mit Linie, Ziel, den nächsten
   Haltestellen und Zeiten; „Aussteigen an der nächsten Haltestelle“ oder eine Haltestelle antippen = dort aussteigen (Halt-Glocke);
   **„Fahrt abkürzen“** (Abblenden, die Uhr springt zur
@@ -63,7 +70,10 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 - Tests: `node --test viz3/test/unit/bus.test.mjs` (Kalender, Daten, Abfahrten in Ratscher, Fahrt nach Schleusingen im Takt, Zufahrt vom
   Rand); `python3 viz3/test/bus.py <port> [fahrt,nacht,reload,zombie]` (Bilder in `out/bus/`: `a_fahrplan` Fahrplanfenster am Schild,
   `b_bus_an_der_haltestelle`, `b2_tuer_offen`, `c_im_bus_panel` Busfenster, `d_aus_dem_bus`, `e_schleusingen_zh` nach „Fahrt abkürzen“,
-  `f_nacht_vorn`, `g_nacht_seite`), auf CI über `viz3/extra/bus/tests.txt`. Der Test holt die Welt-Kacheln entlang des Wegs
+  `f_nacht_vorn`, `g_nacht_seite`, `a2_aushang` Aushangfahrplan, `a3_leute_warten`, `b0_leute_steigen_ein`, `c2_im_bus_telefon`,
+  `h_vorn_ausserhalb` und `h2_fenster_ausserhalb` aus dem Bus jenseits des Quadrats), auf CI über `viz3/extra/bus/tests.txt`. Die Fahrt
+  im Test: in Ratscher einsteigen, „Fahrt abkürzen“ bis zum Krankenhaus, von dort in Echtzeit über den Rand des Quadrats zur
+  Zentralhaltestelle (Höhe des Busses gegen den Boden dort geprüft), dort steigt man von selbst aus. Der Test holt die Welt-Kacheln entlang des Wegs
   Ratscher – Schleusingen von der Website nach `viz3/dist/welt-test/` (wie `viz3/test/fahrt.py`).
 - `BUS.state()` (Zahlen), `BUS.plan` (BUSPLAN), `BUS.spawn(trip, tag, minute)`, `BUS.einsteigen()`, `BUS.want(k)`, `BUS.shorten()`.
 
@@ -79,7 +89,6 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 
 ## Offen
 
-- Fahrgäste steigen nicht sichtbar ein und aus (im Bus sitzen ein paar).
 - Der Bus selbst wartet nicht auf Autos vor ihm (er fährt nach seinem Fahrplan).
 - Aufnahmen statt synthetischer Töne.
 
@@ -89,7 +98,11 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   `css/bus.css` nach `css/verkehr.css`), neue Datei `viz3/shell/css/bus.css`; markiert `// feat/bus`: `welt/fahrt.js` (eine Zeile:
   `WELT.focus` auch ein Punkt vor dem Bus, in dem man sitzt – `FAHRT.focusBus`), `time/clock.js` (die Echtzeit-Uhr für den Bus heißt
   „Echtzeit – Bus“ statt „Leim offen“, Warten ist dann erlaubt), `verkehr/verkehr_auto.js` und `verkehr/verkehr.js` (je eine Zeile: die Busse
-  als Hindernisse, über `window.BUS.obstacles`, weil `bus/bus.js` später lädt). Der Speicherschlüssel `pav-bus-v1` ist in `bus/bus.js` mit
+  als Hindernisse, über `window.BUS.obstacles`, weil `bus/bus.js` später lädt); `verkehr/verkehr.js` eine zweite Zeile: die Figur eines
+  Fahrgasts (`S.busy[k] === 'bus'`) wird nicht freigegeben, solange er an der Haltestelle wartet. `bus/bus_leute.js` schreibt in
+  `VERKEHR.S.busy`/`VERKEHR.S.recent` (die Rollenliste des Verkehrs), statt eine eigene zu führen. Der Speicherschlüssel `pav-bus-v1` ist in `bus/bus.js` mit
   `SAVE.key` angemeldet (Prüfung, Standard) – keine Zeile in `core/save.js`.
 - Quellen: `credits_add` in `viz3/extra/bus/manifest.json` (gtfs.de/DELFI CC BY 4.0, OSM ODbL, Schulferien).
-- Neue `window`-Namen: `BUS`, `BUSMOD`. Ereignisse `bus:bereit`, `bus:warten`, `bus:ein`, `bus:aus`.
+- Neue `window`-Namen: `BUS`, `BUSMOD`, `BUSLEUTE`. Ereignisse `bus:bereit`, `bus:warten`, `bus:ein`, `bus:aus`, `bus:fahrgast`.
+- Figuren der Leute: neue Programme beim ersten Anblick (Haare/Wimpern der Rocketbox-Figuren) wärmt der Lead zentral vor; der Test zählt nur
+  die Programme der eigenen Materialien (Bus, Schild, Anzeige, Aushang).

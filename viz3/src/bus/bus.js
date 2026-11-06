@@ -34,6 +34,7 @@ import { DKDATA } from '../world/dorfkern_data.js';
 import { WELT } from '../welt/welt.js';
 import { FAHRT } from '../welt/fahrt.js';
 import { VNETZ } from '../verkehr/verkehr_netz.js';
+import { VAUTO } from '../verkehr/verkehr_auto.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { audio } from '../audio/audio.js';
 import { Z } from '../zombie/z_state.js';
@@ -397,6 +398,7 @@ export const BUS = (() => {
       z = zR + (zF - zR) * (-D.AR / (D.AF - D.AR));
     if (prevS !== null) I.dist += Math.abs(_o.s - prevS);
     I.lastS = _o.s;
+    I.s = _o.s;
     const moved = Math.abs(cx - I.x) + Math.abs(cy - I.y) + Math.abs(z - I.z) > 0.002;
     I.x = cx;
     I.y = cy;
@@ -465,6 +467,63 @@ export const BUS = (() => {
       spawn(a);
     }
   }
+  // ---- what stands in its lane ahead: the player (on foot, in his car), a car of the traffic, another bus. The bus keeps to its
+  //      timetable, so it slows by running its minutes slower (I.r: 1 free … 0 standing) and is late afterwards, as a real one ----
+  const OBA = [];
+  function blockers(I) {
+    OBA.length = 0;
+    if (P.mode === 'walk' && !PLAY.seated() && !VEH.cur) OBA.push({ x: P.x, y: P.y, r: 0.4, pl: true });
+    const v = VEH.cur;
+    if (v && v.g && v.g.visible && v.st && v.spec && v.spec.box) {
+      const st = v.st,
+        b = v.spec.box;
+      for (const t of [-1, 0, 1]) {
+        const o = (b.cy || 0) + t * Math.max(0, b.hl - b.hw);
+        OBA.push({ x: st.x + Math.sin(st.psi) * o, y: st.y + Math.cos(st.psi) * o, r: b.hw, pl: true });
+      }
+    }
+    for (const c of VAUTO.cars || [])
+      if (c.g && c.g.visible && c.st !== 'weg')
+        for (const t of [-1.3, 0, 1.3])
+          OBA.push({ x: c.x + Math.sin(c.hd) * (t - 0.19), y: c.y + Math.cos(c.hd) * (t - 0.19), r: 0.95 });
+    for (const J of S.inst)
+      if (J !== I)
+        for (const t of [-4.5, -1.5, 1.5, 4.5])
+          OBA.push({ x: J.x + Math.sin(J.hd) * t, y: J.y + Math.cos(J.hd) * t, r: 1.3 });
+    return OBA;
+  }
+  function freeAhead(I, dt) {
+    if (I.st !== 'fahrt' || !Number.isFinite(I.s)) {
+      I.r = 1;
+      I.blockT = 0;
+      return;
+    }
+    const R = I.Rn.R,
+      sF = I.s + 1.0,
+      look = Math.min(45, Math.max(12, 8 + (I.v * I.v) / 2.4));
+    let gap = Infinity,
+      pl = false;
+    for (const o of blockers(I)) {
+      if (Math.abs(o.x - I.x) > look + 14 || Math.abs(o.y - I.y) > look + 14) continue;
+      const pr = VNETZ.project(R, o.x, o.y, sF - 1, sF + look);
+      if (!pr || Math.abs(pr.lat) > D.W / 2 + o.r + 0.15 || pr.s < sF - 0.8) continue;
+      const g = pr.s - sF - o.r;
+      if (g < gap) {
+        gap = g;
+        pl = !!o.pl;
+      }
+    }
+    const want = gap < 3 ? 0 : gap === Infinity ? 1 : Math.min(1, Math.sqrt(2 * 1.3 * (gap - 3)) / Math.max(0.5, I.v));
+    I.r = Math.min((I.r ?? 1) + dt * 0.6, want);
+    // the player in the way: the horn after a moment, again if he stays
+    if (pl && I.r < 0.25) {
+      I.blockT = (I.blockT || 0) + dt;
+      if (I.blockT > 1.5 && performance.now() - (I.hornT || 0) > 6000) {
+        I.hornT = performance.now();
+        horn(I);
+      }
+    } else I.blockT = 0;
+  }
   // per frame: the minute of each bus, its place, what it does
   function step(dt) {
     const [ox, oy] = where();
@@ -473,7 +532,11 @@ export const BUS = (() => {
     S.lastClk = clk;
     for (const I of S.inst.slice()) {
       if (I.hold > 0 && !(S.ride && S.ride.I === I && S.ride.busy)) I.hold -= dt;
+      if (Math.hypot(I.x - ox, I.y - oy) < 300) freeAhead(I, dt);
+      else I.r = 1;
       if (S.ride && S.ride.I === I) {
+        // held up on the way: its minutes run slower, it is late from then on
+        if (I.st === 'fahrt' && I.r < 1 && !S.ride.busy) S.ride.lag += ((1 - I.r) * dt) / 60;
         // the bus one rides: exactly the clock (it runs in real time meanwhile); while the picture fades it waits at the stop.
         // Placed by the seat's camera this frame (follow above): not again, so bus and eye stay together
         // (and while people get on or off at a stop – bus/bus_leute.js holds it – it waits a few seconds and leaves a little late)
@@ -487,7 +550,7 @@ export const BUS = (() => {
         I.tau = clk;
       } else if (!(I.hold > 0 && I.st === 'halt')) {
         // a bus elsewhere: real time (it stands while the clock stands), never ahead of the clock; held while one gets on or off
-        I.tau = Math.min(clk, I.tau + Math.max(0, Math.min(dt / 60, dClk + 1e-9)));
+        I.tau = Math.min(clk, I.tau + Math.max(0, Math.min(dt / 60, dClk + 1e-9)) * (I.r ?? 1));
       }
       place(I, dt);
       const d = Math.hypot(I.x - ox, I.y - oy);
@@ -686,12 +749,13 @@ export const BUS = (() => {
   // ---------------- „Fahrt abkürzen“: fade, the clock jumps to the arrival, the ground there loads ----------------
   let fadeEl = null;
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  async function shorten() {
+  // (toK: to an earlier stop of the way and on from there – tests: the drive across the edge of the square in real time)
+  async function shorten(toK) {
     const R_ = S.ride;
     if (!R_ || R_.busy) return;
     const I = R_.I,
-      k = R_.want !== null ? R_.want : Math.min(I.Rn.P.last, I.k + 1);
-    R_.want = k;
+      k = Number.isInteger(toK) && toK > I.k ? toK : R_.want !== null ? R_.want : Math.min(I.Rn.P.last, I.k + 1);
+    if (R_.want === null) R_.want = k;
     R_.busy = true;
     if (!fadeEl) {
       fadeEl = document.createElement('div');
@@ -914,7 +978,7 @@ export const BUS = (() => {
     }
     const inside = S.ride && S.ride.I === I,
       sp = inside ? { vol: 0.55, lp: 900 } : audio.spatial ? audio.spatial(I.x, I.y, 14) : { vol: 0.3, lp: 1200 },
-      k = 0.62 + Math.min(1, I.v / 14) * 0.7;
+      k = 0.62 + Math.min(1, (I.v * (I.r ?? 1)) / 14) * 0.7;
     const t = eng.ctx.currentTime;
     eng.g.gain.setTargetAtTime(0.2 * sp.vol, t, 0.2);
     eng.os[0].frequency.setTargetAtTime(42 * k, t, 0.35);
@@ -946,6 +1010,33 @@ export const BUS = (() => {
   }
   function doorSound(I, opening) {
     hiss(I.x, I.y, opening ? 0.55 : 0.4, opening ? 2600 : 1800);
+  }
+  // the horn (two tones, a bus's)
+  function horn(I) {
+    const r = raw();
+    if (!r) return;
+    const sp = audio.spatial ? audio.spatial(I.x, I.y, 20) : { vol: 0.5, lp: 6000 };
+    if (sp.vol < 0.01) return;
+    const t = r.ctx.currentTime,
+      g = r.ctx.createGain(),
+      lp = r.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = Math.min(2600, sp.lp);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.28 * Math.max(0.02, sp.vol), t + 0.04);
+    g.gain.setValueAtTime(0.28 * Math.max(0.02, sp.vol), t + 0.75);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+    lp.connect(g);
+    g.connect(r.sfx);
+    for (const f of [311, 392]) {
+      const o = r.ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.value = f;
+      o.connect(lp);
+      o.start(t);
+      o.stop(t + 0.95);
+    }
+    S.stats.honks = (S.stats.honks || 0) + 1;
   }
   // the announcement gong (two soft tones, down)
   function gong() {

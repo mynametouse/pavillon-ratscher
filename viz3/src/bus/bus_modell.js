@@ -452,7 +452,9 @@ export const BUSMOD = (() => {
       c.textAlign = 'center';
       c.fillText(line, 64, 34);
       c.font = 'bold 40px Arial, Helvetica, sans-serif';
+      // too long for the display: the town alone („Schleusingen, Zentralhaltestelle“ → „Schleusingen“), then shortened
       let d = dest;
+      if (c.measureText(d).width > 370 && d.includes(',')) d = d.split(',')[0];
       while (c.measureText(d).width > 370 && d.length > 4) d = d.slice(0, -2) + '…';
       c.textAlign = 'left';
       c.fillText(d, 136, 35);
