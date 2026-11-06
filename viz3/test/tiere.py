@@ -259,9 +259,18 @@ with lib.browser() as b:
         print('alert at', alert_at, 'flee at', flee_at, f'(samples {alert_n} / {flee_n})', flush=True)
         ck('they look up first (alert before the flight)', alert_n is not None and (flee_n is None or alert_n < flee_n), f'{alert_at} / {flee_at}')
         ck('they flee at a roe deer\'s flight distance (70–130 m from a walker at dusk)', flee_at is not None and 60 <= flee_at <= 130, str(flee_at))
+        # look at the fleeing group through a long lens (from where the walker stands)
+        AIM = f"""(() => {{ const q = TIERE.list().filter(a => a.g === '{r['id']}'); if (!q.length) return 0; const P = GAME.P;
+          const mx = q.reduce((s, a) => s + a.x, 0) / q.length, my = q.reduce((s, a) => s + a.y, 0) / q.length, mz = q.reduce((s, a) => s + a.z, 0) / q.length;
+          const d = Math.hypot(mx - P.x, my - P.y), z0 = ROADS.groundAt(P.x, P.y) + 1.62;
+          __view(P.x, P.y, z0, Math.atan2(mx - P.x, my - P.y) * 180 / Math.PI, Math.atan2(mz + 0.5 - z0, d) * 180 / Math.PI, Math.max(8, Math.min(30, 2 * Math.atan2(9, d) * 180 / Math.PI)));
+          return 1; }})()"""
+        E(AIM)
         E("GAME.step(0.05)")
         pic('20_flucht_rehe')
         steps(1.2)
+        E(AIM)
+        E("GAME.step(0.02)")
         pic('21_flucht_rehe_spiegel')
         q1 = J(f"TIERE.list().filter(a => a.g === '{r['id']}')")
         ck('the whole group goes, fast (bounding)', len(q1) >= 1 and all(a['mode'] == 'flee' for a in q1) and max(a['v'] for a in q1) > 6, str(q1))
@@ -399,7 +408,8 @@ with lib.browser() as b:
         ck('… and without chickens no coop', not E("!!THUEHNER.coop"), '')
         # a sign found: walk to a wallow
         w = J("TIERE.groups.find(g => g.art === 'wildschwein').wallowAt")
-        E(f"__view({w[0]} + 5, {w[1]}, ROADS.groundAt({w[0]} + 5, {w[1]}) + 1.7, -90, -25, 60); GAME.step(0.1)")
+        # (from 8 m and not too steeply down: the walker's own legs are in the first-person view now)
+        E(f"__view({w[0]} + 8, {w[1]}, ROADS.groundAt({w[0]} + 8, {w[1]}) + 1.7, -90, -11, 50); GAME.step(0.1)")
         steps(1.2)
         ev = J("window.__ev.filter(e => e.kind === 'spur')")
         ck('a sign found: the wallow (tiere:entdeckt, kind spur, with a source)', any(e['id'] == 'suhle' for e in ev), str(ev)[:300])

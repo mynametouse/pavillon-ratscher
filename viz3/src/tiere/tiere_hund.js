@@ -230,8 +230,8 @@ export const HUND = (() => {
     if (!D.on || !ready) return;
     dt = Math.min(dt, 0.1);
     D.t += dt;
-    const car = VEH && VEH.cur;
-    // in a vehicle he rides along (out of sight) and jumps out with you
+    const car = (VEH && VEH.cur) || riding();
+    // in a vehicle he rides along (out of sight) and jumps out with you – also on the bus, hitchhiking, on the tractor (a seat to ride)
     if (car) {
       if (D.mode !== 'home') D.rideOn = true;
       if (D.model) D.model.g.visible = false;
@@ -455,7 +455,12 @@ export const HUND = (() => {
     }
     panel(dP < 40 && !(window.ZSTATE && ZSTATE.on));
   }
-  // ---------- the buttons (keys P, U, +, −; on a phone these four) ----------
+  // riding along somewhere (the bus, a lift, the tractor): game/play.js PLAY.seat
+  function riding() {
+    return !!(PLAY.seat && PLAY.seat.kind === 'ride');
+  }
+  // ---------- the buttons (keys P, Shift+P, +, −; on a phone these four) – not while riding, in the zombie night or in the view from
+  // above (the strategy mode), where other buttons sit on the right ----------
   let pEl = null;
   function panel(show) {
     if (!show) {
@@ -495,7 +500,7 @@ export const HUND = (() => {
   }
   window.addEventListener('keydown', e => {
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
-    if (!D.on || P.mode !== 'walk' || (VEH && VEH.cur) || !D.model || !D.model.g.visible) return;
+    if (!D.on || P.mode !== 'walk' || (VEH && VEH.cur) || riding() || !D.model || !D.model.g.visible) return;
     if (window.ZSTATE && ZSTATE.on) return;
     const k = e.key;
     // P whistles him back, Shift+P sends him where you look (U belongs to the strategy view: game/st_modus.js)
