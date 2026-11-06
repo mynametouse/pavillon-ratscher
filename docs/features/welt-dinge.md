@@ -11,8 +11,11 @@ des Luftbilds als **Stellplätze, belebt nach Tageszeit**; (23:17) „Wichtig is
 - **Gebiete** (je eine Datei `dist/dinge/<gebiet>.json`, geladen, wenn man näher als r an die Mitte kommt): `ratscher` (das Dorf, die
   Agrargenossenschaft mit zwei Güllebehältern, die ETHOS nicht kennt, der Holzlagerplatz), `schleusingen` (die Stadt), `geisenhoehn` (das
   Dorf im Westen des Quadrats), `talsperre` (Campingplatz an der Talsperre Ratscher), `vessra` (Kloster Veßra mit Baumschule),
-  `zollbrueck` und die Dörfer der Kachelwelt dahinter (`gottfriedsberg`, `rappelsdorf` …; ihr bebauter Bereich aus den Gebäuden von
-  `welt-gebaeude` + 50 m) – siehe „Stand“ unten.
+  `zollbrueck` und alle Orte der Kachelwelt mit Gebäuden (Block B und Zone Veßra): `gottfriedsberg`, `rappelsdorf`, `stkilian`,
+  `gerhardtsgereuth`, `fischbach`, `neuendambach`, `gethles`, `ehrenberg`, `grimmelshausen`, `themar`, `siegritz`, `neuhof` (ihr bebauter
+  Bereich aus den Gebäuden von `welt-gebaeude` + 50 m), dazu die Siedlungen ohne Ort in den Daten der Fahrt – `hinternah`, `wiedersbach`,
+  `heckengereuth` (benannt nach den Ortsnamen des OSM-Auszugs) –, die Außenteile von Schleusingen (eine Datei, geladen auch von drei
+  weiteren Punkten `t` aus) und `strecke` (die Strecken zum Markt und nach Veßra außerhalb der Orte) – siehe „Stand“ unten.
 - **Erkennung** (`tools/welt-dinge/`): das Luftbild Thüringen 2024 (DOP 20 cm, Flug 07.04.2024 – dasselbe Bild wie das Bodenbild des
   Spiels `ortho_near.jpg`) auf Modellachsen über den WMS der GDI-Th (`wdlib.fetch`), darauf ein vortrainierter Luftbild-Detektor
   (Ultralytics YOLO11-OBB auf DOTA v1: „small/large vehicle“, „swimming pool“, „storage tank“ …; `detect.py`). Ratscher: fünf Durchgänge

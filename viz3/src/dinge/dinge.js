@@ -68,6 +68,8 @@ export const DINGE = (() => {
       { id: 'hinternah', c: [1750, 2100], r: 1650, cell: 150 },
       { id: 'wiedersbach', c: [1750, -2625], r: 1000, cell: 120 },
       { id: 'heckengereuth', c: [1750, -1050], r: 1100, cell: 120 },
+      // along the drives to the Markt and to Kloster Veßra beyond the villages (few parked; the masks take the cars that were driving)
+      { id: 'strecke', c: [-3100, -630], r: 2600, cell: 150 },
     ],
     err: null,
   };
