@@ -105,6 +105,25 @@ with lib.browser() as b:
             [0, { graze: 0.55 }], [0, { graze: 0.7 }], [0, { lie: 1 }], [0, {}], [0, {}], [0, {}], [0, { graze: 1 }], [0, {}]];
           window.__sheet.forEach((A, i) => { const q = P[i] || [0, { graze: 1 }]; for (let k = 0; k < 60; k++) A.anim(0.033, q[0], q[1]); }); })()""")
         closeups('pose2', ['reh_ricke_winter', 'reh_bock_sommer', 'reh_kitz_sommer', 'sau', 'hund', 'fuchs', 'hase', 'hirsch_alttier'])
+        # the two that are seen most, roe deer and wild boar, from the side at 7 m (where one gets when sneaking up): noon and November dusk
+        E("window.__sheet.forEach(A => { for (let k = 0; k < 40; k++) A.anim(0.033, 0, {}); })")
+        def side(tag, names, D=7.0):
+            for i, (n, kind, var, sc, dd, eh) in enumerate(SHEET):
+                if n not in names: continue
+                pit = -math.degrees(math.atan2(1.62 - eh, D))
+                fov = max(14, min(40, math.degrees(2 * math.atan2(dd * 0.62, D))))
+                E(f"""(() => {{ const A = window.__sheet[{i}], yaw = 225 * Math.PI / 180, fx = Math.sin(yaw), fy = Math.cos(yaw);
+                  const x = A.g.position.x, y = -A.g.position.z, cx = x - fx * {D}, cy = y - fy * {D};
+                  window.__sheet.forEach((B, j) => B.g.visible = j === {i});
+                  __view(cx, cy, ROADS.groundAt(cx, cy) + 1.62, 225, {pit}, {fov}); }})()""")
+                E("GAME.step(0.02)")
+                pic(f'05_{tag}_{n}')
+            E("window.__sheet.forEach(B => B.g.visible = true)")
+        ZWEI = ['reh_ricke_winter', 'reh_bock_sommer', 'sau', 'frischling_november', 'hirsch_alttier']
+        side('7m_mittag', ZWEI)
+        at(16, 55, date=(11, 5))
+        side('7m_daemmerung', ZWEI)
+        at(12, 0, date=(7, 10))
         # the kite from below and the side, close
         E(f"""(() => {{ const A = TKOERPER.make('milan', {{}}); GAME.scene.add(A.g); const x = {x0} - 4, y = {y0} - 4;
           A.g.position.set(x, ROADS.groundAt(x, y) + 3.2, -y); A.g.rotation.y = 0.6; A.anim(0.05, 8, {{ flap: 0, bank: 0.2, twist: 0.3 }}); window.__kite = A; }})()""")
