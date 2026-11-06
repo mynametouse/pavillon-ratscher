@@ -269,6 +269,27 @@ export const WDATEN = (() => {
       nx = Math.ceil((x1 - x0) / cell),
       ny = Math.ceil((y1 - y0) / cell),
       shade = new Float32Array(nx * ny);
+    // cells of the garden: the centre or a corner inside the boundary
+    const inPoly = (x, y) => {
+      let c = false;
+      for (let a = 0, b = B.length - 1; a < B.length; b = a++)
+        if (B[a][1] > y !== B[b][1] > y && x < ((B[b][0] - B[a][0]) * (y - B[a][1])) / (B[b][1] - B[a][1]) + B[a][0])
+          c = !c;
+      return c;
+    };
+    const inside = new Uint8Array(nx * ny);
+    for (let j = 0; j < ny; j++)
+      for (let i = 0; i < nx; i++) {
+        const x = x0 + i * cell,
+          y = y0 + j * cell;
+        inside[j * nx + i] = +(
+          inPoly(x + cell / 2, y + cell / 2) ||
+          inPoly(x, y) ||
+          inPoly(x + cell, y) ||
+          inPoly(x, y + cell) ||
+          inPoly(x + cell, y + cell)
+        );
+      }
     const cs = [];
     for (const b of site.buildings) cs.push({ foot: b.foot, h: b.h });
     for (const t of site.trees)
@@ -292,6 +313,7 @@ export const WDATEN = (() => {
       }
       for (let j = 0; j < ny; j++)
         for (let i = 0; i < nx; i++) {
+          if (!inside[j * nx + i]) continue;
           const px = x0 + (i + 0.5) * cell,
             py = y0 + (j + 0.5) * cell;
           for (const q of sh)
@@ -308,7 +330,7 @@ export const WDATEN = (() => {
     const hours = new Float32Array(nx * ny);
     for (let i = 0; i < hours.length; i++) hours[i] = (n - shade[i]) * stepH;
     const dl = GPSUN.dayLight(T.y, T.m, T.d);
-    S.sun = { x0, y0, cell, nx, ny, hours, n, max: n * stepH, dl, T, ms: Math.round(performance.now() - t0) };
+    S.sun = { x0, y0, cell, nx, ny, hours, inside, n, max: n * stepH, dl, T, ms: Math.round(performance.now() - t0) };
     S.sunKey = key;
     return S.sun;
   }
@@ -337,6 +359,7 @@ export const WDATEN = (() => {
     let h = '';
     for (let j = 0; j < G.ny; j++)
       for (let i = 0; i < G.nx; i++) {
+        if (!G.inside[j * G.nx + i]) continue;
         const x = G.x0 + i * G.cell,
           y = G.y0 + j * G.cell,
           a = pr(x, y, 0.1),
@@ -344,7 +367,7 @@ export const WDATEN = (() => {
           c = pr(x + G.cell, y + G.cell, 0.1),
           d = pr(x, y + G.cell, 0.1);
         if (!onScr(a, W, H) && !onScr(c, W, H)) continue;
-        h += `<polygon points="${f1(a[0])},${f1(a[1])} ${f1(b[0])},${f1(b[1])} ${f1(c[0])},${f1(c[1])} ${f1(d[0])},${f1(d[1])}" style="fill:${sunCol(G.hours[j * G.nx + i])};fill-opacity:.5"/>`;
+        h += `<polygon points="${f1(a[0])},${f1(a[1])} ${f1(b[0])},${f1(b[1])} ${f1(c[0])},${f1(c[1])} ${f1(d[0])},${f1(d[1])}" style="fill:${sunCol((12 * G.hours[j * G.nx + i]) / Math.max(1, G.max))};fill-opacity:.5"/>`;
       }
     return h;
   }
@@ -503,7 +526,7 @@ export const WDATEN = (() => {
         if (!G) return '<p>Erst wenn der Garten geladen ist.</p>';
         const hh = v => (v == null ? '–' : Math.floor(v) + ':' + String(Math.round((v % 1) * 60)).padStart(2, '0'));
         return (
-          `<div class="wd-g" style="background:linear-gradient(90deg,${sunCol(0)},${sunCol(4)},${sunCol(8)},${sunCol(12)})"></div><div class="wd-gl"><span>0 h</span><span>4</span><span>8</span><span>12 h</span></div>` +
+          `<div class="wd-g" style="background:linear-gradient(90deg,${sunCol(0)},${sunCol(4)},${sunCol(8)},${sunCol(12)})"></div><div class="wd-gl"><span>0 h</span><span>${f1(G.max / 3)}</span><span>${f1((2 * G.max) / 3)}</span><span>${f1(G.max)} h</span></div>` +
           `<p>Am ${G.T.d}.${G.T.m}.${G.T.y}: Sonne über dem Horizont von ${hh(G.dl.rise)} bis ${hh(G.dl.set)} Uhr; mehr als 3° hoch rund ${f1(G.max)} h.</p>` +
           '<small>Sonnenstand über Ratscher (NOAA-Formeln) und die Schatten von Gebäuden und Baumkronen – dieselbe Rechnung wie im Gartenplaner.</small>'
         );

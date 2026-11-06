@@ -45,6 +45,12 @@ test('every „Warum?“: title, one sentence or two, a linked source', () => {
     assert.ok(re instanceof RegExp && D.WHY[id], 'thought pattern → ' + id);
   }
   assert.ok(D.THINK.some(([re]) => re.test('Heute ist Sonntag – Sonn- und Feiertagsruhe.')), 'a Sunday refusal gets its „?“');
+  // the refusals of werk/gear.js as the game words them: the first pattern that matches names the rule
+  const first = t => (D.THINK.find(([re]) => re.test(t)) || [])[1];
+  assert.equal(first('Erst die Forstausrüstung aus der Forstkiste am Traktor holen: Helm, Schnittschutzhose'), 'psa_forst');
+  assert.equal(first('Erst die Schutzausrüstung vom PSA-Brett holen: Gehörschutz, Schutzbrille'), 'psa_werk');
+  assert.equal(first('Handschuhe aus! An der Maschine können sie vom Werkzeug eingezogen werden.'), 'handschuhe');
+  assert.equal(first('Ein schöner Tag im Garten.'), undefined);
 });
 
 test('teachers: Gerhard, Wolfgang, Ingrid, Hubert, Ronald – every topic opens entries that exist and are found by that talk', () => {

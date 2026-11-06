@@ -40,6 +40,7 @@ def run():
         st0 = J("WISSEN.state()")
         ck('the book is there with its entries and five chapters', st0['n'] >= 50 and len(J("WISSEN.data.CH")) == 5, f"{st0['n']} entries")
         ck('a fresh start: nothing found yet', len(st0['found']) == 0, str(st0['found'])[:200])
+        ck('the menu entry is there from the start (before the book was ever opened)', E("!!document.getElementById('wibookbtn')"))
         ck('the save key is registered (SAVE.keys, so the broken-state test covers it)', 'pav-wissen-v1' in [k['key'] for k in J("SAVE.keys()")])
         p0 = E("GAME.R.info.programs.length")
 
@@ -169,8 +170,10 @@ def run():
             E("WISSEN.close()")
 
         if 'daten' in want:
-            pd0 = E("GAME.R.info.programs.length")
             E("GAME.go('draufsicht')"); steps(1.0)
+            # the plan view compiles its own programs when it is first shown – counted after it stands
+            E("GAME.shot()"); steps(0.3); E("GAME.shot()")
+            pd0 = E("GAME.R.info.programs.length")
             pn = J("(() => { const el = document.getElementById('widaten'); return el ? { vis: !el.hidden, chips: [...el.querySelectorAll('[data-wd]')].map(b => b.textContent) } : null; })()")
             ck('plan view: the panel „Daten-Ansichten“ with five views', pn and pn['vis'] and len(pn['chips']) == 5, str(pn))
             nsvg0 = E("document.getElementById('topsvg').querySelectorAll('polygon').length")
@@ -216,6 +219,15 @@ def run():
                 ck('…opens the book from above', J("WISSEN.isOpen") is True)
                 page_pic('08_strategie')
                 E("WISSEN.close()")
+                ly = J("STRAT.layer.list().map(L => L.id)")
+                ck('the five data views are layers of its panel „Ebenen“ (off at first)', all(i in ly for i in ['w_laerm', 'w_verkehr', 'w_sonne', 'w_natur', 'w_stimmung']) and not J("STRAT.layer.on('w_sonne')"), str(ly))
+                E("STRAT.layer.set('w_sonne', true)"); steps(1.0)
+                sv = J("(() => { const L = document.getElementById('widaten'); return { leg: L ? !L.hidden && L.textContent.includes('Horizont') : false, n: [...document.querySelectorAll('svg polygon')].filter(p => (p.getAttribute('style') || '').includes('fill:rgb')).length }; })()")
+                ck('…„Sonne“ on from above: drawn on its map, with the legend', sv['leg'] and sv['n'] > 50, str(sv))
+                page_pic('08b_strategie_sonne')
+                E("STRAT.layer.set('w_sonne', false)")
+                E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'sturmholz', title: 'Sturmholz an der Klinge', source: 'ThüringenForst', text: 'Windwurf nach dem Sturm', by: 'falko' })")
+                ck('an exploration of the strategy mode the book has no entry for becomes one (Natur)', J("(() => { const e = WISSEN.get('st:wald:sturmholz'); return !!e && e.ch === 'natur' && WISSEN.has(e.id); })()"))
         found_before = J("WISSEN.state().found")
         E("WISSEN.saveNow()")
         ck.errors(errs)

@@ -42,6 +42,33 @@ export const WORTE = (() => {
   // where each board stands: [x, y, nx, ny] – n is the way its face looks (the reader stands in front of it)
   function where(at) {
     if (at === 'school') {
+      // beside the door of the facade that looks to the Anger (world/village.js: facades with outward normals, the school = building 215)
+      const V = window.VILLAGE,
+        b = V && V.byId && V.byId.get(215),
+        A0 = VPROPS.ANGER || [222, -108];
+      if (b && b.fac && b.fac.length) {
+        let best = null,
+          bs = -9;
+        for (const f of b.fac) {
+          if (!(f.L > 3)) continue;
+          const mx = (f.ax + f.bx) / 2,
+            my = (f.ay + f.by) / 2,
+            to = norm(A0[0] - mx, A0[1] - my),
+            sc = f.nx * to[0] + f.ny * to[1] + (f.door ? 0.35 : 0);
+          if (sc > bs) {
+            bs = sc;
+            best = f;
+          }
+        }
+        if (best) {
+          const f = best,
+            u = f.door ? f.door.u : f.L / 2,
+            off = u + 2.8 <= f.L - 0.5 ? 2.8 : -2.8,
+            px = f.ax + f.dx * (u + off),
+            py = f.ay + f.dy * (u + off);
+          return [px + f.nx * 3.4, py + f.ny * 3.4, f.nx, f.ny];
+        }
+      }
       const s = VPROPS.school;
       if (!s) return null;
       const f = [Math.cos(s.rot), Math.sin(s.rot)],

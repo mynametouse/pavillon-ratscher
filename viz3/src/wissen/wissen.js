@@ -11,7 +11,7 @@
 // Events: 'wissen:neu' { id, ch, how }, 'wissen:warum' { id }, 'wissen:offen' { on }.
 import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
-import { $ } from '../core/head.js';
+import { $, BASE } from '../core/head.js';
 import { P, PHASE } from '../game/walkable.js';
 import { HUD } from '../game/hud.js';
 import { CLOCK } from '../time/clock.js';
@@ -154,6 +154,11 @@ export const WISSEN = (() => {
         return;
       } catch (err) {}
     }
+    // the open book shows what is new itself
+    if (U.open) {
+      if (NQ.el) NQ.el.hidden = true;
+      return;
+    }
     const el = NQ.el || mkNotice();
     el.querySelector('.ic').textContent = first.icon || '📖';
     el.querySelector('.tx').innerHTML =
@@ -274,7 +279,12 @@ export const WISSEN = (() => {
     const check = () => {
       const t = sb.hidden || !sb.classList.contains('think') ? '' : sb.textContent || '';
       let id = null;
-      if (t) for (const [re, w] of D.THINK) if (re.test(t)) id = w;
+      if (t)
+        for (const [re, w] of D.THINK)
+          if (re.test(t)) {
+            id = w;
+            break;
+          }
       TH.id = id;
       if (!id) {
         chip.hidden = true;
@@ -351,6 +361,7 @@ export const WISSEN = (() => {
 #wiwhy .wb{margin-top:8px;border:1px solid var(--line);background:var(--plate);color:var(--ink);border-radius:999px;font:500 12px/1 var(--f-body);padding:6px 10px;cursor:pointer}
 #winote{position:absolute;z-index:9;top:62px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:min(520px,calc(100% - 24px));background:rgba(28,26,22,.86);color:#f3efe6;border-radius:999px;padding:7px 8px 7px 14px;font:400 13px/1.3 var(--f-body);box-shadow:0 4px 18px rgba(0,0,0,.3)}
 #winote[hidden]{display:none}
+body[data-top="1"] #winote{top:178px}
 #winote .ic{font-size:17px}
 #winote b{font-weight:700}
 #winote small{opacity:.8}
@@ -532,6 +543,7 @@ export const WISSEN = (() => {
     const was = U.open;
     U.el.hidden = false;
     U.open = true;
+    if (NQ.el) NQ.el.hidden = true;
     try {
       if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock();
     } catch (e) {}
@@ -599,6 +611,9 @@ export const WISSEN = (() => {
     'einrichtung:brand': 'im Brennofen gebrannt',
     'einrichtung:glasur': 'glasiert',
     'gplan:gepflanzt': 'einen Baum gepflanzt',
+    'gplan:geschnitten': 'einen Obstbaum geschnitten',
+    'einrichtung:bild': 'ein Bild gemalt',
+    'gplan:gemulcht': 'gemulcht',
     'verkehr:mitfahrt': 'mitgefahren',
     'verkehr:angehalten': 'ein Auto angehalten',
     'zinnen:mount': 'in einem Haus des Dorfs',
@@ -670,6 +685,42 @@ export const WISSEN = (() => {
       'erkundet:' + (d.title || d.id) + (d.by ? ' (' + d.by + ')' : '')
     );
   });
+  // a plant set with the garden planner (gplan/*): its own entry from the planner's database – what it is, its care, its sources
+  const PL = { db: null, p: null };
+  function plantDB() {
+    if (PL.p) return PL.p;
+    PL.p = fetch(BASE + 'gartenplaner/pflanzen.json')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => (PL.db = d && Array.isArray(d.arten) ? d : null))
+      .catch(() => null);
+    return PL.p;
+  }
+  KERN.on('gplan:gepflanzt', d => {
+    if (!d || typeof d.id !== 'string') return;
+    const id = 'pflanze:' + d.id;
+    if (REG.has(id)) return found(id, 'tun:gepflanzt');
+    plantDB().then(db => {
+      const a = db && db.arten.find(q => q.id === d.id);
+      if (!a) return;
+      const Qs = db.quellen || {},
+        src = (a.quellen || [])
+          .map(k => Qs[k])
+          .filter(Boolean)
+          .slice(0, 4)
+          .map(q => [q.titel + (q.herausgeber ? ' (' + q.herausgeber + ')' : ''), q.url || null]);
+      dyn(
+        id,
+        {
+          ch: 'natur',
+          icon: a.schicht === 'baum' || a.schicht === 'kleinbaum' ? '🌳' : '🌱',
+          title: a.name + (a.sorte ? ' ‘' + a.sorte + '’' : '') + (a.art ? ' (' + a.art + ')' : ''),
+          text: [a.text, a.pflege].filter(Boolean).join('\n'),
+          src,
+        },
+        'tun:gepflanzt'
+      );
+    });
+  });
   KERN.on('reset', () => reset());
   // ---- what the book looks at (every 1.5 s; cheap): felling steps, the workshop, the saw and the stack, the office, the planner ----
   const FELLST = {
@@ -716,6 +767,7 @@ export const WISSEN = (() => {
     'amt:wahl': 'zur Wahl angetreten',
     'amt:amt': 'im Amt',
     'gplan:offen': 'den Garten geplant',
+    'jahr:wechsel': 'einen Monat im Spiel erlebt',
     'bau:phase': 'eine Bauphase des Pavillons angesehen',
   };
   const lookHit = new Set();
@@ -764,8 +816,21 @@ export const WISSEN = (() => {
     try {
       if (GPLAN && GPLAN.ui && GPLAN.ui.open) look('gplan:offen');
     } catch (e) {}
-    if (PHASE > 0) look('bau:phase');
+    // a month of the game's calendar went by while playing
+    try {
+      const DNx = window.DN;
+      if (DNx && Number.isFinite(DNx.e0)) {
+        const mo = new Date((DNx.e0 + Math.floor(((CLOCK && CLOCK.t) || 0) / 1440)) * 864e5).getUTCMonth();
+        if (MO0 === null) MO0 = mo;
+        else if (mo !== MO0) look('jahr:wechsel');
+      }
+    } catch (e) {}
+    // a construction phase of the pavilion looked at: the phase changed after the start (the start may be in any phase)
+    if (PH0 === null) PH0 = PHASE;
+    else if (PHASE !== PH0) look('bau:phase');
   }
+  let PH0 = null,
+    MO0 = null;
   let acc = 0,
     first = true;
   KERN.tick(dt => {
