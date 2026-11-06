@@ -312,6 +312,8 @@ with lib.browser() as b:
         pic('halle_wand')
     if 'load' in want:
         ck('at the garden nothing of the cells beyond the square is fetched', st['z'] == 'idle', st['z'])
+        t2s = J("({ on: GEB.T2.on, state: GEB.T2.state, def: GEB.TILES2 })")
+        ck('the tiles without the printed roofs are on, their list is not fetched at the start (only with the first tile of the world)', t2s['on'] and t2s['def'] and t2s['state'] == 'idle', json.dumps(t2s))
     if 'zellen' in want:
         E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
         E("document.querySelector('#menu [data-spot=schleusingen]').click()")
