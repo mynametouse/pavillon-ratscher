@@ -24,6 +24,7 @@ import { $, BASE, cam, COARSE, stage, V } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
+import { TASKS } from '../core/tasks.js';
 import { floorAt, P } from '../game/walkable.js';
 import { go } from '../game/player.js';
 import { PLAY } from '../game/play.js';
@@ -131,9 +132,16 @@ export const BUS = (() => {
         let x = pl.x + rx * 3.9,
           y = pl.y + ry * 3.9,
           shelter = false;
-        // the school bus stop at the old school: its shelter (world/village_props.js) – the sign is there already
+        // the school bus stop at the old school: its shelter (world/village_props.js) – the sign is there already; one board there for
+        // the buses of both directions
         const sh = SHELTER();
         if (Math.hypot(sh.c[0] - pl.x, sh.c[1] - pl.y) < 30) {
+          const tw = STOPS.find(q2 => q2.s === s && q2.shelter);
+          if (tw) {
+            tw.qs.add(q);
+            seen.set(key, tw);
+            return;
+          }
           x = sh.c[0];
           y = sh.c[1];
           shelter = true;
@@ -162,6 +170,7 @@ export const BUS = (() => {
   function sameWay(e, d) {
     const P_ = BUSPLAN.S.pats[d.trip.pat];
     if (!e.qs.has(P_.st[d.k].q)) return false;
+    if (e.shelter) return true;
     BUSPLAN.centreAt(P_, P_.s[d.k], _h);
     return Math.cos(_h.hd - e.hd) > 0.3;
   }
@@ -482,10 +491,12 @@ export const BUS = (() => {
         OBA.push({ x: st.x + Math.sin(st.psi) * o, y: st.y + Math.cos(st.psi) * o, r: b.hw, pl: true });
       }
     }
-    for (const c of VAUTO.cars || [])
-      if (c.g && c.g.visible && c.st !== 'weg')
-        for (const t of [-1.3, 0, 1.3])
-          OBA.push({ x: c.x + Math.sin(c.hd) * (t - 0.19), y: c.y + Math.cos(c.hd) * (t - 0.19), r: 0.95 });
+    // (a car that has held it up for 20 s – face to face in one lane, nobody gives way – is not waited for any longer)
+    if (!(I.carT > 20))
+      for (const c of VAUTO.cars || [])
+        if (c.g && c.g.visible && c.st !== 'weg')
+          for (const t of [-1.3, 0, 1.3])
+            OBA.push({ x: c.x + Math.sin(c.hd) * (t - 0.19), y: c.y + Math.cos(c.hd) * (t - 0.19), r: 0.95 });
     for (const J of S.inst)
       if (J !== I)
         for (const t of [-4.5, -1.5, 1.5, 4.5])
@@ -502,7 +513,8 @@ export const BUS = (() => {
       sF = I.s + 1.0,
       look = Math.min(45, Math.max(12, 8 + (I.v * I.v) / 2.4));
     let gap = Infinity,
-      pl = false;
+      pl = false,
+      car = false;
     for (const o of blockers(I)) {
       if (Math.abs(o.x - I.x) > look + 14 || Math.abs(o.y - I.y) > look + 14) continue;
       const pr = VNETZ.project(R, o.x, o.y, sF - 1, sF + look);
@@ -511,10 +523,12 @@ export const BUS = (() => {
       if (g < gap) {
         gap = g;
         pl = !!o.pl;
+        car = !o.pl && o.r < 1.2;
       }
     }
     const want = gap < 3 ? 0 : gap === Infinity ? 1 : Math.min(1, Math.sqrt(2 * 1.3 * (gap - 3)) / Math.max(0.5, I.v));
     I.r = Math.min((I.r ?? 1) + dt * 0.6, want);
+    I.carT = car && I.r < 0.1 ? (I.carT || 0) + dt : I.carT > 20 ? I.carT - dt * 0.5 : 0;
     // the player in the way: the horn after a moment, again if he stays
     if (pl && I.r < 0.25) {
       I.blockT = (I.blockT || 0) + dt;
@@ -547,6 +561,10 @@ export const BUS = (() => {
         } else I.tau = clk - S.ride.lag;
       } else if (dClk > 2 || CLOCK.warp) {
         // the clock jumped (set, a scene) or races (waiting, sleeping – a time-lapse): the bus to its minute
+        I.tau = clk;
+      } else if (clk - I.tau > 1.5 && (!seen(I.x, I.y) || clk - I.tau > 10) && !(I.r < 0.5)) {
+        // the clock races (one hour a minute, nobody waiting at a stop) and the bus fell behind its minutes: where one does not look
+        // (or when it is far behind) it catches up at once – the timetable stays the truth (not while something holds it up)
         I.tau = clk;
       } else if (!(I.hold > 0 && I.st === 'halt')) {
         // a bus elsewhere: real time (it stands while the clock stands), never ahead of the clock; held while one gets on or off
@@ -668,7 +686,9 @@ export const BUS = (() => {
     S.stats.rides++;
     save();
     panel();
-    KERN.emit('bus:ein', { line: I.trip.line, ziel: I.trip.head, halt: stName(I.Rn.P.st[I.k].s) });
+    // (does it go on to Schleusingen: a later stop there – the task „Mit dem Bus nach Schleusingen“)
+    const schl = I.Rn.P.st.some((o, k) => k > I.k && o.s >= 0 && /^Schleusingen/.test(stName(o.s)));
+    KERN.emit('bus:ein', { line: I.trip.line, ziel: I.trip.head, halt: stName(I.Rn.P.st[I.k].s), schl });
     PLAY.think('Du steigst in den ' + I.trip.line + 'er nach ' + (I.trip.head || I.trip.nach) + '.', 2600);
     return true;
   }
@@ -861,6 +881,7 @@ export const BUS = (() => {
       });
     }
     brdStop = e;
+    KERN.emit('bus:fahrplan', { halt: e.name });
     renderBoard();
     brd.hidden = false;
   }
@@ -1136,6 +1157,49 @@ export const BUS = (() => {
     PLAY.think('Haltestelle ' + (r.name || '') + ' – hier warst du mit dem Bus.', 4200);
     markDirty(true);
   }
+  // ---------------- the task: by bus to Schleusingen (Falko: „einsteigen und mitfahren, z. B. Ratscher – Schleusingen“) ----------------
+  // starts at a stop in Ratscher (or with the scene „Mit dem Bus nach Schleusingen“); the journal (J) and the task card lead
+  const ratscherStop = () => {
+    const [x, y] = where();
+    let best = null,
+      bd = Infinity;
+    for (const e of STOPS)
+      if (/^Ratscher, Schleusebrücke/.test(e.name)) {
+        const d = Math.hypot(e.x - x, e.y - y);
+        if (d < bd) {
+          bd = d;
+          best = e;
+        }
+      }
+    return best ? [best.x, best.y] : null;
+  };
+  TASKS.define({
+    id: 'bus-schleusingen',
+    title: 'Mit dem Bus nach Schleusingen',
+    who: 'Busverkehr',
+    start: { on: 'place', when: d => !!d && /^Haltestelle Ratscher/.test(d.name || '') },
+    steps: [
+      {
+        text: 'Schau an der Haltestelle in den Fahrplan: Wann fährt der nächste Bus nach Schleusingen?',
+        target: ratscherStop,
+        z: 2.6,
+        on: 'bus:fahrplan',
+      },
+      {
+        text: 'Steig in einen Bus nach Schleusingen – die 203 oder die 205 halten an der Schleusebrücke.',
+        target: ratscherStop,
+        z: 2.6,
+        on: 'bus:ein',
+        when: d => !!d && !!d.schl,
+      },
+      {
+        text: 'Fahr mit und steig in Schleusingen aus (im Bus-Fenster die Haltestelle antippen).',
+        on: 'bus:aus',
+        when: d => !!d && /^Schleusingen/.test(d.halt || ''),
+      },
+    ],
+    done: 'Mit dem Bus in Schleusingen. Zurück fährt er auch – der Fahrplan hängt an jeder Haltestelle.',
+  });
   // ---------------- the scenario: at the stop in Ratscher on a school day morning ----------------
   KERN.scenario('bus', {
     label: 'Mit dem Bus nach Schleusingen',
@@ -1143,6 +1207,7 @@ export const BUS = (() => {
     ask: 'Stellt die Uhr auf den nächsten Schultag, 7:38, an die Haltestelle Schleusebrücke in Ratscher.',
     run: async () => {
       await KERN.until(() => S.state === 'ready', 60);
+      if (!TASKS.state('bus-schleusingen')) TASKS.start('bus-schleusingen');
       const now = T();
       let d = Math.floor(now / 1440) + 1;
       for (let i = 0; i < 14; i++, d++) {

@@ -117,11 +117,14 @@ export const BUSLEUTE = (() => {
   function clear() {
     for (const q of S.pax.slice()) remove(q);
   }
-  const done = (k, now) => {
-    if (S.done.has(k)) return true;
-    S.done.set(k, now);
-    if (S.done.size > 200) S.done.delete(S.done.keys().next().value);
-    return false;
+  // per call: how many (decided once) and how many came so far
+  const want = (k, now, n) => {
+    let w = S.done.get(k);
+    if (!w) {
+      S.done.set(k, (w = { n: n(), got: 0, t: now }));
+      if (S.done.size > 200) S.done.delete(S.done.keys().next().value);
+    }
+    return w;
   };
   // ---- plan (twice a second): who comes to wait for the buses due near the player, who gets off a bus that stops near him ----
   function plan() {
@@ -140,9 +143,11 @@ export const BUSLEUTE = (() => {
       for (const c of BUSPLAN.calls(e.s, now - 0.4, now + 4, e0)) {
         const Pt = BUSPLAN.S.pats[c.trip.pat];
         if (!BUS.sameWay(e, c) || (c.k === Pt.last && !c.trip.weiter)) continue;
-        if (done('ein:' + c.trip.i + ':' + c.di + ':' + c.k + ':' + e.i, now)) continue;
-        const n = count(hash(c.trip.i, c.di, c.k, 1), hour, 'ein', c.trip.line);
-        for (let j = 0; j < n; j++) wait(e, c, town, j, now);
+        // how many, decided once per call; who comes is tried again until they are there (people of the traffic may be busy)
+        const w = want('ein:' + c.trip.i + ':' + c.di + ':' + c.k + ':' + e.i, now, () =>
+          count(hash(c.trip.i, c.di, c.k, 1), hour, 'ein', c.trip.line)
+        );
+        while (w.got < w.n && now < c.t - 0.1 && wait(e, c, town, w.got, now)) w.got++;
       }
     }
     for (const I of BUS.S.inst) {
@@ -150,17 +155,16 @@ export const BUSLEUTE = (() => {
       const st = I.Rn.P.st[I.k];
       // (nobody on board at the stop where the trip begins; one that comes from beyond the world brings people with it)
       if (!st || st.s < 0 || (I.k === I.Rn.P.first && !I.trip.vor)) continue;
-      if (done('aus:' + I.key + ':' + I.k, now)) continue;
       const town = townOf(BUSPLAN.S.stations[st.s].n);
       if (!town) continue;
-      const n = count(hash(I.trip.i, I.k, 2), hour, 'aus', I.trip.line);
-      for (let j = 0; j < n; j++) alight(I, town, j);
+      const w = want('aus:' + I.key + ':' + I.k, now, () => count(hash(I.trip.i, I.k, 2), hour, 'aus', I.trip.line));
+      while (w.got < w.n && alight(I, town, w.got)) w.got++;
     }
   }
   // someone comes to wait: the spot beside the sign (a little further from the road), along the verge from where it is not seen
   function wait(e, c, town, j, now) {
     const k = who(town, hash(c.trip.i, c.di, j, 3));
-    if (!k) return;
+    if (!k) return false;
     const fx = Math.sin(e.hd),
       fy = Math.cos(e.hd),
       rx = Math.cos(e.hd),
@@ -173,7 +177,7 @@ export const BUSLEUTE = (() => {
     // already there: after a time-lapse, or where nobody looks
     if (CLOCK.warp || !seen(tx, ty)) {
       add({ key: k, st: 'wartet', e, c, x: tx, y: ty, hd: look, tx, ty, look });
-      return;
+      return true;
     }
     // else along the verge, from the side one does not see, at most as far as one walks until the bus comes
     const walk = PP[k].walk || 1.1,
@@ -183,13 +187,14 @@ export const BUSLEUTE = (() => {
         sy = ty + fy * far * sg;
       if (seen(sx, sy)) continue;
       add({ key: k, st: 'kommt', e, c, x: sx, y: sy, hd: Math.atan2(tx - sx, ty - sy), tx, ty, look });
-      return;
+      return true;
     }
+    return false;
   }
   // someone gets off: inside at the middle door, out to the verge, then along it, away from the front of the bus
   function alight(I, town, j) {
     const k = who(town, hash(I.trip.i, I.k, j, 7));
-    if (!k) return;
+    if (!k) return false;
     const [x, y] = BUS.doorPt(I, -0.55, true),
       [ox, oy] = BUS.doorPt(I, 1.3 + j * 0.5, true),
       back = hash(I.trip.i, j, 8) < 0.65 ? -1 : 1;
@@ -205,6 +210,7 @@ export const BUSLEUTE = (() => {
       wait: j * 1.4,
       dir: I.hd + (back < 0 ? Math.PI : 0),
     });
+    return true;
   }
   // the bus a waiting person waits for, standing at the stop with its doors open
   const busOf = q =>

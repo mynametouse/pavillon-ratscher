@@ -60,7 +60,7 @@ def fetch_tiles():
     with concurrent.futures.ThreadPoolExecutor(12) as ex: n = sum(ex.map(get, sorted(jobs)))
     print(f'welt tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s', flush=True)
 
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'fahrt,nacht,reload,zombie').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'fahrt,nacht,schule,reload,zombie').split(','))
 ck = lib.Checks('bus')
 OUT = lib.out('bus')
 
@@ -85,7 +85,7 @@ if 'fahrt' in want:
     fetch_tiles()
 with lib.browser() as b:
     errs = []
-    if 'fahrt' in want or 'reload' in want or 'nacht' in want:
+    if 'fahrt' in want or 'reload' in want or 'nacht' in want or 'schule' in want:
         pg = lib.page(b, 1100, 680, errs)
         lib.boot(pg, port, '?szenario=bus')
         E, J, steps = helpers(pg)
@@ -139,6 +139,8 @@ with lib.browser() as b:
         E("(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); BUS.board(e); })()")
         # waiting: the clock jumps to a minute before the bus (two people come to wait for it, one gets off: BUSLEUTE.force)
         E("BUSLEUTE.force = { ein: 2, aus: 1, line: '205' }")
+        # (the traffic's people free for it: no new walkers or cars meanwhile)
+        E("VERKEHR.autoOn(false); VERKEHR.clear && VERKEHR.clear(); VERKEHR.S.recent = {}")
         E("document.querySelector('#busboard [data-k=warten]').click()")
         for i in range(40):
             steps(0.5)
@@ -167,6 +169,8 @@ with lib.browser() as b:
           const a = BUS.plan.lane(I.Rn.P), o = {}; const s = R.st[k] - 60; const X = R.X, Y = R.Y, i = Math.max(0, Math.min(R.n - 1, Math.round(s)));
           return { x: X[i], y: Y[i], hd: Math.atan2(X[Math.min(R.n - 1, i + 1)] - X[i], Y[Math.min(R.n - 1, i + 1)] - Y[i]) }; })()""")
         if lane:
+            # (60 m from the stop the clock would race – one hour a minute: in real time meanwhile, as if one waited)
+            E("CLOCK.focus('test')")
             E(f"GAME.P.x = {lane['x']}; GAME.P.y = {lane['y']}; GAME.P.feet = KERN.ground({lane['x']}, {lane['y']}); GAME.P.yaw = GAME.P.body = {lane['hd']} * 180 / Math.PI + 180")
             stood = None
             for i in range(120):
@@ -176,7 +180,7 @@ with lib.browser() as b:
                 if q and q['d'] < 25 and q['v'] < 0.05 and q['honks'] >= 1:
                     stood = q; break
             ck('someone in its lane: the bus stands before him and sounds its horn', stood is not None and stood['d'] > 1.5, str(stood))
-            E("(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 200); GAME.go('bus'); })()")
+            E("GAME.go('bus'); CLOCK.unfocus('test')")
             steps(0.5)
         # the bus comes at its minute and stops at the sign
         arr = None
@@ -300,6 +304,8 @@ with lib.browser() as b:
               GAME.view(x, y, KERN.ground(x, y) + 1.7, Math.atan2(e.x - x, e.y - y) * 180 / Math.PI, -3, 62); })()""")
             steps(0.3)
             pic(pg, 'e_schleusingen_zh')
+            tk = J("TASKS.state('bus-schleusingen')")
+            ck('the task „Mit dem Bus nach Schleusingen“ is done (timetable, a bus to Schleusingen, off there)', tk and tk.get('st') == 'erledigt', str(tk))
             lp = J("BUSLEUTE.state()")
             ck('someone else gets off at the Zentralhaltestelle (middle door) and walks away', lp['stats']['aus'] >= 1 or any(q['st'] in ('aus', 'geht') for q in lp['pax']), str(lp))
             E("BUSLEUTE.force = null; BUSLEUTE.clear()")
@@ -333,6 +339,27 @@ with lib.browser() as b:
                 ck('no new shader program at night either', not mine, f'{p0} → {p2}; of the bus: ' + (' | '.join(mine)[:400] or 'none') + '; others: ' + ' | '.join(new_progs())[:300])
             E("GAME.go('bus')")
             steps(0.5)
+        if 'schule' in want:
+            # the school bus stop at the old school (its shelter, world/village_props.js): the 214 at 7:40 on a school day stops with its
+            # front door at the shelter; the board there lists the buses of both directions
+            E("""(() => { const d0 = Math.floor(CLOCK.t / 1440) + 1; let d = d0; for (let i = 0; i < 14; i++, d++) { const q = BUS.plan.day(DN.e0 + d); if (q.wd < 5 && !q.hol && !q.ferien) break; }
+              CLOCK.t = d * 1440 + 7 * 60 + 37; const e = BUS.STOPS().find(q => q.shelter); GAME.P.x = e.x + 1.5; GAME.P.y = e.y - 2.5; GAME.P.feet = KERN.ground(GAME.P.x, GAME.P.y); })()""")
+            steps(1.0)
+            lib.settle_light(pg)
+            sb = None
+            for i in range(240):
+                steps(1.0)
+                st = J("BUS.state()")
+                here = [q for q in st['inst'] if q['halt'] == 'Ratscher, Schulbushaltestelle' and q['st'] == 'halt' and q['open'] > 0.8]
+                if here:
+                    sb = here[0]; break
+            dsh = J(f"(() => {{ const e = BUS.STOPS().find(q => q.shelter), I = BUS.S.inst.find(q => q.key === '{sb['key'] if sb else ''}'); if (!I) return null; const p = BUS.doorPt(I, 0.6); return Math.hypot(p[0] - e.x, p[1] - e.y); }})()")
+            ck('the school bus (214, 7:40) stops with its front door at the shelter of the old school', sb is not None and sb['line'] == '214' and dsh is not None and dsh < 7, f"{E('CLOCK.hm()')} {sb} door–shelter {dsh}")
+            if sb:
+                E(f"""(() => {{ window.CAM3 && (CAM3.want = false); const I = BUS.S.inst.find(q => q.key === '{sb['key']}'), fx = Math.sin(I.hd), fy = Math.cos(I.hd), rx = Math.cos(I.hd), ry = -Math.sin(I.hd);
+                  const x = I.x + fx * 14 + rx * 7, y = I.y + fy * 14 + ry * 7; GAME.view(x, y, KERN.ground(x, y) + 1.7, Math.atan2(I.x + fx * 3 - x, I.y + fy * 3 - y) * 180 / Math.PI, -4, 60); }})()""")
+                steps(0.1); pic(pg, 'i_schulbus_haeuschen')
+                E("window.CAM3 && (CAM3.want = true)")
         if 'reload' in want:
             # a ride, then a reload: one stands at the stop one boarded at
             E("GAME.go('bus')")
