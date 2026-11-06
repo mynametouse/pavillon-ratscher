@@ -164,7 +164,11 @@ export const BUSLEUTE = (() => {
       if (!st || st.s < 0 || (I.k === I.Rn.P.first && !I.trip.vor)) continue;
       const town = townOf(BUSPLAN.S.stations[st.s].n);
       if (!town) continue;
-      const w = want('aus:' + I.key + ':' + I.k, now, () => count(hash(I.trip.i, I.k, 2), hour, 'aus', I.trip.line));
+      // (at the end of the line all get off: up to three of them as people one sees)
+      const end = I.k >= I.Rn.P.last && !I.trip.weiter;
+      const w = want('aus:' + I.key + ':' + I.k, now, () =>
+        end && !S.force ? Math.min(3, I.B.paxN || 0) : count(hash(I.trip.i, I.k, 2), hour, 'aus', I.trip.line)
+      );
       while (w.got < w.n && alight(I, town, w.got)) w.got++;
     }
   }

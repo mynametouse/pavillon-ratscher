@@ -528,6 +528,11 @@ export const BUS = (() => {
     }
     const o0 = I.B.open;
     I.B.setOpen(open);
+    // the end of the line: a few seconds after the doors opened nobody sits in it any more
+    if (I.k >= I.Rn.P.last && !I.trip.weiter && I.B.open > 0.9 && I.B.paxN > 0) {
+      I.endT = (I.endT || 0) + dt;
+      if (I.endT > 5) I.B.setPax(0);
+    }
     if ((o0 < 0.05 && I.B.open >= 0.05) || (o0 > 0.95 && I.B.open <= 0.95)) doorSound(I, I.B.open > o0);
     // the indicators: right in the last metres before a stop, left when it leaves one (doors shut, the last seconds and the first metres)
     const Pst = I.Rn.P.st;
