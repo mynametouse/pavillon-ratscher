@@ -278,7 +278,9 @@ def fill(a, mask, seed=1):
             af = a[y0:y1, x0:x1].astype(np.float32)
             hp = af - cv2.GaussianBlur(af, (0, 0), 1.5)
             r = ring[y0:y1, x0:x1] > 0
-            sd = hp[r].std(axis=0) if r.sum() > 20 else np.full(3, 4.0, np.float32)
+            # the grain of the ground around: robust (median deviation) – the edges of roofs and shadows in the ring would make it a gravel
+            sd = (np.clip(1.4826 * np.median(np.abs(hp[r] - np.median(hp[r], axis=0)), axis=0), 1.5, 7.0)
+                  if r.sum() > 20 else np.full(3, 4.0, np.float32))
             noise = cv2.GaussianBlur(rng.standard_normal((y1 - y0, x1 - x0)).astype(np.float32), (0, 0), 0.6) * 1.6
             ff = f[y0:y1, x0:x1] + noise[:, :, None] * sd[None, None, :] * (mb[:, :, None] > 0)
             al = np.clip(dist[y0:y1, x0:x1] / 3.0, 0, 1)[:, :, None]
