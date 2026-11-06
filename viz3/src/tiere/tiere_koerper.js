@@ -1783,7 +1783,8 @@ export const TKOERPER = (() => {
       let c = mix(lin(0x8a867e), lin(0x625e58), sst(0.2, 0.9, Math.cos(q.th)) * 0.5);
       c = mix(c, lin(0xaca89f), hash(q.x * 5, q.y * 5, q.z * 5) * 0.2);
       if (q.part === 'trunk' && Math.cos(q.th) < -0.3) c = lin(0x1c1a18);
-      if (q.part === 'hleg' || q.part === 'fleg') c = lin(0x1a1816);
+      // the legs black from the elbow and the stifle down (the haunch and shoulder rings stay in the body's grey: no black patches)
+      if (q.part === 'hleg' || q.part === 'fleg') c = mix(c, lin(0x1a1816), sst(0.12, 0.32, q.u));
       if (q.part === 'neck') {
         if (q.z > 0.36) {
           // the stripes: black bands from the nose over the eyes to the ears, white between and beside them
@@ -1806,7 +1807,30 @@ export const TKOERPER = (() => {
   // raccoon (Procyon lotor): arched back, the black mask, the pale muzzle, the ringed tail, grey-brown
   PLANS.waschbaer = scaled(QBASE, 1.0, 0.55, 0.7, {
     fur: 0.09,
-    ear: { p: [0.36, 0.44], x: 0.035, out: 0.5, up: 0.8, back: -0.2, len: 0.045, wid: 0.045 },
+    // the hunched back (the rump higher than the shoulders), the short neck, the head carried low and forward
+    trunk: [
+      [-0.26, 0.31, 0.25, 0.04],
+      [-0.23, 0.36, 0.2, 0.09],
+      [-0.15, 0.385, 0.18, 0.11],
+      [-0.04, 0.38, 0.18, 0.115],
+      [0.07, 0.36, 0.185, 0.112],
+      [0.16, 0.335, 0.19, 0.104],
+      [0.22, 0.315, 0.2, 0.09],
+      [0.27, 0.29, 0.22, 0.07],
+    ],
+    neck: [
+      [0.19, 0.27, 0.075, 0.07],
+      [0.24, 0.29, 0.068, 0.062],
+      [0.28, 0.305, 0.06, 0.056],
+      [0.31, 0.31, 0.056, 0.052],
+      [0.335, 0.312, 0.058, 0.054],
+      [0.365, 0.31, 0.056, 0.05],
+      [0.4, 0.3, 0.04, 0.036],
+      [0.43, 0.29, 0.026, 0.024],
+      [0.447, 0.285, 0.018, 0.017],
+    ],
+    eye: { p: [0.37, 0.325], x: 0.04, r: 0.006 },
+    ear: { p: [0.34, 0.355], x: 0.035, out: 0.5, up: 0.8, back: -0.2, len: 0.045, wid: 0.045 },
     tail: {
       p: [
         [-0.24, 0.3],
@@ -1818,7 +1842,8 @@ export const TKOERPER = (() => {
     },
     gait: { f0: 2.0, trot: 1.1, gallop: 3.2 },
     coat(q) {
-      let c = mix(lin(0x8a8278), lin(0x5a544e), sst(0.3, 0.9, Math.cos(q.th)) * 0.6);
+      // grizzled grey-brown, darker along the back
+      let c = mix(lin(0x7a7268), lin(0x4e4842), sst(0.3, 0.9, Math.cos(q.th)) * 0.6);
       c = mix(c, lin(0x2a2622), hash(q.x * 4, q.y * 4, q.z * 4) * 0.3);
       if (q.part === 'neck' && q.z > 0.34) {
         // the mask around the eyes, white above and around the muzzle

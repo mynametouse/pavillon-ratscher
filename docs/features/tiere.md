@@ -105,12 +105,16 @@ normalisiert, unter derselben Lizenz (`viz3/extra/tiere/dist/tiere/`, Nachweis i
 
 ## Testen
 
-`bash tools/browser_lock.sh python3 viz3/test/run.py --port 9003 --serve tiere` (Abschnitte `bau,welt,flucht,hund,einfluss,lernen,andere`,
+`bash tools/browser_lock.sh python3 viz3/test/run.py --port 9003 --serve tiere` (Abschnitte `bau,welt,flucht,hund,einfluss,lernen,andere,telefon`,
 einzeln `tiere:bau,welt`); Bilder in `out/tiere/`. Auf GitHub über `viz3/extra/tiere/tests.txt` bei jedem Push auf `feat/tiere`. Prüft:
 alle Arten in wahrer Größe ohne neue Shader-Programme, Lebensraum-Karte, Rehe in der Dämmerung, Wildschweine nachts, Milan mittags, Flucht
 in Fluchtdistanz (erst sichern, dann die ganze Gruppe), Ereignisse, Hund folgt und setzt sich, Verbiss im Zeitraffer (geschützt nein,
 ungeschützt ja), Käferfichten, Ruhezone, Elektrozaun, Spur gefunden, Lernen (Lob/Tadel ändern Neigungen, gespeichert nach Neuladen),
-Schleusingen und Zombie-Nacht unbeschadet.
+Schleusingen und Zombie-Nacht unbeschadet; seit der Nacht zum 6.11. auch: der Wind (unter dem Wind weiter, gegen den Wind näher, geduckt
+näher), die Rotte vor dem Spaziergänger ganz echt (die nächsten Gruppen zuerst), das Sichern vor der Flucht im ruhigen Gehen (alle 0,1 s
+geschaut), die Hund-Knöpfe weichen einem Fenster an ihrer Stelle, Ronalds Ziegen im Entdeckerbuch. Bilder: Tafel und Nahaufnahmen
+(`02_*`), Reh und Sau in 7 m mittags und in der Dämmerung (`05_7m_*`), Flucht durchs Tele (`20_*`, `21_*`), Pflanzung (`40_*`, `41_*`,
+`41b_*`), Suhle (`45_*`), Hühner (`46_*`), Telefon (`70_*`).
 
 ## API für Erweiterungen (Strategie-Modus „Ratscher von oben“, Entdeckerbuch)
 
