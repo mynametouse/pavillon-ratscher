@@ -18,12 +18,22 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
      Ebenheit – erst wer gräbt, weiß es (Erkunden statt Nebel, `STRAT.reveal('bau', 'platte')`). Der Befund ist im Spiel einmal je Spielstand
      ausgewürfelt (die echte Platte zeigt erst das Freilegen); trägt sie nicht (unter 15 cm, unbewehrt oder ohne Frostschürze ≥ 80 cm),
      braucht es ein *Streifenfundament 30 × 80 cm* (Beton ab +5 °C).
-  2. *Bauvoranfrage* beim Bauamt (nur werktags – also ein Urlaubstag): § 35 BauGB (Außenbereich), verfahrensfrei wären in Thüringen nur kleine
-     Gebäude bis 10 m² und auch die nicht im Außenbereich (ThürBO § 63, Fassung 2024). Antwort nach sechs Wochen (Annahme).
+  2. *Bauvoranfrage* beim Bauamt (nur werktags – also ein Urlaubstag): § 35 Abs. 1–3 BauGB (Außenbereich: ein „sonstiges Vorhaben“);
+     verfahrensfrei wären ein eingeschossiges Gebäude bis 10 m² Grundfläche oder eine Garage bis 50 m², beides „außer im Außenbereich“
+     (§ 63 Abs. 1 Nr. 1 Buchst. a und b ThürBO). Antwort nach sechs Wochen (Annahme).
   3. *Tragwerksplaner* (Statik): Gebäudeklasse 1 – in der Regel ohne Prüfingenieur; braucht den Befund der Platte. Vier Wochen (Annahme).
   4. *Bauantrag* (vereinfachtes Verfahren: das Bauamt prüft das Planungsrecht; Treppen, Brandschutz, Abstände verantwortet der Bauherr),
      Gebühr rund 0,5 % der Baukosten (Annahme), Bescheid nach acht Wochen, Baubeginn eine Woche nach der Anzeige.
-  - Variante B: die **offene Frage der Leitertreppe** (ThürBO § 34: notwendige Treppe ins Geschoss mit Aufenthaltsraum) steht im Feld.
+  - Variante B: die **offene Frage der Leitertreppe** (§ 37 Abs. 1 und Abs. 2 Satz 2 ThürBO: notwendige Treppe ins Geschoss mit
+    Aufenthaltsraum, Leitern nur zu Dachräumen ohne Aufenthaltsraum) steht im Feld.
+- **Rechtsstand (geprüft 6.11.2026):** Thüringer Bauordnung (ThürBO) vom 2. Juli 2024 (GVBl. S. 298), geändert 2026 (GVBl. S. 150),
+  landesrecht.thueringen.de – sie hat die alte ThürBO von 2014 neu nummeriert: Treppen **§ 37** (vorher § 34), verfahrensfreie Vorhaben
+  **§ 63** (vorher § 60), vereinfachtes Verfahren **§ 65** (vorher § 62), Bauvorlageberechtigung § 67, bautechnische Nachweise § 72,
+  Abweichungen § 73, Baubeginn § 78; Gebäudeklasse 1 § 2 Abs. 3 Satz 1 Nr. 1, Abstandsflächen § 6 Abs. 5 Satz 1 (0,4 H, mindestens 3 m),
+  Bauschild § 11 Abs. 3, Umwehrungen § 41. Geprüft am Gesetzentwurf (Landtag, Drucksache 7/9641) und an Kommentar-/Gesetzesseiten
+  (haufe.de zu § 65, gesetze.co zu § 63); nicht im Wortlaut gesehen und daher nach der Musterbauordnung zitiert: die Prüfung der Statik
+  in Gebäudeklasse 1 (§ 66 Abs. 3 MBO), die Woche der Baubeginnsanzeige (§ 72 Abs. 8 MBO) und die Mindesthöhen der Umwehrung (§ 38 MBO).
+  Der Text der Planung (`pavilion/phases.js`, Bauphase 22 B) nannte noch § 34 – berichtigt.
 - **Die Bauphasen 1–30** (je ein Auftrag am Bauplatz, nur die nächste ist sichtbar): Leute (z. B. Phase 1 vier, mit Hubert und Traktor),
   Mindestkönnen „Bauen“, Christophs ständige Wirkung (Bauaufträge 15 % schneller), Hubert hilft bei schweren Teilen (15 % schneller),
   Dauer aus „Aufwand zu zweit“ (Personenstunden, größere Teams verlieren etwas an Abstimmung), laute Arbeiten unter den Ruhezeiten,
@@ -77,7 +87,10 @@ Hilfs-Agenten `strategie-bau` (Auftrag `docs/plans/auftraege/strategie-bau.md`) 
 
 ## Für den Lead
 - Neue Module in `viz3/src/modules.txt`, Block `# feat/strategie-bau` direkt unter `strategie/st_hud.js`: `strategie/st_bau_data.js`,
-  `strategie/st_bau.js`, `strategie/st_garten.js`. Keine Änderung an gemeinsamen Dateien; die Bauphase der Welt über `setPhase` aus
+  `strategie/st_bau.js`, `strategie/st_garten.js`.
+- Eine gemeinsame Datei, markiert `// feat/strategie-bau`: `viz3/src/pavilion/phases.js` (Bauphase 22 B, Prüfpunkt Baurecht: „§ 37, bis 2024 § 34“
+  statt „§ 34“ – die neue ThürBO vom 2. Juli 2024). Der Auftrag (`docs/plans/auftraege/strategie-bau.md`) nennt ebenfalls noch § 34.
+- Sonst keine Änderung an gemeinsamen Dateien; die Bauphase der Welt über `setPhase` aus
   `game/walkable.js`, der Garten über `GPLAN`/`GPGAME` (öffentliche API), das Holz über `HOLZSAW.boards`/`HOLZDRY.rebuild`.
 - Gespeichert in `pav-strat-v1` unter `ext.bau` und `ext.garten` (geprüft bei jedem Lesen) – kein neuer Schlüssel.
 - Neue `window`-Namen: `STBAU`, `STGARTEN`.

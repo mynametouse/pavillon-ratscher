@@ -6,9 +6,12 @@
 // Hubert's tractor) works in a weather window, Euro go out, days pass. A finished phase sets the world's phase (game/walkable.js setPhase):
 // the first-person world shows it too, and it stays after a reload. Data: strategie/st_bau_data.js; phases: pavilion/phases.js.
 // State: STRAT.S.ext.bau (saved with pav-strat-v1). API: window.STBAU (docs/features/strategie-bau.md).
+import * as THREE from 'three';
 import { KERN } from '../core/kern.js';
-import { VARIANT } from '../core/head.js';
-import { markDirty } from '../core/assets.js';
+import { scene, V, VARIANT } from '../core/head.js';
+import { markDirty, plain } from '../core/assets.js';
+import { MAT } from '../core/mats.js';
+import { canvasTex, redraw } from '../garden/garten_kit.js';
 import { PHASE, setPhase } from '../game/walkable.js';
 import { PHASES } from '../pavilion/phases.js';
 import { CLOCK } from '../time/clock.js';
@@ -197,8 +200,8 @@ export const STBAU = (() => {
       b.vb = { t: w.t, ok: true };
       const P = B.PREP.voranfrage;
       STRAT.note(
-        'Vorbescheid des Bauamts: Der Pavillon ersetzt die Garage auf derselben Platte und ist als „sonstiges Vorhaben“ im Außenbereich in Aussicht gestellt – mit Auflagen: Abstände zur Grenze, Brandschutz der Holzfassade, kein Wohnsitz. (Im Spiel angenommen; in Wirklichkeit entscheidet das Bauamt.)' +
-          (VARIANT === 'B' ? ' Offen bleibt die Leitertreppe ins Obergeschoss (ThürBO § 34).' : ''),
+        'Vorbescheid des Bauamts: Der Pavillon ersetzt die Garage auf derselben Platte und ist als „sonstiges Vorhaben“ im Außenbereich in Aussicht gestellt – mit Auflagen: Abstandsflächen zur Grenze (0,4 H, mindestens 3 m: § 6 Abs. 5 ThürBO – gut 7 m sind da), Brandschutz der Holzfassade, kein Wohnsitz. (Im Spiel angenommen; in Wirklichkeit entscheidet das Bauamt.)' +
+          (VARIANT === 'B' ? ' Offen bleibt die Leitertreppe ins Obergeschoss (§ 37 ThürBO).' : ''),
         { kind: 'bau', why: P.learn, src: P.src }
       );
       STRAT.emit('bau', { what: 'vorbescheid' });
@@ -215,8 +218,14 @@ export const STBAU = (() => {
       const P = B.PREP.antrag;
       b.gen = { t: w.t, start: Math.round(w.t + P.start * 1440) };
       STRAT.note(
-        `Baugenehmigung erteilt (im Spiel angenommen). Baubeginn angezeigt – ab ${W.day(b.gen.start).label} darf gebaut werden.`,
-        { kind: 'bau', why: P.learn, src: P.src }
+        `Baugenehmigung erteilt (im Spiel angenommen). Baubeginn angezeigt – ab ${W.day(b.gen.start).label} darf gebaut werden. Am Gartentor steht jetzt das Bauschild.`,
+        {
+          kind: 'bau',
+          why:
+            P.learn +
+            ' Das Bauschild nennt Bauvorhaben, Entwurfsverfasser, Bauleiter und Rohbauunternehmer und muss von der Straße aus lesbar sein.',
+          src: P.src + '; § 11 Abs. 3 ThürBO (Baustellenschild)',
+        }
       );
       STRAT.emit('bau', { what: 'genehmigung' });
     } else if (w.k.startsWith('lief:')) {
@@ -233,6 +242,7 @@ export const STBAU = (() => {
     acc = 0;
     applySaved();
     bindPanel();
+    if (window.PAV_LOADED) signSync();
     const b = S.ext.bau;
     if (!b || !Array.isArray(b.waits) || !b.waits.length) return;
     for (const w of st().waits.slice()) if (w.t <= now()) resolve(w);
@@ -253,10 +263,96 @@ export const STBAU = (() => {
   }
   KERN.on('strategie:modus', e => {
     if (!e || !e.on) return;
-    const b = S.ext.bau;
-    if (b && Number.isInteger(b.ph) && b.ph !== PHASE && b.ph <= LAST()) setPhase(b.ph);
+    const b = st();
+    if (Number.isInteger(b.ph) && b.ph !== PHASE && b.ph <= LAST()) setPhase(b.ph);
     bindPanel();
+    // the first time: where the new things are
+    if (!b.hint) {
+      b.hint = 1;
+      setTimeout(
+        () =>
+          STRAT.note(
+            'Neu von oben: der Bauplatz des Pavillons (Platte, Bauamt, Statik, Bauphase für Bauphase) und der Obstgarten des Gartenplaners – anklicken.',
+            { kind: 'info' }
+          ),
+        2500
+      );
+    }
   });
+  // ---------------- the construction sign by the garden gate (from the permit until the pavilion is done) ----------------
+  // the building code wants it at the site, readable from the street: the project, the designer, the site manager, the builders of the
+  // carcass. Its materials are the kit's (a canvas picture like the garden's pictures, oak posts): no new shader program.
+  const SIGN = { g: null, key: '' };
+  const SIGN_AT = { x: -5.6, y: 34.6, az: 139 };
+  function signDraw(q, w, h) {
+    const b = st(),
+      d = b.gen ? W.day(b.gen.t).label.replace(/^\w+ /, '') : '';
+    q.fillStyle = '#f4f1e8';
+    q.fillRect(0, 0, w, h);
+    q.strokeStyle = '#1d3b6a';
+    q.lineWidth = 10;
+    q.strokeRect(6, 6, w - 12, h - 12);
+    q.fillStyle = '#1d3b6a';
+    q.fillRect(6, 6, w - 12, 62);
+    q.fillStyle = '#ffffff';
+    q.font = 'bold 40px sans-serif';
+    q.fillText('BAUSTELLE', 24, 52);
+    q.fillStyle = '#1b1b1b';
+    q.font = 'bold 30px sans-serif';
+    q.fillText('Gartenpavillon (Holzrahmenbau)', 24, 112);
+    q.font = '24px sans-serif';
+    const L = [
+      'Bauherr: Falko',
+      'Entwurf und Statik: Ingenieurbüro (im Spiel)',
+      'Bauleitung: Christoph',
+      'Rohbau: Eigenleistung',
+      'Baugenehmigung vom ' + d + ' · Gebäudeklasse 1',
+      'Bauphase ' + built() + ' von ' + LAST(),
+    ];
+    L.forEach((t, i) => q.fillText(t, 24, 152 + i * 32));
+  }
+  function signSync() {
+    const b = S.ext.bau,
+      on = !!(b && b.gen && Number.isInteger(b.ph) && b.ph < LAST() && PHASE === b.ph);
+    if (!on) {
+      if (SIGN.g) SIGN.g.visible = false;
+      return;
+    }
+    if (!SIGN.g) {
+      const g = new THREE.Group();
+      g.name = 'strategie-bau Bauschild';
+      const tex = canvasTex(512, 352),
+        face = plain({ map: tex, roughness: 0.75 }),
+        z0 = KERN.ground(SIGN_AT.x, SIGN_AT.y) || 0;
+      const panel = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.96, 0.03), [
+        MAT.oak,
+        MAT.oak,
+        MAT.oak,
+        MAT.oak,
+        face,
+        face,
+      ]);
+      panel.position.y = 1.25;
+      g.add(panel);
+      for (const dx of [-0.62, 0.62]) {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.07, 1.8, 0.07), MAT.oak);
+        post.position.set(dx, 0.9, -0.04);
+        g.add(post);
+      }
+      g.position.copy(V(SIGN_AT.x, SIGN_AT.y, z0));
+      g.rotation.y = (SIGN_AT.az * Math.PI) / 180;
+      scene.add(g);
+      SIGN.g = g;
+      SIGN.tex = tex;
+    }
+    const key = built() + ':' + (b.gen ? b.gen.t : '');
+    if (key !== SIGN.key) {
+      SIGN.key = key;
+      redraw(SIGN.tex, signDraw);
+    }
+    SIGN.g.visible = true;
+    markDirty(true);
+  }
   // ---------------- own timber: dry planks graded (DIN 4074), dry boards from the stack ----------------
   const vol = b => STJOBS.boardVol(b);
   const dryStack = thick =>
@@ -349,6 +445,61 @@ export const STBAU = (() => {
     if (n === 28 && b.dryUntil > now()) out.push('Lehmputz trocknet bis ' + W.day(b.dryUntil).label);
     return out;
   }
+  // ---------------- the what-if: when could the pavilion stand? (weekends of three, the savings, deliveries, weather) ----------------
+  // a quick forward estimate, not the simulation: each phase waits for its money (the cash plus the monthly rate), its delivery, then
+  // weekend days (Saturday and most of Sunday, 8 h, three people; outside work on about two of three weekend days for the weather)
+  function forecast() {
+    const b = st(),
+      n0 = next();
+    if (n0 > LAST()) return null;
+    let t = now(),
+      cash = S.eur,
+      paid = monthKey(t),
+      money = 0,
+      work = 0;
+    const days = (from, d) => from + d * 1440;
+    const addMonths = to => {
+      // the rates that come in until time `to`
+      let k = 0;
+      for (let x = Math.floor(t / 1440) * 1440 + 1440; x <= to; x += 1440)
+        if (W.dateOf(x).getUTCDate() === 1 && monthKey(x) !== paid) {
+          paid = monthKey(x);
+          cash += b.konto.rate;
+          k++;
+        }
+      return k;
+    };
+    if (!b.gen) {
+      const left = (waiting('gen') ? waiting('gen').t : t + 7 * 1440 * (b.vb ? 9 : b.statik ? 14 : 16)) - t;
+      addMonths(t + left);
+      t += left + B.PREP.antrag.start * 1440;
+    } else t = Math.max(t, b.gen.start);
+    for (let k = n0; k <= LAST(); k++) {
+      const M = meta(k),
+        c = b.order[k] ? 0 : costOf(k).eur;
+      // money: wait for the rates until the phase can be paid
+      let guard = 0;
+      while (cash < c && b.konto.rate > 0 && guard++ < 600) {
+        const t1 = days(t, 30);
+        addMonths(t1);
+        money += t1 - t;
+        t = t1;
+      }
+      if (cash < c) return { stuck: k, cash, need: c };
+      cash -= c;
+      const lead = b.order[k] ? Math.max(0, b.order[k].due - t) : leadOf(k, matOf(k) === 'eigen') * 1440;
+      addMonths(t + lead);
+      t += lead;
+      // the work: person-hours of three people, a weekend gives about 1,5 days of 8 h, outside on two of three
+      const wd = B.crewMinutes(B.personHours(phaseOf(k).days), 3) / 60 / 8,
+        weekends = Math.ceil(wd / 1.5 / (M.inside ? 1 : 0.67) - 1e-6),
+        dt = weekends * 7 * 1440 + (k === 27 ? (M.dry || 14) * 1440 : 0);
+      addMonths(t + dt);
+      work += dt;
+      t += dt;
+    }
+    return { t, money, work, by: money > work ? 'Geld' : 'Wochenenden' };
+  }
   // ---------------- the panel of the building site ----------------
   function panelHTML() {
     const b = st(),
@@ -395,7 +546,7 @@ export const STBAU = (() => {
     if (b.waits.length)
       h += `<p><button type="button" class="stb" data-sb="skip">⏩ bis ${esc(b.waits.slice().sort((x, y) => x.t - y.t)[0].text)}</button></p>`;
     if (VARIANT === 'B')
-      h += `<div class="learn">Offene Frage der Variante B: Ins Obergeschoss mit Aufenthaltsraum verlangt die Bauordnung eine notwendige Treppe; Leitern sind nur zu Dachräumen ohne Aufenthaltsraum vorgesehen. Im vereinfachten Verfahren prüft das Bauamt das nicht – verantwortlich bleibt der Bauherr (oder er beantragt eine Abweichung). Quelle: ThürBO § 34; Planung Bauphase 22.</div>`;
+      h += `<div class="learn">Offene Frage der Variante B: Ins Obergeschoss mit Aufenthaltsraum verlangt die Bauordnung eine notwendige Treppe; Leitern sind nur zu Dachräumen ohne Aufenthaltsraum vorgesehen. Im vereinfachten Verfahren prüft das Bauamt das nicht – verantwortlich bleibt der Bauherr (oder er beantragt eine Abweichung). Quelle: § 37 Abs. 1 und Abs. 2 Satz 2 ThürBO vom 2. Juli 2024 (bis 2024 § 34); Planung Bauphase 22.</div>`;
     if (n > LAST()) return h + '<h4>Fertig</h4><div class="sub">Der Pavillon steht – alle Bauphasen gebaut.</div>';
     // the next phase as a project
     const p = phaseOf(n),
@@ -414,6 +565,29 @@ export const STBAU = (() => {
     if (kind && !o)
       h += `<p><button type="button" class="stb"${mat === 'kauf' ? ' aria-pressed="true"' : ''} data-sb="mat:kauf">Kaufen</button> <button type="button" class="stb"${mat === 'eigen' ? ' aria-pressed="true"' : ''} data-sb="mat:eigen">${kind === 'holz' ? 'Eigenes Holz' : 'Eigenbau'}</button></p>`;
     h += `<div class="sub">${o ? (o.due > now() ? 'Bestellt – Lieferung ' + W.day(o.due).label : 'Material liegt auf dem Bauplatz') + (o.eigen ? ' (Eigenleistung)' : '') : 'Material noch nicht bestellt'} · inkl. 19 % Umsatzsteuer</div>`;
+    // how long with the smallest and the largest crew (working days of 8 h, a mean pace)
+    const ph = B.personHours(p.days),
+      dd = k => Math.max(0.5, Math.round((B.crewMinutes(ph, k) / 0.95 / 60 / 8) * 2) / 2);
+    h += `<div class="sub">Dauer etwa ${de(dd(M.crew[1]), 1)}–${de(dd(M.crew[0]), 1)} Arbeitstage (${M.crew[1]} bis ${M.crew[0]} Leute)</div>`;
+    // the money plan: how far the cash reaches with the chosen materials, and how long the rest takes at the monthly rate
+    let sum = 0,
+      upto = n - 1;
+    for (let k = n; k <= LAST(); k++) {
+      const c = b.order[k] ? 0 : costOf(k).eur;
+      if (sum + c > S.eur) break;
+      sum += c;
+      upto = k;
+    }
+    let rest = 0;
+    for (let k = n; k <= LAST(); k++) rest += b.order[k] ? 0 : costOf(k).eur;
+    const gap = Math.max(0, rest - S.eur),
+      months = b.konto.rate > 0 ? Math.ceil(gap / b.konto.rate) : null;
+    const fc = forecast();
+    if (fc)
+      h += fc.stuck
+        ? `<div class="sub">Was wäre, wenn: ohne Sparrate bleibt der Bau bei Phase ${fc.stuck} stehen.</div>`
+        : `<div class="sub">Was wäre, wenn – so weiter (Wochenenden zu dritt, die Sparrate, Lieferzeiten, Wetter): fertig etwa <b>${esc(W.day(fc.t).label.replace(/^\w+ /, ''))}</b>; es bremst vor allem: ${fc.by}.</div>`;
+    h += `<h4>Geldplan</h4><div class="sub">Noch offen bis zum fertigen Pavillon: <b>${eur(rest)}</b> (Material mit Umsatzsteuer, ohne Gerüst und Gebühren). Die Kasse reicht ${upto >= n ? 'bis Bauphase ' + upto : 'noch nicht für die nächste Phase'}${gap > 0 ? (months != null ? `; der Rest braucht bei ${eur(b.konto.rate)} im Monat gut ${months} Monate (${de(months / 12, 1)} Jahre).` : '; ohne Sparrate kommt nichts dazu.') : ' – bis zum Ende.'}</div>`;
     const wd = windowDays(n);
     h += `<h4>Wetterfenster</h4><div class="sub">${esc(B.wxText(M.inside ? null : M.wx))}</div><div class="sub">${wd.map(d => `<span title="${esc(d.why)}">${esc(d.label)} ${d.ok ? '✓' : '✗'}</span>`).join(' · ')}</div>`;
     if (L.text) h += `<div class="learn">${esc(L.text)}<br><small>Quelle: ${esc(L.src)}</small></div>`;
@@ -800,12 +974,13 @@ export const STBAU = (() => {
       M = meta(n);
     if (built() !== n - 1) return { no: true, text: `Erst Bauphase ${n - 1}.`, why: '', src: '' };
     if (!b.gen) {
-      const pr = B.PREP.antrag;
       return {
         no: true,
         text: 'Ohne Baugenehmigung wird nicht gebaut.',
         why: 'Im Außenbereich ist selbst eine versetzte Garage nicht verfahrensfrei; Bauen ohne Genehmigung ist eine Ordnungswidrigkeit, das Bauamt kann den Bau stilllegen und den Rückbau verlangen.',
-        src: pr.src + '; ThürBO § 63 (verfahrensfreie Vorhaben, „außer im Außenbereich“)',
+        src:
+          '§ 63 Abs. 1 Nr. 1 Buchst. a und b ThürBO (verfahrensfrei nur „außer im Außenbereich“); Einstellung, Beseitigung, Bußgeld nach der Bauordnung (wie §§ 79, 80, 84 MBO); ' +
+          B.LAW.thuerbo,
       };
     }
     if (cx.t < b.gen.start)
@@ -1011,6 +1186,8 @@ export const STBAU = (() => {
     dryStack,
     useBoards,
     orderTarget,
+    forecast,
+    sign: () => SIGN.g,
     set forcePlatte(v) {
       forcePlatte = v;
     },

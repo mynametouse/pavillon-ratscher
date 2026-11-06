@@ -7,6 +7,14 @@
 // fits, the text says „Annahme“ (an assumption of the game). The phase list itself (materials, prices, how and checks) is pavilion/phases.js.
 export const STBAUDATA = (() => {
   const VAT = 0.19; // the prices of pavilion/phases.js are net – a private builder pays the German VAT on top
+  // ---- the laws as cited (checked 6.11.2026): the new Thüringer Bauordnung of 2 July 2024 renumbered the old one of 2014 – the necessary
+  // staircase is § 37 now (was § 34), procedure-free projects § 63 (was § 60), the simplified procedure § 65 (was § 62) ----
+  const LAW = {
+    thuerbo:
+      'Thüringer Bauordnung (ThürBO) vom 2. Juli 2024, GVBl. S. 298, geändert 2026 (GVBl. S. 150) – landesrecht.thueringen.de',
+    baugb: 'Baugesetzbuch (BauGB) – gesetze-im-internet.de/bbaug/__35.html',
+    mbo: 'Musterbauordnung (MBO) der Bauministerkonferenz – is-argebau.de',
+  };
   // ---- the steps before the first phase: the slab, building law, the structural design, the permit ----
   const PREP = {
     platte: {
@@ -26,8 +34,8 @@ export const STBAUDATA = (() => {
       label: 'Bauvoranfrage beim Bauamt (Vorbescheid)',
       text: 'Mit Lageplan, Skizzen und Fotos zur unteren Bauaufsicht im Landratsamt Hildburghausen: Ist der Pavillon im Außenbereich genehmigungsfähig?',
       learn:
-        'Im Außenbereich gilt § 35 BauGB: Ein Gartenpavillon ist kein privilegiertes Vorhaben und nur zulässig, wenn er öffentliche Belange nicht beeinträchtigt (Flächennutzungsplan, Landschaft, keine Splittersiedlung). Verfahrensfrei wären in Thüringen nur kleine Gebäude bis 10 m² – und auch die nicht im Außenbereich. Ein Vorbescheid klärt die Frage vor den teuren Plänen.',
-      src: '§ 35 BauGB; Thüringer Bauordnung (ThürBO), verfahrensfreie Vorhaben (§ 63 ThürBO 2024); Merkblatt Baurecht der Stadt Erfurt',
+        'Im Außenbereich gilt § 35 BauGB: Ein Gartenpavillon ist kein privilegiertes Vorhaben (Abs. 1), sondern ein „sonstiges“ (Abs. 2) und nur zulässig, wenn er öffentliche Belange nicht beeinträchtigt (Abs. 3: Flächennutzungsplan, Natur und Landschaft, keine Splittersiedlung). Verfahrensfrei wären in Thüringen etwa ein eingeschossiges Gebäude bis 10 m² Grundfläche oder eine Garage bis 50 m² – beides aber „außer im Außenbereich“. Ein Vorbescheid klärt die Frage vor den teuren Plänen.',
+      src: '§ 35 Abs. 1–3 BauGB; § 63 Abs. 1 Nr. 1 Buchst. a und b ThürBO; ' + LAW.thuerbo + '; ' + LAW.baugb,
       hours: 3,
       people: [1, 2],
       fee: 150,
@@ -40,7 +48,10 @@ export const STBAUDATA = (() => {
       text: 'Die Pläne, die Maße und die Befunde der Platte an einen Tragwerksplaner geben: Standsicherheitsnachweis für Kragarme, Ringbalken und Platte.',
       learn:
         'In Gebäudeklasse 1 (freistehend, oberster Aufenthaltsraum höchstens 7 m über dem Gelände) prüft in der Regel kein Prüfingenieur die Statik – der Tragwerksplaner steht selbst dafür ein. Er rechnet die 0,9 m Kragarme mit Kopfbändern, den Ringbalken über dem Westglas und die Linienlast auf der Platte.',
-      src: 'ThürBO § 2 Abs. 3 (Gebäudeklassen); Musterbauordnung § 66 (bautechnische Nachweise); Planung des Pavillons',
+      src:
+        '§ 2 Abs. 3 Satz 1 Nr. 1 ThürBO (Gebäudeklasse 1); § 72 ThürBO (bautechnische Nachweise; geprüft wird bei Gebäudeklasse 1 nur nach Kriterienkatalog, wie § 66 Abs. 3 MBO); ' +
+        LAW.thuerbo +
+        '; Planung des Pavillons',
       hours: 2,
       people: [1, 1],
       fee: 1900,
@@ -53,7 +64,9 @@ export const STBAUDATA = (() => {
       text: 'Bauvorlagen (Lageplan, Bauzeichnungen 1 : 100, Baubeschreibung, Statik), unterschrieben von einer bauvorlageberechtigten Person, ans Bauamt.',
       learn:
         'Außerhalb eines Bebauungsplans läuft das vereinfachte Baugenehmigungsverfahren: Das Bauamt prüft vor allem das Planungsrecht (BauGB). Die übrigen Regeln der Bauordnung – Treppen, Brandschutz, Abstände – muss der Bauherr selbst einhalten. Vor Baubeginn muss man ihn eine Woche vorher anzeigen.',
-      src: 'ThürBO (vereinfachtes Verfahren, Baubeginnsanzeige); Merkblatt Baurecht der Stadt Erfurt; Musterbauordnung § 72',
+      src:
+        '§ 65 ThürBO (vereinfachtes Baugenehmigungsverfahren: geprüft werden §§ 29–38 BauGB und beantragte Abweichungen nach § 73); § 67 ThürBO (Bauvorlageberechtigung); § 78 ThürBO (Baubeginn; die Anzeige eine Woche vorher wie § 72 Abs. 8 MBO); ' +
+        LAW.thuerbo,
       hours: 2,
       people: [1, 2],
       fee: 1400,
@@ -342,7 +355,10 @@ export const STBAUDATA = (() => {
       src: 'Planung des Pavillons (Bauphase 22); DIN 18065 (Gebäudetreppen)',
       learnB:
         'Leitertreppe mit 63°: steiler als eine Treppe, bequemer als eine Leiter. Ins Obergeschoss mit Aufenthaltsraum verlangt die Bauordnung eine notwendige Treppe; Leitern sind nur zu Dachräumen ohne Aufenthaltsraum vorgesehen – die offene Frage mit dem Bauamt.',
-      srcB: 'ThürBO § 34 (Treppen); Planung des Pavillons (Bauphase 22, Variante B)',
+      srcB:
+        '§ 37 Abs. 1 und Abs. 2 Satz 2 ThürBO (Treppen; bis 2024 § 34): Leitern nur als Zugang zu einem Dachraum ohne Aufenthaltsraum; ' +
+        LAW.thuerbo +
+        '; Planung des Pavillons (Bauphase 22, Variante B)',
       leadB: 10,
     },
     23: {
@@ -376,8 +392,8 @@ export const STBAUDATA = (() => {
       wx: { wind: 35, rain: 1 },
       lead: 21,
       learn:
-        'Absturzsicherung: Bis 12 m Absturzhöhe verlangt die Bauordnung mindestens 0,90 m Umwehrung – geplant sind 1,10 m mit Seilen alle 11 cm.',
-      src: 'Musterbauordnung § 38 (Umwehrungen); Planung des Pavillons (Bauphase 25)',
+        'Absturzsicherung: Bis 12 m Absturzhöhe verlangt die Bauordnung mindestens 0,90 m Umwehrung (darüber 1,10 m) – geplant sind 1,10 m mit Seilen alle 11 cm.',
+      src: '§ 41 ThürBO (Umwehrungen); Mindesthöhen nach § 38 MBO; Planung des Pavillons (Bauphase 25)',
     },
     26: {
       crew: [2, 3],
@@ -597,6 +613,14 @@ export const STBAUDATA = (() => {
       erntenSrc: 'Pflanzen-Datenbank des Gartenplaners (Ernte, Ertragsbeginn)',
       paar: 'Äpfel sind selbststeril: ‚Rebella‘ trägt nur mit einem Befruchter in der Nähe, der zur selben Zeit blüht – etwa ‚Rewena‘ aus derselben Pillnitzer Züchtung. Bienen tragen den Pollen.',
       paarSrc: 'Pflanzen-Datenbank des Gartenplaners (Befruchtung); JKI Pillnitz',
+      abstand:
+        'Kernobstbäume auf starker Unterlage (Halbstämme) müssen nach dem Thüringer Nachbarrecht mindestens 2 m von der Grenze stehen; damit die Krone (6–9 m) nicht überhängt, plant man eher 4 m.',
+      abstandSrc: '§ 44 Nr. 2 Buchst. b ThürNRG; Pflanzen-Datenbank des Gartenplaners',
+      einkochen:
+        'Einkochen hält, was sonst verdirbt: Apfelmus heiß in sterile Gläser, bei etwa 90 °C eine halbe Stunde – im kühlen Keller ein Jahr haltbar.',
+      einkochenSrc: 'Haushaltspraxis (Einkochen); Annahme: 1 kg Obst gibt etwa zwei Mahlzeiten als Beilage',
+      ronald:
+        'Ronald kennt die alten Obstsorten des Dorfs und schneidet seit Jahrzehnten: mit ihm geht der Schnitt schneller und sitzt besser.',
       schenken:
         'Ein Korb Äpfel für die Nachbarn: Auf dem Dorf ist das Geben und Nehmen die Währung der Nachbarschaftshilfe.',
       verkaufen:
@@ -620,6 +644,7 @@ export const STBAUDATA = (() => {
   };
   return {
     VAT,
+    LAW,
     PREP,
     PH,
     AGES,

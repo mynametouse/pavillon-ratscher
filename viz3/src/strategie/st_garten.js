@@ -301,7 +301,7 @@ export const STGARTEN = (() => {
     order: 1,
     anytime: true,
     text: 'Im Gartenplaner zwei schorfresistente Halbstämme setzen – mit Abstand zur Grenze, zu den Gebäuden und zueinander.',
-    learn: G.learn.paar + ' Quelle: ' + G.learn.paarSrc,
+    learn: G.learn.paar + ' Quelle: ' + G.learn.paarSrc + '. ' + G.learn.abstand + ' Quelle: ' + G.learn.abstandSrc,
     show: () => ready() && !all().some(x => isTree(x.p)),
     dur: 30,
     finish: () => {
@@ -502,6 +502,8 @@ export const STGARTEN = (() => {
               .filter(x => M.careOf(x.it, x.p, gday()).includes(kind))
               .map(x => x.i);
           },
+          // Ronald's know-how (the old varieties, decades of pruning): faster with him
+          speed: (j, cx) => (cx.who.includes('ronald') && (kind === 'schneiden' || kind === 'ernten') ? 1.25 : 1),
           dur: (j, cx) =>
             ((j.d.list || []).length * (o.per || 12)) / Math.max(1, j.who.length * 0.85) / (0.7 + 0.1 * cx.skill),
           spot: j => {
@@ -545,7 +547,7 @@ export const STGARTEN = (() => {
       skill: 'garten',
       min: 2,
       text: 'Erziehungsschnitt: Mitte und Leitäste, Konkurrenztriebe weg.',
-      learn: G.learn.schneiden + ' Quelle: ' + G.learn.schneidenSrc,
+      learn: G.learn.schneiden + ' Quelle: ' + G.learn.schneidenSrc + '. ' + G.learn.ronald,
     },
     done: n => n + ' Bäume geschnitten',
   });
@@ -630,6 +632,29 @@ export const STGARTEN = (() => {
       STRAT.favour('ronald', 1, 'ein Korb Obst');
       STRAT.style(1, 'Obst an die Nachbarn verschenkt');
       return { text: de(kg, 1) + ' kg verschenkt – Hubert und Ronald freuen sich' };
+    },
+  });
+  STRAT.job.define({
+    id: 'g_einkochen',
+    label: 'Obst einkochen (Apfelmus, Kompott)',
+    place: 'bungalow',
+    people: [1, 2],
+    skill: 'garten',
+    min: 1,
+    heavy: 0.15,
+    order: 30,
+    pose: 'bench',
+    text: 'Schälen, kochen, heiß in Gläser, einkochen – für die Wochenenden im Winter.',
+    learn: G.learn.einkochen + ' Quelle: ' + G.learn.einkochenSrc,
+    show: () => obstKg() >= 3,
+    dur: 90,
+    can: () => (obstKg() >= 3 ? null : { no: true, text: 'Zu wenig Obst zum Einkochen.', why: '', src: '' }),
+    finish: () => {
+      const kg = takeObst(Math.min(8, obstKg())),
+        n = Math.round(kg * 2);
+      S.essen = (S.essen || 0) + n;
+      STRAT.book(-Math.round(kg) * 0.6, 'Gläser, Deckel, Zucker', 'garten');
+      return { text: `${de(kg, 1)} kg eingekocht – ${n} Mahlzeiten im Vorrat` };
     },
   });
   STRAT.job.define({
