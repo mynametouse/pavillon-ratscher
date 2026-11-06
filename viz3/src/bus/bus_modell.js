@@ -421,8 +421,8 @@ export const BUSMOD = (() => {
     let r = seed * 9301 + 49297;
     const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
     const tops = [0x7a2b2b, 0x2f4f2f, 0x4a4a6a, 0x8c6d3f, 0x5b5b5b, 0x2d2d2d, 0x9a8a70, 0x3e5a7a];
-    // (the seat one takes – right, behind the middle door, bus/bus.js SEAT – and the one beside it stay free)
-    const seats = S.seats.filter(([x, y]) => !(Math.abs(y + 1.25) < 0.1 && x > 0));
+    // (the seat one takes – right at the window, bus/bus.js SEAT – stays free)
+    const seats = S.seats.filter(([x, y]) => !(Math.abs(y + 2.05) < 0.1 && x > 0));
     const nP = 2 + Math.floor(rnd() * 5);
     S.lastSeats = [];
     for (let i = 0; i < nP && seats.length; i++) {

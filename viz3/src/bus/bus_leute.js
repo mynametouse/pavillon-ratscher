@@ -22,7 +22,12 @@ import { BUSPLAN } from './bus_fahrplan.js';
 import { BUSMOD } from './bus_modell.js';
 import { BUS } from './bus.js';
 export const BUSLEUTE = (() => {
-  const S = { pax: [], done: new Map(), force: null, stats: { ein: 0, aus: 0, gruss: 0, weg: 0 } };
+  const S = { pax: [], done: new Map(), force: null, stats: { ein: 0, aus: 0, gruss: 0, weg: 0 }, log: [] };
+  // (what happened, the last 40: [minute, what, person, state or why] – tests, the bug report)
+  const log = (...a) => {
+    S.log.push([+CLOCK.t.toFixed(2), ...a]);
+    if (S.log.length > 40) S.log.shift();
+  };
   const PP = VLEUTE.P,
     D = BUSMOD.DIM,
     NEAR = 150;
@@ -94,6 +99,7 @@ export const BUSLEUTE = (() => {
       o
     );
     q.z = KERN.ground(q.x, q.y);
+    log('add', q.key, q.st, q.c ? q.c.trip.line + ' ' + BUSPLAN.hm(q.c.t) : q.I ? q.I.trip.line : '');
     mark(q.key, true);
     S.pax.push(q);
     VFIG.load(q.key).then(f => {
@@ -104,6 +110,7 @@ export const BUSLEUTE = (() => {
     return q;
   }
   function remove(q, why) {
+    log('rm', q.key, q.st, why || '');
     q.gone = true;
     const i = S.pax.indexOf(q);
     if (i >= 0) S.pax.splice(i, 1);
@@ -164,7 +171,10 @@ export const BUSLEUTE = (() => {
   // someone comes to wait: the spot beside the sign (a little further from the road), along the verge from where it is not seen
   function wait(e, c, town, j, now) {
     const k = who(town, hash(c.trip.i, c.di, j, 3));
-    if (!k) return false;
+    if (!k) {
+      log('niemand', town, c.trip.line);
+      return false;
+    }
     const fx = Math.sin(e.hd),
       fy = Math.cos(e.hd),
       rx = Math.cos(e.hd),
@@ -189,6 +199,7 @@ export const BUSLEUTE = (() => {
       add({ key: k, st: 'kommt', e, c, x: sx, y: sy, hd: Math.atan2(tx - sx, ty - sy), tx, ty, look });
       return true;
     }
+    log('gesehen', k, c.trip.line);
     return false;
   }
   // someone gets off: inside at the middle door, out to the verge, then along it, away from the front of the bus
@@ -346,6 +357,12 @@ export const BUSLEUTE = (() => {
   return {
     S,
     clear,
+    // tests: forget who was planned for which bus
+    reset: () => {
+      clear();
+      S.done.clear();
+      S.log.length = 0;
+    },
     set force(v) {
       S.force = v || null;
     },
@@ -361,6 +378,7 @@ export const BUSLEUTE = (() => {
         fig: !!(q.f && q.f.g.visible),
       })),
       stats: Object.assign({}, S.stats),
+      log: S.log.slice(-14),
     }),
   };
 })();

@@ -138,7 +138,7 @@ with lib.browser() as b:
         steps(0.3)
         E("(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); BUS.board(e); })()")
         # waiting: the clock jumps to a minute before the bus (two people come to wait for it, one gets off: BUSLEUTE.force)
-        E("BUSLEUTE.force = { ein: 2, aus: 1, line: '205' }")
+        E("BUSLEUTE.reset(); BUSLEUTE.force = { ein: 2, aus: 1, line: '205' }")
         # (the traffic's people free for it: no new walkers or cars meanwhile)
         E("VERKEHR.autoOn(false); VERKEHR.clear && VERKEHR.clear(); VERKEHR.S.recent = {}")
         E("document.querySelector('#busboard [data-k=warten]').click()")
@@ -251,11 +251,11 @@ with lib.browser() as b:
             moved = math.hypot(p_b[0] - p_a[0], p_b[1] - p_a[1])
             ck('the bus drives on its way, the rider with it', mine and mine[0]['st'] == 'fahrt' and moved > 40, f"{moved:.0f} m, {mine[0] if mine else None}")
             pic(pg, 'd_aus_dem_bus')
-            # the eye at the seat (right, behind the middle door: local x 0.98, y -1.25, 1.56 m up) also while it drives – bus and
+            # the eye at the seat (right, behind the middle door: local x 0.98, y -2.05, 1.56 m up) also while it drives – bus and
             # camera placed in the same frame (the eye once lagged a frame's way behind and looked over its own backrest)
             probe = J("""(() => { const I = BUS.S.ride.I, g = I.B.g, c = GAME.cam; g.updateMatrixWorld(true);
               const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert()); return [p.x, -p.z, p.y]; })()""")
-            ck('the eye stays at the seat while the bus drives', abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 1.25) < 0.15 and abs(probe[2] - 1.56) < 0.1,
+            ck('the eye stays at the seat while the bus drives', abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 2.05) < 0.15 and abs(probe[2] - 1.56) < 0.1,
                'local ' + ', '.join(f'{v:.2f}' for v in probe))
             # „Fahrt abkürzen“ to the Krankenhaus (the clock jumps), from there on in real time across the edge of the square to the
             # Zentralhaltestelle (the ground there streams in as for a car: welt/welt.js tiles, welt/fahrt.js roads), out there by itself
@@ -343,7 +343,9 @@ with lib.browser() as b:
             # the school bus stop at the old school (its shelter, world/village_props.js): the 214 at 7:40 on a school day stops with its
             # front door at the shelter; the board there lists the buses of both directions
             E("""(() => { const d0 = Math.floor(CLOCK.t / 1440) + 1; let d = d0; for (let i = 0; i < 14; i++, d++) { const q = BUS.plan.day(DN.e0 + d); if (q.wd < 5 && !q.hol && !q.ferien) break; }
-              CLOCK.t = d * 1440 + 7 * 60 + 37; const e = BUS.STOPS().find(q => q.shelter); GAME.P.x = e.x + 1.5; GAME.P.y = e.y - 2.5; GAME.P.feet = KERN.ground(GAME.P.x, GAME.P.y); })()""")
+              CLOCK.t = d * 1440 + 7 * 60 + 37; const e = BUS.STOPS().find(q => q.shelter);
+              // (behind the shelter, away from the road: not in the bus's way)
+              GAME.P.x = e.x + Math.cos(e.hd) * 3.5; GAME.P.y = e.y - Math.sin(e.hd) * 3.5; GAME.P.feet = KERN.ground(GAME.P.x, GAME.P.y); })()""")
             steps(1.0)
             lib.settle_light(pg)
             sb = None

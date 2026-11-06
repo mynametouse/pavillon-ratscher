@@ -632,8 +632,8 @@ export const BUS = (() => {
       }
     }
   }
-  // the seat: right, the first row behind the middle door, facing forward
-  const SEAT = [0.98, -1.25];
+  // the seat: right, at the window, the second row behind the middle door (between two window pillars), facing forward
+  const SEAT = [0.98, -2.05];
   function eye(I) {
     const fx = Math.sin(I.hd),
       fy = Math.cos(I.hd),
