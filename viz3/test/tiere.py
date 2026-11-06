@@ -496,6 +496,16 @@ with lib.browser() as b:
         seen = J("Object.keys((SAVE.get('pav-tiere-v1') || {}).seen || {})")
         ck('the species seen are kept too (pav-tiere-v1)', 'reh' in seen, str(seen))
     if 'andere' in want:
+        # Ronald's goats in the discovery book: stand near one, looking at it
+        g0 = J("(() => { const G = (window.NPC && NPC.GOATS) || []; return G.length ? { x: G[0].x, y: G[0].y } : null; })()")
+        if g0:
+            at(11, 0, date=(11, 6))
+            E(f"__view({g0['x']} + 8, {g0['y']}, ROADS.groundAt({g0['x']} + 8, {g0['y']}) + 1.65, -90, -8, 60); GAME.step(0.1)")
+            steps(2.0)
+            zg = J("window.__ev.filter(e => e.id === 'ziege')")
+            ck('Ronald\'s goats seen: tiere:entdeckt „ziege“ for the discovery book', len(zg) >= 1, str(zg)[:200])
+        else:
+            print('note: no goats in this world (npc/npc.js GOATS empty)', flush=True)
         # the rest of the game unharmed: Schleusingen, then the zombie night (the dog's buttons out of the way, no page errors)
         E("GAME.go && GAME.go('schleusingen')")
         steps(3)
