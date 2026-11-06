@@ -28,7 +28,7 @@ test('every entry: unique id, a chapter, title, text, a way to be found and a so
     assert.ok(Array.isArray(e.src) && e.src.length > 0, e.id + ': a source');
     for (const s of e.src) {
       assert.ok(Array.isArray(s) && typeof s[0] === 'string' && s[0].length > 3, e.id + ': source title');
-      assert.ok(s[1] === null || /^https:\/\//.test(s[1]), e.id + ': source link ' + s[1]);
+      assert.ok(s[1] === null || /^https:\/\/\S+$/.test(s[1]), e.id + ': source link (https, no spaces) ' + s[1]);
     }
     for (const p of f.place || []) assert.doesNotThrow(() => new RegExp(p, 'i'), e.id + ': place pattern ' + p);
     for (const m of e.more || []) assert.ok(D.ids.has(m), e.id + ': more → ' + m);
@@ -106,11 +106,16 @@ test('facts that must stay right (checked 6.11.2026 with the sources named)', ()
   assert.match(t('g_talsperre').text, /16 m hoch und 630 m lang/);
   assert.match(t('g_burg').text, /1226–1232/);
   assert.match(t('g_vessra').here, /seit 1990/);
-  assert.match(t('p_ortsteil').text, /22\. Februar 1994/);
+  // 1994: the day differs between the sources (22.2. Wikipedia „Schleusingen“, 8.3. „Ratscher (Schleusingen)“) – the year only
+  assert.match(t('p_ortsteil').text, /seit 1994/);
+  assert.match(t('g_linde').text, /1888/);
   assert.match(t('tier:rotmilan').here, /14\.000 bis 16\.000/);
   // Beaufort: a storm from force 9 (a mean wind of 75 km/h, WetterOnline); thunder: 3 s per km
   assert.match(t('n_sturm').text, /Windstärke 9/);
   assert.match(t('n_gewitter').text, /geteilt durch drei/);
+  // PVGIS (SARAH2) for 50.492 N 10.781 E, 1 kWp, 30° south, 14 % losses: 999.6 kWh a year; vertical 693 kWh (≈ 70 %)
+  assert.match(t('h_pv').text, /rund 1000 kWh im Jahr/);
+  assert.match(t('h_pv').text, /rund 70 %/);
 });
 
 test('the weather finds its entries (feat/wetter: rain, snow, thunder, storm)', () => {

@@ -5,7 +5,7 @@
 // (src: [title, url]) and how it is found (find: places by name, events of the other features, talk topics, states the book looks at).
 // Facts were checked on the night of 5./6.11.2026 (sources named with each entry); where the game assumes something, the text says so.
 export const WDATA = (() => {
-  const W = t => 'https://de.wikipedia.org/wiki/' + t;
+  const W = t => 'https://de.wikipedia.org/wiki/' + String(t).replace(/ /g, '_');
   const wiki = (t, page) => [t + ' (Wikipedia)', W(page || t)];
   // ---- sources used more than once ----
   const Q = {
@@ -309,8 +309,9 @@ export const WDATA = (() => {
         ['WetterOnline – Wetterlexikon: Sturm', 'https://www.wetteronline.de/wetterlexikon/sturm'],
         Q.dguvWald,
       ],
-      find: { look: ['wetter:sturm'] },
-      hint: 'Wenn draußen ein Sturm weht.',
+      // also the strategy mode's windthrow after a storm (strategie/st_ereignis.js: reveal 'wald', 'sturmholz')
+      find: { look: ['wetter:sturm'], ev: [['strategie:entdeckt', d => d && d.id === 'sturmholz']] },
+      hint: 'Wenn draußen ein Sturm weht – oder nach dem Sturm im Wald.',
     },
     {
       id: 'n_hund',
@@ -354,7 +355,12 @@ export const WDATA = (() => {
       text: 'Zuerst der Fallkerb – Sohle und Dach, etwa ein Fünftel bis ein Drittel des Durchmessers tief –, er zeigt die Fallrichtung. Dann von der anderen Seite der Fällschnitt: Dabei bleibt die Bruchleiste stehen, etwa ein Zehntel des Durchmessers breit. Sie wirkt wie ein Scharnier und führt den Baum bis zum Boden.',
       here: 'Neigt sich der Baum nicht von selbst, hilft ein Keil. Vor dem Fallen ruft man laut „Achtung, Baum fällt!“ und geht auf der Rückweiche schräg nach hinten weg – nie direkt hinter den Stamm.',
       src: [Q.dguvWald, Q.dguvRegel],
-      find: { look: ['fell:fallkerb'], talk: ['wolfgang:faellen'] },
+      // also the strategy mode's chainsaw course (strategie/st_holz.js: reveal 'wissen', 'motorsaege')
+      find: {
+        look: ['fell:fallkerb'],
+        talk: ['wolfgang:faellen'],
+        ev: [['strategie:entdeckt', d => d && d.id === 'motorsaege']],
+      },
       hint: 'An der Klinge einen markierten Baum fällen.',
     },
     {
@@ -470,6 +476,23 @@ export const WDATA = (() => {
       src: [wiki('Leinöl')],
       find: { look: ['werk:oel'] },
       hint: 'Ein fertiges Brett ölen.',
+    },
+    {
+      id: 'h_pv',
+      ch: 'handwerk',
+      icon: '☀️',
+      title: 'Strom von der Sonne',
+      text: 'Ein Solarmodul macht aus Sonnenlicht Strom. Ein Kilowatt Modulleistung (kWp), um 30° nach Süden geneigt, bringt bei Ratscher rund 1000 kWh im Jahr – im Juni und Juli gut 4 kWh am Tag, im Dezember keine 0,8. Senkrechte Module wie die Brüstung des Pavillons bringen übers Jahr rund 70 % davon – im Sommer nur die Hälfte, im Winter sogar etwas mehr, weil die Sonne dann tief steht.',
+      here: 'Im Spiel laden Module auf dem Dach der alten Garage eine Powerstation – eine kleine Inselanlage ohne Netz; was sie im Winter nicht schafft, macht das Benzin-Aggregat.',
+      src: [
+        [
+          'PVGIS (Gemeinsame Forschungsstelle der EU): Ertrag bei Ratscher, 1 kWp nach Süden, 30° und senkrecht, 14 % Verluste',
+          'https://re.jrc.ec.europa.eu/pvg_tools/de/',
+        ],
+        wiki('Photovoltaik'),
+      ],
+      find: { look: ['bau:pv'], ev: [['strategie:entdeckt', d => d && (d.id === 'pv2' || d.id === 'speicher2')]] },
+      hint: 'Beim Bau des Pavillons die Phase mit den Solarmodulen ansehen.',
     },
     {
       id: 'h_toepfern',
@@ -614,9 +637,9 @@ export const WDATA = (() => {
       ch: 'geschichte',
       icon: '🏰',
       title: 'Schloss Bertholdsburg',
-      text: 'Graf Poppo VII. von Henneberg ließ die Burg 1226–1232 als Wohnsitz und Festung bauen. Ab 1274 saß hier die Linie Henneberg-Schleusingen; im 15. und 16. Jahrhundert wurde die Burg zum Renaissanceschloss umgebaut. Der Hauptturm ist 40 m hoch.',
+      text: 'Graf Poppo VII. von Henneberg ließ die Burg 1226–1232 als Amtssitz und Befestigung bauen. Ab 1274 saß hier die Linie Henneberg-Schleusingen; im 15. und 16. Jahrhundert wurde die Burg zum Renaissanceschloss umgebaut. Der Hauptturm ist 40 m hoch.',
       here: 'Seit 1934 ist das Schloss Museum, seit 1984 das Naturhistorische Museum – mit Mineralien, Fossilien und der Geschichte von Schloss und Region.',
-      src: [Q.schl, Q.burg],
+      src: [Q.schl, Q.burg, wiki('Schloss Bertholdsburg', 'Schloss_Bertholdsburg')],
       find: { place: ['Bertholdsburg'] },
       hint: 'In Schleusingen über dem Markt.',
     },
@@ -625,7 +648,7 @@ export const WDATA = (() => {
       ch: 'geschichte',
       icon: '⛪',
       title: 'Kloster Veßra',
-      text: 'Um 1131 stifteten Graf Gotebold II. von Henneberg und seine Frau Liutgard ein Kloster der Prämonstratenser; 1138 wurde die Kirche geweiht. Es war das Hauskloster der Henneberger.',
+      text: 'Um 1131 stifteten Graf Godebold II. von Henneberg und seine Frau Liutgard ein Kloster der Prämonstratenser; 1138 wurde die Kirche geweiht. Es war das Hauskloster der Henneberger.',
       here: '1543, in der Reformation, wurde es zum Gut, 1939 brannte die Kirche aus. In der DDR wirtschaftete hier ab 1953 eine LPG, ab 1975 zog das Agrarhistorische Museum ein; seit 1990 ist es das Hennebergische Museum – mit alten Bauernhäusern aus der Gegend, die hierher versetzt wurden.',
       src: [Q.vessra, wiki('Kloster Veßra', 'Kloster_Veßra')],
       find: { place: ['Kloster Veßra'], talk: ['gerhard:vessra'] },
@@ -637,7 +660,7 @@ export const WDATA = (() => {
       icon: '🏘️',
       title: 'Schleusingen',
       text: '1232 zuerst als „Villa Slusungen“ genannt, 1412 Stadtrecht, 1533 Marktrecht. 1577 wurde das Gymnasium eröffnet – das Hennebergische Gymnasium „Georg Ernst“ gibt es bis heute.',
-      here: 'Große Brände trafen die Stadt 1353, 1679, 1765, 1773 und 1876. Ratscher gehört seit dem 22. Februar 1994 zur Stadt Schleusingen.',
+      here: 'Große Brände trafen die Stadt 1353, 1679, 1765, 1773 und 1876. Ratscher gehört seit 1994 zur Stadt Schleusingen.',
       src: [Q.schl],
       find: { place: ['Markt, Schleusingen', 'Schleusingen'] },
       hint: 'Nach Schleusingen auf den Markt.',
@@ -659,8 +682,8 @@ export const WDATA = (() => {
       icon: '🏫',
       title: 'Die alte Schule (1828)',
       text: 'Die Ratscher bauten 1828 ihr Schulhaus: Fachwerk, Schiefer an den Giebeln, oben der Dachreiter mit der Uhr. Wie in vielen Dorfschulen lernten hier wohl lange alle Kinder in einem Raum, die Kleinen vorn, die Großen hinten.',
-      here: 'Ab 1957 war darin ein Kindergarten, später die Gemeindeverwaltung; heute ist es das Vereinshaus der Feuerwehr – freitags wird hier Skat und Rommé gespielt.',
-      src: [Q.ratscher],
+      here: 'Ab 1957 war darin ein Kindergarten, später die Gemeindeverwaltung; heute ist es das Vereinshaus des Feuerwehrvereins. Im Spiel trifft sich das Dorf hier freitags zu Skat und Rommé.',
+      src: [Q.ratscher, Q.dorfAngabe],
       find: { place: ['Alte Schule'], talk: ['gerhard:schule', 'ingrid:schule'] },
       hint: 'Am Anger, mit der Uhr im Dachreiter.',
     },
@@ -671,7 +694,7 @@ export const WDATA = (() => {
       title: 'Die Dorflinde (1888)',
       text: 'Die Linde am Anger wurde 1888 gepflanzt – im Dreikaiserjahr: Kaiser Wilhelm I. starb im März, sein Sohn Friedrich III. regierte nur 99 Tage, dann kam Wilhelm II.',
       here: 'Dorflinden waren Treffpunkt, Tanz- und früher auch Gerichtsplatz. Linden können viele hundert Jahre alt werden – diese ist erst knapp 140.',
-      src: [Q.dorfAngabe, wiki('Dreikaiserjahr'), wiki('Dorflinde')],
+      src: [Q.ratscher, wiki('Dreikaiserjahr'), wiki('Dorflinde')],
       find: { place: ['Dorflinde'], talk: ['gerhard:linde', 'katrin:linde'] },
       hint: 'Mitten auf dem Anger.',
     },
@@ -707,7 +730,7 @@ export const WDATA = (() => {
       icon: '🕊️',
       title: 'Nach der Wende: Land, Kreis, Stadt',
       text: 'Mit der friedlichen Revolution 1989 und der Einheit 1990 endete der Bezirk Suhl: Am 14. Oktober 1990 wurde das Land Thüringen wiedergegründet. 1994 ordnete Thüringen seine Kreise und Gemeinden neu.',
-      here: 'Seit dem 22. Februar 1994 gehört Ratscher zur Stadt Schleusingen im Landkreis Hildburghausen. In der alten Schule saß einmal die Gemeindeverwaltung des Dorfs – geblieben ist der Ortsteil mit seinem Ortsteilrat.',
+      here: 'Seit 1994 gehört Ratscher zur Stadt Schleusingen im Landkreis Hildburghausen. In der alten Schule saß einmal die Gemeindeverwaltung des Dorfs – geblieben ist der Ortsteil mit seinem Ortsteilrat.',
       src: [wiki('Thüringen'), wiki('Landkreis Hildburghausen'), Q.schl, Q.ratscher],
       find: { talk: ['gerhard:wende'] },
       hint: 'Gerhard hat die Wende erlebt.',
@@ -718,7 +741,7 @@ export const WDATA = (() => {
       ch: 'politik',
       icon: '🏘️',
       title: 'Ortsteil und Ortsteilverfassung',
-      text: 'Ratscher ist seit dem 22. Februar 1994 ein Ortsteil der Stadt Schleusingen. Eine Stadt kann in ihrer Hauptsatzung für ihre Ortsteile eine Ortsteilverfassung einführen (§ 45 Thüringer Kommunalordnung): Dann wählen die Bürger des Ortsteils einen Ortsteilbürgermeister und einen Ortsteilrat.',
+      text: 'Ratscher ist seit 1994 ein Ortsteil der Stadt Schleusingen. Eine Stadt kann in ihrer Hauptsatzung für ihre Ortsteile eine Ortsteilverfassung einführen (§ 45 Thüringer Kommunalordnung): Dann wählen die Bürger des Ortsteils einen Ortsteilbürgermeister und einen Ortsteilrat.',
       here: 'Im Dorf sagen viele „Ortsvorsteher“; in Thüringen heißt das Amt offiziell Ortsteilbürgermeister. (Die Hauptsatzung von Schleusingen war nicht online zu finden – das Spiel nimmt an, dass es die Ortsteilverfassung für Ratscher gibt.)',
       src: [Q.thuerko, Q.schl],
       find: { look: ['amt:brief'], talk: ['ingrid:ortsteil'] },
@@ -845,6 +868,24 @@ export const WDATA = (() => {
       find: { ev: [['verkehr:mitfahrt'], ['verkehr:angehalten']], talk: ['jens:auto'] },
       hint: 'Ein Auto anhalten und mitfahren.',
     },
+    {
+      id: 'p_bus',
+      ch: 'politik',
+      icon: '🚌',
+      title: 'Der Bus auf dem Land',
+      text: 'Wer auf dem Dorf kein Auto hat – Kinder, viele Ältere –, braucht den Bus. In Thüringen sorgen die Landkreise und kreisfreien Städte für den Busverkehr (§ 3 ThürÖPNVG): Sie legen fest, welche Linien wie oft fahren, und geben Geld dazu, denn Fahrkarten allein tragen den Bus auf dem Land nicht. Die Fahrten zur Schule sind ein großer Teil davon.',
+      here: 'In Ratscher halten werktags die 203 (Suhl – Schleusingen – Masserberg) und die 205 (Schleusingen – Eisfeld – Coburg), morgens die Schulbusse an der alten Schule. Die Fahrpläne im Spiel sind die echten. Mit dem Deutschlandticket fährt man seit Mai 2023 im ganzen Nahverkehr Deutschlands.',
+      src: [
+        [
+          'Thüringer Gesetz über den öffentlichen Personennahverkehr (ThürÖPNVG) vom 22. Juni 2005, § 3',
+          'https://umwelt-online.de/recht/gefahr.gut/laender/th/oepnv.htm',
+        ],
+        wiki('Deutschlandticket'),
+        ['gtfs.de – Fahrplandaten für Deutschland (Daten DELFI e.V., CC BY 4.0)', 'https://gtfs.de/'],
+      ],
+      find: { ev: [['bus:fahrplan'], ['bus:ein']], place: ['^Haltestelle'] },
+      hint: 'An einer Haltestelle warten, den Fahrplan lesen oder einsteigen.',
+    },
     // ======================= Orte =======================
     {
       id: 'o_garten',
@@ -876,7 +917,8 @@ export const WDATA = (() => {
       text: 'In Süddeutschland und Thüringen heißt ein enges, steiles Tal, das ein Bach eingeschnitten hat, „Klinge“. An der Unteren Klinge liegt der Familienwald: Fichten, Lärchen und Kiefern, gut 800 m südwestlich vom Garten.',
       here: 'Im Frühjahr läuft das Wasser die Klinge herunter. Wer dort Wald hat, braucht Geduld und gute Stiefel – sagt Wolfgang.',
       src: [['Wiktionary: Klinge (Bedeutung „enge Schlucht“)', 'https://de.wiktionary.org/wiki/Klinge'], Q.osm],
-      find: { place: ['Klinge'], talk: ['wolfgang:klinge'] },
+      // also the strategy mode's walk through the forest (strategie/st_holz.js: reveal 'wald', 'klinge')
+      find: { place: ['Klinge'], talk: ['wolfgang:klinge'], ev: [['strategie:entdeckt', d => d && d.id === 'klinge']] },
       more: ['n_fichte', 'n_laerche', 'n_kaefer', 'n_waldumbau', 'h_faellen'],
     },
     {
@@ -885,7 +927,7 @@ export const WDATA = (() => {
       icon: '🏘️',
       title: 'Ratscher',
       text: 'Ein kleines Dorf südöstlich von Schleusingen, zwischen Feldern, Wiesen und dem Wald an der Klinge; 2013 lebten hier 123 Menschen. Die Häuser stehen rund um den Anger, viele mit Fachwerk und Schiefer.',
-      here: 'Seit dem 22. Februar 1994 ist Ratscher ein Ortsteil der Stadt Schleusingen im Landkreis Hildburghausen. Südöstlich liegt die Talsperre Ratscher.',
+      here: 'Seit 1994 ist Ratscher ein Ortsteil der Stadt Schleusingen im Landkreis Hildburghausen. Südöstlich liegt die Talsperre Ratscher.',
       src: [Q.ratscher, Q.schl],
       find: { place: ['^Ratscher'] },
       more: ['o_anger', 'g_schule', 'g_linde', 'g_talsperre', 'p_ortsteil'],
@@ -1055,7 +1097,7 @@ export const WDATA = (() => {
     psa_werk: {
       title: 'Gehörschutz und Staubmaske',
       text: 'Ab 85 dB(A) ist Gehörschutz Pflicht; Eichen- und Buchenholzstaub gilt als krebserzeugend – an Säge und Schleifer gehören Absaugung und eine FFP2-Maske dazu.',
-      src: [Q.laerm, Q.trgs553],
+      src: [Q.laerm, Q.trgs553, wiki('Hartholzstaub')],
     },
     handschuhe: {
       title: 'Keine Handschuhe an drehenden Werkzeugen',
@@ -1151,7 +1193,7 @@ export const WDATA = (() => {
         id: 'vessra',
         label: 'Was war Kloster Veßra?',
         lines: [
-          'Um 1131 haben Graf Gotebold und seine Frau Liutgard das Kloster gestiftet, für die Prämonstratenser. In der Reformation wurde es ein Gut, 1939 brannte die Kirche aus.',
+          'Um 1131 haben Graf Godebold und seine Frau Liutgard das Kloster gestiftet, für die Prämonstratenser. In der Reformation wurde es ein Gut, 1939 brannte die Kirche aus.',
           'Zu DDR-Zeiten war da eine LPG drin, später das Landwirtschaftsmuseum. Heute stehen dort alte Bauernhäuser aus der ganzen Gegend.',
         ],
         entry: 'g_vessra',

@@ -37,6 +37,37 @@ export const WDATEN = (() => {
       min: ((CLOCK && CLOCK.t) || 0) % 1440,
     };
   }
+  // feat/bus: how many buses stop in Ratscher on the game's day, by the real timetable (BUS.plan: gtfs.de, data DELFI e.V.)
+  function busToday() {
+    const B = window.BUS,
+      BP = B && B.plan;
+    if (!BP || !BP.ready || !BP.S || !BP.S.stations || typeof BP.tripsOn !== 'function') return null;
+    const e = (DN && Number.isFinite(DN.e0) ? DN.e0 : 20393) + Math.floor(((CLOCK && CLOCK.t) || 0) / 1440);
+    if (S.busE === e && S.bus) return S.bus;
+    const st = new Set(BP.S.stations.filter(x => /^Ratscher\b/.test(x.n)).map(x => x.i)),
+      lines = new Set();
+    let n = 0;
+    for (const t of BP.tripsOn(e)) {
+      const P = BP.S.pats[t.pat];
+      if (P && P.st.some(o => st.has(o.s))) {
+        n++;
+        lines.add(String(t.line));
+      }
+    }
+    S.busE = e;
+    S.bus = { n, lines: [...lines].sort((a, b) => parseInt(a, 10) - parseInt(b, 10) || (a < b ? -1 : 1)) };
+    return S.bus;
+  }
+  function busLine() {
+    let b = null;
+    try {
+      b = busToday();
+    } catch (e) {}
+    if (!b) return '';
+    return b.n
+      ? `<p>Heute ${b.n === 1 ? 'hält' : 'halten'} in Ratscher <b>${b.n}</b> ${b.n === 1 ? 'Bus' : 'Busse'} (Linie${b.lines.length > 1 ? 'n' : ''} ${b.lines.map(esc).join(', ')}) – nach dem echten Fahrplan (gtfs.de, Daten DELFI e.V.).</p>`
+      : '<p>Heute hält in Ratscher kein Bus (Wochenende oder Feiertag) – nach dem echten Fahrplan.</p>';
+  }
   // public holidays and the quiet hours (wissen/wissen_data.js, tested in node)
   const holiday = WDATA.holiday;
   function quiet() {
@@ -212,14 +243,9 @@ export const WDATEN = (() => {
         }
     } catch (e) {}
     try {
+      // feat/bus: the buses with a model near the observer (BUS.S.inst: x, y)
       const B = window.BUS;
-      const list = B
-        ? typeof B.list === 'function'
-          ? B.list()
-          : typeof B.state === 'function'
-            ? B.state().inst
-            : []
-        : [];
+      const list = B ? (typeof B.list === 'function' ? B.list() : (B.S && B.S.inst) || []) : [];
       for (const b of list || [])
         if (b && Number.isFinite(b.x)) {
           car(b.x, b.y, '#f2c500');
@@ -565,6 +591,7 @@ export const WDATEN = (() => {
           .map(k => `<i style="background:${RCL[k].col}"></i>${RCL[k].de}`)
           .join(' ') +
         `</div><p>Gerade unterwegs: <b>${S.cars | 0}</b> Fahrzeuge (weiß: Verkehr, hellblau: Autos der Dorfbewohner, gelb: Bus).</p>` +
+        busLine() +
         '<small>Straßenklassen aus OpenStreetMap. Zählwerte für die Straßen um Ratscher liegen hier nicht vor – das Spiel zeigt, was gerade fährt.</small>',
     },
     {
@@ -738,6 +765,7 @@ export const WDATEN = (() => {
 #widaten .wd-c button{border:1px solid rgba(255,255,255,.28);background:transparent;color:#f3efe6;border-radius:999px;font:500 12px/1 var(--f-body);padding:6px 9px;cursor:pointer}
 #widaten .wd-c button[aria-pressed=true]{background:#f3e2b8;color:#2b2420;border-color:#f3e2b8;font-weight:700}
 #widaten .wd-l{margin-top:8px;border-top:1px solid rgba(255,255,255,.16);padding-top:6px}
+#widaten .wd-l:first-child{margin-top:0;border-top:0;padding-top:0}
 #widaten .wd-l h6{margin:4px 0 2px;font:700 12px/1.2 var(--f-body)}
 #widaten .wd-l p{margin:3px 0}
 #widaten .wd-l small{display:block;opacity:.72;font-size:11px;line-height:1.35;margin-top:2px}

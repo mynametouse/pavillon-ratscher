@@ -9,21 +9,23 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
 - **Das Entdeckerbuch** (Menü → Startseite → „Entdeckerbuch“, Taste **N**, im Strategie-Modus ein Knopf „📖 Buch“ in seiner Leiste):
   Kapitel **Natur, Handwerk, Geschichte, Politik & Soziales, Orte** und dazu **Regeln** (die „Warum?“-Gründe). Jeder Eintrag: was es ist,
   warum es hier bei Ratscher zählt, ein Symbol, die echten Quellen als Links, wie er gefunden wurde. Noch nicht Gefundenes steht grau mit
-  einem Tipp. Fortschritt je Kapitel und gesamt. 76 Einträge und 28 Regeln (71 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
+  einem Tipp. Fortschritt je Kapitel und gesamt; eine **Suche** im Buch (findet Entdecktes und verstandene Regeln, Unentdecktes nur als Zahl). 78 Einträge und 28 Regeln (73 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
   Daten-Ansichten in `wissen_daten.js`), dazu Einträge, die aus Ereignissen entstehen (Erkundetes, gepflanzte Arten) – und mit feat/tiere jede
   Art seiner Steckbriefe (`TARTEN`) als Eintrag zum Entdecken, mit Steckbrief und Quellen.
 - **Gefunden durch Tun und Sehen** (`viz3/src/wissen/wissen.js`):
   - **Orte** (Ereignis `place`): Anger, Dorflinde, alte Schule, Bach, Klinge, Schleusingen (Markt, Bertholdsburg, St. Johannis, Rathaus),
     Kloster Veßra (Klosterkirche, Henneberger Kapelle), Baumschule, Ziegenweide …
   - **Ereignisse der anderen**: `tiere:entdeckt` (feat/tiere – eine bekannte Art öffnet ihren Eintrag, eine unbekannte wird ein neuer Eintrag
-    mit dem Steckbrief aus `TARTEN` und dessen Quellen), `strategie:entdeckt` (feat/strategie – Erkunden statt Nebel), `hund:befehl` (den Hund rufen → sein
-    Steckbrief) und `hund:gelernt` (loben oder tadeln → „Wie ein Hund lernt“), `einrichtung:schale|brand|glasur`
+    mit dem Steckbrief aus `TARTEN` und dessen Quellen), `strategie:entdeckt` (feat/strategie – Erkunden statt Nebel; Käferbäume, Sturmholz, der Waldbegang in der Klinge und der
+    Motorsägen-Lehrgang öffnen die passenden Einträge, anderes wird ein eigener Eintrag), `hund:befehl` (den Hund rufen → sein
+    Steckbrief) und `hund:gelernt` (loben oder tadeln → „Wie ein Hund lernt“), `bus:fahrplan` und `bus:ein` (feat/bus → „Der Bus auf dem
+    Land“: wer den Busverkehr bestellt, § 3 ThürÖPNVG), `einrichtung:schale|brand|glasur`
     (Töpfern im Atelier), `einrichtung:bild` (Malen), `gplan:gepflanzt|geschnitten|gemulcht`, `garage:gemaeht`, `fell`, `verkehr:mitfahrt`,
     Aktionen (`act`: Forstkiste, Seilwinde). **Gepflanzte Arten** des Gartenplaners werden eigene Einträge – Text, Pflege und Quellen aus
     seiner Pflanzendatenbank (`gartenplaner/pflanzen.json`).
   - **Zustände, auf die das Buch alle 1,5 s schaut**: Fällschritte (`FELL.trees`: Fallkerb, entasten, ablängen, vermessen), Werkstücke des
     Werkstatt-Spiels (`WERK.W.list`: leimen, Stirnholz, ölen), Blockbandsäge und Trockenstapel, Wahl und Amt (`AMT.ST.phase`), der Gartenplaner
-    offen, eine Bauphase des Pavillons, ein Monat im Spiel – und das **Wetter** (feat/wetter, `WETTER.S.w`): Regen → Steigungsregen am
+    offen, eine Bauphase des Pavillons (die Phase mit den Solarmodulen → „Strom von der Sonne“, Erträge nach PVGIS), ein Monat im Spiel – und das **Wetter** (feat/wetter, `WETTER.S.w`): Regen → Steigungsregen am
     Gebirge, Schnee → Schnee und Raureif, Gewitter → Blitz und Donner (3 s je km), Sturm (Böen ab 75 km/h oder Wind ab Stärke 8) → Sturm und
     Windwurf. Mit „wie draußen“ kommt das live von Open-Meteo.
 - **Menschen als Lehrer** (`viz3/src/wissen/wissen_lehrer.js`): ein Thema im Gespräch öffnet einen Eintrag – **Gerhard** (Lehrer i. R.,
@@ -37,7 +39,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   Regeln des Strategie-Modus (`STRAT.D.RULES`), unbekannte IDs fallen auf dessen Text zurück. Tippt man im Strategie-Modus auf dessen eigenes
   „Warum?“, gilt die Regel auch im Buch als verstanden, und der Grund bekommt „Quellen ›“ mit den verlinkten Quellen des Buchs. Ein Gedanke der Spielfigur, der eine Regel nennt
   (z. B. „Sonn- und Feiertagsruhe“ beim Mäher), bekommt ein kleines **„?“** daneben; angetippt erscheinen Grund und Quelle, die Regel gilt als
-  verstanden (Kapitel „Regeln“).
+  verstanden (Kapitel „Regeln“). Ebenso die Warnungen des Gartenplaners, die auf einem Gesetz beruhen (Grenzabstand nach ThürNRG, am Bach
+  der Gewässerrandstreifen nach § 38 WHG) – `WISSEN.chips(root)`.
 - **Orte der Geschichte – Infotafeln** (`viz3/src/wissen/wissen_orte.js`): kleine Tafeln mit Dach auf zwei Pfosten an der alten Schule, unter der
   Dorflinde, am Platz am Bach, an der Forstkiste der Unteren Klinge und auf dem Damm der Talsperre Ratscher (Lage nach Structurae,
   50° 29′ 31,5″ N, 10° 46′ 54,7″ E → UTM → Grundstück über `GEOMAN.xf`); „Tafel lesen“ öffnet das Buch beim Eintrag. Ein Mesh im Material der
@@ -48,7 +51,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   kleines Feld links unten mit sechs Schaltern und der Legende – **Orte der Geschichte** (die Infotafeln, gelesene gefüllt, und die Orte in
   Schleusingen und Veßra), **Lärm** (Straßen nach ihrer OSM-Klasse mit Bändern über 55 und 45 dB(A),
   Maschinen, solange sie laufen: Mäher, Motorsäge, Blockbandsäge, die lauten Aufträge des Strategie-Modus; dazu die Ruhezeiten des Spieltags
-  mit „?“), **Verkehr** (Straßen nach Klasse, die fahrenden Autos des Verkehrs, die Autos der Dorfbewohner, die Busse), **Sonne**
+  mit „?“), **Verkehr** (Straßen nach Klasse, die fahrenden Autos des Verkehrs, die Autos der Dorfbewohner, die Busse;
+  wie viele Busse am Spieltag in Ratscher halten und welche Linien – aus dem echten Fahrplan von feat/bus), **Sonne**
   (Sonnenstunden des Spieltags auf einem 3-m-Raster über dem Garten – Sonnenstand und Schatten von Gebäuden und Kronen wie im Gartenplaner,
   einmal je Tag gerechnet), **Naturwert** (Wald an der Klinge, Hecken um den Garten, Bach mit 5-m-Uferstreifen, alte Bäume, Dorflinde; gesehene Tiere, Käferbäume
   und die Ruhezone am Schwarzstorch-Horst, sobald man von ihnen weiß – feat/tiere), **Stimmung** (Meinung der Leute von dir, 0–100, an ihrer
@@ -71,6 +75,7 @@ WISSEN.found('mein:eintrag', 'tun:den Putz angerührt')  // true, wenn neu (Hinw
 WISSEN.has(id); WISSEN.open(id | 'natur' | … | 'regeln'); WISSEN.close(); WISSEN.progress()
 WISSEN.why('ruhe_sonntag')   // { id, title, text, src: [[titel, url]] } | null
 WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.whyHTML(id) → '<button data-wiwhy=…>?</button>' für jedes Panel
+WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners (ul.gp-warns, ul.gp-w), die auf einem Gesetz beruhen, bekommen ihr „?“
 ```
 
 - Kapitel: `natur`, `handwerk`, `geschichte`, `politik`, `orte`. Das „wie gefunden“ (`how`) beginnt mit `ort:`, `gespraech:`, `tafel:`, `tun:`,
@@ -90,11 +95,14 @@ WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.why
 
 ## Offen
 
-- Lärm und Verkehr sind Näherungen (Straßenklasse, typische Schallpegel); Zählwerte für die Straßen um Ratscher lagen nicht vor.
+- Lärm und Verkehr sind Näherungen (Straßenklasse, typische Schallpegel); Zählwerte für die Straßen um Ratscher lagen nicht vor – echt
+  gezählt sind nur die Busse (Fahrplan).
 - Die Tafeln haben keine Kollision (man läuft durch die Pfosten). Die Tafeln in Schleusingen und Veßra sind bei GitHub nicht prüfbar (dort fehlen
   die Kacheln der Städte) – Abschnitt `stadt` lokal.
 - Die Hauptsatzung von Schleusingen war nicht online zu finden: dass Ratscher eine Ortsteilverfassung hat, ist eine Annahme (wie in „Wahl und Amt“).
-- Das Gründungsjahr der Dorflinde (1888) stammt aus dem Dorfleben des Spiels; eine unabhängige Quelle fehlt noch.
+- Der Tag der Eingemeindung 1994 ist in den Quellen uneinheitlich (22. Februar in den Wikipedia-Artikeln „Schleusingen“ und „Heckengereuth“,
+  8. März in „Ratscher (Schleusingen)“ und „Gethles“) – im Buch steht nur „seit 1994“. Dorflinde 1888 und Schule 1828: Wikipedia „Ratscher
+  (Schleusingen)“; dass dort freitags Skat gespielt wird, ist das Dorfleben des Spiels und so gekennzeichnet.
 
 ## Für den Lead
 

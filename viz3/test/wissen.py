@@ -75,9 +75,22 @@ def run():
             ck('a species the book has no entry for becomes one (Natur, with the source of the event)', g and g['ch'] == 'natur' and g['src'] and 'wikipedia' in (g['src'][0][1] or ''), str(g))
             E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'kaefer', title: 'Borkenkäfer an der Klinge', source: 'ThüringenForst', text: 'Käferbäume', by: 'falko' })")
             ck('feat/strategie: exploring the beetle trees → the beetle entry (no second, generated one)', J("WISSEN.has('n_kaefer') && !WISSEN.get('st:wald:kaefer')"))
+            # the book's search: what was discovered, not what is still hidden
+            E("WISSEN.open('natur')"); time.sleep(0.2)
+            pg.fill('#wibook .wi-find', 'milan'); time.sleep(0.2)
+            sr = J("(() => { const b = document.querySelector('#wibook .wi-body'); const l = b.querySelector('.wi-lead'); return { lead: l ? l.textContent : '', items: [...b.querySelectorAll('[data-went]')].map(x => x.dataset.went) }; })()")
+            ck('the book\'s search finds what was discovered („milan“ → Rotmilan)', 'tier:rotmilan' in sr['items'] and 'Treffer' in sr['lead'], str(sr))
+            page_pic('01b_suche')
+            pg.fill('#wibook .wi-find', 'Talsperre'); time.sleep(0.2)
+            sr2 = J("(() => { const b = document.querySelector('#wibook .wi-body'); return { lead: b.querySelector('.wi-lead').textContent, items: [...b.querySelectorAll('[data-went]')].map(x => x.dataset.went) }; })()")
+            ck('…and of what is still hidden only how much (no titles)', 'g_talsperre' not in sr2['items'] and 'noch nicht entdeckt' in sr2['lead'], str(sr2))
+            pg.fill('#wibook .wi-find', ''); E("WISSEN.close()")
             if E("!!window.HUND"):
                 E("KERN.emit('hund:gelernt', { tat: 'sitz', lob: true, learn: {} })")
                 ck('feat/tiere: the dog praised → „Wie ein Hund lernt“ (operant conditioning)', J("WISSEN.has('n_hund')"))
+            if E("!!window.BUS"):
+                E("KERN.emit('bus:fahrplan', { halt: 'Ratscher' })")
+                ck('feat/bus: the timetable at a stop read → „Der Bus auf dem Land“ (ThürÖPNVG)', J("WISSEN.has('p_bus')"))
             E("KERN.emit('einrichtung:schale', { n: 1 })")
             ck('doing: a bowl thrown in the atelier → „Töpfern“', J("WISSEN.has('h_toepfern')"), str(J("WISSEN.state().how['h_toepfern']")))
 
@@ -143,6 +156,8 @@ def run():
             ck('the rule counts as understood (chapter Regeln)', 'ruhe_sonntag' in J("WISSEN.state().why"))
             page_pic('03_warum')
             E("document.querySelector('#wiwhy .x').click()")
+            gc = J("(() => { const d = document.createElement('div'); d.innerHTML = '<ul class=\"gp-warns\"><li class=\"warn\"><button type=\"button\">Warnung Apfel: 1,2 m bis zur Grenze – nach Thüringer Nachbarrecht mindestens 1,5 m.</button></li><li class=\"hint\"><button type=\"button\">Hinweis zwei Kronen wachsen ineinander</button></li></ul>'; WISSEN.chips(d); return [...d.querySelectorAll('li')].map(li => (li.querySelector('[data-wiwhy]') || {}).dataset ? li.querySelector('[data-wiwhy]').dataset.wiwhy : null); })()")
+            ck('the garden planner\'s warning on the boundary distance gets the „?“ (ThürNRG), one without a law none', gc == ['grenzabstand', None], str(gc))
             h = E("WISSEN.whyHTML('grenzabstand')")
             ck('WISSEN.whyHTML gives any panel its „?“', 'data-wiwhy="grenzabstand"' in h, h[:80])
 
@@ -229,6 +244,9 @@ def run():
                 E(f"WDATEN.set('{v}', false)")
             E("WDATEN.set('w_stimmung', true)"); E("WDATEN.set('w_verkehr', true)"); steps(1.2)
             ck('„Stimmung“ and „Verkehr“ on without errors (legend with the road classes)', 'Kreisstraße' in E("document.getElementById('widaten').textContent"))
+            if E("!!(window.BUS && BUS.plan && BUS.plan.ready)"):
+                bl = E("(() => { const p = [...document.querySelectorAll('#widaten p')].find(p => p.textContent.includes('Fahrplan')); return p ? p.textContent : ''; })()")
+                ck('feat/bus: the traffic view counts today\'s buses in Ratscher by the real timetable', 'Ratscher' in bl and 'echten Fahrplan' in bl, bl[:160])
             page_pic('11_daten_verkehr_stimmung')
             E("WDATEN.set('w_stimmung', false)"); E("WDATEN.set('w_verkehr', false)")
             E("WDATEN.set('w_orte', true)"); steps(0.6)
@@ -263,8 +281,10 @@ def run():
                 ck('…its legend stands clear of the mode\'s people, chapter card, clock and panel', not any(ov.values()), str(ov))
                 page_pic('08b_strategie_sonne')
                 E("STRAT.layer.set('w_sonne', false)")
-                E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'sturmholz', title: 'Sturmholz an der Klinge', source: 'ThüringenForst', text: 'Windwurf nach dem Sturm', by: 'falko' })")
-                ck('an exploration of the strategy mode the book has no entry for becomes one (Natur)', J("(() => { const e = WISSEN.get('st:wald:sturmholz'); return !!e && e.ch === 'natur' && WISSEN.has(e.id); })()"))
+                E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'sturmholz', title: 'Sturmholz: 3 Fichten geworfen', source: 'Waldbegang nach dem Sturm', text: 'Bäume unter Spannung', by: 'falko' })")
+                ck('the windthrow found from above opens „Sturm und Windwurf“ (no generated entry)', J("WISSEN.has('n_sturm') && !WISSEN.get('st:wald:sturmholz')"))
+                E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'quellmulde', title: 'Eine Quellmulde am Hang', source: 'Waldbegang', text: 'nasser Boden, Binsen', by: 'falko' })")
+                ck('an exploration of the strategy mode the book has no entry for becomes one (Natur)', J("(() => { const e = WISSEN.get('st:wald:quellmulde'); return !!e && e.ch === 'natur' && WISSEN.has(e.id); })()"))
                 # its own „Warum?“ on a refusal: the rule counts as understood in the book, the reason gets the book's linked sources
                 if J("!!(STRAT.D && STRAT.D.RULES && STRAT.D.RULES.saftruhe && STRAT.note)"):
                     E("(() => { const R = STRAT.D.RULES.saftruhe; STRAT.note(R.text, { kind: 'nein', why: R.why, src: R.src }); })()"); time.sleep(0.2)
