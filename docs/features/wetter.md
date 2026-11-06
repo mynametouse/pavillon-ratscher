@@ -96,8 +96,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   üblichen Spielzeit „1 Std = 1 Min“ läuft das Spiel dem echten Wetter davon – nach einer Minute ist es die Vorhersage der nächsten
   Stunde; „Uhr und Datum auf jetzt“ stellt deshalb auch auf Echtzeit. Vorschlag für Falko: die Spielzeit beim Start auf jetzt stellen, wenn „wie draußen“ gewählt ist (oder eine
   Einstellung „Spielzeit: wie draußen“) – das betrifft das ganze Spiel, deshalb nicht hier entschieden.
-- Die Dorflinde, die Bäume des Gartenplaners, die Felder und der Wald an der Klinge wiegen nicht (nur die instanzierten Gartenbäume und
-  der Rasen, s. o.); die Schatten der Kronen bleiben still.
+- Die Dorflinde (ein Netz, nicht instanziert; sie bekommt aber Schnee und Reif), die Felder und der Wald an der Klinge wiegen nicht (nur
+  die instanzierten Kronen – Garten, Ring, die Pflanzen des Gartenplaners – und der Rasen, s. o.); die Schatten der Kronen bleiben still.
 - Pfützen; Regen am Fenster und an der Windschutzscheibe; nasse Straßen spiegeln kaum (der Geländeshader dämpft Spiegelungen auf 35 %).
 - Ein wolkenloser Tag zeigt die wenigen Kumuli des Tagesfotos („Sonnig“ bei 2 % Bewölkung) – ganz klar ginge nur mit einem klaren
   Himmelsfoto oder einem an die Fotos angepassten Verlauf.
@@ -117,6 +117,10 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   - `viz3/src/modules.txt`: Block `# feat/wetter` vor `game/tutorial.js`.
   - `viz3/src/garden/grass.js`: zwei Zeilen `if (GRASS.wxSway) GRASS.wxSway(mat);` gleich nach `patchSV` (Rasen, Wiesenblumen) – das Wetter
     setzt `GRASS.wxSway` beim Laden und patcht damit die Materialien, bevor sie übersetzt werden.
+  - `viz3/src/garden/trees.js`: `export const TREEHOOK = { leaf: null }` und in `buildTreeKind` `if (TREEHOOK.leaf) TREEHOOK.leaf(leaf);`
+    – Arten, die später gebaut werden (die eigenen des Gartenplaners: Obstbaum, Büsche, Stauden; die Dorflinde), bekommen denselben
+    Blatt-Patch wie die Gartenbäume und damit deren Programme (sonst brauchten sie das ungepatchte Blattprogramm, das niemand mehr
+    vorab übersetzt: `gartenplaner_kammbach` „no new shader programs … at the nursery“ 165 → 166 in Runde B).
 - Die Menüzeile „Wetter“ setzt `wetter/wetter.js` selbst unter „Spielzeit“ ein (keine Änderung an `shell/menu.html`); das Wetterzeichen
   hängt es als `span.wxi` an `#clockbtn` (die Uhr und DN schreiben nur `.hbt` und das erste `.hbi`).
 - Für ARCHITECTURE.md: neuer `window`-Name `WETTER` (`wetter/wetter.js`; Test-API `mock`, `snap`, `state`, `preset`, `setMode`,

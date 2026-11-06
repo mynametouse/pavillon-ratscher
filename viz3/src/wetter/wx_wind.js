@@ -2,8 +2,9 @@
 // The garden's trees and hedges (garden/trees.js: ez-tree kinds, crowns as instanced leaf cards) sway with the real wind: their leaf
 // material gets a few lines in its vertex shader at load – before the GPU preparation compiles it, so no program later – that lean
 // the crown away from the wind and let it sway back and forth (slower big motion, a faster flutter of the leaves), more the higher a
-// card sits above the trunk's foot and with the square of the wind speed, gusts stronger; each tree in its own phase. Only the
-// instanced crowns (the garden, the ring around it); the Dorflinde and the planner's trees stay still. The crowns' shadows keep their
+// card sits above the trunk's foot and with the square of the wind speed, gusts stronger; each tree in its own phase. Only instanced
+// crowns move (the garden, the ring around it, the garden planner's plants – their kinds are built later and handed over by
+// garden/trees.js as they are made); the Dorflinde (one mesh) stays still but takes the snow. The crowns' shadows keep their
 // place (the shadow map is drawn rarely and from the still crowns). The lawn and the meadow flowers (garden/grass.js hands each of their
 // materials over right after making it, before anything draws it): their tips bend away from the wind in waves that run over the lawn
 // with the gusts, plus a quick flicker; the bend is a share of each blade's height (a mown lawn moves less). Calm air: nothing moves,
@@ -11,7 +12,7 @@
 // top of the crowns and the hedges, rime on a frosty morning), patchy from card to card; lit as the leaves are.
 import { markDirty } from '../core/assets.js';
 import { GRASS } from '../garden/grass.js';
-import { TREES } from '../garden/trees.js';
+import { TREEHOOK, TREES } from '../garden/trees.js';
 export const WXWIND = (() => {
   // x amplitude (m of lean at 12 m above the foot), y flutter (m), z time (s), w the share of the lean that stays (0–1); wxLW the
   // white of snow or rime on the leaves (0–1)
@@ -71,9 +72,12 @@ gl_Position = projectionMatrix * mvPosition;`;
 mvPosition = modelViewMatrix * mvPosition;
 gl_Position = projectionMatrix * mvPosition;`;
   const S = { n: 0, a: 0, g: 0, grass: 0, white: 0, drawT: 0 };
-  for (const K of Object.values(TREES)) {
-    const m = K && K.leaf;
-    if (!m || m.userData.wxSway) continue;
+  // the materials patched (not a flag in userData: a clone copies userData, not the patch)
+  const DONE = new WeakSet();
+  // a leaf material of garden/trees.js, before its first compile: the sway and the white
+  function leaf(m) {
+    if (!m || DONE.has(m)) return;
+    DONE.add(m);
     const prev = m.onBeforeCompile,
       key = m.customProgramCacheKey;
     m.onBeforeCompile = (sh, r) => {
@@ -96,12 +100,16 @@ gl_Position = projectionMatrix * mvPosition;`;
     };
     // its own programs (another material with the same key would otherwise share a program without the sway)
     m.customProgramCacheKey = () => (key ? key.call(m) : '') + '|wxsway';
-    m.userData.wxSway = true;
     S.n++;
   }
+  for (const K of Object.values(TREES)) leaf(K && K.leaf);
+  // kinds built later – the garden planner's own (fruit tree, bushes, perennials), the Dorflinde – are handed over as they are made:
+  // the same patch, so they draw with the garden's programs (none new when the planner's plants appear)
+  TREEHOOK.leaf = leaf;
   // a lawn or flower material from garden/grass.js, before its first compile (its own programs, as above)
   GRASS.wxSway = m => {
-    if (!m || m.userData.wxSway) return;
+    if (!m || DONE.has(m)) return;
+    DONE.add(m);
     const prev = m.onBeforeCompile,
       key = m.customProgramCacheKey;
     m.onBeforeCompile = (sh, r) => {
@@ -115,7 +123,6 @@ gl_Position = projectionMatrix * mvPosition;`;
         sh.vertexShader.replace('#include <project_vertex>', GLSL_GRASS);
     };
     m.customProgramCacheKey = () => (key ? key.call(m) : '') + '|wxgrass';
-    m.userData.wxSway = true;
     S.grass++;
   };
   // the wind to show: v the 10-m wind (m/s), gust (m/s), dir (° from where it blows), k the gusts' swing now (0–1); on: shown at all
