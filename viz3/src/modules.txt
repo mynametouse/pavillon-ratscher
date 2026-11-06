@@ -177,6 +177,7 @@ zombie/z_ziele_bus.js       # feat/zombie-ziele the end of the third night: the 
 bus/bus_fahrplan.js         # feat/bus the real timetable (gtfs.de, DELFI e.V.): service days, departures, a trip's run through the minutes – pure (BUSPLAN)
 bus/bus_modell.js           # feat/bus the regional bus and the stop sign as models; their few materials compiled at load (BUSMOD)
 bus/bus.js                  # feat/bus stops, boards, waiting, buses on their ways, getting on, riding along, getting off (BUS)
+bus/bus_leute.js            # feat/bus passengers: people of the traffic wait at the stops, get on and get off (BUSLEUTE)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue

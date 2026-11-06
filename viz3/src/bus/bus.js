@@ -115,8 +115,17 @@ export const BUS = (() => {
         const key = s + ':' + q + ':' + Math.round((((o.hd * 180) / Math.PI + 360) % 360) / 90);
         if (seen.has(key)) return;
         const st = BUSPLAN.S.stations[s],
-          pl = st.pl[q],
-          rx = Math.cos(o.hd),
+          pl = st.pl[q];
+        // platforms the feed puts on one point (the five of the Zentralhaltestelle in Schleusingen): one sign per direction for all
+        const twin = STOPS.find(
+          q2 => q2.s === s && Math.hypot(st.pl[q2.q].x - pl.x, st.pl[q2.q].y - pl.y) < 2 && Math.cos(q2.hd - o.hd) > 0.7
+        );
+        if (twin) {
+          twin.qs.add(q);
+          seen.set(key, twin);
+          return;
+        }
+        const rx = Math.cos(o.hd),
           ry = -Math.sin(o.hd);
         let x = pl.x + rx * 3.9,
           y = pl.y + ry * 3.9,
@@ -131,6 +140,7 @@ export const BUS = (() => {
         const e = {
           s,
           q,
+          qs: new Set([q]),
           x,
           y,
           hd: o.hd,
@@ -150,7 +160,7 @@ export const BUS = (() => {
   // (and from this platform: the Zentralhaltestelle in Schleusingen has five, each line its own)
   function sameWay(e, d) {
     const P_ = BUSPLAN.S.pats[d.trip.pat];
-    if (P_.st[d.k].q !== e.q) return false;
+    if (!e.qs.has(P_.st[d.k].q)) return false;
     BUSPLAN.centreAt(P_, P_.s[d.k], _h);
     return Math.cos(_h.hd - e.hd) > 0.3;
   }
@@ -437,8 +447,21 @@ export const BUS = (() => {
       if (d < DRAW) cand.push([d, a]);
     }
     cand.sort((p, q) => p[0] - q[0]);
-    for (const [, a] of cand) {
-      if (S.inst.length >= MAXI) break;
+    for (const [d, a] of cand) {
+      if (S.inst.length >= MAXI) {
+        // all models in use: a bus much nearer takes the place of the farthest one one cannot see (not the one ridden)
+        let far = null,
+          fd = 0;
+        for (const I of S.inst) {
+          const di = Math.hypot(I.x - ox, I.y - oy);
+          if (di > fd && !(S.ride && S.ride.I === I) && !seen(I.x, I.y)) {
+            fd = di;
+            far = I;
+          }
+        }
+        if (!far || d > fd * 0.5) break;
+        drop(far);
+      }
       spawn(a);
     }
   }
@@ -453,7 +476,8 @@ export const BUS = (() => {
       if (S.ride && S.ride.I === I) {
         // the bus one rides: exactly the clock (it runs in real time meanwhile); while the picture fades it waits at the stop.
         // Placed by the seat's camera this frame (follow above): not again, so bus and eye stay together
-        if (S.ride.busy) S.ride.lag = clk - I.tau;
+        // (and while people get on or off at a stop – bus/bus_leute.js holds it – it waits a few seconds and leaves a little late)
+        if (S.ride.busy || (I.hold > 0 && I.st === 'halt')) S.ride.lag = clk - I.tau;
         else if (I.followed) {
           I.followed = false;
           continue;
@@ -491,12 +515,14 @@ export const BUS = (() => {
     });
   // ---------------- boarding ----------------
   // where one gets in and out: beside the front door, at the kerb (right side)
-  function doorPt(I, out = 1.0) {
+  // (mid: the middle door instead of the front door; out < 0: inside the bus)
+  function doorPt(I, out = 1.0, mid = false) {
     const fx = Math.sin(I.hd),
       fy = Math.cos(I.hd),
       rx = Math.cos(I.hd),
       ry = -Math.sin(I.hd),
-      y = (D.DOOR_F[0] + D.DOOR_F[1]) / 2;
+      DR = mid ? D.DOOR_M : D.DOOR_F,
+      y = (DR[0] + DR[1]) / 2;
     return [I.x + fx * y + rx * (D.W / 2 + out), I.y + fy * y + ry * (D.W / 2 + out)];
   }
   function acts() {
@@ -556,7 +582,7 @@ export const BUS = (() => {
         if (!R_) return eye(I);
         // the bus at this very moment: the camera and the bus in the same frame (else the seat lags behind the moving bus by a frame's
         // way – at 50 km/h the eye sat behind its own backrest)
-        if (!R_.busy) {
+        if (!R_.busy && !(I.hold > 0 && I.st === 'halt')) {
           I.tau = CLOCK.t - R_.lag;
           place(I, 0);
           I.followed = true;
@@ -1118,6 +1144,11 @@ export const BUS = (() => {
   return {
     S,
     STOPS: () => STOPS,
+    // for the passengers (bus/bus_leute.js)
+    sameWay,
+    doorPt,
+    seen,
+    e0,
     plan: BUSPLAN,
     // for the traffic (verkehr/verkehr_auto.js, verkehr/verkehr.js): each drawn bus as four circles along it
     obstacles: () => {

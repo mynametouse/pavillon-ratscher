@@ -81,7 +81,11 @@ export const BUSMOD = (() => {
           v = Math.abs(j - 63.5) / 64,
           d = Math.max(0, Math.max((u - 0.62) / 0.38, (v - 0.86) / 0.14)),
           a = Math.max(0, 1 - d) ** 1.6;
-        img.data[(j * 64 + i) * 4 + 3] = Math.round(a * 255);
+        // (three reads an alphaMap from the green channel, not from alpha)
+        const o = (j * 64 + i) * 4,
+          g = Math.round(a * 255);
+        img.data[o] = img.data[o + 1] = img.data[o + 2] = g;
+        img.data[o + 3] = 255;
       }
     c.putImageData(img, 0, 0);
     M.shade.alphaMap = new THREE.CanvasTexture(cv);

@@ -137,13 +137,27 @@ with lib.browser() as b:
         E("window.CAM3 && (CAM3.want = true); document.querySelector('#busboard .x') && document.querySelector('#busboard .x').click(); GAME.go('bus')")
         steps(0.3)
         E("(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); BUS.board(e); })()")
-        # waiting: the clock jumps to a minute before the bus
+        # waiting: the clock jumps to a minute before the bus (two people come to wait for it, one gets off: BUSLEUTE.force)
+        E("BUSLEUTE.force = { ein: 2, aus: 1 }")
         E("document.querySelector('#busboard [data-k=warten]').click()")
         for i in range(40):
             steps(0.5)
             if not E("!!CLOCK.warp"): break
         w = J("({ t: CLOCK.hm(), focus: CLOCK.focused, ev: window.__ev.filter(e => e[0] === 'bus:warten').length })")
         ck('„Auf den Bus warten“: the clock jumps to 7:45, then runs in real time (the bus is due)', w['t'] == '07:45' and w['focus'] and w['ev'] >= 1, str(w))
+        # the people waiting beside the sign (their figures load)
+        for i in range(40):
+            lp = J("BUSLEUTE.state()")
+            if len([q for q in lp['pax'] if q['fig']]) >= 2: break
+            steps(0.2); time.sleep(0.5)
+        lp = J("BUSLEUTE.state()")
+        ck('two people wait at the stop (figures of the traffic)', len([q for q in lp['pax'] if q['st'] in ('wartet', 'kommt') and q['fig']]) >= 2, str(lp))
+        E("""(() => { window.CAM3 && (CAM3.want = false); const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30), fx = Math.sin(e.hd), fy = Math.cos(e.hd), rx = Math.cos(e.hd), ry = -Math.sin(e.hd);
+          const x = e.x - rx * 5.5 + fx * 7, y = e.y - ry * 5.5 + fy * 7; GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(e.x - x, e.y - y) * 180 / Math.PI, -4, 60); })()""")
+        steps(0.1)
+        pic(pg, 'a3_leute_warten')
+        E("window.CAM3 && (CAM3.want = true); GAME.go('bus')")
+        steps(0.1)
         # the bus comes at its minute and stops at the sign
         arr = None
         for i in range(90):
@@ -154,6 +168,13 @@ with lib.browser() as b:
                 arr = here[0]; break
         t_arr = E("CLOCK.hm()")
         ck('the 205 comes at its minute (7:46) and stands at the stop with open doors', arr is not None and t_arr in ('07:46', '07:47'), f"{t_arr} {arr}")
+        # the two get in at the front door (the bus waits for them)
+        for i in range(12):
+            steps(0.5)
+            if i == 2: pic(pg, 'b0_leute_steigen_ein')
+            if J("BUSLEUTE.state().stats.ein") >= 2: break
+        lp = J("BUSLEUTE.state()")
+        ck('the waiting people get in at the front door', lp['stats']['ein'] >= 2 and not [q for q in lp['pax'] if q['st'] == 'steigt'], str(lp))
         if arr:
             d = J(f"(() => {{ const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); return Math.hypot({arr['x']} - e.x, {arr['y']} - e.y); }})()")
             ck('the bus stands beside the sign (its middle within 9 m of the stop)', d < 9, f'{d:.1f} m')
@@ -237,6 +258,11 @@ with lib.browser() as b:
               GAME.view(x, y, KERN.ground(x, y) + 1.7, Math.atan2(e.x - x, e.y - y) * 180 / Math.PI, -3, 62); })()""")
             steps(0.3)
             pic(pg, 'e_schleusingen_zh')
+            lp = J("BUSLEUTE.state()")
+            ck('someone else gets off at the Zentralhaltestelle (middle door) and walks away', lp['stats']['aus'] >= 1 or any(q['st'] in ('aus', 'geht') for q in lp['pax']), str(lp))
+            E("BUSLEUTE.force = null; BUSLEUTE.clear()")
+            free = J("Object.entries(VERKEHR.S.busy).filter(([k, v]) => v === 'bus').length")
+            ck('no person left marked as a passenger after clearing', free == 0, str(free))
         ck.errors(errs)
         if 'nacht' in want:
             # at night: the 205 from Coburg at 22:57 at the Schleusebrücke – lamps, the lit display and inside
