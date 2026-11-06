@@ -184,10 +184,12 @@ verändert der Auftrag die Welt Stück für Stück (so sieht man es, wenn man hi
 - `STRAT.chapter.define({ id, title, text, order })`, `STRAT.chapter.set(id)`, `STRAT.chapter.cur()`;
   Ziele: `STRAT.chapter.goal('k3', { id, text, on: 'auftrag', when: d => d.state === 'fertig' && d.def === 'zaun' })` (ein Ereignis des Modus) oder
   `{ id, text, check: () => bool }` (zweimal je Sekunde gefragt) – sind alle Ziele des aktuellen Kapitels erreicht, kommt das nächste.
-- `STRAT.layer.define({ id, label, text, order, on, draw: (pr, W, H) => '<svg-Text>' })` – eine Ebene der Karte, im HUD schaltbar (ein zweites
+- `STRAT.layer.define({ id, label, text, order, on, under, draw: (pr, W, H) => '<svg-Text>' })` – eine Ebene der Karte, im HUD schaltbar
+  (`under: true` zeichnet unter Orten und Leuten, z. B. der Schleier des Wetters; ein zweites
   `define` mit derselben id ergänzt sie); `pr(x, y, dz)` → `[px, py, tiefe]`, dz Meter über dem Boden dort (auch oben in der Klinge).
-  Vorhanden: leute, orte, wege, beduerfnisse, wirtschaft, natur (was man vom Wald weiß), krisen, verkehr (Autos von `verkehr/*`, Busse über
-  `window.BUS.state().inst` von feat/bus), wetter.
+  Vorhanden: leute (mit dem Hund), orte, wege (mit dem Gespann beim Rücken), beduerfnisse, wirtschaft, natur (was man vom Wald weiß), krisen,
+  verkehr (Autos von `verkehr/*`, Busse mit Linie über `window.BUS.state().inst` von feat/bus), wetter (Wolkenschleier, Regen, Windpfeil –
+  `STRAT.W.wx(t)` mit `dir`, live über feat/wetter).
 
 ### Zeit und Ereignisse von STRAT
 - `STRAT.setSpeed(0 | 1 | 5 | 30)` (Spielminuten je Sekunde; 1× = die normale Spieluhr), `STRAT.skip(minuten | 'kommen' | 'morgen' | 'auftrag')`
@@ -214,6 +216,8 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
   Bretter dieser Holzart; ohne `wood` Eiche), `STHOLZ.shelf(minSterne, holzart)`, `STHOLZ.ownPanels()`; `WERK.simBoard({ sp })`; für Bauholz (strategie-bau): die Bretter mit Feuchte stehen in
   `HOLZSAW.boards` (`{ id, sp, t, L, wS, wW, mc, st: 'pile' | 'stack' | 'kiln' | 'shop' | 'used', blue, crack, warp }`), der Stapel in
   `HOLZDRY.stackMC()` (`{ n, avg, min, max }`) – Konstruktionsholz braucht ≤ 20 % (DIN 4074) und eine Sortierung.
+- 6.11. 2:15 – `layer.define({ under: true })`; `STRAT.W.wx(t).dir` (Windrichtung, aus der er kommt); Knöpfe mit `data-skip="<Minuten>"` in
+  einem Feld (`info()` eines Ortes) laufen im Zeitraffer.
 
 ## Offen
 

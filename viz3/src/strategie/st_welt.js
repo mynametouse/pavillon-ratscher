@@ -41,7 +41,7 @@ export const STWELT = (() => {
     WET = [0.45, 0.4, 0.42, 0.36, 0.42, 0.45, 0.45, 0.42, 0.38, 0.4, 0.48, 0.5],
     STORM = [0.05, 0.05, 0.04, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01, 0.03, 0.04, 0.05];
   const WXC = {};
-  // the weather at game time t: { cloud 0..1, rain mm/h, wind km/h, storm, src } – near the clock the one feat/wetter shows (window.WETTER:
+  // the weather at game time t: { cloud 0..1, rain mm/h, wind km/h, storm, dir (° it comes from), src } – near the clock the one feat/wetter shows (window.WETTER:
   // live, an hour of the game's day, or one tried), else one drawn per day from the climate (the same day always gives the same weather)
   W.force = null; // tests: a fixed weather { cloud, rain, wind, storm, src }
   W.wx = t => {
@@ -66,6 +66,7 @@ export const STWELT = (() => {
             rain: c.rain || 0,
             wind: Math.round((c.wind || 0) * 3.6),
             storm: (c.gust || 0) > 17.2 || (c.wind || 0) > 13.9,
+            dir: Number.isFinite(c.dir) ? Math.round(c.dir) : 250,
             src: L.label || 'Wetter wie draußen',
           };
           W._wl = { k, v };
@@ -90,6 +91,7 @@ export const STWELT = (() => {
       rain: wet && rr < 0.55 ? +(0.3 + rr * 3).toFixed(1) : 0,
       wind: Math.round(storm ? 70 + c * 300 : 6 + a * 22),
       storm,
+      dir: Math.round(200 + b * 120), // where it comes from: mostly south-west to north-west (the prevailing westerlies)
       src: 'Klima Meiningen (DWD), Tag für Tag gewürfelt',
     };
     const keys = Object.keys(WXC);

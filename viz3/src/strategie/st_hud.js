@@ -817,7 +817,15 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         y = Math.min(f.y0, f.y1);
       h += `<rect class="frame" x="${x}" y="${y}" width="${Math.abs(f.x1 - f.x0)}" height="${Math.abs(f.y1 - f.y0)}"/>`;
     }
-    for (const L of STRAT.layer.list()) if (L.draw && STRAT.layer.on(L.id)) h += L.draw(pr, Wd, Ht) || '';
+    // the layers of the API: on top – or beneath everything drawn above when a layer says so (under: the weather's veil)
+    let under = '';
+    for (const L of STRAT.layer.list())
+      if (L.draw && STRAT.layer.on(L.id)) {
+        const o = L.draw(pr, Wd, Ht) || '';
+        if (L.under) under += o;
+        else h += o;
+      }
+    h = under + h;
     if (h !== H.svgH) {
       H.svg.innerHTML = h;
       H.svgH = h;
