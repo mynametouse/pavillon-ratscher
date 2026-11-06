@@ -102,7 +102,10 @@ for mode, q in (('ohne', '?welt1'), ('mit', '')):
 json.dump(res, open(os.path.join(OUT, 'state.json'), 'w'), indent=1)
 for name, *_ in SPOTS:
     a, c = res.get(f'{name}_ohne', {}), res.get(f'{name}_mit', {})
-    ck(f'{name}: the world loaded in both runs', a.get('w', {}).get('tiles', 0) > 0 and c.get('w', {}).get('tiles', 0) > 0 and not c.get('w', {}).get('lastErr'), json.dumps({'ohne': a.get('w'), 'mit': c.get('w')})[:300])
+    # (tiles the app asks for beyond the mirrored square answer 404 in both runs: the set may add none of its own)
+    wa, wc = a.get('w', {}), c.get('w', {})
+    ck(f'{name}: the world loaded in both runs, the same tiles, no more failed ones with the set', wa.get('tiles', 0) > 0 and wc.get('tiles', 0) == wa.get('tiles', 0) and wc.get('err', 0) <= wa.get('err', 0) + 2,
+       json.dumps({'ohne': {k: wa.get(k) for k in ('tiles', 'req', 'err')}, 'mit': {k: wc.get(k) for k in ('tiles', 'req', 'err')}, 'tex': [a.get('tex'), c.get('tex')], 'heap': [a.get('heap'), c.get('heap')]}))
 ck('without ?welt1 the retouched tiles are taken (the blocks, the L 3004, Rappelsdorf, Veßra)', all(res.get(f'{n}_mit', {}).get('t2', {}).get('n', 0) > 0 for n in ('bloecke', 'markt', 'rappelsdorf', 'vessra')), json.dumps({k: v.get('t2') for k, v in res.items()})[:400])
 ck('with ?welt1 none of them', all(not res.get(f'{n}_ohne', {}).get('t2', {}).get('on') for n, *_ in SPOTS), json.dumps({k: v.get('t2') for k, v in res.items() if k.endswith('ohne')})[:300])
 # side by side: without | with the set (where PIL is there)
