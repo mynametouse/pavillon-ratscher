@@ -1286,6 +1286,50 @@ export const WDATA = (() => {
   ];
   // the dam of the Talsperre Ratscher (Structurae: 50° 29′ 31.5″ N, 10° 46′ 54.68″ E) in UTM 32N, ETRS89 (EPSG:25832)
   const DAM_UTM = [626388.3, 5594861.6];
+  // ---- small pure helpers of the data views (wissen/wissen_daten.js), tested in node ----
+  // public holidays in Thuringia: New Year, Good Friday, Easter Monday, 1 May, Ascension, Whit Monday, Weltkindertag (20.9.), German
+  // Unity (3.10.), Reformation Day (31.10.), Christmas – Easter after Gauss's rule (the anonymous Gregorian algorithm)
+  function holiday(y, m, d) {
+    if (['1.1', '1.5', '20.9', '3.10', '31.10', '25.12', '26.12'].includes(d + '.' + m)) return true;
+    const a = y % 19,
+      b = Math.floor(y / 100),
+      c = y % 100,
+      dd = Math.floor(b / 4),
+      e = b % 4,
+      f = Math.floor((b + 8) / 25),
+      g = Math.floor((b - f + 1) / 3),
+      h = (19 * a + b - dd - g + 15) % 30,
+      i = Math.floor(c / 4),
+      k = c % 4,
+      l = (32 + 2 * e + 2 * i - h - k) % 7,
+      mm = Math.floor((a + 11 * h + 22 * l) / 451),
+      em = Math.floor((h + l - 7 * mm + 114) / 31),
+      ed = ((h + l - 7 * mm + 114) % 31) + 1;
+    const easter = Date.UTC(y, em - 1, ed) / 864e5,
+      t = Date.UTC(y, m - 1, d) / 864e5;
+    return [-2, 1, 39, 50].includes(t - easter);
+  }
+  // the quiet hours of a moment (weekday 0 = Sunday, hour 0–24): which rule holds and whether loud machines may run (32. BImSchV § 7)
+  function quietAt(y, m, d, wd, hr) {
+    if (wd === 0 || holiday(y, m, d))
+      return {
+        id: 'ruhe_sonntag',
+        loud: false,
+        text: (wd === 0 ? 'Sonntag' : 'Feiertag') + ': laute Geräte bleiben aus.',
+      };
+    if (hr < 7 || hr >= 20)
+      return { id: 'ruhe_nacht', loud: false, text: 'Ruhezeit (20–7 Uhr): laute Geräte bleiben aus.' };
+    const lb = (hr >= 7 && hr < 9) || (hr >= 13 && hr < 15) || (hr >= 17 && hr < 20);
+    return {
+      id: lb ? 'laubblaeser' : 'ruhe_nacht',
+      loud: true,
+      text: 'Werktag, 7–20 Uhr: laute Geräte erlaubt' + (lb ? ' – Laubbläser und Freischneider gerade nicht.' : '.'),
+    };
+  }
+  // where a level falls to L: a road (line source, level L25 at 25 m, −4.5 dB per doubling over soft ground) and a machine (point source,
+  // level at 1 m, −6 dB per doubling); capped so a band stays readable
+  const dLine = (L25, L) => (L25 <= L ? 0 : Math.min(320, 25 * Math.pow(10, (L25 - L) / 15)));
+  const dPoint = (L1, L) => (L1 <= L ? 0 : Math.min(700, Math.pow(10, (L1 - L) / 20)));
   const ids = new Set(E.map(e => e.id));
-  return { CH, E, WHY, THINK, TEACH, TOPICS, ROLE, BOARDS, DAM_UTM, Q, ids };
+  return { CH, E, WHY, THINK, TEACH, TOPICS, ROLE, BOARDS, DAM_UTM, Q, ids, holiday, quietAt, dLine, dPoint };
 })();

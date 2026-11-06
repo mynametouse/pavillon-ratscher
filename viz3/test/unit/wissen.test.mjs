@@ -21,7 +21,10 @@ test('every entry: unique id, a chapter, title, text, a way to be found and a so
     assert.ok(e.title && e.text && e.text.length > 60, e.id + ': title and text');
     assert.ok(e.icon, e.id + ': symbol');
     const f = e.find || {};
-    assert.ok((f.place || []).length + (f.ev || []).length + (f.talk || []).length + (f.look || []).length > 0, e.id + ': how to find it');
+    assert.ok(
+      (f.place || []).length + (f.ev || []).length + (f.talk || []).length + (f.look || []).length > 0,
+      e.id + ': how to find it'
+    );
     assert.ok(Array.isArray(e.src) && e.src.length > 0, e.id + ': a source');
     for (const s of e.src) {
       assert.ok(Array.isArray(s) && typeof s[0] === 'string' && s[0].length > 3, e.id + ': source title');
@@ -39,22 +42,39 @@ test('every „Warum?“: title, one sentence or two, a linked source', () => {
     assert.ok(w.src.length && w.src.every(s => s[0] && (s[1] === null || /^https:\/\//.test(s[1]))), id + ': source');
   }
   // the strategy mode's rules (strategie/st_data.js) that the book explains under the same ids
-  for (const id of ['ruhe_sonntag', 'ruhe_nacht', 'tageslicht', 'lehrgang', 'allein', 'psa_forst', 'psa_werk', 'sturm', 'saftruhe'])
+  for (const id of [
+    'ruhe_sonntag',
+    'ruhe_nacht',
+    'tageslicht',
+    'lehrgang',
+    'allein',
+    'psa_forst',
+    'psa_werk',
+    'sturm',
+    'saftruhe',
+  ])
     assert.ok(D.WHY[id], 'why ' + id);
   for (const [re, id] of D.THINK) {
     assert.ok(re instanceof RegExp && D.WHY[id], 'thought pattern → ' + id);
   }
-  assert.ok(D.THINK.some(([re]) => re.test('Heute ist Sonntag – Sonn- und Feiertagsruhe.')), 'a Sunday refusal gets its „?“');
+  assert.ok(
+    D.THINK.some(([re]) => re.test('Heute ist Sonntag – Sonn- und Feiertagsruhe.')),
+    'a Sunday refusal gets its „?“'
+  );
   // the refusals of werk/gear.js as the game words them: the first pattern that matches names the rule
   const first = t => (D.THINK.find(([re]) => re.test(t)) || [])[1];
-  assert.equal(first('Erst die Forstausrüstung aus der Forstkiste am Traktor holen: Helm, Schnittschutzhose'), 'psa_forst');
+  assert.equal(
+    first('Erst die Forstausrüstung aus der Forstkiste am Traktor holen: Helm, Schnittschutzhose'),
+    'psa_forst'
+  );
   assert.equal(first('Erst die Schutzausrüstung vom PSA-Brett holen: Gehörschutz, Schutzbrille'), 'psa_werk');
   assert.equal(first('Handschuhe aus! An der Maschine können sie vom Werkzeug eingezogen werden.'), 'handschuhe');
   assert.equal(first('Ein schöner Tag im Garten.'), undefined);
 });
 
 test('teachers: Gerhard, Wolfgang, Ingrid, Hubert, Ronald – every topic opens entries that exist and are found by that talk', () => {
-  for (const who of ['gerhard', 'wolfgang', 'ingrid', 'hubert', 'ronald']) assert.ok((D.TEACH[who] || []).length >= 3, who);
+  for (const who of ['gerhard', 'wolfgang', 'ingrid', 'hubert', 'ronald'])
+    assert.ok((D.TEACH[who] || []).length >= 3, who);
   for (const [who, list] of Object.entries(D.TEACH))
     for (const t of list) {
       const ids = t.entry ? [t.entry] : t.entries;
@@ -88,4 +108,41 @@ test('facts that must stay right (checked 6.11.2026 with the sources named)', ()
   assert.match(t('g_vessra').here, /seit 1990/);
   assert.match(t('p_ortsteil').text, /22\. Februar 1994/);
   assert.match(t('tier:rotmilan').here, /14\.000 bis 16\.000/);
+});
+
+test('quiet hours and holidays in Thuringia (the data views)', () => {
+  // 2026: Easter Sunday 5 April – Good Friday 3.4., Easter Monday 6.4., Ascension 14.5., Whit Monday 25.5.
+  for (const [m, d] of [
+    [4, 3],
+    [4, 6],
+    [5, 14],
+    [5, 25],
+    [9, 20],
+    [10, 31],
+    [12, 26],
+    [1, 1],
+  ])
+    assert.ok(D.holiday(2026, m, d), `${d}.${m}.`);
+  for (const [m, d] of [
+    [4, 5 + 2],
+    [5, 15],
+    [11, 6],
+    [10, 30],
+  ])
+    assert.ok(!D.holiday(2026, m, d), `${d}.${m}. is a working day`);
+  assert.equal(D.quietAt(2026, 11, 8, 0, 11).id, 'ruhe_sonntag');
+  assert.equal(D.quietAt(2026, 11, 6, 5, 21).id, 'ruhe_nacht');
+  assert.equal(D.quietAt(2026, 11, 6, 5, 10).loud, true);
+  assert.equal(D.quietAt(2026, 11, 6, 5, 8).id, 'laubblaeser');
+  assert.equal(D.quietAt(2026, 10, 31, 6, 10).loud, false, 'Reformation Day');
+});
+
+test('noise falls off with the distance: a road by its class, a machine as a point', () => {
+  // −6 dB per doubling: a chainsaw of 105 dB(A) at 1 m is down to 55 dB(A) at about 316 m
+  assert.ok(Math.abs(D.dPoint(105, 55) - 316) < 2);
+  assert.ok(D.dPoint(92, 55) > 60 && D.dPoint(92, 55) < 80, 'a petrol mower');
+  assert.equal(D.dPoint(50, 55), 0);
+  // a county road (59 dB(A) at 25 m) is below 55 dB(A) beyond about 46 m
+  assert.ok(Math.abs(D.dLine(59, 55) - 46.4) < 1);
+  assert.ok(D.dLine(80, 45) <= 320, 'capped');
 });

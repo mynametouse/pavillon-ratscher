@@ -17,6 +17,7 @@ import { STREAM } from '../garden/stream_geo.js';
 import { GPLAN } from '../gplan/gplan.js';
 import { GPSUN } from '../gplan/gplan_sun.js';
 import { AMT } from '../amt/amt.js';
+import { WDATA } from './wissen_data.js';
 import { WISSEN } from './wissen.js';
 import { WORTE } from './wissen_orte.js';
 export const WDATEN = (() => {
@@ -36,45 +37,11 @@ export const WDATEN = (() => {
       min: ((CLOCK && CLOCK.t) || 0) % 1440,
     };
   }
-  // public holidays in Thuringia (Easter after Gauss; Weltkindertag 20.9. and Reformationstag 31.10. are Thuringian holidays)
-  function holiday(y, m, d) {
-    const fixed = ['1.1', '1.5', '20.9', '3.10', '31.10', '25.12', '26.12'];
-    if (fixed.includes(d + '.' + m)) return true;
-    const a = y % 19,
-      b = Math.floor(y / 100),
-      c = y % 100,
-      dd = Math.floor(b / 4),
-      e = b % 4,
-      f = Math.floor((b + 8) / 25),
-      g = Math.floor((b - f + 1) / 3),
-      h = (19 * a + b - dd - g + 15) % 30,
-      i = Math.floor(c / 4),
-      k = c % 4,
-      l = (32 + 2 * e + 2 * i - h - k) % 7,
-      mm = Math.floor((a + 11 * h + 22 * l) / 451),
-      em = Math.floor((h + l - 7 * mm + 114) / 31),
-      ed = ((h + l - 7 * mm + 114) % 31) + 1;
-    const easter = Date.UTC(y, em - 1, ed) / 864e5,
-      t = Date.UTC(y, m - 1, d) / 864e5;
-    return [-2, 1, 39, 50].includes(t - easter);
-  }
+  // public holidays and the quiet hours (wissen/wissen_data.js, tested in node)
+  const holiday = WDATA.holiday;
   function quiet() {
-    const T = today(),
-      hr = T.min / 60;
-    if (T.wd === 0 || holiday(T.y, T.m, T.d))
-      return {
-        id: 'ruhe_sonntag',
-        loud: false,
-        text: (T.wd === 0 ? 'Sonntag' : 'Feiertag') + ': laute Geräte bleiben aus.',
-      };
-    if (hr < 7 || hr >= 20)
-      return { id: 'ruhe_nacht', loud: false, text: 'Ruhezeit (20–7 Uhr): laute Geräte bleiben aus.' };
-    const lb = (hr >= 7 && hr < 9) || (hr >= 13 && hr < 15) || (hr >= 17 && hr < 20);
-    return {
-      id: lb ? 'laubblaeser' : 'ruhe_nacht',
-      loud: true,
-      text: 'Werktag, 7–20 Uhr: laute Geräte erlaubt' + (lb ? ' – Laubbläser und Freischneider gerade nicht.' : '.'),
-    };
+    const T = today();
+    return WDATA.quietAt(T.y, T.m, T.d, T.wd, T.min / 60);
   }
   // ---- projection: STRAT gives pr(x, y, dz above the ground) → [px, py, depth]; the plan view pr(x, y, z) → [px, py] ----
   const wrapPlan =
@@ -129,10 +96,7 @@ export const WDATEN = (() => {
     service: { rank: 2, col: '#d9d3c2', L25: 44, de: 'Zufahrt' },
     track: { rank: 1, col: '#a98a5a', L25: 38, de: 'Feld- und Waldweg' },
   };
-  // distance (m) at which a line source of level L25 (at 25 m) falls to L: −4.5 dB per doubling over soft ground
-  const dLine = (L25, L) => (L25 <= L ? 0 : Math.min(320, 25 * Math.pow(10, (L25 - L) / 15)));
-  // point sources (sound pressure at 1 m, dB(A)): −6 dB per doubling
-  const dPoint = (L1, L) => (L1 <= L ? 0 : Math.min(700, Math.pow(10, (L1 - L) / 20)));
+  const { dLine, dPoint } = WDATA;
   function machines() {
     const out = [];
     try {
