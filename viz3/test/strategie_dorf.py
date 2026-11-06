@@ -405,6 +405,21 @@ with lib.browser() as b:
         p = J("STDORF.state().proj.glasfaser")
         lg = J("STDORF.st().proj.glasfaser.log.map(e => e[1])")
         ck('the quota is reached (households counted from your reputation and the round), the provider builds, the cabinet stands', p['st'] == 'fertig' and 'glasfaser' in J("STDWELT.state().items") and any('Quote' in n for n in lg), str(p) + ' ' + str(lg)[:300])
+        # all street lamps to LED: the town's share in the council, the federal Kommunalrichtlinie (no call deadline: the application, the
+        # agency's decision), only then the electricians
+        E("STDORF.meet('katrin', 'sarah')")
+        q = J("STDORF.start('led')")
+        j = job('dp_led_0', ['christoph'])
+        if j and j.get('id'): finish_job(j['id'], 240)
+        for k in range(6):
+            p = J("STDORF.state().proj.led")
+            if p['st'] != 'laeuft' or p['due'] is None: break
+            E("CLOCK.wait(Math.max(5, STDORF.state().proj.led.due - CLOCK.t + 20), 'Test')")
+            until("!CLOCK.warp", 60)
+            steps(1.5)
+        p = J("STDORF.state().proj.led")
+        lg = J("STDORF.st().proj.led ? STDORF.st().proj.led.log.map(e => e[1]) : []")
+        ck('LED for all street lamps: the town pays 60 %, the Kommunalrichtlinie 40 % – approved without a call deadline, then the electricians', q and q.get('ok') and p['st'] == 'fertig' and any('Bewilligt' in n for n in lg), str(q) + ' ' + str(p) + ' ' + str(lg)[:300])
     if 'welt' in want:
         # daylight for the pictures: forward to the next 11:00 (never back – what was built in the last hours would not be due yet)
         E("CLOCK.wait(CLOCK.until(11), 'Test')")

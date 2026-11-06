@@ -425,7 +425,21 @@ export const STDORF = (() => {
         }
       );
     } else if (s.k === 'stadt') p.due = nextStadt(t);
-    else if (s.k === 'foerder') {
+    else if (s.k === 'foerder' && !D.FOERDER[P0(id).foerder].calls) {
+      // a programme without calls (the Kommunalrichtlinie): the application goes in now, the decision comes after the agency's time
+      const F = D.FOERDER[P0(id).foerder];
+      p.fs = 'bewilligung';
+      p.pts = null;
+      p.due = Math.round(t + F.approve * 1440);
+      STRAT.note(
+        `${P0(id).title}: Antrag beim ${F.title.split(' – ')[1] || F.title} gestellt – der Bescheid kommt in etwa ${Math.round(F.approve / 30)} Monaten.`,
+        {
+          kind: 'ereignis',
+          why: F.learn,
+          src: F.src,
+        }
+      );
+    } else if (s.k === 'foerder') {
       const F = D.FOERDER[P0(id).foerder];
       p.fs = 'einreichen';
       p.pts = null;
@@ -1093,7 +1107,7 @@ export const STDORF = (() => {
         ({
           einreichen: 'Förderung: Projektskizze zum Stichtag',
           auswahl: 'Förderung: die Aktionsgruppe bewertet',
-          bewilligung: 'Förderung: Antrag beim Land, warten auf den Bescheid',
+          bewilligung: 'Förderung: Antrag gestellt, warten auf den Bescheid',
         }[p.fs] || 'Förderung') + when
       );
     if (s.k === 'bauhof') return `${s.text || 'Der Bauhof setzt es um'}${when}`;
@@ -1352,6 +1366,13 @@ export const STDORF = (() => {
             h += `<text x="${q[0].toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="middle" style="fill:#fff;font:700 12px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px"><title>${tt}</title>${sym}</text>`;
         }
       }
+      // the street lamps of the village once they are LED (world/village_props.js, the lamps of the photos)
+      if (st().built.led != null && window.VPROPS && Array.isArray(VPROPS.lamps))
+        for (const l of VPROPS.lamps) {
+          const q = pr(l.x, l.y, 1);
+          if (q[2] < 1)
+            h += `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3.4" fill="#fff1c9" stroke="#c99a2e" stroke-width="1"><title>LED-Leuchte, 3000 K, nachts gedimmt</title></circle>`;
+        }
       const H = AMT.homes ? AMT.homes() : null;
       if (!H) return h;
       const COL = { gut: '#8fd16a', mittel: '#e8c26a', schlecht: '#e0705a' };

@@ -46,6 +46,7 @@ export const STDDATA = (() => {
     },
     katrin: {
       need: 'laterne',
+      need2: 'led',
       knows: ['heike', 'ingrid'],
       help: 'organisiert die Eltern',
       tip: 'Katrin pflegt in der Stadt und hat zwei Kinder. Morgens um 7:12 fährt der Schulbus – im Winter ist es da noch stockdunkel.',
@@ -669,6 +670,42 @@ export const STDDATA = (() => {
       ],
     },
   });
+  // ---- all street lamps of Ratscher to LED: the town's project, funded by the federal Kommunalrichtlinie (no call deadline) ----
+  PROJ.led = {
+    title: 'Straßenbeleuchtung auf LED umrüsten',
+    from: 'katrin',
+    by: 'stadt',
+    cost: 9100,
+    need: 55,
+    foerder: 'krl',
+    build: 'led',
+    place: 'anger',
+    fans: { katrin: 4, gerhard: 4, ingrid: 3, heike: 2 },
+    text: 'Die 14 Straßenleuchten von Ratscher bekommen LED-Köpfe: warmweiß (höchstens 3000 Kelvin), nach unten abgeschirmt, nachts ab 22 Uhr halb so hell.',
+    learn:
+      'Alte Quecksilber- oder Natriumdampfleuchten brauchen je 70–125 W, LED-Köpfe 15–25 W. 14 Leuchten × gut 4000 Stunden im Jahr: rund 3.000 kWh weniger – bei 0,30 €/kWh etwa 900 € im Jahr. Die Kommunalrichtlinie fördert das mit 25 % (zeit- oder präsenzabhängig geschaltet) oder 40 % (adaptiv geregelt), wenn es mindestens die Hälfte CO₂ spart; warmweißes Licht lockt weniger Insekten.',
+    src: 'Kommunalrichtlinie 2022–2027 (Nationale Klimaschutzinitiative), Außen- und Straßenbeleuchtung: 25 %/40 %, CO₂-Minderung ≥ 50 %, max. 3000 K; Kosten (650 € je Leuchtenkopf mit Einbau) und Strompreis Annahme',
+    steps: [
+      {
+        k: 'job',
+        label: 'Leuchten zählen, Verbrauch schätzen',
+        place: 'anger',
+        people: [1, 2],
+        skill: 'maschinen',
+        min: 2,
+        dur: 90,
+        help: ['katrin'],
+        prep: true,
+        text: 'Mit Katrin abends durchs Dorf: wie viele Leuchten, welche Lampen, wie lange sie brennen – die Zahlen für den Antrag.',
+        learn:
+          'Ein Förderantrag braucht eine Einsparprognose: alte und neue Leistung, Brennstunden im Jahr, daraus die eingesparten kWh und das CO₂.',
+      },
+      { k: 'rat' },
+      { k: 'stadt' },
+      { k: 'foerder' },
+      { k: 'bauhof', days: 3, text: 'Die Elektrofirma tauscht die Leuchtenköpfe – erst nach dem Zuwendungsbescheid.' },
+    ],
+  };
   // ---- neighbourly help: small things one does for people (their opinion grows; Falko's „your style shapes the world“) ----
   const HILFE = {
     heike: {
@@ -784,6 +821,17 @@ export const STDDATA = (() => {
       learn:
         'Nie vor dem Bewilligungsbescheid anfangen: Gefördert wird nur, was noch nicht begonnen hat – wer vorher einen Auftrag vergibt, verliert die Förderung. Ausgezahlt wird erst nach dem Verwendungsnachweis; die Stadt muss vorfinanzieren.',
       rule: 'Verwaltungsvorschriften zu § 44 Thüringer Landeshaushaltsordnung (Förderung nur für Vorhaben, die noch nicht begonnen haben)',
+    },
+    // the federal Kommunalrichtlinie: applications all year (no call deadline, no selection), a decision of the project agency, then build
+    krl: {
+      title: 'Kommunalrichtlinie – Projektträger Zukunft – Umwelt – Gesellschaft (ZUG)',
+      rate: 0.4,
+      calls: null,
+      approve: 75,
+      src: 'Kommunalrichtlinie 2022–2027 der Nationalen Klimaschutzinitiative (Fördersatz 40 % bei adaptiver Regelung; finanzschwache Kommunen mehr); Bearbeitungszeit hier Annahme',
+      learn:
+        'Bei der Kommunalrichtlinie stellt die Stadt den Antrag beim Projektträger, jederzeit im Jahr. Vor dem Zuwendungsbescheid darf kein Auftrag vergeben werden; ausgezahlt wird nach dem Verwendungsnachweis.',
+      rule: 'Bundeshaushaltsordnung § 44 mit Verwaltungsvorschriften (Förderung nur für Vorhaben, die noch nicht begonnen haben)',
     },
   };
   // ---- the money: the Ortsteil's (amt: 600 € a year, § 45 (6) ThürKO), the town's for small matters (simplified as in amt/amt.js) ----
