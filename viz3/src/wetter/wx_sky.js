@@ -178,15 +178,16 @@ export const WXSKY = (() => {
       U.wxClr.value = 0;
       return;
     }
-    // a clear sky (from the data, not the calendar's): the photographs' clouds give way while the photographed sky shows (by day and in
-    // the twilight; at night it is the night's own gradient). The gradient is the day's (DN's anchors, matched to the photographs'
-    // measured zenith and horizon), the zenith a touch deeper; the glow in the colour of the sun
-    const clr = (W.clear || 0) * clamp(L.gS, 0, 1) * (1 - clamp(L.nK || 0, 0, 1));
+    // a clear sky (from the data, not the calendar's): the photographs' clouds give way by day, with the sun above ~10° (lower, the glow
+    // of dawn and dusk lies on one side of the sky – the photographs keep it, clouds and all; at night the night's own gradient). The
+    // gradient is the day's (DN's anchors, matched to the photographs' measured zenith and horizon), the zenith a touch deeper; the
+    // glow in the colour of the sun
+    const clr = (W.clear || 0) * clamp(L.gS, 0, 1) * (1 - clamp(L.nK || 0, 0, 1)) * sst(3, 10, s.sunEl);
     U.wxClr.value = clr;
     if (clr > 0) {
       U.wxCZ.value.copy(L.zen).multiply(ZDEEP);
       U.wxCH.value.copy(L.hor);
-      U.wxCG.value.copy(L.sunC).multiplyScalar(s.sunEl > -2 ? 1 : 0);
+      U.wxCG.value.copy(L.sunC);
     }
     const c = W.cover,
       wet = clamp((W.rain + 2.5 * W.snow) / 5, 0, 1),
