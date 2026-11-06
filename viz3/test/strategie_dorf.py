@@ -22,7 +22,7 @@ with lib.browser() as b:
     E("document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')")
     def page_pic(name):
         try:
-            E("GAME.shot(); STHUD.draw()"); pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=120000); print('page shot', name, flush=True)
+            E("GAME.shot(); STHUD.draw()"); pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=25000); print('page shot', name, flush=True)
         except Exception as e: print('note: page shot', name, 'failed:', repr(e)[:160], flush=True)
     def until(cond, secs=120, dt=0.25):
         for i in range(int(secs / 5)):
