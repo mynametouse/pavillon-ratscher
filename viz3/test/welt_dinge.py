@@ -102,7 +102,7 @@ with lib.browser() as b:
     ck('the school bus stop is kept free (no place within 5 m of the van the photo shows there)', kb > 5, f'nearest place {kb:.1f} m')
     # walking into a parked car: find one that stands, come from its side
     E("for (const p of DINGE.places) if (p.im && !p.on) {}")
-    tgt = J("(() => { const L = DINGE.places.filter(p => p.im && p.on && !p.hide); const p = L[0]; return p ? { i: p.i, x: p.x, y: p.y, az: p.az, w: p.box.ex } : null; })()")
+    tgt = J("(() => { const L = DINGE.places.filter(p => p.im && p.on && !p.hide && !p.door); const p = L[0]; return p ? { i: p.i, x: p.x, y: p.y, az: p.az, w: p.box.ex } : null; })()")
     if tgt:
         a = math.radians(tgt['az'])
         rx, ry = math.cos(a), -math.sin(a)
