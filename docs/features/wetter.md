@@ -56,7 +56,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Jede Art wird erst geladen, wenn ihr Wetter kommt (kein Speicher für Sturm und Donner an einem ruhigen Tag). Nieselregen und
   Sturmpfeifen im Browser erzeugt. Die Atmosphäre des Spiels hört mit: Vögel verstummen bei Regen, Gewitter, Nebel und Sturm, der leise
   Wind der Atmosphäre folgt dem echten Wind (eine windstille Nacht ist still).
-- **Bäume im Wind** (`wetter/wx_wind.js`): die Gartenbäume und Hecken (`garden/trees.js`, instanzierte Kronen) neigen sich vom Wind weg
+- **Bäume im Wind** (`wetter/wx_wind.js`): die Gartenbäume und Hecken (`garden/trees.js`, instanzierte Kronen) und die Pflanzen des
+  Gartenplaners (ihre Arten baut `buildTreeKind` später, `TREEHOOK` reicht sie herüber) neigen sich vom Wind weg
   und wiegen zurück (langsames Schwingen, schnelles Blattzittern), oben mehr als unten, mit dem Quadrat der Windstärke, Böen stärker, jeder
   Baum in eigenem Takt – ein paar Zeilen im Blatt-Shader, beim Laden eingesetzt (eigener Cache-Schlüssel `|wxsway`, kein Programm
   später), zur Laufzeit nur Uniforms; bei Windstille bewegt sich nichts und es wird nichts dafür gezeichnet. Ebenso **der Rasen und die
@@ -78,7 +79,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 ## Testen
 
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9001 --serve wetter` (Abschnitte: `python3 viz3/test/wetter.py 9001
-  start,jetzt,wetter,innen,ton,kalender,fehler,zombie,neu`), Bilder in `out/wetter/`. Auf GitHub über `viz3/extra/wetter/tests.txt`.
+  start,jetzt,wetter,innen,ton,kalender,fehler,zombie,neu`), Bilder in `out/wetter/`. Auf GitHub über `viz3/extra/wetter/tests.txt`
+  (`wetter` und `gartenplaner_kammbach` – dessen Pflanzen in Töpfen dürfen kein neues Programm brauchen).
 - Ein Testbrowser fragt Open-Meteo nie (`navigator.webdriver`); `WETTER.mock(fn | json | 'fail')` antwortet statt dessen in der Form von
   Open-Meteo. `WETTER.state()` zeigt Quelle, Werte, Tropfen, Spritzer, Himmel, Tonpegel, geladene Aufnahmen, Bäume, Schauer.
   Zum Prüfen von Hand: `WETTER.preset('schauer')`, `WETTER.shower(0 | 1 | null)` (zwischen den Zellen / unter einer / wie es kommt),
@@ -114,7 +116,7 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   - `viz3/src/core/save.js`: ein Schlüssel `pav-wetter-v1`.
   - `viz3/src/audio/audio.js`: `wxBirds`, `wxWind` (Standard 1) und `audio.weather({ birds, wind })` – Vögel (Schleife und Einzelrufe) und
     der leise Wind (Aufnahme und erzeugter) werden damit multipliziert; fünf markierte Stellen.
-  - `viz3/src/modules.txt`: Block `# feat/wetter` vor `game/tutorial.js`.
+  - `viz3/src/modules.txt`: Block `# feat/wetter` (nach dem Zusammenführen vor `# feat/bus`, beide vor `game/tutorial.js`).
   - `viz3/src/garden/grass.js`: zwei Zeilen `if (GRASS.wxSway) GRASS.wxSway(mat);` gleich nach `patchSV` (Rasen, Wiesenblumen) – das Wetter
     setzt `GRASS.wxSway` beim Laden und patcht damit die Materialien, bevor sie übersetzt werden.
   - `viz3/src/garden/trees.js`: `export const TREEHOOK = { leaf: null }` und in `buildTreeKind` `if (TREEHOOK.leaf) TREEHOOK.leaf(leaf);`
@@ -124,7 +126,7 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - Die Menüzeile „Wetter“ setzt `wetter/wetter.js` selbst unter „Spielzeit“ ein (keine Änderung an `shell/menu.html`); das Wetterzeichen
   hängt es als `span.wxi` an `#clockbtn` (die Uhr und DN schreiben nur `.hbt` und das erste `.hbi`).
 - Für ARCHITECTURE.md: neuer `window`-Name `WETTER` (`wetter/wetter.js`; Test-API `mock`, `snap`, `state`, `preset`, `setMode`,
-  `clockToNow`, `strike`, `fall`, `data`), Schlüssel `pav-wetter-v1` `{ v: 1, m: 'live' | 'kalender' }`, Hinweis `pav-wetter-neu`
+  `clockToNow`, `strike`, `shower`, `refresh`, `fall`, `data`), Schlüssel `pav-wetter-v1` `{ v: 1, m: 'live' | 'kalender' }`, Hinweis `pav-wetter-neu`
   (SAVE.once); Module `wetter/wx_data.js` (WXDATA, rein), `wx_sky.js` (WXSKY), `wx_fall.js` (WXFALL), `wx_ton.js` (WXTON), `wx_boden.js`
   (WXBODEN), `wx_wind.js` (WXWIND), `wetter.js`. Fremde Materialien, die das Wetter zur Laufzeit (Uniforms) oder beim Laden (Shader)
   ändert: der Himmel und die Sterne von `time/daynight.js` (Shader, beim Laden), die Blätter von `garden/trees.js` und Rasen/Blumen von
