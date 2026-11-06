@@ -326,6 +326,39 @@ export const STWELT = (() => {
           g.add(me);
         }
         undo.push(() => box.dispose());
+        // own wood in the workshop (werk/werk.js): a glued panel and a finished board of larch and of spruce – their materials once, like
+        // the oak ones the workshop shows from the start (copies of a panel of the rack, never in the rack themselves)
+        try {
+          const WK = window.WERK,
+            src = WK && WK.RACK && WK.wpMesh ? WK.RACK.items.find(w => w.st === 'panel') : null;
+          if (src)
+            for (const sp of ['larch', 'spruce']) {
+              const base = Object.assign({}, src, { sp, own: true, _mats: null, _mk: null, where: 'gone' });
+              const done = Object.assign({}, base, {
+                st: 'done',
+                L: 500,
+                Z: 45,
+                Zcur: 40,
+                H: 40,
+                strips: Array.from({ length: 8 }, (_, k) => ({ v0: k * 48.2, fa: false, fb: false })),
+                slices: Array.from({ length: 9 }, (_, k) => ({ flip: k % 2 === 1 })),
+                trim: true,
+                cham: true,
+                grit: 240,
+                raised: true,
+                oil: { n: 2, t: 0, wiped: true, rag: false },
+                brand: 1,
+                done: true,
+              });
+              for (const wp of [base, done]) {
+                const me = WK.wpMesh(wp, { edge: true }); // as the rack and the shelf draw them
+                me.position.set(0, -60, 0);
+                g.add(me);
+              }
+            }
+        } catch (e) {
+          console.warn('strategie warm werk', e);
+        }
         let first = null;
         g.traverse(o => {
           if (o.isMesh) {
