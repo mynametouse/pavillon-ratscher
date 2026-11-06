@@ -122,6 +122,16 @@ export const GEB = (() => {
       o.sp = 3.4;
       return o;
     }
+    // a flat-roofed building of several storeys (flats, a school, offices): light plaster, plain white windows on every storey
+    if (b.r === 0 && b.h >= 9) {
+      return Object.assign(o, {
+        style: ST.MODERN,
+        col: PASTEL[[0, 4, 4, 9, 1, 5][Math.floor(k2 * 6)]],
+        sp: 3.3 + hh(id + 4) * 0.4,
+        frame: 0,
+        raised: false,
+      });
+    }
     // houses: as world/village.js styleOf0 – the older look near the Anger
     const dC = Math.hypot(b.cx - ANGER[0], b.cy - ANGER[1]),
       old = dC < 330 ? 1 - dC / 330 : 0,
@@ -686,8 +696,11 @@ export const GEB = (() => {
     return J;
   }
   function runJobs() {
-    const t0 = performance.now();
-    while (JOBS.length && performance.now() - t0 < 8) {
+    if (!JOBS.length) return;
+    // the ground first: while the world's tiles load (a car at the edge of the square waits for them), 2 ms of building per frame
+    const t0 = performance.now(),
+      budget = WELT.state && WELT.state().loading > 0 ? 2 : 8;
+    while (JOBS.length && performance.now() - t0 < budget) {
       const J = JOBS[0];
       if (!J.dead && J.i < J.list.length) {
         try {

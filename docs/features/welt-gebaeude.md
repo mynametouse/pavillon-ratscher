@@ -7,9 +7,11 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
 
 - **Gebäude aus Daten (Ratschers Quadrat):** `viz3/src/gebaeude/gebaeude.js` (`GEB`) baut die **307 Gebäude, die OSM fehlten**, aus
   ETHOS.BUILDA (Forschungszentrum Jülich, Grundriss und Höhe jedes Gebäudes in Deutschland, für Thüringen aus dem LoD2 des Landes; ODbL 1.0):
-  44 Häuser, 34 Scheunen und Hallen, 220 Schuppen und Garagen, 3 runde Behälter (Gülle/Silage), 6 Türme/Silos. Echte Lage, echte Höhe
+  45 Häuser, 33 Scheunen und Hallen, 220 Schuppen und Garagen, 3 runde Behälter (Gülle/Silage), 6 Türme/Silos. Echte Lage, echte Höhe
   (Boden bis höchster Punkt), Dachform geschätzt (Satteldach längs, große Häuser teils Walmdach, Schuppen Pultdach, Garagen flach, Hallen
-  flach geneigt; bei fast quadratischen Häusern und Scheunen die Firstrichtung aus dem Luftbild – die beiden Dachseiten sind von der Sonne
+  flach geneigt; Gebäude mit mehreren Geschossen – Wohnblöcke, Schulen, Stadthäuser, ab 10 m Höhe und höchstens 18 m tief – als
+  verputzte Häuser mit Fenstern je Geschoss, flach gedeckt, wo das Luftbild ein ebenes Dach ohne Ziegel zeigt, sonst mit Satteldach;
+  bei fast quadratischen Häusern und Scheunen die Firstrichtung aus dem Luftbild – die beiden Dachseiten sind von der Sonne
   verschieden hell, die Trennlinie ist der First: in Ratscher 9, jenseits 798 Gebäude), Dachfarbe aus dem Luftbild 2024. Aussehen wie das
   Dorf: dieselben Fassaden- und Dach-Shader von `world/village.js`
   (Schuppen aus Brettern, Garagen verputzt oder Ziegel mit hellem Tor, Scheunen mit Bretterwand auf Sockel, Hallen aus Blech, Häuser im
@@ -31,8 +33,8 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   Schleusingen um die Altstadt herum (1,7 km um den Markt, ohne die 789 Häuser von `welt/schleusingen.js`), die Straßen, die man fährt
   (`welt/fahrt.js`, 600 m beiderseits: Richtung Schleusingen und Kloster Veßra mit den Dörfern unterwegs samt ihren Seitenstraßen),
   Kloster Veßra (950 m, ohne die 156 Häuser von `welt/vessra.js`). Eine Zelle wird geholt und gebaut, wenn man ihr näher als 700 m kommt
-  (Telefone 500 m), und jenseits von 900 m (680 m)
-  freigegeben; ihr Fuß auf dem Gelände, wie es dort gezeichnet ist (die Kacheln von `welt/welt.js`, sonst das grobe Gelände – kommt eine
+  (Telefone 500 m), und jenseits von 900 m (680 m) freigegeben; gebaut in Stücken von 8 ms je Bild, solange Kacheln der Welt laden nur
+  2 ms (der Boden zuerst – ein Auto am Rand des Quadrats wartet auf ihn); ihr Fuß auf dem Gelände, wie es dort gezeichnet ist (die Kacheln von `welt/welt.js`, sonst das grobe Gelände – kommt eine
   Kachel später, wird die Zelle neu gesetzt). Fest über `KERN.pushOut` (Rang 15, antwortet nur, wenn es verschoben hat – Schleusingen und
   Veßra werden danach gefragt; Fahrzeuge draußen über `VEH.hitsOut`). `?nogebz` lässt sie weg.
   **Nichts in dem, was die Orte selbst modellieren** (`keepout()` in `tools/welt-gebaeude/wglib.py` – auch für andere Features:
@@ -130,6 +132,7 @@ Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als Hinwei
 | `halle_wand.jpg` | in die Halle gelaufen: die Wand hält auf |
 | `stadt_top*.jpg`, `stadt_boden_vorher.jpg` / `stadt_boden.jpg` | Schleusingen außerhalb der Altstadt (ein Haus der Zellen, ~440 m vom Markt): vorher Wiese mit Dach im Luftbild, jetzt das Haus |
 | `strecke_top*.jpg`, `strecke_boden_vorher.jpg` / `strecke_boden.jpg` | Rappelsdorf auf dem Weg nach Kloster Veßra: die Hauptstraße nach Westen, vorher die Dächer flach im Luftbild, jetzt die Häuser, Scheunen und Schuppen der Zellen |
+| `bloecke_top*.jpg`, `bloecke_boden*.jpg` | Schleusingen West: die Wohnblöcke mit Geschossen und Fenstern, flaches Dach (aus dem Luftbild erkannt) |
 
 ## Offen
 

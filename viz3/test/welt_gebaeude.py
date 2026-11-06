@@ -7,7 +7,8 @@
 # Beyond the square (zellen): Orte → Schleusingen – the cells of 400 m around the Markt come in (Schleusingen beyond its old town), none
 # doubles a house of the old town, pictures from the street and from above, a wall stops the walker, no new programs.
 # The world tiles for that come from the published site (welt-test/, as viz3/test/schleusingen.py does).
-# Along the road (strecke): Rappelsdorf on the way to Kloster Veßra, the cells around its main street – from the street and from above.
+# Along the road (strecke): Rappelsdorf on the way to Kloster Veßra, the cells around its main street, and the blocks of flats in the west of
+# Schleusingen (storeys and windows, flat roofs) – from the street and from above.
 #   python3 viz3/test/welt_gebaeude.py 8997 [sections]      sections: load,places,walk,zellen,strecke,before (default all)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -29,7 +30,11 @@ SITE = os.environ.get('WELT_SITE', 'https://mynametouse.github.io/pavillon-ratsc
 DIST = os.path.join(lib.ROOT, 'viz3', 'dist', 'welt-test')
 XF = json.load(open(os.path.join(lib.ROOT, 'viz3', 'manifests.json')))['geoman']['xf']
 MARKT = (-1084.7, 1241.9)
-STRECKE = (-3206.0, -54.0, 264)   # Rappelsdorf on the way to Kloster Veßra: the main street, looking west (x, y, yaw)
+# places beyond the square seen from the street (name, x, y, yaw, what, at least: buildings within 60 m, houses, houses of several storeys)
+STRECKEN = [
+    ('strecke', -3206.0, -54.0, 264, 'along the road: Rappelsdorf on the way to Kloster Veßra has its buildings in 3D (cells around the main street)', 10, 3, 0),
+    ('bloecke', -1775.0, 580.0, 122, 'Schleusingen west: the blocks of flats stand with storeys and windows (not as halls)', 4, 2, 2),
+]
 
 
 def fetch_tiles(cx, cy, half=650):
@@ -176,8 +181,9 @@ def roads_data():
 V2N = 0
 if 'zellen' in want:
     V2N = fetch_tiles(*MARKT) or 0
-if 'strecke' in want:
-    fetch_tiles(STRECKE[0], STRECKE[1], 450)
+for _st in STRECKEN:
+    if _st[0] in want or 'strecke' in want:
+        fetch_tiles(_st[1], _st[2], 450)
 
 def settle_tiles(E, n_min=10, n_max=80):
     """the tiles near the camera before a picture: they are asked for a moment after a move – at least n_min steps, then until nothing
@@ -368,27 +374,28 @@ with lib.browser() as b:
                 GAME.view(sx, sy, KERN.ground(sx, sy) + 1.6, yaw, 0, 60); GAME.P.body = yaw; for (let i = 0; i < 160; i++) GAME.step(0.025, 1);
                 const d = (GAME.P.x - best.mx) * best.nx + (GAME.P.y - best.my) * best.ny; return {{ d: +d.toFixed(2), moved: +Math.hypot(GAME.P.x - sx, GAME.P.y - sy).toFixed(2), free: KERN.free(sx, sy) }}; }})()""")
             ck('beyond the square a wall of the cells stops the walker', r is not None and r['moved'] > 2 and r['d'] > 0.1, json.dumps(r))
-    if 'strecke' in want:
-        # Rappelsdorf on the way to Kloster Veßra: the cells around its main street come in (tiles of the world, the buildings of the data)
-        sx, sy, syaw = STRECKE
+    for name, sx, sy, syaw, what, nmin, hmin, msmin in STRECKEN:
+        if name not in want and 'strecke' not in want:
+            continue
+        # beyond the square from the street: the cells around come in (tiles of the world, the buildings of the data)
         E("document.body.dataset.mode = 'walk'")
         ground(sx, sy, syaw, -3)
         t0 = time.time()
         zn = {}
         while time.time() - t0 < 200:
             E("GAME.step(0.5)")
-            zn = J(f"""(() => {{ let cells = 0, near = 0, houses = 0; for (const c of GEB.Z.cells.values()) {{ if (!c.meshes.length) continue; cells++;
-                for (const b of c.data.b) if (b.cx !== undefined && Math.hypot(b.cx - {sx}, b.cy - {sy}) < 60) {{ near++; if (b.k === 0) houses++; }} }}
-                return {{ z: GEB.Z.state, jobs: GEB.jobs(), busy: GEB.Z.busy, w: WELT.state().loading, tiles: WELT.state().tiles, cells, near, houses }}; }})()""")
+            zn = J(f"""(() => {{ let cells = 0, near = 0, houses = 0, storeys = 0; for (const c of GEB.Z.cells.values()) {{ if (!c.meshes.length) continue; cells++;
+                for (const b of c.data.b) if (b.cx !== undefined && Math.hypot(b.cx - {sx}, b.cy - {sy}) < 60) {{ near++; if (b.k === 0) houses++; if (b.k === 0 && b.h >= 10) storeys++; }} }}
+                return {{ z: GEB.Z.state, jobs: GEB.jobs(), busy: GEB.Z.busy, w: WELT.state().loading, tiles: WELT.state().tiles, cells, near, houses, storeys }}; }})()""")
             if zn['z'] == 'ready' and zn['near'] > 0 and not zn['jobs'] and not zn['busy'] and zn['w'] == 0:
                 break
             time.sleep(0.3)
         for _ in range(12):   # cells set down again when the tiles under them came in
             E("GAME.step(0.5)"); time.sleep(0.1)
-        print('strecke', json.dumps(zn), round(time.time() - t0), 's', flush=True)
-        ck('along the road: Rappelsdorf on the way to Kloster Veßra has its buildings in 3D (cells around the main street)', zn.get('near', 0) >= 10 and zn.get('houses', 0) >= 3, json.dumps(zn))
-        ground(sx, sy, syaw, -3); settle_tiles(E); pic('strecke_boden')
-        top(sx - 30, sy, 90); settle_tiles(E); pic('strecke_top')
+        print(name, json.dumps(zn), round(time.time() - t0), 's', flush=True)
+        ck(what, zn.get('near', 0) >= nmin and zn.get('houses', 0) >= hmin and zn.get('storeys', 0) >= msmin, json.dumps(zn))
+        ground(sx, sy, syaw, -3); settle_tiles(E); pic(f'{name}_boden')
+        top(sx - 30, sy, 90); settle_tiles(E); pic(f'{name}_top')
         E("document.body.dataset.mode = 'walk'")
     ck.errors(errs)
 if 'before' in want:
@@ -434,8 +441,9 @@ if 'before' in want:
                 E(f"(() => {{ document.body.dataset.mode = 'walk'; GAME.view({sp[0]}, {sp[1]}, KERN.ground({sp[0]}, {sp[1]}) + 1.6, {sp[2]}, -2, 60); for (let i = 0; i < 4; i++) GAME.step(0.25); }})()")
                 settle_tiles(E)
                 lib.shot(pg, OUT, 'stadt_boden_vorher')
-        if 'strecke' in want:
-            sx, sy, syaw = STRECKE
+        for name, sx, sy, syaw, what, nmin, hmin, msmin in STRECKEN:
+            if name not in want and 'strecke' not in want:
+                continue
             E(f"(() => {{ document.body.dataset.mode = 'walk'; GAME.view({sx}, {sy}, KERN.ground({sx}, {sy}) + 1.6, {syaw}, -3, 60); for (let i = 0; i < 4; i++) GAME.step(0.25); }})()")
             t0 = time.time()
             while time.time() - t0 < 120:
@@ -444,8 +452,8 @@ if 'before' in want:
                 time.sleep(0.3)
             E(f"(() => {{ GAME.view({sx}, {sy}, KERN.ground({sx}, {sy}) + 1.6, {syaw}, -3, 60); for (let i = 0; i < 4; i++) GAME.step(0.25); }})()")
             settle_tiles(E)
-            lib.shot(pg, OUT, 'strecke_boden_vorher')
+            lib.shot(pg, OUT, f'{name}_boden_vorher')
             E(f"(() => {{ const P = GAME.P; P.mode = 'top'; P.tx = {sx - 30}; P.ty = {sy}; P.th = 90; document.body.dataset.mode = 'top'; GAME.step(0.05); }})()")
             settle_tiles(E)
-            lib.shot(pg, OUT, 'strecke_top_vorher')
+            lib.shot(pg, OUT, f'{name}_top_vorher')
 ck.done()
