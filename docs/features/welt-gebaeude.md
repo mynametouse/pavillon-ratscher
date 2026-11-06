@@ -65,7 +65,8 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   wie bisher von `TEXHALF` halbiert; `ortho_outer`/`ortho_far` (≥ 4,9 m je Pixel) bleiben unverändert. Die KTX2-Texturen (`tools/tex`,
   `gh-pages/tex2/`) enthalten nur `tex/<name>_col|nrm|orm` und glTF-Bilder – keine Bodenbilder (geprüft), dort gibt es nichts nachzuziehen.
 
-- **Kacheln ohne gedruckte Dächer (Kachelwelt):** `tools/welt-gebaeude/kacheln.py` retuschiert die Luftbild-Kacheln (Stufen 10–12) unter
+- **Kacheln ohne gedruckte Dächer (Kachelwelt):** `tools/welt-gebaeude/kacheln.py` retuschiert die Luftbild-Kacheln (Stufen 10–12; jede
+  Kachel mit einem halben Nachbarn ringsum gefüllt, damit zwei Kacheln eine Stelle an ihrer Kante gleich füllen – keine Nähte) unter
   jedem Gebäude, das jenseits des Quadrats in 3D steht (Schleusingens Altstadt, Kloster Veßra, die Zellen): **950 Kacheln, 35 MB, als neuer
   Satz unter `gh-pages/welt-test/v2/`** (nur die retuschierten `i/{L}/{x}/{y}.webp` + `index.json`; die veröffentlichten Kacheln bleiben
   unberührt). Gebaut und veröffentlicht vom Workflow `.github/workflows/welt-gebaeude-kacheln.yml` (bei jedem Push auf

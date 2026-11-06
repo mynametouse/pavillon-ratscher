@@ -26,6 +26,24 @@ SITE = 'https://mynametouse.github.io/pavillon-ratscher/welt-test/'
 SETS = ['', 'zonen/vessra/']
 
 
+_CACHE, _CLOCK = {}, __import__('threading').Lock()
+
+
+def get_tile(url):
+    """a tile image (array) by URL, kept for the neighbours that ask for it again (the window of the fill reaches into them)"""
+    with _CLOCK:
+        if url in _CACHE:
+            return _CACHE[url]
+    from PIL import Image
+    raw = get(url)
+    img = None if raw is None else np.asarray(Image.open(io.BytesIO(raw)).convert('RGB')).copy()
+    with _CLOCK:
+        if len(_CACHE) > 3000:
+            _CACHE.clear()
+        _CACHE[url] = img
+    return img
+
+
 def get(url, tries=4):
     for k in range(tries):
         try:
@@ -139,30 +157,50 @@ def main():
     done = []
     t0 = time.time()
 
+    BW = 256   # the fill sees half of each neighbour: two tiles fill a masked place across their edge alike (no seam)
+
     def one(job):
         L, x, y, st = job
         s = ROOT / (1 << L)
         e0, n0 = ROOT_E0 + x * s, ROOT_N0 + y * s
-        raw = get(a.site + st + f'i/{L}/{x}/{y}.webp')
-        if raw is None:
+        img = get_tile(a.site + st + f'i/{L}/{x}/{y}.webp')
+        if img is None:
             return None
-        img = np.asarray(Image.open(io.BytesIO(raw)).convert('RGB')).copy()
         n = img.shape[0]
         res = s / n
-        m = np.zeros((n, n), np.uint8)
-        tb = sbox(e0, n0, e0 + s, n0 + s)
+        # the window: this tile and a border from its neighbours (their own set, else the edge of this tile mirrored)
+        W_ = n + 2 * BW
+        win = np.pad(img, ((BW, BW), (BW, BW), (0, 0)), mode='reflect')
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                if dx == 0 and dy == 0:
+                    continue
+                sn = set_of(L, x + dx, y + dy)
+                nb = get_tile(a.site + sn + f'i/{L}/{x + dx}/{y + dy}.webp') if sn is not None else None
+                if nb is None or nb.shape[0] != n:
+                    continue
+                # rows: north is up (y + 1 above), columns: east to the right
+                r0, r1 = (0, BW) if dy == 1 else (BW + n, W_) if dy == -1 else (BW, BW + n)
+                c0, c1 = (0, BW) if dx == -1 else (BW + n, W_) if dx == 1 else (BW, BW + n)
+                sr0, sr1 = (n - BW, n) if dy == 1 else (0, BW) if dy == -1 else (0, n)
+                sc0, sc1 = (n - BW, n) if dx == -1 else (0, BW) if dx == 1 else (0, n)
+                win[r0:r1, c0:c1] = nb[sr0:sr1, sc0:sc1]
+        we0, wn1 = e0 - BW * res, n0 + s + BW * res
+        m = np.zeros((W_, W_), np.uint8)
+        tb = sbox(we0, wn1 - W_ * res, we0 + W_ * res, wn1)
         for i in tree.query(tb):
             g = masks[i]
             for q in (g.geoms if hasattr(g, 'geoms') else [g]):
                 if q.is_empty or q.geom_type != 'Polygon':
                     continue
                 X, Y = q.exterior.xy
-                u = (np.array(X) - e0) / res - 0.5
-                v = (n0 + s - np.array(Y)) / res - 0.5
+                u = (np.array(X) - we0) / res - 0.5
+                v = (wn1 - np.array(Y)) / res - 0.5
                 cv2.fillPoly(m, [np.stack([u, v], 1).round().astype(np.int32)], 255)
-        if not m.any():
+        if not m[BW:BW + n, BW:BW + n].any():
             return None
-        out = fill(img, m, seed=(L * 100003 + x * 1009 + y) & 0xffff)
+        # the grain's random field from the place, not the tile: neighbours draw the same noise where they overlap
+        out = fill(win, m, seed=(L * 100003 + x * 1009 + y) & 0xffff)[BW:BW + n, BW:BW + n]
         d = os.path.join(a.out, 'i', str(L), str(x))
         os.makedirs(d, exist_ok=True)
         Image.fromarray(out).save(os.path.join(d, f'{y}.webp'), quality=82, method=4)
@@ -170,7 +208,7 @@ def main():
             os.makedirs(a.debug, exist_ok=True)
             both = np.concatenate([img, out], 1)
             Image.fromarray(both).save(os.path.join(a.debug, f'{L}_{x}_{y}.jpg'), quality=85)
-        return f'{L}/{x}/{y}', round(100.0 * (m > 0).mean(), 1)
+        return f'{L}/{x}/{y}', round(100.0 * (m[BW:BW + n, BW:BW + n] > 0).mean(), 1)
 
     with ThreadPoolExecutor(6) as ex:
         for r in ex.map(one, jobs):
