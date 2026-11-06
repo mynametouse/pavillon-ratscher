@@ -9,14 +9,15 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
 - **Das Entdeckerbuch** (Menü → Startseite → „Entdeckerbuch“, Taste **N**, im Strategie-Modus ein Knopf „📖 Buch“ in seiner Leiste):
   Kapitel **Natur, Handwerk, Geschichte, Politik & Soziales, Orte** und dazu **Regeln** (die „Warum?“-Gründe). Jeder Eintrag: was es ist,
   warum es hier bei Ratscher zählt, ein Symbol, die echten Quellen als Links, wie er gefunden wurde. Noch nicht Gefundenes steht grau mit
-  einem Tipp. Fortschritt je Kapitel und gesamt. 75 Einträge und 28 Regeln (70 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
+  einem Tipp. Fortschritt je Kapitel und gesamt. 76 Einträge und 28 Regeln (71 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
   Daten-Ansichten in `wissen_daten.js`), dazu Einträge, die aus Ereignissen entstehen (Erkundetes, gepflanzte Arten) – und mit feat/tiere jede
   Art seiner Steckbriefe (`TARTEN`) als Eintrag zum Entdecken, mit Steckbrief und Quellen.
 - **Gefunden durch Tun und Sehen** (`viz3/src/wissen/wissen.js`):
   - **Orte** (Ereignis `place`): Anger, Dorflinde, alte Schule, Bach, Klinge, Schleusingen (Markt, Bertholdsburg, St. Johannis, Rathaus),
     Kloster Veßra (Klosterkirche, Henneberger Kapelle), Baumschule, Ziegenweide …
   - **Ereignisse der anderen**: `tiere:entdeckt` (feat/tiere – eine bekannte Art öffnet ihren Eintrag, eine unbekannte wird ein neuer Eintrag
-    mit dem Steckbrief aus `TARTEN` und dessen Quellen), `strategie:entdeckt` (feat/strategie – Erkunden statt Nebel), `einrichtung:schale|brand|glasur`
+    mit dem Steckbrief aus `TARTEN` und dessen Quellen), `strategie:entdeckt` (feat/strategie – Erkunden statt Nebel), `hund:befehl` (den Hund rufen → sein
+    Steckbrief) und `hund:gelernt` (loben oder tadeln → „Wie ein Hund lernt“), `einrichtung:schale|brand|glasur`
     (Töpfern im Atelier), `einrichtung:bild` (Malen), `gplan:gepflanzt|geschnitten|gemulcht`, `garage:gemaeht`, `fell`, `verkehr:mitfahrt`,
     Aktionen (`act`: Forstkiste, Seilwinde). **Gepflanzte Arten** des Gartenplaners werden eigene Einträge – Text, Pflege und Quellen aus
     seiner Pflanzendatenbank (`gartenplaner/pflanzen.json`).

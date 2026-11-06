@@ -75,6 +75,9 @@ def run():
             ck('a species the book has no entry for becomes one (Natur, with the source of the event)', g and g['ch'] == 'natur' and g['src'] and 'wikipedia' in (g['src'][0][1] or ''), str(g))
             E("KERN.emit('strategie:entdeckt', { kind: 'wald', id: 'kaefer', title: 'Borkenkäfer an der Klinge', source: 'ThüringenForst', text: 'Käferbäume', by: 'falko' })")
             ck('feat/strategie: exploring the beetle trees → the beetle entry (no second, generated one)', J("WISSEN.has('n_kaefer') && !WISSEN.get('st:wald:kaefer')"))
+            if E("!!window.HUND"):
+                E("KERN.emit('hund:gelernt', { tat: 'sitz', lob: true, learn: {} })")
+                ck('feat/tiere: the dog praised → „Wie ein Hund lernt“ (operant conditioning)', J("WISSEN.has('n_hund')"))
             E("KERN.emit('einrichtung:schale', { n: 1 })")
             ck('doing: a bowl thrown in the atelier → „Töpfern“', J("WISSEN.has('h_toepfern')"), str(J("WISSEN.state().how['h_toepfern']")))
 

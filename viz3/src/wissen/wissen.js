@@ -589,7 +589,13 @@ body[data-top="1"] #winote{top:178px}
         title: A.name || id,
         text: [p.wo, p.rolle].filter(Boolean).join('\n'),
         src: (A.sources || []).map(s => [s[0], s[1]]),
-        find: { ev: [['tiere:entdeckt', d => d && d.id === id]] },
+        // the dog (tiere/tiere_hund.js) is not „seen“ like the wild ones: he is found when one calls or sends him
+        find: {
+          ev:
+            id === 'hund'
+              ? [['tiere:entdeckt', d => d && d.id === id], ['hund:befehl']]
+              : [['tiere:entdeckt', d => d && d.id === id]],
+        },
         hint: p.wann ? 'Wann: ' + String(p.wann).split('.')[0] + '.' : 'Draußen in der Gegend unterwegs sein.',
       });
     }
@@ -705,6 +711,8 @@ body[data-top="1"] #winote{top:178px}
     'garage:gemaeht': 'den Rasen gemäht',
     'garage:start': 'den Mäher gestartet',
     'einrichtung:schale': 'eine Schale gedreht',
+    'hund:befehl': 'den Hund gerufen',
+    'hund:gelernt': 'den Hund gelobt oder getadelt',
     'einrichtung:brand': 'im Brennofen gebrannt',
     'einrichtung:glasur': 'glasiert',
     'gplan:gepflanzt': 'einen Baum gepflanzt',

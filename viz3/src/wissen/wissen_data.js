@@ -313,6 +313,17 @@ export const WDATA = (() => {
       hint: 'Wenn draußen ein Sturm weht.',
     },
     {
+      id: 'n_hund',
+      ch: 'natur',
+      icon: '🐕',
+      title: 'Wie ein Hund lernt',
+      text: 'Ein Hund lernt aus den Folgen seines Tuns: Was sich für ihn lohnt – Lob, Futter, Spiel –, zeigt er öfter, was unangenehm endet, seltener. Das heißt operante Konditionierung. Lob wirkt am besten sofort, solange der Hund noch weiß, wofür es ist.',
+      here: 'Hasso ist ein Altdeutscher Hütehund. Diese Hunde arbeiten seit Jahrhunderten bei den Schäfern in Mitteldeutschland und wollen beschäftigt sein.',
+      src: [wiki('Operante Konditionierung'), wiki('Altdeutsche Hütehunde', 'Altdeutsche_Hütehunde')],
+      find: { ev: [['hund:gelernt']] },
+      hint: 'Den Hund loben oder tadeln.',
+    },
+    {
       id: 'n_huehner',
       ch: 'natur',
       icon: '🐔',
