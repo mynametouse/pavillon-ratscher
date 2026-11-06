@@ -264,7 +264,8 @@ with lib.browser() as b:
         w = J("({ on: STRAT.on, mode: GAME.P.mode, ph: window.PHASE })")
         ck('in the first-person world the same phase stands (the slab sealed, the garage gone from it)', not w['on'] and w['mode'] == 'walk' and w['ph'] == E("STBAU.built()"), str(w))
         lib.shot(pg, OUT, '05_ich_sicht')
-        E("GAME.P.x = -3.0; GAME.P.y = 37.6; GAME.P.yaw = 221; GAME.P.pitch = -6")
+        # through one's own eyes (the figure would stand in front of the sign)
+        E("window.CAM3 && (CAM3.want = false); GAME.P.x = -2.6; GAME.P.y = 38.0; GAME.P.yaw = 221; GAME.P.pitch = -8")
         E("GAME.P.feet = KERN.ground(GAME.P.x, GAME.P.y, 0.5)")
         steps(0.5)
         lib.shot(pg, OUT, '05b_bauschild')
@@ -274,6 +275,7 @@ with lib.browser() as b:
             E("GAME.P.feet = KERN.ground(GAME.P.x, GAME.P.y, 0.5)")
             steps(1)
             lib.shot(pg, OUT, '08_obstbaum_ich_sicht')
+        E("window.CAM3 && (CAM3.want = true)")
     if 'reload' in want:
         E("STRAT.start({ keepView: true })")
         steps(0.5)

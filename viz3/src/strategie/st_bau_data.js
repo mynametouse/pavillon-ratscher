@@ -629,14 +629,15 @@ export const STBAUDATA = (() => {
     },
     // the suggestion from above when nothing is planned: an apple and its pollinator, side by side (gplan ids)
     pair: ['apfel-rebella', 'apfel-rewena'],
-    // free places for the suggestion (site metres): the meadow south of the atelier first, the two 7,5 m apart (Halbstämme, crowns 6–9 m)
+    // free places for the suggestion (site metres): the meadow west of the path, south of the atelier, 7,5 m apart (Halbstämme, crowns
+    // 6–9 m) – east of the path stands the garage from phase 1 on
     spots: [
-      [-4, -15.5],
-      [3.5, -15.5],
-      [-4, 9.5],
-      [9.5, -14],
-      [3, -21.5],
+      [-5, -14],
       [-5, -21.5],
+      [-4.5, -6.5],
+      [-3.5, 10],
+      [10.5, 5],
+      [10.5, -2.5],
     ],
     // browsing without the animals' module (feat/tiere): chance a day for an unprotected young tree (winter/spring, summer/autumn)
     browse: [0.012, 0.003],
