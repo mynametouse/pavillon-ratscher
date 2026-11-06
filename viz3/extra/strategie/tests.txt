@@ -1,0 +1,7 @@
+# feat/strategie: „Ratscher von oben“ – the mode, HUD, people, jobs, the wood chain; on a phone; the view from above at the Klinge
+# (one test name per line, as for viz3/test/run.py)
+strategie
+strategie_telefon
+strategie_oben
+# the forest's views (world/forest.js: from above only the crown plane of the far cards – feat/strategie hook)
+v16c:stand,views

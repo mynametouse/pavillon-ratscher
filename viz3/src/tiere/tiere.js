@@ -1018,6 +1018,7 @@ export const TIERE = (() => {
     S.acc += dt;
     if (S.acc > 0.5) {
       S.acc = 0;
+      const W = [];
       for (const g of S.groups) {
         const pl = (g.state = S.force && S.force[g.art] ? S.force[g.art](g) : plan(g));
         const cx = pl.where === 'out' ? g.feed[0] : g.home[0],
@@ -1027,15 +1028,33 @@ export const TIERE = (() => {
         // in cover by day only when one comes into the wood close by (then they jump up and flee)
         const coverNear = pl.where === 'cover' && d < 90;
         const want = pl.where && (pl.where !== 'cover' || coverNear) && d < r ? pl.n + (pl.kids || 0) : 0;
+        W.push({ g, pl, d, want });
+      }
+      // the real ones are the nearest: the cap goes to the groups closest to the walker first (the sounder on the field in front of
+      // him, not deer half a kilometre behind him); those fleeing keep their place until their run is over
+      W.sort((p, q) => p.d - q.d);
+      let budget = S.max;
+      for (const w of W) {
+        const fleeing = w.g.live.filter(a => a.mode === 'flee').length;
+        w.alloc = Math.max(fleeing, Math.min(w.want, budget));
+        budget -= w.alloc;
+      }
+      // more than their share, or none wanted, or far: those out of sight go at once, those fleeing finish their run
+      for (const w of W) {
+        const g = w.g,
+          far = w.d > S.dropR * (g.art === 'rotmilan' ? 1.6 : 1);
+        if (g.live.length > w.alloc || far)
+          for (const a of g.live.slice().reverse()) {
+            if (!far && g.live.length <= w.alloc) break;
+            if (a.mode !== 'flee' && (far || !inView(a.x, a.y, a.z + 0.5))) drop(a);
+          }
+      }
+      for (const w of W) {
+        const { g, pl } = w;
         // a kind with a real model waits for it (loaded on first need, a moment)
         const mk = TARTEN.A[g.art] && TARTEN.A[g.art].model;
-        if (want > g.live.length && S.live.length < S.max && (!mk || TKOERPER.ready(mk)))
-          for (let i = g.live.length; i < want && S.live.length < S.max; i++) spawn(g, i, pl);
-        else if ((want === 0 && g.live.length) || d > S.dropR * (g.art === 'rotmilan' ? 1.6 : 1)) {
-          // gone: those out of sight go at once, those fleeing finish their run
-          for (const a of g.live.slice())
-            if (a.mode !== 'flee' && (d > S.dropR || !inView(a.x, a.y, a.z + 0.5))) drop(a);
-        }
+        if (w.alloc > g.live.length && S.live.length < S.max && (!mk || TKOERPER.ready(mk)))
+          for (let i = g.live.length; i < w.alloc && S.live.length < S.max; i++) spawn(g, i, pl);
         // a new plan (dusk came): the live ones walk to the new place
         for (const a of g.live) if (a.mode !== 'flee') place(a, pl, false);
       }

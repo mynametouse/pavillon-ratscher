@@ -42,7 +42,8 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   wühlen, lauschen (Fuchs), ziehen weiter, sichern, fliehen in ihrer Fluchtdistanz vor dem Spaziergänger (Reh ~110 m, nachts weniger,
   ein Rennender fällt früher auf, ruhend in der Deckung später), vor einem fahrenden Auto, vor Lärm und vor dem frei laufenden Hund – die
   ganze Gruppe, zur Deckung hin; aufgeschreckt bleiben sie eine Weile in der Deckung. Stimmen: der Rehbock schreckt, die Rotte grunzt, der
-  Fuchs bellt und schreit in den Winternächten, Hasso bellt.
+  Fuchs bellt und schreit in den Winternächten, der Uhu ruft, der Bussard miaut „hiääh“, der Milan pfeift (März bis Oktober), der Kolkrabe
+  ruft „krok“, der Hirsch röhrt in der Brunft (Mitte September bis Mitte Oktober), Hasso bellt.
 - **Einfluss** (`TEINFLUSS`, Tag für Tag nach dem Spielkalender, auch im Zeitraffer): Rehe verbeißen junge Bäume (Winter und Frühjahr
   am meisten; Tanne, Ahorn, Eiche lieber als Buche, Lärche, Fichte; nach der Zahl der Rehe im Umkreis von 400 m) – an einer **Pflanzung von
   40 jungen Bäumen am Rand des Familienwalds**, die Hälfte in Wuchshüllen, an Falkos Bäumchen im Garten und an den gepflanzten Bäumen des
@@ -61,7 +62,7 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   White:** von sich aus treibt er Ronalds Ziegen an die Heuraufe, vertreibt Wild aus dem Garten, jagt ihm draußen hinterher, findet Spuren für
   dich (und zeigt sie dir), bellt einen Nachbarn an oder bleibt ruhig. **Loben (+) und Tadeln (−)** gilt dem, was er zuletzt getan hat
   (eine Viertelminute): die Neigung dazu steigt oder sinkt ein Stück, Lob stärkt die Bindung. **Rufen (P)** – von einer Jagd kommt er nur, wenn
-  die Bindung stark und der Jagdtrieb schwach ist; **Schicken (U)** dahin, wo du hinschaust – Wild: er vertreibt es, Ziegen: er hütet sie,
+  die Bindung stark und der Jagdtrieb schwach ist; **Schicken (Umschalt+P)** dahin, wo du hinschaust – Wild: er vertreibt es, Ziegen: er hütet sie,
   sonst sucht er Spuren. Vier Knöpfe am Bildschirm (für das Telefon), wenn er in der Nähe ist. Gespeichert in `pav-hund-v1`.
 
 - **Hühner, wenn jemand sie hält** (`tiere/tiere_huehner.js`, `THUEHNER`): heute hält in der Spiegelwelt niemand Hühner – deshalb stehen
@@ -90,7 +91,7 @@ normalisiert, unter derselben Lizenz (`viz3/extra/tiere/dist/tiere/`, Nachweis i
 
 - Abends an den Waldrand der Klinge, z. B. vom Feld an der L 1625 (Konsole `GAME.view(-150, -400, …)`): Rehe vor dem Wald; langsam
   hingehen – sie sichern und schrecken, dann springen sie ab. Nachts Wildschweine auf den Feldern. Mittags im Sommer nach oben schauen: Milane.
-- Mit Hasso: P rufen, U schicken, + loben, − tadeln (oder die vier Knöpfe rechts).
+- Mit Hasso: P rufen, Umschalt+P schicken (dahin, wo du hinschaust), + loben, − tadeln (oder die vier Knöpfe rechts). U gehört der Ansicht von oben (Strategie-Modus).
 - Konsole: `TIERE.state()`, `TIERE.list()`, `TIERE.groupList()`, `TEINFLUSS.state()`, `TIERE.baeume()`, `TIERE.kaefer.list()`, `HUND.state()`.
 
 ## Testen
@@ -146,7 +147,8 @@ Abfragen und Befehle:
   (Datei, Maßstab, Namen der Bewegungen, Farbtönung) – die Textur wird beim Laden in die Ecken gebacken. Für Wildschwein und Hund fand ich
   nichts Freies ohne Anmeldung, das besser ist als die gebauten Körper; die sind nach den Hinweisen des Leads verbessert (Fell nach Datum,
   schlanke Läufe und Hals beim Reh, keilförmiger Kopf und Borstenkamm beim Wildschwein, voller Hund mit Halskrause).
-- Stimmen von Milan, Bussard, Uhu, Kolkrabe, Rothirsch (Wikimedia Commons antwortete nachts mit 429) – `tiere/ton.json` ergänzen.
+- Stimmen fehlen noch für Schwarzspecht, Wildkatze, Dachs und Waschbär (frei lizenzierte Aufnahmen suchen, z. B. xeno-canto mit CC BY-SA;
+  `tiere/ton.json` ergänzen) – Milan, Bussard, Kolkrabe und Rothirsch kamen in der Nacht von xeno-canto dazu.
 - Wer in Ratscher wirklich Hühner hält, weiß ich nicht – deshalb stehen keine in der Welt, bis jemand (Strategie-Modus, Falko) sie hinstellt.
 
 ## Für den Lead
@@ -156,4 +158,4 @@ Abfragen und Befehle:
 - `viz3/src/world/forest.js`: markiert `// feat/tiere` – `FOREST.tint(t, rgb)` (Kronenfarbe eines Baums: Käferfichten) und die Farbe in
   `relod`/Fernkarten (Rinde bleibt).
 - Quellen: `viz3/extra/tiere/manifest.json` (`credits_add`).
-- Neue `window`-Namen: `TARTEN`, `TKOERPER`, `TTON`, `TIERE`, `TEINFLUSS`, `THUEHNER`, `HUND`. Tasten: P (Hund rufen), U (schicken), + / − (loben/tadeln).
+- Neue `window`-Namen: `TARTEN`, `TKOERPER`, `TTON`, `TIERE`, `TEINFLUSS`, `THUEHNER`, `HUND`. Tasten: P (Hund rufen), Umschalt+P (schicken; nicht mehr U – das schaltet im Strategie-Modus zwischen oben und der Welt), + / − (loben/tadeln).
