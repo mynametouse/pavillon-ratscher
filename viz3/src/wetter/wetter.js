@@ -47,6 +47,9 @@ export const WETTER = (() => {
     // showers as cells passing (see showers()): x the way the air has gone (cell lengths), t the game time (s) of the last step,
     // ph 0 between the cells – 1 under one (-1: no showers), near the strongest cell close by, bow the wish for a rainbow, force (tests)
     sh: { x: Math.random() * 50, t: null, ph: -1, near: 0, bow: 0, force: null },
+    // the clear sky (a gradient instead of the photographs' clouds when the data says clear) is off for now: it reads as a pale haze
+    // rather than a clear blue day (pictures 6.11.) – on with ?klar to try it; tests switch it with WETTER.S.noClear
+    noClear: !QS.has('klar'),
     preset: null,
     mock: null,
     calls: [],
@@ -322,7 +325,9 @@ export const WETTER = (() => {
       wx = S.w || {},
       any = c.cover > 0.003 || c.rain > 0 || c.snow > 0 || c.vis < 20000 || c.wind > 3;
     const sk = OPT.sky;
-    sk.on = on && any;
+    // a clear sky from the data (not the calendar's): the photographs' clouds give way (none left at ~5 % cover, all back from ~35 %)
+    sk.clear = S.w && S.src !== 'kalender' && !S.noClear ? 1 - sstp(0.05, 0.35, c.cover) : 0;
+    sk.on = on && (any || sk.clear > 0);
     sk.cover = c.cover;
     sk.rain = c.rain;
     sk.snow = c.snow;
@@ -796,6 +801,7 @@ export const WETTER = (() => {
         cov: WXSKY.U.wxCov.value,
         fog: WXSKY.U.wxFog.value,
         mask: WXSKY.S.mask,
+        clear: WXSKY.U.wxClr.value,
         patched: WXSKY.patched,
         stars: WXSKY.starsPatched,
       },

@@ -21,6 +21,11 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Laden übersetzt); Mond und Milchstraße verdeckt die Decke ohnehin. Das Licht folgt: Sonne gedämpft (zieht eine Wolke vor die Sonne, wird es in dem Moment dunkler), mehr diffuses
   Himmelslicht, das Auge passt sich an, grauer Dunst nach der Sicht (der größere Wert gewinnt; der Nebel der Zombie-Nacht bleibt darüber),
   keine Sterne und kein Mondlicht unter geschlossener Decke, Wolkenschatten auf dem fernen Land nur bei aufgelockerter Bewölkung.
+  **Klarer Himmel – vorerst aus** (Schalter `?klar` in der Adresse): bei wenig Bewölkung aus den Daten (ab ~35 % abwärts, unter ~5 % ganz)
+  weichen die Wolken der Fotos einem Verlauf des Tages (Zenit und Horizont aus den Ankern von DN, Schein um die Sonne) – bei Sonne über
+  ~10°. Auf den Vorher/Nachher-Bildern vom 6.11. (`wetter.py <port> himmel`) wirkt er wie heller Dunst bzw. hohe Schleierwolken, nicht wie
+  ein klarer blauer Novembertag – deshalb nicht eingeschaltet (s. „Offen“). Was bleibt: bei 0 % Bewölkung keine Wolkenfetzen der Decke
+  und keine gedämpfte Sonne.
   **Schauer** (Wettercodes 80–82, 85, 86) sind keine Stunde gleichmäßigen Regens: Zellen von ~6 km ziehen mit dem Wind in Wolkenhöhe
   vorbei (in Spielzeit gezählt) – unter einer schüttet es (die Stundenmenge in etwa einem Drittel der Zeit) und der Himmel schließt sich,
   dazwischen ist es trocken, aufgelockert, die Sonne kommt heraus. Kurz vor oder nach einem Regenschauer mit Sonne (zwischen ~1° und
@@ -84,7 +89,9 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - Ein Testbrowser fragt Open-Meteo nie (`navigator.webdriver`); `WETTER.mock(fn | json | 'fail')` antwortet statt dessen in der Form von
   Open-Meteo. `WETTER.state()` zeigt Quelle, Werte, Tropfen, Spritzer, Himmel, Tonpegel, geladene Aufnahmen, Bäume, Schauer.
   Zum Prüfen von Hand: `WETTER.preset('schauer')`, `WETTER.shower(0 | 1 | null)` (zwischen den Zellen / unter einer / wie es kommt),
-  `WETTER.strike({ d, az })` (ein Blitz in d m Richtung az°).
+  `WETTER.strike({ d, az })` (ein Blitz in d m Richtung az°), `WETTER.S.noClear = false` (der klare Himmel, sonst `?klar`).
+- Bilder des klaren Himmels vorher/nachher (Mittag, Morgensonne ~12°, Abendgold; Garten und Anger, zur Sonne und weg):
+  `python3 viz3/test/wetter.py <port> himmel` (nicht in `tests.txt`).
 - Echte Antworten von Open-Meteo (der Chat-Rechner bekommt HTTP 429; geprüft 6.11. ~2:00: alle vier Arten gelesen, jede Antwort mit
   `access-control-allow-origin: *` – der Browser auf der veröffentlichten Seite darf sie lesen) liest der Job „Echte Wetterdaten lesen“ in
   `.github/workflows/wetter-ton.yml` mit dem Parser des Moduls (`viz3/extra/wetter/quellen/echt.mjs`): jetzt, ein Tag vor 5 Tagen, eine
@@ -101,8 +108,11 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - Die Dorflinde (ein Netz, nicht instanziert; sie bekommt aber Schnee und Reif), die Felder und der Wald an der Klinge wiegen nicht (nur
   die instanzierten Kronen – Garten, Ring, die Pflanzen des Gartenplaners – und der Rasen, s. o.); die Schatten der Kronen bleiben still.
 - Pfützen; Regen am Fenster und an der Windschutzscheibe; nasse Straßen spiegeln kaum (der Geländeshader dämpft Spiegelungen auf 35 %).
-- Ein wolkenloser Tag zeigt die wenigen Kumuli des Tagesfotos („Sonnig“ bei 2 % Bewölkung) – ganz klar ginge nur mit einem klaren
-  Himmelsfoto oder einem an die Fotos angepassten Verlauf.
+- **Klarer Himmel:** die Himmelsfotos des Tageslaufs haben ihre eigenen Wolken; ein wolkenloser Tag (wie der 6.11. in Ratscher) zeigt sie
+  trotzdem. Der Versuch mit dem Verlauf aus DNs Ankern (`?klar`) reicht nicht (zu blass, wie Dunst). Nötig: ein physikalischer Himmel
+  (Rayleigh/Mie, Preetham oder Hosek-Wilkie mit der echten Sonnenhöhe und Trübung aus Sicht/Feuchte) oder klare Himmelsfotos je
+  Tageszeit (Poly Haven, CC0), und dazu passendes Bildlicht: die Umgebungskarte (HDRI → PMREM) zeigt sonst in Fenstern und nassen
+  Flächen weiter die Wolken des Fotos – das gilt schon heute für jedes Wetter (bedeckt spiegelt das sonnige Foto, nur schwächer).
 - Die Dächerkarte wird nach 3 m Bewegung neu gezeichnet, sonst alle 5 s: ein Bus, der gerade vorbeifuhr, bleibt bis dahin „Dach“
   (fahrende Fahrzeuge könnten beim Zeichnen ausgeblendet werden, wenn sie markiert wären).
 
@@ -126,7 +136,8 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - Die Menüzeile „Wetter“ setzt `wetter/wetter.js` selbst unter „Spielzeit“ ein (keine Änderung an `shell/menu.html`); das Wetterzeichen
   hängt es als `span.wxi` an `#clockbtn` (die Uhr und DN schreiben nur `.hbt` und das erste `.hbi`).
 - Für ARCHITECTURE.md: neuer `window`-Name `WETTER` (`wetter/wetter.js`; Test-API `mock`, `snap`, `state`, `preset`, `setMode`,
-  `clockToNow`, `strike`, `shower`, `refresh`, `fall`, `data`), Schlüssel `pav-wetter-v1` `{ v: 1, m: 'live' | 'kalender' }`, Hinweis `pav-wetter-neu`
+  `clockToNow`, `strike`, `shower`, `refresh`, `fall`, `data`, `S.noClear`), Adresse `?wetter=…`, `?klar`, Schlüssel `pav-wetter-v1`
+  `{ v: 1, m: 'live' | 'kalender' }`, Hinweis `pav-wetter-neu`
   (SAVE.once); Module `wetter/wx_data.js` (WXDATA, rein), `wx_sky.js` (WXSKY), `wx_fall.js` (WXFALL), `wx_ton.js` (WXTON), `wx_boden.js`
   (WXBODEN), `wx_wind.js` (WXWIND), `wetter.js`. Fremde Materialien, die das Wetter zur Laufzeit (Uniforms) oder beim Laden (Shader)
   ändert: der Himmel und die Sterne von `time/daynight.js` (Shader, beim Laden), die Blätter von `garden/trees.js` und Rasen/Blumen von
