@@ -54,8 +54,9 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
   Borkenkäfer in den Fichten (sechs Wochen Zeit, sonst fliegen sie aus und befallen mehr – Stil −6), Maschinenschaden (Sägeband, Zündkerze,
   Seil – reparieren oder Christophs „Notreparatur“), Großbestellung mit knappem Termin, Unfälle bei müder Arbeit (Ausfalltage, kein Blut;
   Erste-Hilfe-Kurs halbiert sie), Gefallen bei Hubert und Ronald zurückgeben.
-- **Essen und Betten** (wie „Supply“): Bungalow (2), Wohnwagen (1), Atelier-Klappsofa (1); Mahlzeiten aus dem Vorrat (Einkaufen in Schleusingen:
-  Lebensmittel, Benzin, Diesel). **Wissen und Ausbau:** Lehrgänge, PV-Module, zweite Powerstation, die Halle; **Zeitalter** nach der Bauphase;
+- **Essen und Betten** (wie „Supply“): Bungalow (2), Wohnwagen (1), Atelier-Klappsofa (1); Mahlzeiten aus dem Vorrat (drei am Tag je Person;
+  wer zum Wochenende kommt, bringt bei leerem Vorrat sechs Mahlzeiten von zu Hause mit – für Urlaubswochen heißt es einkaufen in
+  Schleusingen: Lebensmittel, Benzin, Diesel, gebucht). **Wissen und Ausbau:** Lehrgänge, PV-Module, zweite Powerstation, die Halle; **Zeitalter** nach der Bauphase;
   **Kapitel** mit Zielen, die sich selbst abhaken.
 - **Figuren:** deine Leute als Rocketbox-Figuren aus der Nähe (von oben eingezoomt und in der Ich-Sicht bis 60 m), nicht am Telefon.
 - **Regeln mit „Warum?“:** jede Absage nennt die Regel, ihren Grund und die Quelle (`STDATA.RULES`): Sonn- und Feiertagsruhe (Thüringer
