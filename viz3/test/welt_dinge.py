@@ -112,6 +112,8 @@ with lib.browser() as b:
         pic('04_am_auto')
     else:
         ck('walking into a parked car stops at its side', False, 'no parked car built')
+    nob = J("(() => { const o = []; DINGE.obstacles(o); return { n: o.length, kinds: [...new Set(o.map(q => q.kind))] }; })()")
+    ck('the traffic sees the parked cars (three circles each, like the villagers\' cars)', nob['n'] >= 30 and nob['kinds'] == ['dcar'], str(nob))
     E("GAME.shot()")
     p1 = progs()
     newp = [[n, k[-60:]] for n, k in J("GAME.R.info.programs.map(p => [p.name, p.cacheKey])") if k not in K0]

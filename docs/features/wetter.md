@@ -20,11 +20,17 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Himmelslicht, das Auge passt sich an, grauer Dunst nach der Sicht (der größere Wert gewinnt; der Nebel der Zombie-Nacht bleibt darüber),
   keine Sterne und kein Mondlicht unter geschlossener Decke, Wolkenschatten auf dem fernen Land nur bei aufgelockerter Bewölkung. Regen als
   Schlieren um die Kamera (Nieselregen fein und langsam, Starkregen dicht und schnell), Schnee als sinkende, pendelnde Flocken, Schneeregen
-  gemischt, alles vom Wind und den Böen getragen; ein Netz, beim Laden übersetzt, Dichte über den Zeichenbereich; drinnen (Pavillon,
-  Gartengebäude, Häuser der Zombie-Nacht) keine Tropfen, im Fahrzeug keine in der Kabine. Gewitter: Blitze am Himmel und auf dem Land,
-  Donner nach der Entfernung.
-- **Zu hören** (`wetter/wx_ton.js`): Regen draußen (Rauschen und Prasseln), drinnen das Trommeln auf dem Dach, Wind ab frischer Brise mit Böen,
-  bei Sturm ein Pfeifen, Donner. Vorerst im Browser erzeugt; echte Aufnahmen (CC0 o. ä.) kommen über `dist/wetter/ton.json`.
+  gemischt, alles vom Wind und den Böen getragen; ein Netz, beim Laden übersetzt, Dichte über den Zeichenbereich; Flocken höchstens ein
+  paar Pixel groß und vor der Linse ausgeblendet; drinnen (Pavillon, Gartengebäude, Häuser der Zombie-Nacht) keine Tropfen, im Fahrzeug
+  keine in der Kabine. Gewitter: Blitze flackern (erster Schlag, Nachschläge, ~0,4 s) am Himmel und auf dem Land, Donner nach der Entfernung.
+- **Nasser Boden, Schnee liegt** (`wetter/wx_boden.js`): Regen macht Gelände, Felder, Kacheln, Brücken, den Gartenboden und (etwas) die Dächer
+  dunkler und glänzender – und das bleibt Stunden nach dem Regen (aus dem Niederschlag der letzten Stunden der Daten). Liegt Schnee
+  (Schneehöhe der Daten, ab ~4 cm ganz), werden dieselben Flächen weiß, mit einem Weiß, das dem Licht folgt; Wände, Bäume, Gras bleiben.
+  Nur Farbe/Rauheit/Leuchten der Materialien (Uniforms), die Originale kommen genau zurück.
+- **Zu hören** (`wetter/wx_ton.js`): Regen draußen, drinnen und im Auto das Trommeln aufs Dach, Donner – echte Aufnahmen (gemeinfrei,
+  pdsounds.org über Wikimedia Commons; `viz3/extra/wetter/dist/wetter/`, `ton.json`, geschnitten mit `viz3/extra/wetter/quellen/ton.py`);
+  Wind ab frischer Brise mit Böen und bei Sturm ein Pfeifen vorerst im Browser erzeugt. Weitere Aufnahmen holt
+  `.github/workflows/wetter-ton.yml` auf GitHub Actions (Commons begrenzt Abrufe vom Chat-Rechner) als Artefakt `wetter-ton`.
 - **Wählen:** Menü → Einstellungen → Spiel → „Wetter: wie draußen | nach Kalender“ (gespeichert in `pav-wetter-v1` `{ v: 1, m }`), dieselbe
   Wahl im Uhrfenster mit der Zeile „Regen · 7 °C · Wind 20 km/h, Böen 38 – Open-Meteo“, dazu „Uhr und Datum auf jetzt“ (Spielzeit wie
   draußen, in Echtzeit) und „Wetter ausprobieren“ (Sonne, Wolken, Regen, Starkregen, Gewitter, Schnee, Nebel, Sturm … – nur für den Besuch).
@@ -40,9 +46,10 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 
 ## Offen
 
-- Echte Aufnahmen für Regen, Dach, Wind, Donner (Wikimedia Commons / OpenGameArt, CC0/CC BY).
-- Nasser Boden (dunkler, glänzender) und Schnee auf dem Boden (Schneehöhe ist in den Daten) – braucht Eingriffe in die Boden-Shader.
-- Bäume und Gras im Wind wiegen.
+- Wind als echte Aufnahme (Kandidaten in `quellen/ton.py`, Sichtung über den Workflow).
+- Bäume und Gras im Wind wiegen (braucht Eingriffe in deren Shader).
+- Pfützen, Spritzer am Boden; Regen am Fenster und an der Windschutzscheibe.
+- Lichtglocke der Städte unter der Wolkendecke nachts.
 
 ## Für den Lead
 
@@ -58,4 +65,7 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   Header) – `api.open-meteo.com` und `archive-api.open-meteo.com` sind erreichbar. Nur der Testserver (`tools/csp/cspserve.py`) erlaubt
   `connect-src 'self'`; so soll es bleiben (Tests fragen nie). Käme je eine CSP dazu: `connect-src 'self' https://api.open-meteo.com
   https://archive-api.open-meteo.com`.
-- Quellen: `credits_add` in `viz3/extra/wetter/manifest.json` (Open-Meteo, CC BY 4.0; ERA5/Copernicus).
+- Quellen: `credits_add` in `viz3/extra/wetter/manifest.json` (Open-Meteo, CC BY 4.0; ERA5/Copernicus; die Aufnahmen).
+- Neuer Workflow `.github/workflows/wetter-ton.yml` (nur bei Änderungen an `viz3/extra/wetter/quellen/**` auf `feat/wetter`, lädt nur ein
+  Artefakt hoch, schiebt nichts). Ein „Neu“-Hinweis `SAVE.once('pav-wetter-neu')` beim ersten echten Wetter.
+- Lehre für alle: das Scratch-Verzeichnis teilen sich Lead und Hilfs-Agenten (gleiche Sitzung) – eigene Unterordner mit Präfix nehmen.
