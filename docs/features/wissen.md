@@ -51,6 +51,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   Haustür – „Wahl und Amt“; im Strategie-Modus dazu der Stil). Nur SVG über der Draufsicht: kein Shader-Programm, kein Mesh. Im Strategie-Modus
   sind es Ebenen seines Felds „Ebenen“ (`STRAT.layer.define`, anfangs aus); die Legende erscheint, sobald eine an ist. Wer eine Ansicht
   einschaltet, findet ihren Eintrag (Lärm und Ruhe, Straßen und ihre Klassen, Sonne und Schatten, Was Natur wertvoll macht, Ansehen im Dorf).
+  Feiertage (Ostern nach Gauß, Thüringer Feiertage), Ruhezeiten und der Abfall des Schalls mit dem Abstand sind reine Helfer in
+  `wissen_data.js` (Einheitentests).
 - **Hinweis**: „Neu im Entdeckerbuch: …“ oben in der Mitte mit „Lesen“ (im Strategie-Modus als dessen Meldung, `STRAT.note`).
 - **Gespeichert**: `pav-wissen-v1` (über `SAVE`, mit Prüfung) – gefunden (Spielminute, wie), verstandene Regeln, gelesene Einträge und die
   aus Ereignissen erzeugten Einträge (feat/tiere meldet eine Art nur einmal).
@@ -77,14 +79,16 @@ WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.why
 ## Testen
 
 - Ohne Browser: `node --test viz3/test/unit/wissen.test.mjs` (jeder Eintrag mit Kapitel, Text, Fundweg und Quelle; jede Regel mit Satz und
-  Quelle; Lehrer-Themen zeigen auf vorhandene Einträge; Tafeln; die Talsperre liegt im Quadrat; Fakten, die stimmen müssen).
+  Quelle; Lehrer-Themen zeigen auf vorhandene Einträge; Tafeln; die Talsperre liegt im Quadrat; Fakten, die stimmen müssen; Gedanken der
+  Spielfigur → Regel; Thüringer Feiertage 2026 und Ruhezeiten; Schallabfall).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9006 --serve wissen` (Abschnitte `buch,ereignis,ort,lehrer,warum,
   tafel,daten,reload,telefon,zombie,strategie`; dazu `stadt` – die Tafel an der Bertholdsburg, braucht die Kacheln der Stadt); auf GitHub über `viz3/extra/wissen/tests.txt`, Bilder in `out/wissen/`.
 
 ## Offen
 
 - Lärm und Verkehr sind Näherungen (Straßenklasse, typische Schallpegel); Zählwerte für die Straßen um Ratscher lagen nicht vor.
-- Tafeln in Schleusingen und Veßra (dort finden die Orte selbst die Einträge), Kollision der Tafeln (man läuft durch die Pfosten).
+- Die Tafeln haben keine Kollision (man läuft durch die Pfosten). Die Tafeln in Schleusingen und Veßra sind bei GitHub nicht prüfbar (dort fehlen
+  die Kacheln der Städte) – Abschnitt `stadt` lokal.
 - Die Hauptsatzung von Schleusingen war nicht online zu finden: dass Ratscher eine Ortsteilverfassung hat, ist eine Annahme (wie in „Wahl und Amt“).
 - Das Gründungsjahr der Dorflinde (1888) stammt aus dem Dorfleben des Spiels; eine unabhängige Quelle fehlt noch.
 
@@ -93,7 +97,8 @@ WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.why
 - Gemeinsame Dateien (markiert `feat/wissen`):
   - `viz3/src/dorf/dorf.js` – eine Zeile in `ask()`: `KERN.emit('dorf:thema', { who: k, id, n })`.
   - `viz3/src/npc/npc.js` – `NPCUI.extend` kennt `topics(w)` und `ask(w, k)` (Themen von Erweiterungen in `renderTopics`, Antwort in `ask`).
-  - `viz3/src/modules.txt` – Block `# feat/wissen` nach dem Bus-Block, vor `game/tutorial.js` (fünf Module).
+  - `viz3/src/modules.txt` – Block `# feat/wissen` nach dem Bus-Block, vor `game/tutorial.js` (fünf Module); die Blöcke von feat/strategie und
+    feat/tiere dürfen davor oder danach stehen (das Buch fragt `window.STRAT`, `TARTEN`, `TIERE`, `TEINFLUSS` erst zur Laufzeit).
 - Neuer Speicher-Schlüssel `pav-wissen-v1` (im Modul über `SAVE.key` angemeldet, Prüfung `v === 1` und `f` ein Objekt) – bitte in
   `docs/ARCHITECTURE.md` §8 eintragen. Neue `window`-Namen: `WISSEN`, `WLEHRER`, `WORTE`, `WDATEN`.
 - Quellen: als Text und Links in den Einträgen; eine Sammelzeile über `credits_add` in `viz3/extra/wissen/manifest.json`.
