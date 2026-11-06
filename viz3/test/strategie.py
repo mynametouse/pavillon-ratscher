@@ -10,7 +10,7 @@
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'start,leute,auftrag,regel,holz,strom,ereignis,reload,welt').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'start,leute,auftrag,regel,holz,strom,ereignis,heizen,reload,welt').split(','))
 ck = lib.Checks('strategie')
 OUT = lib.out('strategie')
 with lib.browser() as b:
@@ -426,6 +426,38 @@ with lib.browser() as b:
         rp = job('reparieren', ['christoph'])
         until(done(rp['id']), 60)
         ck('Christoph repairs it', 'Blockbandsäge' not in J("STRAT.S.broken"), str(J("STRAT.S.broken")))
+    if 'heizen' in want:
+        # a cold Friday night in December (−2 °C): the bungalow's cast-iron stove burns dry wood from the store under the eaves – 0,0012 rm per
+        # kelvin below 20 °C; with the store empty a cold night (mood down, a notice with „Brennholz bestellen“); the order fills it again.
+        # (STRAT.setDate only moves the calendar – the nights are crossed in time-lapse)
+        E("STRAT.W.force = { cloud: 0.6, rain: 0, wind: 10, storm: false, src: 'Test', temp: -2 }")
+        J("STRAT.setDate('2026-12-18', 20 * 60)")
+        steps(0.5)
+        E("STRAT.S.ext.heiz.ofen = 0.5; STRAT.S.ext.heiz.kalt = null")
+        h0 = J("({ ofen: STRAT.S.ext.heiz.ofen, dry: STHOLZ.firewood.dry(), who: Object.keys(STRAT.S.people).filter(id => STRAT.isOwn(id) && STRAT.present(id).ok) })")
+        E("STRAT.skip(5 * 60)")
+        until("!CLOCK.warp", 40, 0.25)
+        h1 = J("({ ofen: STRAT.S.ext.heiz.ofen, day: STRAT.W.day(CLOCK.t).label, t: STRAT.W.temp(CLOCK.t) })")
+        burnt = h0['ofen'] - h1['ofen']
+        ck('a cold night (−2 °C): the bungalow\'s stove burns about 0,026 rm of dry wood from the store under the eaves', len(h0['who']) > 0 and 0.02 < burnt + (h0['dry'] or 0) and burnt < 0.035, f'{h0} → {h1}')
+        E("STRAT.skip(22 * 60 + 30)")
+        until("!CLOCK.warp", 40, 0.25)
+        E("STRAT.S.ext.heiz.ofen = 0")
+        m0 = J("Math.round(STRAT.S.people.falko.nd.mood)")
+        E("STRAT.skip(30)")
+        until("!CLOCK.warp", 40, 0.25)
+        m1 = J("Math.round(STRAT.S.people.falko.nd.mood)")
+        kn = J("STRAT.S.notes.slice(-8).map(n => n.text).filter(t => /^Kalte Nacht/.test(t))")
+        btn = J("[...document.querySelectorAll('#stnotes button')].map(b => b.textContent).filter(t => /Brennholz bestellen/.test(t)).length")
+        ck('… without dry wood a cold night: the mood drops, a notice says why (1. BImSchV: only dry wood)', m0 - m1 >= 8 and len(kn) >= 1, f'mood {m0} → {m1}, {kn}, buttons {btn}, {J("STRAT.W.day(CLOCK.t).label")}')
+        J("STRAT.setDate('2026-12-20', 10 * 60)")
+        steps(0.5)
+        e0 = J("STRAT.S.eur")
+        bk = job('brennholz_kaufen', ['falko'])
+        ok = bk and bk.get('id') and until(done(bk['id']), 60)
+        h2 = J("({ ofen: STRAT.S.ext.heiz.ofen, eur: STRAT.S.eur, last: STRAT.S.ledger.slice(-1)[0] })")
+        ck('… Falko orders 1 rm of firewood (110 €/rm, TFZ): stacked under the eaves, booked under „Heizen“', ok and h2['ofen'] > 0.9 and h2['last'] and h2['last']['cat'] == 'heizen' and abs(h2['eur'] - e0 + 110) < 1, f'{bk} {e0} → {h2}')
+        E("STRAT.W.force = { cloud: 0.2, rain: 0, wind: 10, storm: false, src: 'Test' }")
     print('page errors before reload:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'reload' in want:
         J("STRAT.setDate('2026-11-07', 10 * 60)")

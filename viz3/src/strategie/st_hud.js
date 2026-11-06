@@ -582,6 +582,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
           holz: 'Holz und Säge',
           sprit: 'Benzin und Diesel',
           essen: 'Essen',
+          heizen: 'Heizen',
           wissen: 'Lehrgänge',
           ausbau: 'Ausbau und Ausrüstung',
           auto: 'Fahrten',

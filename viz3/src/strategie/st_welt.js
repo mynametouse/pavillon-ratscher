@@ -98,6 +98,29 @@ export const STWELT = (() => {
     if (keys.length > 400) for (const q of keys.slice(0, 200)) delete WXC[q];
     return (WXC[k] = o);
   };
+  // the air temperature (°C) at game time t: near the clock the one feat/wetter shows, else the climate – the month's mean (DWD Meiningen
+  // 1991–2020, about), a day drawn warmer or colder (±4 °C, the same day always the same) and the day's swing (coldest before dawn, warmest
+  // mid-afternoon, ±3,5 °C); W.force.temp in tests
+  const TMEAN = [-0.3, 0.6, 3.9, 8.3, 12.4, 15.7, 17.6, 17.1, 12.9, 8.5, 3.9, 0.9];
+  W.temp = t => {
+    if (W.force && Number.isFinite(W.force.temp)) return W.force.temp;
+    const L = window.WETTER;
+    if (
+      L &&
+      typeof L.state === 'function' &&
+      Math.abs(t - CLOCK.t) < 90 &&
+      ['jetzt', 'stunde', 'probe'].includes(L.src)
+    )
+      try {
+        const st = L.state(),
+          c = st.w || st.cur || {};
+        if (Number.isFinite(c.temp)) return c.temp;
+      } catch (e) {}
+    const d = Math.floor(t / 1440),
+      r = STCORE.rng(((DN.e0 + d) * 6151) | 0)(),
+      sw = Math.cos(((W.minOf(t) - 15 * 60) / 1440) * 2 * Math.PI);
+    return +(TMEAN[W.dateOf(t).getUTCMonth()] + (r - 0.5) * 8 + 3.5 * sw).toFixed(1);
+  };
   // ---------------- places as they stand now ----------------
   const WT = (x, y) => (BUILD.werkstatt ? BUILD.werkstatt.tf(x, y) : [x, y]);
   W.placePos = id => {
