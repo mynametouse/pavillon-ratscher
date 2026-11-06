@@ -1753,7 +1753,20 @@ export const TKOERPER = (() => {
   // badger (Meles meles): low, wide, short legs, the white face with two black stripes over the eyes, grey silver back, black legs
   PLANS.dachs = scaled(QBASE, 1.35, 0.5, 0.88, {
     fur: 0.07,
-    ear: { p: [0.4, 0.37], x: 0.04, out: 0.8, up: 0.5, back: -0.2, len: 0.03, wid: 0.035 },
+    // no neck to be seen: the narrow pointed head held low, in line with the back
+    neck: [
+      [0.24, 0.2, 0.11, 0.09],
+      [0.3, 0.22, 0.095, 0.08],
+      [0.35, 0.235, 0.075, 0.068],
+      [0.39, 0.24, 0.062, 0.058],
+      [0.42, 0.24, 0.056, 0.052],
+      [0.46, 0.235, 0.05, 0.046],
+      [0.5, 0.225, 0.038, 0.034],
+      [0.54, 0.212, 0.024, 0.022],
+      [0.56, 0.206, 0.016, 0.015],
+    ],
+    eye: { p: [0.47, 0.25], x: 0.04, r: 0.006 },
+    ear: { p: [0.405, 0.29], x: 0.04, out: 0.8, up: 0.5, back: -0.2, len: 0.03, wid: 0.035 },
     tail: {
       p: [
         [-0.31, 0.27],
