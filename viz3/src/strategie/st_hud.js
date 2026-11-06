@@ -46,7 +46,7 @@ body[data-strat="1"] #geoattr{left:auto;right:max(10px,env(safe-area-inset-right
 body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(64px + env(safe-area-inset-bottom,0px))}
 #sthud,#stppl,#stpan,#stnotes,#sttime,#stcard{position:absolute;z-index:6;font:400 12px/1.35 var(--f-body,system-ui);color:#f3efe6;user-select:none}
 #sthud[hidden],#stppl[hidden],#stpan[hidden],#stnotes[hidden],#sttime[hidden],#stcard[hidden],#stsvg[hidden]{display:none!important}
-.stbox{background:rgba(24,28,22,.78);border-radius:9px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.stbox{background:rgba(24,28,22,.86);border-radius:9px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 #sthud{top:10px;left:max(10px,env(safe-area-inset-left,0px));display:flex;flex-wrap:wrap;gap:4px;max-width:calc(100vw - 250px)}
 #sthud .r{display:flex;align-items:center;gap:5px;padding:5px 9px;cursor:default}
 #sthud .r b{font:600 12.5px/1 var(--f-mono,monospace);letter-spacing:.01em}
@@ -67,7 +67,7 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
 #stppl .p .nd{grid-column:2;display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:2px}
 #stppl .p .nd i{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden} #stppl .p .nd i u{display:block;height:100%}
 #stppl .tools{display:flex;gap:4px;flex-wrap:wrap}
-#stpan{top:132px;right:max(10px,env(safe-area-inset-right,0px));width:min(320px,44vw);max-height:calc(100% - 200px);overflow:auto;padding:9px 11px 11px;background:rgba(24,28,22,.9)}
+#stpan{top:132px;right:max(10px,env(safe-area-inset-right,0px));width:min(320px,44vw);max-height:calc(100% - 200px);overflow:auto;padding:9px 11px 11px;background:rgba(24,28,22,.94)}
 #stpan h3{margin:0 0 2px;font:600 14px/1.25 var(--f-display,Georgia,serif);display:flex;justify-content:space-between;gap:8px}
 #stpan h3 button{background:none;border:0;color:inherit;font-size:16px;cursor:pointer;padding:0 2px}
 #stpan h4{margin:9px 0 3px;font:600 10.5px/1.2 var(--f-mono,monospace);letter-spacing:.06em;text-transform:uppercase;color:#cfe3a8}
@@ -547,7 +547,24 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
   function openLedger() {
     openPanel(() => {
       let h = head('Kasse', 'Kontostand ' + C.eur(S.eur));
+      // where the money went and came from: the sums by kind (over the last 300 bookings the ledger keeps)
+      const CAT = {
+          verkauf: 'Verkauf',
+          holz: 'Holz und Säge',
+          sprit: 'Benzin und Diesel',
+          essen: 'Essen',
+          wissen: 'Lehrgänge',
+          ausbau: 'Ausbau und Ausrüstung',
+          auto: 'Fahrten',
+          werkstatt: 'Werkstatt',
+        },
+        sum = {};
+      for (const e of S.ledger) sum[e.cat || 'sonst'] = (sum[e.cat || 'sonst'] || 0) + e.eur;
+      const rows = Object.entries(sum).sort((a, b) => b[1] - a[1]);
+      if (rows.length)
+        h += `<h4>Nach Art</h4><ul>${rows.map(([k, v]) => `<li><span>${esc(CAT[k] || k)}</span><b>${v > 0 ? '+' : ''}${C.eur(v)}</b></li>`).join('')}</ul>`;
       const L = S.ledger.slice(-30).reverse();
+      h += '<h4>Buchungen</h4>';
       h += `<ul>${L.length ? L.map(e => `<li><span>${W.day(e.t).label} · ${esc(e.text)}</span><b>${e.eur > 0 ? '+' : ''}${C.eur(e.eur)}</b></li>`).join('') : '<li><span>Noch keine Buchung.</span></li>'}</ul>`;
       h += `<h4>Preise</h4><ul>${Object.values(D.PRICES)
         .map(p => `<li title="${esc(p.src)}"><span>${esc(p.label)}</span><b>${C.eur(p.eur)}/${esc(p.unit)}</b></li>`)

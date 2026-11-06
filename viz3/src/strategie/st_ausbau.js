@@ -53,12 +53,14 @@ export const STAUSBAU = (() => {
       return true;
     },
   });
-  // whoever of your people arrives for the weekend brings food for it when the stores are low (bought on the way: six meals each)
+  // whoever of your people arrives for the weekend brings food for it from home when the stores are low (six meals each – the household's,
+  // not the garden's money); a holiday week or more people need shopping (the job below, booked)
   KERN.on('strategie:da', d => {
     if (!d || !STRAT.isOwn(d.who) || S.essen >= 6) return;
     S.essen += 6;
-    STRAT.book(-6 * MEAL, `Essen fürs Wochenende, auf der Anfahrt gekauft (${D.PEOPLE[d.who].name})`, 'essen');
-    STRAT.note(`${D.PEOPLE[d.who].name} bringt Essen fürs Wochenende mit (6 Mahlzeiten).`, { kind: 'leute' });
+    STRAT.note(`${D.PEOPLE[d.who].name} bringt Essen fürs Wochenende von zu Hause mit (6 Mahlzeiten).`, {
+      kind: 'leute',
+    });
   });
   STRAT.job.define({
     id: 'einkaufen',

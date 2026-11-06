@@ -1034,6 +1034,29 @@ export const STHOLZ = (() => {
   void BUILD;
   void CLOCK;
   void STJOBS;
+  // firewood for other themes (strategie-bau: the pavilion's wood stove in winter): how much is stacked, how much of it is dry, and taking it –
+  // dry first; o.dryOnly (the 1. BImSchV: only dry wood in the stove) takes nothing wet. Returns the rm taken.
+  const firewood = {
+    stacked: () => FB().lots.reduce((n, l) => n + l.rm, 0),
+    dry: (t = S.t ?? CLOCK.t) => FB().lots.reduce((n, l) => n + (lotDry(l, t) ? l.rm : 0), 0),
+    take(rm, o = {}) {
+      const t = S.t ?? CLOCK.t;
+      let left = Math.max(0, +rm || 0),
+        got = 0;
+      const L = FB().lots.sort((a, b) => a.t0 - b.t0);
+      for (const l of L) {
+        if (left <= 1e-6) break;
+        if (o.dryOnly && !lotDry(l, t)) continue;
+        const k = Math.min(l.rm, left);
+        l.rm = +(l.rm - k).toFixed(3);
+        left -= k;
+        got += k;
+      }
+      FB().lots = L.filter(l => l.rm > 1e-3);
+      S.brennholz = Math.max(0, S.brennholz - got);
+      return +got.toFixed(3);
+    },
+  };
   return {
     marked,
     logsForest,
@@ -1045,6 +1068,7 @@ export const STHOLZ = (() => {
     ownPanels,
     shelf,
     toYard,
+    firewood,
     PAYLOAD,
   };
 })();
