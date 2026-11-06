@@ -50,7 +50,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   kleines Feld links unten mit sechs Schaltern und der Legende – **Orte der Geschichte** (die Infotafeln, gelesene gefüllt, und die Orte in
   Schleusingen und Veßra), **Lärm** (Straßen nach ihrer OSM-Klasse mit Bändern über 55 und 45 dB(A),
   Maschinen, solange sie laufen: Mäher, Motorsäge, Blockbandsäge, die lauten Aufträge des Strategie-Modus; dazu die Ruhezeiten des Spieltags
-  mit „?“), **Verkehr** (Straßen nach Klasse, die fahrenden Autos des Verkehrs, die Autos der Dorfbewohner, die Busse), **Sonne**
+  mit „?“), **Verkehr** (Straßen nach Klasse, die fahrenden Autos des Verkehrs, die Autos der Dorfbewohner, die Busse;
+  wie viele Busse am Spieltag in Ratscher halten und welche Linien – aus dem echten Fahrplan von feat/bus), **Sonne**
   (Sonnenstunden des Spieltags auf einem 3-m-Raster über dem Garten – Sonnenstand und Schatten von Gebäuden und Kronen wie im Gartenplaner,
   einmal je Tag gerechnet), **Naturwert** (Wald an der Klinge, Hecken um den Garten, Bach mit 5-m-Uferstreifen, alte Bäume, Dorflinde; gesehene Tiere, Käferbäume
   und die Ruhezone am Schwarzstorch-Horst, sobald man von ihnen weiß – feat/tiere), **Stimmung** (Meinung der Leute von dir, 0–100, an ihrer
@@ -93,7 +94,8 @@ WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners 
 
 ## Offen
 
-- Lärm und Verkehr sind Näherungen (Straßenklasse, typische Schallpegel); Zählwerte für die Straßen um Ratscher lagen nicht vor.
+- Lärm und Verkehr sind Näherungen (Straßenklasse, typische Schallpegel); Zählwerte für die Straßen um Ratscher lagen nicht vor – echt
+  gezählt sind nur die Busse (Fahrplan).
 - Die Tafeln haben keine Kollision (man läuft durch die Pfosten). Die Tafeln in Schleusingen und Veßra sind bei GitHub nicht prüfbar (dort fehlen
   die Kacheln der Städte) – Abschnitt `stadt` lokal.
 - Die Hauptsatzung von Schleusingen war nicht online zu finden: dass Ratscher eine Ortsteilverfassung hat, ist eine Annahme (wie in „Wahl und Amt“).

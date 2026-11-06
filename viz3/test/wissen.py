@@ -244,6 +244,9 @@ def run():
                 E(f"WDATEN.set('{v}', false)")
             E("WDATEN.set('w_stimmung', true)"); E("WDATEN.set('w_verkehr', true)"); steps(1.2)
             ck('„Stimmung“ and „Verkehr“ on without errors (legend with the road classes)', 'Kreisstraße' in E("document.getElementById('widaten').textContent"))
+            if E("!!(window.BUS && BUS.plan && BUS.plan.ready)"):
+                bl = E("(() => { const p = [...document.querySelectorAll('#widaten p')].find(p => p.textContent.includes('Fahrplan')); return p ? p.textContent : ''; })()")
+                ck('feat/bus: the traffic view counts today\'s buses in Ratscher by the real timetable', 'Ratscher' in bl and 'echten Fahrplan' in bl, bl[:160])
             page_pic('11_daten_verkehr_stimmung')
             E("WDATEN.set('w_stimmung', false)"); E("WDATEN.set('w_verkehr', false)")
             E("WDATEN.set('w_orte', true)"); steps(0.6)
