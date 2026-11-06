@@ -1,0 +1,47 @@
+{
+ "reh": {
+  "files": [
+   "reh_schrecken.mp3"
+  ],
+  "vol": 0.9,
+  "ref": 30
+ },
+ "sau": {
+  "files": [
+   "sau_1.mp3",
+   "sau_2.mp3"
+  ],
+  "vol": 0.7,
+  "ref": 10,
+  "gap": 0.55
+ },
+ "fuchs": {
+  "files": [
+   "fuchs_bellen.mp3"
+  ],
+  "vol": 0.7,
+  "ref": 25
+ },
+ "fuchsschrei": {
+  "files": [
+   "fuchs_schrei.mp3"
+  ],
+  "vol": 0.6,
+  "ref": 30
+ },
+ "bellen": {
+  "files": [
+   "hund_bellen.mp3"
+  ],
+  "vol": 0.8,
+  "ref": 12,
+  "gap": 0.6
+ },
+ "uhu": {
+  "files": [
+   "uhu.mp3"
+  ],
+  "vol": 0.8,
+  "ref": 60
+ }
+}
