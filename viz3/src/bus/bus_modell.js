@@ -200,7 +200,9 @@ export const BUSMOD = (() => {
     // roof, air conditioning, ceiling with the light strips
     bx(kB, -HW + 0.12, -L / 2, H - 0.06, HW - 0.12, L / 2 - 0.05, H, WHITE);
     bx(kB, -0.85, -1.6, H, 0.85, 1.8, H + 0.26, col(0xd8dbdc));
-    bx(kB, -HW + 0.06, -L / 2 + 0.1, 2.86, HW - 0.06, L / 2 - 0.2, 2.9, INNER, true);
+    // (the ceiling in the cabin's material: by day it takes a little of the light that comes through the windows – lit only by the sky
+    // from below it read dark brown from the seat)
+    bx(kC, -HW + 0.06, -L / 2 + 0.1, 2.86, HW - 0.06, L / 2 - 0.2, 2.9, col(0xe4e2dc), true);
     for (const sx of [-1, 1])
       bx(kC, sx * 0.62 - 0.08, -L / 2 + 0.6, 2.84, sx * 0.62 + 0.08, L / 2 - 1.2, 2.86, INNER, true);
     // floor and the dark underbody
@@ -486,7 +488,7 @@ export const BUSMOD = (() => {
   function lamps(night) {
     M.head.emissiveIntensity = night ? 2.4 : 0.15;
     M.tail.emissiveIntensity = night ? 1.4 : 0.25;
-    M.cabin.emissiveIntensity = night ? 1.1 : 0;
+    M.cabin.emissiveIntensity = night ? 1.1 : 0.22;
   }
   // ---- the stop sign: pole, H disc, name plate, timetable case (site frame: at x, y, the sign's face towards azimuth az) ----
   // draw(ctx, w, h): the printed timetable in the case (bus/bus.js paints the departures of this kerb)
