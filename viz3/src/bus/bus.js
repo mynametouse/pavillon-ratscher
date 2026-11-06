@@ -258,6 +258,16 @@ export const BUS = (() => {
       c.fillText('s = an Schultagen · Fahrplan gtfs.de (DELFI e.V.)', 8, h - 7);
     };
   }
+  // the place's name at a stop (the label in the corner, events 'place'): „Haltestelle Ratscher, Schleusebrücke“
+  KERN.provide(
+    'place',
+    (x, y) => {
+      if (!STOPS.length) return undefined;
+      const e = stopAt(x, y, 7);
+      return e ? 'Haltestelle ' + e.name : undefined;
+    },
+    31
+  );
   // the stop the player stands at (≤ r m from its sign)
   function stopAt(x, y, r = 40) {
     let best = null,

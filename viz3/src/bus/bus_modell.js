@@ -29,11 +29,11 @@ export const BUSMOD = (() => {
   const M = {
     body: VFIG.mat(),
     glass: new THREE.MeshStandardMaterial({
-      color: 0x24343c,
+      color: 0x2a3a42,
       roughness: 0.06,
-      metalness: 0.35,
+      metalness: 0.3,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.4,
       depthWrite: false,
     }),
     head: new THREE.MeshStandardMaterial({
@@ -208,7 +208,9 @@ export const BUSMOD = (() => {
     bx(kB, -HW, YF - 0.1, 0.55, HW, YF, 0.95, WHITE);
     bx(kB, -HW + 0.05, YF - 0.08, 0.55, -HW + 0.4, YF + 0.01, 0.62, BLACK);
     for (const sx of [-1, 1]) {
-      bx(kH, sx * 0.78 - 0.24, YF - 0.02, 0.66, sx * 0.78 + 0.24, YF + 0.015, 0.8, WHITE);
+      // head lamps in the outer corners of the front, the indicator above them
+      bx(kH, sx * (HW - 0.3) - 0.2, YF - 0.02, 0.64, sx * (HW - 0.3) + 0.2, YF + 0.015, 0.8, WHITE);
+      bx(kB, sx * (HW - 0.3) - 0.2, YF - 0.02, 0.81, sx * (HW - 0.3) + 0.2, YF + 0.012, 0.86, col(0xd98a1c));
       bx(kT, sx * (HW - 0.02) - 0.05, -L / 2 - 0.02, 0.65, sx * (HW - 0.02) + 0.05, -L / 2 + 0.02, 1.55, WHITE);
       // the mirrors on their arms
       bx(kB, sx * HW, YF - 0.25, 2.45, sx * (HW + 0.32), YF - 0.2, 2.5, BLACK);

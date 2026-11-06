@@ -129,6 +129,14 @@ with lib.browser() as b:
            f"{brd['lbl']} | " + ' / '.join(brd['rows'][:5]))
         ck('the board shows the 205 to Schleusingen at 7:46', any('7:46' in r and '205' in r for r in brd['rows']), ' / '.join(brd['rows'][:5]))
         page_pic(pg, 'a_fahrplan')
+        # the printed timetable in the sign's case, close (first person for the picture)
+        E("""(() => { window.CAM3 && (CAM3.want = false); const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30), a = ((e.az + 180) * Math.PI) / 180, fx = Math.sin(a), fy = Math.cos(a);
+          const x = e.x + fx * 1.25, y = e.y + fy * 1.25; GAME.view(x, y, KERN.ground(e.x, e.y) + 1.45, Math.atan2(e.x - x, e.y - y) * 180 / Math.PI, -2, 50); })()""")
+        steps(0.2)
+        pic(pg, 'a2_aushang')
+        E("window.CAM3 && (CAM3.want = true); document.querySelector('#busboard .x') && document.querySelector('#busboard .x').click(); GAME.go('bus')")
+        steps(0.3)
+        E("(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); BUS.board(e); })()")
         # waiting: the clock jumps to a minute before the bus
         E("document.querySelector('#busboard [data-k=warten]').click()")
         for i in range(40):
@@ -198,15 +206,12 @@ with lib.browser() as b:
             moved = math.hypot(p_b[0] - p_a[0], p_b[1] - p_a[1])
             ck('the bus drives on its way, the rider with it', mine and mine[0]['st'] == 'fahrt' and moved > 40, f"{moved:.0f} m, {mine[0] if mine else None}")
             pic(pg, 'd_aus_dem_bus')
-            # (what lies low in the picture from the seat: a ray from the camera, local coordinates of the bus)
-            probe = J("""(() => { const I = BUS.S.ride.I, g = I.B.g, c = GAME.cam, T = window.THREE_ || null; const out = { cam: [c.position.x, -c.position.z, c.position.y], bus: [I.x, I.y, I.z, I.hd] };
-              const inv = g.matrixWorld.clone().invert(), p = c.position.clone().applyMatrix4(inv); out.camLocal = [p.x, -p.z, p.y]; return out; })()""")
-            print('probe', probe, flush=True)
-            # (which part is the bar low in the seat's picture: pictures with parts hidden)
-            for part in ('pax', 'doors', 'glass', 'body'):
-                E(f"(() => {{ const B = BUS.S.ride.I.B; const L = B['{part}']; (Array.isArray(L) ? L : [L]).forEach(m => m.visible = false); }})()")
-                pic(pg, 'dx_ohne_' + part)
-                E(f"(() => {{ const B = BUS.S.ride.I.B; const L = B['{part}']; (Array.isArray(L) ? L : [L]).forEach(m => m.visible = true); }})()")
+            # the eye at the seat (right, behind the middle door: local x 0.98, y -1.25, 1.56 m up) also while it drives – bus and
+            # camera placed in the same frame (the eye once lagged a frame's way behind and looked over its own backrest)
+            probe = J("""(() => { const I = BUS.S.ride.I, g = I.B.g, c = GAME.cam; g.updateMatrixWorld(true);
+              const p = c.position.clone().applyMatrix4(g.matrixWorld.clone().invert()); return [p.x, -p.z, p.y]; })()""")
+            ck('the eye stays at the seat while the bus drives', abs(probe[0] - 0.98) < 0.1 and abs(probe[1] + 1.25) < 0.15 and abs(probe[2] - 1.56) < 0.1,
+               'local ' + ', '.join(f'{v:.2f}' for v in probe))
             # the next stop: Krankenhaus, then the Zentralhaltestelle – „Fahrt abkürzen“ to the Zentralhaltestelle
             kz = J("(() => { const I = BUS.S.ride.I; return I.Rn.P.st.findIndex(o => o.s >= 0 && BUS.plan.S.stations[o.s].n === 'Schleusingen, Zentralhaltestelle'); })()")
             E(f"BUS.want({kz})")
@@ -303,9 +308,10 @@ with lib.browser() as b:
             time.sleep(0.5)
         # (the night's day is a Sunday by the timetable – Reformationstag: at 14:46 the 205 from Coburg is due at the Schleusebrücke)
         E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 14 * 60 + 44")
-        steps(30.0, 0.25)
+        steps(2.0, 0.25)
         st = J("BUS.state()")
         due = E("BUS.S.state === 'ready' ? BUS.plan.active(CLOCK.t, DN.e0, 0, 0).length : -1")
+        print('zombie night', E("CLOCK.hm()"), E("DN.dateStr()"), 'due', due, flush=True)
         ck('in the zombie night no regular buses (though the timetable has some on the road)', st['state'] == 'ready' and due > 0 and len(st['inst']) == 0 and st['furn'] >= 0,
            f"due {due}, drawn {len(st['inst'])}, {st['state']}")
         ck.errors(errs2)

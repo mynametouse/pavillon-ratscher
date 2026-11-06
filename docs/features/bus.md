@@ -22,6 +22,7 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   Richtung (Stunden mit Minuten für Montag–Freitag, Samstag, Sonn- und Feiertag, „s“ = an Schultagen). An der Schulbushaltestelle an der
   alten Schule steht das Wartehäuschen mit Schild schon (`world/village_props.js`); der Bus hält dort mit der Tür am Häuschen (die Lage aus
   Falkos Video, `world/dorfkern_data.js`, statt der 17 m daneben im Feed).
+- An einer Haltestelle heißt der Ort „Haltestelle …“ (Ortsanzeige); beim ersten Mal an einem Schild ein Hinweis, was man dort tun kann.
 - **Fahrplan am Schild** („Fahrplan: …“): die nächsten Abfahrten dieser Richtung (Zeit, Linie, Ziel, „in 3 min“, „steht da“), der Tag
   („Mittwoch, Schultag“), **„Auf den Bus warten“** (die Uhr springt wie beim Schlafen bis eine Minute vor den Bus).
 - **Zufahrt vom Rand**: eine Fahrt, die von außerhalb der Welt kommt (z. B. die 205 aus Coburg über Wiedersbach), fährt vom Rand des
@@ -45,7 +46,9 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
   2+2-Sitze, gelbe Haltestangen, Fahrerplatz mit Fahrer, Klimaanlage auf dem Dach, getönte Scheiben zum Durchsehen, LED-Zielanzeige vorn, an
   der Seite und hinten mit Linie und Ziel, ein paar Fahrgäste. Nachts Scheinwerfer, Rücklichter, beleuchteter Innenraum; ein geliehenes Licht
   vor dem nächsten Bus (`KERN.lights.borrow`, kein neues Licht). Gebaut beim ersten Bus; Material des Verkehrs (Vertexfarben), Glas, Lampen und
-  Anzeige mit eigenem Material, die schon beim Laden übersetzt werden (unsichtbare Träger) – keine neuen Shader-Programme.
+  Anzeige mit eigenem Material, die schon beim Laden übersetzt werden (unsichtbare Träger) – keine neuen Shader-Programme. Kein Schatten in
+  der Sonnenkarte (ein fahrender Schattenwerfer verlangte jedes Bild eine neue Karte, die Autos des Verkehrs werfen auch keinen), dafür ein
+  weicher Schatten auf der Straße unter ihm; neue Bilder fordert ein Bus nur an, wenn man ihn sehen kann. Rund 12 Draw-Calls je Bus.
 - **Ton** (synthetisch): Diesel des nächsten Busses, Türen, Haltewunsch-Glocke.
 - **Zombie-Nacht**: keine Linienbusse (sie hat ihren eigenen Bus).
 - Szene **„Mit dem Bus nach Schleusingen“** (`?szenario=bus`): nächster Schultag 7:38 an der Haltestelle Ratscher, Schleusebrücke (Richtung
