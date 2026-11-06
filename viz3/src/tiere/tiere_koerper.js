@@ -1299,30 +1299,33 @@ export const TKOERPER = (() => {
     e: 2.5,
     // the cross-section: deep flanks narrowing to the high back (a sow is narrow seen from the front, not round)
     tp: 0.32,
-    fur: 0.09,
-    sides: 18,
-    // the wedge: the back falls from the high shoulders to the rump, the rear narrow, the front broad
+    // (a short coat outline only: the ragged fur shows as facets in the shading at 7 m)
+    fur: 0.045,
+    sides: 20,
+    // the wedge: the back falls from the high shoulders to the rump, the rear narrow and tucked up over the hams, the front broad and
+    // deep; the legs show a third of the height below the chest
     trunk: [
-      [-0.52, 0.61, 0.47, 0.05],
-      [-0.48, 0.665, 0.37, 0.108],
-      [-0.35, 0.7, 0.33, 0.132],
-      [-0.15, 0.745, 0.3, 0.148],
-      [0.05, 0.792, 0.285, 0.158],
-      [0.22, 0.85, 0.285, 0.166],
-      [0.34, 0.875, 0.3, 0.162],
-      [0.44, 0.805, 0.34, 0.14],
+      [-0.52, 0.62, 0.5, 0.05],
+      [-0.48, 0.675, 0.41, 0.105],
+      [-0.35, 0.71, 0.36, 0.13],
+      [-0.15, 0.755, 0.32, 0.148],
+      [0.05, 0.8, 0.31, 0.158],
+      [0.22, 0.86, 0.315, 0.166],
+      [0.34, 0.885, 0.33, 0.162],
+      [0.44, 0.815, 0.36, 0.14],
     ],
-    // the short thick neck merged into the shoulders, the long wedge of a head down to the snout disc
+    // the short thick neck merged into the shoulders; the head a long wedge, a third of the length, from the high forehead with the
+    // jowls down to the snout disc
     neck: [
-      [0.34, 0.62, 0.15, 0.21, 2.4],
-      [0.44, 0.63, 0.15, 0.205, 2.4],
-      [0.53, 0.605, 0.136, 0.186, 2.3],
-      [0.61, 0.555, 0.106, 0.146, 2.2],
-      [0.69, 0.495, 0.08, 0.106, 2.1],
-      [0.77, 0.435, 0.06, 0.074],
-      [0.84, 0.388, 0.05, 0.056],
-      [0.885, 0.362, 0.047, 0.048],
-      [0.9, 0.356, 0.046, 0.046],
+      [0.34, 0.63, 0.15, 0.21, 2.4],
+      [0.44, 0.64, 0.15, 0.205, 2.4],
+      [0.53, 0.615, 0.145, 0.2, 2.3],
+      [0.62, 0.56, 0.115, 0.16, 2.2],
+      [0.71, 0.495, 0.088, 0.118, 2.1],
+      [0.79, 0.435, 0.066, 0.083],
+      [0.86, 0.39, 0.054, 0.062],
+      [0.91, 0.365, 0.05, 0.053],
+      [0.93, 0.358, 0.05, 0.05],
     ],
     neckMid: 1,
     headAt: 2,
@@ -1330,21 +1333,22 @@ export const TKOERPER = (() => {
     hx: 0.095,
     fx: 0.095,
     hind: [
-      [-0.33, 0.48],
-      [-0.24, 0.3],
-      [-0.36, 0.16],
+      [-0.33, 0.5],
+      [-0.24, 0.32],
+      [-0.36, 0.17],
       [-0.33, 0.03],
     ],
     hindR: [0.14, 0.12, 0.075, 0.045, 0.033, 0.035],
     front: [
-      [0.3, 0.5],
-      [0.26, 0.3],
-      [0.28, 0.13],
+      [0.3, 0.52],
+      [0.26, 0.32],
+      [0.28, 0.14],
       [0.29, 0.03],
     ],
     frontR: [0.12, 0.1, 0.07, 0.042, 0.032, 0.034],
-    ear: { p: [0.55, 0.75], x: 0.07, out: 0.55, up: 0.8, back: -0.35, len: 0.13, wid: 0.08 },
-    eye: { p: [0.635, 0.6], x: 0.087, r: 0.009 },
+    // small pointed ears, upright, a little out
+    ear: { p: [0.55, 0.78], x: 0.07, out: 0.45, up: 0.85, back: -0.3, len: 0.11, wid: 0.062 },
+    eye: { p: [0.64, 0.6], x: 0.1, r: 0.009 },
     tail: {
       p: [
         [-0.51, 0.6],
@@ -1366,19 +1370,19 @@ export const TKOERPER = (() => {
       const yk = variant && variant.young ? 0.45 : 1;
       // the front of the ridge rides on the neck bones, so it bends down with the head when the boar roots (no horn sticking out)
       const pts = [
-        [0.5, 0.72, [W(sk, 'neck1', 0.3), W(sk, 'neck2', 0.7)]],
-        [0.4, 0.855, [W(sk, 'chest', 0.3), W(sk, 'neck1', 0.7)]],
-        [0.28, 0.87, [W(sk, 'chest')]],
-        [0.12, 0.835, [W(sk, 'root')]],
-        [-0.05, 0.79, [W(sk, 'root')]],
-        [-0.2, 0.745, [W(sk, 'hips')]],
+        [0.5, 0.74, [W(sk, 'neck1', 0.3), W(sk, 'neck2', 0.7)]],
+        [0.4, 0.875, [W(sk, 'chest', 0.3), W(sk, 'neck1', 0.7)]],
+        [0.28, 0.89, [W(sk, 'chest')]],
+        [0.12, 0.85, [W(sk, 'root')]],
+        [-0.05, 0.8, [W(sk, 'root')]],
+        [-0.2, 0.755, [W(sk, 'hips')]],
       ];
       loft(
         B,
         pts.map(([z, y, w], i) => ({
           p: V3(0, y, z),
-          rx: [0.03, 0.04, 0.042, 0.036, 0.03, 0.02][i] * (0.4 + 0.6 * yk),
-          ry: [0.02, 0.034, 0.034, 0.026, 0.02, 0.01][i] * yk,
+          rx: [0.03, 0.042, 0.045, 0.036, 0.03, 0.02][i] * (0.4 + 0.6 * yk),
+          ry: [0.02, 0.046, 0.05, 0.034, 0.022, 0.01][i] * yk,
           w,
           u: i / (pts.length - 1),
         })),
