@@ -788,6 +788,13 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
           taken.push(R);
       }
     }
+    // every place's symbol is taken before any label is placed: a label never runs under a symbol drawn after it (a dense garden on a phone)
+    if (STRAT.layer.on('orte'))
+      for (const Pl of STRAT.place.list()) {
+        const c = STRAT.place.pos(Pl.id),
+          q = c ? pr(c[0], c[1], 1) : null;
+        if (q && onScreen(q)) taken.push([q[0] - 15, q[1] - 15, q[0] + 15, q[1] + 15]);
+      }
     if (STRAT.layer.on('orte'))
       for (const Pl of STRAT.place.list().sort((a, b) => (b.id === H.place) - (a.id === H.place))) {
         const c = STRAT.place.pos(Pl.id);
@@ -807,12 +814,13 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         }
         h += `<text class="ic" x="${q[0].toFixed(1)}" y="${(q[1] + 4.5).toFixed(1)}" text-anchor="middle">${Pl.icon}</text>`;
         const lw = Pl.name.length * 6.4 + 4;
-        // the label right of the symbol, else left of it; neither free: only the symbol (its name in the tooltip and the panel)
-        const right = !hits(q[0] - r, q[1] - 9, q[0] + r + 5 + lw, q[1] + 9),
-          left = !right && !hits(q[0] - r - 5 - lw, q[1] - 9, q[0] + r, q[1] + 9);
+        // the label right of the symbol, else left of it, else below it; none free: only the symbol (its name in the tooltip and the panel)
+        const right = !hits(q[0] + r + 3, q[1] - 9, q[0] + r + 5 + lw, q[1] + 9),
+          left = !right && !hits(q[0] - r - 5 - lw, q[1] - 9, q[0] - r - 3, q[1] + 9),
+          below = !right && !left && !hits(q[0] - lw / 2, q[1] + r + 3, q[0] + lw / 2, q[1] + r + 17);
         if (right || left) {
           const x = right ? q[0] + r + 5 : q[0] - r - 5;
-          free(right ? q[0] - r : q[0] - r - 5 - lw, q[1] - 9, right ? q[0] + r + 5 + lw : q[0] + r, q[1] + 9);
+          free(right ? q[0] + r + 3 : q[0] - r - 5 - lw, q[1] - 9, right ? q[0] + r + 5 + lw : q[0] - r - 3, q[1] + 9);
           h += `<text x="${x.toFixed(1)}" y="${(q[1] + 4).toFixed(1)}"${right ? '' : ' text-anchor="end"'}>${esc(Pl.name)}</text>`;
           if (STRAT.layer.on('wirtschaft') && Pl.badge) {
             const b = Pl.badge(),
@@ -820,7 +828,10 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
             if (b && free(right ? x : x - bw, q[1] + 9, right ? x + bw : x, q[1] + 21))
               h += `<text class="badge" x="${x.toFixed(1)}" y="${(q[1] + 17).toFixed(1)}"${right ? '' : ' text-anchor="end"'}>${esc(b)}</text>`;
           }
-        } else free(q[0] - r, q[1] - r, q[0] + r, q[1] + r);
+        } else if (below) {
+          free(q[0] - lw / 2, q[1] + r + 3, q[0] + lw / 2, q[1] + r + 17);
+          h += `<text x="${q[0].toFixed(1)}" y="${(q[1] + r + 14).toFixed(1)}" text-anchor="middle">${esc(Pl.name)}</text>`;
+        }
         h += `<title>${esc(Pl.name)}</title>`;
         h += '</g>';
       }
