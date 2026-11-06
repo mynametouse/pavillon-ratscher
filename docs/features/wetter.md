@@ -20,7 +20,12 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
   leuchten die Sterne zwischen aufgelockerten Wolken und gehen hinter ihnen aus (je Stern dieselbe Wolkendecke im Sternen-Shader, beim
   Laden übersetzt); Mond und Milchstraße verdeckt die Decke ohnehin. Das Licht folgt: Sonne gedämpft (zieht eine Wolke vor die Sonne, wird es in dem Moment dunkler), mehr diffuses
   Himmelslicht, das Auge passt sich an, grauer Dunst nach der Sicht (der größere Wert gewinnt; der Nebel der Zombie-Nacht bleibt darüber),
-  keine Sterne und kein Mondlicht unter geschlossener Decke, Wolkenschatten auf dem fernen Land nur bei aufgelockerter Bewölkung. Regen als
+  keine Sterne und kein Mondlicht unter geschlossener Decke, Wolkenschatten auf dem fernen Land nur bei aufgelockerter Bewölkung.
+  **Schauer** (Wettercodes 80–82, 85, 86) sind keine Stunde gleichmäßigen Regens: Zellen von ~6 km ziehen mit dem Wind in Wolkenhöhe
+  vorbei (in Spielzeit gezählt) – unter einer schüttet es (die Stundenmenge in etwa einem Drittel der Zeit) und der Himmel schließt sich,
+  dazwischen ist es trocken, aufgelockert, die Sonne kommt heraus. Kurz vor oder nach einem Regenschauer mit Sonne (zwischen ~1° und
+  42° Höhe, keine Wolke vor ihr): ein **Regenbogen** gegenüber der Sonne (Hauptbogen 40–42°, innen violett, außen rot; Nebenbogen
+  50–54°, Farben umgekehrt, schwächer; innen etwas heller) – im Himmels-Shader, beim Laden übersetzt. Regen als
   Schlieren um die Kamera (Nieselregen fein und langsam, Starkregen dicht und schnell), Schnee als sinkende, pendelnde Flocken, Schneeregen
   gemischt, alles vom Wind und den Böen getragen; ein Netz, beim Laden übersetzt, Dichte über den Zeichenbereich; Flocken höchstens ein
   paar Pixel groß und vor der Linse ausgeblendet; drinnen (Pavillon, Gartengebäude, Häuser der Zombie-Nacht) keine Tropfen, im Fahrzeug
@@ -75,7 +80,9 @@ Falko, 5.11.2026 23:02: **Wetter live als Standard** – die Welt zeigt das Wett
 - `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9001 --serve wetter` (Abschnitte: `python3 viz3/test/wetter.py 9001
   start,jetzt,wetter,innen,ton,kalender,fehler,zombie,neu`), Bilder in `out/wetter/`. Auf GitHub über `viz3/extra/wetter/tests.txt`.
 - Ein Testbrowser fragt Open-Meteo nie (`navigator.webdriver`); `WETTER.mock(fn | json | 'fail')` antwortet statt dessen in der Form von
-  Open-Meteo. `WETTER.state()` zeigt Quelle, Werte, Tropfen, Spritzer, Himmel, Tonpegel, geladene Aufnahmen.
+  Open-Meteo. `WETTER.state()` zeigt Quelle, Werte, Tropfen, Spritzer, Himmel, Tonpegel, geladene Aufnahmen, Bäume, Schauer.
+  Zum Prüfen von Hand: `WETTER.preset('schauer')`, `WETTER.shower(0 | 1 | null)` (zwischen den Zellen / unter einer / wie es kommt),
+  `WETTER.strike({ d, az })` (ein Blitz in d m Richtung az°).
 - Echte Antworten von Open-Meteo (der Chat-Rechner bekommt HTTP 429; geprüft 6.11. ~2:00: alle vier Arten gelesen, jede Antwort mit
   `access-control-allow-origin: *` – der Browser auf der veröffentlichten Seite darf sie lesen) liest der Job „Echte Wetterdaten lesen“ in
   `.github/workflows/wetter-ton.yml` mit dem Parser des Moduls (`viz3/extra/wetter/quellen/echt.mjs`): jetzt, ein Tag vor 5 Tagen, eine

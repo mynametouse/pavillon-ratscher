@@ -202,7 +202,26 @@ with lib.browser() as b:
         sky_flash_day = J("WETTER.state().skyFlash")
         pic('10_blitz')
         steps(1)
-        ck('no new shader program while the weather changed (clear → overcast → rain → snow → fog → storm → thunderstorm)', progs() == p0, f"{p0} → {progs()}")
+        # showers: cells pass – under one it pours and the sky closes; between them dry, broken clouds and the sun, a rainbow opposite it
+        midday(18.0)
+        weather('schauer')
+        E("WETTER.shower(1); WETTER.snap()"); steps(1, 0.1)
+        s = st()
+        ck('showers: under a cell it pours (some three times the hour\'s mean) and the sky closes', s['cur']['rain'] > 8 and s['cur']['cover'] > 0.9 and s['shower']['bow'] == 0, f"rain {s['cur']['rain']:.1f} cover {s['cur']['cover']:.2f} {s['shower']}")
+        E("WETTER.shower(0); WETTER.snap()"); steps(1, 0.1)
+        # wait for a gap in front of the sun: the deck moved on by hand (the wind would bring one in a while)
+        for i in range(30):
+            if J("WETTER.state().sky.mask") < 0.2: break
+            E("DN.SU.wxT.value.x += 0.29; DN.SU.wxT.value.y += 0.17"); steps(0.3, 0.1)
+        az = J("DN.state.sunAz"); el = J("DN.state.sunEl")
+        view('garten', round((az + 180) % 360), 12)
+        steps(0.5, 0.1)
+        s = st()
+        ck('showers: between them dry, broken clouds, the sun out – a rainbow opposite it (in the sky\'s program, no new one)', s['cur']['rain'] < 0.05 and s['cur']['cover'] < 0.75 and s['shower']['bow'] > 0.9 and (s['shower']['u'] > 0.1 or s['sky']['mask'] >= 0.2), f"sun {el:.0f}° az {az:.0f}°, rain {s['cur']['rain']:.2f} cover {s['cur']['cover']:.2f} mask {s['sky']['mask']} {s['shower']}")
+        pic('10b_regenbogen')
+        E("WETTER.shower(null)")
+        midday(12.0)
+        ck('no new shader program while the weather changed (clear → overcast → rain → snow → fog → storm → thunderstorm → showers)', progs() == p0, f"{p0} → {progs()}")
         ok, r = lib.check_gl(pg, 16)
         ck('every shader program links and stays within 16 textures (the sky with its clouds, the drops)', ok, json.dumps({k: r[k] for k in ('programs', 'maxFrag', 'maxVert', 'broken')})[:300] + json.dumps(r['bad'])[:200])
         # roofs over the rain: the scene from above as a depth map – no drop under the carport's roof, the open garden rained on
