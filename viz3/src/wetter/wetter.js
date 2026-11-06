@@ -286,6 +286,7 @@ export const WETTER = (() => {
         dir: c.dir,
         col: WXSKY.U.wxHor.value,
         hole: bus ? 7 : cab ? 2.4 : pav ? 5.5 : 0.35,
+        cab,
         ground: P.mode === 'walk' && !cab && !inside ? groundPlane() : null,
         hide: (inside && !pav) || !on,
       },
@@ -474,7 +475,7 @@ export const WETTER = (() => {
     }
   }
   // ---- the mode (saved), a weather to try (this visit only), tests ----
-  function setMode(m) {
+  function setMode(m, byHand) {
     if (m !== 'live' && m !== 'kalender') return;
     S.mode = m;
     S.preset = null;
@@ -482,6 +483,16 @@ export const WETTER = (() => {
     pick(true);
     if (m === 'live') fetchNow(true);
     ui();
+    // chosen by hand while the game's clock is elsewhere: the weather follows the game's hour – say so, and how to get today's
+    if (byHand && m === 'live' && !ZON() && Math.abs(gameU() - Date.now() / 1000) > 45 * 60)
+      toast(
+        'Das Wetter folgt der Spielzeit (' +
+          DN.dateShort() +
+          ' ' +
+          CLOCK.hm() +
+          ' Uhr) – echtes Wetter dieser Stunde. Für das Wetter von jetzt: an der Uhr oben rechts „Uhr und Datum auf jetzt“.',
+        8000
+      );
   }
   function preset(name) {
     S.preset = name && WXDATA.PRESETS[name] ? name : null;
@@ -538,7 +549,7 @@ export const WETTER = (() => {
     return out.length > 1 ? '<ul class="ckj wxnext">' + out.join('') + '</ul>' : '';
   }
   function winBind(win) {
-    win.querySelectorAll('[data-wx]').forEach(x => x.addEventListener('click', () => setMode(x.dataset.wx)));
+    win.querySelectorAll('[data-wx]').forEach(x => x.addEventListener('click', () => setMode(x.dataset.wx, true)));
     win.querySelectorAll('[data-wxp]').forEach(x =>
       x.addEventListener('click', () => {
         preset(S.preset === x.dataset.wxp ? null : x.dataset.wxp);
@@ -593,7 +604,7 @@ export const WETTER = (() => {
     const after = $('crateseg') && $('crateseg').closest('.mrow');
     if (after) after.after(row);
     else page.appendChild(row);
-    row.querySelectorAll('[data-wxm]').forEach(x => x.addEventListener('click', () => setMode(x.dataset.wxm)));
+    row.querySelectorAll('[data-wxm]').forEach(x => x.addEventListener('click', () => setMode(x.dataset.wxm, true)));
   }
   function ui() {
     document
@@ -705,7 +716,15 @@ export const WETTER = (() => {
       now: { ...S.now },
       calls: S.calls.slice(),
       hours: S.store.hours.size,
-      fall: { n: WXFALL.S.n, on: WXFALL.S.on, kR: WXFALL.S.kR, kS: WXFALL.S.kS, splash: WXFALL.S.splash },
+      fall: {
+        n: WXFALL.S.n,
+        on: WXFALL.S.on,
+        kR: WXFALL.S.kR,
+        kS: WXFALL.S.kS,
+        splash: WXFALL.S.splash,
+        roofs: WXFALL.S.roofs || 0,
+        roofMap: WXFALL.U.uRoofC.value.w > 0.5,
+      },
       sky: {
         cov: WXSKY.U.wxCov.value,
         fog: WXSKY.U.wxFog.value,

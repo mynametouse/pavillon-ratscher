@@ -74,9 +74,9 @@ export const WXBODEN = (() => {
     m.roughness = e.r - (e.r - 0.25) * e.g * w * (1 - wh);
     const L = S.lightShown;
     m.emissive.copy(e.em);
-    m.emissive.r += (0.62 * sn + 0.5 * fr) * L;
-    m.emissive.g += (0.62 * sn + 0.53 * fr) * L;
-    m.emissive.b += (0.62 * sn + 0.6 * fr) * L;
+    m.emissive.r += (0.62 * sn + 0.33 * fr) * L;
+    m.emissive.g += (0.62 * sn + 0.35 * fr) * L;
+    m.emissive.b += (0.62 * sn + 0.4 * fr) * L;
   }
   // the wetness (0 dry – 1 soaked) and the snow lying (0–1) to show, eased by the caller, and the light of the moment (the white of the
   // snow follows it); a visible step repaints
