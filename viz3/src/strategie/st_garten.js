@@ -35,6 +35,7 @@ export const STGARTEN = (() => {
     if (!Array.isArray(g.obst)) g.obst = [];
     g.obst = g.obst.filter(o => o && typeof o.id === 'string' && isNum(o.kg) && o.kg > 0 && isNum(o.d)).slice(-60);
     for (const k of ['schutz', 'dmg']) if (!g[k] || typeof g[k] !== 'object' || Array.isArray(g[k])) g[k] = {};
+    if (g.huehner != null && (typeof g.huehner !== 'object' || Array.isArray(g.huehner))) g.huehner = null;
     for (const k of ['sold', 'given', 'eur']) if (!isNum(g[k])) g[k] = 0;
     return g;
   }
@@ -93,6 +94,20 @@ export const STGARTEN = (() => {
     }
   };
   const young = x => ageOf(x) < 6;
+  // the damage of a planted tree (0 whole … 1 lost): feat/tiere's model when it is there (TIERE.baeume, its ids gp_<id>_<x·10>_<y·10>),
+  // else the small model of this module
+  function dmgOf(it) {
+    const t = T();
+    if (t && typeof t.baeume === 'function')
+      try {
+        const id = 'gp_' + it.id + '_' + Math.round(it.x * 10) + '_' + Math.round(it.y * 10),
+          b = t.baeume().find(q => q.id === id);
+        return b ? b.dmg || 0 : 0;
+      } catch (e) {
+        return 0;
+      }
+    return st().dmg[keyOf(it)] || 0;
+  }
   // ---------------- the stock of fruit (kg, by harvest; what keeps and what spoils) ----------------
   const keepOf = id => {
     const k = Object.keys(G.keep).find(s => id.startsWith(s));
@@ -117,7 +132,7 @@ export const STGARTEN = (() => {
     if (!e || !isNum(e.kg) || e.kg <= 0) return;
     const g = st(),
       it = GPLAN.state.items[e.i],
-      dm = it ? g.dmg[keyOf(it)] || 0 : 0,
+      dm = it ? dmgOf(it) : 0,
       kg = +(e.kg * (1 - Math.min(0.8, dm))).toFixed(1);
     g.obst.push({ id: e.id, kg, d: gday() });
     STRAT.emit('obst', { id: e.id, kg });
@@ -175,6 +190,14 @@ export const STGARTEN = (() => {
   });
   // feat/tiere: the animals' module reports damage – told from above when it is in the garden
   KERN.on('tiere:schaden', e => {
+    if (e && e.kind === 'huhn') {
+      STRAT.note('Der Fuchs hat ein Huhn geholt – die Klappe war nachts offen.', {
+        kind: 'garten',
+        why: 'Füchse jagen in der Dämmerung und nachts; ein offener Stall ist für sie leichte Beute. Eine Klappe mit Lichtsensor schließt von selbst.',
+        src: 'feat/tiere (der Fuchs an den Hühnern)',
+      });
+      return;
+    }
     if (!e || !['verbiss', 'fegen', 'wurzel', 'wuehlen'].includes(e.kind)) return;
     if (!(isNum(e.x) && isNum(e.y) && Math.hypot(e.x, e.y) < 70)) return;
     const what = {
@@ -273,7 +296,7 @@ export const STGARTEN = (() => {
         const a = ageOf(x),
           sz = M.sizeAt(x.p, a, M.seedOf(it)),
           c = M.careOf(it, x.p, gd);
-        s = `gepflanzt ${M.dayDe(it.pd)} · ${de(a, 1)} J. · ${de(sz.h, 1)} m${guarded(x) ? ' · geschützt' : isTree(x.p) && young(x) ? ' · ohne Verbissschutz' : ''}${c.length ? ' · ' + c.map(k => M.CARE[k].label).join(', ') : ''}${st().dmg[keyOf(it)] ? ' · verbissen' : ''}`;
+        s = `gepflanzt ${M.dayDe(it.pd)} · ${de(a, 1)} J. · ${de(sz.h, 1)} m${guarded(x) ? ' · geschützt' : isTree(x.p) && young(x) ? ' · ohne Verbissschutz' : ''}${c.length ? ' · ' + c.map(k => M.CARE[k].label).join(', ') : ''}${dmgOf(it) >= 0.3 ? ' · verbissen' : ''}`;
       } else if (it.sch) s = 'wird gepflanzt (' + it.sch + '/' + M.plantSteps(x.p).length + ')';
       else if (arrived(it)) s = 'gekauft – steht am Gartentor';
       else if (coming(it)) s = 'gekauft – kommt morgen früh';
@@ -688,6 +711,108 @@ export const STGARTEN = (() => {
       return { text: `${de(kg, 1)} kg verkauft, ${STRAT.C.eur(eur)}` };
     },
   });
+  // ---------------- chickens (feat/tiere: TIERE.huehner – a coop and a flock where someone decides to keep them) ----------------
+  // a future to try: five hens in a small coop on the meadow; they need food, water and a shut pop hole every day – on weekdays Ronald
+  // looks after them (a favour), the eggs go into the meals; without an automatic pop hole the fox takes one now and then
+  const COOP = [-4.5, -3.2];
+  const HUHN = {
+    stall: { eur: 450, src: 'Annahme: kleiner Hühnerstall auf Stelzen 2026 um 300–600 €' },
+    henne: { eur: 18, src: 'Annahme: Legehenne (Junghenne) um 15–20 €' },
+    klappe: { eur: 120, src: 'Annahme: automatische Hühnerklappe mit Lichtsensor um 100–150 €' },
+    learn:
+      'Hühner brauchen jeden Tag Futter, frisches Wasser und abends eine geschlossene Klappe – der Fuchs kommt in der Dämmerung. Eine Henne legt im Frühjahr und Sommer fast täglich, im Winter (kurze Tage) wenig. Wer Hühner hält, meldet sie dem Veterinäramt und der Tierseuchenkasse – auch zwei, drei im Garten.',
+    src: 'Viehverkehrsverordnung (Meldung der Geflügelhaltung beim Veterinäramt); Thüringer Tierseuchenkasse; feat/tiere (Legeleistung nach Tageslänge)',
+  };
+  const coop = () => {
+    const t = T();
+    try {
+      return t && window.TEINFLUSS && window.TEINFLUSS.E ? window.TEINFLUSS.E.huehner : null;
+    } catch (e) {
+      return null;
+    }
+  };
+  STRAT.job.define({
+    id: 'g_huehner',
+    label: 'Hühner halten: ein Stall und fünf Hennen',
+    place: garden,
+    people: [1, 2],
+    skill: 'garten',
+    min: 2,
+    heavy: 0.5,
+    order: 9,
+    pose: 'place',
+    text: 'Den Stall auf die Wiese stellen, einzäunen, fünf Junghennen holen. Unter der Woche versorgt sie Ronald (ein Gefallen).',
+    learn: HUHN.learn + ' Quelle: ' + HUHN.src,
+    show: () => !!T() && typeof T().huehner === 'function' && !coop(),
+    dur: 240,
+    can: () =>
+      STRAT.S.eur < HUHN.stall.eur + 5 * HUHN.henne.eur
+        ? { no: true, text: 'Nicht genug Geld für Stall und Hennen.', why: HUHN.stall.src, src: '' }
+        : null,
+    finish: () => {
+      const t = T();
+      if (!t) return { text: 'ohne das Tier-Modul keine Hühner' };
+      t.huehner({ x: COOP[0], y: COOP[1], n: 5, zu: false });
+      STRAT.book(-(HUHN.stall.eur + 5 * HUHN.henne.eur), 'Hühnerstall und fünf Junghennen', 'garten');
+      STRAT.favour('ronald', -1, 'die Hühner unter der Woche');
+      st().huehner = { t: Math.round(STRAT.S.t || 0), auto: false };
+      return { text: 'fünf Hennen im Stall auf der Wiese' };
+    },
+  });
+  STRAT.job.define({
+    id: 'g_klappe',
+    label: 'Automatische Hühnerklappe einbauen',
+    place: garden,
+    people: [1, 1],
+    skill: 'maschinen',
+    min: 2,
+    heavy: 0.1,
+    order: 10,
+    text: 'Eine Klappe mit Lichtsensor: sie öffnet bei Tagesanbruch und schließt in der Dämmerung.',
+    learn:
+      'Füchse holen Hühner in der Dämmerung und nachts – eine Klappe, die sich mit dem Licht schließt, hält sie fern, auch wenn niemand da ist. Quelle: feat/tiere (der Fuchs an offenen Ställen); ' +
+      HUHN.klappe.src,
+    show: () => !!coop() && !(st().huehner && st().huehner.auto),
+    dur: 60,
+    can: () => (STRAT.S.eur < HUHN.klappe.eur ? { no: true, text: 'Nicht genug Geld.', why: '', src: '' } : null),
+    finish: () => {
+      const c = coop(),
+        t = T();
+      if (c && t) t.huehner({ x: c.x, y: c.y, n: c.n, zu: true });
+      STRAT.book(-HUHN.klappe.eur, 'Automatische Hühnerklappe', 'garten');
+      const h = (st().huehner = st().huehner || {});
+      h.auto = true;
+      STRAT.style(1, 'Die Hühner nachts sicher vor dem Fuchs');
+      return { text: 'die Klappe schließt jetzt von selbst' };
+    },
+  });
+  STRAT.job.define({
+    id: 'g_eier',
+    label: 'Eier einsammeln',
+    place: garden,
+    spot: () => (coop() ? [coop().x - 0.6, coop().y] : COOP),
+    people: [1, 1],
+    skill: 'garten',
+    min: 1,
+    heavy: 0.05,
+    order: 11,
+    text: 'Die Nester leeren – zwei Eier sind etwa eine Mahlzeit.',
+    learn: HUHN.learn + ' Quelle: ' + HUHN.src,
+    show: () => !!coop() && (coop().eier || 0) >= 1,
+    dur: 15,
+    finish: () => {
+      const c = coop();
+      if (!c || !(c.eier >= 1)) return { text: 'keine Eier im Nest' };
+      const n = Math.floor(c.eier);
+      c.eier -= n;
+      try {
+        window.TEINFLUSS.save && window.TEINFLUSS.save();
+      } catch (e) {}
+      KERN.emit('tiere:eier', { n });
+      S.essen = (S.essen || 0) + Math.floor(n / 2);
+      return { text: `${n} Eier – ${Math.floor(n / 2)} Mahlzeiten im Vorrat` };
+    },
+  });
   // ---------------- a layer: the young trees from above – thirsty, ripe, unprotected, browsed ----------------
   STRAT.layer.define({
     id: 'garten',
@@ -697,8 +822,7 @@ export const STGARTEN = (() => {
     draw: pr => {
       if (!ready()) return '';
       let h = '';
-      const gd = gday(),
-        g = st();
+      const gd = gday();
       for (const x of all().slice(0, 40)) {
         const q = pr(x.it.x, x.it.y, 1.2);
         if (!(q[2] < 1)) continue;
@@ -710,7 +834,7 @@ export const STGARTEN = (() => {
             ? '🍎'
             : c.includes('giessen')
               ? '💧'
-              : g.dmg[keyOf(x.it)]
+              : dmgOf(x.it) >= 0.3
                 ? '✂'
                 : isTree(x.p) && young(x) && !guarded(x)
                   ? '!'

@@ -254,6 +254,19 @@ with lib.browser() as b:
         lib.shot(pg, OUT, '07_obstgarten_oben')
         own, nw = own_new(K0)
         ck('no new shader program for our things (the pavilion in every phase, the planner\'s trees and pots)', not nw and len(own) > 5, f'{len(own)} own materials, new: {nw[:8]}')
+        # chickens (feat/tiere's TIERE.huehner): the coop and five hens from above, eggs into the meals
+        if J("!!(window.TIERE && TIERE.huehner)"):
+            jh = job('g_huehner', ['sarah', 'falko'])
+            until(done(jh['id']), 120)
+            c = J("STGARTEN.coop()")
+            ck('chickens from above: a coop and five hens on the meadow (feat/tiere), Ronald looks after them on weekdays', c and c.get('n') == 5, str(c) + ' ' + str(jstate(jh['id'])))
+            goto(0, 9 * 60)
+            e0 = J("STRAT.S.essen")
+            eg = J("Math.floor((STGARTEN.coop() || {}).eier || 0)")
+            if eg >= 1:
+                je2 = job('g_eier', ['sarah'])
+                until(done(je2['id']), 40)
+            ck('… the next morning there are eggs; collected they become meals', eg >= 2 and J("STRAT.S.essen") > e0, f'{eg} eggs, meals {e0} → {J("STRAT.S.essen")}')
     if 'welt' in want:
         E("STRAT.stop()")
         steps(0.5)
