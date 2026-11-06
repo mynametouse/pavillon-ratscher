@@ -1258,11 +1258,12 @@ export const TKOERPER = (() => {
       }
       if (q.part === 'trunk') {
         // the rump patch: white around the tail, the shape a heart/kidney on the back of the thighs
-        const r = Math.hypot(q.x / 0.085, (q.y - 0.62) / 0.13);
+        // (in the summer coat smaller and buff, hardly to be seen until the deer flares it)
+        const r = Math.hypot(q.x / 0.085, (q.y - 0.62) / 0.13) * (winter ? 1 : 1.25);
         if (q.z < -0.34 && r < 1.15)
-          c = mix(c, lin(winter ? 0xf2efe8 : 0xe8dcc6), sst(1.15, 0.7, r) * (winter ? 1 : 0.75));
+          c = mix(c, lin(winter ? 0xf2efe8 : 0xd2bf9c), sst(1.15, 0.7, r) * (winter ? 1 : 0.6));
       }
-      if (q.part === 'tail') c = lin(winter ? 0xefeae0 : 0xe0d2b8);
+      if (q.part === 'tail') c = lin(winter ? 0xefeae0 : 0xc4a882);
       if (q.part === 'neck') {
         // the muzzle: black nose, the white chin; in winter a pale throat patch
         if (q.z > 0.715) c = mix(c, lin(0x16110e), sst(0.715, 0.735, q.z));
