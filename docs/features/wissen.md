@@ -9,7 +9,7 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
 - **Das Entdeckerbuch** (Menü → Startseite → „Entdeckerbuch“, Taste **N**, im Strategie-Modus ein Knopf „📖 Buch“ in seiner Leiste):
   Kapitel **Natur, Handwerk, Geschichte, Politik & Soziales, Orte** und dazu **Regeln** (die „Warum?“-Gründe). Jeder Eintrag: was es ist,
   warum es hier bei Ratscher zählt, ein Symbol, die echten Quellen als Links, wie er gefunden wurde. Noch nicht Gefundenes steht grau mit
-  einem Tipp. Fortschritt je Kapitel und gesamt. 70 Einträge und 27 Regeln (`viz3/src/wissen/wissen_data.js`, dazu die Einträge der
+  einem Tipp. Fortschritt je Kapitel und gesamt. 75 Einträge und 27 Regeln (70 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
   Daten-Ansichten in `wissen_daten.js`), dazu Einträge, die aus Ereignissen entstehen (Erkundetes, gepflanzte Arten) – und mit feat/tiere jede
   Art seiner Steckbriefe (`TARTEN`) als Eintrag zum Entdecken, mit Steckbrief und Quellen.
 - **Gefunden durch Tun und Sehen** (`viz3/src/wissen/wissen.js`):
@@ -22,7 +22,9 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
     seiner Pflanzendatenbank (`gartenplaner/pflanzen.json`).
   - **Zustände, auf die das Buch alle 1,5 s schaut**: Fällschritte (`FELL.trees`: Fallkerb, entasten, ablängen, vermessen), Werkstücke des
     Werkstatt-Spiels (`WERK.W.list`: leimen, Stirnholz, ölen), Blockbandsäge und Trockenstapel, Wahl und Amt (`AMT.ST.phase`), der Gartenplaner
-    offen, eine Bauphase des Pavillons.
+    offen, eine Bauphase des Pavillons, ein Monat im Spiel – und das **Wetter** (feat/wetter, `WETTER.S.w`): Regen → Steigungsregen am
+    Gebirge, Schnee → Schnee und Raureif, Gewitter → Blitz und Donner (3 s je km), Sturm (Böen ab 75 km/h oder Wind ab Stärke 8) → Sturm und
+    Windwurf. Mit „wie draußen“ kommt das live von Open-Meteo.
 - **Menschen als Lehrer** (`viz3/src/wissen/wissen_lehrer.js`): ein Thema im Gespräch öffnet einen Eintrag – **Gerhard** (Lehrer i. R.,
   Dorfchronist): Henneberger, Kloster Veßra, Reformation, DDR, die Wende, alte Handwerke (Glas in Lauscha, Köhlerei, Schiefer, Fachwerk – je Satz eins);
   **Wolfgang** (Waldarbeiter, „der Förster“ des Dorfs – einen Förster als Figur gibt es nicht): Borkenkäfer, Waldumbau, richtig fällen;
@@ -80,9 +82,9 @@ WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.why
 
 - Ohne Browser: `node --test viz3/test/unit/wissen.test.mjs` (jeder Eintrag mit Kapitel, Text, Fundweg und Quelle; jede Regel mit Satz und
   Quelle; Lehrer-Themen zeigen auf vorhandene Einträge; Tafeln; die Talsperre liegt im Quadrat; Fakten, die stimmen müssen; Gedanken der
-  Spielfigur → Regel; Thüringer Feiertage 2026 und Ruhezeiten; Schallabfall).
+  Spielfigur → Regel; Thüringer Feiertage 2026 und Ruhezeiten; Schallabfall; die Wetter-Einträge).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9006 --serve wissen` (Abschnitte `buch,ereignis,ort,lehrer,warum,
-  tafel,daten,reload,telefon,zombie,strategie`; dazu `stadt` – die Tafel an der Bertholdsburg, braucht die Kacheln der Stadt); auf GitHub über `viz3/extra/wissen/tests.txt`, Bilder in `out/wissen/`.
+  wetter,tafel,daten,reload,telefon,zombie,strategie`; dazu `stadt` – die Tafel an der Bertholdsburg, braucht die Kacheln der Stadt); auf GitHub über `viz3/extra/wissen/tests.txt`, Bilder in `out/wissen/`.
 
 ## Offen
 

@@ -815,6 +815,10 @@ body[data-top="1"] #winote{top:178px}
     'amt:amt': 'im Amt',
     'gplan:offen': 'den Garten geplant',
     'jahr:wechsel': 'einen Monat im Spiel erlebt',
+    'wetter:regen': 'Regen erlebt',
+    'wetter:schnee': 'Schnee erlebt',
+    'wetter:gewitter': 'ein Gewitter erlebt',
+    'wetter:sturm': 'einen Sturm erlebt',
     'bau:phase': 'eine Bauphase des Pavillons angesehen',
   };
   const lookHit = new Set();
@@ -862,6 +866,19 @@ body[data-top="1"] #winote{top:178px}
     } catch (e) {}
     try {
       if (GPLAN && GPLAN.ui && GPLAN.ui.open) look('gplan:offen');
+    } catch (e) {}
+    // the weather of the moment (feat/wetter: live from Open-Meteo or by the calendar)
+    try {
+      // the record itself (WETTER.S.w: rain mm/h, snow cm/h, wind and gust m/s); state() would copy a lot every time
+      const WX = window.WETTER,
+        w = WX && WX.S ? WX.S.w : null;
+      if (w) {
+        if (w.rain > 0.2) look('wetter:regen');
+        if (w.snow > 0.05) look('wetter:schnee');
+        if (w.thunder) look('wetter:gewitter');
+        // a storm gust from Beaufort 9 (75 km/h), or a mean wind from Beaufort 8
+        if (w.gust >= 20.8 || w.wind >= 17.2) look('wetter:sturm');
+      }
     } catch (e) {}
     // a month of the game's calendar went by while playing
     try {

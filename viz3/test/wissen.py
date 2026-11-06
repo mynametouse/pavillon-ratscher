@@ -7,11 +7,12 @@
 # the zombie night starts with the book there; the strategy mode (when the build has it) gets the button in its bar. No page errors.
 # Pictures in out/wissen/ (look at them).
 # Data views on the plan view (Sonne, Lärm, Naturwert, Stimmung, Verkehr): on and off, legends, SVG only.
-#   python3 viz3/test/wissen.py 9006 [sections]   sections: buch,ereignis,ort,lehrer,warum,tafel,daten,reload,telefon,zombie,strategie (default all)
+#   python3 viz3/test/wissen.py 9006 [sections]   sections: buch,ereignis,ort,lehrer,warum,wetter,tafel,daten,reload,telefon,zombie,strategie
+#   (default all; 'stadt' – the boards in Schleusingen and Veßra – only when asked)
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'buch,ereignis,ort,lehrer,warum,tafel,daten,reload,telefon,zombie,strategie').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'buch,ereignis,ort,lehrer,warum,wetter,tafel,daten,reload,telefon,zombie,strategie').split(','))
 ck = lib.Checks('wissen')
 OUT = lib.out('wissen')
 NOBLUR = "document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')"
@@ -141,6 +142,14 @@ def run():
             E("document.querySelector('#wiwhy .x').click()")
             h = E("WISSEN.whyHTML('grenzabstand')")
             ck('WISSEN.whyHTML gives any panel its „?“', 'data-wiwhy="grenzabstand"' in h, h[:80])
+
+        if 'wetter' in want and J("!!(window.WETTER && WETTER.preset)"):
+            # feat/wetter: the weather of the moment (here one to try) → its entry; then back to the calendar's
+            E("WETTER.preset('regen')"); steps(1.7)
+            ck('feat/wetter: rain → „Regen am Gebirge“ (Steigungsregen), found by the weather', J("WISSEN.has('n_regen')"), str(J("WISSEN.state().how['n_regen'] || null")))
+            E("WETTER.preset('sturm')"); steps(1.7)
+            ck('…a storm → „Sturm und Windwurf“; a clear sky finds nothing', J("WISSEN.has('n_sturm') && !WISSEN.has('n_schnee') && !WISSEN.has('n_gewitter')"))
+            E("WETTER.preset(null)")
 
         if 'tafel' in want:
             tb = J("WORTE.S.boards.map(b => ({ id: b.id, x: +b.x.toFixed(1), y: +b.y.toFixed(1), z: +b.z.toFixed(2) }))")
