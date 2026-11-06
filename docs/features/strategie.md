@@ -73,6 +73,10 @@ Gebaut in der Nacht 5./6.11.2026 vom Hilfs-Agenten `strategie` (Auftrag `docs/pl
   13,9 m/s = Bft 7); für fernere Zeiten im Zeitraffer und beim Wetter nach Kalender aus dem Klima von Meiningen Tag für Tag gewürfelt.
 - **Tiere** (feat/tiere): laute Arbeiten (Mähen, Motorsäge, Traktor, Bandsäge) machen Lärm, solange sie laufen (`TIERE.addNoise(x, y, r, s)`,
   Wald 250 m, sonst 150 m, zweimal je Sekunde erneuert) – Rehe und Sauen ziehen weg; `tiere:entdeckt` erscheint als Meldung von oben.
+  Vor dem Fällen und Rücken fragt der Modus die Ruhezone des Schwarzstorchs (`TIERE.ruhe(x, y)`: am Horst nie, bis 300 m vom 1. März bis
+  15. September nicht) – eine Absage mit Grund und Quelle. Läuft das Käfermodell der Tiere (`TIERE.kaefer.list()`), würfelt der Modus
+  keinen eigenen Käfer: der Waldbegang meldet ihre Käferfichten, die Ebenen „Natur“ und „Krisen“ zeigen sie, der Forstunternehmer holt
+  die mit Bohrmehl heraus (gefällt über `FELL.simFell` → `KERN 'fell'` – dann ist der Baum für die Tiere aus dem Wald).
 - **Speichern:** ein Schlüssel `pav-strat-v1` (über `SAVE`, mit Prüfung); ein Neuladen mitten im Auftrag geht weiter, auch von oben.
 
 ## Testen
@@ -223,6 +227,8 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
   `HOLZDRY.stackMC()` (`{ n, avg, min, max }`) – Konstruktionsholz braucht ≤ 20 % (DIN 4074) und eine Sortierung;
   `HOLZDRY.simTake(n, { maxMC: 20, minT })` nimmt n Bretter oben vom Stapel (wie beim Abstapeln, nur trockene) und gibt sie zurück
   (`[{ id, sp, t, L, w, mc, blue, crack, warp }]`) – sie sind dann in der Welt weg (`st: 'used'`).
+- 6.11. 3:05 – mit feat/tiere in src: `TIERE.ruhe` vor Fällen und Rücken, `TIERE.kaefer.list()` statt des eigenen Käfers (Waldbegang,
+  Ebenen, Forstunternehmer).
 - 6.11. 2:20 – Brennholz für andere Themen (der Holzofen des Pavillons im Winter): `STHOLZ.firewood.stacked()`, `.dry(t)`,
   `.take(rm, { dryOnly })` → genommene rm, trockenes zuerst (1. BImSchV: nur trockenes Holz in den Ofen).
 - 6.11. 2:15 – `layer.define({ under: true })`; `STRAT.W.wx(t).dir` (Windrichtung, aus der er kommt); Knöpfe mit `data-skip="<Minuten>"` in
@@ -250,6 +256,10 @@ Nur Ergänzungen, nichts umbenannt oder entfernt:
     `HOLZDRY.simKiln()` (lufttrockene Bretter in den Trockenschrank bzw. heute unter das Pultdach, wie von Hand), `HOLZDRY.kilnMC()`,
     `HOLZDRY.kilnTarget()`, `HOLZDRY.simTake(n, o)` (trockene Bretter oben vom Stapel nehmen, für Bauholz), `HOLZDRY.simShop()`.
   - `viz3/src/werk/werk.js` – `WERK.simBoard({ stars, who, notes, oak, sp })`, `WERK.handOut(ids)`, `WERK.orderPanels(n)`.
+  - `viz3/src/world/forest.js` – von oben (Draufsicht, `P.mode === 'top'`) zeichnen die Fernkarten nur ihre waagrechte Kronenebene; die
+    zwei stehenden Ebenen sahen von oben wie dunkle, schwebende Blätter über der Wiese an der Klinge aus (dasselbe Material, eine zweite
+    Geometrie je Zelle; in der Ich-Sicht unverändert).
+  - `viz3/src/render/render.js` – der warmUp-Fix des Leads (91be8c98) als Cherry-Pick (1b246322), bis er über src kommt.
 - `viz3/src/modules.txt`: Block `# feat/strategie` nach `# feat/bus`, vor `game/tutorial.js`.
 - Das normale Spiel bleibt unberührt, bis jemand den Modus einmal startet (`STRAT.S.used`): vorher keine Simulation, keine Figuren, keine
   Meldungen; danach läuft die Simulation mit der Spieluhr auch beim Gehen (eine Linse auf dieselbe Welt), beginnend mit dem ersten Start.
