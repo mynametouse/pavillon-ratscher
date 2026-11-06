@@ -787,13 +787,12 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
         const q = pr(q0[0], q0[1], 1.8);
         if (!onScreen(q)) continue;
         // on a vehicle's seat (a job's ride – the tractor of the skidding run): the symbol small beside the vehicle the layer draws
-        const pj = S.people[id].job ? STRAT.job.of(S.people[id].job) : null,
-          PJ = pj && pj.st === 'work' ? STRAT.job.get(pj.def) : null;
-        if (PJ && PJ.ride && PJ.ride(pj, id)) {
+        const rides = riding(id);
+        if (rides) {
           q[0] += 14;
           q[1] -= 14;
         }
-        const r = mpp < 0.06 ? 7 : PJ && PJ.ride && PJ.ride(pj, id) ? 7 : 10,
+        const r = mpp < 0.06 || rides ? 7 : 10,
           on = H.sel.includes(id);
         h += `<g class="pp${on ? ' on' : ''}"><circle class="b" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${r}" fill="${d.col}"/><text x="${q[0].toFixed(1)}" y="${q[1].toFixed(1)}">${d.short}</text><text class="lv" x="${(q[0] + r).toFixed(1)}" y="${(q[1] - r).toFixed(1)}">${STRAT.level(id)}</text>`;
         if (STRAT.layer.on('beduerfnisse')) {
@@ -831,6 +830,13 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       H.svgH = h;
     }
   }
+  // on a vehicle's seat right now (a job's ride: the tractor of the skidding run)
+  function riding(id) {
+    const p = S.people[id],
+      j = p && p.job ? STRAT.job.of(p.job) : null,
+      J = j && j.st === 'work' ? STRAT.job.get(j.def) : null;
+    return !!(J && J.ride && J.ride(j, id));
+  }
   // ---------------- picking ----------------
   const rel = e => {
     const r = cv.getBoundingClientRect();
@@ -844,8 +850,12 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
       if (STRAT.isOwn(id) && !STRAT.present(id).ok) continue;
       const q0 = STRAT.pos(id);
       if (!q0) continue;
-      const q = pr(q0[0], q0[1], 1.8),
-        d = Math.hypot(q[0] - sx, q[1] - sy);
+      const q = pr(q0[0], q0[1], 1.8);
+      if (riding(id)) {
+        q[0] += 14;
+        q[1] -= 14;
+      }
+      const d = Math.hypot(q[0] - sx, q[1] - sy);
       if (d < bd) {
         bd = d;
         best = id;
