@@ -38,7 +38,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   Regeln des Strategie-Modus (`STRAT.D.RULES`), unbekannte IDs fallen auf dessen Text zurück. Tippt man im Strategie-Modus auf dessen eigenes
   „Warum?“, gilt die Regel auch im Buch als verstanden, und der Grund bekommt „Quellen ›“ mit den verlinkten Quellen des Buchs. Ein Gedanke der Spielfigur, der eine Regel nennt
   (z. B. „Sonn- und Feiertagsruhe“ beim Mäher), bekommt ein kleines **„?“** daneben; angetippt erscheinen Grund und Quelle, die Regel gilt als
-  verstanden (Kapitel „Regeln“).
+  verstanden (Kapitel „Regeln“). Ebenso die Warnungen des Gartenplaners, die auf einem Gesetz beruhen (Grenzabstand nach ThürNRG, am Bach
+  der Gewässerrandstreifen nach § 38 WHG) – `WISSEN.chips(root)`.
 - **Orte der Geschichte – Infotafeln** (`viz3/src/wissen/wissen_orte.js`): kleine Tafeln mit Dach auf zwei Pfosten an der alten Schule, unter der
   Dorflinde, am Platz am Bach, an der Forstkiste der Unteren Klinge und auf dem Damm der Talsperre Ratscher (Lage nach Structurae,
   50° 29′ 31,5″ N, 10° 46′ 54,7″ E → UTM → Grundstück über `GEOMAN.xf`); „Tafel lesen“ öffnet das Buch beim Eintrag. Ein Mesh im Material der
@@ -72,6 +73,7 @@ WISSEN.found('mein:eintrag', 'tun:den Putz angerührt')  // true, wenn neu (Hinw
 WISSEN.has(id); WISSEN.open(id | 'natur' | … | 'regeln'); WISSEN.close(); WISSEN.progress()
 WISSEN.why('ruhe_sonntag')   // { id, title, text, src: [[titel, url]] } | null
 WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.whyHTML(id) → '<button data-wiwhy=…>?</button>' für jedes Panel
+WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners (ul.gp-warns, ul.gp-w), die auf einem Gesetz beruhen, bekommen ihr „?“
 ```
 
 - Kapitel: `natur`, `handwerk`, `geschichte`, `politik`, `orte`. Das „wie gefunden“ (`how`) beginnt mit `ort:`, `gespraech:`, `tafel:`, `tun:`,

@@ -8,6 +8,7 @@
 //   WISSEN.add({ id, ch, title, text, here, src: [[title, url]], icon, hint }) → the entry (a feature's own entries)
 //   WISSEN.found(id, how) → true when it is new · WISSEN.has(id) · WISSEN.open(id | chapter) · WISSEN.close() · WISSEN.progress()
 //   WISSEN.why(id) → { id, title, text, src } | null · WISSEN.explain(id, anchorEl) shows it · WISSEN.whyHTML(id) a small „?“ for any panel
+//   WISSEN.chips(root): warnings of the garden planner's kind (ul.gp-warns / ul.gp-w) that rest on a law get their „?“
 // Events: 'wissen:neu' { id, ch, how }, 'wissen:warum' { id }, 'wissen:offen' { on }.
 import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
@@ -309,6 +310,27 @@ export const WISSEN = (() => {
       },
       true
     );
+  // ---- the garden planner's warnings (gplan/gplan.js) that rest on a law get the book's „?“ beside them ----
+  const GPWHY = [
+    [/Nachbarrecht|bis zur Grenze/, 'grenzabstand'],
+    [/Bachgraben|vom Bach|am Bach|zum Bach/, 'gewaesser'],
+  ];
+  const GP = { obs: null };
+  function gpChips(root) {
+    for (const li of root.querySelectorAll('ul.gp-warns > li, ul.gp-w > li')) {
+      if (li.querySelector('[data-wiwhy]')) continue;
+      const t = li.textContent || '',
+        m = GPWHY.find(([re]) => re.test(t));
+      if (m && why(m[1])) li.insertAdjacentHTML('beforeend', ' ' + whyHTML(m[1]));
+    }
+  }
+  function watchPlanner() {
+    const gp = GP.obs || typeof MutationObserver === 'undefined' ? null : $('gplan');
+    if (!gp) return;
+    GP.obs = new MutationObserver(() => gpChips(gp));
+    GP.obs.observe(gp, { childList: true, subtree: true });
+    gpChips(gp);
+  }
   // ---- a thought that names a rule (PLAY.think: refusals like the Sunday rest or the boundary distance) gets a small „?“ beside it ----
   const TH = { el: null, id: null, obs: null };
   function watchThoughts() {
@@ -1023,6 +1045,7 @@ body[data-top="1"] #winote{top:178px}
     }
     lookAll();
     if (TH.check && TH.el && !TH.el.hidden) TH.check();
+    if (!GP.obs) watchPlanner();
     for (const f of [stratBtn, tierEntries])
       try {
         f();
@@ -1073,6 +1096,8 @@ body[data-top="1"] #winote{top:178px}
     has,
     why,
     whyHTML,
+    // the garden planner's warnings in root get their „?“ (done by itself on #gplan; for tests and other lists of the same kind)
+    chips: root => gpChips(root),
     explain,
     open,
     close,

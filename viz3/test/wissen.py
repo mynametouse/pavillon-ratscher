@@ -156,6 +156,8 @@ def run():
             ck('the rule counts as understood (chapter Regeln)', 'ruhe_sonntag' in J("WISSEN.state().why"))
             page_pic('03_warum')
             E("document.querySelector('#wiwhy .x').click()")
+            gc = J("(() => { const d = document.createElement('div'); d.innerHTML = '<ul class=\"gp-warns\"><li class=\"warn\"><button type=\"button\">Warnung Apfel: 1,2 m bis zur Grenze – nach Thüringer Nachbarrecht mindestens 1,5 m.</button></li><li class=\"hint\"><button type=\"button\">Hinweis zwei Kronen wachsen ineinander</button></li></ul>'; WISSEN.chips(d); return [...d.querySelectorAll('li')].map(li => (li.querySelector('[data-wiwhy]') || {}).dataset ? li.querySelector('[data-wiwhy]').dataset.wiwhy : null); })()")
+            ck('the garden planner\'s warning on the boundary distance gets the „?“ (ThürNRG), one without a law none', gc == ['grenzabstand', None], str(gc))
             h = E("WISSEN.whyHTML('grenzabstand')")
             ck('WISSEN.whyHTML gives any panel its „?“', 'data-wiwhy="grenzabstand"' in h, h[:80])
 
