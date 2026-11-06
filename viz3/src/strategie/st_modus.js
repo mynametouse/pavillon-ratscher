@@ -925,7 +925,11 @@ export const STRAT = (() => {
           )
         : [];
       S.happened = Array.isArray(s.happened) ? s.happened : [];
-      S.known = s.known && typeof s.known === 'object' ? s.known : {};
+      S.known = {};
+      if (s.known && typeof s.known === 'object')
+        for (const [k, v] of Object.entries(s.known))
+          if (v && typeof v === 'object' && Number.isFinite(v.t))
+            S.known[k] = { t: v.t, by: v.by ?? null, data: v.data && typeof v.data === 'object' ? v.data : {} };
       S.plan = {
         urlaub:
           s.plan && Array.isArray(s.plan.urlaub)
