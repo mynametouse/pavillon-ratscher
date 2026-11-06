@@ -12,7 +12,7 @@ import { scene, V, VARIANT } from '../core/head.js';
 import { markDirty, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
 import { canvasTex, redraw } from '../garden/garten_kit.js';
-import { PHASE, setPhase } from '../game/walkable.js';
+import { P as VIEWP, PHASE, setPhase } from '../game/walkable.js';
 import { PHASES } from '../pavilion/phases.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
@@ -1116,7 +1116,8 @@ export const STBAU = (() => {
       skill: 'bauen',
       min: meta(n).min,
       heavy: meta(n).heavy,
-      loud: !!meta(n).loud,
+      // outside, building is publicly noticeable work – not on Sundays and holidays, not at night (inside work only if loud)
+      loud: !!meta(n).loud || !meta(n).inside,
       where: 'dorf',
       xp: 1.5,
       bau: true,
@@ -1220,7 +1221,8 @@ export const STBAU = (() => {
     order: 9,
     draw: pr => {
       const n = next();
-      if (n > LAST()) return '';
+      // only close up (from about 80 m of view height): further out the place's badge says it
+      if (n > LAST() || VIEWP.th > 80) return '';
       const q = pr(2.0, 2.0, 0.2),
         p = phaseOf(n);
       if (!(q[2] < 1)) return '';
