@@ -11,12 +11,15 @@ export const STDDATA = (() => {
     schule: { name: 'Alte Schule (Ortsteilrat, Feuerwehr)', icon: '⌂', pos: [236, -121], r: 10, order: 101 },
     haltestelle: { name: 'Bushaltestelle Ratscher', icon: '⊓', pos: [250.6, -99.6], r: 8, order: 102 },
     rathaus: { name: 'Rathaus Schleusingen', icon: '⚖', pos: [-1060, 1250], r: 30, order: 103 },
+    flur: { name: 'Flur: Land pachten oder kaufen', icon: '▦', pos: [130, -5], r: 30, order: 104 },
+    baumschule: { name: 'Baumschule bei Kloster Veßra', icon: '♠', pos: [-4060, 2400], r: 30, order: 105 },
   };
   // ---- the villagers as one gets to know them (exploration: known only after someone talked to them) ----
   // need: the project they bring; knows: who they know (who knows whom); help: what they can do for a project; tip: what one learns
   const PEOPLE = {
     ingrid: {
       need: 'mitfahrbank',
+      need2: 'treffpunkt',
       knows: ['gerhard', 'manfred', 'katrin'],
       help: 'kennt alle Wege im Rathaus',
       tip: 'Ingrid ist seit elf Jahren Ortsteilbürgermeisterin. Wer etwas im Dorf will, fragt erst sie – sie weiß, ob es der Ortsteilrat selbst entscheiden kann oder die Stadt.',
@@ -255,6 +258,362 @@ export const STDDATA = (() => {
         { k: 'bauhof', days: 6, text: 'Die Stadt beauftragt die Elektrofirma: Kabel, Mast, Leuchte.' },
       ],
     },
+    // ---- land instead of conquest (Falko 23:30, SimCity / Siedler): leases and purchases with the owner's consent at fair prices ----
+    pacht_hangwiese: {
+      title: 'Hangwiese pachten (0,35 ha)',
+      from: 'uwe',
+      land: 'hangwiese',
+      deal: 'pacht',
+      by: 'privat',
+      place: 'flur',
+      text: 'Uwe verpachtet die Wiese am Hang zwischen Garten und Dorf – zwölf Jahre, damit sich Bäume darauf lohnen.',
+      learn:
+        'Ein Landpachtvertrag über mehr als zwei Jahre gehört schriftlich gemacht (sonst gilt er als unbefristet), und der Verpächter zeigt ihn binnen eines Monats der Landwirtschaftsbehörde an. Pacht wird traditionell zu Martini (11. November) gezahlt.',
+      src: '§§ 585 ff., 585a BGB; Landpachtverkehrsgesetz § 2; Neupacht Ackerland Thüringen 2023: 257 €/ha (Agrarstrukturerhebung, via top agrar), Grünland am Hang Annahme 120 €/ha',
+      steps: [
+        {
+          k: 'deal',
+          label: 'Mit Uwe über die Pacht reden',
+          place: 'flur',
+          people: [1, 2],
+          skill: 'reden',
+          min: 1,
+          dur: 60,
+          help: ['uwe'],
+          text: 'Mit Uwe die Wiese abgehen: Grenzen, Zufahrt, wie lange, wie viel – und was die Nachbarn sagen.',
+          learn:
+            'Ein fairer Preis ist der ortsübliche: Wer zu wenig bietet, verärgert den Eigentümer; wer mit den Nachbarn redet, hat später keinen Streit.',
+        },
+        {
+          k: 'job',
+          label: 'Pachtvertrag unterschreiben',
+          place: 'anger',
+          people: [1, 1],
+          skill: 'reden',
+          min: 1,
+          dur: 45,
+          pay: 'land',
+          help: ['uwe'],
+          text: 'Bei Uwe am Küchentisch: Vertrag, zwei Unterschriften, die erste Jahrespacht.',
+        },
+      ],
+    },
+    kauf_hangwiese: {
+      title: 'Hangwiese kaufen (0,35 ha)',
+      from: 'uwe',
+      land: 'hangwiese',
+      deal: 'kauf',
+      by: 'privat',
+      place: 'flur',
+      text: 'Die Wiese am Hang kaufen: ein Notarvertrag, die Genehmigung der Behörde, das Grundbuch – dann gehört sie dir.',
+      learn:
+        'Grundstückskaufverträge brauchen den Notar. In Thüringen kostet die Grunderwerbsteuer seit 1.1.2024 5 % des Preises (vorher 6,5 %); Notar und Grundbuch etwa 2 %. Land- und forstwirtschaftliche Flächen über der Freigrenze des Landes braucht eine Genehmigung nach dem Grundstückverkehrsgesetz – Landwirte können vorgehen.',
+      src: '§ 311b BGB; Grunderwerbsteuer Thüringen 5 % seit 1.1.2024 (finanz.de); Grundstückverkehrsgesetz; Kaufwerte: Thüringen Ackerland 2024 im Mittel 14.900 €/ha (Destatis via top agrar), Südthüringen deutlich darunter (Suhl 2020: 5.358 €/ha, TLS) – Grünland am Hang Annahme 0,90 €/m²',
+      steps: [
+        {
+          k: 'deal',
+          label: 'Mit Uwe über den Kauf reden',
+          place: 'flur',
+          people: [1, 2],
+          skill: 'reden',
+          min: 2,
+          dur: 75,
+          help: ['uwe'],
+          text: 'Uwe würde verkaufen, wenn der Preis stimmt und die Wiese in guten Händen ist.',
+          learn: 'Wer im Dorf Land kauft, kauft auch Vertrauen: Die Leute fragen, was du damit vorhast.',
+        },
+        {
+          k: 'job',
+          label: 'Kaufvertrag beim Notar',
+          place: 'rathaus',
+          people: [1, 2],
+          skill: 'reden',
+          min: 1,
+          dur: 120,
+          pay: 'land',
+          help: ['uwe'],
+          text: 'Beim Notar in Schleusingen: Vertrag vorlesen, unterschreiben, Kaufpreis, Grunderwerbsteuer, Notar und Grundbuch.',
+          learn:
+            'Der Notar liest den ganzen Vertrag vor – so will es das Beurkundungsgesetz. Bezahlt wird erst, wenn die Genehmigungen da sind und die Auflassungsvormerkung im Grundbuch steht.',
+        },
+        {
+          k: 'warten',
+          days: 28,
+          text: 'Genehmigung nach dem Grundstückverkehrsgesetz, dann die Eintragung ins Grundbuch.',
+        },
+      ],
+    },
+    pacht_acker: {
+      title: 'Ackerstreifen pachten (0,25 ha)',
+      from: 'uwe',
+      land: 'acker',
+      deal: 'pacht',
+      by: 'privat',
+      place: 'flur',
+      text: 'Einen Streifen am Feldweg pachten – für Kartoffeln, Kürbisse und einen Blühstreifen für Insekten.',
+      learn:
+        'Thüringen hat mit die niedrigsten Pachtpreise Deutschlands: neu gepachtetes Ackerland kostete 2023 im Mittel 257 €/ha im Jahr, der Bundesschnitt 511 €/ha.',
+      src: 'Agrarstrukturerhebung 2023 (Destatis, via top agrar); §§ 585 ff. BGB; Landpachtverkehrsgesetz § 2',
+      steps: [
+        {
+          k: 'deal',
+          label: 'Mit Uwe über den Streifen reden',
+          place: 'flur',
+          people: [1, 2],
+          skill: 'reden',
+          min: 1,
+          dur: 45,
+          help: ['uwe'],
+          text: 'Welcher Streifen, wie lange, wer pflügt im Frühjahr.',
+        },
+        {
+          k: 'job',
+          label: 'Pachtvertrag unterschreiben',
+          place: 'anger',
+          people: [1, 1],
+          skill: 'reden',
+          min: 1,
+          dur: 40,
+          pay: 'land',
+          help: ['uwe'],
+          text: 'Vertrag, Unterschrift, die erste Jahrespacht.',
+        },
+      ],
+    },
+    kauf_wald: {
+      title: 'Waldstück an der Klinge kaufen (0,8 ha)',
+      from: 'wolfgang',
+      land: 'wald',
+      deal: 'kauf',
+      by: 'privat',
+      place: 'flur',
+      text: 'Neben der Klinge will eine Erbengemeinschaft aus Suhl ihr Waldstück verkaufen: Fichte und Kiefer, ein paar Buchen am Rand. Wolfgang kennt es.',
+      learn:
+        'Beim Kauf von Wald zählt der Bestand: Holzarten, Alter, Vorrat in Festmetern, Käferschäden. Vor dem Kauf geht man ihn mit dem Revierförster ab. Das Thüringer Waldgesetz kennt beim Verkauf von Wald ein Vorkaufsrecht (§ 17) – der Notar holt die Erklärungen ein.',
+      src: '§ 17 Thüringer Waldgesetz (Vorkaufsrecht); § 311b BGB; Preis Annahme 1,30 €/m² mit Bestand (kleine Privatwaldflächen in Thüringen 2026)',
+      steps: [
+        {
+          k: 'deal',
+          label: 'Waldbegang mit Wolfgang und dem Förster',
+          place: 'klinge',
+          people: [1, 2],
+          skill: 'holz',
+          min: 1,
+          dur: 150,
+          help: ['wolfgang'],
+          where: 'wald',
+          text: 'Das Stück abgehen: Grenzsteine suchen, Bäume schätzen, Käferlöcher, Zufahrt für den Traktor.',
+          learn:
+            'Fichten mit Bohrmehl am Stammfuß sind befallen; viele davon drücken den Wert. Ein gemischter Bestand ist mehr wert als reine Fichte.',
+        },
+        {
+          k: 'job',
+          label: 'Kaufvertrag beim Notar',
+          place: 'rathaus',
+          people: [1, 2],
+          skill: 'reden',
+          min: 1,
+          dur: 120,
+          pay: 'land',
+          text: 'Notar in Schleusingen; die Erben unterschreiben per Vollmacht.',
+        },
+        {
+          k: 'warten',
+          days: 42,
+          text: 'Vorkaufsrecht nach dem Waldgesetz und die Genehmigung abwarten, dann das Grundbuch.',
+        },
+      ],
+    },
+    // ---- a meadow orchard on your land (Gerhard remembers the old one, Heike wants bees): private, with the neighbours' help ----
+    streuobst: {
+      title: 'Streuobstwiese pflanzen',
+      from: 'heike',
+      needLand: 'hangwiese',
+      by: 'privat',
+      place: 'flur',
+      cost: 864,
+      build: 'streuobst',
+      text: 'Zwölf hochstämmige Obstbäume alter Sorten auf der Hangwiese: Äpfel, Birnen, Zwetschgen – mit Wühlmauskorb, Pfahl und Drahthose gegen Rehe.',
+      learn:
+        'Streuobstwiesen gehören zu den artenreichsten Lebensräumen Mitteleuropas: Steinkauz, Gartenrotschwanz, Wildbienen, tausende Insektenarten. Seit 2022 sind sie nach § 30 Bundesnaturschutzgesetz geschützte Biotope. Hochstämme (Stammhöhe ab 1,60 m) stehen 10–12 m auseinander, damit darunter gemäht oder beweidet werden kann; gepflanzt wird im Herbst nach dem Laubfall oder im Frühjahr.',
+      src: '§ 30 Abs. 2 Nr. 7 BNatSchG (Streuobstwiesen seit 2022); Kosten Annahme: Hochstamm 45 €, Pfahl und Bindung 12 €, Wühlmauskorb 5 €, Drahthose 10 € je Baum',
+      steps: [
+        {
+          k: 'job',
+          label: 'Sorten wählen mit Gerhard und Heike',
+          place: 'flur',
+          people: [1, 2],
+          skill: 'garten',
+          min: 1,
+          dur: 90,
+          help: ['gerhard', 'heike'],
+          text: 'Gerhard kennt die alten Sorten der Gegend, Heike den Boden: robuste Hochstämme, die spät blühen (Spätfrost am Hang).',
+          learn:
+            'Alte Sorten wie Kaiser Wilhelm, Schöner von Boskoop, Gellerts Butterbirne oder die Hauszwetschge sind robust und brauchen kaum Spritzmittel.',
+        },
+        {
+          k: 'job',
+          label: '12 Hochstämme in der Baumschule holen',
+          place: 'baumschule',
+          people: [1, 2],
+          skill: 'garten',
+          min: 1,
+          dur: 90,
+          pay: 'proj',
+          text: 'Mit Auto und Anhänger in die Baumschule bei Kloster Veßra: zwölf Bäume, Pfähle, Kokosstrick, Wühlmauskörbe, Drahthosen.',
+        },
+        {
+          k: 'job',
+          label: 'Pflanzen: Loch, Korb, Pfahl, Baum, Drahthose',
+          place: 'flur',
+          people: [2, 3],
+          skill: 'garten',
+          min: 2,
+          dur: 420,
+          heavy: 0.7,
+          season: 'pflanzen',
+          help: ['gerhard', 'heike'],
+          text: 'Je Baum ein Loch von 60 cm, der Wühlmauskorb hinein, der Pfahl auf der Wetterseite, den Baum so tief wie in der Baumschule, angießen, Drahthose drum.',
+          learn:
+            'Der Pfahl steht auf der Westseite (Hauptwind), der Baum wird locker mit einer Achterschlinge angebunden; nach dem Pflanzen ein Pflanzschnitt, damit Krone und Wurzel im Gleichgewicht sind.',
+        },
+      ],
+    },
+    // ---- a funded project: LEADER (the EU programme for rural areas) – own share, deadline, selection, approval, no start before ----
+    treffpunkt: {
+      title: 'Treffpunkt am Anger (LEADER)',
+      from: 'ingrid',
+      by: 'stadt',
+      cost: 24000,
+      need: 60,
+      foerder: 'leader',
+      build: 'treffpunkt',
+      place: 'anger',
+      fans: { ingrid: 5, gerhard: 4, katrin: 4, heike: 3, manfred: 2 },
+      text: 'Ein überdachter Treffpunkt am Anger: Sitzgruppe unter Dach, Fahrradständer, Ladesäule für E-Bikes – für Wanderer, Radler und die Alten, die sonst niemanden treffen.',
+      learn:
+        'LEADER fördert, was eine Region in ihrer Entwicklungsstrategie selbst als wichtig festgelegt hat. Die Regionale Aktionsgruppe wählt die Projekte zum Stichtag nach einer Bewertungsmatrix aus (Mindestpunktzahl), bewilligt wird beim Land. Den Rest – den Eigenanteil – trägt der Antragsteller, hier die Stadt.',
+      src: 'IHK Erfurt: LEADER-Projektaufrufe 2027 (15 Regionen in Thüringen, u. a. Hildburghausen-Sonneberg; Bewertungsmatrix, Mindestpunktzahl); Kosten Annahme',
+      steps: [
+        {
+          k: 'job',
+          label: 'Beratung beim LEADER-Regionalmanagement',
+          place: 'schule',
+          people: [1, 2],
+          skill: 'reden',
+          min: 2,
+          dur: 120,
+          help: ['ingrid'],
+          text: 'Die Regionalmanagerin kommt nach Ratscher: Passt die Idee zur Entwicklungsstrategie? Wer stellt den Antrag? Welche Punkte bringt sie?',
+          learn:
+            'Frühe Beratung ist der wichtigste Schritt: Die Regionalmanagements sagen, ob ein Projekt förderfähig ist, und helfen bei Skizze und Unterlagen.',
+        },
+        {
+          k: 'job',
+          label: 'Drei Angebote einholen, Kosten schätzen',
+          place: 'schule',
+          people: [1, 1],
+          skill: 'reden',
+          min: 1,
+          dur: 150,
+          prep: true,
+          text: 'Zimmerei, Pflasterer, Elektriker: drei vergleichbare Angebote für jedes Gewerk – Förderstellen verlangen den Preisvergleich.',
+          learn:
+            'Wer öffentliches Geld ausgibt, muss wirtschaftlich und sparsam handeln: Angebote vergleichen und dokumentieren.',
+        },
+        { k: 'rat' },
+        { k: 'stadt' },
+        { k: 'foerder' },
+        {
+          k: 'bauhof',
+          days: 10,
+          text: 'Eine Zimmerei aus der Region baut die Hütte – erst jetzt, nach dem Bewilligungsbescheid.',
+        },
+        {
+          k: 'job',
+          label: 'Arbeitseinsatz: Pflaster, Bänke, Fahrradständer',
+          place: 'anger',
+          people: [2, 3],
+          skill: 'bauen',
+          min: 2,
+          dur: 300,
+          heavy: 0.6,
+          help: ['jens', 'manfred', 'uwe'],
+          text: 'Ein Samstag mit dem Dorf: Pflaster legen, Bänke montieren, den Fahrradständer setzen. Uwe bringt den Sand mit dem Traktor.',
+        },
+        {
+          k: 'warten',
+          days: 28,
+          text: 'Verwendungsnachweis an das Land: Rechnungen, Fotos, Zahlungsbelege – dann wird die Förderung ausgezahlt.',
+        },
+      ],
+    },
+  };
+  // ---- land: the plots one can lease or buy (positions on the open ground between garden and village from the orthophoto 2024 –
+  // rectangles of the game, no real parcels; owners from the village) ----
+  const LAND = {
+    hangwiese: {
+      name: 'Hangwiese',
+      kind: 'Grünland',
+      c: [130, -5],
+      w: 60,
+      h: 58,
+      ha: 0.35,
+      owner: 'uwe',
+      pacht: 120,
+      kauf: 0.9,
+      neighbours: ['heike', 'ronald'],
+      use: 'Streuobstwiese, Heu, Ziegen von Ronald',
+    },
+    acker: {
+      name: 'Ackerstreifen am Feldweg',
+      kind: 'Ackerland',
+      c: [35, 86],
+      w: 80,
+      h: 31,
+      ha: 0.25,
+      owner: 'uwe',
+      pacht: 257,
+      kauf: 1.2,
+      neighbours: [],
+      use: 'Kartoffeln, Kürbisse, ein Blühstreifen',
+    },
+    wald: {
+      name: 'Waldstück an der Klinge',
+      kind: 'Wald',
+      c: [-520, -660],
+      w: 90,
+      h: 90,
+      ha: 0.81,
+      owner: null,
+      ownerName: 'eine Erbengemeinschaft aus Suhl',
+      kauf: 1.3,
+      neighbours: ['hubert'],
+      use: 'mehr eigenes Holz; Waldumbau zum Mischwald',
+    },
+  };
+  // purchase costs beyond the price (Thuringia): land transfer tax 5 % since 1.1.2024, notary and land register about 2 % (assumption)
+  const KAUF = { grest: 0.05, notar: 0.02 };
+  // ---- funding programmes ----
+  // LEADER: deadlines of the project calls (assumption: two a year, as many Thuringian regions in 2026 – e.g. 30 September), the action
+  // group's decision a few weeks later by points (assumption: the criteria below, minimum 22), then the approval by the state office
+  const FOERDER = {
+    leader: {
+      title: 'LEADER – Regionale Aktionsgruppe Hildburghausen-Sonneberg',
+      rate: 0.65,
+      calls: [
+        [3, 31],
+        [9, 30],
+      ],
+      prep: 7,
+      select: 21,
+      approve: 42,
+      min: 24,
+      src: 'IHK Erfurt, LEADER-Projektaufrufe 2027 (Stichtage z. B. 30.9.2026, Bewertungsmatrix); Bewilligung beim Thüringer Landesamt für Landwirtschaft und Ländlichen Raum (TLLLR); Fördersatz 65 % und Punkte hier Annahme – jede Region legt sie in ihrer Entwicklungsstrategie fest',
+      learn:
+        'Nie vor dem Bewilligungsbescheid anfangen: Gefördert wird nur, was noch nicht begonnen hat – wer vorher einen Auftrag vergibt, verliert die Förderung. Ausgezahlt wird erst nach dem Verwendungsnachweis; die Stadt muss vorfinanzieren.',
+      rule: 'Verwaltungsvorschriften zu § 44 Thüringer Landeshaushaltsordnung (Förderung nur für Vorhaben, die noch nicht begonnen haben)',
+    },
   };
   // ---- the money: the Ortsteil's (amt: 600 € a year, § 45 (6) ThürKO), the town's for small matters (simplified as in amt/amt.js) ----
   const CITY = 12000;
@@ -289,6 +648,110 @@ export const STDDATA = (() => {
       why: 'Wer abends spät klingelt, stört – die Leute stehen früh auf. Gespräche im Dorf tagsüber oder freitags in der alten Schule.',
       src: 'Dorfleben (dorf/*): so halten es die Leute in Ratscher',
     },
+    pflanzzeit: {
+      text: 'Obstbäume pflanzt man im Herbst nach dem Laubfall oder im zeitigen Frühjahr.',
+      why: 'Ohne Laub verdunstet der Baum kaum Wasser und kann über den Winter neue Wurzeln bilden; im Sommer gepflanzt vertrocknet er leicht.',
+      src: 'Pflanzzeit für wurzelnackte Obstbäume: Mitte Oktober bis Ende März, frostfreier Boden (Baumschulpraxis)',
+    },
+    land_kein: {
+      text: 'Dafür brauchst du erst Land.',
+      why: 'Bäume pflanzt man nur, wo man darf: auf eigenem oder gepachtetem Land, mit Zustimmung des Eigentümers.',
+      src: '§§ 903, 585 BGB (Eigentum, Landpacht)',
+    },
+    preis_fair: {
+      text: 'Unter dem ortsüblichen Preis verkauft oder verpachtet hier niemand.',
+      why: 'Wer zu wenig bietet, verärgert den Eigentümer – im Dorf spricht sich das herum. Ein fairer Preis orientiert sich an den Kauf- und Pachtwerten der Gegend.',
+      src: 'Kaufwerte und Pachtentgelte (Statistisches Landesamt Thüringen, Destatis)',
+    },
+    vorhabenbeginn: {
+      text: 'Erst bauen, wenn der Bewilligungsbescheid da ist.',
+      why: 'Gefördert wird nur ein Vorhaben, das noch nicht begonnen hat – schon die Vergabe eines Auftrags zählt als Beginn. Wer vorher anfängt, verliert die Förderung.',
+      src: 'Verwaltungsvorschriften zu § 44 Thüringer Landeshaushaltsordnung',
+    },
+  };
+  // ---- crisis missions (C&C / StarCraft, but real – Falko 23:30): the volunteer fire brigade of Ratscher (Manfred, the Wehrführer; Jens,
+  // the group leader; Wolfgang, Uwe and others) and whoever helps, under time pressure, with real procedures ----
+  // need: person-minutes of work; limit: minutes from the alarm until the damage happens; crew: members who come by day on a working day
+  // (the commuters are away – „Tagesalarmsicherheit“) and otherwise; skill: what your helpers need most
+  const FW = {
+    alarm: 6,
+    drive: 8,
+    hilfsfrist: 14,
+    crewDay: 3,
+    crew: 7,
+    src: 'Thüringer Brand- und Katastrophenschutzgesetz (ThürBKG): Brandschutz und Allgemeine Hilfe sind Aufgaben der Gemeinde; Feuerwehr-Dienstvorschrift FwDV 3 (Einheiten im Lösch- und Hilfeleistungseinsatz); Hilfsfrist in Thüringen 14 Minuten (Thüringer Feuerwehr-Organisationsverordnung)',
+    learn:
+      'Notruf 112 → die Leitstelle alarmiert über Funkmeldeempfänger und die Sirene auf der alten Schule → wer im Dorf ist, fährt zum Gerätehaus und rückt mit dem Tragkraftspritzenfahrzeug aus. Unter der Woche sind tagsüber die meisten zur Arbeit in der Stadt – dann kommen nur zwei, drei, und die Feuerwehr aus Schleusingen wird nachalarmiert.',
+  };
+  const KRISEN = {
+    baum: {
+      title: 'Sturm: Bäume auf dem Weg',
+      icon: '⚠',
+      need: 210,
+      limit: 140,
+      skill: 'holz',
+      text: 'Zwei Fichten sind über den Weg zwischen Dorf und Klinge gestürzt. Morgen früh muss der Weg frei sein – für Hubert, den Förster und notfalls den Rettungswagen.',
+      phases: [
+        [0, 'Alarm: Sirene auf der alten Schule, Funkmeldeempfänger'],
+        [0.08, 'Erkunden und Absichern: Blaulicht, Warnleitkegel, Gefahrenbereich'],
+        [0.25, 'Sägen: der Motorsägenführer arbeitet die Kronen ab – verspanntes Holz!'],
+        [0.7, 'Räumen: Uwe zieht die Stämme mit der Seilwinde an den Rand'],
+        [0.95, 'Freigabe: Weg frei, Einsatzbericht'],
+      ],
+      safety:
+        'Ein umgestürzter Baum steht unter Spannung: Druck- und Zugseite erkennen, erst entlasten, dann trennen – sonst schlägt der Stamm oder die Säge zurück. An die Motorsäge nur mit Lehrgang, Schnittschutz und einem Helfer in Rufweite.',
+      safetySrc:
+        'DGUV Information 214-046 „Sichere Waldarbeiten“; DGUV Regel 114-018; Lehrgang Motorsägenführer der Feuerwehr',
+      damage: 'Der Weg war zu lange zu: Hubert kam nicht mit dem Traktor durch, und der Förster musste umkehren.',
+      ok: 'Der Weg ist frei, bevor jemand durch muss. Die Stämme liegen am Rand – Hubert holt sie als Brennholz.',
+      fans: { manfred: 4, jens: 3, wolfgang: 3, hubert: 3, uwe: 2 },
+    },
+    hochwasser: {
+      title: 'Starkregen: der Bach steigt',
+      icon: '≋',
+      need: 260,
+      limit: 110,
+      skill: 'bauen',
+      text: 'Nach dem Starkregen steigt der Bach am Garten. Treibgut verstopft den Durchlass unter dem Tor – das Wasser drückt auf den Feldweg und in die Gärten.',
+      phases: [
+        [0, 'Alarm: Pegel steigt, Treibgut am Durchlass'],
+        [0.1, 'Durchlass freiräumen: Äste und Laub mit Rechen und Haken vom Ufer aus'],
+        [0.35, 'Sandsäcke füllen (zu zwei Dritteln, je 12–15 kg) und als Wall legen'],
+        [0.75, 'Pumpen: die Tragkraftspritze zieht das Wasser aus dem Garten'],
+        [0.95, 'Nachkontrolle: Pegel fällt, Wall bleibt ein paar Tage liegen'],
+      ],
+      safety:
+        'Nie allein ans Hochwasser, nie in strömendes Wasser treten: Schon 15 cm schnell fließendes Wasser können einen Menschen umreißen. Am Ufer nur gesichert, mit Rettungsweste.',
+      safetySrc:
+        'Bundesamt für Bevölkerungsschutz und Katastrophenhilfe (BBK), Ratgeber Hochwasser; THW-Hinweise zum Sandsackverbau (Faustwerte Annahme)',
+      damage:
+        'Das Wasser war schneller: Feldweg und Garten stehen unter Wasser, der Bungalow hat nasse Füße – Trocknen und Aufräumen kosten.',
+      ok: 'Der Durchlass ist frei, der Wall hält – das Wasser bleibt im Bach.',
+      cost: 650,
+      fans: { manfred: 4, heike: 3, ronald: 3, jens: 2, katrin: 2 },
+    },
+    waldbrand: {
+      title: 'Rauch über der Klinge',
+      icon: '♨',
+      need: 320,
+      limit: 95,
+      skill: 'holz',
+      text: 'Nach Wochen ohne Regen steigt am Rand der Klinge Rauch auf: ein Bodenfeuer im trockenen Gras und Reisig, das auf den Wald übergreifen kann.',
+      phases: [
+        [0, 'Notruf 112: wer den Rauch sieht, meldet Ort und Größe'],
+        [0.06, 'Alarm für Ratscher und Schleusingen (Tanklöschfahrzeug)'],
+        [0.2, 'Erstangriff: Feuerpatschen und Löschrucksäcke an der Brandkante'],
+        [0.55, 'Wasser im Pendelverkehr, angesaugt aus der Talsperre'],
+        [0.9, 'Brandwache: Glutnester ablöschen, bis nichts mehr raucht'],
+      ],
+      safety:
+        'Ein Bodenfeuer läuft mit dem Wind und bergauf schnell: immer von der verbrannten Seite oder von hinten angreifen, nie vor die Feuerfront, Fluchtweg im Blick. Waldbrandgefahr zeigt der Waldbrandgefahrenindex des Deutschen Wetterdienstes in fünf Stufen.',
+      safetySrc:
+        'Deutscher Wetterdienst, Waldbrandgefahrenindex (WBI); § 12 Thüringer Waldgesetz (Waldbrandschutz); Feuerwehr-Ausbildung Vegetationsbrand',
+      damage: 'Das Feuer war schneller: am Rand der Klinge sind Gras, Jungwuchs und ein paar Fichten verbrannt.',
+      ok: 'Das Feuer ist aus, bevor es in die Kronen kam. Brandwache bis in den Abend.',
+      fans: { manfred: 4, jens: 3, wolfgang: 4, hubert: 3, uwe: 2 },
+    },
   };
   // ---- the chapter (plan section 6: chapter 5 · Das Dorf) ----
   const CHAPTER = {
@@ -296,5 +759,5 @@ export const STDDATA = (() => {
     title: 'Kapitel 5 · Das Dorf',
     text: 'Mit den Leuten reden, ihre Anliegen kennen, Projekte durch Ortsteilrat und Stadtrat bringen – das Dorf verändert sich sichtbar.',
   };
-  return { PLACES, PEOPLE, PROJ, CITY, RAT, STADT, RULES, CHAPTER };
+  return { PLACES, PEOPLE, PROJ, LAND, KAUF, FOERDER, FW, KRISEN, CITY, RAT, STADT, RULES, CHAPTER };
 })();

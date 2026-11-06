@@ -45,7 +45,7 @@ export const STDORF = (() => {
   const own = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
   const fin = (v, d) => (Number.isFinite(v) ? v : d);
   function fresh() {
-    return { v: 1, proj: {}, hh: [], city: { year: null, spent: 0 }, talked: {} };
+    return { v: 1, proj: {}, hh: [], city: { year: null, spent: 0 }, talked: {}, land: {}, built: {} };
   }
   function sanitize(s) {
     const o = fresh();
@@ -61,6 +61,10 @@ export const STDORF = (() => {
           t: fin(p.t, 0),
           due: Number.isFinite(p.due) ? p.due : null,
           prep: p.prep === true,
+          una: p.una === true,
+          offer: p.offer === 'knapp' ? 'knapp' : 'fair',
+          fs: ['einreichen', 'auswahl', 'bewilligung'].includes(p.fs) ? p.fs : null,
+          pts: Number.isFinite(p.pts) ? p.pts : null,
           why: typeof p.why === 'string' ? p.why.slice(0, 400) : '',
           log: Array.isArray(p.log)
             ? p.log
@@ -82,11 +86,18 @@ export const STDORF = (() => {
       };
     if (s.talked && typeof s.talked === 'object')
       for (const [k, v] of Object.entries(s.talked)) if (own(D.PEOPLE, k) && Number.isFinite(v)) o.talked[k] = v | 0;
+    if (s.land && typeof s.land === 'object')
+      for (const [k, v] of Object.entries(s.land))
+        if (own(D.LAND, k) && v && typeof v === 'object' && (v.st === 'pacht' || v.st === 'eigen'))
+          o.land[k] = { st: v.st, t: fin(v.t, 0), eur: Math.max(0, Math.min(1e6, fin(v.eur, 0))) };
+    if (s.built && typeof s.built === 'object')
+      for (const [k, v] of Object.entries(s.built)) if (/^[a-z]{2,16}$/.test(k) && Number.isFinite(v)) o.built[k] = v;
     return o;
   }
   const st = () => {
     const x = S.ext.dorf;
-    if (!x || x.v !== 1 || !x.proj || !Array.isArray(x.hh) || !x.city || !x.talked) S.ext.dorf = sanitize(x);
+    if (!x || x.v !== 1 || !x.proj || !Array.isArray(x.hh) || !x.city || !x.talked || !x.land || !x.built)
+      S.ext.dorf = sanitize(x);
     return S.ext.dorf;
   };
   STRAT.onLoad.push(() => {
@@ -172,7 +183,65 @@ export const STDORF = (() => {
     return first;
   }
   // an idea is known when the one who wishes it is known (her need) – or someone else names it
-  const idea = id => Object.entries(D.PEOPLE).some(([k, Pp]) => (Pp.need === id || Pp.need2 === id) && knownP(k));
+  const idea = id =>
+    (!!D.PROJ[id] && knownP(D.PROJ[id].from)) ||
+    Object.entries(D.PEOPLE).some(([k, Pp]) => (Pp.need === id || Pp.need2 === id) && knownP(k));
+  // ---------------- land: what is yours (leased or owned), its prices ----------------
+  const land = k => st().land[k] || null;
+  const haOf = kind => Object.entries(st().land).reduce((s, [k, v]) => s + (v.st === kind ? D.LAND[k].ha : 0), 0);
+  const rentOf = k => Math.round(D.LAND[k].pacht * D.LAND[k].ha * 100) / 100;
+  const priceOf = k => Math.round(D.LAND[k].kauf * D.LAND[k].ha * 10000);
+  // what a land deal costs at its signature: a year's rent, or the price with the land transfer tax and the notary
+  function dealCost(id) {
+    const Pj = P0(id),
+      k = Pj.land,
+      off = (pst(id) && pst(id).offer) === 'knapp' ? 0.8 : 1;
+    if (Pj.deal === 'pacht')
+      return { total: rentOf(k) * off, parts: [[rentOf(k) * off, `Pacht ${D.LAND[k].name} (1. Jahr)`]] };
+    const pr = priceOf(k) * off,
+      tax = Math.round(pr * D.KAUF.grest),
+      no = Math.round(pr * D.KAUF.notar);
+    return {
+      total: pr + tax + no,
+      parts: [
+        [pr, `Kaufpreis ${D.LAND[k].name}`],
+        [tax, 'Grunderwerbsteuer 5 %'],
+        [no, 'Notar und Grundbuch'],
+      ],
+    };
+  }
+  // the owner's and the neighbours' consent: trust (their opinion of you) and a fair price
+  function consent(id) {
+    const Pj = P0(id),
+      Ld = D.LAND[Pj.land],
+      off = pst(id) ? pst(id).offer : 'fair',
+      o = Ld.owner;
+    if (o) {
+      const need = Pj.deal === 'kauf' ? 50 : 40;
+      if (rep(o) < need)
+        return {
+          no: true,
+          text: `${nameOf(o)} will noch nicht – er kennt dich zu wenig (Meinung ${Math.round(rep(o))}, nötig ${need}).`,
+          why: 'Land gibt man im Dorf nicht an Fremde: erst kennenlernen, helfen, Wort halten.',
+          src: 'Dorfleben; Meinung aus dem Ortsvorsteher-Spiel',
+        };
+      if (off === 'knapp' && rep(o) < 70) {
+        L(o, -4, 'Zu wenig geboten für ' + Ld.name);
+        return Object.assign(STRAT.refuse('preis_fair'), {
+          text: `${nameOf(o)}: „Für so wenig? Nee.“ – ` + D.RULES.preis_fair.text,
+        });
+      }
+    }
+    for (const k of Ld.neighbours || [])
+      if (avail(k) && rep(k) < 35)
+        return {
+          no: true,
+          text: `${nameOf(k)} hat Bedenken – mit den Nachbarn erst reden (Meinung ${Math.round(rep(k))}).`,
+          why: 'Wer neben dem Nachbarn Bäume pflanzt oder Land bewirtschaftet, spricht vorher mit ihm – Grenzabstände, Schatten, Zufahrt.',
+          src: 'Thüringer Nachbarrechtsgesetz; Dorfleben',
+        };
+    return null;
+  }
   // ---------------- the projects ----------------
   const P0 = id => D.PROJ[id];
   const pst = id => st().proj[id] || null;
@@ -218,6 +287,16 @@ export const STDORF = (() => {
         why: 'Erkunden statt Nebel: Was die Leute brauchen, weiß nur, wer hingeht und zuhört.',
         src: 'Falkos Wahl (5.11.2026, C&C/StarCraft): Erkunden',
       };
+    if (Pj.needLand && !land(Pj.needLand)) return STRAT.refuse('land_kein', D.LAND[Pj.needLand].name);
+    if (Pj.land) {
+      const l = land(Pj.land);
+      if (l && (l.st === 'eigen' || Pj.deal === 'pacht'))
+        return { no: true, text: l.st === 'eigen' ? 'Das gehört dir schon.' : 'Das hast du schon gepachtet.' };
+      const other = Object.keys(D.PROJ).find(
+        x => x !== id && P0(x).land === Pj.land && pst(x) && pst(x).st === 'laeuft'
+      );
+      if (other) return { no: true, text: 'Über dieses Stück verhandelst du schon.' };
+    }
     if (p && p.st === 'abgelehnt' && now() - p.t < 14 * 1440)
       return {
         no: true,
@@ -228,7 +307,7 @@ export const STDORF = (() => {
     return null;
   }
   // start a project: its first step (Falko 23:14: Dorfprojekte und Ansehen)
-  function start(id) {
+  function start(id, o = {}) {
     const q = can(id);
     if (q) return q;
     const Pj = P0(id),
@@ -241,6 +320,10 @@ export const STDORF = (() => {
       t: Math.round(t),
       due: null,
       prep: !!(prev && prev.prep),
+      una: false,
+      offer: o.offer === 'knapp' ? 'knapp' : 'fair',
+      fs: null,
+      pts: null,
       why: '',
       log: prev ? prev.log : [],
     };
@@ -269,6 +352,41 @@ export const STDORF = (() => {
     for (let d = dayOf(t) + 2; d < dayOf(t) + 40; d++)
       if (W.day(d * 1440 + 600).wd === D.STADT.wd) return d * 1440 + D.STADT.hour;
     return t + 7 * 1440;
+  }
+  // the next deadline of a funding call at least a week on (time to write the outline), at noon
+  function nextCall(F, t) {
+    const d0 = W.dateOf(t + F.prep * 1440),
+      y = d0.getUTCFullYear();
+    const cand = [];
+    for (const yy of [y, y + 1]) for (const [m, d] of F.calls) cand.push(Date.UTC(yy, m - 1, d));
+    const ok = cand.filter(v => v >= d0.getTime()).sort((a, b) => a - b)[0];
+    const days = Math.round((ok - W.dateOf(t).getTime()) / 864e5);
+    return (dayOf(t) + days) * 1440 + 12 * 60;
+  }
+  // the action group's scoring matrix (assumption, typical criteria): participation, the council's backing, preparation, the
+  // project's own value for community and climate, volunteer work promised by people who think well of you
+  function points(id) {
+    const Pj = P0(id),
+      p = pst(id),
+      helpers = [...new Set(Pj.steps.flatMap(s => s.help || []))].filter(avail),
+      mean = helpers.length ? helpers.reduce((a, k) => a + rep(k), 0) / helpers.length : 50;
+    const rows = [
+      ['Passt zur Entwicklungsstrategie (Beratung)', 4],
+      ['Beteiligung der Leute im Dorf', ORDER.filter(knownP).length >= 5 ? 6 : 2],
+      [
+        'Dorfversammlung (Sarah)',
+        STRAT.ability.buff('sarah', 'dorfversammlung') ||
+        (S.people.sarah && S.people.sarah.cd.dorfversammlung > now() - 30 * 1440)
+          ? 3
+          : 0,
+      ],
+      ['Ortsteilrat einstimmig', p.una ? 3 : 0],
+      ['Vorbereitung (drei Angebote)', p.prep ? 3 : 0],
+      ['Gemeinschaft und Demografie', 6],
+      ['Klima (Ladesäule, Radverkehr)', 3],
+      ['Eigenleistung zugesagt', mean >= 55 ? 4 : 1],
+    ];
+    return { rows, sum: rows.reduce((a, r) => a + r[1], 0) };
   }
   function workDays(t, n) {
     let d = dayOf(t),
@@ -302,7 +420,16 @@ export const STDORF = (() => {
         }
       );
     } else if (s.k === 'stadt') p.due = nextStadt(t);
-    else if (s.k === 'bauhof') p.due = workDays(t, s.days || 3);
+    else if (s.k === 'foerder') {
+      const F = D.FOERDER[P0(id).foerder];
+      p.fs = 'einreichen';
+      p.pts = null;
+      p.due = nextCall(F, t);
+      STRAT.note(
+        `${P0(id).title}: die Projektskizze geht bis zum Stichtag ${W.day(p.due).label} an die ${F.title.split(' – ')[1] || F.title}.`,
+        { kind: 'ereignis', why: F.learn, src: F.src }
+      );
+    } else if (s.k === 'bauhof') p.due = workDays(t, s.days || 3);
     else if (s.k === 'warten') p.due = Math.round(t + (s.days || 1) * 1440);
     p.t = Math.round(t);
   }
@@ -324,9 +451,23 @@ export const STDORF = (() => {
     p.t = Math.round(t);
     log(id, 'Fertig', t);
     const s = AST();
-    // what the Ortsvorsteher system places in the village stands now (amt/amt_world.js builds it at its next refresh)
-    if (Pj.build) s.built[Pj.build] = Math.round(t);
+    // what the Ortsvorsteher system places in the village stands now (amt/amt_world.js builds it at its next refresh); the village's
+    // own things of this mode (the orchard, the meeting place) in STRAT.S.ext.dorf.built (strategie/st_dorf_welt.js)
+    if (Pj.build && Pj.anl) s.built[Pj.build] = Math.round(t);
+    else if (Pj.build) st().built[Pj.build] = Math.round(t);
     if (Pj.build === 'kirmes') kirmesDate(t);
+    if (Pj.land) {
+      st().land[Pj.land] = { st: Pj.deal === 'kauf' ? 'eigen' : 'pacht', t: Math.round(t), eur: dealCost(id).total };
+      const o = D.LAND[Pj.land].owner;
+      if (o)
+        L(
+          o,
+          pst(id).offer === 'knapp' ? -2 : 3,
+          (pst(id).offer === 'knapp' ? 'Knapp verhandelt: ' : 'Fairer Handel: ') + Pj.title
+        );
+      if (pst(id).offer === 'knapp') styleSelf(-2, 'Knapp verhandelt: ' + Pj.title);
+    }
+    if (Pj.fans) E(Pj.fans, 'Fertig: ' + Pj.title);
     if (Pj.anl) {
       s.anl[Pj.anl] = Object.assign(s.anl[Pj.anl] || {}, { st: 'built', t, why: 'Fertig: ' + Pj.title, d: 'built' });
       const An = A.ANLIEGEN[Pj.anl];
@@ -463,15 +604,17 @@ export const STDORF = (() => {
     const base = Object.assign({}, s, { council: office() ? s.council : Math.max(s.council || 0, 35) });
     const pos =
       A.ANLIEGEN[key] && A.ANLIEGEN[key].issue && s.pos[A.ANLIEGEN[key].issue] ? s.pos[A.ANLIEGEN[key].issue].o : null;
-    const res = M.council(base, key, {
-      rat: { pass: true, unanimous: !!p.una },
-      prepared: !!p.prep,
-      budget: cityLeft(t),
-      pos,
-    });
+    const res = !A.ANLIEGEN[key]
+      ? councilLike(base, Pj, p, cityLeft(t))
+      : M.council(base, key, {
+          rat: { pass: true, unanimous: !!p.una },
+          prepared: !!p.prep,
+          budget: cityLeft(t),
+          pos,
+        });
     if (!res) return next(id, t);
     if (res.d === 'yes' || res.d === 'kreis') {
-      st().city.spent += Pj.cost;
+      st().city.spent += res.pay || Pj.cost;
       if (office()) s.council = Math.min(100, (s.council || 0) + 6);
       if (Pj.anl) s.anl[Pj.anl] = Object.assign(s.anl[Pj.anl] || {}, { st: 'yes', t, why: res.why, d: 'yes' });
       amtSave();
@@ -510,6 +653,93 @@ export const STDORF = (() => {
     STRAT.emit('dorfprojekt', { id, state: p.st, t });
     STRAT.save();
   }
+  // the town council on a project that is no concern of the Ortsvorsteher system: the rule of amt/amt_model.js council (the Ortsteilrat's
+  // backing, unanimity, preparation, the standing in the council) – the town pays its share (with funding: the own share)
+  function councilLike(base, Pj, p, money) {
+    const F = Pj.foerder ? D.FOERDER[Pj.foerder] : null,
+      pay = Math.round(Pj.cost * (F ? 1 - F.rate : 1));
+    const score = 40 + 15 + (p.una ? 5 : 0) + (p.prep ? 10 : 0) + ((base.council || 0) - 30) / 4;
+    if (pay > money)
+      return {
+        d: 'later',
+        why: `Vertagt: Für den Eigenanteil von ${eur(pay)} ist im Haushalt dieses Jahres kein Geld mehr – der Stadtrat nimmt ihn in den nächsten Haushalt.`,
+      };
+    if (score >= (Pj.need || 60))
+      return {
+        d: 'yes',
+        pay,
+        why: F
+          ? `Beschlossen: Die Stadt trägt den Eigenanteil von ${eur(pay)} (${Math.round((1 - F.rate) * 100)} %) und stellt den Förderantrag.`
+          : 'Beschlossen: Die Stadt bezahlt es und setzt es um.',
+      };
+    if (score >= (Pj.need || 60) - 15)
+      return { d: 'later', why: 'Vertagt: Der Stadtrat will erst Angebote und eine Kostenschätzung sehen.' };
+    return { d: 'no', why: 'Abgelehnt: Der Nutzen steht für die Mehrheit in keinem Verhältnis zu den Kosten.' };
+  }
+  // the funding programme's dates come: the outline is in, the action group scores, the state office approves
+  function foerderStep(id, t) {
+    const Pj = P0(id),
+      p = pst(id),
+      F = D.FOERDER[Pj.foerder];
+    if (p.fs === 'einreichen') {
+      p.fs = 'auswahl';
+      p.due = Math.round(t + F.select * 1440);
+      log(id, 'Projektskizze eingereicht', t);
+      STRAT.note(
+        `${Pj.title}: eingereicht zum Stichtag. Das Entscheidungsgremium der Aktionsgruppe bewertet in drei Wochen.`,
+        {
+          kind: 'ereignis',
+          why: F.learn,
+          src: F.src,
+        }
+      );
+    } else if (p.fs === 'auswahl') {
+      const P = points(id);
+      p.pts = P.sum;
+      if (P.sum < F.min) {
+        p.st = 'vertagt';
+        p.fs = null;
+        p.due = null;
+        p.why = `Nicht ausgewählt: ${P.sum} von mindestens ${F.min} Punkten (${
+          P.rows
+            .filter(r => !r[1])
+            .map(r => r[0])
+            .join(', ') || 'zu wenig'
+        } fehlte). Zum nächsten Stichtag neu einreichen.`;
+        log(id, p.why, t);
+        STRAT.note(`${Pj.title}: ${p.why}`, { kind: 'nein', why: F.learn, src: F.src });
+        STRAT.emit('dorfprojekt', { id, state: 'vertagt', t, pts: P.sum });
+        STRAT.save();
+        return;
+      }
+      p.fs = 'bewilligung';
+      p.due = Math.round(t + F.approve * 1440);
+      log(id, `Ausgewählt mit ${P.sum} Punkten`, t);
+      STRAT.note(
+        `${Pj.title}: von der Aktionsgruppe ausgewählt (${P.sum} Punkte, nötig ${F.min}). Jetzt der Förderantrag beim Land – erst mit dem Bescheid darf es losgehen.`,
+        {
+          kind: 'fertig',
+          why: D.RULES.vorhabenbeginn.why,
+          src: D.RULES.vorhabenbeginn.src,
+        }
+      );
+      STRAT.emit('dorfprojekt', { id, state: 'ausgewaehlt', t, pts: P.sum });
+    } else {
+      p.fs = null;
+      const g = Math.round(Pj.cost * F.rate);
+      STRAT.note(
+        `Bewilligungsbescheid für ${Pj.title}: ${eur(g)} Förderung (${Math.round(F.rate * 100)} %) – ausgezahlt nach dem Verwendungsnachweis.`,
+        {
+          kind: 'fertig',
+          why: F.learn,
+          src: F.rule,
+        }
+      );
+      STRAT.emit('dorfprojekt', { id, state: 'bewilligt', t, eur: g });
+      next(id, t, 'Bewilligt: ' + eur(g));
+    }
+    STRAT.save();
+  }
   // a postponed project goes back to the step it stopped at (a new year's money, a cost estimate)
   function retry(id) {
     const p = pst(id);
@@ -533,7 +763,7 @@ export const STDORF = (() => {
   // ---------------- the jobs of the projects' steps (offered at their place while the step is due) ----------------
   for (const [id, Pj] of Object.entries(D.PROJ))
     Pj.steps.forEach((s, i) => {
-      if (s.k !== 'job') return;
+      if (s.k !== 'job' && s.k !== 'deal') return;
       STRAT.job.define({
         id: `dp_${id}_${i}`,
         label: s.label,
@@ -545,17 +775,27 @@ export const STDORF = (() => {
         heavy: s.heavy ?? 0.25,
         xp: 1,
         loud: !!s.loud,
-        where: 'dorf',
-        text: s.text + (s.help ? ` Es helfen: ${names(s.help)}.` : ''),
+        where: s.where || 'dorf',
+        text:
+          s.text + (s.help ? ` Es helfen: ${names(s.help)}.` : '') + (s.pay ? ` Kosten: ${eur(payOf(id, s))}.` : ''),
         learn: s.learn || Pj.learn,
         dur: s.dur || 60,
         show: () => {
           const p = pst(id);
           return !!p && p.st === 'laeuft' && p.i === i && !STRAT.job.running().some(j => j.def === `dp_${id}_${i}`);
         },
-        can: () => {
+        can: cx => {
           const p = pst(id);
           if (!p || p.st !== 'laeuft' || p.i !== i) return { no: true, text: 'Das steht gerade nicht an.' };
+          // money from your purse (a year's rent, a price with tax and notary, the trees)
+          if (s.pay && S.eur < payOf(id, s) && !(cx.job && cx.job.started))
+            return { no: true, text: `Nicht genug Geld in der Kasse (${eur(payOf(id, s))} nötig).` };
+          // planting bare-root trees: mid-October to the end of March
+          if (s.season === 'pflanzen') {
+            const d = cx.date,
+              mo = d.getUTCMonth();
+            if (!(mo >= 10 || mo <= 2 || (mo === 9 && d.getUTCDate() >= 15))) return 'pflanzzeit';
+          }
           return null;
         },
         pose: s.skill === 'bauen' ? 'place' : null,
@@ -568,6 +808,15 @@ export const STDORF = (() => {
             if (!knownP(k)) meet(k, j.who[0], t);
           }
           if (s.prep) pst(id).prep = true;
+          // the owner's and the neighbours' word on a land deal
+          if (s.k === 'deal') {
+            const q = consent(id);
+            if (q) {
+              reject(id, q, t);
+              return { text: q.text };
+            }
+          }
+          if (s.pay) for (const [v, txt] of payParts(id, s)) STRAT.book(-v, txt, s.pay === 'land' ? 'land' : 'dorf');
           // a compromise said to both sides (the lamp: shielded, warm white, a motion sensor) – a promise in the model
           if (s.pos && A.ANLIEGEN[Pj.anl] && A.ANLIEGEN[Pj.anl].issue) {
             for (const k of s.help || []) M.promise(AST(), A.ANLIEGEN[Pj.anl].issue, s.pos, k, t);
@@ -579,6 +828,22 @@ export const STDORF = (() => {
         },
       });
     });
+  // what a step costs from your purse
+  const payParts = (id, s) => (s.pay === 'land' ? dealCost(id).parts : [[P0(id).cost || 0, P0(id).title]]);
+  const payOf = (id, s) => payParts(id, s).reduce((a, r) => a + r[0], 0);
+  // a deal refused: the project stops with the reason (try again later with more trust or a fair price)
+  function reject(id, q, t) {
+    const p = pst(id);
+    p.st = 'abgelehnt';
+    p.t = Math.round(t);
+    p.due = null;
+    p.why = q.text;
+    log(id, q.text, t);
+    amtSave();
+    STRAT.note(q.text, { kind: 'nein', why: q.why || null, src: q.src || null });
+    STRAT.emit('dorfprojekt', { id, state: 'abgelehnt', t });
+    STRAT.save();
+  }
   // ---------------- exploration jobs: listen in the village, read the notice board ----------------
   STRAT.job.define({
     id: 'dorf_reden',
@@ -661,6 +926,11 @@ export const STDORF = (() => {
       const s = window.KERN && KERN.spot ? KERN.spot('schleusingen') : null;
       return s && s.pos ? [s.pos[0] + 40, s.pos[1] + 36] : D.PLACES.rathaus.pos.slice();
     },
+    flur: () => D.LAND.hangwiese.c.slice(),
+    baumschule: () => {
+      const s = window.KERN && KERN.spot ? KERN.spot('baumschule') : null;
+      return s && s.pos ? s.pos.slice(0, 2) : D.PLACES.baumschule.pos.slice();
+    },
   };
   const projAt = pl =>
     Object.keys(D.PROJ).filter(
@@ -679,6 +949,14 @@ export const STDORF = (() => {
       return `nächster Schritt: ${s.label} – Leute hinschicken (${STDATA.SKILL[s.skill || 'reden']} ${s.min || 1}, ${(s.people || [1, 2]).join('–')} Personen)`;
     if (s.k === 'rat') return `Ortsteilrat${when}`;
     if (s.k === 'stadt') return `Stadtrat in Schleusingen${when}`;
+    if (s.k === 'foerder')
+      return (
+        ({
+          einreichen: 'Förderung: Projektskizze zum Stichtag',
+          auswahl: 'Förderung: die Aktionsgruppe bewertet',
+          bewilligung: 'Förderung: Antrag beim Land, warten auf den Bescheid',
+        }[p.fs] || 'Förderung') + when
+      );
     if (s.k === 'bauhof') return `${s.text || 'Der Bauhof setzt es um'}${when}`;
     if (s.k === 'warten') return `${s.text || 'Warten'}${when}`;
     return '';
@@ -694,14 +972,26 @@ export const STDORF = (() => {
       q = can(id);
     let act = '';
     if (!p || p.st === 'abgelehnt' || p.st === 'vertagt') {
-      if (!p)
+      if (!p && Pj.land)
+        act = `<button type="button" class="stb${q ? '' : ' acc'}" data-dorf="start:${id}"${q ? ' disabled' : ''} title="zum ortsüblichen Preis">Fair anbieten</button> <button type="button" class="stb" data-dorf="knapp:${id}"${q ? ' disabled' : ''} title="20 % unter dem ortsüblichen Preis">Knapp</button>`;
+      else if (!p)
         act = `<button type="button" class="stb${q ? '' : ' acc'}" data-dorf="start:${id}"${q ? ' disabled' : ''}>Angehen</button>`;
       else act = `<button type="button" class="stb" data-dorf="retry:${id}">Neu einbringen</button>`;
     } else if (p.st === 'fertig') act = '<b>✓</b>';
     const k = p ? p.i / Math.max(1, Pj.steps.length) : 0;
     const who =
       { ortsteil: 'Ortsteilrat (eigenes Geld)', stadt: 'Stadtrat Schleusingen', privat: 'du selbst' }[Pj.by] || '';
-    return `<div class="job"><span><b>${esc(Pj.title)}</b></span><span>${act}</span><small>${esc(Pj.text)}<br>Entscheidet: ${esc(who)} · Kosten ${eur(Pj.cost)} · Wunsch von ${esc(nameOf(Pj.from))}</small><span class="bar"><u style="width:${Math.round(k * 100)}%"></u></span><span class="why">${esc(stepText(id))}</span><span class="learn" style="grid-column:1/3">${esc(Pj.learn)} <small>Quelle: ${esc(Pj.src)}</small></span></div>`;
+    const cost = Pj.land
+      ? Pj.deal === 'pacht'
+        ? `Pacht ${eur(rentOf(Pj.land))} im Jahr (${eur(D.LAND[Pj.land].pacht)}/ha)`
+        : `Kaufpreis ${eur(priceOf(Pj.land))} + 5 % Grunderwerbsteuer + Notar`
+      : Pj.foerder
+        ? `Kosten ${eur(Pj.cost)}, davon ${Math.round(D.FOERDER[Pj.foerder].rate * 100)} % Förderung`
+        : `Kosten ${eur(Pj.cost || 0)}`;
+    const from = Pj.land
+      ? 'Eigentümer: ' + (D.LAND[Pj.land].owner ? nameOf(D.LAND[Pj.land].owner) : D.LAND[Pj.land].ownerName)
+      : 'Wunsch von ' + nameOf(Pj.from);
+    return `<div class="job"><span><b>${esc(Pj.title)}</b></span><span>${act}</span><small>${esc(Pj.text)}<br>Entscheidet: ${esc(who)} · ${esc(cost)} · ${esc(from)}</small><span class="bar"><u style="width:${Math.round(k * 100)}%"></u></span><span class="why">${esc(stepText(id))}</span><span class="learn" style="grid-column:1/3">${esc(Pj.learn)} <small>Quelle: ${esc(Pj.src)}</small></span></div>`;
   }
   function peopleHtml() {
     const ks = ORDER.filter(k => avail(k) || D.PEOPLE[k]);
@@ -753,7 +1043,7 @@ export const STDORF = (() => {
     sub: () => 'Dorfplatz von Ratscher · Linde von 1888 · Projekte und Ansehen',
     info: () => {
       let h = peopleHtml();
-      const ids = Object.keys(D.PROJ).filter(id => pst(id) || idea(id));
+      const ids = Object.keys(D.PROJ).filter(id => (pst(id) || idea(id)) && P0(id).place !== 'flur');
       h += `<h4>Dorfprojekte</h4>`;
       h += ids.length
         ? ids.map(projHtml).join('')
@@ -802,6 +1092,56 @@ export const STDORF = (() => {
       return `<h4>Stadtrat</h4>${due.length ? `<ul>${due.map(id => `<li><span>${esc(W.day(pst(id).due).label)} ${hm(pst(id).due)}</span><b>${esc(P0(id).title)}</b></li>`).join('')}</ul>` : '<div class="sub">Nichts aus Ratscher auf der Tagesordnung.</div>'}<ul><li><span>Mittel der Stadt für kleine Maßnahmen ${yearOf(now())}</span><b>${eur(cityLeft())}</b></li></ul><div class="learn">${esc(D.RULES.stadt_entscheidet.why)} <small>Quelle: ${esc(D.RULES.stadt_entscheidet.src)}</small></div>`;
     },
   });
+  function landHtml() {
+    const ha = haOf('pacht'),
+      he = haOf('eigen');
+    let h = `<h4>Dein Land</h4><ul><li><span>Garten (Pacht, seit Jahren)</span><b>ca. 0,4 ha</b></li><li><span>dazu gepachtet</span><b>${ha.toLocaleString('de-DE', { maximumFractionDigits: 2 })} ha</b></li><li><span>dazu gekauft</span><b>${he.toLocaleString('de-DE', { maximumFractionDigits: 2 })} ha</b></li></ul>`;
+    h += '<h4>Flächen</h4><ul>';
+    for (const [k, Ld] of Object.entries(D.LAND)) {
+      const l = land(k);
+      h += `<li><span>${esc(Ld.name)} · ${esc(Ld.kind)} · ${Ld.ha.toLocaleString('de-DE')} ha<br><small>${esc(Ld.use)}</small></span><b>${l ? (l.st === 'eigen' ? 'gehört dir' : 'gepachtet') : Ld.owner && !knownP(Ld.owner) ? '?' : eur(Ld.kauf).replace(' €', '') + ' €/m²'}</b></li>`;
+    }
+    h += '</ul>';
+    const ids = Object.keys(D.PROJ).filter(id => P0(id).place === 'flur' && (pst(id) || idea(id)));
+    h += ids.length
+      ? ids.map(projHtml).join('')
+      : '<div class="sub">Wem was gehört, erfährst du im Dorf (Uwe bewirtschaftet die Wiesen, Wolfgang kennt den Wald).</div>';
+    return h;
+  }
+  STRAT.place.define({
+    id: 'flur',
+    name: D.PLACES.flur.name,
+    icon: D.PLACES.flur.icon,
+    order: D.PLACES.flur.order,
+    r: D.PLACES.flur.r,
+    pos: POS.flur,
+    sub: () => 'Wiesen, Äcker, Wald um Ratscher – pachten oder kaufen statt erobern',
+    info: landHtml,
+    badge: () =>
+      haOf('pacht') + haOf('eigen') > 0
+        ? '+' + (haOf('pacht') + haOf('eigen')).toLocaleString('de-DE', { maximumFractionDigits: 2 }) + ' ha'
+        : '',
+  });
+  STRAT.place.define({
+    id: 'baumschule',
+    name: D.PLACES.baumschule.name,
+    icon: D.PLACES.baumschule.icon,
+    order: D.PLACES.baumschule.order,
+    r: D.PLACES.baumschule.r,
+    pos: POS.baumschule,
+    sub: () => 'Obstbäume, Hecken, Wildgehölze – Hochstämme alter Sorten',
+    info: () => projAt('baumschule').map(projHtml).join(''),
+  });
+  // the rent is due at Martini (11 November), as it has been for centuries
+  KERN.on('strategie:tag', d => {
+    try {
+      const dy = d && d.day;
+      if (!dy || !/-11-11$/.test(dy.iso)) return;
+      for (const [k, l] of Object.entries(st().land))
+        if (l.st === 'pacht' && dayOf(l.t) !== dayOf(d.t))
+          STRAT.book(-rentOf(k), `Pacht ${D.LAND[k].name} (Martini)`, 'land');
+    } catch (e) {}
+  });
   // ---------------- the bar: the village in one box (the mean opinion of the people one knows, the Ortsteil's money) ----------------
   const meanRep = () => {
     const ks = ORDER.filter(k => knownP(k) && avail(k));
@@ -825,9 +1165,30 @@ export const STDORF = (() => {
     order: 9,
     on: true,
     draw: pr => {
-      const H = AMT.homes ? AMT.homes() : null;
-      if (!H) return '';
       let h = '';
+      for (const [k, Ld] of Object.entries(D.LAND)) {
+        const l = land(k),
+          a = 0,
+          c = Math.cos(a),
+          sn = Math.sin(a),
+          pts = [
+            [-1, -1],
+            [1, -1],
+            [1, 1],
+            [-1, 1],
+          ].map(([u, v]) =>
+            pr(
+              Ld.c[0] + (u * Ld.w * c) / 2 - (v * Ld.h * sn) / 2,
+              Ld.c[1] + (u * Ld.w * sn) / 2 + (v * Ld.h * c) / 2,
+              0.3
+            )
+          );
+        if (pts.some(q => q[2] >= 1)) continue;
+        const col = l ? '#9fe070' : 'rgba(240,235,210,.55)';
+        h += `<polygon points="${pts.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ')}" fill="${l ? 'rgba(140,210,90,.16)' : 'none'}" stroke="${col}" stroke-width="${l ? 2 : 1.2}"${l && l.st === 'pacht' ? ' stroke-dasharray="7 4"' : !l ? ' stroke-dasharray="3 4"' : ''}><title>${esc(Ld.name + (l ? (l.st === 'eigen' ? ' – gehört dir' : ' – gepachtet') : ''))}</title></polygon>`;
+      }
+      const H = AMT.homes ? AMT.homes() : null;
+      if (!H) return h;
       const COL = { gut: '#8fd16a', mittel: '#e8c26a', schlecht: '#e0705a' };
       for (const [k, o] of Object.entries(H)) {
         if (!o || !o.door) continue;
@@ -897,6 +1258,7 @@ export const STDORF = (() => {
       try {
         if (s.k === 'rat') ratDecide(id, due);
         else if (s.k === 'stadt') stadtDecide(id, due);
+        else if (s.k === 'foerder') foerderStep(id, due);
         else next(id, due, s.text || s.k);
       } catch (e) {
         console.warn('strategie-dorf', id, e);
@@ -918,6 +1280,7 @@ export const STDORF = (() => {
       const [a, id] = String(b.dataset.dorf).split(':');
       let r = null;
       if (a === 'start') r = start(id);
+      else if (a === 'knapp') r = start(id, { offer: 'knapp' });
       else if (a === 'retry') r = retry(id);
       if (r && r.no) STRAT.note(r.text, { kind: 'nein', why: r.why || null, src: r.src || null });
       const U = STRAT.ui;
