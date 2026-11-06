@@ -454,6 +454,8 @@ export const VAUTO = (() => {
     }
     for (const w of [NPCS.hubert, NPCS.ronald])
       if (w && w.fig && w.fig.g.visible && !w.drive) OB.push({ x: w.x, y: w.y, r: 0.32, kind: 'ped' });
+    // feat/bus: the buses of the timetable (bus/bus.js loads later: through window) – behind one at a stop the cars wait, then go round
+    if (window.BUS && window.BUS.obstacles) for (const o of window.BUS.obstacles()) OB.push(o);
     if (DCARS && DCARS.cars)
       for (const d of Object.values(DCARS.cars)) {
         if (!d.g || !d.g.visible || !d.at) continue;

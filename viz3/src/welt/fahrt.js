@@ -634,7 +634,8 @@ export const FAHRT = (() => {
       if (S.ready) near(vx, vy);
     }
   }
-  WELT.focus = () => (S.active && S.focusOn && VEH.cur ? [S.fx, S.fy] : null);
+  // feat/bus: or a point ahead of the bus one rides (bus/bus.js sets FAHRT.focusBus), so its ground is there before it
+  WELT.focus = () => (S.active && S.focusOn && VEH.cur ? [S.fx, S.fy] : S.focusBus ? S.focusBus() : null);
   (window.TICKS || (window.TICKS = [])).push(dt => {
     try {
       tick(dt);
