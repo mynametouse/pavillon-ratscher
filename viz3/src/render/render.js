@@ -415,6 +415,26 @@ async function uploadTextures(say, seenOnly) {
   }
   return list.length;
 }
+// A figure or thing that comes later (the village's people, the traffic, the passengers, the zombie night): its programs made when it is
+// built – in the render-target variant the composer uses, as compileShown does at load – not in the first frame that shows it (the
+// people's hair and lashes, „f0xx_opacity“, cost a hitch there and a new program in several tests, 6.11.2026). Cheap when the programs exist.
+let warmRT = null;
+export function warmUp(obj) {
+  if (!obj) return;
+  try {
+    if (!warmRT) warmRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType });
+    const prev = R.getRenderTarget();
+    R.setRenderTarget(warmRT);
+    try {
+      if (R.compileAsync) R.compileAsync(obj, cam, scene).catch(() => {});
+      else R.compile(obj, cam, scene);
+    } finally {
+      R.setRenderTarget(prev);
+    }
+  } catch (e) {
+    console.warn('warmUp', e);
+  }
+}
 export async function prepareGPU(say) {
   const t0 = performance.now(),
     step = t => say && say('Grafik wird vorbereitet … ' + t);
