@@ -20,18 +20,24 @@ import wdlib
 
 EXTRA = os.path.join(wdlib.REPO, 'viz3/extra/welt-dinge')
 TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van']
+KINDS = ['hof', 'strasse', 'betrieb', 'stadt', 'laden', 'kirche', 'schule', 'dienst', 'gaststaette', 'sport', 'friedhof', 'allgemein']  # as dinge/dinge.js KINDS
 # colours of cars on German roads (KBA stock: grey/silver ~ 35 %, black ~ 25 %, white ~ 15 %, blue ~ 10 %, red ~ 6 %, …) – sRGB
 PAL = [('schwarz', (18, 18, 20)), ('dunkelgrau', (58, 60, 64)), ('silber', (150, 152, 155)), ('weiss', (225, 225, 220)),
        ('dunkelblau', (25, 38, 72)), ('blau', (52, 92, 160)), ('rot', (150, 22, 20)), ('dunkelgruen', (30, 62, 40)),
        ('beige', (160, 135, 100)), ('gelb', (210, 160, 30))]
 # the hand-modelled grounds (garden, the neighbours, the brook): their own things, nothing from the photo there
 SKIP = [(-58, 42, -52, 48)]
+# places other features keep free: the nursery's parking at Kloster Veßra, where the player's car is parked (welt/fahrt.js, park.baumschule)
+AVOID = {'vessra': [(-8867.2, -172.3, 15)]}
 # works yards: the agricultural cooperative west of the garden, the yards at the east end of the village
 WORKS = [(-150, -40, -165, -30), (295, 450, -330, -220)]
 HEIGHT = {'auto': 1.5, 'van': 2.3, 'wohnmobil': 3.0, 'lkw': 3.6, 'anhaenger': 1.0, 'wohnwagen': 2.6, 'traktor': 2.8,
-          'pool_rund': 1.1, 'pool_eckig': 0.1, 'trampolin': 0.9, 'rundballen': 1.5, 'quaderballen': 1.8, 'holzstapel': 1.6,
+          'pool_rund': 1.1, 'pool_oval': 1.1, 'pool_eckig': 0.1, 'trampolin': 0.9, 'rundballen': 1.5, 'quaderballen': 1.8, 'holzstapel': 1.6,
           'stammholz': 1.2, 'container': 2.6, 'tank': 3.0}
 HAZE = np.array([55.0, 70.0, 86.0])
+# shares of body types and colours for slots without a car of the photo (KBA stock, rounded), cumulative
+TYPE_CUM = list(np.cumsum([0.22, 0.34, 0.27, 0.12, 0.05]))[:-1] + [1.0]
+COL_CUM = list(np.cumsum([0.25, 0.15, 0.17, 0.22, 0.05, 0.06, 0.06, 0.015, 0.015, 0.01]))[:-1] + [1.0]
 S_DRIVING = []
 SUN = (-0.34, 0.94)  # where the shadows of the photo fall (07.04.2024, late morning): north-north-west, ~1 m per m of height
 
@@ -64,7 +70,7 @@ class Photo:
             if u < 0 or v < 0:
                 continue
             if f not in self.cache:
-                if len(self.cache) > 3:
+                if len(self.cache) > 8:
                     self.cache.pop(next(iter(self.cache)))
                 self.cache[f] = np.asarray(self.Image.open(f).convert('RGB'))
             im = self.cache[f]
@@ -111,7 +117,11 @@ def colour(photo, k):
 
 def main():
     gebiet = sys.argv[1]
-    photo = Photo([a for a in sys.argv[2:] if not a.startswith('--')][:4])
+    args = sys.argv[2:]
+    if '--geb' in args:
+        i = args.index('--geb')
+        args = args[:i] + args[i + 2:]
+    photo = Photo(args[:4])
     # nothing of ours on a building that stands in 3D (OSM, the old town, welt-gebaeude's ETHOS buildings): a tank or shed that is a
     # building there, a 'car' that was a roof window
     from shapely.geometry import Polygon
@@ -122,20 +132,27 @@ def main():
     dropped = []
     P = json.load(open(os.path.join(EXTRA, f'pruefung_{gebiet}.json')))
     ways = [w for w in wdlib.roads() + (wdlib.roads_fahrt() if gebiet != 'ratscher' else []) if w['kind'] <= 5]
+    for w in ways:
+        w['bb'] = (w['p'][:, 0].min(), w['p'][:, 1].min(), w['p'][:, 0].max(), w['p'][:, 1].max())
     autos, dinge, masks = [], [], []
     S_DRIVING.clear()
     for n, k in enumerate(P['ja'] + P.get('dazu', [])):
         x, y, t = k['x'], k['y'], k['t']
-        if in_rect(x, y, SKIP):
+        if in_rect(x, y, SKIP) or any(math.hypot(x - a, y - b) < r for a, b, r in AVOID.get(gebiet, [])):
             continue
         a = math.radians(k['az'])
         ax = (math.sin(a), math.cos(a))
-        # the nearest street, lane or service way
+        # the nearest street, lane or service way (only the ways whose box comes within 80 m)
         best = None
         for w in ways:
+            b = w['bb']
+            if x < b[0] - 80 or x > b[2] + 80 or y < b[1] - 80 or y > b[3] + 80:
+                continue
             d, q, u = wdlib.seg_dist(x, y, w['p'])
             if best is None or d - w['w'] / 2 < best[0]:
                 best = (d - w['w'] / 2, d, q, u, w)
+        if best is None:
+            best = (99.0, 99.0, (x, y), (1.0, 0.0), {'kind': 9, 'w': 0})
         edge, d, q, u, w = best
         h = k.get('h') or HEIGHT.get(t if t in HEIGHT else 'auto', 1.5)
         hl0, hw0 = k['l'] / 2, k['w'] / 2
@@ -157,8 +174,9 @@ def main():
             S_DRIVING.append((x, y))  # in the lane of a main or county road: driving when the photo was taken, no parking place
             continue
         if t in ('auto', 'van'):
-            kind = 'betrieb' if in_rect(x, y, WORKS) else ('strasse' if edge < 2.5 else 'hof')
-            if kind == 'strasse':
+            kerb = 'stadt' if gebiet == 'schleusingen' else 'strasse'
+            kind = 'betrieb' if gebiet == 'ratscher' and in_rect(x, y, WORKS) else (kerb if edge < 2.5 else 'hof')
+            if kind in ('strasse', 'stadt'):
                 o = (x - q[0], y - q[1])
                 cr = u[0] * o[1] - u[1] * o[0]
                 dirv = (u[0], u[1]) if cr < 0 else (-u[0], -u[1])
@@ -171,16 +189,31 @@ def main():
             if t == 'van':
                 ty = 4
             else:
-                L = k['l']
+                L = k['l'] - 0.25  # the detector's boxes take in a rim of shadow: a Golf (4.28 m) reads ~4.5 m
                 hsh = (int(abs(x) * 7.31 + abs(y) * 3.17) % 100) / 100
                 ty = 0 if L < 4.05 else 1 if L < 4.45 else (3 if hsh < 0.3 else 2)
             col = colour(photo, k)
-            autos.append([round(x, 2), round(y, 2), round(az, 1), ty, col, ['hof', 'strasse', 'betrieb'].index(kind)])
+            autos.append([round(x, 2), round(y, 2), round(az, 1), ty, col, KINDS.index(kind)])
         else:
-            dinge.append([t, round(x, 2), round(y, 2), round(k['az'], 1), round(k['l'], 2), round(k['w'], 2), round(h, 2)])
+            e = [t, round(x, 2), round(y, 2), round(k['az'], 1), round(k['l'], 2), round(k['w'], 2), round(h, 2)]
+            if k.get('farbe'):
+                e.append([round(v, 3) for v in k['farbe']])  # sRGB 0…1 of the thing's own colour (a red tractor)
+            dinge.append(e)
+    # car parks of OSM (tools/welt-dinge/plaetze.py): empty in the photo, they fill by the time of what they belong to – a body type and a
+    # colour as common on German roads, chosen by the place
+    pf = os.path.join(EXTRA, f'plaetze_{gebiet}.json')
+    if os.path.exists(pf):
+        for q in json.load(open(pf))['plaetze']:
+            if in_rect(q['x'], q['y'], SKIP) or any(math.hypot(q['x'] - a, q['y'] - b) < r for a, b, r in AVOID.get(gebiet, [])):
+                continue
+            hv = (math.sin(q['x'] * 12.9898 + q['y'] * 78.233) * 43758.5453) % 1.0
+            hc = (math.sin(q['x'] * 39.3468 + q['y'] * 11.135) * 24634.6345) % 1.0
+            ty = next(i for i, c in enumerate(TYPE_CUM) if hv <= c)
+            col = next(i for i, c in enumerate(COL_CUM) if hc <= c)
+            autos.append([q['x'], q['y'], q['az'], ty, col, KINDS.index(q['art'])])
     out = {'v': 1, 'gebiet': gebiet,
            'quelle': 'Luftbild DOP 2024 © GDI-Th (dl-de/by-2-0), erkannt mit YOLO11-OBB (DOTAv1) und von Auge geprüft – tools/welt-dinge',
-           'typen': TYPES, 'farben': [p[0] for p in PAL], 'arten': ['hof', 'strasse', 'betrieb'], 'autos': autos, 'dinge': dinge}
+           'typen': TYPES, 'farben': [p[0] for p in PAL], 'arten': KINDS, 'autos': autos, 'dinge': dinge}
     os.makedirs(os.path.join(EXTRA, 'dist/dinge'), exist_ok=True)
     json.dump(out, open(os.path.join(EXTRA, f'dist/dinge/{gebiet}.json'), 'w'), separators=(',', ':'))
     mfile = os.path.join(EXTRA, 'maske_dinge.json')
@@ -197,7 +230,7 @@ def main():
     U['polys'] = [p for g in sorted(U['gebiete']) for p in U['gebiete'][g]]
     json.dump(U, open(os.path.join(EXTRA, 'maske_dinge_utm.json'), 'w'), separators=(',', ':'))
     from collections import Counter
-    print(gebiet, len(autos), 'cars', dict(Counter(TYPES[a[3]] for a in autos)), dict(Counter(['hof', 'strasse', 'betrieb'][a[5]] for a in autos)),
+    print(gebiet, len(autos), 'cars', dict(Counter(TYPES[a[3]] for a in autos)), dict(Counter(KINDS[a[5]] for a in autos)),
           dict(Counter(PAL[a[4]][0] for a in autos)), len(dinge), 'things', dict(Counter(d[0] for d in dinge)), len(masks), 'masks',
           len(S_DRIVING), 'driving (left out)', len(dropped), 'on buildings (left out):', dropped[:12])
 

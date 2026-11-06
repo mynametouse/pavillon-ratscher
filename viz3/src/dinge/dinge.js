@@ -17,7 +17,10 @@ import { CLOCK } from '../time/clock.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { DCAL } from '../dorf/dorf_cal.js';
 import { DCARS } from '../dorf/dorf_cars.js';
+import { RATSCHER } from '../world/ratscher.js';
+import { WELT } from '../welt/welt.js';
 import { DMOD } from './dinge_modelle.js';
+import { DZEIT } from './dinge_zeit.js';
 export const DINGE = (() => {
   const S = {
     on: false,
@@ -30,10 +33,17 @@ export const DINGE = (() => {
     held: 0,
     frozen: false,
     // the areas with their data (dist/dinge/<id>.json), loaded when the observer comes within r of the centre
-    areas: [{ id: 'ratscher', c: [150, -150], r: 2200, cell: 120 }],
+    areas: [
+      { id: 'ratscher', c: [150, -150], r: 2200, cell: 120 },
+      { id: 'schleusingen', c: [-1000, 1150], r: 1300, cell: 200 },
+      { id: 'geisenhoehn', c: [-860, -520], r: 900, cell: 120 },
+      { id: 'talsperre', c: [1270, -700], r: 700, cell: 120 },
+      { id: 'vessra', c: [-8850, -150], r: 1100, cell: 150 },
+      { id: 'zollbrueck', c: [-5430, -990], r: 700, cell: 120 },
+    ],
     err: null,
   };
-  if (!DMOD.on || !window.RATSCHER || !RATSCHER.on) return S;
+  if (!DMOD.on || !RATSCHER || !RATSCHER.on) return S;
   S.on = true;
   const CELL = 120,
     NEAR = COARSE ? 260 : 380,
@@ -52,142 +62,27 @@ export const DINGE = (() => {
     [160, 135, 100],
     [210, 160, 30],
   ].map(c => new THREE.Color().setRGB(c[0] / 255, c[1] / 255, c[2] / 255, THREE.SRGBColorSpace));
-  const ROUND = new Set(['tank', 'pool_rund', 'trampolin']),
+  const ROUND = new Set(['tank', 'pool_rund', 'trampolin']), // an oval pool takes its box
     TYPES = ['klein', 'kompakt', 'kombi', 'suv', 'van'],
-    KINDS = ['hof', 'strasse', 'betrieb', 'stadt'];
-  const frac = v => v - Math.floor(v),
-    hash = (a, b) => frac(Math.sin(a * 12.9898 + b * 78.233 + 0.5) * 43758.5453);
-  // ---- occupancy: the share of the places of a kind with a car, over the hours of a workday, a Saturday, a Sunday ----
-  // [hour, share] keyframes, linear between (a village in Thuringia: most commute by car, out 6–8 h, back 15:30–18:30)
-  const CURVES = {
-    hof: {
-      werktag: [
-        [0, 0.95],
-        [5.5, 0.95],
-        [6.5, 0.8],
-        [8, 0.52],
-        [12, 0.5],
-        [13, 0.55],
-        [15, 0.55],
-        [17, 0.78],
-        [18.5, 0.9],
-        [20, 0.86],
-        [22, 0.93],
-        [24, 0.95],
-      ],
-      samstag: [
-        [0, 0.93],
-        [8, 0.92],
-        [9.5, 0.68],
-        [12, 0.66],
-        [14, 0.78],
-        [17, 0.75],
-        [19, 0.78],
-        [22, 0.9],
-        [24, 0.93],
-      ],
-      sonntag: [
-        [0, 0.92],
-        [9, 0.92],
-        [11, 0.82],
-        [14, 0.68],
-        [17, 0.72],
-        [19, 0.88],
-        [24, 0.93],
-      ],
-    },
-    strasse: {
-      werktag: [
-        [0, 0.88],
-        [6, 0.86],
-        [8, 0.48],
-        [16, 0.45],
-        [18.5, 0.78],
-        [24, 0.88],
-      ],
-      samstag: [
-        [0, 0.86],
-        [9, 0.8],
-        [11, 0.6],
-        [16, 0.7],
-        [20, 0.8],
-        [24, 0.86],
-      ],
-      sonntag: [
-        [0, 0.86],
-        [12, 0.8],
-        [14, 0.9],
-        [18, 0.85],
-        [24, 0.86],
-      ],
-    },
-    // the kerbs of a town (Schleusingen): residents at night, visitors and shoppers by day – hardly ever empty
-    stadt: {
-      werktag: [
-        [0, 0.86],
-        [6, 0.84],
-        [8, 0.68],
-        [10, 0.78],
-        [17, 0.8],
-        [19, 0.84],
-        [24, 0.86],
-      ],
-      samstag: [
-        [0, 0.86],
-        [8, 0.8],
-        [10, 0.85],
-        [16, 0.8],
-        [24, 0.86],
-      ],
-      sonntag: [
-        [0, 0.86],
-        [24, 0.86],
-      ],
-    },
-    betrieb: {
-      werktag: [
-        [0, 0.15],
-        [5.5, 0.15],
-        [7, 0.92],
-        [15.5, 0.9],
-        [17.5, 0.25],
-        [24, 0.15],
-      ],
-      samstag: [
-        [0, 0.15],
-        [7, 0.15],
-        [8, 0.4],
-        [12, 0.4],
-        [13, 0.15],
-        [24, 0.15],
-      ],
-      sonntag: [
-        [0, 0.12],
-        [24, 0.12],
-      ],
-    },
-  };
-  function curve(K, h) {
-    for (let i = 1; i < K.length; i++)
-      if (h <= K[i][0]) {
-        const [h0, v0] = K[i - 1],
-          [h1, v1] = K[i];
-        return v0 + ((v1 - v0) * (h - h0)) / Math.max(1e-6, h1 - h0);
-      }
-    return K[K.length - 1][1];
-  }
-  const dayType = wd => (wd === 0 ? 'sonntag' : wd === 6 ? 'samstag' : 'werktag');
-  S.share = (kind, t = CLOCK.t) => {
-    const wd = DCAL && DCAL.wd ? DCAL.wd(t) : 1,
-      m = ((t % 1440) + 1440) % 1440;
-    return curve(CURVES[kind][dayType(wd)], m / 60);
-  };
-  // a place has a car at game time t: its habit (fixed: the same drives empty every morning) and the day's chance, against the share
-  function want(p, t = CLOCK.t) {
-    const day = Math.floor(t / 1440),
-      r = 0.65 * p.habit + 0.35 * hash(p.i + 17, day);
-    return r < S.share(p.kind, t);
-  }
+    // the kinds of places in the data (tools/welt-dinge/prep.py KINDS, same order); the last ones are car parks of OSM
+    KINDS = [
+      'hof',
+      'strasse',
+      'betrieb',
+      'stadt',
+      'laden',
+      'kirche',
+      'schule',
+      'dienst',
+      'gaststaette',
+      'sport',
+      'friedhof',
+      'allgemein',
+    ];
+  // ---- occupancy (dinge/dinge_zeit.js): the share of a kind at the hour of the weekday, a place's habit and the day's chance ----
+  const wdOf = t => (DCAL && DCAL.wd ? DCAL.wd(t) : 1);
+  S.share = (kind, t = CLOCK.t) => DZEIT.share(kind, t, wdOf(t));
+  const want = (p, t = CLOCK.t) => DZEIT.want(p.seed, p.habit, p.kind, t, wdOf(t));
   S.want = (i, t) => want(S.places[i], t);
   // ---- seen: in the camera's view and not far, or right behind one ----
   const _fr = new THREE.Frustum(),
@@ -234,7 +129,9 @@ export const DINGE = (() => {
           k0 = S.things.length;
         for (const a of j.autos || []) {
           const [x, y, az, ty, col, kind] = a,
-            i = S.places.length;
+            i = S.places.length,
+            // a seed from the place itself (not the load order of the areas): the same habits in every session
+            seed = (((Math.round(x * 10) * 7919 + Math.round(y * 10) * 104729) % 99991) + 99991) % 99991;
           S.places.push({
             i,
             area,
@@ -244,15 +141,17 @@ export const DINGE = (() => {
             type: TYPES[ty] || 'kompakt',
             col: PAL[col] || PAL[1],
             kind: KINDS[kind] || 'hof',
-            habit: hash(i + 1, 3.7),
+            seed,
+            habit: DZEIT.hash(seed + 1, 3.7),
             on: false,
             cell: null,
             z: 0,
           });
         }
         for (const d of j.dinge || []) {
-          const [t, x, y, az, l, w, h] = d;
-          S.things.push({ i: S.things.length, area, t, x, y, az, l, w, h, cell: null });
+          const [t, x, y, az, l, w, h, rgb] = d,
+            c = Array.isArray(rgb) && rgb.length === 3 ? DMOD.L(rgb[0], rgb[1], rgb[2]) : undefined;
+          S.things.push({ i: S.things.length, area, t, x, y, az, l, w, h, c, cell: null });
         }
         index(i0, k0, A);
       })
@@ -450,6 +349,10 @@ export const DINGE = (() => {
   // ---- the round: cells near the observer built (one per round), far ones freed; built places checked against the clock ----
   let acc = 0,
     rr = 0;
+  const inSquare = (x, y) => {
+    const b = RATSCHER.box;
+    return !b || (x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]);
+  };
   const late = c =>
     c.places.some(p => Math.abs(gz(p.x, p.y) - p.zc) > 0.12) ||
     c.things.some(d => Math.abs(gz(d.x, d.y) - d.zc) > 0.12);
@@ -472,7 +375,8 @@ export const DINGE = (() => {
       bd = 1e9;
     for (const c of S.cells.values()) {
       const d = Math.hypot(c.x - w[0], c.y - w[1]) - c.half;
-      if (!c.built && d < NEAR && d < bd) {
+      // beyond the square the ground comes with the world's tiles: build a cell only when its middle has one
+      if (!c.built && d < NEAR && d < bd && (inSquare(c.x, c.y) || Number.isFinite(WELT.heightAt(c.x, c.y)))) {
         bd = d;
         todo = c;
       } else if (c.built && d > FAR) free(c);
@@ -564,6 +468,8 @@ export const DINGE = (() => {
       things,
       frozen: S.frozen,
       areas: S.areaState(),
+      tris: DMOD.tris,
+      drawn: [...S.cells.values()].reduce((n, c) => n + (c.built ? c.meshes.length : 0), 0),
       reposed: S.reposed || 0,
       err: S.err,
     };

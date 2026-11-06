@@ -1235,6 +1235,16 @@
    "w": 14.0,
    "h": 3.0,
    "quelle": "Auge"
+  },
+  {
+   "t": "pool_oval",
+   "x": 236.0,
+   "y": -264.0,
+   "az": 121,
+   "l": 7.0,
+   "w": 3.8,
+   "h": 1.1,
+   "quelle": "Auge: ovaler Aufstellpool am Feldrand"
   }
  ]
 }

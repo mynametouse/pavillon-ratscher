@@ -25,12 +25,17 @@ def main():
     for k in c:
         t = None
         if k['c'] == 'small vehicle':
-            t = 'auto' if k['p'] >= 0.4 else None
+            # confident: a car (very long ones only when very confident); doubtful ones of a car's length: 91 % were cars by eye
+            # (Schleusingen, 205 looked at, 6.11. ~0:20) – the rest were cut at a block's edge, planters, gaps between cars
+            if (k['p'] >= 0.4 and k['l'] <= 5.6) or k['p'] >= 0.6:
+                t = 'auto'
+            elif k['p'] >= 0.15 and 3.5 <= k['l'] <= 5.6:
+                t = 'auto'
         elif k['c'] == 'large vehicle':
             if '--camping' in sys.argv and 4.5 <= k['l'] <= 10 and k['p'] >= 0.3:
                 t = 'wohnwagen'  # a campsite: the long white boxes are caravans and mobile homes
-            elif 4.8 <= k['l'] <= 7.5 and k['p'] >= 0.5:
-                t = 'van'
+            elif 4.6 <= k['l'] <= 7.5 and k['p'] >= 0.2:
+                t = 'van' if k['l'] >= 5.0 else 'auto'
             elif k['l'] > 7.5 and k['p'] >= 0.6:
                 t = 'lkw'
         elif k['c'] == 'swimming pool' and k['p'] >= 0.4:
@@ -42,9 +47,11 @@ def main():
     p = os.path.join(EXTRA, f'pruefung_{gebiet}.json')
     old = json.load(open(p)) if os.path.exists(p) else {}
     nein = old.get('nein', [])
-    ja = [k for k in ja if not any(math.hypot(k['x'] - a[0], k['y'] - a[1]) < 1.5 for a in nein)]
+    eye = [k for k in old.get('ja', []) if not k.get('regel')]
+    ja = [k for k in ja if not any(math.hypot(k['x'] - a[0], k['y'] - a[1]) < 1.5 for a in nein)
+          and not any(math.hypot(k['x'] - e['x'], k['y'] - e['y']) < 1.5 for e in eye)]
     out = {'quelle': f'DOP 2024 (GDI-Th), YOLO11-OBB (DOTAv1), Regeln aus tools/welt-dinge/decide.py; Stichprobe und Zweifelsfälle von Auge',
-           'ja': ja + [k for k in old.get('ja', []) if not k.get('regel')], 'nein': nein, 'dazu': old.get('dazu', [])}
+           'ja': ja + eye, 'nein': nein, 'dazu': old.get('dazu', [])}
     json.dump(out, open(p, 'w'), indent=0)
     from collections import Counter
     print(gebiet, len(c), 'candidates →', len(out['ja']), 'taken', dict(Counter(k['t'] for k in out['ja'])), len(zweifel), 'doubtful')
@@ -83,3 +90,7 @@ def main():
 
         review.sheets(None, 0, 0, 0.1, sample, o, prefix='stichprobe', crop=crop)
         review.sheets(None, 0, 0, 0.1, zweifel, o, prefix='zweifel', crop=crop)
+
+
+if __name__ == "__main__":
+    main()
