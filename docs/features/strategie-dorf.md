@@ -49,7 +49,9 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   Sarahs Dorfversammlung, einstimmiger Ortsteilrat, Vorbereitung, Gemeinschaft, Klima, zugesagte Eigenleistung; mindestens 24 Punkte),
   **Bewilligungsbescheid** des Landes (TLLLR) – erst dann baut die Zimmerei (Regel „Vorhabenbeginn“, VV zu § 44 ThürLHO), Arbeitseinsatz
   mit Jens, Manfred, Uwe, **Verwendungsnachweis**, Auszahlung. Fertig steht die überdachte Sitzgruppe mit Fahrradständer und
-  E-Bike-Ladesäule am Anger in der Welt.
+  E-Bike-Ladesäule am Anger in der Welt. Die Beratung erklärt auch, warum nicht die **Dorferneuerung** des Landes (Richtlinie ILE/REVIT
+  2022: 65 % für Gemeinden, Antrag bis 15. Januar beim TLLLR, Geld vor allem für anerkannte Förderschwerpunkte mit Gemeindlichem
+  Entwicklungskonzept – Ratscher ist im Spiel keiner, Annahme).
 - **Krisen-Einsätze mit der Freiwilligen Feuerwehr** (`strategie/st_dorf_krise.js`): Sturm wirft Fichten über den Weg zur Klinge (aus dem
   Sturm-Ereignis des Kerns), Starkregen lässt den Bach am Durchlass des Gartens steigen (ein Tag mit Starkregen – oder echter Starkregen
   draußen über feat/wetter), Bodenfeuer an der Klinge nach Wochen ohne Regen (April–September). Ablauf echt: Alarm (Sirene auf der alten
@@ -99,13 +101,13 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
 - Die Sitzungen von Ortsteilrat und Stadtrat laufen von selbst (mit Ergebnis, Abstimmung und Grund als Meldung); in der Ich-Sicht sitzt man
   noch nicht darin (das Ortsvorsteher-Spiel hat dafür eigene Szenen – zusammenführen wäre der nächste Schritt).
 - Glasfaser: in der Welt steht nur der Netzverteiler am Anger, nicht die Hausanschlüsse; der geförderte Ausbau (Gigabit-Förderung) ist nur
-  erklärt, nicht spielbar. LED für alle Straßenlampen des Dorfs (Kommunalrichtlinie) ist nur Lernstoff an der einen neuen Laterne.
+  erklärt, nicht spielbar. LED: das Licht der Leuchten in der Welt bleibt gleich (nur die Karte markiert sie als LED).
 - Krisen: das Feuerwehrauto und die Einsatzkräfte gibt es nur auf der Karte (kein Fahrzeugmodell, keine Figuren); der Waldbrand verbrennt
   keine Bäume des Walds (nur die Brandfläche am Boden); Sandsäcke nur nach gelungenem Einsatz, kein Wasser im Garten bei Schaden.
 - Treffpunkt, Obstbäume, Kirmeszelt und Spuren der Einsätze haben keine Kollision (man kann hindurchgehen).
 - Die Flächen sind Rechtecke des Spiels an plausiblen Stellen (offene Wiese, Acker, Wald nach dem Luftbild 2024), keine echten Flurstücke.
-- Fördersatz (65 %) und Punkte der LEADER-Auswahl, Grünland- und Waldpreise, Quote der Glasfaser, Kosten der Projekte sind ausgewiesene
-  Annahmen; die Regeln (ThürKO, BGB, LPachtVG, Grunderwerbsteuer, Kommunalrichtlinie, Einsatzgrundzeit, BNatSchG) mit Quelle.
+- Fördersatz (65 %) und Punkte der LEADER-Auswahl, Grünland- und Waldpreise, Quote der Glasfaser, Kosten der Projekte, dass Ratscher kein
+  Förderschwerpunkt der Dorferneuerung ist, sind ausgewiesene Annahmen; die Regeln (ThürKO, BGB, LPachtVG, Grunderwerbsteuer, Kommunalrichtlinie, Einsatzgrundzeit, BNatSchG) mit Quelle.
 - Später nach dem Konzept: Dorfwettbewerb „Unser Dorf hat Zukunft“, Region (Radweg, Bürgerbus, Energiegenossenschaft).
 
 ## Für den Lead
@@ -117,8 +119,12 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   `budget`, `byear`, `kd`, und die Meinungen behalten ihre Änderung über dem Bonus der Welt.
 - `amt/amt.js` hat kein exportiertes `save`: das Modul schreibt den Zustand des Ortsvorsteher-Spiels genauso wie es selbst
   (`SAVE.set('pav-amt-v1', AMT.ST)`, danach `AMT.renderBook()`). Schöner wäre `save` in der Rückgabe von `AMT` (eine Zeile).
-- Neue `window`-Namen: `STDORF` (Tests). Zustand im Kern-Speicher: `STRAT.S.ext.dorf` (geprüft beim Laden).
+- Neue `window`-Namen: `STDORF`, `STDKRISE`, `STDWELT` (Tests). Zustand im Kern-Speicher: `STRAT.S.ext.dorf` und `STRAT.S.ext.krise`
+  (geprüft beim Laden).
+- Zusammengeführt: `origin/src` nach Runde B (24be07de) und `origin/feat/strategie` bis e6b692b0 – Konflikte nur in `modules.txt`
+  (Reihenfolge: Kern, `strategie-bau`, `strategie-dorf`, `wissen`).
 - Neue KERN-Ereignisse: `strategie:dorfprojekt` {id, state: begonnen | beschlossen | stadt | vertagt | abgelehnt | fertig, t},
-  `strategie:dorfbuchung` {eur, text, saldo} (Geld des Ortsteils – absichtlich nicht `strategie:buchung`, das ist deine Kasse).
+  `strategie:dorfbuchung` {eur, text, saldo} (Geld des Ortsteils – absichtlich nicht `strategie:buchung`, das ist deine Kasse),
+  `strategie:krise` {id: baum | hochwasser | waldbrand, state: alarm | schaden | geschafft | zu spät, ok, t, helped}.
 - Für den Kern-Helfer: `STRAT.ui.H.panel()` neu zeichnen nach eigenen Knöpfen im Feld (`info()` mit `data-dorf`) – ein kleiner offizieller
   Haken (`STRAT.ui.repaint()`) wäre sauberer.

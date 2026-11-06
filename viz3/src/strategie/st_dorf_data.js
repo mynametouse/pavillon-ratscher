@@ -494,7 +494,7 @@ export const STDDATA = (() => {
       text: 'Ein überdachter Treffpunkt am Anger: Sitzgruppe unter Dach, Fahrradständer, Ladesäule für E-Bikes – für Wanderer, Radler und die Alten, die sonst niemanden treffen.',
       learn:
         'LEADER fördert, was eine Region in ihrer Entwicklungsstrategie selbst als wichtig festgelegt hat. Die Regionale Aktionsgruppe wählt die Projekte zum Stichtag nach einer Bewertungsmatrix aus (Mindestpunktzahl), bewilligt wird beim Land. Den Rest – den Eigenanteil – trägt der Antragsteller, hier die Stadt.',
-      src: 'IHK Erfurt: LEADER-Projektaufrufe 2027 (15 Regionen in Thüringen, u. a. Hildburghausen-Sonneberg; Bewertungsmatrix, Mindestpunktzahl); Kosten Annahme',
+      src: 'IHK Erfurt: LEADER-Projektaufrufe 2027 (15 Regionen in Thüringen, u. a. Hildburghausen-Sonneberg; Bewertungsmatrix, Mindestpunktzahl); Dorferneuerung und -entwicklung: Richtlinie ILE/REVIT 2022 des TMIL (Leistungsbeschreibung im FIM-Portal: 65 % für Gemeinden, Antrag bis 15.1., Förderschwerpunkte mit GEK); Kosten Annahme',
       steps: [
         {
           k: 'job',
@@ -507,7 +507,7 @@ export const STDDATA = (() => {
           help: ['ingrid'],
           text: 'Die Regionalmanagerin kommt nach Ratscher: Passt die Idee zur Entwicklungsstrategie? Wer stellt den Antrag? Welche Punkte bringt sie?',
           learn:
-            'Frühe Beratung ist der wichtigste Schritt: Die Regionalmanagements sagen, ob ein Projekt förderfähig ist, und helfen bei Skizze und Unterlagen.',
+            'Frühe Beratung ist der wichtigste Schritt: Die Regionalmanagements sagen, ob ein Projekt förderfähig ist, und helfen bei Skizze und Unterlagen. Sie prüfen auch andere Wege: Die Dorferneuerung des Landes (für Gemeinden 65 %, Antrag bis 15. Januar beim Landesamt TLLLR) gibt ihr Geld vor allem anerkannten Förderschwerpunkten – Orten mit einem Gemeindlichen Entwicklungskonzept, die das Land für fünf Jahre auswählt. Ratscher ist im Spiel keiner (Annahme), also LEADER.',
         },
         {
           k: 'job',
