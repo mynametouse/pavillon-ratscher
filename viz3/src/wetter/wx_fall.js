@@ -11,18 +11,22 @@ import { COARSE, scene } from '../core/head.js';
 export const WXFALL = (() => {
   const N = COARSE ? 3200 : 9000,
     BOX = COARSE ? new THREE.Vector3(22, 15, 22) : new THREE.Vector3(30, 19, 30);
+  // the first M quads are splashes on the ground around the walker (brief white flecks where drops hit), then the N drops
+  const M = COARSE ? 260 : 700,
+    Q = M + N;
   const g = new THREE.BufferGeometry(),
-    pos = new Float32Array(N * 4 * 3),
-    seed = new Float32Array(N * 4 * 4),
-    cor = new Float32Array(N * 4 * 2),
-    idx = new Uint16Array(N * 6);
+    pos = new Float32Array(Q * 4 * 3),
+    seed = new Float32Array(Q * 4 * 4),
+    cor = new Float32Array(Q * 4 * 2),
+    kind = new Float32Array(Q * 4),
+    idx = new Uint16Array(Q * 6);
   let r = 4711;
   const rnd = () => {
     r = (r * 16807) % 2147483647;
     return (r - 1) / 2147483646;
   };
   const C4 = [-1, 0, 1, 0, -1, 1, 1, 1];
-  for (let i = 0; i < N; i++) {
+  for (let i = 0; i < Q; i++) {
     const s = [rnd(), rnd(), rnd(), rnd()];
     for (let k = 0; k < 4; k++) {
       const v = i * 4 + k;
@@ -30,12 +34,14 @@ export const WXFALL = (() => {
       pos.set([s[0] * BOX.x, s[1] * BOX.y, s[2] * BOX.z], v * 3);
       cor[v * 2] = C4[k * 2];
       cor[v * 2 + 1] = C4[k * 2 + 1];
+      kind[v] = i < M ? 1 : 0;
     }
     idx.set([i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 2, i * 4 + 1, i * 4 + 3], i * 6);
   }
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 4));
   g.setAttribute('aC', new THREE.BufferAttribute(cor, 2));
+  g.setAttribute('aK', new THREE.BufferAttribute(kind, 1));
   g.setIndex(new THREE.BufferAttribute(idx, 1));
   g.setDrawRange(0, 0);
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e5);
@@ -53,6 +59,10 @@ export const WXFALL = (() => {
     uColS: { value: new THREE.Color(0.95, 0.96, 1) },
     uAR: { value: 0.28 },
     uAS: { value: 0.9 },
+    // splashes: x alpha, y radius around the walker (m), z the ground's height (world y), w how often each one comes (per s)
+    uSplash: { value: new THREE.Vector4(0, 7, 0, 2.2) },
+    // the ground around the walker as a sloped plane: x, y where it is measured (site coordinates), z, w its slope east and north
+    uSlope: { value: new THREE.Vector4(0, 0, 0, 0) },
   };
   const mat = new THREE.ShaderMaterial({
     uniforms: U,
@@ -61,10 +71,25 @@ export const WXFALL = (() => {
     depthTest: true,
     fog: false,
     side: THREE.DoubleSide,
-    vertexShader: `attribute vec4 aSeed; attribute vec2 aC;
-      uniform vec3 uCam, uBox, uOff; uniform float uT, uHole, uPx; uniform vec2 uWind; uniform vec4 uRain, uSnow;
+    vertexShader: `attribute vec4 aSeed; attribute vec2 aC; attribute float aK;
+      uniform vec3 uCam, uBox, uOff; uniform float uT, uHole, uPx; uniform vec2 uWind; uniform vec4 uRain, uSnow, uSplash, uSlope;
       varying vec2 vC; varying float vA, vS;
       void main(){
+        if (aK > 0.5) {
+          // a splash: each slot flashes up somewhere on the ground around the walker, a new place each time
+          float cyc = uT * uSplash.w + aSeed.w * 13.0, k = mod(floor(cyc), 257.0), ph = fract(cyc);
+          vec2 h = fract(sin(vec2(k * 12.9898 + aSeed.x * 78.233, k * 39.346 + aSeed.z * 11.135 + 4.1)) * 43758.5453);
+          float rr = sqrt(h.x) * uSplash.y, an = h.y * 6.2832;
+          vec2 wp = vec2(uCam.x + cos(an) * rr, uCam.z + sin(an) * rr);
+          float gy = uSplash.z + uSlope.z * (wp.x - uSlope.x) + uSlope.w * (-wp.y - uSlope.y);
+          vec4 sp = viewMatrix * vec4(wp.x, gy + 0.015, wp.y, 1.0);
+          float px = max(-sp.z, 0.05) * uPx, sz = max(0.018 + 0.045 * smoothstep(0.0, 0.12, ph), px * 1.2);
+          vC = aC; vS = 2.0;
+          vA = uSplash.x * smoothstep(0.0, 0.02, ph) * (1.0 - smoothstep(0.03, 0.12, ph)) * (1.0 - smoothstep(uSplash.y * 0.6, uSplash.y, rr));
+          gl_Position = projectionMatrix * vec4(sp.xyz + vec3(aC.x * sz, (aC.y * 2.0 - 1.0) * sz * 0.55, 0.0), 1.0);
+          if (vA < 0.002) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+          return;
+        }
         float snow = step(fract(aSeed.w * 7.31), uRain.w - 0.0001);
         // each drop's own speed from a number of its own: taken from its height's, the drops gathered in sheets as time went on
         float rv = fract(aSeed.w * 31.73 + aSeed.x * 7.13);
@@ -102,7 +127,8 @@ export const WXFALL = (() => {
     fragmentShader: `uniform vec3 uColR, uColS; uniform float uAR, uAS; varying vec2 vC; varying float vA, vS;
       void main(){
         float a; vec3 col;
-        if (vS > 0.5) { vec2 q = vec2(vC.x, vC.y * 2.0 - 1.0); a = uAS * (1.0 - smoothstep(0.0, 1.0, dot(q, q))); col = uColS; }
+        if (vS > 1.5) { vec2 q = vec2(vC.x, vC.y * 2.0 - 1.0); a = 1.0 - smoothstep(0.1, 1.0, dot(q, q)); col = uColS * 0.85; }
+        else if (vS > 0.5) { vec2 q = vec2(vC.x, vC.y * 2.0 - 1.0); a = uAS * (1.0 - smoothstep(0.0, 1.0, dot(q, q))); col = uColS; }
         else { a = uAR * (1.0 - abs(vC.x)) * (1.0 - 0.75 * vC.y); col = uColR; }
         a *= vA;
         if (a < 0.004) discard;
@@ -134,7 +160,7 @@ export const WXFALL = (() => {
       h = (rt && rt.height) || rr.domElement.height || 600;
     U.uPx.value = (2 * Math.tan(((c.fov || 60) * Math.PI) / 360)) / h;
   };
-  const S = { n: 0, t: 0, kR: 0, kS: 0, on: false, gustT: 0, gustK: 0, gustTo: 0 };
+  const S = { n: 0, t: 0, kR: 0, kS: 0, on: false, gustT: 0, gustK: 0, gustTo: 0, splash: 0 };
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
   // the weather to show: { on, rain mm/h, snow cm/h, drizzle, wind m/s, gust m/s, dir °, col (THREE.Color of the sky's haze), hole m }
   function set(p, dt) {
@@ -147,7 +173,13 @@ export const WXFALL = (() => {
     const k = Math.max(kR, kS),
       n = Math.round(N * k);
     S.n = p.hide ? 0 : n;
-    g.setDrawRange(0, S.n * 6);
+    // splashes: where it rains (not drizzle, snow or hail) on the ground the walker stands on, outdoors
+    const spl = S.n > 0 && p.ground != null && rain > 0.3 && !p.drizzle && !p.hail && kS < kR;
+    S.splash = spl ? M : 0;
+    const gd = p.ground;
+    U.uSplash.value.set(spl ? 0.18 + 0.3 * kR : 0, COARSE ? 5 : 7, spl ? gd[0] : 0, 1.6 + 1.4 * kR);
+    if (spl) U.uSlope.value.set(gd[1], gd[2], gd[3], gd[4]);
+    g.setDrawRange(spl ? 0 : M * 6, (S.splash + S.n) * 6);
     mesh.visible = S.n > 0;
     S.on = mesh.visible;
     if (!mesh.visible) return false;
@@ -188,5 +220,5 @@ export const WXFALL = (() => {
     S.t = (S.t + dt) % 600;
     U.uT.value = S.t;
   }
-  return { set, tick, mesh, U, S, N };
+  return { set, tick, mesh, U, S, N, M };
 })();

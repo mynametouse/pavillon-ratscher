@@ -52,6 +52,8 @@ export const WETTER = (() => {
     wetWant: 0,
     snowC: 0,
     snowWant: 0,
+    frostC: 0,
+    frostWant: 0,
   };
   const AUTOMATED = typeof navigator !== 'undefined' && !!navigator.webdriver;
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -128,9 +130,17 @@ export const WETTER = (() => {
   }
   // ---- the game's moment as a UTC instant (s), the real one, and how to name a day ----
   const gameU = () => (DN.jdOf(CLOCK.t) - 2440587.5) * 86400;
+  // the day as it is in Ratscher (summer time included)
+  let DMF = null;
   const dm = u => {
-    const d = new Date(u * 1000 + 3600e3);
-    return d.getUTCDate() + '.' + (d.getUTCMonth() + 1) + '.';
+    try {
+      DMF = DMF || new Intl.DateTimeFormat('de-DE', { timeZone: 'Europe/Berlin', day: 'numeric', month: 'numeric' });
+      const q = Object.fromEntries(DMF.formatToParts(new Date(u * 1000)).map(p => [p.type, p.value]));
+      return +q.day + '.' + +q.month + '.';
+    } catch (e) {
+      const d = new Date(u * 1000 + 3600e3);
+      return d.getUTCDate() + '.' + (d.getUTCMonth() + 1) + '.';
+    }
   };
   // ---- which weather now: a try, the calendar's, the current values, an hour of the game's day ----
   function pick(fresh) {
@@ -185,10 +195,12 @@ export const WETTER = (() => {
       S.told = true;
       if (SAVE.once('pav-wetter-neu'))
         toast(
-          'Neu: Das Wetter ist wie in Ratscher – ' +
-            (src === 'jetzt' ? 'gerade draußen' : 'zur Spielzeit') +
-            ' (Open-Meteo). Umstellen an der Uhr oben rechts oder unter Menü → Einstellungen.',
-          8000
+          src === 'jetzt' || label === 'Wetter wie draußen'
+            ? 'Neu: Das Wetter ist wie gerade draußen in Ratscher (Open-Meteo). Umstellen an der Uhr oben rechts oder unter Menü → Einstellungen.'
+            : 'Neu: Das Wetter ist das echte von Ratscher – für die Spielzeit, ' +
+                label.replace(/^Wetter vom |^Vorhersage für /, 'den ') +
+                ' (Open-Meteo). Wie gerade draußen: an der Uhr oben rechts „Uhr und Datum auf jetzt“.',
+          9000
         );
     }
     if (fresh && was !== S.src + S.label && CLOCK.winOpen) CLOCK.redraw && CLOCK.redraw();
@@ -208,6 +220,7 @@ export const WETTER = (() => {
     graupel: 'Graupel',
     nebel: 'Nebel',
     sturm: 'Sturm',
+    reif: 'Reif',
   };
   // ---- the effects: eased towards the chosen weather (a few seconds; quick in the time-lapse; at once after loading or for a test) ----
   const ZERO = { cover: 0, rain: 0, snow: 0, vis: 60000, wind: 0, gust: 0, dir: 250 };
@@ -232,21 +245,34 @@ export const WETTER = (() => {
     dt = Math.min(dt, 0.25);
     const snap = S.snapNext;
     // the choice once a second (and at once after a change); the effects every frame
-    if ((S.acc += dt) > 1 || !S.picked || snap) {
+    const due = (S.acc += dt) > 1 || !S.picked || snap;
+    if (due) {
       S.acc = 0;
       S.picked = true;
       pick(false);
       S.wetWant = wetness();
       S.snowWant = snowCover();
+      S.frostWant = frost();
     }
     ease(dt);
+    if (due) {
+      badge();
+      ambience();
+    }
     const on = shown(),
       c = S.cur,
       wx = S.w || {},
       any = c.cover > 0.003 || c.rain > 0 || c.snow > 0 || c.vis < 20000 || c.wind > 3;
     WXSKY.set({ on: on && any, cover: c.cover, rain: c.rain, snow: c.snow, vis: c.vis, wind: c.wind, dir: c.dir });
     WXSKY.tick(dt, !window.FREEZE);
-    const inside = !!(audio.inside && audio.inside());
+    const inside = !!(audio.inside && audio.inside()),
+      // inside the pavilion the rain stays beyond its walls – seen through the big windows; in other buildings none is drawn
+      pav = inside && !!(window.inHouseNow && window.inHouseNow()),
+      // in a cabin: driving, riding along in a car, riding a bus (feat/bus seats one with kind 'ride'; its body is long – no drop
+      // within 7 m of the eye, the rain beyond is seen through the windows)
+      seat = PLAY.seat,
+      bus = !!(window.BUS && window.BUS.S && window.BUS.S.ride),
+      cab = !!(VEH && VEH.cur) || !!(seat && (seat.kind === 'ride' || seat.drive));
     const fall = WXFALL.set(
       {
         on,
@@ -259,8 +285,9 @@ export const WETTER = (() => {
         gust: c.gust,
         dir: c.dir,
         col: WXSKY.U.wxHor.value,
-        hole: VEH && VEH.cur ? 2.4 : 0.35,
-        hide: inside || !on,
+        hole: bus ? 7 : cab ? 2.4 : pav ? 5.5 : 0.35,
+        ground: P.mode === 'walk' && !cab && !inside ? groundPlane() : null,
+        hide: (inside && !pav) || !on,
       },
       dt
     );
@@ -270,13 +297,14 @@ export const WETTER = (() => {
     }
     WXTON.update(
       {
-        on: on || (S.src !== 'kalender' && P.mode === 'walk'),
+        on,
         rain: c.rain,
         drizzle: !!wx.drizzle,
         wind: c.wind,
         gust: c.gust,
         gustK: WXFALL.S.gustK,
-        inside: inside || !!(VEH && VEH.cur),
+        inside: inside || cab,
+        storm: on && !!wx.thunder,
       },
       dt
     );
@@ -286,12 +314,58 @@ export const WETTER = (() => {
     if (S.wet < 0.005) S.wet = 0;
     S.snowC += ((on ? S.snowWant : 0) - S.snowC) * kk;
     if (S.snowC < 0.005) S.snowC = 0;
+    S.frostC += ((on ? S.frostWant : 0) - S.frostC) * kk;
+    if (S.frostC < 0.005) S.frostC = 0;
     // the white of lying snow follows the light that falls on it (sky, sun, image light)
     const light = clamp(0.5 * scene.environmentIntensity + 0.1 * sun.intensity + 0.6 * hemi.intensity, 0, 1.6);
-    WXBODEN.set(S.wet, dt, S.snowC, light);
+    WXBODEN.set(S.wet, dt, S.snowC, light, S.frostC);
     lightning(dt, on && !!wx.thunder);
   }
   KERN.tick(tick, 'wetter');
+  // the ground around the walker as a plane (height, slope east and north from KERN.ground 1.5 m around), a few times a second – the
+  // splashes lie on it also on a sloping street
+  const GP = [0, 0, 0, 0, 0];
+  let gpT = 0,
+    gpX = 1e9,
+    gpY = 1e9;
+  function groundPlane() {
+    const now = performance.now();
+    if (now - gpT < 250 && Math.hypot(P.x - gpX, P.y - gpY) < 0.5) return GP;
+    gpT = now;
+    gpX = P.x;
+    gpY = P.y;
+    const h = (x, y) => {
+        const v = KERN.ground(x, y, P.feet + 0.5);
+        return Number.isFinite(v) ? v : P.feet;
+      },
+      sx = clamp((h(P.x + 1.5, P.y) - h(P.x - 1.5, P.y)) / 3, -0.4, 0.4),
+      sy = clamp((h(P.x, P.y + 1.5) - h(P.x, P.y - 1.5)) / 3, -0.4, 0.4);
+    GP[0] = P.feet;
+    GP[1] = P.x;
+    GP[2] = P.y;
+    GP[3] = sx;
+    GP[4] = sy;
+    return GP;
+  }
+  // ---- the surroundings' own sounds (audio/audio.js): birds fall silent in the rain, in a thunderstorm, in fog and a gale; the light
+  //      wind of the ambience follows the real wind (a calm night is still, a breeze is heard; the storm has its own recording) ----
+  function ambience() {
+    const w = shown() ? S.w : null;
+    if (!audio.weather) return;
+    if (!w) {
+      S.amb = { birds: 1, wind: 1 };
+      return audio.weather(S.amb);
+    }
+    const c = S.cur,
+      birds =
+        (w.thunder ? 0 : 1) *
+        (1 - 0.95 * clamp(c.rain / 1.5, 0, 1)) *
+        (1 - 0.6 * clamp(c.snow / 0.5, 0, 1)) *
+        (c.vis < 1000 ? 0.6 : 1) *
+        (1 - 0.6 * clamp((c.wind - 8) / 6, 0, 1));
+    S.amb = { birds, wind: 0.3 + 0.7 * clamp(c.wind / 5, 0, 1) };
+    audio.weather(S.amb);
+  }
   // ---- snow lying: the data's snow depth (a few centimetres cover the ground; the current values lack it – then the hour's) ----
   function snowCover() {
     const w = S.w;
@@ -302,6 +376,30 @@ export const WETTER = (() => {
       d = r && r.SD;
     }
     return clamp((d || 0) / 0.04, 0, 1);
+  }
+  // ---- hoarfrost: after a clear, calm, cold and humid night (any of the last eight hours) the ground and the roofs turn white-grey –
+  //      the ground cools below the air, so it forms at up to ~+2 °C in the air; it melts once the sun climbs (and when it is mild) ----
+  const sstp = (a, b, x) => {
+    const t = clamp((x - a) / (b - a), 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+  const frostOf = r =>
+    !r || !Number.isFinite(r.T)
+      ? 0
+      : sstp(3, -1, r.T) *
+        (1 - sstp(0.3, 0.7, (r.C ?? 50) / 100)) *
+        (1 - sstp(2, 5, (r.W ?? 10) / 3.6)) *
+        sstp(70, 90, r.H ?? 85) *
+        (1 - sstp(0.05, 0.4, (r.P ?? 0) + (r.R ?? 0)));
+  function frost() {
+    let f = frostOf(S.rec);
+    if (S.src !== 'probe') {
+      const u = gameU();
+      for (let k = 1; k <= 8; k++) f = Math.max(f, frostOf(WXDATA.at(S.store, u - k * 3600)) * (1 - k / 12));
+    }
+    const sunEl = DN.state ? DN.state.sunEl : 0,
+      T = S.w && Number.isFinite(S.w.temp) ? S.w.temp : 0;
+    return f * (1 - sstp(8, 22, sunEl)) * (1 - sstp(3, 6, T));
   }
   // ---- how wet the ground is: the rain now and in the last hours (fading with an e-time of about 1.6 h; snow only when it melts) ----
   function wetness() {
@@ -323,12 +421,21 @@ export const WETTER = (() => {
     const F = S.flash;
     if (storm && (F.next -= dt) <= 0) {
       F.next = 6 + Math.random() * 26;
-      const d = 600 + Math.random() * 7000;
-      F.base = F.on ? F.base : hemi.intensity;
+      const force = F.force;
+      F.force = null;
+      const d = force && force.d > 0 ? force.d : 600 + Math.random() * 7000;
+      if (!F.on) {
+        F.base = hemi.intensity;
+        F.envBase = scene.environmentIntensity;
+      }
       F.on = true;
       F.t = -dt;
       F.third = Math.random() < 0.5;
       F.near = Math.max(0.35, Math.min(1, 2500 / d));
+      // a strike within ~3.5 km shows its bolt (farther ones light the clouds from inside)
+      F.bolt = d < 3500;
+      F.az = force && Number.isFinite(force.az) ? (force.az * Math.PI) / 180 : Math.random() * Math.PI * 2;
+      F.seed = Math.random() * 100;
       F.n++;
       WXTON.thunder(d);
     }
@@ -348,13 +455,20 @@ export const WETTER = (() => {
                     ? 0.6
                     : Math.max(0, 0.45 * (1 - (t - 0.21) / 0.3));
       F.k = k * F.near;
-      WXSKY.U.wxFlash.value = F.k * F.k * 2.4;
-      hemi.intensity = F.base + F.k * 2.2;
+      // by day a flash barely brightens the scene (the daylight is far stronger); at night the clouds glow and the land is lit for a
+      // moment, bluish and dim – the bolt stays the brightest thing (the eye is open wide at night: the exposure is high)
+      const nt = DN.state && Number.isFinite(DN.state.night) ? DN.state.night : 0;
+      WXSKY.U.wxFlash.value = F.k * F.k * (0.25 + 0.3 * nt);
+      // the flash lights the land from the whole sky: the hemisphere and the image light (the day's light restores both after it)
+      hemi.intensity = F.base + F.k * (0.1 + 0.3 * nt);
+      scene.environmentIntensity = F.envBase * (1 + F.k * F.k * (0.3 + 3 * nt));
+      WXSKY.U.wxBolt.value.set(F.az, F.bolt && k > 0.5 ? F.k : 0, F.seed, 0.0025);
       markDirty();
       if (t > 0.5) {
         F.on = false;
         F.k = 0;
         WXSKY.U.wxFlash.value = 0;
+        WXSKY.U.wxBolt.value.y = 0;
         if (DN.hook) DN.hook.v++;
       }
     }
@@ -393,7 +507,7 @@ export const WETTER = (() => {
   function winHTML() {
     const near = S.src === 'jetzt' || S.label === 'Wetter wie draußen',
       b = (k, t) => `<button type="button" data-wxp="${k}" aria-pressed="${S.preset === k}">${t}</button>`;
-    return `<h4>Wetter</h4><div class="ckdate wxline"><b>${S.label}</b><span>${line()}</span></div>
+    return `<h4>Wetter</h4><div class="ckdate wxline"><b>${S.label}</b><span>${line()}</span></div>${coming()}
       <div class="mrow"><span>Wetter</span><div class="mseg"><button type="button" data-wx="live" aria-pressed="${S.mode === 'live' && !S.preset}">wie draußen</button><button type="button" data-wx="kalender" aria-pressed="${S.mode === 'kalender' && !S.preset}">nach Kalender</button></div></div>
       ${S.mode === 'live' && !near && !ZON() ? '<div class="ckw" style="margin-top:8px"><button type="button" data-wxnow>Uhr und Datum auf jetzt</button></div>' : ''}
       <details class="wxtry"><summary class="mnote">Wetter ausprobieren</summary><div class="ckw" style="margin-top:6px">${Object.keys(
@@ -401,6 +515,27 @@ export const WETTER = (() => {
       )
         .map(k => b(k, PNAME[k]))
         .join('')}</div></details>`;
+  }
+  // the coming hours at the game's time (every two hours, as far as the data reaches): „16 Uhr Regen 7 °C“
+  function coming() {
+    if (S.preset || S.mode !== 'live' || !S.w) return '';
+    const t0 = Math.ceil((CLOCK.t + 1) / 60) * 60,
+      out = [];
+    for (let k = 0; k < 4; k++) {
+      const t = t0 + k * 120,
+        u = (DN.jdOf(t) - 2440587.5) * 86400,
+        rec = WXDATA.at(S.store, u);
+      if (!rec) break;
+      let day = true;
+      try {
+        day = DN.sky(DN.jdOf(t)).sunEl > -2;
+      } catch (e) {}
+      const T = Number.isFinite(rec.T) ? Math.round(rec.T) + ' °C' : '';
+      out.push(
+        `<li><b>${CLOCK.hm(t).slice(0, 2).replace(/^0/, '')} Uhr</b><span>${WXDATA.text(rec, day)}${T ? ' · ' + T : ''}</span></li>`
+      );
+    }
+    return out.length > 1 ? '<ul class="ckj wxnext">' + out.join('') + '</ul>' : '';
   }
   function winBind(win) {
     win.querySelectorAll('[data-wx]').forEach(x => x.addEventListener('click', () => setMode(x.dataset.wx)));
@@ -468,6 +603,49 @@ export const WETTER = (() => {
   }
   menuRow();
   ui();
+  // ---- the clock button: a small sign of the weather beside the time (clouds, rain, snow, fog, thunder; nothing when it is fair) ----
+  const GLYPH = {
+    wolke: '<path d="M7 17.5h10a3.6 3.6 0 0 0 .4-7.2A5.2 5.2 0 0 0 7.4 9.6 4 4 0 0 0 7 17.5z"/>',
+    regen:
+      '<path d="M7 14h10a3.3 3.3 0 0 0 .4-6.6A4.8 4.8 0 0 0 7.4 6.9 3.6 3.6 0 0 0 7 14z"/><path d="M8.5 16.5l-1 3M12.5 16.5l-1 3M16.5 16.5l-1 3"/>',
+    schnee:
+      '<path d="M7 13.5h10a3.3 3.3 0 0 0 .4-6.6A4.8 4.8 0 0 0 7.4 6.4 3.6 3.6 0 0 0 7 13.5z"/><path d="M8 17.5h.01M12 19.5h.01M16 17.5h.01M10 21h.01M14 21h.01"/>',
+    nebel: '<path d="M4 9h16M6 13h12M4 17h16"/>',
+    gewitter:
+      '<path d="M7 13.5h10a3.3 3.3 0 0 0 .4-6.6A4.8 4.8 0 0 0 7.4 6.4 3.6 3.6 0 0 0 7 13.5z"/><path d="M12.5 15l-2 3.5h3l-2 3.5"/>',
+  };
+  const glyphOf = w =>
+    !w
+      ? null
+      : w.thunder
+        ? 'gewitter'
+        : w.snow > 0.05
+          ? 'schnee'
+          : w.rain > 0.05
+            ? 'regen'
+            : w.vis < 1000
+              ? 'nebel'
+              : w.cover > 0.6
+                ? 'wolke'
+                : null;
+  function badge() {
+    const b = $('clockbtn');
+    if (!b) return;
+    let e = b.querySelector('.wxi');
+    const k = shown() ? glyphOf(S.w) : null;
+    if (!e) {
+      e = document.createElement('span');
+      e.className = 'hbi wxi';
+      e.style.display = 'none';
+      b.appendChild(e);
+    }
+    e.title = k ? S.label + ': ' + line() : '';
+    if (e.dataset.k === (k || '')) return;
+    e.dataset.k = k || '';
+    e.style.display = k ? '' : 'none';
+    e.style.color = 'var(--ov-ink)';
+    e.innerHTML = k ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + GLYPH[k] + '</svg>' : '';
+  }
   // ?wetter=kalender | live (the mode, saved) or a weather to try
   {
     const q = QS.get('wetter');
@@ -509,6 +687,11 @@ export const WETTER = (() => {
       tick(0.016);
     },
     refresh: () => fetchNow(true),
+    // tests: the next tick of a thunderstorm strikes at d m, its bolt towards az° (compass bearing, as P.yaw)
+    strike(o = {}) {
+      S.flash.force = { d: +o.d || 0, az: +o.az };
+      S.flash.next = 0;
+    },
     clockToNow,
     state: () => ({
       mode: S.mode,
@@ -522,9 +705,17 @@ export const WETTER = (() => {
       now: { ...S.now },
       calls: S.calls.slice(),
       hours: S.store.hours.size,
-      fall: { n: WXFALL.S.n, on: WXFALL.S.on, kR: WXFALL.S.kR, kS: WXFALL.S.kS },
-      sky: { cov: WXSKY.U.wxCov.value, fog: WXSKY.U.wxFog.value, mask: WXSKY.S.mask, patched: WXSKY.patched },
+      fall: { n: WXFALL.S.n, on: WXFALL.S.on, kR: WXFALL.S.kR, kS: WXFALL.S.kS, splash: WXFALL.S.splash },
+      sky: {
+        cov: WXSKY.U.wxCov.value,
+        fog: WXSKY.U.wxFog.value,
+        mask: WXSKY.S.mask,
+        patched: WXSKY.patched,
+        stars: WXSKY.starsPatched,
+      },
       ton: WXTON.levels(),
+      rec: WXTON.recorded(),
+      amb: S.amb || null,
       fallU: {
         wind: [WXFALL.U.uWind.value.x, WXFALL.U.uWind.value.y],
         rain: WXFALL.U.uRain.value.toArray(),
@@ -532,8 +723,10 @@ export const WETTER = (() => {
         hole: WXFALL.U.uHole.value,
       },
       flash: S.flash.k,
+      skyFlash: WXSKY.U.wxFlash.value,
       wet: S.wet,
       snowCover: S.snowC,
+      frost: S.frostC,
       boden: WXBODEN.count(),
       flashes: S.flash.n,
       automated: AUTOMATED,
