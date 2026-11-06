@@ -747,14 +747,15 @@ export const TEINFLUSS = (() => {
         pos.push(x, ground(x, y) + (ri === RINGS.length - 1 ? 0.004 : 0.012), -y);
         col.push(...(ri < 2 ? wet : ri < 3 ? mud : dry));
       }
-    for (let k = 0; k < N; k++) idx.push(0, 1 + ((k + 1) % N), 1 + k);
+    // map (x, y) → three (x, -z) mirrors the ring, so the order is reversed here for faces that look up
+    for (let k = 0; k < N; k++) idx.push(0, 1 + k, 1 + ((k + 1) % N));
     for (let ri = 1; ri < RINGS.length - 1; ri++)
       for (let k = 0; k < N; k++) {
         const a = 1 + (ri - 1) * N + k,
           b = 1 + (ri - 1) * N + ((k + 1) % N),
           c = 1 + ri * N + k,
           d = 1 + ri * N + ((k + 1) % N);
-        idx.push(a, b, c, b, d, c);
+        idx.push(a, c, b, b, c, d);
       }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));

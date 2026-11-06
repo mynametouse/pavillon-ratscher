@@ -15,6 +15,7 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   weiße Spiegel und die schwarze Nase, Sommer- und Winterfell, gefleckte Kitze, beim Wildschwein Borsten und Mähne, gestreifte Frischlinge
   nur im ersten Sommer, beim Rotmilan der rostrote Gabelschwanz, beim Hund die gelben Backen. **Ein Material für alle Tiere**, beim Laden mit
   unsichtbaren Trägern übersetzt (skinned, einfach, instanziert) – kein neues Shader-Programm, wenn Tiere erscheinen.
+  Fell mit Länge (Hund, Wildschwein, Dachs, Waschbär, Wildkatze): der Umriss leicht zottig statt glatt, am Hund eine Halskrause.
   Bewegung: Schritt (Viertakt), Trab, Galopp, Sprünge (das flüchtende Reh), Äsen, Sichern (Kopf hoch), Liegen, Sitzen, Wühlen; Vögel
   schlagen und gleiten, legen sich in die Kurve, der Milan dreht den Schwanz; der Uhu sitzt und dreht den Kopf.
 - **Der Fuchs ist ein echtes Modell:** „Fox“ aus den glTF Sample Assets der Khronos Group (Modell PixelMannen CC0, Rigging und Animation
