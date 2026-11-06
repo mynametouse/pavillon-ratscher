@@ -144,11 +144,20 @@ export const STEBENEN = (() => {
       // the wind: an arrow where it blows to (the plan view has north up), its speed beside it
       const a = (((wx.dir ?? 250) + 180) % 360) * (Math.PI / 180),
         narrow = W <= 720, // phones: left, between the time box and the people strip; else bottom right above the scale
-        cx = narrow ? 34 : W - 46,
         cy = narrow ? Math.round(H * 0.42) : H - 135,
         L = 13,
         dx = Math.sin(a) * L,
         dy = -Math.cos(a) * L;
+      let cx = narrow ? 34 : W - 46;
+      // a place's panel open at the right over it: the arrow steps left of the panel
+      const pn = !narrow && document.getElementById('stpan'),
+        sv = pn && document.getElementById('stsvg');
+      if (pn && sv) {
+        const r = pn.getBoundingClientRect(),
+          s = sv.getBoundingClientRect();
+        if (r.width > 0 && r.bottom - s.top > cy - 22 && r.right - s.left > cx - 22)
+          cx = Math.max(30, Math.round(r.left - s.left - 34));
+      }
       h += `<g class="wind"><circle cx="${cx}" cy="${cy}" r="19" fill="rgba(24,28,22,.7)"/><line x1="${f1(cx - dx)}" y1="${f1(cy - dy)}" x2="${f1(cx + dx)}" y2="${f1(cy + dy)}" stroke="#e8f0ff" stroke-width="2"/><circle cx="${f1(cx + dx)}" cy="${f1(cy + dy)}" r="3" fill="#e8f0ff"/><text x="${cx}" y="${cy + 33}" text-anchor="middle" style="fill:#e8f0ff;font:600 10px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px">${Math.round(wx.wind)} km/h${wx.storm ? ' · Sturm' : ''}</text></g>`;
       return h;
     },

@@ -426,6 +426,13 @@ with lib.browser() as b:
         rp = job('reparieren', ['christoph'])
         until(done(rp['id']), 60)
         ck('Christoph repairs it', 'Blockbandsäge' not in J("STRAT.S.broken"), str(J("STRAT.S.broken")))
+        # the storm's (and the beetle's) logs at the track go to the sawmill – the lorry fetches them, paid per cubic metre; own logs stay
+        CAL = "HOLZ.logs.filter(l => l.st === 'ground' && FELL.trees[l.tid] && FELL.trees[l.tid].who === 'Forstunternehmer')"
+        lf0 = J(f"(() => {{ const L = {CAL}; return {{ n: L.length, fm: L.reduce((s, l) => s + (l.vol || 0), 0), eur: STRAT.S.eur }}; }})()")
+        sv = job('stammholz_verkaufen', ['sarah'])
+        ok = sv and sv.get('id') and until(done(sv['id']), 80)
+        lf1 = J(f"(() => {{ const L = {CAL}; return {{ n: L.length, eur: STRAT.S.eur, last: STRAT.S.ledger.slice(-1)[0] }}; }})()")
+        ck('… the storm\'s logs go to the sawmill (60 €/fm, the lorry fetches them): gone from the track, Euro booked', ok and lf0['n'] > 0 and lf1['n'] == 0 and abs(lf1['eur'] - lf0['eur'] - 60 * lf0['fm']) < 1 + 0.01 * 60 * lf0['fm'], f'{lf0} → {lf1} {sv}')
     if 'heizen' in want:
         # a cold Friday night in December (−2 °C): the bungalow's cast-iron stove burns dry wood from the store at the bungalow – 0,0012 rm per
         # kelvin below 20 °C; with the store empty a cold night (mood down, a notice with „Brennholz bestellen“); the order fills it again.
