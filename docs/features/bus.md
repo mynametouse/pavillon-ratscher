@@ -29,8 +29,12 @@ Nacht 5./6.11.2026 (Auftrag `docs/plans/auftraege/bus.md`).
 - **Ratscher, Schleusebrücke**: der Feed führt dieselbe Haltestelle für die eine 700 je Richtung noch einmal als „Ratscher“ (9 bzw. 28 m
   daneben – zwei Schilder fast nebeneinander); OpenStreetMap kennt dort eine Haltestelle mit Wartehäuschen (Knoten bei 50,49938 N
   10,77264 O): zusammengelegt (`ALIAS` in `viz3/extra/bus/quellen/fahrplan.py`, auch für den nächsten Lauf; die Haltepunkte der beiden Wege
-  dorthin verschoben), und an der Bordsteinkante in Richtung Schleusingen steht ein Wartehäuschen (wie es wirklich aussieht, ist nicht
-  bekannt: ein schlichtes aus Stahl und Glas mit Bank, 3,0 × 1,45 m; für Spielfigur und Fahrzeuge fest).
+  dorthin verschoben).
+- **Wartehäuschen** aus OpenStreetMap (`shelter=yes`, abgefragt 6.11.2026): an der Schleusebrücke (Richtung Schleusingen), an zwei Steigen
+  der Zentralhaltestelle, Felsenkeller, Einkaufszentrum, Hildburghäuser und Themarer Straße in Schleusingen, Fischbach Ort, Abzweig
+  Gottfriedsberg, Gerhardtsgereuth, Ehrenberg und Kloster Veßra Ort – je hinter dem Schild, das dem OSM-Punkt am nächsten steht (25 m).
+  Wie sie wirklich aussehen, ist nicht bekannt: ein schlichtes aus Stahl und Glas mit Bank, 3,0 × 1,45 m; für Spielfigur und Fahrzeuge fest
+  (`BUSMOD.shelter`, zwei Draw-Calls je Häuschen in der Nähe).
 - An einer Haltestelle heißt der Ort „Haltestelle …“ (Ortsanzeige); beim ersten Mal an einem Schild ein Hinweis, was man dort tun kann.
 - **Fahrplan am Schild** („Fahrplan: …“): die nächsten Abfahrten dieser Richtung (Zeit, Linie, Ziel, „in 3 min“, „fährt ein“, „steht da“),
   der Tag („Mittwoch, Schultag“), **„Auf den Bus warten“** (die Uhr springt wie beim Schlafen bis eine Minute vor den Bus).

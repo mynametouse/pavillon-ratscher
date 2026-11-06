@@ -94,6 +94,7 @@ export const BUS = (() => {
       .then(j => {
         BUSPLAN.parse(j);
         stopsOf();
+        osmShelters();
         S.state = 'ready';
         KERN.emit('bus:bereit', { stations: BUSPLAN.S.stations.length, trips: BUSPLAN.S.trips.length });
       })
@@ -176,16 +177,55 @@ export const BUS = (() => {
     return Math.cos(_h.hd - e.hd) > 0.3;
   }
   // ---------------- the furniture near the observer: signs, the board's action ----------------
-  // shelters OpenStreetMap knows at stops where the world has none (shelter=yes; ODbL): beside the sign of the kerb nearest to the point
-  const OSM_SHELTERS = [{ name: 'Ratscher, Schleusebrücke', x: 244.5, y: 14.2 }];
-  const shelterOf = e =>
-    !e.shelter && OSM_SHELTERS.some(o => o.name === e.name && Math.hypot(o.x - e.x, o.y - e.y) < 5);
+  // shelters OpenStreetMap knows at the stops of the world (highway=bus_stop with shelter=yes, © OpenStreetMap contributors, ODbL;
+  // asked 6.11.2026, the points in the world's metres): each beside the sign nearest to its point (25 m) where the world has none
+  const OSM_SHELTERS = [
+    [244.5, 14.2], // Ratscher, Schleusebrücke
+    [-1335.5, 1242.9], // Schleusingen, Zentralhaltestelle (two bays)
+    [-1367.9, 1206.8],
+    [-737.4, 1404.6], // Schleusingen, Felsenkeller (OSM: Ilmenauer Straße)
+    [-811.8, 2253.9], // Schleusingen, Einkaufszentrum (OSM: Mega Center)
+    [-1902.8, 445.2], // Schleusingen, Hildburghäuser Straße
+    [-2155.4, 450.0], // Schleusingen, Themarer Straße
+    [-2436.6, 3147.5], // Fischbach, Ort
+    [-1023.5, -1950.2], // Abzweig Gottfriedsberg
+    [-1835.4, -3139.8], // Gerhardtsgereuth
+    [-7952.6, -1713.6], // Ehrenberg
+    [-8807.7, -258.4], // Kloster Veßra, Ort
+  ];
+  function osmShelters() {
+    for (const [ox, oy] of OSM_SHELTERS) {
+      let best = null,
+        bd = 25;
+      for (const e of STOPS) {
+        const d = Math.hypot(e.x - ox, e.y - oy);
+        if (!e.shelter && d < bd) {
+          best = e;
+          bd = d;
+        }
+      }
+      if (best) best.osm = true;
+    }
+  }
+  const shelterOf = e => !!e.osm;
   // its walls, solid for the walker and vehicles (vehicles/vehicle.js VEH.extra), while one is built
   const SHW = [];
-  for (let i = 0; i < 6; i++) VEH.extra.push({ bus: true, box: () => SHW[i] || null });
+  for (let i = 0; i < 9; i++) VEH.extra.push({ bus: true, box: () => SHW[i] || null });
   function shelterWalls() {
     SHW.length = 0;
     for (const f of S.furn.values()) if (f.shel) SHW.push(...f.shel.walls);
+  }
+  // a shelter from OSM: its front at the kerb line half a metre behind the sign, along the road toward the middle of the bus
+  function buildShel(e) {
+    if (!shelterOf(e)) return null;
+    const fx = Math.sin(e.hd),
+      fy = Math.cos(e.hd),
+      rx = Math.cos(e.hd),
+      ry = -Math.sin(e.hd),
+      sx = e.x - fx * 2.3 + rx * 0.6,
+      sy = e.y - fy * 2.3 + ry * 0.6,
+      sz = KERN.ground(sx, sy);
+    return Number.isFinite(sz) ? BUSMOD.shelter(sx, sy, sz, e.hd) : null;
   }
   function furniture(ox, oy) {
     for (const e of STOPS) {
@@ -216,18 +256,7 @@ export const BUS = (() => {
           label: () => (S.ride || Z.on ? null : 'Fahrplan: ' + BUSPLAN.S.stations[e.s].short),
           run: () => board(e),
         });
-        // a shelter from OSM: its front at the kerb line half a metre behind the sign, along the road toward the middle of the bus
-        let shel = null;
-        if (shelterOf(e)) {
-          const fx = Math.sin(e.hd),
-            fy = Math.cos(e.hd),
-            rx = Math.cos(e.hd),
-            ry = -Math.sin(e.hd),
-            sx = e.x - fx * 2.3 + rx * 0.6,
-            sy = e.y - fy * 2.3 + ry * 0.6,
-            sz = KERN.ground(sx, sy);
-          if (Number.isFinite(sz)) shel = BUSMOD.shelter(sx, sy, sz, e.hd);
-        }
+        const shel = buildShel(e);
         S.furn.set(e.i, { sign, shel, id, z: e.shelter ? 0 : KERN.ground(e.x, e.y) });
         if (shel) shelterWalls();
         S.stats.built++;
@@ -237,6 +266,9 @@ export const BUS = (() => {
         f.sign.dispose();
         f.z = KERN.ground(e.x, e.y);
         f.sign = BUSMOD.sign(e.x, e.y, f.z, (e.az + 180) % 360, e.name, aushang(e));
+        if (f.shel) f.shel.dispose();
+        f.shel = buildShel(e);
+        shelterWalls();
         markDirty(true);
       } else if (f && d > FURN + 140) {
         if (f.sign) f.sign.dispose();
