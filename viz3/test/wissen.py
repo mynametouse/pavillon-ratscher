@@ -176,7 +176,7 @@ def run():
             E("WETTER.preset('sturm')"); steps(1.7)
             ck('…a storm → „Sturm und Windwurf“; a clear sky finds nothing', J("WISSEN.has('n_sturm') && !WISSEN.has('n_schnee') && !WISSEN.has('n_gewitter')"))
             # a clear sky for the pictures that follow (a weather to try, this visit only)
-            E("WETTER.preset('klar')")
+            E("WETTER.preset('klar'); if (WETTER.snap) WETTER.snap()"); steps(0.5)
 
         if 'tafel' in want:
             tb = J("WORTE.S.boards.map(b => ({ id: b.id, x: +b.x.toFixed(1), y: +b.y.toFixed(1), z: +b.z.toFixed(2) }))")
