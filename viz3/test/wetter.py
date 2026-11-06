@@ -193,6 +193,10 @@ with lib.browser() as b:
         pic('11b_nacht_bedeckt')
         g = J("WETTER.S && window.DN ? DN.SU.wxGlow.value.toArray() : null")
         ck('an overcast night: the stars hidden, the towns\' glow on the deck', J("DN.dbg().stars") < 0.05 and g and g[0] > 0.004, f"stars {J('DN.dbg().stars')} glow {g}")
+        # a night of broken clouds: the stars shine between the clouds and go out behind them
+        s = weather('wolkig')
+        pic('11e_nacht_wolkig')
+        ck('a night of broken clouds: the stars on, each one out behind a cloud (their shader has the deck)', s['sky']['stars'] and J("DN.dbg().stars") > 0.3, f"stars {J('DN.dbg().stars')} {s['sky']}")
         # a thunderstorm at night: a near strike lights everything for a moment, its bolt in view
         weather('gewitter', 0.5)
         E("WETTER.strike({ d: 800, az: 176 })")

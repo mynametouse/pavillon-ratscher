@@ -39,7 +39,8 @@ export const WXSKY = (() => {
     wxT: { value: new THREE.Vector2(0, 0) },
   };
   // ---- the cloud layer in the sky's program: the same noise as wxMask below ----
-  const GLSL = `uniform float wxCov, wxDark, wxFog, wxFlash; uniform vec3 wxCol, wxHor, wxSun, wxGlow, wxLow; uniform vec2 wxT; uniform vec4 wxTown, wxBolt;
+  // the deck as a function of the direction: shared by the sky and the stars
+  const DECK = `uniform float wxCov; uniform vec2 wxT;
      float wxH(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
      float wxN(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
        return mix(mix(wxH(i), wxH(i + vec2(1.0, 0.0)), u.x), mix(wxH(i + vec2(0.0, 1.0)), wxH(i + vec2(1.0, 1.0)), u.x), u.y); }
@@ -50,6 +51,10 @@ export const WXSKY = (() => {
        float far = smoothstep(0.02, 0.16, up); m = mix(wxCov, m, far);
        m = mix(m, 1.0, smoothstep(0.78, 1.0, wxCov));
        return vec2(m, clamp((n - th) / 0.3, 0.0, 1.0)); }
+     `;
+  const GLSL =
+    DECK +
+    `uniform float wxDark, wxFog, wxFlash; uniform vec3 wxCol, wxHor, wxSun, wxGlow, wxLow; uniform vec4 wxTown, wxBolt;
      vec3 wxSky(vec3 c, vec3 d, vec3 sd){ if (wxCov < 0.002 && wxFog < 0.002 && wxFlash < 0.002) return c;
        float up = max(d.y, 0.0); vec2 k = wxDeck(d);
        float closed = smoothstep(0.78, 1.0, wxCov), s = max(dot(d, sd), 0.0);
@@ -79,6 +84,16 @@ export const WXSKY = (() => {
       .replace('gl_FragColor = vec4(c, 1.0);', 'c = wxSky(c, d, normalize(sunD)); gl_FragColor = vec4(c, 1.0);');
   }
   const patched = !!(M && M.fragmentShader.includes('wxSky(c, d'));
+  // the stars are points of their own, drawn over the sky: behind a cloud a star goes out (the same deck, looked up per star in its
+  // vertex shader – compiled at load with the stars, no program at night)
+  const SM = DN.STARS && DN.STARS.pts && DN.STARS.pts.material;
+  if (SM && SM.vertexShader && !SM.vertexShader.includes('wxDeck')) {
+    Object.assign(SM.uniforms, { wxCov: U.wxCov, wxT: U.wxT });
+    SM.vertexShader = SM.vertexShader
+      .replace('void main(){', DECK + 'void main(){')
+      .replace('vC = aCol *', 'if (wxCov > 0.002) vA *= 1.0 - wxDeck(wd).x; vC = aCol *');
+  }
+  const starsPatched = !!(SM && SM.vertexShader.includes('vA *= 1.0 - wxDeck(wd).x'));
   // ---- the same noise on the CPU: is there a cloud in front of the sun right now? ----
   function h12(x, y) {
     let a = fr(x * 0.1031),
@@ -181,11 +196,12 @@ export const WXSKY = (() => {
     L.fog.g += 0.0025 * glow;
     L.fog.b += 0.0016 * glow;
     U.wxHor.value.copy(L.fog);
-    // night: no stars and no moonlight through a closed deck or fog
+    // night: under broken clouds each star goes out behind a cloud (its own shader); a closed deck or fog hides them all, and the
+    // moonlight on the land fades with the cover
     const hide = clamp(sst(0.3, 0.9, c) + fogK, 0, 1);
-    s.starK *= 1 - hide;
+    s.starK *= 1 - clamp((starsPatched ? sst(0.75, 0.97, c) : hide) + fogK, 0, 1);
     s.moonI *= 1 - 0.85 * hide;
-    s.lim -= 1.5 * c;
+    s.lim -= 1.0 * c;
   }
   if (DN.hook) DN.hook.look = look;
   // ---- per frame (wetter/wetter.js): the clouds drift with the wind, the sun's cloud is looked up a few times a second ----
@@ -250,5 +266,5 @@ export const WXSKY = (() => {
       bump();
     }
   }
-  return { W, U, S, set, tick, look, deck, sunMask: () => S.mask, patched };
+  return { W, U, S, set, tick, look, deck, sunMask: () => S.mask, patched, starsPatched };
 })();

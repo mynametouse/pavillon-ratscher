@@ -61,6 +61,8 @@ export const WXFALL = (() => {
     uAS: { value: 0.9 },
     // splashes: x alpha, y radius around the walker (m), z the ground's height (world y), w how often each one comes (per s)
     uSplash: { value: new THREE.Vector4(0, 7, 0, 2.2) },
+    // the ground around the walker as a sloped plane: x, y where it is measured (site coordinates), z, w its slope east and north
+    uSlope: { value: new THREE.Vector4(0, 0, 0, 0) },
   };
   const mat = new THREE.ShaderMaterial({
     uniforms: U,
@@ -70,7 +72,7 @@ export const WXFALL = (() => {
     fog: false,
     side: THREE.DoubleSide,
     vertexShader: `attribute vec4 aSeed; attribute vec2 aC; attribute float aK;
-      uniform vec3 uCam, uBox, uOff; uniform float uT, uHole, uPx; uniform vec2 uWind; uniform vec4 uRain, uSnow, uSplash;
+      uniform vec3 uCam, uBox, uOff; uniform float uT, uHole, uPx; uniform vec2 uWind; uniform vec4 uRain, uSnow, uSplash, uSlope;
       varying vec2 vC; varying float vA, vS;
       void main(){
         if (aK > 0.5) {
@@ -78,7 +80,9 @@ export const WXFALL = (() => {
           float cyc = uT * uSplash.w + aSeed.w * 13.0, k = mod(floor(cyc), 257.0), ph = fract(cyc);
           vec2 h = fract(sin(vec2(k * 12.9898 + aSeed.x * 78.233, k * 39.346 + aSeed.z * 11.135 + 4.1)) * 43758.5453);
           float rr = sqrt(h.x) * uSplash.y, an = h.y * 6.2832;
-          vec4 sp = viewMatrix * vec4(uCam.x + cos(an) * rr, uSplash.z + 0.015, uCam.z + sin(an) * rr, 1.0);
+          vec2 wp = vec2(uCam.x + cos(an) * rr, uCam.z + sin(an) * rr);
+          float gy = uSplash.z + uSlope.z * (wp.x - uSlope.x) + uSlope.w * (-wp.y - uSlope.y);
+          vec4 sp = viewMatrix * vec4(wp.x, gy + 0.015, wp.y, 1.0);
           float px = max(-sp.z, 0.05) * uPx, sz = max(0.018 + 0.045 * smoothstep(0.0, 0.12, ph), px * 1.2);
           vC = aC; vS = 2.0;
           vA = uSplash.x * smoothstep(0.0, 0.02, ph) * (1.0 - smoothstep(0.03, 0.12, ph)) * (1.0 - smoothstep(uSplash.y * 0.6, uSplash.y, rr));
@@ -172,7 +176,9 @@ export const WXFALL = (() => {
     // splashes: where it rains (not drizzle, snow or hail) on the ground the walker stands on, outdoors
     const spl = S.n > 0 && p.ground != null && rain > 0.3 && !p.drizzle && !p.hail && kS < kR;
     S.splash = spl ? M : 0;
-    U.uSplash.value.set(spl ? 0.18 + 0.3 * kR : 0, COARSE ? 5 : 7, spl ? p.ground : 0, 1.6 + 1.4 * kR);
+    const gd = p.ground;
+    U.uSplash.value.set(spl ? 0.18 + 0.3 * kR : 0, COARSE ? 5 : 7, spl ? gd[0] : 0, 1.6 + 1.4 * kR);
+    if (spl) U.uSlope.value.set(gd[1], gd[2], gd[3], gd[4]);
     g.setDrawRange(spl ? 0 : M * 6, (S.splash + S.n) * 6);
     mesh.visible = S.n > 0;
     S.on = mesh.visible;

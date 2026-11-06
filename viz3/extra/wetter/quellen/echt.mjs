@@ -35,8 +35,15 @@ let bad = 0;
 for (const j of jobs) {
   let json = null;
   try {
-    const r = await fetch(j.url);
+    // as a browser on the published site asks (cross-origin): the answer must allow any origin
+    const r = await fetch(j.url, { headers: { Origin: 'https://mynametouse.github.io' } });
     const txt = await r.text();
+    const acao = r.headers.get('access-control-allow-origin');
+    console.log('     CORS', j.name, 'access-control-allow-origin:', acao);
+    if (acao !== '*' && acao !== 'https://mynametouse.github.io') {
+      console.log('FAIL', j.name, 'a browser on the published site may not read this answer (CORS)');
+      bad++;
+    }
     fs.writeFileSync(path.join(OUT, j.name + '.json'), txt);
     json = JSON.parse(txt);
     if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + txt.slice(0, 200));

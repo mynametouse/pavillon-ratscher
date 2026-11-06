@@ -283,7 +283,7 @@ export const WETTER = (() => {
         dir: c.dir,
         col: WXSKY.U.wxHor.value,
         hole: bus ? 7 : cab ? 2.4 : pav ? 5.5 : 0.35,
-        ground: P.mode === 'walk' && !cab && !inside ? P.feet : null,
+        ground: P.mode === 'walk' && !cab && !inside ? groundPlane() : null,
         hide: (inside && !pav) || !on,
       },
       dt
@@ -317,6 +317,31 @@ export const WETTER = (() => {
     lightning(dt, on && !!wx.thunder);
   }
   KERN.tick(tick, 'wetter');
+  // the ground around the walker as a plane (height, slope east and north from KERN.ground 1.5 m around), a few times a second – the
+  // splashes lie on it also on a sloping street
+  const GP = [0, 0, 0, 0, 0];
+  let gpT = 0,
+    gpX = 1e9,
+    gpY = 1e9;
+  function groundPlane() {
+    const now = performance.now();
+    if (now - gpT < 250 && Math.hypot(P.x - gpX, P.y - gpY) < 0.5) return GP;
+    gpT = now;
+    gpX = P.x;
+    gpY = P.y;
+    const h = (x, y) => {
+        const v = KERN.ground(x, y, P.feet + 0.5);
+        return Number.isFinite(v) ? v : P.feet;
+      },
+      sx = clamp((h(P.x + 1.5, P.y) - h(P.x - 1.5, P.y)) / 3, -0.4, 0.4),
+      sy = clamp((h(P.x, P.y + 1.5) - h(P.x, P.y - 1.5)) / 3, -0.4, 0.4);
+    GP[0] = P.feet;
+    GP[1] = P.x;
+    GP[2] = P.y;
+    GP[3] = sx;
+    GP[4] = sy;
+    return GP;
+  }
   // ---- the surroundings' own sounds (audio/audio.js): birds fall silent in the rain, in a thunderstorm, in fog and a gale; the light
   //      wind of the ambience follows the real wind (a calm night is still, a breeze is heard; the storm has its own recording) ----
   function ambience() {
@@ -676,7 +701,13 @@ export const WETTER = (() => {
       calls: S.calls.slice(),
       hours: S.store.hours.size,
       fall: { n: WXFALL.S.n, on: WXFALL.S.on, kR: WXFALL.S.kR, kS: WXFALL.S.kS, splash: WXFALL.S.splash },
-      sky: { cov: WXSKY.U.wxCov.value, fog: WXSKY.U.wxFog.value, mask: WXSKY.S.mask, patched: WXSKY.patched },
+      sky: {
+        cov: WXSKY.U.wxCov.value,
+        fog: WXSKY.U.wxFog.value,
+        mask: WXSKY.S.mask,
+        patched: WXSKY.patched,
+        stars: WXSKY.starsPatched,
+      },
       ton: WXTON.levels(),
       rec: WXTON.recorded(),
       amb: S.amb || null,

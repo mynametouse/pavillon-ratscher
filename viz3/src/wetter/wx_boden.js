@@ -3,7 +3,7 @@
 // wetness comes from the precipitation of the last hours, wetter/wetter.js). Only the materials' colour and roughness change (uniforms –
 // no program is touched): the land of the 2.4 km square (world/ratscher.js 'geoterrain'), the far fields ('fields'), the tiles of the
 // wider world ('welt-tile', also built later – looked for again while it is wet), bridge decks, the garden's ground (garden/env.js, its
-// painted map) and the roofs (a little). The original values are kept and come back exactly when it dries.
+// painted map), the lawn's grass tufts and the roofs (a little). The original values are kept and come back exactly when it dries.
 // Snow lying (the snow depth of the data, a few centimetres cover it all): the same surfaces turn white – their own colour damped, a white
 // that follows the light of the moment added as emission (grey under clouds, faint at night; walls, trees and grass stay as they are, as
 // they do under a thin snow cover).
@@ -16,8 +16,11 @@ export const WXBODEN = (() => {
   const M = new Map(),
     NO = new WeakSet();
   const S = { wet: 0, shown: 0, snow: 0, snowShown: 0, lightShown: 1, scanT: 1e9 };
-  function kind(m) {
+  function kind(m, o) {
     if (!m || !m.isMeshStandardMaterial) return null;
+    // the lawn's grass tufts (garden/grass.js: instanced, thinned with distance): a little darker and glossier when wet, white under
+    // snow and hoarfrost (frost whitens the blades first)
+    if (o && o.isInstancedMesh && o.userData && o.userData.thin) return { k: 0.08, g: 0.15, s: 0.75 };
     if (m.map && m.map.image === gpaint) return { k: 0.26, g: 0.25, s: 1 };
     let key = '';
     try {
@@ -39,7 +42,7 @@ export const WXBODEN = (() => {
           seen.add(m);
           continue;
         }
-        const q = kind(m);
+        const q = kind(m, o);
         if (!q) {
           NO.add(m);
           continue;
