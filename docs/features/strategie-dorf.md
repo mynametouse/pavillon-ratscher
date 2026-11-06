@@ -35,14 +35,15 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   Nachbarn müssen einverstanden sein (Heike, Ronald; Hubert am Wald). **Fair** (ortsüblich) oder **knapp** (−20 %) bieten: knapp verärgert
   (−4) und wird unter Meinung 70 abgelehnt; fair gibt +3. Pacht: Vertrag am Küchentisch, die Jahrespacht aus deiner Kasse, danach zu
   **Martini** (11.11.). Kauf: Notar in Schleusingen, Kaufpreis + **5 % Grunderwerbsteuer** (Thüringen seit 1.1.2024) + ~2 % Notar und
-  Grundbuch, dann Genehmigung (Grundstückverkehrsgesetz, beim Wald das Vorkaufsrecht nach § 17 ThürWaldG) und Grundbuch. Preise:
-  Thüringen Ackerland 2024 Ø 14.900 €/ha, Neupacht Ackerland 2023 Ø 257 €/ha (Destatis/Agrarstrukturerhebung), Südthüringen deutlich
-  darunter; Grünland am Hang (0,90 €/m², 120 €/ha Pacht) und Wald mit Bestand (1,30 €/m²) als ausgewiesene Annahmen. Auf der Karte: die
-  Flächen gestrichelt, gepachtet grün gestrichelt, eigene grün.
+  Grundbuch, dann Genehmigung (Grundstückverkehrsgesetz; beim Wald zwei Monate Vorkaufsrecht der Gemeinde, dann des Landes, § 17
+  ThürWaldG) und Grundbuch. Preise: Thüringen Ackerland 2024 Ø 14.900 €/ha, Neupacht Ackerland 2023 Ø 257 €/ha
+  (Destatis/Agrarstrukturerhebung), Südthüringen deutlich darunter; Grünland am Hang (0,90 €/m², 120 €/ha Pacht) und Wald mit Bestand
+  (1,30 €/m²) als ausgewiesene Annahmen. Auf der Karte: die Flächen gestrichelt, gepachtet grün gestrichelt, eigene grün.
 - **Streuobstwiese** auf der gepachteten (oder gekauften) Hangwiese: Sorten mit Gerhard und Heike wählen, zwölf Hochstämme in der Baumschule
-  Kammbach bei Kloster Veßra holen (864 €; derselbe Ort wie beim Garten von `strategie-bau`, `kammbach`), pflanzen – nur in der Pflanzzeit (Mitte Oktober bis Ende März, Regel mit „Warum?“). Danach stehen
-  **zwölf junge Bäume in der Welt** (`strategie/st_dorf_welt.js`): Pfahl auf der Wetterseite, Drahthose gegen Rehe, von Mai bis Oktober mit
-  Laub. Lernen: § 30 BNatSchG (Streuobstwiesen geschützt seit 2022), Abstände, alte Sorten.
+  Kammbach bei Kloster Veßra holen (864 €; derselbe Ort `kammbach` wie beim Garten von `strategie-bau`), pflanzen – nur in der Pflanzzeit
+  (Mitte Oktober bis Ende März, Regel mit „Warum?“). Danach stehen **zwölf junge Bäume in der Welt** (`strategie/st_dorf_welt.js`): Pfahl
+  auf der Wetterseite, Drahthose gegen Rehe, von Mai bis Oktober mit Laub. Lernen: § 30 BNatSchG (Streuobstwiesen geschützt seit 2022),
+  Abstände, alte Sorten.
 - **Förderantrag (LEADER):** „Treffpunkt am Anger“ (24.000 €; Ingrids zweiter Wunsch) – Beratung beim Regionalmanagement, drei Angebote,
   Ortsteilrat, Stadtrat übernimmt den **Eigenanteil** (35 %, gleiche Regel wie `AMTMODEL.council`), Projektskizze zum **Stichtag** der
   Aktionsgruppe Hildburghausen-Sonneberg (31.3./30.9., Annahme), **Bewertungsmatrix** (Beratung, Beteiligung – fünf Leute kennen –,

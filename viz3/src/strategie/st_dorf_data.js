@@ -390,8 +390,8 @@ export const STDDATA = (() => {
       place: 'flur',
       text: 'Neben der Klinge will eine Erbengemeinschaft aus Suhl ihr Waldstück verkaufen: Fichte und Kiefer, ein paar Buchen am Rand. Wolfgang kennt es.',
       learn:
-        'Beim Kauf von Wald zählt der Bestand: Holzarten, Alter, Vorrat in Festmetern, Käferschäden. Vor dem Kauf geht man ihn mit dem Revierförster ab. Das Thüringer Waldgesetz kennt beim Verkauf von Wald ein Vorkaufsrecht (§ 17) – der Notar holt die Erklärungen ein.',
-      src: '§ 17 Thüringer Waldgesetz (Vorkaufsrecht); § 311b BGB; Preis Annahme 1,30 €/m² mit Bestand (kleine Privatwaldflächen in Thüringen 2026)',
+        'Beim Kauf von Wald zählt der Bestand: Holzarten, Alter, Vorrat in Festmetern, Käferschäden. Vor dem Kauf geht man ihn mit dem Revierförster ab. Wird Wald verkauft, haben erst die Gemeinde, dann das Land ein Vorkaufsrecht (§ 17 Thüringer Waldgesetz) – nur wenn der Kauf dem Erhalt des Waldes dient, und nur binnen zwei Monaten, nachdem ihnen der Kaufvertrag mitgeteilt wurde.',
+      src: '§ 17 Thüringer Waldgesetz (Vorkaufsrecht der Gemeinde, dann des Landes; zwei Monate); § 311b BGB; Preis Annahme 1,30 €/m² mit Bestand (kleine Privatwaldflächen in Thüringen 2026)',
       steps: [
         {
           k: 'deal',
@@ -420,8 +420,8 @@ export const STDDATA = (() => {
         },
         {
           k: 'warten',
-          days: 42,
-          text: 'Vorkaufsrecht nach dem Waldgesetz und die Genehmigung abwarten, dann das Grundbuch.',
+          days: 61,
+          text: 'Zwei Monate, in denen Gemeinde und Land ihr Vorkaufsrecht ausüben könnten, dazu die Genehmigung – dann das Grundbuch.',
         },
       ],
     },
@@ -855,7 +855,7 @@ export const STDDATA = (() => {
     stadt_entscheidet: {
       text: 'Darüber entscheidet die Stadt.',
       why: 'Straßen, Laternen, Haltestellen und der Bauhof sind Sache der Stadt Schleusingen: Der Ortsteilrat schlägt vor, der Stadtrat beschließt, die Stadt muss den Vorschlag binnen drei Monaten behandeln.',
-      src: '§ 45 Abs. 5 ThürKO',
+      src: '§ 45 Thüringer Kommunalordnung (Ortsteilverfassung: Vorschlags- und Anhörungsrecht des Ortsteilrats)',
     },
     gleichstand: {
       text: 'Bei Stimmengleichheit ist ein Antrag abgelehnt.',
