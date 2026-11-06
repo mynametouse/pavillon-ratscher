@@ -886,6 +886,26 @@ export const WDATA = (() => {
       hint: 'Ein Auto anhalten und mitfahren.',
     },
     {
+      id: 'p_sirene',
+      ch: 'politik',
+      icon: '📢',
+      title: 'Sirenen und Warnung',
+      text: 'Sirenen erreichen alle, auch nachts und ohne Handy. Ein einminütiger, auf- und abschwellender Heulton heißt Warnung: Radio einschalten und auf Durchsagen achten. Ein einminütiger Dauerton heißt Entwarnung. Dazu warnen Apps wie NINA.',
+      here: 'Auf dem First der alten Schule in Ratscher steht die Sirene des Dorfs. Geprobt wird bundesweit am Warntag, seit 2020 jedes Jahr am zweiten Donnerstag im September: um 11 Uhr die Warnung, um 11:45 Uhr die Entwarnung.',
+      src: [
+        [
+          'BBK: Bundesweiter Warntag – Sirenensignale (Faltblatt, 2020)',
+          'https://www.im.nrw/system/files/media/document/file/flyerwarntag2020.pdf',
+        ],
+        wiki(
+          'Warnung der Bevölkerung in der Bundesrepublik Deutschland',
+          'Warnung_der_Bevölkerung_in_der_Bundesrepublik_Deutschland'
+        ),
+      ],
+      find: { ev: [['zombie:siren']] },
+      hint: 'Wenn die Sirene auf der alten Schule heult.',
+    },
+    {
       id: 'p_bus',
       ch: 'politik',
       icon: '🚌',

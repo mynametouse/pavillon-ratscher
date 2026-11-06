@@ -789,6 +789,7 @@ body[data-top="1"] #winote{top:178px}
     'garage:start': 'den Mäher gestartet',
     'einrichtung:schale': 'eine Schale gedreht',
     'hund:befehl': 'den Hund gerufen',
+    'zombie:siren': 'die Sirene gehört',
     'bus:fahrplan': 'den Fahrplan an der Haltestelle gelesen',
     'bus:ein': 'in den Bus gestiegen',
     'hund:gelernt': 'den Hund gelobt oder getadelt',

@@ -9,7 +9,7 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
 - **Das Entdeckerbuch** (Menü → Startseite → „Entdeckerbuch“, Taste **N**, im Strategie-Modus ein Knopf „📖 Buch“ in seiner Leiste):
   Kapitel **Natur, Handwerk, Geschichte, Politik & Soziales, Orte** und dazu **Regeln** (die „Warum?“-Gründe). Jeder Eintrag: was es ist,
   warum es hier bei Ratscher zählt, ein Symbol, die echten Quellen als Links, wie er gefunden wurde. Noch nicht Gefundenes steht grau mit
-  einem Tipp. Fortschritt je Kapitel und gesamt; eine **Suche** im Buch (findet Entdecktes und verstandene Regeln, Unentdecktes nur als Zahl). 78 Einträge und 28 Regeln (73 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
+  einem Tipp. Fortschritt je Kapitel und gesamt; eine **Suche** im Buch (findet Entdecktes und verstandene Regeln, Unentdecktes nur als Zahl). 79 Einträge und 28 Regeln (74 Einträge in `viz3/src/wissen/wissen_data.js`, 5 der
   Daten-Ansichten in `wissen_daten.js`), dazu Einträge, die aus Ereignissen entstehen (Erkundetes, gepflanzte Arten) – und mit feat/tiere jede
   Art seiner Steckbriefe (`TARTEN`) als Eintrag zum Entdecken, mit Steckbrief und Quellen.
 - **Gefunden durch Tun und Sehen** (`viz3/src/wissen/wissen.js`):
@@ -123,7 +123,7 @@ WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners 
 - Ohne Eingriff in fremde Dateien: ein `KERN.pushOut`-Anbieter (Vorrang 20, nur die Pfosten der Tafeln), ein `MutationObserver` auf `#npcsub`
   (das „?“ neben Gedanken) und auf `#gplan` (das „?“ an Warnungen des Gartenplaners), ein Klick-Lauscher in der Capture-Phase für
   `[data-wiwhy]` und das „Warum?“ des Strategie-Modus. Gelesene Ereignisse: `tiere:entdeckt`, `strategie:entdeckt`, `hund:befehl`,
-  `hund:gelernt`, `bus:fahrplan`, `bus:ein`, `einrichtung:*`, `gplan:*`, `garage:*`, `fell`, `act`, `verkehr:*`, `zinnen:mount`, `place`.
+  `hund:gelernt`, `bus:fahrplan`, `bus:ein`, `zombie:siren` (→ „Sirenen und Warnung“), `einrichtung:*`, `gplan:*`, `garage:*`, `fell`, `act`, `verkehr:*`, `zinnen:mount`, `place`.
 - Neuer Speicher-Schlüssel `pav-wissen-v1` (im Modul über `SAVE.key` angemeldet, Prüfung `v === 1` und `f` ein Objekt) – bitte in
   `docs/ARCHITECTURE.md` §8 eintragen. Neue `window`-Namen: `WISSEN`, `WLEHRER`, `WORTE`, `WDATEN`.
 - Quellen: als Text und Links in den Einträgen; eine Sammelzeile über `credits_add` in `viz3/extra/wissen/manifest.json`.
