@@ -437,6 +437,18 @@ with lib.browser() as b:
         ck('the key + praises (finding things: more searching)', l4['learn']['suchen'] > l3['learn']['suchen'], f"{l3['learn']['suchen']} -> {l4['learn']['suchen']}")
         vis = E("!!document.getElementById('hund-panel') && !document.getElementById('hund-panel').hidden")
         ck('the dog\'s buttons are there when he is near (call, send, praise, scold)', vis, str(vis))
+        # another panel opened on the right (the book, a talk, the phone): the buttons make way, and come back when it closes
+        E("(() => { const d = document.createElement('div'); d.id = '__probe'; d.style.cssText = 'position:fixed;right:0;bottom:0;width:420px;height:70%;z-index:8;background:#ddd'; document.body.appendChild(d); })()")
+        for i in range(8):
+            E("GAME.step(0.05)")
+            time.sleep(0.1)
+        cov = E("document.getElementById('hund-panel').hidden")
+        E("document.getElementById('__probe').remove()")
+        for i in range(8):
+            E("GAME.step(0.05)")
+            time.sleep(0.1)
+        back = E("!document.getElementById('hund-panel').hidden")
+        ck('… they make way for a panel on the right (the book, a talk) and come back after', cov and back, f'{cov} / {back}')
         # sent: to a point 25 m ahead – he runs there and searches
         E("HUND.schicken()")
         m1 = J("HUND.state()")

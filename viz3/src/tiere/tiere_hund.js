@@ -6,7 +6,7 @@
 // driving game out of the garden, chasing game far into the fields, finding a sign for you, barking at a neighbour or staying calm) is
 // what your praise (+) or scolding (−) is about – the tendency to do it again rises or falls, a little each time, and his bond with you
 // grows with praise. Called with P (whistle), sent with Shift+P to where you look. Character and what he learned: pav-hund-v1.
-import { $, scene } from '../core/head.js';
+import { $, R, scene } from '../core/head.js';
 import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
@@ -453,7 +453,7 @@ export const HUND = (() => {
         markDirty();
       }
     }
-    panel(dP < 40 && !(window.ZSTATE && ZSTATE.on));
+    panel(dP < 30 && !(window.ZSTATE && ZSTATE.on));
   }
   // riding along somewhere (the bus, a lift, the tractor): game/play.js PLAY.seat
   function riding() {
@@ -462,7 +462,34 @@ export const HUND = (() => {
   // ---------- the buttons (keys P, Shift+P, +, −; on a phone these four) – not while riding, in the zombie night or in the view from
   // above (the strategy mode), where other buttons sit on the right ----------
   let pEl = null;
+  // another panel where the buttons sit (the menu, a book, a talk, the phone)? Then they make way: at a few points of their place the
+  // first thing (under the buttons themselves) must be the 3D view
+  let pRect = null,
+    coverT = 0,
+    coverV = false;
+  function covered() {
+    const now = performance.now();
+    if (now - coverT < 400) return coverV;
+    coverT = now;
+    coverV = false;
+    const r = pRect,
+      cv = R.domElement;
+    if (!r || !document.elementsFromPoint) return false;
+    for (const [x, y] of [
+      [r.left + 8, r.top + 8],
+      [r.right - 8, r.top + 8],
+      [r.left + 8, r.bottom - 8],
+      [r.right - 8, r.bottom - 8],
+    ])
+      for (const el of document.elementsFromPoint(x, y)) {
+        if (pEl.contains(el)) continue;
+        if (el === cv || el.contains(cv) || el === document.body || el === document.documentElement) break;
+        return (coverV = true);
+      }
+    return false;
+  }
   function panel(show) {
+    if (show && pEl && covered()) show = false;
     if (!show) {
       if (pEl) pEl.hidden = true;
       return;
@@ -497,6 +524,8 @@ export const HUND = (() => {
       document.body.appendChild(pEl);
     }
     pEl.hidden = false;
+    const r = pEl.getBoundingClientRect();
+    if (r.width > 0) pRect = r;
   }
   window.addEventListener('keydown', e => {
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;

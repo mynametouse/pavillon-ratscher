@@ -70,7 +70,8 @@ Module: `viz3/src/tiere/` – `tiere_arten.js` (TARTEN), `tiere_koerper.js` (TKO
   dich (und zeigt sie dir), bellt einen Nachbarn an oder bleibt ruhig. **Loben (+) und Tadeln (−)** gilt dem, was er zuletzt getan hat
   (eine Viertelminute): die Neigung dazu steigt oder sinkt ein Stück, Lob stärkt die Bindung. **Rufen (P)** – von einer Jagd kommt er nur, wenn
   die Bindung stark und der Jagdtrieb schwach ist; **Schicken (Umschalt+P)** dahin, wo du hinschaust – Wild: er vertreibt es, Ziegen: er hütet sie,
-  sonst sucht er Spuren. Vier Knöpfe am Bildschirm (für das Telefon), wenn er in der Nähe ist. Gespeichert in `pav-hund-v1`.
+  sonst sucht er Spuren. Vier Knöpfe am Bildschirm (für das Telefon), wenn er näher als 30 m ist – sie weichen anderen Fenstern an ihrer
+  Stelle (Entdeckerbuch, Gespräch, Menü, Telefon) und fehlen beim Mitfahren (Bus, Trampen, Traktor), in der Zombie-Nacht und in der Ansicht von oben. Gespeichert in `pav-hund-v1`.
 
 - **Hühner, wenn jemand sie hält** (`tiere/tiere_huehner.js`, `THUEHNER`): heute hält in der Spiegelwelt niemand Hühner – deshalb stehen
   keine da. `TIERE.huehner({ x, y, n, zu })` (z. B. der Strategie-Modus: „Hühner halten“ als Zukunft zum Ausprobieren) stellt einen kleinen
