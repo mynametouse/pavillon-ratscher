@@ -547,7 +547,24 @@ body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-righ
   function openLedger() {
     openPanel(() => {
       let h = head('Kasse', 'Kontostand ' + C.eur(S.eur));
+      // where the money went and came from: the sums by kind (over the last 300 bookings the ledger keeps)
+      const CAT = {
+          verkauf: 'Verkauf',
+          holz: 'Holz und Säge',
+          sprit: 'Benzin und Diesel',
+          essen: 'Essen',
+          wissen: 'Lehrgänge',
+          ausbau: 'Ausbau und Ausrüstung',
+          auto: 'Fahrten',
+          werkstatt: 'Werkstatt',
+        },
+        sum = {};
+      for (const e of S.ledger) sum[e.cat || 'sonst'] = (sum[e.cat || 'sonst'] || 0) + e.eur;
+      const rows = Object.entries(sum).sort((a, b) => b[1] - a[1]);
+      if (rows.length)
+        h += `<h4>Nach Art</h4><ul>${rows.map(([k, v]) => `<li><span>${esc(CAT[k] || k)}</span><b>${v > 0 ? '+' : ''}${C.eur(v)}</b></li>`).join('')}</ul>`;
       const L = S.ledger.slice(-30).reverse();
+      h += '<h4>Buchungen</h4>';
       h += `<ul>${L.length ? L.map(e => `<li><span>${W.day(e.t).label} · ${esc(e.text)}</span><b>${e.eur > 0 ? '+' : ''}${C.eur(e.eur)}</b></li>`).join('') : '<li><span>Noch keine Buchung.</span></li>'}</ul>`;
       h += `<h4>Preise</h4><ul>${Object.values(D.PRICES)
         .map(p => `<li title="${esc(p.src)}"><span>${esc(p.label)}</span><b>${C.eur(p.eur)}/${esc(p.unit)}</b></li>`)
