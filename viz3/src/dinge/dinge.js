@@ -19,6 +19,7 @@ import { DCAL } from '../dorf/dorf_cal.js';
 import { DCARS } from '../dorf/dorf_cars.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { WELT } from '../welt/welt.js';
+import { sun, sunDir } from '../garden/env.js';
 import { DMOD } from './dinge_modelle.js';
 import { DZEIT } from './dinge_zeit.js';
 export const DINGE = (() => {
@@ -190,7 +191,11 @@ export const DINGE = (() => {
     _e = new THREE.Euler(0, 0, 0, 'YXZ'),
     _p = new THREE.Vector3(),
     ONE = new THREE.Vector3(1, 1, 1),
-    ZERO = new THREE.Vector3(0, 0, 0);
+    ZERO = new THREE.Vector3(0, 0, 0),
+    _sc = new THREE.Vector3(),
+    _qy = new THREE.Quaternion(),
+    // things without a soft shadow: flat or round (a pool, a tank, a trampoline – a square blob would show)
+    NOSH = new Set(['tank', 'pool_rund', 'pool_eckig', 'pool_oval', 'trampolin']);
   const gz = (x, y) => {
     const z = KERN.ground(x, y);
     return Number.isFinite(z) ? z : 0;
@@ -229,13 +234,43 @@ export const DINGE = (() => {
     _m.compose(_p, p.q, show ? ONE : ZERO);
     p.im.setMatrixAt(p.ii, _m);
     p.im.instanceMatrix.needsUpdate = true;
+    if (p.sh) {
+      // its soft shadow on the ground (DMOD.shMat): width and length a little beyond the body, the height for the sun's stretch
+      const T = DMOD.CARS[p.type];
+      if (show) _sc.set(T.W + 0.6, T.H, T.L + 0.7);
+      else _sc.set(0, 0, 0);
+      _m.compose(_p, p.q, _sc);
+      p.sh.setMatrixAt(p.si, _m);
+      p.sh.instanceMatrix.needsUpdate = true;
+    }
   }
+  // the shadows' sun: its direction on the ground and the length per metre of height (none at night: then only the dark under the body)
+  function shadowSun() {
+    const sd = sunDir,
+      el = Math.asin(THREE.MathUtils.clamp(sd.y, 0.03, 1)),
+      day = THREE.MathUtils.clamp(sun.intensity / 3.6, 0, 1) * THREE.MathUtils.smoothstep(sd.y, 0, 0.12),
+      cot = Math.min(2.5, Math.cos(el) / Math.sin(el)),
+      hl = Math.hypot(sd.x, sd.z) || 1;
+    DMOD.shU.uSun.value.set(-sd.x / hl, cot * day, -sd.z / hl);
+    DMOD.shU.uS.value = 0.32 + 0.3 * day;
+  }
+  S.shadowSun = shadowSun;
   function build(c, keep) {
     const t = CLOCK.t,
       byType = {};
     c.meshes = [];
     c.extra = [];
     c.zT = 0;
+    // one instanced mesh of soft shadows for the cell: its cars (each shown with its car), then its things
+    const shT = c.things.filter(d => !NOSH.has(d.t)),
+      sh =
+        c.places.length + shT.length
+          ? new THREE.InstancedMesh(DMOD.shGeo, DMOD.shMat, c.places.length + shT.length)
+          : null;
+    c.places.forEach((p, j) => {
+      p.sh = sh;
+      p.si = j;
+    });
     for (const p of c.places) {
       poseOf(p);
       if (!keep) {
@@ -309,6 +344,29 @@ export const DINGE = (() => {
           }
         } else if (d.t !== 'pool_eckig') c.extra.push({ box: () => bx, dinge: d });
       }
+      shT.forEach((d, j) => {
+        // turned like the thing, tilted with the ground under its ends and sides (else a long woodpile's shadow hangs in the air)
+        const a = ((d.az || 0) * Math.PI) / 180,
+          f = [Math.sin(a), Math.cos(a)],
+          hl = d.l / 2,
+          hw = d.w / 2,
+          pitch = THREE.MathUtils.clamp(
+            Math.atan2(gz(d.x + f[0] * hl, d.y + f[1] * hl) - gz(d.x - f[0] * hl, d.y - f[1] * hl), 2 * hl),
+            -0.3,
+            0.3
+          ),
+          roll = THREE.MathUtils.clamp(
+            Math.atan2(gz(d.x + f[1] * hw, d.y - f[0] * hw) - gz(d.x - f[1] * hw, d.y + f[0] * hw), 2 * hw),
+            -0.3,
+            0.3
+          );
+        _e.set(pitch, -a, -roll, 'YXZ');
+        _qy.setFromEuler(_e);
+        _sc.set(d.w + 0.3, Math.max(0.3, d.h || 1), d.l + 0.3);
+        _p.set(d.x, d.z, -d.y);
+        _m.compose(_p, _qy, _sc);
+        sh.setMatrixAt(c.places.length + j, _m);
+      });
       if (G.length) {
         const g = mergeGeometries(G);
         for (const q of G) q.dispose();
@@ -323,6 +381,18 @@ export const DINGE = (() => {
           c.meshes.push(me);
         }
       }
+    }
+    if (sh) {
+      // the bounds of every instance, shown or not, and the sun's stretch beyond them
+      sh.computeBoundingSphere();
+      sh.boundingSphere.radius += 12;
+      sh.renderOrder = 1;
+      sh.castShadow = false;
+      sh.receiveShadow = false;
+      sh.userData.noMerge = true;
+      sh.name = 'welt-dinge schatten ' + c.k;
+      scene.add(sh);
+      c.meshes.push(sh);
     }
     for (const x of c.extra) VEH.extra.push(x);
     c.built = true;
@@ -339,7 +409,7 @@ export const DINGE = (() => {
       const i = VEH.extra.indexOf(x);
       if (i >= 0) VEH.extra.splice(i, 1);
     }
-    for (const p of c.places) p.im = null;
+    for (const p of c.places) p.im = p.sh = null;
     c.meshes = [];
     c.extra = [];
     c.built = false;
@@ -359,6 +429,7 @@ export const DINGE = (() => {
   function round(dt = 0.25) {
     const w = KERN.where();
     if (!w) return;
+    shadowSun();
     for (const A of S.areas) if (!A.st && Math.hypot(A.c[0] - w[0], A.c[1] - w[1]) < A.r) load(A);
     // the ground under a built cell nearby may have come later (the town's tiles): set it down again, every few seconds one cell
     for (const c of S.cells.values())

@@ -32,8 +32,8 @@ with lib.browser() as b:
     E("GAME.shot()")
     p0 = progs()
     K0 = set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
-    ck('the two programs of the things were made at the start (warm meshes)', J("GAME.R.info.programs.filter(p => /\\|dinge$/.test(p.cacheKey)).length") == 2,
-       str(J("GAME.R.info.programs.filter(p => /dinge/.test(p.cacheKey)).length")))
+    nk = J("[GAME.R.info.programs.filter(p => /\\|dinge$/.test(p.cacheKey)).length, GAME.R.info.programs.filter(p => /\\|dinge-schatten$/.test(p.cacheKey)).length]")
+    ck('the three programs of the things were made at the start (warm meshes: cars and things, their soft shadows)', nk == [2, 1], str(nk))
     # a workday: the first Tuesday of the calendar, 3:00 and 10:00
     day = J("(() => { for (let d = 0; d < 14; d++) if (DCAL.wd(d * 1440 + 600) === 2) return d; return 1; })()")
     t3, t10 = day * 1440 + 180, day * 1440 + 600

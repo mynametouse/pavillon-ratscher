@@ -45,6 +45,45 @@ export const DMOD = (() => {
     mat.customProgramCacheKey = () => key + '|dinge';
   }
   S.mat = mat;
+  // ---- soft shadows on the ground (one instanced quad per car or thing, like the figures' blobs of npc/npc.js): the quad lies under the
+  // body (the instance's scale: width, height, length) and its corners away from the sun are drawn out by the height times uSun.y
+  // (uSun.xz: the shadow's direction on the ground); uS: strength. Without them the cars beyond the sun's shadow box seem to float. ----
+  const shU = { uSun: { value: new THREE.Vector3(0, 0, 0) }, uS: { value: 0.4 } };
+  S.shU = shU;
+  S.shMat = new THREE.ShaderMaterial({
+    uniforms: shU,
+    vertexShader: `uniform vec3 uSun;
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  mat4 m = modelMatrix;
+#ifdef USE_INSTANCING
+  m = m * instanceMatrix;
+#endif
+  float h = length(m[1].xyz);
+  vec4 c = m * vec4(0.0, 0.0, 0.0, 1.0);
+  vec4 w = m * vec4(position.x, 0.0, position.z, 1.0);
+  vec2 o = w.xz - c.xz;
+  float s = smoothstep(-0.35, 0.35, dot(o / max(length(o), 1e-4), uSun.xz));
+  w.xz += uSun.xz * (uSun.y * h * s);
+  w.y += 0.05;
+  gl_Position = projectionMatrix * viewMatrix * w;
+}`,
+    fragmentShader: `uniform float uS;
+varying vec2 vUv;
+void main() {
+  vec2 q = abs(vUv - 0.5) * 2.0;
+  float d = pow(pow(q.x, 4.0) + pow(q.y, 4.0), 0.25);
+  gl_FragColor = vec4(0.0, 0.0, 0.0, uS * (1.0 - smoothstep(0.45, 1.0, d)));
+}`,
+    transparent: true,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -4,
+  });
+  S.shMat.customProgramCacheKey = () => '|dinge-schatten';
+  S.shGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
   // ---- helpers on a kit ----
   // a frustum from z0 to z1: footprint [x0, x1, y0, y1] at the bottom and at the top
   function prism(k, b, t, z0, z1, col, top = true, bottom = false) {
@@ -603,8 +642,9 @@ export const DMOD = (() => {
     tri.setAttribute('color', new THREE.Float32BufferAttribute([1, 1, 1, 1, 1, 1, 1, 1, 1], 3));
     const im = new THREE.InstancedMesh(tri, mat, 1);
     im.setColorAt(0, new THREE.Color(1, 1, 1));
-    const me = new THREE.Mesh(tri, mat);
-    for (const o of [im, me]) {
+    const me = new THREE.Mesh(tri, mat),
+      sh = new THREE.InstancedMesh(S.shGeo, S.shMat, 1);
+    for (const o of [im, me, sh]) {
       o.visible = false;
       o.frustumCulled = false;
       o.castShadow = false;
@@ -613,7 +653,7 @@ export const DMOD = (() => {
       o.name = 'welt-dinge warm';
       scene.add(o);
     }
-    S.warm = [im, me];
+    S.warm = [im, me, sh];
   }
   return S;
 })();
