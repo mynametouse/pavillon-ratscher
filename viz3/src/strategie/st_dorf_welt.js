@@ -10,6 +10,7 @@ import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { VPROPS } from '../world/village_props.js';
+import { DKDATA } from '../world/dorfkern_data.js';
 import { ROADS } from '../world/roads.js';
 import { WCOL } from '../world/worldcol.js';
 import { CLOCK } from '../time/clock.js';
@@ -53,6 +54,29 @@ export const STDWELT = (() => {
     const A = ring(a, r),
       B = ring(b, r * 0.6);
     for (let k = 0; k < 4; k++) K.quad(A[k], A[(k + 1) % 4], B[(k + 1) % 4], B[k], col);
+  }
+  // a cone from the base centre a (radius r) to the tip b, on any axis, its section squashed in height (a crown lying on the ground),
+  // with a cap at the base – same winding as stick()
+  function cone(K, a, b, r, col, seg = 7, squash = 1) {
+    const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+      L = Math.hypot(...d) || 1,
+      u = d.map(v => v / L);
+    let p = Math.abs(u[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
+    const x = [u[1] * p[2] - u[2] * p[1], u[2] * p[0] - u[0] * p[2], u[0] * p[1] - u[1] * p[0]],
+      lx = Math.hypot(...x) || 1;
+    p = x.map(v => v / lx);
+    const q = [u[1] * p[2] - u[2] * p[1], u[2] * p[0] - u[0] * p[2], u[0] * p[1] - u[1] * p[0]];
+    const R = [];
+    for (let k = 0; k < seg; k++) {
+      const an = (k / seg) * Math.PI * 2,
+        o = [0, 1, 2].map(i => (p[i] * Math.cos(an) + q[i] * Math.sin(an)) * r);
+      o[2] *= squash;
+      R.push([a[0] + o[0], a[1] + o[1], a[2] + o[2]]);
+    }
+    for (let k = 0; k < seg; k++) {
+      K.tri(R[k], R[(k + 1) % seg], b, col);
+      K.tri(R[(k + 1) % seg], R[k], a, col);
+    }
   }
   // free ground: off the road by at least `off` metres and clear of walls; searched on rings around (x, y)
   function freeAt(x, y, rad, off = 2.5, rMax = 30) {
@@ -227,12 +251,27 @@ export const STDWELT = (() => {
             C(0.3, 0.24, 0.17),
             10
           );
-          for (let k = 0; k < 5; k++) {
-            const f = 0.45 + k * 0.12,
-              px = A[0] + (B[0] - A[0]) * f,
+          // the crown: a spruce's cone lying on its side, pressed flat on the ground – three tiers of branches from the middle of the stem
+          // to the top (the lower third of a forest spruce is bare)
+          const at = f => {
+            const px = A[0] + (B[0] - A[0]) * f,
               py = A[1] + (B[1] - A[1]) * f;
-            K.ball(px, py, gz(px, py) + 0.7, 1.3 - k * 0.15, SPRUCE, 7);
-          }
+            return [px, py, gz(px, py) + 0.55];
+          };
+          for (const [f0, f1, r, sh] of [
+            [0.36, 0.8, 2.2, 1],
+            [0.56, 0.93, 1.6, 0.85],
+            [0.76, 1.05, 0.95, 0.7],
+          ])
+            cone(
+              K,
+              at(f0),
+              at(f1),
+              r,
+              SPRUCE.map(v => v * sh),
+              8,
+              0.7
+            );
         } else {
           // cut to length at the side of the track (Hubert takes them as firewood), the brushwood in a heap
           const sx = x - Math.cos(across) * (6 + i * 0.7),
@@ -360,23 +399,31 @@ export const STDWELT = (() => {
     RED = C(0.66, 0.12, 0.1),
     PEELED = C(0.78, 0.66, 0.5),
     GREEN = C(0.2, 0.42, 0.18);
+  // the public green of the Anger between its two trimmed hedges (world/dorfkern_data.js, from Falko's video: the playground's roundabout
+  // and the logs at its west end): the tent on its east part, the Kirmesbaum by the Linde's side – not in somebody's yard
+  const ON_GREEN = DKDATA && DKDATA.open && !DKDATA.off ? { tent: [240.3, -113.4], baum: [227.5, -112.6] } : null;
   function kirmes() {
     const c0 = D.PLACES.anger.pos,
-      p = freeAt(c0[0] - 15, c0[1] - 17, 4.2, 1.8, 36);
+      p = ON_GREEN ? ON_GREEN.tent : freeAt(c0[0] - 15, c0[1] - 17, 4.2, 1.8, 36);
     if (!p) return null;
+    // 8 × 4.5 m on the green (the drawing below is for 9.2 × 5.2 m: its footprint scaled)
+    const sc = ON_GREEN ? 0.87 : 1;
     const [x, y] = p,
       z = gz(x, y),
       e = ROADS.edge,
-      rot = Math.atan2(e(x, y + 0.8) - e(x, y - 0.8), e(x + 0.8, y) - e(x - 0.8, y)) + Math.PI / 2,
-      c = Math.cos(rot),
-      s = Math.sin(rot),
+      // on the green along its hedges (their line 234.2, −108.3 → 246.1, −110.1), open to the street; elsewhere along the nearest road
+      rot = ON_GREEN
+        ? Math.atan2(-1.8, 11.9) + Math.PI
+        : Math.atan2(e(x, y + 0.8) - e(x, y - 0.8), e(x + 0.8, y) - e(x - 0.8, y)) + Math.PI / 2,
+      c = Math.cos(rot) * sc,
+      s = Math.sin(rot) * sc,
       L = (u, v) => [x + u * c - v * s, y + u * s + v * c],
       P3 = (u, v, h) => {
         const q = L(u, v);
         return [q[0], q[1], z + h];
       };
     const K = VPROPS.kit();
-    // the tent: 9 × 5 m, poles, a white roof with a red edge, closed back and sides to half height
+    // the tent: 9 × 5 m (8 × 4.5 on the green), poles, a white roof with a red edge, closed back and sides to half height
     for (const u of [-4.5, -1.5, 1.5, 4.5])
       for (const v of [-2.5, 2.5]) {
         const q = L(u, v);
@@ -388,16 +435,16 @@ export const STDWELT = (() => {
     K.quad(P3(4.6, 0, 3.4), P3(-4.6, 0, 3.4), P3(-4.6, 2.6, 2.2), P3(4.6, 2.6, 2.2), C(0.75, 0.75, 0.72));
     for (const v of [-2.6, 2.6]) {
       const q = L(0, v);
-      K.box(q[0], q[1], z + 1.95, 9.2, 0.04, 0.25, rot, RED);
+      K.box(q[0], q[1], z + 1.95, 9.2 * sc, 0.04, 0.25, rot, RED);
     }
     for (const u of [-4.6, 4.6]) {
       K.tri(P3(u, -2.6, 2.2), P3(u, 2.6, 2.2), P3(u, 0, 3.4), WHITE);
       K.tri(P3(u, 2.6, 2.2), P3(u, -2.6, 2.2), P3(u, 0, 3.4), WHITE);
       const q = L(u, 0);
-      K.box(q[0], q[1], z, 0.04, 5.2, 2.2, rot, WHITE);
+      K.box(q[0], q[1], z, 0.04, 5.2 * sc, 2.2, rot, WHITE);
     }
     const bk = L(0, 2.55);
-    K.box(bk[0], bk[1], z, 9.1, 0.04, 1.2, rot, WHITE);
+    K.box(bk[0], bk[1], z, 9.1 * sc, 0.04, 1.2, rot, WHITE);
     // beer tables with benches inside
     for (const u of [-2.8, 0, 2.8]) {
       const t = L(u, 0.3);
@@ -409,7 +456,7 @@ export const STDWELT = (() => {
       }
     }
     // the Kirmesbaum: 16 m, peeled, a green crown, the wreath at two thirds with ribbons
-    const tb = freeAt(c0[0] + 3, c0[1] + 3, 0.6, 1.5, 20) || L(7, -4),
+    const tb = (ON_GREEN && ON_GREEN.baum) || freeAt(c0[0] + 3, c0[1] + 3, 0.6, 1.5, 20) || L(7, -4),
       tz = gz(tb[0], tb[1]);
     K.cyl(tb[0], tb[1], tz - 0.3, tz + 16, 0.16, 0.06, 8, PEELED);
     K.ball(tb[0], tb[1], tz + 16.8, 1.1, GREEN, 8);

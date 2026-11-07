@@ -66,6 +66,20 @@ with lib.browser() as b:
         a = math.radians(az_off); cx = x + math.sin(a) * d; cy = y + math.cos(a) * d
         yaw = math.degrees(math.atan2(x - cx, y - cy))
         E(f"(() => {{ if (GAME.CAM3) GAME.CAM3.want = false; const z = KERN.terrain({cx}, {cy}); GAME.view({cx}, {cy}, z + {h}, {yaw}, {pitch}, {fov}); for (let i = 0; i < 6; i++) GAME.step(0.1); }})()")
+    # the direction from which the camera sees the point (KX, KY) 2.5 m above the ground freely from 16 m (three.js: x, height, −y);
+    # returns [azimuth, free fraction of the ray] of the best of twelve directions
+    CLEAR_AZ = """(() => { const x = KX, y = KY, rc = new THREE.Raycaster(), ms = [], res = [];
+      GAME.scene.traverse(o => { if (o.isMesh && o.visible && !/^strategie-dorf:/.test(o.name || '')) ms.push(o); });
+      const t = new THREE.Vector3(x, KERN.terrain(x, y) + 2.5, -y);
+      for (let a = 0; a < 360; a += 30) { const r = a * Math.PI / 180, cx = x + Math.sin(r) * 16, cy = y + Math.cos(r) * 16;
+        const o = new THREE.Vector3(cx, KERN.terrain(cx, cy) + 2.3, -cy), d = t.clone().sub(o), L = d.length();
+        rc.set(o, d.normalize()); rc.far = L; const h = rc.intersectObjects(ms, false)[0];
+        res.push([a, h ? h.distance / L : 1]); }
+      res.sort((p, q) => q[1] - p[1]); return res[0]; })()"""
+    # the direction of the track to the Klinge at (KX, KY): the camera stands on the track, a little back towards the garden
+    TRACK_AZ = """(() => { const R = ROADS.routes && ROADS.routes.klinge; if (!R || R.length < 2) return null; let bi = 1, bd = 1e9;
+      for (let i = 1; i < R.length; i++) { const d = Math.hypot((R[i][0] + R[i - 1][0]) / 2 - KX, (R[i][1] + R[i - 1][1]) / 2 - KY); if (d < bd) { bd = d; bi = i; } }
+      return Math.atan2(R[bi - 1][0] - R[bi][0], R[bi - 1][1] - R[bi][1]) * 180 / Math.PI; })()"""
     def back_top():
         # GAME.view walks: back to the plan view of the mode (the clock runs at the mode's pace only from above)
         E("(() => { if (GAME.CAM3) GAME.CAM3.want = true; GAME.go('draufsicht'); for (let i = 0; i < 4; i++) GAME.step(0.1); })()")
@@ -106,6 +120,11 @@ with lib.browser() as b:
         ck('being asked moves their opinion of you (AMT.ST.rep, the Ortsvorsteher system\'s one copy)', all(st1['rep'][k] > rep0[k] for k in st1['known']), str({k: (rep0[k], st1['rep'][k]) for k in st1['known']}))
         disc = J("STRAT.S.notes.filter(n => n.kind === 'entdeckt').map(n => n.text).slice(-3)")
         ck('each new acquaintance is a discovery with what one learns about them', len(disc) >= 3 and any('Ingrid' in d for d in disc), str(disc)[:300])
+        if J("!!window.WISSEN"):
+            # feat/wissen's discovery book: the village's own entry and the book's „Ehrenamt und Dorfgemeinschaft“ found – and no person
+            # met as a generic entry in the chapter „Natur“
+            wb = J("(() => { const s = WISSEN.state(); return { f: s.found.filter(k => /^(stdorf:|p_verein)/.test(k)), gen: s.dyn.filter(k => /^st:(kontakt|dorf|geschichte):/.test(k)) }; })()")
+            ck('the Entdeckerbuch: „Vom Wunsch zum Dorfprojekt“ and „Ehrenamt und Dorfgemeinschaft“ found, no villager filed as nature', 'stdorf:projekt' in wb['f'] and 'p_verein' in wb['f'] and not wb['gen'], str(wb))
         E("STHUD.openPlace('anger')")
         steps(0.3)
         pan = E("document.getElementById('stpan').textContent")
@@ -182,8 +201,9 @@ with lib.browser() as b:
         steps(1.5)
         p = J("STDORF.state().proj.kirmes")
         ck('the Kirmes: the Ortsteilrat is for it, but the Ortsteil\'s money is not enough this year – postponed to January', p['st'] == 'vertagt' and b0 < 450 and 'Geld' in p['step'], f"budget {b0} · {p}")
-        # January: new money, the project again – decided, the band and the permit, the Kirmes weekend with tent and Kirmesbaum
-        E("STRAT.setDate('2027-01-16', 10 * 60)")
+        # the next summer (new money since January): the project again – decided, the band and the permit, the Kirmes weekend in its season
+        # (September) with tent and Kirmesbaum
+        E("STRAT.setDate('2027-08-21', 10 * 60)")
         steps(0.5)
         r = J("STDORF.retry('kirmes')")
         for k in range(4):
@@ -194,7 +214,9 @@ with lib.browser() as b:
             steps(1.5)
         p = J("STDORF.state().proj.kirmes")
         kd = J("AMT.ST.kd")
-        ck('in January (new money) it passes: 450 € from the Ortsteil, the permit, the date of the Kirmes set (a Saturday)', p['st'] == 'fertig' and kd is not None and J(f"STRAT.W.day({kd} + 600).wd") == 6 and abs(J("STDORF.state().budget") - 150) < 0.01, f"{p} kd {kd} budget {J('STDORF.state().budget')}")
+        kday = J(f"STRAT.W.day({kd} + 600)") if kd is not None else {}
+        ck('the next year (new money) it passes: 450 € from the Ortsteil, the permit, the date of the Kirmes set – a Saturday in the Kirmes season (September/October, not a tent in the snow)', p['st'] == 'fertig' and kd is not None and kday.get('wd') == 6 and kday.get('month') in (8, 9) and abs(J("STDORF.state().budget") - 150) < 0.01, f"{p} kd {kd} {kday.get('label')} budget {J('STDORF.state().budget')}")
+        # to the Kirmes Saturday afternoon (time-lapse: STRAT.setDate only renames the days, the clock's minutes stay)
         E(f"CLOCK.wait(Math.max(5, {kd} + 15 * 60 - CLOCK.t), 'Test')")
         until("!CLOCK.warp", 60)
         steps(2.5)
@@ -205,9 +227,11 @@ with lib.browser() as b:
             E(f"GAME.P.tx = {kf[0]}; GAME.P.ty = {kf[1]}; GAME.P.th = 60")
             steps(0.6)
             page_pic('03a_kirmes_oben')
-            # from the side of the line Linde – tent, high: the tent, the Kirmesbaum and the Linde in one view
-            az = math.degrees(math.atan2(kf[0] - 222, kf[1] + 108)) + 90
-            look_at(kf[0], kf[1], 22, 13, az, -26)
+            # at eye height from where nothing stands between the camera and the tent (a ray to the tent from twelve directions; houses
+            # and the Linde stand around the Anger)
+            az = J(CLEAR_AZ.replace('KX', str(kf[0])).replace('KY', str(kf[1])))
+            print('  Kirmes view from', az, flush=True)
+            look_at(kf[0], kf[1], 16, 2.3, (az or [45])[0], 8)
             lib.shot(pg, OUT, '03b_kirmes_welt')
             back_top()
     if 'land' in want:
@@ -328,6 +352,8 @@ with lib.browser() as b:
         ck('a storm throws spruces across the track: the alarm – on a Saturday most of the fire brigade comes (7)', k and k.get('ok') and ks and ks['crew'] == 7, f"{k} {ks}")
         notes = J("STRAT.S.notes.slice(-3).map(n => n.text)")
         ck('the alarm notice says what happens (siren, pager, the fire station) and offers to send people', any('Einsatz!' in n for n in notes), str(notes)[:300])
+        if J("!!window.WISSEN"):
+            ck('the Entdeckerbuch: „Ein Einsatz: vom Alarm bis zur Freigabe“ and the book\'s „Die Freiwillige Feuerwehr“ found', J("WISSEN.has('stdorf:einsatz') && WISSEN.has('p_feuerwehr')"), str(J("WISSEN.state().found.slice(-6)")))
         msg = J("STDKRISE.dispatch(['falko', 'christoph'])")
         ck('Falko and Christoph drive to the site and report to the incident commander', 'Einsatzstelle' in msg and len(J("STRAT.job.running().filter(j => j.def === 'einsatz')")) == 1, msg)
         steps(2.5)
@@ -339,7 +365,9 @@ with lib.browser() as b:
             E("STHUD.openPlace('einsatz')")
             steps(1.0)
             page_pic('09_einsatz_baum_oben')
-            look_at(pos[0], pos[1], 15, 9, 150, -28)
+            # at eye height on the track, a little back towards the garden: the spruces across the way under the forest's roof
+            taz = J(TRACK_AZ.replace('KX', str(pos[0])).replace('KY', str(pos[1])))
+            look_at(pos[0], pos[1], 13, 1.8, taz if taz is not None else 150, -4)
             lib.shot(pg, OUT, '10_einsatz_baum_welt')
             back_top()
         E("STRAT.setSpeed(30)")
@@ -352,7 +380,7 @@ with lib.browser() as b:
         w = J("STDWELT.state()")
         ck('afterwards the logs lie cut at the side of the track', w['krise'] == 'baum:ok', str(w))
         if pos:
-            look_at(pos[0], pos[1], 15, 9, 150, -28)
+            look_at(pos[0], pos[1], 13, 1.8, taz if taz is not None else 150, -4)
             lib.shot(pg, OUT, '11_einsatz_baum_geraeumt')
             back_top()
         # a Tuesday morning: a cloudburst, the brook rises at the culvert – only three of the fire brigade are in the village, nobody helps
@@ -420,6 +448,11 @@ with lib.browser() as b:
         p = J("STDORF.state().proj.led")
         lg = J("STDORF.st().proj.led ? STDORF.st().proj.led.log.map(e => e[1]) : []")
         ck('LED for all street lamps: the town pays 60 %, the Kommunalrichtlinie 40 % – approved without a call deadline, then the electricians', q and q.get('ok') and p['st'] == 'fertig' and any('Bewilligt' in n for n in lg), str(q) + ' ' + str(p) + ' ' + str(lg)[:300])
+        if p['st'] == 'fertig':
+            # from above: the village's street lamps marked as LED on the map (layer „Dorf“), the Anger in the middle
+            E("GAME.P.tx = 222; GAME.P.ty = -112; GAME.P.th = 210")
+            steps(0.8)
+            page_pic('12_led_oben')
     if 'welt' in want:
         # daylight for the pictures: forward to the next 11:00 (never back – what was built in the last hours would not be due yet)
         E("CLOCK.wait(CLOCK.until(11), 'Test')")

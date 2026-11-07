@@ -12,7 +12,7 @@ export const STDDATA = (() => {
     haltestelle: { name: 'Bushaltestelle Ratscher', icon: '⊓', pos: [250.6, -99.6], r: 8, order: 102 },
     rathaus: { name: 'Rathaus Schleusingen', icon: '⚖', pos: [-1060, 1250], r: 30, order: 103 },
     flur: { name: 'Flur: Land pachten oder kaufen', icon: '▦', pos: [130, -5], r: 30, order: 104 },
-    baumschule: { name: 'Baumschule bei Kloster Veßra', icon: '♠', pos: [-4060, 2400], r: 30, order: 105 },
+    baumschule: { name: 'Baumschule Kammbach (Kloster Veßra)', icon: '♠', pos: [-4060, 2400], r: 30, order: 105 },
   };
   // ---- the villagers as one gets to know them (exploration: known only after someone talked to them) ----
   // need: the project they bring; knows: who they know (who knows whom); help: what they can do for a project; tip: what one learns
@@ -390,8 +390,8 @@ export const STDDATA = (() => {
       place: 'flur',
       text: 'Neben der Klinge will eine Erbengemeinschaft aus Suhl ihr Waldstück verkaufen: Fichte und Kiefer, ein paar Buchen am Rand. Wolfgang kennt es.',
       learn:
-        'Beim Kauf von Wald zählt der Bestand: Holzarten, Alter, Vorrat in Festmetern, Käferschäden. Vor dem Kauf geht man ihn mit dem Revierförster ab. Das Thüringer Waldgesetz kennt beim Verkauf von Wald ein Vorkaufsrecht (§ 17) – der Notar holt die Erklärungen ein.',
-      src: '§ 17 Thüringer Waldgesetz (Vorkaufsrecht); § 311b BGB; Preis Annahme 1,30 €/m² mit Bestand (kleine Privatwaldflächen in Thüringen 2026)',
+        'Beim Kauf von Wald zählt der Bestand: Holzarten, Alter, Vorrat in Festmetern, Käferschäden. Vor dem Kauf geht man ihn mit dem Revierförster ab. Wird Wald verkauft, haben erst die Gemeinde, dann das Land ein Vorkaufsrecht (§ 17 Thüringer Waldgesetz) – nur wenn der Kauf dem Erhalt des Waldes dient, und nur binnen zwei Monaten, nachdem ihnen der Kaufvertrag mitgeteilt wurde.',
+      src: '§ 17 Thüringer Waldgesetz (Vorkaufsrecht der Gemeinde, dann des Landes; zwei Monate); § 311b BGB; Preis Annahme 1,30 €/m² mit Bestand (kleine Privatwaldflächen in Thüringen 2026)',
       steps: [
         {
           k: 'deal',
@@ -420,8 +420,8 @@ export const STDDATA = (() => {
         },
         {
           k: 'warten',
-          days: 42,
-          text: 'Vorkaufsrecht nach dem Waldgesetz und die Genehmigung abwarten, dann das Grundbuch.',
+          days: 61,
+          text: 'Zwei Monate, in denen Gemeinde und Land ihr Vorkaufsrecht ausüben könnten, dazu die Genehmigung – dann das Grundbuch.',
         },
       ],
     },
@@ -461,7 +461,7 @@ export const STDDATA = (() => {
           min: 1,
           dur: 90,
           pay: 'proj',
-          text: 'Mit Auto und Anhänger in die Baumschule bei Kloster Veßra: zwölf Bäume, Pfähle, Kokosstrick, Wühlmauskörbe, Drahthosen.',
+          text: 'Mit Auto und Anhänger in die Baumschule Kammbach bei Kloster Veßra: zwölf Bäume, Pfähle, Kokosstrick, Wühlmauskörbe, Drahthosen.',
         },
         {
           k: 'job',
@@ -494,7 +494,7 @@ export const STDDATA = (() => {
       text: 'Ein überdachter Treffpunkt am Anger: Sitzgruppe unter Dach, Fahrradständer, Ladesäule für E-Bikes – für Wanderer, Radler und die Alten, die sonst niemanden treffen.',
       learn:
         'LEADER fördert, was eine Region in ihrer Entwicklungsstrategie selbst als wichtig festgelegt hat. Die Regionale Aktionsgruppe wählt die Projekte zum Stichtag nach einer Bewertungsmatrix aus (Mindestpunktzahl), bewilligt wird beim Land. Den Rest – den Eigenanteil – trägt der Antragsteller, hier die Stadt.',
-      src: 'IHK Erfurt: LEADER-Projektaufrufe 2027 (15 Regionen in Thüringen, u. a. Hildburghausen-Sonneberg; Bewertungsmatrix, Mindestpunktzahl); Kosten Annahme',
+      src: 'IHK Erfurt: LEADER-Projektaufrufe 2027 (15 Regionen in Thüringen, u. a. Hildburghausen-Sonneberg; Bewertungsmatrix, Mindestpunktzahl); Dorferneuerung und -entwicklung: Richtlinie ILE/REVIT 2022 des TMIL (Leistungsbeschreibung im FIM-Portal: 65 % für Gemeinden, Antrag bis 15.1., Förderschwerpunkte mit GEK); Kosten Annahme',
       steps: [
         {
           k: 'job',
@@ -507,7 +507,7 @@ export const STDDATA = (() => {
           help: ['ingrid'],
           text: 'Die Regionalmanagerin kommt nach Ratscher: Passt die Idee zur Entwicklungsstrategie? Wer stellt den Antrag? Welche Punkte bringt sie?',
           learn:
-            'Frühe Beratung ist der wichtigste Schritt: Die Regionalmanagements sagen, ob ein Projekt förderfähig ist, und helfen bei Skizze und Unterlagen.',
+            'Frühe Beratung ist der wichtigste Schritt: Die Regionalmanagements sagen, ob ein Projekt förderfähig ist, und helfen bei Skizze und Unterlagen. Sie prüfen auch andere Wege: Die Dorferneuerung des Landes (für Gemeinden 65 %, Antrag bis 15. Januar beim Landesamt TLLLR) gibt ihr Geld vor allem anerkannten Förderschwerpunkten – Orten mit einem Gemeindlichen Entwicklungskonzept, die das Land für fünf Jahre auswählt. Ratscher ist im Spiel keiner (Annahme), also LEADER.',
         },
         {
           k: 'job',
@@ -827,8 +827,8 @@ export const STDDATA = (() => {
       title: 'Kommunalrichtlinie – Projektträger Zukunft – Umwelt – Gesellschaft (ZUG)',
       rate: 0.4,
       calls: null,
-      approve: 75,
-      src: 'Kommunalrichtlinie 2022–2027 der Nationalen Klimaschutzinitiative (Fördersatz 40 % bei adaptiver Regelung; finanzschwache Kommunen mehr); Bearbeitungszeit hier Annahme',
+      approve: 130,
+      src: 'Kommunalrichtlinie 2022–2027 der Nationalen Klimaschutzinitiative (Fördersatz 40 % bei adaptiver Regelung, 25 % bei Zeit- oder Präsenzschaltung; finanzschwache Kommunen mehr); Anträge ganzjährig, Bescheid etwa vier bis fünf Monate nach dem Antrag (Förderübersicht zur Kommunalrichtlinie, Stand 28.7.2022)',
       learn:
         'Bei der Kommunalrichtlinie stellt die Stadt den Antrag beim Projektträger, jederzeit im Jahr. Vor dem Zuwendungsbescheid darf kein Auftrag vergeben werden; ausgezahlt wird nach dem Verwendungsnachweis.',
       rule: 'Bundeshaushaltsordnung § 44 mit Verwaltungsvorschriften (Förderung nur für Vorhaben, die noch nicht begonnen haben)',
@@ -855,7 +855,7 @@ export const STDDATA = (() => {
     stadt_entscheidet: {
       text: 'Darüber entscheidet die Stadt.',
       why: 'Straßen, Laternen, Haltestellen und der Bauhof sind Sache der Stadt Schleusingen: Der Ortsteilrat schlägt vor, der Stadtrat beschließt, die Stadt muss den Vorschlag binnen drei Monaten behandeln.',
-      src: '§ 45 Abs. 5 ThürKO',
+      src: '§ 45 Thüringer Kommunalordnung (Ortsteilverfassung: Vorschlags- und Anhörungsrecht des Ortsteilrats)',
     },
     gleichstand: {
       text: 'Bei Stimmengleichheit ist ein Antrag abgelehnt.',

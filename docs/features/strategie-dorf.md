@@ -35,21 +35,24 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   Nachbarn müssen einverstanden sein (Heike, Ronald; Hubert am Wald). **Fair** (ortsüblich) oder **knapp** (−20 %) bieten: knapp verärgert
   (−4) und wird unter Meinung 70 abgelehnt; fair gibt +3. Pacht: Vertrag am Küchentisch, die Jahrespacht aus deiner Kasse, danach zu
   **Martini** (11.11.). Kauf: Notar in Schleusingen, Kaufpreis + **5 % Grunderwerbsteuer** (Thüringen seit 1.1.2024) + ~2 % Notar und
-  Grundbuch, dann Genehmigung (Grundstückverkehrsgesetz, beim Wald das Vorkaufsrecht nach § 17 ThürWaldG) und Grundbuch. Preise:
-  Thüringen Ackerland 2024 Ø 14.900 €/ha, Neupacht Ackerland 2023 Ø 257 €/ha (Destatis/Agrarstrukturerhebung), Südthüringen deutlich
-  darunter; Grünland am Hang (0,90 €/m², 120 €/ha Pacht) und Wald mit Bestand (1,30 €/m²) als ausgewiesene Annahmen. Auf der Karte: die
-  Flächen gestrichelt, gepachtet grün gestrichelt, eigene grün.
+  Grundbuch, dann Genehmigung (Grundstückverkehrsgesetz; beim Wald zwei Monate Vorkaufsrecht der Gemeinde, dann des Landes, § 17
+  ThürWaldG) und Grundbuch. Preise: Thüringen Ackerland 2024 Ø 14.900 €/ha, Neupacht Ackerland 2023 Ø 257 €/ha
+  (Destatis/Agrarstrukturerhebung), Südthüringen deutlich darunter; Grünland am Hang (0,90 €/m², 120 €/ha Pacht) und Wald mit Bestand
+  (1,30 €/m²) als ausgewiesene Annahmen. Auf der Karte: die Flächen gestrichelt, gepachtet grün gestrichelt, eigene grün.
 - **Streuobstwiese** auf der gepachteten (oder gekauften) Hangwiese: Sorten mit Gerhard und Heike wählen, zwölf Hochstämme in der Baumschule
-  bei Kloster Veßra holen (864 €), pflanzen – nur in der Pflanzzeit (Mitte Oktober bis Ende März, Regel mit „Warum?“). Danach stehen
-  **zwölf junge Bäume in der Welt** (`strategie/st_dorf_welt.js`): Pfahl auf der Wetterseite, Drahthose gegen Rehe, von Mai bis Oktober mit
-  Laub. Lernen: § 30 BNatSchG (Streuobstwiesen geschützt seit 2022), Abstände, alte Sorten.
+  Kammbach bei Kloster Veßra holen (864 €; derselbe Ort `kammbach` wie beim Garten von `strategie-bau`), pflanzen – nur in der Pflanzzeit
+  (Mitte Oktober bis Ende März, Regel mit „Warum?“). Danach stehen **zwölf junge Bäume in der Welt** (`strategie/st_dorf_welt.js`): Pfahl
+  auf der Wetterseite, Drahthose gegen Rehe, von Mai bis Oktober mit Laub. Lernen: § 30 BNatSchG (Streuobstwiesen geschützt seit 2022),
+  Abstände, alte Sorten.
 - **Förderantrag (LEADER):** „Treffpunkt am Anger“ (24.000 €; Ingrids zweiter Wunsch) – Beratung beim Regionalmanagement, drei Angebote,
   Ortsteilrat, Stadtrat übernimmt den **Eigenanteil** (35 %, gleiche Regel wie `AMTMODEL.council`), Projektskizze zum **Stichtag** der
   Aktionsgruppe Hildburghausen-Sonneberg (31.3./30.9., Annahme), **Bewertungsmatrix** (Beratung, Beteiligung – fünf Leute kennen –,
   Sarahs Dorfversammlung, einstimmiger Ortsteilrat, Vorbereitung, Gemeinschaft, Klima, zugesagte Eigenleistung; mindestens 24 Punkte),
   **Bewilligungsbescheid** des Landes (TLLLR) – erst dann baut die Zimmerei (Regel „Vorhabenbeginn“, VV zu § 44 ThürLHO), Arbeitseinsatz
   mit Jens, Manfred, Uwe, **Verwendungsnachweis**, Auszahlung. Fertig steht die überdachte Sitzgruppe mit Fahrradständer und
-  E-Bike-Ladesäule am Anger in der Welt.
+  E-Bike-Ladesäule am Anger in der Welt. Die Beratung erklärt auch, warum nicht die **Dorferneuerung** des Landes (Richtlinie ILE/REVIT
+  2022: 65 % für Gemeinden, Antrag bis 15. Januar beim TLLLR, Geld vor allem für anerkannte Förderschwerpunkte mit Gemeindlichem
+  Entwicklungskonzept – Ratscher ist im Spiel keiner, Annahme).
 - **Krisen-Einsätze mit der Freiwilligen Feuerwehr** (`strategie/st_dorf_krise.js`): Sturm wirft Fichten über den Weg zur Klinge (aus dem
   Sturm-Ereignis des Kerns), Starkregen lässt den Bach am Durchlass des Gartens steigen (ein Tag mit Starkregen – oder echter Starkregen
   draußen über feat/wetter), Bodenfeuer an der Klinge nach Wochen ohne Regen (April–September). Ablauf echt: Alarm (Sirene auf der alten
@@ -74,15 +77,24 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
   legt Leerrohre, ein grauer Netzverteiler steht am Anger. Verfehlt: neu anfangen oder auf den geförderten Ausbau hoffen.
 - **Straßenbeleuchtung auf LED** (Katrins zweiter Wunsch, Stadtrat, 9.100 €): Leuchten zählen und den Verbrauch schätzen (die Zahlen für die
   Einsparprognose), Ortsteilrat, Stadtrat trägt 60 %, **Kommunalrichtlinie** 40 % (adaptiv geregelt; 25 % bei Zeit-/Präsenzschaltung) – ohne
-  Stichtag, Antrag beim Projektträger ZUG, Zuwendungsbescheid nach etwa zweieinhalb Monaten, erst dann tauscht die Elektrofirma die Köpfe.
+  Stichtag, Antrag beim Projektträger ZUG, Zuwendungsbescheid nach etwa vier Monaten, erst dann tauscht die Elektrofirma die Köpfe.
   Lernen: 70–125 W alt gegen 15–25 W LED, rund 3.000 kWh und 900 € im Jahr, höchstens 3000 K wegen der Insekten. Auf der Karte: die
   Leuchten des Dorfs als LED markiert (das Licht in der Welt bleibt, wie es ist – die Leuchten des Dorfs sind schon warmweiß gezeichnet).
-- **Die Kirmes in der Welt:** am Kirmes-Wochenende (Datum aus dem Ortsvorsteher-Spiel, `AMT.ST.kd`) stehen von Freitagmittag bis
-  Montagmittag ein Festzelt mit Bierbänken und der **Kirmesbaum** (geschälte Fichte, grüne Krone, Kranz mit Bändern) am Anger.
+- **Die Kirmes in der Welt:** am Kirmes-Wochenende (`AMT.ST.kd`, das Datum des Ortsvorsteher-Spiels) stehen von Freitagmittag bis
+  Montagmittag ein Festzelt mit Bierbänken und der **Kirmesbaum** (geschälte Fichte, grüne Krone, Kranz mit Bändern) am Anger. Von oben
+  beschlossen, liegt der Termin in der **Kirmeszeit im Herbst** (Kirchweih nach der Ernte; für Ratscher Annahme: der erste Samstag im
+  September oder Oktober, mindestens zehn Tage nach dem Beschluss) – kein Festzelt im Schnee. `amt/amt.js` setzt ihn bei eigenen
+  Beschlüssen noch zehn Tage später, ganz gleich in welchem Monat (nicht geändert).
 - **Ruhezeiten halten (auch zu Fuß):** wer in der Ich-Sicht sonntags, feiertags oder nach 20 Uhr den Benzinmäher laufen lässt, hört Ronald
   über den Zaun rufen – Hubert, Ronald und Heike denken schlechter von dir, dein Stil sinkt (einmal am Tag, mit der Regel und ihrem Grund).
 - **Ebene „Dorf“:** die Häuser der Leute mit ihrer Meinung von dir (grün, gelb, rot; Unbekannte grau mit „?“) und die Flächen; **Ebene
   „Einsätze“**. Im Feld des Angers bei jeder Person: was sie sich wünscht und wen sie kennt (wohin man als Nächstes geht).
+- **Im Entdeckerbuch** (feat/wissen, über seine API – `strategie/st_dorf_wissen.js`): fünf eigene Einträge – „Vom Wunsch zum Dorfprojekt“
+  (beim ersten Gespräch im Dorf), „Land pachten oder kaufen“, „Die Streuobstwiese“, „Fördergeld: Eigenanteil, Frist, Bescheid“, „Ein
+  Einsatz: vom Alarm bis zur Freigabe“ – und die Einträge des Buchs, wenn man die Sache tut: Ehrenamt und Dorfgemeinschaft, die alte
+  Schule (Dachboden), die Freiwillige Feuerwehr (Grundausbildung, Alarm), der Ortsteilrat (Aushang, Beschluss), Stadtrat, LEADER,
+  Mitfahren auf dem Land, der Bus, einen Baum pflanzen, Sturm und Windwurf. Die Bekanntschaften im Dorf landen so nicht mehr als
+  allgemeine Einträge im Kapitel „Natur“.
 - **Kapitel 5 · Das Dorf** mit vier Zielen (fünf Leute kennen, ein Projekt durch den Ortsteilrat, ein Projekt fertig, bei einem Einsatz helfen).
 
 ## Testen
@@ -99,26 +111,36 @@ dauert – jeder Schritt mit Quelle. Gebaut in der Nacht 5./6.11.2026 vom Hilfs-
 - Die Sitzungen von Ortsteilrat und Stadtrat laufen von selbst (mit Ergebnis, Abstimmung und Grund als Meldung); in der Ich-Sicht sitzt man
   noch nicht darin (das Ortsvorsteher-Spiel hat dafür eigene Szenen – zusammenführen wäre der nächste Schritt).
 - Glasfaser: in der Welt steht nur der Netzverteiler am Anger, nicht die Hausanschlüsse; der geförderte Ausbau (Gigabit-Förderung) ist nur
-  erklärt, nicht spielbar. LED für alle Straßenlampen des Dorfs (Kommunalrichtlinie) ist nur Lernstoff an der einen neuen Laterne.
+  erklärt, nicht spielbar. LED: das Licht der Leuchten in der Welt bleibt gleich (nur die Karte markiert sie als LED).
+- Wie oft es brennt oder der Bach steigt, ist eine Annahme des Spiels: Bodenfeuer an der Klinge nach mindestens neun trockenen von zehn
+  Tagen (April–September, höchstens alle 40 Tage – in einem trockenen Sommer etwa einmal), Starkregen am Bach nur alle paar Jahre.
 - Krisen: das Feuerwehrauto und die Einsatzkräfte gibt es nur auf der Karte (kein Fahrzeugmodell, keine Figuren); der Waldbrand verbrennt
   keine Bäume des Walds (nur die Brandfläche am Boden); Sandsäcke nur nach gelungenem Einsatz, kein Wasser im Garten bei Schaden.
 - Treffpunkt, Obstbäume, Kirmeszelt und Spuren der Einsätze haben keine Kollision (man kann hindurchgehen).
 - Die Flächen sind Rechtecke des Spiels an plausiblen Stellen (offene Wiese, Acker, Wald nach dem Luftbild 2024), keine echten Flurstücke.
-- Fördersatz (65 %) und Punkte der LEADER-Auswahl, Grünland- und Waldpreise, Quote der Glasfaser, Kosten der Projekte sind ausgewiesene
-  Annahmen; die Regeln (ThürKO, BGB, LPachtVG, Grunderwerbsteuer, Kommunalrichtlinie, Einsatzgrundzeit, BNatSchG) mit Quelle.
+- Fördersatz (65 %) und Punkte der LEADER-Auswahl, Grünland- und Waldpreise, Quote der Glasfaser, Kosten der Projekte, dass Ratscher kein
+  Förderschwerpunkt der Dorferneuerung ist, sind ausgewiesene Annahmen; die Regeln (ThürKO, BGB, LPachtVG, Grunderwerbsteuer, Kommunalrichtlinie, Einsatzgrundzeit, BNatSchG) mit Quelle.
 - Später nach dem Konzept: Dorfwettbewerb „Unser Dorf hat Zukunft“, Region (Radweg, Bürgerbus, Energiegenossenschaft).
 
 ## Für den Lead
 
-- Gemeinsame Dateien: `viz3/src/modules.txt` (Block `# feat/strategie-dorf` direkt unter `strategie/st_hud.js`) und **ein markierter Haken in
+- Gemeinsame Dateien: `viz3/src/modules.txt` (Block `# feat/strategie-dorf` nach dem Block von `strategie-bau`, vor `wissen`) und **ein markierter Haken in
   `viz3/src/amt/amt.js` `begin()`**: Bisher ersetzte der Brief von Ingrid (beim ersten Gehen ab Spieltag 2) den ganzen Zustand des
   Ortsvorsteher-Spiels durch einen frischen – was das Dorf von oben schon getan hatte (Meinungen, gebaute Dinge, Anliegen, Geld des Ortsteils)
   war danach weg (CI-Lauf 42137549204: die Mitfahrbank stand nach dem Neuladen nicht mehr). Jetzt bleiben `built`, `anl`, `log`, `pos`,
   `budget`, `byear`, `kd`, und die Meinungen behalten ihre Änderung über dem Bonus der Welt.
 - `amt/amt.js` hat kein exportiertes `save`: das Modul schreibt den Zustand des Ortsvorsteher-Spiels genauso wie es selbst
   (`SAVE.set('pav-amt-v1', AMT.ST)`, danach `AMT.renderBook()`). Schöner wäre `save` in der Rückgabe von `AMT` (eine Zeile).
-- Neue `window`-Namen: `STDORF` (Tests). Zustand im Kern-Speicher: `STRAT.S.ext.dorf` (geprüft beim Laden).
+- Neue `window`-Namen: `STDORF`, `STDKRISE`, `STDWELT`, `STDWISSEN` (Tests). `st_dorf_wissen.js` lädt vor `wissen/*` und trägt seine
+  Einträge über `window.WISSEN` ein, sobald alle Module geladen sind (und noch einmal beim Start des Modus) – ohne das Buch tut es nichts.
+- Für `wissen`: `strategie:entdeckt` mit einer unbekannten Art (`kind`) wird im Buch ein allgemeiner Eintrag im Kapitel **Natur** – das Dorf
+  verhindert das für seine Arten mit eigenen Regeln; `strategie-bau` meldet `kind: 'bau'` (die Bodenplatte), das landet noch in „Natur“.
+  Vorschlag: `bau` → handwerk, `kontakt`/`dorf` → politik, `geschichte` → geschichte in `wissen/wissen.js`. Zustand im Kern-Speicher: `STRAT.S.ext.dorf` und `STRAT.S.ext.krise`
+  (geprüft beim Laden).
+- Zusammengeführt: `origin/src` nach Runde B (24be07de) und `origin/feat/strategie` bis 22b1bdca – Konflikte nur in `modules.txt`
+  (Reihenfolge: Kern, `strategie-bau`, `strategie-dorf`, `wissen`).
 - Neue KERN-Ereignisse: `strategie:dorfprojekt` {id, state: begonnen | beschlossen | stadt | vertagt | abgelehnt | fertig, t},
-  `strategie:dorfbuchung` {eur, text, saldo} (Geld des Ortsteils – absichtlich nicht `strategie:buchung`, das ist deine Kasse).
+  `strategie:dorfbuchung` {eur, text, saldo} (Geld des Ortsteils – absichtlich nicht `strategie:buchung`, das ist deine Kasse),
+  `strategie:krise` {id: baum | hochwasser | waldbrand, state: alarm | schaden | geschafft | zu spät, ok, t, helped}.
 - Für den Kern-Helfer: `STRAT.ui.H.panel()` neu zeichnen nach eigenen Knöpfen im Feld (`info()` mit `data-dorf`) – ein kleiner offizieller
   Haken (`STRAT.ui.repaint()`) wäre sauberer.
