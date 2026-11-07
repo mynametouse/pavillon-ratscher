@@ -16,6 +16,7 @@ veröffentlicht.
 
 ## Stand
 
+- **7.11.2026 Runde D (V17v, Falko: wenig Credits – Nachzügler, Kacheln, Doku, Bilder):** welt-gebaeude b7ededcd (Kacheln v2 als Standard) mit Rückfall auf die alte Kachel in `welt/welt.js`, wissen d5ab3565, strategie-dorf abb912c2, tiere 7f72ad36; geht automatisch live, wenn im Prüfpaket nur `ktx2` rot ist.
 - **Stand 6.11.2026 ~5:25 (Falko: „keine weiteren Credits … Arbeit stoppen, wir arbeiten später weiter“):** live **V17t** (24be07de,
   Prüfpaket 42152070883: 77 grün, 6 bekannte Themen rot – alle in Runde C behoben). `src` = **Runde C / V17u-Kandidat** (wip/runde-c,
   ungetestet beim Push; Prüfpaket läuft danach auf GitHub – grün → Vorschau, dann `git push origin <sha>:refs/heads/live` nach Falkos OK;

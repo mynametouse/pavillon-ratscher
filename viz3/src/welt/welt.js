@@ -448,9 +448,12 @@ export const WELT = (() => {
       // feat/welt-gebaeude: the image tiles without the printed roofs (welt-test/v2/) where gebaeude/gebaeude.js sets S.imgBase
       const ib = S.imgBase ? S.imgBase(t) : t.base,
         tp = terrain(t.base + `t/${t.L}/${t.x}/${t.y}.bin`),
-        ip = new Promise((res, rej) =>
-          new THREE.TextureLoader().load(ib + `i/${t.L}/${t.x}/${t.y}.webp`, res, undefined, rej)
-        );
+        ip = new Promise((res, rej) => {
+          const p = `i/${t.L}/${t.x}/${t.y}.webp`,
+            TL = new THREE.TextureLoader();
+          // a retouched tile that fails (missing in the set, a zone tile) falls back to the published one – never a hole
+          TL.load(ib + p, res, undefined, ib === t.base ? rej : () => TL.load(t.base + p, res, undefined, rej));
+        });
       Promise.all([tp, ip])
         .then(([tr, tex]) => {
           busy--;
