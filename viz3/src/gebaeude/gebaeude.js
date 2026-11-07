@@ -1025,28 +1025,34 @@ export const GEB = (() => {
   }
   if (ZON) KERN.tick(zTick, 'gebaeude/zellen');
   // ---- the world's image tiles without the printed roofs (tools/welt-gebaeude/kacheln.py → gh-pages welt-test/v2/, a set of its own
-  // with only the retouched tiles): welt/welt.js takes a tile's image from there when its key is listed. Off until tested (?welt2) ----
-  S.TILES2 = false;
-  const T2 = { on: S.TILES2 || new URLSearchParams(location.search).has('welt2'), keys: null, state: 'idle', n: 0 };
+  // with only the retouched tiles): welt/welt.js takes a tile's image from there when its key is listed. On since 6.11. (pictures at five
+  // places along the routes, docs/features/welt-gebaeude.md); ?welt1 shows the published photos, ?welt2 forces the set ----
+  S.TILES2 = true;
+  const Q2 = new URLSearchParams(location.search),
+    T2 = { on: (S.TILES2 && !Q2.has('welt1')) || Q2.has('welt2'), keys: null, state: 'idle', n: 0 };
   S.T2 = T2;
-  if (T2.on && WELT.on) {
+  // the list of the retouched tiles is fetched with the first tile of the world (not at the start); tiles asked for before it came
+  // (the coarse levels first – the set only has 10 to 12) keep the published photo
+  function t2Load() {
     T2.state = 'loading';
     fetch(WELT.base + 'v2/index.json')
       .then(r => (r.ok ? r.json() : Promise.reject(new Error('v2/index.json ' + r.status))))
       .then(j => {
         T2.keys = new Set(j.tiles || []);
         T2.state = 'ready';
-        WELT.imgBase = t => {
-          if (!T2.keys.has(t.k)) return t.base;
-          T2.n++;
-          return WELT.base + 'v2/';
-        };
       })
       .catch(e => {
         T2.state = 'error';
         T2.err = String(e);
       });
   }
+  if (T2.on && WELT.on)
+    WELT.imgBase = t => {
+      if (T2.state === 'idle') t2Load();
+      if (!T2.keys || !T2.keys.has(t.k)) return t.base;
+      T2.n++;
+      return WELT.base + 'v2/';
+    };
   whenLoaded(() => {
     // the village has its roof colours by now: the copies of the original photos are not needed any more (memory on phones)
     if (VILLAGE.ready) GEBDACH.near = GEBDACH.inner = null;

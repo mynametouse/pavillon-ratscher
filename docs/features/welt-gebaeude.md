@@ -65,13 +65,22 @@ stehen wie die anderen, an ihrem echten Platz, und ihr Dach soll aus dem Bodenbi
   wie bisher von `TEXHALF` halbiert; `ortho_outer`/`ortho_far` (≥ 4,9 m je Pixel) bleiben unverändert. Die KTX2-Texturen (`tools/tex`,
   `gh-pages/tex2/`) enthalten nur `tex/<name>_col|nrm|orm` und glTF-Bilder – keine Bodenbilder (geprüft), dort gibt es nichts nachzuziehen.
 
-- **Kacheln ohne gedruckte Dächer (Kachelwelt):** `tools/welt-gebaeude/kacheln.py` retuschiert die Luftbild-Kacheln (Stufen 10–12) unter
+- **Kacheln ohne gedruckte Dächer (Kachelwelt):** `tools/welt-gebaeude/kacheln.py` retuschiert die Luftbild-Kacheln (Stufen 10–12; jede
+  Kachel mit einem halben Nachbarn ringsum gefüllt, damit zwei Kacheln eine Stelle an ihrer Kante gleich füllen – keine Nähte) unter
   jedem Gebäude, das jenseits des Quadrats in 3D steht (Schleusingens Altstadt, Kloster Veßra, die Zellen): **950 Kacheln, 35 MB, als neuer
   Satz unter `gh-pages/welt-test/v2/`** (nur die retuschierten `i/{L}/{x}/{y}.webp` + `index.json`; die veröffentlichten Kacheln bleiben
   unberührt). Gebaut und veröffentlicht vom Workflow `.github/workflows/welt-gebaeude-kacheln.yml` (bei jedem Push auf
-  `feat/welt-gebaeude`, der das Werkzeug, die Zellen oder Masken ändert; schreibt nur `welt-test/v2/`). Die App nimmt sie **nur mit dem
-  Schalter**: `?welt2` zum Ausprobieren, `GEB.TILES2` (`S.TILES2 = false` in `gebaeude/gebaeude.js`) legt ihn für alle um. Ohne Schalter
-  fragt die App `welt-test/v2/` gar nicht an.
+  `feat/welt-gebaeude`, der das Werkzeug, die Zellen oder Masken ändert; schreibt nur `welt-test/v2/`). **Seit 6.11. ~5:00 an**
+  (`S.TILES2 = true` in `gebaeude/gebaeude.js`; `?welt1` zeigt zum Vergleich die veröffentlichten Fotos, `?welt2` erzwingt den Satz). Die
+  Liste der retuschierten Kacheln (`v2/index.json`) holt die App mit der ersten Kachel der Welt, nicht beim Start.
+  **Urteil nach Bildern an fünf Stellen** (Test `welt_gebaeude_kacheln`, Augenhöhe und 60 m, ohne/mit): an der L 3004 vor dem Markt
+  Schleusingens klar besser – die Dachstreifen, die neben den 3D-Häusern auf dem Gehweg lagen, und die gedruckten Autos sind weg; in
+  Rappelsdorf zwischen den Häusern ruhiger Boden statt Dachresten; an den Blöcken in Schleusingen-West und an der Einfahrt nach Kloster
+  Veßra kaum ein Unterschied (dort war wenig zu nehmen, ein paar gedruckte Autos); Zollbrück liegt außerhalb der feinen Stufen (10–12),
+  dort gibt es nur die groben Kacheln, also nichts zu tauschen. Nähte an Kachelkanten: in der ersten Fassung des Satzes in der dichten
+  Altstadt sichtbar (gerade Kanten, Farbsprünge der Füllung) – seit der Füllung mit halbem Nachbarn ringsum nicht mehr zu sehen; keine
+  Löcher, keine schwarzen Stellen. Gleiche Zahl Kacheln und Texturen mit und ohne Satz. Was bleibt: in sehr dichter Bebauung ist die
+  Füllung eine ruhige graugrüne Fläche (von oben zwischen den Häusern zu sehen, vom Boden aus kaum).
 
 ## Daten neu erzeugen
 
@@ -157,9 +166,9 @@ Features in der Zeit übersetzen (Wetter, Dinge des Luftbilds), steht als Hinwei
 - `viz3/src/welt/welt.js` (markiert `// feat/welt-gebaeude`): beim Laden einer Kachel die Bild-Adresse über `S.imgBase(t)`, wenn gesetzt
   (`gebaeude/gebaeude.js` setzt es nur mit dem Schalter `?welt2` / `GEB.TILES2`).
 - `gh-pages/welt-test/v2/` neu (Workflow `welt-gebaeude-kacheln.yml`, schreibt nur diesen Ordner; die Kacheln unter `welt-test/` selbst
-  bleiben unberührt). **Umlegen, wenn `?welt2` in der Vorschau gut aussah:** in `viz3/src/gebaeude/gebaeude.js` die Zeile
-  `S.TILES2 = false;` → `S.TILES2 = true;` – sonst nichts (die App holt dann `welt-test/v2/index.json` und nimmt für die dort genannten
-  Kacheln das Bild aus `v2/`, Gelände und alle anderen Kacheln wie bisher). Zurück: wieder `false`.
+  bleiben unberührt). **Umgelegt am 6.11. ~5:00** (Kern-Chat: „wenn klar besser und sauber“, Urteil oben): `S.TILES2 = true;` in
+  `viz3/src/gebaeude/gebaeude.js` – die App nimmt für die in `welt-test/v2/index.json` genannten Kacheln das Bild aus `v2/`, Gelände und
+  alle anderen Kacheln wie bisher. Zurück: die Zeile wieder auf `false` (oder `?welt1` zum Vergleich).
 - Quellen: `credits_add` in `viz3/extra/welt-gebaeude/manifest.json` (ETHOS.BUILDA ODbL 1.0, LoD2 und DOP 2024 © GDI-Th dl-de/by-2-0).
 - Der „weiße Kasten“ des Dorfkerns (`world/dorfkern_data.js` `whitebox`, x 265,2, y −87,6, 6,0 × 2,4 × 2,0 m) ist das weiße Flachdach-
   Gebäude, das ETHOS als `DETHL57P0001tBDK` führt – laut Luftbild und LoD2 steht es knapp 4 m weiter nördlich (Mitte 264,9, −83,9),
