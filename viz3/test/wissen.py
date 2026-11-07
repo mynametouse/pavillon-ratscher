@@ -70,6 +70,14 @@ def run():
             no = J("(() => { const n = document.getElementById('winote'); return n ? { vis: !n.hidden, txt: n.textContent } : null; })()")
             ck('feat/tiere: a species seen → its entry (tier:rotmilan), with a soft notice', J("WISSEN.has('tier:rotmilan')") and no and no['vis'] and 'Rotmilan' in no['txt'], str(no))
             page_pic('01_hinweis')
+            # the menu opens over a notice: it steps back, and comes again when the menu closes (a fresh notice, the first one may be gone)
+            E("WISSEN.found('g_wende', 'tun:Test')"); time.sleep(0.6)
+            shown = J("(() => { const n = document.getElementById('winote'); return !n.hidden && n.textContent.includes('Wende'); })()")
+            E("HUD.setMenu(true)"); time.sleep(0.3)
+            hid = J("document.getElementById('winote').hidden")
+            E("HUD.setMenu(false)"); time.sleep(0.2); steps(1.7); time.sleep(0.3)
+            back = J("(() => { const n = document.getElementById('winote'); return !n.hidden && n.textContent.includes('Wende'); })()")
+            ck('a notice is not over the open menu – it comes again when the menu closes', shown is True and hid is True and back is True, str({'shown': shown, 'hidden_in_menu': hid, 'back': back}))
             E("KERN.emit('tiere:entdeckt', { kind: 'art', id: 'luchs', title: 'Luchs', source: ['Luchs (Wikipedia)', 'https://de.wikipedia.org/wiki/Luchs'] })")
             g = J("(() => { const e = WISSEN.get('tier:luchs'); return e ? { ch: e.ch, title: e.title, src: e.src } : null; })()")
             ck('a species the book has no entry for becomes one (Natur, with the source of the event)', g and g['ch'] == 'natur' and g['src'] and 'wikipedia' in (g['src'][0][1] or ''), str(g))
@@ -310,6 +318,10 @@ def run():
                     E("(() => { const bs = [...document.querySelectorAll('button[data-why]')]; const b = bs[bs.length - 1]; if (b) b.click(); })()"); time.sleep(0.3)
                     sw = J("(() => { const bs = [...document.querySelectorAll('button[data-why]')]; const n = bs.length ? bs[bs.length - 1].closest('.n') : null; return { why: WISSEN.state().why, q: !!(n && n.querySelector('[data-wiwhy=\"saftruhe\"]')) }; })()")
                     ck('the strategy mode\'s own „Warum?“ (Saftruhe): understood in the book too, with „Quellen ›“', 'saftruhe' in sw['why'] and sw['q'], str(sw))
+        # a rule another feature adds at run time (as feat/strategie-bau does with the building law): understood before the reload
+        LATE = "{ id: 'test_spaeteregel', title: 'Eine späte Regel', text: 'Kommt erst nach dem Laden dazu.', src: [['Test', null]] }"
+        E(f"WISSEN.addWhy({LATE}); WISSEN.explain('test_spaeteregel')"); time.sleep(0.2)
+        E("(() => { const x = document.querySelector('#wiwhy .x'); if (x) x.click(); })()")
         found_before = J("WISSEN.state().found")
         E("WISSEN.saveNow()")
         ck.errors(errs)
@@ -324,6 +336,8 @@ def run():
                 ck('…also the generated entry (tier:luchs) with its title', J("(() => { const e = WISSEN.get('tier:luchs'); return !!e && e.title === 'Luchs' && WISSEN.has('tier:luchs'); })()"))
             if 'warum' in want:
                 ck('…and the understood rule', 'ruhe_sonntag' in f2['why'])
+            late = J("(() => { const kept = WISSEN.state().why.includes('test_spaeteregel'), before = WISSEN.progress().regeln[0]; WISSEN.addWhy(" + LATE + "); return { kept, before, after: WISSEN.progress().regeln[0] }; })()")
+            ck('…and a rule another feature adds only after loading (WISSEN.addWhy) counts as understood again', late['kept'] and late['after'] == late['before'] + 1, str(late))
             ck.errors(errs)
         pg.close()
 

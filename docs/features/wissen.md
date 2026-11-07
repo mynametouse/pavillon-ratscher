@@ -68,7 +68,8 @@ vom Hilfs-Agenten `wissen` (Auftrag `docs/plans/auftraege/wissen.md`, Konzept `d
   Feiertage (Ostern nach Gauß, Thüringer Feiertage), Ruhezeiten und der Abfall des Schalls mit dem Abstand sind reine Helfer in
   `wissen_data.js` (Einheitentests).
 - **Hinweis**: „Neu im Entdeckerbuch: …“ oben in der Mitte mit „Lesen“ (im Strategie-Modus als dessen Meldung, `STRAT.note`; am Handy ein
-  Balken über der Mitte, bei offenen Daten-Ansichten über deren Feld).
+  Balken über der Mitte, bei offenen Daten-Ansichten über deren Feld; die ersten Male mit „· Taste N“). Nie über dem offenen Menü: Er wartet,
+  bis es zu ist, und tritt zurück, wenn es sich über ihm öffnet.
 - **Gespeichert**: `pav-wissen-v1` (über `SAVE`, mit Prüfung) – gefunden (Spielminute, wie), verstandene Regeln, gelesene Einträge und die
   aus Ereignissen erzeugten Einträge (feat/tiere meldet eine Art nur einmal).
 
@@ -83,7 +84,11 @@ WISSEN.has(id); WISSEN.open(id | 'natur' | … | 'regeln'); WISSEN.close(); WISS
 WISSEN.why('ruhe_sonntag')   // { id, title, text, src: [[titel, url]] } | null
 WISSEN.explain(id, element)  // zeigt „Warum?“ neben dem Element; WISSEN.whyHTML(id) → '<button data-wiwhy=…>?</button>' für jedes Panel
 WISSEN.chips(root)           // Warnungen in Listen wie denen des Gartenplaners (ul.gp-warns, ul.gp-w), die auf einem Gesetz beruhen, bekommen ihr „?“
+WISSEN.addWhy({ id, title, text, src })  // ein Grund eines anderen Features (auch nach dem Laden: schon Verstandenes bleibt verstanden)
 ```
+
+- Verstandene Regeln werden mit ihrer ID gespeichert, auch wenn ein Feature die Regel erst später hinzufügt (feat/strategie-bau: Baurecht);
+  gezählt wird, sobald es sie gibt.
 
 - Kapitel: `natur`, `handwerk`, `geschichte`, `politik`, `orte`. Das „wie gefunden“ (`how`) beginnt mit `ort:`, `gespraech:`, `tafel:`, `tun:`,
   `gesehen:` oder `erkundet:` – das Buch macht daraus einen Satz.
