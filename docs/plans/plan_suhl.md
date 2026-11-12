@@ -22,6 +22,7 @@ Inhalt: 1 Maßstab · 2 Datenprodukte, Pipeline, Kacheln, Hosting · 3 Laufzeit 
 | Neue Shader | Höchstens 8 neue Programme für ganz Suhl, jedes höchstens 8 Texturen (Grenze des Tests `gpu`: 16). |
 | Kontrolle | Fotoabgleich (Modell vom Standpunkt eines Straßenfotos neben dem Foto) und Abgleich von oben gegen das Luftbild laufen in GitHub Actions und liefern Zahlen je Straße. |
 | Größte Lücke | **Fotos.** Im Zentrum zeigt ein freies Straßenfoto nur 11 % der Straßenseiten; Markt und Steinweg fast gar nicht (1.1). Ohne Falkos eigene Fotos bleibt die Fußgängerzone geschätzt. |
+| Zwei Befunde am Kern | Der Himmel ist eine 9-km-Kugel am Ursprung, und die Sicht von oben ist auf ±11 km begrenzt (1.2). Beides braucht je einen kleinen Haken (S1, K1), bevor Suhl sichtbar wird. |
 | Was Falko entscheidet | Hosting (Daten-Repo oder R2), Landesdaten in der Reihenfolge Zentrum → Kernstadt → Rest, Fotos im Zentrum, Anspruch am Telefon, Zeitpunkt der Freigabe (8.2). |
 
 ## 1 Maßstab
@@ -57,13 +58,17 @@ Garten sind das 13,13 km in Modellmetern und 13,33 km in der Natur.
 
 Die geschätzten Zeilen werden ersetzt, sobald `suhl/bestand` Zahlen hat (`git fetch origin suhl/bestand`).
 
-### 1.2 Das Modell-Koordinatensystem – drei Tatsachen, die Suhl betreffen
+### 1.2 Das Modell-Koordinatensystem – vier Tatsachen, die Suhl betreffen
 
 | Tatsache | Zahl | Beleg | Folge für Suhl |
 |---|---|---|---|
 | Ein Modellmeter ist **1,0157 m** in UTM, die Achsen sind um **4,36°** gedreht. | √(a² + b²) = 1,015725; atan2(b, a) = 4,3566° | `xf` in `viz3/manifests.json` (`geoman.xf`: a = 1,01279, b = 0,07716) | Flächen, Längen und Erträge für Szenarien **nie** aus der Modellgeometrie rechnen, sondern in der Pipeline in UTM. Modell-m² × 1,0317 = m². Höhen sind echte Meter (z = NHN − `H0`, `H0` = 374,617). |
 | Die bisherige Welt endet 400 m südlich vom Suhler Markt. | Fern-Gelände: 201 × 201 Punkte à 120 m, y bis 11 864; `ortho_far` bis N 5 607 500 | `geoman.terrain.outer`, `geoman.tex.far` | Suhl braucht eigenen **Fernboden** (Abschnitt 3.3). Die Naht läuft quer durch den Süden der Kernstadt. |
+| **Der Himmel hängt am Ursprung.** | Himmelskugel mit 9 000 m Radius, fest am Modell-Ursprung; alle drei Himmels-Materialien rechnen die Richtung aus `normalize(position)`. Kloster Veßra liegt 145 m innerhalb der Kugel, der Suhler Markt 4,1 km außerhalb. | `viz3/src/garden/env.js` Zeile 79 (`sky`), Zeilen 64 und 99; `viz3/src/time/daynight.js` Zeile 501; nirgends wird `sky.position` gesetzt | Von Suhl aus wäre der Himmel nur eine Scheibe in Richtung Garten (halber Winkel asin(9 000 / 13 125) = 43°), sonst leer. **Haken S1** (6.4): Himmel und Sterne folgen der Kamera. Ohne ihn ist Suhl nicht vorzeigbar. |
 | Die Kamera sieht 30 km weit, die Draufsicht kommt aber nicht bis Suhl. | `far` = 30 000 m, sobald die Umgebung geladen ist (sonst 12 000), `near` = 0,1 m; die Mitte der Draufsicht ist auf ±11 000 m begrenzt, ihr Bild höchstens 9 000 m hoch | `viz3/src/game/camera.js` (`FAR0`, `TOPMAX`, `applyCam`: `lim`) | Die Skyline ist aus der Ferne zeichenbar. Für die Sicht von oben über Suhl (y = 12 256) braucht es einen Haken (K1 in 6.4). |
+
+Der Befund zum Himmel ist aus dem Code abgeleitet und nicht im Browser nachgesehen (Stufe 1 startet keinen Browser). Er gilt auch
+für die Sterne (`time/daynight.js`, eigene Punktwolke mit fester Matrix).
 
 ### 1.3 Genauigkeit so weit vom Ursprung
 
@@ -513,7 +518,7 @@ Ergebnis je Kachel: vier Zahlen und ein Bogen; die schlechtesten Kacheln zuerst 
 |---|---|
 | `start` | beim Start kein Abruf zur Suhl-Basis, keine neuen Programme, Texturen, Geometrien |
 | `zone` | Zone baut am Rand ihres Kreises (nur Paket und Index); in Schleusingen und im Garten baut sie nicht; 2,5 km vor der Gemeindegrenze Fernsicht da, noch keine Nah-Kacheln; Zeiten |
-| `orte` | an fünf Orten (Markt, Steinweg, Bahnhof, Suhl-Nord, Blick von der Talbrücke): Draw-Calls, Dreiecke, Programme, Texturen gegen 3.4 |
+| `orte` | an fünf Orten (Markt, Steinweg, Bahnhof, Suhl-Nord, Blick von der Talbrücke): Draw-Calls, Dreiecke, Programme, Texturen gegen 3.4; **Himmel in allen vier Himmelsrichtungen gezeichnet** (Prüfung wie „Boden oder Himmel“ in `test/gpu.py`) |
 | `fahrt` | Autopilot quer durch die Stadt: längstes Bild ≤ 50 ms, kein Fall durch den Boden, Wände halten |
 | `telefon` | iPhone-13-Kontext: Bilder-Speicher im Zentrum, Programme ≤ 16 Texturen |
 | `oben` | Draufsicht über dem Zentrum in drei Bildhöhen: echte Dächer, kein Loch im Boden |
@@ -601,6 +606,7 @@ Schleusingen, Veßra, Fahrt und Strategie grün.
 | W1 | `viz3/src/welt/welt.js`, `S.addSet` | zweites Argument: volle Basis-Adresse eines Satzes | 2 Zeilen | Boden-Kacheln auf anderem Host (Daten-Repo, R2) | nur, wenn die Suhl-Kacheln unter `welt-test/zonen/suhl/` lägen – dafür fehlt der Platz |
 | W2 | `viz3/src/welt/welt.js`, `setOf` | Liste `has` je Stufe in `meta.json` beachten (welche Kacheln es gibt) | ≈ 5 Zeilen | die Gemeinde und die Straßen-Korridore sind keine Rechtecke (Idee des Altbestands, dort nie eingebaut) | mit mehreren rechteckigen Sätzen – umständlich; oder doppelt so viele Kacheln |
 | W3 | `viz3/src/welt/welt.js`, `lowerOuter` | zusätzliche Abfrage `S.lowerAlso(x, y)` | 2 Zeilen | das alte 120-m-Gelände unter Suhls Fernboden absenken (Naht bei y = 11 864) | nein – `lowerOuter` setzt das Gelände bei jeder Änderung zurück |
+| S1 | `viz3/src/garden/env.js` (`sky`) und `viz3/src/time/daynight.js` (Sterne) | Himmelskugel und Sterne je Bild auf die Kamera setzen (nur die Lage; die Richtungen bleiben) | ≈ 4 Zeilen | Himmel jenseits von 9 km Abstand vom Garten (1.2); hilft auch Kloster Veßra, wo der Westhimmel heute Horizontfarbe zeigen müsste | nein |
 | K1 | `viz3/src/game/camera.js`, `applyCam` (`lim`) | Mitte der Draufsicht nicht auf ±11 000 m begrenzen, sondern auf einen Rahmen, der Suhl enthält | 2 Zeilen | Sicht von oben und Strategie-Modus über Suhl | nein |
 | F1 | `viz3/src/welt/fahrt.js`, `load` und das Einschneiden der Straßen | zweite Straßendatei `fahrt/suhl.json` holen, wenn man nach Norden fährt; in Suhls Straßen-Kacheln schneidet `FAHRT` nicht (wie heute bei Veßra) | ≈ 15 Zeilen | Anfahrt, Karte, Ziel „Suhl“ | nein |
 | F2 | `viz3/src/vehicles/car.js` (Gänge, Luftwiderstand) | prüfen, ob das Auto 130 km/h erreicht | wenige Zeilen | Autobahn | ja, mit niedrigerem Tempo |
@@ -630,7 +636,7 @@ Größen: K = ein Agentenlauf von 1–2 Stunden, M = 3–5 Stunden, G = mehrere 
 | **S2-3 Straßen** | Straßenraum der `kernstadt` und der Ortsteile: Achsen, Profile, Querschnitte, Kreuzungen, Beläge; Wasser, Bahn | `tools/suhl/strassen/**`, `.github/workflows/suhl-strassen.yml`, `docs/features/suhl-strassen.md` | Geofabrik-Auszug, Gelände, Luftbild | Wellen je km je Art; Kreuzungen eben; kein Haus in der Fahrbahn (mit S2-2) | S2-0, S2-1 | G |
 | **S2-4 Grün und Möbel** | Bäume (Ort, Höhe, Radius, Art), Laternen, Ampeln, Schilder, Haltestellen, Bänke, Ladenschilder-Texte | `tools/suhl/gruen/**`, `tools/suhl/moebel/**`, `.github/workflows/suhl-gruen.yml`, `docs/features/suhl-gruen.md` | Luftbild (RGB, CIR), OSM, GTFS; DOM1/DGM1 soweit da | Zählungen gegen OSM; Bäume nicht auf Dächern und Fahrbahnen | S2-0 | M |
 | **S2-5 Fern** | gebackene Fernmodelle (`f/`), Skyline, Talbrücken | `tools/suhl/fern/**`, `.github/workflows/suhl-fern.yml` | Datensätze aus S2-2, Brücken aus `suhl-fahrt` | Dreiecke und Größe je Kachel | S2-2 | K–M |
-| **S2-6 Laufzeit** | Anmelde-Modul, Pakete, Worker, Streamer, L1–L3, Fernboden, `KERN`-Anbieter, Vertrag `SUHL.*`, einfache Fassaden; Test `suhl.py` (5.4) | `viz3/src/welt/suhl.js`, `viz3/src/lazy/suhl.js`, `viz3/src/lazy/suhl-worker.js`, `viz3/src/lazy/suhl/**`, `viz3/extra/suhl/**`, `viz3/test/suhl.py`, `viz3/test/suhl_tiles.py`, `docs/features/suhl.md` | Schema aus S2-0; früh ein Probesatz Zentrum (S2-1, S2-2) | `suhl.py`, dazu `schleusingen`, `vessra`, `fahrt` | S2-0; Haken H1, W1–W3, K1 | G |
+| **S2-6 Laufzeit** | Anmelde-Modul, Pakete, Worker, Streamer, L1–L3, Fernboden, `KERN`-Anbieter, Vertrag `SUHL.*`, einfache Fassaden; Test `suhl.py` (5.4) | `viz3/src/welt/suhl.js`, `viz3/src/lazy/suhl.js`, `viz3/src/lazy/suhl-worker.js`, `viz3/src/lazy/suhl/**`, `viz3/extra/suhl/**`, `viz3/test/suhl.py`, `viz3/test/suhl_tiles.py`, `docs/features/suhl.md` | Schema aus S2-0; früh ein Probesatz Zentrum (S2-1, S2-2) | `suhl.py`, dazu `schleusingen`, `vessra`, `fahrt` | S2-0; Haken H1, S1, W1–W3, K1 | G |
 | **S2-7 Anfahrt** | Fahrt über Landstraße und Autobahn bis zum Markt; Daten des Altbestands übernehmen; Route über die Anschlussstelle Suhl-Zentrum (ohne Tunnel); Bus 203 bis Suhl | `viz3/extra/suhl-fahrt/**` (aus `feat/suhl-fahrt`), `.github/workflows/suhl-fahrt.yml`, `viz3/test/suhl_fahrt.py`, `docs/features/suhl-fahrt.md`; markierte Zeilen F1, B1, G1 legt der Suhl-Chat an | Korridor-Kacheln (S2-1), `recherche.json` | Autopilot hin über die Autobahn, zurück über die Landstraße; Bus-Test | S2-1, S2-6 (Übergabe in der Stadt) | G |
 | **S2-8 Abgleich** | Fotoabgleich und Abgleich von oben als Workflows mit Zahlen und Bögen (5.1, 5.2) | `tools/suhl/abgleich/**`, `.github/workflows/suhl-abgleich.yml`, `viz3/test/suhl_blick.py`, `docs/features/suhl-abgleich.md`, Wegwerf-Zweig `ref/suhl-abgleich` | Fotokatalog (`suhl/fotos`), eine laufende App mit Suhl | läuft zuerst gegen Schleusingen (dort gibt es Modell und Fotos), dann gegen Suhl | für Suhl: S2-6 | M |
 | **S2-9 Zahlen** | `SUHL.data` Grundausbau: Flächen, Geschosse, Dachebenen, Summen je Viertel, Viertelgrenzen | `tools/suhl/daten/**`, `docs/features/suhl-daten-szenario.md` | S2-2, `docs/plans/suhl/fachdaten.md`, `stadt.md` | Summen gegen amtliche Zahlen | S2-2 | K–M |
@@ -660,7 +666,7 @@ S2-8 Bögen liefert; S3-7 danach. Danach Viertel für Viertel dieselben Pakete (
 | Schritt | Was | Sichtbar für Besucher? |
 |---|---|---|
 | 1 | Dokumente (dieser Plan, `PARALLEL.md`) | nein |
-| 2 | Haken W2, W3, K1 (und W1) als ein kleiner Commit des Suhl-Chats; Tests Schleusingen, Veßra, Fahrt, Strategie grün | nein – ohne Suhl-Daten ändert sich nichts |
+| 2 | Haken S1, W2, W3, K1 (und W1) als ein kleiner Commit des Suhl-Chats; Tests Schleusingen, Veßra, Fahrt, Strategie grün | nein – ohne Suhl-Daten ändert sich nichts |
 | 3 | Anmelde-Modul `welt/suhl.js` (H1), Pakete unter `lazy/`, `viz3/extra/suhl/` mit Test; Menüknopf (H2) nur mit `?suhl=1` | nein; beim Start wird nichts von Suhl geladen (Test `start`) |
 | 4 | Anfahrt: `fahrt/suhl.json`, F1, Busdaten B1, Zellen G1 | ja: man kann Richtung Suhl fahren |
 | 5 | Menüknopf frei, sobald Falko den Stand in der Vorschau gesehen hat | ja |
@@ -685,6 +691,7 @@ S2-8 Bögen liefert; S3-7 danach. Danach Viertel für Viertel dieselben Pakete (
 | 11 | Actions-Cache (10 GB je Repo) mit Landesdaten, Geofabrik, ETHOS | Cache wird verdrängt, Läufe laden neu | Landesdaten dauerhaft als Release-Anhänge (2.2) |
 | 12 | Ampelpläne, Bewohnerzahlen je Haus, Heizarten sind Annahmen | Szenarien wirken genauer, als sie sind | Merker `q` je Feld, „Warum?“ im Modus |
 | 13 | Tunnel Berg Bock (A 71) braucht Boden unter dem Gelände – das gibt es noch nicht | die am 26.10. gerechnete Autobahn-Route führt hindurch | Route über die Anschlussstelle Suhl-Zentrum der A 73 (ohne Tunnel); Tunnel als späteres Paket |
+| 15 | Der Himmel-Befund (1.2) ist nur aus dem Code gelesen | falls er nicht stimmt, ist S1 unnötig; falls doch, fehlt in Suhl der Himmel | ein Blick im Browser in Kloster Veßra und an einem Testpunkt bei y = 12 000 (Kern-Chat oder S2-6, erster Tag) |
 | 14 | Lizenzen | Fotos als Texturen nur mit passender Lizenz; der Gebäude-Datensatz ist aus ODbL-Daten abgeleitet | `ATTRIBUTION.md` im Datensatz; Abgleich-Bögen nur auf dem Wegwerf-Zweig |
 
 ### 8.2 Fragen, die nur Falko beantworten kann
@@ -708,7 +715,9 @@ S2-8 Bögen liefert; S3-7 danach. Danach Viertel für Viertel dieselben Pakete (
 ## Für den Suhl-Chat
 
 - Diese Stufe hat keine vorhandene Datei geändert. Alles, was sich außerhalb der Suhl-Ordner ändern soll, steht in 6.4.
-- Vor Stufe 2 nötig: Falkos Antwort auf Frage 1 (Hosting) und die Ankündigung der Haken W1–W3, K1 in `docs/PARALLEL.md`.
+- Vor Stufe 2 nötig: Falkos Antwort auf Frage 1 (Hosting) und die Ankündigung der Haken S1, W1–W3, K1 in `docs/PARALLEL.md`.
+- **Für den Kern-Chat, unabhängig von Suhl:** die Himmelskugel (9 km, fest am Ursprung, 1.2) – in Kloster Veßra steht man 145 m
+  vor ihrer Wand; ein kurzer Blick im Browser dort nach Westen und Osten zeigt, ob der Befund stimmt.
 - Erster Schritt der Stufe 2: Paket S2-0, dann ein **Probesatz Zentrum** (11 Kacheln der Stufe 10) aus S2-1 und S2-2, damit
   S2-6 und S2-8 früh gegen echte Daten laufen.
 - Die Marke in `viz3/src/modules.txt` (Zeile 90) nennt noch `welt/suhl_innen.js` und `welt/suhl_leute.js`; nach diesem Entwurf sind
