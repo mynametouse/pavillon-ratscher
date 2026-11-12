@@ -1,0 +1,2507 @@
+[
+ {
+  "blatt": "zentrum/adam-riese-strasse_1.jpg",
+  "ort": "Adam-Riese-Straße",
+  "fotos": [
+   {
+    "id": "pmx:3d4e0a2f-8bb0-42a2-bd12-b5d841d43b80",
+    "lat": 50.6080464,
+    "lon": 10.691702,
+    "heading": 182.5,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3d4e0a2f-8bb0-42a2-bd12-b5d841d43b80"
+   },
+   {
+    "id": "pmx:1bef23a9-1753-47e9-b05f-a4ec4689f703",
+    "lat": 50.6081217,
+    "lon": 10.691794,
+    "heading": 217.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1bef23a9-1753-47e9-b05f-a4ec4689f703"
+   },
+   {
+    "id": "pmx:48e8fa16-bb46-44f0-9b6b-c4ed5de68564",
+    "lat": 50.6079832,
+    "lon": 10.6916976,
+    "heading": 123.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=48e8fa16-bb46-44f0-9b6b-c4ed5de68564"
+   },
+   {
+    "id": "pmx:bdd144ba-9c24-4e4b-ac42-0ca1633da1da",
+    "lat": 50.60793,
+    "lon": 10.6918258,
+    "heading": 123.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=bdd144ba-9c24-4e4b-ac42-0ca1633da1da"
+   },
+   {
+    "id": "pmx:e7157c4b-f4f7-48af-8af0-84a7a10496c3",
+    "lat": 50.6079175,
+    "lon": 10.6918631,
+    "heading": 124.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e7157c4b-f4f7-48af-8af0-84a7a10496c3"
+   },
+   {
+    "id": "pmx:0d47a138-f407-42fa-a8a6-a3f62c6e8ca2",
+    "lat": 50.6079211,
+    "lon": 10.6918525,
+    "heading": 129,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=0d47a138-f407-42fa-a8a6-a3f62c6e8ca2"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/adam-riese-strasse_2.jpg",
+  "ort": "Adam-Riese-Straße",
+  "fotos": [
+   {
+    "id": "pmx:5261e337-538a-4cc2-9195-b09daf020a64",
+    "lat": 50.6078448,
+    "lon": 10.6920312,
+    "heading": 121.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=5261e337-538a-4cc2-9195-b09daf020a64"
+   },
+   {
+    "id": "pmx:032d3a7a-104e-427f-a7c4-65499e295150",
+    "lat": 50.6077568,
+    "lon": 10.6922544,
+    "heading": 124.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=032d3a7a-104e-427f-a7c4-65499e295150"
+   },
+   {
+    "id": "pmx:f51b0b4a-dc52-48e6-b046-3060f4beb7db",
+    "lat": 50.607664,
+    "lon": 10.6924666,
+    "heading": 68.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f51b0b4a-dc52-48e6-b046-3060f4beb7db"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/alte-schmiedefelder-strasse_1.jpg",
+  "ort": "Alte Schmiedefelder Straße",
+  "fotos": [
+   {
+    "id": "pmx:e1416f43-ee43-4a30-8e88-35c7c35a5008",
+    "lat": 50.6115161,
+    "lon": 10.6955213,
+    "heading": 37.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e1416f43-ee43-4a30-8e88-35c7c35a5008"
+   },
+   {
+    "id": "pmx:45db7a7e-1e78-47f9-a79f-ec35802f927c",
+    "lat": 50.6114692,
+    "lon": 10.6955874,
+    "heading": 318.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=45db7a7e-1e78-47f9-a79f-ec35802f927c"
+   },
+   {
+    "id": "pmx:bc0e5519-8121-4404-8aec-6d800c494119",
+    "lat": 50.611746,
+    "lon": 10.695785,
+    "heading": 48.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=bc0e5519-8121-4404-8aec-6d800c494119"
+   },
+   {
+    "id": "pmx:59f43128-16c4-45a1-a50c-3015f8fd4463",
+    "lat": 50.6115684,
+    "lon": 10.6959967,
+    "heading": 248.1,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=59f43128-16c4-45a1-a50c-3015f8fd4463"
+   },
+   {
+    "id": "pmx:bedc77f5-2ba9-4902-ae9a-9e9a0dff7cd0",
+    "lat": 50.6116102,
+    "lon": 10.6963228,
+    "heading": 258.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=bedc77f5-2ba9-4902-ae9a-9e9a0dff7cd0"
+   },
+   {
+    "id": "pmx:1c8597f0-d71c-49a9-b780-8a5871766d36",
+    "lat": 50.6116413,
+    "lon": 10.6968695,
+    "heading": 265.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1c8597f0-d71c-49a9-b780-8a5871766d36"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/alte-schmiedefelder-strasse_2.jpg",
+  "ort": "Alte Schmiedefelder Straße",
+  "fotos": [
+   {
+    "id": "pmx:cd70708a-e404-41a5-8d18-8141ed73b3a3",
+    "lat": 50.6117743,
+    "lon": 10.6972156,
+    "heading": 238.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=cd70708a-e404-41a5-8d18-8141ed73b3a3"
+   },
+   {
+    "id": "pmx:4c769a06-5eda-4987-b71c-774d498e596f",
+    "lat": 50.6119147,
+    "lon": 10.69753,
+    "heading": 234.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=4c769a06-5eda-4987-b71c-774d498e596f"
+   },
+   {
+    "id": "pmx:0fa69953-2eeb-4265-a57f-4187a0389f5e",
+    "lat": 50.612086,
+    "lon": 10.6977867,
+    "heading": 223.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=0fa69953-2eeb-4265-a57f-4187a0389f5e"
+   },
+   {
+    "id": "pmx:8deb7b44-8e8f-4781-9e8b-0bdca62d8f9b",
+    "lat": 50.6122953,
+    "lon": 10.6980262,
+    "heading": 216.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=8deb7b44-8e8f-4781-9e8b-0bdca62d8f9b"
+   },
+   {
+    "id": "pmx:f3e82a94-df45-491e-8db9-89351ea0b56c",
+    "lat": 50.6126209,
+    "lon": 10.6985046,
+    "heading": 223.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f3e82a94-df45-491e-8db9-89351ea0b56c"
+   },
+   {
+    "id": "pmx:711ae25c-5ff1-4b07-8dc3-36ccf6e9ebd7",
+    "lat": 50.6128746,
+    "lon": 10.6988533,
+    "heading": 220.4,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=711ae25c-5ff1-4b07-8dc3-36ccf6e9ebd7"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/am-bahnhof_1.jpg",
+  "ort": "Am Bahnhof",
+  "fotos": [
+   {
+    "id": "pmx:1ea6e843-7013-4b0c-81de-d955d6b59dc5",
+    "lat": 50.6089641,
+    "lon": 10.6846133,
+    "heading": 72.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1ea6e843-7013-4b0c-81de-d955d6b59dc5"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/auf-der-mauer_1.jpg",
+  "ort": "Auf der Mauer",
+  "fotos": [
+   {
+    "id": "pmx:35e3a784-64ce-4a00-8a8c-b6745530b2d9",
+    "lat": 50.6129829,
+    "lon": 10.6976893,
+    "heading": 23.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=35e3a784-64ce-4a00-8a8c-b6745530b2d9"
+   },
+   {
+    "id": "pmx:e6ace35d-5a45-4446-8abc-8db64e2387e5",
+    "lat": 50.6131271,
+    "lon": 10.6977869,
+    "heading": 17.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e6ace35d-5a45-4446-8abc-8db64e2387e5"
+   },
+   {
+    "id": "pmx:f453311e-723d-43bb-9ac0-9bf18d3bf2ca",
+    "lat": 50.6132738,
+    "lon": 10.6978586,
+    "heading": 17.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f453311e-723d-43bb-9ac0-9bf18d3bf2ca"
+   },
+   {
+    "id": "pmx:7e64fd9d-e27d-4b7a-a57c-1216002eea58",
+    "lat": 50.6134808,
+    "lon": 10.6979619,
+    "heading": 25.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7e64fd9d-e27d-4b7a-a57c-1216002eea58"
+   },
+   {
+    "id": "pmx:5183632a-3bc8-4295-a110-7a566d55f83e",
+    "lat": 50.6136844,
+    "lon": 10.6981177,
+    "heading": 26.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=5183632a-3bc8-4295-a110-7a566d55f83e"
+   },
+   {
+    "id": "pmx:45cae5f5-69dc-428c-960b-601b3abe729c",
+    "lat": 50.6139026,
+    "lon": 10.6982875,
+    "heading": 23.5,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=45cae5f5-69dc-428c-960b-601b3abe729c"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/backstrasse_1.jpg",
+  "ort": "Backstraße",
+  "fotos": [
+   {
+    "id": "pmx:f533991f-fd3d-4fe5-b1e7-7d05118d9bd0",
+    "lat": 50.6083807,
+    "lon": 10.6935045,
+    "heading": 222.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f533991f-fd3d-4fe5-b1e7-7d05118d9bd0"
+   },
+   {
+    "id": "pmx:67bec969-cef1-40a7-8188-883727c88b88",
+    "lat": 50.6084582,
+    "lon": 10.6936847,
+    "heading": 235.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=67bec969-cef1-40a7-8188-883727c88b88"
+   },
+   {
+    "id": "pmx:7eccec35-9ea8-4796-9741-3cb6beb39703",
+    "lat": 50.6083862,
+    "lon": 10.6938282,
+    "heading": 308.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7eccec35-9ea8-4796-9741-3cb6beb39703"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/backstrasse-flaeche_1.jpg",
+  "ort": "Backstraße [Fläche]",
+  "fotos": [
+   {
+    "id": "pmx:67bec969-cef1-40a7-8188-883727c88b88",
+    "lat": 50.6084582,
+    "lon": 10.6936847,
+    "heading": 235.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=67bec969-cef1-40a7-8188-883727c88b88"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/bahnhofstrasse_1.jpg",
+  "ort": "Bahnhofstraße",
+  "fotos": [
+   {
+    "id": "pmx:ca8e9c47-c2a5-4e26-b147-adbc5a9bafce",
+    "lat": 50.6066317,
+    "lon": 10.6848262,
+    "heading": 139.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=ca8e9c47-c2a5-4e26-b147-adbc5a9bafce"
+   },
+   {
+    "id": "pmx:1533d88f-5ba4-47ee-995c-b163148e4640",
+    "lat": 50.6068193,
+    "lon": 10.6847147,
+    "heading": 159.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1533d88f-5ba4-47ee-995c-b163148e4640"
+   },
+   {
+    "id": "pmx:02451757-36e0-41b7-bd67-019586866ed7",
+    "lat": 50.6068623,
+    "lon": 10.6846607,
+    "heading": 206,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=02451757-36e0-41b7-bd67-019586866ed7"
+   },
+   {
+    "id": "pmx:0892fc17-b995-41c8-b24d-13fb257e7dd5",
+    "lat": 50.6068648,
+    "lon": 10.6847008,
+    "heading": 169.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=0892fc17-b995-41c8-b24d-13fb257e7dd5"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/bluecherstrasse_1.jpg",
+  "ort": "Blücherstraße",
+  "fotos": [
+   {
+    "id": "pmx:e455656f-2e91-43d9-b5fe-1c9c038efc1e",
+    "lat": 50.605592,
+    "lon": 10.6872533,
+    "heading": 124.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e455656f-2e91-43d9-b5fe-1c9c038efc1e"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/burgweg_1.jpg",
+  "ort": "Burgweg",
+  "fotos": [
+   {
+    "id": "pmx:0c101dca-1992-4f0f-93c4-ae70dd1b3f61",
+    "lat": 50.6112498,
+    "lon": 10.685785,
+    "heading": 263.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=0c101dca-1992-4f0f-93c4-ae70dd1b3f61"
+   },
+   {
+    "id": "pmx:5c4f3420-155e-429b-9f82-0587ec99689a",
+    "lat": 50.6111929,
+    "lon": 10.6860039,
+    "heading": 80.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=5c4f3420-155e-429b-9f82-0587ec99689a"
+   },
+   {
+    "id": "pmx:b7dae331-996a-4dcc-ab4d-d80892d9b33e",
+    "lat": 50.6111266,
+    "lon": 10.6858593,
+    "heading": 54.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=b7dae331-996a-4dcc-ab4d-d80892d9b33e"
+   },
+   {
+    "id": "pmx:b6c9dc25-f93f-4be2-8a84-67765140f97e",
+    "lat": 50.6110822,
+    "lon": 10.6858402,
+    "heading": 15.3,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=b6c9dc25-f93f-4be2-8a84-67765140f97e"
+   },
+   {
+    "id": "pmx:c0621347-a9d0-46b4-b92e-47f41a332132",
+    "lat": 50.6110512,
+    "lon": 10.6858144,
+    "heading": 27.8,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=c0621347-a9d0-46b4-b92e-47f41a332132"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/doktor-theodor-neubauer-strasse_1.jpg",
+  "ort": "Doktor-Theodor-Neubauer-Straße",
+  "fotos": [
+   {
+    "id": "pmx:c091debe-5540-4e6b-aba1-edd769362bff",
+    "lat": 50.608763,
+    "lon": 10.6854037,
+    "heading": 194.4,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=c091debe-5540-4e6b-aba1-edd769362bff"
+   },
+   {
+    "id": "pmx:ea0cc65f-0f14-476a-b02a-cbb96007668a",
+    "lat": 50.6090094,
+    "lon": 10.685368,
+    "heading": 174.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=ea0cc65f-0f14-476a-b02a-cbb96007668a"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/dombergweg_1.jpg",
+  "ort": "Dombergweg",
+  "fotos": [
+   {
+    "id": "pmx:3cdc6625-4f8a-462a-9807-eea2de79edef",
+    "lat": 50.6112354,
+    "lon": 10.687284,
+    "heading": 279.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3cdc6625-4f8a-462a-9807-eea2de79edef"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/dr-erfurth-strasse_1.jpg",
+  "ort": "Dr.-Erfurth-Straße",
+  "fotos": [
+   {
+    "id": "pmx:1c8597f0-d71c-49a9-b780-8a5871766d36",
+    "lat": 50.6116413,
+    "lon": 10.6968695,
+    "heading": 265.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1c8597f0-d71c-49a9-b780-8a5871766d36"
+   },
+   {
+    "id": "pmx:cd70708a-e404-41a5-8d18-8141ed73b3a3",
+    "lat": 50.6117743,
+    "lon": 10.6972156,
+    "heading": 238.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=cd70708a-e404-41a5-8d18-8141ed73b3a3"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/dr-theodor-neubauer-strasse_1.jpg",
+  "ort": "Dr.-Theodor-Neubauer-Straße",
+  "fotos": [
+   {
+    "id": "pmx:e3dbe3fb-c858-4c76-aedb-0b59ddf6f7cc",
+    "lat": 50.6064295,
+    "lon": 10.685103,
+    "heading": 123.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e3dbe3fb-c858-4c76-aedb-0b59ddf6f7cc"
+   },
+   {
+    "id": "pmx:d9991887-b19b-4527-92a6-93a439165d0b",
+    "lat": 50.6074657,
+    "lon": 10.6849762,
+    "heading": 204.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=d9991887-b19b-4527-92a6-93a439165d0b"
+   },
+   {
+    "id": "pmx:748d2c51-4698-4338-a2be-d547eaec32fa",
+    "lat": 50.6092532,
+    "lon": 10.6849236,
+    "heading": 245.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=748d2c51-4698-4338-a2be-d547eaec32fa"
+   },
+   {
+    "id": "pmx:3ae9acd8-b53a-4039-b8e5-1fa6ff52c4bb",
+    "lat": 50.6090487,
+    "lon": 10.6851311,
+    "heading": 104.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3ae9acd8-b53a-4039-b8e5-1fa6ff52c4bb"
+   },
+   {
+    "id": "pmx:0c14f80e-22d8-4966-857d-e551f8620b35",
+    "lat": 50.6095443,
+    "lon": 10.6849975,
+    "heading": 353.8,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=0c14f80e-22d8-4966-857d-e551f8620b35"
+   },
+   {
+    "id": "pmx:18c07876-3e55-43c4-800a-fcb3ec07cad3",
+    "lat": 50.6097187,
+    "lon": 10.6856006,
+    "heading": 209.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=18c07876-3e55-43c4-800a-fcb3ec07cad3"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/dr-theodor-neubauer-strasse_2.jpg",
+  "ort": "Dr.-Theodor-Neubauer-Straße",
+  "fotos": [
+   {
+    "id": "pmx:1941da38-fa7b-4186-aab0-75d1c4595cef",
+    "lat": 50.6112006,
+    "lon": 10.6867183,
+    "heading": 105.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1941da38-fa7b-4186-aab0-75d1c4595cef"
+   },
+   {
+    "id": "pmx:9e04eccb-55af-40af-91bd-019f42a4167f",
+    "lat": 50.6112901,
+    "lon": 10.686741,
+    "heading": 270.4,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=9e04eccb-55af-40af-91bd-019f42a4167f"
+   },
+   {
+    "id": "pmx:800ca543-51c9-42ad-af18-e0c71a1718e2",
+    "lat": 50.6111361,
+    "lon": 10.6870847,
+    "heading": 174.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=800ca543-51c9-42ad-af18-e0c71a1718e2"
+   },
+   {
+    "id": "pmx:26b38289-0812-4082-8bf7-8d1f2f5559f2",
+    "lat": 50.6115992,
+    "lon": 10.6890685,
+    "heading": 252.4,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=26b38289-0812-4082-8bf7-8d1f2f5559f2"
+   },
+   {
+    "id": "pmx:630c21b7-7b5e-48be-9171-914982c3d301",
+    "lat": 50.6117075,
+    "lon": 10.6892223,
+    "heading": 54.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=630c21b7-7b5e-48be-9171-914982c3d301"
+   },
+   {
+    "id": "pmx:9da55d56-f776-4d7b-8351-bd472bdf4b0f",
+    "lat": 50.6116406,
+    "lon": 10.6918476,
+    "heading": 271.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=9da55d56-f776-4d7b-8351-bd472bdf4b0f"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/drusselstrasse_1.jpg",
+  "ort": "Drusselstraße",
+  "fotos": [
+   {
+    "id": "pmx:9da55d56-f776-4d7b-8351-bd472bdf4b0f",
+    "lat": 50.6116406,
+    "lon": 10.6918476,
+    "heading": 271.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=9da55d56-f776-4d7b-8351-bd472bdf4b0f"
+   },
+   {
+    "id": "pmx:685edeb6-b623-4ae3-903b-0d69ddf7b723",
+    "lat": 50.6116496,
+    "lon": 10.6924264,
+    "heading": 266.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=685edeb6-b623-4ae3-903b-0d69ddf7b723"
+   },
+   {
+    "id": "pmx:b379bed7-cddb-4171-a7c8-5d7c69bf097a",
+    "lat": 50.6116856,
+    "lon": 10.6925565,
+    "heading": 264.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=b379bed7-cddb-4171-a7c8-5d7c69bf097a"
+   },
+   {
+    "id": "pmx:9dad2f3e-aa01-4e42-a09f-c7c0e7f6ade5",
+    "lat": 50.6117579,
+    "lon": 10.6930891,
+    "heading": 255.6,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=9dad2f3e-aa01-4e42-a09f-c7c0e7f6ade5"
+   },
+   {
+    "id": "pmx:022ddc91-0e78-479b-b582-d351c0fe507a",
+    "lat": 50.6118034,
+    "lon": 10.6932143,
+    "heading": 254.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=022ddc91-0e78-479b-b582-d351c0fe507a"
+   },
+   {
+    "id": "pmx:4e03c3ac-6424-4c80-8676-ba2bc9d2902a",
+    "lat": 50.6119428,
+    "lon": 10.6937167,
+    "heading": 245.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=4e03c3ac-6424-4c80-8676-ba2bc9d2902a"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/drusselstrasse_2.jpg",
+  "ort": "Drusselstraße",
+  "fotos": [
+   {
+    "id": "pmx:e473affc-ac0a-495b-8154-f6089c24b6c6",
+    "lat": 50.6119928,
+    "lon": 10.6938185,
+    "heading": 243.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e473affc-ac0a-495b-8154-f6089c24b6c6"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/friedrich-koenig-strasse_1.jpg",
+  "ort": "Friedrich-König-Straße",
+  "fotos": [
+   {
+    "id": "pmx:ea0cc65f-0f14-476a-b02a-cbb96007668a",
+    "lat": 50.6090094,
+    "lon": 10.685368,
+    "heading": 174.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=ea0cc65f-0f14-476a-b02a-cbb96007668a"
+   },
+   {
+    "id": "pmx:08512b98-89c5-4254-90b8-da21b420047a",
+    "lat": 50.6116213,
+    "lon": 10.6917567,
+    "heading": 272.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=08512b98-89c5-4254-90b8-da21b420047a"
+   },
+   {
+    "id": "pmx:9dad2f3e-aa01-4e42-a09f-c7c0e7f6ade5",
+    "lat": 50.6117579,
+    "lon": 10.6930891,
+    "heading": 255.6,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=9dad2f3e-aa01-4e42-a09f-c7c0e7f6ade5"
+   },
+   {
+    "id": "pmx:4e03c3ac-6424-4c80-8676-ba2bc9d2902a",
+    "lat": 50.6119428,
+    "lon": 10.6937167,
+    "heading": 245.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=4e03c3ac-6424-4c80-8676-ba2bc9d2902a"
+   },
+   {
+    "id": "pmx:7e621e49-ae75-4258-b486-3f8d74c50447",
+    "lat": 50.6121888,
+    "lon": 10.6942832,
+    "heading": 235.6,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7e621e49-ae75-4258-b486-3f8d74c50447"
+   },
+   {
+    "id": "pmx:2af98d37-f43d-400c-ad27-c7b0730825f5",
+    "lat": 50.6124994,
+    "lon": 10.6948706,
+    "heading": 229.5,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=2af98d37-f43d-400c-ad27-c7b0730825f5"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/friedrich-koenig-strasse_2.jpg",
+  "ort": "Friedrich-König-Straße",
+  "fotos": [
+   {
+    "id": "pmx:6a2a55e7-b4d8-49cf-9919-69672db80f68",
+    "lat": 50.6133805,
+    "lon": 10.6961841,
+    "heading": 220.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=6a2a55e7-b4d8-49cf-9919-69672db80f68"
+   },
+   {
+    "id": "pmx:565f6391-c6d4-4cb2-bb10-b0ee6832a22a",
+    "lat": 50.6136013,
+    "lon": 10.6964408,
+    "heading": 238.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=565f6391-c6d4-4cb2-bb10-b0ee6832a22a"
+   },
+   {
+    "id": "pmx:8e3ed3b3-2509-46fb-bd2b-617c228e4b0a",
+    "lat": 50.6137223,
+    "lon": 10.6965089,
+    "heading": 211.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=8e3ed3b3-2509-46fb-bd2b-617c228e4b0a"
+   },
+   {
+    "id": "pmx:13e028c7-abef-402d-b448-43dd56b7aa3f",
+    "lat": 50.6138851,
+    "lon": 10.6966613,
+    "heading": 161.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=13e028c7-abef-402d-b448-43dd56b7aa3f"
+   },
+   {
+    "id": "pmx:83a67d7a-d77a-4186-9063-c4d3b838cdcf",
+    "lat": 50.614081,
+    "lon": 10.6967663,
+    "heading": 255,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=83a67d7a-d77a-4186-9063-c4d3b838cdcf"
+   },
+   {
+    "id": "pmx:d1552354-7ff0-4294-a393-c5fff18112db",
+    "lat": 50.6144556,
+    "lon": 10.6969691,
+    "heading": 200.4,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=d1552354-7ff0-4294-a393-c5fff18112db"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/gothaer-strasse-suhl-nord_1.jpg",
+  "ort": "Gothaer Straße (Suhl Nord)",
+  "fotos": [
+   {
+    "id": "pmx:45db7a7e-1e78-47f9-a79f-ec35802f927c",
+    "lat": 50.6114692,
+    "lon": 10.6955874,
+    "heading": 318.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=45db7a7e-1e78-47f9-a79f-ec35802f927c"
+   },
+   {
+    "id": "pmx:e1416f43-ee43-4a30-8e88-35c7c35a5008",
+    "lat": 50.6115161,
+    "lon": 10.6955213,
+    "heading": 37.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e1416f43-ee43-4a30-8e88-35c7c35a5008"
+   },
+   {
+    "id": "pmx:acdf6f0f-c218-4812-aefd-391fb43919d8",
+    "lat": 50.6114976,
+    "lon": 10.6957196,
+    "heading": 251.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=acdf6f0f-c218-4812-aefd-391fb43919d8"
+   },
+   {
+    "id": "pmx:bc0e5519-8121-4404-8aec-6d800c494119",
+    "lat": 50.611746,
+    "lon": 10.695785,
+    "heading": 48.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=bc0e5519-8121-4404-8aec-6d800c494119"
+   },
+   {
+    "id": "pmx:45f78cdb-04a3-4652-9801-f5d695c4fb5a",
+    "lat": 50.6120355,
+    "lon": 10.6964364,
+    "heading": 59.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=45f78cdb-04a3-4652-9801-f5d695c4fb5a"
+   },
+   {
+    "id": "pmx:b14d9895-2d7a-41a3-80a4-fb2842c93b61",
+    "lat": 50.6122339,
+    "lon": 10.6969162,
+    "heading": 43.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=b14d9895-2d7a-41a3-80a4-fb2842c93b61"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/gothaer-strasse-suhl-nord_2.jpg",
+  "ort": "Gothaer Straße (Suhl Nord)",
+  "fotos": [
+   {
+    "id": "pmx:8f4cc2bd-5c7c-4a7c-b8c1-67949794d366",
+    "lat": 50.6126494,
+    "lon": 10.6974054,
+    "heading": 24.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=8f4cc2bd-5c7c-4a7c-b8c1-67949794d366"
+   },
+   {
+    "id": "pmx:35e3a784-64ce-4a00-8a8c-b6745530b2d9",
+    "lat": 50.6129829,
+    "lon": 10.6976893,
+    "heading": 23.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=35e3a784-64ce-4a00-8a8c-b6745530b2d9"
+   },
+   {
+    "id": "pmx:f453311e-723d-43bb-9ac0-9bf18d3bf2ca",
+    "lat": 50.6132738,
+    "lon": 10.6978586,
+    "heading": 17.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f453311e-723d-43bb-9ac0-9bf18d3bf2ca"
+   },
+   {
+    "id": "pmx:7e64fd9d-e27d-4b7a-a57c-1216002eea58",
+    "lat": 50.6134808,
+    "lon": 10.6979619,
+    "heading": 25.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7e64fd9d-e27d-4b7a-a57c-1216002eea58"
+   },
+   {
+    "id": "pmx:5183632a-3bc8-4295-a110-7a566d55f83e",
+    "lat": 50.6136844,
+    "lon": 10.6981177,
+    "heading": 26.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=5183632a-3bc8-4295-a110-7a566d55f83e"
+   },
+   {
+    "id": "pmx:45cae5f5-69dc-428c-960b-601b3abe729c",
+    "lat": 50.6139026,
+    "lon": 10.6982875,
+    "heading": 23.5,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=45cae5f5-69dc-428c-960b-601b3abe729c"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/hofleitengasse_1.jpg",
+  "ort": "Hofleitengasse",
+  "fotos": [
+   {
+    "id": "pmx:e1416f43-ee43-4a30-8e88-35c7c35a5008",
+    "lat": 50.6115161,
+    "lon": 10.6955213,
+    "heading": 37.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e1416f43-ee43-4a30-8e88-35c7c35a5008"
+   },
+   {
+    "id": "pmx:45db7a7e-1e78-47f9-a79f-ec35802f927c",
+    "lat": 50.6114692,
+    "lon": 10.6955874,
+    "heading": 318.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=45db7a7e-1e78-47f9-a79f-ec35802f927c"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/hohe-roeder_1.jpg",
+  "ort": "Hohe Röder",
+  "fotos": [
+   {
+    "id": "pmx:acdf6f0f-c218-4812-aefd-391fb43919d8",
+    "lat": 50.6114976,
+    "lon": 10.6957196,
+    "heading": 251.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=acdf6f0f-c218-4812-aefd-391fb43919d8"
+   },
+   {
+    "id": "pmx:59f43128-16c4-45a1-a50c-3015f8fd4463",
+    "lat": 50.6115684,
+    "lon": 10.6959967,
+    "heading": 248.1,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=59f43128-16c4-45a1-a50c-3015f8fd4463"
+   },
+   {
+    "id": "pmx:bedc77f5-2ba9-4902-ae9a-9e9a0dff7cd0",
+    "lat": 50.6116102,
+    "lon": 10.6963228,
+    "heading": 258.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=bedc77f5-2ba9-4902-ae9a-9e9a0dff7cd0"
+   },
+   {
+    "id": "pmx:211ba336-e0ad-4ad3-a90e-7ac23f8f15f1",
+    "lat": 50.6116277,
+    "lon": 10.6965717,
+    "heading": 263.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=211ba336-e0ad-4ad3-a90e-7ac23f8f15f1"
+   },
+   {
+    "id": "pmx:1c8597f0-d71c-49a9-b780-8a5871766d36",
+    "lat": 50.6116413,
+    "lon": 10.6968695,
+    "heading": 265.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1c8597f0-d71c-49a9-b780-8a5871766d36"
+   },
+   {
+    "id": "pmx:cd70708a-e404-41a5-8d18-8141ed73b3a3",
+    "lat": 50.6117743,
+    "lon": 10.6972156,
+    "heading": 238.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=cd70708a-e404-41a5-8d18-8141ed73b3a3"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/hohe-roeder_2.jpg",
+  "ort": "Hohe Röder",
+  "fotos": [
+   {
+    "id": "pmx:4c769a06-5eda-4987-b71c-774d498e596f",
+    "lat": 50.6119147,
+    "lon": 10.69753,
+    "heading": 234.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=4c769a06-5eda-4987-b71c-774d498e596f"
+   },
+   {
+    "id": "pmx:0fa69953-2eeb-4265-a57f-4187a0389f5e",
+    "lat": 50.612086,
+    "lon": 10.6977867,
+    "heading": 223.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=0fa69953-2eeb-4265-a57f-4187a0389f5e"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/lauwetter_1.jpg",
+  "ort": "Lauwetter",
+  "fotos": [
+   {
+    "id": "pmx:3f0a4925-a728-4699-914b-61359bcbce27",
+    "lat": 50.6140478,
+    "lon": 10.6967569,
+    "heading": 200.4,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3f0a4925-a728-4699-914b-61359bcbce27"
+   },
+   {
+    "id": "pmx:9a26ffe0-d271-482b-b02a-7e0ff0afa5d4",
+    "lat": 50.614085,
+    "lon": 10.6967519,
+    "heading": 203.0,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=9a26ffe0-d271-482b-b02a-7e0ff0afa5d4"
+   },
+   {
+    "id": "pmx:83a67d7a-d77a-4186-9063-c4d3b838cdcf",
+    "lat": 50.614081,
+    "lon": 10.6967663,
+    "heading": 255,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=83a67d7a-d77a-4186-9063-c4d3b838cdcf"
+   },
+   {
+    "id": "pmx:0354365b-e2f7-4da1-9eb9-1d0c45f5918b",
+    "lat": 50.6141053,
+    "lon": 10.6967869,
+    "heading": 200.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=0354365b-e2f7-4da1-9eb9-1d0c45f5918b"
+   },
+   {
+    "id": "pmx:256888b5-2e02-4ec5-a105-4078c33b72f7",
+    "lat": 50.6140832,
+    "lon": 10.6967738,
+    "heading": 247,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=256888b5-2e02-4ec5-a105-4078c33b72f7"
+   },
+   {
+    "id": "pmx:b0a45d7f-c996-4ce0-8945-94273dd81600",
+    "lat": 50.6141984,
+    "lon": 10.6968421,
+    "heading": 200.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=b0a45d7f-c996-4ce0-8945-94273dd81600"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/lauwetter_2.jpg",
+  "ort": "Lauwetter",
+  "fotos": [
+   {
+    "id": "pmx:c361d3e0-c846-4aa0-a706-74ea1cfda6fc",
+    "lat": 50.6143916,
+    "lon": 10.6969473,
+    "heading": 199.1,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=c361d3e0-c846-4aa0-a706-74ea1cfda6fc"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/muehlhuegel_1.jpg",
+  "ort": "Mühlhügel",
+  "fotos": [
+   {
+    "id": "pmx:e1416f43-ee43-4a30-8e88-35c7c35a5008",
+    "lat": 50.6115161,
+    "lon": 10.6955213,
+    "heading": 37.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e1416f43-ee43-4a30-8e88-35c7c35a5008"
+   },
+   {
+    "id": "pmx:45db7a7e-1e78-47f9-a79f-ec35802f927c",
+    "lat": 50.6114692,
+    "lon": 10.6955874,
+    "heading": 318.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=45db7a7e-1e78-47f9-a79f-ec35802f927c"
+   },
+   {
+    "id": "pmx:acdf6f0f-c218-4812-aefd-391fb43919d8",
+    "lat": 50.6114976,
+    "lon": 10.6957196,
+    "heading": 251.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=acdf6f0f-c218-4812-aefd-391fb43919d8"
+   },
+   {
+    "id": "pmx:3dee2e7f-b53c-4ba5-aa1b-8b8f1595d61e",
+    "lat": 50.6116184,
+    "lon": 10.6956441,
+    "heading": 35.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3dee2e7f-b53c-4ba5-aa1b-8b8f1595d61e"
+   },
+   {
+    "id": "pmx:bc0e5519-8121-4404-8aec-6d800c494119",
+    "lat": 50.611746,
+    "lon": 10.695785,
+    "heading": 48.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=bc0e5519-8121-4404-8aec-6d800c494119"
+   },
+   {
+    "id": "pmx:d80332a2-d917-4f14-9d7d-209e99cb3ba1",
+    "lat": 50.6118568,
+    "lon": 10.6959847,
+    "heading": 54.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=d80332a2-d917-4f14-9d7d-209e99cb3ba1"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/muehltorstrasse_1.jpg",
+  "ort": "Mühltorstraße",
+  "fotos": [
+   {
+    "id": "pmx:1941da38-fa7b-4186-aab0-75d1c4595cef",
+    "lat": 50.6112006,
+    "lon": 10.6867183,
+    "heading": 105.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1941da38-fa7b-4186-aab0-75d1c4595cef"
+   },
+   {
+    "id": "pmx:9e04eccb-55af-40af-91bd-019f42a4167f",
+    "lat": 50.6112901,
+    "lon": 10.686741,
+    "heading": 270.4,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=9e04eccb-55af-40af-91bd-019f42a4167f"
+   },
+   {
+    "id": "pmx:800ca543-51c9-42ad-af18-e0c71a1718e2",
+    "lat": 50.6111361,
+    "lon": 10.6870847,
+    "heading": 174.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=800ca543-51c9-42ad-af18-e0c71a1718e2"
+   },
+   {
+    "id": "pmx:3cdc6625-4f8a-462a-9807-eea2de79edef",
+    "lat": 50.6112354,
+    "lon": 10.687284,
+    "heading": 279.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3cdc6625-4f8a-462a-9807-eea2de79edef"
+   },
+   {
+    "id": "pmx:641de45c-aad9-4520-9434-2a1842a371a2",
+    "lat": 50.6113401,
+    "lon": 10.6878085,
+    "heading": 252.5,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=641de45c-aad9-4520-9434-2a1842a371a2"
+   },
+   {
+    "id": "pmx:c6be6b26-f761-4bf5-bc77-5160c9d25b55",
+    "lat": 50.6114723,
+    "lon": 10.6884373,
+    "heading": 244.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=c6be6b26-f761-4bf5-bc77-5160c9d25b55"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/muehltorstrasse_2.jpg",
+  "ort": "Mühltorstraße",
+  "fotos": [
+   {
+    "id": "pmx:26b38289-0812-4082-8bf7-8d1f2f5559f2",
+    "lat": 50.6115992,
+    "lon": 10.6890685,
+    "heading": 252.4,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=26b38289-0812-4082-8bf7-8d1f2f5559f2"
+   },
+   {
+    "id": "pmx:630c21b7-7b5e-48be-9171-914982c3d301",
+    "lat": 50.6117075,
+    "lon": 10.6892223,
+    "heading": 54.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=630c21b7-7b5e-48be-9171-914982c3d301"
+   },
+   {
+    "id": "pmx:7a4b5f8e-0a8b-4af8-aca2-3d8bb5c59815",
+    "lat": 50.6116965,
+    "lon": 10.6897168,
+    "heading": 260.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7a4b5f8e-0a8b-4af8-aca2-3d8bb5c59815"
+   },
+   {
+    "id": "pmx:f41b3418-1a71-4609-b71e-950363d17ea1",
+    "lat": 50.6116883,
+    "lon": 10.6904268,
+    "heading": 271.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f41b3418-1a71-4609-b71e-950363d17ea1"
+   },
+   {
+    "id": "pmx:7466b04c-7250-4a6e-95d8-e1e6e74820ff",
+    "lat": 50.6116549,
+    "lon": 10.6911481,
+    "heading": 274.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7466b04c-7250-4a6e-95d8-e1e6e74820ff"
+   },
+   {
+    "id": "pmx:9da55d56-f776-4d7b-8351-bd472bdf4b0f",
+    "lat": 50.6116406,
+    "lon": 10.6918476,
+    "heading": 271.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=9da55d56-f776-4d7b-8351-bd472bdf4b0f"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/naumannstrasse_1.jpg",
+  "ort": "Naumannstraße",
+  "fotos": [
+   {
+    "id": "pmx:f3818c19-9e9b-4688-ab2c-253d3aa63072",
+    "lat": 50.6059701,
+    "lon": 10.6862636,
+    "heading": 120.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f3818c19-9e9b-4688-ab2c-253d3aa63072"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/ort-congress-centrum-suhl-ccs_1.jpg",
+  "ort": "Ort: Congress Centrum Suhl (CCS)",
+  "fotos": [
+   {
+    "id": "pmx:3bb973ae-4563-47fd-a58f-15f7c996ae36",
+    "lat": 50.6112271,
+    "lon": 10.6863276,
+    "heading": 96.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3bb973ae-4563-47fd-a58f-15f7c996ae36"
+   },
+   {
+    "id": "pmx:1941da38-fa7b-4186-aab0-75d1c4595cef",
+    "lat": 50.6112006,
+    "lon": 10.6867183,
+    "heading": 105.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1941da38-fa7b-4186-aab0-75d1c4595cef"
+   },
+   {
+    "id": "pmx:800ca543-51c9-42ad-af18-e0c71a1718e2",
+    "lat": 50.6111361,
+    "lon": 10.6870847,
+    "heading": 174.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=800ca543-51c9-42ad-af18-e0c71a1718e2"
+   },
+   {
+    "id": "pmx:3174d8e5-8e73-4f9f-913f-69c3bcc715bd",
+    "lat": 50.6109826,
+    "lon": 10.6871099,
+    "heading": 225.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3174d8e5-8e73-4f9f-913f-69c3bcc715bd"
+   },
+   {
+    "id": "pmx:91fea479-1eac-4c24-9f67-dcb0ea6aaed8",
+    "lat": 50.6110803,
+    "lon": 10.68731,
+    "heading": 229.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=91fea479-1eac-4c24-9f67-dcb0ea6aaed8"
+   },
+   {
+    "id": "pmx:87e5f67e-3b95-4be0-a2b7-02716b14abce",
+    "lat": 50.611295,
+    "lon": 10.6878526,
+    "heading": 238.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=87e5f67e-3b95-4be0-a2b7-02716b14abce"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/ort-congress-centrum-suhl-ccs_2.jpg",
+  "ort": "Ort: Congress Centrum Suhl (CCS)",
+  "fotos": [
+   {
+    "id": "pmx:c6be6b26-f761-4bf5-bc77-5160c9d25b55",
+    "lat": 50.6114723,
+    "lon": 10.6884373,
+    "heading": 244.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=c6be6b26-f761-4bf5-bc77-5160c9d25b55"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/ort-hauptkirche-st-marien_1.jpg",
+  "ort": "Ort: Hauptkirche St. Marien",
+  "fotos": [
+   {
+    "id": "pmx:d0bfacec-32e7-4456-9be7-2c2ec0b97d20",
+    "lat": 50.6104392,
+    "lon": 10.6945196,
+    "heading": 230,
+    "fov": 46,
+    "date": "2026-01-17",
+    "author": "mapcomplete",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=d0bfacec-32e7-4456-9be7-2c2ec0b97d20"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/ort-neues-rathaus_1.jpg",
+  "ort": "Ort: Neues Rathaus",
+  "fotos": [
+   {
+    "id": "pmx:bc0e5519-8121-4404-8aec-6d800c494119",
+    "lat": 50.611746,
+    "lon": 10.695785,
+    "heading": 48.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=bc0e5519-8121-4404-8aec-6d800c494119"
+   },
+   {
+    "id": "pmx:d80332a2-d917-4f14-9d7d-209e99cb3ba1",
+    "lat": 50.6118568,
+    "lon": 10.6959847,
+    "heading": 54.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=d80332a2-d917-4f14-9d7d-209e99cb3ba1"
+   },
+   {
+    "id": "pmx:2ab55afc-e7f4-4540-ac05-7e57703bbfe5",
+    "lat": 50.6133249,
+    "lon": 10.6961523,
+    "heading": 221.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=2ab55afc-e7f4-4540-ac05-7e57703bbfe5"
+   },
+   {
+    "id": "pmx:6a2a55e7-b4d8-49cf-9919-69672db80f68",
+    "lat": 50.6133805,
+    "lon": 10.6961841,
+    "heading": 220.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=6a2a55e7-b4d8-49cf-9919-69672db80f68"
+   },
+   {
+    "id": "pmx:06ed09cd-b95f-4e83-aff5-ae6302465325",
+    "lat": 50.613579,
+    "lon": 10.6964201,
+    "heading": 213.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=06ed09cd-b95f-4e83-aff5-ae6302465325"
+   },
+   {
+    "id": "pmx:8e3ed3b3-2509-46fb-bd2b-617c228e4b0a",
+    "lat": 50.6137223,
+    "lon": 10.6965089,
+    "heading": 211.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=8e3ed3b3-2509-46fb-bd2b-617c228e4b0a"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/ort-neues-rathaus_2.jpg",
+  "ort": "Ort: Neues Rathaus",
+  "fotos": [
+   {
+    "id": "pmx:13e028c7-abef-402d-b448-43dd56b7aa3f",
+    "lat": 50.6138851,
+    "lon": 10.6966613,
+    "heading": 161.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=13e028c7-abef-402d-b448-43dd56b7aa3f"
+   },
+   {
+    "id": "pmx:7fc21f8a-b4d3-40eb-ac16-4a40dadeec96",
+    "lat": 50.6137201,
+    "lon": 10.6967491,
+    "heading": 238.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7fc21f8a-b4d3-40eb-ac16-4a40dadeec96"
+   },
+   {
+    "id": "pmx:b14d9895-2d7a-41a3-80a4-fb2842c93b61",
+    "lat": 50.6122339,
+    "lon": 10.6969162,
+    "heading": 43.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=b14d9895-2d7a-41a3-80a4-fb2842c93b61"
+   },
+   {
+    "id": "pmx:113a339b-0e15-4f7b-b4eb-6c547073422b",
+    "lat": 50.6123156,
+    "lon": 10.6970395,
+    "heading": 37.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=113a339b-0e15-4f7b-b4eb-6c547073422b"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/paul-greifzu-strasse_1.jpg",
+  "ort": "Paul-Greifzu-Straße",
+  "fotos": [
+   {
+    "id": "pmx:48e8fa16-bb46-44f0-9b6b-c4ed5de68564",
+    "lat": 50.6079832,
+    "lon": 10.6916976,
+    "heading": 123.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=48e8fa16-bb46-44f0-9b6b-c4ed5de68564"
+   },
+   {
+    "id": "pmx:3d4e0a2f-8bb0-42a2-bd12-b5d841d43b80",
+    "lat": 50.6080464,
+    "lon": 10.691702,
+    "heading": 182.5,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3d4e0a2f-8bb0-42a2-bd12-b5d841d43b80"
+   },
+   {
+    "id": "pmx:1bef23a9-1753-47e9-b05f-a4ec4689f703",
+    "lat": 50.6081217,
+    "lon": 10.691794,
+    "heading": 217.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1bef23a9-1753-47e9-b05f-a4ec4689f703"
+   },
+   {
+    "id": "pmx:bdd144ba-9c24-4e4b-ac42-0ca1633da1da",
+    "lat": 50.60793,
+    "lon": 10.6918258,
+    "heading": 123.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=bdd144ba-9c24-4e4b-ac42-0ca1633da1da"
+   },
+   {
+    "id": "pmx:e7157c4b-f4f7-48af-8af0-84a7a10496c3",
+    "lat": 50.6079175,
+    "lon": 10.6918631,
+    "heading": 124.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e7157c4b-f4f7-48af-8af0-84a7a10496c3"
+   },
+   {
+    "id": "pmx:0d47a138-f407-42fa-a8a6-a3f62c6e8ca2",
+    "lat": 50.6079211,
+    "lon": 10.6918525,
+    "heading": 129,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=0d47a138-f407-42fa-a8a6-a3f62c6e8ca2"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/paul-greifzu-strasse_2.jpg",
+  "ort": "Paul-Greifzu-Straße",
+  "fotos": [
+   {
+    "id": "pmx:398f1e9e-01eb-4dc6-885b-bbdbb316c027",
+    "lat": 50.6082218,
+    "lon": 10.6919312,
+    "heading": 221.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=398f1e9e-01eb-4dc6-885b-bbdbb316c027"
+   },
+   {
+    "id": "pmx:9a6b3ae9-e3d0-40cb-91f4-a03bc5ceebe0",
+    "lat": 50.6082677,
+    "lon": 10.6921046,
+    "heading": 247.4,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=9a6b3ae9-e3d0-40cb-91f4-a03bc5ceebe0"
+   },
+   {
+    "id": "pmx:ab45b6fa-8e04-4152-9251-5406d68f9da8",
+    "lat": 50.6081973,
+    "lon": 10.6923385,
+    "heading": 295.4,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=ab45b6fa-8e04-4152-9251-5406d68f9da8"
+   },
+   {
+    "id": "pmx:3547c9e8-79fa-4365-a5d9-23edee3ea35b",
+    "lat": 50.6081192,
+    "lon": 10.692612,
+    "heading": 294.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3547c9e8-79fa-4365-a5d9-23edee3ea35b"
+   },
+   {
+    "id": "pmx:89a537c8-de04-4e7b-b566-dfb0325e4e19",
+    "lat": 50.6080459,
+    "lon": 10.6928625,
+    "heading": 294.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=89a537c8-de04-4e7b-b566-dfb0325e4e19"
+   },
+   {
+    "id": "pmx:d6553714-14b9-4046-b33e-1e11267bf769",
+    "lat": 50.6080263,
+    "lon": 10.6930625,
+    "heading": 278.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=d6553714-14b9-4046-b33e-1e11267bf769"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/puschkinstrasse_1.jpg",
+  "ort": "Puschkinstraße",
+  "fotos": [
+   {
+    "id": "pmx:810064a3-a37c-433f-816d-43d103b52b49",
+    "lat": 50.6061233,
+    "lon": 10.68587,
+    "heading": 121.5,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=810064a3-a37c-433f-816d-43d103b52b49"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/roschstrasse_1.jpg",
+  "ort": "Roschstraße",
+  "fotos": [
+   {
+    "id": "pmx:f533991f-fd3d-4fe5-b1e7-7d05118d9bd0",
+    "lat": 50.6083807,
+    "lon": 10.6935045,
+    "heading": 222.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f533991f-fd3d-4fe5-b1e7-7d05118d9bd0"
+   },
+   {
+    "id": "pmx:67bec969-cef1-40a7-8188-883727c88b88",
+    "lat": 50.6084582,
+    "lon": 10.6936847,
+    "heading": 235.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=67bec969-cef1-40a7-8188-883727c88b88"
+   },
+   {
+    "id": "pmx:7eccec35-9ea8-4796-9741-3cb6beb39703",
+    "lat": 50.6083862,
+    "lon": 10.6938282,
+    "heading": 308.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7eccec35-9ea8-4796-9741-3cb6beb39703"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/ruessenstrasse_1.jpg",
+  "ort": "Rüssenstraße",
+  "fotos": [
+   {
+    "id": "pmx:4e03c3ac-6424-4c80-8676-ba2bc9d2902a",
+    "lat": 50.6119428,
+    "lon": 10.6937167,
+    "heading": 245.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=4e03c3ac-6424-4c80-8676-ba2bc9d2902a"
+   },
+   {
+    "id": "pmx:e473affc-ac0a-495b-8154-f6089c24b6c6",
+    "lat": 50.6119928,
+    "lon": 10.6938185,
+    "heading": 243.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e473affc-ac0a-495b-8154-f6089c24b6c6"
+   },
+   {
+    "id": "pmx:06ed09cd-b95f-4e83-aff5-ae6302465325",
+    "lat": 50.613579,
+    "lon": 10.6964201,
+    "heading": 213.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=06ed09cd-b95f-4e83-aff5-ae6302465325"
+   },
+   {
+    "id": "pmx:565f6391-c6d4-4cb2-bb10-b0ee6832a22a",
+    "lat": 50.6136013,
+    "lon": 10.6964408,
+    "heading": 238.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=565f6391-c6d4-4cb2-bb10-b0ee6832a22a"
+   },
+   {
+    "id": "pmx:8e3ed3b3-2509-46fb-bd2b-617c228e4b0a",
+    "lat": 50.6137223,
+    "lon": 10.6965089,
+    "heading": 211.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=8e3ed3b3-2509-46fb-bd2b-617c228e4b0a"
+   },
+   {
+    "id": "pmx:7fc21f8a-b4d3-40eb-ac16-4a40dadeec96",
+    "lat": 50.6137201,
+    "lon": 10.6967491,
+    "heading": 238.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7fc21f8a-b4d3-40eb-ac16-4a40dadeec96"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/ruessenstrasse_2.jpg",
+  "ort": "Rüssenstraße",
+  "fotos": [
+   {
+    "id": "pmx:13e028c7-abef-402d-b448-43dd56b7aa3f",
+    "lat": 50.6138851,
+    "lon": 10.6966613,
+    "heading": 161.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=13e028c7-abef-402d-b448-43dd56b7aa3f"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/senfte_1.jpg",
+  "ort": "Senfte",
+  "fotos": [
+   {
+    "id": "pmx:e455656f-2e91-43d9-b5fe-1c9c038efc1e",
+    "lat": 50.605592,
+    "lon": 10.6872533,
+    "heading": 124.6,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e455656f-2e91-43d9-b5fe-1c9c038efc1e"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/stadelstrasse_1.jpg",
+  "ort": "Stadelstraße",
+  "fotos": [
+   {
+    "id": "pmx:973bed5b-a46c-4d06-89e0-42448fefb41b",
+    "lat": 50.6082471,
+    "lon": 10.6933152,
+    "heading": 213.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=973bed5b-a46c-4d06-89e0-42448fefb41b"
+   },
+   {
+    "id": "pmx:f533991f-fd3d-4fe5-b1e7-7d05118d9bd0",
+    "lat": 50.6083807,
+    "lon": 10.6935045,
+    "heading": 222.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f533991f-fd3d-4fe5-b1e7-7d05118d9bd0"
+   },
+   {
+    "id": "pmx:a7d54841-d793-4255-b8a5-935ef94f02d2",
+    "lat": 50.6081074,
+    "lon": 10.6931704,
+    "heading": 220.2,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=a7d54841-d793-4255-b8a5-935ef94f02d2"
+   },
+   {
+    "id": "pmx:67bec969-cef1-40a7-8188-883727c88b88",
+    "lat": 50.6084582,
+    "lon": 10.6936847,
+    "heading": 235.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=67bec969-cef1-40a7-8188-883727c88b88"
+   },
+   {
+    "id": "pmx:7eccec35-9ea8-4796-9741-3cb6beb39703",
+    "lat": 50.6083862,
+    "lon": 10.6938282,
+    "heading": 308.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7eccec35-9ea8-4796-9741-3cb6beb39703"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/thomas-muentzer-strasse_1.jpg",
+  "ort": "Thomas-Müntzer-Straße",
+  "fotos": [
+   {
+    "id": "pmx:973bed5b-a46c-4d06-89e0-42448fefb41b",
+    "lat": 50.6082471,
+    "lon": 10.6933152,
+    "heading": 213.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=973bed5b-a46c-4d06-89e0-42448fefb41b"
+   },
+   {
+    "id": "pmx:f533991f-fd3d-4fe5-b1e7-7d05118d9bd0",
+    "lat": 50.6083807,
+    "lon": 10.6935045,
+    "heading": 222.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f533991f-fd3d-4fe5-b1e7-7d05118d9bd0"
+   },
+   {
+    "id": "pmx:7eccec35-9ea8-4796-9741-3cb6beb39703",
+    "lat": 50.6083862,
+    "lon": 10.6938282,
+    "heading": 308.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7eccec35-9ea8-4796-9741-3cb6beb39703"
+   },
+   {
+    "id": "pmx:67bec969-cef1-40a7-8188-883727c88b88",
+    "lat": 50.6084582,
+    "lon": 10.6936847,
+    "heading": 235.9,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=67bec969-cef1-40a7-8188-883727c88b88"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/werner-seelenbinder-strasse_1.jpg",
+  "ort": "Werner-Seelenbinder-Straße",
+  "fotos": [
+   {
+    "id": "pmx:dfb86040-cc94-480c-963e-2af90ebb1688",
+    "lat": 50.6094541,
+    "lon": 10.6844351,
+    "heading": 109.4,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=dfb86040-cc94-480c-963e-2af90ebb1688"
+   },
+   {
+    "id": "pmx:748d2c51-4698-4338-a2be-d547eaec32fa",
+    "lat": 50.6092532,
+    "lon": 10.6849236,
+    "heading": 245.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=748d2c51-4698-4338-a2be-d547eaec32fa"
+   },
+   {
+    "id": "pmx:878dd5ca-4e12-42fe-9ed0-7b17afcbe8ca",
+    "lat": 50.6099515,
+    "lon": 10.6849421,
+    "heading": 13.9,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=878dd5ca-4e12-42fe-9ed0-7b17afcbe8ca"
+   },
+   {
+    "id": "pmx:ccdb2943-be5d-44a9-b243-18d6213fe6a4",
+    "lat": 50.6106025,
+    "lon": 10.6853161,
+    "heading": 29.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=ccdb2943-be5d-44a9-b243-18d6213fe6a4"
+   },
+   {
+    "id": "pmx:c248ba1d-6a45-47c3-86b7-6bb919cd3622",
+    "lat": 50.6112189,
+    "lon": 10.6853299,
+    "heading": 263.5,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=c248ba1d-6a45-47c3-86b7-6bb919cd3622"
+   },
+   {
+    "id": "pmx:c0621347-a9d0-46b4-b92e-47f41a332132",
+    "lat": 50.6110512,
+    "lon": 10.6858144,
+    "heading": 27.8,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=c0621347-a9d0-46b4-b92e-47f41a332132"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/werner-seelenbinder-strasse_2.jpg",
+  "ort": "Werner-Seelenbinder-Straße",
+  "fotos": [
+   {
+    "id": "pmx:5c4f3420-155e-429b-9f82-0587ec99689a",
+    "lat": 50.6111929,
+    "lon": 10.6860039,
+    "heading": 80.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=5c4f3420-155e-429b-9f82-0587ec99689a"
+   },
+   {
+    "id": "pmx:7efa8e81-3eb6-4de4-bd20-914952ad22a0",
+    "lat": 50.6112924,
+    "lon": 10.6862427,
+    "heading": 261.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=7efa8e81-3eb6-4de4-bd20-914952ad22a0"
+   },
+   {
+    "id": "pmx:1941da38-fa7b-4186-aab0-75d1c4595cef",
+    "lat": 50.6112006,
+    "lon": 10.6867183,
+    "heading": 105.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1941da38-fa7b-4186-aab0-75d1c4595cef"
+   },
+   {
+    "id": "pmx:3174d8e5-8e73-4f9f-913f-69c3bcc715bd",
+    "lat": 50.6109826,
+    "lon": 10.6871099,
+    "heading": 225.5,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3174d8e5-8e73-4f9f-913f-69c3bcc715bd"
+   },
+   {
+    "id": "pmx:3cdc6625-4f8a-462a-9807-eea2de79edef",
+    "lat": 50.6112354,
+    "lon": 10.687284,
+    "heading": 279.0,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=3cdc6625-4f8a-462a-9807-eea2de79edef"
+   },
+   {
+    "id": "pmx:87e5f67e-3b95-4be0-a2b7-02716b14abce",
+    "lat": 50.611295,
+    "lon": 10.6878526,
+    "heading": 238.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=87e5f67e-3b95-4be0-a2b7-02716b14abce"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/wuerzburger-strasse_1.jpg",
+  "ort": "Würzburger Straße",
+  "fotos": [
+   {
+    "id": "pmx:42ea2e93-645b-4a4f-879e-9f24822ab06e",
+    "lat": 50.6086164,
+    "lon": 10.6836503,
+    "heading": 56.1,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=42ea2e93-645b-4a4f-879e-9f24822ab06e"
+   },
+   {
+    "id": "pmx:5cc36b96-e958-4649-8275-8f64d0f1d910",
+    "lat": 50.6087694,
+    "lon": 10.6836975,
+    "heading": 223.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=5cc36b96-e958-4649-8275-8f64d0f1d910"
+   },
+   {
+    "id": "pmx:f7e22bfa-c301-4ad8-924c-1957043bc70c",
+    "lat": 50.6088241,
+    "lon": 10.6841372,
+    "heading": 65.1,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=f7e22bfa-c301-4ad8-924c-1957043bc70c"
+   },
+   {
+    "id": "pmx:43f21103-5356-4e91-8597-f286cedd3005",
+    "lat": 50.608981,
+    "lon": 10.6841137,
+    "heading": 231.3,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=43f21103-5356-4e91-8597-f286cedd3005"
+   },
+   {
+    "id": "pmx:1ea6e843-7013-4b0c-81de-d955d6b59dc5",
+    "lat": 50.6089641,
+    "lon": 10.6846133,
+    "heading": 72.8,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1ea6e843-7013-4b0c-81de-d955d6b59dc5"
+   },
+   {
+    "id": "pmx:e8635934-daa2-4601-bbc8-5fc62e5e5bd9",
+    "lat": 50.6091349,
+    "lon": 10.6845199,
+    "heading": 239.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=e8635934-daa2-4601-bbc8-5fc62e5e5bd9"
+   }
+  ]
+ },
+ {
+  "blatt": "zentrum/wuerzburger-strasse_2.jpg",
+  "ort": "Würzburger Straße",
+  "fotos": [
+   {
+    "id": "pmx:5555523f-af90-40f8-b6b1-34663b9388db",
+    "lat": 50.6090507,
+    "lon": 10.6851287,
+    "heading": 82.3,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=5555523f-af90-40f8-b6b1-34663b9388db"
+   },
+   {
+    "id": "pmx:748d2c51-4698-4338-a2be-d547eaec32fa",
+    "lat": 50.6092532,
+    "lon": 10.6849236,
+    "heading": 245.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=748d2c51-4698-4338-a2be-d547eaec32fa"
+   },
+   {
+    "id": "pmx:ea0cc65f-0f14-476a-b02a-cbb96007668a",
+    "lat": 50.6090094,
+    "lon": 10.685368,
+    "heading": 174.7,
+    "fov": 74,
+    "date": "2025-12-27",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=ea0cc65f-0f14-476a-b02a-cbb96007668a"
+   },
+   {
+    "id": "pmx:5fb7ecdb-5c3c-48bb-b308-3e256fb416e2",
+    "lat": 50.6094093,
+    "lon": 10.6848742,
+    "heading": 30.1,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=5fb7ecdb-5c3c-48bb-b308-3e256fb416e2"
+   },
+   {
+    "id": "pmx:1a856b92-95d0-47d8-bf4e-dfdac771bbe4",
+    "lat": 50.6093209,
+    "lon": 10.6850485,
+    "heading": 244.2,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=1a856b92-95d0-47d8-bf4e-dfdac771bbe4"
+   },
+   {
+    "id": "pmx:6acd6490-978f-4b5a-995d-e76725f2ce62",
+    "lat": 50.6093931,
+    "lon": 10.6852883,
+    "heading": 238.8,
+    "fov": 74,
+    "date": "2025-12-29",
+    "author": "sixsixfive",
+    "license": "CC BY-SA 4.0",
+    "page": "https://api.panoramax.xyz/#focus=pic&pic=6acd6490-978f-4b5a-995d-e76725f2ce62"
+   }
+  ]
+ }
+]
