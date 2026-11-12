@@ -37,7 +37,6 @@ import { KERN } from '../core/kern.js';
 import { markDirty, plain } from '../core/assets.js';
 import { warmUp } from '../render/render.js';
 import { CLOCK } from '../time/clock.js';
-import { DN } from '../time/daynight.js';
 import { WXBODEN } from '../wetter/wx_boden.js';
 import { FENCE_MAT } from '../garden/fences.js';
 import { ZKDATA } from './zk_data.js';
@@ -279,11 +278,11 @@ export const ZKWELT = (() => {
         S.wt = sh.uniforms.uWT;
       };
       m.customProgramCacheKey = () => 'brook';
-      m.color.setRGB(...L(0.34, 0.3, 0.23));
-      m.opacity = 0.95;
-      m.roughness = 0.12;
-      m.envMapIntensity = 0.8;
-      if (m.normalScale) m.normalScale.set(0.18, 0.18);
+      m.color.setRGB(...L(0.3, 0.29, 0.21));
+      m.opacity = 0.93;
+      m.roughness = 0.06;
+      m.envMapIntensity = 1.1;
+      if (m.normalScale) m.normalScale.set(0.26, 0.26);
       return m;
     }
     return new THREE.MeshStandardMaterial({
@@ -695,7 +694,7 @@ export const ZKWELT = (() => {
           else {
             for (const j of L0) {
               const o = tris[j];
-              if (o.n[0] * t.n[0] + o.n[1] * t.n[1] + o.n[2] * t.n[2] > 0.9986) par[find(i)] = find(j);
+              if (o.n[0] * t.n[0] + o.n[1] * t.n[1] + o.n[2] * t.n[2] > 0.9925) par[find(i)] = find(j);
             }
             L0.push(i);
           }
@@ -710,7 +709,7 @@ export const ZKWELT = (() => {
           Math.max(t.a[0], t.b[0], t.c[0]) + 0.05,
           Math.max(t.a[1], t.b[1], t.c[1]) + 0.05,
         ];
-        const key = t.col + '|' + t.n.map(v => Math.round(v * 12)).join(',') + '|' + Math.round(t.d);
+        const key = t.col + '|' + t.n.map(v => Math.round(v * 6)).join(',') + '|' + Math.round(t.d / 2);
         if (!bk.has(key)) bk.set(key, []);
         bk.get(key).push(i);
       });
@@ -720,7 +719,7 @@ export const ZKWELT = (() => {
             const a = tris[L0[x]],
               b = tris[L0[y]];
             if (a.bb[0] > b.bb[2] || b.bb[0] > a.bb[2] || a.bb[1] > b.bb[3] || b.bb[1] > a.bb[3]) continue;
-            if (Math.abs(a.d - b.d) > 0.04 || a.n[0] * b.n[0] + a.n[1] * b.n[1] + a.n[2] * b.n[2] < 0.9986) continue;
+            if (Math.abs(a.d - b.d) > 0.15 || a.n[0] * b.n[0] + a.n[1] * b.n[1] + a.n[2] * b.n[2] < 0.9925) continue;
             par[find(L0[x])] = find(L0[y]);
           }
       const groups = new Map();
@@ -985,7 +984,7 @@ export const ZKWELT = (() => {
     });
     // a frame colour per installation: older silver, newer black
     const black = hstr(bk) < 0.45;
-    return { id: PID++, bk, rank: hstr(bk + '|pv'), flat, f, mods, cx, cy, cz, black, n: nM };
+    return { id: PID++, bk, typ: vb ? vb.typ : -1, rank: hstr(bk + '|pv'), flat, f, mods, cx, cy, cz, black, n: nM };
   }
   function roofShare(share) {
     const R = scanRoofs();
@@ -1656,6 +1655,7 @@ export const ZKWELT = (() => {
     // the minibus: welt-dinge's van, white, waiting in the bay of the Anger stop (behind the school bus's place)
     let van = null,
       vsh = null,
+      win = null,
       vp = null;
     if (D && D.car) {
       const BP = G('BUS') && BUS.plan,
@@ -1682,14 +1682,32 @@ export const ZKWELT = (() => {
       const T0 = D.CARS && D.CARS.van ? D.CARS.van : { W: 2, H: 2.3, L: 5.3 };
       vsh = shadows([{ x: bx, y: by, z: bz, W: T0.W, H: T0.H, L: T0.L, az: hd }], 'rufbus');
       vp = [bx, by, hd];
+      // a minibus, not a delivery van: tinted side windows along the passenger box, a green band (the plate's colour), in the van's frame
+      // (three: x right, y up, −z forward)
+      const B = GB(false),
+        GLW = L(0.06, 0.07, 0.08),
+        GRN = L(0.05, 0.36, 0.17),
+        hw = T0.W / 2 + 0.006;
+      for (const sx of [-1, 1]) {
+        for (const [z0, z1] of [
+          [-0.55, 0.45],
+          [0.6, 1.55],
+          [1.7, 2.35],
+        ])
+          B.box(M4(sx * hw, 1.5, (z0 + z1) / 2), 0.01, 0.58, z1 - z0, GLW, 0);
+        B.box(M4(sx * hw, 0.82, 0.35), 0.01, 0.14, 4.2, GRN, 0);
+      }
+      win = plainMesh(B.geo(), M.kit, 'rufbus-fenster');
+      win.matrixAutoUpdate = false;
+      win.matrix.copy(m);
     }
-    return { plates, posts, van, vsh, n: st.length, vp };
+    return { plates, posts, van, vsh, win, n: st.length, vp };
   }
   function rufbus(on) {
     if (on && !S.ruf) S.ruf = rufbusBuild();
     const R = S.ruf;
     if (!R) return;
-    for (const m of [R.plates, R.posts, R.van, R.vsh]) if (m) m.visible = !!on;
+    for (const m of [R.plates, R.posts, R.van, R.vsh, R.win]) if (m) m.visible = !!on;
     markDirty(true);
   }
 
@@ -1911,6 +1929,37 @@ export const ZKWELT = (() => {
       z = Bd.bed[best.i] + (Bd.bed[best.i + 1] - Bd.bed[best.i]) * best.t;
     return { s, d: best.d * best.sg, ad: best.d, z };
   }
+  // The official flood area of the Schleuse at Ratscher (Überschwemmungsgebiet, HQ100; Geoproxy Thüringen WMS „UESG“, © GDI-Th /
+  // TLUBN, dl-de/by-2-0, fetched 12.11.2026): a mask of 4 m cells on site metres, rows south to north, run lengths (base 36) from „dry“.
+  // It covers the meadows from the dam down and most of the village – the extent of „Schwerer als 2023“.
+  const USG = {
+    x0: -420,
+    y0: -900,
+    c: 4.0,
+    nx: 342,
+    ny: 345,
+    rle: '76,9,m,1h;75,b,m,1g;75,c,n,1e;75,e,m,1d;75,f,n,1b;74,i,m,1a;74,j,n,18;74,l,m,17;74,m,n,15;74,n,n,14;74,p,n,12;74,r,m,11;73,t,n,z;73,u,n,y;73,w,n,w;73,x,o,u;73,z,n,t;72,11,o,r;72,13,n,q;72,14,1,4,1,2,f,p;71,1e,g,n;71,1f,h,l;71,1h,g,k;70,1k,g,i;70,1n,e,h;70,1p,e,f;6z,1p,g,e;6z,1q,h,c;6p,5,4,1t,h,a;6p,6,3,1q,2,2,h,9;6p,6,2,1r,3,2,i,7;6o,7,2,1r,4,3,h,6;6o,7,1,1t,5,2,h,5;6m,9,1,1u,5,3,h,3;6l,27,4,3,i,1;6k,29,5,2,i;6k,2b,4,4,f;6l,2b,3,5,e;6n,2j,c;6o,2f,2,1,c;6p,2f,e;6p,2e,f;6q,2e,e;6q,2f,d;6q,2g,c;6p,2j,a;6l,2o,9;6l,2q,7;6k,2s,6;6j,2v,4;6j,2w,3;6i,2z,1;6i,2z,1;6i,30;6i,30;6i,30;6i,2z,1;6h,30,1;6h,2z,2;6g,2z,3;6h,2x,4;6g,2x,5;6f,2y,5;6f,2x,6;6f,2w,7;6f,2v,8;6f,2v,8;6f,2u,9;6g,2s,a;6g,2r,b;6f,2r,c;6f,2r,c;6e,2r,d;6e,2q,e;6d,2p,g;6c,2q,g;6a,2q,i;6a,2p,j;69,2q,j;66,2s,k;63,2v,k;62,2w,k;62,2v,l;62,2u,m;61,2u,n;61,2t,o;61,6,2,2k,p;63,1,5,2k,p;62,1,6,2j,q;68,2j,r;62,1,5,2i,s;61,2,5,2h,t;61,2,5,2g,u;61,1,6,2f,v;68,2e,w;5a,1,x,2d,x;5a,3,n,1,6,2d,y;5c,2,l,1,7,2c,z;5d,2,d,1,6,1,7,2b,10;5f,2,a,1,f,2a,11;5g,2,8,1,8,1,7,29,12;5i,2,5,1,8,1,8,28,13;5j,3,2,2,8,1,8,27,14;5k,4,j,26,15;5x,3,7,24,17;5x,3,7,24,17;67,22,19;5w,1,a,21,1a;67,20,1b;67,1z,1c;5v,2,a,1y,1d;5s,5,a,1y,1d;5s,5,a,1x,1e;5u,3,9,1x,1f;5t,4,7,1,1,1w,1g;5t,4,6,1y,1h;5t,3,6,1z,1h;5t,3,6,1z,1h;5u,3,6,1x,1i;5v,3,5,1x,1i;5v,3,5,1w,1j;5w,3,3,1x,1j;5w,4,2,1x,1j;5x,22,1j;5x,21,1k;5y,20,1k;5y,20,1k;5y,20,1k;5z,1z,1k;5y,20,1k;5y,1z,1l;5x,20,1l;5x,20,1l;5w,21,1l;5w,20,1m;5v,21,1m;5v,21,1m;5u,22,1m;5t,23,1m;5s,22,1o;5r,22,1p;5r,21,1q;5r,1u,1,5,1r;5r,1s,1z;5r,1r,20;5q,1q,22;5q,1p,23;5p,1q,23;5m,2,1,1p,24;5d,3,5,1t,24;5c,4,4,1,1,1r,25;5c,4,6,1r,25;5c,7,4,1q,25;5b,8,4,1p,26;4v,1,f,4,1,2,5,1p,26;4s,5,c,8,6,1o,27;4q,7,9,b,6,1o,27;4n,a,6,e,6,1o,27;4m,v,6,1n,28;4j,z,5,1m,29;4h,12,4,1l,2a;4g,2k,2i;4f,2j,2k;4f,2h,2m;4d,2i,2n;4d,2h,2o;4d,2h,2o;4d,2h,2o;4d,2i,2n;4d,2j,2m;4b,2l,2m;4a,2n,2l;49,2o,2l;48,2p,2l;46,2p,2n;45,2o,2p;44,2m,2s;40,2o,2u;40,2m,2w;40,2k,2y;3z,2j,30;3y,28,3c;3x,28,3d;3w,27,3f;3v,26,3h;3u,27,3h;3t,27,3i;3s,27,3j;3s,26,3k;3s,26,3k;3n,2a,3l;3a,3,9,2b,3l;39,6,5,2d,3l;38,7,1,1,1,2e,3m;38,2o,3m;38,2n,3n;38,2n,3n;38,2n,3n;38,2m,3o;38,2l,3p;38,2k,3q;38,2j,3r;39,2h,3s;38,2h,3t;38,2g,3u;38,2f,3v;37,2e,3x;33,2g,3z;32,2g,40;31,2g,41;2z,1g,1,10,42;2y,1g,3,y,43;2x,1h,3,w,45;2x,1h,4,t,47;2w,n,1,u,5,q,49;2v,n,2,u,5,o,4b;2u,o,2,w,4,k,4e;2u,o,2,w,4,h,4h;2t,1n,5,e,4j;2k,1w,4,c,4m;1w,2,2,2g,2,c,4o;1c,3,1,3a,4s;s,3v,4v;8,4c,4y;0,4j,4z;0,4i,50;0,4h,51;0,4g,52;0,4g,52;0,4g,52;0,4g,52;0,4f,53;0,4d,55;0,4c,56;0,4b,57;0,4a,58;0,49,59;0,48,5a;0,46,5c;0,45,5d;0,44,5e;0,44,5e;0,42,5g;0,41,5h;0,40,5i;0,3y,5k;0,3x,5l;0,3w,5m;0,3u,5o;0,3t,5p;0,3r,5r;0,3q,5s;0,3o,5u;0,3n,5v;0,3m,5w;0,3k,5y;0,3j,5z;0,3i,60;0,3h,61;0,3f,63;0,3e,64;0,3d,65;0,3c,66;0,3b,67;0,3a,68;0,39,69;0,37,6b;0,37,6b;0,35,6d;0,34,6e;0,33,6f;0,32,6g;0,30,6i;0,2z,6j;0,2y,6k;0,2x,6l;0,2w,6m;0,2u,6o;0,2s,6q;0,2q,6s;0,2n,6v;0,2l,6x;0,2k,6y;0,2j,6z;0,2h,71;0,2g,72;0,2f,73;0,2d,75;0,2c,76;0,2a,78;0,29,79;0,28,7a;0,26,7c;0,25,7d;0,23,7f;0,22,7g;0,20,7i;0,1z,7j;0,1x,7l;0,1w,7m;0,1u,7o;0,1t,7p;0,1r,7r;0,1q,7s;0,1o,7u;0,1n,7v;0,1l,7x;0,1k,7y;0,1i,80;0,1h,81;0,1f,83;0,1e,84;0,1c,86;0,1b,87;0,1a,88;0,18,8a;0,16,8c;0,14,8e;0,13,8f;0,12,8g;0,10,8i;0,z,8j;0,y,8k;0,x,8l;0,x,8l;0,v,8n;0,u,8o;0,s,8q;0,q,8s;0,o,8u;0,l,8x;0,j,8z;0,g,92;0,e,94;0,a,98;0,8,9a;0,5,9d;0,2,9g;9i;9i;9i;9i;9i;9i;9i',
+  };
+  function usgMask() {
+    if (S.usg) return S.usg;
+    const M = new Uint8Array(USG.nx * USG.ny);
+    USG.rle.split(';').forEach((row, j) => {
+      let i = 0,
+        v = 0;
+      for (const r of row.split(',')) {
+        const n = parseInt(r, 36);
+        if (v) M.fill(1, j * USG.nx + i, j * USG.nx + i + n);
+        i += n;
+        v ^= 1;
+      }
+    });
+    return (S.usg = M);
+  }
+  const usgAt = (x, y) => {
+    const i = Math.floor((x - USG.x0) / USG.c),
+      j = Math.floor((y - USG.y0) / USG.c);
+    return i >= 0 && j >= 0 && i < USG.nx && j < USG.ny ? usgMask()[j * USG.nx + i] : 0;
+  };
   // How deep the water stands over the valley floor of the 10 m terrain: that terrain smooths the Schleuse's bed away, and the village
   // lies on the same flat floor only 0–1,5 m above it – a fixed depth would put the whole village under water. So the depth is chosen
   // so that as many houses stand in the water as the variant assumes (zukunft/zk_data.js: „Wie im Dezember 2023“, gauge 0,9 m above
@@ -1966,7 +2015,7 @@ export const ZKWELT = (() => {
     return S.fgrid;
   }
   // the cells under water at depth d, connected to the river (flood fill from the cells on its line)
-  function floodFill(FG, d) {
+  function floodFill(FG, d, maxD = 1e9) {
     const { NX, NY, W0, Z, Dv, CELL } = FG,
       CX = NX - 1,
       CY = NY - 1,
@@ -1977,6 +2026,7 @@ export const ZKWELT = (() => {
       for (let i = 0; i < CX; i++) {
         const c = corner(i, j);
         if (c.some(k => Number.isNaN(W0[k]))) continue;
+        if (Math.abs(Dv[c[0]]) > maxD) continue;
         if (c.some(k => Z[k] < W0[k] + d)) wet[j * CX + i] = 1;
       }
     const queue = [];
@@ -2014,21 +2064,89 @@ export const ZKWELT = (() => {
       CX = NX - 1,
       CY = NY - 1,
       want = floodHouses(level);
-    // the deepest water (5 cm steps, 5 cm … 1,5 m) that puts no more houses in the water than the variant assumes
     const wetHouses = (seen, d) => FG.houses.filter(h => seen[h.cell] && h.z < W0[h.k] + d).length;
-    let depth = 0.05,
-      seen = floodFill(FG, depth),
-      nh = wetHouses(seen, depth);
-    for (let d = 0.1; d <= 1.5 + 1e-6; d += 0.05) {
-      const s2 = floodFill(FG, d),
-        n2 = wetHouses(s2, d);
-      if (n2 > want) break;
-      depth = d;
-      seen = s2;
-      nh = n2;
-    }
+    const inUsg = new Uint8Array(NX * NY);
+    for (let k = 0; k < inUsg.length; k++) inUsg[k] = usgAt(x0 + (k % NX) * CELL, y0 + ((k / NX) | 0) * CELL);
+    let seen = null,
+      nh = 0,
+      depth = 0,
+      maxD = 0;
     const W = new Float32Array(NX * NY);
-    for (let k = 0; k < W.length; k++) W[k] = W0[k] + depth;
+    const big = level >= 1.4;
+    if (big) {
+      // „Schwerer als 2023“ (HQ100): the official flood area. Its water level along the valley from the heights where the area ends
+      // (the lower quarter of them: the shore lies where the terrain meets the water, inside the area's line), falling downstream
+      const Bd = riverBed(),
+        nS = RIVER.length,
+        bucket = Array.from({ length: nS }, () => []);
+      for (let j = 1; j < NY - 1; j++)
+        for (let i = 1; i < NX - 1; i++) {
+          const k = j * NX + i;
+          if (!inUsg[k] || Number.isNaN(W0[k])) continue;
+          if (inUsg[k - 1] && inUsg[k + 1] && inUsg[k - NX] && inUsg[k + NX]) continue;
+          let st = 0;
+          while (st + 1 < nS && Bd.s[st + 1] < Sv[k]) st++;
+          bucket[st].push(Z[k]);
+        }
+      const Wst = new Float32Array(nS);
+      for (let i = 0; i < nS; i++) {
+        const v = [];
+        for (let q = Math.max(0, i - 3); q <= Math.min(nS - 1, i + 3); q++) v.push(...bucket[q]);
+        v.sort((a, b) => a - b);
+        Wst[i] = v.length >= 4 ? v[Math.floor(v.length * 0.25)] : Bd.bed[i] + 0.6;
+        Wst[i] = Math.max(Wst[i], Bd.bed[i] + 0.3);
+      }
+      for (let i = 1; i < nS; i++) Wst[i] = Math.min(Wst[i], Wst[i - 1]);
+      const at = sv => {
+        let i = 0;
+        while (i + 1 < nS && Bd.s[i + 1] < sv) i++;
+        const t = i + 1 < nS ? Math.max(0, Math.min(1, (sv - Bd.s[i]) / (Bd.s[i + 1] - Bd.s[i]))) : 0;
+        return i + 1 < nS ? Wst[i] + (Wst[i + 1] - Wst[i]) * t : Wst[i];
+      };
+      for (let k = 0; k < W.length; k++) W[k] = Number.isNaN(W0[k]) ? NaN : at(Sv[k]);
+      seen = new Uint8Array(CX * CY);
+      for (let j = 0; j < CY; j++)
+        for (let i = 0; i < CX; i++) {
+          const c = [j * NX + i, j * NX + i + 1, (j + 1) * NX + i + 1, (j + 1) * NX + i];
+          if (c.some(k => Number.isNaN(W[k]))) continue;
+          if (c.filter(k => inUsg[k]).length < 2) continue;
+          if (c.some(k => Z[k] < W[k])) seen[j * CX + i] = 1;
+        }
+      nh = FG.houses.filter(h => seen[h.cell] && h.z < W[h.k]).length;
+      depth = Wst.reduce((a, w, i) => a + (w - Bd.bed[i]), 0) / nS;
+    } else {
+      // „Wie im Dezember 2023“: the reservoir held most of it back – the river at the brim and the lowest meadows next to it, inside
+      // the official area: within 35 m of the river, the deepest water (5 cm steps) that leaves the village's houses dry but the few
+      // the variant assumes (Annahme)
+      maxD = 35;
+      depth = 0.05;
+      const fill = d => {
+        const sn = floodFill(FG, d, maxD);
+        for (let j = 0; j < CY; j++)
+          for (let i = 0; i < CX; i++)
+            if (sn[j * CX + i] && !inUsg[j * NX + i] && !inUsg[(j + 1) * NX + i + 1]) sn[j * CX + i] = 0;
+        return sn;
+      };
+      seen = fill(0.05);
+      nh = wetHouses(seen, 0.05);
+      for (let d = 0.1; d <= 0.8 + 1e-6; d += 0.05) {
+        const s2 = fill(d),
+          n2 = wetHouses(s2, d);
+        if (n2 > want) break;
+        depth = d;
+        seen = s2;
+        nh = n2;
+      }
+      for (let k = 0; k < W.length; k++) W[k] = W0[k] + depth;
+    }
+    // the river itself at the brim: a ribbon of about 10 m along its line (the 10 m terrain has no channel), 8 cm over the ground at least
+    for (let k = 0; k < W.length; k++)
+      if (!Number.isNaN(W[k]) && Math.abs(Dv[k]) <= 5) W[k] = Math.max(W[k], Z[k] + 0.08);
+    for (let j = 0; j < CY; j++)
+      for (let i = 0; i < CX; i++) {
+        const c = [j * NX + i, j * NX + i + 1, (j + 1) * NX + i + 1, (j + 1) * NX + i];
+        if (c.every(k => !Number.isNaN(W[k]) && Math.abs(Dv[k]) <= 5)) seen[j * CX + i] = 1;
+      }
     const corner = (i, j) => [j * NX + i, j * NX + i + 1, (j + 1) * NX + i + 1, (j + 1) * NX + i];
     // the water: one quad per flooded cell at the level of its corners (the terrain cuts the shore)
     const vi = new Int32Array(NX * NY).fill(-1),
@@ -2136,14 +2254,24 @@ export const ZKWELT = (() => {
           z: W[k0] + 0.01,
           r: hash(k0 * 11) * 6.28,
           s: 0.6 + hash(k0 * 13) * 0.9,
-          kind: hash(k0 * 17) < 0.55 ? 0 : 1,
+          kind: hash(k0 * 23) < 0.07 ? 2 : hash(k0 * 17) < 0.55 ? 0 : 1,
         });
       }
-    return { g, mg, fl, cells: nCells, area, depth, houses: nh, want };
+    return { g, mg, fl, cells: nCells, area, depth, houses: nh, want, maxD, usg: big };
   }
   // twigs (a few thin sticks) and straw (a flat pale tangle): flotsam in one geometry each
   function flotsamGeo(kind) {
     const B = GB(false);
+    if (kind === 2) {
+      // driftwood: a trunk piece of 2,4 m with two broken branch stubs, half in the water
+      const BK = L(0.24, 0.2, 0.15),
+        WD = L(0.42, 0.35, 0.26);
+      B.box(M4(0, 0.02, 0), 2.4, 0.18, 0.18, BK, 0);
+      B.box(M4(1.205, 0.02, 0), 0.01, 0.17, 0.17, WD, 0);
+      B.box(M4(0.4, 0.12, 0.12, 0.6), 0.5, 0.05, 0.05, BK, 0);
+      B.box(M4(-0.6, 0.1, -0.1, -0.8), 0.4, 0.04, 0.04, BK, 0);
+      return B.geo();
+    }
     if (kind === 0) {
       const C = [L(0.24, 0.19, 0.14), L(0.32, 0.27, 0.21), L(0.16, 0.13, 0.1)];
       for (let i = 0; i < 4; i++) {
@@ -2178,12 +2306,12 @@ export const ZKWELT = (() => {
   function flood(level) {
     level = level > 0 ? level : 0;
     if (!level) {
-      for (const m of [S.floodMesh, S.mudMesh, S.flot0, S.flot1]) if (m) m.visible = false;
+      for (const m of [S.floodMesh, S.mudMesh, S.flot0, S.flot1, S.flot2]) if (m) m.visible = false;
       S.floodLevel = 0;
       return;
     }
     if (Math.abs((S.floodLevel || 0) - level) < 0.01 && S.floodMesh) {
-      for (const m of [S.floodMesh, S.mudMesh, S.flot0, S.flot1]) if (m) m.visible = true;
+      for (const m of [S.floodMesh, S.mudMesh, S.flot0, S.flot1, S.flot2]) if (m) m.visible = true;
       return;
     }
     const M = mats(),
@@ -2202,7 +2330,7 @@ export const ZKWELT = (() => {
       S.mudMesh.geometry.dispose();
       S.mudMesh.geometry = F.mg;
     }
-    for (const kind of [0, 1]) {
+    for (const kind of [0, 1, 2]) {
       const key = 'flot' + kind,
         L0 = F.fl.filter(f => f.kind === kind);
       if (S[key]) {
@@ -2229,7 +2357,7 @@ export const ZKWELT = (() => {
       im.instanceMatrix.needsUpdate = true;
       S[key] = im;
     }
-    for (const m of [S.floodMesh, S.mudMesh, S.flot0, S.flot1]) if (m) m.visible = true;
+    for (const m of [S.floodMesh, S.mudMesh, S.flot0, S.flot1, S.flot2]) if (m) m.visible = true;
     S.floodLevel = level;
     S.floodInfo = {
       cells: F.cells,
@@ -2238,6 +2366,8 @@ export const ZKWELT = (() => {
       flotsam: F.fl.length,
       houses: F.houses,
       want: F.want,
+      maxD: Math.round(F.maxD),
+      usg: F.usg,
     };
     markDirty(true);
   }
@@ -2301,7 +2431,6 @@ export const ZKWELT = (() => {
       BARK = L(0.3, 0.25, 0.2),
       BIRCH = L(0.78, 0.77, 0.72),
       DARK = L(0.055, 0.085, 0.05);
-    const shade = (k0, k1) => nv => mix3(k0, k1, Math.max(0, Math.min(1, 0.5 + 0.5 * nv.y)));
     if (kind === 'fichte' || kind === 'tanne') {
       // a narrow cone of whorls: five tiers, darker inside, the leader on top
       B.prism(0, 0, 0, 0.98, 0.016, 0.004, 5, BARK, false);
@@ -2323,15 +2452,14 @@ export const ZKWELT = (() => {
       ])
         B.blob(x, y, z, r, r * 1.25, r, () => PAINT, Math.round(y * 100), 3, 6, 0.35);
     } else {
-      // beech, oak, maple, rowan: a stem and a rounded crown of five lumpy masses
-      B.prism(0, 0, 0, 0.55, 0.02, 0.012, 6, BARK, false);
+      // beech, oak, maple, rowan: a stem and a rounded crown of four lumpy masses (few triangles: thousands of them stand)
+      B.prism(0, 0, 0, 0.55, 0.02, 0.012, 5, BARK, false);
       const sp = kind === 'eiche' ? 0.3 : kind === 'ahorn' ? 0.27 : 0.25;
       for (const [x, y, z, r] of [
         [0, 0.66, 0, sp],
-        [0.13, 0.58, 0.06, sp * 0.7],
-        [-0.12, 0.6, -0.07, sp * 0.72],
-        [0.05, 0.82, -0.08, sp * 0.62],
-        [-0.06, 0.79, 0.1, sp * 0.6],
+        [0.13, 0.6, 0.06, sp * 0.72],
+        [-0.12, 0.62, -0.07, sp * 0.74],
+        [0, 0.83, 0.02, sp * 0.62],
       ])
         B.blob(
           x,
@@ -2340,10 +2468,10 @@ export const ZKWELT = (() => {
           r,
           r * 0.85,
           r,
-          nv => (nv.y < -0.2 ? shade(DARK, DARK)(nv) : PAINT),
+          nv => (nv.y < -0.25 ? L(0.11, 0.1, 0.065) : PAINT),
           Math.round(x * 100 + 50),
           3,
-          7,
+          6,
           0.3
         );
     }
@@ -2444,7 +2572,7 @@ export const ZKWELT = (() => {
       // young trees: in the family forest planted in groups (umbau) or seeded (natur), elsewhere fewer
       const occ = ZKDATA.OCC[mode] * (core ? 1 : 0.45);
       if (hash(t.id * 29 + 3) > occ) continue;
-      const n = mode === 'umbau' && core ? 3 : 2;
+      const n = core ? (mode === 'umbau' ? 3 : 2) : 1;
       for (let k = 0; k < n; k++) {
         const r = hash(t.id * 97 + k * 13),
           kind = pickKind(mode, hash(t.id * 53 + k * 7)),
@@ -2602,7 +2730,7 @@ export const ZKWELT = (() => {
         S.young[k] = inst(geos[gk], M.wood, COARSE ? 1200 : 3000, 'jung-' + k);
       }
       S.young.guard = inst(guardGeo(), M.kit, 2000, 'wuchshuellen');
-      S.young.stump = inst(stumpGeo(), M.wood, 6000, 'stubben');
+      S.young.stump = inst(stumpGeo(), M.wood, COARSE ? 2500 : 6000, 'stubben');
       S.young.brush = inst(brushGeo(), M.wood, 600, 'reisig');
     }
     const by = {};
@@ -2617,7 +2745,8 @@ export const ZKWELT = (() => {
       const im = S.young[k],
         L0 = by[k].slice(0, im.instanceMatrix.count);
       L0.forEach((t, i) => {
-        const wide = k === 'fichte' || k === 'tanne' ? 0.95 : k === 'birke' ? 0.85 : 1.0;
+        // crowns of young trees in a stand are narrow (they grow up towards the light): narrower the taller
+        const wide = k === 'fichte' || k === 'tanne' ? 0.95 : (k === 'birke' ? 0.85 : 1.0) * (t.h > 4 ? 0.72 : 0.95);
         _s.set(t.h * wide, t.h, t.h * wide);
         _q.setFromAxisAngle(up, t.rot);
         _p.copy(T3(t.x, t.y, gnd(t.x, t.y) - 0.03));
@@ -2694,10 +2823,10 @@ export const ZKWELT = (() => {
   }
   function clear() {
     S.sig.all = null;
-    for (const m of [S.roofMesh, S.flatMesh, S.flatBody, S.wpMesh, S.floodMesh, S.mudMesh, S.flot0, S.flot1])
+    for (const m of [S.roofMesh, S.flatMesh, S.flatBody, S.wpMesh, S.floodMesh, S.mudMesh, S.flot0, S.flot1, S.flot2])
       if (m) m.visible = false;
     if (S.parkMeshes) for (const m of Object.values(S.parkMeshes)) if (m && m.isObject3D) m.visible = false;
-    if (S.ruf) for (const m of [S.ruf.plates, S.ruf.posts, S.ruf.van, S.ruf.vsh]) if (m) m.visible = false;
+    if (S.ruf) for (const m of [S.ruf.plates, S.ruf.posts, S.ruf.van, S.ruf.vsh, S.ruf.win]) if (m) m.visible = false;
     S.floodLevel = 0;
     bank(false);
     dry(0);
@@ -2798,13 +2927,13 @@ export const ZKWELT = (() => {
       Pk = parkLayout();
     // village houses with the most modules, and a place in the open in front of each (downslope, 12–34 m away)
     const big = [];
-    for (const p of R.P.filter(q => !q.flat && q.bk[0] === 'v' && q.mods.length >= 10)
+    for (const p of R.P.filter(q => !q.flat && q.typ === 0 && q.mods.length >= 8)
       .slice()
       .sort((a, b) => b.mods.length - a.mods.length)) {
       const hl = Math.hypot(p.n[0], p.n[1]) || 1,
         dx = p.n[0] / hl,
         dy = p.n[1] / hl;
-      for (let d = 12; d <= 34; d += 2) {
+      for (let d = 16; d <= 34; d += 2) {
         const x = p.cx + dx * d,
           y = p.cy + dy * d;
         if ([0, 1.5, -1.5].some(o => villageAt(x - dy * o, y + dx * o))) continue;
