@@ -66,6 +66,14 @@ def run():
             ck('the nature value comes from the animals module', ctx and ctx['nat0'] > 0, str(ctx and ctx['nat0']))
 
             global P0
+            # let the world load where the camera goes first (bark, char, village and traffic materials belong to the world, not to the mode):
+            # visit every topic's top view and walk spot once, then count programs – from here on a variant or a year must add none
+            if 'ende' in want:
+                for t in ('mobil', 'energie', 'klima', 'wald'):
+                    E(f"ZUKUNFT.setTopic('{t}')")
+                    for v in ('top', 'walk'):
+                        E(f"ZUKUNFT.view('{v}')"); steps(2.0)
+                E("ZUKUNFT.setTopic('mobil'); ZUKUNFT.show('a')"); steps(1.0)
             P0 = progs()
             print('programs after start', P0, flush=True)
             E("window.__T0 = FOREST.list.filter(t => t.sp === 'spruce').slice(0, 400).map(t => [t.h, t.w, t.tint ? t.tint.join(',') : ''])")
@@ -187,10 +195,10 @@ def run():
         if 'ende' in want:
             print('programs at section start:', progs(), flush=True)
             progs_end = progs()
-            # KNOWN (owner: zukunft-welt, zk_welt.warm()): about 13 programs still compile lazily (energy +3, wood +9: instance colours / tint, weather preset).
-            # Until warm() covers them the test only fails if the count grows beyond that; tighten MAX_NEW to 0 once fixed.
-            MAX_NEW = 14
-            ck('no new shader programs while the variants were tried (known: up to %d, see KNOWN)' % MAX_NEW, P0 is None or progs_end - P0 <= MAX_NEW, f'{P0} -> {progs_end}')
+            # After visiting every view first, local run 14.11.: still +7 (mobil section +2, energie +3, wood +2). Owner: zukunft-welt (zk_welt.warm / bench builder);
+            # tighten to 0 once they are gone. The per-section counts are printed above ('programs at section start').
+            MAX_NEW = 7
+            ck('no new shader programs while the variants were tried (after visiting the views)', P0 is None or progs_end - P0 <= MAX_NEW, f'{P0} -> {progs_end}')
             E("ZUKUNFT.setTopic('wald'); ZUKUNFT.show('a')"); steps(0.5)
             E("ZUKUNFT.exit()"); steps(1.0)
             s = st()
