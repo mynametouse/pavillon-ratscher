@@ -29,11 +29,15 @@ Inhalt: 1 Maßstab · 2 Datenprodukte, Pipeline, Kacheln, Hosting · 3 Laufzeit 
 Gebiete aus `origin/suhl/bestand:tools/suhl/out/bestand/gebiete.geojson` (Commit `3131dc3`, erster Stand aus der OSM-API). Flächen
 und Kachelzahlen am 13.11. aus diesen Polygonen nachgerechnet (UTM 32N, Quadtree von `tools/welt/wlib.py`).
 
-| Gebiet | Fläche | Ausdehnung (UTM) | Modell x (Ost) | Modell y (Nord) | Kacheln Stufe 10 / 11 / 12 | Landes-Kacheln 1 km / 2 km (mit 300 m Rand) |
+| Gebiet | Fläche | Ausdehnung (UTM) | Modell x (Ost) | Modell y (Nord) | Kacheln Stufe 10 / 11 / 12 | Landes-Kacheln 1 km / 2 km |
 |---|---|---|---|---|---|---|
-| `stadt` (Gemeinde, OSM-Relation 62450) | 141,81 km² | 20,6 × 14,5 km | −14 860 … 6 396 | 6 180 … 21 920 | 1 013 / 3 814 / 14 746 | 213 / 69 |
-| `kernstadt` | 22,04 km² | 9,7 × 7,2 km | −10 176 … −112 | 8 861 … 16 688 | 216 / 722 / 2 581 | 57 / 20 |
-| `zentrum` (Pilot) | 0,68 km² | 1,2 × 1,2 km | −5 523 … −4 233 | 11 690 … 12 943 | 11 / 31 / 93 | 8 / 4 |
+| `stadt` (Gemeinde, OSM-Relation 62450) | 141,81 km² | 20,6 × 14,5 km | −14 860 … 6 396 | 6 180 … 21 920 | 1 013 / 3 814 / 14 746 | 193 / 59 |
+| `kernstadt` | 22,04 km² | 9,7 × 7,2 km | −10 176 … −112 | 8 861 … 16 688 | 216 / 722 / 2 581 | 57 / 20 (mit 300 m Rand) |
+| `zentrum` (Pilot) | 0,68 km² | 1,2 × 1,2 km | −5 523 … −4 233 | 11 690 … 12 943 | 11 / 31 / 93 | 8 / 4 (mit 300 m Rand) |
+
+Die Landes-Kacheln (DGM1 und DOM1 je 1 km, LoD2 je 2 km) zählt `origin/suhl/bestand:tools/suhl/out/bestand/kacheln.json` (Commit
+`05c7235`); dazu kommen 35 + 35 + 11 Kacheln für die beiden Straßen-Korridore außerhalb der Gemeinde. Die eigene Nachrechnung
+aus den Polygonen stimmt damit überein.
 
 Mittelpunkt von Suhl (`centre` der Datei): 50,60865° N, 10,69264° O = UTM (619 765, 5 607 674) = **Modell (−4 698, 12 256)**. Vom
 Garten sind das 13,13 km in Modellmetern und 13,33 km in der Natur.
@@ -44,8 +48,10 @@ Garten sind das 13,13 km in Modellmetern und 13,33 km in der Natur.
 | Gebäude in OSM, `zentrum` | 594 | gemessen, ebenda |
 | Gebäude insgesamt mit Schuppen und Garagen, `stadt` | 25 000–35 000 | **Schätzung** – ETHOS zählt jedes Nebengebäude; Zahl kommt aus `suhl/bestand` (ETHOS-Lauf) |
 | Bäume außerhalb des Waldes, `kernstadt` | 30 000–60 000 | **Schätzung** – erst das Kronenhöhenmodell (DOM1 − DGM1) zählt sie |
-| Straßen und Wege, `kernstadt` | 300–450 km | **Schätzung** – der alte Auszug `ref/suhl-leute-fotos:recherche/osm.json` hat 6 577 Wege im Rahmen 50,585–50,650° N |
-| Straßenfotos (Panoramax), Gemeinde | 3 254 | gemessen, Commit `d0d212a` auf `suhl/fotos` |
+| Straßen und Wege im Rahmen 50,585–50,650° N, 10,645–10,740° O (etwa die Kernstadt) | 855 km in 6 577 OSM-Wegen: 214 km Straßen (Autobahn bis Fußgängerzone), 187 km Zufahrten, 198 km Fuß- und Radwege (darunter 227 Treppen), 251 km Wirtschaftswege | gemessen am alten Auszug `ref/suhl-leute-fotos:recherche/osm.json` (26.10.), Längen in UTM-Metern |
+| Benannte Straßen der `kernstadt` / des `zentrum` | 358 Straßen, 185,9 km / 49 Straßen, 14,4 km | gemessen, `origin/suhl/fotos:tools/suhl/out/fotos/abdeckung.json` (Commit `8579d49`) |
+| Straßenfotos (Panoramax) | 3 254 (284 doppelt), davon 259 im `zentrum`, 1 266 in der übrigen `kernstadt`; alle gerichtet (kein Rundumbild), Bildwinkel 74–100°, CC BY-SA 4.0 | gemessen, `origin/suhl/fotos:tools/suhl/out/fotos/quellen.json` |
+| **Fotoabdeckung der Fassaden** | `zentrum`: 42,9 % der Straßenlänge haben ein Foto, aber nur **11,2 % der Straßenseiten** einen Blick auf die Fassade; 21 von 49 Straßen ganz ohne Foto. `kernstadt`: 20,1 % bzw. 5,7 %; 187 von 358 Straßen ohne Foto. Am Rathaus, an der Kreuzkirche, am Waffenmuseum und am Bahnhof: kein Foto im Umkreis von 80 m. | gemessen, `abdeckung.json` (ebenda) |
 
 Die geschätzten Zeilen werden ersetzt, sobald `suhl/bestand` Zahlen hat (`git fetch origin suhl/bestand`).
 
@@ -109,7 +115,7 @@ So macht es `tools/welt/dem.py` (Klasse `Dem`) schon heute, Suhl übernimmt es:
 
 | Schritt | Heute im Code | Für Suhl |
 |---|---|---|
-| Wo eine DGM1-Kachel im Rohdaten-Ordner liegt, gilt sie; sonst Copernicus | `fetch_dgm1(raw, 'dgm', ex, ny)` prüft zuerst die Datei im Cache; `self.source` = `dgm1`, `cop30` oder `dgm1+cop30` | Falkos ZIP-Dateien kommen **unverändert mit ihrem Originalnamen** in den Rohdaten-Ordner. Mehr braucht der Tausch nicht. |
+| Wo eine DGM1-Kachel im Rohdaten-Ordner liegt, gilt sie; sonst Copernicus | `fetch_dgm1(raw, 'dgm', ex, ny)` prüft zuerst die Datei im Cache (`fetch.dgm1_path`: `<raw>/dgm1/dgm1_32_{E}_{N}.zip`, DOM1 entsprechend); `read_dgm1` liest GeoTIFF oder XYZ aus dem ZIP; `self.source` = `dgm1`, `cop30` oder `dgm1+cop30` | Falkos ZIP-Dateien bleiben unverändert; ein Schritt im Workflow legt sie unter diesem Namen in den Rohdaten-Ordner. Mehr braucht der Tausch nicht. |
 | Höhenversatz Copernicus → DGM1 | 30-%-Quantil der Differenz (`cop_off`) | gleich |
 | Weicher Übergang | 300 m (`blend`) | gleich |
 | Ein Mosaik über das ganze Gebiet im Speicher | `mos` = Fläche × 4 Byte | Für die `stadt` (20,6 × 14,5 km = 1,2 GB) zu groß: **in Blöcken von 4 × 4 km mit 300 m Rand** rechnen (neues Hüll-Skript, `Dem` selbst bleibt). |
@@ -117,8 +123,9 @@ So macht es `tools/welt/dem.py` (Klasse `Dem`) schon heute, Suhl übernimmt es:
 
 Wohin legt Falko die Dateien? **Vorschlag:** als Anhänge einer Veröffentlichung („Release“) `landesdaten-suhl-1` im Daten-Repo
 (2.6). Die Lizenz CC BY 4.0 („© GDI-Th“) erlaubt das. Der Workflow holt sie mit `gh release download` in den Actions-Cache. Menge
-(Schätzung, die genaue Liste macht `suhl-bestand`): 213 Kacheln DGM1 und 213 DOM1 für die `stadt`, 69 LoD2; für die `kernstadt`
-allein 57 + 57 + 20. **Reihenfolge für Falko: zuerst Zentrum (8 + 8 + 4), dann Kernstadt, dann der Rest.**
+(Liste `kacheln.csv` auf `suhl/bestand`): 193 Kacheln DGM1 und 193 DOM1 für die `stadt`, 59 LoD2; für die `kernstadt` allein
+57 + 57 + 20; für die Straßen-Korridore weitere 35 + 35 + 11. **Reihenfolge für Falko wie dort (P1–P4): zuerst Zentrum (8 + 8 + 4),
+dann Kernstadt, dann der Rest.**
 
 ### 2.3 Der Datensatz je Gebäude
 
@@ -441,7 +448,7 @@ legt Bild und Kamera nach `out/blickpunkte/`. Jedes Foto im Katalog hat Ort, Bli
 
 | Schritt | Wo | Was |
 |---|---|---|
-| 1 Standpunkte | Actions | je Foto: Lage → UTM → Modell (`xf`), Blickrichtung um 4,36° gedreht, Augenhöhe **Annahme** 2,2 m (Kamera auf dem Autodach), Sichtfeld aus dem Katalog. Rundum-Fotos: zwei Ausschnitte quer zur Fahrtrichtung (links, rechts, je 90°). |
+| 1 Standpunkte | Actions | je Foto: Lage → UTM → Modell (`xf`), Blickrichtung um 4,36° gedreht, Augenhöhe **Annahme** 1,5–2,2 m (Kamera im oder auf dem Auto), Sichtfeld aus dem Katalog (74–100°; bei 393 Bildern unbekannt – dann **Annahme** 74°). Alle Suhler Panoramax-Bilder blicken in Fahrtrichtung: Fassaden erscheinen schräg, die Seite in Fahrtrichtung rechts besser als die linke. |
 | 2 Modellbild | Actions, Browser wie in den Tests (SwiftShader) | wie `blickpunkte.py`, dazu ein zweites Bild mit Gebäude- und Seitennummer als Farbe (für die Zuordnung) |
 | 3 Feinlage | Actions | GPS liegt 3–10 m daneben: Standpunkt ±10 m längs und Richtung ±5° so wählen, dass die Himmelskante von Foto und Modell am besten passt |
 | 4 Zahlen je Bildpaar | Actions | **Umriss:** Deckung der Himmelsfläche (Höhen, Dachformen, Bäume). **Farbe:** Abstand der mittleren Wandfarbe je Seite (ΔE, nach Weißabgleich an Himmel und Fahrbahn). **Raster:** Geschosse und Achsen im Foto (Periodizität der Kanten) gegen die Parameter. |
@@ -496,7 +503,7 @@ Ergebnis je Kachel: vier Zahlen und ein Bogen; die schlechtesten Kacheln zuerst 
 | Kriterium | Maß |
 |---|---|
 | Daten | DGM1, DOM1, LoD2 für die 8 + 8 + 4 Kacheln des Zentrums verarbeitet; jedes der etwa 600 Gebäude hat echte Dachflächen |
-| Fassaden | jede Gebäudeseite an einer Straße mit Foto hat Güte ≥ 2; Seiten ohne Foto sind gezählt und in der Fotoliste für Falko |
+| Fassaden | jede Gebäudeseite an einer Straße mit Foto hat Güte ≥ 2. Heute sind das erst 11,2 % der Straßenseiten des Zentrums (1.1) – **ohne zusätzliche Fotos von Markt, Steinweg und den Wahrzeichen ist dieses Kriterium nicht erfüllbar**; Ziel mit Falkos Fotos: ≥ 90 % der Seiten an öffentlichen Straßen und Plätzen |
 | Fotoabgleich | Umriss-Deckung im Median ≥ 0,85; Wandfarbe im Median ΔE ≤ 12; Geschosse stimmen bei ≥ 95 % der bewerteten Seiten; keine Note unter 3 an Markt und Steinweg (**Annahmen**, siehe 5.1) |
 | Von oben | Dachklasse stimmt bei ≥ 90 % der Flächen; kein fehlendes oder überzähliges Gebäude |
 | Straßenraum | jede Straße des Zentrums hat Fahrbahn, Bordstein, Gehweg; alle Überwege, Ampeln, Haltestellen und Laternen aus OSM stehen; Ladenschilder mit Namen |
@@ -643,12 +650,12 @@ S2-8 Bögen liefert; S3-7 danach. Danach Viertel für Viertel dieselben Pakete (
 
 | # | Risiko | Folge | Gegenmittel |
 |---|---|---|---|
-| 1 | Die Landesdaten bleiben Handarbeit (213 + 213 + 69 Dateien für die ganze Gemeinde) | ohne DGM1 steht die Stadt auf dem 30-m-Oberflächenmodell: in Suhls steilen Tälern liegen Straßen in Rinnen und Häuser schief (bekannt aus Veßra: `roadCap`, Buckel bis 1,7 m am Schleusinger Markt) | Reihenfolge Zentrum → Kernstadt → Rest; die Pipeline läuft ohne und tauscht beim nächsten Lauf; Fassadenarbeit im Zentrum erst nach dem DGM1 |
+| 1 | Die Landesdaten bleiben Handarbeit (193 + 193 + 59 Dateien für die ganze Gemeinde, dazu 81 für die Korridore) | ohne DGM1 steht die Stadt auf dem 30-m-Oberflächenmodell: in Suhls steilen Tälern liegen Straßen in Rinnen und Häuser schief (bekannt aus Veßra: `roadCap`, Buckel bis 1,7 m am Schleusinger Markt) | Reihenfolge Zentrum → Kernstadt → Rest; die Pipeline läuft ohne und tauscht beim nächsten Lauf; Fassadenarbeit im Zentrum erst nach dem DGM1 |
 | 2 | `gh-pages` ist zu 81 % voll | Suhl passt nicht hinein; auch ohne Suhl ist die Grenze nah | Hosting-Entscheidung (2.6) vor Stufe 2 |
 | 3 | Telefon-Speicher | Safari wirft die Seite ab (wie am 22.10. bei 880 MB) | Radien und halbe Texturen am Telefon, Rechnung in 3.4, KTX2 als Reserve; der Test misst nur die Bilder – echte Geräte prüft Falko |
 | 4 | Übersetzen von 8 neuen Programmen auf der Intel-Grafik dauert | Hänger beim ersten Anblick | beim Bau der Zone in 9 km Entfernung, in Portionen (`warmUp`) |
 | 5 | Pakete bei Bedarf mit hineingereichten Abhängigkeiten sind neu für App-Code | Lint oder Build könnten sich sperren | als Erstes in S2-6 prüfen; Ausweg: Code im Bündel (kostet Ladezeit für alle) |
-| 6 | Fotos decken nicht jede Straße (3 254 Panoramax-Bilder in der Gemeinde, Verteilung offen) | Seiten ohne Foto bleiben bei Regeln | Fotoliste für Falko (`suhl-fotos`); Güte je Seite ist sichtbar |
+| 6 | **Fotos fehlen dort, wo es am meisten zählt.** Im Zentrum sieht ein Straßenfoto nur 11,2 % der Straßenseiten; Markt, Steinweg (Fußgängerzone) und vier der sieben Wahrzeichen haben keins (1.1) | „jede Fassade nach Straßenfotos“ ist im Pilotquartier mit den vorhandenen Fotos nicht zu schaffen; der Fotoabgleich misst nur die befahrenen Straßen | Falko fotografiert nach der Liste von `suhl-fotos` (Frage 3); Commons-Fotos für die Wahrzeichen; Güte je Seite bleibt sichtbar, Regeln füllen den Rest |
 | 7 | Zahlen des Fotoabgleichs schwanken (GPS, Jahreszeit, Autos im Bild) | falsche Sicherheit oder falscher Alarm | Feinlage, Urteil des Agenten daneben, Schwellen erst nach 50 Paaren |
 | 8 | Datenstände passen nicht zusammen (ETHOS/LoD2, OSM, Luftbild 2024/25; Abrisse in Suhl-Nord) | Häuser, die es nicht mehr gibt | Abgleich von oben listet sie; Merker im Datensatz |
 | 9 | Haken in `welt/welt.js` und `game/camera.js` treffen den Kern, während andere Chats arbeiten | Fehler in Schleusingen, Veßra, Fahrt, Strategie | klein, markiert, angekündigt; deren Tests vor dem Einbau |
@@ -664,7 +671,7 @@ S2-8 Bögen liefert; S3-7 danach. Danach Viertel für Viertel dieselben Pakete (
 |---|---|---|
 | 1 | **Wo liegen die Suhl-Daten?** Eigenes Daten-Repo bei GitHub (du legst es an und schaltest Pages ein, etwa 5 Minuten) oder gleich Cloudflare R2 (Konto, Bucket, Schlüssel)? | Daten-Repo jetzt; R2, wenn Erfurt oder Berlin kommen |
 | 2 | **Landesdaten:** Lädst du zuerst nur das Zentrum (8 Kacheln DGM1, 8 DOM1, 4 LoD2) und legst die ZIP-Dateien unverändert als Release-Anhang ab? Die Liste macht `suhl-bestand`. | ja, dann Kernstadt (57 + 57 + 20) |
-| 3 | **Fotos:** Würdest du im Zentrum selbst fotografieren, wo Straßenfotos fehlen – und dürfen deine Fotos als Texturen der Wahrzeichen dienen? | ja; Liste von `suhl-fotos` |
+| 3 | **Fotos – die wichtigste Frage für das Zentrum:** Fotografierst du Markt, Steinweg und die Wahrzeichen selbst (Liste und Standpunkte von `suhl-fotos`)? Dort gibt es fast keine freien Straßenfotos. Und dürfen deine Fotos als Vorlage und, bei Wahrzeichen, als Textur dienen? | ja – ein Rundgang mit dem Telefon, jede Fassade einmal frontal; ohne ihn bleibt die Fußgängerzone geschätzt |
 | 4 | **Telefon:** Soll Suhl am iPhone in voller Güte laufen, oder genügt dort eine einfachere Stufe (kürzere Sicht, halbe Texturen)? | einfachere Stufe; volle Güte am Rechner |
 | 5 | **Wann sichtbar?** Soll der Menüknopf „Suhl“ erscheinen, sobald die Stadt aus Daten steht (Stufe 2), oder erst mit dem fertigen Zentrum? | erst in der Vorschau, live nach deinem Blick |
 

@@ -52,8 +52,8 @@ Aus `viz3/extra/suhl-fahrt/dist/fahrt/suhl.json` und `recherche.json` (Quelle Op
 
 | Inhalt | Zahl |
 |---|---|
-| Route Autobahn (A 73 → A 71) hin / zurück | 28 439 m / 28 294 m |
-| Route Landstraße hin / zurück | 18 875 m / 18 900 m |
+| Route Autobahn (A 73 → A 71) hin / zurück | 28 439 / 28 294 Modellmeter = 28,89 / 28,74 km in der Natur |
+| Route Landstraße hin / zurück | 18 875 / 18 900 Modellmeter = 19,17 / 19,20 km in der Natur |
 | Straßenstücke mit Längsprofil | 1 251: Ortsstraße 340, Hauptstraße 289, Zufahrt 271, Autobahn 215, Kreisstraße 89, Gasse 47 |
 | Schilder | 67: 20 Ortstafeln, 32 Autobahn-Schilder, 15 Wegweiser |
 | Orte | 11 |
@@ -62,6 +62,10 @@ Aus `viz3/extra/suhl-fahrt/dist/fahrt/suhl.json` und `recherche.json` (Quelle Op
 | Anschlussstellen-Punkte / Rampen mit Zielangaben | 15 / 37 |
 | Wellen je km vor → nach dem Glätten | Autobahn 16,4 → 0,0; Hauptstraße 16,4 → 0,2; Kreisstraße 13,7 → 0,1; Ortsstraße 15,1 → 2,4 |
 | Höhen-Stützpunkte aus Kacheln / aus Copernicus 30 m | 90 661 / 1 416 009 |
+
+Die Längen in `suhl.json` (Feld `m`) sind Modellmeter; ein Modellmeter ist 1,0157 m (`xf` in `viz3/manifests.json`), so rechnet auch
+`kacheln.json` auf `suhl/bestand` (28 886 m und 19 171 m). Die Autobahn-Route führt durch den Tunnel Berg Bock (A 71) und kommt über die
+Suhler Straße (B 62, L 3247) in die Stadt; die Landstraße ist die L 3004 und L 3247 über St. Kilian.
 
 Das Format ist das von `fahrt/strassen.json` (so der Kopf von `suhl_strecke.py`), erweitert um Autobahn, Tunnel und Brücken. Das
 Skript nutzt `viz3/extra/fahrt/strecke.py` und `tools/welt/roads.py`; beide sind auf `src` seit dem 26.10. unverändert
