@@ -141,7 +141,7 @@ Nur was in den Quellen steht. Farben und Details ohne Quelle müssen aus den Str
 | Z13 | Kreuzkirche | 50.60833, 10.69028; `w38807115` | 1731–39 | Barock, gelb, Turm mit Schweifhaube | ev. Kirche | ja | ja [WP-Kreuz]; OSM | [WP-Kreuz] |
 | Z14 | Kreuzkapelle „Zum Hl. Kreuz“ | 50.60819, 10.69055; `w1433085660` | 1555, Chor 1618 | gotische Kapelle | Kapelle | ja | nicht geprüft | [WP-Suhl] |
 | Z15 | Waffenmuseum im Malzhaus | 50.61023, 10.68947; `n10732305087` | 1663/1668; Museum 1971; saniert 2006–08 | massiver Sockel, Fachwerk, steiles Dach | Museum | ja | nicht geprüft | [WP-Waffenmuseum] |
-| Z16 | Herrenteich | 50.60967, 10.68965; `w30781507` | – | Teich mit Park; die Stadt hat einen Wettbewerb „Herrenteich Park“ durchgeführt (Ergebnis nicht gelesen) | Mitte des DDR-Zentrums | – | – | [Bauwelt 2006], [Suhl-Planen], OSM |
+| Z16 | Herrenteich mit Park | 50.60967, 10.68965; `w30781507` | Umgestaltung geplant: Wettbewerb entschieden am 23.10.2025 | Teich mit Park, rund 1,1 ha; Siegerentwurf verbindet den Park mit dem Platz der Deutschen Einheit (rund 1,2 Mio. €, Bautermin offen) | Mitte des DDR-Zentrums | – | – | [Bauwelt 2006], [WA Herrenteich], [AKT Herrenteich], OSM |
 | Z17 | Congress Centrum Suhl (CCS) | 50.61024, 10.68781; `w42871446` | 1969–72; Umbau bis 1995 | Rundhalle, Glas-Atrium, Parkhaus | Kongress, Konzerte, Tourist-Info | ja | nein (offen) | [WP-CCS], [Jahn 2017] |
 | Z18 | Fahrzeugmuseum im CCS | 50.61019, 10.68726; `n361133609` | seit 2007 | Ausstellung, 1 100 m² | Museum (Simson u. a.) | ja | – | [WP-CCS] |
 | Z19 | Ottilienbad | 50.61003, 10.68686; `w42871445` | Schwimmhalle der Stadthalle 1979/80 [Jahn 2017]; ob das heutige Bad derselbe Bau ist: **unsicher** | Hallenbad zwischen CCS und Hotel | Freizeit- und Wellnessbad der CCS GmbH | ja | – | [WP-CCS], [Jahn 2017] |
@@ -228,7 +228,7 @@ Z43 und Z44 liegen am Rand des 900-m-Kreises; sie stehen hier, weil sie zum Bild
 | K12 | Friedberg: frühere Offiziershochschule der Grenztruppen | um 50.5903, 10.7070 (Weidbergstraße) | eröffnet 1984 | Kasernen- und Lehrbauten | Erstaufnahme des Landes (Schließung zum 30.11.2026), Gewerbepark, Stasi-Unterlagen-Archiv (Weidbergstraße 34) | – | [WP-Suhl], [BZ 5/2026], [BZ 9/2026], OSM |
 | K13 | Landespolizeiinspektion, Schleusinger Straße 111 | 50.60044, 10.71627; `w136168152` | offen | Behördenbau | Polizei | – | OSM, [WP-Suhl] |
 | K14 | Lautenberg-Siedlung und Linsenhof | 50.61035, 10.67197 / 50.61612, 10.67137 | offen | Siedlungen auf den Höhen westlich des Zentrums | Wohnen | – | [WP-Ortsteile], OSM |
-| K15 | Suhl-Nord | 50.62690, 10.70439; `n8084188541` | späte 1970er | größtes Plattenbaugebiet, zum größten Teil abgerissen | Restwohnen, geplanter Gewerbe- und Forschungspark | – | [Nordkurier 2026], [LEG 2022] |
+| K15 | Suhl-Nord | 50.62690, 10.70439; `n8084188541` | späte 1970er | größtes Plattenbaugebiet (um 1990: 5 280 Wohnungen), zum größten Teil abgerissen; noch stehend u. a. das „Hufeisen“ Kleine Beerbergstraße, Große Beerbergstraße 43–53, Ringbergstraße 22–32, „Würfelhäuser“ Ruppbergstraße (Stand 2022) | Restwohnen, geplanter Gewerbe- und Forschungspark | – | [LEG-Lang 2022], [Nordkurier 2026], [LEG 2022] |
 | K16 | Lauter (Stadtteil im Lautertal) | 50.62343, 10.71082; `n2150291899` | altes Dorf | Straßendorf zwischen Zentrum und Goldlauter | Wohnen | – | [WP-Ortsteile] |
 | K17 | „Fröhlicher Mann“ (früheres Gasthaus, 1945 zerstört) | 50.63440, 10.70318; `w111412181` | 1713–1945 | Ort eines Bombenabwurfs am 26.3.1945 | Zirkusplatz, Wertstoffhof in der Nähe | – | [WP-Suhl], OSM |
 
@@ -360,6 +360,10 @@ Z43 und Z44 liegen am Rand des 900-m-Kreises; sie stehen hier, weil sie zum Bild
 - **[Carthalia-Kulturhaus]** https://andreas-praefcke.de/carthalia/germany/suhl_kulturhaus.htm
 - **[Carthalia-Stadthalle]** https://andreas-praefcke.de/carthalia/germany/suhl_stadthalle.htm
 - **[Wikivoyage]** https://de.wikivoyage.org/wiki/Suhl
+- **[WA Herrenteich]** https://www.wettbewerbe-aktuell.de/ergebnis/neugestaltung-herrenteich-park-suhl-380068
+- **[AKT Herrenteich]** https://architekten-thueringen.de/aktuell/n/neugestaltung_des_herrenteich_pa-26675.html
+- **[LEG-Lang 2022]** LEG Thüringen: Suhl-Nord, Realisierungskonzept 2022–2040, Langfassung.
+  https://www.leg-thueringen.de/fileadmin/user_upload/leg_portal/downloads/publikationen/stadt_regionalentwicklung/suhl-nord_realisierungskonzept_2022-2040_langfassung.pdf
 - **[Structurae-Hasel]** https://structurae.net/structures/haseltalbrucke-2006
 - **[Structurae-Albrecht]** https://structurae.net/structures/albrechtsgraben-viaduct
 - **[Suhl-Planen]** Stadt Suhl, Seite „Planen, Bauen und Wohnen“ (gelesen 12.11.2026). https://www.suhl.eu/planen-bauen-wohnen

@@ -8,7 +8,7 @@ nur schwach belegt. Ergänzt `wahrzeichen.md` (Einzelbauten) und `planungen.md` 
 | Größe | Wert | Quelle |
 |---|---|---|
 | Status | kreisfreie Stadt in Südthüringen, Erholungsort seit 1.9.2013; Teil des Oberzentrums Südthüringen | [WP-Suhl] |
-| Fläche | rund 142 km² (aus der OSM-Gemeindegrenze berechnet, Relation 62450; amtlicher Wert nicht geprüft) | OSM/Nominatim, eigene Rechnung 12.11.2026 |
+| Fläche | 14 162 ha = 141,62 km² (Untersuchungsgebiet des ISEK = Stadtgebiet); aus der OSM-Gemeindegrenze (Relation 62450) nachgerechnet: rund 142 km² | [UmbauStadt]; OSM/Nominatim, eigene Rechnung 12.11.2026 |
 | Ausdehnung | etwa 20,5 km von West nach Ost, 14,3 km von Süd nach Nord (Rahmen der OSM-Grenze) | wie oben |
 | Einwohner | 34 034 am 30.6.2025 (Land); 36 999 am 31.12.2022 (Stadt, Hauptwohnsitz) | [TLS PM 224/2025], [Atlas 2022] |
 | Höchststand | über 56 000 im Jahr 1989 | [WP-Suhl] |
@@ -107,6 +107,9 @@ Raster für Szenarien. Einwohner am 31.12.2022 [Atlas 2022] [Sozialplan 2025–2
   (Stadtbus-Halt gegenüber dem Bahnhof, Umbau 2017–2019). Viele Linien beginnen an „Am Bahndamm/SNG“ [WP-SNG], OSM.
 - Linien (OSM und [WP-SNG]): A1, A2, A3 (City-Linie zum Marktplatz), A4, A/G, B, B/F, C1, C2, C12, D1, D2, E, F, G, H, K
   (Tierpark – Ringberghaus – Schmiedefeld – Vesser), R (Schmücke – Gehlberg – Gräfenroda); Schülerlinien S21, S30–S33, S40.
+- **Achtung, neuer Fahrplan seit 11.10.2026:** A2 und A4 zusammengelegt, E in A3 aufgegangen, B statt B/F, Suhl-Nord über
+  D1/D2, A/G ausgedünnt, abends Stundentakt [Suhl-Fahrplan 2026]. OSM und Wikipedia zeigen noch den alten Stand; maßgeblich
+  ist die GTFS-Datei (siehe `fachdaten.md`).
 - Regionalbusse: 200 Hildburghausen–Schleusingen–Suhl (WerraBus); 300 Ilmenau–Suhl und 307 Frauenwald–Suhl (IOV); 400, 447
   (Suhl–Schmalkalden), 449 (Steinbach-Hallenberg–Suhl) (MBB). OSM. Linie 203 Suhl–Schleusingen–Ratscher: siehe `suhl-gemeinsam.md`.
 
@@ -147,7 +150,7 @@ trägt dort Geschosse oder Dachform. Maßgeblich werden LoD2 und Fotos.
 
 ## 7. Offen und unsicher
 
-1. Amtliche Fläche, amtliche Einwohnerzahl zum 31.12.2025 und Einwohner je Stadtteil nach 2022 – nicht gefunden.
+1. Amtliche Einwohnerzahl zum 31.12.2025 und Einwohner je Stadtteil nach 2022 – nicht gefunden.
 2. Eingemeindungsdaten von Goldlauter-Heidersbach und Mäbendorf; die Wikipedia-Liste der Ortsteile war nur als Fließtext lesbar.
 3. Straßennummer der Hauptachse (L 3247 laut OSM, B 247 in älteren Quellen).
 4. Bautypen der Plattenbauten (WBS 70 und andere) – aus Quellen nicht belegt; muss aus Fotos und LoD2 kommen.
@@ -167,6 +170,8 @@ trägt dort Geschosse oder Dachform. Maßgeblich werden LoD2 und Fotos.
 - **[Nordkurier 2026]** Nordkurier, 10.2.2026. https://www.nordkurier.de/panorama/ddr-vorzeigeobjekt-suhl-nord-geistersiedlung-wohnungsmangel-plattenbau-thueringer-wald-sozialismus-4329674
 - **[Volksstimme 10/2026]** Volksstimme (dpa), 12.10.2026. https://www.volksstimme.de/panorama/nach-drei-monaten-offnet-der-brandleitetunnel-wieder-4337358
 - **[Suhl-Wirtschaft]** Stadt Suhl, Meldungen Wirtschaft. https://www.suhl.eu/aktuelles/categories/wirtschaft/page/5
+- **[UmbauStadt]** Planungsbüro UmbauStadt, Projektseite „ISEK Suhl“. https://www.umbaustadt.de/projekte/isek-suhl
+- **[Suhl-Fahrplan 2026]** Stadt Suhl: Fahrplanwechsel der SNG am 11. Oktober 2026. https://www.suhl.eu/post/fahrplanwechsel-der-sng-am-11-oktober-2026
 - **[Wikivoyage]** https://de.wikivoyage.org/wiki/Suhl
 - **[WP-Suhl]** https://de.wikipedia.org/wiki/Suhl · **[WP-Ortsteile]** https://de.wikipedia.org/wiki/Liste_der_Ortsteile_von_Suhl ·
   **[WP-Lauter]** https://de.wikipedia.org/wiki/Lauter_%28Hasel%29 · **[WP-Heinrichs]** https://de.wikipedia.org/wiki/Heinrichs_%28Suhl%29 ·

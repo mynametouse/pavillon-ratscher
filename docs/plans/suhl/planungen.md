@@ -10,9 +10,9 @@ was, wo, wer, Stand mit Datum, Quelle – und die Szenario-Frage, die daraus fol
 
 | Rang | Thema | Warum ergiebig | Beste Quellen |
 |---|---|---|---|
-| 1 | **Suhl-Nord: vom Plattenbau-Stadtteil zum Gewerbe- und Forschungspark** | 149 ha, laufendes Bebauungsplan-Verfahren (Entwurf seit 2.11.2026 öffentlich), sichtbar im Stadtbild, mehrere mögliche Zukünfte (Gewerbe, Forschung, Holzbau, Solar, Wald, Rest-Wohnen) | [LEG-Konzept 2022], [LEG 2022], [Suhl-Bekanntm.], [Nordkurier 2026] |
+| 1 | **Suhl-Nord: vom Plattenbau-Stadtteil zum Gewerbe- und Forschungspark** | 149 ha, laufendes Bebauungsplan-Verfahren (Entwurf seit 2.11.2026 öffentlich), sichtbar im Stadtbild, mehrere mögliche Zukünfte (Gewerbe, Forschung, Holzbau, Solar, Wald, Rest-Wohnen); Block für Block belegt | [LEG-Lang 2022], [LEG-Konzept 2022], [LEG 2022], [Suhl-Bekanntm.], [Nordkurier 2026] |
 | 2 | **Schrumpfen und Altern: 37 000 → 26 600 Einwohner bis 2042** | stärkster Rückgang aller Thüringer Kreise; lässt sich je Stadtteil zeigen (Leerstand, Rückbau, Pflege, Schulen) | [TLS 2042], [TLS PM 224/2025], [Sozialplan 2025–29], [Atlas 2022] |
-| 3 | **Die Innenstadt der Bezirksstadt: zu groß gebaut für die heutige Stadt** | drei Einkaufszentren, vierspurige Durchgangsstraße, Hochhäuser, Steinweg; liegt im Pilotquartier | [Bauwelt 2006], [Uske 2017], [SREK 2024], [Suhl-City] |
+| 3 | **Die Innenstadt der Bezirksstadt: zu groß gebaut für die heutige Stadt** | drei Einkaufszentren, vierspurige Durchgangsstraße, Hochhäuser, Steinweg; liegt im Pilotquartier; mit dem **Herrenteich-Park** gibt es einen entschiedenen Wettbewerb (Oktober 2025, rund 1,2 Mio. €) – ein echtes Vorher/Nachher mitten im Zentrum | [WA Herrenteich], [AKT Herrenteich], [Quaas Rahmenplan], [Bauwelt 2006], [Uske 2017], [SREK 2024] |
 | 4 | **Wärmewende je Quartier** | Entwurf des kommunalen Wärmeplans liegt seit März 2026 öffentlich vor (mit Karte); Fernwärme aus Abwärme, Nahwärme Lautenberg, über 1 000 Ölheizungen – lässt sich je Gebäude zeigen | [Suhl-Planen], [iST 3/2026], [iST 8/2024], [SWSZ 2022] |
 | 5 | **Friedberg nach der Erstaufnahme** | Schließung zum 30.11.2026; großes Kasernen-Areal wird frei; Nachnutzung offen | [BZ 5/2026], [BZ 9/2026], [Sozialplan 2025–29] |
 | knapp dahinter | **Simson-Gelände in Heinrichs** | 21 ha Altstandort in Sanierung, Rückkehr der Fertigung (E-Schwalbe) angekündigt, Industrie-Erbe mit hoher Bekanntheit | [electrive 2026], [ground.news 4/2026], [ground.news 12/2025] |
@@ -28,8 +28,13 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
 
 - **Was:** Das gesamtstädtische Konzept, an dem Förderung und Rückbau hängen.
 - **Wer:** Stadt Suhl (Stadtplanung; Wirtschafts- und Stadtentwicklungsausschuss des Stadtrats).
-- **Stand:** Eine Fassung von 2023 gibt es – der Sozialplan 2025–2029 nennt „ISEK (2023)“ als Quelle seiner Stadtkarte
-  [Sozialplan 2025–29]. Die Stadt stellt das ISEK auf ihrer Seite „Planen, Bauen und Wohnen“ als PDF bereit
+- **Stand:** Das erste ISEK stammt von 2012. Von 2021 bis 2023 hat ein Planungsbüro es ausgewertet und fortgeschrieben
+  (Untersuchungsgebiet 14 162 ha = das ganze Stadtgebiet; Einwohnerzahl dort 36 400). Zentrales Thema sind die
+  Großwohnsiedlungen der 1970er und 1980er Jahre: Seit 2001 werden Blöcke nach einem Rückbaukonzept abgerissen; weiterer
+  Rückbau, Umbau und Umnutzung dieser Quartiere bleiben die Hauptaufgabe [UmbauStadt]. Im März 2023 gab es ein Bürgerforum im
+  Oberrathaussaal mit 37 Teilnehmern; die Fortschreibung hat über 200 Seiten und ist Grundlage für Städtebau-Fördermittel
+  [iST 3/2023]. Der Sozialplan 2025–2029 nennt „ISEK (2023)“ als Quelle seiner Stadtkarte [Sozialplan 2025–29].
+  Ein Datum des Ratsbeschlusses habe ich nicht gefunden – **offen**. Die Stadt stellt das ISEK auf ihrer Seite „Planen, Bauen und Wohnen“ als PDF bereit
   (`https://www.suhl.eu/_files/ugd/1b847c_d56044f1e272446da05a48888ad71b5b.pdf`) [Suhl-Planen]. Den Text selbst konnte ich
   **nicht lesen** (Abruf von hier gesperrt). Älter: das Konzept „Suhl 2025“ mit dem geplanten Rückbau nicht mehr gebrauchter
   Wohnblöcke [Uske 2017].
@@ -68,8 +73,24 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
   Sport und Freizeit, Wohnen, Grün, Wald, Anlage für Fernwärme; Fuß- und Radbrücke über das Heldersbachtal zum Flugplatz
   Goldlauter; Mobilitätsstation (Leihräder, Carsharing, Laden mit Strom und Wasserstoff); Photovoltaik auf Gewerbedächern und über
   Parkplätzen; integriertes Energiekonzept für das Quartier. Dauerhaft als Wohnen vorgesehen: Sonnenweg und Schneekopfstraße 25–37.
-- **Menschen dort:** 3 375 Einwohner am 31.12.2022, davon 1 802 im Kerngebiet Ziegenberg und 1 573 in Lauter/Oberland/Fröhlicher
-  Mann [Atlas 2022]. Laut [WP-Suhl] sollten rund 530 Privatwohnungen bleiben.
+- **Zahlen aus der Langfassung des Konzepts** [LEG-Lang 2022] (Stand Frühjahr 2022):
+  - Um 1990: 5 280 Wohnungen, rund 14 075 Einwohner. Zur Zeit des Konzepts: 1 859 Einwohner, etwa 12 % von 1990.
+  - Gebiet 149,25 ha. Eigentum: Stadt Suhl 56,7 % (84,6 ha), GeWo 10,6 % (15,9 ha), AWG 8,5 % (12,6 ha), übrige Private
+    24,2 % (36,1 ha). (Die Kurzfassung spricht von „etwa zwei Dritteln“ in gemeinsamer Hand – die Tabelle ergibt 75,8 %.)
+  - GeWo hat bis 2021 rund 95 000 von 150 000 m² Wohnfläche abgerissen (63 %). AWG: Kornbergstraße 10–20 leergezogen,
+    Kornbergstraße 40–60 für 2023 vorgesehen, Lauterkopfstraße 1–25 Leerzug 2025 (Abriss je nach Förderung).
+    Zielhorizont für den vollständigen Rückbau: 2035 (an anderer Stelle: AWG „bis 2026“ – **unsicher**).
+  - Was länger bleibt: „Hufeisen“ Kleine Beerbergstraße (GeWo, nicht vor 2035), Seniorenwohnen Kornbergstraße 3, Große
+    Beerbergstraße 43–53 (kein Termin), Ringbergstraße 22–32 (privat), „Würfelhäuser“ Ruppbergstraße 3 und 12 (privat);
+    Große Beerbergstraße 65–85 soll fallen. Dauerhaft: Sonnenweg und Schneekopfstraße 25–37.
+  - Kosten-Annahmen: Bauerwartungsland 8 €/m², Erschließung etwa 50 €/m², bis zu 90 % förderfähig.
+  - Solardächer sind für neue Gewerbebauten Pflicht; ein Konzept zum Waldumbau machen FH Erfurt und Landesforst.
+  - Vorgänger-Konzept von 2010: rund 94 ha Renaturierung/Grün, 18 ha Solar, 12,5 ha Gewerbe, 10,5 ha Sport/Freizeit,
+    4,5 ha Wohnen – ein fertiges **Gegen-Szenario** („Wald und Solar statt Gewerbe“).
+  - Flächenbilanz des Zielkonzepts 2022, Gesamtkosten, Solar-Leistung, Arbeitsplätze: im gelesenen Teil nicht enthalten – **offen**.
+- **Menschen dort heute:** Der statistische Stadtteil Suhl-Nord (größer als das Plattenbaugebiet) hatte am 31.12.2022
+  3 375 Einwohner, davon 1 802 im Kerngebiet Ziegenberg und 1 573 in Lauter/Oberland/Fröhlicher Mann [Atlas 2022].
+  Laut [WP-Suhl] sollten rund 530 Privatwohnungen bleiben.
 - **Weitere Zahl:** Suhl hat als einzige der vier Städte des Oberzentrums städtische Gewerbeflächen: 36 ha in Suhl-Nord und an
   der Hollandsmühle [SREK 2024].
 - **Szenario-Fragen:** Wie sieht der Berg 2030/2040 aus – Hallen, Holzbau-Campus, Solarfelder, zurückgekehrter Wald oder
@@ -99,16 +120,27 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
     (2008) [Uske 2017]; dazu kommen die Läden im CCS (1995) [WP-CCS].
   - Das Entwicklungskonzept der vier Städte nennt als Schwächen der Region: keine klare Innenstadt-Mitte, schwacher Branchenmix;
     vorgeschlagen wird ein gemeinsames Leerstands- und Brachflächen-Management [SREK 2024].
-  - Es gibt einen **Rahmenplan Innenstadt**, eine **Machbarkeitsstudie Bahnhof** und die Dokumentation eines **Wettbewerbs
-    „Herrenteich Park“** – also Pläne genau für die Mitte des Pilotquartiers. Inhalt und Datum: offen [Suhl-Planen].
+  - **Sanierungsgebiet „Innenstadt“ (39,1 ha):** Der Rahmenplan wurde 2020–2022 fortgeschrieben; der Stadtrat hat ihn im
+    November 2022 beschlossen; die Sanierung soll bis 2031 verlängert werden. Er ist Grundlage für Bau- und
+    Ordnungsmaßnahmen der Stadt in der Mitte; einzelne Maßnahmen nennt die gelesene Quelle nicht [Quaas Rahmenplan].
+  - **Herrenteich-Park (rund 1,1 ha):** Nicht offener Wettbewerb für Landschaftsarchitekten, ausgelobt von der Stadt am
+    23.5.2025; elf Arbeiten; Preisgericht am 23.10.2025. 1. Preis: ein Büro aus Kassel, 2. Preis: ein Büro aus Dresden,
+    zwei Anerkennungen (Leipzig, München). Aufgabe: Park mit hoher Aufenthaltsqualität, Anpassung an den Klimawandel,
+    Stadtökologie, Möbel und Licht. Der Siegerentwurf verbindet den Platz der Deutschen Einheit mit dem Park, soll den
+    ökologischen Zustand des Teichs und seinen Wasserrückhalt verbessern und setzt auf klimafeste Bäume; Kritik der Jury:
+    viele Wege. Investition rund 1,2 Mio. € brutto, gefördert aus dem Bundesprogramm „Anpassung urbaner und ländlicher Räume
+    an den Klimawandel“; die Ausführung steht unter Förder-Vorbehalt, ein Bautermin ist nicht genannt
+    [WA Herrenteich] [AKT Herrenteich] [iST 10/2025].
+  - Außerdem auf der Seite der Stadt: eine **Machbarkeitsstudie Bahnhof** (Inhalt offen) [Suhl-Planen].
   - 22.3.2024: Spatenstich für den Wohnpark „Ottilienblick“ [Suhl-Wirtschaft].
   - 18.5.2026: digitales Info-Terminal am Dianabrunnen vor dem Einkaufscentrum am Steinweg in Betrieb [Suhl-City].
   - 24.6.2026: Bürgerumfrage der Stadt zu öffentlichen Plätzen und Grünflächen [Suhl-Umwelt].
   - 15.9.2026: Start des gemeinsamen Gutscheins „WIR 4“ der Städte Oberhof, Schleusingen, Suhl und Zella-Mehlis;
     Ende Oktober 53 Annahmestellen [Suhl-Aktuell-3] [Suhl-Aktuell].
 - **Offen:** aktuelle Leerstandszahlen im Steinweg und in den Zentren; ob es ein Innenstadt-Konzept nach 2023 gibt.
-- **Szenario-Fragen:** Was wird aus einem leeren Einkaufszentrum – Wohnen, Bildung, Abriss? Kann die vierspurige
-  Friedrich-König-Straße schmaler werden? Mehr Wohnen und Grün am Herrenteich?
+- **Szenario-Fragen:** Herrenteich heute und nach dem Siegerentwurf (das ist die erste Zukunft, die man im Pilotquartier
+  bauen sollte – sie ist entschieden und bebildert). Was wird aus einem leeren Einkaufszentrum – Wohnen, Bildung, Abriss?
+  Kann die vierspurige Friedrich-König-Straße schmaler werden?
 
 ### 5. Friedberg: Schließung der Erstaufnahme
 
@@ -133,6 +165,11 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
 - **Was:** Der Stadtrat hat einen **zeitweiligen Ausschuss ÖPNV**. Er tagte am 26.10.2026 zum 14. Mal [Suhl-Bekanntm.].
   Auftrag, Vorlagen und Ergebnisse: **offen** (Einladung von hier nicht abrufbar).
 - **Wer:** Stadtrat Suhl; Städtische Nahverkehrsgesellschaft Suhl/Zella-Mehlis (SNG).
+- **Fahrplanwechsel am 11.10.2026:** Die SNG richtet das Angebot „stärker an der Nachfrage“ aus. Linien A2 und A4 werden
+  zusammengelegt (Himmelreich im Berufsverkehr halbstündlich), E geht in A3 auf (Neundorf direkt ins Zentrum), B fährt
+  wieder über die Große Beerbergstraße statt als B/F, Suhl-Nord wird von D1/D2 bedient, A/G wird ausgedünnt (sonntags alle
+  zwei Stunden), abends ab 19 Uhr fahren die Hauptlinien stündlich, Linie R pendelt werktags vor allem zwischen Schmiedefeld
+  und Gehlberg [Suhl-Fahrplan 2026]. Ob das auf den Ausschuss zurückgeht, sagt die Meldung nicht.
 - **Ausgangslage:** 21 Buslinien, rund 1,62 Mio. Fahrzeug-Kilometer im Jahr, Umsteigepunkt „Zentrum“ an der
   Friedrich-König-Straße und Halt gegenüber dem Bahnhof; seit 2021 auch drei Elektrobusse [WP-SNG]. Das regionale Konzept
   nennt den Nahverkehr zwischen den vier Städten lückenhaft und schlägt einen „RingBus“ vor [SREK 2024].
@@ -180,8 +217,9 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
 - **Stand:** 2. Entwurf, beschlossen am 25.3.2026 (Beschluss Nr. 05/445/2026) [RPSW 2026]. Er weist 40 Vorranggebiete aus;
   die Region muss 1,7 % ihrer Fläche bereitstellen; der Plan soll spätestens Ende 2027 beschlossen sein [BZ Wind 2026].
   Liegt bis 31.12.2027 kein wirksamer Plan vor, können Anlagen auch außerhalb der Vorranggebiete genehmigt werden
-  [Schmalkalden 2026]. Am 18.5.2026 informierte das Landratsamt Hildburghausen online, mit Übertragung u. a. nach Schleusingen
-  [BZ Wind 2026].
+  [Schmalkalden 2026]. Die Unterlagen lagen vom 18.5. bis 20.7.2026 aus, auch in der Planungsstelle in Suhl; vor der Sitzung
+  der Planungsgemeinschaft am 25.3.2026 protestierten in Suhl etwa 150 Menschen [iST Wind 2026]. Am 18.5.2026 informierte das
+  Landratsamt Hildburghausen online, mit Übertragung u. a. nach Schleusingen [BZ Wind 2026].
 - **Offen:** Welche Vorranggebiete im Stadtgebiet Suhl oder in Sichtweite liegen (Nummern, Hektar). Die Gebietsliste des Entwurfs
   habe ich nicht gefunden; nur Anlagen (Vogelschutz, raumwirksame Denkmale – darunter Schloss Bertholdsburg in Schleusingen mit
   rund 2 km Abstandsbereich) [RPSW 2026].
@@ -278,7 +316,9 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
    `https://suhl.eu/_files/ugd/1b847c_bb58bad254ee47199052c6b2796188cc.pdf`.
    Die Meldung zum Bebauungsplan: `https://www.suhl.eu/post/information-zur-öffentlichen-bekanntmachung-zur-veröffentlichung-des-entwurfs-zum-bebauungsplan-gew`
    (Titel gelesen, Text nicht).
-2. **Tagesordnungen** der Stadtratssitzungen vom 11.11. und 16.11.2026 und des ÖPNV-Ausschusses – nicht lesbar.
+2. **Tagesordnungen** der Stadtratssitzungen vom 11.11. und 16.11.2026 und des ÖPNV-Ausschusses – nicht lesbar. Die Stadt
+   hat ein Ratsinformationssystem (`https://suhltrifft.ris-portal.de/`); es lässt automatische Abrufe nicht zu. Dort stehen
+   vermutlich die Vorlagen zu Suhl-Nord, Nahverkehr und Wärmeplan – ein Mensch kann sie lesen.
 3. **Hochwasserschutz-Konzept, Forstzahlen, Tourismuszahlen** für die Stadt selbst – nichts gefunden. Beim Wärmeplan fehlen
    die Karte (Gebietstypen je Quartier) und der Stand des Ratsbeschlusses.
 4. **Nachnutzung Friedberg** – nichts gefunden; ein Bericht vom 11.9.2026 liegt hinter einer Bezahlschranke.
@@ -301,6 +341,24 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
 - **[LEG-Konzept 2022]** LEG Thüringen: Suhl-Nord, Umsetzungsorientiertes Realisierungskonzept 2022 bis 2040, Kurzfassung
   (Redaktionsschluss 11.4.2022).
   https://www.leg-thueringen.de/fileadmin/user_upload/leg_portal/downloads/publikationen/stadt_regionalentwicklung/suhl-nord_realisierungskonzept_2022-2040_kurzfassung.pdf
+- **[LEG-Lang 2022]** LEG Thüringen: Suhl-Nord, Umsetzungsorientiertes Realisierungskonzept 2022 bis 2040, Langfassung
+  (gelesen: etwa das erste Viertel des Textes).
+  https://www.leg-thueringen.de/fileadmin/user_upload/leg_portal/downloads/publikationen/stadt_regionalentwicklung/suhl-nord_realisierungskonzept_2022-2040_langfassung.pdf
+- **[UmbauStadt]** Planungsbüro UmbauStadt, Projektseite „ISEK Suhl“ (2021–2023). https://www.umbaustadt.de/projekte/isek-suhl
+- **[iST 3/2023]** inSüdthüringen, 22.3.2023.
+  https://www.insuedthueringen.de/inhalt.stadtentwicklung-die-grosse-leere-einer-fragmentierten-stadt.c99425f6-a8a8-448f-92f0-f35dc7a2bd53.html
+- **[Quaas Rahmenplan]** quaas-stadtplaner, Projektseite „Rahmenplan Innenstadt Suhl“ (2020–2022).
+  https://www.quaas-stadtplaner.de/projekte/stadt.dorf.planung/shl-02_rahmenplan_innenstadt.html
+- **[WA Herrenteich]** wettbewerbe aktuell: Ergebnis „Neugestaltung Herrenteich-Park in Suhl“.
+  https://www.wettbewerbe-aktuell.de/ergebnis/neugestaltung-herrenteich-park-suhl-380068
+- **[AKT Herrenteich]** Architektenkammer Thüringen, 16.12.2025.
+  https://architekten-thueringen.de/aktuell/n/neugestaltung_des_herrenteich_pa-26675.html
+- **[iST 10/2025]** inSüdthüringen, 29.10.2025.
+  https://www.insuedthueringen.de/inhalt.projekt-herrenteich-ein-stueck-suhler-identitaet-im-herzen-der-stadt.848e1885-a35e-4f28-a65c-d3f1487c41c0.html
+- **[Suhl-Fahrplan 2026]** Stadt Suhl: Fahrplanwechsel der SNG am 11. Oktober 2026.
+  https://www.suhl.eu/post/fahrplanwechsel-der-sng-am-11-oktober-2026
+- **[iST Wind 2026]** inSüdthüringen, 25.3.2026.
+  https://www.insuedthueringen.de/inhalt.planungsgemeinschaft-suedthueringen-plant-40-windrad-gebiete.08ac9250-f484-4d10-8820-7487edb84721.html
 - **[LEG 2022]** LEG Thüringen, Meldung zur Absichtserklärung vom 28.9.2022.
   https://www.leg-thueringen.de/en/news/three-project-partners-for-suhl-north-sign-a-declaration-of-intent-for-the-transformation-of-the-district/
 - **[Nordkurier 2026]** Nordkurier, 10.2.2026.
