@@ -12,6 +12,7 @@ import slib, sheetlib
 REF = os.path.abspath(sys.argv[1]); OUTDIR = os.path.join(REF, 'commons'); CACHE = os.path.join(REF, '..', 'commons-cache')
 areas = slib.Areas()   # the copy of the areas next to the results (tools/suhl/out/fotos/gebiete.geojson), the same as on the chat machine
 PER_GROUP = 12
+SHEET_OK = re.compile(r'^(CC0|CC BY(-SA)?( |$)|Public domain)', re.I)   # on sheets only CC0, CC BY, CC BY-SA, public domain (not 'Attribution', FAL, GFDL)
 NO_SHEETS = '--no-sheets' in sys.argv   # on the chat machine (no access to the Commons image host): only the numbers
 GROUPS = [   # landmark or place -> words to look for (title, description, categories)
     ('Rathaus am Markt', r'\bRathaus\b|Rotes Rathaus'), ('Markt', r'\bMarkt(platz)?\b'), ('Steinweg', r'Steinweg'),
@@ -80,7 +81,7 @@ def main():
 
     summary, credits, n_sheets = [], [], 0
     for name, ps in groups.items():
-        ok = [p for p in ps if p.get('free') and p.get('relevant')]
+        ok = [p for p in ps if p.get('free') and p.get('relevant') and SHEET_OK.match(p.get('license') or '')]
         years = sorted(y for y in (year_of(p) for p in ps) if y)
         row = dict(gruppe=name, fotos=len(ps), frei_und_aussen=len(ok), mit_kameraposition=sum(1 for p in ps if p.get('position') == 'camera'),
                    mit_blickrichtung=sum(1 for p in ps if p.get('heading') is not None), jahre=[years[0], years[-1]] if years else None,

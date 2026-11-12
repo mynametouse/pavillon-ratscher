@@ -45,7 +45,7 @@ Ansehen: `git fetch origin ref/suhl-fotos && git show FETCH_HEAD:karten/abdeckun
 | **Panoramax** (Straßenfotos) | 3 254 im Rechteck um die Stadt, davon 284 doppelt hochgeladen → **2 970 verschiedene**; im Gemeindegebiet 2 139 (Zentrum 171, übrige Kernstadt 1 070, übrige Stadt 898) | 2025: 2 095, 2026: 1 159 | alle CC BY-SA 4.0 | alle (aber siehe unten); kein 360°-Foto | Chat-Rechner, `api.panoramax.xyz`, 28 Abfragen |
 | **Wikimedia Commons** (Einzelfotos) | **6 229**; mit Standort 3 358 (Kamera 3 299, nur Objekt 59); Zentrum 512, übrige Kernstadt 826, übrige Stadt 1 025, außerhalb 995, ohne Standort 2 871 | vor 1945: 55 · 1945–1990: 457 · 1991–2009: 230 · 2010–2019: 1 613 · 2020–2026: 3 794 · ohne: 80 | CC BY-SA 4.0: 3 985 · CC BY-SA 3.0 de: 691 · CC BY 4.0: 392 · CC BY-SA 3.0: 386 · CC0: 347 · CC BY 3.0: 122 · CC BY-SA 2.0: 100 · gemeinfrei: 97 · sonst 109; **frei nutzbar 6 185**, nur ansehen 44 | 250 | GitHub Actions (Lauf 43326964578), 1 107 Abfragen |
 | **Openverse** (vor allem Flickr) | 183, alle ohne Standort | nicht angegeben | CC BY-NC 2.0: 99 · CC BY-SA 2.0: 28 · CC BY-ND 2.0: 23 · CC BY-NC-SA 2.0: 16 · CC BY 2.0: 12 · sonst 5; **frei 41, nur ansehen 142** | 0 | Chat-Rechner |
-| **KartaView** | unbekannt – die Abfrage scheiterte | – | laut OpenStreetMap-Wiki CC BY-SA 4.0 | – | GitHub Actions; `api.openstreetcam.org` antwortet mit einem ungültigen Zertifikat (`log/kartaview.log`) |
+| **KartaView** | **0 in der Kernstadt** (81 Kreisabfragen, alle leer) | – | laut OpenStreetMap-Wiki CC BY-SA 4.0 | – | Chat-Rechner, `api.kartaview.org` (ohne Konto); Gegenprobe in Erfurt liefert Bilder (`kartaview.json`) |
 | **Mapillary** | nicht abgefragt | – | laut Mapillary CC BY-SA 4.0 (nicht geprüft) | – | braucht einen Zugangsschlüssel und damit ein Konto – keines angelegt |
 
 **Panoramax im Einzelnen** (`quellen.json`, verschiedene Fotos): „sixsixfive“ 1 449 (Fairphone 6, Bildwinkel 74°, 26.–30.12.2025) – von ihm stammen
@@ -250,8 +250,10 @@ am Stab, ein Bild alle 3 bis 5 m, einmal durch jede Straße.
 
 ## Lücken und Unsicheres
 
-- **KartaView:** Abfrage gescheitert (ungültiges Zertifikat an `api.openstreetcam.org`, zwei Schnittstellen-Versionen versucht). Ob es Bilder von Suhl gibt, ist offen.
-  Das OpenStreetMap-Wiki nennt für die Bilder CC BY-SA 4.0 und keine offene Schnittstelle (https://wiki.openstreetmap.org/wiki/KartaView).
+- **KartaView:** in der Kernstadt keine Bilder (`kartaview.json`: 81 Kreise von 500 m, alle leer; dieselbe Abfrage liefert in Erfurt Bilder von 2016).
+  Die Ortsteile außerhalb der Kernstadt sind nicht abgefragt. Der erste Versuch aus GitHub Actions ging an die alte Adresse `api.openstreetcam.org`
+  und scheiterte am Zertifikat (`log/kartaview.log`); die Schnittstelle `api.kartaview.org/2.0/photo/` antwortet ohne Konto, höchstens 500 m Umkreis je Frage.
+  Lizenz laut OpenStreetMap-Wiki CC BY-SA 4.0 (https://wiki.openstreetmap.org/wiki/KartaView).
 - **Mapillary:** nicht abgefragt (Konto nötig). Abdeckung von Suhl unbekannt.
 - **Commons:** Der Kategorienbaum wurde bei 700 Kategorien abgebrochen (Ebene 5 nur zum Teil). Eine der 144 Standort-Abfragen meldete „Suche überlastet“ –
   dort können Fotos fehlen. „Außenansicht“ und die Zuordnung zu Wahrzeichen gehen nach Wörtern, nicht nach dem Bild. Von den 77 Commons-Blättern
@@ -281,7 +283,12 @@ am Stab, ein Bild alle 3 bis 5 m, einmal durch jede Straße.
 - **Stufe 3 braucht je Fassade ein Foto mit bekanntem Standort.** Vorschlag: Commons-Fotos des Zentrums über Kamerastandort und Gebäudegrundrisse
   (`suhl-bestand`) dem Haus zuordnen, das sie zeigen, und je Haus ein Blatt machen. Die Liste je Straße steht schon in `commons_zentrum_lokal.json`.
 - Der Workflow startet nur, wenn sich `collect_commons.py`, `collect_kartaview.py` oder die Workflow-Datei ändern. `nach_commons.py` läuft am Ende
-  jedes Laufs vom dann aktuellen Stand des Zweigs.
+  jedes Laufs vom dann aktuellen Stand des Zweigs. `collect_kartaview.py` fragt noch die alte, tote Adresse – ich habe es nicht angefasst, weil die
+  Änderung den ganzen Lauf (1 100 Abfragen an Wikimedia) neu gestartet hätte. Beim nächsten Lauf im Workflow durch `kartaview.py` ersetzen.
+- **Die Gruppen der Commons-Blätter sind nach Wörtern gebildet und teils zu weit:** „Bahnhof“ enthält auch die Bahnhöfe Dietzhausen und Rennsteig,
+  „Luftbilder und Stadtansichten“ auch die Dombergbaude. Für Stufe 3 besser nach Kamerastandort und Gebäude gruppieren.
+- Weitere Funde auf den Commons-Blättern: das Hochhaus Friedrich-König-Straße 44 von nahem (rot-weißes Fassadenmuster), Drohnenfotos der Punkthochhäuser
+  im Wohngebiet Nord (Januar 2024), ein Blick über die Stadt von Südwesten, Bodenplatten aus Bronze im Pflaster der Friedrich-König-Straße.
 - Die 393 Seitenkamera-Fotos von „R_A“ (12.4.2026) zeigen die Autobahn mit Tunnelportalen und Leitplanken – brauchbar für die Anfahrt über A 73/A 71.
 - Die Karte `karten/abdeckung_zentrum.png` zeigt auf einen Blick, wo Falkos Rundgang nötig ist: alles Rote innerhalb des Rings der Hauptstraßen.
 
@@ -291,6 +298,7 @@ am Stab, ein Bild alle 3 bis 5 m, einmal durch jede Straße.
 python3 tools/suhl/fotos/collect_panoramax.py        # Panoramax, etwa 1 Minute
 python3 tools/suhl/fotos/collect_osm.py              # Straßennetz der Kernstadt, 30 Abfragen an die OSM-API
 python3 tools/suhl/fotos/collect_openverse.py        # Openverse, etwa 10 Minuten
+python3 tools/suhl/fotos/kartaview.py                # KartaView, 81 Abfragen über die Kernstadt
 # Commons und KartaView: nur in GitHub Actions – ein Push, der collect_commons.py ändert, startet den Lauf
 python3 tools/suhl/fotos/merge.py                    # katalog_suhl.json.gz, quellen.json
 python3 tools/suhl/fotos/coverage.py                 # abdeckung.json, abdeckung_strassen.csv

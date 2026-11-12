@@ -48,7 +48,8 @@ if kv:
     for p in kv.get('photos', []):
         if 'Vergleich' in (p.get('place') or ''): continue
         photos.append(dict(p, gebiet=areas.of(p['lat'], p['lon']), position='camera', title='', description='', categories=[], relevant=True, nutzung=usable(p.get('license')))); n += 1
-    info['kartaview'] = dict(fetched=kv['fetched'], where='GitHub Actions', probes=kv.get('probes'), photos_in_suhl=n)
+    info['kartaview'] = dict(fetched=kv['fetched'], where=kv.get('where', 'GitHub Actions'), api=kv.get('api') or kv.get('base'), circles=kv.get('circles'), calls=kv.get('calls'),
+                             errors=len(kv.get('errors') or []), control=kv.get('control'), probes=kv.get('probes'), photos_in_suhl=n)
 ov = try_load('openverse.json')
 if ov:
     for p in ov['photos']:

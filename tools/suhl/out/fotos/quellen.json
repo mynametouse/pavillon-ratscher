@@ -1,6 +1,6 @@
 {
  "version": 1,
- "made": "2026-11-12T23:43Z",
+ "made": "2026-11-12T23:51Z",
  "areas": "suhl-bestand",
  "quellen": {
   "commons": {
@@ -296,70 +296,19 @@
    }
   },
   "kartaview": {
-   "fetched": "2026-11-12T23:36Z",
-   "where": "GitHub Actions",
-   "probes": [
-    {
-     "probe": "v2 photo near zentrum",
-     "url": "https://api.openstreetcam.org/2.0/photo/?lat=50.6087&lng=10.6926&radius=1500&itemsPerPage=500&page=1",
-     "post": false,
-     "status": null,
-     "note": "failed after 2 tries: https://api.openstreetcam.org/2.0/photo/?lat=50.6087&lng=10.6926&radius=1500&itemsPerPage=500&page=1 (<urlopen error [SSL: CERTIFICATE_VER"
-    },
-    {
-     "probe": "v1 nearby-photos near zentrum",
-     "url": "https://api.openstreetcam.org/1.0/list/nearby-photos/",
-     "post": true,
-     "status": null,
-     "note": "failed after 2 tries: https://api.openstreetcam.org/1.0/list/nearby-photos/ (<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname",
-     "items": 0
-    },
-    {
-     "probe": "v2 photo near suhl-nord",
-     "url": "https://api.openstreetcam.org/2.0/photo/?lat=50.623&lng=10.703&radius=1500&itemsPerPage=500&page=1",
-     "post": false,
-     "status": null,
-     "note": "failed after 2 tries: https://api.openstreetcam.org/2.0/photo/?lat=50.623&lng=10.703&radius=1500&itemsPerPage=500&page=1 (<urlopen error [SSL: CERTIFICATE_VERIF"
-    },
-    {
-     "probe": "v1 nearby-photos near suhl-nord",
-     "url": "https://api.openstreetcam.org/1.0/list/nearby-photos/",
-     "post": true,
-     "status": null,
-     "note": "failed after 2 tries: https://api.openstreetcam.org/1.0/list/nearby-photos/ (<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname",
-     "items": 0
-    },
-    {
-     "probe": "v2 photo near heinrichs",
-     "url": "https://api.openstreetcam.org/2.0/photo/?lat=50.595&lng=10.669&radius=1500&itemsPerPage=500&page=1",
-     "post": false,
-     "status": null,
-     "note": "failed after 2 tries: https://api.openstreetcam.org/2.0/photo/?lat=50.595&lng=10.669&radius=1500&itemsPerPage=500&page=1 (<urlopen error [SSL: CERTIFICATE_VERIF"
-    },
-    {
-     "probe": "v1 nearby-photos near heinrichs",
-     "url": "https://api.openstreetcam.org/1.0/list/nearby-photos/",
-     "post": true,
-     "status": null,
-     "note": "failed after 2 tries: https://api.openstreetcam.org/1.0/list/nearby-photos/ (<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname",
-     "items": 0
-    },
-    {
-     "probe": "v2 photo near zella-mehlis (Vergleich)",
-     "url": "https://api.openstreetcam.org/2.0/photo/?lat=50.658&lng=10.665&radius=1500&itemsPerPage=500&page=1",
-     "post": false,
-     "status": null,
-     "note": "failed after 2 tries: https://api.openstreetcam.org/2.0/photo/?lat=50.658&lng=10.665&radius=1500&itemsPerPage=500&page=1 (<urlopen error [SSL: CERTIFICATE_VERIF"
-    },
-    {
-     "probe": "v1 nearby-photos near zella-mehlis (Vergleich)",
-     "url": "https://api.openstreetcam.org/1.0/list/nearby-photos/",
-     "post": true,
-     "status": null,
-     "note": "failed after 2 tries: https://api.openstreetcam.org/1.0/list/nearby-photos/ (<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname",
-     "items": 0
-    }
-   ],
+   "fetched": "2026-11-12T23:50Z",
+   "where": "chat machine",
+   "api": "https://api.kartaview.org/2.0/photo/",
+   "circles": 81,
+   "calls": 81,
+   "errors": 0,
+   "control": {
+    "place": "Erfurt 50.9787 N, 11.0328 E",
+    "items_on_first_page_of_5": 5,
+    "has_more": true,
+    "first_shot_date": "2016-08-26 04:19:20.000"
+   },
+   "probes": null,
    "photos_in_suhl": 0
   },
   "openverse": {
