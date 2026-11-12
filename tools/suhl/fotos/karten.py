@@ -12,6 +12,7 @@ areas = slib.Areas(sys.argv[2] if len(sys.argv) > 2 else None)
 COL = {'none': (214, 60, 50), 'photo': (240, 170, 40), 'one': (120, 190, 80), 'both': (20, 120, 60), 'unnamed': (200, 200, 196), 'unnamed_photo': (150, 170, 200)}
 P = slib.load('abdeckung_punkte.json.gz'); cov = slib.load('abdeckung.json'); osm = slib.load('strassen.json.gz')
 photos = slib.load('panoramax.json.gz')['photos']
+slib.add_course(photos)   # 'blick': the direction of travel where the stored heading scatters
 
 
 def draw(name, area, size, with_photos, title):
@@ -40,8 +41,8 @@ def draw(name, area, size, with_photos, title):
         for p in photos:
             if not areas.has(area, p['lat'], p['lon']): continue
             x, y = px(*slib.xy(p['lat'], p['lon']))
-            if p['heading'] is not None:
-                a = math.radians(p['heading']); d.line((x, y, x + 9 * math.sin(a), y - 9 * math.cos(a)), fill=(30, 60, 160), width=1)
+            if p['blick'] is not None:
+                a = math.radians(p['blick']); d.line((x, y, x + 9 * math.sin(a), y - 9 * math.cos(a)), fill=(30, 60, 160), width=1)
             d.ellipse((x - 2, y - 2, x + 2, y + 2), fill=(30, 60, 160))
         names = []
         for m in cov['wahrzeichen']:

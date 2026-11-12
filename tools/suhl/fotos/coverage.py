@@ -88,6 +88,11 @@ def main():
     photos = load_photos()
     CELL = 25.0
     pg = grid_of(photos, CELL)
+    # single photos from Wikimedia Commons with a camera position (outside views), if the collection from GitHub Actions is there
+    try: commons = [dict(p, x=slib.xy(p['lat'], p['lon'])[0], y=slib.xy(p['lat'], p['lon'])[1]) for p in slib.load('commons.json.gz')['photos']
+                    if p.get('position') == 'camera' and p.get('relevant') and p.get('lat') is not None]
+    except FileNotFoundError: commons = []
+    cg = grid_of(commons, CELL)
     places = [dict(p, x=slib.xy(p['lat'], p['lon'])[0], y=slib.xy(p['lat'], p['lon'])[1]) for p in osm['places'] if p['place'] in ('suburb', 'quarter', 'neighbourhood', 'village', 'hamlet', 'town')]
 
     def viertel(x, y):
@@ -127,7 +132,8 @@ def main():
                 else:
                     if slib.angdiff(p['blick'], nl) <= SIDE_ANGLE and off_l <= BEHIND: left = True
                     if slib.angdiff(p['blick'], (br + 90) % 360) <= SIDE_ANGLE and -off_l <= BEHIND: right = True
-            rec['s'].append((x, y, br, L, zen, got, left, right, ids))
+            cids = [i for i in near(cg, CELL, x, y, NEAR) if (commons[i]['x'] - x) ** 2 + (commons[i]['y'] - y) ** 2 <= NEAR * NEAR]
+            rec['s'].append((x, y, br, L, zen, got, left, right, ids, cids))
         if rec['s']: ways.append(rec)
 
     # --- every sample point with its flags, for the maps (metres east/north of the centre)
@@ -185,7 +191,9 @@ def main():
                 if (s[7] if left_is_a else s[6]): b += s[3]
             ids = sorted({i for s in SS for i in s[8]})
             dates = sorted(photos[i]['date'][:10] for i in ids if photos[i]['date'])
-            return dict(laenge_m=round(LL, 1), mit_foto_m=round(sum(s[3] for s in SS if s[5]), 1), anteil_foto=round(sum(s[3] for s in SS if s[5]) / LL, 3),
+            cset = {i for s in SS for i in s[9]}
+            return dict(commons_fotos=len(cset), anteil_commons=round(sum(s[3] for s in SS if s[9]) / LL, 3), anteil_foto_oder_commons=round(sum(s[3] for s in SS if s[5] or s[9]) / LL, 3),
+                        laenge_m=round(LL, 1), mit_foto_m=round(sum(s[3] for s in SS if s[5]), 1), anteil_foto=round(sum(s[3] for s in SS if s[5]) / LL, 3),
                         seite_a_m=round(a, 1), seite_b_m=round(b, 1), anteil_seite_a=round(a / LL, 3), anteil_seite_b=round(b / LL, 3),
                         fotos=len(ids), neuestes=dates[-1] if dates else None, aeltestes=dates[0] if dates else None, foto_ids=ids)
         hws = collections.Counter()
@@ -209,7 +217,9 @@ def main():
         L = sum(r['laenge_m'] for r in rr)
         if not L: return None
         ids = set(i for r in rr for i in r['foto_ids'])
-        return dict(strassen=len(rr), laenge_km=round(L / 1000, 2), mit_foto_km=round(sum(r['mit_foto_m'] for r in rr) / 1000, 2),
+        return dict(anteil_commons=round(sum(r['anteil_commons'] * r['laenge_m'] for r in rr) / L, 3), anteil_foto_oder_commons=round(sum(r['anteil_foto_oder_commons'] * r['laenge_m'] for r in rr) / L, 3),
+                    strassen_ohne_foto_und_commons=sum(1 for r in rr if r['fotos'] == 0 and r['commons_fotos'] == 0),
+                    strassen=len(rr), laenge_km=round(L / 1000, 2), mit_foto_km=round(sum(r['mit_foto_m'] for r in rr) / 1000, 2),
                     anteil_foto=round(sum(r['mit_foto_m'] for r in rr) / L, 3), anteil_seite_a=round(sum(r['seite_a_m'] for r in rr) / L, 3),
                     anteil_seite_b=round(sum(r['seite_b_m'] for r in rr) / L, 3),
                     anteil_beide_seiten_mittel=round((sum(r['seite_a_m'] for r in rr) + sum(r['seite_b_m'] for r in rr)) / (2 * L), 3),
@@ -278,7 +288,8 @@ def main():
                     src.append(('area ' if s['klasse'] == 'platz' else 'street ') + s['label'])
         if not geo: marks.append(dict(name=label, osm=[], hinweis='in OSM im Zentrum nicht gefunden')); continue
         a, b, ids, au = looked_at(geo)
-        marks.append(dict(name=label, osm=src, fotos_bis_80m=a, fotos_mit_blick=b, je_urheber=dict(au), foto_ids=ids))
+        nc = sum(1 for c in commons if any((x - c['x']) ** 2 + (y - c['y']) ** 2 <= LOOK_R ** 2 for x, y in geo))
+        marks.append(dict(name=label, osm=src, fotos_bis_80m=a, fotos_mit_blick=b, commons_kamera_bis_80m=nc, je_urheber=dict(au), foto_ids=ids))
     others = []
     for o in zobjs:
         t = o['tags']
@@ -300,6 +311,7 @@ def main():
     res = dict(
         version=1, made=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), areas=areas.source,
         method=dict(step_m=STEP, near_m=NEAR, along_m=ALONG, behind_m=BEHIND, side_angle_deg=SIDE_ANGLE, landmark_radius_m=LOOK_R,
+                    commons='commons_fotos / anteil_commons: single photos of Wikimedia Commons with a camera position within 25 m (outside views; ' + str(len(commons)) + ' in all) - no viewing direction as a rule, counted apart from the street photos',
                     street_photos='Panoramax (' + str(sum(1 for p in photos if p['source'] == 'panoramax')) + ' different pictures; pictures uploaded twice count once)' + (', KartaView (' + str(sum(1 for p in photos if p['source'] == 'kartaview')) + ')' if any(p['source'] == 'kartaview' for p in photos) else ''),
                     streets='OpenStreetMap ways with highway=' + '/'.join(sorted(ROAD)) + ' (klasse strasse) and ' + '/'.join(sorted(PATH)) + ' (klasse weg), with a name; ways of one name within 250 m are one street',
                     sides='seite_a/seite_b are named after the compass side of the street axis; rough for winding streets',
@@ -309,7 +321,8 @@ def main():
                     quarter='nearest OSM place point (suburb, quarter, neighbourhood, village, hamlet) to the middle of the street'),
         summen=sums, viertel=viertel_sum, strassenklasse=hw_sum,
         zentrum_schlecht=[dict(name=s['label'], klasse=s['klasse'], highway=s['highway'], laenge_m=s['zentrum']['laenge_m'], anteil_foto=s['zentrum']['anteil_foto'],
-                               ohne_foto_m=round(s['zentrum']['laenge_m'] - s['zentrum']['mit_foto_m'], 1)) for s in schlecht],
+                               ohne_foto_m=round(s['zentrum']['laenge_m'] - s['zentrum']['mit_foto_m'], 1), commons_fotos=s['zentrum']['commons_fotos'],
+                               anteil_commons=s['zentrum']['anteil_commons'], anteil_foto_oder_commons=s['zentrum']['anteil_foto_oder_commons']) for s in schlecht],
         zentrum_ohne_fassadenblick=[dict(name=s['label'], laenge_m=s['zentrum']['laenge_m'], anteil_foto=s['zentrum']['anteil_foto'],
                                          anteil_seite_a=s['zentrum']['anteil_seite_a'], anteil_seite_b=s['zentrum']['anteil_seite_b']) for s in ohne_seiten],
         wahrzeichen=marks, weitere_objekte_im_zentrum=others, strassen=[slim(s) for s in out_streets])
@@ -318,11 +331,12 @@ def main():
     slib.save('abdeckung_fotos.json.gz', dict(photos=[p['id'] for p in photos], strassen=[dict(label=s['label'], name=s['name'], klasse=s['klasse'], way_ids=s['way_ids'], achse_grad=s['achse_grad'],
               seite_a=s['seite_a'], seite_b=s['seite_b'], zentrum=s['zentrum'], kernstadt_fotos=(s['kernstadt'] or {}).get('foto_ids', [])) for s in out_streets]))
     with open(os.path.join(slib.OUT, 'abdeckung_strassen.csv'), 'w', encoding='utf-8') as f:
-        f.write('strasse;klasse;highway;viertel;laenge_kernstadt_m;anteil_foto;anteil_seite_a;anteil_seite_b;seite_a;seite_b;fotos;neuestes_foto;laenge_zentrum_m;zentrum_anteil_foto;zentrum_anteil_seite_a;zentrum_anteil_seite_b;zentrum_fotos\n')
+        f.write('strasse;klasse;highway;viertel;laenge_kernstadt_m;anteil_foto;anteil_seite_a;anteil_seite_b;seite_a;seite_b;fotos;neuestes_foto;laenge_zentrum_m;zentrum_anteil_foto;zentrum_anteil_seite_a;zentrum_anteil_seite_b;zentrum_fotos;commons_fotos_kernstadt;anteil_commons_kernstadt;zentrum_commons_fotos;zentrum_anteil_commons\n')
         for s in out_streets:
             k, z = s['kernstadt'], s['zentrum'] or {}
             f.write(';'.join(str(v if v is not None else '') for v in (s['label'], s['klasse'], s['highway'], s['viertel'], k['laenge_m'], k['anteil_foto'], k['anteil_seite_a'], k['anteil_seite_b'],
-                    s['seite_a'], s['seite_b'], k['fotos'], k['neuestes'], z.get('laenge_m'), z.get('anteil_foto'), z.get('anteil_seite_a'), z.get('anteil_seite_b'), z.get('fotos'))) + '\n')
+                    s['seite_a'], s['seite_b'], k['fotos'], k['neuestes'], z.get('laenge_m'), z.get('anteil_foto'), z.get('anteil_seite_a'), z.get('anteil_seite_b'), z.get('fotos'),
+                    k['commons_fotos'], k['anteil_commons'], z.get('commons_fotos'), z.get('anteil_commons'))) + '\n')
     print(json.dumps(sums, ensure_ascii=False, indent=1))
     print('Zentrum: streets with poor coverage:', [(s['label'], s['zentrum']['laenge_m'], s['zentrum']['anteil_foto']) for s in schlecht][:25])
     for m in marks: print(' ', m['name'], m.get('osm'), m.get('fotos_bis_80m'), m.get('fotos_mit_blick'), m.get('hinweis', ''))

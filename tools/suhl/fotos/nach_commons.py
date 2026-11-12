@@ -12,6 +12,7 @@ import slib, sheetlib
 REF = os.path.abspath(sys.argv[1]); OUTDIR = os.path.join(REF, 'commons'); CACHE = os.path.join(REF, '..', 'commons-cache')
 areas = slib.Areas()   # the copy of the areas next to the results (tools/suhl/out/fotos/gebiete.geojson), the same as on the chat machine
 PER_GROUP = 12
+NO_SHEETS = '--no-sheets' in sys.argv   # on the chat machine (no access to the Commons image host): only the numbers
 GROUPS = [   # landmark or place -> words to look for (title, description, categories)
     ('Rathaus am Markt', r'\bRathaus\b|Rotes Rathaus'), ('Markt', r'\bMarkt(platz)?\b'), ('Steinweg', r'Steinweg'),
     ('Hauptkirche St. Marien', r'Marienkirche|St\.? ?Marien|Hauptkirche'), ('Kreuzkirche', r'Kreuzkirche'),
@@ -30,6 +31,13 @@ def text_of(p):
 def year_of(p):
     m = re.search(r'(1[89]\d\d|20\d\d)', p.get('date') or '')
     return int(m.group(1)) if m else None
+
+
+def date_text(p):
+    """The date as Commons gives it, without the words around it ('Taken on 28 April 2025' -> '28 April 2025')."""
+    d = re.sub(r'^(taken on|photographed on|date)\s*:?\s*', '', (p.get('date') or '').strip(), flags=re.I)
+    m = re.match(r'\d{4}-\d{2}-\d{2}', d)
+    return m.group(0) if m else (d[:20] or 'ohne Datum')
 
 
 def pick(ps, n):
@@ -78,7 +86,7 @@ def main():
                    mit_blickrichtung=sum(1 for p in ps if p.get('heading') is not None), jahre=[years[0], years[-1]] if years else None,
                    lizenzen=dict(collections.Counter(p.get('license') or '?' for p in ps).most_common(8)), blaetter=[],
                    titel=[p['title'] for p in sorted(ps, key=lambda p: p['id'])][:200])
-        sel = pick(ok, PER_GROUP)
+        sel = [] if NO_SHEETS else pick(ok, PER_GROUP)
         for k in range(0, len(sel), 6):
             cells = []
             for p in sel[k:k + 6]:
@@ -86,15 +94,16 @@ def main():
                 head = f"Blick {sheetlib.wind16(p['heading'])} ({p['heading']:.0f}°)" if p.get('heading') is not None else 'Blickrichtung unbekannt'
                 pos = 'Kamera' if p.get('position') == 'camera' else 'Objekt' if p.get('position') == 'object' else 'ohne'
                 where = f"{p['lat']:.5f}, {p['lon']:.5f} ({pos})" if p.get('lat') is not None else 'ohne Position'
-                cells.append((im, p['title'].replace('File:', '')[:90], f"{name} · {where} · {head} · {(p.get('date') or 'ohne Datum')[:10]} · {(p.get('author') or '?')[:28]} · {p.get('license')}"))
+                cells.append((im, p['title'].replace('File:', '')[:90], f"{name} · {where} · {head} · {date_text(p)} · {(p.get('author') or '?')[:28]} · {p.get('license')}"))
                 credits.append((name, p))
             fn = f"{sheetlib.slug(name)}_{k // 6 + 1}.jpg"
             sheetlib.sheet('Commons: ' + name, f'{len(ps)} Fotos, davon {len(ok)} frei lizenzierte Außenansichten; Blatt {k // 6 + 1}', cells, os.path.join(OUTDIR, fn))
             row['blaetter'].append('commons/' + fn); n_sheets += 1
         summary.append(row)
-    slib.save('commons_zentrum.json', dict(version=1, fetched=com.get('fetched'), areas=areas.source, counts=com.get('counts'),
+    slib.save('commons_zentrum_lokal.json' if NO_SHEETS else 'commons_zentrum.json', dict(version=1, fetched=com.get('fetched'), areas=areas.source, counts=com.get('counts'),
                                            note='Gruppen nach Wörtern in Titel, Beschreibung und Kategorien (nicht geprüft, ob jedes Foto das Objekt wirklich zeigt); Blätter nur mit CC0, CC BY, CC BY-SA, gemeinfrei',
                                            gruppen=summary), indent=1)
+    if NO_SHEETS: print('numbers only, no sheets'); return
     os.makedirs(OUTDIR, exist_ok=True)
     with open(os.path.join(OUTDIR, 'CREDITS.md'), 'w', encoding='utf-8') as f:
         f.write('# Kontaktabzüge Wikimedia Commons – Urheber und Lizenzen\n\nNur Fotos mit CC0, CC BY, CC BY-SA oder gemeinfrei. Verkleinert (500 px), unverändert bis auf die Beschriftung.\n\n')
@@ -102,7 +111,7 @@ def main():
         for name, p in credits:
             if name != last: f.write(f'\n## {name}\n\n'); last = name
             f.write(f"- [{p['title'].replace('File:', '')}]({p['page']}) – {p.get('author') or 'unbekannt'}, {p.get('license')}"
-                    + (f" ({p['license_url']})" if p.get('license_url') else '') + f", {(p.get('date') or 'ohne Datum')[:10]}\n")
+                    + (f" ({p['license_url']})" if p.get('license_url') else '') + f", {date_text(p)}\n")
     print(n_sheets, 'sheets,', len(credits), 'pictures,', len(groups), 'groups')
     for r in summary: print(' ', r['gruppe'], r['fotos'], r['frei_und_aussen'], len(r['blaetter']))
 

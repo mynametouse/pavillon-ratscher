@@ -1,6 +1,6 @@
 {
  "version": 1,
- "made": "2026-11-12T23:35Z",
+ "made": "2026-11-12T23:43Z",
  "areas": "suhl-bestand",
  "method": {
   "step_m": 5.0,
@@ -9,6 +9,7 @@
   "behind_m": 8.0,
   "side_angle_deg": 60.0,
   "landmark_radius_m": 80.0,
+  "commons": "commons_fotos / anteil_commons: single photos of Wikimedia Commons with a camera position within 25 m (outside views; 3178 in all) - no viewing direction as a rule, counted apart from the street photos",
   "street_photos": "Panoramax (2970 different pictures; pictures uploaded twice count once)",
   "streets": "OpenStreetMap ways with highway=living_street/motorway/motorway_link/pedestrian/primary/primary_link/residential/road/secondary/secondary_link/service/tertiary/tertiary_link/trunk/trunk_link/unclassified (klasse strasse) and bridleway/corridor/cycleway/footway/path/steps/track (klasse weg), with a name; ways of one name within 250 m are one street",
   "sides": "seite_a/seite_b are named after the compass side of the street axis; rough for winding streets",
@@ -60,6 +61,9 @@
  "summen": {
   "kernstadt": {
    "strassen": {
+    "anteil_commons": 0.081,
+    "anteil_foto_oder_commons": 0.263,
+    "strassen_ohne_foto_und_commons": 140,
     "strassen": 358,
     "laenge_km": 185.93,
     "mit_foto_km": 37.43,
@@ -72,6 +76,9 @@
     "fotos": 1164
    },
    "wege": {
+    "anteil_commons": 0.032,
+    "anteil_foto_oder_commons": 0.092,
+    "strassen_ohne_foto_und_commons": 23,
     "strassen": 33,
     "laenge_km": 10.5,
     "mit_foto_km": 0.64,
@@ -84,6 +91,9 @@
     "fotos": 47
    },
    "plaetze_umriss": {
+    "anteil_commons": 0.846,
+    "anteil_foto_oder_commons": 0.853,
+    "strassen_ohne_foto_und_commons": 0,
     "strassen": 6,
     "laenge_km": 2.2,
     "mit_foto_km": 0.02,
@@ -102,6 +112,9 @@
   },
   "zentrum": {
    "strassen": {
+    "anteil_commons": 0.44,
+    "anteil_foto_oder_commons": 0.781,
+    "strassen_ohne_foto_und_commons": 3,
     "strassen": 49,
     "laenge_km": 14.44,
     "mit_foto_km": 6.19,
@@ -114,6 +127,9 @@
     "fotos": 182
    },
    "wege": {
+    "anteil_commons": 0.549,
+    "anteil_foto_oder_commons": 0.6,
+    "strassen_ohne_foto_und_commons": 0,
     "strassen": 2,
     "laenge_km": 0.27,
     "mit_foto_km": 0.02,
@@ -126,6 +142,9 @@
     "fotos": 7
    },
    "plaetze_umriss": {
+    "anteil_commons": 0.846,
+    "anteil_foto_oder_commons": 0.853,
+    "strassen_ohne_foto_und_commons": 0,
     "strassen": 6,
     "laenge_km": 2.2,
     "mit_foto_km": 0.02,
@@ -145,6 +164,9 @@
  },
  "viertel": {
   "Aue 1": {
+   "anteil_commons": 0.008,
+   "anteil_foto_oder_commons": 0.109,
+   "strassen_ohne_foto_und_commons": 9,
    "strassen": 16,
    "laenge_km": 8.7,
    "mit_foto_km": 0.88,
@@ -157,6 +179,9 @@
    "fotos": 22
   },
   "Aue 2": {
+   "anteil_commons": 0.091,
+   "anteil_foto_oder_commons": 0.24,
+   "strassen_ohne_foto_und_commons": 5,
    "strassen": 12,
    "laenge_km": 8.73,
    "mit_foto_km": 1.38,
@@ -169,6 +194,9 @@
    "fotos": 114
   },
   "Goldlauter": {
+   "anteil_commons": 0.0,
+   "anteil_foto_oder_commons": 0.126,
+   "strassen_ohne_foto_und_commons": 15,
    "strassen": 25,
    "laenge_km": 9.04,
    "mit_foto_km": 1.14,
@@ -181,6 +209,9 @@
    "fotos": 40
   },
   "Heidersbach": {
+   "anteil_commons": 0.013,
+   "anteil_foto_oder_commons": 0.279,
+   "strassen_ohne_foto_und_commons": 6,
    "strassen": 24,
    "laenge_km": 10.98,
    "mit_foto_km": 2.92,
@@ -193,6 +224,9 @@
    "fotos": 81
   },
   "Heinrichs": {
+   "anteil_commons": 0.076,
+   "anteil_foto_oder_commons": 0.406,
+   "strassen_ohne_foto_und_commons": 3,
    "strassen": 20,
    "laenge_km": 15.28,
    "mit_foto_km": 5.47,
@@ -205,6 +239,9 @@
    "fotos": 166
   },
   "Himmelreich": {
+   "anteil_commons": 0.015,
+   "anteil_foto_oder_commons": 0.124,
+   "strassen_ohne_foto_und_commons": 19,
    "strassen": 48,
    "laenge_km": 21.22,
    "mit_foto_km": 2.34,
@@ -217,6 +254,9 @@
    "fotos": 96
   },
   "Lautenbergsiedlung": {
+   "anteil_commons": 0.01,
+   "anteil_foto_oder_commons": 0.04,
+   "strassen_ohne_foto_und_commons": 16,
    "strassen": 24,
    "laenge_km": 9.12,
    "mit_foto_km": 0.27,
@@ -229,6 +269,9 @@
    "fotos": 16
   },
   "Lauter": {
+   "anteil_commons": 0.031,
+   "anteil_foto_oder_commons": 0.403,
+   "strassen_ohne_foto_und_commons": 2,
    "strassen": 10,
    "laenge_km": 7.28,
    "mit_foto_km": 2.83,
@@ -241,6 +284,9 @@
    "fotos": 83
   },
   "Linsenhof": {
+   "anteil_commons": 0.012,
+   "anteil_foto_oder_commons": 0.076,
+   "strassen_ohne_foto_und_commons": 13,
    "strassen": 16,
    "laenge_km": 11.16,
    "mit_foto_km": 0.7,
@@ -253,6 +299,9 @@
    "fotos": 21
   },
   "Mäbendorf": {
+   "anteil_commons": 0.039,
+   "anteil_foto_oder_commons": 0.191,
+   "strassen_ohne_foto_und_commons": 9,
    "strassen": 22,
    "laenge_km": 8.17,
    "mit_foto_km": 1.55,
@@ -265,6 +314,9 @@
    "fotos": 59
   },
   "Neundorf": {
+   "anteil_commons": 0.15,
+   "anteil_foto_oder_commons": 0.165,
+   "strassen_ohne_foto_und_commons": 18,
    "strassen": 37,
    "laenge_km": 21.29,
    "mit_foto_km": 0.33,
@@ -277,6 +329,9 @@
    "fotos": 12
   },
   "Suhl Nord": {
+   "anteil_commons": 0.02,
+   "anteil_foto_oder_commons": 0.308,
+   "strassen_ohne_foto_und_commons": 15,
    "strassen": 33,
    "laenge_km": 24.48,
    "mit_foto_km": 7.25,
@@ -289,6 +344,9 @@
    "fotos": 247
   },
   "Suhl-Mitte (Ortspunkt Suhl)": {
+   "anteil_commons": 0.264,
+   "anteil_foto_oder_commons": 0.528,
+   "strassen_ohne_foto_und_commons": 10,
    "strassen": 71,
    "laenge_km": 30.49,
    "mit_foto_km": 10.37,
@@ -303,6 +361,9 @@
  },
  "strassenklasse": {
   "living_street": {
+   "anteil_commons": 0.368,
+   "anteil_foto_oder_commons": 0.484,
+   "strassen_ohne_foto_und_commons": 0,
    "strassen": 12,
    "laenge_km": 2.42,
    "mit_foto_km": 0.28,
@@ -315,6 +376,9 @@
    "fotos": 18
   },
   "pedestrian": {
+   "anteil_commons": 0.954,
+   "anteil_foto_oder_commons": 0.954,
+   "strassen_ohne_foto_und_commons": 0,
    "strassen": 3,
    "laenge_km": 0.55,
    "mit_foto_km": 0.0,
@@ -327,6 +391,9 @@
    "fotos": 0
   },
   "residential": {
+   "anteil_commons": 0.074,
+   "anteil_foto_oder_commons": 0.137,
+   "strassen_ohne_foto_und_commons": 108,
    "strassen": 268,
    "laenge_km": 119.41,
    "mit_foto_km": 9.05,
@@ -339,6 +406,9 @@
    "fotos": 435
   },
   "secondary": {
+   "anteil_commons": 0.164,
+   "anteil_foto_oder_commons": 0.711,
+   "strassen_ohne_foto_und_commons": 0,
    "strassen": 11,
    "laenge_km": 23.34,
    "mit_foto_km": 14.5,
@@ -351,6 +421,9 @@
    "fotos": 545
   },
   "service": {
+   "anteil_commons": 0.031,
+   "anteil_foto_oder_commons": 0.057,
+   "strassen_ohne_foto_und_commons": 27,
    "strassen": 40,
    "laenge_km": 16.73,
    "mit_foto_km": 0.53,
@@ -363,6 +436,9 @@
    "fotos": 30
   },
   "tertiary": {
+   "anteil_commons": 0.011,
+   "anteil_foto_oder_commons": 0.772,
+   "strassen_ohne_foto_und_commons": 1,
    "strassen": 10,
    "laenge_km": 12.71,
    "mit_foto_km": 9.8,
@@ -375,6 +451,9 @@
    "fotos": 318
   },
   "unclassified": {
+   "anteil_commons": 0.026,
+   "anteil_foto_oder_commons": 0.324,
+   "strassen_ohne_foto_und_commons": 4,
    "strassen": 14,
    "laenge_km": 10.77,
    "mit_foto_km": 3.28,
@@ -394,7 +473,10 @@
    "highway": "secondary",
    "laenge_m": 2176.3,
    "anteil_foto": 0.486,
-   "ohne_foto_m": 1119.4
+   "ohne_foto_m": 1119.4,
+   "commons_fotos": 57,
+   "anteil_commons": 0.511,
+   "anteil_foto_oder_commons": 0.817
   },
   {
    "name": "Steinweg [Fläche]",
@@ -402,7 +484,10 @@
    "highway": "pedestrian",
    "laenge_m": 996.4,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 996.4
+   "ohne_foto_m": 996.4,
+   "commons_fotos": 144,
+   "anteil_commons": 0.976,
+   "anteil_foto_oder_commons": 0.976
   },
   {
    "name": "Bahnhofstraße",
@@ -410,7 +495,10 @@
    "highway": "residential",
    "laenge_m": 787.0,
    "anteil_foto": 0.06,
-   "ohne_foto_m": 739.9
+   "ohne_foto_m": 739.9,
+   "commons_fotos": 87,
+   "anteil_commons": 0.952,
+   "anteil_foto_oder_commons": 0.952
   },
   {
    "name": "Am Bahnhof",
@@ -418,7 +506,10 @@
    "highway": "residential",
    "laenge_m": 719.1,
    "anteil_foto": 0.006,
-   "ohne_foto_m": 715.0
+   "ohne_foto_m": 715.0,
+   "commons_fotos": 21,
+   "anteil_commons": 0.575,
+   "anteil_foto_oder_commons": 0.581
   },
   {
    "name": "Steinweg",
@@ -426,7 +517,10 @@
    "highway": "pedestrian",
    "laenge_m": 416.7,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 416.7
+   "ohne_foto_m": 416.7,
+   "commons_fotos": 130,
+   "anteil_commons": 1.0,
+   "anteil_foto_oder_commons": 1.0
   },
   {
    "name": "Marktplatz",
@@ -434,7 +528,10 @@
    "highway": "living_street",
    "laenge_m": 382.0,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 382.0
+   "ohne_foto_m": 382.0,
+   "commons_fotos": 91,
+   "anteil_commons": 0.948,
+   "anteil_foto_oder_commons": 0.948
   },
   {
    "name": "Rimbachstraße [Fläche]",
@@ -442,7 +539,10 @@
    "highway": "pedestrian",
    "laenge_m": 364.2,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 364.2
+   "ohne_foto_m": 364.2,
+   "commons_fotos": 17,
+   "anteil_commons": 0.656,
+   "anteil_foto_oder_commons": 0.656
   },
   {
    "name": "Pfarrstraße",
@@ -450,7 +550,10 @@
    "highway": "residential",
    "laenge_m": 343.4,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 343.4
+   "ohne_foto_m": 343.4,
+   "commons_fotos": 40,
+   "anteil_commons": 0.713,
+   "anteil_foto_oder_commons": 0.713
   },
   {
    "name": "Platz der Deutschen Einheit [Fläche]",
@@ -458,7 +561,10 @@
    "highway": "pedestrian",
    "laenge_m": 335.6,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 335.6
+   "ohne_foto_m": 335.6,
+   "commons_fotos": 22,
+   "anteil_commons": 0.897,
+   "anteil_foto_oder_commons": 0.897
   },
   {
    "name": "Dombergweg",
@@ -466,7 +572,10 @@
    "highway": "service",
    "laenge_m": 269.5,
    "anteil_foto": 0.022,
-   "ohne_foto_m": 263.6
+   "ohne_foto_m": 263.6,
+   "commons_fotos": 3,
+   "anteil_commons": 0.391,
+   "anteil_foto_oder_commons": 0.391
   },
   {
    "name": "Döllstraße",
@@ -474,7 +583,10 @@
    "highway": "residential",
    "laenge_m": 250.1,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 250.1
+   "ohne_foto_m": 250.1,
+   "commons_fotos": 33,
+   "anteil_commons": 0.355,
+   "anteil_foto_oder_commons": 0.355
   },
   {
    "name": "Kirchgasse",
@@ -482,7 +594,10 @@
    "highway": "living_street",
    "laenge_m": 236.7,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 236.7
+   "ohne_foto_m": 236.7,
+   "commons_fotos": 27,
+   "anteil_commons": 0.942,
+   "anteil_foto_oder_commons": 0.942
   },
   {
    "name": "Rimbachstraße",
@@ -490,7 +605,10 @@
    "highway": "residential",
    "laenge_m": 226.0,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 226.0
+   "ohne_foto_m": 226.0,
+   "commons_fotos": 17,
+   "anteil_commons": 0.706,
+   "anteil_foto_oder_commons": 0.706
   },
   {
    "name": "Schleusinger Straße",
@@ -498,7 +616,10 @@
    "highway": "secondary",
    "laenge_m": 225.0,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 225.0
+   "ohne_foto_m": 225.0,
+   "commons_fotos": 33,
+   "anteil_commons": 1.0,
+   "anteil_foto_oder_commons": 1.0
   },
   {
    "name": "Marktplatz [Fläche]",
@@ -506,7 +627,10 @@
    "highway": "pedestrian",
    "laenge_m": 216.5,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 216.5
+   "ohne_foto_m": 216.5,
+   "commons_fotos": 80,
+   "anteil_commons": 1.0,
+   "anteil_foto_oder_commons": 1.0
   },
   {
    "name": "Am Domberg",
@@ -514,7 +638,10 @@
    "highway": "service",
    "laenge_m": 207.1,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 207.1
+   "ohne_foto_m": 207.1,
+   "commons_fotos": 0,
+   "anteil_commons": 0.0,
+   "anteil_foto_oder_commons": 0.0
   },
   {
    "name": "Gutenbergstraße",
@@ -522,7 +649,10 @@
    "highway": "residential",
    "laenge_m": 204.5,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 204.5
+   "ohne_foto_m": 204.5,
+   "commons_fotos": 9,
+   "anteil_commons": 0.234,
+   "anteil_foto_oder_commons": 0.234
   },
   {
    "name": "Friedensstraße",
@@ -530,7 +660,10 @@
    "highway": "residential",
    "laenge_m": 182.7,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 182.7
+   "ohne_foto_m": 182.7,
+   "commons_fotos": 15,
+   "anteil_commons": 0.855,
+   "anteil_foto_oder_commons": 0.855
   },
   {
    "name": "Senfte",
@@ -538,7 +671,10 @@
    "highway": "residential",
    "laenge_m": 213.1,
    "anteil_foto": 0.145,
-   "ohne_foto_m": 182.2
+   "ohne_foto_m": 182.2,
+   "commons_fotos": 11,
+   "anteil_commons": 0.758,
+   "anteil_foto_oder_commons": 0.903
   },
   {
    "name": "Lauwetter",
@@ -546,7 +682,10 @@
    "highway": "residential",
    "laenge_m": 221.3,
    "anteil_foto": 0.178,
-   "ohne_foto_m": 181.9
+   "ohne_foto_m": 181.9,
+   "commons_fotos": 0,
+   "anteil_commons": 0.0,
+   "anteil_foto_oder_commons": 0.178
   },
   {
    "name": "Backstraße [Fläche]",
@@ -554,7 +693,10 @@
    "highway": "pedestrian",
    "laenge_m": 193.3,
    "anteil_foto": 0.081,
-   "ohne_foto_m": 177.6
+   "ohne_foto_m": 177.6,
+   "commons_fotos": 1,
+   "anteil_commons": 0.196,
+   "anteil_foto_oder_commons": 0.277
   },
   {
    "name": "Kefersteinstraße",
@@ -562,7 +704,10 @@
    "highway": "service",
    "laenge_m": 176.9,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 176.9
+   "ohne_foto_m": 176.9,
+   "commons_fotos": 0,
+   "anteil_commons": 0.0,
+   "anteil_foto_oder_commons": 0.0
   },
   {
    "name": "Kommerstraße",
@@ -570,7 +715,10 @@
    "highway": "residential",
    "laenge_m": 167.4,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 167.4
+   "ohne_foto_m": 167.4,
+   "commons_fotos": 17,
+   "anteil_commons": 0.97,
+   "anteil_foto_oder_commons": 0.97
   },
   {
    "name": "Naumannstraße",
@@ -578,7 +726,10 @@
    "highway": "residential",
    "laenge_m": 185.5,
    "anteil_foto": 0.102,
-   "ohne_foto_m": 166.5
+   "ohne_foto_m": 166.5,
+   "commons_fotos": 6,
+   "anteil_commons": 0.623,
+   "anteil_foto_oder_commons": 0.725
   },
   {
    "name": "Hofleitengasse",
@@ -586,7 +737,10 @@
    "highway": "path",
    "laenge_m": 170.7,
    "anteil_foto": 0.064,
-   "ohne_foto_m": 159.8
+   "ohne_foto_m": 159.8,
+   "commons_fotos": 4,
+   "anteil_commons": 0.859,
+   "anteil_foto_oder_commons": 0.859
   },
   {
    "name": "Puschkinstraße",
@@ -594,7 +748,10 @@
    "highway": "residential",
    "laenge_m": 178.0,
    "anteil_foto": 0.111,
-   "ohne_foto_m": 158.3
+   "ohne_foto_m": 158.3,
+   "commons_fotos": 3,
+   "anteil_commons": 0.426,
+   "anteil_foto_oder_commons": 0.536
   },
   {
    "name": "Am Burghof",
@@ -602,7 +759,10 @@
    "highway": "residential",
    "laenge_m": 156.4,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 156.4
+   "ohne_foto_m": 156.4,
+   "commons_fotos": 6,
+   "anteil_commons": 0.265,
+   "anteil_foto_oder_commons": 0.265
   },
   {
    "name": "Platz der Deutschen Einheit",
@@ -610,7 +770,10 @@
    "highway": "living_street",
    "laenge_m": 140.2,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 140.2
+   "ohne_foto_m": 140.2,
+   "commons_fotos": 12,
+   "anteil_commons": 0.65,
+   "anteil_foto_oder_commons": 0.65
   },
   {
    "name": "Straße der Opfer des Faschismus",
@@ -618,7 +781,10 @@
    "highway": "residential",
    "laenge_m": 135.1,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 135.1
+   "ohne_foto_m": 135.1,
+   "commons_fotos": 17,
+   "anteil_commons": 0.924,
+   "anteil_foto_oder_commons": 0.924
   },
   {
    "name": "Stadelstraße",
@@ -626,7 +792,10 @@
    "highway": "living_street",
    "laenge_m": 171.0,
    "anteil_foto": 0.241,
-   "ohne_foto_m": 129.9
+   "ohne_foto_m": 129.9,
+   "commons_fotos": 9,
+   "anteil_commons": 0.265,
+   "anteil_foto_oder_commons": 0.506
   },
   {
    "name": "Friedrich-Engels-Straße",
@@ -634,7 +803,10 @@
    "highway": "residential",
    "laenge_m": 121.6,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 121.6
+   "ohne_foto_m": 121.6,
+   "commons_fotos": 2,
+   "anteil_commons": 0.118,
+   "anteil_foto_oder_commons": 0.118
   },
   {
    "name": "Rüssenstraße",
@@ -642,7 +814,10 @@
    "highway": "residential",
    "laenge_m": 162.2,
    "anteil_foto": 0.326,
-   "ohne_foto_m": 109.4
+   "ohne_foto_m": 109.4,
+   "commons_fotos": 4,
+   "anteil_commons": 0.036,
+   "anteil_foto_oder_commons": 0.326
   },
   {
    "name": "Stadelstraße [Fläche]",
@@ -650,7 +825,10 @@
    "highway": "pedestrian",
    "laenge_m": 98.4,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 98.4
+   "ohne_foto_m": 98.4,
+   "commons_fotos": 9,
+   "anteil_commons": 1.0,
+   "anteil_foto_oder_commons": 1.0
   },
   {
    "name": "Roschstraße",
@@ -658,7 +836,10 @@
    "highway": "residential",
    "laenge_m": 123.9,
    "anteil_foto": 0.226,
-   "ohne_foto_m": 95.9
+   "ohne_foto_m": 95.9,
+   "commons_fotos": 2,
+   "anteil_commons": 0.178,
+   "anteil_foto_oder_commons": 0.404
   },
   {
    "name": "Backstraße",
@@ -666,7 +847,10 @@
    "highway": "living_street",
    "laenge_m": 111.3,
    "anteil_foto": 0.151,
-   "ohne_foto_m": 94.5
+   "ohne_foto_m": 94.5,
+   "commons_fotos": 1,
+   "anteil_commons": 0.04,
+   "anteil_foto_oder_commons": 0.19
   },
   {
    "name": "Dr.-Erfurth-Straße",
@@ -674,7 +858,10 @@
    "highway": "residential",
    "laenge_m": 116.7,
    "anteil_foto": 0.272,
-   "ohne_foto_m": 85.0
+   "ohne_foto_m": 85.0,
+   "commons_fotos": 0,
+   "anteil_commons": 0.0,
+   "anteil_foto_oder_commons": 0.272
   },
   {
    "name": "Burgweg",
@@ -682,7 +869,10 @@
    "highway": "path",
    "laenge_m": 96.5,
    "anteil_foto": 0.142,
-   "ohne_foto_m": 82.8
+   "ohne_foto_m": 82.8,
+   "commons_fotos": 0,
+   "anteil_commons": 0.0,
+   "anteil_foto_oder_commons": 0.142
   },
   {
    "name": "Rosa-Luxemburg-Straße",
@@ -690,7 +880,10 @@
    "highway": "residential",
    "laenge_m": 80.4,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 80.4
+   "ohne_foto_m": 80.4,
+   "commons_fotos": 2,
+   "anteil_commons": 0.362,
+   "anteil_foto_oder_commons": 0.362
   },
   {
    "name": "Topfmarkt",
@@ -698,7 +891,10 @@
    "highway": "living_street",
    "laenge_m": 73.5,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 73.5
+   "ohne_foto_m": 73.5,
+   "commons_fotos": 5,
+   "anteil_commons": 0.529,
+   "anteil_foto_oder_commons": 0.529
   },
   {
    "name": "Marienstieg",
@@ -706,7 +902,10 @@
    "highway": "pedestrian",
    "laenge_m": 65.6,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 65.6
+   "ohne_foto_m": 65.6,
+   "commons_fotos": 3,
+   "anteil_commons": 0.615,
+   "anteil_foto_oder_commons": 0.615
   },
   {
    "name": "Untere Kirchgasse",
@@ -714,7 +913,10 @@
    "highway": "pedestrian",
    "laenge_m": 65.1,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 65.1
+   "ohne_foto_m": 65.1,
+   "commons_fotos": 22,
+   "anteil_commons": 1.0,
+   "anteil_foto_oder_commons": 1.0
   }
  ],
  "zentrum_ohne_fassadenblick": [
@@ -804,6 +1006,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 154,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -815,6 +1018,7 @@
    ],
    "fotos_bis_80m": 7,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 147,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -825,6 +1029,7 @@
    ],
    "fotos_bis_80m": 1,
    "fotos_mit_blick": 1,
+   "commons_kamera_bis_80m": 119,
    "je_urheber": {
     "mapcomplete": 1
    },
@@ -839,6 +1044,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 66,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -850,6 +1056,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 27,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -860,6 +1067,7 @@
    ],
    "fotos_bis_80m": 16,
    "fotos_mit_blick": 7,
+   "commons_kamera_bis_80m": 29,
    "je_urheber": {
     "sixsixfive": 7
    },
@@ -881,6 +1089,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 19,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -892,6 +1101,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 58,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -903,6 +1113,7 @@
    ],
    "fotos_bis_80m": 3,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 240,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -913,6 +1124,7 @@
    ],
    "fotos_bis_80m": 25,
    "fotos_mit_blick": 10,
+   "commons_kamera_bis_80m": 10,
    "je_urheber": {
     "sixsixfive": 10
    },
@@ -936,6 +1148,7 @@
    ],
    "fotos_bis_80m": 7,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 44,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -946,6 +1159,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 105,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -956,6 +1170,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 37,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -966,6 +1181,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 24,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -976,6 +1192,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 1,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -986,6 +1203,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 107,
    "je_urheber": {},
    "foto_ids": []
   },
@@ -996,6 +1214,7 @@
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
+   "commons_kamera_bis_80m": 77,
    "je_urheber": {},
    "foto_ids": []
   }
@@ -1187,6 +1406,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 15,
+    "anteil_commons": 0.431,
+    "anteil_foto_oder_commons": 0.86,
     "laenge_m": 232.3,
     "mit_foto_m": 168.8,
     "anteil_foto": 0.727,
@@ -1199,6 +1421,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 12,
+    "anteil_commons": 0.216,
+    "anteil_foto_oder_commons": 0.772,
     "laenge_m": 143.0,
     "mit_foto_m": 79.5,
     "anteil_foto": 0.556,
@@ -1229,6 +1454,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 244.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1260,6 +1488,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 167.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1291,6 +1522,9 @@
    ],
    "surface": "concrete",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 203.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1323,6 +1557,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.055,
     "laenge_m": 420.5,
     "mit_foto_m": 23.1,
     "anteil_foto": 0.055,
@@ -1357,6 +1594,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.119,
+    "anteil_foto_oder_commons": 0.119,
     "laenge_m": 694.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1396,6 +1636,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.055,
+    "anteil_foto_oder_commons": 0.095,
     "laenge_m": 1191.4,
     "mit_foto_m": 47.9,
     "anteil_foto": 0.04,
@@ -1429,6 +1672,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 336.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1460,6 +1706,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.088,
+    "anteil_foto_oder_commons": 0.186,
     "laenge_m": 143.5,
     "mit_foto_m": 26.8,
     "anteil_foto": 0.186,
@@ -1491,6 +1740,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.116,
     "laenge_m": 169.2,
     "mit_foto_m": 19.7,
     "anteil_foto": 0.116,
@@ -1527,6 +1779,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 4,
+    "anteil_commons": 0.073,
+    "anteil_foto_oder_commons": 0.073,
     "laenge_m": 1023.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1563,6 +1818,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.114,
+    "anteil_foto_oder_commons": 0.963,
     "laenge_m": 845.6,
     "mit_foto_m": 814.6,
     "anteil_foto": 0.963,
@@ -1575,6 +1833,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.205,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 299.1,
     "mit_foto_m": 299.1,
     "anteil_foto": 1.0,
@@ -1607,6 +1868,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 164.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1640,6 +1904,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 37.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1673,6 +1940,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.048,
+    "anteil_foto_oder_commons": 0.048,
     "laenge_m": 373.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1715,6 +1985,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 23,
+    "anteil_commons": 0.304,
+    "anteil_foto_oder_commons": 0.362,
     "laenge_m": 1688.8,
     "mit_foto_m": 98.8,
     "anteil_foto": 0.059,
@@ -1727,6 +2000,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 21,
+    "anteil_commons": 0.575,
+    "anteil_foto_oder_commons": 0.581,
     "laenge_m": 719.1,
     "mit_foto_m": 4.1,
     "anteil_foto": 0.006,
@@ -1757,6 +2033,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.04,
+    "anteil_foto_oder_commons": 0.04,
     "laenge_m": 1173.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1789,6 +2068,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 365.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1821,6 +2103,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 6,
+    "anteil_commons": 0.265,
+    "anteil_foto_oder_commons": 0.265,
     "laenge_m": 156.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1833,6 +2118,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 6,
+    "anteil_commons": 0.265,
+    "anteil_foto_oder_commons": 0.265,
     "laenge_m": 156.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1867,6 +2155,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 471.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1879,6 +2170,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 207.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1910,6 +2204,9 @@
    ],
    "surface": "paved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 143.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1941,6 +2238,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 47.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -1973,6 +2273,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.087,
     "laenge_m": 382.0,
     "mit_foto_m": 33.2,
     "anteil_foto": 0.087,
@@ -2004,6 +2307,9 @@
    ],
    "surface": "concrete",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 39.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2035,6 +2341,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.038,
     "laenge_m": 659.2,
     "mit_foto_m": 24.8,
     "anteil_foto": 0.038,
@@ -2078,6 +2387,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 2109.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2109,6 +2421,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 280.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2145,6 +2460,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 721.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2176,6 +2494,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 167.1,
     "mit_foto_m": 167.1,
     "anteil_foto": 1.0,
@@ -2207,6 +2528,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 96.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2240,6 +2564,9 @@
    ],
    "surface": "unpaved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 894.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2274,6 +2601,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 524.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2306,6 +2636,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.027,
     "laenge_m": 887.7,
     "mit_foto_m": 23.8,
     "anteil_foto": 0.027,
@@ -2343,6 +2676,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.831,
     "laenge_m": 1058.3,
     "mit_foto_m": 879.2,
     "anteil_foto": 0.831,
@@ -2378,6 +2714,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.073,
     "laenge_m": 366.7,
     "mit_foto_m": 26.9,
     "anteil_foto": 0.073,
@@ -2410,6 +2749,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 157.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2442,6 +2784,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.318,
     "laenge_m": 84.0,
     "mit_foto_m": 26.8,
     "anteil_foto": 0.318,
@@ -2476,6 +2821,9 @@
    ],
    "surface": "paved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.055,
     "laenge_m": 485.1,
     "mit_foto_m": 26.9,
     "anteil_foto": 0.055,
@@ -2507,6 +2855,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 167.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2542,6 +2893,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 581.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2573,6 +2927,9 @@
    ],
    "surface": "paved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.346,
     "laenge_m": 129.4,
     "mit_foto_m": 44.8,
     "anteil_foto": 0.346,
@@ -2606,6 +2963,9 @@
    ],
    "surface": "gravel",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.101,
     "laenge_m": 166.6,
     "mit_foto_m": 16.9,
     "anteil_foto": 0.101,
@@ -2642,6 +3002,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.108,
     "laenge_m": 286.2,
     "mit_foto_m": 30.9,
     "anteil_foto": 0.108,
@@ -2673,6 +3036,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 13.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2704,6 +3070,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.215,
     "laenge_m": 114.6,
     "mit_foto_m": 24.7,
     "anteil_foto": 0.215,
@@ -2735,6 +3104,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 572.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2772,6 +3144,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 600.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2814,6 +3189,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.858,
     "laenge_m": 847.4,
     "mit_foto_m": 727.4,
     "anteil_foto": 0.858,
@@ -2845,6 +3223,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 125.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2876,6 +3257,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.12,
     "laenge_m": 162.2,
     "mit_foto_m": 19.5,
     "anteil_foto": 0.12,
@@ -2908,6 +3292,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.056,
     "laenge_m": 974.3,
     "mit_foto_m": 54.9,
     "anteil_foto": 0.056,
@@ -2939,6 +3326,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 228.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -2970,6 +3360,9 @@
    ],
    "surface": "grass_paver",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 290.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3004,6 +3397,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.065,
     "laenge_m": 439.6,
     "mit_foto_m": 28.6,
     "anteil_foto": 0.065,
@@ -3035,6 +3431,9 @@
    ],
    "surface": "dirt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 100.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3068,6 +3467,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 368.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3101,6 +3503,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 230.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3139,6 +3544,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 293.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3172,6 +3580,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.043,
     "laenge_m": 231.1,
     "mit_foto_m": 9.8,
     "anteil_foto": 0.043,
@@ -3228,6 +3639,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 31,
+    "anteil_commons": 0.201,
+    "anteil_foto_oder_commons": 0.285,
     "laenge_m": 2867.7,
     "mit_foto_m": 239.0,
     "anteil_foto": 0.083,
@@ -3260,6 +3674,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.582,
+    "anteil_foto_oder_commons": 0.582,
     "laenge_m": 88.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3291,6 +3708,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 52.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3322,6 +3742,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.06,
+    "anteil_foto_oder_commons": 0.06,
     "laenge_m": 540.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3355,6 +3778,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.186,
     "laenge_m": 165.0,
     "mit_foto_m": 30.7,
     "anteil_foto": 0.186,
@@ -3388,6 +3814,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.478,
     "laenge_m": 192.0,
     "mit_foto_m": 91.9,
     "anteil_foto": 0.478,
@@ -3421,6 +3850,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1190.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3455,6 +3887,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 673.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3486,6 +3921,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 228.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3520,6 +3958,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.257,
     "laenge_m": 324.4,
     "mit_foto_m": 83.4,
     "anteil_foto": 0.257,
@@ -3551,6 +3992,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 321.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3593,6 +4037,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.103,
     "laenge_m": 1709.6,
     "mit_foto_m": 175.6,
     "anteil_foto": 0.103,
@@ -3625,6 +4072,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 111.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3656,6 +4106,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.313,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 246.3,
     "mit_foto_m": 246.3,
     "anteil_foto": 1.0,
@@ -3668,6 +4121,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.857,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 89.9,
     "mit_foto_m": 89.9,
     "anteil_foto": 1.0,
@@ -3699,6 +4155,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 10,
+    "anteil_commons": 0.815,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 282.4,
     "mit_foto_m": 282.4,
     "anteil_foto": 1.0,
@@ -3731,6 +4190,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.135,
+    "anteil_foto_oder_commons": 0.135,
     "laenge_m": 152.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3765,6 +4227,9 @@
    ],
    "surface": "grass",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 255.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -3797,6 +4262,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.04,
+    "anteil_foto_oder_commons": 0.19,
     "laenge_m": 111.3,
     "mit_foto_m": 16.8,
     "anteil_foto": 0.151,
@@ -3809,6 +4277,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.04,
+    "anteil_foto_oder_commons": 0.19,
     "laenge_m": 111.3,
     "mit_foto_m": 16.8,
     "anteil_foto": 0.151,
@@ -3839,6 +4310,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.196,
+    "anteil_foto_oder_commons": 0.277,
     "laenge_m": 193.3,
     "mit_foto_m": 15.7,
     "anteil_foto": 0.081,
@@ -3851,6 +4325,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.196,
+    "anteil_foto_oder_commons": 0.277,
     "laenge_m": 193.3,
     "mit_foto_m": 15.7,
     "anteil_foto": 0.081,
@@ -3892,6 +4369,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 87,
+    "anteil_commons": 0.926,
+    "anteil_foto_oder_commons": 0.926,
     "laenge_m": 809.0,
     "mit_foto_m": 47.1,
     "anteil_foto": 0.058,
@@ -3904,6 +4384,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 87,
+    "anteil_commons": 0.952,
+    "anteil_foto_oder_commons": 0.952,
     "laenge_m": 787.0,
     "mit_foto_m": 47.1,
     "anteil_foto": 0.06,
@@ -3935,6 +4418,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.099,
     "laenge_m": 245.1,
     "mit_foto_m": 24.3,
     "anteil_foto": 0.099,
@@ -3966,6 +4452,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.196,
     "laenge_m": 115.8,
     "mit_foto_m": 22.7,
     "anteil_foto": 0.196,
@@ -4001,6 +4490,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.029,
     "laenge_m": 738.8,
     "mit_foto_m": 21.7,
     "anteil_foto": 0.029,
@@ -4032,6 +4524,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 729.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4063,6 +4558,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.337,
     "laenge_m": 66.9,
     "mit_foto_m": 22.5,
     "anteil_foto": 0.337,
@@ -4095,6 +4593,9 @@
    ],
    "surface": "dirt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 260.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4127,6 +4628,9 @@
    ],
    "surface": "grass",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 79.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4163,6 +4667,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 8,
+    "anteil_commons": 0.384,
+    "anteil_foto_oder_commons": 0.439,
     "laenge_m": 393.8,
     "mit_foto_m": 21.7,
     "anteil_foto": 0.055,
@@ -4175,6 +4682,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.617,
     "laenge_m": 35.2,
     "mit_foto_m": 21.7,
     "anteil_foto": 0.617,
@@ -4209,6 +4719,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.05,
     "laenge_m": 1350.0,
     "mit_foto_m": 67.8,
     "anteil_foto": 0.05,
@@ -4246,6 +4759,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.05,
+    "anteil_foto_oder_commons": 0.08,
     "laenge_m": 907.6,
     "mit_foto_m": 27.2,
     "anteil_foto": 0.03,
@@ -4278,6 +4794,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.1,
     "laenge_m": 242.7,
     "mit_foto_m": 24.3,
     "anteil_foto": 0.1,
@@ -4310,6 +4829,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 197.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4344,6 +4866,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 148.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4376,6 +4901,9 @@
    ],
    "surface": "earth",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 142.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4412,6 +4940,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.026,
     "laenge_m": 809.8,
     "mit_foto_m": 21.2,
     "anteil_foto": 0.026,
@@ -4445,6 +4976,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 117.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4476,6 +5010,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.648,
     "laenge_m": 36.2,
     "mit_foto_m": 23.5,
     "anteil_foto": 0.648,
@@ -4522,6 +5059,9 @@
    ],
    "surface": "paved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 113.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4557,6 +5097,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.049,
     "laenge_m": 589.0,
     "mit_foto_m": 28.6,
     "anteil_foto": 0.049,
@@ -4569,6 +5112,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.142,
     "laenge_m": 96.5,
     "mit_foto_m": 13.7,
     "anteil_foto": 0.142,
@@ -4602,6 +5148,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 417.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4634,6 +5183,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.114,
+    "anteil_foto_oder_commons": 0.114,
     "laenge_m": 313.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4669,6 +5221,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.041,
     "laenge_m": 678.4,
     "mit_foto_m": 27.9,
     "anteil_foto": 0.041,
@@ -4700,6 +5255,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.031,
+    "anteil_foto_oder_commons": 0.031,
     "laenge_m": 447.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4731,6 +5289,9 @@
    ],
    "surface": "compacted",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 257.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4763,6 +5324,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.096,
+    "anteil_foto_oder_commons": 0.448,
     "laenge_m": 262.2,
     "mit_foto_m": 92.3,
     "anteil_foto": 0.352,
@@ -4796,6 +5360,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 251.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4828,6 +5395,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.036,
     "laenge_m": 398.4,
     "mit_foto_m": 14.3,
     "anteil_foto": 0.036,
@@ -4863,6 +5433,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.054,
     "laenge_m": 568.2,
     "mit_foto_m": 30.6,
     "anteil_foto": 0.054,
@@ -4894,6 +5467,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 21.2,
     "mit_foto_m": 21.2,
     "anteil_foto": 1.0,
@@ -4906,6 +5482,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 21.2,
     "mit_foto_m": 21.2,
     "anteil_foto": 1.0,
@@ -4936,6 +5515,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.425,
+    "anteil_foto_oder_commons": 0.425,
     "laenge_m": 69.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -4967,6 +5549,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.391,
+    "anteil_foto_oder_commons": 0.391,
     "laenge_m": 269.5,
     "mit_foto_m": 5.9,
     "anteil_foto": 0.022,
@@ -4979,6 +5564,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.391,
+    "anteil_foto_oder_commons": 0.391,
     "laenge_m": 269.5,
     "mit_foto_m": 5.9,
     "anteil_foto": 0.022,
@@ -5010,6 +5598,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 101.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5041,6 +5632,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.272,
     "laenge_m": 116.7,
     "mit_foto_m": 31.7,
     "anteil_foto": 0.272,
@@ -5053,6 +5647,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.272,
     "laenge_m": 116.7,
     "mit_foto_m": 31.7,
     "anteil_foto": 0.272,
@@ -5084,6 +5681,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 235.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5116,6 +5716,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 5,
+    "anteil_commons": 0.379,
+    "anteil_foto_oder_commons": 0.379,
     "laenge_m": 281.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5147,6 +5750,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.505,
     "laenge_m": 105.6,
     "mit_foto_m": 53.3,
     "anteil_foto": 0.505,
@@ -5215,6 +5821,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 17,
+    "anteil_commons": 0.133,
+    "anteil_foto_oder_commons": 0.986,
     "laenge_m": 2833.3,
     "mit_foto_m": 2772.1,
     "anteil_foto": 0.978,
@@ -5227,6 +5836,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 16,
+    "anteil_commons": 0.114,
+    "anteil_foto_oder_commons": 0.987,
     "laenge_m": 2478.7,
     "mit_foto_m": 2423.7,
     "anteil_foto": 0.978,
@@ -5257,6 +5869,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 143.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5292,6 +5907,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.067,
     "laenge_m": 422.9,
     "mit_foto_m": 28.3,
     "anteil_foto": 0.067,
@@ -5323,6 +5941,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 301.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5355,6 +5976,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.833,
     "laenge_m": 116.7,
     "mit_foto_m": 97.3,
     "anteil_foto": 0.833,
@@ -5367,6 +5991,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.833,
     "laenge_m": 116.7,
     "mit_foto_m": 97.3,
     "anteil_foto": 0.833,
@@ -5399,6 +6026,9 @@
    ],
    "surface": "sett",
    "kernstadt": {
+    "commons_fotos": 33,
+    "anteil_commons": 0.355,
+    "anteil_foto_oder_commons": 0.355,
     "laenge_m": 250.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5411,6 +6041,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 33,
+    "anteil_commons": 0.355,
+    "anteil_foto_oder_commons": 0.355,
     "laenge_m": 250.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5442,6 +6075,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 451.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5474,6 +6110,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 600.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5505,6 +6144,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.118,
     "laenge_m": 227.5,
     "mit_foto_m": 26.8,
     "anteil_foto": 0.118,
@@ -5536,6 +6178,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.305,
+    "anteil_foto_oder_commons": 0.305,
     "laenge_m": 76.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5572,6 +6217,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.064,
     "laenge_m": 493.3,
     "mit_foto_m": 31.7,
     "anteil_foto": 0.064,
@@ -5605,6 +6253,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1078.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5637,6 +6288,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.059,
     "laenge_m": 478.0,
     "mit_foto_m": 28.3,
     "anteil_foto": 0.059,
@@ -5668,6 +6322,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.183,
+    "anteil_foto_oder_commons": 0.183,
     "laenge_m": 261.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5704,6 +6361,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 904.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5737,6 +6397,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.077,
+    "anteil_foto_oder_commons": 0.112,
     "laenge_m": 437.3,
     "mit_foto_m": 15.1,
     "anteil_foto": 0.035,
@@ -5768,6 +6431,9 @@
    ],
    "surface": "compacted",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 85.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5799,6 +6465,9 @@
    ],
    "surface": "gravel",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 912.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5830,6 +6499,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 374.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5866,6 +6538,9 @@
    ],
    "surface": "concrete",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.226,
     "laenge_m": 322.5,
     "mit_foto_m": 72.7,
     "anteil_foto": 0.226,
@@ -5900,6 +6575,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 841.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5931,6 +6609,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 144.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5962,6 +6643,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 903.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -5993,6 +6677,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 226.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6027,6 +6714,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.043,
     "laenge_m": 514.1,
     "mit_foto_m": 22.3,
     "anteil_foto": 0.043,
@@ -6060,6 +6750,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1014.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6091,6 +6784,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 15,
+    "anteil_commons": 0.855,
+    "anteil_foto_oder_commons": 0.855,
     "laenge_m": 182.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6103,6 +6799,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 15,
+    "anteil_commons": 0.855,
+    "anteil_foto_oder_commons": 0.855,
     "laenge_m": 182.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6135,6 +6834,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 11,
+    "anteil_commons": 0.218,
+    "anteil_foto_oder_commons": 0.218,
     "laenge_m": 506.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6168,6 +6870,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.077,
+    "anteil_foto_oder_commons": 0.077,
     "laenge_m": 186.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6180,6 +6885,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.118,
+    "anteil_foto_oder_commons": 0.118,
     "laenge_m": 121.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6258,6 +6966,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 57,
+    "anteil_commons": 0.39,
+    "anteil_foto_oder_commons": 0.834,
     "laenge_m": 2848.5,
     "mit_foto_m": 1655.1,
     "anteil_foto": 0.581,
@@ -6270,6 +6981,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 57,
+    "anteil_commons": 0.511,
+    "anteil_foto_oder_commons": 0.817,
     "laenge_m": 2176.3,
     "mit_foto_m": 1056.9,
     "anteil_foto": 0.486,
@@ -6304,6 +7018,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.118,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 264.5,
     "mit_foto_m": 264.5,
     "anteil_foto": 1.0,
@@ -6336,6 +7053,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.014,
+    "anteil_foto_oder_commons": 0.038,
     "laenge_m": 365.5,
     "mit_foto_m": 8.6,
     "anteil_foto": 0.024,
@@ -6369,6 +7089,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 483.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6400,6 +7123,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.2,
     "laenge_m": 100.0,
     "mit_foto_m": 20.0,
     "anteil_foto": 0.2,
@@ -6438,6 +7164,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.717,
     "laenge_m": 1596.6,
     "mit_foto_m": 1144.2,
     "anteil_foto": 0.717,
@@ -6471,6 +7200,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.11,
     "laenge_m": 276.1,
     "mit_foto_m": 30.4,
     "anteil_foto": 0.11,
@@ -6504,6 +7236,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 820.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6537,6 +7272,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.068,
+    "anteil_foto_oder_commons": 0.068,
     "laenge_m": 533.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6568,6 +7306,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.131,
     "laenge_m": 259.8,
     "mit_foto_m": 34.0,
     "anteil_foto": 0.131,
@@ -6599,6 +7340,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 26.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6631,6 +7375,9 @@
    ],
    "surface": "dirt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 351.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6662,6 +7409,9 @@
    ],
    "surface": "earth",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 36.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6721,6 +7471,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 26,
+    "anteil_commons": 0.105,
+    "anteil_foto_oder_commons": 0.98,
     "laenge_m": 2739.5,
     "mit_foto_m": 2586.4,
     "anteil_foto": 0.944,
@@ -6733,6 +7486,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 26,
+    "anteil_commons": 0.586,
+    "anteil_foto_oder_commons": 0.918,
     "laenge_m": 490.4,
     "mit_foto_m": 352.1,
     "anteil_foto": 0.718,
@@ -6777,6 +7533,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.159,
     "laenge_m": 1549.1,
     "mit_foto_m": 246.1,
     "anteil_foto": 0.159,
@@ -6838,6 +7597,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.838,
     "laenge_m": 3233.3,
     "mit_foto_m": 2708.3,
     "anteil_foto": 0.838,
@@ -6875,6 +7637,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.05,
     "laenge_m": 1034.9,
     "mit_foto_m": 51.6,
     "anteil_foto": 0.05,
@@ -6913,6 +7678,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.064,
+    "anteil_foto_oder_commons": 0.064,
     "laenge_m": 700.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6945,6 +7713,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.071,
+    "anteil_foto_oder_commons": 0.239,
     "laenge_m": 200.3,
     "mit_foto_m": 47.9,
     "anteil_foto": 0.239,
@@ -6979,6 +7750,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 9,
+    "anteil_commons": 0.234,
+    "anteil_foto_oder_commons": 0.234,
     "laenge_m": 204.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -6991,6 +7765,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 9,
+    "anteil_commons": 0.234,
+    "anteil_foto_oder_commons": 0.234,
     "laenge_m": 204.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7022,6 +7799,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 337.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7053,6 +7833,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.057,
     "laenge_m": 417.9,
     "mit_foto_m": 23.8,
     "anteil_foto": 0.057,
@@ -7084,6 +7867,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 162.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7115,6 +7901,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 67.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7146,6 +7935,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 142.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7182,6 +7974,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.05,
+    "anteil_foto_oder_commons": 0.071,
     "laenge_m": 1049.1,
     "mit_foto_m": 21.8,
     "anteil_foto": 0.021,
@@ -7218,6 +8013,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 20,
+    "anteil_commons": 0.611,
+    "anteil_foto_oder_commons": 0.611,
     "laenge_m": 704.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7257,6 +8055,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 9,
+    "anteil_commons": 0.203,
+    "anteil_foto_oder_commons": 0.951,
     "laenge_m": 987.4,
     "mit_foto_m": 938.6,
     "anteil_foto": 0.951,
@@ -7291,6 +8092,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.036,
     "laenge_m": 731.9,
     "mit_foto_m": 26.0,
     "anteil_foto": 0.036,
@@ -7322,6 +8126,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 112.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7362,6 +8169,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1663.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7393,6 +8203,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.255,
     "laenge_m": 209.5,
     "mit_foto_m": 53.5,
     "anteil_foto": 0.255,
@@ -7424,6 +8237,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 229.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7465,6 +8281,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1390.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7499,6 +8318,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.049,
     "laenge_m": 698.3,
     "mit_foto_m": 34.0,
     "anteil_foto": 0.049,
@@ -7530,6 +8352,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 5,
+    "anteil_commons": 0.268,
+    "anteil_foto_oder_commons": 0.396,
     "laenge_m": 166.8,
     "mit_foto_m": 26.8,
     "anteil_foto": 0.161,
@@ -7564,6 +8389,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 986.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7596,6 +8424,9 @@
    ],
    "surface": "earth",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 883.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7627,6 +8458,9 @@
    ],
    "surface": "ground",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 206.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7658,6 +8492,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 260.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7693,6 +8530,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 433.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7728,6 +8568,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.104,
     "laenge_m": 552.8,
     "mit_foto_m": 57.3,
     "anteil_foto": 0.104,
@@ -7761,6 +8604,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 450.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7794,6 +8640,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 9,
+    "anteil_commons": 0.589,
+    "anteil_foto_oder_commons": 0.589,
     "laenge_m": 521.6,
     "mit_foto_m": 10.9,
     "anteil_foto": 0.021,
@@ -7806,6 +8655,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 4,
+    "anteil_commons": 0.859,
+    "anteil_foto_oder_commons": 0.859,
     "laenge_m": 170.7,
     "mit_foto_m": 10.9,
     "anteil_foto": 0.064,
@@ -7839,6 +8691,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 186.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7870,6 +8725,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 885.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7901,6 +8759,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 33.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -7934,6 +8795,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.268,
+    "anteil_foto_oder_commons": 0.71,
     "laenge_m": 369.1,
     "mit_foto_m": 228.2,
     "anteil_foto": 0.618,
@@ -7946,6 +8810,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.41,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 241.4,
     "mit_foto_m": 207.4,
     "anteil_foto": 0.859,
@@ -7976,6 +8843,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 11,
+    "anteil_commons": 0.524,
+    "anteil_foto_oder_commons": 0.524,
     "laenge_m": 274.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8008,6 +8878,9 @@
    ],
    "surface": "earth",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 336.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8041,6 +8914,9 @@
    ],
    "surface": "unpaved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 496.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8075,6 +8951,9 @@
    ],
    "surface": "ground",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 214.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8087,6 +8966,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 23.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8123,6 +9005,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 271.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8156,6 +9041,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 521.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8188,6 +9076,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 389.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8219,6 +9110,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 230.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8251,6 +9145,9 @@
    ],
    "surface": "paved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 111.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8287,6 +9184,9 @@
    ],
    "surface": "sett",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.055,
+    "anteil_foto_oder_commons": 0.055,
     "laenge_m": 856.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8319,6 +9219,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.172,
+    "anteil_foto_oder_commons": 0.226,
     "laenge_m": 292.2,
     "mit_foto_m": 16.0,
     "anteil_foto": 0.055,
@@ -8368,6 +9271,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.064,
+    "anteil_foto_oder_commons": 0.308,
     "laenge_m": 1335.1,
     "mit_foto_m": 351.1,
     "anteil_foto": 0.263,
@@ -8399,6 +9305,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 220.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8430,6 +9339,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 946.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8461,6 +9373,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 7.8,
     "mit_foto_m": 7.8,
     "anteil_foto": 1.0,
@@ -8498,6 +9413,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 445.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8530,6 +9448,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.018,
     "laenge_m": 858.9,
     "mit_foto_m": 15.1,
     "anteil_foto": 0.018,
@@ -8563,6 +9484,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.065,
+    "anteil_foto_oder_commons": 0.065,
     "laenge_m": 452.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8597,6 +9521,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.159,
+    "anteil_foto_oder_commons": 0.566,
     "laenge_m": 894.1,
     "mit_foto_m": 506.1,
     "anteil_foto": 0.566,
@@ -8631,6 +9558,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.164,
+    "anteil_foto_oder_commons": 0.229,
     "laenge_m": 343.3,
     "mit_foto_m": 22.4,
     "anteil_foto": 0.065,
@@ -8663,6 +9593,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.056,
     "laenge_m": 372.4,
     "mit_foto_m": 20.9,
     "anteil_foto": 0.056,
@@ -8694,6 +9627,9 @@
    ],
    "surface": "paved",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.273,
+    "anteil_foto_oder_commons": 0.273,
     "laenge_m": 182.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8729,6 +9665,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.023,
     "laenge_m": 1133.7,
     "mit_foto_m": 25.5,
     "anteil_foto": 0.023,
@@ -8760,6 +9699,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.147,
     "laenge_m": 168.6,
     "mit_foto_m": 24.8,
     "anteil_foto": 0.147,
@@ -8791,6 +9733,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 101.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8822,6 +9767,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 26.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8854,6 +9802,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 586.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8866,6 +9817,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 176.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8896,6 +9850,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 5,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 109.0,
     "mit_foto_m": 109.0,
     "anteil_foto": 1.0,
@@ -8927,6 +9884,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 129.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8961,6 +9921,9 @@
    ],
    "surface": "sett",
    "kernstadt": {
+    "commons_fotos": 27,
+    "anteil_commons": 0.942,
+    "anteil_foto_oder_commons": 0.942,
     "laenge_m": 236.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -8973,6 +9936,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 27,
+    "anteil_commons": 0.942,
+    "anteil_foto_oder_commons": 0.942,
     "laenge_m": 236.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9004,6 +9970,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.136,
+    "anteil_foto_oder_commons": 0.136,
     "laenge_m": 376.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9037,6 +10006,9 @@
    ],
    "surface": "compacted",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1092.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9068,6 +10040,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 320.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9100,6 +10075,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.177,
     "laenge_m": 239.1,
     "mit_foto_m": 42.4,
     "anteil_foto": 0.177,
@@ -9132,6 +10110,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 17,
+    "anteil_commons": 0.651,
+    "anteil_foto_oder_commons": 0.651,
     "laenge_m": 249.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9144,6 +10125,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 17,
+    "anteil_commons": 0.97,
+    "anteil_foto_oder_commons": 0.97,
     "laenge_m": 167.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9179,6 +10163,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1276.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9214,6 +10201,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1786.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9245,6 +10235,9 @@
    ],
    "surface": "paved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.185,
     "laenge_m": 126.7,
     "mit_foto_m": 23.5,
     "anteil_foto": 0.185,
@@ -9279,6 +10272,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 407.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9310,6 +10306,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.101,
     "laenge_m": 264.6,
     "mit_foto_m": 26.6,
     "anteil_foto": 0.101,
@@ -9342,6 +10341,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 7,
+    "anteil_commons": 0.038,
+    "anteil_foto_oder_commons": 0.038,
     "laenge_m": 809.1,
     "mit_foto_m": 25.6,
     "anteil_foto": 0.032,
@@ -9381,6 +10383,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.049,
+    "anteil_foto_oder_commons": 0.955,
     "laenge_m": 1801.8,
     "mit_foto_m": 1719.9,
     "anteil_foto": 0.955,
@@ -9412,6 +10417,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 350.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9445,6 +10453,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.592,
     "laenge_m": 458.8,
     "mit_foto_m": 271.6,
     "anteil_foto": 0.592,
@@ -9457,6 +10468,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.178,
     "laenge_m": 221.3,
     "mit_foto_m": 39.4,
     "anteil_foto": 0.178,
@@ -9489,6 +10503,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.126,
     "laenge_m": 201.6,
     "mit_foto_m": 25.3,
     "anteil_foto": 0.126,
@@ -9520,6 +10537,9 @@
    ],
    "surface": "compacted",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 83.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9555,6 +10575,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.054,
+    "anteil_foto_oder_commons": 0.058,
     "laenge_m": 1301.0,
     "mit_foto_m": 5.5,
     "anteil_foto": 0.004,
@@ -9588,6 +10611,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.043,
     "laenge_m": 548.2,
     "mit_foto_m": 23.7,
     "anteil_foto": 0.043,
@@ -9620,6 +10646,9 @@
    ],
    "surface": "grass",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 317.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9651,6 +10680,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.558,
     "laenge_m": 33.6,
     "mit_foto_m": 18.7,
     "anteil_foto": 0.558,
@@ -9682,6 +10714,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.266,
+    "anteil_foto_oder_commons": 0.405,
     "laenge_m": 75.0,
     "mit_foto_m": 30.4,
     "anteil_foto": 0.405,
@@ -9714,6 +10749,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 149.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9746,6 +10784,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 476.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9779,6 +10820,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 554.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9812,6 +10856,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 124.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9859,6 +10906,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.013,
+    "anteil_foto_oder_commons": 0.205,
     "laenge_m": 3416.6,
     "mit_foto_m": 655.7,
     "anteil_foto": 0.192,
@@ -9893,6 +10943,9 @@
    ],
    "surface": "grass",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 151.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9924,6 +10977,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 7,
+    "anteil_commons": 0.404,
+    "anteil_foto_oder_commons": 0.404,
     "laenge_m": 136.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9958,6 +11014,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 6,
+    "anteil_commons": 0.103,
+    "anteil_foto_oder_commons": 0.103,
     "laenge_m": 1728.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -9990,6 +11049,9 @@
    ],
    "surface": "grass",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 307.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10023,6 +11085,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.412,
+    "anteil_foto_oder_commons": 0.832,
     "laenge_m": 68.8,
     "mit_foto_m": 57.2,
     "anteil_foto": 0.832,
@@ -10059,6 +11124,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.615,
+    "anteil_foto_oder_commons": 0.615,
     "laenge_m": 65.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10071,6 +11139,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.615,
+    "anteil_foto_oder_commons": 0.615,
     "laenge_m": 65.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10107,6 +11178,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 91,
+    "anteil_commons": 0.948,
+    "anteil_foto_oder_commons": 0.948,
     "laenge_m": 382.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10119,6 +11193,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 91,
+    "anteil_commons": 0.948,
+    "anteil_foto_oder_commons": 0.948,
     "laenge_m": 382.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10149,6 +11226,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 80,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 216.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10161,6 +11241,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 80,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 216.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10196,6 +11279,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 277.6,
     "mit_foto_m": 277.6,
     "anteil_foto": 1.0,
@@ -10227,6 +11313,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.192,
     "laenge_m": 105.7,
     "mit_foto_m": 20.3,
     "anteil_foto": 0.192,
@@ -10258,6 +11347,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 239.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10289,6 +11381,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.025,
     "laenge_m": 200.1,
     "mit_foto_m": 5.0,
     "anteil_foto": 0.025,
@@ -10372,6 +11467,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 22,
+    "anteil_commons": 0.181,
+    "anteil_foto_oder_commons": 0.929,
     "laenge_m": 4686.2,
     "mit_foto_m": 3868.7,
     "anteil_foto": 0.826,
@@ -10404,6 +11502,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.272,
     "laenge_m": 110.0,
     "mit_foto_m": 29.9,
     "anteil_foto": 0.272,
@@ -10435,6 +11536,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 147.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10470,6 +11574,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.085,
     "laenge_m": 364.0,
     "mit_foto_m": 31.0,
     "anteil_foto": 0.085,
@@ -10506,6 +11613,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.048,
     "laenge_m": 548.3,
     "mit_foto_m": 26.5,
     "anteil_foto": 0.048,
@@ -10537,6 +11647,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.916,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 49.0,
     "mit_foto_m": 49.0,
     "anteil_foto": 1.0,
@@ -10549,6 +11662,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.916,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 49.0,
     "mit_foto_m": 49.0,
     "anteil_foto": 1.0,
@@ -10581,6 +11697,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.129,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 383.9,
     "mit_foto_m": 379.2,
     "anteil_foto": 0.988,
@@ -10593,6 +11712,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.129,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 383.9,
     "mit_foto_m": 379.2,
     "anteil_foto": 0.988,
@@ -10625,6 +11747,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 6,
+    "anteil_commons": 0.623,
+    "anteil_foto_oder_commons": 0.725,
     "laenge_m": 185.5,
     "mit_foto_m": 19.0,
     "anteil_foto": 0.102,
@@ -10637,6 +11762,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 6,
+    "anteil_commons": 0.623,
+    "anteil_foto_oder_commons": 0.725,
     "laenge_m": 185.5,
     "mit_foto_m": 19.0,
     "anteil_foto": 0.102,
@@ -10668,6 +11796,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 912.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10711,6 +11842,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.029,
+    "anteil_foto_oder_commons": 0.029,
     "laenge_m": 1772.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10746,6 +11880,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 22,
+    "anteil_commons": 0.557,
+    "anteil_foto_oder_commons": 0.614,
     "laenge_m": 660.0,
     "mit_foto_m": 48.8,
     "anteil_foto": 0.074,
@@ -10777,6 +11914,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 184.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10813,6 +11953,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.047,
+    "anteil_foto_oder_commons": 0.237,
     "laenge_m": 1060.7,
     "mit_foto_m": 201.2,
     "anteil_foto": 0.19,
@@ -10847,6 +11990,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.067,
+    "anteil_foto_oder_commons": 0.067,
     "laenge_m": 703.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10878,6 +12024,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 225.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -10909,6 +12058,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.197,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 119.5,
     "mit_foto_m": 119.5,
     "anteil_foto": 1.0,
@@ -10921,6 +12073,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.089,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 105.4,
     "mit_foto_m": 105.4,
     "anteil_foto": 1.0,
@@ -10952,6 +12107,9 @@
    ],
    "surface": "gravel",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.062,
     "laenge_m": 386.2,
     "mit_foto_m": 24.1,
     "anteil_foto": 0.062,
@@ -10997,6 +12155,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 48,
+    "anteil_commons": 0.803,
+    "anteil_foto_oder_commons": 0.803,
     "laenge_m": 577.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11009,6 +12170,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 40,
+    "anteil_commons": 0.713,
+    "anteil_foto_oder_commons": 0.713,
     "laenge_m": 343.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11039,6 +12203,9 @@
    ],
    "surface": "gravel",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 28.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11070,6 +12237,9 @@
    ],
    "surface": "dirt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 233.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11107,6 +12277,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 734.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11138,6 +12311,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 233.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11171,6 +12347,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 12,
+    "anteil_commons": 0.65,
+    "anteil_foto_oder_commons": 0.65,
     "laenge_m": 140.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11183,6 +12362,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 12,
+    "anteil_commons": 0.65,
+    "anteil_foto_oder_commons": 0.65,
     "laenge_m": 140.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11213,6 +12395,9 @@
    ],
    "surface": "sett",
    "kernstadt": {
+    "commons_fotos": 22,
+    "anteil_commons": 0.897,
+    "anteil_foto_oder_commons": 0.897,
     "laenge_m": 335.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11225,6 +12410,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 22,
+    "anteil_commons": 0.897,
+    "anteil_foto_oder_commons": 0.897,
     "laenge_m": 335.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11259,6 +12447,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.068,
     "laenge_m": 420.0,
     "mit_foto_m": 28.7,
     "anteil_foto": 0.068,
@@ -11293,6 +12484,9 @@
    ],
    "surface": "gravel",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1021.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11325,6 +12519,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 634.3,
     "mit_foto_m": 634.3,
     "anteil_foto": 1.0,
@@ -11356,6 +12553,9 @@
    ],
    "surface": "grass",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 202.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11388,6 +12588,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.426,
+    "anteil_foto_oder_commons": 0.536,
     "laenge_m": 178.0,
     "mit_foto_m": 19.7,
     "anteil_foto": 0.111,
@@ -11400,6 +12603,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 3,
+    "anteil_commons": 0.426,
+    "anteil_foto_oder_commons": 0.536,
     "laenge_m": 178.0,
     "mit_foto_m": 19.7,
     "anteil_foto": 0.111,
@@ -11432,6 +12638,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 328.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11466,6 +12675,9 @@
    ],
    "surface": "unpaved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.096,
     "laenge_m": 433.6,
     "mit_foto_m": 41.6,
     "anteil_foto": 0.096,
@@ -11500,6 +12712,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.042,
     "laenge_m": 1391.7,
     "mit_foto_m": 58.1,
     "anteil_foto": 0.042,
@@ -11533,6 +12748,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.014,
     "laenge_m": 383.8,
     "mit_foto_m": 5.2,
     "anteil_foto": 0.014,
@@ -11564,6 +12782,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.047,
+    "anteil_foto_oder_commons": 0.047,
     "laenge_m": 958.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11595,6 +12816,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.14,
     "laenge_m": 861.4,
     "mit_foto_m": 120.8,
     "anteil_foto": 0.14,
@@ -11627,6 +12851,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 9,
+    "anteil_commons": 0.776,
+    "anteil_foto_oder_commons": 0.835,
     "laenge_m": 158.6,
     "mit_foto_m": 132.4,
     "anteil_foto": 0.835,
@@ -11664,6 +12891,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 4,
+    "anteil_commons": 0.184,
+    "anteil_foto_oder_commons": 0.257,
     "laenge_m": 411.3,
     "mit_foto_m": 30.0,
     "anteil_foto": 0.073,
@@ -11708,6 +12938,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 29,
+    "anteil_commons": 0.445,
+    "anteil_foto_oder_commons": 0.693,
     "laenge_m": 977.2,
     "mit_foto_m": 241.6,
     "anteil_foto": 0.247,
@@ -11720,6 +12953,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 17,
+    "anteil_commons": 0.706,
+    "anteil_foto_oder_commons": 0.706,
     "laenge_m": 226.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11751,6 +12987,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 17,
+    "anteil_commons": 0.656,
+    "anteil_foto_oder_commons": 0.656,
     "laenge_m": 364.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11763,6 +13002,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 17,
+    "anteil_commons": 0.656,
+    "anteil_foto_oder_commons": 0.656,
     "laenge_m": 364.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11794,6 +13036,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.235,
     "laenge_m": 205.1,
     "mit_foto_m": 48.1,
     "anteil_foto": 0.235,
@@ -11830,6 +13075,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.019,
     "laenge_m": 1399.5,
     "mit_foto_m": 25.9,
     "anteil_foto": 0.019,
@@ -11865,6 +13113,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 862.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11896,6 +13147,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 537.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11927,6 +13181,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.263,
+    "anteil_foto_oder_commons": 0.263,
     "laenge_m": 110.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11939,6 +13196,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.362,
+    "anteil_foto_oder_commons": 0.362,
     "laenge_m": 80.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -11969,6 +13229,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.178,
+    "anteil_foto_oder_commons": 0.404,
     "laenge_m": 123.9,
     "mit_foto_m": 28.0,
     "anteil_foto": 0.226,
@@ -11981,6 +13244,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.178,
+    "anteil_foto_oder_commons": 0.404,
     "laenge_m": 123.9,
     "mit_foto_m": 28.0,
     "anteil_foto": 0.226,
@@ -12011,6 +13277,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 55.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12044,6 +13313,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.472,
     "laenge_m": 784.2,
     "mit_foto_m": 370.0,
     "anteil_foto": 0.472,
@@ -12075,6 +13347,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 872.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12106,6 +13381,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 227.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12141,6 +13419,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.07,
     "laenge_m": 448.5,
     "mit_foto_m": 31.3,
     "anteil_foto": 0.07,
@@ -12185,6 +13466,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.022,
     "laenge_m": 1304.9,
     "mit_foto_m": 28.1,
     "anteil_foto": 0.022,
@@ -12216,6 +13500,9 @@
    ],
    "surface": "grass",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.293,
     "laenge_m": 137.1,
     "mit_foto_m": 40.2,
     "anteil_foto": 0.293,
@@ -12247,6 +13534,9 @@
    ],
    "surface": "ground",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.074,
     "laenge_m": 468.2,
     "mit_foto_m": 34.6,
     "anteil_foto": 0.074,
@@ -12278,6 +13568,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.1,
+    "anteil_foto_oder_commons": 0.114,
     "laenge_m": 380.9,
     "mit_foto_m": 5.5,
     "anteil_foto": 0.014,
@@ -12310,6 +13603,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.017,
+    "anteil_foto_oder_commons": 0.087,
     "laenge_m": 281.8,
     "mit_foto_m": 19.7,
     "anteil_foto": 0.07,
@@ -12342,6 +13638,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 224.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12373,6 +13672,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 246.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12405,6 +13707,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 4,
+    "anteil_commons": 0.036,
+    "anteil_foto_oder_commons": 0.326,
     "laenge_m": 162.2,
     "mit_foto_m": 52.8,
     "anteil_foto": 0.326,
@@ -12417,6 +13722,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 4,
+    "anteil_commons": 0.036,
+    "anteil_foto_oder_commons": 0.326,
     "laenge_m": 162.2,
     "mit_foto_m": 52.8,
     "anteil_foto": 0.326,
@@ -12447,6 +13755,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 71.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12478,6 +13789,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.204,
     "laenge_m": 125.5,
     "mit_foto_m": 25.6,
     "anteil_foto": 0.204,
@@ -12509,6 +13823,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.454,
     "laenge_m": 111.9,
     "mit_foto_m": 50.8,
     "anteil_foto": 0.454,
@@ -12565,6 +13882,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 73,
+    "anteil_commons": 0.206,
+    "anteil_foto_oder_commons": 0.233,
     "laenge_m": 4094.4,
     "mit_foto_m": 249.3,
     "anteil_foto": 0.061,
@@ -12577,6 +13897,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 33,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 225.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12607,6 +13930,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 46.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12639,6 +13965,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.296,
+    "anteil_foto_oder_commons": 0.296,
     "laenge_m": 82.7,
     "mit_foto_m": 24.5,
     "anteil_foto": 0.296,
@@ -12672,6 +14001,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.184,
+    "anteil_foto_oder_commons": 0.184,
     "laenge_m": 116.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12710,6 +14042,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 1172.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12746,6 +14081,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.021,
+    "anteil_foto_oder_commons": 0.021,
     "laenge_m": 457.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12780,6 +14118,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.039,
     "laenge_m": 637.8,
     "mit_foto_m": 24.6,
     "anteil_foto": 0.039,
@@ -12811,6 +14152,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 103.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12842,6 +14186,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.239,
     "laenge_m": 329.3,
     "mit_foto_m": 78.8,
     "anteil_foto": 0.239,
@@ -12874,6 +14221,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.069,
+    "anteil_foto_oder_commons": 0.944,
     "laenge_m": 748.5,
     "mit_foto_m": 691.1,
     "anteil_foto": 0.923,
@@ -12908,6 +14258,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 671.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -12944,6 +14297,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 13,
+    "anteil_commons": 0.79,
+    "anteil_foto_oder_commons": 0.916,
     "laenge_m": 245.7,
     "mit_foto_m": 30.9,
     "anteil_foto": 0.126,
@@ -12956,6 +14312,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 11,
+    "anteil_commons": 0.758,
+    "anteil_foto_oder_commons": 0.903,
     "laenge_m": 213.1,
     "mit_foto_m": 30.9,
     "anteil_foto": 0.145,
@@ -12986,6 +14345,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 43.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13020,6 +14382,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.034,
     "laenge_m": 759.9,
     "mit_foto_m": 25.7,
     "anteil_foto": 0.034,
@@ -13065,6 +14430,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.069,
     "laenge_m": 1811.2,
     "mit_foto_m": 124.7,
     "anteil_foto": 0.069,
@@ -13096,6 +14464,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 137.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13127,6 +14498,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 135.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13158,6 +14532,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 174.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13190,6 +14567,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 9,
+    "anteil_commons": 0.265,
+    "anteil_foto_oder_commons": 0.506,
     "laenge_m": 171.0,
     "mit_foto_m": 41.1,
     "anteil_foto": 0.241,
@@ -13202,6 +14582,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 9,
+    "anteil_commons": 0.265,
+    "anteil_foto_oder_commons": 0.506,
     "laenge_m": 171.0,
     "mit_foto_m": 41.1,
     "anteil_foto": 0.241,
@@ -13232,6 +14615,9 @@
    ],
    "surface": "sett",
    "kernstadt": {
+    "commons_fotos": 9,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 98.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13244,6 +14630,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 9,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 98.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13274,6 +14663,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 109.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13305,6 +14697,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.315,
+    "anteil_foto_oder_commons": 0.669,
     "laenge_m": 75.0,
     "mit_foto_m": 26.5,
     "anteil_foto": 0.354,
@@ -13338,6 +14733,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.078,
     "laenge_m": 528.1,
     "mit_foto_m": 41.3,
     "anteil_foto": 0.078,
@@ -13372,6 +14770,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 130,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 416.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13384,6 +14785,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 130,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 416.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13414,6 +14818,9 @@
    ],
    "surface": "sett",
    "kernstadt": {
+    "commons_fotos": 144,
+    "anteil_commons": 0.976,
+    "anteil_foto_oder_commons": 0.976,
     "laenge_m": 996.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13426,6 +14833,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 144,
+    "anteil_commons": 0.976,
+    "anteil_foto_oder_commons": 0.976,
     "laenge_m": 996.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13456,6 +14866,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 240.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13487,6 +14900,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 251.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13522,6 +14938,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 25,
+    "anteil_commons": 0.43,
+    "anteil_foto_oder_commons": 0.534,
     "laenge_m": 570.9,
     "mit_foto_m": 102.7,
     "anteil_foto": 0.18,
@@ -13534,6 +14953,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 17,
+    "anteil_commons": 0.924,
+    "anteil_foto_oder_commons": 0.924,
     "laenge_m": 135.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13564,6 +14986,9 @@
    ],
    "surface": "gravel",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.072,
     "laenge_m": 429.8,
     "mit_foto_m": 30.9,
     "anteil_foto": 0.072,
@@ -13602,6 +15027,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.688,
     "laenge_m": 1296.5,
     "mit_foto_m": 891.8,
     "anteil_foto": 0.688,
@@ -13633,6 +15061,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 379.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13664,6 +15095,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.113,
     "laenge_m": 429.4,
     "mit_foto_m": 48.6,
     "anteil_foto": 0.113,
@@ -13695,6 +15129,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 231.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13726,6 +15163,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 146.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13757,6 +15197,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 220.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13788,6 +15231,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.13,
     "laenge_m": 187.5,
     "mit_foto_m": 24.5,
     "anteil_foto": 0.13,
@@ -13820,6 +15266,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 4,
+    "anteil_commons": 0.614,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 121.0,
     "mit_foto_m": 121.0,
     "anteil_foto": 1.0,
@@ -13832,6 +15281,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 22.1,
     "mit_foto_m": 22.1,
     "anteil_foto": 1.0,
@@ -13863,6 +15315,9 @@
    ],
    "surface": "gravel",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 85.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13895,6 +15350,9 @@
    ],
    "surface": "sett",
    "kernstadt": {
+    "commons_fotos": 5,
+    "anteil_commons": 0.529,
+    "anteil_foto_oder_commons": 0.529,
     "laenge_m": 73.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13907,6 +15365,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 5,
+    "anteil_commons": 0.529,
+    "anteil_foto_oder_commons": 0.529,
     "laenge_m": 73.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13939,6 +15400,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 475.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -13971,6 +15435,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.11,
+    "anteil_foto_oder_commons": 0.139,
     "laenge_m": 177.9,
     "mit_foto_m": 24.8,
     "anteil_foto": 0.139,
@@ -14004,6 +15471,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.035,
     "laenge_m": 1004.2,
     "mit_foto_m": 34.7,
     "anteil_foto": 0.035,
@@ -14036,6 +15506,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 523.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14067,6 +15540,9 @@
    ],
    "surface": "paved",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.155,
     "laenge_m": 135.7,
     "mit_foto_m": 21.0,
     "anteil_foto": 0.155,
@@ -14099,6 +15575,9 @@
    ],
    "surface": "sett",
    "kernstadt": {
+    "commons_fotos": 22,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 65.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14111,6 +15590,9 @@
     "aeltestes": null
    },
    "zentrum": {
+    "commons_fotos": 22,
+    "anteil_commons": 1.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 65.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14141,6 +15623,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 102.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14172,6 +15657,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.168,
     "laenge_m": 121.3,
     "mit_foto_m": 20.3,
     "anteil_foto": 0.168,
@@ -14205,6 +15693,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.212,
     "laenge_m": 131.4,
     "mit_foto_m": 27.8,
     "anteil_foto": 0.212,
@@ -14236,6 +15727,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 426.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14267,6 +15761,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 207.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14301,6 +15798,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.814,
     "laenge_m": 526.0,
     "mit_foto_m": 428.3,
     "anteil_foto": 0.814,
@@ -14333,6 +15833,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 669.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14365,6 +15868,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.105,
     "laenge_m": 226.6,
     "mit_foto_m": 23.7,
     "anteil_foto": 0.105,
@@ -14396,6 +15902,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 134.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14428,6 +15937,9 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.34,
+    "anteil_foto_oder_commons": 0.455,
     "laenge_m": 129.9,
     "mit_foto_m": 59.2,
     "anteil_foto": 0.455,
@@ -14459,6 +15971,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.1,
+    "anteil_foto_oder_commons": 0.1,
     "laenge_m": 457.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14490,6 +16005,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 111.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14532,6 +16050,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.05,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 603.4,
     "mit_foto_m": 603.4,
     "anteil_foto": 1.0,
@@ -14544,6 +16065,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.072,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 420.4,
     "mit_foto_m": 420.4,
     "anteil_foto": 1.0,
@@ -14575,6 +16099,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 5,
+    "anteil_commons": 0.36,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 297.1,
     "mit_foto_m": 297.1,
     "anteil_foto": 1.0,
@@ -14608,6 +16135,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.03,
     "laenge_m": 707.4,
     "mit_foto_m": 21.5,
     "anteil_foto": 0.03,
@@ -14639,6 +16169,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.268,
     "laenge_m": 227.3,
     "mit_foto_m": 61.0,
     "anteil_foto": 0.268,
@@ -14670,6 +16203,9 @@
    ],
    "surface": "ground",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 169.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14702,6 +16238,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.205,
+    "anteil_foto_oder_commons": 0.205,
     "laenge_m": 421.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14733,6 +16272,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 371.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14771,6 +16313,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 35,
+    "anteil_commons": 0.383,
+    "anteil_foto_oder_commons": 0.383,
     "laenge_m": 1911.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14802,6 +16347,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 6,
+    "anteil_commons": 0.641,
+    "anteil_foto_oder_commons": 0.641,
     "laenge_m": 113.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -14841,6 +16389,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.028,
+    "anteil_foto_oder_commons": 0.284,
     "laenge_m": 1135.7,
     "mit_foto_m": 322.0,
     "anteil_foto": 0.284,
@@ -14872,6 +16423,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.395,
     "laenge_m": 184.3,
     "mit_foto_m": 72.9,
     "anteil_foto": 0.395,
@@ -14905,6 +16459,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 34,
+    "anteil_commons": 0.185,
+    "anteil_foto_oder_commons": 0.2,
     "laenge_m": 334.5,
     "mit_foto_m": 51.8,
     "anteil_foto": 0.155,
@@ -14955,6 +16512,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 2,
+    "anteil_commons": 0.058,
+    "anteil_foto_oder_commons": 0.773,
     "laenge_m": 1395.4,
     "mit_foto_m": 1079.2,
     "anteil_foto": 0.773,
@@ -14967,6 +16527,9 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.157,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 227.2,
     "mit_foto_m": 227.2,
     "anteil_foto": 1.0,
@@ -14998,6 +16561,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.104,
     "laenge_m": 188.3,
     "mit_foto_m": 19.7,
     "anteil_foto": 0.104,
@@ -15045,6 +16611,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.932,
     "laenge_m": 2727.7,
     "mit_foto_m": 2542.6,
     "anteil_foto": 0.932,
@@ -15077,6 +16646,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 1.0,
     "laenge_m": 39.5,
     "mit_foto_m": 39.5,
     "anteil_foto": 1.0,
@@ -15111,6 +16683,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 1,
+    "anteil_commons": 0.047,
+    "anteil_foto_oder_commons": 0.18,
     "laenge_m": 534.7,
     "mit_foto_m": 70.9,
     "anteil_foto": 0.133,
@@ -15142,6 +16717,9 @@
    ],
    "surface": null,
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 126.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
@@ -15173,6 +16751,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
+    "commons_fotos": 0,
+    "anteil_commons": 0.0,
+    "anteil_foto_oder_commons": 0.0,
     "laenge_m": 290.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,

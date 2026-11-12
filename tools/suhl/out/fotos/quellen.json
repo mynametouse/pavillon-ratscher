@@ -1,6 +1,6 @@
 {
  "version": 1,
- "made": "2026-11-12T23:36Z",
+ "made": "2026-11-12T23:43Z",
  "areas": "suhl-bestand",
  "quellen": {
   "commons": {
@@ -149,6 +149,48 @@
     "Stephan van Helden": 210,
     "Giorno2": 150,
     "Lukas Beck": 149
+   },
+   "bildwinkel": null
+  },
+  "openverse": {
+   "fotos": 183,
+   "doppelt": 0,
+   "je_gebiet": {
+    "None": 183
+   },
+   "jahre": {
+    "ohne": 183
+   },
+   "lizenzen": {
+    "CC BY-NC 2.0": 99,
+    "CC BY-SA 2.0": 28,
+    "CC BY-ND 2.0": 23,
+    "CC BY-NC-SA 2.0": 16,
+    "CC BY 2.0": 12,
+    "CC BY-NC-ND 2.0": 3,
+    "Public Domain Mark 1.0": 1,
+    "CC BY-NC-SA 4.0": 1
+   },
+   "nutzung": {
+    "frei": 41,
+    "nur ansehen": 142
+   },
+   "mit_position": 0,
+   "kameraposition": 0,
+   "mit_blickrichtung": 0,
+   "rundum_360": 0,
+   "aussenansicht": 83,
+   "urheber": {
+    "pilot_micha": 73,
+    "sludgegulper": 22,
+    "dmytrok": 13,
+    "campact": 12,
+    "Mandewo": 11,
+    "grafzahlmd": 10,
+    "MJ Klaver": 7,
+    "Triple-green": 5,
+    "ulrichkarljoho": 3,
+    "a.bierstein": 3
    },
    "bildwinkel": null
   },
@@ -319,6 +361,24 @@
     }
    ],
    "photos_in_suhl": 0
+  },
+  "openverse": {
+   "fetched": "2026-11-12T23:36Z",
+   "where": "chat machine",
+   "api": "https://api.openverse.org/v1/images/",
+   "terms": [
+    "Suhl",
+    "Suhl Thüringen",
+    "Suhl Rathaus",
+    "Suhl Steinweg",
+    "Suhl Waffenmuseum",
+    "Suhl Stadthalle",
+    "Suhl Congress Centrum",
+    "Suhl Bahnhof",
+    "Suhl Kirche",
+    "Suhl Hochhaus",
+    "Suhl DDR"
+   ]
   }
  },
  "mapillary": "not asked: the Mapillary API needs an access token (an account); none was created"

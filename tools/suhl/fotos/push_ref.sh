@@ -12,7 +12,8 @@ for try in 1 2 3 4 5; do
   export GIT_INDEX_FILE="$(mktemp -u)"
   git --work-tree="$REF" add -A -f .
   if [ -n "$old" ] && [ ! -d "$REF/commons" ]; then
-    git fetch -q --depth 1 origin "$BRANCH" && git read-tree --prefix=commons/ FETCH_HEAD:commons 2>/dev/null || true
+    # the Commons sheets are kept only if they came with their CREDITS.md (a run that was cut off leaves none)
+    git fetch -q --depth 1 origin "$BRANCH" && git cat-file -e FETCH_HEAD:commons/CREDITS.md 2>/dev/null && git read-tree --prefix=commons/ FETCH_HEAD:commons 2>/dev/null || true
   fi
   tree="$(git write-tree)"
   commit="$(git commit-tree "$tree" -m "suhl-fotos: contact sheets and maps of Suhl (scratch branch, never merged) - made from $(git rev-parse --short HEAD)
