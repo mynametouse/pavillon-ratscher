@@ -221,3 +221,4 @@ def ZUKUNFT_state_show(E):
     return E("ZUKUNFT.state().show")
 
 run()
+# (CI rerun marker: strategie right-click check failed once on this branch, passes on src)
