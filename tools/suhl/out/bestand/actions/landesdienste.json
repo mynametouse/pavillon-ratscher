@@ -1,0 +1,1163 @@
+{
+ "made": "2026-11-12T23:40:10Z",
+ "von": "GitHub Actions",
+ "proben": [
+  {
+   "name": "DGM1 2020-2025",
+   "url": "https://geoportal.geoportal-th.de/hoehendaten/DGM/dgm_2020-2025/dgm1_32_619_5607_1_th_2020-2025.zip",
+   "zeit": "2026-11-12T23:40:10Z",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 970,
+   "art": "wartungsseite",
+   "sekunden": 0.8,
+   "auszug": "*** Serviceinformation *** Dieser Geodaten-Dienst ist im Moment leider noch nicht verf&uuml;gbar. Bitte versuchen Sie es sp&auml;ter erneut! (c) GDI-Th Freistaat Th&uuml;ringen | Geoportal Th&uuml;ringen",
+   "notiz": ""
+  },
+  {
+   "name": "DGM1 2014-2019",
+   "url": "https://geoportal.geoportal-th.de/hoehendaten/DGM/dgm_2014-2019/dgm1_32_619_5607_1_th_2014-2019.zip",
+   "zeit": "2026-11-12T23:40:12Z",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 970,
+   "art": "wartungsseite",
+   "sekunden": 0.7,
+   "auszug": "*** Serviceinformation *** Dieser Geodaten-Dienst ist im Moment leider noch nicht verf&uuml;gbar. Bitte versuchen Sie es sp&auml;ter erneut! (c) GDI-Th Freistaat Th&uuml;ringen | Geoportal Th&uuml;ringen",
+   "notiz": ""
+  },
+  {
+   "name": "DOM1 2020-2025",
+   "url": "https://geoportal.geoportal-th.de/hoehendaten/DOM/dom_2020-2025/dom1_32_619_5607_1_th_2020-2025.zip",
+   "zeit": "2026-11-12T23:40:13Z",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 970,
+   "art": "wartungsseite",
+   "sekunden": 0.7,
+   "auszug": "*** Serviceinformation *** Dieser Geodaten-Dienst ist im Moment leider noch nicht verf&uuml;gbar. Bitte versuchen Sie es sp&auml;ter erneut! (c) GDI-Th Freistaat Th&uuml;ringen | Geoportal Th&uuml;ringen",
+   "notiz": ""
+  },
+  {
+   "name": "LoD2",
+   "url": "https://geoportal.geoportal-th.de/3dgebaeude/LoD2/LoD2_32_618_5606_2_TH.zip",
+   "zeit": "2026-11-12T23:40:14Z",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 970,
+   "art": "wartungsseite",
+   "sekunden": 0.4,
+   "auszug": "*** Serviceinformation *** Dieser Geodaten-Dienst ist im Moment leider noch nicht verf&uuml;gbar. Bitte versuchen Sie es sp&auml;ter erneut! (c) GDI-Th Freistaat Th&uuml;ringen | Geoportal Th&uuml;ringen",
+   "notiz": ""
+  },
+  {
+   "name": "ATOM Höhendaten DGM",
+   "url": "https://geoportal.geoportal-th.de/dienste/atom_th_hoehendaten_dgm",
+   "zeit": "2026-11-12T23:40:15Z",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 970,
+   "art": "wartungsseite",
+   "sekunden": 0.4,
+   "auszug": "*** Serviceinformation *** Dieser Geodaten-Dienst ist im Moment leider noch nicht verf&uuml;gbar. Bitte versuchen Sie es sp&auml;ter erneut! (c) GDI-Th Freistaat Th&uuml;ringen | Geoportal Th&uuml;ringen",
+   "notiz": ""
+  },
+  {
+   "name": "README Höhendaten",
+   "url": "https://geoportal.geoportal-th.de/hoehendaten/Uebersichten/README_Hoehendaten_2020-2025.pdf",
+   "zeit": "2026-11-12T23:40:17Z",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 970,
+   "art": "wartungsseite",
+   "sekunden": 0.8,
+   "auszug": "*** Serviceinformation *** Dieser Geodaten-Dienst ist im Moment leider noch nicht verf&uuml;gbar. Bitte versuchen Sie es sp&auml;ter erneut! (c) GDI-Th Freistaat Th&uuml;ringen | Geoportal Th&uuml;ringen",
+   "notiz": ""
+  },
+  {
+   "name": "neues Portal Höhendaten",
+   "url": "https://geoportal.thueringen.de/gdi-th/download-offene-geodaten/download-hoehendaten",
+   "zeit": "2026-11-12T23:40:19Z",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 45818,
+   "art": "captcha",
+   "sekunden": 1.2,
+   "auszug": "Link11 - CAPTCHA <link href=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbcAAABzCAMAAAAsR7zPAAAB4FBMVEX///8XFxUAicEAAADt7e3lNRf09PTY2NgAi8UQEA0NAAD7+/sCfK/Ozs7l5eWQkJAFDggmhLAZFQoif6wICATkKwA+Pj1hYWDIyMjV5uvQRzXmMhHCwsF0dHO4uLiFhYQ9PTzOeXRVVVSnp6afn54cHBrpm",
+   "notiz": ""
+  },
+  {
+   "name": "neues Portal Start",
+   "url": "https://geoportal.thueringen.de/gdi-th/download-offene-geodaten",
+   "zeit": "2026-11-12T23:40:20Z",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 45797,
+   "art": "captcha",
+   "sekunden": 1.1,
+   "auszug": "Link11 - CAPTCHA <link href=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbcAAABzCAMAAAAsR7zPAAAB4FBMVEX///8XFxUAicEAAADt7e3lNRf09PTY2NgAi8UQEA0NAAD7+/sCfK/Ozs7l5eWQkJAFDggmhLAZFQoif6wICATkKwA+Pj1hYWDIyMjV5uvQRzXmMhHCwsF0dHO4uLiFhYQ9PTzOeXRVVVSnp6afn54cHBrpm",
+   "notiz": ""
+  },
+  {
+   "name": "WMS alle Ebenen",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0",
+   "zeit": "2026-11-12T23:40:25Z",
+   "status": 200,
+   "content_type": "text/xml; charset=UTF-8",
+   "bytes": 2946156,
+   "art": "xml",
+   "sekunden": 3.9,
+   "auszug": "WMS Geoproxy Thüringen WMS Geoproxy Thüringen WMS Freistaat Thüringen Geoproxy WMS GDI Kompetenzzentrum Geodateninfrastruktur Thüringen Thüringer Ministerium für Digitales und Infrastruktur pointOfContact postal Hohenwindenstr. 13 a Erfurt Erfurt 99086 Germany",
+   "notiz": "",
+   "ebenen": 514,
+   "gesucht_vorhanden": [
+    "Gebaeude",
+    "GebaeudeAusLuftbild",
+    "Firstlinie",
+    "Bauteil",
+    "Gebaeudefunktion",
+    "DachformGebaeude",
+    "GeschossanzahlGebaeude",
+    "alkis_geb",
+    "AngabeZurGebaeudefunktion",
+    "DGM2",
+    "DGM5",
+    "hangneigung",
+    "versiegelung",
+    "EL.GridCoverage",
+    "AD.Address",
+    "gaz_hnr_wms",
+    "ampel",
+    "laermschutzwand",
+    "th_dop",
+    "th_dop20cir",
+    "th_dop_info",
+    "th_dtk",
+    "TN.RoadTransportNetwork.RoadLink"
+   ],
+   "gesucht_fehlt": [],
+   "mit_dom_lod_3d_mesh_schraeg_true": [
+    "Beschriftung",
+    "FlurstueckeLagePunktBeschriftung",
+    "AngabenZumFlurstueckBeschriftung",
+    "AngabenzumGebaeudeBeschriftung",
+    "VerkehrBeschriftung",
+    "StrassenverkehrBeschriftung",
+    "PlatzBeschriftung",
+    "BahnverkehrBeschriftung",
+    "BauwerkeEinrichtungenUndSonstigeAngabenBeschriftung",
+    "BauwerkeUndEinrichtungenInSiedlungsflaechenBeschriftung",
+    "BauwerkeAnlagenUndEinrichtungenFuerDenVerkehrBeschriftung",
+    "GesetzlicheFestlegungenGebietseinheitenKatalogeBeschriftung",
+    "OeffentlichRechtlicheUndSonstigeFestlegungenBeschriftung",
+    "BauRaumOderBodenordnungsrechtBeschriftung",
+    "VerkehrsBeschriftung"
+   ]
+  },
+  {
+   "name": "WFS alle Objektarten",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WFS&REQUEST=GetCapabilities&VERSION=2.0.0",
+   "zeit": "2026-11-12T23:40:26Z",
+   "status": 200,
+   "content_type": "text/xml; charset=UTF-8",
+   "bytes": 84366,
+   "art": "xml",
+   "sekunden": 0.7,
+   "auszug": "Geoproxy Thüringen WFS Geoproxy Thüringen WFS Freistaat Thüringen Geoproxy WFS GDI SDI WFS 2.0.0 1.1.0 1.0.0 Lizenz: Creative Commons BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.de) Namensnennung: \"© GDI-Th\" NONE. Es gelten keine Beschränkungen. T",
+   "notiz": "",
+   "objektarten": [
+    "tlvermgeo:ALKG_GESAMT_GEM",
+    "tlvermgeo:ALKIS_BS_LI",
+    "tlvermgeo:ALKIS_GESAMT_BEWERTUNG",
+    "tlvermgeo:ALKIS_GESAMT_BS",
+    "tlvermgeo:ALKIS_GESAMT_FKZ",
+    "tlvermgeo:ALKIS_GESAMT_FLUR",
+    "tlvermgeo:ALKIS_GESAMT_GEMARKUNG",
+    "tlvermgeo:ALKIS_GESAMT_GEMEINDE",
+    "tlvermgeo:ALKIS_GESAMT_KB",
+    "tlvermgeo:ALKIS_GESAMT_LAND",
+    "tlvermgeo:ALKIS_GESAMT_LK",
+    "tlvermgeo:ALKIS_GESAMT_VERWALTUNGSGEMEINSCHAFT",
+    "tlvermgeo:BORIS_GAA",
+    "tlvermgeo:GAZHKO_COMMUNE",
+    "tlvermgeo:GAZHKO_COMMUNE_FREE",
+    "tlvermgeo:GAZHKO_HNR",
+    "tlvermgeo:GAZHKO_STREET",
+    "tlvermgeo:blattschnitt_tk10",
+    "tlvermgeo:blattschnitt_tk100",
+    "tlvermgeo:blattschnitt_tk25",
+    "tlvermgeo:blattschnitt_tk50",
+    "tlvermgeo:ft_addinfos",
+    "tlvermgeo:ft_addmappings",
+    "tlvermgeo:gaz_alk_flst",
+    "tlvermgeo:gaz_alk_flur",
+    "tlvermgeo:gaz_alk_gem",
+    "tlvermgeo:gaz_alk_kb",
+    "tlvermgeo:gaz_blattschnitt_tk10",
+    "tlvermgeo:gaz_blattschnitt_tk100",
+    "tlvermgeo:gaz_blattschnitt_tk25",
+    "tlvermgeo:gaz_blattschnitt_tk50",
+    "tlvermgeo:gaz_commune",
+    "tlvermgeo:gaz_hnr",
+    "tlvermgeo:gaz_kb",
+    "tlvermgeo:gaz_street",
+    "tlvermgeo:geofp_h",
+    "tlvermgeo:geofp_l",
+    "xgdmeditor:IHK_UN_GES",
+    "xgdmeditor:RAILWAYSTATIONNODE",
+    "xgdmeditor:edit_lines",
+    "xgdmeditor:edit_points",
+    "xgdmeditor:edit_polygons",
+    "xgdmeditor:edit_teilflaechen",
+    "xgdmeditor:highlight",
+    "xgdmeditor:styletest"
+   ]
+  },
+  {
+   "name": "GetFeatureInfo Gebaeude",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=Gebaeude&QUERY_LAYERS=Gebaeude&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:28Z",
+   "status": 200,
+   "content_type": "text/xml",
+   "bytes": 353,
+   "art": "text/xml",
+   "sekunden": 0.5,
+   "auszug": "Missing WMS:GetFeatureInfo right for object(s) Gebaeude.",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo Gebaeudefunktion",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=Gebaeudefunktion&QUERY_LAYERS=Gebaeudefunktion&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:29Z",
+   "status": 200,
+   "content_type": "text/xml",
+   "bytes": 361,
+   "art": "text/xml",
+   "sekunden": 0.4,
+   "auszug": "Missing WMS:GetFeatureInfo right for object(s) Gebaeudefunktion.",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo DachformGebaeude",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=DachformGebaeude&QUERY_LAYERS=DachformGebaeude&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:30Z",
+   "status": 200,
+   "content_type": "text/xml",
+   "bytes": 361,
+   "art": "text/xml",
+   "sekunden": 0.7,
+   "auszug": "Missing WMS:GetFeatureInfo right for object(s) DachformGebaeude.",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo GeschossanzahlGebaeude",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=GeschossanzahlGebaeude&QUERY_LAYERS=GeschossanzahlGebaeude&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:31Z",
+   "status": 200,
+   "content_type": "text/xml",
+   "bytes": 367,
+   "art": "text/xml",
+   "sekunden": 0.6,
+   "auszug": "Missing WMS:GetFeatureInfo right for object(s) GeschossanzahlGebaeude.",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo Firstlinie",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=Firstlinie&QUERY_LAYERS=Firstlinie&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:33Z",
+   "status": 200,
+   "content_type": "text/xml",
+   "bytes": 355,
+   "art": "text/xml",
+   "sekunden": 0.5,
+   "auszug": "Missing WMS:GetFeatureInfo right for object(s) Firstlinie.",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo Bauteil",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=Bauteil&QUERY_LAYERS=Bauteil&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:34Z",
+   "status": 200,
+   "content_type": "text/xml",
+   "bytes": 352,
+   "art": "text/xml",
+   "sekunden": 0.6,
+   "auszug": "Missing WMS:GetFeatureInfo right for object(s) Bauteil.",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo alkis_geb",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=alkis_geb&QUERY_LAYERS=alkis_geb&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:35Z",
+   "status": 200,
+   "content_type": "text/plain; charset=UTF-8",
+   "bytes": 378,
+   "art": "text/plain; charset=UTF-8",
+   "sekunden": 0.5,
+   "auszug": "_featuremember_$#$anzahlDerOberirdischenGeschosse=5.0$#$gebaeudefunktion=1000$#$datenerhebung=Erhebung,1000$#$lebenszeitintervall_beginnt=2018-05-16$#$grundflaeche=181 _featuremember_$#$anzahlDerOberirdischenGeschosse=3.0$#$gebaeudefunktion=1000$#$datenerhebun",
+   "notiz": "",
+   "felder": [
+    "anzahlDerOberirdischenGeschosse",
+    "datenerhebung",
+    "gebaeudefunktion",
+    "grundflaeche",
+    "lebenszeitintervall_beginnt"
+   ],
+   "beispiel": {
+    "anzahlDerOberirdischenGeschosse": "3.0",
+    "gebaeudefunktion": "1000",
+    "datenerhebung": "Erhebung,1000",
+    "lebenszeitintervall_beginnt": "2018-05-16",
+    "grundflaeche": "84"
+   }
+  },
+  {
+   "name": "GetFeatureInfo AngabeZurGebaeudefunktion",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=AngabeZurGebaeudefunktion&QUERY_LAYERS=AngabeZurGebaeudefunktion&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:37Z",
+   "status": 200,
+   "content_type": "text/plain; charset=UTF-8",
+   "bytes": 378,
+   "art": "text/plain; charset=UTF-8",
+   "sekunden": 0.7,
+   "auszug": "_featuremember_$#$anzahlDerOberirdischenGeschosse=5.0$#$gebaeudefunktion=1000$#$datenerhebung=Erhebung,1000$#$lebenszeitintervall_beginnt=2018-05-16$#$grundflaeche=181 _featuremember_$#$anzahlDerOberirdischenGeschosse=3.0$#$gebaeudefunktion=1000$#$datenerhebun",
+   "notiz": "",
+   "felder": [
+    "anzahlDerOberirdischenGeschosse",
+    "datenerhebung",
+    "gebaeudefunktion",
+    "grundflaeche",
+    "lebenszeitintervall_beginnt"
+   ]
+  },
+  {
+   "name": "GetFeatureInfo GebaeudeAusLuftbild",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=GebaeudeAusLuftbild&QUERY_LAYERS=GebaeudeAusLuftbild&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:38Z",
+   "status": 200,
+   "content_type": "text/xml",
+   "bytes": 364,
+   "art": "text/xml",
+   "sekunden": 0.4,
+   "auszug": "Missing WMS:GetFeatureInfo right for object(s) GebaeudeAusLuftbild.",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo EL.GridCoverage",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=EL.GridCoverage&QUERY_LAYERS=EL.GridCoverage&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:39Z",
+   "status": 200,
+   "content_type": "text/xml",
+   "bytes": 360,
+   "art": "text/xml",
+   "sekunden": 0.4,
+   "auszug": "Missing WMS:GetFeatureInfo right for object(s) EL.GridCoverage.",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo DGM2",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=DGM2&QUERY_LAYERS=DGM2&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:40Z",
+   "status": 200,
+   "content_type": "text/plain; charset=UTF-8",
+   "bytes": 41,
+   "art": "text/plain; charset=UTF-8",
+   "sekunden": 0.4,
+   "auszug": "",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo gaz_hnr_wms",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=gaz_hnr_wms&QUERY_LAYERS=gaz_hnr_wms&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:41Z",
+   "status": 200,
+   "content_type": "text/plain; charset=UTF-8",
+   "bytes": 41,
+   "art": "text/plain; charset=UTF-8",
+   "sekunden": 0.5,
+   "auszug": "",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "GetFeatureInfo AD.Address",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=AD.Address&QUERY_LAYERS=AD.Address&STYLES=&CRS=EPSG:25832&BBOX=619783.0,5607834.0,619833.0,5607884.0&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain&FEATURE_COUNT=3",
+   "zeit": "2026-11-12T23:40:42Z",
+   "status": 200,
+   "content_type": "text/plain; charset=UTF-8",
+   "bytes": 41,
+   "art": "text/plain; charset=UTF-8",
+   "sekunden": 0.5,
+   "auszug": "",
+   "notiz": "",
+   "felder": []
+  },
+  {
+   "name": "WCS am Geoproxy",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WCS&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:40:44Z",
+   "status": 400,
+   "content_type": "application/xml",
+   "bytes": 536,
+   "art": "xml",
+   "sekunden": 0.6,
+   "auszug": "No service for service type 'WCS' and request type 'GetCapabilities' is configured / active.",
+   "notiz": "",
+   "ebenen": []
+  },
+  {
+   "name": "WCS Dienst DGM",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/DGM?SERVICE=WCS&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:40:45Z",
+   "status": 200,
+   "content_type": "text/xml; charset=UTF-8",
+   "bytes": 20703,
+   "art": "xml",
+   "sekunden": 0.4,
+   "auszug": "WMS WMS TH DGM Geoproxy Thüringen WMS für AAA ATKIS (R) DGM WMS_TH_DGM open data opendata Geobasisdaten Geoproxy TH GDI TH Freistaat Thüringen Thüringer Landesamt für Bodenmanagement und Geoinformation AdV AdV-OWS-Basisprofil AdV-WMS-Profil 4.0.0 WMS Darstellu",
+   "notiz": "",
+   "ebenen": [
+    "DGM5",
+    "DGM2"
+   ]
+  },
+  {
+   "name": "WMS Dienst DGM",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/DGM?SERVICE=WMS&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:40:46Z",
+   "status": 200,
+   "content_type": "text/xml; charset=UTF-8",
+   "bytes": 20703,
+   "art": "xml",
+   "sekunden": 0.4,
+   "auszug": "WMS WMS TH DGM Geoproxy Thüringen WMS für AAA ATKIS (R) DGM WMS_TH_DGM open data opendata Geobasisdaten Geoproxy TH GDI TH Freistaat Thüringen Thüringer Landesamt für Bodenmanagement und Geoinformation AdV AdV-OWS-Basisprofil AdV-WMS-Profil 4.0.0 WMS Darstellu",
+   "notiz": "",
+   "ebenen": [
+    "DGM5",
+    "DGM2"
+   ]
+  },
+  {
+   "name": "WMS Dienst DOM",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/DOM?SERVICE=WMS&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:40:59Z",
+   "status": 500,
+   "content_type": "application/xml",
+   "bytes": 464,
+   "art": "xml",
+   "sekunden": 12.8,
+   "auszug": "No service with identifier 'DOM' available.",
+   "notiz": "",
+   "ebenen": []
+  },
+  {
+   "name": "WMS Dienst ALKIS",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/ALKIS?SERVICE=WMS&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:41:13Z",
+   "status": 500,
+   "content_type": "application/xml",
+   "bytes": 466,
+   "art": "xml",
+   "sekunden": 12.9,
+   "auszug": "No service with identifier 'ALKIS' available.",
+   "notiz": "",
+   "ebenen": []
+  },
+  {
+   "name": "WFS Dienst INSPIRE bu",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/INSPIREbu?SERVICE=WFS&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:41:27Z",
+   "status": 500,
+   "content_type": "application/xml",
+   "bytes": 470,
+   "art": "xml",
+   "sekunden": 12.9,
+   "auszug": "No service with identifier 'INSPIREbu' available.",
+   "notiz": "",
+   "ebenen": []
+  },
+  {
+   "name": "WMS Dienst LoD2",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/LoD2?SERVICE=WMS&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:41:40Z",
+   "status": 500,
+   "content_type": "application/xml",
+   "bytes": 465,
+   "art": "xml",
+   "sekunden": 13.1,
+   "auszug": "No service with identifier 'LoD2' available.",
+   "notiz": "",
+   "ebenen": []
+  },
+  {
+   "name": "GetMap EL.GridCoverage als TIFF",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=EL.GridCoverage&STYLES=&CRS=EPSG:25832&BBOX=619708.0,5607759.0,619908.0,5607959.0&WIDTH=200&HEIGHT=200&FORMAT=image/tiff",
+   "zeit": "2026-11-12T23:41:42Z",
+   "status": 200,
+   "content_type": "image/tiff",
+   "bytes": 120452,
+   "art": "tiff",
+   "sekunden": 1.3,
+   "auszug": "",
+   "notiz": "",
+   "tiff": {
+    "breite": 200,
+    "hoehe": 200,
+    "bits": "mehrere",
+    "samples": 3,
+    "sampleformat": null,
+    "geotiff": true
+   }
+  },
+  {
+   "name": "GetMap DGM2 als TIFF",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=DGM2&STYLES=&CRS=EPSG:25832&BBOX=619708.0,5607759.0,619908.0,5607959.0&WIDTH=200&HEIGHT=200&FORMAT=image/tiff",
+   "zeit": "2026-11-12T23:41:44Z",
+   "status": 200,
+   "content_type": "image/tiff",
+   "bytes": 120452,
+   "art": "tiff",
+   "sekunden": 1.2,
+   "auszug": "",
+   "notiz": "",
+   "tiff": {
+    "breite": 200,
+    "hoehe": 200,
+    "bits": "mehrere",
+    "samples": 3,
+    "sampleformat": null,
+    "geotiff": true
+   }
+  },
+  {
+   "name": "WFS Hauskoordinaten",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=tlvermgeo:GAZHKO_HNR&COUNT=3&SRSNAME=EPSG:25832&BBOX=619728.0,5607779.0,619888.0,5607939.0,EPSG:25832",
+   "zeit": "2026-11-12T23:41:45Z",
+   "status": 200,
+   "content_type": "text/xml; subtype=\"gml/3.2.1\"; charset=UTF-8",
+   "bytes": 3032,
+   "art": "xml",
+   "sekunden": 0.5,
+   "auszug": "",
+   "notiz": "",
+   "felder": [
+    "boundedBy",
+    "geom",
+    "hausnr",
+    "id",
+    "lowerCorner",
+    "member",
+    "pos",
+    "strkscomid",
+    "upperCorner",
+    "zusatz"
+   ]
+  },
+  {
+   "name": "WFS ALKIS vereinfacht Capabilities",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/adv_alkis_wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:41:47Z",
+   "status": 200,
+   "content_type": "text/xml; charset=UTF-8",
+   "bytes": 44544,
+   "art": "xml",
+   "sekunden": 0.4,
+   "auszug": "WFS TH ALKIS Vereinfacht Das Liegenschaftskataster wird in elektronischer Form im Amtlichen Liegenschaftskatasterinformationssystem (ALKIS) geführt. Der vorliegende Web Feature Service ermöglicht das gezielte Herunterladen von in ALKIS geführten Geo-Objekten a",
+   "notiz": "",
+   "objektarten": [
+    "ave:Flurstueck",
+    "ave:GebaeudeBauwerk",
+    "ave:KatasterBezirk",
+    "ave:Nutzung",
+    "ave:VerwaltungsEinheit"
+   ],
+   "lizenz": "Lizenz: Creative Commons BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.de) Namensnennung: \"© GDI-Th\""
+  },
+  {
+   "name": "WFS ALKIS vereinfacht Gebäude",
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/adv_alkis_wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ave:GebaeudeBauwerk&COUNT=200&SRSNAME=urn:ogc:def:crs:EPSG::25832&BBOX=619708,5607759,619908,5607959,urn:ogc:def:crs:EPSG::25832",
+   "zeit": "2026-11-12T23:41:48Z",
+   "status": 200,
+   "content_type": "application/gml+xml; version=3.2",
+   "bytes": 139819,
+   "art": "xml",
+   "sekunden": 0.6,
+   "auszug": "",
+   "notiz": "",
+   "gebaeude_im_200_m_quadrat": 97,
+   "felder": {
+    "oid": 97,
+    "aktualit": 97,
+    "gebnutzbez": 97,
+    "funktion": 97,
+    "anzahlgs": 89,
+    "lagebeztxt": 97,
+    "name": 4
+   },
+   "werte": {
+    "aktualit": {
+     "2018": 73,
+     "2022": 9,
+     "2026": 8,
+     "2023": 3,
+     "2020": 3,
+     "2024": 1
+    },
+    "gebnutzbez": {
+     "Gebaeude": 94,
+     "Sonstiges Bauwerk Oder Sonstige Einrichtung": 3
+    },
+    "funktion": {
+     "Wohngebäude": 74,
+     "Gebäude für Wirtschaft oder Gewerbe": 6,
+     "Nach Quellenlage nicht zu spezifizieren": 5,
+     "Überdachung": 3,
+     "Verwaltungsgebäude": 3,
+     "Rathaus": 2,
+     "Gericht": 1,
+     "Kirche": 1
+    },
+    "anzahlgs": {
+     "4": 31,
+     "3": 26,
+     "5": 11,
+     "2": 8,
+     "1": 6,
+     "6": 5,
+     "7": 1,
+     "16": 1
+    }
+   },
+   "geometrie": {
+    "Polygon": 97
+   }
+  },
+  {
+   "name": "basemap.de Vektor TileJSON",
+   "url": "https://sgx.geodatenzentrum.de/gdz_basemapde_vektor/tiles/v2/bm_web_de_3857/bm_web_de_3857.json",
+   "zeit": "2026-11-12T23:41:53Z",
+   "status": 200,
+   "content_type": "application/json",
+   "bytes": 14537,
+   "art": "json",
+   "sekunden": 4.9,
+   "auszug": "{ \"attribution\": \"GeoBasis-DE\", \"basename\": \"bm_web_de_3857\", \"bounds\": [ 5.8, 47.2, 15.1, 55.1 ], \"center\": [ 10.45, 51.150000000000006, 2 ], \"description\": \"basemap.de Vektor. Ein Vektor-Kachelarchiv mit amtlichen Daten von Deutschland. (erstellt am 19.10.20",
+   "notiz": "",
+   "tilejson": {
+    "tiles": [
+     "https://sgx.geodatenzentrum.de/gdz_basemapde_vektor/tiles/v2/bm_web_de_3857/{z}/{x}/{y}.pbf"
+    ],
+    "minzoom": 0,
+    "maxzoom": 15,
+    "attribution": "GeoBasis-DE",
+    "ebenen": [
+     [
+      "Adresse",
+      [
+       "hausnummer",
+       "land",
+       "ort",
+       "ortsteil",
+       "strasse"
+      ]
+     ],
+     [
+      "Gebaeudeflaeche",
+      [
+       "hoehe",
+       "klasse",
+       "lage",
+       "land",
+       "name",
+       "zustand"
+      ]
+     ],
+     [
+      "Gebaeudepunkt",
+      [
+       "klasse",
+       "klasse_zusatz",
+       "land",
+       "zustand"
+      ]
+     ]
+    ],
+    "alle_ebenen": [
+     "Adresse",
+     "Barrierenlinie",
+     "Bauwerksflaeche",
+     "Bauwerkslinie",
+     "Bauwerkspunkt",
+     "Besondere_Flaeche",
+     "Besondere_Linie",
+     "Besonderer_Punkt",
+     "Gebaeudeflaeche",
+     "Gebaeudepunkt",
+     "Gewaesserflaeche",
+     "Gewaesserlinie",
+     "Gewaesserpunkt",
+     "Grenze_Flaeche",
+     "Grenze_Linie",
+     "Grenze_Punkt",
+     "Historische_Flaeche",
+     "Historische_Linie",
+     "Historischer_Punkt",
+     "Name_Punkt",
+     "Reliefflaeche",
+     "Relieflinie",
+     "Reliefpunkt",
+     "Siedlungsflaeche",
+     "Vegetationsflaeche",
+     "Vegetationslinie",
+     "Vegetationspunkt",
+     "Verkehrsflaeche",
+     "Verkehrslinie",
+     "Verkehrspunkt",
+     "Versorgungslinie",
+     "Versorgungspunkt",
+     "Weitere_Nutzung_Flaeche",
+     "Hintergrund"
+    ]
+   }
+  },
+  {
+   "name": "basemap.de Schummerung WMS",
+   "url": "https://sgx.geodatenzentrum.de/wms_basemapde_schummerung?REQUEST=GetCapabilities&Version=1.3.0&SERVICE=WMS",
+   "zeit": "2026-11-12T23:41:56Z",
+   "status": 200,
+   "content_type": "text/xml;charset=utf-8",
+   "bytes": 15002,
+   "art": "xml",
+   "sekunden": 2.0,
+   "auszug": "WMS WMS DE BASEMAP.DE WEB RASTER SCHUMMERUNG Der WMS DE basemap.de Web Raster Schummerung hat als Datengrundlage das bundesweite DGM 5. WMS ViewService AdV-OWS-Basisprofil AdV-WMS-Profil 5.0.0 Geobasisdaten Webbasierter Atlas für Deutschland Webkarte Deutschla",
+   "notiz": "",
+   "ebenen": [
+    "de_basemapde_web_raster_combshade",
+    "de_basemapde_web_raster_colordem",
+    "de_basemapde_web_raster_hillshade"
+   ]
+  },
+  {
+   "name": "basemap.de Vektorkachel Zentrum",
+   "url": "https://sgx.geodatenzentrum.de/gdz_basemapde_vektor/tiles/v2/bm_web_de_3857/15/17357/11026.pbf",
+   "zeit": "2026-11-12T23:41:58Z",
+   "status": 200,
+   "content_type": "application/octet-stream",
+   "bytes": 77193,
+   "art": "application/octet-stream",
+   "sekunden": 1.2,
+   "auszug": "\u001a�jx\u0002 \u0007Adresse\u0012\u0015\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003\u0002\u0004\u0003\u0018\u0001\"\u0005 �\u0011� \u0012\u0015\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003\u0002\u0004\u0004\u0018\u0001\"\u0005 �\u0010� \u0012\u0015\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003\u0002\u0004\u0005\u0018\u0001\"\u0005 �\u0010� \u0012\u0015\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003\u0002\u0004\u0006\u0018\u0001\"\u0005 � �\u0010\u0012\u0014\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003\u0007\u0004\b\u0018\u0001\"\u0004 �\u00166\u0012\u0014\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003 \u0004 \u0018\u0001\"\u0004 �\u0014F\u0012\u0015\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003 \u0004 \u0018\u0001\"\u0005 �\u0017�\u0005\u0012\u0015\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003 \u0004 \u0018\u0001\"\u0005 �\u0013�\u0004\u0012\u0015\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003 \u0004 \u0018\u0001\"\u0005 �\u0011�\u0002\u0012\u0014\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003 \u0004\u000e\u0018\u0001\"\u0004 �\u0015h\u0012\u0014\u0012 \u0000\u0000\u0001\u0001\u0002\u0001\u0003 \u0004\u000f\u0018\u0001\"\u0004 ",
+   "notiz": "",
+   "kachel": {
+    "fehler": "ModuleNotFoundError(\"No module named 'mapbox_vector_tile'\")"
+   }
+  },
+  {
+   "name": "GeoMIS Suche LoD2",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%25LoD2%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:41:59Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 483,
+   "art": "xml",
+   "sekunden": 0.8,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 0,
+   "titel": []
+  },
+  {
+   "name": "GeoMIS Suche 3D-Gebäude",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%253D-Geb%C3%A4ude%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:01Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 483,
+   "art": "xml",
+   "sekunden": 0.8,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 0,
+   "titel": []
+  },
+  {
+   "name": "GeoMIS Suche WCS",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%25WCS%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:02Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 483,
+   "art": "xml",
+   "sekunden": 0.8,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 0,
+   "titel": []
+  },
+  {
+   "name": "GeoMIS Suche Digitales Oberflächenmodell",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%25Digitales%20Oberfl%C3%A4chenmodell%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:04Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 483,
+   "art": "xml",
+   "sekunden": 0.7,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 0,
+   "titel": []
+  },
+  {
+   "name": "GeoMIS Suche bDOM",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%25bDOM%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:05Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 483,
+   "art": "xml",
+   "sekunden": 0.7,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 0,
+   "titel": []
+  },
+  {
+   "name": "GeoMIS Suche Schrägluftbild",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%25Schr%C3%A4gluftbild%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:07Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 483,
+   "art": "xml",
+   "sekunden": 0.6,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 0,
+   "titel": []
+  },
+  {
+   "name": "GeoMIS Suche TrueDOP",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%25TrueDOP%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:08Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 483,
+   "art": "xml",
+   "sekunden": 0.8,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 0,
+   "titel": []
+  },
+  {
+   "name": "GeoMIS Suche 3D-Mesh",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%253D-Mesh%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:09Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 483,
+   "art": "xml",
+   "sekunden": 0.7,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 0,
+   "titel": []
+  },
+  {
+   "name": "GeoMIS Suche Hausumringe",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%25Hausumringe%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:11Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 1953,
+   "art": "xml",
+   "sekunden": 0.7,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 1,
+   "titel": [
+    {
+     "titel": "Hausumringe",
+     "typ": "dataset",
+     "id": "dd467a9a-c5a7-400e-90b0-aeb1cba90eda"
+    }
+   ]
+  },
+  {
+   "name": "GeoMIS Suche INSPIRE Gebäude",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%25INSPIRE%20Geb%C3%A4ude%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:12Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 7040,
+   "art": "xml",
+   "sekunden": 0.8,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 4,
+   "titel": [
+    {
+     "titel": "Fernwärme Versorgungsgebiete Thüringen",
+     "typ": "dataset",
+     "id": "5096eb56-0d60-491d-a391-9510cacbc448"
+    },
+    {
+     "titel": "Web-Feature-Services Geoproxy",
+     "typ": "service",
+     "id": "ef47be35-30bf-4204-8ccb-2ab6289615e5"
+    },
+    {
+     "titel": "Hausumringe",
+     "typ": "dataset",
+     "id": "dd467a9a-c5a7-400e-90b0-aeb1cba90eda"
+    },
+    {
+     "titel": "WFS TH ALKIS Vereinfacht",
+     "typ": "service",
+     "id": "d4cccc2c-1d31-4302-bc3a-8bdd9474daac"
+    }
+   ]
+  },
+  {
+   "name": "GeoMIS Suche Historische Orthophotos",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&resultType=results&typeNames=csw:Record&elementSetName=summary&outputSchema=http://www.opengis.net/cat/csw/2.0.2&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&constraint=AnyText%20like%20%27%25Historische%20Orthophotos%25%27&maxRecords=12",
+   "zeit": "2026-11-12T23:42:14Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 483,
+   "art": "xml",
+   "sekunden": 0.7,
+   "auszug": "",
+   "notiz": "",
+   "treffer": 0,
+   "titel": []
+  },
+  {
+   "name": "GeoMIS.Th CSW",
+   "url": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:42:15Z",
+   "status": 200,
+   "content_type": "application/xml;charset=UTF-8",
+   "bytes": 36657,
+   "art": "xml",
+   "sekunden": 0.8,
+   "auszug": "Discovery Service (CSW) für Metadaten der GDI-Th GeoMIS 2.0 - Dies ist der offizielle Catalogue Service Web des Thüringer Landesamt für Bodenmanagement und Geoinformation. Er dient der Bereitstellung von Metadaten über Geoanwendungen, Geodienste und Geodaten d",
+   "notiz": ""
+  },
+  {
+   "name": "GDI-DE Katalog CSW",
+   "url": "https://gdk.gdi-de.org/gdi-de/srv/ger/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetCapabilities",
+   "zeit": "2026-11-12T23:42:18Z",
+   "status": 400,
+   "content_type": "text/html; charset=utf-8",
+   "bytes": 246,
+   "art": "html",
+   "sekunden": 2.1,
+   "auszug": "Request Rejected The requested URL was rejected. Please consult with your administrator. Your support ID is: 9071289104687081916 [Go Back]",
+   "notiz": ""
+  }
+ ],
+ "befund": {
+  "alte_adressen": [
+   "wartungsseite"
+  ],
+  "neues_portal": [
+   "captcha"
+  ],
+  "getfeatureinfo": {
+   "Gebaeude": {
+    "status": 200,
+    "art": "text/xml",
+    "felder": []
+   },
+   "Gebaeudefunktion": {
+    "status": 200,
+    "art": "text/xml",
+    "felder": []
+   },
+   "DachformGebaeude": {
+    "status": 200,
+    "art": "text/xml",
+    "felder": []
+   },
+   "GeschossanzahlGebaeude": {
+    "status": 200,
+    "art": "text/xml",
+    "felder": []
+   },
+   "Firstlinie": {
+    "status": 200,
+    "art": "text/xml",
+    "felder": []
+   },
+   "Bauteil": {
+    "status": 200,
+    "art": "text/xml",
+    "felder": []
+   },
+   "alkis_geb": {
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "felder": [
+     "anzahlDerOberirdischenGeschosse",
+     "datenerhebung",
+     "gebaeudefunktion",
+     "grundflaeche",
+     "lebenszeitintervall_beginnt"
+    ]
+   },
+   "AngabeZurGebaeudefunktion": {
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "felder": [
+     "anzahlDerOberirdischenGeschosse",
+     "datenerhebung",
+     "gebaeudefunktion",
+     "grundflaeche",
+     "lebenszeitintervall_beginnt"
+    ]
+   },
+   "GebaeudeAusLuftbild": {
+    "status": 200,
+    "art": "text/xml",
+    "felder": []
+   },
+   "EL.GridCoverage": {
+    "status": 200,
+    "art": "text/xml",
+    "felder": []
+   },
+   "DGM2": {
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "felder": []
+   },
+   "gaz_hnr_wms": {
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "felder": []
+   },
+   "AD.Address": {
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "felder": []
+   }
+  },
+  "alkis_wfs": {
+   "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/adv_alkis_wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ave:GebaeudeBauwerk&COUNT=200&SRSNAME=urn:ogc:def:crs:EPSG::25832&BBOX=619708,5607759,619908,5607959,urn:ogc:def:crs:EPSG::25832",
+   "status": 200,
+   "bytes": 139819,
+   "sekunden": 0.6,
+   "gebaeude_im_200_m_quadrat": 97,
+   "felder": {
+    "oid": 97,
+    "aktualit": 97,
+    "gebnutzbez": 97,
+    "funktion": 97,
+    "anzahlgs": 89,
+    "lagebeztxt": 97,
+    "name": 4
+   },
+   "werte": {
+    "aktualit": {
+     "2018": 73,
+     "2022": 9,
+     "2026": 8,
+     "2023": 3,
+     "2020": 3,
+     "2024": 1
+    },
+    "gebnutzbez": {
+     "Gebaeude": 94,
+     "Sonstiges Bauwerk Oder Sonstige Einrichtung": 3
+    },
+    "funktion": {
+     "Wohngebäude": 74,
+     "Gebäude für Wirtschaft oder Gewerbe": 6,
+     "Nach Quellenlage nicht zu spezifizieren": 5,
+     "Überdachung": 3,
+     "Verwaltungsgebäude": 3,
+     "Rathaus": 2,
+     "Gericht": 1,
+     "Kirche": 1
+    },
+    "anzahlgs": {
+     "4": 31,
+     "3": 26,
+     "5": 11,
+     "2": 8,
+     "1": 6,
+     "6": 5,
+     "7": 1,
+     "16": 1
+    }
+   },
+   "geometrie": {
+    "Polygon": 97
+   }
+  },
+  "geomis": {
+   "LoD2": {
+    "treffer": 0,
+    "titel": []
+   },
+   "3D-Gebäude": {
+    "treffer": 0,
+    "titel": []
+   },
+   "WCS": {
+    "treffer": 0,
+    "titel": []
+   },
+   "Digitales Oberflächenmodell": {
+    "treffer": 0,
+    "titel": []
+   },
+   "bDOM": {
+    "treffer": 0,
+    "titel": []
+   },
+   "Schrägluftbild": {
+    "treffer": 0,
+    "titel": []
+   },
+   "TrueDOP": {
+    "treffer": 0,
+    "titel": []
+   },
+   "3D-Mesh": {
+    "treffer": 0,
+    "titel": []
+   },
+   "Hausumringe": {
+    "treffer": 1,
+    "titel": [
+     "Hausumringe [dataset]"
+    ]
+   },
+   "INSPIRE Gebäude": {
+    "treffer": 4,
+    "titel": [
+     "Fernwärme Versorgungsgebiete Thüringen [dataset]",
+     "Web-Feature-Services Geoproxy [service]",
+     "Hausumringe [dataset]",
+     "WFS TH ALKIS Vereinfacht [service]"
+    ]
+   },
+   "Historische Orthophotos": {
+    "treffer": 0,
+    "titel": []
+   }
+  }
+ }
+}
