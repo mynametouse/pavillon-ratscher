@@ -149,6 +149,9 @@ und kein Konto angelegt. Die Anleitung zur Schnittstelle (`/api/docs`) habe ich 
    die 8 P1-Kacheln für DGM1 und DOM1 mit 16 Klicks. Erscheint stattdessen eine Anmeldeseite, dann geht es nur mit Konto.
 4. Zusätzlich lohnt ein Klick auf **„Nur Hausumringe“** (ganz oben bei ALKIS). Bitte **nicht** „Komplettpaket“ oder „Nur
    Flurstücke“ – Flurstücke nutzen wir nicht.
+5. Eine Bitte: Klicke unter „DOP“ einmal auf „Downloadlinks (193 Kacheln, JSON)“ und schick uns zwei oder drei der Adressen aus
+   der Liste. Das sind Adressen beim Land. Daran sehen wir, wo das Land seine Kacheln heute ausliefert – vielleicht liegen dort
+   auch DGM1, DOM1 und LoD2, und das Klicken entfällt.
 
 **Die bequemste Lösung wäre ein Schlüssel:** Wenn du dort ein kostenloses Konto anlegst und uns den API-Schlüssel als Geheimnis in
 GitHub hinterlegst, kann die Pipeline alle 228 DGM1- und 228 DOM1-Kacheln selbst holen – ganz nach den Regeln der Seite. Das ist
@@ -170,6 +173,8 @@ Für **LoD2** führt bisher kein Weg daran vorbei.
 
 1. `https://geoportal.thueringen.de/gdi-th/download-offene-geodaten` öffnen und das CAPTCHA lösen.
 2. Bereich **Höhendaten** (`…/download-offene-geodaten/download-hoehendaten`) für DGM1 und DOM1, Bereich **3D-Gebäude** für LoD2.
+   Die Adresse für die Höhendaten nennt der Katalog des Landes selbst (Eintrag „Digitales Geländemodell“, Stand 9.10.2026); die
+   Seite für die 3D-Gebäude habe ich in keinem Katalogeintrag gefunden, sie muss im Portal stehen.
 3. Die Kacheln nach der Liste oben wählen. Die Nummern in unseren Karten sind die linke untere Ecke in Kilometern (Ost, Nord).
 4. Die ZIP-Dateien **unverändert** in einen Ordner legen, zum Beispiel `Suhl-Landesdaten/`. Nichts auspacken, nichts umbenennen.
 
