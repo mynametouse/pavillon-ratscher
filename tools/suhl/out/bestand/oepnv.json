@@ -1,0 +1,530 @@
+{
+ "made": "2026-11-12T23:33:23Z",
+ "quelle": "gtfs.de – GTFS für Deutschland (frei), Daten bereitgestellt von DELFI e.V.; https://download.gtfs.de/germany/free/latest.zip",
+ "lizenz": "CC BY 4.0 (gtfs.de, DELFI e.V.)",
+ "feed": {
+  "feed_version": "latest-free",
+  "feed_start_date": null,
+  "feed_end_date": null,
+  "feed_publisher_name": "gtfs.de - GTFS für Deutschland, Daten bereitgestellt von DELFI e.V."
+ },
+ "referenzwoche": {
+  "montag": "2026-11-16",
+  "werktag": "2026-11-17",
+  "samstag": "2026-11-21",
+  "sonntag": "2026-11-22"
+ },
+ "haltestellen": {
+  "stop_eintraege_in_stadt": 331,
+  "verschiedene_namen": 211,
+  "mit_halt_im_feed": 208,
+  "namen_mit_halt": 132,
+  "in_kernstadt_namen": 151,
+  "im_zentrum_namen": [
+   "Friedrich-König-Straße",
+   "Kreuzkirche",
+   "Marktplatz",
+   "Neues Rathaus",
+   "Senfte",
+   "Suhl",
+   "Suhl, Bahnhof",
+   "Suhl, Friedrich-König Straße l",
+   "Suhl, Friedrich-König-Straße",
+   "Suhl, Kreuzkirche",
+   "Suhl, Marktplatz",
+   "Suhl, Neues Rathaus",
+   "Suhl, Zentrum",
+   "Suhl, Zentrum s",
+   "Suhl-Mitte"
+  ],
+  "meiste_halte": [
+   [
+    "Am Bahndamm/SNG",
+    545
+   ],
+   [
+    "Suhl, Zentrum",
+    501
+   ],
+   [
+    "Suhl, Friedrich-König Straße l",
+    397
+   ],
+   [
+    "Suhl, Bahnhof",
+    328
+   ],
+   [
+    "Neues Rathaus",
+    309
+   ],
+   [
+    "Friedrich-König-Straße",
+    270
+   ],
+   [
+    "Suhl, Bahnhof",
+    268
+   ],
+   [
+    "Neues Rathaus",
+    268
+   ],
+   [
+    "Karl-Marx-Straße/ Schelrod",
+    151
+   ],
+   [
+    "Suhl, Zentrum s",
+    150
+   ],
+   [
+    "Würzburger Straße",
+    142
+   ],
+   [
+    "Würzburger Straße",
+    141
+   ]
+  ]
+ },
+ "linien": {
+  "anzahl": 36,
+  "bahn": [
+   {
+    "betreiber": "8004NT DB Regio AG Südost",
+    "linie": "RE7",
+    "route_type": "2",
+    "fahrten_di": 16,
+    "fahrten_sa": 16,
+    "fahrten_so": 16,
+    "fahrten_im_feed": 55,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Süd-Thüringen-Bahn",
+    "linie": "RB43",
+    "route_type": "2",
+    "fahrten_di": 4,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 6,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Süd-Thüringen-Bahn",
+    "linie": "RB44",
+    "route_type": "2",
+    "fahrten_di": 21,
+    "fahrten_sa": 19,
+    "fahrten_so": 16,
+    "fahrten_im_feed": 27,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Süd-Thüringen-Bahn",
+    "linie": "RB46",
+    "route_type": "2",
+    "fahrten_di": 0,
+    "fahrten_sa": 8,
+    "fahrten_so": 8,
+    "fahrten_im_feed": 8,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Süd-Thüringen-Bahn Express",
+    "linie": "RE50",
+    "route_type": "2",
+    "fahrten_di": 12,
+    "fahrten_sa": 3,
+    "fahrten_so": 3,
+    "fahrten_im_feed": 27,
+    "schleusingen": 0,
+    "ratscher": 0
+   }
+  ],
+  "bus_und_andere": [
+   {
+    "betreiber": "Meininger Busbetriebs GmbH",
+    "linie": "400",
+    "route_type": "3",
+    "fahrten_di": 64,
+    "fahrten_sa": 19,
+    "fahrten_so": 19,
+    "fahrten_im_feed": 215,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Meininger Busbetriebs GmbH",
+    "linie": "419",
+    "route_type": "3",
+    "fahrten_di": 2,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 2,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Meininger Busbetriebs GmbH",
+    "linie": "447",
+    "route_type": "3",
+    "fahrten_di": 13,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 41,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Meininger Busbetriebs GmbH",
+    "linie": "448",
+    "route_type": "3",
+    "fahrten_di": 4,
+    "fahrten_sa": 4,
+    "fahrten_so": 4,
+    "fahrten_im_feed": 8,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Meininger Busbetriebs GmbH",
+    "linie": "449",
+    "route_type": "3",
+    "fahrten_di": 3,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 7,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Omnibusverkehr GmbH Ilmenau",
+    "linie": "300",
+    "route_type": "3",
+    "fahrten_di": 53,
+    "fahrten_sa": 16,
+    "fahrten_so": 12,
+    "fahrten_im_feed": 68,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Omnibusverkehr GmbH Ilmenau",
+    "linie": "307",
+    "route_type": "3",
+    "fahrten_di": 2,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 2,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "A/G",
+    "route_type": "3",
+    "fahrten_di": 15,
+    "fahrten_sa": 14,
+    "fahrten_so": 18,
+    "fahrten_im_feed": 44,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "A1",
+    "route_type": "3",
+    "fahrten_di": 41,
+    "fahrten_sa": 12,
+    "fahrten_so": 6,
+    "fahrten_im_feed": 59,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "A2",
+    "route_type": "3",
+    "fahrten_di": 17,
+    "fahrten_sa": 5,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 22,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "A3",
+    "route_type": "3",
+    "fahrten_di": 8,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 8,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "B",
+    "route_type": "3",
+    "fahrten_di": 69,
+    "fahrten_sa": 35,
+    "fahrten_so": 27,
+    "fahrten_im_feed": 121,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "C1",
+    "route_type": "3",
+    "fahrten_di": 41,
+    "fahrten_sa": 1,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 42,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "C12",
+    "route_type": "3",
+    "fahrten_di": 14,
+    "fahrten_sa": 30,
+    "fahrten_so": 12,
+    "fahrten_im_feed": 52,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "C2",
+    "route_type": "3",
+    "fahrten_di": 42,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 42,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "D1",
+    "route_type": "3",
+    "fahrten_di": 9,
+    "fahrten_sa": 7,
+    "fahrten_so": 5,
+    "fahrten_im_feed": 20,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "D2",
+    "route_type": "3",
+    "fahrten_di": 14,
+    "fahrten_sa": 7,
+    "fahrten_so": 3,
+    "fahrten_im_feed": 21,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "G",
+    "route_type": "3",
+    "fahrten_di": 31,
+    "fahrten_sa": 12,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 43,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "H",
+    "route_type": "3",
+    "fahrten_di": 10,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 10,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "K",
+    "route_type": "3",
+    "fahrten_di": 14,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 14,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "R",
+    "route_type": "3",
+    "fahrten_di": 20,
+    "fahrten_sa": 4,
+    "fahrten_so": 4,
+    "fahrten_im_feed": 24,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "S21",
+    "route_type": "3",
+    "fahrten_di": 2,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 2,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "S30",
+    "route_type": "3",
+    "fahrten_di": 1,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 1,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "S31",
+    "route_type": "3",
+    "fahrten_di": 1,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 1,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "S33",
+    "route_type": "3",
+    "fahrten_di": 2,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 2,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+    "linie": "S40",
+    "route_type": "3",
+    "fahrten_di": 3,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 3,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Süd-Thüringen-Bahn",
+    "linie": "RB43",
+    "route_type": "3",
+    "fahrten_di": 1,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 1,
+    "schleusingen": 0,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Werrabus",
+    "linie": "200",
+    "route_type": "3",
+    "fahrten_di": 34,
+    "fahrten_sa": 16,
+    "fahrten_so": 13,
+    "fahrten_im_feed": 63,
+    "schleusingen": 63,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Werrabus",
+    "linie": "201",
+    "route_type": "3",
+    "fahrten_di": 8,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 8,
+    "schleusingen": 8,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Werrabus",
+    "linie": "202",
+    "route_type": "3",
+    "fahrten_di": 14,
+    "fahrten_sa": 6,
+    "fahrten_so": 6,
+    "fahrten_im_feed": 26,
+    "schleusingen": 26,
+    "ratscher": 0
+   },
+   {
+    "betreiber": "Werrabus",
+    "linie": "203",
+    "route_type": "3",
+    "fahrten_di": 16,
+    "fahrten_sa": 0,
+    "fahrten_so": 0,
+    "fahrten_im_feed": 16,
+    "schleusingen": 16,
+    "ratscher": 16
+   }
+  ]
+ },
+ "fahrten_mit_halt_in_suhl": {
+  "im_feed": 1111,
+  "werktag": 621,
+  "samstag": 234,
+  "sonntag": 172
+ },
+ "nach_schleusingen": [
+  [
+   "Werrabus",
+   "200",
+   63
+  ],
+  [
+   "Werrabus",
+   "201",
+   8
+  ],
+  [
+   "Werrabus",
+   "202",
+   26
+  ],
+  [
+   "Werrabus",
+   "203",
+   16
+  ]
+ ],
+ "nach_ratscher": [
+  [
+   "Werrabus",
+   "203",
+   16
+  ]
+ ],
+ "stop_times_zeilen": 36679397
+}

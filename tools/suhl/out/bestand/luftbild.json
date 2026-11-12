@@ -1,0 +1,1411 @@
+{
+"made": "2026-11-12T23:28:30Z",
+"quelle": "https://www.geoproxy.geoportal-th.de/geoproxy/services/DOP (Ebene th_dop_info, GetFeatureInfo je Kachelmitte), © GDI-Th, CC BY 4.0",
+"kacheln_abgefragt": 228,
+"flugtage_P1_bis_P3": {
+"2024-05-15": 193
+},
+"flugtage_je_prioritaet": {
+"P3": {
+"2024-05-15": 136
+},
+"P2": {
+"2024-05-15": 49
+},
+"P1": {
+"2024-05-15": 8
+},
+"P4": {
+"2024-05-15": 27,
+"2024-04-07": 8
+}
+},
+"naehte": [],
+"naht_linien": [],
+"felder_th_dop_info": [
+"Bezug",
+"CSW-Anfrage",
+"Erstellung",
+"Name",
+"Publikation",
+"Titel"
+],
+"beispiel": {
+"Name": "32_609_5606",
+"Titel": "n/a",
+"Erstellung": "15.05.2024",
+"Publikation": "2025-02",
+"CSW-Anfrage": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&REQUEST=GetRecordById&VERSION=2.0.2&Elementsetname=full&outputSchema=http://www.isotc211.org/2005/gmd&ID=3940ce6d-a2fc-44cf-9b30-916f999750ae",
+"Bezug": "bDOM"
+},
+"kacheln": {
+"609_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"609_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"610_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"610_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"610_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"610_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"611_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"611_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"611_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"611_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"611_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"612_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"612_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"612_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"612_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"612_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"613_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"613_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"613_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"613_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"613_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"613_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"614_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"614_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"614_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"614_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"614_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"614_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"614_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"615_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"615_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"615_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"615_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"615_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"615_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"615_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"615_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"616_5602": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"616_5603": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"616_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"616_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"616_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"616_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"616_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"616_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"616_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"616_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"617_5602": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"617_5603": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"617_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"617_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"617_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"617_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"617_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"617_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"617_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"617_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"618_5602": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"618_5603": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"618_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"618_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"618_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P1"
+},
+"618_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P1"
+},
+"618_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P1"
+},
+"618_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"618_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"618_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"619_5603": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"619_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"619_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"619_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P1"
+},
+"619_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P1"
+},
+"619_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P1"
+},
+"619_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"619_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"619_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"619_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"620_5603": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"620_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"620_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"620_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"620_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P1"
+},
+"620_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P1"
+},
+"620_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"620_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"620_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"620_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"620_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"620_5614": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"621_5601": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"621_5602": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"621_5603": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"621_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"621_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"621_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"621_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"621_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"621_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"621_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"621_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"621_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"621_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"621_5614": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"622_5599": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"622_5600": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"622_5601": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"622_5602": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"622_5603": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"622_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"622_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"622_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"622_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"622_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"622_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"622_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"622_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"622_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"622_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"622_5614": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"623_5597": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"623_5598": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"623_5599": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"623_5600": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"623_5601": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"623_5602": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"623_5603": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"623_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"623_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"623_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"623_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"623_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"623_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"623_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"623_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"623_5614": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"623_5615": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"623_5616": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"624_5595": {
+"flug": "2024-04-07",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"624_5596": {
+"flug": "2024-04-07",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"624_5597": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"624_5598": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"624_5599": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"624_5600": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"624_5601": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"624_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"624_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"624_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"624_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"624_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P2"
+},
+"624_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"624_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"624_5614": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"624_5615": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"624_5616": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5594": {
+"flug": "2024-04-07",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"625_5595": {
+"flug": "2024-04-07",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"625_5596": {
+"flug": "2024-04-07",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"625_5597": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"625_5598": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"625_5599": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"625_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5614": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5615": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"625_5616": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5594": {
+"flug": "2024-04-07",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"626_5595": {
+"flug": "2024-04-07",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"626_5596": {
+"flug": "2024-04-07",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"626_5597": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P4"
+},
+"626_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5614": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5615": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"626_5616": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5614": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5615": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"627_5616": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5614": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"628_5615": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5604": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5605": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5609": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5610": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5611": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"629_5613": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"630_5606": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"630_5607": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"630_5608": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+},
+"630_5612": {
+"flug": "2024-05-15",
+"publikation": "2025-02",
+"bezug": "bDOM",
+"prio": "P3"
+}
+}
+}

@@ -64,6 +64,19 @@ def part_with(g, pt):
     return min(parts, key=lambda p: p.distance(pt))
 
 
+def roundtrip(g):
+    """the polygon as it is written (WGS84, 6 decimals) back in UTM, so that counts made here match what readers of the file get"""
+    from shapely.geometry import mapping, shape
+    ll = sblib.tf_geom(g, sblib.to_wgs)
+
+    def rnd(c):
+        if isinstance(c, (list, tuple)) and c and isinstance(c[0], (int, float)):
+            return [round(c[0], 6), round(c[1], 6)]
+        return [rnd(x) for x in c]
+    m = mapping(ll)
+    return sblib.tf_geom(shape({'type': m['type'], 'coordinates': rnd(m['coordinates'])}), sblib.to_utm)
+
+
 def feat(geom_utm, props, nd=6):
     from shapely.geometry import mapping
     g = sblib.tf_geom(geom_utm, sblib.to_wgs)
@@ -112,7 +125,7 @@ def main():
     comp = part_with(u, centre)
     filled = Polygon(comp.exterior)
     kern = part_with(filled.buffer(-ERODE, 8), centre).intersection(stadt)
-    kern = part_with(kern, centre).simplify(5.0)
+    kern = roundtrip(part_with(kern, centre).simplify(5.0))
     pk = prep(kern)
     nk = sum(1 for b in blds if pk.contains(b[3].representative_point()))
     feats.append(feat(kern, {
@@ -134,7 +147,7 @@ def main():
         tags = (o.ntags.get(i) if kind == 'n' else (o.ways[i][1] if kind == 'w' else o.rels[i][1])) or {}
         lm.append((key, label, kind, i, tags, g))
     hull = unary_union([x[5] for x in lm]).convex_hull
-    zen = hull.buffer(ZENTRUM_BUF, 12).simplify(2.0)
+    zen = roundtrip(hull.buffer(ZENTRUM_BUF, 12).simplify(2.0))
     pz = prep(zen)
     inside_b = [b for b in blds if pz.contains(b[3].representative_point())]
     streets = sorted({t['name'] for w, (nd, t) in o.ways.items() if t and t.get('highway') and t.get('name')
