@@ -231,6 +231,8 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus, Tagesablauf (`life`)
 - `dorf/` – Dorfleben (Kalender, Texte, Dorfbewohner, Schule, Feuer)
 - `welt/` – Kachelwelt um die Kamera, Schleusingen
+- `strassen/` – Straßen (feat/strassen): Stile und Raster der Straßenkarte (`strassen_stil`, rein), Daten (`strassen_daten`), Karte
+  des Fensters jenseits des Quadrats (`strassen_karte`), Modelle (`strassen_modelle`, rein) und Ausstattung je Zelle (`strassen`)
 - `amt/` – Ortsvorsteher: Daten, Logik, Dinge im Dorf, Spiel und Oberfläche
 - `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Wald an der Klinge (`forest`), Fällen (`fell`, V16c2), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
   Kollision mit der Umgebung (`worldcol`), Bäume, die Fahrzeugen nachgeben (`treehit`)
@@ -296,6 +298,12 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   `landDetail(p, farbe, abstand)` (Luftbild entdunstet, helle kalte Flächen wie Acker/Schotter gedämpft und wärmer – `landHi`, auch für
   die modellierten Felder in garden/env.js –, Gras-/Erdkorn aus Detailtexturen in der Nähe) und `roadShade(p, farbe, abstand)` auf
   (Asphalt, Beton, Pflaster, Schotter, Fahrspuren, Bankett, Markierungen). Kein Straßen-Mesh: keine Z-Kämpfe, Kreuzungen fügen sich von selbst.
+- **Straßen seit feat/strassen (13.11.2026, `docs/features/strassen.md`)**: die Karte kodiert G = Stil × 60 + Art × 6 + Belag und A = Meter
+  längs modulo 36 (`strassen/strassen_stil.js`: Kodierung, Raster, vier Stile – freie Strecke, Überholverbot, Stadt, Dorf); `roadShade`
+  zeichnet danach Markierung, Bankett, Bordstein, Rinne, Gehweg, Flickstellen, Risse und Nässe. Jenseits des Quadrats lesen die Kacheln
+  dieselbe Art Karte für ein Fenster um den Beobachter (`strassen/strassen_karte.js` → `ROADS.W`). Was an den Straßen steht
+  (Leitpfosten, Schutzplanken, Schilder, Laternen, Strommasten): `strassen/strassen.js`, je Zelle nahe dem Beobachter, Daten
+  `dist/strassen/ausstattung.json` aus `viz3/extra/strassen/daten.py`.
 - **Fahrzeuge** (`vehicles/vehicle.js`): ein Fahrzeug = `VEH.add(spec, model)`. `model`: `g` (Gruppe, Ursprung am Boden unter dem Schwerpunkt,
   x rechts, y vorn), `body` (federnder Teil), `wheels` (`{x, y, r, steer, drive, piv, node}`), `lamps` (`head/tail/brake/rev`: Materialien mit
   Emission), optional `update(v, dt)` (Spielzeit), `key(k, down)`, `save()/load(a)`, `beam` (Lichtquelle lokal). `spec`: Masse, Trägheit, Achsabstände `a/b`,
