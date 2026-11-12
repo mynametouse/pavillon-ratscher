@@ -503,8 +503,8 @@ Ergebnis je Kachel: vier Zahlen und ein Bogen; die schlechtesten Kacheln zuerst 
 | Hausfuß auf dem Gelände | ±0,5 m an den Ecken (wo DGM1 vorliegt) |
 | Dach geschlossen | jeder Punkt des Grundrisses liegt unter einer Dachfläche |
 | Fassaden-Parameter | Schema; Geschosse × Geschosshöhe passt zur Traufe (±1 m) |
-| Straßen je Art | „Wellen je km“ (`roads.metrics`, Job „Straßen glatt“ im Prüfpaket) unter der Grenze der Art; Kreuzung eine Ebene (±3 cm) |
-| Kachelkanten | Nachbarn haben gleiche Höhen (wie `test_welt.py`) |
+| Straßen je Art | „Wellen je km“ (`roads.metrics`; so prüfen es heute `test_welt.py` und der Job „Straßen glatt“ im Prüfpaket) unter der Grenze der Art; Kreuzung eine Ebene (±3 cm) |
+| Kachelkanten | Nachbarn haben gleiche Höhen (neuer Test; das Format legt die Randpunkte auf die Kante, `tools/welt/wlib.py`) |
 | Summen | Geschossfläche und Bewohner je Viertel gegen amtliche Zahlen (`suhl-wissen`), Abweichung genannt |
 
 ### 5.4 Leistung im Browser (`viz3/test/suhl.py`, Abschnitte einzeln wählbar)
