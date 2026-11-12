@@ -4,7 +4,7 @@ import os, json, gzip, math, time, urllib.request, urllib.error
 
 UA = 'PavillonRatscher-Suhl/0.1 (+https://github.com/mynametouse/pavillon-ratscher)'
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.normpath(os.path.join(HERE, '..', 'out', 'fotos'))
+OUT = os.environ.get('SUHL_FOTOS_OUT') or os.path.normpath(os.path.join(HERE, '..', 'out', 'fotos'))   # the env variable is for tests only
 CENTRE = (50.6087, 10.6926)          # centre of Suhl (lat, lon) - the common file of the Suhl agents
 R_ZENTRUM, R_KERNSTADT = 900.0, 5000.0   # provisional circles until suhl-bestand publishes gebiete.geojson
 M_LAT = 111320.0
