@@ -78,8 +78,10 @@ Raster für Szenarien. Einwohner am 31.12.2022 [Atlas 2022] [Sozialplan 2025–2
 
 **Straßen**
 - Autobahn **A 71** (Erfurt–Schweinfurt) westlich der Stadt: Anschlussstelle Suhl/Zella-Mehlis (50.6419, 10.6892; auf Zella-Mehliser Gebiet), Tunnel Berg
-  Bock, Talbrücke Albrechtsgraben, **Dreieck Suhl** (50.6085, 10.6421) [WP-Suhl], OSM.
-- Autobahn **A 73** (Suhl–Nürnberg) ab dem Dreieck Suhl: Talbrücke Haseltal über Heinrichs (rund 85 m über dem Tal),
+  Bock, Talbrücke Albrechtsgraben (Bogenbrücke, 770 m lang, bis 74 m hoch, fertig 2002;
+  https://structurae.net/structures/albrechtsgraben-viaduct), **Dreieck Suhl** (50.6085, 10.6421) [WP-Suhl], OSM.
+- Autobahn **A 73** (Suhl–Nürnberg) ab dem Dreieck Suhl: Talbrücke Haseltal über Heinrichs (845 m lang, bis 82 m über dem
+  Tal, fertig 2006; https://structurae.net/structures/haseltalbrucke-2006),
   Anschlussstellen **Suhl-Zentrum** (50.5875, 10.6770) und **Suhl-Friedberg** (50.5758, 10.7229; liegt schon auf Schleusinger
   Gebiet) [WP-Suhl], OSM.
 - Hauptachse durch das Tal: Gothaer Straße – Friedrich-König-Straße – Dr.-Theodor-Neubauer-Straße – Schleusinger Straße. In OSM

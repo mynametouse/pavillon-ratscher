@@ -13,8 +13,9 @@ was, wo, wer, Stand mit Datum, Quelle – und die Szenario-Frage, die daraus fol
 | 1 | **Suhl-Nord: vom Plattenbau-Stadtteil zum Gewerbe- und Forschungspark** | 149 ha, laufendes Bebauungsplan-Verfahren (Entwurf seit 2.11.2026 öffentlich), sichtbar im Stadtbild, mehrere mögliche Zukünfte (Gewerbe, Forschung, Holzbau, Solar, Wald, Rest-Wohnen) | [LEG-Konzept 2022], [LEG 2022], [Suhl-Bekanntm.], [Nordkurier 2026] |
 | 2 | **Schrumpfen und Altern: 37 000 → 26 600 Einwohner bis 2042** | stärkster Rückgang aller Thüringer Kreise; lässt sich je Stadtteil zeigen (Leerstand, Rückbau, Pflege, Schulen) | [TLS 2042], [TLS PM 224/2025], [Sozialplan 2025–29], [Atlas 2022] |
 | 3 | **Die Innenstadt der Bezirksstadt: zu groß gebaut für die heutige Stadt** | drei Einkaufszentren, vierspurige Durchgangsstraße, Hochhäuser, Steinweg; liegt im Pilotquartier | [Bauwelt 2006], [Uske 2017], [SREK 2024], [Suhl-City] |
-| 4 | **Friedberg nach der Erstaufnahme** | Schließung zum 30.11.2026; großes Kasernen-Areal wird frei; Nachnutzung offen | [BZ 5/2026], [BZ 9/2026], [Sozialplan 2025–29] |
-| 5 | **Simson-Gelände in Heinrichs** | 21 ha Altstandort in Sanierung, Rückkehr der Fertigung (E-Schwalbe) angekündigt, Industrie-Erbe mit hoher Bekanntheit | [electrive 2026], [ground.news 4/2026], [ground.news 12/2025] |
+| 4 | **Wärmewende je Quartier** | Entwurf des kommunalen Wärmeplans liegt seit März 2026 öffentlich vor (mit Karte); Fernwärme aus Abwärme, Nahwärme Lautenberg, über 1 000 Ölheizungen – lässt sich je Gebäude zeigen | [Suhl-Planen], [iST 3/2026], [iST 8/2024], [SWSZ 2022] |
+| 5 | **Friedberg nach der Erstaufnahme** | Schließung zum 30.11.2026; großes Kasernen-Areal wird frei; Nachnutzung offen | [BZ 5/2026], [BZ 9/2026], [Sozialplan 2025–29] |
+| knapp dahinter | **Simson-Gelände in Heinrichs** | 21 ha Altstandort in Sanierung, Rückkehr der Fertigung (E-Schwalbe) angekündigt, Industrie-Erbe mit hoher Bekanntheit | [electrive 2026], [ground.news 4/2026], [ground.news 12/2025] |
 
 Dazu drei Landschaftsthemen, die schon im Modell für Ratscher angelegt sind und sich auf Suhl übertragen lassen:
 Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9), Wald nach dem Käfer (Nr. 10).
@@ -28,9 +29,15 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
 - **Was:** Das gesamtstädtische Konzept, an dem Förderung und Rückbau hängen.
 - **Wer:** Stadt Suhl (Stadtplanung; Wirtschafts- und Stadtentwicklungsausschuss des Stadtrats).
 - **Stand:** Eine Fassung von 2023 gibt es – der Sozialplan 2025–2029 nennt „ISEK (2023)“ als Quelle seiner Stadtkarte
-  [Sozialplan 2025–29]. Den Text selbst konnte ich **nicht lesen**: Die Dateien der Stadt liegen bei einem Dateidienst, auf den
-  die Weiterleitung von hier gesperrt ist (Kandidaten siehe „Offen“). Älter: das Konzept „Suhl 2025“ mit dem geplanten Rückbau
-  nicht mehr gebrauchter Wohnblöcke [Uske 2017].
+  [Sozialplan 2025–29]. Die Stadt stellt das ISEK auf ihrer Seite „Planen, Bauen und Wohnen“ als PDF bereit
+  (`https://www.suhl.eu/_files/ugd/1b847c_d56044f1e272446da05a48888ad71b5b.pdf`) [Suhl-Planen]. Den Text selbst konnte ich
+  **nicht lesen** (Abruf von hier gesperrt). Älter: das Konzept „Suhl 2025“ mit dem geplanten Rückbau nicht mehr gebrauchter
+  Wohnblöcke [Uske 2017].
+- **Weitere Konzepte auf derselben Seite** (alle vorhanden, von hier nicht lesbar – Inhalt also offen): Rahmenplan Innenstadt,
+  Rahmenplan Suhl-Nord, Rahmenplan Aue, Rahmenplan Karl-Marx-Straße, Rahmenplan Schlauchgarten, Machbarkeitsstudie Bahnhof,
+  Dokumentation des Wettbewerbs „Herrenteich Park“, Kleingarten-Entwicklungskonzept, Gemeindliches Entwicklungskonzept Gehlberg,
+  Kurpark Gehlberg, „Aktivwelt Schmiedefeld“, Rahmenplan historischer Ortskern Schmiedefeld; dazu rechtskräftige Bebauungspläne
+  für 17 Stadtteile mit Übersichtskarte und der Mietspiegel ab 1.1.2026 [Suhl-Planen].
 - **Belegt aus anderen Quellen:** Von 2001 bis 2013 wurden 5 729 Wohnungen zurückgebaut [WP-Suhl].
 - **Szenario-Frage:** Welche Quartiere hält die Stadt, welche gibt sie auf – und was entsteht auf den freien Flächen?
 
@@ -92,6 +99,8 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
     (2008) [Uske 2017]; dazu kommen die Läden im CCS (1995) [WP-CCS].
   - Das Entwicklungskonzept der vier Städte nennt als Schwächen der Region: keine klare Innenstadt-Mitte, schwacher Branchenmix;
     vorgeschlagen wird ein gemeinsames Leerstands- und Brachflächen-Management [SREK 2024].
+  - Es gibt einen **Rahmenplan Innenstadt**, eine **Machbarkeitsstudie Bahnhof** und die Dokumentation eines **Wettbewerbs
+    „Herrenteich Park“** – also Pläne genau für die Mitte des Pilotquartiers. Inhalt und Datum: offen [Suhl-Planen].
   - 22.3.2024: Spatenstich für den Wohnpark „Ottilienblick“ [Suhl-Wirtschaft].
   - 18.5.2026: digitales Info-Terminal am Dianabrunnen vor dem Einkaufscentrum am Steinweg in Betrieb [Suhl-City].
   - 24.6.2026: Bürgerumfrage der Stadt zu öffentlichen Plätzen und Grünflächen [Suhl-Umwelt].
@@ -138,11 +147,28 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
 - **Rahmen:** Gemeinden unter 100 000 Einwohnern brauchen bis 30.6.2028 einen Wärmeplan; Fortschreibung alle fünf Jahre; Ziel
   klimaneutrale Wärme bis 2045. Thüringen hat das 2024 mit einem eigenen Gesetz umgesetzt und fördert Planung und Personal
   [REnK 2024]. Ergebnis sind Gebietstypen: Fernwärme, Fernwärme-Ausbau, Wasserstoff, Wärmepumpe/Einzellösung [REnK 2024].
-- **Stand in Suhl:** **offen.** Ich habe weder einen Beschluss noch eine Bürgerinformation zur Wärmeplanung der Stadt gefunden
-  (gesucht am 12.11.2026 auf den Seiten der Stadt und in der Presse). Belegt ist nur: Das Suhl-Nord-Konzept sieht eine
-  Versorgungsanlage für Fernwärme und ein Energiekonzept für das Quartier vor [LEG-Konzept 2022]; die Netzgesellschaft der
-  Stadtwerke Suhl/Zella-Mehlis betreibt Strom- und Gasnetz [Suhl-Wirtschaft]; die Stadt verweist seit Juli 2026 auf öffentliche
-  Klimadaten für Suhl [Suhl-Umwelt].
+- **Wer in Suhl:** Stadt Suhl (Energiemanagement, Stadtentwicklung) mit den Stadtwerken Suhl/Zella-Mehlis (SWSZ); bearbeitet
+  von zwei Büros aus Erfurt und Kassel [Suhl-Planen].
+- **Stand in Suhl:**
+  - Förderbescheid 27.5.2024, Projektstart 1.10.2024, Förderzeitraum bis 31.3.2026 (Kennzeichen 67K28845) [Suhl-Planen];
+    Fördersumme 150 000 € [iST 8/2024].
+  - Bestandsaufnahme (Stand August 2024): 108 Haushalte heizen noch überwiegend mit Kohle, mehr als 1 000 Gebäude mit Öl; das
+    Fernwärmenetz reicht durch große Teile der Innenstadt [iST 8/2024].
+  - Dezember 2025: Entwurf im Wirtschafts- und Stadtentwicklungsausschuss vorgestellt [Suhl-Planen].
+  - März 2026: Entwurf erstmals öffentlich, Info-Abend im Oberrathaussaal; Ziel klimaneutrale Wärme bis 2045; Rückmeldungen der
+    Bürger erwünscht (Bericht vom 13.3.2026) [iST 3/2026]. Danach vorgesehen: Vorstellung im Stadtrat [Suhl-Planen].
+    Ob der Stadtrat schon beschlossen hat: **offen**.
+  - Karte des Wärmeplans (Entwurf): `https://www.suhl.eu/_files/ugd/b4a114_6cfe1295a87b49c799bf4a564686b74f.pdf` – von hier
+    nicht lesbar; welche Quartiere welchem Gebietstyp zugeordnet sind, ist deshalb **offen** [Suhl-Planen].
+- **Fernwärme heute:** Die SWSZ speisten 2025 104 151 MWh ein und lieferten 78 656 MWh aus (Netzverlust 24,48 %); Wärmequelle ist
+  vor allem Abwärme der Restabfall-Behandlungsanlage (RABA) Südwestthüringen, daneben Erdgas [SWSZ-Fernwärme].
+- **Strategie der Stadtwerke** („Wärmenetzstrategie 2040“ vom 23.12.2022): fast klimaneutrale Fernwärme bis 2040 – mehr Abwärme
+  aus der RABA, neue Anlage am Standort Bohrhügel für klimaneutrales Gas, Elektrodenkessel, großer Wärmespeicher, eigene
+  Solaranlagen, Anschluss des Inselnetzes Döllberg an das Hauptnetz [SWSZ 2022].
+- **Nahwärme Lautenberg:** Für das Wohngebiet zwischen Berufsschulzentrum (Robert-Schumann-Straße) und Lautenbergschule prüfen
+  die Stadtwerke ein Nahwärmenetz; der Stadtrat hat die Prüfung 2022 gebilligt (Bericht vom 19.1.2026) [iST 1/2026].
+- Außerdem: Das Suhl-Nord-Konzept sieht eine Versorgungsanlage für Fernwärme und ein Energiekonzept für das Quartier vor
+  [LEG-Konzept 2022]; die Stadt verweist seit Juli 2026 auf öffentliche Klimadaten für Suhl [Suhl-Umwelt].
 - **Szenario-Fragen:** Welche Quartiere bekommen Fernwärme (Plattenbau, Zentrum), welche Wärmepumpen (Siedlungen, Ortsteile)?
   Wie viel Solarstrom tragen die Flachdächer der Plattenbauten und Hallen?
 
@@ -245,14 +271,16 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
 
 ## Offen und unsicher
 
-1. **ISEK 2023 und Bebauungsplan Suhl-Nord im Wortlaut.** Mögliche Dateien der Stadt (nicht lesbar, Weiterleitung gesperrt):
-   `https://www.suhl.eu/_files/ugd/1b847c_d56044f1e272446da05a48888ad71b5b.pdf`,
+1. **ISEK 2023 und Bebauungsplan Suhl-Nord im Wortlaut.** Dateien der Stadt (nicht lesbar, Abruf von hier gesperrt):
+   ISEK `https://www.suhl.eu/_files/ugd/1b847c_d56044f1e272446da05a48888ad71b5b.pdf` (laut [Suhl-Planen]); zwei weitere
+   Dateien unbekannten Inhalts, die bei der Suche zu Suhl-Nord auftauchten:
    `https://www.suhl.eu/_files/ugd/1b847c_139526b5d54d4d57a29ad2ca4426f05e.pdf`,
-   `https://suhl.eu/_files/ugd/1b847c_bb58bad254ee47199052c6b2796188cc.pdf`. Was darin steht, weiß ich nicht.
+   `https://suhl.eu/_files/ugd/1b847c_bb58bad254ee47199052c6b2796188cc.pdf`.
    Die Meldung zum Bebauungsplan: `https://www.suhl.eu/post/information-zur-öffentlichen-bekanntmachung-zur-veröffentlichung-des-entwurfs-zum-bebauungsplan-gew`
    (Titel gelesen, Text nicht).
 2. **Tagesordnungen** der Stadtratssitzungen vom 11.11. und 16.11.2026 und des ÖPNV-Ausschusses – nicht lesbar.
-3. **Wärmeplanung, Hochwasserschutz-Konzept, Forstzahlen, Tourismuszahlen** für die Stadt selbst – nichts gefunden.
+3. **Hochwasserschutz-Konzept, Forstzahlen, Tourismuszahlen** für die Stadt selbst – nichts gefunden. Beim Wärmeplan fehlen
+   die Karte (Gebietstypen je Quartier) und der Stand des Ratsbeschlusses.
 4. **Nachnutzung Friedberg** – nichts gefunden; ein Bericht vom 11.9.2026 liegt hinter einer Bezahlschranke.
 5. **Windgebiete bei Suhl** – Liste nicht gefunden.
 6. Presse aus der Region (inSüdthüringen/Freies Wort, MDR) konnte ich nur über Zusammenfassungen lesen.
@@ -260,7 +288,9 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
 ## Für den Suhl-Chat
 
 - Die Unterlagen der Stadt lassen sich in einem GitHub-Actions-Lauf vermutlich abrufen (normale Weiterleitung auf den
-  Dateidienst der Website). Vorschlag: ein kleiner Lauf, der ISEK, Bebauungsplan-Entwurf und Amtsblatt als Text ablegt.
+  Dateidienst der Website). Vorschlag: ein kleiner Lauf, der ISEK, Rahmenplan Innenstadt, Wettbewerb Herrenteich, Karte des
+  Wärmeplans, Bebauungsplan-Entwurf Suhl-Nord und die Übersichtskarte der Bebauungspläne als Text bzw. Bild ablegt.
+  Oder Falko öffnet die Seite https://www.suhl.eu/planen-bauen-wohnen und lädt diese sechs Dateien von Hand.
 - Für Szenarien je Stadtteil reichen die 17 statistischen Stadtteile der Stadt (siehe `stadt.md`) – dieselbe Gliederung nutzen
   Sozialplan und Jugendatlas.
 
@@ -275,6 +305,16 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
   https://www.leg-thueringen.de/en/news/three-project-partners-for-suhl-north-sign-a-declaration-of-intent-for-the-transformation-of-the-district/
 - **[Nordkurier 2026]** Nordkurier, 10.2.2026.
   https://www.nordkurier.de/panorama/ddr-vorzeigeobjekt-suhl-nord-geistersiedlung-wohnungsmangel-plattenbau-thueringer-wald-sozialismus-4329674
+- **[Suhl-Planen]** Stadt Suhl, Seite „Planen, Bauen und Wohnen“ (gelesen 12.11.2026). https://www.suhl.eu/planen-bauen-wohnen
+- **[iST 3/2026]** inSüdthüringen, 13.3.2026.
+  https://www.insuedthueringen.de/inhalt.suhl-auf-weg-zur-klimaneutralitaet-waerme-klimaneutral-aber-bezahlbar.18e2417d-0fed-42a0-bb23-c2626ca7f87b.html
+- **[iST 8/2024]** inSüdthüringen, 21.8.2024.
+  https://www.insuedthueringen.de/inhalt.energieversorgung-klimaneutrale-waermeversorgung-als-ziel.3d32488f-6717-43fc-9c47-e8e6b1e120a8.html
+- **[iST 1/2026]** inSüdthüringen, 19.1.2026.
+  https://www.insuedthueringen.de/inhalt.enregiewende-in-suhl-nahwaerme-statt-gastherme.a0926f81-0418-4a64-b052-ff6c96f25ca8.html
+- **[SWSZ 2022]** Stadtwerke Suhl/Zella-Mehlis: Wärmenetzstrategie 2040 (23.12.2022).
+  https://www.swsz.de/images/downloads/geschaeftskunden/fernwaerme/KonzeptFW2040.pdf
+- **[SWSZ-Fernwärme]** Stadtwerke Suhl/Zella-Mehlis, Seite Fernwärme (gelesen 12.11.2026). https://www.swsz.de/fernwaerme
 - **[Suhl-Bekanntm.]** Stadt Suhl, Bekanntmachungen (gelesen 12.11.2026). https://www.suhl.eu/aktuelles/categories/bekanntmachungen
 - **[Suhl-Aktuell]** Stadt Suhl, Aktuelles (gelesen 12.11.2026). https://www.suhl.eu/aktuelles/categories/aktuelles
 - **[Suhl-Aktuell-3]** Stadt Suhl, Aktuelles, Seite 3 (gelesen 12.11.2026). https://www.suhl.eu/aktuelles/page/3

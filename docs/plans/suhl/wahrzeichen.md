@@ -141,7 +141,7 @@ Nur was in den Quellen steht. Farben und Details ohne Quelle müssen aus den Str
 | Z13 | Kreuzkirche | 50.60833, 10.69028; `w38807115` | 1731–39 | Barock, gelb, Turm mit Schweifhaube | ev. Kirche | ja | ja [WP-Kreuz]; OSM | [WP-Kreuz] |
 | Z14 | Kreuzkapelle „Zum Hl. Kreuz“ | 50.60819, 10.69055; `w1433085660` | 1555, Chor 1618 | gotische Kapelle | Kapelle | ja | nicht geprüft | [WP-Suhl] |
 | Z15 | Waffenmuseum im Malzhaus | 50.61023, 10.68947; `n10732305087` | 1663/1668; Museum 1971; saniert 2006–08 | massiver Sockel, Fachwerk, steiles Dach | Museum | ja | nicht geprüft | [WP-Waffenmuseum] |
-| Z16 | Herrenteich | 50.60967, 10.68965; `w30781507` | – | Teich | Mitte des DDR-Zentrums | – | – | [Bauwelt 2006], OSM |
+| Z16 | Herrenteich | 50.60967, 10.68965; `w30781507` | – | Teich mit Park; die Stadt hat einen Wettbewerb „Herrenteich Park“ durchgeführt (Ergebnis nicht gelesen) | Mitte des DDR-Zentrums | – | – | [Bauwelt 2006], [Suhl-Planen], OSM |
 | Z17 | Congress Centrum Suhl (CCS) | 50.61024, 10.68781; `w42871446` | 1969–72; Umbau bis 1995 | Rundhalle, Glas-Atrium, Parkhaus | Kongress, Konzerte, Tourist-Info | ja | nein (offen) | [WP-CCS], [Jahn 2017] |
 | Z18 | Fahrzeugmuseum im CCS | 50.61019, 10.68726; `n361133609` | seit 2007 | Ausstellung, 1 100 m² | Museum (Simson u. a.) | ja | – | [WP-CCS] |
 | Z19 | Ottilienbad | 50.61003, 10.68686; `w42871445` | Schwimmhalle der Stadthalle 1979/80 [Jahn 2017]; ob das heutige Bad derselbe Bau ist: **unsicher** | Hallenbad zwischen CCS und Hotel | Freizeit- und Wellnessbad der CCS GmbH | ja | – | [WP-CCS], [Jahn 2017] |
@@ -269,8 +269,8 @@ Z43 und Z44 liegen am Rand des 900-m-Kreises; sie stehen hier, weil sie zum Bild
 | F2 | Punkthochhäuser am Nordrand des Zentrums | siehe Z21 | 43–45 m (OSM) | Reihe vor dem Domberg-Hang, prägt die Silhouette | OSM, [Uske 2017] (Hochhäuser bestimmen das Stadtbild) |
 | F3 | Domberg mit Bismarckturm und Sendemast | 50.61705, 10.68577 | Gipfel 675 m; Turm 21 m | Hausberg direkt über dem Zentrum | [WP-Domberg] |
 | F4 | Ringberghaus auf dem Ringberg | 50.61685, 10.72297 | Gipfel 745 m | weithin sichtbarer Hotelriegel im Osten | [WP-Ringberg], [WP-Suhl] |
-| F5 | Talbrücke Haseltal (A 73) bei Heinrichs | 50.60106, 10.64345; `w211110670` | Fahrbahn rund 85 m über dem Tal | Autobahn quert das Tal hoch über Heinrichs und dem Simson-Gelände | [WP-Suhl], OSM |
-| F6 | Talbrücke Albrechtsgraben (A 71) | 50.60986, 10.63462; `w754345237` | offen | Autobahnbrücke bei Albrechts, nahe dem Dreieck Suhl | OSM |
+| F5 | Talbrücke Haseltal (A 73) bei Heinrichs | 50.60106, 10.64345; `w211110670` | 845 m lang, bis 82 m über dem Tal (85 m laut [WP-Suhl]); größte Stützweite 175 m; fertig 2006 | Stahl-Beton-Verbundbrücke mit acht Feldern; quert das Tal hoch über Heinrichs und dem Simson-Gelände | [Structurae-Hasel], [WP-Suhl], OSM |
+| F6 | Talbrücke Albrechtsgraben (A 71) | 50.60986, 10.63462; `w754345237` | 770 m lang, bis 74 m über dem Tal; Bogen 156,5 m; fertig 2002 | Bogenbrücke aus Stahlbeton mit aufgeständerter Fahrbahn, bei Albrechts nahe dem Dreieck Suhl | [Structurae-Albrecht], OSM |
 | F7 | Tunnel Berg Bock (A 71) | 50.63087, 10.66998; `w4605247` | – | Tunnelportale nordwestlich der Stadt | OSM |
 | F8 | Sender Suhl-Erleshügel | 50.61241, 10.74503; `w141460687` | Mast 69 m (OSM) | Sendeturm auf dem Höhenzug im Osten (schon Gebiet Schleusingen/St. Kilian) | OSM |
 | F9 | Kamm des Thüringer Waldes: Großer Beerberg, Schneekopf | 50.65847, 10.74340 / 50.66613, 10.76406 | 983 m / 978 m | Horizont im Nordosten; gehören seit 2019 zum Stadtgebiet | [WP-Suhl], OSM |
@@ -360,6 +360,9 @@ Z43 und Z44 liegen am Rand des 900-m-Kreises; sie stehen hier, weil sie zum Bild
 - **[Carthalia-Kulturhaus]** https://andreas-praefcke.de/carthalia/germany/suhl_kulturhaus.htm
 - **[Carthalia-Stadthalle]** https://andreas-praefcke.de/carthalia/germany/suhl_stadthalle.htm
 - **[Wikivoyage]** https://de.wikivoyage.org/wiki/Suhl
+- **[Structurae-Hasel]** https://structurae.net/structures/haseltalbrucke-2006
+- **[Structurae-Albrecht]** https://structurae.net/structures/albrechtsgraben-viaduct
+- **[Suhl-Planen]** Stadt Suhl, Seite „Planen, Bauen und Wohnen“ (gelesen 12.11.2026). https://www.suhl.eu/planen-bauen-wohnen
 - **[Suhl-Bekanntm.]** Bekanntmachungen der Stadt Suhl: https://www.suhl.eu/aktuelles/categories/bekanntmachungen (gelesen 12.11.2026).
 - **[Nordkurier 2026]** Nordkurier, 10.2.2026, zu Suhl-Nord:
   https://www.nordkurier.de/panorama/ddr-vorzeigeobjekt-suhl-nord-geistersiedlung-wohnungsmangel-plattenbau-thueringer-wald-sozialismus-4329674
