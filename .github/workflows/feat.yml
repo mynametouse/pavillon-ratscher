@@ -1,7 +1,9 @@
 # Feature branches of the helper agents (feat/**, since 23.10.2026): the quick checks, smoke and the branch's own topic tests
 # (viz3/extra/<topic>/tests.txt, one 'name[:args]' per line as for viz3/test/run.py) on a build with the website as asset base (the preview if there
 # is one) plus the branch's extras (viz3/extra/*/dist). Screenshots and logs (out/) are kept as the artifact 'out' – the agents look at their
-# work there (gh run download), because the chat machine runs only one browser at a time. Nothing is published from here.
+# work there (gh run download -n out), because the chat machine runs only one browser at a time. Nothing is published from here.
+# Since 12.11.2026 every test runs as its own job side by side (one after another they took ~30 min; a new push cancels a running
+# round, so a slow round was often lost) – the job 'out' puts all their pictures and logs into the one artifact 'out' as before.
 name: Feature
 
 on:
@@ -17,10 +19,45 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Prüfen und Bilder
+  liste:
+    name: Tests finden
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 5
+    outputs:
+      m: ${{ steps.l.outputs.m }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: viz3/extra
+      - id: l
+        env:
+          B: ${{ github.ref_name }}
+        run: |
+          # only this branch's topic (since the agents merge src, every topic's tests.txt is here); the topics run side by side on src
+          # (Prüfpaket). Branch feat/<name> → viz3/extra/<topic>/tests.txt, one 'name[:args]' per line; smoke always, with the quick checks
+          python3 - >> "$GITHUB_OUTPUT" <<'EOF'
+          import glob, json, os, re
+          b = os.environ['B'].split('feat/', 1)[-1]
+          top = {'dorf-leben': 'dorf', 'dorf': 'dorf', 'ortsvorsteher': 'amt'}.get(b, b)
+          f = 'viz3/extra/%s/tests.txt' % top
+          files = [f] if os.path.exists(f) else sorted(glob.glob('viz3/extra/*/tests.txt'))
+          tests = ['smoke']
+          for f in files:
+              for ln in open(f):
+                  for t in ln.split('#', 1)[0].split():
+                      if t not in tests: tests.append(t)
+          inc = [{'key': re.sub(r'[^A-Za-z0-9_-]+', '-', t).strip('-')[:40], 'test': t, 'check': i == 0} for i, t in enumerate(tests)]
+          print('m=' + json.dumps({'include': inc}))
+          EOF
+
+  test:
+    name: ${{ matrix.key }}
+    needs: liste
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.liste.outputs.m) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,22 +87,34 @@ jobs:
           pip install playwright
           timeout 300 python -m playwright install --with-deps chromium || python -m playwright install chromium
       - name: Schnellprüfung (Bauen, Lint, Format, Abhängigkeiten, Einheitentests, Typen)
+        if: matrix.check
         run: bash tools/check.sh
       - name: Bauen wie veröffentlicht
         run: python viz3/build.py --fast --min
-      - name: Browser-Tests (smoke und die Tests des eigenen Themas)
-        run: |
-          # only this branch's topic (since the agents merge src, every topic's tests.txt is here – all of them one after another took
-          # ~70 min); the topics run side by side on src (Prüfpaket). Branch feat/<name> → viz3/extra/<topic>/tests.txt
-          B=${GITHUB_REF_NAME#feat/}
-          case "$B" in dorf-leben|dorf) TOP=dorf ;; ortsvorsteher) TOP=amt ;; *) TOP=$B ;; esac
-          F=viz3/extra/$TOP/tests.txt
-          if [ -f "$F" ]; then T=$(grep -v '^\s*#' "$F" | xargs); else T=$(cat viz3/extra/*/tests.txt 2>/dev/null | grep -v '^\s*#' | xargs); fi
-          echo "Thema $TOP – Tests: smoke $T"
-          python viz3/test/run.py --serve smoke $T
+      - name: Test ${{ matrix.test }}
+        run: python viz3/test/run.py --serve '${{ matrix.test }}'
       - name: Bilder und Protokolle aufheben
         if: always()
         uses: actions/upload-artifact@v4
+        with:
+          name: out-${{ matrix.key }}
+          path: out/
+          if-no-files-found: ignore
+          retention-days: 1
+
+  out:
+    name: Bilder und Protokolle (ein Artefakt 'out')
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: out-*
+          path: out
+          merge-multiple: true
+      - uses: actions/upload-artifact@v4
         with:
           name: out
           path: out/
