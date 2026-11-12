@@ -34,8 +34,8 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
   Rückbau, Umbau und Umnutzung dieser Quartiere bleiben die Hauptaufgabe [UmbauStadt]. Im März 2023 gab es ein Bürgerforum im
   Oberrathaussaal mit 37 Teilnehmern; die Fortschreibung hat über 200 Seiten und ist Grundlage für Städtebau-Fördermittel
   [iST 3/2023]. Der Sozialplan 2025–2029 nennt „ISEK (2023)“ als Quelle seiner Stadtkarte [Sozialplan 2025–29].
-  Ein Datum des Ratsbeschlusses habe ich nicht gefunden – **offen**. Die Stadt stellt das ISEK auf ihrer Seite „Planen, Bauen
-  und Wohnen“ als PDF bereit
+  Ein Datum des Ratsbeschlusses habe ich nicht gefunden – **offen**.
+- **Wo es liegt:** Die Stadt stellt das ISEK auf ihrer Seite „Planen, Bauen und Wohnen“ als PDF bereit
   (`https://www.suhl.eu/_files/ugd/1b847c_d56044f1e272446da05a48888ad71b5b.pdf`) [Suhl-Planen]. Den Text selbst konnte ich
   **nicht lesen** (Abruf von hier gesperrt). Älter: das Konzept „Suhl 2025“ mit dem geplanten Rückbau nicht mehr gebrauchter
   Wohnblöcke [Uske 2017].
@@ -333,9 +333,11 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
    vermutlich die Vorlagen zu Suhl-Nord, Nahverkehr und Wärmeplan – ein Mensch kann sie lesen.
 3. **Hochwasserschutz-Konzept, Forstzahlen, Tourismuszahlen** für die Stadt selbst – nichts gefunden. Beim Wärmeplan fehlen
    die Karte (Gebietstypen je Quartier) und der Stand des Ratsbeschlusses.
-4. **Nachnutzung Friedberg** – nichts gefunden; ein Bericht vom 11.9.2026 liegt hinter einer Bezahlschranke.
+4. **Nachnutzung Friedberg** – nichts gefunden; der Bericht der Berliner Zeitung vom 11.9.2026 war nur im Anriss lesbar, ein
+   Bericht von inSüdthüringen („Erstaufnahme in Suhl besteht nur noch ein Jahr“) gar nicht.
 5. **Windgebiete bei Suhl** – nur aus zweiter Hand (Bürgerinitiative); amtliche Prüfbögen und Karte nicht gelesen.
-6. Presse aus der Region (inSüdthüringen/Freies Wort, MDR) konnte ich nur über Zusammenfassungen lesen.
+6. Den MDR-Beitrag zum Simson-Werk (9.12.2025) und den inSüdthüringen-Bericht zur Sanierung (30.4.2026) konnte ich nur über
+   Zusammenfassungen lesen.
 
 ## Für den Suhl-Chat
 
