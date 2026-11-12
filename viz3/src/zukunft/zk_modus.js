@@ -134,7 +134,7 @@ export const ZUKUNFT = (() => {
       'Dach-Photovoltaik im Dorf',
       'energie',
       'dach',
-      'Auf einem Süddach bringt ein Kilowatt Modulleistung bei Ratscher rund 1000 kWh im Jahr; Ost- und Westdächer etwa 85 %. Entscheidend ist, wie viel man selbst verbraucht: Eigenstrom spart etwa 32 Cent je kWh, Einspeisung bringt etwa 8 Cent.',
+      'Auf einem Süddach bringt ein Kilowatt Modulleistung bei Ratscher rund 1000 kWh im Jahr (PVGIS: 1 011 kWh bei 35° nach Süden); Ost- und Westdächer etwa 820 kWh. Entscheidend ist, wie viel man selbst verbraucht: Eigenstrom spart etwa 32 Cent je kWh, Einspeisung bringt etwa 8 Cent.',
       'Die geeigneten Dachflächen im Modell sind aus den 3D-Dächern gezählt: Neigung, Ausrichtung, Größe, Randabstand.',
       [Z.SRC.pvgis, Z.SRC.ise, Z.SRC.mastr],
     ],

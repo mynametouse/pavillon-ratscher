@@ -55,7 +55,7 @@ export const ZKDATA = (() => {
       'https://www.umweltbundesamt.de/themen/klima-energie/energieversorgung/strom-waermeversorgung-in-zahlen',
     ],
     pvgis: [
-      'PVGIS (Gemeinsame Forschungsstelle der EU): Ertrag bei Ratscher',
+      'PVGIS (Gemeinsame Forschungsstelle der EU, API v5_2, abgefragt 12.11.2026): Jahresertrag bei Ratscher (50,47° N, 10,78° O)',
       'https://re.jrc.ec.europa.eu/pvg_tools/de/',
     ],
     ise: [
@@ -88,6 +88,14 @@ export const ZKDATA = (() => {
     kostra: [
       'DWD: KOSTRA-DWD-2020 (Starkregenhöhen nach Dauer und Wiederkehrzeit)',
       'https://www.dwd.de/DE/leistungen/kostra_dwd_rasterwerte/kostra_dwd_rasterwerte.html',
+    ],
+    rekis: [
+      'ReKIS/TLUBN: Klima-Steckbrief Landkreis Hildburghausen (Projektion RCP8.5, Abweichung gegen 1961–1990)',
+      'https://rekisviewer.hydro.tu-dresden.de/viewer/rekis_domain/Klima_Steckbriefe/Thueringen/Landkreise/16069/000_GESAMT.pdf',
+    ],
+    waldbericht: [
+      'Waldbericht Thüringen 2025 (PEFC-Veröffentlichung): Borkenkäfer-Schadholz und Verjüngung',
+      'https://www.pefc.de/media/filer_public/56/2a/562a9da2-dca5-4956-a063-7bbbd91ca007/waldbericht_thuringen_2025.pdf',
     ],
     klimaatlas: [
       'DWD: Klimaatlas Deutschland (Projektionen, Südthüringen)',
@@ -149,7 +157,11 @@ export const ZKDATA = (() => {
   const EF_KLEIN = [0.3, 0.27, 0.2, 0.06, 0.02]; // minibus of a Rufbus
   const PRICE_ROOF = [1300, 1150, 1000, 850, 800]; // € per kWp small roof system (ISE 2024: 700–2000, small roofs about 1300); later steps Annahme
   const PRICE_FIELD = [700, 620, 560, 480, 450]; // € per kWp ground-mounted (ISE: below 460 by 2045)
-  const KWH_KWP = 1000; // Ratscher, 30° south, losses included (PVGIS; same as the Entdeckerbuch „Strom von der Sonne“)
+  // PVGIS-SARAH (JRC API v5_2, 12.11.2026, lat 50.47 lon 10.78, 456 m, losses 14 %): kWh a year per kWp – south 35°: 1011, south 20°: 980, south 12°
+  // (flat-roof racks): 945, east or west 35°: 815–825. Roofs of the village: a mix of south, east/west and flat roofs (Annahme: about 900, range 815–1010).
+  const KWH_ROOF = 900;
+  const KWH_FIELD = 980; // field tables, 20° to the south
+  const KWH_KWP = KWH_ROOF;
   const EF_PKW_TXT =
     'Auto: 150 g CO₂ je km heute (UBA, Durchschnitt aller Pkw), später weniger, weil mehr Elektroautos fahren (Annahme)';
   // ---------- topics and their variants ----------
@@ -300,7 +312,7 @@ export const ZKDATA = (() => {
     'mobil/ruf': [
       ['katrin', 2, 'Mit zwei Kindern und ohne zweites Auto wäre das ein Segen – auch abends.'],
       ['ingrid', 1, 'Ich bin dafür, wenn der Landkreis zahlt. Alleine trägt das kein Ortsteil.'],
-      ['uwe', -1, 'Sechzigtausend Euro im Jahr für ein Dorf mit 120 Leuten? Das ist viel Steuergeld.'],
+      ['uwe', -1, 'Gut sechzigtausend Euro im Jahr für ein Dorf mit 120 Leuten? Das ist viel Steuergeld.'],
       ['jens', 0, 'Technisch kein Problem. Ob es einer nutzt, weiß ich nicht.'],
     ],
     'mobil/takt': [
@@ -328,9 +340,13 @@ export const ZKDATA = (() => {
       ['hubert', -1, 'Die Wärmepumpe der Nachbarn brummt nachts. Ich hab’s im Schlafzimmer gehört.'],
     ],
     'klima/regen': [
-      ['manfred', -2, 'Beim letzten Gewitter standen drei Keller unter Wasser. Wir waren die ganze Nacht draußen.'],
+      [
+        'manfred',
+        -2,
+        'Bei so einem Regen müssen wir als Wehr raus, und die Keller am Hang laufen voll. Das kennen wir von anderen Orten.',
+      ],
       ['ingrid', -1, 'Das Dorf liegt am Hang. Das Wasser sucht sich seinen Weg durch die Straße.'],
-      ['katrin', -1, 'Die Kinder gehen durch die Unterführung zum Bus – bei Starkregen unmöglich.'],
+      ['katrin', -1, 'Wenn die Straße zum Bach wird, kommt der Schulbus nicht durch, und die Kinder stehen im Nassen.'],
     ],
     'klima/vorsorge': [
       ['manfred', 2, 'Mulden und ein größerer Durchlass – genau das, was wir der Stadt seit Jahren sagen.'],
@@ -347,8 +363,16 @@ export const ZKDATA = (() => {
       ['gerhard', 0, 'Wir wissen, wo das Wasser hinläuft. Ein Pegelstand am Dorfeingang wäre schon eine Hilfe.'],
     ],
     'klima/hoch': [
-      ['manfred', -2, 'Dezember 2023: die Schleuse war schon einen halben Meter vor der Brücke. Mehr geht nicht.'],
-      ['gerhard', -1, 'In der Dorfchronik steht ein Hochwasser von 1909. Das Wasser vergisst nichts.'],
+      [
+        'manfred',
+        -2,
+        'Dezember 2023 hat uns gezeigt, wie schnell die Schleuse steigt. Wenn die Talsperre nicht mehr reicht, wird es ernst.',
+      ],
+      [
+        'gerhard',
+        -1,
+        'Ich habe in der Dorfchronik nachgelesen: Hochwasser gab es immer wieder. Das Wasser vergisst nichts.',
+      ],
       ['uwe', -1, 'Meine Wiese steht dann zwei Wochen unter Wasser.'],
     ],
     'klima/duerre': [
@@ -358,7 +382,11 @@ export const ZKDATA = (() => {
     ],
     'wald/natur': [
       ['ronald', 2, 'Soll die Natur es machen. Birken, Eberesche, und der Rotmilan hat freie Sicht.'],
-      ['wolfgang', -1, 'Das sieht lange wild aus, und ich habe keinen Wald mit Holz, wenn es so weitergeht.'],
+      [
+        'wolfgang',
+        -1,
+        'Das sieht lange wild aus, und für Nutzholz wird es dauern. Wer vom Wald leben will, hat davon wenig.',
+      ],
       ['gerhard', 0, 'Mein Großvater hat die Fichten noch gepflanzt. Man kann nicht ewig nachtrauern.'],
     ],
     'wald/umbau': [
@@ -469,7 +497,7 @@ export const ZKDATA = (() => {
     if (vid === 'dach') {
       const share = at([0, 0.25, 0.5, 0.8, 0.8], y),
         kwp = c.roof.kwp * share,
-        kwh = kwp * KWH_KWP,
+        kwh = kwp * KWH_ROOF,
         inv = kwp * PRICE_ROOF[i];
       res.kosten = { inv: [inv * 0.7, inv, inv * 1.4], yr: [inv * 0.012, inv * 0.015, inv * 0.02] };
       res.kwp = kwp;
@@ -481,7 +509,7 @@ export const ZKDATA = (() => {
     } else if (vid === 'park') {
       const share = at([0, 1, 1, 1, 1], y),
         kwp = c.field.kwp * share,
-        kwh = kwp * KWH_KWP,
+        kwh = kwp * KWH_FIELD,
         inv = kwp * PRICE_FIELD[Math.max(1, i)];
       const pacht = c.field.ha * 2500 * share,
         om = kwp * 12 * (share ? 1 : 0);
@@ -715,11 +743,11 @@ export const ZKDATA = (() => {
       return W(
         'Der Regen: etwa 50 mm in einer Stunde, wie er einmal in 100 Jahren fällt (KOSTRA-DWD-2020; Annahme für Ratscher). Schaden Annahme: 12 Keller und Erdgeschosse × 12 000 € und 40 000 € Wege. Erwartet im Jahr: ein 20-jähriges Ereignis mit 30 % des Schadens plus das 100-jährige, mal ' +
           dec(at([1, 1.05, 1.1, 1.25, 1.5], y), 2) +
-          ' (mehr starke Regen mit der Wärme, etwa +7 % Regenmenge je Grad).' +
+          ' (mehr starke Regen mit der Wärme, etwa +7 % Regenmenge je Grad; die Projektion für den Landkreis Hildburghausen sieht Starkregentage von 35 im Jahr (1961–1990) auf etwa 37–39 – im Mittel kaum mehr, die einzelnen Regen werden aber stärker).' +
           (v === 'vorsorge'
             ? ' Vorsorge: zwei Rückhaltemulden, größerer Durchlass, Schutz an den Häusern: 80 000–180 000 € (Annahme); sie senkt den Schaden um etwa 60 %.'
             : ''),
-        [SRC.kostra, SRC.klimaatlas],
+        [SRC.kostra, SRC.rekis, SRC.klimaatlas],
         true
       );
     if (t === 'klima' && v === 'dez23')
@@ -736,8 +764,8 @@ export const ZKDATA = (() => {
       );
     if (t === 'klima' && v === 'duerre')
       return W(
-        'Annahme: 110 ha Acker und Grünland, 20 % weniger Ertrag bei 1 000 € je Hektar, dazu Wasser für die Gärten: 24 000 € in einem Dürresommer. Die Wahrscheinlichkeit pro Jahr steigt von 15 % auf 45 % (Annahme nach den Projektionen des DWD-Klimaatlas für Südthüringen).',
-        [SRC.klimaatlas],
+        'Annahme: 110 ha Acker und Grünland, 20 % weniger Ertrag bei 1 000 € je Hektar, dazu Wasser für die Gärten: 24 000 € in einem Dürresommer. Die Wahrscheinlichkeit pro Jahr steigt von 15 % auf 45 % (Annahme, abgeleitet aus den Projektionen für den Landkreis Hildburghausen, Szenario RCP8.5 ohne Klimaschutz: Sommerniederschlag −6 % bis 2021–2050 und −19 % bis 2071–2100 gegen 1961–1990 (221 mm); Heiße Tage von 1 auf etwa 7 (bis 2050) und etwa 27 (bis 2100) im Jahr; Mitteltemperatur +1,9 K bzw. +4,5 K). Der Anteil an Dürresommern selbst ist nicht veröffentlicht – das ist die Annahme.',
+        [SRC.rekis, SRC.klimaatlas],
         true
       );
     if (t === 'wald')
@@ -750,8 +778,8 @@ export const ZKDATA = (() => {
           (v === 'umbau'
             ? 'Waldumbau: Pflanzung etwa 3 000 Pflanzen je Hektar, Schutz gegen Wild und Pflege: 6 000–13 000 € je Hektar (Annahme; die Förderung des Landes ist möglich, ihre Höhe nicht geprüft), Pflege 150 €/ha im Jahr.'
             : 'Natürliche Verjüngung: nur Räumung, Wegesicherung und Kontrolle, 400–1 500 €/ha (Annahme).') +
-          ' Der Erlös aus Käferholz ist nicht eingerechnet (der Preis schwankt stark).',
-        [SRC.forst, SRC.waldwissen],
+          ' Der Erlös aus Käferholz ist nicht eingerechnet (der Preis schwankt stark). Hintergrund: in Thüringen fielen 2022 bis 2024 jeweils über 5 Mio. Festmeter Schadholz an, vornehmlich Fichte; auf großen Kahlflächen fehlen Samenbäume, deshalb spielt die Pflanzung eine große Rolle (Waldbericht Thüringen 2025, S. 22 und 40). Die Zahlen für die Fläche an der Klinge sind Annahmen, nicht gemessen.',
+        [SRC.forst, SRC.waldwissen, SRC.waldbericht],
         true
       );
     return W('Annahme.', [], true);
@@ -806,8 +834,10 @@ export const ZKDATA = (() => {
         'Strom: ' +
           Math.round(r.kwh / 1000) +
           ' MWh im Jahr (' +
-          KWH_KWP +
-          ' kWh je kWp nach PVGIS) ersetzt Strom aus dem Netz. Der Strommix stößt heute etwa 0,38 kg CO₂ je kWh aus (UBA), Annahme für später: ' +
+          (v === 'park' ? KWH_FIELD : KWH_ROOF) +
+          ' kWh je kWp und Jahr nach PVGIS für Ratscher: Süd 35° 1 011, Süd 20° 980, Ost oder West 35° etwa 820; Dächer im Dorf gemischt, deshalb ' +
+          (v === 'park' ? 'Tische nach Süden' : 'Annahme 900, Spanne 815–1 010') +
+          ') ersetzt Strom aus dem Netz. Der Strommix stößt heute etwa 0,38 kg CO₂ je kWh aus (UBA), Annahme für später: ' +
           dec(EF_GRID[i], 2) +
           ' kg im Jahr ' +
           y +
