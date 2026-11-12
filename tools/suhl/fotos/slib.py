@@ -168,3 +168,42 @@ def angdiff(a, b):
 def bearing(x0, y0, x1, y1):
     """Compass direction from point 0 to point 1 (0 = north, 90 = east) in local metres."""
     return math.degrees(math.atan2(x1 - x0, y1 - y0)) % 360
+
+
+def add_course(photos):
+    """Direction of travel of every picture from its neighbour in the sequence (3-60 m away), and the best estimate of the
+    viewing direction: 'blick'. Per author and camera the stored headings are compared with the direction of travel: if they keep
+    a fixed angle to it (a camera fixed in the car - forward, or to the side), the stored heading is used; if they scatter
+    (a phone compass in a car), the direction of travel is used instead - those cameras look forward through the windscreen
+    (checked on the contact sheets). Returns the numbers per author and camera."""
+    import collections
+    seqs = collections.defaultdict(list)
+    for p in photos:
+        p['heading_fahrt'] = None
+        if p.get('seq'): seqs[p['seq']].append(p)
+    for ps in seqs.values():
+        ps.sort(key=lambda p: (p.get('rank') or 0))
+        for i, p in enumerate(ps):
+            ax, ay = xy(p['lat'], p['lon'])
+            for j in (i + 1, i - 1):
+                if not 0 <= j < len(ps): continue
+                bx, by = xy(ps[j]['lat'], ps[j]['lon'])
+                if 3 <= math.hypot(bx - ax, by - ay) <= 60:
+                    p['heading_fahrt'] = round(bearing(ax, ay, bx, by) if j > i else bearing(bx, by, ax, ay), 1); break
+    groups = collections.defaultdict(list)
+    for p in photos:
+        if p.get('heading') is not None and p['heading_fahrt'] is not None: groups[(p.get('author'), p.get('camera'))].append(math.radians(p['heading'] - p['heading_fahrt']))
+    stats = {}
+    for k, ds in groups.items():
+        c, s = sum(math.cos(d) for d in ds), sum(math.sin(d) for d in ds)
+        dev = sorted(abs((math.degrees(d) + 180) % 360 - 180) for d in ds)
+        stats[k] = dict(paare=len(ds), R=round(math.hypot(c, s) / len(ds), 3), versatz_grad=round(math.degrees(math.atan2(s, c)), 1),
+                        median_abweichung_grad=round(dev[len(dev) // 2], 1), anteil_bis_20_grad=round(sum(1 for d in dev if d <= 20) / len(dev), 3))
+        stats[k]['fest_zur_fahrtrichtung'] = stats[k]['R'] >= 0.9
+    for p in photos:
+        st = stats.get((p.get('author'), p.get('camera')))
+        if st and not st['fest_zur_fahrtrichtung']:
+            if p['heading_fahrt'] is not None: p['blick'], p['blick_quelle'] = p['heading_fahrt'], 'fahrtrichtung'
+            else: p['blick'], p['blick_quelle'] = p.get('heading'), 'metadaten (unsicher)'
+        else: p['blick'], p['blick_quelle'] = p.get('heading'), 'metadaten'
+    return {f'{k[0]} / {k[1]}': v for k, v in stats.items()}

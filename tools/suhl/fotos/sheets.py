@@ -41,6 +41,8 @@ def main():
     cov = slib.load('abdeckung.json'); idx = slib.load('abdeckung_fotos.json.gz')
     byid = {p['id']: p for p in slib.load('panoramax.json.gz')['photos']}
     for p in byid.values(): p['x'], p['y'] = slib.xy(p['lat'], p['lon'])
+    slib.add_course(list(byid.values()))
+    for p in byid.values(): p['stored'], p['heading'] = p['heading'], p['blick'] if p['blick'] is not None else p['heading']   # from here on 'heading' is the best estimate
     ids = idx['photos']
     groups = []
     for s in idx['strassen']:
@@ -67,7 +69,8 @@ def main():
             cells = []
             for p in sel[k * 6:k * 6 + 6]:
                 im = sheetlib.fetch_image(p['url_small'], CACHE, pause=0.25)
-                l1 = f"{p['id'][:12]} · {g['title'].replace('Ort: ', '')} · Blick {sheetlib.wind16(p['heading'])} ({p['heading']:.0f}°)"
+                src = 'Fahrtrichtung' if p['blick_quelle'] == 'fahrtrichtung' else 'Kompass, unsicher' if 'unsicher' in p['blick_quelle'] else 'Metadaten'
+                l1 = f"{p['id'][:12]} · {g['title'].replace('Ort: ', '')} · Blick {sheetlib.wind16(p['heading'])} ({p['heading']:.0f}°, {src})"
                 l2 = f"{sheetlib.date_de(p['date'])} · {p['author']} · {p['license']} · {p['lat']:.5f}, {p['lon']:.5f} · Bildwinkel {p['fov'] or '?'}°"
                 cells.append((im, l1, l2)); used.add(p['id'])
             fn = f"{g['key']}_{k + 1}.jpg"

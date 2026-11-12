@@ -1,6 +1,6 @@
 {
  "version": 1,
- "made": "2026-11-12T23:32Z",
+ "made": "2026-11-12T23:35Z",
  "areas": "suhl-bestand",
  "quellen": {
   "panoramax": {
@@ -48,7 +48,49 @@
    "fetched": "2026-11-12T23:26Z",
    "where": "chat machine",
    "api": "https://api.panoramax.xyz/api/search",
-   "duplicates": 284
+   "duplicates": 284,
+   "heading_check": {
+    "R_A / Garmin VIRB Ultra 30": {
+     "paare": 380,
+     "R": 0.993,
+     "versatz_grad": 1.9,
+     "median_abweichung_grad": 5.8,
+     "anteil_bis_20_grad": 1.0,
+     "fest_zur_fahrtrichtung": true
+    },
+    "R_A / SONY HDR-AS200V": {
+     "paare": 393,
+     "R": 1.0,
+     "versatz_grad": -120.0,
+     "median_abweichung_grad": 120.0,
+     "anteil_bis_20_grad": 0.0,
+     "fest_zur_fahrtrichtung": true
+    },
+    "sixsixfive / Fairphone 6": {
+     "paare": 1474,
+     "R": 0.587,
+     "versatz_grad": 18.5,
+     "median_abweichung_grad": 40.0,
+     "anteil_bis_20_grad": 0.225,
+     "fest_zur_fahrtrichtung": false
+    },
+    "r_a / Garmin VIRB Ultra 30": {
+     "paare": 385,
+     "R": 1.0,
+     "versatz_grad": 0.0,
+     "median_abweichung_grad": 0.3,
+     "anteil_bis_20_grad": 1.0,
+     "fest_zur_fahrtrichtung": true
+    },
+    "cucu / samsung SM-A546B": {
+     "paare": 133,
+     "R": 0.551,
+     "versatz_grad": -61.7,
+     "median_abweichung_grad": 70.3,
+     "anteil_bis_20_grad": 0.06,
+     "fest_zur_fahrtrichtung": false
+    }
+   }
   }
  },
  "mapillary": "not asked: the Mapillary API needs an access token (an account); none was created"

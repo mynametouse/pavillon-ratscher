@@ -50,6 +50,7 @@ def load_photos():
         if key in seen: continue
         seen.add(key); out.append(p)
     for p in out: p['x'], p['y'] = slib.xy(p['lat'], p['lon'])
+    load_photos.course = slib.add_course(out)   # 'blick' = stored heading, or the direction of travel where the stored one scatters
     return out
 
 
@@ -118,14 +119,14 @@ def main():
                 p = photos[i]; dx, dy = p['x'] - x, p['y'] - y
                 if dx * dx + dy * dy > NEAR * NEAR: continue
                 got = True; ids.append(i)
-                if p['heading'] is None: continue
+                if p['blick'] is None: continue
                 along, off_l = dx * ax + dy * ay, dx * lx + dy * ly
                 if abs(along) > ALONG: continue
                 if p.get('pano'):
                     left = right = True
                 else:
-                    if slib.angdiff(p['heading'], nl) <= SIDE_ANGLE and off_l <= BEHIND: left = True
-                    if slib.angdiff(p['heading'], (br + 90) % 360) <= SIDE_ANGLE and -off_l <= BEHIND: right = True
+                    if slib.angdiff(p['blick'], nl) <= SIDE_ANGLE and off_l <= BEHIND: left = True
+                    if slib.angdiff(p['blick'], (br + 90) % 360) <= SIDE_ANGLE and -off_l <= BEHIND: right = True
             rec['s'].append((x, y, br, L, zen, got, left, right, ids))
         if rec['s']: ways.append(rec)
 
@@ -254,8 +255,8 @@ def main():
                 d = math.hypot(x - p['x'], y - p['y'])
                 if d > LOOK_R: continue
                 best = d if best is None else min(best, d)
-                if p['heading'] is None: continue
-                if p.get('pano') or d < 3 or slib.angdiff(slib.bearing(p['x'], p['y'], x, y), p['heading']) <= (p.get('fov') or 70) / 2: sees = True
+                if p['blick'] is None: continue
+                if p.get('pano') or d < 3 or slib.angdiff(slib.bearing(p['x'], p['y'], x, y), p['blick']) <= (p.get('fov') or 70) / 2: sees = True
             if best is None: continue
             n_near += 1
             if sees: n_look += 1; ids.append(p['id']); by_author[p['author']] += 1
@@ -302,6 +303,9 @@ def main():
                     street_photos='Panoramax (' + str(sum(1 for p in photos if p['source'] == 'panoramax')) + ' different pictures; pictures uploaded twice count once)' + (', KartaView (' + str(sum(1 for p in photos if p['source'] == 'kartaview')) + ')' if any(p['source'] == 'kartaview' for p in photos) else ''),
                     streets='OpenStreetMap ways with highway=' + '/'.join(sorted(ROAD)) + ' (klasse strasse) and ' + '/'.join(sorted(PATH)) + ' (klasse weg), with a name; ways of one name within 250 m are one street',
                     sides='seite_a/seite_b are named after the compass side of the street axis; rough for winding streets',
+                    viewing_direction='blick: the stored heading where it keeps a fixed angle to the direction of travel (camera fixed in the car), else the direction of travel '
+                                      '(phone compass headings scatter; those cameras look forward through the windscreen)',
+                    heading_check=getattr(load_photos, 'course', None),
                     quarter='nearest OSM place point (suburb, quarter, neighbourhood, village, hamlet) to the middle of the street'),
         summen=sums, viertel=viertel_sum, strassenklasse=hw_sum,
         zentrum_schlecht=[dict(name=s['label'], klasse=s['klasse'], highway=s['highway'], laenge_m=s['zentrum']['laenge_m'], anteil_foto=s['zentrum']['anteil_foto'],

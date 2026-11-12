@@ -35,7 +35,8 @@ if pm:
         if key in seen: q['dup_of'] = seen[key]
         else: seen[key] = p['id']
         photos.append(q)
-    info['panoramax'] = dict(fetched=pm['fetched'], where='chat machine', api=pm['api'], duplicates=sum(1 for q in photos if q.get('dup_of')))
+    info['panoramax'] = dict(fetched=pm['fetched'], where='chat machine', api=pm['api'], duplicates=sum(1 for q in photos if q.get('dup_of')),
+                             heading_check=slib.add_course([q for q in photos if q['source'] == 'panoramax']))
 co = try_load('commons.json.gz')
 if co:
     for p in co['photos']:
@@ -59,13 +60,13 @@ if ov:
 rows = []
 for p in photos:
     r = {k: p.get(k) for k in FIELDS}
-    for k in ('seq', 'rank', 'instance', 'camera', 'acc_m', 'dup_of', 'object', 'found_via', 'width', 'height'):
+    for k in ('heading_fahrt', 'blick', 'blick_quelle', 'seq', 'rank', 'instance', 'camera', 'acc_m', 'dup_of', 'object', 'found_via', 'width', 'height'):
         if p.get(k) is not None: r[k] = p[k]
     rows.append(r)
 slib.save('katalog_suhl.json.gz', dict(
     version=1, made=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), areas=areas.source,
     fields='id, source, gebiet (zentrum/kernstadt/stadt/umland, None = no position), lat/lon (WGS84), position (camera/object), heading (degrees, 0 = north), fov (degrees), '
-           'pano (360 degrees), date, author, license, nutzung (frei = CC0/CC BY/CC BY-SA/public domain; nur ansehen = NC, ND or unclear), page, url_small (about 500 px), url, url_large',
+           'heading_fahrt (direction of travel from the sequence), blick (best estimate of the viewing direction) with blick_quelle, pano (360 degrees), date, author, license, nutzung (frei = CC0/CC BY/CC BY-SA/public domain; nur ansehen = NC, ND or unclear), page, url_small (about 500 px), url, url_large',
     sources=info, photos=rows))
 
 
