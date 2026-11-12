@@ -15,12 +15,14 @@ Inhalt: 1 Maßstab · 2 Datenprodukte, Pipeline, Kacheln, Hosting · 3 Laufzeit 
 | Thema | Entscheidung des Entwurfs |
 |---|---|
 | Koordinaten | Das Modell-Koordinatensystem bleibt (Ursprung Garten). Suhl bekommt **keinen eigenen Welt-Ursprung**, aber jedes Suhl-Mesh einen **lokalen Ursprung je Kachel** (Abschnitt 1). |
-| Kachelung | Der vorhandene Quadtree von `tools/welt` (UTM 32N) für alles: Boden Stufen 7–12, Inhalte (Gebäude, Straßenraum, Bäume) in Kacheln der Stufe 10 (400 m), Fernmodelle in Stufe 8 (1,6 km). |
+| Kachelung | Der vorhandene Quadtree von `tools/welt` (UTM 32N) für alles: Boden Stufen 6–12, Inhalte (Gebäude, Straßenraum, Bäume) in Kacheln der Stufe 10 (400 m), Fernmodelle in Stufe 8 (1,6 km). |
 | Gebäude | Ein **Datensatz je Gebäude** (parametrisch, veränderbar), die Geometrie entsteht im Browser in einem Worker. Kein Photogrammetrie-Netz. |
-| Hosting | `gh-pages` ist mit 809 MB fast voll (Grenze 1 GB). Suhl braucht etwa 230–300 MB (Schätzung). Empfehlung: **eigenes Daten-Repo mit GitHub Pages** (gleiche Herkunft, kostenlos); Aufbau so, dass ein Umzug zu Cloudflare R2 nur die Basis-Adresse ändert. |
+| Hosting | `gh-pages` ist mit 809 MB fast voll (Grenze 1 GB). Suhl braucht etwa 240–330 MB (Schätzung). Empfehlung: **eigenes Daten-Repo mit GitHub Pages** (gleiche Herkunft, kostenlos); Aufbau so, dass ein Umzug zu Cloudflare R2 nur die Basis-Adresse ändert. |
 | Laden | Nichts beim Start. Ein kleines Modul meldet Zone, Sprungziele und Menü an; der eigentliche Code kommt als Paket bei Bedarf (`src/lazy/`). Vier Detailstufen nach Entfernung. |
 | Neue Shader | Höchstens 8 neue Programme für ganz Suhl, jedes höchstens 8 Texturen (Grenze des Tests `gpu`: 16). |
 | Kontrolle | Fotoabgleich (Modell vom Standpunkt eines Straßenfotos neben dem Foto) und Abgleich von oben gegen das Luftbild laufen in GitHub Actions und liefern Zahlen je Straße. |
+| Größte Lücke | **Fotos.** Im Zentrum zeigt ein freies Straßenfoto nur 11 % der Straßenseiten; Markt und Steinweg fast gar nicht (1.1). Ohne Falkos eigene Fotos bleibt die Fußgängerzone geschätzt. |
+| Was Falko entscheidet | Hosting (Daten-Repo oder R2), Landesdaten in der Reihenfolge Zentrum → Kernstadt → Rest, Fotos im Zentrum, Anspruch am Telefon, Zeitpunkt der Freigabe (8.2). |
 
 ## 1 Maßstab
 
@@ -97,8 +99,8 @@ liegen unter `tools/suhl/<paket>/` und importieren `tools/welt/*.py` und `tools/
 
 | Produkt | Quelle heute | Quelle, sobald Falkos Landesdaten da sind | Werkzeug, auf dem es aufbaut | Ergebnis (Kachel) |
 |---|---|---|---|---|
-| Gelände | Copernicus GLO-30 mit abgesenktem Wald (`tools/welt/dem.py` `CopGround`) | DGM1 (1 m) | `tools/welt/dem.py` `Dem`, `tools/welt/tiles.py` (Format WTH1: 101 × 101 Höhen in cm) | `t/{L}/{x}/{y}.bin`, Stufen 7–12 |
-| Luftbild | WMS `th_dop` (20 cm), Farbausgleich je Flugtag (`fetch.flight_dates`, `tiles.Harmonizer`) | dasselbe | `tools/welt/tiles.py` `ImagePyramid` | `i/{L}/{x}/{y}.webp` (512 px), Stufen 7–12; unter 3D-Gebäuden ohne gedruckte Dächer (wie `tools/welt-gebaeude/kacheln.py`) |
+| Gelände | Copernicus GLO-30 mit abgesenktem Wald (`tools/welt/dem.py` `CopGround`) | DGM1 (1 m) | `tools/welt/dem.py` `Dem`, `tools/welt/tiles.py` (Format WTH1: 101 × 101 Höhen in cm) | `t/{L}/{x}/{y}.bin`, Stufen 6–12 |
+| Luftbild | WMS `th_dop` (20 cm), Farbausgleich je Flugtag (`fetch.flight_dates`, `tiles.Harmonizer`) | dasselbe | `tools/welt/tiles.py` `ImagePyramid` | `i/{L}/{x}/{y}.webp` (512 px), Stufen 6–12; unter 3D-Gebäuden ohne gedruckte Dächer (wie `tools/welt-gebaeude/kacheln.py`) |
 | Gebäude | ETHOS.BUILDA (Grundriss, Höhe, LoD2-Kennung) + OSM (Name, Nutzung, Adresse) + Dachform geschätzt (`tools/welt-gebaeude/prep.py`) | LoD2 (echte Dachflächen, Dachart, Funktion) | `prep.py`, `lod2.py` (beschreibt den Tausch über die Gebäude-Kennung) | `g/10/{x}/{y}.json` – ein Datensatz je Gebäude (2.3) |
 | Dach-Aussehen | Luftbild 20 cm, je Dachfläche Klasse und Farbe; Detailbild 40 cm | dazu DOM1 für Gauben, Schornsteine, Aufbauten | neu (`tools/suhl/dach/`), Versatz wie `tools/welt-gebaeude/retusche.py` | in `g/…json` (Klasse, Farbe) und `da/10/{x}/{y}.webp` (Dach-Atlas) |
 | Straßenraum | OSM (Geofabrik-Auszug, osmium), Längsprofil auf dem Gelände | Profil und Querschnitt aus DGM1 | `tools/welt/roads.py` (`fit_axis`, `solve_profile`, `cross`, `ribbons`, `markings`, `metrics`) | `s/10/{x}/{y}.json` (Flächen, Kanten, Markierungen, Höhen) |
@@ -156,8 +158,8 @@ Ein Schema für alles: der Quadtree aus `tools/welt/wlib.py` (Wurzel 409,6 km be
 
 | Ordner | Stufe | Kachelgröße | Format | Größe je Kachel | Zahl (`kernstadt` / `stadt`) |
 |---|---|---|---|---|---|
-| `t/` Gelände | 7–12 | 3,2 km … 100 m | WTH1 (zlib) | Stufe 12: 2,4 kB, 11: 3,0 kB, 10: 4,7 kB (gemessen, Copernicus-glatt); mit DGM1 **Schätzung** × 2–3 | siehe 2.5 |
-| `i/` Luftbild | 7–12 | wie oben, 512 px | WebP (später KTX2, Werkzeug `tools/tex` gibt es) | Stufe 12: 17,7 kB, 11: 27 kB, 10: 30 kB (gemessen); ohne Dächer 22 kB | siehe 2.5 |
+| `t/` Gelände | 6–12 | 6,4 km … 100 m | WTH1 (zlib) | Stufe 12: 2,4 kB, 11: 3,0 kB, 10: 4,7 kB (gemessen, Copernicus-glatt); mit DGM1 **Schätzung** × 2–3 | siehe 2.5 |
+| `i/` Luftbild | 6–12 | wie oben, 512 px | WebP (später KTX2, Werkzeug `tools/tex` gibt es) | Stufe 12: 17,7 kB, 11: 27 kB, 10: 30 kB (gemessen); ohne Dächer 22 kB | siehe 2.5 |
 | `g/` Gebäude | 10 | 400 m | JSON (gzip auf dem Weg) | **Schätzung** 1,5–2,5 kB je Gebäude roh (heute 0,73 kB ohne die neuen Felder: 9,5 MB für 13 025 Gebäude) | 216 / ≤ 1 013 |
 | `da/` Dach-Atlas | 10 | 400 m | WebP 1024² (40 cm) | **Schätzung** 40–120 kB | 216 / nur bebaute |
 | `s/` Straßenraum | 10 | 400 m | JSON | **Schätzung** 20–150 kB | 216 / bebaute + Korridore |
@@ -191,18 +193,21 @@ Kachelgrößen gemessen auf `gh-pages` (GitHub-API, Baum `a54ba4f`, 13.11.): Tes
 | 9 | 1,6 m / 8 m | `stadt` | 279 | 8,9 MB | 2,1 MB |
 | 8 | 3,1 m / 16 m | `stadt` | 83 | 2,9 MB | 0,9 MB |
 | 7 | 6,3 m / 32 m | `stadt` + Rand | 25 | 1,4 MB | 0,3 MB |
-| **Summe** | | | **5 281 Kacheln, 10 562 Dateien** | **124 MB** | **18 MB** (mit DGM1 **Schätzung** 30–40 MB) |
+| 6 | 12,5 m / 64 m | `stadt` + Rand (**Annahme** 12 Kacheln à 49 kB / 16 kB wie im Testblock) | 12 | 0,6 MB | 0,2 MB |
+| 10 und 11 | – | die beiden Straßen-Korridore außerhalb der Gemeinde und außerhalb von Block B (13 der 35 Landes-Kacheln P4; **Annahme** 110 + 400 Kacheln) | 510 | 14,1 MB | 1,7 MB |
+| **Summe** | | | **etwa 5 800 Kacheln, 11 600 Dateien** | **139 MB** | **20 MB** (mit DGM1 **Schätzung** 32–42 MB) |
 
-Zum Vergleich: die ganze `stadt` bis Stufe 12 wären 408 MB Bild und 39 920 Dateien – nicht sinnvoll, der größte Teil ist Wald.
+Zum Vergleich: die ganze `stadt` bis Stufe 12 wären 408 MB Bild und 39 920 Dateien – nicht sinnvoll, der größte Teil ist Wald. Von den
+193 Landes-Kacheln der Gemeinde haben 57 kein einziges OSM-Gebäude (`kacheln.json`, `P3_ohne_osm_gebaeude`).
 
 | Posten | Größe | Art |
 |---|---|---|
-| Boden (oben) | 145–165 MB | gemessene Größen, DGM1-Anteil geschätzt |
+| Boden (oben) | 160–180 MB | gemessene Größen, DGM1-Anteil geschätzt |
 | Gebäude-Datensätze | 45–80 MB | Schätzung (30 000 Gebäude × 1,5–2,5 kB) |
 | Straßenraum, Möbel, Bäume | 15–30 MB | Schätzung |
 | Dach-Atlas | 10–25 MB | Schätzung |
 | Fernmodelle | 8–15 MB | Schätzung |
-| **Suhl gesamt, eine Version** | **etwa 230–300 MB** | Schätzung; Stufe 2 misst es am ersten Lauf |
+| **Suhl gesamt, eine Version** | **etwa 240–330 MB** | Schätzung; Stufe 2 misst es am ersten Lauf |
 
 Rechenzeit (Anhalt): der Block Veßra (4 359 Dateien, 71,8 MB) brauchte 273 s (`docs/features/vessra.md`, Lauf 39918421150). Der
 Suhl-Boden hat gut doppelt so viele Dateien; dazu DGM1 in Blöcken. **Schätzung** 20–40 Minuten je Lauf, gut innerhalb der Grenze
@@ -225,9 +230,9 @@ ein Deployment darf höchstens 10 Minuten dauern. Es bleiben also **190 MB** –
 
 | Weg | Platz | Kosten | Was Falko tun muss | Technik | Urteil |
 |---|---|---|---|---|---|
-| A. Suhl auf `gh-pages` dieses Repos | 190 MB frei | 0 | nichts | wie Veßra | **reicht nicht** (230–300 MB), und jeder MB unter `viz3/extra/*/dist` läge doppelt (Website + Vorschau) |
+| A. Suhl auf `gh-pages` dieses Repos | 190 MB frei | 0 | nichts | wie Veßra | **reicht nicht** (240–330 MB), und jeder MB unter `viz3/extra/*/dist` läge doppelt (Website + Vorschau) |
 | B. Eigenes Daten-Repo mit GitHub Pages, z. B. `mynametouse/pavillon-ratscher-welt` | 1 GB | 0 | Repo anlegen, Pages einschalten, es dem Suhl-Chat freigeben | gleiche Herkunft `mynametouse.github.io` → kein CORS, keine Änderung an Sicherheitsregeln; Workflows im Daten-Repo holen die Werkzeuge aus dem öffentlichen Haupt-Repo und veröffentlichen mit dem eigenen `GITHUB_TOKEN` (kein Geheimnis nötig); Ordner-weise Commits wie `welt-vessra.yml` | **Empfehlung für Stufe 2 und 3** – reicht für Suhl in 2–3 Versionen |
-| C. Cloudflare R2 | 10 GB frei, danach 0,015 $ je GB und Monat; Abruf kostenlos (Quelle: https://developers.cloudflare.com/r2/pricing/, gelesen 13.11.2026) | 0 bis 10 GB | Konto, Bucket, Zugangsschlüssel als Actions-Geheimnis, öffentliche Adresse (für Dauerbetrieb eine eigene Domain – **Annahme**, bei Einrichtung prüfen), CORS-Regel für `mynametouse.github.io` | Dateien einzeln abgleichen (`rclone`/S3), keine git-Geschichte | **Ziel, sobald Erfurt oder Berlin dazukommen** (eine Stadt wie Suhl ≈ 0,25–0,3 GB; mehrere passen nicht mehr in B) |
+| C. Cloudflare R2 | 10 GB frei, danach 0,015 $ je GB und Monat; Abruf kostenlos (Quelle: https://developers.cloudflare.com/r2/pricing/, gelesen 13.11.2026) | 0 bis 10 GB | Konto, Bucket, Zugangsschlüssel als Actions-Geheimnis, öffentliche Adresse (für Dauerbetrieb eine eigene Domain – **Annahme**, bei Einrichtung prüfen), CORS-Regel für `mynametouse.github.io` | Dateien einzeln abgleichen (`rclone`/S3), keine git-Geschichte | **Ziel, sobald Erfurt oder Berlin dazukommen** (eine Stadt wie Suhl ≈ 0,25–0,33 GB; mehrere passen nicht mehr in B) |
 
 Damit B → C später nur eine Zeile ist: die App kennt genau **eine** Basis-Adresse für Suhl-Daten (`SUHL.BASE`, überschreibbar mit
 `?suhl=<url>` wie `?welt=` in `welt/welt.js`); die Dateien sind schlichte statische Dateien ohne Server-Logik. Tests kopieren die
@@ -258,17 +263,24 @@ Nebenbefund für den Kern-Chat, nicht Teil von Suhl: `vorschau/` und alter Besta
 
 | Teil | Datei (neu) | Wann geladen | Inhalt |
 |---|---|---|---|
-| Anmeldung | `viz3/src/welt/suhl.js` (im Bündel, klein – Ziel < 200 Zeilen) | beim Start | `KERN.zone({ id: 'suhl', x: -4698, y: 12256, near: 9000, far: 10500, keep: 60 })`, `KERN.spot`, `KERN.scenario`, Vertrag `SUHL.*` als Hülle, die bis zum Laden wartet. **Kein Netzabruf.** |
-| Kern | `viz3/src/lazy/suhl.js` | wenn die Zone baut (9 km vor der Mitte, also rund 3 km vor der Gemeindegrenze im Süden) | Index, Streamer, Detailstufen, Materialien, Anbieter für `KERN` |
+| Anmeldung | `viz3/src/welt/suhl.js` (im Bündel, klein – Ziel < 200 Zeilen) | beim Start | `KERN.zone({ id: 'suhl', x: -4362, y: 13836, near: 11800, far: 12400, keep: 60 })`, `KERN.spot`, `KERN.scenario`, Vertrag `SUHL.*` als Hülle, die bis zum Laden wartet. **Kein Netzabruf.** |
+| Kern | `viz3/src/lazy/suhl.js` | wenn die Zone baut: zuerst nur Paket und Index (**Schätzung** < 1 MB); Shader, Skyline und Fernboden erst, wenn man näher als 2,5 km an der Gemeindegrenze ist | Index, Streamer, Detailstufen, Materialien, Anbieter für `KERN` |
 | Rechner | `viz3/src/lazy/suhl-worker.js` (Worker) | mit dem Kern | Kacheln holen, entpacken, Geometrie erzeugen; gibt fertige Puffer zurück |
 | Nahbereich | `viz3/src/lazy/suhl-nah.js` | wenn man in bebautes Gebiet kommt | Straßenraum, Möbel, Fassadenrelief, Ladenschilder, Ampeln |
 | Wahrzeichen | `viz3/src/lazy/suhl-lm-<name>.js` | näher als 300 m am Bau | handgebaute Modelle, Innenräume |
 | Leben | `viz3/src/lazy/suhl-leute.js` | im Nahbereich | Suhler Figuren, Verkehr in der Stadt |
 
-Weil ein Paket bei Bedarf einzeln gebaut wird, darf es **keine Module der App importieren** – sonst steckte eine zweite Kopie von
-three.js und `KERN` darin. Das Anmelde-Modul reicht dem Paket deshalb alles hinein: `mod.start({ THREE, KERN, WELT, VILLAGE, VEH, … })`.
-**Annahme, in Stufe 2 als Erstes zu prüfen:** `tools/check/deps.mjs` und der Lint lassen das zu (das Paket von `npc/ki.js` importiert
-nichts aus der App).
+Der Kreis der Zone ist der kleinste Kreis um die Gemeinde (aus `gebiete.geojson` gerechnet: Mitte (−4 362, 13 836), Radius 10 337 m)
+plus 1,5 km. Der Garten liegt 14 507 m von dieser Mitte, der Markt von Schleusingen 13 013 m (seine Zone reicht bis 12 063 m heran),
+Kloster Veßra 14 831 m – alle bleiben draußen. Ein Kreis um den Suhler Markt ginge nicht: Gehlberg liegt 11,2 km von ihm entfernt,
+Schleusingen nur 11,6 km.
+
+Weil `viz3/build.py` (Zeilen 86–89) jede Datei `src/lazy/*.js` für sich mit esbuild bündelt (`--bundle --format=esm`), darf ein
+Paket **keine Module der App importieren** – sonst steckte eine zweite Kopie von three.js und `KERN` darin. Das Anmelde-Modul reicht
+dem Paket deshalb alles hinein: `mod.start({ THREE, KERN, WELT, VILLAGE, VEH, … })`. Eigene Hilfsdateien liegen in
+`src/lazy/suhl/` und werden in das Paket hineingebündelt; der Worker ist ein Modul-Worker.
+**Neu und als Erstes in Stufe 2 zu prüfen:** die drei vorhandenen Pakete (`anthropic.js`, `piper.js`, `raum.js`) sind fremde
+Bibliotheken – App-Code als Paket gibt es noch nicht. `tools/check/deps.mjs` kennt `lazy` nicht; Prettier läuft über `src/**/*.js`.
 
 ### 3.3 Detailstufen einer ganzen Stadt
 
@@ -294,8 +306,8 @@ Der **Fernboden** ist Pflicht, nicht Kür: nördlich von y = 11 864 gibt es heut
 | **B** | Suhl zeichnet den Fernboden selbst (`lazy/suhl.js`): eigene Meshes aus denselben Kachel-Dateien; wo `WELT` zeichnet, blendet der Fernboden aus – er liest `WELT.covers(x, y)` und `WELT.visible` (beides gibt es) | nur Haken W3 (das alte 120-m-Gelände unter dem Fernboden absenken) | **Empfehlung für Stufe 2**; später als Weg A in den Kern übernehmen |
 
 Bauen ohne Ruckeln: der Worker liefert fertige Puffer; der Hauptfaden legt je Bild höchstens 8 ms lang Geometrien an (2 ms, solange
-`WELT.state().loading > 0` – die Regel von `gebaeude.js`), Shader werden beim Bau der Zone einmal übersetzt, bevor das erste Suhl-Mesh
-sichtbar wird (`warmUp` in `render/render.js`, so wie es `ZKWELT.warm()` im Was-wäre-wenn-Modus tut).
+`WELT.state().loading > 0` – die Regel von `gebaeude.js`), Shader werden einmal übersetzt, 2,5 km vor der Gemeindegrenze und damit lange
+bevor das erste Suhl-Mesh sichtbar wird (`warmUp` in `render/render.js`, so wie es `ZKWELT.warm()` im Was-wäre-wenn-Modus tut).
 
 ### 3.4 Budgets
 
@@ -307,7 +319,7 @@ laut `docs/ARCHITECTURE.md` §10 auf Stufe „mittel“ oder „schnell“ lande
 | Texturen je Shader-Programm | höchstens 16 (`test/gpu.py`, `GLCHECK`) | Suhl-Programme höchstens 8 | `gpu`-artiger Abschnitt im Suhl-Test |
 | Shader-Programme | ≈ 156 (V17f, ARCHITECTURE §10); Veßra-Test erlaubt + 6 | **+ 8 für ganz Suhl**: Fassade, Dach, Straßenfläche, Fernmodell, Fernboden, Wasser/Glas, zwei Reserve; Requisiten, Schilder, Bäume teilen vorhandene | `GAME.R.info.programs` vor/nach |
 | Neue Punktlichter | keine (jedes neue Licht übersetzt alle Shader neu, ARCHITECTURE §1) | **0**; Laternen leuchten als Emission, Lichtfleck und über Uniforms; die zwei nächsten über `KERN.lights.borrow` | Zählung der Lichter |
-| Entpackte Bilder am Telefon | < 350 MB beim Start (`test/memphone.py`) | beim Start **0**; in Suhl + 80 MB (Telefon), + 250 MB (Rechner) – Rechnung unten | Suhl-Test im iPhone-13-Kontext |
+| Entpackte Bilder am Telefon | < 350 MB beim Start (`test/memphone.py`) | beim Start **0**; in Suhl + 90 MB (Telefon), + 300 MB (Rechner) – Rechnung unten | Suhl-Test im iPhone-13-Kontext |
 | Draw-Calls im Bild | – (alter Auftrag `suhl.md`: + 150) | + 180 im Zentrum (Rechner), + 110 (Telefon) | Zählung wie `test/leistung.py` |
 | Dreiecke im Hauptpass | – | + 800 000 (Rechner), + 350 000 (Telefon) – **Annahme**, am ersten Stand messen | wie oben |
 | Längstes Bild beim Nachladen | – (alter Auftrag: 50 ms) | 50 ms auf dem Laptop bei einer Fahrt durch die Stadt | Fahrt-Test mit Autopilot |
@@ -318,14 +330,14 @@ Textur-Rechnung für Suhl (unkomprimiert, mit Mipmaps; Telefone laden Bilder ab 
 
 | Posten | Rechner | Telefon |
 |---|---|---|
-| Nahboden, etwa 40 Kacheln 512² (wie heute in Veßra) | 56 MB | 14 MB |
+| Nahboden, 40–100 Kacheln 512² – vorhandenes Verhalten von `WELT` (40 aus den Ringen gerechnet; im Schleusingen-Test kamen 100 Texturen dazu, „vor allem Luftbilder der Kacheln“) | 56–140 MB | 14–35 MB |
 | Fernboden, etwa 50 Kacheln 512² | 70 MB | 17 MB |
 | Dach-Atlas, 9 nahe Kacheln 1024² | 50 MB | 13 MB |
 | Schilder, Wahrzeichen, Fassaden-Tafeln | ≤ 40 MB | ≤ 20 MB |
-| **Summe** | **≈ 215 MB** | **≈ 65 MB** |
+| **Summe** | **≈ 215–300 MB** | **≈ 65–85 MB** |
 
-Mit KTX2 (Werkzeug `tools/tex`, Workflow `texturen-ktx2.yml` gibt es) sinkt das auf etwa ein Fünftel; das ist der Hebel, wenn die
-Telefon-Grenze reißt.
+Mit KTX2 (Werkzeug `tools/tex`, Workflow `texturen-ktx2.yml` gibt es) sinkt das auf ein Viertel bis ein Achtel (**Annahme**: übliche
+komprimierte Formate mit 4–8 Bit je Bildpunkt statt 32); das ist der Hebel, wenn die Telefon-Grenze reißt.
 
 ### 3.5 Boden und Kollision
 
@@ -426,7 +438,7 @@ sie ändern (dämmen, streichen, Laden schließen).
 |---|---|
 | Ersatz für den Generator | `SUHL.detail(id, { build(ctx), free(obj), near })` – Suhl lässt das Gebäude `id` aus L0/L1 weg und ruft `build`, wenn man näher als `near` kommt. In L2/L3 bleibt die gebackene Form. |
 | Jedes Wahrzeichen ein eigenes Paket | `lazy/suhl-lm-<name>.js`, eigene Datei, eigener Agent – keine Überschneidung |
-| Reihenfolge im Zentrum | nach `docs/plans/suhl/wahrzeichen.md` (`suhl-wissen`); Kandidaten aus `gebiete.geojson`: Rathaus am Markt, Hauptkirche St. Marien, Kreuzkirche, Malzhaus mit Waffenmuseum, CCS, Bahnhof, Neues Rathaus |
+| Reihenfolge im Zentrum | nach `docs/plans/suhl/wahrzeichen.md` auf `suhl/wissen` (Stand 13.11.: 45 Einträge im Zentrum, 15 davon als die wichtigsten beschrieben); Kandidaten aus `gebiete.geojson`: Rathaus am Markt, Hauptkirche St. Marien, Kreuzkirche, Malzhaus mit Waffenmuseum, CCS, Bahnhof, Neues Rathaus |
 | Innenräume | erst beim Betreten gebaut (`KERN.inside`, Ereignisse `suhl:enter`/`suhl:leave`); Vorbild Ratssaal in `welt/schleusingen.js` |
 
 ### 4e Leben
@@ -490,7 +502,7 @@ Ergebnis je Kachel: vier Zahlen und ein Bogen; die schlechtesten Kacheln zuerst 
 | Abschnitt | Prüft |
 |---|---|
 | `start` | beim Start kein Abruf zur Suhl-Basis, keine neuen Programme, Texturen, Geometrien |
-| `zone` | Zone baut 9 km vor der Mitte; Zeit; Fernsicht da; noch keine Nah-Kacheln |
+| `zone` | Zone baut am Rand ihres Kreises (nur Paket und Index); in Schleusingen und im Garten baut sie nicht; 2,5 km vor der Gemeindegrenze Fernsicht da, noch keine Nah-Kacheln; Zeiten |
 | `orte` | an fünf Orten (Markt, Steinweg, Bahnhof, Suhl-Nord, Blick von der Talbrücke): Draw-Calls, Dreiecke, Programme, Texturen gegen 3.4 |
 | `fahrt` | Autopilot quer durch die Stadt: längstes Bild ≤ 50 ms, kein Fall durch den Boden, Wände halten |
 | `telefon` | iPhone-13-Kontext: Bilder-Speicher im Zentrum, Programme ≤ 16 Texturen |
@@ -652,10 +664,10 @@ S2-8 Bögen liefert; S3-7 danach. Danach Viertel für Viertel dieselben Pakete (
 |---|---|---|---|
 | 1 | Die Landesdaten bleiben Handarbeit (193 + 193 + 59 Dateien für die ganze Gemeinde, dazu 81 für die Korridore) | ohne DGM1 steht die Stadt auf dem 30-m-Oberflächenmodell: in Suhls steilen Tälern liegen Straßen in Rinnen und Häuser schief (bekannt aus Veßra: `roadCap`, Buckel bis 1,7 m am Schleusinger Markt) | Reihenfolge Zentrum → Kernstadt → Rest; die Pipeline läuft ohne und tauscht beim nächsten Lauf; Fassadenarbeit im Zentrum erst nach dem DGM1 |
 | 2 | `gh-pages` ist zu 81 % voll | Suhl passt nicht hinein; auch ohne Suhl ist die Grenze nah | Hosting-Entscheidung (2.6) vor Stufe 2 |
-| 3 | Telefon-Speicher | Safari wirft die Seite ab (wie am 22.10. bei 880 MB) | Radien und halbe Texturen am Telefon, Rechnung in 3.4, KTX2 als Reserve; der Test misst nur die Bilder – echte Geräte prüft Falko |
-| 4 | Übersetzen von 8 neuen Programmen auf der Intel-Grafik dauert | Hänger beim ersten Anblick | beim Bau der Zone in 9 km Entfernung, in Portionen (`warmUp`) |
+| 3 | Telefon-Speicher: Suhl bringt 65–85 MB Bilder zu den bis zu 350 MB des Starts | Safari wirft die Seite ab (wie am 22.10. bei 880 MB) | Radien und halbe Texturen am Telefon, Rechnung in 3.4, KTX2 als Reserve; der Test misst nur die Bilder – echte Geräte prüft Falko |
+| 4 | Übersetzen von 8 neuen Programmen auf der Intel-Grafik dauert | Hänger beim ersten Anblick | schon 2,5 km vor der Gemeindegrenze, in Portionen (`warmUp`) |
 | 5 | Pakete bei Bedarf mit hineingereichten Abhängigkeiten sind neu für App-Code | Lint oder Build könnten sich sperren | als Erstes in S2-6 prüfen; Ausweg: Code im Bündel (kostet Ladezeit für alle) |
-| 6 | **Fotos fehlen dort, wo es am meisten zählt.** Im Zentrum sieht ein Straßenfoto nur 11,2 % der Straßenseiten; Markt, Steinweg (Fußgängerzone) und vier der sieben Wahrzeichen haben keins (1.1) | „jede Fassade nach Straßenfotos“ ist im Pilotquartier mit den vorhandenen Fotos nicht zu schaffen; der Fotoabgleich misst nur die befahrenen Straßen | Falko fotografiert nach der Liste von `suhl-fotos` (Frage 3); Commons-Fotos für die Wahrzeichen; Güte je Seite bleibt sichtbar, Regeln füllen den Rest |
+| 6 | **Fotos fehlen dort, wo es am meisten zählt.** Im Zentrum sieht ein Straßenfoto nur 11,2 % der Straßenseiten; an Markt und Steinweg (Fußgängerzone) gibt es kein Foto mit Blick auf die Fassaden, an vier der sieben Wahrzeichen aus `gebiete.geojson` gar keins (1.1) | „jede Fassade nach Straßenfotos“ ist im Pilotquartier mit den vorhandenen Fotos nicht zu schaffen; der Fotoabgleich misst nur die befahrenen Straßen | Falko fotografiert nach der Liste von `suhl-fotos` (Frage 3); Commons-Fotos für die Wahrzeichen; Güte je Seite bleibt sichtbar, Regeln füllen den Rest |
 | 7 | Zahlen des Fotoabgleichs schwanken (GPS, Jahreszeit, Autos im Bild) | falsche Sicherheit oder falscher Alarm | Feinlage, Urteil des Agenten daneben, Schwellen erst nach 50 Paaren |
 | 8 | Datenstände passen nicht zusammen (ETHOS/LoD2, OSM, Luftbild 2024/25; Abrisse in Suhl-Nord) | Häuser, die es nicht mehr gibt | Abgleich von oben listet sie; Merker im Datensatz |
 | 9 | Haken in `welt/welt.js` und `game/camera.js` treffen den Kern, während andere Chats arbeiten | Fehler in Schleusingen, Veßra, Fahrt, Strategie | klein, markiert, angekündigt; deren Tests vor dem Einbau |
