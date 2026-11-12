@@ -31,7 +31,7 @@ Stadt 141,8 km², Kernstadt 22,0 km², **Zentrum 0,68 km²** (Hülle um Markt, S
 | Zahlen je Quelle (Jahre, Lizenzen, Gebiete, Blickrichtung) | `tools/suhl/out/fotos/quellen.json` |
 | Abdeckung je Straße, je Viertel, Zentrum, Wahrzeichen | `tools/suhl/out/fotos/abdeckung.json`, als Tabelle `abdeckung_strassen.csv` |
 | Messpunkte alle 5 m entlang der Straßen (für Karten) | `tools/suhl/out/fotos/abdeckung_punkte.json.gz` |
-| Commons-Fotos je Wahrzeichen und Straße des Zentrums | `tools/suhl/out/fotos/commons_zentrum.json` (aus GitHub Actions, mit den Namen der Blätter) und `commons_zentrum_lokal.json` (dieselben Zahlen, auf dem Chat-Rechner nachgerechnet) |
+| Commons-Fotos je Wahrzeichen und Straße des Zentrums | `tools/suhl/out/fotos/commons_zentrum.json` (aus GitHub Actions, mit den Namen der Blätter) und `commons_zentrum_lokal.json` (auf dem Chat-Rechner nachgerechnet; gleiche Zahlen bis auf eine – mit dem strengeren Lizenzfilter für Blätter 216 statt 217 bei „Bahnhof“) |
 | Rohlisten je Quelle | `panoramax.json.gz`, `commons.json.gz`, `openverse.json`, `kartaview.json`; Straßennetz `strassen.json.gz` (OpenStreetMap) |
 | Kontaktabzüge des Zentrums, Karten, `CREDITS.md` | Zweig **`ref/suhl-fotos`** (ein einzelner Commit, wird nie gemergt): `zentrum/*.jpg` (49 Blätter zu 34 Straßen und Orten, Panoramax), `commons/*.jpg` (77 Blätter zu 48 Gruppen, Wikimedia Commons, mit eigener `commons/CREDITS.md`), `karten/abdeckung_zentrum.png`, `karten/abdeckung_kernstadt.png`, `index.json` |
 | Werkzeuge | `tools/suhl/fotos/` (siehe „Neu erzeugen“), Workflow `.github/workflows/suhl-fotos.yml` |
@@ -152,7 +152,7 @@ Mühltorstraße, Alte Schmiedefelder Straße, Paul-Greifzu-Straße, Auf der Maue
 
 ## Blick ins Zentrum – was die Straßenfotos zeigen
 
-Ich habe die Kontaktabzüge auf `ref/suhl-fotos` selbst angesehen (je Straße das erste Blatt, bei den Hauptstraßen beide). Hier steht nur, was auf den
+Ich habe die Kontaktabzüge auf `ref/suhl-fotos` selbst angesehen (zu jeder der 34 Straßen und Orte das erste Blatt, bei den Hauptstraßen beide). Hier steht nur, was auf den
 Bildern zu sehen ist. Alle Bilder: Dezember 2025, Bäume kahl, tiefe Sonne, durch die Frontscheibe – Farben oft verfälscht, einige Bilder fast nur Gegenlicht.
 
 - **Friedrich-König-Straße** (`friedrich-koenig-strasse_1/2`): breite Hauptstraße, zwei bis vier Spuren mit Abbiegepfeilen, Ampeln an Auslegermasten,
@@ -299,7 +299,7 @@ python3 tools/suhl/fotos/collect_panoramax.py        # Panoramax, etwa 1 Minute
 python3 tools/suhl/fotos/collect_osm.py              # Straßennetz der Kernstadt, 30 Abfragen an die OSM-API
 python3 tools/suhl/fotos/collect_openverse.py        # Openverse, etwa 10 Minuten
 python3 tools/suhl/fotos/kartaview.py                # KartaView, 81 Abfragen über die Kernstadt
-# Commons und KartaView: nur in GitHub Actions – ein Push, der collect_commons.py ändert, startet den Lauf
+# Commons: nur in GitHub Actions – ein Push, der collect_commons.py ändert, startet den Lauf (etwa 30 Minuten)
 python3 tools/suhl/fotos/merge.py                    # katalog_suhl.json.gz, quellen.json
 python3 tools/suhl/fotos/coverage.py                 # abdeckung.json, abdeckung_strassen.csv
 python3 tools/suhl/fotos/nach_commons.py /tmp/x --no-sheets   # commons_zentrum_lokal.json
