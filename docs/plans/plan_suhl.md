@@ -164,8 +164,10 @@ Regeln:
 
 - **Kachel-Listen statt Rechtecke.** `index.json` nennt je Produkt und Stufe, welche Kacheln es gibt (Bitfeld). Die Gemeinde ist
   kein Rechteck; ein Rechteck über die `stadt` hätte auf Stufe 11 doppelt so viele Kacheln wie nötig.
-- **Version im Pfad:** `<basis>/suhl/v<N>/…` wird nie überschrieben. `<basis>/suhl/aktuell.json` nennt die gültige Version und
-  ihre Mindest-App-Version. So passen App und Daten immer zusammen, auch während ein Lauf hochlädt, und der Browser darf lange cachen.
+- **Version im Pfad, je Produkt:** `<basis>/suhl/<produkt>/v<N>/…` wird nie überschrieben. `<basis>/suhl/aktuell.json` nennt je
+  Produkt die gültige Version und die Schema-Nummer, die die App mindestens können muss. So veröffentlicht jedes Arbeitspaket für
+  sich, App und Daten passen immer zusammen (auch während ein Lauf hochlädt), und der Browser darf lange cachen. Alte Versionen
+  löscht ein Aufräum-Lauf, wenn keine veröffentlichte App sie mehr nennt.
 - **Quellen reisen mit:** `index.json` → `attribution`, `sources` je Produkt (wie `welt-test/meta.json`), dazu `ATTRIBUTION.md`.
 - Der Boden (`t/`, `i/`) bleibt ein gewöhnlicher Kachel-Satz für `WELT` (`meta.json` im alten Format). Die App meldet ihn mit
   `WELT.addSet` an (Haken W1/W2 in Abschnitt 6.4).
@@ -285,8 +287,8 @@ Der **Fernboden** ist Pflicht, nicht Kür: nördlich von y = 11 864 gibt es heut
 | **B** | Suhl zeichnet den Fernboden selbst (`lazy/suhl.js`): eigene Meshes aus denselben Kachel-Dateien; wo `WELT` zeichnet, blendet der Fernboden aus – er liest `WELT.covers(x, y)` und `WELT.visible` (beides gibt es) | nur Haken W3 (das alte 120-m-Gelände unter dem Fernboden absenken) | **Empfehlung für Stufe 2**; später als Weg A in den Kern übernehmen |
 
 Bauen ohne Ruckeln: der Worker liefert fertige Puffer; der Hauptfaden legt je Bild höchstens 8 ms lang Geometrien an (2 ms, solange
-`WELT.state().loading > 0` – die Regel von `gebaeude.js`), Shader werden beim Bau der Zone einmal mit `compileAsync` übersetzt, bevor
-das erste Suhl-Mesh sichtbar wird (wie `compileShown` in `core/assets.js`).
+`WELT.state().loading > 0` – die Regel von `gebaeude.js`), Shader werden beim Bau der Zone einmal übersetzt, bevor das erste Suhl-Mesh
+sichtbar wird (`warmUp` in `render/render.js`, so wie es `ZKWELT.warm()` im Was-wäre-wenn-Modus tut).
 
 ### 3.4 Budgets
 
@@ -344,7 +346,7 @@ Telefon-Grenze reißt.
 |---|---|---|
 | Fensterlicht | `uWinP`, `uNight` in `world/village.js` (`VILLAGE.night()`), nach Uhrzeit | derselbe Takt: das Suhl-Fassadenprogramm liest diese Werte; Läden leuchten bis Ladenschluss (OSM `opening_hours`, sonst **Annahme** 9–18 Uhr); L2 zeigt Fensterpunkte, L3 einen Schimmer |
 | Laternen | Emission, Lichtflecken, die 8 nächsten beleuchten Wände (`uLampV`), 2 geliehene Lichter (Veßra) | gleich; Laternen-Standorte aus `m/` |
-| Nasser Boden, Schnee | `wetter/wx_boden.js` erkennt Boden- und Dachmaterial am Programm-Schlüssel (`welt-tile`, `geoterrain`, `fields` …) und ändert nur Farbe und Rauheit | Suhl-Materialien lesen `WXBODEN.shown` und `WXBODEN.snowShown` selbst und setzen ihre Uniforms – kein Haken nötig; die Boden-Kacheln werden schon erkannt |
+| Nasser Boden, Schnee | `wetter/wx_boden.js` erkennt Boden- und Dachmaterial am Programm-Schlüssel (`welt-tile`, `geoterrain`, `fields` …) und ändert nur Farbe und Rauheit | Suhl-Materialien lesen `WXBODEN.S.shown` und `WXBODEN.S.snowShown` selbst und setzen ihre Uniforms – kein Haken nötig; die Boden-Kacheln werden schon erkannt |
 | Regen | „Kein Regen unter Dächern“: Tiefenkarte von oben (64 × 64) | funktioniert mit Suhls Dächern von selbst |
 | Jahreszeit | Lärchen und Laub nach Spieldatum (`seasonOf` in `world/forest.js`) | Laubbäume der Stadt nach demselben Wert. **Grenze:** das Luftbild zeigt immer den Flugtag (April/Mai, Laub teils noch nicht da). |
 | Schatten | Häuser des Dorfs werfen keine eigenen Schatten; die Schatten des Luftbilds bleiben | zunächst gleich. Für später (Stufe 3, optional): Schatten der Häuser aus dem Oberflächenmodell als Horizontkarte je Kachel – dann stimmt der Schatten zu jeder Tageszeit. |
@@ -374,7 +376,7 @@ sie ändern (dämmen, streichen, Laden schließen).
 
 | Parameter | Werte | Regel, wenn niemand hingesehen hat (Güte 0–1) |
 |---|---|---|
-| `mat` Material | Putz, Platte WBS 70 (Fugenraster 6,0 × 2,8 m), Klinker, Schiefer, Fachwerk, Sandstein, Sichtbeton, Glasfassade, Blech, Holz | nach Art und Baualter |
+| `mat` Material | Putz, Platte WBS 70 (Fugenraster 6,0 × 2,8 m – Systemmaß, an Fotos prüfen), Klinker, Schiefer, Fachwerk, Sandstein, Sichtbeton, Glasfassade, Blech, Holz | nach Art und Baualter |
 | `col`, `col2` | Hauptfarbe, Farbe von Sockel, Bändern, Faschen | Luftbild taugt dafür nicht; aus dem nächsten Foto (automatisch, Mittelwert der Wandfläche), sonst Palette des Baualters |
 | `fl`, `h0`, `hf` | Geschosse, Höhe Erdgeschoss, Geschosshöhe | Traufhöhe ÷ 2,8 m (Platte), 3,2 m (vor 1918); OSM `building:levels` |
 | `sock` | Sockelhöhe und -material | 0,5 m; am Hang bis zum tiefsten Punkt (wie Schleusingen) |
@@ -409,7 +411,7 @@ sie ändern (dämmen, streichen, Laden schließen).
 | Mauern, Treppen am Hang | OSM `barrier=wall`/`retaining_wall`, `highway=steps`; dazu Geländesprünge im DGM1 (> 0,8 m auf 1 m) als Stützmauer | einfache Mauer- und Stufengeometrie in L0; Treppen sind begehbar |
 | Parkende Autos | Erkennung im Luftbild (`tools/welt-dinge/`: YOLO11-OBB, Regeln aus `decide.py`) | vorhandene Laufzeit `dinge/` – Suhl wird ein weiteres Gebiet |
 | Ladenschilder mit echten Namen | OSM-Punkte mit `name` und `shop`/`amenity` (der alte Auszug hat 3 795 benannte Orte im Stadtrahmen) | Schildzone der Fassade, die dem Punkt am nächsten zur Straße liegt |
-| Wasser, Bahn | Lauter und Hasel aus OSM, Sohle aus DGM1; Gleise der Strecke Erfurt–Meiningen und der Bahnhof | Wasserprogramm des Bachs; Gleise als Geometrie in L0 |
+| Wasser, Bahn | Lauter und Hasel aus OSM, Sohle aus DGM1; Gleise der Bahnstrecke durch das Tal und der Bahnhof (OSM) | Wasserprogramm des Bachs; Gleise als Geometrie in L0 |
 
 ### 4d Wahrzeichen und Innenräume
 
@@ -447,7 +449,8 @@ legt Bild und Kamera nach `out/blickpunkte/`. Jedes Foto im Katalog hat Ort, Bli
 | 6 Urteil des Agenten | Chat | `git fetch origin ref/suhl-abgleich`, Bögen mit dem Lese-Werkzeug ansehen; je Seite Noten 1–5 für Material, Farbe, Geschosse, Fenster, Erdgeschoss, Dach in `tools/suhl/out/abgleich/<viertel>.json` |
 | 7 Zahl je Straße | Actions | Anteil der Seiten mit Güte ≥ 2, Median von Umriss und ΔE, schlechteste fünf Paare; Tabelle in `docs/features/suhl-abgleich.md` |
 
-Laufzeit (Anhalt): `blickpunkte.py` braucht je Blick gut 3 s; 300 Paare ≈ 20–25 Minuten in einem eigenen Workflow
+Laufzeit (**Schätzung** aus dem Skript: je Blick 1 s feste Pause plus Licht, Schritte und Aufnahme, zusammen etwa 4 s): 300 Paare
+≈ 20–25 Minuten in einem eigenen Workflow
 `suhl-abgleich.yml` (nicht `feat.yml`). Die Schwellen in 5.5 sind **Annahmen**; sie werden nach den ersten 50 Paaren festgelegt.
 
 ### 5.2 Abgleich von oben
@@ -504,4 +507,181 @@ Ergebnis je Kachel: vier Zahlen und ein Bogen; die schlechtesten Kacheln zuerst 
 | Szenario | `SUHL.data` liefert für jedes Gebäude des Zentrums Nutzung, Flächen, Dachflächen; Summen des Viertels gegen amtliche Zahlen geprüft |
 | Falko | hat es am Laptop und am iPhone gesehen und sagt, was fehlt |
 
-*(Abschnitte 6–8 folgen im nächsten Commit.)*
+## 6 Verträge und Haken
+
+### 6.1 `SUHL.*` – fortgeschrieben für eine ganze Stadt
+
+Der Vertrag vom 26.10. (`docs/plans/auftraege/suhl.md`: `SUHL.near`, `toModel`, `ground`, `onBuilt`/`onFreed`, `building(osmId)`,
+`detail`, `areas { zentrum, aue, nord }`, Sprungziele, Ereignisse) bleibt gültig, wo er passt. Alles ist ab dem Laden der Seite
+aufrufbar; vor dem Bau der Zone antworten die Abfragen mit `null`/`undefined`, die `…Async`-Formen warten.
+
+| Name | Bedeutung |
+|---|---|
+| `SUHL.state` | `'idle' \| 'loading' \| 'ready' \| 'error'` (Zone); `SUHL.near` = `state === 'ready'` (alter Name) |
+| `SUHL.O`, `SUHL.BASE`, `SUHL.version` | Bezugspunkt `[-4698.2, 12255.7]`, Basis-Adresse der Daten, Versionen je Produkt |
+| `SUHL.toModel(lat, lon)`, `SUHL.toLatLon(x, y)`, `SUHL.toUTM(x, y)` | Umrechnungen (WGS84 ↔ UTM 32N ↔ Modell über `xf`) |
+| `SUHL.onBuilt(fn)`, `SUHL.onFreed(fn)`, `SUHL.ready()` | Zone gebaut / frei; `ready()` ist ein Promise auf den Index |
+| `SUHL.areas` | `{ stadt, kernstadt, zentrum, <viertel>… }`, je `{ id, name, kind: 'gebiet' \| 'viertel' \| 'ortsteil', center: [x, y], r, poly, parent }`; `zentrum`, `aue`, `nord` behalten ihre Namen |
+| `SUHL.areaAt(x, y)`, `SUHL.quarters()` | Viertel an einem Punkt; alle Viertel |
+| `SUHL.levelAt(x, y)`, `SUHL.whenLevel(x, y, n)` | welche Detailstufe dort gebaut ist (0 = L0 … 3 = L3, −1 nichts); Promise, bis Stufe `n` steht (Tests, Sprungziele) |
+| `SUHL.ground(x, y, z?)` | Höhe des Bodens (Straßenfläche vor Gelände) oder `undefined` |
+| `SUHL.building(id)` | Sicht auf den Datensatz oder `null`, wenn seine Kachel nicht geladen ist: `{ id, osm, name, adr, use, era, quarter, pts, z0, eave, h, levels, roof: [{ pts, area, az, slope, cls, col }], sides: [{ a, b, len, street, params }], flags }`. `id` ist die LoD2/ETHOS-Kennung; eine OSM-Kennung (`'way/…'`) wird übersetzt (alter Vertrag). |
+| `SUHL.buildingAsync(id)`, `SUHL.buildingAt(x, y)`, `SUHL.buildingsIn(area)` | lädt die Kachel bei Bedarf; Gebäude unter einem Punkt; Kennungen in einem Viertel oder Kreis |
+| `SUHL.detail(id, { build(ctx), free(obj), near })` | handgebauter Ersatz (Wahrzeichen, Innenraum); gibt eine Funktion zum Abmelden zurück |
+| `SUHL.override(id, patch)`, `SUHL.reset(id?)` | Szenario-Änderung an einem Gebäude: `{ hidden: true }` (Abriss), `{ sides: { 2: { col, mat } } }` (Sanierung), `{ levels }`, `{ replace: datensatz }`; `reset` nimmt sie zurück. Wirkt in L0–L2. |
+| `SUHL.add(datensatz)`, `SUHL.remove(id)` | Neubau eines Szenarios (Kennung `neu-…`) |
+| `SUHL.ways(cx, cy, r)`, `SUHL.stops()`, `SUHL.signal(id)` | Wege im Format von `VNETZ.graph`; Haltestellen mit Bordkante; Zustand einer Ampel `{ state: 'rot' \| 'gelb' \| 'gruen', rest }` |
+| `SUHL.data` | Zahlen für den Was-wäre-wenn-Modus (6.3) |
+| `SUHL.status()` | für Tests: Zustand, Versionen, Kacheln je Stufe, Warteschlange, Zeiten, Fehler |
+
+### 6.2 Ereignisse, Sprungziele, Szenen
+
+| Art | Namen |
+|---|---|
+| Ereignisse (`KERN.emit`) | `suhl:built`, `suhl:freed` (Zone) · `suhl:tile` `{ key, level, on }` · `suhl:quarter` `{ id, prev }` (der Beobachter wechselt das Viertel) · `suhl:enter` / `suhl:leave` `{ id }` (Gebäude betreten) · `suhl:changed` `{ id }` (nach `override`, `add`, `remove`) |
+| Sprungziele (`KERN.spot`) | `suhl` (Markt), `suhl_steinweg`, `suhl_bahnhof`, `suhl_ccs`; je Viertel später `suhl_<viertel>` (`suhl_aue`, `suhl_nord` wie im alten Vertrag) |
+| Szenen (`KERN.scenario`) | `suhl` (auf dem Markt), `suhl-fahrt` (im Auto vor der Ortstafel), `suhl-bus` (an der Haltestelle der 203) |
+| Orte (`KERN.place`) | „<Straße>, Suhl“ bzw. „<Straße>, Suhl-<Ortsteil>“; an Wahrzeichen ihr Name |
+
+### 6.3 `SUHL.data` – für den Was-wäre-wenn-Modus
+
+Der Modus (`origin/feat/zukunft-welt`: `zukunft/zk_welt.js`) setzt heute Solarmodule auf Dachebenen, die er selbst aus den Dreiecken
+der 3D-Dächer zusammensucht, und zählt daraus kWp (`ZKWELT.ctx()` → `roof: { kwp, area, n }`). Suhl gibt ihm die Ebenen und Zahlen
+fertig. **Alle Flächen in echten m², in der Pipeline in UTM gerechnet** (Abschnitt 1.2); Richtungen in Grad von geografisch Nord.
+
+| Aufruf | Liefert |
+|---|---|
+| `SUHL.data.building(id)` | `{ id, quarter, use, era, levels, footprint, floorArea, height, volume, roof: [{ area, areaPlan, az, slope, cls, usable, pvKwp }], roofFlat, residents, heat: { kind, demand }, listed, vacant, q, src }` – `usable` = Fläche nach Randabständen und Aufbauten; `pvKwp` = heute schon vorhanden; `residents`, `heat` sind **Schätzungen** mit genannter Methode; `q` sagt je Feld „gemessen“ oder „Annahme“ |
+| `SUHL.data.roofPlanes(id)` | die Dachebenen als Polygone in Modellkoordinaten (zum Auflegen von Modulen), mit denselben Nummern wie `roof` |
+| `SUHL.data.quarter(id)` | `{ id, name, area, buildings, byUse, byEra, floorArea, roofArea, roofUsable, pvKwpToday, residents, official: { residents, year, src } }` – aus `viertel.json`, ohne dass Gebäude geladen sind |
+| `SUHL.data.each(area, fn)` | läuft über die Gebäude eines Viertels (lädt nur Daten, keine Geometrie) |
+| `SUHL.data.meta` | Stand, Quellen, Liste der Annahmen (für das „Warum?“) |
+
+Offen und vom Was-wäre-wenn-Chat zu ergänzen (Bitte steht in `docs/PARALLEL.md`, Nachricht vom 13.11. 0:10): welche weiteren
+Felder er braucht – etwa Stellplätze, Baujahr genauer, Leerstand, Fernwärme-Anschluss.
+
+### 6.4 Haken in gemeinsamen Dateien – Wunschliste
+
+Jeder Haken ist klein und wird mit `// suhl` markiert. Vor dem Einbau: Ankündigung in `docs/PARALLEL.md`, danach die Tests von
+Schleusingen, Veßra, Fahrt und Strategie grün.
+
+| # | Datei, Stelle | Änderung | Umfang | Wozu | Geht es ohne? |
+|---|---|---|---|---|---|
+| H1 | `viz3/src/modules.txt`, unter der Marke `# feat/suhl:` (Zeile 90) | eine Zeile `welt/suhl.js`; Text der Marke anpassen (nur noch ein Modul, der Rest sind Pakete) | 1 Zeile | Anmeldung | nein |
+| H2 | `viz3/shell/menu.html`, Abschnitt „Weiter weg“ nach Kloster Veßra | ein Knopf „Suhl“ (`data-spot="suhl"`); weitere Viertel später | 1 Zeile | Menü | nein; bis zur Freigabe nur mit `?suhl=1` sichtbar |
+| W1 | `viz3/src/welt/welt.js`, `S.addSet` | zweites Argument: volle Basis-Adresse eines Satzes | 2 Zeilen | Boden-Kacheln auf anderem Host (Daten-Repo, R2) | nur, wenn die Suhl-Kacheln unter `welt-test/zonen/suhl/` lägen – dafür fehlt der Platz |
+| W2 | `viz3/src/welt/welt.js`, `setOf` | Liste `has` je Stufe in `meta.json` beachten (welche Kacheln es gibt) | ≈ 5 Zeilen | die Gemeinde und die Straßen-Korridore sind keine Rechtecke (Idee des Altbestands, dort nie eingebaut) | mit mehreren rechteckigen Sätzen – umständlich; oder doppelt so viele Kacheln |
+| W3 | `viz3/src/welt/welt.js`, `lowerOuter` | zusätzliche Abfrage `S.lowerAlso(x, y)` | 2 Zeilen | das alte 120-m-Gelände unter Suhls Fernboden absenken (Naht bei y = 11 864) | nein – `lowerOuter` setzt das Gelände bei jeder Änderung zurück |
+| K1 | `viz3/src/game/camera.js`, `applyCam` (`lim`) | Mitte der Draufsicht nicht auf ±11 000 m begrenzen, sondern auf einen Rahmen, der Suhl enthält | 2 Zeilen | Sicht von oben und Strategie-Modus über Suhl | nein |
+| F1 | `viz3/src/welt/fahrt.js`, `load` und das Einschneiden der Straßen | zweite Straßendatei `fahrt/suhl.json` holen, wenn man nach Norden fährt; in Suhls Straßen-Kacheln schneidet `FAHRT` nicht (wie heute bei Veßra) | ≈ 15 Zeilen | Anfahrt, Karte, Ziel „Suhl“ | nein |
+| F2 | `viz3/src/vehicles/car.js` (Gänge, Luftwiderstand) | prüfen, ob das Auto 130 km/h erreicht | wenige Zeilen | Autobahn | ja, mit niedrigerem Tempo |
+| B1 | `viz3/extra/bus/quellen/fahrplan.py` (Rahmen `BOX`, Straßennetz) und die erzeugte `bus/fahrplan.json` | Haltestellen und Fahrten in Suhl aufnehmen, Netz um `fahrt/suhl.json` erweitern | Daten + ≈ 10 Zeilen | Bus 203 bis Suhl, Stadtlinien | nein |
+| M1 | `viz3/src/vehicles/minimap.js` | Liste `MMAP.layers` statt des einen Hakens `MMAP.more` | 3 Zeilen | Stadtteile und Haltestellen auf der Karte | ja: nur die Straßen über `FAHRT` |
+| G1 | `tools/welt-gebaeude/prep.py` (liest `fahrt/strassen.json`), `wglib.py` `keepout` | auch `fahrt/suhl.json` lesen; nichts innerhalb der Gemeinde Suhl bauen | ≈ 6 Zeilen + Daten | Dörfer an den Anfahrtsstraßen als Gebäude-Zellen von `GEB` | ja: die Dörfer blieben flach im Luftbild |
+| D1 | – | keiner: geparkte Autos zeichnet Suhl selbst mit den Modellen `DMOD` (`dinge/dinge_modelle.js`) | 0 | | |
+| – | `core/kern.js`, `core/save.js`, `wetter/*`, `gebaeude/gebaeude.js`, `world/village.js` | **keine Änderung** nötig; kein neuer Speicher-Schlüssel in Stufe 2 | 0 | | |
+
+Für die anderen Chats: der Was-wäre-wenn-Modus liest `SUHL.data` und `SUHL.override` von seiner Seite aus; Suhl ändert `zukunft/*` nicht.
+
+## 7 Arbeitspakete
+
+Regeln für alle: eigener Zweig, eigene Ordner (Spalte „Besitz“ – keine Überschneidung), kleine Commits, eigener Workflow mit
+eigener `concurrency`-Gruppe. Reine Daten-Pakete arbeiten auf `suhl/<name>` (löst keine App-Tests aus), Pakete mit App-Code auf
+`feat/suhl-<name>` (dort läuft `feat.yml` mit `viz3/extra/<name>/tests.txt`). Veröffentlichen der Daten läuft für alle über
+**eine** gemeinsame Aktion aus S2-0 (Gruppe `suhl-daten`, nie abbrechen), je Produkt in seinen eigenen Versionsordner.
+Größen: K = ein Agentenlauf von 1–2 Stunden, M = 3–5 Stunden, G = mehrere Läufe (**Schätzung**).
+
+### 7.1 Stufe 2 – die ganze Stadt aus Daten
+
+| Paket | Ziel | Besitz (Dateien, Ordner) | Eingaben | Test | Hängt ab von | Größe |
+|---|---|---|---|---|---|---|
+| **S2-0 Datenhaus** | Daten-Repo oder Bucket eingerichtet; gemeinsame Bibliothek (Kachel-Schlüssel, `xf`, Index, Schema, Prüfung des Suchrahmens); Aktion „veröffentlichen“; `aktuell.json` | `tools/suhl/lib/**`, `.github/actions/suhl-publish/**`, `docs/features/suhl-daten.md` | Falkos Entscheidung zum Hosting; `gebiete.geojson` | Einheitentests ohne Browser | – | K |
+| **S2-1 Boden** | Gelände und Luftbild Stufen 6–12 nach 2.5, mit Kachel-Listen; DGM1 gemischt, wo vorhanden; Straßen-Korridore | `tools/suhl/boden/**`, `.github/workflows/suhl-boden.yml`, `docs/features/suhl-boden.md` | WMS `th_dop`, Copernicus, Landesdaten (soweit da), Routen aus `suhl-fahrt` | Kanten, Listen, Größen je Stufe; Bild-Bogen | S2-0 | M |
+| **S2-2 Gebäude** | ein Datensatz je Gebäude der `stadt` (2.3): ETHOS + OSM (+ LoD2), Dachform geschätzt mit Merker, Dachklasse und -farbe, Fassaden nach Regeln (Güte 0–1), Nutzung, Baualter | `tools/suhl/gebaeude/**`, `.github/workflows/suhl-gebaeude.yml`, `docs/features/suhl-gebaeude.md` | ETHOS (Zenodo), Geofabrik-Auszug, Luftbild, Fachdaten | Prüfungen 5.3 | S2-0; Höhen aus S2-1 oder direkt aus `Dem` | G |
+| **S2-3 Straßen** | Straßenraum der `kernstadt` und der Ortsteile: Achsen, Profile, Querschnitte, Kreuzungen, Beläge; Wasser, Bahn | `tools/suhl/strassen/**`, `.github/workflows/suhl-strassen.yml`, `docs/features/suhl-strassen.md` | Geofabrik-Auszug, Gelände, Luftbild | Wellen je km je Art; Kreuzungen eben; kein Haus in der Fahrbahn (mit S2-2) | S2-0, S2-1 | G |
+| **S2-4 Grün und Möbel** | Bäume (Ort, Höhe, Radius, Art), Laternen, Ampeln, Schilder, Haltestellen, Bänke, Ladenschilder-Texte | `tools/suhl/gruen/**`, `tools/suhl/moebel/**`, `.github/workflows/suhl-gruen.yml`, `docs/features/suhl-gruen.md` | Luftbild (RGB, CIR), OSM, GTFS; DOM1/DGM1 soweit da | Zählungen gegen OSM; Bäume nicht auf Dächern und Fahrbahnen | S2-0 | M |
+| **S2-5 Fern** | gebackene Fernmodelle (`f/`), Skyline, Talbrücken | `tools/suhl/fern/**`, `.github/workflows/suhl-fern.yml` | Datensätze aus S2-2, Brücken aus `suhl-fahrt` | Dreiecke und Größe je Kachel | S2-2 | K–M |
+| **S2-6 Laufzeit** | Anmelde-Modul, Pakete, Worker, Streamer, L1–L3, Fernboden, `KERN`-Anbieter, Vertrag `SUHL.*`, einfache Fassaden; Test `suhl.py` (5.4) | `viz3/src/welt/suhl.js`, `viz3/src/lazy/suhl.js`, `viz3/src/lazy/suhl-worker.js`, `viz3/src/lazy/suhl/**`, `viz3/extra/suhl/**`, `viz3/test/suhl.py`, `viz3/test/suhl_tiles.py`, `docs/features/suhl.md` | Schema aus S2-0; früh ein Probesatz Zentrum (S2-1, S2-2) | `suhl.py`, dazu `schleusingen`, `vessra`, `fahrt` | S2-0; Haken H1, W1–W3, K1 | G |
+| **S2-7 Anfahrt** | Fahrt über Landstraße und Autobahn bis zum Markt; Daten des Altbestands übernehmen; Route über die Anschlussstelle Suhl-Zentrum (ohne Tunnel); Bus 203 bis Suhl | `viz3/extra/suhl-fahrt/**` (aus `feat/suhl-fahrt`), `.github/workflows/suhl-fahrt.yml`, `viz3/test/suhl_fahrt.py`, `docs/features/suhl-fahrt.md`; markierte Zeilen F1, B1, G1 legt der Suhl-Chat an | Korridor-Kacheln (S2-1), `recherche.json` | Autopilot hin über die Autobahn, zurück über die Landstraße; Bus-Test | S2-1, S2-6 (Übergabe in der Stadt) | G |
+| **S2-8 Abgleich** | Fotoabgleich und Abgleich von oben als Workflows mit Zahlen und Bögen (5.1, 5.2) | `tools/suhl/abgleich/**`, `.github/workflows/suhl-abgleich.yml`, `viz3/test/suhl_blick.py`, `docs/features/suhl-abgleich.md`, Wegwerf-Zweig `ref/suhl-abgleich` | Fotokatalog (`suhl/fotos`), eine laufende App mit Suhl | läuft zuerst gegen Schleusingen (dort gibt es Modell und Fotos), dann gegen Suhl | für Suhl: S2-6 | M |
+| **S2-9 Zahlen** | `SUHL.data` Grundausbau: Flächen, Geschosse, Dachebenen, Summen je Viertel, Viertelgrenzen | `tools/suhl/daten/**`, `docs/features/suhl-daten-szenario.md` | S2-2, `docs/plans/suhl/fachdaten.md`, `stadt.md` | Summen gegen amtliche Zahlen | S2-2 | K–M |
+
+Gleichzeitig möglich: nach S2-0 (kurz, zuerst) laufen **S2-1, S2-2, S2-3, S2-4, S2-6 und S2-8 nebeneinander** – S2-6 gegen einen
+Probesatz, S2-8 gegen Schleusingen. Danach S2-5 und S2-9 (brauchen die Datensätze) und S2-7 (braucht Korridor-Kacheln und die Laufzeit).
+S2-3 liest Gebäude nur zum Prüfen, schreibt aber nie in fremde Ordner.
+
+### 7.2 Stufe 3 – Zentrum in höchster Güte
+
+| Paket | Ziel | Besitz | Eingaben | Test | Hängt ab von | Größe |
+|---|---|---|---|---|---|---|
+| **S3-1 Landesdaten Zentrum** | DGM1, DOM1, LoD2 der 8 + 8 + 4 Kacheln verarbeitet: echtes Gelände, echte Dächer | Erweiterung in `tools/suhl/boden/**`, `tools/suhl/gebaeude/**` (dieselben Besitzer wie S2-1, S2-2) | Falkos Downloads | 5.3; Vergleich vorher/nachher | Falko | M |
+| **S3-2 Dach** | Dach-Atlas, Versatz des Luftbilds, Gauben, Schornsteine, vorhandene Solarmodule | `tools/suhl/dach/**`, `.github/workflows/suhl-dach.yml` | S3-1, Luftbild | Abgleich von oben (5.2) | S3-1 | M–G |
+| **S3-3 Fassaden-Generator** | Programm `suhl-wall` mit allen Parametern aus 4b, Relief in L0, Ladenschilder | `viz3/src/lazy/suhl/wand*.js`, `viz3/src/lazy/suhl-nah.js` | S2-6 | Bildvergleich je Parameter; Programme und Texturen gezählt | S2-6 | G |
+| **S3-4 Fassaden nach Fotos** | je Straße die Parameter jeder Seite (Güte ≥ 2) | `tools/suhl/fassaden/zentrum/<strasse>.json` – **eine Datei je Straße, ein Agent je Datei**; eine Seite gehört zu der Straße, auf die sie blickt | Bögen aus S2-8, `suhl/fotos` | Schema; Abgleich 5.1 vorher/nachher | S2-8, S3-3 | G; etwa 600 Gebäude, **Schätzung** 1 500–2 500 Straßenseiten, in 6–8 Straßenpaketen nebeneinander |
+| **S3-5 Straßenraum Zentrum** | Bordsteine, Überwege, schaltende Ampeln, Schilder, Laternen nach Bauart, Stufen und Mauern | `viz3/src/lazy/suhl/strasse*.js`, `tools/suhl/strassen/zentrum/**` | S2-3, S2-4, Fotos | 5.4 `orte`, Gehen und Fahren über Bordsteine | S2-6 | G |
+| **S3-6 Wahrzeichen** | je Bau ein Modell, mindestens zwei betretbar | je Bau `viz3/src/lazy/suhl-lm-<name>.js`, `viz3/extra/suhl-lm-<name>/**` – **ein Agent je Bau** | `docs/plans/suhl/wahrzeichen.md`, Fotos | eigener Test je Bau; Programme gezählt | S2-6 (`SUHL.detail`) | je Bau M |
+| **S3-7 Leben** | Menschen im Zentrum, Verkehr mit Vorfahrt und Ampeln, Stadtbusse | `viz3/src/lazy/suhl-leute.js`, `tools/suhl/leben/**`, `viz3/test/suhl_leute.py` | S2-3 (Netz), GTFS, `suhl-wissen` | Bus hält nach Plan; Autos halten bei Rot | S2-6, S2-7, S3-5 | G |
+| **S3-8 Abnahme** | Kriterien 5.5 gemessen, Schwellen festgelegt, Telefon-Lauf, Liste für Falko | `docs/features/suhl-zentrum.md` | alles | alle | alle | K |
+
+Gleichzeitig möglich: S3-2, S3-3, S3-5 und die Wahrzeichen (S3-6) nebeneinander; S3-4 in Straßenpaketen nebeneinander, sobald
+S2-8 Bögen liefert; S3-7 danach. Danach Viertel für Viertel dieselben Pakete (S3-1, S3-2, S3-4, S3-5).
+
+### 7.3 Reihenfolge, in der etwas `src` erreicht
+
+| Schritt | Was | Sichtbar für Besucher? |
+|---|---|---|
+| 1 | Dokumente (dieser Plan, `PARALLEL.md`) | nein |
+| 2 | Haken W2, W3, K1 (und W1) als ein kleiner Commit des Suhl-Chats; Tests Schleusingen, Veßra, Fahrt, Strategie grün | nein – ohne Suhl-Daten ändert sich nichts |
+| 3 | Anmelde-Modul `welt/suhl.js` (H1), Pakete unter `lazy/`, `viz3/extra/suhl/` mit Test; Menüknopf (H2) nur mit `?suhl=1` | nein; beim Start wird nichts von Suhl geladen (Test `start`) |
+| 4 | Anfahrt: `fahrt/suhl.json`, F1, Busdaten B1, Zellen G1 | ja: man kann Richtung Suhl fahren |
+| 5 | Menüknopf frei, sobald Falko den Stand in der Vorschau gesehen hat | ja |
+| danach | neue Datenversionen brauchen keine neue App, solange die Schema-Nummer passt (`aktuell.json`) | ja |
+
+## 8 Risiken und offene Fragen
+
+### 8.1 Risiken
+
+| # | Risiko | Folge | Gegenmittel |
+|---|---|---|---|
+| 1 | Die Landesdaten bleiben Handarbeit (213 + 213 + 69 Dateien für die ganze Gemeinde) | ohne DGM1 steht die Stadt auf dem 30-m-Oberflächenmodell: in Suhls steilen Tälern liegen Straßen in Rinnen und Häuser schief (bekannt aus Veßra: `roadCap`, Buckel bis 1,7 m am Schleusinger Markt) | Reihenfolge Zentrum → Kernstadt → Rest; die Pipeline läuft ohne und tauscht beim nächsten Lauf; Fassadenarbeit im Zentrum erst nach dem DGM1 |
+| 2 | `gh-pages` ist zu 81 % voll | Suhl passt nicht hinein; auch ohne Suhl ist die Grenze nah | Hosting-Entscheidung (2.6) vor Stufe 2 |
+| 3 | Telefon-Speicher | Safari wirft die Seite ab (wie am 22.10. bei 880 MB) | Radien und halbe Texturen am Telefon, Rechnung in 3.4, KTX2 als Reserve; der Test misst nur die Bilder – echte Geräte prüft Falko |
+| 4 | Übersetzen von 8 neuen Programmen auf der Intel-Grafik dauert | Hänger beim ersten Anblick | beim Bau der Zone in 9 km Entfernung, in Portionen (`warmUp`) |
+| 5 | Pakete bei Bedarf mit hineingereichten Abhängigkeiten sind neu für App-Code | Lint oder Build könnten sich sperren | als Erstes in S2-6 prüfen; Ausweg: Code im Bündel (kostet Ladezeit für alle) |
+| 6 | Fotos decken nicht jede Straße (3 254 Panoramax-Bilder in der Gemeinde, Verteilung offen) | Seiten ohne Foto bleiben bei Regeln | Fotoliste für Falko (`suhl-fotos`); Güte je Seite ist sichtbar |
+| 7 | Zahlen des Fotoabgleichs schwanken (GPS, Jahreszeit, Autos im Bild) | falsche Sicherheit oder falscher Alarm | Feinlage, Urteil des Agenten daneben, Schwellen erst nach 50 Paaren |
+| 8 | Datenstände passen nicht zusammen (ETHOS/LoD2, OSM, Luftbild 2024/25; Abrisse in Suhl-Nord) | Häuser, die es nicht mehr gibt | Abgleich von oben listet sie; Merker im Datensatz |
+| 9 | Haken in `welt/welt.js` und `game/camera.js` treffen den Kern, während andere Chats arbeiten | Fehler in Schleusingen, Veßra, Fahrt, Strategie | klein, markiert, angekündigt; deren Tests vor dem Einbau |
+| 10 | Modellmeter ≠ Meter (1,57 %) | falsche Flächen und Erträge in Szenarien | Zahlen nur aus der Pipeline (6.3) |
+| 11 | Actions-Cache (10 GB je Repo) mit Landesdaten, Geofabrik, ETHOS | Cache wird verdrängt, Läufe laden neu | Landesdaten dauerhaft als Release-Anhänge (2.2) |
+| 12 | Ampelpläne, Bewohnerzahlen je Haus, Heizarten sind Annahmen | Szenarien wirken genauer, als sie sind | Merker `q` je Feld, „Warum?“ im Modus |
+| 13 | Tunnel Berg Bock (A 71) braucht Boden unter dem Gelände – das gibt es noch nicht | die am 26.10. gerechnete Autobahn-Route führt hindurch | Route über die Anschlussstelle Suhl-Zentrum der A 73 (ohne Tunnel); Tunnel als späteres Paket |
+| 14 | Lizenzen | Fotos als Texturen nur mit passender Lizenz; der Gebäude-Datensatz ist aus ODbL-Daten abgeleitet | `ATTRIBUTION.md` im Datensatz; Abgleich-Bögen nur auf dem Wegwerf-Zweig |
+
+### 8.2 Fragen, die nur Falko beantworten kann
+
+| # | Frage | Vorschlag |
+|---|---|---|
+| 1 | **Wo liegen die Suhl-Daten?** Eigenes Daten-Repo bei GitHub (du legst es an und schaltest Pages ein, etwa 5 Minuten) oder gleich Cloudflare R2 (Konto, Bucket, Schlüssel)? | Daten-Repo jetzt; R2, wenn Erfurt oder Berlin kommen |
+| 2 | **Landesdaten:** Lädst du zuerst nur das Zentrum (8 Kacheln DGM1, 8 DOM1, 4 LoD2) und legst die ZIP-Dateien unverändert als Release-Anhang ab? Die Liste macht `suhl-bestand`. | ja, dann Kernstadt (57 + 57 + 20) |
+| 3 | **Fotos:** Würdest du im Zentrum selbst fotografieren, wo Straßenfotos fehlen – und dürfen deine Fotos als Texturen der Wahrzeichen dienen? | ja; Liste von `suhl-fotos` |
+| 4 | **Telefon:** Soll Suhl am iPhone in voller Güte laufen, oder genügt dort eine einfachere Stufe (kürzere Sicht, halbe Texturen)? | einfachere Stufe; volle Güte am Rechner |
+| 5 | **Wann sichtbar?** Soll der Menüknopf „Suhl“ erscheinen, sobald die Stadt aus Daten steht (Stufe 2), oder erst mit dem fertigen Zentrum? | erst in der Vorschau, live nach deinem Blick |
+
+### 8.3 Offen, klärt das Team (nicht Falko)
+
+- Zahlen aus `suhl/bestand` einsetzen (Gebäude nach ETHOS, Straßen-km, Kachelliste, Flugtage, ob es ein echtes Orthofoto gibt).
+- Viertelgrenzen und Namen (`suhl-wissen`: `stadt.md`) → `SUHL.areas`.
+- Liste der Wahrzeichen und ihre Reihenfolge (`wahrzeichen.md`).
+- Was der Was-wäre-wenn-Chat von `SUHL.data` zusätzlich braucht.
+- Messung statt Schätzung: Größe der DGM1-Geländekacheln, Größe der Gebäude-Kacheln, Zeit eines Laufs – am ersten Probesatz Zentrum.
+
+## Für den Suhl-Chat
+
+- Diese Stufe hat keine vorhandene Datei geändert. Alles, was sich außerhalb der Suhl-Ordner ändern soll, steht in 6.4.
+- Vor Stufe 2 nötig: Falkos Antwort auf Frage 1 (Hosting) und die Ankündigung der Haken W1–W3, K1 in `docs/PARALLEL.md`.
+- Erster Schritt der Stufe 2: Paket S2-0, dann ein **Probesatz Zentrum** (11 Kacheln der Stufe 10) aus S2-1 und S2-2, damit
+  S2-6 und S2-8 früh gegen echte Daten laufen.
+- Die Marke in `viz3/src/modules.txt` (Zeile 90) nennt noch `welt/suhl_innen.js` und `welt/suhl_leute.js`; nach diesem Entwurf sind
+  das Pakete unter `src/lazy/`.
+- Nebenbefund: `gh-pages` hält 809 MB von 1 GB; `vorschau/` ist eine zweite Kopie der Website (191 MB).
