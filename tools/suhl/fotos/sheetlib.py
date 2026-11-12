@@ -33,14 +33,18 @@ def fit(draw, text, f, width):
     return text + '…'
 
 
+_failed = set()
+
+
 def _cached(url, cache, pause):
     os.makedirs(cache, exist_ok=True)
     fn = os.path.join(cache, hashlib.sha1(url.encode()).hexdigest() + '.img')
     if not (os.path.exists(fn) and os.path.getsize(fn) > 500):
+        if url in _failed: return None   # asked once in this run already - do not wait for it again
         try:
             raw = slib.get(url, pause=pause, tries=3, timeout=25)
         except Exception as e:
-            print('  picture failed', url[:100], str(e)[:80], flush=True); return None
+            _failed.add(url); print('  picture failed', url[:100], str(e)[:80], flush=True); return None
         with open(fn + '.part', 'wb') as f: f.write(raw)
         os.replace(fn + '.part', fn)
     return fn

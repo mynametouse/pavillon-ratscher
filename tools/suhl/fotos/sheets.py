@@ -14,6 +14,13 @@ PER_STREET = 12
 def spread(ps, n, axis):
     """Farthest-point choice in position along the street and viewing direction; returns the chosen ones in street order."""
     if not ps: return []
+    # pictures from the same spot with the same view (a car waiting at a light) once only
+    seen, uniq = set(), []
+    for p in sorted(ps, key=lambda p: p['id']):
+        key = (round(p['x'] / 4), round(p['y'] / 4), round((p['heading'] or 0) / 15))
+        if key in seen: continue
+        seen.add(key); uniq.append(p)
+    ps = uniq
     ax, ay = math.sin(math.radians(axis)), math.cos(math.radians(axis))
     t = [p['x'] * ax + p['y'] * ay for p in ps]
     span = max(max(t) - min(t), 30.0)
@@ -81,6 +88,16 @@ def main():
         for title, sel in credits:
             f.write(f'\n## {title}\n\n')
             for p in sel: f.write(f"- `{p['id']}` – Foto: {p['author']}, {p['license']}, via Panoramax, {p['date'][:10]} – {p['page']}\n")
+    with open(os.path.join(REF, 'README.md'), 'w', encoding='utf-8') as f:
+        f.write('# ref/suhl-fotos – Kontaktabzüge und Karten zur Fotoabdeckung von Suhl (Arbeitszweig, wird nie gemergt)\n\n'
+                'Gemacht vom Hilfs-Agenten `suhl-fotos` (Zweig `suhl/fotos`, Dokument `docs/features/suhl-fotos.md`). Ein einzelner Commit ohne Vorgeschichte; '
+                'er wird bei jedem neuen Stand ersetzt.\n\n'
+                '- `zentrum/` – Kontaktabzüge der Panoramax-Straßenfotos je Straße und Ort des Zentrums (je Blatt sechs Bilder, höchstens 1024 px; '
+                'unter jedem Bild: Kennung, Ort, Blickrichtung, Datum, Urheber, Lizenz, Position, Bildwinkel). `index.json` nennt die Fotos je Blatt.\n'
+                '- `karten/` – Abdeckungskarten der Kernstadt und des Zentrums.\n'
+                '- `commons/` – Kontaktabzüge von Wikimedia-Commons-Fotos (nur wenn der Lauf in GitHub Actions fertig wurde), mit eigener `CREDITS.md`.\n'
+                '- `CREDITS.md` – Urheber, Lizenz und Quelle jedes Fotos.\n\n'
+                'Straßenfotos können Menschen und Kennzeichen zeigen (bei Panoramax verpixelt). Die Bilder bleiben auf diesem Zweig und gehen nicht in die App.\n')
     au = collections.Counter(byid[i]['author'] for i in used)
     print(n_sheets, 'sheets for', len(groups), 'streets and places,', len(used), 'different pictures,', dict(au))
 

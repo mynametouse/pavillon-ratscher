@@ -43,8 +43,14 @@ def load_photos():
     ph = [p for p in slib.load('panoramax.json.gz')['photos']]
     try: ph += [p for p in slib.load('kartaview.json')['photos'] if p.get('place', '').find('Vergleich') < 0 and p.get('heading') is not None]
     except Exception: pass
-    for p in ph: p['x'], p['y'] = slib.xy(p['lat'], p['lon'])
-    return ph
+    # the same picture uploaded twice (same author, same second, same place) counts once
+    seen, out = set(), []
+    for p in ph:
+        key = ((p['author'] or '').lower(), p['date'], round(p['lat'], 5), round(p['lon'], 5))
+        if key in seen: continue
+        seen.add(key); out.append(p)
+    for p in out: p['x'], p['y'] = slib.xy(p['lat'], p['lon'])
+    return out
 
 
 def grid_of(items, cell):
@@ -293,7 +299,7 @@ def main():
     res = dict(
         version=1, made=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), areas=areas.source,
         method=dict(step_m=STEP, near_m=NEAR, along_m=ALONG, behind_m=BEHIND, side_angle_deg=SIDE_ANGLE, landmark_radius_m=LOOK_R,
-                    street_photos='Panoramax (' + str(sum(1 for p in photos if p['source'] == 'panoramax')) + ')' + (', KartaView (' + str(sum(1 for p in photos if p['source'] == 'kartaview')) + ')' if any(p['source'] == 'kartaview' for p in photos) else ''),
+                    street_photos='Panoramax (' + str(sum(1 for p in photos if p['source'] == 'panoramax')) + ' different pictures; pictures uploaded twice count once)' + (', KartaView (' + str(sum(1 for p in photos if p['source'] == 'kartaview')) + ')' if any(p['source'] == 'kartaview' for p in photos) else ''),
                     streets='OpenStreetMap ways with highway=' + '/'.join(sorted(ROAD)) + ' (klasse strasse) and ' + '/'.join(sorted(PATH)) + ' (klasse weg), with a name; ways of one name within 250 m are one street',
                     sides='seite_a/seite_b are named after the compass side of the street axis; rough for winding streets',
                     quarter='nearest OSM place point (suburb, quarter, neighbourhood, village, hamlet) to the middle of the street'),

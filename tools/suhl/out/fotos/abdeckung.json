@@ -1,6 +1,6 @@
 {
  "version": 1,
- "made": "2026-11-12T23:28Z",
+ "made": "2026-11-12T23:32Z",
  "areas": "suhl-bestand",
  "method": {
   "step_m": 5.0,
@@ -9,7 +9,7 @@
   "behind_m": 8.0,
   "side_angle_deg": 60.0,
   "landmark_radius_m": 80.0,
-  "street_photos": "Panoramax (3254)",
+  "street_photos": "Panoramax (2970 different pictures; pictures uploaded twice count once)",
   "streets": "OpenStreetMap ways with highway=living_street/motorway/motorway_link/pedestrian/primary/primary_link/residential/road/secondary/secondary_link/service/tertiary/tertiary_link/trunk/trunk_link/unclassified (klasse strasse) and bridleway/corridor/cycleway/footway/path/steps/track (klasse weg), with a name; ways of one name within 250 m are one street",
   "sides": "seite_a/seite_b are named after the compass side of the street axis; rough for winding streets",
   "quarter": "nearest OSM place point (suburb, quarter, neighbourhood, village, hamlet) to the middle of the street"
@@ -26,7 +26,7 @@
     "anteil_beide_seiten_mittel": 0.057,
     "strassen_ohne_foto": 187,
     "strassen_ganz": 23,
-    "fotos": 1420
+    "fotos": 1164
    },
    "wege": {
     "strassen": 33,
@@ -38,7 +38,7 @@
     "anteil_beide_seiten_mittel": 0.023,
     "strassen_ohne_foto": 24,
     "strassen_ganz": 0,
-    "fotos": 49
+    "fotos": 47
    },
    "plaetze_umriss": {
     "strassen": 6,
@@ -50,7 +50,7 @@
     "anteil_beide_seiten_mittel": 0.0,
     "strassen_ohne_foto": 5,
     "strassen_ganz": 0,
-    "fotos": 2
+    "fotos": 1
    },
    "strassen_ohne_namen": {
     "laenge_km": 129.29,
@@ -68,7 +68,7 @@
     "anteil_beide_seiten_mittel": 0.112,
     "strassen_ohne_foto": 21,
     "strassen_ganz": 10,
-    "fotos": 276
+    "fotos": 182
    },
    "wege": {
     "strassen": 2,
@@ -92,7 +92,7 @@
     "anteil_beide_seiten_mittel": 0.0,
     "strassen_ohne_foto": 5,
     "strassen_ganz": 0,
-    "fotos": 2
+    "fotos": 1
    },
    "strassen_ohne_namen": {
     "laenge_km": 7.57,
@@ -123,7 +123,7 @@
    "anteil_beide_seiten_mittel": 0.067,
    "strassen_ohne_foto": 8,
    "strassen_ganz": 0,
-   "fotos": 195
+   "fotos": 114
   },
   "Goldlauter": {
    "strassen": 25,
@@ -183,7 +183,7 @@
    "anteil_beide_seiten_mittel": 0.009,
    "strassen_ohne_foto": 19,
    "strassen_ganz": 0,
-   "fotos": 17
+   "fotos": 16
   },
   "Lauter": {
    "strassen": 10,
@@ -231,7 +231,7 @@
    "anteil_beide_seiten_mittel": 0.001,
    "strassen_ohne_foto": 33,
    "strassen_ganz": 0,
-   "fotos": 20
+   "fotos": 12
   },
   "Suhl Nord": {
    "strassen": 33,
@@ -243,7 +243,7 @@
    "anteil_beide_seiten_mittel": 0.067,
    "strassen_ohne_foto": 15,
    "strassen_ganz": 2,
-   "fotos": 248
+   "fotos": 247
   },
   "Suhl-Mitte (Ortspunkt Suhl)": {
    "strassen": 71,
@@ -255,7 +255,7 @@
    "anteil_beide_seiten_mittel": 0.097,
    "strassen_ohne_foto": 25,
    "strassen_ganz": 13,
-   "fotos": 520
+   "fotos": 335
   }
  },
  "strassenklasse": {
@@ -269,7 +269,7 @@
    "anteil_beide_seiten_mittel": 0.037,
    "strassen_ohne_foto": 5,
    "strassen_ganz": 0,
-   "fotos": 27
+   "fotos": 18
   },
   "pedestrian": {
    "strassen": 3,
@@ -293,7 +293,7 @@
    "anteil_beide_seiten_mittel": 0.022,
    "strassen_ohne_foto": 144,
    "strassen_ganz": 10,
-   "fotos": 572
+   "fotos": 435
   },
   "secondary": {
    "strassen": 11,
@@ -305,7 +305,7 @@
    "anteil_beide_seiten_mittel": 0.148,
    "strassen_ohne_foto": 0,
    "strassen_ganz": 4,
-   "fotos": 711
+   "fotos": 545
   },
   "service": {
    "strassen": 40,
@@ -341,7 +341,7 @@
    "anteil_beide_seiten_mittel": 0.125,
    "strassen_ohne_foto": 5,
    "strassen_ganz": 3,
-   "fotos": 150
+   "fotos": 147
   }
  },
  "zentrum_schlecht": [
@@ -798,7 +798,7 @@
     "street Steinweg",
     "area Steinweg [Fläche]"
    ],
-   "fotos_bis_80m": 6,
+   "fotos_bis_80m": 3,
    "fotos_mit_blick": 0,
    "je_urheber": {},
    "foto_ids": []
@@ -902,8 +902,8 @@
    "art": "leisure=park",
    "lat": 50.6074453,
    "lon": 10.6907956,
-   "fotos_bis_80m": 24,
-   "fotos_mit_blick": 10
+   "fotos_bis_80m": 14,
+   "fotos_mit_blick": 6
   },
   {
    "name": "Cineplex",
@@ -911,8 +911,8 @@
    "art": "amenity=cinema",
    "lat": 50.6089282,
    "lon": 10.6860016,
-   "fotos_bis_80m": 28,
-   "fotos_mit_blick": 9
+   "fotos_bis_80m": 10,
+   "fotos_mit_blick": 3
   },
   {
    "name": "Alfred Herzberg",
@@ -920,7 +920,7 @@
    "art": "historic=memorial",
    "lat": 50.6066954,
    "lon": 10.6839792,
-   "fotos_bis_80m": 48,
+   "fotos_bis_80m": 16,
    "fotos_mit_blick": 0
   },
   {
@@ -1055,7 +1055,7 @@
    "art": "building=chapel",
    "lat": 50.6082633,
    "lon": 10.6905632,
-   "fotos_bis_80m": 6,
+   "fotos_bis_80m": 3,
    "fotos_mit_blick": 0
   }
  ],
@@ -1089,7 +1089,7 @@
     "seite_b_m": 66.6,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.287,
-    "fotos": 32,
+    "fotos": 16,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -1101,7 +1101,7 @@
     "seite_b_m": 32.7,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.228,
-    "fotos": 18,
+    "fotos": 9,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -1617,7 +1617,7 @@
     "seite_b_m": 10.6,
     "anteil_seite_a": 0.034,
     "anteil_seite_b": 0.006,
-    "fotos": 15,
+    "fotos": 9,
     "neuestes": "2025-12-30",
     "aeltestes": "2025-12-27"
    },
@@ -1629,7 +1629,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.0,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -3495,7 +3495,7 @@
     "seite_b_m": 24.9,
     "anteil_seite_a": 0.061,
     "anteil_seite_b": 0.015,
-    "fotos": 14,
+    "fotos": 10,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -3601,7 +3601,7 @@
     "seite_b_m": 22.9,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.081,
-    "fotos": 36,
+    "fotos": 14,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -3699,7 +3699,7 @@
     "seite_b_m": 4.5,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.041,
-    "fotos": 6,
+    "fotos": 3,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -3711,7 +3711,7 @@
     "seite_b_m": 4.5,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.041,
-    "fotos": 6,
+    "fotos": 3,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -3741,7 +3741,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.0,
-    "fotos": 2,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -3753,7 +3753,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.0,
-    "fotos": 2,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -3794,7 +3794,7 @@
     "seite_b_m": 36.4,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.045,
-    "fotos": 42,
+    "fotos": 14,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -3806,7 +3806,7 @@
     "seite_b_m": 36.4,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.046,
-    "fotos": 42,
+    "fotos": 14,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -4065,7 +4065,7 @@
     "seite_b_m": 9.6,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.024,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -4077,7 +4077,7 @@
     "seite_b_m": 9.6,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.274,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -4796,7 +4796,7 @@
     "seite_b_m": 21.2,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 1.0,
-    "fotos": 6,
+    "fotos": 2,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -4808,7 +4808,7 @@
     "seite_b_m": 21.2,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 1.0,
-    "fotos": 6,
+    "fotos": 2,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -5117,7 +5117,7 @@
     "seite_b_m": 91.9,
     "anteil_seite_a": 0.333,
     "anteil_seite_b": 0.032,
-    "fotos": 151,
+    "fotos": 77,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -5129,7 +5129,7 @@
     "seite_b_m": 91.9,
     "anteil_seite_a": 0.381,
     "anteil_seite_b": 0.037,
-    "fotos": 139,
+    "fotos": 73,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -6160,7 +6160,7 @@
     "seite_b_m": 25.4,
     "anteil_seite_a": 0.341,
     "anteil_seite_b": 0.009,
-    "fotos": 72,
+    "fotos": 68,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -6172,7 +6172,7 @@
     "seite_b_m": 25.4,
     "anteil_seite_a": 0.234,
     "anteil_seite_b": 0.012,
-    "fotos": 39,
+    "fotos": 35,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -6623,7 +6623,7 @@
     "seite_b_m": 1030.2,
     "anteil_seite_a": 0.021,
     "anteil_seite_b": 0.376,
-    "fotos": 109,
+    "fotos": 108,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -6847,7 +6847,7 @@
     "seite_b_m": 28.6,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.143,
-    "fotos": 12,
+    "fotos": 6,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -7432,7 +7432,7 @@
     "seite_b_m": 16.1,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.096,
-    "fotos": 6,
+    "fotos": 4,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -8499,7 +8499,7 @@
     "seite_b_m": 204.8,
     "anteil_seite_a": 0.107,
     "anteil_seite_b": 0.229,
-    "fotos": 52,
+    "fotos": 27,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -8798,7 +8798,7 @@
     "seite_b_m": 67.8,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.622,
-    "fotos": 21,
+    "fotos": 13,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -9553,7 +9553,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.266,
     "anteil_seite_b": 0.0,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -9925,7 +9925,7 @@
     "seite_b_m": 18.9,
     "anteil_seite_a": 0.263,
     "anteil_seite_b": 0.274,
-    "fotos": 6,
+    "fotos": 4,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -10527,7 +10527,7 @@
     "seite_b_m": 9.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.048,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -10539,7 +10539,7 @@
     "seite_b_m": 9.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.048,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -10648,7 +10648,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.044,
     "anteil_seite_b": 0.0,
-    "fotos": 6,
+    "fotos": 2,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -10811,7 +10811,7 @@
     "seite_b_m": 81.3,
     "anteil_seite_a": 0.046,
     "anteil_seite_b": 0.68,
-    "fotos": 28,
+    "fotos": 14,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -10823,7 +10823,7 @@
     "seite_b_m": 67.2,
     "anteil_seite_a": 0.052,
     "anteil_seite_b": 0.637,
-    "fotos": 24,
+    "fotos": 12,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -11290,7 +11290,7 @@
     "seite_b_m": 10.2,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.058,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -11302,7 +11302,7 @@
     "seite_b_m": 10.2,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.058,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -11497,7 +11497,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.124,
     "anteil_seite_b": 0.0,
-    "fotos": 11,
+    "fotos": 10,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -11529,7 +11529,7 @@
     "seite_b_m": 34.9,
     "anteil_seite_a": 0.535,
     "anteil_seite_b": 0.22,
-    "fotos": 11,
+    "fotos": 10,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -11566,7 +11566,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.048,
     "anteil_seite_b": 0.0,
-    "fotos": 4,
+    "fotos": 2,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -11871,7 +11871,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.151,
     "anteil_seite_b": 0.0,
-    "fotos": 6,
+    "fotos": 3,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -11883,7 +11883,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.151,
     "anteil_seite_b": 0.0,
-    "fotos": 6,
+    "fotos": 3,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -11946,7 +11946,7 @@
     "seite_b_m": 58.7,
     "anteil_seite_a": 0.377,
     "anteil_seite_b": 0.075,
-    "fotos": 29,
+    "fotos": 27,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -12467,7 +12467,7 @@
     "seite_b_m": 49.7,
     "anteil_seite_a": 0.01,
     "anteil_seite_b": 0.012,
-    "fotos": 36,
+    "fotos": 12,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -12846,7 +12846,7 @@
     "seite_b_m": 20.9,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.085,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -12858,7 +12858,7 @@
     "seite_b_m": 20.9,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.098,
-    "fotos": 3,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -13092,7 +13092,7 @@
     "seite_b_m": 23.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.134,
-    "fotos": 10,
+    "fotos": 5,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -13104,7 +13104,7 @@
     "seite_b_m": 23.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.134,
-    "fotos": 10,
+    "fotos": 5,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -13424,7 +13424,7 @@
     "seite_b_m": 75.6,
     "anteil_seite_a": 0.057,
     "anteil_seite_b": 0.132,
-    "fotos": 12,
+    "fotos": 8,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -13722,7 +13722,7 @@
     "seite_b_m": 74.3,
     "anteil_seite_a": 0.33,
     "anteil_seite_b": 0.614,
-    "fotos": 20,
+    "fotos": 10,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -13734,7 +13734,7 @@
     "seite_b_m": 22.1,
     "anteil_seite_a": 0.389,
     "anteil_seite_b": 1.0,
-    "fotos": 8,
+    "fotos": 4,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -13873,7 +13873,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.11,
     "anteil_seite_b": 0.0,
-    "fotos": 6,
+    "fotos": 2,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -14477,7 +14477,7 @@
     "seite_b_m": 222.6,
     "anteil_seite_a": 0.208,
     "anteil_seite_b": 0.749,
-    "fotos": 50,
+    "fotos": 26,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -14807,7 +14807,7 @@
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.096,
     "anteil_seite_b": 0.0,
-    "fotos": 5,
+    "fotos": 3,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -14857,7 +14857,7 @@
     "seite_b_m": 298.3,
     "anteil_seite_a": 0.477,
     "anteil_seite_b": 0.214,
-    "fotos": 186,
+    "fotos": 105,
     "neuestes": "2025-12-30",
     "aeltestes": "2025-12-27"
    },
@@ -14869,7 +14869,7 @@
     "seite_b_m": 130.9,
     "anteil_seite_a": 0.664,
     "anteil_seite_b": 0.576,
-    "fotos": 41,
+    "fotos": 21,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
