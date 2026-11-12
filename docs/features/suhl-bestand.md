@@ -40,6 +40,10 @@ Datei: `tools/suhl/out/bestand/gebiete.geojson` (WGS84; jedes Gebiet trägt sein
   Lautenbergsiedlung, Goldlauter, Heidersbach, Mäbendorf; außerhalb Albrechts (3,9 km vom Mittelpunkt), Dietzhausen (7,1 km),
   Wichtshausen (8,5 km), Vesser (7,1 km), Schmiedefeld am Rennsteig (8,6 km), Gehlberg (10,4 km), Schmücke (7,7 km).
 - **Grenzen von Ortsteilen** sind in OSM nur für Gehlberg (20,62 km²) und Schmiedefeld am Rennsteig (18,26 km²) erfasst.
+- **Achtung beim Rechnen:** Das Zentrum liegt zu 98,2 % in der Kernstadt. 1,2 ha am Nordrand (Waldhang des Dombergs, dort steht
+  kein größeres Gebäude) ragen hinaus, ein OSM-Gebäude ist betroffen. Wer „in der Kernstadt“ prüft, nimmt am besten „Kernstadt
+  oder Zentrum“. Die Kernstadt ragt durch die Vereinfachung der Linie an wenigen Stellen über die Stadtgrenze, zusammen 197 m².
+  Die Flächen sind seit dem ersten Stand (13.11., 0:11 Uhr) unverändert.
 
 ## 2 Gebäude
 
@@ -241,7 +245,7 @@ Datei: `oepnv.json` (Skript `oepnv.py`; freier Deutschland-Fahrplan von gtfs.de,
 - **Kernstadt:** Die Regel ist eine von mehreren möglichen. Wer Goldlauter, Heidersbach und Mäbendorf nicht zur Kernstadt zählen
   will, nimmt die strengere Regel – dann sinkt P2 entsprechend.
 - **Zentrum:** eine einfache Hülle um die Landmarken, nicht an Straßen ausgerichtet. Für den Bau des Pilotquartiers sollte die
-  Grenze an Straßenachsen gelegt werden.
+  Grenze an Straßenachsen gelegt werden; dabei kann die Kernstadt gleich um das Zentrum ergänzt werden.
 - **ETHOS und OSM** sind verschieden alt (ETHOS: Stand des LoD2 von 2024 oder früher, OSM: heute). Neubauten und Abrisse seither
   sind nicht einzeln geprüft.
 - **Haltestellen:** Bahnhöfe im Fahrplan sind nicht eigens ausgewertet; die sechs Bahnhöfe oben stammen aus OSM.

@@ -158,6 +158,8 @@ def main():
         'flaeche_km2': round(zen.area / 1e6, 3), 'bbox_utm32_km': sblib.bbox_km(zen), 'gebaeude_osm': len(inside_b),
         'regel': (f'konvexe Hülle der Landmarken (Marktplatz, Steinweg, Rathaus am Markt, Hauptkirche St. Marien, Kreuzkirche, Waffenmuseum/'
                   f'Malzhaus, Congress Centrum Suhl, Platz der Deutschen Einheit, Bahnhof, Neues Rathaus) aus OSM, um {ZENTRUM_BUF:.0f} m gepuffert'),
+        'anteil_in_kernstadt_prozent': round(100 * zen.intersection(kern).area / zen.area, 1),
+        'hinweis': 'das Zentrum ragt über die Kernstadt hinaus, wo kein Gebäude steht (Wald am Domberg, Bahn): für Prüfungen "in der Kernstadt" kernstadt ODER zentrum nehmen',
         'landmarken': [{'key': k, 'name': lab, 'osm': {'n': 'node', 'w': 'way', 'r': 'relation'}[kd] + f'/{i}',
                         'drin': bool(pz.contains(g.representative_point()))} for k, lab, kd, i, t, g in lm],
         'strassen': streets, 'gebaeude_mit_namen': named_b, 'quelle': 'OpenStreetMap, ODbL'}))
