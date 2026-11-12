@@ -301,7 +301,7 @@ def maps(a, o, fc, G, zen300, kern300, routes, cor, T1, T2):
     draw('4_stadt_west', (full[0], full[1], mid, full[3]), 'Stadt Suhl, Westhälfte: 1-km-Kacheln DGM1/DOM1 (Ost/Nord in km)', px=1300)
     draw('5_stadt_ost', (mid, full[1], full[2], full[3]), 'Stadt Suhl, Osthälfte: 1-km-Kacheln DGM1/DOM1 (Ost/Nord in km)', px=1300)
     if routes:
-        draw('6_korridor_P4', (allb[0] if allb[0] < full[0] else 617000, allb[1], allb[2], full[1] + 2000),
+        draw('6_korridor_P4', (allb[0] if allb[0] < full[0] else 617000, allb[1], allb[2], full[1] + 3000),
              'P4 Straßen Garten – Suhl (Autobahn A 73/A 71 und Landstraße): 1-km-Kacheln DGM1/DOM1', px=1300)
     f2 = (math.floor(allb[0] / 2000) * 2000, math.floor(allb[1] / 2000) * 2000, math.ceil(allb[2] / 2000) * 2000, math.ceil(allb[3] / 2000) * 2000)
     draw('7_lod2_2km', f2, 'LoD2-Gebäude: 2-km-Kacheln (Ost/Nord in km, gerade Zahlen)', s=2, px=1300)

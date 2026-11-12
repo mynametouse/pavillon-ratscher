@@ -1,5 +1,5 @@
 {
- "made": "2026-11-12T23:39:07Z",
+ "made": "2026-11-12T23:40:21Z",
  "auftrag": "docs/plans/auftraege/suhl-bestand.md",
  "doku": [
   "docs/features/suhl-bestand.md",
@@ -295,7 +295,7 @@
   },
   "zeilen_csv": 526,
   "datei": "tools/suhl/out/bestand/kacheln.json",
-  "stand": "2026-11-12T23:20:44Z"
+  "stand": "2026-11-12T23:39:56Z"
  },
  "osm": {
   "quelle": "OSM API 0.6 map calls (39 boxes)",

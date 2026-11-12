@@ -1,5 +1,5 @@
 {
- "made": "2026-11-12T23:20:44Z",
+ "made": "2026-11-12T23:39:56Z",
  "regel": "P1 = zentrum + 300 m, P2 = kernstadt + 300 m, P3 = the rest of stadt, P4 = the two road corridors garden -> Suhl (motorway A 73/A 71\n  and country road, routes of feat/suhl-fahrt, 600 m to both sides) outside P1-P3. A tile takes the best priority of what it touches\n  (touching = more than 1 m2 in common).",
  "produkte": {
   "DGM1": {
