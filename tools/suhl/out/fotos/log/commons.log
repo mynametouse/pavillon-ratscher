@@ -1,0 +1,31 @@
+geosearch: 96 circles to ask
+  API error cirrussearch-too-busy-error Search is currently too busy. Please try again later.
+geosearch: 2855 geotagged files, 144 circles asked
+category tree: level 0: 1 categories, 64 files so far
+category tree: level 1: 25 categories, 208 files so far
+category tree: level 2: 94 categories, 1557 files so far
+category tree: level 3: 360 categories, 4021 files so far
+category tree: level 4: 187 categories, 5935 files so far
+category tree: level 5: 80 categories, 6342 files so far
+category tree: level 6: 18 categories, 6342 files so far
+search 'Suhl Bundesarchiv': 586 files
+search 'Suhl "Deutsche Fotothek"': 30 files
+6446 files to describe (604 skipped by name)
+details: 50/6446
+details: 550/6446
+details: 1050/6446
+details: 1550/6446
+details: 2050/6446
+details: 2550/6446
+details: 3050/6446
+details: 3550/6446
+details: 4050/6446
+details: 4550/6446
+details: 5050/6446
+details: 5550/6446
+details: 6050/6446
+/home/runner/work/pavillon-ratscher/pavillon-ratscher/tools/suhl/out/fotos/commons.json.gz {'geotagged': 2855, 'in_category_tree': 6342, 'historic_search': 615, 'described': 6446, 'kept': 6229} 1107 calls
+gebiet {'None': 2871, 'umland': 975, 'zentrum': 1332, 'stadt': 809, 'kernstadt': 242}
+position {'None': 2871, 'camera': 3299, 'object': 59} with heading 250
+license [('CC BY-SA 4.0', 3985), ('CC BY-SA 3.0 de', 691), ('CC BY 4.0', 392), ('CC BY-SA 3.0', 386), ('CC0', 347), ('CC BY 3.0', 122), ('CC BY-SA 2.0', 100), ('Public domain', 97), ('CC BY 2.0', 36), ('FAL', 32), ('CC BY-SA 2.5', 13), ('Attribution', 8)]
+relevant 5536 free 6185
