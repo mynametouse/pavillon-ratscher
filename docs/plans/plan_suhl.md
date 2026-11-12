@@ -209,6 +209,16 @@ Zum Vergleich: die ganze `stadt` bis Stufe 12 wären 408 MB Bild und 39 920 Date
 | Fernmodelle | 8–15 MB | Schätzung |
 | **Suhl gesamt, eine Version** | **etwa 240–330 MB** | Schätzung; Stufe 2 misst es am ersten Lauf |
 
+Dasselbe als **MB je km²** (gemessen auf `gh-pages`: Testblock / Zone Veßra; die Gelände-Werte gelten für das glatte 30-m-Modell):
+
+| Produkt | Stufe 12 | Stufe 11 | Stufe 10 | Stufe 9 |
+|---|---|---|---|---|
+| Luftbild (WebP 512 px) | 1,74 / 1,79 | 0,68 / 0,66 | 0,19 / 0,18 | 0,054 / 0,047 |
+| Luftbild ohne gedruckte Dächer (`welt-test/v2/`) | 2,21 | 0,79 | 0,20 | – |
+| Gelände (WTH1) | 0,25 / 0,23 | 0,077 / 0,073 | 0,030 / 0,028 | 0,012 / 0,011 |
+| Gebäude-Zellen heute (`gebaeude/z/`, 9,5 MB für 217 Zellen à 0,16 km²) | 0,27 (Dörfer und Stadtrand) | | | |
+| Gebäude-Datensätze Suhl, `kernstadt` | **Schätzung** 1,4–2,8 (20 000–25 000 Gebäude à 1,5–2,5 kB auf 22 km²) | | | |
+
 Rechenzeit (Anhalt): der Block Veßra (4 359 Dateien, 71,8 MB) brauchte 273 s (`docs/features/vessra.md`, Lauf 39918421150). Der
 Suhl-Boden hat gut doppelt so viele Dateien; dazu DGM1 in Blöcken. **Schätzung** 20–40 Minuten je Lauf, gut innerhalb der Grenze
 eines Jobs.
@@ -366,8 +376,8 @@ komprimierte Formate mit 4–8 Bit je Bildpunkt statt 32); das ist der Hebel, we
 | Fensterlicht | `uWinP`, `uNight` in `world/village.js` (`VILLAGE.night()`), nach Uhrzeit | derselbe Takt: das Suhl-Fassadenprogramm liest diese Werte; Läden leuchten bis Ladenschluss (OSM `opening_hours`, sonst **Annahme** 9–18 Uhr); L2 zeigt Fensterpunkte, L3 einen Schimmer |
 | Laternen | Emission, Lichtflecken, die 8 nächsten beleuchten Wände (`uLampV`), 2 geliehene Lichter (Veßra) | gleich; Laternen-Standorte aus `m/` |
 | Nasser Boden, Schnee | `wetter/wx_boden.js` erkennt Boden- und Dachmaterial am Programm-Schlüssel (`welt-tile`, `geoterrain`, `fields` …) und ändert nur Farbe und Rauheit | Suhl-Materialien lesen `WXBODEN.S.shown` und `WXBODEN.S.snowShown` selbst und setzen ihre Uniforms – kein Haken nötig; die Boden-Kacheln werden schon erkannt |
-| Regen | „Kein Regen unter Dächern“: Tiefenkarte von oben (64 × 64) | funktioniert mit Suhls Dächern von selbst |
-| Jahreszeit | Lärchen und Laub nach Spieldatum (`seasonOf` in `world/forest.js`) | Laubbäume der Stadt nach demselben Wert. **Grenze:** das Luftbild zeigt immer den Flugtag (April/Mai, Laub teils noch nicht da). |
+| Regen | „Kein Regen unter Dächern“: die Szene wird von oben in eine Tiefenkarte gezeichnet (64 × 64, `docs/features/wetter.md`) | **Annahme:** Suhls Dächer zählen dabei von selbst mit; im Test prüfen |
+| Jahreszeit | Lärchen und Laub nach Spieldatum (`seasonOf` in `world/forest.js`) | Laubbäume der Stadt nach demselben Wert. **Grenze:** das Luftbild zeigt immer den Flugtag (um Ratscher 7.4.2024 bis 12.5.2025, Laub teils noch nicht da; die Flugtage über Suhl bestimmt `suhl-bestand`). |
 | Schatten | Häuser des Dorfs werfen keine eigenen Schatten; die Schatten des Luftbilds bleiben | zunächst gleich. Für später (Stufe 3, optional): Schatten der Häuser aus dem Oberflächenmodell als Horizontkarte je Kachel – dann stimmt der Schatten zu jeder Tageszeit. |
 
 ## 4 „Realer als Schleusingen“ – die Hebel
@@ -704,3 +714,5 @@ S2-8 Bögen liefert; S3-7 danach. Danach Viertel für Viertel dieselben Pakete (
 - Die Marke in `viz3/src/modules.txt` (Zeile 90) nennt noch `welt/suhl_innen.js` und `welt/suhl_leute.js`; nach diesem Entwurf sind
   das Pakete unter `src/lazy/`.
 - Nebenbefund: `gh-pages` hält 809 MB von 1 GB; `vorschau/` ist eine zweite Kopie der Website (191 MB).
+- Zahlen anderer Agenten in diesem Dokument stammen von `suhl/bestand` (`3131dc3`, `05c7235`), `suhl/fotos` (`8579d49`) und
+  `suhl/wissen` (`3027bf4`); nach deren Abschluss einmal gegenlesen (Gebäude nach ETHOS, Flugtage, Viertelgrenzen).
