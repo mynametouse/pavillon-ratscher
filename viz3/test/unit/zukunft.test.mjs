@@ -69,6 +69,9 @@ test('Klimaanpassung: precaution lowers the expected damage; the flood level and
     b = Z.calc('klima', 'vorsorge', 2035).raw;
   assert.ok(b.ead < a.ead * 0.5 && b.kosten.inv[1] > 50000);
   assert.ok(Z.calc('klima', 'hoch', 2045).world.flood > 1.5);
+  const d23 = Z.calc('klima', 'dez23', 2026);
+  assert.ok(d23.world.flood > 0.5 && d23.world.flood < Z.calc('klima', 'hoch', 2026).world.flood);
+  assert.ok(/7\/9624/.test(JSON.stringify(d23.ind.kosten.why)));
   assert.ok(Z.calc('klima', 'duerre', 2060).world.dry > Z.calc('klima', 'duerre', 2026).world.dry);
   assert.equal(Z.calc('klima', 'regen', 2030).world.rain, 'starkregen');
 });

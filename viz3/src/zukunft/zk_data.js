@@ -97,6 +97,10 @@ export const ZKDATA = (() => {
       'Hochwassernachrichtenzentrum Thüringen: Hochwasservorsorge',
       'https://hnz.thueringen.de/hochwasservorsorge/pdf/HWVorsorge_Gesamtdokument.pdf',
     ],
+    dez23: [
+      'Thüringer Landtag, Drucksache 7/9624: Hochwasser im Dezember 2023 (Talsperre Ratscher, Betreiber TFW, etwa 900 000 m³ zurückgehalten)',
+      'https://parldok.thueringer-landtag.de/',
+    ],
     forst: ['ThüringenForst: Waldumbau und Wiederbewaldung', 'https://www.thueringenforst.de/'],
     bwi: ['Bundeswaldinventur: Vorräte und Zuwachs der Fichte', 'https://bwi.info/'],
     waldwissen: ['waldwissen.net: Borkenkäfer und Kalamitätsflächen', 'https://www.waldwissen.net/'],
@@ -172,13 +176,13 @@ export const ZKDATA = (() => {
           id: 'ruf',
           label: 'Rufbus',
           short: 'Rufbus auf Bestellung',
-          text: 'Ein Kleinbus fährt auf Anruf oder per App – Montag bis Samstag, 6 bis 20 Uhr.',
+          text: 'Ein Kleinbus fährt auf Anruf oder per App – Montag bis Samstag, 6 bis 20 Uhr. Gedacht für Ältere ohne Auto, auch abends und am Wochenende, wenn der Linienbus nicht fährt.',
         },
         {
           id: 'takt',
           label: 'Mehr Fahrten',
           short: '6 Fahrten mehr nach Schleusingen',
-          text: 'Sechs zusätzliche Fahrten am Werktag mit dem normalen Linienbus.',
+          text: 'Sechs zusätzliche Fahrten am Werktag mit dem normalen Linienbus – auch für Schülerinnen und Schüler, die nach dem Unterricht oder der AG heimfahren.',
         },
       ],
     },
@@ -204,7 +208,7 @@ export const ZKDATA = (() => {
           id: 'park',
           label: 'Solarpark',
           short: 'Solarpark am Ortsrand',
-          text: 'Eine Freifläche südlich des Dorfs (Annahme für den Ort) mit Modultischen in Reihen.',
+          text: 'Eine Freifläche am südwestlichen Ortsrand (Annahme für den Ort – eine konkrete Planung für Ratscher oder Schleusingen wurde bei einer Suche im November 2026 nicht gefunden) mit Modultischen in Reihen.',
         },
         {
           id: 'waerme',
@@ -234,10 +238,16 @@ export const ZKDATA = (() => {
           text: 'Derselbe Regen, aber mit Rückhaltemulden am Hang, einem größeren Durchlass und Schutz an den Häusern.',
         },
         {
+          id: 'dez23',
+          label: 'Wie im Dezember 2023',
+          short: 'Hochwasser wie im Dezember 2023',
+          text: 'Das Hochwasser vom Dezember 2023: Die Talsperre Ratscher hielt etwa 900 000 m³ zurück, die Schleuse blieb im Dorf meist in der Aue.',
+        },
+        {
           id: 'hoch',
-          label: 'Hochwasser',
-          short: 'Hochwasser der Schleuse',
-          text: 'Die Schleuse tritt über die Ufer – ein Hochwasser, wie es etwa einmal in 100 Jahren kommt.',
+          label: 'Schwerer als 2023',
+          short: 'Hochwasser schwerer als 2023',
+          text: 'Ein Hochwasser, wie es etwa einmal in 100 Jahren kommt (HQ100) – der Rückhalt der Talsperre reicht nicht mehr aus.',
         },
         {
           id: 'duerre',
@@ -251,7 +261,7 @@ export const ZKDATA = (() => {
       id: 'wald',
       label: 'Wald nach dem Käfer',
       icon: '🌲',
-      text: 'Der Fichtenwald an der Klinge stirbt – Hitze, Trockenheit und der Borkenkäfer. Was wächst danach, und was kostet es?',
+      text: 'Der Fichtenwald an der Unteren Klinge, dem Familienwald, stirbt – Hitze, Trockenheit und der Borkenkäfer. Was wächst danach, und was kostet es?',
       variants: [
         { id: 'heute', label: 'Heute', short: 'der Wald wie jetzt', text: 'Der Bestand, wie er heute steht.' },
         {
@@ -326,6 +336,15 @@ export const ZKDATA = (() => {
       ['manfred', 2, 'Mulden und ein größerer Durchlass – genau das, was wir der Stadt seit Jahren sagen.'],
       ['ingrid', 1, 'Die Stadt Schleusingen muss mitzahlen. Aber billiger als jeder Schaden.'],
       ['uwe', 0, 'Wenn die Mulde auf meinem Acker liegt, will ich eine Entschädigung.'],
+    ],
+    'klima/dez23': [
+      [
+        'manfred',
+        1,
+        'Im Dezember 2023 hat die Talsperre viel abgefangen. Gut, dass es sie gibt – darauf verlassen möchte ich mich nicht allein.',
+      ],
+      ['uwe', -1, 'Die Wiese an der Schleuse stand trotzdem unter Wasser. Wer ersetzt mir den Ausfall?'],
+      ['gerhard', 0, 'Wir wissen, wo das Wasser hinläuft. Ein Pegelstand am Dorfeingang wäre schon eine Hilfe.'],
     ],
     'klima/hoch': [
       ['manfred', -2, 'Dezember 2023: die Schleuse war schon einen halben Meter vor der Brücke. Mehr geht nicht.'],
@@ -406,11 +425,16 @@ export const ZKDATA = (() => {
         trips = 6 * 330 * grow,
         perTrip = 30; // € gross per trip (Annahme 20–45; rural on-demand services lie there)
       res.kosten = { inv: [8000, 15000, 30000], yr: [trips * 20, trips * perTrip, trips * 45] };
-      // minibus: 2 × km per trip, shared by 1,4 passengers; 40 % of the trips replace a car trip
-      const vehKm = (trips * km * 2) / 1.4,
-        em = (vehKm * EF_KLEIN[i]) / 1000,
-        saved = (trips * 0.4 * km * 2 * pkw) / 1000;
-      res.co2 = [(em - saved) * 0.6, em - saved, (em - saved) * 1.5];
+      // CO2 of the Rufbus = what the minibus drives (empty runs included) minus the car trips it replaces. Three assumptions decide the sign
+      // (ranges, Annahme): passengers per vehicle run, the share of empty/positioning km, and the share of rides that replace a car trip.
+      //   best case:  3,5 passengers, +30 % km, 70 % replace a car   typical: 1,8 / +60 % / 40 %   worst: 1,2 / +80 % / 25 %
+      const CASE = { best: [3.5, 1.3, 0.7], mid: [1.8, 1.6, 0.4], worst: [1.2, 1.8, 0.25] };
+      const co = k => {
+        const [occ, dead, repl] = CASE[k];
+        return (trips * km * (dead / occ) * EF_KLEIN[i]) / 1000 - (trips * repl * km * pkw) / 1000;
+      };
+      res.co2 = [co('best'), co('mid'), co('worst')];
+      res.rufCase = CASE;
       res.houses = 2;
       res.level = 1;
       res.world.rufbus = 1;
@@ -515,6 +539,16 @@ export const ZKDATA = (() => {
       }
       res.world.rain = 'starkregen';
       res.world.wet = 1;
+    } else if (vid === 'dez23') {
+      // reference event: Dec 2023. The reservoir held back about 900 000 m³ (Drs. 7/9624), so the village was largely spared.
+      // Annahme: level 0,9 m over the bed in the village, two houses with wet cellars, 15 000 € each; the next such event once in 10 years
+      const dmg = 30000;
+      const ead = dmg * 0.1 * at([1, 1.05, 1.1, 1.2, 1.3], y);
+      res.dmg = dmg;
+      res.houses = 2;
+      res.ead = ead;
+      res.kosten = { inv: [0, 0, 0], yr: [ead * 0.5, ead, ead * 2] };
+      res.world.flood = 0.9 * at([1, 1.02, 1.04, 1.07, 1.1], y);
     } else if (vid === 'hoch') {
       const dmg = 315000; // Annahme: 9 Häuser × 35 000 €
       const ead = dmg * 0.01 * at([1, 1.02, 1.04, 1.07, 1.1], y) + dmg * 0.002;
@@ -663,7 +697,7 @@ export const ZKDATA = (() => {
       );
     if (t === 'energie' && v === 'park')
       return W(
-        'Annahme: eine Fläche von ' +
+        'Annahme (eine konkrete Planung für Ratscher oder Schleusingen wurde bei einer Suche im November 2026 nicht gefunden): eine Fläche von ' +
           dec(c.field.ha, 1) +
           ' ha trägt ' +
           dec(c.field.kwp / 1000, 1) +
@@ -688,10 +722,16 @@ export const ZKDATA = (() => {
         [SRC.kostra, SRC.klimaatlas],
         true
       );
+    if (t === 'klima' && v === 'dez23')
+      return W(
+        'Bezugsereignis: das Hochwasser vom Dezember 2023. Die Talsperre Ratscher (Betreiber TFW) hielt etwa 900 000 m³ zurück (Landtag Drs. 7/9624). Alles Weitere ist Annahme: Pegel 0,9 m über dem Bachbett im Dorf, zwei Häuser mit nassem Keller zu je 15 000 €, ein solches Ereignis etwa alle zehn Jahre, mit dem Klima häufiger. Die Zahlen sind mit der Chronik und der Gemeinde zu prüfen.',
+        [SRC.dez23, SRC.hnz],
+        true
+      );
     if (t === 'klima' && v === 'hoch')
       return W(
-        'Annahme: neun Häuser an der Schleuse betroffen, je 35 000 €. Die Hochwassergefahrenkarte von Thüringen (HQ100) konnte nicht abgerufen werden – die Zahl muss mit der Karte des Landes geprüft werden. Erwartet im Jahr: 1 % mal Schaden, dazu kleine Hochwasser. Im Dezember 2023 war die Schleuse hoch (Entdeckerbuch).',
-        [SRC.hnz, SRC.buch],
+        'Annahme: neun Häuser an der Schleuse betroffen, je 35 000 €. Die Hochwassergefahrenkarte von Thüringen (HQ100) konnte nicht abgerufen werden – die Zahl muss mit der Karte des Landes geprüft werden. Erwartet im Jahr: 1 % mal Schaden, dazu kleine Hochwasser. Bezug ist das Hochwasser vom Dezember 2023, bei dem die Talsperre etwa 900 000 m³ zurückhielt (Drs. 7/9624) – hier reicht dieser Rückhalt nicht.',
+        [SRC.hnz, SRC.buch, SRC.dez23],
         true
       );
     if (t === 'klima' && v === 'duerre')
@@ -751,7 +791,10 @@ export const ZKDATA = (() => {
           dec(EF_BUS[i] * 1000, 0) +
           ' g je km, Kleinbus: ' +
           dec(EF_KLEIN[i] * 1000, 0) +
-          ' g je km (Annahme; elektrisch ab 2035 deutlich weniger). Was ein Bus oder Rufbus ausstößt, steht gegen die Autofahrten, die er ersetzt. Ein schwach besetzter Bus verursacht mehr CO₂ als die Autos, die er ersetzt – das ändert sich erst, wenn er elektrisch fährt.' +
+          ' g je km (Annahme; elektrisch ab 2035 deutlich weniger). Was ein Bus oder Rufbus ausstößt, steht gegen die Autofahrten, die er ersetzt. Ein schwach besetzter Bus verursacht mehr CO₂ als die Autos, die er ersetzt – das ändert sich erst, wenn er gut besetzt ist und elektrisch fährt.' +
+          (v === 'ruf'
+            ? ' Rufbus gerechnet: gefahrene Kleinbus-km (Leerfahrten eingerechnet) minus ersetzte Autofahrten. Drei Annahmen, jeweils als Spanne: Fahrgäste je Fahrt (1,2 – 1,8 – 3,5), Anteil Leer- und Anfahrtkilometer (+80 % – +60 % – +30 %) und der Anteil der Fahrten, die ein Auto ersetzen (25 % – 40 % – 70 %). Am meisten entscheidet die Besetzung: erst mit gut drei Fahrgästen und einem E-Kleinbus (ab etwa 2035) kippt das Vorzeichen ins Minus; heute mit Diesel bleibt es ein Plus. Belastbare Zahlen für Ratscher gibt es nicht.'
+            : '') +
           (v === 'bank'
             ? ' Die Mitfahrbank: das Auto fährt ohnehin, ersetzt werden nur Fahrten, die sonst allein im eigenen Auto gemacht würden (Annahme: 0,6 Fahrten am Tag, 30 % davon).'
             : ''),

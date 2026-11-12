@@ -183,6 +183,17 @@ export const ZUKUNFT = (() => {
       [Z.SRC.hnz],
     ],
     [
+      'zk:hq23',
+      'natur',
+      '🌊',
+      'Hochwasser im Dezember 2023 – Rückhalt der Talsperre',
+      'klima',
+      'dez23',
+      'Im Dezember 2023 hielt die Talsperre Ratscher (Betreiber TFW) etwa 900 000 m³ Wasser zurück (Landtag Drs. 7/9624). Ein Rückhaltebecken senkt die Spitze der Welle, aber es füllt sich: Kommt mehr Wasser, als hineinpasst, läuft es über.',
+      'Im Modell steht das Wasser niedriger als beim schweren Hochwasser; der Pegel im Dorf und die Schäden sind Annahmen.',
+      [Z.SRC.dez23, Z.SRC.hnz],
+    ],
+    [
       'zk:duerre',
       'natur',
       '☀️',
@@ -243,7 +254,7 @@ export const ZUKUNFT = (() => {
     mobil: { top: [245, -105, 260], walk: [236, -96, 100], label: 'Haltestelle am Anger' },
     energie: { top: [230, -330, 520], walk: [250, -230, 0], label: 'Dorfrand' },
     klima: { top: [250, 40, 640], walk: [228, 6, 110], label: 'Schleusebrücke' },
-    wald: { top: [-280, -670, 820], walk: [-120, -440, 200], label: 'Waldrand an der Klinge' },
+    wald: { top: [-280, -670, 820], walk: [-120, -440, 200], label: 'Untere Klinge (Familienwald)' },
   };
   function view(kind) {
     const G = window.GAME,
@@ -383,7 +394,7 @@ body.zk-pres #hotbar,body.zk-pres #moves,body.zk-pres #act2,body.zk-pres #actrow
 <div class="zw"><button type="button" class="zb" data-view="top">Von oben ansehen</button><button type="button" class="zb" data-view="walk">Hingehen: ${esc(FOCUS[S.topic].label)}</button></div>
 <table><thead><tr><th></th><th class="${S.show === 'heute' ? 'zon' : ''}">Heute</th><th class="${S.show === 'a' ? 'zon' : ''}">A · ${esc(Z.variant(S.topic, S.a[S.topic]).short)}</th><th class="${S.show === 'b' ? 'zon' : ''}">B · ${esc(Z.variant(S.topic, S.b[S.topic]).short)}</th></tr></thead><tbody>${rows}</tbody></table>
 ${why}<div class="zv">${voices}</div>
-<div class="zn">Preise in Euro von 2026. Jede Zahl hat ein „?“ mit Rechnung und Quelle; was nicht belegt ist, heißt „Annahme“. Die Stimmen sind Figuren des Spiels, keine Umfrage in Ratscher. Fahrplan: ${S.ctx && S.ctx.bus && S.ctx.bus.src === 'fahrplan' ? 'echt (gtfs.de) – ' + S.ctx.bus.werk + ' Fahrten werktags nach Schleusingen, etwa ' + S.ctx.bus.min + ' min' : 'Annahme'}. Dachflächen: ${S.ctx && S.ctx.roof && S.ctx.roof.src === 'welt' ? 'aus den 3D-Dächern gezählt' : 'Annahme'}.</div></div>`;
+<div class="zn">Preise in Euro von 2026. Jede Zahl hat ein „?“ mit Rechnung und Quelle; was nicht belegt ist, heißt „Annahme“. Die Stimmen sind Figuren des Spiels, keine Umfrage in Ratscher. Fahrplan: ${S.ctx && S.ctx.bus && S.ctx.bus.src === 'fahrplan' ? 'echt (gtfs.de) – ' + S.ctx.bus.werk + ' Fahrten werktags nach Schleusingen, etwa ' + S.ctx.bus.min + ' min' : 'Annahme'}${S.ctx && S.ctx.school ? '; Schulbus: ' + S.ctx.school.trips + ' Fahrten an einem Schultag über Ratscher (alle Richtungen)' : ''}. Dachflächen: ${S.ctx && S.ctx.roof && S.ctx.roof.src === 'welt' ? 'aus den 3D-Dächern gezählt' : 'Annahme'}.</div></div>`;
   }
   // ---------- events ----------
   function onClick(e) {
@@ -457,6 +468,28 @@ ${why}<div class="zv">${voices}</div>
     render();
     save();
   }
+  // school-bus trips of the real timetable on a school-day Wednesday (trips flagged school, Ratscher stops, towards Schleusingen) – read from BUSPLAN here
+  function schoolStats() {
+    const bp = window.BUS && BUS.plan;
+    if (!bp || !bp.S || !bp.S.trips.length) return null;
+    const names = new Set(bp.S.stations.filter(x => /^Ratscher\b/.test(x.n) && !/Stausee/.test(x.n)).map(x => x.i));
+    const e0 =
+      (window.DN && Number.isFinite(DN.e0) ? DN.e0 : 20393) + Math.floor(((window.CLOCK && CLOCK.t) || 0) / 1440);
+    let e = e0;
+    for (let d = 0; d < 21; d++, e++) {
+      if (new Date(e * 864e5).getUTCDay() !== 3) continue;
+      const D = bp.day(e);
+      if (D.ferien) continue;
+      let n = 0;
+      for (const t of bp.tripsOn(e)) {
+        if (!t.school) continue;
+        const P = bp.S.pats[t.pat];
+        if (P && P.st.some(o => names.has(o.s))) n++;
+      }
+      return { trips: n, src: 'fahrplan' };
+    }
+    return null;
+  }
   // ---------- start and end ----------
   let offBus = null;
   function enter() {
@@ -468,6 +501,7 @@ ${why}<div class="zv">${voices}</div>
     S.used = true;
     try {
       S.ctx = ZKWELT.ctx();
+      S.ctx.school = schoolStats();
     } catch (e) {
       console.warn('zukunft ctx', e);
       S.ctx = null;
@@ -479,6 +513,7 @@ ${why}<div class="zv">${voices}</div>
         if (!S.on) return;
         try {
           S.ctx = ZKWELT.ctx();
+          S.ctx.school = schoolStats();
         } catch (e) {}
         render();
       });
