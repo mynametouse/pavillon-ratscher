@@ -1,116 +1,103 @@
 strasse;klasse;highway;viertel;laenge_kernstadt_m;anteil_foto;anteil_seite_a;anteil_seite_b;seite_a;seite_b;fotos;neuestes_foto;laenge_zentrum_m;zentrum_anteil_foto;zentrum_anteil_seite_a;zentrum_anteil_seite_b;zentrum_fotos
-Ackerstraße;strasse;residential;Suhl Nord;289.9;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Adam-Riese-Straße;strasse;residential;Suhl;232.3;0.727;0.0;0.287;Nordostseite;Südwestseite;32;2025-12-27;232.3;0.727;0.0;0.287;32
+Adam-Riese-Straße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);232.3;0.727;0.0;0.287;Nordostseite;Südwestseite;32;2025-12-27;143.0;0.556;0.0;0.228;18
 Adlersbergstraße;strasse;residential;Suhl Nord;244.2;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Albert-Kehr-Straße;strasse;residential;Goldlauter;167.9;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Albert-Lortzing-Straße;strasse;residential;Lautenbergsiedlung;203.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Albert-Schilling-Straße;strasse;residential;Aue 1;420.5;0.055;0.037;0.0;Ostseite;Westseite;1;2025-12-30;;;;;
 Albert-Schweitzer-Straße;strasse;residential;Himmelreich;694.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Albrechtser Berg;strasse;service;Linsenhof;1191.4;0.04;0.004;0.0;Nordostseite;Südwestseite;2;2025-12-27;119.9;0.4;0.045;0.0;2
-Albrechtser Weg;strasse;residential;Suhl Nord;281.9;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Albrechtser Berg;strasse;service;Linsenhof;1191.4;0.04;0.004;0.0;Nordostseite;Südwestseite;2;2025-12-27;;;;;
 Alexander-Gerbig-Straße;strasse;residential;Himmelreich;336.3;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Alte Brauerei;strasse;residential;Mäbendorf;143.5;0.186;0.0;0.088;Ostseite;Westseite;3;2025-12-30;;;;;
 Alte Höhle;strasse;residential;Mäbendorf;169.2;0.116;0.033;0.0;Ostseite;Westseite;7;2025-12-30;;;;;
-Alte Poststraße;weg;track;Himmelreich;1035.1;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Alte Schleusinger Straße;strasse;residential;Neundorf;1023.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Alte Schmiedefelder Straße;strasse;residential;Suhl;845.6;0.963;0.2;0.514;Nordwestseite;Südostseite;33;2025-12-27;845.6;0.963;0.2;0.514;33
-Alter Postweg;strasse;residential;Suhl Nord;168.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Alte Schmiedefelder Straße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);845.6;0.963;0.2;0.514;Nordwestseite;Südostseite;33;2025-12-27;299.1;1.0;0.087;0.369;16
 Altertal;strasse;residential;Mäbendorf;164.3;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Am Auhammer;strasse;service;Aue 2;37.3;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Am Bahndamm;strasse;unclassified;Aue 2;373.3;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;158.8;0.0;0.0;0.0;0
-Am Bahnhof;strasse;residential;Aue 2;1688.8;0.059;0.034;0.006;Nordwestseite;Südostseite;15;2025-12-30;801.0;0.042;0.03;0.013;12
-Am Bock;strasse;residential;Albrechts;407.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Am Bahndamm;strasse;unclassified;Aue 2;373.3;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Am Bahnhof;strasse;residential;Aue 2;1688.8;0.059;0.034;0.006;Nordwestseite;Südostseite;15;2025-12-30;719.1;0.006;0.0;0.0;3
 Am Bocksberg;strasse;residential;Heidersbach;1173.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Am Brand;strasse;residential;Goldlauter;420.3;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Am Burghof;strasse;residential;Suhl;156.4;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;156.4;0.0;0.0;0.0;0
-Am Domberg;strasse;service;Suhl;471.9;0.0;0.0;0.0;Ostseite;Westseite;0;;471.9;0.0;0.0;0.0;0
+Am Brand;strasse;residential;Goldlauter;365.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Am Burghof;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);156.4;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;156.4;0.0;0.0;0.0;0
+Am Domberg;strasse;service;Suhl-Mitte (Ortspunkt Suhl);471.9;0.0;0.0;0.0;Ostseite;Westseite;0;;207.1;0.0;0.0;0.0;0
 Am Döllberg;strasse;service;Himmelreich;143.8;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Am Friedberghang;strasse;service;Neundorf;47.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Am Fröhlichen Mann;strasse;tertiary;Suhl Nord;382.0;0.087;0.0;0.0;Nordostseite;Südwestseite;2;2025-12-29;;;;;
-Am Geiersberg;weg;track;Heidersbach;216.6;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
+Am Geiersberg;weg;track;Heidersbach;39.8;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Am Gesetz;strasse;residential;Heidersbach;659.2;0.038;0.009;0.0;Nordostseite;Südwestseite;1;2025-12-27;;;;;
 Am Himmelreich;strasse;service;Himmelreich;2109.5;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Am Hinzenacker;strasse;residential;Heidersbach;280.7;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Am Hoheloh;strasse;residential;Suhl;721.0;0.0;0.0;0.0;Ostseite;Westseite;0;;18.8;0.0;0.0;0.0;0
-Am Holunderbusch;strasse;residential;Suhl;167.1;1.0;0.118;0.656;Nordwestseite;Südostseite;16;2025-12-27;167.1;1.0;0.118;0.656;16
+Am Hoheloh;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);721.0;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
+Am Holunderbusch;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);167.1;1.0;0.118;0.656;Nordwestseite;Südostseite;16;2025-12-27;;;;;
 Am Hügel;strasse;service;Goldlauter;96.6;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Am Kornberg;strasse;service;Suhl Nord;894.6;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Am Köhlersgehäu;strasse;residential;Suhl Nord;3282.6;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Am Königswasser;strasse;tertiary;Suhl Nord;539.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Am Lautenbach;strasse;residential;Heinrichs;912.0;0.026;0.0;0.02;Ostseite;Westseite;2;2025-12-27;;;;;
+Am Königswasser;strasse;tertiary;Suhl Nord;524.2;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Am Lautenbach;strasse;residential;Heinrichs;887.7;0.027;0.0;0.021;Ostseite;Westseite;2;2025-12-27;;;;;
 Am Lautenberg;strasse;unclassified;Heinrichs;1058.3;0.831;0.603;0.016;Nordwestseite;Südostseite;26;2025-12-27;;;;;
-Am Mittelrain;strasse;residential;Albrechts;591.7;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Am Mühlberg;strasse;service;Mäbendorf;366.7;0.073;0.0;0.05;Nordostseite;Südwestseite;2;2025-12-30;;;;;
 Am Rasen;strasse;residential;Heinrichs;157.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Am Rotebächle;strasse;service;Himmelreich;84.0;0.318;0.206;0.0;Nordseite;Südseite;1;2025-12-27;84.0;0.318;0.206;0.0;1
-Am Roten Stein;strasse;service;Himmelreich;485.1;0.055;0.046;0.018;Nordwestseite;Südostseite;2;2025-12-27;432.0;0.062;0.052;0.021;2
-Am Sandersberg;strasse;residential;Mäbendorf;92.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Am Rotebächle;strasse;service;Himmelreich;84.0;0.318;0.206;0.0;Nordseite;Südseite;1;2025-12-27;;;;;
+Am Roten Stein;strasse;service;Himmelreich;485.1;0.055;0.046;0.018;Nordwestseite;Südostseite;2;2025-12-27;;;;;
+Am Sandersberg;strasse;residential;Mäbendorf;167.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Am Schackeberg;strasse;residential;Neundorf;581.4;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Am Schelrod;strasse;residential;Himmelreich;129.4;0.346;0.0;0.037;Nordwestseite;Südostseite;2;2025-12-27;129.4;0.346;0.0;0.037;2
-Am Schieferhügel;strasse;residential;Goldlauter;365.0;0.123;0.01;0.0;Nordseite;Südseite;2;2025-12-27;;;;;
+Am Schelrod;strasse;residential;Himmelreich;129.4;0.346;0.0;0.037;Nordwestseite;Südostseite;2;2025-12-27;;;;;
+Am Schieferhügel;strasse;residential;Goldlauter;166.6;0.101;0.0;0.0;Ostseite;Westseite;1;2025-12-27;;;;;
 Am Schießgrund;strasse;residential;Aue 1;286.2;0.108;0.0;0.075;Ostseite;Westseite;1;2025-12-30;;;;;
-Am Schießstand;strasse;unclassified;Suhl Nord;1594.9;0.031;0.0;0.0;Nordostseite;Südwestseite;17;2025-06-08;;;;;
+Am Schießstand;strasse;unclassified;Suhl Nord;13.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Am Schleifgraben;strasse;residential;Goldlauter;114.6;0.215;0.0;0.171;Nordwestseite;Südostseite;2;2025-12-27;;;;;
 Am Schwarzen Wasser;strasse;service;Himmelreich;572.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Am Schönen Hügel;strasse;residential;Linsenhof;600.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Am Sehmar;strasse;secondary;Aue 1;861.9;0.861;0.04;0.017;Nordwestseite;Südostseite;17;2025-12-30;;;;;
+Am Sehmar;strasse;secondary;Aue 1;847.4;0.858;0.041;0.017;Nordwestseite;Südostseite;17;2025-12-30;;;;;
 Am Sehmarplan;strasse;residential;Neundorf;125.6;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Am Silberbrunnen;strasse;residential;Heidersbach;162.2;0.12;0.0;0.0;Nordwestseite;Südostseite;2;2025-12-27;;;;;
 Am Steinsfelder Wasser;strasse;residential;Suhl Nord;974.3;0.056;0.0;0.035;Nordwestseite;Südostseite;2;2025-12-27;;;;;
 Am Tierpark;strasse;residential;Himmelreich;228.8;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Am Weidberg;strasse;residential;Neundorf;290.4;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Amtmannsweg;strasse;residential;Aue 2;439.6;0.065;0.0;0.0;Nordwestseite;Südostseite;1;2025-12-27;269.9;0.106;0.0;0.0;1
-An den Hofleiten;weg;path;Suhl;100.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;100.5;0.0;0.0;0.0;0
+Amtmannsweg;strasse;residential;Aue 2;439.6;0.065;0.0;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
+An den Hofleiten;weg;path;Suhl-Mitte (Ortspunkt Suhl);100.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 An den Stadelwiesen;weg;track;Linsenhof;368.7;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 An der Fahrt;strasse;residential;Aue 1;230.7;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 An der Goldenen Lauter;strasse;residential;Goldlauter;293.9;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 An der Hardt;strasse;residential;Heinrichs;231.1;0.043;0.0;0.0;Nordostseite;Südwestseite;1;2025-12-30;;;;;
-An der Hasel;strasse;residential;Neundorf;2867.7;0.083;0.005;0.0;Nordostseite;Südwestseite;8;2025-12-30;248.1;0.0;0.0;0.0;0
+An der Hasel;strasse;residential;Neundorf;2867.7;0.083;0.005;0.0;Nordostseite;Südwestseite;8;2025-12-30;;;;;
 An der Kirche;strasse;living_street;Heinrichs;88.7;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 An der Krinitzenstube;strasse;service;Linsenhof;52.4;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 An der Kunigunde;strasse;residential;Neundorf;540.2;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 An der Kunst;strasse;residential;Himmelreich;165.0;0.186;0.124;0.0;Nordostseite;Südwestseite;2;2025-12-27;;;;;
 An der Lauter;strasse;residential;Lauter;192.0;0.478;0.478;0.0;Nordseite;Südseite;4;2025-12-27;;;;;
-An der Quelle;strasse;service;Suhl Nord;330.4;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 An der Stirn;strasse;residential;Aue 2;1190.3;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 An der Struth;strasse;unclassified;Suhl Nord;673.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Anton-Bruckner-Straße;strasse;residential;Lautenbergsiedlung;228.9;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Aschenhofer Weg;strasse;tertiary;Albrechts;765.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Aschenhofweg;strasse;residential;Heinrichs;324.4;0.257;0.154;0.0;Nordseite;Südseite;6;2025-12-27;;;;;
 Asternweg;strasse;residential;Neundorf;321.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Auenstraße;strasse;residential;Aue 2;1709.6;0.103;0.061;0.015;Nordwestseite;Südostseite;14;2025-12-29;319.7;0.549;0.327;0.078;14
-Auf dem Domberg;strasse;service;Linsenhof;2185.3;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Auf der Mauer;strasse;service;Suhl;246.3;1.0;0.253;0.0;Nordwestseite;Südostseite;11;2025-12-27;246.3;1.0;0.253;0.0;11
-August-Bebel-Straße;strasse;residential;Suhl;282.4;1.0;0.0;0.081;Nordwestseite;Südostseite;36;2025-12-27;282.4;1.0;0.0;0.081;36
+Auenstraße;strasse;residential;Aue 2;1709.6;0.103;0.061;0.015;Nordwestseite;Südostseite;14;2025-12-29;;;;;
+Auf dem Domberg;strasse;service;Linsenhof;111.8;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Auf der Mauer;strasse;service;Suhl-Mitte (Ortspunkt Suhl);246.3;1.0;0.253;0.0;Nordwestseite;Südostseite;11;2025-12-27;89.9;1.0;0.191;0.0;6
+August-Bebel-Straße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);282.4;1.0;0.0;0.081;Nordwestseite;Südostseite;36;2025-12-27;;;;;
 Auhammerweg;strasse;residential;Aue 2;152.4;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Azalienweg;strasse;service;Himmelreich;255.2;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Backstraße;strasse;pedestrian;Suhl;304.6;0.107;0.0;0.015;Nordostseite;Südwestseite;6;2025-12-27;304.6;0.107;0.0;0.015;6
-Bahnhofstraße (Suhl Nord);strasse;primary;Suhl Nord;508.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Bahnhofstraße (Suhl);strasse;residential;Suhl;809.0;0.058;0.0;0.045;Nordwestseite;Südostseite;42;2025-12-27;809.0;0.058;0.0;0.045;42
+Backstraße;strasse;living_street;Suhl-Mitte (Ortspunkt Suhl);111.3;0.151;0.0;0.041;Nordostseite;Südwestseite;6;2025-12-27;111.3;0.151;0.0;0.041;6
+Backstraße [Fläche];platz;pedestrian;Suhl-Mitte (Ortspunkt Suhl);193.3;0.081;0.0;0.0;Rand (Blick über den Rand);;2;2025-12-27;193.3;0.081;0.0;0.0;2
+Bahnhofstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);809.0;0.058;0.0;0.045;Nordwestseite;Südostseite;42;2025-12-27;787.0;0.06;0.0;0.046;42
 Bahnhofsweg;strasse;residential;Mäbendorf;245.1;0.099;0.079;0.04;Nordostseite;Südwestseite;3;2025-12-30;;;;;
 Beckenwiesenstraße;strasse;residential;Heidersbach;115.8;0.196;0.0;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
-Beerbergstraße;strasse;residential;Heidersbach;806.4;0.027;0.015;0.0;Ostseite;Westseite;2;2025-12-27;;;;;
+Beerbergstraße;strasse;residential;Heidersbach;738.8;0.029;0.0;0.016;Nordwestseite;Südostseite;2;2025-12-27;;;;;
 Beethovenstraße;strasse;residential;Lautenbergsiedlung;729.6;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Beiersgrund;strasse;residential;Suhl;66.9;0.337;0.263;0.0;Ostseite;Westseite;4;2025-12-27;66.9;0.337;0.263;0.0;4
-Benshäuser Straße;strasse;residential;Albrechts;490.6;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Bergbauwanderweg;weg;path;Linsenhof;661.6;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Bierbachstraße;strasse;residential;Suhl Nord;523.8;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
+Beiersgrund;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);66.9;0.337;0.263;0.0;Ostseite;Westseite;4;2025-12-27;;;;;
+Bergbauwanderweg;weg;path;Linsenhof;260.8;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Blumenweg;strasse;service;Neundorf;79.9;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Blücherstraße;strasse;unclassified;Neundorf;393.8;0.055;0.0;0.024;Nordwestseite;Südostseite;3;2025-12-27;393.8;0.055;0.0;0.024;3
-Bocksberg;strasse;residential;Lauter;1597.5;0.042;0.009;0.02;Ostseite;Westseite;3;2025-12-27;;;;;
-Bocksbergstraße;strasse;residential;Heidersbach;2050.4;0.025;0.0;0.005;Nordwestseite;Südostseite;4;2025-12-27;;;;;
+Blücherstraße;strasse;unclassified;Neundorf;393.8;0.055;0.0;0.024;Nordwestseite;Südostseite;3;2025-12-27;35.2;0.617;0.0;0.274;3
+Bocksberg;strasse;residential;Lauter;1350.0;0.05;0.035;0.0;Nordwestseite;Südostseite;3;2025-12-27;;;;;
+Bocksbergstraße (Heidersbach);strasse;residential;Heidersbach;907.6;0.03;0.0;0.012;Nordwestseite;Südostseite;3;2025-12-27;;;;;
+Bocksbergstraße (Heidersbach);strasse;residential;Heidersbach;242.7;0.1;0.0;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
 Brahmsstraße;strasse;residential;Lautenbergsiedlung;197.3;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Braugasse;strasse;residential;Goldlauter;148.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Brauwiese;strasse;residential;Albrechts;101.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Breiter Weg;weg;path;Linsenhof;932.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;295.0;0.0;0.0;0.0;0
+Breiter Weg;weg;path;Linsenhof;142.3;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Breites Feld;strasse;residential;Goldlauter;809.8;0.026;0.0;0.02;Nordostseite;Südwestseite;2;2025-12-27;;;;;
 Brunnensteig;strasse;residential;Goldlauter;117.8;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Brunnenweg;strasse;residential;Heidersbach;36.2;0.648;0.0;0.402;Nordwestseite;Südostseite;2;2025-12-27;;;;;
-Bräutigamsweg;weg;path;Himmelreich;3138.3;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Buddeusstraße;strasse;residential;Suhl Nord;375.6;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Burgweg;weg;path;Suhl;589.0;0.049;0.006;0.032;Nordostseite;Südwestseite;5;2025-12-29;589.0;0.049;0.006;0.032;5
-Böhmerbergstraße (Suhl Nord);strasse;residential;Suhl Nord;652.0;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Böhmerbergstraße (Suhl Nord);strasse;residential;Suhl Nord;417.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Brückenweg;strasse;service;Goldlauter;113.3;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Burgweg;weg;path;Suhl-Mitte (Ortspunkt Suhl);589.0;0.049;0.006;0.032;Nordostseite;Südwestseite;5;2025-12-29;96.5;0.142;0.039;0.142;5
+Böhmerbergstraße;strasse;residential;Suhl Nord;417.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Böttcherstraße;strasse;residential;Neundorf;313.4;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Carl-Fiedler-Straße;strasse;residential;Himmelreich;678.4;0.041;0.0;0.0;Nordseite;Südseite;2;2025-12-27;;;;;
 Carl-Maria-von-Weber-Straße;strasse;residential;Lautenbergsiedlung;447.6;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
@@ -119,33 +106,29 @@ Cranachstraße;strasse;residential;Suhl Nord;262.2;0.352;0.0;0.029;Ostseite;West
 Dahlienweg;strasse;residential;Himmelreich;251.2;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Damaschkeweg;strasse;residential;Suhl Nord;398.4;0.036;0.024;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
 Dambacher Weg;strasse;residential;Mäbendorf;568.2;0.054;0.0;0.036;Ostseite;Westseite;2;2025-12-30;;;;;
-Doktor-Theodor-Neubauer-Straße;strasse;secondary;Suhl;21.2;1.0;0.0;1.0;Ostseite;Westseite;6;2025-12-27;21.2;1.0;0.0;1.0;6
+Doktor-Theodor-Neubauer-Straße;strasse;secondary;Suhl-Mitte (Ortspunkt Suhl);21.2;1.0;0.0;1.0;Ostseite;Westseite;6;2025-12-27;21.2;1.0;0.0;1.0;6
 Doktorswinkel;weg;footway;Heinrichs;69.3;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Dombergweg;strasse;service;Suhl;269.5;0.022;0.0;0.0;Nordseite;Südseite;1;2025-12-27;269.5;0.022;0.0;0.0;1
+Dombergweg;strasse;service;Suhl-Mitte (Ortspunkt Suhl);269.5;0.022;0.0;0.0;Nordseite;Südseite;1;2025-12-27;269.5;0.022;0.0;0.0;1
 Dorfwiese;strasse;residential;Goldlauter;101.1;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Dr.-Erfurth-Straße;strasse;residential;Suhl;116.7;0.272;0.015;0.0;Nordwestseite;Südostseite;2;2025-12-27;116.7;0.272;0.015;0.0;2
+Dr.-Erfurth-Straße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);116.7;0.272;0.015;0.0;Nordwestseite;Südostseite;2;2025-12-27;116.7;0.272;0.015;0.0;2
 Dr.-Ernst-Anschütz-Straße;strasse;residential;Goldlauter;235.6;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Dr.-Hermann-Engel-Straße;strasse;residential;Neundorf;281.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;281.0;0.0;0.0;0.0;0
+Dr.-Hermann-Engel-Straße;strasse;residential;Neundorf;281.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Dr.-Hoffsümmer-Straße;strasse;residential;Goldlauter;105.6;0.505;0.0;0.117;Nordseite;Südseite;2;2025-12-27;;;;;
-Dr.-Theodor-Neubauer-Straße;strasse;secondary;Suhl;2833.3;0.978;0.333;0.032;Nordwestseite;Südostseite;151;2025-12-29;2833.3;0.978;0.333;0.032;151
-Dr.-Wilhelm-Külz-Straße;strasse;residential;Neundorf;143.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;143.0;0.0;0.0;0.0;0
+Dr.-Theodor-Neubauer-Straße;strasse;secondary;Suhl-Mitte (Ortspunkt Suhl);2833.3;0.978;0.333;0.032;Nordwestseite;Südostseite;151;2025-12-29;2478.7;0.978;0.381;0.037;139
+Dr.-Wilhelm-Külz-Straße;strasse;residential;Neundorf;143.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Dreisbachstraße;strasse;residential;Mäbendorf;422.9;0.067;0.0;0.024;Ostseite;Westseite;2;2025-12-30;;;;;
-Dreisbachweg;strasse;service;Mäbendorf;595.3;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Drusselstraße;strasse;living_street;Suhl;116.7;0.833;0.667;0.0;Nordwestseite;Südostseite;7;2025-12-29;116.7;0.833;0.667;0.0;7
-Dröhbergstraße;strasse;residential;Neundorf;169.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Döllstraße;strasse;residential;Suhl;250.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;250.1;0.0;0.0;0.0;0
-Dörnbachstraße;strasse;residential;Suhl Nord;596.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Dreisbachweg;strasse;service;Mäbendorf;301.2;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
+Drusselstraße;strasse;living_street;Suhl-Mitte (Ortspunkt Suhl);116.7;0.833;0.667;0.0;Nordwestseite;Südostseite;7;2025-12-29;116.7;0.833;0.667;0.0;7
+Döllstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);250.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;250.1;0.0;0.0;0.0;0
 Dörrenbachstraße;strasse;residential;Suhl Nord;451.1;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Dürre Lauter;strasse;residential;Goldlauter;600.5;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Eckstraße;strasse;living_street;Heidersbach;227.5;0.118;0.077;0.0;Nordseite;Südseite;2;2025-12-27;;;;;
 Ellerstraße;strasse;residential;Heinrichs;76.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Ellerweg;strasse;residential;Albrechts;308.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Erhard-Schübel-Straße;strasse;residential;Heinrichs;493.3;0.064;0.0;0.053;Nordostseite;Südwestseite;2;2025-12-27;;;;;
 Erich-Krempel-Straße;strasse;residential;Neundorf;1078.8;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Erich-Weinert-Straße;strasse;residential;Himmelreich;478.0;0.059;0.0;0.0;Nordostseite;Südwestseite;1;2025-12-27;;;;;
-Erlenstraße;strasse;residential;Suhl Nord;145.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Ernst-Fischer-Straße;strasse;residential;Neundorf;261.4;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Ernst-Heß-Straße;strasse;service;Suhl;904.6;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;474.0;0.0;0.0;0.0;0
+Ernst-Heß-Straße;strasse;service;Suhl-Mitte (Ortspunkt Suhl);904.6;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Ernst-König-Straße;strasse;residential;Heinrichs;437.3;0.035;0.0;0.0;Nordseite;Südseite;1;2025-12-30;;;;;
 Fallbachtal (Suhl Nord);strasse;service;Suhl Nord;85.7;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Fallbachtal (Suhl Nord);weg;track;Suhl Nord;912.6;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
@@ -154,101 +137,92 @@ Felsengartenweg;weg;path;Suhl Nord;322.5;0.226;0.0;0.0;Ostseite;Westseite;5;2025
 Fliederweg;strasse;residential;Neundorf;841.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Forstweg;strasse;residential;Heidersbach;144.6;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Franz-Liszt-Straße;strasse;residential;Lautenbergsiedlung;903.0;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Franz-Mehring-Straße;strasse;residential;Himmelreich;226.9;0.0;0.0;0.0;Ostseite;Westseite;0;;73.6;0.0;0.0;0.0;0
-Freiligrathstraße;strasse;residential;Suhl;514.1;0.043;0.0;0.025;Nordseite;Südseite;2;2025-12-27;337.1;0.0;0.0;0.0;0
+Franz-Mehring-Straße;strasse;residential;Himmelreich;226.9;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
+Freiligrathstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);514.1;0.043;0.0;0.025;Nordseite;Südseite;2;2025-12-27;;;;;
 Friedbergweg;strasse;residential;Himmelreich;1014.8;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Friedensstraße;strasse;residential;Suhl;182.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;182.7;0.0;0.0;0.0;0
+Friedensstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);182.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;182.7;0.0;0.0;0.0;0
 Friedhofsweg;strasse;residential;Heinrichs;506.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Friedrich-Engels-Straße;strasse;residential;Neundorf;186.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;186.4;0.0;0.0;0.0;0
-Friedrich-König-Straße;strasse;secondary;Suhl;2848.5;0.581;0.341;0.009;Nordwestseite;Südostseite;72;2025-12-29;2672.8;0.553;0.311;0.009;48
+Friedrich-Engels-Straße;strasse;residential;Neundorf;186.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;121.6;0.0;0.0;0.0;0
+Friedrich-König-Straße;strasse;secondary;Suhl-Mitte (Ortspunkt Suhl);2848.5;0.581;0.341;0.009;Nordwestseite;Südostseite;72;2025-12-29;2176.3;0.486;0.234;0.012;39
 Friedrich-Ludwig-Jahn-Straße;strasse;unclassified;Heinrichs;264.5;1.0;0.0;0.98;Ostseite;Westseite;16;2025-12-27;;;;;
-Friedrich-Wolf-Straße;strasse;residential;Himmelreich;365.5;0.024;0.0;0.0;Nordwestseite;Südostseite;2;2025-12-27;255.1;0.0;0.0;0.0;0
+Friedrich-Wolf-Straße;strasse;residential;Himmelreich;365.5;0.024;0.0;0.0;Nordwestseite;Südostseite;2;2025-12-27;;;;;
 Friesenstraße;strasse;residential;Lautenbergsiedlung;483.9;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Fritz-Reuter-Straße;strasse;residential;Himmelreich;100.0;0.2;0.15;0.0;Ostseite;Westseite;2;2025-12-27;;;;;
 Fröhliche-Mann-Straße;strasse;tertiary;Suhl Nord;1596.6;0.717;0.545;0.01;Nordwestseite;Südostseite;51;2025-12-29;;;;;
 Fuhrmannstraße;strasse;residential;Goldlauter;276.1;0.11;0.0;0.018;Nordwestseite;Südostseite;2;2025-12-27;;;;;
 Geiersberg;strasse;residential;Goldlauter;820.8;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Georg-Friedrich-Händel-Straße;strasse;residential;Lautenbergsiedlung;533.1;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Gewerbestraße;strasse;residential;Suhl Nord;965.9;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Goethestraße;strasse;residential;Himmelreich;259.8;0.131;0.0;0.086;Nordseite;Südseite;1;2025-12-27;176.1;0.0;0.0;0.0;0
-Goldbachstraße;strasse;unclassified;Albrechts;1191.3;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Goldlauter-Heidersbach-Rundwanderweg (Goldlauter);weg;track;Goldlauter;208.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Goldlauter-Heidersbach-Rundwanderweg (Heidersbach);weg;path;Heidersbach;606.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Goldlauter-Heidersbach-Rundwanderweg (Heidersbach);weg;track;Heidersbach;332.4;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Gothaer Straße;strasse;secondary;Suhl Nord;4585.9;0.678;0.011;0.261;Ostseite;Westseite;122;2025-12-29;731.6;0.811;0.033;0.104;30
+Goethestraße;strasse;residential;Himmelreich;259.8;0.131;0.0;0.086;Nordseite;Südseite;1;2025-12-27;;;;;
+Goldlauter-Heidersbach-Rundwanderweg (Goldlauter);weg;path;Goldlauter;26.2;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Goldlauter-Heidersbach-Rundwanderweg (Heidersbach);weg;path;Heidersbach;351.6;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Goldlauter-Heidersbach-Rundwanderweg (Heidersbach);weg;track;Heidersbach;36.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Gothaer Straße (Suhl Nord);strasse;secondary;Suhl Nord;2739.5;0.944;0.021;0.376;Ostseite;Westseite;109;2025-12-29;490.4;0.718;0.0;0.101;20
+Gothaer Straße (Suhl Nord);strasse;secondary;Suhl Nord;1549.1;0.159;0.0;0.083;Ostseite;Westseite;8;2025-12-29;;;;;
 Große Beerbergstraße;strasse;tertiary;Suhl Nord;3233.3;0.838;0.237;0.055;Nordwestseite;Südostseite;92;2025-12-29;;;;;
 Gräfenleite;strasse;residential;Aue 1;1034.9;0.05;0.032;0.007;Nordseite;Südseite;3;2025-12-30;;;;;
-Grüner Weg;strasse;residential;Neundorf;700.9;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;573.1;0.0;0.0;0.0;0
-Grünewaldstraße;strasse;residential;Suhl;200.3;0.239;0.0;0.143;Nordwestseite;Südostseite;12;2025-12-27;200.3;0.239;0.0;0.143;12
-Gutenbergstraße;strasse;residential;Suhl;204.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;204.5;0.0;0.0;0.0;0
+Grüner Weg;strasse;residential;Neundorf;700.9;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Grünewaldstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);200.3;0.239;0.0;0.143;Nordwestseite;Südostseite;12;2025-12-27;;;;;
+Gutenbergstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);204.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;204.5;0.0;0.0;0.0;0
 Haak;strasse;residential;Mäbendorf;337.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Hainbergstraße;strasse;residential;Himmelreich;417.9;0.057;0.0;0.034;Nordwestseite;Südostseite;2;2025-12-27;;;;;
-Hainbergweg;strasse;service;Suhl;162.8;0.0;0.0;0.0;Nordseite;Südseite;0;;89.2;0.0;0.0;0.0;0
+Hainbergweg;strasse;service;Suhl-Mitte (Ortspunkt Suhl);162.8;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Hammerwandweg;weg;path;Heinrichs;67.2;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Hans-Holbein-Straße;strasse;residential;Himmelreich;142.3;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;142.3;0.0;0.0;0.0;0
+Hans-Holbein-Straße;strasse;residential;Himmelreich;142.3;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Harzgasse;strasse;service;Suhl Nord;1049.1;0.021;0.0;0.0;Nordseite;Südseite;1;2025-12-29;;;;;
 Haselweg;strasse;residential;Neundorf;704.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Hauptstraße;strasse;secondary;Mäbendorf;834.2;0.969;0.114;0.14;Nordseite;Südseite;43;2025-12-30;;;;;
+Hauptstraße;strasse;secondary;Mäbendorf;987.4;0.951;0.096;0.118;Nordseite;Südseite;45;2025-12-30;;;;;
 Heidersbacher Straße;strasse;residential;Goldlauter;731.9;0.036;0.029;0.0;Nordostseite;Südwestseite;2;2025-12-27;;;;;
 Heideweg;strasse;residential;Himmelreich;112.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Heiligenberg;strasse;residential;Albrechts;335.8;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Heiligenland;strasse;residential;Heinrichs;1721.2;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Heiligenland;strasse;residential;Heinrichs;1663.0;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Heinestraße;strasse;residential;Himmelreich;209.5;0.255;0.0;0.145;Nordseite;Südseite;2;2025-12-27;;;;;
 Heinrich-Schütz-Straße;strasse;residential;Lautenbergsiedlung;229.5;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Heinrichser Straße;strasse;residential;Aue 1;1390.9;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Heldersbacher Weg;strasse;residential;Lauter;1221.2;0.028;0.02;0.0;Nordwestseite;Südostseite;2;2025-12-27;;;;;
-Hennebergstraße;strasse;residential;Suhl;166.8;0.161;0.0;0.096;Nordwestseite;Südostseite;6;2025-12-27;166.8;0.161;0.0;0.096;6
-Herbert-Albrecht-Straße;strasse;residential;Albrechts;159.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Heldersbacher Weg;strasse;residential;Lauter;698.3;0.049;0.0;0.034;Ostseite;Westseite;2;2025-12-27;;;;;
+Hennebergstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);166.8;0.161;0.0;0.096;Nordwestseite;Südostseite;6;2025-12-27;;;;;
 Herbert-Roth-Straße;strasse;residential;Linsenhof;986.8;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Herbert-Roth-Wanderweg;weg;path;Neundorf;883.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Hermannstraße;strasse;residential;Suhl Nord;97.3;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Hexe;weg;path;Goldlauter;206.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Hinterer Loh;strasse;residential;Neundorf;260.8;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Hof;strasse;residential;Mäbendorf;254.3;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Hof;strasse;residential;Mäbendorf;433.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Hoffnung;strasse;residential;Suhl Nord;552.8;0.104;0.0;0.061;Ostseite;Westseite;3;2025-12-29;;;;;
-Hofgasse;strasse;residential;Mäbendorf;448.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Hofleitengasse;weg;path;Suhl;521.6;0.021;0.021;0.0;Nordwestseite;Südostseite;2;2025-12-27;521.6;0.021;0.021;0.0;2
-Hohe Bergstraße;strasse;residential;Goldlauter;114.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Hofgasse;strasse;residential;Mäbendorf;450.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Hofleitengasse;weg;path;Suhl-Mitte (Ortspunkt Suhl);521.6;0.021;0.021;0.0;Nordwestseite;Südostseite;2;2025-12-27;170.7;0.064;0.064;0.0;2
+Hohe Bergstraße;strasse;residential;Goldlauter;186.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Hohe Feldstraße;strasse;residential;Aue 2;885.0;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Hohe Gasse;strasse;residential;Goldlauter;33.8;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Hohe Röder;strasse;residential;Suhl;369.1;0.618;0.0;0.17;Nordseite;Südseite;9;2025-12-27;369.1;0.618;0.0;0.17;9
-Hoheloh;strasse;service;Neundorf;274.9;0.0;0.0;0.0;Nordseite;Südseite;0;;274.9;0.0;0.0;0.0;0
-Hohlweg Steinsburg;weg;path;Neundorf;1875.1;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
+Hohe Röder;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);369.1;0.618;0.0;0.17;Nordseite;Südseite;9;2025-12-27;241.4;0.859;0.0;0.26;8
+Hoheloh;strasse;service;Neundorf;274.9;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Hohlweg Steinsburg;weg;path;Neundorf;336.4;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Hollergrund;strasse;service;Heinrichs;496.7;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Hopfenberg;weg;steps;Suhl;302.2;0.0;0.0;0.0;Ostseite;Westseite;0;;302.2;0.0;0.0;0.0;0
-Hubertusstraße;strasse;unclassified;Neundorf;455.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Hufelandstraße;strasse;residential;Suhl;521.1;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Hopfenberg;strasse;service;Suhl-Mitte (Ortspunkt Suhl);214.2;0.0;0.0;0.0;Ostseite;Westseite;0;;23.6;0.0;0.0;0.0;0
+Hubertusstraße;strasse;unclassified;Neundorf;271.3;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Hufelandstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);521.1;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Hungeleite;strasse;residential;Mäbendorf;389.3;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Hungerleite;strasse;residential;Mäbendorf;230.0;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Hyazinthenweg;strasse;residential;Himmelreich;111.6;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Hölderlinstraße;strasse;residential;Himmelreich;856.5;0.0;0.0;0.0;Nordseite;Südseite;0;;602.5;0.0;0.0;0.0;0
+Hölderlinstraße;strasse;residential;Himmelreich;856.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Hügel;strasse;residential;Suhl Nord;292.2;0.055;0.04;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
-Hügelstraße;strasse;service;Albrechts;153.9;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Ilmenauer Straße;strasse;secondary;Himmelreich;1335.1;0.263;0.018;0.194;Nordseite;Südseite;15;2025-12-27;376.0;0.236;0.065;0.129;8
+Ilmenauer Straße;strasse;secondary;Himmelreich;1335.1;0.263;0.018;0.194;Nordseite;Südseite;15;2025-12-27;;;;;
 Im Fallmich;strasse;residential;Suhl Nord;220.5;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Industriestraße;strasse;tertiary;Suhl Nord;1473.1;0.047;0.032;0.018;Nordostseite;Südwestseite;7;2026-05-23;;;;;
 Johann-Sebastian-Bach-Straße;strasse;residential;Aue 1;946.8;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Johann-Stockmar-Platz;strasse;service;Heidersbach;7.8;1.0;0.0;0.0;Ostseite;Westseite;1;2025-12-27;;;;;
 Johann-Stockmar-Straße;weg;track;Goldlauter;445.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Johann-Wendel-Straße;strasse;service;Aue 1;1430.2;0.011;0.007;0.0;Ostseite;Westseite;1;2025-12-30;;;;;
+Johann-Wendel-Straße;strasse;residential;Aue 1;858.9;0.018;0.012;0.0;Nordwestseite;Südostseite;1;2025-12-30;;;;;
 Joseph-Haydn-Straße;strasse;residential;Linsenhof;452.2;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Judithstraße;strasse;residential;Suhl;894.1;0.566;0.107;0.229;Nordostseite;Südwestseite;52;2025-12-27;894.1;0.566;0.107;0.229;52
+Judithstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);894.1;0.566;0.107;0.229;Nordostseite;Südwestseite;52;2025-12-27;;;;;
 Julius-Fucik-Straße;strasse;residential;Himmelreich;343.3;0.065;0.0;0.0;Ostseite;Westseite;1;2025-12-27;;;;;
-Juri-Gagarin-Straße;strasse;residential;Himmelreich;372.4;0.056;0.0;0.0;Nordwestseite;Südostseite;2;2025-12-27;372.4;0.056;0.0;0.0;2
-Karl-Liebknecht-Straße;strasse;residential;Neundorf;182.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;182.7;0.0;0.0;0.0;0
+Juri-Gagarin-Straße;strasse;residential;Himmelreich;372.4;0.056;0.0;0.0;Nordwestseite;Südostseite;2;2025-12-27;;;;;
+Karl-Liebknecht-Straße;strasse;residential;Neundorf;182.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Karl-Marx-Straße;strasse;residential;Himmelreich;1133.7;0.023;0.0;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
 Karl-Mundt-Straße;strasse;residential;Aue 1;168.6;0.147;0.068;0.0;Nordwestseite;Südostseite;1;2025-12-30;;;;;
 Karl-Wilhelm-Straße;strasse;residential;Lautenbergsiedlung;101.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Karlstraße;strasse;residential;Suhl Nord;190.2;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Katzbachstraße;strasse;residential;Neundorf;26.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;26.5;0.0;0.0;0.0;0
-Kefersteinstraße;strasse;service;Suhl;586.6;0.0;0.0;0.0;Ostseite;Westseite;0;;491.5;0.0;0.0;0.0;0
-Kellerstraße;strasse;residential;Suhl;109.0;1.0;0.0;0.622;Nordostseite;Südwestseite;21;2025-12-27;109.0;1.0;0.0;0.622;21
+Katzbachstraße;strasse;residential;Neundorf;26.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Kefersteinstraße;strasse;service;Suhl-Mitte (Ortspunkt Suhl);586.6;0.0;0.0;0.0;Ostseite;Westseite;0;;176.9;0.0;0.0;0.0;0
+Kellerstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);109.0;1.0;0.0;0.622;Nordostseite;Südwestseite;21;2025-12-27;;;;;
 Kiefer;strasse;residential;Mäbendorf;129.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Kirchberg;strasse;residential;Albrechts;363.7;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Kirchgasse;strasse;living_street;Suhl;236.7;0.0;0.0;0.0;Ostseite;Westseite;0;;236.7;0.0;0.0;0.0;0
+Kirchgasse;strasse;living_street;Suhl-Mitte (Ortspunkt Suhl);236.7;0.0;0.0;0.0;Ostseite;Westseite;0;;236.7;0.0;0.0;0.0;0
 Kirchstraße;strasse;residential;Heidersbach;376.9;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Kirchtal;weg;track;Mäbendorf;549.3;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Kleine Bahnhofstraße;strasse;service;Suhl Nord;102.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Kirchtal;weg;track;Mäbendorf;1092.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Kleine Beerbergstraße;strasse;residential;Suhl Nord;320.8;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Kleine Gartenstraße;strasse;residential;Lautenbergsiedlung;239.1;0.177;0.058;0.0;Nordwestseite;Südostseite;2;2025-12-27;;;;;
 Kommerstraße;strasse;residential;Aue 2;249.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;167.4;0.0;0.0;0.0;0
@@ -256,190 +230,169 @@ Kornbergstraße;strasse;service;Suhl Nord;1276.7;0.0;0.0;0.0;Ostseite;Westseite;
 Krinitzenstraße;strasse;residential;Linsenhof;1786.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Käthe-Kollwitz-Straße;strasse;residential;Himmelreich;126.7;0.185;0.0;0.11;Nordwestseite;Südostseite;1;2025-12-27;;;;;
 Küttebahn;strasse;residential;Linsenhof;407.6;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Lange Lauter;strasse;residential;Goldlauter;308.4;0.086;0.0;0.0;Nordseite;Südseite;1;2025-12-27;;;;;
-Langes Tal;strasse;residential;Mäbendorf;903.5;0.028;0.0;0.017;Ostseite;Westseite;3;2025-12-30;;;;;
-Lauter;strasse;tertiary;Lauter;2191.7;0.958;0.688;0.0;Nordseite;Südseite;57;2025-12-27;;;;;
+Lange Lauter;strasse;residential;Goldlauter;264.6;0.101;0.0;0.0;Nordseite;Südseite;1;2025-12-27;;;;;
+Langes Tal;strasse;residential;Mäbendorf;809.1;0.032;0.0;0.019;Ostseite;Westseite;3;2025-12-30;;;;;
+Lauter;strasse;tertiary;Lauter;1801.8;0.955;0.715;0.0;Nordseite;Südseite;50;2025-12-27;;;;;
 Lauterkopfstraße;strasse;residential;Suhl Nord;350.0;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Lauwetter;strasse;residential;Suhl;458.8;0.592;0.499;0.017;Nordwestseite;Südostseite;20;2025-12-29;440.5;0.575;0.52;0.0;19
+Lauwetter;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);458.8;0.592;0.499;0.017;Nordwestseite;Südostseite;20;2025-12-29;221.3;0.178;0.155;0.0;9
 Leiterweg;strasse;residential;Mäbendorf;201.6;0.126;0.0;0.075;Ostseite;Westseite;1;2025-12-26;;;;;
-Leitweg;weg;track;Goldlauter;5358.0;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Lengberg;strasse;residential;Albrechts;360.1;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Leitweg;weg;track;Goldlauter;83.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Leonhard-Frank-Straße;strasse;residential;Aue 1;1301.0;0.004;0.0;0.0;Nordseite;Südseite;1;2025-12-30;;;;;
-Lessingstraße;strasse;residential;Himmelreich;548.2;0.043;0.0;0.0;Nordseite;Südseite;2;2025-12-27;335.9;0.071;0.0;0.0;2
+Lessingstraße;strasse;residential;Himmelreich;548.2;0.043;0.0;0.0;Nordseite;Südseite;2;2025-12-27;;;;;
 Lilienweg;strasse;residential;Himmelreich;317.7;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Lilliplatz;strasse;living_street;Suhl;33.6;0.558;0.266;0.0;Nordwestseite;Südostseite;3;2025-12-27;33.6;0.558;0.266;0.0;3
+Lilliplatz;strasse;living_street;Suhl-Mitte (Ortspunkt Suhl);33.6;0.558;0.266;0.0;Nordwestseite;Südostseite;3;2025-12-27;;;;;
 Linde;strasse;residential;Mäbendorf;75.0;0.405;0.188;0.078;Nordostseite;Südwestseite;3;2025-12-30;;;;;
 Lindenstraße;strasse;residential;Goldlauter;149.4;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Linkwerkhohle;strasse;residential;Aue 1;476.3;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Linsenhofer Berg;strasse;residential;Linsenhof;554.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Linsenhofer Platz;strasse;residential;Linsenhof;124.7;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Linsenhofer Straße;strasse;unclassified;Linsenhof;3783.4;0.193;0.151;0.014;Nordseite;Südseite;29;2026-05-23;220.6;1.0;0.846;0.0;7
+Linsenhofer Straße;strasse;unclassified;Linsenhof;3416.6;0.192;0.155;0.0;Nordseite;Südseite;21;2025-12-27;;;;;
 Lupinenweg;weg;path;Himmelreich;151.2;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Lutherstraße;strasse;residential;Suhl;136.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;136.5;0.0;0.0;0.0;0
+Lutherstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);136.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Löffeltal;strasse;residential;Neundorf;1728.9;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Margaritenweg;strasse;residential;Neundorf;307.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Marggrafstraße;strasse;residential;Suhl;68.8;0.832;0.263;0.274;Nordostseite;Südwestseite;6;2025-12-27;68.8;0.832;0.263;0.274;6
-Marienstieg;strasse;pedestrian;Suhl;65.6;0.0;0.0;0.0;Ostseite;Westseite;0;;65.6;0.0;0.0;0.0;0
-Marktplatz;strasse;living_street;Suhl;598.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;598.5;0.0;0.0;0.0;0
+Marggrafstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);68.8;0.832;0.263;0.274;Nordostseite;Südwestseite;6;2025-12-27;;;;;
+Marienstieg;strasse;pedestrian;Suhl-Mitte (Ortspunkt Suhl);65.6;0.0;0.0;0.0;Ostseite;Westseite;0;;65.6;0.0;0.0;0.0;0
+Marktplatz;strasse;living_street;Suhl-Mitte (Ortspunkt Suhl);382.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;382.0;0.0;0.0;0.0;0
+Marktplatz [Fläche];platz;pedestrian;Suhl-Mitte (Ortspunkt Suhl);216.5;0.0;0.0;0.0;Rand (Blick über den Rand);;0;;216.5;0.0;0.0;0.0;0
 Martin-Andersen-Nexö-Straße;strasse;unclassified;Himmelreich;277.6;1.0;0.876;0.0;Nordwestseite;Südostseite;10;2025-12-27;;;;;
-Mauerstraße;strasse;residential;Himmelreich;105.7;0.192;0.066;0.0;Nordseite;Südseite;2;2025-12-27;19.3;0.234;0.0;0.0;1
+Mauerstraße;strasse;residential;Himmelreich;105.7;0.192;0.066;0.0;Nordseite;Südseite;2;2025-12-27;;;;;
 Max-Reger-Straße;strasse;residential;Lautenbergsiedlung;239.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Maxim-Gorki-Straße;strasse;residential;Himmelreich;200.1;0.025;0.0;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
 Meininger Straße;strasse;secondary;Heinrichs;4686.2;0.826;0.226;0.211;Nordseite;Südseite;127;2025-12-30;;;;;
-Mittelbergstraße;strasse;residential;Neundorf;1215.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Mittelgasse;strasse;residential;Suhl Nord;110.0;0.272;0.0;0.047;Nordostseite;Südwestseite;1;2025-12-29;;;;;
 Mozartstraße;strasse;residential;Lautenbergsiedlung;147.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Mutental;strasse;residential;Albrechts;169.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Märzenberg;strasse;residential;Suhl Nord;120.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Mühlbergstraße;strasse;tertiary;Albrechts;1902.4;0.052;0.032;0.027;Ostseite;Westseite;9;2026-05-23;;;;;
+Mühlbergstraße;strasse;tertiary;Mäbendorf;364.0;0.085;0.03;0.056;Ostseite;Westseite;2;2025-12-30;;;;;
 Mühlgasse;weg;path;Mäbendorf;548.3;0.048;0.0;0.029;Nordostseite;Südwestseite;2;2025-12-30;;;;;
-Mühlhügel;strasse;residential;Suhl;49.0;1.0;0.496;0.0;Nordwestseite;Südostseite;6;2025-12-27;49.0;1.0;0.496;0.0;6
-Mühltorstraße;strasse;residential;Suhl;383.9;0.988;0.66;0.01;Nordseite;Südseite;18;2025-12-29;383.9;0.988;0.66;0.01;18
-Naumannstraße;strasse;residential;Suhl;185.5;0.102;0.0;0.048;Nordwestseite;Südostseite;3;2025-12-27;185.5;0.102;0.0;0.048;3
+Mühlhügel;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);49.0;1.0;0.496;0.0;Nordwestseite;Südostseite;6;2025-12-27;49.0;1.0;0.496;0.0;6
+Mühltorstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);383.9;0.988;0.66;0.01;Nordseite;Südseite;18;2025-12-29;383.9;0.988;0.66;0.01;18
+Naumannstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);185.5;0.102;0.0;0.048;Nordwestseite;Südostseite;3;2025-12-27;185.5;0.102;0.0;0.048;3
 Nelkenweg;strasse;service;Neundorf;912.1;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Neuer Friedberg;strasse;residential;Neundorf;1772.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Neundorfer Straße;strasse;residential;Neundorf;660.0;0.074;0.044;0.0;Ostseite;Westseite;6;2025-12-27;660.0;0.074;0.044;0.0;6
+Neundorfer Straße;strasse;residential;Neundorf;660.0;0.074;0.044;0.0;Ostseite;Westseite;6;2025-12-27;;;;;
 Obere Küttebahn;strasse;service;Linsenhof;184.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Oberlandstraße;strasse;residential;Lauter;1060.7;0.19;0.083;0.019;Nordwestseite;Südostseite;13;2025-12-27;;;;;
 Otto-Bruchholz-Straße;strasse;service;Himmelreich;703.3;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Otto-Schön-Straße;strasse;residential;Lauter;225.2;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Paul-Greifzu-Straße;strasse;residential;Suhl;119.5;1.0;0.046;0.68;Nordseite;Südseite;28;2025-12-27;119.5;1.0;0.046;0.68;28
-Pfaffental;strasse;residential;Suhl Nord;10.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Paul-Greifzu-Straße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);119.5;1.0;0.046;0.68;Nordseite;Südseite;28;2025-12-27;105.4;1.0;0.052;0.637;24
 Pfannrain;weg;track;Goldlauter;386.2;0.062;0.0;0.028;Ostseite;Westseite;1;2025-12-27;;;;;
-Pfarrstraße;strasse;residential;Suhl;577.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;577.4;0.0;0.0;0.0;0
+Pfarrstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);577.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;343.4;0.0;0.0;0.0;0
 Pfiffergrund;weg;footway;Lautenbergsiedlung;28.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Pfiffersgrund;weg;path;Lautenbergsiedlung;233.8;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Pfütschbergstraße;strasse;unclassified;Neundorf;1226.7;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
+Pfütschbergstraße;strasse;unclassified;Neundorf;734.7;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Philosophenweg;strasse;residential;Aue 2;233.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Platz der Deutschen Einheit;strasse;pedestrian;Suhl;475.8;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;475.8;0.0;0.0;0.0;0
+Platz der Deutschen Einheit;strasse;living_street;Suhl-Mitte (Ortspunkt Suhl);140.2;0.0;0.0;0.0;Ostseite;Westseite;0;;140.2;0.0;0.0;0.0;0
+Platz der Deutschen Einheit [Fläche];platz;pedestrian;Suhl-Mitte (Ortspunkt Suhl);335.6;0.0;0.0;0.0;Rand (Blick über den Rand);;0;;335.6;0.0;0.0;0.0;0
 Plessengrund;strasse;residential;Heinrichs;420.0;0.068;0.0;0.045;Ostseite;Westseite;3;2025-12-30;;;;;
-Pochwerksgrund;strasse;residential;Goldlauter;372.6;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Prießnitzstraße;strasse;residential;Himmelreich;634.3;1.0;0.805;0.051;Nordseite;Südseite;26;2025-12-27;127.3;1.0;0.509;0.069;6
+Pochwerksgrund;strasse;residential;Goldlauter;1021.0;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Prießnitzstraße;strasse;residential;Himmelreich;634.3;1.0;0.805;0.051;Nordseite;Südseite;26;2025-12-27;;;;;
 Promillepfad;weg;path;Heidersbach;202.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Puschkinstraße;strasse;residential;Neundorf;178.0;0.111;0.0;0.058;Nordwestseite;Südostseite;3;2025-12-27;178.0;0.111;0.0;0.058;3
 Querstraße;strasse;residential;Heidersbach;328.3;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Regenspiegel;strasse;service;Suhl;433.6;0.096;0.0;0.084;Ostseite;Westseite;4;2025-12-29;65.5;0.635;0.0;0.554;4
-Rennsteigstraße (Suhl Nord);strasse;residential;Suhl Nord;1391.7;0.042;0.016;0.0;Nordostseite;Südwestseite;2;2025-12-27;;;;;
-Rennsteigstraße (Suhl Nord);strasse;residential;Suhl Nord;406.9;0.124;0.0;0.0;Ostseite;Westseite;3;2026-05-23;;;;;
-Reuetal;strasse;residential;Lautenbergsiedlung;383.8;0.014;0.0;0.0;Ostseite;Westseite;1;2025-12-27;119.2;0.044;0.0;0.0;1
+Regenspiegel;strasse;service;Suhl-Mitte (Ortspunkt Suhl);433.6;0.096;0.0;0.084;Ostseite;Westseite;4;2025-12-29;;;;;
+Rennsteigstraße;strasse;residential;Suhl Nord;1391.7;0.042;0.016;0.0;Nordostseite;Südwestseite;2;2025-12-27;;;;;
+Reuetal;strasse;residential;Lautenbergsiedlung;383.8;0.014;0.0;0.0;Ostseite;Westseite;1;2025-12-27;;;;;
 Richard-Strauss-Straße;strasse;residential;Lautenbergsiedlung;958.2;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Richard-Wagner-Straße;strasse;unclassified;Lautenbergsiedlung;861.4;0.14;0.124;0.0;Nordwestseite;Südostseite;11;2025-12-27;;;;;
-Riemenschneiderstraße;strasse;residential;Suhl;158.6;0.835;0.535;0.22;Nordwestseite;Südostseite;11;2025-12-27;158.6;0.835;0.535;0.22;11
-Rimbachhügel;strasse;living_street;Suhl;411.3;0.073;0.048;0.0;Nordwestseite;Südostseite;4;2025-12-27;411.3;0.073;0.048;0.0;4
-Rimbachstraße;strasse;residential;Suhl;1341.4;0.18;0.07;0.05;Nordostseite;Südwestseite;12;2025-12-27;1341.4;0.18;0.07;0.05;12
-Rimbachtal;strasse;service;Suhl;205.1;0.235;0.073;0.0;Nordostseite;Südwestseite;4;2025-12-27;205.1;0.235;0.073;0.0;4
-Ringberg;strasse;service;Himmelreich;603.4;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Riemenschneiderstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);158.6;0.835;0.535;0.22;Nordwestseite;Südostseite;11;2025-12-27;;;;;
+Rimbachhügel;strasse;living_street;Suhl-Mitte (Ortspunkt Suhl);411.3;0.073;0.048;0.0;Nordwestseite;Südostseite;4;2025-12-27;;;;;
+Rimbachstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);977.2;0.247;0.096;0.069;Nordostseite;Südwestseite;12;2025-12-27;226.0;0.0;0.0;0.0;0
+Rimbachstraße [Fläche];platz;pedestrian;Suhl-Mitte (Ortspunkt Suhl);364.2;0.0;0.0;0.0;Rand (Blick über den Rand);;0;;364.2;0.0;0.0;0.0;0
+Rimbachtal;strasse;service;Suhl-Mitte (Ortspunkt Suhl);205.1;0.235;0.073;0.0;Nordostseite;Südwestseite;4;2025-12-27;;;;;
 Ringbergstraße;strasse;residential;Suhl Nord;1399.5;0.019;0.015;0.0;Nordwestseite;Südostseite;2;2025-12-27;;;;;
-Ringweg;weg;track;Himmelreich;1509.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Robert-Koch-Straße;strasse;service;Suhl;862.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Robert-Koch-Straße;strasse;service;Suhl-Mitte (Ortspunkt Suhl);862.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Robert-Schumann-Straße;strasse;residential;Lautenbergsiedlung;537.5;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Rodewasser;strasse;residential;Suhl Nord;212.3;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Rosa-Luxemburg-Straße;strasse;residential;Neundorf;110.8;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;110.8;0.0;0.0;0.0;0
-Roschstraße;strasse;residential;Suhl;123.9;0.226;0.151;0.0;Nordwestseite;Südostseite;6;2025-12-27;123.9;0.226;0.151;0.0;6
-Rosenkopfstraße;weg;track;Heidersbach;4203.5;0.088;0.07;0.014;Nordwestseite;Südostseite;29;2025-12-29;;;;;
+Rosa-Luxemburg-Straße;strasse;residential;Neundorf;110.8;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;80.4;0.0;0.0;0.0;0
+Roschstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);123.9;0.226;0.151;0.0;Nordwestseite;Südostseite;6;2025-12-27;123.9;0.226;0.151;0.0;6
+Rosenkopfstraße (Heidersbach);weg;track;Heidersbach;55.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Rosenkopfstraße (Suhl Nord);weg;track;Suhl Nord;784.2;0.472;0.377;0.075;Nordwestseite;Südostseite;29;2025-12-29;;;;;
 Rosenweg;strasse;residential;Himmelreich;872.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Rossinistraße;strasse;residential;Lautenbergsiedlung;227.6;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Rudolf-Harbig-Straße;strasse;residential;Lautenbergsiedlung;448.5;0.07;0.0;0.0;Nordostseite;Südwestseite;1;2025-12-27;448.5;0.07;0.0;0.0;1
+Rudolf-Harbig-Straße;strasse;residential;Lautenbergsiedlung;448.5;0.07;0.0;0.0;Nordostseite;Südwestseite;1;2025-12-27;;;;;
 Rudolf-Virchow-Straße;strasse;unclassified;Himmelreich;1304.9;0.022;0.003;0.014;Nordwestseite;Südostseite;4;2025-12-27;;;;;
 Rundwanderweg;weg;path;Goldlauter;137.1;0.293;0.0;0.034;Ostseite;Westseite;3;2025-12-27;;;;;
-Rundweg Mäbendorf;weg;path;Mäbendorf;861.2;0.062;0.017;0.0;Nordseite;Südseite;1;2025-12-26;;;;;
+Rundweg Mäbendorf;weg;path;Mäbendorf;468.2;0.074;0.031;0.0;Nordostseite;Südwestseite;1;2025-12-26;;;;;
 Ruppbergstraße;strasse;residential;Suhl Nord;380.9;0.014;0.014;0.0;Nordwestseite;Südostseite;2;2025-12-27;;;;;
-Röderfeld;strasse;residential;Suhl;281.8;0.07;0.039;0.0;Nordwestseite;Südostseite;1;2025-12-27;281.8;0.07;0.039;0.0;1
-Röderfeldweg;strasse;residential;Suhl;224.6;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;224.6;0.0;0.0;0.0;0
-Rückertstraße;strasse;residential;Suhl;246.7;0.0;0.0;0.0;Nordseite;Südseite;0;;94.6;0.0;0.0;0.0;0
-Rüssenstraße;strasse;residential;Suhl;162.2;0.326;0.128;0.096;Nordwestseite;Südostseite;7;2025-12-29;162.2;0.326;0.128;0.096;7
-Rüssestraße;strasse;tertiary;Albrechts;524.7;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Röderfeld;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);281.8;0.07;0.039;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
+Röderfeldweg;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);224.6;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Rückertstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);246.7;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Rüssenstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);162.2;0.326;0.128;0.096;Nordwestseite;Südostseite;7;2025-12-29;162.2;0.326;0.128;0.096;7
 Saalhügel;strasse;residential;Heidersbach;71.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Schillerstraße;strasse;residential;Suhl;125.5;0.204;0.163;0.0;Nordostseite;Südwestseite;2;2025-12-27;125.5;0.204;0.163;0.0;2
-Schlangenweg;weg;track;Himmelreich;2732.4;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
+Schillerstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);125.5;0.204;0.163;0.0;Nordostseite;Südwestseite;2;2025-12-27;;;;;
 Schlauchgarten;strasse;residential;Himmelreich;111.9;0.454;0.4;0.0;Nordwestseite;Südostseite;3;2025-12-27;;;;;
-Schleusinger Straße;strasse;secondary;Neundorf;5221.8;0.048;0.008;0.01;Nordostseite;Südwestseite;36;2025-12-27;1010.6;0.247;0.039;0.049;36
+Schleusinger Straße;strasse;secondary;Suhl-Mitte (Ortspunkt Suhl);4094.4;0.061;0.01;0.012;Nordseite;Südseite;36;2025-12-27;225.0;0.0;0.0;0.0;0
 Schlossergasse;weg;path;Heinrichs;46.9;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Schmiedegasse;strasse;residential;Mäbendorf;82.7;0.296;0.0;0.296;Ostseite;Westseite;4;2025-12-30;;;;;
 Schnakenhügel;strasse;residential;Heinrichs;116.6;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Schneekopfstraße;strasse;residential;Suhl Nord;1172.6;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Schneid;strasse;residential;Lauter;457.3;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Schopfenstraße;strasse;residential;Goldlauter;727.5;0.034;0.0;0.02;Nordwestseite;Südostseite;1;2025-12-27;;;;;
+Schopfenstraße;strasse;residential;Goldlauter;637.8;0.039;0.0;0.023;Nordwestseite;Südostseite;1;2025-12-27;;;;;
 Schubertstraße;strasse;residential;Lautenbergsiedlung;103.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Schulzenhohle;strasse;residential;Himmelreich;329.3;0.239;0.0;0.0;Nordostseite;Südwestseite;5;2025-12-27;;;;;
 Schwarzwasserweg;strasse;tertiary;Lauter;748.5;0.923;0.712;0.0;Nordseite;Südseite;26;2025-12-27;;;;;
-Schöne Aussicht;strasse;residential;Suhl Nord;600.0;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Schützenstraße;strasse;unclassified;Neundorf;2044.1;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Seitenstraße;strasse;residential;Linsenhof;671.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Senfte;strasse;residential;Suhl;245.7;0.126;0.0;0.085;Nordwestseite;Südostseite;3;2025-12-27;245.7;0.126;0.0;0.085;3
+Senfte;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);245.7;0.126;0.0;0.085;Nordwestseite;Südostseite;3;2025-12-27;213.1;0.145;0.0;0.098;3
 Sibeliusstraße;strasse;residential;Aue 1;43.3;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
 Silbergrund;strasse;residential;Heidersbach;759.9;0.034;0.021;0.0;Nordostseite;Südwestseite;1;2025-12-27;;;;;
 Simsonstraße;strasse;residential;Heinrichs;1811.2;0.069;0.01;0.022;Nordseite;Südseite;8;2025-12-30;;;;;
 Smetanastraße;strasse;residential;Aue 1;137.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Sommerbergstraße;strasse;residential;Neundorf;2081.7;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Sonnenweg;strasse;residential;Suhl Nord;135.3;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Spitzberg;strasse;service;Himmelreich;264.9;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Stadelstraße;strasse;living_street;Suhl;269.4;0.153;0.0;0.085;Nordostseite;Südwestseite;10;2025-12-27;269.4;0.153;0.0;0.085;10
+Spitzberg;strasse;service;Himmelreich;174.9;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
+Stadelstraße;strasse;living_street;Suhl-Mitte (Ortspunkt Suhl);171.0;0.241;0.0;0.134;Nordostseite;Südwestseite;10;2025-12-27;171.0;0.241;0.0;0.134;10
+Stadelstraße [Fläche];platz;pedestrian;Suhl-Mitte (Ortspunkt Suhl);98.4;0.0;0.0;0.0;Rand (Blick über den Rand);;0;;98.4;0.0;0.0;0.0;0
 Steiler Weg;strasse;residential;Neundorf;109.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Steinatalbrücke;strasse;motorway;Suhl Nord;74.4;1.0;0.0;1.0;Nordwestseite;Südostseite;15;2026-05-23;;;;;
-Steinfelder Weg;strasse;living_street;Albrechts;544.3;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Steinhorstweg (Goldlauter);weg;track;Goldlauter;3449.3;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Steinhorstweg (Lauter);strasse;service;Lauter;75.0;0.354;0.0;0.0;Nordostseite;Südwestseite;2;2025-12-27;;;;;
-Steinigte Äcker;strasse;residential;Suhl Nord;330.5;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Steinhorstweg;strasse;service;Lauter;75.0;0.354;0.0;0.0;Nordostseite;Südwestseite;2;2025-12-27;;;;;
 Steinsfeld;strasse;residential;Suhl Nord;528.1;0.078;0.049;0.0;Nordwestseite;Südostseite;9;2025-12-29;;;;;
-Steinweg;strasse;pedestrian;Suhl;1413.1;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;1413.1;0.0;0.0;0.0;0
+Steinweg;strasse;pedestrian;Suhl-Mitte (Ortspunkt Suhl);416.7;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;416.7;0.0;0.0;0.0;0
+Steinweg [Fläche];platz;pedestrian;Suhl-Mitte (Ortspunkt Suhl);996.4;0.0;0.0;0.0;Rand (Blick über den Rand);;0;;996.4;0.0;0.0;0.0;0
 Strawinskistraße;strasse;residential;Aue 1;240.8;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Straße der Einheit;strasse;residential;Lautenbergsiedlung;251.2;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Straße der Opfer des Faschismus;strasse;residential;Suhl;570.9;0.18;0.057;0.132;Nordostseite;Südwestseite;12;2025-12-27;570.9;0.18;0.057;0.132;12
-Suhler Leube;weg;track;Heidersbach;1874.2;0.016;0.011;0.014;Nordwestseite;Südostseite;7;2025-12-29;;;;;
-Suhler Straße (Goldlauter);strasse;tertiary;Goldlauter;1296.5;0.688;0.566;0.0;Nordwestseite;Südostseite;30;2025-12-27;;;;;
-Suhler Straße (Goldlauter);strasse;secondary;Goldlauter;1953.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Suhler Straße (Suhl Nord);strasse;primary;Suhl Nord;3224.0;0.039;0.019;0.019;Nordostseite;Südwestseite;8;2026-05-23;;;;;
-Talsperre;strasse;service;Himmelreich;144.8;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Talstraße (Linsenhof);strasse;residential;Linsenhof;379.8;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Talstraße (Suhl Nord);strasse;residential;Suhl Nord;88.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Straße der Opfer des Faschismus;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);570.9;0.18;0.057;0.132;Nordostseite;Südwestseite;12;2025-12-27;135.1;0.0;0.0;0.0;0
+Suhler Leube;weg;track;Suhl Nord;429.8;0.072;0.048;0.061;Nordwestseite;Südostseite;7;2025-12-29;;;;;
+Suhler Straße;strasse;tertiary;Goldlauter;1296.5;0.688;0.566;0.0;Nordwestseite;Südostseite;30;2025-12-27;;;;;
+Talstraße;strasse;residential;Linsenhof;379.8;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Teichweg;strasse;living_street;Heinrichs;429.4;0.113;0.0;0.068;Nordseite;Südseite;1;2025-12-30;;;;;
 Themarer Straße;strasse;residential;Neundorf;231.0;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Thematischer Wanderweg Pfanntal;weg;track;Goldlauter;1552.0;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Theodor-Fontane-Straße;strasse;residential;Himmelreich;146.4;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Theodor-Körner-Straße;strasse;residential;Lautenbergsiedlung;220.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Thomas-Mann-Straße;strasse;residential;Himmelreich;187.5;0.13;0.0;0.0;Ostseite;Westseite;2;2025-12-27;;;;;
-Thomas-Müntzer-Straße;strasse;residential;Suhl;121.0;1.0;0.33;0.614;Nordwestseite;Südostseite;20;2025-12-27;121.0;1.0;0.33;0.614;20
+Thomas-Müntzer-Straße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);121.0;1.0;0.33;0.614;Nordwestseite;Südostseite;20;2025-12-27;22.1;1.0;0.389;1.0;8
 Tierpark;strasse;service;Himmelreich;85.5;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Topfmarkt;strasse;living_street;Suhl;73.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;73.5;0.0;0.0;0.0;0
-Treibersweg;weg;track;Heidersbach;106.4;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Tränkstraße;weg;track;Heidersbach;1066.1;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Trübenbachstraße;strasse;residential;Suhl;177.9;0.139;0.11;0.0;Nordwestseite;Südostseite;6;2025-12-27;177.9;0.139;0.11;0.0;6
+Topfmarkt;strasse;living_street;Suhl-Mitte (Ortspunkt Suhl);73.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;73.5;0.0;0.0;0.0;0
+Tränkstraße;strasse;residential;Heidersbach;475.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
+Trübenbachstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);177.9;0.139;0.11;0.0;Nordwestseite;Südostseite;6;2025-12-27;;;;;
 Tschaikowskistraße;strasse;residential;Heinrichs;1004.2;0.035;0.0;0.0;Nordwestseite;Südostseite;2;2025-12-27;;;;;
 Tulpenweg;strasse;residential;Himmelreich;523.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Turmstraße;strasse;residential;Suhl;135.7;0.155;0.0;0.0;Nordwestseite;Südostseite;1;2025-12-27;135.7;0.155;0.0;0.0;1
-Untere Kirchgasse;strasse;pedestrian;Suhl;65.1;0.0;0.0;0.0;Ostseite;Westseite;0;;65.1;0.0;0.0;0.0;0
+Turmstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);135.7;0.155;0.0;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
+Untere Kirchgasse;strasse;pedestrian;Suhl-Mitte (Ortspunkt Suhl);65.1;0.0;0.0;0.0;Ostseite;Westseite;0;;65.1;0.0;0.0;0.0;0
 Untere Küttebahn;strasse;service;Linsenhof;102.5;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
 Unterer Forstweg;strasse;residential;Heidersbach;121.3;0.168;0.095;0.0;Ostseite;Westseite;2;2025-12-27;;;;;
 Unterer Silberbrunnen;strasse;residential;Heidersbach;131.4;0.212;0.151;0.0;Nordwestseite;Südostseite;1;2025-12-27;;;;;
 Veilchenweg;strasse;residential;Himmelreich;426.8;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Vivaldistraße;strasse;residential;Aue 1;207.8;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Von-Kleist-Straße;strasse;unclassified;Himmelreich;721.2;0.865;0.022;0.687;Nordostseite;Südwestseite;39;2025-12-27;7.7;0.0;0.0;0.0;0
+Von-Kleist-Straße;strasse;unclassified;Himmelreich;526.0;0.814;0.03;0.615;Nordostseite;Südwestseite;34;2025-12-27;;;;;
 Vorderer Bocksberg;strasse;residential;Lauter;669.4;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Vorderhügel;strasse;living_street;Suhl Nord;11.5;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Waldbadstraße;strasse;residential;Heidersbach;226.6;0.105;0.063;0.0;Nordostseite;Südwestseite;2;2025-12-27;;;;;
 Waldstraße;strasse;residential;Linsenhof;134.0;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Wehnergasse;strasse;residential;Heinrichs;129.9;0.455;0.116;0.12;Nordostseite;Südwestseite;3;2025-12-27;;;;;
 Weidbergstraße;strasse;residential;Neundorf;457.6;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Wendelsgarten;strasse;residential;Aue 1;111.9;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Werner-Seelenbinder-Straße;strasse;unclassified;Suhl;603.4;1.0;0.493;0.392;Nordseite;Südseite;34;2025-12-29;603.4;1.0;0.493;0.392;34
-Wertherstraße;strasse;residential;Suhl;297.1;1.0;0.208;0.749;Nordwestseite;Südostseite;50;2025-12-27;297.1;1.0;0.208;0.749;50
+Werner-Seelenbinder-Straße;strasse;unclassified;Suhl-Mitte (Ortspunkt Suhl);603.4;1.0;0.493;0.392;Nordseite;Südseite;34;2025-12-29;420.4;1.0;0.342;0.562;29
+Wertherstraße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);297.1;1.0;0.208;0.749;Nordwestseite;Südostseite;50;2025-12-27;;;;;
 Wiesengrund;strasse;residential;Heidersbach;707.4;0.03;0.015;0.0;Nordseite;Südseite;2;2025-12-27;;;;;
 Wiesenstraße;strasse;residential;Heidersbach;227.3;0.268;0.245;0.0;Nordostseite;Südwestseite;3;2025-12-27;;;;;
 Wiesweg;weg;path;Heinrichs;169.8;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
-Wilhelm-Busch-Straße;strasse;residential;Suhl;421.7;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;421.7;0.0;0.0;0.0;0
+Wilhelm-Busch-Straße;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);421.7;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
 Wilhelm-G.-Spangenberg-Straße;strasse;residential;Aue 2;371.8;0.0;0.0;0.0;Nordostseite;Südwestseite;0;;;;;;
-Windeweg;strasse;residential;Neundorf;1911.2;0.0;0.0;0.0;Nordseite;Südseite;0;;258.2;0.0;0.0;0.0;0
-Windmühlenweg;strasse;residential;Suhl;113.9;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;113.9;0.0;0.0;0.0;0
-Winkeltal;strasse;residential;Mäbendorf;1156.5;0.278;0.069;0.047;Ostseite;Westseite;18;2025-12-30;;;;;
-Wolfsgasse;strasse;residential;Lautenbergsiedlung;184.3;0.395;0.2;0.0;Nordseite;Südseite;3;2025-12-27;93.5;0.779;0.394;0.0;3
-Wolfsgrube;strasse;residential;Suhl;334.5;0.155;0.096;0.0;Nordostseite;Südwestseite;5;2025-12-27;334.5;0.155;0.096;0.0;5
-Würzburger Straße;strasse;secondary;Aue 2;1395.4;0.773;0.477;0.214;Nordwestseite;Südostseite;186;2025-12-30;661.8;1.0;0.724;0.288;103
+Windeweg;strasse;residential;Neundorf;1911.2;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
+Windmühlenweg;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);113.9;0.0;0.0;0.0;Nordwestseite;Südostseite;0;;;;;;
+Winkeltal;strasse;residential;Mäbendorf;1135.7;0.284;0.07;0.047;Ostseite;Westseite;18;2025-12-30;;;;;
+Wolfsgasse;strasse;residential;Lautenbergsiedlung;184.3;0.395;0.2;0.0;Nordseite;Südseite;3;2025-12-27;;;;;
+Wolfsgrube;strasse;residential;Suhl-Mitte (Ortspunkt Suhl);334.5;0.155;0.096;0.0;Nordostseite;Südwestseite;5;2025-12-27;;;;;
+Würzburger Straße;strasse;secondary;Aue 2;1395.4;0.773;0.477;0.214;Nordwestseite;Südostseite;186;2025-12-30;227.2;1.0;0.664;0.576;41
 Zeisighügel;strasse;residential;Goldlauter;188.3;0.104;0.0;0.052;Nordwestseite;Südostseite;1;2025-12-27;;;;;
-Zella-Mehlis, Bahnhof;weg;footway;Suhl Nord;28.2;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Zellaer Höhe;strasse;residential;Suhl Nord;336.1;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
-Zellaer Straße;strasse;tertiary;Heidersbach;3380.3;0.933;0.527;0.05;Nordseite;Südseite;96;2025-12-27;;;;;
+Zellaer Straße (Heidersbach);strasse;tertiary;Heidersbach;2727.7;0.932;0.515;0.06;Nordostseite;Südwestseite;81;2025-12-27;;;;;
+Zellaer Straße (Suhl Nord);strasse;tertiary;Suhl Nord;39.5;1.0;0.756;0.0;Nordwestseite;Südostseite;2;2025-12-27;;;;;
 Ziegenbergweg;strasse;residential;Suhl Nord;534.7;0.133;0.045;0.017;Ostseite;Westseite;5;2025-12-27;;;;;
 Zum Kirchenholz;strasse;residential;Heidersbach;126.4;0.0;0.0;0.0;Nordseite;Südseite;0;;;;;;
 Zum Kirchenwäldchen;strasse;residential;Suhl Nord;290.8;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;
-Zum Zimmergrund;strasse;residential;Albrechts;1503.0;0.0;0.0;0.0;Ostseite;Westseite;0;;;;;;

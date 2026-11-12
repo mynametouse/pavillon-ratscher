@@ -1,0 +1,55 @@
+{
+ "version": 1,
+ "made": "2026-11-12T23:28Z",
+ "areas": "suhl-bestand",
+ "quellen": {
+  "panoramax": {
+   "fotos": 3254,
+   "doppelt": 284,
+   "je_gebiet": {
+    "umland": 831,
+    "zentrum": 259,
+    "kernstadt": 1266,
+    "stadt": 898
+   },
+   "jahre": {
+    "2025": 2095,
+    "2026": 1159
+   },
+   "lizenzen": {
+    "CC BY-SA 4.0": 3254
+   },
+   "nutzung": {
+    "frei": 3254
+   },
+   "mit_position": 3254,
+   "kameraposition": 3254,
+   "mit_blickrichtung": 3254,
+   "rundum_360": 0,
+   "aussenansicht": 3254,
+   "urheber": {
+    "sixsixfive": 1733,
+    "R_A": 773,
+    "r_a": 385,
+    "cucu": 362,
+    "mapcomplete": 1
+   },
+   "bildwinkel": {
+    "74": 1733,
+    "100": 765,
+    "None": 393,
+    "95": 362,
+    "46": 1
+   }
+  }
+ },
+ "herkunft": {
+  "panoramax": {
+   "fetched": "2026-11-12T23:26Z",
+   "where": "chat machine",
+   "api": "https://api.panoramax.xyz/api/search",
+   "duplicates": 284
+  }
+ },
+ "mapillary": "not asked: the Mapillary API needs an access token (an account); none was created"
+}

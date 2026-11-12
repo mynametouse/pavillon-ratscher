@@ -33,16 +33,31 @@ def fit(draw, text, f, width):
     return text + '…'
 
 
-def fetch_image(url, cache, pause=0.3):
-    """A small picture through a cache folder outside the repo; None if it cannot be had."""
+def _cached(url, cache, pause):
     os.makedirs(cache, exist_ok=True)
     fn = os.path.join(cache, hashlib.sha1(url.encode()).hexdigest() + '.img')
     if not (os.path.exists(fn) and os.path.getsize(fn) > 500):
         try:
-            raw = slib.get(url, pause=pause, tries=3, timeout=60)
+            raw = slib.get(url, pause=pause, tries=3, timeout=25)
         except Exception as e:
             print('  picture failed', url[:100], str(e)[:80], flush=True); return None
-        with open(fn, 'wb') as f: f.write(raw)
+        with open(fn + '.part', 'wb') as f: f.write(raw)
+        os.replace(fn + '.part', fn)
+    return fn
+
+
+def prefetch(urls, cache, workers=4, pause=0.25):
+    """Fill the cache with a few threads (a few hundred small thumbnails; short timeouts so that one hanging answer does not stop all)."""
+    from concurrent.futures import ThreadPoolExecutor
+    urls = sorted(set(u for u in urls if u))
+    with ThreadPoolExecutor(workers) as ex: res = list(ex.map(lambda u: _cached(u, cache, pause), urls))
+    print(f'prefetch: {sum(1 for r in res if r)}/{len(urls)} pictures in the cache', flush=True)
+
+
+def fetch_image(url, cache, pause=0.3):
+    """A small picture through a cache folder outside the repo; None if it cannot be had."""
+    fn = _cached(url, cache, pause)
+    if not fn: return None
     try:
         im = Image.open(fn); im.load(); return im.convert('RGB')
     except Exception as e:

@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import slib
 
 API = 'https://api.openstreetmap.org/api/0.6/map'
-areas = slib.Areas(sys.argv[1] if len(sys.argv) > 1 else None)
+areas = slib.Areas(next((a for a in sys.argv[1:] if not a.startswith('--')), None))
 WAY_TAGS = ('name', 'highway', 'ref', 'surface', 'smoothness', 'lit', 'maxspeed', 'oneway', 'lanes', 'sidewalk', 'sidewalk:both', 'sidewalk:left', 'sidewalk:right',
             'width', 'tunnel', 'bridge', 'layer', 'service', 'area', 'access', 'incline', 'cycleway', 'bicycle', 'foot', 'junction', 'covered')
 OBJ_AMENITY = {'townhall', 'place_of_worship', 'theatre', 'cinema', 'library', 'arts_centre', 'community_centre', 'courthouse', 'marketplace', 'fountain',
@@ -71,6 +71,33 @@ def box(b):
             el.clear()
 
 
+def extra_objects(objs):
+    """Landmarks named by suhl-bestand (gebiete.geojson) that the tag filter did not keep, e.g. a station building with building=yes: fetched one by one."""
+    n = 0
+    for lm in getattr(areas, 'landmarks', []):
+        kind, _, oid = str(lm.get('osm', '')).partition('/')
+        key = kind[:1] + oid
+        if key in objs or kind not in ('way', 'relation') or not oid.isdigit(): continue
+        try: raw = slib.get(f'https://api.openstreetmap.org/api/0.6/{kind}/{oid}/full', pause=1.1, tries=3, timeout=60)
+        except Exception as e:
+            print('  landmark not fetched', lm.get('osm'), e, flush=True); continue
+        root = ET.fromstring(raw)
+        nodes = {nd.get('id'): [round(float(nd.get('lat')), 7), round(float(nd.get('lon')), 7)] for nd in root.iter('node')}
+        el = next((e for e in root.iter(kind) if e.get('id') == oid), None)
+        if el is None: continue
+        t = {c.get('k'): c.get('v') for c in el if c.tag == 'tag'}
+        if kind == 'way': pts = [nodes[c.get('ref')] for c in el if c.tag == 'nd' and c.get('ref') in nodes]
+        else: pts = [nodes[c.get('ref')] for w in root.iter('way') for c in w if c.tag == 'nd' and c.get('ref') in nodes]
+        if t.get('highway') and t.get('area') != 'yes': continue   # streets are in the way list already
+        if pts: objs[key] = dict(id=key, tags=dict(t, name=t.get('name') or lm.get('name')), pts=pts, from_landmark_list=True); n += 1
+    return n
+
+
+if '--extra-only' in sys.argv:   # add the missing landmark objects to an existing file without asking for all boxes again
+    d = slib.load('strassen.json.gz'); o = {x['id']: x for x in d['objects']}
+    n = extra_objects(o); d['objects'] = sorted(o.values(), key=lambda x: x['id'])
+    print(slib.save('strassen.json.gz', d), n, 'landmark objects added'); sys.exit(0)
+
 b = areas.bbox('kernstadt', pad=0.001)
 sx, sy = 0.0250, 0.0160   # about 1.8 km x 1.8 km to start with
 nx, ny = int((b[2] - b[0]) / sx) + 1, int((b[3] - b[1]) / sy) + 1
@@ -78,10 +105,8 @@ todo = []
 for i in range(nx):
     for j in range(ny):
         q = (b[0] + i * sx, b[1] + j * sy, min(b[2], b[0] + (i + 1) * sx), min(b[3], b[1] + (j + 1) * sy))
-        # only boxes that touch the area (corners, centre and edge midpoints)
-        pts = [(q[1] + (q[3] - q[1]) * v, q[0] + (q[2] - q[0]) * u) for u in (0, .5, 1) for v in (0, .5, 1)]
-        if any(areas.has('kernstadt', la, lo) for la, lo in pts): todo.append(q)
-print(f'{len(todo)} boxes of {nx * ny} touch the Kernstadt', flush=True)
+        todo.append(q)   # every box of the bounding box of the Kernstadt (a few more than needed, but none is missed)
+print(f'{len(todo)} boxes over the bounding box of the Kernstadt ({areas.source})', flush=True)
 failed = []
 for k, q in enumerate(todo):
     try: box(q)
@@ -89,6 +114,7 @@ for k, q in enumerate(todo):
         failed.append([round(v, 5) for v in q]); print('  box failed', q, e, flush=True)
     if k % 5 == 4: print(f'box {k + 1}/{len(todo)}: {len(ways)} highway ways, {calls[0]} calls ({refused[0]} refused and split)', flush=True)
 
+print(extra_objects(objs), 'landmark objects added from the list of suhl-bestand', flush=True)
 out = dict(version=1, fetched=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'),
            source='OpenStreetMap API 0.6 map call in boxes; (c) OpenStreetMap contributors, ODbL', bbox=[round(v, 5) for v in b], areas=areas.source,
            calls=calls[0], failed_boxes=failed, ways=sorted(ways.values(), key=lambda w: w['id']), places=sorted(places.values(), key=lambda p: p['id']),

@@ -1,7 +1,7 @@
 {
  "version": 1,
- "made": "2026-11-12T23:17Z",
- "areas": "provisional",
+ "made": "2026-11-12T23:28Z",
+ "areas": "suhl-bestand",
  "method": {
   "step_m": 5.0,
   "near_m": 25.0,
@@ -17,86 +17,98 @@
  "summen": {
   "kernstadt": {
    "strassen": {
-    "strassen": 402,
-    "laenge_km": 229.95,
-    "mit_foto_km": 39.3,
-    "anteil_foto": 0.171,
-    "anteil_seite_a": 0.066,
-    "anteil_seite_b": 0.032,
-    "anteil_beide_seiten_mittel": 0.049,
-    "strassen_ohne_foto": 229,
-    "strassen_ganz": 22,
-    "fotos": 1512
+    "strassen": 358,
+    "laenge_km": 185.93,
+    "mit_foto_km": 37.43,
+    "anteil_foto": 0.201,
+    "anteil_seite_a": 0.078,
+    "anteil_seite_b": 0.037,
+    "anteil_beide_seiten_mittel": 0.057,
+    "strassen_ohne_foto": 187,
+    "strassen_ganz": 23,
+    "fotos": 1420
    },
    "wege": {
-    "strassen": 42,
-    "laenge_km": 38.99,
-    "mit_foto_km": 0.66,
-    "anteil_foto": 0.017,
-    "anteil_seite_a": 0.009,
-    "anteil_seite_b": 0.003,
-    "anteil_beide_seiten_mittel": 0.006,
-    "strassen_ohne_foto": 33,
+    "strassen": 33,
+    "laenge_km": 10.5,
+    "mit_foto_km": 0.64,
+    "anteil_foto": 0.061,
+    "anteil_seite_a": 0.033,
+    "anteil_seite_b": 0.013,
+    "anteil_beide_seiten_mittel": 0.023,
+    "strassen_ohne_foto": 24,
     "strassen_ganz": 0,
     "fotos": 49
    },
+   "plaetze_umriss": {
+    "strassen": 6,
+    "laenge_km": 2.2,
+    "mit_foto_km": 0.02,
+    "anteil_foto": 0.007,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "anteil_beide_seiten_mittel": 0.0,
+    "strassen_ohne_foto": 5,
+    "strassen_ganz": 0,
+    "fotos": 2
+   },
    "strassen_ohne_namen": {
-    "laenge_km": 237.12,
-    "anteil_foto": 0.122
+    "laenge_km": 129.29,
+    "anteil_foto": 0.089
    }
   },
   "zentrum": {
    "strassen": {
-    "strassen": 107,
-    "laenge_km": 36.58,
-    "mit_foto_km": 12.49,
-    "anteil_foto": 0.341,
-    "anteil_seite_a": 0.125,
-    "anteil_seite_b": 0.07,
-    "anteil_beide_seiten_mittel": 0.098,
-    "strassen_ohne_foto": 41,
-    "strassen_ganz": 16,
-    "fotos": 603
+    "strassen": 49,
+    "laenge_km": 14.44,
+    "mit_foto_km": 6.19,
+    "anteil_foto": 0.429,
+    "anteil_seite_a": 0.155,
+    "anteil_seite_b": 0.068,
+    "anteil_beide_seiten_mittel": 0.112,
+    "strassen_ohne_foto": 21,
+    "strassen_ganz": 10,
+    "fotos": 276
    },
    "wege": {
-    "strassen": 5,
-    "laenge_km": 1.81,
-    "mit_foto_km": 0.04,
-    "anteil_foto": 0.022,
-    "anteil_seite_a": 0.008,
-    "anteil_seite_b": 0.01,
-    "anteil_beide_seiten_mittel": 0.009,
-    "strassen_ohne_foto": 3,
+    "strassen": 2,
+    "laenge_km": 0.27,
+    "mit_foto_km": 0.02,
+    "anteil_foto": 0.092,
+    "anteil_seite_a": 0.055,
+    "anteil_seite_b": 0.051,
+    "anteil_beide_seiten_mittel": 0.053,
+    "strassen_ohne_foto": 0,
     "strassen_ganz": 0,
     "fotos": 7
    },
+   "plaetze_umriss": {
+    "strassen": 6,
+    "laenge_km": 2.2,
+    "mit_foto_km": 0.02,
+    "anteil_foto": 0.007,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "anteil_beide_seiten_mittel": 0.0,
+    "strassen_ohne_foto": 5,
+    "strassen_ganz": 0,
+    "fotos": 2
+   },
    "strassen_ohne_namen": {
-    "laenge_km": 20.4,
-    "anteil_foto": 0.16
+    "laenge_km": 7.57,
+    "anteil_foto": 0.112
    }
   }
  },
  "viertel": {
-  "Albrechts": {
-   "strassen": 17,
-   "laenge_km": 9.87,
-   "mit_foto_km": 0.1,
-   "anteil_foto": 0.01,
-   "anteil_seite_a": 0.006,
-   "anteil_seite_b": 0.005,
-   "anteil_beide_seiten_mittel": 0.006,
-   "strassen_ohne_foto": 16,
-   "strassen_ganz": 0,
-   "fotos": 9
-  },
   "Aue 1": {
    "strassen": 16,
-   "laenge_km": 9.29,
-   "mit_foto_km": 0.89,
-   "anteil_foto": 0.096,
-   "anteil_seite_a": 0.011,
+   "laenge_km": 8.7,
+   "mit_foto_km": 0.88,
+   "anteil_foto": 0.101,
+   "anteil_seite_a": 0.012,
    "anteil_seite_b": 0.005,
-   "anteil_beide_seiten_mittel": 0.008,
+   "anteil_beide_seiten_mittel": 0.009,
    "strassen_ohne_foto": 9,
    "strassen_ganz": 0,
    "fotos": 22
@@ -115,51 +127,51 @@
   },
   "Goldlauter": {
    "strassen": 25,
-   "laenge_km": 10.55,
-   "mit_foto_km": 1.16,
-   "anteil_foto": 0.11,
-   "anteil_seite_a": 0.072,
-   "anteil_seite_b": 0.007,
-   "anteil_beide_seiten_mittel": 0.04,
+   "laenge_km": 9.04,
+   "mit_foto_km": 1.14,
+   "anteil_foto": 0.126,
+   "anteil_seite_a": 0.083,
+   "anteil_seite_b": 0.009,
+   "anteil_beide_seiten_mittel": 0.046,
    "strassen_ohne_foto": 15,
    "strassen_ganz": 0,
-   "fotos": 41
+   "fotos": 40
   },
   "Heidersbach": {
-   "strassen": 22,
-   "laenge_km": 12.12,
-   "mit_foto_km": 3.53,
-   "anteil_foto": 0.292,
-   "anteil_seite_a": 0.16,
-   "anteil_seite_b": 0.016,
-   "anteil_beide_seiten_mittel": 0.088,
-   "strassen_ohne_foto": 7,
+   "strassen": 24,
+   "laenge_km": 10.98,
+   "mit_foto_km": 2.92,
+   "anteil_foto": 0.266,
+   "anteil_seite_a": 0.142,
+   "anteil_seite_b": 0.018,
+   "anteil_beide_seiten_mittel": 0.08,
+   "strassen_ohne_foto": 8,
    "strassen_ganz": 2,
-   "fotos": 96
+   "fotos": 81
   },
   "Heinrichs": {
    "strassen": 20,
-   "laenge_km": 15.37,
+   "laenge_km": 15.28,
    "mit_foto_km": 5.47,
-   "anteil_foto": 0.356,
-   "anteil_seite_a": 0.116,
-   "anteil_seite_b": 0.092,
-   "anteil_beide_seiten_mittel": 0.104,
+   "anteil_foto": 0.358,
+   "anteil_seite_a": 0.117,
+   "anteil_seite_b": 0.093,
+   "anteil_beide_seiten_mittel": 0.105,
    "strassen_ohne_foto": 7,
    "strassen_ganz": 1,
    "fotos": 166
   },
   "Himmelreich": {
-   "strassen": 50,
-   "laenge_km": 22.25,
-   "mit_foto_km": 2.54,
-   "anteil_foto": 0.114,
-   "anteil_seite_a": 0.042,
-   "anteil_seite_b": 0.04,
-   "anteil_beide_seiten_mittel": 0.041,
-   "strassen_ohne_foto": 24,
+   "strassen": 48,
+   "laenge_km": 21.22,
+   "mit_foto_km": 2.34,
+   "anteil_foto": 0.11,
+   "anteil_seite_a": 0.044,
+   "anteil_seite_b": 0.034,
+   "anteil_beide_seiten_mittel": 0.039,
+   "strassen_ohne_foto": 22,
    "strassen_ganz": 2,
-   "fotos": 101
+   "fotos": 96
   },
   "Lautenbergsiedlung": {
    "strassen": 24,
@@ -175,443 +187,235 @@
   },
   "Lauter": {
    "strassen": 10,
-   "laenge_km": 8.44,
-   "mit_foto_km": 3.21,
-   "anteil_foto": 0.381,
-   "anteil_seite_a": 0.268,
+   "laenge_km": 7.28,
+   "mit_foto_km": 2.83,
+   "anteil_foto": 0.389,
+   "anteil_seite_a": 0.282,
    "anteil_seite_b": 0.006,
-   "anteil_beide_seiten_mittel": 0.137,
+   "anteil_beide_seiten_mittel": 0.144,
    "strassen_ohne_foto": 3,
    "strassen_ganz": 2,
-   "fotos": 90
+   "fotos": 83
   },
   "Linsenhof": {
    "strassen": 16,
-   "laenge_km": 13.6,
-   "mit_foto_km": 0.78,
-   "anteil_foto": 0.057,
-   "anteil_seite_a": 0.042,
-   "anteil_seite_b": 0.004,
-   "anteil_beide_seiten_mittel": 0.023,
+   "laenge_km": 11.16,
+   "mit_foto_km": 0.7,
+   "anteil_foto": 0.063,
+   "anteil_seite_a": 0.048,
+   "anteil_seite_b": 0.0,
+   "anteil_beide_seiten_mittel": 0.024,
    "strassen_ohne_foto": 14,
    "strassen_ganz": 0,
-   "fotos": 29
+   "fotos": 21
   },
   "Mäbendorf": {
-   "strassen": 21,
-   "laenge_km": 7.81,
-   "mit_foto_km": 1.39,
-   "anteil_foto": 0.178,
+   "strassen": 22,
+   "laenge_km": 8.17,
+   "mit_foto_km": 1.55,
+   "anteil_foto": 0.19,
    "anteil_seite_a": 0.027,
-   "anteil_seite_b": 0.039,
+   "anteil_seite_b": 0.04,
    "anteil_beide_seiten_mittel": 0.033,
    "strassen_ohne_foto": 9,
    "strassen_ganz": 1,
-   "fotos": 57
+   "fotos": 59
   },
   "Neundorf": {
-   "strassen": 42,
-   "laenge_km": 32.69,
-   "mit_foto_km": 0.58,
-   "anteil_foto": 0.018,
-   "anteil_seite_a": 0.003,
-   "anteil_seite_b": 0.002,
-   "anteil_beide_seiten_mittel": 0.002,
-   "strassen_ohne_foto": 37,
+   "strassen": 37,
+   "laenge_km": 21.29,
+   "mit_foto_km": 0.33,
+   "anteil_foto": 0.015,
+   "anteil_seite_a": 0.002,
+   "anteil_seite_b": 0.001,
+   "anteil_beide_seiten_mittel": 0.001,
+   "strassen_ohne_foto": 33,
    "strassen_ganz": 0,
-   "fotos": 50
-  },
-  "Suhl": {
-   "strassen": 69,
-   "laenge_km": 28.39,
-   "mit_foto_km": 10.13,
-   "anteil_foto": 0.357,
-   "anteil_seite_a": 0.129,
-   "anteil_seite_b": 0.075,
-   "anteil_beide_seiten_mittel": 0.102,
-   "strassen_ohne_foto": 24,
-   "strassen_ganz": 13,
-   "fotos": 493
+   "fotos": 20
   },
   "Suhl Nord": {
-   "strassen": 58,
-   "laenge_km": 41.74,
-   "mit_foto_km": 7.85,
-   "anteil_foto": 0.188,
-   "anteil_seite_a": 0.046,
-   "anteil_seite_b": 0.039,
-   "anteil_beide_seiten_mittel": 0.043,
-   "strassen_ohne_foto": 37,
-   "strassen_ganz": 1,
-   "fotos": 301
+   "strassen": 33,
+   "laenge_km": 24.48,
+   "mit_foto_km": 7.25,
+   "anteil_foto": 0.296,
+   "anteil_seite_a": 0.075,
+   "anteil_seite_b": 0.059,
+   "anteil_beide_seiten_mittel": 0.067,
+   "strassen_ohne_foto": 15,
+   "strassen_ganz": 2,
+   "fotos": 248
+  },
+  "Suhl-Mitte (Ortspunkt Suhl)": {
+   "strassen": 71,
+   "laenge_km": 30.49,
+   "mit_foto_km": 10.37,
+   "anteil_foto": 0.34,
+   "anteil_seite_a": 0.122,
+   "anteil_seite_b": 0.072,
+   "anteil_beide_seiten_mittel": 0.097,
+   "strassen_ohne_foto": 25,
+   "strassen_ganz": 13,
+   "fotos": 520
   }
  },
  "strassenklasse": {
   "living_street": {
    "strassen": 12,
-   "laenge_km": 3.04,
-   "mit_foto_km": 0.26,
-   "anteil_foto": 0.086,
-   "anteil_seite_a": 0.041,
-   "anteil_seite_b": 0.017,
-   "anteil_beide_seiten_mittel": 0.029,
-   "strassen_ohne_foto": 6,
+   "laenge_km": 2.42,
+   "mit_foto_km": 0.28,
+   "anteil_foto": 0.115,
+   "anteil_seite_a": 0.051,
+   "anteil_seite_b": 0.023,
+   "anteil_beide_seiten_mittel": 0.037,
+   "strassen_ohne_foto": 5,
    "strassen_ganz": 0,
    "fotos": 27
   },
-  "motorway": {
-   "strassen": 1,
-   "laenge_km": 0.07,
-   "mit_foto_km": 0.07,
-   "anteil_foto": 1.0,
-   "anteil_seite_a": 0.0,
-   "anteil_seite_b": 1.0,
-   "anteil_beide_seiten_mittel": 0.5,
-   "strassen_ohne_foto": 0,
-   "strassen_ganz": 1,
-   "fotos": 15
-  },
   "pedestrian": {
-   "strassen": 5,
-   "laenge_km": 2.32,
-   "mit_foto_km": 0.03,
-   "anteil_foto": 0.014,
+   "strassen": 3,
+   "laenge_km": 0.55,
+   "mit_foto_km": 0.0,
+   "anteil_foto": 0.0,
    "anteil_seite_a": 0.0,
-   "anteil_seite_b": 0.002,
-   "anteil_beide_seiten_mittel": 0.001,
-   "strassen_ohne_foto": 4,
+   "anteil_seite_b": 0.0,
+   "anteil_beide_seiten_mittel": 0.0,
+   "strassen_ohne_foto": 3,
    "strassen_ganz": 0,
-   "fotos": 6
-  },
-  "primary": {
-   "strassen": 2,
-   "laenge_km": 3.73,
-   "mit_foto_km": 0.12,
-   "anteil_foto": 0.033,
-   "anteil_seite_a": 0.016,
-   "anteil_seite_b": 0.016,
-   "anteil_beide_seiten_mittel": 0.016,
-   "strassen_ohne_foto": 1,
-   "strassen_ganz": 0,
-   "fotos": 8
+   "fotos": 0
   },
   "residential": {
-   "strassen": 299,
-   "laenge_km": 137.72,
-   "mit_foto_km": 9.11,
-   "anteil_foto": 0.066,
-   "anteil_seite_a": 0.021,
-   "anteil_seite_b": 0.018,
-   "anteil_beide_seiten_mittel": 0.019,
-   "strassen_ohne_foto": 176,
+   "strassen": 268,
+   "laenge_km": 119.41,
+   "mit_foto_km": 9.05,
+   "anteil_foto": 0.076,
+   "anteil_seite_a": 0.024,
+   "anteil_seite_b": 0.02,
+   "anteil_beide_seiten_mittel": 0.022,
+   "strassen_ohne_foto": 144,
    "strassen_ganz": 10,
-   "fotos": 576
+   "fotos": 572
   },
   "secondary": {
    "strassen": 11,
-   "laenge_km": 26.58,
-   "mit_foto_km": 14.66,
-   "anteil_foto": 0.552,
-   "anteil_seite_a": 0.146,
-   "anteil_seite_b": 0.115,
-   "anteil_beide_seiten_mittel": 0.131,
-   "strassen_ohne_foto": 1,
-   "strassen_ganz": 3,
-   "fotos": 714
+   "laenge_km": 23.34,
+   "mit_foto_km": 14.5,
+   "anteil_foto": 0.621,
+   "anteil_seite_a": 0.167,
+   "anteil_seite_b": 0.13,
+   "anteil_beide_seiten_mittel": 0.148,
+   "strassen_ohne_foto": 0,
+   "strassen_ganz": 4,
+   "fotos": 711
   },
   "service": {
-   "strassen": 44,
-   "laenge_km": 21.62,
-   "mit_foto_km": 0.54,
-   "anteil_foto": 0.025,
-   "anteil_seite_a": 0.006,
-   "anteil_seite_b": 0.003,
-   "anteil_beide_seiten_mittel": 0.005,
-   "strassen_ohne_foto": 32,
+   "strassen": 40,
+   "laenge_km": 16.73,
+   "mit_foto_km": 0.53,
+   "anteil_foto": 0.031,
+   "anteil_seite_a": 0.007,
+   "anteil_seite_b": 0.004,
+   "anteil_beide_seiten_mittel": 0.006,
+   "strassen_ohne_foto": 29,
    "strassen_ganz": 2,
-   "fotos": 31
+   "fotos": 30
   },
   "tertiary": {
-   "strassen": 12,
-   "laenge_km": 18.03,
-   "mit_foto_km": 10.89,
-   "anteil_foto": 0.604,
-   "anteil_seite_a": 0.349,
-   "anteil_seite_b": 0.024,
-   "anteil_beide_seiten_mittel": 0.187,
-   "strassen_ohne_foto": 3,
-   "strassen_ganz": 3,
-   "fotos": 352
+   "strassen": 10,
+   "laenge_km": 12.71,
+   "mit_foto_km": 9.8,
+   "anteil_foto": 0.771,
+   "anteil_seite_a": 0.443,
+   "anteil_seite_b": 0.03,
+   "anteil_beide_seiten_mittel": 0.236,
+   "strassen_ohne_foto": 1,
+   "strassen_ganz": 4,
+   "fotos": 318
   },
   "unclassified": {
-   "strassen": 16,
-   "laenge_km": 16.83,
-   "mit_foto_km": 3.6,
-   "anteil_foto": 0.214,
-   "anteil_seite_a": 0.112,
-   "anteil_seite_b": 0.065,
-   "anteil_beide_seiten_mittel": 0.088,
-   "strassen_ohne_foto": 6,
+   "strassen": 14,
+   "laenge_km": 10.77,
+   "mit_foto_km": 3.28,
+   "anteil_foto": 0.304,
+   "anteil_seite_a": 0.17,
+   "anteil_seite_b": 0.08,
+   "anteil_beide_seiten_mittel": 0.125,
+   "strassen_ohne_foto": 5,
    "strassen_ganz": 3,
-   "fotos": 180
+   "fotos": 150
   }
  },
  "zentrum_schlecht": [
   {
-   "name": "Steinweg",
+   "name": "Friedrich-König-Straße",
    "klasse": "strasse",
-   "highway": "pedestrian",
-   "laenge_m": 1413.1,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 1413.1
+   "highway": "secondary",
+   "laenge_m": 2176.3,
+   "anteil_foto": 0.486,
+   "ohne_foto_m": 1119.4
   },
   {
-   "name": "Rimbachstraße",
+   "name": "Steinweg [Fläche]",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "laenge_m": 996.4,
+   "anteil_foto": 0.0,
+   "ohne_foto_m": 996.4
+  },
+  {
+   "name": "Bahnhofstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "laenge_m": 1341.4,
-   "anteil_foto": 0.18,
-   "ohne_foto_m": 1099.8
+   "laenge_m": 787.0,
+   "anteil_foto": 0.06,
+   "ohne_foto_m": 739.9
   },
   {
    "name": "Am Bahnhof",
    "klasse": "strasse",
    "highway": "residential",
-   "laenge_m": 801.0,
-   "anteil_foto": 0.042,
-   "ohne_foto_m": 767.3
+   "laenge_m": 719.1,
+   "anteil_foto": 0.006,
+   "ohne_foto_m": 715.0
   },
   {
-   "name": "Bahnhofstraße (Suhl)",
+   "name": "Steinweg",
    "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 809.0,
-   "anteil_foto": 0.058,
-   "ohne_foto_m": 761.9
-  },
-  {
-   "name": "Schleusinger Straße",
-   "klasse": "strasse",
-   "highway": "secondary",
-   "laenge_m": 1010.6,
-   "anteil_foto": 0.247,
-   "ohne_foto_m": 761.3
-  },
-  {
-   "name": "Neundorfer Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 660.0,
-   "anteil_foto": 0.074,
-   "ohne_foto_m": 611.2
-  },
-  {
-   "name": "Hölderlinstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 602.5,
+   "highway": "pedestrian",
+   "laenge_m": 416.7,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 602.5
+   "ohne_foto_m": 416.7
   },
   {
    "name": "Marktplatz",
    "klasse": "strasse",
    "highway": "living_street",
-   "laenge_m": 598.5,
+   "laenge_m": 382.0,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 598.5
+   "ohne_foto_m": 382.0
+  },
+  {
+   "name": "Rimbachstraße [Fläche]",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "laenge_m": 364.2,
+   "anteil_foto": 0.0,
+   "ohne_foto_m": 364.2
   },
   {
    "name": "Pfarrstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "laenge_m": 577.4,
+   "laenge_m": 343.4,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 577.4
+   "ohne_foto_m": 343.4
   },
   {
-   "name": "Grüner Weg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 573.1,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 573.1
-  },
-  {
-   "name": "Burgweg",
-   "klasse": "weg",
-   "highway": "path",
-   "laenge_m": 589.0,
-   "anteil_foto": 0.049,
-   "ohne_foto_m": 560.4
-  },
-  {
-   "name": "Hofleitengasse",
-   "klasse": "weg",
-   "highway": "path",
-   "laenge_m": 521.6,
-   "anteil_foto": 0.021,
-   "ohne_foto_m": 510.7
-  },
-  {
-   "name": "Kefersteinstraße",
-   "klasse": "strasse",
-   "highway": "service",
-   "laenge_m": 491.5,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 491.5
-  },
-  {
-   "name": "Platz der Deutschen Einheit",
-   "klasse": "strasse",
+   "name": "Platz der Deutschen Einheit [Fläche]",
+   "klasse": "platz",
    "highway": "pedestrian",
-   "laenge_m": 475.8,
+   "laenge_m": 335.6,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 475.8
-  },
-  {
-   "name": "Ernst-Heß-Straße",
-   "klasse": "strasse",
-   "highway": "service",
-   "laenge_m": 474.0,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 474.0
-  },
-  {
-   "name": "Am Domberg",
-   "klasse": "strasse",
-   "highway": "service",
-   "laenge_m": 471.9,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 471.9
-  },
-  {
-   "name": "Straße der Opfer des Faschismus",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 570.9,
-   "anteil_foto": 0.18,
-   "ohne_foto_m": 468.2
-  },
-  {
-   "name": "Wilhelm-Busch-Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 421.7,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 421.7
-  },
-  {
-   "name": "Rudolf-Harbig-Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 448.5,
-   "anteil_foto": 0.07,
-   "ohne_foto_m": 417.2
-  },
-  {
-   "name": "Am Roten Stein",
-   "klasse": "strasse",
-   "highway": "service",
-   "laenge_m": 432.0,
-   "anteil_foto": 0.062,
-   "ohne_foto_m": 405.1
-  },
-  {
-   "name": "Rimbachhügel",
-   "klasse": "strasse",
-   "highway": "living_street",
-   "laenge_m": 411.3,
-   "anteil_foto": 0.073,
-   "ohne_foto_m": 381.3
-  },
-  {
-   "name": "Blücherstraße",
-   "klasse": "strasse",
-   "highway": "unclassified",
-   "laenge_m": 393.8,
-   "anteil_foto": 0.055,
-   "ohne_foto_m": 372.1
-  },
-  {
-   "name": "Juri-Gagarin-Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 372.4,
-   "anteil_foto": 0.056,
-   "ohne_foto_m": 351.5
-  },
-  {
-   "name": "Freiligrathstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 337.1,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 337.1
-  },
-  {
-   "name": "Lessingstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 335.9,
-   "anteil_foto": 0.071,
-   "ohne_foto_m": 312.2
-  },
-  {
-   "name": "Hopfenberg",
-   "klasse": "weg",
-   "highway": "steps",
-   "laenge_m": 302.2,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 302.2
-  },
-  {
-   "name": "Breiter Weg",
-   "klasse": "weg",
-   "highway": "path",
-   "laenge_m": 295.0,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 295.0
-  },
-  {
-   "name": "Ilmenauer Straße",
-   "klasse": "strasse",
-   "highway": "secondary",
-   "laenge_m": 376.0,
-   "anteil_foto": 0.236,
-   "ohne_foto_m": 287.4
-  },
-  {
-   "name": "Wolfsgrube",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 334.5,
-   "anteil_foto": 0.155,
-   "ohne_foto_m": 282.7
-  },
-  {
-   "name": "Dr.-Hermann-Engel-Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 281.0,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 281.0
-  },
-  {
-   "name": "Hoheloh",
-   "klasse": "strasse",
-   "highway": "service",
-   "laenge_m": 274.9,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 274.9
-  },
-  {
-   "name": "Backstraße",
-   "klasse": "strasse",
-   "highway": "pedestrian",
-   "laenge_m": 304.6,
-   "anteil_foto": 0.107,
-   "ohne_foto_m": 272.1
+   "ohne_foto_m": 335.6
   },
   {
    "name": "Dombergweg",
@@ -622,52 +426,12 @@
    "ohne_foto_m": 263.6
   },
   {
-   "name": "Röderfeld",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 281.8,
-   "anteil_foto": 0.07,
-   "ohne_foto_m": 262.1
-  },
-  {
-   "name": "Windeweg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 258.2,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 258.2
-  },
-  {
-   "name": "Friedrich-Wolf-Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 255.1,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 255.1
-  },
-  {
    "name": "Döllstraße",
    "klasse": "strasse",
    "highway": "residential",
    "laenge_m": 250.1,
    "anteil_foto": 0.0,
    "ohne_foto_m": 250.1
-  },
-  {
-   "name": "An der Hasel",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 248.1,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 248.1
-  },
-  {
-   "name": "Amtmannsweg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 269.9,
-   "anteil_foto": 0.106,
-   "ohne_foto_m": 241.3
   },
   {
    "name": "Kirchgasse",
@@ -678,28 +442,36 @@
    "ohne_foto_m": 236.7
   },
   {
-   "name": "Stadelstraße",
-   "klasse": "strasse",
-   "highway": "living_street",
-   "laenge_m": 269.4,
-   "anteil_foto": 0.153,
-   "ohne_foto_m": 228.3
-  },
-  {
-   "name": "Röderfeldweg",
+   "name": "Rimbachstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "laenge_m": 224.6,
+   "laenge_m": 226.0,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 224.6
+   "ohne_foto_m": 226.0
   },
   {
-   "name": "Senfte",
+   "name": "Schleusinger Straße",
    "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 245.7,
-   "anteil_foto": 0.126,
-   "ohne_foto_m": 214.8
+   "highway": "secondary",
+   "laenge_m": 225.0,
+   "anteil_foto": 0.0,
+   "ohne_foto_m": 225.0
+  },
+  {
+   "name": "Marktplatz [Fläche]",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "laenge_m": 216.5,
+   "anteil_foto": 0.0,
+   "ohne_foto_m": 216.5
+  },
+  {
+   "name": "Am Domberg",
+   "klasse": "strasse",
+   "highway": "service",
+   "laenge_m": 207.1,
+   "anteil_foto": 0.0,
+   "ohne_foto_m": 207.1
   },
   {
    "name": "Gutenbergstraße",
@@ -710,14 +482,6 @@
    "ohne_foto_m": 204.5
   },
   {
-   "name": "Friedrich-Engels-Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 186.4,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 186.4
-  },
-  {
    "name": "Friedensstraße",
    "klasse": "strasse",
    "highway": "residential",
@@ -726,20 +490,36 @@
    "ohne_foto_m": 182.7
   },
   {
-   "name": "Karl-Liebknecht-Straße",
+   "name": "Senfte",
    "klasse": "strasse",
    "highway": "residential",
-   "laenge_m": 182.7,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 182.7
+   "laenge_m": 213.1,
+   "anteil_foto": 0.145,
+   "ohne_foto_m": 182.2
   },
   {
-   "name": "Goethestraße",
+   "name": "Lauwetter",
    "klasse": "strasse",
    "highway": "residential",
-   "laenge_m": 176.1,
+   "laenge_m": 221.3,
+   "anteil_foto": 0.178,
+   "ohne_foto_m": 181.9
+  },
+  {
+   "name": "Backstraße [Fläche]",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "laenge_m": 193.3,
+   "anteil_foto": 0.081,
+   "ohne_foto_m": 177.6
+  },
+  {
+   "name": "Kefersteinstraße",
+   "klasse": "strasse",
+   "highway": "service",
+   "laenge_m": 176.9,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 176.1
+   "ohne_foto_m": 176.9
   },
   {
    "name": "Kommerstraße",
@@ -758,12 +538,12 @@
    "ohne_foto_m": 166.5
   },
   {
-   "name": "Am Bahndamm",
-   "klasse": "strasse",
-   "highway": "unclassified",
-   "laenge_m": 158.8,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 158.8
+   "name": "Hofleitengasse",
+   "klasse": "weg",
+   "highway": "path",
+   "laenge_m": 170.7,
+   "anteil_foto": 0.064,
+   "ohne_foto_m": 159.8
   },
   {
    "name": "Puschkinstraße",
@@ -774,14 +554,6 @@
    "ohne_foto_m": 158.3
   },
   {
-   "name": "Rimbachtal",
-   "klasse": "strasse",
-   "highway": "service",
-   "laenge_m": 205.1,
-   "anteil_foto": 0.235,
-   "ohne_foto_m": 157.0
-  },
-  {
    "name": "Am Burghof",
    "klasse": "strasse",
    "highway": "residential",
@@ -790,84 +562,36 @@
    "ohne_foto_m": 156.4
   },
   {
-   "name": "Trübenbachstraße",
+   "name": "Platz der Deutschen Einheit",
    "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 177.9,
-   "anteil_foto": 0.139,
-   "ohne_foto_m": 153.1
-  },
-  {
-   "name": "Grünewaldstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 200.3,
-   "anteil_foto": 0.239,
-   "ohne_foto_m": 152.4
-  },
-  {
-   "name": "Dr.-Wilhelm-Külz-Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 143.0,
+   "highway": "living_street",
+   "laenge_m": 140.2,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 143.0
+   "ohne_foto_m": 140.2
   },
   {
-   "name": "Hans-Holbein-Straße",
+   "name": "Straße der Opfer des Faschismus",
    "klasse": "strasse",
    "highway": "residential",
-   "laenge_m": 142.3,
+   "laenge_m": 135.1,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 142.3
+   "ohne_foto_m": 135.1
   },
   {
-   "name": "Hennebergstraße",
+   "name": "Stadelstraße",
    "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 166.8,
-   "anteil_foto": 0.161,
-   "ohne_foto_m": 140.0
+   "highway": "living_street",
+   "laenge_m": 171.0,
+   "anteil_foto": 0.241,
+   "ohne_foto_m": 129.9
   },
   {
-   "name": "Lutherstraße",
+   "name": "Friedrich-Engels-Straße",
    "klasse": "strasse",
    "highway": "residential",
-   "laenge_m": 136.5,
+   "laenge_m": 121.6,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 136.5
-  },
-  {
-   "name": "Turmstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 135.7,
-   "anteil_foto": 0.155,
-   "ohne_foto_m": 114.7
-  },
-  {
-   "name": "Reuetal",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 119.2,
-   "anteil_foto": 0.044,
-   "ohne_foto_m": 114.0
-  },
-  {
-   "name": "Windmühlenweg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 113.9,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 113.9
-  },
-  {
-   "name": "Rosa-Luxemburg-Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 110.8,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 110.8
+   "ohne_foto_m": 121.6
   },
   {
    "name": "Rüssenstraße",
@@ -878,20 +602,12 @@
    "ohne_foto_m": 109.4
   },
   {
-   "name": "An den Hofleiten",
-   "klasse": "weg",
-   "highway": "path",
-   "laenge_m": 100.5,
+   "name": "Stadelstraße [Fläche]",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "laenge_m": 98.4,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 100.5
-  },
-  {
-   "name": "Schillerstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 125.5,
-   "anteil_foto": 0.204,
-   "ohne_foto_m": 99.9
+   "ohne_foto_m": 98.4
   },
   {
    "name": "Roschstraße",
@@ -902,20 +618,12 @@
    "ohne_foto_m": 95.9
   },
   {
-   "name": "Rückertstraße",
+   "name": "Backstraße",
    "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 94.6,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 94.6
-  },
-  {
-   "name": "Hainbergweg",
-   "klasse": "strasse",
-   "highway": "service",
-   "laenge_m": 89.2,
-   "anteil_foto": 0.0,
-   "ohne_foto_m": 89.2
+   "highway": "living_street",
+   "laenge_m": 111.3,
+   "anteil_foto": 0.151,
+   "ohne_foto_m": 94.5
   },
   {
    "name": "Dr.-Erfurth-Straße",
@@ -926,20 +634,20 @@
    "ohne_foto_m": 85.0
   },
   {
-   "name": "Am Schelrod",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 129.4,
-   "anteil_foto": 0.346,
-   "ohne_foto_m": 84.6
+   "name": "Burgweg",
+   "klasse": "weg",
+   "highway": "path",
+   "laenge_m": 96.5,
+   "anteil_foto": 0.142,
+   "ohne_foto_m": 82.8
   },
   {
-   "name": "Franz-Mehring-Straße",
+   "name": "Rosa-Luxemburg-Straße",
    "klasse": "strasse",
    "highway": "residential",
-   "laenge_m": 73.6,
+   "laenge_m": 80.4,
    "anteil_foto": 0.0,
-   "ohne_foto_m": 73.6
+   "ohne_foto_m": 80.4
   },
   {
    "name": "Topfmarkt",
@@ -948,14 +656,6 @@
    "laenge_m": 73.5,
    "anteil_foto": 0.0,
    "ohne_foto_m": 73.5
-  },
-  {
-   "name": "Albrechtser Berg",
-   "klasse": "strasse",
-   "highway": "service",
-   "laenge_m": 119.9,
-   "anteil_foto": 0.4,
-   "ohne_foto_m": 72.0
   },
   {
    "name": "Marienstieg",
@@ -972,52 +672,29 @@
    "laenge_m": 65.1,
    "anteil_foto": 0.0,
    "ohne_foto_m": 65.1
-  },
-  {
-   "name": "Am Rotebächle",
-   "klasse": "strasse",
-   "highway": "service",
-   "laenge_m": 84.0,
-   "anteil_foto": 0.318,
-   "ohne_foto_m": 57.2
-  },
-  {
-   "name": "Beiersgrund",
-   "klasse": "strasse",
-   "highway": "residential",
-   "laenge_m": 66.9,
-   "anteil_foto": 0.337,
-   "ohne_foto_m": 44.4
   }
  ],
  "zentrum_ohne_fassadenblick": [
   {
-   "name": "Judithstraße",
-   "laenge_m": 894.1,
-   "anteil_foto": 0.566,
-   "anteil_seite_a": 0.107,
-   "anteil_seite_b": 0.229
-  },
-  {
-   "name": "Gothaer Straße",
-   "laenge_m": 731.6,
-   "anteil_foto": 0.811,
-   "anteil_seite_a": 0.033,
-   "anteil_seite_b": 0.104
-  },
-  {
-   "name": "Hohe Röder",
-   "laenge_m": 369.1,
-   "anteil_foto": 0.618,
+   "name": "Gothaer Straße (Suhl Nord)",
+   "laenge_m": 490.4,
+   "anteil_foto": 0.718,
    "anteil_seite_a": 0.0,
-   "anteil_seite_b": 0.17
+   "anteil_seite_b": 0.101
   },
   {
-   "name": "August-Bebel-Straße",
-   "laenge_m": 282.4,
+   "name": "Adam-Riese-Straße",
+   "laenge_m": 143.0,
+   "anteil_foto": 0.556,
+   "anteil_seite_a": 0.0,
+   "anteil_seite_b": 0.228
+  },
+  {
+   "name": "Auf der Mauer",
+   "laenge_m": 89.9,
    "anteil_foto": 1.0,
-   "anteil_seite_a": 0.0,
-   "anteil_seite_b": 0.081
+   "anteil_seite_a": 0.191,
+   "anteil_seite_b": 0.0
   }
  ],
  "wahrzeichen": [
@@ -1034,7 +711,8 @@
   {
    "name": "Markt (Marktplatz)",
    "osm": [
-    "street Marktplatz"
+    "street Marktplatz",
+    "area Marktplatz [Fläche]"
    ],
    "fotos_bis_80m": 7,
    "fotos_mit_blick": 0,
@@ -1093,9 +771,21 @@
    ]
   },
   {
-   "name": "Bahnhof Suhl (Bahnhofspunkt)",
+   "name": "Bahnhof Suhl (Empfangsgebäude und Bahnhofspunkt)",
    "osm": [
-    "n3059296510 Suhl"
+    "n3059296510 Suhl",
+    "w116951221 Bahnhof Suhl"
+   ],
+   "fotos_bis_80m": 0,
+   "fotos_mit_blick": 0,
+   "je_urheber": {},
+   "foto_ids": []
+  },
+  {
+   "name": "Platz der Deutschen Einheit",
+   "osm": [
+    "street Platz der Deutschen Einheit",
+    "area Platz der Deutschen Einheit [Fläche]"
    ],
    "fotos_bis_80m": 0,
    "fotos_mit_blick": 0,
@@ -1105,7 +795,8 @@
   {
    "name": "Steinweg",
    "osm": [
-    "street Steinweg"
+    "street Steinweg",
+    "area Steinweg [Fläche]"
    ],
    "fotos_bis_80m": 6,
    "fotos_mit_blick": 0,
@@ -1174,16 +865,6 @@
    "foto_ids": []
   },
   {
-   "name": "St. Kilian",
-   "osm": [
-    "w24927887 St. Kilian"
-   ],
-   "fotos_bis_80m": 9,
-   "fotos_mit_blick": 0,
-   "je_urheber": {},
-   "foto_ids": []
-  },
-  {
    "name": "Villa Simson",
    "osm": [
     "w99691622 Villa Simson"
@@ -1216,15 +897,6 @@
  ],
  "weitere_objekte_im_zentrum": [
   {
-   "name": "Wolfsgrube",
-   "osm": "w1175859123",
-   "art": "building=yes",
-   "lat": 50.6059736,
-   "lon": 10.6959799,
-   "fotos_bis_80m": 31,
-   "fotos_mit_blick": 13
-  },
-  {
    "name": "Stadtpark",
    "osm": "r1085152",
    "art": "leisure=park",
@@ -1243,30 +915,12 @@
    "fotos_mit_blick": 9
   },
   {
-   "name": "Ewald Stübler",
-   "osm": "n12544127390",
-   "art": "historic=memorial",
-   "lat": 50.6065961,
-   "lon": 10.6970901,
-   "fotos_bis_80m": 28,
-   "fotos_mit_blick": 6
-  },
-  {
    "name": "Alfred Herzberg",
    "osm": "n12116412549",
    "art": "historic=memorial",
    "lat": 50.6066954,
    "lon": 10.6839792,
    "fotos_bis_80m": 48,
-   "fotos_mit_blick": 0
-  },
-  {
-   "name": "Amtsgericht",
-   "osm": "n366996813",
-   "art": "amenity=courthouse",
-   "lat": 50.6096815,
-   "lon": 10.7019067,
-   "fotos_bis_80m": 0,
    "fotos_mit_blick": 0
   },
   {
@@ -1285,24 +939,6 @@
    "lat": 50.6097184,
    "lon": 10.6863252,
    "fotos_bis_80m": 11,
-   "fotos_mit_blick": 0
-  },
-  {
-   "name": "Dr. Bästlein",
-   "osm": "n2650780142",
-   "art": "historic=memorial",
-   "lat": 50.6145199,
-   "lon": 10.6890704,
-   "fotos_bis_80m": 0,
-   "fotos_mit_blick": 0
-  },
-  {
-   "name": "Ehrenmal für die Gefallenen des Ersten Weltkriegs (Vierschwerterdenkmal)",
-   "osm": "w1366213710",
-   "art": "historic=memorial",
-   "lat": 50.6026099,
-   "lon": 10.6985263,
-   "fotos_bis_80m": 0,
    "fotos_mit_blick": 0
   },
   {
@@ -1333,12 +969,12 @@
    "fotos_mit_blick": 0
   },
   {
-   "name": "Jüdischer Friedhof",
-   "osm": "w171069395",
-   "art": "historic=cemetery",
-   "lat": 50.6043251,
-   "lon": 10.6945418,
-   "fotos_bis_80m": 0,
+   "name": "Marktplatz",
+   "osm": "w44124199",
+   "art": "",
+   "lat": 50.6103978,
+   "lon": 10.6933058,
+   "fotos_bis_80m": 2,
    "fotos_mit_blick": 0
   },
   {
@@ -1405,15 +1041,6 @@
    "fotos_mit_blick": 0
   },
   {
-   "name": "Windmühle",
-   "osm": "w128989331",
-   "art": "building=yes",
-   "lat": 50.6056336,
-   "lon": 10.6911246,
-   "fotos_bis_80m": 0,
-   "fotos_mit_blick": 0
-  },
-  {
    "name": "Woolworth",
    "osm": "n13061323906",
    "art": "shop=department_store",
@@ -1434,42 +1061,10 @@
  ],
  "strassen": [
   {
-   "name": "Ackerstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.647182,
-    10.672794
-   ],
-   "achse_grad": 151.0,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    27203250,
-    940442185
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 289.9,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Ackerstraße"
-  },
-  {
    "name": "Adam-Riese-Straße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.607838,
     10.69198
@@ -1499,14 +1094,14 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 232.3,
-    "mit_foto_m": 168.8,
-    "anteil_foto": 0.727,
+    "laenge_m": 143.0,
+    "mit_foto_m": 79.5,
+    "anteil_foto": 0.556,
     "seite_a_m": 0.0,
-    "seite_b_m": 66.6,
+    "seite_b_m": 32.7,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.287,
-    "fotos": 32,
+    "anteil_seite_b": 0.228,
+    "fotos": 18,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -1707,52 +1302,8 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 119.9,
-    "mit_foto_m": 47.9,
-    "anteil_foto": 0.4,
-    "seite_a_m": 5.3,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.045,
-    "anteil_seite_b": 0.0,
-    "fotos": 2,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
-   "label": "Albrechtser Berg"
-  },
-  {
-   "name": "Albrechtser Weg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.647853,
-    10.671521
-   ],
-   "achse_grad": 29.0,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    27203213,
-    27203214,
-    27203854
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 281.9,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
    "zentrum": null,
-   "label": "Albrechtser Weg"
+   "label": "Albrechtser Berg"
   },
   {
    "name": "Alexander-Gerbig-Straße",
@@ -1850,37 +1401,6 @@
    "label": "Alte Höhle"
   },
   {
-   "name": "Alte Poststraße",
-   "klasse": "weg",
-   "highway": "track",
-   "viertel": "Himmelreich",
-   "mitte": [
-    50.614304,
-    10.733134
-   ],
-   "achse_grad": 71.8,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    39501659
-   ],
-   "surface": "grass",
-   "kernstadt": {
-    "laenge_m": 1035.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Alte Poststraße"
-  },
-  {
    "name": "Alte Schleusinger Straße",
    "klasse": "strasse",
    "highway": "residential",
@@ -1920,7 +1440,7 @@
    "name": "Alte Schmiedefelder Straße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.612262,
     10.699805
@@ -1950,50 +1470,18 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 845.6,
-    "mit_foto_m": 814.6,
-    "anteil_foto": 0.963,
-    "seite_a_m": 168.8,
-    "seite_b_m": 434.3,
-    "anteil_seite_a": 0.2,
-    "anteil_seite_b": 0.514,
-    "fotos": 33,
+    "laenge_m": 299.1,
+    "mit_foto_m": 299.1,
+    "anteil_foto": 1.0,
+    "seite_a_m": 25.9,
+    "seite_b_m": 110.4,
+    "anteil_seite_a": 0.087,
+    "anteil_seite_b": 0.369,
+    "fotos": 16,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
    "label": "Alte Schmiedefelder Straße"
-  },
-  {
-   "name": "Alter Postweg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.645989,
-    10.675866
-   ],
-   "achse_grad": 143.2,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    23228980,
-    1278811253
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 168.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Alter Postweg"
   },
   {
    "name": "Altertal",
@@ -2091,18 +1579,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 158.8,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Am Bahndamm"
   },
   {
@@ -2145,50 +1622,18 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 801.0,
-    "mit_foto_m": 33.7,
-    "anteil_foto": 0.042,
-    "seite_a_m": 24.1,
-    "seite_b_m": 10.6,
-    "anteil_seite_a": 0.03,
-    "anteil_seite_b": 0.013,
-    "fotos": 12,
-    "neuestes": "2025-12-29",
-    "aeltestes": "2025-12-27"
-   },
-   "label": "Am Bahnhof"
-  },
-  {
-   "name": "Am Bock",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.618965,
-    10.643998
-   ],
-   "achse_grad": 39.9,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    53345617,
-    53345618
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 407.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
+    "laenge_m": 719.1,
+    "mit_foto_m": 4.1,
+    "anteil_foto": 0.006,
     "seite_a_m": 0.0,
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
+    "fotos": 3,
+    "neuestes": "2025-12-27",
+    "aeltestes": "2025-12-27"
    },
-   "zentrum": null,
-   "label": "Am Bock"
+   "label": "Am Bahnhof"
   },
   {
    "name": "Am Bocksberg",
@@ -2227,10 +1672,10 @@
    "highway": "residential",
    "viertel": "Goldlauter",
    "mitte": [
-    50.628028,
-    10.746039
+    50.628225,
+    10.745814
    ],
-   "achse_grad": 147.7,
+   "achse_grad": 151.0,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
@@ -2239,7 +1684,7 @@
    ],
    "surface": null,
    "kernstadt": {
-    "laenge_m": 420.3,
+    "laenge_m": 365.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -2257,7 +1702,7 @@
    "name": "Am Burghof",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.60905,
     10.690594
@@ -2300,7 +1745,7 @@
    "name": "Am Domberg",
    "klasse": "strasse",
    "highway": "service",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.614371,
     10.69493
@@ -2329,7 +1774,7 @@
     "aeltestes": null
    },
    "zentrum": {
-    "laenge_m": 471.9,
+    "laenge_m": 207.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -2443,19 +1888,18 @@
    "highway": "track",
    "viertel": "Heidersbach",
    "mitte": [
-    50.64059,
-    10.7403
+    50.639809,
+    10.740499
    ],
-   "achse_grad": 171.5,
+   "achse_grad": 170.5,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
-    27647164,
     1188268857
    ],
-   "surface": "asphalt",
+   "surface": "concrete",
    "kernstadt": {
-    "laenge_m": 216.6,
+    "laenge_m": 39.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -2578,7 +2022,7 @@
    "name": "Am Hoheloh",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.602375,
     10.702415
@@ -2607,25 +2051,14 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 18.8,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Am Hoheloh"
   },
   {
    "name": "Am Holunderbusch",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606328,
     10.69981
@@ -2649,18 +2082,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 167.1,
-    "mit_foto_m": 167.1,
-    "anteil_foto": 1.0,
-    "seite_a_m": 19.8,
-    "seite_b_m": 109.6,
-    "anteil_seite_a": 0.118,
-    "anteil_seite_b": 0.656,
-    "fotos": 16,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Am Holunderbusch"
   },
   {
@@ -2728,59 +2150,15 @@
    "label": "Am Kornberg"
   },
   {
-   "name": "Am Köhlersgehäu",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.648067,
-    10.68541
-   ],
-   "achse_grad": 132.9,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    23221042,
-    23228971,
-    23228972,
-    23229039,
-    116761077,
-    176364334,
-    248010912,
-    929781383,
-    1178165933,
-    1242455357,
-    1242455359,
-    1242455361,
-    1250747224,
-    1360061137
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 3282.6,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Am Köhlersgehäu"
-  },
-  {
    "name": "Am Königswasser",
    "klasse": "strasse",
    "highway": "tertiary",
    "viertel": "Suhl Nord",
    "mitte": [
-    50.638805,
-    10.699053
+    50.638753,
+    10.699117
    ],
-   "achse_grad": 143.1,
+   "achse_grad": 143.2,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
@@ -2791,7 +2169,7 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 539.1,
+    "laenge_m": 524.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -2811,10 +2189,10 @@
    "highway": "residential",
    "viertel": "Heinrichs",
    "mitte": [
-    50.605296,
-    10.65749
+    50.605201,
+    10.657413
    ],
-   "achse_grad": 21.2,
+   "achse_grad": 21.0,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
@@ -2823,13 +2201,13 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 912.0,
+    "laenge_m": 887.7,
     "mit_foto_m": 23.8,
-    "anteil_foto": 0.026,
+    "anteil_foto": 0.027,
     "seite_a_m": 0.0,
     "seite_b_m": 18.3,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.02,
+    "anteil_seite_b": 0.021,
     "fotos": 2,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
@@ -2873,39 +2251,6 @@
    },
    "zentrum": null,
    "label": "Am Lautenberg"
-  },
-  {
-   "name": "Am Mittelrain",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.617884,
-    10.65412
-   ],
-   "achse_grad": 63.9,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    53345629,
-    53345630,
-    53345631
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 591.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Am Mittelrain"
   },
   {
    "name": "Am Mühlberg",
@@ -3003,18 +2348,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 84.0,
-    "mit_foto_m": 26.8,
-    "anteil_foto": 0.318,
-    "seite_a_m": 17.3,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.206,
-    "anteil_seite_b": 0.0,
-    "fotos": 1,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Am Rotebächle"
   },
   {
@@ -3048,18 +2382,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 432.0,
-    "mit_foto_m": 26.9,
-    "anteil_foto": 0.062,
-    "seite_a_m": 22.4,
-    "seite_b_m": 8.9,
-    "anteil_seite_a": 0.052,
-    "anteil_seite_b": 0.021,
-    "fotos": 2,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Am Roten Stein"
   },
   {
@@ -3068,10 +2391,10 @@
    "highway": "residential",
    "viertel": "Mäbendorf",
    "mitte": [
-    50.607689,
-    10.622543
+    50.607628,
+    10.622036
    ],
-   "achse_grad": 74.2,
+   "achse_grad": 78.3,
    "seite_a": "Nordseite",
    "seite_b": "Südseite",
    "way_ids": [
@@ -3079,7 +2402,7 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 92.2,
+    "laenge_m": 167.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -3156,18 +2479,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 129.4,
-    "mit_foto_m": 44.8,
-    "anteil_foto": 0.346,
-    "seite_a_m": 0.0,
-    "seite_b_m": 4.8,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.037,
-    "fotos": 2,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Am Schelrod"
   },
   {
@@ -3176,12 +2488,12 @@
    "highway": "residential",
    "viertel": "Goldlauter",
    "mitte": [
-    50.62421,
-    10.733113
+    50.623803,
+    10.733615
    ],
-   "achse_grad": 75.9,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
+   "achse_grad": 18.4,
+   "seite_a": "Ostseite",
+   "seite_b": "Westseite",
    "way_ids": [
     25418894,
     30999350,
@@ -3189,14 +2501,14 @@
    ],
    "surface": "gravel",
    "kernstadt": {
-    "laenge_m": 365.0,
-    "mit_foto_m": 44.9,
-    "anteil_foto": 0.123,
-    "seite_a_m": 3.6,
+    "laenge_m": 166.6,
+    "mit_foto_m": 16.9,
+    "anteil_foto": 0.101,
+    "seite_a_m": 0.0,
     "seite_b_m": 0.0,
-    "anteil_seite_a": 0.01,
+    "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.0,
-    "fotos": 2,
+    "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -3245,30 +2557,27 @@
    "highway": "unclassified",
    "viertel": "Suhl Nord",
    "mitte": [
-    50.638283,
-    10.685565
+    50.634792,
+    10.694747
    ],
-   "achse_grad": 125.1,
+   "achse_grad": 132.9,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
-    26699992,
-    27599098,
-    464307126,
-    464307127
+    27599098
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 1594.9,
-    "mit_foto_m": 49.6,
-    "anteil_foto": 0.031,
+    "laenge_m": 13.1,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
     "seite_a_m": 0.0,
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.0,
-    "fotos": 17,
-    "neuestes": "2025-06-08",
-    "aeltestes": "2025-06-08"
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
    },
    "zentrum": null,
    "label": "Am Schießstand"
@@ -3378,10 +2687,10 @@
    "highway": "secondary",
    "viertel": "Aue 1",
    "mitte": [
-    50.59781,
-    10.673086
+    50.597857,
+    10.673119
    ],
-   "achse_grad": 30.6,
+   "achse_grad": 31.0,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
@@ -3400,12 +2709,12 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 861.9,
-    "mit_foto_m": 741.9,
-    "anteil_foto": 0.861,
+    "laenge_m": 847.4,
+    "mit_foto_m": 727.4,
+    "anteil_foto": 0.858,
     "seite_a_m": 34.7,
     "seite_b_m": 14.4,
-    "anteil_seite_a": 0.04,
+    "anteil_seite_a": 0.041,
     "anteil_seite_b": 0.017,
     "fotos": 17,
     "neuestes": "2025-12-30",
@@ -3601,25 +2910,14 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 269.9,
-    "mit_foto_m": 28.6,
-    "anteil_foto": 0.106,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 1,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Amtmannsweg"
   },
   {
    "name": "An den Hofleiten",
    "klasse": "weg",
    "highway": "path",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.607602,
     10.702989
@@ -3643,18 +2941,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 100.5,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "An den Hofleiten"
   },
   {
@@ -3847,18 +3134,7 @@
     "neuestes": "2025-12-30",
     "aeltestes": "2025-12-30"
    },
-   "zentrum": {
-    "laenge_m": 248.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "An der Hasel"
   },
   {
@@ -4022,40 +3298,6 @@
    "label": "An der Lauter"
   },
   {
-   "name": "An der Quelle",
-   "klasse": "strasse",
-   "highway": "service",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.643917,
-    10.684782
-   ],
-   "achse_grad": 34.2,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    23228975,
-    23228976,
-    1271368337,
-    1278811267
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 330.4,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "An der Quelle"
-  },
-  {
    "name": "An der Stirn",
    "klasse": "strasse",
    "highway": "residential",
@@ -4152,38 +3394,6 @@
    },
    "zentrum": null,
    "label": "Anton-Bruckner-Straße"
-  },
-  {
-   "name": "Aschenhofer Weg",
-   "klasse": "strasse",
-   "highway": "tertiary",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.621734,
-    10.630102
-   ],
-   "achse_grad": 121.6,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    8874937,
-    195696374
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 765.4,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Aschenhofer Weg"
   },
   {
    "name": "Aschenhofweg",
@@ -4289,18 +3499,7 @@
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 319.7,
-    "mit_foto_m": 175.6,
-    "anteil_foto": 0.549,
-    "seite_a_m": 104.7,
-    "seite_b_m": 24.9,
-    "anteil_seite_a": 0.327,
-    "anteil_seite_b": 0.078,
-    "fotos": 14,
-    "neuestes": "2025-12-29",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Auenstraße"
   },
   {
@@ -4309,20 +3508,19 @@
    "highway": "service",
    "viertel": "Linsenhof",
    "mitte": [
-    50.6231,
-    10.678777
+    50.625594,
+    10.679956
    ],
-   "achse_grad": 147.0,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
+   "achse_grad": 93.6,
+   "seite_a": "Nordseite",
+   "seite_b": "Südseite",
    "way_ids": [
-    27762847,
     118172374,
     1278168896
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 2185.3,
+    "laenge_m": 111.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -4340,7 +3538,7 @@
    "name": "Auf der Mauer",
    "klasse": "strasse",
    "highway": "service",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.613997,
     10.698434
@@ -4365,14 +3563,14 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 246.3,
-    "mit_foto_m": 246.3,
+    "laenge_m": 89.9,
+    "mit_foto_m": 89.9,
     "anteil_foto": 1.0,
-    "seite_a_m": 62.4,
+    "seite_a_m": 17.2,
     "seite_b_m": 0.0,
-    "anteil_seite_a": 0.253,
+    "anteil_seite_a": 0.191,
     "anteil_seite_b": 0.0,
-    "fotos": 11,
+    "fotos": 6,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -4382,7 +3580,7 @@
    "name": "August-Bebel-Straße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.604624,
     10.692106
@@ -4407,18 +3605,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 282.4,
-    "mit_foto_m": 282.4,
-    "anteil_foto": 1.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 22.9,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.081,
-    "fotos": 36,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "August-Bebel-Straße"
   },
   {
@@ -4490,41 +3677,40 @@
   {
    "name": "Backstraße",
    "klasse": "strasse",
-   "highway": "pedestrian",
-   "viertel": "Suhl",
+   "highway": "living_street",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
-    50.608886,
-    10.693413
+    50.608827,
+    10.693479
    ],
-   "achse_grad": 140.4,
+   "achse_grad": 138.3,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
     81074103,
-    81074140,
-    81101786
+    81074140
    ],
    "surface": "paving_stones",
    "kernstadt": {
-    "laenge_m": 304.6,
-    "mit_foto_m": 32.5,
-    "anteil_foto": 0.107,
+    "laenge_m": 111.3,
+    "mit_foto_m": 16.8,
+    "anteil_foto": 0.151,
     "seite_a_m": 0.0,
     "seite_b_m": 4.5,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.015,
+    "anteil_seite_b": 0.041,
     "fotos": 6,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 304.6,
-    "mit_foto_m": 32.5,
-    "anteil_foto": 0.107,
+    "laenge_m": 111.3,
+    "mit_foto_m": 16.8,
+    "anteil_foto": 0.151,
     "seite_a_m": 0.0,
     "seite_b_m": 4.5,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.015,
+    "anteil_seite_b": 0.041,
     "fotos": 6,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
@@ -4532,43 +3718,52 @@
    "label": "Backstraße"
   },
   {
-   "name": "Bahnhofstraße",
-   "klasse": "strasse",
-   "highway": "primary",
-   "viertel": "Suhl Nord",
+   "name": "Backstraße",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
-    50.649398,
-    10.672213
+    50.608921,
+    10.693375
    ],
-   "achse_grad": 153.2,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
+   "achse_grad": 143.6,
+   "seite_a": "Rand (Blick über den Rand)",
+   "seite_b": null,
    "way_ids": [
-    27203144,
-    297083289,
-    914935453
+    81101786
    ],
-   "surface": "asphalt",
+   "surface": "paving_stones",
    "kernstadt": {
-    "laenge_m": 508.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
+    "laenge_m": 193.3,
+    "mit_foto_m": 15.7,
+    "anteil_foto": 0.081,
     "seite_a_m": 0.0,
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.0,
     "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
+    "fotos": 2,
+    "neuestes": "2025-12-27",
+    "aeltestes": "2025-12-27"
    },
-   "zentrum": null,
-   "label": "Bahnhofstraße (Suhl Nord)"
+   "zentrum": {
+    "laenge_m": 193.3,
+    "mit_foto_m": 15.7,
+    "anteil_foto": 0.081,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 2,
+    "neuestes": "2025-12-27",
+    "aeltestes": "2025-12-27"
+   },
+   "label": "Backstraße [Fläche]"
   },
   {
    "name": "Bahnhofstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606558,
     10.685724
@@ -4604,18 +3799,18 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 809.0,
+    "laenge_m": 787.0,
     "mit_foto_m": 47.1,
-    "anteil_foto": 0.058,
+    "anteil_foto": 0.06,
     "seite_a_m": 0.0,
     "seite_b_m": 36.4,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.045,
+    "anteil_seite_b": 0.046,
     "fotos": 42,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "label": "Bahnhofstraße (Suhl)"
+   "label": "Bahnhofstraße"
   },
   {
    "name": "Bahnhofsweg",
@@ -4686,12 +3881,12 @@
    "highway": "residential",
    "viertel": "Heidersbach",
    "mitte": [
-    50.639456,
-    10.734566
+    50.639196,
+    10.734415
    ],
-   "achse_grad": 20.1,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
+   "achse_grad": 23.5,
+   "seite_a": "Nordwestseite",
+   "seite_b": "Südostseite",
    "way_ids": [
     37683989,
     37683990,
@@ -4701,13 +3896,13 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 806.4,
+    "laenge_m": 738.8,
     "mit_foto_m": 21.7,
-    "anteil_foto": 0.027,
-    "seite_a_m": 12.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.015,
-    "anteil_seite_b": 0.0,
+    "anteil_foto": 0.029,
+    "seite_a_m": 0.0,
+    "seite_b_m": 12.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.016,
     "fotos": 2,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
@@ -4750,7 +3945,7 @@
    "name": "Beiersgrund",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606095,
     10.700861
@@ -4774,51 +3969,8 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 66.9,
-    "mit_foto_m": 22.5,
-    "anteil_foto": 0.337,
-    "seite_a_m": 17.6,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.263,
-    "anteil_seite_b": 0.0,
-    "fotos": 4,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
-   "label": "Beiersgrund"
-  },
-  {
-   "name": "Benshäuser Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.619884,
-    10.639295
-   ],
-   "achse_grad": 7.7,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    53345616,
-    1225857909
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 490.6,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
    "zentrum": null,
-   "label": "Benshäuser Straße"
+   "label": "Beiersgrund"
   },
   {
    "name": "Bergbauwanderweg",
@@ -4826,20 +3978,19 @@
    "highway": "path",
    "viertel": "Linsenhof",
    "mitte": [
-    50.620926,
-    10.671157
+    50.621501,
+    10.66772
    ],
-   "achse_grad": 130.9,
+   "achse_grad": 132.6,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
     77348169,
-    77348170,
-    77348174
+    77348170
    ],
    "surface": "dirt",
    "kernstadt": {
-    "laenge_m": 661.6,
+    "laenge_m": 260.8,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -4852,44 +4003,6 @@
    },
    "zentrum": null,
    "label": "Bergbauwanderweg"
-  },
-  {
-   "name": "Bierbachstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.649214,
-    10.669714
-   ],
-   "achse_grad": 158.6,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    27203853,
-    27203856,
-    27203859,
-    27203861,
-    27203862,
-    45846294,
-    1360086212,
-    1360086213
-   ],
-   "surface": "sett",
-   "kernstadt": {
-    "laenge_m": 523.8,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Bierbachstraße"
   },
   {
    "name": "Blumenweg",
@@ -4957,13 +4070,13 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 393.8,
+    "laenge_m": 35.2,
     "mit_foto_m": 21.7,
-    "anteil_foto": 0.055,
+    "anteil_foto": 0.617,
     "seite_a_m": 0.0,
     "seite_b_m": 9.6,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.024,
+    "anteil_seite_b": 0.274,
     "fotos": 3,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
@@ -4976,12 +4089,12 @@
    "highway": "residential",
    "viertel": "Lauter",
    "mitte": [
-    50.627218,
-    10.720219
+    50.626683,
+    10.720512
    ],
-   "achse_grad": 166.1,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
+   "achse_grad": 60.6,
+   "seite_a": "Nordwestseite",
+   "seite_b": "Südostseite",
    "way_ids": [
     55100129,
     55100142,
@@ -4991,13 +4104,13 @@
    ],
    "surface": null,
    "kernstadt": {
-    "laenge_m": 1597.5,
+    "laenge_m": 1350.0,
     "mit_foto_m": 67.8,
-    "anteil_foto": 0.042,
-    "seite_a_m": 14.8,
-    "seite_b_m": 32.6,
-    "anteil_seite_a": 0.009,
-    "anteil_seite_b": 0.02,
+    "anteil_foto": 0.05,
+    "seite_a_m": 47.4,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.035,
+    "anteil_seite_b": 0.0,
     "fotos": 3,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
@@ -5011,19 +4124,16 @@
    "highway": "residential",
    "viertel": "Heidersbach",
    "mitte": [
-    50.634873,
-    10.723568
+    50.634854,
+    10.727725
    ],
-   "achse_grad": 32.5,
+   "achse_grad": 66.6,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
     55455160,
-    55455161,
-    152001322,
     224339829,
     224339830,
-    1242232289,
     1535221851,
     1535221866,
     1535221867,
@@ -5031,19 +4141,51 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 2050.4,
-    "mit_foto_m": 51.5,
-    "anteil_foto": 0.025,
+    "laenge_m": 907.6,
+    "mit_foto_m": 27.2,
+    "anteil_foto": 0.03,
     "seite_a_m": 0.0,
     "seite_b_m": 10.8,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.005,
-    "fotos": 4,
+    "anteil_seite_b": 0.012,
+    "fotos": 3,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
    "zentrum": null,
-   "label": "Bocksbergstraße"
+   "label": "Bocksbergstraße (Heidersbach)"
+  },
+  {
+   "name": "Bocksbergstraße",
+   "klasse": "strasse",
+   "highway": "residential",
+   "viertel": "Heidersbach",
+   "mitte": [
+    50.637814,
+    10.721016
+   ],
+   "achse_grad": 26.2,
+   "seite_a": "Nordwestseite",
+   "seite_b": "Südostseite",
+   "way_ids": [
+    152001322,
+    1242232289
+   ],
+   "surface": "asphalt",
+   "kernstadt": {
+    "laenge_m": 242.7,
+    "mit_foto_m": 24.3,
+    "anteil_foto": 0.1,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 1,
+    "neuestes": "2025-12-27",
+    "aeltestes": "2025-12-27"
+   },
+   "zentrum": null,
+   "label": "Bocksbergstraße (Heidersbach)"
   },
   {
    "name": "Brahmsstraße",
@@ -5112,23 +4254,24 @@
    "label": "Braugasse"
   },
   {
-   "name": "Brauwiese",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
+   "name": "Breiter Weg",
+   "klasse": "weg",
+   "highway": "path",
+   "viertel": "Linsenhof",
    "mitte": [
-    50.617548,
-    10.642535
+    50.617567,
+    10.678571
    ],
-   "achse_grad": 51.9,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
+   "achse_grad": 94.7,
+   "seite_a": "Nordseite",
+   "seite_b": "Südseite",
    "way_ids": [
-    53345626
+    27762848,
+    1425650110
    ],
-   "surface": null,
+   "surface": "earth",
    "kernstadt": {
-    "laenge_m": 101.5,
+    "laenge_m": 142.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -5140,49 +4283,6 @@
     "aeltestes": null
    },
    "zentrum": null,
-   "label": "Brauwiese"
-  },
-  {
-   "name": "Breiter Weg",
-   "klasse": "weg",
-   "highway": "path",
-   "viertel": "Linsenhof",
-   "mitte": [
-    50.616156,
-    10.683349
-   ],
-   "achse_grad": 112.9,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    27762848,
-    1425650110
-   ],
-   "surface": "earth",
-   "kernstadt": {
-    "laenge_m": 932.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": {
-    "laenge_m": 295.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
    "label": "Breiter Weg"
   },
   {
@@ -5286,56 +4386,38 @@
    "label": "Brunnenweg"
   },
   {
-   "name": "Bräutigamsweg",
-   "klasse": "weg",
-   "highway": "path",
-   "viertel": "Himmelreich",
-   "mitte": [
-    50.603132,
-    10.747969
-   ],
-   "achse_grad": 9.5,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    109687405,
-    1079095211,
-    1079095212
-   ],
-   "surface": "ground",
-   "kernstadt": {
-    "laenge_m": 3138.3,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Bräutigamsweg"
-  },
-  {
-   "name": "Buddeusstraße",
+   "name": "Brückenweg",
    "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
+   "highway": "service",
+   "viertel": "Goldlauter",
    "mitte": [
-    50.649411,
-    10.670959
+    50.635103,
+    10.752476
    ],
-   "achse_grad": 167.4,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
+   "achse_grad": 31.2,
+   "seite_a": "Nordwestseite",
+   "seite_b": "Südostseite",
    "way_ids": [
-    27203143
+    25418942,
+    25418943,
+    25418944,
+    25418945,
+    25418946,
+    25418947,
+    25418948,
+    58896656,
+    58896659,
+    190553993,
+    209377289,
+    209377290,
+    209377291,
+    209377292,
+    209377293,
+    209377294
    ],
-   "surface": "asphalt",
+   "surface": "paved",
    "kernstadt": {
-    "laenge_m": 375.6,
+    "laenge_m": 113.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -5347,13 +4429,13 @@
     "aeltestes": null
    },
    "zentrum": null,
-   "label": "Buddeusstraße"
+   "label": "Brückenweg"
   },
   {
    "name": "Burgweg",
    "klasse": "weg",
    "highway": "path",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.612415,
     10.685468
@@ -5382,51 +4464,18 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 589.0,
-    "mit_foto_m": 28.6,
-    "anteil_foto": 0.049,
+    "laenge_m": 96.5,
+    "mit_foto_m": 13.7,
+    "anteil_foto": 0.142,
     "seite_a_m": 3.8,
-    "seite_b_m": 18.7,
-    "anteil_seite_a": 0.006,
-    "anteil_seite_b": 0.032,
+    "seite_b_m": 13.7,
+    "anteil_seite_a": 0.039,
+    "anteil_seite_b": 0.142,
     "fotos": 5,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
    "label": "Burgweg"
-  },
-  {
-   "name": "Böhmerbergstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.649003,
-    10.668059
-   ],
-   "achse_grad": 1.9,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    27203987,
-    27203988,
-    981261017
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 652.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Böhmerbergstraße (Suhl Nord)"
   },
   {
    "name": "Böhmerbergstraße",
@@ -5460,7 +4509,7 @@
     "aeltestes": null
    },
    "zentrum": null,
-   "label": "Böhmerbergstraße (Suhl Nord)"
+   "label": "Böhmerbergstraße"
   },
   {
    "name": "Böttcherstraße",
@@ -5727,7 +4776,7 @@
    "name": "Doktor-Theodor-Neubauer-Straße",
    "klasse": "strasse",
    "highway": "secondary",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.608758,
     10.685503
@@ -5800,7 +4849,7 @@
    "name": "Dombergweg",
    "klasse": "strasse",
    "highway": "service",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.612057,
     10.688202
@@ -5874,7 +4923,7 @@
    "name": "Dr.-Erfurth-Straße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.61123,
     10.696903
@@ -5973,18 +5022,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 281.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Dr.-Hermann-Engel-Straße"
   },
   {
@@ -6022,7 +5060,7 @@
    "name": "Dr.-Theodor-Neubauer-Straße",
    "klasse": "strasse",
    "highway": "secondary",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.608705,
     10.687063
@@ -6084,14 +5122,14 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 2833.3,
-    "mit_foto_m": 2772.1,
+    "laenge_m": 2478.7,
+    "mit_foto_m": 2423.7,
     "anteil_foto": 0.978,
     "seite_a_m": 944.0,
     "seite_b_m": 91.9,
-    "anteil_seite_a": 0.333,
-    "anteil_seite_b": 0.032,
-    "fotos": 151,
+    "anteil_seite_a": 0.381,
+    "anteil_seite_b": 0.037,
+    "fotos": 139,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -6125,18 +5163,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 143.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Dr.-Wilhelm-Külz-Straße"
   },
   {
@@ -6180,10 +5207,10 @@
    "highway": "service",
    "viertel": "Mäbendorf",
    "mitte": [
-    50.596986,
-    10.637537
+    50.598152,
+    10.63717
    ],
-   "achse_grad": 177.5,
+   "achse_grad": 19.4,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
@@ -6191,7 +5218,7 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 595.3,
+    "laenge_m": 301.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -6209,7 +5236,7 @@
    "name": "Drusselstraße",
    "klasse": "strasse",
    "highway": "living_street",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.611878,
     10.692869
@@ -6249,41 +5276,10 @@
    "label": "Drusselstraße"
   },
   {
-   "name": "Dröhbergstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Neundorf",
-   "mitte": [
-    50.578234,
-    10.704776
-   ],
-   "achse_grad": 118.4,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    49501253
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 169.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Dröhbergstraße"
-  },
-  {
    "name": "Döllstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.611324,
     10.694179
@@ -6322,41 +5318,6 @@
     "aeltestes": null
    },
    "label": "Döllstraße"
-  },
-  {
-   "name": "Dörnbachstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.642567,
-    10.675403
-   ],
-   "achse_grad": 147.0,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    34727267,
-    70992098,
-    1157856512,
-    1544004468,
-    1544004469
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 596.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Dörnbachstraße"
   },
   {
    "name": "Dörrenbachstraße",
@@ -6485,37 +5446,6 @@
    "label": "Ellerstraße"
   },
   {
-   "name": "Ellerweg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.620925,
-    10.64237
-   ],
-   "achse_grad": 27.4,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    53345628
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 308.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Ellerweg"
-  },
-  {
    "name": "Erhard-Schübel-Straße",
    "klasse": "strasse",
    "highway": "residential",
@@ -6617,37 +5547,6 @@
    "label": "Erich-Weinert-Straße"
   },
   {
-   "name": "Erlenstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.650979,
-    10.669863
-   ],
-   "achse_grad": 74.4,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    27202737
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 145.6,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Erlenstraße"
-  },
-  {
    "name": "Ernst-Fischer-Straße",
    "klasse": "strasse",
    "highway": "residential",
@@ -6682,7 +5581,7 @@
    "name": "Ernst-Heß-Straße",
    "klasse": "strasse",
    "highway": "service",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.616734,
     10.693364
@@ -6711,18 +5610,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 474.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Ernst-Heß-Straße"
   },
   {
@@ -7011,25 +5899,14 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 73.6,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Franz-Mehring-Straße"
   },
   {
    "name": "Freiligrathstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.605237,
     10.703686
@@ -7056,18 +5933,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 337.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Freiligrathstraße"
   },
   {
@@ -7107,7 +5973,7 @@
    "name": "Friedensstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.607005,
     10.688325
@@ -7209,7 +6075,7 @@
     "aeltestes": null
    },
    "zentrum": {
-    "laenge_m": 186.4,
+    "laenge_m": 121.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -7226,7 +6092,7 @@
    "name": "Friedrich-König-Straße",
    "klasse": "strasse",
    "highway": "secondary",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.612481,
     10.69359
@@ -7299,14 +6165,14 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 2672.8,
-    "mit_foto_m": 1479.3,
-    "anteil_foto": 0.553,
-    "seite_a_m": 830.6,
+    "laenge_m": 2176.3,
+    "mit_foto_m": 1056.9,
+    "anteil_foto": 0.486,
+    "seite_a_m": 509.8,
     "seite_b_m": 25.4,
-    "anteil_seite_a": 0.311,
-    "anteil_seite_b": 0.009,
-    "fotos": 48,
+    "anteil_seite_a": 0.234,
+    "anteil_seite_b": 0.012,
+    "fotos": 39,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -7376,18 +6242,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 255.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Friedrich-Wolf-Straße"
   },
   {
@@ -7592,44 +6447,6 @@
    "label": "Georg-Friedrich-Händel-Straße"
   },
   {
-   "name": "Gewerbestraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.645698,
-    10.680789
-   ],
-   "achse_grad": 18.6,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    23228974,
-    23229035,
-    23229036,
-    1058050297,
-    1058050298,
-    1058050299,
-    1242455358,
-    1242455360
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 965.9,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Gewerbestraße"
-  },
-  {
    "name": "Goethestraße",
    "klasse": "strasse",
    "highway": "residential",
@@ -7657,76 +6474,27 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 176.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "label": "Goethestraße"
-  },
-  {
-   "name": "Goldbachstraße",
-   "klasse": "strasse",
-   "highway": "unclassified",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.616821,
-    10.646131
-   ],
-   "achse_grad": 93.1,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    48964259,
-    108069717,
-    193365557,
-    193497972,
-    195575843,
-    312636477,
-    1225857902,
-    1257332055
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 1191.3,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
    "zentrum": null,
-   "label": "Goldbachstraße"
+   "label": "Goethestraße"
   },
   {
    "name": "Goldlauter-Heidersbach-Rundwanderweg",
    "klasse": "weg",
-   "highway": "track",
+   "highway": "path",
    "viertel": "Goldlauter",
    "mitte": [
-    50.637501,
-    10.746298
+    50.638534,
+    10.75487
    ],
-   "achse_grad": 150.3,
+   "achse_grad": 114.7,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
-    447529017
+    223979752
    ],
-   "surface": "ground",
+   "surface": null,
    "kernstadt": {
-    "laenge_m": 208.0,
+    "laenge_m": 26.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -7746,10 +6514,10 @@
    "highway": "path",
    "viertel": "Heidersbach",
    "mitte": [
-    50.640636,
-    10.739535
+    50.640383,
+    10.739189
    ],
-   "achse_grad": 157.2,
+   "achse_grad": 137.8,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
@@ -7758,7 +6526,7 @@
    ],
    "surface": "dirt",
    "kernstadt": {
-    "laenge_m": 606.1,
+    "laenge_m": 351.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -7778,10 +6546,10 @@
    "highway": "track",
    "viertel": "Heidersbach",
    "mitte": [
-    50.641882,
-    10.731957
+    50.641804,
+    10.732461
    ],
-   "achse_grad": 31.6,
+   "achse_grad": 53.3,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
@@ -7789,7 +6557,7 @@
    ],
    "surface": "earth",
    "kernstadt": {
-    "laenge_m": 332.4,
+    "laenge_m": 36.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -7809,19 +6577,16 @@
    "highway": "secondary",
    "viertel": "Suhl Nord",
    "mitte": [
-    50.625151,
-    10.697772
+    50.618996,
+    10.698029
    ],
-   "achse_grad": 0.5,
+   "achse_grad": 4.8,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
     19783794,
-    27289483,
-    27289490,
     28647929,
     32301024,
-    32301225,
     32301402,
     32301694,
     38569759,
@@ -7831,7 +6596,6 @@
     56024322,
     71194823,
     211369201,
-    242704036,
     312643250,
     312643251,
     312643252,
@@ -7839,56 +6603,88 @@
     312643254,
     312643255,
     312643256,
-    312644140,
-    312644141,
-    312644142,
-    312644144,
-    312644145,
     312657533,
     312657534,
     312657535,
-    981628236,
     1136763415,
     1230841641,
-    1299960242,
-    1299960243,
-    1299960244,
     1337263615,
-    1337263644,
-    1337263781,
     1427265997,
     1456673957,
-    1463938590,
-    1463938591,
     1494646183,
     1494646184
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 4585.9,
-    "mit_foto_m": 3110.5,
-    "anteil_foto": 0.678,
-    "seite_a_m": 51.7,
-    "seite_b_m": 1196.6,
-    "anteil_seite_a": 0.011,
-    "anteil_seite_b": 0.261,
-    "fotos": 122,
+    "laenge_m": 2739.5,
+    "mit_foto_m": 2586.4,
+    "anteil_foto": 0.944,
+    "seite_a_m": 57.5,
+    "seite_b_m": 1030.2,
+    "anteil_seite_a": 0.021,
+    "anteil_seite_b": 0.376,
+    "fotos": 109,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 731.6,
-    "mit_foto_m": 593.4,
-    "anteil_foto": 0.811,
-    "seite_a_m": 24.3,
-    "seite_b_m": 76.5,
-    "anteil_seite_a": 0.033,
-    "anteil_seite_b": 0.104,
-    "fotos": 30,
+    "laenge_m": 490.4,
+    "mit_foto_m": 352.1,
+    "anteil_foto": 0.718,
+    "seite_a_m": 0.0,
+    "seite_b_m": 49.3,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.101,
+    "fotos": 20,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "label": "Gothaer Straße"
+   "label": "Gothaer Straße (Suhl Nord)"
+  },
+  {
+   "name": "Gothaer Straße",
+   "klasse": "strasse",
+   "highway": "secondary",
+   "viertel": "Suhl Nord",
+   "mitte": [
+    50.635035,
+    10.697492
+   ],
+   "achse_grad": 174.7,
+   "seite_a": "Ostseite",
+   "seite_b": "Westseite",
+   "way_ids": [
+    27289490,
+    32301225,
+    242704036,
+    312644140,
+    312644141,
+    312644142,
+    312644144,
+    312644145,
+    981628236,
+    1299960242,
+    1299960243,
+    1299960244,
+    1337263781,
+    1463938590,
+    1463938591
+   ],
+   "surface": "asphalt",
+   "kernstadt": {
+    "laenge_m": 1549.1,
+    "mit_foto_m": 246.1,
+    "anteil_foto": 0.159,
+    "seite_a_m": 0.0,
+    "seite_b_m": 128.4,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.083,
+    "fotos": 8,
+    "neuestes": "2025-12-29",
+    "aeltestes": "2025-12-29"
+   },
+   "zentrum": null,
+   "label": "Gothaer Straße (Suhl Nord)"
   },
   {
    "name": "Große Beerbergstraße",
@@ -8023,25 +6819,14 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 573.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Grüner Weg"
   },
   {
    "name": "Grünewaldstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.607186,
     10.693217
@@ -8066,25 +6851,14 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 200.3,
-    "mit_foto_m": 47.9,
-    "anteil_foto": 0.239,
-    "seite_a_m": 0.0,
-    "seite_b_m": 28.6,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.143,
-    "fotos": 12,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Grünewaldstraße"
   },
   {
    "name": "Gutenbergstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.608537,
     10.687056
@@ -8192,7 +6966,7 @@
    "name": "Hainbergweg",
    "klasse": "strasse",
    "highway": "service",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.604741,
     10.703558
@@ -8216,18 +6990,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 89.2,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Hainbergweg"
   },
   {
@@ -8289,18 +7052,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 142.3,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Hans-Holbein-Straße"
   },
   {
@@ -8381,13 +7133,14 @@
    "highway": "secondary",
    "viertel": "Mäbendorf",
    "mitte": [
-    50.604225,
-    10.627304
+    50.604089,
+    10.626377
    ],
-   "achse_grad": 89.5,
+   "achse_grad": 85.4,
    "seite_a": "Nordseite",
    "seite_b": "Südseite",
    "way_ids": [
+    53273119,
     53273134,
     297114733,
     297114734,
@@ -8399,14 +7152,14 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 834.2,
-    "mit_foto_m": 808.5,
-    "anteil_foto": 0.969,
+    "laenge_m": 987.4,
+    "mit_foto_m": 938.6,
+    "anteil_foto": 0.951,
     "seite_a_m": 95.0,
     "seite_b_m": 116.6,
-    "anteil_seite_a": 0.114,
-    "anteil_seite_b": 0.14,
-    "fotos": 43,
+    "anteil_seite_a": 0.096,
+    "anteil_seite_b": 0.118,
+    "fotos": 45,
     "neuestes": "2025-12-30",
     "aeltestes": "2025-12-26"
    },
@@ -8479,46 +7232,15 @@
    "label": "Heideweg"
   },
   {
-   "name": "Heiligenberg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.615519,
-    10.644733
-   ],
-   "achse_grad": 148.6,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    53345625
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 335.8,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Heiligenberg"
-  },
-  {
    "name": "Heiligenland",
    "klasse": "strasse",
    "highway": "residential",
    "viertel": "Heinrichs",
    "mitte": [
-    50.598583,
-    10.64365
+    50.59863,
+    10.643647
    ],
-   "achse_grad": 46.0,
+   "achse_grad": 43.9,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
@@ -8535,7 +7257,7 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 1721.2,
+    "laenge_m": 1663.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -8658,12 +7380,12 @@
    "highway": "residential",
    "viertel": "Lauter",
    "mitte": [
-    50.628308,
-    10.712561
+    50.626706,
+    10.711168
    ],
-   "achse_grad": 27.9,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
+   "achse_grad": 13.8,
+   "seite_a": "Ostseite",
+   "seite_b": "Westseite",
    "way_ids": [
     55100131,
     55100145,
@@ -8672,13 +7394,13 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 1221.2,
+    "laenge_m": 698.3,
     "mit_foto_m": 34.0,
-    "anteil_foto": 0.028,
-    "seite_a_m": 24.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.02,
-    "anteil_seite_b": 0.0,
+    "anteil_foto": 0.049,
+    "seite_a_m": 0.0,
+    "seite_b_m": 24.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.034,
     "fotos": 2,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
@@ -8690,7 +7412,7 @@
    "name": "Hennebergstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.60728,
     10.697874
@@ -8714,52 +7436,8 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 166.8,
-    "mit_foto_m": 26.8,
-    "anteil_foto": 0.161,
-    "seite_a_m": 0.0,
-    "seite_b_m": 16.1,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.096,
-    "fotos": 6,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
-   "label": "Hennebergstraße"
-  },
-  {
-   "name": "Herbert-Albrecht-Straße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.621049,
-    10.633348
-   ],
-   "achse_grad": 80.4,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    53345614,
-    53345615,
-    1225860355
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 159.2,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
    "zentrum": null,
-   "label": "Herbert-Albrecht-Straße"
+   "label": "Hennebergstraße"
   },
   {
    "name": "Herbert-Roth-Straße",
@@ -8826,37 +7504,6 @@
    },
    "zentrum": null,
    "label": "Herbert-Roth-Wanderweg"
-  },
-  {
-   "name": "Hermannstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.649946,
-    10.670023
-   ],
-   "achse_grad": 77.0,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    27203855
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 97.3,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Hermannstraße"
   },
   {
    "name": "Hexe",
@@ -8926,21 +7573,22 @@
    "highway": "residential",
    "viertel": "Mäbendorf",
    "mitte": [
-    50.607037,
-    10.622544
+    50.606748,
+    10.622073
    ],
-   "achse_grad": 51.1,
+   "achse_grad": 53.2,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
     53273128,
     53273129,
+    53273130,
     116078107,
     1393595539
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 254.3,
+    "laenge_m": 433.5,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -8996,9 +7644,9 @@
    "viertel": "Mäbendorf",
    "mitte": [
     50.605788,
-    10.623997
+    10.623989
    ],
-   "achse_grad": 107.7,
+   "achse_grad": 107.5,
    "seite_a": "Nordseite",
    "seite_b": "Südseite",
    "way_ids": [
@@ -9008,7 +7656,7 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 448.5,
+    "laenge_m": 450.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -9026,7 +7674,7 @@
    "name": "Hofleitengasse",
    "klasse": "weg",
    "highway": "path",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.610623,
     10.697419
@@ -9053,12 +7701,12 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 521.6,
+    "laenge_m": 170.7,
     "mit_foto_m": 10.9,
-    "anteil_foto": 0.021,
+    "anteil_foto": 0.064,
     "seite_a_m": 10.9,
     "seite_b_m": 0.0,
-    "anteil_seite_a": 0.021,
+    "anteil_seite_a": 0.064,
     "anteil_seite_b": 0.0,
     "fotos": 2,
     "neuestes": "2025-12-27",
@@ -9072,20 +7720,21 @@
    "highway": "residential",
    "viertel": "Goldlauter",
    "mitte": [
-    50.633021,
-    10.751732
+    50.633106,
+    10.751974
    ],
-   "achse_grad": 113.5,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
+   "achse_grad": 91.6,
+   "seite_a": "Nordseite",
+   "seite_b": "Südseite",
    "way_ids": [
+    25418938,
     25418939,
     25418940,
     25418941
    ],
    "surface": null,
    "kernstadt": {
-    "laenge_m": 114.5,
+    "laenge_m": 186.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -9165,7 +7814,7 @@
    "name": "Hohe Röder",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.611874,
     10.697842
@@ -9192,14 +7841,14 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 369.1,
-    "mit_foto_m": 228.2,
-    "anteil_foto": 0.618,
+    "laenge_m": 241.4,
+    "mit_foto_m": 207.4,
+    "anteil_foto": 0.859,
     "seite_a_m": 0.0,
     "seite_b_m": 62.8,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.17,
-    "fotos": 9,
+    "anteil_seite_b": 0.26,
+    "fotos": 8,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -9233,18 +7882,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 274.9,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Hoheloh"
   },
   {
@@ -9253,25 +7891,19 @@
    "highway": "path",
    "viertel": "Neundorf",
    "mitte": [
-    50.588528,
-    10.68158
+    50.59425,
+    10.684509
    ],
-   "achse_grad": 21.5,
+   "achse_grad": 20.0,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
-    74944665,
-    74945100,
-    107523311,
-    107904368,
     128128171,
-    269556143,
-    1460799714,
-    1568017853
+    1460799714
    ],
-   "surface": "ground",
+   "surface": "earth",
    "kernstadt": {
-    "laenge_m": 1875.1,
+    "laenge_m": 336.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -9320,14 +7952,14 @@
   },
   {
    "name": "Hopfenberg",
-   "klasse": "weg",
-   "highway": "steps",
-   "viertel": "Suhl",
+   "klasse": "strasse",
+   "highway": "service",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
-    50.613066,
-    10.686601
+    50.612732,
+    10.686841
    ],
-   "achse_grad": 163.4,
+   "achse_grad": 159.1,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
@@ -9338,7 +7970,7 @@
    ],
    "surface": "ground",
    "kernstadt": {
-    "laenge_m": 302.2,
+    "laenge_m": 214.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -9350,7 +7982,7 @@
     "aeltestes": null
    },
    "zentrum": {
-    "laenge_m": 302.2,
+    "laenge_m": 23.6,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -9369,16 +8001,13 @@
    "highway": "unclassified",
    "viertel": "Neundorf",
    "mitte": [
-    50.587689,
-    10.715701
+    50.587713,
+    10.714426
    ],
-   "achse_grad": 91.8,
+   "achse_grad": 92.6,
    "seite_a": "Nordseite",
    "seite_b": "Südseite",
    "way_ids": [
-    23376176,
-    23407039,
-    312593057,
     312593058,
     312601116,
     312601117,
@@ -9389,7 +8018,7 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 455.5,
+    "laenge_m": 271.3,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -9407,7 +8036,7 @@
    "name": "Hufelandstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.602668,
     10.704314
@@ -9564,18 +8193,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 602.5,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Hölderlinstraße"
   },
   {
@@ -9609,37 +8227,6 @@
    },
    "zentrum": null,
    "label": "Hügel"
-  },
-  {
-   "name": "Hügelstraße",
-   "klasse": "strasse",
-   "highway": "service",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.618331,
-    10.639344
-   ],
-   "achse_grad": 31.2,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    53345621
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 153.9,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Hügelstraße"
   },
   {
    "name": "Ilmenauer Straße",
@@ -9687,18 +8274,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 376.0,
-    "mit_foto_m": 88.6,
-    "anteil_foto": 0.236,
-    "seite_a_m": 24.4,
-    "seite_b_m": 48.5,
-    "anteil_seite_a": 0.065,
-    "anteil_seite_b": 0.129,
-    "fotos": 8,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Ilmenauer Straße"
   },
   {
@@ -9731,68 +8307,6 @@
    },
    "zentrum": null,
    "label": "Im Fallmich"
-  },
-  {
-   "name": "Industriestraße",
-   "klasse": "strasse",
-   "highway": "tertiary",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.642563,
-    10.692309
-   ],
-   "achse_grad": 142.7,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    23221620,
-    27289486,
-    32302529,
-    176364346,
-    297114745,
-    297114747,
-    297114748,
-    297114750,
-    297114751,
-    297114752,
-    297114753,
-    312650181,
-    312650182,
-    312657559,
-    312657560,
-    312657561,
-    312657562,
-    312657563,
-    312657564,
-    312657565,
-    312657566,
-    312657567,
-    312657568,
-    998142921,
-    998142922,
-    1057247179,
-    1070121428,
-    1070121429,
-    1242226099,
-    1242226100,
-    1242455356,
-    1242840540
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 1473.1,
-    "mit_foto_m": 69.4,
-    "anteil_foto": 0.047,
-    "seite_a_m": 47.7,
-    "seite_b_m": 25.8,
-    "anteil_seite_a": 0.032,
-    "anteil_seite_b": 0.018,
-    "fotos": 7,
-    "neuestes": "2026-05-23",
-    "aeltestes": "2025-06-08"
-   },
-   "zentrum": null,
-   "label": "Industriestraße"
   },
   {
    "name": "Johann-Sebastian-Bach-Straße",
@@ -9896,27 +8410,27 @@
   {
    "name": "Johann-Wendel-Straße",
    "klasse": "strasse",
-   "highway": "service",
+   "highway": "residential",
    "viertel": "Aue 1",
    "mitte": [
-    50.595225,
-    10.674798
+    50.597222,
+    10.675238
    ],
-   "achse_grad": 13.1,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
+   "achse_grad": 39.3,
+   "seite_a": "Nordwestseite",
+   "seite_b": "Südostseite",
    "way_ids": [
     25122144,
     54714419
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 1430.2,
+    "laenge_m": 858.9,
     "mit_foto_m": 15.1,
-    "anteil_foto": 0.011,
+    "anteil_foto": 0.018,
     "seite_a_m": 10.0,
     "seite_b_m": 0.0,
-    "anteil_seite_a": 0.007,
+    "anteil_seite_a": 0.012,
     "anteil_seite_b": 0.0,
     "fotos": 1,
     "neuestes": "2025-12-30",
@@ -9962,7 +8476,7 @@
    "name": "Judithstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606105,
     10.697654
@@ -9989,18 +8503,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 894.1,
-    "mit_foto_m": 506.1,
-    "anteil_foto": 0.566,
-    "seite_a_m": 95.6,
-    "seite_b_m": 204.8,
-    "anteil_seite_a": 0.107,
-    "anteil_seite_b": 0.229,
-    "fotos": 52,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Judithstraße"
   },
   {
@@ -10066,18 +8569,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 372.4,
-    "mit_foto_m": 20.9,
-    "anteil_foto": 0.056,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 2,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Juri-Gagarin-Straße"
   },
   {
@@ -10108,18 +8600,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 182.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Karl-Liebknecht-Straße"
   },
   {
@@ -10220,37 +8701,6 @@
    "label": "Karl-Wilhelm-Straße"
   },
   {
-   "name": "Karlstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.649568,
-    10.670818
-   ],
-   "achse_grad": 62.7,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    19733823
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 190.2,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Karlstraße"
-  },
-  {
    "name": "Katzbachstraße",
    "klasse": "strasse",
    "highway": "residential",
@@ -10278,25 +8728,14 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 26.5,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Katzbachstraße"
   },
   {
    "name": "Kefersteinstraße",
    "klasse": "strasse",
    "highway": "service",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.615133,
     10.69544
@@ -10322,7 +8761,7 @@
     "aeltestes": null
    },
    "zentrum": {
-    "laenge_m": 491.5,
+    "laenge_m": 176.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -10339,7 +8778,7 @@
    "name": "Kellerstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606833,
     10.693764
@@ -10363,18 +8802,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 109.0,
-    "mit_foto_m": 109.0,
-    "anteil_foto": 1.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 67.8,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.622,
-    "fotos": 21,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Kellerstraße"
   },
   {
@@ -10409,43 +8837,10 @@
    "label": "Kiefer"
   },
   {
-   "name": "Kirchberg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.617759,
-    10.640572
-   ],
-   "achse_grad": 49.0,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    53345623,
-    53345624,
-    193497973
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 363.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Kirchberg"
-  },
-  {
    "name": "Kirchgasse",
    "klasse": "strasse",
    "highway": "living_street",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.609905,
     10.693533
@@ -10524,18 +8919,20 @@
    "highway": "track",
    "viertel": "Mäbendorf",
    "mitte": [
-    50.609106,
-    10.622673
+    50.607417,
+    10.621006
    ],
-   "achse_grad": 177.8,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
+   "achse_grad": 24.9,
+   "seite_a": "Nordwestseite",
+   "seite_b": "Südostseite",
    "way_ids": [
-    84526162
+    84526162,
+    1393595538,
+    1393595540
    ],
    "surface": "compacted",
    "kernstadt": {
-    "laenge_m": 549.3,
+    "laenge_m": 1092.1,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -10548,38 +8945,6 @@
    },
    "zentrum": null,
    "label": "Kirchtal"
-  },
-  {
-   "name": "Kleine Bahnhofstraße",
-   "klasse": "strasse",
-   "highway": "service",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.651496,
-    10.671853
-   ],
-   "achse_grad": 79.6,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    23210033,
-    23210034
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 102.6,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Kleine Bahnhofstraße"
   },
   {
    "name": "Kleine Beerbergstraße",
@@ -10829,10 +9194,10 @@
    "highway": "residential",
    "viertel": "Goldlauter",
    "mitte": [
-    50.627053,
-    10.7458
+    50.627121,
+    10.74551
    ],
-   "achse_grad": 108.7,
+   "achse_grad": 109.4,
    "seite_a": "Nordseite",
    "seite_b": "Südseite",
    "way_ids": [
@@ -10840,9 +9205,9 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 308.4,
+    "laenge_m": 264.6,
     "mit_foto_m": 26.6,
-    "anteil_foto": 0.086,
+    "anteil_foto": 0.101,
     "seite_a_m": 0.0,
     "seite_b_m": 0.0,
     "anteil_seite_a": 0.0,
@@ -10860,10 +9225,10 @@
    "highway": "residential",
    "viertel": "Mäbendorf",
    "mitte": [
-    50.601201,
-    10.628321
+    50.601564,
+    10.628159
    ],
-   "achse_grad": 166.1,
+   "achse_grad": 167.2,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
@@ -10872,13 +9237,13 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 903.5,
+    "laenge_m": 809.1,
     "mit_foto_m": 25.6,
-    "anteil_foto": 0.028,
+    "anteil_foto": 0.032,
     "seite_a_m": 0.0,
     "seite_b_m": 15.4,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.017,
+    "anteil_seite_b": 0.019,
     "fotos": 3,
     "neuestes": "2025-12-30",
     "aeltestes": "2025-12-27"
@@ -10892,10 +9257,10 @@
    "highway": "tertiary",
    "viertel": "Lauter",
    "mitte": [
-    50.623994,
-    10.719743
+    50.623825,
+    10.718531
    ],
-   "achse_grad": 79.2,
+   "achse_grad": 77.1,
    "seite_a": "Nordseite",
    "seite_b": "Südseite",
    "way_ids": [
@@ -10911,14 +9276,14 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 2191.7,
-    "mit_foto_m": 2100.0,
-    "anteil_foto": 0.958,
-    "seite_a_m": 1509.0,
+    "laenge_m": 1801.8,
+    "mit_foto_m": 1719.9,
+    "anteil_foto": 0.955,
+    "seite_a_m": 1289.1,
     "seite_b_m": 0.0,
-    "anteil_seite_a": 0.688,
+    "anteil_seite_a": 0.715,
     "anteil_seite_b": 0.0,
-    "fotos": 57,
+    "fotos": 50,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -10960,7 +9325,7 @@
    "name": "Lauwetter",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.614462,
     10.696513
@@ -10987,14 +9352,14 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 440.5,
-    "mit_foto_m": 253.3,
-    "anteil_foto": 0.575,
-    "seite_a_m": 229.2,
+    "laenge_m": 221.3,
+    "mit_foto_m": 39.4,
+    "anteil_foto": 0.178,
+    "seite_a_m": 34.3,
     "seite_b_m": 0.0,
-    "anteil_seite_a": 0.52,
+    "anteil_seite_a": 0.155,
     "anteil_seite_b": 0.0,
-    "fotos": 19,
+    "fotos": 9,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -11039,24 +9404,18 @@
    "highway": "track",
    "viertel": "Goldlauter",
    "mitte": [
-    50.620111,
-    10.744301
+    50.620827,
+    10.732715
    ],
-   "achse_grad": 100.2,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
+   "achse_grad": 119.1,
+   "seite_a": "Nordostseite",
+   "seite_b": "Südwestseite",
    "way_ids": [
-    25418898,
-    48349000,
-    69926601,
-    75236686,
-    245252107,
-    1313156675,
-    1544004471
+    75236686
    ],
    "surface": "compacted",
    "kernstadt": {
-    "laenge_m": 5358.0,
+    "laenge_m": 83.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -11069,37 +9428,6 @@
    },
    "zentrum": null,
    "label": "Leitweg"
-  },
-  {
-   "name": "Lengberg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.616893,
-    10.635082
-   ],
-   "achse_grad": 89.4,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    53345612
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 360.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Lengberg"
   },
   {
    "name": "Leonhard-Frank-Straße",
@@ -11166,18 +9494,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 335.9,
-    "mit_foto_m": 23.7,
-    "anteil_foto": 0.071,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 2,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Lessingstraße"
   },
   {
@@ -11216,7 +9533,7 @@
    "name": "Lilliplatz",
    "klasse": "strasse",
    "highway": "living_street",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.607805,
     10.694285
@@ -11240,18 +9557,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 33.6,
-    "mit_foto_m": 18.7,
-    "anteil_foto": 0.558,
-    "seite_a_m": 8.9,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.266,
-    "anteil_seite_b": 0.0,
-    "fotos": 3,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Lilliplatz"
   },
   {
@@ -11421,15 +9727,13 @@
    "highway": "unclassified",
    "viertel": "Linsenhof",
    "mitte": [
-    50.613979,
-    10.668587
+    50.613773,
+    10.66992
    ],
-   "achse_grad": 91.9,
+   "achse_grad": 82.8,
    "seite_a": "Nordseite",
    "seite_b": "Südseite",
    "way_ids": [
-    24929244,
-    24929245,
     30109560,
     42072431,
     122285211,
@@ -11446,36 +9750,22 @@
     1242515744,
     1257332054,
     1312019001,
-    1389254289,
-    1389254290,
-    1429939486,
-    1459762881
+    1389254290
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 3783.4,
-    "mit_foto_m": 729.9,
-    "anteil_foto": 0.193,
-    "seite_a_m": 571.9,
-    "seite_b_m": 53.7,
-    "anteil_seite_a": 0.151,
-    "anteil_seite_b": 0.014,
-    "fotos": 29,
-    "neuestes": "2026-05-23",
-    "aeltestes": "2025-06-08"
-   },
-   "zentrum": {
-    "laenge_m": 220.6,
-    "mit_foto_m": 220.6,
-    "anteil_foto": 1.0,
-    "seite_a_m": 186.6,
+    "laenge_m": 3416.6,
+    "mit_foto_m": 655.7,
+    "anteil_foto": 0.192,
+    "seite_a_m": 528.4,
     "seite_b_m": 0.0,
-    "anteil_seite_a": 0.846,
+    "anteil_seite_a": 0.155,
     "anteil_seite_b": 0.0,
-    "fotos": 7,
+    "fotos": 21,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
+   "zentrum": null,
    "label": "Linsenhofer Straße"
   },
   {
@@ -11516,7 +9806,7 @@
    "name": "Lutherstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.609328,
     10.696338
@@ -11540,18 +9830,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 136.5,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Lutherstraße"
   },
   {
@@ -11624,7 +9903,7 @@
    "name": "Marggrafstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.605987,
     10.693846
@@ -11650,25 +9929,14 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 68.8,
-    "mit_foto_m": 57.2,
-    "anteil_foto": 0.832,
-    "seite_a_m": 18.1,
-    "seite_b_m": 18.9,
-    "anteil_seite_a": 0.263,
-    "anteil_seite_b": 0.274,
-    "fotos": 6,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Marggrafstraße"
   },
   {
    "name": "Marienstieg",
    "klasse": "strasse",
    "highway": "pedestrian",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.609729,
     10.69463
@@ -11715,19 +9983,18 @@
    "name": "Marktplatz",
    "klasse": "strasse",
    "highway": "living_street",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
-    50.610782,
-    10.693103
+    50.610815,
+    10.693002
    ],
-   "achse_grad": 140.8,
+   "achse_grad": 141.4,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
     32083902,
     32083904,
     32083905,
-    44124199,
     44124203,
     100127375,
     1136763414,
@@ -11735,7 +10002,7 @@
    ],
    "surface": "paving_stones",
    "kernstadt": {
-    "laenge_m": 598.5,
+    "laenge_m": 382.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -11747,7 +10014,7 @@
     "aeltestes": null
    },
    "zentrum": {
-    "laenge_m": 598.5,
+    "laenge_m": 382.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -11759,6 +10026,48 @@
     "aeltestes": null
    },
    "label": "Marktplatz"
+  },
+  {
+   "name": "Marktplatz",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
+   "mitte": [
+    50.610723,
+    10.693283
+   ],
+   "achse_grad": 139.5,
+   "seite_a": "Rand (Blick über den Rand)",
+   "seite_b": null,
+   "way_ids": [
+    44124199
+   ],
+   "surface": "paving_stones",
+   "kernstadt": {
+    "laenge_m": 216.5,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "zentrum": {
+    "laenge_m": 216.5,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "label": "Marktplatz [Fläche]"
   },
   {
    "name": "Martin-Andersen-Nexö-Straße",
@@ -11824,18 +10133,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 19.3,
-    "mit_foto_m": 4.5,
-    "anteil_foto": 0.234,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 1,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Mauerstraße"
   },
   {
@@ -11984,41 +10282,6 @@
    "label": "Meininger Straße"
   },
   {
-   "name": "Mittelbergstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Neundorf",
-   "mitte": [
-    50.578184,
-    10.702322
-   ],
-   "achse_grad": 146.7,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    26780670,
-    27001834,
-    27001835,
-    33360479,
-    1242210293
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 1215.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Mittelbergstraße"
-  },
-  {
    "name": "Mittelgasse",
    "klasse": "strasse",
    "highway": "residential",
@@ -12082,106 +10345,36 @@
    "label": "Mozartstraße"
   },
   {
-   "name": "Mutental",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.616162,
-    10.635475
-   ],
-   "achse_grad": 96.8,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    53345611,
-    53345620
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 169.2,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Mutental"
-  },
-  {
-   "name": "Märzenberg",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.652009,
-    10.676502
-   ],
-   "achse_grad": 123.3,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    23210291
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 120.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Märzenberg"
-  },
-  {
    "name": "Mühlbergstraße",
    "klasse": "strasse",
    "highway": "tertiary",
-   "viertel": "Albrechts",
+   "viertel": "Mäbendorf",
    "mitte": [
-    50.611385,
-    10.636212
+    50.605167,
+    10.633886
    ],
-   "achse_grad": 19.3,
+   "achse_grad": 22.3,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
-    8874974,
     116078053,
     116078092,
     175791048,
-    193365560,
-    193365569,
-    195575844,
-    243947880,
     312636480,
-    813417633,
-    1007569047,
-    1007569048
+    813417633
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 1902.4,
-    "mit_foto_m": 99.6,
-    "anteil_foto": 0.052,
-    "seite_a_m": 60.8,
-    "seite_b_m": 51.0,
-    "anteil_seite_a": 0.032,
-    "anteil_seite_b": 0.027,
-    "fotos": 9,
-    "neuestes": "2026-05-23",
-    "aeltestes": "2025-06-08"
+    "laenge_m": 364.0,
+    "mit_foto_m": 31.0,
+    "anteil_foto": 0.085,
+    "seite_a_m": 11.0,
+    "seite_b_m": 20.4,
+    "anteil_seite_a": 0.03,
+    "anteil_seite_b": 0.056,
+    "fotos": 2,
+    "neuestes": "2025-12-30",
+    "aeltestes": "2025-12-27"
    },
    "zentrum": null,
    "label": "Mühlbergstraße"
@@ -12226,7 +10419,7 @@
    "name": "Mühlhügel",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.611761,
     10.695593
@@ -12268,7 +10461,7 @@
    "name": "Mühltorstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.611615,
     10.689472
@@ -12312,7 +10505,7 @@
    "name": "Naumannstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606636,
     10.687078
@@ -12459,18 +10652,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 660.0,
-    "mit_foto_m": 48.8,
-    "anteil_foto": 0.074,
-    "seite_a_m": 29.2,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.044,
-    "anteil_seite_b": 0.0,
-    "fotos": 6,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Neundorfer Straße"
   },
   {
@@ -12609,7 +10791,7 @@
    "name": "Paul-Greifzu-Straße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.608114,
     10.692289
@@ -12634,49 +10816,18 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 119.5,
-    "mit_foto_m": 119.5,
+    "laenge_m": 105.4,
+    "mit_foto_m": 105.4,
     "anteil_foto": 1.0,
     "seite_a_m": 5.5,
-    "seite_b_m": 81.3,
-    "anteil_seite_a": 0.046,
-    "anteil_seite_b": 0.68,
-    "fotos": 28,
+    "seite_b_m": 67.2,
+    "anteil_seite_a": 0.052,
+    "anteil_seite_b": 0.637,
+    "fotos": 24,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
    "label": "Paul-Greifzu-Straße"
-  },
-  {
-   "name": "Pfaffental",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.652004,
-    10.674144
-   ],
-   "achse_grad": 139.3,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    27204170
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 10.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Pfaffental"
   },
   {
    "name": "Pfannrain",
@@ -12714,7 +10865,7 @@
    "name": "Pfarrstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.609914,
     10.695723
@@ -12753,7 +10904,7 @@
     "aeltestes": null
    },
    "zentrum": {
-    "laenge_m": 577.4,
+    "laenge_m": 343.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -12834,27 +10985,24 @@
    "highway": "unclassified",
    "viertel": "Neundorf",
    "mitte": [
-    50.585634,
-    10.712223
+    50.587711,
+    10.712766
    ],
-   "achse_grad": 12.0,
+   "achse_grad": 4.7,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
-    23956959,
-    23956960,
     38658284,
     312601126,
     312601127,
     312601128,
     312601129,
     312601130,
-    312601131,
-    1242210294
+    312601131
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 1226.7,
+    "laenge_m": 734.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -12902,24 +11050,23 @@
   {
    "name": "Platz der Deutschen Einheit",
    "klasse": "strasse",
-   "highway": "pedestrian",
-   "viertel": "Suhl",
+   "highway": "living_street",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
-    50.609525,
-    10.689013
+    50.60968,
+    10.690253
    ],
-   "achse_grad": 54.3,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
+   "achse_grad": 176.3,
+   "seite_a": "Ostseite",
+   "seite_b": "Westseite",
    "way_ids": [
     27762859,
-    69995472,
     1157688150,
     1167486347
    ],
-   "surface": "sett",
+   "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 475.8,
+    "laenge_m": 140.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -12931,7 +11078,7 @@
     "aeltestes": null
    },
    "zentrum": {
-    "laenge_m": 475.8,
+    "laenge_m": 140.2,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -12943,6 +11090,48 @@
     "aeltestes": null
    },
    "label": "Platz der Deutschen Einheit"
+  },
+  {
+   "name": "Platz der Deutschen Einheit",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
+   "mitte": [
+    50.60946,
+    10.688495
+   ],
+   "achse_grad": 63.3,
+   "seite_a": "Rand (Blick über den Rand)",
+   "seite_b": null,
+   "way_ids": [
+    69995472
+   ],
+   "surface": "sett",
+   "kernstadt": {
+    "laenge_m": 335.6,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "zentrum": {
+    "laenge_m": 335.6,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "label": "Platz der Deutschen Einheit [Fläche]"
   },
   {
    "name": "Plessengrund",
@@ -12985,18 +11174,21 @@
    "highway": "residential",
    "viertel": "Goldlauter",
    "mitte": [
-    50.632383,
-    10.749691
+    50.634929,
+    10.751972
    ],
-   "achse_grad": 52.2,
+   "achse_grad": 30.6,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
+    25418949,
+    27887377,
+    27887378,
     612254762
    ],
-   "surface": null,
+   "surface": "gravel",
    "kernstadt": {
-    "laenge_m": 372.6,
+    "laenge_m": 1021.0,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -13039,18 +11231,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 127.3,
-    "mit_foto_m": 127.3,
-    "anteil_foto": 1.0,
-    "seite_a_m": 64.8,
-    "seite_b_m": 8.8,
-    "anteil_seite_a": 0.509,
-    "anteil_seite_b": 0.069,
-    "fotos": 6,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Prießnitzstraße"
   },
   {
@@ -13164,7 +11345,7 @@
    "name": "Regenspiegel",
    "klasse": "strasse",
    "highway": "service",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.616953,
     10.696521
@@ -13191,18 +11372,7 @@
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 65.5,
-    "mit_foto_m": 41.6,
-    "anteil_foto": 0.635,
-    "seite_a_m": 0.0,
-    "seite_b_m": 36.3,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.554,
-    "fotos": 4,
-    "neuestes": "2025-12-29",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Regenspiegel"
   },
   {
@@ -13237,40 +11407,7 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": null,
-   "label": "Rennsteigstraße (Suhl Nord)"
-  },
-  {
-   "name": "Rennsteigstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.645743,
-    10.6918
-   ],
-   "achse_grad": 3.6,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    25408240,
-    285634321,
-    312657570
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 406.9,
-    "mit_foto_m": 50.6,
-    "anteil_foto": 0.124,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 3,
-    "neuestes": "2026-05-23",
-    "aeltestes": "2026-05-23"
-   },
-   "zentrum": null,
-   "label": "Rennsteigstraße (Suhl Nord)"
+   "label": "Rennsteigstraße"
   },
   {
    "name": "Reuetal",
@@ -13302,18 +11439,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 119.2,
-    "mit_foto_m": 5.2,
-    "anteil_foto": 0.044,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 1,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Reuetal"
   },
   {
@@ -13382,7 +11508,7 @@
    "name": "Riemenschneiderstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606347,
     10.693932
@@ -13407,25 +11533,14 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 158.6,
-    "mit_foto_m": 132.4,
-    "anteil_foto": 0.835,
-    "seite_a_m": 84.8,
-    "seite_b_m": 34.9,
-    "anteil_seite_a": 0.535,
-    "anteil_seite_b": 0.22,
-    "fotos": 11,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Riemenschneiderstraße"
   },
   {
    "name": "Rimbachhügel",
    "klasse": "strasse",
    "highway": "living_street",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.608475,
     10.695281
@@ -13455,30 +11570,19 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 411.3,
-    "mit_foto_m": 30.0,
-    "anteil_foto": 0.073,
-    "seite_a_m": 19.6,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.048,
-    "anteil_seite_b": 0.0,
-    "fotos": 4,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Rimbachhügel"
   },
   {
    "name": "Rimbachstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
-    50.60835,
-    10.696723
+    50.607971,
+    10.69804
    ],
-   "achse_grad": 114.7,
+   "achse_grad": 116.0,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
@@ -13486,9 +11590,7 @@
     25745929,
     71194825,
     71194829,
-    81101783,
     81101784,
-    81252144,
     674701741,
     674703529,
     674703533,
@@ -13501,36 +11603,79 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 1341.4,
+    "laenge_m": 977.2,
     "mit_foto_m": 241.6,
-    "anteil_foto": 0.18,
+    "anteil_foto": 0.247,
     "seite_a_m": 94.0,
     "seite_b_m": 67.1,
-    "anteil_seite_a": 0.07,
-    "anteil_seite_b": 0.05,
+    "anteil_seite_a": 0.096,
+    "anteil_seite_b": 0.069,
     "fotos": 12,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 1341.4,
-    "mit_foto_m": 241.6,
-    "anteil_foto": 0.18,
-    "seite_a_m": 94.0,
-    "seite_b_m": 67.1,
-    "anteil_seite_a": 0.07,
-    "anteil_seite_b": 0.05,
-    "fotos": 12,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
+    "laenge_m": 226.0,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
    },
    "label": "Rimbachstraße"
+  },
+  {
+   "name": "Rimbachstraße",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
+   "mitte": [
+    50.609366,
+    10.693189
+   ],
+   "achse_grad": 105.1,
+   "seite_a": "Rand (Blick über den Rand)",
+   "seite_b": null,
+   "way_ids": [
+    81101783,
+    81252144
+   ],
+   "surface": "paving_stones",
+   "kernstadt": {
+    "laenge_m": 364.2,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "zentrum": {
+    "laenge_m": 364.2,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "label": "Rimbachstraße [Fläche]"
   },
   {
    "name": "Rimbachtal",
    "klasse": "strasse",
    "highway": "service",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606077,
     10.702211
@@ -13555,56 +11700,8 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 205.1,
-    "mit_foto_m": 48.1,
-    "anteil_foto": 0.235,
-    "seite_a_m": 14.9,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.073,
-    "anteil_seite_b": 0.0,
-    "fotos": 4,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
-   "label": "Rimbachtal"
-  },
-  {
-   "name": "Ringberg",
-   "klasse": "strasse",
-   "highway": "service",
-   "viertel": "Himmelreich",
-   "mitte": [
-    50.617302,
-    10.726408
-   ],
-   "achse_grad": 94.8,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    39314818,
-    39314822,
-    47663885,
-    48357932,
-    1242462437,
-    1474123742,
-    1474123743
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 603.4,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
    "zentrum": null,
-   "label": "Ringberg"
+   "label": "Rimbachtal"
   },
   {
    "name": "Ringbergstraße",
@@ -13643,43 +11740,10 @@
    "label": "Ringbergstraße"
   },
   {
-   "name": "Ringweg",
-   "klasse": "weg",
-   "highway": "track",
-   "viertel": "Himmelreich",
-   "mitte": [
-    50.616408,
-    10.723309
-   ],
-   "achse_grad": 70.5,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    39314808,
-    200755721,
-    225046923
-   ],
-   "surface": "ground",
-   "kernstadt": {
-    "laenge_m": 1509.6,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Ringweg"
-  },
-  {
    "name": "Robert-Koch-Straße",
    "klasse": "strasse",
    "highway": "service",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.603577,
     10.705752
@@ -13742,37 +11806,6 @@
    "label": "Robert-Schumann-Straße"
   },
   {
-   "name": "Rodewasser",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.64033,
-    10.681778
-   ],
-   "achse_grad": 70.8,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    26699993
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 212.3,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Rodewasser"
-  },
-  {
    "name": "Rosa-Luxemburg-Straße",
    "klasse": "strasse",
    "highway": "residential",
@@ -13801,7 +11834,7 @@
     "aeltestes": null
    },
    "zentrum": {
-    "laenge_m": 110.8,
+    "laenge_m": 80.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -13818,7 +11851,7 @@
    "name": "Roschstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.608907,
     10.694045
@@ -13862,41 +11895,63 @@
    "highway": "track",
    "viertel": "Heidersbach",
    "mitte": [
-    50.643045,
-    10.72054
+    50.642902,
+    10.735321
    ],
-   "achse_grad": 63.7,
+   "achse_grad": 111.9,
+   "seite_a": "Nordseite",
+   "seite_b": "Südseite",
+   "way_ids": [
+    27888911
+   ],
+   "surface": null,
+   "kernstadt": {
+    "laenge_m": 55.2,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "zentrum": null,
+   "label": "Rosenkopfstraße (Heidersbach)"
+  },
+  {
+   "name": "Rosenkopfstraße",
+   "klasse": "weg",
+   "highway": "track",
+   "viertel": "Suhl Nord",
+   "mitte": [
+    50.637318,
+    10.70646
+   ],
+   "achse_grad": 50.4,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
     27762833,
     27812922,
-    27888911,
-    27888912,
-    37682803,
-    37683388,
-    37683390,
-    37683394,
-    203909820,
-    220799865,
-    258697645,
-    531874077
+    37683388
    ],
-   "surface": "compacted",
+   "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 4203.5,
+    "laenge_m": 784.2,
     "mit_foto_m": 370.0,
-    "anteil_foto": 0.088,
+    "anteil_foto": 0.472,
     "seite_a_m": 295.5,
     "seite_b_m": 58.7,
-    "anteil_seite_a": 0.07,
-    "anteil_seite_b": 0.014,
+    "anteil_seite_a": 0.377,
+    "anteil_seite_b": 0.075,
     "fotos": 29,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
    "zentrum": null,
-   "label": "Rosenkopfstraße"
+   "label": "Rosenkopfstraße (Suhl Nord)"
   },
   {
    "name": "Rosenweg",
@@ -13992,18 +12047,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 448.5,
-    "mit_foto_m": 31.3,
-    "anteil_foto": 0.07,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 1,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Rudolf-Harbig-Straße"
   },
   {
@@ -14087,23 +12131,23 @@
    "highway": "path",
    "viertel": "Mäbendorf",
    "mitte": [
-    50.606698,
-    10.628712
+    50.606235,
+    10.629801
    ],
-   "achse_grad": 107.9,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
+   "achse_grad": 114.9,
+   "seite_a": "Nordostseite",
+   "seite_b": "Südwestseite",
    "way_ids": [
     76185153
    ],
    "surface": "ground",
    "kernstadt": {
-    "laenge_m": 861.2,
-    "mit_foto_m": 53.4,
-    "anteil_foto": 0.062,
+    "laenge_m": 468.2,
+    "mit_foto_m": 34.6,
+    "anteil_foto": 0.074,
     "seite_a_m": 14.6,
     "seite_b_m": 0.0,
-    "anteil_seite_a": 0.017,
+    "anteil_seite_a": 0.031,
     "anteil_seite_b": 0.0,
     "fotos": 1,
     "neuestes": "2025-12-26",
@@ -14147,7 +12191,7 @@
    "name": "Röderfeld",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.611417,
     10.698587
@@ -14172,25 +12216,14 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 281.8,
-    "mit_foto_m": 19.7,
-    "anteil_foto": 0.07,
-    "seite_a_m": 10.9,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.039,
-    "anteil_seite_b": 0.0,
-    "fotos": 1,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Röderfeld"
   },
   {
    "name": "Röderfeldweg",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.611255,
     10.700039
@@ -14215,25 +12248,14 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 224.6,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Röderfeldweg"
   },
   {
    "name": "Rückertstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.605173,
     10.704483
@@ -14257,25 +12279,14 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 94.6,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Rückertstraße"
   },
   {
    "name": "Rüssenstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.61264,
     10.694404
@@ -14315,38 +12326,6 @@
    "label": "Rüssenstraße"
   },
   {
-   "name": "Rüssestraße",
-   "klasse": "strasse",
-   "highway": "tertiary",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.619423,
-    10.637087
-   ],
-   "achse_grad": 141.5,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    8874938,
-    53345613
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 524.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Rüssestraße"
-  },
-  {
    "name": "Saalhügel",
    "klasse": "strasse",
    "highway": "residential",
@@ -14381,7 +12360,7 @@
    "name": "Schillerstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.607109,
     10.701993
@@ -14405,51 +12384,8 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 125.5,
-    "mit_foto_m": 25.6,
-    "anteil_foto": 0.204,
-    "seite_a_m": 20.5,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.163,
-    "anteil_seite_b": 0.0,
-    "fotos": 2,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
-   "label": "Schillerstraße"
-  },
-  {
-   "name": "Schlangenweg",
-   "klasse": "weg",
-   "highway": "track",
-   "viertel": "Himmelreich",
-   "mitte": [
-    50.600601,
-    10.739372
-   ],
-   "achse_grad": 166.6,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    47474132,
-    319329979
-   ],
-   "surface": "compacted",
-   "kernstadt": {
-    "laenge_m": 2732.4,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
    "zentrum": null,
-   "label": "Schlangenweg"
+   "label": "Schillerstraße"
   },
   {
    "name": "Schlauchgarten",
@@ -14486,14 +12422,14 @@
    "name": "Schleusinger Straße",
    "klasse": "strasse",
    "highway": "secondary",
-   "viertel": "Neundorf",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
-    50.598924,
-    10.709094
+    50.600693,
+    10.705999
    ],
-   "achse_grad": 115.0,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
+   "achse_grad": 107.6,
+   "seite_a": "Nordseite",
+   "seite_b": "Südseite",
    "way_ids": [
     23376181,
     24927883,
@@ -14502,19 +12438,10 @@
     45552419,
     45985835,
     45985839,
-    69882264,
     71194826,
-    107489472,
-    107489474,
     118164322,
-    118164330,
-    118164337,
     135919903,
     144189114,
-    297037408,
-    297037409,
-    297063256,
-    297063257,
     297063262,
     297063264,
     297063268,
@@ -14523,7 +12450,6 @@
     297063271,
     297063272,
     297411677,
-    312593070,
     312601132,
     575605598,
     1242210296,
@@ -14534,28 +12460,28 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 5221.8,
+    "laenge_m": 4094.4,
     "mit_foto_m": 249.3,
-    "anteil_foto": 0.048,
+    "anteil_foto": 0.061,
     "seite_a_m": 39.8,
     "seite_b_m": 49.7,
-    "anteil_seite_a": 0.008,
-    "anteil_seite_b": 0.01,
+    "anteil_seite_a": 0.01,
+    "anteil_seite_b": 0.012,
     "fotos": 36,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 1010.6,
-    "mit_foto_m": 249.3,
-    "anteil_foto": 0.247,
-    "seite_a_m": 39.8,
-    "seite_b_m": 49.7,
-    "anteil_seite_a": 0.039,
-    "anteil_seite_b": 0.049,
-    "fotos": 36,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
+    "laenge_m": 225.0,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
    },
    "label": "Schleusinger Straße"
   },
@@ -14735,10 +12661,10 @@
    "highway": "residential",
    "viertel": "Goldlauter",
    "mitte": [
-    50.628939,
-    10.737728
+    50.628896,
+    10.737865
    ],
-   "achse_grad": 42.1,
+   "achse_grad": 52.7,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
@@ -14749,13 +12675,13 @@
    ],
    "surface": null,
    "kernstadt": {
-    "laenge_m": 727.5,
+    "laenge_m": 637.8,
     "mit_foto_m": 24.6,
-    "anteil_foto": 0.034,
+    "anteil_foto": 0.039,
     "seite_a_m": 0.0,
     "seite_b_m": 14.8,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.02,
+    "anteil_seite_b": 0.023,
     "fotos": 1,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
@@ -14858,85 +12784,6 @@
    "label": "Schwarzwasserweg"
   },
   {
-   "name": "Schöne Aussicht",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.649329,
-    10.675544
-   ],
-   "achse_grad": 16.4,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    23207762,
-    1046236576,
-    1046236577,
-    1046236578,
-    1329395714
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 600.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Schöne Aussicht"
-  },
-  {
-   "name": "Schützenstraße",
-   "klasse": "strasse",
-   "highway": "unclassified",
-   "viertel": "Neundorf",
-   "mitte": [
-    50.582889,
-    10.718753
-   ],
-   "achse_grad": 4.8,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    23376175,
-    26132500,
-    26132501,
-    38658281,
-    107171804,
-    107171805,
-    140886374,
-    140886376,
-    144060998,
-    312593071,
-    312593072,
-    312593073,
-    312593074,
-    1492424713
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 2044.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Schützenstraße"
-  },
-  {
    "name": "Seitenstraße",
    "klasse": "strasse",
    "highway": "residential",
@@ -14974,7 +12821,7 @@
    "name": "Senfte",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.60606,
     10.688459
@@ -15004,13 +12851,13 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 245.7,
+    "laenge_m": 213.1,
     "mit_foto_m": 30.9,
-    "anteil_foto": 0.126,
+    "anteil_foto": 0.145,
     "seite_a_m": 0.0,
     "seite_b_m": 20.9,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.085,
+    "anteil_seite_b": 0.098,
     "fotos": 3,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
@@ -15159,42 +13006,6 @@
    "label": "Smetanastraße"
   },
   {
-   "name": "Sommerbergstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Neundorf",
-   "mitte": [
-    50.580437,
-    10.703017
-   ],
-   "achse_grad": 77.8,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    26780627,
-    26780712,
-    26780769,
-    40545083,
-    134778061,
-    1242210292
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 2081.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Sommerbergstraße"
-  },
-  {
    "name": "Sonnenweg",
    "klasse": "strasse",
    "highway": "residential",
@@ -15231,10 +13042,10 @@
    "highway": "service",
    "viertel": "Himmelreich",
    "mitte": [
-    50.592592,
-    10.721155
+    50.592984,
+    10.721278
    ],
-   "achse_grad": 10.8,
+   "achse_grad": 16.5,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
@@ -15242,7 +13053,7 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 264.9,
+    "laenge_m": 174.9,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -15260,45 +13071,86 @@
    "name": "Stadelstraße",
    "klasse": "strasse",
    "highway": "living_street",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
-    50.608847,
-    10.692435
+    50.608707,
+    10.692649
    ],
-   "achse_grad": 130.7,
+   "achse_grad": 130.8,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
     25746308,
-    81101785,
     1052298182
    ],
-   "surface": "sett",
+   "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 269.4,
+    "laenge_m": 171.0,
     "mit_foto_m": 41.1,
-    "anteil_foto": 0.153,
+    "anteil_foto": 0.241,
     "seite_a_m": 0.0,
     "seite_b_m": 23.0,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.085,
+    "anteil_seite_b": 0.134,
     "fotos": 10,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 269.4,
+    "laenge_m": 171.0,
     "mit_foto_m": 41.1,
-    "anteil_foto": 0.153,
+    "anteil_foto": 0.241,
     "seite_a_m": 0.0,
     "seite_b_m": 23.0,
     "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.085,
+    "anteil_seite_b": 0.134,
     "fotos": 10,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
    "label": "Stadelstraße"
+  },
+  {
+   "name": "Stadelstraße",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
+   "mitte": [
+    50.60909,
+    10.692063
+   ],
+   "achse_grad": 130.6,
+   "seite_a": "Rand (Blick über den Rand)",
+   "seite_b": null,
+   "way_ids": [
+    81101785
+   ],
+   "surface": "sett",
+   "kernstadt": {
+    "laenge_m": 98.4,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "zentrum": {
+    "laenge_m": 98.4,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "label": "Stadelstraße [Fläche]"
   },
   {
    "name": "Steiler Weg",
@@ -15332,102 +13184,6 @@
    "label": "Steiler Weg"
   },
   {
-   "name": "Steinatalbrücke",
-   "klasse": "strasse",
-   "highway": "motorway",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.642665,
-    10.690042
-   ],
-   "achse_grad": 27.2,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    662874709
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 74.4,
-    "mit_foto_m": 74.4,
-    "anteil_foto": 1.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 74.4,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 1.0,
-    "fotos": 15,
-    "neuestes": "2026-05-23",
-    "aeltestes": "2025-06-08"
-   },
-   "zentrum": null,
-   "label": "Steinatalbrücke"
-  },
-  {
-   "name": "Steinfelder Weg",
-   "klasse": "strasse",
-   "highway": "living_street",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.617405,
-    10.647031
-   ],
-   "achse_grad": 122.3,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    53345619,
-    195575845
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 544.3,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Steinfelder Weg"
-  },
-  {
-   "name": "Steinhorstweg",
-   "klasse": "weg",
-   "highway": "track",
-   "viertel": "Goldlauter",
-   "mitte": [
-    50.617406,
-    10.739938
-   ],
-   "achse_grad": 97.7,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    39314811,
-    39314814,
-    1544004472
-   ],
-   "surface": "compacted",
-   "kernstadt": {
-    "laenge_m": 3449.3,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Steinhorstweg (Goldlauter)"
-  },
-  {
    "name": "Steinhorstweg",
    "klasse": "strasse",
    "highway": "service",
@@ -15456,38 +13212,7 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": null,
-   "label": "Steinhorstweg (Lauter)"
-  },
-  {
-   "name": "Steinigte Äcker",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.650678,
-    10.67296
-   ],
-   "achse_grad": 112.5,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    23210035
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 330.5,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Steinigte Äcker"
+   "label": "Steinhorstweg"
   },
   {
    "name": "Steinsfeld",
@@ -15526,24 +13251,23 @@
    "name": "Steinweg",
    "klasse": "strasse",
    "highway": "pedestrian",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
-    50.609221,
-    10.691547
+    50.609092,
+    10.69152
    ],
-   "achse_grad": 45.0,
+   "achse_grad": 43.0,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
     38570043,
-    40437966,
     81101787,
     81101788,
     1161285633
    ],
    "surface": "paving_stones",
    "kernstadt": {
-    "laenge_m": 1413.1,
+    "laenge_m": 416.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -15555,7 +13279,7 @@
     "aeltestes": null
    },
    "zentrum": {
-    "laenge_m": 1413.1,
+    "laenge_m": 416.7,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -15567,6 +13291,48 @@
     "aeltestes": null
    },
    "label": "Steinweg"
+  },
+  {
+   "name": "Steinweg",
+   "klasse": "platz",
+   "highway": "pedestrian",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
+   "mitte": [
+    50.609276,
+    10.691559
+   ],
+   "achse_grad": 46.2,
+   "seite_a": "Rand (Blick über den Rand)",
+   "seite_b": null,
+   "way_ids": [
+    40437966
+   ],
+   "surface": "sett",
+   "kernstadt": {
+    "laenge_m": 996.4,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "zentrum": {
+    "laenge_m": 996.4,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
+   },
+   "label": "Steinweg [Fläche]"
   },
   {
    "name": "Strawinskistraße",
@@ -15634,7 +13400,7 @@
    "name": "Straße der Opfer des Faschismus",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606112,
     10.692568
@@ -15663,16 +13429,16 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 570.9,
-    "mit_foto_m": 102.7,
-    "anteil_foto": 0.18,
-    "seite_a_m": 32.7,
-    "seite_b_m": 75.6,
-    "anteil_seite_a": 0.057,
-    "anteil_seite_b": 0.132,
-    "fotos": 12,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
+    "laenge_m": 135.1,
+    "mit_foto_m": 0,
+    "anteil_foto": 0.0,
+    "seite_a_m": 0.0,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.0,
+    "anteil_seite_b": 0.0,
+    "fotos": 0,
+    "neuestes": null,
+    "aeltestes": null
    },
    "label": "Straße der Opfer des Faschismus"
   },
@@ -15680,29 +13446,26 @@
    "name": "Suhler Leube",
    "klasse": "weg",
    "highway": "track",
-   "viertel": "Heidersbach",
+   "viertel": "Suhl Nord",
    "mitte": [
-    50.643913,
-    10.712121
+    50.639057,
+    10.70693
    ],
-   "achse_grad": 30.5,
+   "achse_grad": 35.0,
    "seite_a": "Nordwestseite",
    "seite_b": "Südostseite",
    "way_ids": [
-    37682811,
-    104236826,
-    104236827,
-    1314411460
+    104236827
    ],
    "surface": "gravel",
    "kernstadt": {
-    "laenge_m": 1874.2,
+    "laenge_m": 429.8,
     "mit_foto_m": 30.9,
-    "anteil_foto": 0.016,
+    "anteil_foto": 0.072,
     "seite_a_m": 20.8,
     "seite_b_m": 26.0,
-    "anteil_seite_a": 0.011,
-    "anteil_seite_b": 0.014,
+    "anteil_seite_a": 0.048,
+    "anteil_seite_b": 0.061,
     "fotos": 7,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-29"
@@ -15746,136 +13509,7 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": null,
-   "label": "Suhler Straße (Goldlauter)"
-  },
-  {
-   "name": "Suhler Straße",
-   "klasse": "strasse",
-   "highway": "secondary",
-   "viertel": "Goldlauter",
-   "mitte": [
-    50.614704,
-    10.749807
-   ],
-   "achse_grad": 92.4,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    404583665,
-    915741094
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 1953.2,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Suhler Straße (Goldlauter)"
-  },
-  {
-   "name": "Suhler Straße",
-   "klasse": "strasse",
-   "highway": "primary",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.642617,
-    10.685111
-   ],
-   "achse_grad": 121.0,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    23234989,
-    27289485,
-    27600351,
-    32301034,
-    32301399,
-    36871631,
-    36871632,
-    80415855,
-    115729171,
-    297083281,
-    297083283,
-    297083286,
-    297083305,
-    297114746,
-    312650186,
-    312650187,
-    312650188,
-    312650189,
-    312650190,
-    312650191,
-    312650192,
-    312650193,
-    312650194,
-    344607719,
-    409857839,
-    998142848,
-    998142849,
-    998142850,
-    998142851,
-    1242226103,
-    1244523966,
-    1247292256,
-    1251119561,
-    1264974293,
-    1360055304,
-    1360055305
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 3224.0,
-    "mit_foto_m": 124.5,
-    "anteil_foto": 0.039,
-    "seite_a_m": 59.8,
-    "seite_b_m": 60.9,
-    "anteil_seite_a": 0.019,
-    "anteil_seite_b": 0.019,
-    "fotos": 8,
-    "neuestes": "2026-05-23",
-    "aeltestes": "2025-06-08"
-   },
-   "zentrum": null,
-   "label": "Suhler Straße (Suhl Nord)"
-  },
-  {
-   "name": "Talsperre",
-   "klasse": "strasse",
-   "highway": "service",
-   "viertel": "Himmelreich",
-   "mitte": [
-    50.584994,
-    10.746763
-   ],
-   "achse_grad": 74.9,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    263205781
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 144.8,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Talsperre"
+   "label": "Suhler Straße"
   },
   {
    "name": "Talstraße",
@@ -15906,38 +13540,7 @@
     "aeltestes": null
    },
    "zentrum": null,
-   "label": "Talstraße (Linsenhof)"
-  },
-  {
-   "name": "Talstraße",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.650049,
-    10.666678
-   ],
-   "achse_grad": 141.1,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    27204032
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 88.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Talstraße (Suhl Nord)"
+   "label": "Talstraße"
   },
   {
    "name": "Teichweg",
@@ -16000,40 +13603,6 @@
    },
    "zentrum": null,
    "label": "Themarer Straße"
-  },
-  {
-   "name": "Thematischer Wanderweg Pfanntal",
-   "klasse": "weg",
-   "highway": "track",
-   "viertel": "Goldlauter",
-   "mitte": [
-    50.619659,
-    10.748547
-   ],
-   "achse_grad": 128.2,
-   "seite_a": "Nordostseite",
-   "seite_b": "Südwestseite",
-   "way_ids": [
-    25418900,
-    217745221,
-    217745222,
-    1313156674
-   ],
-   "surface": "grass",
-   "kernstadt": {
-    "laenge_m": 1552.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Thematischer Wanderweg Pfanntal"
   },
   {
    "name": "Theodor-Fontane-Straße",
@@ -16132,7 +13701,7 @@
    "name": "Thomas-Müntzer-Straße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.608011,
     10.693113
@@ -16158,14 +13727,14 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 121.0,
-    "mit_foto_m": 121.0,
+    "laenge_m": 22.1,
+    "mit_foto_m": 22.1,
     "anteil_foto": 1.0,
-    "seite_a_m": 39.9,
-    "seite_b_m": 74.3,
-    "anteil_seite_a": 0.33,
-    "anteil_seite_b": 0.614,
-    "fotos": 20,
+    "seite_a_m": 8.6,
+    "seite_b_m": 22.1,
+    "anteil_seite_a": 0.389,
+    "anteil_seite_b": 1.0,
+    "fotos": 8,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
@@ -16207,7 +13776,7 @@
    "name": "Topfmarkt",
    "klasse": "strasse",
    "highway": "living_street",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.609166,
     10.692693
@@ -16247,46 +13816,15 @@
    "label": "Topfmarkt"
   },
   {
-   "name": "Treibersweg",
-   "klasse": "weg",
-   "highway": "track",
-   "viertel": "Heidersbach",
-   "mitte": [
-    50.640524,
-    10.730589
-   ],
-   "achse_grad": 175.7,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    37683396
-   ],
-   "surface": "earth",
-   "kernstadt": {
-    "laenge_m": 106.4,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Treibersweg"
-  },
-  {
    "name": "Tränkstraße",
-   "klasse": "weg",
-   "highway": "track",
+   "klasse": "strasse",
+   "highway": "residential",
    "viertel": "Heidersbach",
    "mitte": [
-    50.641282,
-    10.72785
+    50.639429,
+    10.730419
    ],
-   "achse_grad": 140.4,
+   "achse_grad": 131.0,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
@@ -16296,7 +13834,7 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 1066.1,
+    "laenge_m": 475.4,
     "mit_foto_m": 0,
     "anteil_foto": 0.0,
     "seite_a_m": 0.0,
@@ -16314,7 +13852,7 @@
    "name": "Trübenbachstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.607569,
     10.697017
@@ -16339,18 +13877,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 177.9,
-    "mit_foto_m": 24.8,
-    "anteil_foto": 0.139,
-    "seite_a_m": 19.5,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.11,
-    "anteil_seite_b": 0.0,
-    "fotos": 6,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Trübenbachstraße"
   },
   {
@@ -16422,7 +13949,7 @@
    "name": "Turmstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.611986,
     10.700232
@@ -16446,25 +13973,14 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 135.7,
-    "mit_foto_m": 21.0,
-    "anteil_foto": 0.155,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 1,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Turmstraße"
   },
   {
    "name": "Untere Kirchgasse",
    "klasse": "strasse",
    "highway": "pedestrian",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.60968,
     10.692919
@@ -16666,44 +14182,32 @@
    "highway": "unclassified",
    "viertel": "Himmelreich",
    "mitte": [
-    50.608915,
-    10.708846
+    50.609157,
+    10.707825
    ],
-   "achse_grad": 119.3,
+   "achse_grad": 118.7,
    "seite_a": "Nordostseite",
    "seite_b": "Südwestseite",
    "way_ids": [
     25630518,
     25630971,
     71194845,
-    118164336,
     297411719
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 721.2,
-    "mit_foto_m": 623.6,
-    "anteil_foto": 0.865,
+    "laenge_m": 526.0,
+    "mit_foto_m": 428.3,
+    "anteil_foto": 0.814,
     "seite_a_m": 15.6,
-    "seite_b_m": 495.6,
-    "anteil_seite_a": 0.022,
-    "anteil_seite_b": 0.687,
-    "fotos": 39,
+    "seite_b_m": 323.3,
+    "anteil_seite_a": 0.03,
+    "anteil_seite_b": 0.615,
+    "fotos": 34,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 7.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Von-Kleist-Straße"
   },
   {
@@ -16737,37 +14241,6 @@
    },
    "zentrum": null,
    "label": "Vorderer Bocksberg"
-  },
-  {
-   "name": "Vorderhügel",
-   "klasse": "strasse",
-   "highway": "living_street",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.651328,
-    10.670692
-   ],
-   "achse_grad": 22.6,
-   "seite_a": "Nordwestseite",
-   "seite_b": "Südostseite",
-   "way_ids": [
-    23210032
-   ],
-   "surface": null,
-   "kernstadt": {
-    "laenge_m": 11.5,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Vorderhügel"
   },
   {
    "name": "Waldbadstraße",
@@ -16930,7 +14403,7 @@
    "name": "Werner-Seelenbinder-Straße",
    "klasse": "strasse",
    "highway": "unclassified",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.610805,
     10.68543
@@ -16966,14 +14439,14 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 603.4,
-    "mit_foto_m": 603.4,
+    "laenge_m": 420.4,
+    "mit_foto_m": 420.4,
     "anteil_foto": 1.0,
-    "seite_a_m": 297.4,
+    "seite_a_m": 143.8,
     "seite_b_m": 236.4,
-    "anteil_seite_a": 0.493,
-    "anteil_seite_b": 0.392,
-    "fotos": 34,
+    "anteil_seite_a": 0.342,
+    "anteil_seite_b": 0.562,
+    "fotos": 29,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -16983,7 +14456,7 @@
    "name": "Wertherstraße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606019,
     10.695395
@@ -17008,18 +14481,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 297.1,
-    "mit_foto_m": 297.1,
-    "anteil_foto": 1.0,
-    "seite_a_m": 61.7,
-    "seite_b_m": 222.6,
-    "anteil_seite_a": 0.208,
-    "anteil_seite_b": 0.749,
-    "fotos": 50,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Wertherstraße"
   },
   {
@@ -17121,7 +14583,7 @@
    "name": "Wilhelm-Busch-Straße",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.610502,
     10.701334
@@ -17146,18 +14608,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 421.7,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Wilhelm-Busch-Straße"
   },
   {
@@ -17226,25 +14677,14 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 258.2,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Windeweg"
   },
   {
    "name": "Windmühlenweg",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.605407,
     10.690633
@@ -17268,18 +14708,7 @@
     "neuestes": null,
     "aeltestes": null
    },
-   "zentrum": {
-    "laenge_m": 113.9,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
+   "zentrum": null,
    "label": "Windmühlenweg"
   },
   {
@@ -17288,10 +14717,10 @@
    "highway": "residential",
    "viertel": "Mäbendorf",
    "mitte": [
-    50.601163,
+    50.601209,
     10.624588
    ],
-   "achse_grad": 8.6,
+   "achse_grad": 7.8,
    "seite_a": "Ostseite",
    "seite_b": "Westseite",
    "way_ids": [
@@ -17307,12 +14736,12 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 1156.5,
+    "laenge_m": 1135.7,
     "mit_foto_m": 322.0,
-    "anteil_foto": 0.278,
+    "anteil_foto": 0.284,
     "seite_a_m": 79.5,
     "seite_b_m": 53.8,
-    "anteil_seite_a": 0.069,
+    "anteil_seite_a": 0.07,
     "anteil_seite_b": 0.047,
     "fotos": 18,
     "neuestes": "2025-12-30",
@@ -17349,25 +14778,14 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 93.5,
-    "mit_foto_m": 72.9,
-    "anteil_foto": 0.779,
-    "seite_a_m": 36.8,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.394,
-    "anteil_seite_b": 0.0,
-    "fotos": 3,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Wolfsgasse"
   },
   {
    "name": "Wolfsgrube",
    "klasse": "strasse",
    "highway": "residential",
-   "viertel": "Suhl",
+   "viertel": "Suhl-Mitte (Ortspunkt Suhl)",
    "mitte": [
     50.606314,
     10.695331
@@ -17393,18 +14811,7 @@
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
-   "zentrum": {
-    "laenge_m": 334.5,
-    "mit_foto_m": 51.8,
-    "anteil_foto": 0.155,
-    "seite_a_m": 32.1,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.096,
-    "anteil_seite_b": 0.0,
-    "fotos": 5,
-    "neuestes": "2025-12-27",
-    "aeltestes": "2025-12-27"
-   },
+   "zentrum": null,
    "label": "Wolfsgrube"
   },
   {
@@ -17455,14 +14862,14 @@
     "aeltestes": "2025-12-27"
    },
    "zentrum": {
-    "laenge_m": 661.8,
-    "mit_foto_m": 661.8,
+    "laenge_m": 227.2,
+    "mit_foto_m": 227.2,
     "anteil_foto": 1.0,
-    "seite_a_m": 479.0,
-    "seite_b_m": 190.4,
-    "anteil_seite_a": 0.724,
-    "anteil_seite_b": 0.288,
-    "fotos": 103,
+    "seite_a_m": 150.9,
+    "seite_b_m": 130.9,
+    "anteil_seite_a": 0.664,
+    "anteil_seite_b": 0.576,
+    "fotos": 41,
     "neuestes": "2025-12-29",
     "aeltestes": "2025-12-27"
    },
@@ -17501,79 +14908,17 @@
    "label": "Zeisighügel"
   },
   {
-   "name": "Zella-Mehlis, Bahnhof",
-   "klasse": "weg",
-   "highway": "footway",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.646525,
-    10.674875
-   ],
-   "achse_grad": 171.7,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    463550042
-   ],
-   "surface": "paving_stones",
-   "kernstadt": {
-    "laenge_m": 28.2,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Zella-Mehlis, Bahnhof"
-  },
-  {
-   "name": "Zellaer Höhe",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Suhl Nord",
-   "mitte": [
-    50.642069,
-    10.680599
-   ],
-   "achse_grad": 87.7,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
-   "way_ids": [
-    232979181
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 336.1,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Zellaer Höhe"
-  },
-  {
    "name": "Zellaer Straße",
    "klasse": "strasse",
    "highway": "tertiary",
    "viertel": "Heidersbach",
    "mitte": [
-    50.635509,
-    10.729867
+    50.634756,
+    10.733597
    ],
-   "achse_grad": 109.1,
-   "seite_a": "Nordseite",
-   "seite_b": "Südseite",
+   "achse_grad": 119.6,
+   "seite_a": "Nordostseite",
+   "seite_b": "Südwestseite",
    "way_ids": [
     25172342,
     25418918,
@@ -17583,9 +14928,6 @@
     151353352,
     224339834,
     1182673660,
-    1182673661,
-    1182673662,
-    1182673663,
     1242232290,
     1242232291,
     1242232292,
@@ -17598,19 +14940,51 @@
    ],
    "surface": "asphalt",
    "kernstadt": {
-    "laenge_m": 3380.3,
-    "mit_foto_m": 3155.3,
-    "anteil_foto": 0.933,
-    "seite_a_m": 1781.9,
-    "seite_b_m": 169.4,
-    "anteil_seite_a": 0.527,
-    "anteil_seite_b": 0.05,
-    "fotos": 96,
+    "laenge_m": 2727.7,
+    "mit_foto_m": 2542.6,
+    "anteil_foto": 0.932,
+    "seite_a_m": 1404.2,
+    "seite_b_m": 163.7,
+    "anteil_seite_a": 0.515,
+    "anteil_seite_b": 0.06,
+    "fotos": 81,
     "neuestes": "2025-12-27",
     "aeltestes": "2025-12-27"
    },
    "zentrum": null,
-   "label": "Zellaer Straße"
+   "label": "Zellaer Straße (Heidersbach)"
+  },
+  {
+   "name": "Zellaer Straße",
+   "klasse": "strasse",
+   "highway": "tertiary",
+   "viertel": "Suhl Nord",
+   "mitte": [
+    50.637523,
+    10.710473
+   ],
+   "achse_grad": 43.0,
+   "seite_a": "Nordwestseite",
+   "seite_b": "Südostseite",
+   "way_ids": [
+    1182673662,
+    1182673663
+   ],
+   "surface": "asphalt",
+   "kernstadt": {
+    "laenge_m": 39.5,
+    "mit_foto_m": 39.5,
+    "anteil_foto": 1.0,
+    "seite_a_m": 29.8,
+    "seite_b_m": 0.0,
+    "anteil_seite_a": 0.756,
+    "anteil_seite_b": 0.0,
+    "fotos": 2,
+    "neuestes": "2025-12-27",
+    "aeltestes": "2025-12-27"
+   },
+   "zentrum": null,
+   "label": "Zellaer Straße (Suhl Nord)"
   },
   {
    "name": "Ziegenbergweg",
@@ -17707,40 +15081,6 @@
    },
    "zentrum": null,
    "label": "Zum Kirchenwäldchen"
-  },
-  {
-   "name": "Zum Zimmergrund",
-   "klasse": "strasse",
-   "highway": "residential",
-   "viertel": "Albrechts",
-   "mitte": [
-    50.622523,
-    10.64356
-   ],
-   "achse_grad": 21.3,
-   "seite_a": "Ostseite",
-   "seite_b": "Westseite",
-   "way_ids": [
-    34727366,
-    53345622,
-    53345627,
-    1225857903
-   ],
-   "surface": "asphalt",
-   "kernstadt": {
-    "laenge_m": 1503.0,
-    "mit_foto_m": 0,
-    "anteil_foto": 0.0,
-    "seite_a_m": 0.0,
-    "seite_b_m": 0.0,
-    "anteil_seite_a": 0.0,
-    "anteil_seite_b": 0.0,
-    "fotos": 0,
-    "neuestes": null,
-    "aeltestes": null
-   },
-   "zentrum": null,
-   "label": "Zum Zimmergrund"
   }
  ]
 }

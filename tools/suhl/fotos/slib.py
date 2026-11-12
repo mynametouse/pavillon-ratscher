@@ -69,6 +69,28 @@ def in_geom(lat, lon, geom):
     return False
 
 
+class FastGeom:
+    """Point-in-polygon for many points: the edges of all rings are sorted into latitude bands (even-odd rule, so holes work)."""
+
+    def __init__(self, geom, bands=400):
+        polys = geom['coordinates'] if geom['type'] == 'MultiPolygon' else [geom['coordinates']]
+        edges = [(r[i][0], r[i][1], r[i + 1][0], r[i + 1][1]) for poly in polys for r in poly for i in range(len(r) - 1) if r[i][1] != r[i + 1][1]]
+        self.y0 = min(min(e[1], e[3]) for e in edges); self.y1 = max(max(e[1], e[3]) for e in edges)
+        self.x0 = min(min(e[0], e[2]) for e in edges); self.x1 = max(max(e[0], e[2]) for e in edges)
+        self.n = bands; self.h = (self.y1 - self.y0) / bands or 1e-9
+        self.band = [[] for _ in range(bands)]
+        for e in edges:
+            a = int((min(e[1], e[3]) - self.y0) / self.h); b = int((max(e[1], e[3]) - self.y0) / self.h)
+            for k in range(max(0, a), min(bands - 1, b) + 1): self.band[k].append(e)
+
+    def has(self, lat, lon):
+        if not (self.y0 <= lat <= self.y1 and self.x0 <= lon <= self.x1): return False
+        inside = False
+        for xi, yi, xj, yj in self.band[min(self.n - 1, int((lat - self.y0) / self.h))]:
+            if (yi > lat) != (yj > lat) and lon < (xj - xi) * (lat - yi) / (yj - yi) + xi: inside = not inside
+        return inside
+
+
 def circle(lat, lon, r, n=72):
     pts = []
     for i in range(n + 1):
@@ -83,28 +105,33 @@ class Areas:
 
     def __init__(self, path=None):
         self.source = 'provisional'
-        self.geom = {}
+        self.geom, self._fast = {}, {}
         prov = os.path.join(OUT, 'gebiete_vorlaeufig.geojson')
-        for p, label in ((path, 'suhl-bestand'), (prov, 'provisional')):
+        self.landmarks, self.quarters = [], []
+        # 1. a file given by the caller, 2. the copy of suhl-bestand's gebiete.geojson kept next to the results (so that the chat
+        # machine and GitHub Actions use the same areas), 3. the provisional circles
+        for p, label in ((path, 'suhl-bestand'), (os.path.join(OUT, 'gebiete.geojson'), 'suhl-bestand'), (prov, 'provisional')):
             if not p or not os.path.exists(p): continue
             try: fc = json.load(open(p, encoding='utf-8'))
             except Exception: continue
             for f in fc.get('features', []):
                 pr = f.get('properties') or {}
-                key = ' '.join(str(pr.get(k, '')) for k in ('gebiet', 'id', 'key', 'name', 'kind', 'typ')).lower()
-                if not f.get('geometry') or f['geometry']['type'] not in ('Polygon', 'MultiPolygon'): continue
-                for g in ('zentrum', 'kernstadt', 'stadt'):
-                    # 'stadt' must not match 'kernstadt'
-                    hit = (g in key.split()) or (g != 'stadt' and g in key)
-                    if hit and g not in self.geom:
-                        self.geom[g] = f['geometry']
-                        if label == 'suhl-bestand': self.source = 'suhl-bestand'
-                        break
+                gt = (f.get('geometry') or {}).get('type')
+                # the area is named by the property id (suhl-bestand) or gebiet (provisional file) - exactly, never by a word in the long name
+                g = str(pr.get('id') or pr.get('gebiet') or '').lower()
+                if g in ('zentrum', 'kernstadt', 'stadt') and gt in ('Polygon', 'MultiPolygon') and g not in self.geom:
+                    self.geom[g] = f['geometry']
+                    if label == 'suhl-bestand': self.source = 'suhl-bestand'
+                elif label == 'suhl-bestand' and pr.get('art') == 'landmarke' and pr.get('osm'): self.landmarks.append(pr)
+                elif label == 'suhl-bestand' and pr.get('art') == 'ortsteil' and gt == 'Point':
+                    self.quarters.append(dict(name=pr.get('name'), place=pr.get('place'), lat=f['geometry']['coordinates'][1], lon=f['geometry']['coordinates'][0]))
         self.geom.setdefault('zentrum', circle(CENTRE[0], CENTRE[1], R_ZENTRUM))
         self.geom.setdefault('kernstadt', circle(CENTRE[0], CENTRE[1], R_KERNSTADT))
 
     def has(self, g, lat, lon):
-        return g in self.geom and in_geom(lat, lon, self.geom[g])
+        if g not in self.geom: return False
+        if g not in self._fast: self._fast[g] = FastGeom(self.geom[g])
+        return self._fast[g].has(lat, lon)
 
     def of(self, lat, lon):
         """The smallest area a point lies in: zentrum, kernstadt, stadt or umland."""

@@ -21,14 +21,14 @@ LANDMARKS = [
     ('Kreuzkirche', 'obj', r'^Kreuzkirche$'),
     ('Waffenmuseum (Malzhaus)', 'obj', r'Waffenmuseum|Malzhaus'),
     ('Congress Centrum Suhl (CCS)', 'obj', r'Congress Centrum'),
-    ('Bahnhof Suhl (Bahnhofspunkt)', 'obj', r'^Suhl$'),
+    ('Bahnhof Suhl (Empfangsgebäude und Bahnhofspunkt)', 'obj', r'^Suhl$|^Bahnhof Suhl$'),
+    ('Platz der Deutschen Einheit', 'street', r'^Platz der Deutschen Einheit$'),
     ('Steinweg', 'street', r'^Steinweg$'),
     ('Neues Rathaus', 'obj', r'^Neues Rathaus$'),
     ('Lauterbogen-Center', 'obj', r'^Lauterbogen-Center$'),
     ('Einkaufszentrum Am Steinweg', 'obj', r'^Am Steinweg$'),
     ('Haus der Geschichte', 'obj', r'^Haus der Geschichte$'),
     ('Stadtbücherei', 'obj', r'^Stadtbücherei'),
-    ('St. Kilian', 'obj', r'^St\. Kilian$'),
     ('Villa Simson', 'obj', r'^Villa Simson$'),
     ('Waffenschmied-Denkmal', 'obj', r'^Waffenschmied$'),
     ('Dianabrunnen', 'obj', r'^Dianabrunnen$'),
@@ -85,17 +85,19 @@ def main():
 
     def viertel(x, y):
         if not places: return None
-        return min(places, key=lambda p: (p['x'] - x) ** 2 + (p['y'] - y) ** 2)['name']
+        n = min(places, key=lambda p: (p['x'] - x) ** 2 + (p['y'] - y) ** 2)
+        return 'Suhl-Mitte (Ortspunkt Suhl)' if n['place'] == 'town' else n['name']
 
     # --- sample every highway way, mark area and photos
     ways = []
     for w in osm['ways']:
         hw = w['tags'].get('highway')
         if hw not in ROAD and hw not in PATH: continue
-        if w['tags'].get('area') == 'yes' and hw != 'pedestrian': continue
+        is_area = w['tags'].get('area') == 'yes'
+        if is_area and hw != 'pedestrian': continue
         ss = samples(w['pts'])
         if not ss: continue
-        rec = dict(id=w['id'], name=w['tags'].get('name'), hw=hw, tags=w['tags'], s=[])
+        rec = dict(id=w['id'], name=w['tags'].get('name'), hw=hw, tags=w['tags'], area=is_area, s=[])
         for x, y, br, L in ss:
             la, lo = slib.ll(x, y)
             zen = areas.has('zentrum', la, lo)
@@ -121,12 +123,23 @@ def main():
             rec['s'].append((x, y, br, L, zen, got, left, right, ids))
         if rec['s']: ways.append(rec)
 
+    # --- every sample point with its flags, for the maps (metres east/north of the centre)
+    pts = dict(x=[], y=[], f=[])
+    for w in ways:
+        base = (16 if w['name'] else 0) | (32 if w['hw'] in PATH else 0) | (64 if w['area'] else 0)
+        for q in w['s']:
+            pts['x'].append(round(q[0])); pts['y'].append(round(q[1]))
+            pts['f'].append(base | (1 if q[5] else 0) | (2 if q[6] else 0) | (4 if q[7] else 0) | (8 if q[4] else 0))
+    slib.save('abdeckung_punkte.json.gz', dict(note='sample points every 5 m along the highway ways of the Kernstadt; x/y = metres east/north of the centre; '
+                                                    'f = bits: 1 photo within 25 m, 2 photo looks at the left side, 4 at the right side, 8 in the Zentrum, 16 way has a name, 32 footway/path/track class, 64 outline of a pedestrian area',
+                                               centre=list(slib.CENTRE), step_m=STEP, **pts))
+
     # --- streets: ways of one name that lie together (within 250 m) are one street
     by_name = collections.defaultdict(list)
     for w in ways:
-        if w['name']: by_name[w['name']].append(w)
+        if w['name']: by_name[(w['name'], w['area'])].append(w)   # a square mapped as an area is kept apart: its length is its outline
     streets = []
-    for name, ws in by_name.items():
+    for (name, is_area), ws in by_name.items():
         parent = list(range(len(ws)))
         def find(a):
             while parent[a] != a: parent[a] = parent[parent[a]]; a = parent[a]
@@ -138,10 +151,10 @@ def main():
                 if any((xa - xb) ** 2 + (ya - yb) ** 2 <= 250.0 ** 2 for xa, ya in pts[a] for xb, yb in pts[b]): parent[find(a)] = find(b)
         groups = collections.defaultdict(list)
         for a in range(len(ws)): groups[find(a)].append(ws[a])
-        for g in groups.values(): streets.append((name, g))
+        for g in groups.values(): streets.append((name, is_area, g))
 
     out_streets = []
-    for name, g in streets:
+    for name, is_area, g in streets:
         S = [s for w in g for s in w['s']]
         L = sum(s[3] for s in S)
         cx, cy = sum(s[0] * s[3] for s in S) / L, sum(s[1] * s[3] for s in S) / L
@@ -157,6 +170,9 @@ def main():
             if LL <= 0: return None
             a = b = 0.0
             for s in SS:
+                if is_area:   # outline of a square: a photo that looks across the edge, whichever way
+                    if s[6] or s[7]: a += s[3]
+                    continue
                 left_is_a = slib.angdiff((s[2] - 90) % 360, nref) <= 90
                 if (s[6] if left_is_a else s[7]): a += s[3]
                 if (s[7] if left_is_a else s[6]): b += s[3]
@@ -169,13 +185,16 @@ def main():
         for w in g: hws[w['hw']] += sum(s[3] for s in w['s'])
         main_hw = hws.most_common(1)[0][0]
         kern = agg(lambda s: True); zen = agg(lambda s: s[4])
-        out_streets.append(dict(name=name, klasse='strasse' if main_hw in ROAD else 'weg', highway=main_hw, viertel=viertel(cx, cy),
-                                mitte=[round(v, 6) for v in slib.ll(cx, cy)], achse_grad=round(axis, 1), seite_a=wind(nref) + 'seite', seite_b=wind(nref + 180) + 'seite',
+        out_streets.append(dict(name=name, klasse='platz' if is_area else 'strasse' if main_hw in ROAD else 'weg', highway=main_hw, viertel=viertel(cx, cy),
+                                mitte=[round(v, 6) for v in slib.ll(cx, cy)], achse_grad=round(axis, 1),
+                                seite_a='Rand (Blick über den Rand)' if is_area else wind(nref) + 'seite', seite_b=None if is_area else wind(nref + 180) + 'seite',
                                 way_ids=sorted(w['id'] for w in g), surface=collections.Counter(w['tags'].get('surface') for w in g if w['tags'].get('surface')).most_common(1)[0][0] if any(w['tags'].get('surface') for w in g) else None,
                                 kernstadt=kern, zentrum=zen))
     # same name twice (different places): add the quarter to tell them apart
-    cnt = collections.Counter(s['name'] for s in out_streets)
-    for s in out_streets: s['label'] = f"{s['name']} ({s['viertel']})" if cnt[s['name']] > 1 and s['viertel'] else s['name']
+    cnt = collections.Counter((s['name'], s['klasse'] == 'platz') for s in out_streets)
+    for s in out_streets:
+        s['label'] = f"{s['name']} ({s['viertel']})" if cnt[(s['name'], s['klasse'] == 'platz')] > 1 and s['viertel'] else s['name']
+        if s['klasse'] == 'platz': s['label'] += ' [Fläche]'
     out_streets.sort(key=lambda s: (s['label']))
 
     def total(rows, key):
@@ -190,8 +209,9 @@ def main():
                     strassen_ohne_foto=sum(1 for r in rr if r['fotos'] == 0), strassen_ganz=sum(1 for r in rr if r['anteil_foto'] >= 0.9), fotos=len(ids))
 
     roads = [s for s in out_streets if s['klasse'] == 'strasse']; paths = [s for s in out_streets if s['klasse'] == 'weg']
-    sums = dict(kernstadt=dict(strassen=total(roads, 'kernstadt'), wege=total(paths, 'kernstadt')),
-                zentrum=dict(strassen=total(roads, 'zentrum'), wege=total(paths, 'zentrum')))
+    squares = [s for s in out_streets if s['klasse'] == 'platz']
+    sums = dict(kernstadt=dict(strassen=total(roads, 'kernstadt'), wege=total(paths, 'kernstadt'), plaetze_umriss=total(squares, 'kernstadt')),
+                zentrum=dict(strassen=total(roads, 'zentrum'), wege=total(paths, 'zentrum'), plaetze_umriss=total(squares, 'zentrum')))
     # roads without a name, as one line each
     for key, sel in (('kernstadt', lambda s: True), ('zentrum', lambda s: s[4])):
         SS = [s for w in ways if not w['name'] and w['hw'] in ROAD for s in w['s'] if sel(s)]
@@ -236,7 +256,7 @@ def main():
         return n_near, n_look, ids, by_author
 
     marks = []
-    zobjs = [o for o in osm['objects'] if areas.has('zentrum', *o['pts'][0])]
+    zobjs = [o for o in osm['objects'] if any(areas.has('zentrum', *q) for q in o['pts'])]
     used = set()
     for label, kind, rx in LANDMARKS:
         geo, src = [], []
@@ -248,7 +268,7 @@ def main():
                 if re.search(rx, s['name']) and s['zentrum']:
                     for w in ways:
                         if w['id'] in s['way_ids']: geo += [(q[0], q[1]) for q in w['s'] if q[4]]
-                    src.append('street ' + s['label'])
+                    src.append(('area ' if s['klasse'] == 'platz' else 'street ') + s['label'])
         if not geo: marks.append(dict(name=label, osm=[], hinweis='in OSM im Zentrum nicht gefunden')); continue
         a, b, ids, au = looked_at(geo)
         marks.append(dict(name=label, osm=src, fotos_bis_80m=a, fotos_mit_blick=b, je_urheber=dict(au), foto_ids=ids))

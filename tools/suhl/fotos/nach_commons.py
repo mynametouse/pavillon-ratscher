@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import slib, sheetlib
 
 REF = os.path.abspath(sys.argv[1]); OUTDIR = os.path.join(REF, 'commons'); CACHE = os.path.join(REF, '..', 'commons-cache')
-areas = slib.Areas(sys.argv[2] if len(sys.argv) > 2 else None)
+areas = slib.Areas()   # the copy of the areas next to the results (tools/suhl/out/fotos/gebiete.geojson), the same as on the chat machine
 PER_GROUP = 12
 GROUPS = [   # landmark or place -> words to look for (title, description, categories)
     ('Rathaus am Markt', r'\bRathaus\b|Rotes Rathaus'), ('Markt', r'\bMarkt(platz)?\b'), ('Steinweg', r'Steinweg'),
@@ -49,7 +49,7 @@ def pick(ps, n):
 
 def main():
     if os.path.exists(os.path.join(slib.HERE, 'merge.py')):
-        r = subprocess.run([sys.executable, os.path.join(slib.HERE, 'merge.py')] + sys.argv[2:3], capture_output=True, text=True)
+        r = subprocess.run([sys.executable, os.path.join(slib.HERE, 'merge.py')], capture_output=True, text=True)
         print(r.stdout[-3000:], r.stderr[-2000:], flush=True)
     com = slib.load('commons.json.gz')
     photos = com['photos']
