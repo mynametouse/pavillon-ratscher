@@ -1,10 +1,13 @@
 // ===================== V16b roads and paths: the OSM ways drawn into the ground, the surface under the wheels, bridges =====================
 // The ways (tools/geo/build_roads.py: kind, surface, width, polyline in model metres) are rasterised once at load into a road map over the
-// drivable square (the 2.4 km of the 10 m terrain): R = distance to the nearest road edge (+ inside the road), G = kind × 8 + surface of
-// that road, B = the signed lateral offset from its centre line, A = the phase of its dashed centre line (18 m: 6 m line, 12 m gap).
-// The ground shaders (world/ratscher.js terrain, garden/env.js near ground) draw asphalt, concrete, gravel, two-track ruts, verges and
-// markings from it (ROADS.GLSL, roadShade()); vehicles read the surface under each wheel (ROADS.at) and stand on ROADS.groundAt
-// (terrain triangles, bridge decks). Bridges get a deck with railings, their height straight between the two ends.
+// drivable square (the 2.4 km of the 10 m terrain): R = distance to the nearest road edge (+ inside the road), G = style × 60 + kind × 6 +
+// surface of that road, B = the signed lateral offset from its centre line, A = the metres along it modulo 36 (strassen/strassen_stil.js:
+// the encoding, the raster and the four styles – open country, no overtaking, town, village).
+// The ground shaders (world/ratscher.js terrain, garden/env.js near ground, welt/welt.js tiles) draw asphalt with its patches and sealed
+// cracks, concrete, gravel, two-track ruts, shoulders, kerbs, gutters, pavements and markings from it (ROADS.GLSL, roadShade()); vehicles
+// read the surface under each wheel (ROADS.at) and stand on ROADS.groundAt (terrain triangles, bridge decks). Bridges get a deck with
+// railings, their height straight between the two ends. Beyond the square the tiles read a second map of the same kind around the
+// vehicle (ROADS.W, filled by strassen/strassen_karte.js). Wet roads shine (uRoad.y, ROADS.gloss – set by strassen/strassen.js).
 // © OpenStreetMap contributors (ODbL), with the other geodata in the credits.
 import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -16,6 +19,8 @@ import { DETAIL, GLCHECK } from '../core/detail.js';
 import { STREAM } from '../garden/stream_geo.js';
 import { GEO_REAL } from '../garden/env.js';
 import { RATSCHER } from './ratscher.js';
+import { STRSTIL } from '../strassen/strassen_stil.js';
+import { STRDAT } from '../strassen/strassen_daten.js';
 export const ROADS = (() => {
   const M = window.GEOMAN && window.GEOMAN.roads;
   const S = {
@@ -31,7 +36,15 @@ export const ROADS = (() => {
     tRoad: { value: null },
     bRoad: { value: new THREE.Vector4(0, 0, 1, 1) },
     uRoad: { value: new THREE.Vector4(0, 0, 0, 0) },
-  }; // uRoad.x: road map present
+  }; // uRoad: x road map present, y wetness (0 dry – 1 soaked), z the distance where the roads end (0: fading 600–1400 m)
+  // the same for the tiles of the wider world (welt/welt.js): a map of a window around the vehicle (strassen/strassen_karte.js)
+  const W1 = new THREE.DataTexture(new Uint8Array(4), 1, 1);
+  W1.needsUpdate = true;
+  S.W = {
+    tRoad: { value: W1 },
+    bRoad: { value: new THREE.Vector4(0, 0, 1, 1) },
+    uRoad: { value: new THREE.Vector4(0, 0, 0, 0) },
+  };
   // detail textures for the ground up close: the photo gives the colour, these the grain (grass, soil, asphalt, gravel) – layers of the one
   // texture array of core/detail.js (V16b1: a shader may use 16 textures on many GPUs; four extra ones broke the near ground there)
   {
@@ -45,12 +58,10 @@ export const ROADS = (() => {
   }
   const LY = n => DETAIL.L[n].toFixed(1);
   S.U = U;
-  const EMIN = -4,
-    ERNG = 12,
-    LRNG = 8,
-    DASH = 18; // encoding: edge distance −4 … +8 m, lateral offset ±8 m, dash period (m)
+  const { EMIN, ERNG, LRNG } = STRSTIL; // encoding: edge distance −4 … +8 m, lateral offset ±8 m (strassen/strassen_stil.js)
   // ---- the ground shader part: roadShade( p (site metres), ground colour, distance from the camera ) → colour ----
   S.GLSL = `uniform sampler2D tRoad; uniform highp sampler2DArray tDet; uniform vec4 bRoad, uRoad, uDTile;
+    float gRdGloss = 0.0, gRdPud = 0.0;   // set by roadShade: the pixel is wet hard road / standing water
     float rdH( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
     float rdN( vec2 p ) { vec2 i = floor( p ), f = fract( p ); vec2 u = f * f * ( 3.0 - 2.0 * f ); return mix( mix( rdH( i ), rdH( i + vec2( 1.0, 0.0 ) ), u.x ), mix( rdH( i + vec2( 0.0, 1.0 ) ), rdH( i + vec2( 1.0, 1.0 ) ), u.x ), u.y ); }
     float rdLine( float d, float hw, float fw ) { return clamp( ( hw - d ) / fw + 0.5, 0.0, 1.0 ) * min( 1.0, 2.0 * hw / fw ); }   // coverage of a line of half width hw
@@ -77,23 +88,55 @@ export const ROADS = (() => {
       if ( k > 0.0 ) { vec3 d = gr < 0.02 ? rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ) : gr > 0.98 ? rdTex( ${LY('lawn')}, p, uDTile.x, dx, dy ) : mix( rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ), rdTex( ${LY('lawn')}, p, uDTile.x, dx, dy ), gr );
         c *= mix( vec3( 1.0 ), clamp( d, 0.2, 2.5 ), 0.8 * k ); }
       return c * ( 1.0 + n ); }
-    vec3 roadShade( vec2 p, vec3 c, float dist ) {
+    // dark joints of a pattern of cells (q in cells, jw the joint's half width in cells, fw the pixel's footprint in cells)
+    float rdJoint( vec2 q, float jw, float fw ) { vec2 f = fract( q ); float d = min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) );
+      return ( 1.0 - smoothstep( jw, jw + max( fw, 0.02 ), d ) ) * ( 1.0 - smoothstep( 0.25, 0.7, fw ) ); }
+    // mode 0: the road and what lies beside it; mode 1: only its markings; mode 2: nothing (a zone's own sett or paving, welt/welt.js)
+    vec3 roadShade( vec2 p, vec3 c, float dist, float mode ) {
       if ( uRoad.x < 0.5 ) return c;
       // everything that needs screen derivatives first, before any per-pixel branch
       vec2 dx = dFdx( p ), dy = dFdy( p ), uv = ( p - bRoad.xy ) * bRoad.zw; float fwp = length( abs( dx ) + abs( dy ) );
       vec4 t = texture( tRoad, uv ); float e = t.r * ${ERNG.toFixed(1)} + ${EMIN.toFixed(1)}, lat = t.b * ${(2 * LRNG).toFixed(1)} - ${LRNG.toFixed(1)}, fwE = max( fwidth( e ), 0.01 ), fwL = max( fwidth( lat ), 0.01 );
-      if ( uv.x <= 0.001 || uv.y <= 0.001 || uv.x >= 0.999 || uv.y >= 0.999 || e < -1.4 ) return c;
-      float code = floor( texelFetch( tRoad, ivec2( uv * vec2( textureSize( tRoad, 0 ) ) ), 0 ).g * 255.0 + 0.5 ), kind = floor( code / 8.0 ), surf = code - kind * 8.0;
-      float al = abs( lat ), fine = 1.0 - smoothstep( 0.012, 0.05, fwp ), mid = 1.0 - smoothstep( 0.08, 0.4, fwp );
+      if ( mode > 1.5 || uv.x <= 0.001 || uv.y <= 0.001 || uv.x >= 0.999 || uv.y >= 0.999 || e < -2.6 ) return c;
+      // the square's roads fade into the photo far away; a window around the vehicle ends before its own edge
+      float far = uRoad.z > 0.5 ? 1.0 - smoothstep( uRoad.z - 70.0, uRoad.z, dist ) : 1.0 - smoothstep( 600.0, 1400.0, dist );
+      if ( far <= 0.0 ) return c;
+      float code = floor( texelFetch( tRoad, ivec2( uv * vec2( textureSize( tRoad, 0 ) ) ), 0 ).g * 255.0 + 0.5 ), style = floor( code / 60.0 ), rest = code - style * 60.0, kind = floor( rest / 6.0 ), surf = rest - kind * 6.0;
+      float al = abs( lat ), hw = max( e + al, 0.6 ), fine = 1.0 - smoothstep( 0.012, 0.05, fwp ), mid = 1.0 - smoothstep( 0.08, 0.4, fwp );
       float lum = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hard = step( surf, 2.5 );   // asphalt, concrete, paving: a hard edge; gravel and earth fray into the grass
-      float eN = e + ( rdN( p * 1.7 ) - 0.5 ) * mix( 0.5, 0.13, hard ) + ( rdN( p * 9.0 ) - 0.5 ) * 0.05 * mid;
-      float k = smoothstep( -fwE, fwE, eN ) * ( 1.0 - smoothstep( 600.0, 1400.0, dist ) );
+      float built = step( 1.5, style ), town = built * step( style, 2.5 ), two = step( 2.6, hw );
+      // kerbs: in a town along its streets, in a village along the through roads; pavements in the town
+      float kerbed = hard * built * step( kind, mix( 2.5, 3.5, town ) ), walk = hard * town * step( kind, 3.5 ) * ( kind < 2.5 ? 1.7 : 1.3 );
+      if ( mode > 0.5 && ( kind > 2.5 || hard < 0.5 || dist > 220.0 || e < 0.0 ) ) return c;
+      float eN = e + ( ( rdN( p * 1.7 ) - 0.5 ) * mix( 0.5, 0.13, hard ) + ( rdN( p * 9.0 ) - 0.5 ) * 0.05 * mid ) * ( 1.0 - kerbed );
+      float k = smoothstep( -fwE, fwE, eN ) * far;
       float n1 = rdN( p * 0.23 ), n2 = rdN( p * 1.3 + 3.7 ), n3 = ( rdN( p * 23.0 ) - 0.5 ) * fine + ( rdN( p * 7.0 + 1.3 ) - 0.5 ) * 0.6 * mid;
+      float kd = 1.0 - smoothstep( 25.0, 120.0, dist ), u = 0.0, ph = 0.0;
+      if ( hard > 0.5 && dist < 240.0 ) { ph = rdPhase( uv ); u = ph * 36.0; }   // metres along the way (wraps every 36 m)
+      float trk = two > 0.5 ? abs( al - hw * 0.5 ) : abs( al - 0.8 );   // distance to the middle of a lane, on a single lane to a wheel track
       vec3 r;
-      float kd = 1.0 - smoothstep( 25.0, 120.0, dist );
-      if ( surf < 0.5 ) {   // asphalt: dark grey, patches and repairs after the photo's brightness, grain (texture up close); polished wheel tracks on wider roads
+      if ( mode > 0.5 ) r = c;
+      else if ( surf < 0.5 ) {   // asphalt: dark grey, lighter and darker after the photo's brightness, grain (texture up close); polished wheel tracks
         r = vec3( 0.098, 0.1, 0.105 ) * clamp( lum / 0.12, 0.72, 1.45 ) * ( 0.84 + 0.3 * n1 ) * ( 0.94 + 0.12 * n2 ) * mix( vec3( 1.0 + 0.3 * n3 ), clamp( rdTex( ${LY('asphalt')}, p, uDTile.z, dx, dy ), 0.3, 2.2 ), kd );
-        if ( kind < 3.5 ) r *= 1.0 - 0.07 * ( 1.0 - smoothstep( 0.25, 0.6, abs( al - 1.75 ) ) ) * mid; }
+        if ( kind < 4.5 ) r *= 1.0 - 0.07 * ( 1.0 - smoothstep( 0.25, 0.6, trk ) ) * mid;
+        if ( mid > 0.0 && kind < 5.5 && dist < 240.0 ) {
+          // up close a road shows its age: the two lanes laid one after the other, patches of newer asphalt with a sealed rim, sealed
+          // cracks along the lanes and across – more of it on the small roads, in stretches (main roads are kept best)
+          float side = step( 0.0, lat ), old = clamp( ( kind - 0.6 ) * 0.2 + rdN( p * 0.011 + 5.3 ) * 0.75, 0.0, 1.0 );
+          r *= 1.0 + ( side - 0.5 ) * 0.09 * two * smoothstep( 0.35, 0.6, rdN( p * 0.006 + 2.1 ) );
+          vec2 pc = vec2( floor( u / 9.0 ), side ) + floor( p / 120.0 ) * 7.0; float h1 = rdH( pc ), h2 = rdH( pc + 3.1 ), h3 = rdH( pc + 9.7 );
+          if ( h1 < 0.05 + 0.32 * old * old ) {
+            float fu = fract( u / 9.0 ) * 9.0, a0 = 0.8 + 3.0 * h2, a1 = a0 + 1.6 + 3.4 * h3, v0 = h3 < 0.5 ? 0.14 : hw * 0.42, v1 = min( hw - 0.24, v0 + 1.1 + 1.5 * h1 / 0.37 );
+            float dR = max( max( a0 - fu, fu - a1 ), max( v0 - al, al - v1 ) ), aw = max( fwp, 0.02 );
+            r = mix( r, r * ( 0.76 + 0.14 * h2 ), ( 1.0 - smoothstep( -aw, aw, dR ) ) * mid );
+            r = mix( r, vec3( 0.03, 0.03, 0.032 ), rdLine( abs( dR ), 0.016, aw ) * 0.75 * mid ); }
+          float cr = smoothstep( 0.42, 0.68, old ) * mid;
+          if ( cr > 0.0 ) {
+            float w1 = hw * 0.5 * two + 0.16 * sin( u * 0.5236 + side * 2.0 ) + 0.06 * sin( u * 1.5708 ) + ( rdN( p * 0.7 + 31.0 ) - 0.5 ) * 0.34;
+            float ln = rdLine( abs( al - w1 ), 0.013, fwL ) * step( 0.45, rdN( p * 0.09 + 17.0 ) );
+            float dt = abs( fract( u / 12.0 + 0.37 ) - 0.5 ) * 12.0 + 0.12 * sin( lat * 2.3 + floor( u / 12.0 + 0.37 ) );
+            ln = max( ln, rdLine( abs( dt ), 0.012, max( fwp, 0.01 ) ) * step( rdH( vec2( floor( u / 12.0 + 0.37 ), 3.0 ) + floor( p / 120.0 ) ), 0.55 ) );
+            r = mix( r, vec3( 0.028, 0.028, 0.03 ), ln * cr * 0.85 ); } } }
       else if ( surf < 1.5 ) { r = vec3( 0.32, 0.315, 0.3 ) * ( 0.88 + 0.2 * n1 ) * ( 1.0 + 0.22 * n3 ); }   // concrete
       else if ( surf < 2.5 ) {   // paving stones: small blocks
         vec2 bq = fract( p * vec2( 4.0, 6.0 ) ); float jt = ( 1.0 - smoothstep( 0.0, 0.08, min( min( bq.x, 1.0 - bq.x ), min( bq.y, 1.0 - bq.y ) ) ) ) * fine;
@@ -105,23 +148,60 @@ export const ROADS = (() => {
         rut *= ( surf > 4.5 ? 0.4 : 0.92 ) * ( 0.75 + 0.25 * n2 );
         vec3 soil = vec3( 0.25, 0.205, 0.155 ) * ( 0.8 + 0.35 * n1 ) * mix( vec3( 1.0 + 0.35 * n3 ), clamp( rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ), 0.3, 2.2 ), kd ), worn = c * vec3( 1.08, 1.05, 0.9 );
         r = mix( worn, soil, rut ); }
-      // markings: edge lines (main roads, motorway), dashed centre line or lane divider (main and county roads, motorway); worn white paint
+      // markings (worn white paint), by the kind of road, its width and where it runs: the motorway's edge lines and lane divider 6 m / 12 m;
+      // in open country edge lines on main roads and on county roads from 5 m, a centre line from 5.5 m – dashed 4 m / 8 m, solid where
+      // one must not overtake; in towns and villages a centre line 3 m / 6 m on the through roads, no edge lines (kerbs instead)
       if ( kind < 2.5 && hard > 0.5 && dist < 220.0 ) {
-        float paint = 0.0;
-        if ( kind < 1.5 ) paint = rdLine( abs( e - 0.27 ), 0.075, fwE );
-        if ( al < 0.5 ) paint = max( paint, rdLine( al, 0.065, fwL ) * step( rdPhase( uv ), 0.3333 ) );
-        r = mix( r, vec3( 0.58, 0.58, 0.56 ) * ( 0.85 + 0.15 * n2 ), paint * ( 0.8 + 0.2 * n1 ) * ( 1.0 - smoothstep( 120.0, 220.0, dist ) ) ); }
-      // verge: beside asphalt and concrete a strip of trodden grass and grit
-      vec3 o = c; if ( hard > 0.5 ) o = mix( c, vec3( 0.2, 0.19, 0.155 ) * ( 0.8 + 0.4 * n2 ), smoothstep( -0.7, -0.05, eN ) * ( 1.0 - k ) * 0.5 );
-      return mix( o, r, k ); }`;
+        float paint = 0.0, wd = 2.0 * hw;
+        if ( kind < 0.5 ) { paint = rdLine( abs( e - 0.3 ), 0.09, fwE ); if ( hw > 3.2 && al < 0.5 ) paint = max( paint, rdLine( al, 0.075, fwL ) * step( fract( ph * 2.0 ), 0.3333 ) ); }
+        else {
+          if ( built < 0.5 && ( kind < 1.5 || wd > 4.95 ) ) paint = rdLine( abs( e - 0.27 ), 0.06, fwE );
+          if ( wd > 5.45 && al < 0.5 ) paint = max( paint, rdLine( al, 0.06, fwL ) * ( style > 0.5 && style < 1.5 ? 1.0 : step( fract( ph * mix( 3.0, 4.0, built ) ), 0.3333 ) ) ); }
+        r = mix( r, vec3( 0.6, 0.6, 0.58 ) * ( 0.85 + 0.15 * n2 ), paint * ( 0.66 + 0.34 * smoothstep( 0.2, 0.6, n1 ) ) * ( 1.0 - smoothstep( 120.0, 220.0, dist ) ) ); }
+      if ( mode > 0.5 ) return mix( c, r, k );
+      vec3 o = c;
+      if ( kerbed > 0.5 ) {
+        // a kerbed street: two rows of setts as the gutter, the kerb stones (a metre each, a dark line where they drop to the gutter),
+        // behind them in a town the pavement of small concrete pavers
+        float fq = fwp / 0.17, gut = ( 1.0 - smoothstep( 0.3, 0.3 + fwE, e ) ) * step( surf, 0.5 );
+        vec2 gq = vec2( u / 0.18, e / 0.15 );
+        r = mix( r, vec3( 0.2, 0.196, 0.186 ) * ( 0.82 + 0.3 * rdH( floor( gq ) ) ) * ( 1.0 - 0.5 * rdJoint( gq, 0.06, fq ) ), gut * ( 0.35 + 0.65 * mid ) );
+        r = mix( r, r * 0.5, ( 1.0 - smoothstep( 0.0, 0.035 + fwE, e ) ) * mid );
+        float kb = smoothstep( -0.15 - fwE, -0.15 + fwE, e );
+        vec3 kcol = vec3( 0.38, 0.375, 0.36 ) * ( 0.9 + 0.2 * n2 ) * ( 1.0 - 0.5 * rdJoint( vec2( u, 0.5 ), 0.012, fwp ) );
+        if ( walk > 0.0 ) {
+          float wb = -0.15 - walk + ( rdN( p * 2.3 ) - 0.5 ) * 0.1;
+          vec2 wq = vec2( u / 0.2, ( e + 0.15 ) / 0.1 ); wq.x += 0.5 * mod( floor( wq.y ), 2.0 );
+          vec3 wcol = vec3( 0.3, 0.295, 0.285 ) * clamp( lum / 0.2, 0.8, 1.15 ) * ( 0.88 + 0.16 * n1 ) * ( 0.9 + 0.2 * rdH( floor( wq ) ) * mid ) * ( 1.0 - 0.4 * rdJoint( wq, 0.06, fwp / 0.1 ) );
+          o = mix( o, wcol, smoothstep( wb - fwE, wb + fwE, e ) * far ); }
+        o = mix( o, kcol, kb * far ); }
+      else if ( hard > 0.5 ) {
+        // open country: a shoulder of gravel and trodden grass beside the asphalt, wider along the bigger roads
+        float sw = kind < 2.5 ? 1.1 : 0.7, sh = smoothstep( -sw, -0.08, eN ) * ( 1.0 - k );
+        vec3 grit = mix( vec3( 0.2, 0.19, 0.155 ), vec3( 0.27, 0.255, 0.22 ), rdN( p * 3.1 ) ) * ( 0.8 + 0.4 * n2 ) * ( 1.0 + 0.5 * n3 );
+        o = mix( c, grit, sh * ( kind < 4.5 ? 0.42 + 0.3 * smoothstep( 0.35, 0.7, rdN( p * 0.6 + 9.0 ) ) : 0.45 ) * far ); }
+      // rain: the hard road darkens and shines, water stands in the wheel tracks and along the edges (the ground materials read
+      // gRdGloss and gRdPud for their roughness, ROADS.gloss)
+      if ( uRoad.y > 0.01 && hard > 0.5 ) {
+        float low = max( 1.0 - smoothstep( 0.0, 0.7, e ), kind < 4.5 ? ( 1.0 - smoothstep( 0.2, 0.55, trk ) ) * 0.6 : 0.0 );
+        float pud = smoothstep( 0.55, 0.8, rdN( p * 0.37 + 11.0 ) * 0.7 + low * 0.45 ) * smoothstep( 0.35, 0.9, uRoad.y ) * k;
+        r *= 1.0 - 0.14 * uRoad.y - 0.3 * pud; gRdGloss = k * uRoad.y; gRdPud = pud; }
+      return mix( o, r, k ); }
+    vec3 roadShade( vec2 p, vec3 c, float dist ) { return roadShade( p, c, dist, 0.0 ); }`;
   // without textures (GPU below what the shader needs, core/detail.js GLCHECK.lite): the same functions, plain
   S.STUB =
-    'float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';
+    'float gRdGloss = 0.0, gRdPud = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';
   S.shader = sh => {
     if (window.GLCHECK && GLCHECK.lite) return S.STUB;
     Object.assign(sh.uniforms, U);
     return S.GLSL;
   }; // a ground material's onBeforeCompile: S.shader(sh) → GLSL to prepend
+  // … and S.gloss(fragmentShader): the material's roughness follows the wet road (after roadShade ran in <map_fragment>)
+  S.gloss = fs =>
+    fs.replace(
+      '#include <roughnessmap_fragment>',
+      '#include <roughnessmap_fragment>\n roughnessFactor = mix( mix( roughnessFactor, 0.42, gRdGloss ), 0.07, gRdPud );'
+    );
   const ground0 = (x, y) =>
     (Math.abs(x) < 120 && Math.abs(y) < 120) || !(window.RATSCHER && RATSCHER.ready)
       ? STREAM.zAt(x, y)
@@ -129,6 +209,7 @@ export const ROADS = (() => {
   if (!S.on) {
     S.at = () => null;
     S.edge = () => -99;
+    S.edgeAt = () => -99;
     S.deckAt = () => null;
     S.groundAt = ground0;
     S.place = () => null;
@@ -167,55 +248,22 @@ export const ROADS = (() => {
   function raster() {
     const t0 = performance.now();
     D = new Uint8Array(W * H * 4);
-    for (let i = 0; i < W * H; i++) {
-      D[i * 4 + 2] = 128;
-    } // R 0 = far from every road
-    const BAND = 4,
-      enc = v => Math.max(0, Math.min(255, Math.round(v))),
-      eK = 255 / ERNG,
-      lK = 255 / (2 * LRNG);
+    STRSTIL.clear(D);
+    const placeAt = STRDAT.ready ? STRDAT.placeAt : null;
     for (const wy of S.ways) {
+      const n = wy.p.length / 2;
+      // the style of every stretch (open country, no overtaking, town, village) – also for the bridges: the furniture reads it
+      wy.st = STRSTIL.styles(wy.p, 2, n, wy.kind, placeAt);
       if (wy.fl & 1) continue; // bridges: their own deck
-      const hw = wy.w / 2,
-        code = wy.kind * 8 + wy.surf,
-        p = wy.p,
-        n = p.length / 2,
-        R2 = hw + BAND;
-      let s0 = 0;
-      for (let k = 0; k < n - 1; k++) {
-        const ax = p[k * 2],
-          ay = p[k * 2 + 1],
-          bx = p[k * 2 + 2],
-          by = p[k * 2 + 3],
-          L = Math.hypot(bx - ax, by - ay);
-        if (L < 1e-3) continue;
-        const ux = (bx - ax) / L,
-          uy = (by - ay) / L;
-        const i0 = Math.max(0, Math.floor((Math.min(ax, bx) - R2 - X0) / RES)),
-          i1 = Math.min(W - 1, Math.ceil((Math.max(ax, bx) + R2 - X0) / RES)),
-          j0 = Math.max(0, Math.floor((Math.min(ay, by) - R2 - Y0) / RES)),
-          j1 = Math.min(H - 1, Math.ceil((Math.max(ay, by) + R2 - Y0) / RES));
-        for (let j = j0; j <= j1; j++) {
-          const py = Y0 + (j + 0.5) * RES - ay;
-          for (let i = i0; i <= i1; i++) {
-            const px = X0 + (i + 0.5) * RES - ax;
-            let t = px * ux + py * uy;
-            const lat = ux * py - uy * px;
-            const tc = t < 0 ? 0 : t > L ? L : t,
-              d = Math.hypot(px - tc * ux, py - tc * uy),
-              e = hw - d;
-            if (e < -BAND) continue;
-            const r8 = enc((e - EMIN) * eK),
-              q = (j * W + i) * 4;
-            if (r8 <= D[q]) continue;
-            D[q] = r8;
-            D[q + 1] = code;
-            D[q + 2] = enc((Math.max(-LRNG, Math.min(LRNG, lat)) + LRNG) * lK);
-            D[q + 3] = enc((((s0 + tc) / DASH) % 1) * 255) & 255;
-          }
-        }
-        s0 += L;
-      }
+      STRSTIL.raster(D, W, H, X0, Y0, RES, {
+        p: wy.p,
+        stride: 2,
+        n,
+        hw: wy.w / 2,
+        kind: wy.kind,
+        surf: wy.surf,
+        st: wy.st,
+      });
     }
     S.rasterMs = Math.round(performance.now() - t0);
   }
@@ -245,13 +293,30 @@ export const ROADS = (() => {
     if (q < 0) return null;
     const e = (D[q] / 255) * ERNG + EMIN;
     if (e < -3.9) return null;
-    const code = D[q + 1];
-    return { e, kind: code >> 3, surf: code & 7, lat: (D[q + 2] / 255) * 2 * LRNG - LRNG };
+    const c = STRSTIL.decode(D[q + 1]);
+    return { e, kind: c.kind, surf: c.surf, style: c.style, lat: (D[q + 2] / 255) * 2 * LRNG - LRNG };
   };
   S.edge = (x, y) => {
     if (!D) return -99;
     const q = pix(x, y);
     return q < 0 ? -99 : (D[q] / 255) * ERNG + EMIN;
+  };
+  // the same between the pixels (bilinear): for setting things beside a road to a few decimetres (strassen/strassen.js)
+  S.edgeAt = (x, y) => {
+    if (!D) return -99;
+    const fx = (x - X0) / RES - 0.5,
+      fy = (y - Y0) / RES - 0.5,
+      i = Math.floor(fx),
+      j = Math.floor(fy);
+    if (i < 0 || j < 0 || i >= W - 1 || j >= H - 1) return S.edge(x, y);
+    const u = fx - i,
+      v = fy - j,
+      q = (j * W + i) * 4,
+      a = D[q],
+      b = D[q + 4],
+      c = D[q + W * 4],
+      d = D[q + W * 4 + 4];
+    return (((a * (1 - u) + b * u) * (1 - v) + (c * (1 - u) + d * u) * v) / 255) * ERNG + EMIN;
   };
   // ---- bridges: a deck straight between the two ends (at the height of the higher ground across the width), railings on both sides ----
   function buildDecks() {
@@ -274,6 +339,7 @@ export const ROADS = (() => {
           '#include <map_fragment>',
           '#include <map_fragment>\n diffuseColor.rgb *= roadShade( vRdP, vec3( 0.13, 0.13, 0.135 ), length( vViewPosition ) );'
         );
+      sh.fragmentShader = S.gloss(sh.fragmentShader);
     };
     matTop.customProgramCacheKey = () => 'roaddeck';
     const top = [],
@@ -489,16 +555,18 @@ export const ROADS = (() => {
   // ---- load ----
   new THREE.FileLoader(LM).setResponseType('json').load(
     BASE + 'geo/' + M.file,
-    j => {
-      try {
-        parse(b64bytes(j.b64).buffer);
-        raster();
-        texture();
-        S.ready = true;
-      } catch (e) {
-        console.warn('roads', e);
-      }
-    },
+    j =>
+      // the raster needs the towns and villages (strassen/strassen_daten.js, its small file loads beside this one; without it: open country)
+      STRDAT.when(() => {
+        try {
+          parse(b64bytes(j.b64).buffer);
+          raster();
+          texture();
+          S.ready = true;
+        } catch (e) {
+          console.warn('roads', e);
+        }
+      }),
     undefined,
     () => {}
   );
