@@ -438,7 +438,7 @@ sie ändern (dämmen, streichen, Laden schließen).
 | Haltestellen | GTFS + OSM-Steige wie `docs/features/bus.md`; Wartehäuschen aus OSM | Schild und Aushang kommen vom Bus-Modul; Suhl liefert Bordkante und Bucht |
 | Bäume | Kronenhöhenmodell (Ort, Höhe, Radius), Laub/Nadel aus dem CIR-Bild; Straßenbäume aus OSM | Baumarten der App (EZ-Tree-Stufen aus ARCHITECTURE §10), instanziert je Kachel |
 | Mauern, Treppen am Hang | OSM `barrier=wall`/`retaining_wall`, `highway=steps`; dazu Geländesprünge im DGM1 (> 0,8 m auf 1 m) als Stützmauer | einfache Mauer- und Stufengeometrie in L0; Treppen sind begehbar |
-| Parkende Autos | Erkennung im Luftbild (`tools/welt-dinge/`: YOLO11-OBB, Regeln aus `decide.py`) | vorhandene Laufzeit `dinge/` – Suhl wird ein weiteres Gebiet |
+| Parkende Autos | Erkennung im Luftbild (`tools/welt-dinge/`: YOLO11-OBB, Regeln aus `decide.py`, Zweifelsfälle von Auge) | Suhl zeichnet sie in L0 selbst mit den vorhandenen Modellen (`DMOD` aus `dinge/dinge_modelle.js`), Lagen in den `m/`-Kacheln – die Laufzeit `dinge/` bleibt unberührt |
 | Ladenschilder mit echten Namen | OSM-Punkte mit `name` und `shop`/`amenity` (der alte Auszug hat 3 795 benannte Orte im Stadtrahmen) | Schildzone der Fassade, die dem Punkt am nächsten zur Straße liegt |
 | Wasser, Bahn | Lauter und Hasel aus OSM, Sohle aus DGM1; Gleise der Bahnstrecke durch das Tal und der Bahnhof (OSM) | Wasserprogramm des Bachs; Gleise als Geometrie in L0 |
 

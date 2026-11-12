@@ -14,8 +14,9 @@ Actions. Alle Zahlen stammen aus den genannten Dateien und Protokollen. Der tech
   (die Abfrage lag in Nigeria) und eine überschriebene Variable. Er kam nie bis zum Bau einer Kachel.
 - **Vorschlag:** die alten Zweige nicht mit `src` zusammenführen. Die wenigen brauchbaren Dateien in neue Zweige übernehmen.
 
-Alle vier Zweige zweigen von `4a5019e` ab (Stand V16u, 26.10.2026). `src` ist seitdem 443 Commits weiter
-(`git diff --shortstat 4a5019e origin/src`: 690 Dateien, +126 737 Zeilen).
+Alle vier Zweige zweigen von `4a5019e` ab (Stand V16u, 26.10.2026). `src` ist seitdem 603 Commits weiter (GitHub-Vergleich
+`compare/4a5019e...src` am 13.11.; `git diff --shortstat 4a5019e origin/src`: 690 Dateien, +126 737 Zeilen). `feat/suhl` selbst hat
+genau einen eigenen Commit.
 
 ## Warum der Kachel-Lauf scheiterte
 
