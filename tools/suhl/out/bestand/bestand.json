@@ -1,5 +1,5 @@
 {
- "made": "2026-11-12T23:40:21Z",
+ "made": "2026-11-12T23:43:41Z",
  "auftrag": "docs/plans/auftraege/suhl-bestand.md",
  "doku": [
   "docs/features/suhl-bestand.md",
@@ -2951,6 +2951,42 @@
   "datei": "tools/suhl/out/bestand/landesdienste.json",
   "stand": "2026-11-12T23:35:01Z"
  },
- "aus_github_actions": "noch kein Ergebnis",
+ "aus_github_actions": {
+  "ethos.json": {
+   "stand": "2026-11-12T23:39:58Z",
+   "quelle": "ETHOS.BUILDA v1.0.0, Zenodo 11845992, DEG.csv (Thüringen), Forschungszentrum Jülich; Lizenz ODbL 1.0",
+   "gebaeude": {
+    "stadt": 30929,
+    "kernstadt": 23282,
+    "zentrum": 1012
+   }
+  },
+  "landesdienste.json": {
+   "stand": "2026-11-12T23:40:10Z",
+   "quelle": "GitHub Actions",
+   "befund": {
+    "alte_adressen": [
+     "wartungsseite"
+    ],
+    "neues_portal": [
+     "captcha"
+    ]
+   }
+  },
+  "osm_geofabrik.json": {
+   "stand": "2026-11-12T23:39:51Z",
+   "quelle": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
+   "gebaeude": {
+    "stadt": 22180,
+    "kernstadt": 16168,
+    "zentrum": 595
+   },
+   "highway_km": {
+    "stadt": 1559.1,
+    "kernstadt": 513.2,
+    "zentrum": 34.8
+   }
+  }
+ },
  "fehlt": []
 }

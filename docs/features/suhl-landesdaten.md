@@ -191,7 +191,7 @@ Anleitung genauer.
 
 Abgefragt vom Chat-Rechner mit `tools/suhl/bestand/landesdienste.py`; das Protokoll `tools/suhl/out/bestand/landesdienste.json` hält
 die letzte Probe fest (0:35 Uhr).
-Dieselbe Probe läuft auch aus GitHub Actions (`tools/suhl/out/bestand/actions/landesdienste.json`, sobald der Lauf fertig ist).
+Dieselbe Probe aus GitHub Actions um 0:40 Uhr brachte dieselben Antworten (`tools/suhl/out/bestand/actions/landesdienste.json`).
 
 ## Was sich automatisch holen lässt – kurz
 
@@ -200,7 +200,7 @@ Ausführlich in `docs/features/suhl-bestand.md`, Abschnitt „Dienste“. ✔ = 
 | Was | Geht automatisch? | Wo |
 |---|---|---|
 | Luftbild 20 cm (Farbe, Infrarot, Grau) | ✔ ja | WMS des Landes `…/geoproxy/services/DOP`; Suhl ist am 15.05.2024 beflogen |
-| **Gebäudegrundrisse mit Nutzung und Geschosszahl** (Kataster) | ✔ ja | WFS „ALKIS vereinfacht“ `…/geoproxy/services/adv_alkis_wfs`, Objektart `ave:GebaeudeBauwerk` |
+| **Gebäudegrundrisse mit Nutzung und Geschosszahl** (Kataster) | ✔ ja, auch aus GitHub Actions | WFS „ALKIS vereinfacht“ `…/geoproxy/services/adv_alkis_wfs`, Objektart `ave:GebaeudeBauwerk` |
 | Hausnummern mit Lage | ✔ ja | WFS des Landes, Objektart `tlvermgeo:GAZHKO_HNR` |
 | Gebäudegrundrisse mit Höhe in ganzen Metern | ✔ ja | Vektorkacheln von basemap.de (Bund und Länder) |
 | Gebäudegrundrisse mit Höhe (aus dem LoD2 des Landes abgeleitet) | ✔ ja | ETHOS.BUILDA (Forschungszentrum Jülich): 30.929 Gebäude in Suhl |

@@ -218,6 +218,10 @@ Datei: `oepnv.json` (Skript `oepnv.py`; freier Deutschland-Fahrplan von gtfs.de,
   Geofabrik-Auszug Thüringen, ETHOS, die Proben der Dienste von GitHub aus. Ergebnisse in `tools/suhl/out/bestand/actions/`;
   `bestand.json` → `aus_github_actions` zeigt, was da ist. Der Lauf startet, wenn sich die Workflow-Datei oder
   `tools/suhl/bestand/lauf.txt` ändert.
+- **Ergebnis der Gegenprobe** (Lauf 43330687251, 13.11.2026, 0:39–0:42 Uhr, vier Minuten): OSM aus dem Geofabrik-Auszug ergibt
+  dieselben Zahlen wie die OSM-API (22.180 / 16.168 / 595 Gebäude; 1.559,1 / 513,2 / 34,8 km Wege), ETHOS ebenso (30.929 /
+  23.282 / 1.012). Die Download-Adressen des Landes antworten auch von GitHub aus mit Wartungsseite und CAPTCHA. Der WFS „ALKIS
+  vereinfacht“ und die Vektorkacheln von basemap.de antworten von GitHub aus wie vom Chat-Rechner.
 - In `kacheln.csv` zählt `gebaeude_osm` alle OSM-Gebäude in der Kachel, auch die jenseits der Stadtgrenze (Zella-Mehlis). Für
   die P4-Kacheln außerhalb des geladenen Ausschnitts ist die Spalte leer.
 
