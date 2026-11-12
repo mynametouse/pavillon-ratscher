@@ -8,16 +8,17 @@ nur schwach belegt. Ergänzt `wahrzeichen.md` (Einzelbauten) und `planungen.md` 
 | Größe | Wert | Quelle |
 |---|---|---|
 | Status | kreisfreie Stadt in Südthüringen, Erholungsort seit 1.9.2013; Teil des Oberzentrums Südthüringen | [WP-Suhl] |
-| Fläche | 14 162 ha = 141,62 km² (Untersuchungsgebiet des ISEK = Stadtgebiet); aus der OSM-Gemeindegrenze (Relation 62450) nachgerechnet: rund 142 km² | [UmbauStadt]; OSM/Nominatim, eigene Rechnung 12.11.2026 |
+| Fläche | 141,62 km² (= 14 162 ha, Untersuchungsgebiet des ISEK); aus der OSM-Gemeindegrenze (Relation 62450) nachgerechnet: rund 142 km² | [WP-en], [UmbauStadt]; OSM/Nominatim, eigene Rechnung 12.11.2026 |
 | Ausdehnung | etwa 20,5 km von West nach Ost, 14,3 km von Süd nach Nord (Rahmen der OSM-Grenze) | wie oben |
-| Einwohner | 34 034 am 30.6.2025 (Land); 36 999 am 31.12.2022 (Stadt, Hauptwohnsitz) | [TLS PM 224/2025], [Atlas 2022] |
-| Höchststand | über 56 000 im Jahr 1989 | [WP-Suhl] |
+| Einwohner | 34 034 am 30.6.2025 und 34 685 am 31.12.2024 (Land); 36 999 am 31.12.2022 (Stadt, Hauptwohnsitz) | [TLS PM 224/2025], [WP-en], [Atlas 2022] |
+| Höchststand | 56 345 am 31.12.1988; „über 56 000“ noch 1989 | [WP-en], [WP-Suhl] |
 | Verlauf | 1945: 24 500 · 1970: rund 26 000 · 1989: über 56 000 · 1995: 52 692 · 2005: 41 763 · 2015: 36 858 · 2022: 36 999 · Mitte 2025: 34 034 | [Jahn 2017], [Nordkurier 2026], [Atlas 2022], [TLS PM 224/2025] |
 | Vorausberechnung | 26 600 im Jahr 2042 (−28,2 % gegenüber 2022; stärkster Rückgang aller Thüringer Kreise) | [TLS 2042] |
 | Alter | Durchschnitt 50,16 Jahre; 31,27 % sind 66 oder älter (2022) | [Sozialplan 2025–29] |
 | Haushalte | 18 968, davon 47,25 % Ein-Personen-Haushalte (Zensus 15.5.2022) | [Sozialplan 2025–29] |
 | Pendler | 6 102 ein, 4 544 aus (Datenstand des Sozialplans, 2022); stärkste Verflechtung mit Zella-Mehlis | [Sozialplan 2025–29] |
-| Höhen | Talsohle ab etwa 380 m; Haltepunkt Heinrichs 395 m; Hohe Loh 528 m; Domberg 675 m; Ringberg 745 m; Döllberg 760 m; Schneekopf 978 m; Großer Beerberg 983 m (höchster Punkt) | [WP-Suhl], OSM |
+| Höhen | Talsohle ab etwa 380 m; Bahnhof Suhl 426 m; Stadt laut Lexikon 422 m, Zentrum um 450 m; Haltepunkt Heinrichs 395 m; Hohe Loh 528 m; Domberg 675 m; Ringberg 745 m; Döllberg 760 m; Schneekopf 978 m; Großer Beerberg 983 m (höchster Punkt) | [WP-Suhl], [WP-en], [WP-en-Bf], OSM |
+| Leerstand | 8 % der Wohnungen (Zensus 2011; neuere Zahl: Zensus 2022, siehe `fachdaten.md`) | [WP-en] |
 | Stadtwald | 934,6 ha | [WP-Suhl] |
 | Stadtrat | 36 Mitglieder und Oberbürgermeister | [Hauptsatzung 2026] |
 
@@ -53,10 +54,10 @@ Raster für Szenarien. Einwohner am 31.12.2022 [Atlas 2022] [Sozialplan 2025–2
 | 05 | Suhl-Friedberg | 2 609 | Kernstadt (Höhe im Südosten; Zahl mit Erstaufnahme) | – |
 | 06 | Suhl-Döllberg | 2 346 | Kernstadt (Hang im Osten, Klinikum) | – |
 | 07 | Suhl-Ilmenauer Straße | 5 503 | Kernstadt (Nordosten) | – |
-| 08 | Goldlauter-Heidersbach | 2 403 | Ortsteil mit Ortsteilrat | vor 1994 (Datum offen) |
+| 08 | Goldlauter-Heidersbach | 2 403 | Ortsteil mit Ortsteilrat | 1979 [WP-en] |
 | 09 | Neundorf | 770 | Dorf im Haseltal, ohne eigenen Ortsteilrat | 1936 [WP-Neundorf] |
 | 10 | Heinrichs | 1 288 | Ortsteil mit Ortsteilrat | 1936 [WP-Heinrichs] |
-| 11 | Mäbendorf | 591 | Ortsteil mit Ortsteilrat | vor 1994 (Datum offen) |
+| 11 | Mäbendorf | 591 | Ortsteil mit Ortsteilrat | 1979 [WP-en] |
 | 12 | Albrechts | 1 217 | Ortsteil mit Ortsteilrat | 1.4.1994 |
 | 13 | Dietzhausen | 1 032 | Ortsteil mit Ortsteilrat | 1.4.1994 |
 | 14 | Wichtshausen | 486 | Ortsteil mit Ortsteilrat | 1.4.1994 |
@@ -77,7 +78,8 @@ Raster für Szenarien. Einwohner am 31.12.2022 [Atlas 2022] [Sozialplan 2025–2
 ## 4. Verkehr
 
 **Straßen**
-- Autobahn **A 71** (Erfurt–Schweinfurt) westlich der Stadt: Anschlussstelle Suhl/Zella-Mehlis (50.6419, 10.6892; auf Zella-Mehliser Gebiet), Tunnel Berg
+- Autobahn **A 71** (Erfurt–Schweinfurt) westlich der Stadt: Anschlussstelle Suhl/Zella-Mehlis (50.6419, 10.6892; auf
+  Zella-Mehliser Gebiet), Tunnel Berg
   Bock, Talbrücke Albrechtsgraben (Bogenbrücke, 770 m lang, bis 74 m hoch, fertig 2002;
   https://structurae.net/structures/albrechtsgraben-viaduct), **Dreieck Suhl** (50.6085, 10.6421) [WP-Suhl], OSM.
 - Autobahn **A 73** (Suhl–Nürnberg) ab dem Dreieck Suhl: Talbrücke Haseltal über Heinrichs (845 m lang, bis 82 m über dem
@@ -85,20 +87,21 @@ Raster für Szenarien. Einwohner am 31.12.2022 [Atlas 2022] [Sozialplan 2025–2
   Anschlussstellen **Suhl-Zentrum** (50.5875, 10.6770) und **Suhl-Friedberg** (50.5758, 10.7229; liegt schon auf Schleusinger
   Gebiet) [WP-Suhl], OSM.
 - Hauptachse durch das Tal: Gothaer Straße – Friedrich-König-Straße – Dr.-Theodor-Neubauer-Straße – Schleusinger Straße. In OSM
-  trägt sie die Nummer **L 3247**; ältere Quellen nennen sie B 247 (Gotha–Suhl–Schleusingen) [Wikivoyage] – **unsicher**, ob und
-  seit wann abgestuft.
+  trägt sie die Nummer **L 3247**. Die frühere Bundesstraße B 247 (Gotha–Suhl–Schleusingen) [Wikivoyage] wurde nach dem Bau der
+  Autobahnen abgestuft [WP-en].
 - **L 1140:** Meininger Straße – Würzburger Straße – Ilmenauer Straße, weiter über den Ringberg-Südhang Richtung Schmiedefeld
   [WP-Ringberg], OSM. **L 3140:** An der Hasel (Neundorf). **K 502:** Zellaer Straße / Große Beerbergstraße (Suhl-Nord, Lauter). OSM.
 - Wege vom Garten in Ratscher: Landstraße 18,9 km, Autobahn 28,4 km (`origin/feat/suhl-fahrt:viz3/extra/suhl-fahrt/recherche.json`).
 
 **Bahn**
-- Strecke Neudietendorf–Ritschenhausen (Nr. 6298 in OSM), eingleisig, nicht elektrifiziert (OSM); Bahnhof Suhl (seit 1882),
-  Haltepunkt Suhl-Heinrichs; im Stadtgebiet außerdem die Bahnhöfe Gehlberg und Rennsteig (748 m, Anschluss an die Rennsteigbahn)
-  [WP-Suhl] [WP-Heinrichs], OSM.
+- Strecke Neudietendorf–Ritschenhausen (Nr. 6298 in OSM), eingleisig, nicht elektrifiziert (OSM); Bahnhof Suhl (eröffnet
+  20.12.1882, zwei Gleise an zwei Außenbahnsteigen, 426 m), Haltepunkte Suhl-Heinrichs und Dietzhausen; im Stadtgebiet außerdem
+  die Bahnhöfe Gehlberg und Rennsteig (748 m, Anschluss an die Rennsteigbahn) [WP-Suhl] [WP-Heinrichs] [WP-en] [WP-en-Bf], OSM.
 - Linien laut OSM und Presse: RE 7 Erfurt–Würzburg (DB Regio), RB 44 Erfurt–Meiningen und RE 50 Erfurt–Meiningen
   (Süd-Thüringen-Bahn), RB 43 Wernshausen–Suhl [Volksstimme 10/2026], OSM.
 - Brandleitetunnel (3 km, von 1884) zwischen Oberhof und Gehlberg; 2026 drei Monate gesperrt [Volksstimme 10/2026].
-- Friedbergbahn Suhl–Schleusingen: 1911 eröffnet, bis 1928 mit Zahnstange, seit 1997 ohne Verkehr [WP-Neundorf] [WP-Suhl].
+- Friedbergbahn Suhl–Schleusingen: 1911 eröffnet, bis 1928 mit Zahnstange, Steigung fast 7 %, seit 1997 ohne Verkehr;
+  frühere Halte Suhl-Neundorf und Friedberg aufgegeben [WP-Neundorf] [WP-Suhl] [WP-en].
 
 **Bus**
 - Stadtverkehr: Städtische Nahverkehrsgesellschaft Suhl/Zella-Mehlis (SNG), seit 1991/92 kommunal; 21 Linien, rund 1,62 Mio.
@@ -151,8 +154,9 @@ trägt dort Geschosse oder Dachform. Maßgeblich werden LoD2 und Fotos.
 ## 7. Offen und unsicher
 
 1. Amtliche Einwohnerzahl zum 31.12.2025 und Einwohner je Stadtteil nach 2022 – nicht gefunden.
-2. Eingemeindungsdaten von Goldlauter-Heidersbach und Mäbendorf; die Wikipedia-Liste der Ortsteile war nur als Fließtext lesbar.
-3. Straßennummer der Hauptachse (L 3247 laut OSM, B 247 in älteren Quellen).
+2. Die deutsche Wikipedia-Liste der Ortsteile (mit Flächen je Ortsteil) war nur als Fließtext lesbar; die Eingemeindungsjahre
+   1979 stammen aus der englischen Wikipedia.
+3. Seit wann genau die Hauptachse L 3247 heißt.
 4. Bautypen der Plattenbauten (WBS 70 und andere) – aus Quellen nicht belegt; muss aus Fotos und LoD2 kommen.
 5. Wohnungsbestand, Leerstand und Rückbau nach 2013 – stehen vermutlich im ISEK 2023 (nicht lesbar, siehe `planungen.md`).
 
@@ -172,6 +176,7 @@ trägt dort Geschosse oder Dachform. Maßgeblich werden LoD2 und Fotos.
 - **[Suhl-Wirtschaft]** Stadt Suhl, Meldungen Wirtschaft. https://www.suhl.eu/aktuelles/categories/wirtschaft/page/5
 - **[UmbauStadt]** Planungsbüro UmbauStadt, Projektseite „ISEK Suhl“. https://www.umbaustadt.de/projekte/isek-suhl
 - **[Suhl-Fahrplan 2026]** Stadt Suhl: Fahrplanwechsel der SNG am 11. Oktober 2026. https://www.suhl.eu/post/fahrplanwechsel-der-sng-am-11-oktober-2026
+- **[WP-en]** https://en.wikipedia.org/wiki/Suhl (gelesen 12.11.2026) · **[WP-en-Bf]** https://en.wikipedia.org/wiki/Suhl_station
 - **[Wikivoyage]** https://de.wikivoyage.org/wiki/Suhl
 - **[WP-Suhl]** https://de.wikipedia.org/wiki/Suhl · **[WP-Ortsteile]** https://de.wikipedia.org/wiki/Liste_der_Ortsteile_von_Suhl ·
   **[WP-Lauter]** https://de.wikipedia.org/wiki/Lauter_%28Hasel%29 · **[WP-Heinrichs]** https://de.wikipedia.org/wiki/Heinrichs_%28Suhl%29 ·

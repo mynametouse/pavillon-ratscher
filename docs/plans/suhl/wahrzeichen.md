@@ -107,14 +107,17 @@ Nur was in den Quellen steht. Farben und Details ohne Quelle müssen aus den Str
     [Jahn 2017] [Carthalia-Kulturhaus]. 2010 wurde es abgerissen – bis auf die Säulenvorhalle mit Dreiecksgiebel und Relief
     und den Eingangsflügel [Carthalia-Kulturhaus] [Jahn 2017]. Dahinter steht der Neubau „Haus der Wirtschaft“ der IHK
     (in OSM: Baubeginn/Eröffnung 03/2016). Der Portalbau heißt heute „Haus der Geschichte“ [WP-Suhl]; OSM: 25 m hoch.
-    **unsicher:** Baujahre (1954–58 [Jahn 2017], 1955–57 [Carthalia-Kulturhaus], „1956“ [WP-Suhl]); und wo das Stadtarchiv
-    heute sitzt ([WP-Suhl]: im Portalbau; OSM: Zellaer Straße 159, `n12112614600`).
+    **unsicher:** Baujahre (1954–58 [Jahn 2017], 1955–57 [Carthalia-Kulturhaus], „1956“ [WP-Suhl], 1957 [WP-en]); Jahr des
+    Abrisses (2010 [Carthalia-Kulturhaus] oder 2013 [WP-en]); und wo das Stadtarchiv heute sitzt ([WP-Suhl]: im Portalbau;
+    OSM: Zellaer Straße 159, `n12112614600`).
 13. **Hotel am Platz der Deutschen Einheit – das frühere Interhotel „Thüringen Tourist“** (50.60906, 10.68990; `w42871447`).
     Bettenhaus 1965, Wirtschaftsflügel 1966, Entwurf Heinz Luther [Jahn 2017]. 2017 „Michel Hotel“ [Jahn 2017], in OSM heute
     „Achat Hotel Suhl“ (Höhe dort 16 m – **unsicher**, wirkt für ein mehrgeschossiges Bettenhaus zu niedrig).
-14. **Bahnhof Suhl, Bahnhofstraße 28** (50.60515, 10.68310; `w116951221`; Station `n3059296510`). Bahnanschluss 1882 nach
-    Süden, 1884 nach Norden [WP-Suhl] [Uske 2017]. OSM: Empfangsgebäude mit drei Geschossen, Satteldach, dunkle Deckung,
-    Baujahr dort 1887. Stadtbus-Haltestelle gegenüber dem Bahnhof (Umbau 2017–2019) [WP-SNG].
+14. **Bahnhof Suhl, Bahnhofstraße 28** (50.60515, 10.68310; `w116951221`; Station `n3059296510`). Eröffnet am 20.12.1882
+    (Strecke nach Süden), 1884 nach Norden; zwei Gleise an zwei Außenbahnsteigen, 426 m hoch [WP-en-Bf] [WP-Suhl]
+    [Uske 2017]. OSM: Empfangsgebäude mit drei Geschossen, Satteldach, dunkle Deckung, Baujahr dort 1887. Die Stadt hat eine
+    Machbarkeitsstudie zum Bahnhof (Inhalt nicht gelesen) [Suhl-Planen]. Stadtbus-Haltestelle gegenüber dem Bahnhof (Umbau
+    2017–2019) [WP-SNG].
 15. **Domberg über dem Zentrum: Ottilienkapelle, Ottilienstein, Bismarckturm** (Kapelle 50.61324, 10.69210 `w198660171`;
     Aussicht Ottilienstein 50.61321, 10.69216 `w1488971691`; Turm 50.61708, 10.68590 `w139966525`; Gipfel 675 m).
     Der bewaldete Hausberg reicht bis an das Zentrum; aus dem Wald ragen die Felsen des Ottiliensteins [WP-Domberg].
@@ -202,8 +205,8 @@ Z43 und Z44 liegen am Rand des 900-m-Kreises; sie stehen hier, weil sie zum Bild
 | Kulturhaus „7. Oktober“ / „Haus Philharmonie“ | 1950er; Saal zu seit 1997; Abriss 2010 | Portalbau = Haus der Geschichte; dahinter Haus der Wirtschaft (IHK, 2016) | [Carthalia-Kulturhaus], [Jahn 2017] |
 | Stadthalle der Freundschaft (mit Wandbildern) | 1972 | Umbau zum CCS (1995); Kunst am Bau entfernt | [WP-CCS], [Jahn 2017] |
 | Wohnhochhaus mit 26 Etagen, 88 m | 1977 | auf 16 Etagen gekürzt, Hotel (1998) | [WP-CCS] |
-| Alte Bebauung an der heutigen Friedrich-König-Straße | Abriss ab 1959 für die Durchgangsstraße | vierspurige Straße, Hochhäuser | [Jahn 2017] |
-| Südliche Innenstadt | Abriss in den 1980er Jahren | Plattenbau-Wohnhäuser | [Jahn 2017] |
+| Alte Bebauung an der heutigen Friedrich-König-Straße | Abriss ab 1959 für die Durchgangsstraße, vor allem in den 1960er Jahren | vierspurige Straße, Hochhäuser | [Jahn 2017], [WP-en] |
+| Südliche Innenstadt und die Viertel östlich des Topfmarkts | Abriss in den 1980er Jahren | Plattenbau-Wohnhäuser | [Jahn 2017], [WP-en] |
 | Rokokohäuser am Steinweg | DDR-Umbau | eines erhalten | [WP-Suhl] |
 | Synagoge (1904–06) | 1938 niedergebrannt | Gedenkstele (1985) | [WP-Suhl] |
 | Vier Hochhäuser Dr.-Theodor-Neubauer-Straße (1972–74) | zwei 2006 saniert | OSM zeigt dort zwei Wohnblöcke mit elf Geschossen (50.60758, 10.68121 `w120366626`; 50.60646, 10.67976 `w120366627`) – ob die anderen zwei noch stehen: **unsicher** | [WP-CCS], OSM |
@@ -359,6 +362,7 @@ Z43 und Z44 liegen am Rand des 900-m-Kreises; sie stehen hier, weil sie zum Bild
   https://bauwelt.de/dl/753845/10820904_8b8753c1dc.pdf
 - **[Carthalia-Kulturhaus]** https://andreas-praefcke.de/carthalia/germany/suhl_kulturhaus.htm
 - **[Carthalia-Stadthalle]** https://andreas-praefcke.de/carthalia/germany/suhl_stadthalle.htm
+- **[WP-en]** https://en.wikipedia.org/wiki/Suhl (gelesen 12.11.2026) · **[WP-en-Bf]** https://en.wikipedia.org/wiki/Suhl_station
 - **[Wikivoyage]** https://de.wikivoyage.org/wiki/Suhl
 - **[WA Herrenteich]** https://www.wettbewerbe-aktuell.de/ergebnis/neugestaltung-herrenteich-park-suhl-380068
 - **[AKT Herrenteich]** https://architekten-thueringen.de/aktuell/n/neugestaltung_des_herrenteich_pa-26675.html

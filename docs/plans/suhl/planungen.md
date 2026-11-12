@@ -34,7 +34,8 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
   Rückbau, Umbau und Umnutzung dieser Quartiere bleiben die Hauptaufgabe [UmbauStadt]. Im März 2023 gab es ein Bürgerforum im
   Oberrathaussaal mit 37 Teilnehmern; die Fortschreibung hat über 200 Seiten und ist Grundlage für Städtebau-Fördermittel
   [iST 3/2023]. Der Sozialplan 2025–2029 nennt „ISEK (2023)“ als Quelle seiner Stadtkarte [Sozialplan 2025–29].
-  Ein Datum des Ratsbeschlusses habe ich nicht gefunden – **offen**. Die Stadt stellt das ISEK auf ihrer Seite „Planen, Bauen und Wohnen“ als PDF bereit
+  Ein Datum des Ratsbeschlusses habe ich nicht gefunden – **offen**. Die Stadt stellt das ISEK auf ihrer Seite „Planen, Bauen
+  und Wohnen“ als PDF bereit
   (`https://www.suhl.eu/_files/ugd/1b847c_d56044f1e272446da05a48888ad71b5b.pdf`) [Suhl-Planen]. Den Text selbst konnte ich
   **nicht lesen** (Abruf von hier gesperrt). Älter: das Konzept „Suhl 2025“ mit dem geplanten Rückbau nicht mehr gebrauchter
   Wohnblöcke [Uske 2017].
@@ -128,7 +129,9 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
     zwei Anerkennungen (Leipzig, München). Aufgabe: Park mit hoher Aufenthaltsqualität, Anpassung an den Klimawandel,
     Stadtökologie, Möbel und Licht. Der Siegerentwurf verbindet den Platz der Deutschen Einheit mit dem Park, soll den
     ökologischen Zustand des Teichs und seinen Wasserrückhalt verbessern und setzt auf klimafeste Bäume; Kritik der Jury:
-    viele Wege. Investition rund 1,2 Mio. € brutto, gefördert aus dem Bundesprogramm „Anpassung urbaner und ländlicher Räume
+    viele Wege. Das Siegerbüro nennt selbst: Flächen entsiegeln, neue Entwässerung, viele neue Schattenbäume, ein
+    Röhrichtstreifen am Teich für Tiere und Wasserqualität [RB+P 2026]. Investition rund 1,2 Mio. € brutto, gefördert aus dem
+    Bundesprogramm „Anpassung urbaner und ländlicher Räume
     an den Klimawandel“; die Ausführung steht unter Förder-Vorbehalt, ein Bautermin ist nicht genannt
     [WA Herrenteich] [AKT Herrenteich] [iST 10/2025].
   - Außerdem auf der Seite der Stadt: eine **Machbarkeitsstudie Bahnhof** (Inhalt offen) [Suhl-Planen].
@@ -170,6 +173,9 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
   wieder über die Große Beerbergstraße statt als B/F, Suhl-Nord wird von D1/D2 bedient, A/G wird ausgedünnt (sonntags alle
   zwei Stunden), abends ab 19 Uhr fahren die Hauptlinien stündlich, Linie R pendelt werktags vor allem zwischen Schmiedefeld
   und Gehlberg [Suhl-Fahrplan 2026]. Ob das auf den Ausschuss zurückgeht, sagt die Meldung nicht.
+- **Geld:** Zum 1.1.2026 stiegen die Fahrpreise der SNG um bis zu 30 % (Einzelfahrt 1,90 → 2,30 €, Monatskarte 39 → 50 €),
+  begründet mit der schlechten wirtschaftlichen Lage des Unternehmens; die Erhöhung davor war im Oktober 2024 (Bericht vom
+  10.7.2025) [iST 7/2025].
 - **Ausgangslage:** 21 Buslinien, rund 1,62 Mio. Fahrzeug-Kilometer im Jahr, Umsteigepunkt „Zentrum“ an der
   Friedrich-König-Straße und Halt gegenüber dem Bahnhof; seit 2021 auch drei Elektrobusse [WP-SNG]. Das regionale Konzept
   nennt den Nahverkehr zwischen den vier Städten lückenhaft und schlägt einen „RingBus“ vor [SREK 2024].
@@ -220,10 +226,16 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
   [Schmalkalden 2026]. Die Unterlagen lagen vom 18.5. bis 20.7.2026 aus, auch in der Planungsstelle in Suhl; vor der Sitzung
   der Planungsgemeinschaft am 25.3.2026 protestierten in Suhl etwa 150 Menschen [iST Wind 2026]. Am 18.5.2026 informierte das
   Landratsamt Hildburghausen online, mit Übertragung u. a. nach Schleusingen [BZ Wind 2026].
-- **Offen:** Welche Vorranggebiete im Stadtgebiet Suhl oder in Sichtweite liegen (Nummern, Hektar). Die Gebietsliste des Entwurfs
-  habe ich nicht gefunden; nur Anlagen (Vogelschutz, raumwirksame Denkmale – darunter Schloss Bertholdsburg in Schleusingen mit
-  rund 2 km Abstandsbereich) [RPSW 2026].
-- **Szenario-Frage:** Windräder auf den Höhen um Suhl und Schleusingen – was sieht man vom Markt, vom Domberg, vom Garten?
+- **Gebiete bei Suhl** (aus einer Liste einer Bürgerinitiative, die die amtlichen Unterlagen auswertet – **vor Verwendung mit
+  den amtlichen Prüfbögen abgleichen**): **W-21 „Schneeberg“** (Suhl, Oberstadt, Grub, Eichenberg) – also auch auf Suhler
+  Gebiet, im Kleinen Thüringer Wald südlich der Stadt; **W-20 „Knotenberg“** (Dillstädt, Marisfeld) westlich; **W-22
+  „Ahlstädter Berg“** (Stadt Schleusingen) – das liegt im Raum der bestehenden Spiegelwelt um Schleusingen. Gesamt laut dieser
+  Quelle: 40 Gebiete, rund 7 483 ha, 1,8 % der Region [Windwiderstand 2026].
+- **Offen:** Hektar und genaue Lage der drei Gebiete; die amtliche Gebietsliste habe ich nicht selbst gelesen. Gelesen habe
+  ich nur Anlagen des Entwurfs (Vogelschutz, raumwirksame Denkmale – darunter Schloss Bertholdsburg in Schleusingen mit rund
+  2 km Abstandsbereich) [RPSW 2026]. Geodaten des Entwurfs gibt es laut derselben Quelle noch nicht (nur Stand 2012).
+- **Szenario-Frage:** Windräder auf dem Schneeberg und dem Ahlstädter Berg – was sieht man vom Markt, vom Domberg, von
+  Schleusingen, vom Garten in Ratscher?
 
 ### 9. Hochwasser und Starkregen an Lauter und Hasel
 
@@ -322,7 +334,7 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
 3. **Hochwasserschutz-Konzept, Forstzahlen, Tourismuszahlen** für die Stadt selbst – nichts gefunden. Beim Wärmeplan fehlen
    die Karte (Gebietstypen je Quartier) und der Stand des Ratsbeschlusses.
 4. **Nachnutzung Friedberg** – nichts gefunden; ein Bericht vom 11.9.2026 liegt hinter einer Bezahlschranke.
-5. **Windgebiete bei Suhl** – Liste nicht gefunden.
+5. **Windgebiete bei Suhl** – nur aus zweiter Hand (Bürgerinitiative); amtliche Prüfbögen und Karte nicht gelesen.
 6. Presse aus der Region (inSüdthüringen/Freies Wort, MDR) konnte ich nur über Zusammenfassungen lesen.
 
 ## Für den Suhl-Chat
@@ -355,6 +367,12 @@ Windkraft auf den Höhen (Nr. 8), Hochwasser und Starkregen im Lautertal (Nr. 9)
   https://architekten-thueringen.de/aktuell/n/neugestaltung_des_herrenteich_pa-26675.html
 - **[iST 10/2025]** inSüdthüringen, 29.10.2025.
   https://www.insuedthueringen.de/inhalt.projekt-herrenteich-ein-stueck-suhler-identitaet-im-herzen-der-stadt.848e1885-a35e-4f28-a65c-d3f1487c41c0.html
+- **[RB+P 2026]** Büroseite des ersten Preisträgers, 26.1.2026.
+  https://rbplusp.de/1-preis-freiraumplanerischer-wettbewerb-herrenteich-in-suhl/
+- **[iST 7/2025]** inSüdthüringen, 10.7.2025.
+  https://www.insuedthueringen.de/inhalt.sng-erhoeht-preise-busfahren-in-suhl-wird-deutlich-teurer.46746167-e048-4884-a86a-43c17a5efe47.html
+- **[Windwiderstand 2026]** Seite einer Bürgerinitiative zum Regionalplan (keine amtliche Quelle; nur für die Gebietsliste
+  genutzt). https://windwiderstand.de/regionalplan/suedwestthueringen/
 - **[Suhl-Fahrplan 2026]** Stadt Suhl: Fahrplanwechsel der SNG am 11. Oktober 2026.
   https://www.suhl.eu/post/fahrplanwechsel-der-sng-am-11-oktober-2026
 - **[iST Wind 2026]** inSüdthüringen, 25.3.2026.
