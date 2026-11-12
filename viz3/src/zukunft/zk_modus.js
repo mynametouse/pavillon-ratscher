@@ -101,8 +101,8 @@ export const ZUKUNFT = (() => {
       'Mitfahrbank',
       'mobil',
       'bank',
-      'Eine Bank am Straßenrand mit einem Schild: wer sich setzt, möchte mitgenommen werden. Sie kostet wenig (etwa 3 000 Euro mit Schild), braucht aber Vertrauen. Bei einem Unfall greift die Kfz-Haftpflicht des Fahrzeugs, das mitnimmt – sie deckt auch die Mitfahrenden. Viele Dörfer haben eine.',
-      'Im Spiel steht sie im Ort; im Ortsteilrat wird sie beschlossen, das Geld käme aus dem Ortsteilbudget.',
+      'Eine Bank am Straßenrand mit einem Schild: wer sich setzt, möchte mitgenommen werden. Sie kostet etwa 3 000 Euro mit Schild und braucht Vertrauen; das Ortsteilbudget reicht dafür nicht, die Stadt oder Spenden müssten helfen. Bei einem Unfall greift die Kfz-Haftpflicht des Fahrzeugs, das mitnimmt – sie deckt auch die Mitfahrenden. Viele Dörfer haben eine.',
+      'Im Spiel steht sie im Ort; im Ortsteilrat würde sie beschlossen, bezahlt würde sie aber von der Stadt oder aus Spenden.',
       [Z.SRC.bank, Z.SRC.mfbank, Z.SRC.mfbank2],
     ],
     [
@@ -112,8 +112,8 @@ export const ZUKUNFT = (() => {
       'Rufbus – der Bus auf Bestellung',
       'mobil',
       'ruf',
-      'Ein Rufbus fährt nur, wenn jemand ihn bestellt, per Anruf oder App, und holt Fahrgäste an einer Haltestelle ab. In Thüringen gibt es nur wenige reine Rufbuslinien (Jena seit 1999); die beiden Dorfbus-Versuche im Wartburgkreis wurden wieder in normale Linien überführt, und der Landkreis Hildburghausen hat einzelne Linien als reine Rufbusse angekündigt. Eine Fahrt kostet je Fahrgast oft 30 bis 56 Euro (so zahlten es Landkreise in Mecklenburg-Vorpommern 2023–2025) – den größten Teil zahlt der Landkreis, der den Busverkehr bestellt (§ 3 ThürÖPNVG).',
-      'In Ratscher fahren die Linien 203 und 205 nach Schleusingen: in der Woche etwa 30 Fahrten (von 5:11 bis 22:57 Uhr), samstags 14, sonntags 11. Der Rufbus füllt die Lücken, etwa nach dem letzten Bus um 21:10 aus Schleusingen.',
+      'Ein Rufbus fährt nur, wenn jemand ihn bestellt, per Anruf oder App, und holt Fahrgäste an einer Haltestelle ab. In Thüringen gibt es nur wenige reine Rufbuslinien (Jena seit 1999); die beiden Dorfbus-Versuche im Wartburgkreis wurden wieder in normale Linien überführt. Nach einem MDR-Bericht von 2023 (zitiert in Drs. 7/8819) sollten im Landkreis Hildburghausen einige Linien nur noch als Rufbus fahren – beim Landkreis nachfragen. Eine Fahrt kostet je Fahrgast oft 30 bis 56 Euro (eigene Rechnung aus Zahlen der Landkreise in Mecklenburg-Vorpommern 2023–2025) – den größten Teil zahlt der Landkreis, der den Busverkehr bestellt (§ 3 ThürÖPNVG).',
+      'In Ratscher fahren die Linien 203 und 205 nach Schleusingen: montags bis freitags etwa 30 Fahrten am Tag (von 5:11 bis 22:57 Uhr), samstags 14, sonntags 11. Der Rufbus füllt die Lücken, etwa nach dem letzten Bus um 21:10 aus Schleusingen.',
       [Z.SRC.rufbus, Z.SRC.mvruf, Z.SRC.ruf2],
     ],
     [
@@ -373,11 +373,11 @@ body.zk-pres #hotbar,body.zk-pres #moves,body.zk-pres #act2,body.zk-pres #actrow
       .map(c => {
         const v = R[c].ind.stimmung.voices || [];
         return v.length
-          ? `<h4>Stimmen zu ${colName(c)}: ${esc(Z.variant(S.topic, vid(c)).short)}</h4>` +
+          ? `<h4>${R[c].ind.stimmung.event ? 'Was Leute dazu sagen' : 'Stimmen zu'} ${colName(c)}: ${esc(Z.variant(S.topic, vid(c)).short)}</h4>` +
               v
                 .map(
                   x =>
-                    `<p><b>${esc(x.name)}</b> <i>(${esc(x.role)}, ${x.lean > 0 ? 'dafür' : x.lean < 0 ? 'dagegen' : 'unentschieden'})</i> – „${esc(x.say)}“</p>`
+                    `<p><b>${esc(x.name)}</b> <i>(${esc(x.role)}${R[c].ind.stimmung.event ? '' : ', ' + (x.lean > 0 ? 'dafür' : x.lean < 0 ? 'dagegen' : 'unentschieden')})</i> – „${esc(x.say)}“</p>`
                 )
                 .join('')
           : '';

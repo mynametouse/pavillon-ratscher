@@ -10,19 +10,19 @@ Schleusingen).
 - **Aufruf:** Menü → Erleben → Szenen → „Zukünfte erproben“, `?szenario=zukunft`, Knopf „🔮 Zukunft“ in der Leiste des Strategie-Modus. Es läuft
   von oben (Knopf „Von oben ansehen“ setzt die Draufsicht auf den Ort des Themas) und zu Fuß („Hingehen: …“).
 - **Vier Themen**, je „Heute“ und Varianten (`viz3/src/zukunft/zk_data.js`):
-  - *Mobilität:* Mitfahrbank am Anger · Rufbus auf Bestellung · sechs Fahrten mehr nach Schleusingen. Grundlage: der echte Fahrplan
+  - *Mobilität:* Mitfahrbank im Ort · Rufbus auf Bestellung · sechs Fahrten mehr nach Schleusingen. Grundlage: der echte Fahrplan
     (`BUS.plan`, gtfs.de: Fahrten werktags von Ratscher nach Schleusingen und die Fahrzeit, aus den Haltestellen „Ratscher …“ und „Schleusingen …“).
   - *Energie:* Solarmodule auf den geeigneten Dächern (aus den 3D-Dächern gezählt) · Solarpark am Ortsrand (Annahme für den Platz) ·
     Wärmepumpen in den Häusern (Nahwärme als Zahl im „Warum?“).
   - *Klimaanpassung:* Starkregen ohne / mit Vorsorge · Hochwasser der Schleuse · Dürresommer.
   - *Wald nach dem Käfer:* natürliche Verjüngung · Waldumbau (Mischwald pflanzen).
-- **Jahr:** Regler 2026 · 2030 · 2035 · 2045 · 2060; Welt und Zahlen folgen.
+- **Jahr:** Regler 2030 · 2035 · 2045 · 2060 (Jahr der Wirkung nach Fertigstellung); Welt und Zahlen folgen.
 - **Nebeneinander:** Spalten Heute · A · B; A und B sind frei aus den Varianten des Themas wählbar. „Die Welt zeigt: Heute | A | B“ und die
   Taste **Y** (A ↔ B) setzen die Welt sofort um – es gibt nur eine Welt, die Variante wird hinein gesetzt und beim Wechsel oder Beenden
   zurückgenommen.
 - **Fünf Kennzahlen**, je mit „?“ (Warum): Kosten (Investition und jährlich, mit Spanne) · CO₂ (t/Jahr gegenüber heute, minus ist gut) · Lärm
-  (Stufe 0–4, betroffene Häuser) · Naturwert (0–100, Ausgangswert `TEINFLUSS.naturwert()` wie im Entdeckerbuch, plus Änderung) · Stimmung (Mittel
-  der Haltungen der Dorfbewohner aus „Wahl und Amt“, drei bis vier Stimmen mit Grund). Jede Zahl auf zwei Stellen gerundet, Spannen wo unsicher,
+  (Stufe 0–4, betroffene Häuser) · Naturwert (0–100, Ausgangswert `TEINFLUSS.naturwert()` wie im Entdeckerbuch, plus Änderung) · Stimmung (gezählt:
+  „2 dafür · 1 dagegen“ nach erfundenen Beispielstimmen aus verschiedenen Sichten, Platzhalter für die Stimmen der Teilnehmenden; bei Ereignissen kein Votum). Jede Zahl auf zwei Stellen gerundet, Spannen wo unsicher,
   jedes „Warum?“ sagt „Annahme“ oder nennt Quellen mit Link.
 - **In der Welt zu sehen** (`zk_welt.js`, alles rückgängig bei „Beenden“): Solarmodule auf den Dachflächen (instanziert, ein Material; die
   Ebenen der Dach-Dreiecke der 3D-Gebäude: Neigung 10–60°, bis 70° von Süd, ab 5 m², Randabstand 0,3 m; Flachdächer mit aufgeständerten Reihen;
@@ -43,13 +43,13 @@ Schleusingen).
 ## Ehrlichkeit der Zahlen
 
 - Fest aus Quellen: PV-Ertrag ≈ 1000 kWh/kWp bei Ratscher (PVGIS, wie im Entdeckerbuch „Strom von der Sonne“), PV-Kosten 700–2000 €/kW (Fraunhofer
-  ISE 2024), Strommix ≈ 0,38 kg/kWh (UBA), Gemeindebeteiligung 0,2 ct/kWh (§ 6 EEG), reine Rufbuslinien in Thüringen (Landtag Drs. 7/8819),
+  ISE 2024), Strommix ≈ 0,34 kg/kWh (UBA, 344 g im Jahr 2025), Gemeindebeteiligung 0,2 ct/kWh (§ 6 EEG), reine Rufbuslinien in Thüringen (Landtag Drs. 7/8819),
   Nachtrichtwerte (TA Lärm).
 - **Annahmen** (so im Fenster gekennzeichnet): Kosten je Rufbus-Fahrt, Fahrgastzahlen, Schadenssummen und betroffene Häuser bei Starkregen,
   Hochwasser und Dürre, der Hochwasser-Pegel (die Hochwassergefahrenkarte des Landes war vom Chat-Rechner nicht abrufbar – im „Warum?“ steht,
   dass sie zu prüfen ist), der Platz des Solarparks, der Verlauf des Fichtensterbens (Kurve `DIEBACK`), Flächen- und Kostenwerte des Waldumbaus,
   Entwicklung des Strommix, Fahrzeugflotten und Preise nach 2026.
-- Die Dorfbewohner (Stimmung) sind Figuren des Spiels – keine Umfrage in Ratscher; das steht im „Warum?“.
+- Die Stimmen sind erfundene Beispielstimmen („Sicht Landwirtschaft“, „Sicht Pendler“ …), keine Personen aus Ratscher und keine Umfrage; das steht im „Warum?“.
 
 ## Schnittstelle Modus ↔ Welt (zk_modus.js ruft zk_welt.js)
 

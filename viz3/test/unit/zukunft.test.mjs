@@ -44,8 +44,10 @@ test('Mobilität: a bank is cheap, a Rufbus costs tens of thousands a year, more
     ruf = Z.calc('mobil', 'ruf', 2030).raw,
     takt = Z.calc('mobil', 'takt', 2030).raw;
   assert.ok(bank.kosten.inv[1] < 5000);
-  assert.ok(ruf.kosten.yr[1] >= 59000 && ruf.kosten.yr[1] < 150000);
-  assert.ok(takt.kosten.yr[1] > 20000 && takt.kosten.yr[1] < ruf.kosten.yr[1]);
+  assert.ok(ruf.kosten.yr[1] > 30000 && ruf.kosten.yr[1] < 150000);
+  // recomputable from the shown numbers: trips a year × 40 € per trip
+  assert.ok(Math.abs(ruf.kosten.yr[1] - ruf.tripsYr * 40) < 1);
+  assert.ok(takt.kosten.yr[1] > 20000);
   assert.ok(takt.co2[1] > 0 && Z.calc('mobil', 'takt', 2060).raw.co2[1] < takt.co2[1]);
   assert.ok(bank.co2[1] < 0);
 });
@@ -103,8 +105,9 @@ test('Stimmung: voices are the game villagers, with a lean and a reason; the moo
     }
   }
   const sb = Z.calc('mobil', 'bank', 2030).ind.stimmung.raw,
-    sd = Z.calc('klima', 'duerre', 2030).ind.stimmung.raw;
-  assert.ok(sb.pro > sb.con && sd.con > sd.pro);
+    sd = Z.calc('klima', 'duerre', 2030).ind.stimmung;
+  assert.ok(sb.pro > sb.con);
+  assert.ok(sd.event && sd.main === 'kein Votum');
 });
 
 test('the world part is empty for Heute', () => {
