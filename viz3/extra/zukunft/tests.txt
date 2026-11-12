@@ -1,0 +1,4 @@
+# feat/zukunft: „Zukünfte erproben“ – the what-if mode (one test name per line, as for viz3/test/run.py)
+zukunft
+strategie
+wissen
