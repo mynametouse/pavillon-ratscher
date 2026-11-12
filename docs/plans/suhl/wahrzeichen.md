@@ -84,8 +84,11 @@ Nur was in den Quellen steht. Farben und Details ohne Quelle müssen aus den Str
 9. **Punkthochhäuser an der Friedrich-König-Straße** (fünf in einer Reihe nördlich der Straße: 50.61117, 10.68866 `w45393690`;
    50.61132, 10.68941 `w45393691`; 50.61133, 10.69032 `w45393692`; 50.61124, 10.69146 `w45393693`; 50.61134, 10.69350
    `w45393694` = Friedrich-König-Straße 20; dazu 50.60957, 10.69088 `w45393695` und 50.61375, 10.69710 `w66319441`).
-   OSM: Wohnhäuser, 43–45 m hoch, zwei davon mit 14 Geschossen und Flachdach erfasst. [WP-CCS] spricht von sechs
-   Hochhäusern mit 14 Etagen im neuen Zentrum, [Jahn 2017] von vier Hochhäusern an der vierspurigen Straße Richtung Domberg.
+   OSM: Wohnhäuser, 43–45 m hoch, zwei davon mit 14 Geschossen und Flachdach erfasst. Adressen laut OSM: das westlichste der
+   Reihe ist Friedrich-König-Straße 9, das östlichste Nr. 20; das einzeln stehende mit 43 m ist **Platz der Deutschen
+   Einheit 1** (im Sockel ein Restaurant, an derselben Adresse das Suhler Marionettentheater). [WP-CCS] spricht von sechs
+   Hochhäusern mit 14 Etagen im neuen Zentrum, [Jahn 2017] von vier Hochhäusern an der vierspurigen Straße Richtung Domberg
+   und von einem Hochhaus, das 1963 zusammen mit dem Platz eingeweiht wurde.
    **unsicher:** genaue Zahl, Baujahre und Bautyp – bitte mit Fotos und LoD2 abgleichen.
 10. **Einkaufscentrum „Am Steinweg“ – Standort des Centrum-Warenhauses** (50.61015, 10.69171; `w42484467`, Parkhaus
     `w32083739`). Das Warenhaus (1966–1969, Entwurf Heinz Luther mit Kollektiv; viergeschossiger Würfel mit einer
@@ -93,9 +96,11 @@ Nur was in den Quellen steht. Farben und Details ohne Quelle müssen aus den Str
     [Bauwelt 2006] [WP-Suhl]. Ende 2000 geschlossen; ab Oktober 2006 bis auf die entkernten unteren Geschosse abgetragen;
     geplant waren rund 10 000 m² Verkaufsfläche, 25 Läden, ein Parkhaus mit sieben Ebenen und eine Fassade aus Glas und
     Naturstein [Bauwelt 2006]. Eröffnung als Einkaufszentrum am 13.3.2008 [Uske 2017]. Die Kühn-Fassade gibt es nicht mehr
-    [Jahn 2017]. OSM: zwei Verkaufsgeschosse, Flachdach, Parkhaus 26 m.
+    [Jahn 2017]. OSM: zwei Verkaufsgeschosse, Flachdach, Parkhaus 26 m. Läden laut OSM (12.11.2026): C&A, KiK, Deichmann,
+    Thalia, TEDi, Woolworth, Ernsting's family, Jeans Fritz, mister*lady, Subway u. a.
 11. **Lauterbogen-Center, Friedrich-König-Straße 21** (50.61079, 10.69077; `w42484465`). Einkaufszentrum der Nachwendezeit,
-    eröffnet am 2.11.1996 [Uske 2017]; OSM: zwei Geschosse. Aussehen: noch aus Fotos zu klären.
+    eröffnet am 2.11.1996 [Uske 2017]; OSM: zwei Geschosse. Läden laut OSM (12.11.2026): REWE, Action, New Yorker, Bonita,
+    Benetton, Camp David, Bijou Brigitte, Deutsche Bank, Lauterbogen-Apotheke u. a. Aussehen: noch aus Fotos zu klären.
 12. **Haus der Geschichte (Portal des Kulturhauses) und Haus der Wirtschaft, Platz der Deutschen Einheit** (50.60883, 10.68880
     `w110458614`; 50.60846, 10.68891 `w412429677`). Das Kulturhaus „7. Oktober“ (Entwurf Hermann Räder; Theatersaal mit 690,
     Kino mit 407 Plätzen) war der erste Bau am späteren Ernst-Thälmann-Platz; um 1990 hieß es „Haus Philharmonie“
@@ -167,7 +172,27 @@ Nur was in den Quellen steht. Farben und Details ohne Quelle müssen aus den Str
 | Z44 | Schul- und Volkssternwarte, Hoheloh 1 | 50.60247, 10.69801; `w1175859109` | offen | Kuppel aus Metall | Sternwarte mit Planetarium | ja | – | [WP-Suhl], OSM |
 | Z45 | Kino Cineplex | 50.60880, 10.68596; `w300432514` | nach 1990 | Kino | Kino | ja | – | OSM |
 
-Z43 und Z44 liegen knapp außerhalb des 900-m-Kreises bzw. am Rand; sie stehen hier, weil sie zum Zentrum gezählt werden.
+Z43 und Z44 liegen am Rand des 900-m-Kreises; sie stehen hier, weil sie zum Bild des Zentrums gehören.
+
+**Weitere benannte Häuser im Zentrum (nur OSM, Abruf 12.11.2026 – Geschichte jeweils offen):**
+
+| Objekt | Lage | OSM | Hinweis aus OSM |
+|---|---|---|---|
+| Villa Sauer | 50.60722, 10.68515 | `w70114714` | rote Dachdeckung |
+| Villa Krämer | 50.60680, 10.68603 | `w85551604` | zwei Geschosse, aufwendige Dachform |
+| Villa Schlegelmilch | 50.60649, 10.68266 | `w122527869` | – |
+| Villa Kober | 50.61247, 10.68875 | `w99691635` | vier Geschosse |
+| „Postamt“, Schleusinger Straße 2 | 50.60788, 10.68963 | `w71131884` | zwei Geschosse, Walmdach, braun; Commons-Kategorie „Schleusinger Straße 2 (Suhl)“ |
+| Staatliches Gymnasium, Friedensstraße 1 | 50.60746, 10.68840 | `w74151808` | Schule |
+| Musikschule „Alfred Wagner“ | 50.60809, 10.69883 | `w80618838` | Satteldach, rotbraun |
+| Amtsgericht | 50.60968, 10.70191 | `n366996813` | Gericht |
+| „Gastmahl des Meeres“, Steinweg 15 | 50.60931, 10.69228 | `w83910673` | Gaststätte, grün gestrichen |
+| Cigarrenhaus Georg Eckardt | 50.61058, 10.69398 | `w1118753730` | drei Geschosse |
+| Jugendschmiede, Bahnhofstraße 16 | 50.60742, 10.68620 | `n7907725535` | Jugendkulturzentrum; Einzelbild auf Commons |
+| Freundsbrücke (über die Lauter) | 50.61056, 10.68953 | `w1433085659` | Brücke |
+| Denkmal „Rollerkinder“ | 50.60915, 10.68921 | `n10856211554` | Bronze, Stephan Horota |
+| Gedenktafel Herbert Roth, Steinweg 31 | 50.60873, 10.69112 | `n11459469272` | Wohnhaus des Musikers 1950–1956 (Inschrift) |
+| Lutherbuche vor der Hauptkirche | – | `n13045551675` | Baum mit eigener Commons-Kategorie |
 
 ### 1.4 Was im Zentrum nicht mehr steht – und was heute dort ist
 
@@ -299,6 +324,9 @@ Z43 und Z44 liegen knapp außerhalb des 900-m-Kreises bzw. am Rand; sie stehen h
 - Die OSM-Daten des Zentrums (Abruf 12.11.2026) zeigen, wie wenig dort an Attributen steht: von 2 318 Gebäuden im 900-m-Kreis
   haben nur 720 eine Geschosszahl, 759 eine Dachform, 191 eine Hausnummer, 45 einen Namen, 15 eine Denkmal-Marke, 10 ein Baujahr
   (eigene Auszählung). Fassaden und Geschosse müssen also aus LoD2 und Fotos kommen, nicht aus OSM.
+- **Echte Ladennamen:** OSM kennt im Zentrum viele Geschäfte mit Namen – im 900-m-Kreis (Auszug 26.10.2026) u. a. 21
+  Bekleidungsläden, 18 Restaurants, 15 Friseure, 8 Banken, 6 Bäcker, 5 Supermärkte, 4 Apotheken. Das reicht für echte
+  Schilder an Steinweg, Markt und in den Einkaufszentren.
 - Vorschlag Reihenfolge Einzelbauten in Stufe 3: Markt-Ensemble (Z1–Z5) → Steinweg-Zeile mit Kreuzkirche (Z7–Z14) → Malzhaus und
   Herrenteich (Z15, Z16) → CCS mit Hotelturm und Bad (Z17–Z20) → Hochhausreihe (Z21) → Platz der Deutschen Einheit (Z24–Z27).
 - Für die Fernsicht (Stufe 2) reichen zunächst F1–F5 als eigene Körper.
