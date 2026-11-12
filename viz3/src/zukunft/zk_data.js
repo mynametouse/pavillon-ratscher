@@ -72,7 +72,10 @@ export const ZKDATA = (() => {
     ],
     ruf2: ['Wikipedia: Rufbus', 'https://de.wikipedia.org/wiki/Rufbus'],
     bank: ['Wikipedia: Mitfahrbank', 'https://de.wikipedia.org/wiki/Mitfahrbank'],
-    oepnv: ['Thüringer ÖPNV-Gesetz (ThürÖPNVG), § 3: der Landkreis bestellt den Busverkehr', null],
+    oepnv: [
+      'Thüringer ÖPNV-Gesetz (ThürÖPNVG), § 3: der Landkreis bestellt den Busverkehr',
+      'https://landesrecht.thueringen.de/',
+    ],
     fahrplan: [
       'Fahrplan nach gtfs.de (DELFI e. V.), wie im Spiel: Linien 203 und 205 nach Schleusingen',
       'https://gtfs.de/',
@@ -81,9 +84,62 @@ export const ZKDATA = (() => {
       'TA Lärm: Richtwerte nachts 45 dB(A) im Dorfgebiet, 40 dB(A) im allgemeinen Wohngebiet',
       'https://www.verwaltungsvorschriften-im-internet.de/bsvwvbund_26081998_IG19980826.htm',
     ],
-    bafa: [
-      'BAFA: Bundesförderung für effiziente Gebäude (Wärmepumpen)',
-      'https://www.bafa.de/DE/Energie/Effiziente_Gebaeude/Waermepumpen/waermepumpen_node.html',
+    kfw: [
+      'test.de: Neue Förderung für Haus und Heizung – KfW 458, bis zu 45 % Zuschuss (seit 21.07.2026)',
+      'https://www.test.de/Neue-Foerderung-fuer-Haus-und-Heizung-Bis-zu-45-Prozent-Zuschuss-zur-neuen-Heizung-5561989-5574917/',
+    ],
+    vzwp: [
+      'Verbraucherzentrale Rheinland-Pfalz: Wärmepumpen-Faktencheck (02/2026)',
+      'https://www.verbraucherzentrale-rlp.de/sites/default/files/2026-02/260210_wp-faktencheck_vzrp.pdf',
+    ],
+    behg: [
+      'Advant Beiten: BEHG-Novelle – CO₂-Preis bleibt 2027 im Korridor von 55 bis 65 Euro',
+      'https://www.advant-beiten.com/en/news/behg-novelle-co2-preis-bleibt-2027-im-korridor-von-55-bis-65-euro',
+    ],
+    ubaverkehr: [
+      'Umweltbundesamt: Emissionsdaten Verkehr (TREMOD)',
+      'https://www.umweltbundesamt.de/themen/verkehr/emissionsdaten',
+    ],
+    ubaregen: [
+      'Umweltbundesamt: Emissionsbilanz erneuerbarer Energieträger 2024 (vermiedene Emissionen)',
+      'https://www.umweltbundesamt.de/publikationen/emissionsbilanz-erneuerbarer-energietrager-2024',
+    ],
+    ubastrom: [
+      'Umweltbundesamt: CO₂-Emissionen pro Kilowattstunde Strom 2025 (344 g)',
+      'https://www.umweltbundesamt.de/themen/co2-emissionen-pro-kilowattstunde-strom-2025-nur',
+    ],
+    mvruf: [
+      'Landtag Mecklenburg-Vorpommern, Drucksache 8/6129: Rufbus in M-V – Kosten, Nutzung 2023–2025 (30–56 € je Fahrgast)',
+      'https://www.dokumentation.landtag-mv.de/parldok/dokument/69365/8_6129_rufbus_in_mecklenburg_vorpommern_kosten_nutzung_flotte_und_personal_in_den_jahren_2023_bis_2025',
+    ],
+    mfbank: [
+      'Land Brandenburg: FAQ Mitfahrerbänke Prenzlau (Haftung: die Kfz-Haftpflicht des Fahrers)',
+      'https://mweke.brandenburg.de/sixcms/media.php/54/FAQ_Mitfahrerbaenke_Prenzlau.pdf',
+    ],
+    mfbank2: [
+      'kommunal.de: Gefangen im Dorf – ist die Mitfahrbank die Lösung? (Kosten etwa 3 000 € je Bank)',
+      'https://kommunal.de/index%2ephp/gefangen-im-dorf-ist-die-mitfahrbank-die-loesung',
+    ],
+    pvstrom: [
+      'pv magazine: Fraunhofer ISE – Stromgestehungskosten neuer Freiflächenanlagen 4,1 bis 6,9 ct/kWh',
+      'https://www.pv-magazine.de/2024/08/06/fraunhofer-ise-stromgestehungskosten-fuer-neue-photovoltaik-freiflaechenanlagen-bei-41-bis-69-cent-pro-kilowattstunde-angekommen/',
+    ],
+    laenderbet: [
+      'pv magazine: § 6 EEG und die Länder-Beteiligungsgesetze im Überblick (ThürWindBeteilG nur Wind)',
+      'https://www.pv-magazine.de/unternehmensmeldungen/%C2%A7-6-eeg-alle-laenderbeteiligungsgesetze-im-ueberblick/',
+    ],
+    einsp: [
+      'EMA Energiewelt: Einspeisevergütung sinkt zum 1.8.2026 (7,70 ct/kWh)',
+      'https://ema-energiewelt.de/wissen/pv-einspeiseverguetung-sinkt-1-august-2026-stichtag',
+    ],
+    wpg: ['Wärmeplanungsgesetz § 4 (Frist der Wärmeplanung)', 'https://www.gesetze-im-internet.de/wpg/__4.html'],
+    ubadurre: [
+      'Umweltbundesamt: Trockenheit und Dürre in Deutschland (05.08.2026)',
+      'https://www.umweltbundesamt.de/node/74131',
+    ],
+    mastr: [
+      'Marktstammdatenregister: Solaranlagen im Postleitzahlgebiet 98553 (Stand November 2026)',
+      'https://www.marktstammdatenregister.de/',
     ],
     kostra: [
       'DWD: KOSTRA-DWD-2020 (Starkregenhöhen nach Dauer und Wiederkehrzeit)',
@@ -106,41 +162,39 @@ export const ZKDATA = (() => {
       'https://hnz.thueringen.de/hochwasservorsorge/pdf/HWVorsorge_Gesamtdokument.pdf',
     ],
     dez23: [
-      'Thüringer Landtag, Drucksache 7/9624: Hochwasser im Dezember 2023 (Talsperre Ratscher, Betreiber TFW, etwa 900 000 m³ zurückgehalten)',
-      'https://parldok.thueringer-landtag.de/',
+      'Thüringer Landtag, Drucksache 7/9624 (28.02.2024): Talsperren Schönbrunn und Ratscher im Dezember 2023 – etwa 900 000 m³ gespeichert am 23./24.12.',
+      'https://parldok.thueringer-landtag.de/ParlDok/dokument/96219/management_der_talsperren_schoenbrunn_und_ratscher_waehrend_der_hochwasserlage_in_suedthueringen_landkreis_hildburghausen_im_dezember_2023.pdf',
     ],
     forst: ['ThüringenForst: Waldumbau und Wiederbewaldung', 'https://www.thueringenforst.de/'],
-    bwi: ['Bundeswaldinventur: Vorräte und Zuwachs der Fichte', 'https://bwi.info/'],
+    bwi: ['Bundeswaldinventur: Vorräte und Zuwachs der Fichte', 'https://www.bundeswaldinventur.de/'],
     waldwissen: ['waldwissen.net: Borkenkäfer und Kalamitätsflächen', 'https://www.waldwissen.net/'],
     bfn: ['BfN: Photovoltaik-Freiflächenanlagen und Naturschutz (BfN-Skript 247)', null],
-    mastr: [
-      'Marktstammdatenregister: alle Anlagen, auch die auf Dächern in Ratscher',
-      'https://www.marktstammdatenregister.de/',
-    ],
     buch: ['Entdeckerbuch im Spiel', null],
   };
   // ---------- the villagers (the game's, as in „Wahl und Amt“) ----------
   const WHO = {
-    ingrid: ['Ingrid', 'Ortsteilbürgermeisterin'],
-    gerhard: ['Gerhard', 'Lehrer i. R., Dorfchronik'],
-    manfred: ['Manfred', 'Wehrführer'],
-    wolfgang: ['Wolfgang', 'Waldarbeiter'],
-    katrin: ['Katrin', 'Pflegerin, zwei Kinder'],
-    heike: ['Heike', 'Gemüsegarten und Hühner'],
-    jens: ['Jens', 'Kfz-Mechaniker'],
-    hubert: ['Hubert', 'Nachbar im Westen'],
-    ronald: ['Ronald', 'Nachbar im Osten, Ziegen'],
-    uwe: ['Uwe', 'Landwirt'],
+    landwirt: ['Ein Landwirt', 'Ackerbau'],
+    rentnerin: ['Eine Rentnerin', 'ohne Auto'],
+    pendlerin: ['Eine Pendlerin', 'Pflegedienst, zwei Kinder'],
+    feuerwehr: ['Jemand von der Feuerwehr', ''],
+    jugendliche: ['Eine Jugendliche', 'Schülerin'],
+    waldbesitzer: ['Ein Waldbesitzer', 'kleiner Privatwald'],
+    handwerker: ['Ein Handwerker', 'Kfz-Betrieb'],
+    gaertnerin: ['Eine Gärtnerin', 'Gemüsegarten und Hühner'],
+    chronist: ['Ein Lehrer im Ruhestand', 'sammelt Dorfgeschichte'],
+    vogel: ['Ein Vogelfreund', 'Naturschutz'],
+    gemeinde: ['Jemand aus dem Ortsteilrat', ''],
   };
+
   // ---------- the defaults for what the world tells (ctx) ----------
   const CTX0 = {
-    bus: { werk: 6, sa: 3, so: 0, min: 12, src: 'annahme' },
+    bus: { werk: 30, sa: 14, so: 11, min: 4, src: 'annahme' }, // Annahme as a stand-in: the real timetable (week of 16.11.2026) has 30 / 14 / 11 departures
     roof: { kwp: 600, area: 2900, n: 40, src: 'annahme' },
-    field: { kwp: 2200, ha: 1.7, src: 'annahme' },
+    field: { kwp: 1700, ha: 1.7, src: 'annahme' },
     nat0: 55,
     forest: { ha: 16.8, spruce: 0.62 },
     houses: 55,
-    km: 6,
+    km: 3, // Ratscher Schleusebrücke → Schleusingen Zentralhaltestelle 2,4 km, Schulbushaltestelle 3,2 km (fahrplan.json); rounded
   };
   const ctxOf = c => {
     const o = {};
@@ -150,11 +204,13 @@ export const ZKDATA = (() => {
   };
   // ---------- common factors over the years (2026, 2030, 2035, 2045, 2060) ----------
   // Strommix kg CO₂/kWh: 2023 about 0,38 (UBA); after that Annahme on the way to the climate-neutral power system of 2045 (KSG)
-  const EF_GRID = [0.36, 0.22, 0.13, 0.03, 0.01];
+  const EF_GRID = [0.34, 0.22, 0.13, 0.03, 0.01]; // 2025: 344 g/kWh (UBA); later Annahme
+  // fossil power that a PV kWh displaces (UBA net balance of renewables: about 0,7 kg/kWh today – reviewer's division 205 Mt / 285 TWh); Annahme falling with the grid
+  const EF_DISP = [0.7, 0.5, 0.35, 0.15, 0.05];
   const EF_PV = 0.04; // life cycle of a PV module in Germany about 40 g/kWh (UBA, Fraunhofer ISE) – rounded
-  const EF_PKW = [0.15, 0.135, 0.115, 0.075, 0.04]; // kg per car kilometre, real fleet; Annahme for the later years (more electric cars)
-  const EF_BUS = [0.85, 0.75, 0.55, 0.15, 0.05]; // kg per bus kilometre (diesel bus about 30 l/100 km); Annahme: electrified step by step
-  const EF_KLEIN = [0.3, 0.27, 0.2, 0.06, 0.02]; // minibus of a Rufbus
+  const EF_PKW = [0.23, 0.2, 0.17, 0.11, 0.06]; // kg per car kilometre incl. upstream: TREMOD 2024 164 g per person-km at 1,4 persons ≈ 0,23 (UBA); later years Annahme (more electric cars)
+  const EF_BUS = [1.0, 0.9, 0.65, 0.18, 0.06]; // kg per bus kilometre incl. upstream (diesel line bus; Annahme); electrified step by step
+  const EF_KLEIN = [0.35, 0.32, 0.23, 0.07, 0.02]; // minibus of a Rufbus incl. upstream (Annahme)
   const PRICE_ROOF = [1300, 1150, 1000, 850, 800]; // € per kWp small roof system (ISE 2024: 700–2000, small roofs about 1300); later steps Annahme
   const PRICE_FIELD = [700, 620, 560, 480, 450]; // € per kWp ground-mounted (ISE: below 460 by 2045)
   // PVGIS-SARAH (JRC API v5_2, 12.11.2026, lat 50.47 lon 10.78, 456 m, losses 14 %): kWh a year per kWp – south 35°: 1011, south 20°: 980, south 12°
@@ -163,7 +219,7 @@ export const ZKDATA = (() => {
   const KWH_FIELD = 980; // field tables, 20° to the south
   const KWH_KWP = KWH_ROOF;
   const EF_PKW_TXT =
-    'Auto: 150 g CO₂ je km heute (UBA, Durchschnitt aller Pkw), später weniger, weil mehr Elektroautos fahren (Annahme)';
+    'Auto: etwa 230 g CO₂ je Pkw-Kilometer heute (UBA/TREMOD 2024: 164 g je Personenkilometer bei 1,4 Personen, mit Vorkette), später weniger, weil mehr Elektroautos fahren (Annahme). Linienbus etwa 1 kg je Kilometer mit Vorkette (Annahme; UBA: 90 g je Personenkilometer bei 16 % Auslastung)';
   // ---------- topics and their variants ----------
   const TOPICS = [
     {
@@ -176,25 +232,25 @@ export const ZKDATA = (() => {
           id: 'heute',
           label: 'Heute',
           short: 'Bus nach Fahrplan',
-          text: 'Der Bus nach dem echten Fahrplan, sonst das eigene Auto.',
+          text: 'Der Bus nach dem echten Fahrplan (in der Woche etwa 30 Fahrten nach Schleusingen, samstags 14, sonntags 11), sonst das eigene Auto.',
         },
         {
           id: 'bank',
           label: 'Mitfahrbank',
-          short: 'Mitfahrbank am Anger',
-          text: 'Eine Bank an der Ortsmitte: wer sich setzt, will mitgenommen werden.',
+          short: 'Mitfahrbank im Ort',
+          text: 'Eine Bank im Ort: wer sich setzt, will mitgenommen werden.',
         },
         {
           id: 'ruf',
           label: 'Rufbus',
           short: 'Rufbus auf Bestellung',
-          text: 'Ein Kleinbus fährt auf Anruf oder per App – Montag bis Samstag, 6 bis 20 Uhr. Gedacht für Ältere ohne Auto, auch abends und am Wochenende, wenn der Linienbus nicht fährt.',
+          text: 'Ein Kleinbus fährt auf Anruf oder per App, Montag bis Samstag. Gedacht für die Lücken des Linienbusses: nach der letzten Fahrt am Abend (der letzte Bus aus Schleusingen kommt um 21:10), sonntags und an Feiertagen und für Ältere ohne Auto.',
         },
         {
           id: 'takt',
           label: 'Mehr Fahrten',
-          short: '6 Fahrten mehr nach Schleusingen',
-          text: 'Sechs zusätzliche Fahrten am Werktag mit dem normalen Linienbus – auch für Schülerinnen und Schüler, die nach dem Unterricht oder der AG heimfahren.',
+          short: '6 Fahrten mehr abends und am Wochenende',
+          text: 'Sechs zusätzliche Fahrten mit dem normalen Linienbus, dorthin gelegt, wo der Fahrplan Lücken hat: spät am Abend und am Wochenende.',
         },
       ],
     },
@@ -208,7 +264,7 @@ export const ZKDATA = (() => {
           id: 'heute',
           label: 'Heute',
           short: 'wie jetzt',
-          text: 'Dächer ohne Solarmodule (Annahme: die Anlagen im Dorf sind nicht erfasst), Heizungen mit Öl, Gas und Holz.',
+          text: 'Die Dächer, wie sie sind (einzelne Solaranlagen gibt es schon – nach dem Marktstammdatenregister für die Postleitzahl 98553 etwa 939 Anlagen, davon in Ratscher vermutlich 10–25 –, hier nicht eingerechnet), Heizungen mit Öl, Gas und Holz.',
         },
         {
           id: 'dach',
@@ -253,7 +309,7 @@ export const ZKDATA = (() => {
           id: 'dez23',
           label: 'Wie im Dezember 2023',
           short: 'Hochwasser wie im Dezember 2023',
-          text: 'Das Hochwasser vom Dezember 2023: Die Talsperre Ratscher hielt etwa 900 000 m³ zurück, die Schleuse blieb im Dorf meist in der Aue.',
+          text: 'Das Hochwasser vom Dezember 2023: Die Talsperre Ratscher speicherte etwa 900 000 m³. Wie hoch das Wasser im Dorf stand, ist hier eine Annahme.',
         },
         {
           id: 'hoch',
@@ -286,7 +342,7 @@ export const ZKDATA = (() => {
           id: 'umbau',
           label: 'Waldumbau',
           short: 'Mischwald pflanzen',
-          text: 'Auf den Kahlflächen werden Buche, Weißtanne, Eiche und Douglasie gepflanzt, nach Plan von ThüringenForst.',
+          text: 'Auf den Kahlflächen werden Buche, Weißtanne, Eiche und Douglasie gepflanzt. Der Eigentümer entscheidet, das Forstamt berät.',
         },
       ],
     },
@@ -301,101 +357,159 @@ export const ZKDATA = (() => {
   const VOICES = {
     'mobil/bank': [
       [
-        'ingrid',
+        'rentnerin',
         2,
-        'Das hat bei den Nachbardörfern geklappt. Wer kein Auto hat, kommt am Wochenende endlich in die Stadt.',
+        'Zum Arzt nach Schleusingen komme ich nur mit dem Bus – und der fährt am Wochenende selten. Eine Bank würde mir helfen.',
       ],
-      ['gerhard', 2, 'Früher hat man sich auch mitgenommen. Die Bank macht daraus wieder eine Gewohnheit.'],
-      ['katrin', 1, 'Gut für die Jugendlichen. Mir wäre wohler, wenn man weiß, wer einsteigt.'],
-      ['manfred', -1, 'Wenn etwas passiert: Wer haftet? Das muss die Stadt klären.'],
+      [
+        'jugendliche',
+        1,
+        'Ich würde mich hinsetzen, wenn ich weiß, dass wirklich jemand hält. Zu zweit ist mir das lieber als allein.',
+      ],
+      ['pendlerin', 0, 'Ich nehme gern jemanden mit, aber nur, wenn ich weiß, wen. Das muss sich erst einspielen.'],
+      ['gemeinde', -1, 'Die Bank allein löst nichts, wenn niemand anhält. Wer kümmert sich darum, und was kostet sie?'],
     ],
     'mobil/ruf': [
-      ['katrin', 2, 'Mit zwei Kindern und ohne zweites Auto wäre das ein Segen – auch abends.'],
-      ['ingrid', 1, 'Ich bin dafür, wenn der Landkreis zahlt. Alleine trägt das kein Ortsteil.'],
-      ['uwe', -1, 'Gut sechzigtausend Euro im Jahr für ein Dorf mit 120 Leuten? Das ist viel Steuergeld.'],
-      ['jens', 0, 'Technisch kein Problem. Ob es einer nutzt, weiß ich nicht.'],
+      [
+        'rentnerin',
+        2,
+        'Nach dem letzten Bus um zehn bin ich auf Hilfe angewiesen. Anrufen und abgeholt werden wäre für mich viel wert.',
+      ],
+      ['pendlerin', 1, 'Abends, wenn ich spät vom Dienst komme, wäre das ein Segen – wenn es zuverlässig kommt.'],
+      [
+        'landwirt',
+        -1,
+        'Fünfzig- bis achtzigtausend Euro im Jahr für ein Dorf mit etwa 120 Leuten? Das muss der Landkreis wollen.',
+      ],
+      [
+        'handwerker',
+        0,
+        'Technisch geht das. Ob es genug Leute nutzen, zeigt nur ein Versuch, und der Landkreis müsste mitziehen.',
+      ],
     ],
     'mobil/takt': [
-      ['katrin', 2, 'Sechs Fahrten mehr – dann geht auch die Spätschicht.'],
-      ['gerhard', 1, 'Der Bus gehört zum Dorf. Aber er sollte nicht leer fahren.'],
-      ['jens', -1, 'Ein leerer Bus ist schlechter fürs Klima als mein Auto. Das rechnet sich nicht.'],
-      ['uwe', -1, 'Und der Lärm an der Ortsdurchfahrt kommt dazu.'],
+      ['pendlerin', 2, 'Mit mehr Fahrten am Abend und am Wochenende könnte ich öfter ohne Auto fahren.'],
+      ['jugendliche', 1, 'Am Wochenende ohne Eltern nach Schleusingen zu kommen wäre schon etwas.'],
+      ['handwerker', -1, 'Ein halb leerer Bus ist fürs Klima nicht besser als mein Auto. Das muss sich rechnen.'],
+      [
+        'rentnerin',
+        0,
+        'Gut, wenn er fährt, wenn ich ihn brauche. Wenn nicht, hilft mir auch ein zusätzlicher Bus nicht.',
+      ],
     ],
     'energie/dach': [
-      ['heike', 2, 'Ich würde sofort Module aufs Hühnerhaus-Dach legen, wenn es sich lohnt.'],
-      ['jens', 2, 'Mit Speicher und Wallbox rechnet sich das. Ich mache gern die Technik.'],
-      ['gerhard', -1, 'Auf der alten Schule bitte nicht: das Ortsbild und der Denkmalschutz.'],
-      ['ronald', 0, 'Meine Schwalben nisten am Stall – die Module dürfen sie nicht stören.'],
+      ['gaertnerin', 2, 'Auf dem Dach vom Stall würde ich Module sofort legen, wenn sich das rechnet.'],
+      ['handwerker', 2, 'Mit Speicher und Wallbox rechnet sich das für viele. Ich würde die Technik gern machen.'],
+      [
+        'chronist',
+        -1,
+        'Bei den alten Häusern im Dorfkern bitte nicht auf die Straßenseite: das Ortsbild und der Denkmalschutz.',
+      ],
+      [
+        'vogel',
+        0,
+        'Schwalben und Mauersegler brüten an den Gebäuden. Die Module dürfen ihnen die Nistplätze nicht nehmen.',
+      ],
     ],
     'energie/park': [
-      ['jens', 2, 'Viel Strom auf einem Fleck, billig pro Kilowattstunde.'],
-      ['ingrid', 1, 'Wenn das Dorf etwas davon hat: Gemeinde-Beteiligung, Bürgerstrom.'],
-      ['uwe', -2, 'Das ist guter Boden, den ich bewirtschaftet bekomme. Pacht hin oder her.'],
-      ['gerhard', -1, 'Der Blick vom Weg Richtung Süden ist dann ein anderer.'],
+      [
+        'landwirt',
+        1,
+        'Pacht ist verlässlicher als Weizenpreis. Wenn die Fläche ohnehin schlecht ist, überlege ich es mir.',
+      ],
+      ['handwerker', 2, 'Viel Strom an einem Ort, günstig je Kilowattstunde.'],
+      ['gemeinde', 1, 'Wenn das Dorf etwas davon hat – eine Beteiligung, vielleicht Bürgerstrom.'],
+      [
+        'chronist',
+        -1,
+        'Der Blick vom Weg nach Südwesten wäre danach ein anderer. Das sollte man vorher gemeinsam anschauen.',
+      ],
     ],
     'energie/waerme': [
-      ['jens', 1, 'Die Technik ist gut, aber die Häuser müssen mitspielen – ein Altbau braucht Dämmung.'],
-      ['heike', 0, 'Mein Holzofen bleibt. Aber die Ölheizung vom Nachbarn möchte ich nicht mehr riechen.'],
-      ['uwe', -2, 'Fünfundzwanzigtausend Euro für eine Heizung? Wer soll das bezahlen?'],
-      ['hubert', -1, 'Die Wärmepumpe der Nachbarn brummt nachts. Ich hab’s im Schlafzimmer gehört.'],
+      ['handwerker', 1, 'Die Technik ist gut, aber ein Altbau braucht Dämmung und meist größere Heizkörper.'],
+      ['gaertnerin', 0, 'Mein Holzofen bleibt. Eine Pumpe daneben wäre für mich eine Ergänzung.'],
+      ['rentnerin', -1, 'Dreißigtausend Euro für eine Heizung, in meinem Alter? Auch mit Förderung ist das viel.'],
+      [
+        'pendlerin',
+        1,
+        'Für uns Jüngere ist das die Zukunft, wenn die Förderung stimmt. Das Brummen nachts darf nicht stören.',
+      ],
     ],
     'klima/regen': [
       [
-        'manfred',
+        'feuerwehr',
         -2,
-        'Bei so einem Regen müssen wir als Wehr raus, und die Keller am Hang laufen voll. Das kennen wir von anderen Orten.',
+        'Bei so einem Regen müssen wir raus, und die Keller am Hang laufen voll. Das kennt man aus anderen Dörfern.',
       ],
-      ['ingrid', -1, 'Das Dorf liegt am Hang. Das Wasser sucht sich seinen Weg durch die Straße.'],
-      ['katrin', -1, 'Wenn die Straße zum Bach wird, kommt der Schulbus nicht durch, und die Kinder stehen im Nassen.'],
+      ['rentnerin', -1, 'Das Wasser läuft von den Feldern über die Straße. Ich habe Angst um meinen Keller.'],
+      [
+        'pendlerin',
+        -1,
+        'Wenn die Straße zum Bach wird, kommt der Schulbus nicht durch, und die Kinder müssen im Nassen warten.',
+      ],
+      ['landwirt', 0, 'Die Felder sind zum Teil schuld, aber auch der Hang. Beides lässt sich bessern.'],
     ],
     'klima/vorsorge': [
-      ['manfred', 2, 'Mulden und ein größerer Durchlass – genau das, was wir der Stadt seit Jahren sagen.'],
-      ['ingrid', 1, 'Die Stadt Schleusingen muss mitzahlen. Aber billiger als jeder Schaden.'],
-      ['uwe', 0, 'Wenn die Mulde auf meinem Acker liegt, will ich eine Entschädigung.'],
+      ['feuerwehr', 2, 'Mulden und ein größerer Durchlass: genau das, was uns im Einsatz Arbeit abnähme.'],
+      ['gemeinde', 1, 'Die Stadt muss mitzahlen. Aber es ist billiger als jeder Schaden.'],
+      [
+        'landwirt',
+        0,
+        'Wenn die Mulde auf meinem Acker liegt, will ich eine Entschädigung – und eine Lösung für die Bewirtschaftung.',
+      ],
+      ['pendlerin', 1, 'Hauptsache, die Straße bleibt befahrbar.'],
     ],
     'klima/dez23': [
       [
-        'manfred',
+        'feuerwehr',
         1,
-        'Im Dezember 2023 hat die Talsperre viel abgefangen. Gut, dass es sie gibt – darauf verlassen möchte ich mich nicht allein.',
+        'Im Dezember 2023 hat die Talsperre viel abgefangen. Gut, dass es sie gibt – darauf allein verlassen möchte ich mich nicht.',
       ],
-      ['uwe', -1, 'Die Wiese an der Schleuse stand trotzdem unter Wasser. Wer ersetzt mir den Ausfall?'],
-      ['gerhard', 0, 'Wir wissen, wo das Wasser hinläuft. Ein Pegelstand am Dorfeingang wäre schon eine Hilfe.'],
+      [
+        'landwirt',
+        -1,
+        'Die Wiesen an der Schleuse können unter Wasser stehen, auch wenn die Talsperre hält. Wer ersetzt den Ausfall?',
+      ],
+      ['chronist', 0, 'Wir wissen, wo das Wasser hinläuft. Ein Pegel am Dorfeingang wäre schon eine Hilfe.'],
     ],
     'klima/hoch': [
       [
-        'manfred',
+        'feuerwehr',
         -2,
-        'Dezember 2023 hat uns gezeigt, wie schnell die Schleuse steigt. Wenn die Talsperre nicht mehr reicht, wird es ernst.',
+        'Dezember 2023 hat gezeigt, wie schnell das geht. Wenn die Talsperre nicht mehr reicht, wird es ernst.',
       ],
-      [
-        'gerhard',
-        -1,
-        'Ich habe in der Dorfchronik nachgelesen: Hochwasser gab es immer wieder. Das Wasser vergisst nichts.',
-      ],
-      ['uwe', -1, 'Meine Wiese steht dann zwei Wochen unter Wasser.'],
+      ['chronist', -1, 'Hochwasser gab es hier immer wieder; die Dorfchronik zeigt das. Das Wasser vergisst nichts.'],
+      ['landwirt', -1, 'Meine Wiesen stünden dann tagelang unter Wasser.'],
+      ['jugendliche', 0, 'Ich hätte gern, dass man vorher sagt, was zu tun ist – nicht erst, wenn es da ist.'],
     ],
     'klima/duerre': [
-      ['uwe', -2, 'Zweimal Dürre hintereinander – das halte ich nicht durch. Der Mais ist verbrannt.'],
-      ['heike', -2, 'Der Garten ist nur noch mit Gießen zu halten. Und der Brunnen wird knapp.'],
-      ['wolfgang', -1, 'Die Fichten an der Klinge stehen schon jetzt im Stress. Der Käfer kommt zuverlässig.'],
+      ['landwirt', -2, 'Mehrere trockene Sommer hintereinander halte ich nicht durch. Dann bleibt der Mais klein.'],
+      ['gaertnerin', -2, 'Der Garten ist nur noch mit Gießen zu halten, und der Brunnen wird knapp.'],
+      ['waldbesitzer', -1, 'Meine Fichten stehen schon im Stress. Der Käfer kommt dann zuverlässig.'],
+      ['jugendliche', -1, 'Wenn der Bach trocken ist, ist es auch kein Dorf mehr, in dem man gern draußen ist.'],
     ],
     'wald/natur': [
-      ['ronald', 2, 'Soll die Natur es machen. Birken, Eberesche, und der Rotmilan hat freie Sicht.'],
+      ['vogel', 2, 'Soll die Natur es machen: Birke, Eberesche, und der Rotmilan hat freie Sicht.'],
       [
-        'wolfgang',
+        'waldbesitzer',
         -1,
-        'Das sieht lange wild aus, und für Nutzholz wird es dauern. Wer vom Wald leben will, hat davon wenig.',
+        'Das sieht lange wild aus, und für Nutzholz dauert es. Wer vom Wald etwas haben will, hat davon wenig.',
       ],
-      ['gerhard', 0, 'Mein Großvater hat die Fichten noch gepflanzt. Man kann nicht ewig nachtrauern.'],
+      ['chronist', 0, 'Die Fichten hat man hier angepflanzt. Man kann nicht ewig nachtrauern.'],
+      ['jugendliche', 1, 'Ich finde einen wilden Wald spannender als Reihen. Hauptsache, er wird nicht zur Müllkippe.'],
     ],
     'wald/umbau': [
-      ['wolfgang', 2, 'Buche, Tanne, Eiche – das trägt in sechzig Jahren. Ich pflanze gern, wenn es einer bezahlt.'],
-      ['hubert', 1, 'In vierzig Jahren gibt es wieder gutes Holz für den Ofen und für Bretter.'],
-      ['ronald', -1, 'Gepflanzt ist nicht wild. Und der Zaun gegen Rehe hält auch die Ziegen nicht fern.'],
-      ['uwe', -1, 'Neuntausend Euro je Hektar. Wer ist der Eigentümer, der das zahlt?'],
+      [
+        'waldbesitzer',
+        2,
+        'Buche, Tanne, Eiche: Ein Mischwald hält mehr aus. Ich pflanze gern, wenn die Förderung stimmt – Holz gibt es erst in vielen Jahrzehnten.',
+      ],
+      ['gemeinde', 1, 'Das Forstamt berät, der Eigentümer entscheidet. Mit einem gemeinsamen Plan ginge es leichter.'],
+      ['vogel', -1, 'Gepflanzt ist nicht wild. Und was gegen Rehe gezäunt werden muss, sperrt auch andere Tiere aus.'],
+      ['landwirt', -1, 'Neun- bis dreizehntausend Euro je Hektar. Wer ist der Eigentümer, der das zahlt?'],
     ],
   };
+
   // ---------- the stand: spruces that die and are cleared (the world's trees are put by this curve) ----------
   const DIEBACK = [0, 0.3, 0.65, 0.95, 1]; // share of the spruces struck by year (Annahme after Hitze- und Trockenstress, Käfer: DWD-Klimaatlas, ThüringenForst)
   const LAG = 2.5; // years from the first red crowns to the cleared area
@@ -439,8 +553,8 @@ export const ZKDATA = (() => {
       world: { bank: 0, rufbus: 0, takt: 0 },
     };
     if (vid === 'bank') {
-      // one bench (AMTDATA: 380 €) and its sign; care 60 € a year (Annahme)
-      res.kosten = { inv: [300, 400, 600], yr: [40, 60, 100] };
+      // one bench with sign: about 3 000 € in practice (kommunal.de; the game's AMTDATA says 380 €, the bare bench); care 60 € a year (Annahme)
+      res.kosten = { inv: [2000, 3000, 4000], yr: [40, 60, 100] };
       // Annahme: 0,6 rides a day on 300 days; 30 % of them would have driven alone (11 km there and back)
       const rides = 0.6 * 300,
         saved = rides * 0.3 * 2 * km * pkw;
@@ -448,11 +562,22 @@ export const ZKDATA = (() => {
       res.world.bank = 1;
       res.ridesYr = rides;
     } else if (vid === 'ruf') {
-      // Annahme: 6 trips a day on 330 days (about 17 a year for each of 120 inhabitants); demand grows with the age of the village
+      // Annahme: 3 passenger trips a day on 300 days (Mon–Sat; range 1,5–6), growing with the age of the village. Per passenger 30–56 €
+      // (Landtag M-V Drs. 8/6129: 2023–25 districts paid 30–56 €); mid 40 €. Mecklenburg-Vorpommern sees only 0,5–0,6 trips per inhabitant a year –
+      // 3 a day would be about 7 per inhabitant, so the low end of the range is the more cautious guess.
       const grow = at([1, 1.1, 1.2, 1.35, 1.5], y),
-        trips = 6 * 330 * grow,
-        perTrip = 30; // € gross per trip (Annahme 20–45; rural on-demand services lie there)
-      res.kosten = { inv: [8000, 15000, 30000], yr: [trips * 20, trips * perTrip, trips * 45] };
+        perDay = [1.5, 3, 6],
+        perTrip = [30, 40, 56],
+        trips = 3 * 300 * grow;
+      res.kosten = {
+        inv: [0, 0, 0],
+        // Fahrer and vehicle cost money even without passengers: a floor of about 59–80 k€ a year for a Mon–Sat zone (Annahme)
+        yr: [
+          Math.max(40000, perDay[0] * 300 * grow * perTrip[0]),
+          Math.max(59000, trips * perTrip[1]),
+          Math.max(80000, perDay[2] * 300 * grow * perTrip[2]),
+        ],
+      };
       // CO2 of the Rufbus = what the minibus drives (empty runs included) minus the car trips it replaces. Three assumptions decide the sign
       // (ranges, Annahme): passengers per vehicle run, the share of empty/positioning km, and the share of rides that replace a car trip.
       //   best case:  3,5 passengers, +30 % km, 70 % replace a car   typical: 1,8 / +60 % / 40 %   worst: 1,2 / +80 % / 25 %
@@ -475,7 +600,7 @@ export const ZKDATA = (() => {
         saved = (kmYr * 2.5 * 0.4 * pkw) / 1000; // Annahme: 2,5 riders a trip, 40 % of them would have driven
       res.co2 = [(em - saved) * 0.7, em - saved, (em - saved) * 1.3];
       res.houses = 14; // Annahme: houses along the road through the village
-      res.level = 2;
+      res.level = 1;
       res.kmYr = kmYr;
       res.world.takt = 1;
     }
@@ -493,7 +618,7 @@ export const ZKDATA = (() => {
       nat: 0,
       world: { pvRoof: 0, pvField: 0, wp: 0 },
     };
-    const gridNet = EF_GRID[i] - EF_PV; // kg saved per kWh of PV
+    const gridNet = Math.max(0, EF_GRID[i] - EF_PV); // kg saved per kWh of PV against the grid mix (direct factor of the mix minus the module's life cycle; never below 0)
     if (vid === 'dach') {
       const share = at([0, 0.25, 0.5, 0.8, 0.8], y),
         kwp = c.roof.kwp * share,
@@ -502,8 +627,12 @@ export const ZKDATA = (() => {
       res.kosten = { inv: [inv * 0.7, inv, inv * 1.4], yr: [inv * 0.012, inv * 0.015, inv * 0.02] };
       res.kwp = kwp;
       res.kwh = kwh;
-      res.eurPerYr = kwh * 0.164;
-      res.co2 = [-(kwh * gridNet * 1.15) / 1000, -(kwh * gridNet) / 1000, -(kwh * gridNet * 0.85) / 1000];
+      res.eurPerYr = kwh * (0.32 / 3 + (2 / 3) * at([0.077, 0.04, 0.04, 0.04, 0.04], y));
+      res.co2 = [
+        -(kwh * Math.max(gridNet, EF_DISP[i] - EF_PV)) / 1000,
+        -(kwh * gridNet) / 1000,
+        -(kwh * gridNet * 0.7) / 1000,
+      ];
       res.nat = -1;
       res.world.pvRoof = share;
     } else if (vid === 'park') {
@@ -517,7 +646,11 @@ export const ZKDATA = (() => {
       res.kwp = kwp;
       res.kwh = kwh;
       res.beteil = kwh * 0.002; // § 6 EEG, 0,2 ct/kWh
-      res.co2 = [-(kwh * gridNet * 1.15) / 1000, -(kwh * gridNet) / 1000, -(kwh * gridNet * 0.85) / 1000];
+      res.co2 = [
+        -(kwh * Math.max(gridNet, EF_DISP[i] - EF_PV)) / 1000,
+        -(kwh * gridNet) / 1000,
+        -(kwh * gridNet * 0.7) / 1000,
+      ];
       res.nat = share ? 3 : 0;
       res.world.pvField = share;
     } else if (vid === 'waerme') {
@@ -525,12 +658,12 @@ export const ZKDATA = (() => {
         n = Math.max(0, (share - 0.05) * c.houses),
         jaz = at([3, 3.2, 3.5, 3.8, 4], y),
         demand = 20000; // kWh a year for an old village house (Annahme)
-      const fossil = [0.19, 0.19, 0.19, 0.19, 0.19][i]; // kg/kWh heat: Öl 0,27 and Gas 0,20 direct, Holz low, as a mix (UBA)
+      const fossil = 0.26; // kg/kWh heat of an oil or gas boiler (UBA: Heizöl 0,27, Erdgas 0,20; with upstream 0,22–0,30)
       const dco = n * ((demand * (EF_GRID[i] / jaz - fossil)) / 1000);
       res.n = n;
-      res.kosten = { inv: [n * 18000, n * 24000, n * 32000], yr: [0, 0, 0] };
+      res.kosten = { inv: [n * 25000, n * 32000, n * 40000], yr: [0, 0, 0] };
       const strom = (demand / jaz) * 0.28,
-        gas = demand * (0.11 + at([0.013, 0.03, 0.05, 0.08, 0.1], y));
+        gas = demand * (0.11 + at([0.013, 0.02, 0.035, 0.06, 0.075], y)); // fuel price plus the CO₂ price (Annahme, see Warum)
       res.savePerWp = gas - strom;
       res.kosten.yr = [n * (strom - gas) * 1.5, n * (strom - gas), n * (strom - gas) * 0.5];
       res.co2 = [dco * 0.75, dco, dco * 1.3];
@@ -552,7 +685,7 @@ export const ZKDATA = (() => {
       world: { wet: 0, rain: null, flood: 0, dry: 0 },
     };
     if (vid === 'regen' || vid === 'vorsorge') {
-      const dmg = 190000; // Annahme: 12 Keller und Erdgeschosse × 12 000 € + 40 000 € Wege und Straßen
+      const dmg = 184000; // Annahme: 12 Keller und Erdgeschosse × 12 000 € + 40 000 € Wege und Straßen
       const ead = (0.3 * dmg * 0.05 + dmg * 0.01) * f; // expected damage a year: a 20-year event at 30 % of the damage plus the 100-year event
       res.dmg = dmg;
       res.houses = vid === 'regen' ? 12 : 5;
@@ -586,7 +719,7 @@ export const ZKDATA = (() => {
       res.kosten = { inv: [0, 0, 0], yr: [ead * 0.5, ead, ead * 2.2] };
       res.world.flood = 1.8 * at([1, 1.02, 1.04, 1.07, 1.1], y);
     } else if (vid === 'duerre') {
-      const p = at([0.15, 0.2, 0.25, 0.33, 0.45], y); // chance of a drought summer in a year (Annahme after the DWD-Klimaatlas)
+      const p = at([0.35, 0.38, 0.42, 0.5, 0.6], y); // chance of a drought summer in a year (Annahme after the DWD-Klimaatlas)
       const dmg = 24000; // Annahme: 20 % of the yield on 110 ha × 1 000 €/ha plus water for the gardens
       res.dmg = dmg;
       res.p = p;
@@ -636,8 +769,15 @@ export const ZKDATA = (() => {
     res.kosten.inv = perHa.map(v => v * N.clrHa);
     const unter = vid === 'umbau' ? 150 : 20; // € per hectare and year: care of the young stand / checks
     res.kosten.yr = [unter * N.clrHa * 0.7, unter * N.clrHa, unter * N.clrHa * 1.5];
-    const net = N.emit + N.lostSink - N.sink; // t CO₂ a year more than today (minus is good)
-    res.co2 = [net * 0.6, net, net * 1.4];
+    // the die-back itself (emission and lost sink) hits both variants alike – it is the beetle, not the choice. So the two are compared with
+    // each other: natural regeneration is the reference (0), the planted mixed forest is shown against it.
+    const net = N.emit + N.lostSink - N.sink;
+    const Nn = waldNums('natur', y, c),
+      netRef = Nn.emit + Nn.lostSink - Nn.sink;
+    res.dieback = N.emit + N.lostSink;
+    const diff = net - netRef;
+    res.co2 = vid === 'natur' ? [0, 0, 0] : [diff * 1.4, diff, diff * 0.6];
+    res.co2ref = true;
     res.houses = N.rate > 0.05 ? 8 : 0;
     res.level = N.rate <= 0.05 ? 0 : N.rate < 0.4 ? 1 : N.rate < 1 ? 2 : N.rate < 1.6 ? 3 : 4;
     res.nat = vid === 'natur' ? at([0, 3, 4, 9, 15], y) : at([0, -2, 0, 7, 12], y);
@@ -689,14 +829,14 @@ export const ZKDATA = (() => {
       );
     if (t === 'mobil' && v === 'bank')
       return W(
-        'Eine Bank mit Schild kostet etwa 380 € (so im Spiel für die Mitfahrbank; Annahme 300–600 €), Pflege etwa 60 € im Jahr. Mitfahrbänke gibt es in vielen Dörfern; die Stadt oder der Ortsteil zahlt sie aus dem Ortsteilbudget.',
-        [SRC.bank],
+        'Eine Bank mit Schild kostet in der Praxis etwa 3 000 € (kommunal.de; Spanne 2 000–4 000 €, die bloße Bank im Spiel 380 €), Pflege etwa 60 € im Jahr (Annahme). Mitfahrbänke gibt es in vielen Dörfern; zahlen würde die Stadt oder der Ortsteil aus seinem Budget. Zur Haftung: Es fährt ein Auto mit seiner eigenen Kfz-Haftpflicht, sie deckt auch die Mitfahrenden (FAQ des Landes Brandenburg).',
+        [SRC.bank, SRC.mfbank2, SRC.mfbank],
         true
       );
     if (t === 'mobil' && v === 'ruf')
       return W(
-        'Annahme: sechs Fahrten am Tag aus Ratscher (330 Tage, wächst mit dem Alter im Dorf). Kosten je Fahrt brutto etwa 30 € (Spanne 20–45 €; ländliche Rufbusse liegen dort, ohne Fahrgeld und Zuschüsse). Thüringen kennt wenige reine Rufbuslinien (Jena seit 1999, Dorfbusse im Wartburgkreis 2021–2023) – es gibt keine belastbare Zahl für Ratscher. Bestellt und bezahlt wird der Busverkehr vom Landkreis (§ 3 ThürÖPNVG).',
-        [SRC.rufbus, SRC.ruf2, SRC.oepnv],
+        'Annahme: im Mittel drei Fahrgastfahrten am Tag aus Ratscher (300 Tage, Spanne 1,5–6; wächst mit dem Alter im Dorf). Je Fahrgast 30–56 € (Mecklenburg-Vorpommern, Landtag Drs. 8/6129: so viel zahlten die Landkreise 2023–2025); dort fahren allerdings nur etwa 0,5–0,6 Fahrten je Einwohner und Jahr – für Ratscher mit rund 120 Einwohnern wären das nur etwa 70 im Jahr, drei am Tag wären gut 7 je Einwohner. Fahrer und Fahrzeug kosten auch ohne Fahrgäste: untere Grenze etwa 59–80 000 € im Jahr für ein Gebiet Montag bis Samstag (Annahme). In Thüringen wurden beide Dorfbus-Versuche im Wartburgkreis wieder in normale Linien überführt, und der Landkreis Hildburghausen hat einzelne Linien als reine Rufbusse angekündigt (Landtag Drs. 7/8819). Bestellt und bezahlt wird der Busverkehr vom Landkreis (§ 3 ThürÖPNVG).',
+        [SRC.rufbus, SRC.mvruf, SRC.ruf2, SRC.oepnv],
         true
       );
     if (t === 'mobil' && v === 'takt')
@@ -719,7 +859,7 @@ export const ZKDATA = (() => {
           Math.round(at([0, 0.25, 0.5, 0.8, 0.8], y) * 100) +
           ' % belegt. Preis ' +
           grp(String(PRICE_ROOF[YEARS.indexOf(y)])) +
-          ' €/kWp (Fraunhofer ISE 2024: 700–2000 €/kW, kleine Dächer mehr; spätere Jahre Annahme). Betrieb 1,5 % der Investition im Jahr (Annahme). Erlös und Ersparnis mit 16 ct/kWh: ein Drittel Eigenverbrauch zu 32 ct, der Rest zu 8 ct Einspeisung (Annahme).',
+          ' €/kWp (Fraunhofer ISE 2024: 700–2000 €/kW, kleine Dächer mehr; spätere Jahre Annahme). Betrieb 1,5 % der Investition im Jahr (Annahme). Erlös und Ersparnis: ein Drittel Eigenverbrauch zu 32 ct (Annahme), der Rest wird eingespeist – 7,70 ct/kWh seit 1.8.2026 (EMA Energiewelt); der Kabinettsentwurf vom 29.07.2026 will die feste Vergütung für neue Anlagen ab 2027 abschaffen (nicht beschlossen), deshalb ab 2030 der Marktwert, Annahme 3–5 ct (hier 4 ct). Im Dorf stehen schon einzelne Anlagen (Marktstammdatenregister, PLZ 98553: 939 Anlagen mit etwa 12 MWp; für Ratscher vermutlich 10–25) – sie sind hier nicht eingerechnet. Die Preise je kWp gelten für die gesamte Leistung im Jahr der Rechnung.',
         [SRC.ise, SRC.pvgis],
         true
       );
@@ -729,19 +869,19 @@ export const ZKDATA = (() => {
           dec(c.field.ha, 1) +
           ' ha trägt ' +
           dec(c.field.kwp / 1000, 1) +
-          ' MWp (etwa 1 MWp je Hektar). Der Preis fällt von 700 auf 450 €/kWp (Fraunhofer ISE: unter 460 €/kW bis 2045). Jährlich Betrieb 12 €/kWp und Pacht 2 500 €/ha (Annahme). Die Gemeinde darf mit 0,2 ct/kWh beteiligt werden (§ 6 EEG, Kann-Regel). Bis zum Bau vergehen zwei bis drei Jahre Bauleitplanung (Aufstellungsbeschluss, Bebauungsplan).',
+          ' MWp (etwa 1 MWp je Hektar). Der Strom aus neuen Freiflächenanlagen kostet 4,1–6,9 ct/kWh (Fraunhofer ISE 2024). Gezeigt werden Investition und laufende Kosten des Betreibers; die Stadt oder das Dorf zahlt sie nicht – sie verpachtet allenfalls die Fläche. Im Marktstammdatenregister ist für PLZ 98553 keine Freiflächenanlage gebaut oder geplant (größte Anlage 999 kW, größte geplante 50 kW). Der Preis fällt von 700 auf 450 €/kWp (Fraunhofer ISE: unter 460 €/kW bis 2045). Jährlich Betrieb 12 €/kWp und Pacht 2 500 €/ha (Annahme). Die Gemeinde kann mit 0,2 ct/kWh beteiligt werden (§ 6 EEG: der Betreiber „soll“ es anbieten; freiwillig, nur bei EEG-Förderung erstattet; das Thüringer Beteiligungsgesetz von 2024 gilt nur für Wind). Bis zum Bau vergehen zwei bis drei Jahre Bauleitplanung (Aufstellungsbeschluss, Bebauungsplan).',
         [SRC.ise, SRC.eeg6],
         true
       );
     if (t === 'energie' && v === 'waerme')
       return W(
-        'Annahme: 55 Haushalte, 5 % heizen heute schon mit Wärmepumpe. Je Haus 18 000–32 000 € (Luft-Wasser, mit Speicher und Heizkörpern; vor Förderung – die Bundesförderung für effiziente Gebäude übernimmt bis zu 70 %, der Stand 2026 ist nicht geprüft). Betrieb: Strom 28 ct/kWh bei Jahresarbeitszahl 3–4 gegen Öl und Gas zu 11 ct plus CO₂-Preis. Ein Nahwärmenetz würde allein im Dorfkern lohnen (Annahme: etwa 1 MWh je Meter Trasse und Jahr als Schwelle).',
-        [SRC.bafa, SRC.uba],
+        'Annahme: 55 Haushalte, 5 % heizen heute schon mit Wärmepumpe. Je Haus 25 000–40 000 € (Luft-Wasser, mit Speicher und Heizkörpern; Verbraucherzentrale RLP 02/2026; vor Förderung). Förderung: KfW 458 seit 21.07.2026 – 30 % Grundförderung, dazu Geschwindigkeitsbonus (16 %, sinkt ab 1.2.2027 alle sechs Monate um 4 Punkte) und Einkommensbonus 10/30/40 %, bei höchstens 28 000 € förderfähigen Kosten (test.de); die Förderung ist hier nicht abgezogen. Betrieb: Strom 28 ct/kWh bei Jahresarbeitszahl 3–4 gegen Öl und Gas zu 11 ct plus CO₂-Preis. Der CO₂-Preis liegt 2026 und 2027 im Korridor 55–65 €/t (BEHG), danach Annahme: etwa 100 €/t 2030, 175 €/t 2035, 300 €/t 2045 und 375 €/t 2060 (europäischer Handel für Gebäude ab 2028; unsicher). Ein Nahwärmenetz würde allein im Dorfkern lohnen (Annahme: etwa 1 MWh je Meter Trasse und Jahr als Schwelle); die Wärmeplanung der Stadt Schleusingen ist bis 30.06.2028 vorgeschrieben (§ 4 WPG) und wird zeigen, ob das Dorf dafür in Frage kommt.',
+        [SRC.vzwp, SRC.kfw, SRC.behg, SRC.wpg, SRC.uba],
         true
       );
     if (t === 'klima' && (v === 'regen' || v === 'vorsorge'))
       return W(
-        'Der Regen: etwa 50 mm in einer Stunde, wie er einmal in 100 Jahren fällt (KOSTRA-DWD-2020; Annahme für Ratscher). Schaden Annahme: 12 Keller und Erdgeschosse × 12 000 € und 40 000 € Wege. Erwartet im Jahr: ein 20-jähriges Ereignis mit 30 % des Schadens plus das 100-jährige, mal ' +
+        'Der Regen: etwa 47 mm in einer Stunde, wie er einmal in 100 Jahren fällt (KOSTRA-DWD-2020, Rasterzelle Ratscher: 47,5 mm ± 26 %; ein 20-jähriger Regen 35 mm, ein jährlicher 16 mm). Schaden Annahme: 12 Keller und Erdgeschosse × 12 000 € und 40 000 € Wege. Erwartet im Jahr: ein 20-jähriges Ereignis mit 30 % des Schadens plus das 100-jährige, mal ' +
           dec(at([1, 1.05, 1.1, 1.25, 1.5], y), 2) +
           ' (mehr starke Regen mit der Wärme, etwa +7 % Regenmenge je Grad; die Projektion für den Landkreis Hildburghausen sieht Starkregentage von 35 im Jahr (1961–1990) auf etwa 37–39 – im Mittel kaum mehr, die einzelnen Regen werden aber stärker).' +
           (v === 'vorsorge'
@@ -752,7 +892,7 @@ export const ZKDATA = (() => {
       );
     if (t === 'klima' && v === 'dez23')
       return W(
-        'Bezugsereignis: das Hochwasser vom Dezember 2023. Die Talsperre Ratscher (Betreiber TFW) hielt etwa 900 000 m³ zurück (Landtag Drs. 7/9624). Alles Weitere ist Annahme: Pegel 0,9 m über dem Bachbett im Dorf, zwei Häuser mit nassem Keller zu je 15 000 €, ein solches Ereignis etwa alle zehn Jahre, mit dem Klima häufiger. Die Zahlen sind mit der Chronik und der Gemeinde zu prüfen.',
+        'Bezugsereignis: das Hochwasser vom Dezember 2023. Die Talsperre Ratscher (Betreiber TFW) speicherte am 23. und 24. Dezember etwa 900 000 m³ und stand dabei bei 2,5 Mio. m³ (üblich 0,4–0,7 Mio.); die Talsperre Schönbrunn weiter oben hielt weitere 660 000 m³ zurück (Landtag Drs. 7/9624, 28.02.2024). Wie sich das im Dorf auswirkte, steht dort nicht – alles Weitere ist Annahme: Pegel 0,9 m über dem Bachbett im Dorf, zwei Häuser mit nassem Keller zu je 15 000 €, ein solches Ereignis etwa alle zehn Jahre, mit dem Klima häufiger. Ob sich Hochwasser an der Schleuse mit dem Klima häufiger oder stärker einstellt, ist unsicher; der Anstieg über die Jahre ist eine Annahme. Die Zahlen sind mit der Chronik und der Gemeinde zu prüfen.',
         [SRC.dez23, SRC.hnz],
         true
       );
@@ -764,8 +904,8 @@ export const ZKDATA = (() => {
       );
     if (t === 'klima' && v === 'duerre')
       return W(
-        'Annahme: 110 ha Acker und Grünland, 20 % weniger Ertrag bei 1 000 € je Hektar, dazu Wasser für die Gärten: 24 000 € in einem Dürresommer. Die Wahrscheinlichkeit pro Jahr steigt von 15 % auf 45 % (Annahme, abgeleitet aus den Projektionen für den Landkreis Hildburghausen, Szenario RCP8.5 ohne Klimaschutz: Sommerniederschlag −6 % bis 2021–2050 und −19 % bis 2071–2100 gegen 1961–1990 (221 mm); Heiße Tage von 1 auf etwa 7 (bis 2050) und etwa 27 (bis 2100) im Jahr; Mitteltemperatur +1,9 K bzw. +4,5 K). Der Anteil an Dürresommern selbst ist nicht veröffentlicht – das ist die Annahme.',
-        [SRC.rekis, SRC.klimaatlas],
+        'Annahme: 110 ha Acker und Grünland, 20 % weniger Ertrag bei 1 000 € je Hektar, dazu Wasser für die Gärten: 24 000 € in einem Dürresommer. Die Wahrscheinlichkeit pro Jahr steigt von 35 % auf 60 % (heute schon hoch: nach dem Umweltbundesamt waren 2018, 2019, 2020 und 2022 trocken, 2025 von Februar bis Mai und das Frühjahr 2026 „deutlich zu trocken“; Annahme, abgeleitet aus den Projektionen für den Landkreis Hildburghausen, Szenario RCP8.5 ohne Klimaschutz: Sommerniederschlag −6 % bis 2021–2050 und −19 % bis 2071–2100 gegen 1961–1990 (221 mm); Heiße Tage von 1 auf etwa 7 (bis 2050) und etwa 27 (bis 2100) im Jahr; Mitteltemperatur +1,9 K bzw. +4,5 K). Der Anteil an Dürresommern selbst ist nicht veröffentlicht – das ist die Annahme.',
+        [SRC.rekis, SRC.ubadurre, SRC.klimaatlas],
         true
       );
     if (t === 'wald')
@@ -798,7 +938,12 @@ export const ZKDATA = (() => {
       id: 'co2',
       label: 'CO₂',
       main,
-      sub: na || vid === 'heute' ? '' : 'gegenüber „Heute“ · minus ist gut',
+      sub:
+        na || vid === 'heute'
+          ? ''
+          : topicId === 'wald'
+            ? 'gegenüber der natürlichen Verjüngung · minus ist gut'
+            : 'gegenüber „Heute“ · minus ist gut',
       range,
       raw: { t: na ? null : mid, lo, hi },
       why: co2Why(topicId, vid, y, r, c),
@@ -819,14 +964,14 @@ export const ZKDATA = (() => {
           dec(EF_BUS[i] * 1000, 0) +
           ' g je km, Kleinbus: ' +
           dec(EF_KLEIN[i] * 1000, 0) +
-          ' g je km (Annahme; elektrisch ab 2035 deutlich weniger). Was ein Bus oder Rufbus ausstößt, steht gegen die Autofahrten, die er ersetzt. Ein schwach besetzter Bus verursacht mehr CO₂ als die Autos, die er ersetzt – das ändert sich erst, wenn er gut besetzt ist und elektrisch fährt.' +
+          ' g je km (Annahme, mit Vorkette; elektrisch ab 2035 deutlich weniger). Was ein Bus oder Rufbus ausstößt, steht gegen die Autofahrten, die er ersetzt. Ein schwach besetzter Bus verursacht mehr CO₂ als die Autos, die er ersetzt – das ändert sich erst, wenn er gut besetzt ist und elektrisch fährt.' +
           (v === 'ruf'
             ? ' Rufbus gerechnet: gefahrene Kleinbus-km (Leerfahrten eingerechnet) minus ersetzte Autofahrten. Drei Annahmen, jeweils als Spanne: Fahrgäste je Fahrt (1,2 – 1,8 – 3,5), Anteil Leer- und Anfahrtkilometer (+80 % – +60 % – +30 %) und der Anteil der Fahrten, die ein Auto ersetzen (25 % – 40 % – 70 %). Am meisten entscheidet die Besetzung: erst mit gut drei Fahrgästen und einem E-Kleinbus (ab etwa 2035) kippt das Vorzeichen ins Minus; heute mit Diesel bleibt es ein Plus. Belastbare Zahlen für Ratscher gibt es nicht.'
             : '') +
           (v === 'bank'
-            ? ' Die Mitfahrbank: das Auto fährt ohnehin, ersetzt werden nur Fahrten, die sonst allein im eigenen Auto gemacht würden (Annahme: 0,6 Fahrten am Tag, 30 % davon).'
+            ? ' Die Mitfahrbank: das Auto fährt ohnehin, ersetzt werden nur Fahrten, die sonst allein im eigenen Auto gemacht würden (Annahme: 0,6 Fahrten am Tag, 30 % davon; je Fahrt etwa 3 km).'
             : ''),
-        [SRC.uba, SRC.ruf2],
+        [SRC.ubaverkehr, SRC.mvruf, SRC.ruf2],
         true
       );
     if (t === 'energie' && (v === 'dach' || v === 'park'))
@@ -837,17 +982,17 @@ export const ZKDATA = (() => {
           (v === 'park' ? KWH_FIELD : KWH_ROOF) +
           ' kWh je kWp und Jahr nach PVGIS für Ratscher: Süd 35° 1 011, Süd 20° 980, Ost oder West 35° etwa 820; Dächer im Dorf gemischt, deshalb ' +
           (v === 'park' ? 'Tische nach Süden' : 'Annahme 900, Spanne 815–1 010') +
-          ') ersetzt Strom aus dem Netz. Der Strommix stößt heute etwa 0,38 kg CO₂ je kWh aus (UBA), Annahme für später: ' +
+          ') ersetzt Strom aus dem Netz. Der Strommix stößt heute etwa 0,34 kg CO₂ je kWh aus (UBA: 344 g im Jahr 2025), Annahme für später: ' +
           dec(EF_GRID[i], 2) +
           ' kg im Jahr ' +
           y +
-          ' – das Netz wird sauberer, deshalb spart ein Modul später weniger. Module selbst: 0,04 kg/kWh über ihr Leben.',
-        [SRC.uba, SRC.pvgis],
+          ' – das Netz wird sauberer, deshalb spart ein Modul später weniger. Module selbst: 0,04 kg/kWh über ihr Leben, das ist vom direkten Wert des Mixes abgezogen (nie unter null). Die obere Grenze der Spanne rechnet mit dem fossilen Strom, den die Module verdrängen – nach der Bilanz des Umweltbundesamts etwa 0,7 kg je kWh heute (Annahme: sinkt mit dem Netz).',
+        [SRC.ubastrom, SRC.ubaregen, SRC.pvgis],
         true
       );
     if (t === 'energie' && v === 'waerme')
       return W(
-        'Wärmebedarf 20 000 kWh je Haus (Annahme). Öl und Gas: im Mittel 0,19 kg CO₂ je kWh Wärme (UBA: Heizöl 0,27, Erdgas 0,20, Holz niedrig). Wärmepumpe: Strom ' +
+        'Wärmebedarf 20 000 kWh je Haus (Annahme). Öl und Gas: im Mittel 0,26 kg CO₂ je kWh Wärme (UBA: Heizöl 0,27, Erdgas 0,20; mit Vorkette 0,22–0,30; Holz ist hier nicht einbezogen, es würde den Vorteil verkleinern). Wärmepumpe: Strom ' +
           dec(EF_GRID[i], 2) +
           ' kg/kWh geteilt durch die Jahresarbeitszahl ' +
           dec(at([3, 3.2, 3.5, 3.8, 4], y), 1) +
@@ -858,7 +1003,7 @@ export const ZKDATA = (() => {
     if (t === 'wald') {
       const N = r.nums;
       return W(
-        'Zwei Dinge: Wo die Fichten sterben und geräumt werden, wird gespeichertes CO₂ frei (etwa 300 t je Hektar im Bestand, die Hälfte davon über die Jahre; Bundeswaldinventur, Annahme) – jetzt ≈ ' +
+        'Zwei Dinge (Zahlen für den ganzen Bestand an der Klinge): Wo die Fichten sterben und geräumt werden, wird gespeichertes CO₂ frei (etwa 300 t je Hektar im Bestand, die Hälfte davon über die Jahre; Bundeswaldinventur, Annahme) – jetzt ≈ ' +
           Math.round(N.emit) +
           ' t im Jahr, dazu fehlt die Senke des alten Bestands (≈ ' +
           Math.round(N.lostSink) +
@@ -866,12 +1011,14 @@ export const ZKDATA = (() => {
           (v === 'umbau' ? 'bei dichter Pflanzung' : 'auf einem Teil der Fläche') +
           ': ≈ ' +
           Math.round(N.sink) +
-          ' t im Jahr. Alles gegenüber heute; die Spanne ist groß.',
+          ' t im Jahr. Das Absterben selbst (≈ ' +
+          Math.round(N.emit + N.lostSink) +
+          ' t im Jahr in diesem Jahr) trifft beide Varianten gleich – das ist der Käfer, nicht die Entscheidung. Deshalb werden die Varianten untereinander verglichen: die natürliche Verjüngung ist der Bezug (0), der Waldumbau steht gegen sie, minus ist gut. Die Spanne ist groß.',
         [SRC.bwi, SRC.forst],
         true
       );
     }
-    return W('Dieses Szenario verändert den Ausstoß nicht und wird hier nicht bewertet.', [], false);
+    return W('Dieses Szenario wird für den Ausstoß hier nicht bewertet.', [], false);
   }
   function laerm(topicId, vid, y, r, c) {
     const lvl = r.level || 0,
@@ -901,14 +1048,14 @@ export const ZKDATA = (() => {
       return W('Eine Bank macht keinen Lärm; es fahren nicht mehr Autos als bisher.', [], true);
     if (t === 'mobil' && v === 'ruf')
       return W(
-        'Ein Kleinbus hält am Anger, tagsüber, ein paar Mal am Tag: Annahme zwei Häuser an der Haltestelle.',
+        'Ein Kleinbus hält an der Haltestelle am alten Schulhaus, tagsüber, ein paar Mal am Tag: Annahme zwei Häuser an der Haltestelle.',
         [],
         true
       );
     if (t === 'mobil' && v === 'takt')
       return W(
-        'Zwölf Vorbeifahrten mehr am Tag an der Ortsdurchfahrt: Annahme 14 Häuser an der Straße. Für Wohnen im Dorfgebiet gilt nachts 45 dB(A) (TA Lärm) – tagsüber fahren die Busse.',
-        [SRC.lärm],
+        'Zwölf Vorbeifahrten mehr am Tag (sechs Fahrten hin und zurück) an der Ortsdurchfahrt, zu den etwa 60 Fahrzeugen am Tag, die es dort ohnehin gibt: Das erhöht den Pegel um deutlich weniger als 1 dB, also kaum hörbar (Annahme). Die TA Lärm gilt für Anlagen, nicht für Busverkehr auf öffentlichen Straßen; Annahme: etwa 14 Häuser an der Straße.',
+        [],
         true
       );
     if (t === 'energie' && (v === 'dach' || v === 'park'))
@@ -1001,7 +1148,7 @@ export const ZKDATA = (() => {
     return (VOICES[tid + '/' + vid] || []).map(([who, lean, say]) => ({
       who,
       name: WHO[who][0],
-      role: WHO[who][1],
+      role: WHO[who][1] || 'erfunden',
       lean,
       say,
     }));
@@ -1015,35 +1162,29 @@ export const ZKDATA = (() => {
         main: 'Referenz',
         sub: 'wie jetzt im Dorf',
         range: '',
-        raw: { v: 50 },
+        raw: { pro: 0, con: 0, neu: 0 },
         voices: [],
         why: W(
-          'Die Vergleichsgröße: die Stimmung heute (50 von 100). Die Stimmen sind Figuren des Spiels (Annahme), keine Umfrage in Ratscher.',
+          'Die Vergleichsgröße: das Dorf, wie es heute ist. Die Stimmen bei den Varianten sind erfundene Platzhalter, keine Umfrage in Ratscher.',
           [],
           false
         ),
       };
-    const mean = V.length ? V.reduce((a, b) => a + b.lean, 0) / V.length : 0;
-    const v = clamp(Math.round(50 + 12.5 * mean), 0, 100);
     const pro = V.filter(x => x.lean > 0).length,
-      con = V.filter(x => x.lean < 0).length;
+      con = V.filter(x => x.lean < 0).length,
+      neu = V.length - pro - con;
     return {
       id: 'stimmung',
       label: 'Stimmung',
-      main: v + ' von 100',
-      sub:
-        pro +
-        ' dafür, ' +
-        con +
-        ' dagegen' +
-        (V.length - pro - con ? ', ' + (V.length - pro - con) + ' unentschieden' : ''),
+      main: pro + ' dafür · ' + con + ' dagegen',
+      sub: (neu ? neu + ' unentschieden · ' : '') + 'Platzhalter für Ihre Stimmen',
       range: '',
-      raw: { v, pro, con },
+      raw: { pro, con, neu },
       voices: V,
       why: W(
-        'Der Mittelwert der Haltungen der Dorfbewohner im Spiel (−2 bis +2, aus „Wahl und Amt“; 50 ist neutral): ' +
-          V.map(x => x.name + ' ' + (x.lean > 0 ? '+' : '') + x.lean).join(', ') +
-          '. Die Stimmen sind erfunden – Annahme zum Ausprobieren der Beteiligung, kein Meinungsbild des echten Orts. Ob jemand dafür oder dagegen ist, hängt am Grund: darum stehen die Sätze darunter.',
+        'Hier zählen die erfundenen Stimmen darunter (' +
+          V.map(x => x.name + (x.lean > 0 ? ' dafür' : x.lean < 0 ? ' dagegen' : ' unentschieden')).join(', ') +
+          '). Sie sind Platzhalter für Ihre eigenen Stimmen im Workshop – kein Meinungsbild des Orts, keine Umfrage, und keine Person aus Ratscher. Eine Zahl wie „63 von 100“ wäre bei drei oder vier Stimmen falsche Genauigkeit; wichtiger sind die Gründe in den Sätzen darunter.',
         [],
         true
       ),

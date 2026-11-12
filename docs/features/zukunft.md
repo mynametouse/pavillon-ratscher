@@ -68,7 +68,7 @@ Ab dem ersten Push gehört `zk_welt.js` dem Helfer `zukunft-welt` (Branch feat/z
 
 ## Offen (nicht in dieser Fassung)
 
-- `zk_welt.warm()` deckt noch nicht alle Programme ab: im Browser-Test kommen ca. 13 Shader-Programme beim Durchspielen dazu (Energie +3, Wald +9: Instanzfarben/Tönung, Wetter-Voreinstellung). `viz3/test/zukunft.py` hat dafür `MAX_NEW = 14` (KNOWN) – nach der Korrektur durch `zukunft-welt` auf 0 setzen.
+- Shader-Programme: `zukunft-welt` hat gezeigt, dass `ZKWELT.warm()` alles abdeckt; die früher gezählten Programme kamen vom Laden der Welt an den Kamerapunkten. Der Test besucht darum zuerst jede Ansicht und verlangt danach 0 neue Programme (`MAX_NEW = 0`).
 - Der Fahrplan-Wert „Fahrzeit nach Schleusingen“ ist der Mittelwert von der ersten Ratscher- bis zur letzten Schleusinger Haltestelle (im Test 6 min).
 
 - Mitmach-Schicht (Kommentare an Orten), Moderator-/Handy-Synchronisation, echte hydraulische Simulation.

@@ -34,7 +34,7 @@ export const ZUKUNFT = (() => {
   const S = {
     on: false,
     topic: 'mobil',
-    yi: 0,
+    yi: 1,
     a: {},
     b: {},
     show: 'a',
@@ -62,7 +62,7 @@ export const ZUKUNFT = (() => {
     const v = SAVE.get(KS);
     if (v) {
       if (Z.topic(v.topic)) S.topic = v.topic;
-      S.yi = v.yi;
+      S.yi = Math.max(1, v.yi | 0);
       Object.assign(S.a, v.a);
       Object.assign(S.b, v.b);
       S.show = v.show === 'b' || v.show === 'heute' ? v.show : 'a';
@@ -101,9 +101,9 @@ export const ZUKUNFT = (() => {
       'Mitfahrbank',
       'mobil',
       'bank',
-      'Eine Bank am Straßenrand mit einem Schild: wer sich setzt, möchte mitgenommen werden. Sie kostet wenig, braucht aber Vertrauen – und eine Klärung, wer bei einem Unfall haftet. Viele Dörfer haben eine.',
-      'Im Spiel steht sie am Anger; im Ortsteilrat wird sie beschlossen, das Geld kommt aus dem Ortsteilbudget.',
-      [Z.SRC.bank],
+      'Eine Bank am Straßenrand mit einem Schild: wer sich setzt, möchte mitgenommen werden. Sie kostet wenig (etwa 3 000 Euro mit Schild), braucht aber Vertrauen. Bei einem Unfall greift die Kfz-Haftpflicht des Fahrzeugs, das mitnimmt – sie deckt auch die Mitfahrenden. Viele Dörfer haben eine.',
+      'Im Spiel steht sie im Ort; im Ortsteilrat wird sie beschlossen, das Geld käme aus dem Ortsteilbudget.',
+      [Z.SRC.bank, Z.SRC.mfbank, Z.SRC.mfbank2],
     ],
     [
       'zk:rufbus',
@@ -112,9 +112,9 @@ export const ZUKUNFT = (() => {
       'Rufbus – der Bus auf Bestellung',
       'mobil',
       'ruf',
-      'Ein Rufbus fährt nur, wenn jemand ihn bestellt, per Anruf oder App, und holt Fahrgäste an einer Haltestelle ab. In Thüringen gibt es nur wenige reine Rufbuslinien (Jena seit 1999, Dorfbusse im Wartburgkreis 2021–2023). Eine Fahrt kostet brutto oft 20 bis 45 Euro – den größten Teil zahlt der Landkreis, der den Busverkehr bestellt (§ 3 ThürÖPNVG).',
-      'In Ratscher fährt der Linienbus 203/205 nach Schleusingen etwa im Zweistundentakt.',
-      [Z.SRC.rufbus, Z.SRC.ruf2],
+      'Ein Rufbus fährt nur, wenn jemand ihn bestellt, per Anruf oder App, und holt Fahrgäste an einer Haltestelle ab. In Thüringen gibt es nur wenige reine Rufbuslinien (Jena seit 1999); die beiden Dorfbus-Versuche im Wartburgkreis wurden wieder in normale Linien überführt, und der Landkreis Hildburghausen hat einzelne Linien als reine Rufbusse angekündigt. Eine Fahrt kostet je Fahrgast oft 30 bis 56 Euro (so zahlten es Landkreise in Mecklenburg-Vorpommern 2023–2025) – den größten Teil zahlt der Landkreis, der den Busverkehr bestellt (§ 3 ThürÖPNVG).',
+      'In Ratscher fahren die Linien 203 und 205 nach Schleusingen: in der Woche etwa 30 Fahrten (von 5:11 bis 22:57 Uhr), samstags 14, sonntags 11. Der Rufbus füllt die Lücken, etwa nach dem letzten Bus um 21:10 aus Schleusingen.',
+      [Z.SRC.rufbus, Z.SRC.mvruf, Z.SRC.ruf2],
     ],
     [
       'zk:busleer',
@@ -123,9 +123,9 @@ export const ZUKUNFT = (() => {
       'Wann ein Bus dem Klima nützt',
       'mobil',
       'takt',
-      'Ein Linienbus stößt etwa 0,85 kg CO₂ je Kilometer aus, ein Auto etwa 0,15. Erst wenn im Mittel mehr als fünf Fahrgäste im Bus sitzen oder er elektrisch fährt, ist er besser als die Autos, die er ersetzt.',
-      'Sechs Fahrten mehr nach Schleusingen helfen Menschen ohne Auto, aber dem Klima erst mit voller Besetzung oder Elektroantrieb.',
-      [Z.SRC.uba],
+      'Ein Linienbus stößt etwa 1 kg CO₂ je Kilometer aus (mit Vorkette), ein Auto etwa 0,23. Erst wenn im Mittel vier bis fünf Fahrgäste im Bus sitzen, die sonst allein Auto gefahren wären, oder wenn er elektrisch fährt, ist er besser als die Autos, die er ersetzt.',
+      'Sechs Fahrten mehr am Abend und am Wochenende helfen Menschen ohne Auto, aber dem Klima erst mit guter Besetzung oder Elektroantrieb.',
+      [Z.SRC.ubaverkehr],
     ],
     [
       'zk:pv_ertrag',
@@ -134,7 +134,7 @@ export const ZUKUNFT = (() => {
       'Dach-Photovoltaik im Dorf',
       'energie',
       'dach',
-      'Auf einem Süddach bringt ein Kilowatt Modulleistung bei Ratscher rund 1000 kWh im Jahr (PVGIS: 1 011 kWh bei 35° nach Süden); Ost- und Westdächer etwa 820 kWh. Entscheidend ist, wie viel man selbst verbraucht: Eigenstrom spart etwa 32 Cent je kWh, Einspeisung bringt etwa 8 Cent.',
+      'Auf einem Süddach bringt ein Kilowatt Modulleistung bei Ratscher rund 1000 kWh im Jahr (PVGIS: 1 011 kWh bei 35° nach Süden); Ost- und Westdächer etwa 820 kWh. Entscheidend ist, wie viel man selbst verbraucht: Eigenstrom spart etwa 32 Cent je kWh, Einspeisung bringt 7,7 Cent (seit 1.8.2026; ob es die feste Vergütung nach 2026 noch gibt, ist offen).',
       'Die geeigneten Dachflächen im Modell sind aus den 3D-Dächern gezählt: Neigung, Ausrichtung, Größe, Randabstand.',
       [Z.SRC.pvgis, Z.SRC.ise, Z.SRC.mastr],
     ],
@@ -145,9 +145,9 @@ export const ZUKUNFT = (() => {
       'Freiflächen-Solarpark',
       'energie',
       'park',
-      'Etwa ein Hektar Fläche trägt ein Megawatt Modulleistung. Das ist der billigste Solarstrom (unter 5 Cent je kWh), braucht aber einen Bebauungsplan und Fläche, die oft Acker ist. Die Gemeinde darf mit 0,2 Cent je kWh beteiligt werden (§ 6 EEG).',
-      'Der Platz im Modell südlich des Dorfs ist eine Annahme zum Ausprobieren, keine Planung.',
-      [Z.SRC.eeg6, Z.SRC.ise, Z.SRC.bfn],
+      'Etwa ein Hektar Fläche trägt ein Megawatt Modulleistung. Das ist der billigste Solarstrom (4,1 bis 6,9 Cent je kWh nach Fraunhofer ISE), braucht aber einen Bebauungsplan und Fläche, die oft Acker ist. Die Gemeinde kann mit 0,2 Cent je kWh beteiligt werden (§ 6 EEG: ein „soll“, freiwillig).',
+      'Der Platz im Modell südwestlich des Dorfs ist eine Annahme zum Ausprobieren, keine Planung (im Marktstammdatenregister ist hier keine Freiflächenanlage geplant).',
+      [Z.SRC.eeg6, Z.SRC.pvstrom, Z.SRC.laenderbet, Z.SRC.bfn],
     ],
     [
       'zk:waermepumpe',
@@ -158,7 +158,7 @@ export const ZUKUNFT = (() => {
       'waerme',
       'Eine Wärmepumpe macht aus einer Kilowattstunde Strom drei bis vier Kilowattstunden Wärme (Jahresarbeitszahl). Im Altbau braucht sie Dämmung oder große Heizkörper. Die Außeneinheit darf nachts am Nachbarhaus nicht lauter als 40 bis 45 dB(A) sein (TA Lärm).',
       'Im Dorf: je älter das Haus und je enger die Nachbarn, desto genauer muss man hinschauen.',
-      [Z.SRC.bafa, Z.SRC.lärm],
+      [Z.SRC.vzwp, Z.SRC.kfw, Z.SRC.lärm],
     ],
     [
       'zk:starkregen',
@@ -167,7 +167,7 @@ export const ZUKUNFT = (() => {
       'Starkregen und Rückhalt',
       'klima',
       'regen',
-      'Ein Starkregen bringt in einer Stunde 40 bis 60 Liter je Quadratmeter. Was im Boden nicht versickert, läuft über Straßen und Hänge ins Dorf. Rückhaltemulden, ein größerer Durchlass und Schutz an den Häusern halten das Wasser zurück. Mit der Erwärmung werden solche Regen häufiger.',
+      'Der Deutsche Wetterdienst warnt vor Starkregen ab 15 Litern je Quadratmeter in der Stunde, vor extremem Regen ab 40; für Ratscher gilt als Regen, wie er einmal in 100 Jahren fällt, etwa 47 Liter (KOSTRA-DWD-2020, ± 26 %). Was im Boden nicht versickert, läuft über Straßen und Hänge ins Dorf. Rückhaltemulden, ein größerer Durchlass und Schutz an den Häusern halten das Wasser zurück. Mit der Erwärmung werden solche Regen häufiger.',
       'Der Regen des Szenarios ist ein 100-jähriger (KOSTRA-DWD-2020), die Schadenszahlen Annahmen.',
       [Z.SRC.kostra, Z.SRC.klimaatlas],
     ],
@@ -387,14 +387,16 @@ body.zk-pres #hotbar,body.zk-pres #moves,body.zk-pres #act2,body.zk-pres #actrow
     el.innerHTML = `<div class="zh"><b>Zukünfte erproben</b><button type="button" class="zb" data-a="pres" aria-pressed="${S.pres}" title="Große Schrift, freier Bildschirm für den Beamer">Präsentation</button><button type="button" class="zb" data-a="col" title="Fenster ein- oder ausklappen">${S.collapsed ? '▴' : '▾'}</button><button type="button" class="zb" data-a="exit" title="Zurück zu „Heute“">✕ Beenden</button></div>
 <div class="zbody"><div class="zt" role="tablist">${Z.TOPICS.map(t => `<button type="button" role="tab" data-topic="${t.id}" aria-pressed="${t.id === S.topic}">${t.icon} ${esc(t.label)}</button>`).join('')}</div>
 <div class="zx">${esc(T.text)}</div>
-<div class="zy"><output id="zkyear">${year()}</output><input type="range" id="zkyi" min="0" max="4" step="1" value="${S.yi}" aria-label="Jahr"></div>
-<div class="zyl">${Z.YEARS.map(y => `<span>${y}</span>`).join('')}</div>
+<div class="zy"><output id="zkyear">${year()}</output><input type="range" id="zkyi" min="1" max="4" step="1" value="${Math.max(1, S.yi)}" aria-label="Jahr"></div>
+<div class="zyl">${Z.YEARS.slice(1)
+      .map(y => `<span>${y}</span>`)
+      .join('')}</div>
 <div class="zs"><label>Variante A<select data-sel="a">${opts(S.a[S.topic])}</select></label><label>Variante B<select data-sel="b">${opts(S.b[S.topic])}</select></label></div>
 <div class="zw"><span>Die Welt zeigt:</span><button type="button" class="zb" data-show="heute" aria-pressed="${S.show === 'heute'}">Heute</button><button type="button" class="zb" data-show="a" aria-pressed="${S.show === 'a'}">A</button><button type="button" class="zb" data-show="b" aria-pressed="${S.show === 'b'}">B</button><span>(Taste Y wechselt A/B)</span></div>
 <div class="zw"><button type="button" class="zb" data-view="top">Von oben ansehen</button><button type="button" class="zb" data-view="walk">Hingehen: ${esc(FOCUS[S.topic].label)}</button></div>
 <table><thead><tr><th></th><th class="${S.show === 'heute' ? 'zon' : ''}">Heute</th><th class="${S.show === 'a' ? 'zon' : ''}">A · ${esc(Z.variant(S.topic, S.a[S.topic]).short)}</th><th class="${S.show === 'b' ? 'zon' : ''}">B · ${esc(Z.variant(S.topic, S.b[S.topic]).short)}</th></tr></thead><tbody>${rows}</tbody></table>
 ${why}<div class="zv">${voices}</div>
-<div class="zn">Preise in Euro von 2026. Jede Zahl hat ein „?“ mit Rechnung und Quelle; was nicht belegt ist, heißt „Annahme“. Die Stimmen sind Figuren des Spiels, keine Umfrage in Ratscher. Fahrplan: ${S.ctx && S.ctx.bus && S.ctx.bus.src === 'fahrplan' ? 'echt (gtfs.de) – ' + S.ctx.bus.werk + ' Fahrten werktags nach Schleusingen, etwa ' + S.ctx.bus.min + ' min' : 'Annahme'}${S.ctx && S.ctx.school ? '; Schulbus: ' + S.ctx.school.trips + ' Fahrten an einem Schultag über Ratscher (alle Richtungen)' : ''}. Dachflächen: ${S.ctx && S.ctx.roof && S.ctx.roof.src === 'welt' ? 'aus den 3D-Dächern gezählt' : 'Annahme'}.</div></div>`;
+<div class="zn">Preise in Euro von 2026. Jede Zahl hat ein „?“ mit Rechnung und Quelle; was nicht belegt ist, heißt „Annahme“. Das Jahr ist das Jahr der Wirkung nach Fertigstellung. Die Stimmen sind erfundene Platzhalter für Ihre eigenen, keine Umfrage in Ratscher. Fahrplan: ${S.ctx && S.ctx.bus && S.ctx.bus.src === 'fahrplan' ? 'echt (gtfs.de) – ' + S.ctx.bus.werk + ' Fahrten werktags nach Schleusingen, etwa ' + S.ctx.bus.min + ' min' : 'Annahme'}${S.ctx && S.ctx.school ? '; Schulbus: ' + S.ctx.school.trips + ' Fahrten an einem Schultag über Ratscher (alle Richtungen)' : ''}. Dachflächen: ${S.ctx && S.ctx.roof && S.ctx.roof.src === 'welt' ? 'aus den 3D-Dächern gezählt' : 'Annahme'}.</div></div>`;
   }
   // ---------- events ----------
   function onClick(e) {
@@ -437,7 +439,7 @@ ${why}<div class="zv">${voices}</div>
     save();
   }
   function setYear(i, quiet) {
-    S.yi = Math.max(0, Math.min(4, i | 0));
+    S.yi = Math.max(0, Math.min(4, i | 0)); // the API accepts 2026 (tests), the slider starts at 2030
     S.why = null;
     if (quiet && el) {
       const o = el.querySelector('#zkyear');

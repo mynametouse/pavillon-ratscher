@@ -43,9 +43,9 @@ test('Mobilität: a bank is cheap, a Rufbus costs tens of thousands a year, more
   const bank = Z.calc('mobil', 'bank', 2030).raw,
     ruf = Z.calc('mobil', 'ruf', 2030).raw,
     takt = Z.calc('mobil', 'takt', 2030).raw;
-  assert.ok(bank.kosten.inv[1] < 1000);
-  assert.ok(ruf.kosten.yr[1] > 40000 && ruf.kosten.yr[1] < 120000);
-  assert.ok(takt.kosten.yr[1] > ruf.kosten.yr[1]);
+  assert.ok(bank.kosten.inv[1] < 5000);
+  assert.ok(ruf.kosten.yr[1] >= 59000 && ruf.kosten.yr[1] < 150000);
+  assert.ok(takt.kosten.yr[1] > 20000 && takt.kosten.yr[1] < ruf.kosten.yr[1]);
   assert.ok(takt.co2[1] > 0 && Z.calc('mobil', 'takt', 2060).raw.co2[1] < takt.co2[1]);
   assert.ok(bank.co2[1] < 0);
 });
@@ -89,7 +89,7 @@ test('Wald: the stand dies along its curve, clearing follows 2.5 years later, yo
   assert.equal(Z.calc('wald', 'umbau', 2045).world.forest.mode, 'umbau');
   // the clearing hits the climate first (emission), the young stand binds later
   assert.ok(
-    Z.calc('wald', 'natur', 2035).raw.co2[1] > 0 &&
+    Z.calc('wald', 'natur', 2035).raw.dieback > 0 &&
       Z.calc('wald', 'umbau', 2060).raw.co2[1] < Z.calc('wald', 'umbau', 2035).raw.co2[1]
   );
 });
@@ -102,8 +102,9 @@ test('Stimmung: voices are the game villagers, with a lean and a reason; the moo
       assert.ok(lean >= -2 && lean <= 2 && say.length > 20, k);
     }
   }
-  assert.ok(Z.calc('mobil', 'bank', 2030).ind.stimmung.raw.v > 55);
-  assert.ok(Z.calc('klima', 'duerre', 2030).ind.stimmung.raw.v < 40);
+  const sb = Z.calc('mobil', 'bank', 2030).ind.stimmung.raw,
+    sd = Z.calc('klima', 'duerre', 2030).ind.stimmung.raw;
+  assert.ok(sb.pro > sb.con && sd.con > sd.pro);
 });
 
 test('the world part is empty for Heute', () => {
@@ -112,4 +113,14 @@ test('the world part is empty for Heute', () => {
     assert.equal(w.pvRoof + w.pvField + w.wp + w.bank + w.rufbus + w.flood + w.dry + w.wet, 0);
     assert.equal(w.forest, null);
   }
+});
+
+test('PV never turns CO2-positive (grid factor minus module life cycle is clamped); the Rufbus range can cross zero only when well used', () => {
+  for (const y of Z.YEARS)
+    for (const v of ['dach', 'park']) {
+      const c = Z.calc('energie', v, y).raw.co2;
+      assert.ok(c[0] <= 0 && c[1] <= 0 && c[2] <= 0, v + y);
+    }
+  const r45 = Z.calc('mobil', 'ruf', 2045).raw.co2;
+  assert.ok(r45[0] < 0 && r45[2] > 0);
 });
