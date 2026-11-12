@@ -68,6 +68,9 @@ Ab dem ersten Push gehört `zk_welt.js` dem Helfer `zukunft-welt` (Branch feat/z
 
 ## Offen (nicht in dieser Fassung)
 
+- `zk_welt.warm()` deckt noch nicht alle Programme ab: im Browser-Test kommen ca. 13 Shader-Programme beim Durchspielen dazu (Energie +3, Wald +9: Instanzfarben/Tönung, Wetter-Voreinstellung). `viz3/test/zukunft.py` hat dafür `MAX_NEW = 14` (KNOWN) – nach der Korrektur durch `zukunft-welt` auf 0 setzen.
+- Der Fahrplan-Wert „Fahrzeit nach Schleusingen“ ist der Mittelwert von der ersten Ratscher- bis zur letzten Schleusinger Haltestelle (im Test 6 min).
+
 - Mitmach-Schicht (Kommentare an Orten), Moderator-/Handy-Synchronisation, echte hydraulische Simulation.
 - Die Lage des Hochwasserbands ist aus dem Luftbild und dem Gelände abgeleitet (Tal der Schleuse), nicht aus der Hochwassergefahrenkarte.
 - Gebäude jenseits des Quadrats und die Falko-Gartenbauten tragen keine Module; eine Rufbus-Fahrt, ein Starkregen-Abfluss sind nicht animiert.
