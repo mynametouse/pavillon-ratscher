@@ -81,7 +81,8 @@ Nur was in den Quellen steht. Farben und Details ohne Quelle müssen aus den Str
    Fassade, obenauf ein ovales verglastes Restaurant, Aussichtsplattform und Antenne; eine Glasbrücke führt zum CCS
    [WP-CCS]. Eröffnet im Juni 1998 als Kongresshotel [Uske 2017]; Name 2022 und in OSM heute „City Hotel am CCS“.
    OSM gibt 60 m Höhe an (nicht geprüft).
-9. **Punkthochhäuser an der Friedrich-König-Straße** (fünf in einer Reihe nördlich der Straße: 50.61117, 10.68866 `w45393690`;
+9. **Punkthochhäuser an der Durchgangsstraße** (fünf in einer Reihe, rund 30 m südlich der vierspurigen L 3247 – also
+   zwischen Straße und Stadtmitte, der Domberg-Hang liegt gegenüber auf der Nordseite: 50.61117, 10.68866 `w45393690`;
    50.61132, 10.68941 `w45393691`; 50.61133, 10.69032 `w45393692`; 50.61124, 10.69146 `w45393693`; 50.61134, 10.69350
    `w45393694` = Friedrich-König-Straße 20; dazu 50.60957, 10.69088 `w45393695` und 50.61375, 10.69710 `w66319441`).
    OSM: Wohnhäuser, 43–45 m hoch, zwei davon mit 14 Geschossen und Flachdach erfasst. Adressen laut OSM: das westlichste der
@@ -149,7 +150,7 @@ Nur was in den Quellen steht. Farben und Details ohne Quelle müssen aus den Str
 | Z18 | Fahrzeugmuseum im CCS | 50.61019, 10.68726; `n361133609` | seit 2007 | Ausstellung, 1 100 m² | Museum (Simson u. a.) | ja | – | [WP-CCS] |
 | Z19 | Ottilienbad | 50.61003, 10.68686; `w42871445` | Schwimmhalle der Stadthalle 1979/80 [Jahn 2017]; ob das heutige Bad derselbe Bau ist: **unsicher** | Hallenbad zwischen CCS und Hotel | Freizeit- und Wellnessbad der CCS GmbH | ja | – | [WP-CCS], [Jahn 2017] |
 | Z20 | Hotelturm (City Hotel am CCS) | 50.60967, 10.68627; `w42871444` | 1977; Rückbau und Umbau 1993–98 | Hochhaus, heute 16 Etagen, ovaler Glasaufsatz | Hotel, Panorama-Restaurant | ja (Lobby, Restaurant) | – | [WP-CCS], [Uske 2017] |
-| Z21 | Punkthochhäuser Friedrich-König-Straße (7 Stück in OSM) | 50.6112–50.6113, 10.6887–10.6935 u. a. | 1960er/70er – **unsicher** | Wohnhochhäuser, 14 Geschosse, 43–45 m | Wohnen | – | – | OSM, [WP-CCS], [Jahn 2017] |
+| Z21 | Punkthochhäuser an der Durchgangsstraße (7 hohe Wohnhäuser in OSM; Adressen Friedrich-König-Straße 9 … 20, Platz der Deutschen Einheit 1) | 50.6112–50.6113, 10.6887–10.6935 u. a. | 1960er/70er – **unsicher** | Wohnhochhäuser, 14 Geschosse, 43–45 m; Reihe an der Südseite der L 3247 | Wohnen, Läden im Sockel | – | – | OSM, [WP-CCS], [Jahn 2017] |
 | Z22 | Einkaufscentrum „Am Steinweg“ (früher Centrum-Warenhaus) | 50.61015, 10.69171; `w42484467` | 1966–69; Umbau 2006–08 | Einkaufszentrum, Parkhaus 7 Ebenen | Handel | ja | – | [Bauwelt 2006], [Uske 2017] |
 | Z23 | Lauterbogen-Center | 50.61079, 10.69077; `w42484465` | 1996 | Einkaufszentrum, zwei Geschosse | Handel | ja | – | [Uske 2017] |
 | Z24 | Haus der Geschichte (Portal des Kulturhauses) | 50.60883, 10.68880; `w110458614` | 1950er; Rest nach Abriss 2010 | Säulenvorhalle, Dreiecksgiebel mit Relief | Stadtgeschichte, Depot | offen | nicht geprüft | [Jahn 2017], [Carthalia-Kulturhaus] |
