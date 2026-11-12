@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """suhl-bestand, deliverable 8: all numbers of the Suhl inventory in one machine-readable file -> tools/suhl/out/bestand/bestand.json.
-It only gathers what the other scripts wrote (gebiete.py, kacheln.py, osm_bestand.py, ethos.py, luftbild.py, oepnv.py,
-landesdienste.py); a part that is missing is listed under 'fehlt'.
+It only gathers what the other scripts wrote (gebiete.py, kacheln.py, osm_bestand.py, ethos.py, alkis_probe.py, luftbild.py,
+oepnv.py, landesdienste.py); a part that is missing is listed under 'fehlt'.
 
   python3 -I tools/suhl/bestand/bestand.py
 """
@@ -43,6 +43,7 @@ def main():
             ('ethos', 'ethos.json', lambda d: {'spalten': d['spalten'], 'im_rechteck_um_suhl': d['im_rechteck_um_suhl'], 'gebiete': d['gebiete'],
                                                'hohe_gebaeude_ab_25_m': {k: v for k, v in d['hohe_gebaeude_ab_25_m'].items() if k != 'liste'},
                                                'hohe_gebaeude_ab_25_m_und_100_m2': [x for x in d['hohe_gebaeude_ab_25_m']['liste'] if x['grundflaeche_m2'] >= 100]}),
+            ('alkis_zentrum', 'alkis_zentrum.json', lambda d: {k: d[k] for k in d if k != 'made'}),
             ('luftbild', 'luftbild.json', lambda d: {k: d[k] for k in ('quelle', 'kacheln_abgefragt', 'flugtage_P1_bis_P3', 'flugtage_je_prioritaet', 'naht_linien', 'felder_th_dop_info', 'beispiel')}),
             ('oepnv', 'oepnv.json', lambda d: {k: d[k] for k in ('quelle', 'referenzwoche', 'haltestellen', 'linien', 'fahrten_mit_halt_in_suhl', 'nach_schleusingen', 'nach_ratscher')}),
             ('landesdienste', 'landesdienste.json', lambda d: {'made': d['made'], 'von': d['von'], 'befund': d['befund'],

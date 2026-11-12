@@ -1,5 +1,5 @@
 {
- "made": "2026-11-12T23:43:41Z",
+ "made": "2026-11-12T23:46:44Z",
  "auftrag": "docs/plans/auftraege/suhl-bestand.md",
  "doku": [
   "docs/features/suhl-bestand.md",
@@ -1828,6 +1828,90 @@
   ],
   "datei": "tools/suhl/out/bestand/ethos.json",
   "stand": "2026-11-12T23:35:03Z"
+ },
+ "alkis_zentrum": {
+  "quelle": "https://www.geoproxy.geoportal-th.de/geoproxy/services/adv_alkis_wfs (ave:GebaeudeBauwerk), © GDI-Th, CC BY 4.0",
+  "abruf": {
+   "status": 200,
+   "bytes": 2824578,
+   "sekunden": 4.1,
+   "zurueckgegeben": 2169,
+   "rechteck_utm": [
+    618966,
+    5607131,
+    620190,
+    5608314
+   ]
+  },
+  "im_zentrum": 1025,
+  "ab_40_m2": 606,
+  "grundflaeche_ha": 17.0,
+  "mit_geschosszahl": 856,
+  "mit_namen": 35,
+  "geschosse": {
+   "(ohne)": 169,
+   "1": 200,
+   "14": 1,
+   "15": 6,
+   "16": 2,
+   "19": 1,
+   "2": 196,
+   "3": 220,
+   "4": 147,
+   "5": 44,
+   "6": 31,
+   "7": 8
+  },
+  "funktion": {
+   "Wohngebäude": 629,
+   "Überdachung": 106,
+   "Garage": 54,
+   "Gebäude für Wirtschaft oder Gewerbe": 50,
+   "Nach Quellenlage nicht zu spezifizieren": 33,
+   "Gebäude zur Freizeitgestaltung": 31,
+   "Gebäude für Handel und Dienstleistungen": 22,
+   "Gemischt genutztes Gebäude mit Wohnen": 14,
+   "Verwaltungsgebäude": 9,
+   "Gebäude für öffentliche Zwecke": 9,
+   "Betriebsgebäude zu Verkehrsanlagen (allgemein)": 9,
+   "Allgemein bildende Schule": 7,
+   "Gebäude für kulturelle Zwecke": 7,
+   "Tiefgarage": 6
+  },
+  "art": {
+   "Gebaeude": 918,
+   "Sonstiges Bauwerk Oder Sonstige Einrichtung": 106,
+   "Bauwerk Oder Anlage Fuer Industrie Und Gewerbe": 1
+  },
+  "stand_jahr": {
+   "2018": 608,
+   "2019": 51,
+   "2020": 44,
+   "2021": 5,
+   "2022": 191,
+   "2023": 45,
+   "2024": 28,
+   "2025": 25,
+   "2026": 28
+  },
+  "kennungen": {
+   "ethos_im_zentrum": 1012,
+   "alkis_im_zentrum": 1025,
+   "beispiel_ethos": [
+    "DEG_DETHL57P00002jBp",
+    "DEG_DETHL57P00002jBx"
+   ],
+   "beispiel_alkis": [
+    "DETHL57P00002jBpBL",
+    "DETHL57P00002jBxBL"
+   ],
+   "ethos_kennung_auch_in_alkis": 979,
+   "anteil_ethos_prozent": 96.7,
+   "anteil_alkis_prozent": 95.5,
+   "regel": "ETHOS-Kennung ohne Vorsatz DEG_ und ALKIS-oid, jeweils die ersten 16 Zeichen"
+  },
+  "datei": "tools/suhl/out/bestand/alkis_zentrum.json",
+  "stand": "2026-11-12T23:46:21Z"
  },
  "luftbild": {
   "quelle": "https://www.geoproxy.geoportal-th.de/geoproxy/services/DOP (Ebene th_dop_info, GetFeatureInfo je Kachelmitte), © GDI-Th, CC BY 4.0",

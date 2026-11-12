@@ -9,7 +9,7 @@ Die Anleitung für die Landesdaten steht in `docs/features/suhl-landesdaten.md`.
 
 - **Grundrisse gibt es reichlich und doppelt:** 22.180 Gebäude in OpenStreetMap, 30.929 in ETHOS.BUILDA (aus dem LoD2 des Landes
   abgeleitet, jedes mit Höhe). Dazu – neu gefunden – die Gebäude des Katasters mit Nutzung und Geschosszahl aus einem offenen
-  Dienst des Landes.
+  Dienst des Landes (im Zentrum 1.025 Gebäude, 83,5 % mit Geschosszahl).
 - **Was den Gebäuden fehlt, sind Dach und Gesicht:** Nur 11,9 % der OSM-Gebäude haben eine Dachform, 1,7 % eine Angabe zur
   Fassade. Echte Dachformen stecken im LoD2 des Landes – das gibt es nur hinter dem CAPTCHA.
 - **Gelände und Oberfläche in 1 m fehlen.** Kein offener Dienst liefert sie als Zahlen. Das ist die Aufgabe für Falko
@@ -68,8 +68,9 @@ Dateien: `osm_bestand.json` (Skript `osm_bestand.py`), `ethos.json` (Skripte `et
 
 - **ETHOS.BUILDA** (Forschungszentrum Jülich, Zenodo 11845992, Datei `DEG.csv`, 882 MB, ODbL): vier Spalten – Kennung, Quelle,
   Grundriss, Höhe. In Suhl stammen alle 30.929 Grundrisse und Höhen aus dem LoD2 des Landes (`lod2_de_th`). Die Kennungen sind
-  die des Katasters (`DETHL57P…`) – dieselben, die der Dienst „ALKIS vereinfacht“ liefert. Darüber lassen sich Höhe, Nutzung und
-  Geschosszahl später zusammenführen.
+  die des Katasters (`DETHL57P…`) – dieselben, die der Dienst „ALKIS vereinfacht“ liefert. Geprüft im Zentrum: 979 der 1.012
+  ETHOS-Kennungen (96,7 %) stehen auch im Dienst (`alkis_zentrum.json`). Darüber lassen sich Höhe, Nutzung und Geschosszahl
+  zusammenführen.
 - ETHOS zählt mehr Gebäude als OSM, weil dort auch Anbauten, Garagen und Lauben einzeln stehen. Höhenklassen in der Stadt:
   unter 3 m 6.254 · 3–6 m 12.039 · 6–10 m 7.820 · 10–15 m 4.102 · 15–25 m 655 · 25–40 m 39 · ab 40 m 20.
 - **Wie gut passen beide zusammen** (nach Überdeckung der Grundrisse): 84,1 % der OSM-Gebäude der Stadt sind zu mindestens der
@@ -158,7 +159,7 @@ Abfrage für eine kleine Fläche im Zentrum geprüft.
 
 | Dienst | Was kommt | Lizenz | Urteil |
 |---|---|---|---|
-| ✔ WFS „ALKIS vereinfacht“ des Landes, `https://www.geoproxy.geoportal-th.de/geoproxy/services/adv_alkis_wfs`, Objektart `ave:GebaeudeBauwerk` | Gebäudegrundrisse des Katasters als Flächen (GML, UTM 32N) mit Kennung, Nutzung in Worten, Geschosszahl, Stand. Im 200-m-Quadrat am Markt: 97 Gebäude in 0,8 s, 89 davon mit Geschosszahl; Stände von 2018 bis 2026 | CC BY 4.0, „© GDI-Th“ | **bester Fund** – aus GitHub Actions nutzbar; Flurstücke desselben Dienstes rühren wir nicht an |
+| ✔ WFS „ALKIS vereinfacht“ des Landes, `https://www.geoproxy.geoportal-th.de/geoproxy/services/adv_alkis_wfs`, Objektart `ave:GebaeudeBauwerk` | Gebäudegrundrisse des Katasters als Flächen (GML, UTM 32N) mit Kennung, Nutzung in Worten, Geschosszahl, Stand. Im 200-m-Quadrat am Markt: 97 Gebäude in 0,8 s, 89 davon mit Geschosszahl; Stände von 2018 bis 2026. Für das ganze Zentrum reichte ein Abruf (2,8 MB, 4 s): 1.025 Gebäude, 856 davon mit Geschosszahl (83,5 %, bis 19 Geschosse), 629 Wohngebäude (`alkis_zentrum.json`) | CC BY 4.0, „© GDI-Th“ | **bester Fund** – aus GitHub Actions nutzbar; Flurstücke desselben Dienstes rühren wir nicht an |
 | ✔ WMS des Landes, Ebene `alkis_geb` (Auskunft an einem Punkt) | Geschosszahl, Gebäudefunktion als Schlüssel, Grundfläche, Datum | CC BY 4.0 | geht, aber nur ein Gebäude je Abruf; der WFS ist besser |
 | ✔ WFS des Landes, `tlvermgeo:GAZHKO_HNR` | Hausnummern als Punkte mit Straßenschlüssel | CC BY 4.0 | nutzbar für Adressen |
 | ✔ WMS Luftbild `…/geoproxy/services/DOP` | Farbe, Infrarot, Grau in 20 cm und 2 m; Flugtag je Kachel | CC BY 4.0 | nutzbar, läuft schon in der Welt |
@@ -204,6 +205,7 @@ Datei: `oepnv.json` (Skript `oepnv.py`; freier Deutschland-Fahrplan von gtfs.de,
 | `gebiete.py` | Gebiete, Ortsteile, Landmarken | `gebiete.geojson` |
 | `kacheln.py` | Kachelliste und Karten | `kacheln.csv`, `kacheln.json`, Bilder |
 | `landesdienste.py` | Proben der Download-Adressen und Dienste | `landesdienste.json` |
+| `alkis_probe.py` | ein Abruf der Kataster-Gebäude für das Zentrum (nur Zahlen) | `alkis_zentrum.json` |
 | `osm_bestand.py` | Gebäude und Straßenraum aus OSM | `osm_bestand.json` |
 | `ethos_filter.py`, `ethos.py` | ETHOS im Strom filtern; Zahlen und Abgleich | `ethos.json` |
 | `luftbild.py` | Flugtag je Kachel | `luftbild.json` |
