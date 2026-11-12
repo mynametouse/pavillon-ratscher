@@ -2,3 +2,4 @@
 zukunft
 strategie
 wissen
+strategie_telefon

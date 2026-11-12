@@ -547,6 +547,9 @@ ${why}<div class="zv">${voices}</div>
   function stratBtn() {
     const ST = window.STRAT;
     if (!ST || !ST.on || typeof document === 'undefined') return;
+    // on a phone the strategy bar has no room for one more button (it would push the time box off the screen): the mode stays
+    // reachable there through Menu → Erleben → Szenen
+    if (window.innerWidth < 560) return;
     const w = document.querySelector('.stb[data-a="wissen"]') || document.querySelector('.stb[data-a="layers"]');
     if (!w || (w.parentNode && w.parentNode.querySelector('[data-zukunft-st]'))) return;
     const b = document.createElement('button');
