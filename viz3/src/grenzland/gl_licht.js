@@ -223,8 +223,8 @@ export const GLLICHT = (() => {
     MAT.kegel89 = karte('kegel 1989', 0xffcf86, 0.18);
     MAT.glanz = karte('glanz', 0xf4f7ff, 0.6);
     MAT.glanz89 = karte('glanz 1989', 0xffd79a, 0.6);
-    MAT.pool = karte('pool', 0xeef3ff, 0.1);
-    MAT.pool89 = karte('pool 1989', 0xffcf86, 0.11);
+    MAT.pool = karte('pool', 0xeef3ff, 0.075);
+    MAT.pool89 = karte('pool 1989', 0xffcf86, 0.085);
     MAT.heck = karte('heck', 0xffffff, 0.55);
     MAT.bremse = karte('bremse', 0xffffff, 1);
     MAT.blauL = karte('blau links', 0x2f63ff, 0);
@@ -234,7 +234,7 @@ export const GLLICHT = (() => {
     MAT.fackelGlas = karte('fackel glas', 0xfff6e8, 0.9);
     MAT.fackelBoden = karte('fackel boden', 0xffeccc, 0.14);
     MAT.blauRund = karte('blau rundum', 0x2f63ff, 0);
-    MAT.heli = karte('heli', 0xe6efff, 0.55);
+    MAT.heli = karte('heli', 0xe6efff, 0.3);
     MAT.dunst = karte('leuchtkugel dunst', 0xff3018, 0.2);
     MAT.glut = karte('leuchtkugel glut', 0xff4020, 1);
     MAT.kern = karte('leuchtkugel kern', 0xffd8cc, 1);
@@ -631,6 +631,10 @@ export const GLLICHT = (() => {
     _sd.copy(D.dir).transformDirection(h.matrixWorld);
     for (const p of D.lampen) {
       _sp.copy(p).applyMatrix4(h.matrixWorld).addScaledVector(_sd, 0.05);
+      // (a camera inside a beam would see its card from within, filling the picture: then none)
+      _m1.copy(cam.position).sub(_sp);
+      const along = Math.max(0, Math.min(L, _m1.dot(_sd)));
+      if (_m1.addScaledVector(_sd, -along).length() < 1.2 + (w1 * along) / L) continue;
       B.strahl(_sp, _sd, L, w0, w1, REG.beam);
     }
   }
@@ -641,7 +645,7 @@ export const GLLICHT = (() => {
   function poolGitter(zf, moped) {
     const w = moped ? 2.0 : 3.0,
       z0 = zf + (moped ? 0.3 : 0.2),
-      z1 = zf + (moped ? 10.5 : 15),
+      z1 = zf + (moped ? 10 : 13),
       R = REG.pool,
       pos = new Float32Array(PX * PZ * 3),
       uv = new Float32Array(PX * PZ * 2),
@@ -679,14 +683,13 @@ export const GLLICHT = (() => {
       q = D.poolAt,
       x = r.position.x,
       z = r.position.z;
-    if (
-      q &&
-      Math.hypot(x - q[0], z - q[1]) < 0.35 &&
-      Math.abs(r.quaternion.y - q[2]) < 0.01 &&
-      Math.abs(r.quaternion.w - q[3]) < 0.01
-    )
-      return;
-    D.poolAt = [x, z, r.quaternion.y, r.quaternion.w];
+    // (laid anew when it has moved 35 cm or turned – at most ten times a second, unless it was set down elsewhere)
+    if (q) {
+      const d = Math.hypot(x - q[0], z - q[1]);
+      if (d < 0.35 && Math.abs(r.quaternion.y - q[2]) < 0.01 && Math.abs(r.quaternion.w - q[3]) < 0.01) return;
+      if (S.t - q[4] < 0.1 && d < 3) return;
+    }
+    D.poolAt = [x, z, r.quaternion.y, r.quaternion.w, S.t];
     r.updateWorldMatrix(true, false);
     _pm.copy(r.matrixWorld).invert();
     const P = D.pool.geometry.attributes.position,
@@ -775,8 +778,8 @@ export const GLLICHT = (() => {
       MAT.kegel89.opacity = 0.18 * k * nass;
       MAT.glanz.opacity = 0.6 * k;
       MAT.glanz89.opacity = 0.6 * k;
-      MAT.pool.opacity = 0.09 * k;
-      MAT.pool89.opacity = 0.1 * k;
+      MAT.pool.opacity = 0.075 * k;
+      MAT.pool89.opacity = 0.085 * k;
       MAT.heck.opacity = 0.55 * k;
       MAT.blauL.opacity = 1.1 * pl * k;
       MAT.blauR.opacity = 1.1 * pr * k;
@@ -901,15 +904,23 @@ export const GLLICHT = (() => {
         L.glas.position.copy(_h);
         L.glas.quaternion.setFromEuler(_e);
         _fd.set(0, 0, -1).applyEuler(_e);
-        L.licht.begin();
-        L.licht.strahl(_h.clone().addScaledVector(_fd, 0.08), _fd, 7, 0.04, 1.2, REG.beam);
-        L.licht.end();
         const gz = Number.isFinite(F.z) ? F.z : KERN.ground(F.x, F.y),
           hh = Math.max(0.5, _h.y - gz),
           dist = Math.min(7.5, Math.max(2.2, hh / Math.tan(pitch))),
           gx = _h.x + Math.sin(yaw) * dist,
           gy = -_h.z + Math.cos(yaw) * dist,
           g2 = KERN.ground(gx, gy);
+        // the beam ends where it meets the ground (beyond, the ground cut it off in a hard line)
+        L.licht.begin();
+        L.licht.strahl(
+          _h.clone().addScaledVector(_fd, 0.08),
+          _fd,
+          Math.min(7, dist / Math.cos(pitch) + 0.2),
+          0.04,
+          1.1,
+          REG.beam
+        );
+        L.licht.end();
         L.boden.position.set(gx, (Number.isFinite(g2) ? g2 : gz) + 0.08, -gy);
         L.boden.rotation.y = -yaw;
         L.boden.scale.set(0.8 + dist * 0.12, 1, 1 + dist * 0.22);
@@ -917,7 +928,7 @@ export const GLLICHT = (() => {
         // seen from close by, along the beam, the cards would add up to a white wedge: fainter near the camera
         const nah = Math.max(0.12, Math.min(1, (_h.distanceTo(cam.position) - 1.2) / 6));
         L.licht.m.material.opacity = 0.16 * S.lampK * nah;
-        L.boden.material.opacity = 0.075 * S.lampK * (0.4 + 0.6 * nah);
+        L.boden.material.opacity = 0.055 * S.lampK * (0.4 + 0.6 * nah);
       }
     for (const [F, L] of S.fackeln) if (!seen.has(F)) fackelWeg(F, L);
     if (S.fackeln.size) {
