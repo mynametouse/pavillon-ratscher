@@ -1,9 +1,56 @@
 {
- "was": "Der Satz der Suhl-Daten, den der Job satz (.github/workflows/suhl-daten.yml) ins Daten-Repo mynametouse/pavillon-daten bringt. Geändert wird diese Datei nur auf Ansage des Suhl-Chats. Je Produkt: run = Lauf, der das Artefakt erzeugt hat, artifact = sein Name, version = das N von suhl/<produkt>/v<N>. dry_run: true = alles außer dem Push. remove: Versionsordner, die dieser Satz löscht (z. B. \"g/v0\").",
- "name": "trockenlauf-boden-v1",
+ "was": "Der Satz der Suhl-Daten, den der Job satz (.github/workflows/suhl-daten.yml) ins Daten-Repo mynametouse/pavillon-daten bringt. Geändert wird diese Datei nur auf Ansage des Suhl-Chats. Je Produkt: run = Lauf, der das Artefakt erzeugt hat, artifact = sein Name, version = das N von suhl/<produkt>/v<N>. dry_run: true = alles außer dem Push. remove: Versionsordner, die dieser Satz löscht (z. B. \"g/v0\"). Statt run/artifact auch {\"branch\", \"commit\", \"path\"}: ein Ordner eines Zweigs dieses Repos an einem genannten Commit (so liegen die Probesätze).",
+ "name": "probe-zentrum-v1-trockenlauf",
  "dry_run": true,
  "products": {
-  "boden": {"run": 43340569202, "artifact": "suhl-boden-v1", "version": 1}
+  "boden": {
+   "branch": "suhl/boden",
+   "commit": "64a37c21b3efb864228d79d5f039c3acc8a06b5a",
+   "path": "tools/suhl/out/boden/probe/suhl/boden/v1",
+   "version": 1
+  },
+  "s": {
+   "branch": "suhl/strassen",
+   "commit": "5d38f16c0bec807c75ca7716aac361f182cb0267",
+   "path": "tools/suhl/out/strassen/probe/suhl/s/v1",
+   "version": 1
+  },
+  "m": {
+   "branch": "suhl/strassen",
+   "commit": "5d38f16c0bec807c75ca7716aac361f182cb0267",
+   "path": "tools/suhl/out/strassen/probe/suhl/m/v1",
+   "version": 1
+  },
+  "g": {
+   "branch": "suhl/gebaeude",
+   "commit": "e7836b7ddcd439e2d2e89e185ae21b4bd8a3e74f",
+   "path": "tools/suhl/out/gebaeude/probe/suhl/g/v1",
+   "version": 1
+  },
+  "b": {
+   "branch": "suhl/gruen",
+   "commit": "8f8b77ff2a0a2cbd461c7c700560b27857a6e6e7",
+   "path": "tools/suhl/out/gruen/probe/suhl/b/v1",
+   "version": 1
+  },
+  "gr": {
+   "branch": "suhl/gruen",
+   "commit": "8f8b77ff2a0a2cbd461c7c700560b27857a6e6e7",
+   "path": "tools/suhl/out/gruen/probe/suhl/gr/v1",
+   "version": 1
+  },
+  "w": {
+   "branch": "suhl/gruen",
+   "commit": "8f8b77ff2a0a2cbd461c7c700560b27857a6e6e7",
+   "path": "tools/suhl/out/gruen/probe/suhl/w/v1",
+   "version": 1
+  },
+  "d": {
+   "branch": "suhl/daten",
+   "commit": "e0baac9fee2ca23c0fcd035ad1606f13204395a1",
+   "path": "tools/suhl/out/daten/probe/suhl/d/v1",
+   "version": 1
+  }
  },
  "remove": []
 }
