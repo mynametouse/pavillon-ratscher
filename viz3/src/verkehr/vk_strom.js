@@ -175,6 +175,18 @@ export const VKSTROM = (() => {
       }
     }
     for (const n of G.nodes) n.deg = n.edges.length;
+    // where the data ends (the village's square, the region's edge – the road goes on there) or a bigger road ends at all: an exit (on
+    // into the country), never a dead end – only small streets end in dead ends one parks in (a car parked where the data ends would
+    // stand in the middle of the road)
+    {
+      const B = box();
+      for (const n of G.nodes) {
+        if (n.exit || n.deg !== 1) continue;
+        const e = n.edges[0],
+          atBox = B && (Math.abs(n.x - B[0]) < 10 || Math.abs(n.x - B[2]) < 10 || Math.abs(n.y - B[1]) < 10 || Math.abs(n.y - B[3]) < 10);
+        if (e.kind <= 2 || atBox) n.exit = true;
+      }
+    }
     S.G = G;
     S.stats.graphMs = Math.round(performance.now() - t0);
     S.stats.graphs++;
@@ -380,10 +392,20 @@ export const VKSTROM = (() => {
       _f.z = fz / l;
     }
     S.cars = S.cars.filter(c => c.st !== 'weg');
-    if (!on) {
-      // switched off (a mode of its own, the zombie night): the unseen go at once
-      for (const c of S.cars.slice()) if (!seen(c.x, c.y) && c.st !== 'geliehen') drop(c);
+    if (S.off) {
+      // a test that drives the player's car on fixed routes: no flow at all
+      for (const c of S.cars.slice()) if (c.st !== 'geliehen') drop(c);
       return;
+    }
+    if (!on) {
+      // switched off (a mode of its own, the zombie night): the unseen go at once; when it comes back, it fills up at once again
+      for (const c of S.cars.slice()) if (!seen(c.x, c.y) && c.st !== 'geliehen') drop(c);
+      S.wasOff = true;
+      return;
+    }
+    if (S.wasOff) {
+      S.wasOff = false;
+      S.prime = true;
     }
     // the graph: first, when the observer has moved on, when more road data has come (a jump: prime again)
     const moved = S.at ? hyp(o[0] - S.at[0], o[1] - S.at[1]) : Infinity,

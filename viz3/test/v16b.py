@@ -14,6 +14,8 @@ def check(name, cond, info=''):
 with lib.browser() as b:
     errs = []; pg = lib.page(b, 1100, 680, errs, tier='mittel'); lib.boot(pg, port, figures=True); E = pg.evaluate
     E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
+    # the flow of traffic (verkehr/vk_strom.js) off: the car is driven on fixed routes here, a vehicle ahead would hold the test's driver
+    E("window.VKSTROM && (VKSTROM.off = true)")
     st = lambda: json.loads(E("JSON.stringify(VEH.state())"))
     steps = lambda secs: E(f"for (let i = 0; i < {int(secs / 0.025)}; i++) GAME.step(0.025)")
     def drive(secs, thr=0, brk=0, steer=0, hand=False):
@@ -118,7 +120,7 @@ with lib.browser() as b:
         ctx = b.new_context(viewport={'width': 390, 'height': 780}, device_scale_factor=2, is_mobile=True, has_touch=True)
         mp = ctx.new_page(); lib.preset(mp); mp.on('pageerror', lambda e: errs.append('M PAGEERR ' + str(e)))
         mp.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded')
-        mp.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); time.sleep(2); M = mp.evaluate; M("window.FREEZE = true")
+        mp.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); time.sleep(2); M = mp.evaluate; M("window.FREEZE = true"); M("window.VKSTROM && (VKSTROM.off = true)")
         M("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
         mp.wait_for_function("!window.AVATAR || AVATAR.ready || AVATAR.failed", timeout=900000, polling=1000); M("GAME.step(0.1)")   # the figure loaded: no long busy frames any more
         # since V16v the menu has pages: the car's chip is on „Hingehen“

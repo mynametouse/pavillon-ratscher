@@ -349,7 +349,8 @@ with lib.browser() as b:
         view(cx, cy - 20, 0)
         E("STRKARTE.flush(); STRASSEN.fill()")
         steps(3, 0.05)
-        base = J("{ ways: FAHRT.data.ways.length, signs: FAHRT.data.signs.length, places: FAHRT.data.places.length, grid: FAHRT.data.grid.size, orte: STRDAT.orte.length, extra: VEH.extra.length, n: STRASSEN.state().n, faces: STRASSEN.state().faces, maps: STRKARTE.n }")
+        # (the colliders without the traffic's: its vehicles come and go meanwhile, verkehr/vk_strom.js)
+        base = J("{ ways: FAHRT.data.ways.length, signs: FAHRT.data.signs.length, places: FAHRT.data.places.length, grid: FAHRT.data.grid.size, orte: STRDAT.orte.length, extra: VEH.extra.filter(x => !x.verkehr).length, n: STRASSEN.state().n, faces: STRASSEN.state().faces, maps: STRKARTE.n }")
         gnd = f"[[0, 0], [40, 40], [-30, 20], [40, -30], [-60, 30], [80, -30]].map(q => KERN.ground({cx} + q[0], {cy} + q[1]))"
         g0 = J(gnd)
         ck('a meadow before: no road there, open country', at_(0, -30) is None and surf(40, 40) is None and E(f"STRDAT.placeAt({P(0, 0)})") == 0, json.dumps(base)[:200])
@@ -403,7 +404,7 @@ with lib.browser() as b:
         E("STRKARTE.flush(); STRASSEN.fill()")
         steps(1, 0.05)
         E("STRKARTE.flush(); STRASSEN.fill()")
-        end = J("{ ways: FAHRT.data.ways.length, signs: FAHRT.data.signs.length, places: FAHRT.data.places.length, grid: FAHRT.data.grid.size, orte: STRDAT.orte.length, extra: VEH.extra.length, n: STRASSEN.state().n, faces: STRASSEN.state().faces, maps: STRKARTE.n }")
+        end = J("{ ways: FAHRT.data.ways.length, signs: FAHRT.data.signs.length, places: FAHRT.data.places.length, grid: FAHRT.data.grid.size, orte: STRDAT.orte.length, extra: VEH.extra.filter(x => !x.verkehr).length, n: STRASSEN.state().n, faces: STRASSEN.state().faces, maps: STRKARTE.n }")
         s3 = J("FAHRT.status()")
         same = all(end[k] == base[k] for k in ('ways', 'signs', 'places', 'grid', 'orte', 'extra')) and end['n'] == base['n']
         ck('FAHRT.drop and STRDAT.drop take it all out again: tables, grid, places, furniture, colliders', ok and same and s3['sets'] == [] and s3['areas'] == 0 and not E("STRDAT.sets.size") and st()['sets'] == [],
