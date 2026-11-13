@@ -1,0 +1,394 @@
+// ===================== feat/grenzland: the vehicles of the mode in the world – driving along the roads, the player's moped (GLAUTO) =====================
+// The models are grenzland/gl_modelle.js (GLMOD). Here they drive: a road graph of the whole square from the OSM ways
+// (verkehr/verkehr_netz.js, pure), routes shortest in time, a line with the right-hand lane and speeds per metre; a car follows its line
+// with both axles (the body turns like a real car), stands on the ground, brakes for whatever it is told to stop for; a moped leans into
+// the curve. The lamps glow at night, the beacons flash, the nearest horn is heard (grenzland/gl_ton.js). The player's moped is a vehicle
+// of vehicles/vehicle.js with the physics of the player's car scaled down, made when the mode first needs it.
+//   GLAUTO.spawn(typ, o) → c · park(c, x, y, hd) · onLine(c, line, s, v) · drive(c, dt, { k, vmax, acc, halt, stopS }) · remove(c)
+//   GLAUTO.route([x, y], [x, y], { k, aLat, vEnd, lane }) → line · netz() · nodeNear(x, y) · zufahrten() · mopedAt(x, y, hd) · mopedHide()
+import * as THREE from 'three';
+import { scene } from '../core/head.js';
+import { KERN } from '../core/kern.js';
+import { markDirty } from '../core/assets.js';
+import { ROADS } from '../world/roads.js';
+import { VEH } from '../vehicles/vehicle.js';
+import { VNETZ } from '../verkehr/verkehr_netz.js';
+import { VAUTO } from '../verkehr/verkehr_auto.js';
+import { GLTON } from './gl_ton.js';
+import { GLMOD } from './gl_modelle.js';
+export const GLAUTO = (() => {
+  const S = { cars: [], n: 0, G: null, moped: null, blink: 0 };
+  const TYP = GLMOD.TYP,
+    LM = GLMOD.LM;
+  // ---- a vehicle of the mode in the world ----
+  // o: { col, col2, band, band2, bar: 'balken' | 'rundum', place }
+  function spawn(typ, o = {}) {
+    const M = GLMOD.bau(typ, o);
+    if (!M) return null;
+    const T = M.T,
+      g = M.g,
+      c = {
+        id: ++S.n,
+        typ,
+        T,
+        g,
+        o,
+        line: null,
+        s: 0,
+        v: 0,
+        lat: 0,
+        x: 0,
+        y: 0,
+        z: 0,
+        hd: 0,
+        spin: 0,
+        blau: false,
+        horn: false,
+        parts: M.parts,
+        tilt: M.tilt,
+        seat: M.seat,
+        mod: M,
+      };
+    if (T.form !== 'moped') {
+      // solid for the player's vehicle and for the walker (vehicles/vehicle.js VEH.extra)
+      c.box = {
+        box: () =>
+          c.g.visible
+            ? {
+                c: [c.x + Math.sin(c.hd) * T.cy, c.y + Math.cos(c.hd) * T.cy],
+                ax: [Math.cos(c.hd), -Math.sin(c.hd)],
+                ay: [Math.sin(c.hd), Math.cos(c.hd)],
+                ex: T.hw,
+                ey: T.hl,
+                z0: c.z,
+                z1: c.z + 1.5,
+              }
+            : null,
+        grenzland: c,
+      };
+      if (VEH && VEH.extra) VEH.extra.push(c.box);
+    }
+    S.cars.push(c);
+    return c;
+  }
+  function remove(c) {
+    if (!c) return;
+    const i = S.cars.indexOf(c);
+    if (i >= 0) S.cars.splice(i, 1);
+    if (c.box && VEH && VEH.extra) {
+      const j = VEH.extra.indexOf(c.box);
+      if (j >= 0) VEH.extra.splice(j, 1);
+    }
+    scene.remove(c.g);
+    c.gone = true;
+    markDirty();
+  }
+  const removeAll = () => {
+    for (const c of S.cars.slice()) remove(c);
+  };
+  const _e = new THREE.Euler(0, 0, 0, 'YXZ'),
+    _a = {},
+    _b = {};
+  // stand at (x, y) facing hd (compass rad): both axles on the ground
+  function park(c, x, y, hd) {
+    const T = c.T;
+    c.line = null;
+    c.v = 0;
+    c.x = x;
+    c.y = y;
+    c.hd = hd;
+    const fx = x + Math.sin(hd) * T.a,
+      fy = y + Math.cos(hd) * T.a,
+      rx = x + Math.sin(hd) * T.b,
+      ry = y + Math.cos(hd) * T.b,
+      zF = KERN.ground(fx, fy),
+      zR = KERN.ground(rx, ry);
+    c.z = Number.isFinite(zF + zR) ? zR + ((zF - zR) * -T.b) / T.wb : 0;
+    c.g.position.set(x, c.z, -y);
+    _e.set(Math.atan2((zF || 0) - (zR || 0), T.wb), -hd, 0, 'YXZ');
+    c.g.quaternion.setFromEuler(_e);
+    c.g.visible = true;
+    markDirty(true);
+    return c;
+  }
+  // on its line at c.s: front and rear axle on the line (shifted by c.lat to the right)
+  function pose(c) {
+    const R = c.line,
+      T = c.T;
+    VNETZ.at(R, c.s + T.a, _a);
+    const fx = _a.x + Math.cos(_a.hd) * c.lat,
+      fy = _a.y - Math.sin(_a.hd) * c.lat;
+    VNETZ.at(R, c.s + T.b, _b);
+    const rx = _b.x + Math.cos(_b.hd) * c.lat,
+      ry = _b.y - Math.sin(_b.hd) * c.lat,
+      hd = Math.atan2(fx - rx, fy - ry),
+      k = -T.b / T.wb;
+    c.x = rx + (fx - rx) * k;
+    c.y = ry + (fy - ry) * k;
+    // the curve the line bends with here: the moped leans into it
+    let dh = _a.hd - _b.hd;
+    while (dh > Math.PI) dh -= 2 * Math.PI;
+    while (dh < -Math.PI) dh += 2 * Math.PI;
+    c.kr = dh / T.wb;
+    c.hd = hd;
+    const zF = KERN.ground(fx, fy, c.z + 0.6),
+      zR = KERN.ground(rx, ry, c.z + 0.6),
+      z = zR + (zF - zR) * k;
+    if (Number.isFinite(z)) c.z = z;
+    const pitch = Math.atan2(zF - zR, T.wb);
+    c.g.position.set(c.x, c.z, -c.y);
+    _e.set(Number.isFinite(pitch) ? pitch : 0, -hd, 0, 'YXZ');
+    c.g.quaternion.setFromEuler(_e);
+  }
+  // onto a line at s (m along it) with speed v
+  function onLine(c, line, s = 0, v = 0) {
+    c.line = line;
+    c.s = Math.max(-c.T.b, s);
+    c.v = v;
+    c.lat = 0;
+    c.ende = false;
+    const p = VNETZ.at(line, c.s, {});
+    c.z = KERN.ground(p.x, p.y);
+    if (!Number.isFinite(c.z)) c.z = 0;
+    pose(c);
+    c.g.visible = true;
+    markDirty();
+    return c;
+  }
+  // one step along the line. o: { k: factor on the line's speeds, vmax, acc, halt: [{ x, y, r, gap }] what to stop for, stopS }
+  function drive(c, dt, o = {}) {
+    const R = c.line;
+    if (!R || c.gone) return;
+    const i = Math.min(R.n - 1, Math.max(0, Math.round((c.s + 2) / R.step)));
+    let vT = (R.S ? R.S[i] : 8) * (o.k || 1);
+    if (o.vmax != null) vT = Math.min(vT, o.vmax);
+    let stopAt = o.stopS ?? Infinity;
+    for (const h of o.halt || []) {
+      if (Math.abs(h.x - c.x) > 60 || Math.abs(h.y - c.y) > 60) continue;
+      const pr = VNETZ.project(R, h.x, h.y, c.s - 2, c.s + 45);
+      if (pr && Math.abs(pr.lat - c.lat) < c.T.hw + h.r + 0.35 && pr.s > c.s + 0.5)
+        stopAt = Math.min(stopAt, pr.s - c.T.yf - h.r - (h.gap ?? 1.6));
+    }
+    if (stopAt < Infinity) {
+      const d = stopAt - c.s;
+      vT = Math.min(vT, d <= 0.05 ? 0 : Math.sqrt(2 * 4 * d));
+    }
+    const dv = vT - c.v;
+    c.v = Math.max(0, c.v + (dv > 0 ? Math.min(dv, (o.acc || 2.4) * dt) : Math.max(dv, -7 * dt)));
+    c.s = Math.min(R.L, c.s + c.v * dt);
+    c.ende = c.s >= R.L - 0.6;
+    pose(c);
+    c.spin += (c.v * dt) / c.T.rw;
+    if (c.parts.axF) {
+      c.parts.axF.rotation.x = -c.spin;
+      c.parts.axR.rotation.x = -c.spin;
+    } else if (c.parts.wf) {
+      c.parts.wf.rotation.x = -c.spin;
+      c.parts.wr.rotation.x = -c.spin;
+      // lean into the curve: atan(v² κ / g), eased
+      const want = Math.max(-0.6, Math.min(0.6, Math.atan((c.v * c.v * (c.kr || 0)) / 9.81)));
+      c.lean = (c.lean || 0) + (want - (c.lean || 0)) * Math.min(1, dt * 4);
+      c.tilt.rotation.z = -c.lean;
+    }
+  }
+  // ---- the road graph of the whole square (once): routes for the police, the clique, the lorries of the story ----
+  const VMAX = [27, 21, 18, 11, 8, 6, 5.5]; // m/s by kind: motorway, main, county, street, lane, service, track
+  function netz() {
+    if (S.G) return S.G;
+    const ways = (ROADS && ROADS.ways) || [];
+    S.G = VNETZ.graph(ways, { kinds: new Set([0, 1, 2, 3, 4, 5, 6]) });
+    return S.G;
+  }
+  function nodeNear(x, y, max = 1e9) {
+    const G = netz();
+    let b = -1,
+      bd = max;
+    for (let i = 0; i < G.nodes.length; i++) {
+      const d = Math.hypot(G.nodes[i].x - x, G.nodes[i].y - y);
+      if (d < bd) {
+        bd = d;
+        b = i;
+      }
+    }
+    return b;
+  }
+  const cost = e => e.len / (VMAX[e.kind] || 5);
+  // a line from near a to near b ([x, y] each). o: { k: speed factor, aLat, vEnd, lane: false for the middle of the road }
+  function route(a, b, o = {}) {
+    const G = netz(),
+      na = nodeNear(a[0], a[1]),
+      nb = nodeNear(b[0], b[1]);
+    if (na < 0 || nb < 0 || na === nb) return null;
+    const path = VNETZ.route(G, na, nb, cost);
+    if (!path || !path.length) return null;
+    const line = VNETZ.line(path, {
+      off: e => (o.lane === false || e.kind > 3 ? 0 : Math.max(1.0, (e.w || 5) / 4)),
+      vmax: e => (VMAX[e.kind] || 5) * (o.k || 1),
+      cut: 5,
+      aLat: o.aLat || 2.6,
+      aBrk: 3,
+      vMin: 2.6,
+      vEnd: o.vEnd ?? 0,
+    });
+    if (line) line.from = na;
+    return line;
+  }
+  // where a road leaves the square (the ends of main and county roads): the police come in there
+  function zufahrten() {
+    const G = netz();
+    return G.nodes
+      .filter(n => n.edges.length === 1 && n.edges[0].kind <= 2 && n.edges[0].kind >= 1)
+      .map(n => [n.x, n.y]);
+  }
+  // ---- the player's moped: a vehicle of vehicles/vehicle.js (made when the mode first needs it, hidden far out when not) ----
+  const HIDE = [-930, -1240];
+  function mopedVeh() {
+    if (S.moped) return S.moped;
+    const base = VEH && VEH.by && VEH.by.car;
+    if (!base) return null;
+    const PM = GLMOD.spielerMoped(),
+      T = PM.T,
+      model = PM.model,
+      g = model.g;
+    const spec = Object.assign({}, base.spec, {
+      id: 'gl-moped',
+      name: 'Moped',
+      enterLabel: 'Aufs Moped steigen',
+      mass: 165,
+      Iz: 52,
+      a: T.a,
+      b: -T.b,
+      track: 0.22,
+      hcg: 0.55,
+      rw: T.rw,
+      mu: 0.95,
+      Cf: 11500,
+      Cr: 13500,
+      steerMax: 0.52,
+      steerV: 9,
+      steerRate: 3.2,
+      steerBack: 5,
+      eng: {
+        idle: 1300,
+        red: 7000,
+        launch: 3200,
+        drag: 1.4,
+        curve: [
+          [1200, 3.4],
+          [3000, 4.9],
+          [5200, 5.3],
+          [6200, 4.6],
+          [7000, 3.2],
+          [7400, 0],
+        ],
+      },
+      gears: [3.1, 1.9, 1.3, 1.0],
+      rev: 3.1,
+      final: 10.2,
+      eff: 0.9,
+      split: 0,
+      shift: 0.25,
+      upAt: t => 3600 + 2600 * t,
+      downAt: t => 2000 + 1200 * t,
+      brake: 1500,
+      brakeF: 0.6,
+      hand: true,
+      cdA: 0.52,
+      dive: 0.006,
+      lean: 0,
+      travel: 0.07,
+      susp: 60,
+      suspD: 12,
+      box: { hw: 0.34, hl: T.hl, cy: T.cy, h: 1.25 },
+      eye: [0, -0.28, 1.5],
+      door: [-0.75, -0.1],
+      reach: 2.0,
+      beam: 150,
+      beamAngle: 0.55,
+      sound: 'petrol',
+      cam: { dist: 4.4, height: 1.75, look: 1.05 },
+      home: () => [HIDE[0], HIDE[1], 0, false],
+    });
+    delete spec.L;
+    const v = VEH.add(spec, model);
+    for (const o of g.children) o.castShadow = false;
+    g.visible = false;
+    S.moped = v;
+    return v;
+  }
+  function mopedAt(x, y, hd) {
+    const v = mopedVeh();
+    if (!v) return null;
+    VEH.place('gl-moped', x, y, hd);
+    v.g.visible = true;
+    markDirty(true);
+    return v;
+  }
+  function mopedHide() {
+    const v = S.moped;
+    if (!v) return;
+    if (VEH.cur === v) VEH.exit();
+    VEH.place('gl-moped', HIDE[0], HIDE[1], 0);
+    v.g.visible = false;
+  }
+  // ---- per frame: lamps by the hour, the beacons, the nearest horn ----
+  let night = null;
+  function tick(dt, ox, oy) {
+    const dk = !!(VAUTO.dark && VAUTO.dark());
+    if (dk !== night) {
+      night = dk;
+      LM.head.emissiveIntensity = dk ? 3.2 : 0;
+      LM.tail.emissiveIntensity = dk ? 1.4 : 0;
+      markDirty();
+    }
+    S.blink += dt;
+    let any = false,
+      near = 1e9,
+      mop = 1e9,
+      mv = 0;
+    for (const c of S.cars) {
+      if (!c.g.visible) continue;
+      const d = Math.hypot(c.x - ox, c.y - oy);
+      if (c.blau) any = true;
+      if (c.horn && d < near) near = d;
+      if (c.typ === 'moped' && c.v > 0.5 && d < mop) {
+        mop = d;
+        mv = c.v;
+      }
+      if (c.v > 0.05 && d < 300) markDirty();
+    }
+    const ph = Math.floor(S.blink * 5.5) % 2;
+    const a = any ? (ph ? 7 : 0.3) : 0,
+      b = any ? (ph ? 0.3 : 7) : 0;
+    if (LM.blau.emissiveIntensity !== a || LM.blau2.emissiveIntensity !== b) {
+      LM.blau.emissiveIntensity = a;
+      LM.blau2.emissiveIntensity = b;
+      markDirty();
+    }
+    GLTON.siren(near < 1e8, near, S.hornAlt);
+    GLTON.moped(mop < 1e8, mop, mv);
+  }
+  Object.assign(S, {
+    TYP,
+    spawn,
+    remove,
+    removeAll,
+    park,
+    onLine,
+    drive,
+    pose,
+    netz,
+    nodeNear,
+    route,
+    zufahrten,
+    mopedVeh,
+    mopedAt,
+    mopedHide,
+    tick,
+    LM,
+    VMAX,
+    HIDE,
+  });
+  return S;
+})();
+window.GLAUTO = GLAUTO;
