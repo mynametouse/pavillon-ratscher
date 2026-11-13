@@ -109,21 +109,6 @@ export const GLTYPEN = (() => {
       form: 'lkw',
       name: 'W 50',
     },
-    // Lada 2105: 4130 × 1620 × 1446 mm, wheelbase 2424
-    lada: {
-      yf: 2.0,
-      yr: -2.13,
-      hw: 0.81,
-      a: 1.2,
-      b: -1.224,
-      rw: 0.287,
-      tw: 0.165,
-      track: 1.365,
-      trackR: 1.321,
-      h: 1.446,
-      form: 'pkw',
-      name: 'Lada 2105',
-    },
     // today: an estate of the upper middle class (4.77 × 1.83 × 1.5 m, wheelbase 2.79), a small estate in the size of the player's car,
     // a panel van (5.41 × 1.99 × 2.5 m, wheelbase 3.3)
     streife: {
@@ -514,8 +499,8 @@ export const GLTYPEN = (() => {
     k.tube(
       'matt',
       [
-        [-0.34, -1.5, 0.25],
-        [-0.34, -1.93, 0.245],
+        [-0.34, -1.72, 0.25],
+        [-0.34, -1.9, 0.245],
       ],
       0.021,
       8,
@@ -775,8 +760,8 @@ export const GLTYPEN = (() => {
     k.tube(
       'matt',
       [
-        [0.4, -1.7, 0.26],
-        [0.4, -2.2, 0.255],
+        [0.4, -1.98, 0.27],
+        [0.4, -2.19, 0.265],
       ],
       0.024,
       8,
@@ -1860,6 +1845,44 @@ export const GLTYPEN = (() => {
     lenkrad(k, 'matt', 0.19, C.ivory, { t: 0.0105, ts: 0.0085, spokes: [0, Math.PI] });
     return k.done();
   }
+  // the driver's hands on the rim at ten and two, in the wheel's frame: gloves and the sleeves of a padded jacket coming from the
+  // elbows (seen from the driver's seat only; they go a little way with the wheel)
+  function trabantHaende() {
+    const k = K.kit(),
+      sleeve = rgb(74, 78, 66),
+      glove = rgb(58, 40, 28);
+    for (const s of [-1, 1]) {
+      const h = [s * 0.165, -0.012, 0.095],
+        w = [s * 0.185, -0.07, 0.07],
+        e = [s * 0.28, -0.31, -0.2];
+      k.tube('matt', [e, [s * 0.24, -0.2, -0.07], w], t => 0.05 - 0.012 * t, 10, sleeve, { caps: 'a' });
+      k.tube(
+        'matt',
+        [
+          [w[0] + s * 0.004, w[1] - 0.012, w[2] - 0.006],
+          [w[0] - s * 0.004, w[1] + 0.012, w[2] + 0.006],
+        ],
+        0.041,
+        10,
+        sleeve
+      );
+      k.pad('matt', [h[0] + s * 0.006, h[1] - 0.03, h[2] - 0.006], [0.085, 0.07, 0.06], 0.022, glove);
+      k.pad('matt', h, [0.075, 0.05, 0.075], 0.022, glove);
+      // the thumb along the rim
+      k.tube(
+        'matt',
+        [
+          [h[0] - s * 0.03, h[1] - 0.02, h[2] + 0.02],
+          [h[0] - s * 0.05, h[1] - 0.004, h[2] + 0.045],
+        ],
+        0.013,
+        6,
+        glove,
+        { caps: 'b' }
+      );
+    }
+    return k.done();
+  }
   function tachoNadel(len = 0.04, col = rgb(214, 60, 24)) {
     const k = K.kit();
     k.quad('matt', [-len * 0.25, -0.002, 0], [len, -0.0009, 0], [len, 0.0009, 0], [-len * 0.25, 0.002, 0], col);
@@ -1948,7 +1971,6 @@ export const GLTYPEN = (() => {
     wartburg: '#e9e6da',
     barkas: '#c9c7b4',
     w50: '#3f6f9a',
-    lada: '#b33a2c',
     streife: '#c9cdd2',
     kombi: '#7d8791',
     kasten: '#f1f1ee',
@@ -1977,7 +1999,7 @@ export const GLTYPEN = (() => {
   // paint: how metallic (the plain paints of 1989: 0)
   TYP.streife.metal = 0.55;
   TYP.kombi.metal = 0.55;
-  const ALIAS = { limo89: 'wartburg', klein89: 'trabant', lkw89: 'w50' };
+  const ALIAS = { limo89: 'wartburg', klein89: 'trabant', lkw89: 'w50', lada: 'wartburg' };
   const cache = new Map();
   function bau(typ0, o = {}) {
     const typ = ALIAS[typ0] || typ0,
@@ -2016,6 +2038,7 @@ export const GLTYPEN = (() => {
     if (o.innen === 'cockpit' && (typ === 'trabant' || typ === 'trabant_kombi')) {
       pieces.push({ name: 'lenkrad', parts: trabantLenkrad(), at: TC.hub, paint });
       pieces.push({ name: 'nadel', parts: tachoNadel(0.04), at: TC.dial.c, paint });
+      pieces.push({ name: 'haende', parts: trabantHaende(), at: TC.hub, paint });
       M.cockpit = TC;
     }
     cache.set(key, M);

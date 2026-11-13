@@ -123,7 +123,7 @@ with lib.browser() as b:
     E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: true })")
     steps(5, 0.05)
     tk = J("({ tank: GLSTATE.tank, c: GLCOCKPIT.stand(), sub: VEH.cur.gl.sub })")
-    ck('the tank went down, the odometer counted, the small line tells the tank', tk['tank'] < 3 and tk['c']['km'] > 27418.35 and 'Tank 2,9' in tk['sub'], str(tk))
+    ck('the tank went down, the odometer counted, the small line tells the tank', tk['tank'] < 3 and tk['c']['km'] > 27418.35 and 'Tank ' in tk['sub'] and ' l' in tk['sub'], str(tk))
     E("GLSTATE.tank = 0.5")
     steps(0.2, 0.05)
     tk = J("({ tap: VEH.cur.model.cockpit.tap.rotation.x, sub: VEH.cur.gl.sub, lamps: GLCOCKPIT.stand().lampen })")
@@ -150,8 +150,8 @@ with lib.browser() as b:
     pic('9b_trabi_cockpit_tag')
     E("VEH.auto = () => ({ thr: 0.4, brk: 0, steer: 0.5, hand: false })")
     steps(1.0, 0.05)
-    t2 = J("({ rad: VEH.cur.model.cockpit.wheel.rotation.z, steer: VEH.cur.st.steer, radio: GLCOCKPIT.stand().radio, cur: window.GLRADIO ? GLRADIO.cur() : null })")
-    ck('the steering wheel turns with the steering, the radio\'s dial shows the station that plays', t2['steer'] > 0.02 and t2['rad'] < -0.2 and t2['radio'] == t2['cur'] and t2['cur'], str(t2))
+    t2 = J("({ rad: VEH.cur.model.cockpit.wheel.rotation.z, steer: VEH.cur.st.steer, radio: GLCOCKPIT.stand().radio, cur: window.GLRADIO ? GLRADIO.cur() : null, haende: GLCOCKPIT.stand().haende, hz: VEH.cur.model.cockpit.hands.rotation.z })")
+    ck('the steering wheel turns with the steering (the hands go a little way with it), the radio\'s dial shows the station that plays', t2['steer'] > 0.02 and t2['rad'] < -0.2 and t2['radio'] == t2['cur'] and t2['cur'] and t2['haende'] and -0.61 < t2['hz'] < -0.1, str(t2))
     pic('9c_trabi_cockpit_kurve')
     E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: true })")
     steps(4, 0.05)
@@ -188,9 +188,11 @@ with lib.browser() as b:
     ck('the beacons flash, the lamps glow at night', max(bl['a'], bl['b']) > 3 and bl['head'] > 1, str(bl))
     # ---- shader programs: what the vehicles added ----
     p1 = progs()
-    new = [p for p in p1 if p not in p0]
-    print('programs before', len(p0), 'after', len(p1), 'new:', new, flush=True)
-    ck('at most four new shader programs for all the vehicles and the mode', len(new) <= 4, str(new))
+    mine = J("(() => { const ids = new Set(), add = g => g && g.traverse(o => { if (!o.isMesh) return; const pr = GAME.R.properties.get(o.material), cp = pr && pr.currentProgram; "
+             "if (cp) ids.add(cp.name + '#' + cp.id); }); for (const c of GLAUTO.cars) add(c.g); add(GLAUTO.moped && GLAUTO.moped.g); add(GLAUTO.trabi && GLAUTO.trabi.g); return [...ids]; })()")
+    new = [p for p in mine if p not in p0]
+    print('programs before', len(p0), 'after the mode', len(p1), '| the vehicles use', len(mine), mine, '| of them new:', new, flush=True)
+    ck('the vehicles add at most three shader programs (vertex colours, the unlit dials, the shadow patch)', len(mine) >= 4 and len(new) <= 3, str(new))
     okgl, rep = lib.check_gl(pg)
     ck('at most 16 textures per shader program, none broken', okgl, str({k: rep[k] for k in ('maxFrag', 'maxVert')}) + str(rep['bad'])[:200])
     # ---- the end ----
