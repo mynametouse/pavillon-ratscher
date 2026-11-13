@@ -107,6 +107,7 @@
  * @property {(fn: (dt: number) => void, name?: string, opt?: { late?: boolean }) => () => void} tick  a per-frame callback (returns off;
  *   replaces window.TICKS); late: after all the others (the figure)
  * @property {() => string[]} ticks  the names of the per-frame callbacks (tests, error report)
+ * @property {(name: string, on?: boolean) => boolean} mute  feat/workshop: stop (true) or restart (false) a per-frame callback by name; without `on` it asks
  * @property {(on?: boolean) => Record<string, { ms: number, n: number }> | null} profile  true: start timing each callback, false: stop; the table
  * @property {(dt: number) => void} update  once per frame from the frame loop (game/game.js): zones, lights, waits
  */
@@ -405,6 +406,14 @@ export const KERN = (() => {
     /** @type {Record<string, { ms: number, n: number }> | null} */
     PROF = null; // KERN.profile(true): time per callback (viz3/test/prof.py)
   const TICK_LISTS = [TICK, LATE_TICK];
+  // feat/workshop: KERN.mute(name, true) stops a per-frame callback (by the name it was registered with) until KERN.mute(name, false);
+  // the Workshop mode's layers (zukunft/zk_workshop.js) switch whole systems – villagers, buses, animals – off with it
+  const MUTED = new Set();
+  function mute(name, on) {
+    if (on === undefined) return MUTED.has(name);
+    on ? MUTED.add(name) : MUTED.delete(name);
+    return MUTED.has(name);
+  }
   function tick(fn, name, opt) {
     const T = { fn, name: name || fn.name || 'tick', err: 0 };
     (opt && opt.late ? LATE_TICK : TICK).push(T);
@@ -441,7 +450,8 @@ export const KERN = (() => {
     for (const L of TICK_LISTS)
       for (let i = 0; i < L.length; i++) {
         const T = L[i];
-        if (T.fn)
+        if (T.fn && !(MUTED.size && MUTED.has(T.name)))
+          // feat/workshop: a muted callback does not run (KERN.mute)
           try {
             if (PROF) {
               const a = now();
@@ -504,6 +514,7 @@ export const KERN = (() => {
     spot,
     spots: () => SPOTS,
     scenario,
+    mute,
     scenarios: () => Object.values(SCEN).sort((a, b) => a.order - b.order),
     tasks,
     act,
