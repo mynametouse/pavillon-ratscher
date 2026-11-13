@@ -16,6 +16,13 @@ veröffentlicht.
 
 ## Stand
 
+- **13.11.2026 nachts: Kombi neu, innen und außen (V18i; Hilfs-Agent `cockpit` des Chats session_01Mmpsvp11QsXpPSQRRbZ4Jv,
+  `docs/features/cockpit.md`, Auftrag `docs/plans/auftraege/cockpit.md` mit der Erweiterung von 18:05).** Karosserie `vehicles/kombi.js`
+  (gebaut mit `grenzland/gl_karosse.js`, nur lesend), Cockpit `vehicles/cockpit*.js`, Grafik beim Bewegen `cockpit_set.js` mit dem Haken
+  `MOTION.user` in `render/render.js`; markierte Haken in `car.js`, `vehicle.js` (Blickwinkel), `minimap.js`, `core/save.js`
+  (`pav-cockpit-v1`), `zombie/z_fp.js` (`makeBody`). Tests `viz3/extra/cockpit/tests.txt`. Offen: die Beine der Figur auf den Pedalen; eine
+  Taste für den Warnblinker; die fahrbaren Verkehrsautos bekommen das Cockpit wieder, sobald der Straßen-Chat ihr eingeschweißtes Innenleben
+  nach `model.inside` legt (dann eine Zeile `KIND` in `vehicles/cockpit.js`).
 - **13.11.2026 abends: Zeitreise durch vier Welten, Stufe 1, und der Workshop-Modus (V18d; Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, Plan
   `docs/plans/plan_zeitreise.md`, `docs/features/zeitreise-chronik|regie|welt|medien.md`, `workshop.md`).** Falko 12:15–13:30: ein
   immersives Zeitsprung-Gefühl statt leicht verfärbter Bäume, ein klar umschaltbarer Workshop-Modus für den großen Bildschirm (Ebenen mit
