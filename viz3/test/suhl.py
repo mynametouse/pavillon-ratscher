@@ -142,7 +142,7 @@ def desktop():
         if want('start'):
             ck('nothing of Suhl at the start: no request, no package, the zone idle', st0['s']['state'] == 'idle' and not st0['s']['loaded'] and st0['res'] == 0 and st0['s']['zone'] == 'idle', json.dumps(st0['s']))
             kz = J("""{ sc: (KERN.scenario('suhl') || {}).label || null, menu: (KERN.scenario('suhl') || {}).menu, spots: ['suhl', 'suhl_steinweg', 'suhl_bahnhof', 'suhl_ccs'].map(n => !!KERN.spots()[n]),
-                chip: !!document.querySelector('#menu [data-spot=suhl]'), ll: SUHL.toLatLon(SUHL.O[0], SUHL.O[1]), back: SUHL.toModel(50.6086518, 10.6926437), utm: SUHL.toUTM(SUHL.O[0], SUHL.O[1]) }""")
+                chip: !!document.querySelector('#menu [data-spot=suhl]') || !!document.getElementById('suhlbtn'), ll: SUHL.toLatLon(SUHL.O[0], SUHL.O[1]), back: SUHL.toModel(50.6086518, 10.6926437), utm: SUHL.toUTM(SUHL.O[0], SUHL.O[1]) }""")
             ck('a zone of the core, the start situation and the places to jump to; no menu entry without ?suhl=1', bool(kz['sc']) and kz['menu'] is False and all(kz['spots']) and not kz['chip'], json.dumps(kz))
             ck('SUHL.toLatLon / toModel / toUTM: the centre of Suhl (50.60865 N, 10.69264 E = UTM 619765, 5607674)',
                abs(kz['ll'][0] - 50.60865) < 2e-5 and abs(kz['ll'][1] - 10.69264) < 2e-5 and math.hypot(kz['back'][0] - O[0], kz['back'][1] - O[1]) < 0.2 and abs(kz['utm'][0] - 619765) < 1.5 and abs(kz['utm'][1] - 5607674) < 1.5, json.dumps(kz))
@@ -364,6 +364,15 @@ def desktop():
             for _ in range(8):
                 E("GAME.step(0.5)")
             lib.shot(pg, OUT, 'suhl_rathaus')
+            # the drum of the Congress Centrum (kern/tuerme.js) above its wings, lowered after the photos (bau/marken.js e), seen
+            # from where the photo „CCS Suhl 2024-08-22“ (Strubbl, CC BY-SA 4.0) was taken on the Platz der Deutschen Einheit
+            E("""(() => { const p = SUHL.toModel(50.60923, 10.68857), q = SUHL.toModel(50.61054, 10.68788), h = Math.atan2(q[0] - p[0], q[1] - p[1]) * 180 / Math.PI;
+                GAME.view(p[0], p[1], KERN.ground(p[0], p[1]) + 1.6, h, 4, 56); })()""")
+            for _ in range(8):
+                E("GAME.step(0.5)")
+            tu = J("SUHL.status().tuerme")
+            ck('the towers and the drum of the Congress Centrum near the centre', tu and tu['towers'] >= 4, json.dumps(tu))
+            lib.shot(pg, OUT, 'suhl_ccs')
             E("GAME.go('suhl')")
             wait(QUIET, 60)
             ck('street furniture of Suhl in the roads system: lamps, signs and lines of every street tile, the lamps around the Markt built',
@@ -625,6 +634,12 @@ def anfahrt():
         J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
         a0 = J("({ st: SUHL.approach.state, asked: %d, sets: FAHRT.sets ? FAHRT.sets() : null, active: !!FAHRT.active })" % len(net))
         ck('way there: nothing of it at the start (it waits for the drive)', a0['st'] == 'waiting' and a0['asked'] == 0 and not a0['active'], json.dumps(a0))
+        # with ?suhl=1 the way in by menu: a card on its start page (and the chip under Hingehen → Weiter weg) – it closes the menu
+        mk = J("""(() => { const c = document.getElementById('suhlbtn'), chip = document.querySelector('#menu [data-spot=suhl]');
+            HUD.setMenu(true); const open = HUD.open; if (c) c.click();
+            return { card: !!c, chip: !!chip, open, after: HUD.open, pressed: chip ? chip.getAttribute('aria-pressed') : null }; })()""")
+        ck('with ?suhl=1: the card „Nach Suhl“ on the menu\'s start page and the chip; the card closes the menu and goes there',
+           mk['card'] and mk['chip'] and mk['open'] and not mk['after'] and mk['pressed'] == 'true', json.dumps(mk))
         E("GAME.go('suhl_bahnhof')")            # outside the square: the drive wakes
         t0 = time.time()
         while time.time() - t0 < 300:

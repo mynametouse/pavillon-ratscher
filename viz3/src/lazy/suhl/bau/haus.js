@@ -641,7 +641,7 @@ function balconies(b, id, z0, RB, o) {
           .filter(q => q.L >= 0.6 * longest)
           .sort((p, q) => q.sd + 6 * q.face - (p.sd + 6 * p.face)) // away from the street (courtyard, garden), else to the sun
           .slice(0, 1),
-    pc = PARA[Math.floor(hh(id + 31) * PARA.length)];
+    pc = b.mark && b.mark.balkCol ? linC(hex(b.mark.balkCol), 0.85) : PARA[Math.floor(hh(id + 31) * PARA.length)];
   for (const s of pick) {
     const nb = Math.max(1, Math.floor((s.L - 0.6) / o.sp)),
       bw = s.L / nb,

@@ -3,8 +3,9 @@
 // Taken from freely licensed photos on Wikimedia Commons that stand with their camera position (the contact sheets of suhl-fotos on
 // the scratch branch ref/suhl-fotos, credits there in commons/CREDITS.md) and checked against the model seen from the same place;
 // colours as they read in daylight (sRGB). A stand-in until the pipeline writes them into the records themselves (field S per side).
-// mat: putz, schiefer (slate all over), schiefer_og (slate above a plastered ground floor), fachwerk, klinker, platte.
-// rise: the roof above the eave this many times higher (a roof the fit from the aerial photo made too flat).
+// mat: putz, schiefer (slate all over), schiefer_og (slate above a plastered ground floor), fachwerk, fachwerk_og (framing above a
+// plastered ground floor), klinker, platte. balkCol: the balconies' parapets. frame: 0 white, 1 brown, 2 green, 3 grey.
+// rise: the roof above the eave this many times higher (a roof the fit from the aerial photo made too flat). e: a flat roof lower.
 export const MARKEN = {
   // Marktplatz
   DETHL57P00006G2R: {
@@ -98,9 +99,11 @@ export const MARKEN = {
     col: '#e1c88d',
     frame: 3,
     balk: false,
+    e: 10.5, // the record's one height (18.1 m) is the drum's; the wings around it two storeys (photos, shadows in the aerial)
     foto: 'CCS Suhl 2024-08-22 (Strubbl, CC BY-SA 4.0)',
   },
   DETHL57P00006G0Q: { name: 'Congress Centrum Suhl', col: '#e1c88d', frame: 3, balk: false },
+  DETHL57P00006G0X: { name: 'Congress Centrum Suhl, Nordring', col: '#e1c88d', frame: 3, balk: false, roof: '#4e4843' },
   DETHL57P00006G0l: {
     name: 'Hotelturm am CCS',
     col: '#e9e9e6',
@@ -114,6 +117,78 @@ export const MARKEN = {
     frame: 0,
     foto: 'CCS Suhl 2024-08-22 (Strubbl, CC BY-SA 4.0)',
   },
+  // Platz der Deutschen Einheit
+  DETHL57P00012Wyt: {
+    name: 'Haus der Geschichte (ehemaliges Kulturhaus)',
+    col: '#e6c596',
+    frame: 1,
+    roof: '#6e7174',
+    balk: false,
+    foto: 'Haus der Geschichte Suhl von der Westseite 2024-08-22 (Strubbl, CC BY-SA 4.0); Kulturhaus Suhl2025 (Clemenspool, CC0)',
+  },
+  DETHL57P00006Ibz: { name: 'Haus der Geschichte, Säulenvorhalle', col: '#cf9a74', roof: '#6e7174' },
+  DETHL57P00006FW1: {
+    name: 'Hochhaus Platz der Deutschen Einheit 1',
+    col: '#ecebe7',
+    frame: 0,
+    balkCol: '#c8553d',
+    foto: 'Hochhaus Platz der Deutschen Einheit 1 Suhl 2024-08-10 (Strubbl, CC BY-SA 4.0)',
+  },
+  DETHL57P00006FZU: {
+    name: 'Platz der Deutschen Einheit 4',
+    col: '#dde4e7',
+    frame: 3,
+    balk: false,
+    foto: 'Gebäude Platz der Deutschen Einheit 4 Suhl 2025-04-26 (Strubbl, CC BY-SA 4.0)',
+  },
+  DETHL57P00006Ibp: { name: 'Platz der Deutschen Einheit 4', col: '#e6e9e9', frame: 3, balk: false },
+  DETHL57P00006Ibs: { name: 'Platz der Deutschen Einheit 4', col: '#e6e9e9', frame: 3, balk: false },
+  // Friedrich-König-Straße, Mühlplatz
+  DETHL57P00006G0A: {
+    name: 'Waffenmuseum im ehemaligen Malzhaus',
+    mat: 'fachwerk_og',
+    col: '#efe9dc',
+    roof: '#a9472f',
+    foto: 'Gebäude Friedrich-König-Straße 19 Waffenmuseum Suhl 2025-04-26 (Strubbl, CC BY-SA 4.0)',
+  },
+  DETHL57P00006G07: {
+    name: 'Fachwerkhaus am Mühlplatz',
+    mat: 'fachwerk',
+    col: '#ece6da',
+    frame: 1,
+    roof: '#a64a32',
+    foto: 'Fachwerkhaus neben dem Waffenmuseum (Thomas Vogt, CC BY 2.0)',
+  },
+  DETHL57P00006G0r: {
+    name: 'Lauterbogen-Center',
+    col: '#f1f1ee',
+    frame: 3,
+    balk: false,
+    foto: 'Lauterbogen-Center Suhl Bild 2 2025-04-26 (Strubbl, CC BY-SA 4.0)',
+  },
+  // Topfmarkt: grey-beige blocks, their windows framed in red (the nearest frame colour: brown)
+  DETHL57P00006FYw: {
+    name: 'Topfmarkt 1–7',
+    col: '#d6cab3',
+    frame: 1,
+    foto: 'Gebäudepassage zur Backstraße am Topfmarkt Suhl 2023-12-27 (Strubbl, CC BY-SA 4.0)',
+  },
+  DETHL57P00006FW7: { name: 'Topfmarkt 1–7', col: '#d6cab3', frame: 1 },
+  DETHL57P00006FYd: { name: 'Topfmarkt 1–7', col: '#d6cab3', frame: 1 },
+  // by the Kreuzkirche
+  DETHL57P00006FJ0: {
+    name: 'Ehemaliges Postamt, Schleusinger Straße 2',
+    mat: 'klinker',
+    col: '#9c4b36',
+    roof: '#3c3f45',
+    foto: 'Ehemaliges Postamt Schleusinger Straße 2 Suhl 2024-08-10 (Strubbl, CC BY-SA 4.0)',
+  },
+  DETHL57P00006FJ4: {
+    name: 'Ehemaliges Postamt, Schleusinger Straße 2',
+    mat: 'klinker',
+    col: '#9c4b36',
+    roof: '#3c3f45',
+  },
 };
 // a material word → the style of the facade program (lazy/suhl/bau/haus.js ST)
-export const MARK_ST = { putz: 0, platte: 1, schiefer: 2, schiefer_og: 3, fachwerk: 5, klinker: 0 };
+export const MARK_ST = { putz: 0, platte: 1, schiefer: 2, schiefer_og: 3, fachwerk: 5, fachwerk_og: 6, klinker: 0 };

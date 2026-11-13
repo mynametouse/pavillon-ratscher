@@ -4,7 +4,8 @@
 // Kreuzkirche – the tower with the main portal on the east side towards the town, three storeys, a curved cap with a lantern;
 // St. Marien – a square tower with a „welsche Haube“ and a lantern at the east end; Rathaus – a hipped roof with a small clock turret.
 // Positions are model metres taken from the footprints of product g (stage 2): the tower's centre and the direction of the nave.
-// Built near the observer as merged meshes per material (walls, trim, slate, copper, clock faces).
+// And the drum of the Congress Centrum (TROMMELN). Built near the observer as merged meshes per material (walls, trim, slate,
+// copper, clock faces, glass).
 import { buf, geometry, addGeometry } from './teile.js';
 const R = 900;
 // at: centre [x, y]; az: the nave's direction (degrees clockwise from north); w: width; body: top of the walls above the ground;
@@ -50,6 +51,24 @@ const TUERME = [
     turret: true,
   },
 ];
+// the round halls the records flatten into one block: at: centre, r: radius (a circle fitted to the footprint's arc, it matches the
+// roof's rim in the aerial photo of 2024), top: the drum's height above the ground (the record's), bands: ribbons of windows (from, to
+// above the ground; the photos from the north: three storeys of them, the upper one above the wings), dome: a skylight in the middle
+const TROMMELN = [
+  {
+    name: 'Congress Centrum Suhl, Großer Saal',
+    at: [-5018.48, 12480.07],
+    r: 32.8,
+    top: 18.1,
+    col: 0xe7dcc0,
+    bands: [
+      [7.2, 8.6],
+      [10.6, 12.0],
+      [14.0, 15.4],
+    ],
+    dome: 4.3,
+  },
+];
 export function tuerme(ctx) {
   const { THREE, scene, markDirty, KERN } = ctx,
     S = { on: true, built: false, at: [1e9, 1e9], n: 0, ref: [] };
@@ -66,6 +85,8 @@ export function tuerme(ctx) {
       sph: new THREE.SphereGeometry(1, 16, 10),
       cone: new THREE.ConeGeometry(1, 1, 12),
       disc: new THREE.CylinderGeometry(1, 1, 1, 20),
+      drum: new THREE.CylinderGeometry(1, 1, 1, 72, 1, true),
+      lid: new THREE.CylinderGeometry(1, 1, 1, 72),
     };
   function kit() {
     if (K) return K;
@@ -84,6 +105,8 @@ export function tuerme(ctx) {
       slate: mk({ color: 0x33373d, roughness: 0.6, metalness: 0.1 }, 'suhl tuerme schiefer'),
       copper: mk({ color: 0x5f9a86, roughness: 0.55, metalness: 0.35 }, 'suhl tuerme kupfer'),
       gold: mk({ color: 0xb8913b, roughness: 0.35, metalness: 0.8 }, 'suhl tuerme gold'),
+      glass: mk({ color: 0x27313a, roughness: 0.22, metalness: 0.55 }, 'suhl tuerme glas'),
+      roof: mk({ color: 0xc9cbcb, roughness: 0.9 }, 'suhl tuerme dach'),
       walls: new Map(), // colour → mesh
     };
     return K;
@@ -102,7 +125,7 @@ export function tuerme(ctx) {
   }
   function build(o) {
     const k = kit(),
-      B = { white: buf(), slate: buf(), copper: buf(), gold: buf() },
+      B = { white: buf(), slate: buf(), copper: buf(), gold: buf(), glass: buf(), roof: buf() },
       walls = new Map(),
       ref = [];
     let n = 0;
@@ -154,6 +177,30 @@ export function tuerme(ctx) {
       part(B.gold, 'sph', t, z0, 0, 0, zl + t.lan + 1.0 + t.spire * 0.55, 0.28, 0.28, 0.28);
       n++;
     }
+    for (const t of TROMMELN) {
+      if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
+      // the ground: the lowest of the centre and the rim, the wall reaching a little below it (a slope must not show a gap)
+      let zg = KERN.ground(t.at[0], t.at[1]);
+      if (zg === undefined || zg === null || !Number.isFinite(zg)) continue;
+      for (let k = 0; k < 8; k++) {
+        const a = (k * Math.PI) / 4,
+          z = KERN.ground(t.at[0] + Math.cos(a) * t.r, t.at[1] + Math.sin(a) * t.r);
+        if (Number.isFinite(z)) zg = Math.min(zg, z);
+      }
+      ref.push([t.at[0], t.at[1], KERN.ground(t.at[0], t.at[1])]);
+      if (!walls.has(t.col)) walls.set(t.col, buf());
+      const W = walls.get(t.col),
+        d = { at: t.at, az: 0 },
+        z0 = zg - 1.5,
+        H = t.top + 1.5;
+      part(W, 'drum', d, z0, 0, 0, H / 2, t.r, t.r, H);
+      for (const [a, b] of t.bands)
+        part(B.glass, 'drum', d, z0, 0, 0, 1.5 + (a + b) / 2, t.r + 0.06, t.r + 0.06, b - a);
+      part(B.white, 'drum', d, z0, 0, 0, H - 0.25, t.r + 0.18, t.r + 0.18, 0.5); // the cornice
+      part(B.roof, 'lid', d, z0, 0, 0, H - 0.3, t.r - 0.05, t.r - 0.05, 0.5);
+      if (t.dome) part(B.white, 'sph', d, z0, 0, 0, H - 0.1, t.dome, t.dome, t.dome * 0.55);
+      n++;
+    }
     const put = (me, b) => {
       me.geometry.dispose();
       me.geometry = geometry(THREE, b);
@@ -163,6 +210,8 @@ export function tuerme(ctx) {
     put(k.slate, B.slate);
     put(k.copper, B.copper);
     put(k.gold, B.gold);
+    put(k.glass, B.glass);
+    put(k.roof, B.roof);
     for (const [col, b] of walls) {
       let me = k.walls.get(col);
       if (!me) {
@@ -194,14 +243,14 @@ export function tuerme(ctx) {
   };
   S.away = () => {
     if (!K) return;
-    for (const me of [K.white, K.slate, K.copper, K.gold, ...K.walls.values()]) me.visible = false;
+    for (const me of [K.white, K.slate, K.copper, K.gold, K.glass, K.roof, ...K.walls.values()]) me.visible = false;
     S.built = false;
     S.at = [1e9, 1e9];
     markDirty(true);
   };
   S.leave = () => {
     if (!K) return;
-    for (const me of [K.white, K.slate, K.copper, K.gold, ...K.walls.values()]) {
+    for (const me of [K.white, K.slate, K.copper, K.gold, K.glass, K.roof, ...K.walls.values()]) {
       scene.remove(me);
       me.geometry.dispose();
       me.material.dispose();

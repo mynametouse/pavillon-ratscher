@@ -310,6 +310,23 @@ export function kachel(m, F) {
         for (const t of b.tris) t.kc = [t.kc[0], ...rc];
         b.trim = rc;
       }
+      // a flat roof lower than the record's single height (the CCS: its wings stay well below the drum, kern/tuerme.js draws that)
+      if (mk.e > 0 && b.r === 0 && mk.e < b.e) {
+        const dz = mk.e - b.e,
+          done = new Set();
+        for (const t of b.tris)
+          for (const v of t.v)
+            if (!done.has(v)) {
+              if (v[2] > mk.e) v[2] = Math.max(mk.e, v[2] + dz);
+              done.add(v);
+            }
+        for (const f of b.F) {
+          f[4] = Math.min(f[4], mk.e);
+          f[6] = Math.min(f[6], mk.e);
+          f[7] = Math.min(f[7], mk.e);
+        }
+        b.e = mk.e;
+      }
       if (mk.rise > 0 && b.r !== 0) {
         const done = new Set();
         for (const t of b.tris)
