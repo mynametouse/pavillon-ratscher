@@ -219,10 +219,12 @@ export const GLLICHT = (() => {
   function mats() {
     if (MAT.kegel) return MAT;
     // the beams and pools: today white, 1989 and the Simson warm (a bulb of the time)
-    MAT.kegel = karte('kegel', 0xeef3ff, 0.14);
-    MAT.kegel89 = karte('kegel 1989', 0xffcf86, 0.16);
-    MAT.pool = karte('pool', 0xeef3ff, 0.09);
-    MAT.pool89 = karte('pool 1989', 0xffcf86, 0.1);
+    MAT.kegel = karte('kegel', 0xeef3ff, 0.16);
+    MAT.kegel89 = karte('kegel 1989', 0xffcf86, 0.18);
+    MAT.glanz = karte('glanz', 0xf4f7ff, 0.6);
+    MAT.glanz89 = karte('glanz 1989', 0xffd79a, 0.6);
+    MAT.pool = karte('pool', 0xeef3ff, 0.1);
+    MAT.pool89 = karte('pool 1989', 0xffcf86, 0.11);
     MAT.heck = karte('heck', 0xffffff, 0.55);
     MAT.bremse = karte('bremse', 0xffffff, 1);
     MAT.blauL = karte('blau links', 0x2f63ff, 0);
@@ -276,24 +278,6 @@ export const GLLICHT = (() => {
               .addScaledVector(t, b * sy);
         B.quad(P(-1, -1), P(1, -1), P(-1, 1), P(1, 1), R);
       },
-      // a beam from p along d (unit): three cards crossed along its axis – a flat one and two tilted by 38° (no upright one: seen from
-      // behind or ahead it stood as a bright streak), w0 wide at the lamp, w1 at the end
-      beam(pc, d, L, w0, w1, R) {
-        const up = Math.abs(d.y) > 0.9 ? new V3(1, 0, 0) : new V3(0, 1, 0),
-          s0 = new V3().crossVectors(d, up).normalize(),
-          e = pc.clone().addScaledVector(d, L);
-        for (const ang of [0, 0.66, -0.66]) {
-          const s = s0.clone().applyAxisAngle(d, ang);
-          B.quad(
-            pc.clone().addScaledVector(s, -w0),
-            pc.clone().addScaledVector(s, w0),
-            e.clone().addScaledVector(s, -w1),
-            e.clone().addScaledVector(s, w1),
-            R,
-            true
-          );
-        }
-      },
       // lying on the ground (up), from z0 to z1 ahead (−z), w wide
       boden(x0, h, z0, z1, wn, wf, R) {
         B.quad(new V3(x0 - wn, h, -z0), new V3(x0 + wn, h, -z0), new V3(x0 - wf, h, -z1), new V3(x0 + wf, h, -z1), R);
@@ -321,7 +305,10 @@ export const GLLICHT = (() => {
     m.name = 'grenzland licht ' + name;
     return m;
   };
-  // ---- billboards drawn anew each frame (the flare, its sparks and smoke, beacons' glows of far cars): n cards in one mesh ----
+  // ---- billboards drawn anew each frame (the flare, its sparks and smoke; the beams of the vehicles): n cards in one mesh ----
+  const _m1 = new V3(),
+    _m2 = new V3(),
+    _m3 = new V3();
   function schar(n, mat) {
     const g = new THREE.BufferGeometry(),
       pos = new Float32Array(n * 12),
@@ -374,6 +361,46 @@ export const GLLICHT = (() => {
         pos[o + 9] = x + ax + bx;
         pos[o + 10] = y + ay + by;
         pos[o + 11] = z + az + bz;
+        uv[w] = R[0];
+        uv[w + 1] = R[1];
+        uv[w + 2] = R[2];
+        uv[w + 3] = R[1];
+        uv[w + 4] = R[0];
+        uv[w + 5] = R[3];
+        uv[w + 6] = R[2];
+        uv[w + 7] = R[3];
+        Q.k++;
+      },
+      // a card along a beam from p (three's frame) along d (unit), w0 wide at p, w1 at its end L away: turned about its axis to face the
+      // camera (a beam looks alike from every side, one card adds nothing up)
+      strahl(p, d, L, w0, w1, R) {
+        if (Q.k >= n) return;
+        _m1.copy(p).addScaledVector(d, L * 0.5);
+        _m2.copy(cam.position).sub(_m1);
+        _m3.crossVectors(d, _m2);
+        const sl = _m3.length();
+        if (sl < 1e-4) return;
+        _m3.multiplyScalar(1 / sl);
+        const o = Q.k * 12,
+          w = Q.k * 8,
+          ex = p.x + d.x * L,
+          ey = p.y + d.y * L,
+          ez = p.z + d.z * L,
+          sx = _m3.x,
+          sy = _m3.y,
+          sz = _m3.z;
+        pos[o] = p.x - sx * w0;
+        pos[o + 1] = p.y - sy * w0;
+        pos[o + 2] = p.z - sz * w0;
+        pos[o + 3] = p.x + sx * w0;
+        pos[o + 4] = p.y + sy * w0;
+        pos[o + 5] = p.z + sz * w0;
+        pos[o + 6] = ex - sx * w1;
+        pos[o + 7] = ey - sy * w1;
+        pos[o + 8] = ez - sz * w1;
+        pos[o + 9] = ex + sx * w1;
+        pos[o + 10] = ey + sy * w1;
+        pos[o + 11] = ez + sz * w1;
         uv[w] = R[0];
         uv[w + 1] = R[1];
         uv[w + 2] = R[2];
@@ -477,25 +504,20 @@ export const GLLICHT = (() => {
     let G = GEOS.get(key);
     if (!G) {
       G = {};
-      // the beams and the glare on the glass, in the lamp part's own group (for a moped: the fork – it steers and leans)
+      // the glare on the glass, in the lamp part's own group (for a moped: the fork – it steers and leans); the beams are cards turned
+      // to the camera each frame (strahlen below)
       const K = bau(),
         d = new V3(0, -Math.sin(moped ? 0.075 : 0.06), -1).normalize();
-      for (const p of zentren(T.head.geometry)) {
-        K.beam(p.clone().addScaledVector(d, 0.04), d, moped ? 8 : 11, moped ? 0.07 : 0.09, moped ? 1.5 : 2.0, REG.beam);
-        K.facing(p.clone().addScaledVector(d, 0.03), d, moped ? 0.32 : 0.42, REG.glow);
-      }
+      for (const p of zentren(T.head.geometry))
+        K.facing(p.clone().addScaledVector(d, 0.03), d, moped ? 0.3 : 0.4, REG.glow);
       G.kegel = K.geo();
-      // the pool on the road, under the vehicle's frame (it stays flat while a moped leans)
-      const P = bau();
+      // where the pool on the road begins: just ahead of the lamps
       let zf = -1e9;
       for (const p of zentren(T.head.geometry)) {
         const w = p.clone().applyMatrix4(T.head.matrixWorld).applyMatrix4(inv);
         zf = Math.max(zf, -w.z);
       }
-      if (!(zf > 0.3 && zf < 8)) zf = 2;
-      if (moped) P.boden(0, 0.05, zf + 0.3, zf + 10.5, 0.5, 2.0, REG.pool);
-      else P.boden(0, 0.05, zf + 0.2, zf + 15, 0.8, 3.0, REG.pool);
-      G.pool = P.geo();
+      G.zf = zf > 0.3 && zf < 8 ? zf : 2;
       // the tail lamps: a glow facing back; braking a bigger, brighter one (at the brake lamps where there are any)
       const H = bau(),
         Br = bau(),
@@ -509,10 +531,15 @@ export const GLLICHT = (() => {
       G.bremse = Br.n ? Br.geo() : null;
       GEOS.set(key, G);
     }
-    D.kegel = own(new THREE.Mesh(G.kegel, D.warm ? MAT.kegel89 : MAT.kegel), 'kegel');
+    D.kegel = own(new THREE.Mesh(G.kegel, D.warm ? MAT.glanz89 : MAT.glanz), 'glanz');
     T.head.parent.add(D.kegel);
-    D.pool = own(new THREE.Mesh(G.pool, D.warm ? MAT.pool89 : MAT.pool), 'pool');
+    // the beams: from each lamp, along the lamp's own forward and a little down
+    D.lampen = zentren(T.head.geometry);
+    D.dir = new V3(0, -Math.sin(moped ? 0.075 : 0.06), -1).normalize();
+    // the pool: its own grid under the vehicle's frame (it stays flat while a moped leans), laid onto the ground as the vehicle moves
+    D.pool = own(new THREE.Mesh(poolGitter(G.zf, moped), D.warm ? MAT.pool89 : MAT.pool), 'pool');
     D.pool.renderOrder = 2;
+    D.poolAt = null;
     root.add(D.pool);
     if (G.heck && T.tail) {
       D.heck = own(new THREE.Mesh(G.heck, MAT.heck), 'heck');
@@ -569,6 +596,7 @@ export const GLLICHT = (() => {
   }
   function ausziehen(D) {
     for (const m of [D.kegel, D.pool, D.heck, D.bremse, D.boden, ...D.blau]) if (m && m.parent) m.parent.remove(m);
+    if (D.pool) D.pool.geometry.dispose();
     D.glas.forEach((m, i) => {
       if (m.material === MAT.bremsLampe) m.material = D.glas0[i];
     });
@@ -579,6 +607,101 @@ export const GLLICHT = (() => {
     const a = D.a;
     if (a.v) return !!(a.v.st && a.v.st.brakeOn && a.v.st.engine);
     return !!a.c.bremst;
+  }
+  // ---- the beams of all vehicles: two batches of cards (today white, 1989 warm) – two draw calls for all of them ----
+  let SB = null;
+  function strahlBau() {
+    if (SB) return SB;
+    mats();
+    SB = { w: schar(48, MAT.kegel), y: schar(48, MAT.kegel89) };
+    SB.w.m.name = 'grenzland licht strahlen';
+    SB.y.m.name = 'grenzland licht strahlen 1989';
+    scene.add(SB.w.m, SB.y.m);
+    return SB;
+  }
+  const _sp = new V3(),
+    _sd = new V3();
+  function strahlen(D) {
+    const h = D.T.head,
+      B = D.warm ? SB.y : SB.w,
+      L = D.moped ? 8 : 11,
+      w1 = D.moped ? 1.5 : 2.0,
+      w0 = D.moped ? 0.09 : 0.12;
+    h.updateWorldMatrix(true, false);
+    _sd.copy(D.dir).transformDirection(h.matrixWorld);
+    for (const p of D.lampen) {
+      _sp.copy(p).applyMatrix4(h.matrixWorld).addScaledVector(_sd, 0.05);
+      B.strahl(_sp, _sd, L, w0, w1, REG.beam);
+    }
+  }
+  // ---- the pool of light on the road: a grid of 5 × 9 points in the vehicle's frame, its heights from the ground below each point – laid
+  //      anew when the vehicle has moved (on a crest or in a dip a flat pool was cut off by the ground in a hard line) ----
+  const PX = 5,
+    PZ = 9;
+  function poolGitter(zf, moped) {
+    const w = moped ? 2.0 : 3.0,
+      z0 = zf + (moped ? 0.3 : 0.2),
+      z1 = zf + (moped ? 10.5 : 15),
+      R = REG.pool,
+      pos = new Float32Array(PX * PZ * 3),
+      uv = new Float32Array(PX * PZ * 2),
+      idx = [];
+    for (let j = 0; j < PZ; j++)
+      for (let i = 0; i < PX; i++) {
+        const u = i / (PX - 1),
+          v = j / (PZ - 1),
+          k = j * PX + i;
+        pos[k * 3] = (u * 2 - 1) * w;
+        pos[k * 3 + 1] = 0.06;
+        pos[k * 3 + 2] = -(z0 + (z1 - z0) * v);
+        uv[k * 2] = R[0] + (R[2] - R[0]) * u;
+        uv[k * 2 + 1] = R[1] + (R[3] - R[1]) * v;
+      }
+    for (let j = 0; j < PZ - 1; j++)
+      for (let i = 0; i < PX - 1; i++) {
+        const a = j * PX + i,
+          b = a + 1,
+          c = a + PX,
+          d = c + 1;
+        idx.push(a, b, c, c, b, d);
+      }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    g.setIndex(idx);
+    g.computeBoundingSphere();
+    return g;
+  }
+  const _pm = new THREE.Matrix4(),
+    _pv = new V3();
+  function poolLegen(D) {
+    const r = D.root,
+      q = D.poolAt,
+      x = r.position.x,
+      z = r.position.z;
+    if (
+      q &&
+      Math.hypot(x - q[0], z - q[1]) < 0.35 &&
+      Math.abs(r.quaternion.y - q[2]) < 0.01 &&
+      Math.abs(r.quaternion.w - q[3]) < 0.01
+    )
+      return;
+    D.poolAt = [x, z, r.quaternion.y, r.quaternion.w];
+    r.updateWorldMatrix(true, false);
+    _pm.copy(r.matrixWorld).invert();
+    const P = D.pool.geometry.attributes.position,
+      a = P.array;
+    for (let k = 0; k < P.count; k++) {
+      // the point's place on the ground, back into the vehicle's frame (its x and z stay, its height follows the ground)
+      _pv.set(a[k * 3], 0, a[k * 3 + 2]).applyMatrix4(r.matrixWorld);
+      const gz = KERN.ground(_pv.x, -_pv.z, _pv.y + 2);
+      if (!Number.isFinite(gz)) continue;
+      _pv.y = gz + 0.07;
+      _pv.applyMatrix4(_pm);
+      a[k * 3 + 1] = _pv.y;
+    }
+    P.needsUpdate = true;
+    D.pool.geometry.computeBoundingSphere();
   }
   function autos(dt, show) {
     const list = [];
@@ -603,6 +726,9 @@ export const GLLICHT = (() => {
       nb = 0;
     const [pl, pr] = puls(),
       lk = S.lampK;
+    const B = strahlBau();
+    B.w.begin();
+    B.y.begin();
     // (from the driver's seat of one's own vehicle the beams would stand in the picture as a bright streak: there only the pool and the
     // real headlight of vehicles/vehicle.js)
     const sitz = VEH.cur && !CAM3.want ? VEH.cur : null;
@@ -611,13 +737,17 @@ export const GLLICHT = (() => {
         on = show && vis && brennt(D),
         br = show && vis && bremst(D),
         kegel = on && !(sitz && D.a.v === sitz);
-      if (D.kegel && (D.kegel.visible !== kegel || D.pool.visible !== on)) {
-        D.kegel.visible = kegel;
+      if (D.kegel && (D.kegel.visible !== on || D.pool.visible !== on)) {
+        D.kegel.visible = on;
         D.pool.visible = on;
         if (D.heck) D.heck.visible = on;
         markDirty();
       }
-      if (on) nk++;
+      if (on) {
+        nk++;
+        poolLegen(D);
+        if (kegel) strahlen(D);
+      }
       if (D.bremse && D.bremse.visible !== (br && lk > 0.02)) {
         D.bremse.visible = br && lk > 0.02;
         markDirty();
@@ -635,11 +765,16 @@ export const GLLICHT = (() => {
       if (D.boden) D.boden.visible = blau && lk > 0.02;
       if (blau) nb++;
     }
-    // the shared materials follow the dusk; the beacons flash
+    B.w.end();
+    B.y.end();
+    // the shared materials follow the dusk (in the rain the beams show more); the beacons flash
     if (MAT.kegel) {
-      const k = Math.max(0, lk);
-      MAT.kegel.opacity = 0.14 * k;
-      MAT.kegel89.opacity = 0.16 * k;
+      const k = Math.max(0, lk),
+        nass = S.regnet ? 1.6 : 1;
+      MAT.kegel.opacity = 0.16 * k * nass;
+      MAT.kegel89.opacity = 0.18 * k * nass;
+      MAT.glanz.opacity = 0.6 * k;
+      MAT.glanz89.opacity = 0.6 * k;
       MAT.pool.opacity = 0.09 * k;
       MAT.pool89.opacity = 0.1 * k;
       MAT.heck.opacity = 0.55 * k;
@@ -714,20 +849,19 @@ export const GLLICHT = (() => {
   let FGEO = null;
   function fackelGeo() {
     if (FGEO) return FGEO;
-    const K = bau(),
-      d = new V3(0, 0, -1);
-    K.beam(new V3(0, 0, -0.06), d, 7, 0.035, 1.25, REG.beam);
     const G = bau();
-    G.facing(new V3(0, 0, -0.05), d, 0.13, REG.glow);
+    G.facing(new V3(0, 0, -0.05), new V3(0, 0, -1), 0.13, REG.glow);
     const B = bau();
     B.boden(0, 0, -1.7, 1.7, 1.3, 1.3, REG.spot);
-    return (FGEO = { licht: K.geo(), glas: G.geo(), boden: B.geo() });
+    return (FGEO = { glas: G.geo(), boden: B.geo() });
   }
   const _h = new V3(),
+    _fd = new V3(),
     _e = new THREE.Euler(0, 0, 0, 'YXZ');
   function fackelWeg(F, L) {
-    scene.remove(L.licht, L.boden);
-    L.licht.material.dispose();
+    scene.remove(L.licht.m, L.glas, L.boden);
+    L.licht.m.geometry.dispose();
+    L.licht.m.material.dispose();
     L.boden.material.dispose();
     S.fackeln.delete(F);
     markDirty();
@@ -742,16 +876,17 @@ export const GLLICHT = (() => {
         if (!L) {
           mats();
           const G = fackelGeo();
-          // (each its own copy of the materials – the same program: a beam fades as the camera comes close to it)
+          // (each its own copy of the materials – the same program: a beam fades as the camera comes close to it); the beam one card
+          // turned to the camera
           L = {
-            licht: own(new THREE.Mesh(G.licht, MAT.fackel.clone()), 'fackel'),
+            licht: schar(1, MAT.fackel.clone()),
             glas: own(new THREE.Mesh(G.glas, MAT.fackelGlas), 'fackel glas'),
             boden: own(new THREE.Mesh(G.boden, MAT.fackelBoden.clone()), 'fackel boden'),
             ph: Math.random() * 7,
           };
+          L.licht.m.name = 'grenzland licht fackel';
           L.boden.renderOrder = 2;
-          L.licht.add(L.glas);
-          scene.add(L.licht, L.boden);
+          scene.add(L.licht.m, L.glas, L.boden);
           S.fackeln.set(F, L);
         }
         // the hand: the left if the right holds something
@@ -763,9 +898,12 @@ export const GLLICHT = (() => {
           yaw = F.hd + Math.sin(S.t * 1.3 + L.ph) * 0.16 * walk + Math.sin(S.t * 0.37 + L.ph * 2) * 0.22,
           pitch = 0.2 + Math.sin(S.t * 2.1 + L.ph) * 0.04 * walk;
         _e.set(-pitch, -yaw, 0, 'YXZ');
-        L.licht.position.copy(_h);
-        L.licht.quaternion.setFromEuler(_e);
-        L.licht.visible = true;
+        L.glas.position.copy(_h);
+        L.glas.quaternion.setFromEuler(_e);
+        _fd.set(0, 0, -1).applyEuler(_e);
+        L.licht.begin();
+        L.licht.strahl(_h.clone().addScaledVector(_fd, 0.08), _fd, 7, 0.04, 1.2, REG.beam);
+        L.licht.end();
         const gz = Number.isFinite(F.z) ? F.z : KERN.ground(F.x, F.y),
           hh = Math.max(0.5, _h.y - gz),
           dist = Math.min(7.5, Math.max(2.2, hh / Math.tan(pitch))),
@@ -778,7 +916,7 @@ export const GLLICHT = (() => {
         L.boden.visible = true;
         // seen from close by, along the beam, the cards would add up to a white wedge: fainter near the camera
         const nah = Math.max(0.12, Math.min(1, (_h.distanceTo(cam.position) - 1.2) / 6));
-        L.licht.material.opacity = 0.09 * S.lampK * nah;
+        L.licht.m.material.opacity = 0.16 * S.lampK * nah;
         L.boden.material.opacity = 0.075 * S.lampK * (0.4 + 0.6 * nah);
       }
     for (const [F, L] of S.fackeln) if (!seen.has(F)) fackelWeg(F, L);
@@ -1185,21 +1323,19 @@ export const GLLICHT = (() => {
   // from looking at the yard to the flight home (mission 'klinge', steps 1 … 4), at night: the weather's own rain
   function regenWill() {
     if (S.regenHand !== null) return S.regenHand;
-    // (the mission that really runs – grenzland/gl_mission.js, loaded after us; never in a flashback nor while one begins: the weather of
-    // 1989 keeps what it found as the weather to come back to)
+    // (the mission that really runs – grenzland/gl_mission.js, loaded after us: its runner's mission and step, by the step's name – from
+    // looking at the yard to the flight home, whatever steps may come between; GLMISSION.stop() keeps the mission's state for a reload
+    // but ends the run. Never in a flashback nor while one begins: the weather of 1989 keeps what it found as the weather to come back to)
     const M = window.GLMISSION,
-      cur = M && M.cur ? M.cur() : GL.cur,
-      G89 = window.GL89,
-      m = cur === 'klinge' && GL.m && GL.m.klinge;
-    return !!(
-      m &&
-      m.st === 'läuft' &&
-      m.i >= 1 &&
-      m.i <= 4 &&
-      S.nachtK > 0.2 &&
-      GL.era !== '1989' &&
-      !(G89 && (G89.busy || G89.on))
-    );
+      St = M && M.St,
+      G89 = window.GL89;
+    let lauf = false;
+    if (St) lauf = !!(St.m && St.m.id === 'klinge' && St.step && St.step.id !== 'abend' && St.step.id !== 'heim');
+    else {
+      const m = GL.cur === 'klinge' && GL.m && GL.m.klinge;
+      lauf = !!(m && m.st === 'läuft' && m.i >= 1 && m.i <= 4);
+    }
+    return lauf && S.nachtK > 0.2 && GL.era !== '1989' && !(G89 && (G89.busy || G89.on));
   }
   function regen(want) {
     if (want === S.regnet) return;
@@ -1258,6 +1394,13 @@ export const GLLICHT = (() => {
     if (HELI.spot) {
       scene.remove(HELI.spot, HELI.glanz);
       HELI.spot = HELI.glanz = null;
+    }
+    if (SB) {
+      for (const b of [SB.w, SB.y]) {
+        scene.remove(b.m);
+        b.m.geometry.dispose();
+      }
+      SB = null;
     }
     S.fl = null;
     if (FB) {
