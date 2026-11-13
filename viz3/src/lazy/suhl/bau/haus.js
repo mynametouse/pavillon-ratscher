@@ -474,6 +474,7 @@ export function building(b, id, z0, WB, RB, segs) {
         [ex, ey]
       );
   }
+  if (b.open) posts(b, z0, RB);
   const gb = b.mark && b.mark.gauben;
   if (
     !flat &&
@@ -622,6 +623,60 @@ export function building(b, id, z0, WB, RB, segs) {
 const BALK = { platte: 1, zeilenbau: 1, punkthochhaus: 1, hochhaus: 1, wbs70: 1 };
 const PARA = ['#bdb8ad', '#c4825f', '#d8c48a', '#93a6b6', '#a9b99c', '#e4e0d6', '#b56b5a'].map(c => linC(hex(c), 0.85)),
   SLAB_C = linC([0.6, 0.59, 0.56], 0.85);
+// an open roof (carport, canopy, the portico of the Haus der Geschichte) stands on posts: along its outline about every 3.5 m, as thick
+// as its height asks for (eight-sided), in the colour of its walls – without them a tall canopy floats
+function posts(b, z0, RB) {
+  const ring = [];
+  for (let k = 0; k + 1 < b.f.length; k += 2) ring.push([b.f[k], b.f[k + 1]]);
+  if (ring.length < 3) return;
+  const h = b.e,
+    r = Math.min(0.6, Math.max(0.08, h * 0.022)),
+    kc = [4, ...b.st.col],
+    N = 8,
+    lo = z0 - 0.4,
+    hi = z0 + h - 0.05;
+  const put = (x, y) => {
+    for (let i = 0; i < N; i++) {
+      const a0 = (i / N) * 2 * Math.PI,
+        a1 = ((i + 1) / N) * 2 * Math.PI,
+        am = (a0 + a1) / 2,
+        n = [Math.cos(am), Math.sin(am), 0],
+        x0 = x + Math.cos(a0) * r,
+        y0 = y + Math.sin(a0) * r,
+        x1 = x + Math.cos(a1) * r,
+        y1 = y + Math.sin(a1) * r;
+      RB.tri([x0, y0, lo], [x1, y1, lo], [x1, y1, hi], n, PUV, kc, [1, 0]);
+      RB.tri([x0, y0, lo], [x1, y1, hi], [x0, y0, hi], n, PUV, kc, [1, 0]);
+    }
+  };
+  // the posts a little inside the roof's edge
+  let cx = 0,
+    cy = 0;
+  for (const q of ring) {
+    cx += q[0] / ring.length;
+    cy += q[1] / ring.length;
+  }
+  for (let k = 0; k < ring.length; k++) {
+    const a = ring[k],
+      c = ring[(k + 1) % ring.length],
+      L = Math.hypot(c[0] - a[0], c[1] - a[1]);
+    if (L < 0.3) continue;
+    const n = Math.max(1, Math.round(L / 3.5));
+    for (let i = 0; i < n; i++) {
+      const t = i / n,
+        x = a[0] + (c[0] - a[0]) * t,
+        y = a[1] + (c[1] - a[1]) * t,
+        d = Math.hypot(cx - x, cy - y),
+        k2 = d > 0.01 ? Math.min(r * 1.2, d * 0.5) / d : 0;
+      put(x + (cx - x) * k2, y + (cy - y) * k2);
+    }
+  }
+}
+const PUV = [
+  [0, 0],
+  [1, 0],
+  [1, 1],
+];
 function balconies(b, id, z0, RB, o) {
   const sides = [];
   b.F.forEach(f => {
