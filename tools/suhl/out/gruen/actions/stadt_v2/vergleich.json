@@ -1,0 +1,47 @@
+[
+ {
+  "ort": "Zentrum (Markt)",
+  "kachel": "497_542",
+  "fenster_utm": [
+   619680,
+   5607800,
+   619880,
+   5608000
+  ],
+  "baeume": 71,
+  "gehoelzmaske_von_kronen_bedeckt_prozent": 86.1,
+  "kronenflaeche_auf_nicht_gruen_prozent": 12.5,
+  "kronendeckung_modell_prozent": 8.7,
+  "gehoelz_im_bild_prozent": 7.3
+ },
+ {
+  "ort": "Plattenbau-Gebiet (Aue, Friedrich-König-Straße)",
+  "kachel": "495_541",
+  "fenster_utm": [
+   618830,
+   5607290,
+   619030,
+   5607490
+  ],
+  "baeume": 196,
+  "gehoelzmaske_von_kronen_bedeckt_prozent": 87.8,
+  "kronenflaeche_auf_nicht_gruen_prozent": 4.6,
+  "kronendeckung_modell_prozent": 37.6,
+  "gehoelz_im_bild_prozent": 35.0
+ },
+ {
+  "ort": "Waldrand (Domberg, Nordrand des Zentrums)",
+  "kachel": "496_543",
+  "fenster_utm": [
+   619250,
+   5608000,
+   619450,
+   5608200
+  ],
+  "baeume": 251,
+  "gehoelzmaske_von_kronen_bedeckt_prozent": 85.9,
+  "kronenflaeche_auf_nicht_gruen_prozent": 2.5,
+  "kronendeckung_modell_prozent": 68.7,
+  "gehoelz_im_bild_prozent": 73.4
+ }
+]
