@@ -833,7 +833,7 @@ export const GLKAP1 = (() => {
       const o = { era: '1989', sees: true, knows: true };
       if (!leute().abv) {
         const a = O.anger.pos;
-        A.fig('abv', 'abv', a[0] + 6, a[1] - 4, 0, Object.assign({ r: 34 }, o));
+        A.fig('abv', 'abv', a[0] + 6, a[1] - 4, 0, Object.assign({ r: 34, ready: F => (F.lampe = true) }, o));
       }
       if (Object.keys(leute()).length < 2) {
         const l = O.linde.pos,
@@ -1230,7 +1230,8 @@ export const GLKAP1 = (() => {
       const K = szeneKlinge();
       A.auto('van', 'kasten', K.van[0], K.van[1], K.hd, { col: '#d9d9d2' });
       if (i <= 3) {
-        for (const [key, cast, p, hd] of K.men) A.fig(key, cast, p[0], p[1], hd, { karte: 'feind' });
+        for (const [key, cast, p, hd] of K.men)
+          A.fig(key, cast, p[0], p[1], hd, { karte: 'feind', ready: F => (F.lampe = true) });
         A.ding('kisten', () => ding(stapel, K.kisten[0], K.kisten[1], K.hd));
       }
     },
@@ -1359,8 +1360,12 @@ export const GLKAP1 = (() => {
           MI.rede('leucht');
           GLTON.fx('boeller', MI.fern(K.van), 600);
           S.z0 = KERN.ground(K.van[0], K.van[1]) + 2;
-          MI.A.ding('leucht', leuchtkugel);
-          legen(MI.D('leucht'), K.van[0], K.van[1], S.z0, 0);
+          // (feat/grenzland-kino) the flare is agent licht's picture (grenzland/gl_licht.js); the small ball only while that is missing
+          GL.emit('flare', { x: K.van[0], y: K.van[1], z: S.z0 });
+          if (!window.GLLICHT) {
+            MI.A.ding('leucht', leuchtkugel);
+            legen(MI.D('leucht'), K.van[0], K.van[1], S.z0, 0);
+          }
           GLHUD.say(T.leucht, '', 4);
           // the van leaves over the tracks towards the road out of the square
           try {

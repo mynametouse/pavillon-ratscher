@@ -233,6 +233,8 @@ grenzland/gl_1989_welt.js   # feat/grenzland the village as it was in 1989: what
 grenzland/gl_1989.js        # feat/grenzland the flashback to November 1989: into it and back, the people, the clothes (GL89)
 grenzland/gl_mission_data.js # feat/grenzland the missions' texts and places (GLMDATA)
 grenzland/gl_lager.js       # feat/grenzland the haulier's yard in the fields (GLLAGER)
+grenzland/gl_kamera.js      # feat/grenzland-kino talks as cutscenes: a film camera on the speakers, black bars, cuts (GLKAMERA)
+grenzland/gl_score.js       # feat/grenzland-kino the score by situation under the missions, stings – synthesised (GLSCORE)
 grenzland/gl_mission.js     # feat/grenzland the missions of chapter 1, listed in the game's journal (GLMISSION)
 grenzland/gl_kapitel1.js    # feat/grenzland-mission chapter 1: the five missions as data for the runner of gl_mission.js (GLKAP1)
 grenzland/gl_modus.js       # feat/grenzland the mode: start, Falko and Sarah to switch between, keys, the end; the scenario (GRENZLAND)

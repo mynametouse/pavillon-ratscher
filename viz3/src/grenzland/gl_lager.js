@@ -686,6 +686,8 @@ export const GLLAGER = (() => {
       }
     }
     if (S.wachen.length) wachenTick(dt);
+    // (feat/grenzland-kino) at night the guards carry torches (agent licht draws them for every figure with F.lampe)
+    for (const w of S.wachen) if (w.F && w.F.lampe !== S.dark) w.F.lampe = !!S.dark;
   }
   // the floodlight: one borrowed light over the yard while it is dark and one is near
   KERN.lights.borrow({
