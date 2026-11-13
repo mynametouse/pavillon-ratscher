@@ -51,14 +51,15 @@ export const GLHANDY = (() => {
     unlocked: false,
   };
   const TABS = [
-    ['sms', 'Nachrichten', 'M4 5h16v11H9l-5 4z'],
-    ['chat', 'Dorf-Chat', 'M3 4h12v8H8l-3 3v-3H3zM17 9h4v8h-2v3l-3-3h-5v-3h6z'],
-    ['feed', 'Feed', 'M4 5h16v3H4zM4 10.5h16v3H4zM4 16h10v3H4z'],
-    ['bank', 'Bank', 'M12 3l9 5v2H3V8zM5 11h2v6H5zM9 11h2v6H9zM13 11h2v6h-2zM17 11h2v6h-2zM3 18h18v3H3z'],
-    ['notiz', 'Notizen', 'M6 3h9l4 4v14H6zM8 10h8v1.6H8zM8 13.5h8v1.6H8zM8 17h5v1.6H8z'],
-    ['kamera', 'Kamera', 'M4 7h4l1.5-2h5L16 7h4v12H4zM12 9.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z'],
+    ['sms', 'Nachrichten', 'SMS', 'M4 5h16v11H9l-5 4z'],
+    ['chat', 'Dorf-Chat', 'Chat', 'M3 4h12v8H8l-3 3v-3H3zM17 9h4v8h-2v3l-3-3h-5v-3h6z'],
+    ['feed', 'Feed', 'Feed', 'M4 5h16v3H4zM4 10.5h16v3H4zM4 16h10v3H4z'],
+    ['bank', 'Bank', 'Bank', 'M12 3l9 5v2H3V8zM5 11h2v6H5zM9 11h2v6H9zM13 11h2v6h-2zM17 11h2v6h-2zM3 18h18v3H3z'],
+    ['notiz', 'Notizen', 'Notizen', 'M6 3h9l4 4v14H6zM8 10h8v1.6H8zM8 13.5h8v1.6H8zM8 17h5v1.6H8z'],
+    ['kamera', 'Kamera', 'Kamera', 'M4 7h4l1.5-2h5L16 7h4v12H4zM12 9.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z'],
     [
       'radio',
+      'Radio',
       'Radio',
       'M4 9h16v11H4zM6.4 8.2l10-4 .6 1.4-10 4zM7.5 14.5a3 3 0 106 0 3 3 0 00-6 0zM15.5 12h3v1.5h-3zM15.5 15h3v1.5h-3z',
     ],
@@ -75,7 +76,7 @@ export const GLHANDY = (() => {
 #glhandy .hk button{width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font:400 19px/1 system-ui;cursor:pointer;flex:none}
 #glhandy .hb{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:14px;background:#151920;padding:8px}
 #glhandy .hn{display:flex;gap:1px;padding-top:7px}
-#glhandy .hn button{position:relative;flex:1;min-width:0;border:0;background:none;color:#aab0b8;padding:5px 0 3px;border-radius:9px;cursor:pointer;font:500 9px/1.2 var(--f-body,system-ui)}
+#glhandy .hn button{position:relative;flex:1;min-width:0;overflow:hidden;white-space:nowrap;border:0;background:none;color:#aab0b8;padding:5px 0 3px;border-radius:9px;cursor:pointer;font:500 9px/1.2 var(--f-body,system-ui)}
 #glhandy .hn button svg{display:block;width:21px;height:21px;margin:0 auto 2px;fill:currentColor}
 #glhandy .hn button[aria-selected="true"]{color:#fff;background:rgba(255,255,255,.12)}
 #glhandy .hn button em{position:absolute;top:0;right:calc(50% - 19px);min-width:15px;height:15px;border-radius:8px;background:#e5484d;color:#fff;font:700 10px/15px system-ui;font-style:normal;padding:0 3px}
@@ -115,7 +116,7 @@ export const GLHANDY = (() => {
 #glcam.gut .ra i,#glcam.gut .ra b{border-color:#8fe08a}
 #glcam .ci{position:absolute;left:50%;top:calc(9% + 10px);transform:translateX(-50%);background:rgba(10,12,14,.72);border-radius:8px;padding:6px 12px;text-align:center;white-space:nowrap}
 #glcam .ci b{color:#ffd36a;margin-right:8px;font:700 13px/1 var(--f-mono,monospace)}
-#glcam .cb{position:absolute;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:12px;pointer-events:auto}
+#glcam .cb{position:absolute;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:12px;pointer-events:auto}
 #glcam .cb button{border:0;border-radius:999px;padding:13px 22px;font:600 15px/1 var(--f-body,system-ui);cursor:pointer;background:rgba(20,24,30,.82);color:#fff}
 #glcam .cb button:first-child{background:#fff;color:#111}
 #glcam .cb button kbd{font:600 11px/1 var(--f-mono,monospace);opacity:.6;margin-left:6px}
@@ -201,8 +202,8 @@ export const GLHANDY = (() => {
       '<div class="hk"><div><b id="hytitel"></b><small id="hysub"></small></div><button type="button" data-x aria-label="Handy weglegen">×</button></div>' +
       '<div class="hb" id="hybody"></div><nav class="hn" role="tablist">' +
       TABS.map(
-        ([k, n, d]) =>
-          `<button type="button" role="tab" data-tab="${k}" aria-label="${n}"><svg viewBox="0 0 24 24" fill-rule="evenodd"><path d="${d}"/></svg>${n}</button>`
+        ([k, n, kurz, d]) =>
+          `<button type="button" role="tab" data-tab="${k}" aria-label="${n}" title="${n}"><svg viewBox="0 0 24 24" fill-rule="evenodd"><path d="${d}"/></svg>${kurz}</button>`
       ).join('') +
       '</nav>';
     root.appendChild(el);
