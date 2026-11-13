@@ -18,7 +18,8 @@ Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo ech
   sich jedes Bild um die Achse des Strahls zur Kamera dreht (gekreuzte Karten addierten sich von oben gesehen zu weißen Keilen); alle
   Kegel aller Fahrzeuge sind zwei Zeichenaufrufe (heute weiß, 1989 warm); im Regen etwas kräftiger –, ein schwacher Lichtfleck auf
   der Straße voraus, der beim Fahren auf den Boden gelegt wird (ein Gitter von 5 × 9 Punkten; ein ebener Fleck wurde an Kuppen und
-  Gräben in harten Linien abgeschnitten), ein Glanz auf dem Glas, rotes Glühen der Rückleuchten, beim Bremsen größer und heller
+  Gräben in harten Linien abgeschnitten), ein Glanz auf dem Glas (eine zur Kamera gedrehte Karte: groß, wenn die Lampe einen
+  ansieht, von der Seite ein kleines Glühen), rotes Glühen der Rückleuchten, beim Bremsen größer und heller
   – auch das Glas der Bremsleuchten selbst (eine hellere Kopie des Rückleuchten-Materials). Warm (Glühlampe der Zeit) für 1989 und
   die Simson, weißer für die Autos von heute. Das gilt für alle Fahrzeuge von `gl_auto.js` (Streife, Kombi, Kasten, Trabant, Wartburg,
   Barkas, W 50, Mopeds der Clique) und für Moped und Trabant des Spielers; beim Moped hängt der Kegel an der Gabel (lenkt und legt
@@ -78,8 +79,11 @@ der Partner in 15 m; dann „Nachts an der Klinge“ (Regen, Lampen der Wachleut
 Jedes Bild zweimal – ohne (`GLLICHT.an(false)`) und mit – und nebeneinander in `out/grenzland_licht/*_vergleich.jpg`. Geprüft wird:
 der Fleck macht die Straße voraus heller (gegen dieselbe Entfernung seitlich außerhalb des Kegels), das Blaulicht blitzt abwechselnd
 links und rechts und nie beide, das geliehene Blau reicht höchstens 12 m, die Figur in 15 m ist heller, Taschenlampen und Regen kommen,
-unter der Leuchtkugel wird das Bild rot (obere Hälfte: Rot deutlich über Grün), sie brennt nach 25 s noch und sinkt, höchstens zwei
-neue Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden“ gibt alles zurück, keine Seitenfehler.
+unter der Leuchtkugel wird das Bild rot (obere Hälfte: Rot deutlich über Grün), sie brennt nach 25 s noch und sinkt, die Mission
+selbst löst sie im Schritt `flucht` aus (und keine zweite rote Kugel), das Modul kostet unter 4 ms Skriptzeit je Bild, in der
+Dämmerung gehen die Lampen an, bei vier Sternen fällt das Licht des Hubschraubers als Fleck auf den Boden, höchstens zwei neue
+Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden“ gibt alles zurück, keine Seitenfehler. Abschnitte als zweites
+Argument: `strasse,leute,klinge,1989,heli` (Standard) und `stadt` (Schleusingen, eigene Seite).
 
 ## Entscheidungen
 
@@ -97,14 +101,20 @@ neue Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden�
   Beim Beenden ist die Eigenschaft wieder die gewöhnliche.
 - **Taschenlampe ohne Angabe für Uniformierte nachts:** damit Wachleute, Beamte und die Polizei von 1989 auch dann Licht tragen,
   wenn `kino` und `welt` die Angabe noch nicht setzen. `F.lampe = false` hat Vorrang.
-- **Die Leuchtkugel von `gl_kapitel1.js`** (eine rote Kugel, die `kino` steuert): solange `gl_licht.js` eine eigene Leuchtkugel
-  zeichnet, sollte die Kugel weg (Wunsch an `kino`, unten).
+- **Die Leuchtkugel von `gl_kapitel1.js`** (eine rote Kugel, die `kino` steuert): seit der Zusammenführung 1 schickt die Mission
+  das Ereignis und lässt die Kugel weg, wenn `window.GLLICHT` da ist – es gibt eine Leuchtkugel, nicht zwei.
+- **Kegel und Glanz als zur Kamera gedrehte Karten** statt fester, gekreuzter Karten: ein Strahl sieht von jeder Seite gleich aus,
+  feste Karten addierten sich von oben oder von vorn zu weißen Keilen; die Karten aller Fahrzeuge liegen in vier Sammelnetzen
+  (Kegel und Glanz, je heute und 1989) – vier Zeichenaufrufe für alle zusammen. Steht die Kamera in einem Strahl, fällt seine Karte
+  weg (von innen füllte sie das Bild).
 
 ## Kosten (Telefon)
 
 - Texturen: Atlas 256 × 128 und Rauch 512 × 64 (zusammen mit Mipmaps unter 0,5 MB), Zweige 1989 256 × 256.
-- Zeichenaufrufe nachts: die Kegel aller Fahrzeuge zusammen 2; je Fahrzeug mit Licht 3 (Glanz, Fleck, Rücklicht; beim Bremsen 1
-  mehr; Streife +3 für Blaulicht und Boden), je Taschenlampe 3, die Leuchtkugel 4 (solange sie brennt). Am Tag 0.
+- Zeichenaufrufe nachts: Kegel und Glanz aller Fahrzeuge zusammen 4; je Fahrzeug mit Licht 2 (Fleck, Rücklicht; beim Bremsen 1
+  mehr; Streife +3 für Blaulicht und Boden), je Taschenlampe 3, die Leuchtkugel 4 (solange sie brennt), der Hubschrauber 3. Am Tag 0.
+- Gemessen (Test, Chat-Rechner): das Modul braucht je Bild 0,24 ms Skriptzeit – mit brennender Leuchtkugel, Rauch, Funken,
+  vier Taschenlampen und sechs Fahrzeugen mit Licht.
 - Je Frame nachts: die Kegelkarten (4 Ecken je Lampe) auf der CPU, der Fleck eines Fahrzeugs nur, wenn es sich bewegt hat
   (45 Bodenabfragen).
 - Arbeit je Frame: ein Blick auf die Uhr; nachts eine Schleife über die Fahrzeuge und Figuren (wenige), die Leuchtkugel ~200 Karten
@@ -119,17 +129,23 @@ neue Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden�
   `gl_1989_welt.js` (Zweige der kahlen Linde); Test `viz3/test/grenzland_licht.py`, `viz3/extra/grenzland-licht/tests.txt`.
 - **An `welt`:** das Blaulicht ist erledigt (danke). Offen: der eigene Kegel des Hubschraubers in `gl_heli.js` (`S.cone`) – bitte
   nicht mehr zeigen, wenn `window.GLLICHT` da ist; bis dahin blendet `gl_licht.js` ihn nach dessen Takt aus.
-- **An `kino` (gl_kapitel1.js, Schritt `flucht` der Mission `klinge`):** beim Abschuss `KERN.emit('grenzland:flare', { x: K.van[0],
-  y: K.van[1], z: KERN.ground(K.van[0], K.van[1]) + 1.5 })` und die eigene rote Kugel (`leuchtkugel`) weglassen, wenn
-  `window.GLLICHT` da ist – sonst sieht man zwei. Die Leuchtkugel brennt ~47 s (Steigen 3,2 s, Brennen 40 s, Erlöschen 3,5 s).
-  Taschenlampen: `F.lampe = true` für die Wachleute der Klinge und des Lagers nachts; ohne die Angabe tragen sie nachts ohnehin eine.
+- **An `kino`:** erledigt (danke) – die Mission schickt `grenzland:flare` im Schritt `flucht` und lässt ihre Kugel weg; Wachleute der
+  Klinge, des Lagers und der ABV tragen `F.lampe`. Die Leuchtkugel brennt ~47 s (Steigen 3 s, Brennen 40 s, Erlöschen 3,5 s).
+- **An `figuren`:** `GLLICHT.hatLampe(F)` – wahr, solange die Figur eine brennende Taschenlampe trägt (nicht am Tag).
+- **Tests auf Actions:** `viz3/extra/grenzland-licht/tests.txt` hat zwei Zeilen – `grenzland_licht` (alles außer der Stadt) und
+  `grenzland_licht:stadt` (Schleusingen bei Nacht, eigene Seite: ein Gebiet je Seite, im Chat-Rechner nicht gelaufen).
 - **Ton (gl_ton.js):** das Fauchen und Zischen der Leuchtkugel hat der Lead seit der Zusammenführung 1 eingebaut; Regen kommt vom
   Wetter selbst (`wetter/wx_ton.js`).
 
 ## Offen
 
 - Tropfen auf einer Scheibe (an der Klinge fährt man Moped – keine Scheibe).
-- Die Rundumleuchte der Volkspolizei schlägt im Takt, dreht sich aber nicht sichtbar (ein Glühen, kein wandernder Strahl).
+- Die Rundumleuchte der Volkspolizei schlägt im Takt, dreht sich aber nicht sichtbar (ein Glühen, kein wandernder Strahl); nicht im
+  Bild geprüft.
+- Steht man direkt vor einem Wagen mit Licht (Bild `4_streife_vergleich.jpg`), liegt sein Lichtfleck breit und hell neben einem – als
+  Licht der Scheinwerfer richtig, wirkt aber eher wie heller Dunst; ein schmalerer Fleck wäre einen Versuch wert.
+- Schleusingen bei Nacht (Abschnitt `stadt`) läuft nur auf Actions; Bilder dort im Artefakt `out`.
+- Der Kegel des Hubschraubers aus `gl_heli.js` wird von außen ausgeblendet (Wunsch an `welt`, oben).
 
 ## Verlauf
 
@@ -153,3 +169,6 @@ neue Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden�
   Dämmerung, Kosten je Bild 0,24 ms mit brennender Leuchtkugel, Hubschrauber bei vier Sternen).
 - ~14:10: der Kegel des Hubschraubers (`gl_heli.js`) stand als harter blasser Keil im Himmel – ersetzt durch einen weichen Strahl;
   Kegel der Fahrzeuge und Taschenlampen schwächer (Wagen und Wachleute an der Klinge ergaben eine weiße Fläche).
+- ~14:30: lokal `strasse,klinge,heli` 19/19 (die Mission löst die Leuchtkugel selbst aus, keine zweite Kugel; Hubschrauber mit
+  weichem Strahl), auf Actions `ff527f94` grün. ~14:40: `feat/grenzland` noch einmal hereingeholt (`welt` hat das Blaulicht selbst
+  auf 12 m und den Doppeltakt gestellt – unser Übergang ist weg), der Glanz der Scheinwerfer als zur Kamera gedrehte Karte.
