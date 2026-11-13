@@ -135,22 +135,20 @@ Die Tabelle steht als `CAST` in `tools/voices/grenzland_record.py`; eine Änderu
 
 ## Für den Lead
 
-- **Zusammenführen:** `feat/grenzland-stimmen` bringt `gl_stimmen.js` (eine Zeile in `modules.txt` nach `gl_modus.js`), drei Zeilen in
-  `viz3/build.py`, das Extra (≈ 5,9 MB mit Liste) und den Workflow. Die Liste enthält schon die Zeilen von welt (034ef982) und kino
-  (b0c64a19) – nach dem Zusammenführen ist der Sammler-Lauf nur nötig, wenn die beiden danach noch Sätze geändert haben.
-- **Mehr Platz?** Mit 6 MB bleiben Matzes Rest, Radio Republik und die Reaktionen der Leute ohne Geschichte bei der Gerätestimme. Alles
-  zusammen bräuchte gut 12 MB; `GL_BUDGET` (Bytes) im Workflow hebt die Grenze, sobald du es erlaubst.
-- **Nach jedem Zusammenführen neuer Zeilen** (welt: `GLREAKTION.linien()`, `GLEREIGNIS.linien()`, Änderungen am Funk; kino): auf
-  `feat/grenzland` `node tools/voices/grenzland_linien.mjs`, die geänderte `tools/voices/grenzland_linien.json` committen und pushen – der
-  Workflow „Stimmen Grenzland“ nimmt das Neue in ~5 Minuten auf und committet es zurück (`[skip ci] Stimmen Grenzland: Aufnahmen`), danach
-  `git pull`. Der Unit-Test `grenzland_stimmen` schlägt fehl, solange ein Gespräch aus `GLMDATA.R` nicht in der Liste steht (mit Befehl in
-  der Meldung); der Browser-Test, solange das Spiel eine Zeile sammelt, die nicht in der Liste steht.
-- **`GLRADIO` hat keinen Ducking-Haken** (`gl_radio*.js` gehören diese Runde niemandem): das Radio tritt nur zurück, solange ein Untertitel
-  steht (`mixTick`, `talk`). Vorschlag, zwei Zeilen in `gl_radio.js`: im Rückgabeobjekt `duck: on => void (S.duckOn = !!on),` und in
-  `mixTick` `const talk = (GLHUD.funk && GLHUD.subT > 0.1) || S.duckOn;` – `GLSTIMMEN` ruft `GLRADIO.duck` schon auf, sobald es das gibt.
+- **Zusammenführen (Merge 2):** `feat/grenzland-stimmen` enthält Merge 1 (250a60b3) und darauf die Liste vom zusammengeführten Stand (749
+  Zeilen) mit dem Budget von 12 MB; der Bot-Commit „[skip ci] Stimmen Grenzland: Aufnahmen“ bringt die Dateien (≈ 11,4 MB im Ordner).
+- **Der Workflow auf `feat/grenzland`: ja, lass ihn laufen.** Er startet bei jedem Push dorthin, der `tools/voices/grenzland_linien.json`,
+  das Skript oder den Workflow ändert. Der Merge-Push selbst ändert die Liste gegenüber dem alten `feat/grenzland` – der Lauf findet dann
+  nichts Neues (die Aufnahmen kommen mit dem Merge) und committet nichts. Ändern kino/welt danach noch Sätze: auf `feat/grenzland`
+  `node tools/voices/grenzland_linien.mjs`, die geänderte Liste committen und pushen – der Lauf nimmt nur das Neue auf (~5 Minuten, wenn die
+  Warteschlange der Actions frei ist) und committet es zurück; danach `git pull` (pushst du dazwischen, setzt der Bot seinen Commit oben
+  drauf). Der Unit-Test `grenzland_stimmen` schlägt fehl, solange ein Gespräch aus `GLMDATA.R` nicht in der Liste steht (mit Befehl in der
+  Meldung); der Browser-Test, solange das Spiel eine Zeile sammelt, die nicht in der Liste steht.
+- **Danke für `GLRADIO.duck(on)` und das Radio im Konsum** (`STIMME.say('gl_r_republik', …)`): `GLSTIMMEN` ruft `GLRADIO.duck` auf, sobald
+  es da ist – außer der Radiosprecher spricht gerade selbst; die Konsum-Sätze sind als `gl_r_republik` aufgenommen.
 - **Polizeifunk:** welt meldet für die Gerätestimme `STIMME.person('gl_funk', { g: 'm', age: 46 })` an; die Aufnahmen sprechen die Leitstelle
-  mit einer Frau. Für Sätze ohne Aufnahme passender wäre `g: 'f'` (ein Wort in `gl_fahndung.js`, welt).
-- **Das Radio im Konsum 1989** (`gl_1989.js` Zeile 347, nur Untertitel): die Sätze sind als `gl_r_republik` aufgenommen; sprechen ließe es
-  sich mit `STIMME.say('gl_r_republik', line, { at: [g[0], g[1]] })` neben dem `GLHUD.sub` (Import von `STIMME` dazu).
+  mit einer Frau. Für Sätze ohne Aufnahme passender wäre `g: 'f'` (ein Wort in `gl_fahndung.js`, welt). Beobachtung: welt ruft die Stimme
+  des Funks sofort, der Untertitel „Funk“ wartet aber in deiner Schlange, solange jemand spricht – Stimme und Untertitel können
+  auseinanderlaufen.
 - Falko kann Stimmen tauschen: Zeile in `CAST` (`tools/voices/grenzland_record.py`) ändern, pushen – die Sätze dieser Person werden neu
-  aufgenommen.
+  aufgenommen. Florian für Falko noch einmal versuchen: in `viz3/extra/grenzland-stimmen/aufnahmen.json` den Eintrag `_bad` löschen.
