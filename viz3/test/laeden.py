@@ -328,7 +328,7 @@ if GROUPS or 'nacht' in want:
             # the retaining walls (where the ground outside a pad lies more than 1.5 m above or below it), seen from near by
             if D['walls']:
                 w0 = max(D['walls'], key=lambda w: len(w['pts']))
-                x, y, ex, ey, zs, out = w0['pts'][len(w0['pts']) // 2]
+                x, y, ex, ey, zs, out = w0['pts'][len(w0['pts']) // 2][:6]
                 vx, vy = (x - ex * 12, y - ey * 12) if w0['kind'] == 'cut' else (x + ex * 14, y + ey * 14)
                 yw = (math.degrees(math.atan2(ex, ey)) + (0 if w0['kind'] == 'cut' else 180)) % 360
                 E(f"GAME.setView3(false, true); GAME.view({vx}, {vy}, KERN.ground({vx}, {vy}) + 1.7, {yw}, 0)")
