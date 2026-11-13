@@ -226,6 +226,13 @@ window.SAVE = SAVE;
     null,
     v => v === null || (obj(v) && v.v === 1)
   ); // feat/zombie (zombie/z_state.js)
+  K(
+    'pav-grenzland-v1',
+    'Grenzland: Stand, Geld, Missionen, Handy',
+    'json',
+    null,
+    v => v === null || (obj(v) && v.v === 1)
+  ); // feat/grenzland (grenzland/gl_state.js)
   K('pav-wetter-v1', 'Wetter: wie draußen oder nach Kalender', 'json', null, v => v === null || (obj(v) && v.v === 1)); // feat/wetter (wetter/wetter.js)
   K(
     'pav-tiere-v1',
