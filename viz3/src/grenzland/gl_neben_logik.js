@@ -7,6 +7,10 @@ export const GLNLOGIK = (() => {
   // ---- a small seeded random (mulberry32) ----
   function rng(seed) {
     let a = seed >>> 0 || 1;
+    // the seed is stirred first: seeds close to one another must not give numbers close to one another (cast after cast)
+    a = Math.imul(a ^ (a >>> 16), 0x85ebca6b);
+    a = Math.imul(a ^ (a >>> 13), 0xc2b2ae35);
+    a = (a ^ (a >>> 16)) >>> 0 || 1;
     return () => {
       a = (a + 0x6d2b79f5) | 0;
       let t = Math.imul(a ^ (a >>> 15), 1 | a);

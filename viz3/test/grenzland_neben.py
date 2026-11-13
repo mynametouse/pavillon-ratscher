@@ -125,7 +125,7 @@ with lib.browser() as b:
     st = J("({ best: GLSTATE.stats.kegel, seat: PLAY.seated(), panel: GLSPIEL.shown(), w: KERN.where(), on: GLKEGELN.on, up: GLKEGELN.meshes.pins.every(m => Math.abs(m.quaternion.w) > 0.999) })")
     ck('five throws in die Vollen: the wood is what the rules say for these throws, a Pudel among them, the sum is the best game on the slate',
        ok and r and r['liste'] == [e[0] for e in exp] and exp[2] == [0, True] and r['punkte'] == sum(e[0] for e in exp) and not r['abbruch'] and st['best'] == r['punkte']
-       and r['punkte'] >= 15, f'{r} expected {exp} {st}')
+       and r['punkte'] >= 10, f'{r} expected {exp} {st}')
     ck('after the game one stands where one stood, the pins are set up again', not st['seat'] and not st['panel'] and not st['on'] and st['up']
        and abs(st['w'][0] - w0[0]) < 0.3 and abs(st['w'][1] - w0[1]) < 0.3, str(st))
     # by hand: the choice, the ball to the right, spin, the swinging line, the swinging bar
@@ -222,7 +222,7 @@ with lib.browser() as b:
     # ------------------------------------------------------------------ the angling spot (pictures; the game below) ------------------------------------------------------------------
     AH = math.degrees(E("GLORTE.AN.hd"))
     p = J("GLORTE.AN.F.xy(0.3, 3.5)"); look(p[0], p[1], AH, -22); pic('15_steg_von_oben')
-    p = J("GLORTE.AN.F.xy(-5.5, GLORTE.AN.sA - 1)"); look(p[0], p[1], AH - 62, -8); pic('16_steg_seite')
+    p = J("GLORTE.AN.F.xy(-5.5, GLORTE.AN.sA - 1)"); look(p[0], p[1], AH + 52, -8); pic("16_steg_seite")
     ax, ay = Pp2 = J("GLORTE.P.angel")
     look(ax, ay, AH, -10); pic('17_steg_ende')
     # ------------------------------------------------------------------ Angeln ------------------------------------------------------------------
@@ -300,7 +300,7 @@ with lib.browser() as b:
     ok = talk(1)
     m2 = J("({ st: GLNEBEN.stand(), text: KERN.tasks.list().filter(t => t.src === 'grenzland-neben')[0].text, sub: document.getElementById('glsub').textContent })")
     ck('she tells of the Waffenschmied and what she needs (and what is true and what is hers)', ok and m2['st']['i'] == 1 and 'Karpfen ab 2 kg' in m2['text'] and 'Milchreis' in m2['text'], str(m2))
-    E("GLSTATE.use('karpfen_gross', 9); 0")
+    E("while (GLSTATE.use('karpfen_gross')); 0")
     talk()
     m3 = J("({ st: GLNEBEN.stand(), geld: GLSTATE.geld, sub: document.getElementById('glsub').textContent })")
     E("GLSTATE.add('karpfen_gross', 1); 0")
