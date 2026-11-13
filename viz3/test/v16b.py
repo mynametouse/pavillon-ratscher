@@ -135,7 +135,10 @@ with lib.browser() as b:
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': cx, 'y': cy - jr['h'] * 0.42, 'id': 1}]})
         M("for (let i = 0; i < 160; i++) GAME.step(0.025)"); ph = json.loads(M("JSON.stringify(VEH.state()[0])"))
         u = rects(M, ['vhud', 'vmap', 'vmaplab', 'where', 'hudtr', 'actrow', 'joy', 'moves', 'menubtn']); print('phone', ph, u, flush=True)
-        M("GAME.shot()"); mp.screenshot(path=os.path.join(OUT, 'h_phone_drive.png')); print('shot h_phone_drive', flush=True)
+        # (the picture with a longer wait, as the other tests' heavy pictures: the software renderer of the test machines is slow at the
+        # phone's double resolution; the times and the vehicles' state printed, should it ever be slow again)
+        t0 = time.time(); M("GAME.shot()"); t1 = time.time(); mp.screenshot(path=os.path.join(OUT, 'h_phone_drive.png'), timeout=120000); t2 = time.time()
+        print(f'shot h_phone_drive (frame {t1 - t0:.1f} s, picture {t2 - t1:.1f} s)', M("JSON.stringify({ progs: (GAME.R.info.programs || []).length, calls: GAME.R.info.render.calls, vk: window.VKMOD ? VKMOD.stats : null, cars: window.VAUTO ? VAUTO.cars.length : -1 })"), flush=True)
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
         check('phone: the circle drives', ph['kmh'] > 8, f"{ph['kmh']} km/h")
         bad = [f"{a}/{c}" for a, c in [('vhud', 'joy'), ('vhud', 'actrow'), ('vmap', 'where'), ('vmap', 'hudtr'), ('vmap', 'menubtn'), ('vmaplab', 'where'), ('vhud', 'moves')] if overlap(u[a], u[c])]
