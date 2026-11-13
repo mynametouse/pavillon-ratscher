@@ -89,9 +89,16 @@ export const BUS = (() => {
   function load() {
     if (S.state !== 'idle') return;
     S.state = 'loading';
-    // feat/suhl (B1): with ?suhl=… the timetable that runs on into Suhl (the same tool with Suhl's roads, tools/suhl/bus) replaces the world's
-    fetch((window.SUHL && SUHL.busPlan) || BASE + 'bus/fahrplan.json')
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+    // feat/suhl (B1): the timetable that runs on into Suhl (the same tool with Suhl's roads, tools/suhl/bus) replaces the world's – off
+    // with ?suhl=0; if it cannot be had, the world's own
+    const get = u => fetch(u).then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status + ' ' + u))));
+    (window.SUHL && SUHL.busPlan
+      ? get(SUHL.busPlan).catch(e => {
+          console.warn('bus: Suhl timetable', e);
+          return get(BASE + 'bus/fahrplan.json');
+        })
+      : get(BASE + 'bus/fahrplan.json')
+    )
       .then(j => {
         BUSPLAN.parse(j);
         stopsOf();
