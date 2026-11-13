@@ -41,19 +41,23 @@ const TUERME = [
     at: [-4665.3, 12450.2],
     az: 55,
     w: 2.6,
-    base: 20.5, // on the ridge (its roof made steeper after the photos: bau/marken.js rise)
-    body: 24.2,
+    on: 'DETHL57P00006G2R', // it rides the ridge of this building, as the worker raised it (bau/marken.js rise): heights from there
+    base: -0.8,
+    body: 3.4,
     cap: 2.2,
     lan: 1.6,
     spire: 1.8,
     col: 0x2f3236,
-    clock: 23.0,
+    clock: 2.2,
     turret: true,
   },
 ];
-// the round halls the records flatten into one block: at: centre, r: radius (a circle fitted to the footprint's arc, it matches the
-// roof's rim in the aerial photo of 2024), top: the drum's height above the ground (the record's), bands: ribbons of windows (from, to
-// above the ground; the photos from the north: three storeys of them, the upper one above the wings), dome: a skylight in the middle
+// the round forms the records flatten into one block: at: centre, r: radius. The drum of the CCS: a circle fitted to its footprint's arc
+// (it matches the roof's rim in the aerial photo of 2024), top: its height above the ground (the record's), bands: ribbons of windows
+// (from, to above the ground; the photos from the north: three storeys of them, the upper one above the wings), dome: a skylight in the
+// middle. The crown of the hotel tower (on: the building it sits on, from its foot z0): a glazed round storey from base to top above
+// that foot, an overhanging roof (lid), a small round storey on it (hat) and the mast – the photo „Friedrich-König-Straße 1 Suhl mit
+// City Hotel am CCS“ (Strubbl, CC BY-SA 4.0) and the aerial photo (a circle as wide as the square tower).
 const TROMMELN = [
   {
     name: 'Congress Centrum Suhl, Großer Saal',
@@ -68,10 +72,23 @@ const TROMMELN = [
     ],
     dome: 4.3,
   },
+  {
+    name: 'City Hotel am CCS, Turmkrone',
+    on: 'DETHL57P00006G0l',
+    at: [-5132.8, 12400.4],
+    r: 12.2,
+    base: 50.4,
+    top: 55.4,
+    col: 0xe9e9e6,
+    glass: true,
+    lid: [13.2, 0.8],
+    hat: [5.6, 2.6],
+    mast: 15,
+  },
 ];
 export function tuerme(ctx) {
   const { THREE, scene, markDirty, KERN } = ctx,
-    S = { on: true, built: false, at: [1e9, 1e9], n: 0, ref: [] };
+    S = { on: true, built: false, at: [1e9, 1e9], n: 0, ref: [], wait: 0 };
   let K = null;
   const M = new THREE.Matrix4(),
     Q = new THREE.Quaternion(),
@@ -128,12 +145,22 @@ export function tuerme(ctx) {
       B = { white: buf(), slate: buf(), copper: buf(), gold: buf(), glass: buf(), roof: buf() },
       walls = new Map(),
       ref = [];
-    let n = 0;
+    let n = 0,
+      wait = false;
     for (const t of TUERME) {
       if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
-      const zg = KERN.ground(t.at[0], t.at[1]);
+      let zg = null;
+      if (t.on) {
+        // the ridge of its building: the foot as the worker placed it, the eave and the top of the record, the roof raised by rise
+        const v = ctx.SUHL && ctx.SUHL.building ? ctx.SUHL.building(t.on) : null,
+          e = v ? (v.eave ?? v.h) : null,
+          h = v ? (v.h ?? v.eave) : null;
+        if (v && Number.isFinite(v.z0) && Number.isFinite(e) && Number.isFinite(h))
+          zg = v.z0 + e + (h - e) * (v.look && v.look.rise > 0 ? v.look.rise : 1);
+        else wait = true;
+      } else zg = KERN.ground(t.at[0], t.at[1]);
       if (zg === undefined || zg === null || !Number.isFinite(zg)) continue;
-      ref.push([t.at[0], t.at[1], zg]);
+      ref.push([t.at[0], t.at[1], t.on ? KERN.ground(t.at[0], t.at[1]) : zg]);
       if (!walls.has(t.col)) walls.set(t.col, buf());
       const W = walls.get(t.col),
         w = t.w,
@@ -179,26 +206,56 @@ export function tuerme(ctx) {
     }
     for (const t of TROMMELN) {
       if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
-      // the ground: the lowest of the centre and the rim, the wall reaching a little below it (a slope must not show a gap)
-      let zg = KERN.ground(t.at[0], t.at[1]);
-      if (zg === undefined || zg === null || !Number.isFinite(zg)) continue;
-      for (let k = 0; k < 8; k++) {
-        const a = (k * Math.PI) / 4,
-          z = KERN.ground(t.at[0] + Math.cos(a) * t.r, t.at[1] + Math.sin(a) * t.r);
-        if (Number.isFinite(z)) zg = Math.min(zg, z);
+      // the reference height: the foot of the building it sits on (as the worker placed it), else the lowest of the ground at the
+      // centre and on the rim, the wall reaching a little below it (a slope must not show a gap)
+      let zr = null;
+      if (t.on) {
+        const v = ctx.SUHL && ctx.SUHL.building ? ctx.SUHL.building(t.on) : null;
+        if (v && Number.isFinite(v.z0)) zr = v.z0;
+        else wait = true;
+      } else {
+        zr = KERN.ground(t.at[0], t.at[1]);
+        if (zr !== undefined && zr !== null && Number.isFinite(zr))
+          for (let k = 0; k < 8; k++) {
+            const a = (k * Math.PI) / 4,
+              z = KERN.ground(t.at[0] + Math.cos(a) * t.r, t.at[1] + Math.sin(a) * t.r);
+            if (Number.isFinite(z)) zr = Math.min(zr, z);
+          }
+        else zr = null;
       }
+      if (zr === null) continue;
       ref.push([t.at[0], t.at[1], KERN.ground(t.at[0], t.at[1])]);
       if (!walls.has(t.col)) walls.set(t.col, buf());
       const W = walls.get(t.col),
         d = { at: t.at, az: 0 },
-        z0 = zg - 1.5,
-        H = t.top + 1.5;
-      part(W, 'drum', d, z0, 0, 0, H / 2, t.r, t.r, H);
-      for (const [a, b] of t.bands)
-        part(B.glass, 'drum', d, z0, 0, 0, 1.5 + (a + b) / 2, t.r + 0.06, t.r + 0.06, b - a);
-      part(B.white, 'drum', d, z0, 0, 0, H - 0.25, t.r + 0.18, t.r + 0.18, 0.5); // the cornice
-      part(B.roof, 'lid', d, z0, 0, 0, H - 0.3, t.r - 0.05, t.r - 0.05, 0.5);
-      if (t.dome) part(B.white, 'sph', d, z0, 0, 0, H - 0.1, t.dome, t.dome, t.dome * 0.55);
+        zA = t.on ? zr + t.base : zr - 1.5,
+        zT = zr + t.top,
+        ring = (B, z0, z1, r) => part(B, 'drum', d, 0, 0, 0, (z0 + z1) / 2, r, r, z1 - z0),
+        lid = (B, z0, z1, r) => part(B, 'lid', d, 0, 0, 0, (z0 + z1) / 2, r, r, z1 - z0);
+      if (t.glass) {
+        ring(B.glass, zA, zT, t.r);
+        ring(W, zA, zA + 0.7, t.r + 0.05); // a light band at its foot and under the roof
+        ring(W, zT - 0.35, zT, t.r + 0.05);
+      } else ring(W, zA, zT, t.r);
+      for (const [a, b] of t.bands || []) ring(B.glass, zr + a, zr + b, t.r + 0.06);
+      if (t.lid) {
+        const [lr, lh] = t.lid;
+        lid(B.white, zT, zT + lh, lr);
+        let z = zT + lh;
+        if (t.hat) {
+          lid(W, z, z + t.hat[1], t.hat[0]);
+          lid(B.roof, z + t.hat[1], z + t.hat[1] + 0.3, t.hat[0] + 0.25);
+          z += t.hat[1] + 0.3;
+        }
+        if (t.mast) {
+          part(B.slate, 'cyl', d, 0, 0, 0, z + t.mast / 2, 0.35, 0.35, t.mast);
+          for (const f of [0.45, 0.8]) lid(B.slate, z + t.mast * f, z + t.mast * f + 0.25, 1.1);
+        }
+      } else {
+        ring(B.white, zT - 0.5, zT, t.r + 0.18); // the cornice
+        lid(B.roof, zT - 0.55, zT - 0.05, t.r - 0.05);
+        if (t.dome) part(B.white, 'sph', d, 0, 0, 0, zT - 0.1, t.dome, t.dome, t.dome * 0.55);
+      }
       n++;
     }
     const put = (me, b) => {
@@ -228,10 +285,12 @@ export function tuerme(ctx) {
     for (const [col, me] of k.walls) if (!walls.has(col)) me.visible = false;
     S.n = n;
     S.ref = ref;
+    S.wait = wait ? 2 : 0;
     S.built = true;
     markDirty(true);
   }
   S.tick = (dt, o) => {
+    if (S.wait > 0 && (S.wait -= dt) <= 0) S.built = false; // a crown waited for its building: try again
     if (
       S.built &&
       Math.hypot(o[0] - S.at[0], o[1] - S.at[1]) < 200 &&

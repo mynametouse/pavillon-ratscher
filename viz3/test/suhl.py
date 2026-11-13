@@ -371,8 +371,23 @@ def desktop():
             for _ in range(8):
                 E("GAME.step(0.5)")
             tu = J("SUHL.status().tuerme")
-            ck('the towers and the drum of the Congress Centrum near the centre', tu and tu['towers'] >= 4, json.dumps(tu))
+            ck('the towers, the drum of the Congress Centrum and the crown of its hotel tower near the centre', tu and tu['towers'] >= 5, json.dumps(tu))
             lib.shot(pg, OUT, 'suhl_ccs')
+            # the hotel tower's crown, from where the photo „Friedrich-König-Straße 1 Suhl mit City Hotel am CCS“ was taken
+            E("""(() => { const p = SUHL.toModel(50.60805, 10.68572), h = Math.atan2(-5132.8 - p[0], 12400.4 - p[1]) * 180 / Math.PI;
+                GAME.view(p[0], p[1], KERN.ground(p[0], p[1]) + 1.6, h, 12, 50); })()""")
+            for _ in range(8):
+                E("GAME.step(0.5)")
+            lib.shot(pg, OUT, 'suhl_hotel')
+            # open water (kern/wasser.js): the pond before the Waffenmuseum and the Lauter where it runs in the open, laid on the ground
+            E("""(() => { const x = -4846, y = 12330, h = Math.atan2(-4899 - x, 12381 - y) * 180 / Math.PI;
+                GAME.view(x, y, KERN.ground(x, y) + 1.7, h, -7, 60); })()""")
+            for _ in range(8):
+                E("GAME.step(0.5)")
+            wa = J("SUHL.status().wasser")
+            ck('open water near the centre: ponds and the Lauter as surfaces on the ground', wa and wa['areas'] >= 2 and wa['rivers'] >= 1 and wa['tris'] > 10,
+               json.dumps(wa))
+            lib.shot(pg, OUT, 'suhl_wasser')
             E("GAME.go('suhl')")
             wait(QUIET, 60)
             ck('street furniture of Suhl in the roads system: lamps, signs and lines of every street tile, the lamps around the Markt built',
