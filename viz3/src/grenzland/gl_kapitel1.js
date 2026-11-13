@@ -752,11 +752,11 @@ export const GLKAP1 = (() => {
     const dx = P.x - K89.lx,
       dy = P.y - K89.ly,
       d = hyp(dx, dy),
-      max = 1.6 * dt;
+      max = 1.9 * dt;
     if (d > max && d < 3 && dt > 0) {
       P.x = K89.lx + (dx / d) * max;
       P.y = K89.ly + (dy / d) * max;
-      if (P.speed > 1.7) P.speed = 1.6;
+      if (P.speed > 2) P.speed = 1.9;
       if (d > 2.8 * dt && (K89.warn -= dt) < 0) {
         K89.warn = 12;
         MI.denk(T.kisteLaeuft, 2400);
@@ -1611,7 +1611,8 @@ export const GLKAP1 = (() => {
               if (n !== S.hieb) {
                 S.hieb = n;
                 GLTON.fx('schlag');
-                if (plan() !== 'laut' || !GLLAGER.wachen.some(w => w.job === 'gelenkt')) GLLAGER.laerm(P.x, P.y, 24);
+                // (the quiet way: only whoever passes close by hears it – wait until the round is at the far side)
+                GLLAGER.laerm(P.x, P.y, plan() === 'laut' ? 24 : 7.5);
               }
             },
             run() {

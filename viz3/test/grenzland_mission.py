@@ -250,7 +250,7 @@ with lib.browser() as b:
         E("GAME.step(4, 1, 0, 0, 1.9)")
         st = J("({ w: KERN.where(), k: (o => o ? [o.position.x, -o.position.z, o.position.y - GAME.P.feet] : null)(GLMISSION.D('kiste')) })")
         mv = ((st['w'][0] - p0[0]) ** 2 + (st['w'][1] - p0[1]) ** 2) ** 0.5
-        ck('with the crate nobody runs: slow steps, the crate before the body', 1.5 < mv < 7.2 and st['k'] and abs(st['k'][0] - st['w'][0]) < 0.8 and abs(st['k'][1] - st['w'][1]) < 0.8 and 0.3 < st['k'][2] < 1.3, f'{mv:.1f} m ' + str(st))
+        ck('with the crate nobody runs: slow steps, the crate before the body', 1.5 < mv < 8.4 and st['k'] and abs(st['k'][0] - st['w'][0]) < 0.8 and abs(st['k'][1] - st['w'][1]) < 0.8 and 0.3 < st['k'][2] < 1.3, f'{mv:.1f} m ' + str(st))
         pic('33_kiste')
         ok = until("['abv'].every(k => GLMISSION.F(k) || (GL89.leute && GL89.leute[k]))", 120, 0.3, 0.5)
         E("GLMISSION.St.S.t = 61"); steps(0.3)

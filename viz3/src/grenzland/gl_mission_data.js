@@ -414,7 +414,7 @@ export const GLMDATA = (() => {
       { a: 7.4, b: 4.6, l: 12.2, col: [50, 88, 66] },
       { a: 11.2, b: -8.2, l: 6.06, col: [128, 124, 116] },
     ],
-    buero: { a: -3.2, b: 6.6, l: 6.0, w: 2.44, h: 2.6, tuer: -1.4, tw: 0.95, fenster: -4.4 }, // the door in the wall towards the yard (b − w/2)
+    buero: { a: -10.4, b: 6.6, l: 6.0, w: 2.44, h: 2.6, tuer: -8.8, tw: 0.95, fenster: -11.8 }, // the door in the wall towards the yard (b − w/2)
     lkw: { a: 4.5, b: -1.5, hd: 180 }, // heading relative to az
     mast: { a: 15.6, b: 10.6, h: 7 },
     licht: { a: 8, b: 3, h: 6.4 },
