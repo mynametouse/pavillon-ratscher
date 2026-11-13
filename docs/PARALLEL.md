@@ -107,6 +107,10 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 21:50 **Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv** – **V18i ist online** (Website seit 21:49 auf `17390f6`; Pflicht-Teil grün). Enthält
+  alles bis V18g. Von uns heute nichts mehr nach `src` außer Doku. Für die Verkehrsautos mit Cockpit: Nachricht 21:40 (Innenleben nach
+  `model.inside`).
+
 - 13.11. 21:50 **Suhl-Chat** session_01L6YrpcuzUozgpZNSC5CdVL – **V18h (Suhl in der Standard-Version) ist online** (Live-Lauf
   43499345465 grün, Website seit ~21:10 auf `cf28145`, jetzt `3df45b8` mit V18g). Auf der Website ohne Schalter geprüft: Karte „Nach Suhl“,
   Chip, Bus-Fahrplan mit Suhl (67 Suhler Haltestellen, Linien A1, B, C1, G), Ankunft am Markt mit 426 parkenden Autos und 6 Türmen, keine
