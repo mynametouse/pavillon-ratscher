@@ -141,13 +141,18 @@ export function boden(ctx, G, IX, worker) {
     g.setAttribute('position', new THREE.BufferAttribute(pos.subarray(0, v * 3), 3));
     g.setAttribute('uv', new THREE.BufferAttribute(uv.subarray(0, v * 2), 2));
     t.lines = lines;
-    g.setIndex(indexOf(t, 15));
+    // the normals of the surface alone (all four quarters, no skirts); a skirt is lit like the ground it hangs from – a curtain with
+    // its own normals shows as a dark line wherever a neighbour lies a little lower
+    g.setIndex(indexOf(t, 15, true));
     g.computeVertexNormals();
+    const nr = g.attributes.normal.array;
+    for (const [ks, first] of lines) ks.forEach((k, q) => nr.copyWithin((first + q) * 3, k * 3, k * 3 + 3));
+    g.setIndex(indexOf(t, 15));
     g.computeBoundingSphere();
     return g;
   }
   // the triangles of the visible quarters (mask bit q = kid q of kids(): 0 SW, 1 SE, 2 NW, 3 NE) and the skirts along them
-  function indexOf(t, mask) {
+  function indexOf(t, mask, bare) {
     const idx = [],
       H = (NS - 1) / 2,
       vis = (i, j) => (mask >> ((j >= H ? 2 : 0) + (i >= H ? 1 : 0))) & 1;
@@ -160,6 +165,7 @@ export function boden(ctx, G, IX, worker) {
           d = a + NS;
         idx.push(a, b, c, a, c, d);
       }
+    if (bare) return idx;
     t.lines.forEach(([ks, first], li) => {
       const inner = li >= 4;
       if (inner && mask === 15) return;

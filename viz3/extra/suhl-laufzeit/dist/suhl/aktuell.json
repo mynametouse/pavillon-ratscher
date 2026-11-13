@@ -3,9 +3,10 @@
  "schema": 1,
  "stand": "Probesatz Zentrum (viz3/extra/suhl-laufzeit/probe_holen.py)",
  "quellen": {
-  "boden": "5fc9fec8",
-  "gebaeude": "13e3db02",
-  "gruen": "23bf81bf"
+  "boden": "97084bf5",
+  "gebaeude": "29db4164",
+  "gruen": "025255f1",
+  "strassen": "b58357ad"
  },
  "produkte": {
   "b": {
@@ -17,6 +18,18 @@
    "schema": 1
   },
   "g": {
+   "v": 0,
+   "schema": 1
+  },
+  "gr": {
+   "v": 0,
+   "schema": 1
+  },
+  "s": {
+   "v": 0,
+   "schema": 1
+  },
+  "w": {
    "v": 0,
    "schema": 1
   }

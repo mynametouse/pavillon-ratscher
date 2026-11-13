@@ -2,9 +2,10 @@
 //   <base>aktuell.json                      { schema, produkte: { <produkt>: { v, schema?, pfad? } } } – the valid version of every product
 //   <base><produkt>/v<N>/index.json         which tiles exist (ground: meta.json in the format of welt/welt.js), sources, attribution
 //   <base><produkt>/v<N>/<L>/<x>/<y>.<ext>   the tiles (ground: t/<L>/<x>/<y>.bin and i/<L>/<x>/<y>.webp)
-// Products read here: boden (terrain and aerial image, levels 6–12), g (building records, level 10), b (trees, level 10).
+// Products read here: boden (terrain and aerial image, levels 6–12), g (building records), b (trees), s (streets) – level-10 tiles.
 // A tile list may be written as { "x_y": n, … }, ["x_y", …], [[x, y], …] or as the bit field of suhllib.tileset_encode
 // { x0, y0, w, h, n, bits } – per level under 'kacheln', 'tiles' or 'has'.
+export const READ = ['boden', 'g', 'b', 's'];
 export const SCHEMA = 1; // the schema this runtime reads; a product that asks for more is left out (and named in the status)
 // (aktuell.json changes with every publication and GitHub Pages lets it be cached for ten minutes: asked for without the cache;
 // the versioned folders never change)
@@ -75,6 +76,7 @@ export async function loadIndex(base) {
     IX = { akt, schema: akt.schema || 1, version: {}, skipped: [], prod: {} };
   const jobs = [];
   for (const [name, p] of Object.entries(P)) {
+    if (!READ.includes(name)) continue; // a product this runtime does not read yet (m, f, w, gr, d …): not asked for
     const v = typeof p === 'number' ? p : p.v,
       need = (typeof p === 'object' && (p.schema || p.schema_min)) || 1;
     if (need > SCHEMA) {

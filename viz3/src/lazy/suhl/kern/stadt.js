@@ -114,7 +114,8 @@ export function stadt(ctx, G, IX, worker, opt) {
     g.computeBoundingSphere();
     return g;
   };
-  const SZ = { position: 3, normal: 3, aTan: 3, uv: 2, color: 3 };
+  const SZ = { position: 3, normal: 3, aTan: 3, uv: 2, color: 3 },
+    ROOFCLS = ['ziegel_rot', 'ziegel_dunkel', 'betonstein', 'schiefer', 'bitumen_kies', 'blech', 'gruendach', 'glas'];
   function dropMeshes(t) {
     for (const m of t.meshes) {
       scene.remove(m);
@@ -469,48 +470,94 @@ export function stadt(ctx, G, IX, worker, opt) {
       pts = [];
     for (let k = 0; k + 1 < b.f.length; k += 2) pts.push(map(b.f[k], b.f[k + 1]));
     const z0 = t.foot ? t.foot[i * 4 + 2] : (b.z0 ?? 0),
-      d = b.d || {};
+      d = b.d || {},
+      str = (t.head && t.head.str) || [],
+      fnw = (t.head && t.head.fn) || [];
+    // sides: one per edge of the rings (outer ring, then the courtyards) with the record's S entry
+    // [top a, top b, flags (1 party wall, 2 gable, 4 courtyard, 8 faces a street), street distance, street index (, apex u, apex top)];
+    // records in the format of gebaeude/z carry their ends themselves (F)
+    const sides = [];
+    if (Array.isArray(b.F))
+      for (const q of b.F) {
+        const A = map(q[0], q[1]),
+          B = map(q[2], q[3]);
+        sides.push({
+          a: A,
+          b: B,
+          len: Math.hypot(B[0] - A[0], B[1] - A[1]),
+          top: [q[4], q[7]],
+          party: !!(q[8] & 1),
+          gable: q[6] > Math.max(q[4], q[7]) + 0.6,
+          court: false,
+          street: null,
+          streetDist: q[9] > 90 ? null : q[9],
+          params: null,
+        });
+      }
+    else {
+      let n = 0;
+      for (const ring of [b.f].concat(Array.isArray(b.h) ? b.h : []))
+        for (let k = 0; k + 1 < ring.length; k += 2) {
+          const j = (k + 2) % ring.length,
+            A = map(ring[k], ring[k + 1]),
+            B = map(ring[j], ring[j + 1]),
+            q = (b.S && b.S[n]) || [b.e, b.e, 0, -1, -1],
+            own = b.Sp && b.Sp[n];
+          sides.push({
+            a: A,
+            b: B,
+            len: Math.hypot(B[0] - A[0], B[1] - A[1]),
+            top: [q[0], q[1]],
+            party: !!(q[2] & 1),
+            gable: !!(q[2] & 2),
+            court: !!(q[2] & 4),
+            street: q[4] >= 0 ? str[q[4]] || null : null,
+            streetDist: q[3] >= 0 ? q[3] : null,
+            params: b.fa ? (own ? Object.assign({}, b.fa, own) : b.fa) : null,
+          });
+          n++;
+        }
+    }
+    // roof faces: corners in model metres with their height (z0 + height above the foot), triangles; a flat roof is the footprint at the eave
+    const roof = (b.R || []).map(r => {
+      const v = [];
+      if (r.v) for (let k = 0; k + 2 < r.v.length; k += 3) v.push([...map(r.v[k], r.v[k + 1]), z0 + r.v[k + 2]]);
+      else for (const p of pts) v.push([p[0], p[1], z0 + (b.e || 0)]);
+      return {
+        pts: v,
+        tris: r.t || null,
+        area: r.a ?? null,
+        az: r.az ?? null,
+        slope: r.sl ?? (r.v ? null : 0),
+        cls: ROOFCLS[r.c] || r.c || null,
+        col: r.col ?? null,
+        q: r.cq ?? null,
+      };
+    });
     return {
       id: String(b.id),
       osm: b.osm || null,
       name: b.n || b.name || null,
       adr: b.adr || null,
       use: b.use ?? null,
+      fn: Number.isInteger(b.fn) ? fnw[b.fn] || null : null,
+      typ: b.typ || null,
       era: b.era ?? null,
       kind: b.k ?? null,
       quarter: b.q || b.quarter || null,
       pts,
+      holes: (Array.isArray(b.h) ? b.h : []).map(h => {
+        const o = [];
+        for (let k = 0; k + 1 < h.length; k += 2) o.push(map(h[k], h[k + 1]));
+        return o;
+      }),
       z0,
       eave: b.e ?? null,
-      h: b.h ?? b.hr ?? null,
+      h: b.hr ?? (Number.isFinite(b.h) ? b.h : null),
       levels: b.gs ?? b.levels ?? d.levels ?? (Number.isFinite(b.e) ? Math.max(1, Math.round(b.e / 2.9)) : null),
-      roof: (b.R || []).map(r => ({
-        pts: r.p || r.pts || null,
-        area: r.a ?? r.area ?? null,
-        az: r.az ?? null,
-        slope: r.n ?? r.slope ?? null,
-        cls: r.k ?? r.cls ?? null,
-        col: r.c ?? r.col ?? null,
-      })),
-      sides: (b.S || b.F || []).map(s =>
-        Array.isArray(s)
-          ? {
-              a: map(s[0], s[1]),
-              b: map(s[2], s[3]),
-              len: Math.hypot(s[2] - s[0], s[3] - s[1]),
-              street: null,
-              params: null,
-              party: !!(s[8] & 1),
-            }
-          : {
-              a: s.a ? map(s.a[0], s.a[1]) : null,
-              b: s.b ? map(s.b[0], s.b[1]) : null,
-              len: s.len ?? null,
-              street: s.str ?? s.street ?? null,
-              params: s.p ?? s.params ?? null,
-              party: !!s.nb,
-            }
-      ),
+      roofForm: b.r ?? null,
+      roof,
+      sides,
       flags: b.fl || null,
       tile: '10/' + t.k,
       raw: b,

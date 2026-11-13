@@ -9,6 +9,7 @@ import { frame } from './suhl/kern/geo.js';
 import { loadIndex, SCHEMA } from './suhl/kern/index.js';
 import { boden } from './suhl/kern/boden.js';
 import { stadt } from './suhl/kern/stadt.js';
+import { strassen } from './suhl/kern/strassen.js';
 import { probe } from './suhl/kern/probe.js';
 // the worker behind promises: ask({ op, … }, [transfer]) → the answer
 function workerOf(url, xf) {
@@ -63,6 +64,7 @@ export async function start(ctx) {
     areas = () => ctx.SUHL.areas,
     B = boden(ctx, G, IX, worker),
     C = stadt(ctx, G, IX, worker, { old: [MARKT[0], MARKT[1], 520], areas }),
+    ST = strassen(ctx, G, IX),
     T = { index: Math.round(performance.now() - t0), enter: 0, warm: 0, first: 0 },
     A = { on: false, stage: 0, d: 1e9, quarter: null, mem0: null };
   // ---- the observer: the walker, else the camera; from above the height of the picture counts ----
@@ -99,6 +101,7 @@ export async function start(ctx) {
       B.tick(dt, o, far);
     }
     if (C.on && far) C.tick(dt, o, top());
+    if (ST.on) ST.tick(dt, o, d < NEAR);
     if (!T.first && C.on && C.n.built > 0) T.first = Math.round(performance.now() - T.t0);
     acc += dt;
     if (acc > 1) {
@@ -130,6 +133,7 @@ export async function start(ctx) {
       A.on = false;
       B.leave();
       C.leave();
+      if (ST.on) ST.clear();
       worker.stop();
       A.warmed = false;
       markDirty(true);
@@ -140,8 +144,8 @@ export async function start(ctx) {
     pushOut: (p, r) => (C.on ? C.pushOut(p, r) : undefined),
     place(x, y) {
       if (!B.on || !B.covers(x, y)) return undefined;
-      const q = areaAt(x, y);
-      return q === 'zentrum' ? 'Suhl, Zentrum' : 'Suhl';
+      const n = ST.on ? ST.nameAt(x, y) : null;
+      return n ? n + ', Suhl' : areaAt(x, y) === 'zentrum' ? 'Suhl, Zentrum' : 'Suhl';
     },
     // KERN 'ground' above the tiles: street and pavement surfaces (stage 3) – nothing yet, the tiles of WELT answer
     surface: () => undefined,
@@ -171,31 +175,44 @@ export async function start(ctx) {
     reset: id => C.on && C.reset(id === undefined ? undefined : String(id)),
     add: rec => (C.on ? C.add(rec) : null),
     remove: id => C.on && C.remove(id),
-    ways: () => [],
+    ways: (cx, cy, r) => (ST.on ? ST.ways(cx, cy, r === undefined ? 300 : r) : []),
     stops: () => [],
     signal: () => null,
     data: {
+      // the numbers of a building for scenarios: what the record's d holds (areas computed in UTM by the pipeline: gf footprint,
+      // bgf gross floor area, da roof area) with the roof faces – nothing is computed from model geometry here
       building(id) {
         const b = api.building(id);
         if (!b) return null;
         const d = b.raw.d || {};
-        return Object.assign(
-          {
-            id: b.id,
-            quarter: b.quarter,
-            use: b.use,
-            era: b.era,
-            levels: b.levels,
-            height: b.h,
-            q: d.q || null,
-            src: d.src || null,
+        return {
+          id: b.id,
+          quarter: b.quarter,
+          use: b.use,
+          era: b.era,
+          levels: b.levels,
+          height: b.h,
+          footprint: d.gf ?? null,
+          floorArea: d.bgf ?? null,
+          roofArea: d.da ?? null,
+          roof: b.roof.map(r => ({ area: r.area, az: r.az, slope: r.slope, cls: r.cls })),
+          roofFlat: b.roofForm === 0,
+          listed: !!(b.flags && b.flags.dm),
+          q: {
+            levels: b.raw.gsq ?? null,
+            era: b.raw.eraq ?? null,
+            height: b.raw.hq ?? null,
+            roof: b.raw.rq ?? null,
+            foot: b.raw.zq ?? null,
           },
-          d
-        );
+          src: b.raw.src || null,
+        };
       },
       roofPlanes(id) {
         const b = api.building(id);
-        return b ? b.roof.filter(r => r.pts) : null;
+        return b
+          ? b.roof.map((r, i) => ({ i, pts: r.pts, tris: r.tris, cls: r.cls, area: r.area, az: r.az, slope: r.slope }))
+          : null;
       },
       quarter: () => null,
       async each(area, fn) {
@@ -218,12 +235,13 @@ export async function start(ctx) {
       products: Object.fromEntries(Object.values(IX.prod).map(p => [p.name, p.err ? 'Fehler: ' + p.err : 'v' + p.v])),
       boden: B.on ? B.state() : null,
       stadt: C.on ? C.state() : null,
+      strassen: ST.on ? ST.state() : null,
       worker: worker.busy(),
       times: T,
       mem0: A.mem0,
       mem: mem(),
     }),
-    _: { B, C, G, IX },
+    _: { B, C, ST, G, IX },
   };
   return api;
 }
