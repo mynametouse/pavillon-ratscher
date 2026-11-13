@@ -6,7 +6,7 @@
 // Products read here: boden (terrain and aerial image, levels 6–12), g (building records), b (trees), s (streets) – level-10 tiles.
 // A tile list may be written as { "x_y": n, … }, ["x_y", …], [[x, y], …] or as the bit field of suhllib.tileset_encode
 // { x0, y0, w, h, n, bits } – per level under 'has' (the contract), 'tiles' or 'kacheln' (older indexes).
-export const READ = ['boden', 'g', 'b', 's'];
+export const READ = ['boden', 'g', 'b', 's', 'm'];
 export const SCHEMA = 1; // the schema this runtime reads; a product that asks for more is left out (and named in the status)
 // (aktuell.json changes with every publication and GitHub Pages lets it be cached for ten minutes: asked for without the cache;
 // the versioned folders never change)

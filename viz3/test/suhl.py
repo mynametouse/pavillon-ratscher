@@ -290,6 +290,15 @@ def desktop():
             st_ = pl[4] or {}
             painted = bool(st_.get('overlay')) or (st_.get('tiles', 0) > 0 and st_.get('given') == st_.get('tiles') and pl[5] >= st_['tiles'])
             ck('place names from the street tiles (a named way: „Steinweg, Suhl“; a named square: „Marktplatz, Suhl“), the ways for traffic, the streets painted on the ground', (pl[0] or '').endswith(', Suhl') and pl[1] == 'Marktplatz, Suhl' and pl[2] == 'zentrum' and pl[3] > 0 and painted and st_.get('err') == 0, json.dumps(pl, ensure_ascii=False))
+            # the furniture of the street tiles (product m) went to the roads system's STRDAT tile by tile, and it builds it near the observer
+            for _ in range(6):
+                E("GAME.step(0.5)")
+            fu = J("""(() => { const s = SUHL.status().strassen, sets = window.STRDAT ? [...STRDAT.sets.keys()].filter(k => k.startsWith('suhl/m/')) : [],
+                R = window.STRASSEN && STRASSEN.state ? STRASSEN.state() : null;
+                return { furn: s.furn, err: s.furnErr, sets: sets.length, n: R && R.n, shown: R && R.shown }; })()""")
+            ck('street furniture of Suhl in the roads system: lamps, signs and lines of every street tile, the lamps around the Markt built',
+               fu['furn'] > 0 and fu['sets'] == fu['furn'] and fu['err'] == 0 and fu['n'] and fu['n'].get('lamps', 0) > 300 and fu['shown'] and fu['shown'].get('lamps', 0) > 5,
+               json.dumps(fu))
             E("GAME.go('suhl')")
             wait(QUIET, 60)
 

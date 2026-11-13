@@ -11,6 +11,9 @@
 // decimetres, { carve: false }: Suhl's ground carries the road cut; { places: false }: Suhl names its places itself – and the built-up
 // areas of the index once as the set 'suhl/orte' (they make the style „Stadt“). Nothing is painted here then: the region's road map
 // draws Suhl's streets. A tile the drive does not take (FAHRT off, an error) keeps the painting below.
+// Furniture (product m, the same level-10 tiles): street lamps, traffic signs, delineators, guard rails, power masts and lines, stop
+// and give-way lines and zebra crossings go tile by tile to the roads system's furniture (STRDAT.add, round 2 – its models, built
+// near the observer); traffic lights, crossings, stops and street-name signs (Suhl's own lists of the tile) stay with Suhl.
 // Frames: the contract writes positions in whole decimetres relative to the tile's centre o; the sample of 13.11.2026 02:28 wrote
 // absolute model decimetres and said so in its index (unit „… absolute model coordinates …“) – read as declared, never guessed.
 const SIZE = 768, // the window (m) and its picture (px)
@@ -21,10 +24,11 @@ const SIZE = 768, // the window (m) and its picture (px)
 export function strassen(ctx, G, IX) {
   const { THREE, WELT } = ctx,
     sp = IX.prod.s,
+    mp = IX.prod.m && IX.prod.m.index && IX.prod.m.sets[10] ? IX.prod.m : null,
     S = {
       on: !!(sp && sp.index && sp.sets[10]),
       tiles: new Map(),
-      n: { req: 0, ok: 0, err: 0, paint: 0, given: 0 },
+      n: { req: 0, ok: 0, err: 0, paint: 0, given: 0, furn: 0, furnErr: 0 },
       ms: 0,
       lastErr: '',
     };
@@ -78,6 +82,7 @@ export function strassen(ctx, G, IX) {
         S.n.ok++;
         stale = true;
         give(t);
+        furnish(t);
       })
       .catch(e => {
         t.st = 'err';
@@ -135,7 +140,61 @@ export function strassen(ctx, G, IX) {
       S.lastErr = 'FAHRT.add: ' + String((e && e.message) || e);
     }
   }
+  // ---- the furniture of the tile (product m) to the roads system's STRDAT: the lists of strassen/ausstattung.json in absolute dm ----
+  const D = () => (window.STRDAT && typeof window.STRDAT.add === 'function' ? window.STRDAT : null);
+  function furnish(t) {
+    const sd = D();
+    if (!sd || !mp || !mp.sets[10].has(t.x, t.y) || t.furn) return;
+    t.furn = 'load';
+    fetch(mp.path + '10/' + t.x + '/' + t.y + '.json')
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+      .then(j => {
+        if (t.st === 'gone' || t.furn !== 'load') return;
+        const o = j.o || [G.tile(10, t.x, t.y).cx, G.tile(10, t.x, t.y).cy],
+          ox = Math.round(o[0] * 10),
+          oy = Math.round(o[1] * 10),
+          // flat lists of n numbers per thing, x and y first: delineators [x, y, az], lamps [x, y, az, kind]
+          flat = (f, n) => (f || []).map((v, k) => (k % n === 0 ? v + ox : k % n === 1 ? v + oy : v)),
+          at = (rows, i) => (rows || []).map(r => r.map((v, k) => (k === i ? v + ox : k === i + 1 ? v + oy : v))), // x, y at i, i + 1
+          line = rows => (rows || []).map(r => [r[0]].concat(r.slice(1).map((v, k) => v + (k & 1 ? oy : ox)))), // [kind, x, y, x, y …]
+          // masts: the tile writes rows [x, y, type, az, [x, y of the next mast]] (a line may leave the tile); STRDAT reads flat
+          // [x, y, type, az] and lines as chains of mast indices of the same set – a span to a mast of another tile is left out
+          mr = j.masten || [],
+          masten = [],
+          leitungen = [];
+        for (const r of mr) masten.push(r[0] + ox, r[1] + oy, r[2], r[3]);
+        mr.forEach((r, i) => {
+          const nx = r[4];
+          if (!nx) return;
+          const k = mr.findIndex(q => Math.abs(q[0] - nx[0]) < 2 && Math.abs(q[1] - nx[1]) < 2);
+          if (k >= 0 && k !== i) leitungen.push([0, 0, i, k]);
+        });
+        const set = {
+          pfosten: flat(j.pfosten, 3),
+          lampen: flat(j.lampen, 4),
+          masten,
+          leitungen,
+          schilder: at(j.schilder, 1),
+          linien: at(j.linien, 1),
+          planken: line(j.planken),
+        };
+        t.furn = sd.add('suhl/m/' + t.k, set) !== false ? 'in' : 'off';
+        if (t.furn === 'in') S.n.furn++;
+        t.own = { ampeln: j.ampeln || [], querungen: j.querungen || [], halte: j.halte || [], namen: j.namen || [], o };
+      })
+      .catch(e => {
+        t.furn = 'err';
+        S.n.furnErr++;
+        S.lastErr = 'm: ' + String((e && e.message) || e);
+      });
+  }
+  function unfurnish(t) {
+    const sd = D();
+    if (t.furn === 'in' && sd) sd.drop('suhl/m/' + t.k);
+    t.furn = null;
+  }
   function take(t) {
+    unfurnish(t);
     const fa = F();
     if (!t.given || !fa) return;
     t.given = false;
@@ -353,6 +412,8 @@ export function strassen(ctx, G, IX) {
     ways: [...S.tiles.values()].reduce((n, t) => n + (t.st === 'ok' ? t.d.ways.length : 0), 0),
     overlay: !!tex && !!WELT.overlay && WELT.overlay() === tex,
     given: [...S.tiles.values()].filter(t => t.given).length,
+    furn: [...S.tiles.values()].filter(t => t.furn === 'in').length,
+    furnErr: S.n.furnErr,
     orte,
     frame: ABS ? 'absolut' : 'kachel',
     paints: S.n.paint,
