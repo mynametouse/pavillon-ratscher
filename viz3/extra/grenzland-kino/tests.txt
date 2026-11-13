@@ -2,8 +2,3 @@ grenzland_kino:m1
 grenzland_kino:m3
 grenzland_kino:coup
 grenzland_kino:score
-grenzland_mission:m1
-grenzland_mission:m2
-grenzland_mission:m3
-grenzland_mission:m4
-grenzland_mission:m5

@@ -91,8 +91,9 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - In `modules.txt` stehen `gl_kamera.js` und `gl_score.js` direkt vor `gl_mission.js`.
 - Beobachtet in den Testbildern: ein Spruch des Grundspiels („Ronald: Ruhe im Stall! Ha ha.“) erscheint mitten im Bild, auch in einer
   Zwischensequenz – gehört zu „Störendes raus“ (Paket A).
-- `viz3/extra/grenzland-kino/tests.txt` enthält vorübergehend auch `grenzland_mission:m1…m5` (Regressionsnetz, weil die Gespräche aller
-  Missionen jetzt Zwischensequenzen sind) – beim Zusammenführen gern wieder auf die drei `grenzland_kino`-Zeilen kürzen.
+- Regressionsnetz: mit den Gesprächen aller Missionen als Zwischensequenzen liefen `grenzland_mission:m1…m5` auf diesem Zweig in Actions
+  grün (Lauf 43422482963, Stand 8d1d377b, zusammen mit `grenzland_kino:m1,m3,coup,score` und `smoke`); `tests.txt` hat jetzt wieder nur die
+  vier `grenzland_kino`-Zeilen.
 
 ## Offen
 
