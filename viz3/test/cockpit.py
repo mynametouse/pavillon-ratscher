@@ -213,13 +213,18 @@ with lib.browser() as b:
         p0 = E("GAME.R.info.programs.length")
         E("VEH.goTo('car'); GAME.step(0.3)")
         s0 = views(pg, E, '')
+        # the target's side view (Falko 13.11. evening, round 2: a short bonnet, the windscreen 60° from upright, the roof dropping a little
+        # at the back, a slightly raked D pillar, a near-vertical tailgate) as [y, z] in the model frame, drawn dashed over the picture
+        TARGET = [[2.047, 0.34], [2.047, 0.6], [2.0, 0.71], [1.75, 0.86], [1.4, 0.95], [1.02, 1.0], [0.13, 1.525], [-0.3, 1.565],
+                  [-1.4, 1.548], [-2.216, 1.5], [-2.356, 1.085], [-2.426, 1.0], [-2.426, 0.36]]
         # the side with its measures: points of the car's near side (0.87 m from its middle towards the camera) projected into the
         # picture, lines drawn over it
         pts = json.loads(E("""JSON.stringify((() => { const s = VEH.by.car.st, f = [Math.sin(s.psi), Math.cos(s.psi)], c = GAME.cam,
               r = [f[1], -f[0]], k = 0.87 * Math.sign((c.position.x - s.x) * r[0] + (-c.position.z - s.y) * r[1]);
             const P = (fy, z) => { const p = c.position.clone().set(s.x + f[0] * fy + r[0] * k, s.z + z, -(s.y + f[1] * fy + r[1] * k)).project(c);
               return [(p.x + 1) / 2 * innerWidth, (1 - p.y) / 2 * innerHeight]; };
-            return { front: P(2.047, 0.05), rear: P(-2.426, 0.05), top: P(-1.0, 1.64), foot: P(-1.0, 0), ax1: P(1.25, 0.31), ax2: P(-1.655, 0.31) }; })())"""))
+            return { front: P(2.047, 0.05), rear: P(-2.426, 0.05), top: P(-1.0, 1.64), foot: P(-1.0, 0), ax1: P(1.25, 0.31), ax2: P(-1.655, 0.31),
+              target: TGT.map(q => P(q[0], q[1])) }; })())""".replace('TGT', json.dumps(TARGET))))
         im = Image.open(os.path.join(OUT, 'k_side.jpg')).convert('RGB'); dr = ImageDraw.Draw(im)
         kx, ky = im.width / 1200, im.height / 700
         T = lambda p: (p[0] * kx, p[1] * ky)
@@ -229,6 +234,12 @@ with lib.browser() as b:
         dr.text((T(pts['top'])[0] + 6, T(pts['top'])[1]), '1,64 m', fill=(255, 210, 60))
         dr.line([T(pts['ax1']), T(pts['ax2'])], fill=(120, 220, 255), width=2)
         dr.text(((T(pts['ax1'])[0] + T(pts['ax2'])[0]) / 2 - 40, T(pts['ax1'])[1] - 16), 'Radstand 2,905 m', fill=(120, 220, 255))
+        tg = [T(q) for q in pts['target']]
+        for (x0, y0), (x1, y1) in zip(tg, tg[1:]):
+            n = max(1, int(math.hypot(x1 - x0, y1 - y0) / 9))
+            for i in range(0, n, 2):
+                dr.line([(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n), (x0 + (x1 - x0) * (i + 1) / n, y0 + (y1 - y0) * (i + 1) / n)], fill=(255, 255, 255), width=2)
+        dr.text((tg[6][0] - 30, tg[6][1] - 18), 'Ziel', fill=(255, 255, 255))
         im.save(os.path.join(OUT, 'k_side_mass.jpg'), quality=90)
         p1 = E("GAME.R.info.programs.length")
         names = E(f"GAME.R.info.programs.slice({p0}).map(p => p.name || '?').join(' | ')")

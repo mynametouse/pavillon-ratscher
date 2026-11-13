@@ -25,9 +25,11 @@ export const KOMBI = (() => {
     HW = 0.87,
     YF = 2.047,
     YR = -2.426;
-  const y3 = 0.82, // the windscreen's foot
-    y2 = 0.2, // the roof's front edge (the windscreen about 50° from upright, as the class has it)
-    y1 = YR + 0.17, // the roof's rear edge
+  // round 2 (Falko 13.11. evening: „moderner, runder“): a short bonnet, the windscreen about 60° from upright, the belt rising to the rear,
+  // a roof that drops a little at the back, a slightly raked D pillar over a near-vertical tailgate
+  const y3 = 1.02, // the windscreen's foot
+    y2 = 0.13, // the roof's front edge (the windscreen 60° from upright: 0.89 m back over 0.52 m up)
+    y1 = YR + 0.21, // the roof's rear edge
     y0 = YR + 0.07, // the rear window's foot
     yB = -0.4, // B pillar (front door's end)
     yC = -1.37, // C pillar (rear door's end)
@@ -43,64 +45,84 @@ export const KOMBI = (() => {
     liner: rgb(188, 184, 176),
     carpet: rgb(30, 31, 33),
     cloth: rgb(60, 63, 68),
+    plastic: rgb(46, 47, 50), // the sills, the arch lips and the lower bumpers: dark grained plastic
   };
   // ---- the body's sections (K.body) ----
+  const Yf = YF - 0.005,
+    Yr = YR + 0.005;
+  // keys of a smooth curve: f(t) at n + 1 stations from ya (t 0) to yb (t 1)
+  const keys = (ya, yb, n, f) => Array.from({ length: n + 1 }, (_, i) => [ya + ((yb - ya) * i) / n, f(i / n)]);
+  // the corners in plan: an elliptic quarter (a: how far the end face lies inside the side, over the length L)
+  const corner = (a, t) => a * (1 - Math.sqrt(Math.max(0, 1 - (1 - t) * (1 - t))));
   const D = {
-    y0: YR + 0.04,
-    y1: YF - 0.04,
+    y0: Yr,
+    y1: Yf,
     hw: [
-      [YR + 0.04, 0.835],
-      [YR + 0.12, 0.862],
-      [YR + 0.3, 0.87],
-      [1.45, 0.87],
-      [1.72, 0.855],
-      [1.88, 0.818],
-      [1.97, 0.76],
-      [YF - 0.04, 0.68],
+      ...keys(Yr, Yr + 0.3, 6, t => HW - corner(0.13, t)),
+      [B, HW],
+      [A, HW],
+      ...keys(Yf - 0.5, Yf, 8, t => HW - corner(0.27, 1 - t)),
     ],
     zb: [
-      [YR + 0.04, 0.34],
-      [YR + 0.28, 0.3],
-      [B - 0.45, 0.25],
-      [B + 0.45, 0.215],
-      [A - 0.45, 0.215],
-      [A + 0.42, 0.25],
-      [1.86, 0.29],
-      [YF - 0.04, 0.34],
+      [Yr, 0.36],
+      [Yr + 0.08, 0.32],
+      [Yr + 0.25, 0.29],
+      [B - 0.4, 0.24],
+      [B + 0.4, 0.215],
+      [A - 0.4, 0.215],
+      [A + 0.4, 0.24],
+      [1.85, 0.28],
+      [1.97, 0.31],
+      [Yf, 0.34],
     ],
-    // the belt: high and almost level, a little up towards the rear, falling over the wings to the nose
+    // the belt: rising a little towards the rear (the side glass about 0.42 m high), falling over the wings to the nose
     sh: [
-      [YR + 0.04, 1.0],
-      [YR + 0.1, 1.035],
-      [B, 1.025],
-      [yB, 1.0],
-      [y3, 0.98],
-      [A, 0.94],
-      [1.72, 0.875],
-      [1.93, 0.835],
-      [YF - 0.04, 0.79],
+      [Yr, 1.0],
+      [Yr + 0.04, 1.05],
+      [Yr + 0.12, 1.075],
+      [B, 1.07],
+      [yC, 1.055],
+      [yB, 1.03],
+      [y3, 0.995],
+      ...keys(1.4, Yf, 8, t => 0.93 - 0.28 * Math.pow(t, 1.6)),
     ],
+    // the short bonnet sloping down into the nose; the tailgate's top under the rear window
     deck: [
-      [YR + 0.04, 1.02],
-      [YR + 0.1, 1.05],
+      [Yr, 1.02],
+      [Yr + 0.03, 1.065],
+      [y0, 1.085],
       [y3, 1.0],
-      [A, 0.965],
-      [1.72, 0.905],
-      [1.93, 0.855],
-      [YF - 0.04, 0.8],
+      ...keys(1.4, Yf, 8, t => 0.955 - 0.285 * Math.pow(t, 1.6)),
     ],
     dp: 2.2,
     rs: [
-      [YR + 0.1, 0.06],
-      [y3, 0.06],
-      [YF - 0.06, 0.085],
+      [Yr, 0.07],
+      [Yr + 0.2, 0.085],
+      [y3, 0.085],
+      [1.8, 0.1],
+      [Yf, 0.12],
     ],
-    rl: 0.075,
-    tuck: 0.045,
-    sl: 0.026,
-    zw: 0.6,
-    ztrim: 0.68,
-    gin: 0.092,
+    rl: 0.085,
+    tuck: 0.05,
+    sl: 0.045, // the sides lean in about 7° above the waist
+    zw: [
+      [Yr, 0.52],
+      [Yr + 0.2, 0.57],
+      [A + 0.4, 0.57],
+      [Yf, 0.47],
+    ],
+    // the trim line between waist and shoulder (GLK keeps it between them)
+    ztrim: [
+      [Yr, 0.86],
+      [Yr + 0.12, 0.93],
+      [B, 0.93],
+      [yB, 0.9],
+      [y3, 0.86],
+      [1.4, 0.8],
+      [1.8, 0.7],
+      [Yf, 0.58],
+    ],
+    gin: 0.1,
     pw: 0.058, // slim pillars (the A pillar about 7 cm from the driver's seat)
     cab: {
       y0,
@@ -108,81 +130,125 @@ export const KOMBI = (() => {
       y2,
       y3,
       roof: [
-        [y1, 1.54],
-        [-1.6, 1.56],
-        [-0.5, 1.565],
-        [y2, 1.535],
+        [y1, 1.5],
+        [-1.9, 1.528],
+        [-1.4, 1.548],
+        [-0.8, 1.56],
+        [-0.3, 1.565],
+        [y2, 1.525],
       ],
-      crown: 0.03,
+      crown: 0.04,
       wr: [
-        [y1, 0.655],
-        [-0.6, 0.675],
-        [y2, 0.66],
+        [y1, 0.62],
+        [-1.8, 0.655],
+        [-0.6, 0.67],
+        [y2, 0.645],
       ],
-      rr: 0.06,
-      bowF: [0.1, 0.06],
-      bowR: [0.03, 0.02],
+      rr: 0.07,
+      bowF: [0.12, 0.06],
+      bowR: [0.04, 0.02],
       sideGlass: [
         [y1 + 0.13, yC - 0.05],
         [yC + 0.045, yB - 0.045],
         [yB + 0.045, y3 - 0.02],
       ],
     },
+    // the wheels fill their arches (5 cm over the tyre)
     arches: [
-      { y: A, r: RW + 0.072, zc: RW + 0.012 },
-      { y: B, r: RW + 0.072, zc: RW + 0.012 },
+      { y: A, r: RW + 0.04, zc: RW + 0.015 },
+      { y: B, r: RW + 0.04, zc: RW + 0.015 },
     ],
-    seams: [y3 - 0.06, yB, yC],
+    seams: [A - RW - 0.07, yB, yC],
     zone: {
       sims: ['matt', C.black],
-      kappeV: ['matt', C.black],
+      schweller: ['matt', C.plastic],
     },
     // B and C pillars black between the windows; the A and D pillars in the body's colour
     farbe: (zn, y) => (zn === 'saeule' && y < y2 - 0.05 && y > y1 + 0.2 ? ['matt', C.black] : undefined),
     inner: { trim: C.trim, liner: C.liner },
   };
   // ---- the add-ons of the near detail level ----
+  // a lens (or its backing) as a pad between two points on a surface in plan, facing out
+  function strip(k, part, a, b, z, h, d, col, r = 0.015) {
+    const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    k.at({ p: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, z], rz: Math.atan2(b[1] - a[1], b[0] - a[0]) }, () =>
+      k.pad(part, [0, 0, 0], [L + 0.01, d, h], r, col)
+    );
+  }
   function details(k, Bd) {
-    const yF = YF - 0.04,
-      yRr = YR + 0.04;
-    // front: the grille between the lamps (a dark frame, three bars – no badge), the headlamps, fog lamps in the bumper
-    const zg = 0.7;
-    k.pad('matt', [0, Bd.end(0, zg, 1) - 0.01, zg], [0.86, 0.04, 0.15], 0.02, C.black);
-    for (let i = 0; i < 3; i++)
-      k.pad('matt', [0, Bd.end(0, zg, 1) + 0.004, zg - 0.045 + i * 0.045], [0.8, 0.02, 0.012], 0.005, C.dark);
-    for (const s of [-1, 1]) {
-      // the headlamp: a lens set into the wing's corner, its reflector, the indicator at the outer end
-      const x = 0.6,
-        y = Bd.end(s * x, 0.74, 1);
-      k.at({ p: [s * x, y - 0.02, 0.745], rz: -s * 0.32 }, () => {
-        k.pad('matt', [0, -0.004, 0], [0.31, 0.05, 0.135], 0.03, C.black);
-        k.pad('head', [0, 0.006, 0.006], [0.27, 0.05, 0.105], 0.03, C.silver);
-        k.pad(s < 0 ? 'blinkL' : 'blinkR', [s * 0.125, 0.004, -0.032], [0.06, 0.05, 0.035], 0.012, C.silver);
+    // the front's surface in plan at a height: points (x, y) along the nose, set out by d (dir +1 front, −1 rear)
+    const along = (xs, z, dir, d = 0) =>
+      xs.map(x => {
+        const y0 = Bd.end(x, z, dir),
+          y1 = Bd.end(x + 0.01, z, dir),
+          n = [-(y1 - y0), 0.01],
+          l = Math.hypot(n[0], n[1]);
+        return [x + (dir * n[0] * d) / l, y0 + (dir * n[1] * d) / l];
       });
-      // the fog lamp in the bumper's black lower part
-      k.pad('matt', [s * 0.62, YF - 0.012, 0.4], [0.16, 0.03, 0.07], 0.02, C.black);
-      k.pad('head', [s * 0.62, YF - 0.007, 0.4], [0.11, 0.025, 0.045], 0.015, C.silver);
+    // front: the headlamps, large and swept back round the corners into the wings (the indicator at the outer end), the grille between
+    // them (a trapezoid of horizontal bars, no badge), the plate, the lower intake, fog lamps in the bumper's corners
+    for (const s of [-1, 1]) {
+      const xs = [0.4, 0.52, 0.63, 0.72, 0.79].map(x => s * x),
+        P = along(xs, 0.63, 1, -0.006),
+        Q = along(xs, 0.63, 1, -0.012);
+      for (let i = 0; i < 4; i++) {
+        const a = s < 0 ? P[i + 1] : P[i],
+          b = s < 0 ? P[i] : P[i + 1],
+          qa = s < 0 ? Q[i + 1] : Q[i],
+          qb = s < 0 ? Q[i] : Q[i + 1];
+        strip(k, 'matt', qa, qb, 0.63, 0.14 - i * 0.012, 0.03, C.black, 0.025);
+        strip(
+          k,
+          i === 3 ? (s < 0 ? 'blinkL' : 'blinkR') : 'head',
+          a,
+          b,
+          0.635,
+          0.115 - i * 0.012,
+          0.03,
+          C.silver,
+          0.02
+        );
+      }
+      // the fog lamp in the bumper's corner
+      const F = along([s * 0.56, s * 0.66], 0.42, 1, -0.008),
+        Fb = along([s * 0.55, s * 0.67], 0.42, 1, -0.016);
+      strip(k, 'matt', s < 0 ? Fb[1] : Fb[0], s < 0 ? Fb[0] : Fb[1], 0.42, 0.075, 0.03, C.black, 0.02);
+      strip(k, 'head', s < 0 ? F[1] : F[0], s < 0 ? F[0] : F[1], 0.42, 0.045, 0.03, C.silver, 0.015);
     }
-    // bumpers: the body colour above, black below, round the corners
-    const bump = (dir, y, zTop) => {
-      k.pad('lack0', [0, y, zTop - 0.07], [2 * HW * 0.985, 0.12, 0.15], 0.05, [1, 1, 1]);
-      k.pad('matt', [0, y + dir * 0.005, zTop - 0.2], [2 * HW * 0.95, 0.12, 0.13], 0.045, C.black);
-      k.pad('matt', [0, y - dir * 0.15, zTop - 0.255], [2 * HW * 0.8, 0.3, 0.03], 0.012, C.black);
-    };
-    bump(1, YF - 0.065, 0.6);
-    bump(-1, YR + 0.06, 0.62); // the rear bumper's face at the car's length (YR), as the front one's (YF)
+    const yg = Bd.end(0, 0.62, 1);
+    for (let i = 0; i < 4; i++) {
+      const w = 0.74 - i * 0.05,
+        z = 0.665 - i * 0.03;
+      k.pad('matt', [0, yg - 0.012, z], [w, 0.03, 0.034], 0.012, C.black);
+      k.pad('matt', [0, yg - 0.004, z + 0.004], [w - 0.03, 0.02, 0.011], 0.004, C.grey);
+    }
+    // the lower intake across the bumper (dark, as its lower part round the corners)
+    k.pad('matt', [0, Bd.end(0, 0.4, 1) - 0.014, 0.4], [1.16, 0.035, 0.12], 0.03, C.plastic);
     // sides: door handles (body colour with a black insert), mirror housings on black bases, the indicator repeaters on the wings,
-    // the rubbing strips
+    // a character line along the doors, the arch lips (dark plastic)
     for (const s of [-1, 1]) {
       for (const y of [yB + 0.2, yC + 0.18]) {
-        k.pad('lack0', Bd.side(s, y, 0.87, 0.006), [0.03, 0.17, 0.04], 0.012, [1, 1, 1]);
-        k.pad('matt', Bd.side(s, y - 0.02, 0.87, 0.012), [0.012, 0.11, 0.012], 0.004, C.black);
+        k.pad('lack0', Bd.side(s, y, 0.9, 0.006), [0.03, 0.17, 0.04], 0.012, [1, 1, 1]);
+        k.pad('matt', Bd.side(s, y - 0.02, 0.9, 0.012), [0.012, 0.11, 0.012], 0.004, C.black);
       }
       const mp = Bd.side(s, y3 - 0.22, 1.035, 0.02);
       k.pad('matt', [mp[0] - s * 0.03, mp[1], mp[2]], [0.09, 0.09, 0.05], 0.02, C.black);
       k.pad('lack0', [mp[0] + s * 0.095, mp[1], mp[2] + 0.035], [0.19, 0.11, 0.14], 0.045, [1, 1, 1]);
       k.pad(s < 0 ? 'blinkL' : 'blinkR', Bd.side(s, A + 0.42, 0.8, 0.004), [0.012, 0.06, 0.025], 0.008, C.silver);
-      k.pad('matt', Bd.side(s, (yB + yC) / 2 + 0.2, 0.6, 0.008), [0.02, 2.35, 0.05], 0.015, C.black);
+      const line = [];
+      for (let y = A - 0.3; y >= B + 0.32; y -= 0.25)
+        line.push(Bd.side(s, y, 0.84 + ((A - y) / (A - B)) * 0.07, -0.002));
+      k.tube('lack0', line, 0.007, 8, [1, 1, 1], { caps: 1 });
+      for (const ya of [A, B]) {
+        const lip = [];
+        for (let i = 0; i <= 14; i++) {
+          const a = (-8 + (i / 14) * 196) * (Math.PI / 180),
+            y = ya + Math.cos(a) * (RW + 0.052),
+            z = RW + 0.015 + Math.sin(a) * (RW + 0.052);
+          lip.push(Bd.side(s, y, Math.max(z, 0.22), 0.006));
+        }
+        k.tube('matt', lip, 0.02, 8, C.plastic, { caps: 1 });
+      }
       // the roof rail on three feet
       const rail = [];
       for (let i = 0; i < Bd.Y.length; i++) {
@@ -199,36 +265,39 @@ export const KOMBI = (() => {
         }
       }
     }
-    // rear: vertical lamps up the D pillars (tail on top, brake, indicator, reversing), the third brake light, the split of the doors with
-    // its handle, the hinges, the plate's recess, the exhaust
+    // rear: L-shaped lamps at the D pillars (the tail across the top and round into the side, brake, indicator and reversing light
+    // down the edge), the hinges and seams of the split doors, the handle, the third brake light, the plate's recess, the dark lower
+    // part, the exhaust
     for (const s of [-1, 1]) {
-      const x = HW - 0.11,
-        y = Bd.end(s * x, 0.95, -1) + 0.012;
-      k.pad('matt', [s * x, y + 0.008, 0.92], [0.15, 0.04, 0.5], 0.03, C.black);
-      k.pad('tail', [s * x, y, 1.08], [0.13, 0.04, 0.17], 0.025, C.silver);
-      k.pad('brems', [s * x, y, 0.93], [0.13, 0.04, 0.12], 0.02, C.silver);
-      k.pad(s < 0 ? 'blinkL' : 'blinkR', [s * x, y, 0.82], [0.13, 0.04, 0.08], 0.02, C.silver);
-      k.pad('rev', [s * x, y, 0.72], [0.12, 0.04, 0.07], 0.02, C.silver);
-      // the hinges beside the lamps
-      for (const z of [0.78, 1.25]) k.pad('matt', [s * (HW - 0.215), y - 0.004, z], [0.05, 0.03, 0.07], 0.01, C.black);
-      k.pad(
-        'matt',
-        [s * (HW - 0.2), Bd.end(s * (HW - 0.2), 1.0, -1) - 0.002, 1.0],
-        [0.006, 0.01, 0.82],
-        0.002,
-        C.black
-      );
+      const x = 0.665,
+        y = z => Bd.end(s * x, z, -1) + 0.012;
+      k.pad('matt', [s * x, y(0.91) + 0.008, 0.91], [0.12, 0.04, 0.22], 0.03, C.black);
+      k.pad('matt', [s * x, y(1.13) + 0.008, 1.13], [0.12, 0.04, 0.22], 0.03, C.black);
+      k.pad('tail', [s * (x - 0.035), y(1.2), 1.2], [0.17, 0.04, 0.045], 0.018, C.silver);
+      k.pad('tail', [s * x, y(1.125), 1.125], [0.1, 0.04, 0.09], 0.02, C.silver);
+      k.pad('brems', [s * x, y(1.02), 1.02], [0.1, 0.04, 0.11], 0.02, C.silver);
+      k.pad(s < 0 ? 'blinkL' : 'blinkR', [s * x, y(0.92), 0.92], [0.1, 0.04, 0.08], 0.02, C.silver);
+      k.pad('rev', [s * x, y(0.845), 0.845], [0.1, 0.04, 0.06], 0.02, C.silver);
+      // round the corner into the side
+      k.pad('tail', Bd.side(s, Yr + 0.09, 1.18, 0.002), [0.03, 0.13, 0.05], 0.015, C.silver);
+      // the hinges and the doors' outer seams beside the lamps
+      for (const z of [0.6, 0.95])
+        k.pad('matt', [s * 0.585, Bd.end(s * 0.585, z, -1) - 0.004, z], [0.04, 0.03, 0.07], 0.01, C.black);
+      k.pad('matt', [s * 0.6, Bd.end(s * 0.6, 0.76, -1) - 0.002, 0.76], [0.006, 0.01, 0.52], 0.002, C.black);
     }
-    const ys = Bd.end(split, 0.9, -1);
-    k.pad('matt', [split, ys - 0.002, 1.0], [0.008, 0.012, 0.86], 0.003, C.black);
-    k.pad('matt', [split - 0.05, ys - 0.012, 0.98], [0.06, 0.03, 0.035], 0.012, C.dark);
-    k.pad('brems', [0, Bd.end(0, 1.5, -1) - 0.01, 1.5], [0.32, 0.03, 0.025], 0.01, C.silver);
+    const ys = Bd.end(split, 0.76, -1);
+    k.pad('matt', [split, ys - 0.002, 0.76], [0.008, 0.012, 0.52], 0.003, C.black);
+    k.pad('matt', [split - 0.05, ys - 0.012, 0.93], [0.06, 0.03, 0.035], 0.012, C.dark);
+    // the third brake light under a slim lip at the roof's rear edge
+    k.pad('lack0', [0, y1 - 0.012, 1.497], [1.1, 0.07, 0.02], 0.009, [1, 1, 1]);
+    k.pad('brems', [0, y1 - 0.03, 1.478], [0.3, 0.025, 0.02], 0.008, C.silver);
     k.pad('matt', [-0.25, Bd.end(-0.25, 0.7, -1) - 0.004, 0.7], [0.56, 0.016, 0.14], 0.01, C.black);
+    k.pad('matt', [0, Bd.end(0, 0.41, -1) + 0.014, 0.41], [1.3, 0.035, 0.1], 0.03, C.plastic);
     k.tube(
       'matt',
       [
-        [-0.45, yRr + 0.2, 0.27],
-        [-0.45, yRr - 0.02, 0.27],
+        [-0.45, Yr + 0.24, 0.27],
+        [-0.45, Yr + 0.02, 0.27],
       ],
       0.03,
       10,
@@ -236,7 +305,7 @@ export const KOMBI = (() => {
       { caps: 1 }
     );
     // the cabin's floor, the firewall, the rear bench and the boot's floor (what one sees through the glass and in the mirror)
-    k.box('matt', [0, -0.31, 0.3], [1.6, 2.22, 0.03], C.carpet, 'b');
+    k.box('matt', [0, -0.25, 0.3], [1.6, 2.34, 0.03], C.carpet, 'b');
     k.box('matt', [0, y3 + 0.04, 0.6], [1.6, 0.03, 0.62], C.black);
     k.pad('matt', [0, -1.0, 0.52], [1.36, 0.5, 0.13], 0.05, C.cloth);
     k.pad('matt', [0, -1.26, 0.86], [1.36, 0.12, 0.58], 0.05, C.cloth);
@@ -374,7 +443,7 @@ export const KOMBI = (() => {
       for (const i of [0, 1, 2, 0, 2, 3]) P.push(...pts[i]);
       U.push(0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1);
     };
-    quad(0, YF + 0.003, 0.5, 1);
+    quad(0, Bd.end(0, 0.5, 1) + 0.004, 0.5, 1);
     quad(-0.25, Bd.end(-0.25, 0.7, -1) - 0.014, 0.7, -1);
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
@@ -395,13 +464,14 @@ export const KOMBI = (() => {
       rim: 0.19,
       s,
       seg: 28,
-      col: rgb(150, 152, 156),
-      spokes: 8,
-      spokeCol: rgb(188, 190, 194),
-      cap: rgb(60, 62, 66),
-      capR: 0.05,
+      col: rgb(58, 60, 64),
+      spokes: 10,
+      spokeCol: rgb(196, 198, 202),
+      cap: rgb(52, 54, 58),
+      capR: 0.042,
     });
     const g = meshes(k.done(), M, true);
+    g.position.x = s * 0.016; // the tyres flush with the body's side: a track of about 1.50 m to the eye (car.js keeps 1.468 for the physics)
     return g;
   }
   // ---- swap the body of vehicles/car.js ----
@@ -427,10 +497,10 @@ export const KOMBI = (() => {
       Df = Object.assign({}, D, { inner: false }),
       Bf = K.body(kf, Df);
     for (const s of [-1, 1]) {
-      const x = HW - 0.11,
-        y = Bf.end(s * x, 0.95, -1) + 0.012;
-      kf.box('tail', [s * x, y, 1.0], [0.12, 0.03, 0.3], C.silver);
-      kf.box('head', [s * 0.6, Bf.end(s * 0.6, 0.74, 1) - 0.01, 0.745], [0.26, 0.03, 0.1], C.silver);
+      const x = 0.665,
+        y = Bf.end(s * x, 1.0, -1) + 0.012;
+      kf.box('tail', [s * x, y, 1.05], [0.1, 0.03, 0.34], C.silver);
+      kf.box('head', [s * 0.55, Bf.end(s * 0.55, 0.69, 1) - 0.012, 0.69], [0.26, 0.03, 0.09], C.silver);
     }
     const far = meshes(kf.done(), M, true);
     const lod = new THREE.LOD();
@@ -475,7 +545,7 @@ export const KOMBI = (() => {
     // windscreen (its frit, 3.5 cm high), the headliner from there back over the rear seats, the visors folded against it and the top
     // frames of the door windows (the roof's side rails inside)
     const hz = z1 - 0.06;
-    // the eye: about 0.5 m behind the roof's front edge and 0.33 m behind the rim's top (the header and the visors at the top of the view)
+    // the eye: about 0.43 m behind the roof's front edge and 0.33 m behind the rim's top (the header and the visors at the top of the view)
     v.spec.eye = [-0.36, -0.3, 1.17];
     v.spec.cockpit = {
       body: 'kombi', // the anchors of this body only (a copy of the spec on another body keeps today's)
@@ -521,9 +591,17 @@ export const KOMBI = (() => {
     try {
       swap(v);
     } catch (e) {
+      S.err = String((e && e.stack) || e).slice(0, 400);
       console.warn('kombi', e);
     }
   }
-  const info = () => ({ swapped: S.swapped, ms: Math.round(S.ms), near: S.near, far: S.far, tris: S.tris });
+  const info = () => ({
+    swapped: S.swapped,
+    ms: Math.round(S.ms),
+    near: S.near,
+    far: S.far,
+    tris: S.tris,
+    err: S.err || null,
+  });
   return { D, info, S };
 })();
