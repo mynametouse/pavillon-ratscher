@@ -100,7 +100,9 @@ body[data-gl-era="1989"] #gldatum{display:block}
 #glhud .gdot{border:0;background:rgba(14,18,22,.42);color:#fff;border-radius:999px;width:26px;height:20px;padding:0;font:700 13px/1 system-ui;cursor:pointer}
 #glhud .gk{display:flex;gap:5px;margin-top:2px}
 #glhud .gk i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:rgba(14,18,22,.5);opacity:.38;transition:opacity .3s,background .3s}
-#glhud .gk i.an{opacity:1;background:rgba(190,40,30,.78)} #glhud .gk svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#glhud .gk i.an{opacity:1;background:rgba(190,40,30,.78)} #glhud .gk i.neu{animation:glneu .5s ease-in-out 4}
+@keyframes glneu{50%{transform:scale(1.35);background:rgba(255,80,60,.95)}}
+ #glhud .gk svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #glhud .gw{max-width:230px;text-align:right;font:500 11.5px/1.35 var(--f-body,system-ui);opacity:.95}
 #glhud .gw:empty,#glhud .gh:empty{display:none}
 #glhud .gxtra{border:0;border-radius:999px;background:#f3c64f;color:#1d1b16;font:600 12px/1 var(--f-body,system-ui);padding:7px 11px;cursor:pointer;text-shadow:none}
@@ -169,7 +171,7 @@ body[data-gl="1"][data-clean="1"] :is(#glhud,#glort,#glvoll){display:none!import
    side; stacked again (found by agent welt; the shared phone of agent handy replaces this panel) */
 #glhandy .hb{display:block;gap:0;min-height:0;font:inherit;color:inherit;cursor:auto;backdrop-filter:none;-webkit-backdrop-filter:none}
 /* the game's own speech line (a villager, a thought) gives way while a subtitle of the mode shows */
-body[data-gl="1"]:has(#glsub:not([hidden])) #npcsub{visibility:hidden}
+body[data-gl="1"]:has(#glsub:not([hidden])) #npcsub,body[data-gl-kino="1"] #npcsub{visibility:hidden}
 body:has(#npcpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),body:has(#dorfpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),
 body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:none!important}
 
@@ -585,6 +587,13 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
       S.funkT = 0;
     }
   }
+  // the subtitle away at once (a scene skipped); what waited goes too
+  function subAus() {
+    build();
+    S.subQ.length = 0;
+    S.subT = 0;
+    S.subEl.hidden = true;
+  }
   function subNext() {
     while (S.subQ.length) {
       const l = S.subQ.shift();
@@ -674,6 +683,19 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
       refresh();
     }
   }
+  // the police learned something (agent welt: { wissen, neu?, weg? }): its sign blinks a few times
+  KERN.on('grenzland:wissen', d => {
+    if (!S.shown || !d || !d.neu) return;
+    const wk = q('glwissen');
+    if (!wk) return;
+    for (const k of [].concat(d.neu)) {
+      const i = wk.querySelector('[data-w="' + k + '"]');
+      if (!i) continue;
+      i.classList.remove('neu');
+      void i.offsetWidth;
+      i.classList.add('neu');
+    }
+  });
   KERN.on('grenzland:geld', () => {
     S.last = '';
   });
@@ -696,6 +718,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
     ort,
     titel,
     kino,
+    subAus,
     busy,
     ruhig,
     auf,
