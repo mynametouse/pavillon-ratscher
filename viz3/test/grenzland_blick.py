@@ -15,6 +15,7 @@ with lib.browser() as b:
     steps = lambda secs, dt=0.1: E(f"for (let i = 0; i < {max(1, int(secs / dt))}; i++) GAME.step({dt})")
     def pic(name):
         try:
+            E("GAME.shot()")
             pg.screenshot(path=os.path.join(OUT, name + '.png')); print('shot', name, flush=True)
         except Exception as e:
             print('shot failed', name, e)
