@@ -45,8 +45,10 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   gerahmte Karte hängt sichtbar **innen** an der Rückwand. Gibt die Tür nach, zeigt ein **Zwischenschnitt** (3,4 s, `GLKAMERA.einstellung`)
   aus der Türöffnung (einen Schritt innen – wer die Tür aufgebrochen hat, steht hinter der Kamera) auf die Rückwand mit dem Rahmen; nicht,
   wenn ein Wachmann gerade jagt; Leertaste/Esc kürzt ab.
-- **Leuchtkugel**: Mission 4 meldet `grenzland:flare { x, y, z }` (Bild: Agent licht). Die kleine rote Kugel bleibt nur, solange es
-  `window.GLLICHT` nicht gibt.
+- **Leuchtkugel**: Mission 4 meldet `grenzland:flare { x, y, z }` (z = Boden + 1,5 m am Transporter; Bild: Agent licht). Die kleine rote
+  Kugel bleibt nur, solange es `window.GLLICHT` nicht gibt.
+- **Gerhard sitzt auf der Bank** (Hinweis von Agent figuren): auf einem der sechs Sitze rund um den Stamm (`VPROPS.LINDE`, `GLFIG.platz`),
+  dem zum Anger hin – vorher saß er zwischen Stamm und Bänken in der Luft. Der Sitz wird einmal gewählt (danach ist er ja besetzt).
 - **Taschenlampen**: `F.lampe = true` für die drei Männer an der Klinge, den ABV 1989 (Dämmerung) und – nachts – die Wachen im Außenlager
   (Bild: Agent licht).
 - **Für die Aufnahmen**: `GLMISSION.linien()` → `[['gl_<Figur>', Satz], …]` – alle gesprochenen Sätze der Missionen (ohne Erzähler).
@@ -99,6 +101,9 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   vier `grenzland_kino`-Zeilen.
 
 ## Offen
+
+- Hinweis von figuren „wer an der Zentralhaltestelle wartet, sitzt auf der Bank des Wartehäuschens“: in Mission 1 wartet dort niemand
+  von der Besetzung (der Fremde kommt zu Fuß über den Platz) – nicht umgesetzt.
 
 - Gespräche auf dem fahrenden Moped bleiben ohne Bild (gewollt, wie GTA); ebenso alles bei Fahndung.
 - Die Musik ist nach Regeln komponiert und in Pegeln gemessen (Test `score`), gehört hat sie hier niemand: Falko bitte einmal anhören.
