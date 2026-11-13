@@ -258,11 +258,12 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     rgb, cir8 = gbild.fetch(tx, ty)
     cir = cir8.astype(np.float32)
     bld, road, water = U.raster(bb, PX)
-    wood, nd, tex, veg = woody(cir, water)
+    forest = U.forest_mask(bb, PX)
+    # in the mapped forest shaded canopy counts too (slopes turned away from the sun; there is no lawn to mistake it for)
+    wood, nd, tex, veg = woody(cir, water, shade_ok=forest)
     seg, n = crowns(cir, wood)
     st = {'kronen_roh': int(n), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean())}
     out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk')}
-    forest = U.forest_mask(bb, PX)
     if n:
         idx = np.arange(1, n + 1)
         area = ndi.sum(np.ones(seg.shape, np.float32), seg, idx) * PX * PX

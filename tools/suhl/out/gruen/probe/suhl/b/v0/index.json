@@ -2,7 +2,7 @@
  "produkt": "b",
  "name": "Bäume (Einzelbäume)",
  "schema": 1,
- "made": "2026-11-13T00:46:55Z",
+ "made": "2026-11-13T00:58:30Z",
  "level": 10,
  "kachel_m": 400.0,
  "crs": "EPSG:25832 (ETRS89 / UTM 32N); Kacheln im Quadtree von tools/welt/wlib.py",
@@ -99,11 +99,11 @@
   "496_543": 1187,
   "497_541": 936,
   "497_542": 404,
-  "497_543": 1176,
-  "498_542": 929,
-  "498_543": 858
+  "497_543": 1184,
+  "498_542": 930,
+  "498_543": 862
  },
- "anzahl": 9717,
+ "anzahl": 9730,
  "attribution": "Luftbild (DOP20 RGB und CIR, Bildflug 15.05.2024): © GDI-Th, CC BY 4.0 (dl-de/by-2-0); Bäume, Baumreihen, Wald- und Grünflächen: © OpenStreetMap-Mitwirkende, ODbL 1.0",
  "quellen": [
   {
@@ -120,6 +120,7 @@
    "lizenz": "ODbL 1.0, Forschungszentrum Jülich, Zenodo 11845992"
   }
  ],
- "stand": "Probesatz Zentrum (11 Kacheln), Stand 1: Laub/Nadel/Strauch aus der Infrarot-Signatur, Höhen geschätzt",
- "gebiet": "zentrum"
+ "stand": "Gebiet zentrum, Lauf 1",
+ "gebiet": "zentrum",
+ "hoehen": "geschätzt (kein nDOM1)"
 }
