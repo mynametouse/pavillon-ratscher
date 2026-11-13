@@ -4,11 +4,11 @@
 # them, the two worlds differ; next/prev/seek; before()/between() hooks wait, snapshot() gives a JPEG, duck(); programs: start ≤ budget,
 # playing and splitting +0; stop() restores clock, calendar, light, weather, view, layers; no page errors; a contact sheet of the places
 # per chapter (out/zeitreise/orte_*.jpg) and split frames.
-#   python3 viz3/test/zeitreise.py 9012 [sections]   sections: api,lapse,split,halt,nav,hooks,orte,probe,stop
+#   python3 viz3/test/zeitreise.py 9012 [sections]   sections: api,lapse,split,halt,take,nav,hooks,orte,probe,stop
 import sys, os, json, time, base64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'api,lapse,split,halt,nav,hooks,orte,probe,stop').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'api,lapse,split,halt,take,nav,hooks,orte,probe,stop').split(','))
 ck = lib.Checks('zeitreise')
 OUT = lib.out('zeitreise')
 NOBLUR = "document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')"
@@ -59,7 +59,7 @@ def run():
         ck('layers 21/22 unused before the start', J("ZKBILD_LAYERS()") == [] if E("!!(window.ZKBILD_LAYERS = () => { const o = []; GAME.scene.traverse(x => { if (x.layers && (x.layers.mask & ((1 << 21) | (1 << 22)))) o.push(x.name || x.type); }); return o; })") else False)
         back = J("({ t: CLOCK.t, e0: DN.e0, mode: GAME.P.mode, x: GAME.P.x, y: GAME.P.y, yaw: GAME.P.yaw, mask: GAME.cam.layers.mask, light: window.MODE_NOW, wx: WETTER.state().preset, cam: GAME.cam.matrixWorld.elements.slice(12, 15) })")
         p0 = progs()
-        E("window.__ev = []; window.__off = ZKREGIE.on(e => { if (e.type !== 'tick') __ev.push({ type: e.type, id: e.id || (e.ev && e.ev.id) || e.chapter || '', state: e.state || '', who: e.who || '', text: e.text || '' }); }); 0")
+        E("window.__ev = []; window.__off = ZKREGIE.on(e => { if (e.type !== 'tick') __ev.push({ type: e.type, id: e.id || (e.ev && (e.ev.id || e.ev)) || e.chapter || '', state: e.state || '', who: e.who || '', text: e.text || '' }); }); 0")
 
         # ---------------- the time-lapse ----------------
         E("ZKREGIE.start({ pair: ['allein', 'gewappnet'], split: true })")
@@ -76,7 +76,8 @@ def run():
             steps(1.4)
             s = st(); h1 = E("CLOCK.t % 1440")
             ck('autoplay advances the year (~0.5 y/s)', s['y'] > y0 + 0.3, f"{y0:.3f} → {s['y']:.3f}")
-            ck('a fixed hour in the time-lapse (no day–night flicker)', abs(h1 - h0) < 2 and abs(h1 - 690) < 2, f'{h0:.0f} → {h1:.0f} min')
+            hw = E("((ZKCHRONIK.CHAPTERS[0] && ZKCHRONIK.CHAPTERS[0].hour) ?? 11.5) * 60")
+            ck('a fixed hour in the time-lapse (no day–night flicker)', abs(h1 - h0) < 2 and abs(h1 - hw) < 2, f'{h0:.0f} → {h1:.0f} min (chapter {hw:.0f})')
             d0 = E("DN.dateStr(CLOCK.t, true)")
             ck('the calendar moves with the year', str(int(s['y'])) in d0, d0)
             save('lapse_split', E(SHOT))
@@ -136,6 +137,8 @@ def run():
             lv = J("(() => { const m = ZKREGIE.state().ev, e = ZKCHRONIK.find('allein', m.id); return [0, 0.25, 0.5, 0.75, 1].map(p => ZKCHRONIK.state('allein', ZKCHRONIK.at(e, p)).water.level); })()")
             ck('the chronicle\'s water rises during the phase (allein)', max(lv) > 0.05, str([round(v, 2) for v in lv]))
             lines = [e for e in J("__ev") if e['type'] == 'line']
+            cues = [e['id'] for e in J("__ev") if e['type'] == 'cue']
+            ck('the stress test\'s cues come at their phase (rain, siren, blue light …)', len(cues) >= 3, ','.join(cues))
             ck('lines come as { type:"line", who, text, id }', len(lines) >= 1 and all(e['who'] and e['text'] for e in lines), json.dumps(lines[:2], ensure_ascii=False)[:300])
             ck('the ambience ducks under a line', E("!!ZKREGIE.state().line") or True)
             save('halt_starkregen', E(SHOT))
@@ -145,6 +148,24 @@ def run():
             ck('next ends the halt (time-lapse or the next halt)', s['mode'] in ('lapse', 'prelude', 'before', 'halt') and (s.get('ev') or {}).get('id') != 'starkregen', s['mode'])
             ck('no new programs while playing and halting (rain, night)', E("GAME.R.info.programs.every(p => __P1.has(p.cacheKey))"),
                str(J("GAME.R.info.programs.filter(p => !__P1.has(p.cacheKey)).map(p => p.name).slice(0, 8)")))
+
+        # ---------------- two takes: a halt at the family forest in the split shows one world after the other ----------------
+        if 'take' in want:
+            E("ZKREGIE.start({ pair: ['allein', 'gewappnet'], split: true, chapter: 'wald' })"); steps(0.3)
+            E("ZKREGIE.seek(2028.45)"); steps(0.2)
+            ok = until("ZKREGIE.state().mode === 'halt' && ZKREGIE.state().place === 'waldrand'", 40)
+            steps(0.5)
+            s = st()
+            ck('a halt at the Klinge in the split: first take, the left world on the whole screen', ok and s.get('take') == 'L' and not s['split'] and s['pair'] == ['allein'] and J("ZKREGIE.info().bild.split") is False,
+               json.dumps({k: s.get(k) for k in ('mode', 'place', 'take', 'split', 'pair')}))
+            save('take_L', E(SHOT))
+            ok = until("ZKREGIE.state().take === 'R'", 40)
+            s = st()
+            ck('… then the second take, the right world', ok and s['pair'] == ['gewappnet'] and not s['split'], json.dumps({k: s.get(k) for k in ('take', 'split', 'pair')}))
+            save('take_R', E(SHOT))
+            E("ZKREGIE.next()"); steps(0.6)
+            s = st()
+            ck('… and after the halt the split again', s['split'] and not s.get('take') and s['pair'] == ['allein', 'gewappnet'], json.dumps({k: s.get(k) for k in ('mode', 'take', 'split', 'pair')}))
 
         # ---------------- next, prev, seek, the card, between ----------------
         if 'nav' in want:
@@ -195,7 +216,7 @@ def run():
             for ch in J("ZKCHRONIK.CHAPTERS.map(c => c.id)"):
                 E(f"ZKREGIE.seek(ZKCHRONIK.CHAPTERS.find(c => c.id === '{ch}').from + 10)"); steps(0.4)
                 items = []
-                for pid in J(f"ZKCHRONIK.CHAPTERS.find(c => c.id === '{ch}').places"):
+                for pid in ['ueberblick'] + J(f"ZKCHRONIK.CHAPTERS.find(c => c.id === '{ch}').places"):
                     E(f"ZKREGIE.view('{pid}')"); steps(0.6)
                     items.append([pid + ' · ' + str(J(f"ZKREGIE.pose('{pid}').pos.map(v => Math.round(v))")), E(SHOT)])
                 save('orte_' + ch, E(f"({SHEET})({json.dumps(items)})"))
