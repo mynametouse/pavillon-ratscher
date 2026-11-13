@@ -39,8 +39,8 @@ with lib.browser() as b:
     X("""window.TW = { ev: [], funk: [], wissen: [],
       look(x, y, d, az, h) { const a = az * Math.PI / 180; GAME.view(x - Math.sin(a) * d, y - Math.cos(a) * d, KERN.ground(x - Math.sin(a) * d, y - Math.cos(a) * d) + (h || 1.7), az, -6) },
       // a view of (x, y) from d metres, h above the ground: the first direction (from `az` round) with a clear line and not indoors
-      blick(x, y, az, d, h) { for (const dd of [d, d * 0.7, d * 1.3]) for (let i = 0; i < 12; i++) { const a = (az + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 30) * Math.PI / 180, cx = x - Math.sin(a) * dd, cy = y - Math.cos(a) * dd;
-          if (KERN.inside(cx, cy, KERN.ground(cx, cy) + 1.5) || !GLFAHNDUNG.los(cx, cy, x, y)) continue; GAME.view(cx, cy, KERN.ground(cx, cy) + h, a * 180 / Math.PI, -9); return true } return false },
+      blick(x, y, az, d, h, pitch) { for (const dd of [d, d * 0.7, d * 1.3]) for (let i = 0; i < 12; i++) { const a = (az + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 30) * Math.PI / 180, cx = x - Math.sin(a) * dd, cy = y - Math.cos(a) * dd;
+          if (KERN.inside(cx, cy, KERN.ground(cx, cy) + 1.5) || !GLFAHNDUNG.los(cx, cy, x, y)) continue; GAME.view(cx, cy, KERN.ground(cx, cy) + h, a * 180 / Math.PI, pitch ?? -9); return true } return false },
       act(id) { const a = KERN.acts().find(q => q.id === id); return a ? a.label() : null },
       run(id) { const a = KERN.acts().find(q => q.id === id); if (a) a.run(); return !!a },
       get x() { return KERN.where()[0] }, get y() { return KERN.where()[1] } };
@@ -230,13 +230,14 @@ with lib.browser() as b:
             ck(f'ereignis {k}: starts at the player', ok and info and info['name'] == k, str((ok, info, E("GLEREIGNIS.err"))))
             # its point on the radar
             steps(0.5)
-            bl = J("(GLKARTE.blips ? GLKARTE.blips() : []).filter(b => b.k === 'ort').map(b => b.name)")
-            ck(f'ereignis {k}: a point on the radar', len(bl) > 0, str(bl))
+            bl = J("(GLKARTE.blips ? GLKARTE.blips() : []).filter(b => b.k === 'ereignis').map(b => b.name)")
+            ck(f'ereignis {k}: a point on the radar', len(bl) == 1, str(bl))
             # let it show (figures load), look at it
             for _ in range(10): steps(0.3); time.sleep(0.4)
             info = J("GLEREIGNIS.debug.info()")
             # the picture: from the player's side, some 16 m off and a little above, looking at it
-            X(f"const i = GLEREIGNIS.debug.info(); if (i) {{ const a = Math.atan2(i.x - {x}, i.y - ({y})) * 180 / Math.PI; TW.blick(i.x, i.y, a, 15, 3.4) }}")
+            far = "24, 1.8, 7" if k == 'kirmes' else "15, 3.4"
+            X(f"const i = GLEREIGNIS.debug.info(); if (i) {{ const a = Math.atan2(i.x - {x}, i.y - ({y})) * 180 / Math.PI; TW.blick(i.x, i.y, a, {far}) }}")
             steps(0.3)
             pic(f'1{["blitzer", "traktorstau", "kirmes", "korso", "boeller", "wildunfall"].index(k)}_{k}')
             ck(f'ereignis {k}: shows (cars, figures or props)', info and (info['cars'] + info['figs'] + info['meshes']) > 0, str(info))

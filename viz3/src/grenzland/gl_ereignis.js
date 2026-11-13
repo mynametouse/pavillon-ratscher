@@ -14,6 +14,7 @@
 // The people are figures of grenzland/gl_fig.js (their cast and clothes are added to GLDATA at load – nothing of the lead's data
 // changes), the cars of grenzland/gl_auto.js, the props merged meshes in the traffic's material (no new shader program, no lamp).
 //   GLEREIGNIS.start(name) · stop() · aktiv() → name | '' · linien() → [[who, text], …] · debug.start(name) (tests: at the player)
+//   The radar gets { x, y, k: 'ereignis', name } (the lead's radar draws its own sign for it).
 import * as THREE from 'three';
 import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -504,6 +505,46 @@ export const GLEREIGNIS = (() => {
             A.x + Math.sin(hd - 1.4) * 6,
             A.y + Math.cos(hd - 1.4) * 6,
             hd
+          )
+        );
+        // bunting from the tree to the stall's roof and to the table (pennants in the fair's colours along a sagging line)
+        const tx = A.x + Math.sin(hd - 1.4) * 6,
+          ty = A.y + Math.cos(hd - 1.4) * 6;
+        E.meshes.push(
+          mesh(
+            K => {
+              const C = [L(220, 40, 40), L(244, 244, 240), L(40, 90, 200), L(240, 200, 40), L(60, 150, 70)];
+              const kette = (a, b) => {
+                const n = Math.max(6, Math.round(hyp(b[0] - a[0], b[1] - a[1]) / 0.45));
+                for (let k = 0; k < n; k++) {
+                  const u0 = k / n,
+                    u1 = (k + 0.8) / n,
+                    P = u => [
+                      a[0] + (b[0] - a[0]) * u,
+                      a[1] + (b[1] - a[1]) * u,
+                      a[2] + (b[2] - a[2]) * u - Math.sin(Math.PI * u) * 0.9,
+                    ],
+                    p0 = P(u0),
+                    p1 = P(u1),
+                    m = P((u0 + u1) / 2),
+                    tip = [m[0], m[1], m[2] - 0.26],
+                    c = C[k % C.length];
+                  K.tri(p0, p1, tip, c);
+                  K.tri(p1, p0, tip, c);
+                }
+              };
+              const st = [sx - A.x, sy - A.y],
+                ta = [tx - A.x, ty - A.y];
+              // (in the mesh's own frame: the tree at the origin, the mesh unturned)
+              kette([0, 0, 5.2], [st[0] - Math.cos(hd) * 1.5, st[1] + Math.sin(hd) * 1.5, 2.45]);
+              kette([0, 0, 5.2], [st[0] + Math.cos(hd) * 1.5, st[1] - Math.sin(hd) * 1.5, 2.45]);
+              kette([0, 0, 4.8], [ta[0], ta[1], 1.9]);
+              // a pole at the table for its end
+              K.cyl(ta[0], ta[1], 0, 2.0, 0.035, 0.03, 6, L(150, 120, 80));
+            },
+            A.x,
+            A.y,
+            0
           )
         );
         const sv = [sx - Math.sin(hd) * 0.9, sy - Math.cos(hd) * 0.9];
@@ -1020,7 +1061,7 @@ export const GLEREIGNIS = (() => {
   // the radar: where it is (a letter on the map)
   GLKARTE.src(out => {
     const E = S.E;
-    if (E && heute()) out.push({ x: E.x, y: E.y, k: 'ort', name: E.def.radar });
+    if (E && heute()) out.push({ x: E.x, y: E.y, k: 'ereignis', name: E.def.radar });
   });
   // ------------------------------------------------------------------ per frame ------------------------------------------------------------------
   // where the player is, for the plan: in the town, in a village, out on the land

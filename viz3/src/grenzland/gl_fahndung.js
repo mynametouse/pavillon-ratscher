@@ -339,7 +339,8 @@ export const GLFAHNDUNG = (() => {
     if (!H) return null;
     if (!haubeGeo) {
       const K = VPROPS.kit(),
-        col = [0.018, 0.018, 0.022],
+        col = [0.016, 0.016, 0.02],
+        col2 = [0.03, 0.03, 0.036],
         rx = Math.max(0.075, Math.min(0.1, H.rx)) * 1.13 + 0.006,
         ry = Math.max(0.085, Math.min(0.115, H.rz)) * 1.12 + 0.008,
         rz = 0.128,
@@ -360,8 +361,10 @@ export const GLFAHNDUNG = (() => {
           while (am > Math.PI) am -= 2 * Math.PI;
           // (the eye slit: in front, at the eyes' height)
           if (Math.abs(am) < 0.62 && Math.abs(zm - eye) < 0.019) continue;
-          if (j === 0) K.tri(Pt(a0, t1), Pt(a1, t1), Pt(a0, t0), col);
-          else K.quad(Pt(a0, t1), Pt(a1, t1), Pt(a1, t0), Pt(a0, t0), col);
+          // (the knit: ribs in two tones)
+          const c = (i + (j >> 1)) % 2 ? col : col2;
+          if (j === 0) K.tri(Pt(a0, t1), Pt(a1, t1), Pt(a0, t0), c);
+          else K.quad(Pt(a0, t1), Pt(a1, t1), Pt(a1, t0), Pt(a0, t0), c);
         }
       }
       haubeGeo = K.geo();
@@ -1111,8 +1114,9 @@ export const GLFAHNDUNG = (() => {
       if (F.downT > 0) return;
       if (c.goal) {
         const far = hyp(c.goal[0] - F.x, c.goal[1] - F.y),
-          // after him: they run (the figures' run of round 2, GLFIG.go(F, pts, { renn }) – with the old figures they walk fast)
-          renn = c.st === 'jagt' && !!GLFIG.geste,
+          // after him: today's police run (the figures' run of round 2, GLFIG.go(F, pts, { renn }) – with the old figures they walk
+          // fast); the ABV and the Volkspolizei of 1989 keep their pace
+          renn = c.st === 'jagt' && !!GLFIG.geste && GL.era === 'heute',
           v = renn ? Math.max(c.v, 3.2) : c.v;
         if (far > 0.5 && (F.st !== 'geht' || !c.went || hyp(c.goal[0] - c.went[0], c.goal[1] - c.went[1]) > 0.45)) {
           c.went = [c.goal[0], c.goal[1]];
@@ -1227,9 +1231,9 @@ export const GLFAHNDUNG = (() => {
     want: () => GL.on && !!S.blauU && dark(),
     on: ls => {
       const l = ls[0];
-      l.color.setHex(0x2a5cff);
-      l.distance = 24;
-      l.decay = 1.4;
+      l.color.setHex(0x2a5cff); // (feat/grenzland-licht finds this light by its colour)
+      l.distance = 12;
+      l.decay = 2;
       l.intensity = 0;
     },
     tick: ls => {
@@ -1240,7 +1244,12 @@ export const GLFAHNDUNG = (() => {
         return;
       }
       l.position.set(u.x, (u.c.z || 0) + 2.1, -u.y);
-      l.intensity = Math.floor((GLAUTO.blink || 0) * 5.5) % 2 ? 30 : 4;
+      // (the beacons' own rhythm, feat/grenzland-licht: twice left, twice right)
+      l.intensity = GLAUTO.blauPuls
+        ? 46 * Math.max(...GLAUTO.blauPuls(GLAUTO.blink || 0))
+        : Math.floor((GLAUTO.blink || 0) * 5.5) % 2
+          ? 30
+          : 4;
     },
   });
   // ---- caught ----
@@ -1346,7 +1355,8 @@ export const GLFAHNDUNG = (() => {
     if (!S.stimme) {
       S.stimme = true;
       try {
-        STIMME.person('gl_funk', { name: 'Funk', g: 'm', age: 46 });
+        // (the dispatcher is a woman – as the recordings of feat/grenzland-stimmen have her)
+        STIMME.person('gl_funk', { name: 'Funk', g: 'f', age: 41 });
       } catch (e) {}
     }
     // (the looks and the radio's description must never stop the police)

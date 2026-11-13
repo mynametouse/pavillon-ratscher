@@ -22,6 +22,7 @@ import { go } from '../game/player.js';
 import { AVATAR } from '../game/avatar.js';
 import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
+import { STIMME } from '../audio/stimme.js';
 import { GLDATA } from './gl_data.js';
 import { GL } from './gl_state.js';
 import { GLTON } from './gl_ton.js';
@@ -344,7 +345,12 @@ export const GL89 = (() => {
       const R = (GLDATA.J89.radio89 && GLDATA.J89.radio89.length ? GLDATA.J89.radio89 : null) || D.RADIO;
       S.radioT = 17;
       GLTON.fx('radio89', dr, 26);
-      S.sayT = GLHUD.sub('Radio', R[S.radioI++ % R.length]) + 1;
+      const line = R[S.radioI++ % R.length];
+      S.sayT = GLHUD.sub('Radio', line) + 1;
+      // the recorded voice of the set (agent stimmen: Radio Republik), heard at the shop's door
+      try {
+        if (STIMME.speaks('gl_r_republik', line)) STIMME.say('gl_r_republik', line, { at: [g[0], g[1]] });
+      } catch (e) {}
     }
   }
   // ------------------------------------------------------------------ in and out ------------------------------------------------------------------
