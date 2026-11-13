@@ -25,6 +25,7 @@ import { VKTYPEN } from './vk_typen.js';
 import { VKMOD } from './vk_modelle.js';
 import { VKDICHTE } from './vk_dichte.js';
 import { VKREGELN } from './vk_regeln.js';
+import { VKAMPEL } from './vk_ampel.js';
 import { STRDAT } from '../strassen/strassen_daten.js';
 export const VKSTROM = (() => {
   const S = {
@@ -346,7 +347,7 @@ export const VKSTROM = (() => {
     const I = signIdx();
     line.lim = VKREGELN.limits(G, path, line, I.S, VNETZ.project);
     if (line.lim) line.S = VNETZ.speeds(line, 2.0, 2.0, 2.6, end === 'sack' ? 0 : null);
-    const jn = VKREGELN.events(G, path, line, G.ruleOf, VNETZ.project);
+    const jn = VKAMPEL.attach(VKREGELN.events(G, path, line, G.ruleOf, VNETZ.project), line, VNETZ.project);
     const T = VKTYPEN.TYP[typ];
     s0 = Math.max(T.b < 0 ? -T.b : 2, Math.min(line.L - 10, s0));
     // not onto another vehicle

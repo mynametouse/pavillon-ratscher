@@ -41,6 +41,7 @@ import { VKTYPEN } from './vk_typen.js';
 import { VKMOD } from './vk_modelle.js';
 import { VKSTROM } from './vk_strom.js';
 import { VKREGELN } from './vk_regeln.js';
+import { VKAMPEL } from './vk_ampel.js';
 export const VERKEHR = (() => {
   // feat/verkehr-real: each driver of the cast has a car of today of his own (by his name: the same type every time; the colour stays
   // his, VLEUTE) – the cars by their share of the stock (VKTYPEN.PKW); their models asked for at once, in the order of that share
@@ -549,7 +550,7 @@ export const VERKEHR = (() => {
           };
         }
         if (VKREGELN.limits(Pl.G, path, line, I.S, VNETZ.project)) line.S = VNETZ.speeds(line, 2.0, 2.0, 2.6, null);
-        line.jnT = VKREGELN.events(Pl.G, path, line, Pl.G.ruleOf, VNETZ.project);
+        line.jnT = VKAMPEL.attach(VKREGELN.events(Pl.G, path, line, Pl.G.ruleOf, VNETZ.project), line, VNETZ.project);
       } catch (e) {
         line.jnT = null;
       }
@@ -1442,6 +1443,13 @@ export const VERKEHR = (() => {
     } catch (e) {
       if (!S.errStrom) console.warn('verkehr strom', e);
       S.errStrom = String((e && e.message) || e);
+    }
+    // stage 2b: the traffic lights (their phases, the meshes near the observer; a walker standing at a crossing presses)
+    try {
+      VKAMPEL.tick(dt, o, [P.x, P.y]);
+    } catch (e) {
+      if (!S.errAmpel) console.warn('verkehr ampel', e);
+      S.errAmpel = String((e && e.message) || e);
     }
     // figures nobody needs any more: freed after a while (memory on the phone)
     for (const k of Object.keys(VFIG.figs)) {

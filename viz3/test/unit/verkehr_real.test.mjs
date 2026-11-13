@@ -275,3 +275,39 @@ test('stage 2: the junctions of a route, the indicator, limits by sign', () => {
   const after = Math.round(ev[0].sN + 30);
   assert.ok(line.V[after] > 30 / 3.6 + 0.5 || line.V[after] === 13.9, 'after the turn the street’s own limit: ' + line.V[after]);
 });
+
+test('stage 2b: the lights – a junction cycle of two groups, a crossing on request, who stops at yellow', () => {
+  // the junction: group A green 1–25 s, B green 30–44 s; never both green, red-yellow before green, all red between
+  const seen = new Set();
+  for (let t = 0; t < 50; t += 0.25) {
+    const p = R2.phaseK(t);
+    assert.ok(!(p.A === 'gruen' && p.B !== 'rot') && !(p.B === 'gruen' && p.A !== 'rot'), `t ${t}: ${p.A} ${p.B}`);
+    seen.add(p.A + '/' + p.B);
+  }
+  assert.equal(R2.phaseK(10).A, 'gruen');
+  assert.equal(R2.phaseK(10).B, 'rot');
+  assert.equal(R2.phaseK(35).B, 'gruen');
+  assert.equal(R2.phaseK(26).A, 'gelb');
+  assert.equal(R2.phaseK(0.5).A, 'rotgelb');
+  assert.equal(R2.phaseK(29.5).B, 'rotgelb');
+  assert.ok(seen.has('rot/rot'), 'all red between the groups');
+  assert.equal(R2.phaseK(60).A, R2.phaseK(10).A, 'the cycle repeats');
+  // the crossing: green until pressed (and at least 20 s), then yellow 3, red 12 (walkers green inside), red-yellow 1, green
+  const st = { ph: 'gruen', t: 0, req: false },
+    log = [];
+  for (let t = 0; t < 60; t += 0.5) {
+    R2.crossStep(st, 0.5, t === 5);
+    log.push([t, st.ph, R2.walkGreen(st)]);
+  }
+  const at = ph => log.find(q => q[1] === ph);
+  assert.ok(at('gelb')[0] >= 19 && at('gelb')[0] <= 21, 'yellow after 20 s of green: ' + at('gelb')[0]);
+  assert.ok(at('rot')[0] - at('gelb')[0] >= 2.9 && at('rot')[0] - at('gelb')[0] <= 3.6);
+  assert.ok(log.some(q => q[2]) && log.filter(q => q[2]).every(q => q[1] === 'rot'), 'walkers green only while the cars have red');
+  assert.equal(log[log.length - 1][1], 'gruen', 'back to green');
+  // at the line: red stops, yellow stops whoever can (36 km/h: 10 m/s needs ~17 m), too close goes on
+  assert.ok(R2.atLight('rot', 20, 10));
+  assert.ok(R2.atLight('rotgelb', 5, 0));
+  assert.ok(R2.atLight('gelb', 40, 10));
+  assert.ok(!R2.atLight('gelb', 8, 10));
+  assert.ok(!R2.atLight('gruen', 5, 10));
+});

@@ -3,7 +3,7 @@
 # road, weekday and hour (verkehr/vk_dichte.js), the flow on every road round the observer (verkehr/vk_strom.js), the top view.
 # Pictures in out/verkehr_real/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 8962 --serve verkehr_real      (or: python3 viz3/test/verkehr_real.py 8962 bau,bild)
-# Sections (second argument, comma-separated): bau,bild,nacht,lod,zug,leih,dichte,strom,regeln,oben,perf
+# Sections (second argument, comma-separated): bau,bild,nacht,lod,zug,leih,dichte,strom,regeln,ampel,oben,perf
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
@@ -215,7 +215,7 @@ with lib.browser() as b:
             if real:
                 time.sleep(real)
 
-    if want('strom') or want('dichte') or want('regeln') or want('oben') or want('perf'):
+    if want('strom') or want('dichte') or want('regeln') or want('ampel') or want('oben') or want('perf'):
         E(pg, "for (const t of Object.keys(VKTYPEN.TYP)) VKMOD.need(t, 1)")
         for k in range(200):
             E(pg, "GAME.step(0.05)")
@@ -308,7 +308,7 @@ with lib.browser() as b:
                 const L = c.line; let bi = 0, bd = 1e9;
                 for (let i = 0; i < L.n; i++) { const d = Math.hypot(L.X[i] - x, L.Y[i] - y); if (d < bd) { bd = d; bi = i; } }
                 const mx = (a, b) => { let m = 0; for (let i = Math.max(0, a); i < Math.min(L.n, b); i++) m = Math.max(m, L.V[i]); return m; };
-                const out = { lim: L.lim, i: bi, d: Math.round(bd * 10) / 10, before: Math.round(mx(bi - 80, bi - 8) * 36) / 10, after: Math.round(mx(bi + 8, bi + 90) * 36) / 10, kind: e.kind, style: e.style, n: L.n };
+                const out = { lim: L.lim, i: bi, d: Math.round(bd * 10) / 10, before: Math.round(mx(bi - 80, bi - 8) * 36) / 10, after: Math.round(mx(bi + 8, bi + 90) * 36) / 10, kind: e.kind, style: e.style, ev: Math.round(e.v * 36) / 10, n: L.n };
                 c.st = 'weg'; VAUTO.remove(c); return out; },
               // step the world, record each car's way to the node
               run(ids, ni, secs) { const G = VKSTROM.G, N = G.nodes[ni], cars = ids.map(i => VAUTO.cars.find(c => c.id === i)), rec = cars.map(() => []);
@@ -383,15 +383,67 @@ with lib.browser() as b:
                         ck('right before left: the one from the right goes first', tb < ta and ta < 99, f"A {ta} s, B {tb} s")
                 else:
                     ck('right before left: two approaches at a right angle', False, json.dumps(jr))
-            # a limit by sign: the 50 on the road at the west edge of the square (274-50 of strassen/, read northwards there)
-            E(pg, "VERKEHR.clear(); GAME.view(-1000, 250, KERN.ground(-1000, 250) + 1.7, 340, -10)")
+            # a limit by sign: the 60 on the county road north-east of the village (274-60 of strassen/ at (469, -194), read northwards)
+            E(pg, "VERKEHR.clear(); GAME.view(450, -240, KERN.ground(450, -240) + 1.7, 0, -10)")
             run_flow(3, 0.02)
-            lm = J(pg, "__rg.limit(-1027, 310, 342)")
-            print('limit 50', json.dumps(lm), flush=True)
-            ck('a speed limit by sign: after the 50 at most 50 km/h, before it more', lm and lm['lim'] >= 1 and lm['after'] <= 50.5 and lm['before'] > 55, json.dumps(lm))
+            lm = J(pg, "__rg.limit(469, -194, 357)")
+            print('limit 60', json.dumps(lm), flush=True)
+            ck('a speed limit by sign: after the 60 at most 60 km/h, below the road’s own', lm and lm['lim'] >= 1 and lm['after'] <= 60.5 and (lm['ev'] <= 60 or lm['after'] < lm['ev']), json.dumps(lm))
             E(pg, "VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
         except Exception as ex:
             ck('section ran: regeln', False, repr(ex)[:400])
+
+    if want('ampel'):
+        # stage 2b: the traffic lights of OpenStreetMap in Schleusingen – the junction light built near the observer (a pole on every
+        # approach), the phases of its two groups; a car on a red approach waits at its line until green, then goes; the walkers' crossing
+        # switches when someone presses; the top view shows the lights
+        try:
+            E(pg, "__vr.clear(); VERKEHR.force({ peds: 0, cars: 0 }); VERKEHR.clear(); VERKEHR.autoOn(true); VKSTROM.force = { n: 0 }")
+            at_day((2026, 11, 13), 11)
+            lib.settle_light(pg)
+            if not E(pg, "!!window.__rg"):
+                raise RuntimeError('needs the section regeln first (its helpers)')
+            E(pg, "GAME.view(-1034, 1630, KERN.ground(-1034, 1630) + 1.7, 0, -8)")
+            run_flow(4, 0.05)
+            lt = J(pg, "VKAMPEL.lights.map(L => ({ id: L.id, kind: L.kind, built: !!L.g, failed: !!L.failed, axis: L.axis, parts: L.g ? L.g.children.length : 0, lamps: L.mat ? Object.keys(L.mat).sort() : [] }))")
+            print('lights', json.dumps(lt), flush=True)
+            k = next((l for l in lt if l['kind'] == 'k'), None)
+            ck('the junction light in Schleusingen is built near the observer (poles, heads, lamps per group)', k and k['built'] and {'Ar', 'Ay', 'Ag', 'Br', 'By', 'Bg'} <= set(k['lamps']), json.dumps(k))
+            # the phases over one cycle: both groups see green, never at once
+            ph = J(pg, "(() => { const L = VKAMPEL.lights.find(q => q.kind === 'k'), out = []; for (let t = 0; t < 50; t += 1) { const p = VKREGELN.phaseK(t + L.off); out.push(p.A[0] + p.B[0]); } return out; })()")
+            ck('its two groups take turns (green for each, never both)', any(p[0] == 'g' for p in ph) and any(p[1] == 'g' for p in ph) and not any(p == 'gg' for p in ph), ''.join(p[0] for p in ph))
+            # a car on a red approach: the light set so that its group has red for the next ~18 s
+            js = J(pg, "__rg.find(-1034, 1677, 18).map(j => ({ ni: j.ni, x: Math.round(j.x), y: Math.round(j.y), app: j.R.app.map(a => [a.e, a.role, Math.round(a.h * 100) / 100, Math.round(VKSTROM.G.edges[a.e].len)]) }))")
+            print('junction at the light', json.dumps(js), flush=True)
+            if js:
+                j = js[0]
+                a0 = max(j['app'], key=lambda a: a[3])
+                out = next(a for a in j['app'] if a is not a0)
+                # the moment: this approach's group red for 18 s (A red 28–49 s of the cycle, B red 0–29 and 47–50)
+                E(pg, f"(() => {{ const L = VKAMPEL.lights.find(q => q.kind === 'k'), g = VKAMPEL.grpOf(L, {a0[2]}); window.__ag = g; VKAMPEL.t = (g === 'A' ? 30 : 5) - L.off; }})()")
+                A = J(pg, f"__rg.put({j['ni']}, {a0[0]}, {out[0]}, 35, 'kompakt')")
+                print('car at the light', json.dumps(A), flush=True)
+                ck('the car’s route knows the light of its approach', A and not A.get('noev'), json.dumps(A))
+                if A and not A.get('noev'):
+                    rec = J(pg, f"(() => {{ const c = VAUTO.cars.find(q => q.id === {A['id']}), L = VKAMPEL.lights.find(q => q.kind === 'k'), out = []; for (let t = 0; t < 32; t += 0.05) {{ GAME.step(0.05); const ev = c.jn && c.jn.find(q => q.ni === {j['ni']}); out.push([+t.toFixed(2), +(c.s + c.D.YF - ev.sStop).toFixed(2), +c.v.toFixed(2), VKAMPEL.state(L, __ag), !!ev.lt, c.st]); }} return out; }})()")
+                    red_cross = [r for r in rec if r[3] in ('rot', 'rotgelb') and r[1] > 0.5 and r[5] != 'weg']
+                    waited = [r for r in rec if r[3] in ('rot', 'rotgelb') and r[2] < 0.3 and r[1] <= 0.3]
+                    went = [r for r in rec if r[3] == 'gruen' and r[1] > 2]
+                    print('at the light', rec[::40], flush=True)
+                    ck('it waits at the line while its light is red', bool(waited) and not red_cross, f"waited {len(waited)} steps, over the line at red {red_cross[:2]}")
+                    ck('and goes at green', bool(went), str(rec[-1]))
+            # the walkers' crossing at the Markt: someone presses – yellow, then red for the cars, the walkers green in between
+            E(pg, "GAME.view(-702, 1400, KERN.ground(-702, 1400) + 1.7, 0, -8)")
+            run_flow(3, 0.05)
+            cr = J(pg, "(() => { const L = VKAMPEL.lights.find(q => q.kind === 'f'); if (!L) return null; L.st.ph = 'gruen'; L.st.t = 25; L.st.req = true; const seq = []; for (let t = 0; t < 22; t += 0.5) { GAME.step(0.5); seq.push(L.st.ph[0] + (VKREGELN.walkGreen(L.st) ? '*' : '')); } return { built: !!L.g, lamps: L.mat ? Object.keys(L.mat).sort() : [], seq: seq.join(' ') }; })()")
+            print('crossing', json.dumps(cr), flush=True)
+            ck('the walkers’ crossing switches on request (yellow, red with the walkers’ green, back to green)', cr and cr['built'] and 'g r' not in cr['seq'] and 'r*' in cr['seq'] and cr['seq'].strip().endswith('g'), json.dumps(cr))
+            # the top view: the lights as dots
+            svg = J(pg, "(() => { const L = STRAT.layer.list().find(l => l.id === 'verkehr'); if (!L) return ''; const pr = (x, y) => [600 + (x + 870) * 0.5, 360 - (y - 1550) * 0.5, 0]; return L.draw(pr, 1200, 720); })()")
+            ck('the top view shows the lights', svg and svg.count('Ampel') >= 2, str(svg.count('Ampel') if svg else None))
+            E(pg, "VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
+        except Exception as ex:
+            ck('section ran: ampel', False, repr(ex)[:400])
 
     if want('dichte'):
         try:
