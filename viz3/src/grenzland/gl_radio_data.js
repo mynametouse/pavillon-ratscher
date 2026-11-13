@@ -73,7 +73,7 @@ export const GLRDATA = (() => {
           'Verkehr: Der Bus nach Schleusingen ist pünktlich abgefahren. Wer ihn verpasst hat: Der nächste fährt. Irgendwann.',
           'Verkehr: Blitzer am Ortseingang. Er wurde gegrüßt, er hat nicht zurückgegrüßt.',
           'Verkehr: Auf der Autobahn bei Schleusingen freie Fahrt. Auf dem Feldweg an der Klinge Gegenverkehr mit Anhänger.',
-          'Verkehr: An der Staumauer parken Mopeds in zweiter Reihe. In erster Reihe steht der Grill.',
+          'Verkehr: Am Staudamm parken Mopeds in zweiter Reihe. In erster Reihe steht der Grill.',
         ],
         werb: [
           'Werbung: Spedition Krähwinkel. Wir fahren, was Sie uns geben. Wir fragen nicht, was drin ist. Krähwinkel – diskret seit gestern.',
@@ -168,7 +168,7 @@ export const GLRDATA = (() => {
         ],
         news: [
           'Meldung für Schrauber: Der Teilemarkt an der Feldscheune findet statt. Gesucht wird wie immer derselbe Vergaser.',
-          'Meldung für Schrauber: Die Moped-Clique trifft sich an der Staumauer. Wer nicht anspringt, wird geschoben.',
+          'Meldung für Schrauber: Die Moped-Clique trifft sich am Staudamm. Wer nicht anspringt, wird geschoben.',
         ],
         werb: [
           'Werbung: Zweirad-Schrauber Kolbe. Kolbenfresser? Kolbe frisst mit. Termine nach Gehör.',
