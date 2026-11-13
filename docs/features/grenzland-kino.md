@@ -70,7 +70,18 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - **Aufstellen**: steht man zu nah (unter 1,3 m) oder zu weit (3,2–9 m) vom Gegenüber, setzt der erste Schnitt einen auf gut zwei Meter
   (das verdeckt der Schnitt, so macht es GTA). Die Partnerin wird nur versetzt, wenn sie weiter als 3,5 m weg ist.
 - **Ego-Sicht**: wer die Ich-Sicht gewählt hat, sieht in der Zwischensequenz seine Figur (die Sicht kommt danach zurück).
+- **Versetzt mitten im Gespräch** (z. B. ein Test mit `GAME.view`): die Zwischensequenz läuft dort weiter (neue Seite, neuer Schnitt), wenn
+  die Leute in 14 m sind; versetzt die Mission selbst (`GLMISSION.hin`), endet sie ohne Rückfahrt.
+- **Wenn der Blick verstellt ist** (die Sichtprüfung kennt nur Wände ohne Höhe, unter der Linde zählen niedrige Dinge mit): erst die
+  anderen Einstellungen, zuletzt das Gesicht aus dem freien Raum zwischen den beiden – nie die Kamera hinter dem Spieler auf einen Satz.
+- **Titel und Abschlussbild warten Bild für Bild**, bis nichts Großes mehr zu sehen ist (auch im Test, wo `GLHUD.ruhig` sofort antwortet);
+  das Abschlussbild wartet danach noch auf `GLHUD.ruhig()`.
+- **Pegel der Musik** (gemessen offline, RMS): `spannung` ≈ 0,035, `flucht` ≈ 0,05, `1989` ≈ 0,05, `szene` ≈ 0,013 (leise unter Stimmen),
+  Stiche 0,03–0,055 – die Radiomusik liegt bei 0,1; die Partitur bleibt also hörbar darunter.
 - **Rennen bekommt `flucht`** (Stufe 2) statt `spannung` – ein Rennen braucht Schlagzeug; der Startcountdown hat `spannung`.
+- **Eigener kleiner Synthesizer statt der Radio-Maschine**: `gl_radio_musik.js` rendert ganze Stücke vorab (24 kHz, Sekunden Rechenzeit je
+  Stück); eine Partitur, die je nach Lage in zwei Sekunden überblendet und mit den Sternen dichter wird, braucht Schichten in Echtzeit –
+  also plant `gl_score.js` die Noten eine Viertelsekunde voraus als WebAudio-Knoten (eine Handvoll je Sekunde).
 - **Kein Score unter freiem Spiel**, auch nicht bei Fahndung ohne Mission (wie GTA: Verfolgungsmusik nur in Missionen).
 - **Stich „bestanden“** spielt `gl_modus.js` (Lead) mit „Mission bestanden“ (statt des Jingles); hier nur `start` und `gescheitert`.
 
@@ -82,6 +93,8 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - Zum Überspringen (Esc) wäre `GLHUD.subAus()` gut (Untertitel sofort weg); bis dahin setze ich `GLHUD.subEl.hidden`.
 - `GLHUD.sub`: meine Sätze kommen in ihrer Taktung (Dauer = erwartete Satzlänge); Leute ersetzen einander sofort – passt so.
 - In `modules.txt` stehen `gl_kamera.js` und `gl_score.js` direkt vor `gl_mission.js`.
+- Beobachtet in den Testbildern: ein Spruch des Grundspiels („Ronald: Ruhe im Stall! Ha ha.“) erscheint mitten im Bild, auch in einer
+  Zwischensequenz – gehört zu „Störendes raus“ (Paket A).
 - `viz3/extra/grenzland-kino/tests.txt` enthält vorübergehend auch `grenzland_mission:m1…m5` (Regressionsnetz, weil die Gespräche aller
   Missionen jetzt Zwischensequenzen sind) – beim Zusammenführen gern wieder auf die drei `grenzland_kino`-Zeilen kürzen.
 
