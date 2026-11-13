@@ -149,7 +149,8 @@ export const MARKEN = {
     name: 'Waffenmuseum im ehemaligen Malzhaus',
     mat: 'fachwerk_og',
     col: '#efe9dc',
-    roof: '#a9472f',
+    roof: '#9b4630',
+    gauben: false, // the long roof without dormers (the photo)
     foto: 'Gebäude Friedrich-König-Straße 19 Waffenmuseum Suhl 2025-04-26 (Strubbl, CC BY-SA 4.0)',
   },
   DETHL57P00006G07: {
