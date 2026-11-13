@@ -161,7 +161,8 @@ def run():
             sheet('hang', names, cols=4)
             print('slope colours', json.dumps(cols), flush=True)
             d = lambda a, c: sum(abs(x - y) for x, y in zip(cols[a], cols[c]))
-            ck('the slopes change colour with the years (overview: today → 2029 red-grey)', d('hang-hoch-heute', 'hang-hoch-allein-2029') > 6, f"{cols['hang-hoch-heute']} → {cols['hang-hoch-allein-2029']}")
+            # (the band under the horizon holds fields too: a few units of the mean are a whole slope turning grey)
+            ck('the slopes change colour with the years (overview: today → 2029 grey, → 2045)', d('hang-hoch-heute', 'hang-hoch-allein-2029') > 4 and d('hang-hoch-heute', 'hang-hoch-allein-2045') > 8, f"{cols['hang-hoch-heute']} → {cols['hang-hoch-allein-2029']} → {cols['hang-hoch-allein-2045']}")
             ck('the slopes change seen from over the village (the regie\'s hang)', d('hang-hang-heute', 'hang-hang-allein-2029') > 4, f"{cols['hang-hang-heute']} → {cols['hang-hang-allein-2029']}")
             ck('the two worlds look different in 2045 (pioneer wood and dead wood against the planted mix)', d('hang-hoch-allein-2045', 'hang-hoch-gewappnet-2045') > 2, f"{cols['hang-hoch-allein-2045']} vs {cols['hang-hoch-gewappnet-2045']}")
 

@@ -55,12 +55,12 @@ export const ZKKIT = (() => {
         polygonOffsetUnits: -6,
       }),
       water: new THREE.MeshStandardMaterial({
-        color: new THREE.Color(0x4f4234),
-        roughness: 0.07,
+        color: new THREE.Color(0x4a3d30),
+        roughness: 0.22,
         metalness: 0,
         transparent: true,
-        opacity: 0.94,
-        envMapIntensity: 0.75,
+        opacity: 0.95,
+        envMapIntensity: 0.4,
       }),
       band: new THREE.MeshBasicMaterial({
         vertexColors: true,

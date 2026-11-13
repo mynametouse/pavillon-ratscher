@@ -79,11 +79,19 @@ das Martinshorn der Feuerwehr (a¹–d², ~440/585 Hz, in Stößen), Pumpen am M
 Die Vögel des Spiels werden mit dem Totholz leiser (ihr Wetterfaktor wird skaliert, solange die Zeitreise klingt). Freie Aufnahmen mit
 Lizenzangaben können eine Schicht später ersetzen (wie `wetter/wx_ton.js`).
 
+## Aufnahmen der Regie (eine Welt nach der anderen)
+
+An der Klinge zeigt die Regie im geteilten Bild zwei Aufnahmen nacheinander, jede mit einer Welt auf dem ganzen Bild: `set(dieseWelt, null)`.
+Der Familienwald folgt dann dieser Welt (die erste Fassung tönt ihre Bäume neu, einmal je Wechsel), der Ton spielt ihre Mischung
+(`sound(st, null, 'R')` gibt die Mischung dieser einen Welt), Stichworte zählen für die gezeigte Welt und beginnen bei einem Wechsel neu.
+
 ## Kosten
 
-Programme nur in `warm()` (Bausatz: sechs Materialien; Hänge: zwei gepatchte statt der zwei alten), `set()` und geteiltes Bild +0. Je Ding
-ein bis drei Draw-Calls; Neubau nur, wenn sich die Beschreibung eines Dings ändert (Anteile gerundet), Bewegung (Rotor, Blaulicht, Wasser,
-Milan, Laster) im Takt. Nichts lädt oder übersetzt, solange die Zeitreise aus ist.
+Programme nur in `warm()`: gemessen 167 → 178 (+11: Bausatz sechs Materialien, die Kopie des Kartenmaterials, das gepatchte Gelände, die
+der ersten Fassung), danach +0 bei `set()`, Orten, Nächten, geteiltem Bild. Je Ding ein bis drei Draw-Calls (mit Windrad und Dorf im Bild 2
+eigene); Neubau nur, wenn sich die Beschreibung eines Dings ändert (Anteile gerundet); der Familienwald höchstens zweimal je Jahr des
+Zeitraffers, die Stubben und Jungbäume der Käferfläche nur, solange die Kamera näher als 600 m ist (beim Herankommen nachgeholt);
+Bewegung (Rotor, Blaulicht, Wasser, Milan, Laster) im Takt. Nichts lädt oder übersetzt, solange die Zeitreise aus ist.
 
 ## Blicke auf die Hänge (für die Regie, Geländesicht geprüft)
 
