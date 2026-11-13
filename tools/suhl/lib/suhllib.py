@@ -66,15 +66,15 @@ PROBE_JSON = os.path.join(HERE, 'probe.json')
 
 # the products of plan 2.4. 'tiles': sub folder -> (levels, extension); '' = the tiles lie directly in the version folder.
 PRODUCTS = {
-    'boden': {'title': 'Gelände und Luftbild', 'owner': 'suhl-boden', 'index': 'meta.json',
+    'boden': {'title': 'Gelände und Luftbild', 'owner': 'suhl-boden', 'index': 'index.json',     # plus meta.json in the layout WELT reads
               'tiles': {'t': ((6, 12), 'bin'), 'i': ((6, 12), 'webp')}},
     'g': {'title': 'Gebäude', 'owner': 'suhl-gebaeude', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     'da': {'title': 'Dach-Atlas', 'owner': 'suhl-dach (Stufe 3)', 'index': 'index.json', 'tiles': {'': ((10, 10), 'webp')}},
     's': {'title': 'Straßenraum', 'owner': 'suhl-strassen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     'b': {'title': 'Bäume', 'owner': 'suhl-gruen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'bin')}},
-    'm': {'title': 'Möbel der Straße', 'owner': 'suhl-gruen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
+    'm': {'title': 'Möbel der Straße', 'owner': 'suhl-strassen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     'f': {'title': 'Fernmodell', 'owner': 'suhl-fern', 'index': 'index.json', 'tiles': {'': ((8, 8), 'bin')}},
-    'd': {'title': 'Szenario-Zahlen', 'owner': 'suhl-daten', 'index': 'index.json', 'tiles': {}},
+    'd': {'title': 'Szenario-Zahlen', 'owner': 'suhl-daten', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     '_probe': {'title': 'Probe des Veröffentlichens', 'owner': 'suhl-daten', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
 }
 
