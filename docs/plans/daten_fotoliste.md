@@ -1,7 +1,7 @@
 # Fotoliste für Falko – was offene Quellen nicht zeigen
 
 Stand 13.11.2026 (Hilfs-Agent `daten-katalog`). Grundlage: Panoramax kennt nur eine Fahrt (03.10.2025) südlich an Schleusingen vorbei – in der Stadt
-selbst **kein Bild**, im Dorf Ratscher 92 Bilder von der Durchgangsstraße, in Kloster Veßra 100 (`tools/daten/out/panoramax.csv`). Mapillary: noch nicht
+selbst **kein Bild**, im Dorf Ratscher 92 Bilder von der Durchgangsstraße, in Kloster Veßra 100 (`tools/daten/ergebnis/panoramax.csv`). Mapillary: noch nicht
 abgefragt (wartet auf den Schlüssel, `docs/plans/daten_katalog.md`). Wikimedia Commons deckt Markt, Rathaus, Burg ab (Schleusingen-Chat, 23.10.).
 
 **So fotografieren (iPhone, kurz):** quer, 10–20 m Abstand, Kamera auf Brusthöhe, jede Ansicht **zwei Bilder** (Übersicht + Tür nah).

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Seeds for Falko's defects table (maengel_start.csv): places and doors the data shows that the world lacks or has wrong.
-Sources: tools/daten/out/*.csv (OSM, 13.11.2026), Falko's own list (16:42), the Zensus 2022 grid. Run: python3 -I tools/daten/maengel_start.py
+Sources: tools/daten/ergebnis/*.csv (OSM, 13.11.2026), Falko's own list (16:42), the Zensus 2022 grid. Run: python3 -I tools/daten/maengel_start.py
 Columns: Ort; Stelle; Was fehlt oder falsch; Kategorie; Wie es wirklich ist / Quelle; Priorität (1 = zuerst). 'Status' stays empty for Falko."""
 import csv, os
 HERE = os.path.dirname(os.path.abspath(__file__))

@@ -4,7 +4,7 @@ Stand 13.11.2026 (Hilfs-Agent `daten-katalog`). Falko (13.11. 16:42): wo visuell
 Gebäudekonstrukte“ bauen – bei einem Wohnhaus mit Innenhof „muss es natürlich einen Zugang zu diesem Innenhof geben“. Echte Namen nur als
 **schlichter Schriftzug**, nie Logo, Farbwelt oder Schriftart einer Marke (Falko 16:50).
 
-**Wie man die Zahlen liest:** „OSM“ = am 13.11.2026 aus dem Gebäudeumriss in OpenStreetMap gemessen (`tools/daten/out/pois.csv`), gilt für genau diesen
+**Wie man die Zahlen liest:** „OSM“ = am 13.11.2026 aus dem Gebäudeumriss in OpenStreetMap gemessen (`tools/daten/ergebnis/pois.csv`), gilt für genau diesen
 Ort. „Faustwert“ = gängige Größe dieses Typs aus allgemeinem Wissen (Bauordnung, Branchenüblichkeit), **nicht** für den einzelnen Ort geprüft –
 zum Ausfüllen, solange kein Foto da ist; ein Foto oder ein Maß aus ETHOS.BUILDA geht vor.
 
@@ -84,4 +84,4 @@ Größen mit **OSM** sind gemessen, alle anderen Faustwerte. „Etagen“ zählt
 4. **Kein Durchgang unter einem Haus**, der schmaler als 1,2 m oder niedriger als 2,2 m ist.
 5. Jedes Gebäude mit Anlieferung hat auf der Rückseite weder Haupteingang noch Parkplatz.
 
-Daten dazu: `tools/daten/out/pois.csv`, `entrances.csv`, `passages.csv`, `hofzugaenge.csv`, `gebaeude.csv`.
+Daten dazu: `tools/daten/ergebnis/pois.csv`, `entrances.csv`, `passages.csv`, `hofzugaenge.csv`, `gebaeude.csv`.

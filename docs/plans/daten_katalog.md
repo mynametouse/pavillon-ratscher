@@ -79,7 +79,7 @@ Das Suhl-Datenhaus (`tools/suhl`, öffentliches Datenrepo `mynametouse/pavillon-
 | ETHOS.BUILDA | Grundriss + Höhe aller Gebäude | Europa | siehe Welt-Chat | schon in `tools/welt` | – | – | – | **läuft schon** | – | ✔ |
 | ALKIS „Hausumringe“ (ohne Flurstücke) | amtliche Gebäudegrundrisse, Hauskoordinaten mit Hausnummern | Thüringen | CC BY 4.0 (offene Geobasisdaten) | im Download-Portal; ATOM-Namen geraten, Probe im Workflow | Shape/GML | laufend | ✘ wie LoD2, ○ ATOM | **Hausnummern für Ratscher** (OSM hat keine) – Flurstücke nie übernehmen | 2 | ○ |
 | Denkmalliste Landkreis Hildburghausen | Kulturdenkmale je Ort | Landkreis | amtlich (TLDA); Wikipedia-Listen „Liste der Kulturdenkmale in …“ CC BY-SA | `https://de.wikipedia.org/wiki/Liste_der_Kulturdenkmale_in_Schleusingen` (Seitenname nicht geprüft, 429), OSM-Tag `heritage` | Text, Tabellen | uneinheitlich | hier (langsam) | Wahrzeichen, Beschriftungen | 3 | ○ |
-| OSM-Gebäudetags | Etagen, Dachform, Höhe, Material, Baujahr, Farbe | Welt | ODbL | wie OSM oben, `tools/daten/out/gebaeude.csv` | CSV 179 KB | laufend | hier | wo vorhanden: Etagen und Dachform | 2 | ✔ (dünn: siehe unten) |
+| OSM-Gebäudetags | Etagen, Dachform, Höhe, Material, Baujahr, Farbe | Welt | ODbL | wie OSM oben, `tools/daten/ergebnis/gebaeude.csv` | CSV 179 KB | laufend | hier | wo vorhanden: Etagen und Dachform | 2 | ✔ (dünn: siehe unten) |
 | Bildquellen für Aussehen | Wikimedia Commons, Panoramax, Mapillary, eigene Fotos | – | je Bild | oben | – | – | – | Farben, Material, Eingänge | 1 | ✔ |
 
 ## 4. Verkehr
@@ -104,7 +104,7 @@ Das Suhl-Datenhaus (`tools/suhl`, öffentliches Datenrepo `mynametouse/pavillon-
 | Deutsche Fotothek / Deutsche Digitale Bibliothek | historische Fotos, Luftbilder | Deutschland | je Bild | `https://www.deutschefotothek.de/` (antwortet ✔), DDB-API nur mit Schlüssel | hier | Zeitreise: Fotos von Orten | 3 | ✔ Seite, ○ Treffer |
 | Bundesarchiv auf Commons | Fotos der DDR-Zeit (CC BY-SA 3.0 de) | Deutschland | CC BY-SA 3.0 de, „Bundesarchiv, Bild …“ | Commons-Kategorien | hier (Commons) | Grenzland, DDR-Szenen | 3 | ○ |
 
-## Was ich geholt habe (`tools/daten/out/`)
+## Was ich geholt habe (`tools/daten/ergebnis/`)
 
 | Datei | Inhalt | Umfang | Skript |
 |---|---|---|---|
