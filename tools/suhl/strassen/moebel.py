@@ -66,7 +66,7 @@ def main():
         F['ways'] = F['ways'] + [w[:4] + [w[4] + off, w[5] + off, w[6]] for w in X['ways']]
         F['hw'] = F['hw'] + [hm[i] for i in X['hw']]
     idx = json.load(open(os.path.join(a.out, L.index_path('s', 0)), encoding='utf-8'))
-    T = [tuple(t) for t in L.tileset_decode(idx['tiles'][str(S.LEVEL)])]
+    T = S.index_tiles(idx)
     Tset = set(T)
     tb = [L.tbounds(S.LEVEL, x, y) for x, y in T]
     core = (min(b[0] for b in tb), min(b[1] for b in tb), max(b[2] for b in tb), max(b[3] for b in tb))
@@ -220,7 +220,8 @@ def main():
         E, Nn = S.m2u(x, y)
         return tuple(L.tile_at(S.LEVEL, float(E), float(Nn)))
     tiles = {t: collections.defaultdict(list) for t in T}
-    orig = {t: tuple(int(round(v * 10)) for v in L.tile_frame(S.LEVEL, *t).o) for t in T}
+    # absolute model dm, as strassen/ausstattung.json: a tile can go into STRDAT.add of feat/strassen as it is
+    orig = {t: (0, 0) for t in T}
     cnt = collections.Counter()
     dm = lambda v: int(round(v * 10))
 
@@ -281,18 +282,54 @@ def main():
         'querungen': '[type (0 ohne Markierung, 1 markiert, 2 Zebrastreifen, 3 Ampel), x, y, az of the road, half width, tactile, island, osm node]',
         'halte': '[x, y, az, name, shelter, bench, name in the timetable (1), IFOPT, osm node]',
         'namen': '[x, y, name 1, az 1, name 2, az 2]',
-        'note': 'x, y in dm relative to o (model axes); az in degrees clockwise from north; no heights – things stand on the ground of the moment',
+        'note': 'x, y: absolute model coordinates in whole decimetres, as in strassen/ausstattung.json; az in degrees clockwise from north; no heights – things stand on the ground of the moment',
     }
     root = os.path.join(a.out, L.product_dir('m', VERSION))
     nb = 0
     for t in T:
         fr = L.tile_frame(S.LEVEL, *t)
-        doc = {'v': VERSION, 'schema': L.SCHEMA, 'product': 'm', 'key': fr.key, 'o': fr.o_json()}
         d = tiles[t]
-        doc['pfosten'] = [v for r in d.get('pfosten', []) for v in r]
-        doc['lampen'] = [v for r in d.get('lampen', []) for v in r]
+        # x_strdat: the lists of strassen/ausstattung.json (absolute model dm) – what STRDAT.add of feat/strassen takes;
+        # items: the same things in the common layout of the contract (docs/features/suhl-daten.md: tile-local model metres)
+        sd = {'unit': 'dm', 'pfosten': [v for r in d.get('pfosten', []) for v in r], 'lampen': [v for r in d.get('lampen', []) for v in r]}
         for k_ in ('planken', 'schilder', 'linien', 'masten', 'ampeln', 'querungen', 'halte', 'namen'):
-            doc[k_] = d.get(k_, [])
+            sd[k_] = d.get(k_, [])
+        ox, oy = fr.o
+        lx = lambda v: round(v / 10 - ox, 1)
+        ly = lambda v: round(v / 10 - oy, 1)
+        items = []
+        for r in d.get('pfosten', []):
+            items.append({'t': 'leitpfosten', 'x': lx(r[0]), 'y': ly(r[1]), 'az': r[2] % 360})
+        for r in d.get('planken', []):
+            items.append({'t': 'leitplanke', 'x': lx(r[1]), 'y': ly(r[2]), 'k': r[0], 'pts': [f(v) for k in range(1, len(r), 2) for f, v in ((lx, r[k]), (ly, r[k + 1]))]})
+        for r in d.get('schilder', []):
+            it = {'t': 'schild', 'x': lx(r[1]), 'y': ly(r[2]), 'az': r[3] % 360, 'k': r[0]}
+            if len(r) > 4:
+                it['n'] = r[4]
+            items.append(it)
+        for r in d.get('lampen', []):
+            items.append({'t': 'laterne', 'x': lx(r[0]), 'y': ly(r[1]), 'az': r[2] % 360, 'k': r[3]})
+        for r in d.get('linien', []):
+            items.append({'t': 'sonst', 'k': 'linie ' + r[0], 'x': lx(r[1]), 'y': ly(r[2]), 'az': r[3] % 360, 'w': round(r[4] / 5, 1)})
+        for r in d.get('masten', []):
+            items.append({'t': 'mast', 'x': lx(r[0]), 'y': ly(r[1]), 'az': r[3] % 360, 'k': r[2]})
+        for r in d.get('ampeln', []):
+            ms = r[5]
+            if not ms:
+                items.append({'t': 'ampel', 'x': lx(r[1]), 'y': ly(r[2]), 'k': 'knoten ' + ('fuss' if r[0] else 'kfz'), 'osm': 'node/%d' % r[4]})
+            for k in range(0, len(ms), 3):
+                items.append({'t': 'ampel', 'x': lx(ms[k]), 'y': ly(ms[k + 1]), 'az': ms[k + 2] % 360, 'k': 'fuss' if r[0] else 'kfz', 'osm': 'node/%d' % r[4]})
+        for r in d.get('querungen', []):
+            items.append({'t': 'ueberweg', 'x': lx(r[1]), 'y': ly(r[2]), 'az': r[3] % 360, 'w': round(r[4] / 5, 1),
+                          'k': ['ohne Markierung', 'markiert', 'zebra', 'ampel'][r[0]], 'osm': 'node/%d' % r[7]})
+        for r in d.get('halte', []):
+            items.append({'t': 'haltestelle', 'x': lx(r[0]), 'y': ly(r[1]), 'az': r[2] % 360, 'n': r[3], 'osm': 'node/%d' % r[8]})
+            if r[4]:
+                items.append({'t': 'wartehalle', 'x': lx(r[0]), 'y': ly(r[1]), 'az': r[2] % 360})
+        for r in d.get('namen', []):
+            items.append({'t': 'strassenschild', 'x': lx(r[0]), 'y': ly(r[1]), 'az': r[3] % 360, 'n': r[2]})
+            items.append({'t': 'strassenschild', 'x': lx(r[0]), 'y': ly(r[1]), 'az': r[5] % 360, 'n': r[4]})
+        doc = {'v': L.SCHEMA, 'p': 'm', 'key': fr.key, 'o': fr.o_json(), 'made': made, 'items': items, 'x_strdat': sd}
         nb += S.write_json(os.path.join(a.out, L.tile_path('m', VERSION, S.LEVEL, *t)), doc)
     numbers = {'made': made, 'tiles': len(T), 'counts': dict(cnt), 'lamps_osm_in_box': n_osm,
                'signs_by_code': dict(collections.Counter(s[0].split('-')[0] for s in Sg)),
@@ -303,10 +340,13 @@ def main():
                'guard_rail_m': round(sum(sum(math.dist(p, q) for p, q in zip(r, r[1:])) for tw, r in rails) * S.MSCALE),
                'places': [(p['n'], p['k']) for p in places], 'bytes_tiles': nb,
                'tool': 'viz3/extra/strassen/daten.py of feat/strassen, unchanged: guard_rails, delineators, signs, lamps, power'}
-    index = {'v': VERSION, 'schema': L.SCHEMA, 'product': 'm', 'title': 'Möbel der Straße Suhl', 'made': made, 'level': S.LEVEL,
+    index = {'v': L.SCHEMA, 'p': 'm', 'version': VERSION, 'area': idx.get('area', 'stadt'), 'title': 'Möbel der Straße Suhl', 'made': made, 'level': S.LEVEL,
+             'unit': 'items: tile-local model metres (contract); x_strdat: absolute model coordinates in whole decimetres (as strassen/ausstattung.json)',
              'tiles': {str(S.LEVEL): L.tileset_encode(T)}, 'attribution': ATTR, 'sources': {'osm': o.source, 'osm_stamp': o.stamp},
              'fields': fields, 'numbers': numbers}
     S.write_json(os.path.join(a.out, L.index_path('m', VERSION)), index)
+    S.common_index(os.path.join(a.out, L.product_dir('m', VERSION)), idx.get('area', 'stadt'), ['osm', 'gtfs', 'regel'],
+                   'Möbel der Straße: Werkzeug des Straßen-Chats (viz3/extra/strassen/daten.py) und Ampeln, Querungen, Haltestellen, Straßennamen aus OSM')
     one = {'v': 1, 'made': made[:10],
            'note': 'Suhl: built-up areas and road furniture in the format of strassen/ausstattung.json (feat/strassen), model metres × 10; '
                    'headings in degrees clockwise from north; ampeln, querungen, halte, namen are Suhl\'s additions',

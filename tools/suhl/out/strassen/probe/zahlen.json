@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:18:15Z",
+ "made": "2026-11-13T01:28:04Z",
  "gebiet": "probe",
  "tiles": 11,
  "osm": "OSM API 0.6 map calls (2 boxes, cached by stage 1)",
@@ -396,6 +396,6 @@
   "own_sampling_share": 0.1154,
   "zaehlt": true
  },
- "bytes_tiles": 226174,
+ "bytes_tiles": 315592,
  "bytes_drive": 277413
 }

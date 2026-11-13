@@ -129,6 +129,13 @@ jobs:
           if [ -f tools/suhl/strassen/pruefen.py ]; then
             python -I -u tools/suhl/strassen/pruefen.py --opl "$SUHL_RAW/geofabrik/suhl-strassen.opl.gz" --out "$OUT" 2>&1 | tee logs/pruefen.log
           else echo "pruefen.py fehlt noch – übersprungen" | tee logs/pruefen.log; fi
+      - name: Gegen den gemeinsamen Vertrag prüfen (tools/suhl/lib/validate.py von suhl-daten)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          if [ -f tools/suhl/lib/validate.py ]; then
+            python -I tools/suhl/lib/validate.py "$OUT" --quiet --json "$OUT/vertrag.json" 2>&1 | tail -15 | tee logs/vertrag.log || true
+          else echo "validate.py fehlt – übersprungen" | tee logs/vertrag.log; fi
       - name: Veröffentlichen ins Daten-Repo (nur mit DATEN_TOKEN und der Aktion von suhl-daten)
         continue-on-error: true
         env:

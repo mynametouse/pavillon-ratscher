@@ -40,7 +40,9 @@ RAIL_FIELDS = ['type (0 in Betrieb, 1 stillgelegt)', 'fl', 'name', 'xyz_dm', 'os
 RAILPT_FIELDS = ['type (0 Bahnhof, 1 Haltepunkt, 2 Bahnübergang, 3 Fußgänger-Übergang)', 'x_dm', 'y_dm', 'z_dm', 'name', 'osm_node']
 WATER_FIELDS = ['type', 'fl (2 verrohrt oder überdeckt)', 'width_dm', 'name', 'xyz_dm', 'osm_way', 's0_dm']
 WAREA_FIELDS = ['kind', 'name', 'osm', 'home', 'z_dm', 'xy_dm', 'holes']
-AREA_FIELDS = ['type', 'surf', 'fl', 'name', 'osm', 'home', 'q', 'xyz_dm', 'holes']
+AREA_FIELDS = {'k': 'type', 'surf': 'surface index', 'fl': 'flags', 'n': 'name index', 'osm': 'OSM id', 'home': '1 in the tile of its reference point', 'q': '1 plane through solved way nodes, 0 from the terrain',
+               'z': 'mean height dm', 'f': 'outline x, y dm', 'fz': 'height of every vertex dm', 'h': 'holes x, y', 'hz': 'their heights',
+               'x_areas': '[surface, flags, name, [x, y, z, …], [holes]] – the layout the road map takes'}
 
 
 def tile_set(gebiet):
@@ -267,21 +269,19 @@ def main():
             hid[s] = len(hws)
             hws.append(s)
         return hid[s]
-    tiles = {t: {'ways': [], 'areas': [], 'rail': [], 'railpts': [], 'water': [], 'wareas': [], 'm': collections.Counter()} for t in T}
+    tiles = {t: {'ways': [], 'areas': [], 'x_areas': [], 'rail': [], 'railpts': [], 'water': [], 'wareas': [], 'm': collections.Counter()} for t in T}
     f_rail, f_water, f_wareas, f_railpts = [], [], [], []
     km_rail, km_water = collections.Counter(), collections.Counter()
-    fw, f_lanes, f_ids, f_hw, f_ms, f_s0, f_kor = [], [], [], [], [], [], []
+    fw, f_lanes, f_ids, f_hw, f_ms, f_s0, f_kor, f_grund = [], [], [], [], [], [], [], []
     km_kor = collections.Counter()
+    km_kor_g = collections.Counter()
     bridges, tunnels = [], []
     km_kind, km_hw, n_kind = collections.Counter(), collections.Counter(), collections.Counter()
     npts = 0
     def local(pts, key):
-        fr = L.tile_frame(S.LEVEL, *key)
-        ox, oy = int(round(fr.o[0] * 10)), int(round(fr.o[1] * 10))
-        q = []
-        for p in pts:
-            q += [int(round(p[0] * 10)) - ox, int(round(p[1] * 10)) - oy, int(round(p[2] * 10))]
-        return q
+        """the points of a piece as the tile holds them: ABSOLUTE model coordinates in whole decimetres, as in fahrt/strassen.json
+        (contract of suhl-daten for the product s; the road code of the region reads a tile as it is)"""
+        return [int(round(v * 10)) for p in pts for v in p]
 
     def runs(U, P):
         """the pieces of a line per tile of the run, and the uncut runs inside the tile set -> [(key, pts, s0)], [(pts, s0)]"""
@@ -334,13 +334,30 @@ def main():
         rf = name_i(w['ref'])
         inside_m = 0.0
         pc, rn = runs(U, P)
+        rn = [(r_, s_, None) for r_, s_ in rn]
+        if w.get('korridor'):
+            # the approach: a run ends where the ground changes hands – on the ground tiles of suhl-boden the road is cut into the
+            # terrain there (no carving at run time), beyond them the drive code carves as in the rest of the region
+            rn, cur = [], None
+            for key, pts, s0 in pc:
+                g = 1 if dem.tiles is not None and (S.LEVEL, key[0], key[1]) in dem.tiles.have else 0
+                if cur is not None and cur[2] == g and abs(cur[3] - s0) < 0.5:
+                    cur[0] += [tuple(q) for q in pts[1:]]
+                else:
+                    if cur is not None:
+                        rn.append((np.array(cur[0]), cur[1], cur[2]))
+                    cur = [[tuple(q) for q in pts], s0, g, s0]
+                cur[3] = s0 + S.way_len(pts)
+            if cur is not None:
+                rn.append((np.array(cur[0]), cur[1], cur[2]))
         for key, pts, s0 in pc:
             Lp = S.way_len(pts)
             tiles[key]['ways'].append([k_i, s_i, w10, w['fl'], nm, rf, local(pts, key), w['id'], int(round(s0 * 10)), w['lanes'], hw_i(w['hw']), w['ms'], style])
             tiles[key]['m'][w['kout']] += Lp * S.MSCALE
             npts += len(pts)
             inside_m += Lp * S.MSCALE
-        for run, run_s0 in rn:
+        for run, run_s0, run_g in rn:
+            f_grund.append(run_g)
             fw.append([k_i, s_i, w10, w['fl'], nm, rf, [int(round(v * 10)) for p in run for v in p]])
             f_lanes.append(w['lanes'])
             f_ids.append(w['id'])
@@ -351,6 +368,7 @@ def main():
             Lr = S.way_len(run)
             if w.get('korridor'):
                 km_kor[w['kout']] += Lr * S.MSCALE / 1000
+                km_kor_g[run_g] += Lr * S.MSCALE / 1000
             if w['fl'] & 1 and Lr > 8:
                 bridges.append({'way': w['id'], 'name': w['bname'] or w['name'], 'ref': w['ref'], 'kind': w['kout'], 'm': round(Lr * S.MSCALE),
                                 'z': round(float(run[:, 2].mean()), 1), 'i': len(fw) - 1})
@@ -378,9 +396,7 @@ def main():
         z = float(h[k]) if d < 1.0 else float(dem.sample([E], [N])[0])
         x, y = S.u2m(E, N)
         nm = name_i(t.get('name', ''))
-        fr = L.tile_frame(S.LEVEL, *key)
-        tiles[key]['railpts'].append([rt, int(round(float(x) * 10)) - int(round(fr.o[0] * 10)), int(round(float(y) * 10)) - int(round(fr.o[1] * 10)),
-                                      int(round((z - S.H0) * 10)), nm, i])
+        tiles[key]['railpts'].append([rt, int(round(float(x) * 10)), int(round(float(y) * 10)), int(round((z - S.H0) * 10)), nm, i])
         f_railpts.append([rt, int(round(float(x) * 10)), int(round(float(y) * 10)), int(round((z - S.H0) * 10)), nm, i])
         n_rpt[['Bahnhof', 'Haltepunkt', 'Bahnübergang', 'Fußgänger-Übergang'][rt]] += 1
     # ---------------- water: lines downhill, ponds level ----------------
@@ -419,8 +435,7 @@ def main():
         f_wareas.append([wa['kind'], nm, wa['id'], zd, model_ring(ext), [model_ring(r) for r in holes]])
         wa_m2 += pg.area
         for t in touching:
-            fr = L.tile_frame(S.LEVEL, *t)
-            tiles[t]['wareas'].append([wa['kind'], nm, wa['id'], 1 if t == home else 0, zd, model_ring(ext, None, fr.o), [model_ring(r, None, fr.o) for r in holes]])
+            tiles[t]['wareas'].append([wa['kind'], nm, wa['id'], 1 if t == home else 0, zd, model_ring(ext), [model_ring(r) for r in holes]])
     S.log('water:', {k: round(v, 2) for k, v in km_water.items() if not k.startswith('Name')}, 'km;', len(f_wareas), 'water areas', round(wa_m2), 'm²; railway points', dict(n_rpt))
     # ---------------- areas ----------------
     AR = NZ.areas(o, core, pos, h, dem)
@@ -443,10 +458,14 @@ def main():
                         NZ.ATYPES.index(ar['type']), ar['id'], ar['q']])
         a_n[ar['type']] += 1
         a_m2[ar['type']] += pg.area
+        ring, hol = model_ring(ext, ze), [model_ring(r, z) for r, z in zip(holes, zh)]
         for t in touching:
-            fr = L.tile_frame(S.LEVEL, *t)
-            tiles[t]['areas'].append([NZ.ATYPES.index(ar['type']), SURF.index(ar['surf']), ar['fl'], nm, ar['id'], 1 if t == home else 0, ar['q'],
-                                      model_ring(ext, ze, fr.o), [model_ring(r, z, fr.o) for r, z in zip(holes, zh)]])
+            # the contract's area (an object: kind, surface, outline, name, one height) with what Suhl adds (flags, OSM id, home, q, the
+            # height of every vertex, holes); x_areas: the same in the layout the road map of feat/strassen takes (answer to wish W2)
+            tiles[t]['areas'].append({'k': ar['type'], 'surf': SURF.index(ar['surf']), 'fl': ar['fl'], 'n': nm, 'osm': ar['id'], 'home': 1 if t == home else 0,
+                                      'q': ar['q'], 'z': int(round(float(np.mean(ze) - S.H0) * 10)), 'f': [v for k in range(0, len(ring), 3) for v in ring[k:k + 2]],
+                                      'fz': ring[2::3], 'h': [[v for k in range(0, len(r), 3) for v in r[k:k + 2]] for r in hol], 'hz': [r[2::3] for r in hol]})
+            tiles[t]['x_areas'].append([SURF.index(ar['surf']), ar['fl'], nm, ring, hol])
     S.log('areas:', dict(a_n), {k: round(v) for k, v in a_m2.items()}, 'm²')
     # ---------------- write: tiles, index, the drive file, numbers ----------------
     made = S.now()
@@ -476,13 +495,15 @@ def main():
         d = tiles[t]
         fr = L.tile_frame(S.LEVEL, *t)
         # the name table of a tile holds only what it uses
-        use_n = sorted({w[4] for w in d['ways']} | {w[5] for w in d['ways']} | {ar[3] for ar in d['areas']} | {r[2] for r in d['rail']}
+        use_n = sorted({w[4] for w in d['ways']} | {w[5] for w in d['ways']} | {ar['n'] for ar in d['areas']} | {r[2] for r in d['rail']}
                        | {r[4] for r in d['railpts']} | {r[3] for r in d['water']} | {r[1] for r in d['wareas']} | {0})
         ren = {i: k for k, i in enumerate(use_n)}
         for w in d['ways']:
             w[4], w[5] = ren[w[4]], ren[w[5]]
         for ar in d['areas']:
-            ar[3] = ren[ar[3]]
+            ar['n'] = ren[ar['n']]
+        for ar in d['x_areas']:
+            ar[2] = ren[ar[2]]
         for r in d['rail']:
             r[2] = ren[r[2]]
         for r in d['railpts']:
@@ -491,10 +512,12 @@ def main():
             r[3] = ren[r[3]]
         for r in d['wareas']:
             r[1] = ren[r[1]]
-        doc = {'v': VERSION, 'schema': L.SCHEMA, 'product': 's', 'key': fr.key, 'o': fr.o_json(),
-               'unit': 'dm; x, y relative to o along the model axes, z = NHN - H0', 'kinds': KINDS, 'surf': SURF, 'hws': hws, 'atypes': NZ.ATYPES,
-               'wtypes': LN.WTYPES, 'names': [names[i] for i in use_n], 'ways': d['ways'], 'areas': d['areas'], 'rail': d['rail'],
-               'railpts': d['railpts'], 'water': d['water'], 'wareas': d['wareas'], 'm': {k: round(v) for k, v in d['m'].items()}}
+        # the head and the frame of the contract (docs/features/suhl-daten.md: v = schema number, p, key, o; unit "dm" = absolute model
+        # coordinates in whole decimetres); lanes: beside ways as in the drive data, so that a tile can go into FAHRT.add as it is
+        doc = {'v': L.SCHEMA, 'p': 's', 'key': fr.key, 'o': fr.o_json(), 'made': made, 'unit': 'dm', 'kinds': KINDS, 'surf': SURF,
+               'names': [names[i] for i in use_n], 'ways': d['ways'], 'lanes': [w[9] for w in d['ways']], 'areas': d['areas'], 'x_areas': d['x_areas'],
+               'rail': d['rail'], 'water': d['water'], 'hws': hws, 'atypes': NZ.ATYPES, 'wtypes': LN.WTYPES, 'railpts': d['railpts'],
+               'wareas': d['wareas'], 'm': {k: round(v) for k, v in d['m'].items()}}
         nbytes += S.write_json(os.path.join(out, L.tile_path('s', VERSION, S.LEVEL, *t)), doc)
     numbers = {
         'made': made, 'gebiet': a.gebiet, 'tiles': len(T), 'osm': o.source, 'osm_stamp': o.stamp,
@@ -510,8 +533,9 @@ def main():
         'water_areas': {'n': len(f_wareas), 'm2': round(wa_m2)},
         'metric': res, 'junctions': jst, 'clearance': clr, 'fit_to_ground': fit, 'heights': heights, 'bytes_tiles': nbytes,
     }
-    index = {'v': VERSION, 'schema': L.SCHEMA, 'product': 's', 'title': 'Straßenraum Suhl', 'made': made, 'level': S.LEVEL,
-             'tiles': {str(S.LEVEL): L.tileset_encode(T)}, 'attribution': ATTR,
+    index = {'v': L.SCHEMA, 'p': 's', 'version': VERSION, 'area': a.gebiet, 'title': 'Straßenraum Suhl', 'made': made, 'level': S.LEVEL,
+             'unit': 'dm: absolute model coordinates in whole decimetres (x east, y north, z = NHN - H0), as in fahrt/strassen.json',
+             'tiles': {str(S.LEVEL): L.tileset_encode(T)}, 'attribution': ATTR, 'places': places, 'orte': orte,
              'sources': {'osm': o.source, 'osm_stamp': o.stamp, 'heights': heights},
              'fields': {'ways': WAY_FIELDS, 'areas': AREA_FIELDS, 'rail': RAIL_FIELDS, 'railpts': RAILPT_FIELDS, 'water': WATER_FIELDS,
                         'wareas': WAREA_FIELDS},
@@ -542,6 +566,11 @@ def main():
             d['water'] = [r[:3] + [nr[r[3]]] + r[4:] for r in extra['water']]
             d['wtypes'] = LN.WTYPES
             d['wareas'] = [r[:1] + [nr[r[1]]] + r[2:] for r in extra['wareas']]
+        if extra.get('grund'):
+            d['grund'] = [f_grund[i] for i in sel]
+            d['grund_note'] = ('grund, eine Zahl je Weg: 1 = der Weg liegt auf den Geländekacheln von suhl-boden (dort ist er schon in den Boden '
+                               'geschnitten: FAHRT.add mit carve: false), 0 = außerhalb (die Fahrt schneidet den Boden wie in der Region). '
+                               'Ein Weg ist an dieser Grenze geteilt.')
         d.update(metric=res, heights=heights, junctions=jst)
         return d
     city = [i for i in range(len(fw)) if not f_kor[i]]
@@ -556,13 +585,16 @@ def main():
         nbk = S.write_json(os.path.join(out, 'fahrt', name + '-anfahrt.json'), drive_doc(
             kor, 'Suhl, the approach: the roads for cars along the routes garden - Suhl outside the city\'s tiles and outside fahrt/strassen.json, in its '
                  'format, solved in one system with the city (they meet without a step) and held at the profiles of fahrt/strassen.json where they touch; '
-                 'routes: the routes of routen.py', dict(routes=rdoc)))
+                 'routes: the routes of routen.py', dict(routes=rdoc, grund=True)))
         numbers['korridor'] = {'tiles': len(Kset), 'ways': len(kor), 'km_by_kind': {k: round(v, 2) for k, v in km_kor.most_common()},
-                               'km': round(sum(km_kor.values()), 1), 'pinned_nodes': len(pin), 'bytes': nbk}
+                               'km': round(sum(km_kor.values()), 1), 'pinned_nodes': len(pin), 'bytes': nbk,
+                               'km_auf_suhls_boden': round(km_kor_g.get(1, 0.0), 1), 'km_ausserhalb': round(km_kor_g.get(0, 0.0), 1)}
         index['numbers']['korridor'] = numbers['korridor']
         index['korridor'] = {str(S.LEVEL): L.tileset_encode(sorted(Kset))}
         S.write_json(os.path.join(out, L.index_path('s', VERSION)), index)
     numbers['bytes_drive'] = nb
+    S.common_index(os.path.join(out, L.product_dir('s', VERSION)), a.gebiet, ['osm'] + (['dgm1'] if heights.get('dgm1_share') else []) + ['cop30', 'worldcover'],
+                   'Straßenraum: Wege, Flächen, Gleise, Gewässer; Profile gerechnet auf: ' + heights['solved_on'])
     S.write_json(os.path.join(out, 'zahlen.json'), numbers, indent=1, separators=(',', ': '))
     S.log('fertig:', os.path.relpath(out, S.REPO), '· tiles', len(T), round(nbytes / 1e3), 'kB · drive file', round(nb / 1e3), 'kB ·',
           round(sum(km_kind.values()), 1), 'km in', round(time.time() - t0), 's')

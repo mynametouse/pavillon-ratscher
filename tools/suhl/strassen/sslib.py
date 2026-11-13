@@ -176,3 +176,27 @@ def write_json(path, obj, **kw):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(obj, f, ensure_ascii=False, separators=kw.pop('separators', (',', ':')), **kw)
     return os.path.getsize(path)
+
+
+def common_index(folder, area, sources, note=''):
+    """the common head of an index.json (tile lists, sources, attribution of the contract docs/features/suhl-daten.md), written by the
+    shared tool tools/suhl/lib/validate.py --index; the product's own keys stay"""
+    import subprocess
+    v = os.path.join(REPO, 'tools', 'suhl', 'lib', 'validate.py')
+    if not os.path.exists(v):
+        log('validate.py of suhl-daten is not there: the index keeps its own head')
+        return False
+    r = subprocess.run([sys.executable, '-I', v, '--index', folder, '--area', area, '--sources', ','.join(sources)] + (['--note', note] if note else []),
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        log('validate.py --index:', (r.stdout + r.stderr).strip()[-400:])
+    return r.returncode == 0
+
+
+def index_tiles(idx, L=LEVEL):
+    """the tiles of a product's index.json as [(x, y)] – the common layout {"": {"10": bit field}} or the bare {"10": bit field}"""
+    import suhllib
+    t = idx['tiles']
+    if '' in t:
+        t = t['']
+    return [tuple(q) for q in suhllib.tileset_decode(t[str(L)])]

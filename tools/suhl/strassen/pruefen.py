@@ -51,7 +51,7 @@ def main():
         F['ids'] = F['ids'] + X['ids']
     Z = json.load(open(os.path.join(a.out, 'zahlen.json'), encoding='utf-8'))
     idx = json.load(open(os.path.join(a.out, L.index_path('s', 0)), encoding='utf-8'))
-    T = [tuple(t) for t in L.tileset_decode(idx['tiles'][str(S.LEVEL)])]
+    T = S.index_tiles(idx)
     cover = unary_union([sbox(*L.tbounds(S.LEVEL, x, y)) for x, y in T])
     res = {'made': S.now(), 'run': os.path.relpath(a.out, S.REPO), 'drive_file': os.path.basename(fz[0]), 'tiles': len(T)}
     # the ways in UTM
@@ -141,7 +141,7 @@ def main():
     pieces = collections.defaultdict(list)
     for x, y in T:
         t = json.load(open(os.path.join(a.out, L.tile_path('s', 0, S.LEVEL, x, y)), encoding='utf-8'))
-        ox, oy = int(round(t['o'][0] * 10)), int(round(t['o'][1] * 10))
+        ox = oy = 0          # the tiles hold absolute model decimetres
         for w in t['ways']:
             q = w[6]
             pieces[w[7]].append((w[8], (q[0] + ox, q[1] + oy, q[2]), (q[-3] + ox, q[-2] + oy, q[-1]), sum(math.hypot(q[i + 3] - q[i], q[i + 4] - q[i + 1]) for i in range(0, len(q) - 3, 3)), (x, y)))

@@ -275,7 +275,7 @@ Jede Zahl hier schreibt `tools/suhl/strassen/zahlen_md.py` aus den Dateien des L
 ### 4.1 Probesatz Zentrum
 
 <!-- zahlen:probe -->
-Aus `tools/suhl/out/strassen/probe/zahlen.json` (Lauf vom 2026-11-13 01:18 UTC, OSM-Stand 2026-11-12 23:07 UTC, 11 Kacheln). Längen sind echte Meter (UTM).
+Aus `tools/suhl/out/strassen/probe/zahlen.json` (Lauf vom 2026-11-13 01:28 UTC, OSM-Stand 2026-11-12 23:07 UTC, 11 Kacheln). Längen sind echte Meter (UTM).
 
 **Gerechnet auf:** ungeschnittene Geländekacheln von suhl-boden (DGM1 Thüringen (1 m) unter 100 % der Kacheln des Laufs, sonst Copernicus GLO-30; Stand 2026-11-13T01:10:23Z, origin/suhl/boden d262745d, tools/suhl/out/boden/probe/roh/v1/t; 737194 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 96179 Stützwerte – nur am Rand außerhalb der Kacheln). Der Lauf zählt (ein Boden für alle).
 
@@ -310,9 +310,9 @@ Wasser: stream 2,64 km, verrohrt oder überdeckt 0,94 km; 12 Wasserflächen mit 
 
 Kreuzungen (Knoten mit drei und mehr Armen; größte Abweichung von einer Ebene, 3 m um den Knoten): 1 735 Knoten, Mitte 0,3 cm, 95 % unter 4,0 cm, größte 37,8 cm; **92,1 % innerhalb von 3 cm** (Kreuzungen von Fahrstraßen: 851 Knoten, 91,2 %).
 Brücken über anderen Wegen: 24 Stellen, an 8 davon weniger als 4,5 m Abstand.
-Rechnung: 90 927 Punkte; 608 Nahtstellen geglättet, 4 587 Zeilen für ebene Kreuzungen, 957 Verbindungen zwischen Richtungsfahrbahnen; Brücken bis 1,34 m angehoben; Glättung der kleinen Klassen × 1,0. Größe: Kacheln 226 kB, Datei im Format der Fahrtdaten 277 kB.
+Rechnung: 90 927 Punkte; 608 Nahtstellen geglättet, 4 587 Zeilen für ebene Kreuzungen, 957 Verbindungen zwischen Richtungsfahrbahnen; Brücken bis 1,34 m angehoben; Glättung der kleinen Klassen × 1,0. Größe: Kacheln 316 kB, Datei im Format der Fahrtdaten 277 kB.
 
-**Ausstattung** (`tools/suhl/out/strassen/probe/moebel.json`): 28 Verkehrszeichen, 534 Laternen, 17 Halt-, Wartelinien und Zebrastreifen, 54 Ampelknoten, 50 Querungen, 23 Bushaltestellen, 72 Straßennamensschilder. Schutzplanken 0,0 km. Zeichen nach Nummer: 274: 1, 206: 2, 205: 19, 350: 6. Ampeln: 33 für Fahrzeuge, 21 für Fußgänger, 73 Masten. Querungen: 25 ohne Markierung, 1 markiert, 3 Zebrastreifen, 21 Ampel. Haltestellen mit Namen: 23. Orte: Suhl (town). Größe: Kacheln 21 kB, eine Datei 39 kB.
+**Ausstattung** (`tools/suhl/out/strassen/probe/moebel.json`): 28 Verkehrszeichen, 534 Laternen, 17 Halt-, Wartelinien und Zebrastreifen, 54 Ampelknoten, 50 Querungen, 23 Bushaltestellen, 72 Straßennamensschilder. Schutzplanken 0,0 km. Zeichen nach Nummer: 274: 1, 206: 2, 205: 19, 350: 6. Ampeln: 33 für Fahrzeuge, 21 für Fußgänger, 73 Masten. Querungen: 25 ohne Markierung, 1 markiert, 3 Zebrastreifen, 21 Ampel. Haltestellen mit Namen: 23. Orte: Suhl (town). Größe: Kacheln 79 kB, eine Datei 39 kB.
 
 **Prüfungen** (`tools/suhl/out/strassen/probe/pruefung.json`):
 
