@@ -746,7 +746,7 @@ export const GLKAMERA = (() => {
       window.removeEventListener('pointerdown', onTap, true);
     }
     document.body.dataset.glSchnitt = on ? '1' : '';
-    // the way out, small in the corner of the bottom bar (as GTA shows „Überspringen“)
+    // the way out, small in the corner of the top bar (the subtitles sit in the bottom one)
     if (!S.css) {
       S.css = true;
       const st = document.createElement('style');
@@ -770,7 +770,7 @@ export const GLKAMERA = (() => {
 #glkinobar i:first-child{top:0} #glkinobar i:last-child{bottom:0}
 #glkinobar.on i{height:11vh}
 body[data-gl-schnitt="1"] :is(#joy,.pad,#actrow,.hint){display:none!important}
-#glkinotipp{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(3vh + env(safe-area-inset-bottom,0px));z-index:10;
+#glkinotipp{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(4vh + env(safe-area-inset-top,0px));z-index:10;
   pointer-events:none;color:#fff;opacity:0;transition:opacity .6s;font:500 11px/1.3 var(--f-mono,monospace);letter-spacing:.06em}
 #glkinotipp.on{opacity:.55} #glkinotipp kbd{font:inherit;border:1px solid rgba(255,255,255,.5);border-radius:4px;padding:0 4px;margin:0 3px}
 body[data-gl-schnitt-eigen="1"] :is(#glhud,#gltouch,#glmap,#glmaplab,#qtrack,#glort,#glfunk){visibility:hidden!important}

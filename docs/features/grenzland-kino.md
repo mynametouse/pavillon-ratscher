@@ -18,7 +18,8 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   - **Balken** oben und unten: `GLHUD.kino(true/false)` des Leads, solange es das nicht gibt, eigene Balken (dann blendet das Modul Tafel,
     Radar, Aufgabenkarte für die Dauer aus).
   - **Festhalten**: der Spieler kann nicht weglaufen (Lauftasten und Steuerknüppel ruhen, die Position wird nach der Laufphysik gehalten).
-    **Leertaste, Enter, E oder Tippen** = nächster Satz, **Esc** = Rest überspringen (was nach dem Gespräch kommt, passiert trotzdem).
+    **Leertaste, Enter, E oder Tippen** = nächster Satz, **Esc** = Rest überspringen (was nach dem Gespräch kommt, passiert trotzdem);
+    ein kleiner Hinweis dazu steht rechts im oberen Balken.
   - **Blicke**: wer spricht, dreht sich zum Zuhörer; die anderen schauen den Sprecher an (`GLFIG.blick`, Agent figuren, sobald es das
     gibt); der Spieler dreht den Kopf zum Sprecher; Gesten bei langen Sätzen (`GLFIG.geste`, falls da). Danach drehen sich die Leute zurück.
   - **Danach** gleitet die Kamera in 0,6 s zurück hinter den Spieler; folgt sofort das nächste Gespräch, bleibt es eine Zwischensequenz.
@@ -90,7 +91,7 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - `GLHUD.kino(on)`, `GLHUD.titel(name, ueber, sec, unter)`, `GLHUD.ruhig()` (Stand 28c6b702, in den Zweig gemischt) werden genutzt; fehlen
   sie, gibt es eigene Balken, `GLHUD.say` und einen eigenen Ruhe-Test (keine Blende, `#glpass`, `#glmsg`, `#glbust` verborgen). Titel:
   `ueber` = „Kapitel 1 · Mission n“, `unter` = Ort und Zeit.
-- Zum Überspringen (Esc) wäre `GLHUD.subAus()` gut (Untertitel sofort weg); bis dahin setze ich `GLHUD.subEl.hidden`.
+- Zum Überspringen (Esc) wäre `GLHUD.subAus()` gut (Untertitel sofort weg); bis dahin setze ich `GLHUD.subEl.hidden` und `GLHUD.subT = 0`.
 - `GLHUD.sub`: meine Sätze kommen in ihrer Taktung (Dauer = erwartete Satzlänge); Leute ersetzen einander sofort – passt so.
 - In `modules.txt` stehen `gl_kamera.js` und `gl_score.js` direkt vor `gl_mission.js`.
 - Beobachtet in den Testbildern: ein Spruch des Grundspiels („Ronald: Ruhe im Stall! Ha ha.“) erscheint mitten im Bild, auch in einer
