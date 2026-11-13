@@ -186,6 +186,17 @@ with lib.browser() as b:
         E("GLRADIO.tune(null)"); steps(0.5)
         st = J("GLSCORE.stand()")
         ck('radio off: the chase music again', st['ziel'] == 'flucht', str(st))
+        # the music itself, rendered offline: every layer and sting sounds, nothing clips
+        lv = {}
+        for nm, sec in (('spannung', 6), ('flucht', 4), ('1989', 8), ('szene', 6), ('start', 2.5), ('bestanden', 3), ('gescheitert', 3)):
+            pg.evaluate(f"GLSCORE.probe('{nm}', {sec}).then(r => {{ window.__lv = r }})")
+            lv[nm] = None
+            for _ in range(40):
+                time.sleep(0.25)
+                r = J("window.__lv || null")
+                if r:
+                    lv[nm] = r; E("window.__lv = null"); break
+        ck('the score sounds: every layer and sting has a level, nothing clips', all(v and 0.004 < v['rms'] and v['peak'] < 0.98 for v in lv.values()), json.dumps(lv))
         E("GLFAHNDUNG.clear()"); steps(0.5)
         E("GLMISSION.stop()"); steps(0.5)
         st = J("GLSCORE.stand()")

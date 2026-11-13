@@ -39,6 +39,14 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   - Stiche: `start` (Paukenschlag und Akkord), `bestanden` (B-Dur → D-Dur), `gescheitert` (fallende Linie, dumpfer Schlag) – letzterer
     unter der Blende eines Fehlschlags.
   - Überblendung ~2 s; **stumm im freien Spiel und solange das Autoradio spielt**; **8 dB leiser**, solange eine Stimme spricht.
+- **Sucher beim Fotografieren** (Mission 4, `gl_kapitel1.js`): in den Foto-Schritten, zu Fuß, sobald man auf den Transporter zielt
+  (höchstens 35° neben der Blickrichtung, unter 60 m): Rahmen mit Ecken, Fokuskreis, Zähler „● FOTO 1/3 · 34 m“, grün, wenn das Foto
+  zählen würde (≤ 40 m, freie Sicht), sonst „zu weit“ / „keine Sicht“; bei jedem Foto ein weißer Blitz (der Auslöser-Ton kommt wie bisher
+  aus `GLTON.fx('foto')`). Ist die Handy-Kamera offen, zeigt deren Sucher. Das Bild fürs Handy: gibt es `GLHANDY.bild(url, info)` (oder
+  `galerie`), bekommt es ein kleines JPEG (320 px) jedes Missionsfotos.
+- **Das Büro im Außenlager** (`gl_lager.js`, Wunsch des Leads): innen Holzvertäfelung, dunkle Decke, eine Leuchte, die nachts brennt – die
+  gerahmte Karte hängt sichtbar **innen** an der Rückwand. Gibt die Tür nach, zeigt ein **Zwischenschnitt** (3,4 s, `GLKAMERA.einstellung`)
+  durch die Tür auf die Rückwand mit dem Rahmen; nicht, wenn ein Wachmann gerade jagt; Leertaste/Esc kürzt ab.
 - **Leuchtkugel**: Mission 4 meldet `grenzland:flare { x, y, z }` (Bild: Agent licht). Die kleine rote Kugel bleibt nur, solange es
   `window.GLLICHT` nicht gibt.
 - **Taschenlampen**: `F.lampe = true` für die drei Männer an der Klinge, den ABV 1989 (Dämmerung) und – nachts – die Wachen im Außenlager
@@ -74,8 +82,13 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - `GLHUD.sub` als Warteschlange: meine Sätze kommen in ihrer Taktung (Dauer = erwartete Satzlänge); beim Überspringen (E, Leertaste) muss
   ein neuer Gesprächssatz den alten **ersetzen**, nicht warten.
 - In `modules.txt` stehen `gl_kamera.js` und `gl_score.js` direkt vor `gl_mission.js`.
+- `GLHUD.titel(name, ueber, sec, unter)`: ich gebe `ueber` leer und den Ort als `unter`.
+- `viz3/extra/grenzland-kino/tests.txt` enthält vorübergehend auch `grenzland_mission:m1,m3,m4,m5` (Regressionsnetz, weil die Gespräche aller
+  Missionen jetzt Zwischensequenzen sind) – beim Zusammenführen gern wieder auf die drei `grenzland_kino`-Zeilen kürzen.
 
 ## Offen
 
-- Sucher für die Fotos (Schritt 4 des Auftrags) – siehe unten, falls noch geschafft.
-- Gespräche im Sitzen auf dem fahrenden Moped bleiben ohne Bild (gewollt).
+- Gespräche auf dem fahrenden Moped bleiben ohne Bild (gewollt, wie GTA); ebenso alles bei Fahndung.
+- 1989 hat in Kapitel 1 keinen Foto-Schritt – der Sucher einer Filmkamera mit Bildzähler wartet auf Kapitel 2.
+- Die Musik ist nach Regeln komponiert und in Pegeln gemessen (Test `score`), gehört hat sie hier niemand: Falko bitte einmal anhören.
+- Für die Handy-Galerie fehlt eine Schnittstelle bei Agent welt (`GLHANDY.bild(url, info)`), die Bilder werden schon geliefert.

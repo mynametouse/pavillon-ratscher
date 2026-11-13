@@ -487,7 +487,47 @@ export const GLSCORE = (() => {
       } catch (e) {}
     }, 900);
   }
+  // ---------------- tests: a layer or a sting rendered offline, its level (nobody here can listen to it) ----------------
+  async function probe(name, sec = 4, stufe = 3) {
+    const D = LAYER[name],
+      X = STICH[name];
+    if ((!D && !X) || typeof OfflineAudioContext === 'undefined') return null;
+    const SR = 24000,
+      c = new OfflineAudioContext(1, Math.round(SR * sec), SR),
+      nb = c.createBuffer(1, SR, SR),
+      d0 = nb.getChannelData(0);
+    let r = 4711;
+    for (let i = 0; i < d0.length; i++) {
+      r = (Math.imul(r, 1664525) + 1013904223) | 0;
+      d0[i] = (r >>> 8) / 8388608 - 1;
+    }
+    const A = { ctx: c, noise: nb },
+      out = c.createGain(),
+      s0 = S.stufe;
+    out.gain.value = D ? D.g : 0.9;
+    out.connect(c.destination);
+    S.stufe = stufe;
+    try {
+      if (D) {
+        if (D.on) D.on(A, out);
+        const st = 60 / D.bpm / 4;
+        for (let t = 0.02, n = 0; t < sec; t += st, n++) D.step(A, out, t, n);
+      } else X(A, out, 0.02);
+    } finally {
+      S.stufe = s0;
+    }
+    const b = await c.startRendering(),
+      d = b.getChannelData(0);
+    let sq = 0,
+      pk = 0;
+    for (let i = 0; i < d.length; i++) {
+      sq += d[i] * d[i];
+      pk = Math.max(pk, Math.abs(d[i]));
+    }
+    return { rms: Math.round(Math.sqrt(sq / d.length) * 1e4) / 1e4, peak: Math.round(pk * 1e3) / 1e3 };
+  }
   return {
+    probe,
     lage: n => void (S.lage = LAYER[n] || n === 'flucht' ? n : ''),
     mission: id => void (S.mission = id || ''),
     szene: on => void (S.szene = !!on),

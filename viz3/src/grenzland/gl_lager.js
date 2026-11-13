@@ -277,6 +277,26 @@ export const GLLAGER = (() => {
       W3(aR - 0.1, B.b - 0.25, zF + 1.75),
       L(226, 224, 214)
     ); // the calendar of 2019
+    // (feat/grenzland-kino) the room reads as a room: panelled walls inside, a dark ceiling, a lamp that glows at night – so that,
+    // seen through the open door, the framed map hangs on the back wall inside and not on the outside of the container
+    {
+      const PAN = L(126, 96, 64),
+        CEIL = L(52, 48, 44),
+        d0 = Y.tuer.a - Y.tuer.la,
+        d1 = Y.tuer.a + Y.tuer.la,
+        i0 = aL + 0.086,
+        i1 = aR - 0.086,
+        ih = top - zF - 0.05;
+      box(k, B.a, bf - 0.084, (i1 - i0) / 2, 0.002, zF + 0.02, ih, PAN);
+      box(k, i0 + 0.002, B.b, 0.002, B.w / 2 - 0.086, zF + 0.02, ih, PAN);
+      box(k, i1 - 0.002, B.b, 0.002, B.w / 2 - 0.086, zF + 0.02, ih, PAN);
+      box(k, (i0 + d0) / 2, bb + 0.084, (d0 - i0) / 2, 0.002, zF + 0.02, ih, PAN);
+      box(k, (d1 + i1) / 2, bb + 0.084, (i1 - d1) / 2, 0.002, zF + 0.02, ih, PAN);
+      box(k, Y.tuer.a, bb + 0.084, Y.tuer.la, 0.002, zF + 2.05, top - zF - 2.1, PAN);
+      box(k, B.a, B.b, (i1 - i0) / 2, B.w / 2 - 0.086, top - 0.035, 0.01, CEIL);
+      const q = Y.w(B.a - 0.4, B.b);
+      kl.box(q[0], q[1], top - 0.08, 0.16, 0.9, 0.04, rot, [1, 1, 1], true);
+    }
     // pallets and crates beside the lorry
     for (const [a, b, n] of [
       [H.lkw.a + 0.5, H.lkw.b + 3.4, 3],

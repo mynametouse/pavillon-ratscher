@@ -68,6 +68,7 @@ export const GLKAMERA = (() => {
     css: false,
     keys: false,
     lineT: 0, // seconds since the line began (taps right after a cut are not counted)
+    insertT: 0, // an insert's seconds left
     turn: [], // figures turning smoothly: { F, hd }
     stats: { cuts: 0, kinds: {}, n: 0 },
     nein: '', // why the last talk was no cutscene (tests)
@@ -219,12 +220,10 @@ export const GLKAMERA = (() => {
     }
     S.N = [n[0] * best, n[1] * best];
   }
-  // a wall between two points (site metres)?
+  // a wall between two points (site metres)? (only walls: the walkers' push-out would count a bench under the camera as one)
   function frei(a, b) {
     try {
-      if (!GLFAHNDUNG.los(a[0], a[1], b[0], b[1])) return false;
-      const q = [b[0], b[1]];
-      return !KERN.pushOut(q, 0.22);
+      return GLFAHNDUNG.los(a[0], a[1], b[0], b[1]);
     } catch (e) {
       return true;
     }
@@ -293,8 +292,8 @@ export const GLKAMERA = (() => {
     const x = kopf(X.F),
       l = kopf(L.F);
     if (kind === 'ots') {
-      // (far apart, the shoulder is a long way off: then the face instead)
-      if (hyp(x[0] - l[0], x[1] - l[1]) > 2.9) return null;
+      // (far apart, the shoulder is a long way off; behind somebody seated there is his bench or his tree: then the face instead)
+      if (hyp(x[0] - l[0], x[1] - l[1]) > 2.9 || (L.F !== 'P' && (L.F.sitzt || L.F.reitet))) return null;
       const d = norm([x[0] - l[0], x[1] - l[1]]),
         n = seite(d),
         b = 0.75 + (S.n % 3) * 0.08;
@@ -391,6 +390,8 @@ export const GLKAMERA = (() => {
     const weiter = S.on && S.endT >= 0;
     S.talk = o;
     S.endT = -1;
+    // (an insert that runs gives way to the talk)
+    if (S.on && S.insertT > 0) aus(false);
     if (weiter) {
       const add = besetzen(o.lines, o.figOf);
       for (const q of add) if (!S.who.some(e => e.id === q.id)) S.who.push(q);
@@ -456,6 +457,32 @@ export const GLKAMERA = (() => {
     markDirty(true);
     return true;
   }
+  // a single picture without a talk (an insert, e.g. into the office when its door gives way): from p looking at t ([x, y, z] in
+  // site metres) for sec seconds – bars, the walk held; Space, a tap or Esc end it sooner
+  function einstellung(p, t, sec = 3, fov = 42) {
+    if (S.on || !GL.on || sterne() > 0 || VEH.cur || P.mode !== 'walk' || PLAY.seated()) return false;
+    S.who = [{ id: 'ich', F: 'P', party: 0, hd0: P.body }];
+    S.ax = [0, 1];
+    S.N = [1, 0];
+    S.on = true;
+    S.n = 1;
+    S.run = 0;
+    S.lastWho = '';
+    S.blend = null;
+    S.lineT = 0;
+    S.shot = mk('insert', boden([p[0], p[1], p[2]]), [t[0], t[1], t[2]], fov, sec, 0.2);
+    S.insertT = sec;
+    S.talk = { weiter: () => ende(), skip: () => ende() };
+    S.lock = { x: P.x, y: P.y, body: P.body };
+    S.view = { want: CAM3.want, cur: CAM3.cur };
+    CAM3.want = true;
+    haken(true);
+    tasten(true);
+    balken(true);
+    S.stats.kinds.insert = (S.stats.kinds.insert || 0) + 1;
+    markDirty(true);
+    return true;
+  }
   // the talk is over: the cutscene ends in the next tick unless another talk begins at once
   function ende() {
     if (!S.on) return;
@@ -465,6 +492,7 @@ export const GLKAMERA = (() => {
     if (!S.on) return;
     S.on = false;
     S.endT = -1;
+    S.insertT = 0;
     S.talk = null;
     S.lock = null;
     tasten(false);
@@ -515,12 +543,13 @@ export const GLKAMERA = (() => {
   // ---------------- per frame, after the walk physics ----------------
   function tick(dt) {
     if (S.endT >= 0 && (S.endT -= dt) < 0) aus(true);
+    if (S.on && S.insertT > 0 && (S.insertT -= dt) <= 0) ende();
     if (S.on) {
       S.lineT += dt;
       if (S.shot) S.shot.t += dt;
       const L = S.lock;
       if (L) {
-        if (hyp(P.x - L.x, P.y - L.y) > 1.6) {
+        if (hyp(P.x - L.x, P.y - L.y) > 1.2) {
           // put elsewhere: the scene is over
           aus(false);
         } else {
@@ -744,6 +773,7 @@ body[data-gl-schnitt-eigen="1"] #glsub{bottom:calc(11vh + 12px + env(safe-area-i
     start,
     zeile,
     ende,
+    einstellung,
     tick,
     weg,
     stop,

@@ -13,6 +13,7 @@
 // (GLDATA.ORTE, GLORTE.P, the village's own data) – another agent's barn or bench may stand a little elsewhere.
 import * as THREE from 'three';
 import { KERN } from '../core/kern.js';
+import { stage } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
 import { VEH } from '../vehicles/vehicle.js';
@@ -1167,6 +1168,90 @@ export const GLKAP1 = (() => {
     if (dv > 22) S.gelenkt = true;
     if (!MI.redet()) MI.rede('knall');
   }
+  // ---------------- (feat/grenzland-kino) the viewfinder while one aims at the van: frame, focus, counter; a flash on each photo ----------------
+  const SUCHER_CSS = `
+#glsucher{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity .25s;color:#fff}
+#glsucher.on{opacity:1}
+#glsucher .sr{position:absolute;inset:15% 19%;border:1px solid rgba(255,255,255,.18)}
+#glsucher .sr i{position:absolute;width:30px;height:30px;border:2px solid rgba(255,255,255,.92);filter:drop-shadow(0 0 2px rgba(0,0,0,.9))}
+#glsucher .sr i:nth-child(1){left:-2px;top:-2px;border-right:0;border-bottom:0} #glsucher .sr i:nth-child(2){right:-2px;top:-2px;border-left:0;border-bottom:0}
+#glsucher .sr i:nth-child(3){left:-2px;bottom:-2px;border-right:0;border-top:0} #glsucher .sr i:nth-child(4){right:-2px;bottom:-2px;border-left:0;border-top:0}
+#glsucher .sm{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px;border:1.5px solid rgba(255,255,255,.85);border-radius:50%}
+#glsucher .sm::after{content:'';position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:#fff}
+#glsucher.gut .sr i,#glsucher.gut .sm{border-color:#8fe08a} #glsucher.gut .sm::after{background:#8fe08a}
+#glsucher .si{position:absolute;left:50%;top:calc(15% + 9px);transform:translateX(-50%);font:600 12px/1 var(--f-mono,monospace);letter-spacing:.09em;
+  background:rgba(0,0,0,.5);padding:6px 10px;border-radius:6px;white-space:nowrap}
+#glsucher .si b{color:#ff5a4a;margin-right:6px}
+#glsucher .sb{position:absolute;inset:0;background:#fff;opacity:0}
+#glsucher.klick .sb{animation:glsblitz .4s ease-out}
+@keyframes glsblitz{0%{opacity:.9}100%{opacity:0}}
+`;
+  const SU = { el: null, on: false, t: 0 };
+  function sucherEl() {
+    if (SU.el) return SU.el;
+    const st = document.createElement('style');
+    st.textContent = SUCHER_CSS;
+    document.head.appendChild(st);
+    const d = document.createElement('div');
+    d.id = 'glsucher';
+    d.innerHTML =
+      '<div class="sr"><i></i><i></i><i></i><i></i></div><div class="sm"></div><div class="si"></div><div class="sb"></div>';
+    (stage || document.body).appendChild(d);
+    return (SU.el = d);
+  }
+  // aiming: in the photo steps, on foot, the van ahead (within 35° of the view) and not too far
+  function sucher(dt) {
+    if ((SU.t += dt) < 0.12) return;
+    SU.t = 0;
+    const v = K4.van,
+      phone = window.GLHANDY && GLHANDY.S && GLHANDY.S.camOn;
+    let on = false,
+      gut = false,
+      d = 0;
+    if (v && K4.n < 3 && !VEH.cur && !phone && GL.on) {
+      d = MI.fern(v);
+      let a = (Math.atan2(v[0] - P.x, v[1] - P.y) * 180) / Math.PI - P.yaw;
+      a = ((a + 540) % 360) - 180;
+      on = d < 60 && Math.abs(a) < 35;
+      gut = on && d <= 40 && GLFAHNDUNG.los(P.x, P.y, v[0], v[1]);
+    }
+    if (!on && !SU.on) return;
+    const el = sucherEl();
+    SU.on = on;
+    el.classList.toggle('on', on);
+    el.classList.toggle('gut', gut);
+    if (on)
+      el.querySelector('.si').innerHTML =
+        '<b>●</b>FOTO ' + K4.n + '/3 · ' + Math.round(d) + ' m' + (gut ? '' : d > 40 ? ' · zu weit' : ' · keine Sicht');
+  }
+  function sucherAus() {
+    SU.on = false;
+    if (SU.el) SU.el.classList.remove('on', 'gut');
+  }
+  // the shutter: a flash on the viewfinder, and the picture for the phone's gallery where the phone keeps one (agent welt)
+  function klick() {
+    const el = sucherEl();
+    el.classList.remove('klick');
+    void el.offsetWidth;
+    el.classList.add('klick');
+    const H = window.GLHANDY,
+      put = H && (H.bild || H.galerie);
+    if (typeof put !== 'function' || window.FREEZE) return;
+    try {
+      if (window.GAME && GAME.shot) GAME.shot();
+      const cv = stage.querySelector('canvas'),
+        c = document.createElement('canvas'),
+        w = 320,
+        h = Math.round((w * cv.height) / Math.max(1, cv.width));
+      c.width = w;
+      c.height = h;
+      c.getContext('2d').drawImage(cv, 0, 0, w, h);
+      put.call(H, c.toDataURL('image/jpeg', 0.72), { titel: 'Untere Klinge', n: K4.n, von: 'mission' });
+    } catch (e) {}
+  }
+  KERN.on('grenzland:foto', () => {
+    if (GL.on && SU.el) klick();
+  });
   function fotoAn(S) {
     try {
       GLHANDY.kamera({
@@ -1198,6 +1283,7 @@ export const GLKAP1 = (() => {
   }
   function fotoAus() {
     KERN.unact('gl:foto');
+    sucherAus();
     try {
       GLHANDY.kamera(null);
     } catch (e) {}
@@ -1311,6 +1397,7 @@ export const GLKAP1 = (() => {
         tick(dt, S) {
           if (K4.ft > 0) K4.ft -= dt;
           maenner(dt, S);
+          sucher(dt);
           return !!S.gelenkt || K4.n > 0;
         },
       },
@@ -1336,6 +1423,7 @@ export const GLKAP1 = (() => {
         tick(dt, S) {
           if (K4.ft > 0) K4.ft -= dt;
           maenner(dt, S);
+          sucher(dt);
           GLHUD.hint('Fotos: ' + K4.n + ' von 3');
           return K4.n >= 3;
         },
@@ -1464,6 +1552,20 @@ export const GLKAP1 = (() => {
       if (y) MI.hin(y.hinten[0], y.hinten[1], yawTo(y.hinten, y.drin));
       if (plan() === 'leise' && !dark()) MI.uhr(23, 0);
     }
+  }
+  // (feat/grenzland-kino) the door gives way: a short look through it at the back wall, where the framed half of the map hangs
+  function blickInsBuero() {
+    const y = Y();
+    if (!y || !window.GLKAMERA || (GLLAGER.wachen || []).some(w => w.job === 'jagt')) return;
+    const B = y.H.buero,
+      bb = B.b - B.w / 2,
+      bf = B.b + B.w / 2,
+      z = Number.isFinite(GLLAGER.zF) ? GLLAGER.zF : KERN.ground(y.vorTuer[0], y.vorTuer[1]),
+      p = y.w(B.tuer - 0.05, bb - 0.85),
+      t = y.w(B.tuer + 0.2, bf - 0.12);
+    try {
+      window.GLKAMERA.einstellung([p[0], p[1], z + 1.6], [t[0], t[1], z + 1.5], 3.4, 40);
+    } catch (e) {}
   }
   MI.def({
     id: 'coup',
@@ -1637,6 +1739,7 @@ export const GLKAP1 = (() => {
           if (Y() && !GLLAGER.offen) GLLAGER.tuerAuf();
           K5.tuer = true;
           MI.rede('tuerAuf');
+          blickInsBuero();
         },
       },
       {
@@ -1720,6 +1823,6 @@ export const GLKAP1 = (() => {
     ],
   });
   markDirty();
-  return { ORT, mitfahren, renn, bank, kistePos, K89, szeneKlinge, K4: () => K4, K5 };
+  return { ORT, mitfahren, renn, bank, kistePos, K89, szeneKlinge, K4: () => K4, K5, SU };
 })();
 window.GLKAP1 = GLKAP1;

@@ -546,7 +546,7 @@ export const GLMISSION = (() => {
       if (g !== St.titelN || !GL.on || GL.cur !== m.id || St.busy) return;
       const D = GLMDATA.M[m.id];
       try {
-        if (GLHUD.titel) GLHUD.titel(D.title, D.unter || '', 5);
+        if (GLHUD.titel) GLHUD.titel(D.title, '', 5, D.unter || '');
         else GLHUD.say(D.title, D.unter || '', 5);
       } catch (e) {}
       GLSCORE.stich('start');
