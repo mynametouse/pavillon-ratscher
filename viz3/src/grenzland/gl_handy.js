@@ -12,7 +12,8 @@
 // It closes with T, Esc, the cross, or when the mouse goes back into the picture. In 1989 nobody has a phone. Built into the page by the
 // module itself when first opened; „Beenden“ takes it away. Saved through GL: GL.sms, GL.feed (chat, feed, bank and note entries by k).
 // Interface (the core's, kept): GLHANDY.sms(von, text) · chat(wer, text) · feed(wer, text, ort) · note(titel, zeilen, quellen) ·
-//   open(tab) · close() · toggle() · isOpen() · unread() · tick(dt) · stop() · kamera(o | null) · foto() · cam()
+//   open(tab) → true | false · close() · toggle() · isOpen() · unread() · tick(dt) · stop() · kamera(o | null) · foto() · cam() ·
+//   zu() → a promise that resolves when the phone is put away
 // Events: 'grenzland:sms' { von, text }, 'grenzland:foto' { n }, 'grenzland:handy' { gelesen }, 'grenzland:ziel' { pos, name }.
 import { COARSE, stage } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -42,7 +43,7 @@ export const GLHANDY = (() => {
     feedT: 70,
     evI: {},
     evT: {},
-    res: null,
+    res: [],
     dirty: false,
     acc: 0,
     ziel: null,
@@ -419,11 +420,12 @@ export const GLHANDY = (() => {
       n = /Klinge|Wald|Forst/.test(ort) ? 1 : /Schleusingen|Ratscher|Anger|Dorf/.test(ort) ? 4 : 3;
     S.el.querySelector('#hynetz').textContent = '▂▃▅▇'.slice(0, n) + '·'.repeat(4 - n) + (n === 1 ? ' Funkloch' : '');
   }
+  // takes the phone out (true) – unless it is 1989 or the mode is off (false). (No promise: a test's evaluate would wait for it forever.)
   function open(t) {
-    if (!GL.on) return Promise.resolve();
+    if (!GL.on) return false;
     if (GL.era === '1989') {
       PLAY.think('1989 hat hier niemand ein Telefon in der Tasche. Die nächste Zelle steht am Konsum.', 3600);
-      return Promise.resolve();
+      return false;
     }
     build();
     camShow(false);
@@ -431,7 +433,10 @@ export const GLHANDY = (() => {
     else if (!S.open && unread()) S.tab = 'sms';
     S.note = -1;
     S.gelesen = unread();
-    if (S.tab === 'kamera' && S.cam && t === 'kamera') return (camShow(true), Promise.resolve());
+    if (S.tab === 'kamera' && S.cam && t === 'kamera') {
+      camShow(true);
+      return true;
+    }
     S.open = true;
     S.el.hidden = false;
     render();
@@ -441,21 +446,20 @@ export const GLHANDY = (() => {
         HUD.unlock();
       } catch (e) {}
     }
-    return new Promise(res => {
-      if (S.res) S.res();
-      S.res = res;
-    });
+    return true;
   }
+  // a promise for whoever wants to go on when the phone is put away (at once if it is not out)
+  const zu = () =>
+    new Promise(res => {
+      if (!S.open) res();
+      else S.res.push(res);
+    });
   function close() {
     if (!S.open) return;
     S.open = false;
     if (S.el) S.el.hidden = true;
     GL.save();
-    if (S.res) {
-      const r = S.res;
-      S.res = null;
-      r();
-    }
+    for (const r of S.res.splice(0)) r();
     if (S.unlocked) {
       S.unlocked = false;
       if (!S.camOn)
@@ -712,6 +716,7 @@ export const GLHANDY = (() => {
     unlock,
     open,
     close,
+    zu,
     toggle,
     tab,
     isOpen: () => S.open,

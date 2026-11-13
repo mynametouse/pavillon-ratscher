@@ -76,6 +76,7 @@ export const GLRADIO = (() => {
     tuneT: 0,
     uhr: 0,
     sonder: [],
+    weak: false,
   };
   const era = () => (GL.era === '1989' ? '1989' : 'heute');
   const list = () => D.SENDER[era()];
@@ -499,6 +500,7 @@ export const GLRADIO = (() => {
     if (s) {
       voices();
       chain();
+      S.sig = signal();
       S.tuneT = 0.22;
       // one lands in the middle of the programme: a piece that is already running
       const st = prog(S.id);
@@ -511,6 +513,10 @@ export const GLRADIO = (() => {
       if (S.A) mixTick(0);
     }
     if (!o.quiet) show(true);
+    if (S.listOn) {
+      listFill();
+      S.listT = 7;
+    }
     GL.emit('radio', { id: S.id, name: s ? s.name : '', freq: s ? s.freq : '' });
     return true;
   }
@@ -566,7 +572,7 @@ export const GLRADIO = (() => {
 
   // ---------------- the display ----------------
   const CSS = `
-#glradio{position:absolute;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:6;width:min(340px,78vw);
+#glradio{position:absolute;left:calc(50% - 64px);top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:6;width:min(330px,78vw);
   background:rgba(12,15,19,.82);color:#f2f0e6;border-radius:12px;padding:8px 12px 9px;font:400 12px/1.3 var(--f-body,system-ui);
   backdrop-filter:blur(5px);pointer-events:auto;user-select:none;cursor:pointer;transition:opacity .35s;box-shadow:0 4px 18px rgba(0,0,0,.35)}
 #glradio[hidden]{display:none!important} #glradio.aus{opacity:0;pointer-events:none}
@@ -597,8 +603,9 @@ body[data-gl-era="1989"] #glradio .rd{background:linear-gradient(#efe2bd,#d8c796
 body[data-gl-era="1989"] #glradio .rd i{background:rgba(60,40,20,.5)} body[data-gl-era="1989"] #glradio .rd i.s{background:#7a2a1c}
 body[data-gl-era="1989"] #glradio .rd i.on{box-shadow:none} body[data-gl-era="1989"] #glradio .rd u{background:#b3261a;box-shadow:none}
 body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl button span{color:#f0c56a}
+@media (max-width:1000px){#glradio{left:50%;top:calc(58px + env(safe-area-inset-top,0px))}}
 @media (max-width:720px){#glradio{top:calc(104px + env(safe-area-inset-top,0px));width:min(320px,92vw)}}
-@media (orientation:landscape) and (max-height:500px){#glradio{top:6px;width:min(300px,44vw);padding:6px 10px}}
+@media (orientation:landscape) and (max-height:500px){#glradio{left:50%;top:6px;width:min(300px,44vw);padding:6px 10px}}
 `;
   function build() {
     if (S.ui) return S.ui;
@@ -618,8 +625,7 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
       const b = e.target.closest('button[data-s]');
       if (b) {
         tune(b.dataset.s || null);
-        S.listT = 5;
-        listFill();
+        S.listT = 4;
         return;
       }
       listShow(!S.listOn);
@@ -803,6 +809,11 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     if (!S.id) return;
     S.fadeT += dt;
     S.sig = signal();
+    // (the display says when the reception turns weak or good)
+    if (S.sig < 0.5 !== S.weak) {
+      S.weak = S.sig < 0.5;
+      if (S.ui && !S.ui.el.hidden) paint();
+    }
     jobTick();
     mixTick(dt);
     // a special report over the music

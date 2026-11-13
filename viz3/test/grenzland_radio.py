@@ -9,8 +9,32 @@
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-ck = lib.Checks('grenzland_radio')
+_ck = lib.Checks('grenzland_radio')
 OUT = lib.out('grenzland_radio')
+FAILS = []
+def ck(what, cond, info=''):
+    if not cond: FAILS.append((what, str(info)))
+    return _ck(what, cond, info)
+ck.errors = lambda errs: (FAILS.append(('page errors', ' | '.join(e[:160] for e in errs if e.startswith('PAGEERR'))[:500])) if any(e.startswith('PAGEERR') for e in errs) else None, _ck.errors(errs))[1]
+ck.done = _ck.done
+def annotate():
+    """On GitHub Actions the log of a job is not public, its annotations are: what failed goes there (the runner reads the step's output –
+    this test's own output goes to a file, so the lines are written to the runner's pipe of the parent process). After the police agent's test."""
+    if not os.environ.get('GITHUB_ACTIONS'): return
+    esc = lambda t: t.replace('%', '%25').replace('\r', ' ').replace('\n', '%0A')
+    try:
+        with open(f'/proc/{os.getppid()}/fd/1', 'w') as f:
+            if FAILS:
+                for i in range(0, len(FAILS), 3):
+                    f.write('::error title=grenzland_radio::' + esc('\n'.join(f'FAIL {w}: {inf[:700]}' for w, inf in FAILS[i:i + 3])) + '\n')
+            else:
+                f.write(f'::notice title=grenzland_radio::{len(_ck.ok)} checks ok in {round(time.time() - _ck.t0)} s\n')
+    except Exception as e:
+        print('annotate failed', e)
+import atexit; atexit.register(annotate)
+def _hook(t, v, tb, _old=sys.excepthook):
+    FAILS.append(('the test itself stopped', f'{t.__name__}: {str(v)[:300]}')); _old(t, v, tb)
+sys.excepthook = _hook
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs)
@@ -19,13 +43,14 @@ with lib.browser() as b:
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
     steps = lambda secs, dt=0.25: E(f"for (let i = 0; i < {max(1, int(secs / dt))}; i++) GAME.step({dt})")
     def pic(name, world=False):
+        # (the frame read back first – lib.shot –, else the page's screenshot waits for the software GPU and gives up)
         try:
-            if world: lib.shot(pg, OUT, name)
-            else: E("GAME.shot()")
-            pg.screenshot(path=os.path.join(OUT, name + '.png'))
+            lib.shot(pg, OUT, name)
+            pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=20000)
+            if not world: os.remove(os.path.join(OUT, name + '.jpg'))
             print('pic', name, flush=True)
         except Exception as e:
-            print('shot failed', name, e)
+            print('shot failed', name, str(e)[:120])
     def until(cond, secs=30, dt=0.25, real=0.05):
         for _ in range(int(secs / dt)):
             steps(dt, dt)
@@ -152,7 +177,7 @@ with lib.browser() as b:
     E("GLRADIO.next()"); steps(0.25); a = E("GLRADIO.cur()")
     E("GLRADIO.next()"); steps(0.5); w = ST()
     ck('the youth station, and the Western one with noise', a == 'impuls' and w['id'] == 'west' and w['sig'] < 0.95 and w['mode'] == 'koffer', str({k: w[k] for k in ('id', 'sig', 'mode')}))
-    E("GLHANDY.toggle()"); steps(0.25)
+    E("GLHANDY.toggle(); 0"); steps(0.25)
     ck('1989 nobody has a phone', not E("GLHANDY.isOpen()"))
     E("GL89.leave().then(() => { window.__e89 = 2 }); 0")
     for _ in range(20):
@@ -188,9 +213,9 @@ with lib.browser() as b:
     closed = not E("GLHANDY.isOpen()")
     E("GLHANDY.sms('Jule', 'Staumauer, 20 Uhr. Bring Gemisch mit.')"); steps(0.25)
     u1 = E("GLHANDY.unread()")
-    E("GLHANDY.open()"); steps(0.5)
+    o1 = E("GLHANDY.open()"); steps(0.5)
     v = J("({ tab: GLHANDY.S.tab, neu: document.querySelectorAll('#glhandy .msg.neu').length, txt: document.getElementById('hybody').textContent, unread: GLHANDY.unread(), saved: GLSTATE.sms.length })")
-    ck('Esc puts the phone away; a message arrives, is shown as new, and is read', closed and u1 == 1 and v['tab'] == 'sms' and v['neu'] == 1 and 'Staumauer' in v['txt'] and v['unread'] == 0 and v['saved'] == 1, str(v)[:240])
+    ck('Esc puts the phone away; a message arrives, is shown as new, and is read', closed and o1 is True and u1 == 1 and v['tab'] == 'sms' and v['neu'] == 1 and 'Staumauer' in v['txt'] and v['unread'] == 0 and v['saved'] == 1, str(v)[:240])
     pic('07_handy_nachricht')
     # the bank
     E("GLSTATE.earn(50, 'Kurierlohn')"); pg.click('#glhandy .hn button[data-tab="bank"]'); steps(0.5)
@@ -204,7 +229,7 @@ with lib.browser() as b:
     pic('08_handy_notiz')
     # the camera
     E("GAME.view(4, 15, 0, 90, 0)"); steps(0.5)
-    E("window.__fotos = 0; GLHANDY.kamera({ ziel: [KERN.where()[0] + 12, KERN.where()[1]], r: 30, n: 2, name: 'Testmotiv', done: () => { window.__fotos = 1 } }); GLHANDY.open('kamera')"); steps(0.5)
+    E("window.__fotos = 0; GLHANDY.kamera({ ziel: [KERN.where()[0] + 12, KERN.where()[1]], r: 30, n: 2, name: 'Testmotiv', done: () => { window.__fotos = 1 } }); GLHANDY.open('kamera'); 0"); steps(0.5)
     c0 = J("({ cam: !document.getElementById('glcam').hidden, handy: GLHANDY.isOpen(), gut: document.getElementById('glcam').classList.contains('gut'), t: document.getElementById('glcam').textContent })")
     pic('09_kamera', True)
     pg.click('#glcam button[data-c="foto"]'); steps(0.25)
@@ -220,7 +245,7 @@ with lib.browser() as b:
     fits = {}
     for name, (w, h) in {'hochkant': (390, 780), 'quer': (780, 390)}.items():
         pg.set_viewport_size({'width': w, 'height': h}); time.sleep(1.5); steps(0.5)
-        E("GLHANDY.open('chat')"); steps(0.5)
+        E("GLHANDY.open('chat'); 0"); steps(0.5)
         r = J("(() => { const r = document.getElementById('glhandy').getBoundingClientRect(), t = document.querySelector('#glhandy .hn').getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, tabs: t.bottom, w: innerWidth, h: innerHeight } })()")
         fits[name] = r['l'] >= -1 and r['t'] >= -1 and r['r'] <= r['w'] + 1 and r['b'] <= r['h'] + 1 and r['tabs'] <= r['h'] + 1 and (r['r'] - r['l']) > 250
         print(name, r, flush=True)
@@ -232,8 +257,8 @@ with lib.browser() as b:
     ck('the phone and the station display fit a phone\'s screen, portrait and landscape', all(fits.values()), str(fits))
     pg.set_viewport_size({'width': 1100, 'height': 680}); time.sleep(1); steps(0.5)
     # ---------------- the end ----------------
-    E("GLHANDY.open('radio')"); steps(0.5)
-    E("GRENZLAND.stop()"); steps(0.5)
+    E("GLHANDY.open('radio'); 0"); steps(0.5)
+    E("GRENZLAND.stop(); 0"); steps(0.5)
     time.sleep(0.6)
     s = J("({ on: GLSTATE.on, cur: GLRADIO.cur(), st: GLRADIO.stand(), handy: document.getElementById('glhandy').hidden, cam: document.getElementById('glcam').hidden, "
           "bar: document.getElementById('glradio').hidden, open: GLHANDY.isOpen(), el: !!GLRADIO.S.el, prog: Object.keys(GLRADIO.S.prog).length })")
