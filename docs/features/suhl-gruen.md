@@ -74,7 +74,12 @@ Dateien: `tools/suhl/out/gruen/actions/stadt_v0/statistik.json`, `index_b.json`,
 
 ### Ganze Stadt, v1 (mit Höhenmodell)
 
-Siehe Abschnitt 9 („Läufe“) und `tools/suhl/out/gruen/actions/stadt_v1/`.
+Lauf 43349414221, gestartet am 13.11.2026 um 03:03 Uhr (nDOM1 für alle 193 Kacheln der Gemeinde, Bäume in 416 Kacheln,
+Waldzellen und Grünflächen in allen 1 013). Der Lauf legt seine Zahlen selbst nach `tools/suhl/out/gruen/actions/stadt_v1/`
+(`statistik.json` mit `pruefung`, `schema`, `ndom`, `zweifel`; `index_b.json`, `index_w.json`, `index_gr.json`;
+`bestaende.geojson.gz`; `zweifel.json.gz`; `lauf_stadt_v1.txt` mit dem Ergebnis des Höhen-Abrufs) und die Produkte als
+Artefakte `suhl-b-v1`, `suhl-w-v1`, `suhl-gr-v1`. **Gültig ist er, wenn dort `pruefung.ok` und `schema.gueltig` wahr sind.**
+Bis dahin gilt für die ganze Stadt v0.
 
 ## 3 Wie die Bäume gefunden werden
 
@@ -229,7 +234,7 @@ ragt ein Kreis schnell über das Grün hinaus.
 | 43346253676 | zentrum | v1, erster Versuch mit nDOM1 (P1, 8 Kacheln, 6,2 MB) | grün, aber **überholt**: Höhen aus einem Median-Filter – bei kahlen Kronen viel zu niedrig |
 | 43347272870 | zentrum | v1, zweiter Versuch | grün, aber **überholt**: verwarf 937 Kronen, weil der Laser sie nicht sah |
 | 43348531474 | zentrum | **v0 und v1 des Probesatzes** (Code `50e49e89`) | grün; der Stand in `tools/suhl/out/gruen/probe/` |
-| 43349414221 | stadt | v1: ganze Stadt mit nDOM1 für alle 193 Kacheln | siehe `actions/stadt_v1/` |
+| 43349414221 | stadt | v1: ganze Stadt mit nDOM1 für alle 193 Kacheln (Code `5f29ec3c`) | lief beim Schreiben dieser Zeile; Ergebnis in `actions/stadt_v1/`, Artefakte `suhl-b-v1`, `suhl-w-v1`, `suhl-gr-v1` |
 
 ## 10 Quellen und Nennung
 
@@ -273,8 +278,15 @@ im Cache des Workflows und werden nie zweimal geholt.
 
 ## 13 Offen, nächste Schritte
 
-- Nadel/Laub in der Stadt ist unsicher (Halbschatten); mit der Kronenform aus dem Höhenmodell ließe es sich verbessern.
-- Lärche im Wald nicht getrennt.
+- **Flugtag des Lasers** über Suhl herausfinden (der Dienst nennt nur 2020–2025). Davon hängt ab, ob die Bäume der
+  Zweifelsliste gestrichen werden sollten. Ein neueres Luftbild klärt es ebenso.
+- **Höhen der anderen Hälfte:** Ein Oberflächenmodell aus den Luftbildern selbst (bDOM, mit Laub, vom Tag des Bildflugs) gäbe
+  jede Kronenhöhe ohne Zeitversatz. Das Land rechnet sein Luftbild auf ein solches Modell um, bietet es aber nicht an (auch
+  easygeodata nicht) – Stand 13.11.2026.
+- Nadel/Laub in der Stadt ist unsicher (Halbschatten). Die Laser-Dichte einer Krone (Nadelbäume sieht der Laser dicht) könnte
+  es entscheiden – noch nicht genutzt.
+- Lärche im Wald nicht getrennt (im Mai hellgrün wie Laub, im Laser kahl wie Laub).
 - Die Waldklassen sind nicht um die Hangbeleuchtung bereinigt: Laubwald an sonnenabgewandten Hängen kann als Mischwald gelten.
-- Grünmaske aus dem Luftbild (Rasen/Gehölz je 2 m) als kleines Raster für den Boden-Shader – noch nicht gebaut.
-- Jeder Waldbaum einzeln aus dem Höhenmodell (wie die 21 000 Bäume des Dorfs) – möglich, wenn die Laufzeit es will.
+- Jeder Waldbaum einzeln aus den Baumspitzen des Lasers (wie die 21 000 Bäume des Dorfs) – die Spitzen sind je Waldzelle
+  schon gezählt; als Einzelbäume wären es grob eine Million (8 MB). Sinnvoll, wenn die Laufzeit sie zeichnen will.
+- Baumarten: nur wo OSM sie nennt. Ein offenes Baumkataster der Stadt habe ich nicht gefunden.
