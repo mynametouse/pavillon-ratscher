@@ -1080,7 +1080,8 @@ export const GLFIG = (() => {
   // ---- hair, moustache, glasses: built in the head's own measure (D of headOf; kit frame: x right, y forward, z up from the crown) ----
   const tone = (c, f) => [Math.min(1, c[0] * f), Math.min(1, c[1] * f), Math.min(1, c[2] * f)];
   const HAAR = {
-    // a perm: curls all over, the face free (lang: down to the shoulders)
+    // a perm: curls all over, the face free (lang: down to the shoulders). The curls overlap and differ little in tone: small, angular
+    // ones with strong contrast read as hair rollers close up.
     dauerwelle(K, D, c, lang) {
       const rv = 0.108,
         n = lang ? 96 : 76;
@@ -1097,9 +1098,9 @@ export const GLFIG = (() => {
           Math.sin(th) * Math.sin(ph) * D.rx * r,
           Math.sin(th) * fr * D.rz * r,
           -rv + Math.cos(th) * rv * r,
-          0.024 + h3 * 0.012,
-          tone(c, 0.8 + hash(i, 3) * 0.42),
-          5
+          0.03 + h3 * 0.013,
+          tone(c, 0.88 + hash(i, 3) * 0.24),
+          7
         );
       }
       if (lang)
@@ -1113,9 +1114,9 @@ export const GLFIG = (() => {
             Math.sin(ph) * D.rx * r,
             Math.cos(ph) * D.rz * r,
             z,
-            0.028 + hash(i, 47) * 0.012,
-            tone(c, 0.8 + hash(i, 5) * 0.4),
-            5
+            0.032 + hash(i, 47) * 0.013,
+            tone(c, 0.88 + hash(i, 5) * 0.24),
+            7
           );
         }
     },
