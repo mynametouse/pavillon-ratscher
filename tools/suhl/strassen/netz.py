@@ -24,11 +24,12 @@ KINDS, SURF = ST.KINDS, ST.SURF
 # flags of a way (field 4 of a way in the drive data). The app reads 1 and 2 (viz3/src/welt/fahrt.js); strecke.py writes 4; the first
 # Suhl attempt wrote 8 and 16. From 32 on: Suhl's proposal to the roads chat (docs/features/suhl-strassen.md).
 FL = {'bridge': 1, 'tunnel': 2, 'oneway': 4, 'motorway': 8, 'link': 16, 'roundabout': 32, 'level': 64, 'steps': 128,
-      'no_walk_left': 256, 'no_walk_right': 512, 'private': 1024, 'passage': 2048, 'covered': 4096, 'sidewalk': 8192, 'crossing': 16384}
+      'no_walk_left': 256, 'no_walk_right': 512, 'private': 1024, 'passage': 2048, 'covered': 4096, 'sidewalk': 8192, 'crossing': 16384,
+      'into_building': 32768}
 FL_DOC = {1: 'Brücke', 2: 'Tunnel', 4: 'Einbahnstraße in Punktrichtung', 8: 'Autobahn-Fahrbahn', 16: 'Autobahn-Rampe', 32: 'Kreisverkehr',
           64: 'niveaugleich ohne Bord (Fußgängerzone, verkehrsberuhigt)', 128: 'Treppe', 256: 'links kein Gehweg', 512: 'rechts kein Gehweg',
           1024: 'nicht öffentlich (access=private/no)', 2048: 'Hausdurchgang', 4096: 'überdacht', 8192: 'eigens kartierter Gehweg neben einer Straße',
-          16384: 'Querung (Fußweg über die Fahrbahn)'}
+          16384: 'Querung (Fußweg über die Fahrbahn)', 32768: 'führt in ein Gebäude (Einfahrt, Durchfahrt ohne Tunnel-Angabe)'}
 HW_SKIP = {'construction', 'proposed', 'platform', 'rest_area', 'services', 'elevator', 'corridor', 'raceway', 'bus_stop', 'razed',
            'abandoned', 'planned', 'escape', 'via_ferrata', 'emergency_bay', 'disused'}
 NONE_WALK = ('no', 'none', 'separate')
@@ -127,7 +128,7 @@ def record(wid, nd, t, nodes):
     return dict(id=wid, kind=kind, kout=kout, surf=surf, w=float(np.clip(wd, 1.0, 16.0)), fl=f, refs=refs, name=t.get('name', ''),
                 ref=t.get('ref', ''), layer=layer, hw=hw, lanes=lanes, ms=int(ms) if ms and ms < 200 else 0,
                 lit={'yes': 1, '24/7': 1, 'automatic': 1, 'no': 2}.get(t.get('lit'), 0), service=t.get('service', ''),
-                bname=t.get('bridge:name', '') or t.get('tunnel:name', ''))
+                bname=t.get('bridge:name', '') or t.get('tunnel:name', ''), wtag=_num(t.get('width', '')) is not None)
 
 
 RAIL = {'rail': 0, 'light_rail': 0, 'narrow_gauge': 0, 'tram': 0, 'preserved': 1, 'disused': 1}
@@ -181,6 +182,56 @@ def select(o, box, rail=True, tiles=None):
         out.append(r)
     out.sort(key=lambda w: w['id'])
     return out
+
+
+def is_building(t):
+    """a building that stands on the ground (no roof over a filling station, no carport, nothing underground or on a bridge)"""
+    b = t.get('building')
+    if not b or b in ('no', 'roof', 'carport'):
+        return False
+    if t.get('location') == 'underground' or 'bridge' in t:
+        return False
+    try:
+        if int(t.get('layer', '0')) < 0:
+            return False
+    except ValueError:
+        pass
+    return True
+
+
+def fit_buildings(ways, o, gap=0.3, min_w=2.2):
+    """no building inside a carriageway (plan 5.3): where a house stands nearer to the axis of a road for cars than half its assumed
+    width, the road is as narrow as the house allows (the default widths of the classes are too wide for the lanes of the old town);
+    a width OSM gives is kept. A way whose axis itself enters a building (the ramp into a car park, a passage without a tunnel tag)
+    gets the flag 'into_building'. -> (narrowed, into a building, buildings looked at)"""
+    from shapely.geometry import LineString
+    from shapely.strtree import STRtree
+    B = [p for kind, i, t, p in o.areas(is_building)]
+    if not B:
+        return 0, 0, 0
+    tree = STRtree(B)
+    skip = 1 | 2 | FL['passage'] | FL['covered']
+    nn = ni = 0
+    for w in ways:
+        if w['kind'] not in ('motorway', 'main', 'county', 'street', 'lane', 'service') or w['fl'] & skip or w['hw'] == 'pedestrian':
+            continue
+        ln = LineString([o.nodes[r] for r in w['refs']])
+        hw = w['w'] / 2
+        idx = tree.query(ln.buffer(hw), predicate='intersects')
+        if not len(idx):
+            continue
+        d = min(ln.distance(B[j]) for j in idx)
+        if d <= 0.05:
+            w['fl'] |= FL['into_building']
+            ni += 1
+            near = [ln.distance(B[j]) for j in idx if ln.distance(B[j]) > 0.05]
+            if not near or w['wtag']:
+                continue
+            d = min(near)
+        if d - gap < hw and not w['wtag']:
+            w['w'] = float(max(min_w, 2 * (d - gap)))
+            nn += 1
+    return nn, ni, len(B)
 
 
 def lam_of(w, grob=1.0):

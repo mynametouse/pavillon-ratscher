@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:08:51Z",
+ "made": "2026-11-13T01:14:50Z",
  "run": "tools/suhl/out/strassen/probe",
  "drive_file": "suhl-zentrum.json",
  "tiles": 11,
@@ -82,235 +82,74 @@
  "gebaeude_in_fahrbahn": {
   "quelle_gebaeude": "OpenStreetMap (building=*, ohne Dächer und Carports, ohne Unterirdisches) – die Grundrisse von suhl-gebaeude folgen",
   "gebaeude": 1461,
-  "strassen_geprueft": 653,
+  "strassen_geprueft": 631,
+  "fuehren_in_ein_gebaeude": 22,
   "grenze_m": 0.3,
-  "treffer": 67,
-  "strassenstuecke_betroffen": 53,
-  "gebaeude_betroffen": 57,
+  "treffer": 7,
+  "strassenstuecke_betroffen": 6,
+  "gebaeude_betroffen": 7,
   "ok": false,
   "tiefste": [
    {
-    "tiefe_m": 1.56,
-    "osm_weg": 54818046,
-    "strasse": "Böttcherstraße",
-    "breite_m": 5.0,
-    "gebaeude": "w133019887",
-    "art": "yes",
+    "tiefe_m": 0.95,
+    "osm_weg": 70114731,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w42871444",
+    "art": "hotel",
     "name": ""
    },
    {
-    "tiefe_m": 1.5,
-    "osm_weg": 985108413,
+    "tiefe_m": 0.86,
+    "osm_weg": 70115857,
     "strasse": "service",
-    "breite_m": 3.0,
-    "gebaeude": "w32083739",
-    "art": "parking",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.5,
-    "osm_weg": 847449124,
-    "strasse": "Auenstraße",
-    "breite_m": 3.0,
-    "gebaeude": "w847449113",
-    "art": "apartments",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.5,
-    "osm_weg": 175906376,
-    "strasse": "service",
-    "breite_m": 3.0,
-    "gebaeude": "w42871446",
-    "art": "yes",
-    "name": "Congress Centrum Suhl (CCS)"
-   },
-   {
-    "tiefe_m": 1.5,
-    "osm_weg": 70114738,
-    "strasse": "service",
-    "breite_m": 3.0,
-    "gebaeude": "w42871446",
-    "art": "yes",
-    "name": "Congress Centrum Suhl (CCS)"
-   },
-   {
-    "tiefe_m": 1.49,
-    "osm_weg": 1211540627,
-    "strasse": "Auenstraße",
-    "breite_m": 3.0,
-    "gebaeude": "w847449114",
-    "art": "apartments",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.48,
-    "osm_weg": 1161282134,
-    "strasse": "service",
-    "breite_m": 3.0,
-    "gebaeude": "w42871446",
-    "art": "yes",
-    "name": "Congress Centrum Suhl (CCS)"
-   },
-   {
-    "tiefe_m": 1.47,
-    "osm_weg": 1461905339,
-    "strasse": "service",
-    "breite_m": 3.0,
-    "gebaeude": "w115751930",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.47,
-    "osm_weg": 1461905337,
-    "strasse": "service",
-    "breite_m": 3.0,
-    "gebaeude": "w115751930",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.47,
-    "osm_weg": 985108412,
-    "strasse": "service",
-    "breite_m": 3.0,
-    "gebaeude": "w32083739",
-    "art": "parking",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.45,
-    "osm_weg": 1460160790,
-    "strasse": "Auenstraße",
-    "breite_m": 3.0,
-    "gebaeude": "w847449114",
-    "art": "apartments",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.45,
-    "osm_weg": 69720848,
-    "strasse": "service",
-    "breite_m": 3.0,
-    "gebaeude": "w42484465",
-    "art": "retail",
-    "name": "Lauterbogen-Center"
-   },
-   {
-    "tiefe_m": 1.43,
-    "osm_weg": 1417282548,
-    "strasse": "service",
-    "breite_m": 3.0,
-    "gebaeude": "w127199553",
-    "art": "industrial",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.4,
-    "osm_weg": 1456678991,
-    "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w85578519",
+    "breite_m": 2.2,
+    "gebaeude": "w314472767",
     "art": "office",
     "name": ""
    },
    {
-    "tiefe_m": 1.4,
-    "osm_weg": 1096294718,
-    "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w300432514",
-    "art": "yes",
+    "tiefe_m": 0.83,
+    "osm_weg": 55567768,
+    "strasse": "Auf der Mauer",
+    "breite_m": 2.5,
+    "gebaeude": "w127249681",
+    "art": "house",
     "name": ""
    },
    {
-    "tiefe_m": 1.4,
-    "osm_weg": 985108409,
+    "tiefe_m": 0.64,
+    "osm_weg": 1161282130,
     "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w1499548844",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.4,
-    "osm_weg": 557943618,
-    "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w412429677",
-    "art": "office",
-    "name": "Haus der Wirtschaft"
-   },
-   {
-    "tiefe_m": 1.4,
-    "osm_weg": 557943618,
-    "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w1499541881",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.4,
-    "osm_weg": 317728349,
-    "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w314472765",
-    "art": "office",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.4,
-    "osm_weg": 51343347,
-    "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w94964399",
+    "breite_m": 2.2,
+    "gebaeude": "w45393693",
     "art": "apartments",
     "name": ""
    },
    {
-    "tiefe_m": 1.39,
-    "osm_weg": 104143996,
+    "tiefe_m": 0.57,
+    "osm_weg": 55567768,
+    "strasse": "Auf der Mauer",
+    "breite_m": 2.5,
+    "gebaeude": "w129316283",
+    "art": "house",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.41,
+    "osm_weg": 1461940744,
     "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w103513213",
+    "breite_m": 2.2,
+    "gebaeude": "w94964409",
     "art": "yes",
     "name": ""
    },
    {
-    "tiefe_m": 1.39,
-    "osm_weg": 70114709,
+    "tiefe_m": 0.4,
+    "osm_weg": 261649104,
     "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w300432514",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.37,
-    "osm_weg": 557943617,
-    "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w1499541881",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.35,
-    "osm_weg": 1492423890,
-    "strasse": "service",
-    "breite_m": 2.8,
-    "gebaeude": "w126550142",
-    "art": "office",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.28,
-    "osm_weg": 55567770,
-    "strasse": "Hofleitengasse",
-    "breite_m": 5.0,
-    "gebaeude": "w104143998",
+    "breite_m": 2.2,
+    "gebaeude": "w127069502",
     "art": "yes",
     "name": ""
    }
@@ -321,17 +160,17 @@
   "ziel": "jede Kreuzung eine Ebene, ±3 cm (3 m um den Knoten)",
   "alle": {
    "n": 1735,
-   "median_cm": 0.5,
-   "p95_cm": 7.1,
-   "max_cm": 37.1,
-   "share_within_3cm": 0.878
+   "median_cm": 0.3,
+   "p95_cm": 4.0,
+   "max_cm": 37.8,
+   "share_within_3cm": 0.921
   },
   "fahrstrassen": {
    "n": 851,
-   "median_cm": 0.4,
-   "p95_cm": 7.8,
-   "max_cm": 25.2,
-   "share_within_3cm": 0.854
+   "median_cm": 0.3,
+   "p95_cm": 4.2,
+   "max_cm": 34.9,
+   "share_within_3cm": 0.912
   },
   "ok": false
  },
@@ -339,41 +178,41 @@
   "klassen": {
    "street": {
     "km": 38.25,
-    "wellen_je_km": 1.8,
+    "wellen_je_km": 1.4,
     "grenze_wellen": 4,
-    "steigungswechsel_10m": 0.71,
+    "steigungswechsel_10m": 0.66,
     "grenze_steigungswechsel": 1.0,
     "ok": true
    },
    "service": {
     "km": 25.76,
-    "wellen_je_km": 4.0,
+    "wellen_je_km": 2.8,
     "grenze_wellen": 5,
-    "steigungswechsel_10m": 1.11,
+    "steigungswechsel_10m": 0.92,
     "grenze_steigungswechsel": 1.2,
     "ok": true
    },
    "track": {
     "km": 9.76,
-    "wellen_je_km": 3.8,
+    "wellen_je_km": 3.6,
     "grenze_wellen": 6,
-    "steigungswechsel_10m": 1.15,
+    "steigungswechsel_10m": 1.4,
     "grenze_steigungswechsel": 1.5,
     "ok": true
    },
    "main": {
     "km": 7.01,
-    "wellen_je_km": 0.1,
+    "wellen_je_km": 0.3,
     "grenze_wellen": 2,
-    "steigungswechsel_10m": 0.23,
+    "steigungswechsel_10m": 0.14,
     "grenze_steigungswechsel": 0.5,
     "ok": true
    },
    "lane": {
     "km": 2.45,
-    "wellen_je_km": 1.2,
+    "wellen_je_km": 1.6,
     "grenze_wellen": 4,
-    "steigungswechsel_10m": 0.71,
+    "steigungswechsel_10m": 0.72,
     "grenze_steigungswechsel": 1.0,
     "ok": true
    },
@@ -381,66 +220,66 @@
     "km": 0.08,
     "wellen_je_km": 0.0,
     "grenze_wellen": 3,
-    "steigungswechsel_10m": 0.05,
+    "steigungswechsel_10m": 0.23,
     "grenze_steigungswechsel": 0.7,
     "ok": true
    }
   },
   "ok": true,
-  "gerechnet_auf": "ungeschnittene Geländekacheln von suhl-boden (Copernicus DEM GLO-30 (Oberflächenmodell 30 m) mit abgesenktem Wald (ESA WorldCover); DGM1 Thüringen noch nicht verfügbar, Stand 2026-11-13T00:43:18Z, Commit a00136ba; 766022 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 86728 Stützwerte – nur am Rand außerhalb der Kacheln); kleine Klassen 1.3-fach länger geglättet"
+  "gerechnet_auf": "ungeschnittene Geländekacheln von suhl-boden (DGM1 Thüringen (1 m) unter 100 % der Kacheln des Laufs, sonst Copernicus GLO-30; Stand 2026-11-13T01:10:23Z, origin/suhl/boden d262745d, tools/suhl/out/boden/probe/roh/v1/t; 737194 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 96179 Stützwerte – nur am Rand außerhalb der Kacheln)"
  },
  "bruecken": {
   "kreuzungen_mit_anderen_wegen": 24,
-  "unter_4_5_m": 23,
+  "unter_4_5_m": 8,
   "ok": false,
   "niedrigste": [
    {
-    "gap_m": -1.4,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 297293073
+    "gap_m": 0.1,
+    "bridge_way": 70223028,
+    "name": "footway",
+    "below_way": 42559825
    },
    {
-    "gap_m": -1.4,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 1257119748
-   },
-   {
-    "gap_m": -1.3,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 1257119749
-   },
-   {
-    "gap_m": -1.1,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 1386295050
-   },
-   {
-    "gap_m": -1.0,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 32125359
-   },
-   {
-    "gap_m": -1.0,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 297293095
-   },
-   {
-    "gap_m": -0.9,
+    "gap_m": 0.1,
     "bridge_way": 70223028,
     "name": "footway",
     "below_way": 70223029
    },
    {
-    "gap_m": -0.7,
+    "gap_m": 0.1,
     "bridge_way": 1547281403,
     "name": "steps",
     "below_way": 70223030
+   },
+   {
+    "gap_m": 1.0,
+    "bridge_way": 70120187,
+    "name": "footway",
+    "below_way": 1241964770
+   },
+   {
+    "gap_m": 1.1,
+    "bridge_way": 69720862,
+    "name": "footway",
+    "below_way": 25745639
+   },
+   {
+    "gap_m": 3.8,
+    "bridge_way": 143019247,
+    "name": "6298",
+    "below_way": 1359641164
+   },
+   {
+    "gap_m": 3.9,
+    "bridge_way": 134908381,
+    "name": "railway=rail",
+    "below_way": 1359641164
+   },
+   {
+    "gap_m": 4.1,
+    "bridge_way": 67502212,
+    "name": "6298",
+    "below_way": 67502215
    }
   ]
  },

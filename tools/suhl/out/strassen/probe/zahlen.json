@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:08:43Z",
+ "made": "2026-11-13T01:14:26Z",
  "gebiet": "probe",
  "tiles": 11,
  "osm": "OSM API 0.6 map calls (2 boxes, cached by stage 1)",
@@ -14,10 +14,15 @@
  "nodes": 90927,
  "solve": {
   "joints": 608,
-  "flat": 4588,
+  "flat": 4587,
   "twins": 957,
-  "grob": 1.3,
-  "lift_max_m": 2.56
+  "grob": 1.0,
+  "lift_max_m": 1.34
+ },
+ "buildings": {
+  "narrowed": 99,
+  "into_building": 26,
+  "buildings": 7970
  },
  "km_by_kind": {
   "foot": 22.61,
@@ -96,12 +101,12 @@
  "metric": {
   "street": {
    "km": 38.25,
-   "wellen_je_km_vorher": 15.2,
-   "wellen_je_km": 1.8,
-   "steigungswechsel_10m_vorher": 2.89,
-   "steigungswechsel_10m": 0.71,
-   "max_steigung_vorher": 93.2,
-   "max_steigung": 22.3,
+   "wellen_je_km_vorher": 7.5,
+   "wellen_je_km": 1.4,
+   "steigungswechsel_10m_vorher": 2.14,
+   "steigungswechsel_10m": 0.66,
+   "max_steigung_vorher": 114.2,
+   "max_steigung": 25.1,
    "grenzwerte": {
     "wellen_je_km": 4,
     "steigungswechsel_10m": 1.0
@@ -112,18 +117,18 @@
     "min_kuppe": 3000,
     "min_wanne": 2000
    },
-   "anteil_ueber_steigung": 0.181,
-   "anteil_kuppe_zu_eng": 0.073,
-   "anteil_wanne_zu_eng": 0.013
+   "anteil_ueber_steigung": 0.207,
+   "anteil_kuppe_zu_eng": 0.064,
+   "anteil_wanne_zu_eng": 0.026
   },
   "service": {
    "km": 25.76,
-   "wellen_je_km_vorher": 17.7,
-   "wellen_je_km": 4.0,
-   "steigungswechsel_10m_vorher": 3.63,
-   "steigungswechsel_10m": 1.11,
-   "max_steigung_vorher": 75.4,
-   "max_steigung": 45.6,
+   "wellen_je_km_vorher": 14.1,
+   "wellen_je_km": 2.8,
+   "steigungswechsel_10m_vorher": 2.35,
+   "steigungswechsel_10m": 0.92,
+   "max_steigung_vorher": 131.1,
+   "max_steigung": 44.3,
    "grenzwerte": {
     "wellen_je_km": 5,
     "steigungswechsel_10m": 1.2
@@ -132,39 +137,39 @@
   },
   "foot": {
    "km": 24.74,
-   "wellen_je_km_vorher": 19.9,
-   "wellen_je_km": 10.0,
-   "steigungswechsel_10m_vorher": 3.27,
-   "steigungswechsel_10m": 2.04,
-   "max_steigung_vorher": 57.7,
-   "max_steigung": 52.7
+   "wellen_je_km_vorher": 12.3,
+   "wellen_je_km": 4.8,
+   "steigungswechsel_10m_vorher": 2.19,
+   "steigungswechsel_10m": 1.35,
+   "max_steigung_vorher": 117.6,
+   "max_steigung": 44.2
   },
   "path": {
    "km": 15.55,
-   "wellen_je_km_vorher": 13.9,
-   "wellen_je_km": 6.9,
-   "steigungswechsel_10m_vorher": 4.54,
-   "steigungswechsel_10m": 2.7,
-   "max_steigung_vorher": 68.4,
-   "max_steigung": 62.1
+   "wellen_je_km_vorher": 21.3,
+   "wellen_je_km": 6.6,
+   "steigungswechsel_10m_vorher": 4.95,
+   "steigungswechsel_10m": 2.52,
+   "max_steigung_vorher": 142.6,
+   "max_steigung": 56.5
   },
   "rail": {
    "km": 13.5,
-   "wellen_je_km_vorher": 11.5,
+   "wellen_je_km_vorher": 11.9,
    "wellen_je_km": 0.0,
-   "steigungswechsel_10m_vorher": 1.89,
-   "steigungswechsel_10m": 0.12,
-   "max_steigung_vorher": 31.2,
-   "max_steigung": 8.9
+   "steigungswechsel_10m_vorher": 2.95,
+   "steigungswechsel_10m": 0.1,
+   "max_steigung_vorher": 123.1,
+   "max_steigung": 10.3
   },
   "track": {
    "km": 9.76,
-   "wellen_je_km_vorher": 14.9,
-   "wellen_je_km": 3.8,
-   "steigungswechsel_10m_vorher": 3.43,
-   "steigungswechsel_10m": 1.15,
-   "max_steigung_vorher": 50.9,
-   "max_steigung": 29.4,
+   "wellen_je_km_vorher": 17.9,
+   "wellen_je_km": 3.6,
+   "steigungswechsel_10m_vorher": 4.15,
+   "steigungswechsel_10m": 1.4,
+   "max_steigung_vorher": 114.9,
+   "max_steigung": 37.4,
    "grenzwerte": {
     "wellen_je_km": 6,
     "steigungswechsel_10m": 1.5
@@ -173,12 +178,12 @@
   },
   "main": {
    "km": 7.01,
-   "wellen_je_km_vorher": 19.2,
-   "wellen_je_km": 0.1,
-   "steigungswechsel_10m_vorher": 2.96,
-   "steigungswechsel_10m": 0.23,
-   "max_steigung_vorher": 22.0,
-   "max_steigung": 13.9,
+   "wellen_je_km_vorher": 3.3,
+   "wellen_je_km": 0.3,
+   "steigungswechsel_10m_vorher": 1.9,
+   "steigungswechsel_10m": 0.14,
+   "max_steigung_vorher": 100.5,
+   "max_steigung": 14.6,
    "grenzwerte": {
     "wellen_je_km": 2,
     "steigungswechsel_10m": 0.5
@@ -189,18 +194,18 @@
     "min_kuppe": 6000,
     "min_wanne": 3500
    },
-   "anteil_ueber_steigung": 0.118,
-   "anteil_kuppe_zu_eng": 0.035,
+   "anteil_ueber_steigung": 0.091,
+   "anteil_kuppe_zu_eng": 0.017,
    "anteil_wanne_zu_eng": 0.0
   },
   "lane": {
    "km": 2.45,
-   "wellen_je_km_vorher": 11.8,
-   "wellen_je_km": 1.2,
-   "steigungswechsel_10m_vorher": 2.94,
-   "steigungswechsel_10m": 0.71,
-   "max_steigung_vorher": 45.5,
-   "max_steigung": 33.6,
+   "wellen_je_km_vorher": 6.1,
+   "wellen_je_km": 1.6,
+   "steigungswechsel_10m_vorher": 1.78,
+   "steigungswechsel_10m": 0.72,
+   "max_steigung_vorher": 48.0,
+   "max_steigung": 27.6,
    "grenzwerte": {
     "wellen_je_km": 4,
     "steigungswechsel_10m": 1.0
@@ -212,17 +217,17 @@
     "min_wanne": 2000
    },
    "anteil_ueber_steigung": 0.166,
-   "anteil_kuppe_zu_eng": 0.034,
-   "anteil_wanne_zu_eng": 0.041
+   "anteil_kuppe_zu_eng": 0.073,
+   "anteil_wanne_zu_eng": 0.046
   },
   "county": {
    "km": 0.08,
-   "wellen_je_km_vorher": 25.6,
+   "wellen_je_km_vorher": 0.0,
    "wellen_je_km": 0.0,
-   "steigungswechsel_10m_vorher": 2.28,
-   "steigungswechsel_10m": 0.05,
-   "max_steigung_vorher": 4.3,
-   "max_steigung": 0.6,
+   "steigungswechsel_10m_vorher": 0.42,
+   "steigungswechsel_10m": 0.23,
+   "max_steigung_vorher": 3.2,
+   "max_steigung": 1.9,
    "grenzwerte": {
     "wellen_je_km": 3,
     "steigungswechsel_10m": 0.7
@@ -242,126 +247,117 @@
   "reach_m": 3.0,
   "alle": {
    "n": 1735,
-   "median_cm": 0.5,
-   "p95_cm": 7.1,
-   "max_cm": 37.1,
-   "share_within_3cm": 0.878
+   "median_cm": 0.3,
+   "p95_cm": 4.0,
+   "max_cm": 37.8,
+   "share_within_3cm": 0.921
   },
   "fahr": {
    "n": 851,
-   "median_cm": 0.4,
-   "p95_cm": 7.8,
-   "max_cm": 25.2,
-   "share_within_3cm": 0.854
+   "median_cm": 0.3,
+   "p95_cm": 4.2,
+   "max_cm": 34.9,
+   "share_within_3cm": 0.912
   },
   "fuss": {
    "n": 884,
-   "median_cm": 0.6,
-   "p95_cm": 6.0,
-   "max_cm": 37.1,
-   "share_within_3cm": 0.902
+   "median_cm": 0.3,
+   "p95_cm": 3.8,
+   "max_cm": 37.8,
+   "share_within_3cm": 0.93
   }
  },
  "clearance": {
   "bridges": 32,
   "crossings": 24,
-  "low": 23,
+  "low": 8,
   "clear_m": 4.5,
   "lowest": [
    {
-    "gap_m": -1.4,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 297293073
-   },
-   {
-    "gap_m": -1.4,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 1257119748
-   },
-   {
-    "gap_m": -1.3,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 1257119749
-   },
-   {
-    "gap_m": -1.1,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 1386295050
-   },
-   {
-    "gap_m": -1.0,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 32125359
-   },
-   {
-    "gap_m": -1.0,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 297293095
-   },
-   {
-    "gap_m": -0.9,
-    "bridge_way": 70223028,
-    "name": "footway",
-    "below_way": 70223029
-   },
-   {
-    "gap_m": -0.7,
-    "bridge_way": 1547281403,
-    "name": "steps",
-    "below_way": 70223030
-   },
-   {
-    "gap_m": -0.5,
-    "bridge_way": 44638404,
-    "name": "6298",
-    "below_way": 27762854
-   },
-   {
-    "gap_m": -0.4,
+    "gap_m": 0.1,
     "bridge_way": 70223028,
     "name": "footway",
     "below_way": 42559825
    },
    {
-    "gap_m": -0.3,
-    "bridge_way": 24929243,
-    "name": "6298",
-    "below_way": 1571453105
+    "gap_m": 0.1,
+    "bridge_way": 70223028,
+    "name": "footway",
+    "below_way": 70223029
    },
    {
     "gap_m": 0.1,
-    "bridge_way": 45985839,
-    "name": "Schleusinger Straße",
-    "below_way": 26724301
+    "bridge_way": 1547281403,
+    "name": "steps",
+    "below_way": 70223030
+   },
+   {
+    "gap_m": 1.0,
+    "bridge_way": 70120187,
+    "name": "footway",
+    "below_way": 1241964770
+   },
+   {
+    "gap_m": 1.1,
+    "bridge_way": 69720862,
+    "name": "footway",
+    "below_way": 25745639
+   },
+   {
+    "gap_m": 3.8,
+    "bridge_way": 143019247,
+    "name": "6298",
+    "below_way": 1359641164
+   },
+   {
+    "gap_m": 3.9,
+    "bridge_way": 134908381,
+    "name": "railway=rail",
+    "below_way": 1359641164
+   },
+   {
+    "gap_m": 4.1,
+    "bridge_way": 67502212,
+    "name": "6298",
+    "below_way": 67502215
    }
   ]
  },
  "heights": {
-  "tiles": 766022,
-  "copernicus": 86728,
-  "tile_dir": "/tmp/suhl-strassen/boden-5fc9fec8/tools/suhl/out/boden/probe/suhl/boden/v0/t",
+  "tiles": 737194,
+  "copernicus": 96179,
+  "tile_dir": "/tmp/suhl-strassen/boden-roh-v1/tools/suhl/out/boden/probe/roh/v1/t",
   "copernicus_canopy_m": 9.3,
   "note": "samples per source: tiles = the uncut ground tiles of suhl-boden (the one ground of all Suhl packages); copernicus = own sampling of Copernicus GLO-30 with the forest lowered (tools/welt/dem.py CopGround) where no tile holds the point",
   "ground": {
-   "generated": "2026-11-13T00:43:18Z",
-   "commit": "a00136ba",
-   "plan": "suhl-probe",
-   "terrain": "Copernicus DEM GLO-30 (Oberflächenmodell 30 m) mit abgesenktem Wald (ESA WorldCover); DGM1 Thüringen noch nicht verfügbar",
-   "terrain_source": "cop30",
+   "generated": "2026-11-13T01:10:23Z",
+   "commit": null,
+   "plan": "suhl-probe-roh",
+   "terrain": null,
+   "terrain_source": "dgm1+cop30",
    "canopy_m": 9.33,
-   "dgm1_level10_tiles": 0,
-   "dgm1_have": 0
+   "copernicus_offset_m": -4.896,
+   "dgm1_level10_tiles": null,
+   "dgm1_tiles_km": [
+    "618_5606",
+    "618_5607",
+    "618_5608",
+    "619_5606",
+    "619_5607",
+    "619_5608",
+    "620_5607",
+    "620_5608"
+   ],
+   "dgm1_via": "easygeodata",
+   "dgm1_have": 8,
+   "note": "Gelände VOR dem Straßeneinschnitt (nur Stufen 10-12): darauf rechnet suhl-strassen seine Profile. Nicht für die App."
   },
-  "solved_on": "ungeschnittene Geländekacheln von suhl-boden (Copernicus DEM GLO-30 (Oberflächenmodell 30 m) mit abgesenktem Wald (ESA WorldCover); DGM1 Thüringen noch nicht verfügbar, Stand 2026-11-13T00:43:18Z, Commit a00136ba; 766022 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 86728 Stützwerte – nur am Rand außerhalb der Kacheln); kleine Klassen 1.3-fach länger geglättet",
-  "own_sampling_share": 0.1017,
+  "dgm1_share": 1.0,
+  "tiles_from": "origin/suhl/boden d262745d, tools/suhl/out/boden/probe/roh/v1/t",
+  "solved_on": "ungeschnittene Geländekacheln von suhl-boden (DGM1 Thüringen (1 m) unter 100 % der Kacheln des Laufs, sonst Copernicus GLO-30; Stand 2026-11-13T01:10:23Z, origin/suhl/boden d262745d, tools/suhl/out/boden/probe/roh/v1/t; 737194 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 96179 Stützwerte – nur am Rand außerhalb der Kacheln)",
+  "own_sampling_share": 0.1154,
   "zaehlt": true
  },
- "bytes_tiles": 236753,
- "bytes_drive": 285032
+ "bytes_tiles": 226172,
+ "bytes_drive": 270184
 }

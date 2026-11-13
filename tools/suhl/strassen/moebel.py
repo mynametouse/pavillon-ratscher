@@ -92,8 +92,20 @@ def main():
     fz = [p for p in fz if not os.path.basename(p).startswith('routen')]
     if not fz:
         raise SystemExit('no drive-format file under ' + a.out + '/fahrt – run lauf.py first')
+    fz.sort(key=lambda q: ('anfahrt' in os.path.basename(q), q))
     F = json.load(open(fz[0], encoding='utf-8'))
     name = os.path.basename(fz[0])[:-5]
+    for extra in fz[1:]:                 # the approach roads: the same network for the tool
+        X = json.load(open(extra, encoding='utf-8'))
+        off, hoff = len(F['names']), len(F.get('hws', []))
+        F['names'] = F['names'] + X['names']
+        hm = {i: (F['hws'].index(h_) if h_ in F['hws'] else None) for i, h_ in enumerate(X.get('hws', []))}
+        for i, h_ in enumerate(X.get('hws', [])):
+            if hm[i] is None:
+                F['hws'].append(h_)
+                hm[i] = len(F['hws']) - 1
+        F['ways'] = F['ways'] + [w[:4] + [w[4] + off, w[5] + off, w[6]] for w in X['ways']]
+        F['hw'] = F['hw'] + [hm[i] for i in X['hw']]
     idx = json.load(open(os.path.join(a.out, L.index_path('s', 0)), encoding='utf-8'))
     T = [tuple(t) for t in L.tileset_decode(idx['tiles'][str(S.LEVEL)])]
     Tset = set(T)

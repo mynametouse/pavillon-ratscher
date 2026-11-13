@@ -123,6 +123,8 @@ class Heights:
             S.log(f'forest lowered as in the ground tiles: {float(cm):.2f} m (own fit {self.cop.canopy:.1f} m)')
             self.cop.canopy = float(cm)
         self.canopy = float(self.cop.canopy)
+        # … and is shifted by the offset the tile set gave Copernicus to meet its 1 m terrain
+        self.cop_off = float((((self.tiles.meta or {}).get('sources') or {}).get('copernicus_offset_m') or 0.0) if self.tiles is not None else 0.0)
         self.n_tile = self.n_cop = 0
 
     def sample(self, E, N):
@@ -131,7 +133,7 @@ class Heights:
         out = self.tiles.sample(E, N) if self.tiles is not None else np.full(len(E), np.nan)
         bad = ~np.isfinite(out)
         if bad.any():
-            out[bad] = self.cop(E[bad], N[bad])
+            out[bad] = self.cop(E[bad], N[bad]) + self.cop_off
         self.n_tile += int((~bad).sum())
         self.n_cop += int(bad.sum())
         return out
@@ -146,15 +148,23 @@ class Heights:
             src = m.get('sources', {})
             d['ground'] = {'generated': m.get('generated'), 'commit': m.get('commit'), 'plan': m.get('plan'), 'terrain': src.get('terrain'),
                            'terrain_source': src.get('terrain_source'), 'canopy_m': src.get('canopy_m'),
-                           'dgm1_level10_tiles': src.get('dgm1_level10_tiles'), 'dgm1_have': (src.get('dgm1') or {}).get('have')}
+                           'copernicus_offset_m': src.get('copernicus_offset_m'), 'dgm1_level10_tiles': src.get('dgm1_level10_tiles'),
+                           'dgm1_tiles_km': src.get('dgm1_tiles_km'), 'dgm1_via': (src.get('dgm1') or {}).get('via'),
+                           'dgm1_have': (src.get('dgm1') or {}).get('have'), 'note': m.get('note')}
         return d
 
-    def coarse(self, ntiles):
+    def dgm1_share(self, T):
+        """the share of 1 m terrain under the level-10 tiles T of the run, as the tile set states it (0 when it does not say)"""
+        src = ((self.tiles.meta or {}).get('sources') or {}) if self.tiles is not None else {}
+        sh = src.get('dgm1_share_level10')
+        if isinstance(sh, dict) and T:
+            return float(sum(sh.get(f'{x}/{y}', 0.0) for x, y in T) / len(T))
+        n = src.get('dgm1_level10_tiles')
+        return float(min(1.0, n / len(T))) if n and T else 0.0
+
+    def coarse(self, T):
         """True while the heights are a 30 m surface model (own Copernicus sampling, or ground tiles without 1 m terrain under most
-        of the run's tiles)"""
+        of the run's tiles T)"""
         if self.tiles is None or self.n_cop > self.n_tile:
             return True
-        src = (self.tiles.meta or {}).get('sources', {})
-        if not src:
-            return True
-        return (src.get('dgm1_level10_tiles') or 0) < 0.5 * ntiles
+        return self.dgm1_share(T) < 0.5

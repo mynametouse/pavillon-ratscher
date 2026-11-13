@@ -20,21 +20,7 @@ sys.path.insert(0, os.path.join(HERE, '..', 'lib'))
 import numpy as np
 import sslib as S
 import suhllib as L
-
-
-def is_building(t):
-    """a building that stands on the ground (no roof over a filling station, no carport, nothing underground or on a bridge)"""
-    b = t.get('building')
-    if not b or b in ('no', 'roof', 'carport'):
-        return False
-    if t.get('location') == 'underground' or 'bridge' in t:
-        return False
-    try:
-        if int(t.get('layer', '0')) < 0:
-            return False
-    except ValueError:
-        pass
-    return True
+import netz as NZ
 
 
 def main():
@@ -49,7 +35,20 @@ def main():
     from shapely.prepared import prep
     from shapely.strtree import STRtree
     fz = [p for p in sorted(glob.glob(os.path.join(a.out, 'fahrt', '*.json'))) if not os.path.basename(p).startswith('routen')]
+    fz.sort(key=lambda q: ('anfahrt' in os.path.basename(q), q))
     F = json.load(open(fz[0], encoding='utf-8'))
+    for extra in fz[1:]:                 # the approach roads belong to the same run
+        X = json.load(open(extra, encoding='utf-8'))
+        off = len(F['names'])
+        F['names'] = F['names'] + X['names']
+        hm = {}
+        for i, h_ in enumerate(X.get('hws', [])):
+            if h_ not in F['hws']:
+                F['hws'].append(h_)
+            hm[i] = F['hws'].index(h_)
+        F['ways'] = F['ways'] + [w[:4] + [w[4] + off, w[5] + off, w[6]] for w in X['ways']]
+        F['hw'] = F['hw'] + [hm[i] for i in X['hw']]
+        F['ids'] = F['ids'] + X['ids']
     Z = json.load(open(os.path.join(a.out, 'zahlen.json'), encoding='utf-8'))
     idx = json.load(open(os.path.join(a.out, L.index_path('s', 0)), encoding='utf-8'))
     T = [tuple(t) for t in L.tileset_decode(idx['tiles'][str(S.LEVEL)])]
@@ -94,16 +93,19 @@ def main():
     lo1, la1 = S.u2ll(core[2], core[3])
     o = S.load_osm(opl=a.opl, api_dir=a.api_dir, box=(min(lo0, lo1) - 0.002, min(la0, la1) - 0.002, max(lo0, lo1) + 0.002, max(la0, la1) + 0.002))
     B, Bid = [], []
-    for kind, i, t, p in o.areas(is_building):
+    for kind, i, t, p in o.areas(NZ.is_building):
         if p.intersects(cover):
             B.append(p)
             Bid.append((f'{kind}{i}', t.get('building'), t.get('name', '')))
     tree = STRtree(B)
     LIMIT = 0.3
     hits = []
-    n_roads = 0
+    n_roads = n_into = 0
     for n, k, w, fl, hw, name, ln, wid in W:
         if k > 5 or fl & (1 | 2 | 2048 | 4096) or hw in ('pedestrian',):
+            continue
+        if fl & 32768:
+            n_into += 1      # the axis enters a building (car park, passage without a tag): flagged, not a fault of the width
             continue
         n_roads += 1
         hwid = w / 2
@@ -116,7 +118,8 @@ def main():
     by_road = collections.Counter(h[1] for h in hits)
     res['gebaeude_in_fahrbahn'] = {
         'quelle_gebaeude': 'OpenStreetMap (building=*, ohne Dächer und Carports, ohne Unterirdisches) – die Grundrisse von suhl-gebaeude folgen',
-        'gebaeude': len(B), 'strassen_geprueft': n_roads, 'grenze_m': LIMIT, 'treffer': len(hits), 'strassenstuecke_betroffen': len(by_road),
+        'gebaeude': len(B), 'strassen_geprueft': n_roads, 'fuehren_in_ein_gebaeude': n_into, 'grenze_m': LIMIT, 'treffer': len(hits),
+        'strassenstuecke_betroffen': len(by_road),
         'gebaeude_betroffen': len({h[4] for h in hits}), 'ok': len(hits) == 0,
         'tiefste': [{'tiefe_m': h[0], 'osm_weg': h[1], 'strasse': h[2], 'breite_m': h[3], 'gebaeude': h[4], 'art': h[5], 'name': h[6]} for h in hits[:25]],
         'hinweis': 'Tiefe = halbe Fahrbahnbreite minus Abstand der Achse zum Grundriss; meist ist die angenommene Breite zu groß oder die OSM-Achse liegt neben der Fahrbahn',

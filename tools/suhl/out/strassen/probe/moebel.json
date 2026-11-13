@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:08:51Z",
+ "made": "2026-11-13T01:14:48Z",
  "tiles": 11,
  "counts": {
   "schilder": 28,
@@ -8,7 +8,7 @@
   "ampeln": 54,
   "querungen": 50,
   "halte": 23,
-  "namen": 71
+  "namen": 72
  },
  "lamps_osm_in_box": 322,
  "signs_by_code": {
@@ -37,7 +37,7 @@
    "town"
   ]
  ],
- "bytes_tiles": 21277,
+ "bytes_tiles": 21349,
  "tool": "viz3/extra/strassen/daten.py of feat/strassen, unchanged: guard_rails, delineators, signs, lamps, power",
- "bytes_one_file": 39122
+ "bytes_one_file": 39201
 }
