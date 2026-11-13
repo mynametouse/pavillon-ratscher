@@ -19,8 +19,9 @@ und blendet auf; `GL89.leave()` – oder das Ende des Modus mitten darin (`GL89.
   - *anders:* Putz, Fachwerk und Dächer vergraut (Tönung der beiden Fassaden-Materialien), die fernen Baumkronen im letzten braunen
     Laub, die Linden am Anger kahl (Alpha-Test ihres Blattmaterials), Dunst wie über einem Tal, das mit Braunkohle heizt (der Nebel der
     Szene, als das Größere aus Tageswert und unserem gelesen – wie die Zombie-Nacht), Wetter fest auf „heiter“ (`WETTER.preset`), die Uhr
-    in Echtzeit (`CLOCK.focus`) und von uns gezogen: in etwa zehn Minuten Spiel wird aus dem Nachmittag die Dämmerung (16:26; Sonnenuntergang
-    16:37), die Lampen gehen an, Fenster werden hell;
+    in Echtzeit (`CLOCK.focus`) und von uns gezogen (`BILD.tempo` 0,13 Spielminuten je Sekunde): nach sieben, acht Minuten Spiel geht die
+    Sonne unter (gegen 16:35), nach etwa zwölf gehen die Lampen an (die Nacht des Spiels beginnt bei 3° unter dem Horizont, ~17:00),
+    Fenster werden hell;
   - *dazu,* etwa 150 m um die alte Schule, als **ein** Mesh aus Vertex-Farben im Material des Verkehrs (kein neues Shader-Programm):
     Straßenlampen auf Holzmasten mit Emailleschirm (dort, wo heute die Laternen stehen – deren Lichtkegel am Boden und das Licht an den
     Fassaden bleiben), gelbe Telefonzelle, Litfaßsäule, Milchbank mit Kannen, Briketthaufen mit Eimern (vor einem Haus am Anger und für
@@ -30,8 +31,8 @@ und blendet auf; `GL89.leave()` – oder das Ende des Modus mitten darin (`GL89.
     die Wandzeitung neben der Schultür, die Plakate der Litfaßsäule (Kirmes-Tanz, Altstoffe, Film, Bekanntmachung), „Fernsprecher“;
     Glühbirnen (das Glas-Material der Laternen: sie gehen mit dem Dorf an), ein geliehenes Punktlicht an der nächsten Lampe
     (`KERN.lights.borrow`), Kohlenrauch aus den Schornsteinen (weiche Karten im Material der Lichtkegel), die geparkten Autos der Zeit
-    über `GLAUTO.spawn/park` (Trabant, Wartburg, Barkas, W 50 mit Kohlen, Simson – bzw. `klein89`, `limo89`, `lkw89`, `moped`, bis die
-    Typen von `grenzland-auto` da sind; geparkt ohne Licht).
+    über `GLAUTO.spawn/park` mit den Typen von `grenzland-auto` (`trabant`, `trabant_kombi`, `wartburg`, `barkas`, `w50` mit Kohlen,
+    `s51`, `schwalbe`; fehlt ein Typ, die alten Namen `klein89`, `limo89`, `lkw89`, `kasten89`, `moped`; geparkt ohne Licht).
 - **Die Leute** (`gl_1989_data.js`, `gl_fig.js`). Neun Dorfbewohner (erfunden, alle erwachsen), jeder bei dem, was man an dem Tag tat:
   Gisela in der Tür des Konsums, Brigitte und Renate in der Schlange davor (Netz, Dederon-Beutel), Erna kehrt vor der Schule, Kurt liest
   die Wandzeitung, Maik schraubt an der Simson, Ines steht dabei, Horst schippt Briketts, Werner geht mit der Aktentasche die Straße
@@ -51,9 +52,15 @@ und blendet auf; `GL89.leave()` – oder das Ende des Modus mitten darin (`GL89.
   Dauerwelle kurz und schulterlang, Vokuhila, Schnauzbart, die großen Brillen der Achtziger; Hut, Schiebermütze, Kopftücher. In der Hand:
   Einkaufsnetz (mit Kuba-Apfelsinen), Dederon-Beutel, Zinkeimer mit Briketts, Aktentasche, Milchkanne, Besen, Schaufel. Arbeitshaltungen
   aus `npc/npc_real.js` (`GLFIG.pose(F, 'pick' | 'saw' | 'bonnet' | 'carry')`).
-- **Der junge Gerhard.** Die eigene Spielfigur wird umgefärbt (`GLFIG.dress` auf `AVATAR.figs.m.model`): Parka über kariertem Hemd,
-  Cordhose, braune Halbschuhe, dazu Brille (Goldrand) und Schnauzer; spielt man gerade Sarah, wird für die Erinnerung auf die Männerfigur
-  gewechselt und danach zurück. Beim Verlassen kommen die alten Texturen zurück, die gemalten werden freigegeben.
+- **Der junge Gerhard.** Die eigene Spielfigur wird umgefärbt (`GLFIG.pixels` + `GLFIG.dress` auf `AVATAR.figs.m.model`): olivgrüner
+  Parka über kariertem Hemd, Cordhose, braune Halbschuhe, dazu die große Brille mit Goldrand (kein Schnauzer: die Figur trägt Bart und
+  Mütze); spielt man gerade Sarah, wird für die Erinnerung auf die Männerfigur gewechselt und danach zurück. Beim Verlassen kommen die
+  alten Texturen zurück, die gemalten werden freigegeben.
+- **Komprimierte Texturen.** In der Vorschau und auf den Testservern (später überall, auf Telefonen sowieso) kommen die Bilder in den
+  Modellen als KTX2 an (`core/assets.js`, TEX2) – darauf kann kein Canvas malen. Deshalb blieb die Spielfigur zuerst in ihren Sachen von
+  heute, ebenso alle `dorf_*`-Figuren der Besetzung (Gisela, Brigitte, Werner, Kurt, der Volkspolizist). `GLFIG.pixels(model, datei)`
+  liest die Datei der Figur noch einmal (sie liegt im Cache des Browsers) und dekodiert die Farbbilder ihrer Materialien; `dress` malt
+  darauf und macht eine gewöhnliche Textur, `forget` gibt die Bilder wieder frei. `GLFIG.make` tut das von selbst.
 - **Ton** (alles synthetisch über `GLTON.add`): die Glocke im Schulturm zur vollen Stunde, ein Hund, ein Zweitakter irgendwo, die
   Schaufel in den Kohlen, der Besen, das Radio aus der Ladentür (dünn und dumpf; dazu die Meldungen als Untertitel).
 
@@ -61,8 +68,10 @@ und blendet auf; `GL89.leave()` – oder das Ende des Modus mitten darin (`GL89.
 
 `?szenario=grenzland`, dann in der Konsole `GL89.enter({ pos: [238.5, -72.5], yaw: 320 })` (Hof hinter der Schule) und
 `GL89.leave()`. Test mit Bildern: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9014 --serve grenzland_1989`
-(`out/grenzland_1989/`: Hof, Straße von vier Standpunkten, Kohlen, alle zwölf Figuren von vorn und hinten, Köpfe, Gerhard über die
-Schulter und aus den Augen); dieselben Standpunkte heute: `grenzland_1989_blick` (`out/grenzland_1989_blick/`).
+(`out/grenzland_1989/`: Hof, Straße von vier Standpunkten, Kohlen, der Startpunkt der Mission und der Blick in die Gärten, zwei Seiten
+mit dem Bild des alten Abzugs (`_seite.png`), Dämmerung, alle zwölf Figuren von vorn und hinten, Köpfe, Gerhard über die Schulter und aus
+den Augen); dieselben Standpunkte heute: `grenzland_1989_blick` (`out/grenzland_1989_blick/`). Der Test läuft im freien Spiel des Modus
+(Mission aus, Fahndung aus) und vergleicht Figuren und Autos gegen den Stand davor.
 
 ## Was an dem Tag wahr war (und was die Leute deshalb sagen)
 
@@ -120,23 +129,52 @@ Keine Fotos, Logos oder Plakate übernommen; alles in der Szene ist selbst gebau
   Anger, die Bushütte, Hecken, Infotafel, Karussell, Papierkörbe bleiben (plausibel bzw. nicht sauber zu trennen).
 - **Höchstens sechs Dorfbewohner** als Figuren zugleich (Telefon drei) – dazu kommen ABV, Volkspolizist und Lutz der anderen Module.
 - Geliehenes Licht: einmal angemeldet (beim ersten Betreten), will nur etwas, solange die Rückblende läuft.
+- **Vermessen in der Bind-Pose (A-Pose):** Zonen (Rumpf, Arme, Beine, Schuhe, Kragen) aus den Gelenken des Skeletts, Saum, Stiefelschaft
+  und Kragenlinie je Pixel; die Helligkeit des alten Stoffs wird örtlich herausgerechnet (heller Rock unter dunkler Bluse wird *ein*
+  Kittel), Falten bleiben. Haarkarten, Wimpern, Brillen werden nie bemalt. Texturen von 512 px werden am PC doppelt so groß bemalt
+  (Knöpfe, Blümchen).
+- **Volkspolizist auf `dorf_jens`** (kurzes Haar; die erste Figur hatte kragenlanges). **Gerhard ohne Schnauzer** (s. o.).
+- **Dauerwelle:** große, runde, sich überlappende Locken in fast einem Ton – kleine kantige mit starkem Kontrast sahen aus der Nähe wie
+  Lockenwickler aus.
+- **Kohlenhaufen** als unebener Hügel aus mehreren Klumpen (die erste, regelmäßige Kuppel sah aus wie ein schwarzes Zelt); das Beet in
+  Stücken, die dem Boden folgen, Winterkohl sitzt in der Erde.
+- **Putz und Dächer** stärker vergraut (`BILD.wand`, `BILD.dach`) – die Tönung kann nur abdunkeln, nicht entfärben; die Entsättigung
+  macht das Bild des Leads. Die alte Schule bleibt frisch gestrichen (rotes Fachwerk, weißes Gefach): ihr Material fasse ich nicht an.
+- **Wie geprüft wurde:** jede Figur zuerst ohne Browser (ein kleiner Software-Renderer führt `gl_fig.js` in node aus und zeichnet alle
+  von vorn, hinten und den Kopf – Werkzeug außerhalb des Repos), dann im Spiel: ein Lauf des Tests hier (03:37–03:48, Bilder angesehen),
+  dazu GitHub Actions als zweite Prüfbank. Läufe hier gehen über eine Kopie des gebauten Spiels (`out/snap3/`), damit das Bauen den
+  wartenden Lauf nicht stört.
 
 ## Offen
 
-- Photovoltaik gibt es im Dorfmodell nicht; Dächer und Boden stammen aus dem Luftbild 2024 (Pflaster, Carports sichtbar von oben).
+- **Noch nicht im Spiel gesehen** (nur ohne Browser bzw. als Prüfung auf Actions): Gerhards Parka an der Spielfigur, die bemalten
+  `dorf_*`-Figuren (weißer Kittel, Wintermantel, Fischgrat, Loden, Dienstjacke), die brennenden Lampen in der Dämmerung (die Bilder des
+  ersten Laufs waren von 16:52 – da brennt noch keine), der neue Kohlenhaufen, das Beet, die größeren Locken. Ein Lauf mit diesem Stand
+  wartet in der Schlange.
+- Von heute bleibt sichtbar: die Bushütte aus Glas, die Infotafel und der geschnitzte Wegweiser am Anger, das Pflaster, weiße
+  Lattenzäune, die Blumenschale; Photovoltaik gibt es im Dorfmodell nicht; Dächer und Boden stammen aus dem Luftbild 2024.
+- Die Lampe der Zeit steht an der Bushaltestelle 3,6 m neben einem Betonmast der Freileitung (zwei Masten nebeneinander); schöner
+  wäre die Lampe am Betonmast.
+- Erna kehrt in der Säge-Haltung von `npc_real.js` – aus der Nähe lehnt sie sich weit vor und zurück.
 - Tiere (`tiere/`) bleiben – zeitlos.
 - Kein Sitzen für die GLFIG-Figuren (Kurt steht an der Wandzeitung, statt auf der Bank zu sitzen).
 - Sätze nur als Untertitel, keine Stimme (die Stimmen sind registriert: `gl_<id>`).
 
 ## Für den Lead
 
-- **`gl_hud.js`, Bild 1989:** Werte folgen nach den Bildern des Tests (unten nachgetragen).
+- **`gl_hud.js`, Bild 1989:** an zwei Seiten des Tests beurteilt (`1989_b_schule_seite.png`, `1989_e_hof_seite.png`): **so lassen** –
+  `sepia(.34) saturate(.6) contrast(1.07) brightness(.97) hue-rotate(-6deg)`, Vignette und Korn ergeben mit dem Dunst einen
+  verblassten Farbabzug; das Rot der Dächer und des Fachwerks wird genau so weit gedämpft, dass es nicht mehr nach heute aussieht.
+  Falls du etwas drehen willst: nicht dunkler (ich habe Wände und Dächer selbst abgedunkelt), eher `brightness(1)`.
+- **Von heute in 1989 zu sehen (nicht meins):** die Aufgabe „FUTTER FÜR DIE ZIEGEN ↓ 206 m“ oben links, die Hunde-Knöpfe (Rufen,
+  Schicken, Loben, Tadeln) und der Hund selbst läuft mit über die Straße; in der Kopfzeile des Uhr-Fensters „Echtzeit – Leim offen“.
+- **`GLFIG.dress` direkt aufrufen** (Polizei, Mission mit eigenen Figuren): vorher `await GLFIG.pixels(model, datei)`, danach
+  `GLFIG.forget(model)` – sonst bleibt die Figur bei komprimierten Texturen unbemalt (`GLFIG.last.packed` zählt solche Fälle).
+  `GLFIG.make` und `GL89.hol` tun es selbst.
 - **`gl_data.js`:** `J89.radio[2]` „neblig-trüb, um fünf Grad“ → besser „nach frostiger Nacht heiter und trocken, dunstig“ (Quelle
   Wetter). `J89.leute` wird von `GL89DATA.SAGT` abgelöst (Erna, Horst, Renate, Maik, Ines erweitert; `abv` und `lutz` unverändert
-  übernommen). `CAST.erna/horst/renate/maik/ines/abv` und `KLEID.kittel/watte/anorak/stonewash/jeans89/parka/vopo/grenzer` werden beim
-  Laden von `gl_1989_data.js` überschrieben – die Einträge im Kern können bleiben oder weg.
-- **`gl_orte.js` (neben):** Verkaufswagen, Kegelbahn und Grill sollten bei `grenzland:era` `{ era: '1989' }` verschwinden (ich fasse sie
-  nicht an).
-- **Uhr-Fenster:** `CLOCK.focus('gl-1989')` zeigt dort „Echtzeit – Leim offen“ (Text aus `time/clock.js`) – kosmetisch.
-- **Fahndung/Mission:** Figuren von 1989 mit `GLFIG.make(id, { era: '1989' })` bzw. `GL89.hol(id, x, y, hd)`; `abv` trägt jetzt den
-  Uniformmantel (`vopomantel`), `vopo` die Dienstjacke.
+  übernommen). `CAST.erna/horst/renate/maik/ines/abv/vopo` und `KLEID.kittel/watte/anorak/stonewash/jeans89/parka/vopo/grenzer` werden
+  beim Laden von `gl_1989_data.js` überschrieben – die Einträge im Kern können bleiben oder weg.
+- **Fahndung/Mission:** Figuren von 1989 mit `GLFIG.make(id, { era: '1989' })` bzw. `GL89.hol(id, x, y, hd)`; `abv` trägt den
+  Uniformmantel (`vopomantel`), `vopo` die Dienstjacke. Die Uhr der Rückblende läuft mit `GL89DATA.BILD.tempo` (0,13): eine Mission
+  von zehn Minuten endet in der Dämmerung.
