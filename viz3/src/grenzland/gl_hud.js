@@ -275,6 +275,13 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
     };
     S.el.addEventListener('click', click);
     S.touch.addEventListener('click', click);
+    // the 3D panel never scrolls while the mode runs: a click or a focus that the browser scrolls into view (the shared phone is large on a
+    // phone's screen) would shift the whole picture and leave a black band (seen in grenzland_radio's portrait check)
+    const pan = document.getElementById('p-3d');
+    if (pan)
+      pan.addEventListener('scroll', () => {
+        if (S.shown && (pan.scrollTop || pan.scrollLeft)) pan.scrollTop = pan.scrollLeft = 0;
+      });
     S.askEl.addEventListener('click', e => {
       const b = e.target.closest('button');
       if (!b || b.disabled || !S.ask) return;
