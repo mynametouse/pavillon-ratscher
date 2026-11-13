@@ -6,13 +6,14 @@
 # Sections (optional second argument, comma-separated): start,sprung,stufen,boden,fahrt,oben,nacht,frei,zahlen,telefon,uebergabe
 #   uebergabe  the streets handed to the region's road system (FAHRT.add/drop/ground, round 2 of the roads chat) – a page of its own
 #   anfahrt    the way there: with ?suhl=1 the approach ways and the named routes garden → Suhl come into the drive once it wakes
+#   bus        by bus: with ?suhl=1 the bus module takes the timetable that runs on into Suhl (203 from Ratscher, the city buses)
 #   tag1   the checks of the first day (not in the default run): package and worker, the sky and the top view at Suhl, precision
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
 port = sys.argv[1]
-ALL = ['start', 'sprung', 'stufen', 'boden', 'fahrt', 'oben', 'nacht', 'frei', 'zahlen', 'telefon', 'uebergabe', 'anfahrt']
+ALL = ['start', 'sprung', 'stufen', 'boden', 'fahrt', 'oben', 'nacht', 'frei', 'zahlen', 'telefon', 'uebergabe', 'anfahrt', 'bus']
 ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else ALL
 want = lambda k: k in ONLY
 ck = lib.Checks('suhl')
@@ -555,7 +556,42 @@ def anfahrt():
         ck.errors(errs)
 
 
-if [k for k in ONLY if k not in ('telefon', 'uebergabe', 'anfahrt')]:
+def bus():
+    """by bus (S2-7): without ?suhl the world's timetable as before; with ?suhl=1 the bus module loads bus/fahrplan_suhl.json (hook B1)
+    – line 203 runs from Ratscher on to Suhl, the city's own buses are in it, and the departures in Ratscher name Suhl. Pages of their own."""
+    Q = """(() => { const S = BUS.plan.S, st = S.stations, rat = new Set(st.filter(s => s.n.startsWith('Ratscher')).map(s => s.i)),
+        suhl = new Set(st.filter(s => s.n.startsWith('Suhl')).map(s => s.i)), heads = new Set();
+        let n203 = 0;
+        for (const t of S.trips) {
+          const ids = S.pats[t.pat].st.map(o => o.s);
+          if (t.line === '203' && ids.some(i => rat.has(i)) && ids.some(i => suhl.has(i))) { n203++; heads.add(t.head); }
+        }
+        return { state: BUS.S.state, stations: st.length, suhl: suhl.size, lines: Object.keys(S.lines).length, city: ['A1', 'B', 'C1', 'G'].filter(l => S.lines[l]),
+          n203, heads: [...heads], zentrum: st.some(s => s.n === 'Suhl, Zentrum'), plan: window.SUHL ? SUHL.busPlan : undefined }; })()"""
+    for query in ('', '?suhl=1'):
+        with lib.browser() as b:
+            errs = []
+            pg = lib.page(b, 1100, 680, errs, tier='mittel')
+            lib.boot(pg, port, query)
+            E = pg.evaluate
+            J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
+            E("BUS.load()")
+            t0 = time.time()
+            while time.time() - t0 < 120 and not E("BUS.S.state === 'ready' || BUS.S.state === 'error'"):
+                E("GAME.step(0.5)")
+                time.sleep(0.3)
+            r = J(Q)
+            if not query:
+                ck('by bus, without ?suhl: the world\'s timetable as before (no stop of Suhl, the plan not replaced)',
+                   r['state'] == 'ready' and r['suhl'] == 0 and r['plan'] is None and r['n203'] == 0, json.dumps(r, ensure_ascii=False))
+            else:
+                ck('by bus, with ?suhl=1: line 203 runs from Ratscher to Suhl, the city buses run, the Zentrum is a stop',
+                   r['state'] == 'ready' and r['suhl'] >= 40 and r['n203'] >= 10 and len(r['city']) == 4 and r['zentrum'] and (r['plan'] or '').endswith('bus/fahrplan_suhl.json'),
+                   json.dumps(r, ensure_ascii=False))
+            ck.errors(errs)
+
+
+if [k for k in ONLY if k not in ('telefon', 'uebergabe', 'anfahrt', 'bus')]:
     desktop()
 if want('telefon'):
     telefon()
@@ -563,4 +599,6 @@ if want('uebergabe'):
     uebergabe()
 if want('anfahrt'):
     anfahrt()
+if want('bus'):
+    bus()
 ck.done()

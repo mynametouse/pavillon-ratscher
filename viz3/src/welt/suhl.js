@@ -8,7 +8,7 @@
 // serves dist/suhl/ (the test puts viz3/extra/suhl-laufzeit/probe there). ?suhl=1 shows the menu entry (hidden until Falko has seen the city).
 // Contract and plan: docs/features/suhl.md, docs/plans/plan_suhl.md (sections 3 and 6).
 import * as THREE from 'three';
-import { COARSE, QS, R, cam, scene } from '../core/head.js';
+import { BASE, COARSE, QS, R, cam, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { ANISO, markDirty } from '../core/assets.js';
 import { TREES } from '../garden/trees.js';
@@ -183,6 +183,9 @@ export const SUHL = (() => {
   // Suhl's ground, carved as the region's; anfahrt-grund.json: the ways on Suhl's corridor tiles, whose ground already holds the cut),
   // never at the start. Only with ?suhl=… until the city is released (Falko, 13.11.2026: preview first). ----
   const approach = { state: S.MENU ? 'waiting' : 'off', err: '', sets: [] };
+  // by bus (S2-7): the world's timetable with Suhl's roads (tools/suhl/bus/fahrplan_suhl.py) – lines 200–203, 300, 400 run on into the
+  // city, and its own buses (SNG Suhl/Zella-Mehlis) run; bus/bus.js loads it instead of bus/fahrplan.json (hook B1), only with ?suhl=…
+  S.busPlan = S.MENU ? BASE + 'bus/fahrplan_suhl.json' : null;
   S.approach = approach;
   if (S.MENU)
     KERN.until(() => window.FAHRT && FAHRT.add && FAHRT.active, 1e9)
