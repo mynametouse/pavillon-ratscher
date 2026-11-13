@@ -23,6 +23,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: read          # the feet may come from suhl-boden's run artifact (lauf.txt: "boden: run <id> <artifact>")
 
 jobs:
   gebaeude:
@@ -135,11 +136,32 @@ jobs:
           set -o pipefail
           python -I -u tools/suhl/gebaeude/bauen.py --area stadt --opl "$SUHL_RAW/geofabrik/suhl.opl.gz" --dop --dop-workers 2 --dom "$SUHL_RAW" \
             --zensus tools/suhl/out/gebaeude/actions/zensus_baujahr.json --out "$OUT/suhl/g/$VERSION" --version "$VERSION" 2>&1 | tee logs/bauen.log
-      - name: Fußhöhen – Geländekacheln von suhl-boden (Daten-Repo), sonst Copernicus (vorläufig)
+      - name: Fußhöhen – Geländekacheln von suhl-boden (Artefakt eines Laufs oder Daten-Repo), sonst Copernicus (vorläufig)
         timeout-minutes: 15
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -o pipefail
           BASE="https://mynametouse.github.io/pavillon-daten/suhl"
+          V=""
+          # 1. the ground of a whole-city run of suhl-boden, named in lauf.txt ("boden: run <id> <artifact>") - the cut city ground
+          #    before it is published (the feet must stand on exactly the ground that goes into the same set)
+          BR=$(sed -n 's/^boden: *run *\([0-9][0-9]*\) *\([A-Za-z0-9._-][A-Za-z0-9._-]*\).*/\1 \2/p' tools/suhl/gebaeude/lauf.txt | tail -1)
+          if [ -n "$BR" ]; then
+            RID=${BR%% *}; ART=${BR##* }
+            D="$RUNNER_TEMP/boden-art"; mkdir -p "$D"
+            if gh run download "$RID" -R "${{ github.repository }}" -n "$ART" -D "$D"; then
+              M=$(find "$D" -maxdepth 5 -name meta.json | head -1); TD=$(dirname "$M")
+              V=$(python -c "import json,sys; v=json.load(open(sys.argv[1]))['suhl']['version']; print(int(str(v).lstrip('v')))" "$M")
+              SRC=$(python -c "import json,sys; m=json.load(open(sys.argv[1])); print(m['heights']['terrain_source'] if isinstance(m.get('heights'), dict) and m['heights'].get('terrain_source') else m.get('sources', {}).get('terrain_source', ''))" "$M" 2>/dev/null || true)
+              case "$SRC" in *dgm1*) Q=2; SID=dgm1;; *) Q=1; SID=cop30;; esac
+              echo "Geländekacheln von suhl-boden v$V aus Lauf $RID, Artefakt $ART ($SRC)"
+              python -I -u tools/suhl/gebaeude/fuss.py --tiles "$OUT/suhl/g/$VERSION" --terrain "$TD/t" --boden "$V" --q "$Q" --src-id "$SID" \
+                --source "Geländekacheln suhl-boden v$V (Lauf $RID, Artefakt $ART)" 2>&1 | tee logs/fuss.log || { echo "die Geländekacheln des Artefakts decken die Stadt nicht"; exit 1; }
+            else
+              echo "::error::das Artefakt $ART des Laufs $RID von suhl-boden ist nicht abrufbar"; exit 1
+            fi
+          else
           V=$(curl -sSfL -m 30 -A "$UA" "$BASE/aktuell.json" 2>/dev/null | python -c "import json,sys; print(json.load(sys.stdin)['products']['boden']['version'])" 2>/dev/null || true)
           if [ -n "$V" ]; then
             echo "Geländekacheln von suhl-boden, Version $V"
@@ -149,6 +171,7 @@ jobs:
           if [ -z "$V" ]; then
             echo "keine veröffentlichten Geländekacheln von suhl-boden – Fußhöhen aus Copernicus GLO-30 (vorläufig, ohne based_on: die Laufzeit nimmt ihren Boden)"
             python -I -u tools/suhl/gebaeude/fuss.py --tiles "$OUT/suhl/g/$VERSION" --cop "$SUHL_RAW" 2>&1 | tee logs/fuss.log
+          fi
           fi
       - name: Prüfungen (Plan 5.3)
         timeout-minutes: 15
