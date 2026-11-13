@@ -104,6 +104,8 @@ export const ZKREGIE = (() => {
     pi: 0,
     card: null,
     note: null,
+    cues: [],
+    ci2: 0,
     rt: 0,
     segT: 0,
     lapseHour: 12,
@@ -186,7 +188,7 @@ export const ZKREGIE = (() => {
     const out = [],
       add = (e, s) => {
         if (e && Array.isArray(e.lines))
-          for (const l of e.lines) out.push({ id: l.id, who: l.who, text: l.text, side: s, w: e.w });
+          for (const l of e.lines) out.push({ id: l.id, who: l.who, text: l.text, rec: l.rec, side: s, w: e.w });
       };
     if (m.L && m.R && m.same) add(m.L, 'both');
     else {
@@ -319,13 +321,20 @@ export const ZKREGIE = (() => {
       age: w && w.born ? clamp(Math.floor(S.y) - w.born, 18, 90) : 50,
     });
   }
+  // the chronicle's recording of a line (viz3/extra/saetze → window.VOICEX: { who, id, text, file, dur }), by its id or its words
+  function recOf(l) {
+    const L = (window.VOICEX && window.VOICEX.lines) || null;
+    if (!L) return null;
+    return (l.rec && L.find(v => v.id === l.rec)) || L.find(v => v.text === l.text && v.who === l.who) || null;
+  }
   function sayLine(l) {
     const key = String(l.who || '')
         .toLowerCase()
         .replace(/[^a-zäöüß]/g, ''),
       w = (C.WHO || {})[key],
       name = w ? w.name : cap(l.who);
-    S.lineLeft = Math.max(2.4, 1.0 + String(l.text || '').length * 0.068);
+    const vx = recOf(l);
+    S.lineLeft = Math.max(2.4, vx && vx.dur > 0 ? vx.dur + 0.4 : 1.0 + String(l.text || '').length * 0.068);
     S.line = { id: l.id, who: name, key, role: w ? w.role : '', text: l.text, side: l.side, w: l.w, dur: S.lineLeft };
     S.voiceOn = false;
     emit({
@@ -337,6 +346,7 @@ export const ZKREGIE = (() => {
       role: S.line.role,
       side: l.side,
       w: l.w,
+      rec: l.rec,
       dur: S.lineLeft,
     });
     try {
@@ -538,6 +548,8 @@ export const ZKREGIE = (() => {
     S.phase = 0;
     S.segT = 0;
     S.hdur = Math.max(m.halt || 0, 4);
+    S.cues = cuesOf(m);
+    S.ci2 = 0;
     S.lines = linesOf(m);
     S.li = -1;
     S.nextLineT = 1.2;
@@ -569,6 +581,7 @@ export const ZKREGIE = (() => {
     S.phase = clamp(S.ht / S.hdur);
     const m = S.ev;
     if (m.dur > 0) setClock(clockAt(C.at(evOf(m), S.phase)));
+    while (S.ci2 < S.cues.length && S.cues[S.ci2].p <= S.phase + 1e-9) cue(S.cues[S.ci2++], m);
     if (S.line) {
       S.lineLeft -= dt;
       if (S.lineLeft <= 0 && !S.voiceOn) {
@@ -577,6 +590,26 @@ export const ZKREGIE = (() => {
       }
     } else if (S.li + 1 < S.lines.length && S.ht >= S.nextLineT) sayLine(S.lines[++S.li]);
     if (S.ht >= S.hdur && !S.line && S.li + 1 >= S.lines.length) endHalt();
+  }
+  // the stress tests' cues ({ h, p, id } per world): siren, blue light, pump, lights out … – in phase order, with their side
+  function cuesOf(m) {
+    const out = [],
+      add = (e, s) => {
+        if (e && Array.isArray(e.cues))
+          for (const c of e.cues) out.push({ id: c.id, p: +c.p || 0, h: c.h, side: s, w: e.w });
+      };
+    add(m.L, m.R ? 'L' : S.side === 'R' ? 'R' : 'L');
+    add(m.R, 'R');
+    return out.sort((a, b) => a.p - b.p);
+  }
+  function cue(c, m) {
+    const label = (C.CUES && C.CUES[c.id]) || c.id;
+    emit({ type: 'cue', id: c.id, label, side: c.side, w: c.w, p: c.p, h: c.h, ev: m.id });
+    try {
+      if (typeof W.cue === 'function') W.cue(c.id, c.side, { ev: m.id, w: c.w, p: c.p, h: c.h });
+    } catch (e) {
+      console.warn('ZKZEITWELT.cue', e);
+    }
   }
   function endHalt() {
     const m = S.ev;
@@ -949,7 +982,8 @@ export const ZKREGIE = (() => {
       if (S.wait) S.wait.done = true;
     } else if (md === 'halt') endHalt();
     else if (md === 'card') leaveCard();
-    if (S.mode !== 'end') setPlaying(true);
+    // go on – except where next() itself ended at a card (it waits there) or the end
+    if (S.mode !== 'end' && S.mode !== 'card') setPlaying(true);
     markDirty();
   }
   function prev() {
@@ -981,11 +1015,13 @@ export const ZKREGIE = (() => {
     if (recent && S.ci > 0) return enterChapter(S.ci - 1);
     enterChapter(S.ci);
   }
-  function seek(y) {
+  // seek(y): within the chapter that runs (the workshop's timeline); seek(y, chapterId): into that chapter at year y
+  function seek(y, chapterId) {
     if (!S.on || !S.chapters.length) return;
     const span = C.SPAN || [2026, 2060];
     y = clamp(+y || span[0], span[0], span[1]);
-    let i = S.ch && y >= S.ch.from && y <= S.ch.to ? S.ci : S.chapters.findIndex(c => y >= c.from && y < c.to);
+    let i = chapterId ? S.chapters.findIndex(c => c.id === chapterId) : -1;
+    if (i < 0) i = S.ch && y >= S.ch.from && y <= S.ch.to ? S.ci : S.chapters.findIndex(c => y >= c.from && y < c.to);
     if (i < 0) i = S.chapters.length - 1;
     enterChapter(i, y);
   }
@@ -1034,6 +1070,20 @@ export const ZKREGIE = (() => {
     return () => set.delete(fn);
   };
   // tests and the workshop's preview: stand at a place (the time-lapse pauses there)
+  function look(q) {
+    if (!S.on || !q || !q.pos || !q.look) return null;
+    const a = {
+      id: 'blick',
+      pos: q.pos.slice(),
+      look: q.look.slice(),
+      fov: q.fov || 50,
+      near: q.near || 0.5,
+      foot: false,
+      move: null,
+    };
+    setShot({ id: 'blick', a, b: null, t: 0, T: PLACE_S, hold: true });
+    return a;
+  }
   function view(id, o = {}) {
     if (!S.on) return null;
     const sh = shotOf(id, o.still !== false);
@@ -1089,6 +1139,7 @@ export const ZKREGIE = (() => {
     side,
     bars: k => (ZKBILD.set({ bars: k }), ZKBILD.S.want),
     view,
+    look,
     places: () => ZKORTE.ids(),
     pose: id => ZKORTE.pose(id, W),
     info: () => ({

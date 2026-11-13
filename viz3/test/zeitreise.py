@@ -4,11 +4,11 @@
 # them, the two worlds differ; next/prev/seek; before()/between() hooks wait, snapshot() gives a JPEG, duck(); programs: start ≤ budget,
 # playing and splitting +0; stop() restores clock, calendar, light, weather, view, layers; no page errors; a contact sheet of the places
 # per chapter (out/zeitreise/orte_*.jpg) and split frames.
-#   python3 viz3/test/zeitreise.py 9012 [sections]   sections: api,lapse,split,halt,nav,hooks,orte,stop
+#   python3 viz3/test/zeitreise.py 9012 [sections]   sections: api,lapse,split,halt,nav,hooks,orte,probe,stop
 import sys, os, json, time, base64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'api,lapse,split,halt,nav,hooks,orte,stop').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'api,lapse,split,halt,nav,hooks,orte,probe,stop').split(','))
 ck = lib.Checks('zeitreise')
 OUT = lib.out('zeitreise')
 NOBLUR = "document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')"
@@ -59,7 +59,7 @@ def run():
         ck('layers 21/22 unused before the start', J("ZKBILD_LAYERS()") == [] if E("!!(window.ZKBILD_LAYERS = () => { const o = []; GAME.scene.traverse(x => { if (x.layers && (x.layers.mask & ((1 << 21) | (1 << 22)))) o.push(x.name || x.type); }); return o; })") else False)
         back = J("({ t: CLOCK.t, e0: DN.e0, mode: GAME.P.mode, x: GAME.P.x, y: GAME.P.y, yaw: GAME.P.yaw, mask: GAME.cam.layers.mask, light: window.MODE_NOW, wx: WETTER.state().preset, cam: GAME.cam.matrixWorld.elements.slice(12, 15) })")
         p0 = progs()
-        E("window.__ev = []; window.__off = ZKREGIE.on(e => { if (e.type !== 'tick') __ev.push({ type: e.type, id: e.id || (e.ev && e.ev.id) || e.chapter || '', state: e.state || '', who: e.who || '', text: e.text || '' }); })")
+        E("window.__ev = []; window.__off = ZKREGIE.on(e => { if (e.type !== 'tick') __ev.push({ type: e.type, id: e.id || (e.ev && e.ev.id) || e.chapter || '', state: e.state || '', who: e.who || '', text: e.text || '' }); }); 0")
 
         # ---------------- the time-lapse ----------------
         E("ZKREGIE.start({ pair: ['allein', 'gewappnet'], split: true })")
@@ -159,7 +159,7 @@ def run():
             s = st()
             ck('the chapter ends with a card { chapter, kpi, questions } and pauses', s['mode'] == 'card' and s['card'] and s['card']['chapter'] == 'wald' and not s['playing'] and len(s['card']['questions']) > 0,
                json.dumps({'mode': s['mode'], 'card': (s.get('card') or {}).get('chapter'), 'kpi': list(((s.get('card') or {}).get('kpi') or {}).keys())}))
-            E("window.__btw = []; window.__offB = ZKREGIE.between(a => { __btw.push(a.chapter); return new Promise(r => setTimeout(r, 400)); })")
+            E("window.__btw = []; window.__offB = ZKREGIE.between(a => { __btw.push(a.chapter); return new Promise(r => setTimeout(r, 400)); }); 0")
             E("ZKREGIE.next()"); steps(0.2)
             ck('between(): called after the card with the next chapter, the regie waits', J("__btw") == ['wasser'] and st()['mode'] == 'between', str(J("__btw")) + ' ' + st()['mode'])
             time.sleep(0.6); steps(0.4)
@@ -175,7 +175,7 @@ def run():
         if 'hooks' in want:
             E("ZKREGIE.start({ pair: ['allein', 'gewappnet'], split: true, chapter: 'wald' })"); steps(0.3)
             E("""window.__bef = []; window.__snap = null; window.__offH = ZKREGIE.before(a => { __bef.push({ id: a.ev.id, w: a.w, place: a.place });
-              return ZKREGIE.snapshot(a.place, 'L').then(u => { __snap = u; }); })""")
+              return ZKREGIE.snapshot(a.place, 'L').then(u => { __snap = u; }); }); 0""")
             E("ZKREGIE.next()")
             ok = until("ZKREGIE.state().mode === 'before'", 8)
             ck('before(): the time-lapse eased out, fn({ ev, w, place }) called, the regie waits', ok and len(J("__bef")) == 1, json.dumps(J("__bef")))
@@ -183,8 +183,9 @@ def run():
             ok = until("ZKREGIE.state().mode === 'halt'", 6)
             snap = E("__snap ? __snap.slice(0, 23) + ' ' + __snap.length : null")
             ck('snapshot(place, side) → a JPEG data URL of the place', bool(snap) and snap.startswith('data:image/jpeg') and int(snap.split(' ')[1]) > 20000, str(snap))
-            if E("!!__snap"): save('snapshot_' + J("__bef")[0]['place'], E("__snap"))
-            ck('… and the halt starts after it, at that place', ok and st()['place'] == J("__bef")[0]['place'], st()['mode'] + ' ' + str(st()['place']))
+            if E("!!__snap") and J("__bef"): save('snapshot_' + J("__bef")[0]['place'], E("__snap"))
+            bef = J("__bef")
+            ck('… and the halt starts after it, at that place', ok and bool(bef) and st()['place'] == bef[0]['place'], st()['mode'] + ' ' + str(st()['place']))
             E("__offH()")
             ck('duck(level)', E("ZKREGIE.duck(0.3) === 0.3 && ZKREGIE.duck(1) === 1"))
 
@@ -201,6 +202,24 @@ def run():
             E("ZKREGIE.start({ pair: ['allein', 'gewappnet'], split: true, chapter: 'energie', play: false, instant: true })"); steps(0.4)
             E("ZKREGIE.seek(2045)"); E("ZKREGIE.view('anger')"); steps(0.6)
             save('split_anger_2045', E(SHOT))
+
+        # ---------------- probe: the slopes around the village (numbers) and two views from above with the places ----------------
+        if 'probe' in want:
+            prof = J("""(() => { const g = (x, y) => KERN.terrain(x, y) || 0, out = {};
+              for (const [n, x, y] of [['anger', 230, -104], ['garten', 2, 2], ['klinge', -120, -440]]) { const z = g(x, y) + 1.65, row = [];
+                for (let az = 0; az < 360; az += 20) { let best = -90, bd = 0; const s = Math.sin(az * Math.PI / 180), c = Math.cos(az * Math.PI / 180);
+                  for (let r = 60; r <= 3000; r += 30) { const e = Math.atan2(g(x + s * r, y + c * r) - z, r) * 180 / Math.PI; if (e > best) { best = e; bd = r; } }
+                  row.push([az, +best.toFixed(1), bd]); } out[n] = { z: +z.toFixed(1), sil: row }; }
+              const grid = []; for (let y = 1500; y >= -1500; y -= 250) { const r = []; for (let x = -1500; x <= 1500; x += 250) r.push(Math.round(g(x, y) - g(230, -104))); grid.push(r); }
+              out.grid = grid; return out; })()""")
+            for n in ('anger', 'garten', 'klinge'):
+                print('silhouette', n, 'z', prof[n]['z'], ' '.join(f"{a}°:{e}/{d}" for a, e, d in prof[n]['sil']), flush=True)
+            print('heights rel. Anger, x -1500..1500 →, y 1500 (top) .. -1500 (bottom), step 250 m:', flush=True)
+            for r in prof['grid']: print('  ' + ' '.join(f'{v:5d}' for v in r), flush=True)
+            E("ZKREGIE.start({ pair: ['allein'], split: false, chapter: 'wald', play: false, instant: true })"); steps(0.3)
+            for name, h, fov in (('oben_1500', 1500, 60), ('oben_3500', 3500, 60)):
+                E(f"ZKREGIE.look({{ pos: [230, -104, KERN.terrain(230, -104) + {h}], look: [230, -104.1, KERN.terrain(230, -104)], fov: {fov}, near: 5 }})"); steps(0.3)
+                save('probe_' + name, E(SHOT))
 
         # ---------------- stop restores everything ----------------
         if 'stop' in want:

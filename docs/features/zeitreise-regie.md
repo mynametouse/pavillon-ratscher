@@ -43,7 +43,7 @@ Solange die Zeitreise aus ist, sind beide `null`: nichts läuft, nichts wird gel
 - **Präsentator:**
   - `next()`: zum nächsten Halt, Halt beenden, Karte weiter.
   - `prev()`: den letzten Halt noch einmal, sonst den Kapitelanfang; gleich nach einem Halt den davor.
-  - `seek(y)` springt im laufenden Kapitel zu einem Jahr.
+  - `seek(y)` springt im laufenden Kapitel zu einem Jahr; `seek(y, kapitel)` in dieses Kapitel (die Zeitleiste des Workshops).
   - `pause()` / `toggle()`.
   - `split(v)`, `side('L'|'R')`.
 
@@ -53,7 +53,7 @@ Solange die Zeitreise aus ist, sind beide `null`: nichts läuft, nichts wird gel
 ZKREGIE.start({ pair:['allein','gewappnet'], split:true, chapter:null, speed:1, play:true })
 ZKREGIE.state() → { on, pair, split, side, worlds, chapter, chapterIndex, y, date, ev, next, phase, playing, place, placeLabel, card,
                     mode, speed, line, note, waiting, bars, span }
-ZKREGIE.on(fn) → off       { type:'tick'|'chapter'|'event'|'line'|'card'|'end'|'place'|'play', … }
+ZKREGIE.on(fn) → off       { type:'tick'|'chapter'|'event'|'line'|'cue'|'card'|'end'|'place'|'play', … }
 ZKREGIE.before(fn) → off   fn({ ev, w, worlds, side, place }) vor einem Halt; darf ein Promise geben (höchstens 30 s)
 ZKREGIE.between(fn) → off  dasselbe nach der Karte: { ev:null, w, worlds, side, place, chapter, prev }
 ZKREGIE.snapshot(placeId, side) → Promise<dataURL>   JPEG des Orts für eine Seite, im selben Bild gezeichnet (nie sichtbar)
@@ -63,7 +63,9 @@ ZKREGIE.bars(k)            Höhe eines Kinobalkens als Anteil (Vorgabe 0,09 = di
 
 Die einzelnen Ereignisse:
 
-- `line`: `{ type:'line', id, who, text, key, role, side, w, dur }`. `who` ist der Anzeigename aus `ZKCHRONIK.WHO`, `key` die Person
+- `cue`: `{ type:'cue', id, label, side, w, p, h, ev }` – die Zeichen der Stresstests (`ev.cues` der Chronik: Sirene, Blaulicht, Pumpe,
+  Licht aus, Aggregat, Licht in der Schule …) bei ihrer Phase; hat `ZKZEITWELT` eine Funktion `cue(id, side, info)`, bekommt es sie auch.
+- `line`: `{ type:'line', id, who, text, key, role, side, w, rec, dur }`; `dur` ist die Länge der Aufnahme (`VOICEX`), sonst eine Schätzung. `who` ist der Anzeigename aus `ZKCHRONIK.WHO`, `key` die Person
   für die Stimme.
 - `state().ev`: nur in den Modi `before` und `halt`. Es enthält `{ id, title, text, kind, place, placeLabel, halt, dur, weather, same,
   fork, side, L, R }`; `L` und `R` sind die Fassungen beider Welten, wenn sie verschieden sind.
