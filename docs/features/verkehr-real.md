@@ -1,4 +1,4 @@
-# Verkehr realistisch, Stufe 1: Fahrzeuge von heute, Dichte nach Wochentag und Uhrzeit, Draufsicht (`verkehr-real`)
+# Verkehr realistisch: Fahrzeuge von heute, Dichte nach Wochentag und Uhrzeit, Draufsicht, Regeln, Ampeln, Unfälle (`verkehr-real`)
 
 Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx mit Falko, 13.11.2026, Branch `feat/verkehr`. Plan: `docs/plans/plan_verkehr.md`.
 
@@ -94,6 +94,36 @@ Falko (13.11. 12:14): „Sie sollen sich natürlich an Ampeln und Verkehrsregeln
 - Test `verkehr_real:ampel`: die Kreuzungsampel gebaut, die Gruppen wechseln sich ab, ein Auto auf Rot wartet an der Linie und fährt bei
   Grün; die Fußgängerampel schaltet auf Anforderung; die Draufsicht zeigt die Ampeln.
 
+## Stufe 3: Zusammenstöße mit harmlosen Folgen (`verkehr/vk_unfall.js`, `VKUNFALL`)
+
+- **Fest und mit Masse:** fährt man ein Verkehrsauto an, rechnet die Physik des Spielerfahrzeugs (`vehicles/vehicle.js`, `resolve`)
+  den Stoß zwischen **beiden** Körpern – Massen und Trägheit je Typ (Kleinwagen 1 t bis Müllwagen 20 t), Stoßpunkt, etwas Rückprall und
+  Reibung. Ein gleich schweres Auto übernimmt gut die Hälfte des Schwungs, ein Lkw bewegt sich kaum, das eigene Auto prallt ab.
+  Haken (markiert `feat/verkehr-real`): ein Kasten in `VEH.extra` mit `dyn()` ist im Stoß ein Körper eigener Masse, `knock()` nimmt das
+  Ergebnis zurück; `VEH.resolve` für den weitergegebenen Stoß zweier Verkehrsautos. Andere Kästen (Anhänger, Tore, Dinge) wie bisher.
+- **Danach** (im Bezug zu seiner Straße: entlang, quer, verdreht): das Auto rollt weiter, rutscht seitlich (Reifenreibung), dreht sich;
+  der Fahrer bremst nach 0,8 s (stand es, sofort – der Fuß war auf der Bremse). Es schiebt sich an Wänden, Bäumen und Zäunen nicht
+  hindurch, stößt ein anderes Verkehrsauto weiter (beide Körper) und weckt ein geparktes Fahrzeug des Spielers, das den Stoß selbst
+  nimmt.
+- **Stufen** nach der Geschwindigkeitsänderung des Autos oder wie schnell beide zusammenkamen: **Berührung** (unter 0,4 m/s bzw.
+  1,2 m/s – Einparken): es bleibt auf seinem Weg, der Fahrer hupt; **Rempler**: Warnblinker, ein Satz aus dem Fenster, nach 4,5 s weiter;
+  **Unfall** (ab 1 m/s bzw. 3 m/s zusammen, ~11 km/h): Warnblinker, der Fahrer schimpft – ein **Fremder** aus dem Auto („Der Fahrer:“,
+  „Die Lkw-Fahrerin:“, „Der Landwirt:“ …, zwei Stimmen), **jemand aus dem Ort steigt aus**, geht ein paar Schritte an seinem Auto entlang
+  zum Spieler, schimpft mit seinem Namen und seiner Stimme, sagt zum Schluss etwas Versöhnliches („Na, wir kennen uns ja. Das klären wir
+  beim Bier.“) und steigt wieder ein. Nach ~13 s fährt das Auto zurück in seine Spur (langsam, die Karosserie dreht sich mit der Straße
+  zurück), der Warnblinker geht aus. Steht es weit neben der Straße oder verkehrt herum, wartet es mit Warnblinker, bis es keiner sieht.
+- **Wer schuld ist:** wer schneller auf den anderen zufuhr. Fährt ein Verkehrsauto dem Spieler hinten drauf (Vollbremsung vor ihm):
+  „Warum bremst du denn einfach so?!“. Ein **geparktes** Auto hat niemanden drin: es wird nur geschoben (kein Blinker, kein Wort).
+  Noch ein Stoß, während es steht: ein Satz mehr („Jetzt reicht’s aber!“).
+- **Die anderen:** ein Auto nach einem Unfall steht für alle wie ein geparktes im Weg (wie auch immer es verdreht ist) – sie halten
+  davor, warten, fahren vorbei, wenn Platz und Gegenverkehr es erlauben; an Kreuzungen zählt es nicht mehr als Ankommender.
+  Draufsicht: ein Warndreieck neben dem Auto, solange der Warnblinker an ist.
+- **Für andere Module:** `KERN.emit('verkehr:unfall', { id, who, typ, x, y, grade, fault })` beim Stoß durch den Spieler (z. B. für
+  die Folgen im Grenzland-Modus oder das Dorfgerede).
+- Test `verkehr_real:unfall` (mit `regeln`): Auffahren mit ~16 km/h auf ein stehendes Auto (Stoß, Warnblinker, Satz für „stand“,
+  Draufsicht, weiter in der Spur), ein geparktes (nur geschoben), eine Berührung (Hupe), ein Lkw (bewegt sich kaum, schimpft), Thomas
+  aus dem Ort (steigt aus und wieder ein, seine Sätze), ein Auto dahinter (hält davor, fährt nie hinein).
+
 ## Messungen (13.11.2026, SwiftShader im Chat-Rechner)
 
 | | Wert |
@@ -115,12 +145,13 @@ schreibt die blockierenden WebGL-Aufrufe des ersten Bilds ins Protokoll.
 
 - `viz3/test/unit/verkehr_real.test.mjs`: Maße aller Typen, Achsen, Lampenarten, Stufen, Tagesganglinien, Ostern und Feiertage,
   Raten, kein Lkw am Sonntag; Stufe 2: Rollen an Kreuzungen (größere Straße, Zeichen, rechts vor links, Kreisverkehr, Haltlinie), wen man
-  abwartet (Zeitfenster, von rechts, Linksabbieger, besetzte Kreuzung, vier Wartende), Kreuzungen einer Route, Blinker, Tempolimits.
-- `viz3/test/verkehr_real.py` (Abschnitte `bau,bild,nacht,lod,zug,strom,regeln,dichte,oben,perf`): Worker, Bilder in `out/verkehr_real/`,
+  abwartet (Zeitfenster, von rechts, Linksabbieger, besetzte Kreuzung, vier Wartende), Kreuzungen einer Route, Blinker, Tempolimits;
+  Stufe 3: Stufen des Stoßes, Massen, das Auto als Körper und zurück in den Bezug zur Straße, Rutschen und Bremsen, zurück in die Spur.
+- `viz3/test/verkehr_real.py` (Abschnitte `bau,bild,nacht,lod,zug,strom,regeln,ampel,unfall,dichte,oben,perf`): Worker, Bilder in `out/verkehr_real/`,
   Lampen nachts, die drei Stufen, Sattelzug in der Kurve, die Zahl je Stunde, Draufsicht, Zeichenaufrufe, keine neuen Shader-Programme.
 - Bilder ohne Browser: `node viz3/extra/verkehr-real/werkzeug/bild.mjs <typ> out/verkehr_real/<typ>.png --col '#…' [--col2 '#…'] [--zug]`.
 
-## Was als Nächstes kommt (Plan, Stufen 3–4)
+## Was als Nächstes kommt (Plan, Stufe 4)
 
-Überholen außerorts, Zusammenstöße mit harmlosen Folgen (alle Verkehrsteilnehmer fest, auch Busse, Räder, Fußgänger), Räder und
-Fußgänger im Verkehr, Ampelphasen in der Draufsicht.
+Busse im Stoß (Haken in `bus/`), Räder und Fußgänger im Verkehr (fest, stürzen und stehen wieder auf), eine Delle ab einer
+Geschwindigkeit, das Dorfgerede nach einem Unfall mit jemandem aus dem Ort, Überholen außerorts.
