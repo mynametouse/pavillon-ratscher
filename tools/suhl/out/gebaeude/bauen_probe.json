@@ -1,11 +1,11 @@
 {
- "made": "2026-11-13T01:32:48Z",
+ "made": "2026-11-13T01:35:22Z",
  "area": "probe",
  "version": "v0",
- "seconds": 14.3,
+ "seconds": 10.5,
  "tiles": 11,
  "buildings": 2502,
- "bytes": 2864347,
+ "bytes": 2864303,
  "kb_per_building": 1.12,
  "centre_tile_present": true,
  "ethos_in_frame": 4532,
@@ -91,9 +91,9 @@
  },
  "floors_gsq": {
   "-1": 294,
-  "0": 137,
+  "0": 130,
   "1": 118,
-  "2": 1959
+  "2": 1966
  },
  "era": {
   "0": 2212,
@@ -128,8 +128,8 @@
  "landmarks": 50,
  "monuments": 18,
  "footprint_ha": 29.78,
- "floor_area_ha": 94.57,
- "roof_area_ha": 32.47,
+ "floor_area_ha": 95.29,
+ "roof_area_ha": 32.43,
  "function_to_use": {
   "Wohngebäude": [
    1417,
@@ -288,7 +288,7 @@
  "zensus": null,
  "underground": 6,
  "floors_not_fitting_height": {
-  "0": 33,
+  "0": 26,
   "3": 9
  },
  "use_out": {

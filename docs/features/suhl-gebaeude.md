@@ -2,7 +2,7 @@
 
 Stand: 13.11.2026, Hilfs-Agent `suhl-gebaeude` (Auftrag `docs/plans/auftraege/suhl-gebaeude.md`, gemeinsam `suhl-gemeinsam.md`,
 `suhl-stufe2.md`). Zweig `suhl/gebaeude`. Das Format ist das des Datenvertrags: `docs/features/suhl-daten.md`, Abschnitt 5
-(Schema 1, Fassung 1.0; Prüfer `tools/suhl/lib/validate.py`). Dieses Dokument sagt, **woher jedes Feld kommt und wie gut es ist**.
+(Schema 1, Fassung 1.1; Prüfer `tools/suhl/lib/validate.py`). Dieses Dokument sagt, **woher jedes Feld kommt und wie gut es ist**.
 Zahlen stehen maschinenlesbar in `tools/suhl/out/gebaeude/` (Probesatz) und `tools/suhl/out/gebaeude/actions/` (ganze Stadt, aus GitHub Actions).
 
 ## Kurzfassung
@@ -39,7 +39,7 @@ Zahlen stehen maschinenlesbar in `tools/suhl/out/gebaeude/` (Probesatz) und `too
 | `dach.py`, `fassade.py`, `regeln.py` | Dach schätzen und Flächen bauen; Seiten und Fassaden-Regeln; Art, Nutzung, Haustyp, Baualter, Wahrzeichen |
 | `zensus.py` | Zensus-Gitter 2022 (Gebäude nach Baujahr, 100 m) auf Suhl schneiden und je Haus nachschlagen |
 | `bauen.py` | fügt alles zusammen, schreibt Kacheln, `index.json`, Zahlen |
-| `fuss.py` | liest die Fußhöhen `z0` vom Gelände ab und ändert **nur** `z0`, `q.z0`, `x_zv` |
+| `fuss.py` | liest die Fußhöhen `z0` vom Gelände ab und ändert **nur** `z0`, `q.z0`, `zv` |
 | `pruefen.py` | Prüfungen nach Plan 5.3 |
 | `versatz.py` | misst, ob Dächer im Luftbild auf den Grundrissen liegen |
 
@@ -62,16 +62,16 @@ Die Kennung ist überall dieselbe: ETHOS `DEG_DETHL57P00006G0l` = LoD2 `DETHL57P
 |---|---:|---:|
 | ETHOS-Körper im Gebiet (Stufe 1 zählte 30 929) | 30 928 – ein Körper von 1 m² entfällt | 2 431 |
 | davon im Kataster mit derselben Kennung oder nach Lage (≥ 50 % Überdeckung) | 30 657 | 2 408 |
-| davon **nicht mehr im Kataster** (`fg` 32, `x_kat` 0) | 271 | 23 |
+| davon **nicht mehr im Kataster** (`fg` 32, `kat` 0) | 271 | 23 |
 | nur im Kataster (neu seit dem LoD2; `fg` 64; Höhe geschätzt, ab Lauf 2 am Oberflächenmodell gemessen) | 791 | 77 (6 davon Tiefgaragen) |
 | Kataster-Gebäude, die ein ETHOS-Körper schon zu ≥ 30 % deckt (nicht doppelt gebaut) | 324 | 50 |
 | **Datensätze** | **31 719** | **2 502** |
 
 - Kataster-Abfrage: 83 Kästen, 190 Sekunden, 33 394 Gebäude (mit Umland der Kästen), 25 293 mit Geschosszahl; Stände 2013–2026.
 - **Bauteile:** Das Kataster führt Treppentürme, Erker, Balkontürme und Anbauten als eigene Körper. Ein kleiner Körper (< 60 m²,
-  höchstens halb so groß wie der Nachbar, gemeinsame Wand ≥ 1,5 m) trägt `x_teil` = Kennung des Hauptgebäudes und dessen Farbe.
+  höchstens halb so groß wie der Nachbar, gemeinsame Wand ≥ 1,5 m) trägt `teil` = Kennung des Hauptgebäudes und dessen Farbe.
   Hohe „Überdachungen“ an Häusern (bis 34 m an den Zwölfgeschossern der Aue) sind Balkon- oder Loggientürme, keine Carports.
-- **Tiefgaragen** (Kataster-Funktion „Tiefgarage“, 11 in der Stadt) stehen nicht in `b`, sondern als Umriss in `x_tief` der Kachel.
+- **Tiefgaragen** (Kataster-Funktion „Tiefgarage“, 11 in der Stadt) stehen nicht in `b`, sondern als Umriss in `tief` der Kachel.
 - **Abgerissen:** drei Körper mit 14–16 m Höhe (`DETHL57P00002jP4`, `…jP5`, `…jP6`, bei UTM E 619 225, N 5 607 395) liegen im
   Luftbild vom 15.05.2024 auf einer Brachfläche (von Auge geprüft, nur diese Stelle). Ab Lauf 2 zählt der Lauf, bei wie vielen das Oberflächenmodell ebenes Gelände zeigt.
 
@@ -86,22 +86,22 @@ Die Kachel nennt in `src` die übliche Quelle je Feld; ein Gebäude nennt in `sr
 | `f`, `fh` | Grundriss, Löcher; um 0,12 m vereinfacht, Zacken ohne Breite entfernt | ETHOS (aus LoD2); nur-Kataster-Gebäude: Kataster | 2 |
 | `h` | Höhe vom tiefsten Geländepunkt zum höchsten Dachpunkt | ETHOS; nur-Kataster: geschätzt (Geschosse × 3 m + 1,5 m), ab Lauf 2 am DOM1 gemessen | 2 / 0 / 1 |
 | `e` | Traufe | Regel (Geschosse × Geschosshöhe des Haustyps + Sockel) oder DOM1 | 0 / 1 |
-| `z0`, `x_zv` | Fuß (Modell-z) und Gelände über dem Fuß an jeder Grundriss-Ecke | Geländekacheln von `suhl-boden` (`based_on`), sonst Copernicus | 1 (mit DGM1: 2) |
+| `z0`, `zv` | Fuß (Modell-z) und Gelände über dem Fuß an jeder Grundriss-Ecke | Geländekacheln von `suhl-boden` (`based_on`), sonst Copernicus | 1 (mit DGM1: 2) |
 | `r`, `az`, `p`, `rq` | Dachform, Firstrichtung (Modellrahmen), Neigung | DOM1 (`src.r` `dom1`) > OpenStreetMap `roof:shape` (`osm`) > Luftbild + Regel (`dop`) > Regel | `rq` 1 / 1 / 1 / 0 |
 | `rv`, `rt`, `R` | Dach-Netz und Dachflächen: Neigung, Fallrichtung von geografisch Nord, Fläche in echten m² (ohne Dachüberstand, in UTM gerechnet) | aus `r`, `az`, `p`, `e`, `h` gebaut | wie `rq` |
 | `rk`, `rc`, `R[].c`, `R[].col` | Deckung und Farbe, je Fläche und fürs ganze Haus | Luftbild 2024 (Farbe und Infrarot); `roof:material` aus OSM geht vor | 1 (ohne Bild 0) |
 | `F` | Wände: Enden, Oberkanten, Lage der Giebelspitze als Anteil 0…1, Merker Nachbarwand, Meter zur Straße | Geometrie; Straßen aus OSM | – |
-| `S` | je Wand nur, was sie Eigenes hat: `st` Straße, auf die sie blickt (kein Haus dazwischen), `eg: laden`, `sign` Namen, `x_hof` | OSM | 1 |
-| `x_fa`, Kachel `x_fat` | Fassaden-Parameter des ganzen Hauses nach Regel: `col`, und über `t` aus der Tabelle der Kachel `mat`, `col2`, `sock`, `win`, `balk`; Geschosshöhe = (`e` − `sock`) / `lv` | Regel nach Haustyp; `building:colour`/`material` aus OSM gehen vor | 0 (1 mit Geschossen aus Daten) |
+| `S` | je Wand nur, was sie Eigenes hat: `st` Straße, auf die sie blickt (kein Haus dazwischen), `eg: laden`, `sign` Namen, `hof` | OSM | 1 |
+| `fas`, Kachel `fat` | Fassaden-Parameter des ganzen Hauses nach Regel: `col`, und über `t` aus der Tabelle der Kachel `mat`, `col2`, `sock`, `win`, `balk`; Geschosshöhe = (`e` − `sock`) / `lv` | Regel nach Haustyp; `building:colour`/`material` aus OSM gehen vor | 0 (1 mit Geschossen aus Daten) |
 | `k` | Art: 0 Haus, 1 Halle, 2 Nebengebäude, 3 Kirche, 4 Behälter, 5 Turm | Kataster-Funktion, sonst OSM, sonst Form | 2 / 1 / 0 |
 | `use`, `eg`, `fkt` | Nutzung in den Worten des Vertrags, Erdgeschoss-Nutzung, Funktion in den Worten des Katasters | Kataster; ist dessen Wort allgemein, OSM | 2 / 1 |
-| `lv`, `x_lv` | Geschosse; `x_lv` = Kataster-Zahl, die nicht unter die Höhe des Körpers passt (dann ist `lv` geschätzt) | Kataster `anzahlgs`, sonst OSM, sonst Traufe ÷ Geschosshöhe | 2 / 1 / 0 |
+| `lv`, `lvk` | Geschosse; `lvk` = Kataster-Zahl, die nicht unter die Höhe des Körpers passt (dann ist `lv` geschätzt) | Kataster `anzahlgs`, sonst OSM, sonst Traufe ÷ Geschosshöhe | 2 / 1 / 0 |
 | `bt` | Haustyp: punkthochhaus, platte, zeilenbau, stadthaus, villa, efh, dorfhaus, block, halle, kirche, garage, laube, nebengebaeude, ueberdachung, behaelter, turm | Regel aus Nutzung, Geschossen, Form, Nachbarn, Lage | 0 |
 | `era`, `yr` | Baualter-Klasse, Jahr | Jahr aus OSM oder `wahrzeichen.md`; Platte und Hochhaus → 1949–1990; Altstadt-Streifen und Dorfkerne → vor 1918; Zensus-Gitter, sobald es da ist | 1 / 0 |
 | `n`, `adr` | Name, Adresse | Kataster, sonst OSM, Name auch aus `wahrzeichen.md` | 2 / 1 |
 | `osm` | OSM-Gebäude mit > 50 % Überdeckung | OSM | – |
 | `fg` | 1 Wahrzeichen, 2 Denkmal (OSM `heritage` oder Liste – kein amtlicher Nachweis), 4 betretbar, 32 steht nicht mehr, 64 neu | `wahrzeichen.md`, OSM, Abgleich ETHOS–Kataster | – |
-| `x_lm`, `x_teil`, `x_kat` | Nummer in `wahrzeichen.md`; Hauptgebäude eines Bauteils; 1 = dem Kataster nach Lage zugeordnet, 0 = nicht im Kataster | – | – |
+| `lm`, `teil`, `kat` | Nummer in `wahrzeichen.md`; Hauptgebäude eines Bauteils; 1 = dem Kataster nach Lage zugeordnet, 0 = nicht im Kataster | – | – |
 | `d` | `fa` Grundfläche, `lv`, `gfa` Geschossfläche = Grundfläche × Geschosse, `rf` Dachfläche – echte m², in UTM gerechnet | gerechnet | wie `lv`, `rq` |
 
 ## 4 Dächer
@@ -145,8 +145,8 @@ Ein gewöhnliches Orthofoto zeigte bei diesen Höhen viele Meter. Eine Korrektur
   Farbe aus einer Palette je Typ (gleiches Haus, gleiche Wahl), Sockel, Fensterraster (Achsabstand 2,3–3,6 m), Loggien für Platten
   und Hochhäuser, Balkone für einen Teil der Zeilen. Ladenzone (`eg: laden`) an den Straßenseiten, wenn OSM im Haus einen Laden,
   eine Gaststätte, Bank, Apotheke oder ein Handwerk führt oder das Kataster „Handel“ sagt; Schilder mit den Namen aus OSM.
-- Stufe 3 schreibt je Seite nach Fotos in `S[i]` (Güte 2–3); `x_fa` bleibt der Rückfall. Lücke im Vertrag: `S` kennt keine
-  Parameter fürs ganze Haus – deshalb `x_fa`/`x_fat` (je Seite wiederholt hätten sie die Kacheln fast verdreifacht).
+- Stufe 3 schreibt je Seite nach Fotos in `S[i]` (Güte 2–3); `fas` bleibt der Rückfall. Lücke im Vertrag: `S` kennt keine
+  Parameter fürs ganze Haus – deshalb `fas`/`fat` (je Seite wiederholt hätten sie die Kacheln fast verdreifacht).
 
 ## 6 Art, Nutzung, Haustyp, Baualter
 
@@ -164,7 +164,7 @@ Ein gewöhnliches Orthofoto zeigte bei diesen Höhen viele Meter. Eine Korrektur
 ## 7 Fußhöhen
 
 `fuss.py` liest die Höhe am Umriss (Ecken und alle 2 m) aus Geländekacheln (WTH1) – Ordner oder Adresse, die feinste vorhandene Stufe
-gilt – und schreibt nur `z0` (tiefster Punkt, Modell-z), `q.z0`, `x_zv` (Gelände über `z0` je Ecke, ab 0,4 m Unterschied) und in den
+gilt – und schreibt nur `z0` (tiefster Punkt, Modell-z), `q.z0`, `zv` (Gelände über `z0` je Ecke, ab 0,4 m Unterschied) und in den
 Index `based_on: {boden: N}`. Ein neuer Boden braucht nur diesen Schritt. Probesatz v0: Geländeprobe von `suhl-boden` v0 (Copernicus),
 2 500 von 2 502 Gebäuden. Reihenfolge (Suhl-Chat, 13.11.): `suhl-boden` rohes Gelände → `suhl-strassen` Profile → `suhl-boden`
 schneidet die Straßen ein → **dann** `fuss.py` auf den eingeschnittenen Kacheln.
@@ -214,7 +214,7 @@ Jeder `index.json` trägt die Quellen und die Zeile für die App. Rohdaten und L
 - Dachformen ohne DOM1 und ohne OSM-Angabe sind Regeln; Gauben, Aufbauten und Solarmodule (`A`) fehlen ganz.
 - Die Dachklassen sind an einem Ausschnitt von Auge angesehen, nicht ausgezählt.
 - „Steht nicht mehr“ (`fg` 32) ist an einer Stelle geprüft; „neu“ (`fg` 64) kann auch ein Gebäude sein, das dem LoD2 nur fehlte.
-- Geschosse: das Kataster zählt je Gebäude, die Höhe gilt je Körper – 42 Körper der Probekacheln tragen deshalb `x_lv`.
+- Geschosse: das Kataster zählt je Gebäude, die Höhe gilt je Körper – 42 Körper der Probekacheln tragen deshalb `lvk`.
 - Fassadenfarben sind Paletten, keine Beobachtung; das Luftbild taugt dafür nicht.
 - Dachfarben kommen vom WMS des Landes. Sobald `suhl-boden` farbausgeglichene Bildkacheln liefert, sollen sie von dort kommen,
   damit Dach und Boden zusammenpassen (Suhl-Chat, 13.11.) – noch nicht umgestellt.
@@ -222,9 +222,9 @@ Jeder `index.json` trägt die Quellen und die Zeile für die App. Rohdaten und L
 
 ## Für den Suhl-Chat
 
-1. **Vertrag:** Bitte an `suhl-daten` für Fassung 1.1 – Plätze für `x_fa`/`x_fat` (Fassade des ganzen Hauses), `x_teil`, `x_zv`,
-   `x_lv`, `x_lm`, `x_kat`, `x_hof`, `x_tief`; `F[i][5]` als Anteil 0…1 (heute liest `gebaeude.js` Meter); Kachel-`src` als
+1. **Vertrag:** Bitte an `suhl-daten` für Fassung 1.1 – Plätze für `fas`/`fat` (Fassade des ganzen Hauses), `teil`, `zv`,
+   `lvk`, `lm`, `kat`, `hof`, `tief`; `F[i][5]` als Anteil 0…1 (heute liest `gebaeude.js` Meter); Kachel-`src` als
    Vorgabe je Feld; Quelle `zensus` im Katalog.
-2. **Nicht zeichnen:** `fg` & 32 und `x_tief`.
+2. **Nicht zeichnen:** `fg` & 32 und `tief`.
 3. **`tools/welt/QUELLEN.md`:** WFS „ALKIS vereinfacht“ und easygeodata als Quellen eintragen (ich ändere keine vorhandene Datei).
 4. **Fragen an Falko:** keine neuen. Seine LoD2-Dateien bleiben der Weg zu echten Dachflächen.

@@ -135,6 +135,9 @@ def estimate(sh, h, k, typ, use, gs, osm_tags, ridge=None, img=None, part=False)
                 rise = min(rise, room) if not attic else room
             elif k in (0, 6) and h >= 6.0:
                 rise = min(rise, 0.5 * h)
+        if g and k in (0, 6):
+            # the floors of the cadastre are data: the eave lies at least on top of all floors but the last (which may sit in the roof)
+            rise = min(rise, max(0.0, h - ((g - 1) * 2.5 + 0.3)))
         if h - rise < emin:
             rise = max(0.0, h - emin)
         eave = h - rise
