@@ -197,7 +197,7 @@ export const ZKCHRONIK = (() => {
       places: ['anger', 'hang', 'waldrand', 'kahlflaeche', 'schule'],
       questions: [
         'Wem gehört der Wald um Ratscher – und wer entscheidet, was nach dem Käfer kommt?',
-        'Was würden Sie mit Ihrem Stück Wald tun, wenn die Fichten sterben – allein oder mit anderen?',
+        'Wenn die Fichten sterben: Wer sollte sich um den Wald kümmern – und wie?',
       ],
     },
     {
@@ -222,7 +222,7 @@ export const ZKCHRONIK = (() => {
       hour: 15,
       places: ['anger', 'schule', 'strasse', 'heizhaus', 'windrad'],
       questions: [
-        'Was müsste passieren, damit Sie Wärme oder Strom gemeinsam mit den Nachbarn machen?',
+        'Würden Sie Wärme oder Strom lieber selbst machen oder mit den Nachbarn zusammen – und warum?',
         'Wohin würden Sie in einer Winternacht ohne Strom gehen – und wer bräuchte dann Hilfe?',
       ],
     },
@@ -248,7 +248,7 @@ export const ZKCHRONIK = (() => {
       lines: [
         [
           'gerhard',
-          'Seit 2018 sind im Thüringer Wald ganze Berge braun geworden. Bei uns stehen die Fichten noch. Die Frage ist, wie lange.',
+          'Seit 2018 sind im Thüringer Wald ganze Berge braun geworden. Bei uns stehen die Fichten noch – die Frage ist, wie lange.',
         ],
       ],
     },
@@ -277,7 +277,7 @@ export const ZKCHRONIK = (() => {
       lines: [
         [
           'wolfgang',
-          'Siehst du das braune Mehl am Stamm? Da sitzt der Käfer drin. Die Fichte ist schon tot, sie weiß es nur noch nicht.',
+          'Siehst du das braune Mehl am Stamm? Da sitzt der Käfer drin, die Fichte ist schon tot und weiß es nur noch nicht.',
         ],
         ['wolfgang', 'Letztes Jahr waren es drei Bäume. Jetzt ist es der halbe Hang.'],
       ],
@@ -383,7 +383,7 @@ export const ZKCHRONIK = (() => {
         lines: [
           [
             'gerhard',
-            'Der Wald kommt wieder, sagen die Förster. Nur anders. Und Holz machen wird hier so bald keiner mehr.',
+            'Der Wald kommt wieder, sagen die Förster, nur anders. Holz machen wird hier so bald keiner mehr.',
           ],
         ],
       },
@@ -682,7 +682,7 @@ export const ZKCHRONIK = (() => {
         pick: 1,
         title: 'Der Wärmeplan: jedes Haus für sich',
         text: 'Der Wärmeplan der Stadt ist fertig, Pflicht bis Mitte 2028. Für Ratscher steht darin: Einzelversorgung. Jedes Haus sucht sich selbst eine neue Heizung.',
-        lines: [['katrin', 'Wärmepumpe? In unserem alten Haus? Erst mal läuft der Ölkessel weiter.']],
+        lines: [['katrin', 'Eine Wärmepumpe in unserem alten Haus? Erst mal läuft der Ölkessel weiter.']],
       },
       gewappnet: {
         pick: 0,

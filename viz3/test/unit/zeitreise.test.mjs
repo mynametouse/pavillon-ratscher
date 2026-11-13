@@ -279,6 +279,7 @@ test('lines: unique stable ids, only the invented villagers, never Hubert or Ron
     assert.ok(VILLAGERS.includes(l.who), l.id + ' ' + l.who);
     assert.ok(C.WHO[l.who], l.who);
     assert.ok(l.text.length > 5 && !/[{}]/.test(l.text), l.id);
+    assert.ok((l.text.match(/[.!?](\s|$)/g) || []).length <= 2, l.id + ': one or two sentences');
   }
   const all = JSON.stringify([C.events('allein'), C.events('gewappnet'), C.CHAPTERS, C.SIGNS, C.kpi('allein', 'wald')]);
   assert.ok(!/hubert|ronald/i.test(all), 'no real neighbours');
