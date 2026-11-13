@@ -1,0 +1,9 @@
+/home/runner/work/pavillon-ratscher/pavillon-ratscher/tools/suhl/out/fotos/kartaview.json 0 pictures
+  v2 photo near zentrum -> None None failed after 2 tries: https://api.openstreetcam.org/2.0/photo/?lat=50.6087&lng=10.6926&radius=1500&itemsPerPage=500&page=1 (<urlopen error [SSL: CERTIFICATE_VER
+  v1 nearby-photos near zentrum -> None 0 failed after 2 tries: https://api.openstreetcam.org/1.0/list/nearby-photos/ (<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname
+  v2 photo near suhl-nord -> None None failed after 2 tries: https://api.openstreetcam.org/2.0/photo/?lat=50.623&lng=10.703&radius=1500&itemsPerPage=500&page=1 (<urlopen error [SSL: CERTIFICATE_VERIF
+  v1 nearby-photos near suhl-nord -> None 0 failed after 2 tries: https://api.openstreetcam.org/1.0/list/nearby-photos/ (<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname
+  v2 photo near heinrichs -> None None failed after 2 tries: https://api.openstreetcam.org/2.0/photo/?lat=50.595&lng=10.669&radius=1500&itemsPerPage=500&page=1 (<urlopen error [SSL: CERTIFICATE_VERIF
+  v1 nearby-photos near heinrichs -> None 0 failed after 2 tries: https://api.openstreetcam.org/1.0/list/nearby-photos/ (<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname
+  v2 photo near zella-mehlis (Vergleich) -> None None failed after 2 tries: https://api.openstreetcam.org/2.0/photo/?lat=50.658&lng=10.665&radius=1500&itemsPerPage=500&page=1 (<urlopen error [SSL: CERTIFICATE_VERIF
+  v1 nearby-photos near zella-mehlis (Vergleich) -> None 0 failed after 2 tries: https://api.openstreetcam.org/1.0/list/nearby-photos/ (<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname

@@ -1,0 +1,97 @@
+# suhl/fotos (stage 1 of the Suhl plan, agent suhl-fotos): only what the chat machine cannot reach - the Wikimedia Commons API (HTTP 429
+# there) and KartaView. Panoramax, the street network, the coverage, the maps and the contact sheets of the Zentrum are made on the chat
+# machine (GitHub Actions was congested on 13.11.2026). Runs when one of the two collectors or this file changes - not on every script, so
+# that a queued run keeps its place. The results (small JSON files) are committed back to suhl/fotos; if the branch then has the script
+# tools/suhl/fotos/nach_commons.py, it is run (merged catalogue, landmark numbers, Commons contact sheets) and its pictures go into the
+# folder commons/ of the scratch branch ref/suhl-fotos (one orphan commit, never merged). Nothing is published, no app test starts.
+name: Suhl – Fotos (Commons, KartaView)
+
+on:
+  push:
+    branches: ['suhl/fotos']
+    paths: ['tools/suhl/fotos/collect_commons.py', 'tools/suhl/fotos/collect_kartaview.py', '.github/workflows/suhl-fotos.yml']
+
+concurrency:
+  group: suhl-fotos
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  fotos:
+    name: Commons, KartaView
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: .github/workflows/suhl-fotos.yml
+      - name: Werkzeuge
+        run: pip install --quiet pillow
+      - name: Gebiete von suhl-bestand (falls schon da)
+        run: |
+          git fetch -q --depth 1 origin suhl/bestand 2>/dev/null && git show FETCH_HEAD:tools/suhl/out/bestand/gebiete.geojson > "$RUNNER_TEMP/gebiete.geojson" 2>/dev/null || rm -f "$RUNNER_TEMP/gebiete.geojson"
+          ls -la "$RUNNER_TEMP/gebiete.geojson" 2>/dev/null || echo "noch keine gebiete.geojson – vorläufige Gebiete"
+      - name: Wikimedia Commons
+        timeout-minutes: 40
+        run: python -u tools/suhl/fotos/collect_commons.py "$RUNNER_TEMP/gebiete.geojson" 2>&1 | tee "$RUNNER_TEMP/commons.log"
+      - name: KartaView
+        continue-on-error: true
+        timeout-minutes: 5
+        run: python -u tools/suhl/fotos/collect_kartaview.py 2>&1 | tee "$RUNNER_TEMP/kartaview.log"
+      - name: Ergebnisse nach suhl/fotos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p tools/suhl/out/fotos/log
+          cp "$RUNNER_TEMP/commons.log" tools/suhl/out/fotos/log/commons.log
+          cp "$RUNNER_TEMP/kartaview.log" tools/suhl/out/fotos/log/kartaview.log 2>/dev/null || true
+          git add -f tools/suhl/out/fotos/commons.json.gz tools/suhl/out/fotos/log
+          git add -f tools/suhl/out/fotos/kartaview.json 2>/dev/null || true
+          git commit -q -m "suhl-fotos: Commons and KartaView catalogue from GitHub Actions (${GITHUB_SHA::7})" || echo "nothing new"
+          for i in 1 2 3 4 5; do
+            git pull -q --rebase origin suhl/fotos && git push -q origin HEAD:suhl/fotos && break
+            sleep $((20 * i))
+          done
+      - name: Nacharbeit vom Stand des Zweigs (falls vorhanden)
+        continue-on-error: true
+        timeout-minutes: 12
+        run: |
+          if [ -f tools/suhl/fotos/nach_commons.py ]; then
+            python -u tools/suhl/fotos/nach_commons.py "$RUNNER_TEMP/ref" "$RUNNER_TEMP/gebiete.geojson" 2>&1 | tee "$RUNNER_TEMP/nach.log"
+            cp "$RUNNER_TEMP/nach.log" tools/suhl/out/fotos/log/nach_commons.log
+            git add -f tools/suhl/out/fotos
+            git commit -q -m "suhl-fotos: catalogue and numbers with Commons, from GitHub Actions (${GITHUB_SHA::7})" || echo "nothing new"
+            for i in 1 2 3 4 5; do
+              git pull -q --rebase origin suhl/fotos && git push -q origin HEAD:suhl/fotos && break
+              sleep $((20 * i))
+            done
+          else
+            echo "kein nach_commons.py auf dem Zweig"
+          fi
+      - name: Commons-Kontaktabzüge nach ref/suhl-fotos (Ordner commons/)
+        continue-on-error: true
+        run: |
+          [ -d "$RUNNER_TEMP/ref/commons" ] || { echo "keine Abzüge"; exit 0; }
+          cd "$RUNNER_TEMP"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for i in 1 2 3; do
+            rm -rf scratch && git init -q scratch && cd scratch
+            git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+            old=""
+            if git fetch -q --depth 1 origin ref/suhl-fotos 2>/dev/null; then
+              old=$(git rev-parse FETCH_HEAD); git checkout -q FETCH_HEAD
+            fi
+            git checkout -q --orphan neu
+            rm -rf commons && cp -r "$RUNNER_TEMP/ref/commons" commons
+            git add -A
+            git commit -q -m "suhl-fotos: contact sheets and maps (scratch, never merged) – Commons sheets from GitHub Actions ${GITHUB_SHA::7}"
+            if [ -n "$old" ]; then lease="--force-with-lease=refs/heads/ref/suhl-fotos:$old"; else lease=""; fi
+            if git push -q $lease origin neu:refs/heads/ref/suhl-fotos; then du -sh commons; break; fi
+            cd "$RUNNER_TEMP"; sleep $((20 * i))
+          done

@@ -1,0 +1,334 @@
+{
+ "version": 1,
+ "made": "2026-11-13T00:00Z",
+ "areas": "suhl-bestand",
+ "quellen": {
+  "commons": {
+   "fotos": 6229,
+   "doppelt": 0,
+   "je_gebiet": {
+    "None": 2871,
+    "umland": 995,
+    "zentrum": 512,
+    "kernstadt": 826,
+    "stadt": 1025
+   },
+   "jahre": {
+    "1826": 1,
+    "1830": 1,
+    "1839": 1,
+    "1840": 1,
+    "1842": 1,
+    "1844": 1,
+    "1850": 1,
+    "1853": 1,
+    "1857": 1,
+    "1858": 7,
+    "1860": 2,
+    "1862": 5,
+    "1868": 3,
+    "1870": 3,
+    "1881": 2,
+    "1886": 1,
+    "1890": 5,
+    "1898": 1,
+    "1900": 4,
+    "1903": 2,
+    "1905": 1,
+    "1906": 1,
+    "1910": 1,
+    "1916": 1,
+    "1920": 1,
+    "1921": 5,
+    "1926": 1,
+    "1945": 1,
+    "1952": 2,
+    "1953": 7,
+    "1954": 3,
+    "1955": 3,
+    "1956": 6,
+    "1957": 3,
+    "1958": 8,
+    "1959": 6,
+    "1960": 5,
+    "1962": 1,
+    "1963": 4,
+    "1965": 4,
+    "1966": 2,
+    "1967": 5,
+    "1969": 2,
+    "1970": 16,
+    "1971": 9,
+    "1972": 2,
+    "1973": 11,
+    "1974": 9,
+    "1975": 19,
+    "1976": 34,
+    "1977": 14,
+    "1978": 26,
+    "1979": 12,
+    "1980": 28,
+    "1981": 16,
+    "1982": 20,
+    "1983": 18,
+    "1984": 35,
+    "1985": 17,
+    "1986": 20,
+    "1987": 26,
+    "1988": 21,
+    "1989": 31,
+    "1990": 11,
+    "1991": 2,
+    "1993": 1,
+    "1994": 2,
+    "1997": 1,
+    "1998": 5,
+    "2000": 1,
+    "2001": 1,
+    "2002": 1,
+    "2003": 4,
+    "2004": 10,
+    "2005": 21,
+    "2006": 33,
+    "2007": 48,
+    "2008": 67,
+    "2009": 33,
+    "2010": 42,
+    "2011": 73,
+    "2012": 46,
+    "2013": 126,
+    "2014": 219,
+    "2015": 170,
+    "2016": 87,
+    "2017": 231,
+    "2018": 110,
+    "2019": 509,
+    "2020": 153,
+    "2021": 265,
+    "2022": 211,
+    "2023": 261,
+    "2024": 795,
+    "2025": 745,
+    "2026": 1364,
+    "ohne": 80
+   },
+   "lizenzen": {
+    "CC BY-SA 4.0": 3985,
+    "CC BY-SA 3.0 de": 691,
+    "CC BY 4.0": 392,
+    "CC BY-SA 3.0": 386,
+    "CC0": 347,
+    "CC BY 3.0": 122,
+    "CC BY-SA 2.0": 100,
+    "Public domain": 97,
+    "CC BY 2.0": 36,
+    "FAL": 32,
+    "CC BY-SA 2.5": 13,
+    "Attribution": 8,
+    "GFDL 1.2": 4,
+    "Copyrighted free use": 4,
+    "CC BY-SA 2.0 de": 4
+   },
+   "nutzung": {
+    "frei": 6185,
+    "nur ansehen": 44
+   },
+   "mit_position": 3358,
+   "kameraposition": 3299,
+   "mit_blickrichtung": 250,
+   "rundum_360": 0,
+   "aussenansicht": 5536,
+   "urheber": {
+    "Strubbl": 1173,
+    "Sven Mandel": 997,
+    "Sandro Halank , Wikimedia Commons": 479,
+    "Steffen Prößdorf": 394,
+    "Helmut Schaar": 320,
+    "Aschroet": 257,
+    "Störfix": 226,
+    "Stephan van Helden": 210,
+    "Giorno2": 150,
+    "Lukas Beck": 149
+   },
+   "bildwinkel": null
+  },
+  "openverse": {
+   "fotos": 183,
+   "doppelt": 0,
+   "je_gebiet": {
+    "None": 183
+   },
+   "jahre": {
+    "ohne": 183
+   },
+   "lizenzen": {
+    "CC BY-NC 2.0": 99,
+    "CC BY-SA 2.0": 28,
+    "CC BY-ND 2.0": 23,
+    "CC BY-NC-SA 2.0": 16,
+    "CC BY 2.0": 12,
+    "CC BY-NC-ND 2.0": 3,
+    "Public Domain Mark 1.0": 1,
+    "CC BY-NC-SA 4.0": 1
+   },
+   "nutzung": {
+    "frei": 41,
+    "nur ansehen": 142
+   },
+   "mit_position": 0,
+   "kameraposition": 0,
+   "mit_blickrichtung": 0,
+   "rundum_360": 0,
+   "aussenansicht": 83,
+   "urheber": {
+    "pilot_micha": 73,
+    "sludgegulper": 22,
+    "dmytrok": 13,
+    "campact": 12,
+    "Mandewo": 11,
+    "grafzahlmd": 10,
+    "MJ Klaver": 7,
+    "Triple-green": 5,
+    "ulrichkarljoho": 3,
+    "a.bierstein": 3
+   },
+   "bildwinkel": null
+  },
+  "panoramax": {
+   "fotos": 3254,
+   "doppelt": 284,
+   "je_gebiet": {
+    "umland": 831,
+    "zentrum": 259,
+    "kernstadt": 1266,
+    "stadt": 898
+   },
+   "jahre": {
+    "2025": 2095,
+    "2026": 1159
+   },
+   "lizenzen": {
+    "CC BY-SA 4.0": 3254
+   },
+   "nutzung": {
+    "frei": 3254
+   },
+   "mit_position": 3254,
+   "kameraposition": 3254,
+   "mit_blickrichtung": 3254,
+   "rundum_360": 0,
+   "aussenansicht": 3254,
+   "urheber": {
+    "sixsixfive": 1733,
+    "R_A": 773,
+    "r_a": 385,
+    "cucu": 362,
+    "mapcomplete": 1
+   },
+   "bildwinkel": {
+    "74": 1733,
+    "100": 765,
+    "None": 393,
+    "95": 362,
+    "46": 1
+   }
+  }
+ },
+ "herkunft": {
+  "panoramax": {
+   "fetched": "2026-11-12T23:26Z",
+   "where": "chat machine",
+   "api": "https://api.panoramax.xyz/api/search",
+   "duplicates": 284,
+   "heading_check": {
+    "R_A / Garmin VIRB Ultra 30": {
+     "paare": 380,
+     "R": 0.993,
+     "versatz_grad": 1.9,
+     "median_abweichung_grad": 5.8,
+     "anteil_bis_20_grad": 1.0,
+     "fest_zur_fahrtrichtung": true
+    },
+    "R_A / SONY HDR-AS200V": {
+     "paare": 393,
+     "R": 1.0,
+     "versatz_grad": -120.0,
+     "median_abweichung_grad": 120.0,
+     "anteil_bis_20_grad": 0.0,
+     "fest_zur_fahrtrichtung": true
+    },
+    "sixsixfive / Fairphone 6": {
+     "paare": 1474,
+     "R": 0.587,
+     "versatz_grad": 18.5,
+     "median_abweichung_grad": 40.0,
+     "anteil_bis_20_grad": 0.225,
+     "fest_zur_fahrtrichtung": false
+    },
+    "r_a / Garmin VIRB Ultra 30": {
+     "paare": 385,
+     "R": 1.0,
+     "versatz_grad": 0.0,
+     "median_abweichung_grad": 0.3,
+     "anteil_bis_20_grad": 1.0,
+     "fest_zur_fahrtrichtung": true
+    },
+    "cucu / samsung SM-A546B": {
+     "paare": 133,
+     "R": 0.551,
+     "versatz_grad": -61.7,
+     "median_abweichung_grad": 70.3,
+     "anteil_bis_20_grad": 0.06,
+     "fest_zur_fahrtrichtung": false
+    }
+   }
+  },
+  "commons": {
+   "fetched": "2026-11-12T23:34Z",
+   "where": "GitHub Actions",
+   "api": "https://commons.wikimedia.org/w/api.php",
+   "counts": {
+    "geotagged": 2855,
+    "in_category_tree": 6342,
+    "historic_search": 615,
+    "described": 6446,
+    "kept": 6229
+   }
+  },
+  "kartaview": {
+   "fetched": "2026-11-12T23:59Z",
+   "where": "chat machine",
+   "api": "https://api.kartaview.org/2.0/photo/",
+   "circles": 369,
+   "calls": 369,
+   "errors": 0,
+   "control": {
+    "place": "Erfurt 50.9787 N, 11.0328 E",
+    "items_on_first_page_of_5": 5,
+    "has_more": true,
+    "first_shot_date": "2016-08-26 04:19:20.000"
+   },
+   "probes": null,
+   "photos_in_suhl": 0
+  },
+  "openverse": {
+   "fetched": "2026-11-12T23:36Z",
+   "where": "chat machine",
+   "api": "https://api.openverse.org/v1/images/",
+   "terms": [
+    "Suhl",
+    "Suhl Thüringen",
+    "Suhl Rathaus",
+    "Suhl Steinweg",
+    "Suhl Waffenmuseum",
+    "Suhl Stadthalle",
+    "Suhl Congress Centrum",
+    "Suhl Bahnhof",
+    "Suhl Kirche",
+    "Suhl Hochhaus",
+    "Suhl DDR"
+   ]
+  }
+ },
+ "mapillary": "not asked: the Mapillary API needs an access token (an account); none was created"
+}

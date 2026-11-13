@@ -1,0 +1,129 @@
+# Suhl-Bestand (Stufe 1 des Suhl-Plans, Auftrag docs/plans/auftraege/suhl-bestand.md): die Teile der Datenkarte, die der Chat-Rechner
+# nicht erreicht oder die in Actions wiederholbar sein sollen – OpenStreetMap aus dem Geofabrik-Auszug Thüringen (mit osmium auf Suhl
+# geschnitten) als Gegenprobe zu den Zahlen aus der OSM-API, ETHOS.BUILDA (Zenodo, DEG.csv) und die Probe der Landesdienste von GitHub aus.
+# Ergebnis: kleine JSON-Dateien nach tools/suhl/out/bestand/actions/ auf suhl/bestand (sonst wird nichts angefasst), Protokolle als Artefakt.
+# Läuft nur auf suhl/bestand und nur, wenn diese Datei oder tools/suhl/bestand/lauf.txt sich ändert (lauf.txt ändern = neuen Lauf
+# bestellen). Der Lauf nimmt beim Start den neuesten Stand des Zweigs: ein Lauf, der lange in der Warteschlange stand, rechnet mit den
+# neuesten Skripten, und Skript-Änderungen stoßen keinen neuen Lauf an (die Warteschlange war am 13.11.2026 lang).
+name: Suhl – Bestand (Datenkarte)
+
+on:
+  push:
+    branches: ['suhl/bestand']
+    paths: ['.github/workflows/suhl-bestand.yml', 'tools/suhl/bestand/lauf.txt']
+
+concurrency:
+  group: suhl-bestand
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  bestand:
+    name: OSM-Auszug, ETHOS, Landesdienste
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      SUHL_RAW: /home/runner/suhl-raw
+      UA: 'PavillonRatscher-Suhl/0.1 (+https://github.com/mynametouse/pavillon-ratscher)'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: suhl/bestand
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: |
+          pip install --quiet numpy shapely pyproj
+          sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
+          mkdir -p "$SUHL_RAW" logs tools/suhl/out/bestand/actions
+      - name: Rohdaten aus dem Cache (Downloads früherer Läufe)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/suhl-raw
+          key: suhl-bestand-raw-v1-${{ github.run_id }}
+          restore-keys: |
+            suhl-bestand-raw-v1-
+      - name: OpenStreetMap – Geofabrik-Auszug Thüringen, auf Suhl geschnitten (OPL)
+        id: osm
+        continue-on-error: true
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          mkdir -p "$SUHL_RAW/geofabrik"
+          P="$SUHL_RAW/geofabrik/suhl.opl.gz"
+          if [ ! -s "$P" ]; then
+            curl -sSfL --retry 3 --retry-delay 20 -A "$UA" -o "$RUNNER_TEMP/th.osm.pbf" https://download.geofabrik.de/europe/germany/thueringen-latest.osm.pbf
+            osmium fileinfo "$RUNNER_TEMP/th.osm.pbf" | grep -E "timestamp|Bounding|osmosis_replication_timestamp" | tee "$SUHL_RAW/geofabrik/fileinfo.txt"
+            # the bounding box of the municipality (OSM relation 62450) + 0.004 degrees, as in tools/suhl/bestand/osm_api.py
+            osmium extract -b 10.5482,50.5568,10.8466,50.6929 -s smart "$RUNNER_TEMP/th.osm.pbf" -o "$RUNNER_TEMP/suhl.osm.pbf"
+            osmium cat "$RUNNER_TEMP/suhl.osm.pbf" -f opl | gzip -6 > "$P"
+            rm -f "$RUNNER_TEMP/th.osm.pbf"
+          fi
+          ls -la "$SUHL_RAW/geofabrik"
+          if [ -f tools/suhl/bestand/osm_bestand.py ]; then
+            python -I -u tools/suhl/bestand/osm_bestand.py --opl "$P" --out tools/suhl/out/bestand/actions/osm_geofabrik.json 2>&1 | tee logs/osm_bestand.log
+          fi
+      - name: ETHOS.BUILDA – DEG.csv (Zenodo 11845992) im Strom auf Suhl gefiltert
+        id: ethos
+        continue-on-error: true
+        timeout-minutes: 25
+        run: |
+          set -o pipefail
+          mkdir -p "$SUHL_RAW/ethos"
+          P="$SUHL_RAW/ethos/suhl.jsonl"
+          if [ ! -s "$P" ] && [ -f tools/suhl/bestand/ethos_filter.py ]; then
+            curl -sSL --retry 3 --retry-delay 20 -A "$UA" https://zenodo.org/api/records/11845992/files/DEG.csv/content \
+              | python -I -u tools/suhl/bestand/ethos_filter.py "$P.part" 2>&1 | tee logs/ethos_filter.log
+            mv "$P.part" "$P"
+          fi
+          ls -la "$SUHL_RAW/ethos"
+          if [ -f tools/suhl/bestand/ethos.py ]; then
+            python -I -u tools/suhl/bestand/ethos.py --jsonl "$P" --opl "$SUHL_RAW/geofabrik/suhl.opl.gz" \
+              --out tools/suhl/out/bestand/actions/ethos.json 2>&1 | tee logs/ethos.log
+          fi
+      - name: Landesdienste von GitHub aus (alte Download-Adressen, Dienste)
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          set -o pipefail
+          if [ -f tools/suhl/bestand/landesdienste.py ]; then
+            python -I -u tools/suhl/bestand/landesdienste.py --out tools/suhl/out/bestand/actions/landesdienste.json 2>&1 | tee logs/landesdienste.log
+          fi
+      - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
+        if: always()
+        run: echo "RAWKEY=$(cd "$SUHL_RAW" 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+      - name: Rohdaten in den Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/suhl-raw
+          key: suhl-bestand-raw-v1-${{ env.RAWKEY }}
+      - name: Ergebnisse nach suhl/bestand (nur tools/suhl/out/bestand/actions/)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f tools/suhl/out/bestand/actions
+          if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+          if git diff --cached --name-only | grep -v '^tools/suhl/out/bestand/actions/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
+          printf '%s\n\n%s\n%s\n' "suhl-bestand: results of the Actions run ${GITHUB_RUN_ID} (Geofabrik extract, ETHOS, state services seen from GitHub)" \
+            "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>" \
+            "Claude-Session: https://claude.ai/code/session_01L6YrpcuzUozgpZNSC5CdVL" > "$RUNNER_TEMP/msg.txt"
+          git commit -q -F "$RUNNER_TEMP/msg.txt"
+          for i in 1 2 3 4 5; do
+            if git pull -q --rebase origin suhl/bestand && git push -q origin HEAD:suhl/bestand; then echo "gepusht"; break; fi
+            echo "Push abgelehnt (Versuch $i)"; sleep $((15 * i))
+          done
+      - name: Protokolle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-bestand-logs
+          path: |
+            logs/
+            tools/suhl/out/bestand/actions/
+          if-no-files-found: ignore
+          retention-days: 5

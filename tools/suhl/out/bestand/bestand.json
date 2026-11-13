@@ -1,0 +1,3076 @@
+{
+ "made": "2026-11-12T23:48:09Z",
+ "auftrag": "docs/plans/auftraege/suhl-bestand.md",
+ "doku": [
+  "docs/features/suhl-bestand.md",
+  "docs/features/suhl-landesdaten.md"
+ ],
+ "bilder": "Zweig ref/suhl-bestand, Ordner karten/",
+ "quellen": {
+  "OpenStreetMap": "© OpenStreetMap-Mitwirkende, ODbL 1.0; OSM-API 0.6 (map-Abrufe in Kästen, relation/62450/full), Nominatim",
+  "Land Thüringen": "© GDI-Th, CC BY 4.0 (WMS/WFS des Geoproxy Thüringen: DOP, th_dop_info, ALKIS vereinfacht, Hauskoordinaten)",
+  "ETHOS.BUILDA": "Forschungszentrum Jülich, Zenodo 11845992 (DEG.csv), ODbL 1.0",
+  "Fahrplan": "gtfs.de – GTFS für Deutschland (frei), Daten bereitgestellt von DELFI e.V., CC BY 4.0",
+  "basemap.de": "GeoBasis-DE (Bund und Länder), Vektorkacheln basemap.de Web Vektor",
+  "easygeodata.de": "privates Portal mit aufbereiteten Kopien amtlicher Daten; nur die öffentlichen Seiten gelesen"
+ },
+ "gebiete": {
+  "stadt": {
+   "name": "Stadt Suhl (Gemeindegebiet)",
+   "flaeche_km2": 141.81,
+   "bbox_utm32_km": [
+    609.823,
+    5602.294,
+    630.374,
+    5616.762
+   ],
+   "gebaeude_osm": null,
+   "osm": "relation/62450",
+   "regel": "Gemeindegrenze aus OpenStreetMap (boundary=administrative, admin_level 6), aus den 34 Grenzwegen der Relation zusammengesetzt"
+  },
+  "kernstadt": {
+   "name": "Kernstadt Suhl (zusammenhängend bebautes Gebiet um das Zentrum)",
+   "flaeche_km2": 22.04,
+   "bbox_utm32_km": [
+    614.423,
+    5604.548,
+    624.124,
+    5611.782
+   ],
+   "gebaeude_osm": 16168,
+   "osm": null,
+   "regel": "OSM-Gebäude (building=*, Grundfläche >= 40 m²) in der Stadtgrenze, je 100 m gepuffert und vereinigt; der Teil mit dem Stadtmittelpunkt; Löcher gefüllt; um 40 m zurückgenommen (Lücken bis etwa 180 m zwischen Gebäuden zählen als zusammenhängend, der Rand liegt 60 m außerhalb der äußersten Gebäude); auf die Stadtgrenze beschnitten; auf 5 m vereinfacht"
+  },
+  "zentrum": {
+   "name": "Zentrum Suhl (Pilotquartier)",
+   "flaeche_km2": 0.682,
+   "bbox_utm32_km": [
+    618.966,
+    5607.131,
+    620.19,
+    5608.314
+   ],
+   "gebaeude_osm": 595,
+   "osm": null,
+   "regel": "konvexe Hülle der Landmarken (Marktplatz, Steinweg, Rathaus am Markt, Hauptkirche St. Marien, Kreuzkirche, Waffenmuseum/Malzhaus, Congress Centrum Suhl, Platz der Deutschen Einheit, Bahnhof, Neues Rathaus) aus OSM, um 120 m gepuffert",
+   "landmarken": [
+    "Marktplatz",
+    "Marktplatz (Fahrgasse)",
+    "Steinweg (Fußgängerzone, Nordteil)",
+    "Steinweg (Fußgängerzone, Mitte)",
+    "Steinweg (Fußgängerzone, Südteil)",
+    "Rathaus (am Markt)",
+    "Hauptkirche St. Marien",
+    "Kreuzkirche",
+    "Waffenmuseum Suhl (im Malzhaus)",
+    "ehemaliges Malzhaus",
+    "Congress Centrum Suhl (CCS)",
+    "Platz der Deutschen Einheit",
+    "Platz der Deutschen Einheit (Nordteil)",
+    "Bahnhof Suhl (Empfangsgebäude)",
+    "Neues Rathaus"
+   ]
+  }
+ },
+ "ortsteile": [
+  {
+   "name": "Aue 1",
+   "place": "suburb",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 2.05,
+   "osm": "node/298552220"
+  },
+  {
+   "name": "Aue 2",
+   "place": "suburb",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 1.1,
+   "osm": "node/298552219"
+  },
+  {
+   "name": "Heinrichs",
+   "place": "suburb",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 2.77,
+   "osm": "node/1561379998"
+  },
+  {
+   "name": "Lauter",
+   "place": "suburb",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 2.09,
+   "osm": "node/2150291899"
+  },
+  {
+   "name": "Linsenhof",
+   "place": "suburb",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 1.72,
+   "osm": "node/4674406673"
+  },
+  {
+   "name": "Neundorf",
+   "place": "suburb",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 0.88,
+   "osm": "node/298551715"
+  },
+  {
+   "name": "Suhl Nord",
+   "place": "quarter",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 2.19,
+   "osm": "node/8084188541"
+  },
+  {
+   "name": "Himmelreich",
+   "place": "neighbourhood",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 1.3,
+   "osm": "node/13137778327"
+  },
+  {
+   "name": "Lautenbergsiedlung",
+   "place": "neighbourhood",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 1.48,
+   "osm": "node/4674411716"
+  },
+  {
+   "name": "Albrechts",
+   "place": "village",
+   "in_kernstadt": false,
+   "entfernung_zentrum_km": 3.89,
+   "osm": "node/64629145"
+  },
+  {
+   "name": "Dietzhausen",
+   "place": "village",
+   "in_kernstadt": false,
+   "entfernung_zentrum_km": 7.14,
+   "osm": "node/64633725"
+  },
+  {
+   "name": "Gehlberg",
+   "place": "village",
+   "in_kernstadt": false,
+   "entfernung_zentrum_km": 10.42,
+   "osm": "node/240035473"
+  },
+  {
+   "name": "Goldlauter",
+   "place": "village",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 4.49,
+   "osm": "node/277027896"
+  },
+  {
+   "name": "Heidersbach",
+   "place": "village",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 4.08,
+   "osm": "node/567055342"
+  },
+  {
+   "name": "Mäbendorf",
+   "place": "village",
+   "in_kernstadt": true,
+   "entfernung_zentrum_km": 4.62,
+   "osm": "node/64633727"
+  },
+  {
+   "name": "Schmiedefeld am Rennsteig",
+   "place": "village",
+   "in_kernstadt": false,
+   "entfernung_zentrum_km": 8.63,
+   "osm": "node/240123989"
+  },
+  {
+   "name": "Vesser",
+   "place": "village",
+   "in_kernstadt": false,
+   "entfernung_zentrum_km": 7.12,
+   "osm": "node/303353584"
+  },
+  {
+   "name": "Wichtshausen",
+   "place": "village",
+   "in_kernstadt": false,
+   "entfernung_zentrum_km": 8.48,
+   "osm": "node/64633724"
+  },
+  {
+   "name": "Schmücke",
+   "place": "hamlet",
+   "in_kernstadt": false,
+   "entfernung_zentrum_km": 7.68,
+   "osm": "node/245382657"
+  }
+ ],
+ "ortsteil_grenzen": [
+  {
+   "name": "Gehlberg",
+   "admin_level": "9",
+   "flaeche_km2": 20.62,
+   "osm": "relation/165447"
+  },
+  {
+   "name": "Schmiedefeld am Rennsteig",
+   "admin_level": "9",
+   "flaeche_km2": 18.26,
+   "osm": "relation/165446"
+  }
+ ],
+ "kacheln": {
+  "produkte": {
+   "DGM1": {
+    "kachel_km": 1,
+    "je_prioritaet": {
+     "P1": 8,
+     "P2": 49,
+     "P3": 136,
+     "P4": 35
+    },
+    "gesamt": 228,
+    "zentrum_anteile_prozent": {
+     "619_5607": 74.1,
+     "619_5608": 16.9,
+     "620_5608": 7.1,
+     "620_5607": 1.4,
+     "618_5607": 0.6
+    },
+    "P1_bis_P3": 193,
+    "P1_bis_P3_mit_osm_gebaeuden": 133,
+    "P3_ohne_osm_gebaeude": 57
+   },
+   "DOM1": {
+    "kachel_km": 1,
+    "je_prioritaet": {
+     "P1": 8,
+     "P2": 49,
+     "P3": 136,
+     "P4": 35
+    },
+    "gesamt": 228,
+    "zentrum_anteile_prozent": {
+     "619_5607": 74.1,
+     "619_5608": 16.9,
+     "620_5608": 7.1,
+     "620_5607": 1.4,
+     "618_5607": 0.6
+    },
+    "P1_bis_P3": 193,
+    "P1_bis_P3_mit_osm_gebaeuden": 133,
+    "P3_ohne_osm_gebaeude": 57
+   },
+   "LoD2": {
+    "kachel_km": 2,
+    "je_prioritaet": {
+     "P1": 4,
+     "P2": 16,
+     "P3": 39,
+     "P4": 11
+    },
+    "gesamt": 70,
+    "zentrum_anteile_prozent": {
+     "618_5606": 74.7,
+     "618_5608": 16.9,
+     "620_5608": 7.1,
+     "620_5606": 1.4
+    },
+    "P1_bis_P3": 59,
+    "P1_bis_P3_mit_osm_gebaeuden": 56,
+    "P3_ohne_osm_gebaeude": 3
+   }
+  },
+  "p4_1km_kacheln_im_block_b_um_den_garten": 22,
+  "routen_m": {
+   "suhl_ab": 28886,
+   "suhl_land": 19171
+  },
+  "dateinamen": {
+   "DGM1": "dgm1_32_{e}_{n}_1_th_2020-2025.zip",
+   "DOM1": "dom1_32_{e}_{n}_1_th_2020-2025.zip",
+   "LoD2": "LoD2_32_{e}_{n}_2_TH.zip"
+  },
+  "zeilen_csv": 526,
+  "datei": "tools/suhl/out/bestand/kacheln.json",
+  "stand": "2026-11-12T23:39:56Z"
+ },
+ "osm": {
+  "quelle": "OSM API 0.6 map calls (39 boxes)",
+  "elemente": {
+   "nodes": 338985,
+   "ways": 49812,
+   "relations": 931
+  },
+  "gebaeude": {
+   "stadt": {
+    "anzahl": 22180,
+    "ab_40_m2": 14079,
+    "grundflaeche_ha": 257.5,
+    "gebaeudeteile_building_part": 625,
+    "adressknoten_addr_housenumber": 8421,
+    "anteil_prozent": {
+     "levels": 15.3,
+     "height": 0.9,
+     "levels_oder_height": 16.0,
+     "roof_shape": 11.9,
+     "roof_levels": 5.3,
+     "dachfarbe_oder_material": 11.6,
+     "fassade_farbe_oder_material": 1.7,
+     "start_date": 0.1,
+     "name": 0.8,
+     "hausnummer": 6.1,
+     "typ_nicht_yes": 22.9,
+     "wikidata_oder_wikipedia": 0.2,
+     "denkmal": 0.2
+    },
+    "anzahl_mit": {
+     "levels": 3402,
+     "height": 198,
+     "roof_shape": 2629,
+     "dachfarbe_oder_material": 2572,
+     "fassade_farbe_oder_material": 388,
+     "start_date": 23,
+     "name": 180,
+     "hausnummer": 1350
+    },
+    "building_werte": {
+     "yes": 17099,
+     "allotment_house": 1733,
+     "apartments": 694,
+     "detached": 562,
+     "garage": 492,
+     "garages": 302,
+     "house": 236,
+     "shed": 121,
+     "industrial": 107,
+     "carport": 102,
+     "roof": 84,
+     "office": 83,
+     "semidetached_house": 81,
+     "service": 79
+    },
+    "roof_shape_werte": {
+     "gabled": 1502,
+     "flat": 619,
+     "hipped": 228,
+     "skillion": 68,
+     "mansard": 68,
+     "half-hipped": 60,
+     "gambrel": 47,
+     "pyramidal": 9
+    }
+   },
+   "kernstadt": {
+    "anzahl": 16168,
+    "ab_40_m2": 10386,
+    "grundflaeche_ha": 197.1,
+    "gebaeudeteile_building_part": 587,
+    "adressknoten_addr_housenumber": 6427,
+    "anteil_prozent": {
+     "levels": 20.2,
+     "height": 1.2,
+     "levels_oder_height": 21.1,
+     "roof_shape": 15.6,
+     "roof_levels": 7.0,
+     "dachfarbe_oder_material": 15.6,
+     "fassade_farbe_oder_material": 2.3,
+     "start_date": 0.1,
+     "name": 0.7,
+     "hausnummer": 6.0,
+     "typ_nicht_yes": 28.6,
+     "wikidata_oder_wikipedia": 0.1,
+     "denkmal": 0.2
+    },
+    "anzahl_mit": {
+     "levels": 3270,
+     "height": 193,
+     "roof_shape": 2530,
+     "dachfarbe_oder_material": 2519,
+     "fassade_farbe_oder_material": 374,
+     "start_date": 18,
+     "name": 114,
+     "hausnummer": 969
+    },
+    "building_werte": {
+     "yes": 11538,
+     "allotment_house": 1711,
+     "apartments": 690,
+     "detached": 470,
+     "garage": 405,
+     "garages": 285,
+     "house": 210,
+     "shed": 102,
+     "industrial": 84,
+     "carport": 82,
+     "office": 79,
+     "roof": 68,
+     "semidetached_house": 59,
+     "retail": 55
+    },
+    "roof_shape_werte": {
+     "gabled": 1441,
+     "flat": 592,
+     "hipped": 226,
+     "skillion": 68,
+     "mansard": 67,
+     "half-hipped": 58,
+     "gambrel": 45,
+     "berlin roof": 8
+    }
+   },
+   "zentrum": {
+    "anzahl": 595,
+    "ab_40_m2": 526,
+    "grundflaeche_ha": 16.9,
+    "gebaeudeteile_building_part": 190,
+    "adressknoten_addr_housenumber": 558,
+    "anteil_prozent": {
+     "levels": 29.7,
+     "height": 4.4,
+     "levels_oder_height": 33.3,
+     "roof_shape": 43.4,
+     "roof_levels": 26.2,
+     "dachfarbe_oder_material": 40.8,
+     "fassade_farbe_oder_material": 8.7,
+     "start_date": 1.8,
+     "name": 5.9,
+     "hausnummer": 10.4,
+     "typ_nicht_yes": 43.9,
+     "wikidata_oder_wikipedia": 2.4,
+     "denkmal": 2.0
+    },
+    "anzahl_mit": {
+     "levels": 177,
+     "height": 26,
+     "roof_shape": 258,
+     "dachfarbe_oder_material": 243,
+     "fassade_farbe_oder_material": 52,
+     "start_date": 11,
+     "name": 35,
+     "hausnummer": 62
+    },
+    "building_werte": {
+     "yes": 334,
+     "apartments": 139,
+     "office": 25,
+     "retail": 20,
+     "house": 16,
+     "roof": 12,
+     "service": 8,
+     "detached": 5,
+     "school": 4,
+     "warehouse": 3,
+     "hotel": 3,
+     "carport": 3,
+     "garages": 3,
+     "station": 2
+    },
+    "roof_shape_werte": {
+     "gabled": 133,
+     "hipped": 43,
+     "mansard": 28,
+     "flat": 23,
+     "gambrel": 12,
+     "berlin roof": 8,
+     "half-hipped": 7,
+     "skillion": 2
+    }
+   },
+   "hoch_laut_osm_ab_25m_oder_9_geschosse": [
+    {
+     "osm": "way/120453549",
+     "name": null,
+     "building": "apartments",
+     "height": "41",
+     "levels": "15",
+     "lat": 50.605865,
+     "lon": 10.677033
+    },
+    {
+     "osm": "way/45393690",
+     "name": null,
+     "building": "apartments",
+     "height": "45.00",
+     "levels": "14",
+     "lat": 50.611206,
+     "lon": 10.688622
+    },
+    {
+     "osm": "way/45393694",
+     "name": null,
+     "building": "apartments",
+     "height": "45.00",
+     "levels": "14",
+     "lat": 50.611356,
+     "lon": 10.693497
+    },
+    {
+     "osm": "way/120366627",
+     "name": null,
+     "building": "apartments",
+     "height": null,
+     "levels": "11",
+     "lat": 50.606386,
+     "lon": 10.679787
+    },
+    {
+     "osm": "way/847449106",
+     "name": null,
+     "building": "apartments",
+     "height": null,
+     "levels": "11",
+     "lat": 50.605347,
+     "lon": 10.678479
+    },
+    {
+     "osm": "way/120366626",
+     "name": null,
+     "building": "apartments",
+     "height": null,
+     "levels": "11",
+     "lat": 50.60756,
+     "lon": 10.681171
+    },
+    {
+     "osm": "way/120367048",
+     "name": null,
+     "building": "apartments",
+     "height": null,
+     "levels": "11",
+     "lat": 50.607238,
+     "lon": 10.678055
+    },
+    {
+     "osm": "way/124795862",
+     "name": null,
+     "building": "apartments",
+     "height": null,
+     "levels": "11",
+     "lat": 50.607548,
+     "lon": 10.678761
+    },
+    {
+     "osm": "way/134919312",
+     "name": null,
+     "building": "apartments",
+     "height": null,
+     "levels": "10",
+     "lat": 50.601034,
+     "lon": 10.666711
+    },
+    {
+     "osm": "way/134919329",
+     "name": null,
+     "building": "house",
+     "height": null,
+     "levels": "10",
+     "lat": 50.600755,
+     "lon": 10.664733
+    },
+    {
+     "osm": "way/134919325",
+     "name": null,
+     "building": "apartments",
+     "height": null,
+     "levels": "10",
+     "lat": 50.601519,
+     "lon": 10.668426
+    },
+    {
+     "osm": "way/134919332",
+     "name": null,
+     "building": "apartments",
+     "height": null,
+     "levels": "10",
+     "lat": 50.602019,
+     "lon": 10.669868
+    },
+    {
+     "osm": "way/42484467",
+     "name": "Am Steinweg",
+     "building": "retail",
+     "height": "25",
+     "levels": "2",
+     "lat": 50.61025,
+     "lon": 10.691747
+    },
+    {
+     "osm": "way/32083739",
+     "name": null,
+     "building": "parking",
+     "height": "26",
+     "levels": null,
+     "lat": 50.609962,
+     "lon": 10.690714
+    },
+    {
+     "osm": "way/42871444",
+     "name": null,
+     "building": "hotel",
+     "height": "60.00",
+     "levels": null,
+     "lat": 50.609753,
+     "lon": 10.686302
+    },
+    {
+     "osm": "way/45393691",
+     "name": null,
+     "building": "apartments",
+     "height": "45",
+     "levels": null,
+     "lat": 50.611342,
+     "lon": 10.689422
+    },
+    {
+     "osm": "way/45393692",
+     "name": null,
+     "building": "apartments",
+     "height": "45.00",
+     "levels": null,
+     "lat": 50.611351,
+     "lon": 10.690317
+    },
+    {
+     "osm": "way/45393693",
+     "name": null,
+     "building": "apartments",
+     "height": "45.00",
+     "levels": null,
+     "lat": 50.611255,
+     "lon": 10.69148
+    },
+    {
+     "osm": "way/45393695",
+     "name": null,
+     "building": "apartments",
+     "height": "43.00",
+     "levels": null,
+     "lat": 50.609578,
+     "lon": 10.690889
+    },
+    {
+     "osm": "way/66319441",
+     "name": null,
+     "building": "apartments",
+     "height": "45",
+     "levels": null,
+     "lat": 50.613767,
+     "lon": 10.697042
+    },
+    {
+     "osm": "way/110458614",
+     "name": "Haus der Geschichte",
+     "building": "government",
+     "height": "25.00",
+     "levels": null,
+     "lat": 50.608816,
+     "lon": 10.688832
+    },
+    {
+     "osm": "way/243112145",
+     "name": null,
+     "building": "yes",
+     "height": "25",
+     "levels": null,
+     "lat": 50.666023,
+     "lon": 10.764176
+    }
+   ]
+  },
+  "strassenraum": {
+   "stadt": {
+    "highway_km": {
+     "track": 684.32,
+     "path": 310.65,
+     "service": 199.25,
+     "residential": 155.56,
+     "footway": 71.68,
+     "secondary": 59.42,
+     "motorway": 34.15,
+     "tertiary": 20.25,
+     "unclassified": 13.41,
+     "living_street": 5.56,
+     "steps": 2.94,
+     "pedestrian": 0.95,
+     "cycleway": 0.76,
+     "sonstige": 0.23,
+     "platform": 0.01
+    },
+    "highway_km_gesamt": 1559.1,
+    "fahrstrassen_km": 288.4,
+    "fahrstrassen_klassen": [
+     "motorway",
+     "trunk",
+     "primary",
+     "secondary",
+     "tertiary",
+     "unclassified",
+     "residential",
+     "living_street"
+    ],
+    "fahrstrassen_anteil_prozent_nach_laenge": {
+     "name": 80.0,
+     "surface": 79.1,
+     "maxspeed": 55.2,
+     "lanes": 43.2,
+     "lit": 38.5,
+     "sidewalk": 34.5,
+     "cycleway": 37.6,
+     "oneway": 21.7,
+     "width": 18.6,
+     "parking": 3.6,
+     "smoothness": 19.6,
+     "incline": 2.4
+    },
+    "gehweg_als_eigener_weg_km": 4.48,
+    "querung_als_eigener_weg_km": 0.21,
+    "knoten": {
+     "ampeln_knoten": 99,
+     "bahnhoefe_haltepunkte": 6,
+     "bahnuebergaenge": 8,
+     "barriere_bollard": 50,
+     "barriere_gate": 289,
+     "barriere_lift_gate": 53,
+     "bushaltestellen_bus_stop": 228,
+     "bussteige_platform_knoten": 220,
+     "einzelbaeume": 981,
+     "einzelbaeume_mit_art": 802,
+     "haltepunkte_stop_position": 190,
+     "hydranten": 932,
+     "man_made_street_cabinet": 3,
+     "man_made_surveillance": 14,
+     "moebel_bench": 323,
+     "moebel_bicycle_parking": 20,
+     "moebel_clock": 4,
+     "moebel_fountain": 7,
+     "moebel_post_box": 34,
+     "moebel_recycling": 48,
+     "moebel_telephone": 3,
+     "moebel_vending_machine": 38,
+     "moebel_waste_basket": 65,
+     "querungen": 190,
+     "querungen_mit_kerb": 18,
+     "querungen_mit_tactile_paving": 88,
+     "strassenlaternen": 844,
+     "verkehrszeichen": 152,
+     "vorfahrt_stop_schilder": 45,
+     "wendekreise_minikreisel": 92,
+     "werbung": 55
+    },
+    "querungen_nach_art": {
+     "traffic_signals": 67,
+     "(ohne Angabe)": 61,
+     "no": 19,
+     "unmarked": 15,
+     "uncontrolled": 12,
+     "marked": 6,
+     "dashes": 6,
+     "zebra": 2,
+     "yes": 2
+    },
+    "bussteige_platform_wege": 19,
+    "treppen_anzahl": 273,
+    "treppen_km": 2.94,
+    "bruecken": {
+     "strasse_anzahl": 180,
+     "strasse_m": 8.03,
+     "bahn_anzahl": 25,
+     "bahn_m": 0.54
+    },
+    "tunnel": {
+     "strasse_anzahl": 64,
+     "strasse_m": 4.28,
+     "bahn_anzahl": 5,
+     "bahn_m": 0.08
+    },
+    "bahn_km": {
+     "rail": 26.51,
+     "abandoned": 10.51,
+     "disused": 5.42
+    },
+    "gewaesser_km": {
+     "river": 8.45,
+     "stream": 139.09,
+     "ditch": 4.72,
+     "drain": 0.29
+    },
+    "gewaesser_namen_km": {
+     "(ohne Namen)": 42.81,
+     "Hasel": 9.98,
+     "Nahe": 8.89,
+     "Lauter": 7.44,
+     "Vesser": 5.75,
+     "Wilde Gera": 5.3,
+     "Freibach": 5.15,
+     "Steinsfelder Wasser": 4.4,
+     "Steinbach": 4.19,
+     "Dreisbach": 4.15,
+     "Königswasser": 3.28,
+     "Goldene Lauter": 3.1
+    },
+    "gewaesser_verrohrt_km": 8.95,
+    "barrieren": {
+     "city_wall_anzahl": 1,
+     "city_wall_m": 0.0,
+     "fence_anzahl": 324,
+     "fence_m": 74.8,
+     "guard_rail_anzahl": 172,
+     "guard_rail_m": 48.78,
+     "hedge_anzahl": 242,
+     "hedge_m": 7.8,
+     "retaining_wall_anzahl": 108,
+     "retaining_wall_m": 8.09,
+     "wall_anzahl": 53,
+     "wall_m": 2.23
+    },
+    "baumreihen": {
+     "anzahl": 26,
+     "km": 2.54
+    },
+    "flaechen": {
+     "gaerten": 6,
+     "kleingartenanlagen": 103,
+     "parkplaetze_flaechen": 497,
+     "parkplaetze_knoten": 42,
+     "parkplaetze_m2": 41.6,
+     "parkplaetze_mit_capacity": 42,
+     "parks": 11,
+     "spielplaetze": 63,
+     "sportfelder": 66
+    },
+    "geschaefte_mit_namen": {
+     "anzahl": 283,
+     "nach_art": {
+      "car": 25,
+      "hairdresser": 24,
+      "car_repair": 24,
+      "clothes": 24,
+      "supermarket": 18,
+      "bakery": 17,
+      "butcher": 14,
+      "medical_supply": 6,
+      "furniture": 5,
+      "shoes": 5,
+      "variety_store": 5,
+      "optician": 5,
+      "beauty": 5,
+      "bicycle": 5,
+      "computer": 4,
+      "yes": 4,
+      "beverages": 4,
+      "travel_agency": 4,
+      "kiosk": 4,
+      "florist": 4
+     }
+    },
+    "einrichtungen_mit_namen": {
+     "anzahl": 396,
+     "nach_art": {
+      "restaurant": 62,
+      "shelter": 35,
+      "fast_food": 29,
+      "doctors": 28,
+      "place_of_worship": 16,
+      "school": 15,
+      "kindergarten": 14,
+      "dentist": 12,
+      "post_office": 12,
+      "pharmacy": 10,
+      "fire_station": 10,
+      "social_facility": 10,
+      "parcel_locker": 8,
+      "pub": 8,
+      "charging_station": 8,
+      "bank": 8,
+      "cafe": 8,
+      "fuel": 7,
+      "bench": 7,
+      "car_wash": 6,
+      "townhall": 5,
+      "parking": 5,
+      "police": 5,
+      "bar": 4
+     }
+    },
+    "tourismus_mit_namen": {
+     "anzahl": 556,
+     "nach_art": {
+      "information": 341,
+      "attraction": 44,
+      "apartment": 40,
+      "viewpoint": 26,
+      "guest_house": 22,
+      "chalet": 18,
+      "hotel": 17,
+      "artwork": 13,
+      "yes": 9,
+      "picnic_site": 9
+     }
+    }
+   },
+   "kernstadt": {
+    "highway_km": {
+     "service": 146.96,
+     "residential": 118.53,
+     "track": 79.14,
+     "footway": 67.22,
+     "path": 51.49,
+     "secondary": 19.21,
+     "tertiary": 10.89,
+     "unclassified": 10.23,
+     "living_street": 4.25,
+     "steps": 2.01,
+     "motorway": 1.59,
+     "pedestrian": 0.95,
+     "cycleway": 0.5,
+     "sonstige": 0.23,
+     "platform": 0.01
+    },
+    "highway_km_gesamt": 513.2,
+    "fahrstrassen_km": 164.7,
+    "fahrstrassen_klassen": [
+     "motorway",
+     "trunk",
+     "primary",
+     "secondary",
+     "tertiary",
+     "unclassified",
+     "residential",
+     "living_street"
+    ],
+    "fahrstrassen_anteil_prozent_nach_laenge": {
+     "name": 98.1,
+     "surface": 84.1,
+     "maxspeed": 44.9,
+     "lanes": 25.2,
+     "lit": 37.5,
+     "sidewalk": 48.2,
+     "cycleway": 47.0,
+     "oneway": 15.9,
+     "width": 3.4,
+     "parking": 6.4,
+     "smoothness": 24.8,
+     "incline": 2.3
+    },
+    "gehweg_als_eigener_weg_km": 4.48,
+    "querung_als_eigener_weg_km": 0.21,
+    "knoten": {
+     "ampeln_knoten": 94,
+     "bahnhoefe_haltepunkte": 2,
+     "bahnuebergaenge": 5,
+     "barriere_bollard": 41,
+     "barriere_gate": 181,
+     "barriere_lift_gate": 34,
+     "bushaltestellen_bus_stop": 152,
+     "bussteige_platform_knoten": 149,
+     "einzelbaeume": 907,
+     "einzelbaeume_mit_art": 754,
+     "haltepunkte_stop_position": 132,
+     "hydranten": 780,
+     "man_made_street_cabinet": 1,
+     "man_made_surveillance": 11,
+     "moebel_bench": 129,
+     "moebel_bicycle_parking": 17,
+     "moebel_clock": 2,
+     "moebel_fountain": 4,
+     "moebel_post_box": 24,
+     "moebel_recycling": 42,
+     "moebel_telephone": 2,
+     "moebel_vending_machine": 27,
+     "moebel_waste_basket": 31,
+     "querungen": 181,
+     "querungen_mit_kerb": 18,
+     "querungen_mit_tactile_paving": 86,
+     "strassenlaternen": 723,
+     "verkehrszeichen": 98,
+     "vorfahrt_stop_schilder": 14,
+     "wendekreise_minikreisel": 71,
+     "werbung": 55
+    },
+    "querungen_nach_art": {
+     "traffic_signals": 66,
+     "(ohne Angabe)": 59,
+     "no": 19,
+     "unmarked": 14,
+     "uncontrolled": 7,
+     "marked": 6,
+     "dashes": 6,
+     "zebra": 2,
+     "yes": 2
+    },
+    "bussteige_platform_wege": 13,
+    "treppen_anzahl": 206,
+    "treppen_km": 2.01,
+    "bruecken": {
+     "bahn_anzahl": 15,
+     "bahn_m": 0.38,
+     "strasse_anzahl": 101,
+     "strasse_m": 2.23
+    },
+    "tunnel": {
+     "strasse_anzahl": 55,
+     "strasse_m": 1.4,
+     "bahn_anzahl": 3,
+     "bahn_m": 0.06
+    },
+    "bahn_km": {
+     "rail": 9.25,
+     "abandoned": 7.84,
+     "disused": 3.31
+    },
+    "gewaesser_km": {
+     "river": 4.59,
+     "stream": 23.32,
+     "ditch": 1.44,
+     "drain": 0.16
+    },
+    "gewaesser_namen_km": {
+     "Lauter": 6.72,
+     "Hasel": 6.1,
+     "(ohne Namen)": 5.18,
+     "Steinsfelder Wasser": 1.76,
+     "Steinbach": 1.75,
+     "Steina": 1.34,
+     "Lautenbach": 1.27,
+     "Königswasser": 1.25,
+     "Goldene Lauter": 0.87,
+     "Dürre Lauter": 0.8,
+     "Heldersbach": 0.67,
+     "Rimbach": 0.56
+    },
+    "gewaesser_verrohrt_km": 3.98,
+    "barrieren": {
+     "city_wall_anzahl": 1,
+     "city_wall_m": 0.0,
+     "fence_anzahl": 185,
+     "fence_m": 27.35,
+     "guard_rail_anzahl": 32,
+     "guard_rail_m": 4.73,
+     "hedge_anzahl": 199,
+     "hedge_m": 4.94,
+     "retaining_wall_anzahl": 88,
+     "retaining_wall_m": 3.8,
+     "wall_anzahl": 22,
+     "wall_m": 1.66
+    },
+    "baumreihen": {
+     "anzahl": 15,
+     "km": 1.32
+    },
+    "flaechen": {
+     "gaerten": 2,
+     "kleingartenanlagen": 72,
+     "parkplaetze_flaechen": 399,
+     "parkplaetze_knoten": 31,
+     "parkplaetze_m2": 31.6,
+     "parkplaetze_mit_capacity": 28,
+     "parks": 9,
+     "spielplaetze": 50,
+     "sportfelder": 44
+    },
+    "geschaefte_mit_namen": {
+     "anzahl": 250,
+     "nach_art": {
+      "hairdresser": 24,
+      "clothes": 24,
+      "car_repair": 22,
+      "car": 20,
+      "supermarket": 17,
+      "bakery": 15,
+      "butcher": 9,
+      "shoes": 5,
+      "variety_store": 5,
+      "medical_supply": 5,
+      "optician": 5,
+      "beauty": 5,
+      "travel_agency": 4,
+      "kiosk": 4,
+      "florist": 4,
+      "bicycle": 4,
+      "furniture": 4,
+      "yes": 3,
+      "paint": 3,
+      "computer": 3
+     }
+    },
+    "einrichtungen_mit_namen": {
+     "anzahl": 273,
+     "nach_art": {
+      "restaurant": 34,
+      "doctors": 23,
+      "fast_food": 23,
+      "school": 14,
+      "kindergarten": 13,
+      "place_of_worship": 10,
+      "social_facility": 10,
+      "pharmacy": 9,
+      "post_office": 9,
+      "dentist": 8,
+      "parcel_locker": 8,
+      "bank": 8,
+      "fuel": 7,
+      "car_wash": 6,
+      "charging_station": 6,
+      "fire_station": 6,
+      "pub": 5,
+      "police": 5,
+      "cafe": 5,
+      "bar": 4,
+      "community_centre": 4,
+      "veterinary": 3,
+      "parking": 3,
+      "car_rental": 3
+     }
+    },
+    "tourismus_mit_namen": {
+     "anzahl": 85,
+     "nach_art": {
+      "information": 44,
+      "guest_house": 13,
+      "artwork": 9,
+      "hotel": 6,
+      "apartment": 5,
+      "attraction": 3,
+      "hostel": 2,
+      "museum": 2,
+      "yes": 1
+     }
+    }
+   },
+   "zentrum": {
+    "highway_km": {
+     "footway": 9.45,
+     "service": 7.84,
+     "residential": 7.11,
+     "secondary": 3.63,
+     "path": 2.75,
+     "living_street": 1.88,
+     "pedestrian": 0.89,
+     "steps": 0.59,
+     "unclassified": 0.25,
+     "sonstige": 0.21,
+     "cycleway": 0.13,
+     "tertiary": 0.01
+    },
+    "highway_km_gesamt": 34.8,
+    "fahrstrassen_km": 12.9,
+    "fahrstrassen_klassen": [
+     "motorway",
+     "trunk",
+     "primary",
+     "secondary",
+     "tertiary",
+     "unclassified",
+     "residential",
+     "living_street"
+    ],
+    "fahrstrassen_anteil_prozent_nach_laenge": {
+     "name": 98.7,
+     "surface": 96.8,
+     "maxspeed": 49.2,
+     "lanes": 35.3,
+     "lit": 87.0,
+     "sidewalk": 71.6,
+     "cycleway": 53.8,
+     "oneway": 59.8,
+     "width": 8.8,
+     "parking": 27.0,
+     "smoothness": 73.8,
+     "incline": 0.0
+    },
+    "gehweg_als_eigener_weg_km": 0.08,
+    "querung_als_eigener_weg_km": 0.07,
+    "knoten": {
+     "ampeln_knoten": 26,
+     "bahnhoefe_haltepunkte": 1,
+     "barriere_bollard": 7,
+     "barriere_gate": 7,
+     "barriere_lift_gate": 8,
+     "bushaltestellen_bus_stop": 18,
+     "bussteige_platform_knoten": 18,
+     "einzelbaeume": 263,
+     "einzelbaeume_mit_art": 240,
+     "haltepunkte_stop_position": 20,
+     "hydranten": 77,
+     "man_made_surveillance": 4,
+     "moebel_bench": 53,
+     "moebel_bicycle_parking": 9,
+     "moebel_clock": 1,
+     "moebel_fountain": 2,
+     "moebel_post_box": 1,
+     "moebel_recycling": 2,
+     "moebel_telephone": 1,
+     "moebel_vending_machine": 20,
+     "moebel_waste_basket": 20,
+     "querungen": 26,
+     "querungen_mit_kerb": 5,
+     "querungen_mit_tactile_paving": 16,
+     "strassenlaternen": 91,
+     "vorfahrt_stop_schilder": 1,
+     "wendekreise_minikreisel": 5,
+     "werbung": 9
+    },
+    "querungen_nach_art": {
+     "traffic_signals": 15,
+     "no": 4,
+     "(ohne Angabe)": 4,
+     "uncontrolled": 1,
+     "marked": 1,
+     "unmarked": 1
+    },
+    "bussteige_platform_wege": 5,
+    "treppen_anzahl": 57,
+    "treppen_km": 0.59,
+    "bruecken": {
+     "bahn_anzahl": 8,
+     "bahn_m": 0.2,
+     "strasse_anzahl": 7,
+     "strasse_m": 0.12
+    },
+    "tunnel": {
+     "strasse_anzahl": 27,
+     "strasse_m": 0.84
+    },
+    "bahn_km": {
+     "rail": 2.19,
+     "disused": 0.05,
+     "abandoned": 0.32
+    },
+    "gewaesser_km": {
+     "stream": 1.27
+    },
+    "gewaesser_namen_km": {
+     "Lauter": 1.27
+    },
+    "gewaesser_verrohrt_km": 0.68,
+    "barrieren": {
+     "city_wall_anzahl": 1,
+     "city_wall_m": 0.0,
+     "fence_anzahl": 11,
+     "fence_m": 0.61,
+     "hedge_anzahl": 12,
+     "hedge_m": 0.94,
+     "retaining_wall_anzahl": 46,
+     "retaining_wall_m": 1.49,
+     "wall_anzahl": 4,
+     "wall_m": 0.07
+    },
+    "baumreihen": {
+     "anzahl": 2,
+     "km": 0.02
+    },
+    "flaechen": {
+     "parkplaetze_flaechen": 58,
+     "parkplaetze_knoten": 9,
+     "parkplaetze_m2": 3.8,
+     "parkplaetze_mit_capacity": 3,
+     "parks": 2,
+     "spielplaetze": 4,
+     "sportfelder": 5
+    },
+    "geschaefte_mit_namen": {
+     "anzahl": 114,
+     "nach_art": {
+      "clothes": 21,
+      "hairdresser": 12,
+      "bakery": 5,
+      "optician": 5,
+      "travel_agency": 4,
+      "medical_supply": 4,
+      "florist": 4,
+      "variety_store": 4,
+      "shoes": 4,
+      "supermarket": 3,
+      "hearing_aids": 3,
+      "telecommunication": 3,
+      "beauty": 3,
+      "computer": 2,
+      "kiosk": 2,
+      "books": 2,
+      "jewelry": 2,
+      "convenience": 2,
+      "bicycle": 2,
+      "interior_decoration": 2
+     }
+    },
+    "einrichtungen_mit_namen": {
+     "anzahl": 94,
+     "nach_art": {
+      "restaurant": 16,
+      "doctors": 11,
+      "fast_food": 10,
+      "bank": 8,
+      "social_facility": 5,
+      "pharmacy": 4,
+      "dentist": 4,
+      "school": 3,
+      "bar": 3,
+      "cafe": 3,
+      "ice_cream": 3,
+      "pub": 2,
+      "charging_station": 2,
+      "place_of_worship": 2,
+      "townhall": 2,
+      "fountain": 2,
+      "post_office": 1,
+      "parcel_locker": 1,
+      "driving_school": 1,
+      "parking": 1,
+      "library": 1,
+      "police": 1,
+      "community_centre": 1,
+      "studio": 1
+     }
+    },
+    "tourismus_mit_namen": {
+     "anzahl": 18,
+     "nach_art": {
+      "artwork": 6,
+      "information": 4,
+      "hotel": 3,
+      "museum": 2,
+      "hostel": 1,
+      "guest_house": 1,
+      "viewpoint": 1
+     }
+    }
+   }
+  },
+  "datei": "tools/suhl/out/bestand/osm_bestand.json",
+  "stand": "2026-11-12T23:30:35Z"
+ },
+ "ethos": {
+  "spalten": "id,source,footprint,height_m",
+  "im_rechteck_um_suhl": 53938,
+  "gebiete": {
+   "stadt": {
+    "anzahl": 30929,
+    "mit_hoehe": 30929,
+    "grundflaeche_ha": 246.3,
+    "ab_40_m2": 14606,
+    "hoehe_m": {
+     "min": 2.0,
+     "p10": 2.6,
+     "median": 4.9,
+     "p90": 11.0,
+     "p99": 18.4,
+     "max": 68.0
+    },
+    "hoehenklassen": {
+     "0-3 m": 6254,
+     "3-6 m": 12039,
+     "6-10 m": 7820,
+     "10-15 m": 4102,
+     "15-25 m": 655,
+     "25-40 m": 39,
+     "ab 40 m": 20
+    },
+    "quelle_grundriss": {
+     "lod2_de_th": 30929
+    },
+    "hoehe_herkunft": {
+     "dir": 30929
+    },
+    "hoehe_quelle": {
+     "lod2_de_th": 30929
+    },
+    "id_muster": {
+     "DEG_D": 30929
+    },
+    "abgleich_osm": {
+     "osm_gebaeude": 22180,
+     "ethos_gebaeude": 30929,
+     "osm_zu_mind_50_prozent_von_ethos_bedeckt_prozent": 84.1,
+     "osm_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 95.4,
+     "osm_ohne_ethos_unter_10_prozent": 2918,
+     "ethos_zu_mind_50_prozent_von_osm_bedeckt_prozent": 75.5,
+     "ethos_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 92.3,
+     "ethos_ohne_osm_unter_10_prozent": 5249,
+     "grundflaeche_osm_ha": 257.5,
+     "grundflaeche_ethos_ha": 246.3,
+     "gemeinsame_flaeche_ha": 208.9,
+     "gemeinsam_anteil_an_osm_prozent": 81.1,
+     "gemeinsam_anteil_an_ethos_prozent": 84.7
+    }
+   },
+   "kernstadt": {
+    "anzahl": 23282,
+    "mit_hoehe": 23282,
+    "grundflaeche_ha": 189.2,
+    "ab_40_m2": 10754,
+    "hoehe_m": {
+     "min": 2.0,
+     "p10": 2.6,
+     "median": 4.7,
+     "p90": 11.2,
+     "p99": 19.0,
+     "max": 68.0
+    },
+    "hoehenklassen": {
+     "0-3 m": 4984,
+     "3-6 m": 9047,
+     "6-10 m": 5482,
+     "10-15 m": 3124,
+     "15-25 m": 598,
+     "25-40 m": 31,
+     "ab 40 m": 16
+    },
+    "quelle_grundriss": {
+     "lod2_de_th": 23282
+    },
+    "hoehe_herkunft": {
+     "dir": 23282
+    },
+    "hoehe_quelle": {
+     "lod2_de_th": 23282
+    },
+    "id_muster": {
+     "DEG_D": 23282
+    },
+    "abgleich_osm": {
+     "osm_gebaeude": 16168,
+     "ethos_gebaeude": 23282,
+     "osm_zu_mind_50_prozent_von_ethos_bedeckt_prozent": 85.0,
+     "osm_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 95.4,
+     "osm_ohne_ethos_unter_10_prozent": 2025,
+     "ethos_zu_mind_50_prozent_von_osm_bedeckt_prozent": 74.4,
+     "ethos_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 92.1,
+     "ethos_ohne_osm_unter_10_prozent": 4224,
+     "grundflaeche_osm_ha": 197.1,
+     "grundflaeche_ethos_ha": 189.2,
+     "gemeinsame_flaeche_ha": 160.7,
+     "gemeinsam_anteil_an_osm_prozent": 81.5,
+     "gemeinsam_anteil_an_ethos_prozent": 84.7
+    }
+   },
+   "zentrum": {
+    "anzahl": 1012,
+    "mit_hoehe": 1012,
+    "grundflaeche_ha": 15.8,
+    "ab_40_m2": 596,
+    "hoehe_m": {
+     "min": 2.0,
+     "p10": 3.1,
+     "median": 9.6,
+     "p90": 16.5,
+     "p99": 38.7,
+     "max": 56.6
+    },
+    "hoehenklassen": {
+     "0-3 m": 84,
+     "3-6 m": 209,
+     "6-10 m": 241,
+     "10-15 m": 330,
+     "15-25 m": 136,
+     "25-40 m": 1,
+     "ab 40 m": 11
+    },
+    "quelle_grundriss": {
+     "lod2_de_th": 1012
+    },
+    "hoehe_herkunft": {
+     "dir": 1012
+    },
+    "hoehe_quelle": {
+     "lod2_de_th": 1012
+    },
+    "id_muster": {
+     "DEG_D": 1012
+    },
+    "abgleich_osm": {
+     "osm_gebaeude": 595,
+     "ethos_gebaeude": 1012,
+     "osm_zu_mind_50_prozent_von_ethos_bedeckt_prozent": 92.6,
+     "osm_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 94.9,
+     "osm_ohne_ethos_unter_10_prozent": 29,
+     "ethos_zu_mind_50_prozent_von_osm_bedeckt_prozent": 75.6,
+     "ethos_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 94.3,
+     "ethos_ohne_osm_unter_10_prozent": 170,
+     "grundflaeche_osm_ha": 16.9,
+     "grundflaeche_ethos_ha": 15.8,
+     "gemeinsame_flaeche_ha": 14.7,
+     "gemeinsam_anteil_an_osm_prozent": 86.8,
+     "gemeinsam_anteil_an_ethos_prozent": 92.5
+    }
+   }
+  },
+  "hohe_gebaeude_ab_25_m": {
+   "anzahl": 59,
+   "mit_grundflaeche_ab_100_m2": 20,
+   "hinweis": "Körper unter 100 m² Grundfläche sind meist Dachaufbauten, Aufzugsschächte, Schornsteine oder Teile eines Hochhauses",
+   "im_zentrum": 12,
+   "in_kernstadt": 47
+  },
+  "hohe_gebaeude_ab_25_m_und_100_m2": [
+   {
+    "id": "DEG_DETHL57P00006G0l",
+    "hoehe_m": 56.6,
+    "grundflaeche_m2": 584,
+    "lat": 50.60976,
+    "lon": 10.686304,
+    "utm32_km": [
+     619.314,
+     5607.787
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "hotel",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006G1W",
+    "hoehe_m": 46.1,
+    "grundflaeche_m2": 480,
+    "lat": 50.611371,
+    "lon": 10.693479,
+    "utm32_km": [
+     619.817,
+     5607.978
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "14"
+   },
+   {
+    "id": "DEG_DETHL57P00006G0d",
+    "hoehe_m": 45.7,
+    "grundflaeche_m2": 510,
+    "lat": 50.611338,
+    "lon": 10.689436,
+    "utm32_km": [
+     619.531,
+     5607.968
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006G0c",
+    "hoehe_m": 45.5,
+    "grundflaeche_m2": 506,
+    "lat": 50.611196,
+    "lon": 10.688624,
+    "utm32_km": [
+     619.474,
+     5607.951
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "14"
+   },
+   {
+    "id": "DEG_DETHL57P0000jruo",
+    "hoehe_m": 45.5,
+    "grundflaeche_m2": 434,
+    "lat": 50.613781,
+    "lon": 10.697032,
+    "utm32_km": [
+     620.063,
+     5608.252
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006G0m",
+    "hoehe_m": 45.4,
+    "grundflaeche_m2": 509,
+    "lat": 50.611321,
+    "lon": 10.690324,
+    "utm32_km": [
+     619.594,
+     5607.967
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00002jxj",
+    "hoehe_m": 45.1,
+    "grundflaeche_m2": 519,
+    "lat": 50.605886,
+    "lon": 10.677006,
+    "utm32_km": [
+     618.666,
+     5607.342
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "15"
+   },
+   {
+    "id": "DEG_DETHL57P00006G0z",
+    "hoehe_m": 45.1,
+    "grundflaeche_m2": 507,
+    "lat": 50.611246,
+    "lon": 10.691497,
+    "utm32_km": [
+     619.677,
+     5607.961
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006FW1",
+    "hoehe_m": 40.3,
+    "grundflaeche_m2": 400,
+    "lat": 50.609578,
+    "lon": 10.690891,
+    "utm32_km": [
+     619.639,
+     5607.774
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00002jt0",
+    "hoehe_m": 35.4,
+    "grundflaeche_m2": 987,
+    "lat": 50.607605,
+    "lon": 10.681109,
+    "utm32_km": [
+     618.952,
+     5607.539
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002jwM",
+    "hoehe_m": 35.4,
+    "grundflaeche_m2": 990,
+    "lat": 50.605413,
+    "lon": 10.678386,
+    "utm32_km": [
+     618.765,
+     5607.291
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002jtE",
+    "hoehe_m": 35.3,
+    "grundflaeche_m2": 350,
+    "lat": 50.607552,
+    "lon": 10.678771,
+    "utm32_km": [
+     618.786,
+     5607.53
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002jsf",
+    "hoehe_m": 35.2,
+    "grundflaeche_m2": 989,
+    "lat": 50.606434,
+    "lon": 10.67972,
+    "utm32_km": [
+     618.856,
+     5607.407
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002jtn",
+    "hoehe_m": 35.2,
+    "grundflaeche_m2": 989,
+    "lat": 50.60727,
+    "lon": 10.678112,
+    "utm32_km": [
+     618.74,
+     5607.497
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00000OAR",
+    "hoehe_m": 30.9,
+    "grundflaeche_m2": 385,
+    "lat": 50.601522,
+    "lon": 10.668441,
+    "utm32_km": [
+     618.071,
+     5606.843
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "10"
+   },
+   {
+    "id": "DEG_DETHL57P00000OAQ",
+    "hoehe_m": 30.7,
+    "grundflaeche_m2": 378,
+    "lat": 50.602028,
+    "lon": 10.669894,
+    "utm32_km": [
+     618.172,
+     5606.901
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "10"
+   },
+   {
+    "id": "DEG_DETHL57P00000OAq",
+    "hoehe_m": 30.5,
+    "grundflaeche_m2": 355,
+    "lat": 50.601075,
+    "lon": 10.666715,
+    "utm32_km": [
+     617.95,
+     5606.79
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "10"
+   },
+   {
+    "id": "DEG_DETHL57P00000OAP",
+    "hoehe_m": 30.0,
+    "grundflaeche_m2": 337,
+    "lat": 50.600763,
+    "lon": 10.664731,
+    "utm32_km": [
+     617.81,
+     5606.752
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "house",
+    "osm_levels": "10"
+   },
+   {
+    "id": "DEG_DETHL57P00012Wyt",
+    "hoehe_m": 25.8,
+    "grundflaeche_m2": 981,
+    "lat": 50.608817,
+    "lon": 10.688847,
+    "utm32_km": [
+     619.496,
+     5607.687
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": "Haus der Geschichte",
+    "osm_building": "government",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00012zzx",
+    "hoehe_m": 25.2,
+    "grundflaeche_m2": 4984,
+    "lat": 50.602145,
+    "lon": 10.709693,
+    "utm32_km": [
+     620.988,
+     5606.978
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "hospital",
+    "osm_levels": "5"
+   }
+  ],
+  "datei": "tools/suhl/out/bestand/ethos.json",
+  "stand": "2026-11-12T23:35:03Z"
+ },
+ "alkis_zentrum": {
+  "quelle": "https://www.geoproxy.geoportal-th.de/geoproxy/services/adv_alkis_wfs (ave:GebaeudeBauwerk), © GDI-Th, CC BY 4.0",
+  "abruf": {
+   "status": 200,
+   "bytes": 2824578,
+   "sekunden": 4.1,
+   "zurueckgegeben": 2169,
+   "rechteck_utm": [
+    618966,
+    5607131,
+    620190,
+    5608314
+   ]
+  },
+  "im_zentrum": 1025,
+  "ab_40_m2": 606,
+  "grundflaeche_ha": 17.0,
+  "mit_geschosszahl": 856,
+  "mit_namen": 35,
+  "geschosse": {
+   "(ohne)": 169,
+   "1": 200,
+   "14": 1,
+   "15": 6,
+   "16": 2,
+   "19": 1,
+   "2": 196,
+   "3": 220,
+   "4": 147,
+   "5": 44,
+   "6": 31,
+   "7": 8
+  },
+  "funktion": {
+   "Wohngebäude": 629,
+   "Überdachung": 106,
+   "Garage": 54,
+   "Gebäude für Wirtschaft oder Gewerbe": 50,
+   "Nach Quellenlage nicht zu spezifizieren": 33,
+   "Gebäude zur Freizeitgestaltung": 31,
+   "Gebäude für Handel und Dienstleistungen": 22,
+   "Gemischt genutztes Gebäude mit Wohnen": 14,
+   "Verwaltungsgebäude": 9,
+   "Gebäude für öffentliche Zwecke": 9,
+   "Betriebsgebäude zu Verkehrsanlagen (allgemein)": 9,
+   "Allgemein bildende Schule": 7,
+   "Gebäude für kulturelle Zwecke": 7,
+   "Tiefgarage": 6
+  },
+  "art": {
+   "Gebaeude": 918,
+   "Sonstiges Bauwerk Oder Sonstige Einrichtung": 106,
+   "Bauwerk Oder Anlage Fuer Industrie Und Gewerbe": 1
+  },
+  "stand_jahr": {
+   "2018": 608,
+   "2019": 51,
+   "2020": 44,
+   "2021": 5,
+   "2022": 191,
+   "2023": 45,
+   "2024": 28,
+   "2025": 25,
+   "2026": 28
+  },
+  "kennungen": {
+   "ethos_im_zentrum": 1012,
+   "alkis_im_zentrum": 1025,
+   "beispiel_ethos": [
+    "DEG_DETHL57P00002jBp",
+    "DEG_DETHL57P00002jBx"
+   ],
+   "beispiel_alkis": [
+    "DETHL57P00002jBpBL",
+    "DETHL57P00002jBxBL"
+   ],
+   "ethos_kennung_auch_in_alkis": 979,
+   "anteil_ethos_prozent": 96.7,
+   "anteil_alkis_prozent": 95.5,
+   "regel": "ETHOS-Kennung ohne Vorsatz DEG_ und ALKIS-oid, jeweils die ersten 16 Zeichen"
+  },
+  "datei": "tools/suhl/out/bestand/alkis_zentrum.json",
+  "stand": "2026-11-12T23:46:21Z"
+ },
+ "luftbild": {
+  "quelle": "https://www.geoproxy.geoportal-th.de/geoproxy/services/DOP (Ebene th_dop_info, GetFeatureInfo je Kachelmitte), © GDI-Th, CC BY 4.0",
+  "kacheln_abgefragt": 228,
+  "flugtage_P1_bis_P3": {
+   "2024-05-15": 193
+  },
+  "flugtage_je_prioritaet": {
+   "P3": {
+    "2024-05-15": 136
+   },
+   "P2": {
+    "2024-05-15": 49
+   },
+   "P1": {
+    "2024-05-15": 8
+   },
+   "P4": {
+    "2024-05-15": 27,
+    "2024-04-07": 8
+   }
+  },
+  "naht_linien": [],
+  "felder_th_dop_info": [
+   "Bezug",
+   "CSW-Anfrage",
+   "Erstellung",
+   "Name",
+   "Publikation",
+   "Titel"
+  ],
+  "beispiel": {
+   "Name": "32_609_5606",
+   "Titel": "n/a",
+   "Erstellung": "15.05.2024",
+   "Publikation": "2025-02",
+   "CSW-Anfrage": "https://geomis.geoportal-th.de/geonetwork/srv/ger/csw?SERVICE=CSW&REQUEST=GetRecordById&VERSION=2.0.2&Elementsetname=full&outputSchema=http://www.isotc211.org/2005/gmd&ID=3940ce6d-a2fc-44cf-9b30-916f999750ae",
+   "Bezug": "bDOM"
+  },
+  "datei": "tools/suhl/out/bestand/luftbild.json",
+  "stand": "2026-11-12T23:28:30Z"
+ },
+ "oepnv": {
+  "quelle": "gtfs.de – GTFS für Deutschland (frei), Daten bereitgestellt von DELFI e.V.; https://download.gtfs.de/germany/free/latest.zip",
+  "referenzwoche": {
+   "montag": "2026-11-16",
+   "werktag": "2026-11-17",
+   "samstag": "2026-11-21",
+   "sonntag": "2026-11-22"
+  },
+  "haltestellen": {
+   "stop_eintraege_in_stadt": 331,
+   "verschiedene_namen": 211,
+   "mit_halt_im_feed": 208,
+   "namen_mit_halt": 132,
+   "in_kernstadt_namen": 151,
+   "im_zentrum_namen": [
+    "Friedrich-König-Straße",
+    "Kreuzkirche",
+    "Marktplatz",
+    "Neues Rathaus",
+    "Senfte",
+    "Suhl",
+    "Suhl, Bahnhof",
+    "Suhl, Friedrich-König Straße l",
+    "Suhl, Friedrich-König-Straße",
+    "Suhl, Kreuzkirche",
+    "Suhl, Marktplatz",
+    "Suhl, Neues Rathaus",
+    "Suhl, Zentrum",
+    "Suhl, Zentrum s",
+    "Suhl-Mitte"
+   ],
+   "meiste_halte": [
+    [
+     "Am Bahndamm/SNG",
+     545
+    ],
+    [
+     "Suhl, Zentrum",
+     501
+    ],
+    [
+     "Suhl, Friedrich-König Straße l",
+     397
+    ],
+    [
+     "Suhl, Bahnhof",
+     328
+    ],
+    [
+     "Neues Rathaus",
+     309
+    ],
+    [
+     "Friedrich-König-Straße",
+     270
+    ],
+    [
+     "Suhl, Bahnhof",
+     268
+    ],
+    [
+     "Neues Rathaus",
+     268
+    ],
+    [
+     "Karl-Marx-Straße/ Schelrod",
+     151
+    ],
+    [
+     "Suhl, Zentrum s",
+     150
+    ],
+    [
+     "Würzburger Straße",
+     142
+    ],
+    [
+     "Würzburger Straße",
+     141
+    ]
+   ]
+  },
+  "linien": {
+   "anzahl": 36,
+   "bahn": [
+    {
+     "betreiber": "8004NT DB Regio AG Südost",
+     "linie": "RE7",
+     "route_type": "2",
+     "fahrten_di": 16,
+     "fahrten_sa": 16,
+     "fahrten_so": 16,
+     "fahrten_im_feed": 55,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Süd-Thüringen-Bahn",
+     "linie": "RB43",
+     "route_type": "2",
+     "fahrten_di": 4,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 6,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Süd-Thüringen-Bahn",
+     "linie": "RB44",
+     "route_type": "2",
+     "fahrten_di": 21,
+     "fahrten_sa": 19,
+     "fahrten_so": 16,
+     "fahrten_im_feed": 27,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Süd-Thüringen-Bahn",
+     "linie": "RB46",
+     "route_type": "2",
+     "fahrten_di": 0,
+     "fahrten_sa": 8,
+     "fahrten_so": 8,
+     "fahrten_im_feed": 8,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Süd-Thüringen-Bahn Express",
+     "linie": "RE50",
+     "route_type": "2",
+     "fahrten_di": 12,
+     "fahrten_sa": 3,
+     "fahrten_so": 3,
+     "fahrten_im_feed": 27,
+     "schleusingen": 0,
+     "ratscher": 0
+    }
+   ],
+   "bus_und_andere": [
+    {
+     "betreiber": "Meininger Busbetriebs GmbH",
+     "linie": "400",
+     "route_type": "3",
+     "fahrten_di": 64,
+     "fahrten_sa": 19,
+     "fahrten_so": 19,
+     "fahrten_im_feed": 215,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Meininger Busbetriebs GmbH",
+     "linie": "419",
+     "route_type": "3",
+     "fahrten_di": 2,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 2,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Meininger Busbetriebs GmbH",
+     "linie": "447",
+     "route_type": "3",
+     "fahrten_di": 13,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 41,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Meininger Busbetriebs GmbH",
+     "linie": "448",
+     "route_type": "3",
+     "fahrten_di": 4,
+     "fahrten_sa": 4,
+     "fahrten_so": 4,
+     "fahrten_im_feed": 8,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Meininger Busbetriebs GmbH",
+     "linie": "449",
+     "route_type": "3",
+     "fahrten_di": 3,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 7,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Omnibusverkehr GmbH Ilmenau",
+     "linie": "300",
+     "route_type": "3",
+     "fahrten_di": 53,
+     "fahrten_sa": 16,
+     "fahrten_so": 12,
+     "fahrten_im_feed": 68,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Omnibusverkehr GmbH Ilmenau",
+     "linie": "307",
+     "route_type": "3",
+     "fahrten_di": 2,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 2,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "A/G",
+     "route_type": "3",
+     "fahrten_di": 15,
+     "fahrten_sa": 14,
+     "fahrten_so": 18,
+     "fahrten_im_feed": 44,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "A1",
+     "route_type": "3",
+     "fahrten_di": 41,
+     "fahrten_sa": 12,
+     "fahrten_so": 6,
+     "fahrten_im_feed": 59,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "A2",
+     "route_type": "3",
+     "fahrten_di": 17,
+     "fahrten_sa": 5,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 22,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "A3",
+     "route_type": "3",
+     "fahrten_di": 8,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 8,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "B",
+     "route_type": "3",
+     "fahrten_di": 69,
+     "fahrten_sa": 35,
+     "fahrten_so": 27,
+     "fahrten_im_feed": 121,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "C1",
+     "route_type": "3",
+     "fahrten_di": 41,
+     "fahrten_sa": 1,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 42,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "C12",
+     "route_type": "3",
+     "fahrten_di": 14,
+     "fahrten_sa": 30,
+     "fahrten_so": 12,
+     "fahrten_im_feed": 52,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "C2",
+     "route_type": "3",
+     "fahrten_di": 42,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 42,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "D1",
+     "route_type": "3",
+     "fahrten_di": 9,
+     "fahrten_sa": 7,
+     "fahrten_so": 5,
+     "fahrten_im_feed": 20,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "D2",
+     "route_type": "3",
+     "fahrten_di": 14,
+     "fahrten_sa": 7,
+     "fahrten_so": 3,
+     "fahrten_im_feed": 21,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "G",
+     "route_type": "3",
+     "fahrten_di": 31,
+     "fahrten_sa": 12,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 43,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "H",
+     "route_type": "3",
+     "fahrten_di": 10,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 10,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "K",
+     "route_type": "3",
+     "fahrten_di": 14,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 14,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "R",
+     "route_type": "3",
+     "fahrten_di": 20,
+     "fahrten_sa": 4,
+     "fahrten_so": 4,
+     "fahrten_im_feed": 24,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "S21",
+     "route_type": "3",
+     "fahrten_di": 2,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 2,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "S30",
+     "route_type": "3",
+     "fahrten_di": 1,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 1,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "S31",
+     "route_type": "3",
+     "fahrten_di": 1,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 1,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "S33",
+     "route_type": "3",
+     "fahrten_di": 2,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 2,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Städtische Nahverkehrsgesellschaft mbH Suhl/Zella-Mehlis",
+     "linie": "S40",
+     "route_type": "3",
+     "fahrten_di": 3,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 3,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Süd-Thüringen-Bahn",
+     "linie": "RB43",
+     "route_type": "3",
+     "fahrten_di": 1,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 1,
+     "schleusingen": 0,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Werrabus",
+     "linie": "200",
+     "route_type": "3",
+     "fahrten_di": 34,
+     "fahrten_sa": 16,
+     "fahrten_so": 13,
+     "fahrten_im_feed": 63,
+     "schleusingen": 63,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Werrabus",
+     "linie": "201",
+     "route_type": "3",
+     "fahrten_di": 8,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 8,
+     "schleusingen": 8,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Werrabus",
+     "linie": "202",
+     "route_type": "3",
+     "fahrten_di": 14,
+     "fahrten_sa": 6,
+     "fahrten_so": 6,
+     "fahrten_im_feed": 26,
+     "schleusingen": 26,
+     "ratscher": 0
+    },
+    {
+     "betreiber": "Werrabus",
+     "linie": "203",
+     "route_type": "3",
+     "fahrten_di": 16,
+     "fahrten_sa": 0,
+     "fahrten_so": 0,
+     "fahrten_im_feed": 16,
+     "schleusingen": 16,
+     "ratscher": 16
+    }
+   ]
+  },
+  "fahrten_mit_halt_in_suhl": {
+   "im_feed": 1111,
+   "werktag": 621,
+   "samstag": 234,
+   "sonntag": 172
+  },
+  "nach_schleusingen": [
+   [
+    "Werrabus",
+    "200",
+    63
+   ],
+   [
+    "Werrabus",
+    "201",
+    8
+   ],
+   [
+    "Werrabus",
+    "202",
+    26
+   ],
+   [
+    "Werrabus",
+    "203",
+    16
+   ]
+  ],
+  "nach_ratscher": [
+   [
+    "Werrabus",
+    "203",
+    16
+   ]
+  ],
+  "datei": "tools/suhl/out/bestand/oepnv.json",
+  "stand": "2026-11-12T23:33:23Z"
+ },
+ "landesdienste": {
+  "made": "2026-11-12T23:35:01Z",
+  "von": "Chat-Rechner",
+  "befund": {
+   "alte_adressen": [
+    "wartungsseite"
+   ],
+   "neues_portal": [
+    "captcha"
+   ],
+   "getfeatureinfo": {
+    "Gebaeude": {
+     "status": 200,
+     "art": "text/xml",
+     "felder": []
+    },
+    "Gebaeudefunktion": {
+     "status": 200,
+     "art": "text/xml",
+     "felder": []
+    },
+    "DachformGebaeude": {
+     "status": 200,
+     "art": "text/xml",
+     "felder": []
+    },
+    "GeschossanzahlGebaeude": {
+     "status": 200,
+     "art": "text/xml",
+     "felder": []
+    },
+    "Firstlinie": {
+     "status": 200,
+     "art": "text/xml",
+     "felder": []
+    },
+    "Bauteil": {
+     "status": 200,
+     "art": "text/xml",
+     "felder": []
+    },
+    "alkis_geb": {
+     "status": 200,
+     "art": "text/plain; charset=UTF-8",
+     "felder": [
+      "anzahlDerOberirdischenGeschosse",
+      "datenerhebung",
+      "gebaeudefunktion",
+      "grundflaeche",
+      "lebenszeitintervall_beginnt"
+     ]
+    },
+    "AngabeZurGebaeudefunktion": {
+     "status": 200,
+     "art": "text/plain; charset=UTF-8",
+     "felder": [
+      "anzahlDerOberirdischenGeschosse",
+      "datenerhebung",
+      "gebaeudefunktion",
+      "grundflaeche",
+      "lebenszeitintervall_beginnt"
+     ]
+    },
+    "GebaeudeAusLuftbild": {
+     "status": 200,
+     "art": "text/xml",
+     "felder": []
+    },
+    "EL.GridCoverage": {
+     "status": 200,
+     "art": "text/xml",
+     "felder": []
+    },
+    "DGM2": {
+     "status": 200,
+     "art": "text/plain; charset=UTF-8",
+     "felder": []
+    },
+    "gaz_hnr_wms": {
+     "status": 200,
+     "art": "text/plain; charset=UTF-8",
+     "felder": []
+    },
+    "AD.Address": {
+     "status": 200,
+     "art": "text/plain; charset=UTF-8",
+     "felder": []
+    }
+   },
+   "alkis_wfs": {
+    "url": "https://www.geoproxy.geoportal-th.de/geoproxy/services/adv_alkis_wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ave:GebaeudeBauwerk&COUNT=200&SRSNAME=urn:ogc:def:crs:EPSG::25832&BBOX=619708,5607759,619908,5607959,urn:ogc:def:crs:EPSG::25832",
+    "status": 200,
+    "bytes": 139819,
+    "sekunden": 0.8,
+    "gebaeude_im_200_m_quadrat": 97,
+    "felder": {
+     "oid": 97,
+     "aktualit": 97,
+     "gebnutzbez": 97,
+     "funktion": 97,
+     "anzahlgs": 89,
+     "lagebeztxt": 97,
+     "name": 4
+    },
+    "werte": {
+     "aktualit": {
+      "2018": 73,
+      "2022": 9,
+      "2026": 8,
+      "2023": 3,
+      "2020": 3,
+      "2024": 1
+     },
+     "gebnutzbez": {
+      "Gebaeude": 94,
+      "Sonstiges Bauwerk Oder Sonstige Einrichtung": 3
+     },
+     "funktion": {
+      "Wohngebäude": 74,
+      "Gebäude für Wirtschaft oder Gewerbe": 6,
+      "Nach Quellenlage nicht zu spezifizieren": 5,
+      "Überdachung": 3,
+      "Verwaltungsgebäude": 3,
+      "Rathaus": 2,
+      "Gericht": 1,
+      "Kirche": 1
+     },
+     "anzahlgs": {
+      "4": 31,
+      "3": 26,
+      "5": 11,
+      "2": 8,
+      "1": 6,
+      "6": 5,
+      "7": 1,
+      "16": 1
+     }
+    },
+    "geometrie": {
+     "Polygon": 97
+    }
+   },
+   "geomis": {
+    "LoD2": {
+     "treffer": 0,
+     "titel": []
+    },
+    "3D-Gebäude": {
+     "treffer": 0,
+     "titel": []
+    },
+    "WCS": {
+     "treffer": 0,
+     "titel": []
+    },
+    "Digitales Oberflächenmodell": {
+     "treffer": 0,
+     "titel": []
+    },
+    "bDOM": {
+     "treffer": 0,
+     "titel": []
+    },
+    "Schrägluftbild": {
+     "treffer": 0,
+     "titel": []
+    },
+    "TrueDOP": {
+     "treffer": 0,
+     "titel": []
+    },
+    "3D-Mesh": {
+     "treffer": 0,
+     "titel": []
+    },
+    "Hausumringe": {
+     "treffer": 1,
+     "titel": [
+      "Hausumringe [dataset]"
+     ]
+    },
+    "INSPIRE Gebäude": {
+     "treffer": 4,
+     "titel": [
+      "Fernwärme Versorgungsgebiete Thüringen [dataset]",
+      "Web-Feature-Services Geoproxy [service]",
+      "Hausumringe [dataset]",
+      "WFS TH ALKIS Vereinfacht [service]"
+     ]
+    },
+    "Historische Orthophotos": {
+     "treffer": 0,
+     "titel": []
+    }
+   }
+  },
+  "proben": [
+   {
+    "name": "DGM1 2020-2025",
+    "zeit": "2026-11-12T23:35:02Z",
+    "status": 200,
+    "art": "wartungsseite",
+    "bytes": 970
+   },
+   {
+    "name": "DGM1 2014-2019",
+    "zeit": "2026-11-12T23:35:04Z",
+    "status": 200,
+    "art": "wartungsseite",
+    "bytes": 970
+   },
+   {
+    "name": "DOM1 2020-2025",
+    "zeit": "2026-11-12T23:35:05Z",
+    "status": 200,
+    "art": "wartungsseite",
+    "bytes": 970
+   },
+   {
+    "name": "LoD2",
+    "zeit": "2026-11-12T23:35:07Z",
+    "status": 200,
+    "art": "wartungsseite",
+    "bytes": 970
+   },
+   {
+    "name": "ATOM Höhendaten DGM",
+    "zeit": "2026-11-12T23:35:08Z",
+    "status": 200,
+    "art": "wartungsseite",
+    "bytes": 970
+   },
+   {
+    "name": "README Höhendaten",
+    "zeit": "2026-11-12T23:35:10Z",
+    "status": 200,
+    "art": "wartungsseite",
+    "bytes": 970
+   },
+   {
+    "name": "neues Portal Höhendaten",
+    "zeit": "2026-11-12T23:35:12Z",
+    "status": 200,
+    "art": "captcha",
+    "bytes": 45819
+   },
+   {
+    "name": "neues Portal Start",
+    "zeit": "2026-11-12T23:35:14Z",
+    "status": 200,
+    "art": "captcha",
+    "bytes": 45798
+   },
+   {
+    "name": "WMS alle Ebenen",
+    "zeit": "2026-11-12T23:35:18Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 2946156
+   },
+   {
+    "name": "WFS alle Objektarten",
+    "zeit": "2026-11-12T23:35:20Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 84366
+   },
+   {
+    "name": "GetFeatureInfo Gebaeude",
+    "zeit": "2026-11-12T23:35:21Z",
+    "status": 200,
+    "art": "text/xml",
+    "bytes": 353
+   },
+   {
+    "name": "GetFeatureInfo Gebaeudefunktion",
+    "zeit": "2026-11-12T23:35:22Z",
+    "status": 200,
+    "art": "text/xml",
+    "bytes": 361
+   },
+   {
+    "name": "GetFeatureInfo DachformGebaeude",
+    "zeit": "2026-11-12T23:35:24Z",
+    "status": 200,
+    "art": "text/xml",
+    "bytes": 361
+   },
+   {
+    "name": "GetFeatureInfo GeschossanzahlGebaeude",
+    "zeit": "2026-11-12T23:35:25Z",
+    "status": 200,
+    "art": "text/xml",
+    "bytes": 367
+   },
+   {
+    "name": "GetFeatureInfo Firstlinie",
+    "zeit": "2026-11-12T23:35:27Z",
+    "status": 200,
+    "art": "text/xml",
+    "bytes": 355
+   },
+   {
+    "name": "GetFeatureInfo Bauteil",
+    "zeit": "2026-11-12T23:35:28Z",
+    "status": 200,
+    "art": "text/xml",
+    "bytes": 352
+   },
+   {
+    "name": "GetFeatureInfo alkis_geb",
+    "zeit": "2026-11-12T23:35:29Z",
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "bytes": 378
+   },
+   {
+    "name": "GetFeatureInfo AngabeZurGebaeudefunktion",
+    "zeit": "2026-11-12T23:35:31Z",
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "bytes": 378
+   },
+   {
+    "name": "GetFeatureInfo GebaeudeAusLuftbild",
+    "zeit": "2026-11-12T23:35:32Z",
+    "status": 200,
+    "art": "text/xml",
+    "bytes": 364
+   },
+   {
+    "name": "GetFeatureInfo EL.GridCoverage",
+    "zeit": "2026-11-12T23:35:34Z",
+    "status": 200,
+    "art": "text/xml",
+    "bytes": 360
+   },
+   {
+    "name": "GetFeatureInfo DGM2",
+    "zeit": "2026-11-12T23:35:35Z",
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "bytes": 41
+   },
+   {
+    "name": "GetFeatureInfo gaz_hnr_wms",
+    "zeit": "2026-11-12T23:35:38Z",
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "bytes": 41
+   },
+   {
+    "name": "GetFeatureInfo AD.Address",
+    "zeit": "2026-11-12T23:35:39Z",
+    "status": 200,
+    "art": "text/plain; charset=UTF-8",
+    "bytes": 41
+   },
+   {
+    "name": "WCS am Geoproxy",
+    "zeit": "2026-11-12T23:35:41Z",
+    "status": 400,
+    "art": "xml",
+    "bytes": 536
+   },
+   {
+    "name": "WCS Dienst DGM",
+    "zeit": "2026-11-12T23:35:42Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 20703
+   },
+   {
+    "name": "WMS Dienst DGM",
+    "zeit": "2026-11-12T23:35:43Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 20703
+   },
+   {
+    "name": "WMS Dienst DOM",
+    "zeit": "2026-11-12T23:35:57Z",
+    "status": 500,
+    "art": "xml",
+    "bytes": 464
+   },
+   {
+    "name": "WMS Dienst ALKIS",
+    "zeit": "2026-11-12T23:36:11Z",
+    "status": 500,
+    "art": "xml",
+    "bytes": 466
+   },
+   {
+    "name": "WFS Dienst INSPIRE bu",
+    "zeit": "2026-11-12T23:36:25Z",
+    "status": 500,
+    "art": "xml",
+    "bytes": 470
+   },
+   {
+    "name": "WMS Dienst LoD2",
+    "zeit": "2026-11-12T23:36:39Z",
+    "status": 500,
+    "art": "xml",
+    "bytes": 465
+   },
+   {
+    "name": "GetMap EL.GridCoverage als TIFF",
+    "zeit": "2026-11-12T23:36:41Z",
+    "status": 200,
+    "art": "tiff",
+    "bytes": 120452
+   },
+   {
+    "name": "GetMap DGM2 als TIFF",
+    "zeit": "2026-11-12T23:36:43Z",
+    "status": 200,
+    "art": "tiff",
+    "bytes": 120452
+   },
+   {
+    "name": "WFS Hauskoordinaten",
+    "zeit": "2026-11-12T23:36:45Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 3032
+   },
+   {
+    "name": "WFS ALKIS vereinfacht Capabilities",
+    "zeit": "2026-11-12T23:36:46Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 44544
+   },
+   {
+    "name": "WFS ALKIS vereinfacht Gebäude",
+    "zeit": "2026-11-12T23:36:47Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 139819
+   },
+   {
+    "name": "basemap.de Vektor TileJSON",
+    "zeit": "2026-11-12T23:36:49Z",
+    "status": 200,
+    "art": "json",
+    "bytes": 14537
+   },
+   {
+    "name": "basemap.de Schummerung WMS",
+    "zeit": "2026-11-12T23:36:51Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 15002
+   },
+   {
+    "name": "basemap.de Vektorkachel Zentrum",
+    "zeit": "2026-11-12T23:36:53Z",
+    "status": 200,
+    "art": "application/octet-stream",
+    "bytes": 77193
+   },
+   {
+    "name": "GeoMIS Suche LoD2",
+    "zeit": "2026-11-12T23:36:55Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 483
+   },
+   {
+    "name": "GeoMIS Suche 3D-Gebäude",
+    "zeit": "2026-11-12T23:36:57Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 483
+   },
+   {
+    "name": "GeoMIS Suche WCS",
+    "zeit": "2026-11-12T23:36:59Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 483
+   },
+   {
+    "name": "GeoMIS Suche Digitales Oberflächenmodell",
+    "zeit": "2026-11-12T23:37:00Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 483
+   },
+   {
+    "name": "GeoMIS Suche bDOM",
+    "zeit": "2026-11-12T23:37:02Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 483
+   },
+   {
+    "name": "GeoMIS Suche Schrägluftbild",
+    "zeit": "2026-11-12T23:37:04Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 483
+   },
+   {
+    "name": "GeoMIS Suche TrueDOP",
+    "zeit": "2026-11-12T23:37:06Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 483
+   },
+   {
+    "name": "GeoMIS Suche 3D-Mesh",
+    "zeit": "2026-11-12T23:37:08Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 483
+   },
+   {
+    "name": "GeoMIS Suche Hausumringe",
+    "zeit": "2026-11-12T23:37:09Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 1953
+   },
+   {
+    "name": "GeoMIS Suche INSPIRE Gebäude",
+    "zeit": "2026-11-12T23:37:11Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 7040
+   },
+   {
+    "name": "GeoMIS Suche Historische Orthophotos",
+    "zeit": "2026-11-12T23:37:12Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 483
+   },
+   {
+    "name": "GeoMIS.Th CSW",
+    "zeit": "2026-11-12T23:37:14Z",
+    "status": 200,
+    "art": "xml",
+    "bytes": 36657
+   },
+   {
+    "name": "GDI-DE Katalog CSW",
+    "zeit": "2026-11-12T23:37:27Z",
+    "status": 0,
+    "art": "leer",
+    "bytes": 63
+   }
+  ],
+  "datei": "tools/suhl/out/bestand/landesdienste.json",
+  "stand": "2026-11-12T23:35:01Z"
+ },
+ "aus_github_actions": {
+  "ethos.json": {
+   "stand": "2026-11-12T23:39:58Z",
+   "quelle": "ETHOS.BUILDA v1.0.0, Zenodo 11845992, DEG.csv (Thüringen), Forschungszentrum Jülich; Lizenz ODbL 1.0",
+   "gebaeude": {
+    "stadt": 30929,
+    "kernstadt": 23282,
+    "zentrum": 1012
+   }
+  },
+  "landesdienste.json": {
+   "stand": "2026-11-12T23:40:10Z",
+   "quelle": "GitHub Actions",
+   "befund": {
+    "alte_adressen": [
+     "wartungsseite"
+    ],
+    "neues_portal": [
+     "captcha"
+    ]
+   }
+  },
+  "osm_geofabrik.json": {
+   "stand": "2026-11-12T23:39:51Z",
+   "quelle": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
+   "gebaeude": {
+    "stadt": 22180,
+    "kernstadt": 16168,
+    "zentrum": 595
+   },
+   "highway_km": {
+    "stadt": 1559.1,
+    "kernstadt": 513.2,
+    "zentrum": 34.8
+   }
+  }
+ },
+ "fehlt": []
+}

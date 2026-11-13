@@ -1,0 +1,1112 @@
+{
+ "made": "2026-11-12T23:39:58Z",
+ "quelle": "ETHOS.BUILDA v1.0.0, Zenodo 11845992, DEG.csv (Thüringen), Forschungszentrum Jülich; Lizenz ODbL 1.0",
+ "spalten": "id,source,footprint,height_m",
+ "im_rechteck_um_suhl": 53938,
+ "gebiete": {
+  "stadt": {
+   "anzahl": 30929,
+   "mit_hoehe": 30929,
+   "grundflaeche_ha": 246.3,
+   "ab_40_m2": 14606,
+   "hoehe_m": {
+    "min": 2.0,
+    "p10": 2.6,
+    "median": 4.9,
+    "p90": 11.0,
+    "p99": 18.4,
+    "max": 68.0
+   },
+   "hoehenklassen": {
+    "0-3 m": 6254,
+    "3-6 m": 12039,
+    "6-10 m": 7820,
+    "10-15 m": 4102,
+    "15-25 m": 655,
+    "25-40 m": 39,
+    "ab 40 m": 20
+   },
+   "quelle_grundriss": {
+    "lod2_de_th": 30929
+   },
+   "hoehe_herkunft": {
+    "dir": 30929
+   },
+   "hoehe_quelle": {
+    "lod2_de_th": 30929
+   },
+   "id_muster": {
+    "DEG_D": 30929
+   },
+   "abgleich_osm": {
+    "osm_gebaeude": 22180,
+    "ethos_gebaeude": 30929,
+    "osm_zu_mind_50_prozent_von_ethos_bedeckt_prozent": 84.1,
+    "osm_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 95.4,
+    "osm_ohne_ethos_unter_10_prozent": 2918,
+    "ethos_zu_mind_50_prozent_von_osm_bedeckt_prozent": 75.5,
+    "ethos_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 92.3,
+    "ethos_ohne_osm_unter_10_prozent": 5249,
+    "grundflaeche_osm_ha": 257.5,
+    "grundflaeche_ethos_ha": 246.3,
+    "gemeinsame_flaeche_ha": 208.9,
+    "gemeinsam_anteil_an_osm_prozent": 81.1,
+    "gemeinsam_anteil_an_ethos_prozent": 84.7
+   }
+  },
+  "kernstadt": {
+   "anzahl": 23282,
+   "mit_hoehe": 23282,
+   "grundflaeche_ha": 189.2,
+   "ab_40_m2": 10754,
+   "hoehe_m": {
+    "min": 2.0,
+    "p10": 2.6,
+    "median": 4.7,
+    "p90": 11.2,
+    "p99": 19.0,
+    "max": 68.0
+   },
+   "hoehenklassen": {
+    "0-3 m": 4984,
+    "3-6 m": 9047,
+    "6-10 m": 5482,
+    "10-15 m": 3124,
+    "15-25 m": 598,
+    "25-40 m": 31,
+    "ab 40 m": 16
+   },
+   "quelle_grundriss": {
+    "lod2_de_th": 23282
+   },
+   "hoehe_herkunft": {
+    "dir": 23282
+   },
+   "hoehe_quelle": {
+    "lod2_de_th": 23282
+   },
+   "id_muster": {
+    "DEG_D": 23282
+   },
+   "abgleich_osm": {
+    "osm_gebaeude": 16168,
+    "ethos_gebaeude": 23282,
+    "osm_zu_mind_50_prozent_von_ethos_bedeckt_prozent": 85.0,
+    "osm_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 95.4,
+    "osm_ohne_ethos_unter_10_prozent": 2025,
+    "ethos_zu_mind_50_prozent_von_osm_bedeckt_prozent": 74.4,
+    "ethos_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 92.1,
+    "ethos_ohne_osm_unter_10_prozent": 4224,
+    "grundflaeche_osm_ha": 197.1,
+    "grundflaeche_ethos_ha": 189.2,
+    "gemeinsame_flaeche_ha": 160.7,
+    "gemeinsam_anteil_an_osm_prozent": 81.5,
+    "gemeinsam_anteil_an_ethos_prozent": 84.7
+   }
+  },
+  "zentrum": {
+   "anzahl": 1012,
+   "mit_hoehe": 1012,
+   "grundflaeche_ha": 15.8,
+   "ab_40_m2": 596,
+   "hoehe_m": {
+    "min": 2.0,
+    "p10": 3.1,
+    "median": 9.6,
+    "p90": 16.5,
+    "p99": 38.7,
+    "max": 56.6
+   },
+   "hoehenklassen": {
+    "0-3 m": 84,
+    "3-6 m": 209,
+    "6-10 m": 241,
+    "10-15 m": 330,
+    "15-25 m": 136,
+    "25-40 m": 1,
+    "ab 40 m": 11
+   },
+   "quelle_grundriss": {
+    "lod2_de_th": 1012
+   },
+   "hoehe_herkunft": {
+    "dir": 1012
+   },
+   "hoehe_quelle": {
+    "lod2_de_th": 1012
+   },
+   "id_muster": {
+    "DEG_D": 1012
+   },
+   "abgleich_osm": {
+    "osm_gebaeude": 595,
+    "ethos_gebaeude": 1012,
+    "osm_zu_mind_50_prozent_von_ethos_bedeckt_prozent": 92.6,
+    "osm_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 94.9,
+    "osm_ohne_ethos_unter_10_prozent": 29,
+    "ethos_zu_mind_50_prozent_von_osm_bedeckt_prozent": 75.6,
+    "ethos_ab_40_m2_zu_mind_50_prozent_bedeckt_prozent": 94.3,
+    "ethos_ohne_osm_unter_10_prozent": 170,
+    "grundflaeche_osm_ha": 16.9,
+    "grundflaeche_ethos_ha": 15.8,
+    "gemeinsame_flaeche_ha": 14.7,
+    "gemeinsam_anteil_an_osm_prozent": 86.8,
+    "gemeinsam_anteil_an_ethos_prozent": 92.5
+   }
+  }
+ },
+ "osm_quelle": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
+ "hohe_gebaeude_ab_25_m": {
+  "anzahl": 59,
+  "mit_grundflaeche_ab_100_m2": 20,
+  "hinweis": "Körper unter 100 m² Grundfläche sind meist Dachaufbauten, Aufzugsschächte, Schornsteine oder Teile eines Hochhauses",
+  "im_zentrum": 12,
+  "in_kernstadt": 47,
+  "liste": [
+   {
+    "id": "DEG_DETHL57P0000js64",
+    "hoehe_m": 68.0,
+    "grundflaeche_m2": 26,
+    "lat": 50.631418,
+    "lon": 10.69838,
+    "utm32_km": [
+     620.113,
+     5610.215
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0000js2G",
+    "hoehe_m": 59.2,
+    "grundflaeche_m2": 20,
+    "lat": 50.632485,
+    "lon": 10.699481,
+    "utm32_km": [
+     620.188,
+     5610.335
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006G0l",
+    "hoehe_m": 56.6,
+    "grundflaeche_m2": 584,
+    "lat": 50.60976,
+    "lon": 10.686304,
+    "utm32_km": [
+     619.314,
+     5607.787
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "hotel",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0001nlJk",
+    "hoehe_m": 55.7,
+    "grundflaeche_m2": 44,
+    "lat": 50.628413,
+    "lon": 10.701526,
+    "utm32_km": [
+     620.343,
+     5609.886
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0001jGod",
+    "hoehe_m": 51.5,
+    "grundflaeche_m2": 50,
+    "lat": 50.656313,
+    "lon": 10.768952,
+    "utm32_km": [
+     625.038,
+     5613.1
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0000jrup",
+    "hoehe_m": 47.9,
+    "grundflaeche_m2": 71,
+    "lat": 50.613713,
+    "lon": 10.697253,
+    "utm32_km": [
+     620.078,
+     5608.244
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0001nmpP",
+    "hoehe_m": 46.4,
+    "grundflaeche_m2": 24,
+    "lat": 50.586764,
+    "lon": 10.715777,
+    "utm32_km": [
+     621.458,
+     5605.278
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006G1W",
+    "hoehe_m": 46.1,
+    "grundflaeche_m2": 480,
+    "lat": 50.611371,
+    "lon": 10.693479,
+    "utm32_km": [
+     619.817,
+     5607.978
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "14"
+   },
+   {
+    "id": "DEG_DETHL57P0001eCsk",
+    "hoehe_m": 46.0,
+    "grundflaeche_m2": 6,
+    "lat": 50.611533,
+    "lon": 10.649404,
+    "utm32_km": [
+     616.699,
+     5607.926
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006G1Y",
+    "hoehe_m": 45.9,
+    "grundflaeche_m2": 5,
+    "lat": 50.611342,
+    "lon": 10.693663,
+    "utm32_km": [
+     619.83,
+     5607.975
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "14"
+   },
+   {
+    "id": "DEG_DETHL57P00006IbC",
+    "hoehe_m": 45.9,
+    "grundflaeche_m2": 7,
+    "lat": 50.611375,
+    "lon": 10.689269,
+    "utm32_km": [
+     619.519,
+     5607.972
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "office",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006G0d",
+    "hoehe_m": 45.7,
+    "grundflaeche_m2": 510,
+    "lat": 50.611338,
+    "lon": 10.689436,
+    "utm32_km": [
+     619.531,
+     5607.968
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0001oCJz",
+    "hoehe_m": 45.7,
+    "grundflaeche_m2": 1,
+    "lat": 50.616277,
+    "lon": 10.793533,
+    "utm32_km": [
+     626.883,
+     5608.69
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006G0c",
+    "hoehe_m": 45.5,
+    "grundflaeche_m2": 506,
+    "lat": 50.611196,
+    "lon": 10.688624,
+    "utm32_km": [
+     619.474,
+     5607.951
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "14"
+   },
+   {
+    "id": "DEG_DETHL57P0000jruo",
+    "hoehe_m": 45.5,
+    "grundflaeche_m2": 434,
+    "lat": 50.613781,
+    "lon": 10.697032,
+    "utm32_km": [
+     620.063,
+     5608.252
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006G0m",
+    "hoehe_m": 45.4,
+    "grundflaeche_m2": 509,
+    "lat": 50.611321,
+    "lon": 10.690324,
+    "utm32_km": [
+     619.594,
+     5607.967
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00002jxj",
+    "hoehe_m": 45.1,
+    "grundflaeche_m2": 519,
+    "lat": 50.605886,
+    "lon": 10.677006,
+    "utm32_km": [
+     618.666,
+     5607.342
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "15"
+   },
+   {
+    "id": "DEG_DETHL57P00006G0z",
+    "hoehe_m": 45.1,
+    "grundflaeche_m2": 507,
+    "lat": 50.611246,
+    "lon": 10.691497,
+    "utm32_km": [
+     619.677,
+     5607.961
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00006FW1",
+    "hoehe_m": 40.3,
+    "grundflaeche_m2": 400,
+    "lat": 50.609578,
+    "lon": 10.690891,
+    "utm32_km": [
+     619.639,
+     5607.774
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0001jqWY",
+    "hoehe_m": 40.1,
+    "grundflaeche_m2": 6,
+    "lat": 50.615368,
+    "lon": 10.80307,
+    "utm32_km": [
+     627.56,
+     5608.605
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0001geFy",
+    "hoehe_m": 39.8,
+    "grundflaeche_m2": 2,
+    "lat": 50.636413,
+    "lon": 10.710488,
+    "utm32_km": [
+     620.956,
+     5610.79
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0001nmpr",
+    "hoehe_m": 39.8,
+    "grundflaeche_m2": 1,
+    "lat": 50.582779,
+    "lon": 10.705783,
+    "utm32_km": [
+     620.761,
+     5604.819
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00002jt0",
+    "hoehe_m": 35.4,
+    "grundflaeche_m2": 987,
+    "lat": 50.607605,
+    "lon": 10.681109,
+    "utm32_km": [
+     618.952,
+     5607.539
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002jwM",
+    "hoehe_m": 35.4,
+    "grundflaeche_m2": 990,
+    "lat": 50.605413,
+    "lon": 10.678386,
+    "utm32_km": [
+     618.765,
+     5607.291
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P0001nw3R",
+    "hoehe_m": 35.4,
+    "grundflaeche_m2": 34,
+    "lat": 50.617348,
+    "lon": 10.685378,
+    "utm32_km": [
+     619.229,
+     5608.63
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00002jtE",
+    "hoehe_m": 35.3,
+    "grundflaeche_m2": 350,
+    "lat": 50.607552,
+    "lon": 10.678771,
+    "utm32_km": [
+     618.786,
+     5607.53
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002jsf",
+    "hoehe_m": 35.2,
+    "grundflaeche_m2": 989,
+    "lat": 50.606434,
+    "lon": 10.67972,
+    "utm32_km": [
+     618.856,
+     5607.407
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002jtn",
+    "hoehe_m": 35.2,
+    "grundflaeche_m2": 989,
+    "lat": 50.60727,
+    "lon": 10.678112,
+    "utm32_km": [
+     618.74,
+     5607.497
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lPf",
+    "hoehe_m": 34.5,
+    "grundflaeche_m2": 27,
+    "lat": 50.605283,
+    "lon": 10.67845,
+    "utm32_km": [
+     618.769,
+     5607.277
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lPe",
+    "hoehe_m": 34.4,
+    "grundflaeche_m2": 28,
+    "lat": 50.605469,
+    "lon": 10.678189,
+    "utm32_km": [
+     618.75,
+     5607.297
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lPd",
+    "hoehe_m": 34.2,
+    "grundflaeche_m2": 14,
+    "lat": 50.605615,
+    "lon": 10.677985,
+    "utm32_km": [
+     618.736,
+     5607.313
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lO2",
+    "hoehe_m": 34.1,
+    "grundflaeche_m2": 14,
+    "lat": 50.607464,
+    "lon": 10.678748,
+    "utm32_km": [
+     618.785,
+     5607.52
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lO3",
+    "hoehe_m": 34.1,
+    "grundflaeche_m2": 13,
+    "lat": 50.607557,
+    "lon": 10.678913,
+    "utm32_km": [
+     618.796,
+     5607.531
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lPg",
+    "hoehe_m": 34.1,
+    "grundflaeche_m2": 14,
+    "lat": 50.605137,
+    "lon": 10.678653,
+    "utm32_km": [
+     618.784,
+     5607.261
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOo",
+    "hoehe_m": 34.0,
+    "grundflaeche_m2": 27,
+    "lat": 50.607145,
+    "lon": 10.678026,
+    "utm32_km": [
+     618.735,
+     5607.483
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOp",
+    "hoehe_m": 34.0,
+    "grundflaeche_m2": 14,
+    "lat": 50.607015,
+    "lon": 10.677796,
+    "utm32_km": [
+     618.719,
+     5607.468
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOT",
+    "hoehe_m": 34.0,
+    "grundflaeche_m2": 13,
+    "lat": 50.606158,
+    "lon": 10.679987,
+    "utm32_km": [
+     618.876,
+     5607.377
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOR",
+    "hoehe_m": 33.9,
+    "grundflaeche_m2": 28,
+    "lat": 50.60649,
+    "lon": 10.679523,
+    "utm32_km": [
+     618.842,
+     5607.413
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOS",
+    "hoehe_m": 33.9,
+    "grundflaeche_m2": 27,
+    "lat": 50.606304,
+    "lon": 10.679784,
+    "utm32_km": [
+     618.861,
+     5607.393
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P0000jwy5",
+    "hoehe_m": 33.9,
+    "grundflaeche_m2": 4,
+    "lat": 50.616719,
+    "lon": 10.723083,
+    "utm32_km": [
+     621.898,
+     5608.621
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": "Ringberghotel",
+    "osm_building": "commercial",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0000jwy6",
+    "hoehe_m": 33.9,
+    "grundflaeche_m2": 21,
+    "lat": 50.61673,
+    "lon": 10.723128,
+    "utm32_km": [
+     621.901,
+     5608.622
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": "Ringberghotel",
+    "osm_building": "commercial",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00002lOn",
+    "hoehe_m": 33.8,
+    "grundflaeche_m2": 27,
+    "lat": 50.607311,
+    "lon": 10.678319,
+    "utm32_km": [
+     618.755,
+     5607.502
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOm",
+    "hoehe_m": 33.8,
+    "grundflaeche_m2": 13,
+    "lat": 50.60744,
+    "lon": 10.678547,
+    "utm32_km": [
+     618.771,
+     5607.517
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOa",
+    "hoehe_m": 33.7,
+    "grundflaeche_m2": 14,
+    "lat": 50.607807,
+    "lon": 10.680708,
+    "utm32_km": [
+     618.923,
+     5607.561
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOb",
+    "hoehe_m": 33.7,
+    "grundflaeche_m2": 27,
+    "lat": 50.607661,
+    "lon": 10.680912,
+    "utm32_km": [
+     618.938,
+     5607.545
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOc",
+    "hoehe_m": 33.7,
+    "grundflaeche_m2": 27,
+    "lat": 50.607475,
+    "lon": 10.681173,
+    "utm32_km": [
+     618.956,
+     5607.525
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOQ",
+    "hoehe_m": 33.6,
+    "grundflaeche_m2": 14,
+    "lat": 50.606636,
+    "lon": 10.679319,
+    "utm32_km": [
+     618.827,
+     5607.429
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P00002lOd",
+    "hoehe_m": 33.6,
+    "grundflaeche_m2": 13,
+    "lat": 50.607329,
+    "lon": 10.681376,
+    "utm32_km": [
+     618.971,
+     5607.509
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "11"
+   },
+   {
+    "id": "DEG_DETHL57P0001eCtd",
+    "hoehe_m": 33,
+    "grundflaeche_m2": 6,
+    "lat": 50.605346,
+    "lon": 10.724699,
+    "utm32_km": [
+     622.042,
+     5607.359
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00002jRj",
+    "hoehe_m": 31.1,
+    "grundflaeche_m2": 7,
+    "lat": 50.605401,
+    "lon": 10.693927,
+    "utm32_km": [
+     619.864,
+     5607.315
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "industrial",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00000OAR",
+    "hoehe_m": 30.9,
+    "grundflaeche_m2": 385,
+    "lat": 50.601522,
+    "lon": 10.668441,
+    "utm32_km": [
+     618.071,
+     5606.843
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "10"
+   },
+   {
+    "id": "DEG_DETHL57P00000OAQ",
+    "hoehe_m": 30.7,
+    "grundflaeche_m2": 378,
+    "lat": 50.602028,
+    "lon": 10.669894,
+    "utm32_km": [
+     618.172,
+     5606.901
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "10"
+   },
+   {
+    "id": "DEG_DETHL57P00000OAq",
+    "hoehe_m": 30.5,
+    "grundflaeche_m2": 355,
+    "lat": 50.601075,
+    "lon": 10.666715,
+    "utm32_km": [
+     617.95,
+     5606.79
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "apartments",
+    "osm_levels": "10"
+   },
+   {
+    "id": "DEG_DETHL57P00000OAP",
+    "hoehe_m": 30.0,
+    "grundflaeche_m2": 337,
+    "lat": 50.600763,
+    "lon": 10.664731,
+    "utm32_km": [
+     617.81,
+     5606.752
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "house",
+    "osm_levels": "10"
+   },
+   {
+    "id": "DEG_DETHL57P0001juaB",
+    "hoehe_m": 27.0,
+    "grundflaeche_m2": 1,
+    "lat": 50.615905,
+    "lon": 10.804301,
+    "utm32_km": [
+     627.645,
+     5608.667
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0001uQLO",
+    "hoehe_m": 26.6,
+    "grundflaeche_m2": 15,
+    "lat": 50.609951,
+    "lon": 10.597266,
+    "utm32_km": [
+     613.014,
+     5607.669
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00012Wyt",
+    "hoehe_m": 25.8,
+    "grundflaeche_m2": 981,
+    "lat": 50.608817,
+    "lon": 10.688847,
+    "utm32_km": [
+     619.496,
+     5607.687
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": true,
+    "osm_name": "Haus der Geschichte",
+    "osm_building": "government",
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P0001mfek",
+    "hoehe_m": 25.4,
+    "grundflaeche_m2": 7,
+    "lat": 50.677234,
+    "lon": 10.792729,
+    "utm32_km": [
+     626.662,
+     5615.466
+    ],
+    "in_kernstadt": false,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": null,
+    "osm_levels": null
+   },
+   {
+    "id": "DEG_DETHL57P00012zzx",
+    "hoehe_m": 25.2,
+    "grundflaeche_m2": 4984,
+    "lat": 50.602145,
+    "lon": 10.709693,
+    "utm32_km": [
+     620.988,
+     5606.978
+    ],
+    "in_kernstadt": true,
+    "im_zentrum": false,
+    "osm_name": null,
+    "osm_building": "hospital",
+    "osm_levels": "5"
+   }
+  ]
+ }
+}
