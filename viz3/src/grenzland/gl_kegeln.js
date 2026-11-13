@@ -30,7 +30,7 @@ import { GLORTE } from './gl_orte.js';
 export const GLSPIEL = (() => {
   const S = { el: null, cb: null, key: '', bar: '' };
   const CSS = `
-#glspiel{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:8;width:min(440px,94vw);
+#glspiel{position:absolute;left:50%;bottom:calc(98px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:8;width:min(440px,94vw);
   background:rgba(14,18,22,.84);color:#eef1f2;border-radius:12px;padding:10px 12px;font:400 13px/1.35 var(--f-body,system-ui);pointer-events:auto;
   user-select:none;-webkit-user-select:none;touch-action:manipulation}
 #glspiel[hidden]{display:none!important}
@@ -50,6 +50,8 @@ export const GLSPIEL = (() => {
 #glspiel .gk button:active{filter:brightness(1.25)}
 @media (max-height:500px){#glspiel{bottom:calc(64px + env(safe-area-inset-bottom,0px));padding:7px 9px}#glspiel p{margin:2px 0 5px}#glspiel .gk button{min-height:36px}}
 body:has(#glwahl:not([hidden])) #glspiel{display:none!important}
+body:has(#glspiel:not([hidden])) #glsub{bottom:calc(250px + env(safe-area-inset-bottom,0px))}
+@media (max-height:500px){body:has(#glspiel:not([hidden])) #glsub{bottom:auto;top:54px}}
 `;
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   function build() {
@@ -385,7 +387,8 @@ export const GLKEGELN = (() => {
       balken = null;
     if (!mein) text = vs.name + ' wirft.';
     else if (S.ph === 'ziel') {
-      text = 'Kugel setzen ◀ ▶, Drall ↶ ↷ – die Kreidelinie zeigt den Weg. Am besten knapp neben den vordersten Kegel.';
+      text =
+        'Kugel setzen ◀ ▶, Drall ↶ ↷ – die Kreidelinie zeigt den Weg. Am besten knapp neben den vordersten Kegel. (Tasten: Pfeile, weiter mit Leertaste oder E)';
       K.push(
         { k: 'l', t: '◀' },
         { k: 'r', t: '▶' },
@@ -635,7 +638,9 @@ export const GLKEGELN = (() => {
     S.cam.y = c[1];
     S.cam.z = c[2];
     P.yaw = HDdeg();
-    P.pitch = -8.5 - 4 * k;
+    // looking down a little more while one aims: the lane's near end with the ball lies above the panel
+    S.pitch += ((roll ? -8.5 - 4 * k : -14) - S.pitch) * Math.min(1, dt * 4);
+    P.pitch = S.pitch;
     markDirty();
   }
   function ende(abbruch) {
@@ -644,6 +649,8 @@ export const GLKEGELN = (() => {
     S.ph = '';
     window.removeEventListener('keydown', onKey, true);
     GLSPIEL.hide();
+    if (S.folgtWar) GL.folgt = true;
+    S.folgtWar = false;
     if (S.meshes) {
       S.meshes.ball.visible = false;
       S.meshes.linie.visible = false;
@@ -776,6 +783,9 @@ export const GLKEGELN = (() => {
       ballX: 0,
       schnell: o.auto ? 2 : 1,
     });
+    S.folgtWar = GL.folgt;
+    GL.folgt = false; // the other of the two waits at the approach (the eye travels down the lane)
+    S.pitch = -14;
     S.cam.x = st[0];
     S.cam.y = st[1];
     S.cam.z = KB.z + 1.52;
@@ -785,23 +795,15 @@ export const GLKEGELN = (() => {
       y: st[1],
       eye: KB.z + 1.52,
       yaw: HDdeg(),
-      pitch: -8.5,
+      pitch: -14,
       fp: true,
       drive: true,
       keepKeys: true,
       follow: () => S.cam,
       primary: los,
-      primaryLabel: () =>
-        S.dran !== 'ich'
-          ? ''
-          : S.ph === 'ziel'
-            ? 'Richtung'
-            : S.ph === 'richtung'
-              ? 'Stopp'
-              : S.ph === 'kraft'
-                ? 'Wurf!'
-                : '',
-      leaveLabel: 'Aufhören',
+      // (the panel has the buttons; the game's own stay away, E and Q work all the same)
+      primaryLabel: () => '',
+      leaveLabel: '',
       onLeave: () => ende(true),
     });
     window.addEventListener('keydown', onKey, true);

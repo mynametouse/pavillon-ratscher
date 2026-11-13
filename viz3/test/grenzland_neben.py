@@ -8,8 +8,32 @@
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-ck = lib.Checks('grenzland_neben')
+_ck = lib.Checks('grenzland_neben')
 OUT = lib.out('grenzland_neben')
+FAILS = []
+def ck(what, cond, info=''):
+    if not cond: FAILS.append((what, str(info)))
+    return _ck(what, cond, info)
+ck.errors = lambda errs: (FAILS.append(('page errors', ' | '.join(e[:160] for e in errs if e.startswith('PAGEERR'))[:500])) if any(e.startswith('PAGEERR') for e in errs) else None, _ck.errors(errs))[1]
+ck.done = _ck.done
+def annotate():
+    """On GitHub Actions the log of a job is not public, its annotations are: what failed goes there (the runner reads the step's output –
+    this test's own output goes to a file, so the lines are written to the runner's pipe of the parent process). As in grenzland_polizei.py."""
+    if not os.environ.get('GITHUB_ACTIONS'): return
+    esc = lambda t: t.replace('%', '%25').replace('\r', ' ').replace('\n', '%0A')
+    try:
+        with open(f'/proc/{os.getppid()}/fd/1', 'w') as f:
+            if FAILS:
+                for i in range(0, len(FAILS), 3):
+                    f.write('::error title=grenzland_neben::' + esc('\n'.join(f'FAIL {w}: {inf[:700]}' for w, inf in FAILS[i:i + 3])) + '\n')
+            else:
+                f.write(f'::notice title=grenzland_neben::{len(_ck.ok)} checks ok\n')
+    except Exception as e:
+        print('annotate failed', e)
+import atexit; atexit.register(annotate)
+def _hook(t, v, tb, _old=sys.excepthook):
+    FAILS.append(('the test itself stopped', f'{t.__name__}: {str(v)[:300]}')); _old(t, v, tb)
+sys.excepthook = _hook
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs)
@@ -173,6 +197,8 @@ with lib.browser() as b:
     steps(0.6)
     ck('and today again', E("GLORTE.meshes.treff.visible && !GLORTE.meshes.alt.visible"))
     # ------------------------------------------------------------------ the shop on wheels ------------------------------------------------------------------
+    E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 17 * 60 + 20; 0")   # (the games above took their time: back to the late afternoon)
+    steps(1.2)
     wx, wy = Pp['wagen']
     WH = math.degrees(E("GLORTE.WG.hd"))
     look(wx, wy, WH - 90, 2)

@@ -248,13 +248,14 @@ export const GLANGELN = (() => {
     const rechts = N.KOEDER[S.koeder] + ' · noch ' + koederN(S.koeder);
     if (S.ph === 'wurf') text = 'Ausgeworfen …';
     else if (S.ph === 'warten') {
-      text = 'Die Pose liegt auf dem Wasser. Warten – und erst anschlagen, wenn sie abtaucht.';
+      text = 'Die Pose liegt auf dem Wasser. Warten – und erst anschlagen, wenn sie abtaucht (Leertaste oder E).';
       K.push({ k: 'los', t: 'Anhieb!', cls: 'haupt' }, { k: 'aus', t: 'Einholen', cls: 'aus' });
     } else if (S.ph === 'biss') {
       text = 'BISS! Anhieb!';
       K.push({ k: 'los', t: 'Anhieb!', cls: 'haupt' });
     } else if (S.ph === 'drill') {
-      text = 'Drill: Kurbel halten und die Spannung im grünen Feld halten. Zieht der Fisch, loslassen.';
+      text =
+        'Drill: Kurbel halten (Knopf, Leertaste oder E) und die Spannung im grünen Feld halten. Zieht der Fisch, loslassen.';
       balken = { v: S.D ? S.D.sp : 0.5, band: N.BAND };
       K.push({ k: 'kurbel', t: 'Kurbeln (halten)', cls: 'haupt' });
     } else if (S.ph === 'fang' || S.ph === 'leer') {
@@ -582,15 +583,9 @@ export const GLANGELN = (() => {
       pitch: -9,
       keepKeys: true,
       primary,
-      primaryLabel: () =>
-        S.ph === 'warten' || S.ph === 'biss'
-          ? 'Anhieb!'
-          : S.ph === 'drill'
-            ? 'Kurbeln: Leertaste halten'
-            : S.ph === 'fang' || S.ph === 'leer'
-              ? 'Auswerfen'
-              : '',
-      leaveLabel: 'Zusammenpacken',
+      // (the panel has the buttons; the game's own stay away, E and Q work all the same)
+      primaryLabel: () => '',
+      leaveLabel: '',
       onLeave: ende,
     });
     window.addEventListener('keydown', onKey, true);
