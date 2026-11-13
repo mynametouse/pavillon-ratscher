@@ -26,7 +26,7 @@ FREI = ("(() => { const T = fn => { try { fn(); } catch (e) { return String(e).s
 X0, Y0 = 20.0, -430.0      # the fields south of the village
 MX, MY, MH = 104.0, -316.0, 0.5   # the player's moped (as grenzland_auto)
 # who wears what (the suggestion for gl_data.js, see docs/features/grenzland-figuren.md): id, helmet kind
-WHO = [('jule', 'helmblau'), ('timo', 'helmoliv'), ('basti', 'helmjetschwarz'), ('falko', 'helmrot'), ('sarah', 'helmcreme'),
+WHO = [('jule', 'helmblau'), ('timo', 'helmweiss'), ('basti', 'helmjetschwarz'), ('falko', 'helmrot'), ('sarah', 'helmcreme'),
        ('polizei1', 'helmschwarz')]
 # the helmet's facts in the page: triangles, meshes, the rim's lowest point in front against the eyes, vertices before the eyes
 INFO = r"""(F) => {
@@ -104,7 +104,7 @@ with lib.browser() as b:
     for k, (id, kind) in enumerate(WHO):
         x, y = X0 + k * 3.0, Y0
         POS[id] = (x, y, 0.0)
-        do("const F = GT.%s; if (F) { GLFIG.place(F, %f, %f, 0); F.g.visible = true; }" % (id, x, y))
+        do("const F = GT.%s; if (F) { F.sees = false; GLFIG.place(F, %f, %f, 0); F.g.visible = true; }" % (id, x, y))
     # the mode's vehicles in the picture too (a moped and a car of grenzland/gl_modelle.js: their paint and glass are the helmets')
     do("window.GK = GLAUTO.spawn('kombi', { col: '#2b3a4a' }); GLAUTO.park(GK, %f, %f, 0.3); window.GS = GLAUTO.spawn('s51', { col: '#a23a2a' }); GLAUTO.park(GS, %f, %f, 1.2)" % (X0 + 4.5, Y0 + 6, X0 + 10.5, Y0 + 5))
     steps(1.0)
@@ -127,7 +127,7 @@ with lib.browser() as b:
     p1 = progs()
     if p1 > p0:
         note('new programs: %s' % J("GAME.R.info.programs.map(p => p.cacheKey).filter(k => !PK0.includes(k)).map(k => k.slice(0, 260))"))
-    ck('the helmets add no shader program (paint and visor: the mode\'s vehicles\' paint and glass; the rest the traffic\'s material)', p1 <= p0, '%d → %d' % (p0, p1))
+    ck('the helmets add no shader program (the paint: the mode\'s vehicles\' paint; the rest the traffic\'s material)', p1 <= p0, '%d → %d' % (p0, p1))
 
     # ---- the facts per head ----
     INF = {}
@@ -139,7 +139,8 @@ with lib.browser() as b:
             ck('%s wears a helmet' % id, False, 'none'); continue
         eye = r['eyeBone'] if r['eyeBone'] is not None else r['eyeFit']
         eyeK = r['eyeBoneK'] if r['eyeBoneK'] is not None else r['eyeK']
-        ck('%s: the rim\'s lowest point in front is over the eyes (≥ 1.5 cm)' % id, r['low'] > eye + 0.015 and r['lowK'] > eyeK + 0.015,
+        # (in the head's own frame ≥ 1.5 cm; in the world, where the idle clip tilts the head a little, over the eyes at all)
+        ck('%s: the rim\'s lowest point in front is over the eyes (≥ 1.5 cm in the head\'s frame)' % id, r['low'] > eye and r['lowK'] > eyeK + 0.015,
            'rim %.3f, eye %.3f (bone %s, fit %.3f)' % (r['low'], eye, r['eyeBone'], r['eyeFit']))
         ck('%s: nothing of the helmet before the eyes and brows' % id, r['inFace'] == 0, str(r['inFace']))
         ck('%s: ≤ 3000 triangles in ≤ 3 meshes' % id, r['tris'] <= 3000 and r['meshes'] <= 3, '%d tris, %d meshes' % (r['tris'], r['meshes']))
@@ -147,6 +148,9 @@ with lib.browser() as b:
     def stehen():
         for id, kind in WHO:
             x, y, hd = POS[id]
+            # (the figures turn to whoever comes near: held facing ahead for the pictures)
+            do("const F = GT.%s; F.sees = false; F.look = null; GLFIG.place(F, %f, %f, %f)" % (id, x, y, hd))
+            steps(0.3)
             r = INF.get(id) or {}
             hh = (r.get('top') or 1.7) - J("KERN.ground(%f, %f)" % (x, y))
             look_at(x, y, hd, 1.15, 0.0, hh - 0.1, 30, -2)

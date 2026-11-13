@@ -1062,7 +1062,7 @@ export const GLFIG = (() => {
     strick: ['strick', { top: L(196, 70, 150), band: L(236, 232, 224) }],
     strickblau: ['strick', { top: L(60, 96, 150), band: L(232, 228, 216) }],
     basecap: ['basecap', { top: L(30, 34, 40), band: L(30, 34, 40) }],
-    // helmets (grenzland/gl_helm.js): jet helmets of today in a few paints, with a snap-on peak or a raised clear visor; the special
+    // helmets (grenzland/gl_helm.js): jet helmets of today in a few paints, with a snap-on peak or a raised smoked visor; the special
     // forces' tactical helmet. helm: the cast's default (Jule, Timo), helmrot: the player's (grenzland/gl_fahndung.js)
     helm: ['jet', { top: L(226, 220, 200) }],
     helmcreme: ['jet', { top: L(226, 220, 200), visier: true }],
