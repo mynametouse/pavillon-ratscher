@@ -534,8 +534,8 @@ export const GLLICHT = (() => {
       G.bremse = Br.n ? Br.geo() : null;
       GEOS.set(key, G);
     }
+    // (the glare is drawn with the beams, turned to the camera; this mesh only marks the lamps as dressed)
     D.kegel = own(new THREE.Mesh(G.kegel, D.warm ? MAT.glanz89 : MAT.glanz), 'glanz');
-    T.head.parent.add(D.kegel);
     // the beams: from each lamp, along the lamp's own forward and a little down
     D.lampen = zentren(T.head.geometry);
     D.dir = new V3(0, -Math.sin(moped ? 0.075 : 0.06), -1).normalize();
@@ -616,10 +616,14 @@ export const GLLICHT = (() => {
   function strahlBau() {
     if (SB) return SB;
     mats();
-    SB = { w: schar(48, MAT.kegel), y: schar(48, MAT.kegel89) };
+    SB = { w: schar(48, MAT.kegel), y: schar(48, MAT.kegel89), gw: schar(48, MAT.glanz), gy: schar(48, MAT.glanz89) };
     SB.w.m.name = 'grenzland licht strahlen';
     SB.y.m.name = 'grenzland licht strahlen 1989';
-    scene.add(SB.w.m, SB.y.m);
+    SB.gw.m.name = 'grenzland licht glanz';
+    SB.gy.m.name = 'grenzland licht glanz 1989';
+    // (the glare over the beams)
+    SB.gw.m.renderOrder = SB.gy.m.renderOrder = 4;
+    scene.add(SB.w.m, SB.y.m, SB.gw.m, SB.gy.m);
     return SB;
   }
   const _sp = new V3(),
@@ -627,6 +631,7 @@ export const GLLICHT = (() => {
   function strahlen(D) {
     const h = D.T.head,
       B = D.warm ? SB.y : SB.w,
+      Gl = D.warm ? SB.gy : SB.gw,
       L = D.moped ? 8 : 11,
       w1 = D.moped ? 1.5 : 2.0,
       w0 = D.moped ? 0.09 : 0.12;
@@ -634,6 +639,11 @@ export const GLLICHT = (() => {
     _sd.copy(D.dir).transformDirection(h.matrixWorld);
     for (const p of D.lampen) {
       _sp.copy(p).applyMatrix4(h.matrixWorld).addScaledVector(_sd, 0.05);
+      // the glare on the glass, turned to the camera: large when the lamp looks at it, a small glow from the side
+      _m1.copy(cam.position).sub(_sp);
+      const dd = _m1.length(),
+        vor = dd > 0.01 ? Math.max(0, _m1.dot(_sd) / dd) : 0;
+      Gl.card(_sp.x, _sp.y, _sp.z, (D.moped ? 0.16 : 0.2) + (D.moped ? 0.34 : 0.5) * vor * vor, REG.glow);
       // (a camera inside a beam would see its card from within, filling the picture: then none)
       _m1.copy(cam.position).sub(_sp);
       const along = Math.max(0, Math.min(L, _m1.dot(_sd)));
@@ -735,6 +745,8 @@ export const GLLICHT = (() => {
     const B = strahlBau();
     B.w.begin();
     B.y.begin();
+    B.gw.begin();
+    B.gy.begin();
     // (from the driver's seat of one's own vehicle the beams would stand in the picture as a bright streak: there only the pool and the
     // real headlight of vehicles/vehicle.js)
     const sitz = VEH.cur && !CAM3.want ? VEH.cur : null;
@@ -773,6 +785,8 @@ export const GLLICHT = (() => {
     }
     B.w.end();
     B.y.end();
+    B.gw.end();
+    B.gy.end();
     // the shared materials follow the dusk (in the rain the beams show more); the beacons flash
     if (MAT.kegel) {
       const k = Math.max(0, lk),
@@ -1409,7 +1423,7 @@ export const GLLICHT = (() => {
       HELI.spot = HELI.glanz = HELI.strahl = null;
     }
     if (SB) {
-      for (const b of [SB.w, SB.y]) {
+      for (const b of [SB.w, SB.y, SB.gw, SB.gy]) {
         scene.remove(b.m);
         b.m.geometry.dispose();
       }
