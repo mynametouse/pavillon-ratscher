@@ -1,0 +1,18 @@
+{
+ "made": "2026-11-13T01:52:52Z",
+ "raw": "/home/runner/suhl-boden-raw",
+ "reports": [
+  {
+   "product": "dgm",
+   "wanted": 228,
+   "present": 228,
+   "fetched": 220,
+   "cached": 8,
+   "bytes": 319149973,
+   "missing": [],
+   "failed": {},
+   "stopped": null,
+   "calls": 221
+  }
+ ]
+}
