@@ -995,6 +995,167 @@
    "src": "GLHANDY.linien"
   },
   {
+   "who": "gl_sarah",
+   "id": "gl_sarah_ittjfj",
+   "text": "Falko, ich steh doch hier. Du kannst auch einfach mit mir reden.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_10sifhh",
+   "text": "Wollte nur testen, ob das Ding geht.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_10sifhh",
+   "text": "Wollte nur testen, ob das Ding geht.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1f5v61x",
+   "text": "Geht. Leg auf.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_wu0v4v",
+   "text": "Ja? Ich bin im Dorf.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1ibdfw0",
+   "text": "Jetzt weißt du es. Bis gleich.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_130j2cl",
+   "text": "Ja? Ich bin noch in Schleusingen.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1r3uoge",
+   "text": "Ja? Ich bin an der Talsperre.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_9x14c1",
+   "text": "Ja? Ich bin im Wald an der Klinge. Hier ist kaum Netz.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1605j3u",
+   "text": "Ja? Ich bin unterwegs.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1c6ljqd",
+   "text": "Sarah, ich steh doch hier. Du kannst auch einfach mit mir reden.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1f5v61x",
+   "text": "Geht. Leg auf.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1qovh4j",
+   "text": "Na? Ich bin im Dorf.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1ibdfw0",
+   "text": "Jetzt weißt du es. Bis gleich.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_g6rgwh",
+   "text": "Na? Ich bin noch in Schleusingen.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1wvzj6a",
+   "text": "Na? Ich bin an der Talsperre.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_c02z7x",
+   "text": "Na? Ich bin im Wald an der Klinge. Hier ist kaum Netz.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_10zadlm",
+   "text": "Na? Bin unterwegs.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_mopbjd",
+   "text": "Ich seh dich doch. Komm einfach rüber.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_mopbjd",
+   "text": "Ich seh dich doch. Komm einfach rüber.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_mopbjd",
+   "text": "Ich seh dich doch. Komm einfach rüber.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_mopbjd",
+   "text": "Ich seh dich doch. Komm einfach rüber.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_19n24v8",
+   "text": "Ich seh dich doch. Komm einfach her.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
    "who": "gl_funk",
    "id": "gl_funk_1obfdg7",
    "text": "Zentrale an alle Streifen.",

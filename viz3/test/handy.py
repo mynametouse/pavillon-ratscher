@@ -4,11 +4,11 @@
 # contact (calling → talking → ended), the camera's viewfinder and a real photo in Fotos, a locked app unlocked, the hold (the right hand at
 # chest height with the phone in it, at the ear during a call, down again after), the peek while it is away, a phone's screen upright and
 # sideways, the presentation layout, an alert; after „Beenden“ everything is gone. Pictures in out/handy/.
-#   python3 viz3/test/handy.py 9017 [sections: app,anruf,kamera,halten,format]
+#   python3 viz3/test/handy.py 9017 [sections: app,anruf,wo,kamera,halten,format]
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib, grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-SECT = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'app,anruf,kamera,halten,format').split(',') if s]
+SECT = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'app,anruf,wo,kamera,halten,format').split(',') if s]
 ck = grenzland_ci.wrap(lib.Checks('handy'), 'handy')
 OUT = lib.out('handy')
 with lib.browser() as b:
@@ -181,6 +181,48 @@ with lib.browser() as b:
         g = E("document.querySelectorAll('#glhandy .hy-gitter button').length")
         ck('Esc: back to the phone; Fotos has the picture', not h['sucher'] and h['open'] and g == n0 + 1, str(h) + ' ' + str(g))
         pic('13_fotos')
+    def sect_wo():
+        # ---------------- a call goes by where the one called is (Falko 13.11. 20:33: „sie sagt, sie wäre im Garten, dabei steht sie vor
+        # mir in Schleusingen“): the partner in sight says so, at the garden she is in the garden, elsewhere the place's name ----------------
+        has = until("!!(GRENZLAND.partnerOf && GRENZLAND.partnerOf())", 30)
+        pid = E("GLSTATE.wer === 'f' ? 'falko' : 'sarah'")
+        E("GLSTATE.folgt = false; 0")
+        def at(js):
+            E("(F => (GLFIG.place(F, " + js + ", 0), 0))(GRENZLAND.partnerOf())"); steps(0.1)
+        erste = lambda: E("(GLHANDY.rufZeilen('" + pid + "') || [[0, '']])[0][1]")
+        at("GAME.P.x + 2, GAME.P.y + 1"); nah = erste()
+        # at the garden while one is far away (the player moved for the question only – the free play may start in the garden)
+        at("3, 4"); garten = E("(() => { const x = GAME.P.x, y = GAME.P.y; GAME.P.x = 700; GAME.P.y = -650; const r = (GLHANDY.rufZeilen('" + pid + "') || [[0, '']])[0][1]; GAME.P.x = x; GAME.P.y = y; return r })()")
+        far = J("[GAME.P.x + 160, GAME.P.y + 40]")
+        at(f"{far[0]}, {far[1]}"); weit = erste(); ort = E(f"String(KERN.place({far[0]}, {far[1]}, 0) || '')")
+        ck('a call to the partner in sight: „ich steh doch hier“; at the garden: in the garden; elsewhere not the garden',
+           has and 'steh doch hier' in nah and ('Garten' in garten or 'Werkstatt' in garten) and 'Garten' not in weit and 'Werkstatt' not in weit
+           and (('Schleusingen' in weit) == ('Schleusingen' in ort)), f'{pid}: nah „{nah}“ · garten „{garten}“ · weit „{weit}“ (Ort {ort})')
+        # the same through the phone: call the partner standing beside one
+        at("GAME.P.x + 2, GAME.P.y + 1")
+        if not E("HANDY.S.open"): E("GLHANDY.open(); 0"); steps(0.4); time.sleep(0.3)
+        if E("HANDY.S.sperre >= 0"): pg.keyboard.press('Enter'); steps(0.4); time.sleep(0.3)
+        E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.home(); 0"); steps(0.2); time.sleep(0.2)
+        pg.click('#glhandy .hy-ic[data-app="telefon"]'); steps(0.25); time.sleep(0.2)
+        pg.click('#glhandy [data-hy="seg:alle"]'); steps(0.2)
+        pg.click(f'#glhandy [data-hy="k:{pid}"]'); steps(0.25); time.sleep(0.2)
+        pg.click(f'#glhandy [data-hy="ruf:{pid}"]'); steps(0.2)
+        ok = until("HANDY.S.anruf && HANDY.S.anruf.st === 'aktiv' && /steh doch hier/.test(document.querySelector('#glhandy .hy-anr').textContent)", 10)
+        cap = E("(document.querySelector('#glhandy .hy-anr') || {}).textContent || ''")
+        pic('11b_anruf_nah')
+        ck('calling the partner who stands beside one: the answer on the call says so', ok, cap[:160])
+        E("HANDY.S.anruf && HANDY.auflegen(true); GLSTATE.folgt = true; 0"); steps(0.3)
+        # the phone's lines are all in the list for the recordings
+        lin = J("GLHANDY.linien().map(q => q[0] + ':' + q[1])")
+        ck('every call line is in GLHANDY.linien() (recorded)', any('steh doch hier' in q for q in lin) and any('Schleusingen' in q for q in lin) and any('komm einfach' in q.lower() for q in lin), str(len(lin)))
+
+    if 'wo' in SECT:
+        try: sect_wo()
+        except Exception as e:
+            ck('section wo ran through', False, f'{type(e).__name__}: {str(e)[:1400]}')
+            try: E("HANDY.S.anruf && HANDY.auflegen(true); GLSTATE.folgt = true; 0")
+            except Exception: pass
+
     if 'kamera' in SECT:
         try: sect_kamera()
         except Exception as e:
