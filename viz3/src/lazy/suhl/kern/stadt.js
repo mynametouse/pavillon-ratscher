@@ -348,7 +348,8 @@ export function stadt(ctx, G, IX, worker, opt) {
   }
   function nearTrees(o, off) {
     const [ox, oy] = o;
-    if (off ? !NEAR.n && !NEAR.hidden.size : Math.hypot(ox - NEAR.at[0], oy - NEAR.at[1]) < 3 && NEAR.key === treeRev) return;
+    if (off ? !NEAR.n && !NEAR.hidden.size : Math.hypot(ox - NEAR.at[0], oy - NEAR.at[1]) < 3 && NEAR.key === treeRev)
+      return;
     NEAR.at = [ox, oy];
     NEAR.key = treeRev;
     const pick = [];
