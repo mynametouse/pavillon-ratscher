@@ -47,13 +47,15 @@ Tests: `viz3/test/unit/grenzland_neben.test.mjs` (5 Tests, ohne Browser), `viz3/
   neben dem vordersten Kegel räumt am meisten, die tote Mitte nimmt nur die Mittelreihe, „Pudel“ in der Rinne); Töne Wurf, Rollen, Kegel,
   Rinne; „Alle Neune!“; die beste Partie steht in Kreide auf der Tafel (`GL.stats.kegel`). Steht **Timo** in der Nähe (`GLFIG.near`), kann
   man gegen ihn um 10 € spielen (abwechselnd, sein Arm: `GLNLOGIK.gegner`). Die Kegel hängen am Seil (kein Kegeljunge – im Spiel
-  kommt niemand unter 18 vor) und werden nach jedem Wurf hochgezogen und neu gesetzt.
+  kommt niemand unter 18 vor) und werden nach jedem Wurf hochgezogen und neu gesetzt. Am Aushang („Aushang lesen“) stehen Bahnrekord,
+  die Zeiten des Verkaufswagens und der Weg zur Angelstelle. Ein Bahnrekord ab 30 Holz kommt in den Regional-Feed.
 - **Angeln** („Angeln“ am Stegende): Köder wählen (Mais, Tauwurm, Blinker – je Wurf einer), man sitzt auf dem Hocker (Ich-Sicht und
   Schulterblick: Rute, Schnur und Pose sind Dinge in der Welt), die Pose wippt; Wartezeit und Fisch nach Monat, Stunde und Köder; manchmal
   zupft es nur. Biss: Pose taucht ab → „Anhieb!“ binnen 1,5 s (zu früh: Fisch gewarnt, zu spät: Köder weg). Drill: Kurbel halten (Knopf,
   Leertaste, E) und die Spannung im grünen Feld halten – zieht der Fisch, loslassen, sonst reißt die Schnur; zu lange schlaff, und er
   schlitzt aus. Der Fang hängt kurz an der Schnur, mit Gewicht; Fische kommen in den Rucksack (`GL.inv`: `karpfen`, `karpfen_gross` ab
-  2 kg, `silberkarpfen`, `schleie`, `rotauge`, `barsch`, `hecht`, `zander`), `GL.stats.fische`, `GL.stats.best`.
+  2 kg, `silberkarpfen`, `schleie`, `rotauge`, `barsch`, `hecht`, `zander`), `GL.stats.fische`, `GL.stats.best`. Die Köderwahl sagt, was
+  auf den Köder „jetzt am ehesten“ geht; ein Fang ab 5 kg kommt in den Regional-Feed.
   **Erlaubnis**: wie im echten Leben braucht man eine (in Thüringen Fischereischein plus Erlaubnisschein des Gewässers) – im Spiel die
   Gastkarte vom Verkaufswagen (8 €). Ohne Karte ist jeder Wurf eine Tat, wenn es jemand sieht (`GLFAHNDUNG.tat`).
 - **Nebenmission „Karpfen für Suhl“** (`GLNEBEN`): sobald die Clique bekannt ist (`grenzland:mission` `{ id: 'clique', st: 'erledigt' }`),
@@ -110,6 +112,14 @@ fisch: { art: 'karpfen', kg: 3.4 }, auto: true })`, `GLWAGEN.kaufen({ mais: 1 })
   die drei Ersatz-Zutaten „so wird es erzählt“, gestorben 2008, Tafel in der Gothaer Straße seit 2012). Die Japanreise 1979 erwähnt sie
   nicht (Quellen widersprechen sich, siehe unten).
 - **Schilder ohne Textur**: Punktschrift 5 × 7 aus kleinen Vierecken (`GLORTE.schrift`) – keine neue Textur, kein neues Programm.
+- **Das Feld der Nebenspiele** (`GLSPIEL`, in `gl_kegeln.js`): Titel, Hilfezeile, Balken mit grünem Feld und Marke, Knöpfe (gedrückt und
+  losgelassen – fürs Kurbeln). Solange es offen ist, zeigt das Spiel seine eigenen Aktionsknöpfe nicht (E und Q wirken trotzdem), und die
+  Untertitel des Modus rücken darüber (eine CSS-Regel auf `#glsub` aus `gl_kegeln.js`).
+- **Beim Kegeln wartet der oder die andere am Anlauf** (`GL.folgt` wird für die Dauer des Spiels ausgeschaltet und danach wieder
+  eingeschaltet): das Auge fährt mit der Kugel die Bahn hinunter, und wer „mitkommt“, liefe sonst hinterher.
+- **Der Zufall mit Startwert** (`GLNLOGIK.rng`) verrührt den Startwert zuerst: benachbarte Startwerte (Wurf nach Wurf) gaben sonst
+  ähnliche erste Zahlen – eine ganze Sitzung lang denselben Fisch.
+- **Yuki steht neben dem Wartehäuschen**, einen Schritt hinter der Bordsteinkante (vor dem Häuschen halten die Busse).
 - **Leistung**: alle Orte zusammen ~25 000 Dreiecke in 9 Meshes, in < 0,1 s gebaut, Materialien `VPROPS.mat.paint/metal` (vorhandene
   Programme); Lampen, Glut, Kreidelinie und Angelschnur sind Klone des Lampenmaterials des Verkehrs. Pro Bild wird nichts angelegt.
 
@@ -148,6 +158,8 @@ fisch: { art: 'karpfen', kg: 3.4 }, auto: true })`, `GLWAGEN.kaufen({ mais: 1 })
 
 - **Radar**: `GLORTE` meldet seine Orte über `GLKARTE.src` (beim Laden, falls `window.GLKARTE` schon da ist, sonst beim ersten
   `build()`): Scheune immer, heute dazu Kegelbahn, Angelstelle und – solange offen – Verkaufswagen. Der Tagebuch-Eintrag trägt `ort`.
+- **Ein Haus steht im Stausee**, etwa 60 m vor der Staumauer (Gebäudedaten der Welt, nicht von mir; auf den Bildern `15_`/`16_steg…`
+  zu sehen) – vermutlich ein Betriebsgebäude aus OSM, dessen Fuß auf der Wasserfläche liegt. Für den Kern-Chat.
 - **`#glwahl` auf dem Handy**: das Feld der Auswahl hat keine größte Höhe; bei mehr als ~6 Knöpfen im Querformat läuft es oben aus dem
   Bild. Der Laden zeigt deshalb Regale mit höchstens 5 Einträgen. Wunsch: `max-height` + `overflow:auto` in `gl_hud.js`.
 - **Tat `angeln`** (für `grenzland-polizei`): `CRIMES.angeln = { h: 0.4, name: 'Fischwilderei' }` und `GLDATA.TATEN.angeln =

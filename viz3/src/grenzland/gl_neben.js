@@ -231,6 +231,11 @@ export const GLNEBEN = (() => {
       S.off = KERN.on('grenzland:mission', d => {
         if (GL.on && d && d.id === 'clique' && d.st === 'erledigt') start();
       });
+      // a saved game in which she has her carp: the note is in the phone again
+      if (st() && st().st === 'erledigt') {
+        GLHANDY.note(GLDATA.SUSHI.titel, GLDATA.SUSHI.text.concat([T.hinweis]), GLDATA.SUSHI.quellen);
+        S.note = true;
+      }
       // a saved game in which the clique is met already
       if (GL.m.clique && GL.m.clique.st === 'erledigt' && !st()) setTimeout(() => GL.on && start(), 4000);
       KERN.act({

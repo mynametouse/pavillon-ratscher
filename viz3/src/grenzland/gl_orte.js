@@ -386,6 +386,42 @@ export const GLORTE = (() => {
         F.beam([r, hd - 0.08, zAt(hd) - 0.85], [r + sgn * 0.75, hd - 0.08, zAt(hd) - 0.1], 0.09, 0.09, bk);
       }
     }
+    // the floor: trodden earth over the field (it follows the ground), wisps of straw on it
+    {
+      const erde = alt ? L(112, 94, 72) : L(126, 104, 78),
+        nr = 10,
+        nf = 6;
+      for (let i = 0; i < nr; i++)
+        for (let j = 0; j < nf; j++) {
+          const r0 = -hw + (2 * hw * i) / nr,
+            r1 = -hw + (2 * hw * (i + 1)) / nr,
+            f0 = -hd + ((2 * hd + 0.5) * j) / nf,
+            f1 = -hd + ((2 * hd + 0.5) * (j + 1)) / nf,
+            z = (r, f) => F.g(r, f) + 0.04;
+          F.quad(
+            [r0, f0, z(r0, f0)],
+            [r1, f0, z(r1, f0)],
+            [r1, f1, z(r1, f1)],
+            [r0, f1, z(r0, f1)],
+            shade(erde, 0.9 + R() * 0.2)
+          );
+        }
+      for (let i = 0; i < 70; i++) {
+        const r = -hw + 0.3 + R() * (2 * hw - 0.6),
+          f = -hd + 0.3 + R() * (2 * hd - 0.2);
+        F.box(
+          r,
+          f,
+          F.g(r, f) + 0.042,
+          0.16 + R() * 0.2,
+          0.014,
+          0.008,
+          shade(C.stroh, 0.8 + R() * 0.3),
+          false,
+          R() * 3.1
+        );
+      }
+    }
     // plates along the front and the back, rails for the boards, rafters
     F.box(0, hd - 0.08, zAt(hd) - 0.18, 2 * hw + 0.3, 0.14, 0.18, bk, true);
     F.box(0, -hd + 0.08, zAt(-hd) - 0.16, 2 * hw + 0.3, 0.14, 0.16, bk, true);
@@ -580,8 +616,8 @@ export const GLORTE = (() => {
         [-4.0, 0.6],
       ])
         F.box(r, f, g, 0.06, 0.06, 0.12, C.balken, false);
-      F.box(-3.2, -0.25, g + 0.02, 1.2, 1.9, 0.012, L(120, 44, 40), false);
-      F.box(-3.2, -0.25, g + 0.022, 0.9, 1.5, 0.012, L(150, 120, 80), false);
+      F.box(-3.2, -0.25, g + 0.045, 1.2, 1.9, 0.012, L(120, 44, 40), false);
+      F.box(-3.2, -0.25, g + 0.047, 0.9, 1.5, 0.012, L(150, 120, 80), false);
       kasten(F, -3.15, -0.3, g + 0.03, C.gelb, false, 0.2);
       F.box(-3.15, -0.3, g + 0.31, 0.5, 0.4, 0.02, L(120, 96, 70), false);
       F.cyl(-3.05, -0.25, g + 0.33, g + 0.56, 0.03, 0.03, 6, C.flasche, true);
