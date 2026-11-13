@@ -339,6 +339,7 @@ export const GLLICHT = (() => {
       k: 0,
       begin() {
         Q.k = 0;
+        cam.updateMatrixWorld();
         rx.setFromMatrixColumn(cam.matrixWorld, 0);
         ry.setFromMatrixColumn(cam.matrixWorld, 1);
       },
@@ -819,6 +820,28 @@ export const GLLICHT = (() => {
     S.aktiv = true;
     markDirty();
   }
+  // the red ball of the mission (grenzland/gl_kapitel1.js 'leuchtkugel', the step 'flucht' of „Nachts an der Klinge“): while our flare burns
+  // it is hidden (one flare, not two); a ball that goes up without the event starts ours where it is. Looked for twice a second, only
+  // while that mission runs at night.
+  const KUGEL = { o: null, t: 0, seen: new WeakSet() };
+  function kugel(dt) {
+    if ((KUGEL.t -= dt) > 0) return;
+    KUGEL.t = 0.5;
+    if (GL.cur !== 'klinge' || S.lampK < 0.3) {
+      KUGEL.o = null;
+      return;
+    }
+    const o = scene.getObjectByName('grenzland leuchtkugel');
+    KUGEL.o = o || null;
+    if (!o || KUGEL.seen.has(o)) return;
+    KUGEL.seen.add(o);
+    if (!S.fl) {
+      const x = o.position.x,
+        y = -o.position.z,
+        g = KERN.ground(x, y);
+      flare(x, y, Number.isFinite(g) ? g + 1.5 : o.position.y - 2);
+    }
+  }
   // how bright it burns at its time t (0 … 1, a pop when the parachute opens), and a flicker
   function flareK(t) {
     if (t < FL.steig) return 0.25 + 0.2 * (t / FL.steig);
@@ -1164,8 +1187,10 @@ export const GLLICHT = (() => {
       blauLicht(show);
       heli(show);
       fackeln(dt, show);
+      kugel(dt);
       if (S.fl && show) flareTick(dt);
       else if (FB && !show) flareLeer();
+      if (KUGEL.o && KUGEL.o.visible === !!(S.fl && show)) KUGEL.o.visible = !(S.fl && show);
       licht(show);
       if ((rT -= dt) <= 0) {
         rT = 0.5;

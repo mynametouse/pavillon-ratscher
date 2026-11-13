@@ -6,12 +6,11 @@
 # road ahead, the beacons flash left and right in turn, the figure at 15 m is brighter, torches and rain come, the picture turns red under
 # the flare, no new shader program (at most two), „Beenden“ gives every value back, no page errors.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9014 --serve grenzland_licht
-import sys, os, json, time, math, io, base64
+import sys, os, json, time, math, base64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib, grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
 ck = grenzland_ci.wrap(lib.Checks('grenzland_licht'), 'grenzland_licht')
 OUT = lib.out('grenzland_licht')
-from PIL import Image, ImageDraw
 # free play (as the lead gives it), at 22:00
 FREI = ("(() => { const T = fn => { try { fn(); } catch (e) { return String(e).slice(0, 90); } return ''; }; return ["
         "T(() => GLMISSION.stop()), "
@@ -36,13 +35,16 @@ with lib.browser() as b:
             steps(dt)
             if real: time.sleep(real)
         return bool(E(cond))
-    def grab(name):
-        """one full frame as a picture (PIL) and as a file"""
-        data = E("(() => { GAME.shot(); return document.querySelector('#stage canvas').toDataURL('image/jpeg', 0.9); })()")
-        raw = base64.b64decode(data.split(',')[1])
-        open(os.path.join(OUT, name + '.jpg'), 'wb').write(raw)
+    # (no PIL on the runners of GitHub Actions: the pictures are kept and measured in the page, on 2D canvases)
+    E("window.__img = {}; 0")
+    def save(name, data):
+        open(os.path.join(OUT, name + '.jpg'), 'wb').write(base64.b64decode(data.split(',')[1]))
         print('shot', name, flush=True)
-        return Image.open(io.BytesIO(raw)).convert('RGB')
+    def grab(name):
+        """one full frame: as a file, and kept in the page (window.__img[name]) to be measured"""
+        save(name, E("(n => { GAME.shot(); const s = document.querySelector('#stage canvas'), c = document.createElement('canvas'); c.width = s.width; c.height = s.height; "
+                     "c.getContext('2d').drawImage(s, 0, 0); __img[n] = c; return c.toDataURL('image/jpeg', 0.9); })(" + json.dumps(name) + ")"))
+        return name
     NEU = set()
     def paar(name, settle=0.3, aus="GLLICHT.an(false)", an="GLLICHT.an(true)"):
         """the same view without and with the lights of this module, and both side by side; the shader programs that appear only with
@@ -53,25 +55,22 @@ with lib.browser() as b:
         do(an); steps(settle, 0.05)
         c = grab(name + '_nachher')
         NEU.update(pnames() - k0)
-        w, h = a.size
-        v = Image.new('RGB', (w * 2 + 8, h + 26), (24, 24, 24))
-        v.paste(a, (0, 26)); v.paste(c, (w + 8, 26))
-        d = ImageDraw.Draw(v)
-        d.text((10, 7), 'vorher (ohne grenzland/gl_licht.js)', fill=(230, 230, 230))
-        d.text((w + 18, 7), 'nachher', fill=(255, 210, 120))
-        v.save(os.path.join(OUT, name + '_vergleich.jpg'), quality=86)
+        save(name + '_vergleich', E("((a, b) => { const A = __img[a], B = __img[b], w = A.width, h = A.height, c = document.createElement('canvas'); c.width = w * 2 + 8; c.height = h + 26; "
+                                    "const x = c.getContext('2d'); x.fillStyle = '#181818'; x.fillRect(0, 0, c.width, c.height); x.drawImage(A, 0, 26); x.drawImage(B, w + 8, 26); "
+                                    "x.font = '14px sans-serif'; x.fillStyle = '#e6e6e6'; x.fillText('vorher (ohne grenzland/gl_licht.js)', 10, 18); x.fillStyle = '#ffd278'; x.fillText('nachher', w + 18, 18); "
+                                    "return c.toDataURL('image/jpeg', 0.86); })(" + json.dumps(a) + ", " + json.dumps(c) + ")"))
         return a, c
-    def lum(img, box):
-        x0, y0, x1, y1 = [int(round(q)) for q in box]
-        x0, y0 = max(0, x0), max(0, y0); x1, y1 = min(img.size[0], x1), min(img.size[1], y1)
-        if x1 <= x0 or y1 <= y0: return -1
-        px = list(img.crop((x0, y0, x1, y1)).getdata())
-        return sum(0.2126 * r + 0.7152 * g + 0.0722 * bb for r, g, bb in px) / len(px)
     def rgb(img, box):
-        x0, y0, x1, y1 = [int(q) for q in box]
-        px = list(img.crop((x0, y0, x1, y1)).getdata())
-        n = len(px)
-        return [sum(p[i] for p in px) / n for i in range(3)]
+        """mean colour of a box of a kept picture"""
+        return J("((n, b) => { const c = __img[n], x0 = Math.max(0, Math.round(b[0])), y0 = Math.max(0, Math.round(b[1])), x1 = Math.min(c.width, Math.round(b[2])), y1 = Math.min(c.height, Math.round(b[3])); "
+                 "if (x1 <= x0 || y1 <= y0) return [-1, -1, -1]; const d = c.getContext('2d').getImageData(x0, y0, x1 - x0, y1 - y0).data; let r = 0, g = 0, bb = 0; "
+                 "for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; bb += d[i + 2]; } const n = d.length / 4; return [r / n, g / n, bb / n]; })("
+                 + json.dumps(img) + ", " + json.dumps(list(box)) + ")")
+    def lum(img, box):
+        r, g, bb = rgb(img, box)
+        return -1 if r < 0 else 0.2126 * r + 0.7152 * g + 0.0722 * bb
+    def size(img):
+        return J("(c => [c.width, c.height])(__img[" + json.dumps(img) + "])")
     # a point of the world (x, y east/north, z up) on the picture: [px, py] or null
     SCR = ("((x, y, z) => { const v = new THREE.Vector3(x, z, -y).project(GAME.cam || window.cam); const c = document.querySelector('#stage canvas'); "
            "if (v.z > 1) return null; return [(v.x + 1) / 2 * c.width, (1 - v.y) / 2 * c.height]; })")
@@ -213,7 +212,7 @@ with lib.browser() as b:
         img = grab('8_flare_brennt')
         do(f"GAME.view({p[0]}, {p[1]}, KERN.ground({p[0]}, {p[1]}) + 1.62, {yawTo(p, KL['van'])}, -2, 62)")
         img2 = grab('9_flare_wald')
-        w, h = img.size
+        w, h = size(img)
         up = rgb(img, (0, 0, w, h // 2))
         ck('the flare burns high over the van (a light of its own, smoke, sparks)', st['flare'] and st['flare']['z'] > 40 and st['flare']['k'] > 0.6 and st['flare']['puffs'] > 10, str(st['flare']))
         ck('under the flare the picture turns red (upper half: red clearly above green)', up[0] > up[1] * 1.35 and up[0] > 30, str([round(q, 1) for q in up]))
