@@ -8,6 +8,9 @@
 // The raster (world/roads.js for the 2.4 km square, strassen/strassen_karte.js for a window around the vehicle beyond it) keeps per pixel
 // R = distance to the nearest road edge (+ inside), G = style × 60 + kind × 6 + surface, B = the signed lateral offset from the centre line,
 // A = the metres along the way modulo DASH. No scene, no DOM: unit tests in viz3/test/unit/strassen.test.mjs.
+// Round 2 (13.11.2026, wishes of the Suhl chat): kind 9 in the map is a level surface – a pedestrian zone, a square, a car park: its
+// paving or asphalt flush with what lies beside it, no kerb, no gutter, no pavement, no line (a way flagged so, or an area: rasterArea);
+// a way may go without its centre line (roundabouts, one-way streets of one lane) and without the pavement on one side.
 export const STRSTIL = (() => {
   const S = {
     EMIN: -4, // edge distance −4 … +8 m
@@ -19,6 +22,8 @@ export const STRSTIL = (() => {
     SOLID: 1,
     TOWN: 2,
     VILLAGE: 3,
+    LEVEL: 9, // the kind of a level surface in the map (kinds 0–8 are those of the road data)
+    NC: 0.55, // a way without a centre line: its lateral offset is written no nearer than this to the axis (the shader paints within 0.5 m)
   };
   S.code = (kind, surf, style = 0) => style * 60 + kind * 6 + surf;
   S.decode = c => {
@@ -151,7 +156,10 @@ export const STRSTIL = (() => {
     return m;
   };
   // ---- the raster: one way into the map D (RGBA bytes, W × H pixels of RES metres from (X0, Y0)); the pixel keeps the road whose
-  // edge is furthest (+ inside). way: { p, stride, n, hw, kind, surf, st (styles per segment, optional) } ----
+  // edge is furthest (+ inside). way: { p, stride, n, hw, kind, surf, st (styles per segment, optional), s0 (metres along at its first
+  // point: a way cut into pieces keeps the rhythm of its dashes), nc (no centre line), noL / noR (in a town: no pavement on the left /
+  // right in the direction of its points – that half is rastered like a through road in a village: kerb and gutter, nothing behind
+  // them; a street (kind 3) is written as kind 2 there, and to keep it free of a centre line its lateral offset stays off the axis) } ----
   const BAND = 4;
   S.clear = D => {
     D.fill(0);
@@ -161,9 +169,11 @@ export const STRSTIL = (() => {
     const enc = v => (v < 0 ? 0 : v > 255 ? 255 : Math.round(v)),
       eK = 255 / S.ERNG,
       lK = 255 / (2 * S.LRNG),
-      { p, stride, n, hw, kind, surf, st } = way,
-      R2 = hw + BAND;
-    let s0 = 0;
+      { p, stride, n, hw, kind, surf, st, noL, noR } = way,
+      R2 = hw + BAND,
+      nc = way.nc || (kind === 3 && (noL || noR)),
+      bare = S.code(kind === 3 ? 2 : kind, surf, S.VILLAGE);
+    let s0 = way.s0 || 0;
     for (let k = 0; k < n - 1; k++) {
       const ax = p[k * stride],
         ay = p[k * stride + 1],
@@ -181,7 +191,10 @@ export const STRSTIL = (() => {
       }
       const ux = (bx - ax) / L,
         uy = (by - ay) / L,
-        code = S.code(kind, surf, st ? st[k] : 0);
+        sk = st ? st[k] : 0,
+        code = S.code(kind, surf, sk),
+        codeL = noL && sk === S.TOWN ? bare : code,
+        codeR = noR && sk === S.TOWN ? bare : code;
       for (let j = j0; j <= j1; j++) {
         const py = Y0 + (j + 0.5) * RES - ay;
         for (let i = i0; i <= i1; i++) {
@@ -194,14 +207,115 @@ export const STRSTIL = (() => {
           const r8 = enc((e - S.EMIN) * eK),
             q = (j * W + i) * 4;
           if (r8 <= D[q]) continue;
-          const lat = ux * py - uy * px;
+          const lat = ux * py - uy * px, // + to the left of the direction of the points
+            lw = nc ? Math.max(Math.abs(lat), S.NC) : lat;
           D[q] = r8;
-          D[q + 1] = code;
-          D[q + 2] = enc(((lat < -S.LRNG ? -S.LRNG : lat > S.LRNG ? S.LRNG : lat) + S.LRNG) * lK);
+          D[q + 1] = lat > 0 ? codeL : codeR;
+          D[q + 2] = enc(((lw < -S.LRNG ? -S.LRNG : lw > S.LRNG ? S.LRNG : lw) + S.LRNG) * lK);
           D[q + 3] = enc((((s0 + tc) / S.DASH) % 1) * 255) & 255;
         }
       }
       s0 += L;
+    }
+  };
+  // ---- an area into the map: a square, a pedestrian precinct, a car park – { r (its ring: x, y[, z] …), stride, holes (rings),
+  // surf }. Inside it the pixel becomes the level kind with the area's surface and the distance to its edge, whatever road crosses it
+  // (the area is flush: no kerb, no line on it); beside it the usual rule (the nearest edge wins). Raster the areas after the ways ----
+  // (the distance of a pixel to the ring is only needed near the ring: every edge writes into the pixels within reach of it, the
+  // inside comes row by row from the crossings – a square of 7,000 m² with 60 corners takes under a millisecond instead of twelve)
+  let scratch = new Float32Array(0),
+    cross = [];
+  S.rasterArea = (D, W, H, X0, Y0, RES, area) => {
+    const enc = v => (v < 0 ? 0 : v > 255 ? 255 : Math.round(v)),
+      eK = 255 / S.ERNG,
+      st = area.stride || 2,
+      rings = [area.r].concat(area.holes || []),
+      code = S.code(S.LEVEL, area.surf, 0),
+      lev0 = S.LEVEL * 6,
+      IN = S.ERNG + S.EMIN, // +8 m: further inside the byte is full
+      REACH = IN + RES;
+    let x0 = 1e9,
+      y0 = 1e9,
+      x1 = -1e9,
+      y1 = -1e9;
+    for (let i = 0; i < area.r.length; i += st) {
+      x0 = Math.min(x0, area.r[i]);
+      y0 = Math.min(y0, area.r[i + 1]);
+      x1 = Math.max(x1, area.r[i]);
+      y1 = Math.max(y1, area.r[i + 1]);
+    }
+    const i0 = Math.max(0, Math.floor((x0 - BAND - X0) / RES)),
+      i1 = Math.min(W - 1, Math.ceil((x1 + BAND - X0) / RES)),
+      j0 = Math.max(0, Math.floor((y0 - BAND - Y0) / RES)),
+      j1 = Math.min(H - 1, Math.ceil((y1 + BAND - Y0) / RES));
+    if (i0 > i1 || j0 > j1) return;
+    const w = i1 - i0 + 1,
+      h = j1 - j0 + 1;
+    if (scratch.length < w * h) scratch = new Float32Array(w * h);
+    const d2 = scratch;
+    d2.fill(1e9, 0, w * h);
+    // the squared distance to the nearest edge, where an edge is within reach
+    for (const r of rings) {
+      const m = r.length;
+      for (let a = 0, b = m - st; a < m; b = a, a += st) {
+        const ax = r[a],
+          ay = r[a + 1],
+          ex = r[b] - ax,
+          ey = r[b + 1] - ay,
+          l2 = ex * ex + ey * ey,
+          a0 = Math.max(i0, Math.floor((Math.min(ax, ax + ex) - REACH - X0) / RES)),
+          a1 = Math.min(i1, Math.ceil((Math.max(ax, ax + ex) + REACH - X0) / RES)),
+          b0 = Math.max(j0, Math.floor((Math.min(ay, ay + ey) - REACH - Y0) / RES)),
+          b1 = Math.min(j1, Math.ceil((Math.max(ay, ay + ey) + REACH - Y0) / RES));
+        for (let j = b0; j <= b1; j++) {
+          const py = Y0 + (j + 0.5) * RES - ay,
+            row = (j - j0) * w - i0;
+          for (let i = a0; i <= a1; i++) {
+            const px = X0 + (i + 0.5) * RES - ax,
+              t = l2 > 1e-9 ? (px * ex + py * ey) / l2 : 0,
+              tc = t < 0 ? 0 : t > 1 ? 1 : t,
+              dx = px - ex * tc,
+              dy = py - ey * tc,
+              dd = dx * dx + dy * dy;
+            if (dd < d2[row + i]) d2[row + i] = dd;
+          }
+        }
+      }
+    }
+    for (let j = j0; j <= j1; j++) {
+      // where the row of pixel centres crosses the rings: inside between an odd and the next even crossing
+      const py = Y0 + (j + 0.5) * RES;
+      cross.length = 0;
+      for (const r of rings) {
+        const m = r.length;
+        for (let a = 0, b = m - st; a < m; b = a, a += st) {
+          const ay = r[a + 1],
+            by = r[b + 1];
+          if (ay > py !== by > py) cross.push(((r[b] - r[a]) * (py - ay)) / (by - ay) + r[a]);
+        }
+      }
+      cross.sort((p, q) => p - q);
+      let c = 0;
+      const row = (j - j0) * w - i0;
+      for (let i = i0; i <= i1; i++) {
+        const px = X0 + (i + 0.5) * RES;
+        while (c < cross.length && cross[c] <= px) c++;
+        const dd = d2[row + i],
+          inside = c & 1;
+        if (dd > 1e8 && !inside) continue; // far outside
+        const e = inside ? (dd > 1e8 ? IN : Math.sqrt(dd)) : -Math.sqrt(dd);
+        if (e < -BAND) continue;
+        const r8 = enc((e - S.EMIN) * eK),
+          q = (j * W + i) * 4;
+        if (e > 0) {
+          const k = D[q + 1] % 60;
+          if (k >= lev0 && r8 <= D[q]) continue; // another area, further in
+        } else if (r8 <= D[q]) continue;
+        D[q] = r8;
+        D[q + 1] = code;
+        D[q + 2] = 128;
+        D[q + 3] = 0;
+      }
     }
   };
   // what the map says at (x, y): { e, kind, surf, style, lat } or null beyond 3.9 m of every road

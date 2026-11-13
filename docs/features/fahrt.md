@@ -128,6 +128,14 @@ Straßen auf.
   Dauer bei GitHub knapp 10 Minuten (rund 14 Minuten Spielzeit, davon gut 11 für die ganze Fahrt vom Garten zur Baumschule).
 - Daten neu bauen: `python3 -I viz3/extra/fahrt/strecke.py --raw <Cache-Ordner>` (OSM-API in Zellen, Kacheln der Website).
 
+## Weitere Straßendaten zur Laufzeit (feat/strassen, Runde 2, 13.11.2026)
+`FAHRT.add(name, json, opts)` nimmt eine Datei im Format von `fahrt/strassen.json` dazu, `FAHRT.drop(name)` nimmt sie wieder heraus
+(eine Stadt, die erst beim Hinkommen lädt; Wunsch des Suhl-Chats). Dafür hält das Raster (Weg, Teilstück)-Paare statt Indizes in zwei
+Tabellen, Wege und Schilder tragen eine Kennung (`id`) und den Namen ihres Satzes (`set`, leer für die Datei der Region), und es gibt
+Flächen (`areas`: Plätze, Parkplätze) mit eigenem Raster. `opts.carve: false`: der Boden dort gehört dem Satz, nichts wird
+zurechtgeschnitten; `opts.decks: false`: er baut seine Brücken selbst. Einzelheiten und die Merker je Weg: `docs/features/strassen.md`,
+Abschnitt „Runde 2“.
+
 ## Quellen
 Straßen, Orte, Ortstafeln © OpenStreetMap-Mitwirkende (ODbL 1.0); Höhen aus den Welt-Kacheln (© GDI-Th, CC BY 4.0; Copernicus DEM
 GLO-30). Liste in der App über `viz3/extra/fahrt/manifest.json` (`credits_add`).

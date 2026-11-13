@@ -749,43 +749,66 @@ export const STRMOD = (() => {
     }
   }
   S.draw = draw;
-  // ---- the atlas: one cell per sign face that occurs (code + text), plus the grey of the backs ----
+  // ---- the atlas: one cell per sign face that occurs (code + text), plus the grey of the backs. The faces lie in rows of eight from
+  // the top. Further faces may come later (a town that loads with its own signs): atlas.add(list) draws them into the free cells, and
+  // when the rows are used up the picture grows downwards (the next power of two). The meshes keep their texture coordinates: they
+  // count in a picture ROWS rows high, and the texture's transform (repeat.y = HV / H, offset.y = 1 − HV / H) maps them onto the rows
+  // that exist ----
+  S.ROWS = 32;
   S.atlas = (list, makeCanvas, CELL = CELL0) => {
-    const PAD = Math.max(2, Math.round((PAD0 * CELL) / CELL0));
-    const keys = ['back'];
-    for (const s of list) {
-      for (const c of s.c.split('+')) {
-        const k = c + (c.startsWith('625') || c === 'km' ? '|' + (s.t || '') : '');
-        if (!keys.includes(k)) keys.push(k);
-      }
-    }
-    const cols = 8,
-      rows = Math.max(1, Math.ceil(keys.length / cols)),
+    const PAD = Math.max(2, Math.round((PAD0 * CELL) / CELL0)),
+      cols = 8,
       W = cols * CELL,
-      H = Math.pow(2, Math.ceil(Math.log2(rows * CELL))),
-      cv = makeCanvas ? makeCanvas(W, H) : null,
-      g = cv ? cv.getContext('2d') : null;
-    if (g) {
-      g.fillStyle = '#7d8083';
-      g.fillRect(0, 0, W, H);
-    }
-    const cell = {};
-    keys.forEach((k, i) => {
-      const cx = (i % cols) * CELL + CELL / 2,
-        cy = Math.floor(i / cols) * CELL + CELL / 2;
-      cell[k] = [cx / W, 1 - cy / H, (CELL - 2 * PAD) / W, (CELL - 2 * PAD) / H];
-      if (k === 'back' || !g) return;
-      const [code, t] = k.split('|');
-      g.save();
-      g.translate(cx, cy);
-      try {
-        draw(g, code, t, CELL - 2 * PAD);
-      } catch (e) {
-        console.warn('strassen sign', code, e);
+      HV = S.ROWS * CELL,
+      A = { cell: {}, keys: [], cv: null, W, H: 0, HV, grown: 0 },
+      keyOf = (s, c) => c + (c.startsWith('625') || c === 'km' ? '|' + (s.t || '') : '');
+    // the faces of the list that are not in the picture yet → how many were added
+    A.add = l => {
+      const fresh = [];
+      for (const s of l)
+        for (const c of s.c.split('+')) {
+          const k = keyOf(s, c);
+          if (!(k in A.cell) && !fresh.includes(k)) fresh.push(k);
+        }
+      // (full: what does not fit shows the grey of the backs)
+      fresh.length = Math.min(fresh.length, cols * S.ROWS - A.keys.length);
+      if (!fresh.length) return 0;
+      const rows = Math.ceil((A.keys.length + fresh.length) / cols),
+        H = Math.min(HV, Math.pow(2, Math.ceil(Math.log2(rows * CELL))));
+      if (H !== A.H) {
+        const cv = makeCanvas ? makeCanvas(W, H) : null;
+        if (cv) {
+          const g = cv.getContext('2d');
+          g.fillStyle = '#7d8083';
+          g.fillRect(0, 0, W, H);
+          if (A.cv) g.drawImage(A.cv, 0, 0);
+        }
+        A.cv = cv;
+        A.H = H;
+        A.grown++;
       }
-      g.restore();
-    });
-    return { cell, keys, cv, W, H };
+      const g = A.cv ? A.cv.getContext('2d') : null;
+      for (const k of fresh) {
+        const i = A.keys.length,
+          cx = (i % cols) * CELL + CELL / 2,
+          cy = Math.floor(i / cols) * CELL + CELL / 2;
+        A.keys.push(k);
+        A.cell[k] = [cx / W, 1 - cy / HV, (CELL - 2 * PAD) / W, (CELL - 2 * PAD) / HV];
+        if (k === 'back' || !g) continue;
+        const [code, t] = k.split('|');
+        g.save();
+        g.translate(cx, cy);
+        try {
+          draw(g, code, t, CELL - 2 * PAD);
+        } catch (e) {
+          console.warn('strassen sign', code, e);
+        }
+        g.restore();
+      }
+      return fresh.length;
+    };
+    A.add([{ c: 'back' }].concat(list));
+    return A;
   };
   // ---- a sign at (x, y, z): read by the traffic heading az (it faces against az). K takes the post and the frame, F the faces
   // (F: { pos, nrm, uv, idx }, the atlas' cells in AT). Returns the collider of the post ----

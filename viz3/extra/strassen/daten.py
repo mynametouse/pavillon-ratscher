@@ -1,6 +1,11 @@
 """What stands beside the roads, and where towns and villages are – for viz3/src/strassen/ (feat/strassen, package 1: the roads).
 
     python3 -I viz3/extra/strassen/daten.py --raw <cache dir> [--plot out.png]   -> viz3/extra/strassen/dist/strassen/ausstattung.json
+    python3 -I viz3/extra/strassen/daten.py --fahrt <roads.json> --osm <extract.opl> --out <furniture.json>   (another area, round 2)
+
+Round 2 (13.11.2026, wish W5 of the Suhl chat): --fahrt takes the roads from one file of the shape of fahrt/strassen.json instead of the
+region's two files (the square of the app is left out), --osm reads OpenStreetMap from an OPL file (osmium export … -f opl) instead of
+the cells of the API cache, --out names the file to write. The result goes into the app with STRDAT.add(name, json).
 
 Sources: OpenStreetMap (API 0.6 /map in cells, the cache of viz3/extra/fahrt/strecke.py under <raw>/osm/) and the app's own roads – the
 2.4 km square (dist/geo/roads.b64.json, world/roads.js) and the roads beyond it (viz3/extra/fahrt/dist/fahrt/strassen.json, welt/fahrt.js).
@@ -117,8 +122,17 @@ class Net:
         return (np.hypot(*u) + np.hypot(*v)) / 2 / abs(th), (1 if th > 0 else -1)   # + : turning left
 
 
-def load_net():
+def load_net(fahrt=None):
     N = Net()
+    if fahrt:
+        # another area: its roads from one file of the shape of fahrt/strassen.json
+        F = json.load(open(fahrt))
+        for row in F['ways']:
+            k, sf, w10, fl, ni, ri, q = row[:7]
+            P = np.asarray(q, float).reshape(-1, 3)[:, :2] / 10.0
+            N.add(k, sf, w10 / 20.0, fl, P, 'f', F['names'][ri] or F['names'][ni])
+        log('roads of', os.path.basename(fahrt) + ':', len(N.ways))
+        return N, F
     # the square: world/roads.js
     R = MAN['roads']
     j = json.load(open(os.path.join(REPO, 'viz3', 'dist', 'geo', R['file'])))
@@ -176,9 +190,40 @@ class Places:
 
 
 # ---------------- OpenStreetMap in model metres ----------------
+def read_opl(path):
+    """OpenStreetMap from an OPL file (one object per line: n… / w… with the fields T tags, x, y, N node refs) → nodes, ways as SK.fetch_osm"""
+    import re
+    esc = re.compile(r'%([0-9a-fA-F]+)%')
+    un = lambda v: esc.sub(lambda m: chr(int(m.group(1), 16)), v)
+
+    def tags(v):
+        t = {}
+        for kv in v.split(',') if v else []:
+            k, _, val = kv.partition('=')
+            t[un(k)] = un(val)
+        return t
+    nodes, ways = {}, {}
+    with open(path, encoding='utf-8') as f:
+        for ln in f:
+            if not ln or ln[0] not in 'nw':
+                continue
+            parts = ln.rstrip('\n').split(' ')
+            fld = {q[0]: q[1:] for q in parts[1:] if q}
+            if fld.get('d') == 'D':
+                continue
+            i = int(parts[0][1:])
+            if ln[0] == 'n':
+                if fld.get('x') and fld.get('y'):
+                    nodes[i] = (float(fld['x']), float(fld['y']), tags(fld.get('T', '')))
+            else:
+                ways[i] = ([int(r[1:]) for r in fld.get('N', '').split(',') if r[:1] == 'n'], tags(fld.get('T', '')))
+    log('OSM (OPL)', len(nodes), 'nodes', len(ways), 'ways')
+    return nodes, ways
+
+
 class Osm:
-    def __init__(self, raw):
-        self.nodes, self.ways = SK.fetch_osm(raw)
+    def __init__(self, raw, opl=None):
+        self.nodes, self.ways = read_opl(opl) if opl else SK.fetch_osm(raw)
         ids = list(self.nodes)
         lon = np.array([self.nodes[i][0] for i in ids])
         lat = np.array([self.nodes[i][1] for i in ids])
@@ -799,12 +844,17 @@ def power(O):
 # ---------------- main ----------------
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--raw', required=True)
+    ap.add_argument('--raw', help='the cache of viz3/extra/fahrt/strecke.py (OpenStreetMap in cells under <raw>/osm/)')
     ap.add_argument('--plot')
+    ap.add_argument('--fahrt', help='the roads of another area: a file of the shape of fahrt/strassen.json (then without the app\'s square)')
+    ap.add_argument('--osm', help='OpenStreetMap as an OPL file instead of the cells of --raw')
+    ap.add_argument('--out', help='the file to write (default: dist/strassen/ausstattung.json beside this script)')
     A = ap.parse_args()
-    N, F = load_net()
+    if not A.raw and not A.osm:
+        ap.error('--raw <cache dir> or --osm <file.opl>')
+    N, F = load_net(A.fahrt)
     PL = Places(F)
-    O = Osm(A.raw)
+    O = Osm(A.raw, A.osm)
     log('OSM roads', len(O.roads))
     rails = guard_rails(N, O)
     posts = delineators(N, PL, rails)
@@ -830,10 +880,10 @@ def main():
         leitungen=[[t, kv] + ln for t, kv, ln in plines],
         linien=[[l[0], dm(l[1]), dm(l[2]), int(round(l[3])), dm(l[4])] for l in lines],
     )
-    p = os.path.join(HERE, 'dist', 'strassen', 'ausstattung.json')
+    p = os.path.abspath(A.out) if A.out else os.path.join(HERE, 'dist', 'strassen', 'ausstattung.json')
     os.makedirs(os.path.dirname(p), exist_ok=True)
     json.dump(out, open(p, 'w'), separators=(',', ':'), ensure_ascii=False)
-    log('→', os.path.relpath(p, REPO), round(os.path.getsize(p) / 1024), 'KB')
+    log('→', p, round(os.path.getsize(p) / 1024), 'KB')
     if A.plot:
         plot(A.plot, N, PL, out)
 

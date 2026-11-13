@@ -9,6 +9,9 @@
 // the nearest ones light the facades (VPROPS.lamps). Everything stands on the ground of the moment (KERN.ground) and is set down again
 // when finer tiles arrive. Lamps, sign posts and guard rails are solid for vehicles (VEH.extra). The wetness of the weather goes to
 // the road shaders here (ROADS.U / ROADS.W uRoad.y). ?nostrassen leaves all of it out.
+// Round 2 (13.11.2026, wish W6 of the Suhl chat): further sets of furniture come and go with STRDAT.add / STRDAT.drop – their things
+// go into the same cells (every thing carries the name of its set), new sign faces into the free cells of the picture of the faces;
+// the paint on the bridge decks follows the road data of welt/fahrt.js when it changes (FAHRT.rev).
 import * as THREE from 'three';
 import { COARSE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -24,6 +27,7 @@ import { WXBODEN } from '../wetter/wx_boden.js';
 import { STRDAT } from './strassen_daten.js';
 import { STRMOD } from './strassen_modelle.js';
 import { STRSTIL } from './strassen_stil.js';
+import { STRKARTE } from './strassen_karte.js';
 export const STRASSEN = (() => {
   const S = {
     on: false,
@@ -127,15 +131,18 @@ export const STRASSEN = (() => {
       scene.add(o);
     }
   }
-  // ---- the data into cells ----
-  function init() {
-    const D = STRDAT.data;
-    if (!STRDAT.ready || !D) return;
+  // ---- the data into cells: the file's own things (set '') and those of sets that come later. Returns the signs of the set and
+  // marks the cells it touched (c.redo: a built cell is built again) ----
+  function index(D, set) {
+    const hit = c => {
+      c.redo = c.built;
+      return c;
+    };
     const q = D.pfosten || [];
     for (let i = 0; i + 2 < q.length; i += 3) {
       const x = q[i] / 10,
         y = q[i + 1] / 10;
-      cellOf(S.cells, CELL, x, y).posts.push({ x, y, az: q[i + 2] * RAD });
+      hit(cellOf(S.cells, CELL, x, y)).posts.push({ x, y, az: q[i + 2] * RAD, set });
       S.n.posts++;
     }
     // guard rails in pieces of about 96 m (48 spans), each in the cell of its middle; only a run's true ends sink into the ground
@@ -149,37 +156,37 @@ export const STRASSEN = (() => {
         for (let i = a; i <= b; i++) P.push([r[1 + i * 2] / 10, r[2 + i * 2] / 10]);
         if (P.length < 2) continue;
         const m = P[P.length >> 1];
-        cellOf(S.cells, CELL, m[0], m[1]).rails.push({ P, tw, s0: a === 0, s1: b === np - 1 });
+        hit(cellOf(S.cells, CELL, m[0], m[1])).rails.push({ P, tw, s0: a === 0, s1: b === np - 1, set });
         S.n.rails++;
       }
     }
     const signs = [];
-    for (const s of D.schilder || []) {
-      const sg = { c: s[0], x: s[1] / 10, y: s[2] / 10, h: s[3] * RAD, t: s[4] || '' };
+    for (const sr of D.schilder || []) {
+      const sg = { c: sr[0], x: sr[1] / 10, y: sr[2] / 10, h: sr[3] * RAD, t: sr[4] || '', set };
       signs.push(sg);
-      cellOf(S.cells, CELL, sg.x, sg.y).signs.push(sg);
+      hit(cellOf(S.cells, CELL, sg.x, sg.y)).signs.push(sg);
       S.n.signs++;
     }
     // paint across the lanes: stop and give-way lines, zebra crossings
-    for (const q of D.linien || []) {
-      const ln = { t: q[0], x: q[1] / 10, y: q[2] / 10, az: q[3] * RAD, hw: q[4] / 10 };
-      cellOf(S.cells, CELL, ln.x, ln.y).lines.push(ln);
+    for (const lq of D.linien || []) {
+      const ln = { t: lq[0], x: lq[1] / 10, y: lq[2] / 10, az: lq[3] * RAD, hw: lq[4] / 10, set };
+      hit(cellOf(S.cells, CELL, ln.x, ln.y)).lines.push(ln);
       S.n.lines++;
     }
     const l = D.lampen || [];
     for (let i = 0; i + 3 < l.length; i += 4) {
       const x = l[i] / 10,
         y = l[i + 1] / 10;
-      cellOf(S.cells, CELL, x, y).lamps.push({ x, y, az: l[i + 2] * RAD, kind: l[i + 3] });
+      hit(cellOf(S.cells, CELL, x, y)).lamps.push({ x, y, az: l[i + 2] * RAD, kind: l[i + 3], set });
       S.n.lamps++;
     }
-    // masts with the spans that start at them
+    // masts with the spans that start at them (a set's lines join its own masts)
     const m = D.masten || [],
       M = [];
     for (let i = 0; i + 3 < m.length; i += 4) {
-      const mast = { x: m[i] / 10, y: m[i + 1] / 10, type: m[i + 2], az: m[i + 3] * RAD, to: [] };
+      const mast = { x: m[i] / 10, y: m[i + 1] / 10, type: m[i + 2], az: m[i + 3] * RAD, to: [], set };
       M.push(mast);
-      cellOf(S.big, BIG, mast.x, mast.y).masts.push(mast);
+      hit(cellOf(S.big, BIG, mast.x, mast.y)).masts.push(mast);
       S.n.masts++;
     }
     for (const ln of D.leitungen || [])
@@ -191,6 +198,46 @@ export const STRASSEN = (() => {
           S.n.spans++;
         }
       }
+    return signs;
+  }
+  // a set leaves: its things out of the cells
+  function unindex(set) {
+    const cut = (c, k, cnt) => {
+      const a = c[k],
+        b = a.filter(o => o.set !== set);
+      if (b.length === a.length) return;
+      if (cnt) S.n[cnt] -= a.length - b.length;
+      if (k === 'masts') for (const o of a) if (o.set === set) S.n.spans -= o.to.length;
+      c[k] = b;
+      c.redo = c.built;
+    };
+    for (const c of S.cells.values()) {
+      cut(c, 'posts', 'posts');
+      cut(c, 'rails', 'rails');
+      cut(c, 'signs', 'signs');
+      cut(c, 'lines', 'lines');
+      cut(c, 'lamps', 'lamps');
+    }
+    for (const c of S.big.values()) cut(c, 'masts', 'masts');
+  }
+  // the picture of the faces onto the texture: the rows that exist of the ROWS the meshes count in
+  let texFace = null,
+    grown = 0;
+  function fitFace() {
+    if (!texFace) return;
+    if (atlas.grown !== grown) {
+      grown = atlas.grown;
+      texFace.dispose(); // (another size: the texture is allocated anew)
+      texFace.image = atlas.cv;
+    }
+    texFace.repeat.set(1, atlas.HV / atlas.H);
+    texFace.offset.set(0, 1 - atlas.HV / atlas.H);
+    texFace.needsUpdate = true;
+  }
+  function init() {
+    if (!STRDAT.ready && !STRDAT.failed) return;
+    const signs = index(STRDAT.data || {}, '');
+    for (const [name, st] of STRDAT.sets) signs.push(...index(st.data, name));
     // the picture of the sign faces and the materials – now, so that their programs are compiled while the loading screen is up
     atlas = STRMOD.atlas(
       signs,
@@ -202,10 +249,12 @@ export const STRASSEN = (() => {
       },
       COARSE ? 64 : 128
     );
-    const tex = new THREE.CanvasTexture(atlas.cv);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 4;
-    matFace = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55, metalness: 0 });
+    texFace = new THREE.CanvasTexture(atlas.cv);
+    texFace.colorSpace = THREE.SRGBColorSpace;
+    texFace.anisotropy = 4;
+    grown = atlas.grown;
+    fitFace();
+    matFace = new THREE.MeshStandardMaterial({ map: texFace, roughness: 0.55, metalness: 0 });
     matGlass = new THREE.MeshStandardMaterial({
       color: 0x2a2c2e,
       roughness: 0.15,
@@ -224,6 +273,18 @@ export const STRASSEN = (() => {
     S.atlas = atlas;
     S.ready = true;
   }
+  // sets of furniture that come and go (STRDAT.add / STRDAT.drop)
+  STRDAT.onChange((name, added) => {
+    if (!S.ready) return; // (before init: init takes the sets that are there)
+    unindex(name);
+    if (added) {
+      const st = STRDAT.sets.get(name),
+        signs = st ? index(st.data, name) : [];
+      if (signs.length && atlas.add(signs)) fitFace();
+    }
+    acc = 1;
+    markDirty();
+  });
   const mesh = (g, mat, name) => {
     const me = new THREE.Mesh(g, mat);
     me.castShadow = false;
@@ -253,7 +314,7 @@ export const STRASSEN = (() => {
         return r && r.surf <= 3 ? ROADS.edgeAt(x, y) : -9;
       }
       const r = KERN.surface(x, y);
-      return r && r.surf <= 3 ? r.e : -9;
+      return r && r.surf <= 3 && !r.area ? r.e : -9; // (a square or a car park is no carriageway: a lamp may stand on it)
     };
   // a thing beside a road must not stand on its carriageway: (x, y) moved along (dx, dy) until it is `clear` metres off the edge;
   // null when it still stands on a road then (the mouth of another road – better no post than one on the asphalt)
@@ -518,6 +579,8 @@ export const STRASSEN = (() => {
       c.meshes.push(ls);
     }
     c.built = true;
+    c.redo = false;
+    c.nm = c.masts.length;
     c.wx = w[0];
     c.wy = w[1];
     S.builtBig++;
@@ -527,7 +590,7 @@ export const STRASSEN = (() => {
       scene.remove(m);
       m.geometry.dispose();
     }
-    S.shown.masts -= c.masts.length;
+    S.shown.masts -= c.nm;
     c.meshes = [];
     c.built = false;
     S.builtBig--;
@@ -535,14 +598,15 @@ export const STRASSEN = (() => {
   // ---- bridges: the road map leaves them out (no road on the valley floor under a deck) – their markings are laid on the decks as
   // paint. The decks of the square come with the terrain (world/roads.js), those beyond it with the roads of welt/fahrt.js ----
   let decksQ = 0,
-    decksF = false;
+    decksRev = -1;
   function bridges() {
-    const add = (P, hw, kind, surf, style) => {
+    const add = (P, hw, kind, surf, style, f, nc) => {
       const m = STRSTIL.marks(kind, hw, style, surf <= 1);
+      if (nc) m.centre = null;
       if (!m.centre && !m.edge) return;
       const mid = P[P.length >> 1],
         c = cellOf(S.cells, CELL, mid[0], mid[1]);
-      c.decks.push({ P, hw, m });
+      c.decks.push({ P, hw, m, f });
       S.n.decks++;
       c.redo = c.built; // built already: once more, with the paint
     };
@@ -557,20 +621,30 @@ export const STRASSEN = (() => {
       }
       decksQ = ROADS.decks.length;
     }
-    if (!decksF && FAHRT.ready && FAHRT.data) {
-      decksF = true;
+    if (FAHRT.ready && FAHRT.data && decksRev !== (FAHRT.rev || 0)) {
+      // the decks of welt/fahrt.js – once more whenever its road data changed (a set came or went)
+      if (decksRev >= 0)
+        for (const c of S.cells.values()) {
+          const b = c.decks.filter(d => !d.f);
+          if (b.length === c.decks.length) continue;
+          S.n.decks -= c.decks.length - b.length;
+          c.decks = b;
+          c.redo = c.built;
+        }
+      decksRev = FAHRT.rev || 0;
       // (not in a zone that lays its own roads and bridges: Kloster Veßra, as welt/fahrt.js keeps out of it)
       const V = window.VESSRA,
         Z = V && V.ORT ? V.ZONE || [V.ORT[0] - 650, V.ORT[1] - 650, V.ORT[0] + 650, V.ORT[1] + 650] : null;
       for (const w of FAHRT.data.ways) {
-        if (!(w.fl & 1) || w.fl & 2) continue;
+        if (!(w.fl & 1) || w.fl & 194 || w.nodeck) continue; // no tunnel, no steps, nothing level; not a set's own bridge
         const mx = (w.bb[0] + w.bb[2]) / 2,
           my = (w.bb[1] + w.bb[3]) / 2;
         if (Z && mx > Z[0] - 50 && mx < Z[2] + 50 && my > Z[1] - 50 && my < Z[3] + 50) continue;
         const P = [];
         for (let i = 0; i < w.n; i++) P.push([w.p[i * 3], w.p[i * 3 + 1], w.p[i * 3 + 2] + 0.01]);
-        const st = STRSTIL.styles(w.p, 3, w.n, w.kind, STRDAT.placeAt);
-        add(P, w.hw, w.kind, w.surf, st[Math.min(st.length - 1, w.n >> 1)] || 0);
+        const st = STRSTIL.styles(w.p, 3, w.n, w.kind, STRDAT.placeAt),
+          o = STRKARTE.optsOf ? STRKARTE.optsOf(w) : null;
+        add(P, w.hw, w.kind, w.surf, st[Math.min(st.length - 1, w.n >> 1)] || 0, true, o && o.nc);
       }
     }
   }
@@ -621,6 +695,7 @@ export const STRASSEN = (() => {
           freeBig(c);
           ch = true;
         } else if (
+          c.redo ||
           ((c.zT += dt) > 5 && c.ref.some(r => Math.abs(gz(r[0], r[1]) - r[2]) > 0.25)) ||
           Math.hypot(c.wx - w[0], c.wy - w[1]) > 300
         ) {
@@ -766,6 +841,8 @@ export const STRASSEN = (() => {
       0
     ),
     extra: [...S.cells.values()].reduce((a, c) => a + c.extra.length, 0),
+    sets: [...STRDAT.sets.keys()],
+    faces: atlas ? atlas.keys.length : 0,
     err: S.err,
   });
   return S;

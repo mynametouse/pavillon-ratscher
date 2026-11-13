@@ -6,6 +6,10 @@
 // The window follows the observer: a new map is rastered a few ways per frame into a second buffer and swapped in when done (in a town a
 // whole raster would take tens of milliseconds – too long for one frame). The roads end 70 m before the window's nearest edge (uRoad.z);
 // further out the plain band of welt/fahrt.js remains. ?nostrassen leaves the map out.
+// Round 2 (13.11.2026, wishes of the Suhl chat): the flags of a way decide how it goes into the map – 32 a roundabout and 4 a one-way
+// road of one lane: no centre line; 64 level (a pedestrian zone, a living street): kind 9, no kerb, no line; 128 steps: left out;
+// 256 / 512 no pavement on the left / right. The areas of the road data (squares, car parks) are rastered after the ways. When road
+// data comes or goes (FAHRT.add / FAHRT.drop) or the places change (STRDAT.rev), STRKARTE.refresh() rasters the window again.
 import * as THREE from 'three';
 import { COARSE } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -34,22 +38,46 @@ export const STRKARTE = (() => {
     tex = null,
     job = null;
   const U = ROADS.W;
+  // the styles of a way's segments, worked out again when the places have changed (a town that came with its roads)
   function styleOf(w) {
-    if (!w.st) w.st = STRSTIL.styles(w.p, 3, w.n, w.kind, STRDAT.ready ? STRDAT.placeAt : null);
+    if (!w.st || w.stRev !== STRDAT.rev) {
+      w.st = STRSTIL.styles(w.p, 3, w.n, w.kind, STRDAT.ready || STRDAT.sets.size ? STRDAT.placeAt : null);
+      w.stRev = STRDAT.rev;
+    }
     return w.st;
   }
+  // how a way goes into the map, from its flags (welt/fahrt.js keeps them as the data has them)
+  const NOLINE = w => !!(w.fl & 32 || (w.fl & 4 && w.kind >= 1 && w.kind <= 2 && !(w.lanes > 1)));
+  S.optsOf = w => ({
+    p: w.p,
+    stride: 3,
+    n: w.n,
+    hw: w.hw,
+    kind: w.fl & 64 ? STRSTIL.LEVEL : w.kind,
+    surf: w.surf,
+    st: styleOf(w),
+    s0: w.s0 || 0,
+    nc: NOLINE(w),
+    noL: !!(w.fl & 256),
+    noR: !!(w.fl & 512),
+  });
   function start(cx, cy) {
     const x0 = Math.round(cx - SZ / 2),
       y0 = Math.round(cy - SZ / 2),
       list = [];
     for (const w of FAHRT.data.ways) {
-      if (w.fl & 3) continue; // bridges get their deck (welt/fahrt.js), tunnels nothing
+      if (w.fl & 131) continue; // bridges get their deck (welt/fahrt.js), tunnels nothing; steps are no band on the ground
       if (w.bb[2] < x0 - 12 || w.bb[0] > x0 + SZ + 12 || w.bb[3] < y0 - 12 || w.bb[1] > y0 + SZ + 12) continue;
       list.push(w);
     }
+    // the areas after the ways: a square lies over the roads that cross it
+    for (const a of FAHRT.data.areas || []) {
+      if (a.bb[2] < x0 - 12 || a.bb[0] > x0 + SZ + 12 || a.bb[3] < y0 - 12 || a.bb[1] > y0 + SZ + 12) continue;
+      list.push(a);
+    }
     if (!back) back = new Uint8Array(N * N * 4);
     STRSTIL.clear(back);
-    job = { x0, y0, list, i: 0, t0: performance.now(), ms: 0 };
+    job = { x0, y0, list, i: 0, t0: performance.now(), ms: 0, rev: FAHRT.rev || 0, drev: STRDAT.rev };
     S.busy = true;
   }
   function work(budget) {
@@ -57,15 +85,8 @@ export const STRKARTE = (() => {
       J = job;
     while (J.i < J.list.length) {
       const w = J.list[J.i++];
-      STRSTIL.raster(back, N, N, J.x0, J.y0, RES, {
-        p: w.p,
-        stride: 3,
-        n: w.n,
-        hw: w.hw,
-        kind: w.kind,
-        surf: w.surf,
-        st: styleOf(w),
-      });
+      if (w.r) STRSTIL.rasterArea(back, N, N, J.x0, J.y0, RES, w);
+      else STRSTIL.raster(back, N, N, J.x0, J.y0, RES, S.optsOf(w));
       if (performance.now() - t0 > budget) break;
     }
     J.ms += performance.now() - t0;
@@ -91,6 +112,8 @@ export const STRKARTE = (() => {
     U.uRoad.value.z = FAR;
     S.x0 = J.x0;
     S.y0 = J.y0;
+    S.rev = J.rev;
+    S.drev = J.drev;
     S.n++;
     S.ways = J.list.length;
     S.ms = Math.round(J.ms * 10) / 10;
@@ -108,7 +131,8 @@ export const STRKARTE = (() => {
     U.uRoad.value.x = 0;
     markDirty(true);
   }
-  let acc = 1;
+  let acc = 1,
+    again = false;
   KERN.tick(dt => {
     if (job) return work(BUDGET);
     acc += dt;
@@ -117,12 +141,37 @@ export const STRKARTE = (() => {
     if (!FAHRT.ready || !WELT.active || !FAHRT.data || !FAHRT.data.ways.length) return off();
     const w = KERN.where();
     if (!w) return;
-    if (!S.active || Math.abs(w[0] - S.x0 - SZ / 2) > MOVE || Math.abs(w[1] - S.y0 - SZ / 2) > MOVE) start(w[0], w[1]);
+    if (
+      !S.active ||
+      again ||
+      S.drev !== STRDAT.rev ||
+      Math.abs(w[0] - S.x0 - SZ / 2) > MOVE ||
+      Math.abs(w[1] - S.y0 - SZ / 2) > MOVE
+    ) {
+      again = false;
+      start(w[0], w[1]);
+    }
   }, 'strassen-karte');
+  // the road data or the places changed: the window is rastered again (around where the observer is now) – a running raster starts over
+  S.refresh = () => {
+    again = true;
+    if (job) {
+      job = null;
+      S.busy = false;
+    }
+    acc = 1;
+  };
   // the map at a point (tests, the furniture): { e, kind, surf, style, lat } or null
   S.at = (x, y) => (S.active && front ? STRSTIL.read(front, N, N, S.x0, S.y0, RES, x, y) : null);
   // tests: finish the running raster now
   S.flush = () => {
+    if (again && !job && FAHRT.ready && WELT.active) {
+      const w = KERN.where();
+      if (w) {
+        again = false;
+        start(w[0], w[1]);
+      }
+    }
     while (job) work(1e9);
   };
   return S;
