@@ -34,12 +34,13 @@ export const GLZWEIRAD = (() => {
   // the speedometer: its middle, the way it faces (towards the rider), its right and up
   const DIAL_D = nrm([0, -0.5, 0.866]),
     DIAL = {
-      c: [-0.064, PIV[1] + 0.022, PIV[2] + 0.062],
+      c: [0, PIV[1] + 0.078, PIV[2] + 0.05],
       d: DIAL_D,
       r: [1, 0, 0],
       up: crs(DIAL_D, [1, 0, 0]),
-      R: 0.034,
-    };
+      R: 0.04,
+    },
+    HAHN = [-0.118, -0.02, 0.652]; // the fuel tap under the tank on the left
   const TYP = {
     // Simson S 51: 1890 × 635 × 1200 mm, wheelbase 1210, 2.75-16, 8.7 l, 3.7 PS, 60 km/h
     s51: {
@@ -55,8 +56,9 @@ export const GLZWEIRAD = (() => {
       pivot: PIV,
       axis: AX,
       dial: DIAL,
+      hahn: HAHN,
       seat: [0, -0.42, 0.79],
-      eye1: [0, -0.5, 1.36],
+      eye1: [0, -0.32, 1.22],
       eye3: [0, -0.38, 1.55],
       beam: [0, 0.6, 0.8],
     },
@@ -352,6 +354,33 @@ export const GLZWEIRAD = (() => {
       ],
       16,
       C.chrome
+    );
+    // the fuel tap under the tank on the left: its body, the bowl, the hose to the carburettor (the lever is a piece of its own)
+    k.lathe(
+      'matt',
+      HAHN,
+      [0, 0, -1],
+      [
+        [0.009, -0.014],
+        [0.009, 0.012],
+        [0.012, 0.016],
+        [0.012, 0.034],
+        [0.006, 0.04],
+        [0.0005, 0.04],
+      ],
+      8,
+      C.alu
+    );
+    k.tube(
+      'matt',
+      [
+        [HAHN[0] + 0.01, HAHN[1] - 0.004, HAHN[2] - 0.03],
+        [-0.06, 0.0, 0.56],
+        [-0.02, 0.04, 0.5],
+      ],
+      0.005,
+      5,
+      C.rubber
     );
     // ---- the long seat with its strap ----
     k.blob(
@@ -754,10 +783,10 @@ export const GLZWEIRAD = (() => {
       dc,
       d,
       [
-        [0.0005, -0.052],
-        [0.026, -0.048],
-        [0.037, -0.02],
-        [0.039, 0.0],
+        [0.0005, -0.056],
+        [0.03, -0.052],
+        [0.043, -0.022],
+        [0.045, 0.0],
       ],
       18,
       C.black
@@ -767,25 +796,116 @@ export const GLZWEIRAD = (() => {
       dc,
       d,
       [
-        [0.039, -0.003],
-        [0.0405, 0.004],
-        [0.038, 0.007],
-        [0.0345, 0.005],
+        [0.045, -0.003],
+        [0.0465, 0.004],
+        [0.044, 0.007],
+        [0.0405, 0.005],
       ],
       18,
       C.chrome
     );
-    const R = DIAL.R,
-      o = add(dc, mul(d, 0.0035)),
-      cr = (su, sv) => add(o, add(mul(DIAL.r, su * R), mul(DIAL.up, sv * R)));
-    k.quad('tacho', cr(-1, -1), cr(1, -1), cr(1, 1), cr(-1, 1), C.white, [
-      [0, 0],
-      [1, 0],
-      [1, 1],
-      [0, 1],
-    ]);
-    // its stalk on the head
-    k.tube('matt', [[-0.064, 0.0, 0.03], add(dc, mul(d, -0.045))], 0.009, 6, C.black);
+    k.scheibe('tacho', add(dc, mul(d, 0.0035)), DIAL.r, DIAL.up, DIAL.R, C.white);
+    // its bracket over the lamp's bowl
+    k.box('matt', [0, 0.06, 0.012], [0.05, 0.07, 0.012], C.black);
+    // the ignition and light switch in the lamp's bowl, the key in it with its tag
+    const zs = [0.062, 0.085, 0.006];
+    k.lathe(
+      'chrom',
+      zs,
+      [0, 0, 1],
+      [
+        [0.014, -0.004],
+        [0.014, 0.008],
+        [0.005, 0.01],
+        [0.0005, 0.01],
+      ],
+      12,
+      C.chrome
+    );
+    k.box('chrom', [zs[0], zs[1], zs[2] + 0.02], [0.003, 0.014, 0.022], C.chrome);
+    k.box('matt', [zs[0] + 0.012, zs[1] - 0.01, zs[2] + 0.02], [0.004, 0.026, 0.016], C.red);
+    // two control lamps on the bowl: indicator (green) and high beam (blue) – their own parts, lit by grenzland/gl_cockpit.js
+    [
+      ['k_gruen', [-0.058, 0.075, 0.006], rgb(40, 150, 60)],
+      ['k_blau', [-0.058, 0.103, 0.0], rgb(40, 80, 190)],
+    ].forEach(([part, at, c]) => {
+      k.lathe(
+        'chrom',
+        at,
+        [0, -0.25, 0.97],
+        [
+          [0.0085, -0.002],
+          [0.0085, 0.004],
+          [0.007, 0.005],
+        ],
+        10,
+        C.chrome
+      );
+      k.lathe(
+        part,
+        at,
+        [0, -0.25, 0.97],
+        [
+          [0.007, 0.004],
+          [0.005, 0.008],
+          [0.0005, 0.0095],
+        ],
+        10,
+        c
+      );
+    });
+  }
+  // the rider's hands on the grips as one sees them from the saddle: black gloves, the jacket's sleeves coming from the elbows
+  // (relative to the pivot – they turn with the handlebar)
+  function s51Haende(k) {
+    const sleeve = rgb(46, 52, 62),
+      glove = rgb(20, 20, 22);
+    for (const s of [-1, 1]) {
+      const w = [s * 0.268, -0.118, 0.128], // the wrist
+        e = [s * 0.4, -0.46, 0.03]; // the elbow
+      k.tube('matt', [e, [s * 0.335, -0.29, 0.085], w], t => 0.043 - 0.009 * t, 10, sleeve, { caps: 'a' });
+      k.tube(
+        'matt',
+        [
+          [w[0], w[1] - 0.012, w[2]],
+          [w[0], w[1] + 0.012, w[2]],
+        ],
+        0.043,
+        10,
+        glove
+      );
+      // the hand over the grip: the back of the hand, the fingers round the grip, the thumb under it
+      k.pad('matt', [s * 0.262, -0.092, 0.132], [0.095, 0.075, 0.045], 0.02, glove);
+      k.pad('matt', [s * 0.258, -0.062, 0.113], [0.1, 0.05, 0.05], 0.022, glove);
+      k.tube(
+        'matt',
+        [
+          [s * 0.215, -0.1, 0.118],
+          [s * 0.2, -0.075, 0.105],
+          [s * 0.205, -0.055, 0.1],
+        ],
+        0.014,
+        6,
+        glove,
+        { caps: 'b' }
+      );
+    }
+  }
+  // the fuel tap's lever in its own frame (x: the tap's axis, pointing left out of the tap; the lever hangs down along −z)
+  function hahnHebel() {
+    const k = K.kit();
+    k.tube(
+      'matt',
+      [
+        [0.004, 0, 0],
+        [0.004, 0, -0.03],
+      ],
+      0.0045,
+      6,
+      C.black,
+      { caps: 'b', flat: [0.6, 1.4] }
+    );
+    return k.done();
   }
   // the needle in the dial's own frame: x right, y up on the face, z towards the rider; it points along +x
   function nadel() {
@@ -812,7 +932,7 @@ export const GLZWEIRAD = (() => {
   function bau(typ, o = {}) {
     const T = TYP[typ];
     if (!T) return null;
-    const key = typ + '|' + (o.col || '');
+    const key = typ + '|' + (o.col || '') + (o.fahrer ? '|f' : '');
     if (cache.has(key)) return cache.get(key);
     const paint = [hex(o.col || DEF[typ]), hex(o.col || DEF[typ]), hex('#888888'), hex('#888888')],
       pieces = [];
@@ -826,14 +946,20 @@ export const GLZWEIRAD = (() => {
       pieces.push({ name: 'rad', parts: rad(), at: [0, T.a, T.rw], paint });
       pieces.push({ name: 'rad', parts: pieces[2].parts, at: [0, T.b, T.rw], paint });
       pieces.push({ name: 'nadel', parts: nadel(), at: T.dial.c, paint, dial: true });
+      if (o.fahrer) {
+        k = K.kit();
+        s51Haende(k);
+        pieces.push({ name: 'haende', parts: k.done(), at: T.pivot, paint, dial: true });
+        pieces.push({ name: 'hahn', parts: hahnHebel(), at: T.hahn, paint, dial: true });
+      }
     } else return null;
     const M = { typ, T, pieces };
     cache.set(key, M);
     return M;
   }
   // the needle's angle on the dial (radians, counter-clockwise from the dial's right as the rider sees it) for a speed in km/h:
-  // 0 at the lower left, 100 at the lower right, over the top
-  const nadelWinkel = kmh => ((225 - 270 * Math.max(0, Math.min(1.04, kmh / 100))) * Math.PI) / 180;
+  // 0 at the lower left, the scale's end (100 km/h on the S 51, 120 in the Trabant) at the lower right, over the top
+  const nadelWinkel = (kmh, max = 100) => ((225 - 270 * Math.max(0, Math.min(1.04, kmh / max))) * Math.PI) / 180;
   const has = typ => typ === 's51';
   return { TYP, DEF, C, bau, has, nadelWinkel, rad };
 })();

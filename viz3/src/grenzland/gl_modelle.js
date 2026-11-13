@@ -11,7 +11,9 @@
 //   GLMOD.bau(typ, o) → { g, T, parts: { axF, axR } | { wf, wr }, tilt, seat, steer, axis }
 //                             o: { col, col2, band, band2, bar: 'balken' | 'rundum', plane }
 //   GLMOD.spielerMoped() → { model, T }   the model of the player's moped for vehicles/vehicle.js VEH.add (the cockpit's parts in
-//                             model.cockpit: { needle, dial, steer })
+//                             model.cockpit: { needle, dial, face, steer, max, tank })
+//   GLMOD.spielerTrabi() → { model, T, TC }   the Trabant the player drives in 1989, with its cockpit (model.cockpit: { needle, dial,
+//                             face, wheel, radio: { mat, draw }, max })
 import * as THREE from 'three';
 import { scene } from '../core/head.js';
 import { VPROPS } from '../world/village_props.js';
@@ -404,6 +406,104 @@ export const GLMOD = (() => {
     m.color.setHex(0xffffff);
     return m;
   }
+  // a word on a door (the authority's name – no badge, no crest): drawn once per word and colours
+  const WORT = new Map();
+  function schrift(S) {
+    const key = S.text + '|' + S.fg + '|' + S.bg;
+    let m = WORT.get(key);
+    if (m) return m;
+    const cv = document.createElement('canvas');
+    cv.width = 512;
+    cv.height = 96;
+    const x = cv.getContext('2d');
+    x.fillStyle = S.bg;
+    x.fillRect(0, 0, 512, 96);
+    x.fillStyle = S.fg;
+    x.textAlign = 'center';
+    x.textBaseline = 'middle';
+    let px = 74;
+    x.font = 'bold ' + px + 'px "Arial Narrow", "Helvetica Neue", Arial, sans-serif';
+    const w = x.measureText(S.text).width;
+    if (w > 480) {
+      px = Math.floor((px * 480) / w);
+      x.font = 'bold ' + px + 'px "Arial Narrow", "Helvetica Neue", Arial, sans-serif';
+    }
+    x.fillText(S.text, 256, 51);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    m = textured(tex, { roughness: 0.45 });
+    m.name = 'grenzland schrift';
+    WORT.set(key, m);
+    return m;
+  }
+  // ---- the shadow under a vehicle: a soft dark patch on the ground (the sun's shadow map is not asked for – as with the traffic's
+  //      cars – but without any shadow a car seems to hover). It takes light away (subtractive blending), so it needs no alpha;
+  //      an unlit textured material like the traffic's pools of light ----
+  const SCHATTEN = { mat: null, geo: new Map() };
+  function schatten(T) {
+    if (!SCHATTEN.mat) {
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = 64;
+      const x = cv.getContext('2d'),
+        im = x.createImageData(64, 64);
+      for (let j = 0; j < 64; j++)
+        for (let i = 0; i < 64; i++) {
+          const u = Math.abs(i / 31.5 - 1),
+            v = Math.abs(j / 31.5 - 1),
+            e = t => Math.max(0, Math.min(1, (1 - t) / 0.3)),
+            a = e(u) * e(v),
+            q = (j * 64 + i) * 4,
+            g = Math.round(255 * a * a * (3 - 2 * a));
+          im.data[q] = im.data[q + 1] = im.data[q + 2] = g;
+          im.data[q + 3] = 255;
+        }
+      x.putImageData(im, 0, 0);
+      SCHATTEN.mat = new THREE.MeshBasicMaterial({
+        map: new THREE.CanvasTexture(cv),
+        color: 0x6e6e6e,
+        transparent: true,
+        blending: THREE.SubtractiveBlending,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -2,
+        toneMapped: false,
+      });
+      SCHATTEN.mat.name = 'grenzland schatten';
+    }
+    const moped = T.form === 'moped',
+      w = moped ? 0.75 : 2 * T.hw + 0.5,
+      l = T.yf - T.yr + (moped ? 0.3 : 0.5),
+      key = w.toFixed(2) + '|' + l.toFixed(2) + '|' + T.cy.toFixed(2);
+    let g = SCHATTEN.geo.get(key);
+    if (!g) {
+      g = new THREE.PlaneGeometry(w, l);
+      g.rotateX(-Math.PI / 2);
+      g.translate(0, 0.035, -T.cy);
+      SCHATTEN.geo.set(key, g);
+    }
+    const m = own(new THREE.Mesh(g, SCHATTEN.mat));
+    m.renderOrder = 1;
+    m.name = 'schatten';
+    return m;
+  }
+  // the control lamps of a cockpit: copies of the lamp material in their colours, dark until they are used
+  function kontroll() {
+    const L = {};
+    for (const [k, col, em] of [
+      ['k_rot', 0x5a1410, 0xff2a18],
+      ['k_gruen', 0x12401c, 0x30ff60],
+      ['k_blau', 0x101c50, 0x3070ff],
+    ]) {
+      const m = LM.tail.clone();
+      m.color.setHex(col);
+      m.emissive.setHex(em);
+      m.emissiveIntensity = 0;
+      L[k] = m;
+    }
+    return L;
+  }
   const own = m => {
     m.userData.noMerge = true;
     m.userData.shared = true;
@@ -464,7 +564,16 @@ export const GLMOD = (() => {
     steer.add(wf);
     wr.position.set(0, T.rw, -T.b);
     tilt.add(steer, wr);
-    const out = { T, tilt, steer, wf, wr, axis: v3(T.axis).normalize(), needle: null };
+    const out = { T, tilt, steer, wf, wr, axis: v3(T.axis).normalize(), needle: null, hands: null, tap: null };
+    if (P('haende')) {
+      // the rider's hands on the grips (shown from the saddle only) and the fuel tap's lever (it turns to „Reserve“)
+      out.hands = meshes(P('haende'), T, lamps);
+      out.hands.visible = false;
+      steer.add(out.hands);
+      out.tap = meshes(P('hahn'), T, lamps);
+      out.tap.position.copy(v3(T.hahn));
+      tilt.add(out.tap);
+    }
     if (T.dial && P('nadel')) {
       // the needle on the dial: its frame is the dial's right, the way it faces, and down
       const nd = new THREE.Group(),
@@ -509,7 +618,7 @@ export const GLMOD = (() => {
         const P = name => N.pieces.find(p => p.name === name),
           axF = meshes(P('axF'), T),
           axR = meshes(P('axR'), T);
-        g.add(meshes(P('body'), T));
+        g.add(meshes(P('body'), T, LM, N.schrift ? { schrift: schrift(N.schrift) } : {}));
         axF.position.set(0, T.rw, -T.a);
         axR.position.set(0, T.rw, -T.b);
         g.add(axF, axR);
@@ -539,12 +648,13 @@ export const GLMOD = (() => {
         if (o.bar === 'rundum') g.add(own(new THREE.Mesh(ALT.lampGeo(alt, 'rundum'), LM.blau)));
       }
     }
+    g.add(schatten(T));
     g.name = 'grenzland ' + typ;
     g.visible = false;
     scene.add(g);
     return M;
   }
-  // ---- the speedometer's face: drawn once, the tank's mark drawn again when the tank changes ----
+  // ---- the speedometer's face: scale, numbers and the odometer – drawn again when the odometer moves on (every 100 m) ----
   function tachoBild(max = 100) {
     const cv = document.createElement('canvas');
     cv.width = cv.height = 256;
@@ -552,7 +662,7 @@ export const GLMOD = (() => {
       tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
-    const draw = tank => {
+    const draw = km => {
       const c = 128,
         P = (deg, r) => [c + Math.cos((deg * Math.PI) / 180) * r, c - Math.sin((deg * Math.PI) / 180) * r];
       x.fillStyle = '#0c0c0d';
@@ -583,38 +693,161 @@ export const GLMOD = (() => {
           x.fillText(String(v), t[0], t[1]);
         }
       }
-      // the 60 mark of the type's limit
-      const m = P(225 - (270 * 60) / max, 122);
-      x.fillStyle = '#d6401c';
-      x.beginPath();
-      x.arc(m[0], m[1], 5, 0, 7);
-      x.fill();
+      // the mark at 60: the moped's limit
+      if (max === 100) {
+        const m = P(225 - (270 * 60) / max, 122);
+        x.fillStyle = '#d6401c';
+        x.beginPath();
+        x.arc(m[0], m[1], 5, 0, 7);
+        x.fill();
+      }
       x.fillStyle = '#b9b6aa';
       x.font = '17px Arial, sans-serif';
       x.textAlign = 'center';
       x.fillText('km/h', c, c + 40);
-      // the odometer's window
+      // the odometer's window: five wheels of whole kilometres, the tenths in red
+      const n = Math.max(0, km || 0),
+        whole = String(Math.floor(n) % 100000).padStart(5, '0'),
+        tenth = String(Math.floor(n * 10) % 10);
       x.fillStyle = '#e6e2d2';
-      x.fillRect(c - 34, c + 58, 68, 20);
-      x.fillStyle = '#111';
+      x.fillRect(c - 40, c + 58, 66, 20);
+      x.fillStyle = '#c9392a';
+      x.fillRect(c + 27, c + 58, 14, 20);
       x.font = 'bold 16px "Courier New", monospace';
-      x.fillText('2 7 4 1 8', c, c + 69);
-      // the tank's mark (the real one has none: a small scale under the hub, the reserve in red)
-      if (tank != null) {
-        const w = 72,
-          x0 = c - w / 2,
-          y0 = c + 92;
-        x.fillStyle = '#2a2b2c';
-        x.fillRect(x0, y0, w, 9);
-        x.fillStyle = '#d6401c';
-        x.fillRect(x0, y0, w * 0.1, 9);
-        x.fillStyle = tank < 0.1 ? '#d6401c' : '#e9e6da';
-        x.fillRect(x0, y0 + 2, Math.max(2, w * Math.max(0, Math.min(1, tank))), 5);
-      }
+      x.textAlign = 'center';
+      x.textBaseline = 'middle';
+      x.fillStyle = '#111';
+      for (let i = 0; i < 5; i++) x.fillText(whole[i], c - 33 + i * 13, c + 69);
+      x.fillStyle = '#fff';
+      x.fillText(tenth, c + 34, c + 69);
       tex.needsUpdate = true;
     };
-    draw(null);
+    draw(0);
     return { tex, draw };
+  }
+  // ---- the radio's dial: a lit scale with the stations' marks, the pointer at the one that plays ----
+  function radioBild() {
+    const cv = document.createElement('canvas');
+    cv.width = 256;
+    cv.height = 64;
+    const x = cv.getContext('2d'),
+      tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    const fx = f => 14 + ((Math.max(87, Math.min(108, f)) - 87) / 21) * 228;
+    // list: [{ id, name, freq }], cur: id | null
+    const draw = (list, cur) => {
+      x.fillStyle = cur ? '#e8dcae' : '#8d8873';
+      x.fillRect(0, 0, 256, 64);
+      x.strokeStyle = '#2a2622';
+      x.fillStyle = '#2a2622';
+      x.lineWidth = 1;
+      x.font = '10px Arial, sans-serif';
+      x.textAlign = 'center';
+      x.textBaseline = 'middle';
+      for (let f = 88; f <= 108; f += 1) {
+        const px = Math.round(fx(f)) + 0.5;
+        x.beginPath();
+        x.moveTo(px, 24);
+        x.lineTo(px, f % 4 === 0 ? 34 : 29);
+        x.stroke();
+        if (f % 4 === 0) x.fillText(String(f), px, 42);
+      }
+      x.fillText('UKW  MHz', 128, 55);
+      let pf = 87.2;
+      (list || []).forEach((st, i) => {
+        const n = parseFloat(String(st.freq == null ? '' : st.freq).replace(',', '.')),
+          f = Number.isFinite(n) && n > 80 ? n : 89 + i * 4.5;
+        x.fillRect(Math.round(fx(f)) - 1, 14, 3, 9);
+        x.font = 'bold 9px Arial, sans-serif';
+        x.fillText(String(st.name || '').slice(0, 9), Math.max(24, Math.min(232, fx(f))), i % 2 ? 6 : 6);
+        if (st.id === cur) pf = f;
+      });
+      x.fillStyle = '#c62a1a';
+      x.fillRect(Math.round(fx(pf)) - 1, 2, 3, 60);
+      tex.needsUpdate = true;
+    };
+    draw([], null);
+    return { tex, draw };
+  }
+  // ---- the model of the Trabant the player drives (vehicles/vehicle.js VEH.add): the body with its cockpit, four wheels on their
+  //      pivots, the steering wheel and the needle as groups that turn ----
+  function spielerTrabi(o = {}) {
+    const N = GLTYPEN.bau('trabant', { col: o.col || '#9fc1d2', innen: 'cockpit', einzel: true }),
+      T = N.T,
+      TC = N.cockpit,
+      lamps = { head: LM.head.clone(), tail: LM.tail.clone(), blau: LM.blau, blau2: LM.blau2, blink: LM.blink },
+      face = tachoBild(TC.dial.max),
+      dial = new THREE.MeshBasicMaterial({ map: face.tex }),
+      radio = radioBild(),
+      radioM = new THREE.MeshBasicMaterial({ map: radio.tex }),
+      ctl = kontroll(),
+      g = new THREE.Group(),
+      body = new THREE.Group(),
+      P = name => N.pieces.find(p => p.name === name);
+    dial.name = 'grenzland tacho';
+    radioM.name = 'grenzland radio';
+    g.add(body);
+    body.add(meshes(P('body'), T, lamps, Object.assign({ tacho: dial, radio: radioM }, ctl)));
+    // the steering wheel: its frame is x right, the column (away from the driver), up in the wheel's plane
+    const wheelG = new THREE.Group(),
+      wheelS = new THREE.Group(),
+      Ly = v3(TC.col).multiplyScalar(-1).normalize(),
+      Lx = new THREE.Vector3(1, 0, 0),
+      Lz = new THREE.Vector3().crossVectors(Lx, Ly);
+    wheelG.position.copy(v3(TC.hub));
+    wheelG.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(Lx, Lz, Ly.clone().multiplyScalar(-1)));
+    wheelS.add(meshes(P('lenkrad'), T, lamps));
+    wheelG.add(wheelS);
+    body.add(wheelG);
+    // the needle on the dial
+    const nd = new THREE.Group(),
+      spin = new THREE.Group(),
+      D = TC.dial;
+    nd.position.copy(v3([D.c[0] + D.d[0] * 0.006, D.c[1] + D.d[1] * 0.006, D.c[2] + D.d[2] * 0.006]));
+    nd.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(v3(D.r), v3(D.d), v3(D.up).multiplyScalar(-1)));
+    spin.add(meshes(P('nadel'), T, lamps));
+    spin.rotation.y = GLZWEIRAD.nadelWinkel(0, D.max);
+    nd.add(spin);
+    body.add(nd);
+    const wheels = [];
+    for (const [x, y, steer, drive, pc] of [
+      [-T.track / 2, T.a, 1, 1, 'radL'],
+      [T.track / 2, T.a, 1, 1, 'radR'],
+      [-T.trackR / 2, T.b, 0, 0, 'radL'],
+      [T.trackR / 2, T.b, 0, 0, 'radR'],
+    ]) {
+      const piv = new THREE.Group(),
+        node = new THREE.Group();
+      piv.position.set(x, T.rw, -y);
+      piv.add(node);
+      g.add(piv);
+      node.add(meshes(P(pc), T, lamps));
+      wheels.push({ x, y, r: T.rw, w: T.tw, steer, drive, piv, node });
+    }
+    const model = {
+      g,
+      body,
+      wheels,
+      lamps: { head: [lamps.head], tail: [], brake: [lamps.tail], rev: [] },
+      beam: [0, T.yf - 0.1, 0.66],
+      cockpit: {
+        needle: spin,
+        dial,
+        face,
+        wheel: wheelS,
+        radio: { mat: radioM, draw: radio.draw },
+        max: D.max,
+        km0: 86302.6,
+        lampen: ctl,
+        T,
+      },
+      // the steering wheel turns about three times from lock to lock
+      update(v) {
+        wheelS.rotation.z = -v.st.steer * 15;
+      },
+    };
+    return { model, T, TC };
   }
   // ---- the model of the player's moped (vehicles/vehicle.js VEH.add): four contact points for the physics, two wheels to see ----
   function spielerMoped(o = {}) {
@@ -627,7 +860,8 @@ export const GLMOD = (() => {
       },
       face = tachoBild(100),
       dial = new THREE.MeshBasicMaterial({ map: face.tex }),
-      Z = mopedModel('s51', { col: o.col || '#3d6b4a' }, lamps, { tacho: dial }),
+      ctl = kontroll(),
+      Z = mopedModel('s51', { col: o.col || '#3d6b4a', fahrer: true }, lamps, Object.assign({ tacho: dial }, ctl)),
       T = Z.T,
       g = new THREE.Group(),
       body = new THREE.Group();
@@ -656,7 +890,19 @@ export const GLMOD = (() => {
       wheels,
       lamps: { head: [lamps.head], tail: [], brake: [lamps.tail], rev: [] },
       beam: T.beam,
-      cockpit: { needle: Z.needle, dial, face, steer: Z.steer, T },
+      cockpit: {
+        needle: Z.needle,
+        dial,
+        face,
+        steer: Z.steer,
+        max: 100,
+        tank: 8.7,
+        km0: 27418.3,
+        lampen: ctl,
+        hands: Z.hands,
+        tap: Z.tap,
+        T,
+      },
       lean: () => lean,
       // after the vehicle's own pose: lean into the curve instead of out of it, the handlebar turns the fork, the wheels roll
       update(v, dt) {
@@ -670,6 +916,21 @@ export const GLMOD = (() => {
     };
     return { model, T };
   }
-  return { TYP, LM, MAT, bau, spielerMoped, paint, glass, chrome, textured, meshes, tachoBild, own };
+  return {
+    TYP,
+    LM,
+    MAT,
+    SCHATTEN,
+    bau,
+    spielerMoped,
+    spielerTrabi,
+    paint,
+    glass,
+    chrome,
+    textured,
+    meshes,
+    tachoBild,
+    own,
+  };
 })();
 window.GLMOD = GLMOD;

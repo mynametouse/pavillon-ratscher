@@ -1,8 +1,9 @@
 # feat/grenzland-auto (13.11.2026): the vehicles of the mode „Grenzland“ – bodies that look like the real types, the player's moped, the
 # cockpits. One run: every type spawns and stands on the ground (a line-up in the fields, pictures of each in three-quarter view from the
 # front and of the important ones from behind), the first version's names still work, a car and a moped drive a line, the player's
-# Simson rides (name and second line for the HUD, about 60 km/h, leans into the curve, the handlebar turns), the speedometer reads
-# the truth, pictures from the saddle by day and at night; no new shader programs beyond what is reported, at most 16 textures each.
+# Simson rides (name and second line for the HUD, about 60 km/h, leans into the curve, the handlebar turns), the Trabant of 1989
+# drives (about 105 km/h, the steering wheel turns, the radio's dial), the speedometers read the truth, pictures from the saddle and
+# from the driver's seat by day and at night; no new shader programs beyond what is reported, at most 16 textures each.
 #   python3 viz3/test/grenzland_auto.py 9012        (~7 min in the chat machine; pictures in out/grenzland_auto/)
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -26,7 +27,7 @@ TYPES = [
     ('lkw89', {}, False),
     ('moped', {'col': '#a23a2a'}, False),
 ]
-X0, Y0, DX, HD = 30.0, -430.0, 4.6, 3.55
+X0, Y0, DX, HD = 20.0, -430.0, 5.6, 3.3
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs)
@@ -71,14 +72,14 @@ with lib.browser() as b:
         big = info[typ] and info[typ]['len'] > 5
         d = 9.5 if big else (4.2 if info[typ] and info[typ]['form'] == 'moped' else 6.6)
         import math
-        # the vehicles face HD (south-west): the camera stands in front of them, a little to their left
-        ax = HD + 0.6
+        # the vehicles face HD (south): the camera stands in front of them, to their left
+        ax = HD - 0.62
         cx, cy = x + math.sin(ax) * d, Y0 + math.cos(ax) * d
         yaw = math.degrees(math.atan2(x - cx, Y0 - cy))
         E("GAME.view(%f, %f, KERN.ground(%f, %f) + %f, %f, %f, 34)" % (cx, cy, x, Y0, 1.7 if not big else 2.4, yaw, -9 if not big else -7))
         pic('1_%02d_%s' % (i, typ))
         if rear:
-            ax = HD + math.pi - 0.62
+            ax = HD + math.pi + 0.62
             cx, cy = x + math.sin(ax) * d, Y0 + math.cos(ax) * d
             yaw = math.degrees(math.atan2(x - cx, Y0 - cy))
             E("GAME.view(%f, %f, KERN.ground(%f, %f) + 1.8, %f, -10, 34)" % (cx, cy, x, Y0, yaw))
@@ -98,7 +99,7 @@ with lib.browser() as b:
     pic('3_moped_aussen')
     E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
     steps(8, 0.05)
-    m1 = J("({ id: VEH.cur && VEH.cur.id, u: VEH.cur.st.u, gear: VEH.cur.st.gear, c: GLCOCKPIT.stand(), want: GLZWEIRAD.nadelWinkel(Math.abs(VEH.cur.st.u) * 3.6) })")
+    m1 = J("({ id: VEH.cur && VEH.cur.id, u: VEH.cur.st.u, gear: VEH.cur.st.gear, c: GLCOCKPIT.stand(), want: GLCOCKPIT.winkel(Math.abs(VEH.cur.st.u) * 3.6) })")
     ck('the Simson rides (over 40 km/h after 8 s)', m1['id'] == 'gl-moped' and m1['u'] * 3.6 > 40, str(m1))
     ck('the speedometer reads the truth (needle within 4 km/h of the speed)', m1['c']['on'] and abs(m1['c']['kmh'] - m1['u'] * 3.6) < 4 and abs(m1['c']['winkel'] - m1['want']) < 0.2, str(m1))
     E("CAM3.want = false")
@@ -108,23 +109,68 @@ with lib.browser() as b:
     steps(1.6, 0.05)
     m2 = J("({ lean: VEH.cur.model.lean(), steer: VEH.cur.st.steer, q: VEH.cur.model.cockpit.steer.quaternion.w, ex: VEH.cur.spec.eye[0], u: VEH.cur.st.u })")
     ck('it leans into the curve, the handlebar turns, the eyes go with the lean', m2['lean'] > 0.06 and m2['steer'] > 0.02 and m2['q'] < 0.99999 and m2['ex'] > 0.05, str(m2))
+    ck('from the saddle one sees the rider\'s hands on the grips', E("GLCOCKPIT.stand().haende"))
     pic('5_cockpit_kurve')
     E("CAM3.want = true")
     steps(0.2, 0.05)
     pic('6_moped_kurve_aussen')
-    E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
-    steps(16, 0.05)
-    m3 = J("({ kmh: VEH.cur.st.u * 3.6, gear: VEH.cur.st.gear, tank: GLSTATE.tank })")
-    ck('about 60 km/h at full throttle in fourth gear, the tank goes down', 50 < m3['kmh'] < 74 and m3['tank'] < 3, str(m3))
+    # the top speed on the flat from the vehicle's own data: where the drive in the top gear meets air and rolling resistance
+    TOP = ("(id => { const sp = VEH.by[id].spec, c = sp.eng.curve, T = r => { if (r <= c[0][0]) return c[0][1]; for (let i = 1; i < c.length; i++) if (r <= c[i][0]) "
+           "return c[i - 1][1] + (c[i][1] - c[i - 1][1]) * (r - c[i - 1][0]) / (c[i][0] - c[i - 1][0]); return 0; }, q = sp.gears[sp.gears.length - 1] * sp.final; "
+           "let v = 1; for (; v < 80; v += 0.05) { const rpm = v / sp.rw * 60 / (2 * Math.PI) * q; if (rpm > sp.eng.red || T(rpm) * q * sp.eff / sp.rw < 0.6 * sp.cdA * v * v + 0.012 * sp.mass * 9.81) break; } return v * 3.6; })")
+    top = E(TOP + "('gl-moped')")
+    ck('the Simson\'s data give about 60 km/h on the flat', 56 <= top <= 68, '%.1f km/h' % top)
     E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: true })")
     steps(5, 0.05)
-    # ---- at night: the cockpit lit, the lamps, the beacons ----
+    tk = J("({ tank: GLSTATE.tank, c: GLCOCKPIT.stand(), sub: VEH.cur.gl.sub })")
+    ck('the tank went down, the odometer counted, the small line tells the tank', tk['tank'] < 3 and tk['c']['km'] > 27418.35 and 'Tank 2,9' in tk['sub'], str(tk))
+    E("GLSTATE.tank = 0.5")
+    steps(0.2, 0.05)
+    tk = J("({ tap: VEH.cur.model.cockpit.tap.rotation.x, sub: VEH.cur.gl.sub, lamps: GLCOCKPIT.stand().lampen })")
+    ck('under 0.8 l the fuel tap stands on reserve', tk['tap'] < -1 and 'Reserve' in tk['sub'], str(tk))
+    E("GLSTATE.tank = 3")
+    E("VEH.auto = null; VEH.exit()")
+    steps(0.4)
+    # ---- the Trabant of 1989 ----
+    E("GLAUTO.mopedAt(96, -318, 0.5); GLAUTO.trabiAt(108, -312, 0.5)")
+    steps(0.5)
+    E("CAM3.want = true; VEH.enter('gl-trabi')")
+    steps(1.2)
+    t0 = J("({ id: VEH.cur && VEH.cur.id, name: VEH.cur && VEH.cur.name, sub: VEH.cur && VEH.cur.gl && VEH.cur.gl.sub, z: VEH.cur ? VEH.cur.st.z - KERN.ground(VEH.cur.st.x, VEH.cur.st.y) : 9 })")
+    ck('the Trabant stands there, one gets in, its name for the HUD', t0['id'] == 'gl-trabi' and t0['name'] == 'Trabant 601' and 'PS' in (t0['sub'] or '') and abs(t0['z']) < 0.4, str(t0))
+    pic('9a_trabi_aussen')
+    E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
+    steps(7, 0.05)
+    t1 = J("({ u: VEH.cur.st.u, gear: VEH.cur.st.gear, c: GLCOCKPIT.stand(), want: GLCOCKPIT.winkel(Math.abs(VEH.cur.st.u) * 3.6, 120) })")
+    ck('the Trabant drives (over 30 km/h after 7 s), its speedometer reads the truth', t1['u'] * 3.6 > 30 and t1['c']['on'] and abs(t1['c']['kmh'] - t1['u'] * 3.6) < 5 and abs(t1['c']['winkel'] - t1['want']) < 0.2, str(t1))
+    top = E(TOP + "('gl-trabi')")
+    ck('the Trabant\'s data give about 105 km/h on the flat', 96 <= top <= 114, '%.1f km/h' % top)
+    E("CAM3.want = false; if (window.GLRADIO && GLRADIO.stations().length) GLRADIO.tune(GLRADIO.stations()[0].id)")
+    steps(0.4, 0.05)
+    pic('9b_trabi_cockpit_tag')
+    E("VEH.auto = () => ({ thr: 0.4, brk: 0, steer: 0.5, hand: false })")
+    steps(1.0, 0.05)
+    t2 = J("({ rad: VEH.cur.model.cockpit.wheel.rotation.z, steer: VEH.cur.st.steer, radio: GLCOCKPIT.stand().radio, cur: window.GLRADIO ? GLRADIO.cur() : null })")
+    ck('the steering wheel turns with the steering, the radio\'s dial shows the station that plays', t2['steer'] > 0.02 and t2['rad'] < -0.2 and t2['radio'] == t2['cur'] and t2['cur'], str(t2))
+    pic('9c_trabi_cockpit_kurve')
+    E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: true })")
+    steps(4, 0.05)
+    # ---- at night: the cockpits lit, the lamps, the beacons ----
     E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 23 * 60 + 10; if (window.DN && DN.active) DN.update(true)")
     lib.settle_light(pg)
-    E("CAM3.want = false; VEH.auto = () => ({ thr: 0.6, brk: 0, steer: 0, hand: false })")
+    E("VEH.auto = () => ({ thr: 0.5, brk: 0, steer: 0, hand: false })")
+    steps(2.5, 0.05)
+    n0 = J("({ c: GLCOCKPIT.stand(), head: VEH.cur.model.lamps.head[0].emissiveIntensity, dark: VAUTO.dark() })")
+    ck('at night the Trabant\'s lamps are on and its instruments lit', n0['dark'] and n0['head'] > 1 and n0['c']['hell'] > 0.3, str(n0))
+    pic('9d_trabi_cockpit_nacht')
+    E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: true })")
+    steps(4, 0.05)
+    E("VEH.auto = null; VEH.exit()")
+    steps(0.4)
+    E("VEH.enter('gl-moped'); VEH.auto = () => ({ thr: 0.6, brk: 0, steer: 0, hand: false })")
     steps(3, 0.05)
-    n1 = J("({ c: GLCOCKPIT.stand(), head: VEH.cur.model.lamps.head[0].emissiveIntensity, dark: VAUTO.dark() })")
-    ck('at night the lamp is on and the speedometer is lit', n1['dark'] and n1['head'] > 1 and n1['c']['hell'] > 0.3, str(n1))
+    n1 = J("({ id: VEH.cur && VEH.cur.id, c: GLCOCKPIT.stand(), head: VEH.cur.model.lamps.head[0].emissiveIntensity })")
+    ck('at night the Simson\'s lamp is on and the speedometer is lit', n1['id'] == 'gl-moped' and n1['head'] > 1 and n1['c']['hell'] > 0.3, str(n1))
     pic('7_cockpit_nacht')
     E("VEH.auto = () => ({ thr: 0, brk: 1, steer: 0, hand: true })")
     steps(4, 0.05)
@@ -136,7 +182,7 @@ with lib.browser() as b:
     import math
     ax = HD + 0.5
     cx, cy = X0 + i * DX + 2.5 + math.sin(ax) * 9, Y0 + math.cos(ax) * 9
-    E("GAME.view(%f, %f, KERN.ground(%f, %f) + 1.7, %f, -7, 40)" % (cx, cy, X0 + i * DX, Y0, math.degrees(math.atan2(X0 + i * DX + 2.5 - cx, Y0 - cy))))
+    E("CAM3.want = false; GAME.view(%f, %f, KERN.ground(%f, %f) + 1.7, %f, -7, 40)" % (cx, cy, X0 + i * DX, Y0, math.degrees(math.atan2(X0 + i * DX + 2.5 - cx, Y0 - cy))))
     pic('8_streifen_nacht')
     bl = J("({ a: GLMOD.LM.blau.emissiveIntensity, b: GLMOD.LM.blau2.emissiveIntensity, head: GLMOD.LM.head.emissiveIntensity })")
     ck('the beacons flash, the lamps glow at night', max(bl['a'], bl['b']) > 3 and bl['head'] > 1, str(bl))
@@ -144,13 +190,13 @@ with lib.browser() as b:
     p1 = progs()
     new = [p for p in p1 if p not in p0]
     print('programs before', len(p0), 'after', len(p1), 'new:', new, flush=True)
-    ck('at most three new shader programs for all the vehicles and the mode', len(new) <= 3, str(new))
+    ck('at most four new shader programs for all the vehicles and the mode', len(new) <= 4, str(new))
     okgl, rep = lib.check_gl(pg)
     ck('at most 16 textures per shader program, none broken', okgl, str({k: rep[k] for k in ('maxFrag', 'maxVert')}) + str(rep['bad'])[:200])
     # ---- the end ----
     E("GRENZLAND.stop()")
     steps(0.5)
-    st = J("({ on: GLSTATE.on, cars: GLAUTO.cars.length, moped: GLAUTO.moped ? GLAUTO.moped.g.visible : false, zt: !!GLAUTO.zt })")
-    ck('„Beenden“ takes the vehicles away', not st['on'] and st['cars'] == 0 and not st['moped'] and not st['zt'], str(st))
+    st = J("({ on: GLSTATE.on, cars: GLAUTO.cars.length, moped: GLAUTO.moped ? GLAUTO.moped.g.visible : false, trabi: GLAUTO.trabi ? GLAUTO.trabi.g.visible : false, zt: !!GLAUTO.zt })")
+    ck('„Beenden“ takes the vehicles away', not st['on'] and st['cars'] == 0 and not st['moped'] and not st['trabi'] and not st['zt'], str(st))
     ck.errors(errs)
     ck.done()

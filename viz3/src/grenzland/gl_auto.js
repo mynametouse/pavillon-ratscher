@@ -8,6 +8,7 @@
 // the vehicle's engine sound it has a two-stroke's own voice (the ring of the exhaust, the rattle between the firings, the uneven idle).
 //   GLAUTO.spawn(typ, o) → c · park(c, x, y, hd) · onLine(c, line, s, v) · drive(c, dt, { k, vmax, acc, halt, stopS }) · remove(c)
 //   GLAUTO.route([x, y], [x, y], { k, aLat, vEnd, lane }) → line · netz() · nodeNear(x, y) · zufahrten() · mopedAt(x, y, hd) · mopedHide()
+//   GLAUTO.trabiAt(x, y, hd) · trabiHide()   the Trabant 601 to drive in 1989 (id 'gl-trabi'); GLAUTO.moped, GLAUTO.trabi: the vehicles
 import * as THREE from 'three';
 import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -17,10 +18,11 @@ import { CAM3 } from '../game/player.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { VNETZ } from '../verkehr/verkehr_netz.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
+import { GL } from './gl_state.js';
 import { GLTON } from './gl_ton.js';
 import { GLMOD } from './gl_modelle.js';
 export const GLAUTO = (() => {
-  const S = { cars: [], n: 0, G: null, moped: null, blink: 0, zt: null };
+  const S = { cars: [], n: 0, G: null, moped: null, trabi: null, blink: 0, zt: null };
   const TYP = GLMOD.TYP,
     LM = GLMOD.LM;
   // ---- a vehicle of the mode in the world ----
@@ -89,6 +91,7 @@ export const GLAUTO = (() => {
   const removeAll = () => {
     for (const c of S.cars.slice()) remove(c);
     zweitakt(null, 0);
+    if (S.trabi) trabiHide();
   };
   const _e = new THREE.Euler(0, 0, 0, 'YXZ'),
     _a = {},
@@ -245,6 +248,13 @@ export const GLAUTO = (() => {
       .filter(n => n.edges.length === 1 && n.edges[0].kind <= 2 && n.edges[0].kind >= 1)
       .map(n => [n.x, n.y]);
   }
+  // the player's own vehicles throw the sun's shadow (they are two, and one looks at them all the time): the big parts only –
+  // paint and the parts of vertex colours, no glass, no lamps, no chrome trim
+  function schattenwurf(g) {
+    g.traverse(o => {
+      if (o.isMesh) o.castShadow = /^lack|^matt$/.test(o.name) && o.geometry.attributes.position.count > 600;
+    });
+  }
   // ---- the player's moped: a vehicle of vehicles/vehicle.js (made when the mode first needs it, hidden far out when not) ----
   const HIDE = [-930, -1240];
   function mopedVeh() {
@@ -337,13 +347,130 @@ export const GLAUTO = (() => {
       }
     };
     const v = VEH.add(spec, model);
-    v.gl = { sub: 'Moped · 3,7 PS · Baujahr 1984', typ: 's51', zweitakt: 60 };
-    g.traverse(o => {
-      if (o.isMesh) o.castShadow = false;
-    });
+    // the small line under the name when one gets on (the lead's HUD reads it): the tank in litres – the S 51 has no gauge, one
+    // looks into the tank; under 0.8 l the tap stands on reserve
+    v.gl = {
+      typ: 's51',
+      zweitakt: 60,
+      get sub() {
+        const t = Math.max(0, GL.tank || 0);
+        return (
+          'Moped · 3,7 PS · Baujahr 1984 · Tank ' +
+          t.toFixed(1).replace('.', ',') +
+          ' l' +
+          (t < 0.8 ? ' (Reserve)' : '')
+        );
+      },
+    };
+    schattenwurf(g);
     g.visible = false;
     S.moped = v;
     return v;
+  }
+  // ---- the Trabant the player drives in 1989: a vehicle of vehicles/vehicle.js (id 'gl-trabi') – 594 cm³, two cylinders, two strokes,
+  //      26 PS at 4200/min, four gears on the dash (the fourth runs free: no engine braking), 620 kg, soft springs, about 105 km/h ----
+  function trabiVeh() {
+    if (S.trabi) return S.trabi;
+    const base = VEH && VEH.by && VEH.by.car;
+    if (!base) return null;
+    const PM = GLMOD.spielerTrabi(),
+      T = PM.T,
+      TC = PM.TC,
+      model = PM.model;
+    const spec = Object.assign({}, base.spec, {
+      id: 'gl-trabi',
+      name: T.name,
+      enterLabel: 'In den Trabant steigen',
+      mass: 695,
+      Iz: 820,
+      a: T.a,
+      b: -T.b,
+      track: T.track,
+      hcg: 0.52,
+      rw: T.rw,
+      mu: 0.9,
+      Cf: 38000,
+      Cr: 43000,
+      steerMax: 0.56,
+      steerV: 13,
+      steerRate: 2.4,
+      steerBack: 4,
+      eng: {
+        idle: 800,
+        red: 5000,
+        launch: 2300,
+        drag: 6,
+        curve: [
+          [800, 38],
+          [2000, 51],
+          [3000, 54],
+          [4200, 43.5],
+          [4800, 33],
+          [5200, 0],
+        ],
+      },
+      gears: [4.08, 2.32, 1.52, 1.103],
+      rev: 3.83,
+      final: 3.95,
+      eff: 0.9,
+      split: 1,
+      shift: 0.45,
+      upAt: t => 2100 + 2300 * t,
+      downAt: t => 1300 + 1100 * t,
+      brake: 5200,
+      brakeF: 0.66,
+      hand: true,
+      cdA: 0.85,
+      dive: 0.009,
+      lean: 0.013,
+      travel: 0.11,
+      susp: 36,
+      suspD: 7,
+      box: { hw: T.hw, hl: T.hl, cy: T.cy, h: 1.44 },
+      eye: TC.eye3.slice(),
+      door: [-1.15, -0.1],
+      reach: 2.2,
+      beam: 220,
+      beamAngle: 0.5,
+      sound: 'petrol',
+      cam: { dist: 5.2, height: 1.85, look: 1.1 },
+      home: () => [HIDE[0] + 14, HIDE[1], 0, false],
+    });
+    delete spec.L;
+    // the eyes: the driver's in the driver's view, the seat for the figure
+    const pose0 = model.update;
+    model.update = (vv, dt) => {
+      pose0(vv, dt);
+      const E = CAM3.want ? TC.eye3 : TC.eye1;
+      spec.eye[0] = E[0];
+      spec.eye[1] = E[1];
+      spec.eye[2] = E[2];
+    };
+    const v = VEH.add(spec, model);
+    v.gl = {
+      sub: 'Zweitakter · 26 PS · Baujahr 1986 · keine Tankuhr: Reservehahn und Peilstab',
+      typ: 'trabant',
+      zweitakt: 105,
+    };
+    schattenwurf(model.g);
+    model.g.visible = false;
+    S.trabi = v;
+    return v;
+  }
+  function trabiAt(x, y, hd) {
+    const v = trabiVeh();
+    if (!v) return null;
+    VEH.place('gl-trabi', x, y, hd);
+    v.g.visible = true;
+    markDirty(true);
+    return v;
+  }
+  function trabiHide() {
+    const v = S.trabi;
+    if (!v) return;
+    if (VEH.cur === v) VEH.exit();
+    VEH.place('gl-trabi', HIDE[0] + 14, HIDE[1], 0);
+    v.g.visible = false;
   }
   function mopedAt(x, y, hd) {
     const v = mopedVeh();
@@ -360,6 +487,8 @@ export const GLAUTO = (() => {
     VEH.place('gl-moped', HIDE[0], HIDE[1], 0);
     v.g.visible = false;
   }
+  // „Beenden“ (grenzland/gl_modus.js calls mopedHide and removeAll): the Trabant goes too
+  const mopedHide0 = mopedHide;
   // ---- a two-stroke's own voice for the vehicle the player rides, on top of the engine note of vehicles/vsound.js: the ring of the
   //      exhaust (the firing pulses through a narrow band), the rattle between the firings (noise gated by them), a hollow beat at
   //      idle that stumbles now and then. All synthesised, on the game's effects bus ----
@@ -473,6 +602,7 @@ export const GLAUTO = (() => {
       night = dk;
       LM.head.emissiveIntensity = dk ? 3.2 : 0;
       LM.tail.emissiveIntensity = dk ? 1.4 : 0;
+      if (GLMOD.SCHATTEN.mat) GLMOD.SCHATTEN.mat.color.setHex(dk ? 0x1c1c1c : 0x6e6e6e);
       markDirty();
     }
     S.blink += dt;
@@ -519,7 +649,13 @@ export const GLAUTO = (() => {
     zufahrten,
     mopedVeh,
     mopedAt,
-    mopedHide,
+    mopedHide: () => {
+      mopedHide0();
+      trabiHide();
+    },
+    trabiVeh,
+    trabiAt,
+    trabiHide,
     zweitakt,
     tick,
     LM,

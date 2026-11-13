@@ -210,6 +210,24 @@ export const GLKAROSSE = (() => {
         K.tri(n, a, b, c, col, uv && [uv[0], uv[1], uv[2]]);
         K.tri(n, a, c, d, col, uv && [uv[0], uv[2], uv[3]]);
       },
+      // a round face with texture coordinates (a dial): middle c, its right r and up u (unit vectors), radius R; the picture's
+      // square lies round the circle
+      scheibe(n, c, r, u, R, col, seg = 20) {
+        const P = a => [
+          c[0] + (r[0] * Math.cos(a) + u[0] * Math.sin(a)) * R,
+          c[1] + (r[1] * Math.cos(a) + u[1] * Math.sin(a)) * R,
+          c[2] + (r[2] * Math.cos(a) + u[2] * Math.sin(a)) * R,
+        ];
+        for (let i = 0; i < seg; i++) {
+          const a0 = (i / seg) * Math.PI * 2,
+            a1 = ((i + 1) / seg) * Math.PI * 2;
+          K.tri(n, c, P(a0), P(a1), col, [
+            [0.5, 0.5],
+            [0.5 + 0.5 * Math.cos(a0), 0.5 + 0.5 * Math.sin(a0)],
+            [0.5 + 0.5 * Math.cos(a1), 0.5 + 0.5 * Math.sin(a1)],
+          ]);
+        }
+      },
       // both sides
       quad2(n, a, b, c, d, col) {
         K.quad(n, a, b, c, d, col);
@@ -976,6 +994,37 @@ export const GLKAROSSE = (() => {
       Math.max(10, seg / 2),
       rgb(40, 40, 42)
     );
+    if (o.spokes) {
+      // an alloy wheel: spokes from the hub to the rim's edge over the dark dish
+      const t0 = d - dish + 0.008,
+        sc = o.spokeCol || rgb(170, 172, 175);
+      for (let i = 0; i < o.spokes; i++) {
+        const a = (i / o.spokes) * Math.PI * 2,
+          ca = Math.cos(a),
+          sa = Math.sin(a),
+          P = (r, w, t) => [s * t, ca * r - sa * w, sa * r + ca * w],
+          q = [
+            P(ri * 0.2, -ri * 0.1, t0 + 0.012),
+            P(ri * 0.93, -ri * 0.07, d - 0.006),
+            P(ri * 0.93, ri * 0.07, d - 0.006),
+            P(ri * 0.2, ri * 0.1, t0 + 0.012),
+          ];
+        if (s > 0) k.quad(n, q[0], q[1], q[2], q[3], sc);
+        else k.quad(n, q[3], q[2], q[1], q[0], sc);
+      }
+      k.lathe(
+        n,
+        [0, 0, 0],
+        [s, 0, 0],
+        [
+          [ri * 0.24, t0],
+          [ri * 0.22, t0 + 0.016],
+          [0.001, t0 + 0.018],
+        ],
+        12,
+        sc
+      );
+    }
     if (o.cap) {
       const cr = o.capR || ri * 0.3,
         t0 = d - dish + 0.014;

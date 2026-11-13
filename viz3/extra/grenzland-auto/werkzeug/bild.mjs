@@ -239,7 +239,7 @@ function png(img, w, h) {
 
 const t0 = Date.now();
 const model0 = GLTYPEN.bau(typ, O) || GLZWEIRAD.bau(typ, O);
-const model = model0 && { T: model0.T, pieces: model0.pieces.filter(p => !p.dial) };
+const model = model0 && { T: model0.T, pieces: model0.pieces.filter(p => !p.dial || p.name === 'haende') };
 if (!model0) {
   console.error('unknown type', typ, '– known:', Object.keys(GLTYPEN.TYP).concat(Object.keys(GLZWEIRAD.TYP)).join(' '));
   process.exit(1);

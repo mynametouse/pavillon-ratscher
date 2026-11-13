@@ -109,7 +109,7 @@ test('the Simson S 51: 1.89 m long, wheelbase 1.21 m, wheels of 2.75-16; the pie
   assert.ok(Math.abs(b.z0) < 0.005 && b.z1 > 1.05 && b.z1 < 1.25, 'height ' + b.z1);
   assert.deepEqual(M.pieces.map(p => p.name), ['rahmen', 'lenkung', 'rad', 'rad', 'nadel']);
   const L = M.pieces[1].parts;
-  assert.ok(L.tacho && L.tacho.uv && L.tacho.n === 2, 'the speedometer\'s face has texture coordinates');
+  assert.ok(L.tacho && L.tacho.uv && L.tacho.n >= 12, 'the speedometer\'s round face has texture coordinates');
   // the axle lies on the steering axis
   const d = [0 - T.pivot[0], T.a - T.pivot[1], T.rw - T.pivot[2]],
     t = d[1] * T.axis[1] + d[2] * T.axis[2],
