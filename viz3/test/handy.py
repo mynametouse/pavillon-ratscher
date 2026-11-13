@@ -14,6 +14,7 @@ OUT = lib.out('handy')
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs)
+    pg.set_default_timeout(12000)
     lib.boot(pg, port, '?szenario=grenzland', figures=True)
     E = pg.evaluate
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
@@ -58,7 +59,7 @@ with lib.browser() as b:
     ck('then it unlocks by itself: the home screen with the apps and a dock', not h['app'] and h['sperre'] < 0 and len(ico) >= 10 and len(dock) == 4, str(h) + ' ' + str(ico))
     ck('upright, at the lower right, the size of a phone (1100×680)', 230 < root['w'] < 330 and root['h'] > 1.9 * root['w'] and root['r'] <= 1100 and root['b'] <= 680 and root['l'] > 600, str(root))
     pic('02_home')
-    if 'app' in SECT:
+    def sect_app():
         # ---------------- Nachrichten: the threads, a conversation from top to bottom ----------------
         pg.click('#glhandy .hy-ic[data-app="nachrichten"]'); steps(0.3); time.sleep(0.4)
         h = H()
@@ -117,7 +118,13 @@ with lib.browser() as b:
         h2 = H()
         ck('a locked app is grey and says „Kommt mit Kapitel 2.“; unlocked it opens (and stays so in the save)', zu0 and h['app'] != 'auftraege' and 'Kapitel 2' in why and not zu1
            and h2['app'] == 'auftraege' and E("GLSTATE.feed.some(q => q.k === 'frei' && q.text === 'auftraege')"), str([zu0, h, why[:60], zu1, h2]))
-    if 'anruf' in SECT:
+    if 'app' in SECT:
+        try: sect_app()
+        except Exception as e:
+            ck('section app ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
+            except Exception: pass
+    def sect_anruf():
         # ---------------- a call ----------------
         E("HANDY.home(); 0"); steps(0.2); time.sleep(0.3)
         pg.click('#glhandy .hy-ic[data-app="telefon"]'); steps(0.25); time.sleep(0.3)
@@ -141,7 +148,13 @@ with lib.browser() as b:
         rec = J("GLSTATE.feed.filter(q => q.k === 'anruf').map(q => q.wer + ':' + q.text)")
         ck('hung up: „Anruf beendet“, then the app again, the call in the recents', a1 == 'ende' and ok and any('Jule' in r for r in rec), str(a1) + str(rec))
         E("GAME.P.yaw = GAME.P.body; 0")
-    if 'kamera' in SECT:
+    if 'anruf' in SECT:
+        try: sect_anruf()
+        except Exception as e:
+            ck('section anruf ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
+            except Exception: pass
+    def sect_kamera():
         # ---------------- the camera ----------------
         if not E("HANDY.S.open"): E("GLHANDY.open(); 0"); steps(0.8)
         E("HANDY.home(); 0"); steps(0.2); time.sleep(0.3)
@@ -160,7 +173,13 @@ with lib.browser() as b:
         g = E("document.querySelectorAll('#glhandy .hy-gitter button').length")
         ck('Esc: back to the phone; Fotos has the picture', not h['sucher'] and h['open'] and g == n0 + 1, str(h) + ' ' + str(g))
         pic('13_fotos')
-    if 'halten' in SECT:
+    if 'kamera' in SECT:
+        try: sect_kamera()
+        except Exception as e:
+            ck('section kamera ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
+            except Exception: pass
+    def sect_halten():
         # ---------------- the hold ----------------
         if not E("HANDY.S.open"): E("GLHANDY.open(); 0")
         E("HANDY.home(); 0"); steps(1)
@@ -188,7 +207,13 @@ with lib.browser() as b:
         steps(5)
         progs = E("(GAME.R.info.programs || []).length")
         ck('no new shader programs for the phone in the hand (at most one)', progs - prog0 <= 1, f'{prog0} → {progs}')
-    if 'format' in SECT:
+    if 'halten' in SECT:
+        try: sect_halten()
+        except Exception as e:
+            ck('section halten ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
+            except Exception: pass
+    def sect_format():
         # ---------------- other screens ----------------
         fits = {}
         for name, (w, hh) in {'hochkant': (390, 844), 'quer': (844, 390)}.items():
@@ -218,6 +243,12 @@ with lib.browser() as b:
         ok2 = until("!HANDY.S.anruf", 20, 0.5, 0.3)
         ck('a call comes in: rings, is taken, the lines are said, it ends', ein == 'eingehend' and ok and ok2, str(ein))
         E("GLHANDY.close(); 0"); steps(0.5)
+    if 'format' in SECT:
+        try: sect_format()
+        except Exception as e:
+            ck('section format ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
+            except Exception: pass
     # ---------------- the end ----------------
     lin = J("GLHANDY.linien()")
     ck('the lines of the calls are listed for the recordings', len(lin) >= 10 and all(len(q) == 2 and q[0] for q in lin), str(lin[:3]))

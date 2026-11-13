@@ -56,7 +56,7 @@ export const HANDYAPPS = (() => {
 .hy-pfeil{font-style:normal;font-size:3.6cqmin;margin-right:1cqmin}
 .hy-pfeil.hy-rot{color:#ff453a}
 .hy-gitter{display:grid;grid-template-columns:repeat(3,1fr);gap:.8cqmin;margin:0 -2.6cqmin}
-.hy-gitter button{aspect-ratio:1;background:#222 center/cover no-repeat!important}
+.hy-gitter button{aspect-ratio:1;background-color:#222;background-position:center;background-size:cover;background-repeat:no-repeat}
 .hy-bild{width:100%;border-radius:2cqmin;display:block}
 .hy-po{padding:3cqmin 0 3.4cqmin;border-bottom:.3cqmin solid rgba(255,255,255,.08)}
 .hy-po h5{margin:0 0 1.6cqmin;display:flex;align-items:center;gap:2.2cqmin;font-size:3.9cqmin;font-weight:650}

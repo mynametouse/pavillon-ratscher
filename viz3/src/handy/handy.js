@@ -159,7 +159,7 @@ export const HANDY = (() => {
   font-family:var(--hy-font,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif);-webkit-font-smoothing:antialiased}
 .hy[hidden]{display:none!important}
 .hy *{box-sizing:border-box}
-.hy button{appearance:none;-webkit-appearance:none;border:0;margin:0;padding:0;background:none;color:inherit;font:inherit;text-align:inherit;cursor:pointer;
+:where(.hy) button{appearance:none;-webkit-appearance:none;border:0;margin:0;padding:0;background:none;color:inherit;font:inherit;text-align:inherit;cursor:pointer;
   border-radius:0;box-shadow:none;backdrop-filter:none;min-height:0;letter-spacing:inherit;text-transform:none}
 .hy-geh{position:absolute;inset:0;border-radius:14.6% / 7.1%;padding:2.3%;
   background:linear-gradient(140deg,#5b616b 0%,#23272d 18%,#1a1d22 50%,#30353d 78%,#0d0f12 100%);
@@ -257,7 +257,7 @@ export const HANDY = (() => {
 .hy-mk b{display:flex;justify-content:space-between;gap:2cqmin;font-weight:650}
 .hy-mk b time{font-weight:400;opacity:.6;font-size:3.2cqmin;flex:none}
 .hy-mk span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:.92}
-.hy-ban{position:absolute;z-index:56;left:2.6cqmin;right:2.6cqmin;top:1.4cqh;transition:transform .34s cubic-bezier(.2,.9,.3,1.15),opacity .3s;cursor:pointer}
+.hy-ban{position:absolute;z-index:56;left:2.6cqmin;right:2.6cqmin;top:12cqmin;transition:transform .34s cubic-bezier(.2,.9,.3,1.15),opacity .3s;cursor:pointer}
 .hy-ban.hy-weg{transform:translateY(-140%);opacity:0;pointer-events:none}
 .hy-ban .hy-mk{background:rgba(44,44,50,.86);box-shadow:0 2cqmin 6cqmin rgba(0,0,0,.45)}
 .hy-anr{position:absolute;inset:0;z-index:48;display:flex;flex-direction:column;align-items:center;padding:20cqmin 7cqmin 12cqmin;
@@ -304,7 +304,8 @@ export const HANDY = (() => {
   .hy:not([data-lay="gross"]) .hy-insel{top:50%;left:1.2cqh;width:9.4cqmin;height:31cqmin;margin:-15.5cqmin 0 0}
   .hy:not([data-lay="gross"]) .hy-insel::after{right:auto;top:auto;left:2.7cqmin;bottom:3cqmin}
   .hy:not([data-lay="gross"]) .hy-stat{display:none}
-  .hy:not([data-lay="gross"]) .hy-app{padding-top:0;padding-left:12cqmin}
+  .hy:not([data-lay="gross"]) .hy-app{padding-top:2.5cqmin;padding-left:12cqmin}
+  .hy:not([data-lay="gross"]) .hy-ban{top:3cqmin;left:14cqmin}
   .hy:not([data-lay="gross"]) .hy-home{padding:4cqmin 5cqmin 6cqmin 14cqmin}
   .hy:not([data-lay="gross"]) .hy-wid{display:none}
   .hy:not([data-lay="gross"]) .hy-sperre{padding-top:5cqmin}
@@ -337,7 +338,7 @@ export const HANDY = (() => {
 .hy-sucher.gut .hy-si b{color:#30d158}
 .hy-sucher .hy-sb{position:absolute;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;justify-content:space-between;
   padding:0 max(24px,calc(50% - 170px));pointer-events:auto}
-.hy-sucher .hy-sb button{appearance:none;border:0;padding:0;background:none;color:#fff;cursor:pointer;font:inherit}
+.hy-sucher :where(.hy-sb) button{appearance:none;border:0;padding:0;background:none;color:#fff;cursor:pointer;font:inherit}
 .hy-sucher .hy-ausl{width:70px;height:70px;border-radius:50%;border:4px solid #fff!important;padding:4px!important;display:flex;align-items:center;justify-content:center}
 .hy-sucher .hy-ausl i{display:block;width:100%;height:100%;border-radius:50%;background:#fff;transition:transform .1s}
 .hy-sucher .hy-ausl:active i{transform:scale(.88)}
@@ -763,6 +764,7 @@ export const HANDY = (() => {
         } catch (e) {}
       }
       ton('auf');
+      if (S.peekEl) peek(null);
       KERN.emit('handy:auf', { app: id || '' });
     }
     if (id && S.apps[id]) {
@@ -1407,6 +1409,7 @@ export const HANDY = (() => {
       S.sucherVon = o.von != null ? o.von : S.open ? 'handy' : '';
       if (S.open) close({ auchAnruf: true });
       S.sucher = true;
+      if (S.peekEl) peek(null);
       S.suEl.hidden = false;
       S.suEl.classList.remove('blitz');
       sucherStatus();
