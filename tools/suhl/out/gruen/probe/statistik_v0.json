@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:47:14Z",
+ "made": "2026-11-13T01:57:04Z",
  "gebiet": "zentrum",
  "kacheln_gebiet": 11,
  "kacheln_einzelbaeume": 11,
@@ -12,12 +12,12 @@
   "baeume": {
    "anzahl": 9724,
    "kacheln": 11,
-   "sekunden": 29
+   "sekunden": 23
   }
  },
  "kontext": {
   "osm": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
-  "osm_stand": "2026-11-13T01:47:10Z",
+  "osm_stand": "2026-11-13T01:57:00Z",
   "gebaeude_osm_ringe": 35667,
   "gebaeude_ethos": 53938,
   "strassen": 10630,
@@ -29,11 +29,12 @@
   "ordner": false
  },
  "kachel_summen": {
+  "breite_krone_ohne_laser_treffer": 0,
   "geruecket": 875,
   "hoehe_gemessen": 0,
   "kronen_aus_hoehenmodell": 0,
   "kronen_roh": 11128,
-  "ohne_hoehe_im_laser_behalten": 0,
+  "laser_zu_duenn_hoehe_geschaetzt": 0,
   "osm_baeume": 505,
   "osm_mit_krone": 349,
   "osm_neu_gepflanzt": 25,
@@ -41,7 +42,6 @@
   "osm_ohne_krone_gesetzt": 70,
   "verworfen_dach_fahrbahn": 149,
   "verworfen_klein": 0,
-  "verworfen_ohne_hoehe": 0,
   "hinweis": "Summen über die Kacheln samt 12 m Rand – am Rand doppelt gezählt (etwa 6 %); die Zahlen der Bäume stehen unter \"baeume\""
  },
  "baeume": {
@@ -210,7 +210,7 @@
   "meldung": "VALID: out0 - schema 1 (rev 1.1), 0 errors, 0 warnings",
   "zeilen": []
  },
- "sekunden": 31,
+ "sekunden": 25,
  "kachel_tabelle": [
   [
    495,
