@@ -379,9 +379,12 @@ export const ZKKIT = (() => {
     markDirty(true);
   }
   function clearAll() {
+    // clear() runs only when the Zeitreise stops: the things go (geometry freed, nothing left on layers 21/22); the next start builds
+    // them again with the same materials, so no new programs
     for (const t of T) {
-      if (t.A) t.A.visible = false;
-      if (t.B) t.B.visible = false;
+      dispose(t.A);
+      dispose(t.B);
+      t.A = t.B = null;
       t.dA = t.dB = undefined;
       if (t.def.clear) t.def.clear();
     }
