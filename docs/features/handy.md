@@ -184,9 +184,11 @@ eingehender Anruf; nach „Beenden“ alles weg; Shader-Programme. Bilder in `ou
 
 ## Für den Lead
 
-- **Zusammenführen:** `feat/grenzland-welt` hat `gl_handy.js` vor der Übergabe geändert (`post`, Bilder im Feed). Mein `gl_handy.js` enthält
-  das alles (`feed(…, { img, live, likes, kom })`, `post`, `posts`, `S.fotoT`) – bei einem Konflikt **die Fassung von `feat/handy`
-  nehmen**. `modules.txt`: drei Zeilen `handy/…` direkt vor dem Block `# feat/grenzland`.
+- **Zusammenführen:** `feat/handy` enthält schon `feat/grenzland` bis 686c7631 (Zusammenführen 1 von Runde 2, ohne Konflikt) – beim
+  nächsten Zusammenführen kommen nur die Handy-Dateien dazu. Sollte `gl_handy.js` doch kollidieren (ein Agent hat ihn noch angefasst):
+  **die Fassung von `feat/handy` nehmen** – sie kann alles von `welt` (`feed(…, { img, live, likes, kom })`, `post`, `posts`, `S.fotoT`).
+  `modules.txt`: drei Zeilen `handy/…` direkt vor dem Block `# feat/grenzland`.
+- **Die CSS-Zeile `#glhandy .hb{…}` in `gl_hud.js`** (Paket A) braucht es nicht mehr – im neuen Handy gibt es kein `.hb`; sie schadet nicht.
 - **HUD:** der ☎-Knopf und T rufen weiter `GLHANDY.toggle()`; die Zahl `GLHUD.neu = GLHANDY.unread()` stimmt weiter.
 - **Wünsche:** (1) `grenzland_radio.py` auf `GLHANDY.open('<tab>')` statt der Tab-Klicks umstellen – dann kann die unsichtbare Leiste weg.
   (2) Gedankenblasen „Nachricht von …“ braucht es nicht mehr (der Peek zeigt es). (3) Kino kann Anrufe als Szene nutzen:

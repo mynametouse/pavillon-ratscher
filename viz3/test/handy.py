@@ -161,7 +161,12 @@ with lib.browser() as b:
         pg.click('#glhandy .hy-ic[data-app="kamera"]'); steps(0.3)
         c0 = J("({ su: !document.getElementById('glcam').hidden, open: HANDY.S.open, iso: GLHANDY.isOpen() })")
         n0 = E("HANDY.S.fotos.length")
-        pg.click('#glcam button[data-c="foto"]'); steps(0.25); time.sleep(0.3)
+        # with the mouse looking around (pointer lock after the click on the icon) a click anywhere takes the picture; else the shutter
+        locked = E("!!document.pointerLockElement")
+        if locked: pg.mouse.click(550, 360)
+        else: pg.click('#glcam button[data-c="foto"]')
+        steps(0.25); time.sleep(0.3)
+        print('pointer lock in the viewfinder:', locked, flush=True)
         f = J("(() => { const f = HANDY.S.fotos[HANDY.S.fotos.length - 1]; return f ? { n: HANDY.S.fotos.length, len: f.img.length, jpg: f.img.startsWith('data:image/jpeg') } : null })()")
         ck('Kamera: the viewfinder over the picture, the phone itself put down; the shutter takes a real frame', c0['su'] and not c0['open'] and not c0['iso'] and f and f['n'] == n0 + 1 and f['jpg'] and f['len'] > 8000, str(c0) + str(f))
         po = J("HANDYPOSE.stand()")

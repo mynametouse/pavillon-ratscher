@@ -840,6 +840,8 @@ export const HANDY = (() => {
   function statusLine() {
     if (!S.el) return;
     $('.hy-zeit').textContent = hhmm(now());
+    // the home screen's clock goes with it
+    if (!S.app) $('.hy-wz').textContent = hhmm(now());
     let n = call(W().netz);
     n = Number.isFinite(n) ? Math.max(-1, Math.min(4, Math.round(n))) : 4;
     const kn = $('.hy-kn'),
@@ -1171,13 +1173,30 @@ export const HANDY = (() => {
     },
     true
   );
-  // the mouse back in the picture: the phone is put away (the viewfinder wants the mouse look)
+  // the mouse back in the picture: the phone is put away (the viewfinder wants the mouse look). In the viewfinder the release of the mouse
+  // (Esc) closes the viewfinder – not the game's menu: the HUD takes it as its own release (LOCK.self)
   document.addEventListener('pointerlockchange', () => {
     if (document.pointerLockElement && S.open) {
       S.unlocked = false;
       close();
     }
+    if (document.pointerLockElement && S.sucher) {
+      S.sucherLock = true;
+      if (HUD.LOCK) HUD.LOCK.self = true;
+    } else if (!document.pointerLockElement && S.sucher && S.sucherLock) sucher(false);
   });
+  // in the viewfinder with the mouse looking around: a left click takes the picture (the game's own click does nothing meanwhile)
+  for (const t of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'])
+    window.addEventListener(
+      t,
+      e => {
+        if (!S.sucher || !document.pointerLockElement) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (t === 'mousedown' && e.button === 0) ausloesen();
+      },
+      true
+    );
   // ---------------- calls ----------------
   // k: { id, name, nummer, bild, rolle } – o: { szene(ctl) → Promise, klingeln: s, annehmen: s (incoming taken by itself), app: back to }
   function anrufStart(k, o, st) {
@@ -1421,13 +1440,18 @@ export const HANDY = (() => {
       S.suEl.classList.remove('blitz');
       sucherStatus();
       thumb();
+      S.sucherLock = !!document.pointerLockElement;
       try {
-        if (!COARSE) HUD.lockNow();
+        if (S.sucherLock && HUD.LOCK) HUD.LOCK.self = true;
+        else if (!COARSE) HUD.lockNow();
       } catch (e) {}
       KERN.emit('handy:sucher', { on: true });
     } else {
       S.sucher = false;
       S.suEl.hidden = true;
+      // the mouse goes on looking around: a later Esc is the player's again (the menu)
+      if (S.sucherLock && document.pointerLockElement && HUD.LOCK) HUD.LOCK.self = false;
+      S.sucherLock = false;
       KERN.emit('handy:sucher', { on: false });
       if (S.sucherVon === 'handy' && o.heim !== false) {
         S.sucherVon = '';
