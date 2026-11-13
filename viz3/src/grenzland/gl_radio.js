@@ -73,6 +73,7 @@ export const GLRADIO = (() => {
     ui: null,
     voices: false,
     tuneT: 0,
+    uhr: 0,
   };
   const era = () => (GL.era === '1989' ? '1989' : 'heute');
   const list = () => D.SENDER[era()];
@@ -175,7 +176,7 @@ export const GLRADIO = (() => {
     const lade = !S.item || S.item.k === 'lade';
     A.out.gain.setTargetAtTime(S.id ? Mo.g : 0, t, 0.12);
     A.sig.gain.setTargetAtTime(0.1 + 0.9 * sg * sg, t, 0.2);
-    A.nzG.gain.setTargetAtTime(S.id ? (1 - sg) * 0.22 + (lade ? 0.05 : 0) + (S.tuneT > 0 ? 0.16 : 0) : 0, t, 0.04);
+    A.nzG.gain.setTargetAtTime(S.id ? (1 - sg) * 0.12 + (lade ? 0.035 : 0) + (S.tuneT > 0 ? 0.1 : 0) : 0, t, 0.04);
     A.duck.gain.setTargetAtTime(S.over ? 0.18 : 1, t, 0.18);
     if (S.tuneT > 0) S.tuneT -= dt;
   }
@@ -290,8 +291,8 @@ export const GLRADIO = (() => {
     S.id === 'klassik' && Array.isArray(window.MUSICMAN) ? window.MUSICMAN.filter(r => r && r.file) : [];
   const songs = id => (M.REP[id] ? M.REP[id].length : 1) + (id === 'klassik' ? recs().length : 0);
   function ctxOf() {
-    const now = CLOCK.t;
-    for (let i = S.pend.length - 1; i >= 0; i--) if (now - S.pend[i].t > 45) S.pend.splice(i, 1);
+    // (what happened more than ten minutes ago is no news)
+    for (let i = S.pend.length - 1; i >= 0; i--) if (S.uhr - S.pend[i].t > 600) S.pend.splice(i, 1);
     return {
       taten: S.pend,
       sterne: GL.W ? starsNow() : 0,
@@ -464,6 +465,7 @@ export const GLRADIO = (() => {
     S.item = null;
     S.over = null;
     S.jobs.length = 0;
+    S.job = null;
     S.id = s ? s.id : null;
     S.sel[era()] = S.id;
     if (era() === 'heute') {
@@ -720,7 +722,7 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
   // ---------------- what happens in the world ----------------
   KERN.on('grenzland:tat', d => {
     if (!GL.on || !d) return;
-    S.pend.push({ id: d.id, wit: d.zeugen | 0, t: CLOCK.t });
+    S.pend.push({ id: d.id, wit: d.zeugen | 0, t: S.uhr });
     if (S.pend.length > 6) S.pend.shift();
   });
   KERN.on('grenzland:sterne', d => {
@@ -776,6 +778,7 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
       tune(list()[0].id);
       PLAY.think('Radio: R wechselt den Sender, R halten zeigt die Liste.', 4200);
     }
+    S.uhr += dt;
     uiTick(dt);
     if (!S.id) return;
     S.fadeT += dt;

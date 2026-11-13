@@ -67,7 +67,7 @@ export const GLRMUSIK = (() => {
   };
   const snap = (p, ch, dir) => {
     if (istAkk(p, ch)) return p;
-    for (const o of dir >= 0 ? [1, -1, 2, -2] : [-1, 1, -2, 2]) if (istAkk(p + o, ch)) return p + o;
+    for (const o of dir >= 0 ? [1, 2, -1, -2] : [-1, -2, 1, 2]) if (istAkk(p + o, ch)) return p + o;
     return p;
   };
   // the lowest note at or above lo with the pitch class pc
@@ -794,7 +794,8 @@ export const GLRMUSIK = (() => {
       unit = bars >= 16 ? 8 : bars >= 8 ? 4 : bars,
       out = [],
       LO = -2,
-      HI = 9;
+      HI = 8,
+      grid = bpb === 4 ? 2 : bpb === 3 ? 3 : 1;
     const mot = () => {
       const c = [pick(), pick()],
         st = [];
@@ -820,7 +821,7 @@ export const GLRMUSIK = (() => {
             const ch = chAt(b0 + k);
             let pos = 0;
             for (const d of M.c[k]) {
-              const st = pos % 1 === 0 && d >= 0.5;
+              const st = (pos % grid === 0 && d >= 0.5) || d >= 2;
               p = fold(p + (j === 0 && u === 0 ? 0 : M.st[j]));
               if (st) p = fold(snap(p, ch, M.st[j]));
               out.push({ b: (b0 + k) * bpb + pos, d, p, st });
@@ -833,7 +834,7 @@ export const GLRMUSIK = (() => {
           const ch = chAt(b0);
           let pos = 0;
           for (const d of unit > 2 ? KAD : []) {
-            const st = pos % 1 === 0 && d >= 0.5;
+            const st = (pos % grid === 0 && d >= 0.5) || d >= 2;
             p = fold(p + (r() < 0.5 ? -1 : 1));
             if (st) p = fold(snap(p, ch, -1));
             out.push({ b: b0 * bpb + pos, d, p, st });
@@ -906,11 +907,13 @@ export const GLRMUSIK = (() => {
     for (let si = 0; si < sek.length; si++) {
       const s = sek[si],
         tonic = mod(key + s.tr, 12),
-        bassLo = into(tonic, 31) > 40 ? 28 : 31;
+        bassLo = into(tonic, 31) > 40 ? 28 : 31,
+        // fuller sections are played louder
+        dyn = 0.64 + 0.36 * s.lvl;
       const part = (role, beat, dur, midi, vel) => {
         const name = bes[role];
         if (!name) return;
-        ev.push([tOf(beat), dur * spb, midi, vel * (0.92 + 0.16 * r()), insOf(name)]);
+        ev.push([tOf(beat), dur * spb, midi, vel * dyn * (0.92 + 0.16 * r()), insOf(name)]);
       };
       for (let b = 0; b < s.bars; b++) {
         const ch = s.prog[b % s.prog.length],
@@ -934,14 +937,13 @@ export const GLRMUSIK = (() => {
           walk: 0,
         };
         {
-          const a = semi(sk, ch.d),
-            z = semi(sk, nx.d) + (mod(nx.d - ch.d, 7) > 3 ? -12 : 0),
-            dir = z >= a ? 1 : -1,
-            deg = ch.d + (mod(nx.d - ch.d, 7) > 3 ? mod(nx.d - ch.d, 7) - 7 : mod(nx.d - ch.d, 7)) - dir;
-          C.walk = Math.abs(z - a) <= 2 ? C.bs(2) : rootB + (semi(sk, deg) - a);
+          const dd = mod(nx.d - ch.d, 7),
+            zdeg = ch.d + (dd > 3 ? dd - 7 : dd),
+            sg = Math.sign(zdeg - ch.d);
+          C.walk = Math.abs(zdeg - ch.d) <= 1 ? C.bs(2) : rootB + semi(sk, zdeg - sg) - semi(sk, ch.d);
         }
         const E = (role, bt, d, midi, v) => part(role, beat0 + bt, d, midi, v),
-          D = (kind, bt, v) => ev.push([tOf(beat0 + bt), 0, kind, v * (0.9 + 0.2 * r()), -1]);
+          D = (kind, bt, v) => ev.push([tOf(beat0 + bt), 0, kind, v * dyn * (0.9 + 0.2 * r()), -1]);
         if (ende) {
           // the last bar: everybody holds the tonic's chord
           E('bass', 0, bpb * 1.4, rootB, 1);
@@ -950,7 +952,7 @@ export const GLRMUSIK = (() => {
             E('pad', 0, bpb * 1.4, C.ct(k, 60), 0.7);
           }
           const reg = (INS[bes.lead] || {}).reg || 60;
-          E('lead', 0, bpb * 1.4, into(tonic, reg) + 12, 0.9);
+          E('lead', 0, bpb * 1.4, into(tonic, reg - 5) + 12, 0.9);
           if (stil.feel !== 'klavier') {
             D(bes.kit === 'marsch' ? DR.bd : DR.kick, 0, 0.9);
             D(DR.crash, 0, 0.5);
@@ -965,9 +967,8 @@ export const GLRMUSIK = (() => {
         const th = themes[key2] || (themes[key2] = thema(r, stil, s.prog, s.bars));
         const role = bes[s.wer] ? s.wer : 'lead',
           reg = (INS[bes[role]] || {}).reg || 60,
-          base = into(tonic, reg),
-          two = bes.zwei && bes.lead2 && role === 'lead' && (s.nth > 1 || s.lvl >= 1.1),
-          reg2 = two ? (INS[bes.lead2] || {}).reg || 60 : 0;
+          base = into(tonic, reg - 5),
+          two = bes.zwei && bes.lead2 && role === 'lead' && (s.nth > 1 || s.lvl >= 1.1);
         for (const nt of th) {
           const ch = s.prog[Math.floor(nt.b / bpb) % s.prog.length],
             beat = s.b0 * bpb + nt.b,
@@ -979,13 +980,7 @@ export const GLRMUSIK = (() => {
             let q = nt.p - 2;
             if (nt.st && !istAkk(q, ch))
               q = istAkk(nt.p - 3, ch) ? nt.p - 3 : istAkk(nt.p - 4, ch) ? nt.p - 4 : nt.p - 5;
-            part(
-              'lead2',
-              beat,
-              d,
-              into(tonic, reg2 - 5) + ton(sk, q, ch) + (reg2 - 5 > base ? -12 : 0),
-              nt.st ? 0.72 : 0.6
-            );
+            part('lead2', beat, d, base + ton(sk, q, ch), nt.st ? 0.72 : 0.6);
           }
         }
       }
